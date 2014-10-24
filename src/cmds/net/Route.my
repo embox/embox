@@ -1,13 +1,16 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "route",
 	help = "Manipilate routing table",
 	man = '''
 		NAME
 			route - show / manipulate the IP routing table.
 		SYNOPSIS
-			route [-hn] [-A family] {add|del} <target> [gw <Gw>]
+			route [-n]
+			route [-A family] {add|del} <target> [gw <Gw>]
 					[netmask <Nm>] [[dev] If]
+			route [-h]
 		OPTIONS
 			add
 				add a new route.
@@ -16,19 +19,36 @@ package embox.cmd.net
 			target
 				target IP address
 			-h  help message
-			-A  specify address family
-			gw  specify gateway for this net
+			-n  show numeric adresses instead of trying
+				to determine symbolic name
+			-A  specify address family. Only inet supported (DARPA internet).
+				inet is used by default.
+			gw  specify gateway for subnet
 			netmask
-				specify network mask for this net
+				specify network mask for subnet.
 			[dev] If
 				use this interface for current net
 		EXAMPLE
 			route -n
 			route add default gw 10.0.2.10 eth0
+		OUTPUT
+			The output contains this columns:
+				Destination
+					Destination host or destination net.
+				Gateway
+					The gateway address or '*' of not set.
+				Netmask
+					Should be 255.255.255.255 for host.
+				Flags. Possible flags:
+					U - route is up
+					G - use gateway
+					H - target is host
+				Iface
+					Interface to which IP packets are to be sent.
 		SEE ALSO
-			ifconfig, arp
+			ifconfig, arp, netstat
 		AUTHOR
-			Nikolay Korotky, Ilia Vaprol, Vladimir Sokolov
+			Nikolay Korotky, Ilia Vaprol, Vladimir Sokolov, Denis Deryugin
 	''')
 module route {
 	source "route.c"
