@@ -1,10 +1,15 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "netstat",
 	help = "Print network connections, interface statics",
 	man = '''
 		NAME
 			netstat - Print network connections
+		OPTIONS
+			-c	Reprint information every second
+			-l	Print only listening sockets
+			-a	Print listening and non-listening sockets
 		AUTHORS
 			Alexander Kalmuk
 	''')

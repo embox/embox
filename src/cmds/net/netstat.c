@@ -7,17 +7,25 @@
  * @author Alexandr Chernakov
  */
 
-#include <embox/cmd.h>
+#include <getopt.h>
 #include <stdio.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+
 #include <net/sock.h>
 #include <net/l4/udp.h>
 #include <net/l4/tcp.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
-#include <unistd.h>
-#include <fcntl.h>
 
-EMBOX_CMD(exec);
+#define NETSTAT_CONT			0x0100
+
+#define NETSTAT_LISTENING		0x0001
+#define NETSTAT_NONLISTENING	0x0002
+#define NETSTAT_OUTPUT_FLAGS	0x000F
+
+static int netstat_flags;
 
 static const char * sock_state_str(enum sock_state st) {
 	switch (st) {
@@ -64,6 +72,13 @@ void print_inet_sock_info(const struct sock *sk) {
 	assert(in_sk != NULL);
 	assert(in_sk->sk.opt.so_domain == AF_INET);
 
+	if (netstat_flags & NETSTAT_OUTPUT_FLAGS) {
+		if ((sk->state == SS_LISTENING && ~(netstat_flags & NETSTAT_LISTENING)) ||
+			(sk->state != SS_LISTENING && ~(netstat_flags & NETSTAT_NONLISTENING))) {
+			return;
+		}
+	}
+
 	printf("%-5s ", in_sk->sk.opt.so_protocol == IPPROTO_TCP ? "tcp"
 			: in_sk->sk.opt.so_protocol == IPPROTO_UDP ? "udp"
 			: "unknown");
@@ -91,7 +106,7 @@ void print_inet_sock_info(const struct sock *sk) {
 	}
 
 	printf("%s", in_sk->sk.opt.so_protocol == IPPROTO_TCP
-			? tcp_sock_state_str(((const struct tcp_sock *)&in_sk->sk)->state)
+			? tcp_sock_state_str(to_tcp_sock(&(in_sk->sk))->state)
 			: sock_state_str(sock_get_state(&in_sk->sk)));
 
 	printf("\n");
@@ -113,12 +128,36 @@ void print_info(const char *title,
 	}
 }
 
-static int exec(int argc, char **argv) {
-	print_info(
-			"Active Internet connections\n"
-			"Proto   Local Address   Foreign Address   State\n",
-			tcp_sock_ops, &print_inet_sock_info);
-	print_info(NULL, udp_sock_ops, &print_inet_sock_info);
+int main(int argc, char **argv) {
+	int c;
+
+	netstat_flags = 0;
+
+	while ((c = getopt(argc, argv, "cl")) != -1) {
+		switch (c) {
+			case 'c':
+				netstat_flags |= NETSTAT_CONT;
+				break;
+			case 'l':
+				netstat_flags |= NETSTAT_LISTENING;
+				break;
+			case 'a':
+				netstat_flags |= NETSTAT_LISTENING | NETSTAT_NONLISTENING;
+				break;
+			default:
+				break;
+		}
+	}
+
+	do {
+		print_info(
+				"Active Internet connections\n"
+				"Proto   Local Address   Foreign Address   State\n",
+				tcp_sock_ops, &print_inet_sock_info);
+		print_info(NULL, udp_sock_ops, &print_inet_sock_info);
+		if (netstat_flags & NETSTAT_CONT)
+			sleep(1);
+	} while (netstat_flags & NETSTAT_CONT);
 
 	return 0;
 }
