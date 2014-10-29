@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 int system(const char *command) {
-	const struct shell *sh = shell_lookup("tish");
+	const struct shell *sh = shell_any();
 
 	if (!sh) {
 		return -ENOENT;
