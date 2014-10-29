@@ -191,7 +191,7 @@ static int flashbdev_write(block_dev_t *bdev,
 	return flash->drv->flash_program(flash, startpos, buffer, count);
 }
 
-static int flash_erase(struct flash_dev * dev, uint32_t flash_base,
+static int flashbdev_erase(struct flash_dev * dev, uint32_t flash_base,
                 size_t len, uint32_t *err_address) {
 	uint32_t block, end_addr;
 	size_t erase_count;
@@ -281,7 +281,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 			return -EINVAL;
 		}
 
-		e->flasherr = flash_erase(dev, startpos, e->len, &e->err_address);
+		e->flasherr = flashbdev_erase(dev, startpos, e->len, &e->err_address);
 		return ENOERR;
 
 	case GET_CONFIG_FLASH_DEVSIZE:
