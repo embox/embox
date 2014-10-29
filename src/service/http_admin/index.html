@@ -37,6 +37,7 @@
   <div class="row">
     <div class="col-sm-6 col-sm-offset-3">
       <div ng-controller="InterfacesAdminCtrl">
+	<button type="button" class="btn btn-danger" ng-click="flash()">Save current settings to flash</button>
 	<form role="form" name="interfaceForm"
 	  ng-repeat="iface in interfaces">
 	  <h1>{{iface.name}}</h1>
@@ -74,7 +75,6 @@
 	    ng-disabled="interfaceForm.$invalid"
 	    ng-click="update(iface)">Submit</button>
 	</form>
-
       {{sent}}
       </div>
     </div>

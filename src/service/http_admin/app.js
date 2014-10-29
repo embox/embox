@@ -8,7 +8,22 @@ angular.module("HttpAdmin", [])
     });
 
     $scope.update = function(iface) {
-      $http.post('cgi-bin/http_admin_backend', iface).success(function (data) {
+      post_data = {
+	'action' : 'iface_update',
+	'data' : iface
+      };
+
+      $http.post('cgi-bin/http_admin_backend', post_data).success(function (data) {
+	/* saved */
+      });
+    };
+
+    $scope.flash = function() {
+      post_data = {
+	'action' : 'flash_settings',
+      };
+
+      $http.post('cgi-bin/http_admin_backend', post_data).success(function (data) {
 	/* saved */
       });
     };
