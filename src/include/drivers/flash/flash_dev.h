@@ -27,7 +27,7 @@ struct flash_dev_drv {
 /* Structure of flash device private info*/
 struct flash_dev {
 	struct block_dev *bdev;
-	struct flash_dev_drv *drv;
+	const struct flash_dev_drv *drv;
 	uint32_t     flags;            /* Device characteristics */
 	uint32_t     start;            /* First address */
 	uint32_t     end;              /* Last address */
@@ -37,6 +37,19 @@ struct flash_dev {
 
 	bool    init;             /* Device has been initialised */
 };
+
+static inline int flash_read(struct flash_dev *flashdev, unsigned long offset, void *buf, size_t len) {
+	return flashdev->drv->flash_read(flashdev, offset, buf, len);
+}
+
+static inline int flash_write(struct flash_dev *flashdev, unsigned long offset, const void *buf, size_t len) {
+	return flashdev->drv->flash_program(flashdev, offset, buf, len);
+}
+
+/* FIXME should take adresses as args, since adresses->blocks map could be nontrivial */
+static inline int flash_erase(struct flash_dev *flashdev, unsigned int block) {
+	return flashdev->drv->flash_erase_block(flashdev, block);
+}
 
 typedef int (* flash_dev_module_init_ft)(void *args);
 typedef struct flash_dev_module {

@@ -7,41 +7,70 @@
  */
 
 #include <assert.h>
+#include <string.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <hal/reg.h>
 #include <hal/mem.h>
+#include <util/math.h>
 #include <drivers/flash/flash_dev.h>
 #include <stm32f4xx_flash.h>
 
-#define FLASH_MEMORY_START 0x08000000
-
-#if 0
-static const unsigned stm32_flash_g_sector_sizes[] = {
-	0x4000,
-	0x4000,
-	0x4000,
-	0x4000,
-	0x10000,
-	0x20000,
-	0x20000,
-	0x20000,
-	0x20000,
-	0x20000,
-	0x20000,
-	0x20000,
-};
+#define STM32_FIRST_BLOCK_OFFSET 11
+static const struct flash_dev_drv stm32_flash_drv;
+const struct flash_dev stm32_flash = {
+	.bdev = NULL,
+	.drv = &stm32_flash_drv,
+	.flags = 0,
+	.start = 0x080e0000,
+	.end   = 0x080fffff,
+	.init = true,
+#if 1
+	.num_block_infos = 1,
+	.block_info = { 1, 0x20000 },
+#else
+	.num_block_infos = 3,
+	.block_info = {
+		{ 4, 0x4000  },
+		{ 1, 0x10000 },
+		{ 7, 0x20000 },
+	},
 #endif
+};
 
 static inline void stm32_flash_set_program_size(void) {
 	/* setting word 32-bit access */
 	REG_STORE(&FLASH->CR, (REG_LOAD(&FLASH->CR) & CR_PSIZE_MASK) | FLASH_PSIZE_WORD);
 }
 
+static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long base, size_t len) {
+	return dev->start + base + len <= dev->end;
+}
+
+static inline int stm32_flash_check_align(unsigned long base, size_t len) {
+	return ((uintptr_t) base & 0x3) == 0 && ((uintptr_t) len  & 0x3) == 0;
+}
+
+static inline int stm32_flash_check_block(struct flash_dev *dev, uint32_t block) {
+	unsigned int n_block, i;
+
+	n_block = 0;
+	for (i = 0; i < dev->num_block_infos; i ++) {
+#if 0
+		n_block += dev->block_info[i].blocks;
+#else
+		n_block += dev->block_info.blocks;
+#endif
+	}
+
+	return block < n_block;
+}
+
 static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	FLASH_Status status;
 	int err;
 
-	if (block >= 12) {
+	if (!stm32_flash_check_block(dev, block)) {
 		return -EINVAL;
 	}
 
@@ -53,7 +82,10 @@ static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 
 		stm32_flash_set_program_size();
 
-		REG_STORE(&FLASH->CR, (REG_LOAD(&FLASH->CR) & 0xffffff07) | FLASH_CR_SER | (block << 3));
+		REG_STORE(&FLASH->CR,
+				(REG_LOAD(&FLASH->CR) & 0xffffff07)
+				| FLASH_CR_SER
+				| ((STM32_FIRST_BLOCK_OFFSET + block) << 3));
 
 		REG_ORIN(&FLASH->CR, FLASH_CR_STRT);
 
@@ -69,14 +101,28 @@ static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	return err;
 }
 
+
+static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void* data, size_t len) {
+	size_t rlen = min(len, dev->end - dev->start + base);
+
+	/* read can be unaligned */
+
+	memcpy(data, (void *) dev->start + base, rlen);
+
+	return rlen;
+}
+
 static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void* data, size_t len) {
 	FLASH_Status status;
 	int err;
 
-	if (((uintptr_t) base & 0x2) != 0
-			|| ((uintptr_t) data & 0x2) != 0
-			|| ((uintptr_t) len  & 0x2) != 0) {
+	if (!stm32_flash_check_align(base, len)
+			|| ((uintptr_t) data & 0x3) != 0) {
 		return -EINVAL;
+	}
+
+	if (!stm32_flash_check_range(dev, base, len)) {
+		return -EFBIG;
 	}
 
 	FLASH_Unlock();
@@ -89,7 +135,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 
 		REG_ORIN(&FLASH->CR, FLASH_CR_PG);
 
-		regcpy32((void *) FLASH_MEMORY_START + base, data, len >> 2);
+		regcpy32((void *) dev->start + base, data, len >> 2);
 
 		FLASH_WaitForLastOperation();
 
@@ -106,14 +152,14 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 #if 0
 static int stm32_flash_init(void *arg);
 static size_t stm32_flash_query(struct flash_dev *dev, void * data, size_t len);
-static int flash_read(struct flash_dev *dev, uint32_t base, void* data, size_t len);
 #endif
-struct flash_dev_drv stm32_flash_drv = {
+static const struct flash_dev_drv stm32_flash_drv = {
 #if 0
 	.flash_init = stm32_flash_init,
 	.flash_query = stm32_flash_query,
-	.flash_read = stm32_flash_read,
 #endif
+	.flash_read = stm32_flash_read,
 	.flash_erase_block = stm32_flash_erase_block,
 	.flash_program = stm32_flash_program,
 };
+
