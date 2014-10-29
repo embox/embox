@@ -257,6 +257,7 @@ static int httpd_send_response_file(const struct client_info *cinfo, const struc
 
 	file = fopen(filename, "r");
 	if (!file) {
+		HTTPD_DEBUG("%s: file couldn't be opened (%d)\n", __func__, errno);
 		strcpy(filename, PAGE_4XX);
 		file = fopen(filename, "r");
 		/* testing file for NULL performed later */
@@ -291,7 +292,7 @@ static int httpd_send_response_file(const struct client_info *cinfo, const struc
 			int sent_bytes;
 
 			if (0 > (sent_bytes = write(cinfo->ci_sock, pb, read_bytes))) {
-				return -errno;
+				break;
 			}
 
 			pb += sent_bytes;
