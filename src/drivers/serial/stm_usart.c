@@ -44,35 +44,35 @@
 #define MODOPS_USARTX OPTION_GET(NUMBER, usartx)
 
 #if MODOPS_USARTX == 6
-#define EVAL_COM1                        USART6
-#define EVAL_COM1_CLK                    RCC_APB2Periph_USART6
-#define EVAL_COM1_CLK_CMD                RCC_APB2PeriphClockCmd
-#define EVAL_COM1_TX_PIN                 GPIO_Pin_6
-#define EVAL_COM1_TX_GPIO_PORT           GPIOC
-#define EVAL_COM1_TX_GPIO_CLK            RCC_AHB1Periph_GPIOC
-#define EVAL_COM1_TX_SOURCE              GPIO_PinSource6
-#define EVAL_COM1_TX_AF                  GPIO_AF_USART6
-#define EVAL_COM1_RX_PIN                 GPIO_Pin_7
-#define EVAL_COM1_RX_GPIO_PORT           GPIOC
-#define EVAL_COM1_RX_GPIO_CLK            RCC_AHB1Periph_GPIOC
-#define EVAL_COM1_RX_SOURCE              GPIO_PinSource7
-#define EVAL_COM1_RX_AF                  GPIO_AF_USART6
-#define EVAL_COM1_IRQn                   USART6_IRQn
+#define EVAL_COM                        USART6
+#define EVAL_COM_CLK                    RCC_APB2Periph_USART6
+#define EVAL_COM_CLK_CMD                RCC_APB2PeriphClockCmd
+#define EVAL_COM_TX_PIN                 GPIO_Pin_6
+#define EVAL_COM_TX_GPIO_PORT           GPIOC
+#define EVAL_COM_TX_GPIO_CLK            RCC_AHB1Periph_GPIOC
+#define EVAL_COM_TX_SOURCE              GPIO_PinSource6
+#define EVAL_COM_TX_AF                  GPIO_AF_USART6
+#define EVAL_COM_RX_PIN                 GPIO_Pin_7
+#define EVAL_COM_RX_GPIO_PORT           GPIOC
+#define EVAL_COM_RX_GPIO_CLK            RCC_AHB1Periph_GPIOC
+#define EVAL_COM_RX_SOURCE              GPIO_PinSource7
+#define EVAL_COM_RX_AF                  GPIO_AF_USART6
+#define EVAL_COM_IRQn                   USART6_IRQn
 #elif MODOPS_USARTX == 2
-#define EVAL_COM1                        USART2
-#define EVAL_COM1_CLK                    RCC_APB1Periph_USART2
-#define EVAL_COM1_CLK_CMD                RCC_APB1PeriphClockCmd
-#define EVAL_COM1_TX_PIN                 GPIO_Pin_5
-#define EVAL_COM1_TX_GPIO_PORT           GPIOD
-#define EVAL_COM1_TX_GPIO_CLK            RCC_AHB1Periph_GPIOD
-#define EVAL_COM1_TX_SOURCE              GPIO_PinSource5
-#define EVAL_COM1_TX_AF                  GPIO_AF_USART2
-#define EVAL_COM1_RX_PIN                 GPIO_Pin_6
-#define EVAL_COM1_RX_GPIO_PORT           GPIOD
-#define EVAL_COM1_RX_GPIO_CLK            RCC_AHB1Periph_GPIOD
-#define EVAL_COM1_RX_SOURCE              GPIO_PinSource6
-#define EVAL_COM1_RX_AF                  GPIO_AF_USART2
-#define EVAL_COM1_IRQn                   USART2_IRQn
+#define EVAL_COM                        USART2
+#define EVAL_COM_CLK                    RCC_APB1Periph_USART2
+#define EVAL_COM_CLK_CMD                RCC_APB1PeriphClockCmd
+#define EVAL_COM_TX_PIN                 GPIO_Pin_5
+#define EVAL_COM_TX_GPIO_PORT           GPIOD
+#define EVAL_COM_TX_GPIO_CLK            RCC_AHB1Periph_GPIOD
+#define EVAL_COM_TX_SOURCE              GPIO_PinSource5
+#define EVAL_COM_TX_AF                  GPIO_AF_USART2
+#define EVAL_COM_RX_PIN                 GPIO_Pin_6
+#define EVAL_COM_RX_GPIO_PORT           GPIOD
+#define EVAL_COM_RX_GPIO_CLK            RCC_AHB1Periph_GPIOD
+#define EVAL_COM_RX_SOURCE              GPIO_PinSource6
+#define EVAL_COM_RX_AF                  GPIO_AF_USART2
+#define EVAL_COM_IRQn                   USART2_IRQn
 #else
 #error Unsupported USARTx
 #endif
@@ -129,34 +129,34 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	USART_InitTypeDef USART_InitStruct;
 
 	/* Enable GPIO clock */
-	RCC_AHB1PeriphClockCmd(EVAL_COM1_TX_GPIO_CLK | EVAL_COM1_RX_GPIO_CLK, ENABLE);
+	RCC_AHB1PeriphClockCmd(EVAL_COM_TX_GPIO_CLK | EVAL_COM_RX_GPIO_CLK, ENABLE);
 
 	/* Enable UART clock */
-	EVAL_COM1_CLK_CMD(EVAL_COM1_CLK, ENABLE);
+	EVAL_COM_CLK_CMD(EVAL_COM_CLK, ENABLE);
 
 	/* Connect PXx to USARTx_Tx*/
-	GPIO_PinAFConfig(EVAL_COM1_TX_GPIO_PORT, EVAL_COM1_TX_SOURCE, EVAL_COM1_TX_AF);
+	GPIO_PinAFConfig(EVAL_COM_TX_GPIO_PORT, EVAL_COM_TX_SOURCE, EVAL_COM_TX_AF);
 
 	/* Connect PXx to USARTx_Rx*/
-	GPIO_PinAFConfig(EVAL_COM1_RX_GPIO_PORT, EVAL_COM1_RX_SOURCE, EVAL_COM1_RX_AF);
+	GPIO_PinAFConfig(EVAL_COM_RX_GPIO_PORT, EVAL_COM_RX_SOURCE, EVAL_COM_RX_AF);
 
 	/* Configure USART Tx as alternate function  */
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
 
-	GPIO_InitStructure.GPIO_Pin = EVAL_COM1_TX_PIN;
+	GPIO_InitStructure.GPIO_Pin = EVAL_COM_TX_PIN;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(EVAL_COM1_TX_GPIO_PORT, &GPIO_InitStructure);
+	GPIO_Init(EVAL_COM_TX_GPIO_PORT, &GPIO_InitStructure);
 
 	/* Configure USART Rx as alternate function  */
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_Pin = EVAL_COM1_RX_PIN;
-	GPIO_Init(EVAL_COM1_RX_GPIO_PORT, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = EVAL_COM_RX_PIN;
+	GPIO_Init(EVAL_COM_RX_GPIO_PORT, &GPIO_InitStructure);
 
 	stm32_params2init(params, &USART_InitStruct);
-	USART_Init(EVAL_COM1, &USART_InitStruct);
-	USART_Cmd(EVAL_COM1, ENABLE);
+	USART_Init(EVAL_COM, &USART_InitStruct);
+	USART_Cmd(EVAL_COM, ENABLE);
 
 	return 0;
 }
@@ -171,7 +171,7 @@ static const struct uart_ops stm32_uart_ops = {
 static struct uart stm32_uart0 = {
 		.uart_ops = &stm32_uart_ops,
 		.irq_num = 0,
-		.base_addr = (unsigned long) EVAL_COM1,
+		.base_addr = (unsigned long) EVAL_COM,
 };
 
 static const struct uart_params uart_defparams = {
