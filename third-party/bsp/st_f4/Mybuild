@@ -4,6 +4,8 @@ package third_party.bsp
 @BuildArtifactPath(cppflags="-DSTM32F40XX -I$(abspath $(ROOT_DIR))/third-party/bsp/st_f4/ $(addprefix -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Libraries/,CMSIS/Include/ CMSIS/Device/ST/STM32F4xx/Include/ STM32F4xx_StdPeriph_Driver/inc/ STM32F4x7_ETH_Driver/inc/)")
 static module st_f4 extends st_bsp_api {
 
+	option number hse_freq_hz = 8000000 /* STM32F4Discovery oscillator */
+
 	@DefineMacro("STM32F40XX")
 	@DefineMacro("USE_STDPERIPH_DRIVER")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Libraries/CMSIS/Include/")
@@ -49,4 +51,19 @@ static module st_f4 extends st_bsp_api {
 static module cmsis extends embox.arch.arm.cmsis {
 	source "cmsis_impl.h"
 	depends st_f4
+}
+
+
+@Build(stage=1,script="true")
+@BuildDepends(st_f4)
+static module st_system_init {
+	@DefineMacro("STM32F40XX")
+	@DefineMacro("USE_STDPERIPH_DRIVER")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Libraries/CMSIS/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Libraries/CMSIS/Device/ST/STM32F4xx/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Libraries/STM32F4xx_StdPeriph_Driver/inc/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Libraries/STM32F4x7_ETH_Driver/inc/")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/st_f4/")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/st_f4//STM32F4xx_Ethernet_Example")
+	source "./Project/Standalone/httpserver/src/system_stm32f4xx.c"
 }

@@ -4,6 +4,7 @@
 #define ST_F4_STM32F4XX_CONF_H_
 
 #include <assert.h>
+#include <framework/mod/options.h>
 
 #include <misc.h>
 #include <stm32f4xx_adc.h>
@@ -34,5 +35,10 @@
 
 #define USE_FULL_ASSERT
 #define assert_param(expr) assert(expr)
+
+#include <module/third_party/bsp/st_f4.h>
+
+#undef  HSE_VALUE
+#define HSE_VALUE OPTION_MODULE_GET(third_party__bsp__st_f4, NUMBER, hse_freq_hz)
 
 #endif /* ST_F4_STM32F4XX_CONF_H_ */
