@@ -379,6 +379,7 @@ static int stm32eth_open(struct net_device *dev) {
 
 static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
 	memcpy(dev->dev_addr, addr, ETH_ALEN);
+	ETH_MACAddressConfig(ETH_MAC_Address0, dev->dev_addr);
 	return ENOERR;
 }
 
