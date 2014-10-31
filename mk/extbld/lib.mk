@@ -43,7 +43,7 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 		echo "different number of sources and MD5"; false)
 	( cd $(DOWNLOAD_DIR); \
 		$(foreach c,$(filter-out %.-,$(join $(PKG_SOURCES),$(addprefix .,$(PKG_MD5)))), \
-			echo "$(subst .,,$(suffix $c))  $(notdir $(basename $c))" | md5sum -c --strict ; ) \
+			echo "$(subst .,,$(suffix $c))  $(notdir $(basename $c))" | md5sum -c ; ) \
 	)
 
 	touch $@
