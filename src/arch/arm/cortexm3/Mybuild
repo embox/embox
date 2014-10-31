@@ -2,17 +2,8 @@
 package embox.arch.arm.cortexm3
 
 module bundle {
-	depends embox.arch.arm.cortexm3.arch
 	depends embox.arch.arm.armmlib.locore
 	depends embox.arch.arm.armmlib.interrupt
 	depends embox.arch.arm.armmlib.context
-}
-
-@Build(stage=1,script="true")
-@BuildDepends(third_party.bsp.st_f4)
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	depends third_party.bsp.st_system_init
 }
 

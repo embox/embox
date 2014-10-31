@@ -80,7 +80,7 @@ module stm32_usart extends embox.driver.diag.diag_api {
 	depends diag
 }
 
-@BuildDepends(third_party.bsp.st_f4)
+@BuildDepends(third_party.bsp.st_f4.core)
 module stm_usart extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=6
@@ -91,7 +91,7 @@ module stm_usart extends embox.driver.diag.diag_api {
 	/*depends embox.driver.gpio.stm32*/
 	depends core
 	depends diag
-	depends third_party.bsp.st_f4
+	depends third_party.bsp.st_f4.core
 }
 
 

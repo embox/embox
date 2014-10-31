@@ -2,15 +2,15 @@ package embox.driver.audio
 
 abstract module portaudio { }
 
-@BuildDepends(third_party.bsp.st_f4)
+@BuildDepends(third_party.bsp.st_f4.core)
 module stm32f4_pa extends portaudio {
 	option number volume=70
 	option number sample_rate
 	option number buf_cnt=0x4
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/core/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/")
 	source "stm32f4_pa.c"
 
-	depends third_party.bsp.st_f4
+	depends third_party.bsp.st_f4.core
 	depends embox.util.DList
 	depends embox.compat.libc.LibCAssert
 	depends embox.compat.posix.util.sleep
