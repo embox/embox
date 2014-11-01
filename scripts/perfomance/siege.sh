@@ -1,4 +1,8 @@
 #!/bin/bash
+#
+# Network perfomance test with `siege' utillity
+# Author: Anastasia Novoselova
+
 script_name=$0
 server_name=$1
 echo "Input name of server (ex.: www.google.com)"
