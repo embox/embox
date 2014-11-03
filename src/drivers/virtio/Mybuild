@@ -8,7 +8,7 @@ module virtio {
 	source "virtio_queue.c"
 	depends embox.compat.libc.LibCAssert
 	depends embox.compat.libc.LibCString
-	depends embox.compat.libc.LibCStdlib
+	depends embox.compat.libc.stdlib.core
 	depends embox.mem.sysmalloc_api
 	/* depends virtio_ring.c */
 }

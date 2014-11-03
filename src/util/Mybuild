@@ -115,7 +115,7 @@ static module indexator {
 	source "indexator.c"
 
 	depends embox.compat.libc.LibCAssert
-	depends embox.compat.libc.LibCStdlib
+	depends embox.compat.libc.stdlib.core
 	depends embox.compat.libc.LibCString
 }
 

@@ -7,7 +7,7 @@ static module Print {
 	source "printf_impl.h"
 
 	//depends LibCMath // depends from support_floating value
-	@NoRuntime depends LibCStdlib // atoi
+	@NoRuntime depends stdlib.core // atoi
 	@NoRuntime depends LibCType
 }
 

@@ -145,7 +145,7 @@ static module inet_addr {
 
 	depends embox.compat.libc.LibCAssert
 	depends embox.compat.libc.LibCStdioSprintf
-	depends embox.compat.libc.LibCStdlib
+	depends embox.compat.libc.stdlib.core
 	depends embox.compat.libc.LibCString
 }
 

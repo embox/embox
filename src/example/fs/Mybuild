@@ -14,6 +14,7 @@ module flock {
 	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.example
+	depends embox.compat.libc.stdlib.system
 }
 
 module long_file_write {

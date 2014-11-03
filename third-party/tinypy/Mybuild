@@ -10,4 +10,5 @@ module tinypy_core {
 
 	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
+	depends embox.compat.libc.stdlib.system
 }
