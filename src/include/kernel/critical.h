@@ -179,12 +179,12 @@ extern unsigned int __critical_count __cpudata__;
 #define critical_count() \
 	cpudata_var(__critical_count)
 
-static inline void __critical_count_add(unsigned int count) {
+static inline void __critical_count_add(unsigned long count) {
 	critical_count() += count;
 	__barrier();
 }
 
-static inline void __critical_count_sub(unsigned int count) {
+static inline void __critical_count_sub(unsigned long count) {
 	__barrier();
 	critical_count() -= count;
 }
