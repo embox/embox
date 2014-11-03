@@ -9,7 +9,7 @@
 
 #include <stdlib.h>
 
-static unsigned int seed = 314567651;
+static unsigned long seed = 314567651ul;
 
 void srand(unsigned int new_seed) {
 	seed = new_seed;
