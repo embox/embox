@@ -10,3 +10,16 @@ module modbus_server {
 
 	@NoRuntime depends third_party.lib.libmodbus
 }
+
+@AutoCmd
+@Cmd(name="led_driver", help="Drives abstract led", man="")
+module led_driver {
+	source "led_driver.c"
+	depends libleddrv
+}
+
+@BuildDepends(third_party.bsp.st_f4.core)
+static module libleddrv {
+	source "libleddrv.c"
+	depends third_party.bsp.st_f4.core
+}
