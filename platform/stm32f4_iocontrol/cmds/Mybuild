@@ -1,6 +1,8 @@
 package stm32f4_iocontrol
 
 @AutoCmd
+@Build(script="$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<")
+@BuildDepends(third_party.lib.libmodbus)
 @Cmd(name="modbus_server")
 module modbus_server {
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/lib/libmodbus/install/include/modbus")

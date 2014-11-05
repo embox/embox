@@ -11,15 +11,15 @@ libmodbus_cflags = -I$(ROOT_DIR)/third-party/lib/libmodbus/include/ \
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(PKG_SOURCE_DIR) && ( \
 		CC=$(EMBOX_GCC) ./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
-		prefix=$(BUILD_DIR)/install\
+		prefix=$(PKG_INSTALL_DIR) \
 		CFLAGS=$(libmodbus_cflags) \
 	)
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(PKG_SOURCE_DIR) && ( \
 		make install MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
