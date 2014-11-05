@@ -34,3 +34,9 @@ module NewService {
 	depends SrvLib
 	depends embox.framework.service
 }
+
+@AutoCmd
+@Cmd(name="cgi_cmd_wrapper", help="", man="")
+module cgi_cmd_wrapper {
+	source "cgi_cmd_wrapper.c"
+}
