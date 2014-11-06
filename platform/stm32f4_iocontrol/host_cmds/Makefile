@@ -7,3 +7,6 @@ led-server : CFLAGS += -I../cmds/
 led-server : ../cmds/modbus_server.c libleddrv_stub.c
 	$(CC) $(CFLAGS) $^ -o $@
 
+clean :
+	rm led-server led-client
+
