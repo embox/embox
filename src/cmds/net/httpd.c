@@ -335,7 +335,7 @@ static const struct cgi_env_descr {
 } cgi_env[] = {
 	{ .name = "REQUEST_METHOD", .hreq_offset = offsetof(struct http_req, method) },
 	{ .name = "CONTENT_LENGTH", .hreq_offset = offsetof(struct http_req, content_len) },
-	{ .name = "QUERY_STRING",   .hreq_offset = offsetof(struct http_req, uri) + offsetof(struct http_req_uri, query)},
+	{ .name = "QUERY_STRING", .hreq_offset = offsetof(struct http_req, uri) + offsetof(struct http_req_uri, query) },
 };
 static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
 	char filename[HTTPD_MAX_PATH];
