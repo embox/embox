@@ -166,7 +166,7 @@ extern void abort(void);
 
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
-extern void exit(int status);
+extern void exit(int status) __attribute__ ((__noreturn__));
 
 /**
  * Returns the absolute value of an argument. If the argument is not negative,
