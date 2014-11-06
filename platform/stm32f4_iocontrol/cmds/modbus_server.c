@@ -23,6 +23,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
@@ -30,13 +31,24 @@
 #include <errno.h>
 #include <modbus.h>
 
-#define LED_BITS 16
+#include "libleddrv.h"
 
-static void update_leds(uint8_t leds[], size_t leds_n) {
-	int i;
-	for (i = 0; i < leds_n; i++) {
-		fprintf(stderr, "led(%03d)=%d\n", i, !!leds[i]);
-	}
+static modbus_mapping_t *mb_mapping_wrapper_new(void) {
+	modbus_mapping_t *mb_mapping;
+	mb_mapping = modbus_mapping_new(0, 0, 0, 0);
+
+	assert(mb_mapping->nb_bits == 0);
+	mb_mapping->nb_bits = LEDDRV_LED_N;
+	assert(mb_mapping->tab_bits == NULL);
+	mb_mapping->tab_bits = leddrv_getstates();
+
+	return mb_mapping;
+}
+
+static void mb_mapping_wrapper_free(modbus_mapping_t *mb_mapping) {
+	mb_mapping->nb_bits = 0;
+	mb_mapping->tab_bits = NULL;
+	modbus_mapping_free(mb_mapping);
 }
 
 int main(int argc, char*argv[]) {
@@ -66,7 +78,7 @@ int main(int argc, char*argv[]) {
 
 	modbus_set_debug(ctx, TRUE);
 
-	mb_mapping = modbus_mapping_new(LED_BITS, 0, 0, 0);
+	mb_mapping = mb_mapping_wrapper_new();
 	if (mb_mapping == NULL) {
 		fprintf(stderr, "Failed to allocate the mapping: %s\n",
 				modbus_strerror(errno));
@@ -98,7 +110,7 @@ int main(int argc, char*argv[]) {
 				break;
 			}
 
-			update_leds(mb_mapping->tab_bits, mb_mapping->nb_bits);
+			leddrv_updatestates();
 		}
 
 		close(client_socket);
@@ -106,7 +118,7 @@ int main(int argc, char*argv[]) {
 	printf("exiting: %s\n", modbus_strerror(errno));
 
 	close(listen_socket);
-	modbus_mapping_free(mb_mapping);
+	mb_mapping_wrapper_free(mb_mapping);
 	free(query);
 	modbus_free(ctx);
 

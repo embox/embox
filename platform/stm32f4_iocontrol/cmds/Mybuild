@@ -1,7 +1,7 @@
 package stm32f4_iocontrol
 
 @AutoCmd
-@Build(script="$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<")
+@Build(script="true")
 @BuildDepends(third_party.lib.libmodbus)
 @Cmd(name="modbus_server")
 module modbus_server {

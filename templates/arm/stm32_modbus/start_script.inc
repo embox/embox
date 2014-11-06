@@ -5,4 +5,5 @@
 "route add 192.168.1.0 netmask 255.255.255.0 eth0",
 "flash_settings restore",
 "led_driver init",
+"modbus_server",
 //"httpd http_admin",

@@ -6,7 +6,8 @@
  * @date    05.11.2014
  */
 
-#include <err.h>
+#include <stdbool.h>
+#include <assert.h>
 #include <errno.h>
 #include <util/array.h>
 
@@ -26,6 +27,8 @@ static const struct leddrv_desc leddrv_leds[] = {
 	{ GPIOD, GPIO_Pin_14 },
 	{ GPIOD, GPIO_Pin_15 },
 };
+static_assert(ARRAY_SIZE(leddrv_leds) == LEDDRV_LED_N);
+static unsigned char leddrv_leds_state[LEDDRV_LED_N];
 
 int leddrv_init(void) {
 	GPIO_InitTypeDef GPIO_InitStructure;
@@ -45,34 +48,55 @@ int leddrv_init(void) {
 	return 0;
 }
 
-static inline const struct leddrv_desc *leddrv_get(unsigned int led_n) {
-	if (led_n >= ARRAY_SIZE(leddrv_leds)) {
-		return err_ptr(EINVAL);
+static inline int leddrv_check(unsigned int led_n) {
+	if (led_n >= LEDDRV_LED_N) {
+		return -EINVAL;
 	}
-
-	return &leddrv_leds[led_n];
+	return 0;
 }
 
 int leddrv_set(unsigned int led_n) {
-	const struct leddrv_desc *led = leddrv_get(led_n);
+	int err;
 
-	if (err(led)) {
-		return err(led);
+	if ((err = leddrv_check(led_n))) {
+		return err;
 	}
 
-	GPIO_SetBits(led->gpio, led->pin);
+	leddrv_leds_state[led_n] = true;
+
+	leddrv_updatestates();
 
 	return 0;
 }
 
 int leddrv_clr(unsigned int led_n) {
-	const struct leddrv_desc *led = leddrv_get(led_n);
+	int err;
 
-	if (err(led)) {
-		return err(led);
+	if ((err = leddrv_check(led_n))) {
+		return err;
 	}
 
-	GPIO_ResetBits(led->gpio, led->pin);
+	leddrv_leds_state[led_n] = false;
+
+	leddrv_updatestates();
 
 	return 0;
+}
+
+unsigned char *leddrv_getstates(void) {
+	return leddrv_leds_state;
+}
+
+void leddrv_updatestates(void) {
+	int i;
+
+	for (i = 0; i < LEDDRV_LED_N; i++) {
+		const struct leddrv_desc *led = &leddrv_leds[i];
+
+		if (leddrv_leds_state[i]) {
+			GPIO_SetBits(led->gpio, led->pin);
+		} else {
+			GPIO_ResetBits(led->gpio, led->pin);
+		}
+	}
 }
