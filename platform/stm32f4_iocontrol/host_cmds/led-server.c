@@ -46,6 +46,7 @@ int main(int argc, char*argv[]) {
 	uint8_t *query;
 	const char *ip = "0.0.0.0";
 	unsigned short port = 1502;
+	int header_len;
 	int opt;
 
 	while (-1 != (opt = getopt(argc, argv, "a:p:"))) {
@@ -60,6 +61,7 @@ int main(int argc, char*argv[]) {
 	}
 
 	ctx = modbus_new_tcp(ip, port);
+	header_len = modbus_get_header_length(ctx);
 	query = malloc(MODBUS_TCP_MAX_ADU_LENGTH);
 
 	modbus_set_debug(ctx, TRUE);
@@ -85,6 +87,10 @@ int main(int argc, char*argv[]) {
 			if (-1 == query_len) {
 				/* Connection closed by the client or error */
 				break;
+			}
+
+			if (query[header_len - 1] != MODBUS_TCP_SLAVE) {
+				continue;
 			}
 
 			if (-1 == modbus_reply(ctx, query, query_len, mb_mapping)) {
