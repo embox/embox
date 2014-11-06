@@ -38,5 +38,6 @@ module NewService {
 @AutoCmd
 @Cmd(name="cgi_cmd_wrapper", help="", man="")
 module cgi_cmd_wrapper {
+	option string allowed_cmds
 	source "cgi_cmd_wrapper.c"
 }

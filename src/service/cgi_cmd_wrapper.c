@@ -12,6 +12,10 @@
 #include <stdio.h>
 #include <util/array.h>
 
+#include <framework/mod/options.h>
+
+#define CCWRP_ALLOWED_CMD_NAMES OPTION_STRING_GET(allowed_cmds)
+
 static int ccwrp_query_to_argv(char *query, char **argv, unsigned int argv_len) {
 	unsigned int argv_cnt = 0;
 	char *query_to_parse = query;
@@ -34,6 +38,25 @@ static int ccwrp_query_to_argv(char *query, char **argv, unsigned int argv_len) 
 	return argv_cnt;
 }
 
+static int ccwrp_security_check(int argc, char *argv[]) {
+	const char *allowed_cmds = CCWRP_ALLOWED_CMD_NAMES;
+	const char *p_cmd, *p_e_cmd;
+
+	p_cmd = allowed_cmds;
+	while (*p_cmd) {
+		p_cmd += strspn(p_cmd, " ");
+		p_e_cmd = strchrnul(p_cmd, ' ');
+		if (0 == strncmp(argv[0], p_cmd, p_e_cmd - p_cmd) &&
+				argv[0][p_e_cmd - p_cmd] == '\0') {
+			return 0;
+		}
+
+		p_cmd = p_e_cmd;
+	}
+
+	return 1;
+}
+
 int main(int argc, char *argv[]) {
 	char *method;
 
@@ -49,7 +72,7 @@ int main(int argc, char *argv[]) {
 			"\r\n", 200, "OK", "text/plain");
 
 		new_argc = ccwrp_query_to_argv(query, new_argv, ARRAY_SIZE(new_argv));
-		if (new_argc) {
+		if (new_argc && 0 == ccwrp_security_check(new_argc, new_argv)) {
 			return execv(new_argv[0], new_argv);
 		}
 	}
