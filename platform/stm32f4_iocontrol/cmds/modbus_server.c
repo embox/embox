@@ -35,20 +35,34 @@
 
 static modbus_mapping_t *mb_mapping_wrapper_new(void) {
 	modbus_mapping_t *mb_mapping;
-	mb_mapping = modbus_mapping_new(0, 0, 0, 0);
+	mb_mapping = modbus_mapping_new(LEDDRV_LED_N, 0, 0, 0);
+#if 0
 
 	assert(mb_mapping->nb_bits == 0);
 	mb_mapping->nb_bits = LEDDRV_LED_N;
 	assert(mb_mapping->tab_bits == NULL);
 	mb_mapping->tab_bits = leddrv_getstates();
+#endif
 
 	return mb_mapping;
 }
 
 static void mb_mapping_wrapper_free(modbus_mapping_t *mb_mapping) {
+#if 0
 	mb_mapping->nb_bits = 0;
 	mb_mapping->tab_bits = NULL;
+#endif
 	modbus_mapping_free(mb_mapping);
+}
+
+static void mb_mapping_getstates(modbus_mapping_t *mb_mapping) {
+	int i;
+
+	leddrv_getstates(mb_mapping->tab_bits);
+
+	for (i = 0; i < mb_mapping->nb_bits; i++) {
+		mb_mapping->tab_bits[i] = mb_mapping->tab_bits[i] ? ON : OFF;
+	}
 }
 
 int main(int argc, char*argv[]) {
@@ -106,11 +120,13 @@ int main(int argc, char*argv[]) {
 				continue;
 			}
 
+			mb_mapping_getstates(mb_mapping);
+
 			if (-1 == modbus_reply(ctx, query, query_len, mb_mapping)) {
 				break;
 			}
 
-			leddrv_updatestates();
+			leddrv_updatestates(mb_mapping->tab_bits);
 		}
 
 		close(client_socket);

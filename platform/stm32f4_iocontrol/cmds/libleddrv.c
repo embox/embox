@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 #include <util/array.h>
 
 #include <stm32f4xx_gpio.h>
@@ -55,6 +56,20 @@ static inline int leddrv_check(unsigned int led_n) {
 	return 0;
 }
 
+static void leddrv_do_update(void) {
+	int i;
+
+	for (i = 0; i < LEDDRV_LED_N; i++) {
+		const struct leddrv_desc *led = &leddrv_leds[i];
+
+		if (leddrv_leds_state[i]) {
+			GPIO_SetBits(led->gpio, led->pin);
+		} else {
+			GPIO_ResetBits(led->gpio, led->pin);
+		}
+	}
+}
+
 int leddrv_set(unsigned int led_n) {
 	int err;
 
@@ -64,7 +79,7 @@ int leddrv_set(unsigned int led_n) {
 
 	leddrv_leds_state[led_n] = true;
 
-	leddrv_updatestates();
+	leddrv_do_update();
 
 	return 0;
 }
@@ -78,25 +93,18 @@ int leddrv_clr(unsigned int led_n) {
 
 	leddrv_leds_state[led_n] = false;
 
-	leddrv_updatestates();
+	leddrv_do_update();
 
 	return 0;
 }
 
-unsigned char *leddrv_getstates(void) {
-	return leddrv_leds_state;
+int leddrv_getstates(unsigned char leds_state[LEDDRV_LED_N]) {
+	memcpy(leds_state, leddrv_leds_state, sizeof(leds_state));
+	return 0;
 }
 
-void leddrv_updatestates(void) {
-	int i;
-
-	for (i = 0; i < LEDDRV_LED_N; i++) {
-		const struct leddrv_desc *led = &leddrv_leds[i];
-
-		if (leddrv_leds_state[i]) {
-			GPIO_SetBits(led->gpio, led->pin);
-		} else {
-			GPIO_ResetBits(led->gpio, led->pin);
-		}
-	}
+int leddrv_updatestates(unsigned char new_leds_state[LEDDRV_LED_N]) {
+	memcpy(leddrv_leds_state, new_leds_state, sizeof(leddrv_leds_state));
+	leddrv_do_update();
+	return 0;
 }
