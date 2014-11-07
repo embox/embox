@@ -212,6 +212,7 @@ static const struct ext2type_table_item {
 	{ .ext = ".gif",         .type = "image/gif", },
 	{ .ext = ".ico",         .type = "image/vnd.microsoft.icon", },
 	{ .ext = ".js",          .type = "application/javascript", },
+	{ .ext = ".css",         .type = "text/css", },
 	{ .ext = "",             .type = "application/unknown", },
 };
 static const char *ext2type_unkwown = "plain/text";
