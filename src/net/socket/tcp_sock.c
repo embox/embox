@@ -221,35 +221,35 @@ static int tcp_sock_alloc_missing_backlog(struct tcp_sock *tcp_sk) {
 
 	assert(tcp_sk != NULL);
 
-	to_alloc = tcp_sk->free_wait_queue_max - tcp_sk->free_wait_queue_len;
-	/* to_alloc allowed to be negative. It could be if backlog had set and then
- 	 * was reduced.
-	 */
+	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
+	{
+		to_alloc = tcp_sk->free_wait_queue_max - tcp_sk->free_wait_queue_len;
+		/* to_alloc allowed to be negative. It could be if backlog had set and then
+		 * was reduced.
+		 */
 
-	while (to_alloc > 0) {
-		struct sock *newsk;
-		struct tcp_sock *tcp_newsk;
+		while (to_alloc > 0) {
+			struct sock *newsk;
+			struct tcp_sock *tcp_newsk;
 
-		newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
-				SOCK_STREAM, IPPROTO_TCP);
-		if (err(newsk) != 0) {
-			break;
-		}
+			newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
+					SOCK_STREAM, IPPROTO_TCP);
+			if (err(newsk) != 0) {
+				break;
+			}
 
-		to_alloc--;
+			to_alloc--;
 
-		tcp_newsk = to_tcp_sock(newsk);
-		tcp_newsk->parent = tcp_sk;
+			tcp_newsk = to_tcp_sock(newsk);
+			tcp_newsk->parent = tcp_sk;
 
-		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-		{
 			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_free);
 			tcp_sk->free_wait_queue_len++;
 		}
-		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 	}
+	tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
-	return to_alloc;
+	return tcp_sk->free_wait_queue_len;
 }
 
 static int tcp_listen(struct sock *sk, int backlog) {
@@ -332,6 +332,10 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		return -EINVAL; /* error: the socket is not accepting connections */
 	}
 
+	if (0 == tcp_sock_alloc_missing_backlog(tcp_sk)) {
+		return -ENOBUFS;
+	}
+
 	/* waiting anyone */
 	tcp_newsk = NULL;
 	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
@@ -353,8 +357,6 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			return -ECONNRESET; /* FIXME */
 		}
 	}
-
-	tcp_sock_alloc_missing_backlog(tcp_sk);
 
 	if (tcp_sock_get_status(tcp_newsk) == TCP_ST_NOTEXIST) {
 		tcp_sock_release(tcp_newsk);
