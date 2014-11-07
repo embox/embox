@@ -1,0 +1,12 @@
+
+.led-off, .led-off:hover, .led-off:focus {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+}
+
+.led-on, .led-on:hover, .led-on:focus {
+  color: #fff;
+  background-color: #428bca;
+  border-color: #357ebd;
+}

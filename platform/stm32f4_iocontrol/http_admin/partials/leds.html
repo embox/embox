@@ -1,0 +1,15 @@
+
+<div ng-controller="LedsCtrl">
+
+    <p>
+    <button type="button" class="btn btn-link" ng-click="update()">Update</button>
+    </p>
+
+    <div class="btn-group">
+        <div class="btn-group" ng-repeat="led_state in leds_state track by $index">
+            <button type="button" class="btn btn-default"
+                ng-class="led_state ? 'led-on' : 'led-off'"
+                ng-click="led_switch($index)">{{$index}}</button>
+        </div>
+    </div>
+</div>
