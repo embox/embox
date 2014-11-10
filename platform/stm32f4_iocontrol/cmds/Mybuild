@@ -21,5 +21,6 @@ module led_driver {
 @BuildDepends(third_party.bsp.st_f4.core)
 static module libleddrv {
 	source "libleddrv.c"
+	source "libleddrv_ll.c"
 	depends third_party.bsp.st_f4.core
 }
