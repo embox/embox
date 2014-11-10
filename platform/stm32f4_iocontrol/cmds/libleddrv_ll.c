@@ -42,6 +42,17 @@ void leddrv_ll_init(void) {
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
 	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = \
+		GPIO_Pin_7 |
+		GPIO_Pin_8 |
+		GPIO_Pin_9 |
+		GPIO_Pin_10 |
+		GPIO_Pin_11 |
+		GPIO_Pin_12 |
+		GPIO_Pin_13 |
+		GPIO_Pin_14;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
 }
 
 void leddrv_ll_update(unsigned char leds_state[LEDDRV_LED_N]) {
@@ -58,3 +69,36 @@ void leddrv_ll_update(unsigned char leds_state[LEDDRV_LED_N]) {
 	}
 }
 
+struct leddrv_shift_desc {
+	GPIO_TypeDef *gpio;
+	unsigned int clk;
+	unsigned int data;
+};
+
+static const struct leddrv_shift_desc leddrv_shift_led[] = {
+	{ .gpio = GPIOE, .clk = GPIO_Pin_7,  .data = GPIO_Pin_8  },
+	{ .gpio = GPIOE, .clk = GPIO_Pin_9,  .data = GPIO_Pin_10 },
+	{ .gpio = GPIOE, .clk = GPIO_Pin_11, .data = GPIO_Pin_12 },
+	{ .gpio = GPIOE, .clk = GPIO_Pin_13, .data = GPIO_Pin_14 },
+	/*{ .gpio = GPIOD, .clk = GPIO_Pin_9,  .data = GPIO_Pin_10 },*/
+};
+
+#define LED_NUM_PER_LINE \
+	(LEDDRV_LED_N / ARRAY_SIZE(leddrv_shift_led))
+
+void leddrv_ll_shift_update(unsigned char leds_state[LEDDRV_LED_N]) {
+	int i_led;
+
+	/* shift out new states in reverse order (as for shift-registers) */
+	for (i_led = LEDDRV_LED_N - 1; i_led >= 0; --i_led) {
+		const struct leddrv_shift_desc *desc = &leddrv_shift_led[i_led / LED_NUM_PER_LINE];
+
+		GPIO_ResetBits(desc->gpio, desc->clk);
+		if (leds_state[i_led]) {
+			GPIO_SetBits(desc->gpio, desc->data);
+		} else {
+			GPIO_ResetBits(desc->gpio, desc->data);
+		}
+		GPIO_SetBits(desc->gpio, desc->clk);
+	}
+}
