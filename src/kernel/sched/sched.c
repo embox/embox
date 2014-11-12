@@ -391,7 +391,7 @@ static void __schedule(int preempt) {
 		ipl = spin_lock_ipl(&rq.lock);
 	}
 
-	sched_timing_start(next);
+	sched_timing_start(prev);
 }
 
 void schedule(void) {
