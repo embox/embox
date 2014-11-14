@@ -5,8 +5,14 @@
   border-color: #ccc;
 }
 
-.led-on, .led-on:hover, .led-on:focus {
+.led-blue, .led-blue:hover, .led-blue:focus {
   color: #fff;
   background-color: #428bca;
   border-color: #357ebd;
+}
+
+.led-red, .led-red:hover, .led-red:focus {
+  color: #fff;
+  background-color: #d9534f;
+  border-color: #d43f3a;
 }

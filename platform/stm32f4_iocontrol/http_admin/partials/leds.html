@@ -6,8 +6,8 @@
     </p>
 
     <div class="row">
-        <button type="button" class="col-xs-1 btn btn-default"
-                ng-class="led_state ? 'led-on' : 'led-off'"
+        <button type="button" class="col-xs-6 btn btn-default"
+                ng-class="led_class(led_state, $index)"
                 ng-click="led_switch($index)"
                 ng-repeat="led_state in leds_state track by $index">
             {{$index}}

@@ -53,6 +53,18 @@ angular.module("HttpAdmin", ['ngRoute'])
         });
     };
 
+    $scope.led_class = function(state, led_n) {
+        if (state) {
+            if (led_n % 2 == 0) {
+                return 'led-red';
+            } else {
+                return 'led-blue';
+            }
+        } else {
+            return 'led-off';
+        }
+    }
+
     $scope.update();
 }])
 .config(['$routeProvider', function($routeProvider) {
