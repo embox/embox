@@ -17,12 +17,6 @@
 #include <kernel/sched/schedee_priority.h>
 
 #include <kernel/sched/waitq.h>
-/* Used as a return value of schedee->process function. */
-/* Informs the scheduler that it has to finish scheduling. */
-#define SCHEDEE_EXIT   0
-/* Informs the scheduler that it has to get another schedee and repeat
- * scheduling. */
-#define SCHEDEE_REPEAT 1
 
 #ifdef SMP
 # define TW_SMP_WAKING  (~0x0)  /**< In the middle of sched_wakeup. */
@@ -42,9 +36,9 @@ struct schedee {
 	 *
 	 * It has to restore ipl as soon as possible.
 	 *
-	 * This function returns one of the SCHEDEE_* value.
+	 * This function returns schedee to which context switched.
 	 */
-	int               (*process)(struct schedee *prev, struct schedee *next,
+	struct schedee    *(*process)(struct schedee *prev, struct schedee *next,
 			ipl_t ipl);
 
 	void              *(*run)(void *); /**< Start routine */
@@ -63,7 +57,7 @@ struct schedee {
 
 #include <stdbool.h>
 static inline int schedee_init(struct schedee *schedee, sched_priority_t priority,
-	int (*process)(struct schedee *prev, struct schedee *next, ipl_t ipl),
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next, ipl_t ipl),
 	void *(*run)(void *),
 	void *arg)
 {
@@ -88,7 +82,8 @@ static inline int schedee_init(struct schedee *schedee, sched_priority_t priorit
 }
 
 extern int schedee_init(struct schedee *schedee, sched_priority_t priority,
-	int (*process)(struct schedee *prev, struct schedee *next, ipl_t ipl),
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next,
+			ipl_t ipl),
 	void *(*run)(void *),
 	void *arg);
 

@@ -355,7 +355,6 @@ void sched_start_switch(struct schedee *next) {
 static void __schedule(int preempt) {
 	struct schedee *prev;
 	struct schedee *next;
-	int res;
 	ipl_t ipl;
 
 	prev = schedee_get_current();
@@ -383,15 +382,16 @@ static void __schedule(int preempt) {
 		spin_unlock(&rq.lock);
 
 		/* next->process has to restore ipl. */
-		res = next->process(prev, next, ipl);
-		if (res == SCHEDEE_EXIT) {
+		next = next->process(prev, next, ipl);
+
+		if (next) {
 			break;
 		}
 
 		ipl = spin_lock_ipl(&rq.lock);
 	}
 
-	sched_timing_start(prev);
+	sched_timing_start(next);
 }
 
 void schedule(void) {

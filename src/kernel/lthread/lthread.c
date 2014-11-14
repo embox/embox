@@ -27,8 +27,8 @@
 POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
 
 /* locks: sched. lthread->run must be atomic. */
-static int lthread_process(struct schedee *prev, struct schedee *next,
-		ipl_t ipl) {
+static struct schedee *lthread_process(struct schedee *prev,
+		struct schedee *next, ipl_t ipl) {
 	struct lthread *lt = mcast_out(next, struct lthread,
 			schedee);
 	schedee_set_current(next);
@@ -42,7 +42,7 @@ static int lthread_process(struct schedee *prev, struct schedee *next,
 
 	lt->run_ret = next->run(next->run_arg);
 
-	return SCHEDEE_REPEAT;
+	return NULL;
 }
 
 static void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
