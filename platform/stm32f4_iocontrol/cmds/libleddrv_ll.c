@@ -70,47 +70,6 @@ void leddrv_ll_init(void) {
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
-#if 0
-static void leddrv_ll_shift_out(const struct leddrv_shift_desc *desc, bool val) {
-
-	/* make clock low */
-	GPIO_ResetBits(desc->gpio, desc->clk);
-
-	if (val) {
-		/* set data high */
-		GPIO_SetBits(desc->gpio, desc->data);
-	} else {
-		/* set data low */
-		GPIO_ResetBits(desc->gpio, desc->data);
-	}
-
-	/* make clock high, shift data to regsiter */
-	GPIO_SetBits(desc->gpio, desc->clk);
-}
-
-void leddrv_ll_update(unsigned char leds_state[LEDDRV_LED_N]) {
-	int i_desc;
-	int base_led;
-
-	base_led = 0;
-	for (i_desc = 0; i_desc < ARRAY_SIZE(leddrv_shift_led); ++i_desc) {
-		const struct leddrv_shift_desc *const desc = &leddrv_shift_led[i_desc];
-
-		/* shift capacity could be larger than led number, shifting meaningless data */
-		for (int i_led_skip = desc->shift_n - desc->led_n; i_led_skip > 0; --i_led_skip) {
-			leddrv_ll_shift_out(desc, 0);
-		}
-
-		/* shift data in desceding order as shift-registers require */
-		for (int i_led_shift = desc->led_n - 1; i_led_shift >= 0; --i_led_shift) {
-			leddrv_ll_shift_out(desc, leds_state[base_led + i_led_shift]);
-		}
-
-		base_led += desc->led_n;
-	}
-}
-#endif
-
 static void leddrv_ll_shift_out(int led_in_line, unsigned char leds_state[LEDDRV_LED_N]) {
 
 	/* set clock low */
@@ -153,7 +112,7 @@ void leddrv_ll_update(unsigned char leds_state[LEDDRV_LED_N]) {
 		leddrv_ll_shift_out(led_in_line, leds_state);
 	}
 
-	for (int led_in_line = LINES_N; led_in_line >= 4; --led_in_line) {
+	for (int led_in_line = LEDS_PER_LINE - 1; led_in_line >= 4; --led_in_line) {
 		leddrv_ll_shift_out(led_in_line, leds_state);
 	}
 
