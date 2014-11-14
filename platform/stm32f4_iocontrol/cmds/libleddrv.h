@@ -9,7 +9,7 @@
 #ifndef LIBLEDDRV_H_
 #define LIBLEDDRV_H_
 
-#define LEDDRV_LED_N 4
+#define LEDDRV_LED_N 80
 
 extern int leddrv_init(void);
 

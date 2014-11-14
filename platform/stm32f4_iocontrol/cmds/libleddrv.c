@@ -23,7 +23,7 @@ int leddrv_init(void) {
 	leddrv_ll_init();
 
 	/* default all on state */
-	memset(leddrv_leds_state, 1, sizeof(leddrv_leds_state));
+	memset(leddrv_leds_state, 0, sizeof(leddrv_leds_state));
 	leddrv_ll_do_update();
 
 	return 0;
