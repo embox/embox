@@ -68,6 +68,12 @@ angular.module("HttpAdmin", ['ngRoute'])
         });
     };
 
+    $scope.save = function() {
+        $http.get('cgi-bin/cgi_cmd_wrapper?c=flash_settings&a1=store&a2=led').success(function (data) {
+
+        });
+    };
+
     $scope.update();
 }])
 .config(['$routeProvider', function($routeProvider) {
