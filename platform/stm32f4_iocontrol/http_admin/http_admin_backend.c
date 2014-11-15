@@ -16,6 +16,9 @@
 #include <cJSON.h>
 #include <embox/cmd.h>
 
+/* all that needs for NVIC_SystemReset in next include */
+#include <stm32f4xx_wwdg.h>
+
 EMBOX_CMD(http_admin_main);
 
 static char *http_admin_build_iface_list(void) {
@@ -39,6 +42,10 @@ static char *http_admin_build_iface_list(void) {
 		char buf[64];
 
                 if (iaddr == NULL || iaddr->sa_family != AF_INET) {
+			continue;
+		}
+
+		if (0 == strcmp(i_ifa->ifa_name, "lo")) {
 			continue;
 		}
 
@@ -135,8 +142,10 @@ static void http_admin_post(char *post_data) {
 		if (netdev_set_macaddr(iface_dev->dev, if_hwaddr)) {
 			goto outerr;
 		}
-	} else if (!strcmp(action, "flash_settings")) {
-		system("flash_settings store");
+
+		system("flash_settings store net");
+
+		NVIC_SystemReset();
 	}
 
 outerr:
