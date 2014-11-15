@@ -5,17 +5,20 @@
     <button type="button" class="btn btn-link" ng-click="update()">Update</button>
     </p>
 
-    <div class="row" ng-repeat="led_state in leds_state track by $index">
-        <!--<span class="col-xs-2">{{$index}}</span>-->
-        <button type="button" class="col-xs-5 btn btn-default"
-                ng-class="led_state.red ? 'led-red' : 'led-off'"
-		ng-click="led_switch(led_state, $index, 0)">
-            Red {{$index + 1}}
-        </button>
-	<button type="button" class="col-xs-5 btn btn-default"
-                ng-class="led_state.blue ? 'led-blue' : 'led-off'"
-		ng-click="led_switch(led_state, $index, 1)">
-            Blue {{$index + 1}}
-        </button>
+    <div class="row">
+	<div class="block col-xs-1" style="float:left; margin: 5px; border-radius:6px; padding:5px; background:#eee;"
+		ng-repeat="led_state in leds_state track by $index">
+		<button type="button" class="col-xs-12 btn btn-default"
+		        ng-class="led_state.red ? 'led-red' : 'led-off'"
+			ng-click="led_switch(led_state, $index, 0)">
+		    Red
+		</button>
+		<br/><div class="col-xs-12" style="margin: 0 auto;"><center>{{$index + 1}}</center></div>
+		<button type="button" class="col-xs-12 btn btn-default"
+		        ng-class="led_state.blue ? 'led-blue' : 'led-off'"
+			ng-click="led_switch(led_state, $index, 1)">
+		    Blue
+		</button>
+	</div>
     </div>
-</div>
+</div
