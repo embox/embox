@@ -27,16 +27,16 @@ struct leddrv_pin_desc {
 static const struct leddrv_pin_desc leddrv_clk =
 	{ .gpio = GPIOE, .pin = GPIO_Pin_7 };
 static const struct leddrv_pin_desc leddrv_datas[] = {
-	{ .gpio = GPIOE, .pin = GPIO_Pin_8 },
-	{ .gpio = GPIOE, .pin = GPIO_Pin_9 },
-	{ .gpio = GPIOE, .pin = GPIO_Pin_10 },
-	{ .gpio = GPIOE, .pin = GPIO_Pin_11 },
-	{ .gpio = GPIOE, .pin = GPIO_Pin_12 },
-	{ .gpio = GPIOE, .pin = GPIO_Pin_13 },
-	{ .gpio = GPIOE, .pin = GPIO_Pin_14 },
-	{ .gpio = GPIOE, .pin = GPIO_Pin_15 },
 	{ .gpio = GPIOB, .pin = GPIO_Pin_14 },
 	{ .gpio = GPIOB, .pin = GPIO_Pin_15 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_15 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_13 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_14 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_11 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_12 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_10 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_9 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_8 },
 };
 static_assert(ARRAY_SIZE(leddrv_datas) == LINES_N);
 
