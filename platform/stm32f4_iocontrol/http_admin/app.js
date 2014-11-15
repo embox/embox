@@ -40,30 +40,33 @@ angular.module("HttpAdmin", ['ngRoute'])
 
     $scope.update = function() {
         $http.get('cgi-bin/cgi_cmd_wrapper?c=led_driver&a1=serialize_states').success(function (data) {
-            $scope.leds_state = data;
+            var led_n = data.length;
+            var new_leds_state = [];
+            for (var i = 0; i < led_n; i += 2) {
+                var state = { red : !!data[i], blue : !!data[i + 1] };
+                new_leds_state.push(state);
+            }
+            $scope.leds_state = new_leds_state;
         });
     }
 
-    $scope.led_switch = function(led_n) {
-        $scope.leds_state[led_n] = !$scope.leds_state[led_n];
+    $scope.led_switch = function(state, pair_n, offset) {
+        var led_n = pair_n * 2 + offset;
+        var new_state;
 
-        var str_op = $scope.leds_state[led_n] ? 'set' : 'clr';
+        if (offset == 0) {
+            state.red = !state.red;
+            new_state = state.red;
+        } else {
+            state.blue = !state.blue;
+            new_state = state.blue;
+        }
+
+        var str_op = new_state ? 'set' : 'clr';
         $http.get('cgi-bin/cgi_cmd_wrapper?c=led_driver&a1=' + str_op + '&a2=' + led_n).success(function (data) {
 
         });
     };
-
-    $scope.led_class = function(state, led_n) {
-        if (state) {
-            if (led_n % 2 == 0) {
-                return 'led-red';
-            } else {
-                return 'led-blue';
-            }
-        } else {
-            return 'led-off';
-        }
-    }
 
     $scope.update();
 }])
