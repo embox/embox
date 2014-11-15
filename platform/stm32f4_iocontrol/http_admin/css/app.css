@@ -16,3 +16,11 @@
   background-color: #d9534f;
   border-color: #d43f3a;
 }
+
+.block {
+  float: left;
+  margin: 5px;
+  border-radius: 6px;
+  padding: 5px;
+  background: #eee;
+}
