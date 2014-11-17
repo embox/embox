@@ -69,8 +69,6 @@ $(AUTOCONF_DIR)/start_script.inc: $(CONF_DIR)/start_script.inc
 
 -include $(addsuffix .d,$(build_mk) $(config_h) $(config_lds_h))
 
-$(build_mk) $(config_h) $(config_lds_h): mk/script/build/oldconf-gen.mk
-
 # XXX copy-patse
 cmd_notouch = \
 	set_on_error_trap() { trap "$$1" INT QUIT TERM HUP EXIT; };            \
@@ -92,4 +90,10 @@ cmd_notouch_stdout = \
 	$(call cmd_notouch,$1,{ $2; } > $$OUTFILE)
 sh_quote = \
 	'$(subst ','\'',$1)'
+
+%/. :
+	@$(MKDIR) $*
+
+.SECONDEXPANSION :
+$(build_mk) $(config_h) $(config_lds_h): mk/script/build/oldconf-gen.mk | $$(@D)/.
 

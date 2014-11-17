@@ -6,6 +6,7 @@
 /build
 /conf
 /core
+/dist
 /download
 mk/.cache
 mk/GNUmakefile

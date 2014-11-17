@@ -28,10 +28,13 @@ export DOC_DIR        := $(ROOT_DIR)/build/doc
 
 export BIN_DIR        := $(BUILD_DIR)/bin
 export OBJ_DIR        := $(BUILD_DIR)/obj
-export LIB_DIR        := $(BUILD_DIR)/lib
-export SRCGEN_DIR     := $(BUILD_DIR)/src-gen
-export MKGEN_DIR      := $(SRCGEN_DIR)
-export AUTOCONF_DIR   := $(SRCGEN_DIR)
+
+export DIST_DIR       := $(BUILD_DIR)
+export GEN_DIR        := $(DIST_DIR)/gen
+export SRCGEN_DIR     := $(GEN_DIR)
+export MKGEN_DIR      := $(GEN_DIR)
+export AUTOCONF_DIR   := $(GEN_DIR)
+
 export ROOTFS_DIR     := $(OBJ_DIR)/rootfs
 export ROOTFS_IMAGE   := $(OBJ_DIR)/rootfs.cpio
 export USER_ROOTFS_DIR:= $(CONF_DIR)/rootfs

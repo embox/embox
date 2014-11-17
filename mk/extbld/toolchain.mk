@@ -1,6 +1,4 @@
 
-.PHONY: $$(image_prerequisites)
-
 include $(MKGEN_DIR)/build.mk
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
@@ -49,8 +47,6 @@ $(EMBOX_GCC_ENV): | $(dir $(EMBOX_GCC_ENV))
 	@echo EMBOX_IMPORTED_CXXFLAGS="'"$(EMBOX_IMPORTED_CXXFLAGS)"'"         >> $@
 	@echo EMBOX_IMPORTED_LDFLAGS="'"$(EMBOX_IMPORTED_LDFLAGS)"'"           >> $@
 	@echo EMBOX_IMPORTED_LDFLAGS_FULL="'"$(EMBOX_IMPORTED_LDFLAGS_FULL)"'" >> $@
-
-$$(image_prerequisites):
 
 TOOLCHAIN_TEST_SRC := $(ROOT_DIR)/mk/extbld/toolchain_test.c
 TOOLCHAIN_TEST_OUT := $(OBJ_DIR)/toolchain_test

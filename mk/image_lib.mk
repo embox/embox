@@ -11,7 +11,8 @@ endif
 
 # This must be expanded in a secondary expansion context.
 # NOTE: must be the last one in a list of prerequisites (contains order-only)
-common_prereqs = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk \
+common_prereqs = mk/image2.mk mk/image3.mk mk/image_lib.mk mk/flags.mk \
+	$(MKGEN_DIR)/build.mk \
 	$(if $(value mk_file),$(mk_file)) \
 	| $(if $(value my_file),$(dir $(my_file:%=$(OBJ_DIR)/%)).) $(@D)/.
 

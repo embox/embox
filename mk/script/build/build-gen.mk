@@ -38,7 +38,7 @@ cmd_assemble = \
 	$(ECHO) '$(\h)!/bin/sh' > $1; \
 	$(foreach w,$2,$(ECHO) -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
 
-#cmd_notouch = \
+# cmd_notouch = \
 	OUTFILE=$(call trim,$1); { $2; }
 
 #   1. Output file.
@@ -94,7 +94,7 @@ gen_make_dep = \
 # 2. Variable name.
 # 3. Value.
 gen_make_tsvar = \
-	$(PRINTF) '%s : %s := %s\n\n' \
+	$(PRINTF) '%s : %s := %s\n' \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2) \
 		$(call sh_quote,$3)
@@ -102,7 +102,7 @@ gen_make_tsvar = \
 # 2. Funtion name.
 # 3. Function body.
 gen_make_tsfn = \
-	$(PRINTF) '%s : %s = %s\n\n' \
+	$(PRINTF) '%s : %s = %s\n' \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2) \
 		$(call sh_quote,$3)
@@ -208,7 +208,6 @@ __gen_stage = \
 $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_make_var,__image_prerequisities,$$$$(image_prerequisites)); \
 		$(call gen_make_var,__image_mk_file,$(mk_file)); \
 		$(call __gen_stage,1); \
 		$(call __gen_stage,2))
@@ -646,3 +645,101 @@ $(@source_gen) :
 	+@$(call cmd_notouch_stdout,$(@file), \
 		$(script))
 
+
+ifdef GEN_DIST
+
+%/. :
+	@$(MKDIR) $*
+
+.SECONDEXPANSION :
+
+@source_dist := \
+	$(addprefix source-dist/,$(notdir $(build_sources)))
+
+all .PHONY : $(@source_dist)
+
+$(@source_dist) : file = $(call source_file,$@)
+$(@source_dist) : @file = $(DIST_DIR)/$(file)
+$(@source_dist) : @dir = $(patsubst %/,%,$(dir $(@file)))
+$(@source_dist) : | $$(@dir)/.
+$(@source_dist) :
+	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi
+
+@dist_cpfiles := $(addprefix dist-cpfile-/$(DIST_DIR)/, \
+	mk/core/common.mk \
+	mk/core/string.mk \
+	$(wildcard mk/extbld/*) \
+	mk/script/application_template.c \
+	mk/script/lds-apps.mk \
+	mk/script/nm2c.awk \
+	mk/script/qt-plugin.mk \
+	mk/script/script-common.mk \
+	mk/arhelper.mk \
+	mk/build-dist.mk \
+	mk/extbld.mk \
+	mk/flags.mk \
+	mk/image.lds.S \
+	mk/image2.mk \
+	mk/image3.mk \
+	mk/image_lib.mk \
+	mk/main-stripping.mk \
+	mk/main-dist.mk \
+	mk/main-stripping.sh \
+	mk/phymem_cc_addon.tmpl.c \
+	Makefile)
+
+@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_DIR)/, \
+	doc \
+	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
+
+__source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
+@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_DIR)/, \
+	$(wildcard $(foreach e,*.h *.inc,$(addsuffix $e,$(__source_dirs)))))
+
+include mk/flags.mk  # INCLUDES_FROM_FLAGS
+
+@dist_includes := $(addprefix dist-includes-/,$(sort \
+	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_DIR)/%, \
+		$(filter-out $(abspath \
+				$(DIST_DIR) $(DIST_DIR)/% \
+				$(CONF_DIR) $(CONF_DIR)/%),$(abspath \
+			$(call expand,$(call get, \
+				$(sort $(call source_annotation_values,$(build_sources), \
+					$(my_incpath_val) $(my_incpath_before_val))),value)) \
+			$(INCLUDES_FROM_FLAGS))))))
+
+# remove nested directories
+@dist_includes := \
+	$(filter-out $(addsuffix /%,$(@dist_includes)),$(@dist_includes))
+
+@dist_conf := $(addprefix dist-conf-/$(DIST_DIR)/conf/, \
+	rootfs \
+	start_script.inc)
+
+@dist_all := \
+	$(@dist_cpfiles) \
+	$(@dist_includes) \
+	$(@dist_conf)
+
+
+all .PHONY : $(@dist_all)
+
+$(@dist_cpfiles) : dist-cpfile-/% : | $$(*D)/.
+$(@dist_cpfiles) : @file = $(subst -dist.,.,$(@:dist-cpfile-/%=%))
+$(@dist_cpfiles) : file = $(@:dist-cpfile-/$(DIST_DIR)/%=$(ROOT_DIR)/%)
+$(@dist_cpfiles) :
+	@cp -Trf $(file) $(@file)
+
+
+$(@dist_includes) : dist-includes-/% : | $$(*D)/.
+$(@dist_includes) : @file = $(@:dist-includes-/%=%)
+$(@dist_includes) : file = $(@file:$(DIST_DIR)/%=$(ROOT_DIR)/%)
+
+$(@dist_conf) : dist-conf-/% : | $$(*D)/.
+$(@dist_conf) : @file = $(@:dist-conf-/%=%)
+$(@dist_conf) : file = $(@file:$(DIST_DIR)/conf/%=$(CONF_DIR)/%)
+
+$(@dist_includes) $(@dist_conf) :
+	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi
+
+endif # GEN_DIST
