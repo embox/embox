@@ -28,7 +28,7 @@ struct schedee {
 
 	runq_item_t       runq_link;
 
-	spinlock_t        lock;         /**< Protects wait state and others. */
+	spinlock_t        lock; /**< Protects wait state and others. */
 
 	/* Process function is called in schedule() function after extracting
 	 * the next schedee from the runq. This function performs all necessary
@@ -38,28 +38,26 @@ struct schedee {
 	 *
 	 * This function returns schedee to which context switched.
 	 */
-	struct schedee    *(*process)(struct schedee *prev, struct schedee *next,
-			ipl_t ipl);
+	struct schedee    *(*process)(struct schedee *prev, struct schedee *next);
 
 	void              *(*run)(void *); /**< Start routine */
 	void              *run_arg;        /**< Argument to be passed to run */
-	unsigned int      active;       /**< Running on a CPU. TODO SMP-only. */
-	unsigned int      ready;        /**< Managed by the scheduler. */
-	unsigned int      waiting;      /**< Waiting for an event. */
+	unsigned int      active;          /**< Running on a CPU. TODO SMP-only. */
+	unsigned int      ready;           /**< Managed by the scheduler. */
+	unsigned int      waiting;         /**< Waiting for an event. */
 
-	struct affinity   affinity;
-	struct sched_timing sched_timing;
-	struct schedee_priority  priority;
-	int               policy;
+	struct affinity         affinity;
+	struct sched_timing     sched_timing;
+	struct schedee_priority priority;
+	int                     policy;
 
-	struct waitq_link waitq_link;   /**< Used as a link in different waitqs. */
+	struct waitq_link waitq_link; /**< Used as a link in different waitqs. */
 };
 
 #include <stdbool.h>
 static inline int schedee_init(struct schedee *schedee, sched_priority_t priority,
-	struct schedee *(*process)(struct schedee *prev, struct schedee *next, ipl_t ipl),
-	void *(*run)(void *),
-	void *arg)
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next),
+	void *(*run)(void *), void *arg)
 {
 
 	runq_item_init(&schedee->runq_link);
@@ -82,10 +80,8 @@ static inline int schedee_init(struct schedee *schedee, sched_priority_t priorit
 }
 
 extern int schedee_init(struct schedee *schedee, sched_priority_t priority,
-	struct schedee *(*process)(struct schedee *prev, struct schedee *next,
-			ipl_t ipl),
-	void *(*run)(void *),
-	void *arg);
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next),
+	void *(*run)(void *), void *arg);
 
 
 #endif /* _KERNEL_SCHEDEE_H_ */

@@ -355,12 +355,11 @@ void sched_start_switch(struct schedee *next) {
 static void __schedule(int preempt) {
 	struct schedee *prev;
 	struct schedee *next;
-	ipl_t ipl;
 
 	prev = schedee_get_current();
 
 	assert(!sched_in_interrupt());
-	ipl = spin_lock_ipl(&rq.lock);
+	spin_lock_ipl(&rq.lock);
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
@@ -382,13 +381,13 @@ static void __schedule(int preempt) {
 		spin_unlock(&rq.lock);
 
 		/* next->process has to restore ipl. */
-		next = next->process(prev, next, ipl);
+		next = next->process(prev, next);
 
 		if (next) {
 			break;
 		}
 
-		ipl = spin_lock_ipl(&rq.lock);
+		spin_lock_ipl(&rq.lock);
 	}
 
 	sched_timing_start(next);

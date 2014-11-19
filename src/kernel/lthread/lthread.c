@@ -28,9 +28,8 @@ POOL_DEF(lthread_pool, struct lthread, LTHREAD_POOL_SIZE);
 
 /* locks: sched. lthread->run must be atomic. */
 static struct schedee *lthread_process(struct schedee *prev,
-		struct schedee *next, ipl_t ipl) {
-	struct lthread *lt = mcast_out(next, struct lthread,
-			schedee);
+		struct schedee *next) {
+	struct lthread *lt = mcast_out(next, struct lthread, schedee);
 	schedee_set_current(next);
 
 	/* lthread is not in runq, it can be waken up again. */
@@ -38,7 +37,7 @@ static struct schedee *lthread_process(struct schedee *prev,
 	next->waiting = true;
 
 	/* We have to restore ipl as soon as possible. */
-	ipl_restore(ipl);
+	ipl_enable();
 
 	lt->run_ret = next->run(next->run_arg);
 
