@@ -12,6 +12,9 @@ module http_admin {
 	source "partials",
 	       "css",
 	       "index.html",
+	       "angular.min.js",
+	       "angular-route.min.js",
+	       "ui-bootstrap-tpls-0.6.0.min.js",
 	       "app.js"
 
 	depends third_party.lib.cjson
