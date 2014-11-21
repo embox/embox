@@ -40,11 +40,14 @@ static module LibCStdioFseek {
 }
 
 static module LibCStdioFileOps {
+	source "stdfile_static.c"
+
 	source "fgetc.c"
+	source "ungetc.c"
 	source "fgets.c"
 
 	source "funopen.c"
-	source "file_ops.c"
+	source "fileno.c"
 	source "fread.c"
 	source "fwrite.c"
 	source "fioctl.c"

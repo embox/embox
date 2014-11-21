@@ -52,8 +52,11 @@ __BEGIN_DECLS
 extern int putc(int c, FILE *f);
 extern int fputc(int c, FILE *f);
 
-extern int getc(FILE *f);
 extern int fgetc(FILE *f);
+static inline int getc(FILE *f) {
+	return fgetc(f);
+}
+
 
 /**
  * Writes the string s and a trailing newline to stdout.
