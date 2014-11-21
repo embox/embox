@@ -113,7 +113,7 @@ VPATH += $(GPATH)
 
 $(embox_o): ldflags_all = $(LDFLAGS) \
 		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
-$(embox_o): $$(common_prereqs)
+$(embox_o):
 	$(LD) -r $(ldflags_all) \
 		$(call fmt_line,$(ld_objs)) \
 		--start-group \
@@ -124,8 +124,7 @@ $(embox_o): $$(common_prereqs)
 
 stages := $(wordlist 1,$(STAGE),1 2)
 
-image_prereqs = $(common_prereqs) \
-	$(ld_scripts) $(ld_objs) $(ld_libs)
+image_prereqs = $(ld_scripts) $(ld_objs) $(ld_libs) $(common_prereqs)
 
 $(embox_o) : $$(image_prereqs)
 $(embox_o) : mk_file = $(__image_mk_file)
