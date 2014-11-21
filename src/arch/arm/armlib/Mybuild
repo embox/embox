@@ -16,7 +16,7 @@ module locore extends embox.arch.locore {
 
 	source "entry.S",
 		"exception_table.S",
-		"exception_handler.S"
+		"exception_handler.c"
 
 	depends head
 }
