@@ -3,9 +3,11 @@
 #
 
 export MYBUILD_VERSION := 0.4
-export DIST_DIR := .
 
 include mk/core/common.mk
+include mk/variables.mk
+
+export DIST_DIR := .
 
 .PHONY : all a
 a : all

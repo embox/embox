@@ -6,7 +6,6 @@
 .PHONY : build docsgen
 
 build :
-	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-1
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=1
 	@$(MAKE) -f mk/extbld/toolchain.mk do_test

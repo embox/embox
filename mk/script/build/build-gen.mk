@@ -686,6 +686,7 @@ $(@source_dist) :
 	mk/main-dist.mk \
 	mk/main-stripping.sh \
 	mk/phymem_cc_addon.tmpl.c \
+	mk/variables.mk \
 	Makefile)
 
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_DIR)/, \
