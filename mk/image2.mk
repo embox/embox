@@ -17,7 +17,6 @@ all : $(embox_o) $(image_lds)
 
 FORCE :
 
-include mk/core/common.mk
 include mk/image_lib.mk
 
 include $(MKGEN_DIR)/build.mk

@@ -12,7 +12,6 @@ all : image
 
 FORCE :
 
-include mk/core/common.mk
 include mk/image_lib.mk
 
 include $(MKGEN_DIR)/build.mk
