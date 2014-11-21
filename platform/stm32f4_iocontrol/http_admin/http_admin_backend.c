@@ -164,7 +164,7 @@ static int http_admin_main(int argc, char *argv[]) {
 	method = getenv("REQUEST_METHOD");
 	if (0 == strcmp("GET", method)) {
 		char *list = http_admin_build_iface_list();
-		printf("%s", list);
+		printf("%s\n", list);
 		free(list);
 	} else if (0 == strcmp("POST", method)) {
 		char buf[256];

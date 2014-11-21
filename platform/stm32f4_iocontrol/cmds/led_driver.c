@@ -24,7 +24,7 @@ static int cldrv_serialize(void) {
 	for (i = 0; i < LEDDRV_LED_N - 1; ++i) {
 		printf("%d,", !!led_states[i]);
 	}
-	printf("%d]", led_states[LEDDRV_LED_N - 1]);
+	printf("%d]\n", led_states[LEDDRV_LED_N - 1]);
 	return 0;
 }
 
