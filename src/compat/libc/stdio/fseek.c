@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include "file_struct.h"
 
 int fseek(FILE *file, long int offset, int origin) {
 	off_t ret;

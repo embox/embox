@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include "file_struct.h"
 
 extern FILE *stdio_file_alloc(int fd);
 

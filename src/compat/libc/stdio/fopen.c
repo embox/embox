@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "file_struct.h"
 
 #include <sys/ioctl.h>
 

@@ -5,14 +5,13 @@
  * @author: Anton Bondarev
  */
 
+#include <framework/mod/options.h>
+#include <mem/misc/pool.h>
+#include "file_struct.h"
+
 #include <stdio.h>
 
-#include <mem/misc/pool.h>
-
-#include <framework/mod/options.h>
-
 #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
-
 
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 

@@ -24,12 +24,5 @@ int putc(int c, FILE *f) {
 }
 
 int putchar(int c) {
-#if 0
-#if OPTION_GET(BOOLEAN,stdio_lf_crlf_map)
-	if (c == '\n') {
-		fputc('\r', stdout);
-	}
-#endif
-#endif
 	return fputc(c, stdout);
 }

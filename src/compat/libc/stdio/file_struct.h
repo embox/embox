@@ -1,0 +1,25 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Anton Kozlov
+ * @date    21.11.2014
+ */
+
+#ifndef STDIO_FILE_STRUCT_H_
+#define STDIO_FILE_STRUCT_H_
+
+#include <stdio.h>
+
+struct file_struct {
+	int (*readfn)(void *, char *, int);
+	int (*writefn)(void *, const char *, int);
+	fpos_t (*seekfn)(void *, fpos_t, int);
+	int (*closefn)(void *);
+	const void *cookie;
+	int fd;
+	char has_ungetc;
+	int ungetc;
+};
+
+#endif /* STDIO_FILE_STRUCT_H_ */

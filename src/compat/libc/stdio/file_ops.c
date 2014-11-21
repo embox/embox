@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stddef.h>
+#include "file_struct.h"
 
 #include <unistd.h>
 

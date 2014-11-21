@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include "file_struct.h"
 
 extern void stdio_file_free(FILE *file);
 
