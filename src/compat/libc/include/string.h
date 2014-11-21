@@ -298,6 +298,21 @@ extern int memcmp(const void *ptr1, const void *ptr2, size_t n);
 extern void *memchr(const void *s, int c, size_t n);
 
 /**
+ * Scans the memory area pointed to by s in backward for the character c.
+ *
+ * @param s
+ *   Pointer to the memory
+ * @param c
+ *   The character to search
+ * @param n
+ *   Number of bytes to scan
+ * @return
+ *   Pointer to the matching byte
+ * @retval NULL the character doesn't occur in the given memory area
+ */
+extern void *memrchr(const void *s, int c, size_t n);
+
+/**
  * map upper-case characters in a string to lower-case.
  *
  * @param str

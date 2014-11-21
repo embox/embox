@@ -2,6 +2,7 @@ package embox.compat.libc
 
 static module LibCString {
 	source "memchr.c"
+	source "memrchr.c"
 	source "memcmp.c"
 	source "memcpy.c"
 	source "memmove.c"
