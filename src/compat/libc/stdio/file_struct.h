@@ -20,6 +20,13 @@ struct file_struct {
 	int fd;
 	char has_ungetc;
 	int ungetc;
+
+	int buftype;
+	void *obuf;
+	int obuf_sz;
+	int obuf_len;
 };
+
+extern int funopen_check(FILE *f);
 
 #endif /* STDIO_FILE_STRUCT_H_ */

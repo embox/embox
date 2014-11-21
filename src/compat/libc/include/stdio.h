@@ -21,10 +21,10 @@
 
 #define EOF (-1)
 
-#define _IOFBF        0x20
-#define _IOLBF        0x20
-#define _IONBF        0x20
-#define BUFSIZ        0x100
+#define _IONBF        0
+#define _IOFBF        1
+#define _IOLBF        2
+#define BUFSIZ        256
 #define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
 
@@ -40,8 +40,6 @@ typedef long int fpos_t;
 
 struct file_struct;
 typedef struct file_struct FILE;
-
-extern int funopen_check(FILE *f);
 
 struct stat;
 
