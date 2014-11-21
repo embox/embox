@@ -10,6 +10,9 @@ module irq_static extends irq_api {
 }
 
 module irq extends irq_api {
+	option number action_n = 0
+	option number entry_n = 0
+
 	source "irq.c"
 	depends irq_lock
 	@NoRuntime depends irq_stack

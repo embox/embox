@@ -43,8 +43,20 @@ struct irq_action {
 	int sharing_supported;
 };
 
-OBJALLOC_DEF(irq_actions, struct irq_action, IRQ_NRS_TOTAL);
-OBJALLOC_DEF(irq_entries, struct irq_entry, IRQ_NRS_TOTAL * 2);
+#if OPTION_GET(NUMBER, action_n) <= 0
+#define IRQ_ACTION_N IRQ_NRS_TOTAL
+#else
+#define IRQ_ACTION_N OPTION_GET(NUMBER, action_n)
+#endif
+
+#if OPTION_GET(NUMBER, action_n) <= 0
+#define IRQ_ENTRY_N (2 * IRQ_NRS_TOTAL)
+#else
+#define IRQ_ENTRY_N OPTION_GET(NUMBER, entry_n)
+#endif
+
+OBJALLOC_DEF(irq_actions, struct irq_action, IRQ_ACTION_N);
+OBJALLOC_DEF(irq_entries, struct irq_entry, IRQ_ENTRY_N);
 
 static struct irq_action *irq_table[IRQ_NRS_TOTAL];
 
