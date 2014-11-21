@@ -183,7 +183,7 @@ int service_send_reply(struct service_data *srv_data,
 	curr += service_set_starting_line(curr, srv_data->http_status);
 	/* 2. set options */
 	assert(srv_file->fd != NULL);
-	fstat(srv_file->fd->fd, &stat); /* TODO bad bad bad!! */
+	fstat(fileno(srv_file->fd), &stat);
 	curr += service_set_ops(curr, stat.st_size, srv_data->request.connection,
 			content_type);
 	/* 3. set message bode and send response */
