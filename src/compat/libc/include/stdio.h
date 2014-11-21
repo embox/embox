@@ -38,16 +38,8 @@
 
 typedef long int fpos_t;
 
-typedef struct file_struct {
-	int (*readfn)(void *, char *, int);
-	int (*writefn)(void *, const char *, int);
-	fpos_t (*seekfn)(void *, fpos_t, int);
-	int (*closefn)(void *);
-	const void *cookie;
-	int fd;
-	char has_ungetc;
-	int ungetc;
-} FILE;
+struct file_struct;
+typedef struct file_struct FILE;
 
 extern int funopen_check(FILE *f);
 
