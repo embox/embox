@@ -33,10 +33,10 @@ endif
 $(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
 	@echo ' BUILDGEN $(DIST_DIR)'
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
-	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
 	@$(MAKE) -f $< MAKEFILES='$(MKGEN_DIR)/build.mk $(MAKEFILES)' \
-		GEN_DIST='$(filter distgen,$(MAKECMDGOALS))' && \
-		$(MKDIR) $(@D) && touch $@
+		GEN_DIST='$(filter distgen,$(MAKECMDGOALS))'
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
+	@$(MKDIR) $(@D) && touch $@
 
 # force regeneration of build files when some of them are missing
 
