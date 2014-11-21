@@ -3,7 +3,6 @@ include $(MKGEN_DIR)/build.mk
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
-rootdir := $(abspath $(ROOT_DIR))
 EMBOX_IMPORTED_CPPFLAGS := $(filter -D% -U% -I% -nostdinc,$(filter-out -D"% -D'%,$(EMBOX_EXPORT_CPPFLAGS)))
 
 EMBOX_IMPORTED_CFLAGS   := $(filter -g% -f% -m% -O% -G% -E%,$(CFLAGS))
@@ -21,18 +20,18 @@ endif
 
 EMBOX_IMPORTED_LDFLAGS_FULL :=
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--relax
-EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,-T,$(rootdir)/build/base/obj/mk/image.lds
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,-T,$(abspath $(OBJ_DIR))/mk/image.lds
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
-EMBOX_IMPORTED_LDFLAGS_FULL += $(rootdir)/build/base/obj/embox.o
+EMBOX_IMPORTED_LDFLAGS_FULL += $(abspath $(OBJ_DIR))/embox.o
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--start-group
-EMBOX_IMPORTED_LDFLAGS_FULL += $(__image_ld_libs1:.%=-Wl,$(rootdir)%)
+EMBOX_IMPORTED_LDFLAGS_FULL += $(__image_ld_libs1:.%=-Wl,$(abspath $(ROOT_DIR))%)
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--end-group
 
 # We are not including user ld scripts in flags, since it is not required to do
 # working object, only compilation errors are matter. If required, place it below
 # --relax flag and perfrom 2 phase link at arch-unknown-embox, first with user lds,
 # next with image.lds
-#EMBOX_IMPORTED_LDFLAGS_FULL += $(__image_ld_scripts1:.%=-Wl,-T,$(rootdir)%)
+#EMBOX_IMPORTED_LDFLAGS_FULL += $(__image_ld_scripts1:.%=-Wl,-T,$(abspath $(ROOT_DIR))%)
 
 EMBOX_IMPORTED_MAKEFLAGS :=
 ifneq (,$(filter -j,$(MAKEFLAGS)))

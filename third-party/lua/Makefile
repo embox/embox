@@ -10,7 +10,7 @@ PKG_PATCHES := pkg_patch.txt
 include $(EXTBLD_LIB)
 
 define option_get
-$(shell echo OPTION_BOOLEAN_third_party__cmd__lua__$(1) | gcc -P -E -include $(ROOT_DIR)/build/base/src-gen/include/config/third_party/cmd/lua.h -)
+$(shell echo OPTION_BOOLEAN_third_party__cmd__lua__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/cmd/lua.h -)
 endef
 
 LUA_CPPFLAGS :=

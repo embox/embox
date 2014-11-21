@@ -40,8 +40,29 @@ EXTERNAL_MAKE_PRO = \
 
 EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
-	ROOT_DIR=$(abspath $(ROOT_DIR)) \
-	EXTERNAL_BUILD_DIR=$(abspath $(EXTERNAL_BUILD_DIR)) \
+	$(foreach path_var, \
+			ROOT_DIR \
+			CONF_DIR \
+			TEMPLATES_DIR \
+			SRC_DIR \
+			THIRDPARTY_DIR \
+			PLATFORM_DIR \
+			SUBPLATFORM_TEMPLATE_DIR \
+			EXTERNAL_BUILD_DIR \
+			DOC_DIR \
+			BIN_DIR \
+			OBJ_DIR \
+			LIB_DIR \
+			GEN_DIR \
+			SRCGEN_DIR \
+			MKGEN_DIR \
+			AUTOCONF_DIR \
+			ROOTFS_DIR \
+			USER_ROOTFS_DIR \
+			DOT_DIR \
+			DOCS_OUT_DIR \
+			CACHE_DIR, \
+		$(path_var)=$(abspath $($(path_var)))) \
 	BUILD_DIR=$(abspath $(mod_build_dir)) \
 	EMBOX_ARCH='$(ARCH)' \
 	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \

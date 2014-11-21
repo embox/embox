@@ -10,7 +10,7 @@ PKG_PATCHES := pkg_patch.txt
 include $(EXTBLD_LIB)
 
 define option_get
-$(shell echo OPTION_BOOLEAN_third_party__qt__core__$(1) | gcc -P -E -include $(ROOT_DIR)/build/base/src-gen/include/config/third_party/qt/core.h -)
+$(shell echo OPTION_BOOLEAN_third_party__qt__core__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/qt/core.h -)
 endef
 
 QT_CONF_FLAGS := -hostprefix $(PKG_INSTALL_DIR)
