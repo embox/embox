@@ -221,21 +221,22 @@ static const char *httpd_filename2content_type(const char *filename) {
 	int i_table;
 	const char *file_ext;
 
-	file_ext = strchrnul(filename, '.');
+	file_ext = strrchr(filename, '.');
+	if (file_ext) {
+		for (i_table = 0; i_table < ARRAY_SIZE(httpd_ext2type_table); i_table ++) {
+			const struct ext2type_table_item *ti = &httpd_ext2type_table[i_table];
 
-	for (i_table = 0; i_table < ARRAY_SIZE(httpd_ext2type_table); i_table ++) {
-		const struct ext2type_table_item *ti = &httpd_ext2type_table[i_table];
-
-		if (ti->ext) {
-			if (0 == strcmp(file_ext, ti->ext)) {
-				return ti->type;
-			}
-		}
-		if (ti->exts) {
-			const char **ext;
-			for (ext = ti->exts; *ext != NULL; ext++) {
-				if (0 == strcmp(file_ext, *ext)) {
+			if (ti->ext) {
+				if (0 == strcmp(file_ext, ti->ext)) {
 					return ti->type;
+				}
+			}
+			if (ti->exts) {
+				const char **ext;
+				for (ext = ti->exts; *ext != NULL; ext++) {
+					if (0 == strcmp(file_ext, *ext)) {
+						return ti->type;
+					}
 				}
 			}
 		}
