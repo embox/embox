@@ -83,6 +83,12 @@ static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 	total_len = 0;
 
 	do {
+		int err;
+
+		if (0 != (err = sock_err(sk))) {
+			return -err;
+		}
+
 		skb = skb_queue_front(&sk->rx_queue);
 		if (skb == NULL) {
 			if (total_len == 0) {

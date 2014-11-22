@@ -243,6 +243,8 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 			"TCP_SYN_SENT", "TCP_SYN_RECV_PRE", "TCP_SYN_RECV", "TCP_ESTABIL",
 			"TCP_FINWAIT_1", "TCP_FINWAIT_2", "TCP_CLOSEWAIT", "TCP_CLOSING",
 			"TCP_LASTACK", "TCP_TIMEWAIT"};
+	struct sock *sk = to_sock(tcp_sk);
+
 	switch (new_state) {
 	default:
 		break;
@@ -254,12 +256,12 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 	case TCP_LASTACK:
 		tcp_sk->ack_flag = tcp_sk->self.seq + 1;
 		debug_print(2, "sk %p set ack_flag %u for state %d-%s\n",
-				to_sock(tcp_sk), tcp_sk->ack_flag, new_state, str_state[new_state]);
+				sk, tcp_sk->ack_flag, new_state, str_state[new_state]);
 		break;
 	}
 
 	tcp_sk->state = new_state;
-	debug_print(2, "sk %p set state %d-%s\n", to_sock(tcp_sk), new_state, str_state[new_state]);
+	debug_print(2, "sk %p set state %d-%s\n", sk, new_state, str_state[new_state]);
 
 	/* idesc manipulation */
 	switch (new_state) {
@@ -267,7 +269,7 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		break;
 	case TCP_ESTABIL: /* new connection */
 		/* enable writing when connection is established */
-		sock_notify(to_sock(tcp_sk), POLLOUT); /* FIXME tcp_sock was notified earlier at line 911 */
+		sock_notify(sk, POLLOUT); /* FIXME tcp_sock was notified earlier at line 911 */
 		/* enable reading for listening (parent) socket */
 		if (tcp_sk->parent != NULL) {
 			tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
@@ -283,14 +285,16 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 		}
 		break;
 	case TCP_CLOSEWAIT: /* throw error: can't read */
-		sock_set_so_error(to_sock(tcp_sk), 1);
-		sock_notify(to_sock(tcp_sk), POLLIN | POLLERR);
+		sock_update_err(sk, ECONNRESET);
+		sock_set_so_error(sk, 1);
+		sock_notify(sk, POLLIN | POLLERR);
 		break;
 	case TCP_TIMEWAIT: /* throw error: can't read and write */
 	case TCP_CLOSING:
 	case TCP_CLOSED:
-		sock_set_so_error(to_sock(tcp_sk), 1);
-		sock_notify(to_sock(tcp_sk), POLLIN | POLLOUT | POLLERR);
+		sock_update_err(sk, ECONNRESET);
+		sock_set_so_error(sk, 1);
+		sock_notify(sk, POLLIN | POLLOUT | POLLERR);
 		break;
 	}
 }

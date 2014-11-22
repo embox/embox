@@ -89,7 +89,16 @@ struct sock {
 	const struct sockaddr *dst_addr;
 	struct timeval last_packet_tstamp;
 	size_t addr_len;
+	int err;
 };
+
+static inline int sock_err(struct sock *sk) {
+	return sk->err;
+}
+
+static inline void sock_update_err(struct sock *sk, int err) {
+	sk->err = err;
+}
 
 struct sock_family_ops {
 	int (*init)(struct sock *sk);
@@ -190,8 +199,6 @@ static inline void sock_set_so_error(struct sock *sk, int error) {
 	assert(sk != NULL);
 	sk->opt.so_error = error;
 }
-
-
 
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
 		const struct sk_buff *skb);

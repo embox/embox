@@ -127,6 +127,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->o_ops = o_ops;
 	sk->src_addr = sk->dst_addr = NULL;
 	sk->addr_len = 0;
+	sk->err = 0;
 
 	idesc_init(&sk->idesc, &task_idx_ops_socket, FS_MAY_READ | FS_MAY_WRITE);
 	sock_xattr_init(sk);
