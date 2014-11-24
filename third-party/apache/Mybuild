@@ -1,0 +1,13 @@
+package third_party.apache
+
+@App
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@AutoCmd
+@Cmd(name = "httpd",
+	help = "",
+	man = '''
+	''')
+module httpd {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "httpd.o"
+}
