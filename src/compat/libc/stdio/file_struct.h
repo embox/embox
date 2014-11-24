@@ -12,12 +12,14 @@
 #include <stdio.h>
 
 struct file_struct {
+	int fd;
+	int flags;
+
 	int (*readfn)(void *, char *, int);
 	int (*writefn)(void *, const char *, int);
 	fpos_t (*seekfn)(void *, fpos_t, int);
 	int (*closefn)(void *);
 	const void *cookie;
-	int fd;
 	char has_ungetc;
 	int ungetc;
 

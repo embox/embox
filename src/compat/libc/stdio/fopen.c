@@ -56,6 +56,8 @@ FILE *fopen(const char *path, const char *mode) {
 		return NULL;
 	}
 
+	file->flags = flags;
+
 	return file;
 
 }
@@ -93,6 +95,7 @@ FILE *freopen(const char *path, const char *mode, FILE *file) {
 	old_fd = file->fd;
 
 	dup2(fd, old_fd);
+	file->flags = flags;
 
 	close(fd);
 

@@ -33,7 +33,7 @@ static int libc_ob_check(FILE *file) {
 	return file->obuf != NULL ? 0 : -1;
 }
 
-static int libc_ob_forceflush(FILE *file) {
+int libc_ob_forceflush(FILE *file) {
 	int err;
 
 	if (0 > libc_ob_check(file)) {
@@ -124,7 +124,8 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 	int i_block;
 
 	if (NULL == file) {
-		return -1;
+		errno = EBADF;
+		return 0;
 	}
 
 	for (i_block = 0; i_block < count; ++i_block) {
@@ -140,6 +141,7 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 		}
 
 		if (0 > err) {
+			errno = err;
 			return i_block;
 		}
 	}

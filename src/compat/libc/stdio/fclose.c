@@ -20,6 +20,8 @@ int fclose(FILE *file) {
 		return -1;
 	}
 
+	fflush(file);
+
 	if (funopen_check(file)) {
 		/* An error on closefn() does not keep the stream open. */
 		if (file->closefn) {

@@ -51,6 +51,7 @@ static module LibCStdioFileOps {
 	source "fread.c"
 	source "fwrite.c"
 	source "fioctl.c"
+	source "fflush.c"
 	source "fclose.c"
 
 	source "stdio_stubs.c"
