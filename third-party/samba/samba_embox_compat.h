@@ -134,7 +134,7 @@ char *mktemp(char *template) {
 
 static inline
 int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-	printf(">>> setvbuf, stream->fd - %d\n", stream->fd);
+	printf(">>> setvbuf, stream->fd - %d\n", fileno(stream));
 	return -1;
 }
 

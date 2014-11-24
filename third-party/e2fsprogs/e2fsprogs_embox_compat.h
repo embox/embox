@@ -75,7 +75,7 @@ static inline int pclose(FILE *stream) {
 }
 
 static inline void setbuf(FILE *stream, char *buf) {
-	printf(">>> setbuf, stream->fd - %d, buf - %p\n", stream->fd, buf);
+	printf(">>> setbuf, stream->fd - %d, buf - %p\n", fileno(stream), buf);
 }
 
 
@@ -92,7 +92,7 @@ static inline int sigaction(int sig, const struct sigaction *act,
 }
 
 static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-	printf(">>> setvbuf, stream->fd - %d\n", stream->fd);
+	printf(">>> setvbuf, stream->fd - %d\n", fileno(stream));
 	return -1;
 }
 
