@@ -1,6 +1,6 @@
 diff -aur STLport-5.2.1/build/Makefiles/gmake/gcc.mak STLport/build/Makefiles/gmake/gcc.mak
 --- STLport-5.2.1/build/Makefiles/gmake/gcc.mak	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/build/Makefiles/gmake/gcc.mak	2014-02-17 18:52:30.183456480 +0400
++++ STLport/build/Makefiles/gmake/gcc.mak	2014-11-24 13:28:28.293054685 +0300
 @@ -25,11 +25,11 @@
  RC := windres
  endif
@@ -20,7 +20,7 @@ diff -aur STLport-5.2.1/build/Makefiles/gmake/gcc.mak STLport/build/Makefiles/gm
  CXX_VERSION_MAJOR := $(shell echo ${CXX_VERSION} | awk 'BEGIN { FS = "."; } { print $$1; }')
 diff -aur STLport-5.2.1/src/num_get_float.cpp STLport/src/num_get_float.cpp
 --- STLport-5.2.1/src/num_get_float.cpp	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/src/num_get_float.cpp	2014-02-17 18:52:30.183456480 +0400
++++ STLport/src/num_get_float.cpp	2014-11-24 13:28:28.293054685 +0300
 @@ -28,7 +28,7 @@
  #endif
  
@@ -59,7 +59,7 @@ diff -aur STLport-5.2.1/src/num_get_float.cpp STLport/src/num_get_float.cpp
    val = _Stl_string_to_double(v.c_str());
 diff -aur STLport-5.2.1/src/num_put_float.cpp STLport/src/num_put_float.cpp
 --- STLport-5.2.1/src/num_put_float.cpp	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/src/num_put_float.cpp	2014-02-17 18:52:30.183456480 +0400
++++ STLport/src/num_put_float.cpp	2014-11-24 13:28:28.293054685 +0300
 @@ -126,7 +126,7 @@
  #  elif defined (__DJGPP) || (defined (_STLP_USE_GLIBC) && ! defined (__MSL__)) || \
        defined (__CYGWIN__) || \
@@ -80,21 +80,18 @@ diff -aur STLport-5.2.1/src/num_put_float.cpp STLport/src/num_put_float.cpp
  { return ecvt_r(x, n, pt, sign, buf); }
 diff -aur STLport-5.2.1/src/_stdio_file.h STLport/src/_stdio_file.h
 --- STLport-5.2.1/src/_stdio_file.h	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/src/_stdio_file.h	2014-02-17 18:52:30.183456480 +0400
-@@ -102,6 +102,10 @@
- /* the prototypes are taken from LynxOS patch for STLport 4.0 */
- inline int _FILE_fd(const FILE *__f) { return __f->_fd; }
++++ STLport/src/_stdio_file.h	2014-11-24 13:33:41.153045464 +0300
+@@ -67,6 +67,7 @@
  
-+#elif defined (__EMBOX__)
-+
-+inline int _FILE_fd(const FILE *__f) { return __f->fd; }
-+
- #else  /* The most common access to file descriptor. */
+ #elif defined (__hpux) /* && defined(__hppa) && defined(__HP_aCC)) */ || \
+       defined (__MVS__) || \
++      defined (__EMBOX__) || \
+       defined (_STLP_USE_UCLIBC) /* should be before _STLP_USE_GLIBC */
  
- inline int _FILE_fd(const FILE *__f) { return __f->_file; }
+ inline int _FILE_fd(const FILE *__f) { return fileno(__CONST_CAST(FILE*, __f)); }
 diff -aur STLport-5.2.1/src/time_facets.cpp STLport/src/time_facets.cpp
 --- STLport-5.2.1/src/time_facets.cpp	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/src/time_facets.cpp	2014-02-17 18:52:30.183456480 +0400
++++ STLport/src/time_facets.cpp	2014-11-24 13:28:28.293054685 +0300
 @@ -165,17 +165,21 @@
  static void __append(__iostring &buf, const string& name)
  { buf.append(name.data(), name.data() + name.size()); }
@@ -132,7 +129,7 @@ diff -aur STLport-5.2.1/src/time_facets.cpp STLport/src/time_facets.cpp
    const char * fmt = _Locale_d_fmt(time);
 diff -aur STLport-5.2.1/stlport/stl/config/features.h STLport/stlport/stl/config/features.h
 --- STLport-5.2.1/stlport/stl/config/features.h	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/stlport/stl/config/features.h	2014-02-17 18:52:30.183456480 +0400
++++ STLport/stlport/stl/config/features.h	2014-11-24 13:28:28.296388018 +0300
 @@ -308,7 +308,11 @@
  /* Some compiler support 0 size array so we use negative size array to generate
   * a compilation time error.
@@ -148,7 +145,7 @@ diff -aur STLport-5.2.1/stlport/stl/config/features.h STLport/stlport/stl/config
  /* apple mpw exception handling bug */
 diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/_system.h
 --- STLport-5.2.1/stlport/stl/config/_system.h	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/stlport/stl/config/_system.h	2014-02-17 18:52:30.183456480 +0400
++++ STLport/stlport/stl/config/_system.h	2014-11-24 13:28:28.296388018 +0300
 @@ -52,6 +52,9 @@
  #  elif defined (__FCC_VERSION) /* Fujitsu Compiler, v4.0 assumed */
  #    include <stl/config/_fujitsu.h>
@@ -161,7 +158,7 @@ diff -aur STLport-5.2.1/stlport/stl/config/_system.h STLport/stlport/stl/config/
  #  if defined (__GNUC__)
 diff -aur STLport-5.2.1/stlport/stl/_istream.c STLport/stlport/stl/_istream.c
 --- STLport-5.2.1/stlport/stl/_istream.c	2008-12-10 12:56:51.000000000 +0300
-+++ STLport/stlport/stl/_istream.c	2014-02-17 18:55:30.471025516 +0400
++++ STLport/stlport/stl/_istream.c	2014-11-24 13:28:28.296388018 +0300
 @@ -1145,7 +1145,6 @@
  
    if (__sentry) {
