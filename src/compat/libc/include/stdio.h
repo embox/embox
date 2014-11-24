@@ -217,12 +217,14 @@ extern FILE *stderr;
 
 extern int fileno(FILE *stream);
 
-//TODO: stub
 extern void clearerr(FILE *stream);
 extern int feof(FILE *stream);
 extern int ferror(FILE *stream);
 extern int fflush(FILE *fp);
 
+extern int setvbuf(FILE *stream, char *buf, int mode, size_t size);
+extern void setbuffer(FILE *stream, char *buf, size_t size);
+extern void setbuf(FILE *stream, char *buf);
 
 __END_DECLS
 

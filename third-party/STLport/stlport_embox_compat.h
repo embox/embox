@@ -86,15 +86,6 @@ namespace std {
 		DPRINT();
 		return -1;
 	}
-	static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-		(void)stream;
-		(void)buf;
-		(void)mode;
-		(void)size;
-		DPRINT();
-		return -1;
-	}
-
 //	extern int ecvt_r(double number, int ndigits, int *decpt,
 //	           int *sign, char *buf, size_t len);
 //

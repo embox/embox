@@ -74,11 +74,6 @@ static inline int pclose(FILE *stream) {
 	return -1;
 }
 
-static inline void setbuf(FILE *stream, char *buf) {
-	printf(">>> setbuf, stream->fd - %d, buf - %p\n", fileno(stream), buf);
-}
-
-
 /****************** Functions for e2fsck *******************/
 
 #define SI_USER         0
@@ -88,11 +83,6 @@ struct sigaction;
 static inline int sigaction(int sig, const struct sigaction *act,
 		struct sigaction *oact) {
 	printf(">>> sigaction, sig - %d\n", sig);
-	return -1;
-}
-
-static inline int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-	printf(">>> setvbuf, stream->fd - %d\n", fileno(stream));
 	return -1;
 }
 

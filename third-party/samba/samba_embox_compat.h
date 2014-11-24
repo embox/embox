@@ -133,12 +133,6 @@ char *mktemp(char *template) {
 }
 
 static inline
-int setvbuf(FILE *stream, char *buf, int mode, size_t size) {
-	printf(">>> setvbuf, stream->fd - %d\n", fileno(stream));
-	return -1;
-}
-
-static inline
 ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
 	DPRINT();
 	errno = ENOSYS;

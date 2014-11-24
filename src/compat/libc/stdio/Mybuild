@@ -54,6 +54,7 @@ static module LibCStdioFileOps {
 	source "fclose.c"
 
 	source "stdio_stubs.c"
+	source "buf.c"
 
 	depends LibCStdioFilePool
 	depends embox.compat.posix.fs.file_ops
