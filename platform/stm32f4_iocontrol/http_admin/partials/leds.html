@@ -1,86 +1,33 @@
+<!-- this template could be inlined, but during development I want it as
+template several times, so decided to leave it so -->
+<script id="BlockTemplate" type="text/ng-template">
+    <div class="block">
+	<button type="button" class="btn btn-default led led-off"
+	    ng-class="{'led-red' : led_pair[0].state}"
+	    ng-click="led_switch({led : led_pair[0]})">Red</button>
+	<div class="block-caption">{{led_pair[0].index / 2 + 1}}</div>
+	<button type="button" class="btn btn-default led led-off"
+	    ng-class="{'led-blue' : led_pair[1].state}"
+	    ng-click="led_switch({led : led_pair[1]})">Blue</button>
+	</div>
+    </div>
+</script>
 
 <div class="container" ng-controller="LedsCtrl">
 
-    <!-- Block odd from 1 to 20. Sorry guys -->
     <div class="row">
-    <div class="block col-xs-1" ng-repeat="led_state in leds_state track by $index"
-        ng-if="$index<20 && $index%2==0">
-        <button type="button" class="col-xs-12 btn btn-default"
-                ng-class="led_state.red ? 'led-red' : 'led-off'"
-            ng-click="led_switch(led_state, $index, 0)">
-            Red
-        </button>
-        <br/><div class="col-xs-12"><center>{{$index + 1}}</center></div>
-        <button type="button" class="col-xs-12 btn btn-default"
-                ng-class="led_state.blue ? 'led-blue' : 'led-off'"
-            ng-click="led_switch(led_state, $index, 1)">
-            Blue
-        </button>
-    </div>
-    </div>
-
-    <!-- Block even from 1 to 20 -->
-    <div class="row">
-    <div class="block col-xs-1" ng-repeat="led_state in leds_state track by $index"
-        ng-if="$index<20 && $index%2==1">
-        <button type="button" class="col-xs-12 btn btn-default"
-                ng-class="led_state.red ? 'led-red' : 'led-off'"
-            ng-click="led_switch(led_state, $index, 0)">
-            Red
-        </button>
-        <br/><div class="col-xs-12"><center>{{$index + 1}}</center></div>
-        <button type="button" class="col-xs-12 btn btn-default"
-                ng-class="led_state.blue ? 'led-blue' : 'led-off'"
-            ng-click="led_switch(led_state, $index, 1)">
-            Blue
-        </button>
-    </div>
-    </div>
-
-    <!-- line -->
-    <hr>
-
-    <!-- Block odd from 21 to 40 -->
-    <div class="row">
-    <div class="block col-xs-1" ng-repeat="led_state in leds_state track by $index"
-        ng-if="$index>=20 && $index<40 && $index%2==0">
-        <button type="button" class="col-xs-12 btn btn-default"
-                ng-class="led_state.red ? 'led-red' : 'led-off'"
-            ng-click="led_switch(led_state, $index, 0)">
-            Red
-        </button>
-        <br/><div class="col-xs-12"><center>{{$index + 1}}</center></div>
-        <button type="button" class="col-xs-12 btn btn-default"
-                ng-class="led_state.blue ? 'led-blue' : 'led-off'"
-            ng-click="led_switch(led_state, $index, 1)">
-            Blue
-        </button>
-    </div>
-    </div>
-
-    <!-- Block even from 21 to 40 -->
-    <div class="row">
-    <div class="block col-xs-1" ng-repeat="led_state in leds_state track by $index"
-        ng-if="$index>=20 && $index<40 && $index%2==1">
-        <button type="button" class="col-xs-12 btn btn-default"
-                ng-class="led_state.red ? 'led-red' : 'led-off'"
-            ng-click="led_switch(led_state, $index, 0)">
-            Red
-        </button>
-        <br/><div class="col-xs-12"><center>{{$index + 1}}</center></div>
-        <button type="button" class="col-xs-12 btn btn-default"
-                ng-class="led_state.blue ? 'led-blue' : 'led-off'"
-            ng-click="led_switch(led_state, $index, 1)">
-            Blue
-        </button>
-    </div>
+	<div class="block-pair" ng-repeat="block_pair in leds_state">
+	    <block-template led-pair="block_pair[0]" led-switch="led_switch(led)"></block-template>
+	    <block-template led-pair="block_pair[1]" led-switch="led_switch(led)"></block-template>
+	    <hr>
+	</div>
     </div>
 
     <div class="row">
-    <!-- Refresh -->
-    <button type="button" class="btn btn-link" ng-click="update()">Refresh</button>
-    <!-- Save -->
-    <button type="button" class="btn btn-link" ng-click="save()">Save</button>
+	<!-- Refresh -->
+	<button type="button" class="btn btn-link" ng-click="update()">Refresh</button>
+	<!-- Save -->
+	<button type="button" class="btn btn-link" ng-click="save()">Save</button>
     </div>
 
 </div

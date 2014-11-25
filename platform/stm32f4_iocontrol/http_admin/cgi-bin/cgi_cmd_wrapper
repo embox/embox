@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo -ne "HTTP/1.1 200 OK\r\n"
 echo -ne "Content-Type: application/json\r\n"
@@ -7,7 +7,8 @@ echo -ne "\r\n"
 
 if [ $REQUEST_METHOD = "GET" ]; then
 	echo "Query: $QUERY_STRING" >&2
-	echo '[0, 1, 0, 1, 0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1,0, 1, 0, 1]'
+	STATES="0, 1"
+	echo [ $(printf "${STATES}, %.0s" {1..39}) $STATES ]
 elif [ $REQUEST_METHOD = "POST" ]; then
 	read -n $CONTENT_LENGTH POST_DATA
 	echo "Posted: $POST_DATA" >&2

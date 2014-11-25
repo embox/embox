@@ -1,4 +1,9 @@
 
+.led {
+  min-width: 100%;
+  padding: 6px 0px;
+}
+
 .led-off, .led-off:hover, .led-off:focus {
   color: #333;
   background-color: #fff;
@@ -17,10 +22,18 @@
   border-color: #d43f3a;
 }
 
-.block {
+.block-pair {
   float: left;
+  min-width: 10%;
+}
+
+.block {
   margin: 5px;
   border-radius: 6px;
   padding: 5px;
   background: #eee;
+}
+
+.block-caption {
+  text-align: center;
 }
