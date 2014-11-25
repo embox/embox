@@ -19,8 +19,7 @@
 // FIXME: for yet obscure reason despite limits.h is included, but these constants are not defined.
 //         No time for it now, let's figure out why later.
 #include <limits.h>
-//#define CHAR_MAX (127)
-//#define CHAR_MIN (-128)
+
 
 
 #if 1
@@ -40,22 +39,7 @@
 
 // it is not immediately apparent, but if we write "namespace std" it is changed to some other name
 namespace std {
-#if 0
-/* implemented now */
-	static inline char *asctime(const struct tm *tm) {
-		DPRINT();
-		time_t t = mktime((struct tm *)tm);
-		return ctime(&t);
-	}
-	static inline struct tm *localtime(const time_t *timep) {
-		DPRINT();
-		return gmtime(timep);
-	}
-	static inline int system(const char *command) {
-		DPRINT();
-		return -1;
-	}
-#endif
+
 	static inline double difftime(time_t time1, time_t time0) {
 		DPRINT();
 		return (double)(time1 - time0);
@@ -86,17 +70,12 @@ namespace std {
 		DPRINT();
 		return -1;
 	}
-//	extern int ecvt_r(double number, int ndigits, int *decpt,
-//	           int *sign, char *buf, size_t len);
-//
-//	extern int fcvt_r(double number, int ndigits, int *decpt,
-//	           int *sign, char *buf, size_t len);
+
+	//extern int setvbuf(FILE *stream, char *buf, int mode, size_t size);
+
+
 }
 
-
-/* implemented now
- * extern int nanosleep(const struct timespec *req, struct timespec *rem);
- */
 
 extern void clearerr(FILE *stream);
 

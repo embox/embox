@@ -20,7 +20,7 @@ namespace std {
 	using ::fopen;
 	using ::freopen;
 //	using ::setbuf;
-//	using ::setvbuf;
+	using ::setvbuf;
 	using ::fprintf;
 	using ::fscanf;
 	using ::printf;
