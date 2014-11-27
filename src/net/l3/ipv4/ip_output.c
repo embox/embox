@@ -306,11 +306,11 @@ static int ip_snd(struct sk_buff *skb) {
 	ip_set_id_field(skb->nh.iph, global_id++);
 	ip_set_check_field(skb->nh.iph);
 
-//	if (skb->len > skb->dev->mtu) {
-//		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
-//			return fragment_skb_and_send(skb, skb->dev);
-//		}
-//	}
+	if (skb->len > skb->dev->mtu) {
+		if (!(skb->nh.iph->frag_off & htons(IP_DF))) {
+			return fragment_skb_and_send(skb, skb->dev);
+		}
+	}
 
 	return ip_xmit(skb);
 }
