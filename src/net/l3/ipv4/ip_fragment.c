@@ -259,12 +259,17 @@ int ip_frag(const struct sk_buff *skb, uint32_t mtu,
 
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
+
+	skb_queue_init(tx_buf);
+	if (!IP_FRAGMENTED_SUPP) {
+		skb_queue_push(tx_buf, (struct sk_buff *) skb);
+		return 0;
+	}
+
 	offset = len = skb->dev->hdr_len + IP_HEADER_SIZE(skb->nh.iph);
 
 	/* Note: correct MTU, because fragment offset must divide on 8*/
 	align_MTU = mtu - (mtu - len) % 8;
-
-	skb_queue_init(tx_buf);
 
 	/* copy sk_buff without last fragment. All this fragments have size MTU */
 	while (offset < skb->len - align_MTU) {
