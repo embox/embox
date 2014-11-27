@@ -24,9 +24,18 @@ struct leddrv_pin_desc {
 	unsigned int pin; /**< pin mask */
 };
 
+#if 0
+#define LEDBLOCK_VER_PROTO
+#define LEDBLOCK_VER1_FORWARD
+#endif
+#define LEDBLOCK_VER1_MIRROR
+
+#if defined(LEDBLOCK_VER_PROTO)
 static const struct leddrv_pin_desc leddrv_clk =
 	{ .gpio = GPIOE, .pin = GPIO_Pin_7 };
+
 static const struct leddrv_pin_desc leddrv_datas[] = {
+	/* prototype register numeration */
 	{ .gpio = GPIOB, .pin = GPIO_Pin_14 },
 	{ .gpio = GPIOB, .pin = GPIO_Pin_15 },
 	{ .gpio = GPIOE, .pin = GPIO_Pin_15 },
@@ -38,13 +47,54 @@ static const struct leddrv_pin_desc leddrv_datas[] = {
 	{ .gpio = GPIOE, .pin = GPIO_Pin_9 },
 	{ .gpio = GPIOE, .pin = GPIO_Pin_8 },
 };
+#endif
+
+
+#if defined(LEDBLOCK_VER1_FORWARD)
+static const struct leddrv_pin_desc leddrv_clk =
+	{ .gpio = GPIOE, .pin = GPIO_Pin_7 };
+
+static const struct leddrv_pin_desc leddrv_datas[] = {
+	/* v1 register numeration, forward, wrong */
+	{ .gpio = GPIOE, .pin = GPIO_Pin_12 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_14 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_13 },
+	{ .gpio = GPIOB, .pin = GPIO_Pin_14 },
+	{ .gpio = GPIOB, .pin = GPIO_Pin_15 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_15 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_11 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_10 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_9 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_8 },
+};
+#endif
+
+#if defined(LEDBLOCK_VER1_MIRROR)
+static const struct leddrv_pin_desc leddrv_clk =
+	{ .gpio = GPIOE, .pin = GPIO_Pin_8 };
+
+static const struct leddrv_pin_desc leddrv_datas[] = {
+	/* prototype register numeration */
+	{ .gpio = GPIOE, .pin = GPIO_Pin_11 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_13 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_14 },
+	{ .gpio = GPIOB, .pin = GPIO_Pin_14 },
+	{ .gpio = GPIOD, .pin = GPIO_Pin_8 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_15 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_12 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_9 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_10 },
+	{ .gpio = GPIOE, .pin = GPIO_Pin_7 },
+};
+#endif
+
 static_assert(ARRAY_SIZE(leddrv_datas) == LINES_N);
 
 void leddrv_ll_init(void) {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
 	/* Enable GPIOs clocks */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE | RCC_AHB1Periph_GPIOB, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOE | RCC_AHB1Periph_GPIOB | RCC_AHB1Periph_GPIOD, ENABLE);
 
 	/* Base GPIOs config for output */
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
@@ -68,6 +118,10 @@ void leddrv_ll_init(void) {
 		GPIO_Pin_14 |
 		GPIO_Pin_15;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Pin = \
+		GPIO_Pin_8;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
 }
 
 static void leddrv_ll_shift_out(int led_in_line, unsigned char leds_state[LEDDRV_LED_N]) {
