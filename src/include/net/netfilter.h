@@ -12,7 +12,7 @@
 #include <net/l2/ethernet.h>
 #include <net/skbuff.h>
 #include <netinet/in.h>
-#include <util/list.h>
+#include <util/dlist.h>
 
 /**
  * Netfilter chains
@@ -68,7 +68,7 @@ typedef int (*nf_test_hnd)(const struct nf_rule *r,
 	typeof(type) name; char set_##name; char not_##name;
 
 struct nf_rule {
-	struct list_link lnk;
+	struct dlist_head lnk;
 	enum nf_target target;
 	NF_DECL_NOT_FIELD(hwaddr_src, char [ETH_ALEN]);
 	NF_DECL_NOT_FIELD(hwaddr_dst, char [ETH_ALEN]);
@@ -84,35 +84,35 @@ struct nf_rule {
 /**
  * Default chains
  */
-extern struct list nf_input_rules;
-extern struct list nf_forward_rules;
-extern struct list nf_output_rules;
+extern struct dlist_head nf_input_rules;
+extern struct dlist_head nf_forward_rules;
+extern struct dlist_head nf_output_rules;
 
 /**
  * Convertion between nf_chain and string
  */
 extern int nf_chain_get_by_name(const char *chain_name);
-extern const char * nf_chain_to_str(int chain);
+extern const char *nf_chain_to_str(int chain);
 
 /**
  * Convertion between nf_target and string
  */
 extern enum nf_target nf_target_get_by_name(const char *target_name);
-extern const char * nf_target_to_str(enum nf_target target);
+extern const char *nf_target_to_str(enum nf_target target);
 
 /**
  * Convertion between nf_proto and string
  */
 extern enum nf_proto nf_proto_get_by_name(const char *proto_name);
-extern const char * nf_proto_to_str(enum nf_proto proto);
+extern const char *nf_proto_to_str(enum nf_proto proto);
 
 /**
  * Netfilter getters/setters
  */
-extern struct list * nf_get_chain(int chain);
+extern struct dlist_head *nf_get_chain(int chain);
 extern enum nf_target nf_get_chain_target(int chain);
 extern int nf_set_chain_target(int chain, enum nf_target target);
-extern struct nf_rule * nf_get_rule_by_num(int chain, size_t r_num);
+extern struct nf_rule *nf_get_rule_by_num(int chain, size_t r_num);
 
 /**
  * Netfilter rule utility

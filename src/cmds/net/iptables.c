@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <util/list.h>
+#include <util/dlist.h>
 #include <net/netfilter.h>
 #include <string.h>
 
@@ -84,7 +84,7 @@ static void print_rule(const struct nf_rule *r) {
 }
 
 static void print_rules(int chain) {
-	struct list *rules;
+	struct dlist_head *rules;
 	struct nf_rule *r;
 
 	rules = nf_get_chain(chain);
@@ -93,7 +93,7 @@ static void print_rules(int chain) {
 	}
 
 	print_header(chain);
-	list_foreach(r, rules, lnk) {
+	dlist_foreach_entry(r, rules, lnk) {
 		print_rule(r);
 	}
 }

@@ -29,9 +29,9 @@ POOL_DEF(nf_rule_pool, struct nf_rule, MODOPS_NETFILTER_AMOUNT_RULES);
 /**
  * Default chains of rules
  */
-LIST_DEF(nf_input_rules);
-LIST_DEF(nf_forward_rules);
-LIST_DEF(nf_output_rules);
+DLIST_DEFINE(nf_input_rules);
+DLIST_DEFINE(nf_forward_rules);
+DLIST_DEFINE(nf_output_rules);
 
 /**
  * Default policy for chains
@@ -42,7 +42,7 @@ static enum nf_target nf_output_default_target = NF_TARGET_ACCEPT;
 
 static void free_rule(struct nf_rule *r) {
 	assert(r != NULL);
-	list_unlink_link(&r->lnk);
+	dlist_del_init(&r->lnk);
 	pool_free(&nf_rule_pool, r);
 }
 
@@ -64,7 +64,7 @@ int nf_chain_get_by_name(const char *chain_name) {
 	}
 }
 
-const char * nf_chain_to_str(int chain) {
+const char *nf_chain_to_str(int chain) {
 	switch (chain) {
 	default: return NULL;
 	case NF_CHAIN_INPUT: return "INPUT";
@@ -88,7 +88,7 @@ enum nf_target nf_target_get_by_name(const char *target_name) {
 	}
 }
 
-const char * nf_target_to_str(enum nf_target target) {
+const char *nf_target_to_str(enum nf_target target) {
 	switch (target) {
 	default: return NULL;
 	case NF_TARGET_DROP: return "DROP";
@@ -117,7 +117,7 @@ enum nf_proto nf_proto_get_by_name(const char *proto_name) {
 	}
 }
 
-const char * nf_proto_to_str(enum nf_proto proto) {
+const char *nf_proto_to_str(enum nf_proto proto) {
 	switch (proto) {
 	default: return NULL;
 	case NF_PROTO_ALL: return "all";
@@ -127,7 +127,7 @@ const char * nf_proto_to_str(enum nf_proto proto) {
 	}
 }
 
-struct list * nf_get_chain(int chain) {
+struct dlist_head *nf_get_chain(int chain) {
 	switch (chain) {
 	default: return NULL;
 	case NF_CHAIN_INPUT: return &nf_input_rules;
@@ -166,8 +166,8 @@ int nf_set_chain_target(int chain, enum nf_target target) {
 	return 0;
 }
 
-struct nf_rule * nf_get_rule_by_num(int chain, size_t r_num) {
-	struct list *rules;
+struct nf_rule *nf_get_rule_by_num(int chain, size_t r_num) {
+	struct dlist_head *rules;
 	size_t i;
 	struct nf_rule *r;
 
@@ -177,7 +177,7 @@ struct nf_rule * nf_get_rule_by_num(int chain, size_t r_num) {
 	}
 
 	i = 0;
-	list_foreach(r, rules, lnk) {
+	dlist_foreach_entry(r, rules, lnk) {
 		if (i == r_num) {
 			return r;
 		}
@@ -193,14 +193,14 @@ int nf_rule_init(struct nf_rule *r) {
 	}
 
 	memset(r, 0, sizeof *r);
-	list_link_init(&r->lnk);
+	dlist_head_init(&r->lnk);
 
 	return 0;
 }
 
 int nf_rule_copy(struct nf_rule *r_dst,
 		const struct nf_rule *r_src) {
-	struct list_link dst_link;
+	struct dlist_head dst_link;
 
 	if ((r_dst == NULL) || (r_src == NULL)) {
 		return -EINVAL;
@@ -214,8 +214,8 @@ int nf_rule_copy(struct nf_rule *r_dst,
 }
 
 static int nf_chain_rule_prepare(int chain, const struct nf_rule *r,
-		struct list **rules_p, struct nf_rule **new_r_p) {
-	struct list *rules;
+		struct dlist_head **rules_p, struct nf_rule **new_r_p) {
+	struct dlist_head *rules;
 	struct nf_rule *new_r;
 
 	rules = nf_get_chain(chain);
@@ -243,7 +243,7 @@ static int nf_chain_rule_prepare(int chain, const struct nf_rule *r,
 
 
 int nf_add_rule(int chain, const struct nf_rule *r) {
-	struct list *rules;
+	struct dlist_head *rules;
 	struct nf_rule *new_r;
 	int res;
 
@@ -252,13 +252,13 @@ int nf_add_rule(int chain, const struct nf_rule *r) {
 		return res;
 	}
 
-	list_add_last_link(&new_r->lnk, rules);
+	dlist_add_prev(&new_r->lnk, rules);
 
 	return 0;
 }
 
 int nf_insert_rule(int chain, const struct nf_rule *r, size_t num) {
-	struct list *rules;
+	struct dlist_head *rules;
 	struct nf_rule *new_r, *old_r;
 	int res;
 
@@ -269,9 +269,9 @@ int nf_insert_rule(int chain, const struct nf_rule *r, size_t num) {
 
 	old_r = nf_get_rule_by_num(chain, num);
 	if (!old_r) {
-		list_add_last_link(&new_r->lnk, rules);
+		dlist_add_prev(&new_r->lnk, rules);
 	} else {
-		list_insert_before_link(&new_r->lnk, &old_r->lnk);
+		dlist_add_prev(&new_r->lnk, &old_r->lnk);
 	}
 
 	return 0;
@@ -308,7 +308,7 @@ int nf_del_rule(int chain, size_t r_num) {
 }
 
 int nf_clear(int chain) {
-	struct list *rules;
+	struct dlist_head *rules;
 	struct nf_rule *r;
 
 	rules = nf_get_chain(chain);
@@ -316,7 +316,7 @@ int nf_clear(int chain) {
 		return -EINVAL;
 	}
 
-	list_foreach(r, rules, lnk) {
+	dlist_foreach_entry(r, rules, lnk) {
 		free_rule(r);
 	}
 
@@ -331,7 +331,7 @@ int nf_clear(int chain) {
 				!= !!r->not_##field))
 
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
-	struct list *rules;
+	struct dlist_head *rules;
 	struct nf_rule *r;
 
 	rules = nf_get_chain(chain);
@@ -343,7 +343,7 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 		return -EINVAL;
 	}
 
-	list_foreach(r, rules, lnk) {
+	dlist_foreach_entry(r, rules, lnk) {
 		if ((r->target != NF_TARGET_UNKNOWN)
 				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_src)
 				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_dst)
