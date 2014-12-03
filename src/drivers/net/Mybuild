@@ -40,7 +40,7 @@ module ti816x {
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
-	depends embox.util.List
+	depends embox.util.DList
 }
 
 module e1000 {

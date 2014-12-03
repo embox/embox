@@ -63,7 +63,7 @@ package embox.cmd.net
 module iptables {
 	source "iptables.c"
 
-	depends embox.util.List
+	depends embox.util.DList
 	depends embox.net.netfilter
 	depends embox.compat.libc.LibC
 	depends embox.framework.LibFramework

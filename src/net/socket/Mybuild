@@ -8,7 +8,7 @@ module raw_sock {
 	depends embox.compat.libc.LibCString
 	depends embox.net.skbuff
 	depends embox.net.sock
-	depends embox.util.List
+	depends embox.util.DList
 }
 
 module tcp_sock {
@@ -31,7 +31,7 @@ module udp_sock {
 	depends embox.compat.libc.LibCString
 	depends embox.net.lib.udp
 	depends embox.util.indexator
-	depends embox.util.List
+	depends embox.util.DList
 }
 
 module af_inet {
