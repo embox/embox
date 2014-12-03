@@ -15,12 +15,12 @@
 #include <net/netdevice.h>
 #include <stddef.h>
 #include <string.h>
-#include <util/list.h>
+#include <util/dlist.h>
 
 #define MODOPS_AMOUNT_INTERFACE OPTION_GET(NUMBER, amount_interface)
 
 POOL_DEF(inetdev_pool, struct in_device, MODOPS_AMOUNT_INTERFACE);
-static LIST_DEF(inetdev_list);
+static DLIST_DEFINE(inetdev_list);
 
 int inetdev_register_dev(struct net_device *dev) {
 	int ret;
@@ -42,10 +42,10 @@ int inetdev_register_dev(struct net_device *dev) {
 	}
 
 	memset(in_dev, 0, sizeof *in_dev);
-	list_link_init(&in_dev->lnk);
+	dlist_head_init(&in_dev->lnk);
 	in_dev->dev = dev;
 
-	list_add_last_element(in_dev, &inetdev_list, lnk);
+	dlist_add_prev_entry(in_dev, &inetdev_list, lnk);
 
 	return 0;
 }
@@ -69,7 +69,7 @@ int inetdev_unregister_dev(struct net_device *dev) {
 		return ret;
 	}
 
-	list_unlink_element(in_dev, lnk);
+	dlist_del_init_entry(in_dev, lnk);
 	pool_free(&inetdev_pool, in_dev);
 
 	return 0;
@@ -82,7 +82,7 @@ struct in_device * inetdev_get_by_name(const char *name) {
 		return NULL; /* error: invalid name */
 	}
 
-	list_foreach(in_dev, &inetdev_list, lnk) {
+	dlist_foreach_entry(in_dev, &inetdev_list, lnk) {
 		assert(in_dev->dev != NULL);
 		if (strcmp(name, &in_dev->dev->name[0]) == 0) {
 			return in_dev;
@@ -103,7 +103,7 @@ struct in_device * inetdev_get_by_dev(struct net_device *dev) {
 struct in_device * inetdev_get_by_addr(in_addr_t addr) {
 	struct in_device *in_dev;
 
-	list_foreach(in_dev, &inetdev_list, lnk) {
+	dlist_foreach_entry(in_dev, &inetdev_list, lnk) {
 		if (in_dev->ifa_address == addr) {
 			return in_dev;
 		}
@@ -156,7 +156,7 @@ in_addr_t inetdev_get_addr(struct in_device *in_dev) {
 }
 
 struct in_device * inetdev_get_first(void) {
-	return list_first_element(&inetdev_list, struct in_device, lnk);
+	return dlist_prev_entry_or_null(&inetdev_list, struct in_device, lnk);
 }
 
 struct in_device * inetdev_get_next(struct in_device *in_dev) {
@@ -164,12 +164,12 @@ struct in_device * inetdev_get_next(struct in_device *in_dev) {
 		return NULL; /* error: invalid argument */
 	}
 
-	if (in_dev == list_last_element(&inetdev_list,
+	if (in_dev == dlist_last_entry(&inetdev_list,
 				struct in_device, lnk)) {
 		return NULL; /* error: there are no more devices */
 	}
 
-	return list_element(in_dev->lnk.next, struct in_device, lnk);
+	return dlist_entry(in_dev->lnk.next, struct in_device, lnk);
 }
 
 #include <linux/in.h>
@@ -189,7 +189,7 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast,
 		return true;
 	}
 
-	list_foreach(in_dev, &inetdev_list, lnk) {
+	dlist_foreach_entry(in_dev, &inetdev_list, lnk) {
 		if (in_dev->ifa_address == addr) {
 			return true;
 		}

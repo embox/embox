@@ -12,7 +12,7 @@
 
 #include <net/netdevice.h>
 #include <netinet/in.h>
-#include <util/list.h>
+#include <util/dlist.h>
 
 struct net_device;
 
@@ -20,7 +20,7 @@ struct net_device;
  * structute of inet(IP) device
  */
 typedef struct in_device {
-	struct list_link lnk;
+	struct dlist_head lnk;
 	struct net_device *dev;
 
 	in_addr_t ifa_address;
