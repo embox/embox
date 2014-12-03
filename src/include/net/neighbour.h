@@ -11,13 +11,13 @@
 
 #include <net/netdevice.h>
 #include <time.h>
-#include <util/list.h>
+#include <util/dlist.h>
 
 /**
  * Neighbour entity
  */
 struct neighbour {
-	struct list_link lnk;              /* lnk */
+	struct dlist_head lnk;             /* lnk */
 	unsigned short ptype;              /* protocol */
 	unsigned char paddr[MAX_ADDR_LEN]; /* protocol address */
 	unsigned char plen;                /* protocol address len  */

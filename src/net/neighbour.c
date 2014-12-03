@@ -12,7 +12,7 @@
 #include <mem/misc/pool.h>
 #include <string.h>
 #include <time.h>
-#include <util/list.h>
+#include <util/dlist.h>
 #include <util/array.h>
 #include <sys/time.h>
 #include <kernel/time/ktime.h>
@@ -39,7 +39,7 @@
 EMBOX_UNIT_INIT(neighbour_init);
 
 POOL_DEF(neighbour_pool, struct neighbour, MODOPS_NEIGHBOUR_AMOUNT);
-static LIST_DEF(neighbour_list);
+static DLIST_DEFINE(neighbour_list);
 static struct sys_timer neighbour_tmr;
 
 static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
@@ -59,7 +59,7 @@ static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
 static void nbr_free(struct neighbour *nbr) {
 	assert(nbr != NULL);
 
-	list_unlink_element(nbr, lnk);
+	dlist_del_init_entry(nbr, lnk);
 	skb_queue_purge(&nbr->w_queue);
 	pool_free(&neighbour_pool, nbr);
 }
@@ -71,7 +71,7 @@ static struct neighbour * nbr_lookup_by_paddr(unsigned short ptype,
 	assert(paddr != NULL);
 	assert(dev != NULL);
 
-	list_foreach(nbr, &neighbour_list, lnk) {
+	dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 		if ((nbr->ptype == ptype)
 				&& (0 == memcmp(&nbr->paddr[0], paddr, nbr->plen))
 				&& (nbr->dev == dev)) {
@@ -89,7 +89,7 @@ static struct neighbour * nbr_lookup_by_haddr(unsigned short htype,
 	assert(haddr != NULL);
 	assert(dev != NULL);
 
-	list_foreach(nbr, &neighbour_list, lnk) {
+	dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 		if ((nbr->htype == htype)
 				&& (0 == memcmp(&nbr->haddr[0], haddr, nbr->hlen))
 				&& (nbr->dev == dev)) {
@@ -222,7 +222,7 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 		nbr_flush_w_queue(nbr);
 	}
 	else {
-		list_link_init(&nbr->lnk);
+		dlist_head_init(&nbr->lnk);
 		nbr->ptype = ptype;
 		memcpy(nbr->paddr, paddr, plen);
 		nbr->plen = plen;
@@ -231,7 +231,7 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 
 		softirq_lock();
 		{
-			list_add_last_element(nbr, &neighbour_list, lnk);
+			dlist_add_prev_entry(nbr, &neighbour_list, lnk);
 		}
 		softirq_unlock();
 	}
@@ -335,7 +335,7 @@ int neighbour_clean(struct net_device *dev) {
 
 	softirq_lock();
 	{
-		list_foreach(nbr, &neighbour_list, lnk) {
+		dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 			if ((nbr->dev == dev) || (dev == NULL)) {
 				nbr_free(nbr);
 			}
@@ -356,7 +356,7 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 
 	softirq_lock();
 	{
-		list_foreach(nbr, &neighbour_list, lnk) {
+		dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 			softirq_unlock();
 			ret = (*func)(nbr, args);
 			softirq_lock();
@@ -393,7 +393,7 @@ int neighbour_send_after_resolve(unsigned short ptype,
 				skb_free(skb);
 				return -ENOMEM;
 			}
-			list_link_init(&nbr->lnk);
+			dlist_head_init(&nbr->lnk);
 			nbr->ptype = ptype;
 			memcpy(nbr->paddr, paddr, plen);
 			nbr->plen = plen;
@@ -405,7 +405,7 @@ int neighbour_send_after_resolve(unsigned short ptype,
 			skb_queue_init(&nbr->w_queue);
 			nbr->expire = MODOPS_NEIGHBOUR_EXPIRE;
 
-			list_add_last_element(nbr, &neighbour_list, lnk);
+			dlist_add_prev_entry(nbr, &neighbour_list, lnk);
 
 			allocated = 1;
 		}
@@ -440,7 +440,7 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 
 	softirq_lock();
 	{
-		list_foreach(nbr, &neighbour_list, lnk) {
+		dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 			if (nbr->flags & NEIGHBOUR_FLAG_PERMANENT) {
 				continue;
 			}
