@@ -80,7 +80,7 @@ static void compare(struct tree_link *root) {
 
 /** Returns the leftmost child of specified node. */
 static struct tree_link *get_left_child(struct tree_link *link) {
-	return list_element(list_first_link(&link->children), struct tree_link, list_link);
+	return dlist_entry(dlist_first(&link->children), struct tree_link, list_link);
 }
 
 /**

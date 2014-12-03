@@ -11,7 +11,7 @@
 
 #include <util/member.h>
 #include <util/macro.h>
-#include <util/list.h>
+#include <util/dlist.h>
 
 #define tree_element(link, element_type, link_member) \
 	(link == NULL ? NULL \
@@ -25,10 +25,10 @@ struct tree_link {
 	struct tree_link *par;
 
 	/** Children are represented as a list of nodes. */
-	struct list children;
+	struct dlist_head children;
 
 	/** List link inside of list of children. */
-	struct list_link list_link;
+	struct dlist_head list_link;
 };
 
 /**
