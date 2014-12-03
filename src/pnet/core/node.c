@@ -11,7 +11,6 @@
 #include <mem/objalloc.h>
 #include <assert.h>
 #include <string.h>
-#include <util/list.h>
 
 #include <pnet/core.h>
 

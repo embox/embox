@@ -35,20 +35,6 @@ static module SListNDebug extends SList {
 //	source "slist_impl.h"
 }
 
-@DefaultImpl(ListNDebug)
-abstract module List {
-
-}
-
-static module ListDebug extends List {
-	source "list_debug.h"
-	source "list_impl.h"
-}
-static module ListNDebug extends List {
-	source "list_ndebug.h"
-	//source "list_impl.h"
-}
-
 @DefaultImpl(DListDebug)
 abstract module DList {}
 
@@ -77,7 +63,6 @@ static module ring {
 
 static module LibUtil {
 //	source "slist_debug.c"
-//	source "list_debug.c"
 
 	depends sys_log
 	depends ring
@@ -86,7 +71,6 @@ static module LibUtil {
 	depends Array
 	depends DList
 	depends SList
-	depends List
 	depends Bit
 }
 

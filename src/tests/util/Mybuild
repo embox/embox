@@ -19,13 +19,6 @@ module bitmap_test {
 	depends embox.framework.LibFramework
 }
 
-module list_test {
-	source "list_test.c"
-
-	depends embox.compat.libc.LibC
-	depends embox.framework.LibFramework
-}
-
 module slist_test {
 	source "slist_test.c"
 
