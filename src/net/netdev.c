@@ -20,7 +20,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <util/hashtable.h>
-#include <util/list.h>
+#include <util/dlist.h>
 #include <util/indexator.h>
 
 #define MODOPS_NETDEV_QUANTITY OPTION_GET(NUMBER, netdev_quantity)
@@ -39,7 +39,7 @@ static int netdev_init(struct net_device *dev, const char *name,
 	assert(name != NULL);
 	assert(setup != NULL);
 
-	list_link_init(&dev->rx_lnk);
+	dlist_head_init(&dev->rx_lnk);
 	strcpy(&dev->name[0], name);
 	memset(&dev->stats, 0, sizeof dev->stats);
 	skb_queue_init(&dev->dev_queue);
@@ -88,7 +88,7 @@ struct net_device * netdev_alloc(const char *name,
 
 void netdev_free(struct net_device *dev) {
 	if (dev != NULL) {
-		list_unlink_link(&dev->rx_lnk);
+		dlist_del_init(&dev->rx_lnk);
 		skb_queue_purge(&dev->dev_queue);
 		sysfree(dev->priv);
 		index_free(&netdev_index, dev->index);

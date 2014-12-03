@@ -15,7 +15,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
-#include <util/list.h>
+#include <util/dlist.h>
 #include <net/l0/net_rx.h>
 #include <embox/unit.h>
 
@@ -25,7 +25,7 @@
 
 EMBOX_UNIT_INIT(net_entry_init);
 
-static LIST_DEF(netif_rx_list);
+static DLIST_DEFINE(netif_rx_list);
 
 static struct lthread *netif_rx_irq_handler;
 
@@ -36,8 +36,8 @@ static void netif_rx_queued(struct net_device *dev) {
 
 	sp = ipl_save();
 	{
-		if (list_alone_link(&dev->rx_lnk)) {
-			list_add_last_link(&dev->rx_lnk, &netif_rx_list);
+		if (dlist_empty(&dev->rx_lnk)) {
+			dlist_add_prev(&dev->rx_lnk, &netif_rx_list);
 		}
 	}
 	ipl_restore(sp);
@@ -50,8 +50,8 @@ static void netif_rx_dequeued(struct net_device *dev) {
 
 	sp = ipl_save();
 	{
-		assert(!list_alone_link(&dev->rx_lnk));
-		list_unlink_link(&dev->rx_lnk);
+		assert(!dlist_empty(&dev->rx_lnk));
+		dlist_del_init(&dev->rx_lnk);
 	}
 	ipl_restore(sp);
 }
@@ -67,7 +67,7 @@ static void netif_poll(struct net_device *dev) {
 static void *netif_rx_action(void *data) {
 	struct net_device *dev;
 
-	list_foreach(dev, &netif_rx_list, rx_lnk) {
+	dlist_foreach_entry(dev, &netif_rx_list, rx_lnk) {
 		netif_poll(dev);
 		netif_rx_dequeued(dev);
 	}

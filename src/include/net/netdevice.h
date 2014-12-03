@@ -16,7 +16,7 @@
 //#include <arpa/inet.h>
 
 #include <net/skbuff.h>
-#include <util/list.h>
+#include <util/dlist.h>
 
 //#include <util/hashtable.h>
 
@@ -110,7 +110,7 @@ typedef struct net_device_ops {
  * structure of net device
  */
 typedef struct net_device {
-	struct list_link rx_lnk;
+	struct dlist_head rx_lnk;
 	int index;
 	char name[IFNAMSIZ]; /**< Name of the interface.  */
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
