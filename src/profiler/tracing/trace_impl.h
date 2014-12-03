@@ -17,7 +17,6 @@
 
 #include <util/array.h>
 #include <util/location.h>
-#include <util/list.h>
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>

@@ -18,7 +18,6 @@
 #include <util/array.h>
 #include <util/location.h>
 #include <util/hashtable.h>
-#include <util/list.h>
 
 #include <mem/misc/pool.h>
 
