@@ -150,12 +150,66 @@ static inline struct dlist_head *dlist_prev(const struct dlist_head *list) {
  *
  * Get next/prev element of a non-empty list casted to a given type.
  */
-
 #define dlist_next_entry(list, type, member) \
 	mcast_out(dlist_next(list), type, member)
 
 #define dlist_prev_entry(list, type, member) \
 	mcast_out(dlist_prev(list), type, member)
+
+/**
+ * @def dlist_del_init_entry()
+ *
+ * TODO
+ *
+ */
+#define dlist_del_init_entry(element, link_member) \
+		dlist_del_init(member_cast_in(element, link_member))
+
+/**
+ * @def dlist_empty_entry()
+ *
+ * TODO
+ *
+ */
+#define dlist_empty_entry(element, link_member) \
+	dlist_empty(member_cast_in(element, link_member))
+
+/**
+ * @def dlist_prev_entry_or_null()
+ * @def dlist_next_entry_or_null()
+ *
+ * TODO
+ *
+ */
+#define dlist_prev_entry_or_null(list, element_type, link_member) \
+	member_cast_out_or_null(dlist_prev(list), element_type, link_member)
+
+#define dlist_next_entry_or_null(list, element_type, link_member) \
+	member_cast_out_or_null(dlist_next(list), element_type, link_member)
+
+/**
+ * @def dlist_next_if_not_last()
+ * @def dlist_next_entry_if_not_last()
+ *
+ * TODO
+ *
+ */
+#define dlist_next_if_not_last(link, list) \
+	(link != dlist_prev(list) ? link->next : NULL)
+
+#define dlist_next_entry_if_not_last(element, list, element_type, link_member) \
+	member_cast_out_or_null(dlist_next_if_not_last(member_cast_in(element, \
+	link_member), list), element_type, link_member)
+
+/**
+ * @def dlist_add_prev_entry()
+ * @def dlist_add_next_entry() TODO
+ *
+ * TODO
+ *
+ */
+#define dlist_add_prev_entry(element, list, link_member) \
+	dlist_add_prev(member_cast_in(element, link_member), list)
 
 /**
  * @fn dlist_first()
