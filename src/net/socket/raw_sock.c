@@ -20,7 +20,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <util/list.h>
+#include <util/dlist.h>
 
 static const struct sock_proto_ops raw_sock_ops_struct;
 const struct sock_proto_ops *const raw_sock_ops
@@ -167,7 +167,7 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return sk->o_ops->snd_pack(skb);
 }
 
-static LIST_DEF(raw_sock_list);
+static DLIST_DEFINE(raw_sock_list);
 
 static const struct sock_proto_ops raw_sock_ops_struct = {
 	.sendmsg   = raw_sendmsg,

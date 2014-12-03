@@ -6,7 +6,7 @@
  */
 
 #include <net/sock.h>
-#include <util/list.h>
+#include <util/dlist.h>
 #include <arpa/inet.h>
 #include <hal/ipl.h>
 
@@ -15,20 +15,20 @@ struct sock * sock_iter(const struct sock_proto_ops *p_ops) {
 		return NULL; /* error: invalid argument */
 	}
 
-	return list_first_element(p_ops->sock_list, struct sock, lnk);
+	return !dlist_empty(p_ops->sock_list) ? dlist_first_entry(p_ops->sock_list, struct sock, lnk) : NULL;
 }
 
 struct sock * sock_next(const struct sock *sk) {
 	if (sk == NULL) {
 		return NULL; /* error: invalid argument */
 	}
-	else if (list_alone_element(sk, lnk)) {
+	else if (dlist_empty_entry(sk, lnk)) {
 		return NULL; /* error: not hashed */
 	}
 
 	assert(sk->p_ops != NULL);
 
-	return list_next_element(sk, sk->p_ops->sock_list,
+	return dlist_next_entry_if_not_last(sk, sk->p_ops->sock_list,
 			struct sock, lnk);
 }
 

@@ -529,7 +529,7 @@ static int tcp_setsockopt(struct sock *sk, int level, int optname,
 }
 
 POOL_DEF(tcp_sock_pool, struct tcp_sock, MODOPS_AMOUNT_TCP_SOCK);
-static LIST_DEF(tcp_sock_list);
+static DLIST_DEFINE(tcp_sock_list);
 
 static const struct sock_proto_ops tcp_sock_ops_struct = {
 	.init       = tcp_init,

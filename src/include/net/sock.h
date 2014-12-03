@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <util/list.h>
+#include <util/dlist.h>
 
 #include <fs/idesc.h>
 #include <net/socket/sock_xattr.h>
@@ -73,7 +73,7 @@ struct sock_opt {
 struct sock {
 	struct idesc idesc;
 	struct sock_xattr sock_xattr;
-	struct list_link lnk;
+	struct dlist_head lnk;
 	enum sock_state state;
 	struct sock_opt opt;
 	struct sk_buff_head rx_queue;
@@ -145,7 +145,7 @@ struct sock_proto_ops {
 			const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
 	struct pool *sock_pool;
-	struct list *sock_list;
+	struct dlist_head *sock_list;
 };
 
 /* Base class for protocol sockets */
@@ -221,7 +221,7 @@ extern int sock_addr_alloc_port(const struct sock_proto_ops *p_ops,
 		const struct sockaddr *addr, socklen_t addrlen);
 
 #define sock_foreach(sk, p_ops) \
-	list_foreach(sk, p_ops->sock_list, lnk)
+	dlist_foreach_entry(sk, p_ops->sock_list, lnk)
 
 /**
  * AF_INET/AF_INET6 socket functions

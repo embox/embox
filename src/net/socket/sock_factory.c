@@ -114,7 +114,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	assert(f_ops != NULL);
 	assert(p_ops != NULL);
 
-	list_link_init(&sk->lnk);
+	dlist_head_init(&sk->lnk);
 	sock_opt_init(&sk->opt, family, type, protocol);
 	skb_queue_init(&sk->rx_queue);
 	skb_queue_init(&sk->tx_queue);
