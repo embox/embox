@@ -168,7 +168,7 @@ static int change_mode_recursive(struct path *node_path, int is_recursive,
 	child = *node_path;
 	if_mounted_follow_down(&child);
 
-	list_foreach(link, &child.node->tree_link.children, list_link) {
+	dlist_foreach_entry(link, &child.node->tree_link.children, list_link) {
 		child.node = tree_element(link, node_t, tree_link);
 		change_mode(&child, is_recursive, modes, count);
 	}
