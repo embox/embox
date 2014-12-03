@@ -5,10 +5,6 @@ package embox.util
    So it's safe and natural to have it static
 */
 
-static module Prioq {
-	source "prioq_impl.h"
-}
-
 static module priolist {
 	source "priolist.c"
 }
@@ -83,13 +79,10 @@ static module LibUtil {
 //	source "slist_debug.c"
 //	source "list_debug.c"
 
-	source "priority_q.c"
-
 	depends sys_log
 	depends ring
 	depends tree
 
-	depends Prioq
 	depends Array
 	depends DList
 	depends SList

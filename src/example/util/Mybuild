@@ -1,13 +1,5 @@
 package embox.example.util
 
-module priority_q {
-	source "priority_q.c"
-
-	depends embox.util.LibUtil
-	depends embox.compat.libc.LibC
-	depends embox.framework.example
-}
-
 module readline {
 	source "readline.c"
 
