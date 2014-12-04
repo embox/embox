@@ -19,11 +19,32 @@ OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE    := $(CROSS_COMPILE)size
 
+comma_sep_list = $(subst $(\s),$(,),$(strip $1))
+
 COVERAGE_CFLAGS ?= -finstrument-functions \
-		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
+   -finstrument-functions-exclude-function-list=$(call comma_sep_list, \
+			symbol_lookup \
+			__cyg_profile_func_enter \
+			__cyg_profile_func_exit \
+			bitmap_set_bit)
 
 PROFILING_CFLAGS ?= -finstrument-functions \
-		   -finstrument-functions-exclude-function-list=__cyg_profile_func_enter,__cyg_profile_func_exit,cyg_tracing_profiler_enter,cyg_tracing_profiler_exit,__coverage_func_enter,__coverage_func_exit,trace_block_func_enter,trace_block_func_exit,get_trace_block_hash,cmp_trace_blocks,trace_block_enter,trace_block_leave,__tracepoint_handle,get_profiling_mode,set_profiling_mode\
+   -finstrument-functions-exclude-function-list=$(call comma_sep_list, \
+			__cyg_profile_func_enter \
+			__cyg_profile_func_exit \
+			cyg_tracing_profiler_enter \
+			cyg_tracing_profiler_exit \
+			__coverage_func_enter \
+			__coverage_func_exit \
+			trace_block_func_enter \
+			trace_block_func_exit \
+			get_trace_block_hash \
+			cmp_trace_blocks \
+			trace_block_enter \
+			trace_block_leave \
+			__tracepoint_handle \
+			get_profiling_mode \
+			set_profiling_mode)
 
 EXTERNAL_MAKE = \
 	$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
@@ -105,22 +126,29 @@ endif
 
 # Expand user defined flags and append them after default ones.
 
-__srcgen_includes_fn = $(addprefix $1$(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
-__srcgen_includes := $(call __srcgen_includes_fn,)
+__srcgen_includes_fn = \
+	$(addprefix $1$(SRCGEN_DIR)/, \
+		src/include \
+		src/arch/$(ARCH)/include)
+__srcgen_includes := $(call __srcgen_includes_fn,id)
 $(and $(shell $(MKDIR) $(__srcgen_includes)),)
 
 cppflags_fn = \
 	-U__linux__ -Ulinux -U__linux \
 	-D__EMBOX__ \
 	-D__unix \
-	-D"__impl_x(path)=<../path>"\
-	-imacros $1$(AUTOCONF_DIR)/config.h\
-	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\
-	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
-	$(call __srcgen_includes_fn,-I$1) \
-	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
-	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include -I$1$(SRC_DIR)/compat/libc/include\
-	-nostdinc\
+	-D"__impl_x(path)=<../path>" \
+	-imacros $1$(AUTOCONF_DIR)/config.h \
+	-I$1$(SRC_DIR)/include \
+	-I$1$(SRC_DIR)/arch/$(ARCH)/include \
+	-I$1$(SRCGEN_DIR)/include \
+	-I$1$(SRCGEN_DIR)/src/include \
+	$(addprefix -I,$(call __srcgen_includes_fn,$1)) \
+	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include) \
+	-I$1$(SRC_DIR)/compat/linux/include \
+	-I$1$(SRC_DIR)/compat/posix/include \
+	-I$1$(SRC_DIR)/compat/libc/include \
+	-nostdinc \
 	-MMD -MP# -MT $@ -MF $(@:.o=.d)
 
 # Preprocessor flags
