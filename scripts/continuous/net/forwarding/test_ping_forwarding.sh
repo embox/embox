@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ue
+set -u
 
 ROOT_DIR=.
 BASE_DIR=$ROOT_DIR
