@@ -18,6 +18,7 @@
 #include <net/l4/tcp.h>
 #include <net/lib/tcp.h>
 #include <net/l3/ipv4/ip.h>
+#include <net/l2/ethernet.h>
 #include <net/sock.h>
 
 #include <kernel/time/time.h>
@@ -49,6 +50,9 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1,
 		tcp_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
 		tcp_sock_ops_struct);
+
+#define MAX_HEADER_SIZE    (IP_MIN_HEADER_SIZE + IP_MAX_OPTLEN + \
+		TCP_MIN_HEADER_SIZE + ETH_HEADER_SIZE + 128 /* 128 is max size of tcp options length */)
 
 
 /************************ Socket's functions ***************************/
@@ -376,7 +380,9 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 	int ret;
 
 	while (len != 0) {
-		bytes = len; /* try to send wholly msg */
+		/* Previous comment: try to send wholly msg
+		 * We must pass no more than 64k bytes to underlaying IP level */
+		bytes = min(len, IP_MAX_PACKET_LEN - MAX_HEADER_SIZE);
 		skb = NULL; /* alloc new pkg */
 
 		ret = alloc_prep_skb(tcp_sk, 0, &bytes, &skb);

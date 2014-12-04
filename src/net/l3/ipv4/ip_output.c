@@ -265,10 +265,12 @@ static int ip_make(const struct sock *sk,
 		return -EMSGSIZE;
 	}
 
+#if 0
 	/* TODO ip fragmentation accepts packets size <= 64 KB,
 	 * so it would be something like this:
 	 * *data_size = min(*data_size, 64000 - hdr_size); */
 	*data_size = min(*data_size, max_size - hdr_size);
+#endif
 
 	skb = skb_realloc(hdr_size + *data_size, *out_skb);
 	if (skb == NULL) {
