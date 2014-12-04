@@ -1,4 +1,6 @@
 
+include mk/core/common.mk
+
 CFLAGS ?=
 CXXFLAGS ?=
 CPPFLAGS ?=
@@ -127,7 +129,7 @@ endif
 # Expand user defined flags and append them after default ones.
 
 __srcgen_includes_fn = \
-	$(addprefix $1$(SRCGEN_DIR)/, \
+	$(addprefix $(call $1,$(SRCGEN_DIR))/, \
 		src/include \
 		src/arch/$(ARCH)/include)
 __srcgen_includes := $(call __srcgen_includes_fn,id)
@@ -138,23 +140,23 @@ cppflags_fn = \
 	-D__EMBOX__ \
 	-D__unix \
 	-D"__impl_x(path)=<../path>" \
-	-imacros $1$(AUTOCONF_DIR)/config.h \
-	-I$1$(SRC_DIR)/include \
-	-I$1$(SRC_DIR)/arch/$(ARCH)/include \
-	-I$1$(SRCGEN_DIR)/include \
-	-I$1$(SRCGEN_DIR)/src/include \
+	-imacros $(call $1,$(AUTOCONF_DIR))/config.h \
+	-I$(call $1,$(SRC_DIR))/include \
+	-I$(call $1,$(SRC_DIR))/arch/$(ARCH)/include \
+	-I$(call $1,$(SRCGEN_DIR))/include \
+	-I$(call $1,$(SRCGEN_DIR))/src/include \
 	$(addprefix -I,$(call __srcgen_includes_fn,$1)) \
-	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include) \
-	-I$1$(SRC_DIR)/compat/linux/include \
-	-I$1$(SRC_DIR)/compat/posix/include \
-	-I$1$(SRC_DIR)/compat/libc/include \
+	$(if $(value PLATFORM),-I$(call $1,$(PLATFORM_DIR))/$(PLATFORM)/include) \
+	-I$(call $1,$(SRC_DIR))/compat/linux/include \
+	-I$(call $1,$(SRC_DIR))/compat/posix/include \
+	-I$(call $1,$(SRC_DIR))/compat/libc/include \
 	-nostdinc \
 	-MMD -MP# -MT $@ -MF $(@:.o=.d)
 
 # Preprocessor flags
 cppflags := $(CPPFLAGS)
-override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
-EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(abspath $(ROOT_DIR))/)
+override CPPFLAGS  = $(call cppflags_fn,id) $(cppflags)
+EMBOX_EXPORT_CPPFLAGS = $(call cppflags_fn,abspath)
 
 override COMMON_FLAGS := -pipe
 debug_prefix_map_supported:=$(shell $(CPP) /dev/zero --debug-prefix-map=./= 2>/dev/null && echo true)
