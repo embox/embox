@@ -6,6 +6,7 @@
 			"folder_exclude_patterns": [
 				"build/base/bin",
 				"build/base/obj",
+				"mk/.cache",
 				".*"
 			],
 			"file_exclude_patterns": [".*"]
