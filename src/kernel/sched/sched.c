@@ -65,11 +65,6 @@ int sched_init(struct schedee *current) {
 	runq_init(&rq.queue);
 	rq.lock = SPIN_UNLOCKED;
 
-#if 0
-	assert(idle->waiting); // XXX
-	sched_wakeup(idle);
-#endif
-
 	sched_set_current(current);
 
 	sched_ticker_init();
