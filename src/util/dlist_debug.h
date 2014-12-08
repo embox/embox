@@ -70,8 +70,7 @@ static inline int __is_linked(struct dlist_head *head) {
  */
 static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
 	head->next = head->prev = head;
-	//FIXME
-	//head->poison = ~(uintptr_t) head;
+	head->poison = ~(uintptr_t) head;
 	head->list_id = NULL; /* mark it's not in a list */
 
 	return head;
@@ -87,8 +86,7 @@ static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
  */
 static inline struct dlist_head *dlist_init(struct dlist_head *head) {
 	head->next = head->prev = head; /* closure list */
-	//FIXME
-	//head->poison = ~(uintptr_t) head;
+	head->poison = ~(uintptr_t) head;
 	head->list_id = head; /* mark it's in a list and this head is list entry */
 
 	return head;

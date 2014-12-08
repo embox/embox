@@ -444,13 +444,16 @@ int ksetsockopt(struct sock *sk, int level, int optname,
 		case SO_PROTOCOL:
 		case SO_TYPE:
 			return -EINVAL;
+		case SO_BINDTODEVICE:
+		{
+			struct net_device *dev = netdev_get_by_name(optval);
+			if (dev == NULL) {
+				return -ENODEV;
+			}
+			sk->opt.so_bindtodevice = dev;
+			return 0;
+		}
 		CASE_SETSOCKOPT(SO_REUSEADDR, so_reuseaddr, );
-		CASE_SETSOCKOPT(SO_BINDTODEVICE, so_bindtodevice,
-				optval = netdev_get_by_name(optval);
-				if (optval == NULL) {
-					return -ENODEV;
-				}
-				optlen = sizeof optval);
 		CASE_SETSOCKOPT(SO_BROADCAST, so_broadcast, );
 		CASE_SETSOCKOPT(SO_DONTROUTE, so_dontroute, );
 		CASE_SETSOCKOPT(SO_LINGER, so_linger, );
