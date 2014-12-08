@@ -8,6 +8,7 @@
 #define KERNEL_LTHREAD_PRIORITY_H_
 
 #include <kernel/sched/sched_priority.h>
+#include <kernel/lthread/lthread.h>
 
 #define LTHREAD_PRIORITY_MIN SCHED_PRIORITY_MIN
 #define LTHREAD_PRIORITY_MAX SCHED_PRIORITY_MAX

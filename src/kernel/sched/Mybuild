@@ -1,34 +1,26 @@
 package embox.kernel.sched
 
 module sched {
-	option boolean light_idle=false
 	source "sched_start.c"
-	depends embox.kernel.task.kernel_task
-	depends embox.kernel.lthread.lthread
-	depends embox.kernel.thread.core
+	depends idle
+	depends boot
 
 	source "sched.c"
 	depends embox.kernel.addr_space
 
 	source "sched_signal.c"
 
-	depends embox.arch.context /* context_switch */
-
 	depends schedee
 
-	depends embox.kernel.thread.signal.lock_api
-	depends embox.kernel.thread.signal_api
-	depends embox.compat.posix.util.time
+ 	depends embox.compat.posix.util.time
 	depends embox.kernel.critical
 	depends embox.profiler.trace
 
 	depends sched_ticker
 	depends wait_queue
 
-	//XXX kernel/thread.h included
-	depends embox.kernel.thread.thread_wait
-
 	depends embox.kernel.lthread.lthread_api
+
 	depends embox.kernel.sched.current.api
 }
 
@@ -70,4 +62,34 @@ module waitq_protect_link_store extends waitq_protect_link {
 module waitq_protect_link_thread_plugin extends embox.kernel.thread.thread_wait {
 	source "waitq_protect_link_thread_plugin.c"
 	source "waitq_protect_link_thread_plugin.h"
+}
+
+@DefaultImpl(idle_thread)
+abstract module idle { }
+
+module idle_thread extends idle {
+	source "idle_thread.c"
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.task.kernel_task
+}
+
+module idle_light extends idle {
+	source "idle_light.c"
+
+	depends embox.kernel.lthread.lthread
+}
+
+@DefaultImpl(boot_thread)
+abstract module boot { }
+
+module boot_thread extends boot {
+	source "boot_thread.c"
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.task.kernel_task
+}
+
+module boot_light extends boot {
+	source "boot_light.c"
 }
