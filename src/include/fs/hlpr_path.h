@@ -8,6 +8,8 @@
 #ifndef FS_HLPR_PATH_H_
 #define FS_HLPR_PATH_H_
 
+extern int path_is_double_dot(const char *path);
+
 /**
  * @brief Get stripped from leading '/' path and lenght of first node's name
  * For example,

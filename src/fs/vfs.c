@@ -339,8 +339,12 @@ struct node *vfs_subtree_lookup_childn(struct node *parent, const char *name,
 		size_t len) {
 	struct lookup_tuple lookup = { .name = name, .len = len };
 	struct tree_link *tlink;
+	struct node *ret;
 
 	assert(parent);
+
+	if (path_is_double_dot(name))
+		return (ret = __vfs_get_parent(parent)) ? ret : parent;
 
 	tlink = tree_lookup_child(&(parent->tree_link), vfs_lookup_cmp, &lookup);
 

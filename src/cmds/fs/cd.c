@@ -6,7 +6,6 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <errno.h>
 #include <framework/mod/options.h>
 #include <limits.h>
@@ -15,11 +14,9 @@
 #include <unistd.h>
 #include <util/array.h>
 
-EMBOX_CMD(exec);
-
 #define MODOPS_HOME_DIR OPTION_STRING_GET(home_dir)
 
-static int exec(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	char *dir, buff[PATH_MAX];
 
 	if (argc == 1) {
