@@ -9,6 +9,7 @@
 #define SCHED_TIMING_NONE_H_
 
 #include <sys/cdefs.h>
+#include <sys/types.h>
 
 struct sched_timing {
 	EMPTY_STRUCT_BODY
