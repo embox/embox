@@ -22,8 +22,6 @@
 
 EMBOX_TEST_SUITE("sched_wait_*_lthread test");
 
-#define LTHREAD_QUANTITY OPTION_GET(NUMBER, lthreads_quantity)
-
 static int done = 0, ready = 0;
 
 static void *sched_wait_timeout_run(void *arg) {
