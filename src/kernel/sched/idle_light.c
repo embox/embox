@@ -3,6 +3,8 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
 
+static struct lthread idle;
+
 static void *idle_run(void *arg) {
 	arch_idle();
 	sched_wakeup(schedee_get_current());
@@ -10,20 +12,16 @@ static void *idle_run(void *arg) {
 }
 
 int idle_thread_create(void) {
-	struct lthread *lt;
 
-	lt = lthread_create(idle_run, NULL);
-	if (0 != err(lt)) {
-		return err(lt);
-	}
+	lthread_init(&idle, idle_run, NULL);
 
-	sched_change_priority(&lt->schedee, SCHED_PRIORITY_MIN);
-#if 0 //XXX
+	sched_change_priority(&idle.schedee, SCHED_PRIORITY_MIN);
+#if 0 //XX
 	cpu_init(cpu_get_id(), t);
 #else
-	sched_affinity_set(&lt->schedee.affinity, 1 << cpu_get_id());
+	sched_affinity_set(&idle.schedee.affinity, 1 << cpu_get_id());
 #endif
-	lthread_launch(lt);
+	lthread_launch(&idle);
 
 	return 0;
 }

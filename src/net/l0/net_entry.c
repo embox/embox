@@ -27,7 +27,7 @@ EMBOX_UNIT_INIT(net_entry_init);
 
 static DLIST_DEFINE(netif_rx_list);
 
-static struct lthread *netif_rx_irq_handler;
+static struct lthread netif_rx_irq_handler;
 
 static void netif_rx_queued(struct net_device *dev) {
 	ipl_t sp;
@@ -87,7 +87,7 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 
 	netif_rx_queued(dev);
 
-	lthread_launch(netif_rx_irq_handler);
+	lthread_launch(&netif_rx_irq_handler);
 }
 
 int netif_rx(void *data) {
@@ -97,8 +97,7 @@ int netif_rx(void *data) {
 }
 
 static int net_entry_init(void) {
-	netif_rx_irq_handler = lthread_create(&netif_rx_action, NULL);
-	assert(!err(netif_rx_irq_handler));
-	lthread_priority_set(netif_rx_irq_handler, LTHREAD_PRIORITY_MAX);
+	lthread_init(&netif_rx_irq_handler, &netif_rx_action, NULL);
+	lthread_priority_set(&netif_rx_irq_handler, LTHREAD_PRIORITY_MAX);
 	return 0;
 }

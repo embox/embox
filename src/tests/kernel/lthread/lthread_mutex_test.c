@@ -18,7 +18,7 @@
 #include <kernel/lthread/sync/mutex.h>
 #include <kernel/thread/sync/mutex.h>
 
-static struct lthread *high;
+static struct lthread high;
 static struct thread *low;
 static struct mutex m;
 
@@ -36,7 +36,7 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	mutex_lock(&m);
 	test_emit('b');
-	lthread_launch(high);
+	lthread_launch(&high);
 	test_emit('c');
 	mutex_unlock(&m);
 	test_emit('e');
@@ -60,10 +60,9 @@ static int setup(void) {
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
 	test_assert_zero(err(low));
 
-	high = lthread_create(high_run, NULL);
-	test_assert_zero(err(high));
+	lthread_init(&high, high_run, NULL);
 
 	test_assert_zero(thread_set_priority(low, l));
-	test_assert_zero(lthread_priority_set(high, h));
+	test_assert_zero(lthread_priority_set(&high, h));
 	return 0;
 }

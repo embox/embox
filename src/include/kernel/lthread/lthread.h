@@ -56,14 +56,14 @@ struct lthread {
 
 /**
  * Creates a new light thread.
+ * @param lt
+ *   the light thread to init
  * @param run
- *   The light thread start routine.
+ *   the light thread start routine
  * @param arg
- *   A value to pass to the start routine as the argument.
- * @return
- *   Created light thread.
+ *   a value to pass to the start routine as the argument
  */
-extern struct lthread * lthread_create(void *(*run)(void *), void *arg);
+extern void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg);
 
 /**
  * Deletes light thread from the pool

@@ -22,6 +22,8 @@
 
 EMBOX_TEST_SUITE("sched_wait_*_lthread test");
 
+#define LTHREAD_QUANTITY OPTION_GET(NUMBER, lthreads_quantity)
+
 static int done = 0, ready = 0;
 
 static void *sched_wait_timeout_run(void *arg) {
@@ -39,14 +41,13 @@ static void *sched_wait_timeout_run(void *arg) {
 }
 
 TEST_CASE("sched_wait_timeout: timeout is exceeded") {
-	struct lthread *lt;
+	struct lthread lt;
 	int timeout = 20;
 
 	done = 0;
 
-	lt = lthread_create(sched_wait_timeout_run, (void *)timeout);
-	test_assert_zero(err(lt));
-	lthread_launch(lt);
+	lthread_init(&lt, sched_wait_timeout_run, (void *)timeout);
+	lthread_launch(&lt);
 
 	/* Spin, waiting lthread finished */
 	while(1) {
@@ -54,49 +55,47 @@ TEST_CASE("sched_wait_timeout: timeout is exceeded") {
 		ksleep(timeout);
 	}
 
-	test_assert_equal((int)lt->run_ret, -ETIMEDOUT);
+	test_assert_equal((int)lt.run_ret, -ETIMEDOUT);
 
-	lthread_delete(lt);
+	lthread_delete(&lt);
 }
 
 TEST_CASE("sched_wait_timeout: wakeup before timeout is exceeded") {
-	struct lthread *lt;
+	struct lthread lt;
 	int timeout = 20;
 
 	done = 0;
 
-	lt = lthread_create(sched_wait_timeout_run, (void *)timeout);
-	test_assert_zero(err(lt));
-	lthread_launch(lt);
+	lthread_init(&lt, sched_wait_timeout_run, (void *)timeout);
+	lthread_launch(&lt);
 
-	sched_wakeup(&lt->schedee);
+	sched_wakeup(&lt.schedee);
 
 	ksleep(0);
 
 	test_assert_equal(done, 1);
-	test_assert_equal((int)lt->run_ret, 0);
+	test_assert_equal((int)lt.run_ret, 0);
 
-	lthread_delete(lt);
+	lthread_delete(&lt);
 }
 
 TEST_CASE("sched_wait_timeout: SCHED_TIMEOUT_INFINITE") {
-	struct lthread *lt;
+	struct lthread lt;
 	int timeout = SCHED_TIMEOUT_INFINITE;
 
 	done = 0;
 
-	lt = lthread_create(sched_wait_timeout_run, (void *)timeout);
-	test_assert_zero(err(lt));
-	lthread_launch(lt);
+	lthread_init(&lt, sched_wait_timeout_run, (void *)timeout);
+	lthread_launch(&lt);
 
-	sched_wakeup(&lt->schedee);
+	sched_wakeup(&lt.schedee);
 
 	ksleep(0);
 
 	test_assert_equal(done, 1);
-	test_assert_equal((int)lt->run_ret, 0);
+	test_assert_equal((int)lt.run_ret, 0);
 
-	lthread_delete(lt);
+	lthread_delete(&lt);
 }
 
 static void *sched_wait_timeout_macro_run(void *arg) {
@@ -111,40 +110,38 @@ static void *sched_wait_timeout_macro_run(void *arg) {
 }
 
 TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: wakeup before timeout is exceeded") {
-	struct lthread *lt;
+	struct lthread lt;
 	int timeout = 20;
 
 	done = 0;
 	ready = 0;
 
-	lt = lthread_create(sched_wait_timeout_macro_run, (void *)timeout);
-	test_assert_zero(err(lt));
-	lthread_launch(lt);
+	lthread_init(&lt, sched_wait_timeout_macro_run, (void *)timeout);
+	lthread_launch(&lt);
 
 	ksleep(0);
 
 	ready = 1;
 
-	sched_wakeup(&lt->schedee);
+	sched_wakeup(&lt.schedee);
 
 	ksleep(0);
 
 	test_assert_equal(done, 1);
-	test_assert_equal((int)lt->run_ret, 0);
+	test_assert_equal((int)lt.run_ret, 0);
 
-	lthread_delete(lt);
+	lthread_delete(&lt);
 }
 
 TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: timeout exceeded") {
-	struct lthread *lt;
+	struct lthread lt;
 	int timeout = 20;
 
 	done = 0;
 	ready = 0;
 
-	lt = lthread_create(sched_wait_timeout_macro_run, (void *)timeout);
-	test_assert_zero(err(lt));
-	lthread_launch(lt);
+	lthread_init(&lt, sched_wait_timeout_macro_run, (void *)timeout);
+	lthread_launch(&lt);
 
 	while(1) {
 		if(done == 1) break;
@@ -152,31 +149,30 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: timeout exceeded") {
 	}
 
 	test_assert_equal(done, 1);
-	test_assert_equal((int)lt->run_ret, -ETIMEDOUT);
+	test_assert_equal((int)lt.run_ret, -ETIMEDOUT);
 
-	lthread_delete(lt);
+	lthread_delete(&lt);
 }
 
 TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: SCHED_TIMEOUT_INFINITE") {
-	struct lthread *lt;
+	struct lthread lt;
 	int timeout = SCHED_TIMEOUT_INFINITE;
 
 	done = 0;
 	ready = 0;
 
-	lt = lthread_create(sched_wait_timeout_macro_run, (void *)timeout);
-	test_assert_zero(err(lt));
-	lthread_launch(lt);
+	lthread_init(&lt, sched_wait_timeout_macro_run, (void *)timeout);
+	lthread_launch(&lt);
 
 	ksleep(20);
 
 	ready = 1;
-	sched_wakeup(&lt->schedee);
+	sched_wakeup(&lt.schedee);
 
 	ksleep(0);
 
 	test_assert_equal(done, 1);
-	test_assert_equal((int)lt->run_ret, 0);
+	test_assert_equal((int)lt.run_ret, 0);
 
-	lthread_delete(lt);
+	lthread_delete(&lt);
 }
