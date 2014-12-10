@@ -15,7 +15,7 @@
 #define SCHED_WAIT_FINISHED 0
 #define SCHED_WAIT_STARTED 1
 
-#define SCHED_WAIT_TIMEOUT(cond_expr) \
+#define SCHED_WAIT_LTHREAD(cond_expr) \
 	SCHED_WAIT_TIMEOUT_LTHREAD(cond_expr, SCHED_TIMEOUT_INFINITE)
 
 /**
