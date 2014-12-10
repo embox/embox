@@ -41,6 +41,10 @@ static struct schedee *lthread_process(struct schedee *prev,
 
 	lt->run_ret = next->run(next->run_arg);
 
+	/* After finishing lt has to restore waiting state in case it is not sceduled*/
+	spin_protected_if(&next->lock, !next->ready)
+		next->waiting = true;
+
 	return NULL;
 }
 
@@ -67,8 +71,19 @@ struct lthread *lthread_create(void *(*run)(void *), void *arg) {
 	return lt;
 }
 
+//TODO disable logic
 void lthread_delete(struct lthread *lt) {
 	assert(lt);
+
+check:
+	spin_protected_if(&lt->schedee.lock, lt->schedee.waiting) {
+		/* cannot be launched anymore */
+		lt->schedee.waiting = false;
+	} else {
+		schedule();
+		goto check;
+	}
+
 	pool_free(&lthread_pool, lt);
 }
 
