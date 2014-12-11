@@ -1,0 +1,17 @@
+package embox.cmd
+
+@Cmd(name = "race",
+	help = "",
+	man = '''
+		NAME
+			rcae - game
+		SYNOPSIS
+			race
+		AUTHORS
+			Vita Loginova
+	''')
+module race {
+	source "race.c"
+
+	depends embox.compat.posix.util.sleep
+}
