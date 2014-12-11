@@ -43,6 +43,7 @@ static struct schedee *lthread_process(struct schedee *prev,
 void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	schedee_init(&lt->schedee, LTHREAD_PRIORITY_DEFAULT, lthread_process, run, arg);
 	sched_wait_info_init(&lt->info);
+	lthread_start_label_set(NULL);
 }
 
 static int __lthread_delete(struct lthread *lt) {
