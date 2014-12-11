@@ -45,17 +45,27 @@ void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 	sched_wait_info_init(&lt->info);
 }
 
-//TODO disable logic
+static int __lthread_delete(struct lthread *lt) {
+	assert(lt);
+
+ 	/* lt scheduled, have to wait till finished */
+ 	if (lt->schedee.ready)
+ 		return false;
+
+ 	/* lt is sleeping, have to prevent waking up */
+	if (lt->info.status == SCHED_WAIT_STARTED)
+		timer_close(lt->info.tmr);
+
+	lt->schedee.waiting = false;
+
+	return true;
+}
+
 void lthread_delete(struct lthread *lt) {
 	assert(lt);
 
-check:
-	spin_protected_if(&lt->schedee.lock, lt->schedee.waiting) {
-		/* cannot be launched anymore */
-		lt->schedee.waiting = false;
-	} else {
+ 	while (!SPIN_IPL_PROTECTED_DO(&lt->schedee.lock, __lthread_delete(lt))) {
 		schedule();
-		goto check;
 	}
 }
 
