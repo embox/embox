@@ -17,15 +17,11 @@
 #include <fs/fsop.h>
 #include <util/array.h>
 
-#include <embox/cmd.h>
-
 #define MV_RECURSIVE	(0x1 << 0)
 #define MV_FORCE		(0x1 << 1)
 
 /* Iterate through array from position 'start', 'count' times
  * and set 'value' to current value on each step */
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: mv [-rfh] path\n"
@@ -34,19 +30,18 @@ static void print_usage(void) {
 			"\t-h - print this help\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt, rc;
 	unsigned int flags = 0;
 	char *oldpathcopy = NULL, *newpathcopy = NULL;
 	char *opc_free, *npc_free;
 	char *oldpath, *newpath = argv[argc - 1];
-	struct path oldnode, newnode, root;
+	struct path oldnode, newnode;
 
 	newpathcopy = strdup(newpath);
 	npc_free = newpathcopy;
 
-	vfs_get_root_path(&root);
-	rc = fs_perm_lookup(&root, (const char *) newpathcopy,
+	rc = fs_perm_lookup((const char *) newpathcopy,
 			(const char **) &newpathcopy, &newnode);
 	free(npc_free);
 	if (-ENOENT == rc) {
@@ -87,7 +82,7 @@ static int exec(int argc, char **argv) {
 		if (! (flags & MV_RECURSIVE)) {
 			oldpathcopy = strdup(oldpath);
 			opc_free = oldpathcopy;
-			rc = fs_perm_lookup(&root, (const char *) oldpathcopy,
+			rc = fs_perm_lookup((const char *) oldpathcopy,
 					(const char **) &oldpathcopy, &oldnode);
 			free(opc_free);
 			if (-ENOENT == rc) {

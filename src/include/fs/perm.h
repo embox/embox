@@ -46,7 +46,7 @@ extern int fs_perm_check(struct node *node, int fd_flags);
  *	-ENOENT on not all path resolved
  *	0 on success
  */
-int fs_perm_lookup(struct path *root, const char *path, const char **pathlast,
+int fs_perm_lookup(const char *path, const char **pathlast,
 		struct path *nodelast);
 
 int fs_perm_lookup_relative(const char *path, const char **pathlast,

@@ -20,7 +20,7 @@
 #include <fs/perm.h>
 
 int chdir(const char *path) {
-	struct path last, root;
+	struct path last;
 	struct stat buff;
 
 	if ((path == NULL) || (*path == '\0')
@@ -35,8 +35,7 @@ int chdir(const char *path) {
 	}
 
 	/*check if such path exists in fs*/
-	vfs_get_root_path(&root);
-	if(0 != fs_perm_lookup(&root, path, NULL, &last)){
+	if(0 != fs_perm_lookup(path, NULL, &last)){
 		SET_ERRNO(ENOENT);
 		return -1;
 	}

@@ -15,7 +15,7 @@ struct node;
 struct stat;
 struct path;
 
-extern int kmkdir(struct path *root_node, const char *pathname, mode_t mode);
+extern int kmkdir(const char *pathname, mode_t mode);
 
 extern int kremove(const char *pathname);
 

@@ -28,17 +28,17 @@
 OBJALLOC_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
 
 DIR *opendir(const char *path) {
-	struct path node_path, leaf;
+	struct path node_path;
 	DIR *d;
 	int res;
-	//char cur_path[PATH_MAX];
 
 	if (!strcmp(path, ".")) {
 		path = "";//getcwd(cur_path, PATH_MAX);
 	}
 
-	vfs_get_leaf_path(&leaf);
-	if (0 != (res = fs_perm_lookup_relative(path, NULL, &node_path))) {
+	res = fs_perm_lookup(path, NULL, &node_path);
+
+	if (res != 0) {
 		SET_ERRNO(-res);
 		return NULL;
 	}
