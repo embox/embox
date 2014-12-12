@@ -68,7 +68,6 @@ int fs_perm_lookup(const char *path, const char **pathlast,
 		vfs_get_leaf_path(&node_path);
 
 	while (1) {
-
 		path = path_next(path + len, &len);
 
 		*nodelast = node_path;

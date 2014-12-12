@@ -22,12 +22,16 @@
 int chdir(const char *path) {
 	struct path last;
 	struct stat buff;
+	char strbuf[PATH_MAX] = "";
 
-	if ((path == NULL) || (*path == '\0')
-			|| (*path != '/')) {
+	if ((path == NULL) || (*path == '\0')) {
 		SET_ERRNO(ENOENT);
 		return -1;
 	}
+
+	if (path[0] != '/')
+		strcpy(strbuf, getenv("PWD"));
+	strcat(strbuf, path);
 
 	if (strlen(path) >= PATH_MAX - 1) {
 		SET_ERRNO(ENAMETOOLONG);
@@ -47,7 +51,7 @@ int chdir(const char *path) {
 		return -1;
 	}
 
-	if (-1 == setenv("PWD", path, 1)) {
+	if (-1 == setenv("PWD", strbuf, 1)) {
 		assert(errno == ENOMEM); /* it is the only possible error */
 		SET_ERRNO(ENAMETOOLONG);
 		return -1;
