@@ -60,7 +60,10 @@ void sched_wait_prepare_lthread(clock_t timeout) {
 void sched_wait_cleanup_lthread(void) {
 	struct sched_wait_info *info = &lthread_self()->info;
 
-	timer_close(info->tmr);
+	if (info->status == SCHED_WAIT_STARTED &&
+			info->remain != SCHED_TIMEOUT_INFINITE) {
+		timer_close(info->tmr);
+	}
 	sched_wait_info_clear(info);
 	sched_wait_cleanup();
 }
