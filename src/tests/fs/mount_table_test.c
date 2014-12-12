@@ -46,10 +46,9 @@ static struct node *test_node;
 static int test_mt_path_init(const char *strpath, const char *name) {
 	struct mount_descriptor *mdesc;
 	struct node *node, *root_node;
-	struct path rootp, path;
+	struct path path;
 
-	vfs_get_root_path(&rootp);
-	if (vfs_lookup(&rootp, strpath, &path)) {
+	if (vfs_lookup(strpath, &path)) {
 		return -ENOENT;
 	}
 
@@ -67,11 +66,10 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 }
 
 static int test_mt_path_fini(const char *strpath) {
-	struct path root, path;
+	struct path path;
 	struct node *root_node;
 
-	vfs_get_root_path(&root);
-	if (vfs_lookup(&root, strpath, &path)) {
+	if (vfs_lookup(strpath, &path)) {
 		return -ENOENT;
 	}
 
@@ -114,65 +112,60 @@ static int teardown_suite(void) {
 }
 
 TEST_CASE("new mounts should hide old content") {
-	struct path root, path;
-	vfs_get_root_path(&root);
+	struct path path;
 
-	test_assert_zero(vfs_lookup(&root, "test", &path));
+	test_assert_zero(vfs_lookup("test", &path));
 
-	test_assert_zero(vfs_lookup(&root, "test/ch1", &path));
-	test_assert_zero(vfs_lookup(&root, "test/ch1/ch4", &path));
-	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
-	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2", &path));
+	test_assert_zero(vfs_lookup("test/ch1", &path));
+	test_assert_zero(vfs_lookup("test/ch1/ch4", &path));
+	test_assert_not_zero(vfs_lookup("test/ch1/ch2/ch3", &path));
+	test_assert_not_zero(vfs_lookup("test/ch1/ch2", &path));
 }
 
 TEST_CASE("mount_table_get_child should find `test' mount_desc") {
-	struct path root, path;
+	struct path path;
 
-	vfs_get_root_path(&root);
-
-	test_assert_zero(vfs_lookup(&root, "test", &path));
+	test_assert_zero(vfs_lookup("test", &path));
 
 	test_assert_not_null(mount_table_get_child(path.mnt_desc, path.node));
 }
 
 TEST_CASE("umount should expose old content") {
-	struct path root, path;
-	vfs_get_root_path(&root);
+	struct path path;
 
-	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
+	test_assert_not_zero(vfs_lookup("/test/ch1/ch2/ch3", &path));
 
-	test_assert_zero(test_mt_path_fini("test/ch1/ch4"));
+	test_assert_zero(test_mt_path_fini("/test/ch1/ch4"));
 
-	test_assert_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
+	test_assert_zero(vfs_lookup("/test/ch1/ch2/ch3", &path));
 
 	/* reverting changes back */
 	test_assert_zero(test_mt_path_init("/test/ch1", "ch4"));
-	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
+	test_assert_not_zero(vfs_lookup("/test/ch1/ch2/ch3", &path));
 }
 
 TEST_CASE("mount_table_del() and mount_table_get_child() correctness") {
-	struct path root, path, test_path, c1_path, c2_path;
+	struct path path, test_path, c1_path, c2_path;
 
-	vfs_get_root_path(&root);
-	test_assert_zero(vfs_lookup(&root, "test", &test_path));
+	test_assert_zero(vfs_lookup("/test", &test_path));
 	test_assert_not_null(mount_table_get_child(test_path.mnt_desc, test_path.node));
 
-	test_assert_zero(vfs_lookup(&root, "test/ch1", &c1_path));
+	test_assert_zero(vfs_lookup("/test/ch1", &c1_path));
 
-	test_assert_zero(vfs_lookup(&root, "test/ch1/ch4", &c2_path));
-	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2", &path));
+	test_assert_zero(vfs_lookup("/test/ch1/ch4", &c2_path));
+	test_assert_not_zero(vfs_lookup("/test/ch1/ch2", &path));
 
 	mount_table_del(c2_path.mnt_desc);
-	test_assert_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
+	test_assert_zero(vfs_lookup("/test/ch1/ch2/ch3", &path));
 
 	mount_table_del(path.mnt_desc);
-	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2/ch3", &path));
-	test_assert_zero(vfs_lookup(&root, "test/ch1/ch2", &path));
+	test_assert_not_zero(vfs_lookup("test/ch1/ch2/ch3", &path));
+	test_assert_zero(vfs_lookup("/test/ch1/ch2", &path));
 
 	mount_table_del(path.mnt_desc);
-	test_assert_not_zero(vfs_lookup(&root, "test/ch1/ch2", &path));
-	test_assert_zero(vfs_lookup(&root, "test/ch1", &path));
+	test_assert_not_zero(vfs_lookup("/test/ch1/ch2", &path));
+	test_assert_zero(vfs_lookup("/test/ch1", &path));
 
 	mount_table_del(path.mnt_desc);
-	test_assert_not_zero(vfs_lookup(&root, "test/ch1", &path));
+	test_assert_not_zero(vfs_lookup("/test/ch1", &path));
 }

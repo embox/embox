@@ -34,11 +34,12 @@ int char_dev_init_all(void) {
 }
 
 int char_dev_register(const char *name, const struct kfile_operations *ops) {
-	struct path root, node;
+	struct path  node;
 	struct nas *dev_nas;
 
-	vfs_get_root_path(&root);
-	vfs_lookup(&root, "/dev", &node);
+	if (vfs_lookup("/dev", &node)) {
+		return -1;
+	}
 
 	if (node.node == NULL) {
 		return -ENODEV;

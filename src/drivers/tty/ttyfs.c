@@ -9,8 +9,9 @@
 #include <fs/vfs.h>
 
 static mount_tty(struct tty* tty, const struct kfile_operations *file_ops) {
+	struct path node;
 	/* register char device */
-	node = vfs_lookup(NULL, "/dev");
+	node = vfs_lookup("/dev");
 	if (!node) {
 		return -1;
 	}

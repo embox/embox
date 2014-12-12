@@ -19,12 +19,10 @@ static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group
 
 	for (file_p = files; *file_p != NULL; file_p++) {
 		char *file = *file_p;
-		struct path node_path, leaf;
+		struct path node_path;
 		int ret;
 
-		vfs_get_leaf_path(&leaf);
-
-		ret = vfs_lookup(&leaf, file, &node_path);
+		ret = vfs_lookup(file, &node_path);
 		if (ret) {
 			fprintf(stderr, "Can't open %s: %s\n", file, strerror(-ret));
 			return ret;

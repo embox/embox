@@ -93,12 +93,11 @@ struct flash_dev *flash_create(char *path, size_t size) {
 }
 
 struct flash_dev *flash_get_param(char *path) {
-	struct path root, flash_node;
+	struct path flash_node;
 	struct nas *nas;
 	struct node_fi *node_fi;
 
-	vfs_get_root_path(&root);
-	vfs_lookup(&root, path, &flash_node);
+	vfs_lookup(path, &flash_node);
 
 	if (NULL == flash_node.node) {
 		return NULL;
@@ -109,14 +108,13 @@ struct flash_dev *flash_get_param(char *path) {
 }
 
 int flash_delete(const char *name) {
-	struct path root, flash_node;
+	struct path flash_node;
 	struct flash_dev *flash;
 	struct nas *nas;
 	struct node_fi *node_fi;
 	int idx;
 
-	vfs_get_root_path(&root);
-	vfs_lookup(&root, name, &flash_node);
+	vfs_lookup(name, &flash_node);
 
 	if (NULL == flash_node.node) {
 		return -1;
