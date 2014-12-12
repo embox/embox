@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "rm",
 	help = "Remove file or directory",
 	man = '''
