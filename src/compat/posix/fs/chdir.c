@@ -29,8 +29,10 @@ int chdir(const char *path) {
 		return -1;
 	}
 
-	if (path[0] != '/')
+	if (path[0] != '/') {
 		strcpy(strbuf, getenv("PWD"));
+		strcat(strbuf, "/");
+	}
 	strcat(strbuf, path);
 
 	if (strlen(path) >= PATH_MAX - 1) {
