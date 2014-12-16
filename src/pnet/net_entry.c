@@ -11,8 +11,7 @@
 #include <mem/objalloc.h>
 #include <linux/list.h>
 #include <stdio.h>
-
-#include <linux/interrupt.h>
+#include <kernel/softirq.h>
 
 #include <pnet/prior_path.h>
 #include <pnet/core.h>
@@ -21,6 +20,8 @@
 #include <pnet/pnet_pack.h>
 
 EMBOX_UNIT_INIT(unit_init);
+
+#define PNET_RX_SOFTIRQ 4
 
 static LIST_HEAD(skb_queue);
 static LIST_HEAD(pnet_queue);
@@ -44,7 +45,7 @@ int netif_rx(void *data) {
 		list_add_tail(&pack->link, &pnet_queue);
 	}
 
-	raise_softirq(PNET_RX_SOFTIRQ);
+	softirq_raise(PNET_RX_SOFTIRQ);
 
 	return NET_RX_SUCCESS;
 }
