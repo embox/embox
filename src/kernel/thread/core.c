@@ -173,6 +173,12 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 	return &thread_self()->schedee;
 }
 
+struct thread *thread_self(void) {
+	struct schedee *schedee = schedee_get_current();
+	assert(schedee->process == thread_process, "thread_self is about to return not-thread");
+	return mcast_out(schedee, struct thread, schedee);;
+}
+
 void thread_init(struct thread *t, sched_priority_t priority,
 		void *(*run)(void *), void *arg) {
 

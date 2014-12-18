@@ -32,7 +32,7 @@ struct thread;
  * @return
  *   The currently executing thread.
  */
-#define thread_self() mcast_out(schedee_get_current(), struct thread, schedee)
+extern struct thread *thread_self(void);
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
