@@ -26,10 +26,8 @@ int backtrace_symbol_buf(void *ptr, char *out, int size) {
 
 	s = symbol_lookup(ptr);
 	if (s) {
-		const ptrdiff_t offset = ptr - s->addr;
-		const char *name = offset >= 0 ?  s->name : "__unknown__";
-
-		res = snprintf(out, size, "%p <%s+%#tx>", ptr, name, offset);
+		res = snprintf(out, size, "%p <%s+%#tx>",
+				ptr, s->name, ptr - s->addr);
 	} else {
 		res = snprintf(out, size, "%p", ptr);
 	}
