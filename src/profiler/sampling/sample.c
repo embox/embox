@@ -33,16 +33,9 @@ static int get_hash(char *str) {
 static void sampling_timer_handler(sys_timer_t* timer, void *param) {
 	int i, nptrs, hash;
 	void *buffer[100];
-	char **bt_res;
+	char bt_str[64];
 
 	nptrs = backtrace(buffer, 100);
-
-	bt_res = backtrace_symbols(buffer, nptrs);
-
-	if (bt_res == NULL) {
-		perror("backtrace_symbols");
-		exit(EXIT_FAILURE);
-	}
 
 	/* It makes sense to start not from 0 element,
 	 * because the top of the callstack is always the same
@@ -62,13 +55,15 @@ static void sampling_timer_handler(sys_timer_t* timer, void *param) {
 	 */
 
 	for (i = shift; i < nptrs; i++) {
-		hash = get_hash(bt_res[i]) % SAMPLE_HASH_SIZE;
+		backtrace_symbol_buf(buffer[i], bt_str, sizeof(bt_str));
+		bt_str[sizeof(bt_str) - 1] = '\0';
+
+		hash = get_hash(bt_str) % SAMPLE_HASH_SIZE;
 		if (hash_array[hash] == 0) {
-			strcpy(sample_strings[hash], bt_res[i]);
+			strcpy(sample_strings[hash], bt_str);
 		}
 		hash_array[hash]++;
 	}
-	free(bt_res);
 }
 
 static int sampling_profiler_set(int interval) {

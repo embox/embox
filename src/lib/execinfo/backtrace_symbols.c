@@ -20,34 +20,39 @@
 
 static char bt_buff[MODOPS_ROW_COUNT][MODOPS_ROW_SIZE];
 
-char ** backtrace_symbols(void *const *buff, int size) {
-	int i;
-	char **out;
+int backtrace_symbol_buf(void *ptr, char *out, int size) {
 	const struct symbol *s;
-	ptrdiff_t offset;
+	int res;
 
-	out = malloc(size * sizeof &bt_buff[0][0]);
-	if (out == NULL) {
-		return NULL;
+	s = symbol_lookup(ptr);
+	if (s) {
+		const ptrdiff_t offset = ptr - s->addr;
+		const char *name = offset >= 0 ?  s->name : "__unknown__";
+
+		res = snprintf(out, size, "%p <%s+%#tx>", ptr, name, offset);
+	} else {
+		res = snprintf(out, size, "%p", ptr);
 	}
 
-	for (i = 0; i < min(size, MODOPS_ROW_COUNT); ++i) {
-		out[i] = &bt_buff[i][0];
+	return res;
+}
 
-		s = symbol_lookup(buff[i]);
-		if (s != NULL) {
-			offset = (char *)buff[i] - (char *)s->addr;
-			snprintf(out[i], MODOPS_ROW_SIZE, "%p <%s+%#tx>",
-					buff[i], offset >= 0 ? s->name : "__unknown__",
-					offset);
-		}
-		else {
-			snprintf(out[i], 30, "%p", buff[i]);
-		}
-	}
+char **backtrace_symbols(void *const *buff, int size) {
+	char **out;
 
-	while (i < size) {
-		out[i++] = NULL;
+	out = malloc(size * sizeof(*out));
+	if (out) {
+		const int can_fill_symbols = min(size, MODOPS_ROW_COUNT);
+		int i;
+
+		for (i = 0; i < can_fill_symbols; ++i) {
+			backtrace_symbol_buf(buff[i], bt_buff[i], sizeof(bt_buff[i]));
+			out[i] = bt_buff[i];
+		}
+
+		for (i = can_fill_symbols; i < size; ++i) {
+			out[i] = NULL;
+		}
 	}
 
 	return out;
