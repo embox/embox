@@ -23,12 +23,7 @@ module core {
 
 	depends embox.compat.posix.proc.pid
 	depends embox.compat.posix.proc.exit
-
 	depends embox.compat.libc.LibCStdioFseek
-	depends embox.compat.libc.LibCStdioRename
 	depends embox.compat.libc.LibCTime
-
-	/*depends third_party.STLport.core*/
-
 
 }

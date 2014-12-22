@@ -19,20 +19,21 @@ DISABLE_FEATURES := \
 	g7221-codec \
 	#g711-codec
 
-PJSIP_CPPFLAGS := -I$(ROOT_DIR)/third-party/pjproject/include
+PJPROJECT_ROOT := $(ROOT_DIR)/third-party/pjproject
+PJSIP_CPPFLAGS := -I$(PJPROJECT_ROOT)/include
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
-		./configure \
+		./aconfigure \
 			CC=$(EMBOX_GCC) \
-			CPPFLAGS=$(PJSIP_CPPFLAGS) \
+			CPPFLAGS="$(PJSIP_CPPFLAGS)" \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			$(DISABLE_FEATURES:%=--disable-%) \
 			--with-external-pa; \
-		echo export CFLAGS+=$(PJSIP_CPPFLAGS) > user.mak; \
-		echo export CXXFLAGS+=$(PJSIP_CPPFLAGS) >> user.mak; \
+		echo export CFLAGS+="$(PJSIP_CPPFLAGS)" > user.mak; \
+		echo export CXXFLAGS+="$(PJSIP_CPPFLAGS)" >> user.mak; \
 	)
 	#cp ./config_site.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/pjlib/include/pj/config_site.h
 	touch $@
