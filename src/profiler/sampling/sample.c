@@ -97,6 +97,11 @@ bool sampling_profiler_is_running(void){
 
 int start_profiler(int interval) {
 	int i;
+
+	if (is_running) {
+		stop_profiler();
+	}
+
 	is_running = true;
 	pow[0] = 1, hash_array[0] = 0;
 	for (i = 1; i < SAMPLE_HASH_SIZE; i++) {
