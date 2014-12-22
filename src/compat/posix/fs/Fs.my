@@ -79,6 +79,7 @@ static module open {
 
 	depends embox.fs.index_operation
 	depends embox.kernel.task.resource.errno
+	depends embox.fs.core /* if_mounted_follow_down */
 	depends libgen
 	depends dirent
 	depends umask
