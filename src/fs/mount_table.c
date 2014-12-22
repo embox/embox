@@ -19,7 +19,7 @@
 
 #include <mem/misc/pool.h>
 
-POOL_DEF(mount_desc_pool, struct mount_descriptor, 16);
+POOL_DEF(mount_desc_pool, struct mount_descriptor, OPTION_GET(NUMBER,mount_desc_quantity));
 
 static struct mount_descriptor *mnt_root = NULL;
 

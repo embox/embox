@@ -1,25 +1,30 @@
 package embox.fs
 
 module node {
-	source "node.c"
 	option number fnode_quantity=64
+
+	source "node.c"
+
 	depends embox.util.tree
 }
 
 module filesystem {
+	option number fs_quantity=32
+	option number mount_desc_quantity=16
+
 	source "file_system.c"
 	source "mount_table.c"
-	option number fs_quantity=32
 
 	depends embox.fs.driver.repo
 }
 
 module file_desc {
+	option number fdesc_quantity=32
+
 	source "file_desc.c"
 	source "file_xattr.c"
 	depends xattr
 	depends idesc
-	option number fdesc_quantity=32
 
 	depends embox.kernel.task.resource.idesc_table
 }
