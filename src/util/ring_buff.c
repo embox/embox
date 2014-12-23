@@ -45,12 +45,12 @@ int ring_buff_alloc(struct ring_buff *buf, int n, void **ret) {
 	return ring_buff_allocover(buf, n < m ? n : m, ret);
 }
 
-static int enqueue_fn(int (*alloc)(struct ring_buff *, int n, void **ret),
+static int enqueue_fn(int (*alloc_fn)(struct ring_buff *, int n, void **ret),
 		struct ring_buff *buf, void *elem, int cnt ) {
 	void *write_to;
 	int tcnt = cnt, t1, t2;
 
-	if (0 >= (t1 = alloc(buf, tcnt, &write_to))) {
+	if (0 >= (t1 = alloc_fn(buf, tcnt, &write_to))) {
 		return t1;
 	}
 
@@ -62,7 +62,7 @@ static int enqueue_fn(int (*alloc)(struct ring_buff *, int n, void **ret),
 		return cnt;
 	}
 
-	if (0 >= (t2 = alloc(buf, tcnt, &write_to))) {
+	if (0 >= (t2 = alloc_fn(buf, tcnt, &write_to))) {
 		return t2;
 	}
 
@@ -77,8 +77,8 @@ int ring_buff_enqueueover(struct ring_buff *buf, void *elem, int cnt) {
 	return enqueue_fn(ring_buff_allocover, buf, elem, cnt);
 }
 
-int ring_buff_enqueue(struct ring_buff *buf, void *elem, int cnt) {
-	return enqueue_fn(ring_buff_alloc, buf, elem, cnt);
+int ring_buff_enqueue(struct ring_buff *ring_buff, void *elem, int cnt) {
+	return enqueue_fn(ring_buff_alloc, ring_buff, elem, cnt);
 }
 
 
