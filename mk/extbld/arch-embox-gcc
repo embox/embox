@@ -27,6 +27,7 @@ case " $@" in
 	*" -c "*) ARG_LINE="$C_CXX_FLAGS";;
 	*" -E "*) ARG_LINE=;;
 	*" -shared "*) echo "Can't build shared objects"; exit 1;;
+	*" -l"*) echo -e "\n\nWARNING!!! You're linking somethingn with it\n\n";;
 esac
 
 ARG_LINE="$ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
