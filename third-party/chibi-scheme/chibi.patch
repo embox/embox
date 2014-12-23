@@ -1,0 +1,24 @@
+diff -aur chibi-scheme-0.6.1-orig/include/chibi/features.h chibi-scheme-0.6.1/include/chibi/features.h
+--- chibi-scheme-0.6.1-orig/include/chibi/features.h	2014-12-23 16:06:21.951470269 +0300
++++ chibi-scheme-0.6.1/include/chibi/features.h	2014-12-23 15:46:27.164838819 +0300
+@@ -693,7 +693,7 @@
+ #define SEXP_API    __declspec(dllimport)
+ #endif
+ #else
+-#define SEXP_API
++#define SEXP_API extern
+ #endif
+ 
+ /************************************************************************/
+diff -aur chibi-scheme-0.6.1-orig/Makefile chibi-scheme-0.6.1/Makefile
+--- chibi-scheme-0.6.1-orig/Makefile	2014-12-23 16:06:21.948136936 +0300
++++ chibi-scheme-0.6.1/Makefile	2014-12-23 16:04:46.264806423 +0300
+@@ -100,7 +100,7 @@
+ 	$(CC) $(XCPPFLAGS) $(XCFLAGS) -o $@ $< -L. -lchibi-scheme
+ 
+ chibi-scheme-static$(EXE): main.o $(SEXP_OBJS) $(EVAL_OBJS)
+-	$(CC) $(XCFLAGS) $(STATICFLAGS) -o $@ $^ $(LDFLAGS) $(GCLDFLAGS) -lm
++	$(CC) $(XCFLAGS) $(STATICFLAGS) -o $@ $^ $(LDFLAGS) $(GCLDFLAGS)
+ 
+ chibi-scheme-ulimit$(EXE): main.o $(SEXP_ULIMIT_OBJS) $(EVAL_OBJS)
+ 	$(CC) $(XCFLAGS) $(STATICFLAGS) -o $@ $^ $(LDFLAGS) $(GCLDFLAGS) -lm
