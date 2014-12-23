@@ -103,6 +103,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 
@@ -201,6 +202,9 @@ static int enableRawMode(int fd, struct termios *orig_termios, int *rawmode) {
     /* put terminal in raw mode after flushing */
     if (tcsetattr(fd,TCSAFLUSH,&raw) < 0) goto fatal;
     *rawmode = 1;
+
+    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) & ~O_NONBLOCK);
+
     return 0;
 
 fatal:
