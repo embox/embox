@@ -229,16 +229,21 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 	pipe = idesc_to_pipe(idesc);
 	assert(pipe);
 
+	res = 0;
+	mutex_lock(&pipe->mutex);
 	switch (mask) {
 	case POLLIN:
 		/* how many we can read */
-		return ring_buff_get_cnt(pipe->buff);
+		res = ring_buff_get_cnt(pipe->buff);
+		goto out;
 	case POLLOUT:
 		/* how many we can write */
-		return pipe->buf_size - ring_buff_get_cnt(pipe->buff);
+		res = pipe->buf_size - ring_buff_get_cnt(pipe->buff);
+		goto out;
 	case POLLERR:
 		/* is there any exeptions */
-		return 0;//TODO Where is errors counter
+		res = 0; //TODO Where is errors counter
+		goto out;
 	default:
 		res = 0;
 		break;
@@ -258,6 +263,9 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 		/* is there any exeptions */
 		res += 0; //TODO Where is errors counter
 	}
+
+out:
+	mutex_unlock(&pipe->mutex);
 
 	return res;
 }
