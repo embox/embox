@@ -36,7 +36,7 @@ TEST_TEARDOWN(case_teardown);
 
 static int pipes[PIPES_COUNT][2];
 static int max_fd;
-pthread_attr_t attr;
+static pthread_attr_t attr;
 
 /* Write data to the pipe until it is full. */
 static void fill_pipe(const int pipe_fds[]);
