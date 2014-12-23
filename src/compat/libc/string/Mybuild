@@ -23,6 +23,7 @@ static module LibCString {
 	source "strrchr.c"
 	source "strspn.c"
 	source "strstr.c"
+	source "strcasestr.c"
 	source "strupr.c"
 	source "strcasecmp.c"
 	source "strncasecmp.c"
