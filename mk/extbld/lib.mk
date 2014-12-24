@@ -2,10 +2,9 @@
 # This file should be included by extbld Makefiles.
 #
 # This also could generate md5sums for specified extbld Makefile:
-# Assuming you are in ROOT_DIR, run
-# make -C directory/where/extbld/Makefile/live ROOT_DIR=$PWD BUILD_DIR=. EXTBLD_LIB=$PWD/mk/extbld/lib.mk md5_gen
+# Assuming you are in ROOT_DIR, and you are going to generate md5sums of third_party/smth/, run
+# make EXTBLD_LIB=$PWD/mk/extbld/lib.mk ROOT_DIR=$PWD -C third-party/smth BUILD_DIR=$PWD/build/extbld/third_party/smth md5_gen
 #
-# (BUILD_DIR not used actually, so it's just anything)
 
 ifeq ($(strip $(ROOT_DIR)),)
 $(error ROOT_DIR is not set)
