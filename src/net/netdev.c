@@ -289,8 +289,9 @@ int netdev_set_irq(struct net_device *dev, int irq_num) {
 	return 0;
 }
 
-static size_t netdev_hash(const char *name) {
+static size_t netdev_hash(void *key) {
 	size_t hash;
+	const char *name = key;
 
 	hash = 0;
 	while (*name != '\0') {
@@ -302,7 +303,7 @@ static size_t netdev_hash(const char *name) {
 
 static int netdev_unit_init(void) {
 	netdevs_table = hashtable_create(MODOPS_NETDEV_TABLE_SZ,
-			(get_hash_ft)&netdev_hash, (ht_cmp_ft)&strcmp);
+			&netdev_hash, (ht_cmp_ft)&strcmp);
 	if (netdevs_table == NULL) {
 		return -ENOMEM;
 	}

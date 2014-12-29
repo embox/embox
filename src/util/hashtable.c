@@ -10,17 +10,17 @@
  * @author Anton Bondarev
  */
 
-#include <mem/objalloc.h>
-#include <mem/sysmalloc.h>
 #include <errno.h>
-
-#include <util/array.h>
-
-#include <util/dlist.h>
 
 #include <util/hashtable.h>
 
-#include <embox/unit.h>
+#include <mem/objalloc.h>
+#include <mem/sysmalloc.h>
+
+#include <util/dlist.h>
+
+
+#include <framework/mod/options.h>
 
 #define CONFIG_HASHTABLES_QUANTITY     OPTION_GET(NUMBER,hashtables_quantity)
 #define CONFIG_HASHTABLE_ELEM_QUNTITY  OPTION_GET(NUMBER,item_quntity)
@@ -45,7 +45,7 @@ struct hashtable_entry {
  */
 struct hashtable {
 	struct hashtable_entry *table; /**< array of the tables entry */
-	get_hash_ft get_hash_key; /**< handler of the calculation index function */
+	ht_hash_ft get_hash_key; /**< handler of the calculation index function */
 	ht_cmp_ft cmp; /** < handler of the compare elements function */
 	size_t table_size; /** size of the array of the table entry */
 	struct dlist_head all;
@@ -58,7 +58,7 @@ OBJALLOC_DEF(ht_elem_pool, struct hashtable_element,
 		CONFIG_HASHTABLES_QUANTITY * CONFIG_HASHTABLE_ELEM_QUNTITY);
 
 
-struct hashtable *hashtable_create(size_t table_size, get_hash_ft get_hash, ht_cmp_ft cmp) {
+struct hashtable *hashtable_create(size_t table_size, ht_hash_ft get_hash, ht_cmp_ft cmp) {
 	struct hashtable *ht;
 	int i;
 
@@ -107,7 +107,6 @@ void *hashtable_get(struct hashtable *ht, void* key) {
 	size_t idx;
 	struct hashtable_element *htel;
 
-
 	assert(ht);
 
 	idx = ht->get_hash_key(key) % ht->table_size;
@@ -145,7 +144,7 @@ void hashtable_destroy(struct hashtable *ht) {
 
 	assert(ht);
 
-	for(i = 0; i < ARRAY_SIZE(ht->table); i ++) {
+	for(i = 0; i < ht->table_size; i ++) {
 		dlist_foreach_entry(htel, &ht->table[i].list, lnk) {
 			objfree(&ht_elem_pool, htel);
 		}

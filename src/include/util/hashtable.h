@@ -24,7 +24,7 @@
 struct hashtable;
 
 /** Hash function type definition */
-typedef size_t (*get_hash_ft)(void *key);
+typedef size_t (*ht_hash_ft)(void *key);
 
 /** Compare item function type definition. */
 typedef int (*ht_cmp_ft)(void *key1, void *key2);
@@ -43,7 +43,7 @@ typedef int (*ht_cmp_ft)(void *key1, void *key2);
  * @return hashtable structure pointer
  */
 extern struct hashtable *hashtable_create(size_t table_size,
-		get_hash_ft get_hash, ht_cmp_ft cmp);
+		ht_hash_ft get_hash, ht_cmp_ft cmp);
 
 /**
  * Delete all elements from hash-table and free hash-table structure memory
