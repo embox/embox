@@ -33,9 +33,13 @@ struct dvalue {
 
 POOL_DEF(dcache_path_pool, struct dvalue, DCACHE_TABLE_SIZE);
 
+static size_t dcache_hash(void *key);
+static int dcache_cmp(void *key1, void *key2);
+
+HASHTABLE_DEE(dcache_ht, DCACHE_TABLE_SIZE,	&dcache_hash, &dcache_cmp);
+
 static struct hashtable *dcache_table = NULL;
 static struct dlist_head values;
-
 
 static size_t dcache_hash(void *key) {
 	struct dkey *dkey = key;
@@ -56,13 +60,14 @@ static int dcache_cmp(void *key1, void *key2) {
 }
 
 static int dcache_lazy_init(void) {
+#if 0
 	dcache_table = hashtable_create(DCACHE_TABLE_SIZE,
 			&dcache_hash, &dcache_cmp);
 
 	if (dcache_table == NULL) {
 		return -ENOMEM;
 	}
-
+#endif
 	dlist_init(&values);
 
 	return 0;
