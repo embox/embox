@@ -78,8 +78,37 @@ void cyg_tracing_profiler_exit(void *func, void *caller) {
 	}
 }
 
+/* Functions for hash */
+
+static size_t get_trace_block_hash(void *key) {
+	/* trace_block hash is just the pointer, beacuse
+	 * it is unique for every functions, and there must be
+	 * one block for one funcion.
+	 */
+	return (size_t) key;
+}
+
+static int cmp_trace_blocks(void *key1, void *key2) {
+	/* trace_block hash is just the pointer, beacuse
+	 * it is unique for every functions, and there must be
+	 * one block for one funcion.
+	 * So it is enough to compare those pointers.
+	 */
+
+	return 1 - (key1 == key2);
+}
+
 /* Hashtable to keep all dynamically generated trace_blocks */
+#if 0
 static struct hashtable *tbhash = NULL;
+#endif
+HASHTABLE_DEF(tbhash_full,
+		FUNC_QUANTITY * sizeof(struct __trace_block),
+		get_trace_block_hash,
+		cmp_trace_blocks);
+
+static struct hashtable *tbhash = &tbhash_full;
+
 static int **prev_key;
 
 /* Global clock_source to keep all trace_block consistent */
@@ -171,34 +200,6 @@ void print_trace_block_info(struct __trace_block *tb) {
 											tb->is_entered ? "YES" : "NO");
 }
 
-/* Functions for hash */
-
-/*static int str_hash(const char *c){
-	int s = 0, i = 0;
-	while (c[i]) {
-		s += c[i++];
-	}
-	return s;
-}*/
-
-static size_t get_trace_block_hash(void *key) {
-	/* trace_block hash is just the pointer, beacuse
-	 * it is unique for every functions, and there must be
-	 * one block for one funcion.
-	 */
-	return (size_t) key;
-}
-
-static int cmp_trace_blocks(void *key1, void *key2) {
-	/* trace_block hash is just the pointer, beacuse
-	 * it is unique for every functions, and there must be
-	 * one block for one funcion.
-	 * So it is enough to compare those pointers.
-	 */
-
-	return 1 - (key1 == key2);
-}
-
 /* It is assumed that there are traceblocks for every function
  * with trace_block_enter just after function call and
  * trace_block_exit just before function exit */
@@ -210,10 +211,6 @@ void trace_block_func_enter(void *func) {
 	 *	Args: void *func - pointer to functions that is about to enter
 	 */
 	struct __trace_block *tb = NULL;
-	if (!tbhash) {
-		/* Table is not initialized */
-		return;
-	}
 
 	tb = hashtable_get(tbhash, func);
 	if (!tb) {
@@ -268,8 +265,9 @@ struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
 
 static int instrument_profiling_init(void) {
 	set_profiling_mode(DISABLED);
-	tbhash = NULL;
+
 	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
+#if 0
 	/* Initializing hash table */
 	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
 				get_trace_block_hash, cmp_trace_blocks);
@@ -278,7 +276,7 @@ static int instrument_profiling_init(void) {
 		return -ENOMEM;
 		fprintf(stderr, "Unable to create hashtable for profiling\n");
 	}
-
+#endif
 	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_enter_array);
 	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_exit_array);
 	ARRAY_SPREAD_ADD(__cyg_handler_enter_array, &cyg_tracing_profiler_enter);
@@ -312,17 +310,6 @@ void trace_block_hashtable_init(void) {
 	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
 
 	set_profiling_mode(c);
-}
-void trace_block_hashtable_destroy(void) {
-	/* Clear trace_block hash table */
-	/*int c = cyg_profiling;
-	cyg_profiling = false;
-
-	if (tbhash)
-		hashtable_destroy(tbhash);
-	tbhash = NULL;
-	cyg_profiling = c;*/
-	// TODO: remove this function
 }
 
 
