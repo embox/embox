@@ -22,7 +22,11 @@ EMBOX_UNIT_INIT(bcache_init);
 POOL_DEF(buffer_head_pool, struct buffer_head, BCACHE_SIZE);
 static DLIST_DEFINE(bh_list);
 
-static struct hashtable *bcache;
+
+static size_t bh_hash(void *key);
+static int bh_cmp(void *key1, void *key2);
+HASHTABLE_DEF(bcache_ht, BCACHE_SIZE / 10, bh_hash, bh_cmp);
+static struct hashtable *bcache = &bcache_ht;
 static struct mutex bcache_mutex;
 static int graw_buffers(block_dev_t *bdev, int block, size_t size);
 static void free_more_memory(size_t size);
@@ -140,13 +144,14 @@ static int bh_cmp(void *key1, void *key2) {
 }
 
 static int bcache_init(void) {
+#if 0
 	/* XXX calculate size of hashtable */
 	bcache = hashtable_create(BCACHE_SIZE / 10, bh_hash, bh_cmp);
 
 	if (!bcache) {
 		return -1;
 	}
-
+#endif
 	mutex_init(&bcache_mutex);
 
 	return 0;
