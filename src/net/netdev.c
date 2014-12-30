@@ -8,30 +8,47 @@
  */
 
 #include <assert.h>
-#include <embox/unit.h>
-#include <errno.h>
-#include <stdlib.h>
-#include <framework/mod/options.h>
-#include <mem/misc/pool.h>
-#include <mem/sysmalloc.h>
-#include <net/if.h>
-#include <net/netdevice.h>
-#include <net/skbuff.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
+#include <errno.h>
+
+
 #include <util/hashtable.h>
 #include <util/dlist.h>
 #include <util/indexator.h>
+#include <util/array.h>
+
+#include <mem/misc/pool.h>
+#include <mem/sysmalloc.h>
+
+#include <net/if.h>
+#include <net/netdevice.h>
+#include <net/skbuff.h>
+
+#include <framework/mod/options.h>
 
 #define MODOPS_NETDEV_QUANTITY OPTION_GET(NUMBER, netdev_quantity)
 #define MODOPS_NETDEV_TABLE_SZ OPTION_GET(NUMBER, netdev_table_sz)
 
-EMBOX_UNIT_INIT(netdev_unit_init);
-
 POOL_DEF(netdev_pool, struct net_device, MODOPS_NETDEV_QUANTITY);
-struct hashtable *netdevs_table = NULL;
 
 INDEX_DEF(netdev_index, 1, MODOPS_NETDEV_QUANTITY);
+
+static size_t netdev_hash(void *key) {
+	size_t hash;
+	const char *name = key;
+
+	hash = 0;
+	while (*name != '\0') {
+		hash ^= *name++;
+	}
+
+	return hash;
+}
+
+HASHTABLE_DEF(nd_ht, MODOPS_NETDEV_TABLE_SZ, &netdev_hash, (ht_cmp_ft)&strcmp);
+struct hashtable *netdevs_table = &nd_ht;
 
 static int netdev_init(struct net_device *dev, const char *name,
 		int (*setup)(struct net_device *), size_t priv_size) {
@@ -285,28 +302,6 @@ int netdev_set_irq(struct net_device *dev, int irq_num) {
 	}
 
 	dev->irq = irq_num;
-
-	return 0;
-}
-
-static size_t netdev_hash(void *key) {
-	size_t hash;
-	const char *name = key;
-
-	hash = 0;
-	while (*name != '\0') {
-		hash ^= *name++;
-	}
-
-	return hash;
-}
-
-static int netdev_unit_init(void) {
-	netdevs_table = hashtable_create(MODOPS_NETDEV_TABLE_SZ,
-			&netdev_hash, (ht_cmp_ft)&strcmp);
-	if (netdevs_table == NULL) {
-		return -ENOMEM;
-	}
 
 	return 0;
 }
