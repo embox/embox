@@ -8,7 +8,7 @@
  * @date 30.09.11
  *
  * @author Dmitry Zubarevich
- * @author Avdyukhin Dmitry
+ * @author Dmitry Avdyukhin
  * @author Anton Bondarev
  */
 
@@ -22,6 +22,7 @@
  * structure outside of hash-table implementation library
  */
 struct hashtable;
+
 
 /** Hash function type definition */
 typedef size_t (*ht_hash_ft)(void *key);
@@ -101,5 +102,48 @@ extern void *hashtable_get_key_first(struct hashtable *ht);
  * @return pointer to next key or NULL if no more entries in hash-table
  */
 extern void *hashtable_get_key_next(struct hashtable *ht, void *prev_key);
+
+
+
+#include <util/dlist.h>
+
+struct hashtable_element {
+	struct dlist_head lnk;
+	struct dlist_head general_lnk;
+	void *key;
+	void *value;
+};
+
+struct hashtable_entry {
+	struct dlist_head list;
+	size_t cnt;
+};
+
+/**
+ * handler of hash-table.
+ * It contains size of hash-table array, compare element function, calculation
+ * hash index function and array of the table entry. table entry is the list of
+ *  the element with equivalent hash index.
+ */
+struct hashtable {
+	struct hashtable_entry *table; /**< array of the tables entry */
+	ht_hash_ft get_hash_key; /**< handler of the calculation index function */
+	ht_cmp_ft cmp; /** < handler of the compare elements function */
+	size_t table_size; /** size of the array of the table entry */
+	struct dlist_head all;
+};
+
+#define HASHTABLE_BUFFER_DEF(buff_name,buff_size) \
+	char buff_name[sizeof(struct hashtable_entry)][buff_size] = {{0}}
+
+#define HASHTABLE_DEF(name,size,hash_fn,cmp_fn)       \
+		static HASHTABLE_BUFFER_DEF(name##_buff, size); \
+		static struct hashtable name = {                \
+				(struct hashtable_entry *)name##_buff,  \
+				hash_fn,                                \
+				cmp_fn,                                 \
+				size, \
+				DLIST_INIT(name.all),                    \
+		}
 
 #endif /* UTIL_HASHTABLE_H_ */

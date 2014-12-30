@@ -25,33 +25,6 @@
 #define CONFIG_HASHTABLES_QUANTITY     OPTION_GET(NUMBER,hashtables_quantity)
 #define CONFIG_HASHTABLE_ELEM_QUNTITY  OPTION_GET(NUMBER,item_quntity)
 
-struct hashtable_element {
-	struct dlist_head lnk;
-	struct dlist_head general_lnk;
-	void *key;
-	void *value;
-};
-
-struct hashtable_entry {
-	struct dlist_head list;
-	size_t cnt;
-};
-
-/**
- * handler of hash-table.
- * It contains size of hash-table array, compare element function, calculation
- * hash index function and array of the table entry. table entry is the list of
- *  the element with equivalent hash index.
- */
-struct hashtable {
-	struct hashtable_entry *table; /**< array of the tables entry */
-	ht_hash_ft get_hash_key; /**< handler of the calculation index function */
-	ht_cmp_ft cmp; /** < handler of the compare elements function */
-	size_t table_size; /** size of the array of the table entry */
-	struct dlist_head all;
-};
-
-
 
 OBJALLOC_DEF(ht_pool, struct hashtable, CONFIG_HASHTABLES_QUANTITY);
 OBJALLOC_DEF(ht_elem_pool, struct hashtable_element,
