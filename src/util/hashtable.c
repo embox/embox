@@ -11,6 +11,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 
 #include <util/hashtable.h>
 
@@ -33,7 +34,6 @@ OBJALLOC_DEF(ht_elem_pool, struct hashtable_element,
 
 struct hashtable *hashtable_create(size_t table_size, ht_hash_ft get_hash, ht_cmp_ft cmp) {
 	struct hashtable *ht;
-	int i;
 
 	if (NULL == (ht = objalloc(&ht_pool))) {
 		return NULL;
@@ -43,9 +43,8 @@ struct hashtable *hashtable_create(size_t table_size, ht_hash_ft get_hash, ht_cm
 		objfree(&ht_pool, ht);
 		return NULL;
 	}
-	for(i = 0; i < table_size; i ++) {
-		dlist_init(&ht->table[i].list);
-	}
+	memset(ht->table, 0, table_size * sizeof(struct hashtable_entry));
+
 	ht->get_hash_key = get_hash;
 	ht->table_size = table_size;
 	ht->cmp = cmp;
@@ -67,9 +66,12 @@ int hashtable_put(struct hashtable *ht, void *key, void *value) {
 	htel->value = value;
 
 	idx = ht->get_hash_key(key) % ht->table_size;
+	if (0 == ht->table[idx].cnt) {
+		dlist_init(&ht->table[idx].list);
+	}
 
-	dlist_add_next(dlist_head_init(&htel->lnk), &ht->table[idx].list);
 	ht->table[idx].cnt ++;
+	dlist_add_next(dlist_head_init(&htel->lnk), &ht->table[idx].list);
 
 	dlist_add_prev(dlist_head_init(&htel->general_lnk), &ht->all);
 
@@ -83,6 +85,9 @@ void *hashtable_get(struct hashtable *ht, void* key) {
 	assert(ht);
 
 	idx = ht->get_hash_key(key) % ht->table_size;
+	if (!ht->table[idx].cnt) {
+		return NULL;
+	}
 	dlist_foreach_entry(htel, &ht->table[idx].list, lnk) {
 		if(0 == ht->cmp(key, htel->key)) {
 			return htel->value;
@@ -118,6 +123,9 @@ void hashtable_destroy(struct hashtable *ht) {
 	assert(ht);
 
 	for(i = 0; i < ht->table_size; i ++) {
+		if (0 == ht->table[i].cnt) {
+			continue;
+		}
 		dlist_foreach_entry(htel, &ht->table[i].list, lnk) {
 			objfree(&ht_elem_pool, htel);
 		}
