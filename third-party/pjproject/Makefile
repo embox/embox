@@ -35,7 +35,7 @@ $(CONFIGURE) :
 		echo export CFLAGS+="$(PJSIP_CPPFLAGS)" > user.mak; \
 		echo export CXXFLAGS+="$(PJSIP_CPPFLAGS)" >> user.mak; \
 	)
-	#cp ./config_site.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/pjlib/include/pj/config_site.h
+	cp ./config_site.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/pjlib/include/pj/config_site.h
 	touch $@
 
 $(BUILD) :
