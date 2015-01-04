@@ -54,8 +54,6 @@ static int this_config(struct time_dev_conf * conf) {
 
 	REG_STORE(SYSTICK_VAL, 0);
 
-	REG_STORE(SCB_SHP_BASE + 2, 0xf0 << (3 * SCB_SHP_PERIF_N));
-
 	REG_STORE(SYSTICK_CTRL, SYSTICK_ENABLE | SYSTICK_TICKINT |
 			SYSTICK_CLOCKINIT);
 
