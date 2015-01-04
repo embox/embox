@@ -18,10 +18,15 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
+#include <kernel/thread.h>
+#include <kernel/thread/thread_sched_wait.h>
+#include <err.h>
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
+
+extern void Audio_MAL_I2S_IRQHandler(void);
 
 #define MODOPS_VOLUME      OPTION_GET(NUMBER, volume)
 #define MODOPS_SAMPLE_RATE OPTION_GET(NUMBER, sample_rate)
@@ -47,9 +52,28 @@ struct pa_strm {
 };
 
 static struct pa_strm *_strm = NULL; /* for EVAL_AUDIO_HalfTransfer_CallBack */
+static struct thread *pa_thread;
+static volatile int pa_thread_waked;
+
+static void strm_get_data(struct pa_strm *strm, uint16_t *buf, size_t len);
+
+static void *pa_thread_hnd(void *arg) {
+	static int half = 1;
+
+	while (1) {
+		SCHED_WAIT(pa_thread_waked);
+		pa_thread_waked = 0;
+
+		if (!_strm->completed) {
+			strm_get_data(_strm, half ? _strm->buf : &_strm->buf[ARRAY_SIZE(_strm->buf) / 2], ARRAY_SIZE(_strm->buf) / 2);
+			half = !half;
+		}
+	}
+
+	return NULL;
+}
 
 static irq_return_t stm32f4_audio_i2s_dma_interrupt(unsigned int irq_num, void *dev_id) {
-	extern void Audio_MAL_I2S_IRQHandler(void);
 	Audio_MAL_I2S_IRQHandler();
 	return IRQ_HANDLED;
 }
@@ -57,14 +81,24 @@ static irq_return_t stm32f4_audio_i2s_dma_interrupt(unsigned int irq_num, void *
 PaError Pa_Initialize(void) {
 	D("", __func__);
 
+	pa_thread = thread_create(0, pa_thread_hnd, NULL);
+	if (err(pa_thread)) {
+		goto err_out;
+	}
+
 	if (0 != irq_attach(STM32F4_AUDIO_I2S_DMA_IRQ, stm32f4_audio_i2s_dma_interrupt,
 				0, NULL, "stm32f4_audio")) {
-		return paUnanticipatedHostError;
+		goto err_thread_free;
 	}
 
 	EVAL_AUDIO_SetAudioInterface(AUDIO_INTERFACE_I2S);
 
 	return paNoError;
+
+err_thread_free:
+	thread_delete(pa_thread);
+err_out:
+	return paUnanticipatedHostError;
 }
 
 PaError Pa_Terminate(void) {
@@ -73,6 +107,8 @@ PaError Pa_Terminate(void) {
 	if (0 != irq_detach(STM32F4_AUDIO_I2S_DMA_IRQ, NULL)) {
 		return paUnanticipatedHostError;
 	}
+
+	thread_delete(pa_thread);
 
 	return paNoError;
 }
@@ -261,12 +297,9 @@ uint32_t Codec_TIMEOUT_UserCallback(void) {
 }
 
 void EVAL_AUDIO_HalfTransfer_CallBack(uint32_t pBuffer, uint32_t Size) {
+	pa_thread_waked = 1;
+	sched_wakeup(&pa_thread->schedee);
 	//printk("half: %x %x\n", pBuffer, Size);
-	static int half = 1;
-	if (!_strm->completed) {
-		strm_get_data(_strm, half ? _strm->buf : &_strm->buf[ARRAY_SIZE(_strm->buf) / 2], ARRAY_SIZE(_strm->buf) / 2);
-		half = !half;
-	}
 //	assert(_strm != NULL);
 //	printk("half: %x %x\n", pBuffer, Size);
 //	if (!_strm->completed) {
