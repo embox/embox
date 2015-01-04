@@ -1,7 +1,6 @@
 
 package third_party.pjproject
 
-@App
 @AutoCmd
 @Cmd(name="streamutil", help="", man="")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
