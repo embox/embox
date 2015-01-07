@@ -23,7 +23,8 @@
 
 #include <framework/mod/options.h>
 
-#define IP_FRAGMENTED_SUPP OPTION_GET(NUMBER,ip_fragmented_support)
+#define MAX_BUFS_CNT       OPTION_GET(NUMBER, max_uncomplete_cnt)
+#define IP_FRAGMENTED_SUPP OPTION_GET(NUMBER, ip_fragmented_support)
 
 /**
  * Datagram receive buffer
