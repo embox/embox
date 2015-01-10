@@ -10,21 +10,22 @@
 #include <unistd.h>
 #include <time.h>
 #include <linux/byteorder.h>
+#include <err.h>
 
 #include <stm32f4_discovery_audio_codec.h>
 #include <stm32f4xx.h>
 
-#include <drivers/audio/portaudio.h>
-#include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
 #include <kernel/thread.h>
 #include <kernel/thread/thread_sched_wait.h>
-#include <err.h>
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
+#include <util/bit.h>
+
+#include <drivers/audio/portaudio.h>
 
 extern void Audio_MAL_I2S_IRQHandler(void);
 
@@ -39,7 +40,7 @@ extern void Audio_MAL_I2S_IRQHandler(void);
 
 #define STM32F4_AUDIO_I2S_DMA_IRQ (AUDIO_I2S_DMA_IRQ + 16)
 
-#define MAX_FRAMES_PER_BUF 180
+#define MAX_BUF_LEN (160 * 6)
 #define OUTPUT_CHAN_N 2
 #define BUF_N 2
 
@@ -48,31 +49,48 @@ struct pa_strm {
 	int paused;
 	int completed;
 	int sample_format;
-	int half;
-	unsigned long frames_per_buf;
 	PaStreamCallback *callback;
 	void *callback_data;
-	uint16_t in_buf[MAX_FRAMES_PER_BUF];
-	uint16_t out_buf[MAX_FRAMES_PER_BUF * OUTPUT_CHAN_N * BUF_N];
+	size_t chan_buf_len;
+	uint16_t in_buf[MAX_BUF_LEN];
+	uint16_t out_buf[MAX_BUF_LEN * OUTPUT_CHAN_N * BUF_N];
+	volatile unsigned char out_buf_empty_mask;
 };
+static_assert(BUF_N <= 8);
 
 static struct pa_strm *_strm = NULL; /* for EVAL_AUDIO_HalfTransfer_CallBack */
 static struct thread *pa_thread;
-static int pa_thread_waked;
-#define PA_WAKED_CANARY_ADD 314
 
 static void strm_get_data(struct pa_strm *strm, int buf_index);
 
 static void *pa_thread_hnd(void *arg) {
-	int buf_index;
 
 	while (1) {
-		SCHED_WAIT(pa_thread_waked);
-		buf_index = pa_thread_waked - PA_WAKED_CANARY_ADD;
-		pa_thread_waked = 0;
+		SCHED_WAIT(_strm->out_buf_empty_mask);
 
 		if (!_strm->completed) {
+			unsigned char empty_mask;
+			int buf_index;
+
+			empty_mask = _strm->out_buf_empty_mask;
+
+			static_assert(BUF_N == 2);
+			if (empty_mask < 3) {
+				/* 0 - impossible; 1 -> 0; 2 -> 1 */
+				buf_index = empty_mask >> 1;
+			} else {
+				/* there are some empty buffers, but should be 1 */
+				printk("stm32f4_pa: underrun!\n");
+				buf_index = bit_ffs(empty_mask);
+			}
+
 			strm_get_data(_strm, buf_index);
+
+			irq_lock();
+			_strm->out_buf_empty_mask &= ~(1 << buf_index);
+			irq_unlock();
+		} else {
+			EVAL_AUDIO_Stop(CODEC_PDWN_SW);
 		}
 	}
 
@@ -185,6 +203,7 @@ PaError Pa_OpenStream(PaStream** stream,
 			&& outputParameters->hostApiSpecificStreamInfo == 0);
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
 	assert(streamCallback != NULL);
+	assert(framesPerBuffer <= MAX_BUF_LEN);
 
 	D(": %p %p %p %f %lu %lu %p %p", __func__, stream, inputParameters,
 			outputParameters, sampleRate, framesPerBuffer, streamFlags, streamCallback, userData);
@@ -198,13 +217,11 @@ PaError Pa_OpenStream(PaStream** stream,
 	strm.paused = 0;
 	strm.completed = 0;
 	strm.sample_format = outputParameters->sampleFormat;
-	strm.frames_per_buf = framesPerBuffer;
+	strm.chan_buf_len = (MAX_BUF_LEN / framesPerBuffer) * framesPerBuffer;
 	strm.callback = streamCallback;
 	strm.callback_data = userData;
 	*stream = (void *)&strm;
 	_strm = &strm;
-
-	assert(_strm->frames_per_buf <= MAX_FRAMES_PER_BUF);
 
 	return paNoError;
 }
@@ -220,16 +237,14 @@ static void strm_get_data(struct pa_strm *strm, int buf_index) {
 	uint16_t *buf;
 	int i_in, rc;
 
-	/* assert(_strm->half == buf_index);*/
-
-	rc = strm->callback(NULL, _strm->in_buf, _strm->frames_per_buf, NULL, 0, strm->callback_data);
+	rc = strm->callback(NULL, _strm->in_buf, _strm->chan_buf_len, NULL, 0, strm->callback_data);
 	if (rc == paComplete) {
 		strm->completed = 1;
 	}
 	else assert(rc == paContinue);
 
-	buf = _strm->out_buf + _strm->half * _strm->frames_per_buf * OUTPUT_CHAN_N;
-	for (i_in = 0; i_in < _strm->frames_per_buf; ++i_in) {
+	buf = _strm->out_buf + buf_index * _strm->chan_buf_len * OUTPUT_CHAN_N;
+	for (i_in = 0; i_in < _strm->chan_buf_len; ++i_in) {
 		const uint16_t hw_frame = le16_to_cpu(_strm->in_buf[i_in]);
 		int i_out;
 
@@ -237,8 +252,6 @@ static void strm_get_data(struct pa_strm *strm, int buf_index) {
 			buf[i_in * OUTPUT_CHAN_N + i_out] = hw_frame;
 		}
 	}
-
-	_strm->half = 1 - _strm->half;
 }
 
 PaError Pa_StartStream(PaStream *stream) {
@@ -252,10 +265,9 @@ PaError Pa_StartStream(PaStream *stream) {
 	assert(!strm->started || strm->paused);
 
 	if (!strm->started) {
-		strm_get_data(strm, 0);
-		strm_get_data(strm, 1);
+		strm->out_buf_empty_mask = 0;
 
-		if (0 != EVAL_AUDIO_Play(strm->out_buf, strm->frames_per_buf * OUTPUT_CHAN_N * BUF_N * sizeof(uint16_t))) {
+		if (0 != EVAL_AUDIO_Play(strm->out_buf, strm->chan_buf_len * OUTPUT_CHAN_N * BUF_N * sizeof(uint16_t))) {
 			return paInternalError;
 		}
 		printk("playing\n");
@@ -303,12 +315,8 @@ uint32_t Codec_TIMEOUT_UserCallback(void) {
 }
 
 static void stm32f4_audio_irq_fill_buffer(int buf_index) {
-	/*assert(pa_thread_waked == 0);*/
-	pa_thread_waked = PA_WAKED_CANARY_ADD + buf_index;
+	_strm->out_buf_empty_mask |= 1 << buf_index;
 	sched_wakeup(&pa_thread->schedee);
-	if (_strm->completed) {
-		EVAL_AUDIO_Stop(CODEC_PDWN_SW);
-	}
 }
 
 void EVAL_AUDIO_HalfTransfer_CallBack(uint32_t pBuffer, uint32_t Size) {
