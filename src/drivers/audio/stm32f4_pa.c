@@ -39,6 +39,10 @@ extern void Audio_MAL_I2S_IRQHandler(void);
 
 #define STM32F4_AUDIO_I2S_DMA_IRQ (AUDIO_I2S_DMA_IRQ + 16)
 
+#define MAX_FRAMES_PER_BUF 180
+#define OUTPUT_CHAN_N 2
+#define BUF_N 2
+
 struct pa_strm {
 	int started;
 	int paused;
@@ -48,7 +52,8 @@ struct pa_strm {
 	unsigned long frames_per_buf;
 	PaStreamCallback *callback;
 	void *callback_data;
-	uint16_t buf[512];
+	uint16_t in_buf[MAX_FRAMES_PER_BUF];
+	uint16_t out_buf[MAX_FRAMES_PER_BUF * OUTPUT_CHAN_N * BUF_N];
 };
 
 static struct pa_strm *_strm = NULL; /* for EVAL_AUDIO_HalfTransfer_CallBack */
@@ -199,7 +204,7 @@ PaError Pa_OpenStream(PaStream** stream,
 	*stream = (void *)&strm;
 	_strm = &strm;
 
-	assert(_strm->frames_per_buf < ARRAY_SIZE(_strm->buf));
+	assert(_strm->frames_per_buf <= MAX_FRAMES_PER_BUF);
 
 	return paNoError;
 }
@@ -213,21 +218,24 @@ PaError Pa_CloseStream(PaStream *stream) {
 
 static void strm_get_data(struct pa_strm *strm, int buf_index) {
 	uint16_t *buf;
-	int len, i, rc;
+	int i_in, rc;
 
 	/* assert(_strm->half == buf_index);*/
 
-	buf = _strm->buf + _strm->half * _strm->frames_per_buf;
-	len = _strm->frames_per_buf;
-
-	rc = strm->callback(NULL, buf, len, NULL, 0, strm->callback_data);
+	rc = strm->callback(NULL, _strm->in_buf, _strm->frames_per_buf, NULL, 0, strm->callback_data);
 	if (rc == paComplete) {
 		strm->completed = 1;
 	}
 	else assert(rc == paContinue);
 
-	for (i = 0; i < len; i++) {
-		buf[i] = le16_to_cpu(buf[i]);
+	buf = _strm->out_buf + _strm->half * _strm->frames_per_buf * OUTPUT_CHAN_N;
+	for (i_in = 0; i_in < _strm->frames_per_buf; ++i_in) {
+		const uint16_t hw_frame = le16_to_cpu(_strm->in_buf[i_in]);
+		int i_out;
+
+		for (i_out = 0; i_out < OUTPUT_CHAN_N; ++i_out) {
+			buf[i_in * OUTPUT_CHAN_N + i_out] = hw_frame;
+		}
 	}
 
 	_strm->half = 1 - _strm->half;
@@ -247,7 +255,7 @@ PaError Pa_StartStream(PaStream *stream) {
 		strm_get_data(strm, 0);
 		strm_get_data(strm, 1);
 
-		if (0 != EVAL_AUDIO_Play(strm->buf, strm->frames_per_buf * 2 * sizeof(uint16_t))) {
+		if (0 != EVAL_AUDIO_Play(strm->out_buf, strm->frames_per_buf * OUTPUT_CHAN_N * BUF_N * sizeof(uint16_t))) {
 			return paInternalError;
 		}
 		printk("playing\n");
