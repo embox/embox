@@ -16,7 +16,7 @@ namespace std {
 	using ::time;
 	using ::asctime;
 	using ::localtime;
-	// difftime
+	using ::difftime;
 } // namespace std
 
 #endif // CTIME_

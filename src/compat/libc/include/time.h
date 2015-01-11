@@ -110,6 +110,10 @@ extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm
 
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
+static inline double difftime(time_t time1, time_t time0) {
+	return (time1 - time0);
+}
+
 __END_DECLS
 
 #endif /* TIME_H_ */
