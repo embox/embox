@@ -2,6 +2,7 @@ package embox.cmd.fs
 
 import embox.compat.posix.LibPosix
 
+@AutoCmd
 @Cmd(name = "mount",
 	help = "Mount a filesystem",
 	man = '''

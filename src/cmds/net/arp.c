@@ -6,7 +6,6 @@
  * @author Nikolay Korotky
  */
 
-#include <embox/cmd.h>
 #include <errno.h>
 
 #include <stdio.h>
@@ -19,10 +18,6 @@
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
 #include <string.h>
-
-
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: arp [-h] [-i if] [-s addr hwaddr|-d addr]\n");
@@ -57,7 +52,7 @@ static void print_arp_cache(struct in_device *in_dev) {
 	neighbour_foreach((neighbour_foreach_ft)&print_arp_entity, in_dev);
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	struct in_addr addr;
 	unsigned char hwaddr[ETH_ALEN];

@@ -1,6 +1,7 @@
 
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "input_test",
 	help = "Print input events from device",
 	man = '''

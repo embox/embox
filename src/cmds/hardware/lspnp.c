@@ -15,7 +15,6 @@
  * @author Alexandr Batyukov
  */
 
-#include <embox/cmd.h>
 #include <errno.h>
 
 #include <unistd.h>
@@ -24,8 +23,6 @@
 
 #include <drivers/amba_pnp.h>
 #include <drivers/amba_registry.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: lspnp [-b bus_type] [-n dev_id] [-h]\n");
@@ -284,7 +281,7 @@ const char *msg[] = {
 NULL,
 };
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int dev_number = -1;
 	func_show_bus_t show_func = show_all;
 	int opt;

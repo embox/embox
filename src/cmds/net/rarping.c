@@ -6,8 +6,6 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -28,9 +26,6 @@
 #include <net/l3/ipv4/ip.h>
 #include <string.h>
 #include <kernel/time/time.h>
-
-
-EMBOX_CMD(exec);
 
 #define DEFAULT_INTERVAL (1000 * USEC_PER_MSEC)
 
@@ -70,7 +65,7 @@ static int send_request(struct net_device *dev, uint16_t pro,
 	return net_tx(skb, NULL);
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt, ret;
 	int cnt = 4, cnt_resp = 0;
 	struct in_device *in_dev = inetdev_get_by_name("eth0");

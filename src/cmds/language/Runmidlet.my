@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "runMidlet",
 	help = "runMidlet application on top of jvm",
 	man = '''

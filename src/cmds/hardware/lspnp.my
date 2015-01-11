@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "lspnp",
 	help = "Show list of plug and play devices",
 	man = '''

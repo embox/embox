@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "ps",
 	help = "report a snapshot of the current processes.",
 	man = '''

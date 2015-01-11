@@ -6,8 +6,6 @@
  * @author Nikolay Korotky
  */
 
-#include <embox/cmd.h>
-
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -15,9 +13,7 @@
 #include <util/array.h>
 #include <framework/cmd/api.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	const struct cmd *cmd;
 	char *name;
 

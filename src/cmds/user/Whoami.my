@@ -1,6 +1,7 @@
 
 package embox.cmd.user
 
+@AutoCmd
 @Cmd(name = "whoami",
 	help = "Display current user's name",
 	man = '''

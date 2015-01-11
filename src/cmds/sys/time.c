@@ -7,7 +7,6 @@
  * @author Anton Bondatev
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -15,10 +14,7 @@
 #include <util/array.h>
 #include <framework/cmd/api.h>
 
-
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	const struct cmd *cmd;
 
 	if (argc <= 1) {

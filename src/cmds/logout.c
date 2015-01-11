@@ -7,11 +7,7 @@
  */
 
 #include <stdlib.h>
-#include <embox/cmd.h>
 
-EMBOX_CMD(logout_main);
-
-static int logout_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	exit(0);
 }
-

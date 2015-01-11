@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "rarping",
 	help = "Send RARP REQUEST to a neighbour host",
 	man = '''

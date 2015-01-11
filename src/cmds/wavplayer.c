@@ -11,12 +11,9 @@
 #include <stdint.h>
 
 #include <drivers/audio/portaudio.h>
-#include <embox/cmd.h>
 #include <kernel/printk.h>
 #include <linux/byteorder.h>
 #include <util/math.h>
-
-EMBOX_CMD(exec);
 
 extern const uint16_t AUDIO_SAMPLE[];  /* user-provided */
 
@@ -45,7 +42,7 @@ static int callback(const void *input, void *output, unsigned long frameCount,
 	return data->left ? paContinue : paComplete;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	static struct out_data data;
 	uint32_t sample_rate, subchunk2size;
 	PaStream *strm;

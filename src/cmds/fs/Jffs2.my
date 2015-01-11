@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "jffs2",
 	help = "make emulation bdev as flash device",
 	man = '''

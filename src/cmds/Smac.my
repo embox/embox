@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "smac_adm",
 	help = "administration utility for SMAC",
 	man = '''

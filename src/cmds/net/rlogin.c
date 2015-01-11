@@ -21,10 +21,6 @@
 
 #include <util/ring_buff.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
 #define RLOGIN_ADDR INADDR_ANY
 
 /* rlogin port */
@@ -207,7 +203,7 @@ static int rlogin_handle(int sock) {
 	return err;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	static int tries = 0;
 	int res = -1, sock, opt;
 	struct sockaddr_in our, dst;

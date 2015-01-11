@@ -1,5 +1,6 @@
 package embox.cmd.sys
 
+@AutoCmd
 @Cmd(name = "Shutdown",
 	help = "reset the system",
 	man = '''

@@ -13,13 +13,10 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <embox/cmd.h>
 #include <debug/symbol.h>
 #include <util/array.h>
 
 #include <profiler/tracing/trace.h>
-
-EMBOX_CMD(exec);
 
 ARRAY_SPREAD_DECLARE(struct __trace_block *, __trace_blocks_array);
 
@@ -158,7 +155,7 @@ bool change_block_activity(int index, bool activity) {
 	return false;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	int index;
 	TRACE_BLOCK_DEF(this_is_block);

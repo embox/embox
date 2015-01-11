@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "arp",
 	help = "Manipulate the system ARP cache",
 	man = '''

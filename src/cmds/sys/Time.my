@@ -1,5 +1,6 @@
 package embox.cmd.sys
 
+@AutoCmd
 @Cmd(name = "time",
 	help = "Shows time of a command execution",
 	man = '''

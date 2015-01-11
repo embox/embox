@@ -5,11 +5,8 @@
  * @author Nikolay Korotkiy
  */
 
-#include <embox/cmd.h>
 #include <tp.h>
 #include <unistd.h>
-
-EMBOX_CMD(exec);
 
 extern tp_vm *tp_init(int argc, char **argv);
 extern tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params);
@@ -19,7 +16,7 @@ static void usage(char **argv) {
 	printf("Usage: %s <filename.py>\n", argv[0]);
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	tp_vm *tp;
 

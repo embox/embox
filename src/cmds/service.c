@@ -7,15 +7,12 @@
  */
 
 #include <assert.h>
-#include <embox/cmd.h>
 #include <stdio.h>
 #include <util/array.h>
 #include <errno.h>
 #include <string.h>
 #include <stddef.h>
 #include <cmd/shell.h>
-
-EMBOX_CMD(exec);
 
 struct serv_cmd {
 	const char *name;
@@ -78,7 +75,7 @@ static const struct serv_cmd * serv_cmd_lookup(const char *name,
 	return NULL;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ind;
 	const struct serv_info *sinfo;
 	const struct serv_cmd *scmd;

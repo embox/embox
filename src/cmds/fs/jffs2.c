@@ -6,7 +6,6 @@
  * @author Andrey Gazukin
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -14,13 +13,11 @@
 #include <drivers/flash/flash.h>
 #include <drivers/flash/flash_dev.h>
 
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: jffs2 DEV NAME\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 
 

@@ -6,16 +6,13 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <errno.h>
 #include <sys/resource.h>
 #include <stdio.h>
 #include <string.h>
 #include <pwd.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int with_incr, incr, ind, prior, with_n, which, ret;
 	id_t who;
 	struct passwd *p;

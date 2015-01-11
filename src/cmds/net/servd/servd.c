@@ -15,13 +15,10 @@
 #include <cmd/web_server.h>
 #include <cmd/servd.h>
 #include <embox/web_service.h>
-#include <embox/cmd.h>
 #include <kernel/task.h>
 #include <errno.h>
 #include <unistd.h>
 #include <fcntl.h>
-
-EMBOX_CMD(servd);
 
 static int web_server_started = 0;
 static int web_server_task;
@@ -153,7 +150,7 @@ int stop_server(void) {
 	return 0;
 }
 
-static int servd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 
 	if (!web_server_started) {

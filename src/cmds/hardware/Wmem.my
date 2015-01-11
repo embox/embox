@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "wmem",
 	help = "Writes memory word at the specified address",
 	man = '''

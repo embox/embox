@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "test",
 	help = "Interacts with Embox testing framework",
 	man = '''

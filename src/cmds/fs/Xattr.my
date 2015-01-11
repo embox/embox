@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "xattr",
 	help = "Display and manipulate extended attributes",
 	man = '''

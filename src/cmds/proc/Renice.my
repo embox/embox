@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "renice",
 	help = "alter priority of running processes.",
 	man = '''

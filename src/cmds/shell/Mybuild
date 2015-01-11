@@ -36,6 +36,7 @@ module tish {
 	depends embox.cmd.logout
 }
 
+@AutoCmd
 @Cmd(name = "shell_run",
 	help = "Run shell by name",
 	man = '''
@@ -54,6 +55,7 @@ module shell_run {
 	depends embox.framework.LibFramework
 }
 
+@AutoCmd
 @Cmd(name = "exec_helper",
 	help = "",
 	man = "")

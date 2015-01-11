@@ -1,5 +1,6 @@
 package embox.cmd.sys
 
+@AutoCmd
 @Cmd(name = "export",
 	help = "Set/unset environment variables",
 	man = '''

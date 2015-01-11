@@ -7,16 +7,13 @@
  */
 
 #include <assert.h>
-#include <embox/cmd.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stddef.h>
 #include <net/lib/pop3.h>
 #include <unistd.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ret;
 	struct pop3_session p3s;
 	char *password;

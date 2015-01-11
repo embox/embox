@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "modprobe",
 	help = "Enables a given module",
 	man = '''

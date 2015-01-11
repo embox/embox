@@ -6,7 +6,6 @@
  * @author Eldar Abusalimov
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <errno.h>
 #include <stddef.h>
@@ -16,8 +15,6 @@
 
 #include <drivers/irqctrl.h>
 #include <hal/ipl.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: load [-h] -a addr\n");
@@ -66,7 +63,7 @@ static __attribute__ ((noreturn))
 	callme();
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	extern char _load_image_start, _load_image_end;
 
 	char *image_vma;

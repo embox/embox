@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "bootpc",
 	help = "BOOTP client",
 	man = '''

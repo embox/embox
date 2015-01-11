@@ -6,12 +6,8 @@
  * @author Felix Sulima
  */
 
-#include <embox/cmd.h>
-
 #include <cxx_app_start.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	return cxx_app_start(argc,argv);
 }

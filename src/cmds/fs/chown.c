@@ -10,9 +10,6 @@
 #include <stdlib.h>
 #include <fs/path.h>
 #include <fs/vfs.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(chown_main);
 
 static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group_set) {
 	char **file_p;
@@ -37,7 +34,7 @@ static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group
 	return 0;
 }
 
-static int chown_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	uid_t owner_id;
 	bool is_group_set;
 	gid_t group_id;

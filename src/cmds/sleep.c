@@ -9,15 +9,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(sleep_cmd);
 
 static void usage(char *arg0) {
 	printf("usage: %s USEC\n", arg0);
 }
 
-static int sleep_cmd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	useconds_t usec = 0;
 
 	if (argc != 2) {

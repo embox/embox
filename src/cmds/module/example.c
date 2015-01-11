@@ -12,9 +12,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <framework/example/api.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(const char *cmd) {
 	printf("Usage: %s [-h] [-n <number> | <example_name>]", cmd);
@@ -35,7 +32,7 @@ static void print_examples(void) {
 	printf("\nTotal examples: %d\n", i);
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt, number;
 	const struct example *example;
 

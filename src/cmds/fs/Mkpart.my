@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "mkpart",
 	help = "creates block device corresponding to partition",
 	man = '''

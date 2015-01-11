@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "servd",
 	help = "Start HTTP server",
 	man = '''

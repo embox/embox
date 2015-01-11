@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "nice",
 	help = "run a program with modified scheduling priority.",
 	man = '''

@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "mkfs",
 	help = "Build a file system",
 	man = '''

@@ -1,5 +1,6 @@
 package embox.cmd.user
 
+@AutoCmd
 @Cmd(name = "userdel",
 	help = "",
 	man = '''

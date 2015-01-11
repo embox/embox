@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "service",
 	help = "run a system service",
 	man = '''

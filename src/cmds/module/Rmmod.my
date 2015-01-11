@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "rmmod",
 	help = "Disables a given module",
 	man = '''

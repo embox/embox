@@ -6,15 +6,12 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <net/lib/dns.h>
 #include <stdio.h>
 #include <arpa/inet.h>
 #include <errno.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ret;
 	struct dns_result result;
 	struct dns_rr *rr;

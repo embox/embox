@@ -1,6 +1,7 @@
 
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "sleep",
 	help = "sleep for specified usec num",
 	man = '''

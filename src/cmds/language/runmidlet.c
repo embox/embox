@@ -6,12 +6,8 @@
  * @author Felix Sulima
  */
 
-#include <embox/cmd.h>
-
 #include <midp.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	return phoneme_midp(argc, argv);
 }

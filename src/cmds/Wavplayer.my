@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "wavplayer",
 	help = "Play .wav audio files",
 	man = '''

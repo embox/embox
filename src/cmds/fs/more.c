@@ -6,7 +6,6 @@
  * @author Denis Deryugin
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,8 +16,6 @@
 
 #define TAB_SIZE 4
 #define MAX_SCREEN_WIDTH 256
-
-EMBOX_CMD(exec);
 
 static char buff[MAX_SCREEN_WIDTH], info[MAX_SCREEN_WIDTH];
 
@@ -87,7 +84,7 @@ static void screen(FILE *fp) {
 	return;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	FILE *fp;
 	TRACE_BLOCK_DEF(more_outer);
 	TRACE_BLOCK_DEF(more_inner);

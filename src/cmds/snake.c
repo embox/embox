@@ -7,13 +7,10 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <embox/cmd.h>
 #include <drivers/vt.h>
 #include <drivers/diag.h>
 #include <unistd.h>
 #include <time.h>
-
-EMBOX_CMD(exec);
 
 #if 0x0 /* fix warnings: function print_usage not used */
 static void print_usage(void) {
@@ -212,7 +209,7 @@ static int valid(point p) {
 	return (last_valid = !(p.x == 0 && p.y == 0));
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	field_init();
 	diff = dxp;
 	diag_getc();

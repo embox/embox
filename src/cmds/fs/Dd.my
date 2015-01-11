@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "dd",
 	help = "Read blocks of file",
 	man = '''

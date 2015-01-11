@@ -1,6 +1,7 @@
 
 package embox.cmd.user
 
+@AutoCmd
 @Cmd(name = "su",
 	help = "Asks for superuser password and on success gives his shell",
 	man = '''

@@ -28,13 +28,9 @@
 
 #include <security/seculog.h>
 
-#include <embox/cmd.h>
-
 #include <crypt.h>
 
 extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
-
-EMBOX_CMD(login_cmd);
 
 #define BUF_LEN 64
 
@@ -249,7 +245,7 @@ errret:
 	return res;
 }
 
-static int login_cmd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	char *name = NULL, *cmd = NULL;
 	char with_pass = 1;
 	int opt, res;

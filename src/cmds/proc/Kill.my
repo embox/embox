@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "kill",
 	help = "Sends signal to task",
 	man = '''

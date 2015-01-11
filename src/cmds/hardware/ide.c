@@ -5,6 +5,7 @@
  * @date 20.07.2012
  * @author Andrey Gazukin
  */
+
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -12,11 +13,6 @@
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <fs/node.h>
-
-#include <embox/cmd.h>
-
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: ide \n");
@@ -50,7 +46,7 @@ static void print_drive (struct ide_tab *ide) {
 
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 
 	getopt_init();

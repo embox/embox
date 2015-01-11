@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "example",
 	help = "Interacts with Embox example framework",
 	man = '''

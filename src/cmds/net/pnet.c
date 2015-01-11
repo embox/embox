@@ -22,11 +22,6 @@
 #include <pnet/repo.h>
 #include <pnet/graph.h>
 
-
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
 ARRAY_SPREAD_DECLARE(const struct pnet_module, __pnet_mod_repo);
 
 #define MAX_WORD_LENGTH 100
@@ -406,7 +401,7 @@ static _rule_setter get_setter_by_option(char *option) {
 	return NULL;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt, res;
 	struct pnet_graph *gr;
 	const struct pnet_module *mod;

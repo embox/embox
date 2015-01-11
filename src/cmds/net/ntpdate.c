@@ -9,7 +9,6 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
-#include <embox/cmd.h>
 #include <errno.h>
 #include <framework/mod/options.h>
 #include <kernel/time/time.h>
@@ -21,8 +20,6 @@
 #include <time.h>
 
 #define MODOPS_TIMEOUT OPTION_GET(NUMBER, timeout)
-
-EMBOX_CMD(exec);
 
 static int make_socket(const struct timeval *timeout, int *out_sock,
 		const struct sockaddr_in *addr_in) {
@@ -175,7 +172,7 @@ static int ntpdate(in_addr_t addr, const struct timeval *timeout,
 	return ntpdate_process(&rep, addr, only_query);
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt, only_query, timeout;
 	struct timeval timeout_tv;
 	in_addr_t addr;

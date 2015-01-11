@@ -12,7 +12,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include <embox/cmd.h>
 #include <fs/fsop.h>
 #include <fs/file_system.h>
 #include <fs/mount.h>
@@ -23,8 +22,6 @@
 #include <embox/block_dev.h>
 
 #include <mem/phymem.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: mount [-h] [-t fstype] dev dir\n");
@@ -55,7 +52,7 @@ static void show_mount_list(void) {
 	}
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	int opt_cnt;
 	char *dev, *dir;

@@ -5,13 +5,11 @@
  * @author  Anton Kozlov
  * @date    30.10.2013
  */
+
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <drivers/input/input_dev.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(input_test_main);
 
 static void usage(char *argv0) {
 	printf("Usage: %s -i INPUT_DEV\n", argv0);
@@ -42,7 +40,7 @@ static int indev_cb(struct input_dev *indev) {
 	return 0;
 }
 
-static int input_test_main(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	char *indev_name = NULL;
 	struct input_dev *indev;

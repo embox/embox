@@ -6,20 +6,16 @@
  * @author Alexandr Batyukov
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 #include <stdio.h>
 
 #include <framework/cmd/api.h>
 
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: help [-h]\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	const struct cmd *cmd;
 	int opt;
 

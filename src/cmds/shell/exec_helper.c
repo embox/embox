@@ -10,10 +10,6 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec_helper_main);
-
 struct exec_data {
 	int argc;
 	char **argv;
@@ -27,7 +23,7 @@ static void *exec_helper_trampoline(void *arg) {
 	_exit(1);
 }
 
-static int exec_helper_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int res;
 	struct exec_data edata;
 

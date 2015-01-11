@@ -8,7 +8,6 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
@@ -19,8 +18,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <stddef.h>
-
-EMBOX_CMD(exec);
 
 /*
  * Trivial File Transfer Protocol (IEN-133)
@@ -497,7 +494,7 @@ error:
 	return ret;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ret, i;
 	char param_ascii, param_binary, param_get, param_put;
 	int (*file_hnd)(char *, char *, char);

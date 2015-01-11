@@ -5,9 +5,9 @@
  * @date 27.04.14
  * @author Kirill Smirnov
  */
+
 #include <stdio.h>
 #include <unistd.h>
-#include <embox/cmd.h>
 #include <drivers/ahci.h>
 
 struct lssata_cb {
@@ -56,8 +56,6 @@ static struct hba_port_reg generic_port_regs[] = {
 	{0x40,  "FIS SWITCHING CONTROL"},
 	{0, ""},
 };
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: lssata [-x] [-d] [-h]\n");
@@ -166,7 +164,7 @@ static int sata_callback(struct ahci_hba* hba, void *cookie) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	int hexdump = 0;
 	int describe = 0;

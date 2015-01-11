@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "mem",
 	help = "Prints the contents of memory",
 	man = '''

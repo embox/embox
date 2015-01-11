@@ -1,5 +1,6 @@
 package embox.cmd.sys
 
+@AutoCmd
 @Cmd(name = "version",
 	help = "Displays info associated with compilation",
 	man = '''
