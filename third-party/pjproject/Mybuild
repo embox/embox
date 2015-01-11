@@ -1,12 +1,9 @@
 
 package third_party.pjproject
 
-@AutoCmd
-@Cmd(name="streamutil", help="", man="")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 /*@BuildDepends(third_party.STLport.core)*/
 module core {
-	source "^BUILD/extbld/^MOD_PATH/install/streamutil.o"
 
 	depends embox.net.lib.getifaddrs
 
@@ -24,5 +21,21 @@ module core {
 	depends embox.compat.posix.proc.exit
 	depends embox.compat.libc.LibCStdioFseek
 	depends embox.compat.libc.LibCTime
-
 }
+
+@AutoCmd
+@Cmd(name="streamutil", help="", man="")
+@BuildDepends(core)
+module streamutil {
+	source "^BUILD/extbld/third_party/pjproject/core/install/streamutil.o"
+	depends core
+}
+
+@AutoCmd
+@Cmd(name="pjsua", help="", man="")
+@BuildDepends(core)
+module pjsua {
+	source "^BUILD/extbld/third_party/pjproject/core/install/pjsua.o"
+	depends core
+}
+

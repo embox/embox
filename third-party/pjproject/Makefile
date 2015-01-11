@@ -21,10 +21,11 @@ DISABLE_FEATURES := \
 
 PJPROJECT_ROOT := $(ROOT_DIR)/third-party/pjproject
 PJSIP_CPPFLAGS := -I$(PJPROJECT_ROOT)/include
+BUILD_ROOT := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(BUILD_ROOT) && ( \
 		./aconfigure \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS="$(PJSIP_CPPFLAGS)" \
@@ -35,18 +36,22 @@ $(CONFIGURE) :
 		echo export CFLAGS+="$(PJSIP_CPPFLAGS)" > user.mak; \
 		echo export CXXFLAGS+="$(PJSIP_CPPFLAGS)" >> user.mak; \
 	)
-	cp ./config_site.h $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/pjlib/include/pj/config_site.h
+	cp ./config_site.h $(BUILD_ROOT)/pjlib/include/pj/config_site.h
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(BUILD_ROOT) && ( \
 		make -j1 dep; \
 		make -j1 MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	for f in $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/pjsip-apps/bin/samples/$(AUTOCONF_TARGET_TRIPLET)/*; do \
+	for f in $(BUILD_ROOT)/pjsip-apps/bin/samples/$(AUTOCONF_TARGET_TRIPLET)/*; do \
        		cp $$f $(PKG_INSTALL_DIR)/$$(basename $$f).o; \
+	done
+	for f in $(BUILD_ROOT)/pjsip-apps/bin/*-$(AUTOCONF_TARGET_TRIPLET); do \
+		fn=$$(basename $$f); \
+		cp $$f $(PKG_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET)}.o; \
 	done
 	touch $@
