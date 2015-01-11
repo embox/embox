@@ -26,6 +26,7 @@ module core {
 @AutoCmd
 @Cmd(name="streamutil", help="", man="")
 @BuildDepends(core)
+@Build(stage=2,script="true")
 module streamutil {
 	source "^BUILD/extbld/third_party/pjproject/core/install/streamutil.o"
 	depends core
@@ -34,6 +35,7 @@ module streamutil {
 @AutoCmd
 @Cmd(name="pjsua", help="", man="")
 @BuildDepends(core)
+@Build(stage=2,script="true")
 module pjsua {
 	source "^BUILD/extbld/third_party/pjproject/core/install/pjsua.o"
 	depends core
