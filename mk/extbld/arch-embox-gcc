@@ -3,7 +3,7 @@
 if [ $EMBOX_GCC_ENV ] && [ -f $EMBOX_GCC_ENV ]; then
 	. $EMBOX_GCC_ENV
 else
-	echo "No EMBOX_GCC_ENV is set"
+	echo "No EMBOX_GCC_ENV is set" >&2
 	exit 1
 fi
 
@@ -27,7 +27,7 @@ case " $@" in
 	*" -c "*) ARG_LINE="$C_CXX_FLAGS";;
 	*" -E "*) ARG_LINE=;;
 	*" -shared "*) echo "Can't build shared objects"; exit 1;;
-	*" -l"*) echo -e "\n\nWARNING!!! You're linking somethingn with it\n\n";;
+	*" -l"*) echo -e "\n\nWARNING!!! You're linking something with it\n\n";;
 esac
 
 ARG_LINE="$ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
