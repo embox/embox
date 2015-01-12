@@ -8,6 +8,7 @@
 
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <fs/path.h>
 #include <fs/vfs.h>
 
