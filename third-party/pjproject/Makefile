@@ -7,7 +7,7 @@ PKG_MD5     := 6ed4bb7750c827dc1d881e209a3b62db
 
 include $(EXTBLD_LIB)
 
-PKG_PATCHES := pjproject.patch cxx_builds_disable.patch
+PKG_PATCHES := pjproject.patch
 
 DISABLE_FEATURES := \
 	l16-codec   \
@@ -20,7 +20,7 @@ DISABLE_FEATURES := \
 	#g711-codec
 
 PJPROJECT_ROOT := $(ROOT_DIR)/third-party/pjproject
-PJSIP_CPPFLAGS := -I$(PJPROJECT_ROOT)/include
+PJSIP_CPPFLAGS := -I$(PJPROJECT_ROOT)/include $(EMBOX_DEPS_CPPFLAGS) -I$(ROOT_DIR)/src/include/c++
 BUILD_ROOT := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 
 $(CONFIGURE) :
@@ -28,9 +28,11 @@ $(CONFIGURE) :
 	cd $(BUILD_ROOT) && ( \
 		./aconfigure \
 			CC=$(EMBOX_GCC) \
+			CXX=$(EMBOX_GXX) \
 			CPPFLAGS="$(PJSIP_CPPFLAGS)" \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
+			--prefix=/ \
 			$(DISABLE_FEATURES:%=--disable-%) \
 			--with-external-pa; \
 		echo export CFLAGS+="$(PJSIP_CPPFLAGS)" > user.mak; \
