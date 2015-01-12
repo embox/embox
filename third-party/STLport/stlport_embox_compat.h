@@ -40,10 +40,6 @@
 // it is not immediately apparent, but if we write "namespace std" it is changed to some other name
 namespace std {
 
-	static inline double difftime(time_t time1, time_t time0) {
-		DPRINT();
-		return (double)(time1 - time0);
-	}
 	static inline int mblen(const char *s, size_t n) {
 		(void)s;
 		(void)n;
