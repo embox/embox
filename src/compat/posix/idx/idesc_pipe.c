@@ -305,7 +305,7 @@ static struct pipe *pipe_alloc(void) {
 	}
 
 	pipe->buff = pipe_buff;
-	pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE;
+	pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE - 1;
 	ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
 
 	mutex_init(&pipe->mutex);
