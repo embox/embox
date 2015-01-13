@@ -43,21 +43,24 @@ TEST_CASE("Test capacity of buffer") {
 	test_assert_equal(cnt, BUFF_LENGTH);
 }
 
-TEST_CASE("Ringbuffer should be able write all one piece") {
+TEST_CASE("Ringbuffer should be able read and write all one piece") {
 	int rd[BUFF_LENGTH] = { 5,5,5,5, 5,5,5,5, 5,5,5,5, 5,5,5,5,};
-	int wr;
-	int cnt = BUFF_LENGTH;
+	int wr[BUFF_LENGTH];
+
+	/* in order to test wrapping */
+	test_rbuff.ring.head = test_rbuff.ring.tail = 5;
 
 	test_assert_equal(BUFF_LENGTH,
 		ring_buff_enqueue(&test_rbuff, &rd, BUFF_LENGTH));
 
-	while (cnt--) {
-		test_assert_equal(1, ring_buff_dequeue(&test_rbuff, &wr, 1));
+	test_assert_equal(BUFF_LENGTH,
+		ring_buff_dequeue(&test_rbuff, &wr, BUFF_LENGTH));
 
-		test_assert_equal(wr, 5);
+	for(int i = 0; i < BUFF_LENGTH; i++) {
+		test_assert_equal(wr[i], rd[i]);
 	}
 
-	test_assert_equal(0, ring_buff_dequeue(&test_rbuff, &wr, 1));
+	test_assert_zero(ring_buff_dequeue(&test_rbuff, &wr, 1));
 }
 
 #define SMALL_BUFLEN 4
