@@ -95,17 +95,3 @@ static module indexator {
 	depends embox.compat.libc.stdlib.core
 	depends embox.compat.libc.LibCString
 }
-
-//TODO this is too abstract in my mind
-@DefaultImpl(num_alloc_array)
-abstract module num_alloc { }
-
-static module num_alloc_array extends num_alloc {
-	source "num_alloc_array.c", "num_alloc_array.h"
-}
-
-static module idx_table {
-	depends num_alloc
-}
-
-

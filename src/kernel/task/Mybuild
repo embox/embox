@@ -66,6 +66,5 @@ module task_table extends task_table_api {
 	source "task_table.c"
 
 	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.util.idx_table
 }
 
