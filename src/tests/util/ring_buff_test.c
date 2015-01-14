@@ -103,7 +103,7 @@ TEST_CASE("Ringbuffer enqueue should respect bounds") {
 #define SMALL_BUFLEN 4
 RING_BUFFER_DEF(test_null_buf, char, SMALL_BUFLEN + 1);
 
-TEST_CASE("Ringbuffer allocs space filled nulls and return pointer") {
+TEST_CASE("Ringbuffer allocates space filled with nulls and returns a pointer") {
 	char wr[SMALL_BUFLEN];
 	char *buf;
 
