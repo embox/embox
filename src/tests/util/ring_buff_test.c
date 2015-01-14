@@ -9,6 +9,8 @@
 
 #include <embox/test.h>
 #include <util/ring_buff.h>
+#include <string.h>
+
 
 EMBOX_TEST_SUITE("util/ring_buff test");
 
@@ -101,12 +103,20 @@ TEST_CASE("Ringbuffer enqueue should respect bounds") {
 #define SMALL_BUFLEN 4
 RING_BUFFER_DEF(test_null_buf, char, SMALL_BUFLEN + 1);
 
-TEST_CASE("Ringbuffer enqueues nulls in ring_buff_fill_nulls") {
-	char wr;
+TEST_CASE("Ringbuffer allocs space filled nulls and return pointer") {
+	char wr[SMALL_BUFLEN];
+	char *buf;
 
-	ring_buff_fill_nulls(&test_null_buf, SMALL_BUFLEN);
+	test_assert_equal(SMALL_BUFLEN,
+		ring_buff_alloc(&test_null_buf, SMALL_BUFLEN, (void **) &buf));
 
-	while(0 != ring_buff_dequeue(&test_null_buf, &wr, 1)) {
-		test_assert_equal(wr, 0);
+	for (int i = 0; i < SMALL_BUFLEN; i++) {
+		test_assert_equal(0, buf[i]);
 	}
+
+	strcpy(buf, "aba");
+
+	test_assert_equal(SMALL_BUFLEN,
+		ring_buff_dequeue(&test_null_buf, &wr, SMALL_BUFLEN));
+	test_assert_str_equal("aba", wr);
 }

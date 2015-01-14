@@ -90,10 +90,10 @@ int input_dev_input(struct input_dev *dev) {
 
 	irq_lock();
 	{
-		if (!dev->curprocessd && !ring_buff_fill_nulls(&dev->rbuf, 1)) {
-				ret = 0;
-				goto out_unlock;
-			}
+		if (!dev->curprocessd && !ring_buff_alloc(&dev->rbuf, 1,
+			(void **) &dev->curprocessd)) {
+			ret = 0;
+			goto out_unlock;
 		}
 
 		if (0 > (ret = dev->ops->event_get(dev, dev->curprocessd))) {

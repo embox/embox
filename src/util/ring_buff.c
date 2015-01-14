@@ -20,39 +20,21 @@ int ring_buff_get_space(struct ring_buff *buf) {
 	return ring_room_size(&buf->ring, buf->capacity);
 }
 
-static int __ring_buff_fill_nulls(struct ring_buff *buf,
-	void *write_to, int cnt) {
-	struct ring *ring = &buf->ring;
-	int can_write;
-
-	can_write = ring_can_write(&buf->ring, buf->capacity, cnt);
-	memset(write_to, 0, buf->elem_size * can_write);
-	ring_just_write(ring, buf->capacity, can_write);
-
-	return can_write;
-}
-
-int ring_buff_fill_nulls(struct ring_buff *buf, int cnt) {
+int ring_buff_alloc(struct ring_buff *buf, int cnt, void **ret) {
 	struct ring *ring = &buf->ring;
 	void *write_to = buf->storage + (ring->head * buf->elem_size);
-	int written, rest;
+	int can_write;
 
 	if (ring_full(ring, buf->capacity)) {
 		return 0;
 	}
 
-	written = __ring_buff_fill_nulls(buf, write_to, cnt);
+	*ret = write_to;
 
-	if (ring_full(ring, buf->capacity)) {
-		return written;
-	}
+	can_write = ring_can_write(&buf->ring, buf->capacity, cnt);
+	memset(write_to, 0, buf->elem_size * can_write);
 
-	rest = cnt - written;
-	if (rest) {
-		written += __ring_buff_fill_nulls(buf, buf->storage, rest);
-	}
-
-	return written;
+	return ring_just_write(ring, buf->capacity, can_write);
 }
 
 static int __ring_buff_enqueue(struct ring_buff *buf,
@@ -87,7 +69,6 @@ int ring_buff_enqueue(struct ring_buff *buf, void *from_buf, int cnt) {
 		written += __ring_buff_enqueue(buf, buf->storage,
 			from_buf + buf->elem_size * written, rest);
 	}
-
 
 	return written;
 }

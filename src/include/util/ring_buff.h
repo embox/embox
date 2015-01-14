@@ -51,7 +51,16 @@ extern int ring_buff_enqueue(struct ring_buff *buf, void *from_buf, int cnt);
  */
 extern int ring_buff_dequeue(struct ring_buff *buf, void *into_buf, int cnt);
 
-extern int ring_buff_fill_nulls(struct ring_buff *buf, int cnt);
+/**
+ * @brief Allocate space for @a cnt or less elements without wrapping.
+ *
+ * @param buf
+ * @param cnt
+ * @param ret Pointer at the first element in the array
+ *
+ * @return Number of allocated elements without wrapping
+ */
+extern int ring_buff_alloc(struct ring_buff *buf, int cnt, void **ret);
 
 extern int ring_buff_init(struct ring_buff *buf, size_t elem_size,
 	int count, void *storage);
