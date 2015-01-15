@@ -27,9 +27,13 @@ static unsigned long task_table_bm[BITMAP_SIZE(TABLE_SZ)];
 #define TID2IDX(tid) (tid - 1)
 #define IDX2TID(idx) (idx + 1)
 
+#define IDXCHK(idx) (idx >= 0 && idx < TABLE_SZ)
+
+#define BMFOUND(idx, size) (idx < size)
+
 int task_table_add(struct task *tsk) {
 	int idx = bitmap_find_zero_bit(task_table_bm, TABLE_SZ, 0);
-	assert(idx < TABLE_SZ);
+	assert(BMFOUND(idx, TABLE_SZ));
 	task_table[idx] = tsk;
 	bitmap_set_bit(task_table_bm, idx);
 	return IDX2TID(idx);
@@ -37,32 +41,28 @@ int task_table_add(struct task *tsk) {
 
 struct task *task_table_get(int tid) {
 	int idx = TID2IDX(tid);
-	assert(idx >= 0 && tid < TABLE_SZ);
+	assert(IDXCHK(idx));
 	return bitmap_test_bit(task_table_bm, idx) ? task_table[idx] : NULL;
 }
 
 void task_table_del(int tid) {
 	int idx = TID2IDX(tid);
-	assert(idx >= 0 && tid < TABLE_SZ);
+	assert(IDXCHK(idx));
 	bitmap_clear_bit(task_table_bm, idx);
 }
 
 int task_table_has_space(void) {
 	int idx = bitmap_find_zero_bit(task_table_bm, TABLE_SZ, 0);
-	return idx < TABLE_SZ;
+	return BMFOUND(idx, TABLE_SZ);
 }
 
 int task_table_get_first(int since) {
 	int idx = TID2IDX(since);
 	int set_idx = bitmap_find_bit(task_table_bm, TABLE_SZ, idx);
-	return set_idx < TABLE_SZ ? IDX2TID(set_idx) : -ENOENT;
+	return BMFOUND(set_idx, TABLE_SZ) ? IDX2TID(set_idx) : -ENOENT;
 }
 
 static int task_table_module_init(void) {
 	bitmap_clear_all(task_table_bm, TABLE_SZ);
-	/* if TABLE_SZ % LONG_BIT != 0, then
-	 * last bits should be set here, and shouldn't changed later
-	 */
-	static_assert(TABLE_SZ % LONG_BIT == 0);
 	return 0;
 }
