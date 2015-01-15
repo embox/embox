@@ -144,14 +144,7 @@ static int bh_cmp(void *key1, void *key2) {
 }
 
 static int bcache_init(void) {
-#if 0
-	/* XXX calculate size of hashtable */
-	bcache = hashtable_create(BCACHE_SIZE / 10, bh_hash, bh_cmp);
 
-	if (!bcache) {
-		return -1;
-	}
-#endif
 	mutex_init(&bcache_mutex);
 
 	return 0;

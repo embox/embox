@@ -60,14 +60,7 @@ static int dcache_cmp(void *key1, void *key2) {
 }
 
 static int dcache_lazy_init(void) {
-#if 0
-	dcache_table = hashtable_create(DCACHE_TABLE_SIZE,
-			&dcache_hash, &dcache_cmp);
 
-	if (dcache_table == NULL) {
-		return -ENOMEM;
-	}
-#endif
 	dlist_init(&values);
 
 	return 0;

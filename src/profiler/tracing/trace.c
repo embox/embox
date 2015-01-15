@@ -267,16 +267,7 @@ static int instrument_profiling_init(void) {
 	set_profiling_mode(DISABLED);
 
 	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);
-#if 0
-	/* Initializing hash table */
-	tbhash = hashtable_create(FUNC_QUANTITY * sizeof(struct __trace_block),
-				get_trace_block_hash, cmp_trace_blocks);
 
-	if (!tbhash) {
-		return -ENOMEM;
-		fprintf(stderr, "Unable to create hashtable for profiling\n");
-	}
-#endif
 	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_enter_array);
 	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_exit_array);
 	ARRAY_SPREAD_ADD(__cyg_handler_enter_array, &cyg_tracing_profiler_enter);
