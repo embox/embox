@@ -14,35 +14,25 @@
 #include <string.h>
 
 #include <util/hashtable.h>
+#include <util/dlist.h>
+
 
 #include <mem/objalloc.h>
-#include <mem/sysmalloc.h>
-
-#include <util/dlist.h>
 
 
 #include <framework/mod/options.h>
 
-#define CONFIG_HASHTABLES_QUANTITY     OPTION_GET(NUMBER,hashtables_quantity)
 #define CONFIG_HASHTABLE_ELEM_QUNTITY  OPTION_GET(NUMBER,item_quntity)
 
-
-OBJALLOC_DEF(ht_pool, struct hashtable, CONFIG_HASHTABLES_QUANTITY);
 OBJALLOC_DEF(ht_elem_pool, struct hashtable_element,
-		CONFIG_HASHTABLES_QUANTITY * CONFIG_HASHTABLE_ELEM_QUNTITY);
+		CONFIG_HASHTABLE_ELEM_QUNTITY * 16);
 
 
-struct hashtable *hashtable_create(size_t table_size, ht_hash_ft get_hash, ht_cmp_ft cmp) {
-	struct hashtable *ht;
+struct hashtable *hashtable_create(struct hashtable *ht, size_t table_size,
+		ht_hash_ft get_hash, ht_cmp_ft cmp) {
 
-	if (NULL == (ht = objalloc(&ht_pool))) {
-		return NULL;
-	}
+	ht->table = (struct hashtable_entry *)(ht + 1);
 
-	if (NULL ==	(ht->table = sysmalloc(table_size * sizeof(struct hashtable_entry)))) {
-		objfree(&ht_pool, ht);
-		return NULL;
-	}
 	memset(ht->table, 0, table_size * sizeof(struct hashtable_entry));
 
 	ht->get_hash_key = get_hash;
@@ -109,6 +99,9 @@ int hashtable_del(struct hashtable *ht, void *key) {
 			dlist_del_init(&htel->lnk);
 			dlist_del_init(&htel->general_lnk);
 			objfree(&ht_elem_pool, htel);
+
+			ht->table[idx].cnt--;
+
 			return ENOERR;
 		}
 	}
@@ -131,8 +124,6 @@ void hashtable_destroy(struct hashtable *ht) {
 		}
 
 	}
-	sysfree(ht->table);
-	objfree(&ht_pool, ht);
 }
 
 void *hashtable_get_key_first(struct hashtable *ht) {

@@ -43,8 +43,8 @@ typedef int (*ht_cmp_ft)(void *key1, void *key2);
  *
  * @return hashtable structure pointer
  */
-extern struct hashtable *hashtable_create(size_t table_size,
-		ht_hash_ft get_hash, ht_cmp_ft cmp);
+extern struct hashtable *hashtable_create(struct hashtable *ht,
+		size_t table_size, ht_hash_ft get_hash, ht_cmp_ft cmp);
 
 /**
  * Delete all elements from hash-table and free hash-table structure memory
@@ -104,7 +104,6 @@ extern void *hashtable_get_key_first(struct hashtable *ht);
 extern void *hashtable_get_key_next(struct hashtable *ht, void *prev_key);
 
 
-
 #include <util/dlist.h>
 
 struct hashtable_element {
@@ -133,8 +132,11 @@ struct hashtable {
 	struct dlist_head all;
 };
 
+#define HASHTABLE_BUFFER_SIZE(size) \
+	(size * sizeof(struct hashtable_entry))
+
 #define HASHTABLE_BUFFER_DEF(buff_name,buff_size) \
-	char buff_name[sizeof(struct hashtable_entry)][buff_size] = {{0}}
+	void *buff_name[(HASHTABLE_BUFFER_SIZE(buff_size) / 4) + 1] = {0}
 
 #define HASHTABLE_DEF(name,size,hash_fn,cmp_fn)       \
 		static HASHTABLE_BUFFER_DEF(name##_buff, size); \
@@ -145,5 +147,15 @@ struct hashtable {
 				size, \
 				DLIST_INIT(name.all),                    \
 		}
+
+
+#define HASHTABLE_SIZE(size) \
+	(HASHTABLE_BUFFER_SIZE + sizeof(struct hashtable))
+
+#define HASHTABLE_DECL(name, size) \
+	HASHTABLE_BUFFER_DEF(name##_buff,HASHTABLE_SIZE); \
+	struct hashtable *name = (struct hashtable *)name##_buff;
+
+
 
 #endif /* UTIL_HASHTABLE_H_ */

@@ -79,12 +79,10 @@ static module tree {
 }
 
 static module hashtable {
-	option number hashtables_quantity=16
 	option number item_quntity=64
 
 	source "hashtable.c"
 
-	depends embox.mem.sysmalloc_api
 	depends embox.mem.objalloc
 }
 

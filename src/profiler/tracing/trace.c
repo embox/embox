@@ -99,9 +99,6 @@ static int cmp_trace_blocks(void *key1, void *key2) {
 }
 
 /* Hashtable to keep all dynamically generated trace_blocks */
-#if 0
-static struct hashtable *tbhash = NULL;
-#endif
 HASHTABLE_DEF(tbhash_full,
 		FUNC_QUANTITY * sizeof(struct __trace_block),
 		get_trace_block_hash,
