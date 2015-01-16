@@ -22,6 +22,7 @@ module skbuff {
 	option number extra_padto=1
 	source "skb.c"
 	depends embox.arch.interrupt
+	depends embox.mem.sysmalloc_api
 
 	source "skb_queue.c"
 	depends embox.arch.interrupt
