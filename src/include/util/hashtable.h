@@ -150,11 +150,14 @@ struct hashtable {
 
 
 #define HASHTABLE_SIZE(size) \
-	(HASHTABLE_BUFFER_SIZE + sizeof(struct hashtable))
+	(HASHTABLE_BUFFER_SIZE(size) + sizeof(struct hashtable))
 
 #define HASHTABLE_DECL(name, size) \
-	HASHTABLE_BUFFER_DEF(name##_buff,HASHTABLE_SIZE); \
+	HASHTABLE_BUFFER_DEF(name##_buff,HASHTABLE_SIZE(size)); \
 	struct hashtable *name = (struct hashtable *)name##_buff;
+
+
+
 
 
 
