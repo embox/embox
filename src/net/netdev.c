@@ -50,6 +50,8 @@ static size_t netdev_hash(void *key) {
 HASHTABLE_DEF(nd_ht, MODOPS_NETDEV_TABLE_SZ, &netdev_hash, (ht_cmp_ft)&strcmp);
 struct hashtable *netdevs_table = &nd_ht;
 
+POOL_DEF(netdev_htitem_pool, struct hashtable_item, MODOPS_NETDEV_QUANTITY);
+
 static int netdev_init(struct net_device *dev, const char *name,
 		int (*setup)(struct net_device *), size_t priv_size) {
 	assert(dev != NULL);
@@ -114,20 +116,30 @@ void netdev_free(struct net_device *dev) {
 }
 
 int netdev_register(struct net_device *dev) {
+	struct hashtable_item *ht_item;
+
 	if (dev == NULL) {
 		return -EINVAL;
 	}
 
-	return hashtable_put(netdevs_table, (void *)&dev->name[0],
-			(void *)dev);
+	ht_item = pool_alloc(&netdev_htitem_pool);
+	ht_item = hashtable_item_init(ht_item, (void *)&dev->name[0], (void *)dev);
+
+	return hashtable_put(netdevs_table, ht_item);
 }
 
 int netdev_unregister(struct net_device *dev) {
+	struct hashtable_item *ht_item;
+
 	if (dev == NULL) {
 		return -EINVAL;
 	}
+	ht_item = hashtable_del(netdevs_table, (void *)&dev->name[0]);
 
-	return hashtable_del(netdevs_table, (void *)&dev->name[0]);
+	pool_free(&netdev_htitem_pool, ht_item);
+
+	return 0;
+
 }
 
 struct net_device * netdev_get_by_name(const char *name) {

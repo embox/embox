@@ -44,6 +44,8 @@ POOL_DEF(itimer_pool, struct itimer, FUNC_QUANTITY);
 POOL_DEF(key_pool, int, FUNC_QUANTITY);
 POOL_DEF(st_pool, struct tb_time, TB_MAX_DEPTH);
 
+POOL_DEF(tb_ht_pool, struct hashtable_item, FUNC_QUANTITY);
+
 /* This variable contains current profiling mode (see profiler/tracing/trace.h) */
 static profiling_mode p_mode;
 profiling_mode get_profiling_mode(void) {
@@ -211,6 +213,7 @@ void trace_block_func_enter(void *func) {
 
 	tb = hashtable_get(tbhash, func);
 	if (!tb) {
+		struct hashtable_item *ht_item;
 		/* Lazy traceblock initialization.
 		 * Func name and func location will be retrieved somewhere else,
 		 * for example, in "trace_blocks -n" shell command. */
@@ -222,7 +225,11 @@ void trace_block_func_enter(void *func) {
 		tb->time_list_head = NULL;
 		tb->active = true;
 		tb->is_entered = false;
-		hashtable_put(tbhash, func, tb);
+
+
+		ht_item = pool_alloc(&tb_ht_pool);
+		ht_item = hashtable_item_init(ht_item, func, tb);
+		hashtable_put(tbhash, ht_item);
 	}
 
 	trace_block_enter(tb);

@@ -79,7 +79,7 @@ static module tree {
 }
 
 static module hashtable {
-	option number item_quntity=64
+//	option number item_quntity=64
 
 	source "hashtable.c"
 

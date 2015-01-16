@@ -23,6 +23,8 @@
  */
 struct hashtable;
 
+struct hashtable_item;
+
 
 /** Hash function type definition */
 typedef size_t (*ht_hash_ft)(void *key);
@@ -63,7 +65,13 @@ extern void hashtable_destroy(struct hashtable *ht);
  *
  * @return error code
  */
+#if 0
 extern int hashtable_put(struct hashtable *ht, void *key, void *value);
+#endif
+extern int hashtable_put(struct hashtable *ht, struct hashtable_item *ht_item);
+
+extern struct hashtable_item *hashtable_item_init(
+		struct hashtable_item *ht_item,  void *key, void *value);
 
 /**
  * Search element in the hash-table by key. It returns first appropriate object
@@ -82,7 +90,7 @@ extern void *hashtable_get(struct hashtable *ht, void* key);
  *
  * @return error code
  */
-extern int hashtable_del(struct hashtable *ht, void *key);
+extern struct hashtable_item *hashtable_del(struct hashtable *ht, void *key);
 
 /**
  * Get initial pointer to key from the hash-table
@@ -106,7 +114,7 @@ extern void *hashtable_get_key_next(struct hashtable *ht, void *prev_key);
 
 #include <util/dlist.h>
 
-struct hashtable_element {
+struct hashtable_item {
 	struct dlist_head lnk;
 	struct dlist_head general_lnk;
 	void *key;
@@ -136,7 +144,7 @@ struct hashtable {
 	(size * sizeof(struct hashtable_entry))
 
 #define HASHTABLE_BUFFER_DEF(buff_name,buff_size) \
-	void *buff_name[(HASHTABLE_BUFFER_SIZE(buff_size) / 4) + 1] = {0}
+	void *buff_name[(HASHTABLE_BUFFER_SIZE(buff_size) / sizeof(void *)) + 1] = {0}
 
 #define HASHTABLE_DEF(name,size,hash_fn,cmp_fn)       \
 		static HASHTABLE_BUFFER_DEF(name##_buff, size); \

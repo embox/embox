@@ -26,6 +26,8 @@ static DLIST_DEFINE(bh_list);
 static size_t bh_hash(void *key);
 static int bh_cmp(void *key1, void *key2);
 HASHTABLE_DEF(bcache_ht, BCACHE_SIZE / 10, bh_hash, bh_cmp);
+POOL_DEF(bcach_ht_item_pool, struct hashtable_item, BCACHE_SIZE);
+
 static struct hashtable *bcache = &bcache_ht;
 static struct mutex bcache_mutex;
 static int graw_buffers(block_dev_t *bdev, int block, size_t size);
@@ -93,6 +95,7 @@ static void free_more_memory(size_t size) {
 
 static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	struct buffer_head *bh;
+	struct hashtable_item *ht_item;
 
 	bh = pool_alloc(&buffer_head_pool);
 
@@ -114,13 +117,23 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 		pool_free(&buffer_head_pool, bh);
 		return -1;
 	}
+	ht_item = pool_alloc(&bcach_ht_item_pool);
+	if (!ht_item) {
+		sysfree(bh->data);
+		pool_free(&buffer_head_pool, bh);
+		return -1;
+	}
+	ht_item = hashtable_item_init(ht_item, bh, bh);
+	hashtable_put(bcache, ht_item);
 
+
+#if 0
 	if (0 > hashtable_put(bcache, bh, bh)) {
 		sysfree(bh->data);
 		pool_free(&buffer_head_pool, bh);
 		return -1;
 	}
-
+#endif
 	dlist_add_next(&bh->bh_next, &bh_list);
 
 	return 0;
