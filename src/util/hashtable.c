@@ -17,18 +17,7 @@
 #include <util/dlist.h>
 
 
-#include <mem/objalloc.h>
-
-
 #include <framework/mod/options.h>
-
-#if 0
-#define CONFIG_HASHTABLE_ELEM_QUNTITY  OPTION_GET(NUMBER,item_quntity)
-
-OBJALLOC_DEF(ht_elem_pool, struct hashtable_item,
-		CONFIG_HASHTABLE_ELEM_QUNTITY * 16);
-
-#endif
 
 struct hashtable *hashtable_create(struct hashtable *ht, size_t table_size,
 		ht_hash_ft get_hash, ht_cmp_ft cmp) {
@@ -44,6 +33,7 @@ struct hashtable *hashtable_create(struct hashtable *ht, size_t table_size,
 
 	return ht;
 }
+
 struct hashtable_item *hashtable_item_init(struct hashtable_item *ht_item,
 		void *key, void *value) {
 
@@ -56,32 +46,6 @@ struct hashtable_item *hashtable_item_init(struct hashtable_item *ht_item,
 
 	return ht_item;
 }
-#if 0
-int hashtable_put(struct hashtable *ht, void *key, void *value) {
-	size_t idx;
-	struct hashtable_item *htel;
-
-	assert(ht);
-
-	if (NULL == (htel = objalloc(&ht_elem_pool))) {
-		return -ENOMEM;
-	}
-	htel->key = key;
-	htel->value = value;
-
-	idx = ht->get_hash_key(key) % ht->table_size;
-	if (0 == ht->table[idx].cnt) {
-		dlist_init(&ht->table[idx].list);
-	}
-
-	ht->table[idx].cnt ++;
-	dlist_add_next(dlist_head_init(&htel->lnk), &ht->table[idx].list);
-
-	dlist_add_prev(dlist_head_init(&htel->general_lnk), &ht->all);
-
-	return ENOERR;
-}
-#endif
 
 int hashtable_put(struct hashtable *ht, struct hashtable_item *ht_item) {
 	size_t idx;
@@ -132,9 +96,7 @@ struct hashtable_item *hashtable_del(struct hashtable *ht, void *key) {
 		if(0 == ht->cmp(key, htel->key)) {
 			dlist_del_init(&htel->lnk);
 			dlist_del_init(&htel->general_lnk);
-#if 0
-			objfree(&ht_elem_pool, htel);
-#endif
+
 			ht->table[idx].cnt--;
 
 			return htel;
@@ -193,5 +155,3 @@ void *hashtable_get_key_next(struct hashtable *ht, void *prev_key) {
 	htel = dlist_first_entry(&htel->general_lnk, struct hashtable_item, general_lnk);
 	return &htel->key;
 }
-
-
