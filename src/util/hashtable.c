@@ -16,9 +16,6 @@
 #include <util/hashtable.h>
 #include <util/dlist.h>
 
-
-#include <framework/mod/options.h>
-
 struct hashtable *hashtable_create(struct hashtable *ht, size_t table_size,
 		ht_hash_ft get_hash, ht_cmp_ft cmp) {
 
@@ -117,9 +114,7 @@ void hashtable_destroy(struct hashtable *ht) {
 			continue;
 		}
 		dlist_foreach_entry(htel, &ht->table[i].list, lnk) {
-#if 0
-			objfree(&ht_elem_pool, htel);
-#endif
+
 		}
 
 	}

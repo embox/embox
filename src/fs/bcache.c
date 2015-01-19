@@ -6,15 +6,19 @@
  * @date    22.07.2013
  */
 
-#include <fs/bcache.h>
-#include <embox/unit.h>
-#include <mem/misc/pool.h>
-#include <mem/sysmalloc.h>
-#include <stdlib.h>
-#include <util/hashtable.h>
 #include <string.h>
 #include <stdbool.h>
+#include <stdlib.h>
 
+#include <util/hashtable.h>
+
+#include <mem/misc/pool.h>
+#include <mem/sysmalloc.h>
+
+#include <fs/bcache.h>
+
+
+#include <embox/unit.h>
 EMBOX_UNIT_INIT(bcache_init);
 
 #define BCACHE_SIZE OPTION_GET(NUMBER, bcache_size)
@@ -127,13 +131,6 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	hashtable_put(bcache, ht_item);
 
 
-#if 0
-	if (0 > hashtable_put(bcache, bh, bh)) {
-		sysfree(bh->data);
-		pool_free(&buffer_head_pool, bh);
-		return -1;
-	}
-#endif
 	dlist_add_next(&bh->bh_next, &bh_list);
 
 	return 0;
