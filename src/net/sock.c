@@ -85,13 +85,16 @@ static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 	do {
 		int err;
 
-		if (0 != (err = sock_err(sk))) {
-			return -err;
-		}
-
 		skb = skb_queue_front(&sk->rx_queue);
 		if (skb == NULL) {
 			if (total_len == 0) {
+				/* ToDo I think this check must be placed before this do-while loop
+				 * and properly analyze either TCP connection was closed in usual way or forcibly.
+				 * See "RETURN VALUE" http://pubs.opengroup.org/onlinepubs/009695399/functions/recvfrom.html
+				 * --Alexander */
+				if (0 != (err = sock_err(sk))) {
+					return -err;
+				}
 				return -EAGAIN;
 			}
 			break;
