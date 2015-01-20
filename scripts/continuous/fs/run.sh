@@ -2,8 +2,8 @@
 
 #FS_TEST_RO="iso9660 jffs2"
 #FS_TEST_RW="vfat ext2 ext3 ext4"
-FS_TEST_RO="jffs2"
-FS_TEST_RW="ext2 ext3 ext4 ntfs"
+FS_TEST_RO="jffs2 ext4"
+FS_TEST_RW="ext2 ext3 ntfs"
 FS_TEST_NETWORK="nfs cifs"
 
 FS_TEST_NFS_ROOT="/var/nfs_test"
