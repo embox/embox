@@ -6,4 +6,6 @@ static module cjson {
 
 	source "^BUILD/extbld/^MOD_PATH/cJSON/cJSON.c"
 
+	source "empty_for_dist.c"
+
 }
