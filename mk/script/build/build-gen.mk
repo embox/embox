@@ -695,7 +695,7 @@ $(@source_dist) :
 
 __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_DIR)/, \
-	$(wildcard $(foreach e,*.h *.inc,$(addsuffix $e,$(__source_dirs)))))
+	$(wildcard $(foreach e,*.h *.inc Makefile *.txt *.patch *.diff,$(addsuffix $e,$(__source_dirs)))))
 
 include mk/flags.mk  # INCLUDES_FROM_FLAGS
 
@@ -703,7 +703,8 @@ include mk/flags.mk  # INCLUDES_FROM_FLAGS
 	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_DIR)/%, \
 		$(filter-out $(abspath \
 				$(DIST_DIR) $(DIST_DIR)/% \
-				$(CONF_DIR) $(CONF_DIR)/%),$(abspath \
+				$(CONF_DIR) $(CONF_DIR)/% \
+				$(EXTERNAL_BUILD_DIR) $(EXTERNAL_BUILD_DIR)/%),$(abspath \
 			$(call expand,$(call get, \
 				$(sort $(call source_annotation_values,$(build_sources), \
 					$(my_incpath_val) $(my_incpath_before_val))),value)) \
