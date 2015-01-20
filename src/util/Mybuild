@@ -9,19 +9,6 @@ static module priolist {
 	source "priolist.c"
 }
 
-static module Array {
-	source "array_impl.h"
-	source "array_spread.lds.S"
-}
-
-static module Bit {
-	source "bit_impl.h"
-}
-
-static module Bitmap {
-	source "bitmap.c"
-	depends Bit
-}
 
 @DefaultImpl(SListDebug)
 abstract module SList {
@@ -35,16 +22,6 @@ static module SListNDebug extends SList {
 //	source "slist_impl.h"
 }
 
-@DefaultImpl(DListDebug)
-abstract module DList {}
-
-static module DListDebug extends DList {
-	source "dlist_debug.h"
-	source "dlist_debug.c"
-}
-static module DListNDebug extends DList {
-	source "dlist_ndebug.h"
-}
 
 static module sys_log {
 	source "sys_log.c"
@@ -62,8 +39,6 @@ static module ring {
 }
 
 static module LibUtil {
-//	source "slist_debug.c"
-
 	depends sys_log
 	depends ring
 	depends tree
@@ -76,12 +51,6 @@ static module LibUtil {
 
 static module tree {
 	source "tree.c"
-}
-
-static module hashtable {
-	source "hashtable.c"
-
-	depends embox.mem.objalloc
 }
 
 static module indexator {

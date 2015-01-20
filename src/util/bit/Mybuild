@@ -1,0 +1,5 @@
+package embox.util
+
+static module Bit {
+	source "bit_impl.h"
+}
