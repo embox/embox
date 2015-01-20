@@ -66,6 +66,7 @@ struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t si
 
 static void free_more_memory(size_t size) {
 	struct buffer_head *bh;
+	struct hashtable_item *ht_item;
 
 	/* Free everything that we can free */
 	dlist_foreach_entry(bh, &bh_list, bh_next) {
@@ -88,11 +89,12 @@ static void free_more_memory(size_t size) {
 			}
 
 			dlist_del(&bh->bh_next);
-			hashtable_del(bcache, bh);
+			ht_item = hashtable_del(bcache, bh);
 		}
 		bcache_buffer_unlock(bh);
 
 		sysfree(bh->data);
+		pool_free(&bcach_ht_item_pool, ht_item);
 		pool_free(&buffer_head_pool, bh);
 	}
 }
@@ -129,7 +131,6 @@ static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
 	}
 	ht_item = hashtable_item_init(ht_item, bh, bh);
 	hashtable_put(bcache, ht_item);
-
 
 	dlist_add_next(&bh->bh_next, &bh_list);
 

@@ -291,6 +291,7 @@ void trace_block_hashtable_init(void) {
 	/* Initializing trace_block hash table */
 	profiling_mode c = get_profiling_mode();
 	struct __trace_block *tb1, *tb2;
+	struct hashtable_item *ht_item;
 
 	set_profiling_mode(DISABLED);
 
@@ -299,7 +300,8 @@ void trace_block_hashtable_init(void) {
 		pool_free(&tb_pool, tb1);
 		tb2 = tb1;
 		tb1 = auto_profile_tb_next(tb1);
-		hashtable_del(tbhash, tb2->func);
+		ht_item = hashtable_del(tbhash, tb2->func);
+		pool_free(&tb_ht_pool, ht_item);
 	}
 
 	tb_cs = clock_source_get_best(CS_WITHOUT_IRQ);

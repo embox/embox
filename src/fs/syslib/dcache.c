@@ -75,7 +75,10 @@ static int dcache_lazy_init(void) {
 }
 
 static void dvalue_delete(struct dvalue *dvalue) {
-	hashtable_del(dcache_table, &dvalue->key);
+	struct hashtable_item *ht_item;
+
+	ht_item = hashtable_del(dcache_table, &dvalue->key);
+	pool_free(&ht_item_pool, ht_item);
 	dlist_del(&dvalue->link);
 	pool_free(&dcache_path_pool, dvalue);
 }
