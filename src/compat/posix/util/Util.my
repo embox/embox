@@ -2,18 +2,14 @@
 package embox.compat.posix.util
 
 module All {
-	depends Time,
+	depends time,
+		sleep,
+		gettimeofday,
 		getopt,
 		utsname,
 		getpass,
 		gethostname,
 		environ
-}
-
-module Time {
-	depends time,
-		sleep,
-		gettimeofday
 }
 
 static module getopt {
