@@ -41,8 +41,7 @@ union dns_msg {
 	} msg;
 };
 
-static int name_to_label(const char *name, char *buff,
-		size_t buff_sz, size_t *out_bytes) {
+static int name_to_label(const char *name, char *buff, size_t buff_sz) {
 	char *dot;
 	size_t bytes_left, field_sz;
 
@@ -77,10 +76,6 @@ static int name_to_label(const char *name, char *buff,
 		return -ENOMEM;
 	}
 	*(uint8_t *)buff = 0;
-	bytes_left -= sizeof(uint8_t);
-	buff += sizeof(uint8_t);
-
-	*out_bytes = buff_sz - bytes_left;
 
 	return 0;
 }
@@ -157,15 +152,16 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 	return 0;
 }
 
-static int dns_q_format(struct dns_q *query, char *buff,
-		size_t buff_sz, size_t *out_bytes) {
+static int dns_q_format(struct dns_q *query, char *buff, size_t buff_sz) {
 	int ret;
 	size_t bytes_left, field_sz;
 	uint16_t field_val;
 
 	bytes_left = buff_sz;
 
-	ret = name_to_label(&query->qname[0], buff, buff_sz, &field_sz);
+	ret = name_to_label(&query->qname[0], buff, buff_sz);
+
+	field_sz = (strlen(&query->qname[0]) + 1) * sizeof(uint8_t);
 	if (ret != 0) {
 		return ret;
 	}
@@ -187,16 +183,11 @@ static int dns_q_format(struct dns_q *query, char *buff,
 	}
 	field_val = htons(query->qclass);
 	memcpy(buff, &field_val, sizeof field_sz);
-	bytes_left -= field_sz;
-	buff += field_sz;
-
-	*out_bytes = buff_sz - bytes_left;
 
 	return 0;
 }
 
-static int dns_query_format(struct dns_q *query, union dns_msg *dm,
-		size_t *out_dm_sz) {
+static int dns_query_format(struct dns_q *query, union dns_msg *dm, size_t *out_dm_sz) {
 	int ret;
 	size_t data_sz;
 
@@ -210,12 +201,14 @@ static int dns_query_format(struct dns_q *query, union dns_msg *dm,
 
 	/* Format data section */
 	ret = dns_q_format(query, &dm->msg.data[0],
-			sizeof *dm - sizeof dm->msg.hdr, &data_sz);
+			sizeof *dm - sizeof dm->msg.hdr);
 	if (ret != 0) {
 		return ret;
 	}
 
 	/* Save the total size fo message */
+	data_sz = sizeof(query->qclass) + sizeof(query->qtype) +
+			(strlen(&query->qname[0]) + 1) * sizeof(uint8_t);
 	*out_dm_sz = sizeof dm->msg.hdr + data_sz;
 
 	return 0;
