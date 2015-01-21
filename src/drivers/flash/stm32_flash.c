@@ -16,26 +16,19 @@
 #include <drivers/flash/flash_dev.h>
 #include <stm32f4xx_flash.h>
 
-#define STM32_FIRST_BLOCK_OFFSET 11
+#define STM32_FIRST_BLOCK_OFFSET 0x9
 static const struct flash_dev_drv stm32_flash_drv;
 const struct flash_dev stm32_flash = {
 	.bdev = NULL,
 	.drv = &stm32_flash_drv,
 	.flags = 0,
-	.start = 0x080e0000,
+	.start = 0x080a0000,
 	.end   = 0x080fffff,
-	.init = true,
-#if 1
 	.num_block_infos = 1,
-	.block_info = { 1, 0x20000 },
-#else
-	.num_block_infos = 3,
 	.block_info = {
-		{ 4, 0x4000  },
-		{ 1, 0x10000 },
-		{ 7, 0x20000 },
+		.block_size = 0x020000,
+		.blocks = 8
 	},
-#endif
 };
 
 static inline void stm32_flash_set_program_size(void) {
@@ -56,11 +49,7 @@ static inline int stm32_flash_check_block(struct flash_dev *dev, uint32_t block)
 
 	n_block = 0;
 	for (i = 0; i < dev->num_block_infos; i ++) {
-#if 0
-		n_block += dev->block_info[i].blocks;
-#else
 		n_block += dev->block_info.blocks;
-#endif
 	}
 
 	return block < n_block;
@@ -149,17 +138,19 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 	return err;
 }
 
+static int stm32_flash_copy(struct flash_dev *dev, uint32_t base_dst,
+				uint32_t base_src, size_t len) {
+	return stm32_flash_program(dev, base_dst, (void *) dev->start + base_src, len);
+}
+
 #if 0
 static int stm32_flash_init(void *arg);
 static size_t stm32_flash_query(struct flash_dev *dev, void * data, size_t len);
 #endif
 static const struct flash_dev_drv stm32_flash_drv = {
-#if 0
-	.flash_init = stm32_flash_init,
-	.flash_query = stm32_flash_query,
-#endif
 	.flash_read = stm32_flash_read,
 	.flash_erase_block = stm32_flash_erase_block,
 	.flash_program = stm32_flash_program,
+	.flash_copy = stm32_flash_copy,
 };
 
