@@ -18,7 +18,7 @@ struct dfs_superblock dfs_sb;
 #define NAND_PAGES_PER_BLOCK (NAND_BLOCK_SIZE / NAND_PAGE_SIZE)
 
 /* XXX Hardcode */
-char *file_name[] = { "set", };
+char *file_name[] = { "flashset", };
 int file_len[] = { 136, };
 
 /* Converting */

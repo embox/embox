@@ -21,7 +21,7 @@ struct flash_dev_drv {
 	int	(*flash_erase_block) (struct flash_dev *dev, uint32_t block_base);
 	int	(*flash_program) (struct flash_dev *dev, uint32_t base, const void* data, size_t len);
 	int	(*flash_read) (struct flash_dev *dev, uint32_t base, void* data, size_t len);
-	int	(*flash_copy) (struct flash_dev *dev, uint32_t base_from, uint32_t base_to, size_t len);
+	int	(*flash_copy) (struct flash_dev *dev, uint32_t base_to, uint32_t base_from, size_t len);
 };
 
 /* Structure of flash device private info*/
@@ -48,8 +48,8 @@ static inline int flash_erase(struct flash_dev *flashdev, uint32_t block) {
 	return flashdev->drv->flash_erase_block(flashdev, block);
 }
 
-static inline int flash_copy(struct flash_dev *dev, uint32_t from, uint32_t to, size_t len) {
-	return dev->drv->flash_copy(dev, from, to, len);
+static inline int flash_copy(struct flash_dev *dev, uint32_t to, uint32_t from, size_t len) {
+	return dev->drv->flash_copy(dev, to, from, len);
 }
 
 typedef int (* flash_dev_module_init_ft)(void *args);

@@ -9,7 +9,7 @@
 
 #include <drivers/flash/flash_dev.h>
 
-#define DFS_INODES_MAX 3
+#define DFS_INODES_MAX 1
 #define DFS_NAME_MAX_LENGTH 16
 
 extern struct flash_dev *dfs_flashdev;
