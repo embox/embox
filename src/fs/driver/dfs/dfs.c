@@ -2,6 +2,7 @@
  * @date 26 Dec 2014
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -87,14 +88,6 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	return 0;
 }
 
-int dfs_read_superblock(void) {
-	return _read(0, (void *) &dfs_sb, sizeof(dfs_sb));
-}
-
-static int dfs_write_superblock(void) {
-	return dfs_write_raw(0, (void *) &dfs_sb, sizeof(dfs_sb));
-}
-
 int dfs_read_inode(int n, struct dfs_inode *node) {
 	if (n >= dfs_sb.inode_count)
 		return -1;
@@ -108,6 +101,11 @@ int dfs_read_inode(int n, struct dfs_inode *node) {
 int dfs_init(void) {
 	int node_pt, file_pt;
 	struct dfs_inode node;
+
+	if (!dfs_flashdev) {
+		return -ENOENT;
+	}
+
 	printf("Writing DFS image...\n");
 
 	dfs_sb.sb_size = sizeof(dfs_sb);
@@ -116,7 +114,7 @@ int dfs_init(void) {
 	dfs_sb.inode_count = 1;
 	dfs_sb.buff_bk = 2;
 
-	dfs_write_superblock();
+	dfs_write_raw(0, (void *) &dfs_sb, sizeof(dfs_sb));
 
 	node_pt = page_capacity(sizeof(dfs_sb));
 	file_pt = node_pt + dfs_sb.max_inode_count * page_capacity(sizeof(struct dfs_inode));
@@ -154,7 +152,15 @@ struct dfs_desc *dfs_open(const char *path) {
 	struct dfs_desc *fd = malloc(sizeof(struct dfs_desc));
 	struct dfs_inode *node = malloc(sizeof(struct dfs_inode));
 
-	dfs_read_inode(inode_from_path(path), node);
+	if (!fd || !node) {
+		errno = ENOMEM;
+		return NULL;
+	}
+
+	if (0 > dfs_read_inode(inode_from_path(path), node)) {
+		errno = ENOENT;
+		return NULL;
+	}
 
 	fd->pos = 0;
 	fd->node = node;
