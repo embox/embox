@@ -16,13 +16,14 @@
 
 #include "libleddrv.h"
 
-#define FLASHSET_BLOCK 0
+#include <fs/dfs.h>
 
 extern const struct flash_dev stm32_flash;
 
 #define FLASHSET_MAGIC 0x5500AAAA
 #define FLASHSET_WHAT_NET 0x00000001
 #define FLASHSET_WHAT_LED 0x00000002
+
 struct flashset_settings {
 	uint32_t fsn_magic;
 	uint32_t fsn_what_mask;
@@ -32,15 +33,18 @@ struct flashset_settings {
 	unsigned char fsn_leds_state[LEDDRV_LED_N];
 };
 
-static inline int flashset_is_stored(struct flashset_settings *fl_settings, uint32_t mask) {
+static inline int flashset_is_stored(struct flashset_settings *fl_settings,
+					uint32_t mask) {
 	return fl_settings->fsn_what_mask & mask;
 }
 
-static inline void flashset_make_store(struct flashset_settings *fl_settings, uint32_t mask) {
+static inline void flashset_make_store(struct flashset_settings *fl_settings,
+					uint32_t mask) {
 	fl_settings->fsn_what_mask |= mask;
 }
 
-static int flashset_nic_store(const char *nic_name, struct flashset_settings *fl_settings) {
+static int flashset_nic_store(const char *nic_name,
+				struct flashset_settings *fl_settings) {
         struct ifaddrs *i_ifa, *nic_ifa, *ifa;
 	struct in_device *iface_dev;
 	int errcode;
@@ -53,7 +57,8 @@ static int flashset_nic_store(const char *nic_name, struct flashset_settings *fl
 	nic_ifa = NULL;
         for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
 
-                if (i_ifa->ifa_addr == NULL || i_ifa->ifa_addr->sa_family != AF_INET) {
+                if (i_ifa->ifa_addr == NULL ||
+			i_ifa->ifa_addr->sa_family != AF_INET) {
 			continue;
 		}
 
@@ -75,16 +80,20 @@ static int flashset_nic_store(const char *nic_name, struct flashset_settings *fl
 		goto outerr;
 	}
 
-	memcpy(&fl_settings->fsn_addr, nic_ifa->ifa_addr, sizeof(fl_settings->fsn_addr));
-	memcpy(&fl_settings->fsn_mask, nic_ifa->ifa_netmask, sizeof(fl_settings->fsn_mask));
-	memcpy(&fl_settings->fsn_mac, iface_dev->dev->dev_addr, sizeof(fl_settings->fsn_mac));
+	memcpy(&fl_settings->fsn_addr, nic_ifa->ifa_addr,
+		sizeof(fl_settings->fsn_addr));
+	memcpy(&fl_settings->fsn_mask, nic_ifa->ifa_netmask,
+		sizeof(fl_settings->fsn_mask));
+	memcpy(&fl_settings->fsn_mac, iface_dev->dev->dev_addr,
+		sizeof(fl_settings->fsn_mac));
 	flashset_make_store(fl_settings, FLASHSET_WHAT_NET);
 
 outerr:
 	return errcode;
 }
 
-static int flashset_nic_restore(const char *nic_name, struct flashset_settings *fl_settings) {
+static int flashset_nic_restore(const char *nic_name,
+				struct flashset_settings *fl_settings) {
 	struct in_device *iface_dev;
 	int errcode;
 
@@ -98,11 +107,13 @@ static int flashset_nic_restore(const char *nic_name, struct flashset_settings *
 		goto outerr;
 	}
 
-	if ((errcode = inetdev_set_addr(iface_dev, ((struct sockaddr_in *) &fl_settings->fsn_addr)->sin_addr.s_addr))) {
+	if ((errcode = inetdev_set_addr(iface_dev,
+		((struct sockaddr_in *) &fl_settings->fsn_addr)->sin_addr.s_addr))) {
 		goto outerr;
 	}
 
-	if ((errcode = inetdev_set_mask(iface_dev, ((struct sockaddr_in *) &fl_settings->fsn_mask)->sin_addr.s_addr))) {
+	if ((errcode = inetdev_set_mask(iface_dev,
+		((struct sockaddr_in *) &fl_settings->fsn_mask)->sin_addr.s_addr))) {
 		goto outerr;
 	}
 
@@ -133,27 +144,33 @@ static int flashset_led_restore(struct flashset_settings *fl_settings) {
 	return leddrv_updatestates(fl_settings->fsn_leds_state);
 }
 
-static int flashset_load(struct flash_dev *flashdev, struct flashset_settings *fl_settings) {
-	int errcode;
+static int flashset_load(struct flashset_settings *fl_settings) {
+	struct dfs_desc *fd = dfs_open("flashset");
+	int errcode = dfs_read(fd, fl_settings, sizeof(*fl_settings));
+	dfs_close(fd);
 
-	if (0 > (errcode = flash_read(flashdev, FLASHSET_BLOCK, fl_settings, sizeof(struct flashset_settings)))) {
+	if (errcode < 0)
 		return errcode;
-	}
-	if (fl_settings->fsn_magic != FLASHSET_MAGIC) {
+	if (fl_settings->fsn_magic != FLASHSET_MAGIC)
 		return -ENOENT;
-	}
 
 	return 0;
 }
 
 int main(int argc, char *argv[]) {
-	struct flash_dev *flashdev = (struct flash_dev *) &stm32_flash;
+	dfs_flashdev = (struct flash_dev *) &stm32_flash;
 	struct flashset_settings fl_settings;
 	int errcode;
 
-	if (0 == strcmp(argv[1], "store")) {
+	/* Init DFS */
+	if (dfs_sb.sb_size == 0)
+		dfs_init();
 
-		if (0 > (errcode = flashset_load(flashdev, &fl_settings))) {
+	if (0 == strcmp(argv[1], "store")) {
+		printf(	"Storing flash settings:\n"
+			"Magic: %x\n Mask:  %x\n",
+			fl_settings.fsn_magic, fl_settings.fsn_what_mask);
+		if (0 > (errcode = flashset_load(&fl_settings))) {
 			if (errcode == -ENOENT) {
 				fl_settings.fsn_magic = FLASHSET_MAGIC;
 				fl_settings.fsn_what_mask = 0;
@@ -181,20 +198,24 @@ int main(int argc, char *argv[]) {
 		}
 
 		/* ready to write */
-		if (0 > (errcode = flash_erase(flashdev, FLASHSET_BLOCK))) {
+		struct dfs_desc *fd = dfs_open("flashset");
+		errcode = dfs_write(fd, &fl_settings, sizeof(struct flashset_settings));
+		if (errcode < 0)
 			return errcode;
-		}
-		if (0 > (errcode = flash_write(flashdev, FLASHSET_BLOCK, &fl_settings, sizeof(struct flashset_settings)))) {
-			return errcode;
-		}
 
 	} else if (0 == strcmp(argv[1], "restore")) {
 
-		if (0 > (errcode = flashset_load(flashdev, &fl_settings))) {
+		if (0 > (errcode = flashset_load(&fl_settings))) {
+			printf("Failed to load settings\n"
+			"Magic: %x\n Mask: %x\n",
+			fl_settings.fsn_magic, fl_settings.fsn_what_mask);
 			return 0;
 		}
 
 		/* seems to have valid settings */
+		printf("Restoring flash settings:\n"
+		"Magic: %x\n Mask: %x\n",
+		fl_settings.fsn_magic, fl_settings.fsn_what_mask);
 		if (0 > (errcode = flashset_nic_restore("eth0", &fl_settings))) {
 			return errcode;
 		}

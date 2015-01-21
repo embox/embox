@@ -19,6 +19,7 @@ package stm32f4_iocontrol.cmd
 module flash_settings {
 	source "flash_settings.c"
 
+	depends embox.fs.driver.dfs
 	depends embox.driver.flash.stm32
 }
 
