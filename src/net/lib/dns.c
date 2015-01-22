@@ -161,7 +161,7 @@ static int dns_q_format(struct dns_q *query, char *buff, size_t buff_sz) {
 
 	ret = name_to_label(&query->qname[0], buff, buff_sz);
 
-	field_sz = (strlen(&query->qname[0]) + 1) * sizeof(uint8_t);
+	field_sz = (strlen(&query->qname[0]) + 2) * sizeof(uint8_t);
 	if (ret != 0) {
 		return ret;
 	}
@@ -208,7 +208,7 @@ static int dns_query_format(struct dns_q *query, union dns_msg *dm, size_t *out_
 
 	/* Save the total size fo message */
 	data_sz = sizeof(query->qclass) + sizeof(query->qtype) +
-			(strlen(&query->qname[0]) + 1) * sizeof(uint8_t);
+			(strlen(&query->qname[0]) + 2) * sizeof(uint8_t);
 	*out_dm_sz = sizeof dm->msg.hdr + data_sz;
 
 	return 0;
