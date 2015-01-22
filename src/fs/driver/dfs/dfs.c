@@ -10,6 +10,7 @@
 
 #include <fs/dfs.h>
 #include <framework/mod/options.h>
+#include <util/bitmap.h>
 
 struct flash_dev *dfs_flashdev;
 struct dfs_superblock dfs_sb;
@@ -17,6 +18,9 @@ struct dfs_superblock dfs_sb;
 #define NAND_PAGE_SIZE 8
 #define NAND_BLOCK_SIZE (dfs_flashdev->block_info.block_size)
 #define NAND_PAGES_PER_BLOCK (NAND_BLOCK_SIZE / NAND_PAGE_SIZE)
+#define NAND_PAGES_MAX (1024 * 128 / 8 * 3)
+
+BITMAP_DECL(dfs_free_pages, NAND_PAGES_MAX);
 
 /* XXX Hardcode */
 char *file_name[] = { "flashset", };
@@ -33,6 +37,9 @@ static inline int pos_from_block(int block) { return block * NAND_BLOCK_SIZE; }
 static inline int block_from_pos(int pos) { return pos / NAND_BLOCK_SIZE; }
 
 static inline int _erase(unsigned int block) {
+	int i;
+	for (i = 0; i < NAND_PAGES_PER_BLOCK; i++)
+		bitmap_set_bit(dfs_free_pages, i + block * NAND_BLOCK_SIZE / NAND_PAGE_SIZE);
 	return flash_erase(dfs_flashdev, block);
 }
 
@@ -41,6 +48,9 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
 }
 
 static inline int _write(unsigned long offset, const void *buff, size_t len) {
+	int i;
+	for (i = 0; i < len; i++)
+		bitmap_clear_bit(dfs_free_pages, i + offset);
 	return flash_write(dfs_flashdev, offset, buff, len);
 }
 
@@ -105,6 +115,8 @@ int dfs_init(void) {
 	if (!dfs_flashdev) {
 		return -ENOENT;
 	}
+
+	bitmap_set_all(dfs_free_pages, NAND_PAGES_MAX);
 
 	printf("Writing DFS image...\n");
 
