@@ -42,7 +42,7 @@ TEST_CASE("Add single element to hashtable") {
 	struct hashtable_item *ht_item;
 	struct ht_element *ht_value;
 
-	ht = hashtable_create(ht, 0x10, get_hash, cmp_keys);
+	ht = hashtable_init(ht, 0x10, get_hash, cmp_keys);
 
 	ht_item = pool_alloc(&ht_test_item_pool);
 	ht_item = hashtable_item_init(ht_item, (void *)key[0], &el[0]);
@@ -62,7 +62,7 @@ TEST_CASE("Add three elements to hashtable") {
 	struct ht_element *ht_value[3];
 	int i, j;
 
-	ht = hashtable_create(ht, 0x30, get_hash, cmp_keys);
+	ht = hashtable_init(ht, 0x30, get_hash, cmp_keys);
 
 	for(i = 0; i < ARRAY_SIZE(el); i++)	{
 		ht_item = pool_alloc(&ht_test_item_pool);
@@ -102,7 +102,7 @@ TEST_CASE("Add tree elements and comparer there on each iteration") {
 	struct hashtable_item *ht_item;
 	HASHTABLE_DECL(ht, 0x1);
 
-	ht = hashtable_create(ht, 0x1, get_hash, cmp_keys);
+	ht = hashtable_init(ht, 0x1, get_hash, cmp_keys);
 
 	for (i = 0; i < ARRAY_SIZE(el); i++) {
 		ht_item = pool_alloc(&ht_test_item_pool);

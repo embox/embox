@@ -33,7 +33,7 @@ typedef size_t (*ht_hash_ft)(void *key);
 typedef int (*ht_cmp_ft)(void *key1, void *key2);
 
 /**
- * Create hashtable with specified size and special hash-table functions
+ * Initialize a buffer as hashtable with specified size and special hash-table functions
  * (#get_hash_ft calculating hash index and #ht_cmp_ft comparing items). This
  * function creates array for lists with element pointer. The Lists use for
  * resolving hash index collision. Return value is the created hash-table
@@ -45,8 +45,8 @@ typedef int (*ht_cmp_ft)(void *key1, void *key2);
  *
  * @return hashtable structure pointer
  */
-extern struct hashtable *hashtable_create(struct hashtable *ht,
-		size_t table_size, ht_hash_ft get_hash, ht_cmp_ft cmp);
+extern struct hashtable *hashtable_init(struct hashtable *ht,
+		unsigned int table_size, ht_hash_ft get_hash, ht_cmp_ft cmp);
 
 /**
  * Delete all elements from hash-table and free hash-table structure memory
@@ -65,9 +65,6 @@ extern void hashtable_destroy(struct hashtable *ht);
  *
  * @return error code
  */
-#if 0
-extern int hashtable_put(struct hashtable *ht, void *key, void *value);
-#endif
 extern int hashtable_put(struct hashtable *ht, struct hashtable_item *ht_item);
 
 extern struct hashtable_item *hashtable_item_init(
@@ -123,7 +120,7 @@ struct hashtable_item {
 
 struct hashtable_entry {
 	struct dlist_head list;
-	size_t cnt;
+	unsigned int cnt;
 };
 
 /**
@@ -136,7 +133,7 @@ struct hashtable {
 	struct hashtable_entry *table; /**< array of the tables entry */
 	ht_hash_ft get_hash_key; /**< handler of the calculation index function */
 	ht_cmp_ft cmp; /** < handler of the compare elements function */
-	size_t table_size; /** size of the array of the table entry */
+	unsigned int table_size; /** size of the array of the table entry */
 	struct dlist_head all;
 };
 
@@ -163,10 +160,5 @@ struct hashtable {
 #define HASHTABLE_DECL(name, size) \
 	HASHTABLE_BUFFER_DEF(name##_buff,HASHTABLE_SIZE(size)); \
 	struct hashtable *name = (struct hashtable *)name##_buff;
-
-
-
-
-
 
 #endif /* UTIL_HASHTABLE_H_ */

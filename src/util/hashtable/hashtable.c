@@ -16,9 +16,13 @@
 #include <util/hashtable.h>
 #include <util/dlist.h>
 
-struct hashtable *hashtable_create(struct hashtable *ht, size_t table_size,
+struct hashtable *hashtable_init(struct hashtable *ht, unsigned int table_size,
 		ht_hash_ft get_hash, ht_cmp_ft cmp) {
 
+	/* ht must have following structure:
+	 * first of all place struct hashtable and then place
+	 * array struct hashtable_item[size]
+	 */
 	ht->table = (struct hashtable_entry *)(ht + 1);
 
 	memset(ht->table, 0, table_size * sizeof(struct hashtable_entry));
