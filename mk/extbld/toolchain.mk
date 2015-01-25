@@ -41,8 +41,9 @@ EMBOX_IMPORTED_MAKEFLAGS += -j $(shell nproc)
 endif
 
 ifdef GEN_DIST
-_abs_dist_dir := $(abspath $(DIST_BASE_DIR))
-root2dist = $(subst $(abspath $(ROOT_DIR)),$(_abs_dist_dir),$(filter-out -I$(_abs_dist_dir)%,$1)) $(filter -I$(_abs_dist_dir)%,$1)
+root2dist = $(strip \
+	$(subst $(abspath $(DIST_BASE_DIR)),$${EMBOX_DIST_BASE_DIR}, \
+		$(subst $(abspath $(ROOT_DIR)),$${EMBOX_ROOT_DIR},$1)))
 else
 root2dist = $1
 endif
@@ -50,12 +51,12 @@ endif
 $(EMBOX_GCC_ENV): $(MKGEN_DIR)/build.mk $(MKGEN_DIR)/image.rule.mk
 $(EMBOX_GCC_ENV): mk/flags.mk mk/extbld/toolchain.mk
 $(EMBOX_GCC_ENV): | $(dir $(EMBOX_GCC_ENV))
-	@echo EMBOX_CROSS_COMPILE="'"$(CROSS_COMPILE)"'"                       > $@
-	@echo EMBOX_IMPORTED_CPPFLAGS="'"$(call root2dist,$(EMBOX_IMPORTED_CPPFLAGS))"'"         >> $@
-	@echo EMBOX_IMPORTED_CFLAGS="'"$(call root2dist,$(EMBOX_IMPORTED_CFLAGS))"'"             >> $@
-	@echo EMBOX_IMPORTED_CXXFLAGS="'"$(call root2dist,$(EMBOX_IMPORTED_CXXFLAGS))"'"         >> $@
-	@echo EMBOX_IMPORTED_LDFLAGS="'"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS))"'"           >> $@
-	@echo EMBOX_IMPORTED_LDFLAGS_FULL="'"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS_FULL))"'" >> $@
+	@echo EMBOX_CROSS_COMPILE='"$(CROSS_COMPILE)"'                       > $@
+	@echo EMBOX_IMPORTED_CPPFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CPPFLAGS))"'         >> $@
+	@echo EMBOX_IMPORTED_CFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CFLAGS))"'             >> $@
+	@echo EMBOX_IMPORTED_CXXFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CXXFLAGS))"'         >> $@
+	@echo EMBOX_IMPORTED_LDFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS))"'           >> $@
+	@echo EMBOX_IMPORTED_LDFLAGS_FULL='"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS_FULL))"' >> $@
 
 TOOLCHAIN_TEST_SRC := $(ROOT_DIR)/mk/extbld/toolchain_test.c
 TOOLCHAIN_TEST_OUT := $(OBJ_DIR)/toolchain_test

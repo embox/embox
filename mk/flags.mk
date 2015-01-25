@@ -65,6 +65,7 @@ EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
 	$(foreach path_var, \
 			ROOT_DIR \
+			EMBOX_ROOT_DIR \
 			CONF_DIR \
 			TEMPLATES_DIR \
 			SRC_DIR \

@@ -3,6 +3,7 @@
 #
 
 export ROOT_DIR       := .
+export EMBOX_ROOT_DIR := $(abspath $(ROOT_DIR))
 
 export CONF_DIR        = $(ROOT_DIR)/conf
 export TEMPLATES_DIR   = $(ROOT_DIR)/templates
@@ -35,6 +36,7 @@ export DOCS_OUT_DIR    = $(DOC_DIR)
 
 export CACHE_DIR       = mk/.cache
 
+export EMBOX_DIST_BASE_DIR := $(abspath $(DIST_BASE_DIR))
 export EXTBLD_LIB      = $(abspath $(ROOT_DIR))/mk/extbld/lib.mk
 export EMBOX_GCC_ENV   = $(abspath $(MKGEN_DIR))/embox_gcc_env.sh
 

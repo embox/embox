@@ -8,6 +8,7 @@ include mk/core/common.mk
 include mk/variables.mk
 
 export DIST_BASE_DIR := .
+export EMBOX_DIST_BASE_DIR := $(abspath $(DIST_BASE_DIR))
 
 .PHONY : all a
 a : all
