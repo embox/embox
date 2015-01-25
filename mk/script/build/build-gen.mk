@@ -5,7 +5,13 @@
 
 include mk/script/script-common.mk
 
-MOD_AUTOCMD_POSTBUILD=$$(EXTERNAL_MAKE_FLAGS) MAIN_STRIPPING_LOCALS=yes $$(abspath $$(ROOT_DIR))/mk/main-stripping.sh $$(module_id) $$(abspath $$(obj_build)) $$(abspath $$(obj_postbuild))
+MOD_AUTOCMD_POSTBUILD = \
+	$$(EXTERNAL_MAKE_FLAGS) \
+	MAIN_STRIPPING_LOCALS=yes \
+	$$(abspath $$(ROOT_DIR))/mk/main-stripping.sh \
+	$$(module_id) \
+	$$(abspath $$(obj_build)) \
+	$$(abspath $$(obj_postbuild))
 
 # Wraps the given rule with a script which compares the command output with
 # the original file (if it exists) and replaces the latter only in case when
@@ -281,9 +287,27 @@ module_id   = $(subst .,__,$(module_fqn))
 
 my_add_prefix := $(call mybuild_resolve_or_die,mybuild.lang.AddPrefix.value)
 
-__source_file_mod = $(subst ^MOD_PATH,$(call module_type_path,$2),$(if $(findstring ^BUILD,$3),../..$(subst ^BUILD,,$3),$(patsubst %$(call get,$1,fileName),%,$(call get,$1,fileFullName))$3))#
-__source_file_wprefix =$(strip $(foreach p,$(call get,$(call invoke,$(call invoke,$1,eContainer),getAnnotationValuesOfOption,$(my_add_prefix)),value),$(strip $p)/))$(call get,$1,fileName)#
-source_file = $(foreach f,$1,$(call __source_file_mod,$f,$(call invoke,$(call invoke,$f,eContainer),eContainer),$(call __source_file_wprefix,$f)))
+source_member = $(call invoke,$1,eContainer)
+source_annotation_values = \
+	$(call invoke,$(source_member),getAnnotationValuesOfOption,$2)
+source_annotations = \
+	$(call invoke,$(source_member),getAnnotationsOfType,$2)
+
+__source_file_mod = $(strip \
+	$(subst ^MOD_PATH,$(call module_type_path,$2), \
+		$(if $(findstring ^BUILD,$3), \
+			../..$(subst ^BUILD,,$3), \
+			$(patsubst %$(call get,$1,fileName),%, \
+				$(call get,$1,fileFullName))$3)))
+__source_file_wprefix = $(subst $(\s),, \
+	$(foreach p, \
+		$(call annotation_value,$(source_member),$(my_add_prefix)), \
+		$(strip $p)/))$(call get,$1,fileName)
+source_file = $(strip \
+	$(foreach 1,$1, \
+		$(call __source_file_mod,$1,$(call invoke,$(source_member),eContainer),$(__source_file_wprefix))))
+# source_file = \
+# 	$(warning $@ [$(__source_file)])$(__source_file)
 
 source_base = $(basename $(source_file))
 
@@ -476,12 +500,6 @@ $(@module_extbld_rmk) :
 # Per-source artifacts.
 #
 
-source_member = $(call invoke,$1,eContainer)
-source_annotation_values = \
-	$(call invoke,$(source_member),getAnnotationValuesOfOption,$2)
-source_annotations = \
-	$(call invoke,$(source_member),getAnnotationsOfType,$2)
-
 my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 
 @source_gen := \
@@ -566,9 +584,12 @@ $(@source_rmk) : instrument = $(call values_of,$(my_instrument_val))
 
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
 $(@source_rmk) : check_profiling = $(if $(filter true, $(call get,$1,value)), -finstrument-functions, )
-$(@source_rmk) : flags_before = $(call trim,$(call do_flags,-I,$(includes_before)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
+$(@source_rmk) : flags_before = $(call trim, \
+			$(call do_flags,-I,$(includes_before)) \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
 $(@source_rmk) : flags = $(call trim, \
-			$(call do_flags,-I,$(includes)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
+			$(call do_flags,-I,$(includes)) \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
 			$(call do_flags,-D,$(defines)) \
 			-include $(patsubst %,$(value module_config_h_pat), \
 						$(mod_path)) \
@@ -695,7 +716,8 @@ $(@source_dist) :
 
 __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
-	$(wildcard $(foreach e,*.h *.inc Makefile *.txt *.patch *.diff,$(addsuffix $e,$(__source_dirs)))))
+	$(wildcard $(foreach e,*.h *.inc Makefile *.txt *.patch *.diff, \
+		$(addsuffix $e,$(__source_dirs)))))
 
 include mk/flags.mk  # INCLUDES_FROM_FLAGS
 
