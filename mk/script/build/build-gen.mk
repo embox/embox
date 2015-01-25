@@ -679,12 +679,14 @@ ifdef GEN_DIST
 
 all .PHONY : $(@source_dist)
 
-$(@source_dist) : file = $(call source_file,$@)
+$(@source_dist) : file = $(patsubst ../../%,../%,$(call source_file,$@))
 $(@source_dist) : @file = $(DIST_BASE_DIR)/$(file)
 $(@source_dist) : @dir = $(patsubst %/,%,$(dir $(@file)))
 $(@source_dist) : | $$(@dir)/.
 $(@source_dist) :
 	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi
+
+@dist_makefile := dist-makefile-/$(DIST_BASE_DIR)/../Makefile
 
 @dist_cpfiles := $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
 	mk/core/common.mk \
@@ -707,8 +709,7 @@ $(@source_dist) :
 	mk/main-dist.mk \
 	mk/main-stripping.sh \
 	mk/phymem_cc_addon.tmpl.c \
-	mk/variables.mk \
-	Makefile)
+	mk/variables.mk)
 
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
 	doc \
@@ -741,15 +742,21 @@ include mk/flags.mk  # INCLUDES_FROM_FLAGS
 	start_script.inc)
 
 @dist_all := \
+	$(@dist_makefile) \
 	$(@dist_cpfiles) \
 	$(@dist_includes) \
 	$(@dist_conf)
 
 
 all .PHONY : $(@dist_all)
+$(@dist_makefile) : dist-makefile-/% : | $$(*D)/.
+$(@dist_makefile) : @file = $(@:dist-makefile-/%=%)
+$(@dist_makefile) : file = $(@:dist-makefile-/$(DIST_BASE_DIR)/../%=$(ROOT_DIR)/%)
+$(@dist_makefile) :
+	@sed 's/\$$(dir \$$(lastword \$$(MAKEFILE_LIST)))/\$$(dir \$$(lastword \$$(MAKEFILE_LIST)))\/base/g' < $(file) > $(@file)
 
 $(@dist_cpfiles) : dist-cpfile-/% : | $$(*D)/.
-$(@dist_cpfiles) : @file = $(subst -dist.,.,$(@:dist-cpfile-/%=%))
+$(@dist_cpfiles) : @file = $(foreach f,$(@:dist-cpfile-/%=%),$(dir $f)$(subst -dist.,.,$(notdir $f)))
 $(@dist_cpfiles) : file = $(@:dist-cpfile-/$(DIST_BASE_DIR)/%=$(ROOT_DIR)/%)
 $(@dist_cpfiles) :
 	@cp -Trf $(file) $(@file)
