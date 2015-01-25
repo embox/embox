@@ -198,9 +198,8 @@ image_size_sort = \
 	cat $@.tmp | sort -g -k $1 >> $@;
 
 $(IMAGE_SIZE): $(IMAGE)
-	@if [ `which $(SIZE) 2> /dev/null` ];  \
-	then                                   \
-	    $(SIZE) $^ > $@.tmp;               \
+	@if which $(SIZE) >/dev/null 2>&1; then \
+	    $(SIZE) $^ | tee $@.tmp;            \
 		echo "size util generated output for $(TARGET)" > $@; \
 		$(call image_size_sort,1,text)     \
 		$(call image_size_sort,2,data)     \
