@@ -31,6 +31,6 @@ case " $@" in
 esac
 
 ARG_LINE="$ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
-#echo "$EMBOX_CROSS_COMPILE${cmd#arch-embox-} $@ $ARG_LINE" >&2
-$EMBOX_CROSS_COMPILE${cmd#arch-embox-} "$@" $ARG_LINE
+# echo "$EMBOX_CROSS_COMPILE${cmd#arch-embox-} $@ ${ARG_LINE//$PWD/.}" >&2
+$EMBOX_CROSS_COMPILE${cmd#arch-embox-} "$@" ${ARG_LINE//$PWD/.}
 exit $?

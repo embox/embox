@@ -46,4 +46,7 @@ $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
+# XXX GCC built for Windows doesn't recognize /cygdrive/... absolute paths -- Eldar
+.SHELLFLAGS = -c$(if $(filter %.o %.lds,$(value @)), '$(SHELL) -c "$${0//$$PWD/.}"')
+
 endif
