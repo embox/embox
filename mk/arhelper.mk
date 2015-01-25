@@ -76,6 +76,9 @@ $(objs) :
 endif
 
 
+$(TARGET) : mk/arhelper.mk
 $(TARGET) : $(objs)
-	$(AR) $(ARFLAGS) $@ $(call fmt_line,$^)
+	@$(RM) $@
+	echo $(call fmt_line,$(objs)) \
+	| xargs $(AR) $(ARFLAGS) $@
 
