@@ -1,0 +1,12 @@
+package embox.driver.sd
+
+abstract module sd { }
+
+@BuildDepends(third_party.bsp.st_f4.core)
+module stm32f4_sd extends sd {
+	source "stm32f4_sd.c"
+	source "stm32f4_discovery.c"
+	source "stm32f4_discovery_sdio_sd.c"
+
+	depends third_party.bsp.st_f4.core
+}
