@@ -158,12 +158,13 @@ static int flashset_load(struct flashset_settings *fl_settings) {
 }
 
 int main(int argc, char *argv[]) {
-	dfs_flashdev = (struct flash_dev *) &stm32_flash;
 	struct flashset_settings fl_settings;
 	int errcode;
 
+	dfs_set_dev((struct flash_dev *) &stm32_flash);
+
 	/* Init DFS */
-	if (dfs_sb.sb_size == 0)
+	if (!dfs_get_dev())
 		dfs_init();
 
 	if (0 == strcmp(argv[1], "store")) {

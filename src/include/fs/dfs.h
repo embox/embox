@@ -12,9 +12,6 @@
 #define DFS_INODES_MAX 1
 #define DFS_NAME_MAX_LENGTH 16
 
-extern struct flash_dev *dfs_flashdev;
-extern struct dfs_superblock dfs_sb;
-
 struct dfs_inode {
 	int num;
 	int page_start;
@@ -37,6 +34,8 @@ struct dfs_desc {
 
 extern int dfs_init(void);
 extern int dfs_mount(void);
+extern int dfs_set_dev(struct flash_dev *new_dev);
+extern struct flash_dev *dfs_get_dev(void);
 
 /* Inode interface */
 int dfs_read_inode(int n, struct dfs_inode*);

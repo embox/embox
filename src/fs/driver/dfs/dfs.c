@@ -12,8 +12,8 @@
 #include <framework/mod/options.h>
 #include <util/bitmap.h>
 
-struct flash_dev *dfs_flashdev;
-struct dfs_superblock dfs_sb;
+static struct flash_dev *dfs_flashdev;
+static struct dfs_superblock dfs_sb;
 
 #define NAND_PAGE_SIZE 8
 #define NAND_BLOCK_SIZE (dfs_flashdev->block_info.block_size)
@@ -23,8 +23,8 @@ struct dfs_superblock dfs_sb;
 BITMAP_DECL(dfs_free_pages, NAND_PAGES_MAX);
 
 /* XXX Hardcode */
-char *file_name[] = { "flashset", };
-int file_len[] = { 136, };
+static char *file_name[] = { "flashset", };
+static int file_len[] = { 136, };
 
 /* Converting */
 static inline int page_capacity(int bytes) {
@@ -144,6 +144,15 @@ int dfs_init(void) {
 	}
 
 	return 0;
+}
+
+int dfs_set_dev(struct flash_dev *new_dev) {
+	dfs_flashdev = new_dev;
+	return 0;
+}
+
+struct flash_dev *dfs_get_dev(void) {
+	return dfs_flashdev;
 }
 
 static int inode_from_path(const char *path) {
