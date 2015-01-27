@@ -25,6 +25,7 @@ IMAGE_BIN   = $(IMAGE).bin
 IMAGE_SREC  = $(IMAGE).srec
 IMAGE_SIZE  = $(IMAGE).size
 IMAGE_PIGGY = $(IMAGE).piggy
+IMAGE_A     = $(BIN_DIR)/lib$(TARGET).a
 
 include mk/flags.mk # It must be included after a user-defined config.
 
@@ -43,11 +44,15 @@ include $(__include)
 .SECONDARY:
 .DELETE_ON_ERROR:
 
+IMAGE_TARGET ?= executable
+ifeq ($(IMAGE_TARGET),executable)
 image: $(IMAGE)
 image: $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
-
 ifeq ($(value DISASSEMBLY),y)
 image : $(IMAGE_DIS)
+endif
+else ifeq ($(IMAGE_TARGET),library)
+image: $(IMAGE_A)
 endif
 
 ifndef LD_SINGLE_T_OPTION
@@ -105,10 +110,15 @@ $(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
 GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%)
 VPATH += $(GPATH)
 
+image_relocatable_o = $(OBJ_DIR)/image_relocatable.o
 image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
 image_pass1_o = $(OBJ_DIR)/image_pass1.o
 
 image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
+
+$(IMAGE_A) : $(image_relocatable_o) $$(common_prereqs)
+	@$(RM) $@
+	$(AR) rcs $@ $<
 
 #XXX
 FINAL_LINK_WITH_CC ?=
@@ -123,6 +133,16 @@ phymem_cflags_addon := \
 	mk/phymem_cc_addon.tmpl.c
 
 FINAL_LDFLAGS ?=
+$(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
+	$(CC) -Wl,--relocatable \
+	$(embox_o) \
+	$(FINAL_LDFLAGS) \
+	-Wl,--defsym=__symbol_table=0 \
+	-Wl,--defsym=__symbol_table_size=0 \
+	$(phymem_cflags_addon) \
+	-Wl,--cref -Wl,-Map,$@.map \
+	-o $@
+
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(CC) -Wl,--relax \
 	$(embox_o) \
@@ -151,6 +171,15 @@ $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
 	-Wl,--cref -Wl,-Map,$@.map \
 	-o $@
 else
+
+$(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
+	$(LD) --relocatable $(ldflags) \
+	-T $(image_lds) \
+	$(embox_o) \
+	--defsym=__symbol_table=0 \
+	--defsym=__symbol_table_size=0 \
+	--cref -Map $@.map \
+	-o $@
 
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(LD) --relax $(ldflags) \
