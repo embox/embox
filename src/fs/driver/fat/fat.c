@@ -11,10 +11,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <limits.h>
 
-#include <util/array.h>
+#include <util/math.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 
@@ -41,7 +40,7 @@ POOL_DEF(fat_fs_pool, struct fat_fs_info,
 POOL_DEF(fat_file_pool, struct fat_file_info,
 	OPTION_GET(NUMBER, inode_quantity));
 
-#define LABEL "EMBOX_DISK\0"
+#define LABEL "EMBOX_DISK"
 #define SYSTEM "FAT12"
 
 char bootcode[130] =
@@ -85,26 +84,44 @@ static fat_file_info_t *fat_fi_alloc(struct nas *nas, void *fs) {
 
 
 static int fat_create_partition(void *bdev) {
-	lbr_t lbr;
-	size_t num_sect;
-	uint16_t bytepersec, secperfat, rootentries;
+	uint16_t bytepersec = SECTOR_SIZE;
+	size_t num_sect = block_dev(bdev)->size / bytepersec;
+	uint16_t secperfat = max(1, (uint16_t) 0xFFFF & (num_sect / bytepersec ));
+	uint16_t rootentries = 0x0200; /* 512 for FAT16 */
 
-	memset ((void *)&lbr.jump, 0x00, SECTOR_SIZE); /* set all by ZERO */
-	lbr.jump[0] = 0xeb;
-	lbr.jump[1] = 0x3c;
-	lbr.jump[2] = 0x90;
-	memset ((void *)&lbr.oemid, 0x45, 0x08); /* EEEEEEEE */
-	bytepersec = SECTOR_SIZE;
-	lbr.bpb.bytepersec_l = (uint8_t)(bytepersec & 0xFF);
-	lbr.bpb.bytepersec_h = (uint8_t)((bytepersec & 0xFF00) >> 8);
-	lbr.bpb.secperclus = 0x04;
-	lbr.bpb.reserved_l = 0x01; /* reserved sectors */
-	lbr.bpb.numfats = 0x02;/* 2 FAT copy */
-	lbr.bpb.mediatype = 0xF8;
-	lbr.bpb.secpertrk_l = 0x3f;
-	lbr.bpb.heads_l = 0xff;
-	lbr.sig_55 = 0x55;
-	lbr.sig_aa = 0xAA;
+	lbr_t lbr = {
+		.jump = {0xeb, 0x3c, 0x90}, /* JMP 0x3c; NOP; */
+		.oemid = {0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45}, /* ASCII "EEEEEEEE" */
+		.bpb = {
+			.bytepersec_l = (uint8_t)(bytepersec & 0xFF),
+			.bytepersec_h = (uint8_t)((bytepersec & 0xFF00) >> 8),
+			.secperclus = 0x04,
+			.reserved_l = 0x01,	/* reserved sectors */
+			.reserved_h = 0x0,
+			.numfats = 0x02,	/* 2 FAT copy */
+			.mediatype = 0xF8,
+			.secpertrk_l = 0x3F,
+			.heads_l = 0xFF,
+			.secperfat_l = (uint8_t)(0x00FF & secperfat),
+			.secperfat_h = (uint8_t)(0x00FF & (secperfat >> 8)),
+			.rootentries_l = (uint8_t)(0x00FF & rootentries ),
+			.rootentries_h = (uint8_t)(0x00FF & (rootentries >> 8)),
+		},
+		.ebpb = {
+			.ebpb = {
+				.signature = 0x29,
+				.serial_0 = 0x81,
+				.serial_1 = 0xDB,
+				.serial_2 = 0xF7,
+				.serial_3 = 0xBB,
+				.label = LABEL,
+				.system = SYSTEM,
+			},
+		},
+		.sig_55 = 0x55,
+		.sig_aa = 0xAA,
+	};
+
 	memcpy(lbr.ebpb.ebpb.system + 8, bootcode, 130);
 
 	num_sect = block_dev(bdev)->size / bytepersec;
@@ -119,27 +136,8 @@ static int fat_create_partition(void *bdev) {
 		lbr.bpb.sectors_l_3 = (uint8_t)(0x00000FF & (num_sect >> 24));
 	}
 
-	secperfat = (uint16_t)(0xFFFF & (num_sect / bytepersec));
-	if(0 == secperfat) {
-		secperfat++;
-	}
-	lbr.bpb.secperfat_l = (uint8_t)(0x00FF & secperfat );
-	lbr.bpb.secperfat_h = (uint8_t)(0x00FF & (secperfat >> 8));
-	rootentries = 0x0200; /* 512 for FAT16 */
-	lbr.bpb.rootentries_l = (uint8_t)(0x00FF & rootentries );
-	lbr.bpb.rootentries_h = (uint8_t)(0x00FF & (rootentries >> 8));
-	lbr.ebpb.ebpb.signature = 0x29;
-	lbr.ebpb.ebpb.serial_0 = 0x81;
-	lbr.ebpb.ebpb.serial_1 = 0xdb;
-	lbr.ebpb.ebpb.serial_2 = 0xf7;
-	lbr.ebpb.ebpb.serial_3 = 0xbb;
-	strcpy ((void *)&lbr.ebpb.ebpb.label, LABEL);
-	strcpy ((void *)&lbr.ebpb.ebpb.system, SYSTEM);
-	memcpy ((void *)&sector_buff[0], (void *)&lbr, SECTOR_SIZE);
-
-	return fat_write_sector(bdev, sector_buff, 0, 1);
+	return fat_write_sector(bdev, (void *) &lbr, 0, 1);
 }
-
 
 /**
  *	Get starting sector# of specified partition on drive #unit
@@ -2352,5 +2350,4 @@ const struct fs_driver *fatfs_get_fs(void) {
 }
 
 DECLARE_FILE_SYSTEM_DRIVER(fatfs_driver);
-
 
