@@ -147,7 +147,6 @@ static struct fsop_desc initfs_fsop = {
 
 static struct fs_driver initfs_driver = {
 	.name = "initfs",
-	.mount_dev_by_string = true,
 	.file_op = &initfs_fop,
 	.fsop = &initfs_fsop,
 };

@@ -286,13 +286,6 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
-	if ((0 == strcmp(fs_type, "nfs")) || (0 == strcmp(fs_type, "cifs") ||
-				drv->mount_dev_by_string)) {
-		//todo xxx
-		dev_node.node = (node_t *) dev;
-		goto skip_dev_lookup;
-	}
-
 	if (ENOERR != (res = fs_perm_lookup(dev, &lastpath, &dev_node))) {
 		errno = res == -ENOENT ? ENODEV : -res;
 		return -1;
@@ -303,7 +296,6 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
-skip_dev_lookup:
 	/* find directory */
 	if (ENOERR != (res = fs_perm_lookup(dir, &lastpath, &dir_node))) {
 		errno = -res;

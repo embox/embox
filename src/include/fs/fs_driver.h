@@ -43,7 +43,6 @@ struct kfile_operations;
  */
 struct fs_driver {
 	const char                    *name;
-	bool                          mount_dev_by_string;
 	const struct kfile_operations *file_op;
 	const struct fsop_desc        *fsop;
 };
