@@ -129,11 +129,7 @@ void vfs_lookup_child(struct path *parent, const char *name, struct path *child)
 int vfs_lookup(const char *str_path, struct path *path) {
 	struct path parent;
 
-	if (str_path[0] == '/')
-		vfs_get_root_path(&parent);
-	else
-		vfs_get_root_path(&parent);
-
+	vfs_get_root_path(&parent);
 
 	if_mounted_follow_down(&parent);
 
