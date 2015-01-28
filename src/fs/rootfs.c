@@ -19,7 +19,7 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-static int rootfs_mount(const char *dev, const char *dir, const char *fs_type) {
+static int rootfs_mount(const char *dev, const char *fs_type) {
 	struct fs_driver *fsdrv;
 
 	/* mount dev filesystem */
@@ -28,11 +28,7 @@ static int rootfs_mount(const char *dev, const char *dir, const char *fs_type) {
 		fsdrv->fsop->mount("/dev", NULL);
 	}
 
-	if(0 == strlen((char *) dir)) {
-		return 0;
-	}
-
-	if (-1 == mount((char *) dev, (char *) dir, (char *) fs_type)) {
+	if (-1 == mount((char *) dev, "/", (char *) fs_type)) {
 		return -errno;
 	}
 
@@ -40,11 +36,10 @@ static int rootfs_mount(const char *dev, const char *dir, const char *fs_type) {
 }
 
 static int unit_init(void) {
-	const char *dev, *dir, *fs_type;
+	const char *dev, *fs_type;
 
-	dev = OPTION_STRING_GET(src);
-	dir = OPTION_STRING_GET(dst);
+	dev = OPTION_STRING_GET(bdev);
 	fs_type = OPTION_STRING_GET(fstype);
 
-	return rootfs_mount(dev, dir, fs_type);
+	return rootfs_mount(dev, fs_type);
 }

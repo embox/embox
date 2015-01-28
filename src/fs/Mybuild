@@ -76,8 +76,7 @@ module index_operation {
 module rootfs {
 	source "rootfs.c"
 	option string fstype = "initfs"
-	option string src = ""
-	option string dst = "/"
+	option string bdev = ""
 	depends node, driver.repo
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
