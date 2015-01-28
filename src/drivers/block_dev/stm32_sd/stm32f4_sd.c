@@ -14,14 +14,16 @@ static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t s
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
 
+#define STM32F4_SD_DEVNAME "stm32f4_sd_card"
+
 block_dev_driver_t stm32f4_sd_driver = {
-	.name = "stm32f4 sd card",
+	.name = STM32F4_SD_DEVNAME,
 	.ioctl = stm32f4_sd_ioctl,
 	.read = stm32f4_sd_read,
 	.write = stm32f4_sd_write,
 };
 
-EMBOX_BLOCK_DEV("stm32f4 sd card", &stm32f4_sd_driver, stm32f4_sd_init);
+EMBOX_BLOCK_DEV(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, stm32f4_sd_init);
 
 static int stm32f4_sd_init(void *arg) {
 	return -SD_Init();
