@@ -82,6 +82,7 @@ extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(char *name, struct indexator *indexator);
 
+extern block_dev_module_t *block_dev_lookup(const char *name);
 
 #include <util/array.h>
 

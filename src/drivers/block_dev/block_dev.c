@@ -90,22 +90,6 @@ static int blockdev_init(void) {
 	return 0;
 }
 
-/*
-static block_dev_module_t *block_dev_find(char *name) {
-	block_dev_module_t *b_dev;
-	size_t i;
-
-	for(i = 0; i < ARRAY_SPREAD_SIZE(__block_dev_registry); i++) {
-		if(!strcmp(__block_dev_registry[i].name, name)) {
-			b_dev = (block_dev_module_t *) &(__block_dev_registry[i]);
-			return b_dev;
-		}
-	}
-
-	return NULL;
-}
-*/
-
 block_dev_t *block_dev(void *dev) {
 	return (block_dev_t *)dev;
 }
@@ -414,13 +398,11 @@ ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
 
 
 int block_devs_init(void) {
-#if 0
 	int ret;
 	const block_dev_module_t *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
 		if (bdev_module->init != NULL) {
-
 			ret = bdev_module->init(NULL);
 			if (ret != 0) {
 				return ret;
@@ -428,12 +410,12 @@ int block_devs_init(void) {
 		}
 
 	}
-#endif
+
 	return 0;
 }
 
-const block_dev_module_t *block_devs_lookup(const char *bd_name) {
-	const block_dev_module_t *bdev_module;
+block_dev_module_t *block_dev_lookup(const char *bd_name) {
+	block_dev_module_t *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
 		if (0 == strcmp(bdev_module->name, bd_name)) {
