@@ -2092,13 +2092,15 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	dir_nas->fs->bdev = dev_fi->privdata;
 
-	if(NULL == (fsi = pool_alloc(&fat_fs_pool))) {
+	if (NULL == (fsi = pool_alloc(&fat_fs_pool))) {
 		rc =  -ENOMEM;
 		goto error;
 	}
 
+	dir_nas->fs->fsi = fsi;
+
 	/* allocate this directory info */
-	if(NULL == (fi = pool_alloc(&fat_file_pool))) {
+	if (NULL == (fi = pool_alloc(&fat_file_pool))) {
 		rc =  -ENOMEM;
 		goto error;
 	}
