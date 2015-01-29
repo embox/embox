@@ -234,7 +234,8 @@ static struct fsop_desc nfsfs_fsop = {
 static struct fs_driver nfsfs_driver = {
 	.name = "nfs",
 	.file_op = &nfsfs_fop,
-	.fsop = &nfsfs_fsop
+	.fsop = &nfsfs_fsop,
+	.mount_dev_by_string = true,
 };
 
 static int nfsfs_init(void * par) {

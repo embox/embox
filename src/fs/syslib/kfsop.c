@@ -286,17 +286,20 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
-	if (ENOERR != (res = fs_perm_lookup(dev, &lastpath, &dev_node))) {
-		errno = res == -ENOENT ? ENODEV : -res;
-		return -1;
+	if (drv->mount_dev_by_string) {
+		dev_node.node = (node_t *) dev;
+	} else {
+		if (ENOERR != (res = fs_perm_lookup(dev, &lastpath, &dev_node))) {
+			errno = res == -ENOENT ? ENODEV : -res;
+			return -1;
+		}
+
+		if (ENOERR != (res = fs_perm_check(dev_node.node, FS_MAY_READ | FS_MAY_EXEC))) {
+			errno = EACCES;
+			return -1;
+		}
 	}
 
-	if (ENOERR != (res = fs_perm_check(dev_node.node, FS_MAY_READ | FS_MAY_EXEC))) {
-		errno = EACCES;
-		return -1;
-	}
-
-	/* find directory */
 	if (ENOERR != (res = fs_perm_lookup(dir, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;

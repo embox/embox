@@ -45,6 +45,7 @@ static struct fsop_desc binfs_fsop = {
 static struct fs_driver binfs_driver = {
 	.name = "binfs",
 	.fsop = &binfs_fsop,
+	.mount_dev_by_string = true,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(binfs_driver);

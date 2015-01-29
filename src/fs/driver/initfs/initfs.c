@@ -149,6 +149,7 @@ static struct fs_driver initfs_driver = {
 	.name = "initfs",
 	.file_op = &initfs_fop,
 	.fsop = &initfs_fsop,
+	.mount_dev_by_string = true,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(initfs_driver);
