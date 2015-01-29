@@ -60,7 +60,7 @@ static int this_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-cycle_t this_read(void) {
+static cycle_t this_read(void) {
 	return RELOAD_VALUE - REG_LOAD(SYSTICK_VAL);
 }
 
