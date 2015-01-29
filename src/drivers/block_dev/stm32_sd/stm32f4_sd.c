@@ -26,11 +26,24 @@ block_dev_driver_t stm32f4_sd_driver = {
 EMBOX_BLOCK_DEV(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, stm32f4_sd_init);
 
 static int stm32f4_sd_init(void *arg) {
-	return -SD_Init();
+	block_dev_t *bdev;
+	if (block_dev_lookup(STM32F4_SD_DEVNAME)) {
+		bdev = block_dev_create("/dev/" STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
+		bdev->size = 2048 * 1024; /* XXX Hardcode */
+		return -SD_Init();
+	}
+	return -1;
 }
 
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size) {
-	return 0;
+	switch (cmd) {
+	case IOCTL_GETDEVSIZE:
+		return 2048 * 1024; /* XXX Hardcode */
+	case IOCTL_GETBLKSIZE:
+		return 512;	/* XXX Hardcode */
+	default:
+		return -1;
+	}
 }
 
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
