@@ -17,7 +17,7 @@ $(TARGET) :  # default
 
 include mk/core/common.mk
 
-fmt_line = $(addprefix \$(\n)$(\t)$(\t),$1)
+fmt_line = $(if $(word 2,$1),$(addprefix \$(\n)$(\t),$1),$1)
 normalize_path = $(patsubst $(abspath $(CURDIR))/%,%,$(abspath $1))
 
 
@@ -43,6 +43,11 @@ else  # no APP_ID
 o_objs = $(O_FILES)
 endif # APP_ID
 
+ifdef APP_ID
+a_obj_sep := .# path/to/lib.a.x.o
+else  # no APP_ID
+a_obj_sep := .x/# path/to/lib.a.x/x.o
+endif # APP_ID
 
 $(A_FILES:%=%.x) : %.x : %
 	$(MKDIR) $@; cd $@; $(AR) x ../$(*F);
@@ -55,11 +60,9 @@ $(error Can't get members of the archive '$a')
 endif
 $(members-$(abs):%=$a.x/%) : $a.x
 
+objects-$(abs) := $(members-$(abs):%=$a$(a_obj_sep)%)
 ifdef APP_ID
-objects-$(abs) := $(members-$(abs):%=$a.%)  # path/to/lib.a.x.o
 $(objects-$(abs)) : $a.% : $a.x/%
-else  # no APP_ID
-objects-$(abs) := $(members-$(abs):%=$a.x/%)  # path/to/lib.a.x/x.o
 endif # APP_ID
 
 endef
@@ -71,14 +74,16 @@ a_objs := $(foreach a,$(A_FILES),$(foreach abs,$(abspath $a), \
 objs = $(o_objs) $(a_objs)
 
 ifdef APP_ID
-$(objs) :
+$(o_objs) $(a_objs) :
 	$(OBJCOPY) $(OBJCOPYFLAGS) $< $@
 endif
 
 
 $(TARGET) : mk/arhelper.mk
-$(TARGET) : $(objs)
+$(TARGET) : $(o_objs) $(a_objs)
 	@$(RM) $@
-	echo $(call fmt_line,$(objs)) \
+	{ echo $(call fmt_line,$(o_objs)); $(foreach a,$(A_FILES),\$(\n)\
+  for o in $(call fmt_line,$(members-$(abspath $a))); \$(\n)\
+    	do echo $a$(a_obj_sep)$$o; done; )} \
 	| xargs $(AR) $(ARFLAGS) $@
 
