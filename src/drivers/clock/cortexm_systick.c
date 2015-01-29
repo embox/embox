@@ -34,6 +34,8 @@
 #define SCB_SHP_BASE ((unsigned int *) 0xe000ed18)
 #define SCB_SHP_PERIF_N 8
 
+#define RELOAD_VALUE (SYS_CLOCK / (CLOCK_DIVIDER * 1000))
+
 static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(irq_nr, data);
@@ -46,11 +48,9 @@ static int this_init(void) {
 }
 
 static int this_config(struct time_dev_conf * conf) {
-	int reload = SYS_CLOCK / (CLOCK_DIVIDER * 1000);
-
 	REG_STORE(SYSTICK_CTRL, 0);
 
-	REG_STORE(SYSTICK_RELOAD, reload - 1);
+	REG_STORE(SYSTICK_RELOAD, RELOAD_VALUE - 1);
 
 	REG_STORE(SYSTICK_VAL, 0);
 
@@ -60,8 +60,8 @@ static int this_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t this_read(void) {
-	return 0;
+cycle_t this_read(void) {
+	return RELOAD_VALUE - REG_LOAD(SYSTICK_VAL);
 }
 
 static struct time_event_device this_event = {
