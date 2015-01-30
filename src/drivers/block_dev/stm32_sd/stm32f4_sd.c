@@ -29,9 +29,12 @@ block_dev_driver_t stm32f4_sd_driver = {
 
 EMBOX_BLOCK_DEV(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, stm32f4_sd_init);
 
+static struct mutex stm32f4_sd_mutex;
+
 static int stm32f4_sd_init(void *arg) {
 	block_dev_t *bdev;
 	if (block_dev_lookup(STM32F4_SD_DEVNAME)) {
+		mutex_init(&stm32f4_sd_mutex);
 		bdev = block_dev_create("/dev/" STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
 		bdev->size = 2048 * 1024; /* XXX Hardcode */
 		return -SD_Init();
@@ -49,8 +52,6 @@ static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t s
 		return -1;
 	}
 }
-
-static struct mutex stm32f4_sd_mutex;
 
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	int res;
