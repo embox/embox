@@ -6,8 +6,12 @@
  * @date    26 Jan 2015
  */
 
+#include <string.h>
+
 #include <embox/block_dev.h>
 #include "stm32f4_discovery_sdio_sd.h"
+#include <kernel/time/ktime.h>
+#include <kernel/thread/sync/mutex.h>
 
 static int stm32f4_sd_init(void *arg);
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size);
@@ -46,11 +50,22 @@ static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t s
 	}
 }
 
+static struct mutex stm32f4_sd_mutex;
+
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
-	return -SD_ReadBlock((uint8_t*) buf, blkno, SECTOR_SIZE);
+	int res;
+	mutex_lock(&stm32f4_sd_mutex);
+	while (SD_GetTransferState() != SD_TRANSFER_OK);
+	res = SD_ReadBlock((uint8_t*) buf, blkno, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	mutex_unlock(&stm32f4_sd_mutex);
+	return res;
 }
 
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
-	return -SD_WriteBlock((uint8_t*) buf, blkno, SECTOR_SIZE);
+	int res;
+	mutex_lock(&stm32f4_sd_mutex);
+	res =  SD_WriteBlock((uint8_t*) buf, blkno, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	mutex_unlock(&stm32f4_sd_mutex);
+	return res;
 }
 
