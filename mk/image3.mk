@@ -26,6 +26,7 @@ IMAGE_SREC  = $(IMAGE).srec
 IMAGE_SIZE  = $(IMAGE).size
 IMAGE_PIGGY = $(IMAGE).piggy
 IMAGE_A     = $(BIN_DIR)/lib$(TARGET).a
+IMAGE_LINKED_A = $(BIN_DIR)/lib$(TARGET)-linked.a
 
 include mk/flags.mk # It must be included after a user-defined config.
 
@@ -116,7 +117,11 @@ image_pass1_o = $(OBJ_DIR)/image_pass1.o
 
 image_files := $(IMAGE) $(image_nosymbols_o) $(image_pass1_o)
 
-$(IMAGE_A) : $(image_relocatable_o) $$(common_prereqs)
+$(IMAGE_A) : $(embox_o) $$(common_prereqs)
+	@$(RM) $@
+	$(AR) rcs $@ $<
+
+$(IMAGE_LINKED_A) : $(image_relocatable_o) $$(common_prereqs)
 	@$(RM) $@
 	$(AR) rcs $@ $<
 
