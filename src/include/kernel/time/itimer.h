@@ -14,7 +14,7 @@
 #include <kernel/time/ktime.h>
 
 struct itimer {
-	time64_t start_value;
+	struct timespec start_value;
 	struct clock_source *cs;
 };
 
@@ -22,6 +22,7 @@ extern void itimer_init(struct itimer *it,
 		struct clock_source *cs, time64_t start_tstamp);
 
 extern time64_t itimer_read(struct itimer *it);
+extern void itimer_read_timespec(struct itimer *it, struct timespec *ts);
 
 extern struct itimer *itimer_alloc(void);
 extern void itimer_free(struct itimer *it);
