@@ -23,6 +23,9 @@
 #define MEMORY_REGION(name) \
 	name : ORIGIN = LDS_REGION_BASE_##name, LENGTH = LDS_REGION_SIZE_##name
 
+#define HAS_MEMORY_REGION(name) \
+	defined(LDS_REGION_BASE_##name)
+
 #define SECTION_REGION(section) \
 	> LDS_SECTION_VMA_##section AT> LDS_SECTION_LMA_##section
 
