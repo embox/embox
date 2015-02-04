@@ -1,7 +1,8 @@
 package embox.kernel.time
 
 module slowdown {
-	option number factor = 1
+	/* factor = 1 << shift */
+	option number shift = 0
 }
 
 module clock_source {

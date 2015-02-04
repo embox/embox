@@ -13,7 +13,7 @@
 #include <kernel/time/timer.h>
 #include <kernel/time/clock_source.h>
 
-#define SLOWDOWN_FACTOR OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, factor)
+#define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
 
 EMBOX_UNIT_INIT(init);
 
@@ -26,7 +26,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 	struct clock_source *cs = (struct clock_source *) dev_id;
 
 	assert(cs);
-	if (++cs->jiffies_cnt == SLOWDOWN_FACTOR) {
+	if (++cs->jiffies_cnt == (1 << SLOWDOWN_SHIFT)) {
 		cs->jiffies_cnt = 0;
 		cs->jiffies++;
 
