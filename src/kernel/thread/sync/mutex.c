@@ -72,8 +72,11 @@ int mutex_lock(struct mutex *m) {
 	return ret;
 }
 
+static inline int mutex_this_owner(struct mutex *m) {
+	return m->holder == schedee_get_current();
+}
+
 int mutex_trylock(struct mutex *m) {
-	struct schedee *current = schedee_get_current();
 	int res;
 
 	assert(m);
@@ -84,45 +87,57 @@ int mutex_trylock(struct mutex *m) {
 
 	sched_lock();
 	{
-		if (m->holder == current) {
-			if (m->attr.type & MUTEX_ERRORCHECK) {
-				/* Nested locks. */
-				return -EDEADLK;
+		if (m->attr.type & MUTEX_ERRORCHECK) {
+			if (!mutex_this_owner(m)) {
+				res = mutex_trylock_schedee(m);
+			} else {
+				res = -EDEADLK;
 			}
-			if (m->attr.type & MUTEX_RECURSIVE) {
-				/* Nested locks. */
-				m->lock_count++;
-				return 0;
+		} else if (m->attr.type & MUTEX_RECURSIVE) {
+			if (mutex_this_owner(m)) {
+				++m->lock_count;
+				res = 0;
+			} else {
+				res = mutex_trylock_schedee(m);
 			}
+		} else {
+			res = mutex_trylock_schedee(m);
 		}
-
-		res = mutex_trylock_schedee(m);
 	}
 	sched_unlock();
-
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 	return res;
 }
 
 int mutex_unlock(struct mutex *m) {
-	struct schedee *current = schedee_get_current();
+	int res;
 
 	assert(m);
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
+	res = 0;
 	sched_lock();
 	{
-		if ((!m->holder || m->holder != current)
-				&& (m->attr.type & (MUTEX_ERRORCHECK | MUTEX_RECURSIVE))) {
-			return -EPERM;
+		if (m->attr.type & MUTEX_ERRORCHECK) {
+			if (mutex_this_owner(m)) {
+				mutex_unlock_schedee(m);
+			} else {
+				res = -EPERM;
+			}
+		} else if (m->attr.type & MUTEX_RECURSIVE) {
+			if (mutex_this_owner(m)) {
+				assert(m->lock_count > 0);
+				if (--m->lock_count == 0) {
+					mutex_unlock_schedee(m);
+				}
+			} else {
+				res = -EPERM;
+			}
+		} else {
+			mutex_unlock_schedee(m);
 		}
-
-		assert(m->lock_count > 0);
-
-		if (--m->lock_count != 0 && (m->attr.type & MUTEX_RECURSIVE)) {
-			return 0;
-		}
-
-		mutex_unlock_schedee(m);
 	}
 	sched_unlock();
-	return 0;
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+	return res;
 }
