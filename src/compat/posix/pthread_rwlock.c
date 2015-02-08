@@ -5,18 +5,25 @@
  * @author: Anton Bondarev
  */
 
+#include <kernel/thread/sync/rwlock.h>
 #include <pthread.h>
 
 int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
-	return -ENOSYS;
+	return 0;
 }
 
 int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr) {
-	return -ENOSYS;
+	if (attr != NULL) {
+		return -ENOSYS;
+	}
+
+	rwlock_init(rwlock);
+	return 0;
 }
 
 int pthread_rwlock_rdlock(pthread_rwlock_t *rwlock) {
-	return -ENOSYS;
+	rwlock_read_up(rwlock);
+	return 0;
 }
 
 int pthread_rwlock_tryrdlock(pthread_rwlock_t *rwlock) {
@@ -28,10 +35,12 @@ int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock) {
 }
 
 int pthread_rwlock_unlock(pthread_rwlock_t *rwlock) {
-	return -ENOSYS;
+	rwlock_any_down(rwlock);
+	return 0;
 }
 
 int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock) {
+	rwlock_write_up(rwlock);
 	return -ENOSYS;
 }
 

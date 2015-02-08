@@ -77,9 +77,7 @@ typedef struct mutex pthread_mutex_t;
 
 typedef struct mutexattr pthread_mutexattr_t;
 
-typedef struct pthread_rwlock {
-
-} pthread_rwlock_t;
+typedef struct rwlock pthread_rwlock_t;
 
 typedef struct pthread_rwlockattr {
 
