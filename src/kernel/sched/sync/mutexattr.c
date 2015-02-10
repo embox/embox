@@ -35,7 +35,7 @@ int mutexattr_gettype(const struct mutexattr *attr, int *type) {
 }
 
 int mutexattr_settype(struct mutexattr *attr, int type) {
-	attr->type |= type;
+	attr->type = type;
 
 	return ENOERR;
 }

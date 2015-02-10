@@ -56,22 +56,6 @@ TEST_CASE("Mutex with type PTHREAD_MUTEX_RECURSIVE correctness") {
 	test_assert_equal(-EPERM, pthread_mutex_unlock(&mutex));
 }
 
-TEST_CASE("Mutex with type PTHREAD_MUTEX_RECURSIVE | "
-		"PTHREAD_MUTEX_ERRORCHECK correctness") {
-	pthread_mutex_t mutex;
-	pthread_mutexattr_t mutexattr;
-	pthread_mutexattr_init(&mutexattr);
-	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_RECURSIVE);
-	pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_ERRORCHECK);
-	pthread_mutex_init(&mutex, &mutexattr);
-
-	test_assert_equal(-EPERM, pthread_mutex_unlock(&mutex));
-	test_assert_zero(pthread_mutex_lock(&mutex));
-	test_assert_equal(-EDEADLK, pthread_mutex_lock(&mutex));
-	test_assert_zero(pthread_mutex_unlock(&mutex));
-	test_assert_equal(-EPERM, pthread_mutex_unlock(&mutex));
-}
-
 TEST_CASE("Mutex with type PTHREAD_MUTEX_DEFAULT correctness") {
 	pthread_mutex_t mutex;
 	pthread_mutex_init(&mutex, NULL);

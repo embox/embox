@@ -41,7 +41,7 @@ void mutex_init_default(struct mutex *m, const struct mutexattr *attr) {
 
 void mutex_init(struct mutex *m) {
 	mutex_init_default(m, NULL);
-	mutexattr_settype(&m->attr, MUTEX_RECURSIVE | MUTEX_ERRORCHECK);
+	mutexattr_settype(&m->attr, MUTEX_RECURSIVE);
 }
 
 int mutex_lock(struct mutex *m) {
@@ -51,7 +51,7 @@ int mutex_lock(struct mutex *m) {
 
 	assert(m);
 
-	errcheck = (m->attr.type & MUTEX_ERRORCHECK);
+	errcheck = (m->attr.type == MUTEX_ERRORCHECK);
 
 	wait_ret = WAITQ_WAIT(&m->wq, ({
 		int done;
@@ -87,13 +87,13 @@ int mutex_trylock(struct mutex *m) {
 
 	sched_lock();
 	{
-		if (m->attr.type & MUTEX_ERRORCHECK) {
+		if (m->attr.type == MUTEX_ERRORCHECK) {
 			if (!mutex_this_owner(m)) {
 				res = mutex_trylock_schedee(m);
 			} else {
 				res = -EDEADLK;
 			}
-		} else if (m->attr.type & MUTEX_RECURSIVE) {
+		} else if (m->attr.type == MUTEX_RECURSIVE) {
 			if (mutex_this_owner(m)) {
 				++m->lock_count;
 				res = 0;
@@ -118,13 +118,13 @@ int mutex_unlock(struct mutex *m) {
 	res = 0;
 	sched_lock();
 	{
-		if (m->attr.type & MUTEX_ERRORCHECK) {
+		if (m->attr.type == MUTEX_ERRORCHECK) {
 			if (mutex_this_owner(m)) {
 				mutex_unlock_schedee(m);
 			} else {
 				res = -EPERM;
 			}
-		} else if (m->attr.type & MUTEX_RECURSIVE) {
+		} else if (m->attr.type == MUTEX_RECURSIVE) {
 			if (mutex_this_owner(m)) {
 				assert(m->lock_count > 0);
 				if (--m->lock_count == 0) {
