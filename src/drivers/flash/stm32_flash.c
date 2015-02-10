@@ -12,11 +12,14 @@
 #include <errno.h>
 #include <hal/reg.h>
 #include <hal/mem.h>
+#include <kernel/printk.h>
 #include <util/math.h>
 #include <drivers/flash/flash_dev.h>
 #include <stm32f4xx_flash.h>
 
 #define STM32_FIRST_BLOCK_OFFSET 11
+#define STM32_ERR_MASK 0x1f3
+
 static const struct flash_dev_drv stm32_flash_drv;
 const struct flash_dev stm32_flash = {
 	.bdev = NULL,
@@ -50,6 +53,11 @@ static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long b
 static inline int stm32_flash_check_align(unsigned long base, size_t len) {
 	return ((uintptr_t) base & 0x3) == 0 && ((uintptr_t) len  & 0x3) == 0;
 }
+static inline void stm32_flash_wait(void) {
+	while (REG_LOAD(&FLASH->SR) & FLASH_FLAG_BSY) {
+		/* nop */
+	}
+}
 
 static inline int stm32_flash_check_block(struct flash_dev *dev, uint32_t block) {
 	unsigned int n_block, i;
@@ -67,7 +75,7 @@ static inline int stm32_flash_check_block(struct flash_dev *dev, uint32_t block)
 }
 
 static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
-	FLASH_Status status;
+	unsigned long sr;
 	int err;
 
 	if (!stm32_flash_check_block(dev, block)) {
@@ -76,23 +84,25 @@ static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 
 	FLASH_Unlock();
 
-	err = 0;
-	status = FLASH_WaitForLastOperation();
-	if (status == FLASH_COMPLETE) {
+	stm32_flash_wait();
 
-		stm32_flash_set_program_size();
+	/* clear all errors */
+	REG_STORE(&FLASH->SR, STM32_ERR_MASK);
 
-		REG_STORE(&FLASH->CR,
-				(REG_LOAD(&FLASH->CR) & 0xffffff07)
-				| FLASH_CR_SER
-				| ((STM32_FIRST_BLOCK_OFFSET + block) << 3));
+	stm32_flash_set_program_size();
 
+	REG_STORE(&FLASH->CR,
+			(REG_LOAD(&FLASH->CR) & 0xffffff07)
+			| FLASH_CR_SER
+			| ((STM32_FIRST_BLOCK_OFFSET + block) << 3));
+
+	sr = REG_LOAD(&FLASH->SR);
+	if (!(sr & STM32_ERR_MASK)) {
 		REG_ORIN(&FLASH->CR, FLASH_CR_STRT);
-
-		FLASH_WaitForLastOperation();
-
-		REG_ANDIN(&FLASH->CR, ~FLASH_CR_SER);
+		stm32_flash_wait();
+		err = 0;
 	} else {
+		printk("%s: EIO sr=%08lx\n", __func__, sr);
 		err = -EIO;
 	}
 
@@ -113,7 +123,7 @@ static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void* data, si
 }
 
 static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void* data, size_t len) {
-	FLASH_Status status;
+	unsigned long sr;
 	int err;
 
 	if (!stm32_flash_check_align(base, len)
@@ -127,20 +137,22 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 
 	FLASH_Unlock();
 
-	err = 0;
-	status = FLASH_WaitForLastOperation();
-	if (status == FLASH_COMPLETE) {
+	stm32_flash_wait();
 
-		stm32_flash_set_program_size();
+	/* clear all errors */
+	REG_STORE(&FLASH->SR, STM32_ERR_MASK);
 
-		REG_ORIN(&FLASH->CR, FLASH_CR_PG);
+	stm32_flash_set_program_size();
 
+	REG_ORIN(&FLASH->CR, FLASH_CR_PG);
+
+	sr = REG_LOAD(&FLASH->SR);
+	if (!(sr & STM32_ERR_MASK)) {
 		regcpy32((void *) dev->start + base, data, len >> 2);
-
-		FLASH_WaitForLastOperation();
-
-		REG_ANDIN(&FLASH->CR, ~FLASH_CR_PG);
+		stm32_flash_wait();
+		err = 0;
 	} else {
+		printk("%s: EIO sr=%08lx\n", __func__, sr);
 		err = -EIO;
 	}
 
