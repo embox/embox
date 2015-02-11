@@ -406,7 +406,6 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 
 			ebp += printed + 1;
 			env_sz -= printed + 1;
-
 		}
 
 		envp[ARRAY_SIZE(envp) - 1] = NULL;
@@ -429,8 +428,6 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 #endif
 
 		exit(1);
-	} else {
-		while (pid != waitpid(pid, NULL, 0));
 	}
 
 	return 0;
@@ -495,6 +492,21 @@ static int httpd_client_process(const struct client_info *cinfo) {
 	return httpd_send_response_file(cinfo, &hreq);
 }
 
+static int httpd_collect_cgi_childs(void) {
+	pid_t child;
+
+	do {
+		child = waitpid(-1, NULL, WNOHANG);
+		if ((child == -1) && (errno != EINTR)) {
+			HTTPD_ERROR("waitpid() : %s\n", strerror(errno));
+			break;
+		}
+	} while (child != 0);
+
+	return child;
+}
+
+
 int main(int argc, char **argv) {
 	int host;
 	const char *basedir;
@@ -542,11 +554,15 @@ int main(int argc, char **argv) {
 		ci.ci_addrlen = inaddrlen;
 		ci.ci_sock = accept(host, &ci.ci_addr, &ci.ci_addrlen);
 		if (ci.ci_sock == -1) {
-			HTTPD_ERROR("accept() failure: %s\n", strerror(errno));
+			if (errno != EINTR) {
+				HTTPD_ERROR("accept() failure: %s\n", strerror(errno));
+			}
 			continue;
 		}
 		assert(ci.ci_addrlen == inaddrlen);
 		ci.ci_basedir = basedir;
+
+		httpd_collect_cgi_childs();
 
 		httpd_client_process(&ci);
 
