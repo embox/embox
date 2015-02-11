@@ -23,7 +23,7 @@ static void *vfork_body_exit_stub(void *arg) {
  * If a multi-threaded task calls fork(), the new task will contain a replica
  * only of the calling thread and its entire address space.
  * Warning: If a thread that is not calling fork() holds a resource, that
- * resource is never released in the child process.
+ * resource is never released in the child task.
  */
 void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	struct task *child;
