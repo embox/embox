@@ -19,14 +19,17 @@ static void *vfork_body_exit_stub(void *arg) {
 	_exit(*((int*) arg));
 }
 
+/*
+ * If a multi-threaded task calls fork(), the new task will contain a replica
+ * only of the calling thread and its entire address space.
+ * Warning: If a thread that is not calling fork() holds a resource, that
+ * resource is never released in the child process.
+ */
 void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	struct task *child;
 	pid_t child_pid;
 	struct task_vfork *task_vfork;
 	int res;
-
-	/* can vfork only in single thread application */
-	assert(&thread_self()->thread_link == thread_self()->thread_link.next);
 
 	/* create task description but not start its main thread */
 	child_pid = task_prepare("");
