@@ -1,26 +1,8 @@
 package stm32f4_cnc
 
 @AutoCmd
-@Build(script="true")
-@BuildDepends(third_party.lib.libmodbus)
-@Cmd(name="modbus_server")
-module modbus_server {
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/lib/libmodbus/install/include/modbus")
-	source "modbus_server.c"
-
-	@NoRuntime depends third_party.lib.libmodbus
-}
-
-@AutoCmd
-@Cmd(name="led_driver", help="Drives abstract led", man="")
-module led_driver {
-	source "led_driver.c"
-	depends libleddrv
-}
-
+@Cmd(name="live_status", help="Live CGI updates")
 @BuildDepends(third_party.bsp.st_f4.core)
-static module libleddrv {
-	source "libleddrv.c"
-	source "libleddrv_ll.c"
-	depends third_party.bsp.st_f4.core
+module live_status {
+	source "live_status.c"
 }

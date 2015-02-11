@@ -32,7 +32,6 @@ angular.module("HttpAdmin", ['ngRoute'])
 
 }])
 .controller("CncCtrl", ['$scope', '$http', function($scope, $http) {
-/*
         $scope.live = {};
 
         // handles the callback from the received event
@@ -42,9 +41,11 @@ angular.module("HttpAdmin", ['ngRoute'])
             });
         }
 
-        var source = new EventSource('/cgi-bin/live');
-        source.addEventListener('message', eventCallback, false);
-*/
+        var source = new EventSource('/cgi-bin/live_status');
+        source.addEventListener('message', eventCallback);
+        $scope.$on('$destroy', function () {
+                source.close();
+        });
 }])
 .config(['$routeProvider', function($routeProvider) {
     $routeProvider.
