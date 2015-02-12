@@ -6,3 +6,13 @@ package stm32f4_cnc
 module live_status {
 	source "live_status.c"
 }
+
+
+@AutoCmd
+@Cmd(name="cnc_control", help="CNC control  ")
+module cnc_control {
+	source "cnc_control.c"
+
+	@InitFS
+	source "filecnc.txt"
+}
