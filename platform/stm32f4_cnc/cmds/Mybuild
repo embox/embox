@@ -16,3 +16,9 @@ module cnc_control {
 	@InitFS
 	source "filecnc.txt"
 }
+
+@AutoCmd
+@Cmd(name="cnc_init", help="main cnc init")
+module cnc_init {
+	source "cnc_init.c"
+}
