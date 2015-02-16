@@ -3,7 +3,7 @@ package third_party.cmd
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 @App
 @Cmd(name = "mruby",
-	help = "ruby interpretator",
+	help = "ruby interpreter",
 	man = '''
 	''')
 module mruby {

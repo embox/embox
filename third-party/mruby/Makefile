@@ -10,13 +10,14 @@ PKG_PATCHES := pkg_patch.txt
 include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
-	export EMBOX_GCC_LINK=full; \
-	cd $(PKG_SOURCE_DIR)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		make CROSS_CC=$(EMBOX_GCC) \
+		CROSS_LD=$(LD) \
+		CROSS_AR=$(AR) \
+		CROSS_CFLAGS="-I$(ROOT_DIR)/build/extbld/third_party/cmd/mruby/mruby-1.1.0/include/"; \
 	)
 	touch $@
 
