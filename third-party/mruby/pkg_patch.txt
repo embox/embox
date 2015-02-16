@@ -1,7 +1,7 @@
 diff -au ../../../../../download/mruby-1.1.0/build_config.rb mruby-1.1.0/build_config.rb 
 --- ../../../../../download/mruby-1.1.0/build_config.rb	2014-11-19 03:02:10.000000000 +0300
 +++ mruby-1.1.0/build_config.rb	2015-02-16 13:59:44.608199431 +0300
-@@ -1,124 +1,34 @@
+@@ -1,124 +1,35 @@
  MRuby::Build.new do |conf|
 -  # load specific toolchain settings
 -
@@ -117,8 +117,9 @@ diff -au ../../../../../download/mruby-1.1.0/build_config.rb mruby-1.1.0/build_c
  
 -  # include the default GEMs
 -  conf.gembox 'default'
-+  conf.linker.command = ENV['CROSS_CC']
-+  conf.archiver.command = ENV['CROSS_CC'] 
++  conf.linker.command = ENV['CROSS_LD']
++  conf.linker.flags = ENV['CROSS_LDFLAGS']
++  conf.archiver.command = ENV['CROSS_AR'] 
 +  
 +end
  

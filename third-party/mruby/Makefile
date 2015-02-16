@@ -15,12 +15,13 @@ $(CONFIGURE) :
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		make CROSS_CC=$(EMBOX_GCC) \
-		CROSS_LD=$(LD) \
-		CROSS_AR=$(AR) \
+		CROSS_LD=$(EMBOX_CROSS_COMPILE)ld \
+		CROSS_AR=$(EMBOX_CROSS_COMPILE)ar \
+		CROSS_LDFLAGS='$(EMBOX_LDFLAGS) -r' \
 		CROSS_CFLAGS="-I$(ROOT_DIR)/build/extbld/third_party/cmd/mruby/mruby-1.1.0/include/"; \
 	)
 	touch $@
 
 $(INSTALL) :
-	# cp $(PKG_SOURCE_DIR)/src/nano $(PKG_INSTALL_DIR)/nano.o
+	cp $(PKG_SOURCE_DIR)/build/embox/bin/mrbc $(PKG_INSTALL_DIR)/mrbc.o
 	touch $@
