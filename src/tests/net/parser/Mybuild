@@ -1,8 +1,0 @@
-package embox.test.net.parser
-
-module url_parser_test {
-	@IncludePath("$(THIRDPARTY_DIR)/lib/url_parser")
-	source "url_parser_test.c"
-	depends third_party.lib.url_parser
-	depends embox.framework.LibFramework
-}
