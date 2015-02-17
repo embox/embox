@@ -85,12 +85,19 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 
 	ms = rqtp->tv_sec * 1000 + rqtp->tv_nsec / 1000000;
 	if (ms > 0) {
-		ksleep(ms);
+		ksleep(ms - 1);
 	}
 
 	tmp = ktime_get_ns();
-	/* remaining time < 2 ms */
 	remaining_time = rqtp_ns - (tmp - start);
+	/*
+	 * Let us figure out what is the upper bound of @c remaining_time.
+	 * For example, we call nanosleep(2 ms 998 usec). What happens inside?
+	 * We call ksleep(2 - 1) to sleep at least 1 ms. It means that
+	 * @c remaining_time < (2 ms 998 usec) - 1 ms = 1 ms 999 usec < 2 ms.
+	 * In general case this suggests that @c remaining_time < 1 ms + rqtp->tv_nsec % 1000000 < 2 ms.
+	 */
+	assert(remaining_time < 2 * NSEC_PER_MSEC);
 	if (remaining_time > 0) {
 		/* Split in two steps, because of cs_nanospins works only for times < 1 ms */
 		cs_nanospin(cs, remaining_time / 2); // < 1 ms
