@@ -22,3 +22,9 @@ module cnc_control {
 module cnc_init {
 	source "cnc_init.c"
 }
+
+@AutoCmd
+@Cmd(name="cnc_manager", help="")
+module cnc_manager {
+	source "cnc_manager.c"
+}
