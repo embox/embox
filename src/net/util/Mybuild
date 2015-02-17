@@ -24,14 +24,6 @@ module protoent {
 	source "protoent.c"
 }
 
-module request_parser {
-	@IncludePath("$(THIRDPARTY_DIR)/lib/url_parser")
-	source "request_parser.c"
-
-	depends third_party.lib.url_parser
-	depends embox.compat.libc.LibCStringDup
-}
-
 module servent {
 	option number max_name_len=32
 	option number max_aliases_num=10
