@@ -1,11 +1,5 @@
 package embox.service
 
-module SrvLib {
-	source "srv_lib.c"
-
-	depends embox.lib.service.service
-}
-
 @AutoCmd
 @Cmd(name="cgi_cmd_wrapper", help="", man="")
 module cgi_cmd_wrapper {

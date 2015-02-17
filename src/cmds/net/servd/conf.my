@@ -1,6 +1,0 @@
-package embox.cmd.net.web_server
-
-module conf {
-	@InitFS
-	source "servd.conf"
-}
