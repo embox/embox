@@ -9,4 +9,4 @@
 "route add 169.254.0.0 netmask 255.255.0.0 eth0",
 #endif
 
-"httpd http_admin",
+"cnc_init",
