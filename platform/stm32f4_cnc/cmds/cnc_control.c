@@ -26,5 +26,6 @@ int main(int argc, char *argv[]) {
 		sleep(1);
 	}
 
+	printf("cnc_control done!\n");
 	return 0;
 }

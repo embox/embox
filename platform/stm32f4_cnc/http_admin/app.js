@@ -32,20 +32,24 @@ angular.module("HttpAdmin", ['ngRoute'])
 
 }])
 .controller("CncCtrl", ['$scope', '$http', function($scope, $http) {
-        $scope.live = {};
+    $scope.live = {};
 
-        // handles the callback from the received event
-        var eventCallback = function (msg) {
-            $scope.$apply(function () {
-                $scope.live = JSON.parse(msg.data)
-            });
-        }
-
-        var source = new EventSource('/cgi-bin/live_status');
-        source.addEventListener('message', eventCallback);
-        $scope.$on('$destroy', function () {
-                source.close();
+    // handles the callback from the received event
+    var eventCallback = function (msg) {
+        $scope.$apply(function () {
+            $scope.live = JSON.parse(msg.data)
         });
+    }
+
+    var source = new EventSource('/cgi-bin/live_status');
+    source.addEventListener('message', eventCallback);
+    $scope.$on('$destroy', function () {
+        source.close();
+    });
+
+    $scope.run = function() {
+        $http.get('cgi-bin/cnc_manager?run');
+    };
 }])
 .config(['$routeProvider', function($routeProvider) {
     $routeProvider.
