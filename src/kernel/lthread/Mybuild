@@ -8,8 +8,12 @@ module no_lthread extends lthread_api {
 }
 
 module lthread extends lthread_api {
+	option number lthread_pool_size=512
+
 	source "lthread.c"
 	source "lthread_sched_wait.c"
-	option number lthread_pool_size=512
+
+	@NoRuntime depends embox.kernel.sched.sched
+
 	depends embox.kernel.sched.current.api
 }
