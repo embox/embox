@@ -146,11 +146,10 @@ static int fat_create_partition(void *bdev) {
  *	If pptype is non-NULL, this function also returns the partition type.
  *	If psize is non-NULL, this function also returns the partition size.
  */
-static uint32_t fat_get_ptn_start(void *bdev,
-		uint8_t *p_scratchsector,	uint8_t pnum, uint8_t *pactive,
+static uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
 		uint8_t *pptype, uint32_t *psize) {
 	uint32_t result;
-	p_mbr_t mbr = (p_mbr_t) p_scratchsector;
+	p_mbr_t mbr = (p_mbr_t) sector_buff;
 
 	/* DOS ptable supports maximum 4 partitions */
 	if (pnum > 3) {
@@ -158,7 +157,7 @@ static uint32_t fat_get_ptn_start(void *bdev,
 	}
 
 	/* Read MBR from target media */
-	if (fat_read_sector(bdev, p_scratchsector, 0, 1)) {
+	if (fat_read_sector(bdev, sector_buff, 0, 1)) {
 		return DFS_ERRMISC;
 	}
 	/* check if that a lbr */
@@ -199,13 +198,12 @@ static uint32_t fat_get_ptn_start(void *bdev,
  * Attempts to read BPB and glean information about the FS from that.
  * Returns 0 OK, nonzero for any error.
  */
-static uint32_t fat_get_vol_info(void *bdev, p_vol_info_t volinfo,
-		uint8_t *p_scratchsector,	uint32_t startsector) {
-	p_lbr_t lbr = (p_lbr_t) p_scratchsector;
+static uint32_t fat_get_vol_info(void *bdev, p_vol_info_t volinfo, uint32_t startsector) {
+	p_lbr_t lbr = (p_lbr_t) sector_buff;
 
 	volinfo->startsector = startsector;
 
-	if(fat_read_sector(bdev, p_scratchsector, startsector, 1)) {
+	if(fat_read_sector(bdev, sector_buff, startsector, 1)) {
 		return DFS_ERRMISC;
 	}
 
@@ -1679,22 +1677,18 @@ static uint32_t fat_write_file(struct nas *nas, uint8_t *p_scratch,
 
 static int fat_read_sector(void *bdev, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
-
-	if(0 > block_dev_read(bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if (0 > block_dev_read(bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
-	}
-	else {
+	} else {
 		return DFS_OK;
 	}
 }
 
 static int fat_write_sector(void *bdev, uint8_t *buffer,
 		uint32_t sector, uint32_t count) {
-
-	if(0 > block_dev_write(bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
+	if (0 > block_dev_write(bdev, (char *) buffer, count * SECTOR_SIZE, sector)) {
 		return DFS_ERRMISC;
-	}
-	else {
+	} else {
 		return DFS_OK;
 	}
 }
@@ -1707,12 +1701,12 @@ static int fat_root_dir_record(void *bdev) {
 	dir_ent_t de;
 
 	/* Obtain pointer to first partition on first (only) unit */
-	pstart = fat_get_ptn_start(bdev, sector_buff, 0, &pactive, &ptype, &psize);
+	pstart = fat_get_ptn_start(bdev, 0, &pactive, &ptype, &psize);
 	if (pstart == 0xffffffff) {
 		return -1;
 	}
 
-	if (fat_get_vol_info(bdev, &volinfo, sector_buff, pstart)) {
+	if (fat_get_vol_info(bdev, &volinfo, pstart)) {
 		return -1;
 	}
 
@@ -1773,14 +1767,15 @@ static int fat_mount_files(struct nas *dir_nas) {
 	struct fat_fs_info *fsi;
 	mode_t mode;
 
+	assert(dir_nas);
 	fsi = dir_nas->fs->fsi;
 
 	/* Obtain pointer to first partition */
-	pstart = fat_get_ptn_start(dir_nas->fs->bdev, sector_buff, 0, &pactive, &ptype, &psize);
+	pstart = fat_get_ptn_start(dir_nas->fs->bdev, 0, &pactive, &ptype, &psize);
 	if (pstart == 0xffffffff) {
 		return -1;
 	}
-	if (fat_get_vol_info(dir_nas->fs->bdev, &fsi->vi, sector_buff, pstart)) {
+	if (fat_get_vol_info(dir_nas->fs->bdev, &fsi->vi, pstart)) {
 		return -1;
 	}
 	di.p_scratch = sector_buff;
