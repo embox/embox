@@ -58,6 +58,7 @@ static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 	mutex_lock(&stm32f4_sd_mutex);
 	while (SD_GetTransferState() != SD_TRANSFER_OK);
 	res = SD_ReadBlock((uint8_t*) buf, blkno, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	while (SD_GetTransferState() != SD_TRANSFER_OK);
 	mutex_unlock(&stm32f4_sd_mutex);
 	return res;
 }
