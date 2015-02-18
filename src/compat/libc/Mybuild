@@ -6,7 +6,6 @@ static module LibC {
 	@NoRuntime depends embox.compat.libc.LibCAssert
 	@NoRuntime depends embox.compat.libc.LibCType
 	@NoRuntime depends embox.compat.libc.stdlib.LibCStdlib
-	@NoRuntime depends embox.compat.libc.LibCString
 	@NoRuntime depends embox.compat.libc.LibCMath
 	@NoRuntime depends embox.compat.libc.LibCStdio
 	@NoRuntime depends embox.compat.libc.LibCInttypes
