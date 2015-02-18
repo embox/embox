@@ -7,16 +7,21 @@
  */
 
 #include <embox/unit.h>
-#include <kernel/softirq.h>
 #include <kernel/task.h>
 #include <module/embox/kernel/time/slowdown.h>
 #include <kernel/time/timer.h>
 #include <kernel/time/clock_source.h>
 
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/lthread_priority.h>
+#include <err.h>
+
 #define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
+#define CLOCK_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
 EMBOX_UNIT_INIT(init);
 
+static struct lthread *clock_handler_lt = NULL;
 extern struct clock_source *cs_jiffies;
 
 /**
@@ -30,18 +35,23 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 		cs->jiffies_cnt = 0;
 		cs->jiffies++;
 
-		if (cs_jiffies->event_device && irq_num == cs_jiffies->event_device->irq_nr) {
-			//task_self()->per_cpu++;
-			softirq_raise(SOFTIRQ_NR_TIMER);
+		/* FIXME: Check for clock_handler_lt is necessary because this function
+		   may be called before initialization of this module.*/
+		if (clock_handler_lt && cs_jiffies->event_device &&
+			irq_num == cs_jiffies->event_device->irq_nr) {
+			lthread_launch(clock_handler_lt);
 		}
 	}
 }
 
-static void soft_clock_handler(unsigned int softirq_nr, void *data) {
+static void *clock_handler(void *data) {
 	timer_strat_sched();
+	return NULL;
 }
 
 static int init(void) {
-	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
+	clock_handler_lt = lthread_create(&clock_handler, NULL);
+	assert(!err(clock_handler_lt));
+	lthread_priority_set(clock_handler_lt, CLOCK_HND_PRIORITY);
 	return 0;
 }

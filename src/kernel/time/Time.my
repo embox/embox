@@ -30,10 +30,11 @@ module jiffies {
 }
 
 module timer {
+	option number hnd_priority = 200
 	source "timer.c"
 	depends jiffies
 	depends embox.arch.clock
-	depends embox.kernel.softirq
+	depends embox.kernel.lthread.lthread
 }
 
 static module timeval {
