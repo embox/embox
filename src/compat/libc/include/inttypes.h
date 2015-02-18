@@ -251,4 +251,8 @@ __END_DECLS
 #define    SCNuMAX       SCNu32
 #define    SCNxMAX       SCNx32
 
+//TODO this is C99 standard. It's required for mruby
+#define 	NAN   __builtin_nan("")
+#define 	INFINITY   __builtin_inf()
+
 #endif /* INTTYPES_H_ */
