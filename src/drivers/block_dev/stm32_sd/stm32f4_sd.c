@@ -33,21 +33,34 @@ static struct mutex stm32f4_sd_mutex;
 
 static int stm32f4_sd_init(void *arg) {
 	block_dev_t *bdev;
+	int res;
 	if (block_dev_lookup(STM32F4_SD_DEVNAME)) {
 		mutex_init(&stm32f4_sd_mutex);
-		bdev = block_dev_create("/dev/" STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
-		bdev->size = 2048 * 1024; /* XXX Hardcode */
-		return -SD_Init();
+		res = SD_Init();
+		if (res != SD_OK) {
+			return -res;
+		} else {
+			bdev = block_dev_create("/dev/" STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
+			bdev->size = stm32f4_sd_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
+		}
 	}
+
 	return -1;
 }
 
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size) {
+	SD_CardInfo info;
+	int res = SD_GetCardInfo(&info);
+
+	if (res != SD_OK) {
+		return -1;
+	}
+
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
-		return 2048 * 1024; /* XXX Hardcode */
+		return info.CardCapacity;
 	case IOCTL_GETBLKSIZE:
-		return 512;	/* XXX Hardcode */
+		return info.CardBlockSize;
 	default:
 		return -1;
 	}
@@ -66,7 +79,7 @@ static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	int res;
 	mutex_lock(&stm32f4_sd_mutex);
-	res =  SD_WriteBlock((uint8_t*) buf, blkno, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	res = SD_WriteBlock((uint8_t*) buf, blkno, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
 	mutex_unlock(&stm32f4_sd_mutex);
 	return res;
 }
