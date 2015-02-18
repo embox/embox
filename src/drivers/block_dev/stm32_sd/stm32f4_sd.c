@@ -79,7 +79,7 @@ static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	int res;
 	mutex_lock(&stm32f4_sd_mutex);
-	res = SD_WriteBlock((uint8_t*) buf, blkno, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	res = SD_WriteBlock((uint8_t*) buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
 	mutex_unlock(&stm32f4_sd_mutex);
 	return res;
 }
