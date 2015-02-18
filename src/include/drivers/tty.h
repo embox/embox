@@ -15,7 +15,6 @@
 
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sync/mutex.h>
-//#include <kernel/work.h>
 #include <util/ring.h>
 
 #include <framework/mod/options.h>
