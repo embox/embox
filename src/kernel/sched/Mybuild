@@ -16,7 +16,6 @@ module sched {
 	depends embox.kernel.critical
 	depends embox.profiler.trace
 
-	depends sched_ticker
 	depends wait_queue
 
 	depends embox.kernel.lthread.lthread_api

@@ -67,8 +67,6 @@ int sched_init(struct schedee *current) {
 
 	sched_set_current(current);
 
-	sched_ticker_init();
-
 	return 0;
 }
 

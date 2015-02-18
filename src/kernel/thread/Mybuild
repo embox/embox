@@ -11,6 +11,7 @@ module core {
 	depends sched_wait
 
 	@NoRuntime depends embox.kernel.sched.sched
+	@NoRuntime depends embox.kernel.sched.sched_ticker
 	@NoRuntime depends embox.arch.context
 
 

@@ -19,6 +19,10 @@
 
 #include <framework/mod/options.h>
 
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(sched_ticker_module_init);
+
 #define SCHED_TICK_INTERVAL \
 	OPTION_GET(NUMBER, tick_interval)
 
@@ -56,5 +60,10 @@ void sched_ticker_switch(struct schedee *prev, struct schedee *next) {
 		next->policy == SCHED_FIFO) {
 		sched_ticker_fini();
 	}
+}
+
+static int sched_ticker_module_init(void) {
+	sched_ticker_init();
+	return 0;
 }
 
