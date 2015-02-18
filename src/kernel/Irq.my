@@ -9,6 +9,11 @@ module irq_static extends irq_api {
 	source "arm_m_irq.S"
 }
 
+module no_irq extends irq_api {
+	source "no_irq.c"
+
+}
+
 module irq extends irq_api {
 	option number action_n = 0
 	option number entry_n = 0
@@ -39,3 +44,4 @@ module irq_lock {
 	source "irq_lock.c"
 	@NoRuntime depends critical
 }
+
