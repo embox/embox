@@ -10,15 +10,21 @@
 #include <errno.h>
 #include <string.h>
 #include <kernel/irq.h>
-#include <kernel/softirq.h>
 #include <util/dlist.h>
 #include <embox/unit.h>
+
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/lthread_priority.h>
+#include <err.h>
 
 #include <drivers/input/input_dev.h>
 
 #define INPUT_SOFTIRQ 17
+#define INDEV_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
 EMBOX_UNIT_INIT(input_devfs_init);
+
+static struct lthread *indev_handler_lt;
 
 /*POOL_DEF(input_event_pool, struct input_eventq, 16);*/
 
@@ -55,7 +61,7 @@ int input_dev_input(struct input_dev *dev) {
 			/* dev not in queue */
 			dlist_add_prev(&dev->post_link, &post_indevs);
 		}
-		ret = softirq_raise(INPUT_SOFTIRQ);
+		lthread_launch(indev_handler_lt);
 	}
 out_unlock:
 	irq_unlock();
@@ -71,10 +77,10 @@ static irq_return_t indev_irqhnd(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static void indev_softirqhnd(unsigned int nt, void* data) {
+static void *indev_handler(void* data) {
 	struct input_dev *dev;
 
-	softirq_lock();
+	sched_lock();
 
 	dlist_foreach_entry(dev, &post_indevs, post_link) {
 		dlist_del(&dev->post_link);
@@ -87,7 +93,9 @@ static void indev_softirqhnd(unsigned int nt, void* data) {
 		dev->event_cb(dev);
 	}
 
-	softirq_unlock();
+	sched_unlock();
+
+	return NULL;
 }
 
 static int evnt_noact(struct input_dev *dev) {
@@ -201,5 +209,8 @@ struct input_dev *input_dev_lookup(const char *name) {
 }
 
 static int input_devfs_init(void) {
-	return softirq_install(INPUT_SOFTIRQ, indev_softirqhnd, NULL);
+	indev_handler_lt = lthread_create(&indev_handler, NULL);
+	assert(!err(indev_handler_lt));
+	lthread_priority_set(indev_handler_lt, INDEV_HND_PRIORITY);
+	return 0;
 }

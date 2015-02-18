@@ -1,9 +1,10 @@
 package embox.driver.input
 
 module core {
+	option number hnd_priority = 200
 	source "core.c"
 
 	depends embox.kernel.irq
-	depends embox.kernel.softirq
 	depends embox.util.DList
+	depends embox.kernel.lthread.lthread
 }
