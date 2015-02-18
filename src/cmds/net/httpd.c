@@ -91,6 +91,7 @@ struct http_req {
 	char *method;
 	char *http_ver;
 	char *content_len;
+	char *content_type;
 };
 
 static char httpd_g_inbuf[BUFF_SZ];
@@ -152,6 +153,7 @@ static const struct http_header_desc {
 	off_t hreq_offset;
 } http_headers[] = {
 	{ .name = "Content-Length: ", .hreq_offset = offsetof(struct http_req, content_len), },
+	{ .name = "Content-Type: ", .hreq_offset = offsetof(struct http_req, content_type), },
 };
 static char *httpd_parse_headers(char *str, struct http_req *hreq) {
 	char *pb;
@@ -331,12 +333,14 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 
 #else
 
+static char httpd_g_envbuf[256];
 static const struct cgi_env_descr {
 	char *name;
 	off_t hreq_offset;
 } cgi_env[] = {
 	{ .name = "REQUEST_METHOD", .hreq_offset = offsetof(struct http_req, method) },
 	{ .name = "CONTENT_LENGTH", .hreq_offset = offsetof(struct http_req, content_len) },
+	{ .name = "CONTENT_TYPE", .hreq_offset = offsetof(struct http_req, content_type) },
 	{ .name = "QUERY_STRING", .hreq_offset = offsetof(struct http_req, uri) + offsetof(struct http_req_uri, query) },
 };
 static int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
@@ -384,13 +388,12 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 	if (pid == 0) {
 		char *argv[] = { cmdname, NULL };
 		char *envp[ARRAY_SIZE(cgi_env) + 1];
-		char envbuf[128];
 		char *ebp;
 		size_t env_sz;
 		int i_ce;
 
-		ebp = envbuf;
-		env_sz = sizeof(envbuf);
+		ebp = httpd_g_envbuf;
+		env_sz = sizeof(httpd_g_envbuf);
 		for (i_ce = 0; i_ce < ARRAY_SIZE(cgi_env); i_ce++) {
 			const struct cgi_env_descr *ce_d = &cgi_env[i_ce];
 			int printed;
