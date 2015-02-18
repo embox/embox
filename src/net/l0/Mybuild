@@ -5,6 +5,7 @@ abstract module entry_api {
 }
 
 module net_entry extends entry_api {
+	option number hnd_priority = 200
 	source "net_entry.c"
 
 	depends net_rx
