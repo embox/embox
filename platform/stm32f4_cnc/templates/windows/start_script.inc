@@ -9,7 +9,4 @@
 "route add 169.254.0.0 netmask 255.255.0.0 eth0",
 #endif
 
-//"led_driver init",
-//"flash_settings restore",
-
-"httpd http_admin",
+"cnc_init",
