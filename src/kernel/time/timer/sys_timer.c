@@ -24,10 +24,16 @@ int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 	}
 
 	tmr->state = 0;
-	tmr->cnt = tmr->load = jiffies + 1;
 	tmr->handle = handler;
 	tmr->param = param;
 	tmr->flags = flags;
+
+	if (timer_is_periodic(tmr)) {
+		tmr->load = jiffies;
+		tmr->cnt = tmr->load + 1;
+	} else {
+		tmr->cnt = tmr->load = jiffies + 1;
+	}
 
 	softirq_lock();
 	{

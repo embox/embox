@@ -96,7 +96,7 @@ extern int timer_init_msec(struct sys_timer *tmr, unsigned int flags, uint32_t t
  *
  * @see description of timer_set().
  * @remarks
- *    This function should call @c handle NO LESS then after @c jiffies ticks.
+ *    This function should call @c handler NO LESS then after @c jiffies ticks.
  */
 extern int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 		sys_timer_handler_t handler, void *param);
