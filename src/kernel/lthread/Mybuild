@@ -13,7 +13,6 @@ module lthread extends lthread_api {
 	source "lthread.c"
 	source "lthread_sched_wait.c"
 
-	@NoRuntime depends embox.kernel.sched.sched
-
+	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.current.api
 }
