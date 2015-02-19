@@ -18,8 +18,6 @@ module sched {
 
 	depends wait_queue
 
-	depends embox.kernel.lthread.lthread_api
-
 	depends embox.kernel.sched.current.api
 }
 
@@ -83,7 +81,7 @@ module idle_thread extends idle {
 module idle_light extends idle {
 	source "idle_light.c"
 
-	depends embox.kernel.lthread.lthread
+	@NoRuntime depends embox.kernel.lthread.lthread
 }
 
 @DefaultImpl(boot_thread)
