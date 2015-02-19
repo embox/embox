@@ -712,7 +712,6 @@ $(@source_dist) :
 	mk/variables.mk)
 
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
-	doc \
 	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
 
 __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
