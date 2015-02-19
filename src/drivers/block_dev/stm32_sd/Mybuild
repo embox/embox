@@ -7,5 +7,6 @@ module stm32f4_sd extends sd {
 	source "stm32f4_sd.c"
 	source "stm32f4_discovery_sdio_sd.c"
 
+	depends embox.driver.block
 	depends third_party.bsp.st_f4.core
 }
