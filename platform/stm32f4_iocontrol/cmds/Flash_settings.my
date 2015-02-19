@@ -21,5 +21,6 @@ module flash_settings {
 
 	depends embox.fs.driver.dfs
 	depends embox.driver.flash.stm32
+	depends stm32f4_iocontrol.libleddrv
 }
 
