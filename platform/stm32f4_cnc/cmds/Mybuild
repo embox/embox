@@ -14,7 +14,7 @@ module cnc_control {
 	source "cnc_control.c"
 
 	@InitFS
-	source "filecnc.txt"
+	source "1544.txt"
 }
 
 @AutoCmd
