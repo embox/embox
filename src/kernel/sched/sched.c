@@ -396,7 +396,7 @@ void schedule(void) {
 static void sched_preempt(void) {
 	sched_lock();
 	__schedule(1);
-	sched_unlock();
+	sched_unlock_noswitch();
 }
 
 void sched_wait_prepare(void) {
