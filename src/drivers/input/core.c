@@ -19,7 +19,6 @@
 
 #include <drivers/input/input_dev.h>
 
-#define INPUT_SOFTIRQ 17
 #define INDEV_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
 EMBOX_UNIT_INIT(input_devfs_init);

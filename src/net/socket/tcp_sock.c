@@ -29,7 +29,7 @@
 
 #include <embox/net/sock.h>
 
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <fs/idesc_event.h>
 #include <net/sock_wait.h>
 
@@ -193,13 +193,13 @@ static int tcp_connect(struct sock *sk,
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_seq_from_sock(tcp_sk, skb);
 			//FIXME hack use common lock/unlock systems for socket
-			softirq_lock();
+			sched_lock();
 			{
 				tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
 				ret = sock_wait(sk, POLLOUT | POLLERR, MODOPS_CONNECT_TIMEOUT);
 				tcp_sock_lock(tcp_sk, TCP_SYNC_STATE);
 			}
-			softirq_unlock();
+			sched_unlock();
 			if (ret == -EAGAIN) {
 				ret = -EINPROGRESS;
 				break;
@@ -437,30 +437,30 @@ sendmsg_again:
 		return -ENOTCONN;
 	case TCP_SYN_SENT:
 	case TCP_SYN_RECV:
-		softirq_lock();
+		sched_lock();
 		{
 			ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
 		}
-		softirq_unlock();
+		sched_unlock();
 		if (ret != 0) {
 			return ret;
 		}
 		goto sendmsg_again;
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
-		softirq_lock();
+		sched_lock();
 		{
 			while ((min(tcp_sk->rem.wind.size, REM_WIND_MAX_SIZE)
 						<= tcp_sk->self.seq - tcp_sk->last_ack)
 					|| tcp_sk->rexmit_mode) {
 				ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
 				if (ret != 0) {
-					softirq_unlock();
+					sched_unlock();
 					return ret;
 				}
 			}
 		}
-		softirq_unlock();
+		sched_unlock();
 
 		buff = (char *)msg->msg_iov->iov_base;
 		len = tcp_write(tcp_sk, buff, len);

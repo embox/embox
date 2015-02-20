@@ -24,7 +24,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <util/sys_log.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
 
@@ -63,7 +63,7 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	hdr->flags = 0;
 	hdr->gso_type = VIRTIO_NET_HDR_GSO_NONE;
 
-	softirq_lock();
+	sched_lock();
 	{
 		desc_id = vq->next_free_desc;
 		do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
@@ -75,7 +75,7 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		vring_push_desc(desc_id, &vq->ring);
 	}
-	softirq_unlock();
+	sched_unlock();
 
 	skb_free(skb);
 

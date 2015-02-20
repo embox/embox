@@ -12,7 +12,7 @@
 
 #include <kernel/time/timer.h>
 #include <kernel/time/time.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <util/lang.h>
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
@@ -35,11 +35,11 @@ int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 		tmr->cnt = tmr->load = jiffies + 1;
 	}
 
-	softirq_lock();
+	sched_lock();
 	{
 		timer_strat_start(tmr);
 	}
-	softirq_unlock();
+	sched_unlock();
 
 	return ENOERR;
 }
@@ -71,11 +71,11 @@ int timer_close(struct sys_timer *tmr) {
 		return -EINVAL;
 	}
 	if (timer_is_started(tmr)) {
-		softirq_lock();
+		sched_lock();
 		{
 			timer_strat_stop(tmr);
 		}
-		softirq_unlock();
+		sched_unlock();
 	}
 	if (timer_is_preallocated(tmr)) {
 		pool_free(&timer_pool, tmr);

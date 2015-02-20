@@ -21,7 +21,7 @@
 #include <kernel/sched.h>
 
 #include <hal/ipl.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <fs/idesc_event.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
@@ -147,7 +147,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 		timeout = SCHED_TIMEOUT_INFINITE;
 	}
 
-	softirq_lock();
+	sched_lock();
 	{
 		do {
 			ret = sock_read(sk, msg, stream_mode);
@@ -158,7 +158,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 			ret = sock_wait(sk, POLLIN | POLLERR, timeout);
 		} while (ret == 0);
 	}
-	softirq_unlock();
+	sched_unlock();
 
 	return ret;
 }

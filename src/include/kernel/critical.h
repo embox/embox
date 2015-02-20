@@ -128,9 +128,7 @@
 
 #define CRITICAL_IRQ_LOCK         0x0000003f /**< 64 calls depth. */
 #define CRITICAL_IRQ_HANDLER      0x00000fc0 /**< 64 nested interrupts. */
-#define CRITICAL_SOFTIRQ_LOCK     0x0003f000 /**< 64 calls. */
-#define CRITICAL_SOFTIRQ_HANDLER  0x00fc0000 /**< 64 nested handlers. */
-#define CRITICAL_SCHED_LOCK       0x3f000000 /**< 64 calls. */
+#define CRITICAL_SCHED_LOCK       0x0003f000 /**< 64 calls. */
 
 /* Internal helper macros for bit masks transformation. */
 
@@ -234,8 +232,6 @@ __END_DECLS
 #if ~0 != \
 	  __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_LOCK)        \
 	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_HANDLER)     \
-	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SOFTIRQ_LOCK)    \
-	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SOFTIRQ_HANDLER) \
 	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SCHED_LOCK)
 # error "CRITICAL_XXX must contain a single contiguous block of bits"
 #endif

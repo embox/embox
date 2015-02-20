@@ -26,8 +26,6 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-#define PNET_RX_SOFTIRQ 4
-
 static LIST_HEAD(skb_queue);
 static LIST_HEAD(pnet_queue);
 

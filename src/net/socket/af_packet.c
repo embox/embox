@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <mem/misc/pool.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <framework/mod/options.h>
 #include <framework/net/sock/self.h>
 #include <embox/net/family.h>
@@ -54,11 +54,11 @@ static inline struct packet_sock *sk2packet(struct sock *sk) {
 }
 
 static inline void af_packet_rcv_lock(void) {
-	softirq_lock();
+	sched_lock();
 }
 
 static inline void af_packet_rcv_unlock(void) {
-	softirq_unlock();
+	sched_unlock();
 }
 
 static int packet_sock_init(struct sock *sk) {

@@ -18,7 +18,7 @@
 #include <embox/unit.h>
 
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <embox/device.h> //XXX
 #include <fs/node.h>
 #include <fs/file_desc.h>
@@ -38,11 +38,11 @@ struct tun {
 static struct net_device *tun_g_array[TUN_N];
 
 static inline void tun_krnl_lock(struct tun *tun) {
-	softirq_lock();
+	sched_lock();
 }
 
 static inline void tun_krnl_unlock(struct tun *tun) {
-	softirq_unlock();
+	sched_unlock();
 }
 
 static inline void tun_user_lock(struct tun *tun) {
