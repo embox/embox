@@ -7,7 +7,6 @@
  */
 
 #include <embox/unit.h>
-#include <kernel/task.h>
 #include <module/embox/kernel/time/slowdown.h>
 #include <kernel/time/timer.h>
 #include <kernel/time/clock_source.h>
@@ -21,12 +20,11 @@
 
 EMBOX_UNIT_INIT(init);
 
+static int inited = 0;
+
 static struct lthread *clock_handler_lt = NULL;
 extern struct clock_source *cs_jiffies;
 
-/**
- * Handling of the clock tick.
- */
 void clock_tick_handler(int irq_num, void *dev_id) {
 	struct clock_source *cs = (struct clock_source *) dev_id;
 
@@ -35,10 +33,13 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 		cs->jiffies_cnt = 0;
 		cs->jiffies++;
 
-		/* FIXME: Check for clock_handler_lt is necessary because this function
+		/* FIXME: Check for inited is necessary because this function
 		   may be called before initialization of this module.*/
-		if (clock_handler_lt && cs_jiffies->event_device &&
-			irq_num == cs_jiffies->event_device->irq_nr) {
+		if (!inited) {
+			return;
+		}
+
+		if (cs_jiffies->event_device &&	irq_num == cs_jiffies->event_device->irq_nr) {
 			lthread_launch(clock_handler_lt);
 		}
 	}
@@ -53,5 +54,8 @@ static int init(void) {
 	clock_handler_lt = lthread_create(&clock_handler, NULL);
 	assert(!err(clock_handler_lt));
 	lthread_priority_set(clock_handler_lt, CLOCK_HND_PRIORITY);
+
+	inited = 1;
+
 	return 0;
 }
