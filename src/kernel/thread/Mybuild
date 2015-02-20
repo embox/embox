@@ -11,7 +11,6 @@ module core {
 	depends sched_wait
 
 	@NoRuntime depends embox.kernel.sched.sched
-	@NoRuntime depends embox.kernel.sched.sched_ticker
 	@NoRuntime depends embox.arch.context
 
 
@@ -25,6 +24,7 @@ module core {
 
 	depends embox.kernel.cpu.common
 	depends embox.kernel.sched.current.api
+	depends embox.kernel.sched.sched_ticker
 }
 
 module sched_wait {
