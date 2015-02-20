@@ -8,7 +8,6 @@
  */
 
 #include <string.h>
-#include <kernel/softirq.h>
 #include <embox/unit.h>
 
 #include <drivers/bluetooth/blue_core4.h>

@@ -1,14 +1,5 @@
 package embox.example.kernel
 
-module critical_example {
-	source "critical_example.c"
-
-	depends embox.compat.libc.LibC
-	depends embox.kernel.critical
-	depends embox.kernel.softirq
-	depends embox.framework.example
-}
-
 module syscall_example {
 	source "syscall_example.c"
 
