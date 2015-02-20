@@ -18,9 +18,6 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <errno.h>
-#include <sched.h>
-#include <time.h>
 #include <sched.h>
 
 #include <kernel/sched.h>

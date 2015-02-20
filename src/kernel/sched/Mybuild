@@ -12,7 +12,6 @@ module sched {
 
 	depends schedee
 
- 	depends embox.compat.posix.util.time
 	depends embox.kernel.critical
 	depends embox.profiler.trace
 
