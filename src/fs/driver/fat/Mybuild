@@ -5,6 +5,7 @@ module fat {
 	source "fatfs_subr.c"
 	option number inode_quantity=64
 	option number fat_descriptor_quantity=4
+	option number fat_max_sector_size=512
 
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.devfs

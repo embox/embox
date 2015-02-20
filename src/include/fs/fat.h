@@ -26,10 +26,6 @@
 #define DFS_ALLOCNEW	5			/* must allocate new directory cluster */
 #define DFS_ERRMISC		0xffffffff	/* generic error */
 
-
-/* Miscellaneous constants */
-#define SECTOR_SIZE		512		/* sector size in bytes */
-
 /* Internal subformat identifiers */
 #define FAT12			0
 #define FAT16			1
@@ -230,6 +226,7 @@ typedef struct volinfo {
  /*	uint8_t system[9]; */		/* system ID ASCIIZ */
 	uint8_t label[12];			/* volume label ASCIIZ */
 	uint32_t startsector;		/* starting sector of filesystem */
+	uint16_t bytepersec;		/* Bytes per sector */
 	uint8_t secperclus;			/* sectors per cluster */
 	uint16_t reservedsecs;		/* reserved sectors */
 	uint32_t numsecs;			/* number of sectors in volume */
