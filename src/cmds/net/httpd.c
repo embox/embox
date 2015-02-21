@@ -415,7 +415,6 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 
 		dup2(cinfo->ci_sock, STDIN_FILENO);
 		dup2(cinfo->ci_sock, STDOUT_FILENO);
-		dup2(cinfo->ci_sock, STDERR_FILENO);
 		close(cinfo->ci_sock);
 
 #if 0
