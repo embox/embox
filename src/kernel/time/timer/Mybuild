@@ -7,8 +7,7 @@ module sys_timer {
 	option number timer_quantity=20
 	source "sys_timer.c"
 
-	@NoRuntime depends embox.kernel.time.timer
-
+	depends embox.kernel.time.timer
 	depends embox.kernel.timer.strategy.api
 	depends embox.kernel.time.clock_source
 	/*uses ms2jiffies */
