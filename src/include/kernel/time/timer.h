@@ -53,8 +53,13 @@ struct sys_timer {
 static inline bool timer_is_preallocated(struct sys_timer *tmr) {
 	return tmr->state & TIMER_STATE_PREALLOC;
 }
+
 static inline void timer_set_preallocated(struct sys_timer *tmr) {
 	tmr->state |= TIMER_STATE_PREALLOC;
+}
+
+static inline void timer_clear_preallocated(struct sys_timer *tmr) {
+	tmr->state &= ~TIMER_STATE_PREALLOC;
 }
 
 static inline bool timer_is_started(struct sys_timer *tmr) {
