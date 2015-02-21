@@ -35,7 +35,7 @@ abstract module sched_ticker { }
 module sched_ticker_preempt extends sched_ticker {
 	source "sched_ticker.c"
 	option number tick_interval = 100
-	@NoRuntime depends embox.kernel.timer.sys_timer /* for timeslices support */
+	depends embox.kernel.timer.sys_timer /* for timeslices support */
 }
 
 module sched_ticker_stub extends sched_ticker {
