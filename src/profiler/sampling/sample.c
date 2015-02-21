@@ -43,14 +43,15 @@ static void sampling_timer_handler(sys_timer_t* timer, void *param) {
 	 *
 	 * Common non-informative top of the callstack looks like this:
 	 *
-	 * 0x0012d66a <backtrace+0x20>
-	 * 0x001035d4 <sampling_timer_handler+0x1f>
-	 * 0x0012aa54 <timer_strat_sched+0x84>
-	 * 0x0013c81c <soft_clock_handler+0xb>
-	 * 0x0012adac <softirq_dispatch+0xa0>
-	 * 0x0012b592 <critical_dispatch_pending+0x5c>
-	 * 0x0010030f <irq_handler+0x76>
-	 * 0x0010004c <irq_stub+0x1c>
+	 * 0x001467f6 <backtrace+0x20>
+	 * 0x00146860 <sampling_timer_handler+0x1f>
+	 * 0x00112e54 <timer_strat_sched+0x85>
+	 * 0x001793d2 <clock_handler+0xb>
+	 * 0x001112fd <lthread_process+0x5e>
+	 * 0x00181947 <__schedule+0x99>
+	 * 0x001819a2 <sched_preempt+0x17>
+	 * 0x00145a2f <critical_dispatch_pending+0x5c>
+	 * 0x00100b88 <irq_handler+0x76>
 	 * 0xdeadbabe <some_interesting_stuff_here+0x11>  That's where should we start
 	 */
 
