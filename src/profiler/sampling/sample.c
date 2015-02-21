@@ -69,13 +69,11 @@ static void sampling_timer_handler(sys_timer_t* timer, void *param) {
 
 static int sampling_profiler_set(int interval) {
 	int res;
-	int tick_cnt;
 	interval = (interval == 0) ? (SAMPLE_TIMER_INTERVAL) : interval;
-	tick_cnt = 0;
 
-	if (ENOERR
-			!= (res = timer_set(&sampling_timer, TIMER_PERIODIC, interval, sampling_timer_handler,
-					&tick_cnt))) {
+	res = timer_set(&sampling_timer, TIMER_PERIODIC, interval,
+		sampling_timer_handler, NULL);
+	if (res) {
 		printk("Failed to install timer\n");
 		return res;
 	}
