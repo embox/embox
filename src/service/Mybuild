@@ -10,5 +10,6 @@ module cgi_cmd_wrapper {
 @AutoCmd
 @Cmd(name="multipart_formdata", help="", man="")
 module multipart_formdata {
+	option string base = "/"
 	source "multipart_formdata.c"
 }
