@@ -8,5 +8,5 @@
 "ifconfig eth0 169.254.140.128 netmask 255.255.0.0 hw ether AA:BB:CC:DD:EE:02 up",
 "route add 169.254.0.0 netmask 255.255.0.0 eth0",
 #endif
-
+//"mount -t vfat /dev/stm32f4_sd_card /mnt",
 "cnc_init",
