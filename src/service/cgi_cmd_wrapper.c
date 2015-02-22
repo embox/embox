@@ -38,6 +38,7 @@ static int ccwrp_query_to_argv(char *query, char **argv, unsigned int argv_len) 
 	return argv_cnt;
 }
 
+#if OPTION_GET(BOOLEAN, cmds_check)
 static int ccwrp_security_check(int argc, char *argv[]) {
 	const char *allowed_cmds = CCWRP_ALLOWED_CMD_NAMES;
 	const char *p_cmd, *p_e_cmd;
@@ -56,6 +57,11 @@ static int ccwrp_security_check(int argc, char *argv[]) {
 
 	return 1;
 }
+#else
+static int ccwrp_security_check(int argc, char *argv[]) {
+	return 0;
+}
+#endif
 
 int main(int argc, char *argv[]) {
 	char *method;
