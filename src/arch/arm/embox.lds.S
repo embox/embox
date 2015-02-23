@@ -17,12 +17,13 @@ MEMORY {
 _ram_base = ORIGIN(RAM);
 _ram_size = LENGTH(RAM);
 
+
 SECTIONS {
 	.text : {
 		*(.trap_table)
 		STATIC_IRQ_TABLE
 
-
+		*(.flash)
 
 		*(.text)
 		*(.text.*)
