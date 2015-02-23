@@ -55,7 +55,7 @@
  * 	             bit 5-10 = minutes (0-59)
  * 				 bit 11-15= hours (0-23)
  */
-typedef struct dir_ent {
+struct dirent {
 	uint8_t name[11];		/* filename */
 	uint8_t attr;			/* attributes (see ATTR_* constant definitions) */
 	uint8_t reserved;		/* reserved, must be 0 */
@@ -78,12 +78,12 @@ typedef struct dir_ent {
 	uint8_t filesize_1;		/* */
 	uint8_t filesize_2;		/* */
 	uint8_t filesize_3;		/* file size, high byte */
-} dir_ent_t, *p_dir_ent_t;
+};
 
 /*
  *	Partition table entry structure
  */
-typedef struct pt_info {
+struct pt_info {
 	uint8_t	active;		/* 0x80 if partition active */
 	uint8_t	start_h;		/* starting head */
 	uint8_t	start_cs_l;		/* starting cylinder and sector (low byte) */
@@ -100,23 +100,22 @@ typedef struct pt_info {
 	uint8_t	size_1;			/* */
 	uint8_t	size_2;			/* */
 	uint8_t	size_3;			/* size of partition (high byte) */
-} pt_info_t, *p_pt_info_t;
+};
 
 /*
  *	Master Boot Record structure
  */
-typedef struct mbr {
+struct mbr {
 	uint8_t bootcode[0x1be];	/* boot sector */
-	pt_info_t ptable[4];		/* four partition table structures */
+	struct pt_info ptable[4];		/* four partition table structures */
 	uint8_t sig_55;				/* 0x55 signature byte */
 	uint8_t sig_aa;				/* 0xaa signature byte */
-} mbr_t, *p_mbr_t;
+};
 
 /*
  *	BIOS Parameter Block structure (FAT12/16)
  */
-typedef struct bpb {
-
+struct bpb {
 	uint8_t bytepersec_l;	/* bytes per sector low byte (0x00) */
 	uint8_t bytepersec_h;	/* bytes per sector high byte (0x02) */
 	uint8_t	secperclus;		/* sectors per cluster (1,2,4,8,16,32,64,128 are valid) */
@@ -142,12 +141,12 @@ typedef struct bpb {
 	uint8_t sectors_l_1;	/* */
 	uint8_t sectors_l_2;	/* */
 	uint8_t sectors_l_3;	/* large num sectors high byte */
-} bpb_t, *p_bpb_t;
+};
 
 /*
  *	Extended BIOS Parameter Block structure (FAT12/16)
  */
-typedef struct ebpb {
+struct ebpb {
 	uint8_t unit;			/* int 13h drive# */
 	uint8_t head;			/* archaic, used by Windows NT-class OSes for flags */
 	uint8_t signature;		/* 0x28 or 0x29 */
@@ -157,12 +156,12 @@ typedef struct ebpb {
 	uint8_t serial_3;		/* serial# */
 	uint8_t label[11];		/* volume label */
 	uint8_t system[8];		/* filesystem ID */
-} ebpb_t, *p_ebpb_t;
+};
 
 /*
  *	Extended BIOS Parameter Block structure (FAT32)
  */
-typedef struct ebpb32 {
+struct ebpb32 {
 	uint8_t fatsize_0;		/* big FAT size in sectors low byte */
 	uint8_t fatsize_1;		/* */
 	uint8_t fatsize_2;		/* */
@@ -189,28 +188,28 @@ typedef struct ebpb32 {
 	uint8_t serial_3;		/* serial# */
 	uint8_t label[11];		/* volume label */
 	uint8_t system[8];		/* filesystem ID */
-} ebpb32_t, *p_ebpb32_t;
+};
 
 /*
  *	Logical Boot Record structure (volume boot sector)
  */
-typedef struct lbr {
+struct lbr {
 	uint8_t jump[3];		/* JMP instruction */
 	uint8_t oemid[8];		/* OEM ID, space-padded */
-	bpb_t bpb;				/* BIOS Parameter Block */
+	struct bpb bpb;				/* BIOS Parameter Block */
 	union {
-		ebpb_t ebpb;		/* FAT12/16 Extended BIOS Parameter Block */
-		ebpb32_t ebpb32;	/* FAT32 Extended BIOS Parameter Block */
+		struct ebpb ebpb;		/* FAT12/16 Extended BIOS Parameter Block */
+		struct ebpb32 ebpb32;	/* FAT32 Extended BIOS Parameter Block */
 	} ebpb;
 	uint8_t code[420];		/* boot sector code */
 	uint8_t sig_55;			/* 0x55 signature byte */
 	uint8_t sig_aa;			/* 0xaa signature byte */
-} lbr_t, *p_lbr_t;
+};
 
 /*
  *	Volume information structure (Internal to DOSFS)
  */
-typedef struct volinfo {
+struct volinfo {
 	uint8_t unit;			/* unit on which this volume resides */
 	uint8_t filesystem;		/* formatted filesystem */
 
@@ -239,7 +238,7 @@ typedef struct volinfo {
 	uint32_t fat1;				/* starting sector# of FAT copy 1 */
 	uint32_t rootdir;			/* starting sector# of root directory (FAT12/FAT16) or cluster (FAT32) */
 	uint32_t dataarea;			/* starting sector# of data area (cluster #2) */
-} vol_info_t, *p_vol_info_t;
+};
 
 /*
  *	Flags in DIRINFO.flags
@@ -249,22 +248,22 @@ typedef struct volinfo {
 /*
  *	Directory search structure (Internal to DOSFS)
  */
-typedef struct dirinfo {
+struct dirinfo {
 	uint32_t currentcluster;	/* current cluster in dir */
 	uint8_t currentsector;		/* current sector in cluster */
 	uint8_t currententry;		/* current dir entry in sector */
 	uint8_t *p_scratch;			/* ptr to user-supplied scratch buffer (one sector) */
 	uint8_t flags;				/* internal DOSFS flags */
-} dir_info_t, *p_dir_info_t;
+};
 
-typedef struct fat_fs_info {
-	vol_info_t vi;
-	block_dev_t *bdev;
+struct fat_fs_info {
+	struct volinfo vi;
+	struct block_dev *bdev;
 	struct node *root;
-} fat_fs_info_t;
+};
 
-typedef struct fat_file_info {
-	vol_info_t *volinfo;		/* vol_info_t used to open this file */
+struct fat_file_info {
+	struct volinfo *volinfo;		/* vol_info_t used to open this file */
 	uint32_t dirsector;			/* physical sector containing dir entry of this file */
 	uint8_t diroffset;			/* # of this entry within the dir sector */
 	int mode;				    /* mode in which this file was opened */
@@ -273,10 +272,9 @@ typedef struct fat_file_info {
 
 	uint32_t cluster;			/* current cluster */
 	uint32_t pointer;			/* current (BYTE) pointer */
-} fat_file_info_t;
+};
 
-
-void fat_set_filetime(dir_ent_t *de);
+void fat_set_filetime(struct dirent *de);
 void fat_get_filename(char *tmppath, char *filename);
 int fat_check_filename(char *filename);
 

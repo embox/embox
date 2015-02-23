@@ -90,8 +90,8 @@ static int blockdev_init(void) {
 	return 0;
 }
 
-block_dev_t *block_dev(void *dev) {
-	return (block_dev_t *)dev;
+struct block_dev *block_dev(void *dev) {
+	return (struct block_dev *)dev;
 }
 
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
