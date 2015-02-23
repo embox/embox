@@ -42,3 +42,12 @@ module inet_dgram_socket_test {
 	depends embox.net.udp
 	depends embox.net.af_inet
 }
+
+module raw_socket_test {
+	source "raw_socket_test.c"
+
+	depends embox.compat.posix.net.socket
+	depends embox.driver.net.loopback
+	depends embox.framework.test
+	depends embox.net.af_inet
+}
