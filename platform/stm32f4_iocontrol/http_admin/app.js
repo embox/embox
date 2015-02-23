@@ -1,6 +1,6 @@
 'use strict';
 
-angular.module("HttpAdmin", ['ngRoute'])
+angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
 .controller("NavBarCtrl", ['$scope', '$location', function($scope, $location) {
     $scope.isActive = function(id) {
         return $location.path().indexOf('/' + id) == 0;
@@ -31,7 +31,7 @@ angular.module("HttpAdmin", ['ngRoute'])
     };
 
 }])
-.controller("LedsCtrl", ['$scope', '$http', function($scope, $http) {
+.controller("LedsCtrl", ['$scope', '$http', '$modal', function($scope, $http, $modal) {
     function ledStatesFromJson(data) {
         return data.map(function(int_state, index) {
             return {
@@ -53,14 +53,33 @@ angular.module("HttpAdmin", ['ngRoute'])
     };
 
     function ledStatesArrange(leds_state) {
-        return collectNth(collectNth(leds_state, 2), 2);
+        var pairs = collectNth(leds_state, 2);
+        return pairs.map(function(p, i) {
+            return {
+                index: i,
+                name: (i+1).toString(),
+                red: p[0],
+                blue: p[1]
+            }
+        });
     }
 
     $scope.leds_state = [];
 
     $scope.update = function() {
-        $http.get('cgi-bin/cgi_cmd_wrapper?c=led_driver&a1=serialize_states').success(function (data) {
-            $scope.leds_state = ledStatesArrange(ledStatesFromJson(data));
+        var leds_state = [];
+        $http.get('cgi-bin/cgi_cmd_wrapper?c=led_driver&a1=serialize_states').then(function (r) {
+            var data = r.data;
+            leds_state = ledStatesArrange(ledStatesFromJson(data));
+            return $http.get('cgi-bin/cgi_cmd_wrapper?c=led_names&a1=serialize')
+        }).then(function(r) {
+            var data = r.data;
+            leds_state.forEach(function(p, i) {
+                if (i < data.length) {
+                    p.name = data[i];
+                }
+            })
+            $scope.leds_state = collectNth(leds_state, 2);
         });
     }
 
@@ -72,11 +91,39 @@ angular.module("HttpAdmin", ['ngRoute'])
         $http.get(uri);
     };
 
+    $scope.name_change_request = function(led_pair) {
+        var modalInstance = $modal.open({
+            templateUrl: 'nameChangeDialog',
+            controller: 'NameChangeCtrl',
+            resolve: {
+                name: function () {
+                    return led_pair.name
+                }
+            }
+        });
+        modalInstance.result.then(function (new_name) {
+            led_pair.name = new_name;
+            $http.post('cgi-bin/cgi_cmd_wrapper?c=led_names&a=store&a=' + led_pair.index.toString(), new_name);
+        });
+    }
+
     $scope.save = function() {
         $http.get('cgi-bin/cgi_cmd_wrapper?c=flash_settings&a1=store&a2=led');
     };
 
     $scope.update();
+}])
+.controller("NameChangeCtrl", [ '$scope', '$modalInstance', 'name', function ($scope, $modalInstance, name) {
+
+    $scope.name = name;
+
+    $scope.ok = function () {
+        $modalInstance.close($scope.name);
+    };
+
+    $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+    };
 }])
 .config(['$routeProvider', function($routeProvider) {
     $routeProvider.
@@ -90,14 +137,16 @@ angular.module("HttpAdmin", ['ngRoute'])
         redirectTo: '/leds'
     });
 }])
-.directive('blockTemplate', function() {
+.directive('ledTemplate', function() {
     return {
         restrict: 'E',
         scope: {
-            led_pair: '=ledPair',
-            led_switch: '&ledSwitch'
+            led: '=led',
+            led_on: '@ledOn',
+            led_switch: '&ledSwitch',
+            led_name: '@ledName'
         },
-        templateUrl:"BlockTemplate"
+        templateUrl:"LedTemplate"
     };
 });
 

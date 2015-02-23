@@ -14,7 +14,7 @@ module http_admin {
 	       "index.html",
 	       "angular.min.js",
 	       "angular-route.min.js",
-	       "ui-bootstrap-tpls-0.6.0.min.js",
+	       "ui-bootstrap-tpls-0.12.1.min.js",
 	       "app.js"
 
 	depends third_party.lib.cjson

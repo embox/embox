@@ -1,24 +1,37 @@
-<!-- this template could be inlined, but during development I want it as
-template several times, so decided to leave it so -->
-<script id="BlockTemplate" type="text/ng-template">
-    <div class="block">
-	<button type="button" class="btn btn-default led led-off"
-	    ng-class="{'led-red' : led_pair[0].state}"
-	    ng-click="led_switch({led : led_pair[0]})">Red</button>
-	<div class="block-caption">{{led_pair[0].index / 2 + 1}}</div>
-	<button type="button" class="btn btn-default led led-off"
-	    ng-class="{'led-blue' : led_pair[1].state}"
-	    ng-click="led_switch({led : led_pair[1]})">Blue</button>
+<script id="nameChangeDialog" type="text/ng-template">
+	<div class="modal-header">
+		<h3 class="modal-title">Change block name</h3>
 	</div>
-    </div>
+	<div class="modal-body">
+		<label for="ledpair_name">Name</label>
+		<input type="text" class="form-control" id="ledpair_name"
+			ng-model="name"
+			required/>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-primary" ng-click="ok()">OK</button>
+		<button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+	</div>
+</script>
+
+<script id="LedTemplate" type="text/ng-template">
+	<button type="button" class="btn btn-default led led-off"
+		ng-class="{'{{led_on}}' : led.state}"
+		ng-click="led_switch({led : led})">{{led_name}}</button>
+</script>
+
+<script id="BlockTemplate" type="text/ng-template">
 </script>
 
 <div class="container" ng-controller="LedsCtrl">
 
     <div class="row">
 	<div class="block-pair" ng-repeat="block_pair in leds_state">
-	    <block-template led-pair="block_pair[0]" led-switch="led_switch(led)"></block-template>
-	    <block-template led-pair="block_pair[1]" led-switch="led_switch(led)"></block-template>
+		<div class="block" ng-repeat="led_pair in block_pair">
+			<led-template led="led_pair.red" led-on="led-red" led-switch="led_switch(led)" led-name="Red"></led-template>
+			<div class="block-caption" ng-dblclick="name_change_request(led_pair)">{{led_pair.name}}</div>
+			<led-template led="led_pair.blue" led-on="led-blue" led-switch="led_switch(led)" led-name="Blue"></led-template>
+		</div>
 	    <hr>
 	</div>
     </div>
