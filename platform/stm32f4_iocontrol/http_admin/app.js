@@ -75,7 +75,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
         }).then(function(r) {
             var data = r.data;
             leds_state.forEach(function(p, i) {
-                if (i < data.length) {
+                if (i < data.length && data[i]) {
                     p.name = data[i];
                 }
             })

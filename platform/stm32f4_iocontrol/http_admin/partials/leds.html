@@ -3,10 +3,16 @@
 		<h3 class="modal-title">Change block name</h3>
 	</div>
 	<div class="modal-body">
-		<label for="ledpair_name">Name</label>
-		<input type="text" class="form-control" id="ledpair_name"
-			ng-model="name"
-			required/>
+		<form role="form" class="form-group has-feedback" name="nameForm" ng-class="{'has-error' : nameForm.ledPairName.$invalid}">
+			<label for="ledpair_name">Name</label><span> (remain: {{16 - name.length}})</span>
+			<input type="text" class="form-control" id="ledpair_name" name="ledPairName"
+				ng-maxlength="16"
+				maxlength="16"
+				ng-model="name"
+				/>
+			<span class='form-control-feedback'
+				ng-show="nameForm.ledPairName.$invalid">X</span>
+		</div>
 	</div>
 	<div class="modal-footer">
 		<button class="btn btn-primary" ng-click="ok()">OK</button>
