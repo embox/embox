@@ -22,12 +22,12 @@ const struct flash_dev stm32_flash = {
 	.bdev = NULL,
 	.drv = &stm32_flash_drv,
 	.flags = 0,
-	.start = 0x080a0000,
-	.end   = 0x080fffff,
+	.start = 0x08004000,
+	.end   = 0x0800ffff,
 	.num_block_infos = 1,
 	.block_info = {
-		.block_size = 0x020000,
-		.blocks = 8
+		.block_size = 0x004000,
+		.blocks = 3
 	},
 };
 
