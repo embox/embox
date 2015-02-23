@@ -1696,7 +1696,9 @@ static int fat_root_dir_record(void *bdev) {
 	struct fat_fs_info fsi;
 	uint32_t pstart, psize;
 	uint8_t pactive, ptype;
-	dir_ent_t de;
+	struct dir_ent de;
+
+	fsi.bdev = bdev;
 
 	/* Obtain pointer to first partition on first (only) unit */
 	pstart = fat_get_ptn_start(bdev, 0, &pactive, &ptype, &psize);
@@ -1708,20 +1710,18 @@ static int fat_root_dir_record(void *bdev) {
 		return -1;
 	}
 
-	/* put sane values in the directory entry */
-	memset(&de, 0, sizeof(de));
-	memcpy(de.name, "/ROOT       ", MSDOS_NAME);
-	de.attr = ATTR_DIRECTORY;
-	fat_set_filetime(&de);
-
-	/* allocate a starting cluster for the directory entry */
-	assert(bdev == fsi.bdev);
 	cluster = fat_get_free_fat_(&fsi, sector_buff);
 
-	de.startclus_l_l = cluster & 0xff;
-	de.startclus_l_h = (cluster & 0xff00) >> 8;
-	de.startclus_h_l = (cluster & 0xff0000) >> 16;
-	de.startclus_h_h = (cluster & 0xff000000) >> 24;
+	de = (struct dir_ent) {
+		.name = "/ROOT      ",
+		.attr = ATTR_DIRECTORY,
+		.startclus_l_l = cluster & 0xff,
+		.startclus_l_h = (cluster & 0xff00) >> 8,
+		.startclus_h_l = (cluster & 0xff0000) >> 16,
+		.startclus_h_h = (cluster & 0xff000000) >> 24,
+	};
+
+	fat_set_filetime(&de);
 
 	/*
 	 * write the directory entry
@@ -1729,8 +1729,10 @@ static int fat_root_dir_record(void *bdev) {
 	 * entry, tragically, so we have to re-read it
 	 */
 
-	if (0 > block_dev_read(bdev, (char *) sector_buff, sizeof(dir_ent_t),
-					fsi.vi.rootdir * fsi.vi.bytepersec / SECTOR_SIZE)) { /* XXX SECTOR SIZE is bdev sector size, not logical! */
+	if (0 > block_dev_read(	bdev,
+				(char *) sector_buff,
+				sizeof(dir_ent_t),
+				fsi.vi.rootdir * fsi.vi.bytepersec / SECTOR_SIZE)) { /* XXX SECTOR SIZE is bdev sector size, not logical! */
 		return DFS_ERRMISC;
 	}
 	/* we clear other FAT TABLE */
@@ -1738,7 +1740,9 @@ static int fat_root_dir_record(void *bdev) {
 
 	memcpy(&(((p_dir_ent_t) sector_buff)[0]), &de, sizeof(dir_ent_t));
 
-	if (0 > block_dev_write(bdev, (char *) sector_buff, sizeof(dir_ent_t),
+	if (0 > block_dev_write(	bdev,
+					(char *) sector_buff,
+					sizeof(dir_ent_t),
 					fsi.vi.rootdir * fsi.vi.bytepersec / SECTOR_SIZE)) { /* XXX SECTOR SIZE is bdev sector size, not logical! */
 		return DFS_ERRMISC;
 	}
@@ -2092,7 +2096,7 @@ static int fatfs_mount(void *dev, void *dir) {
 		rc =  -ENOMEM;
 		goto error;
 	}
-
+	memset(fsi, 0, sizeof(struct fat_fs_info));
 	dir_nas->fs->fsi = fsi;
 
 	/* allocate this directory info */

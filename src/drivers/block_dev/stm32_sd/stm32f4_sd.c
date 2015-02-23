@@ -32,6 +32,7 @@ static int stm32f4_sd_init(void *arg) {
 	block_dev_t *bdev;
 	int res;
 	if (block_dev_lookup(STM32F4_SD_DEVNAME)) {
+		SD_DeInit();
 		res = SD_Init();
 		if (res != SD_OK) {
 			return -res;
@@ -66,6 +67,7 @@ static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 	int res;
 	while (SD_GetTransferState() != SD_TRANSFER_OK);
 	res = SD_ReadBlock((uint8_t*) buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	while (SD_GetTransferState() != SD_TRANSFER_OK);
 	return res;
 }
 
@@ -73,6 +75,7 @@ static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 	int res;
 	while (SD_GetTransferState() != SD_TRANSFER_OK);
 	res = SD_WriteBlock((uint8_t*) buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	while (SD_GetTransferState() != SD_TRANSFER_OK);
 	return res;
 }
 
