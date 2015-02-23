@@ -36,35 +36,36 @@ static char buf[64];
 static int create_recv_socket(int proto);
 
 static inline struct sockaddr * to_sa(struct sockaddr_in *sa_in) {
-	return (struct sockaddr *)sa_in;
+	return (struct sockaddr *) sa_in;
 }
 
 TEST_CASE("raw socket with IPPROTO_RAW could ") {
-    char packet[sizeof(struct iphdr) + 1];
-    /* point the iphdr to the beginning of the packet */
-    struct iphdr *ip = (struct iphdr *)packet;
-    int hdrincl = 1;
-    size_t pkt_size = sizeof(packet);
+	char packet[sizeof(struct iphdr) + 1];
+	/* point the iphdr to the beginning of the packet */
+	struct iphdr *ip = (struct iphdr *) packet;
+	int hdrincl = 1;
+	size_t pkt_size = sizeof(packet);
 
-    create_recv_socket(IPPROTO_RAW);
+	create_recv_socket(IPPROTO_RAW);
 
-    c = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-    test_assert(c >= 0);
+	c = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
+	test_assert(c >= 0);
 
-    test_assert_zero(setsockopt(c, IPPROTO_IP, IP_HDRINCL, &hdrincl, sizeof(hdrincl)));
+	test_assert_zero(
+			setsockopt(c, IPPROTO_IP, IP_HDRINCL, &hdrincl, sizeof(hdrincl)));
 
-    memset(packet, 'a', pkt_size);
+	memset(packet, 'a', pkt_size);
 
-    ip->ihl = 5;
-    ip->version = 4;
-    ip->tos = 0;
-    ip->tot_len = htons(pkt_size);
-    ip->frag_off = 0;
-    ip->ttl = 64;           /* default value */
-    ip->proto = IPPROTO_RAW; /* protocol at L4 */
-    ip->check = 0;          /* not needed in iphdr */
-    ip->saddr = addr.sin_addr.s_addr;
-    ip->daddr = addr.sin_addr.s_addr;
+	ip->ihl = 5;
+	ip->version = 4;
+	ip->tos = 0;
+	ip->tot_len = htons(pkt_size);
+	ip->frag_off = 0;
+	ip->ttl = 64; /* default value */
+	ip->proto = IPPROTO_RAW; /* protocol at L4 */
+	ip->check = 0; /* not needed in iphdr */
+	ip->saddr = addr.sin_addr.s_addr;
+	ip->daddr = addr.sin_addr.s_addr;
 
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 	test_assert_equal(pkt_size, send(c, packet, pkt_size, 0));
