@@ -420,9 +420,14 @@ static int inet_getsockopt(struct sock *sk, int level,
 
 static int inet_setsockopt(struct sock *sk, int level,
 		int optname, const void *optval, socklen_t optlen) {
+	struct inet_sock *inet;
+	int val = 0;
+
 	assert(sk);
 	assert(optval);
 	assert(optlen >= 0);
+
+	inet = to_inet_sock(sk);
 
 	if (level != IPPROTO_IP) {
 		assert(sk->p_ops != NULL);
@@ -434,6 +439,21 @@ static int inet_setsockopt(struct sock *sk, int level,
 	}
 
 	switch (optname) {
+	case IP_HDRINCL:
+		if (optlen <= 0 || optlen > sizeof(int)) {
+			return -EFAULT;
+		}
+		memcpy(&val, optval, optlen);
+		break;
+	}
+
+	switch (optname) {
+	case IP_HDRINCL:
+		if (sk->opt.so_type != SOCK_RAW) {
+			return -ENOPROTOOPT;
+		}
+		inet->opt.hdrincl = val ? 1 : 0;
+		break;
 	default:
 		return -ENOPROTOOPT;
 	}

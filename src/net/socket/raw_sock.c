@@ -32,6 +32,8 @@ EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_UDP, 0,
 		raw_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_TCP, 0,
 		raw_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_RAW, 0,
+		raw_sock_ops_struct);
 
 static int raw_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
@@ -135,6 +137,7 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	size_t data_len;
 	struct sk_buff *skb;
 	const struct sockaddr *sockaddr;
+	int fill_iphdr = 1;
 
 	assert(sk);
 	assert(msg);
@@ -147,7 +150,32 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	skb = NULL;
 	sockaddr = (const struct sockaddr *)msg->msg_name;
 
-	ret = sk->o_ops->make_pack(sk, sockaddr, &data_len, &skb);
+	if (sk->opt.so_type == SOCK_RAW) {
+		struct inet_sock *inet = to_inet_sock(sk);
+
+		if (sk->opt.so_protocol == IPPROTO_RAW) {
+			/* It is Linux specific behaviour. FreeBSD does not set this flag by default
+			 * when protocol is IPPROTO_RAW.
+			 * See http://sock-raw.org/papers/sock_raw */
+			inet->opt.hdrincl = 1;
+		}
+
+		if (inet->opt.hdrincl) {
+			fill_iphdr = 0;
+		}
+	}
+
+	if (fill_iphdr) {
+		ret = sk->o_ops->make_pack(sk, sockaddr, &data_len, &skb);
+	} else {
+		size_t actual_data_len;
+		if (data_len < sizeof(struct iphdr)) {
+			return -EMSGSIZE;
+		}
+		actual_data_len = data_len - sizeof(struct iphdr);
+		ret = sk->o_ops->make_pack(sk, sockaddr, &actual_data_len, &skb);
+		data_len = actual_data_len + sizeof(struct iphdr);
+	}
 
 	if (ret != 0) {
 		return ret;
@@ -161,7 +189,13 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(sk);
 	assert(skb->h.raw);
 
-	memcpy(skb->h.raw, msg->msg_iov->iov_base, data_len);
+	if (fill_iphdr) {
+		memcpy(skb->h.raw, msg->msg_iov->iov_base, data_len);
+	} else {
+		/* Rewrite IP header made by sk->o_ops->make_pack above +
+		 * write @c actual_data_len payload */
+		memcpy(skb->nh.raw, msg->msg_iov->iov_base, data_len);
+	}
 
 	assert(sk->o_ops->snd_pack != NULL);
 	return sk->o_ops->snd_pack(skb);
