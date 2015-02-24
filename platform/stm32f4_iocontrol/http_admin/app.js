@@ -31,7 +31,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
     };
 
 }])
-.controller("LedsCtrl", ['$scope', '$http', '$modal', function($scope, $http, $modal) {
+.controller("LedsCtrl", ['$scope', '$http', '$window', '$modal', function($scope, $http, $window, $modal) {
     function ledStatesFromJson(data) {
         return data.map(function(int_state, index) {
             return {
@@ -108,7 +108,9 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
     }
 
     $scope.save = function() {
-        $http.get('cgi-bin/cgi_cmd_wrapper?c=flash_settings&a1=store&a2=led');
+        $http.get('cgi-bin/cgi_cmd_wrapper?c=flash_settings&a1=store&a2=led').success(function (data) {
+            $window.alert('Led configuration saved!');
+        });
     };
 
     $scope.update();
