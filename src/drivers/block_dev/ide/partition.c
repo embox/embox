@@ -17,7 +17,7 @@
 #include <mem/phymem.h>
 #include <util/indexator.h>
 
-static int part_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+static int part_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	struct partition *part = (struct partition *) bdev->privdata;
 
 	switch (cmd) {
@@ -31,7 +31,7 @@ static int part_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static int part_read(block_dev_t *bdev, char *buffer,
+static int part_read(struct block_dev *bdev, char *buffer,
 						size_t count, blkno_t blkno) {
 	struct partition *part = (struct partition *) bdev->privdata;
 	if (blkno + count / SECTOR_SIZE > part->len) {
@@ -40,7 +40,7 @@ static int part_read(block_dev_t *bdev, char *buffer,
 	return block_dev_read(part->bdev, buffer, count, blkno + part->start);
 }
 
-static int part_write(block_dev_t *bdev, char *buffer,
+static int part_write(struct block_dev *bdev, char *buffer,
 						size_t count, blkno_t blkno) {
 	struct partition *part = (struct partition *) bdev->privdata;
 	if (blkno + count / SECTOR_SIZE > part->len) {
@@ -49,19 +49,19 @@ static int part_write(block_dev_t *bdev, char *buffer,
 	return block_dev_write(part->bdev, buffer, count, blkno + part->start);
 }
 
-static block_dev_driver_t partition_driver = {
+static struct block_dev_driver partition_driver = {
 	"partition_drv",
 	part_ioctl,
 	part_read,
 	part_write
 };
 
-block_dev_driver_t *bdev_driver_part = &partition_driver;
+struct block_dev_driver *bdev_driver_part = &partition_driver;
 
 /* TODO Create Partition as drive */
-int create_partitions(hd_t *hd) {
-	mbr_t mbrdata;
-	mbr_t *mbr = &mbrdata;
+int create_partitions(struct hd *hd) {
+	struct mbr mbrdata;
+	struct mbr *mbr = &mbrdata;
 	int rc;
 
 	/* Read partition table */
