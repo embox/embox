@@ -50,4 +50,5 @@ module raw_socket_test {
 	depends embox.driver.net.loopback
 	depends embox.framework.test
 	depends embox.net.af_inet
+	depends embox.net.af_packet
 }

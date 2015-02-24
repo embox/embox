@@ -14,10 +14,12 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <netpacket/packet.h>
 
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
 #include <net/l3/route.h>
+#include <net/l2/ethernet.h>
 
 EMBOX_TEST_SUITE("raw socket test");
 
@@ -26,33 +28,25 @@ TEST_TEARDOWN_SUITE(suite_teardown);
 
 TEST_TEARDOWN(case_teardown);
 
-#define PORT       1
+static int r, s;
+static struct in_device *in_dev;
+static char buf[128];
 
-static int b, c;
-static struct sockaddr_in addr;
-static socklen_t addrlen;
-static char buf[64];
+static int create_recv_packet_socket(int proto);
+static int create_send_inet_socket(int proto);
 
-static int create_recv_socket(int proto);
-
-static inline struct sockaddr * to_sa(struct sockaddr_in *sa_in) {
-	return (struct sockaddr *) sa_in;
-}
-
-TEST_CASE("raw socket with IPPROTO_RAW can send and receive") {
+TEST_CASE("Send from raw socket with IPPROTO_RAW protocol"
+		"and receive with raw socket with htons(ETH_P_ALL) protocol") {
 	char packet[sizeof(struct iphdr) + 1];
 	/* point the iphdr to the beginning of the packet */
 	struct iphdr *ip = (struct iphdr *) packet;
-	int hdrincl = 1;
+	/* size of packet piece starting from IP header */
 	size_t pkt_size = sizeof(packet);
+	/* size of all packet including device layer header */
+	size_t all_pkt_size = pkt_size + in_dev->dev->hdr_len;
 
-	create_recv_socket(IPPROTO_RAW);
-
-	c = socket(AF_INET, SOCK_RAW, IPPROTO_RAW);
-	test_assert(c >= 0);
-
-	test_assert_zero(
-			setsockopt(c, IPPROTO_IP, IP_HDRINCL, &hdrincl, sizeof(hdrincl)));
+	test_assert_zero(create_send_inet_socket(IPPROTO_RAW));
+	test_assert_zero(create_recv_packet_socket(htons(ETH_P_ALL)));
 
 	memset(packet, 'a', pkt_size);
 
@@ -64,32 +58,58 @@ TEST_CASE("raw socket with IPPROTO_RAW can send and receive") {
 	ip->ttl = 64; /* default value */
 	ip->proto = IPPROTO_RAW; /* protocol at L4 */
 	ip->check = 0; /* not needed in iphdr */
-	ip->saddr = addr.sin_addr.s_addr;
-	ip->daddr = addr.sin_addr.s_addr;
+	ip->saddr = htonl(INADDR_LOOPBACK);
+	ip->daddr = htonl(INADDR_LOOPBACK);
 
-	test_assert_zero(connect(c, to_sa(&addr), addrlen));
-	test_assert_equal(pkt_size, send(c, packet, pkt_size, 0));
+	test_assert_equal(pkt_size, send(s, packet, pkt_size, 0));
 
-	test_assert_equal(pkt_size, recv(b, buf, pkt_size, 0));
-	test_assert_equal('a', buf[pkt_size - 1]);
+	test_assert_equal(all_pkt_size, recv(r, buf, all_pkt_size, 0));
+	test_assert_equal('a', buf[all_pkt_size - 1]);
 }
 
-static int create_recv_socket(int proto) {
-	b = socket(AF_INET, SOCK_RAW, proto);
-	if (b == -1) {
+static int create_recv_packet_socket(int proto) {
+	struct sockaddr_ll sll;
+
+	r = socket(PF_PACKET, SOCK_RAW, proto);
+	if (r == -1) {
 		return -errno;
 	}
 
+    memset(&sll, 0, sizeof(sll));
+    sll.sll_family = AF_PACKET;
+    sll.sll_ifindex = in_dev->dev->index;
+    sll.sll_protocol = htons(ETH_P_ALL);
+
+	if (-1 == bind(r, (struct sockaddr *) &sll, sizeof(sll))) {
+		return -errno;
+	}
+
+	if (-1 == fcntl(r, F_SETFD, O_NONBLOCK)) {
+		return -errno;
+	}
+
+	return 0;
+}
+
+static int create_send_inet_socket(int proto) {
+	int hdrincl = 1;
+	static struct sockaddr_in addr;
+
+	s = socket(AF_INET, SOCK_RAW, proto);
+	if (s == -1) {
+		return -errno;
+	}
+
+	if (-1 == setsockopt(s, IPPROTO_IP, IP_HDRINCL, &hdrincl, sizeof(hdrincl))) {
+		return -errno;
+	}
+
+	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-	addr.sin_port = htons(PORT);
-	addrlen = sizeof addr;
+	addr.sin_port = 0; /* not needed in SOCK_RAW */
 
-	if (-1 == bind(b, to_sa(&addr), addrlen)) {
-		return -errno;
-	}
-
-	if (-1 == fcntl(b, F_SETFD, O_NONBLOCK)) {
+	if (-1 == connect(s, (struct sockaddr *) &addr, sizeof addr)) {
 		return -errno;
 	}
 
@@ -98,7 +118,6 @@ static int create_recv_socket(int proto) {
 
 static int suite_setup(void) {
 	int ret;
-	struct in_device *in_dev;
 
 	/* setup lo device */
 	in_dev = inetdev_get_loopback_dev();
@@ -107,6 +126,7 @@ static int suite_setup(void) {
 	}
 
 	ret = inetdev_set_addr(in_dev, htonl(INADDR_LOOPBACK));
+
 	if (ret != 0) {
 		return ret;
 	}
@@ -128,7 +148,6 @@ static int suite_setup(void) {
 
 static int suite_teardown(void) {
 	int ret;
-	struct in_device *in_dev;
 
 	/* down lo device */
 	in_dev = inetdev_get_loopback_dev();
@@ -152,11 +171,11 @@ static int suite_teardown(void) {
 }
 
 static int case_teardown(void) {
-	if (-1 == close(b)) {
+	if (-1 == close(r)) {
 		return -errno;
 	}
 
-	if (-1 == close(c)) {
+	if (-1 == close(s)) {
 		return -errno;
 	}
 
