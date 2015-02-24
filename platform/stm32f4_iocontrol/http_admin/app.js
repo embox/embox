@@ -57,7 +57,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
         return pairs.map(function(p, i) {
             return {
                 index: i,
-                name: (i+1).toString(),
+                name: "",
                 red: p[0],
                 blue: p[1]
             }
@@ -108,7 +108,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
     }
 
     $scope.save = function() {
-        $http.get('cgi-bin/cgi_cmd_wrapper?c=flash_settings&a1=store&a2=led').success(function (data) {
+        $http.get('cgi-bin/cgi_cmd_wrapper?c=flash_settings&a=store&a=led&a=led_names').success(function (data) {
             $window.alert('Led configuration saved!');
         });
     };
