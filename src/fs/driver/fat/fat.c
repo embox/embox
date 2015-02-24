@@ -953,7 +953,7 @@ static void fat_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
 
 	de = (struct dirent *) sector_buff;
 
-	memset(sector_buff, 0, SECTOR_SIZE);
+	memset(sector_buff, 0, FAT_MAX_SECTOR_SIZE);
 	memcpy(de[0].name, MSDOS_DOT, MSDOS_NAME);
 	memcpy(de[1].name, MSDOS_DOTDOT, MSDOS_NAME);
 	de[0].attr = de[1].attr = ATTR_DIRECTORY;
@@ -1695,6 +1695,9 @@ static int fat_root_dir_record(void *bdev) {
 	uint32_t pstart, psize;
 	uint8_t pactive, ptype;
 	struct dirent de;
+	int dev_blk_size = ((struct block_dev*) bdev)->driver->ioctl(bdev, IOCTL_GETBLKSIZE, 0, 0);
+
+	assert(dev_blk_size > 0);
 
 	fsi.bdev = bdev;
 
@@ -1730,7 +1733,7 @@ static int fat_root_dir_record(void *bdev) {
 	if (0 > block_dev_read(	bdev,
 				(char *) sector_buff,
 				sizeof(struct dirent),
-				fsi.vi.rootdir * fsi.vi.bytepersec / SECTOR_SIZE)) { /* XXX SECTOR SIZE is bdev sector size, not logical! */
+				fsi.vi.rootdir * fsi.vi.bytepersec / dev_blk_size)) {
 		return DFS_ERRMISC;
 	}
 	/* we clear other FAT TABLE */
@@ -1741,7 +1744,7 @@ static int fat_root_dir_record(void *bdev) {
 	if (0 > block_dev_write(	bdev,
 					(char *) sector_buff,
 					sizeof(struct dirent),
-					fsi.vi.rootdir * fsi.vi.bytepersec / SECTOR_SIZE)) { /* XXX SECTOR SIZE is bdev sector size, not logical! */
+					fsi.vi.rootdir * fsi.vi.bytepersec / dev_blk_size)) {
 		return DFS_ERRMISC;
 	}
 	/* Mark newly allocated cluster as end of chain */
