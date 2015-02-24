@@ -15,6 +15,9 @@
 static struct flash_dev *dfs_flashdev;
 static struct dfs_superblock dfs_sb;
 
+#define DFS_MAGIC_0 0x0D
+#define DFS_MAGIC_1 0xF5
+
 #define NAND_PAGE_SIZE 8
 #define NAND_BLOCK_SIZE (dfs_flashdev->block_info.block_size)
 #define NAND_PAGES_PER_BLOCK (NAND_BLOCK_SIZE / NAND_PAGE_SIZE)
@@ -23,8 +26,8 @@ static struct dfs_superblock dfs_sb;
 BITMAP_DECL(dfs_free_pages, NAND_PAGES_MAX);
 
 /* XXX Hardcode */
-static char *file_name[] = { "flashset", };
-static int file_len[] = { 136, };
+static char *file_name[] = { "flashset" };
+static int file_len[] = { 136 };
 
 /* Converting */
 static inline int page_capacity(int bytes) {
@@ -102,8 +105,8 @@ int dfs_read_inode(int n, struct dfs_inode *node) {
 	if (n >= dfs_sb.inode_count)
 		return -1;
 
-	_read(sizeof(struct dfs_superblock) +
-			n * sizeof(struct dfs_inode),
+	_read(NAND_PAGE_SIZE * page_capacity(sizeof(struct dfs_superblock)) +
+			n * NAND_PAGE_SIZE * page_capacity(sizeof(struct dfs_inode)),
 			node, sizeof(struct dfs_inode));
 	return 0;
 }
@@ -116,15 +119,21 @@ int dfs_init(void) {
 		return -ENOENT;
 	}
 
+	_read(0, (void *) &dfs_sb, sizeof(dfs_sb));
+	if (dfs_sb.magic[0] == DFS_MAGIC_0 && dfs_sb.magic[1] == DFS_MAGIC_1)
+		return 0; /* TODO set bitmap */
+
 	bitmap_set_all(dfs_free_pages, NAND_PAGES_MAX);
 
 	printf("Writing DFS image...\n");
 
-	dfs_sb.sb_size = sizeof(dfs_sb);
-	dfs_sb.max_inode_count = DFS_INODES_MAX;
-	/* XXX Hardcode */
-	dfs_sb.inode_count = 1;
-	dfs_sb.buff_bk = 2;
+	dfs_sb = (struct dfs_superblock) {
+		.magic = {DFS_MAGIC_0, DFS_MAGIC_1},
+		.sb_size = sizeof(dfs_sb),
+		.max_inode_count = DFS_INODES_MAX,
+		.inode_count = 1,
+		.buff_bk = 2,
+	};
 
 	dfs_write_raw(0, (void *) &dfs_sb, sizeof(dfs_sb));
 

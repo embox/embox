@@ -20,6 +20,7 @@ struct dfs_inode {
 };
 
 struct dfs_superblock {
+	char magic[2];
 	int sb_size; /* size of this structure */
 	int inode_count;
 	int max_inode_count;

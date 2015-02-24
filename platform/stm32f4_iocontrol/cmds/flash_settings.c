@@ -164,8 +164,7 @@ int main(int argc, char *argv[]) {
 	dfs_set_dev((struct flash_dev *) &stm32_flash);
 
 	/* Init DFS */
-	if (!dfs_get_dev())
-		dfs_init();
+	dfs_init();
 
 	if (0 == strcmp(argv[1], "store")) {
 		printf(	"Storing flash settings:\n"
