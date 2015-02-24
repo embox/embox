@@ -60,15 +60,6 @@ int net_rx(struct sk_buff *skb) {
 		break;
 	}
 
-	/* lookup handler for L3 layer */
-	npack = net_pack_lookup(hdr_info.type);
-	if (npack == NULL) {
-		DBG(printk("net_rx: %p unknown type %#.6hx\n", skb,
-					hdr_info.type));
-		skb_free(skb);
-		return 0; /* ok, but: not supported */
-	}
-
 	/* setup L3 header */
 	assert(skb->mac.raw != NULL);
 	skb->nh.raw = skb->mac.raw + skb->dev->hdr_len;
@@ -83,6 +74,18 @@ int net_rx(struct sk_buff *skb) {
 	}
 
 	sock_packet_add(skb);
+
+	/* lookup handler for L3 layer
+	 * We check if L3 handler exists only after sock_packet_add(), because of
+	 * we must pass skb to all packet sockets even though L3 header is not valid
+	 * from Embox kernel's point of view. */
+	npack = net_pack_lookup(hdr_info.type);
+	if (npack == NULL) {
+		DBG(printk("net_rx: %p unknown type %#.6hx\n", skb,
+					hdr_info.type));
+		skb_free(skb);
+		return 0; /* ok, but: not supported */
+	}
 
 	/* handling on L3 layer */
 	return npack->rcv_pack(skb, skb->dev);
