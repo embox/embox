@@ -75,10 +75,10 @@ static int create_recv_packet_socket(int proto) {
 		return -errno;
 	}
 
-    memset(&sll, 0, sizeof(sll));
-    sll.sll_family = AF_PACKET;
-    sll.sll_ifindex = in_dev->dev->index;
-    sll.sll_protocol = htons(ETH_P_ALL);
+	memset(&sll, 0, sizeof(sll));
+	sll.sll_family = AF_PACKET;
+	sll.sll_ifindex = in_dev->dev->index;
+	sll.sll_protocol = htons(ETH_P_ALL);
 
 	if (-1 == bind(r, (struct sockaddr *) &sll, sizeof(sll))) {
 		return -errno;
