@@ -1,31 +1,46 @@
 
 #include <errno.h>
-#include <fcntl.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 
+static void parse_com(char *com) {
+	const char *sep = " \t\n\r";
+	char *save;
+	char cmd;
+	int arg, frac;
+
+	com = strtok_r(com, sep, &save);
+	while (com) {
+		cmd = *com;
+		if (!('A' <= cmd && cmd <= 'Z')) {
+			printf("Expected G-CODE command, but get '%c' (0x%hhu)\n",
+					isprint(cmd) ? cmd : ' ', cmd);
+			break;
+		}
+		if (2 > sscanf(com + 1, "%d.%d", &arg, &frac)) {
+			frac = 0;
+		}
+		printf("cmd='%c', arg='%d', frac='%d'\n", cmd, arg, frac);
+		com = strtok_r(NULL, sep, &save);
+	}
+	printf("newline\n");
+}
+
 int main(int argc, char *argv[]) {
-	int count;
-	char line_buff[20];
-	int cnc_program_file;
+	char line_buff[50];
+	FILE *pf;
 
 	if (argc < 2) {
 		return -EINVAL;
 	}
 
-	cnc_program_file = open(argv[1], O_RDONLY);
-	read(cnc_program_file, line_buff, 19);
-	line_buff[19] = '\0';
-
-	printf("cnc_control runned!\n");
-
-	count = 20;
-	while(count-- > 0) {
-		printf("cnc_control: %d\n", count);
+	pf = fopen(argv[1], "r");
+	while (fgets(line_buff, sizeof(line_buff), pf)) {
+		parse_com(line_buff);
 		sleep(1);
 	}
 
-	printf("cnc_control done!\n");
 	return 0;
 }
