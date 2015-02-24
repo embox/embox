@@ -12,9 +12,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-#define LEDNAME_MAX 32 /* restriction is 16 chars, which can be unicode */
-#define LEDNAME_N 40
-char led_names[LEDNAME_N][LEDNAME_MAX + 1];
+#include "led_names.h"
 
 static int lednames_serialize(void) {
 	int i;

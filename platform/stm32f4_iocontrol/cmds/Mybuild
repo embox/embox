@@ -29,5 +29,10 @@ static module libleddrv {
 @Cmd(name="led_names", help="", man="")
 module led_names {
 	source "led_names.c"
+
+	depends lib_led_names
 }
 
+static module lib_led_names {
+	source "lib_led_names.c"
+}

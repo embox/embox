@@ -15,6 +15,7 @@
 #include <drivers/flash/flash_dev.h>
 
 #include "libleddrv.h"
+#include "led_names.h"
 
 #include <fs/dfs.h>
 
@@ -23,6 +24,7 @@ extern const struct flash_dev stm32_flash;
 #define FLASHSET_MAGIC 0x5500AAAA
 #define FLASHSET_WHAT_NET 0x00000001
 #define FLASHSET_WHAT_LED 0x00000002
+#define FLASHSET_WHAT_LEDNAMES 0x00000004
 
 struct flashset_settings {
 	uint32_t fsn_magic;
@@ -31,7 +33,9 @@ struct flashset_settings {
 	struct sockaddr fsn_mask;
 	unsigned char fsn_mac[MAX_ADDR_LEN];
 	unsigned char fsn_leds_state[LEDDRV_LED_N];
+	char fsn_led_names[LEDNAME_N][LEDNAME_MAX + 1];
 };
+static struct flashset_settings flashset_g_settings;
 
 static inline int flashset_is_stored(struct flashset_settings *fl_settings,
 					uint32_t mask) {
@@ -144,6 +148,19 @@ static int flashset_led_restore(struct flashset_settings *fl_settings) {
 	return leddrv_updatestates(fl_settings->fsn_leds_state);
 }
 
+static int flashset_lednames_store(struct flashset_settings *fl_settings) {
+	memcpy(fl_settings->fsn_led_names, led_names, sizeof(led_names));
+	flashset_make_store(fl_settings, FLASHSET_WHAT_LEDNAMES);
+	return 0;
+}
+
+static int flashset_lednames_restore(struct flashset_settings *fl_settings) {
+	if (flashset_is_stored(fl_settings, FLASHSET_WHAT_LEDNAMES)) {
+		memcpy(led_names, fl_settings->fsn_led_names, sizeof(led_names));
+	}
+	return 0;
+}
+
 static int flashset_load(struct flashset_settings *fl_settings) {
 	struct dfs_desc *fd = dfs_open("flashset");
 	int errcode = dfs_read(fd, fl_settings, sizeof(*fl_settings));
@@ -158,22 +175,24 @@ static int flashset_load(struct flashset_settings *fl_settings) {
 }
 
 int main(int argc, char *argv[]) {
-	struct flashset_settings fl_settings;
+	struct flashset_settings *const fl_settings = &flashset_g_settings;
 	int errcode;
 
 	dfs_set_dev((struct flash_dev *) &stm32_flash);
 
 	/* Init DFS */
-	dfs_init();
+	if ((errcode = dfs_init())) {
+		return errcode;
+	}
 
 	if (0 == strcmp(argv[1], "store")) {
 		printf(	"Storing flash settings:\n"
-			"Magic: %x\n Mask:  %x\n",
-			fl_settings.fsn_magic, fl_settings.fsn_what_mask);
-		if (0 > (errcode = flashset_load(&fl_settings))) {
+				"Magic: %x\n Mask:  %x\n",
+				fl_settings->fsn_magic, fl_settings->fsn_what_mask);
+		if (0 > (errcode = flashset_load(fl_settings))) {
 			if (errcode == -ENOENT) {
-				fl_settings.fsn_magic = FLASHSET_MAGIC;
-				fl_settings.fsn_what_mask = 0;
+				fl_settings->fsn_magic = FLASHSET_MAGIC;
+				fl_settings->fsn_what_mask = 0;
 			} else {
 				return errcode;
 			}
@@ -184,9 +203,11 @@ int main(int argc, char *argv[]) {
 			const char *what = argv[i_arg];
 
 			if (0 == strcmp(what, "net")) {
-				errcode = flashset_nic_store("eth0", &fl_settings);
+				errcode = flashset_nic_store("eth0", fl_settings);
 			} else if (0 == strcmp(what, "led")) {
-				errcode = flashset_led_store(&fl_settings);
+				errcode = flashset_led_store(fl_settings);
+			} else if (0 == strcmp(what, "led_names")) {
+				errcode = flashset_lednames_store(fl_settings);
 			} else {
 				fprintf(stderr, "unknown store object: %s\n", what);
 				errcode = -EINVAL;
@@ -199,27 +220,30 @@ int main(int argc, char *argv[]) {
 
 		/* ready to write */
 		struct dfs_desc *fd = dfs_open("flashset");
-		errcode = dfs_write(fd, &fl_settings, sizeof(struct flashset_settings));
+		errcode = dfs_write(fd, fl_settings, sizeof(struct flashset_settings));
 		if (errcode < 0)
 			return errcode;
 
 	} else if (0 == strcmp(argv[1], "restore")) {
 
-		if (0 > (errcode = flashset_load(&fl_settings))) {
+		if (0 > (errcode = flashset_load(fl_settings))) {
 			printf("Failed to load settings\n"
-			"Magic: %x\n Mask: %x\n",
-			fl_settings.fsn_magic, fl_settings.fsn_what_mask);
+				"Magic: %x\n Mask: %x\n",
+				fl_settings->fsn_magic, fl_settings->fsn_what_mask);
 			return 0;
 		}
 
 		/* seems to have valid settings */
 		printf("Restoring flash settings:\n"
-		"Magic: %x\n Mask: %x\n",
-		fl_settings.fsn_magic, fl_settings.fsn_what_mask);
-		if (0 > (errcode = flashset_nic_restore("eth0", &fl_settings))) {
+			"Magic: %x\n Mask: %x\n",
+			fl_settings->fsn_magic, fl_settings->fsn_what_mask);
+		if (0 > (errcode = flashset_nic_restore("eth0", fl_settings))) {
 			return errcode;
 		}
-		if (0 > (errcode = flashset_led_restore(&fl_settings))) {
+		if (0 > (errcode = flashset_led_restore(fl_settings))) {
+			return errcode;
+		}
+		if (0 > (errcode = flashset_lednames_restore(fl_settings))) {
 			return errcode;
 		}
 	}
