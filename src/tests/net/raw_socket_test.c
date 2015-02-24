@@ -19,7 +19,7 @@
 #include <net/netdevice.h>
 #include <net/l3/route.h>
 
-EMBOX_TEST_SUITE("inet raw socket test");
+EMBOX_TEST_SUITE("raw socket test");
 
 TEST_SETUP_SUITE(suite_setup);
 TEST_TEARDOWN_SUITE(suite_teardown);
@@ -39,7 +39,7 @@ static inline struct sockaddr * to_sa(struct sockaddr_in *sa_in) {
 	return (struct sockaddr *) sa_in;
 }
 
-TEST_CASE("raw socket with IPPROTO_RAW could ") {
+TEST_CASE("raw socket with IPPROTO_RAW can send and receive") {
 	char packet[sizeof(struct iphdr) + 1];
 	/* point the iphdr to the beginning of the packet */
 	struct iphdr *ip = (struct iphdr *) packet;
@@ -81,7 +81,7 @@ static int create_recv_socket(int proto) {
 	}
 
 	addr.sin_family = AF_INET;
-	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	addr.sin_port = htons(PORT);
 	addrlen = sizeof addr;
 
@@ -92,8 +92,6 @@ static int create_recv_socket(int proto) {
 	if (-1 == fcntl(b, F_SETFD, O_NONBLOCK)) {
 		return -errno;
 	}
-
-	addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 
 	return 0;
 }
