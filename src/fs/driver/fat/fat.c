@@ -1671,7 +1671,11 @@ static int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t se
 	assert(fsi->bdev);
 	assert(fsi->vi.bytepersec);
 
-	if (0 > block_dev_read(fsi->bdev, (char *) buffer, fsi->vi.bytepersec, sector)) {
+	int dev_blk_size = fsi->bdev->driver->ioctl(fsi->bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	assert(dev_blk_size > 0);
+	int sec_size = fsi->vi.bytepersec;
+
+	if (0 > block_dev_read(fsi->bdev, (char *) buffer, sec_size, sector * sec_size / dev_blk_size)) {
 		return DFS_ERRMISC;
 	} else {
 		return DFS_OK;
@@ -1682,7 +1686,11 @@ static int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t s
 	assert(fsi->bdev);
 	assert(fsi->vi.bytepersec);
 
-	if (0 > block_dev_write(fsi->bdev, (char *) buffer, fsi->vi.bytepersec, sector)) {
+	int dev_blk_size = fsi->bdev->driver->ioctl(fsi->bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	assert(dev_blk_size > 0);
+	int sec_size = fsi->vi.bytepersec;
+
+	if (0 > block_dev_write(fsi->bdev, (char *) buffer, sec_size, sector * sec_size / dev_blk_size)) {
 		return DFS_ERRMISC;
 	} else {
 		return DFS_OK;
