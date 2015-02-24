@@ -16,7 +16,7 @@
 #include <drivers/flash/flash_dev.h>
 #include <stm32f4xx_flash.h>
 
-#define STM32_FIRST_BLOCK_OFFSET 0x9
+#define STM32_FIRST_BLOCK_OFFSET 1
 static const struct flash_dev_drv stm32_flash_drv;
 const struct flash_dev stm32_flash = {
 	.bdev = NULL,
