@@ -1838,27 +1838,19 @@ static int fat_mount_files(struct nas *dir_nas) {
 static int fat_create_dir_entry(struct nas *parent_nas) {
 	struct dirinfo di;
 	struct dirent de;
-	uint8_t *rcv_buf;
 	char name[MSDOS_NAME + 2];
 	char full_path[PATH_MAX];
 	struct nas *nas;
 	struct fat_file_info  *fi;
 	struct node *node;
 	mode_t mode;
-	int rc = 0;
 
-	if (NULL == (rcv_buf = page_alloc(__phymem_allocator, 1))) {
-		rc = -ENOMEM;
-		goto out;
-	}
-	memset(rcv_buf, 0, sizeof(PAGE_SIZE()));
-	di.p_scratch = rcv_buf;
+	di.p_scratch = sector_buff;
 
 	vfs_get_relative_path(parent_nas->node, full_path, PATH_MAX);
 
 	if (fat_open_dir(parent_nas, (uint8_t *) full_path, &di)) {
-		rc = -ENODEV;
-		goto out;
+		return -ENODEV;
 	}
 
 	while (DFS_EOF != fat_get_next(parent_nas, &di, &de)) {
@@ -1873,8 +1865,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 			/* Create node and file descriptor*/
 			fi = pool_alloc(&fat_file_pool);
 			if (!fi) {
-				rc = -ENOMEM;
-				goto out;
+				return -ENOMEM;
 			}
 
 			mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
@@ -1882,8 +1873,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 			node = vfs_subtree_create_child(parent_nas->node, name, mode);
 			if (!node) {
 				pool_free(&fat_file_pool, fi);
-				rc = -ENOMEM;
-				goto out;
+				return -ENOMEM;
 			}
 
 			memset(fi, 0, sizeof(*fi));
@@ -1901,8 +1891,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 		}
 	}
 
-out: page_free(__phymem_allocator, rcv_buf, 1);
-	return rc;
+	return ENOERR;
 }
 
 static void fat_free_fs(struct nas *nas) {
