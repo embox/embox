@@ -838,10 +838,7 @@ static uint32_t fat_get_next(struct nas *nas,
 		}
 	}
 
-	if (dirent->name[0] == 0xe5) {	/* handle deleted file entries */
-		dirent->name[0] = 0;
-	}
-	else if ((dirent->attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) {
+	if (dirent->name[0] == 0xe5 || (dirent->attr & ATTR_LONG_NAME) == ATTR_LONG_NAME) {
 		dirent->name[0] = 0;
 	}
 	/* handle kanji filenames beginning with 0xE5*/
@@ -1845,7 +1842,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	struct node *node;
 	mode_t mode;
 
-	di.p_scratch = sector_buff;
+	di.p_scratch = malloc(((struct fat_fs_info *)parent_nas->fs->fsi)->vi.bytepersec);
 
 	vfs_get_relative_path(parent_nas->node, full_path, PATH_MAX);
 
