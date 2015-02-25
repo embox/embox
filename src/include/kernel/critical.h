@@ -1,34 +1,24 @@
 /**
  * Kernel critical API.
  *
- * Embox kernel is fully preemptive and supports both hardware and software
- * interrupts. Preemption in terms of Critical API has more generic meaning
- * than a regular preemption of a thread by a one with higher priority and
- * also includes hardware and software interrupts. In other words, we speak
- * about preemption of execution contexts, not only threads.
+ * Embox kernel is fully preemptive and supports hardware interrupts and
+ * differed interrupt processing via lthreads. Preemption in terms of
+ * Critical API has more generic meaning than regular thread preemption and
+ * also includes hardware interrupts. In other words, we speak about preemption
+ * of execution contexts, not only threads.
  *
  * Lets draw up a quick overview of possible execution contexts:
  *
- *   - Non-preemptable context between calls of #ipl_save() and #ipl_restore()
+ *   - A non-preemptable context between calls of #ipl_save() and #ipl_restore()
  *     in which no hardware interrupt can occur and which must be as fast as
- *     possible to retain suitable reaction time of the system. Of course there
- *     can't be any software interrupt dispatched or thread switched within
- *     such sections.
+ *     possible to retain suitable reaction time of the system. Of course
+ *     neither threads nor light threads can be scheduled in this context.
  *
  *   - Hardware IRQ handlers which can be entered at any time except when
  *     certain interrupts are masked on the CPU using IPL. An IRQ with
  *     higher priority can also preempt others, thus handlers can be nested.
- *     As in the previous described context, soft interrupts and scheduling are
- *     disabled within hardware interrupt handlers.
- *
- *   - Software interrupts are designed by analogy with the hardware
- *     interrupts. Software interrupts can be locked too to temporally prevent
- *     dispatching and deferring it when they become unlocked again.
- *
- *   - Software IRQ handlers that can nest similarly to hardware ones.
- *     Because a handler can start execution only outside hardware IRQ context
- *     it can be preempted as well. However scheduling from the handler is
- *     still impossible.
+ *     As in the previously described context, scheduling is disabled within
+ *     hardware interrupt handlers.
  *
  *   - And finally there is a special context for scheduling locked state to
  *     protect internal structures of the scheduler itself.
@@ -64,17 +54,11 @@
  *
  * @endcode
  *
- * it becomes rather complicated to answer questions like:
- *   - If driver raises a software interrupt being inside a hardware interrupt
- *     handler, so when the kernel have to actually invoke it?
- *     When leaving the hardware interrupt handler? Or leaving the outermost
- *     handler in case of interrupts nesting? And what if someone have
- *     locked software interrupts previously?
- *
- *   - How should we check for pending soft interrupt dispatching? Is such
- *     check is needed on each unlock and after leaving hardware interrupt
- *     handler? And how to be in case when the system is configured without
- *     softirq support at all?
+ * It becomes rather complicated to answer questions like:
+ *   - If some driver wakes lthread being inside a hardware interrupt handler,
+ *     so when the kernel have to actually invoke it? When leaving the hardware
+ *     interrupt handler? Or leaving the outermost handler in case of interrupts
+ *     nesting? And what if someone have locked software interrupts previously?
  *
  *   - What's about reentrancy and interrupt safety?
  *
@@ -82,38 +66,24 @@
  * provides a way to give answers for such questions.
  *
  @verbatim
- ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
- level    sched_lck   swirq_hnd   swirq_lck   hwirq_hnd   hwirq_lck
- bit_nr   29 ... 24   23 ... 18   17 ... 12   11 ...  6    5 ...  0
- ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
+ ------   -- --- --   -- --- --   -- --- --
+ level    sched_lck   hwirq_hnd   hwirq_lck
+ bit_nr   17 ... 12   11 ...  6    5 ...  0
+ ------   -- --- --   -- --- --   -- --- --
  @endverbatim
  *
  * For example, bit masks of the level corresponding to hardware interrupt
  * locks are the following:
  @verbatim
- ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
- level    sched_lck   swirq_hnd   swirq_lck   hwirq_hnd   hwirq_lck
- bit_nr   29 ... 24   23 ... 18   17 ... 12   11 ...  6    5 ...  0
- ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
- mask                                                      *  **  *
+ ------   -- --- --   -- --- --   -- --- --
+ level    sched_lck   hwirq_hnd   hwirq_lck
+ bit_nr   17 ... 12   11 ...  6    5 ...  0
+ ------   -- --- --   -- --- --   -- --- --
+ mask                              *  **  *
  harder
- softer    *  **  *    *  **  *    *  **  *    *  **  *
- count                                                            *
- ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
- @endverbatim
- *
- * And masks being used when entering/leaving software interrupt handlers look
- * like:
- @verbatim
- ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
- level    sched_lck   swirq_hnd   swirq_lck   hwirq_hnd   hwirq_lck
- bit_nr   29 ... 24   23 ... 18   17 ... 12   11 ...  6    5 ...  0
- ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
- mask                  *  **  *
- harder                            *  **  *    *  **  *    *  **  *
- softer    *  **  *
- count                        *
- ------   -- --- --   -- --- --   -- --- --   -- --- --   -- --- --
+ softer    *  **  *    *  **  *
+ count                                    *
+ ------   -- --- --   -- --- --   -- --- --
  @endverbatim
  *
  * @file
