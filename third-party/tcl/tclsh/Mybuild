@@ -18,7 +18,7 @@ static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libtcl8.6.a", "libtclstub8.6.a"
 
-	@NoRuntime depends third_party.lib.Fdlibm
+	@NoRuntime depends embox.compat.libc.LibC
 
 	depends tclsh_export_scripts
 }
