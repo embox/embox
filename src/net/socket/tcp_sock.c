@@ -350,6 +350,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			if (tcp_newsk) {
 				break;
 			}
+			tcp_sock_alloc_missing_backlog(tcp_sk);
 			ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
 		} while (!ret);
 	}
