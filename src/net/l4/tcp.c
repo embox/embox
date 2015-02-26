@@ -1039,6 +1039,14 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		}
 	}
 
+	/* Process RST */
+	if (tcph->rst) {
+		ret = process_rst(tcp_sk, tcph);
+		if (ret != TCP_RET_OK) {
+			return ret;
+		}
+	}
+
 	/* Analyze sequence */
 	switch (tcp_sk->state) {
 	default:
@@ -1083,14 +1091,6 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 			return TCP_RET_DROP;
 		}
 		break;
-	}
-
-	/* Process RST */
-	if (tcph->rst) {
-		ret = process_rst(tcp_sk, tcph);
-		if (ret != TCP_RET_OK) {
-			return ret;
-		}
 	}
 
 	/* Porcess ACK */
