@@ -194,13 +194,18 @@ static const struct sock_family_ops packet_raw_ops = {
 	.sock_pool   = &packet_sock_pool
 };
 
-void sock_packet_add(struct sk_buff *skb) {
+void sock_packet_add(struct sk_buff *skb, unsigned short protocol) {
 	struct packet_sock *psk;
+	int proto_check, iface_check;
 
 	dlist_foreach_entry(psk, &packet_g_sock_list, lnk) {
-		if (psk->sll.sll_ifindex == 0
-				|| psk->sll.sll_ifindex == skb->dev->index
-				|| psk->sll.sll_protocol == htons(ETH_P_ALL)) {
+		proto_check = (psk->sll.sll_protocol == htons(ETH_P_ALL)
+				|| psk->sll.sll_protocol == protocol);
+
+		iface_check = (psk->sll.sll_ifindex == 0
+				|| psk->sll.sll_ifindex == skb->dev->index);
+
+		if (proto_check && iface_check) {
 			skb_queue_push(&psk->rx_q, skb_clone(skb));
 			sock_notify(&psk->sk, POLLIN | POLLERR);
 		}

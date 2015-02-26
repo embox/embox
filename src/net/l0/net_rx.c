@@ -73,7 +73,7 @@ int net_rx(struct sk_buff *skb) {
 		return 0; /* error: something wrong :( */
 	}
 
-	sock_packet_add(skb);
+	sock_packet_add(skb, hdr_info.type);
 
 	/* lookup handler for L3 layer
 	 * We check if L3 handler exists only after sock_packet_add(), because of
