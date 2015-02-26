@@ -14,6 +14,7 @@ module raw_sock {
 module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
+	option number max_simultaneous_tx_pack = 0
 
 	depends route
 	depends sock

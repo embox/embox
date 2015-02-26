@@ -42,6 +42,7 @@
 #define MODOPS_CONNECT_TIMEOUT \
 	OPTION_MODULE_GET(embox__net__socket, NUMBER, connect_timeout)
 
+#define MAX_SIMULTANEOUS_TX_PACK 0 //OPTION_GET(NUMBER, max_simultaneous_tx_pack)
 static const struct sock_proto_ops tcp_sock_ops_struct;
 const struct sock_proto_ops *const tcp_sock_ops
 		= &tcp_sock_ops_struct;
@@ -408,10 +409,32 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 	return len;
 }
 
+#if MAX_SIMULTANEOUS_TX_PACK > 0
+static int tcp_wait_tx_ready(struct sock *sk, int timeout) {
+	int ret;
+
+	ret = 0;
+	sched_lock();
+	{
+		while (MAX_SIMULTANEOUS_TX_PACK <= skb_queue_count(&sk->tx_queue)) {
+			ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
+			if (ret < 0) {
+				break;
+			}
+		}
+	}
+	sched_unlock();
+	return ret;
+}
+#else
+static inline int tcp_wait_tx_ready(struct sock *sk, int timeout) {
+	return 0;
+}
+#endif
+
 #define REM_WIND_MAX_SIZE (1460 * 100) /* FIXME use txqueuelen for netdev */
 static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct tcp_sock *tcp_sk;
-	char *buff;
 	size_t len;
 	int ret, timeout;
 
@@ -419,8 +442,6 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	assert(sk);
 	assert(msg);
-
-	len = msg->msg_iov->iov_len;
 
 	timeout = timeval_to_ms(&sk->opt.so_sndtimeo);
 	if (timeout == 0) {
@@ -462,11 +483,9 @@ sendmsg_again:
 		}
 		sched_unlock();
 
-		buff = (char *)msg->msg_iov->iov_base;
-		len = tcp_write(tcp_sk, buff, len);
-
+		len = tcp_write(tcp_sk, msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 		msg->msg_iov->iov_len -= len;
-		return 0;
+		return tcp_wait_tx_ready(sk, timeout);
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
 	case TCP_CLOSING:
