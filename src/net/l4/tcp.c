@@ -548,6 +548,8 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 			} else {
 				DBG(printk("tcp_st_listen: can't alloc socket\n");)
 				tcp_newsk = NULL;
+				/* maybe calling thread could allocate more? */
+				sock_notify(to_sock(tcp_sk), POLLIN);
 			}
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
