@@ -10,6 +10,7 @@
 #include <lib/math/ieee.h>
 #include <math.h>
 
+#if 0
 int isnan(double x) {
 	struct ieee_binary64 *ieee64_px;
 
@@ -19,6 +20,7 @@ int isnan(double x) {
 	return (ieee64_px->exponent == IEEE_DOUBLE_EXP_MAX)
 		&& ((ieee64_px->mantissa0 != 0) || (ieee64_px->mantissa1 != 0));
 }
+#endif
 
 int isnanf(float x) {
 	struct ieee_binary32 *ieee32_px;

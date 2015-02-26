@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <math.h>
-
+/*
 double modf(double x, double *iptr) {
 	double fract_part;
 
@@ -31,7 +31,7 @@ float modff(float x, float *iptr) {
 
 	return fract_part;
 }
-
+*/
 long double modfl(long double x, long double *iptr) {
 	long double fract_part;
 

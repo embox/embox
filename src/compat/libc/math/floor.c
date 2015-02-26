@@ -7,14 +7,14 @@
  */
 
 #include <math.h>
-
+/*
 double floor(double x) {
 	double rounded;
 
 	rounded = round(x);
 	return rounded <= x ? rounded : rounded - 1.0;
 }
-
+*/
 float floorf(float x) {
 	float rounded;
 

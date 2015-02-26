@@ -12,6 +12,7 @@ extern float __remsf3(float a, float b);
 extern double __remdf3(double a, double b);
 extern long double __remtf3(long double a, long double b);
 
+/*
 double fmod(double x, double y) {
 	double fract_part;
 
@@ -21,6 +22,7 @@ double fmod(double x, double y) {
 			? copysign(y, x) + fract_part
 			: fract_part;
 }
+*/
 
 float fmodf(float x, float y) {
 	float fract_part;

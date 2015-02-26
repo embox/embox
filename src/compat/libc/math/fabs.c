@@ -8,9 +8,11 @@
 
 #include <math.h>
 
+#if 0
 double fabs(double x) {
 	return signbit(x) ? -x : x;
 }
+#endif
 
 float fabsf(float x) {
 	return signbitf(x) ? -x : x;

@@ -11,11 +11,11 @@
 extern float __powf(float x, float y);
 extern double __pow(double x, double y);
 extern long double __powl(long double x, long double y);
-
+#if 0
 double pow(double x, double y) {
 	return __pow(x, y);
 }
-
+#endif
 float powf(float x, float y) {
 	return __powf(x, y);
 }

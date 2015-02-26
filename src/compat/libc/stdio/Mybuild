@@ -81,6 +81,7 @@ static module LibCStdio {
 	@NoRuntime depends LibCStdioFileOps
 	@NoRuntime depends LibCStdioScanf
 	@NoRuntime depends LibCStdioPerror
+	@NoRuntime depends LibCDiv
 }
 
 static module LibCStdioPerror {
@@ -89,4 +90,10 @@ static module LibCStdioPerror {
 
 static module LibCStdioScanf {
 	source "scanf.c"
+}
+
+static module LibCDiv {
+	source "div.c"
+	source "ldiv.c"
+	/* source "lldiv.c" */
 }

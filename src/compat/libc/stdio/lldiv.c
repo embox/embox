@@ -8,7 +8,7 @@
  */
 #include <stdlib.h>
 
-5lldiv_t lldiv (long long int numer, long long int denom) {
+lldiv_t lldiv (long long int numer, long long int denom) {
 	lldiv_t result;
 
 	result.quot = numer / denom;
