@@ -559,6 +559,7 @@ int main(int argc, char **argv) {
 		if (ci.ci_sock == -1) {
 			if (errno != EINTR) {
 				HTTPD_ERROR("accept() failure: %s\n", strerror(errno));
+				usleep(100000);
 			}
 			continue;
 		}
