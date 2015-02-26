@@ -15,7 +15,7 @@ $(BUILD) :
 			LUAV=5.2 \
 			DEBUG=DEBUG \
 			CC=$(EMBOX_GCC) \
-			CPPFLAGS='-I$(ROOT_DIR)/third-party/lib/luasocket/include/ \
+			CPPFLAGS='-I$(ROOT_DIR)/third-party/lua/lib/luasocket/include/ \
 				$(EMBOX_CPPFLAGS)' \
 	)
 	touch $@
