@@ -19,7 +19,7 @@ static module LibCMath {
 	source "pow.c"
 	source "log10.c"
 
-	@IncludePath("$(ROOT_DIR)/download")
+	@IncludePath("$(ROOT_DIR)/download/fdlibm")
 	source "w_powl.c", "e_powl.c"
 
 

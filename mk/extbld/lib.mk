@@ -22,9 +22,14 @@ include $(ROOT_DIR)/mk/core/string.mk
 
 all : download extract patch configure build install
 
-PKG_SOURCE_DIR  ?= $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
-PKG_INSTALL_DIR := $(BUILD_DIR)/install
-DOWNLOAD_DIR    := $(ROOT_DIR)/download
+PKG_SOURCE_DIR   ?= $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
+PKG_INSTALL_DIR  := $(BUILD_DIR)/install
+DOWNLOAD_BASEDIR := $(ROOT_DIR)/download
+ifeq ($(value PKG_DOWNLOADS_SEPARATE),)
+DOWNLOAD_DIR     := $(DOWNLOAD_BASEDIR)
+else
+DOWNLOAD_DIR     := $(DOWNLOAD_BASEDIR)/$(PKG_NAME)
+endif
 
 $(DOWNLOAD_DIR) $(BUILD_DIR) $(PKG_INSTALL_DIR):
 	mkdir -p $@
