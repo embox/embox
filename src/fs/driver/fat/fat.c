@@ -1744,17 +1744,20 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	struct dirinfo di;
 	struct dirent de;
 	char name[MSDOS_NAME + 2];
-	char full_path[PATH_MAX];
+	char dir_path[PATH_MAX];
 	struct nas *nas;
 	struct fat_file_info *fi;
+	struct fat_fs_info *fsi;
 	struct node *node;
 	mode_t mode;
 
-	di.p_scratch = malloc(((struct fat_fs_info *)parent_nas->fs->fsi)->vi.bytepersec);
+	fsi = (struct fat_fs_info *)parent_nas->fs->fsi;
 
-	vfs_get_relative_path(parent_nas->node, full_path, PATH_MAX);
+	di.p_scratch = malloc(fsi->vi.bytepersec);
 
-	if (fat_open_dir(parent_nas, (uint8_t *) full_path, &di)) {
+	vfs_get_relative_path(parent_nas->node, dir_path, PATH_MAX);
+
+	if (fat_open_dir(parent_nas, (uint8_t *) dir_path, &di)) {
 		free(di.p_scratch);
 		return -ENODEV;
 	}
@@ -2006,7 +2009,7 @@ static int fatfs_mount(void *dev, void *dir) {
 	memset(fi, 0, sizeof(struct fat_file_info));
 	dir_nas->fi->privdata = (void *) fi;
 	((struct fat_fs_info *) dir_nas->fs->fsi)->bdev = dir_nas->fs->bdev;
-	((struct fat_fs_info *) dir_nas->fs->fsi)->root = dev_node;
+	((struct fat_fs_info *) dir_nas->fs->fsi)->root = dir_node;
 
 	return fat_mount_files(dir_nas);
 
