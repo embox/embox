@@ -1,8 +1,12 @@
 
 package embox.arch.usermode86
 
+@Build(stage=1,script="$(EXTERNAL_MAKE) build")
 module host {
-	@Rule(script="$(MAKE) -C $(SRC_DIR)/arch/usermode86/host MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)'")
-	source "../../../../../../usermode_host/host.o"
-	source "empty.c"
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source "host_ctx.o",
+		"host_irq.c",
+		"host_main.c",
+		"host_net.c",
+		"host_timer.c"
 }
