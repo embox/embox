@@ -35,7 +35,10 @@ static const struct net_pack_out_ops packet_out_ops_struct;
 static const struct net_pack_out_ops *const packet_out_ops = &packet_out_ops_struct;
 EMBOX_NET_FAMILY(AF_PACKET, packet_types, packet_out_ops);
 
-static const struct sock_proto_ops packet_sock_ops_struct;
+static DLIST_DEFINE(packet_sock_list);
+static const struct sock_proto_ops packet_sock_ops_struct = {
+	.sock_list = &packet_sock_list
+};
 EMBOX_NET_SOCK(AF_PACKET, SOCK_RAW, 0x300 /*htons(ETH_P_ALL)*/, 0, packet_sock_ops_struct);
 
 struct packet_sock {
