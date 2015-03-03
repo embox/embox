@@ -9,8 +9,10 @@
 #include <string.h>
 
 #include <embox/block_dev.h>
-#include "stm32f4_discovery_sdio_sd.h"
+#include <framework/mod/options.h>
 #include <kernel/time/ktime.h>
+
+#include "stm32f4_discovery_sdio_sd.h"
 
 static int stm32f4_sd_init(void *arg);
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size);
@@ -18,6 +20,7 @@ static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
 
 #define STM32F4_SD_DEVNAME "stm32f4_sd_card"
+#define SD_BUF_SIZE OPTION_GET(NUMBER, sd_buf_size)
 
 block_dev_driver_t stm32f4_sd_driver = {
 	.name = STM32F4_SD_DEVNAME,
@@ -57,18 +60,21 @@ static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t s
 	}
 }
 
+static uint8_t sd_buf[SD_BUF_SIZE];
+
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	int res;
+	res = SD_ReadBlock((uint8_t*) sd_buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
 	while (SD_GetStatus() != SD_TRANSFER_OK);
-	res = SD_ReadBlock((uint8_t*) buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
-	while (SD_GetStatus() != SD_TRANSFER_OK);
+
+	memcpy(buf, sd_buf, SECTOR_SIZE);
 	return res;
 }
 
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	int res;
-	while (SD_GetStatus() != SD_TRANSFER_OK);
-	res = SD_WriteBlock((uint8_t*) buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	memcpy(sd_buf, buf, SECTOR_SIZE);
+	res = SD_WriteBlock((uint8_t*) sd_buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
 	while (SD_GetStatus() != SD_TRANSFER_OK);
 	return res;
 }
