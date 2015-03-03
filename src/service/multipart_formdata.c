@@ -133,6 +133,7 @@ out_header:
 			"Content-Type: %s\r\n"
 			"Connection: close\r\n"
 			"\r\n", httpcode, "OK", "text/plain");
+		fflush(stdout);
 	}
 
 	return 0;

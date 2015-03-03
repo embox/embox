@@ -1,7 +1,14 @@
 <div ng-controller="CncCtrl">
 	<p><span>{{live}}</span></p>
-        <button type="submit" class="btn btn-danger"
-          ng-click="run()">Run</button>
+	<button type="submit" class="btn btn-danger"
+		ng-click="run()">Run</button>
+	<form action="cgi-bin/multipart_formdata"
+		enctype="multipart/form-data"
+		method="post">
+		What files are you sending?
+		<input type="file" name="files"><br>
+		<input type="submit" value="Send">
+	</form>
 
 <!--
 	<div id="wb_Text1" style="margin:0;padding:0;position:absolute;left:22px;top:41px;width:98px;height:19px;text-align:left;z-index:0;">
