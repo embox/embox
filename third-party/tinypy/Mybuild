@@ -1,7 +1,20 @@
-package third_party.tinypy
+package third_party
 
-module tinypy_core {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
+@AutoCmd
+@Cmd(name = "tinypy",
+	help = "Python interpreter",
+	man = '''
+		NAME
+			tinypy - Python interpreter
+		SYNOPSIS
+			tinypy [script]
+		AUTHORS
+			Nikolay Korotkiy
+	''')
+module tinypy {
+	@IncludePath("$(THIRDPARTY_DIR)/tinypy")
+	source "tinypy.c"
+
 	@IncludePath("$(SRC_DIR)/include/util")
 	source "tp.c"
 
@@ -11,4 +24,5 @@ module tinypy_core {
 	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.compat.libc.stdlib.system
+	depends embox.framework.LibFramework
 }
