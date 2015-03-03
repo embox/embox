@@ -1745,20 +1745,17 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	struct dirent de;
 	char name[MSDOS_NAME + 2];
 	char dir_path[PATH_MAX];
+	char dir_buff[FAT_MAX_SECTOR_SIZE];
 	struct nas *nas;
 	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
 	struct node *node;
 	mode_t mode;
 
-	fsi = (struct fat_fs_info *)parent_nas->fs->fsi;
-
-	di.p_scratch = malloc(fsi->vi.bytepersec);
+	di.p_scratch = (uint8_t *) dir_buff;
 
 	vfs_get_relative_path(parent_nas->node, dir_path, PATH_MAX);
 
 	if (fat_open_dir(parent_nas, (uint8_t *) dir_path, &di)) {
-		free(di.p_scratch);
 		return -ENODEV;
 	}
 
@@ -1773,14 +1770,12 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 		}
 
 		if (NULL == (fi = pool_alloc(&fat_file_pool))) {
-			free(di.p_scratch);
 			return -ENOMEM;
 		}
 
 		mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
 		if (NULL == (node = vfs_subtree_create_child(parent_nas->node, name, mode))) {
-			free(di.p_scratch);
 			pool_free(&fat_file_pool, fi);
 			return -ENOMEM;
 		}
@@ -1796,7 +1791,6 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 		}
 	}
 
-	free(di.p_scratch);
 	return ENOERR;
 }
 
