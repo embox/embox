@@ -9,8 +9,11 @@ static module tclsh_export_scripts {
 		"tclIndex"
 
 	@InitFS
-	source "../example/tcp_server.tcl",
-		"../example/udp_server.tcl"
+	@AddPrefix("../example")
+	source "tcp_server.tcl",
+		"udp_server.tcl",
+		"fib.tcl",
+		"run_embox_cmd.tcl"
 }
 
 @Build(stage=2, script="$(EXTERNAL_MAKE)")

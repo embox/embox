@@ -8,6 +8,7 @@
 
 "export PWD=/",
 "export HOME=/",
+"export TCL_LIBRARY=/",
 
 "tinypy fib.py",
 
@@ -18,3 +19,4 @@
 "lua tofi_mod.lua new_file.txt",
 "cat new_file.txt",
 "lua http_request.lua http://ya.ru",
+"tclsh fib.py",
