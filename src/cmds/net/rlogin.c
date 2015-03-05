@@ -41,10 +41,10 @@
 #define MODE_RAW      R_RAW
 
 #define RCVBUFFER_SIZE 256
+#define RLOGIN_USERBUF_LEN 128
 
-/* FIXME cheat for now */
-static const char *client = "embox";
-static const char *term = "dumb/38000";
+#define RLOGIN_DEFAULT_CLIENT "embox"
+#define RLOGIN_TERM_SPEC "dumb/38000"
 
 static void print_usage(void) {
 	printf("Usage: rlogin [-l username] <server> \n");
@@ -60,38 +60,43 @@ static void print_usage(void) {
 	} while (0);
 #endif
 
+struct rlogin_state {
+	int state;
+	int mode;
+};
+
 /**
  * @brief handle code if it is control byte
  * @return result if @c code is control byte
  * @retval -1 if not
  * @retval 0 if it is
  */
-static int handle_cntl_byte(unsigned char code, int *state, int *mode) {
+static int handle_cntl_byte(unsigned char code, struct rlogin_state *rs) {
 	switch (code) {
 	case R_DISCARD_All:
-		*state = R_STOP;
+		rs->state = R_STOP;
 		break;
 	case R_RAW:
-		*mode = MODE_RAW;
+		rs->mode = MODE_RAW;
 		break;
 	case R_RESUME:
-		if (*mode == MODE_RAW) {
-			*state = R_START;
-			*mode = MODE_COOKED;
+		if (rs->mode == MODE_RAW) {
+			rs->state = R_START;
+			rs->mode = MODE_COOKED;
 			break;
 		}
 		return -EINVAL;
 	case R_WINDOW_SZ:
 		break;
 	case R_START:
-		if (*mode != MODE_RAW) {
-			*state = R_START;
+		if (rs->mode != MODE_RAW) {
+			rs->state = R_START;
 			break;
 		}
 		return -EINVAL;
 	case R_STOP:
-		if (*mode != MODE_RAW) {
-			*state = R_STOP;
+		if (rs->mode != MODE_RAW) {
+			rs->state = R_STOP;
 		} else {
 			return -EINVAL;
 		}
@@ -103,113 +108,136 @@ static int handle_cntl_byte(unsigned char code, int *state, int *mode) {
 	return 0;
 }
 
-static size_t rlogin_write(int fd, struct ring_buff *rbuf, size_t size) {
-	unsigned char b[RCVBUFFER_SIZE];
-	size_t res;
+static int rlogin_handle_cntl(unsigned char *bufout, unsigned char *bufin, size_t blen,
+		struct rlogin_state *rs) {
+	unsigned char *bop = bufout;
+	unsigned char *bip = bufin;
 
-	ring_buff_dequeue(rbuf, b, size);
-	res = write(fd, b, size);
-	ring_buff_enqueue(rbuf, (b+res), size - res);
+	while (bip < bufin + blen) {
+		unsigned char c = *bip++;
+		if (handle_cntl_byte(c, rs) && rs->state != R_STOP) {
+			*bop++ = c;
+		}
+	}
+	return bop - bufout;
+}
 
-	return res;
+/* XXX NVT terminal requires '\r' as enter */
+static void rlogin_fix_nr(unsigned char *buf, size_t blen) {
+	for (int i = 0; i < blen; i++) {
+		if (buf[i] == '\n') {
+			buf[i] = '\r';
+		}
+	}
+}
+
+static int rlogin_write(int fd, unsigned char *buf, size_t *size) {
+	int nwrite;
+	assert(*size > 0);
+	nwrite = write(fd, buf, *size);
+	if (0 < nwrite) {
+		*size -= nwrite;
+		memmove(buf, buf + nwrite, *size);
+	}
+	return nwrite;
 }
 
 static int rlogin_handle(int sock) {
+	unsigned char io2net[RCVBUFFER_SIZE], net2io[RCVBUFFER_SIZE];
+	size_t io2net_blen, net2io_blen;
 	fd_set readfds, writefds;
-	/*unsigned char c;*/
-	unsigned char sock_storage[RCVBUFFER_SIZE], stdin_storage[RCVBUFFER_SIZE];
-	struct ring_buff sock_buf, stdin_buf;
-	int state = R_START, mode = MODE_COOKED;
 	struct termios tios;
+	struct rlogin_state rs;
 	int c_lflags;
-	int err = 0;
+
+	rs.state = R_START;
+	rs.mode = MODE_COOKED;
 
 	tcgetattr(STDIN_FILENO, &tios);
 	c_lflags = tios.c_lflag;
 	tios.c_lflag &= ~(ICANON | ECHO);
 	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
 
-	ring_buff_init(&stdin_buf, 1, RCVBUFFER_SIZE, stdin_storage);
-	ring_buff_init(&sock_buf, 1, RCVBUFFER_SIZE, sock_storage);
-
+	io2net_blen = net2io_blen = 0;
 	while (1) {
-		int sock_data_len, stdin_data_len;
-
-		stdin_data_len = ring_buff_get_cnt(&stdin_buf);
-		sock_data_len = ring_buff_get_cnt(&sock_buf);
-
 		FD_ZERO(&readfds);
 		FD_ZERO(&writefds);
 
-		FD_SET(sock, &readfds);
-		FD_SET(STDIN_FILENO, &readfds);
-		if (stdin_data_len > 0) {
+		if (io2net_blen > 0) {
 			FD_SET(sock, &writefds);
-		}
-		if (sock_data_len > 0) {
-			FD_SET(STDOUT_FILENO, &writefds);
+		} else {
+			FD_SET(STDIN_FILENO, &readfds);
 		}
 
-		select(sock + 1, &readfds, &writefds, NULL, NULL);
+		if (net2io_blen > 0) {
+			FD_SET(STDOUT_FILENO, &writefds);
+		} else {
+			FD_SET(sock, &readfds);
+		}
+
+		if (0 >= select(sock + 1, &readfds, &writefds, NULL, NULL)) {
+			continue;
+		}
 
 		if (FD_ISSET(sock, &writefds)) {
-			if ((err = rlogin_write(sock, &stdin_buf, stdin_data_len)) < 0) {
-				/*goto reset_out;*/
+			assert(io2net_blen > 0);
+			if (0 > rlogin_write(sock, io2net, &io2net_blen)) {
+				break;
 			}
 		}
 
 		if (FD_ISSET(STDOUT_FILENO, &writefds)) {
-			if ((err = rlogin_write(STDOUT_FILENO, &sock_buf, sock_data_len)) < 0) {
-				/*goto reset_out;*/
-			}
+			assert(net2io_blen > 0);
+			rlogin_write(STDOUT_FILENO, net2io, &net2io_blen);
 		}
 
 		if (FD_ISSET(STDIN_FILENO, &readfds)) {
-			char in_buf[4];
-			if ((err = read(STDIN_FILENO, in_buf, 4)) < 0) {
-				/*goto reset_out;*/
+			assert(io2net_blen == 0);
+			io2net_blen = read(STDIN_FILENO, io2net, sizeof(io2net));
+			if (io2net_blen > 0) {
+				rlogin_fix_nr(io2net, io2net_blen);
 			}
-#if 1
-			for (int i = 0; i < err; i++) {
-			/* XXX NVT terminal requires '\r' as enter */
-				if (in_buf[i] == '\n') {
-					in_buf[i] = '\r';
-				}
-			}
-#endif
-			ring_buff_enqueue(&stdin_buf, in_buf, err);
 		}
 
 		if (FD_ISSET(sock, &readfds)) {
-			unsigned char buf[RCVBUFFER_SIZE];
-			int cur = 0;
+			assert(net2io_blen == 0);
+			net2io_blen = read(sock, net2io, sizeof(net2io));
 
-			if ((err = read(sock, buf, ring_buff_get_space(&sock_buf))) < 0) {
-				/*goto reset_out;*/
+			if (net2io_blen <= 0) {
+				break;
 			}
 
-			do {
-				if (handle_cntl_byte(buf[cur], &state, &mode) && state != R_STOP) {
-					ring_buff_enqueue(&sock_buf, &buf[cur], 1);
-				}
-			} while(++cur != err);
+			net2io_blen = rlogin_handle_cntl(net2io, net2io, net2io_blen, &rs);
 		}
-	} /* while (1) */
+	}
 
-/*reset_out:*/
 	tios.c_lflag = c_lflags;
 	tcsetattr(STDIN_FILENO, TCSANOW, &tios);
 
-	return err;
+	return 0;
+}
+
+static int rlogin_send_user(int sock, const char *user) {
+	char buf[RLOGIN_USERBUF_LEN];
+	const int userlen = strlen(user);
+	int res;
+
+	strncpy(buf, user, RLOGIN_USERBUF_LEN);
+	strncpy(buf + userlen + 1, user, RLOGIN_USERBUF_LEN - (userlen + 1));
+	strncpy(buf + 2 * (userlen + 1), RLOGIN_TERM_SPEC, RLOGIN_USERBUF_LEN - 2 * (userlen + 1));
+	if (write(sock, buf, 2 * (userlen + 1) + strlen(RLOGIN_TERM_SPEC) + 1) < 0) {
+		res = -errno;
+	} else {
+		res = 0;
+	}
+	return res;
 }
 
 int main(int argc, char **argv) {
 	static int tries = 0;
 	int res = -1, sock, opt;
 	struct sockaddr_in our, dst;
-	int len;
-	char *buf;
-	char *server = (char*)client;
+	const char *user = RLOGIN_DEFAULT_CLIENT;
 
 	if (argc < 2) {
 		print_usage();
@@ -223,7 +251,7 @@ int main(int argc, char **argv) {
 			print_usage();
 			return 0;
 		case 'l':
-			server = optarg;
+			user = optarg;
 			break;
 		default:
 			printf("error: unsupported option %c\n", optopt);
@@ -237,13 +265,6 @@ int main(int argc, char **argv) {
 	}
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons(RLOGIN_PORT);
-
-	len = strlen(client) + strlen(server) + strlen(term) + 3;
-	buf = malloc(len);
-	if (buf == NULL) {
-		return -ENOMEM;
-	}
-	memset(buf, 0, len);
 
 	our.sin_family = AF_INET;
 	our.sin_port= htons(RLOGIN_PORT + tries++);
@@ -268,30 +289,17 @@ int main(int argc, char **argv) {
 	RLOGIN_DEBUG(printf("connected\n"));
 
 	/* send Handshake */
-	if (write(sock, buf, 1) < 0) {
+	if (write(sock, "", 1) < 0) {
 		res = -errno;
 		goto exit;
 	}
 
-	len = 0;
-	memcpy(buf, client, strlen(client));
-	len += strlen(client) + 1;
-
-	memcpy(buf + len, server, strlen(server));
-	len += strlen(server) + 1;
-
-	memcpy(buf + len, term, strlen(term));
-	len += strlen(term) + 1;
-	/* send user info */
-	if (write(sock, buf, len) < 0) {
-		res = -errno;
+	if (0 > (res = rlogin_send_user(sock, user))) {
 		goto exit;
 	}
 
 	res = rlogin_handle(sock);
-
 exit:
-	free(buf);
 	close(sock);
 	return res;
 }
