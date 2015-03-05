@@ -19,4 +19,5 @@
 "lua tofi_mod.lua new_file.txt",
 "cat new_file.txt",
 "lua http_request.lua http://ya.ru",
+"tclsh run_embox_cmd.tcl",
 "tclsh fib.tcl",
