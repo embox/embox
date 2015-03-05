@@ -1,6 +1,7 @@
 package third_party
 
 @AutoCmd
+@Build(script="$(EXTERNAL_MAKE)")
 @Cmd(name = "tinypy",
 	help = "Python interpreter",
 	man = '''
@@ -9,17 +10,10 @@ package third_party
 		SYNOPSIS
 			tinypy [script]
 		AUTHORS
-			Nikolay Korotkiy
+			Nikolay Korotkiy - original port
 	''')
 module tinypy {
-	@IncludePath("$(THIRDPARTY_DIR)/tinypy")
-	source "tinypy.c"
-
-	@IncludePath("$(SRC_DIR)/include/util")
-	source "tp.c"
-
-	@InitFS
-	source "fib.py", "py2bc.py"
+	source "^BUILD/extbld/^MOD_PATH/install/tinypy.o"
 
 	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
