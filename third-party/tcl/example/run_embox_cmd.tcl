@@ -1,1 +1,3 @@
-[exec help]
+puts [exec help]
+puts [exec ls]
+

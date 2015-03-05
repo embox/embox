@@ -26,6 +26,7 @@ static module core {
 	depends tclsh_export_scripts
 }
 
+@App
 @Build(stage=2,script="true")
 @BuildDepends(core)
 @Cmd(name = "tclsh",
