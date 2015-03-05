@@ -23,6 +23,8 @@
 #define NI_MAXHOST 1025 // is not POSIX
 #define NI_MAXSERV 32   // is not POSIX
 
+struct utimbuf;
+
 static inline void tzset (void) {
 	printf("tcl>>> %s\n", __func__);
 	return;

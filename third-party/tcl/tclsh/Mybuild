@@ -27,6 +27,7 @@ static module core {
 }
 
 @App
+@AutoCmd(preserve_locals=true)
 @Build(stage=2,script="true")
 @BuildDepends(core)
 @Cmd(name = "tclsh",
@@ -36,9 +37,8 @@ static module core {
 			Alexander Kalmuk
 	''')
 module tclsh {
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	@AddPrefix("^BUILD/extbld/third_party/tcl/core/install")
-	source "strip.tclsh.o"
+	source "tclsh.o"
 
 	@NoRuntime depends third_party.tcl.core
 	depends embox.compat.posix.stubs
