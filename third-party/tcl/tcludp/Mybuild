@@ -8,4 +8,8 @@ static module tcludp {
 
 	depends embox.compat.posix.LibPosix
 	@NoRuntime depends third_party.tcl.core
+
+	@InitFS
+	@AddPrefix("../example")
+	source "tcludp_localhost.tcl"
 }

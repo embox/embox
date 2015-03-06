@@ -21,3 +21,4 @@
 "lua http_request.lua http://ya.ru",
 "tclsh run_embox_cmd.tcl",
 "tclsh fib.tcl",
+"tclsh tcludp_localhost.tcl",
