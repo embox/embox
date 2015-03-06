@@ -20,7 +20,6 @@
 
 #include <mem/page.h>
 #include <mem/phymem.h>
-#include <cmd/mkfs.h>
 
 #define XATTR_MAX_BSIZE  (1024*4)
 

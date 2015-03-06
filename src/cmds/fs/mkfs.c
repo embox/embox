@@ -19,7 +19,6 @@
 #include <drivers/ramdisk.h>
 
 #include <mem/page.h>
-#include <cmd/mkfs.h>
 
 #include <err.h>
 
