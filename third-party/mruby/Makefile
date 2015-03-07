@@ -25,4 +25,6 @@ $(BUILD) :
 
 $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/build/embox/bin/mrbc $(PKG_INSTALL_DIR)/mrbc.o
+	cp $(PKG_SOURCE_DIR)/build/embox/bin/mirb $(PKG_INSTALL_DIR)/mibc.o
+	cp $(PKG_SOURCE_DIR)/build/embox/bin/mruby $(PKG_INSTALL_DIR)/mruby.o
 	touch $@

@@ -1,14 +1,19 @@
-package third_party.cmd
+package third_party.mruby
 
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 @App
 @AutoCmd
-@Cmd(name = "mrbc",
-	help = "ruby interpreter",
+@Cmd(name = "mruby",
+	help = "mruby translator",
 	man = '''
 	''')
 module mruby {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	source "mrbc.o"
+	source "mruby.o"
+//	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+//	source "mirb.o"
+//	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+//	source "mrbc.o"
+	@InitFS
+	source "hello.rb"
 }
-

@@ -28,7 +28,7 @@ MRuby::CrossBuild.new('embox') do |conf|
   conf.linker.flags = ENV['CROSS_LDFLAGS']
   conf.archiver.command = ENV['CROSS_AR']
 
-  conf.bins = %w(mrbc mruby mirb)
+  #conf.bins = %w(mrbc mruby mirb)
   #conf.bins = %w(mrbc)
 
   #do not build executable test
@@ -38,7 +38,10 @@ MRuby::CrossBuild.new('embox') do |conf|
   #conf.disable_cxx_exception
 
   #gems from core
-  #conf.gem :core => "mruby-print"
+  conf.gem :core => 'mruby-bin-mirb'
+  conf.gem :core => 'mruby-bin-mruby'
+
+  conf.gem :core => "mruby-print"
   #conf.gem :core => "mruby-math"
   #conf.gem :core => "mruby-enum-ext"
 
