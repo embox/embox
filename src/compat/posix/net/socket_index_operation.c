@@ -102,16 +102,14 @@ static int socket_status(struct idesc *desc, int status_nr) {
 	res = 0;
 
 	if (status_nr & POLLIN) {
-		/* how many we can read */
-		res += sk->rx_data_len;
+		res += sk->rx_data_len + sk->opt.so_error;
 	}
-
 	if (status_nr & POLLOUT) {
-		/* how many we can write */
-		res += 0x600;
+		res += 0x600 + sk->opt.so_error;
 	}
-
-	res += sk->opt.so_error; //TODO Where is errors counter
+	if (status_nr & POLLERR) {
+		res += sk->opt.so_error;
+	}
 
 	return res;
 }
