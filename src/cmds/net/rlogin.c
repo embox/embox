@@ -108,7 +108,7 @@ static int handle_cntl_byte(unsigned char code, struct rlogin_state *rs) {
 	return 0;
 }
 
-static int rlogin_handle_cntl(unsigned char *bufout, unsigned char *bufin, size_t blen,
+static int rlogin_handle_cntl(unsigned char *bufout, unsigned char *bufin, int blen,
 		struct rlogin_state *rs) {
 	unsigned char *bop = bufout;
 	unsigned char *bip = bufin;
@@ -123,7 +123,7 @@ static int rlogin_handle_cntl(unsigned char *bufout, unsigned char *bufin, size_
 }
 
 /* XXX NVT terminal requires '\r' as enter */
-static void rlogin_fix_nr(unsigned char *buf, size_t blen) {
+static void rlogin_fix_nr(unsigned char *buf, int blen) {
 	for (int i = 0; i < blen; i++) {
 		if (buf[i] == '\n') {
 			buf[i] = '\r';
@@ -131,7 +131,7 @@ static void rlogin_fix_nr(unsigned char *buf, size_t blen) {
 	}
 }
 
-static int rlogin_write(int fd, unsigned char *buf, size_t *size) {
+static int rlogin_write(int fd, unsigned char *buf, int *size) {
 	int nwrite;
 	assert(*size > 0);
 	nwrite = write(fd, buf, *size);
@@ -144,7 +144,7 @@ static int rlogin_write(int fd, unsigned char *buf, size_t *size) {
 
 static int rlogin_handle(int sock) {
 	unsigned char io2net[RCVBUFFER_SIZE], net2io[RCVBUFFER_SIZE];
-	size_t io2net_blen, net2io_blen;
+	int io2net_blen, net2io_blen;
 	fd_set readfds, writefds;
 	struct termios tios;
 	struct rlogin_state rs;
