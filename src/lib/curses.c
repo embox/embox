@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief http://pubs.opengroup.org/onlinepubs/7908799/xcurses/curses.h.html
  *
  * @date 26.02.13
  * @author Ilia Vaprol
@@ -9,12 +9,13 @@
 #include <assert.h>
 #include <curses.h>
 #include <errno.h>
-#include <mem/misc/pool.h>
 #include <string.h>
-#include <util/math.h>
 #include <termios.h>
 #include <stdio.h>
+
+#include <util/math.h>
 #include <util/array.h>
+#include <mem/misc/pool.h>
 
 int COLS;
 int LINES;
