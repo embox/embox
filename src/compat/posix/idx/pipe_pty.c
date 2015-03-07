@@ -310,7 +310,6 @@ static int pty_master_status(struct idesc *idesc, int mask) {
 static int pty_slave_status(struct idesc *idesc, int mask) {
 	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
 	struct pty *pty = ipty->pty;
-	int res;
 
 	/* if master is closed read/write/err will not block and will
  	 * cause error */
@@ -318,20 +317,7 @@ static int pty_slave_status(struct idesc *idesc, int mask) {
 		return 1;
 	}
 
-	switch (mask) {
-	case POLLIN:
-		res = ring_can_read(&pty_to_tty(pty)->i_ring, TTY_IO_BUFF_SZ, 1);
-		break;
-	case POLLOUT:
-		res = ring_can_write(&pty_to_tty(pty)->o_ring, TTY_IO_BUFF_SZ, 1);
-		break;
-	default:
-	case POLLERR:
-		res = 0;
-		break;
-	}
-
-	return res;
+	return tty_status(pty_to_tty(pty), mask);
 }
 
 int ppty(int ptyfds[2]) {
