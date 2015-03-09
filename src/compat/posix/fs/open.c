@@ -14,7 +14,6 @@
 #include <libgen.h>
 
 #include <util/array.h>
-#include <fs/posix.h>
 #include <fs/vfs.h>
 
 #include <fs/kfile.h>
