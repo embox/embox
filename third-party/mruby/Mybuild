@@ -15,5 +15,5 @@ module mruby {
 //	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 //	source "mrbc.o"
 	@InitFS
-	source "hello.rb"
+	source "fib.rb"
 }
