@@ -63,6 +63,7 @@ static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t s
 static uint8_t sd_buf[SD_BUF_SIZE];
 
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
+	assert(count <= SD_BUF_SIZE);
 	int res;
 	res = SD_ReadBlock((uint8_t*) sd_buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
 	while (SD_GetStatus() != SD_TRANSFER_OK);
@@ -72,6 +73,7 @@ static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 }
 
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
+	assert(count <= SD_BUF_SIZE);
 	int res;
 	memcpy(sd_buf, buf, SECTOR_SIZE);
 	res = SD_WriteBlock((uint8_t*) sd_buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
