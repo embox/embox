@@ -14,6 +14,8 @@
 
 "chibi-scheme -xscheme fib.scm",
 
+"mruby fib.rb",
+
 "lua fib.lua",
 "lua doit.lua",
 "lua tofi_mod.lua new_file.txt",
