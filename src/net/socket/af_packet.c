@@ -165,7 +165,21 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 		n_byte = skb_write_iovec(skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw),
 				msg->msg_iov, msg->msg_iovlen);
 	} else if (sk->opt.so_type == SOCK_RAW) {
-		n_byte = skb_write_iovec(skb->mac.raw, skb->len, msg->msg_iov, msg->msg_iovlen);
+		/*
+		 * See https://www.kernel.org/doc/Documentation/networking/tuntap.txt
+		 * section 3.2 Frame format.
+		 * XXX Suppose flag IFF_NO_PI is always set. It is used for raw sockets,
+		 * when Embox's kernel passes the whole packet starting from IP header to an user program.
+		 *
+		 * TODO: The code below is workaround to emulate behaviour of TUN described by link above.
+		 * The problem is that Embox's TUN (src/drivers/tun.c) fill MAC, but it should'nt.
+		 */
+		if (!strncmp(skb->dev->name, "tun", 3)) {
+			n_byte = skb_write_iovec(skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw),
+					msg->msg_iov, msg->msg_iovlen);
+		} else {
+			n_byte = skb_write_iovec(skb->mac.raw, skb->len, msg->msg_iov, msg->msg_iovlen);
+		}
 	}
 
 	skb_free(skb);
