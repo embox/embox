@@ -41,7 +41,7 @@ struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, 
 }
 
 struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
-		struct node *root, const char *dev, const char *fs_type) {
+		struct node *root, const char *dev) {
 	struct mount_descriptor *mdesc;
 
 	assert(mnt_point_path->mnt_desc != NULL ||
@@ -82,8 +82,6 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 
 	strncpy(mdesc->mnt_dev, dev, MOUNT_DESC_STRINFO_LEN);
 	mdesc->mnt_dev[MOUNT_DESC_STRINFO_LEN - 1] = '\0';
-	strncpy(mdesc->mnt_fstype, fs_type, MOUNT_DESC_STRINFO_LEN);
-	mdesc->mnt_fstype[MOUNT_DESC_STRINFO_LEN - 1] = '\0';
 
 	return mdesc;
 }

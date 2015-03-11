@@ -59,7 +59,7 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 
 	vfs_add_leaf(node, root_node);
 
-	mdesc = mount_table_add(&path, root_node, "", "");
+	mdesc = mount_table_add(&path, root_node, "");
 	assert(mdesc);
 
 	return 0;

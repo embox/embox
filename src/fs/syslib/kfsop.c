@@ -323,7 +323,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 
 	}
 
-	if (NULL == mount_table_add(&dir_node, root_path.node, dev, fs_type)) {
+	if (NULL == mount_table_add(&dir_node, root_path.node, dev)) {
 		drv->fsop->umount(&dir_node);
 		//todo free root
 		errno = -res;
