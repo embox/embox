@@ -1,0 +1,9 @@
+
+package third_party.lib
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+static module OpenLibm {
+	source "^BUILD/extbld/^MOD_PATH/install/libopenlibm.a"
+	source "../../../build/extbld/third_party/lib/OpenLibm/install/openlibm_math.h"
+
+}
