@@ -30,10 +30,10 @@ proc run_all_tests {} {
 		}
 
 		exec cat .tmp.txt >> $logfile
-		puts [exec cat .tmp.txt]
 
 		if { $status != 0 } {
 			puts "    autotest: FAILED (error code = $status)"
+			puts [exec cat .tmp.txt]
 			exit 1
 		} else {
 			puts "    autotest: PASSED"
