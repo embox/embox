@@ -1,7 +1,0 @@
-
-package third_party.lib
-
-@Build(stage=1, script="$(EXTERNAL_MAKE)")
-static module Fdlibm2005 {
-	source "^BUILD/extbld/^MOD_PATH/install/fdlibm.a"
-}
