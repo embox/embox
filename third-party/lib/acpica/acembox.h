@@ -10,7 +10,7 @@
 #define ACPICA_PLATFORM_ACEMBOX_H_
 
 #include <limits.h>
-#include <acpica/platform/acgcc.h>
+#include <platform/acgcc.h>
 
 #define ACPI_MACHINE_WIDTH WORD_BIT
 

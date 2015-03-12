@@ -16,7 +16,7 @@
 
 #include <embox/unit.h>
 
-#include <acpica/acpi.h>
+#include <acpi.h>
 
 //#define HPET_DEBUG
 

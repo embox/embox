@@ -21,7 +21,7 @@
 #include <stdlib.h>
 
 #include <asm/io.h>
-#include <acpica/acpi.h>
+#include <acpi.h>
 #include <kernel/printk.h>
 #include <kernel/thread.h>
 #include <kernel/time/ktime.h>

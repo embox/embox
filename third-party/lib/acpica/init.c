@@ -8,7 +8,7 @@
 
 #include <embox/unit.h>
 #include <kernel/printk.h>
-#include <acpica/acpi.h>
+#include <acpi.h>
 
 EMBOX_UNIT_INIT(init);
 

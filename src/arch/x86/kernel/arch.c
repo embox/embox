@@ -12,7 +12,7 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 #include <kernel/printk.h>
-#include <acpica/acpi.h>
+#include <acpi.h>
 
 extern void cpu_triple_reset(void);
 

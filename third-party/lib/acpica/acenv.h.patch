@@ -1,0 +1,61 @@
+--- acpica-unix-20150204/source/include/platform/acenv.h	2015-02-05 00:12:05.000000000 +0300
++++ acpica-unix-20150204/source/include/platform/acenv.new.h	2015-03-12 14:01:01.716351636 +0300
+@@ -240,57 +240,7 @@
+  *
+  *****************************************************************************/
+ 
+-#if defined(_LINUX) || defined(__linux__)
+-#include "aclinux.h"
+-
+-#elif defined(_APPLE) || defined(__APPLE__)
+-#include "acmacosx.h"
+-
+-#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
+-#include "acfreebsd.h"
+-
+-#elif defined(__NetBSD__)
+-#include "acnetbsd.h"
+-
+-#elif defined(__sun)
+-#include "acsolaris.h"
+-
+-#elif defined(MODESTO)
+-#include "acmodesto.h"
+-
+-#elif defined(NETWARE)
+-#include "acnetware.h"
+-
+-#elif defined(_CYGWIN)
+-#include "accygwin.h"
+-
+-#elif defined(WIN32)
+-#include "acwin.h"
+-
+-#elif defined(WIN64)
+-#include "acwin64.h"
+-
+-#elif defined(_WRS_LIB_BUILD)
+-#include "acvxworks.h"
+-
+-#elif defined(__OS2__)
+-#include "acos2.h"
+-
+-#elif defined(_AED_EFI)
+-#include "acefi.h"
+-
+-#elif defined(_GNU_EFI)
+-#include "acefi.h"
+-
+-#elif defined(__HAIKU__)
+-#include "achaiku.h"
+-
+-#else
+-
+-/* Unknown environment */
+-
+-#error Unknown target environment
+-#endif
++#include <acembox.h>
+ 
+ /*! [End] no source code translation !*/
+ 
