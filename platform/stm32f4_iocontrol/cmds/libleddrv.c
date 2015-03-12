@@ -69,3 +69,11 @@ int leddrv_updatestates(unsigned char new_leds_state[LEDDRV_LED_N]) {
 	leddrv_ll_do_update();
 	return 0;
 }
+
+int leddrv_geterrors(unsigned char leds_error[LEDDRV_LED_N]) {
+	int i;
+	for (i = 0; i < LEDDRV_LED_N; ++i) {
+		leds_error[i] = !!leddrv_ll_error(i);
+	}
+	return 0;
+}

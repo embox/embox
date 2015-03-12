@@ -19,4 +19,6 @@ extern int leddrv_clr(unsigned int led_n);
 extern int leddrv_getstates(unsigned char leds_state[LEDDRV_LED_N]);
 extern int leddrv_updatestates(unsigned char new_leds_state[LEDDRV_LED_N]);
 
+extern int leddrv_geterrors(unsigned char leds_error[LEDDRV_LED_N]);
+
 #endif /* LIBLEDDRV_H_ */

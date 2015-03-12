@@ -31,12 +31,15 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
     };
 
 }])
-.controller("LedsCtrl", ['$scope', '$http', '$window', '$modal', function($scope, $http, $window, $modal) {
+.controller("LedsCtrl", ['$scope', '$http', '$window', '$modal', '$interval', function($scope, $http, $window, $modal, $interval) {
+
+    $scope.leds_state = [];
+
     function ledStatesFromJson(data) {
         return data.map(function(int_state, index) {
             return {
                 index: index,
-                state: !!int_state
+                state: !!int_state,
             };
         });
     };
@@ -63,8 +66,6 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
             }
         });
     }
-
-    $scope.leds_state = [];
 
     $scope.update = function() {
         var leds_state = [];
@@ -113,7 +114,22 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
         });
     };
 
+    $scope.update_errors = function() {
+        $http.get('cgi-bin/cgi_cmd_wrapper?c=led_driver&a1=serialize_errors').success(function(data) {
+            $scope.leds_state.forEach(function(p) {
+                p.forEach(function(p2) {
+                    p2.error = data[p2.red.index] || data [p2.blue.index];
+                })
+            })
+        });
+    };
+
     $scope.update();
+
+    var error_update = $interval(function() { $scope.update_errors() }, 2000);
+    $scope.$on('$destroy', function () {
+        $interval.cancel(error_update);
+    });
 }])
 .controller("NameChangeCtrl", [ '$scope', '$modalInstance', 'name', function ($scope, $modalInstance, name) {
 

@@ -90,6 +90,12 @@ static const struct leddrv_pin_desc leddrv_datas[] = {
 
 static_assert(ARRAY_SIZE(leddrv_datas) == LINES_N);
 
+int leddrv_ll_error(int n) {
+	const uint16_t mask = GPIO_Pin_9 | GPIO_Pin_10;
+	int all_voltages = (GPIO_ReadInputData(GPIOD) & mask) == mask;
+	return !all_voltages;
+}
+
 void leddrv_ll_init(void) {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
@@ -121,6 +127,13 @@ void leddrv_ll_init(void) {
 
 	GPIO_InitStructure.GPIO_Pin = \
 		GPIO_Pin_8;
+	GPIO_Init(GPIOD, &GPIO_InitStructure);
+
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_2MHz;
+	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_IN;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
+	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_9;
 	GPIO_Init(GPIOD, &GPIO_InitStructure);
 }
 

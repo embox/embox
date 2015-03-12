@@ -12,6 +12,9 @@ if [ $REQUEST_METHOD = "GET" ]; then
 			STATES="0, 1"
 			echo [ $(printf "${STATES}, %.0s" {1..39}) $STATES ]
 			;;
+		"c=led_driver&a1=serialize_errors")
+			echo [ $(printf "0, %.0s" {1..79}) 1 ]
+			;;
 		"c=led_names&a1=serialize")
 			echo '[ "one", "two" ]'
 			;;
