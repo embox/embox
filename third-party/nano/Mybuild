@@ -1,7 +1,8 @@
 package third_party.cmd
 
-@Build(stage=2,script="$(EXTERNAL_MAKE)")
 @App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
 @Cmd(name = "nano",
 	help = "Text editor",
 	man = '''
@@ -13,9 +14,7 @@ package third_party.cmd
 			Ilia Vaprol - Adaptation for Embox
 	''')
 module nano {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
-	source "strip.nano.o"
+	source "^BUILD/extbld/^MOD_PATH/install/nano.o"
 
 	@NoRuntime depends embox.compat.posix.regex
 
