@@ -13,15 +13,6 @@ static module LibDl {
 	source "dl/dl_relocate.c"
 }
 
-static module LibM {
-	source "math/sin.S"
-	source "math/cos.S"
-	source "math/acos.S"
-	source "math/asin.S"
-	source "math/sqrt.S"
-	source "math/log10.S"
-}
-
 static module vfork extends embox.arch.vfork_entry {
 	source "vfork.S"
 

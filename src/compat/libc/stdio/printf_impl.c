@@ -144,22 +144,27 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 }
 
 #if OPTION_GET(NUMBER, support_floating)
-static int pow_int(int x, int y) {
-	/* FIXME Temporarily until powl not work */
-	int r;
-
-	r = 1;
-	while (y-- > 0)
-		r *= x;
-
-	return r;
-}
+#ifdef LONG_DOUBLE
+#define DOUBLE long double
+#define MODF modfl
+#define LOG10 log10l
+#define FMOD fmodl
+#define POW powl
+#define FABS fabsl
+#else
+#define DOUBLE double
+#define MODF modf
+#define LOG10 log10
+#define FMOD fmod
+#define POW pow
+#define FABS fabs
+#endif
 
 static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data, long double r, int width,
 		int precision, unsigned int ops, int base, int with_exp, int is_shortened) {
 	char buff[PRINT_F_BUFF_SZ], *str, *end, *prefix, *postfix;
-	long double ip, fp, ep;
+	DOUBLE ip, fp, ep;
 	int pc, i, ch, len, prefix_len, postfix_len, pad_count, sign_count, zero_left, letter_base;
 
 	assert(printchar_handler != NULL);
@@ -168,7 +173,7 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	postfix = end = str = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
-	prefix = signbitl(r) ? (r = -r, base == 16)
+	prefix = signbit(r) ? (r = -r, base == 16)
 				? ops & OPS_SPEC_UPPER_CASE ? "-0X" : "-0x"
 				: "-"
 			: ops & OPS_FLAG_WITH_SIGN ? base == 16
@@ -186,33 +191,33 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 				max(precision, 1) : precision
 			: base == 16 ? 12 : PRINT_F_PREC_DEFAULT;
 
-	fp = modfl(r, &ip);
+	fp = MODF(r, &ip);
 	if (with_exp || is_shortened) {
 		ep = 0.0L;
-		while (ip >= base) fp = modfl((ip + fp) / base, &ip), ep += 1.0L;
-		if (fp != 0.0L) while (ip == 0.0L) fp = modfl((ip + fp) * base, &ip), ep -= 1.0L;
+		while (ip >= base) fp = MODF((ip + fp) / base, &ip), ep += 1.0L;
+		if (fp != 0.0L) while (ip == 0.0L) fp = MODF((ip + fp) * base, &ip), ep -= 1.0L;
 		if ((ep < -4) || (ep >= precision)) with_exp = 1;
 	}
-	fp = with_exp ? fp : modfl(r, &ip);
-	precision -= is_shortened ? ceill(log10l(ip)) + (ip != 0.0L) : 0;
+	fp = with_exp ? fp : MODF(r, &ip);
+	precision -= is_shortened ? ceill(LOG10(ip)) + (ip != 0.0L) : 0;
 	assert(precision >= 0);
-	for (; (sign_count < precision) && (fmodl(fp, 1.0L) != 0.0L); ++sign_count) fp *= base;
+	for (; (sign_count < precision) && (FMOD(fp, 1.0L) != 0.0L); ++sign_count) fp *= base;
 	fp = roundl(fp);
-	ip = precision ? fp != (long double)pow_int(base, sign_count)
+	ip = precision ? fp != POW(base, sign_count)
 			? ip : ip + 1.0L : roundl(ip + fp);
-	fp = fp != (long double)pow_int(base, sign_count) ? fp : 0.0L;
-	if (with_exp && (ip >= base)) fp = modfl((ip + fp) / base, &ip), ep += 1.0L;
+	fp = fp != POW(base, sign_count) ? fp : 0.0L;
+	if (with_exp && (ip >= base)) fp = MODF((ip + fp) / base, &ip), ep += 1.0L;
 
 	if (with_exp) {
 		do {
-			ch = (int)fmodl(fabsl(ep), (long double)base);
+			ch = FMOD(FABS(ep), base);
 			assert((ch >= 0) && (ch < base));
 			if (ch >= 10) ch += letter_base - 10 - '0';
 			*--postfix = ch + '0';
-			modfl(ep / base, &ep);
+			MODF(ep / base, &ep);
 		} while (ep != 0.0L);
 		if ((strlen(postfix) == 1) && (base != 16)) *--postfix = '0';
-		*--postfix = signbitl(ep) ? '-' : '+';
+		*--postfix = signbit(ep) ? '-' : '+';
 		*--postfix = base == 16 ? ops & OPS_SPEC_UPPER_CASE ?
 					'P' : 'p'
 				: ops & OPS_SPEC_UPPER_CASE ? 'E' : 'e';
@@ -221,11 +226,11 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	for (; i < sign_count; ++i) {
-		ch = (int)fmodl(fp, (long double)base);
+		ch = FMOD(fp, base);
 		assert((ch >= 0) && (ch < base));
 		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
-		modfl(fp / base, &fp);
+		MODF(fp / base, &fp);
 	}
 
 	if ((precision && !is_shortened) || sign_count
@@ -234,11 +239,11 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	}
 
 	do {
-		ch = (int)fmodl(ip, (long double)base);
+		ch = (int)FMOD(ip, (long double)base);
 		assert((ch >= 0) && (ch < base));
 		if (ch >= 10) ch += letter_base - 10 - '0';
 		*--str = ch + '0';
-		modfl(ip / base, &ip);
+		MODF(ip / base, &ip);
 	} while (ip != 0.0L);
 
 	len = end - str;
