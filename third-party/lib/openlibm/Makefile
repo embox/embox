@@ -14,15 +14,15 @@ include $(EXTBLD_LIB)
 CPPFLAGS := -include $(SRC_DIR)/include/sys/cdefs.h -D__ELF__
 SFLAGS := -D__ELF__
 
-ifeq ($(ARCH),x86)
-OLIBM_ARCH := ARCH=i386
+OLIBM_ARCH ?=
+ifneq ($(filter x86 usermode86,$(ARCH)),)
+OLIBM_ARCH := i386
 endif
 ifeq ($(ARCH), arm)
-ARM_ARCH := $(subst -march=,,$(filter -march=%,$(CFLAGS)))
-ifeq ($(strip $(ARM_ARCH)),)
-$(error ARM_ARCH -march is undefined)
+OLIBM_ARCH := $(subst -march=,,$(filter -march=%,$(CFLAGS)))
+ifeq ($(strip $(OLIBM_ARCH)),)
+$(error OLIBM_ARCH -march is undefined)
 endif
-OLIBM_ARCH := ARCH=$(ARM_ARCH)
 endif
 
 $(CONFIGURE) :
@@ -31,7 +31,7 @@ $(CONFIGURE) :
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		make CC=$(EMBOX_GCC) CPPFLAGS="$(CPPFLAGS)" SFLAGS="$(SFLAGS)" \
-			USEGCC=1 $(OLIBM_ARCH) \
+			USEGCC=1 ARCH=$(OLIBM_ARCH) \
 			libopenlibm.a; \
 	)
 	touch $@
