@@ -1,0 +1,12 @@
+diff -aur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/i387/bsd_asm.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/i387/bsd_asm.h
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/i387/bsd_asm.h	2015-03-11 18:40:25.123240035 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/i387/bsd_asm.h	2015-03-11 18:38:22.337626326 +0300
+@@ -39,7 +39,7 @@
+ #if defined(__APPLE__)
+ #include "osx_asm.h"
+ #define CNAME(x) EXT(x)
+-#elif defined(__FreeBSD__) || defined(__linux__) || defined(_WIN32)
++#elif defined(__FreeBSD__) || defined(__linux__) || defined(_WIN32) || defined(__EMBOX__)
+ #include "bsd_cdefs.h"
+ 
+ #ifdef PIC
