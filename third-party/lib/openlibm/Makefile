@@ -11,9 +11,6 @@ PKG_MD5 := a8d4531e2d35384d244977fce009dbe2
 
 include $(EXTBLD_LIB)
 
-CPPFLAGS := -include $(SRC_DIR)/include/sys/cdefs.h -D__ELF__
-SFLAGS := -D__ELF__
-
 OLIBM_ARCH ?=
 ifneq ($(filter x86 usermode86,$(ARCH)),)
 OLIBM_ARCH := i386
@@ -30,8 +27,13 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make CC=$(EMBOX_GCC) CPPFLAGS="$(CPPFLAGS)" SFLAGS="$(SFLAGS)" \
-			USEGCC=1 ARCH=$(OLIBM_ARCH) \
+		make \
+			USEGCC=1 \
+			ARCH=$(OLIBM_ARCH) \
+			OS=Embox \
+			CC=$(EMBOX_GCC) \
+			CPPFLAGS="-include $(SRC_DIR)/include/sys/cdefs.h -D__ELF__" \
+			SFLAGS="-D__ELF__" \
 			libopenlibm.a; \
 	)
 	touch $@
