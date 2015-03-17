@@ -45,7 +45,7 @@ DOWNLOAD  := $(BUILD_DIR)/.downloaded
 $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach d,$(sources_download), \
 		if [ ! -f $(DOWNLOAD_DIR)/$(call targets_download,$d) ]; then \
-			cd $(DOWNLOAD_DIR) && (curl -O -L $d); \
+			cd $(DOWNLOAD_DIR) && (curl -O -k -L $d); \
 		fi;)
 	$(foreach g,$(sources_git), \
 		if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
