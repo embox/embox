@@ -1,0 +1,93 @@
+/* @author Denis Deryugin
+ * @date 17 Mar 2015
+ *
+ * Dumb VFS
+ */
+
+#ifndef _DVFS_H_
+#define _DVFS_H_
+
+#include <fs/file_system.h>
+#include <util/dlist.h>
+
+/*****************
+ New VFS prototype
+ *****************/
+
+#define DENTRY_NAME_LEN 16
+#define FS_NAME_LEN     16
+
+struct super_block;
+struct inode;
+struct dentry;
+struct dumb_fs_driver;
+
+struct super_block {
+	struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
+	struct block_dev *bdev;
+
+	struct dentry     *root;
+	struct dlist_head *inode_list;
+
+	struct super_block_operations *sb_ops;
+
+	void *sb_data;
+};
+
+struct super_block_operations {
+	struct inode *(*inode_alloc)(struct super_block *sb);
+	int           (*destroy_inode)(struct inode *inode);
+	int           (*write_inode)(struct inode *inode);
+	int           (*umount_begin)(struct super_block *sb);
+};
+
+struct inode {
+	int    i_no;
+	int    start_pos; /* location on disk */
+	size_t length;
+
+	struct inode_operations	*i_ops;
+
+	void *i_data;
+};
+
+struct inode_operations {
+	struct inode *(*create)(struct dentry *d_new, struct dentry *d_dir, int mode);
+	struct inode *(*lookup)(char *name, struct dentry *dir);
+	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
+	int           (*rmdir)(struct dentry *dir);
+	int           (*truncate)(struct inode *inode, size_t len);
+	int           (*pathname)(struct inode *inode, char *buf);
+};
+
+struct dentry {
+	char name[DENTRY_NAME_LEN];
+
+	struct inode *inode;
+
+	struct dentry     *parent;
+	struct dlist_head *next;     /* Next element in this directory */
+	struct dlist_head *children; /* Subelemtnts of directory */
+};
+
+struct file {
+	struct dentry *f_dentry;
+
+	off_t pos;
+
+	struct file_operations *f_ops;
+};
+
+struct file_operations {
+	int    (*open)(struct node *node, struct file *file_desc, int flags);
+	int    (*close)(struct file *desc);
+	size_t (*read)(struct file *desc, void *buf, size_t size);
+	size_t (*write)(struct file *desc, void *buf, size_t size);
+	int    (*ioctl)(struct file *desc, int request, ...);
+};
+
+struct dumb_fs_driver {
+	const char name[FS_NAME_LEN];
+};
+
+#endif
