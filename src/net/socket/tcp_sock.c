@@ -42,7 +42,7 @@
 #define MODOPS_CONNECT_TIMEOUT \
 	OPTION_MODULE_GET(embox__net__socket, NUMBER, connect_timeout)
 
-#define MAX_SIMULTANEOUS_TX_PACK 0 //OPTION_GET(NUMBER, max_simultaneous_tx_pack)
+#define MAX_SIMULTANEOUS_TX_PACK OPTION_GET(NUMBER, max_simultaneous_tx_pack)
 static const struct sock_proto_ops tcp_sock_ops_struct;
 const struct sock_proto_ops *const tcp_sock_ops
 		= &tcp_sock_ops_struct;
