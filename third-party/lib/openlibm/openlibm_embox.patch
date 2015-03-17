@@ -1,6 +1,6 @@
 diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/i387/bsd_asm.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/i387/bsd_asm.h
---- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/i387/bsd_asm.h	2015-03-12 15:54:27.676200499 +0300
-+++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/i387/bsd_asm.h	2015-03-12 15:23:29.021712179 +0300
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/i387/bsd_asm.h	2015-03-17 18:53:13.715657698 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/i387/bsd_asm.h	2015-03-17 18:46:04.197049339 +0300
 @@ -39,7 +39,7 @@
  #if defined(__APPLE__)
  #include "osx_asm.h"
@@ -11,8 +11,8 @@ diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/i3
  
  #ifdef PIC
 diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv.h
---- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv.h	2015-03-12 15:54:27.679533883 +0300
-+++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv.h	2015-03-12 15:42:18.874891789 +0300
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv.h	2015-03-17 18:53:13.715657698 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv.h	2015-03-17 18:46:04.197049339 +0300
 @@ -9,7 +9,8 @@
  #elif defined(__i386__)
  #include <openlibm_fenv_i387.h>
@@ -25,7 +25,7 @@ diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/in
  #endif /* OPENLIBM_USE_HOST_FENV_H */
 diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv_stubs.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv_stubs.h
 --- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv_stubs.h	1970-01-01 03:00:00.000000000 +0300
-+++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv_stubs.h	2015-03-12 15:56:23.388008789 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv_stubs.h	2015-03-17 18:46:04.197049339 +0300
 @@ -0,0 +1,161 @@
 +/*-
 + * Copyright (c) 2004-2005 David Schultz <das@FreeBSD.ORG>
@@ -189,8 +189,8 @@ diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/in
 +
 +#endif	/* !_FENV_H_ */
 diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_math.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_math.h
---- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_math.h	2015-03-12 15:54:27.679533883 +0300
-+++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_math.h	2015-03-12 15:32:07.860790491 +0300
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_math.h	2015-03-17 18:53:13.718991110 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_math.h	2015-03-17 18:46:04.197049339 +0300
 @@ -25,7 +25,7 @@
      #define __WIN32__
  #endif
@@ -201,8 +201,8 @@ diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/in
  #endif
  
 diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/Makefile openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/Makefile
---- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/Makefile	2015-03-12 15:54:27.676200499 +0300
-+++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/Makefile	2015-03-12 15:53:47.418906072 +0300
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/Makefile	2015-03-17 18:53:13.715657698 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/Makefile	2015-03-17 18:46:04.197049339 +0300
 @@ -2,7 +2,7 @@
  include ./Make.inc
  
@@ -212,9 +212,27 @@ diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/Ma
  SUBDIRS += ld80
  endif
  
+diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/fpmath.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/fpmath.h
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/fpmath.h	2015-03-17 18:53:13.722324521 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/fpmath.h	2015-03-17 18:55:34.392998881 +0300
+@@ -79,6 +79,14 @@
+ #define PDP_ENDIAN     _PDP_ENDIAN
+ #define BYTE_ORDER     _BYTE_ORDER
+ 
++#elif defined(__EMBOX__)
++
++#include <endian.h>
++#define _LITTLE_ENDIAN  __LITTLE_ENDIAN
++#define _BIG_ENDIAN     __BIG_ENDIAN
++#define _PDP_ENDIAN     __PDP_ENDIAN
++#define _BYTE_ORDER     __BYTE_ORDER
++
+ #endif
+ 
+ #ifndef _IEEE_WORD_ORDER
 diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/Make.files openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/Make.files
---- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/Make.files	2015-03-12 15:54:27.682867270 +0300
-+++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/Make.files	2015-03-12 15:52:18.297518892 +0300
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/Make.files	2015-03-17 18:53:13.718991110 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/Make.files	2015-03-17 18:46:04.197049339 +0300
 @@ -35,7 +35,7 @@
  $(CUR_SRCS) += s_nan.c
  endif
