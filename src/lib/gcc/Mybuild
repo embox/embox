@@ -17,7 +17,6 @@ static module LibGccInternal extends LibGcc {
 	source "umodsi3.c"
 	source "muldi3.c"
 	source "mulsi3.c"
-	source "arm_eabi.c" /* ??? */
 
 	@IncludePath("$(THIRDPARTY_DIR)/lib/softfloat")
 	source "soft-fp/df.c",
