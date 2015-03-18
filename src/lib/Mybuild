@@ -13,12 +13,6 @@ module rl_linenoise extends readline_api {
 	depends embox.compat.libc.LibCStringDup
 }
 
-static module LibCurses {
-	source "curses.c"
-
-	depends embox.compat.posix.termios
-	depends embox.mem.pool
-}
 
 static module LibElf {
 	source "elf/elf.c"

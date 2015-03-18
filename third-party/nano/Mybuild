@@ -18,7 +18,6 @@ module nano {
 
 	@NoRuntime depends embox.compat.posix.regex
 
-
-	depends embox.lib.LibCurses
+	depends embox.compat.posix.LibCurses
 }
 
