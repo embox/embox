@@ -6,7 +6,7 @@
  * @author Andrey Gazukin
  */
 
-#include <lib/crc32.h>
+#include <lib/crypt/crc32.h>
 
 unsigned long count_crc32(unsigned char *addr, unsigned char *end_addr) {
 	unsigned long crc_table[256];

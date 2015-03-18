@@ -19,7 +19,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
-#include <lib/crc16.h>
+#include <lib/crypt/crc16.h>
 
 
 #include <drivers/ramdisk.h>

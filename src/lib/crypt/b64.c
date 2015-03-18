@@ -7,9 +7,10 @@
  */
 
 #include <errno.h>
-#include <hal/arch.h>
-#include <lib/b64.h>
 #include <stddef.h>
+
+#include <lib/crypt/b64.h>
+
 
 struct b64_char {
 	unsigned char c1,

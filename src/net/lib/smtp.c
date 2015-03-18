@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <netdb.h>
-#include <net/lib/smtp.h>
 #include <netinet/in.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -19,8 +18,11 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 #include <util/array.h>
-#include <lib/b64.h>
+#include <lib/crypt/b64.h>
+
+#include <net/lib/smtp.h>
 
 static char buff[SMTP_COMMAND_LEN + 1];
 

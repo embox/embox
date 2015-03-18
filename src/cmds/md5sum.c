@@ -8,11 +8,14 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <fs/file_operation.h>
-#include <lib/md5.h>
 #include <sys/stat.h>
 #include <stdint.h>
 #include <errno.h>
+
+#include <lib/crypt/md5.h>
+
+#include <fs/file_operation.h>
+
 
 static void print_usage(void) {
 	printf("Usage: md5sum [FILE]\n");

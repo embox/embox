@@ -12,7 +12,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <lib/crc32.h>
+
+#include <lib/crypt/crc32.h>
+
 #include <drivers/usb/usb_whitelist_dev.h>
 
 #define USB_WL_DUMP_HDR_MAGIC_LEN 4
