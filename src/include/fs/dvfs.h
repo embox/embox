@@ -35,7 +35,7 @@ struct super_block {
 };
 
 struct super_block_operations {
-	struct inode *(*inode_alloc)(struct super_block *sb);
+	struct inode *(*alloc_inode)(struct super_block *sb);
 	int           (*destroy_inode)(struct inode *inode);
 	int           (*write_inode)(struct inode *inode);
 	int           (*umount_begin)(struct super_block *sb);
@@ -46,6 +46,8 @@ struct inode {
 	int    start_pos; /* location on disk */
 	size_t length;
 
+	struct dentry *i_dentry;
+	struct super_block *i_sb;
 	struct inode_operations	*i_ops;
 
 	void *i_data;
@@ -53,7 +55,7 @@ struct inode {
 
 struct inode_operations {
 	struct inode *(*create)(struct dentry *d_new, struct dentry *d_dir, int mode);
-	struct inode *(*lookup)(char *name, struct dentry *dir);
+	struct inode *(*lookup)(char const *name, struct dentry const *dir);
 	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
 	int           (*rmdir)(struct dentry *dir);
 	int           (*truncate)(struct inode *inode, size_t len);
@@ -63,7 +65,8 @@ struct inode_operations {
 struct dentry {
 	char name[DENTRY_NAME_LEN];
 
-	struct inode *inode;
+	struct inode *d_inode;
+	struct super_block *d_sb;
 
 	struct dentry     *parent;
 	struct dlist_head *next;     /* Next element in this directory */
@@ -72,6 +75,7 @@ struct dentry {
 
 struct file {
 	struct dentry *f_dentry;
+	struct inode  *f_inode;
 
 	off_t pos;
 
@@ -79,7 +83,7 @@ struct file {
 };
 
 struct file_operations {
-	int    (*open)(struct node *node, struct file *file_desc, int flags);
+	int    (*open)(struct inode *node, struct file *desc);
 	int    (*close)(struct file *desc);
 	size_t (*read)(struct file *desc, void *buf, size_t size);
 	size_t (*write)(struct file *desc, void *buf, size_t size);
@@ -89,5 +93,9 @@ struct file_operations {
 struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
 };
+
+extern int dvfs_open(const char *path, struct file *desc);
+extern int dvfs_write(struct file *desc, char *buf, int count);
+extern int dvfs_read(struct file *desc, char *buf, int count);
 
 #endif

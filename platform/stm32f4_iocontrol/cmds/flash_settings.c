@@ -17,9 +17,7 @@
 #include "libleddrv.h"
 #include "led_names.h"
 
-#include <fs/dfs.h>
-
-extern const struct flash_dev stm32_flash;
+#include <fs/dvfs.h>
 
 #define FLASHSET_MAGIC 0x5500AAAA
 #define FLASHSET_WHAT_NET 0x00000001
@@ -162,9 +160,9 @@ static int flashset_lednames_restore(struct flashset_settings *fl_settings) {
 }
 
 static int flashset_load(struct flashset_settings *fl_settings) {
-	struct dfs_desc *fd = dfs_open("flashset");
-	int errcode = dfs_read(fd, fl_settings, sizeof(*fl_settings));
-	dfs_close(fd);
+	struct file file;
+	dvfs_open("flashset", &file);
+	int errcode = dvfs_read(&file, (char*) fl_settings, sizeof(*fl_settings));
 
 	if (errcode < 0)
 		return errcode;
@@ -177,13 +175,7 @@ static int flashset_load(struct flashset_settings *fl_settings) {
 int main(int argc, char *argv[]) {
 	struct flashset_settings *const fl_settings = &flashset_g_settings;
 	int errcode;
-
-	dfs_set_dev((struct flash_dev *) &stm32_flash);
-
-	/* Init DFS */
-	if ((errcode = dfs_init())) {
-		return errcode;
-	}
+	struct file file;
 
 	if (0 == strcmp(argv[1], "store")) {
 		printf(	"Storing flash settings:\n"
@@ -219,8 +211,8 @@ int main(int argc, char *argv[]) {
 		}
 
 		/* ready to write */
-		struct dfs_desc *fd = dfs_open("flashset");
-		errcode = dfs_write(fd, fl_settings, sizeof(struct flashset_settings));
+		dvfs_open("flashset", &file);
+		errcode = dvfs_write(&file, (char*) fl_settings, sizeof(struct flashset_settings));
 		if (errcode < 0)
 			return errcode;
 
