@@ -7,8 +7,6 @@
  */
 
 .type start, %function
-.type undef_handler, %function
-.type hard_fault, %function
 
 .global trap_table_start
 .global trap_table_end
@@ -31,11 +29,4 @@ start:
     bx r1
 die:
     b 	    die
-
-/* stubs */
-undef_handler:
-    b undef_handler
-
-hard_fault:
-    b hard_fault
 
