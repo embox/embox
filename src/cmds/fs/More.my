@@ -19,7 +19,7 @@ module more {
 	source "more.c"
 
 	depends embox.compat.libc.LibC
-	depends embox.lib.LibCurses
+	depends embox.compat.posix.LibCurses
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file
 	depends embox.fs.core
