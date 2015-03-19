@@ -28,13 +28,30 @@ int dvfs_open(const char *path, struct file *desc) {
 		inode = dfs_iops.create(&d_new, &d_new, 0);
 	}
 
-	return dfs_fops.open(inode, desc);
+	desc->f_inode = inode;
+
+	if (!inode)
+		return -1;
+	else
+		return dfs_fops.open(inode, desc);
 }
 
 int dvfs_write(struct file *desc, char *buf, int count) {
-	return dfs_fops.write(desc, buf, count);
+	if (!desc)
+		return -1;
+
+	if (desc->f_ops && desc->f_ops->write)
+		return desc->f_ops->write(desc, buf, count);
+	else
+		return dfs_fops.write(desc, buf, count); /* Default ops */
 }
 
 int dvfs_read(struct file *desc, char *buf, int count) {
-	return dfs_fops.read(desc, buf, count);
+	if (!desc)
+		return -1;
+
+	if (desc->f_ops && desc->f_ops->read)
+		return desc->f_ops->read(desc, buf, count);
+	else
+		return dfs_fops.read(desc, buf, count); /* Default ops */
 }

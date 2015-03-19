@@ -55,8 +55,26 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
 static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	int i;
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(4)));
+	int head = offset & 0x7;
 
-	for (i = 0; i < len / NAND_PAGE_SIZE; i++) {
+	if (head) {
+		offset -= head;
+		_read(offset, b, NAND_PAGE_SIZE);
+		memcpy(b + head, buff, NAND_PAGE_SIZE - head);
+		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
+		buff   += NAND_PAGE_SIZE;
+		offset += NAND_PAGE_SIZE;
+
+		if (len > NAND_PAGE_SIZE - head)
+			len -= NAND_PAGE_SIZE - head;
+		else
+			len = 0;
+	}
+
+	if (len < 0)
+		return 0;
+
+	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
 		memcpy(b, buff, NAND_PAGE_SIZE);
 		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
 		offset += NAND_PAGE_SIZE;
@@ -74,7 +92,7 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 }
 
 static inline int _copy(unsigned long to, unsigned long from, size_t len) {
-	return flash_copy(dfs_flashdev, to, from, len);
+	return _write(to, (void*) (dfs_flashdev->start + from), len);
 }
 
 static inline int _blkcpy(unsigned int to, unsigned long from) {
@@ -157,48 +175,6 @@ struct flash_dev *dfs_get_dev(void) {
 /*---------------------------------*\
  	File System Interface
 \*---------------------------------*/
-/*
-struct dfs_desc *dfs_open(const char *path) {
-	struct dfs_desc *fd = malloc(sizeof(struct dfs_desc));
-	struct dfs_inode *node = malloc(sizeof(struct dfs_inode));
-
-	if (!fd || !node) {
-		errno = ENOMEM;
-		return NULL;
-	}
-
-	if (0 > dfs_read_inode(inode_from_path(path), node)) {
-		errno = ENOENT;
-		return NULL;
-	}
-
-	fd->pos = 0;
-	fd->node = node;
-	fd->len = node->len * NAND_PAGE_SIZE;
-
-	return fd;
-}
-
-int dfs_write(struct dfs_desc *fd, void *buf, size_t size) {
-	int pos = pos_from_page(fd->node->page_start) + fd->pos;
-
-	dfs_write_raw(pos, buf, size);
-
-	fd->pos += size;
-
-	return 0;
-}
-
-int dfs_read(struct dfs_desc *fd, void *buf, size_t size) {
-	int pos = fd->pos + pos_from_page(fd->node->page_start);
-
-	_read(pos, buf, size);
-	fd->pos += size;
-
-	return 0;
-}
-
-*/
 
 static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
 	_read(0, sbi, sizeof(struct dfs_sb_info));
@@ -438,5 +414,4 @@ int dfs_init(void) {
 
 	return 0;
 };
-
 
