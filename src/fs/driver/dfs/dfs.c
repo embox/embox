@@ -54,9 +54,23 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
 
 static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	int i;
-	for (i = 0; i < len; i++)
-		bitmap_clear_bit(dfs_free_pages, i + offset);
-	return flash_write(dfs_flashdev, offset, buff, len);
+	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(4)));
+
+	for (i = 0; i < len / NAND_PAGE_SIZE; i++) {
+		memcpy(b, buff, NAND_PAGE_SIZE);
+		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
+		offset += NAND_PAGE_SIZE;
+		buff   += NAND_PAGE_SIZE;
+		len    -= NAND_PAGE_SIZE;
+	}
+
+	if (len) {
+		_read(offset, b, NAND_PAGE_SIZE);
+		memcpy(b, buff, len);
+		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
+	}
+
+	return 0;
 }
 
 static inline int _copy(unsigned long to, unsigned long from, size_t len) {
@@ -74,6 +88,7 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	struct dfs_sb_info *sbi = dfs_sb()->sb_data;
 	int buff_bk = sbi->buff_bk;
 	int bk;
+	int err;
 
 	pos %= NAND_BLOCK_SIZE;
 
@@ -81,7 +96,8 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	_copy(buff_bk * NAND_BLOCK_SIZE, start_bk * NAND_BLOCK_SIZE, pos);
 
 	if (start_bk == last_bk) {
-		_write(buff_bk * NAND_BLOCK_SIZE + pos, buff, size);
+		if ((err = _write(buff_bk * NAND_BLOCK_SIZE + pos, buff, size)))
+			return err;
 		pos += size;
 	} else {
 		_write(buff_bk * NAND_BLOCK_SIZE + pos, buff, NAND_BLOCK_SIZE - pos);
@@ -91,7 +107,8 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
 			_erase(bk);
-			_write(bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE);
+			if ((err = _write(bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE)))
+				return err;
 			buff += NAND_BLOCK_SIZE;
 		}
 
