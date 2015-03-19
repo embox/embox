@@ -36,5 +36,5 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 }
 
 int dvfs_read(struct file *desc, char *buf, int count) {
-	return dfs_fops.write(desc, buf, count);
+	return dfs_fops.read(desc, buf, count);
 }

@@ -99,16 +99,8 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 		_write(buff_bk * NAND_BLOCK_SIZE, buff, pos);
 	}
 
-	uint8_t tmpbuff[256];
-
-	_read(buff_bk * NAND_BLOCK_SIZE +pos, tmpbuff, 256);
-	_read(last_bk * NAND_BLOCK_SIZE + pos, tmpbuff, 256);
 	_copy(buff_bk * NAND_BLOCK_SIZE + pos, last_bk * NAND_BLOCK_SIZE + pos, NAND_BLOCK_SIZE - pos);
-
-	_read(buff_bk * NAND_BLOCK_SIZE, tmpbuff, 256);
-
 	_blkcpy(last_bk, buff_bk);
-	_read(0, tmpbuff, 256);
 
 	return 0;
 }
