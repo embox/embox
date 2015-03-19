@@ -14,7 +14,7 @@
 #include <embox/test.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 
 static struct thread *low, *high;
 static struct mutex m;

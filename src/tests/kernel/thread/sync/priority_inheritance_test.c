@@ -14,7 +14,7 @@
 #include <embox/test.h>
 
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 #include <kernel/thread/sync/mutex.h>
 
 EMBOX_TEST_SUITE("Priority inheritance for mutex");

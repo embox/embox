@@ -32,7 +32,7 @@
 #include <fs/file_operation.h>
 #include <fs/tmpfs.h>
 
-#include <err.h>
+#include <util/err.h>
 
 
 /* tmpfs filesystem description pool */

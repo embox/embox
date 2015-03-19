@@ -27,7 +27,7 @@
 #include <kernel/task/resource/idesc_table.h>
 #include <util/sys_log.h>
 
-#include <err.h>
+#include <util/err.h>
 
 static int get_index(struct sock *sk) {
 	struct idesc_table *it;

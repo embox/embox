@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include <err.h>
+#include <util/err.h>
 
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>

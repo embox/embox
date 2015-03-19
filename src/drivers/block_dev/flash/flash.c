@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#include <err.h>
+#include <util/err.h>
 #include <embox/unit.h>
 #include <fs/vfs.h>
 #include <fs/path.h>

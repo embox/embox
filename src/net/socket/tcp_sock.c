@@ -33,7 +33,7 @@
 #include <fs/idesc_event.h>
 #include <net/sock_wait.h>
 
-#include <err.h>
+#include <util/err.h>
 
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)

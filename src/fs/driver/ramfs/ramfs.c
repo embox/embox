@@ -27,7 +27,7 @@
 #include <fs/file_operation.h>
 #include <fs/path.h>
 
-#include <err.h>
+#include <util/err.h>
 
 #include <embox/unit.h>
 #include <embox/block_dev.h>

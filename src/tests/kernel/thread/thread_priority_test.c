@@ -15,7 +15,7 @@
 #include <kernel/task/kernel_task.h>
 #include <framework/mod/options.h>
 
-#include <err.h>
+#include <util/err.h>
 
 EMBOX_TEST_SUITE("test for different priority threads");
 

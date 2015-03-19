@@ -13,7 +13,7 @@
 
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
-#include <err.h>
+#include <util/err.h>
 
 #define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
 #define CLOCK_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)

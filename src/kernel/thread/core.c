@@ -44,7 +44,7 @@
 #include <kernel/panic.h>
 
 #include <hal/context.h>
-#include <err.h>
+#include <util/err.h>
 
 extern void thread_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);

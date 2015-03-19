@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <time.h>
 #include <linux/byteorder.h>
-#include <err.h>
+#include <util/err.h>
 
 #include <stm32f4_discovery_audio_codec.h>
 #include <stm32f4xx.h>

@@ -13,7 +13,7 @@
 #include <fs/vfs.h>
 #include <mem/page.h>
 
-#include <err.h>
+#include <util/err.h>
 
 EMBOX_TEST_SUITE("fs/ramdisk test");
 

@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <kernel/thread/sync/semaphore.h>
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 
 static struct thread *low, *mid, *high, *l_low, *h_high;
 static struct sem s;

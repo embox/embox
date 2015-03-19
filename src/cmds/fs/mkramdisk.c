@@ -6,7 +6,7 @@
  * @date    20.05.2014
  */
 
-#include <err.h>
+#include <util/err.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <drivers/ramdisk.h>

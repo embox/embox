@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <kernel/thread/sync/rwlock.h>
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 
 static struct thread *low, *mid, *high;
 static rwlock_t r;

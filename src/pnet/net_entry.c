@@ -20,7 +20,7 @@
 
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
-#include <err.h>
+#include <util/err.h>
 
 #define PNET_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 

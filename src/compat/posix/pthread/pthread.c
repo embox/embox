@@ -10,7 +10,7 @@
 #include <pthread.h>
 
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 
 
 int pthread_attr_destroy(pthread_attr_t *attr) {

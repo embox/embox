@@ -14,7 +14,7 @@
 #include <embox/test.h>
 
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 
 EMBOX_TEST_SUITE("test for thread API");
 

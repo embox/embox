@@ -15,7 +15,7 @@
 
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
-#include <err.h>
+#include <util/err.h>
 
 #include <drivers/input/input_dev.h>
 

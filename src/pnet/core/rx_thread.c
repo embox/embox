@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 #include <kernel/event.h>
 
 #include <pnet/core.h>

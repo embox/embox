@@ -12,7 +12,7 @@
 #include <drivers/flash/flash_dev.h>
 #include <mem/sysmalloc.h>
 
-#include <err.h>
+#include <util/err.h>
 #include <errno.h>
 #include <stdio.h>
 #include <fcntl.h>

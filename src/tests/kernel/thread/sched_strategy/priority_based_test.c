@@ -9,7 +9,7 @@
 #include <embox/test.h>
 
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/thread/thread_sched_wait.h>

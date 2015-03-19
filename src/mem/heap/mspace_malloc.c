@@ -13,7 +13,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <err.h>
+#include <util/err.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
