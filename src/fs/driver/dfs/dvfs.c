@@ -19,10 +19,10 @@ extern struct super_block *dfs_sb(void);
 extern struct file_operations dfs_fops;
 extern struct inode_operations dfs_iops;
 
-int dvfs_open(const char *path, struct file *desc) {
+int dvfs_open(const char *path, struct file *desc, int mode) {
 	struct inode *inode = dfs_iops.lookup(path, NULL);
 
-	if (!inode) {
+	if (!inode && (mode & DFS_CREAT)) {
 		struct dentry d_new = { .d_sb = dfs_sb(), };
 		strcpy(d_new.name, path);
 		inode = dfs_iops.create(&d_new, &d_new, 0);

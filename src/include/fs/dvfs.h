@@ -94,7 +94,9 @@ struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
 };
 
-extern int dvfs_open(const char *path, struct file *desc);
+#define DFS_CREAT 0x0001
+
+extern int dvfs_open(const char *path, struct file *desc, int mode);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
 

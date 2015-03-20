@@ -77,7 +77,7 @@ static int flashset_nic_store(const char *nic_name) {
 	memcpy(&fsn_network.fsn_mac, iface_dev->dev->dev_addr,
 		sizeof(fsn_network.fsn_mac));
 
-	dvfs_open("nic", &file);
+	dvfs_open("nic", &file, DFS_CREAT);
 	errcode = dvfs_write(&file, (char*) &fsn_network, sizeof(fsn_network));
 
 outerr:
@@ -89,7 +89,9 @@ static int flashset_nic_restore(const char *nic_name) {
 	int errcode;
 	struct file file;
 
-	dvfs_open("nic", &file);
+	errcode = dvfs_open("nic", &file, 0);
+	if (errcode)
+		return errcode;
 	errcode = dvfs_read(&file, (char*) &fsn_network, sizeof(fsn_network));
 	if (errcode < 0)
 		return errcode;
@@ -126,7 +128,7 @@ static int flashset_led_store(void) {
 		return errcode;
 	}
 
-	dvfs_open("led", &file);
+	dvfs_open("led", &file, DFS_CREAT);
 
 	return dvfs_write(&file, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
 }
@@ -134,7 +136,9 @@ static int flashset_led_store(void) {
 static int flashset_led_restore(void) {
 	struct file file;
 	int errcode;
-	dvfs_open("led", &file);
+	errcode = dvfs_open("led", &file, 0);
+	if (errcode)
+		return errcode;
 	errcode = dvfs_read(&file, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
 	if (errcode < 0)
 		return errcode;
@@ -144,14 +148,15 @@ static int flashset_led_restore(void) {
 
 static int flashset_lednames_store(void) {
 	struct file file;
-	dvfs_open("led_names", &file);
+	dvfs_open("led_names", &file, DFS_CREAT);
 	return dvfs_write(&file, (char*) &led_names, sizeof(led_names));
 }
 
 static int flashset_lednames_restore(void) {
 	struct file file;
-	dvfs_open("led_names", &file);
-	return dvfs_read(&file, (char*) &led_names, sizeof(led_names));;
+	if (dvfs_open("led_names", &file, 0))
+		return -1;
+	return 0 > dvfs_read(&file, (char*) &led_names, sizeof(led_names));;
 }
 
 int main(int argc, char *argv[]) {
@@ -182,9 +187,12 @@ int main(int argc, char *argv[]) {
 		/* seems to have valid settings */
 		printf("Restoring flash settings\n");
 
-		flashset_nic_restore("eth0");
-		flashset_led_restore();
-		flashset_lednames_restore();
+		printf("  net       [%s]\n"
+		       "  led       [%s]\n"
+		       "  led_names [%s]\n",
+		flashset_nic_restore("eth0") ? "fail" : " ok ",
+		flashset_led_restore()       ? "fail" : " ok ",
+		flashset_lednames_restore()  ? "fail" : " ok ");
 	}
 
 	return 0;
