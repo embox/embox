@@ -30,6 +30,7 @@ struct super_block {
 	struct dlist_head *inode_list;
 
 	struct super_block_operations *sb_ops;
+	struct inode_operations	*sb_iops;
 
 	void *sb_data;
 };
@@ -70,7 +71,13 @@ struct dentry {
 
 	struct dentry     *parent;
 	struct dlist_head *next;     /* Next element in this directory */
-	struct dlist_head *children; /* Subelemtnts of directory */
+	struct dlist_head *children; /* Subelements of directory */
+
+	struct dentry_operations *dentry_ops;
+};
+
+struct dentry_operations {
+
 };
 
 struct file {
@@ -95,6 +102,8 @@ struct dumb_fs_driver {
 };
 
 #define DFS_CREAT 0x0001
+extern struct inode *dvfs_alloc_inode(struct super_block *sb);
+extern int           dvfs_destroy_inode(struct inode *inode);
 
 extern int dvfs_open(const char *path, struct file *desc, int mode);
 extern int dvfs_write(struct file *desc, char *buf, int count);

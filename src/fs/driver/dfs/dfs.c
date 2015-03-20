@@ -218,35 +218,17 @@ int ino_from_path(const char *path) {
  ***************/
 extern struct inode_operations dfs_iops;
 
-static struct inode *dfs_alloc_inode(struct super_block *sb) {
-	struct inode *inode = malloc(sizeof(struct inode));
-
-	if (inode)
-		*inode = (struct inode) {
-			.i_no = -1,
-			.i_sb = sb,
-			.i_ops = &dfs_iops,
-		};
-
-	return inode;
-};
-
-static int dfs_destroy_inode(struct inode *inode) {
-	free(inode);
-	return 0;
-};
-
 struct super_block_operations dfs_sbops = {
-	.alloc_inode = dfs_alloc_inode,
-	.destroy_inode = dfs_destroy_inode,
-	.write_inode = NULL,
+	.alloc_inode   = NULL,
+	.destroy_inode = NULL,
+	.write_inode   = NULL,
 };
 
 static struct inode *dfs_icreate(struct dentry *d_new,
                                  struct dentry *d_dir, int mode) {
+	assert(d_dir);
 	struct super_block *sb = d_dir->d_sb;
-	assert(sb && sb->sb_ops && sb->sb_ops->alloc_inode);
-	struct inode *i_new = sb->sb_ops->alloc_inode(sb);
+	struct inode *i_new = dvfs_alloc_inode(sb);
 	struct dfs_sb_info sbi;
 	struct dfs_dir_entry dirent;
 
@@ -289,11 +271,6 @@ static int dfs_itruncate(struct inode *inode, size_t new_len) {
 	return 0;
 };
 
-static int dfs_ipathname(struct inode *inode, char *buf) {
-	strcpy(buf, inode->i_dentry->name);
-	return 0;
-};
-
 static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 	struct dfs_sb_info sbi;
 	struct dfs_dir_entry dirent;
@@ -301,12 +278,12 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 
 	dfs_read_sb_info(&sbi);
 
-	inode = dfs_sb()->sb_ops->alloc_inode(dfs_sb());
+	inode = dvfs_alloc_inode(dfs_sb());
 
 	inode->i_no = ino_from_path(path);
 
 	if (inode->i_no < 0) {
-		dfs_sb()->sb_ops->destroy_inode(inode);
+		dvfs_destroy_inode(inode);
 		return NULL;
 	}
 
@@ -324,7 +301,7 @@ struct inode_operations dfs_iops = {
 	.mkdir = NULL,
 	.rmdir = NULL,
 	.truncate = dfs_itruncate,
-	.pathname = dfs_ipathname
+	.pathname = NULL,
 };
 
 static int dfs_open(struct inode *node, struct file *desc) {
@@ -346,8 +323,8 @@ static int dfs_open(struct inode *node, struct file *desc) {
 }
 
 static int dfs_close(struct file *desc) {
-	if (desc)
-		free(desc);
+	/* if (desc)
+		free(desc); */
 	return 0;
 }
 
@@ -393,6 +370,7 @@ struct super_block *dfs_sb(void) {
 		.root = NULL,
 		.inode_list = NULL,
 		.sb_ops = &dfs_sbops,
+		.sb_iops = &dfs_iops,
 		.sb_data = NULL,
 	};
 
