@@ -28,6 +28,8 @@ COVERAGE_CFLAGS ?= -finstrument-functions \
 			symbol_lookup \
 			__cyg_profile_func_enter \
 			__cyg_profile_func_exit \
+			__coverage_func_enter \
+			__coverage_func_exit \
 			bitmap_set_bit)
 
 PROFILING_CFLAGS ?= -finstrument-functions \
