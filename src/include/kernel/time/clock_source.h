@@ -68,6 +68,8 @@ extern struct timespec clock_source_read(struct clock_source *cs);
 extern int clock_source_register(struct clock_source *cs);
 extern int clock_source_unregister(struct clock_source *cs);
 
+extern time64_t clock_source_get_hwcycles(struct clock_source *cs);
+
 static inline uint32_t clock_sourcehz2mult(uint32_t hz, uint32_t shift) {
 	uint64_t tmp = ((uint64_t)NSEC_PER_SEC) << shift;
 	return tmp / hz;

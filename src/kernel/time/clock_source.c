@@ -222,3 +222,13 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 struct dlist_head *clock_source_get_list(void) {
 	return &clock_source_list;
 }
+
+time64_t clock_source_get_hwcycles(struct clock_source *cs) {
+	int load;
+
+	/* TODO: support for counter-less and event-less clock sources */
+	assert(cs->event_device && cs->counter_device);
+
+	load = cs->counter_device->cycle_hz / cs->event_device->event_hz;
+	return ((uint64_t) cs->jiffies) * load + cs->counter_device->read();
+}
