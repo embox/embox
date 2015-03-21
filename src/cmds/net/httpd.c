@@ -89,7 +89,6 @@ struct http_req_uri {
 struct http_req {
 	struct http_req_uri uri;
 	char *method;
-	char *http_ver;
 	char *content_len;
 	char *content_type;
 };
@@ -396,11 +395,14 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 		env_sz = sizeof(httpd_g_envbuf);
 		for (i_ce = 0; i_ce < ARRAY_SIZE(cgi_env); i_ce++) {
 			const struct cgi_env_descr *ce_d = &cgi_env[i_ce];
+			char *val = *(char **) ((void *) hreq + ce_d->hreq_offset);
 			int printed;
 
-			printed = snprintf(ebp, env_sz, "%s=%s",
-						ce_d->name,
-						*(char **) ((void *) hreq + ce_d->hreq_offset));
+			if (!val) {
+				continue;
+			}
+
+			printed = snprintf(ebp, env_sz, "%s=%s", ce_d->name, val);
 			if (printed == env_sz) {
 				HTTPD_ERROR("have no space to write environment\n");
 				exit(1);
@@ -468,13 +470,14 @@ static int httpd_client_process(const struct client_info *cinfo) {
 	struct http_req hreq;
 	int ret;
 
-	ret = httpd_read_http_header(cinfo, httpd_g_inbuf, sizeof(httpd_g_inbuf));
+	ret = httpd_read_http_header(cinfo, httpd_g_inbuf, sizeof(httpd_g_inbuf) - 1);
 	if (ret < 0) {
 		HTTPD_ERROR("can't read from client socket: %s\n", strerror(errno));
 		return ret;
 	}
 	httpd_g_inbuf[ret] = '\0';
 
+	memset(&hreq, 0, sizeof(hreq));
 	if (NULL == httpd_parse_request(httpd_g_inbuf, &hreq)) {
 		return -EINVAL;
 	}
