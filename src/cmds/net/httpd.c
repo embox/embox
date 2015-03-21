@@ -389,10 +389,11 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 		char *envp[ARRAY_SIZE(cgi_env) + 1];
 		char *ebp;
 		size_t env_sz;
-		int i_ce;
+		int i_ce, n_ce;
 
 		ebp = httpd_g_envbuf;
 		env_sz = sizeof(httpd_g_envbuf);
+		n_ce = 0;
 		for (i_ce = 0; i_ce < ARRAY_SIZE(cgi_env); i_ce++) {
 			const struct cgi_env_descr *ce_d = &cgi_env[i_ce];
 			char *val = *(char **) ((void *) hreq + ce_d->hreq_offset);
@@ -407,13 +408,13 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 				HTTPD_ERROR("have no space to write environment\n");
 				exit(1);
 			}
-			envp[i_ce] = ebp;
+			envp[n_ce++] = ebp;
 
 			ebp += printed + 1;
 			env_sz -= printed + 1;
 		}
 
-		envp[ARRAY_SIZE(envp) - 1] = NULL;
+		envp[n_ce] = NULL;
 
 		dup2(cinfo->ci_sock, STDIN_FILENO);
 		dup2(cinfo->ci_sock, STDOUT_FILENO);
@@ -422,7 +423,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 #if 0
 		execve(cmdname, argv, envp);
 #else
-		for (i_ce = 0; i_ce < ARRAY_SIZE(envp) - 1; i_ce++) {
+		for (i_ce = 0; envp[i_ce]; i_ce++) {
 			if (putenv(envp[i_ce])) {
 				HTTPD_ERROR("putenv failed\n");
 				exit(1);
