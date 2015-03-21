@@ -82,7 +82,7 @@ static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 	assert((buff != NULL) || (buff_sz == 0));
 	total_len = 0;
 
-	do {
+	while (buff_sz != 0) {
 		int err;
 
 		skb = skb_queue_front(&sk->rx_queue);
@@ -128,7 +128,7 @@ static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 		if (skb->p_data == skb->p_data_end) {
 			skb_free(skb);
 		}
-	} while (buff_sz != 0);
+	}
 
 	sk->rx_data_len -= total_len;
 	msg->msg_iov->iov_len = total_len;
