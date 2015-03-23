@@ -443,23 +443,33 @@ size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
 	return len;
 }
 
-int skb_write_iovec(const void *buf, int buflen, struct iovec *iov, int iovlen) {
-	int i_io;
-	const void *buf_p;
+int skb_iovec_buf(const struct iovec *iov, int iovlen, const void *buf, int buflen) {
+	const void *const buf_e = buf + buflen;
+	const void *buf_p = buf;
+	int i_io = 0;
 
-	buf_p = buf;
+	while (buf_p < buf_e && i_io < iovlen) {
+		const int to_copy = min(iov[i_io].iov_len, buf_e - buf_p);
 
-	for (i_io = 0; i_io < iovlen; i_io++) {
-		int this_io_len, buf_remain;
+		memcpy(iov[i_io].iov_base, buf_p, to_copy);
+		buf_p += to_copy;
+		++i_io;
+	}
 
-		buf_remain = buflen - (buf_p - buf);
-		if (buf_remain == 0) {
-			break;
-		}
+	return buf_p - buf;
+}
 
-		this_io_len = min(iov[i_io].iov_len, buf_remain);
-		memcpy(iov[i_io].iov_base, buf_p, this_io_len);
-		buf_p += this_io_len;
+int skb_buf_iovec(void *buf, int buflen, struct iovec *iov, int iovlen) {
+	void *const buf_e = buf + buflen;
+	void *buf_p = buf;
+	int i_io = 0;
+
+	while (buf_p < buf_e && i_io < iovlen) {
+		const int to_copy = min(iov[i_io].iov_len, buf_e - buf_p);
+
+		memcpy(buf_p, iov[i_io].iov_base, to_copy);
+		buf_p += to_copy;
+		++i_io;
 	}
 
 	return buf_p - buf;
