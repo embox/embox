@@ -183,8 +183,7 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 	}
 
 	skb_free(skb);
-	msg->msg_iov->iov_len = n_byte; /* XXX */
-	return 0;
+	return n_byte;
 }
 
 static int packet_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
