@@ -175,10 +175,10 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 		 * The problem is that Embox's TUN (src/drivers/tun.c) fill MAC, but it should'nt.
 		 */
 		if (!strncmp(skb->dev->name, "tun", 3)) {
-			n_byte = skb_write_iovec(msg->msg_iov, msg->msg_iovlen,
+			n_byte = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen,
 					skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw));
 		} else {
-			n_byte = skb_write_iovec(msg->msg_iov, msg->msg_iovlen, skb->mac.raw, skb->len);
+			n_byte = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen, skb->mac.raw, skb->len);
 		}
 	}
 
