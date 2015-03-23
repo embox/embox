@@ -205,6 +205,6 @@ static DLIST_DEFINE(raw_sock_list);
 
 static const struct sock_proto_ops raw_sock_ops_struct = {
 	.sendmsg   = raw_sendmsg,
-	.recvmsg   = sock_nonstream_recvmsg,
+	.recvmsg   = sock_dgram_recvmsg,
 	.sock_list = &raw_sock_list
 };

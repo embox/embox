@@ -99,7 +99,7 @@ static int udp_fillmsg(struct sock *sk, struct msghdr *msg,
 
 static const struct sock_proto_ops udp_sock_ops_struct = {
 	.sendmsg   = udp_sendmsg,
-	.recvmsg   = sock_nonstream_recvmsg,
+	.recvmsg   = sock_dgram_recvmsg,
 	.fillmsg   = udp_fillmsg,
 	.sock_list = &udp_sock_list
 };

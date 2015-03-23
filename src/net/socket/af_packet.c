@@ -162,8 +162,8 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 	assert(sk->opt.so_type == SOCK_DGRAM || sk->opt.so_type == SOCK_RAW);
 
 	if (sk->opt.so_type == SOCK_DGRAM) {
-		n_byte = skb_write_iovec(skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw),
-				msg->msg_iov, msg->msg_iovlen);
+		n_byte = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen,
+				skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw));
 	} else if (sk->opt.so_type == SOCK_RAW) {
 		/*
 		 * See https://www.kernel.org/doc/Documentation/networking/tuntap.txt
@@ -175,10 +175,10 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 		 * The problem is that Embox's TUN (src/drivers/tun.c) fill MAC, but it should'nt.
 		 */
 		if (!strncmp(skb->dev->name, "tun", 3)) {
-			n_byte = skb_write_iovec(skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw),
-					msg->msg_iov, msg->msg_iovlen);
+			n_byte = skb_write_iovec(msg->msg_iov, msg->msg_iovlen,
+					skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw));
 		} else {
-			n_byte = skb_write_iovec(skb->mac.raw, skb->len, msg->msg_iov, msg->msg_iovlen);
+			n_byte = skb_write_iovec(msg->msg_iov, msg->msg_iovlen, skb->mac.raw, skb->len);
 		}
 	}
 
