@@ -134,12 +134,7 @@ int sock_dgram_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	skb_free(skb);
 
-#if 0 //XXX
 	return nrecv;
-#else
-	msg->msg_iov->iov_len = nrecv;
-	return 0;
-#endif
 }
 
 int sock_stream_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
@@ -186,12 +181,7 @@ int sock_stream_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	sk->rx_data_len -= total_len;
 
-#if 0 //XXX
 	return total_len;
-#else
-	msg->msg_iov->iov_len = total_len;
-	return 0;
-#endif
 }
 
 in_port_t sock_inet_get_src_port(const struct sock *sk) {

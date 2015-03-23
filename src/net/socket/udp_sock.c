@@ -79,7 +79,11 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	udp4_set_check_field(skb->h.uh, skb->nh.iph);
 
 	assert(sk->o_ops->snd_pack);
-	return sk->o_ops->snd_pack(skb);
+	ret = sk->o_ops->snd_pack(skb);
+	if (0 > ret) {
+		return ret;
+	}
+	return data_len;
 }
 
 static DLIST_DEFINE(udp_sock_list);

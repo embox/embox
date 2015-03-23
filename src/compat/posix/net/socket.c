@@ -77,7 +77,7 @@ int bind(int sockfd, const struct sockaddr *addr,
 		return SET_ERRNO(EINVAL);
 
 	ret = kbind(sk, addr, addrlen);
-	if (ret != 0){
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -95,7 +95,7 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 		return SET_ERRNO(EINVAL);
 
 	ret = kconnect(sk, addr, addrlen, sk->idesc.idesc_flags);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
 
@@ -110,7 +110,7 @@ int listen(int sockfd, int backlog) {
 	socket_idesc_check(sockfd, sk);
 
 	ret = klisten(sk, backlog);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
 
@@ -131,7 +131,7 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	}
 
 	ret = kaccept(sk, addr, addrlen, sk->idesc.idesc_flags, &new_sk);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
 
@@ -176,11 +176,10 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 	iov.iov_len = size;
 
 	ret = ksendmsg(sk, &msg, sk->idesc.idesc_flags);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
-
-	return iov.iov_len;
+	return ret;
 }
 /* open? write */
 ssize_t sendto(int sockfd, const void *buff, size_t size,
@@ -216,12 +215,12 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 	iov.iov_len = size;
 
 	ret = ksendmsg(sk, &msg, sk->idesc.idesc_flags);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
-
-	return iov.iov_len;
+	return ret;
 }
+
 /* open? write */
 ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	int ret;
@@ -248,11 +247,10 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 	msg_.msg_flags = flags;
 
 	ret = ksendmsg(sk, &msg_, sk->idesc.idesc_flags);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
-
-	return msg_.msg_iov->iov_len;
+	return ret;
 }
 
 /* read */
@@ -283,11 +281,11 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 	iov.iov_len = size;
 
 	ret = krecvmsg(sk, &msg, sk->idesc.idesc_flags);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
 
-	return iov.iov_len;
+	return ret;
 }
 /* open? read */
 ssize_t recvfrom(int sockfd, void *buff, size_t size,
@@ -320,7 +318,7 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 	iov.iov_len = size;
 
 	ret = krecvmsg(sk, &msg, sk->idesc.idesc_flags);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
 
@@ -328,7 +326,7 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 		*addrlen = msg.msg_namelen;
 	}
 
-	return iov.iov_len;
+	return ret;
 }
 
 /* open? read */
@@ -358,7 +356,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 	msg_.msg_flags = flags;
 
 	ret = krecvmsg(sk, &msg_, sk->idesc.idesc_flags);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
 
@@ -366,7 +364,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 	msg->msg_namelen = msg_.msg_namelen;
 	msg->msg_flags = msg_.msg_flags;
 
-	return msg_.msg_iov->iov_len;
+	return ret;
 }
 
 /* fcntl */
@@ -380,7 +378,7 @@ int shutdown(int sockfd, int how) {
 		return SET_ERRNO(EINVAL);
 
 	ret = kshutdown(sk, how);
-	if (ret != 0){
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -400,7 +398,7 @@ int getsockname(int sockfd, struct sockaddr *addr,
 	}
 
 	ret = kgetsockname(sk, addr, addrlen);
-	if (ret != 0){
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -421,7 +419,7 @@ int getpeername(int sockfd, struct sockaddr *addr,
 	}
 
 	ret = kgetpeername(sk, addr, addrlen);
-	if (ret != 0){
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -441,7 +439,7 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 	}
 
 	ret = kgetsockopt(sk, level, optname, optval, optlen);
-	if (ret != 0){
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -460,7 +458,7 @@ int setsockopt(int sockfd, int level, int optname,
 	}
 
 	ret = ksetsockopt(sk, level, optname, optval, optlen);
-	if (ret != 0) {
+	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
 

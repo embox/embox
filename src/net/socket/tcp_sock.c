@@ -376,20 +376,21 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	return 0;
 }
 
-static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
-	size_t bytes;
+static int tcp_write(struct tcp_sock *tcp_sk, void *buff, size_t len) {
+	void *pb;
 	struct sk_buff *skb;
 	int ret;
 
+	pb = buff;
 	while (len != 0) {
 		/* Previous comment: try to send wholly msg
 		 * We must pass no more than 64k bytes to underlaying IP level */
-		bytes = min(len, IP_MAX_PACKET_LEN - MAX_HEADER_SIZE);
+		size_t bytes = min(len, IP_MAX_PACKET_LEN - MAX_HEADER_SIZE);
 		skb = NULL; /* alloc new pkg */
 
 		ret = alloc_prep_skb(tcp_sk, 0, &bytes, &skb);
 		if (ret != 0) {
-			return len;
+			break;
 		}
 
 		debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
@@ -399,15 +400,15 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 				sock_inet_get_src_port(to_sock(tcp_sk)),
 				TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
 
-		memcpy(skb->h.th + 1, buff, bytes);
-		buff += bytes;
+		memcpy(skb->h.th + 1, pb, bytes);
+		pb += bytes;
 		len -= bytes;
 		/* Fill TCP header */
 		skb->h.th->psh = (len == 0);
 		tcp_set_ack_field(skb->h.th, tcp_sk->rem.seq);
 		send_seq_from_sock(tcp_sk, skb);
 	}
-	return len;
+	return pb - buff;
 }
 
 #if MAX_SIMULTANEOUS_TX_PACK > 0
@@ -485,8 +486,11 @@ sendmsg_again:
 		sched_unlock();
 
 		len = tcp_write(tcp_sk, msg->msg_iov->iov_base, msg->msg_iov->iov_len);
-		msg->msg_iov->iov_len -= len;
-		return tcp_wait_tx_ready(sk, timeout);
+		ret = tcp_wait_tx_ready(sk, timeout);
+		if (0 > ret) {
+			return ret;
+		}
+		return len;
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
 	case TCP_CLOSING:
