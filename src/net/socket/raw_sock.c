@@ -198,7 +198,11 @@ static int raw_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 
 	assert(sk->o_ops->snd_pack != NULL);
-	return sk->o_ops->snd_pack(skb);
+	ret = sk->o_ops->snd_pack(skb);
+	if (0 > ret) {
+		return ret;
+	}
+	return data_len;
 }
 
 static DLIST_DEFINE(raw_sock_list);
