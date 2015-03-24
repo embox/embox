@@ -552,7 +552,7 @@ static int ohci_pci_init(struct pci_slot_dev *pci_dev) {
 		return -ENOMEM;
 	}
 
-	ret = irq_attach(pci_dev->irq, ohci_irq, 0, hcd, "ohci irq");
+	ret = irq_attach(pci_dev->irq, ohci_irq, IF_SHARESUP, hcd, "ohci irq");
 	if (0 != ret) {
 		return ret;
 	}
