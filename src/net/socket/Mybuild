@@ -18,8 +18,10 @@ module tcp_sock {
 
 	depends route
 	depends sock
+	depends tcp
+	depends skbuff
 	depends embox.compat.posix.net.inet_addr
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.LibCString     /* memset, memcpy */
 	depends embox.mem.pool
 	depends embox.framework.LibFrameworkNet
 }
