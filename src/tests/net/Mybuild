@@ -52,3 +52,8 @@ module raw_socket_test {
 	depends embox.net.af_inet
 	depends embox.net.af_packet
 }
+
+module skb_iovec {
+	source "skb_iovec_test.c"
+	depends embox.net.skbuff
+}
