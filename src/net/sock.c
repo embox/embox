@@ -81,23 +81,20 @@ static struct sk_buff *sock_get_skb(struct sock *sk, unsigned long timeout, int 
 
 	sched_lock();
 	{
-		while (1) {
+		do {
 			skb = skb_queue_front(&sk->rx_queue);
 			if (skb) {
-				break;
-			}
-
-			if (!timeout) {
 				err = 0;
 				break;
 			}
-
-			err = sock_wait(sk, POLLIN | POLLERR, timeout);
-			if (err) {
-				break;
+			err = -sock_err(sk);
+			if (!err) {
+				if (timeout == 0) {
+					break;
+				}
+				err = sock_wait(sk, POLLIN | POLLERR, timeout);
 			}
-
-		};
+		} while (!err);
 	}
 	sched_unlock();
 
@@ -138,39 +135,32 @@ int sock_dgram_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 }
 
 int sock_stream_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	unsigned long timeout = sock_calc_timeout(sk);
-	size_t buff_sz, total_len, len;
+	void *buf, *bufend, *bp;
 	struct sk_buff *skb;
-	char *buff;
+	unsigned long timeout;
+	int err;
 
 	assert(msg->msg_iovlen == 1);
+	buf = msg->msg_iov->iov_base;
+	bufend = buf + msg->msg_iov->iov_len;
 
-	buff = msg->msg_iov->iov_base;
-	buff_sz = msg->msg_iov->iov_len;
+	/* TODO I think here should be a check if stream connection is closed forcibly.
+	 * See "RETURN VALUE" http://pubs.opengroup.org/onlinepubs/009695399/functions/recvfrom.html
+	 * --Alexander */
 
-	total_len = 0;
-	while (buff_sz != 0) {
-		int err;
+	timeout = sock_calc_timeout(sk);
+	bp = buf;
+	err = 0;
+	while (bp < bufend) {
+		size_t len;
 
 		skb = sock_get_skb(sk, timeout, &err);
 		if (!skb) {
-			if (err) {
-				return err;
-			}
-			/* ToDo I think this check must be placed before this do-while loop
-			 * and properly analyze either TCP connection was closed in usual way or forcibly.
-			 * See "RETURN VALUE" http://pubs.opengroup.org/onlinepubs/009695399/functions/recvfrom.html
-			 * --Alexander */
-			if (0 != (err = sock_err(sk))) {
-				return -err;
-			}
 			break;
 		}
 
-		len = skb_read(skb, buff, buff_sz);
-		buff += len;
-		buff_sz -= len;
-		total_len += len;
+		len = skb_read(skb, bp, bufend - bp);
+		bp += len;
 
 		if (skb->p_data == skb->p_data_end) {
 			skb_free(skb);
@@ -179,9 +169,12 @@ int sock_stream_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		timeout = 0;
 	}
 
-	sk->rx_data_len -= total_len;
+	if (bp == buf) {
+		return err;
+	}
 
-	return total_len;
+	sk->rx_data_len -= bp - buf;
+	return bp - buf;
 }
 
 in_port_t sock_inet_get_src_port(const struct sock *sk) {
