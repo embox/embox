@@ -52,6 +52,7 @@ static module file_ops {
 	source "ftruncate.c"
 	source "fcntl.c"
 
+	depends embox.fs.index_operation
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno
@@ -77,7 +78,6 @@ static module getcwd {
 static module open {
 	source "open.c"
 
-	depends embox.fs.index_operation
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core /* if_mounted_follow_down */
 	depends libgen
