@@ -58,21 +58,23 @@ module xattr_list {
 }
 
 module core extends fs_api {
-	source "vfs.c", "hlpr_path.c"
+	source "vfs.c"
+	source "hlpr_path.c"
 
-	depends file_desc, node
-	depends embox.fs.driver.repo
-
-	depends embox.fs.SysLibFsFull
-	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 	depends filesystem
+	depends node
+
+	depends embox.compat.libc.LibCString
+	depends embox.compat.posix.util.environ
 	depends embox.util.tree
+
+	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 }
 
 module index_operation {
 	source "index_operation.c"
-	depends fs_api
-	depends embox.kernel.task.idesc
+
+	depends embox.fs.SysLibFsFull
 }
 
 module rootfs {

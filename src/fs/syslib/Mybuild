@@ -9,6 +9,7 @@ module SysLibFsFull extends SysLibFile {
 	source "kfile.c"
 	source "kfile_node.c"
 
+	depends embox.fs.file_desc
 	depends embox.security.api
 
 	depends SysLibFileSystemFull
