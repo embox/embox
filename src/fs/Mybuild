@@ -23,8 +23,10 @@ module file_desc {
 
 	source "file_desc.c"
 	source "file_xattr.c"
-	depends xattr
+
 	depends idesc
+	depends index_operation
+	depends xattr
 
 	depends embox.kernel.task.resource.idesc_table
 }

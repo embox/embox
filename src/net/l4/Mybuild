@@ -8,6 +8,7 @@ module tcp {
 	depends embox.net.skbuff
 	depends embox.net.sock
 	depends embox.net.lib.tcp
+	depends embox.net.ipv4
 	depends embox.compat.posix.net.inet_addr
 	depends embox.kernel.time.kernel_time
 	depends embox.compat.libc.LibCAssert

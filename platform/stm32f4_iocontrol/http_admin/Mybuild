@@ -19,4 +19,5 @@ module http_admin {
 
 	depends third_party.lib.cjson
 	depends embox.compat.libc.stdlib.system
+	depends embox.compat.posix.util.environ
 }
