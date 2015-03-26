@@ -17,7 +17,7 @@ module md5sum {
 	source "md5sum.c"
 
 	depends embox.lib.LibCrypt
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.fs.core
 	depends embox.framework.LibFramework

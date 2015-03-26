@@ -19,7 +19,7 @@ package embox.cmd.sys
 module shutdown {
 	source "shutdown.c"
 
-	depends embox.compat.libc.LibCStdio
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.stdio.all
+	depends embox.compat.libc.str
 	/* FIXME: arch_shutdown() - which module? */
 }

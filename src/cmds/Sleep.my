@@ -18,7 +18,7 @@ module sleep {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "sleep.c"
 
-	depends embox.compat.libc.LibC
-	depends embox.compat.posix.util.sleep
-
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.stdlib.core       /* atol   */
+	depends embox.compat.posix.util.sleep       /* usleep */
 }

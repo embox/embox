@@ -11,7 +11,7 @@ module boundary_markers {
 module objalloc {
 	source "objalloc.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.mem.objalloc
 	depends embox.framework.example
 }
@@ -35,6 +35,6 @@ module simple_alloc {
 
 	source "simple_alloc.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.example
 }

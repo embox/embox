@@ -19,7 +19,7 @@ package embox.cmd
 module example {
 	source "example.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.example
 }

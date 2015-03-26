@@ -4,7 +4,7 @@ module affinity {
 	source "affinity.c"
 
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module env {
@@ -13,8 +13,8 @@ module env {
 	source "env.c", "env.h"
 
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.util.Array
 }
 
@@ -22,7 +22,7 @@ module errno {
 	source "errno.c"
 
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module idesc_table {
@@ -31,7 +31,7 @@ module idesc_table {
 
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.kernel.task.idesc
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module task_heap {
@@ -44,7 +44,7 @@ module mmap {
 
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.mem.mmap_api
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module mmap_notify {
@@ -53,7 +53,7 @@ module mmap_notify {
 	@NoRuntime depends embox.arch.mmu
 	@NoRuntime depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.mem.mmap_api
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module module_ptr {
@@ -65,16 +65,16 @@ module security {
 	source "security.c"
 
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 }
 
 module sig_table {
 	source "sig_table.c"
 
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 }
 
 module thread_key_table {
@@ -83,7 +83,7 @@ module thread_key_table {
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.kernel.thread.mutex
 	@NoRuntime depends embox.kernel.thread.thread_local
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.util.indexator
 }
 
@@ -91,7 +91,7 @@ module u_area {
 	source "u_area.c"
 
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module waitpid {
@@ -99,7 +99,7 @@ module waitpid {
 
 	depends embox.kernel.sched.wait_queue
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module vfork {

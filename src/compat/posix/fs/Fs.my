@@ -21,7 +21,7 @@ static module chdir {
 	source "chdir.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 }
 
 static module dirent {
@@ -30,7 +30,7 @@ static module dirent {
 
 	depends embox.fs.core
 	depends embox.mem.objalloc
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.str
 	depends embox.fs.dcache
 	depends embox.compat.posix.fs.getcwd
 }
@@ -52,6 +52,7 @@ static module file_ops {
 	source "ftruncate.c"
 	source "fcntl.c"
 
+	depends embox.fs.index_operation
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno
@@ -71,13 +72,12 @@ static module getcwd {
 	source "getcwd.c"
 
 	depends embox.compat.posix.util.environ
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.str
 }
 
 static module open {
 	source "open.c"
 
-	depends embox.fs.index_operation
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core /* if_mounted_follow_down */
 	depends libgen

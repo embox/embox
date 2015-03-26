@@ -23,7 +23,7 @@ module iperf {
 	@NoRuntime depends embox.compat.posix.net.inet_addr
 	@NoRuntime depends embox.compat.posix.pthreads
 	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.compat.libc.LibCType
+	@NoRuntime depends embox.compat.libc.type
 	@NoRuntime depends third_party.lib.libgcc_toolchain
 }
 
@@ -33,6 +33,6 @@ module iperf_stubs {
 
 	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.lib.Printk
 }

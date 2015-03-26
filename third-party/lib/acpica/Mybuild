@@ -169,6 +169,6 @@ module acpica {
 	depends embox.mem.heap_api
 	depends embox.kernel.timer.sleep_api
 	depends embox.arch.cpu
-	depends embox.compat.libc.LibCStdio
+	depends embox.compat.libc.stdio.all
 	depends embox.lib.Printk
 }

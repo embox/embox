@@ -1,7 +1,7 @@
 package third_party.ti
 
 module syslink {
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.sched
 	depends embox.compat.posix.util.sleep
 
@@ -11,7 +11,7 @@ module syslink {
 }
 
 static module libs {
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 
 	@Rule(script="$(MAKE) -C $(THIRDPARTY_DIR)/ti syslink-lib MAKEFLAGS= EMBOX_MAKEFLAGS='$(MAKEFLAGS)' THIRDPARTY_DIR=$(abspath $(THIRDPARTY_DIR)) ROOT_DIR=$(abspath $(ROOT_DIR)) EMBOX_CFLAGS='$(CFLAGS)' EMBOX_CXXFLAGS='$(CXXFLAGS)' EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' EMBOX_CC='$(CC)' EMBOX_CXX='$(CXX)' EMBOX_LD='$(LD)' EMBOX_OBJCOPY='$(OBJCOPY)'")
 

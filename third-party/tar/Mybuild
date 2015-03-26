@@ -14,8 +14,8 @@ module tar {
 	source "strip.tar.o"
 
 	@NoRuntime depends embox.compat.posix.fs.dirent
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCType
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.type
 	@NoRuntime depends embox.kernel.task.resource.errno
 
 	depends embox.compat.posix.stubs

@@ -33,8 +33,8 @@ module multi extends api {
 	 * thread_self to determine current thread
 	 */
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 }
 
 module single extends api {
@@ -43,21 +43,21 @@ module single extends api {
 
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 }
 
 module task_no_table extends task_table_api {
 	source "task_no_table.h"
 
 	@NoRuntime depends embox.kernel.task.kernel_task
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module task_resource {
 	source "task_resource.c", "task_resource.lds.S"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.util.Array
 }
 
@@ -65,6 +65,6 @@ module task_table extends task_table_api {
 	option number task_table_size=32
 	source "task_table.c"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 

@@ -23,8 +23,10 @@ module file_desc {
 
 	source "file_desc.c"
 	source "file_xattr.c"
-	depends xattr
+
 	depends idesc
+	depends index_operation
+	depends xattr
 
 	depends embox.kernel.task.resource.idesc_table
 }
@@ -56,21 +58,23 @@ module xattr_list {
 }
 
 module core extends fs_api {
-	source "vfs.c", "hlpr_path.c"
+	source "vfs.c"
+	source "hlpr_path.c"
 
-	depends file_desc, node
-	depends embox.fs.driver.repo
-
-	depends embox.fs.SysLibFsFull
-	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 	depends filesystem
+	depends node
+
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.environ
 	depends embox.util.tree
+
+	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 }
 
 module index_operation {
 	source "index_operation.c"
-	depends fs_api
-	depends embox.kernel.task.idesc
+
+	depends embox.fs.SysLibFsFull
 }
 
 module rootfs {
@@ -81,13 +85,13 @@ module rootfs {
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
 	depends SysLibFileSystem
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 }
 
 module journal {
 	source "journal.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends buffer_cache
 	depends embox.mem.slab
 }
@@ -96,7 +100,7 @@ module buffer_cache {
 	source "bcache.c"
 	option number bcache_size=128
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
 

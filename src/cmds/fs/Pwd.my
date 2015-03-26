@@ -17,6 +17,6 @@ module pwd {
 	source "pwd.c"
 
 	depends embox.compat.posix.fs.getcwd
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }

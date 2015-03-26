@@ -23,7 +23,7 @@ module slist_test {
 	source "slist_test.c"
 
 	depends embox.util.LibUtil
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 
@@ -43,7 +43,7 @@ module ring_buff_test {
 module hashtable_test {
 	source "hashtable_test.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.util.hashtable
 	depends embox.framework.LibFramework
 }

@@ -4,7 +4,7 @@ module framebuffer {
 	source "framebuffer.c"
 
 	depends embox.driver.video.fb
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.example
 }

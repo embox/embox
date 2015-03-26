@@ -1,7 +1,6 @@
 package embox.compat.libc
 
-static module LibCMath {
-
+static module math {
 	@IncludePath("$(THIRDPARTY_DIR)/lib/softfloat")
 	source "soft_fp.c"
 

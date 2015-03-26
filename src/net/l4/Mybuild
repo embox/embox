@@ -8,10 +8,11 @@ module tcp {
 	depends embox.net.skbuff
 	depends embox.net.sock
 	depends embox.net.lib.tcp
+	depends embox.net.ipv4
 	depends embox.compat.posix.net.inet_addr
 	depends embox.kernel.time.kernel_time
-	depends embox.compat.libc.LibCAssert
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.assert
+	depends embox.compat.libc.str
 	depends embox.kernel.timer.sys_timer
 	depends embox.framework.net.proto
 }
@@ -24,6 +25,6 @@ module udp {
 	depends embox.net.skbuff
 	depends embox.net.icmpv4
 	depends embox.net.sock
-	depends embox.compat.libc.LibCAssert
+	depends embox.compat.libc.assert
 	depends embox.framework.net.proto
 }

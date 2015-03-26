@@ -1,6 +1,6 @@
 package embox.compat.libc
 
-static module LibCString {
+static module str {
 	source "memchr.c"
 	source "memrchr.c"
 	source "memcmp.c"
@@ -28,12 +28,11 @@ static module LibCString {
 	source "strcasecmp.c"
 	source "strncasecmp.c"
 	source "strtok.c"
-
 	source "strlcpy.c"
 	source "strnlen.c"
 }
 
-static module LibCStringDup {
+static module str_dup {
 	source "strdup.c"
 	source "strndup.c"
 	depends embox.mem.heap_api /*for strdup() */

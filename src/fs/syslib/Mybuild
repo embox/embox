@@ -9,6 +9,7 @@ module SysLibFsFull extends SysLibFile {
 	source "kfile.c"
 	source "kfile_node.c"
 
+	depends embox.fs.file_desc
 	depends embox.security.api
 
 	depends SysLibFileSystemFull
@@ -31,9 +32,14 @@ module SysLibFileSystemNone extends SysLibFileSystem {
 module SysLibFileSystemFull extends SysLibFileSystem {
 	source "kfsop.c"
 	source "fsop.c"
+
+	depends dcache
 	depends Perm
+
 	depends embox.kernel.thread.mutex
-	depends embox.compat.libc.LibCStringDup
+	depends embox.compat.libc.str_dup
+	depends embox.compat.posix.fs.open
+	depends embox.compat.posix.util.environ
 	depends embox.util.tree
 	/*depends embox.fs.core // for vfs*/
 
@@ -44,6 +50,7 @@ module Perm {
 	source "perm.c"
 
 	depends embox.security.api
+	depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.compat.posix.proc.All
 }
 

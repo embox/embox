@@ -3,7 +3,7 @@ package embox.example.util
 module readline {
 	source "readline.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends third_party.lib.linenoise
 	depends embox.framework.example
 }

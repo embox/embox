@@ -5,7 +5,7 @@ module fb {
 	source "fb.c"
 	option number fb_amount=2
 	depends embox.mem.pool
-	@NoRuntime depends embox.compat.libc.LibC
+	@NoRuntime depends embox.compat.libc.all
 	//depends embox.fs.rootfs
 	depends fb_videomodes
 	//depends embox.driver.virtual.fb_device
@@ -16,7 +16,7 @@ module bochs {
 
 	depends embox.driver.pci
 	@NoRuntime depends fb
-	@NoRuntime depends embox.compat.libc.LibC
+	@NoRuntime depends embox.compat.libc.all
 }
 
 module cirrus_logic {

@@ -22,6 +22,6 @@ module getmail {
 
 	depends embox.compat.posix.util.getpass
 	depends embox.net.lib.pop3
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }

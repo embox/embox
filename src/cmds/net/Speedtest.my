@@ -20,7 +20,7 @@ module speedtest {
 
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.net.socket
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

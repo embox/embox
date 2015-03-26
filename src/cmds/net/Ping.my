@@ -51,9 +51,9 @@ module ping {
 	depends embox.net.af_inet
 	depends embox.net.raw_sock
 	depends embox.net.ipv4 /* sock_get_secure_level, skb_get_secure_level */
-	depends embox.compat.libc.LibCStdioFileOps
-	depends embox.compat.libc.LibCStdioPerror
-	depends embox.compat.libc.LibCStdioScanf
+	depends embox.compat.libc.stdio.file_ops
+	depends embox.compat.libc.stdio.perror
+	depends embox.compat.libc.stdio.scanf
 	depends embox.kernel.timer.sys_timer
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.net.inet_addr

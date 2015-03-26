@@ -31,7 +31,7 @@ package embox.cmd
 module wmem {
 	source "wmem.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

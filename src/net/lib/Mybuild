@@ -3,8 +3,8 @@ package embox.net.lib
 module arp {
 	source "arp.c"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 }
 
 module bootp {
@@ -30,30 +30,30 @@ module getifaddrs {
 module icmpv4 {
 	source "icmpv4.c"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.lib.ipv4
 }
 
 module icmpv6 {
 	source "icmpv6.c"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.lib.ipv6
 }
 
 module ipv4 {
 	source "ipv4.c"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 }
 
 module ipv6 {
 	source "ipv6.c"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 }
 
 module ntp {
@@ -80,7 +80,7 @@ module smtp {
 module tcp {
 	source "tcp.c"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.net.lib.ipv4
 	@NoRuntime depends embox.net.lib.ipv6
 }
@@ -88,7 +88,7 @@ module tcp {
 module udp {
 	source "udp.c"
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.net.lib.ipv4
 	@NoRuntime depends embox.net.lib.ipv6
 }

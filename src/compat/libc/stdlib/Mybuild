@@ -33,7 +33,7 @@ static module system {
 	depends embox.cmd.sh.shell
 }
 
-static module LibCStdlib {
+static module all {
 	depends core,
 		config,
 		rand,

@@ -4,13 +4,13 @@ package embox.example.framework
 module array_registry {
 	source "array_registry.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.example
 }
 
 module module_check {
 	source "module_check.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.example
 }

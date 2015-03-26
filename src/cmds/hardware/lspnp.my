@@ -23,7 +23,7 @@ module lspnp {
 	@IncludePath("$(CONF_DIR)")
 	source "lspnp.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.driver.amba_registry
 	depends embox.driver.ambapp_api
 	depends embox.compat.posix.util.getopt

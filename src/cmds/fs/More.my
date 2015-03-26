@@ -18,7 +18,7 @@ package embox.cmd.fs
 module more {
 	source "more.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibCurses
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file

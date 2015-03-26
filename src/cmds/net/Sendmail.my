@@ -22,6 +22,6 @@ module sendmail {
 
 	depends embox.compat.posix.util.getpass
 	depends embox.net.lib.smtp
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
