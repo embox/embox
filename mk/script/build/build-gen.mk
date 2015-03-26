@@ -171,7 +171,11 @@ annotation_value = $(call get,$(call invoke,$1,getAnnotationValuesOfOption,$2),v
 @build_initfs := \
 	$(build_model:%=build-initfs-rmk/%)
 
+@build_include_install := \
+	$(build_model:%=build-include_install-rmk/%)
+
 @build_all = \
+	$(@build_include_install) \
 	$(@build_image) \
 	$(@build_include_mk) \
 	$(@build_initfs)
@@ -237,6 +241,9 @@ $(@build_include_mk) : module_extbld_rmk = \
 $(@build_include_mk) : initfs_rmk = \
 		$(patsubst %,$(value build_initfs_rmk_mk_pat),$(build_initfs))
 
+#$(@build_include_mk) : include_install_rmk = \
+#		$(patsubst %,$(value build_include_install_rmk_mk_pat),$(build_include_install))
+
 $(@build_include_mk) : cmd_file = $(@file).cmd
 $(@build_include_mk) :
 	@$(call cmd_assemble,$(cmd_file), \
@@ -276,6 +283,29 @@ $(@build_initfs) :
 		$(call gen_make_tsvar_list,$(target_file),cpio_files,$(cpio_files)); \
 		$(call gen_make_var_list,__cpio_files,$(cpio_files)))
 
+####################
+
+build_include_install := include_install
+
+$(@build_include_install) : include_install = $(build_include_install)
+
+build_include_install_rmk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
+build_include_install_rmk_target_pat = $(INCLUDE_INSTALL)
+
+$(@build_include_install) : @file    = $(include_install:%=$(build_include_install_rmk_mk_pat))
+$(@build_include_install) : mk_file  = \
+		$(patsubst %,$(value build_include_install_rmk_mk_pat),$$(build_include_install))
+$(@build_include_install) : target_file = \
+		$(patsubst %,$(value build_include_install_rmk_target_pat),$$(build_include_install))
+
+$(@build_include_install) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_banner); \
+		$(call gen_make_var,build_include_install,$(include_install)); \
+		$(call gen_make_dep,$(target_file),$$$$(include_install_prerequisites)); \
+		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)));
+
+##################
 #
 # Per-module artifacts.
 #
@@ -508,6 +538,17 @@ my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 		$(patsubst %,source-gen/%$s, \
 			$(call source_annotation_values,$s,$(my_gen_script))))
 
+#####################
+my_include_install := $(call mybuild_resolve_or_die,mybuild.lang.IncludeExport)
+my_include_install_dir := $(call mybuild_resolve_or_die,mybuild.lang.IncludeExport.path)
+my_include_install_target_name := $(call mybuild_resolve_or_die,mybuild.lang.IncludeExport.target_name)
+
+@source_include_install := \
+	$(foreach s,$(build_sources), \
+		$(patsubst %,source-include-install/%$s, \
+			$(call source_annotations,$s,$(my_include_install))))
+#####################
+
 my_initfs := $(call mybuild_resolve_or_die,mybuild.lang.InitFS)
 my_initfs_target_dir := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target_dir)
 my_initfs_target_name := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target_name)
@@ -542,6 +583,7 @@ $(@source_mk_rmk)  : kind := mk
 $(@source_cpp_rmk) : kind := cpp
 
 @source_rmk += \
+	$(@source_include_install) \
 	$(@source_initfs_cp_rmk)
 
 # task/???.module.source
@@ -667,6 +709,26 @@ $(@source_gen) :
 	+@$(call cmd_notouch_stdout,$(@file), \
 		$(script))
 
+###########################
+source_include_install_dir=$(call get,$(call source_annotation_values,$s,$(my_include_install_dir)),value)
+source_include_install_target_name=$(or $(strip \
+	$(call get,$(call source_annotation_values,$s,$(my_include_install_target_name)),value)),$(call get,$s,fileName))
+source_include_install_out = $(addprefix $$(INCUDE_INSTALL_DIR)/, \
+	       $(foreach s,$1,$(source_include_install_dir)/$(source_include_install_target_name)))
+
+$(@source_include_install) : out = $(call source_include_install_out,$@)
+$(@source_include_install) : src_file = $(file)
+$(@source_include_install) : mk_file = $(patsubst %,$(value source_rmk_mk_pat),$(file))
+$(@source_include_install) : kind := include_install_cp
+
+$(@source_include_install) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out),src_file,$(src_file)); \
+		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
+		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)))
+
+#############################
 
 ifdef GEN_DIST
 
