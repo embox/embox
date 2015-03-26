@@ -18,7 +18,7 @@ module jffs2 {
 	source "jffs2.c"
 
 	depends embox.driver.flash_emu
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.driver.flash

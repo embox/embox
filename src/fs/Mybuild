@@ -64,7 +64,7 @@ module core extends fs_api {
 	depends filesystem
 	depends node
 
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.str
 	depends embox.compat.posix.util.environ
 	depends embox.util.tree
 
@@ -85,13 +85,13 @@ module rootfs {
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
 	depends SysLibFileSystem
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 }
 
 module journal {
 	source "journal.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends buffer_cache
 	depends embox.mem.slab
 }
@@ -100,7 +100,7 @@ module buffer_cache {
 	source "bcache.c"
 	option number bcache_size=128
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
 

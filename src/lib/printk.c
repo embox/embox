@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 
-#include <module/embox/compat/libc/Print.h>
+#include <module/embox/compat/libc/stdio/print.h>
 
 static void printk_printchar(struct printchar_handler_data *d, int c) {
 	diag_putc(c);

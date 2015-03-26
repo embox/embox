@@ -3,7 +3,7 @@ package embox.example.kernel
 module syscall_example {
 	source "syscall_example.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.kernel.syscall
 	depends embox.arch.syscall_caller
 	depends embox.framework.example

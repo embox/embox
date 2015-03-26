@@ -24,7 +24,7 @@ module page {
 module heap {
 	source "heap.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.mem.heap_api
 	depends embox.framework.LibFramework
 }

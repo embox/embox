@@ -56,7 +56,7 @@ static module tree {
 static module indexator {
 	source "indexator.c"
 
-	depends embox.compat.libc.LibCAssert
+	depends embox.compat.libc.assert
 	depends embox.compat.libc.stdlib.core
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.str
 }

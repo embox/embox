@@ -1,6 +1,6 @@
 package embox.compat.libc
 
-static module LibCTime {
+static module time {
 	source "ctime.c"
 	source "strftime.c"
 }

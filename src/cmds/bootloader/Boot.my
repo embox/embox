@@ -27,7 +27,7 @@ package embox.cmd
 module boot {
 	source "boot.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

@@ -24,7 +24,7 @@ package embox.cmd.fs
 module mkpart {
 	source "mkpart.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.fsop
 	depends embox.fs.core

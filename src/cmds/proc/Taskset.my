@@ -16,7 +16,7 @@ package embox.cmd.proc
 module taskset {
 	source "taskset.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.kernel.task.api
 	depends embox.kernel.task.resource.affinity
 }

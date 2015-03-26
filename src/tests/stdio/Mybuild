@@ -3,13 +3,13 @@ package embox.test.stdio
 module printf_test {
 	source "printf_test.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 
 module scanf_test {
 	source "scanf_test.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }

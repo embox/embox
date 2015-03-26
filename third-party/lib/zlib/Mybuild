@@ -5,8 +5,8 @@ static module zlib_download { }
 
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 static module libs {
-	depends embox.compat.libc.LibC
-	depends embox.compat.libc.LibCMath
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libz.a"

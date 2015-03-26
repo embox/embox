@@ -21,7 +21,7 @@ module nice {
 	source "nice.c"
 
 	depends embox.compat.posix.proc.priority
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.cmd
 	depends embox.framework.LibFramework
 }

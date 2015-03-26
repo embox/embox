@@ -29,7 +29,7 @@ module null {
 module zero {
 	source "zero.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.fs.driver.devfs
 }
 

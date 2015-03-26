@@ -24,6 +24,6 @@ module ntpd {
 	depends embox.framework.LibFramework
 	depends embox.kernel.time.timekeeper
 	depends embox.kernel.timer.sys_timer
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.net.lib.ntp
 }

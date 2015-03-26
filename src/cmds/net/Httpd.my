@@ -22,7 +22,7 @@ module httpd {
 	option boolean use_real_cmd=false
 	source "httpd.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.proc.vfork

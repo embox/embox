@@ -37,7 +37,7 @@ module SysLibFileSystemFull extends SysLibFileSystem {
 	depends Perm
 
 	depends embox.kernel.thread.mutex
-	depends embox.compat.libc.LibCStringDup
+	depends embox.compat.libc.str_dup
 	depends embox.compat.posix.fs.open
 	depends embox.compat.posix.util.environ
 	depends embox.util.tree

@@ -16,6 +16,6 @@ package embox.cmd.proc
 module ps {
 	source "ps.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.kernel.task.api
 }

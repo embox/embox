@@ -11,5 +11,5 @@ module rpc {
 
 	depends embox.util.sys_log
 	depends embox.kernel.time.kernel_time
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 }

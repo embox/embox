@@ -24,6 +24,6 @@ module nslookup {
 	source "nslookup.c"
 
 	depends embox.net.lib.dns
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }

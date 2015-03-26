@@ -9,7 +9,7 @@ package embox.cmd.fs
 module mandatory {
 	source "mandatory.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

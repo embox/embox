@@ -3,6 +3,6 @@ package embox.example
 module hello {
 	source "hello.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.example
 }

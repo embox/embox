@@ -8,17 +8,17 @@ module rl_linenoise extends readline_api {
 	source "readline/rl_linenoise.c"
 
 	depends embox.compat.posix.fs.dirent
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends third_party.lib.linenoise
-	depends embox.compat.libc.LibCStringDup
+	depends embox.compat.libc.str_dup
 }
 
 
 static module LibElf {
 	source "elf/elf.c"
 
-	@NoRuntime depends embox.compat.libc.LibCStdio
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.stdio.all
+	@NoRuntime depends embox.compat.libc.str
 }
 
 
@@ -30,5 +30,5 @@ static module Printk {
 	source "printk.c"
 
 	depends embox.driver.diag
-	@NoRuntime depends embox.compat.libc.Print
+	@NoRuntime depends embox.compat.libc.stdio.print
 }

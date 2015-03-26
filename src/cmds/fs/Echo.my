@@ -14,7 +14,7 @@ package embox.cmd.fs
 module echo {
 	source "echo.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file
 	depends embox.framework.LibFramework

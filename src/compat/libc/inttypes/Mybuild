@@ -1,6 +1,6 @@
 package embox.compat.libc
 
-static module LibCInttypes {
+static module int_types {
 	source "imaxmath.c"
 	source "strtoimax.c"
 	source "strtoumax.c"

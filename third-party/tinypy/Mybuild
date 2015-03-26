@@ -15,7 +15,7 @@ package third_party
 module tinypy {
 	source "^BUILD/extbld/^MOD_PATH/install/tinypy.o"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.compat.libc.stdlib.system
 	depends embox.framework.LibFramework
