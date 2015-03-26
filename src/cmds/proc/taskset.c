@@ -6,8 +6,6 @@
  * @author Anton Bulychev
  */
 
-#include <embox/cmd.h>
-
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -18,13 +16,11 @@
 #include <kernel/task/resource/affinity.h>
 #include <kernel/task/task_table.h>
 
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: taskset -p [mask] tid\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	int tid;
 	struct task *task;

@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "top",
 	help = "display processes",
 	man = '''
@@ -16,5 +17,5 @@ module top {
 	source "top.c"
 
 	depends embox.kernel.task.resource.u_area
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 }

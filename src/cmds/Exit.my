@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name="exit",
 	help="exit from shell",
 	man="")
@@ -7,6 +8,7 @@ module exit {
 	source "exit.c"
 }
 
+@AutoCmd
 @Cmd(name="logout",
 	help="logout current user",
 	man="")

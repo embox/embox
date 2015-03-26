@@ -8,7 +8,6 @@
 
 #include <kernel/thread.h>
 #include <kernel/addr_space.h>
-#include <profiler/tracing/trace.h>
 
 static struct thread *saved_prev __cpudata__; // XXX
 
@@ -36,8 +35,6 @@ static void thread_prepare_switch(struct thread *prev, struct thread *next) {
 
 void thread_switch(struct thread *prev, struct thread *next) {
 	thread_prepare_switch(prev, next);
-
-	trace_point(__func__);
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;

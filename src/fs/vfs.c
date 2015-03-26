@@ -126,14 +126,14 @@ void vfs_lookup_child(struct path *parent, const char *name, struct path *child)
 	vfs_lookup_childn(parent, name, strlen(name), child);
 }
 
-int vfs_lookup(struct path *parent, const char *str_path, struct path *path) {
-	if (!parent) {
-		vfs_get_root_path(parent);
-	}
+int vfs_lookup(const char *str_path, struct path *path) {
+	struct path parent;
 
-	if_mounted_follow_down(parent);
+	vfs_get_root_path(&parent);
 
-	__vfs_lookup_existing(parent, str_path, &str_path, path);
+	if_mounted_follow_down(&parent);
+
+	__vfs_lookup_existing(&parent, str_path, &str_path, path);
 
 	if (path_next(str_path, NULL)) {
 		/* Have unresolved fragments in path. */
@@ -200,11 +200,9 @@ void vfs_get_root_path(struct path *path) {
 
 void vfs_get_leaf_path(struct path *path) {
 	char *leaf_name;
-	struct path root;
 
-	vfs_get_root_path(&root);
 	if ((NULL == (leaf_name = getenv("PWD")))
-			|| (0 != vfs_lookup(&root, leaf_name, path))) {
+			|| (0 != vfs_lookup(leaf_name, path))) {
 		vfs_get_root_path(path);
 	}
 }

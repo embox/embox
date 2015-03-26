@@ -2,7 +2,7 @@
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
-#include <err.h>
+#include <util/err.h>
 #include <errno.h>
 #include <time.h>
 #include <unistd.h>

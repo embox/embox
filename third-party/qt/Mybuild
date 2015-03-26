@@ -13,7 +13,7 @@ static module core {
 		"libQtNetwork.a", "libQtSql.a", "libQtSvg.a",
 		"libQtTest.a", "libQtXml.a"
 
-	@NoRuntime depends embox.compat.libc.LibC
+	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.fs.rootfs

@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "nice",
 	help = "run a program with modified scheduling priority.",
 	man = '''
@@ -20,7 +21,7 @@ module nice {
 	source "nice.c"
 
 	depends embox.compat.posix.proc.priority
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.cmd
 	depends embox.framework.LibFramework
 }

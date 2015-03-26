@@ -7,7 +7,7 @@
  */
 
 #include <errno.h>
-#include <err.h>
+#include <util/err.h>
 #include <unistd.h>
 #include <util/dlist.h>
 
@@ -46,12 +46,7 @@ void *malloc(size_t size) {
 	ptr = mspace_malloc(size, task_self_mspace());
 
 	if (ptr == NULL) {
-		if (size == 0) {
-			return NULL;
-		} else {
-			SET_ERRNO(ENOMEM);
-			return NULL;
-		}
+		SET_ERRNO(ENOMEM);
 	}
 
 	return ptr;

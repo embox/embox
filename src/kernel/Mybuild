@@ -15,5 +15,5 @@ module Kernel {
 	depends embox.kernel.stack
 
 	depends embox.framework.runlevel
-	depends embox.compat.libc.LibCAssert
+	depends embox.compat.libc.assert
 }

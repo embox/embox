@@ -1,0 +1,33 @@
+package third_party.cmd
+
+@App
+@AutoCmd(preserve_locals=true)
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/cmd/lua/install/include")
+@Cmd(name = "lua",
+	help = "Lua interpreter",
+	man = '''
+		NAME
+			lua - Lua interpreter
+		SYNOPSIS
+			lua [script]
+		AUTHORS
+			Nikolay Korotkiy, Ilia Vaprol - Adaptation for Embox
+	''')
+module lua {
+	option boolean luasocket_support=false
+	option boolean luabitop_support=false
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "lua.o"
+
+	@InitFS
+	source "fib.lua",
+		"tofi.lua",
+		"tofi_mod.lua",
+		"doit.lua"
+
+	depends embox.mem.heap_api
+	@NoRuntime depends embox.compat.libc.all
+	@NoRuntime depends embox.lib.LibGcc
+	@NoRuntime depends embox.kernel.task.resource.errno
+}

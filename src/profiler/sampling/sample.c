@@ -33,16 +33,9 @@ static int get_hash(char *str) {
 static void sampling_timer_handler(sys_timer_t* timer, void *param) {
 	int i, nptrs, hash;
 	void *buffer[100];
-	char **bt_res;
+	char bt_str[64];
 
 	nptrs = backtrace(buffer, 100);
-
-	bt_res = backtrace_symbols(buffer, nptrs);
-
-	if (bt_res == NULL) {
-		perror("backtrace_symbols");
-		exit(EXIT_FAILURE);
-	}
 
 	/* It makes sense to start not from 0 element,
 	 * because the top of the callstack is always the same
@@ -50,36 +43,37 @@ static void sampling_timer_handler(sys_timer_t* timer, void *param) {
 	 *
 	 * Common non-informative top of the callstack looks like this:
 	 *
-	 * 0x0012d66a <backtrace+0x20>
-	 * 0x001035d4 <sampling_timer_handler+0x1f>
-	 * 0x0012aa54 <timer_strat_sched+0x84>
-	 * 0x0013c81c <soft_clock_handler+0xb>
-	 * 0x0012adac <softirq_dispatch+0xa0>
-	 * 0x0012b592 <critical_dispatch_pending+0x5c>
-	 * 0x0010030f <irq_handler+0x76>
-	 * 0x0010004c <irq_stub+0x1c>
+	 * 0x001467f6 <backtrace+0x20>
+	 * 0x00146860 <sampling_timer_handler+0x1f>
+	 * 0x00112e54 <timer_strat_sched+0x85>
+	 * 0x001793d2 <clock_handler+0xb>
+	 * 0x001112fd <lthread_process+0x5e>
+	 * 0x00181947 <__schedule+0x99>
+	 * 0x001819a2 <sched_preempt+0x17>
+	 * 0x00145a2f <critical_dispatch_pending+0x5c>
+	 * 0x00100b88 <irq_handler+0x76>
 	 * 0xdeadbabe <some_interesting_stuff_here+0x11>  That's where should we start
 	 */
 
 	for (i = shift; i < nptrs; i++) {
-		hash = get_hash(bt_res[i]) % SAMPLE_HASH_SIZE;
+		backtrace_symbol_buf(buffer[i], bt_str, sizeof(bt_str));
+		bt_str[sizeof(bt_str) - 1] = '\0';
+
+		hash = get_hash(bt_str) % SAMPLE_HASH_SIZE;
 		if (hash_array[hash] == 0) {
-			strcpy(sample_strings[hash], bt_res[i]);
+			strcpy(sample_strings[hash], bt_str);
 		}
 		hash_array[hash]++;
 	}
-	free(bt_res);
 }
 
 static int sampling_profiler_set(int interval) {
 	int res;
-	int tick_cnt;
 	interval = (interval == 0) ? (SAMPLE_TIMER_INTERVAL) : interval;
-	tick_cnt = 0;
 
-	if (ENOERR
-			!= (res = timer_set(&sampling_timer, TIMER_PERIODIC, interval, sampling_timer_handler,
-					&tick_cnt))) {
+	res = timer_set(&sampling_timer, TIMER_PERIODIC, interval,
+		sampling_timer_handler, NULL);
+	if (res) {
 		printk("Failed to install timer\n");
 		return res;
 	}
@@ -102,6 +96,11 @@ bool sampling_profiler_is_running(void){
 
 int start_profiler(int interval) {
 	int i;
+
+	if (is_running) {
+		stop_profiler();
+	}
+
 	is_running = true;
 	pow[0] = 1, hash_array[0] = 0;
 	for (i = 1; i < SAMPLE_HASH_SIZE; i++) {

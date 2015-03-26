@@ -20,14 +20,20 @@
 #include <fs/perm.h>
 
 int chdir(const char *path) {
-	struct path last, root;
+	struct path last;
 	struct stat buff;
+	char strbuf[PATH_MAX] = "";
 
-	if ((path == NULL) || (*path == '\0')
-			|| (*path != '/')) {
+	if ((path == NULL) || (*path == '\0')) {
 		SET_ERRNO(ENOENT);
 		return -1;
 	}
+
+	if (path[0] != '/') {
+		strcpy(strbuf, getenv("PWD"));
+		strcat(strbuf, "/");
+	}
+	strcat(strbuf, path);
 
 	if (strlen(path) >= PATH_MAX - 1) {
 		SET_ERRNO(ENAMETOOLONG);
@@ -35,8 +41,7 @@ int chdir(const char *path) {
 	}
 
 	/*check if such path exists in fs*/
-	vfs_get_root_path(&root);
-	if(0 != fs_perm_lookup(&root, path, NULL, &last)){
+	if(0 != fs_perm_lookup(path, NULL, &last)){
 		SET_ERRNO(ENOENT);
 		return -1;
 	}
@@ -48,7 +53,7 @@ int chdir(const char *path) {
 		return -1;
 	}
 
-	if (-1 == setenv("PWD", path, 1)) {
+	if (-1 == setenv("PWD", strbuf, 1)) {
 		assert(errno == ENOMEM); /* it is the only possible error */
 		SET_ERRNO(ENAMETOOLONG);
 		return -1;

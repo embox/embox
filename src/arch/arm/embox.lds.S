@@ -9,17 +9,21 @@ ENTRY(start)
 MEMORY {
 	MEMORY_REGION(RAM)
 	MEMORY_REGION(ROM)
+#if HAS_MEMORY_REGION(SRAM_CCM)
+	MEMORY_REGION(SRAM_CCM)
+#endif
 }
 
 _ram_base = ORIGIN(RAM);
 _ram_size = LENGTH(RAM);
+
 
 SECTIONS {
 	.text : {
 		*(.trap_table)
 		STATIC_IRQ_TABLE
 
-
+		*(.flash)
 
 		*(.text)
 		*(.text.*)

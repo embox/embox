@@ -8,6 +8,6 @@
 
 #include <net/socket/packet.h>
 
-void sock_packet_add(struct sk_buff *skb) {
+void sock_packet_add(struct sk_buff *skb, unsigned short protocol) {
 
 }

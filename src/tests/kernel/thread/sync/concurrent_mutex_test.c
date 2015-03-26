@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 #include <unistd.h>
 
 static struct thread *t1, *t2;

@@ -1,0 +1,8 @@
+package embox.compat.posix
+
+static module LibCurses {
+	source "curses.c"
+
+	depends embox.compat.posix.termios
+	depends embox.mem.pool
+}

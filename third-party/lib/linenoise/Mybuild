@@ -3,8 +3,8 @@ package third_party.lib
 module linenoise {
 	source "linenoise.c"
 
-	depends embox.compat.libc.LibC
-	depends embox.compat.libc.LibCStringDup
+	depends embox.compat.libc.all
+	depends embox.compat.libc.str_dup
 	depends embox.mem.heap_api
 	depends embox.mem.sysmalloc_api
 	depends embox.compat.posix.fs.file

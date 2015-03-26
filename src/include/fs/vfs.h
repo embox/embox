@@ -57,7 +57,7 @@ extern void vfs_create_child(struct path *parent, const char *name, mode_t mode,
 extern int vfs_create_intermediate(struct path *parent, const char *path, mode_t mode,
 		struct path *child);
 
-extern int vfs_lookup(struct path *parent, const char *str_path, struct path *path);
+extern int vfs_lookup(const char *str_path, struct path *path);
 extern void vfs_lookup_child(struct path *parent, const char *name, struct path *child);
 extern void vfs_lookup_childn(struct path *parent, const char *name, size_t len,
 		struct path *child);

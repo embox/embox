@@ -97,6 +97,13 @@ SECTIONS {
 	_bss_len = _bss_end - _bss_vma;
 	_bss_len_with_reserve = SIZEOF(.bss);
 
+#if HAS_SECTION_REGION(heap)
+	.heap : ALIGN(DATA_ALIGNMENT) {
+		*(.heap)
+		*(.heap.*)
+	} SECTION_REGION(heap)
+#endif
+
 	/DISCARD/ : {
 		*(.comment)
 		*(.note.*)

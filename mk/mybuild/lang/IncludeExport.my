@@ -1,0 +1,6 @@
+package mybuild.lang
+
+annotation IncludeExport {
+	string path
+	string target_name
+}

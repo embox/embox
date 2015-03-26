@@ -9,11 +9,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <embox/cmd.h>
 
-EMBOX_CMD(exit_main);
-
-static int exit_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int ecode = 0;
 
 	if ((0 == strcmp(argv[0], "exit")) && argc != 1) {

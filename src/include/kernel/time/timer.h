@@ -53,8 +53,13 @@ struct sys_timer {
 static inline bool timer_is_preallocated(struct sys_timer *tmr) {
 	return tmr->state & TIMER_STATE_PREALLOC;
 }
+
 static inline void timer_set_preallocated(struct sys_timer *tmr) {
 	tmr->state |= TIMER_STATE_PREALLOC;
+}
+
+static inline void timer_clear_preallocated(struct sys_timer *tmr) {
+	tmr->state &= ~TIMER_STATE_PREALLOC;
 }
 
 static inline bool timer_is_started(struct sys_timer *tmr) {
@@ -89,8 +94,15 @@ typedef struct sys_timer sys_timer_t;
  * @retval non-0 if the timer isn't set
  */
 extern int timer_init_msec(struct sys_timer *tmr, unsigned int flags, uint32_t ticks,
-		sys_timer_handler_t handle, void *param);
+		sys_timer_handler_t handler, void *param);
 
+/**
+ * Set @c handle timer for executing every @c jiffies of hardware timer ticks.
+ *
+ * @see description of timer_set().
+ * @remarks
+ *    This function should call @c handler NO LESS then after @c jiffies ticks.
+ */
 extern int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 		sys_timer_handler_t handler, void *param);
 
@@ -99,7 +111,6 @@ extern int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies
  * Memory for set_tmr instance will be allocated inside timer_set.
  *
  * @param ptimer is pointer to buffer of sys_timer_t *.
- *
  * @param ticks assignable time (quantity of milliseconds)
  * @param handler the function to be executed
  *
@@ -108,7 +119,7 @@ extern int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies
  * @retval non-0 if the timer isn't set
  */
 extern int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t ticks,
-		sys_timer_handler_t handle, void *param);
+		sys_timer_handler_t handler, void *param);
 
 /**
  * Shut down timer with system_tmr_t identity

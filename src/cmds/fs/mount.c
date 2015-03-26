@@ -12,7 +12,6 @@
 #include <string.h>
 #include <errno.h>
 
-#include <embox/cmd.h>
 #include <fs/fsop.h>
 #include <fs/file_system.h>
 #include <fs/mount.h>
@@ -23,8 +22,6 @@
 #include <embox/block_dev.h>
 
 #include <mem/phymem.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: mount [-h] [-t fstype] dev dir\n");
@@ -39,8 +36,10 @@ static void lookup_mounts(struct mount_descriptor *parent) {
 	path.node = parent->mnt_root;
 
 	vfs_get_path_by_node(&path, mount_path);
-	printf("%s on %s type %s\n", parent->mnt_dev[0] ? parent->mnt_dev : "none",
-			mount_path, parent->mnt_fstype);
+	printf("%s on %s type %s\n",
+			parent->mnt_dev[0] ? parent->mnt_dev : "none",
+			mount_path,
+			parent->mnt_root->nas->fs->drv->name);
 
 	dlist_foreach_entry(desc, &parent->mnt_mounts, mnt_child) {
 		lookup_mounts(desc);
@@ -55,7 +54,7 @@ static void show_mount_list(void) {
 	}
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	int opt_cnt;
 	char *dev, *dir;

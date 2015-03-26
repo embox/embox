@@ -5,13 +5,10 @@
  * @author: Anton Bondarev
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <mem/phymem.h>
 #include <stdint.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: memmap [-hra]\n");
@@ -39,7 +36,7 @@ static void show_all(void) {
 
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hra"))) {

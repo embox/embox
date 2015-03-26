@@ -21,7 +21,8 @@
 
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_priority.h>
-#include <err.h>
+
+#define NETIF_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
 EMBOX_UNIT_INIT(net_entry_init);
 
@@ -98,6 +99,6 @@ int netif_rx(void *data) {
 
 static int net_entry_init(void) {
 	lthread_init(&netif_rx_irq_handler, &netif_rx_action, NULL);
-	lthread_priority_set(&netif_rx_irq_handler, LTHREAD_PRIORITY_MAX);
+	lthread_priority_set(&netif_rx_irq_handler, NETIF_RX_HND_PRIORITY);
 	return 0;
 }

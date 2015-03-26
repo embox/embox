@@ -13,14 +13,11 @@
 #include <string.h>
 #include <util/bitmap.h>
 #include <debug/symbol.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(coverage_main);
 
 extern int coverage_getstat(const struct symbol **sym_table,
 		const unsigned long **cov_bitmap);
 
-static int coverage_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	const char *outfile = NULL;
 	FILE *out;
 	const struct symbol *sym_table;
@@ -71,4 +68,3 @@ static int coverage_main(int argc, char *argv[]) {
 
 	return 0;
 }
-

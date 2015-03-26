@@ -68,13 +68,9 @@ static int teardown_suite(void) {
 
 static struct node *vfs_lookup_nr(struct node *node, const char *str_path) {
 	static struct path nr_return;
-	struct path leaf;
 	int lookup_ecode;
 
-	vfs_get_leaf_path(&leaf);
-
-	leaf.node = node;
-	lookup_ecode = vfs_lookup(&leaf, str_path, &nr_return);
+	lookup_ecode = vfs_lookup(str_path, &nr_return);
 	if (lookup_ecode < 0) {
 		return NULL;
 	}

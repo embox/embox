@@ -13,7 +13,7 @@
  * @author Alexander Kalmuk
  */
 
-#include <err.h>
+#include <util/err.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -22,6 +22,7 @@
 #include <mem/page.h>
 
 #include <util/dlist.h>
+#include <util/array.h>
 
 #include <kernel/printk.h>
 
@@ -29,6 +30,37 @@
 //static DLIST_DEFINE(task_mem_segments);
 
 //#define DEBUG
+
+extern struct page_allocator *__heap_pgallocator;
+extern struct page_allocator *__heap_pgallocator2 __attribute__((weak));
+static struct page_allocator ** const mm_page_allocs[] = {
+	&__heap_pgallocator,
+	&__heap_pgallocator2,
+};
+
+static void *mm_segment_alloc(int page_cnt) {
+	void *ret;
+	int i;
+	for (i = 0; i < ARRAY_SIZE(mm_page_allocs); i++) {
+		if (mm_page_allocs[i]) {
+			ret = page_alloc(*mm_page_allocs[i], page_cnt);
+			if (ret) {
+				break;
+			}
+		}
+	}
+	return ret;
+}
+
+static void mm_segment_free(void *segment, int page_cnt) {
+	int i;
+	for (i = 0; i < ARRAY_SIZE(mm_page_allocs); i++) {
+		if (mm_page_allocs[i] && page_belong(*mm_page_allocs[i], segment)) {
+			page_free(*mm_page_allocs[i], segment, page_cnt);
+			break;
+		}
+	}
+}
 
 struct mm_segment {
 	struct dlist_head link;
@@ -62,14 +94,12 @@ static void *pointer_to_segment(void *ptr, struct dlist_head *mspace) {
 }
 
 void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
-	extern struct page_allocator *__heap_pgallocator;
 	void *block;
 	struct mm_segment *mm;
 	size_t segment_pages_cnt, segment_bytes_cnt;
 	int iter;
 
 	assert(mspace);
-	assert(__heap_pgallocator);
 
 	block = NULL;
 	iter = 0;
@@ -91,7 +121,7 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 		segment_pages_cnt += (size % PAGE_SIZE() + boundary % PAGE_SIZE()
 				+ 2 * PAGE_SIZE()) / PAGE_SIZE();
 
-		mm = (struct mm_segment *) page_alloc(__heap_pgallocator, segment_pages_cnt);
+		mm = mm_segment_alloc(segment_pages_cnt);
 		if (mm == NULL)
 			return NULL;
 
@@ -183,15 +213,10 @@ int mspace_init(struct dlist_head *mspace) {
 }
 
 int mspace_fini(struct dlist_head *mspace) {
-	extern struct page_allocator *__heap_pgallocator;
 	struct mm_segment *mm;
-	void *block;
-
-	//task_heap = task_heap_get(mspace);
 
 	dlist_foreach_entry(mm, mspace, link) {
-		block = mm;
-		page_free(__heap_pgallocator, block, mm->size / PAGE_SIZE());
+		mm_segment_free(mm, mm->size / PAGE_SIZE());
 	}
 
 	return 0;

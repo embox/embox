@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "ide",
 	help = "Check IDE drive",
 	man = '''
@@ -18,7 +19,7 @@ module ide {
 	source "ide.c"
 
 	depends embox.driver.ide
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

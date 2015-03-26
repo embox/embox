@@ -1,0 +1,244 @@
+diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/i387/bsd_asm.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/i387/bsd_asm.h
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/i387/bsd_asm.h	2015-03-17 18:53:13.715657698 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/i387/bsd_asm.h	2015-03-17 18:46:04.197049339 +0300
+@@ -39,7 +39,7 @@
+ #if defined(__APPLE__)
+ #include "osx_asm.h"
+ #define CNAME(x) EXT(x)
+-#elif defined(__FreeBSD__) || defined(__linux__) || defined(_WIN32)
++#elif defined(__FreeBSD__) || defined(__linux__) || defined(_WIN32) || defined(__EMBOX__)
+ #include "bsd_cdefs.h"
+ 
+ #ifdef PIC
+diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv.h
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv.h	2015-03-17 18:53:13.715657698 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv.h	2015-03-17 18:46:04.197049339 +0300
+@@ -9,7 +9,8 @@
+ #elif defined(__i386__)
+ #include <openlibm_fenv_i387.h>
+ #else
+-#error "Unsupported platform"
++#include <openlibm_fenv_stubs.h>
++#warning "Unsupported platform"
+ #endif
+ 
+ #endif /* OPENLIBM_USE_HOST_FENV_H */
+diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv_stubs.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv_stubs.h
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_fenv_stubs.h	1970-01-01 03:00:00.000000000 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_fenv_stubs.h	2015-03-17 18:46:04.197049339 +0300
+@@ -0,0 +1,161 @@
++/*-
++ * Copyright (c) 2004-2005 David Schultz <das@FreeBSD.ORG>
++ * All rights reserved.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions
++ * are met:
++ * 1. Redistributions of source code must retain the above copyright
++ *    notice, this list of conditions and the following disclaimer.
++ * 2. Redistributions in binary form must reproduce the above copyright
++ *    notice, this list of conditions and the following disclaimer in the
++ *    documentation and/or other materials provided with the distribution.
++ *
++ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
++ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
++ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
++ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
++ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
++ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
++ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
++ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
++ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
++ * SUCH DAMAGE.
++ *
++ * $FreeBSD: src/lib/msun/arm/fenv.h,v 1.6 2011/10/10 15:43:09 das Exp $
++ */
++
++#ifndef	_FENV_H_
++#define	_FENV_H_
++
++#include <stdint.h>
++
++#ifndef	__fenv_static
++#define	__fenv_static	static
++#endif
++
++typedef	uint32_t	fenv_t;
++typedef	uint32_t	fexcept_t;
++
++/* Exception flags */
++#define	FE_INVALID	0x0001
++#define	FE_DIVBYZERO	0x0002
++#define	FE_OVERFLOW	0x0004
++#define	FE_UNDERFLOW	0x0008
++#define	FE_INEXACT	0x0010
++#define	FE_ALL_EXCEPT	(FE_DIVBYZERO | FE_INEXACT | \
++			 FE_INVALID | FE_OVERFLOW | FE_UNDERFLOW)
++
++/* Rounding modes */
++#define	FE_TONEAREST	0x0000
++#define	FE_TOWARDZERO	0x0001
++#define	FE_UPWARD	0x0002
++#define	FE_DOWNWARD	0x0003
++#define	_ROUND_MASK	(FE_TONEAREST | FE_DOWNWARD | \
++			 FE_UPWARD | FE_TOWARDZERO)
++__BEGIN_DECLS
++
++/* Default floating-point environment */
++extern const fenv_t	__fe_dfl_env;
++#define	FE_DFL_ENV	(&__fe_dfl_env)
++
++/* We need to be able to map status flag positions to mask flag positions */
++#define _FPUSW_SHIFT	16
++#define	_ENABLE_MASK	(FE_ALL_EXCEPT << _FPUSW_SHIFT)
++
++
++__fenv_static inline int
++feclearexcept(int __excepts)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++fegetexceptflag(fexcept_t *__flagp, int __excepts)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++fesetexceptflag(const fexcept_t *__flagp, int __excepts)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++feraiseexcept(int __excepts)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++fetestexcept(int __excepts)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++fegetround(void)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++fesetround(int __round)
++{
++
++	return (-1);
++}
++
++__fenv_static inline int
++fegetenv(fenv_t *__envp)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++feholdexcept(fenv_t *__envp)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++fesetenv(const fenv_t *__envp)
++{
++	return (-1);
++}
++
++__fenv_static inline int
++feupdateenv(const fenv_t *__envp)
++{
++	return (-1);
++}
++
++#if __BSD_VISIBLE
++
++/* We currently provide no external definitions of the functions below. */
++
++static inline int
++feenableexcept(int __mask)
++{
++	return (-1);
++}
++
++static inline int
++fedisableexcept(int __mask)
++{
++	return (-1);
++}
++
++static inline int
++fegetexcept(void)
++{
++	return (-1);
++}
++
++#endif /* __BSD_VISIBLE */
++
++__END_DECLS
++
++#endif	/* !_FENV_H_ */
+diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_math.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_math.h
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/include/openlibm_math.h	2015-03-17 18:53:13.718991110 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/include/openlibm_math.h	2015-03-17 18:46:04.197049339 +0300
+@@ -25,7 +25,7 @@
+     #define __WIN32__
+ #endif
+ 
+-#ifndef __arm__
++#if defined (__i386__) || defined(__x86_64__)
+ #define LONG_DOUBLE
+ #endif
+ 
+diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/Makefile openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/Makefile
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/Makefile	2015-03-17 18:53:13.715657698 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/Makefile	2015-03-17 18:46:04.197049339 +0300
+@@ -2,7 +2,7 @@
+ include ./Make.inc
+ 
+ SUBDIRS = src $(ARCH) bsdsrc
+-ifneq ($(ARCH), arm)
++ifneq ($(filter i386 i387 i486 i586 i686 x86_64,$(ARCH)),)
+ SUBDIRS += ld80
+ endif
+ 
+diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/fpmath.h openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/fpmath.h
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/fpmath.h	2015-03-17 18:53:13.722324521 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/fpmath.h	2015-03-17 18:55:34.392998881 +0300
+@@ -79,6 +79,14 @@
+ #define PDP_ENDIAN     _PDP_ENDIAN
+ #define BYTE_ORDER     _BYTE_ORDER
+ 
++#elif defined(__EMBOX__)
++
++#include <endian.h>
++#define _LITTLE_ENDIAN  __LITTLE_ENDIAN
++#define _BIG_ENDIAN     __BIG_ENDIAN
++#define _PDP_ENDIAN     __PDP_ENDIAN
++#define _BYTE_ORDER     __BYTE_ORDER
++
+ #endif
+ 
+ #ifndef _IEEE_WORD_ORDER
+diff -x '.*.sw?' -Naur openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/Make.files openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/Make.files
+--- openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d.orig/src/Make.files	2015-03-17 18:53:13.718991110 +0300
++++ openlibm-ef29d06db1b57c415cbee51b90b492ae89812b5d/src/Make.files	2015-03-17 18:46:04.197049339 +0300
+@@ -35,7 +35,7 @@
+ $(CUR_SRCS) += s_nan.c
+ endif
+ 
+-ifneq ($(ARCH), arm)
++ifneq ($(filter i386 i387 i486 i586 i686 x86_64,$(ARCH)),)
+ # C99 long double functions
+ $(CUR_SRCS) +=	s_copysignl.c s_fabsl.c s_llrintl.c s_lrintl.c s_modfl.c
+ 

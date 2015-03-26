@@ -4,8 +4,8 @@ module raw_sock {
 	source "raw_sock.c"
 
 	depends embox.framework.net.sock
-	depends embox.compat.libc.LibCAssert
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.assert
+	depends embox.compat.libc.str
 	depends embox.net.skbuff
 	depends embox.net.sock
 	depends embox.util.DList
@@ -14,11 +14,14 @@ module raw_sock {
 module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
+	option number max_simultaneous_tx_pack = 0
 
 	depends route
 	depends sock
+	depends tcp
+	depends skbuff
 	depends embox.compat.posix.net.inet_addr
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.str     /* memset, memcpy */
 	depends embox.mem.pool
 	depends embox.framework.LibFrameworkNet
 }
@@ -27,8 +30,8 @@ module udp_sock {
 	source "udp_sock.c"
 
 	depends embox.framework.net.sock
-	depends embox.compat.libc.LibCAssert
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.assert
+	depends embox.compat.libc.str
 	depends embox.net.lib.udp
 	depends embox.util.indexator
 	depends embox.util.DList
@@ -85,7 +88,7 @@ module socket {
 	source "socket_desc.c"
 	option number connect_timeout=5000
 
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.str
 	depends embox.net.sock
 	depends embox.net.dev //ksocket, netdev_get_by_name
 	depends embox.util.sys_log

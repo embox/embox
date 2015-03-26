@@ -12,18 +12,23 @@
 #include <linux/list.h>
 #include <stdio.h>
 
-#include <linux/interrupt.h>
-
 #include <pnet/prior_path.h>
 #include <pnet/core.h>
 #include <pnet/node.h>
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
 
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/lthread_priority.h>
+
+#define PNET_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
+
 EMBOX_UNIT_INIT(unit_init);
 
 static LIST_HEAD(skb_queue);
 static LIST_HEAD(pnet_queue);
+
+static struct lthread pnet_rx_handler_lt;
 
 int netif_rx(void *data) {
 	struct pnet_pack *pack;
@@ -44,14 +49,14 @@ int netif_rx(void *data) {
 		list_add_tail(&pack->link, &pnet_queue);
 	}
 
-	raise_softirq(PNET_RX_SOFTIRQ);
+	lthread_launch(&pnet_rx_handler_lt);
 
 	return NET_RX_SUCCESS;
 }
 
 static net_node_t entry;
 
-static void pnet_rx_action(unsigned int nr, void *data) {
+static void *pnet_rx_action(void *data) {
 	struct pnet_pack *pack, *safe;
 	struct list_head *curr, *n;
 	struct pnet_pack *skb_pack;
@@ -67,12 +72,15 @@ static void pnet_rx_action(unsigned int nr, void *data) {
 		skb_pack->node = entry;
 		pnet_entry(skb_pack);
 	}
+
+	return NULL;
 }
 
 static int unit_init(void) {
 	entry = pnet_get_module("pnet entry");
 
-	softirq_install(PNET_RX_SOFTIRQ, pnet_rx_action, NULL);
+	lthread_init(&pnet_rx_handler_lt, &pnet_rx_action, NULL);
+	lthread_priority_set(&pnet_rx_handler_lt, PNET_RX_HND_PRIORITY);
 
 	return 0;
 }

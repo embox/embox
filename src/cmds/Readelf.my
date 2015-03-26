@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "readelf",
 	help = "Display information about the contents of ELF format files",
 	man = '''
@@ -21,7 +22,7 @@ package embox.cmd
 module readelf {
 	source "readelf.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.fs.core
 	depends embox.lib.LibElf
 	depends embox.framework.LibFramework

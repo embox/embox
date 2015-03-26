@@ -20,7 +20,7 @@
 #include <framework/mod/options.h>
 
 #define LINK_POOL_SZ \
-	OPTION_MODULE_GET(embox__kernel__thread__signal__siginfoq, NUMBER, pool_sz)
+	OPTION_GET(NUMBER, pool_sz)
 
 struct siginfoq_link {
 	struct slist_link link;

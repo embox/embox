@@ -12,12 +12,7 @@
 #include <errno.h>
 #include <stdint.h>
 
-
 #include <framework/mod/api.h>
-
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: lsmod [-qdlhp:n:]\n");
@@ -28,7 +23,7 @@ static void mod_print(const struct mod *mod) {
 	printf(" %c  %s.%s ", enabled ? '*' : ' ', mod_pkg_name(mod), mod_name(mod));
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	const struct mod *mod, *dep;
 	const char *substr_package = NULL, *substr_name = NULL;
 	int print_deps = 0, show_label = 0;

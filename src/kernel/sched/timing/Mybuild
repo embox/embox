@@ -11,5 +11,7 @@ module none extends timing {
 module running extends timing {
 	source "running_time.h"
 	source "running_time.c"
+
+ 	depends embox.compat.posix.util.time
 }
 

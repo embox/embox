@@ -6,7 +6,7 @@
  */
 #include <assert.h>
 
-#include <err.h>
+#include <util/err.h>
 #include <poll.h>
 
 #include <mem/misc/pool.h>

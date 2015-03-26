@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "iptables",
 	help = "Administration tools for manipulation over IP traffic",
 	man = '''
@@ -65,6 +66,6 @@ module iptables {
 
 	depends embox.util.DList
 	depends embox.net.netfilter
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }

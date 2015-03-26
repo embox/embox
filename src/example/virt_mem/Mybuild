@@ -4,7 +4,7 @@ module mmuprobe {
 	source "mmu_probe.c"
 
 	depends embox.mem.vmem
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.example
 }

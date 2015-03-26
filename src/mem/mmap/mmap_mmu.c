@@ -92,11 +92,14 @@ void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
 }
 
 void mmap_init(struct emmap *mmap) {
+	int err;
 	dlist_init(&mmap->marea_list);
 	//mmap->stack_marea = NULL;
 	//mmap->heap_marea = NULL;
 
-	assert(!vmem_init_context(&mmap->ctx));
+	if ((err = vmem_init_context(&mmap->ctx))) {
+		panic("%s: %s\n", __func__, strerror(-err));
+	}
 }
 
 void mmap_free(struct emmap *mmap) {

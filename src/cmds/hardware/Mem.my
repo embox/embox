@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "mem",
 	help = "Prints the contents of memory",
 	man = '''
@@ -32,7 +33,7 @@ package embox.cmd
 module mem {
 	source "mem.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Build(script="$(MAKE) -C ../linux MAKEFLAGS=")
 module load {
 	option string image = "../linux/build/bin/piggy"

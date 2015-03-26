@@ -14,7 +14,6 @@
 #include <time.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <embox/cmd.h>
 #include <string.h>
 #include <kernel/thread.h>
 #include <unistd.h>
@@ -27,8 +26,6 @@
 
 #define MAX_SNMP_LEN 256
 #define MAX_PDU_LEN 128
-
-EMBOX_CMD(exec);
 
 /* There is only one SNMP agent in system. So, we can make common socket */
 static int sock;
@@ -52,7 +49,7 @@ static void build_response(struct snmp_desc *snmp) {
 	}
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	struct sockaddr_in our;
 	struct snmp_desc snmp;

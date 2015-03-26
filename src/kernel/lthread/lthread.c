@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <assert.h>
 #include <errno.h>
-#include <err.h>
+#include <util/err.h>
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/sched/schedee.h>

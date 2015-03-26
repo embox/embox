@@ -5,7 +5,7 @@
  * @author  Vita Loginova
  * @date    Jul 31, 2014
  */
-#include <err.h>
+#include <util/err.h>
 #include <embox/test.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>

@@ -5,7 +5,7 @@
  * @author Andrey Kokorev
  * @date    16.02.2014
  */
-#include <err.h>
+#include <util/err.h>
 #include <embox/test.h>
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>

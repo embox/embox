@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "xattr",
 	help = "Display and manipulate extended attributes",
 	man = '''
@@ -70,7 +71,7 @@ OPTIONS
 module xattr {
 	source "xattr.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file

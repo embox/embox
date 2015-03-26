@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <ctype.h>
 
-#include <err.h>
+#include <util/err.h>
 #include <embox/unit.h>
 #include <fs/vfs.h>
 
@@ -113,12 +113,13 @@ err_out:
 }
 
 ramdisk_t *ramdisk_get_param(char *path) {
-	struct path root, ramdisk_node;
+	struct path ramdisk_node;
 	struct nas *nas;
 	struct node_fi *node_fi;
 
-	vfs_get_root_path(&root);
-	vfs_lookup(&root, path, &ramdisk_node);
+	if (vfs_lookup(path, &ramdisk_node)) {
+		return NULL;
+	}
 
 	if (NULL == ramdisk_node.node) {
 		return NULL;
@@ -129,14 +130,15 @@ ramdisk_t *ramdisk_get_param(char *path) {
 }
 
 int ramdisk_delete(const char *name) {
-	struct path root, ramdisk_node;
+	struct path ramdisk_node;
 	ramdisk_t *ramdisk;
 	struct nas *nas;
 	struct node_fi *node_fi;
 	int idx;
 
-	vfs_get_root_path(&root);
-	vfs_lookup(&root, name, &ramdisk_node);
+	if (vfs_lookup(name, &ramdisk_node)) {
+		return -1;
+	}
 
 	if (NULL == ramdisk_node.node) {
 		return -1;

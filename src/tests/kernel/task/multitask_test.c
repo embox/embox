@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <err.h>
+#include <util/err.h>
 #include <embox/test.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>

@@ -1,6 +1,7 @@
 
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "mkramdisk",
 	help = "make ramdisk",
 	man = '''

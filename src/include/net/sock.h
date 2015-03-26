@@ -176,18 +176,8 @@ extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
 
 extern int sock_close(struct sock *sk);
 
-extern int sock_common_recvmsg(struct sock *sk, struct msghdr *msg,
-		int flags, int stream_mode);
-
-static inline int sock_nonstream_recvmsg(struct sock *sk,
-		struct msghdr *msg, int flags) {
-	return sock_common_recvmsg(sk, msg, flags, 0);
-}
-
-static inline int sock_stream_recvmsg(struct sock *sk,
-		struct msghdr *msg, int flags) {
-	return sock_common_recvmsg(sk, msg, flags, 1);
-}
+extern int sock_dgram_recvmsg(struct sock *sk, struct msghdr *msg, int flags);
+extern int sock_stream_recvmsg(struct sock *sk, struct msghdr *msg, int flags);
 
 static inline void sock_update_tstamp(struct sock *sk, struct sk_buff *skb) {
 	memcpy(&sk->last_packet_tstamp, &skb->tstamp, sizeof(sk->last_packet_tstamp));

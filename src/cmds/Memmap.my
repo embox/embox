@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "memmap",
 	help = "Prints memory map for different address space",
 	man = '''
@@ -23,7 +24,7 @@ package embox.cmd
 module memmap {
 	source "memmap.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

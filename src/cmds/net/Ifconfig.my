@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "ifconfig",
 	help = "Configure a network interface",
 	man = '''
@@ -58,6 +59,6 @@ module ifconfig {
 	depends embox.net.util.macaddr
 	depends embox.net.af_inet
 	depends embox.framework.LibFramework
-	depends embox.compat.libc.LibCStdioPerror
-	depends embox.compat.libc.LibCStdioScanf
+	depends embox.compat.libc.stdio.perror
+	depends embox.compat.libc.stdio.scanf
 }

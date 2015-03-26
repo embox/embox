@@ -5,17 +5,15 @@
  * @date 21.04.14
  * @author Kirill Smirnov
  */
+
 #include <stdio.h>
 #include <unistd.h>
-#include <embox/cmd.h>
 #include <drivers/i2c.h>
 
 struct lsi2c_cb {
 	int nbuses;
 	int full;
 };
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: lsi2c [-f] [-h]\n");
@@ -35,7 +33,7 @@ static int i2c_bus_callback(int bus_id, void *cookie)
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	int full = 0;
 	struct lsi2c_cb cookie;

@@ -1,0 +1,39 @@
+
+.led {
+  min-width: 100%;
+  padding: 6px 0px;
+}
+
+.led-off, .led-off:hover, .led-off:focus {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+}
+
+.led-blue, .led-blue:hover, .led-blue:focus {
+  color: #fff;
+  background-color: #428bca;
+  border-color: #357ebd;
+}
+
+.led-red, .led-red:hover, .led-red:focus {
+  color: #fff;
+  background-color: #d9534f;
+  border-color: #d43f3a;
+}
+
+.block-pair {
+  float: left;
+  min-width: 10%;
+}
+
+.block {
+  margin: 5px;
+  border-radius: 6px;
+  padding: 5px;
+  background: #eee;
+}
+
+.block-caption {
+  text-align: center;
+}

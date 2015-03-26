@@ -201,6 +201,23 @@ extern char *strrchr(const char *str, int ch);
 extern char *strstr(const char *haystack, const char *needle);
 
 /**
+ * Finds the first occurrence of the substring @a needle in
+ * the given null-terminated string @a haystack, but ignores case of both
+ * arguments.
+ *
+ * @param haystack
+ *   The null-terminated string to search for @a needle occurrence.
+ * @param needle
+ *   The substring to search.
+ * @return
+ *   Pointer into the @a haystack that is the first character of the located
+ *   substring (if any). Returns @a haystack if @a needle is empty.
+ * @retval NULL
+ *   If no match was found.
+ */
+extern char *strcasestr(const char *haystack, const char *needle);
+
+/**
  * Maps given error code to its string representation.
  *
  * @param errno

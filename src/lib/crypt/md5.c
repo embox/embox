@@ -51,10 +51,10 @@
   1999-05-03 lpd Original version.
  */
 
-#include <lib/md5.h>
-#include <hal/arch.h>
 #include <string.h>
 #include <endian.h>
+
+#include <lib/crypt/md5.h>
 
 /* 1 = big-endian, -1 = little-endian, 0 = unknown */
 #if  __BYTE_ORDER == __BIG_ENDIAN

@@ -1,6 +1,7 @@
 
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "usb_test",
 	help = "Utility for raw access to usb devices",
 	man = '''
@@ -23,7 +24,7 @@ package embox.cmd
 module usb_test {
 	source "usb_test.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.driver.usb.core
 	depends embox.framework.LibFramework

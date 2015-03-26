@@ -8,6 +8,8 @@
 #ifndef FS_HLPR_PATH_H_
 #define FS_HLPR_PATH_H_
 
+#include <stddef.h>
+
 extern int path_is_double_dot(const char *path);
 
 /**

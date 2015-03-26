@@ -4,9 +4,9 @@ package third_party.zeromq
 @BuildDepends(third_party.STLport.core)
 @BuildDepends(third_party.gcc.core)
 static module core {
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
 	depends embox.lib.cxx.lib
-	depends embox.arch.x86.LibM // FIXME:
 
 	depends third_party.STLport.core
 

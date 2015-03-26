@@ -16,7 +16,7 @@ package embox.cmd.net
 module netstat {
 	source "netstat.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.net.tcp
 	depends embox.net.udp
 	depends embox.framework.LibFramework

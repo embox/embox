@@ -3,6 +3,7 @@ package embox.arch.arm.armmlib
 
 module locore extends embox.arch.locore {
 	source "exception_table.S"
+	source "exception_handlers.c"
 
 	depends embox.arch.arm.armlib.head
 }

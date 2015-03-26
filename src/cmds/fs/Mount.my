@@ -2,6 +2,7 @@ package embox.cmd.fs
 
 import embox.compat.posix.LibPosix
 
+@AutoCmd
 @Cmd(name = "mount",
 	help = "Mount a filesystem",
 	man = '''
@@ -18,7 +19,7 @@ import embox.compat.posix.LibPosix
 module mount {
 	source "mount.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework

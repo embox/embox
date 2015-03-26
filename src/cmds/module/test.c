@@ -9,15 +9,11 @@
  *         - Rewriting some parts from scratch
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
 
 #include <framework/test/api.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: test [-h] [-n <test_num>] [-t <test_name, string>] [-i]\n");
@@ -52,7 +48,7 @@ static const struct test_suite *get_test_by_nr(int nr) {
 	return NULL;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	const struct test_suite *test = NULL;
 	int test_nr = -1;
 	int opt;

@@ -6,7 +6,6 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -14,8 +13,6 @@
 #include <util/dlist.h>
 #include <net/netfilter.h>
 #include <string.h>
-
-EMBOX_CMD(exec);
 
 static int clear_rules(int chain) {
 	int ret;
@@ -124,7 +121,7 @@ static int show_rules(int chain, int rule_num) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ind, oper, chain, rule_num, not_flag;
 	unsigned int port;
 	struct nf_rule rule;

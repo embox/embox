@@ -3,7 +3,7 @@ package embox.example.fs
 module devfs {
 	source "devfs.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.example
 }
@@ -11,7 +11,7 @@ module devfs {
 module flock {
 	source "flock.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.example
 	depends embox.compat.libc.stdlib.system

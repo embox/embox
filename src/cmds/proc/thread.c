@@ -19,10 +19,6 @@
 #include <kernel/task.h>
 #include <kernel/sched.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: thread [-h] [-s] [-k <thread_id>]\n");
 }
@@ -102,7 +98,7 @@ static void kill_thread(thread_id_t thread_id) {
 	printf("Thread %d killed\n", thread_id);
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 
 	if (argc <= 1) {

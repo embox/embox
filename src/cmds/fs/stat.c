@@ -6,15 +6,12 @@
  * @author Andrey Gazukin
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
-
-EMBOX_CMD(exec);
 
 stat_t filestat;
 
@@ -38,7 +35,7 @@ static void print_statistic(void *stat) {
 	printf("Change: %d  \n", filestat->st_ctime);
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 
 	if (argc < 2) {

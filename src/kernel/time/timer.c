@@ -7,41 +7,53 @@
  */
 
 #include <embox/unit.h>
-#include <kernel/softirq.h>
-#include <kernel/task.h>
 #include <module/embox/kernel/time/slowdown.h>
 #include <kernel/time/timer.h>
 #include <kernel/time/clock_source.h>
 
-#define SLOWDOWN_FACTOR OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, factor)
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/lthread_priority.h>
+
+#define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
+#define CLOCK_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
 EMBOX_UNIT_INIT(init);
 
+static int inited = 0;
+
+static struct lthread clock_handler_lt;
 extern struct clock_source *cs_jiffies;
 
-/**
- * Handling of the clock tick.
- */
 void clock_tick_handler(int irq_num, void *dev_id) {
 	struct clock_source *cs = (struct clock_source *) dev_id;
 
 	assert(cs);
-	if (++cs->jiffies_cnt == SLOWDOWN_FACTOR) {
+	if (++cs->jiffies_cnt == (1 << SLOWDOWN_SHIFT)) {
 		cs->jiffies_cnt = 0;
 		cs->jiffies++;
 
-		if (cs_jiffies->event_device && irq_num == cs_jiffies->event_device->irq_nr) {
-			//task_self()->per_cpu++;
-			softirq_raise(SOFTIRQ_NR_TIMER);
+		/* FIXME: Check for inited is necessary because this function
+		   may be called before initialization of this module.*/
+		if (!inited) {
+			return;
+		}
+
+		if (cs_jiffies->event_device &&	irq_num == cs_jiffies->event_device->irq_nr) {
+			lthread_launch(&clock_handler_lt);
 		}
 	}
 }
 
-static void soft_clock_handler(unsigned int softirq_nr, void *data) {
+static void *clock_handler(void *data) {
 	timer_strat_sched();
+	return NULL;
 }
 
 static int init(void) {
-	softirq_install(SOFTIRQ_NR_TIMER, soft_clock_handler,NULL);
+	lthread_init(&clock_handler_lt, &clock_handler, NULL);
+	lthread_priority_set(&clock_handler_lt, CLOCK_HND_PRIORITY);
+
+	inited = 1;
+
 	return 0;
 }

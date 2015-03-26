@@ -1,3 +1,5 @@
 package mybuild.lang
 
-annotation AutoCmd { }
+annotation AutoCmd {
+	boolean preserve_locals
+}

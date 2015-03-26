@@ -49,6 +49,7 @@ test_case_snmp_should_reply() {
 }
 
 test_case_interactive_tests_should_success() {
+	sudo killall in.rlogind
 	expect $EXPECT_TESTS_BASE/framework/run_all.exp
 	test_retcode
 

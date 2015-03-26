@@ -18,14 +18,9 @@
 #include <fs/fs_driver.h>
 #include <drivers/ramdisk.h>
 
-
 #include <mem/page.h>
-#include <cmd/mkfs.h>
 
-#include <err.h>
-
-#include <embox/cmd.h>
-
+#include <util/err.h>
 
 #define MKFS_CREATE_RAMDISK 0x00000001
 #define MKFS_FORMAT_DEV     0x00000002
@@ -34,9 +29,6 @@
 #define DEFAULT_BLOCK_QTTY  0x20
 #define DEFAULT_FS_NAME  "vfat"
 #define DEFAULT_FS_TYPE  12
-
-
-EMBOX_CMD(exec);
 
 static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		unsigned int fs_type, unsigned int operation_flag);
@@ -59,7 +51,7 @@ static int mkfs_create_ramdisk(char *path, int blocks) {
 	return err(ramdisk_create(path, blocks * PAGE_SIZE()));
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	int min_argc;
 	unsigned int operation_flag;

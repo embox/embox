@@ -8,14 +8,14 @@ module strtod_test {
 module bsearch_test {
 	source "bsearch_test.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 
 module qsort_test {
 	source "qsort_test.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 
@@ -29,44 +29,44 @@ module setjmp_test {
 module strcasecmp_test {
 	source "strcasecmp.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 
 module strtok_test {
 	source "strtok.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 
 module strlcpy_test {
 	source "strlcpy.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 
 module strdup_test {
 	source "strdup.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.mem.heap_api
 	depends embox.framework.LibFramework
-	depends embox.compat.libc.LibCStringDup
+	depends embox.compat.libc.str_dup
 }
 
 module strlen_test {
 	source "strlen.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 
 module strchr_test {
 	source "strchr.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
 

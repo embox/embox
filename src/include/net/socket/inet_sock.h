@@ -17,6 +17,10 @@
 
 struct sock;
 
+struct inet_sock_opt {
+	int hdrincl:1;
+};
+
 /**
  * @struct inet_sock
  * @brief Representation of INET sockets (FixMe)
@@ -41,6 +45,7 @@ typedef struct inet_sock {
 	struct sockaddr_in dst_in; /* really address of destonation host */
 	int16_t uc_ttl;
 	uint16_t id;
+	struct inet_sock_opt opt;
 } inet_sock_t;
 
 static inline struct inet_sock * to_inet_sock(struct sock *sk) {

@@ -182,7 +182,18 @@ static void *shell_hnd(void* args) {
 	return NULL;
 }
 
-
+static int telnet_fix_crnul(unsigned char *buf, int len) {
+	unsigned char *bpi = buf, *bpo = buf;
+	while (bpi < buf + len) {
+		if (bpi < buf + len - 1 && 0 == memcmp(bpi, "\r\0", 2)) {
+			*bpo++ = *bpi;
+			bpi += 2;
+		} else {
+			*bpo++ = *bpi++;
+		}
+	}
+	return bpo - buf;
+}
 
 /* Shell thread for telnet */
 static void *telnet_thread_handler(void* args) {
@@ -321,6 +332,7 @@ static void *telnet_thread_handler(void* args) {
 			if ((sock_data_len = read(sock, s, XBUFF_LEN)) <= 0) {
 				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
 			}
+			sock_data_len = telnet_fix_crnul(s, sock_data_len);
 			if (errno == ECONNREFUSED) {
 				goto out_kill;
 			}

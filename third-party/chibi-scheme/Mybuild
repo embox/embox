@@ -1,0 +1,18 @@
+package third_party.chibi_scheme
+
+@AutoCmd
+@Build(script="$(EXTERNAL_MAKE)")
+@Cmd(name="chibi-scheme",
+	help="chibi-scheme REPL",
+	man="")
+module repl {
+	source "^BUILD/extbld/^MOD_PATH/install/repl.o"
+
+	/* XXX these files are downloaded, by buildsystem can't deal with it */
+	@InitFS(target_dir="lib")
+	source "init-7.scm",
+		"meta.scm"
+
+	@InitFS
+	source "fib.scm"
+}

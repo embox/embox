@@ -32,7 +32,7 @@
 #include <fs/file_operation.h>
 #include <fs/tmpfs.h>
 
-#include <err.h>
+#include <util/err.h>
 
 
 /* tmpfs filesystem description pool */
@@ -68,9 +68,8 @@ static int tmpfs_init(void * par) {
 	}
 
 	/*TODO */
-	vfs_get_root_path(&root);
 
-	if (0 != vfs_lookup(&root, TMPFS_DIR, &dir_path)) {
+	if (0 != vfs_lookup(TMPFS_DIR, &dir_path)) {
 		return -ENOENT;
 	}
 

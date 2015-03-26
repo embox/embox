@@ -11,15 +11,12 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <signal.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(kill_cmd);
 
 static void print_usage(void) {
 	printf("kill [-s SIGNUM] pid\n");
 }
 
-static int kill_cmd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt, sig = SIGKILL;
 	int tid;
 

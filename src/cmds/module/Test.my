@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "test",
 	help = "Interacts with Embox testing framework",
 	man = '''
@@ -23,7 +24,7 @@ package embox.cmd
 module test {
 	source "test.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

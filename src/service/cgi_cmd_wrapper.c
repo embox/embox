@@ -38,6 +38,7 @@ static int ccwrp_query_to_argv(char *query, char **argv, unsigned int argv_len) 
 	return argv_cnt;
 }
 
+#if OPTION_GET(BOOLEAN, cmds_check)
 static int ccwrp_security_check(int argc, char *argv[]) {
 	const char *allowed_cmds = CCWRP_ALLOWED_CMD_NAMES;
 	const char *p_cmd, *p_e_cmd;
@@ -56,25 +57,25 @@ static int ccwrp_security_check(int argc, char *argv[]) {
 
 	return 1;
 }
+#else
+static int ccwrp_security_check(int argc, char *argv[]) {
+	return 0;
+}
+#endif
 
 int main(int argc, char *argv[]) {
-	char *method;
+	char *query = getenv("QUERY_STRING");
+	char *new_argv[16];
+	int new_argc;
 
-	method = getenv("REQUEST_METHOD");
-	if (0 == strcmp("GET", method)) {
-		char *query = getenv("QUERY_STRING");
-		char *new_argv[16];
-		int new_argc;
+	printf("HTTP/1.1 %d %s\r\n"
+		"Content-Type: %s\r\n"
+		"Connection: close\r\n"
+		"\r\n", 200, "OK", "text/plain");
 
-		printf("HTTP/1.1 %d %s\r\n"
-			"Content-Type: %s\r\n"
-			"Connection: close\r\n"
-			"\r\n", 200, "OK", "text/plain");
-
-		new_argc = ccwrp_query_to_argv(query, new_argv, ARRAY_SIZE(new_argv));
-		if (new_argc && 0 == ccwrp_security_check(new_argc, new_argv)) {
-			return execv(new_argv[0], new_argv);
-		}
+	new_argc = ccwrp_query_to_argv(query, new_argv, ARRAY_SIZE(new_argv));
+	if (new_argc && 0 == ccwrp_security_check(new_argc, new_argv)) {
+		return execv(new_argv[0], new_argv);
 	}
 
 	return 0;

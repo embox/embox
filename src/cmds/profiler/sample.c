@@ -9,13 +9,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #include <unistd.h>
-#include <embox/cmd.h>
 #include <util/array.h>
 #include <profiler/sampling/sample.h>
-
-EMBOX_CMD(exec);
 
 typedef enum {START_PROFILING, STOP_PROFILING, SHOW_INFO} action;
 
@@ -39,7 +37,7 @@ static void print_usage(void) {
 			"-i set custom timer interval\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int i, total_counter = 0, total_entries = 0, limiter = 0, interval = 100;
 	char c;
 	action act = SHOW_INFO;

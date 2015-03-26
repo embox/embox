@@ -30,7 +30,7 @@
 #include <kernel/time/timer.h>
 #include <embox/net/proto.h>
 #include <embox/unit.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <kernel/time/ktime.h>
 #include <net/lib/tcp.h>
 
@@ -126,9 +126,9 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 9:  /* sending package */
 //	case 10: /* pre_process */
 //	case 11: /* tcp_handle */
-		softirq_lock();
+		sched_lock();
 		vprintk(msg, args);
-		softirq_unlock();
+		sched_unlock();
 		break;
 	}
 	va_end(args);
@@ -196,14 +196,14 @@ int alloc_prep_skb(struct tcp_sock *tcp_sk, size_t opt_len,
 
 void tcp_sock_lock(struct tcp_sock *tcp_sk, unsigned int obj) {
 	if (tcp_sk->lock++ == 0) {
-		softirq_lock();
+		sched_lock();
 	}
 }
 
 void tcp_sock_unlock(struct tcp_sock *tcp_sk, unsigned int obj) {
 	assert(tcp_sk->lock != 0);
 	if (--tcp_sk->lock == 0) {
-		softirq_unlock();
+		sched_unlock();
 	}
 }
 
@@ -548,6 +548,8 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 			} else {
 				DBG(printk("tcp_st_listen: can't alloc socket\n");)
 				tcp_newsk = NULL;
+				/* maybe calling thread could allocate more? */
+				sock_notify(to_sock(tcp_sk), POLLIN);
 			}
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
@@ -1039,6 +1041,14 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		}
 	}
 
+	/* Process RST */
+	if (tcph->rst) {
+		ret = process_rst(tcp_sk, tcph);
+		if (ret != TCP_RET_OK) {
+			return ret;
+		}
+	}
+
 	/* Analyze sequence */
 	switch (tcp_sk->state) {
 	default:
@@ -1083,14 +1093,6 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 			return TCP_RET_DROP;
 		}
 		break;
-	}
-
-	/* Process RST */
-	if (tcph->rst) {
-		ret = process_rst(tcp_sk, tcph);
-		if (ret != TCP_RET_OK) {
-			return ret;
-		}
 	}
 
 	/* Porcess ACK */

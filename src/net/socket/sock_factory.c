@@ -16,7 +16,7 @@
 #include <framework/net/sock/api.h>
 #include <framework/net/pack/api.h>
 
-#include <err.h>
+#include <util/err.h>
 #include <security/security.h>
 
 static struct sock * sock_alloc(

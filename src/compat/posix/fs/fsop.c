@@ -29,10 +29,8 @@ int creat(const char *pathname, mode_t mode) {
 
 int mkdir(const char *pathname, mode_t mode) {
 	int rc;
-	struct path leaf;
 
-	vfs_get_leaf_path(&leaf);
-	rc = kmkdir(&leaf, pathname, umask_modify(mode));
+	rc = kmkdir(pathname, umask_modify(mode));
 	DPRINTF(("mkdir(%s, %d ...) = %d\n", pathname, mode, rc));
 	return rc;
 }
@@ -78,11 +76,10 @@ int stat(const char *path, struct stat *buf) {
 }
 
 int truncate(const char *path, off_t length) {
-	struct path node, leaf;
+	struct path node;
 	int res;
 
-	vfs_get_leaf_path(&leaf);
-	if (0 == (res = fs_perm_lookup(&leaf, path, NULL, &node))) {
+	if (0 == (res = fs_perm_lookup(path, NULL, &node))) {
 		errno = -res;
 		res = -1;
 		goto end;

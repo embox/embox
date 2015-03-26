@@ -19,6 +19,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <lib/crypt/crc16.h>
 
 
 #include <drivers/ramdisk.h>
@@ -129,8 +130,13 @@ static int ext4_read_sblock(struct nas *nas);
 static int ext4_read_gdblock(struct nas *nas);
 static int ext4_mount_entry(struct nas *nas);
 
+int ext4_write_gdblock(struct nas *nas);
+
 static void ext4_rw_inode(struct nas *nas, struct ext4_inode *fdi,
 		int rw_flag);
+
+int ext4_write_map(struct nas *nas, long position,
+							uint32_t new_block, int op);
 
 /* ext filesystem description pool */
 POOL_DEF(ext4_fs_pool, struct ext4_fs_info, 128);
@@ -1215,6 +1221,26 @@ out:
 	return ret;
 }
 
+static uint16_t ext4_checksum(struct ext4_fs_info *fsi, uint32_t block_nr,
+		struct ext4_group_desc *gdp) {
+
+	int offset;
+	uint16_t crc = 0;
+
+	offset = offsetof(struct ext4_group_desc, checksum);
+
+	crc = crc16(~0, fsi->e4sb.s_uuid, sizeof(fsi->e4sb.s_uuid));
+	crc = crc16(crc, (__u8 *)&block_nr, sizeof(block_nr));
+	crc = crc16(crc, (__u8 *)gdp, offset);
+	offset += sizeof(gdp->checksum);
+
+	crc = crc16(crc, (__u8 *) gdp + offset,
+			sizeof(struct ext4_group_desc) - offset);
+
+	return crc;
+}
+
+
 int ext4_write_gdblock(struct nas *nas) {
 	uint gdpb;
 	int i;
@@ -1227,6 +1253,8 @@ int ext4_write_gdblock(struct nas *nas) {
 
 	for (i = 0; i < fsi->s_gdb_count; i += gdpb) {
 		buff = (char *) &fsi->e4fs_gd[i * gdpb];
+
+		fsi->e4fs_gd[i * gdpb].checksum = ext4_checksum(fsi, i / gdpb, &fsi->e4fs_gd[i * gdpb]);
 
 		if (1 != ext4_write_sector(nas, buff, 1,
 						fsi->e4sb.s_first_data_block + 1 + i / gdpb)) {
@@ -1373,13 +1401,19 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 static int ext4_dir_operation(struct nas *nas, char *string, ino_t *numb,
 		int flag, mode_t mode_fmt);
 
+
 static int ext4_new_block(struct nas *nas, long position) {
 	/* Acquire a new block and return a pointer to it.*/
 	int rc;
-	uint32_t b, lblock;
+	uint32_t goal;
+	long position_diff;
+	struct ext4_file_info *fi;
 	struct ext4_fs_info *fsi;
+	uint32_t b, lblock;
 
+	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
+
 	lblock = lblkno(fsi, position);
 
 	if (0 != (rc = ext4_block_map(nas, lblock, &b))) {
@@ -1387,9 +1421,23 @@ static int ext4_new_block(struct nas *nas, long position) {
 	}
 	/* Is another block available? */
 	if (EXT4_NO_BLOCK == b) {
-		if (NO_BLOCK == (b = ext4_alloc_block(nas, EXT4_NO_BLOCK))) {
+		/* Check if this position follows last allocated block. */
+		goal = EXT4_NO_BLOCK;
+		if (fi->f_last_pos_bl_alloc != 0) {
+			position_diff = position - fi->f_last_pos_bl_alloc;
+			if (0 == fi->f_bsearch) {
+				/* Should never happen, but not critical */
+				return -1;
+			}
+			if (position_diff <= fsi->s_block_size) {
+				goal = fi->f_bsearch + 1;
+			}
+		}
+
+		if (EXT4_NO_BLOCK == (b = ext4_alloc_block(nas, goal))) {
 			return ENOSPC;
 		}
+
 		ext4_extent_add_block(nas, lblock, b);
 	}
 	return 0;
@@ -1747,6 +1795,7 @@ static void ext4_rw_inode(struct nas *nas, struct ext4_inode *fdi,
 	if (NULL == (gd = ext4_get_group_desc(block_group_number, fsi))) {
 		return;
 	}
+
 	offset = ((fi->f_num - 1) % fsi->e4sb.s_inodes_per_group)
 			* EXT4_INODE_SIZE(&fsi->e4sb);
 	/* offset requires shifting, since each block contains several inodes,
@@ -1763,6 +1812,7 @@ static void ext4_rw_inode(struct nas *nas, struct ext4_inode *fdi,
 	if (rw_flag) {
 		memcpy(dip, fdi, sizeof(struct ext4_inode));
 		ext4_write_sector(nas, fi->f_buf, 1, b);
+		ext4_write_gdblock(nas);
 	}
 	else {
 		memcpy(fdi, dip, sizeof(struct ext4_inode));
@@ -2102,3 +2152,4 @@ static int ext4_unlink(struct nas *dir_nas, struct nas *nas) {
 }
 
 DECLARE_FILE_SYSTEM_DRIVER(ext4fs_driver);
+

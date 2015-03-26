@@ -1,0 +1,74 @@
+diff -aur tinypy-1.1/setup.py /home/anton/downloads/tinypy-1.1.new/setup.py
+--- tinypy-1.1/setup.py	2008-05-22 02:07:28.000000000 +0400
++++ tinypy-1.1.new/setup.py	2015-03-05 17:25:37.628034238 +0300
+@@ -78,9 +78,10 @@
+     VARS['$VM'] = './vm'
+     VARS['$TINYPY'] = './tinypy'
+     VARS['$SYS'] = '-linux'
++    VARS['$CC'] = os.getenv('CC', 'gcc')
+     VARS['$FLAGS'] = ''
+     
+-    VARS['$WFLAGS'] = '-std=c89 -Wall -Wc++-compat'
++    VARS['$WFLAGS'] = '-Wall -Wc++-compat'
+     #-Wwrite-strings - i think this is included in -Wc++-compat
+     
+     if 'pygame' in MODULES:
+@@ -135,7 +136,7 @@
+ def build_blob():
+     mods = CORE[:]
+     do_chdir(os.path.join(TOPDIR,'tinypy'))
+-    for mod in mods: do_cmd('python py2bc.py %s.py %s.tpc'%(mod,mod))
++    for mod in mods: do_cmd('python2 py2bc.py %s.py %s.tpc'%(mod,mod))
+     do_chdir(os.path.join(TOPDIR))
+     
+     out = []
+@@ -215,30 +216,30 @@
+     do_chdir(os.path.join(TOPDIR,'tinypy'))
+     if TEST:
+         mods.append('tests')
+-        do_cmd("gcc $WFLAGS -g vmmain.c $FLAGS -lm -o vm")
+-        do_cmd('python tests.py $SYS')
++        do_cmd("$CC $WFLAGS -g vmmain.c $FLAGS -o vm")
++        do_cmd('python2 tests.py $SYS')
+         for mod in mods:
+-            py2bc('python py2bc.py $SRC $DEST',mod)
++            py2bc('python2 py2bc.py $SRC $DEST',mod)
+     else:
+         for mod in mods:
+-            py2bc('python py2bc.py $SRC $DEST -nopos',mod)
++            py2bc('python2 py2bc.py $SRC $DEST -nopos',mod)
+     if BOOT:
+         do_cmd('$VM tests.tpc $SYS')
+         for mod in mods: py2bc('$VM py2bc.tpc $SRC $DEST',mod)
+         build_bc()
+-        do_cmd("gcc $WFLAGS -g tpmain.c $FLAGS -lm -o tinypy")
++        do_cmd("$CC $WFLAGS -g tpmain.c $FLAGS -o tinypy")
+     #second pass - builts optimized binaries and stuff
+     if BOOT:
+         do_cmd('$TINYPY tests.py $SYS')
+         for mod in mods: py2bc('$TINYPY py2bc.py $SRC $DEST -nopos',mod)
+     build_bc(True)
+     if BOOT:
+-        do_cmd("gcc $WFLAGS -O2 tpmain.c $FLAGS -lm -o tinypy")
++        do_cmd("$CC $WFLAGS -O2 tpmain.c $FLAGS -o tinypy")
+         do_cmd('$TINYPY tests.py $SYS')
+         print("# OK - we'll try -O3 for extra speed ...")
+-        do_cmd("gcc $WFLAGS -O3 tpmain.c $FLAGS -lm -o tinypy")
++        do_cmd("$CC $WFLAGS -O3 tpmain.c $FLAGS -o tinypy")
+         do_cmd('$TINYPY tests.py $SYS')
+-    do_cmd("gcc $WFLAGS -O3 mymain.c $FLAGS -lm -o ../build/tinypy")
++    do_cmd("$CC $WFLAGS -O3 mymain.c $FLAGS -o ../build/tinypy")
+     do_chdir('..')
+     if TEST:
+         test_mods(os.path.join('.','build','tinypy')+' $TESTS')
+@@ -293,8 +294,8 @@
+     mods = CORE[:]; mods.append('tests')
+     os.chdir(os.path.join(TOPDIR,'tinypy'))
+     do_cmd('cl vmmain.c /D "inline=" /Od /Zi /MD /Fdvm.pdb /Fmvm.map /Fevm.exe')
+-    do_cmd('python tests.py -win')
+-    for mod in mods: do_cmd('python py2bc.py %s.py %s.tpc'%(mod,mod))
++    do_cmd('python2 tests.py -win')
++    for mod in mods: do_cmd('python2 py2bc.py %s.py %s.tpc'%(mod,mod))
+     do_cmd('vm.exe tests.tpc -win')
+     for mod in mods: do_cmd('vm.exe py2bc.tpc %s.py %s.tpc'%(mod,mod))
+     build_bc()

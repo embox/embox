@@ -16,7 +16,7 @@ package embox.cmd.fs
 module mkdir {
 	source "mkdir.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
 	depends embox.framework.LibFramework

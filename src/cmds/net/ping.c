@@ -11,8 +11,6 @@
  * @author Daria Dzendzik
  */
 
-#include <embox/cmd.h>
-
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -34,8 +32,6 @@
 #include <net/util/macaddr.h>
 #include <poll.h>
 #include <signal.h>
-
-EMBOX_CMD(exec);
 
 /* Constants */
 #define DEFAULT_COUNT    4
@@ -280,7 +276,7 @@ out:
 	return ret;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt, i_opt;
 	struct in_device *in_dev = NULL;
 	struct ping_info pinfo;

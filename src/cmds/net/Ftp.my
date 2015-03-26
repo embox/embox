@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "ftp",
 	help = "FTP client",
 	man = '''
@@ -26,7 +27,7 @@ module ftp {
 	option number data_buff_sz=1024
 
 	depends embox.compat.posix.util.getpass
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.net.socket
 	depends embox.framework.LibFramework
 }

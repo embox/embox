@@ -29,11 +29,11 @@
 
 #include <embox/net/sock.h>
 
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <fs/idesc_event.h>
 #include <net/sock_wait.h>
 
-#include <err.h>
+#include <util/err.h>
 
 #include <framework/mod/options.h>
 #define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
@@ -42,6 +42,7 @@
 #define MODOPS_CONNECT_TIMEOUT \
 	OPTION_MODULE_GET(embox__net__socket, NUMBER, connect_timeout)
 
+#define MAX_SIMULTANEOUS_TX_PACK OPTION_GET(NUMBER, max_simultaneous_tx_pack)
 static const struct sock_proto_ops tcp_sock_ops_struct;
 const struct sock_proto_ops *const tcp_sock_ops
 		= &tcp_sock_ops_struct;
@@ -193,13 +194,13 @@ static int tcp_connect(struct sock *sk,
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_seq_from_sock(tcp_sk, skb);
 			//FIXME hack use common lock/unlock systems for socket
-			softirq_lock();
+			sched_lock();
 			{
 				tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
 				ret = sock_wait(sk, POLLOUT | POLLERR, MODOPS_CONNECT_TIMEOUT);
 				tcp_sock_lock(tcp_sk, TCP_SYNC_STATE);
 			}
-			softirq_unlock();
+			sched_unlock();
 			if (ret == -EAGAIN) {
 				ret = -EINPROGRESS;
 				break;
@@ -349,6 +350,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			if (tcp_newsk) {
 				break;
 			}
+			tcp_sock_alloc_missing_backlog(tcp_sk);
 			ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
 		} while (!ret);
 	}
@@ -374,20 +376,21 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	return 0;
 }
 
-static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
-	size_t bytes;
+static int tcp_write(struct tcp_sock *tcp_sk, void *buff, size_t len) {
+	void *pb;
 	struct sk_buff *skb;
 	int ret;
 
+	pb = buff;
 	while (len != 0) {
 		/* Previous comment: try to send wholly msg
 		 * We must pass no more than 64k bytes to underlaying IP level */
-		bytes = min(len, IP_MAX_PACKET_LEN - MAX_HEADER_SIZE);
+		size_t bytes = min(len, IP_MAX_PACKET_LEN - MAX_HEADER_SIZE);
 		skb = NULL; /* alloc new pkg */
 
 		ret = alloc_prep_skb(tcp_sk, 0, &bytes, &skb);
 		if (ret != 0) {
-			return len;
+			break;
 		}
 
 		debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
@@ -397,21 +400,43 @@ static int tcp_write(struct tcp_sock *tcp_sk, char *buff, size_t len) {
 				sock_inet_get_src_port(to_sock(tcp_sk)),
 				TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
 
-		memcpy(skb->h.th + 1, buff, bytes);
-		buff += bytes;
+		memcpy(skb->h.th + 1, pb, bytes);
+		pb += bytes;
 		len -= bytes;
 		/* Fill TCP header */
 		skb->h.th->psh = (len == 0);
 		tcp_set_ack_field(skb->h.th, tcp_sk->rem.seq);
 		send_seq_from_sock(tcp_sk, skb);
 	}
-	return len;
+	return pb - buff;
 }
+
+#if MAX_SIMULTANEOUS_TX_PACK > 0
+static int tcp_wait_tx_ready(struct sock *sk, int timeout) {
+	int ret;
+
+	ret = 0;
+	sched_lock();
+	{
+		while (MAX_SIMULTANEOUS_TX_PACK <= skb_queue_count(&sk->tx_queue)) {
+			ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
+			if (ret < 0) {
+				break;
+			}
+		}
+	}
+	sched_unlock();
+	return ret;
+}
+#else
+static inline int tcp_wait_tx_ready(struct sock *sk, int timeout) {
+	return 0;
+}
+#endif
 
 #define REM_WIND_MAX_SIZE (1460 * 100) /* FIXME use txqueuelen for netdev */
 static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	struct tcp_sock *tcp_sk;
-	char *buff;
 	size_t len;
 	int ret, timeout;
 
@@ -419,8 +444,6 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	assert(sk);
 	assert(msg);
-
-	len = msg->msg_iov->iov_len;
 
 	timeout = timeval_to_ms(&sk->opt.so_sndtimeo);
 	if (timeout == 0) {
@@ -437,36 +460,37 @@ sendmsg_again:
 		return -ENOTCONN;
 	case TCP_SYN_SENT:
 	case TCP_SYN_RECV:
-		softirq_lock();
+		sched_lock();
 		{
 			ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
 		}
-		softirq_unlock();
+		sched_unlock();
 		if (ret != 0) {
 			return ret;
 		}
 		goto sendmsg_again;
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
-		softirq_lock();
+		sched_lock();
 		{
 			while ((min(tcp_sk->rem.wind.size, REM_WIND_MAX_SIZE)
 						<= tcp_sk->self.seq - tcp_sk->last_ack)
 					|| tcp_sk->rexmit_mode) {
 				ret = sock_wait(sk, POLLOUT | POLLERR, timeout);
 				if (ret != 0) {
-					softirq_unlock();
+					sched_unlock();
 					return ret;
 				}
 			}
 		}
-		softirq_unlock();
+		sched_unlock();
 
-		buff = (char *)msg->msg_iov->iov_base;
-		len = tcp_write(tcp_sk, buff, len);
-
-		msg->msg_iov->iov_len -= len;
-		return 0;
+		len = tcp_write(tcp_sk, msg->msg_iov->iov_base, msg->msg_iov->iov_len);
+		ret = tcp_wait_tx_ready(sk, timeout);
+		if (0 > ret) {
+			return ret;
+		}
+		return len;
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
 	case TCP_CLOSING:

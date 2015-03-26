@@ -44,7 +44,7 @@
 #include <kernel/panic.h>
 
 #include <hal/context.h>
-#include <err.h>
+#include <util/err.h>
 
 extern void thread_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
@@ -171,6 +171,12 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 	}
 
 	return &thread_self()->schedee;
+}
+
+struct thread *thread_self(void) {
+	struct schedee *schedee = schedee_get_current();
+	assert(schedee->process == thread_process, "thread_self is about to return not-thread");
+	return mcast_out(schedee, struct thread, schedee);;
 }
 
 void thread_init(struct thread *t, sched_priority_t priority,

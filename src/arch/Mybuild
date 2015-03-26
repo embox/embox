@@ -23,6 +23,9 @@ abstract module entry { }
 abstract module boot { }
 abstract module lds { }
 
+module no_libarch extends libarch { }
+module no_clock extends clock { }
+
 @Mandatory
 @DefaultImpl(embox.arch.generic.nocontext)
 abstract module context { }

@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "touch",
 	help = "Create an empty file",
 	man = '''

@@ -13,10 +13,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <util/math.h>
-#include <embox/cmd.h>
 #include <unistd.h>
-
-EMBOX_CMD(exec);
 
 #define BUFF_SZ 16384
 
@@ -64,7 +61,7 @@ static int client_tcp(size_t nbyte, struct sockaddr_in *in) {
 	return 0;
 }
 
-static int exec(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int opt, count;
 	size_t nbyte;
 	char *protocol, *address, *port, *tmp;

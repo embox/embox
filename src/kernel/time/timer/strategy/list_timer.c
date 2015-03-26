@@ -7,11 +7,11 @@
  * @author Ilia Vaprol
  */
 
-#include <kernel/time/timer.h>
-#include <profiler/tracing/trace.h>
 #include <util/dlist.h>
 
 #include <hal/ipl.h>
+
+#include <kernel/time/timer.h>
 
 static DLIST_DEFINE(sys_timers_list);
 
@@ -41,8 +41,6 @@ void timer_strat_sched(void) {
 
 	dlist_foreach_entry(tmr, &sys_timers_list, lnk) {
 		if (0 == tmr->cnt--) {
-			trace_point("timer tick");
-
 			if (timer_is_periodic(tmr)) {
 				tmr->cnt = tmr->load;
 			} else {

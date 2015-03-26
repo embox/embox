@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "more",
 	help = "Simple tty file output",
 	man = '''
@@ -17,8 +18,8 @@ package embox.cmd.fs
 module more {
 	source "more.c"
 
-	depends embox.compat.libc.LibC
-	depends embox.lib.LibCurses
+	depends embox.compat.libc.all
+	depends embox.compat.posix.LibCurses
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file
 	depends embox.fs.core

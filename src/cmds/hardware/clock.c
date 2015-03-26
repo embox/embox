@@ -6,8 +6,6 @@
  * @author Alina Kramar
  */
 
-#include <embox/cmd.h>
-
 #include <errno.h>
 #include <util/array.h>
 
@@ -15,8 +13,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <kernel/time/clock_source.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: clock [-i] [-h]\n");
@@ -46,7 +42,7 @@ static int clock_source_info(void) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 
 	if (argc <= 1) {

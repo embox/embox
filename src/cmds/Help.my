@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "help",
 	help = "Shows all available commands",
 	man = '''
@@ -16,7 +17,7 @@ module help {
 	 */
 	source "help.c"
 
-	@NoRuntime depends embox.compat.libc.LibCStdio
+	@NoRuntime depends embox.compat.libc.stdio.printf
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

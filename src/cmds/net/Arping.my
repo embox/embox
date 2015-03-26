@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "arping",
 	help = "Send ARP REQUEST to a neighbour host",
 	man = '''
@@ -27,7 +28,7 @@ package embox.cmd.net
 module arping {
 	source "arping.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.net.core
 	depends embox.compat.posix.util.getopt
 	depends embox.net.util.macaddr

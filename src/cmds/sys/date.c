@@ -6,7 +6,6 @@
  * @author Alexander Kalmuk
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,8 +15,6 @@
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
 #include <time.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: date -s CCYYMMDDhhmm.ss\n");
@@ -115,7 +112,7 @@ static int check_format(char *string) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	//struct timeval tv;
 

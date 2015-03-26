@@ -12,11 +12,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <lib/crc32.h>
-#include <drivers/usb/usb_whitelist_dev.h>
-#include <embox/cmd.h>
 
-EMBOX_CMD(usb_whitelist_main);
+#include <lib/crypt/crc32.h>
+
+#include <drivers/usb/usb_whitelist_dev.h>
 
 #define USB_WL_DUMP_HDR_MAGIC_LEN 4
 static const char usb_wl_dump_hdr_magic[] = "UWLD";
@@ -247,7 +246,7 @@ static int usb_wl_rule_parse(char *strrule[], int strn,
 }
 
 #define USB_WL_DEV_PATH_LEN 64
-static int usb_whitelist_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	struct usb_whitelist_rule wl_rule;
 	char usb_wl_dev_path[USB_WL_DEV_PATH_LEN];
 	int rule_id;

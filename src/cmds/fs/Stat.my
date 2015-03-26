@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "stat",
 	help = "Print file and filesystem statistic on the standard output",
 	man = '''
@@ -17,7 +18,7 @@ package embox.cmd.fs
 module stat {
 	source "stat.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.file

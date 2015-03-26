@@ -1,0 +1,5 @@
+package embox.arch.mips.subarch
+
+module rt5350_hw_init {
+	source "rt5350.S"
+}

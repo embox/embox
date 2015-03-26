@@ -584,22 +584,21 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 	return 0;
 }
 
-const block_dev_module_t *block_devs_lookup(const char *bd_name);
 static int ide_create_block_dev(hd_t *hd) {
 	const block_dev_module_t *bdev;
 
 	switch (hd->media) {
 		case IDE_CDROM:
-			bdev = block_devs_lookup("idecd");
+			bdev = block_dev_lookup("idecd");
 
 			break;
 
 
 		case IDE_DISK:	{
 			if (hd->udmamode == -1) {
-				bdev = block_devs_lookup("idedisk");
+				bdev = block_dev_lookup("idedisk");
 			} else {
-				bdev = block_devs_lookup("idedisk_udma");
+				bdev = block_dev_lookup("idedisk_udma");
 			}
 
 			break;

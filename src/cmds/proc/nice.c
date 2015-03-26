@@ -13,11 +13,7 @@
 #include <framework/cmd/api.h>
 #include <kernel/task.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ret, ind, old_prior, prior;
 	const struct cmd *cmd;
 	char backup_task_name[32];

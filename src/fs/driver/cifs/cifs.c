@@ -442,7 +442,6 @@ static const struct fsop_desc cifs_fsop = {
 	.delete_node = embox_cifs_node_delete,
 	.mount = embox_cifs_mount,
 	.umount = embox_cifs_umount,
-//	.truncate = embox_cifs_truncate,
 };
 
 static struct kfile_operations cifs_fop = {
@@ -456,6 +455,7 @@ static const struct fs_driver cifs_driver = {
 	.name = "cifs",
 	.fsop = &cifs_fsop,
 	.file_op = &cifs_fop,
+	.mount_dev_by_string = true,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);

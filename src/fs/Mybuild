@@ -1,25 +1,32 @@
 package embox.fs
 
 module node {
-	source "node.c"
 	option number fnode_quantity=64
+
+	source "node.c"
+
 	depends embox.util.tree
 }
 
 module filesystem {
+	option number fs_quantity=32
+	option number mount_desc_quantity=16
+
 	source "file_system.c"
 	source "mount_table.c"
-	option number fs_quantity=32
 
 	depends embox.fs.driver.repo
 }
 
 module file_desc {
+	option number fdesc_quantity=32
+
 	source "file_desc.c"
 	source "file_xattr.c"
-	depends xattr
+
 	depends idesc
-	option number fdesc_quantity=32
+	depends index_operation
+	depends xattr
 
 	depends embox.kernel.task.resource.idesc_table
 }
@@ -51,39 +58,41 @@ module xattr_list {
 }
 
 module core extends fs_api {
-	source "vfs.c", "hlpr_path.c"
+	source "vfs.c"
+	source "hlpr_path.c"
 
-	depends file_desc, node
-	depends embox.fs.driver.repo
-
-	depends embox.fs.SysLibFsFull
-	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 	depends filesystem
+	depends node
+
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.environ
 	depends embox.util.tree
+
+	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 }
 
 module index_operation {
 	source "index_operation.c"
+
+	depends embox.fs.SysLibFsFull
 	depends fs_api
-	depends embox.kernel.task.idesc
 }
 
 module rootfs {
 	source "rootfs.c"
 	option string fstype = "initfs"
-	option string src = ""
-	option string dst = "/"
+	option string bdev = ""
 	depends node, driver.repo
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
 	depends SysLibFileSystem
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 }
 
 module journal {
 	source "journal.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends buffer_cache
 	depends embox.mem.slab
 }
@@ -92,7 +101,7 @@ module buffer_cache {
 	source "bcache.c"
 	option number bcache_size=128
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
 

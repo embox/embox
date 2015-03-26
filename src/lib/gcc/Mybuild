@@ -1,0 +1,5 @@
+package embox.lib
+
+@DefaultImpl(third_party.lib.libgcc_toolchain)
+abstract module LibGcc {
+}

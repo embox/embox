@@ -7,8 +7,9 @@ static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/embox-lib")
 	source "libstlportg.a"
 
+	@NoRuntime depends embox.mem.vmem_api // include sys/mman.h
 	@NoRuntime depends embox.lib.cxx.lib
-	@NoRuntime depends embox.compat.libc.LibC
+	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends third_party.gcc.core // FIXME
 	@NoRuntime depends embox.compat.posix.pthread_key
 }

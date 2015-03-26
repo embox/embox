@@ -59,6 +59,14 @@ C_ENTRY(_start):
 	mtlo    $zero
 	mthi    $zero
 
+	/* check hardware_init_hook and call if needed */
+	PTR_LA $t5, hardware_init_hook
+	beqz   $t5, 1f
+	nop
+	jal hardware_init_hook
+	nop
+1:
+
 	/* setup stack pointer */
 	PTR_LA  $sp, _stack_top
 

@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "rm",
 	help = "Remove file or directory",
 	man = '''
@@ -18,7 +19,7 @@ package embox.cmd.fs
 module rm {
 	source "rm.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.fs.fsop
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework

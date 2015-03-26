@@ -21,7 +21,7 @@
 #include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <embox/unit.h>
-#include <err.h>
+#include <util/err.h>
 
 extern const struct idesc_xattrops file_idesc_xattrops;
 

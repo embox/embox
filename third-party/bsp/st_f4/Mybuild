@@ -1,7 +1,7 @@
 package third_party.bsp.st_f4
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
-@BuildArtifactPath(cppflags="-DSTM32F40XX -I$(abspath $(ROOT_DIR))/third-party/bsp/st_f4/ $(addprefix -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/bsp/st_f4/core/STM32F4xx_Ethernet_Example/Libraries/,CMSIS/Include/ CMSIS/Device/ST/STM32F4xx/Include/ STM32F4xx_StdPeriph_Driver/inc/ STM32F4x7_ETH_Driver/inc/)")
+@BuildArtifactPath(cppflags="-DSTM32F40XX -I$(ROOT_DIR)/third-party/bsp/st_f4/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/core/STM32F4xx_Ethernet_Example/Libraries/,CMSIS/Include/ CMSIS/Device/ST/STM32F4xx/Include/ STM32F4xx_StdPeriph_Driver/inc/ STM32F4x7_ETH_Driver/inc/)")
 static module core extends third_party.bsp.st_bsp_api {
 
 	option number hse_freq_hz = 8000000 /* STM32F4Discovery oscillator */

@@ -11,16 +11,13 @@
 #include <string.h>
 #include <errno.h>
 
-#include <embox/cmd.h>
 #include <fs/fsop.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: umount [-h] dir\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	char *dir;
 

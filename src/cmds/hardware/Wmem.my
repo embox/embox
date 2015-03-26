@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "wmem",
 	help = "Writes memory word at the specified address",
 	man = '''
@@ -30,7 +31,7 @@ package embox.cmd
 module wmem {
 	source "wmem.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
 }

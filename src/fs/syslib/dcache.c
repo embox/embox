@@ -4,19 +4,26 @@
  * @date 29.04.14
  * @author Vita Loginova
  */
+
+#include <errno.h>
+#include <dirent.h>
+#include <string.h>
+
 #include <util/hashtable.h>
 #include <util/dlist.h>
-#include <errno.h>
-#include <embox/unit.h>
-#include <string.h>
 
 #include <mem/misc/pool.h>
 
-#include <dirent.h>
+#include <fs/path.h>
 
 #include <fs/dcache.h>
 
+
+
+#include <embox/unit.h>
+
 #define DCACHE_TABLE_SIZE OPTION_GET(NUMBER, dcache_table_size)
+#define DCACHE_SIZE       OPTION_GET(NUMBER, dcache_size)
 #define DCACHE_MAX_NAME_SIZE 20
 
 EMBOX_UNIT_INIT(dcache_init);
@@ -32,10 +39,15 @@ struct dvalue {
 };
 
 POOL_DEF(dcache_path_pool, struct dvalue, DCACHE_TABLE_SIZE);
+POOL_DEF(ht_item_pool, struct hashtable_item, DCACHE_SIZE);
 
-static struct hashtable *dcache_table = NULL;
+static size_t dcache_hash(void *key);
+static int dcache_cmp(void *key1, void *key2);
+
+HASHTABLE_DEF(dcache_ht, DCACHE_TABLE_SIZE,	&dcache_hash, &dcache_cmp);
+
+static struct hashtable *dcache_table = &dcache_ht;
 static struct dlist_head values;
-
 
 static size_t dcache_hash(void *key) {
 	struct dkey *dkey = key;
@@ -56,12 +68,6 @@ static int dcache_cmp(void *key1, void *key2) {
 }
 
 static int dcache_lazy_init(void) {
-	dcache_table = hashtable_create(DCACHE_TABLE_SIZE,
-			&dcache_hash, &dcache_cmp);
-
-	if (dcache_table == NULL) {
-		return -ENOMEM;
-	}
 
 	dlist_init(&values);
 
@@ -69,7 +75,10 @@ static int dcache_lazy_init(void) {
 }
 
 static void dvalue_delete(struct dvalue *dvalue) {
-	hashtable_del(dcache_table, &dvalue->key);
+	struct hashtable_item *ht_item;
+
+	ht_item = hashtable_del(dcache_table, &dvalue->key);
+	pool_free(&ht_item_pool, ht_item);
 	dlist_del(&dvalue->link);
 	pool_free(&dcache_path_pool, dvalue);
 }
@@ -92,8 +101,14 @@ static void dvalue_init(struct dvalue *dvalue, struct path *path,
 }
 
 static void dvalue_add(struct dvalue *dvalue) {
+	struct hashtable_item *ht_item;
+
 	dlist_add_next(&dvalue->link, &values);
-	hashtable_put(dcache_table, &dvalue->key, dvalue);
+
+	ht_item = pool_alloc(&ht_item_pool);
+	ht_item = hashtable_item_init(ht_item, &dvalue->key, dvalue);
+	hashtable_put(dcache_table, ht_item);
+
 }
 
 int dcache_delete(const char *prefix, const char *rest) {

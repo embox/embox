@@ -12,7 +12,7 @@
 #include <mem/misc/pool.h>
 #include <kernel/usermode.h>
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/task.h>
 

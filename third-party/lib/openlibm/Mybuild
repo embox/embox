@@ -1,0 +1,13 @@
+
+package third_party.lib
+
+@DefaultImpl(OpenLibmImpl)
+abstract module OpenLibm { }
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+static module OpenLibmImpl extends OpenLibm {
+	source "^BUILD/extbld/^MOD_PATH/install/libopenlibm.a"
+	source "impl.h"
+}
+
+static module NoOpenLibm extends OpenLibm { }

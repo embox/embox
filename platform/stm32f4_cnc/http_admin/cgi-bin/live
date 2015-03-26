@@ -1,0 +1,15 @@
+#!/bin/sh
+
+echo -ne "HTTP/1.1 200 OK\r\n"
+echo -ne "Content-Type: text/event-stream\r\n"
+echo -ne "Cache-Control: no-cache\r\n"
+echo -ne "Connection: keep-alive\r\n"
+echo -ne "\r\n"
+
+
+id=0
+while true; do
+	echo -ne "data: { \"id\" : $id }\n\n" 2>/dev/null || exit 0
+	id=$(($id + 1))
+	sleep 1
+done

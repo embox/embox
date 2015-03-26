@@ -31,8 +31,8 @@ module no_cpudata extends cpudata_api {
 module cpudata extends cpudata_api {
 	source "cpudata.c", "cpudata_impl.h", "cpudata.lds.S"
 	depends embox.arch.cpu
-	@NoRuntime depends embox.compat.libc.LibCAssert
-	@NoRuntime depends embox.compat.libc.LibCString
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
 }
 
 module stats {

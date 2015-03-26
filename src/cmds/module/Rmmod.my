@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "rmmod",
 	help = "Disables a given module",
 	man = '''
@@ -14,6 +15,6 @@ module rmmod {
 	 */
 	source "rmmod.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }

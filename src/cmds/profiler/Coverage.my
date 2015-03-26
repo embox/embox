@@ -1,6 +1,7 @@
 
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "coverage",
 	help = "Shows function coverage statistic",
 	man = '''

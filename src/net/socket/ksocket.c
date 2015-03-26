@@ -24,7 +24,7 @@
 #include <kernel/time/time.h>
 #include <fs/idesc.h>
 
-#include <err.h>
+#include <util/err.h>
 
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
 

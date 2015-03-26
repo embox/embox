@@ -8,7 +8,7 @@
 #ifndef DCACHE_H_
 #define DCACHE_H_
 
-#include <fs/path.h>
+struct path;
 
 extern int dcache_add(const char *prefix, const char *rest, struct path *path);
 extern struct path *dcache_get(const char *prefix, const char *rest);

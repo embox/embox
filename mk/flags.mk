@@ -28,6 +28,8 @@ COVERAGE_CFLAGS ?= -finstrument-functions \
 			symbol_lookup \
 			__cyg_profile_func_enter \
 			__cyg_profile_func_exit \
+			__coverage_func_enter \
+			__coverage_func_exit \
 			bitmap_set_bit)
 
 PROFILING_CFLAGS ?= -finstrument-functions \
@@ -65,6 +67,7 @@ EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
 	$(foreach path_var, \
 			ROOT_DIR \
+			EMBOX_ROOT_DIR \
 			CONF_DIR \
 			TEMPLATES_DIR \
 			SRC_DIR \
@@ -181,7 +184,7 @@ override CXXFLAGS = $(COMMON_CCFLAGS)
 #override CXXFLAGS += -fno-rtti
 #override CXXFLAGS += -fno-exceptions
 #override CXXFLAGS += -fno-threadsafe-statics
-override CXXFLAGS += -I$(SRC_DIR)/include/c++
+override CXXFLAGS += -I$(SRC_DIR)/compat/cxx/include
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)

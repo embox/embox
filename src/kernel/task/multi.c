@@ -23,7 +23,7 @@
 #include <kernel/thread/thread_priority.h>
 
 #include <util/binalign.h>
-#include <err.h>
+#include <util/err.h>
 
 struct task_trampoline_arg {
 	void * (*run)(void *);

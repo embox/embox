@@ -11,9 +11,10 @@
 .syntax unified
 
 ptregs_jmp:
-	mov 	sp, r0
-	ldmia	sp, {r0 - r12, r14}
-	ldr     sp, [sp, #56]; \
+	add	r0, #4
+	ldmia	r0, {r1 - r12, r14}
+	ldr     sp, [r0, #52]; \
 	add	sp, sp, #68
+	ldr	r0, [r0, #-4]
 	mov	pc, lr
 

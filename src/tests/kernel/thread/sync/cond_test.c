@@ -11,7 +11,7 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
-#include <err.h>
+#include <util/err.h>
 
 static struct thread *low, *high;
 static cond_t c, c_private;

@@ -11,6 +11,7 @@ module core {
 	depends sched_wait
 
 	@NoRuntime depends embox.kernel.sched.sched
+	@NoRuntime depends embox.kernel.sched.sched_ticker
 	@NoRuntime depends embox.arch.context
 
 
@@ -20,7 +21,7 @@ module core {
 	@NoRuntime depends signal_api
 	@NoRuntime depends thread_wait
 
-	@NoRuntime depends embox.compat.libc.LibCAssert
+	@NoRuntime depends embox.compat.libc.assert
 
 	depends embox.kernel.cpu.common
 	depends embox.kernel.sched.current.api

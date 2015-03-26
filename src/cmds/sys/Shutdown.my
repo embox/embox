@@ -1,13 +1,25 @@
 package embox.cmd.sys
 
-@Cmd(name = "Shutdown",
-	help = "reset the system",
+@AutoCmd
+@Cmd(name = "shutdown",
+	help = "turn off or reboot the system",
 	man = '''
 		NAME
-			shutdown - reset the system
+			shutdown - turn off or reboot the system
+		SYNOPSIS
+			shutdown -p
+			shutdown -r
+		OPTIONS
+			-p turn off the system
+			-r reboot the system
 		AUTHORS
 			Anton Bondarev
+			Roman Kurbatov
 	''')
 module shutdown {
 	source "shutdown.c"
+
+	depends embox.compat.libc.stdio.all
+	depends embox.compat.libc.str
+	/* FIXME: arch_shutdown() - which module? */
 }

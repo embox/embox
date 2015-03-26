@@ -4,115 +4,114 @@
  *
  * @date 21.10.2011
  * @author Anton Kozlov
+ * @author Vita Loginova
  */
 
 #include <stddef.h>
 #include <string.h>
+#include <util/ring.h>
 #include <util/ring_buff.h>
 
 int ring_buff_get_cnt(struct ring_buff *buf) {
-	return buf->cnt;
+	return ring_data_size(&buf->ring, buf->capacity);
 }
 
 int ring_buff_get_space(struct ring_buff *buf) {
-	return buf->capacity - buf->cnt;
+	return ring_room_size(&buf->ring, buf->capacity);
 }
 
-int ring_buff_allocover(struct ring_buff *buf, int n, void **ret) {
-	int m = buf->capacity - buf->p_write;
+int ring_buff_alloc(struct ring_buff *buf, int cnt, void **ret) {
+	struct ring *ring = &buf->ring;
+	void *write_to = buf->storage + (ring->head * buf->elem_size);
+	int can_write;
 
-	if (n < m) {
-		m = n;
-	}
-
-	*ret = buf->storage + (buf->p_write * buf->elem_size);
-
-	buf->p_write = (buf->p_write + m) % buf->capacity;
-	buf->cnt += m;
-
-	if (buf->cnt > buf->capacity) {
-		buf->p_read = (buf->p_read + (buf->cnt - buf->capacity))
-			% buf->capacity;
-		buf->cnt = buf->capacity;
-	}
-
-	return m;
-}
-
-int ring_buff_alloc(struct ring_buff *buf, int n, void **ret) {
-	int m = buf->capacity - buf->cnt;
-
-	return ring_buff_allocover(buf, n < m ? n : m, ret);
-}
-
-static int enqueue_fn(int (*alloc)(struct ring_buff *, int n, void **ret),
-		struct ring_buff *buf, void *elem, int cnt ) {
-	void *write_to;
-	int tcnt = cnt, t1, t2;
-
-	if (0 >= (t1 = alloc(buf, tcnt, &write_to))) {
-		return t1;
-	}
-
-	memcpy(write_to, elem, t1 * buf->elem_size);
-
-	tcnt -= t1;
-
-	if (tcnt == 0) {
-		return cnt;
-	}
-
-	if (0 >= (t2 = alloc(buf, tcnt, &write_to))) {
-		return t2;
-	}
-
-	memcpy(write_to, elem + t1 * buf->elem_size, t2 * buf->elem_size);
-
-	tcnt -= t2;
-
-	return cnt - tcnt;
-}
-
-int ring_buff_enqueueover(struct ring_buff *buf, void *elem, int cnt) {
-	return enqueue_fn(ring_buff_allocover, buf, elem, cnt);
-}
-
-int ring_buff_enqueue(struct ring_buff *buf, void *elem, int cnt) {
-	return enqueue_fn(ring_buff_alloc, buf, elem, cnt);
-}
-
-
-int ring_buff_dequeue(struct ring_buff *buf, void *elem, int cnt) {
-	int rest = buf->capacity - buf->p_read;
-	void *read_from = (char*)buf->storage + (buf->p_read * buf->elem_size);
-
-	if (buf->cnt == 0) {
+	if (ring_full(ring, buf->capacity)) {
 		return 0;
 	}
 
-	if (buf->cnt < cnt) {
-		cnt = buf->cnt;
+	*ret = write_to;
+
+	can_write = ring_can_write(&buf->ring, buf->capacity, cnt);
+	memset(write_to, 0, buf->elem_size * can_write);
+
+	return ring_just_write(ring, buf->capacity, can_write);
+}
+
+static int __ring_buff_enqueue(struct ring_buff *buf,
+	void *into_buf, void *from_buf, int cnt) {
+	struct ring *ring = &buf->ring;
+	int can_write;
+
+	can_write = ring_can_write(ring, buf->capacity, cnt);
+	memcpy(into_buf, from_buf, buf->elem_size * can_write);
+	ring_just_write(ring, buf->capacity, can_write);
+
+	return can_write;
+}
+
+int ring_buff_enqueue(struct ring_buff *buf, void *from_buf, int cnt) {
+	struct ring *ring = &buf->ring;
+	void *write_to = buf->storage + (ring->head * buf->elem_size);
+	int written, rest;
+
+	if (ring_full(ring, buf->capacity)) {
+		return 0;
 	}
 
-	buf->cnt -= cnt;
+	written = __ring_buff_enqueue(buf, write_to, from_buf, cnt);
 
-	if (cnt > rest) {
-		memcpy(elem, read_from, buf->elem_size * rest);
-		memcpy((char *)elem + buf->elem_size * rest, buf->storage, buf->elem_size * (cnt - rest));
-		buf->p_read = cnt - rest;
-	} else {
-		memcpy(elem, read_from, buf->elem_size * cnt);
-		buf->p_read = (buf->p_read + cnt) % buf->capacity;
+	if (ring_full(ring, buf->capacity)) {
+		return written;
 	}
 
-	return cnt;
+	rest = cnt - written;
+	if (rest) {
+		written += __ring_buff_enqueue(buf, buf->storage,
+			from_buf + buf->elem_size * written, rest);
+	}
+
+	return written;
+}
+
+static int __ring_buff_dequeue(struct ring_buff *buf,
+	void *into_buf, void *from_buf, int cnt) {
+	struct ring *ring = &buf->ring;
+	int can_read;
+
+	can_read = ring_can_read(ring, buf->capacity, cnt);
+	memcpy(into_buf, from_buf, buf->elem_size * can_read);
+	ring_just_read(ring, buf->capacity, can_read);
+
+	return can_read;
+}
+
+int ring_buff_dequeue(struct ring_buff *buf, void *into_buf, int cnt) {
+	struct ring *ring = &buf->ring;
+	void *read_from = buf->storage + (ring->tail * buf->elem_size);
+	int read, rest;
+
+	if (ring_empty(ring)) {
+		return 0;
+	}
+
+	read = __ring_buff_dequeue(buf, into_buf, read_from, cnt);
+
+	if (ring_empty(ring)) {
+		return read;
+	}
+
+	rest = cnt - read;
+	if (rest) {
+		read += __ring_buff_dequeue(buf, into_buf + buf->elem_size * read,
+			buf->storage, rest);
+	}
+
+	return read;
 }
 
 int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage) {
+	ring_init(&buf->ring);
 	buf->capacity = count;
-	buf->cnt = 0;
-	buf->p_write = 0;
-	buf->p_read = 0;
 	buf->storage = storage;
 	buf->elem_size = elem_size;
 

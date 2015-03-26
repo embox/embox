@@ -1,0 +1,8 @@
+package embox.lib
+
+static module LibCrypt {
+	source "crc32.c"
+	source "crc16.c"
+	source "md5.c"
+	source "b64.c"
+}

@@ -5,5 +5,5 @@ module getaddrinfo_test {
 
 	depends embox.compat.posix.net.getaddrinfo
 	depends embox.framework.test
-	depends embox.compat.libc.LibCString
+	depends embox.compat.libc.str
 }

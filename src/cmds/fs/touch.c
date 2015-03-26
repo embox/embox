@@ -12,15 +12,11 @@
 #include <errno.h>
 #include <string.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: touch full_filename ...\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	char *point;
 	int fd;

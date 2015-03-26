@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "ps",
 	help = "report a snapshot of the current processes.",
 	man = '''
@@ -15,6 +16,6 @@ package embox.cmd.proc
 module ps {
 	source "ps.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.kernel.task.api
 }

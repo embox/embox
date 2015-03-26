@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <lib/md5.h>
+#include <lib/crypt/md5.h>
 
 #include <crypt.h>
 

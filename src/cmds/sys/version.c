@@ -5,17 +5,14 @@
  * @author Nikolay Korotky
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: version [-h]\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 #ifdef CONFIG_SVN_REV
 	unsigned int rev = CONFIG_SVN_REV;
 #endif

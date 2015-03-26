@@ -10,6 +10,7 @@
 #include "file_struct.h"
 
 #include <stdio.h>
+#include <string.h>
 
 #define FILE_QUANTITY OPTION_GET(NUMBER,file_quantity)
 
@@ -22,9 +23,9 @@ FILE *stdio_file_alloc(int fd) {
 		return NULL;
 	}
 
+	memset(file, 0, sizeof(FILE));
 	file->fd = fd;
-	file->has_ungetc = 0;
-	file->readfn = NULL;
+
 	return file;
 }
 

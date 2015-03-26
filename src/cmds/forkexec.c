@@ -6,8 +6,6 @@
  * @author Anton Bulychev
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 
 #include <stdlib.h>
@@ -17,11 +15,9 @@
 
 #include <kernel/task.h>
 
-EMBOX_CMD(exec);
-
 static void *new_task_entry(void *file);
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	char *filename;
 	int pid;
 

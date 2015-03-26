@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "trace_blocks",
 	man = '''
 		NAME
@@ -23,7 +24,7 @@ package embox.cmd
 module trace_blocks {
 	source "trace_blocks.c"
 
-	depends embox.compat.libc.LibCStdio
+	depends embox.compat.libc.stdio.all
 	depends embox.profiler.tracing
 	depends embox.framework.LibFramework
 }

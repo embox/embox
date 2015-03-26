@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "bootpc",
 	help = "BOOTP client",
 	man = '''
@@ -19,7 +20,7 @@ module bootpc {
 	source "bootpc.c"
 
 	depends embox.compat.posix.util.getopt
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.net.lib.bootp
 	depends embox.net.dev
 	depends embox.net.core

@@ -15,11 +15,8 @@
 #include <sys/socket.h>
 #include <net/l3/ipv4/ip.h>
 #include <arpa/inet.h>
-#include <embox/cmd.h>
 
 #define FTP_PORT 21
-
-EMBOX_CMD(exec);
 
 #include <framework/mod/options.h>
 
@@ -882,7 +879,7 @@ static int fs_cmd_bye(struct fs_info *session) {
 	return FTP_RET_EXIT;
 }
 
-int ftp_cmd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ret;
 	size_t i;
 	struct fs_info fsi;
@@ -969,8 +966,4 @@ parse_cmd:
 	}
 
 	return 0;
-}
-
-static int exec(int argc, char **argv) {
-	return ftp_cmd(argc, argv);
 }

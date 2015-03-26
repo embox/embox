@@ -1,5 +1,6 @@
 package embox.cmd.sys
 
+@AutoCmd
 @Cmd(name="install",
 	help="install base filesystem",
 	man = '''

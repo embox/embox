@@ -164,15 +164,28 @@ extern struct sk_buff * skb_clone(const struct sk_buff *skb);
 extern struct sk_buff * skb_declone(struct sk_buff *skb);
 
 /**
- * Write sk_buff data to buffers pointed by iovec.
+ * Write buffer from iovec
  *
- * @param skb
+ * @param buf
+ * @param buflen
  * @param iov
  * @param iovlen
  *
- * @return Written data count in bytes.
+ * @return
  */
-extern int skb_write_iovec(const void *buf, int buflen, struct iovec *iov, int iovlen);
+extern int skb_buf_iovec(void *buf, int buflen, struct iovec *iov, int iovlen);
+
+/**
+ * Write iovec from buffer
+ *
+ * @param iov
+ * @param iovlen
+ * @param buf
+ * @param buflen
+ *
+ * @return
+ */
+extern int skb_iovec_buf(const struct iovec *iov, int iovlen, const void *buf, int buflen);
 
 /**
  * Create copy of skb
@@ -204,6 +217,8 @@ extern struct sk_buff * skb_queue_front(struct sk_buff_head *queue);
  * Get first sk_buff from queue
  */
 extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
+
+extern int skb_queue_count(struct sk_buff_head *queue);
 
 #include <net/netdevice.h>
 

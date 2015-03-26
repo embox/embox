@@ -9,6 +9,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <arpa/inet.h>
 #include <net/l0/net_crypt.h>
 #include <net/l0/net_tx.h>
 #include <net/neighbour.h>
@@ -17,12 +18,11 @@
 #include <stddef.h>
 #include <util/array.h>
 #include <net/socket/packet.h>
+#include <net/l2/ethernet.h>
 
 #define NET_TX_DEBUG 0
 #if NET_TX_DEBUG
 #include <kernel/printk.h>
-#include <arpa/inet.h>
-#include <net/l2/ethernet.h>
 #define DBG(x) x
 #else
 #define DBG(x)
@@ -102,7 +102,14 @@ int net_tx(struct sk_buff *skb,
 	DBG(printk("net_tx: skb %p[%zu] type %#.6hx\n",
 				skb, skb->len, ntohs(skb->mac.ethh->h_proto)));
 
-	sock_packet_add(skb);
+	/*
+	 * http://www.linuxfoundation.org/collaborate/workgroups/networking/kernel_flow#Transmission_path
+	 * Search for:
+	 * dev_hard_start_xmit() calls the hard_start_xmit virtual method for the net_device.
+	 * But first, it calls dev_queue_xmit_nit(), which checks if a packet handler has been registered
+	 * for the ETH_P_ALL protocol. This is used for tcpdump.
+	 */
+	sock_packet_add(skb, htons(ETH_P_ALL));
 
 	skb = net_encrypt(skb);
 	if (skb == NULL) {

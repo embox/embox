@@ -24,14 +24,14 @@ TEST_CASE("Test for signbit") {
 
 	/* signbitf */
 	for (i = 0; i < sizeof values / sizeof values[0]; ++i) {
-		test_assert_zero(signbitf((float)values[i]));
-		test_assert_not_zero(signbitf(-(float)values[i]));
+		test_assert_zero(signbit((float)values[i]));
+		test_assert_not_zero(signbit(-(float)values[i]));
 	}
 
 	/* signbitl */
 	for (i = 0; i < sizeof values / sizeof values[0]; ++i) {
-		test_assert_zero(signbitl((long double)values[i]));
-		test_assert_not_zero(signbitl(-(long double)values[i]));
+		test_assert_zero(signbit((long double)values[i]));
+		test_assert_not_zero(signbit(-(long double)values[i]));
 	}
 }
 

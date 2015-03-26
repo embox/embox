@@ -18,9 +18,6 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <errno.h>
-#include <sched.h>
-#include <time.h>
 #include <sched.h>
 
 #include <kernel/sched.h>
@@ -66,8 +63,6 @@ int sched_init(struct schedee *current) {
 	rq.lock = SPIN_UNLOCKED;
 
 	sched_set_current(current);
-
-	sched_ticker_init();
 
 	return 0;
 }
@@ -398,7 +393,7 @@ void schedule(void) {
 static void sched_preempt(void) {
 	sched_lock();
 	__schedule(1);
-	sched_unlock();
+	sched_unlock_noswitch();
 }
 
 void sched_wait_prepare(void) {

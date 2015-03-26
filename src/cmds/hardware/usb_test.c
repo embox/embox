@@ -13,10 +13,6 @@
 #include <drivers/usb/usb_dev_desc.h>
 #include <drivers/usb/usb_desc.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(usb_test_main);
-
 #define TEST_BUF_LEN 16
 static char test_buf[TEST_BUF_LEN];
 
@@ -61,7 +57,7 @@ static int usb_test_write(struct usb_dev_desc *ddesc, int endp, char **data,
 	return usb_request(ddesc, endp, USB_TOKEN_OUT | tok, test_buf, len);
 }
 
-static int usb_test_main(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int vid = -1, pid = -1, endp = -1, len = -1;
 	signed char write = 0, setup_tok = 0, ack_tok = 0;
 	struct usb_dev_desc *ddesc;
@@ -147,4 +143,3 @@ exit:
 
 	return res;
 }
-

@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "cp",
 	help = "Copy file",
 	man = '''
@@ -22,7 +23,7 @@ package embox.cmd.fs
 module cp {
 	source "cp.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }

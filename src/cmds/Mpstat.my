@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "mpstat",
 	help = "report processors related statistics..",
 	man = '''
@@ -15,6 +16,6 @@ package embox.cmd
 module mpstat {
 	source "mpstat.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.kernel.cpu.stats
 }

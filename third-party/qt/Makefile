@@ -79,17 +79,22 @@ QT_CFLAGS   := $(QT_CPPFLAGS) -Wno-error
 QT_CXXFLAGS := $(QT_CPPFLAGS) $(filter -I%,$(EMBOX_CXXFLAGS)) -fpermissive -Wno-error
 QT_CXXFLAGS := $(subst -I./,-I$(ROOT_DIR)/,$(QT_CXXFLAGS))
 
+QT_MAKEFLAGS=
+ifneq ($(filter -j, $(EMBOX_MAKEFLAGS)),)
+	QT_MAKEFLAGS += -j $(shell nproc)
+endif
+
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		CC='$(EMBOX_GCC)' CXX='$(EMBOX_GXX)' CFLAGS='$(QT_CFLAGS)' CXXFLAGS='$(QT_CXXFLAGS)' \
 			m4 --prefix-builtins $(QMAKE_CONF_M4) > $(QMAKE_CONF) && \
-		./configure $(QT_CONF_FLAGS) \
+		MAKEFLAGS='$(QT_MAKEFLAGS)' ./configure $(QT_CONF_FLAGS) \
 	)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make MAKEFLAGS='$(EMBOX_MAKEFLAGS)' \
+		$(MAKE) MAKEFLAGS='$(QT_MAKEFLAGS)'; \
 	)
 	touch $@
 
@@ -97,7 +102,7 @@ $(ROOTFS_IMAGE) : $(INSTALL)
 
 $(INSTALL) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make install MAKEFLAGS='$(EMBOX_MAKEFLAGS)' \
+		$(MAKE) install MAKEFLAGS='$(QT_MAKEFLAGS)' \
 	)
 	cp $(PKG_SOURCE_DIR)/mkspecs/qdevice.pri $(PKG_INSTALL_DIR)/mkspecs/
 	mkdir -p $(ROOT_DIR)/conf/rootfs/fonts

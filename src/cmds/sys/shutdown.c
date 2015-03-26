@@ -3,15 +3,36 @@
  *
  * @date Oct 29, 2012
  * @author: Anton Bondarev
+ *          Roman Kurbatov
+ *          - options processing
+ *          - rebooting the system
  */
 
-#include <embox/cmd.h>
-#include <unistd.h>
+#include <stdio.h>
+#include <string.h>
 #include <hal/arch.h>
 
-EMBOX_CMD(exec);
+static void print_usage(void) {
+	printf("Usage:" "\n"
+			"shutdown -p" "\n"
+			"\t" "turn off the system" "\n"
+			"shutdown -r" "\n"
+			"\t" "reboot the system" "\n");
+}
 
-static int exec(int argc, char **argv) {
-	arch_shutdown(0);
+int main(int argc, char **argv) {
+	if (argc != 2) {
+		print_usage();
+		return 0;
+	}
+
+	if (strcmp(argv[1], "-p") == 0) {
+		arch_shutdown(ARCH_SHUTDOWN_MODE_HALT);
+	} else if (strcmp(argv[1], "-r") == 0) {
+		arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
+	} else {
+		print_usage();
+	}
+
 	return 0;
 }

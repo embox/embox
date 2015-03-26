@@ -13,9 +13,11 @@ static module core {
 
 	depends embox.compat.posix.stubs
 
-	@NoRuntime depends embox.compat.libc.LibC
-	@NoRuntime depends embox.compat.libc.LibCStringDup
-	@NoRuntime depends embox.compat.posix.util.Time
+	@NoRuntime depends embox.compat.libc.all
+	@NoRuntime depends embox.compat.libc.str_dup
+	@NoRuntime depends embox.compat.posix.util.time
+	@NoRuntime depends embox.compat.posix.util.sleep
+	@NoRuntime depends embox.compat.posix.util.gettimeofday
 	@NoRuntime depends embox.compat.posix.proc.uid
 }
 

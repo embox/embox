@@ -14,7 +14,6 @@
 #include <fs/flags.h>
 #include <fs/kfile.h>
 
-
 extern const struct idesc_ops idesc_file_ops;
 
 static void idesc_file_ops_close(struct idesc *idesc) {

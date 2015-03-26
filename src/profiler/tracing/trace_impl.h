@@ -13,7 +13,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include <util/array.h>
 #include <util/location.h>

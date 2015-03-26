@@ -1,6 +1,26 @@
+diff -aur pjproject-2.2.1.orig/build.mak.in pjproject-2.2.1/build.mak.in
+--- pjproject-2.2.1.orig/build.mak.in	2015-01-12 02:52:08.115341907 +0300
++++ pjproject-2.2.1/build.mak.in	2015-01-12 02:51:49.515340847 +0300
+@@ -109,7 +109,7 @@
+ ifneq ($(findstring pa,@ac_pjmedia_snd@),)
+ ifeq (@ac_external_pa@,1)
+ # External PA
+-APP_THIRD_PARTY_EXT += -lportaudio
++#APP_THIRD_PARTY_EXT += -lportaudio
+ else
+ APP_THIRD_PARTY_LIB_FILES += $(PJ_DIR)/third_party/lib/libportaudio-$(LIB_SUFFIX)
+ ifeq ($(PJ_SHARED_LIBRARIES),)
+@@ -254,7 +254,6 @@
+ 	$(PJLIB_LDLIB) \
+ 	@LIBS@
+ export APP_LDXXLIBS := $(PJSUA2_LIB_LDLIB) \
+-	-lstdc++ \
+ 	$(APP_LDLIBS)
+ 
+ # Here are the variabels to use if application is using the library
 diff -aur pjproject-2.2.1.orig/pjlib/src/pj/os_core_unix.c pjproject-2.2.1/pjlib/src/pj/os_core_unix.c
---- pjproject-2.2.1.orig/pjlib/src/pj/os_core_unix.c	2014-08-21 16:11:18.346112334 +0400
-+++ pjproject-2.2.1/pjlib/src/pj/os_core_unix.c	2014-08-21 15:40:38.959499883 +0400
+--- pjproject-2.2.1.orig/pjlib/src/pj/os_core_unix.c	2015-01-12 02:52:08.088675237 +0300
++++ pjproject-2.2.1/pjlib/src/pj/os_core_unix.c	2015-01-12 02:45:47.478653534 +0300
 @@ -994,7 +994,8 @@
  PJ_DEF(pj_status_t) pj_thread_local_alloc(long *p_index)
  {
@@ -12,8 +32,8 @@ diff -aur pjproject-2.2.1.orig/pjlib/src/pj/os_core_unix.c pjproject-2.2.1/pjlib
  
      PJ_ASSERT_RETURN(p_index != NULL, PJ_EINVAL);
 diff -aur pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c pjproject-2.2.1/pjlib/src/pj/sock_bsd.c
---- pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c	2014-08-21 16:11:18.346112334 +0400
-+++ pjproject-2.2.1/pjlib/src/pj/sock_bsd.c	2014-08-21 14:58:58.112906927 +0400
+--- pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c	2015-01-12 02:52:08.092008571 +0300
++++ pjproject-2.2.1/pjlib/src/pj/sock_bsd.c	2015-01-12 02:45:47.478653534 +0300
 @@ -52,7 +52,11 @@
  const pj_uint16_t PJ_SOCK_STREAM= SOCK_STREAM;
  const pj_uint16_t PJ_SOCK_DGRAM	= SOCK_DGRAM;
@@ -26,34 +46,15 @@ diff -aur pjproject-2.2.1.orig/pjlib/src/pj/sock_bsd.c pjproject-2.2.1/pjlib/src
  
  /*
   * Socket level values.
---- ../../../../../download/pjproject-2.2.1/build.mak.in	2014-02-21 11:28:39.000000000 +0400
-+++ pjproject-2.2.1/build.mak.in	2014-10-02 17:00:36.911428486 +0400
-@@ -109,7 +109,7 @@
- ifneq ($(findstring pa,@ac_pjmedia_snd@),)
- ifeq (@ac_external_pa@,1)
- # External PA
--APP_THIRD_PARTY_EXT += -lportaudio
-+#APP_THIRD_PARTY_EXT += -lportaudio
- else
- APP_THIRD_PARTY_LIB_FILES += $(PJ_DIR)/third_party/lib/libportaudio-$(LIB_SUFFIX)
- ifeq ($(PJ_SHARED_LIBRARIES),)
---- ../../../../../download/pjproject-2.2.1/pjlib/include/pj/sock.h	2013-06-19 13:06:55.000000000 +0400
-+++ pjproject-2.2.1/pjlib/include/pj/sock.h	2014-10-10 17:54:57.519741319 +0400
-@@ -497,6 +497,7 @@
-  * The size of sin_zero field in pj_sockaddr_in structure. Most OSes
-  * use 8, but others such as the BSD TCP/IP stack in eCos uses 24.
-  */
-+#define PJ_SOCKADDR_IN_SIN_ZERO_LEN 0
- #ifndef PJ_SOCKADDR_IN_SIN_ZERO_LEN
- #   define PJ_SOCKADDR_IN_SIN_ZERO_LEN	8
- #endif
---- ../../../../../download/pjproject-2.2.1/pjlib/include/pj/config.h	2014-03-14 10:58:10.000000000 +0400
-+++ pjproject-2.2.1/pjlib/include/pj/config.h	2014-10-14 19:39:20.937263621 +0400
-@@ -580,6 +580,7 @@
-  * aware of this constant, to make sure that the program will not break when
-  * the underlying implementation changes.
-  */
-+#define PJ_IOQUEUE_MAX_HANDLES 8
- #ifndef PJ_IOQUEUE_MAX_HANDLES
- #   define PJ_IOQUEUE_MAX_HANDLES	(64)
- #endif
+diff -aur pjproject-2.2.1.orig/pjsip/build/Makefile pjproject-2.2.1/pjsip/build/Makefile
+--- pjproject-2.2.1.orig/pjsip/build/Makefile	2015-01-12 02:52:08.125341908 +0300
++++ pjproject-2.2.1/pjsip/build/Makefile	2015-01-12 02:47:55.268660821 +0300
+@@ -164,7 +164,7 @@
+ 			   main.o
+ export PJSUA2_TEST_CFLAGS += $(_CFLAGS) $(PJ_VIDEO_CFLAGS)
+ export PJSUA2_TEST_CXXFLAGS = $(PJSUA2_LIB_CFLAGS) 
+-export PJSUA2_TEST_LDFLAGS += $(PJ_LDXXFLAGS) $(PJ_LDXXLIBS) $(LDFLAGS)
++export PJSUA2_TEST_LDFLAGS += 
+ export PJSUA2_TEST_EXE := pjsua2-test-$(TARGET_NAME)$(HOST_EXE)
+ 
+ export CC_OUT CC AR RANLIB HOST_MV HOST_RM HOST_RMDIR HOST_MKDIR OBJEXT LD LDOUT 

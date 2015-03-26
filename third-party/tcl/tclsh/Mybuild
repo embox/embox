@@ -9,8 +9,11 @@ static module tclsh_export_scripts {
 		"tclIndex"
 
 	@InitFS
-	source "../example/tcp_server.tcl",
-		"../example/udp_server.tcl"
+	@AddPrefix("../example")
+	source "tcp_server.tcl",
+		"udp_server.tcl",
+		"fib.tcl",
+		"run_embox_cmd.tcl"
 }
 
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
@@ -18,11 +21,13 @@ static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libtcl8.6.a", "libtclstub8.6.a"
 
-	@NoRuntime depends third_party.lib.Fdlibm
+	@NoRuntime depends embox.compat.libc.all
 
 	depends tclsh_export_scripts
 }
 
+@App
+@AutoCmd(preserve_locals=true)
 @Build(stage=2,script="true")
 @BuildDepends(core)
 @Cmd(name = "tclsh",
@@ -32,9 +37,8 @@ static module core {
 			Alexander Kalmuk
 	''')
 module tclsh {
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	@AddPrefix("^BUILD/extbld/third_party/tcl/core/install")
-	source "strip.tclsh.o"
+	source "tclsh.o"
 
 	@NoRuntime depends third_party.tcl.core
 	depends embox.compat.posix.stubs

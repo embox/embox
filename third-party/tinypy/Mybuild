@@ -1,14 +1,22 @@
-package third_party.tinypy
+package third_party
 
-module tinypy_core {
-	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	@IncludePath("$(SRC_DIR)/include/util")
-	source "tp.c"
+@AutoCmd
+@Build(script="$(EXTERNAL_MAKE)")
+@Cmd(name = "tinypy",
+	help = "Python interpreter",
+	man = '''
+		NAME
+			tinypy - Python interpreter
+		SYNOPSIS
+			tinypy [script]
+		AUTHORS
+			Nikolay Korotkiy - original port
+	''')
+module tinypy {
+	source "^BUILD/extbld/^MOD_PATH/install/tinypy.o"
 
-	@InitFS
-	source "fib.py", "py2bc.py"
-
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.compat.libc.stdlib.system
+	depends embox.framework.LibFramework
 }

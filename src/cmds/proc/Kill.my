@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "kill",
 	help = "Sends signal to task",
 	man = '''
@@ -22,5 +23,5 @@ module kill {
 
 	depends embox.compat.posix.proc.signal
 	depends embox.compat.posix.util.getopt
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 }

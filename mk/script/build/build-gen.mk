@@ -5,7 +5,13 @@
 
 include mk/script/script-common.mk
 
-MOD_AUTOCMD_POSTBUILD=$$(EXTERNAL_MAKE_FLAGS) MAIN_STRIPPING_LOCALS=yes $$(abspath $$(ROOT_DIR))/mk/main-stripping.sh $$(module_id) $$(abspath $$(obj_build)) $$(abspath $$(obj_postbuild))
+mod_autocmd_postbuild = \
+	$$(EXTERNAL_MAKE_FLAGS) \
+	MAIN_STRIPPING_LOCALS=$(if $(strip $1),no,yes) \
+	$$(abspath $$(ROOT_DIR))/mk/main-stripping.sh \
+	$$(module_id) \
+	$$(abspath $$(obj_build)) \
+	$$(abspath $$(obj_postbuild))
 
 # Wraps the given rule with a script which compares the command output with
 # the original file (if it exists) and replaces the latter only in case when
@@ -165,7 +171,11 @@ annotation_value = $(call get,$(call invoke,$1,getAnnotationValuesOfOption,$2),v
 @build_initfs := \
 	$(build_model:%=build-initfs-rmk/%)
 
+@build_include_install := \
+	$(build_model:%=build-include_install-rmk/%)
+
 @build_all = \
+	$(@build_include_install) \
 	$(@build_image) \
 	$(@build_include_mk) \
 	$(@build_initfs)
@@ -187,6 +197,7 @@ $(@build_image) : target_file = \
 my_bld       := $(call mybuild_resolve_or_die,mybuild.lang.Build)
 my_bld_stage := $(call mybuild_resolve_or_die,mybuild.lang.Build.stage)
 my_autocmd   := $(call mybuild_resolve_or_die,mybuild.lang.AutoCmd)
+my_autocmd_preserve_locals := $(call mybuild_resolve_or_die,mybuild.lang.AutoCmd.preserve_locals)
 my_postbuild_script := $(call mybuild_resolve_or_die,mybuild.lang.Postbuild.script)
 
 # Return modules of specified stage
@@ -230,6 +241,9 @@ $(@build_include_mk) : module_extbld_rmk = \
 $(@build_include_mk) : initfs_rmk = \
 		$(patsubst %,$(value build_initfs_rmk_mk_pat),$(build_initfs))
 
+#$(@build_include_mk) : include_install_rmk = \
+#		$(patsubst %,$(value build_include_install_rmk_mk_pat),$(build_include_install))
+
 $(@build_include_mk) : cmd_file = $(@file).cmd
 $(@build_include_mk) :
 	@$(call cmd_assemble,$(cmd_file), \
@@ -269,6 +283,29 @@ $(@build_initfs) :
 		$(call gen_make_tsvar_list,$(target_file),cpio_files,$(cpio_files)); \
 		$(call gen_make_var_list,__cpio_files,$(cpio_files)))
 
+####################
+
+build_include_install := include_install
+
+$(@build_include_install) : include_install = $(build_include_install)
+
+build_include_install_rmk_mk_pat     = $(MKGEN_DIR)/%.rule.mk
+build_include_install_rmk_target_pat = $(INCLUDE_INSTALL)
+
+$(@build_include_install) : @file    = $(include_install:%=$(build_include_install_rmk_mk_pat))
+$(@build_include_install) : mk_file  = \
+		$(patsubst %,$(value build_include_install_rmk_mk_pat),$$(build_include_install))
+$(@build_include_install) : target_file = \
+		$(patsubst %,$(value build_include_install_rmk_target_pat),$$(build_include_install))
+
+$(@build_include_install) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(gen_banner); \
+		$(call gen_make_var,build_include_install,$(include_install)); \
+		$(call gen_make_dep,$(target_file),$$$$(include_install_prerequisites)); \
+		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)));
+
+##################
 #
 # Per-module artifacts.
 #
@@ -281,9 +318,27 @@ module_id   = $(subst .,__,$(module_fqn))
 
 my_add_prefix := $(call mybuild_resolve_or_die,mybuild.lang.AddPrefix.value)
 
-__source_file_mod = $(subst ^MOD_PATH,$(call module_type_path,$2),$(if $(findstring ^BUILD,$3),../..$(subst ^BUILD,,$3),$(patsubst %$(call get,$1,fileName),%,$(call get,$1,fileFullName))$3))#
-__source_file_wprefix =$(strip $(foreach p,$(call get,$(call invoke,$(call invoke,$1,eContainer),getAnnotationValuesOfOption,$(my_add_prefix)),value),$(strip $p)/))$(call get,$1,fileName)#
-source_file = $(foreach f,$1,$(call __source_file_mod,$f,$(call invoke,$(call invoke,$f,eContainer),eContainer),$(call __source_file_wprefix,$f)))
+source_member = $(call invoke,$1,eContainer)
+source_annotation_values = \
+	$(call invoke,$(source_member),getAnnotationValuesOfOption,$2)
+source_annotations = \
+	$(call invoke,$(source_member),getAnnotationsOfType,$2)
+
+__source_file_mod = $(strip \
+	$(subst ^MOD_PATH,$(call module_type_path,$2), \
+		$(if $(findstring ^BUILD,$3), \
+			../..$(subst ^BUILD,,$3), \
+			$(patsubst %$(call get,$1,fileName),%, \
+				$(call get,$1,fileFullName))$3)))
+__source_file_wprefix = $(subst $(\s),, \
+	$(foreach p, \
+		$(call annotation_value,$(source_member),$(my_add_prefix)), \
+		$(strip $p)/))$(call get,$1,fileName)
+source_file = $(strip \
+	$(foreach 1,$1, \
+		$(call __source_file_mod,$1,$(call invoke,$(source_member),eContainer),$(__source_file_wprefix))))
+# source_file = \
+# 	$(warning $@ [$(__source_file)])$(__source_file)
 
 source_base = $(basename $(source_file))
 
@@ -415,7 +470,7 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 		$(call gen_make_tsfn,$(out),mod_postbuild, \
 			$(if $(strip $(call invoke, \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_autocmd))),\
-				$(MOD_AUTOCMD_POSTBUILD);) \
+				$(call mod_autocmd_postbuild,$(call annotation_value,$(call get,$@,allTypes),$(my_autocmd_preserve_locals)));) \
 			$(call cond_add,$(call annotation_value,$(call get,$@,allTypes),$(my_postbuild_script)),;)); \
 		$(call gen_make_tsvar_list,$(out),o_files,$(o_files)); \
 		$(call gen_make_tsvar_list,$(out),a_files,$(a_files)))
@@ -476,18 +531,23 @@ $(@module_extbld_rmk) :
 # Per-source artifacts.
 #
 
-source_member = $(call invoke,$1,eContainer)
-source_annotation_values = \
-	$(call invoke,$(source_member),getAnnotationValuesOfOption,$2)
-source_annotations = \
-	$(call invoke,$(source_member),getAnnotationsOfType,$2)
-
 my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 
 @source_gen := \
 	$(foreach s,$(build_sources), \
 		$(patsubst %,source-gen/%$s, \
 			$(call source_annotation_values,$s,$(my_gen_script))))
+
+#####################
+my_include_install := $(call mybuild_resolve_or_die,mybuild.lang.IncludeExport)
+my_include_install_dir := $(call mybuild_resolve_or_die,mybuild.lang.IncludeExport.path)
+my_include_install_target_name := $(call mybuild_resolve_or_die,mybuild.lang.IncludeExport.target_name)
+
+@source_include_install := \
+	$(foreach s,$(build_sources), \
+		$(patsubst %,source-include-install/%$s, \
+			$(call source_annotations,$s,$(my_include_install))))
+#####################
 
 my_initfs := $(call mybuild_resolve_or_die,mybuild.lang.InitFS)
 my_initfs_target_dir := $(call mybuild_resolve_or_die,mybuild.lang.InitFS.target_dir)
@@ -523,6 +583,7 @@ $(@source_mk_rmk)  : kind := mk
 $(@source_cpp_rmk) : kind := cpp
 
 @source_rmk += \
+	$(@source_include_install) \
 	$(@source_initfs_cp_rmk)
 
 # task/???.module.source
@@ -566,9 +627,12 @@ $(@source_rmk) : instrument = $(call values_of,$(my_instrument_val))
 
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
 $(@source_rmk) : check_profiling = $(if $(filter true, $(call get,$1,value)), -finstrument-functions, )
-$(@source_rmk) : flags_before = $(call trim,$(call do_flags,-I,$(includes_before)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
+$(@source_rmk) : flags_before = $(call trim, \
+			$(call do_flags,-I,$(includes_before)) \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
 $(@source_rmk) : flags = $(call trim, \
-			$(call do_flags,-I,$(includes)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
+			$(call do_flags,-I,$(includes)) \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
 			$(call do_flags,-D,$(defines)) \
 			-include $(patsubst %,$(value module_config_h_pat), \
 						$(mod_path)) \
@@ -645,6 +709,26 @@ $(@source_gen) :
 	+@$(call cmd_notouch_stdout,$(@file), \
 		$(script))
 
+###########################
+source_include_install_dir=$(call get,$(call source_annotation_values,$s,$(my_include_install_dir)),value)
+source_include_install_target_name=$(or $(strip \
+	$(call get,$(call source_annotation_values,$s,$(my_include_install_target_name)),value)),$(call get,$s,fileName))
+source_include_install_out = $(addprefix $$(INCUDE_INSTALL_DIR)/, \
+	       $(foreach s,$1,$(source_include_install_dir)/$(source_include_install_target_name)))
+
+$(@source_include_install) : out = $(call source_include_install_out,$@)
+$(@source_include_install) : src_file = $(file)
+$(@source_include_install) : mk_file = $(patsubst %,$(value source_rmk_mk_pat),$(file))
+$(@source_include_install) : kind := include_install_cp
+
+$(@source_include_install) :
+	@$(call cmd_notouch_stdout,$(@file), \
+		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
+		$(call gen_make_tsvar,$(out),src_file,$(src_file)); \
+		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
+		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)))
+
+#############################
 
 ifdef GEN_DIST
 
@@ -658,14 +742,16 @@ ifdef GEN_DIST
 
 all .PHONY : $(@source_dist)
 
-$(@source_dist) : file = $(call source_file,$@)
-$(@source_dist) : @file = $(DIST_DIR)/$(file)
+$(@source_dist) : file = $(patsubst ../../%,../%,$(call source_file,$@))
+$(@source_dist) : @file = $(DIST_BASE_DIR)/$(file)
 $(@source_dist) : @dir = $(patsubst %/,%,$(dir $(@file)))
 $(@source_dist) : | $$(@dir)/.
 $(@source_dist) :
 	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi
 
-@dist_cpfiles := $(addprefix dist-cpfile-/$(DIST_DIR)/, \
+@dist_makefile := dist-makefile-/$(DIST_BASE_DIR)/../Makefile
+
+@dist_cpfiles := $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
 	mk/core/common.mk \
 	mk/core/string.mk \
 	$(wildcard mk/extbld/*) \
@@ -686,24 +772,24 @@ $(@source_dist) :
 	mk/main-dist.mk \
 	mk/main-stripping.sh \
 	mk/phymem_cc_addon.tmpl.c \
-	mk/variables.mk \
-	Makefile)
+	mk/variables.mk)
 
-@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_DIR)/, \
-	doc \
+@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
 	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
 
 __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
-@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_DIR)/, \
-	$(wildcard $(foreach e,*.h *.inc,$(addsuffix $e,$(__source_dirs)))))
+@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+	$(wildcard $(foreach e,*.h *.inc Makefile *.txt *.patch *.diff, \
+		$(addsuffix $e,$(__source_dirs)))))
 
 include mk/flags.mk  # INCLUDES_FROM_FLAGS
 
 @dist_includes := $(addprefix dist-includes-/,$(sort \
-	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_DIR)/%, \
+	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_BASE_DIR)/%, \
 		$(filter-out $(abspath \
-				$(DIST_DIR) $(DIST_DIR)/% \
-				$(CONF_DIR) $(CONF_DIR)/%),$(abspath \
+				$(DIST_BASE_DIR) $(DIST_BASE_DIR)/% \
+				$(CONF_DIR) $(CONF_DIR)/% \
+				$(EXTERNAL_BUILD_DIR) $(EXTERNAL_BUILD_DIR)/%),$(abspath \
 			$(call expand,$(call get, \
 				$(sort $(call source_annotation_values,$(build_sources), \
 					$(my_incpath_val) $(my_incpath_before_val))),value)) \
@@ -713,32 +799,38 @@ include mk/flags.mk  # INCLUDES_FROM_FLAGS
 @dist_includes := \
 	$(filter-out $(addsuffix /%,$(@dist_includes)),$(@dist_includes))
 
-@dist_conf := $(addprefix dist-conf-/$(DIST_DIR)/conf/, \
+@dist_conf := $(addprefix dist-conf-/$(DIST_BASE_DIR)/conf/, \
 	rootfs \
 	start_script.inc)
 
 @dist_all := \
+	$(@dist_makefile) \
 	$(@dist_cpfiles) \
 	$(@dist_includes) \
 	$(@dist_conf)
 
 
 all .PHONY : $(@dist_all)
+$(@dist_makefile) : dist-makefile-/% : | $$(*D)/.
+$(@dist_makefile) : @file = $(@:dist-makefile-/%=%)
+$(@dist_makefile) : file = $(@:dist-makefile-/$(DIST_BASE_DIR)/../%=$(ROOT_DIR)/%)
+$(@dist_makefile) :
+	@sed 's/\$$(dir \$$(lastword \$$(MAKEFILE_LIST)))/\$$(dir \$$(lastword \$$(MAKEFILE_LIST)))\/base/g' < $(file) > $(@file)
 
 $(@dist_cpfiles) : dist-cpfile-/% : | $$(*D)/.
-$(@dist_cpfiles) : @file = $(subst -dist.,.,$(@:dist-cpfile-/%=%))
-$(@dist_cpfiles) : file = $(@:dist-cpfile-/$(DIST_DIR)/%=$(ROOT_DIR)/%)
+$(@dist_cpfiles) : @file = $(foreach f,$(@:dist-cpfile-/%=%),$(dir $f)$(subst -dist.,.,$(notdir $f)))
+$(@dist_cpfiles) : file = $(@:dist-cpfile-/$(DIST_BASE_DIR)/%=$(ROOT_DIR)/%)
 $(@dist_cpfiles) :
 	@cp -Trf $(file) $(@file)
 
 
 $(@dist_includes) : dist-includes-/% : | $$(*D)/.
 $(@dist_includes) : @file = $(@:dist-includes-/%=%)
-$(@dist_includes) : file = $(@file:$(DIST_DIR)/%=$(ROOT_DIR)/%)
+$(@dist_includes) : file = $(@file:$(DIST_BASE_DIR)/%=$(ROOT_DIR)/%)
 
 $(@dist_conf) : dist-conf-/% : | $$(*D)/.
 $(@dist_conf) : @file = $(@:dist-conf-/%=%)
-$(@dist_conf) : file = $(@file:$(DIST_DIR)/conf/%=$(CONF_DIR)/%)
+$(@dist_conf) : file = $(@file:$(DIST_BASE_DIR)/conf/%=$(CONF_DIR)/%)
 
 $(@dist_includes) $(@dist_conf) :
 	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi

@@ -10,11 +10,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(umask_main);
-
-static int umask_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 
 	if (argc != 1) {
 		mode_t umode;
@@ -29,4 +25,3 @@ static int umask_main(int argc, char *argv[]) {
 
 	return 0;
 }
-

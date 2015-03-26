@@ -7,8 +7,18 @@ echo -ne "\r\n"
 
 if [ $REQUEST_METHOD = "GET" ]; then
 	echo "Query: $QUERY_STRING" >&2
-	STATES="0, 1"
-	echo [ $(printf "${STATES}, %.0s" {1..39}) $STATES ]
+	case "$QUERY_STRING" in
+		"c=led_driver&a1=serialize_states")
+			STATES="0, 1"
+			echo [ $(printf "${STATES}, %.0s" {1..39}) $STATES ]
+			;;
+		"c=led_driver&a1=serialize_errors")
+			echo [ $(printf "0, %.0s" {1..79}) 1 ]
+			;;
+		"c=led_names&a1=serialize")
+			echo '[ "one", "two" ]'
+			;;
+	esac
 elif [ $REQUEST_METHOD = "POST" ]; then
 	read -n $CONTENT_LENGTH POST_DATA
 	echo "Posted: $POST_DATA" >&2

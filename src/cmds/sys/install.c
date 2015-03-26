@@ -15,10 +15,6 @@
 #include <dirent.h>
 #include <sys/stat.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(install_main);
-
 #define INITFS_NAME "initfs"
 
 #define MSG_PREFIX "install: "
@@ -43,7 +39,7 @@ static void cp_all_content_recursive(const char *src, const char *dst) {
 	}
 }
 
-static int install_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int opt;
 	const char *base_root = "/initfs";
 	const char *target_root = "/";
@@ -102,3 +98,4 @@ static int install_main(int argc, char *argv[]) {
 
 	return 0;
 }
+

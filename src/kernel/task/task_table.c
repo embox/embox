@@ -7,51 +7,62 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <embox/unit.h>
 #include <kernel/task/task_table.h>
-#include <util/idx_table.h>
+#include <util/bitmap.h>
 #include <framework/mod/options.h>
 
 EMBOX_UNIT_INIT(task_table_module_init);
 
-#define MODOPS_TASK_TABLE_SIZE OPTION_GET(NUMBER, task_table_size)
+#define TABLE_SZ OPTION_GET(NUMBER, task_table_size)
 
-UTIL_IDX_TABLE_DEF(struct task *, task_table, MODOPS_TASK_TABLE_SIZE);
+static struct task *task_table[TABLE_SZ];
+static unsigned long task_table_bm[BITMAP_SIZE(TABLE_SZ)];
 
 /*
- * tasks are started from 1, util table is from 0;
+ * tasks are started from 1, table from 0;
  * doing 1+ translation to output, and 1- for input
  */
+#define TID2IDX(tid) (tid - 1)
+#define IDX2TID(idx) (idx + 1)
+
+#define IDXCHK(idx) (idx >= 0 && idx < TABLE_SZ)
+
+#define BMFOUND(idx, size) (idx < size)
+
 int task_table_add(struct task *tsk) {
-	assert(tsk != NULL);
-	return 1 + util_idx_table_add(task_table, tsk);
+	int idx = bitmap_find_zero_bit(task_table_bm, TABLE_SZ, 0);
+	assert(BMFOUND(idx, TABLE_SZ));
+	task_table[idx] = tsk;
+	bitmap_set_bit(task_table_bm, idx);
+	return IDX2TID(idx);
 }
 
-struct task * task_table_get(int tid) {
-	assert(tid >= 0);
-	return util_idx_table_get(task_table, tid - 1);
+struct task *task_table_get(int tid) {
+	int idx = TID2IDX(tid);
+	assert(IDXCHK(idx));
+	return bitmap_test_bit(task_table_bm, idx) ? task_table[idx] : NULL;
 }
 
 void task_table_del(int tid) {
-	assert(tid > 0);
-	util_idx_table_del(task_table, tid - 1);
+	int idx = TID2IDX(tid);
+	assert(IDXCHK(idx));
+	bitmap_clear_bit(task_table_bm, idx);
 }
 
 int task_table_has_space(void) {
-	return 0 <= util_idx_table_next_alloc(task_table);
+	int idx = bitmap_find_zero_bit(task_table_bm, TABLE_SZ, 0);
+	return BMFOUND(idx, TABLE_SZ);
 }
 
 int task_table_get_first(int since) {
-	/* since should be decremented. i.e. task_foreach calls
- 	 * __func__, it returns first task. Then task_foreach
-	 * gets returned task id, increments it and calls __func__.
-	 * Without decrement it will skip task following next returned one.
-	 */
-	assert(since >= 0);
-	return 1 + util_idx_table_next_mark(task_table, since - 1, 1);
+	int idx = TID2IDX(since);
+	int set_idx = bitmap_find_bit(task_table_bm, TABLE_SZ, idx);
+	return BMFOUND(set_idx, TABLE_SZ) ? IDX2TID(set_idx) : -ENOENT;
 }
 
 static int task_table_module_init(void) {
-	UTIL_IDX_TABLE_INIT(task_table, MODOPS_TASK_TABLE_SIZE);
+	bitmap_clear_all(task_table_bm, TABLE_SZ);
 	return 0;
 }

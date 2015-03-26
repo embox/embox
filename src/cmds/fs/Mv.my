@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "mv",
 	help = "Move or rename file",
 	man = '''
@@ -22,11 +23,11 @@ module mv {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
 	source "mv.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.fs.fsop
 	depends embox.fs.core
 	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
-	depends embox.compat.libc.LibCStringDup
+	depends embox.compat.libc.str_dup
 }

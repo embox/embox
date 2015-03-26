@@ -27,7 +27,7 @@ static int io_fionbio(int fd, va_list args) {
 
 	/* if fcntl returns -1, then errno already set, can just return -1 */
 
-	flags = fcntl(fd, F_GETFD);
+	flags = fcntl(fd, F_GETFL);
 	if (-1 == flags) {
 		return -1;
 	}
@@ -38,7 +38,7 @@ static int io_fionbio(int fd, va_list args) {
 		flags &= ~O_NONBLOCK;
 	}
 
-	if (-1 == fcntl(fd, F_SETFD, flags)) {
+	if (-1 == fcntl(fd, F_SETFL, flags)) {
 		return -1;
 	}
 

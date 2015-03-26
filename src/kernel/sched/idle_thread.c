@@ -6,7 +6,7 @@
  * @date    08.12.2014
  */
 
-#include <err.h>
+#include <util/err.h>
 #include <hal/arch.h>
 
 #include <kernel/cpu/cpu.h>

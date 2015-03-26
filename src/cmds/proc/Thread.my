@@ -1,5 +1,6 @@
 package embox.cmd.proc
 
+@AutoCmd
 @Cmd(name = "thread",
 	help = "Interacts with threading subsystem",
 	man = '''

@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 #include <kernel/thread.h>
-#include <err.h>
+#include <util/err.h>
 #include <kernel/event.h>
 
 #include <pnet/core.h>
@@ -80,7 +80,7 @@ int pnet_rx_thread_add(struct pnet_pack *pack) {
 	prio = pack->priority;
 
 	if (pack->stat.last_sync != (clock_t)-1) {
-		/* We are not in softirq handler */
+		/* We are not in differed irq handler */
 		if ((thread_self() != pnet_rx_threads[prio])) {
 			/* If we will switched to thread with higher priority, than calculate running time in current thread
 			 * and initialize start timestamp in new thread */
@@ -88,7 +88,7 @@ int pnet_rx_thread_add(struct pnet_pack *pack) {
 			pack->stat.last_sync = thread_get_running_time(pnet_rx_threads[prio]);
 		}
 	} else {
-		/* We are in softirq handler */
+		/* We are in differed irq handler */
 		pack->stat.last_sync = thread_get_running_time(pnet_rx_threads[prio]);
 	}
 

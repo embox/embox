@@ -10,16 +10,13 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <embox/cmd.h>
 #include <framework/cmd/api.h>
 
 #include <kernel/task/resource/security.h>
 #include <kernel/task/resource/u_area.h>
 #include <security/smac.h>
 
-EMBOX_CMD(su_exec);
-
-static int su_exec(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	struct task_u_area *uarea = task_self_resource_u_area();
 	const struct cmd *login_cmd = cmd_lookup("login");
 	uid_t euid = geteuid();

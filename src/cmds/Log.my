@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "log",
 	help = "Display last debug messages..",
 	man = '''
@@ -15,7 +16,7 @@ package embox.cmd
 module log {
 	source "log.c"
 
-	depends embox.compat.libc.LibC
+	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
