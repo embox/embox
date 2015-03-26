@@ -92,9 +92,20 @@ static struct time_event_device ti8168_clk_event = {
 	.irq_nr = TI8168_GPTIMER1_IRQ,
 };
 
+/* TODO */
+cycle_t ti8168_this_read(void) {
+	return 0;
+}
+
+static struct time_counter_device ti8168_counter_device = {
+	.read = ti8168_this_read,
+	.cycle_hz = TI8168_CLKIN_HZ,
+};
+
 struct clock_source ti8168_clk_clock_source = {
 	.name = "ti8168",
 	.event_device = &ti8168_clk_event,
+	.counter_device = &ti8168_counter_device,
 	.read = clock_source_read,
 };
 
