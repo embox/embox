@@ -6,7 +6,7 @@ BUILDBOT="/usr/bin/env buildbot"
 TRYWHO=nobody
 
 # buildmaster specific
-MASTER=192.168.33.110:8031
+MASTER=twister:8031
 USER=trybuild
 PASSWD=trybuild
 
