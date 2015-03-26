@@ -1,25 +1,5 @@
 package embox.lib
 
-@DefaultImpl(LibGccInternal)
+@DefaultImpl(third_party.lib.libgcc_toolchain)
 abstract module LibGcc {
-}
-
-static module LibGccInternal extends LibGcc {
-	source "clzsi2.c"
-	source "lshrdi3.c"
-	source "divdi3.c"
-	source "divsi3.c"
-	source "moddi3.c"
-	source "modsi3.c"
-	source "udivdi3.c"
-	source "udivsi3.c"
-	source "umoddi3.c"
-	source "umodsi3.c"
-	source "muldi3.c"
-	source "mulsi3.c"
-
-	@IncludePath("$(THIRDPARTY_DIR)/lib/softfloat")
-	source "soft-fp/df.c",
-		"soft-fp/sf.c",
-		"soft-fp/tf.c"
 }
