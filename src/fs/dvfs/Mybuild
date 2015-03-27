@@ -1,0 +1,6 @@
+package embox.fs
+
+module dvfs {
+	source "dvfs.c"
+	source "dvfs_ops.c"
+}

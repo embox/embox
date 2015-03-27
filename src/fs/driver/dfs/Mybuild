@@ -2,7 +2,6 @@ package embox.fs.driver
 
 module dfs {
 	source "dfs.c"
-	source "dvfs.c"
 
 	option number page_size = 4
 	option number block_size = 131072 /* 128kb */

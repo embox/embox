@@ -19,36 +19,10 @@ extern struct super_block *dfs_sb(void);
 extern struct file_operations dfs_fops;
 extern struct inode_operations dfs_iops;
 
-/* Default FS-nondependent operations */
-static struct inode *dvfs_default_alloc_inode(struct super_block *sb) {
-	struct inode *inode = malloc(sizeof(struct inode));
+extern struct inode *dvfs_default_alloc_inode(struct super_block *sb);
+extern int dvfs_default_destroy_inode(struct inode *inode);
+extern int dvfs_default_pathname(struct inode *inode, char *buf);
 
-	if (inode)
-		*inode = (struct inode) {
-			.i_no = -1,
-			.i_sb = sb,
-			.i_ops = sb->sb_iops,
-		};
-
-	return inode;
-}
-
-static int dvfs_default_destroy_inode(struct inode *inode) {
-	free(inode);
-	return 0;
-}
-
-static int dvfs_default_pathname(struct inode *inode, char *buf) {
-	assert(inode);
-	if (inode->i_dentry)
-		strcpy(buf, inode->i_dentry->name);
-	else
-		strcpy(buf, "empty");
-
-	return 0;
-}
-
-/* VFS interface */
 struct inode *dvfs_alloc_inode(struct super_block *sb) {
 	assert(sb);
 
