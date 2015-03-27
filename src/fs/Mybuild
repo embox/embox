@@ -75,6 +75,7 @@ module index_operation {
 	source "index_operation.c"
 
 	depends embox.fs.SysLibFsFull
+	depends fs_api
 }
 
 module rootfs {

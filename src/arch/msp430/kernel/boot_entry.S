@@ -38,6 +38,7 @@ _start:
 	mov #WDTHOLD, &WDTCTL
 
 	mov #_stack_top, r1
+	push r0
 
 	call #hardware_init_hook
 

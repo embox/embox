@@ -22,22 +22,26 @@
 
 EMBOX_UNIT_INIT(nanosleep_init);
 
+struct hw_time {
+	uint32_t jiffies;
+	uint32_t cycles;
+};
+
 static struct timespec nanosleep_waste_time;
 static struct clock_source *nanosleep_cs;
 static unsigned int nanosleep_cs_load;
 
 static inline struct timespec get_timetosleep(const struct timespec *rqtp);
-static void cs_nanospin(struct clock_source *cs, uint32_t cycles);
-static inline uint32_t cs_nano_diff(struct clock_source *cs, uint32_t load, uint32_t old,
-		uint32_t new);
+static void cs_nanospin(struct clock_source *cs, struct hw_time *hw);
 
 /* XXX: nanosleep is irq sensetive, i.e. rqtp can be exceeded when irq occur
  * after ksleep and before returning from nanosleep. */
 int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
-	time64_t start, hw_cycles, tmp;
+	time64_t start, hw_cycles;
 	uint32_t ms_tosleep;
 	int remaining_cycles;
 	struct timespec timetosleep;
+	struct hw_time hw;
 
 	if (rqtp->tv_sec == 0 && rqtp->tv_nsec == 0) {
 		return ksleep(0);
@@ -54,10 +58,14 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 
 	remaining_cycles = (int64_t)hw_cycles - (clock_source_get_hwcycles(nanosleep_cs) - start);
 
-	while (0 < remaining_cycles) {
-		tmp = min(remaining_cycles, nanosleep_cs_load / 2);
-		cs_nanospin(nanosleep_cs, tmp);
-		remaining_cycles -= tmp;
+	if (remaining_cycles > 0) {
+		int tmp;
+
+		tmp = remaining_cycles + nanosleep_cs->counter_device->read();
+		hw.jiffies = nanosleep_cs->jiffies + tmp / nanosleep_cs_load;
+		hw.cycles = tmp % nanosleep_cs_load;
+
+		cs_nanospin(nanosleep_cs, &hw);
 	}
 
 	return ENOERR;
@@ -68,16 +76,9 @@ void delay(int d) {
 
 }
 
-/* I use busy-wait for small amount of time (< 1 ms), because overhead on calculation is very small. */
-static inline uint32_t cs_nano_diff(struct clock_source *cs, uint32_t load, uint32_t old,
-		uint32_t new) {
-	return new < old ? load - old + new : new - old;
-}
-
-static void cs_nanospin(struct clock_source *cs, uint32_t cycles) {
-	uint32_t start = cs->counter_device->read();
-	uint32_t load = nanosleep_cs_load - 1;
-	while(cs_nano_diff(cs, load, start, cs->counter_device->read()) < cycles);
+static void cs_nanospin(struct clock_source *cs, struct hw_time *hw) {
+	while(cs->jiffies < hw->jiffies);
+	while((cs->jiffies == hw->jiffies) && (cs->counter_device->read() <= hw->cycles));
 }
 
 static inline struct timespec get_timetosleep(const struct timespec *rqtp) {
@@ -127,7 +128,7 @@ static int nanosleep_init(void) {
 		return -1;
 	}
 	nanosleep_cs_load =
-			nanosleep_cs->counter_device->cycle_hz / nanosleep_cs->event_device->event_hz - 1;
+			nanosleep_cs->counter_device->cycle_hz / nanosleep_cs->event_device->event_hz;
 
 	nanosleep_calibrate();
 
