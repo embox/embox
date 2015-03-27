@@ -9,10 +9,11 @@ module SysLibFsFull extends SysLibFile {
 	source "kfile.c"
 	source "kfile_node.c"
 
+	depends embox.compat.libc.assert
+
 	depends embox.fs.file_desc
 	depends embox.security.api
 
-	depends SysLibFileSystemFull
 	depends Perm
 }
 
@@ -36,6 +37,8 @@ module SysLibFileSystemFull extends SysLibFileSystem {
 	depends dcache
 	depends Perm
 
+	depends embox.fs.file_desc
+	depends embox.fs.SysLibFsFull
 	depends embox.kernel.thread.mutex
 	depends embox.compat.libc.str_dup
 	depends embox.compat.posix.fs.open
