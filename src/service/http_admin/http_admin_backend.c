@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <ifaddrs.h>
+#include <net/lib/ifaddrs.h>
 #include <arpa/inet.h>
 #include <net/inetdevice.h>
 #include <net/util/macaddr.h>

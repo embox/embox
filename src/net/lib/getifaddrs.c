@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <framework/mod/options.h>
-#include <ifaddrs.h>
+#include <net/lib/ifaddrs.h>
 #include <mem/misc/pool.h>
 #include <net/if.h>
 #include <net/inetdevice.h>

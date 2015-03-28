@@ -17,7 +17,7 @@
 #include <errno.h>
 #include <arpa/inet.h>
 
-#include <ifaddrs.h>
+#include <net/lib/ifaddrs.h>
 #include <netinet/in.h>
 
 #include <stdlib.h>
