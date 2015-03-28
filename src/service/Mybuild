@@ -6,6 +6,8 @@ module cgi_cmd_wrapper {
 	option boolean cmds_check = false
 	option string allowed_cmds = ""
 	source "cgi_cmd_wrapper.c"
+
+	depends embox.compat.posix.proc.exec
 }
 
 @AutoCmd

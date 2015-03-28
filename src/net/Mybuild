@@ -46,6 +46,7 @@ module sock {
 	source "socket/sock_wait.c"
 
 	depends skbuff
+	depends embox.fs.idesc
 	depends embox.fs.idesc_event
 	depends embox.arch.interrupt
 	depends embox.mem.pool
