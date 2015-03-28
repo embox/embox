@@ -9,8 +9,6 @@
 #ifndef KEYBOARD_H_
 #define KEYBOARD_H_
 
-#include <drivers/input/input_dev.h>
-
 enum KBD_EVENT_CODE {
 	KEY_PRESSED = 0x8000,
 };
