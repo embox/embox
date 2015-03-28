@@ -39,14 +39,14 @@ module idesc_event {
 	source "idesc_event.c"
 }
 
-@DefaultImpl(NoFileSystem)
+@DefaultImpl(no_file_system)
 abstract module fs_api {
 
 }
 
-module NoFileSystem extends fs_api{
-	depends SysLibFsNone
-	depends SysLibFileSystemNone
+module no_file_system extends fs_api{
+	depends embox.fs.syslib.fs_none
+	depends embox.fs.syslib.file_system_none
 }
 
 module xattr {
@@ -74,7 +74,7 @@ module core extends fs_api {
 module index_operation {
 	source "index_operation.c"
 
-	depends embox.fs.SysLibFile
+	depends embox.fs.syslib.file
 	depends fs_api
 }
 
@@ -85,7 +85,7 @@ module rootfs {
 	depends node, driver.repo
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
-	depends SysLibFileSystem
+	depends embox.fs.syslib.file_system
 	depends embox.compat.libc.all
 }
 

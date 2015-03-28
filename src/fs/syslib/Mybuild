@@ -1,11 +1,11 @@
-package embox.fs
+package embox.fs.syslib
 
-@DefaultImpl(SysLibFsNone)
-abstract module SysLibFile {
+@DefaultImpl(fs_none)
+abstract module file {
 
 }
 
-module SysLibFsFull extends SysLibFile {
+module fs_full extends file {
 	source "kfile.c"
 	source "kfile_node.c"
 
@@ -14,31 +14,31 @@ module SysLibFsFull extends SysLibFile {
 	depends embox.fs.file_desc
 	depends embox.security.api
 
-	depends Perm
+	depends perm
 }
 
-module SysLibFsNone extends SysLibFile {
+module fs_none extends file {
 	source "nokfile.c"
 }
 
-@DefaultImpl(SysLibFileSystemNone)
-abstract module SysLibFileSystem {
+@DefaultImpl(file_system_none)
+abstract module file_system {
 
 }
 
-module SysLibFileSystemNone extends SysLibFileSystem {
+module file_system_none extends file_system {
 	source "nokfsop.c"
 }
 
-module SysLibFileSystemFull extends SysLibFileSystem {
+module file_system_full extends file_system {
 	source "kfsop.c"
 	source "fsop.c"
 
 	depends dcache
-	depends Perm
+	depends perm
 
 	depends embox.fs.file_desc
-	depends embox.fs.SysLibFsFull
+	depends embox.fs.syslib.fs_full
 	depends embox.kernel.thread.mutex
 	depends embox.compat.libc.str_dup
 	depends embox.compat.posix.fs.open
@@ -49,7 +49,7 @@ module SysLibFileSystemFull extends SysLibFileSystem {
 	option number flock_quantity=128
 }
 
-module Perm {
+module perm {
 	source "perm.c"
 
 	depends embox.security.api

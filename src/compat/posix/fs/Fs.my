@@ -31,7 +31,7 @@ static module dirent {
 	depends embox.fs.core
 	depends embox.mem.objalloc
 	depends embox.compat.libc.str
-	depends embox.fs.dcache
+	depends embox.fs.syslib.dcache
 	depends embox.compat.posix.fs.getcwd
 }
 
@@ -63,8 +63,8 @@ static module fsop {
 
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
-	depends embox.fs.Perm
-	depends embox.fs.SysLibFileSystem
+	depends embox.fs.syslib.perm
+	depends embox.fs.syslib.file_system
 	depends umask // mkdir
 }
 
@@ -96,7 +96,7 @@ static module xattr {
 	source "xattr.c"
 
 	depends embox.fs.xattr
-	depends embox.fs.Perm
+	depends embox.fs.syslib.perm
 	depends embox.security.api
 }
 
