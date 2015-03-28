@@ -1,46 +1,30 @@
 package embox.compat.posix.fs
 
-@DefaultImpl(all_old)
-abstract module all {
+module all_dvfs extends all {
+	depends file_dvfs,
+		chdir_dvfs,
+		dirent_dvfs,
+		fsop_dvfs,
+		getcwd_dvfs,
+		umask_dvfs,
+		xattr_dvfs,
+		libgen_dvfs
 }
 
-module all_old extends all {
-	depends file,
-		chdir,
-		dirent,
-		fsop,
-		getcwd,
-		umask,
-		xattr,
-		libgen
+static module file_dvfs extends file {
+	depends file_ops_dvfs
+	depends lseek_dvfs
+	depends open_dvfs
 }
 
-@DefaultImpl(file_old)
-abstract module file {
-}
-
-static module file_old extends file {
-	depends file_ops
-	depends lseek
-	depends open
-}
-
-@DefaultImpl(chdir_old)
-abstract module chdir {
-}
-
-static module chdir_old extends chdir {
+static module chdir_dvfs extends chdir {
 	source "chdir.c"
 
 	depends embox.compat.posix.util.environ
 	depends embox.compat.libc.all
 }
 
-@DefaultImpl(dirent_old)
-abstract module dirent {
-}
-
-static module dirent_old extends dirent {
+static module dirent_dvfs extends dirent {
 	option number dir_quantity=4
 	source "dirent.c"
 
@@ -51,22 +35,14 @@ static module dirent_old extends dirent {
 	depends embox.compat.posix.fs.getcwd
 }
 
-@DefaultImpl(lseek_old)
-abstract module lseek {
-}
-
-static module lseek_old extends lseek {
+static module lseek_dvfs extends lseek {
 	source "lseek.c"
 
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno
 }
 
-@DefaultImpl(file_ops_old)
-abstract module file_ops {
-}
-
-static module file_ops_old extends file_ops {
+static module file_ops_dvfs extends file_ops {
 	source "ioctl.c"
 	source "close.c"
 	source "fstat.c"
@@ -82,61 +58,41 @@ static module file_ops_old extends file_ops {
 	depends embox.kernel.task.resource.errno
 }
 
-@DefaultImpl(fsop_old)
-abstract module fsop {
-}
-
-static module fsop_old extends fsop {
+static module fsop_dvfs extends fsop {
 	source "fsop.c"
 
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
 	depends embox.fs.syslib.perm
 	depends embox.fs.syslib.file_system
-	depends umask // mkdir
+	depends umask_dvfs // mkdir
 }
 
-@DefaultImpl(getcwd_old)
-abstract module getcwd {
-}
-
-static module getcwd_old extends getcwd {
+static module getcwd_dvfs extends getcwd {
 	source "getcwd.c"
 
 	depends embox.compat.posix.util.environ
 	depends embox.compat.libc.str
 }
 
-@DefaultImpl(open_old)
-abstract module open {
-}
-
-static module open_old extends open {
+static module open_dvfs extends open {
 	source "open.c"
 
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core /* if_mounted_follow_down */
-	depends libgen
-	depends dirent
-	depends umask
+	depends libgen_dvfs
+	depends dirent_dvfs
+	depends umask_dvfs
 }
 
-@DefaultImpl(umask_old)
-abstract module umask {
-}
-
-static module umask_old extends umask {
+static module umask_dvfs extends umask {
 	source "umask.c"
 
 	option number default_umask = 0022
 	depends embox.kernel.task.task_resource
 }
 
-@DefaultImpl(xattr_old)
-abstract module xattr {
-}
-
-static module xattr_old extends xattr {
+static module xattr_dvfs extends xattr {
 	source "xattr.c"
 
 	depends embox.fs.xattr
@@ -144,11 +100,7 @@ static module xattr_old extends xattr {
 	depends embox.security.api
 }
 
-@DefaultImpl(libgen_old)
-abstract module libgen {
-}
-
-static module libgen_old extends libgen {
+static module libgen_dvfs extends libgen {
 	source "libgen.c"
 }
 
