@@ -8,7 +8,7 @@
  */
 
 #include <debug/symbol.h>
-#include <execinfo.h>
+#include <lib/execinfo.h>
 #include <framework/mod/options.h>
 #include <stddef.h>
 #include <stdio.h>

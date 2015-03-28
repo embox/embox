@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <execinfo.h>
+#include <lib/execinfo.h>
 #include <stdio.h>
 
 #include <debug/symbol.h>

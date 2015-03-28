@@ -5,7 +5,7 @@
 
 #include <kernel/time/timer.h>
 #include <kernel/printk.h>
-#include <execinfo.h>
+#include <lib/execinfo.h>
 #include <embox/unit.h>
 
 #include <profiler/sampling/sample.h>

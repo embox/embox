@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-#include <execinfo.h>
+#include <lib/execinfo.h>
 #include <module/embox/arch/stackframe.h>
 #include <hal/context.h>
 
