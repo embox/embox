@@ -4,20 +4,15 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
 
 #include <fs/dvfs.h>
-#include <fs/dfs.h>
 #include <framework/mod/options.h>
 #include <util/bitmap.h>
-
-/* Now hardcoded to use DumbFS, need to detect FS and mountpoints */
-extern struct super_block *dfs_sb(void);
-extern struct file_operations dfs_fops;
-extern struct inode_operations dfs_iops;
 
 extern struct inode *dvfs_default_alloc_inode(struct super_block *sb);
 extern int dvfs_default_destroy_inode(struct inode *inode);
@@ -51,21 +46,32 @@ int dvfs_pathname(struct inode *inode, char *buf) {
 		return dvfs_default_pathname(inode, buf);
 }
 
-int dvfs_open(const char *path, struct file *desc, int mode) {
-	struct inode *inode = dfs_iops.lookup(path, NULL);
+struct dentry *dvfs_lookup(const char *path) {
+	return NULL; /* XXX */
+}
 
-	if (!inode && (mode & DFS_CREAT)) {
-		struct dentry d_new = { .d_sb = dfs_sb(), };
+int dvfs_open(const char *path, struct file *desc, int mode) {
+	//struct inode *inode = dfs_iops.lookup(path, NULL);
+	struct dentry *d = dvfs_lookup(path);
+	struct inode  *i_no = d->d_inode;
+
+	assert(desc);
+
+	if (!d && (mode & O_CREAT)) {
+		/* XXX  Create index node */
+		/*
 		strcpy(d_new.name, path);
 		inode = dfs_iops.create(&d_new, &d_new, 0);
+		*/
 	}
 
-	desc->f_inode = inode;
+	*desc = (struct file) {
+		.f_dentry = d,
+		.f_inode  = i_no,
+		.f_ops    = d->d_sb->sb_fops,
+	};
 
-	if (!inode)
-		return -1;
-	else
-		return dfs_fops.open(inode, desc);
+	return desc->f_ops->open(i_no, desc);
 }
 
 int dvfs_write(struct file *desc, char *buf, int count) {
@@ -75,7 +81,7 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 	if (desc->f_ops && desc->f_ops->write)
 		return desc->f_ops->write(desc, buf, count);
 	else
-		return dfs_fops.write(desc, buf, count); /* Default ops */
+		return -ENOSYS;
 }
 
 int dvfs_read(struct file *desc, char *buf, int count) {
@@ -85,5 +91,5 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 	if (desc->f_ops && desc->f_ops->read)
 		return desc->f_ops->read(desc, buf, count);
 	else
-		return dfs_fops.read(desc, buf, count); /* Default ops */
+		return -ENOSYS;
 }

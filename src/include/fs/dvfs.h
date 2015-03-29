@@ -30,7 +30,9 @@ struct super_block {
 	struct dlist_head *inode_list;
 
 	struct super_block_operations *sb_ops;
-	struct inode_operations	*sb_iops;
+	struct inode_operations	      *sb_iops;
+	struct dentry_operations      *sb_dops;
+	struct file_operations        *sb_fops;
 
 	void *sb_data;
 };
@@ -102,11 +104,13 @@ struct dumb_fs_driver {
 };
 
 #define DFS_CREAT 0x0001
-extern struct inode *dvfs_alloc_inode(struct super_block *sb);
-extern int           dvfs_destroy_inode(struct inode *inode);
+extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
+extern int            dvfs_destroy_inode(struct inode *inode);
 
-extern struct file  *dvfs_alloc_file(void);
-extern int           dvfs_destroy_file(struct file *desc);
+extern struct file   *dvfs_alloc_file(void);
+extern int            dvfs_destroy_file(struct file *desc);
+
+extern struct dentry *dvfs_lookup(const char *path);
 
 extern int dvfs_open(const char *path, struct file *desc, int mode);
 extern int dvfs_write(struct file *desc, char *buf, int count);

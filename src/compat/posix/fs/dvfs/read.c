@@ -12,12 +12,11 @@
 ssize_t read(int fd, void *buf, size_t nbyte) {
 	struct file *file;
 	struct file_table *ft;
-	int res;
 
 	ft = task_resource_file_table(task_self());
 	if (fd < FILE_TABLE_SZ && ft->file[fd] != NULL) {
 		file = ft->file[fd];
-		return dfvs_read(file, buf, nbyte);
+		return dvfs_read(file, buf, nbyte);
 	} else {
 		return -1;
 	}
