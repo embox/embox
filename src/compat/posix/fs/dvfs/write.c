@@ -1,32 +1,25 @@
 /**
  * @file
  *
- * @date 15.11.13
- * @author Anton Bondarev
+ * @author  Denis Deryugin
+ * @date    29 Mar 2015
  */
 
-#include <errno.h>
-#include <stddef.h>
-#include <unistd.h>
+#include <fs/dvfs.h>
 #include <kernel/task.h>
-#include <fs/index_descriptor.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/file_table.h>
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
-	ssize_t ret;
-	struct idesc *idesc;
+	struct file *file;
+	struct file_table *ft;
+	int res;
 
-	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & FS_MAY_WRITE))) {
-		return SET_ERRNO(EBADF);
+	ft = task_resource_file_table(task_self());
+	if (fd < FILE_TABLE_SZ && ft->file[fd] != NULL) {
+		file = ft->file[fd];
+		return dfvs_write(file, buf, nbyte);
+	} else {
+		return -1;
 	}
-
-	assert(idesc->idesc_ops != NULL);
-	ret = idesc->idesc_ops->write(idesc, buf, nbyte);
-	if (ret < 0) {
-		return SET_ERRNO(-ret);
-	}
-
-	return ret;
 }
+
