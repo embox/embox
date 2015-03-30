@@ -77,7 +77,7 @@ diff -aur e2fsprogs-1.42.8/configure.in e2fsprogs/configure.in
  AC_CHECK_HEADERS(m4_flatten([
  	dirent.h
  	errno.h
--	lib/execinfo.h
+-	execinfo.h
 -	getopt.h
 -	malloc.h
 -	mntent.h

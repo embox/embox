@@ -9,9 +9,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <net/lib/ifaddrs.h>
 #include <arpa/inet.h>
 #include <net/inetdevice.h>
+
+#include <ifaddrs.h>
+
 #include <net/util/macaddr.h>
 #include <cJSON.h>
 #include <embox/cmd.h>
