@@ -35,7 +35,6 @@ $(CONFIGURE) :
 			--disable-nanorc \
 			--disable-glibtest \
 			CC=$(EMBOX_GCC) \
-			CPPFLAGS="-I$(ROOT_DIR)/third-party/nano/include/" \
 	)
 	touch $@
 
