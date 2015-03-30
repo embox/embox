@@ -9,7 +9,7 @@
 #include <stdint.h>
 #include <hal/reg.h>
 
-#include <drivers/pci/pci_utils.h>
+#include <drivers/pci/pci_chip/pci_utils.h>
 
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(ti81xx_pci_init);
