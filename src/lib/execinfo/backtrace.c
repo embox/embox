@@ -9,14 +9,14 @@
 
 #include <stddef.h>
 
-#include <lib/execinfo.h>
+#include <execinfo.h>
+
 #include <module/embox/arch/stackframe.h>
 #include <hal/context.h>
 
 extern void stack_iter_context(stack_iter_t *, struct context *);
 extern void stack_iter_current(stack_iter_t *);
 extern int stack_iter_next(stack_iter_t *);
-//extern void *stack_iter_get_fp(stack_iter_t *);
 extern void *stack_iter_get_retpc(stack_iter_t *);
 
 int backtrace_context(void **buff, int size, struct context *ctx) {

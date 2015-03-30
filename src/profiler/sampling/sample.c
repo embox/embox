@@ -3,9 +3,11 @@
 #include <errno.h>
 #include <string.h>
 
+#include <execinfo.h>
+
 #include <kernel/time/timer.h>
 #include <kernel/printk.h>
-#include <lib/execinfo.h>
+
 #include <embox/unit.h>
 
 #include <profiler/sampling/sample.h>

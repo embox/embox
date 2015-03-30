@@ -1,7 +1,11 @@
 package embox.lib.execinfo
 
+//TODO Linux compatible
 module backtrace {
 	source "backtrace.c"
+
+	@IncludeExport
+	source "execinfo.h"
 
 	depends embox.arch.stackframe
 }
