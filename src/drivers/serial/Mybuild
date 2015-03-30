@@ -31,6 +31,9 @@ module fsnode extends fsnode_api {
 
 module fsnode_none extends fsnode_api {
 	source "fsnode_none.c"
+
+	@IncludeExport(path="drivers/serial")
+	source "fsnode.h"
 }
 
 module diag {
