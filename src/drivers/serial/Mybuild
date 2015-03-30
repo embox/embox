@@ -20,6 +20,10 @@ module core {
 
 module fsnode extends fsnode_api {
 	source "fsnode.c"
+
+	@IncludeExport(path="drivers/serial")
+	source "fsnode.h"
+
 	@NoRuntime depends embox.driver.char_dev
 	@NoRuntime depends embox.driver.tty.serial
 	depends embox.fs.driver.devfs
@@ -31,6 +35,9 @@ module fsnode_none extends fsnode_api {
 
 module diag {
 	source "diag.c"
+
+	@IncludeExport(path="drivers/serial")
+	source "diag.h"
 }
 
 module apbuart extends embox.driver.diag.diag_api {
@@ -56,6 +63,8 @@ module i8250 extends serial {
 	option number baud_rate
 
 	source "8250.c"
+	@IncludeExport(path="drivers/serial")
+	source "8250.h"
 
 	depends core
 	depends diag
