@@ -13,8 +13,6 @@
 #include <stdbool.h>
 #include <errno.h>
 
-#include <execinfo.h>
-
 #include <hal/context.h>
 
 #include <util/array.h>
