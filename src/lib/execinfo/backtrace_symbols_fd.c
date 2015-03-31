@@ -13,7 +13,7 @@
 
 #include <execinfo.h>
 
-#include <lib/debug/symbol.h>
+#include <debug/symbol.h>
 
 void backtrace_symbols_fd(void *const *buff, int size, int fd) {
 	static char error_msg[] = "backtrace_symbols_fd error";

@@ -6,7 +6,7 @@
  * @author Eldar Abusalimov
  */
 
-#include <lib/debug/symbol.h>
+#include <debug/symbol.h>
 #include <stddef.h>
 
 extern const struct symbol __symbol_table[];

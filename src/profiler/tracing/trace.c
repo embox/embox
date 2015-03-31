@@ -21,7 +21,7 @@
 
 #include <mem/misc/pool.h>
 
-#include <lib/debug/symbol.h>
+#include <debug/symbol.h>
 
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>

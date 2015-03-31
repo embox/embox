@@ -10,8 +10,8 @@
 
 #include <execinfo.h>
 
-#include <lib/debug/symbol.h>
-#include <lib/debug/whereami.h>
+#include <debug/symbol.h>
+#include <debug/whereami.h>
 #include <kernel/printk.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>

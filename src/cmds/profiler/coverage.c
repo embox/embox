@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <util/bitmap.h>
-#include <lib/debug/symbol.h>
+#include <debug/symbol.h>
 
 extern int coverage_getstat(const struct symbol **sym_table,
 		const unsigned long **cov_bitmap);
