@@ -8,7 +8,7 @@
 
 #include <stdbool.h>
 #include <errno.h>
-#include <debug/symbol.h>
+#include <lib/debug/symbol.h>
 #include <util/bitmap.h>
 #include <kernel/printk.h>
 #include <embox/unit.h>

@@ -12,8 +12,6 @@
 #include <drivers/gpio.h>
 #include <embox/unit.h>
 
-#include <drivers/gpio.h>
-
 EMBOX_UNIT_INIT(lcd_test);
 
 /* low-level defines */

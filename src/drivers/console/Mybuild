@@ -13,6 +13,11 @@ module mpx_simple extends mpx {
 module fbcon {
 	source "fbcon.c"
 
+	@IncludeExport(path="drivers/console")
+	source "fbcon.h"
+	@IncludeExport(path="drivers/console")
+	source "mpx.h"
+
 	depends embox.driver.video.fonts
 	depends embox.driver.tty.vterm
 	depends embox.driver.input.keyboard.keyboard

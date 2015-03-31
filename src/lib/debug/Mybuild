@@ -2,6 +2,9 @@ package embox.lib.debug
 
 static module symbol {
 	source "symbol.c"
+
+	@IncludeExport(path="lib/debug")
+	source "symbol.h"
 }
 
 @Mandatory
@@ -11,6 +14,10 @@ abstract module whereami_api {
 
 module whereami extends whereami_api {
 	source "whereami.c"
+
+	@IncludeExport(path="lib/debug")
+	source "whereami.h"
+
 	option number max_rows=0
 	option number max_depth=64
 	option number row_sz=80

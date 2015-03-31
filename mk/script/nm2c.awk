@@ -13,7 +13,7 @@
 BEGIN {
 	print "/* Auto-generated file. Do not edit. */";
 	print "";
-	print "#include <debug/symbol.h>";
+	print "#include <lib/debug/symbol.h>";
 	print "#include <stddef.h>";
 	print "";
 	print "const struct symbol __symbol_table[] = {";

@@ -12,7 +12,7 @@
 #include <asm/io.h>
 #include <drivers/diag.h>
 #include <drivers/video/vga.h>
-#include <drivers/console/vc_vga.h>
+#include <drivers/console/vc/vc_vga.h>
 #include <util/member.h>
 
 /* The video memory address. */

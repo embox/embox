@@ -2,6 +2,12 @@ package embox.driver
 
 module flash {
 	source "flash.c"
+
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "flash.h"
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "flash_dev.h"
+
 	option number dev_quantity=4
 
 	depends embox.fs.node

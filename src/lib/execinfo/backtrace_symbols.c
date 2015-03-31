@@ -15,7 +15,7 @@
 
 #include <util/math.h>
 
-#include <debug/symbol.h>
+#include <lib/debug/symbol.h>
 
 #include <framework/mod/options.h>
 

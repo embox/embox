@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <debug/symbol.h>
+#include <lib/debug/symbol.h>
 #include <util/array.h>
 
 #include <profiler/tracing/trace.h>

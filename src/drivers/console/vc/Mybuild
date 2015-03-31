@@ -3,6 +3,9 @@ package embox.driver.console.vc
 module vga extends embox.driver.diag.diag_api {
 	source "vga.c"
 
+	@IncludeExport(path="drivers/console/vc")
+	source "vc_vga.h"
+
 	depends embox.driver.tty.vterm_video
 	depends embox.mem.vmem_api
 }
@@ -10,8 +13,10 @@ module vga extends embox.driver.diag.diag_api {
 module vc {
 	source "vc.c"
 
-	depends vga
+	@IncludeExport(path="drivers/console/vc")
+	source "vc_vga.h"
 
+	depends vga
 	depends embox.driver.tty.vterm
 	depends embox.driver.input.core
 	depends embox.driver.input.keyboard.keyboard

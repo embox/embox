@@ -8,8 +8,8 @@
 
 
 #include <embox/block_dev.h>
-#include <drivers/flash/flash.h>
-#include <drivers/flash/flash_dev.h>
+#include <drivers/block_dev/flash/flash.h>
+#include <drivers/block_dev/flash/flash_dev.h>
 #include <mem/sysmalloc.h>
 
 #include <util/err.h>

@@ -12,7 +12,7 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 #include <kernel/printk.h>
-#include <debug/whereami.h>
+#include <lib/debug/whereami.h>
 
 #define panic(...) \
 	do { \
