@@ -1,6 +1,11 @@
 package embox.fs
 
 module dvfs {
+	option number superblock_pool_size=4
+	option number inode_pool_size=8
+	option number dentry_pool_size=16
+	option number file_pool_size=4
+
 	source "dvfs.c"
 	source "dvfs_ops.c"
 

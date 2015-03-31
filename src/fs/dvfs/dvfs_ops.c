@@ -15,8 +15,16 @@
 #include <mem/misc/pool.h>
 #include <util/bitmap.h>
 
-POOL_DEF(file_pool, struct file, 4); /* XXX */
-POOL_DEF(dentry_pool, struct dentry, 4); /* XXX */
+#define SUPERBLOCK_POOL_SIZE OPTION_GET(NUMBER, superblock_pool_size)
+#define INODE_POOL_SIZE OPTION_GET(NUMBER, inode_pool_size)
+#define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
+#define FILE_POOL_SIZE OPTION_GET(NUMBER, file_pool_size)
+
+
+POOL_DEF(superblock_pool, struct super_block, SUPERBLOCK_POOL_SIZE);
+POOL_DEF(inode_pool, struct inode, INODE_POOL_SIZE);
+POOL_DEF(dentry_pool, struct dentry, DENTRY_POOL_SIZE);
+POOL_DEF(file_pool, struct file, FILE_POOL_SIZE);
 
 struct dentry *dvfs_alloc_dentry(void) {
 	return pool_alloc(&dentry_pool);
@@ -38,7 +46,7 @@ int dvfs_destroy_file(struct file *desc) {
 
 /* Default FS-nondependent operations */
 struct inode *dvfs_default_alloc_inode(struct super_block *sb) {
-	struct inode *inode = malloc(sizeof(struct inode));
+	struct inode *inode = pool_alloc(&inode_pool);
 
 	if (inode)
 		*inode = (struct inode) {
@@ -51,7 +59,7 @@ struct inode *dvfs_default_alloc_inode(struct super_block *sb) {
 }
 
 int dvfs_default_destroy_inode(struct inode *inode) {
-	free(inode);
+	pool_free(&inode_pool, inode);
 	return 0;
 }
 
