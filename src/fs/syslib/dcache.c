@@ -9,16 +9,11 @@
 #include <dirent.h>
 #include <string.h>
 
+#include <fs/dcache.h>
+#include <fs/dvfs.h>
+#include <mem/misc/pool.h>
 #include <util/hashtable.h>
 #include <util/dlist.h>
-
-#include <mem/misc/pool.h>
-
-#include <fs/path.h>
-
-#include <fs/dcache.h>
-
-
 
 #include <embox/unit.h>
 
@@ -34,11 +29,11 @@ struct dkey {
 
 struct dvalue {
 	struct dkey key;
-	struct path path;
+	struct dentry dentry;
 	struct dlist_head link;
 };
 
-POOL_DEF(dcache_path_pool, struct dvalue, DCACHE_TABLE_SIZE);
+POOL_DEF(dcache_dentry_pool, struct dvalue, DCACHE_TABLE_SIZE);
 POOL_DEF(ht_item_pool, struct hashtable_item, DCACHE_SIZE);
 
 static size_t dcache_hash(void *key);
@@ -80,10 +75,10 @@ static void dvalue_delete(struct dvalue *dvalue) {
 	ht_item = hashtable_del(dcache_table, &dvalue->key);
 	pool_free(&ht_item_pool, ht_item);
 	dlist_del(&dvalue->link);
-	pool_free(&dcache_path_pool, dvalue);
+	pool_free(&dcache_dentry_pool, dvalue);
 }
 
-static void compound_path(char *source, const char *prefix, const char *rest) {
+static void compound_dentry(char *source, const char *prefix, const char *rest) {
 	strcpy(source, prefix);
 
 	if (rest[0] != '/' && (0 != strcmp("/", prefix))) {
@@ -93,10 +88,10 @@ static void compound_path(char *source, const char *prefix, const char *rest) {
 	strcat(source, rest);
 }
 
-static void dvalue_init(struct dvalue *dvalue, struct path *path,
+static void dvalue_init(struct dvalue *dvalue, struct dentry *dentry,
 		const char *prefix, const char *rest) {
-	compound_path(dvalue->key.fullpath, prefix, rest);
-	dvalue->path = *path;
+	compound_dentry(dvalue->key.fullpath, prefix, rest);
+	dvalue->dentry = *dentry;
 	dlist_head_init(&dvalue->link);
 }
 
@@ -123,7 +118,7 @@ int dcache_delete(const char *prefix, const char *rest) {
 		return -EINVAL;
 	}
 
-	compound_path(dkey.fullpath, prefix, rest);
+	compound_dentry(dkey.fullpath, prefix, rest);
 	if (NULL != (dvalue = hashtable_get(dcache_table, &dkey))) {
 		dvalue_delete(dvalue);
 	}
@@ -131,12 +126,12 @@ int dcache_delete(const char *prefix, const char *rest) {
 	return 0;
 }
 
-int dcache_add(const char *prefix, const char *rest, struct path *path) {
+int dcache_add(const char *prefix, const char *rest, struct dentry *dentry) {
 	struct dvalue *dvalue;
 	int res;
 
 
-	if (!path) {
+	if (!dentry) {
 		return -EINVAL;
 	}
 
@@ -155,23 +150,23 @@ int dcache_add(const char *prefix, const char *rest, struct path *path) {
 		 }
 	}
 
-	if (NULL == (dvalue = pool_alloc(&dcache_path_pool))) {
+	if (NULL == (dvalue = pool_alloc(&dcache_dentry_pool))) {
 		struct dvalue *last;
 
 		last = dlist_entry(values.prev, struct dvalue, link);
 		dvalue_delete(last);
-		dvalue = pool_alloc(&dcache_path_pool);
+		dvalue = pool_alloc(&dcache_dentry_pool);
 
 		assert(NULL != dvalue);
 	}
 
-	dvalue_init(dvalue, path, prefix, rest);
+	dvalue_init(dvalue, dentry, prefix, rest);
 	dvalue_add(dvalue);
 
 	return 0;
 }
 
-struct path *dcache_get(const char *prefix, const char *rest) {
+struct dentry *dcache_get(const char *prefix, const char *rest) {
 	struct dkey dkey;
 	struct dvalue *dvalue;
 	int prefix_len, rest_len;
@@ -190,7 +185,6 @@ struct path *dcache_get(const char *prefix, const char *rest) {
 	} else {
 		prefix_len = strlen(prefix);
 		pref_tmp = prefix;
-
 	}
 	if ((prefix_len + rest_len + 1) > DCACHE_MAX_NAME_SIZE) {
 		return NULL;
@@ -202,10 +196,10 @@ struct path *dcache_get(const char *prefix, const char *rest) {
 		 }
 	}
 
-	compound_path(dkey.fullpath, pref_tmp, rest);
+	compound_dentry(dkey.fullpath, pref_tmp, rest);
 	dvalue = hashtable_get(dcache_table, &dkey);
 
-	return dvalue ? &dvalue->path : NULL;
+	return dvalue ? &dvalue->dentry : NULL;
 }
 
 static int dcache_init(void) {

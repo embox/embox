@@ -10,4 +10,5 @@ module dvfs {
 	source "dvfs_ops.c"
 
 	depends embox.kernel.task.resource.file_table
+	depends embox.fs.syslib.dcache
 }
