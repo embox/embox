@@ -18,6 +18,12 @@ extern struct inode *dvfs_default_alloc_inode(struct super_block *sb);
 extern int dvfs_default_destroy_inode(struct inode *inode);
 extern int dvfs_default_pathname(struct inode *inode, char *buf);
 
+struct dentry *dvfs_root(void) {
+	static struct dentry *root = NULL;
+
+	return root;
+}
+
 struct inode *dvfs_alloc_inode(struct super_block *sb) {
 	assert(sb);
 

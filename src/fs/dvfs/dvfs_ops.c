@@ -16,6 +16,16 @@
 #include <util/bitmap.h>
 
 POOL_DEF(file_pool, struct file, 4); /* XXX */
+POOL_DEF(dentry_pool, struct dentry, 4); /* XXX */
+
+struct dentry *dvfs_alloc_dentry(void) {
+	return pool_alloc(&dentry_pool);
+}
+
+int dvfs_destroy_dentry(struct dentry *dentry) {
+	pool_free(&dentry_pool, dentry);
+	return 0;
+}
 
 struct file *dvfs_alloc_file(void) {
 	return pool_alloc(&file_pool);

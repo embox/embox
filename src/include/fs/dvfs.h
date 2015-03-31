@@ -110,6 +110,10 @@ extern int            dvfs_destroy_inode(struct inode *inode);
 extern struct file   *dvfs_alloc_file(void);
 extern int            dvfs_destroy_file(struct file *desc);
 
+extern struct dentry *dvfs_alloc_dentry(void);
+extern int            dvfs_destroy_dentry(struct dentry *dentry);
+
+extern struct dentry *dvfs_root(void);
 extern struct dentry *dvfs_lookup(const char *path);
 
 extern int dvfs_open(const char *path, struct file *desc, int mode);
