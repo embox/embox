@@ -33,6 +33,7 @@ static module dirent {
 	depends embox.compat.libc.str
 	depends embox.fs.dcache
 	depends embox.compat.posix.fs.getcwd
+	depends embox.fs.Perm
 }
 
 static module lseek {

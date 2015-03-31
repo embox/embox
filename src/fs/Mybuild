@@ -67,6 +67,7 @@ module core extends fs_api {
 	depends embox.compat.libc.str
 	depends embox.compat.posix.util.environ
 	depends embox.util.tree
+	depends embox.compat.posix.proc.uid
 
 	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 }
