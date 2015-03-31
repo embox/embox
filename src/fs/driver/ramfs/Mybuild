@@ -1,6 +1,9 @@
 package embox.fs.driver
 
 module ramfs {
+	@IncludeExport(path="fs")
+	source "ramfs.h"
+
 	source "ramfs.c"
 	option number inode_quantity=64
 	option number ramfs_descriptor_quantity=4

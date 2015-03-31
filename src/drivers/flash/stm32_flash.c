@@ -14,7 +14,7 @@
 #include <hal/mem.h>
 #include <kernel/printk.h>
 #include <util/math.h>
-#include <drivers/flash/flash_dev.h>
+#include <drivers/block_dev/flash/flash_dev.h>
 #include <stm32f4xx_flash.h>
 
 #define STM32_FIRST_BLOCK_OFFSET 1

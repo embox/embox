@@ -18,7 +18,7 @@
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_repo.h>
-#include <drivers/pci/pci_utils.h>
+#include <drivers/pci/pci_chip/pci_utils.h>
 
 struct pci_reg {
 	uint8_t offset;

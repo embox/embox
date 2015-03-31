@@ -12,8 +12,6 @@
 #include <drivers/gpio.h>
 #include <embox/unit.h>
 
-#include <drivers/gpio.h>
-
 EMBOX_UNIT_INIT(lcd_test);
 
 /* low-level defines */
@@ -39,57 +37,60 @@ static int line_first = 0;
 
 /* low-level routines */
 
-static inline void ctrl(int pin, int state) {
-	if (state) {
-		gpio_set_level(CTRL_PORT, pin, 0x01);
-		return;
-	}
-
-	gpio_set_level(CTRL_PORT, pin, 0);
+static inline void nsdelay(int ns) {
+	volatile int lns = ns / 10 + 1;
+	while (lns-- > 0);
 }
 
-static inline int clock(void) {
-	int level = 0;
-	ctrl(E, 1);
-	gpio_settings(DATA_PORT, BUSY_FLAG, GPIO_MODE_INPUT);
-	level = gpio_get_level(DATA_PORT, BUSY_FLAG);
-	gpio_settings(DATA_PORT, BUSY_FLAG, GPIO_MODE_OUTPUT);
-	ctrl(E, 0);
-	return level;
+static int lcd_read(int reg) {
+	int val;
+	gpio_settings(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_INPUT);
+	gpio_set_level(CTRL_PORT, RS, reg);
+	gpio_set_level(CTRL_PORT, RW, 1);
+
+	gpio_set_level(CTRL_PORT, E, 1);
+	nsdelay(140);
+	val = gpio_get_level(DATA_PORT, 0xff << DATA_PINS_OFFSET);
+	gpio_set_level(CTRL_PORT, E, 0);
+	nsdelay(10);
+
+	return val;
 }
 
-static inline void set_data(int reg, char ch) {
-	ctrl(RS, reg);
-	ctrl(RW, 0);
-	gpio_set_level(DATA_PORT, 0xff & ~ch, 0);
-	gpio_set_level(DATA_PORT, ch, 0x01);
+static void lcd_write(int reg, int val) {
+	gpio_settings(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_OUTPUT);
+	gpio_set_level(DATA_PORT, 0xff << DATA_PINS_OFFSET, 0);
+	gpio_set_level(CTRL_PORT, RS, reg);
+	gpio_set_level(CTRL_PORT, RW, 0);
+	gpio_set_level(DATA_PORT, val << DATA_PINS_OFFSET, 1);
 
+	gpio_set_level(CTRL_PORT, E, 1);
+	nsdelay(140);
+	gpio_set_level(CTRL_PORT, E, 0);
+	nsdelay(10);
 }
 
-static inline void wait_busy(void) {
-	ctrl(RS, 0);
-	ctrl(RW, 1);
-	while (clock());
+static void lcd_wait_busy(void) {
+	while (lcd_read(0) & 0x80);
 }
 
-static inline void set_n_clock(int reg, char ch) {
-	wait_busy();
-	set_data(reg, ch);
-	clock();
+static void lcd_write_wait(int reg, char ch) {
+	lcd_write(reg, ch);
+	lcd_wait_busy();
 }
 
 static inline void go_to(int line, int char_pos) {
-	set_n_clock(0, 0x80 + line * 0x40 + char_pos);
+	lcd_write_wait(0, 0x80 + line * 0x40 + char_pos);
 }
 
 static inline void clear(void) {
-	set_n_clock(0, 0x01);
+	lcd_write_wait(0, 0x01);
 }
 
 /* high-level routines */
 static inline void print_line(int n) {
 	for (int j = 0; j < WIDTH_N; j++) {
-		set_n_clock(1, buf[n * WIDTH_N + j]);
+		lcd_write_wait(1, buf[n * WIDTH_N + j]);
 	}
 }
 
@@ -131,23 +132,22 @@ static void lcd_putc(char ch) {
 	buf[line_first * WIDTH_N + pos] = ch;
 	pos ++;
 
-	set_n_clock(1, ch);
+	lcd_write_wait(1, ch);
 }
 
 
 static int lcd_test(void) {
-	char init[] = {0x38, 0x0e, 0x06, 0x01};
 	char demo[] = "      Embox     \n   Rev unknown  ";
 
-	ctrl(E | RS | RW, 0);
+	gpio_set_level(CTRL_PORT, E | RS | RW, 0);
 	gpio_settings(CTRL_PORT, RS | E | RW, GPIO_MODE_OUTPUT);
-	gpio_settings(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_OUTPUT);
 
-	wait_busy();
-
-	for (int i = 0; i < sizeof(init); i++) {
-		set_n_clock(0, init[i]);
-	}
+	lcd_write(0, 0x38);
+	nsdelay(39000);
+	lcd_write(0, 0x38);
+	nsdelay(39000);
+	lcd_write_wait(0, 0x0e);
+	lcd_write_wait(0, 0x01);
 
 	memset(buf, ' ', LINE_N * WIDTH_N);
 	go_to(LINE_N - 1, 0);

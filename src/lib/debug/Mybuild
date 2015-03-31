@@ -11,6 +11,7 @@ abstract module whereami_api {
 
 module whereami extends whereami_api {
 	source "whereami.c"
+
 	option number max_rows=0
 	option number max_depth=64
 	option number row_sz=80

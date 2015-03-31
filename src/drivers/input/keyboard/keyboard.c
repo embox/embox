@@ -12,7 +12,7 @@
 #include <drivers/keyboard.h>
 #include <drivers/input/keymap.h>
 #include <drivers/input/input_dev.h>
-#include <drivers/indev_manager.h>
+
 #include <embox/unit.h>
 #include <drivers/diag.h>
 #include <drivers/tty.h>

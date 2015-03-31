@@ -1,6 +1,9 @@
 package embox.fs.driver
 
 module tmpfs {
+	@IncludeExport(path="fs")
+	source "tmpfs.h"
+
 	@InitFS source "tmp"
 
 	source "tmpfs.c"

@@ -37,6 +37,8 @@ module file_system_full extends file_system {
 	depends dcache
 	depends perm
 
+	depends SysLibFsFull        // kfile_fill_stat
+
 	depends embox.fs.file_desc
 	depends embox.fs.syslib.fs_full
 	depends embox.kernel.thread.mutex

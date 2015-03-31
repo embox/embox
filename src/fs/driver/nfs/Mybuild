@@ -1,6 +1,11 @@
 package embox.fs.driver
 
 module nfs {
+	@IncludeExport(path="fs")
+	source "nfs.h"
+	@IncludeExport(path="fs")
+	source "xdr_nfs.h"
+
 	source "nfs.c"
 	source "xdr_nfs.c"
 	option number inode_quantity=264

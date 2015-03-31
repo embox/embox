@@ -37,7 +37,7 @@
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
-#include <drivers/flash/flash.h>
+#include <drivers/block_dev/flash/flash.h>
 
 #define FS_NAME "jffs2"
 

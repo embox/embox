@@ -6,8 +6,9 @@
  * @author Ilia Vaprol
  */
 
-#include <execinfo.h>
 #include <stdio.h>
+
+#include <execinfo.h>
 
 #include <debug/symbol.h>
 #include <debug/whereami.h>
@@ -20,7 +21,6 @@
 #include <util/math.h>
 
 #include <framework/mod/options.h>
-
 
 extern int backtrace_context(void **buff, int size, struct context *ctx); // XXX
 

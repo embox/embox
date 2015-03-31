@@ -40,8 +40,8 @@ $(for n <- $(subst .,__,$(get 2->qualifiedName)),
 		$(for impl <- $t $(get t->allSuperTypes),
 			$(\n)
 			// $(get impl->qualifiedName)$(\n)
-			$(or $(strip $(for header <- $(call module_get_headers,$(impl)),
-				$(\h)include <../../$(header)>$(\n))),
+			$(or $(for header <- $(call module_get_headers,$(impl)),
+				$(\h)include <../../$(header)>$(\n)),
 				// (no headers to include)$(\n))),
 
 		// This is a base type of $(get t->qualifiedName)$(\n)

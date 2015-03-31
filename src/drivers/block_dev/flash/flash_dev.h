@@ -10,7 +10,7 @@
 #define FLASH_DEV_H_
 
 #include <stdbool.h>
-#include <drivers/flash/flash.h>
+#include <drivers/block_dev/flash/flash.h>
 
 struct flash_dev;
 

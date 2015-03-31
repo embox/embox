@@ -9,10 +9,12 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+
 #include <ifaddrs.h>
+
 #include <net/inetdevice.h>
 
-#include <drivers/flash/flash_dev.h>
+#include <drivers/block_dev/flash/flash_dev.h>
 
 #include "libleddrv.h"
 #include "led_names.h"

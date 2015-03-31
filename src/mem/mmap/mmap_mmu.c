@@ -103,10 +103,15 @@ void mmap_init(struct emmap *mmap) {
 }
 
 void mmap_free(struct emmap *mmap) {
+	/*
+	 * To unmap this context we should switch to kernel task virtual context.
+	 * Actually, we can save this context for the later created tasks.
+	 */
+
 	//XXX: Bad code
 	mmu_set_context(1);
 	mmap_clear(mmap);
-	//vmem_free_context(mmap->ctx);
+	vmem_free_context(mmap->ctx);
 }
 
 void mmap_clear(struct emmap *mmap) {

@@ -7,7 +7,7 @@
  * @author Anton Kozlov
  */
 
-#include <drivers/console/vc_vga.h>
+#include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
 #include <embox/device.h> //XXX
 #include <fs/idesc.h>

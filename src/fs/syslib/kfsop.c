@@ -110,6 +110,70 @@ int kmkdir(const char *pathname, mode_t mode) {
 	return 0;
 }
 
+int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *child) {
+	struct fs_driver *drv;
+	int ret;
+
+	assert(dir_path->node);
+
+	path = path_next(path, NULL);
+
+	if (!path) {
+		SET_ERRNO(EINVAL);
+		return -1;
+	}
+
+	if (NULL != strchr(path, '/')) {
+		SET_ERRNO(ENOENT);
+		return -1;
+	}
+
+	if (0 != (fs_perm_check(dir_path->node, FS_MAY_WRITE))) {
+		SET_ERRNO(EACCES);
+		return -1;
+	}
+
+	if (0 != (ret = security_node_create(dir_path->node, S_IFREG | mode))) {
+		SET_ERRNO(-ret);
+		return -1;
+	}
+
+	if (0 != vfs_create(dir_path, path, S_IFREG | mode, child)) {
+		SET_ERRNO(ENOMEM);
+		return -1;
+	}
+
+	child->mnt_desc = dir_path->mnt_desc;
+
+	if(!dir_path->node->nas || !dir_path->node->nas->fs) {
+		SET_ERRNO(EBADF);
+		vfs_del_leaf(child->node);
+		return -1;
+	}
+
+	/* check drv of parents */
+	drv = dir_path->node->nas->fs->drv;
+	if (!drv || !drv->fsop->create_node) {
+		SET_ERRNO(EBADF);
+		vfs_del_leaf(child->node);
+		return -1;
+	}
+
+	if (0 != (ret = drv->fsop->create_node(dir_path->node, child->node))) {
+		SET_ERRNO(-ret);
+		vfs_del_leaf(child->node);
+		return -1;
+	}
+
+	/* XXX it's here and not in vfs since vfs node associated with drive after
+ 	 * creating. security may call driver dependent features, like setting
+	 * xattr
+	 */
+	security_node_cred_fill(child->node);
+
+	return 0;
+}
+
 int kremove(const char *pathname) {
 	struct path node;
 	struct nas *nas;
@@ -215,6 +279,7 @@ int krmdir(const char *pathname) {
 
 }
 
+extern int kfile_fill_stat(struct node *node, struct stat *stat_buff);
 int klstat(const char *path, struct stat *buf) {
 	struct path node;
 	int res;

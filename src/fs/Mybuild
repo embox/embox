@@ -67,6 +67,7 @@ module core extends fs_api {
 	depends embox.compat.libc.str
 	depends embox.compat.posix.util.environ
 	depends embox.util.tree
+	depends embox.compat.posix.proc.uid
 
 	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 }
@@ -92,9 +93,13 @@ module rootfs {
 module journal {
 	source "journal.c"
 
-	depends embox.compat.libc.all
+	depends embox.compat.libc.assert
+	depends embox.compat.libc.str
+
 	depends buffer_cache
 	depends embox.mem.slab
+
+	depends embox.util.DList
 }
 
 module buffer_cache {

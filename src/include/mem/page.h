@@ -43,7 +43,7 @@ extern int page_belong(struct page_allocator *allocator, void *page);
 			space, \
 			page_number, \
 			page_size, \
-			page_number, \
+			page_size * page_number, \
 			ctrl_space_##name \
 	}
 

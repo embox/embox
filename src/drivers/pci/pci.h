@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <drivers/pci/pci_id.h>
 #include <util/dlist.h>
-#include <drivers/pci/pci_utils.h>
+#include <drivers/pci/pci_chip/pci_utils.h>
 
 /**
  * Allowed up to 256 buses, each with up to 32 devices,

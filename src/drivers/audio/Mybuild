@@ -10,6 +10,9 @@ module stm32f4_pa extends portaudio {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f4/core/STM32F4xx_Ethernet_Example/Utilities/STM32F4-Discovery/")
 	source "stm32f4_pa.c"
 
+	@IncludeExport(path="drivers/audio")
+	source "portaudio.h"
+
 	depends third_party.bsp.st_f4.core
 	depends embox.util.DList
 	depends embox.compat.libc.assert
