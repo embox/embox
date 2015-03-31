@@ -18,8 +18,16 @@ extern struct inode *dvfs_default_alloc_inode(struct super_block *sb);
 extern int dvfs_default_destroy_inode(struct inode *inode);
 extern int dvfs_default_pathname(struct inode *inode, char *buf);
 
+extern struct super_block *dfs_sb(void);
 struct dentry *dvfs_root(void) {
 	static struct dentry *root = NULL;
+
+	if (!root) {
+		root = dvfs_alloc_dentry();
+		*root = (struct dentry) {
+			.d_sb = dfs_sb(),
+		};
+	}
 
 	return root;
 }
@@ -52,7 +60,6 @@ int dvfs_pathname(struct inode *inode, char *buf) {
 		return dvfs_default_pathname(inode, buf);
 }
 
-extern struct super_block *dfs_sb(void);
 struct dentry *dvfs_lookup(const char *path) {
 	struct dentry *dentry;
 	struct inode  *inode;
