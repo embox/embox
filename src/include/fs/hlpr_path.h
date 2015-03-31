@@ -53,10 +53,4 @@ extern char *path_get_next_name(const char *path, char *buff, int buff_len);
  */
 extern int path_is_dotname(const char *name, size_t name_len);
 
-//TODO this is only FAT function
-extern char *path_dir_to_canonical(char *dest, char *src, char dir);
-
-extern char *path_canonical_to_dir(char *dest, char *src);
-
-
 #endif /* FS_HLPR_PATH_H_ */

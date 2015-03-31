@@ -1,6 +1,9 @@
 package embox.fs.driver
 
 module fat {
+	@IncludeExport(path="fs")
+	source "fat.h"
+
 	source "fat.c"
 	source "fatfs_subr.c"
 	option number inode_quantity=64

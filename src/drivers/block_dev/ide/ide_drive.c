@@ -56,8 +56,6 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 
-
-//#include <fs/fat.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
