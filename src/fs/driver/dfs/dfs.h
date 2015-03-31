@@ -7,7 +7,7 @@
 #ifndef _DFS_H_
 #define _DFS_H_
 
-#include <drivers/flash/flash_dev.h>
+#include <drivers/block_dev/flash/flash_dev.h>
 #include <fs/dvfs.h>
 
 #define DFS_INODES_MAX 4
