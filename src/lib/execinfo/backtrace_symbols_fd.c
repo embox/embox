@@ -7,11 +7,13 @@
  * @author Ilia Vaprol
  */
 
-#include <debug/symbol.h>
-#include <execinfo.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <unistd.h>
+
+#include <execinfo.h>
+
+#include <debug/symbol.h>
 
 void backtrace_symbols_fd(void *const *buff, int size, int fd) {
 	static char error_msg[] = "backtrace_symbols_fd error";

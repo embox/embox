@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief man BACKTRACE(3)
  *
  * @date 25.08.12
  * @author Anton Bulychev

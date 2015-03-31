@@ -7,13 +7,19 @@
  * @author Ilia Vaprol
  */
 
-#include <debug/symbol.h>
-#include <execinfo.h>
-#include <framework/mod/options.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include <execinfo.h>
+
 #include <util/math.h>
+
+#include <debug/symbol.h>
+
+#include <framework/mod/options.h>
+
+
 
 #define MODOPS_ROW_COUNT OPTION_GET(NUMBER, row_count)
 #define MODOPS_ROW_SIZE OPTION_GET(NUMBER, row_size)

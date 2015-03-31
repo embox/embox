@@ -36,6 +36,8 @@ module SysLibFileSystemFull extends SysLibFileSystem {
 	depends dcache
 	depends Perm
 
+	depends SysLibFsFull        // kfile_fill_stat
+
 	depends embox.kernel.thread.mutex
 	depends embox.compat.libc.str_dup
 	depends embox.compat.posix.fs.open

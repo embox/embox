@@ -17,7 +17,6 @@
 #include <errno.h>
 #include <arpa/inet.h>
 
-#include <ifaddrs.h>
 #include <netinet/in.h>
 
 #include <stdlib.h>
@@ -28,6 +27,9 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include <assert.h>
+
+
+#include <ifaddrs.h>
 
 #define ARRAY_SIZE(array) \
 	(sizeof(array) / sizeof(*(array)))

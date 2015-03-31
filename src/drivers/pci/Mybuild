@@ -5,6 +5,15 @@ module pci {
 	option number bus_n_to_scan = 256
 	source "pci.c", "pci_repo.c", "pci_driver.c"
 
+	@IncludeExport(path="drivers/pci")
+	source "pci.h"
+    @IncludeExport(path="drivers/pci")
+	source "pci_repo.h"
+    @IncludeExport(path="drivers/pci")
+	source "pci_driver.h"
+	@IncludeExport(path="drivers/pci")
+	source "pci_id.h"
+
 	depends embox.mem.pool
 	depends embox.kernel.irq
 	depends embox.util.LibUtil
@@ -28,4 +37,8 @@ module pci_bios extends pci_bios_api {
 
 module pci_tlp {
 	source "pci_tlp.c"
+
+	@IncludeExport(path="drivers/pci")
+	source "pci_tlp.h"
+
 }

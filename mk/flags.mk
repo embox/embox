@@ -83,6 +83,7 @@ EXTERNAL_MAKE_FLAGS = \
 			MKGEN_DIR \
 			AUTOCONF_DIR \
 			ROOTFS_DIR \
+			INCUDE_INSTALL_DIR \
 			USER_ROOTFS_DIR \
 			DOT_DIR \
 			DOCS_OUT_DIR \
@@ -144,6 +145,7 @@ cppflags_fn = \
 	-D__unix \
 	-D"__impl_x(path)=<../path>" \
 	-imacros $(call $1,$(AUTOCONF_DIR))/config.h \
+	-I$(call $1,$(INCUDE_INSTALL_DIR)) \
 	-I$(call $1,$(SRC_DIR))/include \
 	-I$(call $1,$(SRC_DIR))/arch/$(ARCH)/include \
 	-I$(call $1,$(SRCGEN_DIR))/include \

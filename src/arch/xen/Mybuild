@@ -1,0 +1,6 @@
+package embox.arch.xen
+
+module xen_header {
+	source "xen_header.S",
+		"xen_header.lds.S"
+}

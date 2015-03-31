@@ -6,8 +6,9 @@
  * @author Ilia Vaprol
  */
 
-#include <execinfo.h>
 #include <stdio.h>
+
+#include <execinfo.h>
 
 #include <debug/symbol.h>
 #include <debug/whereami.h>

@@ -19,9 +19,13 @@ module dns {
 	depends embox.compat.posix.net.socket
 }
 
+//TODO this is a Linux-BSD compatible
 module getifaddrs {
 	source "getifaddrs.c"
 	option number amount_ifaddrs=3
+
+	@IncludeExport
+	source "ifaddrs.h"
 
 	depends embox.mem.pool
 	depends embox.net.core

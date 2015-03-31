@@ -8,8 +8,13 @@ abstract module pci_chip {
 module pci_chip_x86 extends pci_chip {
 	source "pci_chip_x86.c"
 
+	@IncludeExport(path="drivers/pci/pci_chip")
+	source "pci_utils.h"
 }
 
 module ti81xx extends pci_chip {
 	source "ti81xx.c"
+
+	@IncludeExport(path="drivers/pci/pci_chip")
+	source "pci_utils.h"
 }

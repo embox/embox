@@ -11,8 +11,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <execinfo.h>
 #include <errno.h>
+
 #include <hal/context.h>
 
 #include <util/array.h>

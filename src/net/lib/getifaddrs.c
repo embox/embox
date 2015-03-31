@@ -8,14 +8,19 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <framework/mod/options.h>
+#include <stddef.h>
+#include <string.h>
+#include <netinet/in.h>
+
+
 #include <ifaddrs.h>
+
+#include <framework/mod/options.h>
+
 #include <mem/misc/pool.h>
 #include <net/if.h>
 #include <net/inetdevice.h>
-#include <netinet/in.h>
-#include <stddef.h>
-#include <string.h>
+
 #include <util/array.h>
 #include <util/member.h>
 
