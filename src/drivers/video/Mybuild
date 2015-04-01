@@ -3,16 +3,24 @@ package embox.driver.video
 
 module fb {
 	source "fb.c"
+
+	@IncludeExport(path="drivers/video")
+	source "fb.h"
+
 	option number fb_amount=2
 	depends embox.mem.pool
 	@NoRuntime depends embox.compat.libc.all
 	//depends embox.fs.rootfs
 	depends fb_videomodes
+	depends fonts
 	//depends embox.driver.virtual.fb_device
 }
 
 module bochs {
 	source "bochs.c"
+
+	@IncludeExport(path="drivers/video")
+	source "vbe.h"
 
 	depends embox.driver.pci
 	@NoRuntime depends fb
@@ -21,6 +29,9 @@ module bochs {
 
 module cirrus_logic {
 	source "cirrus_logic.c"
+
+	@IncludeExport(path="drivers/video")
+	source "cirrus_logic.h"
 
 	depends fb
 	depends embox.driver.pci
@@ -40,14 +51,22 @@ module generic {
 
 module fb_videomodes {
 	source "fb_videomodes.c"
+
+	depends vesa_modes
 }
 
 module vesa_modes {
 	source "vesa_modes.c"
+
+	@IncludeExport(path="drivers/video")
+	source "vesa_modes.h"
 }
 
 module fonts {
 	source "fonts.c"
+
+	@IncludeExport(path="drivers/video")
+	source "font.h"
 }
 
 @BuildDepends(efm32zg_sk3200.bsp)
