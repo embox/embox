@@ -15,10 +15,9 @@
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 
-static inline void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags);
-static inline int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
-static inline int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
-static inline int do_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size);
+static void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags);
+static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
+static int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
 
 int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
 	int res = do_map_region(ctx, phy_addr, virt_addr, reg_size, flags);
@@ -35,16 +34,6 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 
 	if (res) {
 		vmem_unmap_region(ctx, virt_addr, reg_size, 1);
-	}
-
-	return res;
-}
-
-int vmem_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
-	int res = do_copy_region(nctx, ctx, virt_addr, reg_size);
-
-	if (res) {
-		vmem_unmap_region(nctx, virt_addr, reg_size, 1);
 	}
 
 	return res;
@@ -84,7 +73,7 @@ int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t 
 	return ENOERR;
 }
 
-static inline void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags) {
+static void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags) {
 	mmu_pte_set_writable(pte, flags & VMEM_PAGE_WRITABLE);
 	mmu_pte_set_executable(pte, flags & VMEM_PAGE_EXECUTABLE);
 	mmu_pte_set_cacheable(pte, flags & VMEM_PAGE_CACHEABLE);
@@ -143,7 +132,7 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
 	}
 
 
-static inline int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
+static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
@@ -188,7 +177,7 @@ static inline int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t
 	return -EINVAL;
 }
 
-static inline int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
+static int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
@@ -236,75 +225,3 @@ static inline int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t r
 
 	return -EINVAL;
 }
-
-static inline int do_copy_region(mmu_ctx_t nctx, mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
-	mmu_pgd_t *pgd, *npgd;
-	mmu_pmd_t *pmd, *npmd;
-	mmu_pte_t *pte, *npte;
-	mmu_paddr_t v_end = virt_addr + reg_size;
-	size_t pgd_idx, pmd_idx, pte_idx;
-	void *naddr, *tmp_page = (void *) 0x1000;
-
-	/* Considering that all boundaries are already aligned */
-	assert(!(virt_addr & MMU_PAGE_MASK));
-	assert(!(reg_size  & MMU_PAGE_MASK));
-
-	pgd  = mmu_get_root(ctx);
-	npgd = mmu_get_root(nctx);
-
-	vmem_get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
-
-	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++, pmd_idx = 0) {
-		if (!mmu_pgd_present(pgd + pgd_idx)) {
-			virt_addr = binalign_bound(virt_addr, MMU_PGD_SIZE);
-			pte_idx = 0;
-			continue;
-		}
-
-		GET_PMD(npmd, npgd + pgd_idx);
-		pmd = mmu_pgd_value(pgd + pgd_idx);
-
-		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++, pte_idx = 0) {
-			if (!mmu_pmd_present(pmd + pmd_idx)) {
-				virt_addr = binalign_bound(virt_addr, MMU_PMD_SIZE);
-				continue;
-			}
-
-			GET_PTE(npte, npmd + pmd_idx);
-			pte = mmu_pmd_value(pmd + pmd_idx);
-
-			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
-				if (virt_addr >= v_end) {
-					return 0;
-				}
-
-				if (mmu_pte_present(pte + pte_idx)) {
-					/* Considering that it has not been mapped yet */
-					assert(!mmu_pte_present(npte + pte_idx));
-
-					if (!(naddr = vmem_alloc_page())) {
-						return -ENOMEM;
-					}
-
-					/* Copy memory via NULL */
-					if (vmem_map_region(ctx, (mmu_paddr_t) naddr,
-							(mmu_vaddr_t) tmp_page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE)) {
-						return -ENOMEM;
-					}
-
-					memcpy(tmp_page, (void *) virt_addr, VMEM_PAGE_SIZE);
-					vmem_unmap_region(ctx, (mmu_vaddr_t) tmp_page, VMEM_PAGE_SIZE, 0);
-
-					mmu_pte_set(npte + pte_idx, (mmu_paddr_t) naddr);
-					mmu_pte_set_usermode(npte + pte_idx, 1);
-					mmu_pte_set_writable(npte + pte_idx, 1);
-				}
-
-				virt_addr += VMEM_PAGE_SIZE;
-			}
-		}
-	}
-
-	return 0;
-}
-
