@@ -45,12 +45,6 @@ static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, o
 
 
 
-static inline int munmap(void *addr, size_t size) {
-	(void)size;
-	//printf(">>> munmap(%p)\n",addr);
-	errno = EPERM;
-	return -1;
-}
 #endif
 
 extern void  *mmap(void *, size_t, int, int, int, off_t);

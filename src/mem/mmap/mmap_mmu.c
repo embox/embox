@@ -60,7 +60,7 @@ void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
 	vmem_unmap_region(mmap->ctx, marea->start, len, marea->is_allocated);
 }
 
-static struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
+struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
 	struct marea *marea;
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		if (INSIDE(vaddr, marea->start, marea->end)) {
@@ -89,6 +89,10 @@ void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
 	}
 
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
+}
+
+void mmap_del_marea(struct marea *marea) {
+	dlist_del(&marea->mmap_link);
 }
 
 void mmap_init(struct emmap *mmap) {
