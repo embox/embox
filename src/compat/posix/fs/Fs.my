@@ -49,7 +49,7 @@ static module dirent_old extends dirent {
 	depends embox.compat.libc.str
 	depends embox.fs.syslib.dcache
 	depends embox.compat.posix.fs.getcwd
-	depends embox.fs.Perm
+	depends embox.fs.syslib.perm
 }
 
 @DefaultImpl(lseek_old)

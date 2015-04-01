@@ -75,7 +75,7 @@ struct dentry {
 	struct dlist_head *next;     /* Next element in this directory */
 	struct dlist_head *children; /* Subelements of directory */
 
-	struct dentry_operations *dentry_ops;
+	struct dentry_operations *d_ops;
 };
 
 struct dentry_operations {

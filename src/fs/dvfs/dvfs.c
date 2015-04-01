@@ -18,6 +18,30 @@ extern struct inode *dvfs_default_alloc_inode(struct super_block *sb);
 extern int dvfs_default_destroy_inode(struct inode *inode);
 extern int dvfs_default_pathname(struct inode *inode, char *buf);
 
+static int inode_fill(struct super_block *sb, struct inode *inode,
+                      struct dentry *dentry) {
+	*inode = (struct inode) {
+		.i_dentry = dentry,
+		.i_sb     = sb,
+		.i_ops    = sb ? sb->sb_iops : NULL,
+	};
+
+	return 0;
+}
+
+static int dentry_fill(struct super_block *sb, struct inode *inode,
+                      struct dentry *dentry) {
+	*dentry = (struct dentry) {
+		.d_inode = inode,
+		.d_sb    = sb,
+		.d_ops   = sb ? sb->sb_dops : NULL,
+	};
+
+	/* TODO lists */
+
+	return 0;
+}
+
 extern struct super_block *dfs_sb(void);
 struct dentry *dvfs_root(void) {
 	static struct dentry *root = NULL;
@@ -77,6 +101,9 @@ struct dentry *dvfs_lookup(const char *path) {
 	dentry = dvfs_root();
 	inode  = sb->sb_iops->lookup(path + offt, dentry);
 
+	if (inode == NULL)
+		return NULL;
+
 /*	len = strlen(d->name);
 
 	while (offt < len && d->name[offt] == path[offt])
@@ -94,12 +121,20 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 
 	assert(desc);
 
-	if (!d && (mode & O_CREAT)) {
-		/* TODO Find super_block */
-		sb   = dfs_sb();
-		i_no = dvfs_alloc_inode(sb);
-		d    = dvfs_alloc_dentry();
-		/* TODO add dentry to cache */
+	if (!d) {
+		if (mode & O_CREAT) {
+			/* TODO Find super_block */
+			sb   = dfs_sb();
+			i_no = dvfs_alloc_inode(sb);
+			d    = dvfs_alloc_dentry();
+
+			inode_fill(sb, i_no, d);
+			dentry_fill(sb, i_no, d);
+
+			/* TODO add dentry to cache */
+		} else {
+			return -ENOENT;
+		}
 	}
 
 	*desc = (struct file) {
@@ -107,6 +142,14 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 		.f_inode  = i_no,
 		.f_ops    = d->d_sb->sb_fops,
 	};
+
+	if (i_no == NULL) {
+		dvfs_destroy_dentry(d);
+		return -ENOENT;
+	}
+
+	assert(desc->f_ops);
+	assert(desc->f_ops->open);
 
 	return desc->f_ops->open(i_no, desc);
 }

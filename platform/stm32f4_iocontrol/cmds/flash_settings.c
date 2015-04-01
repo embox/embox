@@ -7,6 +7,7 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -79,7 +80,7 @@ static int flashset_nic_store(const char *nic_name) {
 	memcpy(&fsn_network.fsn_mac, iface_dev->dev->dev_addr,
 		sizeof(fsn_network.fsn_mac));
 
-	dvfs_open("nic", &file, DFS_CREAT);
+	dvfs_open("nic", &file, O_CREAT);
 	errcode = dvfs_write(&file, (char*) &fsn_network, sizeof(fsn_network));
 
 outerr:
@@ -130,7 +131,7 @@ static int flashset_led_store(void) {
 		return errcode;
 	}
 
-	dvfs_open("led", &file, DFS_CREAT);
+	dvfs_open("led", &file, O_CREAT);
 
 	return dvfs_write(&file, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
 }
@@ -150,7 +151,7 @@ static int flashset_led_restore(void) {
 
 static int flashset_lednames_store(void) {
 	struct file file;
-	dvfs_open("led_names", &file, DFS_CREAT);
+	dvfs_open("led_names", &file, O_CREAT);
 	return dvfs_write(&file, (char*) &led_names, sizeof(led_names));
 }
 

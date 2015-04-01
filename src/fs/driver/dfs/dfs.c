@@ -366,11 +366,12 @@ static struct dumb_fs_driver dfs_d_fs_driver = {
 
 struct super_block *dfs_sb(void) {
 	static struct super_block sb = {
-		.fs_drv = &dfs_d_fs_driver,
-		.root = NULL,
+		.fs_drv  = &dfs_d_fs_driver,
+		.root    = NULL,
 		.inode_list = NULL,
-		.sb_ops = &dfs_sbops,
+		.sb_ops  = &dfs_sbops,
 		.sb_iops = &dfs_iops,
+		.sb_fops = &dfs_fops,
 		.sb_data = NULL,
 	};
 
