@@ -37,7 +37,7 @@ void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd
 static int vmem_kernel_map_marea(void *start, uint32_t len, uint32_t flags) {
 	struct marea *ma;
 
-	ma = marea_create((mmu_paddr_t) start, (mmu_paddr_t) start + len, flags);
+	ma = marea_create((mmu_paddr_t) start, (mmu_paddr_t) start + len, flags, false);
 	if (!ma) {
 		return -1;
 	}
