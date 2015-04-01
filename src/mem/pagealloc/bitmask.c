@@ -105,7 +105,7 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 	char *pages_start;
 	struct page_allocator *allocator;
 	unsigned int pages;
-	size_t bitmask_len;
+	size_t bitmap_len;
 
 	if (len < page_size) {
 		return NULL;
@@ -115,9 +115,9 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 	pages = len / page_size;
 	pages_start = (char *) binalign_bound((uintptr_t) start, page_size);
 
-	bitmask_len = sizeof(unsigned long) * BITMAP_SIZE(pages + 1); /* one for guardbit */
+	bitmap_len = sizeof(unsigned long) * BITMAP_SIZE(pages + 1); /* one for guardbit */
 
-	while (sizeof(struct page_allocator) + bitmask_len > pages_start - start) {
+	while (sizeof(struct page_allocator) + bitmap_len > pages_start - start) {
 		pages_start += page_size;
 		pages --;
 		assert(pages > 0);
@@ -128,9 +128,10 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 	allocator->pages_n = pages;
 	allocator->page_size = page_size;
 	allocator->free = pages * page_size;
+	allocator->bitmap_len = bitmap_len;
 	allocator->bitmap = (unsigned long *)((uintptr_t)&allocator->bitmap + sizeof(allocator->bitmap));
 
-	memset(allocator->bitmap, 0, bitmask_len);
+	memset(allocator->bitmap, 0, bitmap_len);
 	bitmap_set_bit(allocator->bitmap, pages);
 
 	return allocator;
