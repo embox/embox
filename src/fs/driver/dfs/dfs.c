@@ -365,6 +365,7 @@ static struct dumb_fs_driver dfs_d_fs_driver = {
 };
 
 struct super_block *dfs_sb(void) {
+	static struct dfs_sb_info dfs_info;
 	static struct super_block sb = {
 		.fs_drv  = &dfs_d_fs_driver,
 		.root    = NULL,
@@ -372,12 +373,9 @@ struct super_block *dfs_sb(void) {
 		.sb_ops  = &dfs_sbops,
 		.sb_iops = &dfs_iops,
 		.sb_fops = &dfs_fops,
-		.sb_data = NULL,
+		.sb_data = &dfs_info,
 	};
 
-	if (!sb.sb_data) {
-		sb.sb_data = malloc(sizeof(struct dfs_sb_info));
-	}
 	if (!sb.bdev)
 		sb.bdev = dfs_flashdev->bdev;
 

@@ -6,13 +6,17 @@
  * @author Denis Deryugin
  */
 
+#include <fs/dvfs.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/file_table.h>
 
 TASK_RESOURCE_DEF(file_table, struct file_table);
 
 static void file_table_init(const struct task *task, void *file_table) {
-	memset(file_table, 0, sizeof(struct file_table));
+	struct file_table *fs = file_table;
+	memset(fs, 0, sizeof(struct file_table));
+
+	fs->root = fs->pwd = dvfs_root();
 }
 
 static void file_table_deinit(const struct task *task) {

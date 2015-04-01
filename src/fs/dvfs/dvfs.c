@@ -11,7 +11,9 @@
 #include <string.h>
 
 #include <fs/dvfs.h>
+#include <fs/hlpr_path.h>
 #include <framework/mod/options.h>
+#include <kernel/task/resource/file_table.h>
 #include <util/bitmap.h>
 
 extern struct inode *dvfs_default_alloc_inode(struct super_block *sb);
@@ -30,7 +32,7 @@ static int inode_fill(struct super_block *sb, struct inode *inode,
 }
 
 static int dentry_fill(struct super_block *sb, struct inode *inode,
-                      struct dentry *dentry) {
+                      struct dentry *dentry, struct dentry *parent) {
 	*dentry = (struct dentry) {
 		.d_inode = inode,
 		.d_sb    = sb,
@@ -50,6 +52,7 @@ struct dentry *dvfs_root(void) {
 		root = dvfs_alloc_dentry();
 		*root = (struct dentry) {
 			.d_sb = dfs_sb(),
+			.parent = root,
 		};
 	}
 
@@ -84,25 +87,45 @@ int dvfs_pathname(struct inode *inode, char *buf) {
 		return dvfs_default_pathname(inode, buf);
 }
 
+struct dentry *dvfs_path_walk(const char *path, struct dentry *parent) {
+	const char *p;
+	struct inode *in;
+	size_t len;
+
+	if (path[0] == '\0')
+		return parent;
+
+	assert(parent);
+	assert(path);
+
+	len = strlen(path);
+	p = path_next(path, &len);
+
+	if (strlen(p) > 1 && path_is_double_dot(p))
+		return dvfs_path_walk(p + 2, parent->parent);
+
+	assert(parent->d_sb);
+	assert(parent->d_sb->sb_iops);
+	assert(parent->d_sb->sb_iops->lookup);
+
+	if ((in = parent->d_sb->sb_iops->lookup(p, parent)))
+		return NULL;
+
+	return dvfs_path_walk(p, in->i_dentry);
+}
+
 struct dentry *dvfs_lookup(const char *path) {
 	struct dentry *dentry;
-	struct inode  *inode;
-	struct super_block *sb = dfs_sb();
-	int offt = 0;
 
-	while (path[offt] == '/')
-		offt++;
-
-	if (path[offt] == '\0')
-		return NULL;
+	if (path[0] == '/')
+		dentry = task_fs()->root;
+	else
+		dentry = task_fs()->pwd;
 
 	/* TODO look in dcache */
+	/* TODO flocks */
 
-	dentry = dvfs_root();
-	inode  = sb->sb_iops->lookup(path + offt, dentry);
-
-	if (inode == NULL)
-		return NULL;
+	return dvfs_path_walk(path, dentry);
 
 /*	len = strlen(d->name);
 
@@ -110,13 +133,11 @@ struct dentry *dvfs_lookup(const char *path) {
 		offt++;
 
 	offt++; */
-
-	return inode->i_dentry;
 }
 
 int dvfs_open(const char *path, struct file *desc, int mode) {
 	struct super_block *sb;
-	struct dentry *d = dvfs_lookup(path);
+	struct dentry *parent = NULL, *d = dvfs_lookup(path);
 	struct inode  *i_no = d->d_inode;
 
 	assert(desc);
@@ -129,7 +150,7 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 			d    = dvfs_alloc_dentry();
 
 			inode_fill(sb, i_no, d);
-			dentry_fill(sb, i_no, d);
+			dentry_fill(sb, i_no, d, parent);
 
 			/* TODO add dentry to cache */
 		} else {
