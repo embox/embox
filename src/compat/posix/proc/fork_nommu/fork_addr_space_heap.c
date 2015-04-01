@@ -32,10 +32,10 @@ void fork_heap_store(struct heap_space *hpspc) {
 
 	if (hpspc->heap_sz != size) {
 		if (hpspc->heap) {
-			page_free(__phymem_allocator, hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
+			phymem_free(hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
 		}
 
-		hpspc->heap = page_alloc(__phymem_allocator, size / PAGE_SIZE());
+		hpspc->heap = phymem_alloc(size / PAGE_SIZE());
 		assert(hpspc->heap);
 	}
 	mspace_deep_store(task_mspace(), &hpspc->store_space, hpspc->heap);
@@ -50,7 +50,7 @@ void fork_heap_cleanup(struct heap_space *hpspc) {
 		return;
 	}
 
-	page_free(__phymem_allocator, hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
+	phymem_free(hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
 	hpspc->heap = NULL;
 }
 

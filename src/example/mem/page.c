@@ -24,10 +24,10 @@ static int run(int argc, char **argv) {
 	void *page;
 	void *pool;
 
-	page = page_alloc(__phymem_allocator, 1);
-	pool = page_alloc(__phymem_allocator, 10);
-	page_free(__phymem_allocator, pool, 10);
-	page_free(__phymem_allocator, page, 1);
+	page = phymem_alloc(1);
+	pool = phymem_alloc(10);
+	phymem_free(pool, 10);
+	phymem_free(page, 1);
 
 	return 0;
 }

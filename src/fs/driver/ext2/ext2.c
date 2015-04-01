@@ -173,7 +173,7 @@ void *ext2_buff_alloc(struct nas *nas,
 		fsi->s_page_count++;
 	}
 
-	return page_alloc(__phymem_allocator, fsi->s_page_count);
+	return phymem_alloc(fsi->s_page_count);
 }
 
 int ext2_buff_free(struct nas *nas, char *buff) {
@@ -182,7 +182,7 @@ int ext2_buff_free(struct nas *nas, char *buff) {
 	fsi = nas->fs->fsi;
 
 	if ((0 != fsi->s_page_count) && (NULL != buff)) {
-		page_free(__phymem_allocator, buff, fsi->s_page_count);
+		phymem_free(buff, fsi->s_page_count);
 	}
 	return 0;
 }
