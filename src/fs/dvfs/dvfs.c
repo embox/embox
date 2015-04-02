@@ -108,7 +108,7 @@ struct dentry *dvfs_path_walk(const char *path, struct dentry *parent) {
 	assert(parent->d_sb->sb_iops);
 	assert(parent->d_sb->sb_iops->lookup);
 
-	if ((in = parent->d_sb->sb_iops->lookup(p, parent)))
+	if (!(in = parent->d_sb->sb_iops->lookup(p, parent)))
 		return NULL;
 
 	return dvfs_path_walk(p, in->i_dentry);
