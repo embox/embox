@@ -40,8 +40,6 @@ struct schedee {
 	 */
 	struct schedee    *(*process)(struct schedee *prev, struct schedee *next);
 
-	void              *(*run)(void *); /**< Start routine */
-	void              *run_arg;        /**< Argument to be passed to run */
 	unsigned int      active;          /**< Running on a CPU. TODO SMP-only. */
 	unsigned int      ready;           /**< Managed by the scheduler. */
 	unsigned int      waiting;         /**< Waiting for an event. */
@@ -56,17 +54,13 @@ struct schedee {
 
 #include <stdbool.h>
 static inline int schedee_init(struct schedee *schedee, sched_priority_t priority,
-	struct schedee *(*process)(struct schedee *prev, struct schedee *next),
-	void *(*run)(void *), void *arg)
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next))
 {
-
 	runq_item_init(&schedee->runq_link);
 
 	schedee->lock = SPIN_UNLOCKED;
 
 	schedee->process = process;
-	schedee->run = run;
-	schedee->run_arg = arg;
 
 	schedee->ready = false;
 	schedee->active = false;
@@ -80,8 +74,7 @@ static inline int schedee_init(struct schedee *schedee, sched_priority_t priorit
 }
 
 extern int schedee_init(struct schedee *schedee, sched_priority_t priority,
-	struct schedee *(*process)(struct schedee *prev, struct schedee *next),
-	void *(*run)(void *), void *arg);
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next));
 
 
 #endif /* _KERNEL_SCHEDEE_H_ */

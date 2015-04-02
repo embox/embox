@@ -47,6 +47,9 @@
 struct lthread {
 	struct schedee schedee;
 
+	void          *(*run)(void *); /**< Start routine */
+	void          *run_arg;        /**< Argument to be passed to run */
+
 	void          *run_ret;      /**< Return value of the routine. */
 	void          *start_label;
 

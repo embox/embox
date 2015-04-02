@@ -49,6 +49,9 @@ struct thread {
 	/* schedee member HAVE TO be first. Please, do NOT move!*/
 	struct schedee    schedee;     /**< Schedee interface for scheduler */
 
+	void              *(*run)(void *); /**< Start routine */
+	void              *run_arg;        /**< Argument to be passed to run */
+
 	unsigned int       critical_count;
 	unsigned int       siglock;
 

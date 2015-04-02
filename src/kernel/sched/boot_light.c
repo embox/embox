@@ -13,10 +13,6 @@
 
 struct schedee boot_schedee;
 
-static void *boot_stub(void *arg) {
-	panic("Entering boot_stub");
-}
-
 static struct schedee *boot_process(struct schedee *prev, struct schedee *next) {
 	assert(prev == next);
 	assert(next == &boot_schedee);
@@ -29,7 +25,6 @@ static struct schedee *boot_process(struct schedee *prev, struct schedee *next) 
 
 struct schedee *boot_thread_create(void)
 {
-	schedee_init(&boot_schedee, LTHREAD_PRIORITY_DEFAULT, boot_process,
-		boot_stub, NULL);
+	schedee_init(&boot_schedee, LTHREAD_PRIORITY_DEFAULT, boot_process);
 	return &boot_schedee;
 };
