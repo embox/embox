@@ -48,6 +48,7 @@ struct inode {
 	int    i_no;
 	int    start_pos; /* location on disk */
 	size_t length;
+	int    flag;
 
 	struct dentry *i_dentry;
 	struct super_block *i_sb;
@@ -72,8 +73,9 @@ struct dentry {
 	struct super_block *d_sb;
 
 	struct dentry     *parent;
-	struct dlist_head *next;     /* Next element in this directory */
-	struct dlist_head *children; /* Subelements of directory */
+	struct dlist_head next;     /* Next element in this directory */
+	struct dlist_head children; /* Subelements of directory */
+	struct dlist_head children_lnk;
 
 	struct dentry_operations *d_ops;
 };
