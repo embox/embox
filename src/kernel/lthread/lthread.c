@@ -33,10 +33,9 @@ static struct schedee *lthread_process(struct schedee *prev,
 
 	lt->label_offset = lt->run(lt);
 
-	/* TODO: TODO SMP barrier?
+	/* TODO: SMP barrier?
 	 * After finishing lt has to restore waiting state in case it is not
-	 * sceduled.
-	 */
+	 * sceduled. */
 	if (!next->ready)
 		next->waiting = true;
 
@@ -51,28 +50,32 @@ void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
 	lt->label_offset = 0;
 }
 
-static int __lthread_delete(struct lthread *lt) {
+static int __lthread_disable(struct lthread *lt) {
 	assert(lt);
 
- 	/* lt scheduled, have to wait till finished */
+ 	/* If lt is scheduled, have to wait till finished. */
  	if (lt->schedee.ready)
  		return false;
 
- 	/* lt is sleeping, have to prevent waking up */
+ 	/* If lt is waiting, have to prevent waking up. */
 	if (lt->info.status == SCHED_WAIT_STARTED)
 		timer_close(lt->info.tmr);
-
-	lt->schedee.waiting = false;
 
 	return true;
 }
 
-void lthread_delete(struct lthread *lt) {
+void lthread_reset(struct lthread *lt) {
 	assert(lt);
 
- 	while (!SPIN_IPL_PROTECTED_DO(&lt->schedee.lock, __lthread_delete(lt))) {
+ 	while (!SPIN_IPL_PROTECTED_DO(&lt->schedee.lock, __lthread_disable(lt))) {
 		schedule();
 	}
+
+	/* Leads to initial state.
+ 	 * TODO: reset timing? */
+	sched_wait_info_init(&lt->info);
+	lt->schedee.waiting = true;
+	lt->label_offset = 0;
 }
 
 void lthread_launch(struct lthread *lt) {

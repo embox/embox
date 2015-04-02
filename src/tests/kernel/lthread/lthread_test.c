@@ -38,7 +38,7 @@ TEST_CASE("Launch simple lthread") {
 		ksleep(0);
 	}
 
-	lthread_delete(&lt);
+	lthread_reset(&lt);
 
 	test_assert_emitted("a");
 }
@@ -63,7 +63,7 @@ TEST_CASE("Call sched from lthread") {
 		ksleep(0);
 	}
 
-	lthread_delete(&lt);
+	lthread_reset(&lt);
 }
 
 static int run2(struct lthread *self) {
@@ -85,7 +85,7 @@ TEST_CASE("Create lthreads with different priorities") {
 
 	/* deleting occurs onle after finishing */
 	for(int i = 0; i < LTHREAD_QUANTITY; i++) {
-		lthread_delete(&lts[i]);
+		lthread_reset(&lts[i]);
 	}
 
 	test_assert_equal(done, LTHREAD_QUANTITY);
@@ -118,8 +118,8 @@ TEST_CASE("Test executing order") {
 	}
 	sched_unlock();
 
-	lthread_delete(&lt1);
-	lthread_delete(&lt2);
+	lthread_reset(&lt1);
+	lthread_reset(&lt2);
 
 	test_assert_emitted("ba");
 }
@@ -139,6 +139,6 @@ TEST_CASE("Test several launches") {
 
 	test_assert_equal(2, done);
 
-	lthread_delete(&lt);
+	lthread_reset(&lt);
 }
 

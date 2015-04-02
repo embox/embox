@@ -66,11 +66,17 @@ struct lthread {
 extern void lthread_init(struct lthread *lt, int (*run)(struct lthread *));
 
 /**
- * Deletes light thread from the pool
+ * Resets lthread state. In case the lthread is in runq, firstly waits for its
+ * finishing. If it is waiting for event, clears waiting context information
+ * and prevents waking up.
+ *
+ * Note: It is user's responsibility to prevent lthread waking up in its run
+ * function.
+ *
  * @param lt
- *   The light thread to delete
+ *   The light thread to reset
  */
-extern void lthread_delete(struct lthread *lt);
+extern void lthread_reset(struct lthread *lt);
 
 /**
  * Adds a light thread in runq

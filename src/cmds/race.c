@@ -191,8 +191,8 @@ static int exec(int argc, char **argv) {
 		schedule();
 	}
 
-	lthread_delete(&lt_car);
-	lthread_delete(&lt_road);
+	lthread_reset(&lt_car);
+	lthread_reset(&lt_road);
 
 	return 0;
 }
