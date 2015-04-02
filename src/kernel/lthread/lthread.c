@@ -33,8 +33,11 @@ static struct schedee *lthread_process(struct schedee *prev,
 
 	lt->label_offset = lt->run(lt);
 
-	/* After finishing lt has to restore waiting state in case it is not sceduled*/
-	spin_protected_if(&next->lock, !next->ready)
+	/* TODO: TODO SMP barrier?
+	 * After finishing lt has to restore waiting state in case it is not
+	 * sceduled.
+	 */
+	if (!next->ready)
 		next->waiting = true;
 
 	return NULL;
