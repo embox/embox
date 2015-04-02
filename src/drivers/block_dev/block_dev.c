@@ -320,7 +320,7 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	}
 	cache->blkfactor = pagecnt;
 
-	if (NULL == (cache->pool = page_alloc(__phymem_allocator, blocks * pagecnt))) {
+	if (NULL == (cache->pool = phymem_alloc(blocks * pagecnt))) {
 		return NULL;
 	}
 	cache->depth = blocks;
@@ -370,7 +370,7 @@ static int block_dev_cache_free(void *dev) {
 		return 0;
 	}
 
-	page_free(__phymem_allocator, cache->pool, cache->depth * cache->blkfactor);
+	phymem_free(cache->pool, cache->depth * cache->blkfactor);
 	pool_free(&cache_pool, cache);
 
 	return  0;

@@ -10,8 +10,9 @@
 #define FAT_H_
 
 #include <stdint.h>
-#include <drivers/ramdisk.h>
+
 #include <embox/block_dev.h>
+#include <fs/mbr.h>
 
 #define MSDOS_NAME      11
 #define ROOT_DIR        "/"
@@ -78,38 +79,6 @@ struct dirent {
 	uint8_t filesize_1;		/* */
 	uint8_t filesize_2;		/* */
 	uint8_t filesize_3;		/* file size, high byte */
-};
-
-/*
- *	Partition table entry structure
- */
-struct pt_info {
-	uint8_t	active;		/* 0x80 if partition active */
-	uint8_t	start_h;		/* starting head */
-	uint8_t	start_cs_l;		/* starting cylinder and sector (low byte) */
-	uint8_t	start_cs_h;		/* starting cylinder and sector (high byte) */
-	uint8_t	type;			/* type ID byte */
-	uint8_t	end_h;			/* ending head */
-	uint8_t	end_cs_l;		/* ending cylinder and sector (low byte) */
-	uint8_t	end_cs_h;		/* ending cylinder and sector (high byte) */
-	uint8_t	start_0;		/* starting sector# (low byte) */
-	uint8_t	start_1;		/* */
-	uint8_t	start_2;		/* */
-	uint8_t	start_3;		/* starting sector# (high byte) */
-	uint8_t	size_0;			/* size of partition (low byte) */
-	uint8_t	size_1;			/* */
-	uint8_t	size_2;			/* */
-	uint8_t	size_3;			/* size of partition (high byte) */
-};
-
-/*
- *	Master Boot Record structure
- */
-struct mbr {
-	uint8_t bootcode[0x1be];	/* boot sector */
-	struct pt_info ptable[4];		/* four partition table structures */
-	uint8_t sig_55;				/* 0x55 signature byte */
-	uint8_t sig_aa;				/* 0xaa signature byte */
 };
 
 /*
@@ -277,5 +246,8 @@ struct fat_file_info {
 void fat_set_filetime(struct dirent *de);
 void fat_get_filename(char *tmppath, char *filename);
 int fat_check_filename(char *filename);
+
+extern char *path_canonical_to_dir(char *dest, char *src);
+extern char *path_dir_to_canonical(char *dest, char *src, char dir);
 
 #endif /* FAT_H_ */

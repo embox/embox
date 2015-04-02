@@ -81,8 +81,6 @@ TEST_CASE("PROCESS_PRIVATE") {
 	cond_init(&c, NULL);
 	condattr_setpshared(&c.attr, PROCESS_SHARED);
 	test_assert(0 <= (p2 = new_task("", try_signal_shared, NULL)));
-	kill(p1, 9);
 	waitpid(p1, NULL, 0);
-	kill(p2, 9);
 	waitpid(p2, NULL, 0);
 }

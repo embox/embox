@@ -15,6 +15,9 @@ case $OMAP_UBOOT_IMAGE_BOARD in
 	omapl137)
 		LOAD_ADDR=0xc0700000
 		;;
+	bananapi)
+		LOAD_ADDR=0x43000000
+		;;
 	*)
 		LOAD_ADDR=0x80000000
 		;;

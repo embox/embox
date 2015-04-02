@@ -17,8 +17,6 @@
 #include <kernel/task.h>
 
 #include <fs/poll_table.h>
-#include <module/embox/compat/posix/idx/poll_table.h>
-
 
 static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
 		nfds_t nfds) {

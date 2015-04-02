@@ -97,7 +97,7 @@ guess_load_arg() {
 	else
 		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
 			echo "Making uImage..." >&2
-			OMAP_UBOOT_IMAGE_BOARD=qemu ./scripts/omap-uboot-uimage >/dev/null
+			OMAP_UBOOT_IMAGE_BOARD=qemu ./scripts/uboot-uimage >/dev/null
 			if [ 0 -ne $? ]; then
 				exit 1
 			fi

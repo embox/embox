@@ -134,9 +134,10 @@ static int xattr_do_iter(const char *path, int (*xattr_iter_fn)(const char *path
 	char *list, *point;
 	int rc;
 
-	if (NULL == (list = page_alloc_zero(__phymem_allocator, page_n))) {
+	if (NULL == (list = phymem_alloc(page_n))) {
 		return -ENOMEM;
 	}
+	memset(list, 0, PAGE_SIZE() * page_n);
 
 	if (0 > listxattr(path, list, XATTR_MAX_BSIZE)) {
 		rc = -errno;
@@ -153,7 +154,7 @@ static int xattr_do_iter(const char *path, int (*xattr_iter_fn)(const char *path
 
 	rc = 0;
 free_list:
-	page_free(__phymem_allocator, list, page_n);
+	phymem_free(list, page_n);
 	return rc;
 }
 

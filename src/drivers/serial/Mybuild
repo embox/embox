@@ -133,3 +133,8 @@ module ns16550 extends embox.driver.diag.diag_api {
 	source "ns16550.c"
 }
 
+module bpi extends embox.driver.diag.diag_api {
+	option number base_addr = 0x01C28000
+
+	source "bpi_uart.c"
+}

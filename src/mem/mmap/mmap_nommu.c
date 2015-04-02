@@ -140,7 +140,7 @@ static int init() {
 
 	mem_page_count = 1;
 
-	if (!(mem_start = (uint32_t)page_alloc(__phymem_allocator, mem_page_count))) {
+	if (!(mem_start = (uint32_t)phymem_alloc(mem_page_count))) {
 		return -ENOMEM;
 	}
 
@@ -150,7 +150,7 @@ static int init() {
 }
 
 static int fini() {
-	page_free(__phymem_allocator, (void *) mem_start, mem_page_count);
+	phymem_free((void *) mem_start, mem_page_count);
 
 	return 0;
 }

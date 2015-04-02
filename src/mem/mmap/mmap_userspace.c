@@ -23,10 +23,10 @@ uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size) {
 	struct marea *marea;
 	void *phy_addr;
 
-	marea = marea_create(mem_end - stack_size, mem_end, PROT_READ | PROT_WRITE | PROT_EXEC);
+	marea = marea_create(mem_end - stack_size, mem_end, PROT_READ | PROT_WRITE | PROT_EXEC, false);
 	mmap_add_marea(emmap, marea);
 
-	phy_addr = page_alloc(__phymem_allocator, stack_size / MMU_PAGE_SIZE);
+	phy_addr = phymem_alloc(stack_size / MMU_PAGE_SIZE);
 
 	vmem_map_region(emmap->ctx, (mmu_paddr_t)phy_addr, mem_end - stack_size, stack_size, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
 
@@ -40,10 +40,10 @@ void *mmap_userspace_add(void *addr, size_t len, int prot) {
 
 	emmap = task_self_resource_mmap();
 
-	marea = marea_create((uint32_t)addr, (uint32_t)addr + len, PROT_READ | PROT_WRITE | PROT_EXEC);
+	marea = marea_create((uint32_t)addr, (uint32_t)addr + len, PROT_READ | PROT_WRITE | PROT_EXEC, false);
 	mmap_add_marea(emmap, marea);
 
-	phy_addr = page_alloc(__phymem_allocator, len / MMU_PAGE_SIZE);
+	phy_addr = phymem_alloc(len / MMU_PAGE_SIZE);
 
 	vmem_map_region(emmap->ctx, (mmu_paddr_t)phy_addr, (uint32_t)addr, len, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
 	return addr;

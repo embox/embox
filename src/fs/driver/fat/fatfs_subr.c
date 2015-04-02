@@ -96,3 +96,73 @@ void fat_set_filetime(struct dirent *de) {
 		de->wrtdate_l = 0x11;
 		de->wrtdate_h = 0x34;
 }
+
+/*
+ *	Convert a filename element from canonical (8.3) to directory entry (11)
+ *	form src must point to the first non-separator character.
+ *	dest must point to a 12-byte buffer.
+ */
+char *path_canonical_to_dir(char *dest, char *src) {
+
+	memset(dest, (int)' ', MSDOS_NAME);
+	dest[MSDOS_NAME] = 0;
+
+	for (int i = 0; i <= 11; i++) {
+		if (!*src) {
+			break;
+		}
+		if (*src == '/') {
+			break;
+		}
+		if (*src == '.') {
+			i = 7;
+			src++;
+			continue;
+		}
+		if (*src >= 'a' && *src <='z') {
+			*src = (*src - 'a') + 'A';
+		}
+
+		*(dest + i) = *src;
+		src++;
+	}
+
+	return dest;
+}
+
+/*
+ *	Convert a filename element from directory entry (11) to canonical (8.3)
+ */
+char *path_dir_to_canonical(char *dest, char *src, char dir) {
+        int i;
+        char *dst;
+
+        dst = dest;
+        memset(dest, 0, MSDOS_NAME + 2);
+        for (i = 0; i < 8; i++) {
+			if (*src != ' ') {
+				*dst = *src;
+				if (*dst >= 'A' && *dst <='Z') {
+					*dst = (*dst - 'A') + 'a';
+				}
+				dst++;
+			}
+			src++;
+        }
+        if ((*src != ' ') && (0 == dir)) {
+        	*dst++ = '.';
+        }
+        for (i = 0; i < 3; i++) {
+			if (*src != ' ') {
+				*dst = *src;
+				if (*dst >= 'A' && *dst <='Z') {
+					*dst = (*dst - 'A') + 'a';
+				}
+				dst++;
+			}
+			src++;
+        }
+        return dest;
+}
+
+
