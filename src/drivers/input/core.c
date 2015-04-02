@@ -75,7 +75,7 @@ static irq_return_t indev_irqhnd(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static void *indev_handler(void* data) {
+static int indev_handler(struct lthread *self) {
 	struct input_dev *dev;
 
 	sched_lock();
@@ -93,7 +93,7 @@ static void *indev_handler(void* data) {
 
 	sched_unlock();
 
-	return NULL;
+	return 0;
 }
 
 static int evnt_noact(struct input_dev *dev) {
@@ -207,7 +207,7 @@ struct input_dev *input_dev_lookup(const char *name) {
 }
 
 static int input_devfs_init(void) {
-	lthread_init(&indev_handler_lt, &indev_handler, NULL);
+	lthread_init(&indev_handler_lt, &indev_handler);
 	lthread_priority_set(&indev_handler_lt, INDEV_HND_PRIORITY);
 	return 0;
 }

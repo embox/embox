@@ -40,16 +40,19 @@ static void *low_run(void *arg) {
 	test_emit('c');
 	mutex_unlock(&m);
 	test_emit('e');
+
 	return NULL;
 }
 
-static void *high_run(void *arg) {
+static int high_run(struct lthread *self) {
 	if (mutex_trylock_lthread(&m) == -EAGAIN) {
-		return NULL;
+		return 0;
 	}
+
 	test_emit('d');
 	mutex_unlock_lthread(&m);
-	return NULL;
+
+	return 0;
 }
 
 static int setup(void) {
@@ -60,9 +63,10 @@ static int setup(void) {
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
 	test_assert_zero(err(low));
 
-	lthread_init(&high, high_run, NULL);
+	lthread_init(&high, high_run);
 
 	test_assert_zero(thread_set_priority(low, l));
 	test_assert_zero(lthread_priority_set(&high, h));
+
 	return 0;
 }

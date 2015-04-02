@@ -56,7 +56,7 @@ int netif_rx(void *data) {
 
 static net_node_t entry;
 
-static void *pnet_rx_action(void *data) {
+static int pnet_rx_action(struct lthread *data) {
 	struct pnet_pack *pack, *safe;
 	struct list_head *curr, *n;
 	struct pnet_pack *skb_pack;
@@ -79,7 +79,7 @@ static void *pnet_rx_action(void *data) {
 static int unit_init(void) {
 	entry = pnet_get_module("pnet entry");
 
-	lthread_init(&pnet_rx_handler_lt, &pnet_rx_action, NULL);
+	lthread_init(&pnet_rx_handler_lt, &pnet_rx_action);
 	lthread_priority_set(&pnet_rx_handler_lt, PNET_RX_HND_PRIORITY);
 
 	return 0;

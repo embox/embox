@@ -5,15 +5,15 @@
 
 static struct lthread idle;
 
-static void *idle_run(void *arg) {
+static int idle_run(struct lthread *self) {
 	arch_idle();
-	sched_wakeup(schedee_get_current());
-	return NULL;
+	lthread_launch(self);
+	return 0;
 }
 
 int idle_thread_create(void) {
 
-	lthread_init(&idle, idle_run, NULL);
+	lthread_init(&idle, idle_run);
 
 	sched_change_priority(&idle.schedee, SCHED_PRIORITY_MIN);
 #if 0 //XX

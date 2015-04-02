@@ -18,10 +18,10 @@ EMBOX_TEST_SUITE("test for lthread API");
 
 static volatile int done = 0;
 
-static void *run1(void *arg) {
+static int run1(struct lthread *self) {
 	test_emit('a');
 	done++;
-	return NULL;
+	return 0;
 }
 
 TEST_CASE("Launch simple lthread") {
@@ -29,7 +29,7 @@ TEST_CASE("Launch simple lthread") {
 
 	done = 0;
 
-	lthread_init(&lt, run1, NULL);
+	lthread_init(&lt, run1);
 	lthread_launch(&lt);
 
 	/* Spin, waiting lthread finished */
@@ -43,10 +43,10 @@ TEST_CASE("Launch simple lthread") {
 	test_assert_emitted("a");
 }
 
-static void *run_resched(void *arg) {
+static int run_resched(struct lthread *self) {
 	ksleep(0);
 	done = 1;
-	return NULL;
+	return 0;
 }
 
 TEST_CASE("Call sched from lthread") {
@@ -54,7 +54,7 @@ TEST_CASE("Call sched from lthread") {
 
 	done = 0;
 
-	lthread_init(&lt, run_resched, NULL);
+	lthread_init(&lt, run_resched);
 	lthread_launch(&lt);
 
 	/* Spin, waiting lthread finished */
@@ -66,9 +66,9 @@ TEST_CASE("Call sched from lthread") {
 	lthread_delete(&lt);
 }
 
-static void *run2(void *arg) {
+static int run2(struct lthread *self) {
 	done++;
-	return NULL;
+	return 0;
 }
 
 TEST_CASE("Create lthreads with different priorities") {
@@ -76,7 +76,7 @@ TEST_CASE("Create lthreads with different priorities") {
 	done = 0;
 
 	for(int i = 0; i < LTHREAD_QUANTITY; i++) {
-		lthread_init(&lts[i], run2, NULL);
+		lthread_init(&lts[i], run2);
 		test_assert_zero(
 			lthread_priority_set(&lts[i], LTHREAD_PRIORITY_MAX - i)
 		);
@@ -91,10 +91,10 @@ TEST_CASE("Create lthreads with different priorities") {
 	test_assert_equal(done, LTHREAD_QUANTITY);
 }
 
-static void *run3(void *arg) {
+static int run3(struct lthread *self) {
 	test_emit('b');
 	done++;
-	return NULL;
+	return 0;
 }
 
 TEST_CASE("Test executing order") {
@@ -102,10 +102,10 @@ TEST_CASE("Test executing order") {
 
 	done = 0;
 
-	lthread_init(&lt1, run1, NULL);
+	lthread_init(&lt1, run1);
 	lthread_priority_set(&lt1, LTHREAD_PRIORITY_MAX - 1);
 
-	lthread_init(&lt2, run3, NULL);
+	lthread_init(&lt2, run3);
 	lthread_priority_set(&lt2, LTHREAD_PRIORITY_MAX);
 
 	/* prevent scheduling to avoid executing one
@@ -129,7 +129,7 @@ TEST_CASE("Test several launches") {
 
 	done = 0;
 
-	lthread_init(&lt, run1, NULL);
+	lthread_init(&lt, run1);
 	lthread_priority_set(&lt, LTHREAD_PRIORITY_MAX);
 
 	lthread_launch(&lt);

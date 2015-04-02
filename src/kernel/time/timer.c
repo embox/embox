@@ -44,13 +44,13 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 	}
 }
 
-static void *clock_handler(void *data) {
+static int clock_handler(struct lthread *self) {
 	timer_strat_sched();
-	return NULL;
+	return 0;
 }
 
 static int init(void) {
-	lthread_init(&clock_handler_lt, &clock_handler, NULL);
+	lthread_init(&clock_handler_lt, &clock_handler);
 	lthread_priority_set(&clock_handler_lt, CLOCK_HND_PRIORITY);
 
 	inited = 1;

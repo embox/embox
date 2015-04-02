@@ -40,12 +40,11 @@ static struct schedee *lthread_process(struct schedee *prev,
 	return NULL;
 }
 
-void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
+void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
 	schedee_init(&lt->schedee, LTHREAD_PRIORITY_DEFAULT, lthread_process);
 	sched_wait_info_init(&lt->info);
 
 	lt->run = run;
-	lt->run_arg = arg;
 	lt->label_offset = 0;
 }
 

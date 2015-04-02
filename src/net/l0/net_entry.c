@@ -65,7 +65,7 @@ static void netif_poll(struct net_device *dev) {
 	}
 }
 
-static void *netif_rx_action(void *data) {
+static int netif_rx_action(struct lthread *self) {
 	struct net_device *dev;
 
 	dlist_foreach_entry(dev, &netif_rx_list, rx_lnk) {
@@ -73,7 +73,7 @@ static void *netif_rx_action(void *data) {
 		netif_rx_dequeued(dev);
 	}
 
-	return NULL;
+	return 0;
 }
 
 static void netif_rx_schedule(struct sk_buff *skb) {
@@ -98,7 +98,7 @@ int netif_rx(void *data) {
 }
 
 static int net_entry_init(void) {
-	lthread_init(&netif_rx_irq_handler, &netif_rx_action, NULL);
+	lthread_init(&netif_rx_irq_handler, &netif_rx_action);
 	lthread_priority_set(&netif_rx_irq_handler, NETIF_RX_HND_PRIORITY);
 	return 0;
 }

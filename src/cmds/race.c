@@ -181,8 +181,8 @@ static int exec(int argc, char **argv) {
 	game_init();
 	road_print();
 
-	lthread_init(&lt_road, (void *(*)(void *))move_road, NULL);
-	lthread_init(&lt_car, (void *(*)(void *))move_car, NULL);
+	lthread_init(&lt_road, move_road);
+	lthread_init(&lt_car, move_car);
 
 	lthread_launch(&lt_road);
 	lthread_launch(&lt_car);

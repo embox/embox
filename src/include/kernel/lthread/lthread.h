@@ -47,10 +47,8 @@
 struct lthread {
 	struct schedee schedee;
 
-	void          *(*run)(void *); /**< Start routine */
-	void          *run_arg;        /**< Argument to be passed to run */
+	int          (*run)(struct lthread *); /**< Start routine */
 
-	void          *run_ret;      /**< Return value of the routine. */
 	int            label_offset;
 
 	struct sched_wait_info info;
@@ -64,10 +62,8 @@ struct lthread {
  *   the light thread to init
  * @param run
  *   the light thread start routine
- * @param arg
- *   a value to pass to the start routine as the argument
  */
-extern void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg);
+extern void lthread_init(struct lthread *lt, int (*run)(struct lthread *));
 
 /**
  * Deletes light thread from the pool
