@@ -360,20 +360,25 @@ struct file_operations dfs_fops = {
 	.ioctl = NULL,
 };
 
-static struct dumb_fs_driver dfs_d_fs_driver = {
+static struct super_block *dfs_alloc_sb(char *dev) {
+	return dfs_sb();
+}
+
+struct dumb_fs_driver dfs_dumb_driver = {
 	.name = "DumbFS",
+	.alloc_sb = &dfs_alloc_sb,
 };
 
 struct super_block *dfs_sb(void) {
 	static struct dfs_sb_info dfs_info;
 	static struct super_block sb = {
-		.fs_drv  = &dfs_d_fs_driver,
-		.root    = NULL,
+		.fs_drv     = &dfs_dumb_driver,
+		.root       = NULL,
 		.inode_list = NULL,
-		.sb_ops  = &dfs_sbops,
-		.sb_iops = &dfs_iops,
-		.sb_fops = &dfs_fops,
-		.sb_data = &dfs_info,
+		.sb_ops     = &dfs_sbops,
+		.sb_iops    = &dfs_iops,
+		.sb_fops    = &dfs_fops,
+		.sb_data    = &dfs_info,
 	};
 
 	if (!sb.bdev)

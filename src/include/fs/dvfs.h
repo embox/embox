@@ -48,7 +48,7 @@ struct inode {
 	int    i_no;
 	int    start_pos; /* location on disk */
 	size_t length;
-	int    flag;
+	int    flags;
 
 	struct dentry *i_dentry;
 	struct super_block *i_sb;
@@ -68,6 +68,8 @@ struct inode_operations {
 
 struct dentry {
 	char name[DENTRY_NAME_LEN];
+
+	int usage_count;
 
 	struct inode *d_inode;
 	struct super_block *d_sb;
@@ -103,6 +105,19 @@ struct file_operations {
 
 struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
+	struct super_block *(*alloc_sb)(char *dev);
+};
+
+struct dvfsmnt {
+	struct dvfsmnt *mnt_parent;
+	struct dentry  *mnt_mountpoint;
+	struct dentry  *mnt_root;
+	struct super_block *mnt_sb;
+
+	struct dlist_head children;
+	struct dlist_head children_lnk;
+
+	int flags;
 };
 
 #define DFS_CREAT 0x0001
@@ -115,6 +130,9 @@ extern int            dvfs_destroy_file(struct file *desc);
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);
 
+extern struct dvfsmnt *dvfs_alloc_mnt(void);
+extern int             dvfs_destroy_mnt(struct dvfsmnt *mnt);
+
 struct lookup;
 extern struct dentry *dvfs_root(void);
 int dvfs_lookup(const char *path, struct lookup *lookup);
@@ -122,5 +140,7 @@ int dvfs_lookup(const char *path, struct lookup *lookup);
 extern int dvfs_open(const char *path, struct file *desc, int mode);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
+
+extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, char *dev);
 
 #endif

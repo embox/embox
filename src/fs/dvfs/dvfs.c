@@ -48,7 +48,9 @@ static int dentry_fill(struct super_block *sb, struct inode *inode,
 	dlist_init(&dentry->children);
 	dlist_head_init(&dentry->children_lnk);
 
-	dlist_add_prev(&dentry->children_lnk, &parent->children);
+	if (parent)
+		dlist_add_prev(&dentry->children_lnk, &parent->children);
+
 	return 0;
 }
 
@@ -161,7 +163,7 @@ int dvfs_create_new(const char *name, struct dentry *parent, int flags) {
 	struct dentry *d;
 
 	assert(parent->d_inode);
-	assert(parent->d_inode->flag & O_DIRECTORY);
+	assert(parent->d_inode->flags & O_DIRECTORY);
 
 	/* TODO Find super_block */
 	sb   = dfs_sb();
@@ -200,7 +202,7 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 		.f_ops    = lookup.item->d_sb->sb_fops,
 	};
 
-	if (i_no == NULL || i_no->flag & O_DIRECTORY) {
+	if (i_no == NULL || i_no->flags & O_DIRECTORY) {
 		if (lookup.item)
 			dvfs_destroy_dentry(lookup.item);
 		return -ENOENT;
@@ -230,4 +232,41 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 		return desc->f_ops->read(desc, buf, count);
 	else
 		return -ENOSYS;
+}
+
+extern struct dumb_fs_driver dfs_dumb_driver;
+
+static struct dumb_fs_driver *get_dumb_fs_driver(char *name) {
+	return &dfs_dumb_driver;
+}
+
+int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
+	struct lookup lookup;
+	struct dumb_fs_driver *drv;
+	struct dvfsmnt *mnt;
+	struct super_block *sb;
+	struct dentry *d;
+
+	dvfs_lookup(dest, &lookup);
+
+	if (lookup.item == NULL)
+		return -ENOENT;
+
+	/* find by name ? */
+	drv = get_dumb_fs_driver(fstype);
+	mnt = dvfs_alloc_mnt();
+	sb  = dvfs_alloc_sb(drv, dev);
+	/* TODO init sb */
+	d   = dvfs_alloc_dentry();
+
+	dentry_fill(sb, NULL, d, NULL);
+	d->usage_count++;
+
+	*mnt = (struct dvfsmnt) {
+		.mnt_sb = sb,
+		.mnt_root = d, /* XXX */
+		.mnt_mountpoint = lookup.item,
+	};
+
+	return 0;
 }
