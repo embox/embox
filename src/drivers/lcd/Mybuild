@@ -2,7 +2,6 @@
 package embox.driver.lcd
 
 module hd44780 {
-
 	option string control_port
 
 	option number reg_select_pin
@@ -14,6 +13,9 @@ module hd44780 {
 
 	option number line_n
 	option number line_width
+
+	@IncludeExport(path="drivers/lcd")
+	source "lcd.h"
 
 	source "hd44780.c"
 
@@ -31,6 +33,5 @@ module hd44780 {
 		clock_pin=2,
 
 		data_port="GPIO_A",
-		data_pins_offset=0)
+		data_pins_offset=1)
 */
-
