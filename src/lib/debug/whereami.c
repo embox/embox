@@ -103,7 +103,7 @@ static size_t tb_snprint_thread_run(char *buff, size_t buff_sz,
 	char *end = buff + buff_sz;
 
 	p += tb_safe_snprintf(p, end-p, "run ");
-	return tb_snprint_symbol(p, end-p, t->schedee.run);
+	return tb_snprint_symbol(p, end-p, t->run);
 }
 
 static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
