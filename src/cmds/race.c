@@ -1,22 +1,39 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Vita Loginova
+ * @date    11.12.2014
+ */
+
 #include <unistd.h>
-#include <stdio.h>
-#include <embox/cmd.h>
-#include <drivers/vt.h>
-#include <drivers/diag.h>
-#include <kernel/lthread/lthread.h>
+#include <errno.h>
 
 #include <kernel/sched.h>
+#include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 
-#include <errno.h>
+#include <embox/cmd.h>
+#include <framework/mod/options.h>
+
+#define USE_LCD OPTION_GET(BOOLEAN, use_lcd)
+
+#if USE_LCD
+#include <drivers/gpio.h>
+#include <drivers/lcd/lcd.h>
+#else
+#include <drivers/vt.h>
+#include <drivers/diag.h>
+#include <stdio.h>
+#endif
 
 EMBOX_CMD(exec);
 
-#define ROAD_LENGTH 20
+#define ROAD_LENGTH 16
 #define ROAD_WIDTH 2
 #define LEVEL_PERIOD_MS 5
-#define ROAD_UPDATE_MS 100
-#define CAR_UPDATE_MS 10
+#define ROAD_UPDATE_MS 150
+#define CAR_UPDATE_MS 130
 #define OBSTACLE_SPACE 4
 #define SCORE_PER_LEVEL 4
 
@@ -41,6 +58,13 @@ static void game_init(void) {
 	road_init();
 }
 
+#if USE_LCD
+static void road_print(void) {
+	for (int i = 0; i < ROAD_WIDTH*ROAD_LENGTH; i++) {
+		lcd_putc(road[i]);
+	}
+}
+#else
 static void road_print(void) {
 	int i, j;
 
@@ -57,9 +81,10 @@ static void road_print(void) {
 
 	printf("\nscore: %i speed: %i\n", score, speed);
 }
+#endif
 
 static void *move_car(void* arg) {
-	int wait_res;
+	int wait_res, is_button_clicked;
 	void *start_label = lthread_start_label_get();
 
 	if (start_label)
@@ -69,7 +94,14 @@ update:
 	if (end)
 		return 0;
 
-	if (!diag_kbhit() && SPACE_CHAR == diag_getc()) {
+#if USE_LCD
+	gpio_settings(GPIO_A, 0xff << 0, GPIO_MODE_INPUT);
+	is_button_clicked = gpio_get_level(GPIO_A, 0xff << 0) & 0x01;
+#else
+	is_button_clicked = !diag_kbhit() && SPACE_CHAR == diag_getc();
+#endif
+
+	if (is_button_clicked) {
 		road[car_pos*ROAD_LENGTH] = SPACE_CHAR;
 		car_pos = (car_pos + 1) % ROAD_WIDTH;
 
@@ -162,7 +194,7 @@ static int exec(int argc, char **argv) {
 	lthread_launch(&lt_car);
 
 	while (!end) {
-		sleep(0);
+		schedule();
 	}
 
 	lthread_delete(&lt_car);

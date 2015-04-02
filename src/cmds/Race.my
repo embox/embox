@@ -11,6 +11,8 @@ package embox.cmd
 			Vita Loginova
 	''')
 module race {
+	option boolean use_lcd = false
+
 	source "race.c"
 
 	depends embox.compat.posix.util.sleep
