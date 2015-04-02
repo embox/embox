@@ -31,7 +31,7 @@ static struct schedee *lthread_process(struct schedee *prev,
 	/* We have to restore ipl as soon as possible. */
 	ipl_enable();
 
-	lt->run_ret = lt->run(lt->run_arg);
+	lt->label_offset = lt->run(lt);
 
 	/* After finishing lt has to restore waiting state in case it is not sceduled*/
 	spin_protected_if(&next->lock, !next->ready)
@@ -46,7 +46,7 @@ void lthread_init(struct lthread *lt, void *(*run)(void *), void *arg) {
 
 	lt->run = run;
 	lt->run_arg = arg;
-	lt->start_label = NULL;
+	lt->label_offset = 0;
 }
 
 static int __lthread_delete(struct lthread *lt) {

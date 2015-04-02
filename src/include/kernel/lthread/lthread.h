@@ -51,7 +51,7 @@ struct lthread {
 	void          *run_arg;        /**< Argument to be passed to run */
 
 	void          *run_ret;      /**< Return value of the routine. */
-	void          *start_label;
+	int            label_offset;
 
 	struct sched_wait_info info;
 };
@@ -87,30 +87,32 @@ extern void lthread_launch(struct lthread *lt);
  * Use case:
  * Helps to go to the right place after waiting
  *
- * static void *func(void *arg) {
- *     void *start = lthread_start_label_get();
+ * static int func(struct lthread *self) {
+ *     goto lthread_resume(self, &&initial_label);
  *
- *     if (start)
- *         goto start;
+ * initial_label:
  *
- *     ... do something ...
+ *      ... code ...
  *
  * mutex_label:
  *     if (mutex_trylock_lthread(&mutex) == -EAGAIN) {
- *         lthread_start_label_set(&&mutex_label);
- *         return NULL;
+ *         return lthread_yield(&&initial_label, &&mutex_label);
  *     }
  *
- *     ... do something ...
+ *     ... code ...
+ *
+ *     mutex_unlock_lthread(&mutex);
+ *
+ *     ... code ...
+ *
+ *     return 0;
  * }
  */
 
-static inline void lthread_start_label_set(void *label) {
-	lthread_self()->start_label = label;
-}
+#define lthread_resume(lt, initial_label) \
+			*((lt)->label_offset + (initial_label))
 
-static inline void *lthread_start_label_get(void) {
-	return lthread_self()->start_label;
-}
+#define lthread_yield(initial_label, target_label) \
+			(target_label) - (initial_label);
 
 #endif /* _KERNEL_LTHREAD_H_ */

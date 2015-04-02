@@ -83,12 +83,10 @@ static void road_print(void) {
 }
 #endif
 
-static void *move_car(void* arg) {
+static int move_car(struct lthread* self) {
 	int wait_res, is_button_clicked;
-	void *start_label = lthread_start_label_get();
 
-	if (start_label)
-		goto *start_label;
+	goto lthread_resume(self, &&update);
 
 update:
 	if (end)
@@ -117,8 +115,7 @@ update:
 wait:
 	wait_res = SCHED_WAIT_TIMEOUT_LTHREAD(0, CAR_UPDATE_MS);
 	if (wait_res == -EAGAIN) {
-		lthread_start_label_set(&&wait);
-		return 0;
+		return lthread_yield(&&update, &&wait);
 	}
 
 	goto update;
@@ -153,12 +150,10 @@ static void set_obtacle(void) {
 	}
 }
 
-static void *move_road(void* arg) {
+static int move_road(struct lthread *self) {
 	int wait_res;
-	void *start_label = lthread_start_label_get();
 
-	if (start_label)
-		goto *start_label;
+	goto lthread_resume(self, &&update);
 
 update:
 	end = end || road[car_pos*ROAD_LENGTH + 1] == OBSTACLE_CHAR;
@@ -174,8 +169,7 @@ update:
 wait:
 	wait_res = SCHED_WAIT_TIMEOUT_LTHREAD(0, ROAD_UPDATE_MS - speed * LEVEL_PERIOD_MS);
 	if (wait_res == -EAGAIN) {
-		lthread_start_label_set(&&wait);
-		return 0;
+		return lthread_yield(&&update, &&wait);
 	}
 
 	goto update;
@@ -187,8 +181,8 @@ static int exec(int argc, char **argv) {
 	game_init();
 	road_print();
 
-	lthread_init(&lt_road, move_road, NULL);
-	lthread_init(&lt_car, move_car, NULL);
+	lthread_init(&lt_road, (void *(*)(void *))move_road, NULL);
+	lthread_init(&lt_car, (void *(*)(void *))move_car, NULL);
 
 	lthread_launch(&lt_road);
 	lthread_launch(&lt_car);
