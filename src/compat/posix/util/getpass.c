@@ -31,6 +31,7 @@ char *getpass_r(const char *prompt, char *buf, size_t buflen) {
 	if (0 > fprintf(stdout, "%s", prompt)) {
 		return NULL;
 	}
+	fflush(stdout);
 
 	/* read password from stdin (with disabling ECHO-mode) */
 	if (-1 == tcgetattr(STDIN_FILENO, &t)) {
