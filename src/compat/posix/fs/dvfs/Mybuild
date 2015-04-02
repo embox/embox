@@ -28,10 +28,10 @@ static module dirent_dvfs extends dirent {
 	option number dir_quantity=4
 	source "dirent.c"
 
-	depends embox.fs.core
+	//depends embox.fs.core
 	depends embox.mem.objalloc
 	depends embox.compat.libc.str
-	depends embox.fs.syslib.dcache
+	//depends embox.fs.syslib.dcache
 	depends embox.compat.posix.fs.getcwd
 }
 
@@ -43,14 +43,14 @@ static module lseek_dvfs extends lseek {
 }
 
 static module file_ops_dvfs extends file_ops {
-	source "ioctl.c"
+	/* source "ioctl.c"
 	source "close.c"
 	source "fstat.c"
-	source "fsync.c"
+	source "fsync.c"*/
 	source "read.c"
 	source "write.c"
-	source "ftruncate.c"
-	source "fcntl.c"
+	/*source "ftruncate.c"
+	source "fcntl.c"*/
 
 	depends embox.fs.index_operation
 	depends embox.kernel.task.api
@@ -62,9 +62,9 @@ static module fsop_dvfs extends fsop {
 	source "fsop.c"
 
 	depends embox.kernel.task.resource.errno
-	depends embox.fs.core
-	depends embox.fs.syslib.perm
-	depends embox.fs.syslib.file_system
+	//depends embox.fs.core
+	//depends embox.fs.syslib.perm
+	//depends embox.fs.syslib.file_system
 	depends umask_dvfs // mkdir
 }
 
@@ -79,7 +79,7 @@ static module open_dvfs extends open {
 	source "open.c"
 
 	depends embox.kernel.task.resource.errno
-	depends embox.fs.core /* if_mounted_follow_down */
+	//depends embox.fs.core /* if_mounted_follow_down */
 	depends libgen_dvfs
 	depends dirent_dvfs
 	depends umask_dvfs
@@ -95,8 +95,8 @@ static module umask_dvfs extends umask {
 static module xattr_dvfs extends xattr {
 	source "xattr.c"
 
-	depends embox.fs.xattr
-	depends embox.fs.syslib.perm
+	//depends embox.fs.xattr
+	//depends embox.fs.syslib.perm
 	depends embox.security.api
 }
 

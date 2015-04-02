@@ -234,12 +234,6 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 		return -ENOSYS;
 }
 
-extern struct dumb_fs_driver dfs_dumb_driver;
-
-static struct dumb_fs_driver *get_dumb_fs_driver(char *name) {
-	return &dfs_dumb_driver;
-}
-
 int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
@@ -253,7 +247,7 @@ int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 		return -ENOENT;
 
 	/* find by name ? */
-	drv = get_dumb_fs_driver(fstype);
+	drv = dumb_fs_driver_find(fstype);
 	mnt = dvfs_alloc_mnt();
 	sb  = dvfs_alloc_sb(drv, dev);
 	/* TODO init sb */

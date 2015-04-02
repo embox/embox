@@ -143,4 +143,9 @@ extern int dvfs_read(struct file *desc, char *buf, int count);
 
 extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, char *dev);
 
+extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
+
+extern int dvfs_mount(char *dev, char *dest, char *fstype, int flags);
+
+
 #endif

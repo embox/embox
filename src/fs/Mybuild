@@ -61,7 +61,7 @@ module core extends fs_api {
 	source "vfs.c"
 	source "hlpr_path.c"
 
-	depends filesystem
+	//depends filesystem
 	depends node
 
 	depends embox.compat.libc.str
@@ -79,7 +79,11 @@ module index_operation {
 	depends fs_api
 }
 
-module rootfs {
+@DefaultImpl(rootfs)
+abstract module root_file_system {
+}
+
+module rootfs extends root_file_system {
 	source "rootfs.c"
 	option string fstype = "initfs"
 	option string bdev = ""
@@ -88,6 +92,15 @@ module rootfs {
 	depends embox.kernel.task.api
 	depends embox.fs.syslib.file_system
 	depends embox.compat.libc.all
+}
+
+module rootfs_dvfs extends root_file_system {
+	source "rootfs_dvfs.c"
+	option string fstype = "initfs"
+	option string bdev = ""
+
+	depends embox.fs.dvfs
+	depends embox.fs.driver.dvfs_driver
 }
 
 module journal {
