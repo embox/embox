@@ -15,6 +15,15 @@
 
 EMBOX_UNIT_INIT(rootfs_mount);
 
+struct super_block *rootfs_sb(void) {
+	static struct super_block sb = {
+		.fs_drv = NULL,
+		.bdev   = NULL,
+	};
+
+	return &sb;
+}
+
 static int do_mount(const char *dev, const char *fs_type) {
 	struct dumb_fs_driver *fsdrv;
 

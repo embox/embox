@@ -54,7 +54,7 @@ static int dentry_fill(struct super_block *sb, struct inode *inode,
 	return 0;
 }
 
-extern struct super_block *dfs_sb(void);
+extern struct super_block *rootfs_sb(void);
 struct dentry *dvfs_root(void) {
 	static struct dentry *root = NULL;
 
@@ -62,9 +62,12 @@ struct dentry *dvfs_root(void) {
 		root = dvfs_alloc_dentry();
 
 		*root = (struct dentry) {
-			.d_sb = dfs_sb(),
+			.d_sb = rootfs_sb(),
 			.parent = root,
+			.name = "/",
 		};
+
+		root->d_sb->root = root;
 
 		dlist_init(&root->children);
 		dlist_head_init(&root->children_lnk);
@@ -106,7 +109,13 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	struct inode *in;
 	size_t len;
 
-	if (path[0] == '\0') {
+	assert(parent);
+	assert(path);
+
+	len = strlen(path);
+	p = path_next(path, &len);
+
+	if (!p || p[0] == '\0') {
 		*lookup = (struct lookup) {
 			.item   = parent,
 			.parent = parent->parent,
@@ -114,11 +123,6 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return 0;
 	}
 
-	assert(parent);
-	assert(path);
-
-	len = strlen(path);
-	p = path_next(path, &len);
 
 	if (strlen(p) > 1 && path_is_double_dot(p))
 		return dvfs_path_walk(p + 2, parent->parent, lookup);
@@ -158,6 +162,7 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	offt++; */
 }
 
+extern struct super_block *dfs_sb(void);
 int dvfs_create_new(const char *name, struct dentry *parent, int flags) {
 	struct super_block *sb;
 	struct dentry *d;
