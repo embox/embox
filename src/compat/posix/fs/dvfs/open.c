@@ -18,15 +18,17 @@ int open(const char *path, int __oflag, ...) {
 	file = dvfs_alloc_file();
 	res = dvfs_open(path, file, __oflag);
 
-	ft = task_resource_file_table(task_self());
+	ft = task_fs();
 	for (res = 0; res < FILE_TABLE_SZ; res++)
 		if (ft->file[res] == NULL) {
 			ft->file[res] = file;
 			break;
 		}
 
-	if (res == FILE_TABLE_SZ)
+	if (res == FILE_TABLE_SZ || (file->f_inode == NULL && file->f_dentry == NULL)) {
+		dvfs_destroy_file(file);
 		res = -1;
+	}
 
 	return res;
 }

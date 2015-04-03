@@ -234,6 +234,9 @@ static struct inode *dfs_icreate(struct dentry *d_new,
 	struct dfs_sb_info sbi;
 	struct dfs_dir_entry dirent;
 
+	if (i_new == NULL)
+		return NULL;
+
 	dfs_read_sb_info(&sbi);
 
 	if (sbi.inode_count > sbi.max_inode_count)
@@ -282,6 +285,9 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 
 	inode = dvfs_alloc_inode(dfs_sb());
 
+	if (!inode)
+		return NULL;
+
 	inode->i_no = ino_from_path(path);
 
 	if (inode->i_no < 0) {
@@ -315,11 +321,7 @@ static int dfs_open(struct inode *node, struct file *desc) {
 
 	dfs_read_dirent(node->i_no, &dirent);
 
-	*desc = (struct file) {
-		.pos = 0,
-		.f_inode = node,
-		.f_ops = &dfs_fops,
-	};
+	desc->f_ops = &dfs_fops;
 
 	return 0;
 }

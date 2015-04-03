@@ -16,7 +16,7 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	ft = task_resource_file_table(task_self());
 	if (fd < FILE_TABLE_SZ && ft->file[fd] != NULL) {
 		file = ft->file[fd];
-		return dvfs_read(file, buf, nbyte);
+		return 0 > dvfs_read(file, buf, nbyte);
 	} else {
 		return -1;
 	}

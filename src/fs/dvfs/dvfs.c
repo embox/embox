@@ -60,19 +60,21 @@ int dvfs_update_root(void) {
 	if (!global_root)
 		global_root = dvfs_alloc_dentry();
 
+	if (!global_root->d_inode)
+		global_root->d_inode = dvfs_alloc_inode(rootfs_sb());
+
 	*global_root = (struct dentry) {
 		.d_sb = rootfs_sb(),
 		.parent = global_root,
 		.name = "/",
-	};
-
-	if (!global_root->d_inode)
-		global_root->d_inode = dvfs_alloc_inode(rootfs_sb());
-
-	*(global_root->d_inode) = (struct inode) {
 		.flags = O_DIRECTORY,
-		.i_ops = rootfs_sb()->sb_iops,
 	};
+
+	if (global_root->d_inode)
+		*(global_root->d_inode) = (struct inode) {
+			.flags = O_DIRECTORY,
+			.i_ops = rootfs_sb()->sb_iops,
+		};
 
 	global_root->d_sb->root = global_root;
 
@@ -115,18 +117,30 @@ int dvfs_pathname(struct inode *inode, char *buf) {
 		return dvfs_default_pathname(inode, buf);
 }
 
-int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
-	const char *p;
-	struct inode *in;
-	size_t len;
+int dvfs_path_next_len(const char *path) {
+	int len = strlen(path);
+	int off = 0;
 
+	while (path[off] == '/')
+		off++;
+
+	while ((path[off] != '/') && (off < len))
+		off++;
+
+	return off;
+}
+
+int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
+	char buff[DENTRY_NAME_LEN];
+	struct inode *in;
+	int len = dvfs_path_next_len(path);
 	assert(parent);
 	assert(path);
 
-	len = strlen(path);
-	p = path_next(path, &len);
+	memcpy(buff, path, len);
+	buff[len] = '\0';
 
-	if (!p || p[0] == '\0') {
+	if (buff[0] == '\0') {
 		*lookup = (struct lookup) {
 			.item   = parent,
 			.parent = parent->parent,
@@ -135,22 +149,28 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	}
 
 
-	if (strlen(p) > 1 && path_is_double_dot(p))
-		return dvfs_path_walk(p + 2, parent->parent, lookup);
+	if (strlen(buff) > 1 && path_is_double_dot(buff))
+		return dvfs_path_walk(buff + 2, parent->parent, lookup);
 
 	assert(parent->d_sb);
 	assert(parent->d_sb->sb_iops);
 	assert(parent->d_sb->sb_iops->lookup);
 
-	if (!(in = parent->d_sb->sb_iops->lookup(p, parent))) {
+	if (!(in = parent->d_sb->sb_iops->lookup(buff, parent))) {
 		*lookup = (struct lookup) {
 			.item   = NULL,
 			.parent = parent,
 		};
 		return -ENOENT;
+	} else {
+		struct dentry *d;
+		d = dvfs_alloc_dentry();
+		in->i_dentry = parent;
+		dentry_fill(parent->d_sb, in, d, parent);
+		strcpy(d->name, buff);
 	}
 
-	return dvfs_path_walk(p, in->i_dentry, lookup);
+	return dvfs_path_walk(path + strlen(buff), in->i_dentry, lookup);
 }
 
 int dvfs_lookup(const char *path, struct lookup *lookup) {
@@ -177,21 +197,23 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 }
 
 extern struct super_block *dfs_sb(void);
-int dvfs_create_new(const char *name, struct dentry *parent, int flags) {
+int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	struct super_block *sb;
-	struct dentry *d;
-
-	assert(parent->d_inode);
-	assert(parent->d_inode->flags & O_DIRECTORY);
+	assert(lookup);
+	assert(lookup->parent);
+	assert(lookup->parent->flags & O_DIRECTORY);
 
 	/* TODO Find super_block */
-	sb   = dfs_sb();
-	d    = dvfs_alloc_dentry();
-	dentry_fill(sb, NULL, d, parent);
-	strcpy(d->name, name);
+	sb = lookup->parent->d_sb;
+	lookup->item = dvfs_alloc_dentry();
+	if (!lookup->item)
+		return -1;
 
-	d->d_inode = sb->sb_iops->create(d, parent, flags);
+	dentry_fill(sb, NULL, lookup->item, lookup->parent);
+	strcpy(lookup->item->name, name);
 
+	lookup->item->d_inode = sb->sb_iops->create(lookup->item, lookup->parent, flags);
+	inode_fill(sb, lookup->item->d_inode, lookup->item);
 	/* TODO add dentry to cache */
 
 	return 0;
@@ -202,18 +224,21 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 	struct inode  *i_no;
 
 	dvfs_lookup(path, &lookup);
-	i_no = lookup.item->d_inode;
 
 	assert(desc);
 
 	if (!lookup.item) {
 		if (mode & O_CREAT) {
 			char *last_name = strrchr(path, '/');
-			dvfs_create_new(last_name ? last_name + 1 : path, lookup.parent, 0);
-		}
-	} else {
+			dvfs_create_new(last_name ? last_name + 1 : path, &lookup, 0);
+		} else {
+			desc->f_inode = NULL;
+			desc->f_dentry = NULL;
 			return -ENOENT;
+		}
 	}
+
+	i_no = lookup.item->d_inode;
 
 	*desc = (struct file) {
 		.f_dentry = lookup.item,

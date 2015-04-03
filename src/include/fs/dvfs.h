@@ -69,6 +69,7 @@ struct inode_operations {
 struct dentry {
 	char name[DENTRY_NAME_LEN];
 
+	int flags;
 	int usage_count;
 
 	struct inode *d_inode;
