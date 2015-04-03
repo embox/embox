@@ -331,7 +331,7 @@ QEmboxVC::QEmboxVC()
 	emboxVC.name = "emboxvc";
 
 	waitq_init(&visualize);
-	globalEmboxVC->is_visualized = false;
+	is_visualized = false;
 	visualize_thread = thread_create(0, visualizeVCThread, NULL);
 
 	mpx_register_vc(&emboxVC);
