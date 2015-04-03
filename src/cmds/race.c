@@ -7,6 +7,8 @@
  */
 
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
 #include <kernel/sched.h>
@@ -64,6 +66,31 @@ static void road_print(void) {
 		lcd_putc(road[i]);
 	}
 }
+
+static void score_print(void) {
+	char game_over_str[] = "    GAME OVER   ";
+	char score_pfx[] = "    SCORE: ";
+	char score_str[5];
+	int score_strlen;
+
+	for (int i = 0; i < sizeof(game_over_str) - 1; i++) {
+		lcd_putc(game_over_str[i]);
+	}
+
+	for (int i = 0; i < sizeof(score_pfx) - 1; i++) {
+		lcd_putc(score_pfx[i]);
+	}
+
+	itoa(score % 10000, score_str, 10);
+	score_strlen = strlen(score_str);
+	for (int i = 0; i < score_strlen; i++) {
+		lcd_putc(score_str[i]);
+	}
+
+	for (int i = 0; i < 17 - score_strlen - sizeof(score_pfx); i++) {
+		lcd_putc(' ');
+	}
+}
 #else
 static void road_print(void) {
 	int i, j;
@@ -80,6 +107,12 @@ static void road_print(void) {
 	}
 
 	printf("\nscore: %i speed: %i\n", score, speed);
+}
+
+static void score_print(void) {
+	printf("%c%c2J",ESC,CSI);
+	printf("%c%cH",ESC,CSI);
+	printf("GAME OVER\nscore: %i\n", score);
 }
 #endif
 
@@ -193,6 +226,8 @@ static int exec(int argc, char **argv) {
 
 	lthread_reset(&lt_car);
 	lthread_reset(&lt_road);
+
+	score_print();
 
 	return 0;
 }
