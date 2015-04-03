@@ -27,7 +27,7 @@ void thread_ack_switched(void) {
 }
 
 static void thread_prepare_switch(struct thread *prev, struct thread *next) {
-	sched_ticker_switch(&prev->schedee, &next->schedee);
+	sched_ticker_switch(prev->policy, next->policy);
 	prev->critical_count = critical_count();
 	critical_count() = next->critical_count;
 	sched_start_switch(&next->schedee);

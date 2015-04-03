@@ -47,7 +47,6 @@ struct schedee {
 	struct affinity         affinity;
 	struct sched_timing     sched_timing;
 	struct schedee_priority priority;
-	int                     policy;
 
 	struct waitq_link waitq_link; /**< Used as a link in different waitqs. */
 };

@@ -77,6 +77,8 @@ struct thread {
 	thread_cancel_t    cleanups;
 
 	struct thread_wait thread_wait;
+
+	int                policy;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */
