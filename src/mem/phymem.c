@@ -44,7 +44,7 @@ static int phymem_init(void) {
 void *phymem_alloc(size_t page_number) {
 	void *ptr = page_alloc(__phymem_allocator, page_number);
 	if (ptr) {
-		void *mptr = mmap_device_memory(ptr, PAGE_SIZE(), PROT_WRITE | PROT_READ,
+		void *mptr = mmap_device_memory(ptr, page_number * PAGE_SIZE(), PROT_WRITE | PROT_READ,
 				MAP_FIXED, (uintptr_t) ptr);
 		if (ptr != mptr) {
 			munmap(mptr, PAGE_SIZE());
