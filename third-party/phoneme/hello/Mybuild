@@ -1,5 +1,6 @@
 package third_party.phoneme
 
+//for running "cldc_vm -cp hello.jar embox.Hello"
 @Build(stage=1,script="$(EXTERNAL_MAKE) build")
 @BuildDepends(third_party.phoneme.cldc)
 module hello_example {
