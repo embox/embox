@@ -57,9 +57,11 @@ int dvfs_destroy_mnt(struct dvfsmnt *mnt) {
 
 /* Default FS-nondependent operations */
 struct inode *dvfs_default_alloc_inode(struct super_block *sb) {
-	struct inode *inode = pool_alloc(&inode_pool);
+	struct inode *inode;
+	if (!sb)
+		return NULL;
 
-	if (inode)
+	if ((inode = pool_alloc(&inode_pool)))
 		*inode = (struct inode) {
 			.i_no = -1,
 			.i_sb = sb,

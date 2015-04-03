@@ -55,30 +55,41 @@ static int dentry_fill(struct super_block *sb, struct inode *inode,
 }
 
 extern struct super_block *rootfs_sb(void);
+static struct dentry *global_root = NULL;
+int dvfs_update_root(void) {
+	if (!global_root)
+		global_root = dvfs_alloc_dentry();
+
+	*global_root = (struct dentry) {
+		.d_sb = rootfs_sb(),
+		.parent = global_root,
+		.name = "/",
+	};
+
+	if (!global_root->d_inode)
+		global_root->d_inode = dvfs_alloc_inode(rootfs_sb());
+
+	*(global_root->d_inode) = (struct inode) {
+		.flags = O_DIRECTORY,
+		.i_ops = rootfs_sb()->sb_iops,
+	};
+
+	global_root->d_sb->root = global_root;
+
+	dlist_init(&global_root->children);
+	dlist_head_init(&global_root->children_lnk);
+	return 0;
+}
+
 struct dentry *dvfs_root(void) {
-	static struct dentry *root = NULL;
-
-	if (!root) {
-		root = dvfs_alloc_dentry();
-
-		*root = (struct dentry) {
-			.d_sb = rootfs_sb(),
-			.parent = root,
-			.name = "/",
-		};
-
-		root->d_sb->root = root;
-
-		dlist_init(&root->children);
-		dlist_head_init(&root->children_lnk);
+	if (!global_root) {
+		dvfs_update_root();
 	}
 
-	return root;
+	return global_root;
 }
 
 struct inode *dvfs_alloc_inode(struct super_block *sb) {
-	assert(sb);
-
 	if (sb->sb_ops && sb->sb_ops->alloc_inode)
 		return sb->sb_ops->alloc_inode(sb);
 	else
@@ -148,6 +159,9 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 		dentry = task_fs()->root;
 	else
 		dentry = task_fs()->pwd;
+
+	if (dentry->d_sb == NULL)
+		return -ENOENT;
 
 	/* TODO look in dcache */
 	/* TODO flocks */

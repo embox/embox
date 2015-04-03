@@ -10,7 +10,9 @@
 
 #include <embox/unit.h>
 #include <fs/dfs.h>
+#include <fs/dvfs.h>
 #include <framework/mod/options.h>
+#include <util/array.h>
 #include <util/bitmap.h>
 #include <util/math.h>
 
@@ -364,10 +366,13 @@ static struct super_block *dfs_alloc_sb(char *dev) {
 	return dfs_sb();
 }
 
-struct dumb_fs_driver dfs_dumb_driver = {
+static struct dumb_fs_driver dfs_dumb_driver = {
 	.name = "DumbFS",
 	.alloc_sb = &dfs_alloc_sb,
 };
+
+ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
+ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_dumb_driver);
 
 struct super_block *dfs_sb(void) {
 	static struct dfs_sb_info dfs_info;

@@ -23,7 +23,7 @@ struct dentry;
 struct dumb_fs_driver;
 
 struct super_block {
-	struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
+	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
 	struct block_dev *bdev;
 
 	struct dentry     *root;
@@ -146,6 +146,4 @@ extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, char *dev);
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
 
 extern int dvfs_mount(char *dev, char *dest, char *fstype, int flags);
-
-
 #endif
