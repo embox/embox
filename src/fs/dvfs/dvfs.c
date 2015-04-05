@@ -150,7 +150,10 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 
 
 	if (strlen(buff) > 1 && path_is_double_dot(buff))
-		return dvfs_path_walk(buff + 2, parent->parent, lookup);
+		return dvfs_path_walk(path + 2, parent->parent, lookup);
+
+	if (strlen(buff) > 1 && path_is_single_dot(buff))
+		return dvfs_path_walk(path + 2, parent, lookup);
 
 	assert(parent->d_sb);
 	assert(parent->d_sb->sb_iops);
@@ -175,9 +178,10 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 
 int dvfs_lookup(const char *path, struct lookup *lookup) {
 	struct dentry *dentry;
-	if (path[0] == '/')
+	if (path[0] == '/') {
 		dentry = task_fs()->root;
-	else
+		path++;
+	} else
 		dentry = task_fs()->pwd;
 
 	if (dentry->d_sb == NULL)
@@ -255,7 +259,23 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 	assert(desc->f_ops);
 	assert(desc->f_ops->open);
 
+	lookup.item->usage_count++;
+
 	return desc->f_ops->open(i_no, desc);
+}
+
+int dvfs_close(struct file *desc) {
+	if (!desc || !desc->f_inode || !desc->f_dentry)
+		return -1;
+
+	desc->f_dentry->usage_count--;
+	if (!desc->f_dentry->usage_count) {
+		dvfs_destroy_dentry(desc->f_dentry);
+		dvfs_destroy_inode(desc->f_inode);
+	}
+
+	dvfs_destroy_file(desc);
+	return 0;
 }
 
 int dvfs_write(struct file *desc, char *buf, int count) {

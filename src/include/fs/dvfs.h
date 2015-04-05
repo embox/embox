@@ -139,6 +139,7 @@ extern struct dentry *dvfs_root(void);
 int dvfs_lookup(const char *path, struct lookup *lookup);
 
 extern int dvfs_open(const char *path, struct file *desc, int mode);
+extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
 

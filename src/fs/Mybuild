@@ -101,6 +101,7 @@ module rootfs_dvfs extends root_file_system {
 
 	depends embox.fs.dvfs
 	depends embox.fs.driver.dvfs_driver
+	depends embox.kernel.task.api
 }
 
 module journal {
