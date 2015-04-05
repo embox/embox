@@ -17,10 +17,12 @@
 #define DENTRY_NAME_LEN 16
 #define FS_NAME_LEN     16
 
-struct super_block;
-struct inode;
 struct dentry;
+struct dir_ctx;
 struct dumb_fs_driver;
+struct file;
+struct inode;
+struct super_block;
 
 struct super_block {
 	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
@@ -60,10 +62,12 @@ struct inode {
 struct inode_operations {
 	struct inode *(*create)(struct dentry *d_new, struct dentry *d_dir, int mode);
 	struct inode *(*lookup)(char const *name, struct dentry const *dir);
+	int           (*remove)(struct inode *inode);
 	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
 	int           (*rmdir)(struct dentry *dir);
 	int           (*truncate)(struct inode *inode, size_t len);
 	int           (*pathname)(struct inode *inode, char *buf);
+	struct inode *(*iterate)(struct inode *inode, struct dir_ctx *ctx);
 };
 
 struct dentry {
@@ -121,6 +125,10 @@ struct dvfsmnt {
 	int flags;
 };
 
+struct dir_ctx {
+	int pos;
+};
+
 #define DFS_CREAT 0x0001
 extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
 extern int            dvfs_destroy_inode(struct inode *inode);
@@ -134,7 +142,11 @@ extern int            dvfs_destroy_dentry(struct dentry *dentry);
 extern struct dvfsmnt *dvfs_alloc_mnt(void);
 extern int             dvfs_destroy_mnt(struct dvfsmnt *mnt);
 
-struct lookup;
+struct lookup {
+	struct dentry *item;
+	struct dentry *parent;
+};
+
 extern struct dentry *dvfs_root(void);
 int dvfs_lookup(const char *path, struct lookup *lookup);
 
@@ -142,6 +154,7 @@ extern int dvfs_open(const char *path, struct file *desc, int mode);
 extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
+extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 
 extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, char *dev);
 

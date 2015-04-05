@@ -16,11 +16,6 @@
 #include <kernel/task/resource/file_table.h>
 #include <util/bitmap.h>
 
-struct lookup {
-	struct dentry *parent;
-	struct dentry *item;
-};
-
 extern struct inode *dvfs_default_alloc_inode(struct super_block *sb);
 extern int dvfs_default_destroy_inode(struct inode *inode);
 extern int dvfs_default_pathname(struct inode *inode, char *buf);
@@ -325,6 +320,26 @@ int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 		.mnt_root = d, /* XXX */
 		.mnt_mountpoint = lookup.item,
 	};
+
+	return 0;
+}
+
+int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
+	struct super_block *sb;
+	struct inode *parent_inode;
+	struct inode *next_inode;
+	struct dentry *next_dentry;
+	assert(lookup);
+	assert(ctx);
+
+	/* TODO free prev dentry */
+
+	sb = lookup->item->d_sb;
+	parent_inode = lookup->parent->d_inode;
+
+	next_inode  = sb->sb_iops->iterate(parent_inode, ctx);
+	next_dentry = dvfs_alloc_dentry();
+	dentry_fill(sb, next_inode, next_dentry, lookup->parent);
 
 	return 0;
 }

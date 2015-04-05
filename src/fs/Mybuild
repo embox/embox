@@ -25,7 +25,7 @@ module file_desc {
 	source "file_xattr.c"
 
 	depends idesc
-	depends index_operation
+	//depends index_operation
 	depends xattr
 
 	depends embox.kernel.task.resource.idesc_table
@@ -57,11 +57,15 @@ module xattr_list {
 	source "xattr_list.c"
 }
 
+module path_helper {
+	source "hlpr_path.c"
+}
+
 module core extends fs_api {
 	source "vfs.c"
-	source "hlpr_path.c"
 
 	//depends filesystem
+	depends path_helper
 	depends node
 
 	depends embox.compat.libc.str

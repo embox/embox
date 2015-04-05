@@ -28,10 +28,8 @@ static module dirent_dvfs extends dirent {
 	option number dir_quantity=4
 	source "dirent.c"
 
-	//depends embox.fs.core
 	depends embox.mem.objalloc
 	depends embox.compat.libc.str
-	//depends embox.fs.syslib.dcache
 	depends embox.compat.posix.fs.getcwd
 }
 

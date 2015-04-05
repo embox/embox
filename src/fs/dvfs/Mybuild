@@ -9,10 +9,11 @@ module dvfs {
 
 	source "dvfs.c"
 	source "dvfs_ops.c"
-	source "../hlpr_path.c"
+
+	depends path_helper
+	depends rootfs_dvfs
 
 	depends embox.kernel.task.resource.file_table
 	depends embox.fs.syslib.dcache
 	depends embox.fs.driver.dvfs_driver
-	@NoRunTime depends embox.fs.rootfs_dvfs
 }

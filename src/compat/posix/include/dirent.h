@@ -15,7 +15,7 @@ __BEGIN_DECLS
 #define DIRENT_DNAME_LEN 40
 
 struct dirent {
-	ino_t  d_ino;      /* File serial number. */
+	ino_t  d_ino;                    /* File serial number. */
 	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
 };
 
