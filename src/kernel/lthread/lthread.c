@@ -15,7 +15,7 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
-#include <kernel/lthread/lthread_priority.h>
+#include <kernel/sched/schedee_priority.h>
 #include <mem/misc/pool.h>
 
 /* locks: sched. lthread->run must be atomic. */
@@ -43,7 +43,7 @@ static struct schedee *lthread_process(struct schedee *prev,
 }
 
 void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
-	schedee_init(&lt->schedee, LTHREAD_PRIORITY_DEFAULT, lthread_process);
+	schedee_init(&lt->schedee, SCHED_PRIORITY_HIGH, lthread_process);
 	sched_wait_info_init(&lt->info);
 
 	lt->run = run;

@@ -14,13 +14,13 @@
 #include <kernel/panic.h>
 #include <kernel/sched.h>
 #include <kernel/sched/sched_lock.h>
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
-#include <kernel/thread/thread_priority.h>
 
 #include <util/binalign.h>
 #include <util/err.h>
@@ -345,7 +345,7 @@ int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 		task_foreach_thread(t, tsk) {
 			/* reschedule thread */
 			schedee_priority_set(&t->schedee,
-				THREAD_PRIORITY_NORMAL + new_prior);
+				SCHED_PRIORITY_NORMAL + new_prior);
 		}
 
 	}

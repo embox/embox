@@ -18,8 +18,8 @@
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
 
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
 
 #define PNET_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 

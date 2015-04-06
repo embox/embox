@@ -16,7 +16,7 @@
 #include <hal/cpu.h>
 
 #include <kernel/sched/sched_lock.h>
-#include <kernel/sched/sched_priority.h>
+#include <kernel/sched/schedee_priority.h>
 
 #include <kernel/time/time.h>
 

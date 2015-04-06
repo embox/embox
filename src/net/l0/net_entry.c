@@ -19,8 +19,8 @@
 #include <net/l0/net_rx.h>
 #include <embox/unit.h>
 
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
 
 #define NETIF_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 

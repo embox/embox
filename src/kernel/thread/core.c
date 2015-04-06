@@ -33,8 +33,7 @@
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_sched_wait.h>
-#include <kernel/thread/thread_priority.h>
-#include <kernel/sched/sched_priority.h>
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
 #include <hal/cpu.h>
@@ -76,14 +75,14 @@ static sched_priority_t thread_priority_by_flags(unsigned int flags) {
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		priority = schedee_priority_get(&thread_self()->schedee);
 	} else {
-		priority = THREAD_PRIORITY_DEFAULT;
+		priority = SCHED_PRIORITY_NORMAL;
 	}
 
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
-			&& (priority > THREAD_PRIORITY_MIN)) {
+			&& (priority > SCHED_PRIORITY_MIN)) {
 		priority--;
 	} else if ((flags & THREAD_FLAG_PRIORITY_HIGHER)
-			&& (priority < THREAD_PRIORITY_HIGH)) {
+			&& (priority < SCHED_PRIORITY_HIGH)) {
 		priority++;
 	}
 

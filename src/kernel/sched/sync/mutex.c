@@ -11,7 +11,7 @@
 
 #include <kernel/sched/sync/mutex.h>
 #include <kernel/thread/waitq.h>
-#include <kernel/sched/sched_priority.h>
+#include <kernel/sched/schedee_priority.h>
 
 
 void mutex_init_schedee(struct mutex *m) {

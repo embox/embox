@@ -11,8 +11,8 @@
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/current.h>
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 #include <kernel/thread.h>
 #include <kernel/time/ktime.h>

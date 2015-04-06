@@ -9,7 +9,7 @@
 #include <kernel/panic.h>
 
 #include <kernel/sched/schedee.h>
-#include <kernel/lthread/lthread_priority.h>
+#include <kernel/sched/schedee_priority.h>
 
 struct schedee boot_schedee;
 
@@ -25,6 +25,6 @@ static struct schedee *boot_process(struct schedee *prev, struct schedee *next) 
 
 struct schedee *boot_thread_create(void)
 {
-	schedee_init(&boot_schedee, LTHREAD_PRIORITY_DEFAULT, boot_process);
+	schedee_init(&boot_schedee, SCHED_PRIORITY_HIGH, boot_process);
 	return &boot_schedee;
 };

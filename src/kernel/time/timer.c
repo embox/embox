@@ -11,8 +11,8 @@
 #include <kernel/time/timer.h>
 #include <kernel/time/clock_source.h>
 
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
 
 #define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
 #define CLOCK_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)

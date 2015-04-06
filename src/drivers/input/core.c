@@ -14,7 +14,7 @@
 #include <embox/unit.h>
 
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
+#include <kernel/sched/schedee_priority.h>
 
 #include <drivers/input/input_dev.h>
 

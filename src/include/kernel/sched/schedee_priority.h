@@ -1,20 +1,35 @@
 /**
  * @file
- * @brief
+ * @brief TODO documentation for sched_priority.h -- Eldar Abusalimov
  *
- * @date 21.11.2013
- * @author Andrey Kokorev
+ * @date Sep 6, 2011
+ * @author Eldar Abusalimov
  */
 
 #ifndef STRATEGY_SCHEDEE_PRIORITY_H_
 #define STRATEGY_SCHEDEE_PRIORITY_H_
 
+#include <module/embox/kernel/sched/priority/priority.h>
+
+#define SCHED_PRIORITY_MIN (0)
+#define SCHED_PRIORITY_MAX 255
+#define SCHED_PRIORITY_TOTAL \
+	(SCHED_PRIORITY_MAX - SCHED_PRIORITY_MIN + 1)
+
+#define SCHED_PRIORITY_NORMAL \
+	(SCHED_PRIORITY_MIN + SCHED_PRIORITY_MAX) / 2
+
+#define SCHED_PRIORITY_LOW  \
+	(SCHED_PRIORITY_MIN + SCHED_PRIORITY_NORMAL) / 2
+#define SCHED_PRIORITY_HIGH \
+	(SCHED_PRIORITY_MAX + SCHED_PRIORITY_NORMAL) / 2
+
+
 struct schedee;
 struct schedee_priority;
 
-#include <kernel/sched/sched_priority.h>
+typedef unsigned int sched_priority_t;
 
-#include <module/embox/kernel/sched/priority/priority.h>
 
 extern int schedee_priority_init(struct schedee *p, sched_priority_t new_priority);
 extern int schedee_priority_set(struct schedee *p, sched_priority_t new_priority);

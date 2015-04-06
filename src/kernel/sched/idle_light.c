@@ -1,7 +1,6 @@
 #include <util/err.h>
 #include <hal/arch.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
 
 static struct lthread idle;
 

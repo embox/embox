@@ -68,7 +68,7 @@ static int rx_thread_init(void) {
 			return -1;
 		}
 
-		schedee_priority_set(&pnet_rx_threads[i]->schedee, THREAD_PRIORITY_DEFAULT + 1 + i);
+		schedee_priority_set(&pnet_rx_threads[i]->schedee, SCHED_PRIORITY_NORMAL + 1 + i);
 	}
 
 	return 0;
