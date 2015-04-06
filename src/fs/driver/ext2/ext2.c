@@ -30,8 +30,6 @@
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 
-#include <drivers/ramdisk.h>
-
 
 /*
  * Copyright (c) 1997 Manuel Bouyer.

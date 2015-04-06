@@ -20,7 +20,7 @@
 #include <mem/objalloc.h>
 #include <mem/phymem.h>
 #include <mem/sysmalloc.h>
-#include <drivers/ramdisk.h>
+
 #include <framework/mod/options.h>
 #include <module/embox/driver/block.h>
 
