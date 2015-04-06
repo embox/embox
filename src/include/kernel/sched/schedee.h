@@ -65,7 +65,7 @@ static inline int schedee_init(struct schedee *schedee, sched_priority_t priorit
 	schedee->active = false;
 	schedee->waiting = true;
 
-	schedee_priority_init(&schedee->priority, priority);
+	schedee_priority_init(schedee, priority);
 	sched_affinity_init(&schedee->affinity);
 	sched_timing_init(schedee);
 

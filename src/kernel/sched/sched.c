@@ -78,8 +78,8 @@ void sched_set_current(struct schedee *schedee) {
 
 static void sched_check_preempt(struct schedee *t) {
 	// TODO ask runq
-	if (schedee_priority_get(&schedee_get_current()->priority) <
-			schedee_priority_get(&t->priority))
+	if (schedee_priority_get(schedee_get_current()) <
+			schedee_priority_get(t))
 		sched_post_switch(); // TODO SMP
 }
 
@@ -109,7 +109,8 @@ int sched_active(struct schedee *s) {
 	return s->active;
 }
 
-int sched_change_priority(struct schedee *s, sched_priority_t prior) {
+int sched_change_priority(struct schedee *s, sched_priority_t prior,
+		int (*set_priority)(struct schedee_priority *, sched_priority_t)) {
 	ipl_t ipl;
 	int in_rq;
 
@@ -120,7 +121,7 @@ int sched_change_priority(struct schedee *s, sched_priority_t prior) {
 
 	if (in_rq)
 		__sched_dequeue(s);
-	schedee_priority_set(&s->priority, prior);
+	set_priority(&s->priority, prior);
 	if (in_rq)
 		__sched_enqueue(s);
 

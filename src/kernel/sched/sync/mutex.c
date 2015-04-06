@@ -52,16 +52,16 @@ void mutex_unlock_schedee(struct mutex *m) {
 }
 
 void priority_inherit(struct schedee *s, struct mutex *m) {
-	sched_priority_t prior = schedee_priority_get(&s->priority);
+	sched_priority_t prior = schedee_priority_get(s);
 
-	if (prior != schedee_priority_inherit(&m->holder->priority, prior))
-		sched_change_priority(m->holder, prior);
+	if (prior != schedee_priority_inherit(m->holder, prior))
+		schedee_priority_set(m->holder, prior);
 }
 
 void priority_uninherit(struct schedee *s) {
-	sched_priority_t prior = schedee_priority_get(&s->priority);
+	sched_priority_t prior = schedee_priority_get(s);
 
-	if (prior != schedee_priority_reverse(&s->priority))
-		sched_change_priority(s, schedee_priority_get(&s->priority));
+	if (prior != schedee_priority_reverse(s))
+		schedee_priority_set(s, schedee_priority_get(s));
 }
 

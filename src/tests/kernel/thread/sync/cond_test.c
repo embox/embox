@@ -53,8 +53,8 @@ TEST_CASE("General") {
 	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, NULL);
 	test_assert_zero(err(high));
 
-	test_assert_zero(thread_set_priority(low, l));
-	test_assert_zero(thread_set_priority(high, h));
+	test_assert_zero(schedee_priority_set(&low->schedee, l));
+	test_assert_zero(schedee_priority_set(&high->schedee, h));
 
 	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));

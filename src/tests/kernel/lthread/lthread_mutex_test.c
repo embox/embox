@@ -65,8 +65,8 @@ static int setup(void) {
 
 	lthread_init(&high, high_run);
 
-	test_assert_zero(thread_set_priority(low, l));
-	test_assert_zero(lthread_priority_set(&high, h));
+	test_assert_zero(schedee_priority_set(&low->schedee, l));
+	test_assert_zero(schedee_priority_set(&high.schedee, h));
 
 	return 0;
 }

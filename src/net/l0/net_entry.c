@@ -99,6 +99,6 @@ int netif_rx(void *data) {
 
 static int net_entry_init(void) {
 	lthread_init(&netif_rx_irq_handler, &netif_rx_action);
-	lthread_priority_set(&netif_rx_irq_handler, NETIF_RX_HND_PRIORITY);
+	schedee_priority_set(&netif_rx_irq_handler.schedee, NETIF_RX_HND_PRIORITY);
 	return 0;
 }

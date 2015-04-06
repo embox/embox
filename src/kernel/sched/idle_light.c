@@ -15,7 +15,7 @@ int idle_thread_create(void) {
 
 	lthread_init(&idle, idle_run);
 
-	sched_change_priority(&idle.schedee, SCHED_PRIORITY_MIN);
+	schedee_priority_set(&idle.schedee, SCHED_PRIORITY_MIN);
 #if 0 //XX
 	cpu_init(cpu_get_id(), t);
 #else

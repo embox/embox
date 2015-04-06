@@ -16,11 +16,11 @@ struct schedee_priority;
 
 #include <module/embox/kernel/sched/priority/priority.h>
 
-extern int schedee_priority_init(struct schedee_priority *p, sched_priority_t new_priority);
-extern int schedee_priority_set(struct schedee_priority *p, sched_priority_t new_priority);
-extern sched_priority_t schedee_priority_get(struct schedee_priority *p);
-extern sched_priority_t schedee_priority_inherit(struct schedee_priority *p,
+extern int schedee_priority_init(struct schedee *p, sched_priority_t new_priority);
+extern int schedee_priority_set(struct schedee *p, sched_priority_t new_priority);
+extern sched_priority_t schedee_priority_get(struct schedee *p);
+extern sched_priority_t schedee_priority_inherit(struct schedee *p,
 		sched_priority_t priority);
-extern sched_priority_t schedee_priority_reverse(struct schedee_priority *p);
+extern sched_priority_t schedee_priority_reverse(struct schedee *p);
 
 #endif /* STRATEGY_SCHEDEE_PRIORITY_H_ */

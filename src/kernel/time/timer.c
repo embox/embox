@@ -51,7 +51,7 @@ static int clock_handler(struct lthread *self) {
 
 static int init(void) {
 	lthread_init(&clock_handler_lt, &clock_handler);
-	lthread_priority_set(&clock_handler_lt, CLOCK_HND_PRIORITY);
+	schedee_priority_set(&clock_handler_lt.schedee, CLOCK_HND_PRIORITY);
 
 	inited = 1;
 

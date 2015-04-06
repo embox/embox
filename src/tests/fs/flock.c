@@ -27,8 +27,8 @@ static void fs_test_flock(void) {
 			(void *) &fd);
 	test_assert_zero(err(sftt));
 
-	test_assert_zero(thread_set_priority(fftt, l));
-	test_assert_zero(thread_set_priority(sftt, h));
+	test_assert_zero(schedee_priority_set(&fftt->schedee, l));
+	test_assert_zero(schedee_priority_set(&sftt->schedee, l));
 
 	test_assert_zero(thread_launch(fftt));
 	test_assert_zero(thread_join(fftt, NULL));

@@ -21,7 +21,7 @@ void runq_init(runq_t *queue) {
 }
 
 void runq_insert(runq_t *queue, struct schedee *s) {
-	s->runq_link.prio = -schedee_priority_get(&s->priority);
+	s->runq_link.prio = -schedee_priority_get(s);
 	priolist_add(&s->runq_link, queue);
 }
 

@@ -208,6 +208,6 @@ struct input_dev *input_dev_lookup(const char *name) {
 
 static int input_devfs_init(void) {
 	lthread_init(&indev_handler_lt, &indev_handler);
-	lthread_priority_set(&indev_handler_lt, INDEV_HND_PRIORITY);
+	schedee_priority_set(&indev_handler_lt.schedee, INDEV_HND_PRIORITY);
 	return 0;
 }

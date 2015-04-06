@@ -107,7 +107,8 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 			goto out_tablefree;
 		}
 
-		thread_set_priority(thd, thread_get_priority(thread_self()));
+		schedee_priority_set(&thd->schedee,
+			schedee_priority_get(&thread_self()->schedee));
 
 		thread_detach(thd);
 		thread_launch(thd);
@@ -183,7 +184,8 @@ int task_prepare(const char *name) {
 			goto out_unlock;
 		}
 
-		thread_set_priority(thd, thread_get_priority(thread_self()));
+		schedee_priority_set(&thd->schedee,
+			schedee_priority_get(&thread_self()->schedee));
 
 		self_task = thread_stack_alloc(thd,
 				sizeof *self_task + TASK_RESOURCE_SIZE);
@@ -342,7 +344,8 @@ int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 
 		task_foreach_thread(t, tsk) {
 			/* reschedule thread */
-			thread_set_priority(t, THREAD_PRIORITY_NORMAL + new_prior);
+			schedee_priority_set(&t->schedee,
+				THREAD_PRIORITY_NORMAL + new_prior);
 		}
 
 	}

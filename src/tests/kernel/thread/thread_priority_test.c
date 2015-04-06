@@ -36,7 +36,7 @@ TEST_CASE("Create " str(THREADS_QUANTITY) " threads with"
 				thread_run, (void *) i);
 		test_assert_zero(err(t));
 		task_thread_register(task_kernel_task(), t);
-		test_assert_zero(thread_set_priority(t, i));
+		test_assert_zero(schedee_priority_set(&t->schedee, i));
 		test_assert_zero(thread_detach(t));
 		test_assert_zero(thread_launch(t));
 	}

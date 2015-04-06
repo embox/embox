@@ -34,7 +34,6 @@
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <kernel/thread/thread_priority.h>
-#include <kernel/thread/priority_priv.h>
 #include <kernel/sched/sched_priority.h>
 #include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
@@ -75,7 +74,7 @@ static sched_priority_t thread_priority_by_flags(unsigned int flags) {
 	sched_priority_t priority;
 
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
-		priority = thread_priority_get(thread_self());
+		priority = schedee_priority_get(&thread_self()->schedee);
 	} else {
 		priority = THREAD_PRIORITY_DEFAULT;
 	}
@@ -398,33 +397,6 @@ int thread_terminate(struct thread *t) {
 
 void thread_yield(void) {
 	sched_post_switch();
-}
-
-int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
-	// sched_priority_t prior;
-	assert(t);
-
-	if ((new_priority < THREAD_PRIORITY_MIN)
-			|| (new_priority > THREAD_PRIORITY_MAX)) {
-		return -EINVAL;
-	}
-
-	// prior = sched_priority_thread(t->task->priority, thread_priority_get(t));
-	// if(new_priority != prior) {
-	// 	prior = sched_priority_full(t->task->priority, new_priority);
-	// 	sched_change_priority(t, prior);
-	// }
-
- 	sched_change_priority(&t->schedee, new_priority);
-
-
-	return 0;
-}
-
-sched_priority_t thread_get_priority(struct thread *t) {
-	assert(t);
-
-	return thread_priority_get(t);
 }
 
 clock_t thread_get_running_time(struct thread *t) {

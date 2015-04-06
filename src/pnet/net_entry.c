@@ -80,7 +80,7 @@ static int unit_init(void) {
 	entry = pnet_get_module("pnet entry");
 
 	lthread_init(&pnet_rx_handler_lt, &pnet_rx_action);
-	lthread_priority_set(&pnet_rx_handler_lt, PNET_RX_HND_PRIORITY);
+	schedee_priority_set(&pnet_rx_handler_lt.schedee, PNET_RX_HND_PRIORITY);
 
 	return 0;
 }

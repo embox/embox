@@ -220,10 +220,6 @@ extern int thread_launch(struct thread *thread);
 
 extern void thread_delete(struct thread *t);
 
-extern int thread_set_priority(struct thread *t, sched_priority_t priority);
-
-extern sched_priority_t thread_get_priority(struct thread *thread);
-
 extern void thread_set_run_arg(struct thread *t, void *run_arg);
 
 /**

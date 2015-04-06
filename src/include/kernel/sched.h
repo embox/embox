@@ -62,7 +62,8 @@ extern int sched_active(struct schedee *s);
  * @param priority
  *   New scheduling priority of the the thread.
  */
-extern int sched_change_priority(struct schedee *s, sched_priority_t priority);
+extern int sched_change_priority(struct schedee *s, sched_priority_t prior,
+		int (*set_priority)(struct schedee_priority *, sched_priority_t));
 
 extern void sched_wait_prepare(void);
 extern void sched_wait_cleanup(void);

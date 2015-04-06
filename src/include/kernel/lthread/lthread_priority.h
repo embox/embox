@@ -20,9 +20,4 @@
 #define LTHREAD_PRIORITY_DEFAULT \
 	LTHREAD_PRIORITY_MAX
 
-static inline int lthread_priority_set(struct lthread *t, sched_priority_t new_priority) {
-	schedee_priority_set(&t->schedee.priority, new_priority);
-	return 0;
-}
-
 #endif /* KERNEL_LTHREAD_PRIORITY_H_ */

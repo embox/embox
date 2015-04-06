@@ -200,7 +200,7 @@ int pthread_getconcurrency(void) {
 
 int pthread_getschedparam(pthread_t thread, int *policy, struct sched_param *param) {
 	*policy = thread->policy;
-	param->sched_priority = thread_get_priority(thread);
+	param->sched_priority = schedee_priority_get(&thread->schedee);
 
 	return ENOERR;
 }
@@ -239,10 +239,10 @@ int pthread_setschedparam(pthread_t thread, int policy,
 			"use SCHED_FIFO and SCHED_RR only with priority more or equal 200");
 
 	thread->policy = policy;
-	return thread_set_priority(thread, param->sched_priority);
+	return schedee_priority_set(&thread->schedee, param->sched_priority);
 }
 
 int pthread_setschedprio(pthread_t thread, int prio) {
-	return thread_set_priority(thread, (sched_priority_t)prio);
+	return schedee_priority_set(&thread->schedee, (sched_priority_t)prio);
 }
 
