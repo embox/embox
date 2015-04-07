@@ -72,12 +72,18 @@ struct dirent *readdir(DIR *dir) {
 		.item   = dir->prv_dentry,
 	};
 
+	c.pos = dir->pos;
 	if (dvfs_iterate(&l, &c)) {
 		SET_ERRNO(EAGAIN);
 		return NULL;
 	}
 
+	if (!l.item) {
+		dir->pos = 0;
+		return NULL;
+	}
 	fill_dirent(&dir->dirent, l.item);
+	dir->pos++;
 
 	return &dir->dirent;
 }

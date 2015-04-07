@@ -7,6 +7,7 @@
 
 struct DIR_struct {
 	struct dirent dirent;
+	int pos;
 	struct dentry *dir_dentry;
 	struct dentry *prv_dentry;
 };

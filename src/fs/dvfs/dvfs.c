@@ -40,6 +40,8 @@ static int dentry_fill(struct super_block *sb, struct inode *inode,
 		.parent  = parent,
 	};
 
+	inode->i_dentry = dentry;
+
 	dlist_init(&dentry->children);
 	dlist_head_init(&dentry->children_lnk);
 
@@ -328,18 +330,26 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct super_block *sb;
 	struct inode *parent_inode;
 	struct inode *next_inode;
-	struct dentry *next_dentry;
+	struct dentry *next_dentry = NULL;
 	assert(lookup);
 	assert(ctx);
 
 	/* TODO free prev dentry */
 
-	sb = lookup->item->d_sb;
+	sb = lookup->parent->d_sb;
 	parent_inode = lookup->parent->d_inode;
 
 	next_inode  = sb->sb_iops->iterate(parent_inode, ctx);
-	next_dentry = dvfs_alloc_dentry();
-	dentry_fill(sb, next_inode, next_dentry, lookup->parent);
+	if (!next_inode) {
+		ctx->pos = 0;
+	} else {
+		ctx->pos++;
+		next_dentry = dvfs_alloc_dentry();
+		dentry_fill(sb, next_inode, next_dentry, lookup->parent);
+		sb->sb_iops->pathname(next_inode, next_dentry->name);
+	}
+
+	lookup->item = next_dentry;
 
 	return 0;
 }
