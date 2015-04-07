@@ -28,9 +28,8 @@ void sched_wait_info_init(struct sched_wait_info *info) {
 	sched_wait_info_clear(info);
 }
 
-void sched_wait_prepare_lthread(clock_t timeout) {
-	struct sched_wait_info *info = &lthread_self()->info;
-
+void sched_wait_prepare_lthread(struct lthread *self, clock_t timeout) {
+	struct sched_wait_info *info = &self->info;
 
 	sched_wait_prepare();
 
@@ -57,8 +56,8 @@ void sched_wait_prepare_lthread(clock_t timeout) {
 	}
 }
 
-void sched_wait_cleanup_lthread(void) {
-	struct sched_wait_info *info = &lthread_self()->info;
+void sched_wait_cleanup_lthread(struct lthread *self) {
+	struct sched_wait_info *info = &self->info;
 
 	if (info->status == SCHED_WAIT_STARTED &&
 			info->remain != SCHED_TIMEOUT_INFINITE) {
@@ -68,8 +67,8 @@ void sched_wait_cleanup_lthread(void) {
 	sched_wait_cleanup();
 }
 
-static int sched_wait_lthread(void) {
-	struct sched_wait_info *info = &lthread_self()->info;
+static int sched_wait_lthread(struct lthread *self) {
+	struct sched_wait_info *info = &self->info;
 
 	if (info->status == SCHED_WAIT_STARTED) {
 		info->status = SCHED_WAIT_FINISHED;
@@ -80,13 +79,12 @@ static int sched_wait_lthread(void) {
 	return -EAGAIN;
 }
 
-int sched_wait_timeout_lthread(void) {
-	struct lthread *lt = lthread_self();
-	struct sched_wait_info *info = &lt->info;
+int sched_wait_timeout_lthread(struct lthread *self) {
+	struct sched_wait_info *info = &self->info;
 	int res;
 
 	if (info->remain == SCHED_TIMEOUT_INFINITE) {
-		return sched_wait_lthread();
+		return sched_wait_lthread(self);
 	}
 
 	if (info->status == SCHED_WAIT_STARTED) {
@@ -102,7 +100,7 @@ int sched_wait_timeout_lthread(void) {
 	}
 
 	if ((res = timer_set(&info->tmr, TIMER_ONESHOT, jiffies2ms(info->remain),
-			sched_wait_timeout_handler, &lt->schedee))) {
+			sched_wait_timeout_handler, &self->schedee))) {
 		return res;
 	}
 

@@ -75,8 +75,6 @@ struct lthread {
 	struct sched_wait_info info;
 };
 
-#define lthread_self() mcast_out(schedee_get_current(), struct lthread, schedee)
-
 /**
  * Initializes a new light thread.
  * @param lt

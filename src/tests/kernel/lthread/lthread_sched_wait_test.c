@@ -34,12 +34,12 @@ static int sched_wait_timeout_run(struct lthread *self) {
 	int res;
 	struct lt_test *lt_test = (struct lt_test *)self;
 
-	sched_wait_prepare_lthread(lt_test->timeout);
+	sched_wait_prepare_lthread(self, lt_test->timeout);
 
-	if ((res = sched_wait_timeout_lthread()) == -EAGAIN) {
+	if ((res = sched_wait_timeout_lthread(self)) == -EAGAIN) {
 		return 0;
 	}
-	sched_wait_cleanup_lthread();
+	sched_wait_cleanup_lthread(self);
 
 	lt_test->res = res;
 
@@ -109,7 +109,8 @@ static int sched_wait_timeout_macro_run(struct lthread *self) {
 	int res;
 	struct lt_test *lt_test = (struct lt_test *)self;
 
-	if ((res = SCHED_WAIT_TIMEOUT_LTHREAD(ready, lt_test->timeout)) == -EAGAIN) {
+	res = SCHED_WAIT_TIMEOUT_LTHREAD(self, ready, lt_test->timeout);
+	if (res == -EAGAIN) {
 		return 0;
 	}
 

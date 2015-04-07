@@ -146,7 +146,7 @@ update:
 	}
 
 wait:
-	wait_res = SCHED_WAIT_TIMEOUT_LTHREAD(0, CAR_UPDATE_MS);
+	wait_res = SCHED_WAIT_TIMEOUT_LTHREAD(self, 0, CAR_UPDATE_MS);
 	if (wait_res == -EAGAIN) {
 		return lthread_yield(&&update, &&wait);
 	}
@@ -200,7 +200,8 @@ update:
 	road_print();
 
 wait:
-	wait_res = SCHED_WAIT_TIMEOUT_LTHREAD(0, ROAD_UPDATE_MS - speed * LEVEL_PERIOD_MS);
+	wait_res = SCHED_WAIT_TIMEOUT_LTHREAD(self, 0,
+					ROAD_UPDATE_MS - speed * LEVEL_PERIOD_MS);
 	if (wait_res == -EAGAIN) {
 		return lthread_yield(&&update, &&wait);
 	}
