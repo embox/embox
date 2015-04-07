@@ -42,6 +42,7 @@ C_ENTRY(context_switch):
 	lw $gp, CTX_GP($a1)
 	lw $ra, CTX_RA($a1)
 	nop /* delay slot for load */
-	j $ra
+	addi $sp, $sp, CTX_SIZE
 	/* and return. */
-	addi $sp, $sp, CTX_SIZE /* in delay slot */
+	jr $ra
+	nop /* in delay slot */
