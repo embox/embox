@@ -178,13 +178,20 @@ struct flash_dev *dfs_get_dev(void) {
  	File System Interface
 \*---------------------------------*/
 
+static enum { EMPTY, DIRTY, ACTUAL } dfs_sb_status = EMPTY;
+
 static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
-	_read(0, sbi, sizeof(struct dfs_sb_info));
+	if (dfs_sb_status == EMPTY)
+		_read(0, sbi, sizeof(struct dfs_sb_info));
+	dfs_sb_status = ACTUAL;
 	return !(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1);
-};
+}
 
 static int dfs_write_sb_info(struct dfs_sb_info *sbi) {
-	dfs_write_raw(0, sbi, sizeof(struct dfs_sb_info));
+	if (dfs_sb_status == DIRTY) {
+		dfs_write_raw(0, sbi, sizeof(struct dfs_sb_info));
+		dfs_sb_status = ACTUAL;
+	}
 	return 0;
 }
 
@@ -203,7 +210,7 @@ static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr) {
 
 	dfs_write_raw(offt, dtr, sizeof(struct dfs_dir_entry));
 	return 0;
-};
+}
 
 int ino_from_path(const char *path) {
 	struct dfs_dir_entry dirent;
@@ -257,13 +264,15 @@ static struct inode *dfs_icreate(struct dentry *d_new,
 
 	sbi.inode_count++;
 	sbi.free_space += dirent.len;
+
+	dfs_sb_status = DIRTY;
 	dfs_write_sb_info(&sbi);
 
 	memset(&dirent, 0xA5, sizeof(dirent));
 	dfs_read_dirent(0, &dirent);
 
 	return d_new->d_inode = i_new;
-};
+}
 
 static int dfs_itruncate(struct inode *inode, size_t new_len) {
 	int max_l = ((struct dfs_sb_info *)inode->i_sb->sb_data)->max_file_size;
@@ -274,7 +283,7 @@ static int dfs_itruncate(struct inode *inode, size_t new_len) {
 	inode->length = new_len;
 
 	return 0;
-};
+}
 
 static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 	struct dfs_sb_info sbi;
@@ -301,13 +310,34 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 	inode->length    = dirent.len;
 
 	return inode;
-};
+}
+
+static struct inode *dfs_iterate(struct inode *inode, struct dir_ctx *ctx) {
+	struct dfs_sb_info sbi;
+	struct dfs_dir_entry dirent;
+	struct inode *ent;
+
+	assert(inode);
+	assert(ctx);
+
+	dfs_read_sb_info(&sbi);
+	dfs_read_dirent(inode->i_no, &dirent);
+
+	ent = dvfs_alloc_inode(dfs_sb());
+
+	if (!ent)
+		return NULL;
+	/* XXX */
+
+	return NULL;
+}
 
 struct inode_operations dfs_iops = {
-	.create = dfs_icreate,
-	.lookup = dfs_ilookup,
-	.mkdir = NULL,
-	.rmdir = NULL,
+	.create   = dfs_icreate,
+	.lookup   = dfs_ilookup,
+	.mkdir    = NULL,
+	.rmdir    = NULL,
+	.iterate  = dfs_iterate,
 	.truncate = dfs_itruncate,
 	.pathname = NULL,
 };
