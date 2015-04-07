@@ -13,4 +13,6 @@ module lthread extends lthread_api {
 
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.current.api
+
+	depends embox.compat.posix.util.time
 }
