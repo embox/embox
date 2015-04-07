@@ -13,7 +13,7 @@ static void *second_flock_test_thread(void *arg);
 
 static void fs_test_flock(void) {
 	int fd;
-	sched_priority_t l = 200, h = 210;
+	int l = 200, h = 210;
 
 	/* Prepare file and threads for test */
 	test_assert(-1 != (fd = open(FS_FLOCK, O_CREAT, S_IRUSR | S_IWUSR)));

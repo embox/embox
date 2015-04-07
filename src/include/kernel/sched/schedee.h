@@ -52,7 +52,7 @@ struct schedee {
 };
 
 #include <stdbool.h>
-static inline int schedee_init(struct schedee *schedee, sched_priority_t priority,
+static inline int schedee_init(struct schedee *schedee, int priority,
 	struct schedee *(*process)(struct schedee *prev, struct schedee *next))
 {
 	runq_item_init(&schedee->runq_link);
@@ -72,7 +72,7 @@ static inline int schedee_init(struct schedee *schedee, sched_priority_t priorit
 	return 0;
 }
 
-extern int schedee_init(struct schedee *schedee, sched_priority_t priority,
+extern int schedee_init(struct schedee *schedee, int priority,
 	struct schedee *(*process)(struct schedee *prev, struct schedee *next));
 
 

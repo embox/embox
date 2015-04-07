@@ -129,7 +129,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
  * @param run - the same in create_thread()
  * @param arg - the same in create_thread()
  */
-extern void thread_init(struct thread *t, sched_priority_t priority,
+extern void thread_init(struct thread *t, int priority,
 		void *(*run)(void *), void *arg);
 
 /**
@@ -144,7 +144,7 @@ extern void thread_init(struct thread *t, sched_priority_t priority,
  * @return Pointer to new thread
  */
 extern struct thread *thread_init_stack(void *stack, size_t stack_sz,
-	       	sched_priority_t priority, void *(*run)(void *), void *arg);
+	       	int priority, void *(*run)(void *), void *arg);
 
 /**
  * Marks the thread identified by thread as detached. When a detached

@@ -56,7 +56,7 @@ static int high_run(struct lthread *self) {
 }
 
 static int setup(void) {
-	sched_priority_t l = 200, h = 210;
+	int l = 200, h = 210;
 
 	mutex_init_schedee(&m);
 

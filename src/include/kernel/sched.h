@@ -62,8 +62,8 @@ extern int sched_active(struct schedee *s);
  *   Function that actually changes a priority value in the corresponging
  *   field of the schedee structure.
  */
-extern int sched_change_priority(struct schedee *s, sched_priority_t prior,
-		int (*set_priority)(struct schedee_priority *, sched_priority_t));
+extern int sched_change_priority(struct schedee *s, int prior,
+		int (*set_priority)(struct schedee_priority *, int));
 
 extern void sched_wait_prepare(void);
 extern void sched_wait_cleanup(void);

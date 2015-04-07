@@ -58,7 +58,7 @@ static void *high_run(void *arg) {
 }
 
 static int setup(void) {
-	sched_priority_t l = 200, m = 210, h = 220;
+	int l = 200, m = 210, h = 220;
 
 	rwlock_init(&r);
 

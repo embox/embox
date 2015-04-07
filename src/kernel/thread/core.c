@@ -69,8 +69,8 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 	/* NOTREACHED */
 }
 
-static sched_priority_t thread_priority_by_flags(unsigned int flags) {
-	sched_priority_t priority;
+static int thread_priority_by_flags(unsigned int flags) {
+	int priority;
 
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
 		priority = schedee_priority_get(&thread_self()->schedee);
@@ -91,7 +91,7 @@ static sched_priority_t thread_priority_by_flags(unsigned int flags) {
 
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
 	struct thread *t;
-	sched_priority_t priority;
+	int priority;
 
 	/* check mutually exclusive flags */
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
@@ -177,7 +177,7 @@ struct thread *thread_self(void) {
 	return mcast_out(schedee, struct thread, schedee);;
 }
 
-void thread_init(struct thread *t, sched_priority_t priority,
+void thread_init(struct thread *t, int priority,
 		void *(*run)(void *), void *arg) {
 
 	assert(t);
@@ -228,7 +228,7 @@ void thread_init(struct thread *t, sched_priority_t priority,
 }
 
 struct thread *thread_init_stack(void *stack, size_t stack_sz,
-	       	sched_priority_t priority, void *(*run)(void *), void *arg) {
+	       	int priority, void *(*run)(void *), void *arg) {
 	struct thread *thread = stack; /* Allocating at the bottom */
 
 	/* Stack setting up */

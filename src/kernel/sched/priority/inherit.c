@@ -13,18 +13,17 @@
 #include <errno.h>
 #include "inherit.h"
 
-int schedee_priority_init(struct schedee *s, sched_priority_t new_priority) {
+int schedee_priority_init(struct schedee *s, int new_priority) {
 	s->priority.base_priority = new_priority;
 	s->priority.current_priority = new_priority;
 
 	return 0;
 }
 
-static int __schedee_priority_set(struct schedee_priority *p, sched_priority_t new_priority) {
-
+static int __schedee_priority_set(struct schedee_priority *p, int new_priority) {
 	sched_lock();
 	{
-		if ((sched_priority_t)p->base_priority == new_priority) {
+		if (p->base_priority == new_priority) {
 			goto out;
 		}
 
@@ -36,7 +35,7 @@ static int __schedee_priority_set(struct schedee_priority *p, sched_priority_t n
 			p->current_priority = new_priority;
 		} else {
 			p->base_priority = new_priority;
-			if ((sched_priority_t)p->current_priority <= new_priority) {
+			if (p->current_priority <= new_priority) {
 				p->current_priority = new_priority;
 			}
 		}
@@ -48,8 +47,7 @@ out:
 	return 0;
 }
 
-int schedee_priority_set(struct schedee *s, sched_priority_t new_priority) {
-
+int schedee_priority_set(struct schedee *s, int new_priority) {
 	if ((new_priority < SCHED_PRIORITY_MIN)
 			|| (new_priority > SCHED_PRIORITY_MAX)) {
 		return -EINVAL;
@@ -58,13 +56,11 @@ int schedee_priority_set(struct schedee *s, sched_priority_t new_priority) {
 	return sched_change_priority(s, new_priority, &__schedee_priority_set);
 }
 
-sched_priority_t schedee_priority_get(struct schedee *s) {
+int schedee_priority_get(struct schedee *s) {
 	return s->priority.current_priority;
 }
 
-sched_priority_t schedee_priority_inherit(struct schedee *s,
-		sched_priority_t priority) {
-
+int schedee_priority_inherit(struct schedee *s, int priority) {
 	if (priority > s->priority.current_priority) {
 		s->priority.current_priority = priority;
 	}
@@ -72,8 +68,7 @@ sched_priority_t schedee_priority_inherit(struct schedee *s,
 	return s->priority.current_priority;
 }
 
-sched_priority_t schedee_priority_reverse(struct schedee *s) {
-
+int schedee_priority_reverse(struct schedee *s) {
 	s->priority.current_priority = s->priority.base_priority;
 
 	return s->priority.current_priority;

@@ -109,8 +109,8 @@ int sched_active(struct schedee *s) {
 	return s->active;
 }
 
-int sched_change_priority(struct schedee *s, sched_priority_t prior,
-		int (*set_priority)(struct schedee_priority *, sched_priority_t)) {
+int sched_change_priority(struct schedee *s, int prior,
+		int (*set_priority)(struct schedee_priority *, int)) {
 	ipl_t ipl;
 	int in_rq;
 

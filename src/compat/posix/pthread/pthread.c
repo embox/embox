@@ -243,6 +243,6 @@ int pthread_setschedparam(pthread_t thread, int policy,
 }
 
 int pthread_setschedprio(pthread_t thread, int prio) {
-	return schedee_priority_set(&thread->schedee, (sched_priority_t)prio);
+	return schedee_priority_set(&thread->schedee, prio);
 }
 

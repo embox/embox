@@ -54,7 +54,7 @@ static void *high_run(void *arg) {
 }
 
 static int setup(void) {
-	sched_priority_t l = 200, h = 210;
+	int l = 200, h = 210;
 
 	waitq_init(&wq);
 

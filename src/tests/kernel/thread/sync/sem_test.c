@@ -48,7 +48,7 @@ static void *high_run(void *arg) {
 }
 
 TEST_CASE("General") {
-	sched_priority_t l = 200, m = 210, h = 220;
+	int l = 200, m = 210, h = 220;
 
 	semaphore_init(&s, 2);
 
@@ -90,7 +90,7 @@ static void *l_low_run(void *arg) {
 }
 
 TEST_CASE("Correctness of semaphore_timedwait") {
-	sched_priority_t ll = 200, hh = 220;
+	int ll = 200, hh = 220;
 
 	semaphore_init(&s, 1);
 

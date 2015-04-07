@@ -30,14 +30,11 @@
 struct schedee;
 struct schedee_priority;
 
-typedef unsigned int sched_priority_t;
-
-
-extern int schedee_priority_init(struct schedee *s, sched_priority_t new_priority);
-extern int schedee_priority_set(struct schedee *s, sched_priority_t new_priority);
-extern sched_priority_t schedee_priority_get(struct schedee *s);
-extern sched_priority_t schedee_priority_inherit(struct schedee *s,
-		sched_priority_t priority);
-extern sched_priority_t schedee_priority_reverse(struct schedee *s);
+extern int schedee_priority_init(struct schedee *s, int new_priority);
+extern int schedee_priority_set(struct schedee *s, int new_priority);
+extern int schedee_priority_get(struct schedee *s);
+extern int schedee_priority_inherit(struct schedee *s,
+		int priority);
+extern int schedee_priority_reverse(struct schedee *s);
 
 #endif /* SCHED_SCHEDEE_PRIORITY_H_ */

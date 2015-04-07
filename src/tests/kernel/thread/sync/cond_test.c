@@ -42,7 +42,7 @@ static void *high_run(void *arg) {
 }
 
 TEST_CASE("General") {
-	sched_priority_t l = 200, h = 210;
+	int l = 200, h = 210;
 
 	mutex_init(&m);
 	cond_init(&c, NULL);
