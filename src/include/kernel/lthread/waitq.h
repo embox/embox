@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief Defines lthread-specific methods associated with waitq. You can also
- * or instead use ones from schedee/waitq.h
+ * or instead use ones from sched/waitq.h
  *
  * @date 7.08.2014
  * @author Vita Loginova
@@ -14,20 +14,25 @@
 #include <kernel/sched/current.h>
 
 /**
- * Waits without timeout till cond_expr becomes true.
+ * Waits without timeout till @p cond_expr becomes true.
  *
- * @param wq if cond_expr is false, puts lthread in wq
- * @param cond_expr conditional expression waiting to be true
+ * @param wq
+ *   If cond_expr is false, puts lthread in wq.
+ * @param cond_expr
+ *   Conditional expression waiting to be true.
  *
- * @return waiting result
- * @retval 0 cond_expr is true
- * @retval -EAGAIN lthread placed in wq, lthread has to finish its routine
- *                 in order to be waken up by wq.
+ * @return
+ *   Waiting result.
+ * @retval 0
+ *   In case cond_expr is true.
+ * @retval -EAGAIN
+ *   The current lthread is placed in @p wq, lthread has to finish its routine
+ *   in order to be waken up later.
  */
-#define WAITQ_WAIT_LTHREAD(wq, cond_expr) \
+#define WAITQ_WAIT_LTHREAD(self, wq, cond_expr) \
 	({ \
 		int ret = 0; \
-		struct waitq_link *wql = &schedee_get_current()->waitq_link; \
+		struct waitq_link *wql = &self->schedee.waitq_link; \
 		if (!wql->schedee) { \
 			waitq_link_init(wql); \
 		} \

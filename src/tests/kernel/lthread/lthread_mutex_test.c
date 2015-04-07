@@ -45,12 +45,12 @@ static void *low_run(void *arg) {
 }
 
 static int high_run(struct lthread *self) {
-	if (mutex_trylock_lthread(&m) == -EAGAIN) {
+	if (mutex_trylock_lthread(self, &m) == -EAGAIN) {
 		return 0;
 	}
 
 	test_emit('d');
-	mutex_unlock_lthread(&m);
+	mutex_unlock_lthread(self, &m);
 
 	return 0;
 }

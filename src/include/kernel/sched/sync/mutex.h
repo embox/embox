@@ -26,29 +26,48 @@ struct mutex {
 };
 
 /**
- * Initializes given mutex, mutex type is default.
+ * Initializes given @p mutex with default type.
  *
- * @param mutex mutex to initialize
+ * @param mutex Mutex to initialize.
  */
-extern void mutex_init_schedee(struct mutex *m);
+extern void mutex_init_schedee(struct mutex *mutex);
 
 /**
  * Unleashes the mutex from lock and unbinds it.
  *
- * @param locked_mutex Previously locked mutex.
+ * @param self Current schedee holding @p mutex.
+ * @param mutex Previously locked mutex.
  */
-extern void mutex_unlock_schedee(struct mutex *locked_mutex);
+extern void mutex_unlock_schedee(struct schedee *self, struct mutex *mutex);
 
 /**
  * Tries to lock the mutex.
- * Returns 0 if the mutex was locked successfully. Otherwise returns error code.
  *
- * @param free_mutex Mutex to lock.
+ * @param fself Current schedee to hold @p mutex.
+ * @param mutex Mutex to lock.
+ *
+ * @return Error code.
+ * @retval 0
+ *   @p mutex successfully locked.
+ * @retval -EBUSY
+ *   @p mutex is already held by some schedee.
  */
-extern int mutex_trylock_schedee(struct mutex *free_mutex);
+extern int mutex_trylock_schedee(struct schedee *self, struct mutex *mutex);
 
-extern void priority_inherit(struct schedee *t, struct mutex *m);
-extern void priority_uninherit(struct schedee *t);
+/**
+ * Inherits priority in order to prevent the priority inversion.
+ *
+ * @param self Current schedee trying to lock @p mutex.
+ * @param mutex The mutex which holder should inherit priority.
+ */
+extern void mutex_priority_inherit(struct schedee *self, struct mutex *mutex);
+
+/**
+ * Uninherits priority after mutex is unlocked.
+ *
+ * @param self Current schedee which priority to uninherit.
+ */
+extern void mutex_priority_uninherit(struct schedee *self);
 
 
 #endif /* KERNEL_SCHEDEE_SYNC_MUTEX_H_ */

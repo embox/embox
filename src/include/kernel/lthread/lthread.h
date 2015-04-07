@@ -31,7 +31,7 @@
  *        ...
  *
  *   mutex_retry:
- *       if (mutex_trylock_lthread(&mutex) == -EAGAIN) {
+ *       if (mutex_trylock_lthread(self, &mutex) == -EAGAIN) {
  *           // mutex is held by another schedee, exit from function in order
  *           // to be woken up later. The next time execution will start with
  *           // goto mutex_retry.
@@ -40,7 +40,7 @@
  *
  *       ... // executes with mutex held
  *
- *       mutex_unlock_lthread(&mutex);
+ *       mutex_unlock_lthread(self, &mutex);
  *
  *       ...
  *
