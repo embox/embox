@@ -6,8 +6,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef STRATEGY_SCHEDEE_PRIORITY_H_
-#define STRATEGY_SCHEDEE_PRIORITY_H_
+#ifndef SCHED_SCHEDEE_PRIORITY_H_
+#define SCHED_SCHEDEE_PRIORITY_H_
 
 #include <module/embox/kernel/sched/priority/priority.h>
 
@@ -16,11 +16,13 @@
 #define SCHED_PRIORITY_TOTAL \
 	(SCHED_PRIORITY_MAX - SCHED_PRIORITY_MIN + 1)
 
+/** Default priority value for #thread */
 #define SCHED_PRIORITY_NORMAL \
 	(SCHED_PRIORITY_MIN + SCHED_PRIORITY_MAX) / 2
 
 #define SCHED_PRIORITY_LOW  \
 	(SCHED_PRIORITY_MIN + SCHED_PRIORITY_NORMAL) / 2
+/** Default priority value for #lthread */
 #define SCHED_PRIORITY_HIGH \
 	(SCHED_PRIORITY_MAX + SCHED_PRIORITY_NORMAL) / 2
 
@@ -31,11 +33,11 @@ struct schedee_priority;
 typedef unsigned int sched_priority_t;
 
 
-extern int schedee_priority_init(struct schedee *p, sched_priority_t new_priority);
-extern int schedee_priority_set(struct schedee *p, sched_priority_t new_priority);
-extern sched_priority_t schedee_priority_get(struct schedee *p);
-extern sched_priority_t schedee_priority_inherit(struct schedee *p,
+extern int schedee_priority_init(struct schedee *s, sched_priority_t new_priority);
+extern int schedee_priority_set(struct schedee *s, sched_priority_t new_priority);
+extern sched_priority_t schedee_priority_get(struct schedee *s);
+extern sched_priority_t schedee_priority_inherit(struct schedee *s,
 		sched_priority_t priority);
-extern sched_priority_t schedee_priority_reverse(struct schedee *p);
+extern sched_priority_t schedee_priority_reverse(struct schedee *s);
 
-#endif /* STRATEGY_SCHEDEE_PRIORITY_H_ */
+#endif /* SCHED_SCHEDEE_PRIORITY_H_ */

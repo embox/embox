@@ -30,14 +30,9 @@ __BEGIN_DECLS
  * Initializes scheduler.
  *
  * @param current
- *   Thread structure corresponding to the current control flow.
+ *   Schedee structure corresponding to the current control flow.
  * @return
- *   Operation result.
- * @retval 0
- *   If initialization succeeds.
- * @retval non-zero
- *   Error code if initialization of the underlying policy implementation has
- *   failed.
+ *   Operation result. At the moment allways success.
  */
 extern int sched_init(struct schedee *current);
 
@@ -47,20 +42,25 @@ extern void sched_ticker_init(void);
 extern void sched_ticker_fini(void);
 extern void sched_ticker_switch(int prev_policy, int next_policy);
 
-extern void sched_sleep(void);
-
 extern int sched_active(struct schedee *s);
 
 /**
- * Changes scheduling priority of the thread. If the thread is running now
- * (present in the runq) calls runq_change_priority() for rescheduling runq
- * and thread_set_priority() else just calls thread_set_priority() for setup
- * a new value for priority field in sched_strategy_data structure
+ * Changes the scheduling priority of the schedee via @p set_priority.
+ * If the schedee is ready now (present in the runq), requeues it. If the
+ * scehdee's new priority is higher than prioriry of the current schedee,
+ * posts rescheduling.
  *
- * @param t
- *   Thread to operate with.
- * @param priority
- *   New scheduling priority of the the thread.
+ * @note
+ *   For use only in schedee_priortity_*() functions. For setting the new
+ *   priority to some schedee use #schedee_priortity_set().
+ *
+ * @param s
+ *   Schedee to operate with.
+ * @param prior
+ *   New scheduling priority of the schedee.
+ * @param set_priority
+ *   Function that actually changes a priority value in the corresponging
+ *   field of the schedee structure.
  */
 extern int sched_change_priority(struct schedee *s, sched_priority_t prior,
 		int (*set_priority)(struct schedee_priority *, sched_priority_t));
@@ -68,15 +68,14 @@ extern int sched_change_priority(struct schedee *s, sched_priority_t prior,
 extern void sched_wait_prepare(void);
 extern void sched_wait_cleanup(void);
 
-extern int __sched_wakeup(struct schedee *);
 extern int sched_wakeup(struct schedee *);
 
-/* XXX thread will not be ever in runq or active - thread is dead,
+/* XXX schedee will not be ever in runq or active - schedee is dead,
  * but with allocated resources on its stack */
 extern void sched_freeze(struct schedee *t);
 
 /**
- * Requests switching of the current thread.
+ * Requests switching of the current schedee.
  */
 extern void sched_post_switch(void);
 
@@ -89,7 +88,8 @@ extern void sched_finish_switch(struct schedee *prev);
 extern void sched_start_switch(struct schedee *next);
 
 /**
- * @brief Makes schedee to run regardless of it's state if thread is scheduling
+ * @brief Makes schedee to run regardless of it's state if schedee is
+ * scheduling
  *
  * @param schedee Schedee to operate with
  *
