@@ -12,6 +12,7 @@
 
 #include <kernel/thread/signal_lock.h>
 #include <kernel/sched.h>
+#include <kernel/time/time.h>
 
 /**
  * Wait cond_expr to become TRUE.

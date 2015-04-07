@@ -14,6 +14,8 @@
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/current.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <kernel/thread/signal_lock.h>
+#include <kernel/time/time.h>
 
 #define WAITQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \
 	((cond_expr) ? 0 : ({                                            \

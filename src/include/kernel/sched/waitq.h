@@ -15,9 +15,6 @@
 #include <util/dlist.h>
 #include <kernel/spinlock.h>
 #include <kernel/sched/current.h>
-#include <kernel/thread/signal_lock.h>
-
-#include <kernel/time/time.h>
 
 __BEGIN_DECLS
 

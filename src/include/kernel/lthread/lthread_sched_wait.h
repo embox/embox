@@ -10,6 +10,7 @@
 #define KERNEL_LTHREAD_SCHED_WAIT_H_
 
 #include <kernel/time/timer.h>
+#include <kernel/time/time.h>
 
 /* Values for sched_wait_info->status */
 #define SCHED_WAIT_FINISHED 0
