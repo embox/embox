@@ -35,3 +35,15 @@ static const struct task_resource_desc file_table = {
 struct file_table *task_resource_file_table(const struct task *task) {
 	return (void*)task->resources + file_table_offset;
 }
+
+int file_table_dupfd(int fd_old, int fd_new) {
+	if (fd_new < 0 || fd_new >= FILE_TABLE_SZ)
+		return -1;
+
+	if (task_fs()->file[fd_new] != NULL)
+		return -1;
+
+	task_fs()->file[fd_new] = task_fs()->file[fd_old];
+
+	return 0;
+}
