@@ -2,9 +2,58 @@
  * @file
  * @brief Describes light thread structure
  *
+ * A light thread is an atomic stackless thread that usually has a high
+ * priority. Light threads are very similar to coroutines and have an
+ * interface to manage its multiple entry points (see #lthread_resume() and
+ * #lthread_yield() functions).
+ *
+ * Light threads don't have an execution context as opposite to ordinary
+ * threads. Nonetheless it is allowed to use waitq and sched_wait functions
+ * and share synchronization primitives with regular threads. Of course the
+ * absence of the own stack imposes some restrictions, thus one must use the
+ * light thread API with care.
+ *
+ * @note
+ * All non-static local variables become invalid when lthread is returned
+ * from its run function.
+ *
+ * Examine the example:
+ *
+ * @code
+ *  static int example(struct lthread *self) {
+ *      // Each time lthread runs it is executed from the beginning of its run
+ *      // function. If it is necessary to start from another place, use the
+ *      // following pattern.
+ *      goto lthread_resume(self, &&start);
+ *
+ *   start:
+ *        // If example() runs for the first time, goto jumps here.
+ *        ...
+ *
+ *   mutex_retry:
+ *       if (mutex_trylock_lthread(&mutex) == -EAGAIN) {
+ *           // mutex is held by another schedee, exit from function in order
+ *           // to be woken up later. The next time execution will start with
+ *           // goto mutex_retry.
+ *           return lthread_yield(&&start, &&mutex_retry);
+ *       }
+ *
+ *       ... // executes with mutex held
+ *
+ *       mutex_unlock_lthread(&mutex);
+ *
+ *       ...
+ *
+ *       // Return value 0 corresponds to the start label.
+ *       return 0;
+ *  }
+ * @endcode
+ *
  * @date 10.12.2013
  * @author Andrey Kokorev
+ *          - Initial light thread prototype
  * @author Vita Loginova
+ *          - Rewriting from scratch
  */
 
 #ifndef _KERNEL_LTHREAD_H_
@@ -16,105 +65,70 @@
 #include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
 #include <kernel/lthread/lthread_sched_wait.h>
-#include <kernel/time/timer.h>
 
-/**
- * lthread is atomic high priority stackless thread. Because of peculiarity of
- * lthread there are some use restrictions.
- *
- * It is impossible to interrupt lthread at the middle of the execution in
- * order to proceed it after some condition becomes true. Nonetheless it is
- * allowed to use waitq and sched_wait functions.
- *
- * For example, you can use WAITQ_WAIT_LTHREAD macro. In case of full thread
- * you are able to allocate memory for waitq_link on the stack. lthread is
- * stackless, so it has to use waitq_link of structure schedee. If conditional
- * expression is not true lthread has to break its routine and wait until it
- * is waken up by waitq. After waking up lthread starts the routine from
- * the first line.
- *
- * So that you should place sync and wait functions at the beginning of the run
- * function in order to execute it in an appropriate context.
- *
- * For waiting and synchronization you can use lthread specific macros and
- * functions (see kernel/lthread/) or macros and functions which are common
- * for all schedee implementation (see kernel/sched/ and
- * kernel/sched/waitq.h and kernel/sched.h).
- *
- * TODO: there is no possibility to use timeout functions yet
- */
 
 struct lthread {
 	struct schedee schedee;
-
-	int          (*run)(struct lthread *); /**< Start routine */
-
-	int            label_offset;
-
+	int (*run)(struct lthread *); /**< Start routine */
+	int label_offset;             /**< Used for calculating label for goto */
+	/* Auxiliary structure for waiting with timeout. */
 	struct sched_wait_info info;
 };
 
 #define lthread_self() mcast_out(schedee_get_current(), struct lthread, schedee)
 
 /**
- * Creates a new light thread.
+ * Initializes a new light thread.
  * @param lt
- *   the light thread to init
+ *   The light thread to initialize.
  * @param run
- *   the light thread start routine
+ *   The light thread start routine.
  */
 extern void lthread_init(struct lthread *lt, int (*run)(struct lthread *));
 
 /**
- * Resets lthread state. In case the lthread is in runq, firstly waits for its
- * finishing. If it is waiting for event, clears waiting context information
- * and prevents waking up.
- *
- * Note: It is user's responsibility to prevent lthread waking up in its run
- * function.
- *
+ * Resets lthread state. In case the @p lt is in runq, firstly waits for its
+ * finishing. If @p lt is waiting for an event, clears the waiting context
+ * information and prevents waking up.
+ * @note
+ *   It is the user's responsibility to prevent lthread waking up in its run
+ *   function.
  * @param lt
- *   The light thread to reset
+ *   The light thread to reset.
  */
 extern void lthread_reset(struct lthread *lt);
 
 /**
- * Adds a light thread in runq
+ * Wakes @p lt up or launches it for the first time.
  * @param lt
- *   The light thread to launch
+ *   The light thread to launch.
  */
 extern void lthread_launch(struct lthread *lt);
 
 /**
- * Use case:
- * Helps to go to the right place after waiting
- *
- * static int func(struct lthread *self) {
- *     goto lthread_resume(self, &&initial_label);
- *
- * initial_label:
- *
- *      ... code ...
- *
- * mutex_label:
- *     if (mutex_trylock_lthread(&mutex) == -EAGAIN) {
- *         return lthread_yield(&&initial_label, &&mutex_label);
- *     }
- *
- *     ... code ...
- *
- *     mutex_unlock_lthread(&mutex);
- *
- *     ... code ...
- *
- *     return 0;
- * }
+ * Calculates a label offset in order to call #lthread_resume() with
+ * @p target_label.
+ * @note
+ *   This function should be used in pair with return statement.
+ * @param initial_label
+ *   The beginning label.
+ * @param target_label
+ *   Label from which lthread should be resumed.
+ * @retval
  */
-
-#define lthread_resume(lt, initial_label) \
-			*((lt)->label_offset + (initial_label))
-
 #define lthread_yield(initial_label, target_label) \
 			(target_label) - (initial_label);
+
+/**
+ * Returns label from which run function should start with.
+ * @note
+ *   This function should be used in pair with goto statement.
+ * @param lt
+ *   The current light thread.
+ * @param initial_label
+ *   The beginning label.
+ */
+#define lthread_resume(lt, initial_label) \
+			*((lt)->label_offset + (initial_label))
 
 #endif /* _KERNEL_LTHREAD_H_ */

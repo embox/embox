@@ -18,7 +18,7 @@
 #include <kernel/sched/schedee_priority.h>
 #include <mem/misc/pool.h>
 
-/* locks: sched. lthread->run must be atomic. */
+/** locks: sched. lthread->run must be atomic. */
 static struct schedee *lthread_process(struct schedee *prev,
 		struct schedee *next) {
 	struct lthread *lt = mcast_out(next, struct lthread, schedee);
@@ -50,6 +50,7 @@ void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
 	lt->label_offset = 0;
 }
 
+/** Locks: IPL, thread. */
 static int __lthread_disable(struct lthread *lt) {
 	assert(lt);
 
