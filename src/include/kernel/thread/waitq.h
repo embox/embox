@@ -10,9 +10,9 @@
 #ifndef KERNEL_THREAD_WAITQ_H_
 #define KERNEL_THREAD_WAITQ_H_
 
+#include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/current.h>
-#include <kernel/sched/schedee.h>
 #include <kernel/thread/thread_sched_wait.h>
 
 #define WAITQ_WAIT_TIMEOUT(wq, cond_expr, timeout) \

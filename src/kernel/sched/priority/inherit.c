@@ -8,7 +8,6 @@
 
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/sched/sched_lock.h>
-#include <kernel/sched/schedee.h>
 #include <kernel/sched.h>
 #include <errno.h>
 #include "inherit.h"

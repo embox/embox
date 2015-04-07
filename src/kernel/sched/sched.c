@@ -28,9 +28,7 @@
 
 #include <kernel/critical.h>
 #include <kernel/spinlock.h>
-#include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
 
 // XXX
@@ -63,6 +61,26 @@ int sched_init(struct schedee *current) {
 	rq.lock = SPIN_UNLOCKED;
 
 	sched_set_current(current);
+
+	return 0;
+}
+
+int schedee_init(struct schedee *schedee, int priority,
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next))
+{
+	runq_item_init(&schedee->runq_link);
+
+	schedee->lock = SPIN_UNLOCKED;
+
+	schedee->process = process;
+
+	schedee->ready = false;
+	schedee->active = false;
+	schedee->waiting = true;
+
+	schedee_priority_init(schedee, priority);
+	sched_affinity_init(&schedee->affinity);
+	sched_timing_init(schedee);
 
 	return 0;
 }

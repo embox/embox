@@ -12,7 +12,6 @@
 #include <kernel/time/timer.h>
 
 #include <kernel/sched/current.h>
-#include <kernel/sched/schedee.h>
 
 #include <kernel/thread.h>
 
