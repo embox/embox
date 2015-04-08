@@ -1,6 +1,6 @@
 /**
- * @file
- * @brief
+ * @file   env_impl.h
+ * @brief  Implementation of struct task_env
  *
  * @author Ilia Vaprol
  * @date 30.03.13
