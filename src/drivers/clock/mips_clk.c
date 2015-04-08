@@ -8,6 +8,7 @@
  */
 
 #include <errno.h>
+#include <kernel/printk.h>
 
 #include <asm/mipsregs.h>
 #include <hal/clock.h>
