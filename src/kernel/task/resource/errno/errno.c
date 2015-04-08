@@ -21,11 +21,11 @@ static const struct task_resource_desc task_errno_desc = {
 	.resource_offset = &task_errno_offset
 };
 
-int * task_resource_errno(const struct task *task) {
+int *task_resource_errno(const struct task *task) {
 	assert(task != NULL);
 	return (void *)task->resources + task_errno_offset;
 }
 
-int * task_self_resource_errno(void) {
+int *task_self_resource_errno(void) {
 	return task_resource_errno(task_self());
 }
