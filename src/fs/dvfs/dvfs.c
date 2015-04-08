@@ -1,5 +1,5 @@
 /* @file   dvfs.c
- * @brief  Implementation of common functions of DVFS
+ * @brief  DVFS interface implementation
  * @author Denis Deryugin
  * @date   11 Mar 2014
  */
@@ -7,106 +7,24 @@
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/stat.h>
 #include <string.h>
 
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
-#include <framework/mod/options.h>
 #include <kernel/task/resource/file_table.h>
-#include <util/bitmap.h>
 
-extern struct inode *dvfs_default_alloc_inode(struct super_block *sb);
-extern int dvfs_default_destroy_inode(struct inode *inode);
-extern int dvfs_default_pathname(struct inode *inode, char *buf);
+/* Utility functions */
+extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
+extern int dentry_fill(struct super_block *, struct inode *,
+                       struct dentry *, struct dentry *);
 
-int inode_fill(struct super_block *sb, struct inode *inode,
-                      struct dentry *dentry) {
-	*inode = (struct inode) {
-		.i_dentry  = dentry,
-		.i_sb      = sb,
-		.i_ops     = sb ? sb->sb_iops : NULL,
-		.start_pos = inode->start_pos,
-	};
+extern int            dvfs_update_root(void);
+extern struct dentry *dvfs_root(void);
 
-	return 0;
-}
+/* Default handlers */
+extern int           dvfs_default_pathname(struct inode *inode, char *buf);
 
-static int dentry_fill(struct super_block *sb, struct inode *inode,
-                      struct dentry *dentry, struct dentry *parent) {
-	*dentry = (struct dentry) {
-		.d_inode = inode,
-		.d_sb    = sb,
-		.d_ops   = sb ? sb->sb_dops : NULL,
-		.parent  = parent,
-	};
-
-	inode->i_dentry = dentry;
-
-	dlist_init(&dentry->children);
-	dlist_head_init(&dentry->children_lnk);
-
-	if (parent)
-		dlist_add_prev(&dentry->children_lnk, &parent->children);
-
-	return 0;
-}
-
-extern struct super_block *rootfs_sb(void);
-static struct dentry *global_root = NULL;
-int dvfs_update_root(void) {
-	if (!global_root)
-		global_root = dvfs_alloc_dentry();
-
-	if (!global_root->d_inode)
-		global_root->d_inode = dvfs_alloc_inode(rootfs_sb());
-
-	*global_root = (struct dentry) {
-		.d_sb = rootfs_sb(),
-		.parent = global_root,
-		.name = "/",
-		.flags = O_DIRECTORY,
-	};
-
-	if (global_root->d_inode)
-		*(global_root->d_inode) = (struct inode) {
-			.flags = O_DIRECTORY,
-			.i_ops = rootfs_sb()->sb_iops,
-		};
-
-	global_root->d_sb->root = global_root;
-
-	dlist_init(&global_root->children);
-	dlist_head_init(&global_root->children_lnk);
-	return 0;
-}
-
-struct dentry *dvfs_root(void) {
-	if (!global_root) {
-		dvfs_update_root();
-	}
-
-	return global_root;
-}
-
-struct inode *dvfs_alloc_inode(struct super_block *sb) {
-	if (sb->sb_ops && sb->sb_ops->alloc_inode)
-		return sb->sb_ops->alloc_inode(sb);
-	else
-		return dvfs_default_alloc_inode(sb);
-}
-
-int dvfs_destroy_inode(struct inode *inode) {
-	assert(inode);
-
-	if (inode->i_sb && inode->i_sb->sb_ops && inode->i_sb->sb_ops->destroy_inode)
-		return inode->i_sb->sb_ops->destroy_inode(inode);
-	else
-		return dvfs_default_destroy_inode(inode);
-}
-
+/* Path-related functions */
 int dvfs_pathname(struct inode *inode, char *buf) {
 	assert(inode);
 	assert(buf);
@@ -176,6 +94,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	return dvfs_path_walk(path + strlen(buff), in->i_dentry, lookup);
 }
 
+/* DVFS interface */
 int dvfs_lookup(const char *path, struct lookup *lookup) {
 	struct dentry *dentry;
 	if (path[0] == '/') {
@@ -191,23 +110,14 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	/* TODO flocks */
 
 	return dvfs_path_walk(path, dentry, lookup);
-
-/*	len = strlen(d->name);
-
-	while (offt < len && d->name[offt] == path[offt])
-		offt++;
-
-	offt++; */
 }
 
-extern struct super_block *dfs_sb(void);
 int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	struct super_block *sb;
 	assert(lookup);
 	assert(lookup->parent);
 	assert(lookup->parent->flags & O_DIRECTORY);
 
-	/* TODO Find super_block */
 	sb = lookup->parent->d_sb;
 	lookup->item = dvfs_alloc_dentry();
 	if (!lookup->item)
@@ -310,7 +220,6 @@ int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 	if (lookup.item == NULL)
 		return -ENOENT;
 
-	/* find by name ? */
 	drv = dumb_fs_driver_find(fstype);
 	mnt = dvfs_alloc_mnt();
 	sb  = dvfs_alloc_sb(drv, dev);
@@ -322,7 +231,7 @@ int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 
 	*mnt = (struct dvfsmnt) {
 		.mnt_sb = sb,
-		.mnt_root = d, /* XXX */
+		.mnt_root = d,
 		.mnt_mountpoint = lookup.item,
 	};
 
@@ -336,8 +245,6 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct dentry *next_dentry = NULL;
 	assert(lookup);
 	assert(ctx);
-
-	/* TODO free prev dentry */
 
 	sb = lookup->parent->d_sb;
 	parent_inode = lookup->parent->d_inode;
