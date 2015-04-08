@@ -17,6 +17,7 @@ struct context {
 	unsigned int gp;   /* global pointer */
 	unsigned int ra;   /* return address */
 	unsigned int sp;   /* stack pointer */
+	unsigned int c0_stat; /* c0 coprocessor status */
 };
 
 #else
@@ -34,8 +35,9 @@ struct context {
 #define CTX_GP     0x24
 #define CTX_RA     0x28
 #define CTX_SP     0x2C
+#define CTX_CR0_STAT 0x30
 
-#define CTX_SIZE   0x30
+#define CTX_SIZE   0x34
 #endif
 
 #endif /* ARCH_MIPS_CONTEXT_H_ */
