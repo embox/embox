@@ -20,7 +20,6 @@ module multi extends api {
 	source "multi.c", "multi.h"
 
 	depends embox.kernel.task.kernel_task
-	depends embox.kernel.task.resource.errno
 	depends embox.kernel.task.task_resource
 	depends embox.kernel.task.task_table
 

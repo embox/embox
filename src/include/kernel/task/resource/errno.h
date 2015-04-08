@@ -15,8 +15,9 @@ struct task;
 
 __BEGIN_DECLS
 
-extern int *task_resource_errno(const struct task *task);
-extern int *task_self_resource_errno(void); // FIXME
+extern int * task_resource_errno(const struct task *task);
+extern int * task_self_resource_errno(void); // FIXME
+//#define task_self_resource_errno() task_resource_errno(task_self())
 
 __END_DECLS
 
