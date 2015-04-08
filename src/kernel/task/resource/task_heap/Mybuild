@@ -1,0 +1,10 @@
+package embox.kernel.task.resource
+
+module task_heap {
+	@IncludeExport(path="kernel/task/resource")
+	source "task_heap.h"
+
+	source "task_heap.c"
+	depends embox.kernel.task.task_resource
+}
+

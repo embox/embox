@@ -8,6 +8,8 @@ module fork_copy_everything extends fork {
 	source "fork_addr_space_static.c"
 
 	depends embox.arch.fork_entry
+	depends embox.kernel.task.resource.task_heap
+	depends embox.mem.phymem
 	depends fork_copy_addr_space
 }
 

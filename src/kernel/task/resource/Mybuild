@@ -16,11 +16,6 @@ module idesc_table {
 	@NoRuntime depends embox.compat.libc.assert
 }
 
-module task_heap {
-	source "task_heap.c"
-	depends embox.kernel.task.task_resource
-}
-
 module mmap {
 	source "mmap.c"
 
