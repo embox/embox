@@ -11,6 +11,7 @@
 void context_init(struct context *ctx, unsigned int flags,
 		void (*routine_fn)(void), void *sp) {
 	/* Set kernel mode stack pointer */
-	ctx->sp = (uint32_t) sp;
+	/* extra substract to allow full desceding stack. Just in case */
+	ctx->sp = (uint32_t) sp - sizeof(struct context) - 4;
 	ctx->ra = (uint32_t) routine_fn;
 }
