@@ -30,11 +30,34 @@
 struct schedee;
 struct schedee_priority;
 
-extern int schedee_priority_init(struct schedee *s, int new_priority);
-extern int schedee_priority_set(struct schedee *s, int new_priority);
-extern int schedee_priority_get(struct schedee *s);
-extern int schedee_priority_inherit(struct schedee *s,
-		int priority);
-extern int schedee_priority_reverse(struct schedee *s);
+/**
+ * Initialize #schedee_priority of @p schedee with @p new_priority.
+ */
+extern int schedee_priority_init(struct schedee *schedee, int new_priority);
+
+/**
+ * Sets @p new_priority to #schedee_priority of @p schedee.
+ */
+extern int schedee_priority_set(struct schedee *schedee, int new_priority);
+
+/**
+ * Returns @p schedee priority.
+ */
+extern int schedee_priority_get(struct schedee *schedee);
+
+/**
+ * Inherits priority in order to prevent the priority inversion.
+ * @param  schedee  The schedee which priority has to inherit @p priority.
+ * @param  priority The priority to inherit.
+ * @return          The new priority of @p schedee.
+ */
+extern int schedee_priority_inherit(struct schedee *schedee, int priority);
+
+/**
+ * Reverses the previously inherited priority of @p schedee.
+ * @param  schedee The schedee which priority has to be reversed.
+ * @return         The new priority of @p schedee.
+ */
+extern int schedee_priority_reverse(struct schedee *schedee);
 
 #endif /* SCHED_SCHEDEE_PRIORITY_H_ */
