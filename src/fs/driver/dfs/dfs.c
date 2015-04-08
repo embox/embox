@@ -415,7 +415,7 @@ size_t dfs_read(struct file *desc, void *buf, size_t size) {
 	assert(buf);
 
 	int pos = pos_from_page(desc->f_inode->start_pos) + desc->pos;
-	int l   = min(size, desc->f_inode->length - pos);
+	int l   = min(size, desc->f_inode->length - desc->pos);
 
 	assert(l >= 0);
 
