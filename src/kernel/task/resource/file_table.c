@@ -47,3 +47,19 @@ int file_table_dupfd(int fd_old, int fd_new) {
 
 	return 0;
 }
+
+int file_table_add(struct file_table *ft, struct file *f) {
+	int i;
+
+	assert(ft);
+	assert(f);
+
+	for (i = 0; i < FILE_TABLE_SZ; i++) {
+		if (ft->file[i] == NULL) {
+			ft->file[i] = f;
+			return 0;
+		}
+	}
+
+	return -ENOMEM;
+}

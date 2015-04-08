@@ -51,7 +51,6 @@ module diag_fd {
 
 	depends embox.kernel.task.api
 	depends embox.compat.posix.idx.dup
-	depends embox.fs.idesc
 }
 
 module start_script {

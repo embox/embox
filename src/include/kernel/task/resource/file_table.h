@@ -26,4 +26,5 @@ static inline struct file_table *task_fs(void) {
 }
 
 extern int file_table_dupfd(int fd_old, int fd_new);
+extern int file_table_add(struct file_table *, struct file *);
 #endif /* FILE_TABLE_H_ */
