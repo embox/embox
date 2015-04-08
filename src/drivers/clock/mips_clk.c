@@ -18,29 +18,26 @@
 #include <embox/unit.h>
 
 #define HZ 1000
-
-//http://stackoverflow.com/questions/4211555/clock-implementation-in-mips
-// XXX Anton, what is it above? -- Eldar
+#define COUNT_OFFSET (SYS_CLOCK / HZ)
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-	uint32_t count = mips_read_c0_count();
-	mips_write_c0_compare(count + 10000);
+	mips_write_c0_compare(COUNT_OFFSET); /* this lowers irq line */
+	mips_write_c0_count(0);
 	clock_tick_handler(irq_nr, dev_id);
 	return IRQ_HANDLED;
 }
 
 static int mips_clock_setup(struct time_dev_conf * conf) {
-	uint32_t count = mips_read_c0_count();
-	mips_write_c0_compare(count + 10000);
-
+	mips_write_c0_compare(COUNT_OFFSET);
+	mips_write_c0_count(0);
 	return ENOERR;
 }
 
 static struct time_event_device mips_event_device  = {
-		.config = mips_clock_setup,
-		.event_hz = 1000,
-		.name = "mips_clk",
-		.irq_nr = MIPS_IRQN_TIMER
+	.config = mips_clock_setup,
+	.event_hz = 1000,
+	.name = "mips_clk",
+	.irq_nr = MIPS_IRQN_TIMER
 };
 
 static struct clock_source mips_clock_source = {
@@ -50,11 +47,16 @@ static struct clock_source mips_clock_source = {
 };
 
 static int mips_clock_init(void) {
-	clock_source_register(&mips_clock_source);
+	int err;
 
-	if (ENOERR != irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, &mips_clock_source,
-			"mips_clk")) {
-		// TODO error handling? -- Eldar
+	err = clock_source_register(&mips_clock_source);
+	if (err) {
+		return err;
+	}
+
+	err = irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, &mips_clock_source, "mips_clk");
+	if (err) {
+		return err;
 	}
 
 	return 0;
