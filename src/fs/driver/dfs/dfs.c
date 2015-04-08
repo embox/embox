@@ -1,5 +1,7 @@
-/* @author Denis Deryugin
- * @date 26 Dec 2014
+/* @file   dfs.c
+ * @brief  DumbFS driver
+ * @author Denis Deryugin
+ * @date   26 Dec 2014
  */
 
 #include <errno.h>
@@ -281,9 +283,6 @@ static struct inode *dfs_icreate(struct dentry *d_new,
 	dfs_sb_status = DIRTY;
 	dfs_write_sb_info(sbi);
 
-	memset(&dirent, 0xA5, sizeof(dirent));
-	dfs_read_dirent(0, &dirent);
-
 	return d_new->d_inode = i_new;
 }
 
@@ -329,7 +328,6 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 static struct inode *dfs_iterate(struct inode *inode, struct dir_ctx *ctx) {
 	struct dfs_dir_entry dirent;
 	struct inode *ent;
-	//assert(inode);
 	assert(ctx);
 
 	if (ctx->pos >= ((struct dfs_sb_info *) dfs_sb()->sb_data)->inode_count)
@@ -375,22 +373,15 @@ struct inode_operations dfs_iops = {
 };
 
 static int dfs_open(struct inode *node, struct file *desc) {
-	//struct dfs_dir_entry dirent;
-
 	if (!desc || !node) {
 		return ENOENT;
 	}
 
-	//dfs_read_dirent(node->i_no, &dirent);
-
 	desc->f_ops = &dfs_fops;
-
 	return 0;
 }
 
 static int dfs_close(struct file *desc) {
-	/* if (desc)
-		free(desc); */
 	return 0;
 }
 

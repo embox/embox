@@ -1,5 +1,7 @@
-/* @author Denis Deryugin
- * @date 11 Mar 2014
+/* @file   dvfs.c
+ * @brief  Implementation of common functions of DVFS
+ * @author Denis Deryugin
+ * @date   11 Mar 2014
  */
 
 #include <assert.h>
@@ -23,9 +25,10 @@ extern int dvfs_default_pathname(struct inode *inode, char *buf);
 int inode_fill(struct super_block *sb, struct inode *inode,
                       struct dentry *dentry) {
 	*inode = (struct inode) {
-		.i_dentry = dentry,
-		.i_sb     = sb,
-		.i_ops    = sb ? sb->sb_iops : NULL,
+		.i_dentry  = dentry,
+		.i_sb      = sb,
+		.i_ops     = sb ? sb->sb_iops : NULL,
+		.start_pos = inode->start_pos,
 	};
 
 	return 0;
