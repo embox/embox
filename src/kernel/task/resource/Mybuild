@@ -1,12 +1,5 @@
 package embox.kernel.task.resource
 
-module affinity {
-	source "affinity.c"
-
-	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.assert
-}
-
 module errno {
 	source "errno.c"
 

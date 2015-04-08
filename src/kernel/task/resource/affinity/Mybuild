@@ -1,0 +1,12 @@
+package embox.kernel.task.resource
+
+module affinity {
+	@IncludeExport(path="kernel/task/resource")
+	source "affinity.h"
+
+	source "affinity.c"
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.compat.libc.assert
+}
+
