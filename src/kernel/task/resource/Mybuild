@@ -36,6 +36,8 @@ module idesc_table {
 
 module file_table {
 	source "file_table.c"
+
+	depends embox.fs.dvfs
 }
 
 module task_heap {
