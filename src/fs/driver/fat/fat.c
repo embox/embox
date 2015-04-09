@@ -1,6 +1,6 @@
 /**
- * @file
- * @brief
+ * @file  fat.c
+ * @brief Implementation of FAT driver
  *
  * @date 28.03.2012
  * @author Andrey Gazukin
@@ -13,22 +13,15 @@
 #include <fcntl.h>
 #include <limits.h>
 
-#include <util/math.h>
-#include <mem/misc/pool.h>
-#include <mem/phymem.h>
-
+#include <fs/fat.h>
+#include <fs/file_desc.h>
+#include <fs/file_operation.h>
+#include <fs/file_system.h>
 #include <fs/fs_driver.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
-#include <fs/fat.h>
-#include <fs/hlpr_path.h>
-#include <fs/file_system.h>
-#include <fs/file_desc.h>
-#include <fs/file_operation.h>
-
-#include <embox/block_dev.h>
-
 #include <framework/mod/options.h>
+#include <mem/misc/pool.h>
 
 #define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
 
@@ -42,14 +35,31 @@ POOL_DEF(fat_fs_pool, struct fat_fs_info,
 POOL_DEF(fat_file_pool, struct fat_file_info,
 	OPTION_GET(NUMBER, inode_quantity));
 
-extern char bootcode[];
-
-static const struct fs_driver fatfs_driver;
-extern int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
-extern int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
+/* VFS-independent functions */
+extern int      fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
+extern int      fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
 extern uint32_t fat_get_next(struct fat_fs_info *fsi,
-		struct dirinfo * dirinfo, struct dirent * dirent);
-static int fat_create_dir_entry (struct nas *parent_nas);
+                             struct dirinfo * dirinfo, struct dirent * dirent);
+static int      fat_create_dir_entry (struct nas *parent_nas);
+extern int      fat_create_partition(void *bdev);
+extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
+                                  uint8_t *pptype, uint32_t *psize);
+extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);
+extern uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
+                             uint32_t *p_scratchcache, uint32_t cluster, uint32_t new_contents);
+extern uint32_t fat_get_free_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch);
+extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
+                             uint8_t *dirname, struct dirinfo *dirinfo);
+extern uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
+                             struct dirinfo *di, struct dirent *de);
+extern void     fat_set_direntry (uint32_t dir_cluster, uint32_t cluster);
+extern uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
+		uint8_t *p_scratch, size_t *size);
+extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
+                              uint8_t *buffer, uint32_t *successcount, uint32_t len);
+extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
+                               uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
+extern int      fat_root_dir_record(void *bdev);
 
 static struct fat_file_info *fat_fi_alloc(struct nas *nas, void *fs) {
 	struct fat_file_info *fi;
@@ -63,25 +73,6 @@ static struct fat_file_info *fat_fi_alloc(struct nas *nas, void *fs) {
 
 	return fi;
 }
-
-extern int fat_create_partition(void *bdev);
-extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
-		uint8_t *pptype, uint32_t *psize);
-
-extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);
-extern uint32_t fat_get_fat_(struct fat_fs_info *fsi,
-		uint8_t *p_scratch,	uint32_t *p_scratchcache, uint32_t cluster);
-extern uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
-		uint32_t *p_scratchcache, uint32_t cluster, uint32_t new_contents);
-extern uint32_t fat_get_free_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch);
-extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
-		uint8_t *dirname, struct dirinfo *dirinfo);
-extern uint32_t fat_get_next(struct fat_fs_info *fsi,
-		struct dirinfo *dirinfo, struct dirent *dirent);
-extern uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
-		struct dirinfo *di, struct dirent *de);
-extern void fat_set_direntry (uint32_t dir_cluster, uint32_t cluster);
-
 /*
  * Create a file or directory. You supply a file_create_param_t
  * structure.
@@ -195,17 +186,6 @@ static int fat_create_file(struct node * parent_node, struct node *node) {
 
 	return DFS_OK;
 }
-
-extern uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
-		uint8_t *p_scratch, size_t *size);
-extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
-                              uint8_t *buffer, uint32_t *successcount, uint32_t len);
-
-extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
-			uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
-extern int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
-extern int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
-extern int fat_root_dir_record(void *bdev);
 
 static int fat_mount_files(struct nas *dir_nas) {
 	uint32_t cluster;
@@ -448,16 +428,14 @@ static int fatfs_ioctl(struct file_desc *desc, int request, ...) {
 
 static int fat_mount_files (struct nas *dir_nas);
 static int fat_create_file(struct node *parent_node, struct node *new_node);
-int fat_create_partition (void *bdev);
-int fat_root_dir_record(void *bdev);
 extern int fat_unlike_file(struct fat_file_info *fi, uint8_t *path, uint8_t *scratch);
 extern int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path, uint8_t *scratch);
 
 /* File system operations */
 
 static int fatfs_init(void * par);
-static int fatfs_format(void * bdev);
-static int fatfs_mount(void * dev, void *dir);
+static int fatfs_format(void *bdev);
+static int fatfs_mount(void *dev, void *dir);
 static int fatfs_create(struct node *parent_node, struct node *new_node);
 static int fatfs_delete(struct node *node);
 static int fatfs_truncate (struct node *node, off_t length);
