@@ -5,6 +5,7 @@ module fat {
 	source "fat.h"
 
 	source "fat.c"
+	source "fat_common.c"
 	source "fatfs_subr.c"
 	option number inode_quantity=64
 	option number fat_descriptor_quantity=4
