@@ -6,14 +6,16 @@
  * @author Anton Kozlov
  */
 
-#include <drivers/at91sam7s256.h>
-#include <drivers/at91_timer_counter.h>
-
-#include <assert.h>
-#include <hal/reg.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <assert.h>
+
+#include <drivers/at91sam7s256.h>
+#include <drivers/timer_counter/at91_timer_counter.h>
+
+#include <hal/reg.h>
+
 
 void tc_init(uint8_t channel) {
 	assert(channel < 3);
