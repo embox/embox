@@ -1,8 +1,8 @@
 /**
- * @file
- *
- * @date May 16, 2014
- * @author: Anton Bondarev
+ * @file    res_vfork.c
+ * @brief   Task resource for vfork
+ * @date    May 16, 2014
+ * @author  Anton Bondarev
  */
 
 #include <stddef.h>

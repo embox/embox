@@ -79,10 +79,6 @@ module waitpid {
 	@NoRuntime depends embox.compat.libc.assert
 }
 
-module vfork {
-	source "res_vfork.c"
-}
-
 module argv {
 	source "res_argv.c"
 
