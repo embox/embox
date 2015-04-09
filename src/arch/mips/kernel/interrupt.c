@@ -22,7 +22,7 @@ void mips_c_interrupt_handler(pt_regs_t *regs) {
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-		unsigned int pending = mips_read_c0_cause() & mips_read_c0_status(); & ST0_IM;
+		unsigned int pending = mips_read_c0_cause() & mips_read_c0_status() & ST0_IM;
 		unsigned int irq;
 
 		for (irq = 15; irq > 7; irq--) {
