@@ -1327,5 +1327,173 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 	return result;
 }
 
+/*
+ * Open a file for reading or writing. You supply populated volinfo_t,
+ * a path to the file, mode (DFS_READ or DFS_WRITE) and an empty fileinfo
+ * structure. You also need to provide a pointer to a sector-sized scratch
+ * buffer.
+ * Returns various DFS_* error states. If the result is DFS_OK, fileinfo
+ * can be used to access the file from this point on.
+ */
+uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
+		uint8_t *p_scratch, size_t *size) {
+	char tmppath[PATH_MAX];
+	uint8_t filename[12];
+	struct dirinfo di;
+	struct dirent de;
 
+	struct volinfo *volinfo;
+	struct fat_fs_info *fsi;
+
+	fsi = fi->fsi;
+	volinfo = &fsi->vi;
+
+	fi->mode = mode;
+
+	strncpy((char *) tmppath, (char *) path, PATH_MAX);
+	tmppath[PATH_MAX - 1] = 0;
+	if (strcmp((char *) path,(char *) tmppath)) {
+		return DFS_PATHLEN;
+	}
+
+	fat_get_filename(tmppath, (char *) filename);
+
+	/*
+	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
+	 *  filename = "FILE    EXT" and  tmppath = "MYDIR/MYDIR2".
+	 */
+
+	di.p_scratch = p_scratch;
+	if (fat_open_dir(fsi, (uint8_t *) tmppath, &di)) {
+		return DFS_NOTFOUND;
+	}
+
+	while (!fat_get_next(fsi, &di, &de)) {
+		path_canonical_to_dir(tmppath, (char *) de.name);
+		if (!memcmp(tmppath, filename, MSDOS_NAME)) {
+			if (de.attr & ATTR_DIRECTORY){
+				return DFS_NOTFOUND;
+			}
+
+			fi->volinfo = volinfo;
+			fi->pointer = 0;
+			/*
+			 * The reason we store this extra info about the file is so that we
+			 * can speedily update the file size, modification date, etc. on a
+			 * file that is opened for writing.
+			 */
+			if (di.currentcluster == 0) {
+				fi->dirsector = volinfo->rootdir + di.currentsector;
+			} else {
+				fi->dirsector = volinfo->dataarea +
+						((di.currentcluster - 2) *
+						volinfo->secperclus) + di.currentsector;
+			}
+			fi->diroffset = di.currententry - 1;
+			if (volinfo->filesystem == FAT32) {
+				fi->cluster = (uint32_t) de.startclus_l_l |
+				  ((uint32_t) de.startclus_l_h) << 8 |
+				  ((uint32_t) de.startclus_h_l) << 16 |
+				  ((uint32_t) de.startclus_h_h) << 24;
+			} else {
+				fi->cluster = (uint32_t) de.startclus_l_l |
+				  ((uint32_t) de.startclus_l_h) << 8;
+			}
+			fi->firstcluster = fi->cluster;
+			if (size)
+				*size = (uint32_t) de.filesize_0 |
+				  ((uint32_t) de.filesize_1) << 8 |
+				  ((uint32_t) de.filesize_2) << 16 |
+				  ((uint32_t) de.filesize_3) << 24;
+
+			return DFS_OK;
+		}
+	}
+	return DFS_NOTFOUND;
+}
+
+/*
+ * Delete a file
+ * p_scratch must point to a sector-sized buffer
+ */
+int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
+		uint8_t *p_scratch) {
+	uint32_t cache;
+	uint32_t tempclus;
+	struct volinfo *volinfo;
+	struct fat_fs_info *fsi;
+
+	fsi = fi->fsi;
+	volinfo = &fsi->vi;
+	cache = 0;
+
+	if (DFS_OK != fat_open_file(fi, path, O_RDONLY, p_scratch, NULL)) {
+		return DFS_NOTFOUND;
+	}
+
+	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
+		return DFS_ERRMISC;
+	}
+	((struct dirent*) p_scratch)[fi->diroffset].name[0] = 0xe5;
+	if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
+		return DFS_ERRMISC;
+	}
+
+	/* Now follow the cluster chain to free the file space */
+	while (!((volinfo->filesystem == FAT12 && fi->firstcluster >= 0x0ff7) ||
+			(volinfo->filesystem == FAT16 && fi->firstcluster >= 0xfff7) ||
+			(volinfo->filesystem == FAT32 && fi->firstcluster >= 0x0ffffff7))) {
+		tempclus = fi->firstcluster;
+		//assert(fsi->bdev == nas->fs->bdev);
+		fi->firstcluster = fat_get_fat_(fsi, p_scratch,
+				&cache, fi->firstcluster);
+		//assert(nas->fs->bdev == fsi->bdev);
+		fat_set_fat_(fsi, p_scratch, &cache, tempclus, 0);
+	}
+	return DFS_OK;
+}
+
+/*
+ * Delete a file
+ * p_scratch must point to a sector-sized buffer
+ */
+int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
+		uint8_t *p_scratch) {
+	uint32_t cache;
+	uint32_t tempclus;
+	struct volinfo *volinfo;
+	struct fat_fs_info *fsi;
+
+	fsi = fi->fsi;
+	volinfo = &fsi->vi;
+
+	cache = 0;
+
+	/* fat_open_file gives us all the information we need to delete it */
+	if (DFS_OK != fat_open_file(fi, path, O_RDONLY, p_scratch, NULL)) {
+		return DFS_NOTFOUND;
+	}
+
+	/* First, read the directory sector and delete that entry */
+	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
+		return DFS_ERRMISC;
+	}
+	((struct dirent*) p_scratch)[fi->diroffset].name[0] = 0xe5;
+	if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
+		return DFS_ERRMISC;
+	}
+
+	/* Now follow the cluster chain to free the file space */
+	while (!((volinfo->filesystem == FAT12 && fi->firstcluster >= 0x0ff7) ||
+			(volinfo->filesystem == FAT16 && fi->firstcluster >= 0xfff7) ||
+			(volinfo->filesystem == FAT32 && fi->firstcluster >= 0x0ffffff7))) {
+		tempclus = fi->firstcluster;
+		//assert(nas->fs->bdev == fsi->bdev);
+		fi->firstcluster = fat_get_fat_(fsi, p_scratch,
+				&cache, fi->firstcluster);
+		//assert(nas->fs->bdev == fsi->bdev);
+		fat_set_fat_(fsi, p_scratch, &cache, tempclus, 0);
+	}
+	return DFS_OK;
+}
 
