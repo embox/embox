@@ -282,140 +282,8 @@ static uint32_t fat_open_file(struct nas *nas, uint8_t *path, int mode,
 	return DFS_NOTFOUND;
 }
 
-/*
- * Read an open file
- * You must supply a prepopulated file_info_t as provided by fat_open_file,
- * and a pointer to a volinfo->bytepersec scratch buffer.
- * 	Note that returning DFS_EOF is not an error condition. This function
- * 	updates the	successcount field with the number of bytes actually read.
- */
-static uint32_t fat_read_file(struct nas *nas, uint8_t *p_scratch,
-		uint8_t *buffer, uint32_t *successcount, uint32_t len) {
-	uint32_t remain;
-	uint32_t result;
-	uint32_t sector;
-	uint32_t bytesread;
-	uint32_t clastersize;
-	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
-	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
-
-	/* Don't try to read past EOF */
-	if (len > nas->fi->ni.size - fi->pointer) {
-		len = nas->fi->ni.size - fi->pointer;
-	}
-
-	result = DFS_OK;
-	remain = len;
-	*successcount = 0;
-	clastersize = fi->volinfo->secperclus * fi->volinfo->bytepersec;
-
-	while (remain && result == DFS_OK) {
-		/* This is a bit complicated. The sector we want to read is addressed
-		 * at a cluster granularity by the fi->cluster member. The file
-		 * pointer tells us how many extra sectors to add to that number.
-		 */
-		sector = fi->volinfo->dataarea +
-		  ((fi->cluster - 2) * fi->volinfo->secperclus) +
-		  div(div(fi->pointer, clastersize).rem, fi->volinfo->bytepersec).quot;
-
-		/* Case 1 - File pointer is not on a sector boundary */
-		if (div(fi->pointer, fi->volinfo->bytepersec).rem) {
-			uint16_t tempreadsize;
-
-			/* We always have to go through scratch in this case */
-			result = fat_read_sector(fsi, p_scratch, sector);
-
-			/*
-			 * This is the number of bytes that we actually care about in the
-			 * sector just read.
-			 */
-			tempreadsize = fi->volinfo->bytepersec -
-					(div(fi->pointer, fi->volinfo->bytepersec).rem);
-
-			/* Case 1A - We want the entire remainder of the sector. After this
-			 * point, all passes through the read loop will be aligned on a
-			 * sector boundary, which allows us to go through the optimal path
-			 *  2A below.
-			 */
-		   	if (remain >= tempreadsize) {
-				memcpy(buffer, p_scratch + (fi->volinfo->bytepersec - tempreadsize),
-						tempreadsize);
-				bytesread = tempreadsize;
-				buffer += tempreadsize;
-				fi->pointer += tempreadsize;
-				remain -= tempreadsize;
-			}
-			/* Case 1B - This read concludes the file read operation */
-			else {
-				memcpy(buffer, p_scratch +
-						(fi->volinfo->bytepersec - tempreadsize), remain);
-
-				buffer += remain;
-				fi->pointer += remain;
-				bytesread = remain;
-				remain = 0;
-			}
-		}
-		/* Case 2 - File pointer is on sector boundary */
-		else {
-			/*
-			 * Case 2A - We have at least one more full sector to read and
-			 * don't have to go through the scratch buffer. You could insert
-			 * optimizations here to read multiple sectors at a time, if you
-			 * were thus inclined (note that the maximum multi-read you could
-			 * perform is a single cluster, so it would be advantageous to have
-			 * code similar to case 1A above that would round the pointer to a
-			 * cluster boundary the first pass through, so all subsequent
-			 * [large] read requests would be able to go a cluster at a time).
-			 */
-			 if (remain >= fi->volinfo->bytepersec) {
-				result = fat_read_sector(fsi, buffer, sector);
-				remain -= fi->volinfo->bytepersec;
-				buffer += fi->volinfo->bytepersec;
-				fi->pointer += fi->volinfo->bytepersec;
-				bytesread = fi->volinfo->bytepersec;
-			}
-			/* Case 2B - We are only reading a partial sector */
-			else {
-				result = fat_read_sector(fsi, p_scratch, sector);
-				memcpy(buffer, p_scratch, remain);
-				buffer += remain;
-				fi->pointer += remain;
-				bytesread = remain;
-				remain = 0;
-			}
-		}
-
-		*successcount += bytesread;
-		/* check to see if we stepped over a cluster boundary */
-		if (div(fi->pointer - bytesread, clastersize).quot !=
-			div(fi->pointer, clastersize).quot) {
-			/*
-			 * An act of minor evil - we use bytesread as a scratch integer,
-			 * knowing that its value is not used after updating *successcount
-			 * above
-			 */
-			bytesread = 0;
-			if (((fi->volinfo->filesystem == FAT12) &&
-					(fi->cluster >= 0xff8)) ||
-					((fi->volinfo->filesystem == FAT16) &&
-							(fi->cluster >= 0xfff8)) ||
-							((fi->volinfo->filesystem == FAT32) &&
-									(fi->cluster >= 0x0ffffff8))) {
-				result = DFS_EOF;
-			}
-			else {
-				assert(nas->fs->bdev == fsi->bdev);
-				fi->cluster = fat_get_fat_(fsi, p_scratch, &bytesread, fi->cluster);
-			}
-		}
-	}
-
-	return result;
-}
-
+extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
+                              uint8_t *buffer, uint32_t *successcount, uint32_t len);
 
 /*
  * Delete a file
@@ -969,8 +837,13 @@ static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
 	fi->pointer = desc->cursor;
+	fi->fsi     = nas->fs->fsi;
+	/* Don't try to read past EOF */
+	if (size > nas->fi->ni.size - fi->pointer) {
+		size = nas->fi->ni.size - fi->pointer;
+	}
 
-	rezult = fat_read_file(nas, fat_sector_buff, buf, &bytecount, size);
+	rezult = fat_read_file(fi, fat_sector_buff, buf, &bytecount, size);
 	if (DFS_OK == rezult) {
 		desc->cursor = fi->pointer;
 		return bytecount;
