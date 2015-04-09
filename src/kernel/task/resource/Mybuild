@@ -64,10 +64,3 @@ module thread_key_table {
 	@NoRuntime depends embox.util.indexator
 }
 
-module u_area {
-	source "u_area.c"
-
-	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.assert
-}
-

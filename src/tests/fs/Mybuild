@@ -50,9 +50,10 @@ module permissions {
 	source "permissions.c"
 
 	depends embox.compat.posix.proc.uid
-	depends embox.fs.driver.ext2
 	depends embox.driver.ide
+	depends embox.fs.driver.ext2
 	depends embox.fs.filesystem
+	depends embox.kernel.task.resource.u_area
 }
 
 module vfs {

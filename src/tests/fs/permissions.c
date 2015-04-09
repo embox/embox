@@ -81,7 +81,7 @@ static int teardown_suite(void) {
 
 #include <kernel/task/resource/u_area.h>
 static int clear_id(void) {
-	memset(task_self_u_area(), 0, sizeof(struct task_u_area));
+	memset(task_self_resource_u_area(), 0, sizeof(struct task_u_area));
 	return 0;
 }
 
