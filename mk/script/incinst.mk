@@ -23,7 +23,6 @@ $(INCUDE_INSTALL_DIR)/%/. : | $(INCUDE_INSTALL_DIR)/.
 	@touch $@
 
 $(INCUDE_INSTALL_DIR)/% : | $(INCUDE_INSTALL_DIR)/.
-	@echo 'hhhhhhhhhhhhh $@'
 	$(CP) -r $(cp_T_if_supported) $(src_file) $@
 	#@touch $@ # workaround when copying directories
 	#@find $@ -name .svn -type d -print0 | xargs -0 /bin/rm -rf
