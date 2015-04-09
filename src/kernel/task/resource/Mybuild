@@ -71,17 +71,10 @@ module u_area {
 	@NoRuntime depends embox.compat.libc.assert
 }
 
-module waitpid {
-	source "waitpid.c"
-
-	depends embox.kernel.sched.wait_queue
-	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.assert
-}
-
 module argv {
 	source "res_argv.c"
 
 	option number args_quantity = 0x8
 	option number arg_length = 0x20
 }
+

@@ -8,7 +8,9 @@
 
 #include <unistd.h>
 #include <sys/wait.h>
+
 #include <embox/test.h>
+#include <kernel/task.h>
 
 EMBOX_TEST_SUITE("waitpid testsuite");
 
