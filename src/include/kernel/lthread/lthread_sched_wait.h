@@ -21,8 +21,7 @@ struct lthread;
 struct sched_wait_info {
 	struct sys_timer *tmr;
 	clock_t remain;
-	clock_t cur_time;
-	clock_t prev_time;
+	clock_t last_sync;
 	int status;
 };
 
@@ -91,12 +90,7 @@ extern int sched_wait_timeout_lthread(struct lthread *self);
 		                                                             \
 		if (!(cond_expr)) {                                          \
 			sched_wait_prepare_lthread(self, __wait_timeout);        \
-			                                                         \
 			__wait_ret = sched_wait_timeout_lthread(self);           \
-			                                                         \
-			if (__wait_ret == 0) {                                   \
-			__wait_ret = sched_wait_timeout_lthread(self);           \
-			}                                                        \
 		}                                                            \
 		                                                             \
 		if (__wait_ret != -EAGAIN) {                                 \
