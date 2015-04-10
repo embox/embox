@@ -17,7 +17,6 @@
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
 extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *, struct dentry *);
-
 extern int            dvfs_update_root(void);
 extern struct dentry *dvfs_root(void);
 
@@ -25,6 +24,14 @@ extern struct dentry *dvfs_root(void);
 extern int           dvfs_default_pathname(struct inode *inode, char *buf);
 
 /* Path-related functions */
+
+/* @brief Get the full path to the inode from task's root dentry
+ * @param inode The inode of which the path is to be resolved
+ * @param buf   Char buffer where path would be put
+ *
+ * @retval  0 Success
+ * @retval -1 Error
+ */
 int dvfs_pathname(struct inode *inode, char *buf) {
 	assert(inode);
 	assert(buf);
@@ -35,6 +42,12 @@ int dvfs_pathname(struct inode *inode, char *buf) {
 		return dvfs_default_pathname(inode, buf);
 }
 
+/* @brief Get the length of next element int the path
+ * @param path Pointer to the path
+ *
+ * @return The length of next element in the path
+ * @revtal -1 Error
+ */
 int dvfs_path_next_len(const char *path) {
 	int len = strlen(path);
 	int off = 0;
@@ -48,6 +61,15 @@ int dvfs_path_next_len(const char *path) {
 	return off;
 }
 
+/* @brief Resolve one more element in the path
+ * @param path   Pointer to relative path
+ * @param dentry The previous dentry
+ * @param lookup Structure which is to contain result of path walk
+ *
+ * @return Negative error code
+ * @retval       0 Ok
+ * @retval -ENOENT Node not found
+ */
 int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
 	char buff[DENTRY_NAME_LEN];
 	struct inode *in;
@@ -95,6 +117,15 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 }
 
 /* DVFS interface */
+
+/* @brief Try to find dentry at specified path
+ * @param path   Absolute or relative path
+ * @param lookup Structure where result will be stored
+ *
+ * @return Negative error code
+ * @retval       0 Ok
+ * @retval -ENOENT No node found or incorrect root/pwd dentry
+ */
 int dvfs_lookup(const char *path, struct lookup *lookup) {
 	struct dentry *dentry;
 	if (path[0] == '/') {
@@ -112,6 +143,15 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	return dvfs_path_walk(path, dentry, lookup);
 }
 
+/* @brief Create new inode
+ * @param name   Directory name for new inode
+ * @param lookup Structure containing parent dentry; lookup->item should be NULL
+ * @param flags  Flags passed to FS driver
+ *
+ * @return Negative error number
+ * @retval       0 Ok
+ * @retval -ENOMEM New dentry can't be allocated
+ */
 int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	struct super_block *sb;
 	assert(lookup);
@@ -121,7 +161,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	sb = lookup->parent->d_sb;
 	lookup->item = dvfs_alloc_dentry();
 	if (!lookup->item)
-		return -1;
+		return -ENOMEM;
 
 	dentry_fill(sb, NULL, lookup->item, lookup->parent);
 	strcpy(lookup->item->name, name);
@@ -133,6 +173,16 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	return 0;
 }
 
+/* @brief Initialize file descriptor for usage according to path
+ * @param path Path to the file
+ * @param desc The file descriptor to be initailized
+ * @param mode Defines behavior according to POSIX
+ *
+ * @returns Negative error number
+ * @retval       0 Ok
+ * @retval -ENOENT File is directory or file not found and
+ *                 creating is not requested
+ */
 int dvfs_open(const char *path, struct file *desc, int mode) {
 	struct lookup lookup;
 	struct inode  *i_no;
@@ -174,6 +224,13 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 	return desc->f_ops->open(i_no, desc);
 }
 
+/* @brief Uninitialize file descriptor
+ * @param desc File descriptor to be uninitialized
+ *
+ * @return Negative error code
+ * @retval  0 Ok
+ * @retval -1 Descriptor fields are inconsistent
+ */
 int dvfs_close(struct file *desc) {
 	if (!desc || !desc->f_inode || !desc->f_dentry)
 		return -1;
@@ -188,6 +245,15 @@ int dvfs_close(struct file *desc) {
 	return 0;
 }
 
+/* @brief Application level interface to write the file
+ * @param desc  File to be written
+ * @param buf   Source of the data
+ * @param count Length of the data
+ *
+ * @return Bytes written or negative error code
+ * @retval       0 Ok
+ * @retval -ENOSYS Function is not implemented in file system driver
+ */
 int dvfs_write(struct file *desc, char *buf, int count) {
 	if (!desc)
 		return -1;
@@ -198,6 +264,15 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 		return -ENOSYS;
 }
 
+/* @brief Application level interface to read the file
+ * @param desc  File to be read
+ * @param buf   Destination
+ * @param count Length of the data
+ *
+ * @return Bytes read or negative error code
+ * @retval       0 Ok
+ * @retval -ENOSYS Function is not implemented in file system driver
+ */
 int dvfs_read(struct file *desc, char *buf, int count) {
 	if (!desc)
 		return -1;
@@ -208,6 +283,16 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 		return -ENOSYS;
 }
 
+/* @brief Mount file system
+ * @param dev    Path to the source device (e.g. /dev/sda1)
+ * @param dest   Path to the mount point (e.g. /mnt)
+ * @param fstype File system type related to FS driver
+ * @param flags  NIY
+ *
+ * @return Negative error value
+ * @retval       0 Ok
+ * @retval -ENOENT Mount point or device not found
+ */
 int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
@@ -238,6 +323,14 @@ int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 	return 0;
 }
 
+/* @brief Get next entry in the directory
+ * @param lookup  Contains directory dentry (.parent) and
+ *                previous element (.item)
+ * @param dir_ctx Position to be found in directory
+ *
+ * @return Negative error value
+ * @retval 0 Ok
+ */
 int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct super_block *sb;
 	struct inode *parent_inode;

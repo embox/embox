@@ -25,6 +25,12 @@ POOL_DEF(file_pool, struct file, FILE_POOL_SIZE);
 POOL_DEF(mnt_pool, struct dvfsmnt, MNT_POOL_SIZE);
 
 /* Default FS-nondependent operations */
+/* @brief Alloc inode and set it superblock and inode_operations
+ * @param sb Superblock of related file system
+ *
+ * @return Pointer to the new inode
+ * @retval NULL inode could not be allocated
+ */
 struct inode *dvfs_default_alloc_inode(struct super_block *sb) {
 	struct inode *inode;
 	if (!sb)
@@ -40,11 +46,22 @@ struct inode *dvfs_default_alloc_inode(struct super_block *sb) {
 	return inode;
 }
 
+/* @brief Remove inode from inode_pool
+ * @param inode inode to be removed from pool
+ *
+ * @retval 0 Ok
+ */
 int dvfs_default_destroy_inode(struct inode *inode) {
 	pool_free(&inode_pool, inode);
 	return 0;
 }
 
+/* @brief Try to resolve pathname according to the dentry
+ * @param inode The inode which is to be path-resolved
+ * @param buf   Buffer for the path
+ *
+ * @retval 0 Ok
+ */
 int dvfs_default_pathname(struct inode *inode, char *buf) {
 	assert(inode);
 	if (inode->i_dentry)
@@ -55,6 +72,13 @@ int dvfs_default_pathname(struct inode *inode, char *buf) {
 	return 0;
 }
 
+/* @brief Try to allocate superblock using file system driver and given device
+ * @param drv Name of file system driver
+ * @param dev Path to device (e.g. /dev/sda1)
+ *
+ * @return Pointer to the new superblock
+ * @retval NULL Superblock could not be allocated
+ */
 struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, char *dev) {
 	assert(drv);
 
@@ -64,6 +88,12 @@ struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, char *dev) {
 		return NULL;
 }
 
+/* @brief Try to allocate inode using given superblock
+ * @param sb Given superlblock
+ *
+ * @return Pointer to the new inode
+ * @retval NULL inode could not be allocated
+ */
 struct inode *dvfs_alloc_inode(struct super_block *sb) {
 	if (sb->sb_ops && sb->sb_ops->alloc_inode)
 		return sb->sb_ops->alloc_inode(sb);
@@ -72,6 +102,12 @@ struct inode *dvfs_alloc_inode(struct super_block *sb) {
 }
 
 extern int dvfs_default_destroy_inode(struct inode *);
+/* @brief Try to destroy the inode
+ * @param inode Pointer to the inode to be destroyed
+ *
+ * @return Negative error code
+ * @retval 0 Ok
+ */
 int dvfs_destroy_inode(struct inode *inode) {
 	assert(inode);
 
@@ -82,34 +118,53 @@ int dvfs_destroy_inode(struct inode *inode) {
 		return dvfs_default_destroy_inode(inode);
 }
 
+/* @brief Get new dentry from pool
+ *
+ * @return Pointer to the new dentry
+ * @retval NULL Pool is full
+ */
 struct dentry *dvfs_alloc_dentry(void) {
 	return pool_alloc(&dentry_pool);
 }
 
+/* @brief Remove dentry from pool
+ */
 int dvfs_destroy_dentry(struct dentry *dentry) {
 	pool_free(&dentry_pool, dentry);
 	return 0;
 }
 
+/* @brief Get new file descriptor from pool
+ *
+ * @return Pointer to the new file descriptor
+ * @retval NULL Pool is full
+ */
 struct file *dvfs_alloc_file(void) {
 	return pool_alloc(&file_pool);
 }
 
+/* @brief Remove file descriptor from pool
+ */
 int dvfs_destroy_file(struct file *desc) {
 	pool_free(&file_pool, desc);
 	return 0;
 }
 
-struct dvfsmnt *dvfs_alloc_mnt(void) {
+/* struct dvfsmnt *dvfs_alloc_mnt(void) {
 	return pool_alloc(&mnt_pool);
 }
 
 int dvfs_destroy_mnt(struct dvfsmnt *mnt) {
 	pool_free(&mnt_pool, mnt);
 	return 0;
-}
+}*/
 
 /* Fillers */
+/* @brief Fills inode fields according to existing dentry and SB
+ * @param inode      The structure to be filled
+ * @param superblock The superblock of FS of the inode
+ * @param dentry     The dentry related to inode
+ */
 int inode_fill(struct super_block *sb, struct inode *inode,
                       struct dentry *dentry) {
 	*inode = (struct inode) {
@@ -121,7 +176,13 @@ int inode_fill(struct super_block *sb, struct inode *inode,
 
 	return 0;
 }
-
+/* @brief Fills dentry fields according to existing superblok,
+ *        inode and prent dentry
+ * @param superblock The superblock of FS of the dentry
+ * @param inode      The inode related to dentry
+ * @param dentry     The structure to be filled
+ * @param parent     The parent of the denrty
+ */
 int dentry_fill(struct super_block *sb, struct inode *inode,
                       struct dentry *dentry, struct dentry *parent) {
 	*dentry = (struct dentry) {
@@ -145,6 +206,9 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 /* Root-related stuff */
 static struct dentry *global_root = NULL;
 extern struct super_block *rootfs_sb(void);
+/* @brief Updating task resources realted to file system or
+ *        initialize them if they are empty
+ */
 int dvfs_update_root(void) {
 	if (!global_root)
 		global_root = dvfs_alloc_dentry();
@@ -172,6 +236,9 @@ int dvfs_update_root(void) {
 	return 0;
 }
 
+/* @brief Global root getter
+ * @return Pointer to the global VFS root
+ */
 struct dentry *dvfs_root(void) {
 	if (!global_root) {
 		dvfs_update_root();
