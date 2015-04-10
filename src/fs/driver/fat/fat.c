@@ -60,6 +60,7 @@ extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
                                uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
 extern int      fat_root_dir_record(void *bdev);
+extern int fat_create_file(struct fat_file_info *fi, char *path, int mode);
 
 static struct fat_file_info *fat_fi_alloc(struct nas *nas, void *fs) {
 	struct fat_file_info *fi;
@@ -72,119 +73,6 @@ static struct fat_file_info *fat_fi_alloc(struct nas *nas, void *fs) {
 	}
 
 	return fi;
-}
-/*
- * Create a file or directory. You supply a file_create_param_t
- * structure.
- * Returns various DFS_* error states. If the result is DFS_OK, file
- * was created and can be used.
- */
-static int fat_create_file(struct node * parent_node, struct node *node) {
-	char tmppath[PATH_MAX];
-	uint8_t filename[12];
-	struct dirinfo di;
-	struct dirent de;
-	struct volinfo *volinfo;
-	struct nas *nas;
-	uint32_t cluster, temp;
-	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
-
-	nas = node->nas;
-	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
-	volinfo = &fsi->vi;
-	fi->volinfo = volinfo;
-
-	vfs_get_relative_path(node, tmppath, PATH_MAX);
-
-	fat_get_filename(tmppath, (char *) filename);
-
-	/*
-	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
-	 *  filename = "FILE    EXT" and  tmppath = "MYDIR/MYDIR2".
-	 */
-	di.p_scratch = fat_sector_buff;
-	if (fat_open_dir(fsi, (uint8_t *) tmppath, &di)) {
-		return DFS_NOTFOUND;
-	}
-
-	while (!fat_get_next(fsi, &di, &de));
-
-	/* Locate or create a directory entry for this file */
-	if (DFS_OK != fat_get_free_dir_ent(fsi, (uint8_t *) tmppath, &di, &de)) {
-		return DFS_ERRMISC;
-	}
-
-	assert(nas->fs->bdev == fsi->bdev);
-	cluster = fat_get_free_fat_(fsi, fat_sector_buff);
-	de = (struct dirent) {
-		.attr = S_ISDIR(node->mode) ? ATTR_DIRECTORY : 0,
-		.startclus_l_l = cluster & 0xff,
-		.startclus_l_h = (cluster & 0xff00) >> 8,
-		.startclus_h_l = (cluster & 0xff0000) >> 16,
-		.startclus_h_h = (cluster & 0xff000000) >> 24,
-	};
-	memcpy(de.name, filename, MSDOS_NAME);
-	fat_set_filetime(&de);
-
-	fi->volinfo = volinfo;
-	fi->pointer = 0;
-	/*
-	 * The reason we store this extra info about the file is so that we can
-	 * speedily update the file size, modification date, etc. on a file
-	 * that is opened for writing.
-	 */
-	if (di.currentcluster == 0) {
-		fi->dirsector = volinfo->rootdir + di.currentsector;
-	} else {
-		fi->dirsector = volinfo->dataarea +
-				((di.currentcluster - 2) * volinfo->secperclus) +
-				di.currentsector;
-	}
-	fi->diroffset = di.currententry - 1;
-	fi->cluster = cluster;
-	fi->firstcluster = cluster;
-	nas->fi->ni.size = 0;
-
-	/*
-	 * write the directory entry
-	 * note that we no longer have the sector containing the directory
-	 * entry, tragically, so we have to re-read it
-	 */
-
-	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector)) {
-		return DFS_ERRMISC;
-	}
-	memcpy(&(((struct dirent*) fat_sector_buff)[di.currententry - 1]),
-			&de, sizeof(struct dirent));
-	if (fat_write_sector(fsi, fat_sector_buff, fi->dirsector)) {
-		return DFS_ERRMISC;
-	}
-	/* Mark newly allocated cluster as end of chain */
-	switch(volinfo->filesystem) {
-		case FAT12:		cluster = 0xfff;	break;
-		case FAT16:		cluster = 0xffff;	break;
-		case FAT32:		cluster = 0x0fffffff;	break;
-		default:		return DFS_ERRMISC;
-	}
-
-	temp = 0;
-	assert(nas->fs->bdev == fsi->bdev);
-	fat_set_fat_(fsi,
-			fat_sector_buff, &temp, fi->cluster, cluster);
-
-	if (node_is_directory(node)) {
-		/* create . and ..  files of this catalog */
-		fat_set_direntry(di.currentcluster, fi->cluster);
-		cluster = fi->volinfo->dataarea +
-				  ((fi->cluster - 2) * fi->volinfo->secperclus);
-		if (fat_write_sector(fsi, fat_sector_buff, cluster)) {
-			return DFS_ERRMISC;
-		}
-	}
-
-	return DFS_OK;
 }
 
 static int fat_mount_files(struct nas *dir_nas) {
@@ -427,7 +315,6 @@ static int fatfs_ioctl(struct file_desc *desc, int request, ...) {
 }
 
 static int fat_mount_files (struct nas *dir_nas);
-static int fat_create_file(struct node *parent_node, struct node *new_node);
 extern int fat_unlike_file(struct fat_file_info *fi, uint8_t *path, uint8_t *scratch);
 extern int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path, uint8_t *scratch);
 
@@ -529,7 +416,10 @@ static int fatfs_mount(void *dev, void *dir) {
 
 static int fatfs_create(struct node *parent_node, struct node *node) {
 	struct nas *parent_nas, *nas;
+	struct fat_file_info *fi;
+	struct fat_fs_info *fsi;
 	int rc;
+	char tmppath[PATH_MAX];
 
 	assert(parent_node && node);
 
@@ -539,12 +429,22 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 
 	nas = node->nas;
 	parent_nas = parent_node->nas;
+	nas->fi->ni.size = 0;
 
 	if (NULL == fat_fi_alloc(nas, parent_nas->fs)) {
 		return -ENOMEM;
 	}
 
-	if(0 != fat_create_file(parent_node, node)) {
+	vfs_get_relative_path(node, tmppath, PATH_MAX);
+
+	fi = nas->fi->privdata;
+	fsi = nas->fs->fsi;
+	*fi = (struct fat_file_info) {
+		.fsi = fsi,
+		.volinfo = &fsi->vi,
+	};
+
+	if (0 != fat_create_file(fi, tmppath, node->mode)) {
 		return -EIO;
 	}
 

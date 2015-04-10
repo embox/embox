@@ -1497,3 +1497,110 @@ int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
 	return DFS_OK;
 }
 
+/*
+ * Create a file or directory. You supply a file_create_param_t
+ * structure.
+ * Returns various DFS_* error states. If the result is DFS_OK, file
+ * was created and can be used.
+ */
+int fat_create_file(struct fat_file_info *fi, char *path, int mode) {
+	uint8_t filename[12];
+	struct dirinfo di;
+	struct dirent de;
+	struct volinfo *volinfo;
+	uint32_t cluster, temp;
+	struct fat_fs_info *fsi;
+
+	fsi = fi->fsi;
+	volinfo = &fsi->vi;
+	fi->volinfo = volinfo;
+
+	fat_get_filename(path, (char *) filename);
+
+	/*
+	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
+	 *  filename = "FILE    EXT" and  path = "MYDIR/MYDIR2".
+	 */
+	di.p_scratch = fat_sector_buff;
+	if (fat_open_dir(fsi, (uint8_t *) path, &di)) {
+		return DFS_NOTFOUND;
+	}
+
+	while (!fat_get_next(fsi, &di, &de));
+
+	/* Locate or create a directory entry for this file */
+	if (DFS_OK != fat_get_free_dir_ent(fsi, (uint8_t *) path, &di, &de)) {
+		return DFS_ERRMISC;
+	}
+
+	//assert(nas->fs->bdev == fsi->bdev);
+	cluster = fat_get_free_fat_(fsi, fat_sector_buff);
+	de = (struct dirent) {
+		.attr = S_ISDIR(mode) ? ATTR_DIRECTORY : 0,
+		.startclus_l_l = cluster & 0xff,
+		.startclus_l_h = (cluster & 0xff00) >> 8,
+		.startclus_h_l = (cluster & 0xff0000) >> 16,
+		.startclus_h_h = (cluster & 0xff000000) >> 24,
+	};
+	memcpy(de.name, filename, MSDOS_NAME);
+	fat_set_filetime(&de);
+
+	fi->volinfo = volinfo;
+	fi->pointer = 0;
+	/*
+	 * The reason we store this extra info about the file is so that we can
+	 * speedily update the file size, modification date, etc. on a file
+	 * that is opened for writing.
+	 */
+	if (di.currentcluster == 0) {
+		fi->dirsector = volinfo->rootdir + di.currentsector;
+	} else {
+		fi->dirsector = volinfo->dataarea +
+				((di.currentcluster - 2) * volinfo->secperclus) +
+				di.currentsector;
+	}
+	fi->diroffset = di.currententry - 1;
+	fi->cluster = cluster;
+	fi->firstcluster = cluster;
+	//nas->fi->ni.size = 0;
+
+	/*
+	 * write the directory entry
+	 * note that we no longer have the sector containing the directory
+	 * entry, tragically, so we have to re-read it
+	 */
+
+	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector)) {
+		return DFS_ERRMISC;
+	}
+	memcpy(&(((struct dirent*) fat_sector_buff)[di.currententry - 1]),
+			&de, sizeof(struct dirent));
+	if (fat_write_sector(fsi, fat_sector_buff, fi->dirsector)) {
+		return DFS_ERRMISC;
+	}
+	/* Mark newly allocated cluster as end of chain */
+	switch(volinfo->filesystem) {
+		case FAT12:		cluster = 0xfff;	break;
+		case FAT16:		cluster = 0xffff;	break;
+		case FAT32:		cluster = 0x0fffffff;	break;
+		default:		return DFS_ERRMISC;
+	}
+
+	temp = 0;
+	//assert(nas->fs->bdev == fsi->bdev);
+	fat_set_fat_(fsi,
+			fat_sector_buff, &temp, fi->cluster, cluster);
+
+	if (S_ISDIR(mode)) {
+		/* create . and ..  files of this catalog */
+		fat_set_direntry(di.currentcluster, fi->cluster);
+		cluster = fi->volinfo->dataarea +
+				  ((fi->cluster - 2) * fi->volinfo->secperclus);
+		if (fat_write_sector(fsi, fat_sector_buff, cluster)) {
+			return DFS_ERRMISC;
+		}
+	}
+
+	return DFS_OK;
+}
+
