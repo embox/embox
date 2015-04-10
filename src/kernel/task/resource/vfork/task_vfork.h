@@ -1,8 +1,8 @@
 /**
- * @file
- *
- * @date May 16, 2014
- * @author: Anton Bondarev
+ * @file    task_vfork.h
+ * @brief   Declaring task_resource_vfork
+ * @date    May 16, 2014
+ * @author  Anton Bondarev
  */
 
 #ifndef TASK_VFORK_H_

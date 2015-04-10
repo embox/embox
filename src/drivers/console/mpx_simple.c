@@ -105,7 +105,10 @@ int mpx_devisualized(struct vc *vc) {
 		return -EINVAL;
 	}
 
-	curvc->fb = NULL;
+	if (curvc) {
+		curvc->fb = NULL;
+	}
+
 	postvc->fb = curfb;
 	postvc->callbacks->visualized(postvc, curfb);
 

@@ -29,6 +29,7 @@ module uid {
 	source "uid.c"
 
 	depends embox.compat.posix.proc.uid
+	depends embox.kernel.task.resource.u_area
 }
 
 @TestFor(embox.compat.posix.idx.pipe)

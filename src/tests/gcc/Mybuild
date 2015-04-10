@@ -1,8 +1,0 @@
-package embox.test.gcc
-
-module int_arithmetic {
-	source "int_arithmetic.c"
-
-	depends embox.lib.LibGcc
-	depends embox.framework.test
-}

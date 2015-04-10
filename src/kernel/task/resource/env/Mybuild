@@ -1,0 +1,17 @@
+package embox.kernel.task.resource
+
+module env {
+	@IncludeExport(path="kernel/task/resource")
+	source "env.h"
+
+	option number env_per_task=8
+	option number env_str_len=32
+	source "env.c"
+	source "env_impl.h"
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.util.Array
+}
+

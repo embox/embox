@@ -1,9 +1,8 @@
 /**
- * @file
- * @brief
- *
+ * @file   env.c
+ * @brief  Implementation of environment variables iterface
  * @author Ilia Vaprol
- * @date 30.03.13
+ * @date   30.03.13
  */
 
 #include <assert.h>
@@ -13,7 +12,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "env.h"
+#include "env_impl.h"
 
 TASK_RESOURCE_DEF(task_env_desc, struct task_env);
 

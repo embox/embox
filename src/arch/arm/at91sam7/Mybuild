@@ -1,0 +1,24 @@
+package embox.arch.arm.at91sam7
+
+module headers {
+	@IncludeExport(path="drivers")
+	source "at91sam7_aic.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7_ckgr.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7_pio.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7_pit.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7_pmc.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7_ssc.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7_tcc.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7_us.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7_wd.h"
+	@IncludeExport(path="drivers")
+	source "at91sam7s256.h"
+}

@@ -22,8 +22,6 @@
 #include <lib/crypt/crc16.h>
 
 
-#include <drivers/ramdisk.h>
-
 #include <fs/journal.h>
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
