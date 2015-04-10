@@ -13,6 +13,8 @@
 
 #include <kernel/sched/sched_timing.h>
 
+struct schedee;
+
 struct sched_timing {
 	EMPTY_STRUCT_BODY
 };
