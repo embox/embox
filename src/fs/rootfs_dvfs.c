@@ -28,6 +28,14 @@ struct super_block *rootfs_sb(void) {
 	return root_sb;
 }
 
+/* @brief Perform mount of the root file system
+ * @param dev     Path to the block device (e.g. /dev/sda1)
+ * @param fs_type Name of the file system driver
+ *
+ * @return Negative error number
+ * @retval       0 Ok
+ * @revtal -ENOENT File system driver not found
+ */
 static int do_mount(const char *dev, const char *fs_type) {
 	assert(fs_type);
 	struct dumb_fs_driver *fsdrv;
@@ -55,6 +63,8 @@ static int do_mount(const char *dev, const char *fs_type) {
 	return 0;
 }
 
+/* @brief Starting initialization of the VFS
+ */
 static int rootfs_mount(void) {
 	const char *dev, *fs_type;
 

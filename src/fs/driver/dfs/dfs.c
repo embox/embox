@@ -57,6 +57,13 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
 	return flash_read(dfs_flashdev, offset, buff, len);
 }
 
+/* @brief Write non-aligned raw data to \b erased NAND flash
+ * @param offset Start position on disk
+ * @param buff   Source of the data
+ * @param len    Length of the data in bytes
+ *
+ * @returns Bytes written or negative error code
+ */
 static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	assert(buff);
 	int i;
@@ -106,6 +113,13 @@ static inline int _blkcpy(unsigned int to, unsigned long from) {
 	return _copy(to * NAND_BLOCK_SIZE, from * NAND_BLOCK_SIZE, NAND_BLOCK_SIZE);
 }
 
+/* @brief Write non-aligned raw data to \b non-erased NAND flash
+ * @param pos  Start position on disk
+ * @param buff Source of the data
+ * @param size Length of the data in bytes
+ *
+ * @returns Bytes written or negative error code
+ */
 static int dfs_write_raw(int pos, void *buff, size_t size) {
 	assert(buff);
 	int start_bk = pos / NAND_BLOCK_SIZE;
