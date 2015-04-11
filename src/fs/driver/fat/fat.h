@@ -12,11 +12,7 @@
 #include <stdint.h>
 
 #include <embox/block_dev.h>
-#include <framework/mod/options.h>
 #include <fs/mbr.h>
-
-#define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
-extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 #define MSDOS_NAME      11
 #define ROOT_DIR        "/"
@@ -258,7 +254,6 @@ extern int      fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint3
 extern int      fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
 extern uint32_t fat_get_next(struct fat_fs_info *fsi,
                              struct dirinfo * dirinfo, struct dirent * dirent);
-static int      fat_create_dir_entry (struct nas *parent_nas);
 extern int      fat_create_partition(void *bdev);
 extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
                                   uint8_t *pptype, uint32_t *psize);

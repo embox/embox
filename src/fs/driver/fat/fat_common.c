@@ -21,6 +21,8 @@
 #define LABEL "EMBOX_DISK"
 #define SYSTEM "FAT12"
 
+extern uint8_t fat_sector_buff[512]; /* XXX */
+
 uint32_t fat_get_next(struct fat_fs_info *fsi,
 		struct dirinfo * dirinfo, struct dirent * dirent);
 
@@ -1602,12 +1604,12 @@ int fat_create_file(struct fat_file_info *fi, char *path, int mode) {
 }
 
 /* fat filesystem description pool */
-POOL_DEF(fat_fs_pool, struct fat_fs_info,
-	OPTION_GET(NUMBER, fat_descriptor_quantity));
+POOL_DEF(fat_fs_pool, struct fat_fs_info, 4);
+	//OPTION_GET(NUMBER, fat_descriptor_quantity));
 
 /* fat file description pool */
-POOL_DEF(fat_file_pool, struct fat_file_info,
-	OPTION_GET(NUMBER, inode_quantity));
+POOL_DEF(fat_file_pool, struct fat_file_info, 16);
+	//OPTION_GET(NUMBER, inode_quantity));
 
 struct fat_fs_info *fat_fs_pool_alloc(void) {
 	return pool_alloc(&fat_fs_pool);
