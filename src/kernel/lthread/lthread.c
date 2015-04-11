@@ -15,6 +15,8 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/sched/schedee_priority.h>
 
+#include <kernel/time/timer.h>
+
 /** locks: sched. lthread->run must be atomic. */
 static struct schedee *lthread_process(struct schedee *prev,
 		struct schedee *next) {
@@ -56,7 +58,7 @@ static int __lthread_disable(struct lthread *lt) {
  		return false;
 
  	/* If lt is waiting, have to prevent waking up. */
-	if (lt->info.status == SCHED_WAIT_STARTED)
+	if (lt->info.status & SCHED_WAIT_STARTED)
 		timer_close(lt->info.tmr);
 
 	return true;

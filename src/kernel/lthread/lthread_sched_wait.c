@@ -20,7 +20,7 @@ static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 static void sched_wait_info_clear(struct sched_wait_info *info) {
 	info->last_sync = 0;
 	info->remain = 0;
-	info->status = SCHED_WAIT_FINISHED;
+	info->status = 0;
 	info->tmr = NULL;
 }
 
@@ -30,29 +30,28 @@ void sched_wait_info_init(struct sched_wait_info *info) {
 
 void sched_wait_prepare_lthread(struct lthread *self, clock_t timeout) {
 	struct sched_wait_info *info = &self->info;
-	clock_t cur_time;
-	int diff;
+	clock_t cur_time = clock();
 
 	sched_wait_prepare();
 
-	if (info->status != SCHED_WAIT_STARTED) {
-		if (!info->remain)
-			info->remain = timeout;
+	if (!(info->status & SCHED_WAIT_PREPARED)) {
+		info->status |= SCHED_WAIT_PREPARED;
+		info->remain = timeout;
+	}
 
-		info->last_sync = clock();
-	} else if (timeout != SCHED_TIMEOUT_INFINITE) {
-		cur_time = clock();
-		diff = cur_time - info->last_sync;
-		info->last_sync = cur_time;
-
+	if (info->status & SCHED_WAIT_STARTED &&
+			info->remain != SCHED_TIMEOUT_INFINITE) {
+		int diff = cur_time - info->last_sync;
 	 	info->remain = max((int)info->remain - diff, 0);
 	}
+
+	info->last_sync = cur_time;
 }
 
 void sched_wait_cleanup_lthread(struct lthread *self) {
 	struct sched_wait_info *info = &self->info;
 
-	if (info->status == SCHED_WAIT_STARTED &&
+	if (info->status & SCHED_WAIT_STARTED &&
 			info->remain != SCHED_TIMEOUT_INFINITE) {
 		timer_close(info->tmr);
 	}
@@ -64,12 +63,12 @@ void sched_wait_cleanup_lthread(struct lthread *self) {
 static int sched_wait_lthread(struct lthread *self) {
 	struct sched_wait_info *info = &self->info;
 
-	if (info->status == SCHED_WAIT_STARTED) {
-		info->status = SCHED_WAIT_FINISHED;
+	if (info->status & SCHED_WAIT_STARTED) {
+		info->status &= ~SCHED_WAIT_STARTED;
 		return 0;
 	}
 
-	info->status = SCHED_WAIT_STARTED;
+	info->status |= SCHED_WAIT_STARTED;
 	return -EAGAIN;
 }
 
@@ -81,10 +80,10 @@ int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain) {
 		return sched_wait_lthread(self);
 	}
 
-	if (info->status == SCHED_WAIT_STARTED) {
+	if (info->status & SCHED_WAIT_STARTED) {
 		timer_close(info->tmr);
 
-		info->status = SCHED_WAIT_FINISHED;
+		info->status &= ~SCHED_WAIT_STARTED;
 
 		if (remain) {
 			*remain = info->remain;
@@ -98,6 +97,6 @@ int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain) {
 		return res;
 	}
 
-	info->status = SCHED_WAIT_STARTED;
+	info->status |= SCHED_WAIT_STARTED;
 	return -EAGAIN;
 }

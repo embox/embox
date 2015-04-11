@@ -9,15 +9,20 @@
 #ifndef KERNEL_LTHREAD_SCHED_WAIT_H_
 #define KERNEL_LTHREAD_SCHED_WAIT_H_
 
-#include <kernel/time/timer.h>
+#include <kernel/sched.h>
 #include <kernel/time/time.h>
 
 /* Values for sched_wait_info->status */
-#define SCHED_WAIT_FINISHED 0
-#define SCHED_WAIT_STARTED 1
+#define SCHED_WAIT_STARTED  0x1
+#define SCHED_WAIT_PREPARED 0x2
 
 struct lthread;
+struct sys_timer;
 
+/**
+ * The auxulary structure for for waiting with or without timeout. It is
+ * necessary due to the lack of an lthread stack.
+ */
 struct sched_wait_info {
 	struct sys_timer *tmr;
 	clock_t remain;
