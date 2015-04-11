@@ -25,37 +25,6 @@
 uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 /* VFS-independent functions */
-extern int      fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
-extern int      fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
-extern uint32_t fat_get_next(struct fat_fs_info *fsi,
-                             struct dirinfo * dirinfo, struct dirent * dirent);
-static int      fat_create_dir_entry (struct nas *parent_nas);
-extern int      fat_create_partition(void *bdev);
-extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
-                                  uint8_t *pptype, uint32_t *psize);
-extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);
-extern uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
-                             uint32_t *p_scratchcache, uint32_t cluster, uint32_t new_contents);
-extern uint32_t fat_get_free_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch);
-extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
-                             uint8_t *dirname, struct dirinfo *dirinfo);
-extern uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
-                             struct dirinfo *di, struct dirent *de);
-extern void     fat_set_direntry (uint32_t dir_cluster, uint32_t cluster);
-extern uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
-		uint8_t *p_scratch, size_t *size);
-extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
-                              uint8_t *buffer, uint32_t *successcount, uint32_t len);
-extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
-                               uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
-extern int      fat_root_dir_record(void *bdev);
-extern int      fat_create_file(struct fat_file_info *fi, char *path, int mode);
-
-extern struct fat_fs_info *fat_fs_pool_alloc(void);
-extern void fat_fs_pool_free(struct fat_fs_info *fsi);
-extern struct fat_file_info *fat_file_pool_alloc(void);
-extern void fat_file_pool_free(struct fat_file_info *fi);
-
 static struct fat_file_info *fat_fi_alloc(struct nas *nas, void *fs) {
 	struct fat_file_info *fi;
 
