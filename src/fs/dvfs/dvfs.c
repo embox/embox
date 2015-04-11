@@ -296,7 +296,7 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
-	struct dvfsmnt *mnt;
+	//struct dvfsmnt *mnt;
 	struct super_block *sb;
 	struct dentry *d;
 
@@ -306,7 +306,7 @@ int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 		return -ENOENT;
 
 	drv = dumb_fs_driver_find(fstype);
-	mnt = dvfs_alloc_mnt();
+	//mnt = dvfs_alloc_mnt();
 	sb  = dvfs_alloc_sb(drv, dev);
 	/* TODO init sb */
 	d   = dvfs_alloc_dentry();
@@ -314,11 +314,11 @@ int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
 	dentry_fill(sb, NULL, d, NULL);
 	d->usage_count++;
 
-	*mnt = (struct dvfsmnt) {
+/*	*mnt = (struct dvfsmnt) {
 		.mnt_sb = sb,
 		.mnt_root = d,
 		.mnt_mountpoint = lookup.item,
-	};
+	}; */
 
 	return 0;
 }

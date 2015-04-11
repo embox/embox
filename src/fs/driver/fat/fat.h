@@ -12,33 +12,37 @@
 #include <stdint.h>
 
 #include <embox/block_dev.h>
+#include <framework/mod/options.h>
 #include <fs/mbr.h>
+
+#define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
+extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 #define MSDOS_NAME      11
 #define ROOT_DIR        "/"
-#define DIR_SEPARATOR	'/'	/* character separating directory components*/
+#define DIR_SEPARATOR   '/'	/* character separating directory components*/
 
 /* 32-bit error codes */
-#define DFS_OK			0			/* no error */
-#define DFS_EOF			1			/* end of file (not an error) */
-#define DFS_WRITEPROT	2			/* volume is write protected */
-#define DFS_NOTFOUND	3			/* path or file not found */
-#define DFS_PATHLEN		4			/* path too long */
-#define DFS_ALLOCNEW	5			/* must allocate new directory cluster */
-#define DFS_ERRMISC		0xffffffff	/* generic error */
+#define DFS_OK        0			/* no error */
+#define DFS_EOF       1			/* end of file (not an error) */
+#define DFS_WRITEPROT 2			/* volume is write protected */
+#define DFS_NOTFOUND  3			/* path or file not found */
+#define DFS_PATHLEN   4			/* path too long */
+#define DFS_ALLOCNEW  5			/* must allocate new directory cluster */
+#define DFS_ERRMISC   0xffffffff	/* generic error */
 
 /* Internal subformat identifiers */
-#define FAT12			0
-#define FAT16			1
-#define FAT32			2
+#define FAT12 0
+#define FAT16 1
+#define FAT32 2
 
 /* DOS attribute bits  */
-#define ATTR_READ_ONLY	0x01
-#define ATTR_HIDDEN		0x02
-#define ATTR_SYSTEM		0x04
-#define ATTR_VOLUME_ID	0x08
-#define ATTR_DIRECTORY	0x10
-#define ATTR_ARCHIVE	0x20
+#define ATTR_READ_ONLY  0x01
+#define ATTR_HIDDEN     0x02
+#define ATTR_SYSTEM     0x04
+#define ATTR_VOLUME_ID  0x08
+#define ATTR_DIRECTORY  0x10
+#define ATTR_ARCHIVE    0x20
 #define ATTR_LONG_NAME \
 	(ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
 

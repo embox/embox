@@ -21,19 +21,8 @@
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <framework/mod/options.h>
-#include <mem/misc/pool.h>
-
-#define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
 
 uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
-
-/* fat filesystem description pool */
-POOL_DEF(fat_fs_pool, struct fat_fs_info,
-	OPTION_GET(NUMBER, fat_descriptor_quantity));
-
-/* fat file description pool */
-POOL_DEF(fat_file_pool, struct fat_file_info,
-	OPTION_GET(NUMBER, inode_quantity));
 
 /* VFS-independent functions */
 extern int      fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
@@ -60,12 +49,17 @@ extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
                                uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
 extern int      fat_root_dir_record(void *bdev);
-extern int fat_create_file(struct fat_file_info *fi, char *path, int mode);
+extern int      fat_create_file(struct fat_file_info *fi, char *path, int mode);
+
+extern struct fat_fs_info *fat_fs_pool_alloc(void);
+extern void fat_fs_pool_free(struct fat_fs_info *fsi);
+extern struct fat_file_info *fat_file_pool_alloc(void);
+extern void fat_file_pool_free(struct fat_file_info *fi);
 
 static struct fat_file_info *fat_fi_alloc(struct nas *nas, void *fs) {
 	struct fat_file_info *fi;
 
-	fi = pool_alloc(&fat_file_pool);
+	fi = fat_file_pool_alloc();
 	if (fi) {
 		memset(fi, 0, sizeof(*fi));
 		nas->fi->privdata = fi;
@@ -118,11 +112,11 @@ static int fat_mount_files(struct nas *dir_nas) {
 
 		mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
-		if (NULL == (fi = pool_alloc(&fat_file_pool))) {
+		if (NULL == (fi = fat_file_pool_alloc())) {
 			return -ENOMEM;
 		}
 		if (NULL == (node = vfs_subtree_create_child(dir_nas->node, (const char *) name, mode))) {
-			pool_free(&fat_file_pool, fi);
+			fat_file_pool_free(fi);
 			return -ENOMEM;
 		}
 
@@ -168,14 +162,14 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 			continue;
 		}
 
-		if (NULL == (fi = pool_alloc(&fat_file_pool))) {
+		if (NULL == (fi = fat_file_pool_alloc())) {
 			return -ENOMEM;
 		}
 
 		mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
 		if (NULL == (node = vfs_subtree_create_child(parent_nas->node, name, mode))) {
-			pool_free(&fat_file_pool, fi);
+			fat_file_pool_free(fi);
 			return -ENOMEM;
 		}
 
@@ -201,13 +195,13 @@ static void fat_free_fs(struct nas *nas) {
 		fsi = nas->fs->fsi;
 
 		if(NULL != fsi) {
-			pool_free(&fat_fs_pool, fsi);
+			fat_fs_pool_free(fsi);
 		}
 		filesystem_free(nas->fs);
 	}
 
 	if (NULL != (fi = nas->fi->privdata)) {
-		pool_free(&fat_file_pool, fi);
+		fat_file_pool_free(fi);
 	}
 }
 
@@ -220,7 +214,7 @@ static int fat_umount_entry(struct nas *nas) {
 				fat_umount_entry(child->nas);
 			}
 
-			pool_free(&fat_file_pool, child->nas->fi->privdata);
+			fat_file_pool_free(child->nas->fi->privdata);
 			vfs_del_leaf(child);
 		}
 	}
@@ -389,7 +383,7 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	dir_nas->fs->bdev = dev_fi->privdata;
 
-	if (NULL == (fsi = pool_alloc(&fat_fs_pool))) {
+	if (NULL == (fsi = fat_fs_pool_alloc())) {
 		rc =  -ENOMEM;
 		goto error;
 	}
@@ -397,7 +391,7 @@ static int fatfs_mount(void *dev, void *dir) {
 	dir_nas->fs->fsi = fsi;
 
 	/* allocate this directory info */
-	if (NULL == (fi = pool_alloc(&fat_file_pool))) {
+	if (NULL == (fi = fat_file_pool_alloc())) {
 		rc =  -ENOMEM;
 		goto error;
 	}
@@ -467,7 +461,7 @@ static int fatfs_delete(struct node *node) {
 	vfs_get_relative_path(node, path, PATH_MAX);
 
 	if (path[root_path_len] == '\0') {
-		pool_free(&fat_fs_pool, fsi);
+		fat_fs_pool_free(fsi);
 	} else {
 		if (node_is_directory(node)) {
 			if (fat_unlike_directory(fi, (uint8_t *) path + root_path_len,
@@ -481,7 +475,7 @@ static int fatfs_delete(struct node *node) {
 			}
 		}
 	}
-	pool_free(&fat_file_pool, fi);
+	fat_file_pool_free(fi);
 
 	vfs_del_leaf(node);
 	return 0;

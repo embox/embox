@@ -15,15 +15,12 @@
 
 #include <framework/mod/options.h>
 #include <fs/fat.h>
+#include <mem/misc/pool.h>
 #include <util/math.h>
-
 
 #define LABEL "EMBOX_DISK"
 #define SYSTEM "FAT12"
 
-#define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
-
-extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 uint32_t fat_get_next(struct fat_fs_info *fsi,
 		struct dirinfo * dirinfo, struct dirent * dirent);
 
@@ -1602,5 +1599,29 @@ int fat_create_file(struct fat_file_info *fi, char *path, int mode) {
 	}
 
 	return DFS_OK;
+}
+
+/* fat filesystem description pool */
+POOL_DEF(fat_fs_pool, struct fat_fs_info,
+	OPTION_GET(NUMBER, fat_descriptor_quantity));
+
+/* fat file description pool */
+POOL_DEF(fat_file_pool, struct fat_file_info,
+	OPTION_GET(NUMBER, inode_quantity));
+
+struct fat_fs_info *fat_fs_pool_alloc(void) {
+	return pool_alloc(&fat_fs_pool);
+}
+
+void fat_fs_pool_free(struct fat_fs_info *fsi) {
+	pool_free(&fat_fs_pool, fsi);
+}
+
+struct fat_file_info *fat_file_pool_alloc(void) {
+	return pool_alloc(&fat_file_pool);
+}
+
+void fat_file_pool_free(struct fat_file_info *fi) {
+	pool_free(&fat_file_pool, fi);
 }
 
