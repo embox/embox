@@ -7,213 +7,101 @@
  */
 
 #include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 
-#include <embox/cmd.h>
-#include <framework/mod/options.h>
+#include "race.h"
 
-#define USE_LCD OPTION_GET(BOOLEAN, use_lcd)
+#define is_obstacle(idx) road[idx] == RACE_OBSTACLE
 
-#if USE_LCD
-#include <drivers/gpio.h>
-#include <drivers/lcd/lcd.h>
-#else
-#include <drivers/vt.h>
-#include <drivers/diag.h>
-#include <stdio.h>
-#endif
+static char road[RACE_ROAD_WDT * RACE_ROAD_LEN];
+static int car_line_nr, is_game_over, speed, step;
 
-EMBOX_CMD(exec);
+static void race_init(void) {
+	car_line_nr = is_game_over = speed = step = 0;
 
-#define ROAD_LENGTH 16
-#define ROAD_WIDTH 2
-#define LEVEL_PERIOD_MS 5
-#define ROAD_UPDATE_MS 150
-#define CAR_UPDATE_MS 130
-#define OBSTACLE_SPACE 4
-#define SCORE_PER_LEVEL 4
+	for (int i = 0; i < RACE_ROAD_WDT; i++)
+		for (int j = 0; j < RACE_ROAD_LEN; j++)
+			road[i*RACE_ROAD_LEN + j] = RACE_SPACE;
 
-#define CAR_CHAR '>'
-#define OBSTACLE_CHAR 'X'
-#define SPACE_CHAR ' '
-
-static char road[ROAD_WIDTH * ROAD_LENGTH];
-
-static int car_pos, end, score, speed,count;
-
-static void road_init(void) {
-	for (int i = 0; i < ROAD_WIDTH; i++)
-		for (int j = 0; j < ROAD_LENGTH; j++)
-			road[i*ROAD_LENGTH + j] = SPACE_CHAR;
-
-	road[car_pos*ROAD_LENGTH] = CAR_CHAR;
+	road[car_line_nr*RACE_ROAD_LEN] = RACE_CAR;
 }
 
-static void game_init(void) {
-	car_pos = end = score = speed = count = 0;
-	road_init();
+static void race_update_road(void) {
+	for (int i = 0; i < RACE_ROAD_WDT; i++) {
+		for (int j = 1; j < RACE_ROAD_LEN; j++)
+			road[i*RACE_ROAD_LEN + j - 1] = road[i*RACE_ROAD_LEN + j];
+		road[i*RACE_ROAD_LEN + RACE_ROAD_LEN - 1] = RACE_SPACE;
+	}
+
+	step++;
+	if (!(step % RACE_OBSTACLE_STEP)) {
+		road[(rand() % RACE_ROAD_WDT + 1)*RACE_ROAD_LEN - 1] = RACE_OBSTACLE;
+	}
+
+	road[car_line_nr*RACE_ROAD_LEN] = RACE_CAR;
 }
 
-#if USE_LCD
-static void road_print(void) {
-	for (int i = 0; i < ROAD_WIDTH*ROAD_LENGTH; i++) {
-		lcd_putc(road[i]);
-	}
-}
-
-static void score_print(void) {
-	char game_over_str[] = "    GAME OVER   ";
-	char score_pfx[] = "    SCORE: ";
-	char score_str[5];
-	int score_strlen;
-
-	for (int i = 0; i < sizeof(game_over_str) - 1; i++) {
-		lcd_putc(game_over_str[i]);
-	}
-
-	for (int i = 0; i < sizeof(score_pfx) - 1; i++) {
-		lcd_putc(score_pfx[i]);
-	}
-
-	itoa(score % 10000, score_str, 10);
-	score_strlen = strlen(score_str);
-	for (int i = 0; i < score_strlen; i++) {
-		lcd_putc(score_str[i]);
-	}
-
-	for (int i = 0; i < 17 - score_strlen - sizeof(score_pfx); i++) {
-		lcd_putc(' ');
-	}
-}
-#else
-static void road_print(void) {
-	int i, j;
-
-	printf("%c%c2J",ESC,CSI);
-	printf("%c%cH",ESC,CSI);
-
-	for (i = 0; i < ROAD_WIDTH; i++) {
-		putchar('|');
-		for (j = 0; j < ROAD_LENGTH; j++)
-			putchar(road[i * ROAD_LENGTH + j]);
-		putchar('|');
-		putchar('\n');
-	}
-
-	printf("\nscore: %i speed: %i\n", score, speed);
-}
-
-static void score_print(void) {
-	printf("%c%c2J",ESC,CSI);
-	printf("%c%cH",ESC,CSI);
-	printf("GAME OVER\nscore: %i\n", score);
-}
-#endif
-
-static int move_car(struct lthread* self) {
-	int wait_res, is_button_clicked;
+static int move_road(struct lthread *self) {
+	int to_wait;
 
 	goto lthread_resume(self, &&update);
 
 update:
-	if (end)
+	is_game_over |= is_obstacle(car_line_nr*RACE_ROAD_LEN + 1);
+	if (is_game_over)
 		return 0;
 
-#if USE_LCD
-	gpio_settings(GPIO_A, 0xff << 0, GPIO_MODE_INPUT);
-	is_button_clicked = gpio_get_level(GPIO_A, 0xff << 0) & 0x01;
-#else
-	is_button_clicked = !diag_kbhit() && SPACE_CHAR == diag_getc();
-#endif
+	race_update_road();
+	race_print_road(road);
 
-	if (is_button_clicked) {
-		road[car_pos*ROAD_LENGTH] = SPACE_CHAR;
-		car_pos = (car_pos + 1) % ROAD_WIDTH;
+wait:
+	to_wait = RACE_ROAD_UPD_MS - (step / RACE_LVL_STEP) * RACE_LVLUP_MS;
 
-		end = end || road[car_pos*ROAD_LENGTH] == OBSTACLE_CHAR;
+	if (SCHED_WAIT_TIMEOUT_LTHREAD(self, 0, to_wait) == -EAGAIN) {
+		return lthread_yield(&&update, &&wait);
+	}
 
-		road[car_pos*ROAD_LENGTH] = CAR_CHAR;
-		road_print();
+	goto update;
+}
 
-		if (end)
+static int move_car(struct lthread* self) {
+	goto lthread_resume(self, &&update);
+
+update:
+	if (is_game_over)
+		return 0;
+
+	if (race_is_car_moved()) {
+		road[car_line_nr*RACE_ROAD_LEN] = RACE_SPACE;
+		car_line_nr = (car_line_nr + 1) % RACE_ROAD_WDT;
+		road[car_line_nr*RACE_ROAD_LEN] = RACE_CAR;
+
+		race_print_road(road);
+
+		is_game_over |= is_obstacle(car_line_nr*RACE_ROAD_LEN);
+		if (is_game_over)
 			return 0;
 	}
 
 wait:
-	wait_res = SCHED_WAIT_TIMEOUT_LTHREAD(self, 0, CAR_UPDATE_MS);
-	if (wait_res == -EAGAIN) {
+	if (SCHED_WAIT_TIMEOUT_LTHREAD(self, 0, RACE_CAR_UPD_MS) == -EAGAIN) {
 		return lthread_yield(&&update, &&wait);
 	}
 
 	goto update;
 }
 
-static void increase_speed_and_score(void) {
-	int is_obstacle = 0;
-
-	for (int i = 0; i < ROAD_WIDTH; i++)
-		is_obstacle = is_obstacle || road[i*ROAD_LENGTH] == OBSTACLE_CHAR;
-
-	if (is_obstacle && ++score % SCORE_PER_LEVEL == 0)
-		speed++;
-}
-
-static void move_road_array(void) {
-	road[car_pos*ROAD_LENGTH] = SPACE_CHAR;
-
-	for (int i = 0; i < ROAD_WIDTH; i++) {
-		for (int j = 1; j < ROAD_LENGTH; j++)
-			road[i*ROAD_LENGTH + j - 1] = road[i*ROAD_LENGTH + j];
-		road[i*ROAD_LENGTH + ROAD_LENGTH - 1] = SPACE_CHAR;
-	}
-
-	road[car_pos*ROAD_LENGTH] = CAR_CHAR;
-}
-
-static void set_obtacle(void) {
-	if (count++ == OBSTACLE_SPACE) {
-		count = 0;
-		road[(clock() % ROAD_WIDTH)*ROAD_LENGTH + ROAD_LENGTH - 1] = OBSTACLE_CHAR;
-	}
-}
-
-static int move_road(struct lthread *self) {
-	int wait_res;
-
-	goto lthread_resume(self, &&update);
-
-update:
-	end = end || road[car_pos*ROAD_LENGTH + 1] == OBSTACLE_CHAR;
-	if (end)
-		return 0;
-
-	increase_speed_and_score();
-	move_road_array();
-	set_obtacle();
-
-	road_print();
-
-wait:
-	wait_res = SCHED_WAIT_TIMEOUT_LTHREAD(self, 0,
-					ROAD_UPDATE_MS - speed * LEVEL_PERIOD_MS);
-	if (wait_res == -EAGAIN) {
-		return lthread_yield(&&update, &&wait);
-	}
-
-	goto update;
-}
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	struct lthread lt_car, lt_road;
+	int score;
 
-	game_init();
-	road_print();
+	race_init();
+	race_print_road(road);
 
 	lthread_init(&lt_road, move_road);
 	lthread_init(&lt_car, move_car);
@@ -221,14 +109,15 @@ static int exec(int argc, char **argv) {
 	lthread_launch(&lt_road);
 	lthread_launch(&lt_car);
 
-	while (!end) {
+	while (!is_game_over) {
 		schedule();
 	}
 
 	lthread_reset(&lt_car);
 	lthread_reset(&lt_road);
 
-	score_print();
+	score = (step - RACE_ROAD_LEN) / RACE_OBSTACLE_STEP;
+	race_print_score(score);
 
 	return 0;
 }

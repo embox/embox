@@ -1,10 +1,22 @@
 package embox.cmd
 
+@DefaultImpl(race_diag_stdio)
+abstract module race_io_api { }
+
+module race_lcd_gpio extends race_io_api {
+	source "race_lcd_gpio.c"
+}
+
+module race_diag_stdio extends race_io_api {
+	source "race_diag_stdio.c"
+}
+
+@AutoCmd
 @Cmd(name = "race",
 	help = "",
 	man = '''
 		NAME
-			rcae - game
+			race - game
 		SYNOPSIS
 			race
 		AUTHORS
@@ -15,5 +27,6 @@ module race {
 
 	source "race.c"
 
-	depends embox.compat.posix.util.sleep
+	depends race_io_api
+	depends embox.compat.libc.stdlib.core
 }
