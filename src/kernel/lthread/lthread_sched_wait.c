@@ -36,7 +36,9 @@ void sched_wait_prepare_lthread(struct lthread *self, clock_t timeout) {
 	sched_wait_prepare();
 
 	if (info->status != SCHED_WAIT_STARTED) {
-		info->remain = timeout;
+		if (!info->remain)
+			info->remain = timeout;
+
 		info->last_sync = clock();
 	} else if (timeout != SCHED_TIMEOUT_INFINITE) {
 		cur_time = clock();
@@ -71,7 +73,7 @@ static int sched_wait_lthread(struct lthread *self) {
 	return -EAGAIN;
 }
 
-int sched_wait_timeout_lthread(struct lthread *self) {
+int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain) {
 	struct sched_wait_info *info = &self->info;
 	int res;
 
@@ -80,8 +82,13 @@ int sched_wait_timeout_lthread(struct lthread *self) {
 	}
 
 	if (info->status == SCHED_WAIT_STARTED) {
-		info->status = SCHED_WAIT_FINISHED;
 		timer_close(info->tmr);
+
+		info->status = SCHED_WAIT_FINISHED;
+
+		if (remain) {
+			*remain = info->remain;
+		}
 
 		return info->remain ? 0 : -ETIMEDOUT;
 	}

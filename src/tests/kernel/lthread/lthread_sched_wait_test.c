@@ -35,7 +35,7 @@ static int sched_wait_timeout_run(struct lthread *self) {
 
 	sched_wait_prepare_lthread(self, lt_test->timeout);
 
-	if ((res = sched_wait_timeout_lthread(self)) == -EAGAIN) {
+	if ((res = sched_wait_timeout_lthread(self, NULL)) == -EAGAIN) {
 		return 0;
 	}
 	sched_wait_cleanup_lthread(self);
@@ -56,7 +56,7 @@ TEST_CASE("sched_wait_timeout: timeout is exceeded") {
 	lthread_init(&(lt_test.lt), sched_wait_timeout_run);
 	lthread_launch(&(lt_test.lt));
 
-	/* Spin, waiting lthread finished */
+	/* Spin, wait till lthread finished */
 	while(1) {
 		if(done == 1) break;
 		ksleep(lt_test.timeout);
@@ -105,32 +105,35 @@ TEST_CASE("sched_wait_timeout: SCHED_TIMEOUT_INFINITE") {
 }
 
 static int sched_wait_timeout_macro_run(struct lthread *self) {
-	int res;
 	struct lt_test *lt_test = (struct lt_test *)self;
 
-	res = SCHED_WAIT_TIMEOUT_LTHREAD(self, ready, lt_test->timeout);
-	if (res == -EAGAIN) {
+	lt_test->res = SCHED_WAIT_TIMEOUT_LTHREAD(self, ready, lt_test->timeout);
+	if (lt_test->res == -EAGAIN) {
 		return 0;
 	}
 
 	done = 1;
-
-	lt_test->res = res;
-
 	return 0;
 }
 
 TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: wakeup before timeout is exceeded") {
 	struct lt_test lt_test;
-	lt_test.timeout = 20;
+	int wakeup_times = 5;
+
+	lt_test.timeout = 150;
 
 	done = 0;
 	ready = 0;
 
 	lthread_init(&lt_test.lt, sched_wait_timeout_macro_run);
-	lthread_launch(&lt_test.lt);
 
-	ksleep(0);
+	/* Check for proceeding waiting in case the lthread is waken up before
+	the condition becomes true. */
+	while(!done && wakeup_times--) {
+		lthread_launch(&lt_test.lt);
+		ksleep(20);
+		test_assert_equal(lt_test.res, -EAGAIN);
+	}
 
 	ready = 1;
 
@@ -146,19 +149,26 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: wakeup before timeout is exceeded") {
 
 TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: timeout exceeded") {
 	struct lt_test lt_test;
-	lt_test.timeout = 20;
+	int wakeup_times;
+	int sleep_period = 20;
+
+	lt_test.timeout = 150;
+	wakeup_times = lt_test.timeout/sleep_period;
 
 	done = 0;
 	ready = 0;
 
 	lthread_init(&lt_test.lt, sched_wait_timeout_macro_run);
-	lthread_launch(&lt_test.lt);
 
-	while(1) {
-		if(done == 1) break;
-		ksleep(lt_test.timeout);
+	/* Check for proceeding waiting in case the lthread is waken up before
+	the condition becomes true. */
+	while(!done && wakeup_times--) {
+		lthread_launch(&lt_test.lt);
+		ksleep(sleep_period);
 	}
 
+	/* Since sleep_period*wakeup_times covers timeout, the lthread is
+	supposed to finish its routine. */
 	test_assert_equal(done, 1);
 	test_assert_equal(lt_test.res, -ETIMEDOUT);
 
@@ -167,19 +177,25 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: timeout exceeded") {
 
 TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: SCHED_TIMEOUT_INFINITE") {
 	struct lt_test lt_test;
+	int wakeup_times = 5;
+
 	lt_test.timeout = SCHED_TIMEOUT_INFINITE;
 
 	done = 0;
 	ready = 0;
 
 	lthread_init(&lt_test.lt, sched_wait_timeout_macro_run);
-	lthread_launch(&lt_test.lt);
 
-	ksleep(20);
+	/* Check for proceeding waiting in case the lthread is waken up before
+	the condition becomes true. */
+	while(wakeup_times--) {
+		lthread_launch(&lt_test.lt);
+		ksleep(0);
+		test_assert_equal(lt_test.res, -EAGAIN);
+	}
 
 	ready = 1;
 	lthread_launch(&lt_test.lt);
-
 	ksleep(0);
 
 	test_assert_equal(done, 1);
