@@ -59,9 +59,6 @@
 #ifndef _KERNEL_LTHREAD_H_
 #define _KERNEL_LTHREAD_H_
 
-
-#include <module/embox/kernel/lthread/lthread_api.h>
-
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 

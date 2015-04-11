@@ -1,13 +1,6 @@
 package embox.kernel.lthread
 
-@DefaultImpl(no_lthread)
-abstract module lthread_api {
-}
-
-module no_lthread extends lthread_api {
-}
-
-module lthread extends lthread_api {
+module lthread {
 	@IncludeExport(path="kernel/lthread")
 	source "lthread.h", "lthread_sched_wait.h", "waitq.h"
 
