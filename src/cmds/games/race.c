@@ -1,6 +1,14 @@
 /**
  * @file
- * @brief
+ * @brief The simple game demonstrating how lthreads work.
+ *
+ * See main(), move_road() and move_car() functions for the lthread usage
+ * example.
+ *
+ * Related documentation:
+ *  - lthread.h
+ *  - lthread/waitq.h
+ *  - lthread_sched_wait.h
  *
  * @author  Vita Loginova
  * @date    11.12.2014
@@ -10,7 +18,6 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <kernel/sched.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 
@@ -49,6 +56,8 @@ static void race_update_road(void) {
 static int move_road(struct lthread *self) {
 	int to_wait;
 
+	/* Multiple entry points are provided by lthread_resume() and
+	 * lthread_yield() functions. */
 	goto lthread_resume(self, &&update);
 
 update:
@@ -63,6 +72,8 @@ wait:
 	to_wait = RACE_ROAD_UPD_MS - (step / RACE_LVL_STEP) * RACE_LVLUP_MS;
 
 	if (SCHED_WAIT_TIMEOUT_LTHREAD(self, 0, to_wait) == -EAGAIN) {
+		/* Next time the function will start from the 'wait' label. Return
+		 * in order to not to block other threads. */
 		return lthread_yield(&&update, &&wait);
 	}
 
@@ -109,9 +120,7 @@ int main(int argc, char **argv) {
 	lthread_launch(&lt_road);
 	lthread_launch(&lt_car);
 
-	while (!is_game_over) {
-		schedule();
-	}
+	while (!is_game_over);
 
 	lthread_reset(&lt_car);
 	lthread_reset(&lt_road);

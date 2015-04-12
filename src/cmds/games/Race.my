@@ -16,15 +16,13 @@ module race_diag_stdio extends race_io_api {
 	help = "",
 	man = '''
 		NAME
-			race - game
+			race - simple game for lthreads demonstration
 		SYNOPSIS
 			race
 		AUTHORS
 			Vita Loginova
 	''')
 module race {
-	option boolean use_lcd = false
-
 	source "race.c"
 
 	depends race_io_api
