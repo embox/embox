@@ -11,6 +11,7 @@ module lthread_mutex_test {
 	source "lthread_mutex_test.c"
 
 	depends embox.kernel.lthread.lthread
+	depends embox.kernel.lthread.sync.mutex
 
 	depends embox.kernel.thread.core
 	depends embox.kernel.sched.sched

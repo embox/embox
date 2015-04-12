@@ -10,6 +10,7 @@
 #ifndef KERNEL_LTHREAD_SYNC_MUTEX_H_
 #define KERNEL_LTHREAD_SYNC_MUTEX_H_
 
+#include <kernel/sched/sync/mutex.h>
 #include <kernel/lthread/waitq.h>
 
 /**
