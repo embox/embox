@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <embox/block_dev.h>
 #include <framework/mod/options.h>
 #include <fs/fat.h>
 #include <mem/misc/pool.h>
@@ -1611,19 +1612,19 @@ POOL_DEF(fat_fs_pool, struct fat_fs_info, 4);
 POOL_DEF(fat_file_pool, struct fat_file_info, 16);
 	//OPTION_GET(NUMBER, inode_quantity));
 
-struct fat_fs_info *fat_fs_pool_alloc(void) {
+struct fat_fs_info *fat_fs_alloc(void) {
 	return pool_alloc(&fat_fs_pool);
 }
 
-void fat_fs_pool_free(struct fat_fs_info *fsi) {
+void fat_fs_free(struct fat_fs_info *fsi) {
 	pool_free(&fat_fs_pool, fsi);
 }
 
-struct fat_file_info *fat_file_pool_alloc(void) {
+struct fat_file_info *fat_file_alloc(void) {
 	return pool_alloc(&fat_file_pool);
 }
 
-void fat_file_pool_free(struct fat_file_info *fi) {
+void fat_file_free(struct fat_file_info *fi) {
 	pool_free(&fat_file_pool, fi);
 }
 

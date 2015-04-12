@@ -275,9 +275,9 @@ extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 extern int      fat_root_dir_record(void *bdev);
 extern int      fat_create_file(struct fat_file_info *fi, char *path, int mode);
 
-extern struct fat_fs_info *fat_fs_pool_alloc(void);
-extern void fat_fs_pool_free(struct fat_fs_info *fsi);
-extern struct fat_file_info *fat_file_pool_alloc(void);
-extern void fat_file_pool_free(struct fat_file_info *fi);
+extern struct fat_fs_info *fat_fs_alloc(void);
+extern void fat_fs_free(struct fat_fs_info *fsi);
+extern struct fat_file_info *fat_file_alloc(void);
+extern void fat_file_free(struct fat_file_info *fi);
 
 #endif /* FAT_H_ */

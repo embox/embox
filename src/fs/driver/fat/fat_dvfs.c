@@ -38,8 +38,12 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
 		return NULL;
-
-	res = fat_open_file(fi, name, 0, fat_sector_buff, &node->length);
+	if (NULL == (fi   = fat_file_alloc())) {
+		dvfs_destroy_inode(node);
+		return NULL;
+	}
+	node->i_data = fi;
+	res = fat_open_file(fi, (uint8_t*) name, 0, fat_sector_buff, &node->length);
 
 	if (res == DFS_OK) {
 		return node;
@@ -62,9 +66,9 @@ static struct inode *fat_create(struct dentry *d_new,
 }
 
 static int fat_open(struct inode *node, struct file *desc) {
-	desc.f_inode = node;
-	desc.f_ops   = &fat_fops;
-	desc.pos     = 0;
+	desc->f_inode = node;
+	desc->f_ops   = &fat_fops;
+	desc->pos     = 0;
 
 	return 0;
 }
@@ -74,15 +78,15 @@ static int fat_close(struct file *desc) {
 }
 
 static size_t fat_read(struct file *desc, void *buf, size_t size) {
-	int res;
+	uint32_t res;
 	return fat_read_file(desc->f_inode->i_data,
 	                     fat_sector_buff, buf, &res, size);
 }
 
-static size_t fat_wrote(struct file *desc, void *buf, size_t size) {
-	int res;
+static size_t fat_write(struct file *desc, void *buf, size_t size) {
+	uint32_t res;
 	return fat_write_file(desc->f_inode->i_data, fat_sector_buff,
-	                      buf, &res, size, desc->f_inode->length);
+	                      buf, &res, size, &desc->f_inode->length);
 }
 
 static struct super_block *fat_alloc_sb(char *bdev) {
@@ -90,8 +94,8 @@ static struct super_block *fat_alloc_sb(char *bdev) {
 }
 
 /* Declaration of operations */
-struct inode_operations dfs_iops = {
-	.create   = fat_icreate,
+struct inode_operations fat_iops = {
+	.create   = fat_create,
 	.lookup   = fat_ilookup,
 	//.mkdir    = NULL,
 	//.rmdir    = NULL,

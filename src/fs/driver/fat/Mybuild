@@ -11,6 +11,8 @@ abstract module fat {
 
 	source "fat_common.c"
 	source "fatfs_subr.c"
+
+	depends embox.driver.block
 }
 
 module fat_old extends fat {
@@ -27,6 +29,7 @@ module fat_dvfs extends fat {
 	source "fat_dvfs.c"
 	option number fat_max_sector_size=512
 
+	depends embox.driver.block
 	depends embox.fs.dvfs
 }
 
