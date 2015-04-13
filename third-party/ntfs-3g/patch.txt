@@ -181,3 +181,4 @@ diff -aur ntfs-3g_ntfsprogs-2013.1.13/libntfs-3g/unix_io.c ntfs-3g/libntfs-3g/un
  	
  	NDevSetOpen(dev);
  	return 0;
+ 	
