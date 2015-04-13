@@ -270,11 +270,10 @@
 			</target>
 		</buildTargets>
 	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
 		<pathentry excluding="build/" kind="src" path=""/>
-		<pathentry kind="src" path="build/base/src-gen"/>
 		<pathentry kind="out" path=""/>
 		<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
 	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
 </cproject>

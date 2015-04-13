@@ -4,8 +4,12 @@
  *
  * @date 19.06.2012
  * @author Alexander Kalmuk
+ * @author Roman Kurbatov
+ *         - clock_source_get_list() function.
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include <errno.h>
 
 #include <util/array.h>
@@ -213,4 +217,8 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	}
 
 	return best;
+}
+
+struct dlist_head *clock_source_get_list(void) {
+	return &clock_source_list;
 }
