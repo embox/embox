@@ -21,7 +21,7 @@
 #include <kernel/sched.h>
 
 #include <hal/ipl.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <fs/idesc_event.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
@@ -83,9 +83,18 @@ static int sock_read(struct sock *sk, struct msghdr *msg, int stream) {
 	total_len = 0;
 
 	do {
+		int err;
+
 		skb = skb_queue_front(&sk->rx_queue);
 		if (skb == NULL) {
 			if (total_len == 0) {
+				/* ToDo I think this check must be placed before this do-while loop
+				 * and properly analyze either TCP connection was closed in usual way or forcibly.
+				 * See "RETURN VALUE" http://pubs.opengroup.org/onlinepubs/009695399/functions/recvfrom.html
+				 * --Alexander */
+				if (0 != (err = sock_err(sk))) {
+					return -err;
+				}
 				return -EAGAIN;
 			}
 			break;
@@ -138,7 +147,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 		timeout = SCHED_TIMEOUT_INFINITE;
 	}
 
-	softirq_lock();
+	sched_lock();
 	{
 		do {
 			ret = sock_read(sk, msg, stream_mode);
@@ -149,7 +158,7 @@ int sock_common_recvmsg(struct sock *sk, struct msghdr *msg, int flags,
 			ret = sock_wait(sk, POLLIN | POLLERR, timeout);
 		} while (ret == 0);
 	}
-	softirq_unlock();
+	sched_unlock();
 
 	return ret;
 }

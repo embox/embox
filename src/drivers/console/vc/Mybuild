@@ -4,6 +4,7 @@ module vga extends embox.driver.diag.diag_api {
 	source "vga.c"
 
 	depends embox.driver.tty.vterm_video
+	depends embox.mem.vmem_api
 }
 
 module vc {

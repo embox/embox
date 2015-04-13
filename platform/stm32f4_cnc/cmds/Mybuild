@@ -1,0 +1,30 @@
+package stm32f4_cnc
+
+@AutoCmd
+@Cmd(name="live_status", help="Live CGI updates")
+@BuildDepends(third_party.bsp.st_f4.core)
+module live_status {
+	source "live_status.c"
+}
+
+
+@AutoCmd
+@Cmd(name="cnc_control", help="CNC control  ")
+module cnc_control {
+	source "cnc_control.c"
+
+	@InitFS
+	source "1544.txt"
+}
+
+@AutoCmd
+@Cmd(name="cnc_init", help="main cnc init")
+module cnc_init {
+	source "cnc_init.c"
+}
+
+@AutoCmd
+@Cmd(name="cnc_manager", help="")
+module cnc_manager {
+	source "cnc_manager.c"
+}

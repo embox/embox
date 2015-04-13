@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "clock",
 	help = "Print existing in system clock sources",
 	man = '''

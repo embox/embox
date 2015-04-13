@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "mandatory.sh",
 	help = "Mandatory test prepare script",
 	man = '''

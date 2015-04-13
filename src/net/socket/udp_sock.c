@@ -23,7 +23,7 @@
 #include <net/socket/inet_sock.h>
 #include <embox/net/pack.h>
 
-#include <util/list.h>
+#include <util/dlist.h>
 
 static const struct sock_proto_ops udp_sock_ops_struct;
 const struct sock_proto_ops *const udp_sock_ops
@@ -56,10 +56,12 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return ret;
 	}
 
+#if 0
 	if (actual_len < total_len) {
 		skb_free(skb);
 		return -EMSGSIZE;
 	}
+#endif
 
 	if (msg->msg_name != NULL) {
 		to = (const struct sockaddr_in *)msg->msg_name;
@@ -80,7 +82,7 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return sk->o_ops->snd_pack(skb);
 }
 
-static LIST_DEF(udp_sock_list);
+static DLIST_DEFINE(udp_sock_list);
 
 static int udp_fillmsg(struct sock *sk, struct msghdr *msg,
 		struct sk_buff *skb) {

@@ -42,16 +42,9 @@ struct sockaddr_un {
                char        sun_path[UNIX_PATH_MAX];  /* pathname */
 };
 
-typedef unsigned int rlim_t;
-struct rlimit {
-               rlim_t rlim_cur;  /* Soft limit */
-               rlim_t rlim_max;  /* Hard limit (ceiling for rlim_cur) */
-};
-
-#define RLIMIT_CORE 0
-
 typedef unsigned int u_int;
 
+struct rlimit;
 static inline int setrlimit(int resource, const struct rlimit *rlp) {
 	(void) resource;
 	(void) rlp;

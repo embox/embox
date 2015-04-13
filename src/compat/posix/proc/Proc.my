@@ -36,17 +36,6 @@ static module vfork_entry {
 	depends embox.kernel.task.resource.vfork
 }
 
-module fork_copy_everything extends fork {
-	source "fork_copy_everything.c"
-	depends embox.arch.fork_entry
-	depends fork_copy_addr_space
-}
-
-/* FIXME artifical module to bypass single `extends` restriction */
-static module fork_copy_addr_space extends embox.kernel.addr_space {
-	source "fork_copy_addr_space.h"
-}
-
 @DefaultImpl(vfork_stub)
 abstract module vfork { }
 
@@ -61,6 +50,7 @@ static module signal {
 	source "signal.c"
 
 	depends embox.kernel.thread.signal
+	depends embox.kernel.task.resource.sig_table
 	depends sigset
 }
 
@@ -74,7 +64,7 @@ static module exit {
 
 	depends vfork
 	depends exec
-	depends embox.util.LibUtil
+	depends signal
 }
 
 static module uid {

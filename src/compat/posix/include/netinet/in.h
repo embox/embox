@@ -75,6 +75,11 @@ enum {
 	IPPROTO_MAX
 };
 
+/* Socket option.
+ * The obvious way to tell the IP layer not to prepend its own header
+ * is by calling the setsockopt() syscall and setting the IP_HDRINCL.
+ * See http://sock-raw.org/papers/sock_raw */
+#define IP_HDRINCL 1
 
 /**
  * IP address constants

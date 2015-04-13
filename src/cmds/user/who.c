@@ -11,14 +11,10 @@
 #include <stdio.h>
 #include <utmp.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(who_cmd);
-
 static const char *login = "LOGIN";
 static const char *localhost = "(localhost)";
 
-static int who_cmd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	struct utmp *ut;
 	const char *user, *host;
 	printf("%8s %8s %16s %8s %4s\n", "NAME", "LINE", "HOST", "TIME", "PID");

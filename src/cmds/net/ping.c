@@ -11,8 +11,6 @@
  * @author Daria Dzendzik
  */
 
-#include <embox/cmd.h>
-
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -34,8 +32,6 @@
 #include <net/util/macaddr.h>
 #include <poll.h>
 #include <signal.h>
-
-EMBOX_CMD(exec);
 
 /* Constants */
 #define DEFAULT_COUNT    4
@@ -67,7 +63,7 @@ struct packet_in {
 			struct icmpbody_dest_unreach dest_unreach;
 		} __attribute__((packed)) body;
 	} __attribute__((packed)) icmp;
-	char data[MAX_PADLEN];
+	char data[];
 } __attribute__((packed));
 
 struct packet_out {
@@ -77,7 +73,7 @@ struct packet_out {
 			struct icmpbody_echo echo_req;
 		} __attribute__((packed)) body;
 	} __attribute__((packed)) icmp;
-	char data[MAX_PADLEN];
+	char data[];
 } __attribute__((packed));
 
 struct ping_stat {
@@ -169,11 +165,11 @@ static void parse_result(struct packet_in *rx_pack,
 	}
 }
 
-static int ping(struct ping_info *pinfo, char *name, char *official_name) {
+static int ping(struct ping_info *pinfo, char *name, char *official_name, struct in_device *in_dev) {
 	struct sockaddr_in to;
 	struct ping_stat stat;
-	struct packet_out *tx_pack = malloc(sizeof *tx_pack);
-	struct packet_in *rx_pack = malloc(sizeof *rx_pack);
+	struct packet_out *tx_pack = malloc(sizeof *tx_pack + pinfo->padding_size);
+	struct packet_in *rx_pack = malloc(sizeof *rx_pack + pinfo->padding_size);
 	clock_t started;
 	int sk, ret;
 	uint16_t seq;
@@ -197,6 +193,12 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name) {
 		printf("socket failed. error=%d\n", sk);
 		free(tx_pack);
 		return -errno;
+	}
+
+	if (in_dev != NULL) {
+		if (-1 == setsockopt(sk, SOL_SOCKET, SO_BINDTODEVICE, &in_dev->dev->name[0], strlen(&in_dev->dev->name[0]))) {
+			return -errno;
+		}
 	}
 
 	to.sin_family = AF_INET;
@@ -274,9 +276,9 @@ out:
 	return ret;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt, i_opt;
-	struct in_device *in_dev;
+	struct in_device *in_dev = NULL;
 	struct ping_info pinfo;
 	int iface_set, cnt_set, ttl_set, tout_set, psize_set, int_set, pat_set, ip_set;
 	int garbage, duplicate;
@@ -447,5 +449,5 @@ static int exec(int argc, char **argv) {
 	pinfo.timeout *= 1000;
 
 	/* ping! */
-	return ping(&pinfo, hostname, he->h_name);
+	return ping(&pinfo, hostname, he->h_name, in_dev);
 }

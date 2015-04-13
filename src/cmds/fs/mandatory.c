@@ -11,11 +11,7 @@
 #include <stdio.h>
 #include <utmp.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(mandatory);
-
-static int mandatory(int argc, char **argv) {
+int main(int argc, char **argv) {
 	printf(".....  Done\n");
 
 	return 0;

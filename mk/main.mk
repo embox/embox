@@ -6,6 +6,7 @@ export MYBUILD_VERSION := 0.4
 
 include mk/core/common.mk
 include mk/util/wildcard.mk
+include mk/variables.mk
 
 .PHONY : all a
 a : all
@@ -59,6 +60,24 @@ Usage: $(MAKE) buildgen-<template>
   Note that in order to use simple form (with no template spesified),
   you have to configure the project first. See configuration targets.
 endef # buildgen
+
+.PHONY : distgen dg
+dg : distgen
+distgen :
+	+@$(make_mybuild) $@
+
+define help-distgen
+Usage: $(MAKE) distgen-<template>
+   Or: $(MAKE) distgen
+   Or: $(MAKE) dg
+
+  Generates build environment for the given <template> (if any)
+  or the current active configuration. The environment is generated inside
+  DIST_DIR and ready for self-sustained builds.
+
+  Note that in order to use simple form (with no template spesified),
+  you have to configure the project first. See configuration targets.
+endef # distgen
 
 .PHONY : rootfs
 rootfs :
@@ -130,6 +149,10 @@ $(templates:%=build-%) : build-% :
 .PHONY : $(templates:%=buildgen-%)
 $(templates:%=buildgen-%) : buildgen-% :
 	+@$(make_mybuild) CONF_DIR=$(call template_name2dir,$*) buildgen
+
+.PHONY : $(templates:%=distgen-%)
+$(templates:%=distgen-%) : distgen-% :
+	+@$(make_mybuild) CONF_DIR=$(call template_name2dir,$*) distgen
 
 #
 # Configuration related stuff.
@@ -263,6 +286,7 @@ endef # disasm
 c : clean
 clean :
 	@$(RM) -r $(ROOT_DIR)/build
+	@$(RM) -r $(DIST_DIR)
 
 define help-clean
 Usage: $(MAKE) clean
@@ -324,6 +348,8 @@ Building targets:
   build-<t>      - Build a given configuration template
   buildgen (bg)  - Unconditionally regenerate build environment
   buildgen-<t>   - Prepare build environment for a given template
+  distgen (dg)   - Generate self-sustained build environment for distribution
+  distgen-<t>    - Prepare distribution for a given template
   menubuild (mb) - Interactively select a configuration to build a menu based
                    program (requires 'dialog')
   xbuild (xb)    - Interactively select a configuration to build using GTK

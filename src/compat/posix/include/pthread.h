@@ -23,7 +23,7 @@
 #include <kernel/thread/thread_flags.h>
 #include <kernel/thread/sync/cond.h>
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/thread/sync/mutexattr.h>
+#include <kernel/sched/sync/mutexattr.h>
 #include <kernel/thread/sync/rwlock.h>
 #include <kernel/task/thread_key_table.h>
 
@@ -77,9 +77,7 @@ typedef struct mutex pthread_mutex_t;
 
 typedef struct mutexattr pthread_mutexattr_t;
 
-typedef struct pthread_rwlock {
-
-} pthread_rwlock_t;
+typedef struct rwlock pthread_rwlock_t;
 
 typedef struct pthread_rwlockattr {
 

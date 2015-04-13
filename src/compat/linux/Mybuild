@@ -1,9 +1,0 @@
-package embox.compat.linux
-
-module LibLinux {
-	option number nrs_total = 32
-
-	source "kernel/softirq.c"
-
-	depends embox.kernel.softirq
-}

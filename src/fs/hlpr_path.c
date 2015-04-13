@@ -218,3 +218,9 @@ int path_is_dotname(const char *name, size_t name_len) {
 		return 0;
 	}
 }
+
+
+int path_is_double_dot(const char *path) {
+	return *path == '.' && *(path + 1) == '.'
+		&& (*(path + 2) == '/' || *(path + 2) == '\0');
+}

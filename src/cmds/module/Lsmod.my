@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "lsmod",
 	help = "Lists mod info emitted by EMBuild",
 	man = '''

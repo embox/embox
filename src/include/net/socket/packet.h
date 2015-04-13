@@ -9,7 +9,8 @@
 #ifndef SOCKET_PACKET_H_
 #define SOCKET_PACKET_H_
 
-extern void sock_packet_add(struct sk_buff *skb);
+struct sk_buff;
+extern void sock_packet_add(struct sk_buff *skb, unsigned short protocol);
 
 #endif /* SOCKET_PACKET_H_ */
 

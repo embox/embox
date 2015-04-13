@@ -6,14 +6,11 @@
  * @author Eldar Abusalimov
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <framework/mod/api.h>
 #include <errno.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: modprobe <mod_name>\n");
@@ -35,7 +32,7 @@ static void fake_enable(const struct mod *mod) {
 	printf(" *  %s.%s\n", mod_pkg_name(mod), mod_name(mod));
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	const struct mod *mod;
 	const char *name;
 

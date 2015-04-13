@@ -12,4 +12,5 @@ module http_admin {
 	       "app.js"
 
 	depends third_party.lib.cjson
+	depends embox.compat.libc.stdlib.system
 }

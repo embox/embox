@@ -10,10 +10,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <embox/cmd.h>
 #include <hal/arch.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage:" "\n"
@@ -23,7 +20,7 @@ static void print_usage(void) {
 			"\t" "reboot the system" "\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	if (argc != 2) {
 		print_usage();
 		return 0;

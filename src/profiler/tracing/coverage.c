@@ -12,6 +12,7 @@
 #include <util/bitmap.h>
 #include <kernel/printk.h>
 #include <embox/unit.h>
+#include "cyg_profile.h"
 
 extern const struct symbol __symbol_table[];
 extern const size_t __symbol_table_size;
@@ -21,7 +22,7 @@ EMBOX_UNIT_INIT(coverage_init);
 #define COVERAGE_TABLE_SIZE OPTION_GET(NUMBER,coverage_table_size)
 static BITMAP_DECL(coverage_table_bitmap, COVERAGE_TABLE_SIZE);
 
-void __cyg_profile_func_enter(void *func, void *caller) {
+void __coverage_func_enter(void *func, void *caller) {
 	const struct symbol *sym;
 	int sym_pos;
 
@@ -36,7 +37,7 @@ void __cyg_profile_func_enter(void *func, void *caller) {
 	bitmap_set_bit(coverage_table_bitmap, sym_pos);
 }
 
-void __cyg_profile_func_exit(void *func, void *caller) {
+void __coverage_func_exit(void *func, void *caller) {
 
 }
 
@@ -56,6 +57,12 @@ static int coverage_init(void) {
 				__func__, (size_t)COVERAGE_TABLE_SIZE, __symbol_table_size);
 		return -ENOMEM;
 	}
+
+
+	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_enter_array);
+	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_exit_array);
+	ARRAY_SPREAD_ADD(__cyg_handler_enter_array, &__coverage_func_enter);
+	ARRAY_SPREAD_ADD(__cyg_handler_exit_array, &__coverage_func_exit);
 
 	return 0;
 }

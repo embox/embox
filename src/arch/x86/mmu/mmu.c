@@ -7,10 +7,12 @@
  */
 
 #include <stdint.h>
+#include <kernel/panic.h>
 
 #include <asm/flags.h>
 
 #include <hal/mmu.h>
+#include <mem/vmem.h>
 
 #define MMU_PMD_FLAG  (MMU_PAGE_WRITABLE | MMU_PAGE_USERMODE)
 
@@ -93,7 +95,7 @@ void mmu_flush_tlb(void) {
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
-	return get_cr2();
+	return get_cr2() & ~(VMEM_PAGE_SIZE - 1);
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
@@ -127,7 +129,7 @@ int mmu_pte_present(mmu_pte_t *pte) {
 /* Set functions */
 
 void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
-	return ;
+	panic("%s\n", __func__);
 }
 
 void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pmd_t *pte) {
@@ -157,7 +159,7 @@ mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 /* Unset functions */
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
-	return ;
+	panic("%s\n", __func__);
 }
 
 void mmu_pmd_unset(mmu_pmd_t *pmd) {
@@ -192,4 +194,8 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int val) {
 	} else {
 		*pte = *pte | MMU_PAGE_DISABLE_CACHE;
 	}
+}
+
+void mmu_pte_set_executable(mmu_pte_t *pte, int val) {
+
 }

@@ -6,17 +6,15 @@
  */
 
 #include <kernel/sched.h>
-#include <kernel/thread.h>
-#include <kernel/sched/waitq.h>
+#include <kernel/sched/schedee.h>
 
-
-void sched_signal(struct thread *t) {
+void sched_signal(struct schedee *s) {
 	sched_lock();
 	{
-		if (t->ready) {
+		if (s->ready) {
 			sched_post_switch();
 		} else {
-			sched_wakeup(t); // XXX -EINTR
+			sched_wakeup(s); // XXX -EINTR
 		}
 	}
 	sched_unlock();

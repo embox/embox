@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "pnet",
 	help = "Util for PNET configuration",
 	man = '''

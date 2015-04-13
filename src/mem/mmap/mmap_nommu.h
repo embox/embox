@@ -28,5 +28,4 @@ struct emmap {
 	struct dlist_head marea_list;
 };
 
-
 #endif /* MEM_MMAP_NOMMU_H_ */

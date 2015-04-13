@@ -58,6 +58,8 @@
 	SAVE_ALL_REGS;              \
 	movl	PT_END(%esp), %ecx; \
 	movl	%ecx, PT_EIP(%esp); \
+	push	%cs;				\
+	popl	PT_CS(%esp);		\
 	pushf;                      \
 	popl	PT_EFLAGS(%esp);    \
 	movl	%esp, %eax;         \
@@ -71,25 +73,42 @@
  */
 
 #define PT_EBX     0
+#define PT_EBX_N   0
 #define PT_ECX     4
+#define PT_ECX_N   1
 #define PT_EDX     8
+#define PT_EDX_N   2
 #define PT_ESI     12
+#define PT_ESI_N   3
 #define PT_EDI     16
+#define PT_EDI_N   4
 #define PT_EBP     20
+#define PT_EBP_N   5
 #define PT_EAX     24
+#define PT_EAX_N   6
 #define PT_GS      28
+#define PT_GS_N    7
 #define PT_FS      32
+#define PT_FS_N    8
 #define PT_ES      36
+#define PT_ES_N    9
 #define PT_DS      40
+#define PT_DS_N    10
 
 #define PT_TRAPNO  44
+#define PT_TRAPNO_N 11
 #define PT_ERR     48
+#define PT_ERR_N   12
 
 #define PT_EIP     52
+#define PT_EIP_N   13
 #define PT_CS      56
 #define PT_EFLAGS  60
+#define PT_EFLAGS_N 15
 #define PT_ESP     64
+#define PT_ESP_N   16
 #define PT_SS      68
+#define PT_SS_N    17
 
 #define PT_END     72
 

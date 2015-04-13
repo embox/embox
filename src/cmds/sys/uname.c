@@ -7,14 +7,12 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
+#include <embox/cmd.h> /* options */
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/utsname.h>
 #include <errno.h>
 #include <string.h>
-
-EMBOX_CMD(exec);
 
 struct uname_args {
 	char with_a;
@@ -34,7 +32,7 @@ static int uname_args_not_empty(struct uname_args *args) {
 			|| args->with_o;
 }
 
-static int exec(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int opt;
 	struct utsname info;
 	struct uname_args args;

@@ -7,8 +7,7 @@
  * @author Anton Kozlov
  */
 
-#include <embox/cmd.h>
-#include <unistd.h>
+#include <stdbool.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -19,8 +18,6 @@
 #include <dirent.h>
 
 #include <mem/page.h>
-
-EMBOX_CMD(exec);
 
 #define MSG_INFO "cp: "
 
@@ -160,7 +157,7 @@ static int cp_recursive(char *src, char *dst) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	bool recursively = false;
 

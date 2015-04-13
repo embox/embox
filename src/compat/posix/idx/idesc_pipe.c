@@ -24,6 +24,8 @@
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 
+#include <kernel/thread/thread_sched_wait.h>
+
 #include <kernel/sched.h>
 #include <fs/flags.h>
 #include <mem/sysmalloc.h>
@@ -227,16 +229,21 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 	pipe = idesc_to_pipe(idesc);
 	assert(pipe);
 
+	res = 0;
+	mutex_lock(&pipe->mutex);
 	switch (mask) {
 	case POLLIN:
 		/* how many we can read */
-		return ring_buff_get_cnt(pipe->buff);
+		res = ring_buff_get_cnt(pipe->buff);
+		goto out;
 	case POLLOUT:
 		/* how many we can write */
-		return pipe->buf_size - ring_buff_get_cnt(pipe->buff);
+		res = pipe->buf_size - ring_buff_get_cnt(pipe->buff);
+		goto out;
 	case POLLERR:
 		/* is there any exeptions */
-		return 0;//TODO Where is errors counter
+		res = 0; //TODO Where is errors counter
+		goto out;
 	default:
 		res = 0;
 		break;
@@ -256,6 +263,9 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 		/* is there any exeptions */
 		res += 0; //TODO Where is errors counter
 	}
+
+out:
+	mutex_unlock(&pipe->mutex);
 
 	return res;
 }
@@ -295,7 +305,7 @@ static struct pipe *pipe_alloc(void) {
 	}
 
 	pipe->buff = pipe_buff;
-	pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE;
+	pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE - 1;
 	ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
 
 	mutex_init(&pipe->mutex);

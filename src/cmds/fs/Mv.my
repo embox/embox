@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "mv",
 	help = "Move or rename file",
 	man = '''

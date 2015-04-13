@@ -11,9 +11,9 @@ include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
-.PHONY : buildgen build prepare docsgen dot
+.PHONY : buildgen distgen build docsgen dot
 
-build_gen_ts := $(MKGEN_DIR)/build-gen.timestamp
+build_gen_ts := $(BUILD_DIR)/build-gen.timestamp
 
 build : $(build_gen_ts)
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
@@ -25,14 +25,19 @@ build : $(build_gen_ts)
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=2
 	@$(MAKE) -f mk/image3.mk MAKEFILES=''
 
-buildgen : $(build_gen_ts)
-ifneq ($(filter buildgen,$(MAKECMDGOALS)),)
+buildgen distgen : $(build_gen_ts)
+ifneq ($(filter buildgen distgen,$(MAKECMDGOALS)),)
 .PHONY : $(build_gen_ts)
 endif
 
 $(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
-	@echo ' BUILDGEN'
-	@$(MAKE) -f $< && touch $@
+	@echo ' BUILDGEN $(DIST_DIR)'
+	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
+	@$(MAKE) -f $< MAKEFILES='$(MKGEN_DIR)/build.mk $(MAKEFILES)' \
+		GEN_DIST='$(filter distgen,$(MAKECMDGOALS))'
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' \
+		GEN_DIST='$(filter distgen,$(MAKECMDGOALS))'
+	@$(MKDIR) $(@D) && touch $@
 
 # force regeneration of build files when some of them are missing
 

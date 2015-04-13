@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "cp",
 	help = "Copy file",
 	man = '''

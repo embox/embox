@@ -13,18 +13,9 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <string.h>
-#include <math.h>
 
-#include <hal/ipl.h>
-#include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/sched.h>
-#include <kernel/sched/sched_priority.h>
-
-
-static void priority_inherit(struct thread *t, struct mutex *m);
-static void priority_uninherit(struct thread *t);
+#include <kernel/thread/waitq.h>
 
 static inline int mutex_is_static_inited(struct mutex *m) {
 	/* Static initializer can't really init list now, so if this condition's
@@ -50,37 +41,43 @@ void mutex_init_default(struct mutex *m, const struct mutexattr *attr) {
 
 void mutex_init(struct mutex *m) {
 	mutex_init_default(m, NULL);
-	mutexattr_settype(&m->attr, MUTEX_RECURSIVE | MUTEX_ERRORCHECK);
+	mutexattr_settype(&m->attr, MUTEX_RECURSIVE);
 }
 
 int mutex_lock(struct mutex *m) {
-	struct thread *current = thread_self();
+	struct schedee *current = schedee_get_current();
 	int errcheck;
 	int ret, wait_ret;
 
 	assert(m);
 
-	errcheck = (m->attr.type & MUTEX_ERRORCHECK);
+	errcheck = (m->attr.type == MUTEX_ERRORCHECK);
 
 	wait_ret = WAITQ_WAIT(&m->wq, ({
 		int done;
 
+		sched_lock();
 		ret = mutex_trylock(m);
-		done = (ret == 0) || (errcheck && ret == -EAGAIN);
+		done = (ret == 0) || (errcheck && ret == -EDEADLK);
 		if (!done)
 			priority_inherit(current, m);
+		sched_unlock();
 		done;
-
 	}));
 
-	if (!wait_ret)
+	if (wait_ret != 0) {
 		ret = wait_ret;
+	}
 
 	return ret;
 }
 
+static inline int mutex_this_owner(struct mutex *m) {
+	return m->holder == schedee_get_current();
+}
+
 int mutex_trylock(struct mutex *m) {
-	struct thread *current = thread_self();
+	int res;
 
 	assert(m);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
@@ -88,63 +85,59 @@ int mutex_trylock(struct mutex *m) {
 	if (mutex_is_static_inited(m))
 		mutex_complete_static_init(m);
 
-	if (m->holder == current) {
-		if (m->attr.type & MUTEX_RECURSIVE){
-			/* Nested locks. */
-			m->lock_count++;
-			return 0;
-		}
-		if (m->attr.type & MUTEX_ERRORCHECK){
-			/* Nested locks. */
-			return -EAGAIN;
+	sched_lock();
+	{
+		if (m->attr.type == MUTEX_ERRORCHECK) {
+			if (!mutex_this_owner(m)) {
+				res = mutex_trylock_schedee(m);
+			} else {
+				res = -EDEADLK;
+			}
+		} else if (m->attr.type == MUTEX_RECURSIVE) {
+			if (mutex_this_owner(m)) {
+				++m->lock_count;
+				res = 0;
+			} else {
+				res = mutex_trylock_schedee(m);
+			}
+		} else {
+			res = mutex_trylock_schedee(m);
 		}
 	}
-
-	if (m->holder) {
-		return -EBUSY;
-	}
-
-	m->lock_count = 1;
-	m->holder = current;
-
-	return 0;
+	sched_unlock();
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+	return res;
 }
 
 int mutex_unlock(struct mutex *m) {
-	struct thread *current = thread_self();
+	int res;
 
 	assert(m);
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	if ((!m->holder || m->holder != current) &&
-			(m->attr.type & (MUTEX_ERRORCHECK | MUTEX_RECURSIVE))){
-		return -EPERM;
+	res = 0;
+	sched_lock();
+	{
+		if (m->attr.type == MUTEX_ERRORCHECK) {
+			if (mutex_this_owner(m)) {
+				mutex_unlock_schedee(m);
+			} else {
+				res = -EPERM;
+			}
+		} else if (m->attr.type == MUTEX_RECURSIVE) {
+			if (mutex_this_owner(m)) {
+				assert(m->lock_count > 0);
+				if (--m->lock_count == 0) {
+					mutex_unlock_schedee(m);
+				}
+			} else {
+				res = -EPERM;
+			}
+		} else {
+			mutex_unlock_schedee(m);
+		}
 	}
-
-	assert(m->lock_count > 0);
-
-	if (--m->lock_count != 0  && (m->attr.type & MUTEX_RECURSIVE)) {
-		return 0;
-	}
-
-	priority_uninherit(current);
-
-	m->holder = NULL;
-	m->lock_count = 0;
-	waitq_wakeup_all(&m->wq);
-
-	return 0;
-}
-
-static void priority_inherit(struct thread *t, struct mutex *m) {
-	sched_priority_t prior = thread_priority_get(t);
-
-	if (prior != thread_priority_inherit(m->holder, prior))
-		sched_change_priority(m->holder, prior);
-}
-
-static void priority_uninherit(struct thread *t) {
-	sched_priority_t prior = thread_priority_get(t);
-
-	if (prior != thread_priority_reverse(t))
-		sched_change_priority(t, thread_priority_get(t));
+	sched_unlock();
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+	return res;
 }

@@ -1,6 +1,7 @@
 
 package embox.cmd.user
 
+@AutoCmd
 @Cmd(name = "useradd",
 	help = "create a new user or update default new user information",
 	man = '''

@@ -9,7 +9,6 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
-#include <embox/cmd.h>
 #include <errno.h>
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
@@ -20,8 +19,6 @@
 #include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
-
-EMBOX_CMD(exec);
 
 struct ntpd_param {
 	int running;
@@ -181,7 +178,7 @@ static int ntpd_stop(struct ntpd_param *param) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	static struct ntpd_param param = {
 		.running = 0
 	};

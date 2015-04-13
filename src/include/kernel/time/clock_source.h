@@ -26,6 +26,9 @@ enum clock_source_property {
 	CS_WITHOUT_IRQ = 2
 };
 
+/* TODO move it arch dependent code */
+#define CS_SHIFT_CONSTANT 24
+
 /**
  * Time source of hardware time - events and cycles.
  * @param read - return count of ns
@@ -38,7 +41,9 @@ struct clock_source {
 	volatile clock_t jiffies; /**< count of jiffies since clock source started */
 	clock_t jiffies_cnt; /**< interjiffes count */
 	uint32_t flags; /**< periodical or not */
-	time64_t (*read)(struct clock_source *cs);
+	struct timespec (*read)(struct clock_source *cs);
+	uint32_t counter_mult;
+	uint32_t counter_shift;
 };
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
@@ -57,11 +62,16 @@ extern struct dlist_head *clock_source_get_list(void);
  * @param cs - clock source read from
  * @return count of nanoseconds from moment when clock source started
  */
-extern time64_t clock_source_read(struct clock_source *cs);
-extern time64_t clock_source_counter_read(struct clock_source *cs);
+extern struct timespec clock_source_read(struct clock_source *cs);
+//extern time64_t clock_source_counter_read(struct clock_source *cs);
 
 extern int clock_source_register(struct clock_source *cs);
 extern int clock_source_unregister(struct clock_source *cs);
+
+static inline uint32_t clock_sourcehz2mult(uint32_t hz, uint32_t shift) {
+	uint64_t tmp = ((uint64_t)NSEC_PER_SEC) << shift;
+	return tmp / hz;
+}
 
 struct clock_source_head {
 	struct dlist_head lnk;

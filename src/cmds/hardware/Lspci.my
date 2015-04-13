@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "lspci",
 	help = "Show list pci's devices and information",
 	man = '''

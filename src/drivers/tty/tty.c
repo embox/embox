@@ -19,6 +19,8 @@
 #include <kernel/irq_lock.h>
 #include <fs/idesc_event.h>
 
+#include <kernel/thread/thread_sched_wait.h>
+
 #include <util/math.h>
 #include <util/member.h>
 
@@ -454,6 +456,8 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 	ring_init(&t->i_canon_ring);
 
 	ring_init(&t->o_ring);
+
+	t->pgrp = -1;
 
 	return t;
 }

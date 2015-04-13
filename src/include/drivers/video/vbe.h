@@ -33,6 +33,11 @@
 #define VBE_DISPI_LFB_ENABLED       0x40
 #define VBE_DISPI_NOCLEARMEM        0x80
 
+/* FIXME This could and probably should be read from GETCAPS register */
+#define VBE_DISPI_MAX_XRES              1600
+#define VBE_DISPI_MAX_YRES              1200
+#define VBE_DISPI_MAX_BPP               32
+
 static inline void vbe_write(uint16_t index, uint16_t value) {
 	out16(index, VBE_DISPI_IOPORT_INDEX);
 	out16(value, VBE_DISPI_IOPORT_DATA);

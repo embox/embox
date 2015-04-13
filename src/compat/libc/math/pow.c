@@ -11,7 +11,7 @@
 extern float __powf(float x, float y);
 extern double __pow(double x, double y);
 extern long double __powl(long double x, long double y);
-
+#if 0
 double pow(double x, double y) {
 	return __pow(x, y);
 }
@@ -23,3 +23,4 @@ float powf(float x, float y) {
 long double powl(long double x, long double y) {
 	return __powl(x,y);
 }
+#endif

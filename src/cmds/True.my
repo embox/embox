@@ -1,6 +1,7 @@
 
 package embox.cmd
 
+@AutoCmd
 @Cmd(name="true",
 	help="does nothing and does it good",
 	man='''

@@ -6,15 +6,11 @@
  * @date    13.02.2014
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 #include <ctype.h>
 #include <crypt.h>
 
 #include "user.h"
-
-EMBOX_CMD(useradd);
 
 static char *def_pw_passwd = "x";
 static char *def_sp_pwdp = "";
@@ -136,7 +132,7 @@ static int print_default_options(void) {
 	return 0;
 }
 
-static int useradd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	char name[15], home[20] = "", shell[20] = "", *pswd = NULL,
 			_pswd[15] = "", gecos[15] = "";
 	int group = -1;

@@ -1,5 +1,6 @@
 package embox.cmd.sys
 
+@AutoCmd
 @Cmd(name = "uname",
 	help = "Print system information",
 	man = '''

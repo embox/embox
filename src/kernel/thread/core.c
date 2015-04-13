@@ -32,9 +32,12 @@
 #include <kernel/thread/signal.h>
 #include <kernel/thread/thread_alloc.h>
 #include <kernel/thread/thread_local.h>
-#include <kernel/thread/thread_register.h>
+#include <kernel/thread/thread_sched_wait.h>
+#include <kernel/thread/thread_priority.h>
+#include <kernel/thread/priority_priv.h>
 #include <kernel/sched/sched_priority.h>
-#include <kernel/runnable/runnable.h>
+#include <kernel/sched/schedee.h>
+#include <kernel/sched/current.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
@@ -43,10 +46,10 @@
 #include <hal/context.h>
 #include <err.h>
 
-
+extern void thread_switch(struct thread *prev, struct thread *next);
+extern void thread_ack_switched(void);
 
 static int id_counter = 0; // TODO make it an indexator
-
 
 /**
  * Wrapper for thread start routine.
@@ -58,18 +61,39 @@ static void __attribute__((noreturn)) thread_trampoline(void) {
 
 	assert(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
 
-	sched_ack_switched();
+	thread_ack_switched();
 
 	assert(!critical_inside(CRITICAL_SCHED_LOCK));
 
 	/* execute user function handler */
-	res = current->runnable.run(current->runnable.run_arg);
+	res = current->schedee.run(current->schedee.run_arg);
 	thread_exit(res);
 	/* NOTREACHED */
 }
 
+static sched_priority_t thread_priority_by_flags(unsigned int flags) {
+	sched_priority_t priority;
+
+	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
+		priority = thread_priority_get(thread_self());
+	} else {
+		priority = THREAD_PRIORITY_DEFAULT;
+	}
+
+	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
+			&& (priority > THREAD_PRIORITY_MIN)) {
+		priority--;
+	} else if ((flags & THREAD_FLAG_PRIORITY_HIGHER)
+			&& (priority < THREAD_PRIORITY_HIGH)) {
+		priority++;
+	}
+
+	return priority;
+}
+
 struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
 	struct thread *t;
+	sched_priority_t priority;
 
 	/* check mutually exclusive flags */
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
@@ -86,6 +110,11 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		return err_ptr(EINVAL);
 	}
 
+	/* calculate current thread priority. It can be change later with
+	 * thread_set_priority () function
+	 */
+	priority = thread_priority_by_flags(flags);
+
 	/* below we will work with thread's instances and therefore we need to
 	 * lock scheduler (disable scheduling) to our structures is not be
 	 * corrupted
@@ -99,11 +128,11 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		}
 
 		/* initialize internal thread structure */
-		thread_init(t, flags, run, arg);
+		thread_init(t, priority, run, arg);
 
 		/* link with task if needed */
 		if (!(flags & THREAD_FLAG_NOTASK)) {
-			thread_register(task_self(), t);
+			task_thread_register(task_self(), t);
 		}
 
 		thread_cancel_init(t);
@@ -123,9 +152,35 @@ out_unlock:
 	return t;
 }
 
-void thread_init(struct thread *t, unsigned int flags,
+static struct schedee *thread_process(struct schedee *prev, struct schedee *next) {
+	struct thread *next_t, *prev_t;
+	next_t = mcast_out(next, struct thread, schedee);
+	prev_t = mcast_out(prev, struct thread, schedee);
+
+	schedee_set_current(next);
+
+	/* Threads context switch */
+	if (prev != next) {
+		thread_switch(prev_t, next_t);
+	}
+
+	ipl_enable();
+
+	if (!prev_t->siglock) {
+		thread_signal_handle();
+	}
+
+	return &thread_self()->schedee;
+}
+
+struct thread *thread_self(void) {
+	struct schedee *schedee = schedee_get_current();
+	assert(schedee->process == thread_process, "thread_self is about to return not-thread");
+	return mcast_out(schedee, struct thread, schedee);;
+}
+
+void thread_init(struct thread *t, sched_priority_t priority,
 		void *(*run)(void *), void *arg) {
-	sched_priority_t priority;
 
 	assert(t);
 	assert(run);
@@ -134,56 +189,22 @@ void thread_init(struct thread *t, unsigned int flags,
 
 	t->id = id_counter++; /* setup thread ID */
 
-	dlist_init(&t->thread_link); /* default unlink value */
+	dlist_head_init(&t->thread_link); /* default unlink value */
+
+	t->task = NULL;
 
 	t->critical_count = __CRITICAL_COUNT(CRITICAL_SCHED_LOCK);
 	t->siglock = 0;
-	t->lock = SPIN_UNLOCKED;
-	t->ready = false;
-	t->active = false;
-	t->waiting = true;
-	t->state = TS_INIT;
 
-	/* set sched routines, implemented in thread_sched_routine.h */
-	t->runnable.prepare = (void *)sched_prepare_thread;
-	t->runnable.run = NULL;
-	t->runnable.run_arg = NULL;
+	t->state = TS_INIT;
 
 	if (thread_local_alloc(t, MODOPS_THREAD_KEY_QUANTITY)) {
 		panic("can't initialize thread_local");
 	}
 
-	/* set executive function and arguments pointer */
-	t->runnable.run = run;
-	t->runnable.run_arg = arg;
-
 	t->joining = NULL;
 
-	/* calculate current thread priority. It can be change later with
-	 * thread_set_priority () function
-	 */
-	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
-		priority = thread_priority_get(thread_self());
-	} else {
-		priority = THREAD_PRIORITY_DEFAULT;
-	}
-
-	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
-			&& (priority > THREAD_PRIORITY_MIN)) {
-		priority--;
-	} else if ((flags & THREAD_FLAG_PRIORITY_HIGHER)
-			&& (priority < THREAD_PRIORITY_HIGH)) {
-		priority++;
-	}
-
-	/* setup thread priority. Now we have not started thread yet therefore we
-	 * just set both base and scheduling priority in default value.
-	 */
-	thread_priority_init(t, priority);
-
 	/* cpu context init */
-	context_init(&t->context, true); /* setup default value of CPU registers */
-	context_set_entry(&t->context, thread_trampoline);/*set entry (IP register*/
 	/* setup stack pointer to the top of allocated memory
 	 * The structure of kernel thread stack follow:
 	 * +++++++++++++++ top
@@ -194,27 +215,37 @@ void thread_init(struct thread *t, unsigned int flags,
 	 * the end
 	 * +++++++++++++++ bottom (t->stack - allocated memory for the stack)
 	 */
-	context_set_stack(&t->context,
-			thread_stack_get(t) + thread_stack_get_size(t));
+	context_init(&t->context, CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
+			thread_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
 
 	sigstate_init(&t->sigstate);
 
-	/* Initializes scheduler strategy data of the thread */
-	runq_item_init(&(t->runnable.sched_attr.runq_link));
-	sched_affinity_init(&(t->runnable));
-	sched_timing_init(t);
+	schedee_init(&t->schedee, priority, thread_process, run, arg);
 
 	/* initialize everthing else */
 	thread_wait_init(&t->thread_wait);
 }
 
+struct thread *thread_init_stack(void *stack, size_t stack_sz,
+	       	sched_priority_t priority, void *(*run)(void *), void *arg) {
+	struct thread *thread = stack; /* Allocating at the bottom */
+
+	/* Stack setting up */
+	thread_stack_init(thread, stack_sz);
+
+	/* General initialization and task setting up */
+	thread_init(thread, priority, run, arg);
+
+	return thread;
+
+}
 void thread_delete(struct thread *t) {
 	static struct thread *zombie = NULL;
 
 	assert(t);
 	assert(t->state & TS_EXITED);
 
-	thread_unregister(t->task, t);
+	task_thread_unregister(t->task, t);
 	thread_local_free(t);
 
 	if (zombie) {
@@ -222,8 +253,8 @@ void thread_delete(struct thread *t) {
 	}
 
 	if (t != thread_self()) {
-		assert(!t->active);
-		assert(!t->ready);
+		assert(!t->schedee.active);
+		assert(!t->schedee.ready);
 		thread_free(t);
 		zombie = NULL;
 	} else {
@@ -246,7 +277,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	sched_lock();
 
 	// sched_finish(current);
-	current->waiting = true;
+	current->schedee.waiting = true;
 	current->state |= TS_EXITED;
 
 	/* Wake up a joining thread (if any).
@@ -254,7 +285,7 @@ void __attribute__((noreturn)) thread_exit(void *ret) {
 	joining = current->joining;
 	current->run_ret = ret;
 	if (joining) {
-		sched_wakeup(joining);
+		sched_wakeup(&joining->schedee);
 	}
 
 	if (current->state & TS_DETACHED)
@@ -332,7 +363,7 @@ int thread_launch(struct thread *t) {
 			ret = -EINVAL;
 		}
 		else {
-			ret = sched_wakeup(t) ? 0 : -EINVAL;
+			ret = sched_wakeup(&t->schedee) ? 0 : -EINVAL;
 		}
 	}
 	sched_unlock();
@@ -348,13 +379,13 @@ int thread_terminate(struct thread *t) {
 		// sched_finish(t);
 		// assert(0, "NIY");
 		// thread_delete(t);
-		sched_freeze(t);
+		sched_freeze(&t->schedee);
 
 		t->state |= TS_EXITED;
 
 		// XXX prevent scheduler to add thread in runq
 		if (t == thread_self()) {
-			t->waiting = true;
+			t->schedee.waiting = true;
 		}
 	}
 	sched_unlock();
@@ -368,9 +399,7 @@ void thread_yield(void) {
 
 int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 	// sched_priority_t prior;
-
 	assert(t);
-	assert(t->task);
 
 	if ((new_priority < THREAD_PRIORITY_MIN)
 			|| (new_priority > THREAD_PRIORITY_MAX)) {
@@ -383,7 +412,7 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 	// 	sched_change_priority(t, prior);
 	// }
 
- 	sched_change_priority(t, new_priority);
+ 	sched_change_priority(&t->schedee, new_priority);
 
 
 	return 0;
@@ -392,8 +421,7 @@ int thread_set_priority(struct thread *t, sched_priority_t new_priority) {
 sched_priority_t thread_get_priority(struct thread *t) {
 	assert(t);
 
-	return sched_priority_thread(task_get_priority(t->task),
-			thread_priority_get(t));
+	return thread_priority_get(t);
 }
 
 clock_t thread_get_running_time(struct thread *t) {
@@ -401,8 +429,7 @@ clock_t thread_get_running_time(struct thread *t) {
 
 	sched_lock();
 	{
-		running = sched_timing_get(t);
-
+		running = sched_timing_get(&t->schedee);
 	}
 	sched_unlock();
 
@@ -411,5 +438,5 @@ clock_t thread_get_running_time(struct thread *t) {
 
 void thread_set_run_arg(struct thread *t, void *run_arg) {
 	assert(t->state == TS_INIT);
-	t->runnable.run_arg = run_arg;
+	t->schedee.run_arg = run_arg;
 }

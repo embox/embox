@@ -6,8 +6,6 @@
  * @date    24.02.2014
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 #include <ctype.h>
 #include <crypt.h>
@@ -16,8 +14,6 @@
 
 #define TMP_PASSWD_FILE "/tmp/passwd.temp"
 #define TMP_SHADOW_FILE "/tmp/shadow.temp"
-
-EMBOX_CMD(exec);
 
 static int shadow(char *name, char *new_name, char *pswd) {
 	struct spwd *spwd;
@@ -90,7 +86,7 @@ static void print_help(void) {
 			"Options: see 'man usage'\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	char name[15], home[20] = "", shell[20] = "", _pswd[15] = "",
 			*pswd = NULL, gecos[15] = "", new_name[15] = "";
 	int group = -1;

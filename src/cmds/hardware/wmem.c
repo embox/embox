@@ -11,15 +11,11 @@
  *          - access_type added
  */
 
-#include <embox/cmd.h>
-
 #include <errno.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-EMBOX_CMD(exec);
 
 enum access_type {
 	MEM_AT_CHAR,
@@ -56,7 +52,7 @@ static int parse_option(char *optarg, int opt, long unsigned int *number) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	bool a_flag = false, v_flag = false;
 	int opt, ret;
 	volatile unsigned int *address;

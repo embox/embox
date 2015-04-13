@@ -18,11 +18,12 @@
 #include <embox/unit.h>
 
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <embox/device.h> //XXX
 #include <fs/node.h>
 #include <fs/file_desc.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 #define TUN_N 1
 
@@ -37,11 +38,11 @@ struct tun {
 static struct net_device *tun_g_array[TUN_N];
 
 static inline void tun_krnl_lock(struct tun *tun) {
-	softirq_lock();
+	sched_lock();
 }
 
 static inline void tun_krnl_unlock(struct tun *tun) {
-	softirq_unlock();
+	sched_unlock();
 }
 
 static inline void tun_user_lock(struct tun *tun) {
@@ -167,7 +168,7 @@ static int tun_dev_close(struct file_desc *desc) {
 }
 
 static size_t tun_dev_read(struct file_desc *desc, void *buf, size_t size) {
-	struct waitq_link wql;
+	struct waitq_link *wql = &thread_self()->schedee.waitq_link;
 	struct net_device *netdev;
 	struct tun *tun;
 	struct sk_buff *skb;
@@ -182,11 +183,11 @@ static size_t tun_dev_read(struct file_desc *desc, void *buf, size_t size) {
 		return -EINVAL;
 	}
 
-	waitq_link_init(&wql);
+	waitq_link_init(wql);
 	do {
 		tun_krnl_lock(tun);
 		{
-			waitq_wait_prepare(&tun->wq, &wql);
+			waitq_wait_prepare(&tun->wq, wql);
 			skb = skb_queue_pop(&tun->rx_q);
 		}
 		tun_krnl_unlock(tun);
@@ -200,7 +201,7 @@ static size_t tun_dev_read(struct file_desc *desc, void *buf, size_t size) {
 			ret = sched_wait_timeout(SCHED_TIMEOUT_INFINITE, NULL);
 		}
 	} while (ret == 0);
-	waitq_wait_cleanup(&tun->wq, &wql);
+	waitq_wait_cleanup(&tun->wq, wql);
 	return ret;
 }
 

@@ -6,7 +6,6 @@
  * @date    18.07.2013
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <errno.h>
 #include <unistd.h>
@@ -20,8 +19,6 @@
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 
-EMBOX_CMD(mkpart_exec);
-
 #define BSIZE 512
 
 extern block_dev_driver_t *bdev_driver_part;
@@ -29,7 +26,7 @@ extern block_dev_driver_t *bdev_driver_part;
 static struct block_dev *partbdev;
 static struct partition part;
 
-static int mkpart_exec(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int opt;
 	const char *blockname = NULL;
 	const char *partname  = NULL;
@@ -80,5 +77,3 @@ static int mkpart_exec(int argc, char *argv[]) {
 	return 0;
 
 }
-
-

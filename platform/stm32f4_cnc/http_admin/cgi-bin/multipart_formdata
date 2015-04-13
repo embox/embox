@@ -1,0 +1,6 @@
+#!/bin/bash
+
+echo -ne "HTTP/1.1 200 OK\r\n"
+echo -ne "Content-Type: application/json\r\n"
+echo -ne "Connection: close\r\n"
+echo -ne "\r\n"

@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "nslookup",
 	help = "Name server lookup",
 	man = '''

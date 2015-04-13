@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "lssata",
 	help = "Display sata ports and devices",
 	man = '''

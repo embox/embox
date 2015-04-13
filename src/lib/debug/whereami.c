@@ -102,7 +102,7 @@ static size_t tb_snprint_thread_run(char *buff, size_t buff_sz,
 	char *end = buff + buff_sz;
 
 	p += tb_safe_snprintf(p, end-p, "run ");
-	return tb_snprint_symbol(p, end-p, t->runnable.run);
+	return tb_snprint_symbol(p, end-p, t->schedee.run);
 }
 
 static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
@@ -115,9 +115,9 @@ static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
 		" --   %08x %c %c %c %c  thread %d  task %d ",
 		t->critical_count,
 		is_current      ? '*' : ' ',
-		sched_active(t) ? 'A' : ' ',
-		t->ready        ? 'R' : ' ',
-		t->waiting      ? 'W' : ' ',
+		sched_active(&t->schedee) ? 'A' : ' ',
+		t->schedee.ready        ? 'R' : ' ',
+		t->schedee.waiting      ? 'W' : ' ',
 		t->id, task_get_id(t->task));
 
 	memset(p, '-', end-p-1);

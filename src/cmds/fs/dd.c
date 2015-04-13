@@ -16,13 +16,10 @@
 #include <string.h>
 #include <fcntl.h>
 #include <mem/phymem.h>
-#include <embox/cmd.h>
 #include <embox/block_dev.h>
 #include <limits.h>
 
 #define DD_DEFAULT_BS 64
-
-EMBOX_CMD(exec);
 
 struct dd_param {
 	size_t bs;
@@ -163,7 +160,7 @@ static int dd_cond_open(const char *path, int mode, int def_fd) {
 	return fd;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	struct dd_param dp;
 	void *tbuf;
 	int ifd, ofd;

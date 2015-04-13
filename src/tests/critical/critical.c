@@ -22,14 +22,12 @@ TEST_TEARDOWN(case_teardown);
 TEST_CASE("critical_inside should return false "
 		"when called outside any critical section") {
 	test_assert_false(critical_inside(CRITICAL_IRQ_LOCK));
-	test_assert_false(critical_inside(CRITICAL_SOFTIRQ_LOCK));
 	test_assert_false(critical_inside(CRITICAL_SCHED_LOCK));
 }
 
 TEST_CASE("critical_allows should return true "
 		"when called outside any critical section") {
 	test_assert_true(critical_allows(CRITICAL_IRQ_LOCK));
-	test_assert_true(critical_allows(CRITICAL_SOFTIRQ_LOCK));
 	test_assert_true(critical_allows(CRITICAL_SCHED_LOCK));
 }
 
@@ -38,32 +36,18 @@ static int run(void) {
 	critical_enter(CRITICAL_SCHED_LOCK);
 
 	test_assert_true(critical_inside(CRITICAL_SCHED_LOCK));
-	test_assert_false(critical_inside(CRITICAL_SOFTIRQ_LOCK));
 	test_assert_false(critical_inside(CRITICAL_IRQ_LOCK));
 
 	test_assert_false(critical_allows(CRITICAL_SCHED_LOCK));
-	test_assert_true(critical_allows(CRITICAL_SOFTIRQ_LOCK));
-
-	critical_enter(CRITICAL_SOFTIRQ);
-
-	test_assert_true(critical_inside(CRITICAL_SCHED_LOCK));
-	test_assert_true(critical_inside(CRITICAL_SOFTIRQ_LOCK));
-	test_assert_false(critical_inside(CRITICAL_IRQ_LOCK));
-
-	test_assert_false(critical_allows(CRITICAL_SCHED_LOCK));
-	test_assert_false(critical_allows(CRITICAL_SOFTIRQ_LOCK));
 
 	critical_enter(CRITICAL_IRQ_LOCK);
 
 	test_assert_true(critical_inside(CRITICAL_SCHED_LOCK));
-	test_assert_true(critical_inside(CRITICAL_SOFTIRQ_LOCK));
 	test_assert_true(critical_inside(CRITICAL_IRQ_LOCK));
 
 	test_assert_false(critical_allows(CRITICAL_SCHED_LOCK));
-	test_assert_false(critical_allows(CRITICAL_SOFTIRQ_LOCK));
 
 	critical_leave(CRITICAL_IRQ_LOCK);
-	critical_leave(CRITICAL_SOFTIRQ_LOCK);
 	critical_leave(CRITICAL_SCHED_LOCK);
 
 	return 0;
@@ -76,7 +60,6 @@ static int suite_setup(void) {
 	/* Test must not be invoked within any critical section. */
 	int inside_any = 0;
 	inside_any |= critical_inside(CRITICAL_IRQ_LOCK);
-	inside_any |= critical_inside(CRITICAL_SOFTIRQ_LOCK);
 	inside_any |= critical_inside(CRITICAL_SCHED_LOCK);
 	return inside_any ? -EPERM : 0;
 }
@@ -89,7 +72,6 @@ static int case_setup(void) {
 static int case_teardown(void) {
 	unsigned int critical, levels[] = {
 		CRITICAL_IRQ_LOCK,
-		CRITICAL_SOFTIRQ_LOCK,
 		CRITICAL_SCHED_LOCK,
 	};
 

@@ -5,6 +5,7 @@ abstract module diag_api {
 
 module mem_diag extends diag_api {
 	option number buffer_len = 128
+	option number buffer_addr = 0
 	source "mem_diag.c"
 }
 

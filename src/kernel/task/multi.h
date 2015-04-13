@@ -69,6 +69,12 @@ static inline const char * task_get_name(const struct task *tsk) {
 	return tsk->tsk_name;
 }
 
+static inline int task_set_name(struct task *tsk, const char *name) {
+	strncpy(tsk->tsk_name, name, sizeof(tsk->tsk_name) - 1);
+	tsk->tsk_name[sizeof(tsk->tsk_name) - 1] = '\0';
+	return 0;
+}
+
 static inline struct thread * task_get_main(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_main;
@@ -83,8 +89,36 @@ static inline void task_set_main(struct task *tsk,
 		struct thread *main_thread) {
 	assert(tsk != NULL);
 	assert(main_thread != NULL);
+	assert(tsk->tsk_main == NULL);
+
 	tsk->tsk_main = main_thread;
 	main_thread->task = tsk;
+}
+
+static inline void task_thread_register(struct task *tsk, struct thread *t) {
+	assert(tsk != NULL);
+	assert(t != NULL);
+	assert(task_get_main(tsk) != NULL);
+	assert(t->task == NULL);
+
+	dlist_add_next(&t->thread_link, &task_get_main(tsk)->thread_link);
+	t->task = tsk;
+}
+
+static inline void task_thread_unregister(struct task *tsk, struct thread *t) {
+	assert(tsk != NULL);
+	assert(t != NULL);
+
+	if (t != task_get_main(tsk)) {
+		dlist_del(&t->thread_link);
+	} else {
+		assert(dlist_empty(&task_get_main(tsk)->thread_link));
+		tsk->tsk_main = NULL;
+	}
+
+	/* XXX t->task isn't set to null, thread allowed to know old parent while
+ 	 * shutting down
+	 */
 }
 
 static inline task_priority_t task_get_priority(const struct task *tsk) {

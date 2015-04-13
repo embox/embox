@@ -8,7 +8,6 @@
  */
 
 #include <arpa/inet.h>
-#include <embox/cmd.h>
 #include <errno.h>
 #include <framework/mod/options.h>
 #include <net/inetdevice.h>
@@ -21,8 +20,6 @@
 #include <unistd.h>
 #include <util/array.h>
 #include <kernel/time/time.h>
-
-EMBOX_CMD(exec);
 
 #define MODOPS_TIMEOUT OPTION_GET(NUMBER, timeout)
 
@@ -173,7 +170,7 @@ error:
 	return ret;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	struct net_device *dev;
 

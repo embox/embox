@@ -42,6 +42,9 @@ typedef __mmu_pte_t mmu_pte_t;
 extern void mmu_on(void);
 extern void mmu_off(void);
 
+
+extern mmu_vaddr_t mmu_get_fault_address(void);
+
 extern mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd);
 extern void mmu_set_context(mmu_ctx_t ctx);
 
@@ -66,5 +69,6 @@ extern int mmu_pte_present(mmu_pte_t *pte);
 extern void mmu_pte_set_writable(mmu_pte_t *pte, int value);
 extern void mmu_pte_set_cacheable(mmu_pte_t *pte, int value);
 extern void mmu_pte_set_usermode(mmu_pte_t *pte, int value);
+extern void mmu_pte_set_executable(mmu_pte_t *pte, int val);
 
 #endif /* HAL_MMU_H_ */

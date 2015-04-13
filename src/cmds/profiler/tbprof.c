@@ -6,15 +6,12 @@
  * @date    04.03.2014
  */
 
-#include <embox/cmd.h>
 #include <framework/cmd/api.h>
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <profiler/tracing/trace.h>
-
-EMBOX_CMD(tbprof_main);
 
 static int run_count = 1;
 
@@ -51,13 +48,13 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	end = clock();
 	printf("Program exited with code %d. Time: %0.3lfs. Profiling finished.\n",
 			res, 1. * (end - begin) / CLOCKS_PER_SEC);
-	//trace_block_hashtable_destroy();
+
 	argc++;
 	cmd = NULL;
 	print_data_to_file(out);
 }
 
-static int tbprof_main (int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	/* parse params */
 	const struct cmd *c_cmd;
 	int c_argc = argc, opt, argnum = 1;

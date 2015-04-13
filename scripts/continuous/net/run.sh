@@ -14,8 +14,15 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
 
+TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
+
 test_case_target_should_reply_to_ping() {
 	ping $EMBOX_IP -c 4
+	test_retcode
+}
+
+test_case_target_should_reply_to_big_ping() {
+	ping $EMBOX_IP -c 4 -s 16384
 	test_retcode
 }
 
@@ -42,6 +49,7 @@ test_case_snmp_should_reply() {
 }
 
 test_case_interactive_tests_should_success() {
+	sudo killall in.rlogind
 	expect $EXPECT_TESTS_BASE/framework/run_all.exp
 	test_retcode
 
@@ -124,5 +132,10 @@ else
 fi
 
 tap_down
+
+test_begin
+	$TEST_PING_FORWARING_SCRIPT
+	test_retcode
+test_end
 
 exit $test_suite_code

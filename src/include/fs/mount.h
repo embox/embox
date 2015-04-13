@@ -22,13 +22,12 @@ struct mount_descriptor {
 	struct dlist_head mnt_mounts;
 	struct dlist_head mnt_child;
 	char mnt_dev[MOUNT_DESC_STRINFO_LEN];
-	char mnt_fstype[MOUNT_DESC_STRINFO_LEN];
 };
 
 extern struct mount_descriptor *mount_table(void);
 
 extern struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
-		struct node *root, const char *dev, const char *fs_type);
+		struct node *root, const char *dev);
 
 extern int mount_table_del(struct mount_descriptor *mdesc);
 

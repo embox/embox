@@ -17,7 +17,6 @@ all : $(embox_o) $(image_lds)
 
 FORCE :
 
-include mk/core/common.mk
 include mk/image_lib.mk
 
 include $(MKGEN_DIR)/build.mk
@@ -36,8 +35,9 @@ $(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
 	@mkdir -p $(@D)
 	@touch $@
 
+cp_T_if_supported := $(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
 $(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
-	$(CP) -r -T $(src_file) $@$(if \
+	$(CP) -r $(cp_T_if_supported) $(src_file) $@$(if \
 		$(and $(chmod),$(findstring $(chmod),'')),,;chmod $(chmod) $@)
 	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
@@ -113,7 +113,7 @@ VPATH += $(GPATH)
 
 $(embox_o): ldflags_all = $(LDFLAGS) \
 		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
-$(embox_o): $$(common_prereqs)
+$(embox_o):
 	$(LD) -r $(ldflags_all) \
 		$(call fmt_line,$(ld_objs)) \
 		--start-group \
@@ -124,7 +124,9 @@ $(embox_o): $$(common_prereqs)
 
 stages := $(wordlist 1,$(STAGE),1 2)
 
-$(embox_o) : $(__image_prerequisities)
+image_prereqs = $(ld_scripts) $(ld_objs) $(ld_libs) $(common_prereqs)
+
+$(embox_o) : $$(image_prereqs)
 $(embox_o) : mk_file = $(__image_mk_file)
 $(embox_o) : ld_scripts = $(__image_ld_scripts1) # TODO check this twice
 $(embox_o) : ld_objs = $(foreach s,$(stages),$(__image_ld_objs$s))
@@ -138,6 +140,3 @@ $(image_lds) : flags = \
 			$(if $(value PLATFORM), \
 				$(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S)))
 -include $(image_lds).d
-
-image_prerequisites = $(mk_file) \
-	$(ld_scripts) $(ld_objs) $(ld_libs)

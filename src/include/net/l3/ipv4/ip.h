@@ -59,6 +59,8 @@ typedef struct iphdr {
 
 #define IP_MIN_HEADER_SIZE   (sizeof(struct iphdr))
 #define IP_HEADER_SIZE(iph) (((iph)->ihl) << 2)
+#define IP_MAX_PACKET_LEN    (1 << 16)
+#define IP_MAX_OPTLEN        40
 
 static inline iphdr_t *ip_hdr(const struct sk_buff *skb) {
 	return skb->nh.iph;

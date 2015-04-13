@@ -1,6 +1,7 @@
 
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name="umask",
 	help="sets umask",
 	man="")

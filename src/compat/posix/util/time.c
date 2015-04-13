@@ -14,20 +14,12 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 
-
 clock_t clock(void) {
 	return clock_sys_ticks();
 }
 
-static struct timespec *ns2timespec(time64_t ns, struct timespec *ts) {
-	ts->tv_sec = ns / NSEC_PER_SEC;
-	ts->tv_nsec = ns % NSEC_PER_SEC;
-	return ts;
-}
-
 int clock_gettime(clockid_t clk_id, struct timespec *ts) {
-
-	ns2timespec(ktime_get_ns(), ts);
+	ktime_get_timespec(ts);
 	return 0;
 }
 

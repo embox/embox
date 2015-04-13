@@ -1,9 +1,0 @@
-package embox.arch.arm.kernel
-
-module head {
-	source "head.S"
-}
-
-module arch {
-	source "arch.c"
-}

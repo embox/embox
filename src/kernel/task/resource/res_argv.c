@@ -18,22 +18,11 @@
 struct task_argv {
 	int argc;
 	char argv_buff[ARGS_QUANTITY][ARG_LENGTH];
-	char *argv[ARGS_QUANTITY];
+	char *argv[ARGS_QUANTITY + 1]; /* null terminated */
 	char path[ARG_LENGTH];
 };
 
 TASK_RESOURCE_DEF(task_argv_desc, struct task_argv);
-
-
-extern struct task_argv *task_resource_argv(const struct task *task);
-
-static void task_argv_init(const struct task *task, void *buff) {
-}
-
-static int task_argv_inherit(const struct task *task,
-		const struct task *parent) {
-	return 0;
-}
 
 static int task_argv_exec(const struct task *task, const char *path, char *const argv[]) {
 	int i;
@@ -43,13 +32,17 @@ static int task_argv_exec(const struct task *task, const char *path, char *const
 
 	task_argv = task_resource_argv(task);
 	task_argv->argc = argv_to_argc(argv);
+	assert(task_argv->argc <= ARGS_QUANTITY);
 
 	for (i = 0; i < task_argv->argc; i++) {
 		strncpy(task_argv->argv_buff[i], argv[i], sizeof(*task_argv->argv_buff));
+		task_argv->argv_buff[i][sizeof(*task_argv->argv_buff) - 1] = '\0';
 		task_argv->argv[i] = task_argv->argv_buff[i];
 	}
+	task_argv->argv[i] = NULL;
 
 	strncpy(task_argv->path, path, sizeof(task_argv->path));
+	task_argv->path[sizeof(task_argv->path) - 1] = '\0';
 
 	return 0;
 }
@@ -57,8 +50,6 @@ static int task_argv_exec(const struct task *task, const char *path, char *const
 static size_t task_argv_offset;
 
 static const struct task_resource_desc task_argv_desc = {
-	.init = task_argv_init,
-	.inherit = task_argv_inherit,
 	.resource_size = sizeof(struct task_argv),
 	.resource_offset = &task_argv_offset,
 	.exec = task_argv_exec
@@ -75,6 +66,21 @@ int task_resource_argv_argc(const struct task *task) {
 
 char **task_resource_argv_argv(const struct task *task) {
 	return task_resource_argv(task)->argv;
+}
+
+void task_resource_argv_insert(const struct task *task, const char *arg, int index) {
+	struct task_argv *task_argv;
+
+	task_argv = task_resource_argv(task);
+	assert(task_argv->argc < ARGS_QUANTITY);
+
+	strncpy(task_argv->argv_buff[task_argv->argc], arg, sizeof(*task_argv->argv_buff));
+	task_argv->argv_buff[task_argv->argc][sizeof(*task_argv->argv_buff) - 1] = '\0';
+
+	memmove(task_argv->argv + index + 1, task_argv->argv + index,
+			(task_argv->argc - index + 1) * sizeof *task_argv->argv);
+
+	task_argv->argv[index] = task_argv->argv_buff[task_argv->argc++];
 }
 
 char *task_resource_argv_path(const struct task *task) {

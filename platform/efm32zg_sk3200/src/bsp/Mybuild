@@ -1,7 +1,7 @@
 
 package efm32zg_sk3200
 
-@Build(script="$(EXTERNAL_MAKE) download extract")
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/CMSIS/Include")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/emlib/inc")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Device/EnergyMicro/EFM32ZG/Include/")

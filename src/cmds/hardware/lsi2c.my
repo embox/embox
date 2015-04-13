@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "lsi2c",
 	help = "Display i2c buses and devices",
 	man = '''

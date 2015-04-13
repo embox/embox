@@ -157,14 +157,16 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	 * packet will use different routes. So they can't be assembled.
 	 * See RFC 1812 for details
 	 */
-	if ((complete_skb = ip_defrag(skb)) == NULL) {
-		if (skb == NULL) {
-			return 0; /* error: */
+	if (ntohs(skb->nh.iph->frag_off) & (IP_MF | IP_OFFSET)) {
+		if ((complete_skb = ip_defrag(skb)) == NULL) {
+			if (skb == NULL) {
+				return 0; /* error: */
+			}
+			return 0;
+		} else {
+			skb = complete_skb;
+			iph = ip_hdr(complete_skb);
 		}
-		return 0;
-	} else {
-		skb = complete_skb;
-		iph = ip_hdr(complete_skb);
 	}
 
 	/* When a packet is received, it is passed to any raw sockets

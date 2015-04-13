@@ -188,7 +188,7 @@ __END_DECLS
 #define    PRIoPTR     PRIo32
 #define    PRIuPTR     PRIu32
 #define    PRIxPTR     PRIx32
-#define    PRIXPTR     PRIX32
+#define    PRIXPTR     "lX"
 
 #define    PRIoMAX     PRIo32
 #define    PRIuMAX     PRIu32
@@ -250,5 +250,9 @@ __END_DECLS
 #define    SCNoMAX       SCNo32
 #define    SCNuMAX       SCNu32
 #define    SCNxMAX       SCNx32
+
+//TODO this is C99 standard. It's required for mruby
+#define 	NAN   __builtin_nan("")
+#define 	INFINITY   __builtin_inf()
 
 #endif /* INTTYPES_H_ */

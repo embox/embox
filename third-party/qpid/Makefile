@@ -13,7 +13,7 @@ QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h \
 	-I$(ROOT_DIR)/third-party/qpid/include \
 	-I$(ROOT_DIR)/build/extbld/third_party/STLport/core/include/stlport \
 	-I$(ROOT_DIR)/build/extbld/third_party/gcc/core/install/include \
-	-I$(ROOT_DIR)/src/include/c++ \
+	-I$(SRC_DIR)/compat/cxx/include \
 	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include"
 
 QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib"

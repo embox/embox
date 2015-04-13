@@ -6,13 +6,10 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	char **env;
 
 	if (!environ) return 0;

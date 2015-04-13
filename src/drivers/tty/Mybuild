@@ -25,6 +25,7 @@ module tty {
 	depends embox.fs.idesc_event
 
 //	depends embox.kernel.thread.sync /* mutex */
+	depends embox.kernel.thread.sched_wait
 	depends task_breaking
 	depends embox.util.ring
 	depends embox.kernel.irq_lock

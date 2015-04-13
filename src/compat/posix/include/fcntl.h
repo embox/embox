@@ -69,6 +69,9 @@ extern int fcntl(int fd, int cmd, ...);
 #define O_DIRECT           0x0800  /* Do not use cache for reads and writes */
 #define O_NONBLOCK         0x1000  /* Non-blocking mode */
 
+#define O_NOCTTY		   0x10000 	/*  */
+#define O_NDELAY		   0x01000	/*	*/
+
 #define O_DIRECTORY        0x2000  /* Fail if not a directory. */
 
 /* Open directory for search only.

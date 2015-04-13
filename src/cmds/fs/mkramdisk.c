@@ -10,13 +10,10 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <drivers/ramdisk.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(mkramdisk_main);
 
 #define MKRAMDISK_DEFAULT_SIZE 8192;
 
-static int mkramdisk_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	size_t ramdisk_size = MKRAMDISK_DEFAULT_SIZE;
 	char *ramdisk_path = "/dev/ramdisk#";
 	struct ramdisk *rd;
@@ -39,6 +36,3 @@ static int mkramdisk_main(int argc, char *argv[]) {
 	rd = ramdisk_create(ramdisk_path, ramdisk_size);
 	return err(rd);
 }
-
-
-

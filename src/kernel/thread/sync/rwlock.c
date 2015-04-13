@@ -10,13 +10,13 @@
 #include <errno.h>
 #include <kernel/thread/sync/rwlock.h>
 #include <kernel/sched.h>
+#include <kernel/thread/waitq.h>
 
 #define RWLOCK_STATUS_NONE    0
 #define RWLOCK_STATUS_READING 1
 #define RWLOCK_STATUS_WRITING 2
 
 static void do_up(rwlock_t *r, int status);
-static void do_down(rwlock_t *r);
 static int tryenter_sched_lock(rwlock_t *s, int status);
 
 void rwlock_init(rwlock_t *r) {
@@ -26,16 +26,10 @@ void rwlock_init(rwlock_t *r) {
 }
 
 void rwlock_read_up(rwlock_t *r) {
-	assert(r);
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
-
 	do_up(r, RWLOCK_STATUS_READING);
 }
 
 void rwlock_write_up(rwlock_t *r) {
-	assert(r);
-	assert(critical_allows(CRITICAL_SCHED_LOCK));
-
 	do_up(r, RWLOCK_STATUS_WRITING);
 }
 
@@ -45,7 +39,6 @@ static void do_up(rwlock_t *r, int status) {
 
 	sched_lock();
 	{
-
 		WAITQ_WAIT(&r->wq, !tryenter_sched_lock(r, status));
 	}
 	sched_unlock();
@@ -70,20 +63,14 @@ static int tryenter_sched_lock(rwlock_t *r, int status) {
 }
 
 void rwlock_read_down(rwlock_t *r) {
-	assert(r);
-	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
-
-	do_down(r);
+	rwlock_any_down(r);
 }
 
 void rwlock_write_down(rwlock_t *r) {
-	assert(r);
-	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
-
-	do_down(r);
+	rwlock_any_down(r);
 }
 
-static void do_down(rwlock_t *r) {
+void rwlock_any_down(rwlock_t *r) {
 	assert(r);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 

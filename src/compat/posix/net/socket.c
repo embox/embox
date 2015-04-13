@@ -161,8 +161,8 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 //		return 0;
 
 	/* TODO remove this */
-	if (flags != 0) {
-		LOG_ERROR("send", "flags are not supported");
+	if (flags & (MSG_EOR | MSG_OOB)) {
+		LOG_ERROR("send", "MSG_EOR, MSG_OOB flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 

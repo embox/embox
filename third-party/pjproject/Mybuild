@@ -1,0 +1,45 @@
+
+package third_party.pjproject
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.STLport.core)
+module core {
+
+	depends embox.net.lib.getifaddrs
+
+	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.pthread_key
+	depends embox.compat.posix.pthread_rwlock
+	depends embox.compat.posix.semaphore
+	depends embox.compat.posix.fs.fsop
+	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.net.getaddrinfo
+	depends embox.compat.posix.net.gethostbyname
+	depends embox.compat.posix.util.gethostname
+
+	depends embox.compat.posix.proc.pid
+	depends embox.compat.posix.proc.exit
+	depends embox.compat.libc.LibCStdioFseek
+	depends embox.compat.libc.LibCTime
+
+	depends third_party.STLport.core
+}
+
+@AutoCmd
+@Cmd(name="streamutil", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module streamutil {
+	source "^BUILD/extbld/third_party/pjproject/core/install/streamutil.o"
+	depends core
+}
+
+@AutoCmd
+@Cmd(name="pjsua", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module pjsua {
+	source "^BUILD/extbld/third_party/pjproject/core/install/pjsua.o"
+	depends core
+}
+

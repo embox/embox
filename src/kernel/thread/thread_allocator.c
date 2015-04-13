@@ -7,7 +7,7 @@
  */
 
 #include <kernel/thread/thread_alloc.h>
-#include <module/embox/mem/page_api.h>
+#include <mem/page.h>
 
 #include <kernel/thread.h>
 #include <mem/misc/pool.h>

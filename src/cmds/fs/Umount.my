@@ -2,6 +2,7 @@ package embox.cmd.fs
 
 import embox.compat.posix.LibPosix
 
+@AutoCmd
 @Cmd(name = "umount",
 	help = "Unmount a filesystem",
 	man = '''

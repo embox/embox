@@ -83,7 +83,7 @@ void fat_get_filename(char *tmppath, char *filename) {
 	}
 }
 
-void fat_set_filetime(dir_ent_t *de) {
+void fat_set_filetime(struct dirent *de) {
 	/* TODO set normal time */
 		de->crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
 		de->crttime_h = 0x08;

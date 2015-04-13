@@ -16,6 +16,7 @@
 #include <fs/flags.h>
 #include <fs/flags.h>
 #include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 #include <embox/unit.h>
 #include <security/seculog.h>
 
@@ -59,6 +60,8 @@ int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char
 	return 0;
 }
 
+/* RFC 868 */
+#define SECONDS_1900_1970 2208988800L
 static void audit_log(const char *subject, const char *object,
 		int may_access, int ret, struct smac_audit *audit) {
 	static char no_audit;
@@ -67,6 +70,8 @@ static void audit_log(const char *subject, const char *object,
 	char pwd_sbuf[64];
 	struct passwd pwd_buf;
 	struct passwd *pwd;
+	time_t time;
+	struct timespec ts;
 
 	if (no_audit) {
 		return;
@@ -77,8 +82,12 @@ static void audit_log(const char *subject, const char *object,
 	getpwuid_r(uid, &pwd_buf, pwd_sbuf, sizeof(pwd_sbuf), &pwd);
 	no_audit = 0;
 
+	getnsofday(&ts, NULL);
+	time = (time_t)((uint32_t)ts.tv_sec - SECONDS_1900_1970);
 	snprintf(line, AUDITLINE_LEN,
-			"subject=%s(label=%s), object=%s, file=%s, request=%c%c%c, action=%s, function=%s\n",
+			"[%s] cmd=%s subject=%s(label=%s), object=%s, file=%s, request=%c%c%c, action=%s, function=%s\n",
+			ctime(&time),
+			task_self() != task_kernel_task() ? task_get_name(task_self()) : "init",
 			pwd ? pwd->pw_name : "?",
 			subject,
 			object,

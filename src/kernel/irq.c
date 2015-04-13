@@ -21,6 +21,8 @@
 #include <stddef.h>
 #include <stdbool.h>
 
+#include <util/dlist.h>
+
 #include <kernel/irq.h>
 #include <kernel/irq_lock.h>
 #include <kernel/irq_stack.h>
@@ -28,8 +30,7 @@
 #include <drivers/irqctrl.h>
 #include <hal/ipl.h>
 #include <mem/objalloc.h>
-#include <profiler/tracing/trace.h>
-#include <util/dlist.h>
+
 
 struct irq_entry {
 	irq_handler_t handler;
@@ -43,8 +44,20 @@ struct irq_action {
 	int sharing_supported;
 };
 
-OBJALLOC_DEF(irq_actions, struct irq_action, IRQ_NRS_TOTAL);
-OBJALLOC_DEF(irq_entries, struct irq_entry, IRQ_NRS_TOTAL * 2);
+#if OPTION_GET(NUMBER, action_n) <= 0
+#define IRQ_ACTION_N IRQ_NRS_TOTAL
+#else
+#define IRQ_ACTION_N OPTION_GET(NUMBER, action_n)
+#endif
+
+#if OPTION_GET(NUMBER, action_n) <= 0
+#define IRQ_ENTRY_N (2 * IRQ_NRS_TOTAL)
+#else
+#define IRQ_ENTRY_N OPTION_GET(NUMBER, entry_n)
+#endif
+
+OBJALLOC_DEF(irq_actions, struct irq_action, IRQ_ACTION_N);
+OBJALLOC_DEF(irq_entries, struct irq_entry, IRQ_ENTRY_N);
 
 static struct irq_action *irq_table[IRQ_NRS_TOTAL];
 
@@ -58,8 +71,6 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 	}
 
 	irq_lock();
-
-	trace_point("irq attach");
 
 	/* Check if irq exists and device support sharing
 	 * and new device also support sharing */
@@ -117,8 +128,6 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 
 	irq_lock();
 
-	trace_point("irq detach");
-
 	/* Go thru list to determine which IRQ/DEV pair should be detached */
 	if (!(action = irq_table[irq_nr])) {
 		ret = -ENOENT;
@@ -148,13 +157,8 @@ void irq_dispatch(unsigned int irq_nr) {
 	irq_handler_t handler = NULL;
 	void *dev_id = NULL;
 	ipl_t ipl;
-	TRACE_BLOCK_DEF(interrupt_tb);
 
 	assert(irq_nr_valid(irq_nr));
-
-	trace_point("interrupt");
-
-	trace_block_enter(&interrupt_tb);
 
 	assert(irq_stack_protection() == 0,
 			"Stack overflow detected on irq dispatch");
@@ -176,6 +180,4 @@ void irq_dispatch(unsigned int irq_nr) {
 		}
 		ipl_restore(ipl);
 	}
-
-	trace_block_leave(&interrupt_tb);
 }

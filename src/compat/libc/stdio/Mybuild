@@ -6,8 +6,8 @@ static module Print {
 	source "printf_impl.c"
 	source "printf_impl.h"
 
-	//depends LibCMath // depends from support_floating value
-	@NoRuntime depends LibCStdlib // atoi
+	depends LibCMath // depends from support_floating value
+	@NoRuntime depends stdlib.core // atoi
 	@NoRuntime depends LibCType
 }
 
@@ -40,17 +40,22 @@ static module LibCStdioFseek {
 }
 
 static module LibCStdioFileOps {
+	source "stdfile_static.c"
+
 	source "fgetc.c"
+	source "ungetc.c"
 	source "fgets.c"
 
 	source "funopen.c"
-	source "file_ops.c"
+	source "fileno.c"
 	source "fread.c"
 	source "fwrite.c"
 	source "fioctl.c"
+	source "fflush.c"
 	source "fclose.c"
 
 	source "stdio_stubs.c"
+	source "buf.c"
 
 	depends LibCStdioFilePool
 	depends embox.compat.posix.fs.file_ops
@@ -64,13 +69,31 @@ static module LibCStdioFileOps {
 	@NoRuntime depends Print
 }
 
-static module LibCStdio {
-	source "perror.c"
+static module LibCStdioRename {
 	source "rename.c"
-	source "scanf.c"
+}
 
+static module LibCStdio {
+	@NoRuntime depends LibCStdioRename
 	@NoRuntime depends LibCStdioSprintf
 	@NoRuntime depends LibCStdioOpen
 	@NoRuntime depends LibCStdioFseek
 	@NoRuntime depends LibCStdioFileOps
+	@NoRuntime depends LibCStdioScanf
+	@NoRuntime depends LibCStdioPerror
+	@NoRuntime depends LibCDiv
+}
+
+static module LibCStdioPerror {
+	source "perror.c"
+}
+
+static module LibCStdioScanf {
+	source "scanf.c"
+}
+
+static module LibCDiv {
+	source "div.c"
+	source "ldiv.c"
+	/* source "lldiv.c" */
 }

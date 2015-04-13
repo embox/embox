@@ -11,11 +11,8 @@
 #include <errno.h>
 
 #include <unistd.h>
-#include <embox/cmd.h>
 #include <util/array.h>
 #include <profiler/tracing/trace.h>
-
-EMBOX_CMD(exec);
 
 ARRAY_SPREAD_DECLARE(struct __trace_point *, __trace_points_array);
 
@@ -87,7 +84,7 @@ bool change_point_activity(int index, bool activity) {
 	return false;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	int index;
 

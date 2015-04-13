@@ -135,7 +135,6 @@ int main(int argc, char **argv) {
 	}
 
 	if (optind < argc) {
-		int l;
 		stat_t sb;
 
 		if (-1 == stat(argv[optind], &sb)) {
@@ -148,9 +147,6 @@ int main(int argc, char **argv) {
 		}
 
 		sprintf(dir_name, "%s", argv[optind]);
-		// trim trailing slash
-		l = strlen(dir_name);
-		while (dir_name[l - 1] == '/') dir_name[--l] = 0;
 	} else {
 		sprintf(dir_name, "%s", "");
 	}

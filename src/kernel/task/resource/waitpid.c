@@ -29,8 +29,12 @@ static void task_waitpid_init(const struct task *task,
 
 static void task_waitpid_deinit(const struct task *task) {
 	struct waitq *waitq;
+	struct task *parent;
 
-	waitq = task_resource_waitpid(task_get_parent(task));
+	assert(task);
+	assert(parent = task_get_parent(task));
+
+	waitq = task_resource_waitpid(parent);
 	assert(waitq != NULL);
 
 	waitq_wakeup_all(waitq);

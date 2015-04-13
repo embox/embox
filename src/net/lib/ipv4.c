@@ -22,7 +22,7 @@ void ip_build(struct iphdr *iph, uint16_t total_len, uint8_t ttl,
 	iph->tos = 0;
 	iph->tot_len = htons(total_len);
 	iph->id = 0; /* use ip_set_id_field */
-	iph->frag_off = htons(IP_DF);
+	iph->frag_off = 0; //htons(IP_DF)
 	iph->ttl = ttl;
 	iph->proto = proto;
 	iph->check = 0; /* use ip_set_check_field */

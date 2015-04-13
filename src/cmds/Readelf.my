@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "readelf",
 	help = "Display information about the contents of ELF format files",
 	man = '''

@@ -18,9 +18,12 @@ module smac extends api {
 
 	depends embox.fs.xattr
 	depends embox.kernel.task.resource.security
+	depends embox.kernel.task.api
 
 	depends embox.security.seculog
 	depends embox.security.seculog_file
+
+	depends embox.kernel.time.timekeeper
 }
 
 @DefaultImpl(smac_user_static_db)
@@ -42,4 +45,6 @@ module smac_user_dynamic_db extends smac_user_db {
 	depends embox.cmd.fs.cp
 	depends embox.cmd.chmod
 	depends embox.cmd.chown
+
+	depends embox.compat.libc.stdlib.system
 }

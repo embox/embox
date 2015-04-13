@@ -6,8 +6,6 @@
  * @author Anton Bulychev
  */
 
-#include <embox/cmd.h>
-
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -17,13 +15,11 @@
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
 
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: mpstat -P ALL\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	clock_t atotal = 0;
 	clock_t aidle = 0;

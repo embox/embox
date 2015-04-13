@@ -6,15 +6,12 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <stdio.h>
 #include <kernel/task.h>
 #include <kernel/task/task_table.h>
 #include <kernel/task/resource/u_area.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int tid;
 	struct task *task;
 

@@ -12,6 +12,7 @@
  */
 
 #include <errno.h>
+#include <string.h>
 #include <util/dlist.h>
 #include <util/array.h>
 #include <mem/misc/pool.h>
@@ -99,6 +100,8 @@ struct pci_slot_dev *pci_insert_dev(char configured,
 		dprintf("pci dev pool overflow");
 		return NULL;
 	}
+
+	memset(new_dev, 0, sizeof(*new_dev));
 
 	new_dev->busn = (uint8_t) bus;
 	new_dev->func = (uint8_t) devfn;

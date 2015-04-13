@@ -29,6 +29,7 @@ extern int task_get_status(const struct task *tsk);
 extern int task_get_id(const struct task *tsk);
 
 extern const char * task_get_name(const struct task *tsk);
+extern int task_set_name(struct task *tsk, const char *name);
 
 extern struct thread * task_get_main(const struct task *tsk);
 extern void task_set_main(struct task *tsk, struct thread *main_thread);

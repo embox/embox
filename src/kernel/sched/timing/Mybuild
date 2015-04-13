@@ -1,0 +1,17 @@
+
+package embox.kernel.sched.timing
+
+@DefaultImpl(running)
+abstract module timing { }
+
+module none extends timing {
+	source "none.h"
+}
+
+module running extends timing {
+	source "running_time.h"
+	source "running_time.c"
+
+ 	depends embox.compat.posix.util.time
+}
+

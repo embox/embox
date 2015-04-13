@@ -1,0 +1,19 @@
+
+package embox.arch.arm.armmlib
+
+module locore extends embox.arch.locore {
+	source "exception_table.S"
+
+	depends embox.arch.arm.armlib.head
+}
+
+module interrupt extends embox.arch.interrupt {
+	source "ipl_impl.h"
+	depends locore
+}
+
+module context extends embox.arch.context {
+	source "context.c",
+		"context.h",
+		"context_switch.S"
+}

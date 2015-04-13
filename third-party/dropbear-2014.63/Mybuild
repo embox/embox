@@ -46,4 +46,5 @@ module dropbeard {
 	source "dropbeard.c"
 
 	depends dropbear
+	depends embox.compat.libc.stdlib.system
 }

@@ -59,7 +59,7 @@ static int ramfs_format(void *path);
 static int ramfs_mount(void *dev, void *dir);
 
 static int ramfs_init(void * par) {
-	struct path dir_node, root;
+	struct path dir_node;
 	struct node *dev_node;
 	int res;
 	ramdisk_t *ramdisk;
@@ -70,8 +70,7 @@ static int ramfs_init(void * par) {
 
 	/*TODO */
 
-	vfs_get_root_path(&root);
-	vfs_lookup(&root, RAMFS_DIR, &dir_node);
+	vfs_lookup(RAMFS_DIR, &dir_node);
 
 	if (dir_node.node == NULL) {
 		return -ENOENT;

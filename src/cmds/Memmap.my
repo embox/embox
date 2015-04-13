@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "memmap",
 	help = "Prints memory map for different address space",
 	man = '''

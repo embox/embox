@@ -10,8 +10,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include <util/array.h>
 #include <util/hashtable.h>
+
+#include <mem/misc/pool.h>
 
 EMBOX_TEST_SUITE("util/hashtable test");
 
@@ -21,6 +24,8 @@ struct ht_element {
 
 static struct ht_element el[3] = { {1}, {2}, {3}};
 static const char *key[3] = {"first", "secnd", "third" };
+
+POOL_DEF(ht_test_item_pool, struct hashtable_item, 3);
 
 static size_t get_hash(void *key) {
 	char *key_str = key;
@@ -33,26 +38,36 @@ static int cmp_keys(void *key1,void *key2) {
 
 
 TEST_CASE("Add single element to hashtable") {
-	struct hashtable *ht;
+	HASHTABLE_DECL(ht,0x10);
+	struct hashtable_item *ht_item;
 	struct ht_element *ht_value;
 
-	ht = hashtable_create(0x10, get_hash, cmp_keys);
-	hashtable_put(ht, (void *)key[0], &el[0]);
+	ht = hashtable_init(ht, 0x10, get_hash, cmp_keys);
+
+	ht_item = pool_alloc(&ht_test_item_pool);
+	ht_item = hashtable_item_init(ht_item, (void *)key[0], &el[0]);
+	hashtable_put(ht, ht_item);
+
 	ht_value = (struct ht_element *) hashtable_get(ht, (void *)key[0]);
 	hashtable_destroy(ht);
+
+	pool_free(&ht_test_item_pool, ht_item);
 
 	test_assert_equal(ht_value, &el[0]);
 }
 
 TEST_CASE("Add three elements to hashtable") {
-	struct hashtable *ht;
+	HASHTABLE_DECL(ht,0x30);
+	struct hashtable_item *ht_item;
 	struct ht_element *ht_value[3];
 	int i, j;
 
-	ht = hashtable_create(0x30, get_hash, cmp_keys);
+	ht = hashtable_init(ht, 0x30, get_hash, cmp_keys);
 
 	for(i = 0; i < ARRAY_SIZE(el); i++)	{
-		hashtable_put(ht, (void *)key[i], &el[i]);
+		ht_item = pool_alloc(&ht_test_item_pool);
+		ht_item = hashtable_item_init(ht_item, (void *)key[i], &el[i]);
+		hashtable_put(ht, ht_item);
 	}
 
 	for(i = 0; i < ARRAY_SIZE(ht_value); i++)	{
@@ -60,7 +75,14 @@ TEST_CASE("Add three elements to hashtable") {
 		test_assert_not_null(ht_value[i]);
 	}
 
+	for(i = 0; i < ARRAY_SIZE(el); i++)	{
+		ht_item = hashtable_del(ht, (void *)key[i]);
+		pool_free(&ht_test_item_pool, ht_item);
+	}
+
 	hashtable_destroy(ht);
+
+
 
 	for(i = 0; i < ARRAY_SIZE(el); i++)	{
 		for(j = 0; j < ARRAY_SIZE(ht_value); j++)	{
@@ -76,13 +98,16 @@ TEST_CASE("Add three elements to hashtable") {
 
 TEST_CASE("Add tree elements and comparer there on each iteration") {
 	int i;
-	struct hashtable *ht;
 	char **key_iter;
+	struct hashtable_item *ht_item;
+	HASHTABLE_DECL(ht, 0x1);
 
-	ht = hashtable_create(0x1, get_hash, cmp_keys);
+	ht = hashtable_init(ht, 0x1, get_hash, cmp_keys);
 
 	for (i = 0; i < ARRAY_SIZE(el); i++) {
-		hashtable_put(ht, (void *)key[i], &el[i]);
+		ht_item = pool_alloc(&ht_test_item_pool);
+		ht_item = hashtable_item_init(ht_item, (void *)key[i], &el[i]);
+		hashtable_put(ht, ht_item);
 	}
 
 	for (key_iter = hashtable_get_key_first(ht), i = 0;
@@ -90,6 +115,12 @@ TEST_CASE("Add tree elements and comparer there on each iteration") {
 			key_iter = hashtable_get_key_next(ht, key_iter), ++i) {
 		test_assert_zero(strcmp(*key_iter, key[i]));
 	}
+
+	for(i = 0; i < ARRAY_SIZE(el); i++)	{
+		ht_item = hashtable_del(ht, (void *)key[i]);
+		pool_free(&ht_test_item_pool, ht_item);
+	}
+
 
 	hashtable_destroy(ht);
 }

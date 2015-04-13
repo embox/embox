@@ -13,10 +13,6 @@
 #include <fs/flags.h>
 #include <errno.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(smac_adm);
-
 extern int cmd_smac_adm_user_set(const char *name, const char *label);
 extern int cmd_smac_adm_user_get(const char *name, char *buf, size_t buflen);
 
@@ -75,7 +71,7 @@ static int print_label(const char *name) {
 	return 0;
 }
 
-static int smac_adm(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	char *label = NULL;
 	char *user = NULL;
 	char *subject = NULL, *object = NULL, *access = NULL;

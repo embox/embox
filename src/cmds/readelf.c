@@ -10,7 +10,6 @@
  *         - Refactoring, fix bugs.
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -20,8 +19,6 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-
-EMBOX_CMD(exec);
 
 /* Collection of information about elf. */
 typedef struct {
@@ -495,7 +492,7 @@ static void print_symbols(Elf32_Obj *obj, int counter) {
 }
 
 /* WARNING: overly complex function. */
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int show_head     = 0;
 	int show_sections = 0;
 	int show_segments = 0;

@@ -20,11 +20,6 @@
 
 #include <mem/page.h>
 #include <mem/phymem.h>
-#include <cmd/mkfs.h>
-
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
 
 #define XATTR_MAX_BSIZE  (1024*4)
 
@@ -209,7 +204,7 @@ static inline enum xattr_cmd_op xattr_check_op(enum xattr_cmd_op orig_op, enum x
 	return XATTR_CMD_INVALID;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	enum xattr_cmd_op cmd_op = XATTR_CMD_UNSPECIFIED;
 	char **unpos_args;
 	int opt;
@@ -264,4 +259,3 @@ static int exec(int argc, char **argv) {
 	}
 	return -1;
 }
-

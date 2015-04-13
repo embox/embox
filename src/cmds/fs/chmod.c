@@ -6,8 +6,6 @@
  * @author Vita Loginova
  */
 
-#include <embox/cmd.h>
-
 #include <fs/perm.h>
 #include <fs/hlpr_path.h>
 #include <fs/vfs.h>
@@ -19,8 +17,6 @@
 #include <dirent.h>
 #include <libgen.h>
 #include <pwd.h>
-
-EMBOX_CMD(exec);
 
 struct mode {
 	mode_t type;
@@ -168,7 +164,7 @@ static int change_mode_recursive(struct path *node_path, int is_recursive,
 	child = *node_path;
 	if_mounted_follow_down(&child);
 
-	list_foreach(link, &child.node->tree_link.children, list_link) {
+	dlist_foreach_entry(link, &child.node->tree_link.children, list_link) {
 		child.node = tree_element(link, node_t, tree_link);
 		change_mode(&child, is_recursive, modes, count);
 	}
@@ -224,7 +220,7 @@ static int change_mode(struct path *node_path, int is_recursive,
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	struct path node_path, leaf;
 	int opt, count, is_recursive = 0, modes_size = 10;
 	struct mode modes[modes_size];

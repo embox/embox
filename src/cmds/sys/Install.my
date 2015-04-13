@@ -1,5 +1,6 @@
 package embox.cmd.sys
 
+@AutoCmd
 @Cmd(name="install",
 	help="install base filesystem",
 	man = '''
@@ -19,4 +20,5 @@ package embox.cmd.sys
 	''')
 module install {
 	source "install.c"
+	depends embox.compat.libc.stdlib.system
 }

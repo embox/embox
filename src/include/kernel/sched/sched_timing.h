@@ -8,16 +8,13 @@
 #ifndef SCHED_TIMING_H_
 #define SCHED_TIMING_H_
 
-#include <time.h>
+#include <module/embox/kernel/sched/timing/timing.h>
 
-#include <module/embox/kernel/sched/strategy/timing_api.h>
+struct sched_timing;
 
-typedef __sched_timing_t sched_timing_t;
-
-struct thread;
-
-extern void sched_timing_init(struct thread *t);
-extern void sched_timing_switch(struct thread *prev, struct thread *next);
-extern clock_t sched_timing_get(struct thread *t);
+extern void sched_timing_init(struct schedee *s);
+extern clock_t sched_timing_get(struct schedee *s);
+extern void sched_timing_start(struct schedee *s);
+extern void sched_timing_stop(struct schedee *s);
 
 #endif /* SCHED_TIMING_H_ */

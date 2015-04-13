@@ -25,9 +25,11 @@
 #include <fs/idesc_event.h>
 #include <fs/flags.h>
 
+#include <kernel/thread/thread_sched_wait.h>
+
 #include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
-#include <mem/sysmalloc.h>
+#include <mem/misc/pool.h>
 
 struct pty;
 
@@ -35,6 +37,10 @@ struct idesc_pty {
 	struct idesc idesc;
 	struct pty *pty;
 };
+
+#define MAX_PTY 20
+POOL_DEF(pty_pool, struct pty, MAX_PTY);
+POOL_DEF(ipty_pool, struct idesc_pty, 2 * MAX_PTY);
 
 #if 0
 struct pty {
@@ -134,7 +140,7 @@ static const struct idesc_ops pty_slave_ops = {
 static struct pty *pty_create(void) {
 	struct pty *pty;
 
-	pty = sysmalloc(sizeof(struct pty));
+	pty = pool_alloc(&pty_pool);
 
 //	if (pty) {
 //		pty_init(&pty->pty);
@@ -145,13 +151,13 @@ static struct pty *pty_create(void) {
 
 static void pty_delete(struct pty *pty) {
 
-	sysfree(pty);
+	pool_free(&pty_pool, pty);
 }
 
 static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_ops *ops) {
 	struct idesc_pty *ipty;
 
-	ipty = sysmalloc(sizeof(struct idesc_pty));
+	ipty = pool_alloc(&ipty_pool);
 
 	if (ipty) {
 		idesc_init(&ipty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
@@ -162,11 +168,11 @@ static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_op
 	return ipty;
 }
 
-static void idesc_pty_delete(struct idesc_pty *pty, struct idesc **idesc) {
+static void idesc_pty_delete(struct idesc_pty *ipty, struct idesc **idesc) {
 
 	*idesc = NULL;
 
-	sysfree(pty);
+	pool_free(&ipty_pool, ipty);
 }
 
 #if 0
@@ -216,12 +222,13 @@ static void pty_close(struct idesc *idesc) {
 		if (idesc == *ipty_pm) {
 			idesc_pty_delete((struct idesc_pty *) idesc, ipty_pm);
 			/* Wake up writing end if it is sleeping. */
-			/*event_notify(&pipe->write_wait);*/
-			pty->tty.idesc = NULL; // XXX
+			if (*ipty_ps)
+				idesc_notify(*ipty_ps, POLLIN | POLLOUT | POLLERR);
 		} else if (idesc == *ipty_ps) {
 			idesc_pty_delete((struct idesc_pty *) idesc, ipty_ps);
 			/* Wake up reading end if it is sleeping. */
-			/*event_notify(&pipe->read_wait);*/
+			if (*ipty_pm)
+				idesc_notify(*ipty_pm, POLLIN | POLLOUT | POLLERR);
 		}
 
 		/* Free memory if both of ends are closed. */
@@ -303,7 +310,6 @@ static int pty_master_status(struct idesc *idesc, int mask) {
 static int pty_slave_status(struct idesc *idesc, int mask) {
 	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
 	struct pty *pty = ipty->pty;
-	int res;
 
 	/* if master is closed read/write/err will not block and will
  	 * cause error */
@@ -311,20 +317,7 @@ static int pty_slave_status(struct idesc *idesc, int mask) {
 		return 1;
 	}
 
-	switch (mask) {
-	case POLLIN:
-		res = ring_can_read(&pty_to_tty(pty)->i_ring, TTY_IO_BUFF_SZ, 1);
-		break;
-	case POLLOUT:
-		res = ring_can_write(&pty_to_tty(pty)->o_ring, TTY_IO_BUFF_SZ, 1);
-		break;
-	default:
-	case POLLERR:
-		res = 0;
-		break;
-	}
-
-	return res;
+	return tty_status(pty_to_tty(pty), mask);
 }
 
 int ppty(int ptyfds[2]) {

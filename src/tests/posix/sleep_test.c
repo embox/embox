@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <kernel/time/time.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/thread/thread_sched_wait.h>
 #include <pthread.h>
 #include <errno.h>
 

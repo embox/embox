@@ -86,7 +86,8 @@ void __waitq_wakeup(struct waitq *wq, int nr) {
 	assert(wq);
 
 	dlist_foreach_entry(wql, &wq->list, link) {
-		if (!sched_wakeup(wql->thread))
+		assert(wql->schedee);
+		if (!sched_wakeup(wql->schedee))
 			continue;
 
 		// TODO mark this wql as the one who has woken the thread up? -- Eldar

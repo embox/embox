@@ -1,0 +1,11 @@
+package third_party.lib
+
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.cmd.lua)
+static module luabitop {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "bit.so.o"
+
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends third_party.cmd.lua
+}

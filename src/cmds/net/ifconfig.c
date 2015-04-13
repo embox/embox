@@ -16,12 +16,10 @@
 #include <net/if.h>
 #include <stddef.h>
 #include <stdio.h>
-#include <embox/cmd.h>
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
 #include <net/util/macaddr.h>
-
-EMBOX_CMD(exec);
+#include <util/array.h>
 
 struct ifconfig_args {
 	char with_a;
@@ -281,7 +279,7 @@ static int ifconfig_show_all_iface(char show_disabled, char use_short_fmt) {
 	return 0;
 }
 
-static int exec(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int i;
 	struct in_device *iface;
 	struct ifconfig_args args;

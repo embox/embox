@@ -7,14 +7,11 @@
  */
 
 #include <errno.h>
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <drivers/irqctrl.h>
 #include <hal/mm/mmu_core.h>
 #include <stdio.h>
 #include "uimage.h"
-
-EMBOX_CMD(exec);
 
 #define KERNBASE    0xf0000000
 #define LOAD_ADDR   (KERNBASE + 0x4000)
@@ -88,7 +85,7 @@ static int uimage_info(unsigned int addr) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	char format = 'r';
 	unsigned int load_addr;

@@ -7,14 +7,14 @@
  */
 
 #include <math.h>
-
+/*
 double ceil(double x) {
 	double rounded;
 
 	rounded = round(x);
 	return rounded < x ? rounded + 1.0 : rounded;
 }
-
+*/
 float ceilf(float x) {
 	float rounded;
 

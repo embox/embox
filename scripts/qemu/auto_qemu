@@ -3,7 +3,6 @@
 DATADIR="$(dirname "$0")"
 CONFDIR=./conf
 
-KERNEL=./build/base/bin/embox
 MODS_CONF=$CONFDIR/mods.config
 LDS_CONF=$CONFDIR/lds.conf
 BUILD_CONF=$CONFDIR/build.conf
@@ -21,28 +20,27 @@ error() {
 }
 
 guessed_info() {
-	info Guessed $1 is: ${!1}
+	info $1: ${!1} "$2"
 }
 
 error_empty() {
 	if [ -z "${!1}" ]; then
-		error $1 is not defined
-	fi
-}
-
-get_user_empty_guess() {
-	if [ -z "${!1}" ]; then
-		eval "$1=\"$($2)\""
-		guessed_info "$1"
-		error_empty "$1"
+		error $1 is empty
 	fi
 }
 
 get_user_undef_guess() {
+	label="(got)"
 	if [ -z "${!1+defined}" ]; then
 		eval "$1=\"$($2)\""
-		guessed_info $1
+		label="(guessed)"
 	fi
+	guessed_info "$1" $label
+}
+
+get_user_empty_guess() {
+	get_user_undef_guess "$@"
+	error_empty "$1"
 }
 
 guess_arch() { sed -n 's/ARCH *= *//p' $BUILD_CONF; }
@@ -60,6 +58,8 @@ get_user_empty_guess AUTOQEMU_MEM guess_mem
 
 guess_nics() { sed -n 's/\t*\(@Runlevel([0-9])\|\) \+include\ embox.driver.net.\([a-z0-9_]\+\)\((.*)\|\)$/\2/p' $MODS_CONF | grep -v loopback | head -n 1; }
 get_user_undef_guess AUTOQEMU_NICS guess_nics
+
+guessed_info AUTOQEMU_NICS_CONFIG "(got)"
 
 guess_kvm() {
 	ret=""
@@ -90,6 +90,9 @@ get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 
 guess_load_arg() {
 	if [ $AUTOQEMU_ARCH != "arm" ]; then
+		if [ x$KERNEL = x ]; then
+			KERNEL=./build/base/bin/embox
+		fi
 		echo "-kernel $KERNEL"
 	else
 		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
@@ -140,27 +143,29 @@ NIC2QEMU=(
 	[lan9118]="lan9118"
 )
 
-qemu_nics_str=$(echo $AUTOQEMU_NICS ${!NIC2QEMU[@]} | sed 's/\ \+/\n/g' | sort | uniq -d)
-IFS=" " read -a qemu_nics <<< "$qemu_nics_str"
-
+IFS=" " read -a qemu_nics <<< "$AUTOQEMU_NICS"
 IFS=" " read -a qemu_nics_config <<< "$AUTOQEMU_NICS_CONFIG"
-
 sudo=""
 nic_lines=""
-if [ ${#qemu_nics[*]} -gt 0 ]; then
+nic_n=${#qemu_nics[*]}
+if [ $nic_n -gt 0 ]; then
 	sudo=sudo
-	nic_n=0
 	for ni in "${!qemu_nics[@]}"; do
 
-		if [ ${qemu_nics_config[$ni]} ]; then
+		if [ ${qemu_nics_config[$ni]} ] && [ ${qemu_nics_config[$ni]} != "-" ]; then
 			host_nic_config=${qemu_nics_config[$ni]}
 		else
 			host_nic_config="tap,script=$DATADIR/start_script,downscript=$DATADIR/stop_script"
 		fi
 
-		nic_lines="$nic_lines -net nic,model=${NIC2QEMU[${qemu_nics[$ni]}]},macaddr=AA:BB:CC:DD:EE:0$(($nic_n + 2)) \
-			-net $host_nic_config"
-		nic_n=$(($nic_n + 1))
+		nic_model=${NIC2QEMU[${qemu_nics[$ni]}]}
+		if [ ! $nic_model ]; then
+			error "nic model ${qemu_nics[$ni]} is not supported"
+		fi
+		nic_macaddr="AA:BB:CC:DD:EE:0$(($ni + 2))"
+		nic_lines="$nic_lines \
+			-net nic,vlan=$ni,model=$nic_model,macaddr=$nic_macaddr \
+			-net $host_nic_config,vlan=$ni"
 	done
 fi
 

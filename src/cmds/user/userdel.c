@@ -6,14 +6,10 @@
  * @date    27.02.2014
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 #include <ctype.h>
 
 #include "user.h"
-
-EMBOX_CMD(exec);
 
 static int shadow_del(char *name) {
 	struct spwd *spwd;
@@ -78,7 +74,7 @@ static void print_help(void) {
 			"Options: see 'man usage'\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	char name[15];
 	int opt;
 

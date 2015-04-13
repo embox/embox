@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "httpd",
 	help = "Start HTTP server",
 	man = '''
@@ -18,13 +19,15 @@ package embox.cmd.net
 module httpd {
 	option number use_ip_ver=4
 	option boolean use_cgi=false
+	option boolean use_real_cmd=false
 	source "httpd.c"
 
 	depends embox.compat.libc.LibC
 	depends embox.compat.posix.LibPosix
 	depends embox.compat.posix.net.socket
+	depends embox.compat.posix.proc.vfork
+	depends embox.compat.posix.proc.waitpid
 	depends embox.fs.core
 	depends embox.framework.LibFramework
-	depends embox.net.util.request_parser
 	depends embox.net.lib.getifaddrs
 }

@@ -6,17 +6,14 @@
  * @author Alexander Kalmuk
  */
 
-#include <embox/cmd.h>
 #include <cmd/shell.h>
 #include <stdio.h>
-
-EMBOX_CMD(exec);
 
 static void print_help(void) {
 	printf("Usage: shell_run <shell>\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	const struct shell *shell;
 
 	if (argc != 2) {

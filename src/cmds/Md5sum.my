@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "md5sum",
 	help = "Compute and check MD5 message digest",
 	man = '''

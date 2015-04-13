@@ -1,5 +1,0 @@
-package embox.third_party.expat
-
-module expat_lib {
-	source "xmlparse.c", "xmltok_impl.c", "xmltok.c", "xmltok_ns.c", "xmlrole.c"
-}

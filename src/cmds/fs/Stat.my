@@ -1,5 +1,6 @@
 package embox.cmd.fs
 
+@AutoCmd
 @Cmd(name = "stat",
 	help = "Print file and filesystem statistic on the standard output",
 	man = '''

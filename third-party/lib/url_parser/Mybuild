@@ -1,5 +1,0 @@
-package third_party.lib
-
-module url_parser {
-	source "url_parser.c"
-}

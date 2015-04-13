@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "chmod",
 	help = "Change the mode of each FILE to MODE",
 	man = '''

@@ -1,0 +1,23 @@
+
+// Create a socket.
+0.000 socket(..., SOCK_STREAM, IPPROTO_TCP) = 3
+
+0.100...0.200 connect(3, ..., ...) = 0
+
+// Establish a connection.
+0.100 > S  0:0(0) win 16384 <mss 16396,nop,wscale 7>
+0.200 < S. 0:0(0) ack 1 win 16384 <mss 16396,nop,wscale 7>
+0.200 > .  1:1(0) ack 1
+
+0.210 fcntl(3, F_GETFL) = 0x0
+0.220 fcntl(3, F_SETFL, O_NONBLOCK) = 0
+
+0.300 write(3, ..., 16) = 16
+0.300 > P. 1:17(16) ack 1 win 16384 // lost
+0.310 < . 1:1(0) ack 17 win 92
+
+// long delay, still should be able to make a transmission
+
+5.000 write(3, ..., 16) = 16
+5.000 > P. 17:33(16) ack 1 win 16384
+5.010 < . 1:1(0) ack 33 win 92

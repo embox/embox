@@ -21,10 +21,10 @@
 
 #define EOF (-1)
 
-#define _IOFBF        0x20
-#define _IOLBF        0x20
-#define _IONBF        0x20
-#define BUFSIZ        0x100
+#define _IONBF        0
+#define _IOFBF        1
+#define _IOLBF        2
+#define BUFSIZ        256
 #define L_tmpnam      0x20
 #define FILENAME_MAX  0x20
 
@@ -38,18 +38,8 @@
 
 typedef long int fpos_t;
 
-typedef struct file_struct {
-	int (*readfn)(void *, char *, int);
-	int (*writefn)(void *, const char *, int);
-	fpos_t (*seekfn)(void *, fpos_t, int);
-	int (*closefn)(void *);
-	const void *cookie;
-	int fd;
-	char has_ungetc;
-	int ungetc;
-} FILE;
-
-extern int funopen_check(FILE *f);
+struct file_struct;
+typedef struct file_struct FILE;
 
 struct stat;
 
@@ -60,8 +50,11 @@ __BEGIN_DECLS
 extern int putc(int c, FILE *f);
 extern int fputc(int c, FILE *f);
 
-extern int getc(FILE *f);
 extern int fgetc(FILE *f);
+static inline int getc(FILE *f) {
+	return fgetc(f);
+}
+
 
 /**
  * Writes the string s and a trailing newline to stdout.
@@ -224,12 +217,14 @@ extern FILE *stderr;
 
 extern int fileno(FILE *stream);
 
-//TODO: stub
 extern void clearerr(FILE *stream);
 extern int feof(FILE *stream);
 extern int ferror(FILE *stream);
 extern int fflush(FILE *fp);
 
+extern int setvbuf(FILE *stream, char *buf, int mode, size_t size);
+extern void setbuffer(FILE *stream, char *buf, size_t size);
+extern void setbuf(FILE *stream, char *buf);
 
 __END_DECLS
 

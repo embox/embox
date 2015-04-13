@@ -7,7 +7,6 @@
  */
 
 #include <assert.h>
-#include <embox/cmd.h>
 #include <stdio.h>
 #include <errno.h>
 #include <stddef.h>
@@ -15,9 +14,7 @@
 #include <unistd.h>
 #include <string.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ret;
 	struct smtp_session ss;
 	char *password;

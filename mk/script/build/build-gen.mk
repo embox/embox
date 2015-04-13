@@ -5,7 +5,13 @@
 
 include mk/script/script-common.mk
 
-MOD_AUTOCMD_POSTBUILD=$$(EXTERNAL_MAKE_FLAGS) MAIN_STRIPPING_LOCALS=yes $$(abspath $$(ROOT_DIR))/mk/main-stripping.sh $$(module_id) $$(abspath $$(obj_build)) $$(abspath $$(obj_postbuild))
+mod_autocmd_postbuild = \
+	$$(EXTERNAL_MAKE_FLAGS) \
+	MAIN_STRIPPING_LOCALS=$(if $(strip $1),no,yes) \
+	$$(abspath $$(ROOT_DIR))/mk/main-stripping.sh \
+	$$(module_id) \
+	$$(abspath $$(obj_build)) \
+	$$(abspath $$(obj_postbuild))
 
 # Wraps the given rule with a script which compares the command output with
 # the original file (if it exists) and replaces the latter only in case when
@@ -35,10 +41,10 @@ cmd_notouch = \
 #   1. Output file.
 #   2. The complete command
 cmd_assemble = \
-	echo '$(\h)!/bin/sh' > $1; \
-	$(foreach w,$2,echo -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
+	$(ECHO) '$(\h)!/bin/sh' > $1; \
+	$(foreach w,$2,$(ECHO) -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
 
-#cmd_notouch = \
+# cmd_notouch = \
 	OUTFILE=$(call trim,$1); { $2; }
 
 #   1. Output file.
@@ -94,7 +100,7 @@ gen_make_dep = \
 # 2. Variable name.
 # 3. Value.
 gen_make_tsvar = \
-	$(PRINTF) '%s : %s := %s\n\n' \
+	$(PRINTF) '%s : %s := %s\n' \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2) \
 		$(call sh_quote,$3)
@@ -102,7 +108,7 @@ gen_make_tsvar = \
 # 2. Funtion name.
 # 3. Function body.
 gen_make_tsfn = \
-	$(PRINTF) '%s : %s = %s\n\n' \
+	$(PRINTF) '%s : %s = %s\n' \
 		$(call sh_quote,$1) \
 		$(call sh_quote,$2) \
 		$(call sh_quote,$3)
@@ -187,6 +193,7 @@ $(@build_image) : target_file = \
 my_bld       := $(call mybuild_resolve_or_die,mybuild.lang.Build)
 my_bld_stage := $(call mybuild_resolve_or_die,mybuild.lang.Build.stage)
 my_autocmd   := $(call mybuild_resolve_or_die,mybuild.lang.AutoCmd)
+my_autocmd_preserve_locals := $(call mybuild_resolve_or_die,mybuild.lang.AutoCmd.preserve_locals)
 my_postbuild_script := $(call mybuild_resolve_or_die,mybuild.lang.Postbuild.script)
 
 # Return modules of specified stage
@@ -208,7 +215,6 @@ __gen_stage = \
 $(@build_image) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
-		$(call gen_make_var,__image_prerequisities,$$$$(image_prerequisites)); \
 		$(call gen_make_var,__image_mk_file,$(mk_file)); \
 		$(call __gen_stage,1); \
 		$(call __gen_stage,2))
@@ -282,9 +288,27 @@ module_id   = $(subst .,__,$(module_fqn))
 
 my_add_prefix := $(call mybuild_resolve_or_die,mybuild.lang.AddPrefix.value)
 
-__source_file_mod = $(subst ^MOD_PATH,$(call module_type_path,$2),$(if $(findstring ^BUILD,$3),../..$(subst ^BUILD,,$3),$(patsubst %$(call get,$1,fileName),%,$(call get,$1,fileFullName))$3))#
-__source_file_wprefix =$(strip $(foreach p,$(call get,$(call invoke,$(call invoke,$1,eContainer),getAnnotationValuesOfOption,$(my_add_prefix)),value),$(strip $p)/))$(call get,$1,fileName)#
-source_file = $(foreach f,$1,$(call __source_file_mod,$f,$(call invoke,$(call invoke,$f,eContainer),eContainer),$(call __source_file_wprefix,$f)))
+source_member = $(call invoke,$1,eContainer)
+source_annotation_values = \
+	$(call invoke,$(source_member),getAnnotationValuesOfOption,$2)
+source_annotations = \
+	$(call invoke,$(source_member),getAnnotationsOfType,$2)
+
+__source_file_mod = $(strip \
+	$(subst ^MOD_PATH,$(call module_type_path,$2), \
+		$(if $(findstring ^BUILD,$3), \
+			../..$(subst ^BUILD,,$3), \
+			$(patsubst %$(call get,$1,fileName),%, \
+				$(call get,$1,fileFullName))$3)))
+__source_file_wprefix = $(subst $(\s),, \
+	$(foreach p, \
+		$(call annotation_value,$(source_member),$(my_add_prefix)), \
+		$(strip $p)/))$(call get,$1,fileName)
+source_file = $(strip \
+	$(foreach 1,$1, \
+		$(call __source_file_mod,$1,$(call invoke,$(source_member),eContainer),$(__source_file_wprefix))))
+# source_file = \
+# 	$(warning $@ [$(__source_file)])$(__source_file)
 
 source_base = $(basename $(source_file))
 
@@ -416,7 +440,7 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 		$(call gen_make_tsfn,$(out),mod_postbuild, \
 			$(if $(strip $(call invoke, \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_autocmd))),\
-				$(MOD_AUTOCMD_POSTBUILD);) \
+				$(call mod_autocmd_postbuild,$(call annotation_value,$(call get,$@,allTypes),$(my_autocmd_preserve_locals)));) \
 			$(call cond_add,$(call annotation_value,$(call get,$@,allTypes),$(my_postbuild_script)),;)); \
 		$(call gen_make_tsvar_list,$(out),o_files,$(o_files)); \
 		$(call gen_make_tsvar_list,$(out),a_files,$(a_files)))
@@ -476,12 +500,6 @@ $(@module_extbld_rmk) :
 #
 # Per-source artifacts.
 #
-
-source_member = $(call invoke,$1,eContainer)
-source_annotation_values = \
-	$(call invoke,$(source_member),getAnnotationValuesOfOption,$2)
-source_annotations = \
-	$(call invoke,$(source_member),getAnnotationsOfType,$2)
 
 my_gen_script := $(call mybuild_resolve_or_die,mybuild.lang.Generated.script)
 
@@ -567,9 +585,12 @@ $(@source_rmk) : instrument = $(call values_of,$(my_instrument_val))
 
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
 $(@source_rmk) : check_profiling = $(if $(filter true, $(call get,$1,value)), -finstrument-functions, )
-$(@source_rmk) : flags_before = $(call trim,$(call do_flags,-I,$(includes_before)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
+$(@source_rmk) : flags_before = $(call trim, \
+			$(call do_flags,-I,$(includes_before)) \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
 $(@source_rmk) : flags = $(call trim, \
-			$(call do_flags,-I,$(includes)) $(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
+			$(call do_flags,-I,$(includes)) \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
 			$(call do_flags,-D,$(defines)) \
 			-include $(patsubst %,$(value module_config_h_pat), \
 						$(mod_path)) \
@@ -646,3 +667,110 @@ $(@source_gen) :
 	+@$(call cmd_notouch_stdout,$(@file), \
 		$(script))
 
+
+ifdef GEN_DIST
+
+%/. :
+	@$(MKDIR) $*
+
+.SECONDEXPANSION :
+
+@source_dist := \
+	$(addprefix source-dist/,$(notdir $(build_sources)))
+
+all .PHONY : $(@source_dist)
+
+$(@source_dist) : file = $(patsubst ../../%,../%,$(call source_file,$@))
+$(@source_dist) : @file = $(DIST_BASE_DIR)/$(file)
+$(@source_dist) : @dir = $(patsubst %/,%,$(dir $(@file)))
+$(@source_dist) : | $$(@dir)/.
+$(@source_dist) :
+	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi
+
+@dist_makefile := dist-makefile-/$(DIST_BASE_DIR)/../Makefile
+
+@dist_cpfiles := $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+	mk/core/common.mk \
+	mk/core/string.mk \
+	$(wildcard mk/extbld/*) \
+	mk/script/application_template.c \
+	mk/script/lds-apps.mk \
+	mk/script/nm2c.awk \
+	mk/script/qt-plugin.mk \
+	mk/script/script-common.mk \
+	mk/arhelper.mk \
+	mk/build-dist.mk \
+	mk/extbld.mk \
+	mk/flags.mk \
+	mk/image.lds.S \
+	mk/image2.mk \
+	mk/image3.mk \
+	mk/image_lib.mk \
+	mk/main-stripping.mk \
+	mk/main-dist.mk \
+	mk/main-stripping.sh \
+	mk/phymem_cc_addon.tmpl.c \
+	mk/variables.mk)
+
+@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
+
+__source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
+@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+	$(wildcard $(foreach e,*.h *.inc Makefile *.txt *.patch *.diff, \
+		$(addsuffix $e,$(__source_dirs)))))
+
+include mk/flags.mk  # INCLUDES_FROM_FLAGS
+
+@dist_includes := $(addprefix dist-includes-/,$(sort \
+	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_BASE_DIR)/%, \
+		$(filter-out $(abspath \
+				$(DIST_BASE_DIR) $(DIST_BASE_DIR)/% \
+				$(CONF_DIR) $(CONF_DIR)/% \
+				$(EXTERNAL_BUILD_DIR) $(EXTERNAL_BUILD_DIR)/%),$(abspath \
+			$(call expand,$(call get, \
+				$(sort $(call source_annotation_values,$(build_sources), \
+					$(my_incpath_val) $(my_incpath_before_val))),value)) \
+			$(INCLUDES_FROM_FLAGS))))))
+
+# remove nested directories
+@dist_includes := \
+	$(filter-out $(addsuffix /%,$(@dist_includes)),$(@dist_includes))
+
+@dist_conf := $(addprefix dist-conf-/$(DIST_BASE_DIR)/conf/, \
+	rootfs \
+	start_script.inc)
+
+@dist_all := \
+	$(@dist_makefile) \
+	$(@dist_cpfiles) \
+	$(@dist_includes) \
+	$(@dist_conf)
+
+
+all .PHONY : $(@dist_all)
+$(@dist_makefile) : dist-makefile-/% : | $$(*D)/.
+$(@dist_makefile) : @file = $(@:dist-makefile-/%=%)
+$(@dist_makefile) : file = $(@:dist-makefile-/$(DIST_BASE_DIR)/../%=$(ROOT_DIR)/%)
+$(@dist_makefile) :
+	@sed 's/\$$(dir \$$(lastword \$$(MAKEFILE_LIST)))/\$$(dir \$$(lastword \$$(MAKEFILE_LIST)))\/base/g' < $(file) > $(@file)
+
+$(@dist_cpfiles) : dist-cpfile-/% : | $$(*D)/.
+$(@dist_cpfiles) : @file = $(foreach f,$(@:dist-cpfile-/%=%),$(dir $f)$(subst -dist.,.,$(notdir $f)))
+$(@dist_cpfiles) : file = $(@:dist-cpfile-/$(DIST_BASE_DIR)/%=$(ROOT_DIR)/%)
+$(@dist_cpfiles) :
+	@cp -Trf $(file) $(@file)
+
+
+$(@dist_includes) : dist-includes-/% : | $$(*D)/.
+$(@dist_includes) : @file = $(@:dist-includes-/%=%)
+$(@dist_includes) : file = $(@file:$(DIST_BASE_DIR)/%=$(ROOT_DIR)/%)
+
+$(@dist_conf) : dist-conf-/% : | $$(*D)/.
+$(@dist_conf) : @file = $(@:dist-conf-/%=%)
+$(@dist_conf) : file = $(@file:$(DIST_BASE_DIR)/conf/%=$(CONF_DIR)/%)
+
+$(@dist_includes) $(@dist_conf) :
+	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi
+
+endif # GEN_DIST

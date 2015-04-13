@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "log",
 	help = "Display last debug messages..",
 	man = '''

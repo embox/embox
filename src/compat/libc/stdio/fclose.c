@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
+#include "file_struct.h"
 
 extern void stdio_file_free(FILE *file);
 
@@ -18,6 +19,8 @@ int fclose(FILE *file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
+
+	fflush(file);
 
 	if (funopen_check(file)) {
 		/* An error on closefn() does not keep the stream open. */

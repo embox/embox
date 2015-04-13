@@ -8,7 +8,6 @@
  */
 
 #include <stdio.h>
-#include <fs/file_operation.h>
 
 int fgetc(FILE *file) {
 	unsigned char ch;
@@ -19,14 +18,6 @@ int fgetc(FILE *file) {
 
 }
 
-int getc(FILE *f) {
-	return fgetc(f);
-}
-
 int getchar(void) {
 	return getc(stdin);
-}
-
-int ungetchar(int ch) {
-	return ungetc(ch, stdin);
 }

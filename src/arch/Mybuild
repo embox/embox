@@ -18,9 +18,13 @@ abstract module interrupt { }
 abstract module clock { }
 abstract module libarch { }
 abstract module locore { }
+abstract module arch { }
 abstract module entry { }
 abstract module boot { }
 abstract module lds { }
+
+module no_libarch extends libarch { }
+module no_clock extends clock { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nocontext)
@@ -41,6 +45,8 @@ abstract module syscall_caller { }
 abstract module usermode { }
 
 abstract module stackframe { }
+
+abstract module testtrap { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nosmp)

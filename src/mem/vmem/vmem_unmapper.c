@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <assert.h>
 
+#include <util/binalign.h>
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 
@@ -19,8 +20,10 @@ static inline int try_free_pte(mmu_pte_t *pte, mmu_pmd_t *pmd) {
 		}
 	}
 
+#if MMU_PTE_SHIFT != MMU_PMD_SHIFT
 	mmu_pmd_unset(pmd);
 	vmem_free_pte_table(pte);
+#endif
 
 	return 1;
 }
@@ -32,8 +35,10 @@ static inline int try_free_pmd(mmu_pmd_t *pmd, mmu_pgd_t *pgd) {
 		}
 	}
 
+#if MMU_PMD_SHIFT != MMU_PGD_SHIFT
 	mmu_pgd_unset(pgd);
 	vmem_free_pmd_table(pmd);
+#endif
 
 	return 1;
 }
@@ -51,8 +56,6 @@ static inline int try_free_pgd(mmu_pgd_t *pgd, mmu_ctx_t ctx) {
 	return 1;
 }
 
-#define ALIGN_UP(x, aligment) (((x) + (aligment)) & (~((aligment)-1)))
-
 void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, int free_pages) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
@@ -67,68 +70,55 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 
 	pgd = mmu_get_root(ctx);
 
-	pgd_idx = ((uint32_t) virt_addr & MMU_PGD_MASK) >> MMU_PGD_SHIFT;
-	pmd_idx = ((uint32_t) virt_addr & MMU_PMD_MASK) >> MMU_PMD_SHIFT;
-	pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
-
+	vmem_get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
+		if (!mmu_pgd_present(pgd + pgd_idx)) {
+			virt_addr = binalign_bound(virt_addr, MMU_PGD_SIZE);
+			pte_idx = pmd_idx = 0;
+			continue;
+		}
 
-		if (mmu_pgd_present(pgd + pgd_idx)) {
-			pmd = mmu_pgd_value(pgd + pgd_idx);
+		pmd = mmu_pgd_value(pgd + pgd_idx);
 
-			for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
-
-				if (mmu_pmd_present(pmd + pmd_idx)) {
-					pte = mmu_pmd_value(pmd + pmd_idx);
-
-					for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
-						if (virt_addr >= v_end) {
-							// Try to free pte, pmd, pgd
-							if (try_free_pte(pte, pmd + pmd_idx)) {
-								if (try_free_pmd(pmd, pgd + pgd_idx)) {
-									try_free_pgd(pgd, ctx);
-								}
-							}
-
-							return ;
-						}
-
-						if (mmu_pte_present(pte + pte_idx)) {
-							if (free_pages && mmu_pte_present(pte + pte_idx)) {
-								addr = (void *) mmu_pte_value(pte + pte_idx);
-								vmem_free_page(addr);
-							}
-
-							mmu_pte_unset(pte + pte_idx);
-						}
-
-						virt_addr += VMEM_PAGE_SIZE;
-					}
-
-					pte_idx = 0;
-
-					try_free_pte(pte, pmd + pmd_idx);
-
-				} else {
-					virt_addr = ALIGN_UP(virt_addr, MMU_PMD_SIZE);
-
-					pte_idx = 0;
-				}
-
+		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
+			if (!mmu_pmd_present(pmd + pmd_idx)) {
+				virt_addr = binalign_bound(virt_addr, MMU_PMD_SIZE);
+				pte_idx = 0;
+				continue;
 			}
 
-			pmd_idx = 0;
+			pte = mmu_pmd_value(pmd + pmd_idx);
 
-			try_free_pmd(pmd, pgd + pgd_idx);
+			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
+				if (virt_addr >= v_end) {
+					// Try to free pte, pmd, pgd
+					if (try_free_pte(pte, pmd + pmd_idx) && try_free_pmd(pmd, pgd + pgd_idx)) {
+						try_free_pgd(pgd, ctx);
+					}
 
-		} else {
-			virt_addr = ALIGN_UP(virt_addr, MMU_PGD_SIZE);
+					return;
+				}
 
-			pmd_idx = 0;
+				if (mmu_pte_present(pte + pte_idx)) {
+					if (free_pages && mmu_pte_present(pte + pte_idx)) {
+						addr = (void *) mmu_pte_value(pte + pte_idx);
+						vmem_free_page(addr);
+					}
+
+					mmu_pte_unset(pte + pte_idx);
+				}
+
+				virt_addr += VMEM_PAGE_SIZE;
+			}
+			try_free_pte(pte, pmd + pmd_idx);
 			pte_idx = 0;
 		}
+
+		try_free_pmd(pmd, pgd + pgd_idx);
+		pmd_idx = 0;
 	}
 
 	try_free_pgd(pgd, ctx);
 }
+

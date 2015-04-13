@@ -11,6 +11,9 @@
 
 #include <string.h>
 
+/* NOTE #strstr have brother -- #strcasestr.
+ * If you change this, change #strcasestr() too
+ */
 char *strstr(const char *haystack, const char *needle) {
 	if (!*needle) {
 		return (char *) haystack;

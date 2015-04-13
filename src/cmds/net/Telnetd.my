@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "telnetd",
 	help = "Start telnetd server",
 	man = '''
@@ -16,6 +17,8 @@ package embox.cmd.net
 	''')
 module telnetd {
 	source "telnetd.c"
+
+	option number telnetd_max_connections = 5
 
 	depends embox.net.tcp_sock
 	depends embox.net.tcp

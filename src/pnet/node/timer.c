@@ -7,20 +7,20 @@
  * @author Alexander Kalmuk
  */
 
+#include <fcntl.h>
+#include <stdio.h>
+
+#include <util/math.h>
+
+#include <kernel/thread.h>
+
 #include <pnet/core.h>
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
 #include <pnet/prior_path.h>
 
-#include <util/math.h>
-#include <stdio.h>
 #include <framework/mod/options.h>
 #include <module/embox/pnet/rx_thread.h>
-#include <kernel/thread.h>
-
-#include <profiler/tracing/trace.h>
-#include <fcntl.h>
-
 #include <embox/unit.h>
 
 EMBOX_UNIT(init, fini);
@@ -35,7 +35,6 @@ static FILE *results;
 static int pnet_timer_hnd(struct pnet_pack *pack) {
 	struct timespec ts;
 	unsigned int elapsed_time;
-//	struct __trace_point *p;
 
 	static int k;
 
@@ -52,16 +51,6 @@ static int pnet_timer_hnd(struct pnet_pack *pack) {
 			printf("K:%d\n", k);
 		}
 	}
-
-#if 0
-	/* interrupts count */
-	p = trace_point_get_by_name("interrupt");
-	pack->stat.interrupt_count = trace_point_get_value(p);
-	interrupt_cnt = pack->stat.interrupt_count - trace_point_get_value(p);
-
-	/* actual time on cpu */
-	running_time = pack->stat.running_time + (clock() - thread_self()->last_sync);
-#endif
 
 	return NET_HND_FORWARD_DEFAULT;
 }

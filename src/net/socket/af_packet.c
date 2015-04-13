@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <mem/misc/pool.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <framework/mod/options.h>
 #include <framework/net/sock/self.h>
 #include <embox/net/family.h>
@@ -35,7 +35,10 @@ static const struct net_pack_out_ops packet_out_ops_struct;
 static const struct net_pack_out_ops *const packet_out_ops = &packet_out_ops_struct;
 EMBOX_NET_FAMILY(AF_PACKET, packet_types, packet_out_ops);
 
-static const struct sock_proto_ops packet_sock_ops_struct;
+static DLIST_DEFINE(packet_sock_list);
+static const struct sock_proto_ops packet_sock_ops_struct = {
+	.sock_list = &packet_sock_list
+};
 EMBOX_NET_SOCK(AF_PACKET, SOCK_RAW, 0x300 /*htons(ETH_P_ALL)*/, 0, packet_sock_ops_struct);
 
 struct packet_sock {
@@ -54,11 +57,11 @@ static inline struct packet_sock *sk2packet(struct sock *sk) {
 }
 
 static inline void af_packet_rcv_lock(void) {
-	softirq_lock();
+	sched_lock();
 }
 
 static inline void af_packet_rcv_unlock(void) {
-	softirq_unlock();
+	sched_unlock();
 }
 
 static int packet_sock_init(struct sock *sk) {
@@ -156,12 +159,28 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 
 	sock_update_tstamp(sk, skb);
 
-	/* XXX now called only on tun, copy from nh.
- 	 * Whole packet should be stored in future, and for tun it will be
-	 * starting from ip header
-	 */
-	n_byte = skb_write_iovec(skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw),
-			msg->msg_iov, msg->msg_iovlen);
+	assert(sk->opt.so_type == SOCK_DGRAM || sk->opt.so_type == SOCK_RAW);
+
+	if (sk->opt.so_type == SOCK_DGRAM) {
+		n_byte = skb_write_iovec(skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw),
+				msg->msg_iov, msg->msg_iovlen);
+	} else if (sk->opt.so_type == SOCK_RAW) {
+		/*
+		 * See https://www.kernel.org/doc/Documentation/networking/tuntap.txt
+		 * section 3.2 Frame format.
+		 * XXX Suppose flag IFF_NO_PI is always set. It is used for raw sockets,
+		 * when Embox's kernel passes the whole packet starting from IP header to an user program.
+		 *
+		 * TODO: The code below is workaround to emulate behaviour of TUN described by link above.
+		 * The problem is that Embox's TUN (src/drivers/tun.c) fill MAC, but it should'nt.
+		 */
+		if (!strncmp(skb->dev->name, "tun", 3)) {
+			n_byte = skb_write_iovec(skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw),
+					msg->msg_iov, msg->msg_iovlen);
+		} else {
+			n_byte = skb_write_iovec(skb->mac.raw, skb->len, msg->msg_iov, msg->msg_iovlen);
+		}
+	}
 
 	skb_free(skb);
 	msg->msg_iov->iov_len = n_byte; /* XXX */
@@ -192,12 +211,18 @@ static const struct sock_family_ops packet_raw_ops = {
 	.sock_pool   = &packet_sock_pool
 };
 
-void sock_packet_add(struct sk_buff *skb) {
+void sock_packet_add(struct sk_buff *skb, unsigned short protocol) {
 	struct packet_sock *psk;
+	int proto_check, iface_check;
 
 	dlist_foreach_entry(psk, &packet_g_sock_list, lnk) {
-		if (psk->sll.sll_ifindex == 0
-				|| psk->sll.sll_ifindex == skb->dev->index) {
+		proto_check = (psk->sll.sll_protocol == htons(ETH_P_ALL)
+				|| psk->sll.sll_protocol == protocol);
+
+		iface_check = (psk->sll.sll_ifindex == 0
+				|| psk->sll.sll_ifindex == skb->dev->index);
+
+		if (proto_check && iface_check) {
 			skb_queue_push(&psk->rx_q, skb_clone(skb));
 			sock_notify(&psk->sk, POLLIN | POLLERR);
 		}

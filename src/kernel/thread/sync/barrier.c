@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <kernel/thread/sync/barrier.h>
 #include <kernel/sched.h>
+#include <kernel/thread/waitq.h>
 
 void barrier_init(barrier_t *b, int count) {
 	waitq_init(&b->wq);

@@ -18,11 +18,12 @@ size_t strspn(const char *s, const char *accept) {
 			if (*p == *a) {
 				break;
 			}
-			if (*a == '\0') {
-				return count;
-			} else {
-				++count;
-			}
+		}
+
+		if (*a == '\0') {
+			return count;
+		} else {
+			++count;
 		}
 	}
 

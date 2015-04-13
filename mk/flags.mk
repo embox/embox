@@ -1,4 +1,6 @@
 
+include mk/core/common.mk
+
 CFLAGS ?=
 CXXFLAGS ?=
 CPPFLAGS ?=
@@ -19,24 +21,39 @@ OBJDUMP := $(CROSS_COMPILE)objdump
 OBJCOPY := $(CROSS_COMPILE)objcopy
 SIZE    := $(CROSS_COMPILE)size
 
+comma_sep_list = $(subst $(\s),$(,),$(strip $1))
+
 COVERAGE_CFLAGS ?= -finstrument-functions \
-		   -finstrument-functions-exclude-function-list=symbol_lookup,__cyg_profile_func_enter,__cyg_profile_func_exit,bitmap_set_bit
+   -finstrument-functions-exclude-function-list=$(call comma_sep_list, \
+			symbol_lookup \
+			__cyg_profile_func_enter \
+			__cyg_profile_func_exit \
+			bitmap_set_bit)
 
 PROFILING_CFLAGS ?= -finstrument-functions \
-		   -finstrument-functions-exclude-function-list=__cyg_profile_func_enter,__cyg_profile_func_exit \
-		   -finstrument-functions-exclude-function-list=trace_block_func_enter,trace_block_func_exit,get_trace_block_hash,cmp_trace_blocks,trace_block_enter,trace_block_leave,__tracepoint_handle,get_profiling_mode,set_profiling_mode\
-		  # critical_inside,critical_leave,critical_enter\
-#		   -finstrument-functions-exclude-function-list=ipl_restore,ipl_save,critical_distapch_handling,in8,cycles_to_ns,irq_handler,critical_inside,critical_enter,__critical_count_add,ipl_init,irq_dispatch,itimer_init,clock_source_read,i8253_read,_udivdi3,_umoddi3,irq_stack_protection,critical_dispatch_pending \
-#		   -finstrument-functions-exclude-function-list=critical_leave,i8259_irq_pending,cs_full_read,clock_handler,clock_tick_handler,softirq_raise,__critical_count_sub,i8259_send_eoi,itimer_read,critical_pending,clock_tick_handler,clock_source_get_best,critical_request_dispatch
-
-
+   -finstrument-functions-exclude-function-list=$(call comma_sep_list, \
+			__cyg_profile_func_enter \
+			__cyg_profile_func_exit \
+			cyg_tracing_profiler_enter \
+			cyg_tracing_profiler_exit \
+			__coverage_func_enter \
+			__coverage_func_exit \
+			trace_block_func_enter \
+			trace_block_func_exit \
+			get_trace_block_hash \
+			cmp_trace_blocks \
+			trace_block_enter \
+			trace_block_leave \
+			__tracepoint_handle \
+			get_profiling_mode \
+			set_profiling_mode)
 
 EXTERNAL_MAKE = \
 	$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_PRO = \
 	$(MKDIR) $(mod_build_dir) && \
-	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/build/.qmake.cache $(mod_build_dir) && \
+	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/.qmake.cache $(mod_build_dir) && \
 	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/bin/qmake \
 		INCLUDEPATH+='$(subst -I,,$(BUILD_DEPS_CPPFLAGS))' \
 		LIBS+='$(BUILD_DEPS_LDFLAGS)' \
@@ -46,8 +63,29 @@ EXTERNAL_MAKE_PRO = \
 
 EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
-	ROOT_DIR=$(abspath $(ROOT_DIR)) \
-	EXTERNAL_BUILD_DIR=$(abspath $(EXTERNAL_BUILD_DIR)) \
+	$(foreach path_var, \
+			ROOT_DIR \
+			EMBOX_ROOT_DIR \
+			CONF_DIR \
+			TEMPLATES_DIR \
+			SRC_DIR \
+			THIRDPARTY_DIR \
+			PLATFORM_DIR \
+			SUBPLATFORM_TEMPLATE_DIR \
+			EXTERNAL_BUILD_DIR \
+			DOC_DIR \
+			BIN_DIR \
+			OBJ_DIR \
+			GEN_DIR \
+			SRCGEN_DIR \
+			MKGEN_DIR \
+			AUTOCONF_DIR \
+			ROOTFS_DIR \
+			USER_ROOTFS_DIR \
+			DOT_DIR \
+			DOCS_OUT_DIR \
+			CACHE_DIR, \
+		$(path_var)=$(abspath $($(path_var)))) \
 	BUILD_DIR=$(abspath $(mod_build_dir)) \
 	EMBOX_ARCH='$(ARCH)' \
 	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
@@ -91,32 +129,42 @@ endif
 
 # Expand user defined flags and append them after default ones.
 
-__srcgen_includes_fn = $(addprefix $1$(SRCGEN_DIR)/src/,include arch/$(ARCH)/include)
-__srcgen_includes := $(call __srcgen_includes_fn,)
+__srcgen_includes_fn = \
+	$(addprefix $(call $1,$(SRCGEN_DIR))/, \
+		src/include \
+		src/arch/$(ARCH)/include)
+__srcgen_includes := $(call __srcgen_includes_fn,id)
 $(and $(shell $(MKDIR) $(__srcgen_includes)),)
 
 cppflags_fn = \
 	-U__linux__ -Ulinux -U__linux \
 	-D__EMBOX__ \
 	-D__unix \
-	-D"__impl_x(path)=<../path>"\
-	-imacros $1$(AUTOCONF_DIR)/config.h\
-	-I$1$(SRC_DIR)/include -I$1$(SRC_DIR)/arch/$(ARCH)/include\
-	-I$1$(SRCGEN_DIR)/include -I$1$(SRCGEN_DIR)/src/include\
-	$(call __srcgen_includes_fn,-I$1) \
-	$(if $(value PLATFORM),-I$1$(PLATFORM_DIR)/$(PLATFORM)/include)\
-	-I$1$(SRC_DIR)/compat/linux/include -I$1$(SRC_DIR)/compat/posix/include -I$1$(SRC_DIR)/compat/libc/include\
-	-nostdinc\
+	-D"__impl_x(path)=<../path>" \
+	-imacros $(call $1,$(AUTOCONF_DIR))/config.h \
+	-I$(call $1,$(SRC_DIR))/include \
+	-I$(call $1,$(SRC_DIR))/arch/$(ARCH)/include \
+	-I$(call $1,$(SRCGEN_DIR))/include \
+	-I$(call $1,$(SRCGEN_DIR))/src/include \
+	$(addprefix -I,$(call __srcgen_includes_fn,$1)) \
+	$(if $(value PLATFORM),-I$(call $1,$(PLATFORM_DIR))/$(PLATFORM)/include) \
+	-I$(call $1,$(SRC_DIR))/compat/linux/include \
+	-I$(call $1,$(SRC_DIR))/compat/posix/include \
+	-I$(call $1,$(SRC_DIR))/compat/libc/include \
+	-nostdinc \
 	-MMD -MP# -MT $@ -MF $(@:.o=.d)
 
 # Preprocessor flags
 cppflags := $(CPPFLAGS)
-override CPPFLAGS  = $(call cppflags_fn,) $(cppflags)
-EMBOX_EXPORT_CPPFLAGS := $(call cppflags_fn,$(abspath $(ROOT_DIR))/)
+override CPPFLAGS  = $(call cppflags_fn,id) $(cppflags)
+EMBOX_EXPORT_CPPFLAGS = $(call cppflags_fn,abspath)
 
 override COMMON_FLAGS := -pipe
+debug_prefix_map_supported:=$(shell $(CPP) /dev/zero --debug-prefix-map=./= 2>/dev/null && echo true)
+ifneq ($(debug_prefix_map_supported),)
 override COMMON_FLAGS += --debug-prefix-map=`pwd`=
 override COMMON_FLAGS += --debug-prefix-map=./=
+endif
 
 # Assembler flags
 asflags := $(CFLAGS)
@@ -134,7 +182,7 @@ override CXXFLAGS = $(COMMON_CCFLAGS)
 #override CXXFLAGS += -fno-rtti
 #override CXXFLAGS += -fno-exceptions
 #override CXXFLAGS += -fno-threadsafe-statics
-override CXXFLAGS += -I$(SRC_DIR)/include/c++
+override CXXFLAGS += -I$(SRC_DIR)/compat/cxx/include
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)
@@ -155,4 +203,7 @@ override ARFLAGS = rcs
 
 
 CCFLAGS ?=
+
+INCLUDES_FROM_FLAGS := \
+	$(patsubst -I%,%,$(filter -I%,$(CPPFLAGS) $(CXXFLAGS)))
 

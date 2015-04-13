@@ -1,5 +1,6 @@
 package embox.cmd.net
 
+@AutoCmd
 @Cmd(name = "ntpdate",
 	help = "Set the date and time via NTP",
 	man = '''

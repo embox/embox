@@ -90,7 +90,7 @@ static int umether_init(void) {
 	res = host_net_cfg(hnet, HOST_NET_INIT);
 	if (res < 0) {
 		etherdev_free(nic);
-		return 0;
+		return res;
 	}
 
 	res = irq_attach(HOST_NET_IRQ, umether_irq, IF_SHARESUP, nic,

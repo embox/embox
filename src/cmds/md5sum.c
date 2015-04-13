@@ -6,7 +6,6 @@
  * @author Nikolay Korotky
  */
 
-#include <embox/cmd.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <fs/file_operation.h>
@@ -15,13 +14,11 @@
 #include <stdint.h>
 #include <errno.h>
 
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: md5sum [FILE]\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	FILE *fd;
 	stat_t st;

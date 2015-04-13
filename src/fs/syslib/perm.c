@@ -52,23 +52,22 @@ static int quick_lookup(const char *path, struct path *nodelast) {
 	return -1;
 }
 
-int fs_perm_lookup(struct path *root, const char *path, const char **pathlast,
+int fs_perm_lookup(const char *path, const char **pathlast,
 		struct path *nodelast) {
 	struct path node_path;
 	size_t len = 0;
 	int ret;
 
-	assert(root);
-
 	if (!path) {
 		return -EINVAL;
 	}
 
-	node_path = *root;
-
+	if (path[0] == '/')
+		vfs_get_root_path(&node_path);
+	else
+		vfs_get_leaf_path(&node_path);
 
 	while (1) {
-
 		path = path_next(path + len, &len);
 
 		*nodelast = node_path;
@@ -98,16 +97,13 @@ int fs_perm_lookup(struct path *root, const char *path, const char **pathlast,
 
 int fs_perm_lookup_relative(const char *path, const char **pathlast,
 		struct path *nodelast) {
-	struct path leaf;
 	int ret = 0;
 
 	if (0 == quick_lookup(path, nodelast)) {
 		return fs_perm_check(nodelast->node, FS_MAY_EXEC);
 	}
 
-	vfs_get_leaf_path(&leaf);
-
-	if (0 != (ret = fs_perm_lookup(&leaf, path, pathlast, nodelast))) {
+	if (0 != (ret = fs_perm_lookup(path, pathlast, nodelast))) {
 		return ret;
 	}
 

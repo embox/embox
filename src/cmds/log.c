@@ -6,8 +6,6 @@
  * @author Timur Abdukadyrov
  */
 
-#include <embox/cmd.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -17,8 +15,6 @@
 #include <util/sys_log.h>
 
 #define DEFAULT_COUNT 20
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: log\t[-c cnt]\n\t\t[-h]\n\t\t[-i][-w][-e][-d]\n\t\t[-I]\n");
@@ -31,7 +27,7 @@ static void print_usage(void) {
 	printf("then log just sets the types to output in intrusive mode.\n");
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int i, opt, cnt = DEFAULT_COUNT;
 	bool disp_types[] = {true, true, true, true};
 	/* indicates if types to show are inputed or defaults are used */

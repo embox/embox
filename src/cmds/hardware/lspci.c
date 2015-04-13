@@ -6,19 +6,19 @@
  * @author Gleb Efimov
  * @author Nikolay Korotkiy
  */
+
 #include <stddef.h>
-#include <embox/cmd.h>
 #include <linux/list.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <util/array.h>
 
 #include <kernel/printk.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_repo.h>
 #include <drivers/pci/pci_utils.h>
-
 
 struct pci_reg {
 	uint8_t offset;
@@ -92,8 +92,6 @@ static struct pci_reg bridge_regs[] = {
 	{0, 0, ""},
 };
 
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: lspci [-f] [-h] [-x] [-b bus] [-s slot] [-u func] [-n] [-l len] [-o off]\n");
 	printf("\t[-f]      - full info\n");
@@ -145,7 +143,7 @@ static void show_device(struct pci_slot_dev *pci_dev, int full) {
 		int bar_num;
 		printf("\t  IRQ number: %d\n", pci_dev->irq);
 
-		for(bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num ++) {
+		for (bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num ++) {
 			uintptr_t base_addr = pci_dev->bar[bar_num];
 			if (0 == base_addr) {
 				continue;
@@ -231,7 +229,7 @@ static void dump_regs2(struct pci_slot_dev *pci_dev)
 }
 
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 	struct pci_slot_dev *pci_dev;
 	char *endptr;

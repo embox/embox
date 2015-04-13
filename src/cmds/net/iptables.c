@@ -6,16 +6,13 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <util/list.h>
+#include <util/dlist.h>
 #include <net/netfilter.h>
 #include <string.h>
-
-EMBOX_CMD(exec);
 
 static int clear_rules(int chain) {
 	int ret;
@@ -84,7 +81,7 @@ static void print_rule(const struct nf_rule *r) {
 }
 
 static void print_rules(int chain) {
-	struct list *rules;
+	struct dlist_head *rules;
 	struct nf_rule *r;
 
 	rules = nf_get_chain(chain);
@@ -93,7 +90,7 @@ static void print_rules(int chain) {
 	}
 
 	print_header(chain);
-	list_foreach(r, rules, lnk) {
+	dlist_foreach_entry(r, rules, lnk) {
 		print_rule(r);
 	}
 }
@@ -124,7 +121,7 @@ static int show_rules(int chain, int rule_num) {
 	return 0;
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int ind, oper, chain, rule_num, not_flag;
 	unsigned int port;
 	struct nf_rule rule;

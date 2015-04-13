@@ -128,9 +128,15 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 	allocator->pages_n = pages;
 	allocator->page_size = page_size;
 	allocator->free = pages * page_size;
+	allocator->bitmap = (unsigned long *)((uintptr_t)&allocator->bitmap + sizeof(allocator->bitmap));
 
 	memset(allocator->bitmap, 0, bitmask_len);
 	bitmap_set_bit(allocator->bitmap, pages);
 
 	return allocator;
+}
+
+int page_belong(struct page_allocator *allocator, void *page) {
+	void *pages_end = allocator->pages_start + allocator->pages_n * allocator->page_size;
+	return allocator->pages_start <= page && page < pages_end;
 }

@@ -14,6 +14,7 @@
 #include <kernel/sched.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/task_vfork.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
 	task_vfork_end(task_self());
@@ -73,7 +74,7 @@ int vfork_child_start(struct task *child) {
 	task_vfork = task_resource_vfork(task_self());
 
 	/* Allocate memory for the new stack */
-	task_vfork->stack = sysmalloc(sizeof(task_vfork->stack));
+	task_vfork->stack = sysmalloc(VFORK_CTX_STACK_LEN);
 
 	if (!task_vfork->stack) {
 		return -EAGAIN;
@@ -84,7 +85,7 @@ int vfork_child_start(struct task *child) {
 	/* Set new stack and go to vfork_waiting */
 	if (!setjmp(task_vfork->env)) {
 		CONTEXT_JMP_NEW_STACK(vfork_waiting,
-			task_vfork->stack + sizeof(task_vfork->stack));
+				task_vfork->stack + VFORK_CTX_STACK_LEN);
 	}
 
 	/* current stack was broken, can't reach any old data */

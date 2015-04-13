@@ -1,14 +1,16 @@
 package embox.net
 
+@DefaultImpl(net_entry)
 abstract module entry_api {
 }
 
 module net_entry extends entry_api {
+	option number hnd_priority = 200
 	source "net_entry.c"
 
 	depends net_rx
 	depends skbuff
-	depends embox.compat.libc.LibC
+	depends embox.kernel.lthread.lthread
 }
 
 module net_rx {
@@ -17,10 +19,8 @@ module net_rx {
 	depends net_crypt_api
 	depends skbuff
 	depends packet
-	depends af_packet /* make af_packet socket receive incoming packets */
-	depends embox.compat.linux.LibLinux
+	depends af_packet_api /* make af_packet socket receive incoming packets */
 	depends embox.framework.LibFrameworkNet
-	depends embox.compat.libc.LibC
 }
 
 module net_tx {
@@ -28,8 +28,8 @@ module net_tx {
 
 	depends net_crypt_api
 	depends skbuff
-	depends af_packet /* make af_packet socket receive outcoming packets */
-	depends embox.compat.libc.LibC
+	depends af_packet_api /* make af_packet socket receive outcoming packets */
+	depends neighbour
 }
 
 @DefaultImpl(net_no_crypt)

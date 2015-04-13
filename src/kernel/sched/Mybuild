@@ -1,38 +1,45 @@
 package embox.kernel.sched
 
 module sched {
+	source "sched_start.c"
+	depends idle
+	depends boot
+
 	source "sched.c"
 	depends embox.kernel.addr_space
 
 	source "sched_signal.c"
 
-	option boolean timer_allocate_on_stack = true
-	source "sched_wait.c"
+	depends schedee
 
-	depends embox.arch.context /* context_switch */
-	depends strategy.api
+	depends embox.kernel.critical
+	depends embox.profiler.trace
 
-	@NoRuntime depends embox.kernel.thread.signal.lock_api
-	@NoRuntime depends embox.kernel.thread.signal_api
-	@NoRuntime depends embox.kernel.thread.current.api
-	@NoRuntime depends embox.compat.posix.util.time
-	@NoRuntime depends embox.kernel.critical
-	@NoRuntime depends embox.profiler.trace
+	depends wait_queue
 
-	@NoRuntime depends sched_ticker
-	@NoRuntime depends wait_queue
-
-	//XXX kernel/thread.h included
-	depends embox.kernel.thread.thread_wait
-
-	depends embox.kernel.lthread.lthread_api
-
+	depends embox.kernel.sched.current.api
 }
 
-module sched_ticker {
+module schedee {
+	/* source "include/kernel/sched/schedee.h" */
+
+	depends strategy.runq.api
+	depends priority.priority
+	depends affinity.affinity
+	depends timing.timing
+}
+
+@DefaultImpl(sched_ticker_preempt)
+abstract module sched_ticker { }
+
+module sched_ticker_preempt extends sched_ticker {
 	source "sched_ticker.c"
 	option number tick_interval = 100
 	depends embox.kernel.timer.sys_timer /* for timeslices support */
+}
+
+module sched_ticker_stub extends sched_ticker {
+	source "sched_ticker_stub.c"
 }
 
 module wait_queue {
@@ -58,4 +65,34 @@ module waitq_protect_link_store extends waitq_protect_link {
 module waitq_protect_link_thread_plugin extends embox.kernel.thread.thread_wait {
 	source "waitq_protect_link_thread_plugin.c"
 	source "waitq_protect_link_thread_plugin.h"
+}
+
+@DefaultImpl(idle_thread)
+abstract module idle { }
+
+module idle_thread extends idle {
+	source "idle_thread.c"
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.task.kernel_task
+}
+
+module idle_light extends idle {
+	source "idle_light.c"
+
+	@NoRuntime depends embox.kernel.lthread.lthread
+}
+
+@DefaultImpl(boot_thread)
+abstract module boot { }
+
+module boot_thread extends boot {
+	source "boot_thread.c"
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.task.kernel_task
+}
+
+module boot_light extends boot {
+	source "boot_light.c"
 }

@@ -5,10 +5,14 @@ abstract module lthread_api {
 }
 
 module no_lthread extends lthread_api {
-	source "no_lthread.h"
 }
 
 module lthread extends lthread_api {
-	source "lthread.c"
 	option number lthread_pool_size=512
+
+	source "lthread.c"
+	source "lthread_sched_wait.c"
+
+	depends embox.kernel.sched.sched
+	depends embox.kernel.sched.current.api
 }

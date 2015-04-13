@@ -19,13 +19,6 @@ module bitmap_test {
 	depends embox.framework.LibFramework
 }
 
-module list_test {
-	source "list_test.c"
-
-	depends embox.compat.libc.LibC
-	depends embox.framework.LibFramework
-}
-
 module slist_test {
 	source "slist_test.c"
 
@@ -58,13 +51,6 @@ module hashtable_test {
 module dlist_test {
 	source "dlist_test.c"
 
-	depends embox.framework.LibFramework
-}
-
-module priority_q_test {
-	source "priority_q_test.c"
-
-	depends embox.util.LibUtil
 	depends embox.framework.LibFramework
 }
 

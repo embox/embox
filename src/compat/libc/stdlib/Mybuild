@@ -1,30 +1,41 @@
-package embox.compat.libc
+package embox.compat.libc.stdlib
 
-static module LibCRand {
+static module rand {
 	source "rand.c"
 	source "random.c"
 	source "random_r.c"
 }
 
-static module LibCConfig {
+static module config {
 	source "getpagesize.c"
 	source "sysconf.c"
 
 	depends embox.mem.page_api
 }
 
-static module LibCStdlib {
+static module core {
 	source "bsearch.c"
 	source "qsort.c"
 	source "strtod.c"
 	source "strtol.c"
 	source "strtoul.c"
 	source "abort.c"
-	source "system.c"
 	source "strtoll.c"
 	source "strtoull.c"
 	source "atol.c"
 
-	depends LibCConfig
-	@NoRuntime depends LibCRand /* qsort required*/
+	depends config
+	@NoRuntime depends rand /* qsort required*/
+}
+
+static module system {
+	source "system.c"
+	depends embox.cmd.sh.shell
+}
+
+static module LibCStdlib {
+	depends core,
+		config,
+		rand,
+		system
 }

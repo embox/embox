@@ -1,6 +1,7 @@
 
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "chown",
 	help = "Change the owner of file",
 	man = '''

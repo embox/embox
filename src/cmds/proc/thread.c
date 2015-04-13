@@ -19,10 +19,6 @@
 #include <kernel/task.h>
 #include <kernel/sched.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(exec);
-
 static void print_usage(void) {
 	printf("Usage: thread [-h] [-s] [-k <thread_id>]\n");
 }
@@ -48,13 +44,13 @@ static void print_stat(void) {
 
 				printf(" %4d %4d %8d %c %c %c %c %9lds\n",
 					t->id, task_get_id(t->task),
-					thread_priority_get(t),
+					thread_get_priority(t),
 					(t == thread_self()) ? '*' : ' ',
-					sched_active(t) ? 'A' : ' ',
-					t->ready        ? 'R' : ' ',
-					t->waiting      ? 'W' : ' ',
+					sched_active(&t->schedee) ? 'A' : ' ',
+					t->schedee.ready        ? 'R' : ' ',
+					t->schedee.waiting      ? 'W' : ' ',
 					thread_get_running_time(t)/CLOCKS_PER_SEC);
-				if (t->ready || sched_active(t))
+				if (t->schedee.ready || sched_active(&t->schedee))
 					running++;
 				else
 					sleeping++;
@@ -102,7 +98,7 @@ static void kill_thread(thread_id_t thread_id) {
 	printf("Thread %d killed\n", thread_id);
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 
 	if (argc <= 1) {

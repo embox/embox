@@ -16,7 +16,7 @@
 /**
  * Locks hardware interrupt.
  *
- * When hardirq locked do not call softirq_dispatch, sched_dispatch.
+ * When hardirq locked do not call sched_dispatch.
  * This function will be called after hardirq_unlock().
  *
  * Each lock must be balanced with the corresponding unlock.

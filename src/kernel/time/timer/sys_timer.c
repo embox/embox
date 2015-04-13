@@ -12,7 +12,7 @@
 
 #include <kernel/time/timer.h>
 #include <kernel/time/time.h>
-#include <kernel/softirq_lock.h>
+#include <kernel/sched/sched_lock.h>
 #include <util/lang.h>
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
@@ -24,16 +24,22 @@ int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 	}
 
 	tmr->state = 0;
-	tmr->cnt = tmr->load = jiffies;
 	tmr->handle = handler;
 	tmr->param = param;
 	tmr->flags = flags;
 
-	softirq_lock();
+	if (timer_is_periodic(tmr)) {
+		tmr->load = jiffies;
+		tmr->cnt = tmr->load + 1;
+	} else {
+		tmr->cnt = tmr->load = jiffies + 1;
+	}
+
+	sched_lock();
 	{
 		timer_strat_start(tmr);
 	}
-	softirq_unlock();
+	sched_unlock();
 
 	return ENOERR;
 }
@@ -50,9 +56,11 @@ int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t msec,
 	if (NULL == handler || NULL == ptimer) {
 		return -EINVAL;
 	}
+
 	if (NULL == (*ptimer = (sys_timer_t*) pool_alloc(&timer_pool))) {
 		return -ENOMEM;
 	}
+
 	/* we know that init will be success (right ptimer and handler) */
 	timer_init_msec(*ptimer, flags, msec, handler, param);
 	timer_set_preallocated(*ptimer);
@@ -64,14 +72,17 @@ int timer_close(struct sys_timer *tmr) {
 	if (NULL == tmr) {
 		return -EINVAL;
 	}
+
 	if (timer_is_started(tmr)) {
-		softirq_lock();
+		sched_lock();
 		{
 			timer_strat_stop(tmr);
 		}
-		softirq_unlock();
+		sched_unlock();
 	}
+
 	if (timer_is_preallocated(tmr)) {
+		timer_clear_preallocated(tmr);
 		pool_free(&timer_pool, tmr);
 	}
 

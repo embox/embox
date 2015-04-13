@@ -6,15 +6,11 @@
  * @author Anton Bulychev
  */
 
-#include <embox/cmd.h>
-
 #include <errno.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
 #include <kernel/task.h>
-
-EMBOX_CMD(exec);
 
 static void print_usage(void) {
 	printf("Usage: ps [-a]\n");
@@ -32,7 +28,7 @@ static void print_all(void) {
 	}
 }
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int opt;
 
 	if (argc <= 1) {

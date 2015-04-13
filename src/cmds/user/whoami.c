@@ -10,13 +10,9 @@
 #include <stdio.h>
 #include <pwd.h>
 
-#include <embox/cmd.h>
-
-EMBOX_CMD(whoami_cmd);
-
 #define BUF_LEN 1024
 
-static int whoami_cmd(int argc, char **argv) {
+int main(int argc, char **argv) {
 	int res;
 	uid_t uid = geteuid();
 	struct passwd pwd, *result;

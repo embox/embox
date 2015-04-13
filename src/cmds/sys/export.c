@@ -6,14 +6,11 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/cmd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 
-EMBOX_CMD(exec);
-
-static int exec(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	int i, res;
 	char *equal;
 

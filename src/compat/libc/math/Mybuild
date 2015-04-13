@@ -15,16 +15,21 @@ static module LibCMath {
 	source "finite.c"
 	source "fmod.c"
 	source "modf.c"
+	source "sqrt.c"
 	source "pow.c"
 	source "log10.c"
-	source "div.c"
-	source "ldiv.c"
-	/*source "lldiv.c"*/
-	source "sqrt.c"
+
+	@IncludePath("$(ROOT_DIR)/download/fdlibm")
+	source "w_powl.c", "e_powl.c"
+
+
+
 
 	@IncludePath("$(THIRDPARTY_DIR)/lib/softfloat")
 	source "soft_fp.c"
 
-	depends third_party.lib.Fdlibm
+
+
+	depends third_party.lib.Fdlibm2005
 	depends third_party.lib.softfloat
 }

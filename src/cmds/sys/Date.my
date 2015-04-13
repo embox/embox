@@ -1,5 +1,6 @@
 package embox.cmd.sys
 
+@AutoCmd
 @Cmd(name = "date",
 	help = "Print or set the system date and times",
 	man = '''

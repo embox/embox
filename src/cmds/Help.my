@@ -1,5 +1,6 @@
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "help",
 	help = "Shows all available commands",
 	man = '''

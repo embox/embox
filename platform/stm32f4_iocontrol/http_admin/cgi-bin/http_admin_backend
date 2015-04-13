@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo -ne "HTTP/1.1 200 OK\r\n"
+echo -ne "Content-Type: application/json\r\n"
+echo -ne "Connection: close\r\n"
+echo -ne "\r\n"
+
+if [ $REQUEST_METHOD = "GET" ]; then
+	echo '[{"name":"lo","ip":"127.0.0.1","netmask":"255.0.0.0","mac":"4b:b7:49:84:4c:07"},{"name":"eth0","ip":"192.168.1.128","netmask":"255.255.255.0","mac":"aa:bb:cc:dd:ee:02"}]'
+elif [ $REQUEST_METHOD = "POST" ]; then
+	read -n $CONTENT_LENGTH POST_DATA
+	echo "Posted: $POST_DATA" >&2
+fi

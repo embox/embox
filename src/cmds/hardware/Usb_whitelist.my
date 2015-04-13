@@ -1,6 +1,7 @@
 
 package embox.cmd
 
+@AutoCmd
 @Cmd(name = "usb_whitelist",
 	help = "Utility to modify kernel usb whitelist",
 	man = '''

@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sys/ioctl.h>
+#include "file_struct.h"
 
 int fioctl(FILE *file, int request, ...) {
 	va_list args;

@@ -1,7 +1,7 @@
 package third_party.qt
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/build/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/build/include/QtCore")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include/QtCore")
 @BuildDepends(third_party.gcc.core)
 @BuildDepends(third_party.STLport.core)
 static module core {

@@ -9,20 +9,27 @@
  */
 
 #include <assert.h>
-#include <embox/unit.h>
 #include <hal/ipl.h>
-#include <linux/interrupt.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
-#include <util/list.h>
+#include <util/dlist.h>
 #include <net/l0/net_rx.h>
+#include <embox/unit.h>
+
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/lthread_priority.h>
+#include <err.h>
+
+#define NETIF_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
 EMBOX_UNIT_INIT(net_entry_init);
 
-static LIST_DEF(netif_rx_list);
+static DLIST_DEFINE(netif_rx_list);
+
+static struct lthread *netif_rx_handler_lt;
 
 static void netif_rx_queued(struct net_device *dev) {
 	ipl_t sp;
@@ -31,8 +38,8 @@ static void netif_rx_queued(struct net_device *dev) {
 
 	sp = ipl_save();
 	{
-		if (list_alone_link(&dev->rx_lnk)) {
-			list_add_last_link(&dev->rx_lnk, &netif_rx_list);
+		if (dlist_empty(&dev->rx_lnk)) {
+			dlist_add_prev(&dev->rx_lnk, &netif_rx_list);
 		}
 	}
 	ipl_restore(sp);
@@ -45,8 +52,8 @@ static void netif_rx_dequeued(struct net_device *dev) {
 
 	sp = ipl_save();
 	{
-		assert(!list_alone_link(&dev->rx_lnk));
-		list_unlink_link(&dev->rx_lnk);
+		assert(!dlist_empty(&dev->rx_lnk));
+		dlist_del_init(&dev->rx_lnk);
 	}
 	ipl_restore(sp);
 }
@@ -59,14 +66,15 @@ static void netif_poll(struct net_device *dev) {
 	}
 }
 
-
-static void netif_rx_action(struct softirq_action *action) {
+static void *netif_rx_action(void *data) {
 	struct net_device *dev;
 
-	list_foreach(dev, &netif_rx_list, rx_lnk) {
+	dlist_foreach_entry(dev, &netif_rx_list, rx_lnk) {
 		netif_poll(dev);
 		netif_rx_dequeued(dev);
 	}
+
+	return NULL;
 }
 
 static void netif_rx_schedule(struct sk_buff *skb) {
@@ -81,16 +89,18 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 
 	netif_rx_queued(dev);
 
-	raise_softirq(NET_RX_SOFTIRQ);
+	lthread_launch(netif_rx_handler_lt);
 }
 
 int netif_rx(void *data) {
 	assert(data != NULL);
-	netif_rx_schedule((struct sk_buff *)data);
+	netif_rx_schedule((struct sk_buff *) data);
 	return NET_RX_SUCCESS;
 }
 
 static int net_entry_init(void) {
-	open_softirq(NET_RX_SOFTIRQ, netif_rx_action, NULL);
+	netif_rx_handler_lt = lthread_create(&netif_rx_action, NULL);
+	assert(!err(netif_rx_handler_lt));
+	lthread_priority_set(netif_rx_handler_lt, NETIF_RX_HND_PRIORITY);
 	return 0;
 }

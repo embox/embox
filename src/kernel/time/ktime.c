@@ -30,9 +30,7 @@ struct timeval *ktime_get_timeval(struct timeval *tv) {
 }
 
 struct timespec *ktime_get_timespec(struct timespec *ts) {
-	time64_t ns = ktime_get_ns();
-
-	*ts = ns_to_timespec(ns);
+	itimer_read_timespec(&sys_timecounter, ts);
 	return ts;
 }
 

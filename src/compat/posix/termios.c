@@ -6,7 +6,7 @@
  */
 
 #include <termios.h>
-
+#include <stropts.h>
 #include <errno.h>
 #include <sys/ioctl.h>
 #include <drivers/tty.h>
@@ -41,4 +41,23 @@ pid_t tcgetpgrp(int fd) {
 
 int tcsetpgrp(int fd, pid_t pgrp) {
 	return ioctl(fd, TIOCSPGRP, &pgrp);
+}
+
+int tcflush(int fd, int queue_selector) {
+	int arg = 0;
+	switch (queue_selector) {
+		case TCIFLUSH:
+			arg = FLUSHR;
+			break;
+		case TCOFLUSH:
+			arg = FLUSHW;
+			break;
+		case TCIOFLUSH:
+			arg = FLUSHRW;
+			break;
+		default:
+			SET_ERRNO(EINVAL);
+			return -1;
+	}
+	return ioctl(fd, I_FLUSH, (void *) &arg);
 }

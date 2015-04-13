@@ -21,4 +21,4 @@ if [ -z $TOPDIR ]; then
 fi
 
 $BUILDBOT try --connect=$CONNECT --master=$MASTER --user=$USER --passwd=$PASSWD \
-	--vc=$VC --topdir=$TOPDIR --who=$TRYWHO --quiet --wait "$@"
+	--vc=$VC --topdir=$TOPDIR --who=$TRYWHO "$@"

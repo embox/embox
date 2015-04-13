@@ -8,12 +8,13 @@ module raw_sock {
 	depends embox.compat.libc.LibCString
 	depends embox.net.skbuff
 	depends embox.net.sock
-	depends embox.util.List
+	depends embox.util.DList
 }
 
 module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
+	option number max_simultaneous_tx_pack = 0
 
 	depends route
 	depends sock
@@ -31,7 +32,7 @@ module udp_sock {
 	depends embox.compat.libc.LibCString
 	depends embox.net.lib.udp
 	depends embox.util.indexator
-	depends embox.util.List
+	depends embox.util.DList
 }
 
 module af_inet {
@@ -52,8 +53,20 @@ module af_inet6 {
 	depends embox.framework.LibFrameworkNet
 }
 
-module af_packet {
+@DefaultImpl(no_af_packet)
+abstract module af_packet_api { }
+
+module af_packet extends af_packet_api {
 	source "af_packet.c"
+	option number amount_sockets=20
+
+	depends sock
+	depends packet
+	depends embox.framework.LibFrameworkNet
+}
+
+module no_af_packet extends af_packet_api {
+	source "no_af_packet.c"
 	option number amount_sockets=20
 
 	depends sock
@@ -76,4 +89,6 @@ module socket {
 	depends embox.compat.libc.LibCString
 	depends embox.net.sock
 	depends embox.net.dev //ksocket, netdev_get_by_name
+	depends embox.util.sys_log
+	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
 }

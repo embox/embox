@@ -7,13 +7,13 @@
  */
 
 #include <assert.h>
-#include <util/list.h>
+#include <util/dlist.h>
 #include <util/tree.h>
 
 struct tree_link *tree_link_init(struct tree_link *link) {
 	assert(link != NULL);
-	list_init(&link->children);
-	list_link_init(&link->list_link);
+	dlist_init(&link->children);
+	dlist_head_init(&link->list_link);
 	link->par = NULL;
 	return link;
 }
@@ -22,7 +22,7 @@ void tree_add_link(struct tree_link *parent, struct tree_link *link) {
 	assert(parent != NULL);
 	assert(link != NULL);
 	assert(link->par == NULL);
-	list_add_last_link(&link->list_link, &parent->children);
+	dlist_add_prev(&link->list_link, &parent->children);
 	link->par = parent;
 }
 
@@ -38,7 +38,7 @@ void tree_move_link(struct tree_link *parent, struct tree_link *link) {
 int tree_unlink_link(struct tree_link *link) {
 	assert(link != NULL);
 	if (link->par != NULL) {
-		list_unlink_link(&link->list_link);
+		dlist_del_init(&link->list_link);
 		link->par = NULL;
 		return 1;
 	}
@@ -64,11 +64,11 @@ struct tree_link *tree_postorder_next(struct tree_link *link) {
 		return NULL;
 	}
 	/* Search for the next element in brother list. */
-	if (&link->list_link != list_last_link(&link->par->children)) {
+	if (&link->list_link != (dlist_last_or_null(&link->par->children))) {
 		/* It's not a last element in list. */
 		/* TODO dirty hack. XXX O(n) time. */
 		return tree_postorder_begin(
-				list_element(link->list_link.next, struct tree_link, list_link));
+				dlist_entry(link->list_link.next, struct tree_link, list_link));
 	} else {
 		/* Next link is a parent */
 		return link->par;
@@ -79,8 +79,8 @@ struct tree_link *tree_postorder_begin(struct tree_link *tree) {
 	if (tree == NULL) {
 		return NULL;
 	}
-	while (!list_is_empty(&tree->children)) {
-		tree = list_element(list_first_link(&tree->children),
+	while (!dlist_empty(&tree->children)) {
+		tree = dlist_entry(dlist_first(&tree->children),
 					struct tree_link, list_link);
 	}
 	return tree;
@@ -96,7 +96,7 @@ struct tree_link *tree_lookup_child(struct tree_link *node,
 
 	assert(node && predicate);
 
-	list_foreach(link, &node->children, list_link) {
+	dlist_foreach_entry(link, &node->children, list_link) {
 		if (predicate(link, arg)) {
 			return link;
 		}
@@ -121,30 +121,30 @@ struct tree_link *tree_lookup(struct tree_link *node,
 }
 
 struct tree_link *tree_children_begin(struct tree_link *tree) {
-	struct list_link *lnk;
+	struct dlist_head *lnk;
 
-	if (NULL == (lnk = list_first_link(&tree->children))) {
+	if (NULL == (lnk = (dlist_first_or_null(&tree->children)))) {
 		return NULL;
 	}
 
-	return list_element(lnk, struct tree_link, list_link);
+	return dlist_entry(lnk, struct tree_link, list_link);
 }
 
 struct tree_link *tree_children_end(struct tree_link *tree) {
-	struct list_link *lnk;
+	struct dlist_head *lnk;
 
-	if (NULL == (lnk = list_last_link(&tree->children))) {
+	if (NULL == (lnk = (!dlist_empty(&tree->children) ? dlist_prev(&tree->children) : NULL))) {
 		return NULL;
 	}
 
-	return list_element(lnk->next, struct tree_link, list_link);
+	return dlist_entry(lnk->next, struct tree_link, list_link);
 }
 
 
 struct tree_link *tree_children_next(struct tree_link *tree) {
-	    return list_element(tree->list_link.next, struct tree_link, list_link);
+	    return dlist_entry(tree->list_link.next, struct tree_link, list_link);
 }
 
 struct tree_link *tree_children_prev(struct tree_link *tree) {
-	    return list_element(tree->list_link.next, struct tree_link, list_link);
+	    return dlist_entry(tree->list_link.next, struct tree_link, list_link);
 }

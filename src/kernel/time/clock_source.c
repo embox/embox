@@ -23,7 +23,8 @@
 #include <kernel/time/time.h>
 #include <module/embox/kernel/time/slowdown.h>
 
-#define SLOWDOWN_FACTOR OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, factor)
+/* XXX used by x86/test/packetdrill */
+#define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
 
 #include <embox/unit.h>
 
@@ -35,12 +36,12 @@ POOL_DEF(clock_source_pool, struct clock_source_head,
 
 DLIST_DEFINE(clock_source_list);
 
-static time64_t cs_full_read(struct clock_source *cs);
-static time64_t cs_event_read(struct clock_source *cs);
-static time64_t cs_counter_read(struct clock_source *cs);
+static struct timespec cs_full_read(struct clock_source *cs);
+static struct timespec cs_event_read(struct clock_source *cs);
+static struct timespec cs_counter_read(struct clock_source *cs);
 
 static inline cycle_t cs_jiffies(struct clock_source *cs) {
-	return (cycle_t) cs->jiffies * SLOWDOWN_FACTOR + (cycle_t) cs->jiffies_cnt;
+	return (((cycle_t) cs->jiffies) << SLOWDOWN_SHIFT) + (cycle_t) cs->jiffies_cnt;
 }
 
 static struct clock_source_head *clock_source_find(struct clock_source *cs) {
@@ -67,6 +68,13 @@ int clock_source_register(struct clock_source *cs) {
 	}
 	csh->clock_source = cs;
 
+	/* TODO move it to arch dependent code */
+	if (cs->counter_device) {
+		cs->counter_shift = CS_SHIFT_CONSTANT;
+		cs->counter_mult = clock_sourcehz2mult(cs->counter_device->cycle_hz,
+				cs->counter_shift);
+	}
+
 	dlist_add_prev(dlist_head_init(&csh->lnk), &clock_source_list);
 
 	return ENOERR;
@@ -85,8 +93,8 @@ int clock_source_unregister(struct clock_source *cs) {
 	return ENOERR;
 }
 
-time64_t clock_source_read(struct clock_source *cs) {
-	time64_t ret;
+struct timespec clock_source_read(struct clock_source *cs) {
+	struct timespec ret;
 	assert(cs);
 
 	/* See comment to clock_source_read in clock_source.h */
@@ -100,15 +108,27 @@ time64_t clock_source_read(struct clock_source *cs) {
 		panic("all clock sources must have at least one device (event or counter)\n");
 	}
 
-	ret /= SLOWDOWN_FACTOR;
+	/* Divide ret by (1 << SLOWDOWN_SHIFT) */
+	if (SLOWDOWN_SHIFT != 0) {
+		uint32_t t;
+		struct timespec tmp = {0, 0};
+
+		t = ret.tv_sec % (1 << SLOWDOWN_SHIFT);
+		tmp.tv_nsec = ((uint64_t)t * NSEC_PER_SEC) >> SLOWDOWN_SHIFT;
+		ret.tv_sec >>= SLOWDOWN_SHIFT;
+		ret.tv_nsec >>= SLOWDOWN_SHIFT;
+		ret = timespec_add(tmp, ret);
+	}
+
 	return ret;
 }
 
-static time64_t cs_full_read(struct clock_source *cs) {
+static struct timespec cs_full_read(struct clock_source *cs) {
 	static cycle_t prev_cycles, cycles, cycles_all;
 	int old_jiffies, cycles_per_jiff, safe;
 	struct time_event_device *ed;
 	struct time_counter_device *cd;
+	struct timespec ts;
 
 	assert(cs);
 
@@ -143,15 +163,18 @@ static time64_t cs_full_read(struct clock_source *cs) {
 
 	prev_cycles = cycles_all;
 
-	return cycles_to_ns(cd->cycle_hz, cycles_all);
+	ts = cycles32_to_timespec(cycles, cs->counter_mult, cs->counter_shift);
+	ts = timespec_add(ts, jiffies_to_timespec(ed->event_hz, old_jiffies));
+
+	return ts;
 }
 
-static time64_t cs_event_read(struct clock_source *cs) {
-	return cycles_to_ns(cs->event_device->event_hz, cs_jiffies(cs));
+static struct timespec cs_event_read(struct clock_source *cs) {
+	return jiffies_to_timespec(cs->event_device->event_hz, cs_jiffies(cs));
 }
 
-static time64_t cs_counter_read(struct clock_source *cs) {
-	return cycles_to_ns(cs->counter_device->cycle_hz, cs->counter_device->read());
+static struct timespec cs_counter_read(struct clock_source *cs) {
+	return cycles64_to_timespec(cs->counter_device->cycle_hz, cs->counter_device->read());
 }
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {

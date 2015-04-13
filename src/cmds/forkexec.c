@@ -6,8 +6,6 @@
  * @author Anton Bulychev
  */
 
-#include <embox/cmd.h>
-
 #include <unistd.h>
 
 #include <stdlib.h>
@@ -17,11 +15,9 @@
 
 #include <kernel/task.h>
 
-EMBOX_CMD(exec);
-
 static void *new_task_entry(void *file);
 
-static int exec(int argc, char **argv) {
+int main(int argc, char **argv) {
 	char *filename;
 	int pid;
 
@@ -29,11 +25,13 @@ static int exec(int argc, char **argv) {
 	strcpy(filename, argv[argc - 1]);
 	pid = new_task(filename, new_task_entry, filename);
 
-	task_waitpid(pid);
+	if (pid > 0) {
+		task_waitpid(pid);
+	}
 
 	free(filename);
 
-	return 0;
+	return pid > 0 ? 0 : pid;
 }
 
 extern int execve_syscall(const char *filename, char *const argv[], char *const envp[]);

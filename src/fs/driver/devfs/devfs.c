@@ -23,8 +23,6 @@ static int devfs_mount(void *dev, void *dir) {
 
 	mode = S_IFDIR | S_IRALL | S_IWALL | S_IXALL;
 
-	//assert(!vfs_lookup(NULL, dev)); // XXX remove it -- Eldar
-
 	vfs_get_root_path(&root);
 
 	if (0 != vfs_create(&root, dev, mode, &node)) {

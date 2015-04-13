@@ -79,3 +79,14 @@ struct sk_buff * skb_queue_pop(struct sk_buff_head *queue) {
 
 	return skb;
 }
+
+int skb_queue_count(struct sk_buff_head *queue) {
+	int n = 0;
+	struct sk_buff *skb = queue->next;
+
+	while (skb != (void *) queue) {
+		++n;
+		skb = skb->lnk.next;
+	}
+	return n;
+}
