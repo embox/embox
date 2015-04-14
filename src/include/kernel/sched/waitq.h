@@ -45,19 +45,12 @@ static inline void waitq_link_init(struct waitq_link *wql) {
 	dlist_head_init(&wql->link);
 }
 
-extern void __waitq_add(struct waitq *, struct waitq_link *);
-extern void waitq_add(struct waitq *, struct waitq_link *);
-
-extern void __waitq_del(struct waitq *, struct waitq_link *);
-extern void waitq_del(struct waitq *, struct waitq_link *);
-
 extern void __waitq_wait_prepare(struct waitq *, struct waitq_link *);
 extern void waitq_wait_prepare(struct waitq *, struct waitq_link *);
 
 extern void __waitq_wait_cleanup(struct waitq *, struct waitq_link *);
 extern void waitq_wait_cleanup(struct waitq *, struct waitq_link *);
 
-extern void __waitq_wakeup(struct waitq *, int nr);
 extern void waitq_wakeup(struct waitq *, int nr);
 
 static inline void waitq_wakeup_all(struct waitq *wq) {

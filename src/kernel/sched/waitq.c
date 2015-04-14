@@ -7,55 +7,38 @@
  */
 
 #include <assert.h>
-#include <errno.h>
 
-#include <kernel/sched/waitq.h>
-
-#include <kernel/irq.h>
-#include <kernel/spinlock.h>
-#include <kernel/sched.h>
-#include <kernel/thread.h>
-
-#include <util/member.h>
 #include <util/dlist.h>
 
-#include <kernel/critical.h>
-#include <kernel/time/timer.h>
+#include <kernel/spinlock.h>
+#include <kernel/sched.h>
+#include <kernel/sched/waitq.h>
 
-#include <mem/sysmalloc.h>
 #include "waitq_protect_link.h"
 
-void __waitq_add(struct waitq *wq, struct waitq_link *wql) {
+static void waitq_add(struct waitq *wq, struct waitq_link *wql) {
+	ipl_t ipl;
+
 	assert(wq && wql);
+
+	ipl = spin_lock_ipl(&wq->lock);
 
 	if (dlist_empty(&wql->link))
 		dlist_add_prev(&wql->link, &wq->list);
-}
 
-void waitq_add(struct waitq *wq, struct waitq_link *wql) {
-	ipl_t ipl;
-
-	assert(wq && wql);
-
-	ipl = spin_lock_ipl(&wq->lock);
-	__waitq_add(wq, wql);
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
-void __waitq_del(struct waitq *wq, struct waitq_link *wql) {
-	assert(wq && wql);
-
-	if (!dlist_empty(&wql->link))
-		dlist_del_init(&wql->link);
-}
-
-void waitq_del(struct waitq *wq, struct waitq_link *wql) {
+static void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 	ipl_t ipl;
 
 	assert(wq && wql);
 
 	ipl = spin_lock_ipl(&wq->lock);
-	__waitq_del(wq, wql);
+
+	if (!dlist_empty(&wql->link))
+		dlist_del_init(&wql->link);
+
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
@@ -88,7 +71,7 @@ void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *_wql) {
 	waitq_link_delete_protected(wql);
 }
 
-void __waitq_wakeup(struct waitq *wq, int nr) {
+static void __waitq_wakeup(struct waitq *wq, int nr) {
 	struct waitq_link *wql;
 
 	assert(wq);
