@@ -35,7 +35,7 @@
 	<div class="block-pair" ng-repeat="block_pair in leds_state">
 		<div class="block" ng-class="{'block-error' : led_pair.error}" ng-repeat="led_pair in block_pair">
 			<led-template led="led_pair.red" led-on="led-red" led-switch="led_switch(led)" led-name="Red"></led-template>
-			<div class="block-caption" ng-dblclick="name_change_request(led_pair)">{{led_pair.name || led_pair.index + 1}}</div>
+			<div class="block-caption" ng-dblclick="name_change_request(led_pair)">{{led_pair.short_name || led_pair.index + 1}}</div>
 			<led-template led="led_pair.blue" led-on="led-blue" led-switch="led_switch(led)" led-name="Blue"></led-template>
 		</div>
 	    <hr>
