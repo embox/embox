@@ -41,9 +41,10 @@
 	#include <util/math.h>
 	#include <framework/mod/options.h>
 
-	#define USE_IP_VER OPTION_GET(NUMBER,use_ip_ver)
-	#define USE_CGI    OPTION_GET(BOOLEAN,use_cgi)
-	#define USE_REAL_CMD OPTION_GET(BOOLEAN,use_real_cmd)
+	#define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
+	#define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
+	#define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
+	#define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
 #endif
 
 #define HTTPD_LOG_QUIET 0
@@ -436,6 +437,10 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 #endif
 
 		exit(1);
+#if USE_PARALLEL_CGI
+	} else {
+		while (pid != waitpid(pid, NULL, 0));
+#endif
 	}
 
 	return 0;
