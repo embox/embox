@@ -1,5 +1,9 @@
 language: c
-cache: apt
+
+cache:
+  apt: true
+  directories:
+    - mk/.cache
 
 env:
   - TEMPLATE=arm/qemu
