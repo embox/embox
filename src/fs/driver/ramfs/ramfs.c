@@ -79,7 +79,7 @@ static int ramfs_init(void * par) {
 		return err(ramdisk);
 	}
 
-	dev_node = ramdisk->bdev->dev_node;
+	dev_node = ramdisk->bdev->dev_vfs_info;
 	assert(dev_node != NULL);
 
 	/* format filesystem */

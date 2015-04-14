@@ -29,7 +29,7 @@ module fat_dvfs extends fat {
 	source "fat_dvfs.c"
 	option number fat_max_sector_size=512
 
-	depends embox.driver.block
+	depends embox.driver.block_common
 	depends embox.fs.dvfs
 }
 

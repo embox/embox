@@ -1,8 +1,17 @@
 package embox.driver
 
+module block_common {
+	source "block_dev_common.c"
+	depends embox.mem.phymem
+	depends embox.fs.buffer_cache
+	depends embox.fs.buffer_crypt_api
+}
+
 module block {
 	source "block_dev.c", "block_dev_namer.c"
 	option number dev_quantity = 16
+
+	depends block_common
 
 	depends embox.util.LibUtil
 	depends embox.util.indexator

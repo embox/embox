@@ -28,7 +28,7 @@
 typedef struct block_dev {
 	dev_t id;
 	char name[NAME_MAX];
-	struct node *dev_node;
+	void *dev_vfs_info;
 
 	struct block_dev_driver *driver;
 	void *privdata;
@@ -81,7 +81,7 @@ extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(char *name, struct indexator *indexator);
-
+extern int block_dev_cache_free(void *dev);
 extern block_dev_module_t *block_dev_lookup(const char *name);
 
 #include <util/array.h>

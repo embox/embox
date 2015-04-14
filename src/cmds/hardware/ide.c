@@ -36,7 +36,7 @@ static void print_drive (struct ide_tab *ide) {
 			drive = (hd_t *) ide->drive[i];
 			dev_bsize = block_dev_ioctl(drive->bdev, IOCTL_GETBLKSIZE, NULL, 0);
 			dev_size = block_dev_ioctl(drive->bdev, IOCTL_GETDEVSIZE, NULL, 0);
-			printf(" %s;", block_dev(drive->bdev)->dev_node->name);
+			printf(" %s;", ((struct node *)block_dev(drive->bdev)->dev_vfs_info)->name);
 			printf(" %s", drive->param.serial);
 			printf(" %s", drive->param.model);
 			printf(" %5.3fM", ((float) dev_size) * dev_bsize / (1024 * 1024));
