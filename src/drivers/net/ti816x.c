@@ -15,7 +15,7 @@
 
 #include <kernel/irq.h>
 #include <hal/reg.h>
-#include <drivers/ethernet/ti816x.h>
+#include <drivers/net/ti816x.h>
 #include <net/l0/net_entry.h>
 
 #include <net/l2/ethernet.h>

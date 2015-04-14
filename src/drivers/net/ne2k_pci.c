@@ -29,7 +29,7 @@
 #include <drivers/pci/pci_driver.h>
 #include <kernel/irq.h>
 #include <net/l2/ethernet.h>
-#include <drivers/ethernet/ne2k_pci.h>
+#include <drivers/net/ne2k_pci.h>
 
 #include <net/netdevice.h>
 #include <net/inetdevice.h>

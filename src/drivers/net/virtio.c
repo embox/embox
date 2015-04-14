@@ -10,7 +10,7 @@
 #include <drivers/virtio/virtio.h>
 #include <drivers/virtio/virtio_ring.h>
 #include <drivers/virtio/virtio_queue.h>
-#include <drivers/ethernet/virtio_net.h>
+#include <drivers/net/virtio_net.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_driver.h>
