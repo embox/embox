@@ -51,7 +51,10 @@ extern void waitq_add(struct waitq *, struct waitq_link *);
 extern void __waitq_del(struct waitq *, struct waitq_link *);
 extern void waitq_del(struct waitq *, struct waitq_link *);
 
+extern void __waitq_wait_prepare(struct waitq *, struct waitq_link *);
 extern void waitq_wait_prepare(struct waitq *, struct waitq_link *);
+
+extern void __waitq_wait_cleanup(struct waitq *, struct waitq_link *);
 extern void waitq_wait_cleanup(struct waitq *, struct waitq_link *);
 
 extern void __waitq_wakeup(struct waitq *, int nr);

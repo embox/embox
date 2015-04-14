@@ -59,13 +59,21 @@ void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 	spin_unlock_ipl(&wq->lock, ipl);
 }
 
+void __waitq_wait_prepare(struct waitq *wq, struct waitq_link *wql) {
+	waitq_add(wq, wql);
+}
+
 void waitq_wait_prepare(struct waitq *wq, struct waitq_link *_wql) {
 	struct waitq_link *wql;
 
 	wql = waitq_link_create_protected(_wql);
 
-	waitq_add(wq, wql);
+	__waitq_wait_prepare(wq, wql);
 	sched_wait_prepare();
+}
+
+void __waitq_wait_cleanup(struct waitq *wq, struct waitq_link *wql) {
+	waitq_del(wq, wql);
 }
 
 void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *_wql) {
@@ -75,7 +83,7 @@ void waitq_wait_cleanup(struct waitq *wq, struct waitq_link *_wql) {
 
 	wql = waitq_link_find_protected(_wql);
 
-	waitq_del(wq, wql);
+	__waitq_wait_cleanup(wq, wql);
 
 	waitq_link_delete_protected(wql);
 }

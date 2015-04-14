@@ -32,12 +32,6 @@ static struct schedee *lthread_process(struct schedee *prev,
 
 	lt->label_offset = lt->run(lt);
 
-	/* TODO: SMP barrier?
-	 * After finishing lt has to restore waiting state in case it is not
-	 * sceduled. */
-	if (!next->ready)
-		next->waiting = true;
-
 	return NULL;
 }
 

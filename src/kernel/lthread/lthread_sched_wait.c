@@ -32,8 +32,6 @@ void sched_wait_prepare_lthread(struct lthread *self, clock_t timeout) {
 	struct sched_wait_info *info = &self->info;
 	clock_t cur_time = clock();
 
-	sched_wait_prepare();
-
 	if (!(info->status & SCHED_WAIT_PREPARED)) {
 		info->status |= SCHED_WAIT_PREPARED;
 		info->remain = timeout;
@@ -57,7 +55,6 @@ void sched_wait_cleanup_lthread(struct lthread *self) {
 	}
 
 	sched_wait_info_clear(info);
-	sched_wait_cleanup();
 }
 
 static int sched_wait_lthread(struct lthread *self) {
