@@ -80,12 +80,20 @@ int dvfs_default_pathname(struct inode *inode, char *buf) {
  * @retval NULL Superblock could not be allocated
  */
 struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev) {
+	struct super_block *sb;
 	assert(drv);
 
 	if (drv->alloc_sb)
 		return drv->alloc_sb(dev);
-	else
-		return NULL;
+	else {
+		sb = pool_alloc(&superblock_pool);
+		*sb = (struct super_block) {
+			.fs_drv = drv,
+			.bdev   = dev,
+		};
+
+		return sb;
+	}
 }
 
 /* @brief Try to allocate inode using given superblock
