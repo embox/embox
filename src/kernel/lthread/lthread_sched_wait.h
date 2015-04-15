@@ -89,27 +89,30 @@ extern int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain);
  *   Waiting has finished because of exceeded timeout.
  */
 #define SCHED_WAIT_TIMEOUT_LTHREAD(self, cond_expr, timeout) \
-	((cond_expr) ? 0 : ({                                            \
-		int __wait_ret = 0;                                          \
-		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
-			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
-		                                                             \
-		do {                                                         \
-			sched_wait_prepare_lthread(self, __wait_timeout);        \
-			                                                         \
-			if (cond_expr)                                           \
-				break;                                               \
-			                                                         \
-			__wait_ret = sched_wait_timeout_lthread(self,            \
-											&__wait_timeout);        \
-		} while (!__wait_ret);                                       \
-		                                                             \
-		if (__wait_ret != -EAGAIN) {                                 \
-			sched_wait_cleanup_lthread(self);                        \
-		}                                                            \
-		                                                             \
-		__wait_ret;                                                  \
-	}))
+	({ \
+		int __wait_ret = 0;                                              \
+                                                                         \
+		if (!cond_expr) {                                                \
+			clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
+				SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
+		                                                                 \
+			do {                                                         \
+				sched_wait_prepare_lthread(self, __wait_timeout);        \
+			                                                             \
+				if (cond_expr)                                           \
+					break;                                               \
+			                                                             \
+				__wait_ret = sched_wait_timeout_lthread(self,            \
+											    &__wait_timeout);        \
+			} while (!__wait_ret);                                       \
+		}                                                                \
+                                                                         \
+		if (__wait_ret != -EAGAIN) {                                     \
+			sched_wait_cleanup_lthread(self);                            \
+		}                                                                \
+	                                                                     \
+		__wait_ret;                                                      \
+	})
 
 #define SCHED_WAIT_LTHREAD(self, cond_expr) \
 	SCHED_WAIT_TIMEOUT_LTHREAD(self, cond_expr, SCHED_TIMEOUT_INFINITE)
