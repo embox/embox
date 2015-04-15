@@ -18,8 +18,8 @@ module sys_timer {
 module sleep extends sleep_api {
 	source "ksleep.c"
 	depends sys_timer
-	//depends embox.kernel.thread.core
-	//depends embox.kernel.thread.sched_wait
+	depends embox.kernel.thread.core
+	depends embox.kernel.thread.sched_wait
 	depends embox.kernel.sched.sched
 }
 
