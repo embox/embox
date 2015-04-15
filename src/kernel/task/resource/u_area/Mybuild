@@ -1,7 +1,7 @@
 package embox.kernel.task.resource
 
 module u_area {
-	@IncludeExport(path="kernel/task/resource/")
+	@IncludeExport(path="kernel/task/resource")
 	source "u_area.h"
 
 	source "u_area.c"

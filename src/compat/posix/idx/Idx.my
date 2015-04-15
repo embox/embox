@@ -26,8 +26,8 @@ static module poll_table {
 }
 
 static module select {
-	@IncludeExport(path="fs")
-	source "poll_table.h"
+//	@IncludeExport(path="fs")
+//	source "poll_table.h"
 
 	source "select.c"
 
@@ -64,8 +64,8 @@ static module ppty {
 }
 
 static module poll {
-	@IncludeExport(path="fs")
-	source "poll_table.h"
+//	@IncludeExport(path="fs")
+//	source "poll_table.h"
 
 	source "poll.c"
 
