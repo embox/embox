@@ -1,18 +1,27 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Anton Kozlov
+ * @date    15.04.2015
+ */
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-
-#include <util/array.h>
+#include <errno.h>
 
 #include "httpd.h"
 
+#ifdef __EMBUILD_MOD__
 #include <framework/mod/options.h>
 #define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
 #define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
+#endif
 
 static char httpd_g_envbuf[256];
 static const struct cgi_env_descr {

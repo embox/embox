@@ -1,15 +1,16 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Anton Kozlov
+ * @date    15.04.2015
+ */
 
 #include <stddef.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
 
-#include <util/array.h>
-
-#if 0
-#include <errno.h>
-#include <unistd.h>
-#endif
 #include "httpd.h"
 
 static const struct http_header_desc {

@@ -1,8 +1,8 @@
 /**
- * @file 
- * @brief 
+ * @file
+ * @brief
  *
- * @author  Anton Kozlov 
+ * @author  Anton Kozlov
  * @date    15.04.2015
  */
 
@@ -11,6 +11,11 @@
 
 #include <sys/socket.h>
 #include <stdio.h>
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(array) \
+	(sizeof(array) / sizeof(*(array)))
+#endif
 
 #define HTTPD_MAX_PATH 128
 #define CGI_PREFIX  "/cgi-bin/"
