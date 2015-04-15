@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Anton Kozlov
+ * @date    15.04.2015
+ */
 
 #include <errno.h>
 #include <string.h>

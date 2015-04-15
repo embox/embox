@@ -1,7 +1,13 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Anton Kozlov
+ * @date    15.04.2015
+ */
+
 #include <stddef.h>
 #include <string.h>
-
-#include <util/array.h>
 
 #include "httpd.h"
 

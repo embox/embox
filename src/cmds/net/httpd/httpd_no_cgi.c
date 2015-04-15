@@ -1,3 +1,15 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Anton Kozlov
+ * @date    15.04.2015
+ */
+
+#include <errno.h>
+#include <stdio.h>
+
+#include "httpd.h"
 
 int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
 	FILE *skf;

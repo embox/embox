@@ -9,25 +9,14 @@
  * 	- Linux adaptation
  */
 
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <errno.h>
-#include <arpa/inet.h>
-
-#include <netinet/in.h>
-
-#include <stdlib.h>
-#include <sys/wait.h>
-#include <sys/stat.h>
-
-#include <math.h>
-#include <stddef.h>
-#include <stdbool.h>
 #include <assert.h>
+#include <string.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/wait.h>
 
-#include <ifaddrs.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include "httpd.h"
 
@@ -35,14 +24,9 @@
 	(sizeof(array) / sizeof(*(array)))
 
 #ifdef __EMBUILD_MOD__
-	#include <net/l3/ipv4/ip.h>
-	#include <net/inetdevice.h>
-	#include <embox/cmd.h>
-	#include <util/math.h>
-	#include <framework/mod/options.h>
-
-	#define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
-	#define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
+#include <framework/mod/options.h>
+#define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
+#define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
 #endif
 
 #define BUFF_SZ     1024
