@@ -120,10 +120,15 @@ int main(int argc, char **argv) {
 	lthread_launch(&lt_road);
 	lthread_launch(&lt_car);
 
-	while (!is_game_over);
+	while (!is_game_over)
+		;
 
-	lthread_reset(&lt_car);
-	lthread_reset(&lt_road);
+	/* FIXME: This function returns -EAGAIN if lthread is not reset because
+	 * it is not safe. Have to wait until lthread is executed completely and
+	 * #lthread_reset() returns 0. #lthread_reset() needs re-implementation,
+	 * see docs for details. */
+	while (lthread_reset(&lt_car) || lthread_reset(&lt_road))
+		;
 
 	score = (step - RACE_ROAD_LEN) / RACE_OBSTACLE_STEP;
 	race_print_score(score);

@@ -44,32 +44,24 @@ void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
 }
 
 /** Locks: IPL, thread. */
-static int __lthread_disable(struct lthread *lt) {
+int __lthread_is_disabled(struct lthread *lt) {
 	assert(lt);
-
- 	/* If lt is scheduled, have to wait till finished. */
- 	if (lt->schedee.ready)
- 		return false;
-
- 	/* If lt is waiting, have to prevent waking up. */
-	if (lt->info.status & SCHED_WAIT_STARTED)
-		timer_close(lt->info.tmr);
-
-	return true;
+	return lt->schedee.waiting && lt->info.status == 0;
 }
 
-void lthread_reset(struct lthread *lt) {
+int lthread_reset(struct lthread *lt) {
 	assert(lt);
 
- 	while (!SPIN_IPL_PROTECTED_DO(&lt->schedee.lock, __lthread_disable(lt))) {
-		schedule();
-	}
+	if (!SPIN_IPL_PROTECTED_DO(&lt->schedee.lock, __lthread_is_disabled(lt)))
+		return -EAGAIN;
 
 	/* Leads to initial state.
- 	 * TODO: reset timing? */
+	 * TODO: reset timing? */
 	sched_wait_info_init(&lt->info);
 	lt->schedee.waiting = true;
 	lt->label_offset = 0;
+
+	return 0;
 }
 
 void lthread_launch(struct lthread *lt) {

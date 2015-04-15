@@ -81,16 +81,24 @@ struct lthread {
 extern void lthread_init(struct lthread *lt, int (*run)(struct lthread *));
 
 /**
- * Resets lthread state. In case the @p lt is in runq, firstly waits for its
- * finishing. If @p lt is waiting for an event, clears the waiting context
- * information and prevents waking up.
+ * FIXME: The existing realization isn't good enough since it makes user
+ * handle -EAGAIN situation in his own way. Ideologically, this function
+ * should make something like #thread_join() (rename it?).
+ *
+ * Tries to reset the lthread into initial state.
  * @note
  *   It is the user's responsibility to prevent lthread waking up in its run
  *   function.
  * @param lt
  *   The light thread to reset.
+ * @return
+ *   The operation result.
+ * @retval 0
+ *   P lt is reset correctly.
+ * @retval -EAGAIN
+ *   @p lt is in runq or is waiting for an event, try again later.
  */
-extern void lthread_reset(struct lthread *lt);
+extern int lthread_reset(struct lthread *lt);
 
 /**
  * Wakes @p lt up or launches it for the first time.
