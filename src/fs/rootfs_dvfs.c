@@ -45,7 +45,7 @@ static int do_mount(const char *dev, const char *fs_type) {
 	assert(fs_type);
 
 	fsdrv = dumb_fs_driver_find(fs_type);
-	if (fsdrv == NULL || fsdrv->alloc_sb == NULL)
+	if (fsdrv == NULL)
 		return -ENOENT;
 
 	if (dev) {
@@ -57,7 +57,7 @@ static int do_mount(const char *dev, const char *fs_type) {
 		}
 	}
 
-	set_rootfs_sb(fsdrv->alloc_sb(bdev));
+	set_rootfs_sb(dvfs_alloc_sb(fsdrv, bdev));
 	dvfs_update_root();
 
 	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0)) {

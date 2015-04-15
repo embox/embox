@@ -89,10 +89,6 @@ static size_t fat_write(struct file *desc, void *buf, size_t size) {
 	                      buf, &res, size, &desc->f_inode->length);
 }
 
-static struct super_block *fat_alloc_sb(struct block_dev *bdev) {
-	return NULL;
-}
-
 /* Declaration of operations */
 struct inode_operations fat_iops = {
 	.create   = fat_create,
@@ -114,7 +110,6 @@ struct file_operations fat_fops = {
 
 static struct dumb_fs_driver dfs_fat_driver = {
 	.name = "vfat",
-	.alloc_sb = &fat_alloc_sb,
 };
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);

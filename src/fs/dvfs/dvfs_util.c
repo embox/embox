@@ -83,17 +83,16 @@ struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *
 	struct super_block *sb;
 	assert(drv);
 
-	if (drv->alloc_sb)
-		return drv->alloc_sb(dev);
-	else {
-		sb = pool_alloc(&superblock_pool);
-		*sb = (struct super_block) {
-			.fs_drv = drv,
-			.bdev   = dev,
-		};
+	sb = pool_alloc(&superblock_pool);
+	*sb = (struct super_block) {
+		.fs_drv = drv,
+		.bdev   = dev,
+	};
 
-		return sb;
-	}
+	if (drv->fill_sb)
+		drv->fill_sb(sb, dev);
+
+	return sb;
 }
 
 /* @brief Try to allocate inode using given superblock

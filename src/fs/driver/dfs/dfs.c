@@ -438,21 +438,17 @@ struct file_operations dfs_fops = {
 	.ioctl = NULL,
 };
 
-static struct super_block *dfs_alloc_sb(struct block_dev *dev) {
-	return dfs_sb();
+static struct dfs_sb_info dfs_info;
+static struct super_block *dfs_super;
+static struct dumb_fs_driver dfs_dumb_driver;
+
+struct super_block *dfs_sb(void) {
+	return dfs_super;
 }
 
-static struct dumb_fs_driver dfs_dumb_driver = {
-	.name = "DumbFS",
-	.alloc_sb = &dfs_alloc_sb,
-};
-
-ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
-ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_dumb_driver);
-
-static struct dfs_sb_info dfs_info;
-struct super_block *dfs_sb(void) {
-	static struct super_block sb = {
+static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
+	dfs_super = sb;
+	*sb = (struct super_block) {
 		.fs_drv     = &dfs_dumb_driver,
 		.root       = NULL,
 		.inode_list = NULL,
@@ -462,11 +458,19 @@ struct super_block *dfs_sb(void) {
 		.sb_data    = &dfs_info,
 	};
 
-	if (!sb.bdev)
-		sb.bdev = dfs_flashdev->bdev;
-
-	return &sb;
+	if (!sb->bdev)
+		sb->bdev = dfs_flashdev->bdev;
+	return 0;
 }
+
+static struct dumb_fs_driver dfs_dumb_driver = {
+	.name = "DumbFS",
+	.fill_sb = &dfs_fill_sb,
+};
+
+ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
+ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_dumb_driver);
+
 
 extern struct flash_dev stm32_flash;
 int dfs_init(void) {

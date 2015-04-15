@@ -111,7 +111,7 @@ struct file_operations {
 
 struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
-	struct super_block *(*alloc_sb)(struct block_dev *dev);
+	int (*fill_sb)(struct super_block *sb, struct block_dev *dev);
 };
 
 struct dvfsmnt {
