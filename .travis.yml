@@ -39,6 +39,7 @@ addons:
     project:
       name: "embox/embox"
       description: "Build submitted via Travis CI"
+    notification_email: eldar.abusalimov@gmail.com
     build_command_prepend: make confload-"$TEMPLATE" buildgen
     build_command: make
     branch_pattern: coverity_scan
