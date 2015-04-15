@@ -21,7 +21,12 @@ module httpd {
 	option boolean use_cgi=false
 	option boolean use_real_cmd=false
 	option boolean use_parallel_cgi=true
+
 	source "httpd.c"
+	source "httpd_file.c"
+	source "httpd_cgi.c"
+	source "httpd_parselib.c"
+	source "httpd_util.c"
 
 	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
