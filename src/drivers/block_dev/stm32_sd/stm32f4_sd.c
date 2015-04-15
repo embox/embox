@@ -34,7 +34,7 @@ EMBOX_BLOCK_DEV(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, stm32f4_sd_init);
 static int stm32f4_sd_init(void *arg) {
 	block_dev_t *bdev;
 	if (block_dev_lookup(STM32F4_SD_DEVNAME) && (SD_Init() == SD_OK)) {
-		bdev = block_dev_create("/dev/" STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
+		bdev = block_dev_create_common(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
 		bdev->size = stm32f4_sd_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
 		return 0;
 	} else {

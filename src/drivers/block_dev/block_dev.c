@@ -13,11 +13,7 @@
 #include <limits.h>
 #include <assert.h>
 
-#include <mem/misc/pool.h>
 #include <mem/phymem.h>
-#include <util/array.h>
-#include <util/indexator.h>
-#include <util/math.h>
 
 #include <embox/unit.h>
 
@@ -32,12 +28,6 @@
 #define MAX_DEV_QUANTITY 16 /* XXX */
 
 EMBOX_UNIT_INIT(blockdev_init);
-
-POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
-INDEX_DEF(block_dev_idx,0,MAX_DEV_QUANTITY);
-
-static struct block_dev *devtab[MAX_DEV_QUANTITY];
-
 
 static int bdev_open(struct node *node, struct file_desc *file_desc, int flags) {
 	return 0;
@@ -95,36 +85,19 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	struct nas *nas;
 	struct node_fi *node_fi;
 
-	bdev = (block_dev_t *) pool_alloc(&blockdev_pool);
+	bdev = block_dev_create_common(path, driver, privdata);
 	if (NULL == bdev) {
 		return NULL;
 	}
 
-	memset(bdev, 0, sizeof(block_dev_t));
-
-	bdev_id = index_alloc(&block_dev_idx, INDEX_MIN);
-	if (bdev_id == INDEX_NONE) {
-		pool_free(&blockdev_pool, bdev);
-		return NULL;
-	}
-	bdev->id = (dev_t)bdev_id;
-
-	devtab[bdev->id] = bdev;
-
-	bdev->driver = driver;
-	bdev->privdata = privdata;
-
 	vfs_get_root_path(&root);
 
 	if (0 != vfs_create(&root, path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
-		index_free(&block_dev_idx, bdev->id);
-		pool_free(&blockdev_pool, bdev);
+		block_dev_free(bdev);
 		return NULL;
 	}
 
-	strncpy (bdev->name, node.node->name, NAME_MAX);
 	bdev->dev_vfs_info = node.node;
-
 	nas = node.node->nas;
 	nas->fs = blockdev_fs;
 	node_fi = nas->fi;
@@ -135,19 +108,12 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	return bdev;
 }
 
-int block_dev_destroy (void *dev) {
-	block_dev_t *bdev;
+int block_dev_destroy(void *dev) {
+	struct block_dev *bdev;
 
 	bdev = block_dev(dev);
-
 	vfs_del_leaf(bdev->dev_vfs_info);
-
-	block_dev_cache_free(bdev);
-
-	devtab[bdev->id] = NULL;
-	index_free(&block_dev_idx, bdev->id);
-
-	pool_free(&blockdev_pool, bdev);
+	block_dev_free(bdev);
 
 	return 0;
 }

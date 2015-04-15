@@ -15,12 +15,74 @@
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 #include <util/array.h>
+#include <util/indexator.h>
 #include <util/math.h>
 
 #define MAX_DEV_QUANTITY 16 /* XXX */
 
 ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
 POOL_DEF(cache_pool, struct block_dev_cache, MAX_DEV_QUANTITY);
+POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
+INDEX_DEF(block_dev_idx,0,MAX_DEV_QUANTITY);
+
+static struct block_dev *devtab[MAX_DEV_QUANTITY];
+
+static int block_dev_cache_free(void *dev) {
+	block_dev_t *bdev;
+	block_dev_cache_t *cache;
+
+	if (NULL == dev) {
+		return -1;
+	}
+	bdev = block_dev(dev);
+
+	cache = bdev->cache;
+	if (NULL == cache) {
+		return 0;
+	}
+
+	phymem_free(cache->pool, cache->depth * cache->blkfactor);
+	pool_free(&cache_pool, cache);
+
+	return  0;
+}
+
+struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata) {
+	struct block_dev *bdev;
+	size_t bdev_id;
+
+	bdev = (block_dev_t *) pool_alloc(&blockdev_pool);
+	if (NULL == bdev) {
+		return NULL;
+	}
+
+	memset(bdev, 0, sizeof(block_dev_t));
+
+	bdev_id = index_alloc(&block_dev_idx, INDEX_MIN);
+	if (bdev_id == INDEX_NONE) {
+		block_dev_free(bdev);
+		return NULL;
+	}
+	devtab[bdev->id] = bdev;
+
+	*bdev = (struct block_dev) {
+		.id = (dev_t)bdev_id,
+		.driver = driver,
+		.privdata = privdata,
+	};
+
+	strncpy (bdev->name, path, NAME_MAX);
+
+	return bdev;
+}
+
+void block_dev_free(struct block_dev *dev) {
+	assert(dev);
+
+	devtab[dev->id] = NULL;
+	index_free(&block_dev_idx, dev->id);
+	pool_free(&blockdev_pool, dev);
+}
 
 int block_devs_init(void) {
 	int ret;
@@ -199,7 +261,6 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 	return bdev->driver->ioctl(bdev, cmd, args, size);
 }
 
-
 block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	int pagecnt;
 	block_dev_cache_t *cache;
@@ -270,22 +331,3 @@ block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
 	return cache;
 }
 
-int block_dev_cache_free(void *dev) {
-	block_dev_t *bdev;
-	block_dev_cache_t *cache;
-
-	if (NULL == dev) {
-		return -1;
-	}
-	bdev = block_dev(dev);
-
-	cache = bdev->cache;
-	if (NULL == cache) {
-		return 0;
-	}
-
-	phymem_free(cache->pool, cache->depth * cache->blkfactor);
-	pool_free(&cache_pool, cache);
-
-	return  0;
-}
