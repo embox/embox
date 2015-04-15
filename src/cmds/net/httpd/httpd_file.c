@@ -12,30 +12,32 @@
 #include "httpd.h"
 
 #define BUFF_SZ 1024
-#define PAGE_4XX    "404.html"
+#define PAGE_INDEX  "index.html"
 
 static char httpd_g_outbuf[BUFF_SZ];
 
-int httpd_send_response_file(const struct client_info *cinfo, const struct http_req *hreq) {
-	char filename[HTTPD_MAX_PATH];
-	FILE *file;
-	int status, cbyte;
+int httpd_try_response_file(const struct client_info *cinfo, const struct http_req *hreq) {
+	char path[HTTPD_MAX_PATH];
+	char *uri_path;
 	size_t read_bytes;
+	FILE *file;
+	int retcode, cbyte;
 
-	snprintf(filename, sizeof(filename), "%s/%s", cinfo->ci_basedir, hreq->uri.target);
-	filename[sizeof(filename) - 1] = '\0';
+	if (0 == strcmp(hreq->uri.target, "/")) {
+		uri_path = PAGE_INDEX;
+	} else {
+		uri_path = hreq->uri.target;
+	}
 
-	HTTPD_DEBUG("requested: %s, on fs: %s\n", hreq->uri.target, filename);
+	snprintf(path, sizeof(path), "%s/%s", cinfo->ci_basedir, uri_path);
+	path[sizeof(path) - 1] = '\0';
 
-	file = fopen(filename, "r");
+	HTTPD_DEBUG("requested: %s, on fs: %s\n", hreq->uri.target, path);
+
+	file = fopen(path, "r");
 	if (!file) {
 		HTTPD_DEBUG("%s: file couldn't be opened (%d)\n", __func__, errno);
-		strcpy(filename, PAGE_4XX);
-		file = fopen(filename, "r");
-		/* testing file for NULL performed later */
-		status = 404;
-	} else {
-		status = 200;
+		return 0;
 	}
 
 	cbyte = snprintf(httpd_g_outbuf, sizeof(httpd_g_outbuf),
@@ -43,17 +45,13 @@ int httpd_send_response_file(const struct client_info *cinfo, const struct http_
 			"Content-Type: %s\r\n"
 			"Connection: close\r\n"
 			"\r\n",
-			status, "", httpd_filename2content_type(filename));
+			200, "", httpd_filename2content_type(path));
 
 	if (0 > write(cinfo->ci_sock, httpd_g_outbuf, cbyte)) {
 		return -errno;
 	}
 
-	if (!file) { /* file could be NULL if wasn't found error template.
-			In this case send header only, body is empty */
-		return 0;
-	}
-
+	retcode = 1;
 	while (0 != (read_bytes = fread(httpd_g_outbuf, 1, sizeof(httpd_g_outbuf), file))) {
 		const char *pb;
 		int remain_send_bytes;
@@ -64,6 +62,7 @@ int httpd_send_response_file(const struct client_info *cinfo, const struct http_
 			int sent_bytes;
 
 			if (0 > (sent_bytes = write(cinfo->ci_sock, pb, read_bytes))) {
+				retcode = sent_bytes;
 				break;
 			}
 
@@ -73,6 +72,6 @@ int httpd_send_response_file(const struct client_info *cinfo, const struct http_
 	}
 
 	fclose(file);
-	return 0;
+	return retcode;
 }
 

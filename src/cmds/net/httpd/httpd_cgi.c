@@ -51,42 +51,6 @@ static int httpd_execve(const char *path, char *const argv[], char *const envp[]
 	return execv(path, argv);
 }
 
-static char *httpd_exec_path_script(char *path) {
-	struct stat fstat;
-	if (stat(path, &fstat)) {
-		return NULL;
-	}
-	return path;
-}
-
-static char *httpd_exec_path_cmd(char *path) {
-	char *s = strstr(path, CGI_PREFIX);
-	if (s) {
-		return s + strlen(CGI_PREFIX);
-	}
-	return s;
-}
-
-static int httpd_error(const struct client_info *cinfo, int st, const char *msg) {
-	FILE *skf = fdopen(cinfo->ci_sock, "rw");
-
-	if (!skf) {
-		HTTPD_ERROR("can't allocate FILE for socket\n");
-		return -ENOMEM;
-	}
-
-	fprintf(skf,
-		"HTTP/1.1 %d %s\r\n"
-		"Content-Type: %s\r\n"
-		"Connection: close\r\n"
-		"\r\n"
-		"%s", st, "", "text/plain",
-		msg);
-
-	fclose(skf);
-	return 0;
-}
-
 static int httpd_fill_env(const struct http_req *hreq, char *envp[], int envp_len) {
 	char *ebp;
 	size_t env_sz;
@@ -123,21 +87,9 @@ static int httpd_fill_env(const struct http_req *hreq, char *envp[], int envp_le
 	return n_ce;
 }
 
-int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq) {
-	char filename[HTTPD_MAX_PATH];
-	char *cmdname;
+static int httpd_response_cgi(const struct client_info *cinfo, const struct http_req *hreq, 
+		char *path) {
 	pid_t pid;
-
-	snprintf(filename, sizeof(filename), "%s/%s", cinfo->ci_basedir, hreq->uri.target);
-	filename[sizeof(filename) - 1] = '\0';
-
-	cmdname = httpd_exec_path_script(filename);
-	if (!cmdname && USE_REAL_CMD) {
-		cmdname = httpd_exec_path_cmd(filename);
-	} 
-	if (!cmdname) {
-		return httpd_error(cinfo, 404, "File not found");
-	}
 
 	pid = vfork();
 	if (pid < 0) {
@@ -146,7 +98,7 @@ int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_r
 	}
 
 	if (pid == 0) {
-		char *argv[] = { cmdname, NULL };
+		char *argv[] = { path, NULL };
 		char *envp[ARRAY_SIZE(cgi_env) + 1];
 
 		httpd_fill_env(hreq, envp, ARRAY_SIZE(envp));
@@ -155,7 +107,7 @@ int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_r
 		dup2(cinfo->ci_sock, STDOUT_FILENO);
 		close(cinfo->ci_sock);
 
-		httpd_execve(cmdname, argv, envp);
+		httpd_execve(path, argv, envp);
 		exit(1);
 	} else {
 		if (!USE_PARALLEL_CGI) {
@@ -164,4 +116,39 @@ int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_r
 	}
 
 	return 0;
+}
+
+static int httpd_check_cgi(const struct http_req *hreq) {
+	return 0 == strncmp(hreq->uri.target, CGI_PREFIX, strlen(CGI_PREFIX));
+}
+
+int httpd_try_response_script(const struct client_info *cinfo, const struct http_req *hreq) {
+	char filename[HTTPD_MAX_PATH];
+	struct stat fstat;
+
+	if (!httpd_check_cgi(hreq)) {
+		return 0;
+	}
+
+	snprintf(filename, sizeof(filename), "%s/%s", cinfo->ci_basedir, hreq->uri.target);
+	filename[sizeof(filename) - 1] = '\0';
+
+	if (0 != stat(filename, &fstat)) {
+		return 0;
+	}
+
+	httpd_response_cgi(cinfo, hreq, filename);
+	return 1;
+}
+
+int httpd_try_response_cmd(const struct client_info *cinfo, const struct http_req *hreq) {
+	char *cmdname;
+
+	if (!httpd_check_cgi(hreq)) {
+		return 0;
+	}
+
+	cmdname = hreq->uri.target + strlen(CGI_PREFIX);
+	httpd_response_cgi(cinfo, hreq, cmdname);
+	return 1;
 }
