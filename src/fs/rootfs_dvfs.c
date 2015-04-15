@@ -10,6 +10,8 @@
 #include <string.h>
 
 #include <fs/dvfs.h>
+#include <embox/block_dev.h>
+#include <embox/device.h>
 #include <embox/unit.h>
 #include <kernel/task/resource/file_table.h>
 
@@ -37,26 +39,28 @@ struct super_block *rootfs_sb(void) {
  * @revtal -ENOENT File system driver not found
  */
 static int do_mount(const char *dev, const char *fs_type) {
-	assert(fs_type);
 	struct dumb_fs_driver *fsdrv;
+	struct block_dev *bdev = NULL;
+
+	assert(fs_type);
 
 	fsdrv = dumb_fs_driver_find(fs_type);
 	if (fsdrv == NULL || fsdrv->alloc_sb == NULL)
 		return -ENOENT;
 
-	set_rootfs_sb(fsdrv->alloc_sb((char*) dev));
-	dvfs_update_root();
-
 	if (dev) {
 		/* TODO mount dev filesystem */
-		fsdrv = dumb_fs_driver_find("devfs");
-		if (fsdrv) {
+		block_devs_init();
+		bdev = block_dev_find(dev);
+		if (bdev) {
 			//fsdrv->fsop->mount("/dev", NULL);
 		}
 	}
 
+	set_rootfs_sb(fsdrv->alloc_sb(bdev));
+	dvfs_update_root();
 
-	if (-1 == dvfs_mount((char *) dev, "/", (char *) fs_type, 0)) {
+	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0)) {
 		return -errno;
 	}
 

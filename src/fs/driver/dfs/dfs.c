@@ -438,7 +438,7 @@ struct file_operations dfs_fops = {
 	.ioctl = NULL,
 };
 
-static struct super_block *dfs_alloc_sb(char *dev) {
+static struct super_block *dfs_alloc_sb(struct block_dev *dev) {
 	return dfs_sb();
 }
 

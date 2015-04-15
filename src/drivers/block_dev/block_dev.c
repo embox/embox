@@ -80,7 +80,6 @@ static int blockdev_init(void) {
 
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *bdev;
-	size_t bdev_id;
 	struct path node, root;
 	struct nas *nas;
 	struct node_fi *node_fi;

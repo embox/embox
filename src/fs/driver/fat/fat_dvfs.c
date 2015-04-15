@@ -89,7 +89,7 @@ static size_t fat_write(struct file *desc, void *buf, size_t size) {
 	                      buf, &res, size, &desc->f_inode->length);
 }
 
-static struct super_block *fat_alloc_sb(char *bdev) {
+static struct super_block *fat_alloc_sb(struct block_dev *bdev) {
 	return NULL;
 }
 

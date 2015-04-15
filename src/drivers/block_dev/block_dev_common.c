@@ -113,6 +113,18 @@ block_dev_module_t *block_dev_lookup(const char *bd_name) {
 	return NULL;
 }
 
+struct block_dev *block_dev_find(const char *bd_name) {
+	int i;
+
+	for (i = 0; i < MAX_DEV_QUANTITY; i++) {
+		if (devtab[i] && 0 == strcmp(devtab[i]->name, bd_name)) {
+			return devtab[i];
+		}
+	}
+
+	return NULL;
+}
+
 struct block_dev *block_dev(void *dev) {
 	return (struct block_dev *)dev;
 }

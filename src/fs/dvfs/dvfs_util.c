@@ -79,7 +79,7 @@ int dvfs_default_pathname(struct inode *inode, char *buf) {
  * @return Pointer to the new superblock
  * @retval NULL Superblock could not be allocated
  */
-struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, char *dev) {
+struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev) {
 	assert(drv);
 
 	if (drv->alloc_sb)

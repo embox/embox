@@ -7,6 +7,7 @@
 #ifndef _DVFS_H_
 #define _DVFS_H_
 
+#include <embox/block_dev.h>
 #include <fs/file_system.h>
 #include <util/dlist.h>
 
@@ -110,7 +111,7 @@ struct file_operations {
 
 struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
-	struct super_block *(*alloc_sb)(char *dev);
+	struct super_block *(*alloc_sb)(struct block_dev *dev);
 };
 
 struct dvfsmnt {
@@ -156,9 +157,9 @@ extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 
-extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, char *dev);
+extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev);
 
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
 
-extern int dvfs_mount(char *dev, char *dest, char *fstype, int flags);
+extern int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags);
 #endif

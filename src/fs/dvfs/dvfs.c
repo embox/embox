@@ -9,6 +9,7 @@
 #include <fcntl.h>
 #include <string.h>
 
+#include <embox/block_dev.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/file_table.h>
@@ -293,7 +294,7 @@ int dvfs_read(struct file *desc, char *buf, int count) {
  * @retval       0 Ok
  * @retval -ENOENT Mount point or device not found
  */
-int dvfs_mount(char *dev, char *dest, char *fstype, int flags) {
+int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
 	//struct dvfsmnt *mnt;

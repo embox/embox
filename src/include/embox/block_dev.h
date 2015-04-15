@@ -84,6 +84,7 @@ extern int block_dev_named(char *name, struct indexator *indexator);
 extern block_dev_module_t *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
 extern struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata);
+extern struct block_dev *block_dev_find(const char *bd_name);
 
 #include <util/array.h>
 
