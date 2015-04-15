@@ -116,7 +116,6 @@ extern void lthread_launch(struct lthread *lt);
  *   The beginning label.
  * @param target_label
  *   Label from which lthread should be resumed.
- * @retval
  */
 #define lthread_yield(initial_label, target_label) \
 			(target_label) - (initial_label);

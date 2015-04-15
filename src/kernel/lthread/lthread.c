@@ -17,7 +17,7 @@
 
 #include <kernel/time/timer.h>
 
-/** locks: sched. lthread->run must be atomic. */
+/** locks: IPL, sched. lthread->run must be atomic. */
 static struct schedee *lthread_process(struct schedee *prev,
 		struct schedee *next) {
 	struct lthread *lt = mcast_out(next, struct lthread, schedee);
