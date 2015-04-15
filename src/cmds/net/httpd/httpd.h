@@ -9,8 +9,8 @@
 #ifndef HTTPD_H_
 #define HTTPD_H_
 
-#include <sys/socket.h>
 #include <stdio.h>
+#include <sys/socket.h>
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(array) \
@@ -65,9 +65,9 @@ struct http_req {
 
 extern char *httpd_parse_request(char *str, struct http_req *hreq);
 
-extern int httpd_send_response_cgi(const struct client_info *cinfo, const struct http_req *hreq);
-
-extern int httpd_send_response_file(const struct client_info *cinfo, const struct http_req *hreq);
+extern int httpd_try_response_script(const struct client_info *cinfo, const struct http_req *hreq);
+extern int httpd_try_response_cmd(const struct client_info *cinfo, const struct http_req *hreq);
+extern int httpd_try_response_file(const struct client_info *cinfo, const struct http_req *hreq);
 
 extern const char *httpd_filename2content_type(const char *filename);
 

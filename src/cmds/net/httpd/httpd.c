@@ -30,7 +30,6 @@
 #endif
 
 #define BUFF_SZ     1024
-#define PAGE_INDEX  "index.html"
 
 static char httpd_g_inbuf[BUFF_SZ];
 
@@ -61,20 +60,41 @@ static int httpd_read_http_header(const struct client_info *cinfo, char *buf, si
 	return pb + sizeof(pattbuf) - buf;
 }
 
-static int httpd_client_process(const struct client_info *cinfo) {
+static int httpd_header(const struct client_info *cinfo, int st, const char *msg) {
+	FILE *skf = fdopen(cinfo->ci_sock, "rw");
+
+	if (!skf) {
+		HTTPD_ERROR("can't allocate FILE for socket\n");
+		return -ENOMEM;
+	}
+
+	fprintf(skf,
+		"HTTP/1.1 %d %s\r\n"
+		"Content-Type: %s\r\n"
+		"Connection: close\r\n"
+		"\r\n"
+		"%s", st, "", "text/plain",
+		msg);
+
+	fclose(skf);
+	return 0;
+}
+
+static void httpd_client_process(const struct client_info *cinfo) {
 	struct http_req hreq;
 	int ret;
 
 	ret = httpd_read_http_header(cinfo, httpd_g_inbuf, sizeof(httpd_g_inbuf) - 1);
 	if (ret < 0) {
 		HTTPD_ERROR("can't read from client socket: %s\n", strerror(errno));
-		return ret;
+		return;
 	}
 	httpd_g_inbuf[ret] = '\0';
 
 	memset(&hreq, 0, sizeof(hreq));
 	if (NULL == httpd_parse_request(httpd_g_inbuf, &hreq)) {
-		return -EINVAL;
+		HTTPD_ERROR("can't parse request");
+		return;
 	}
 
 	HTTPD_DEBUG("%s: method=%s uri_target=%s uri_query=%s\n", __func__,
@@ -82,15 +102,19 @@ static int httpd_client_process(const struct client_info *cinfo) {
 			hreq.uri.target,
 			hreq.uri.query);
 
-	if (0 == strcmp(hreq.uri.target, "/")) {
-		hreq.uri.target = PAGE_INDEX;
+	if (httpd_try_response_script(cinfo, &hreq)) {
+		return;
 	}
 
-	if (0 == strncmp(hreq.uri.target, CGI_PREFIX, strlen(CGI_PREFIX))) {
-		return httpd_send_response_cgi(cinfo, &hreq);
+	if (httpd_try_response_cmd(cinfo, &hreq)) {
+		return;
 	}
 
-	return httpd_send_response_file(cinfo, &hreq);
+	if (httpd_try_response_file(cinfo, &hreq)) {
+		return;
+	}
+
+	httpd_header(cinfo, 404, "");
 }
 
 static int httpd_collect_cgi_childs(void) {
