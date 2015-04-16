@@ -47,3 +47,4 @@ addons:
 notifications:
   slack:
     secure: ATPx+JnB3aMwuyXlJElYv47Z17o5h7rVN2xGOdwKyvuB0HKiGxkUfxAOK37CkLVTZ1i1Jozb1aoDGojTO+zmo4kCfKP3VXRLW9RTVhxt96MlUM0FCRed1bxi1A9rswpaEfWQXpuk9GjUPZOYgSK8D+IV63rhT5F9m4b3Z8WLkr0=
+    on_success: :change
