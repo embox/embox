@@ -7,6 +7,7 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -102,6 +103,8 @@ static size_t fat_read(struct file *desc, void *buf, size_t size) {
 
 static size_t fat_write(struct file *desc, void *buf, size_t size) {
 	uint32_t res;
+	struct fat_file_info *fi = desc->f_inode->i_data;
+	fi->mode |= O_RDWR; /* XXX */
 	fat_write_file(desc->f_inode->i_data, fat_sector_buff,
 	               buf, &res, size, &desc->f_inode->length);
 	return res;

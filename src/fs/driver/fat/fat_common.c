@@ -1090,7 +1090,7 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 	struct fat_fs_info *fsi;
 	fsi = fi->fsi;
 
-	if (!(fi->mode & O_WRONLY) && !(fi->mode & O_APPEND)) {
+	if (!(fi->mode & O_WRONLY) && !(fi->mode & O_APPEND) && !(fi->mode & O_RDWR)) {
 		return DFS_ERRMISC;
 	}
 
