@@ -2,6 +2,9 @@
 /.dep.inc
 /.dropbox
 /.tmp
+*~
+*.sw?
+/tags
 /GNUmakefile
 /build
 /conf
