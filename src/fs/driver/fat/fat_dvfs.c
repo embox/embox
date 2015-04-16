@@ -54,6 +54,10 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 		return NULL;
 	}
 	node->i_data = fi;
+	*fi = (struct fat_file_info) {
+		.fsi = node->i_sb->sb_data,
+		.volinfo = &((struct fat_fs_info*)node->i_sb->sb_data)->vi,
+	};
 	res = fat_open_file(fi, (uint8_t*) name, 0, fat_sector_buff, &node->length);
 
 	if (res == DFS_OK) {
@@ -90,14 +94,16 @@ static int fat_close(struct file *desc) {
 
 static size_t fat_read(struct file *desc, void *buf, size_t size) {
 	uint32_t res;
-	return fat_read_file(desc->f_inode->i_data,
-	                     fat_sector_buff, buf, &res, size);
+	fat_read_file(desc->f_inode->i_data,
+	              fat_sector_buff, buf, &res, size);
+	return res;
 }
 
 static size_t fat_write(struct file *desc, void *buf, size_t size) {
 	uint32_t res;
-	return fat_write_file(desc->f_inode->i_data, fat_sector_buff,
-	                      buf, &res, size, &desc->f_inode->length);
+	fat_write_file(desc->f_inode->i_data, fat_sector_buff,
+	               buf, &res, size, &desc->f_inode->length);
+	return res;
 }
 
 /* @brief Get next inode in directory
