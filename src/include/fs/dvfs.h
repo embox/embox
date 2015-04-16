@@ -127,7 +127,8 @@ struct dvfsmnt {
 };
 
 struct dir_ctx {
-	int pos;
+	int   pos;
+	void *fs_ctx;
 };
 
 #define DFS_CREAT 0x0001
@@ -156,6 +157,7 @@ extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
+extern int dvfs_pathname(struct inode *inode, char *buf);
 
 extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev);
 

@@ -309,13 +309,13 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 	drv = dumb_fs_driver_find(fstype);
 	sb  = dvfs_alloc_sb(drv, dev);
 	d   = dvfs_alloc_dentry();
+	sb->root = d;
 
 	if (!strcmp(dest, "/")) {
 		set_rootfs_sb(sb);
 		dvfs_update_root();
 	}
 
-	dentry_fill(sb, NULL, d, NULL);
 	d->usage_count++;
 
 	return 0;
@@ -341,20 +341,21 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	sb = lookup->parent->d_sb;
 	parent_inode = lookup->parent->d_inode;
 	next_inode   = dvfs_alloc_inode(sb);
+	next_dentry  = dvfs_alloc_dentry();
+	dentry_fill(sb, next_inode, next_dentry, lookup->parent);
 	assert(sb && sb->sb_iops && sb->sb_iops->iterate);
-
 	res = sb->sb_iops->iterate(next_inode, parent_inode, ctx);
 
 	if (res) {
 		ctx->pos = 0;
+		dvfs_destroy_dentry(next_dentry);
+		next_dentry = NULL;
 	} else {
 		ctx->pos++;
-		next_dentry = dvfs_alloc_dentry();
-		dentry_fill(sb, next_inode, next_dentry, lookup->parent);
-		sb->sb_iops->pathname(next_inode, next_dentry->name);
 	}
 
 	lookup->item = next_dentry;
 
 	return 0;
 }
+

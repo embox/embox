@@ -5,6 +5,8 @@ module block_common {
 	depends embox.mem.phymem
 	depends embox.fs.buffer_cache
 	depends embox.fs.buffer_crypt_api
+	depends embox.mem.phymem
+	depends embox.mem.static_heap
 }
 
 module block {
