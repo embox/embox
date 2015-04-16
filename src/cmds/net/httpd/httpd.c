@@ -20,9 +20,6 @@
 
 #include "httpd.h"
 
-#define ARRAY_SIZE(array) \
-	(sizeof(array) / sizeof(*(array)))
-
 #ifdef __EMBUILD_MOD__
 #include <framework/mod/options.h>
 #define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
@@ -130,7 +127,7 @@ static void httpd_client_process(const struct client_info *cinfo) {
 
 	if ((cgi_child = httpd_try_respond_script(cinfo, &hreq))) {
 		httpd_on_cgi_child(cinfo, cgi_child);
-	} else if ((cgi_child = httpd_try_respond_cmd(cinfo, &hreq))) {
+	} else if (USE_REAL_CMD && (cgi_child = httpd_try_respond_cmd(cinfo, &hreq))) {
 		httpd_on_cgi_child(cinfo, cgi_child);
 	} else if (httpd_try_respond_file(cinfo, &hreq)) {
 		/* file sent, nothing to do */
@@ -150,7 +147,7 @@ int main(int argc, char **argv) {
 	inaddr.sin_family = AF_INET;
 	inaddr.sin_port= htons(80);
 	inaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-#else /* USE_IP_VER == 6 */
+#elif USE_IP_VER == 6
 	struct sockaddr_in6 inaddr;
 	const size_t inaddrlen = sizeof(inaddr);
 	const int family = AF_INET6;
@@ -158,6 +155,8 @@ int main(int argc, char **argv) {
 	inaddr.sin6_family = AF_INET6;
 	inaddr.sin6_port= htons(80);
 	memcpy(&inaddr.sin6_addr, &in6addr_any, sizeof(inaddr.sin6_addr));
+#else
+#error Unknown USE_IP_VER
 #endif
 
 	basedir = argc > 1 ? argv[1] : "/";
