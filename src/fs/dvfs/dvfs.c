@@ -284,6 +284,7 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 		return -ENOSYS;
 }
 
+extern int set_rootfs_sb(struct super_block *sb);
 /* @brief Mount file system
  * @param dev    Path to the source device (e.g. /dev/sda1)
  * @param dest   Path to the mount point (e.g. /mnt)
@@ -297,7 +298,6 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
-	//struct dvfsmnt *mnt;
 	struct super_block *sb;
 	struct dentry *d;
 
@@ -307,19 +307,16 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 		return -ENOENT;
 
 	drv = dumb_fs_driver_find(fstype);
-	//mnt = dvfs_alloc_mnt();
 	sb  = dvfs_alloc_sb(drv, dev);
-	/* TODO init sb */
 	d   = dvfs_alloc_dentry();
+
+	if (!strcmp(dest, "/")) {
+		set_rootfs_sb(sb);
+		dvfs_update_root();
+	}
 
 	dentry_fill(sb, NULL, d, NULL);
 	d->usage_count++;
-
-/*	*mnt = (struct dvfsmnt) {
-		.mnt_sb = sb,
-		.mnt_root = d,
-		.mnt_mountpoint = lookup.item,
-	}; */
 
 	return 0;
 }
