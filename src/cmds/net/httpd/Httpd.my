@@ -18,7 +18,6 @@ package embox.cmd.net
 	''')
 module httpd {
 	option number use_ip_ver=4
-	option boolean use_cgi=false
 	option boolean use_real_cmd=false
 	option boolean use_parallel_cgi=true
 
