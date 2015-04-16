@@ -256,13 +256,19 @@ int dvfs_close(struct file *desc) {
  * @retval -ENOSYS Function is not implemented in file system driver
  */
 int dvfs_write(struct file *desc, char *buf, int count) {
+	int res;
 	if (!desc)
 		return -1;
 
 	if (desc->f_ops && desc->f_ops->write)
-		return desc->f_ops->write(desc, buf, count);
+		res = desc->f_ops->write(desc, buf, count);
 	else
 		return -ENOSYS;
+
+	if (res > 0)
+		desc->pos += res;
+
+	return res;
 }
 
 /* @brief Application level interface to read the file
@@ -275,13 +281,19 @@ int dvfs_write(struct file *desc, char *buf, int count) {
  * @retval -ENOSYS Function is not implemented in file system driver
  */
 int dvfs_read(struct file *desc, char *buf, int count) {
+	int res;
 	if (!desc)
 		return -1;
 
 	if (desc->f_ops && desc->f_ops->read)
-		return desc->f_ops->read(desc, buf, count);
+		res = desc->f_ops->read(desc, buf, count);
 	else
 		return -ENOSYS;
+
+	if (res > 0)
+		desc->pos += res;
+
+	return res;
 }
 
 extern int set_rootfs_sb(struct super_block *sb);
