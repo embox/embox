@@ -1400,12 +1400,12 @@ uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 				  ((uint32_t) de.startclus_l_h) << 8;
 			}
 			fi->firstcluster = fi->cluster;
+			fi->filelen = (uint32_t) de.filesize_0 |
+			              ((uint32_t) de.filesize_1) << 8 |
+			              ((uint32_t) de.filesize_2) << 16 |
+			              ((uint32_t) de.filesize_3) << 24;
 			if (size)
-				*size = (uint32_t) de.filesize_0 |
-				  ((uint32_t) de.filesize_1) << 8 |
-				  ((uint32_t) de.filesize_2) << 16 |
-				  ((uint32_t) de.filesize_3) << 24;
-
+				*size = fi->filelen;
 			return DFS_OK;
 		}
 	}

@@ -238,7 +238,7 @@ struct fat_file_info {
 	uint8_t diroffset;			/* # of this entry within the dir sector */
 	int mode;				    /* mode in which this file was opened */
 	uint32_t firstcluster;		/* first cluster of file */
-	//uint32_t filelen;			/* byte length of file */
+	uint32_t filelen;			/* byte length of file */
 
 	uint32_t cluster;			/* current cluster */
 	uint32_t pointer;			/* current (BYTE) pointer */

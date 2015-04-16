@@ -17,6 +17,7 @@
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
+#include <util/math.h>
 
 POOL_DEF(fat_dirinfo_pool, struct dirinfo, 4);
 
@@ -94,8 +95,8 @@ static int fat_close(struct file *desc) {
 
 static size_t fat_read(struct file *desc, void *buf, size_t size) {
 	uint32_t res;
-	fat_read_file(desc->f_inode->i_data,
-	              fat_sector_buff, buf, &res, size);
+	struct fat_file_info *fi = desc->f_inode->i_data;
+	fat_read_file(fi, fat_sector_buff, buf, &res, min(size, fi->filelen - desc->pos));
 	return res;
 }
 
