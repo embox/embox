@@ -16,7 +16,7 @@
 
 static char httpd_g_outbuf[BUFF_SZ];
 
-int httpd_try_response_file(const struct client_info *cinfo, const struct http_req *hreq) {
+int httpd_try_respond_file(const struct client_info *cinfo, const struct http_req *hreq) {
 	char path[HTTPD_MAX_PATH];
 	char *uri_path;
 	size_t read_bytes;

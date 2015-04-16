@@ -27,6 +27,8 @@
 #include <framework/mod/options.h>
 #define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
 #define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
+#define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
+#define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
 #endif
 
 #define BUFF_SZ     1024
@@ -72,16 +74,40 @@ static int httpd_header(const struct client_info *cinfo, int st, const char *msg
 		"HTTP/1.1 %d %s\r\n"
 		"Content-Type: %s\r\n"
 		"Connection: close\r\n"
-		"\r\n"
-		"%s", st, "", "text/plain",
-		msg);
+		"\r\n",
+		st, msg, "text/plain");
 
 	fclose(skf);
 	return 0;
 }
 
+static int httpd_collect_cgi_childs(pid_t target, int opts) {
+	pid_t child;
+
+	do {
+		child = waitpid(target, NULL, opts);
+		if ((child == -1) && (errno != EINTR)) {
+			HTTPD_ERROR("waitpid() : %s\n", strerror(errno));
+			break;
+		}
+	} while (child != 0);
+
+	return child;
+}
+
+static void httpd_on_cgi_child(const struct client_info *cinfo, pid_t child) {
+	if (child > 0) {
+	       if (!USE_PARALLEL_CGI) {
+		       httpd_collect_cgi_childs(child, 0);
+	       }
+	} else {
+		httpd_header(cinfo, 500, strerror(-child));
+	}
+}
+
 static void httpd_client_process(const struct client_info *cinfo) {
 	struct http_req hreq;
+	pid_t cgi_child;
 	int ret;
 
 	ret = httpd_read_http_header(cinfo, httpd_g_inbuf, sizeof(httpd_g_inbuf) - 1);
@@ -102,33 +128,15 @@ static void httpd_client_process(const struct client_info *cinfo) {
 			hreq.uri.target,
 			hreq.uri.query);
 
-	if (httpd_try_response_script(cinfo, &hreq)) {
-		return;
+	if ((cgi_child = httpd_try_respond_script(cinfo, &hreq))) {
+		httpd_on_cgi_child(cinfo, cgi_child);
+	} else if ((cgi_child = httpd_try_respond_cmd(cinfo, &hreq))) {
+		httpd_on_cgi_child(cinfo, cgi_child);
+	} else if (httpd_try_respond_file(cinfo, &hreq)) {
+		/* file sent, nothing to do */
+	} else {
+		httpd_header(cinfo, 404, "");
 	}
-
-	if (httpd_try_response_cmd(cinfo, &hreq)) {
-		return;
-	}
-
-	if (httpd_try_response_file(cinfo, &hreq)) {
-		return;
-	}
-
-	httpd_header(cinfo, 404, "");
-}
-
-static int httpd_collect_cgi_childs(void) {
-	pid_t child;
-
-	do {
-		child = waitpid(-1, NULL, WNOHANG);
-		if ((child == -1) && (errno != EINTR)) {
-			HTTPD_ERROR("waitpid() : %s\n", strerror(errno));
-			break;
-		}
-	} while (child != 0);
-
-	return child;
 }
 
 int main(int argc, char **argv) {
@@ -187,7 +195,9 @@ int main(int argc, char **argv) {
 		assert(ci.ci_addrlen == inaddrlen);
 		ci.ci_basedir = basedir;
 
-		httpd_collect_cgi_childs();
+		if (USE_PARALLEL_CGI) {
+			httpd_collect_cgi_childs(-1, WNOHANG);
+		}
 
 		httpd_client_process(&ci);
 
