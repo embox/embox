@@ -217,23 +217,28 @@ extern struct super_block *rootfs_sb(void);
  *        initialize them if they are empty
  */
 int dvfs_update_root(void) {
+	struct super_block *sb = rootfs_sb();
+	struct inode *inode = global_root->d_inode;
 	if (!global_root)
 		global_root = dvfs_alloc_dentry();
 
 	if (!global_root->d_inode)
-		global_root->d_inode = dvfs_alloc_inode(rootfs_sb());
+		inode = dvfs_alloc_inode(sb);
 
 	*global_root = (struct dentry) {
-		.d_sb = rootfs_sb(),
-		.parent = global_root,
-		.name = "/",
-		.flags = O_DIRECTORY,
+		.d_sb    = sb,
+		.d_inode = inode,
+		.parent  = global_root,
+		.name    = "/",
+		.flags   = O_DIRECTORY,
 	};
 
 	if (global_root->d_inode)
 		*(global_root->d_inode) = (struct inode) {
-			.flags = O_DIRECTORY,
-			.i_ops = rootfs_sb()->sb_iops,
+			.flags    = O_DIRECTORY,
+			.i_ops    = sb->sb_iops,
+			.i_sb     = sb,
+			.i_dentry = global_root,
 		};
 
 	global_root->d_sb->root = global_root;
