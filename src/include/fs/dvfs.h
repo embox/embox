@@ -68,7 +68,7 @@ struct inode_operations {
 	int           (*rmdir)(struct dentry *dir);
 	int           (*truncate)(struct inode *inode, size_t len);
 	int           (*pathname)(struct inode *inode, char *buf);
-	struct inode *(*iterate)(struct inode *inode, struct dir_ctx *ctx);
+	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
 };
 
 struct dentry {

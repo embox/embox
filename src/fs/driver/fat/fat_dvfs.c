@@ -89,13 +89,24 @@ static size_t fat_write(struct file *desc, void *buf, size_t size) {
 	                      buf, &res, size, &desc->f_inode->length);
 }
 
+static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
+/*	int next_num = 0;
+	struct fat_fs_info *fsi;
+	struct dirinfo *dirinfo;
+	struct dirent de;
+*/
+//	fat_get_next(fsi, dirinfo, &de);
+
+	return 0;
+}
+
 /* Declaration of operations */
 struct inode_operations fat_iops = {
 	.create   = fat_create,
 	.lookup   = fat_ilookup,
 	//.mkdir    = NULL,
 	//.rmdir    = NULL,
-	//.iterate  = fat_iterate,
+	.iterate  = fat_iterate,
 	//.truncate = fat_itruncate,
 	//.pathname = fat_pathname,
 };

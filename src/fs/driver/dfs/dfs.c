@@ -336,22 +336,16 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 	return inode;
 }
 
-static struct inode *dfs_iterate(struct inode *inode, struct dir_ctx *ctx) {
+static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
 	struct dfs_dir_entry dirent;
-	struct inode *ent;
 	assert(ctx);
 
 	if (ctx->pos >= ((struct dfs_sb_info *) dfs_sb()->sb_data)->inode_count)
-		return NULL;
+		return -1;
 
 	dfs_read_dirent(ctx->pos, &dirent);
 
-	ent = dvfs_alloc_inode(dfs_sb());
-
-	if (!ent)
-		return NULL;
-
-	*ent = (struct inode) {
+	*next = (struct inode) {
 		.i_no      = ctx->pos,
 		.start_pos = dirent.pos_start,
 		.length    = dirent.len,
@@ -359,7 +353,7 @@ static struct inode *dfs_iterate(struct inode *inode, struct dir_ctx *ctx) {
 		.i_ops     = &dfs_iops,
 	};
 
-	return ent;
+	return 0;
 }
 
 static int dfs_pathname(struct inode *inode, char *buf) {
