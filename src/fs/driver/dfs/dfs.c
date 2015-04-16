@@ -10,7 +10,6 @@
 #include <sys/stat.h>
 #include <string.h>
 
-#include <embox/unit.h>
 #include <fs/dfs.h>
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
@@ -19,8 +18,6 @@
 #include <util/math.h>
 
 static struct flash_dev *dfs_flashdev;
-
-EMBOX_UNIT_INIT(dfs_init);
 
 #define DFS_MAGIC_0 0x0D
 #define DFS_MAGIC_1 0xF5
@@ -446,6 +443,7 @@ struct super_block *dfs_sb(void) {
 	return dfs_super;
 }
 
+extern struct flash_dev stm32_flash;
 static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 	dfs_super = sb;
 	*sb = (struct super_block) {
@@ -460,6 +458,10 @@ static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 
 	if (!sb->bdev)
 		sb->bdev = dfs_flashdev->bdev;
+
+	dfs_set_dev(&stm32_flash);
+	dfs_read_sb_info(dfs_sb()->sb_data);
+
 	return 0;
 }
 
@@ -470,14 +472,4 @@ static struct dumb_fs_driver dfs_dumb_driver = {
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_dumb_driver);
-
-
-extern struct flash_dev stm32_flash;
-int dfs_init(void) {
-	dfs_set_dev(&stm32_flash);
-
-	dfs_read_sb_info(dfs_sb()->sb_data);
-
-	return 0;
-};
 
