@@ -340,6 +340,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	sb = lookup->parent->d_sb;
 	parent_inode = lookup->parent->d_inode;
 
+	assert(sb && sb->sb_iops && sb->sb_iops->iterate);
 	next_inode  = sb->sb_iops->iterate(parent_inode, ctx);
 	if (!next_inode) {
 		ctx->pos = 0;
