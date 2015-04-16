@@ -65,9 +65,9 @@ struct http_req {
 
 extern char *httpd_parse_request(char *str, struct http_req *hreq);
 
-extern int httpd_try_response_script(const struct client_info *cinfo, const struct http_req *hreq);
-extern int httpd_try_response_cmd(const struct client_info *cinfo, const struct http_req *hreq);
-extern int httpd_try_response_file(const struct client_info *cinfo, const struct http_req *hreq);
+extern pid_t httpd_try_respond_script(const struct client_info *cinfo, const struct http_req *hreq);
+extern pid_t httpd_try_respond_cmd(const struct client_info *cinfo, const struct http_req *hreq);
+extern int httpd_try_respond_file(const struct client_info *cinfo, const struct http_req *hreq);
 
 extern const char *httpd_filename2content_type(const char *filename);
 

@@ -18,12 +18,6 @@
 
 #include "httpd.h"
 
-#ifdef __EMBUILD_MOD__
-#include <framework/mod/options.h>
-#define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
-#define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
-#endif
-
 static char httpd_g_envbuf[256];
 
 struct cgi_env_descr {
@@ -87,14 +81,15 @@ static int httpd_fill_env(const struct http_req *hreq, char *envp[], int envp_le
 	return n_ce;
 }
 
-static int httpd_response_cgi(const struct client_info *cinfo, const struct http_req *hreq, 
+static pid_t httpd_response_cgi(const struct client_info *cinfo, const struct http_req *hreq, 
 		char *path) {
 	pid_t pid;
 
 	pid = vfork();
 	if (pid < 0) {
-		HTTPD_ERROR("vfork() error\n");
-		return pid;
+		int err = errno;
+		HTTPD_ERROR("vfork() error(%d): %s\n", err, strerror(err));
+		return -err;
 	}
 
 	if (pid == 0) {
@@ -109,20 +104,16 @@ static int httpd_response_cgi(const struct client_info *cinfo, const struct http
 
 		httpd_execve(path, argv, envp);
 		exit(1);
-	} else {
-		if (!USE_PARALLEL_CGI) {
-			while (pid != waitpid(pid, NULL, 0));
-		}
 	}
 
-	return 0;
+	return pid;
 }
 
 static int httpd_check_cgi(const struct http_req *hreq) {
 	return 0 == strncmp(hreq->uri.target, CGI_PREFIX, strlen(CGI_PREFIX));
 }
 
-int httpd_try_response_script(const struct client_info *cinfo, const struct http_req *hreq) {
+pid_t httpd_try_respond_script(const struct client_info *cinfo, const struct http_req *hreq) {
 	char filename[HTTPD_MAX_PATH];
 	struct stat fstat;
 
@@ -137,11 +128,10 @@ int httpd_try_response_script(const struct client_info *cinfo, const struct http
 		return 0;
 	}
 
-	httpd_response_cgi(cinfo, hreq, filename);
-	return 1;
+	return httpd_response_cgi(cinfo, hreq, filename);
 }
 
-int httpd_try_response_cmd(const struct client_info *cinfo, const struct http_req *hreq) {
+pid_t httpd_try_respond_cmd(const struct client_info *cinfo, const struct http_req *hreq) {
 	char *cmdname;
 
 	if (!httpd_check_cgi(hreq)) {
@@ -149,6 +139,5 @@ int httpd_try_response_cmd(const struct client_info *cinfo, const struct http_re
 	}
 
 	cmdname = hreq->uri.target + strlen(CGI_PREFIX);
-	httpd_response_cgi(cinfo, hreq, cmdname);
-	return 1;
+	return httpd_response_cgi(cinfo, hreq, cmdname);
 }
