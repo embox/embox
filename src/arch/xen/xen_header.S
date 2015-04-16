@@ -1,6 +1,6 @@
 .section ".note", "a"
 
-#define XENNOTE(type, desc) \
+#define ELFNOTE(type, desc) \
     .p2align 2; \
     .long 1f - 0f; \
     .long 3f - 2f; \
@@ -10,6 +10,6 @@
 2:   desc; \
 3:  .p2align 2;
 
-XENNOTE(0x8, .asciz "generic")
-XENNOTE(0x5, .asciz "xen-3.0")
-
+ELFNOTE(0x8, .asciz "generic")
+ELFNOTE(0x5, .asciz "xen-3.0")
+ELFNOTE(0x9, .asciz "yes,bimodal")

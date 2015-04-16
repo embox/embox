@@ -18,6 +18,8 @@ module tun {
 
 module virtio {
 	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
+	@IncludeExport(path="drivers/net")
+	source "virtio_net.h"
 	source "virtio.c"
 
 	depends embox.net.skbuff
@@ -32,6 +34,8 @@ module virtio {
 
 module ti816x {
 	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
+	@IncludeExport(path="drivers/net")
+	source "ti816x.h"
 	source "ti816x.c"
 
 	depends embox.net.skbuff
@@ -44,6 +48,8 @@ module ti816x {
 }
 
 module e1000 {
+	@IncludeExport(path="drivers/net")
+	source "e1000.h"
 	source "e1000.c"
 
 	depends embox.net.skbuff
@@ -56,6 +62,8 @@ module e1000 {
 }
 
 module ne2k_pci {
+	@IncludeExport(path="drivers/net")
+	source "ne2k_pci.h"
 	source "ne2k_pci.c"
 
 	depends embox.net.skbuff
@@ -68,6 +76,8 @@ module ne2k_pci {
 }
 
 module rtl8139 {
+	@IncludeExport(path="drivers/net")
+	source "rtl8139.h"
 	source "rtl8139.c"
 
 	depends embox.net.skbuff
@@ -80,6 +90,8 @@ module rtl8139 {
 }
 
 module r6040 {
+	@IncludeExport(path="drivers/net")
+	source "r6040.h"
 	source "r6040.c"
 
 	depends embox.compat.libc.all

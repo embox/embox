@@ -1,7 +1,7 @@
 package embox.kernel.task.resource
 
 module waitpid {
-	@IncludeExport(path="kernel/task/resource/")
+	@IncludeExport(path="kernel/task/resource")
 	source "waitpid.h"
 
 	source "waitpid.c"

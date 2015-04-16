@@ -4,3 +4,7 @@ module xen_header {
 	source "xen_header.S",
 		"xen_header.lds.S"
 }
+
+module boot {
+	source "boot.S"
+}
