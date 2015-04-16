@@ -29,8 +29,9 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 		uri_path = hreq->uri.target;
 	}
 
-	snprintf(path, sizeof(path), "%s/%s", cinfo->ci_basedir, uri_path);
-	path[sizeof(path) - 1] = '\0';
+	if (sizeof(path) <= snprintf(path, sizeof(path), "%s/%s", cinfo->ci_basedir, uri_path)) {
+		return -ERANGE;
+	}
 
 	HTTPD_DEBUG("requested: %s, on fs: %s\n", hreq->uri.target, path);
 
@@ -48,7 +49,8 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 			200, "", httpd_filename2content_type(path));
 
 	if (0 > write(cinfo->ci_sock, httpd_g_outbuf, cbyte)) {
-		return -errno;
+		retcode = -errno;
+		goto out;
 	}
 
 	retcode = 1;
@@ -70,7 +72,7 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 			remain_send_bytes -= sent_bytes;
 		}
 	}
-
+out:
 	fclose(file);
 	return retcode;
 }

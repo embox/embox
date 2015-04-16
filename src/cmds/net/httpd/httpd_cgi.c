@@ -66,7 +66,7 @@ static int httpd_fill_env(const struct http_req *hreq, char *envp[], int envp_le
 		}
 
 		printed = snprintf(ebp, env_sz, "%s=%s", ce_d->name, val);
-		if (printed == env_sz) {
+		if (env_sz <= printed) {
 			HTTPD_ERROR("have no space to write environment\n");
 			exit(1);
 		}
@@ -121,8 +121,10 @@ pid_t httpd_try_respond_script(const struct client_info *cinfo, const struct htt
 		return 0;
 	}
 
-	snprintf(filename, sizeof(filename), "%s/%s", cinfo->ci_basedir, hreq->uri.target);
-	filename[sizeof(filename) - 1] = '\0';
+	if (sizeof(filename) <= snprintf(filename, sizeof(filename), 
+				"%s/%s", cinfo->ci_basedir, hreq->uri.target)) {
+		return -ERANGE;
+	}
 
 	if (0 != stat(filename, &fstat)) {
 		return 0;
