@@ -5,6 +5,7 @@
 *~
 *.sw?
 /tags
+.gitignore.*
 /GNUmakefile
 /build
 /conf
