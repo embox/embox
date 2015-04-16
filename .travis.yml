@@ -7,6 +7,8 @@ cache:
 
 env:
   global:
+    # Encrypted COVERITY_SCAN_TOKEN
+    - secure: fFf+lgHUkycCUGXTpVCnSL8G+sI/Wr+lbm/9jdy6Lw19MF33E4eC8oln/0OZFrfWY4Xy1QC9jfVgdsYd1jeI+e+mtrVdUzBJPO2z6BN978KiNmQzgff8epkpQB0k9qbDAqsNmjSwShN3PaeOZTUHiusWg0PMCQRb3SokLhKplhk=    - AUTOQEMU_NICS=''
     - AUTOQEMU_NICS=''
   matrix:
     - TEMPLATE=arm/qemu
@@ -26,10 +28,21 @@ install:
 before_script:
   - make confload-"$TEMPLATE"
   - sed -ie '/eth0/d' conf/start_script.inc  # FIXME
+  - make buildgen  # Make as much as possible before the actual build step.
 
 script:
   - make
   - ./scripts/continuous/run.sh "$TEMPLATE"
+
+addons:
+  coverity_scan:
+    project:
+      name: "embox/embox"
+      description: "Build submitted via Travis CI"
+    notification_email: eldar.abusalimov@gmail.com
+    build_command_prepend: make confload-"$TEMPLATE" buildgen
+    build_command: make
+    branch_pattern: coverity_scan
 
 notifications:
   slack:
