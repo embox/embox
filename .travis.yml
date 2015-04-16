@@ -31,8 +31,7 @@ before_script:
   - make buildgen  # Make as much as possible before the actual build step.
 
 script:
-  - make
-  - ./scripts/continuous/run.sh "$TEMPLATE"
+  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make && ./scripts/continuous/run.sh "$TEMPLATE"; fi
 
 addons:
   coverity_scan:
@@ -40,9 +39,8 @@ addons:
       name: "embox/embox"
       description: "Build submitted via Travis CI"
     notification_email: eldar.abusalimov@gmail.com
-    build_command_prepend: make confload-"$TEMPLATE" buildgen
     build_command: make
-    branch_pattern: coverity_scan
+    branch_pattern: coverity
 
 notifications:
   slack:
