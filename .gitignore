@@ -1,11 +1,16 @@
+## Editors
+# Sublime
 /*.sublime-workspace
+# Vim
+*.sw[a-z]
+.*.sw[a-z]
+*~
+/tags
+
+## Stuff
 /.dep.inc
 /.dropbox
 /.tmp
-*~
-*.sw?
-/tags
-.gitignore.*
 /GNUmakefile
 /build
 /conf
