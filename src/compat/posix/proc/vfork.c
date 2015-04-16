@@ -35,7 +35,7 @@ void __attribute__((noreturn)) vfork_body(struct pt_regs *ptregs) {
 	child_pid = task_prepare("");
 	if (0 > child_pid) {
 		/* error */
-		ptregs_retcode_err_jmp(ptregs, -1, child_pid);
+		ptregs_retcode_err_jmp(ptregs, -1, -child_pid);
 		panic("vfork_body returning");
 	}
 	child = task_table_get(child_pid);
