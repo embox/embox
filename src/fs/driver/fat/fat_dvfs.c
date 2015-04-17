@@ -63,6 +63,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	res = fat_open_file(fi, (uint8_t*) name, 0, fat_sector_buff, &node->length);
 
 	if (res == DFS_OK || res == DFS_WRONGRES) {
+		node->flags |= (res == DFS_WRONGRES) ? O_DIRECTORY : 0;
 		return node;
 	} else {
 		dvfs_destroy_inode(node);
@@ -93,6 +94,7 @@ static int fat_create(struct inode *i_new,
 		.fsi     = fsi,
 		.volinfo = &fsi->vi,
 	};
+	i_new->i_data = fi;
 
 	fat_flags |= (mode & O_DIRECTORY) ? S_IFDIR : 0;
 
@@ -123,9 +125,8 @@ static size_t fat_read(struct file *desc, void *buf, size_t size) {
 static size_t fat_write(struct file *desc, void *buf, size_t size) {
 	uint32_t res;
 	struct fat_file_info *fi = desc->f_inode->i_data;
-	fi->mode |= O_RDWR; /* XXX */
-	fat_write_file(desc->f_inode->i_data, fat_sector_buff,
-	               buf, &res, size, &desc->f_inode->length);
+	fi->mode = O_RDWR; /* XXX */
+	fat_write_file(fi, fat_sector_buff, buf, &res, size, &desc->f_inode->length);
 	return res;
 }
 
