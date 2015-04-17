@@ -150,8 +150,8 @@ struct lookup {
 };
 
 extern struct dentry *dvfs_root(void);
-int dvfs_lookup(const char *path, struct lookup *lookup);
-
+extern int dvfs_lookup(const char *path, struct lookup *lookup);
+extern int dvfs_remove(const char *path);
 extern int dvfs_open(const char *path, struct file *desc, int mode);
 extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);

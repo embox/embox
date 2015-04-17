@@ -157,7 +157,9 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	}
 
 	dirinfo = ctx->fs_ctx;
-	dirinfo->currententry = ctx->pos;
+	if (ctx->pos == 0)
+		dirinfo->currententry = 0;
+	//dirinfo->currententry = ctx->pos;
 	while (DFS_EOF != (res = fat_get_next(fsi, dirinfo, &de))) {
 		if (de.name[0] == 0)
 			continue;
@@ -170,15 +172,27 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	else
 		strcpy(next->i_dentry->name, (char*) de.name);
 
-	pool_free(&fat_dirinfo_pool, dirinfo);
-	ctx->fs_ctx = 0;
+	//pool_free(&fat_dirinfo_pool, dirinfo);
+	//ctx->fs_ctx = 0;
 	return 0;
+}
+
+static int fat_remove(struct inode *inode) {
+	struct fat_file_info *fi;
+	int res;
+	fi = inode->i_data;
+	res = fat_unlike_file(fi, NULL, (uint8_t*) fat_sector_buff);
+	if (res == 0)
+		fat_file_free(fi);
+
+	return res;
 }
 
 /* Declaration of operations */
 struct inode_operations fat_iops = {
 	.create   = fat_create,
 	.lookup   = fat_ilookup,
+	.remove   = fat_remove,
 	//.mkdir    = NULL,
 	//.rmdir    = NULL,
 	.iterate  = fat_iterate,

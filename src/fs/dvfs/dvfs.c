@@ -224,6 +224,39 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 	return desc->f_ops->open(i_no, desc);
 }
 
+/* @brief Delete file from storage
+ * @param path Path to file
+ *
+ * @return Negative error code
+ * @retval  0 Ok
+ * @retval -1 File not found
+ */
+int dvfs_remove(const char *path) {
+	struct lookup lookup;
+	struct inode  *i_no;
+	int res;
+
+	dvfs_lookup(path, &lookup);
+
+	if (!lookup.item) {
+		return -ENOENT;
+	}
+
+	i_no = lookup.item->d_inode;
+
+	assert(i_no->i_ops);
+
+	if (!i_no->i_ops->remove)
+		return -EPERM;
+
+	res = i_no->i_ops->remove(i_no);
+
+	if (res == 0)
+		dvfs_destroy_dentry(lookup.item);
+
+	return res;
+}
+
 /* @brief Uninitialize file descriptor
  * @param desc File descriptor to be uninitialized
  *

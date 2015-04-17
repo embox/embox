@@ -9,6 +9,8 @@
 
 #include <fcntl.h>
 
+#include <fs/dvfs.h>
+
 int creat(const char *pathname, mode_t mode) {
 	int rc;
 	rc = open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
@@ -21,7 +23,7 @@ int mkdir(const char *pathname, mode_t mode) {
 }
 
 int remove(const char *pathname) {
-	return 0;
+	return dvfs_remove(pathname);
 }
 
 int unlink(const char *pathname) {

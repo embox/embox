@@ -137,8 +137,12 @@ struct dentry *dvfs_alloc_dentry(void) {
 /* @brief Remove dentry from pool
  */
 int dvfs_destroy_dentry(struct dentry *dentry) {
-	pool_free(&dentry_pool, dentry);
-	return 0;
+	if (dentry->usage_count == 0) {
+		dvfs_destroy_inode(dentry->d_inode);
+		pool_free(&dentry_pool, dentry);
+		return 0;
+	} else
+		return -1;
 }
 
 /* @brief Get new file descriptor from pool

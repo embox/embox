@@ -274,6 +274,7 @@ extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
                                uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
 extern int      fat_root_dir_record(void *bdev);
 extern int      fat_create_file(struct fat_file_info *fi, char *path, int mode);
+extern int      fat_unlike_file(struct fat_file_info *fi, uint8_t *path, uint8_t *p_scratch);
 
 extern struct fat_fs_info *fat_fs_alloc(void);
 extern void fat_fs_free(struct fat_fs_info *fsi);

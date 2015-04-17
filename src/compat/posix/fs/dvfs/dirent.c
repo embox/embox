@@ -60,7 +60,6 @@ int closedir(DIR *dir) {
 
 struct dirent *readdir(DIR *dir) {
 	struct lookup l;
-	struct dir_ctx c;
 
 	if (!dir) {
 		SET_ERRNO(EBADF);
@@ -72,20 +71,17 @@ struct dirent *readdir(DIR *dir) {
 		.item   = dir->prv_dentry,
 	};
 
-	c = (struct dir_ctx) {
-		.pos = dir->pos,
-	};
-	if (dvfs_iterate(&l, &c)) {
+	if (dvfs_iterate(&l, &dir->ctx)) {
 		SET_ERRNO(EAGAIN);
 		return NULL;
 	}
 
 	if (!l.item) {
-		dir->pos = 0;
+		dir->ctx.pos = 0;
 		return NULL;
 	}
 	fill_dirent(&dir->dirent, l.item);
-	dir->pos++;
+	dir->ctx.pos++;
 
 	return &dir->dirent;
 }

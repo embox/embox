@@ -3,11 +3,12 @@
 
 #include <sys/types.h>
 #include <sys/cdefs.h>
-#include <fs/path.h>
+
+#include <fs/dvfs.h>
 
 struct DIR_struct {
 	struct dirent dirent;
-	int pos;
+	struct dir_ctx ctx;
 	struct dentry *dir_dentry;
 	struct dentry *prv_dentry;
 };

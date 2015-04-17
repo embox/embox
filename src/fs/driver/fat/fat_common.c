@@ -1427,9 +1427,9 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 	volinfo = &fsi->vi;
 	cache = 0;
 
-	if (DFS_OK != fat_open_file(fi, path, O_RDONLY, p_scratch, NULL)) {
+	/* if (DFS_OK != fat_open_file(fi, path, O_RDONLY, p_scratch, NULL)) {
 		return DFS_NOTFOUND;
-	}
+	} */
 
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
