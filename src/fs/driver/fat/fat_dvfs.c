@@ -62,7 +62,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	};
 	res = fat_open_file(fi, (uint8_t*) name, 0, fat_sector_buff, &node->length);
 
-	if (res == DFS_OK) {
+	if (res == DFS_OK || res == DFS_WRONGRES) {
 		return node;
 	} else {
 		dvfs_destroy_inode(node);

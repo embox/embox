@@ -19,13 +19,14 @@
 #define DIR_SEPARATOR   '/'	/* character separating directory components*/
 
 /* 32-bit error codes */
-#define DFS_OK        0			/* no error */
-#define DFS_EOF       1			/* end of file (not an error) */
-#define DFS_WRITEPROT 2			/* volume is write protected */
-#define DFS_NOTFOUND  3			/* path or file not found */
-#define DFS_PATHLEN   4			/* path too long */
-#define DFS_ALLOCNEW  5			/* must allocate new directory cluster */
-#define DFS_ERRMISC   0xffffffff	/* generic error */
+#define DFS_OK        0          /* no error */
+#define DFS_EOF       1	         /* end of file (not an error) */
+#define DFS_WRITEPROT 2	         /* volume is write protected */
+#define DFS_NOTFOUND  3	         /* path or file not found */
+#define DFS_PATHLEN   4	         /* path too long */
+#define DFS_ALLOCNEW  5	         /* must allocate new directory cluster */
+#define DFS_ERRMISC   0xffffffff /* generic error */
+#define DFS_WRONGRES  6          /* file expected but dir found or vice versa */
 
 /* Internal subformat identifiers */
 #define FAT12 0

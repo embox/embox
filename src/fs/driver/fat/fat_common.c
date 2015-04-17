@@ -653,7 +653,7 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 					return DFS_ERRMISC;
 				}
 			} else if (!memcmp(de.name, tmpfn, MSDOS_NAME) && !(de.attr & ATTR_DIRECTORY)) {
-				return DFS_NOTFOUND;
+				return DFS_WRONGRES;
 			}
 
 			while (*ptr != DIR_SEPARATOR && *ptr) {
@@ -1372,7 +1372,7 @@ uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 		path_canonical_to_dir(tmppath, (char *) de.name);
 		if (!memcmp(tmppath, filename, MSDOS_NAME)) {
 			if (de.attr & ATTR_DIRECTORY){
-				return DFS_NOTFOUND;
+				return DFS_WRONGRES;
 			}
 
 			fi->volinfo = volinfo;
