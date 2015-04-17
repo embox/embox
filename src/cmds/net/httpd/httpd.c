@@ -78,16 +78,18 @@ static int httpd_header(const struct client_info *cinfo, int st, const char *msg
 	return 0;
 }
 
-static int httpd_collect_cgi_childs(pid_t target, int opts) {
+static int httpd_wait_cgi_child(pid_t target, int opts) {
 	pid_t child;
 
 	do {
 		child = waitpid(target, NULL, opts);
-		if ((child == -1) && (errno != EINTR)) {
-			HTTPD_ERROR("waitpid() : %s\n", strerror(errno));
-			break;
-		}
-	} while (child != 0);
+	} while (child == -1 && errno == EINTR);
+
+	if (child == -1) {
+		int err = errno;
+		HTTPD_ERROR("waitpid() : %s\n", strerror(err));
+		return -err;
+	}
 
 	return child;
 }
@@ -95,7 +97,7 @@ static int httpd_collect_cgi_childs(pid_t target, int opts) {
 static void httpd_on_cgi_child(const struct client_info *cinfo, pid_t child) {
 	if (child > 0) {
 	       if (!USE_PARALLEL_CGI) {
-		       httpd_collect_cgi_childs(child, 0);
+		       httpd_wait_cgi_child(child, 0);
 	       }
 	} else {
 		httpd_header(cinfo, 500, strerror(-child));
@@ -195,7 +197,9 @@ int main(int argc, char **argv) {
 		ci.ci_basedir = basedir;
 
 		if (USE_PARALLEL_CGI) {
-			httpd_collect_cgi_childs(-1, WNOHANG);
+			while (0 < httpd_wait_cgi_child(-1, WNOHANG)) {
+				/* wait another one */
+			}
 		}
 
 		httpd_client_process(&ci);
