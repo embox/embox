@@ -798,7 +798,6 @@ include mk/flags.mk  # INCLUDES_FROM_FLAGS
 @dist_includes := $(addprefix dist-includes-/,$(sort \
 	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_BASE_DIR)/%, \
 		$(filter-out $(abspath \
-				$(DIST_BASE_DIR) $(DIST_BASE_DIR)/% \
 				$(CONF_DIR) $(CONF_DIR)/% \
 				$(EXTERNAL_BUILD_DIR) $(EXTERNAL_BUILD_DIR)/%),$(abspath \
 			$(call expand,$(call get, \

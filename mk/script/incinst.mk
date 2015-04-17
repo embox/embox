@@ -10,7 +10,6 @@ INCLUDE_INSTALL := include_install
 include $(MKGEN_DIR)/include.mk
 include $(MKGEN_DIR)/include_install.rule.mk
 
-
 include $(__include_incinst)
 
 cp_T_if_supported := $(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
@@ -24,8 +23,6 @@ $(INCUDE_INSTALL_DIR)/%/. : | $(INCUDE_INSTALL_DIR)/.
 
 $(INCUDE_INSTALL_DIR)/% : | $(INCUDE_INSTALL_DIR)/.
 	$(CP) -r $(cp_T_if_supported) $(src_file) $@
-	#@touch $@ # workaround when copying directories
-	#@find $@ -name .svn -type d -print0 | xargs -0 /bin/rm -rf
 
 $(INCUDE_INSTALL_DIR)/. :
 	@$(MKDIR) $(@D)
