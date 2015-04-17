@@ -82,6 +82,7 @@ static int fat_create(struct inode *i_new,
 	int res;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
+	int fat_flags = 0;
 	assert(i_new);
 	assert(i_dir);
 	/* TODO check file exists */
@@ -93,7 +94,9 @@ static int fat_create(struct inode *i_new,
 		.volinfo = &fsi->vi,
 	};
 
-	res = fat_create_file(fi, i_new->i_dentry->name, mode);
+	fat_flags |= (mode & O_DIRECTORY) ? S_IFDIR : 0;
+
+	res = fat_create_file(fi, i_new->i_dentry->name, fat_flags);
 
 	return res;
 }

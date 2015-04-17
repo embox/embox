@@ -13,13 +13,13 @@
 
 int creat(const char *pathname, mode_t mode) {
 	int rc;
-	rc = open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
+	rc = open(pathname, O_CREAT | O_WRONLY | O_TRUNC | mode);
 	DPRINTF(("creat(%s, %d ...) = %d\n", pathname, mode, rc));
 	return rc;
 }
 
 int mkdir(const char *pathname, mode_t mode) {
-	return creat(pathname, mode | S_IFDIR);
+	return creat(pathname, O_DIRECTORY);
 }
 
 int remove(const char *pathname) {
