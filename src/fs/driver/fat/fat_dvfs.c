@@ -167,14 +167,17 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 			break;
 	}
 
-	if (DFS_OK != res)
-		return -1;
-	else
+	switch (res) {
+	case DFS_OK:
 		strcpy(next->i_dentry->name, (char*) de.name);
-
-	//pool_free(&fat_dirinfo_pool, dirinfo);
-	//ctx->fs_ctx = 0;
-	return 0;
+		return 0;
+	case DFS_EOF:
+		pool_free(&fat_dirinfo_pool, dirinfo);
+		ctx->fs_ctx = 0;
+		/* Fall through */
+	default:
+		return -1;
+	}
 }
 
 static int fat_remove(struct inode *inode) {
