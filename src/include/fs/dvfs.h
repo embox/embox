@@ -61,7 +61,7 @@ struct inode {
 };
 
 struct inode_operations {
-	struct inode *(*create)(struct dentry *d_new, struct dentry *d_dir, int mode);
+	int           (*create)(struct inode *i_new, struct inode *i_dir, int mode);
 	struct inode *(*lookup)(char const *name, struct dentry const *dir);
 	int           (*remove)(struct inode *inode);
 	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);

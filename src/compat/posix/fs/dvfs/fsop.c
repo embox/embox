@@ -17,7 +17,7 @@ int creat(const char *pathname, mode_t mode) {
 }
 
 int mkdir(const char *pathname, mode_t mode) {
-	return 0;
+	return creat(pathname, mode | S_IFDIR);
 }
 
 int remove(const char *pathname) {

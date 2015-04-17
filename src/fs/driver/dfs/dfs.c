@@ -258,26 +258,25 @@ struct super_block_operations dfs_sbops = {
 	.write_inode   = NULL,
 };
 
-static struct inode *dfs_icreate(struct dentry *d_new,
-                                 struct dentry *d_dir, int mode) {
-	assert(d_dir);
-	struct super_block *sb = d_dir->d_sb;
-	struct inode *i_new = dvfs_alloc_inode(sb);
+static int dfs_icreate(struct inode *i_new,
+                       struct inode *i_dir, int mode) {
+	struct super_block *sb = i_dir->i_sb;
 	struct dfs_sb_info *sbi = sb->sb_data;
 	struct dfs_dir_entry dirent;
 
 	assert(sb);
+	assert(i_dir);
 	if (i_new == NULL)
-		return NULL;
+		return -1;
 
 	dfs_read_sb_info(sbi);
 
 	if (sbi->inode_count > sbi->max_inode_count)
-		return NULL;
+		return -ENOMEM;
 
 	dirent.pos_start = sbi->free_space;
 	dirent.len = 136; /* XXX */
-	strcpy(dirent.name, d_new->name);
+	strcpy(dirent.name, i_new->i_dentry->name);
 	dfs_write_dirent(sbi->inode_count, &dirent);
 
 	*i_new = (struct inode) {
@@ -294,7 +293,7 @@ static struct inode *dfs_icreate(struct dentry *d_new,
 	dfs_sb_status = DIRTY;
 	dfs_write_sb_info(sbi);
 
-	return d_new->d_inode = i_new;
+	return 0;
 }
 
 static int dfs_itruncate(struct inode *inode, size_t new_len) {

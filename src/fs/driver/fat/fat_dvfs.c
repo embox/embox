@@ -71,15 +71,31 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 }
 
 /* @brief Create new file or directory
- * @param d_new Dentry related to new file
- * @param d_dir Dentry realted to the parent
+ * @param i_new Inode to be filled
+ * @param i_dir Inode realted to the parent
  * @param mode  Used to figure out file type
  *
- * @return Pointer to inode of the new file
+ * @return Negative error code
  */
-static struct inode *fat_create(struct dentry *d_new,
-                                struct dentry *d_dir, int mode) {
-	return NULL;
+static int fat_create(struct inode *i_new,
+                                struct inode *i_dir, int mode) {
+	int res;
+	struct fat_file_info *fi;
+	struct fat_fs_info *fsi;
+	assert(i_new);
+	assert(i_dir);
+	/* TODO check file exists */
+
+	fsi = i_dir->i_sb->sb_data;
+	fi = fat_file_alloc();
+	*fi = (struct fat_file_info) {
+		.fsi     = fsi,
+		.volinfo = &fsi->vi,
+	};
+
+	res = fat_create_file(fi, i_new->i_dentry->name, mode);
+
+	return res;
 }
 
 static int fat_open(struct inode *node, struct file *desc) {
