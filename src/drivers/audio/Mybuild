@@ -21,3 +21,9 @@ module stm32f4_pa extends portaudio {
 	depends embox.mem.heap_api
 	depends embox.kernel.irq_api
 }
+
+module portaudio_stub {
+	@IncludeExport(path="drivers/audio")
+	source "portaudio.h"
+	source "portaudio_stub.c"
+}
