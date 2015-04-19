@@ -3,11 +3,11 @@
 #define PJ_LOG_USE_STACK_BUFFER        0
 
 /* make PJSUA slim */
-#define PJSUA_MAX_ACC 1
+#define PJSUA_MAX_ACC 2
 #define PJSUA_MAX_CALLS 1
 #define PJSUA_MAX_VID_WINS 0
 #define PJSUA_MAX_BUDDIES 1
-#define PJSUA_MAX_CONF_PORTS 1
+#define PJSUA_MAX_CONF_PORTS 3
 #define PJSUA_MAX_PLAYERS 1
 #define PJSUA_MAX_RECORDERS 1
 
