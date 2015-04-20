@@ -15,13 +15,13 @@ module core {
 	@NoRuntime depends embox.arch.context
 
 
-	@NoRuntime depends stack_api
-	@NoRuntime depends thread_local
-	@NoRuntime depends thread_cancel
-	@NoRuntime depends signal_api
-	@NoRuntime depends thread_wait
+	depends stack_api
+	depends thread_local
+	depends thread_cancel
+	depends signal_api
+	depends thread_wait
 
-	@NoRuntime depends embox.compat.libc.assert
+	depends embox.compat.libc.assert
 
 	depends embox.kernel.cpu.common
 	depends embox.kernel.sched.current.api
