@@ -21,7 +21,7 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 	char *uri_path;
 	size_t read_bytes;
 	FILE *file;
-	int retcode, cbyte;
+	int path_len, retcode, cbyte;
 
 	if (0 == strcmp(hreq->uri.target, "/")) {
 		uri_path = PAGE_INDEX;
@@ -29,8 +29,9 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 		uri_path = hreq->uri.target;
 	}
 
-	if (sizeof(path) <= snprintf(path, sizeof(path), "%s/%s", cinfo->ci_basedir, uri_path)) {
-		return -ERANGE;
+	path_len = snprintf(path, sizeof(path), "%s/%s", cinfo->ci_basedir, uri_path);
+	if (path_len >= sizeof(path)) {
+		return -ENOMEM;
 	}
 
 	HTTPD_DEBUG("requested: %s, on fs: %s\n", hreq->uri.target, path);
