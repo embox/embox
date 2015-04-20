@@ -12,7 +12,9 @@ env:
     - AUTOQEMU_NICS=''
   matrix:
     - TEMPLATE=arm/qemu
+    - TEMPLATE=arm/stm32_f4
     - TEMPLATE=x86/qemu
+    - TEMPLATE=x86/test/lang
 
 before_install:
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
@@ -27,7 +29,7 @@ install:
 
 before_script:
   - make confload-"$TEMPLATE"
-  - sed -ie '/eth0/d' conf/start_script.inc  # FIXME
+  - sed -ie '/eth0\|http/d' conf/start_script.inc  # FIXME
   - make buildgen  # Make as much as possible before the actual build step.
 
 script:
