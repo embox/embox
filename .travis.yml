@@ -8,11 +8,13 @@ cache:
 env:
   global:
     # Encrypted COVERITY_SCAN_TOKEN
-    - secure: fFf+lgHUkycCUGXTpVCnSL8G+sI/Wr+lbm/9jdy6Lw19MF33E4eC8oln/0OZFrfWY4Xy1QC9jfVgdsYd1jeI+e+mtrVdUzBJPO2z6BN978KiNmQzgff8epkpQB0k9qbDAqsNmjSwShN3PaeOZTUHiusWg0PMCQRb3SokLhKplhk=    - AUTOQEMU_NICS=''
+    - secure: KKhG29VpIOr5mq9xHptpDSfFEcSRKB8BX4e5zL0VQNJGkrNAHJ7ba+boHKEmSJJ1fZvHC18XOb886BIsn0i+lFrVymYDR8L8ca3e/k26LktnqMn76ORK1WYkD1fiRg3lX25v/j0TkoLB7pmDnMhZyGzg20675V1sHbl/KCO1LJI=
     - AUTOQEMU_NICS=''
   matrix:
     - TEMPLATE=arm/qemu
+    - TEMPLATE=arm/stm32_f4
     - TEMPLATE=x86/qemu
+    - TEMPLATE=x86/test/lang
 
 before_install:
   - sudo add-apt-repository -y ppa:terry.guo/gcc-arm-embedded
@@ -27,12 +29,11 @@ install:
 
 before_script:
   - make confload-"$TEMPLATE"
-  - sed -ie '/eth0/d' conf/start_script.inc  # FIXME
+  - sed -ie '/eth0\|http/d' conf/start_script.inc  # FIXME
   - make buildgen  # Make as much as possible before the actual build step.
 
 script:
-  - make
-  - ./scripts/continuous/run.sh "$TEMPLATE"
+  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make && ./scripts/continuous/run.sh "$TEMPLATE"; fi
 
 addons:
   coverity_scan:
@@ -40,10 +41,10 @@ addons:
       name: "embox/embox"
       description: "Build submitted via Travis CI"
     notification_email: eldar.abusalimov@gmail.com
-    build_command_prepend: make confload-"$TEMPLATE" buildgen
     build_command: make
-    branch_pattern: coverity_scan
+    branch_pattern: coverity
 
 notifications:
   slack:
     secure: ATPx+JnB3aMwuyXlJElYv47Z17o5h7rVN2xGOdwKyvuB0HKiGxkUfxAOK37CkLVTZ1i1Jozb1aoDGojTO+zmo4kCfKP3VXRLW9RTVhxt96MlUM0FCRed1bxi1A9rswpaEfWQXpuk9GjUPZOYgSK8D+IV63rhT5F9m4b3Z8WLkr0=
+    on_success: :change
