@@ -34,8 +34,7 @@ static const struct cgi_env_descr cgi_env[] = {
 
 /* TODO replace with execve */
 static int httpd_execve(const char *path, char *const argv[], char *const envp[]) {
-	int i_ce;
-	for (i_ce = 0; envp[i_ce]; i_ce++) {
+	for (int i_ce = 0; envp[i_ce]; i_ce++) {
 		if (putenv(envp[i_ce])) {
 			HTTPD_ERROR("putenv failed\n");
 			exit(1);
@@ -58,7 +57,7 @@ static int httpd_fill_env(const struct http_req *hreq, char *envp[], int envp_le
 
 	for (i_ce = 0; i_ce < ARRAY_SIZE(cgi_env); i_ce++) {
 		const struct cgi_env_descr *ce_d = &cgi_env[i_ce];
-		char *val = *(char **) ((void *) hreq + ce_d->hreq_offset);
+		char *val = *(char **) ((char *) hreq + ce_d->hreq_offset);
 		int printed;
 
 		if (!val) {
