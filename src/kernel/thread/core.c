@@ -154,8 +154,6 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 	next_t = mcast_out(next, struct thread, schedee);
 	prev_t = mcast_out(prev, struct thread, schedee);
 
-	schedee_set_current(next);
-
 	/* Threads context switch */
 	if (prev != next) {
 		thread_switch(prev_t, next_t);

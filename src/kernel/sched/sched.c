@@ -389,6 +389,8 @@ static void __schedule(int preempt) {
 		 * during the 'sched_switch' (if any). */
 		spin_unlock(&rq.lock);
 
+		schedee_set_current(next);
+
 		/* next->process has to restore ipl. */
 		next = next->process(prev, next);
 

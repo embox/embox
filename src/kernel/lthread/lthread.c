@@ -21,7 +21,6 @@
 static struct schedee *lthread_process(struct schedee *prev,
 		struct schedee *next) {
 	struct lthread *lt = mcast_out(next, struct lthread, schedee);
-	schedee_set_current(next);
 
 	/* lthread is not in runq, it can be waken up again. */
 	next->ready = false;
