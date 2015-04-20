@@ -114,23 +114,24 @@ static int httpd_check_cgi(const struct http_req *hreq) {
 }
 
 pid_t httpd_try_respond_script(const struct client_info *cinfo, const struct http_req *hreq) {
-	char filename[HTTPD_MAX_PATH];
+	char path[HTTPD_MAX_PATH];
 	struct stat fstat;
+	int path_len;
 
 	if (!httpd_check_cgi(hreq)) {
 		return 0;
 	}
 
-	if (sizeof(filename) <= snprintf(filename, sizeof(filename), 
-				"%s/%s", cinfo->ci_basedir, hreq->uri.target)) {
-		return -ERANGE;
+	path_len = snprintf(path, sizeof(path), "%s/%s", cinfo->ci_basedir, hreq->uri.target);
+	if (path_len >= sizeof(path)) {
+		return -ENOMEM;
 	}
 
-	if (0 != stat(filename, &fstat)) {
+	if (0 != stat(path, &fstat)) {
 		return 0;
 	}
 
-	return httpd_response_cgi(cinfo, hreq, filename);
+	return httpd_response_cgi(cinfo, hreq, path);
 }
 
 pid_t httpd_try_respond_cmd(const struct client_info *cinfo, const struct http_req *hreq) {
