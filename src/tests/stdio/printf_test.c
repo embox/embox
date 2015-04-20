@@ -104,13 +104,20 @@ TEST_CASE("Test of %n specifier") {
 	test_assert_equal(strlen(answer), size);
 }
 
-TEST_CASE("Test of snprintf with zero size") {
+TEST_CASE("Test of snprintf with truncated output") {
 	char random_char, backup_char;
+	char dest[4];
 
 	backup_char = random_char = 17;
 
 	test_assert_equal(3, snprintf(&random_char, 0, "012"));
 	test_assert_equal(random_char, backup_char);
+
+	test_assert_equal(4, snprintf(dest, 4, "1234"));
+	test_assert_str_equal(dest, "123");
+
+	test_assert_equal(8, snprintf(dest, 2, "12345678"));
+	test_assert_str_equal(dest, "1");
 }
 
 TEST_CASE("Test of printing with mistake in format") {

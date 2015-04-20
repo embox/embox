@@ -18,16 +18,32 @@ package embox.cmd.net
 	''')
 module httpd {
 	option number use_ip_ver=4
-	option boolean use_cgi=false
 	option boolean use_real_cmd=false
+	option boolean use_parallel_cgi=true
+
 	source "httpd.c"
+	source "httpd_file.c"
+	source "httpd_parselib.c"
+	source "httpd_util.c"
+	depends httpd_cgi_interface
 
 	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
 	depends embox.compat.posix.net.socket
-	depends embox.compat.posix.proc.vfork
 	depends embox.compat.posix.proc.waitpid
 	depends embox.fs.core
 	depends embox.framework.LibFramework
 	depends embox.net.lib.getifaddrs
+}
+
+@DefaultImpl(httpd_no_cgi)
+abstract module httpd_cgi_interface { }
+
+module httpd_cgi extends httpd_cgi_interface {
+	source "httpd_cgi.c"
+	depends embox.compat.posix.proc.vfork
+}
+
+module httpd_no_cgi extends httpd_cgi_interface {
+	source "httpd_no_cgi.c"
 }
