@@ -43,7 +43,7 @@
 #include <hal/context.h>
 #include <util/err.h>
 
-extern void thread_switch(struct thread *prev, struct thread *next);
+extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
 
 static int id_counter = 0; // TODO make it an indexator
@@ -151,12 +151,13 @@ out_unlock:
 
 static struct schedee *thread_process(struct schedee *prev, struct schedee *next) {
 	struct thread *next_t, *prev_t;
+
 	next_t = mcast_out(next, struct thread, schedee);
 	prev_t = mcast_out(prev, struct thread, schedee);
 
 	/* Threads context switch */
 	if (prev != next) {
-		thread_switch(prev_t, next_t);
+		thread_context_switch(prev_t, next_t);
 	}
 
 	ipl_enable();

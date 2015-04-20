@@ -33,7 +33,7 @@ static void thread_prepare_switch(struct thread *prev, struct thread *next) {
 	sched_start_switch(&next->schedee);
 }
 
-void thread_switch(struct thread *prev, struct thread *next) {
+void thread_context_switch(struct thread *prev, struct thread *next) {
 	thread_prepare_switch(prev, next);
 
 	/* Preserve initial semantics of prev/next. */
