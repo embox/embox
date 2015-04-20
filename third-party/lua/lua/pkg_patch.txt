@@ -1,54 +1,70 @@
-diff -uar ../../../../../download/lua-5.2.3/src/linit.c lua-5.2.3/src/linit.c
---- ../../../../../download/lua-5.2.3/src/linit.c	2013-04-12 22:48:47.000000000 +0400
-+++ lua-5.2.3/src/linit.c	2014-10-01 15:59:05.020863282 +0400
-@@ -26,6 +26,9 @@
- ** these libs are loaded by lua.c and are readily available to any Lua
- ** program
- */
+diff -Naur lua-5.3.0.orig/src/ldo.c lua-5.3.0/src/ldo.c
+--- lua-5.3.0.orig/src/ldo.c	2014-11-11 20:13:39.000000000 +0300
++++ lua-5.3.0/src/ldo.c	2015-04-18 14:27:18.870593943 +0300
+@@ -60,7 +60,7 @@
+ 	try { a } catch(...) { if ((c)->status == 0) (c)->status = -1; }
+ #define luai_jmpbuf		int  /* dummy variable */
+ 
+-#elif defined(LUA_USE_POSIX)				/* }{ */
++#elif 0 /*defined(LUA_USE_POSIX)*/				/* }{ */
+ 
+ /* in POSIX, try _longjmp/_setjmp (more efficient) */
+ #define LUAI_THROW(L,c)		_longjmp((c)->b, 1)
+diff -Naur lua-5.3.0.orig/src/linit.c lua-5.3.0/src/linit.c
+--- lua-5.3.0.orig/src/linit.c	2015-01-05 16:48:33.000000000 +0300
++++ lua-5.3.0/src/linit.c	2015-04-18 14:28:23.012031212 +0300
+@@ -35,6 +35,9 @@
+ #include "lauxlib.h"
+ 
+ 
 +extern int luaopen_socket_core(lua_State *L);
 +extern int luaopen_mime_core(lua_State *L);
-+extern int luaopen_bit(lua_State *L);
- static const luaL_Reg loadedlibs[] = {
-   {"_G", luaopen_base},
-   {LUA_LOADLIBNAME, luaopen_package},
-@@ -37,6 +40,13 @@
++
+ /*
+ ** these libs are loaded by lua.c and are readily available to any Lua
+ ** program
+@@ -53,6 +56,10 @@
+ #if defined(LUA_COMPAT_BITLIB)
    {LUA_BITLIBNAME, luaopen_bit32},
-   {LUA_MATHLIBNAME, luaopen_math},
-   {LUA_DBLIBNAME, luaopen_debug},
+ #endif
 +#ifdef LUASOCKET_SUPPORT
 +  {"socket.core", luaopen_socket_core},
 +  {"mime.core", luaopen_mime_core},
 +#endif
-+#ifdef LUABITOP_SUPPORT
-+  {"bit", luaopen_bit},
-+#endif
    {NULL, NULL}
  };
  
-diff -uar ../../../../../download/lua-5.2.3/src/luaconf.h lua-5.2.3/src/luaconf.h
---- ../../../../../download/lua-5.2.3/src/luaconf.h	2013-04-12 22:48:47.000000000 +0400
-+++ lua-5.2.3/src/luaconf.h	2014-10-01 15:57:04.418640846 +0400
-@@ -68,8 +68,8 @@
- #if defined(LUA_USE_POSIX)
- #define LUA_USE_MKSTEMP
- #define LUA_USE_ISATTY
--#define LUA_USE_POPEN
--#define LUA_USE_ULONGJMP
-+//#define LUA_USE_POPEN
-+//#define LUA_USE_ULONGJMP
- #define LUA_USE_GMTIME_R
- #endif
+diff -Naur lua-5.3.0.orig/src/liolib.c lua-5.3.0/src/liolib.c
+--- lua-5.3.0.orig/src/liolib.c	2015-01-02 15:50:28.000000000 +0300
++++ lua-5.3.0/src/liolib.c	2015-04-18 15:11:28.237897688 +0300
+@@ -47,7 +47,7 @@
  
-diff -uar ../../../../../download/lua-5.2.3/src/Makefile lua-5.2.3/src/Makefile
---- ../../../../../download/lua-5.2.3/src/Makefile	2013-11-11 15:45:49.000000000 +0400
-+++ lua-5.2.3/src/Makefile	2014-10-01 15:57:04.418640846 +0400
+ #if !defined(l_popen)		/* { */
+ 
+-#if defined(LUA_USE_POSIX)	/* { */
++#if 0 /*defined(LUA_USE_POSIX)*/	/* { */
+ 
+ #define l_popen(L,c,m)		(fflush(NULL), popen(c,m))
+ #define l_pclose(L,file)	(pclose(file))
+@@ -75,7 +75,7 @@
+ 
+ #if !defined(l_getc)		/* { */
+ 
+-#if defined(LUA_USE_POSIX)
++#if 0 /*defined(LUA_USE_POSIX)*/
+ #define l_getc(f)		getc_unlocked(f)
+ #define l_lockfile(f)		flockfile(f)
+ #define l_unlockfile(f)		funlockfile(f)
+diff -Naur lua-5.3.0.orig/src/Makefile lua-5.3.0/src/Makefile
+--- lua-5.3.0.orig/src/Makefile	2015-01-05 19:04:52.000000000 +0300
++++ lua-5.3.0/src/Makefile	2015-04-18 12:43:17.415027232 +0300
 @@ -6,7 +6,7 @@
  # Your platform. See PLATS for possible values.
  PLAT= none
  
--CC= gcc
-+#CC= gcc
- CFLAGS= -O2 -Wall -DLUA_COMPAT_ALL $(SYSCFLAGS) $(MYCFLAGS)
+-CC= gcc -std=gnu99
++#CC= gcc -std=gnu99
+ CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_2 $(SYSCFLAGS) $(MYCFLAGS)
  LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
  LIBS= -lm $(SYSLIBS) $(MYLIBS)
 @@ -49,7 +49,7 @@

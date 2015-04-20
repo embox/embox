@@ -16,7 +16,6 @@ package third_party.cmd
 	''')
 module lua {
 	option boolean luasocket_support=false
-	option boolean luabitop_support=false
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "lua.o"
 
