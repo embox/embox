@@ -62,6 +62,8 @@ static module gethostbyname {
 static module gethostent {
 	option string path_to_hosts="/hosts"
 	source "gethostent.c"
+	@InitFS
+	source "hosts"
 
 	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.libc.stdio.open
