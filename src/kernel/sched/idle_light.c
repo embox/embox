@@ -1,4 +1,11 @@
-#include <util/err.h>
+/**
+ * @file
+ * @brief
+ *
+ * @author  Vita Loginova
+ * @date    08.12.2014
+ */
+
 #include <hal/arch.h>
 #include <kernel/lthread/lthread.h>
 
