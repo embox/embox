@@ -69,6 +69,7 @@ struct lthread {
 	int label_offset;             /**< Used for calculating label for goto */
 	/* Auxiliary structure for waiting with timeout. */
 	struct sched_wait_info info;
+	struct schedee *joining; /**< joining schedee with stack */
 };
 
 /**
@@ -81,24 +82,18 @@ struct lthread {
 extern void lthread_init(struct lthread *lt, int (*run)(struct lthread *));
 
 /**
- * FIXME: The existing realization isn't good enough since it makes user
- * handle -EAGAIN situation in his own way. Ideologically, this function
- * should make something like #thread_join() (rename it?).
- *
- * Tries to reset the lthread into initial state.
+ * Waits for @p lt is not waiting or scheduled and after that resets @p lt
+ * into initial state. @p lt can be safely launched after executing this
+ * function.
+ * @note
+ *   Can be used only by schedee with stack.
  * @note
  *   It is the user's responsibility to prevent lthread waking up in its run
  *   function.
  * @param lt
- *   The light thread to reset.
- * @return
- *   The operation result.
- * @retval 0
- *   P lt is reset correctly.
- * @retval -EAGAIN
- *   @p lt is in runq or is waiting for an event, try again later.
+ *   The light thread to join.
  */
-extern int lthread_reset(struct lthread *lt);
+extern void lthread_join(struct lthread *lt);
 
 /**
  * Wakes @p lt up or launches it for the first time.

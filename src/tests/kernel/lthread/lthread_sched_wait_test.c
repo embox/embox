@@ -65,7 +65,7 @@ TEST_CASE("sched_wait_timeout: timeout is exceeded") {
 	test_assert_equal(done, 1);
 	test_assert_equal(lt_test.res, -ETIMEDOUT);
 
-	lthread_reset(&(lt_test.lt));
+	lthread_join(&(lt_test.lt));
 }
 
 TEST_CASE("sched_wait_timeout: wakeup before timeout is exceeded") {
@@ -82,7 +82,7 @@ TEST_CASE("sched_wait_timeout: wakeup before timeout is exceeded") {
 	test_assert_equal(done, 1);
 	test_assert_equal(lt_test.res, 0);
 
-	lthread_reset(&lt_test.lt);
+	lthread_join(&lt_test.lt);
 }
 
 TEST_CASE("sched_wait_timeout: SCHED_TIMEOUT_INFINITE") {
@@ -101,7 +101,7 @@ TEST_CASE("sched_wait_timeout: SCHED_TIMEOUT_INFINITE") {
 	test_assert_equal(done, 1);
 	test_assert_equal(lt_test.res, 0);
 
-	lthread_reset(&lt_test.lt);
+	lthread_join(&lt_test.lt);
 }
 
 static int sched_wait_timeout_macro_run(struct lthread *self) {
@@ -144,7 +144,7 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: wakeup before timeout is exceeded") {
 	test_assert_equal(done, 1);
 	test_assert_equal(lt_test.res, 0);
 
-	lthread_reset(&lt_test.lt);
+	lthread_join(&lt_test.lt);
 }
 
 TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: timeout exceeded") {
@@ -172,7 +172,7 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: timeout exceeded") {
 	test_assert_equal(done, 1);
 	test_assert_equal(lt_test.res, -ETIMEDOUT);
 
-	lthread_reset(&lt_test.lt);
+	lthread_join(&lt_test.lt);
 }
 
 TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: SCHED_TIMEOUT_INFINITE") {
@@ -201,5 +201,5 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: SCHED_TIMEOUT_INFINITE") {
 	test_assert_equal(done, 1);
 	test_assert_equal(lt_test.res, 0);
 
-	lthread_reset(&lt_test.lt);
+	lthread_join(&lt_test.lt);
 }

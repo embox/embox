@@ -12,10 +12,18 @@
 #include <errno.h>
 
 #include <kernel/sched.h>
+#include <kernel/sched/current.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/sched/schedee_priority.h>
 
 #include <kernel/time/timer.h>
+
+int __lthread_is_disabled(struct lthread *lt) {
+	assert(lt);
+
+	return SPIN_IPL_PROTECTED_DO(&lt->schedee.lock,
+		lt->schedee.waiting && lt->info.status == 0);
+}
 
 /** locks: IPL, sched. lthread->run must be atomic. */
 static struct schedee *lthread_process(struct schedee *prev,
@@ -31,6 +39,9 @@ static struct schedee *lthread_process(struct schedee *prev,
 
 	lt->label_offset = lt->run(lt);
 
+	if (lt->joining && __lthread_is_disabled(lt))
+		sched_wakeup(lt->joining);
+
 	return NULL;
 }
 
@@ -39,28 +50,32 @@ void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
 	sched_wait_info_init(&lt->info);
 
 	lt->run = run;
+	lt->joining = NULL;
 	lt->label_offset = 0;
 }
 
-/** Locks: IPL, thread. */
-int __lthread_is_disabled(struct lthread *lt) {
-	assert(lt);
-	return lt->schedee.waiting && lt->info.status == 0;
-}
+void lthread_join(struct lthread *lt) {
+	struct schedee *self = schedee_get_current();
 
-int lthread_reset(struct lthread *lt) {
 	assert(lt);
 
-	if (!SPIN_IPL_PROTECTED_DO(&lt->schedee.lock, __lthread_is_disabled(lt)))
-		return -EAGAIN;
+	sched_wait_prepare();
+
+	if (!__lthread_is_disabled(lt)) {
+		assert(!lt->joining);
+		lt->joining = self;
+		schedule();
+	}
+
+	sched_wait_cleanup();
 
 	/* Leads to initial state.
 	 * TODO: reset timing? */
 	sched_wait_info_init(&lt->info);
 	lt->schedee.waiting = true;
-	lt->label_offset = 0;
 
-	return 0;
+	lt->joining = NULL;
+	lt->label_offset = 0;
 }
 
 void lthread_launch(struct lthread *lt) {
