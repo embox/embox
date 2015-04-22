@@ -46,6 +46,8 @@ static struct schedee *lthread_process(struct schedee *prev,
 }
 
 void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
+	assert(lt);
+
 	schedee_init(&lt->schedee, SCHED_PRIORITY_HIGH, lthread_process);
 	sched_wait_info_init(&lt->info);
 
