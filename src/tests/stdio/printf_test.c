@@ -91,8 +91,9 @@ TEST_CASE("Test print with width, precision and alignement") {
 }
 
 TEST_CASE("Test print with sign specifiers") {
-	TEST_STR_FMT("+23 -23", "%+d %+d", 23, -23);
-	TEST_STR_FMT(" 23 -23", "% .0f % d", 23.0, -23);
+	TEST_STR_FMT("+23", "%+d", 23);
+	TEST_STR_FMT("-23", "%+d", -23);
+	TEST_STR_FMT("-23", "% d", -23);
 }
 
 TEST_CASE("Test print % symbol") {
@@ -133,7 +134,9 @@ TEST_CASE("Test of printing with mistake in format") {
 }
 
 #if 0
-/* Float is disabled until the reasons (r11423) */
+/* FIXME this test should respect support_floating option of 
+ * embox.compat.libc.stdio.print. Until then, disabled
+ */
 TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("2.00", "%.2f", 1.997);
 	TEST_STR_FMT("2.0", "%.1f", 1.983183456);
@@ -152,5 +155,7 @@ TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("1.000000e+100", "%e", 10e+99);
 	TEST_STR_FMT("1.234560e+02", "%e", 123.456);
 	TEST_STR_FMT("+008.2346E-03", "%+013.4E", 0.00823456);
+
+	TEST_STR_FMT(" 23", "% .0f", 23.0);
 }
 #endif
