@@ -279,7 +279,6 @@ int dvfs_close(struct file *desc) {
 	desc->f_dentry->usage_count--;
 	if (!desc->f_dentry->usage_count) {
 		dvfs_destroy_dentry(desc->f_dentry);
-		dvfs_destroy_inode(desc->f_inode);
 	}
 
 	dvfs_destroy_file(desc);

@@ -118,6 +118,9 @@ extern int dvfs_default_destroy_inode(struct inode *);
 int dvfs_destroy_inode(struct inode *inode) {
 	assert(inode);
 
+	if (inode->i_dentry)
+		inode->i_dentry->d_inode = NULL;
+
 	if (inode->i_sb && inode->i_sb->sb_ops &&
 	    inode->i_sb->sb_ops->destroy_inode)
 		return inode->i_sb->sb_ops->destroy_inode(inode);
