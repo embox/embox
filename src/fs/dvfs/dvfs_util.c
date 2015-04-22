@@ -131,14 +131,19 @@ int dvfs_destroy_inode(struct inode *inode) {
  * @retval NULL Pool is full
  */
 struct dentry *dvfs_alloc_dentry(void) {
-	return pool_alloc(&dentry_pool);
+	struct dentry *d = pool_alloc(&dentry_pool);
+	if (d)
+		memset(d, 0, sizeof(struct dentry));
+	return d;
 }
 
 /* @brief Remove dentry from pool
  */
 int dvfs_destroy_dentry(struct dentry *dentry) {
+	assert(dentry->usage_count >= 0);
 	if (dentry->usage_count == 0) {
-		dvfs_destroy_inode(dentry->d_inode);
+		if (dentry->d_inode)
+			dvfs_destroy_inode(dentry->d_inode);
 		pool_free(&dentry_pool, dentry);
 		return 0;
 	} else
@@ -183,6 +188,7 @@ int inode_fill(struct super_block *sb, struct inode *inode,
 		.i_sb      = sb,
 		.i_ops     = sb ? sb->sb_iops : NULL,
 		.start_pos = inode->start_pos,
+		.i_no      = inode->i_no,
 	};
 
 	return 0;
@@ -235,6 +241,7 @@ int dvfs_update_root(void) {
 		.parent  = global_root,
 		.name    = "/",
 		.flags   = O_DIRECTORY,
+		.usage_count = 1,
 	};
 
 	if (global_root->d_inode)

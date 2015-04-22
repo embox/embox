@@ -360,15 +360,15 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 
 	drv = dumb_fs_driver_find(fstype);
 	sb  = dvfs_alloc_sb(drv, dev);
-	d   = dvfs_alloc_dentry();
-	sb->root = d;
 
 	if (!strcmp(dest, "/")) {
 		set_rootfs_sb(sb);
 		dvfs_update_root();
+	} else {
+		d = dvfs_alloc_dentry();
+		d->usage_count++;
+		sb->root = d;
 	}
-
-	d->usage_count++;
 
 	return 0;
 }
@@ -396,8 +396,10 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	next_dentry  = dvfs_alloc_dentry();
 
 	if (!next_inode || !next_dentry) {
-		dvfs_destroy_dentry(next_dentry);
-		dvfs_destroy_inode(next_inode);
+		if (next_dentry)
+			dvfs_destroy_dentry(next_dentry);
+		if (next_inode)
+			dvfs_destroy_inode(next_inode);
 		return -ENOMEM;
 	}
 
