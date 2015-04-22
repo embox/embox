@@ -157,6 +157,7 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	struct super_block *sb;
 	struct inode *new_inode;
+	int res;
 	assert(lookup);
 	assert(lookup->parent);
 	assert(lookup->parent->flags & O_DIRECTORY);
@@ -170,8 +171,13 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	dentry_fill(sb, new_inode, lookup->item, lookup->parent);
 	strcpy(lookup->item->name, name);
 	inode_fill(sb, new_inode, lookup->item);
-	return sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
-	/* TODO add dentry to cache */
+	res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
+
+	if (res) {
+		dvfs_destroy_dentry(lookup->item);
+	}
+
+	return res;
 }
 
 /* @brief Initialize file descriptor for usage according to path
@@ -195,7 +201,8 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 	if (!lookup.item) {
 		if (mode & O_CREAT) {
 			char *last_name = strrchr(path, '/');
-			dvfs_create_new(last_name ? last_name + 1 : path, &lookup, mode);
+			if (dvfs_create_new(last_name ? last_name + 1 : path, &lookup, mode))
+				return -ENOSPC;
 		} else {
 			desc->f_inode = NULL;
 			desc->f_dentry = NULL;
