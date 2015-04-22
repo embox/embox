@@ -394,15 +394,24 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	parent_inode = lookup->parent->d_inode;
 	next_inode   = dvfs_alloc_inode(sb);
 	next_dentry  = dvfs_alloc_dentry();
+
+	if (!next_inode || !next_dentry) {
+		dvfs_destroy_dentry(next_dentry);
+		dvfs_destroy_inode(next_inode);
+		return -ENOMEM;
+	}
+
 	dentry_fill(sb, next_inode, next_dentry, lookup->parent);
 	assert(sb && sb->sb_iops && sb->sb_iops->iterate);
 	res = sb->sb_iops->iterate(next_inode, parent_inode, ctx);
+	inode_fill(sb, next_inode, next_dentry);
 
 	if (res) {
 		ctx->pos = 0;
 		dvfs_destroy_dentry(next_dentry);
 		next_dentry = NULL;
 	} else {
+		dvfs_pathname(next_inode, next_dentry->name);
 		ctx->pos++;
 	}
 
