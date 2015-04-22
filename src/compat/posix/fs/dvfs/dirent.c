@@ -52,7 +52,14 @@ int closedir(DIR *dir) {
 		return -1;
 	}
 
+	if (dir->prv_dentry) {
+		dir->prv_dentry->usage_count--;
+		dvfs_destroy_dentry(dir->prv_dentry);
+	}
+
 	dir->dir_dentry->usage_count--;
+	dvfs_destroy_dentry(dir->dir_dentry);
+
 	objfree(&dir_pool, dir);
 
 	return 0;
@@ -60,16 +67,24 @@ int closedir(DIR *dir) {
 
 struct dirent *readdir(DIR *dir) {
 	struct lookup l;
+	struct dentry *prev;
 
 	if (!dir) {
 		SET_ERRNO(EBADF);
 		return NULL;
 	}
 
+	prev = dir->prv_dentry;
+
 	l = (struct lookup) {
 		.parent = dir->dir_dentry,
-		.item   = dir->prv_dentry,
+		.item   = prev,
 	};
+
+	if (prev) {
+		prev->usage_count--;
+		dvfs_destroy_dentry(prev);
+	}
 
 	if (dvfs_iterate(&l, &dir->ctx)) {
 		SET_ERRNO(EAGAIN);
