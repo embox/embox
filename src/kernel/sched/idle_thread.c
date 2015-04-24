@@ -31,7 +31,7 @@ int idle_thread_create(void) {
 	}
 
 	task_thread_register(task_kernel_task(), t);
-	thread_set_priority(t, SCHED_PRIORITY_MIN);
+	schedee_priority_set(&t->schedee, SCHED_PRIORITY_MIN);
 
 	cpu_init(cpu_get_id(), t);
 	thread_launch(t);

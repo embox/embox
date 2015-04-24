@@ -8,13 +8,13 @@
 
 #include <util/dlist.h>
 
-#include <kernel/sched/schedee.h>
 #include <kernel/task.h>
 #include <kernel/sched/sched_strategy.h>
 
 #include <module/embox/arch/smp.h>
 #include <kernel/cpu/cpu.h>
 
+struct schedee;
 
 void runq_item_init(runq_item_t *runq_link) {
 	dlist_head_init(runq_link);

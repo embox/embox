@@ -20,7 +20,7 @@ char *itoa( int num, char *buf, unsigned short int base )
 
 	// check base
 	if( base < 2 || base > 36 )
-		{ return; }
+		{ return buf; }
 
 	/* If num < 0, put `-' in the head.  */
 	if( num < 0 )

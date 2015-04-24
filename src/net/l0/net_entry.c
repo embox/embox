@@ -19,9 +19,8 @@
 #include <net/l0/net_rx.h>
 #include <embox/unit.h>
 
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
-#include <util/err.h>
 
 #define NETIF_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
@@ -29,7 +28,7 @@ EMBOX_UNIT_INIT(net_entry_init);
 
 static DLIST_DEFINE(netif_rx_list);
 
-static struct lthread *netif_rx_handler_lt;
+static struct lthread netif_rx_irq_handler;
 
 static void netif_rx_queued(struct net_device *dev) {
 	ipl_t sp;
@@ -66,7 +65,7 @@ static void netif_poll(struct net_device *dev) {
 	}
 }
 
-static void *netif_rx_action(void *data) {
+static int netif_rx_action(struct lthread *self) {
 	struct net_device *dev;
 
 	dlist_foreach_entry(dev, &netif_rx_list, rx_lnk) {
@@ -74,7 +73,7 @@ static void *netif_rx_action(void *data) {
 		netif_rx_dequeued(dev);
 	}
 
-	return NULL;
+	return 0;
 }
 
 static void netif_rx_schedule(struct sk_buff *skb) {
@@ -89,7 +88,7 @@ static void netif_rx_schedule(struct sk_buff *skb) {
 
 	netif_rx_queued(dev);
 
-	lthread_launch(netif_rx_handler_lt);
+	lthread_launch(&netif_rx_irq_handler);
 }
 
 int netif_rx(void *data) {
@@ -99,8 +98,7 @@ int netif_rx(void *data) {
 }
 
 static int net_entry_init(void) {
-	netif_rx_handler_lt = lthread_create(&netif_rx_action, NULL);
-	assert(!err(netif_rx_handler_lt));
-	lthread_priority_set(netif_rx_handler_lt, NETIF_RX_HND_PRIORITY);
+	lthread_init(&netif_rx_irq_handler, &netif_rx_action);
+	schedee_priority_set(&netif_rx_irq_handler.schedee, NETIF_RX_HND_PRIORITY);
 	return 0;
 }

@@ -55,7 +55,7 @@ void startup_ap(void) {
 	lapic_enable();
 
 	bs_idle = thread_init_stack(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
-			THREAD_PRIORITY_MIN, bs_idle_run, NULL);
+			SCHED_PRIORITY_MIN, bs_idle_run, NULL);
 	cpu_init(self_id, bs_idle);
 	task_thread_register(task_kernel_task(), bs_idle);
 	sched_set_current(&bs_idle->schedee);

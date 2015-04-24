@@ -19,7 +19,7 @@
 #include <kernel/thread/thread_stack.h>
 #include <kernel/thread/thread_local.h>
 #include <kernel/thread/thread_cancel.h>
-#include <kernel/sched/schedee.h>
+#include <kernel/sched.h>
 #include <kernel/thread/thread_wait.h>
 
 #include <util/dlist.h>
@@ -34,20 +34,12 @@ struct task;
 
 /**
  * Thread control block.
- *
- * Locking:
- *   t->lock    - used during waking up
- *   t->active  - (SMP) only current is allowed to modify it,
- *                reads are usually paired with t->waiting
- *   t->ready   - any access must be protected with rq lock and interrupts off,
- *                only current can reset it to zero (during 'schedule'),
- *                others can set it to a non-zero during wake up
- *   t->waiting - current can change it from zero to a non-zero with no locks,
- *                others access it with t->lock held and interrupts off
  */
 struct thread {
-	/* schedee member HAVE TO be first. Please, do NOT move!*/
 	struct schedee    schedee;     /**< Schedee interface for scheduler */
+
+	void              *(*run)(void *); /**< Start routine */
+	void              *run_arg;        /**< Argument to be passed to run */
 
 	unsigned int       critical_count;
 	unsigned int       siglock;
@@ -74,6 +66,8 @@ struct thread {
 	thread_cancel_t    cleanups;
 
 	struct thread_wait thread_wait;
+
+	int                policy;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

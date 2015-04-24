@@ -48,7 +48,7 @@ static void *high_run(void *arg) {
 }
 
 TEST_CASE("General") {
-	sched_priority_t l = 200, m = 210, h = 220;
+	int l = 200, m = 210, h = 220;
 
 	semaphore_init(&s, 2);
 
@@ -61,9 +61,9 @@ TEST_CASE("General") {
 	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, NULL);
 	test_assert_zero(err(high));
 
-	test_assert_zero(thread_set_priority(low, l));
-	test_assert_zero(thread_set_priority(mid, m));
-	test_assert_zero(thread_set_priority(high, h));
+	test_assert_zero(schedee_priority_set(&low->schedee, l));
+	test_assert_zero(schedee_priority_set(&mid->schedee, m));
+	test_assert_zero(schedee_priority_set(&high->schedee, h));
 
 	test_assert_zero(thread_launch(low));
 	test_assert_zero(thread_join(low, NULL));
@@ -90,7 +90,7 @@ static void *l_low_run(void *arg) {
 }
 
 TEST_CASE("Correctness of semaphore_timedwait") {
-	sched_priority_t ll = 200, hh = 220;
+	int ll = 200, hh = 220;
 
 	semaphore_init(&s, 1);
 
@@ -100,8 +100,8 @@ TEST_CASE("Correctness of semaphore_timedwait") {
 	h_high = thread_create(THREAD_FLAG_SUSPENDED, h_high_run, NULL);
 	test_assert_zero(err(h_high));
 
-	test_assert_zero(thread_set_priority(l_low, ll));
-	test_assert_zero(thread_set_priority(h_high, hh));
+	test_assert_zero(schedee_priority_set(&l_low->schedee, ll));
+	test_assert_zero(schedee_priority_set(&h_high->schedee, hh));
 	test_assert_zero(thread_launch(l_low));
 
 	test_assert_zero(thread_join(l_low, NULL));

@@ -1,0 +1,30 @@
+package embox.cmd.games
+
+@DefaultImpl(race_diag_stdio)
+abstract module race_io_api { }
+
+module race_lcd_gpio extends race_io_api {
+	source "race_lcd_gpio.c"
+}
+
+module race_diag_stdio extends race_io_api {
+	source "race_diag_stdio.c"
+}
+
+@AutoCmd
+@Cmd(name = "race",
+	help = "",
+	man = '''
+		NAME
+			race - simple game for lthreads demonstration
+		SYNOPSIS
+			race
+		AUTHORS
+			Vita Loginova
+	''')
+module race {
+	source "race.c"
+
+	depends race_io_api
+	depends embox.compat.libc.stdlib.core
+}

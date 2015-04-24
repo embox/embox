@@ -28,9 +28,7 @@
 
 #include <kernel/critical.h>
 #include <kernel/spinlock.h>
-#include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
 
 // XXX
@@ -67,6 +65,26 @@ int sched_init(struct schedee *current) {
 	return 0;
 }
 
+int schedee_init(struct schedee *schedee, int priority,
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next))
+{
+	runq_item_init(&schedee->runq_link);
+
+	schedee->lock = SPIN_UNLOCKED;
+
+	schedee->process = process;
+
+	schedee->ready = false;
+	schedee->active = false;
+	schedee->waiting = true;
+
+	schedee_priority_init(schedee, priority);
+	sched_affinity_init(&schedee->affinity);
+	sched_timing_init(schedee);
+
+	return 0;
+}
+
 void sched_set_current(struct schedee *schedee) {
 	assert(schedee_get_current() == NULL);
 	__schedee_set_current(schedee);
@@ -78,8 +96,8 @@ void sched_set_current(struct schedee *schedee) {
 
 static void sched_check_preempt(struct schedee *t) {
 	// TODO ask runq
-	if (schedee_priority_get(&schedee_get_current()->priority) <
-			schedee_priority_get(&t->priority))
+	if (schedee_priority_get(schedee_get_current()) <
+			schedee_priority_get(t))
 		sched_post_switch(); // TODO SMP
 }
 
@@ -109,7 +127,8 @@ int sched_active(struct schedee *s) {
 	return s->active;
 }
 
-int sched_change_priority(struct schedee *s, sched_priority_t prior) {
+int sched_change_priority(struct schedee *s, int prior,
+		int (*set_priority)(struct schedee_priority *, int)) {
 	ipl_t ipl;
 	int in_rq;
 
@@ -120,7 +139,7 @@ int sched_change_priority(struct schedee *s, sched_priority_t prior) {
 
 	if (in_rq)
 		__sched_dequeue(s);
-	schedee_priority_set(&s->priority, prior);
+	set_priority(&s->priority, prior);
 	if (in_rq)
 		__sched_enqueue(s);
 
@@ -369,6 +388,8 @@ static void __schedule(int preempt) {
 		/* Runq is unlocked as soon as possible, but interrupts remain disabled
 		 * during the 'sched_switch' (if any). */
 		spin_unlock(&rq.lock);
+
+		schedee_set_current(next);
 
 		/* next->process has to restore ipl. */
 		next = next->process(prev, next);

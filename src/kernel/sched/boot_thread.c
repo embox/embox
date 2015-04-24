@@ -24,7 +24,7 @@ struct schedee *boot_thread_create(void) {
 	const size_t kernel_stack_sz = OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size);
 
 	bootstrap = thread_init_stack(&_stack_top - kernel_stack_sz, kernel_stack_sz,
-			THREAD_PRIORITY_NORMAL, boot_stub, NULL);
+			SCHED_PRIORITY_NORMAL, boot_stub, NULL);
 
 	task_set_main(task_kernel_task(), bootstrap);
 

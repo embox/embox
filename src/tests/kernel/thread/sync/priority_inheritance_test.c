@@ -29,7 +29,7 @@ static struct thread *high;
 
 TEST_CASE("with inheritance") {
 	struct mutex mutex;
-	sched_priority_t l = 200, m = 210, h = 220;
+	int l = 200, m = 210, h = 220;
 
 	mutex_init(&mutex);
 
@@ -37,19 +37,19 @@ TEST_CASE("with inheritance") {
 	test_assert_zero(err(low));
 
 	test_assert_not_null(low);
-	test_assert_zero(thread_set_priority(low, l));
+	test_assert_zero(schedee_priority_set(&low->schedee, l));
 
 	mid = thread_create(THREAD_FLAG_SUSPENDED, mid_run, &mutex);
 	test_assert_zero(err(mid));
 
 	test_assert_not_null(mid);
-	test_assert_zero(thread_set_priority(mid, m));
+	test_assert_zero(schedee_priority_set(&mid->schedee, m));
 
 	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, &mutex);
 	test_assert_zero(err(high));
 
 	test_assert_not_null(high);
-	test_assert_zero(thread_set_priority(high, h));
+	test_assert_zero(schedee_priority_set(&high->schedee, h));
 
 	thread_launch(low);
 

@@ -8,8 +8,8 @@
 #include <util/err.h>
 #include <embox/test.h>
 #include <kernel/sched.h>
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
 #include <kernel/time/ktime.h>
 
 #define LTHREAD_QUANTITY OPTION_GET(NUMBER, lthreads_quantity)
@@ -18,20 +18,19 @@ EMBOX_TEST_SUITE("test for lthread API");
 
 static volatile int done = 0;
 
-static void *run1(void *arg) {
+static int run1(struct lthread *self) {
 	test_emit('a');
 	done++;
-	return NULL;
+	return 0;
 }
 
 TEST_CASE("Launch simple lthread") {
-	struct lthread *lt;
+	struct lthread lt;
 
 	done = 0;
 
-	lt = lthread_create(run1, NULL);
-	test_assert_zero(err(lt));
-	lthread_launch(lt);
+	lthread_init(&lt, run1);
+	lthread_launch(&lt);
 
 	/* Spin, waiting lthread finished */
 	while(1) {
@@ -39,25 +38,24 @@ TEST_CASE("Launch simple lthread") {
 		ksleep(0);
 	}
 
-	lthread_delete(lt);
+	lthread_join(&lt);
 
 	test_assert_emitted("a");
 }
 
-static void *run_resched(void *arg) {
+static int run_resched(struct lthread *self) {
 	ksleep(0);
 	done = 1;
-	return NULL;
+	return 0;
 }
 
 TEST_CASE("Call sched from lthread") {
-	struct lthread *lt;
+	struct lthread lt;
 
 	done = 0;
 
-	lt = lthread_create(run_resched, NULL);
-	test_assert_zero(err(lt));
-	lthread_launch(lt);
+	lthread_init(&lt, run_resched);
+	lthread_launch(&lt);
 
 	/* Spin, waiting lthread finished */
 	while(1) {
@@ -65,92 +63,82 @@ TEST_CASE("Call sched from lthread") {
 		ksleep(0);
 	}
 
-	lthread_delete(lt);
+	lthread_join(&lt);
 }
 
-static void *run2(void *arg) {
+static int run2(struct lthread *self) {
 	done++;
-	return NULL;
+	return 0;
 }
 
 TEST_CASE("Create lthreads with different priorities") {
-	struct lthread *lts[LTHREAD_QUANTITY];
+	struct lthread lts[LTHREAD_QUANTITY];
 	done = 0;
 
 	for(int i = 0; i < LTHREAD_QUANTITY; i++) {
-		lts[i] = lthread_create(run2, NULL);
-		test_assert_zero(err(lts[i]));
+		lthread_init(&lts[i], run2);
 		test_assert_zero(
-			lthread_priority_set(lts[i], LTHREAD_PRIORITY_MAX - i)
+			schedee_priority_set(&lts[i].schedee, SCHED_PRIORITY_MAX - i)
 		);
-		lthread_launch(lts[i]);
+		lthread_launch(&lts[i]);
 	}
 
-	/* Spin, waiting all lthreads finished */
-	while(1) {
-		if(done == LTHREAD_QUANTITY) break;
-		ksleep(0);
-	}
-
+	/* deleting occurs onle after finishing */
 	for(int i = 0; i < LTHREAD_QUANTITY; i++) {
-		lthread_delete(lts[i]);
+		lthread_join(&lts[i]);
 	}
+
+	test_assert_equal(done, LTHREAD_QUANTITY);
 }
 
-static void *run3(void *arg) {
+static int run3(struct lthread *self) {
 	test_emit('b');
 	done++;
-	return NULL;
+	return 0;
 }
 
 TEST_CASE("Test executing order") {
-	struct lthread *lt1, *lt2;
+	struct lthread lt1, lt2;
 
 	done = 0;
 
-	lt1 = lthread_create(run1, NULL);
-	test_assert_zero(err(lt1));
-	lthread_priority_set(lt1, LTHREAD_PRIORITY_MAX - 1);
+	lthread_init(&lt1, run1);
+	schedee_priority_set(&lt1.schedee, SCHED_PRIORITY_MAX - 1);
 
-	lt2 = lthread_create(run3, NULL);
-	test_assert_zero(err(lt2));
-	lthread_priority_set(lt2, LTHREAD_PRIORITY_MAX);
+	lthread_init(&lt2, run3);
+	schedee_priority_set(&lt2.schedee, SCHED_PRIORITY_MAX);
 
 	/* prevent scheduling to avoid executing one
 	 * before adding another to runq
 	 */
 	sched_lock();
 	{
-		lthread_launch(lt1);
-		lthread_launch(lt2);
+		lthread_launch(&lt1);
+		lthread_launch(&lt2);
 	}
 	sched_unlock();
 
-	while(done < 2) {
-		ksleep(0);
-	}
-	test_assert_emitted("ba");
+	lthread_join(&lt1);
+	lthread_join(&lt2);
 
-	lthread_delete(lt1);
-	lthread_delete(lt2);
+	test_assert_emitted("ba");
 }
 
 TEST_CASE("Test several launches") {
-	struct lthread *lt;
+	struct lthread lt;
 
 	done = 0;
 
-	lt = lthread_create(run1, NULL);
-	test_assert_zero(err(lt));
-	lthread_priority_set(lt, LTHREAD_PRIORITY_MAX);
+	lthread_init(&lt, run1);
+	schedee_priority_set(&lt.schedee, SCHED_PRIORITY_MAX);
 
-	lthread_launch(lt);
+	lthread_launch(&lt);
 	ksleep(0);
-	lthread_launch(lt);
+	lthread_launch(&lt);
 	ksleep(0);
 
 	test_assert_equal(2, done);
 
-	lthread_delete(lt);
+	lthread_join(&lt);
 }
 
