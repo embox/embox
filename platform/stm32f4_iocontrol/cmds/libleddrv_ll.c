@@ -24,8 +24,8 @@ struct leddrv_pin_desc {
 	unsigned int pin; /**< pin mask */
 };
 
-#define LEDBLOCK_MAJOR 1
-#define LEDBLOCK_MINOR 1
+#define LEDBLOCK_MAJOR 2
+#define LEDBLOCK_MINOR 0
 
 #if LEDBLOCK_MAJOR == 0
 static const struct leddrv_pin_desc leddrv_clk =
