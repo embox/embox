@@ -9,6 +9,14 @@ module cgi_cmd_wrapper {
 }
 
 @AutoCmd
+@Cmd(name="java", help="", man="")
+module java {
+	option boolean cmds_check = false
+	option string allowed_cmds = ""
+	source "java.c"
+}
+
+@AutoCmd
 @Cmd(name="multipart_formdata", help="", man="")
 module multipart_formdata {
 	option string base = "/"

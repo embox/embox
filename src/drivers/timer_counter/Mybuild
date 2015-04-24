@@ -1,6 +1,9 @@
 package embox.driver
 
 module at91_tc {
+	@IncludeExport(path="drivers/timer_counter")
+	source "at91_timer_counter.h"
+
 	source "at91_timer_counter.c"
 
 	depends embox.kernel.irq

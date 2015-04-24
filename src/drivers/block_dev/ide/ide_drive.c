@@ -56,8 +56,6 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 
-
-//#include <fs/fat.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>
@@ -522,10 +520,10 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 
 	if (hdc->bmregbase) {
 		if (hdc->prds) {
-			page_free(__phymem_allocator, hdc->prds, 1);
+			phymem_free(hdc->prds, 1);
 		}
 		/* Allocate one page for PRD list */
-		hdc->prds = (struct prd *) page_alloc(__phymem_allocator, 1);
+		hdc->prds = (struct prd *) phymem_alloc(1);
 	}
 
 	/* Assume no devices connected to controller */

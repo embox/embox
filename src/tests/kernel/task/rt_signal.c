@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <kernel/task.h>
+#include <sys/wait.h>
 
 EMBOX_TEST_SUITE("test for real-time signals");
 
@@ -67,4 +68,5 @@ TEST_CASE("send 3 rt signals of the same type between two tasks and check"
 	test_assert_emitted("123");
 
 	kill(tid, 9);
+	waitpid(tid, NULL, 0);
 }

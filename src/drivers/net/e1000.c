@@ -29,7 +29,7 @@
 
 #include <hal/reg.h>
 
-#include <drivers/ethernet/e1000.h>
+#include <drivers/net/e1000.h>
 
 #include <mem/misc/pool.h>
 

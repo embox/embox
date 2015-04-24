@@ -17,4 +17,8 @@ static inline void *mmap_device_memory(void *addr,
 	return addr;
 }
 
+static inline int munmap(void *addr, size_t size) {
+	return 0;
+}
+
 #endif /* VMEM_NOMMU_H_ */

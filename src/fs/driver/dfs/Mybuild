@@ -1,6 +1,9 @@
 package embox.fs.driver
 
 module dfs {
+	@IncludeExport(path="fs")
+	source "dfs.h"
+
 	source "dfs.c"
 	source "dvfs.c"
 

@@ -6,6 +6,7 @@
  * @author Anton Bondarev
  */
 
+#include <assert.h>
 #include <asm/mipsregs.h>
 #include <kernel/irq.h>
 #include <asm/ptrace.h>
@@ -16,13 +17,24 @@
 EMBOX_UNIT_INIT(mips_interrupt_init);
 
 void mips_c_interrupt_handler(pt_regs_t *regs) {
-	unsigned int pending = mips_read_c0_cause() & mips_read_c0_status() & ST0_IM;
-	unsigned int irq;
-	for (irq = 15; irq > 7; irq--) {
-		if (pending & (1 << irq)) {
-			irq_dispatch(irq - 8);
+
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
+	critical_enter(CRITICAL_IRQ_HANDLER);
+	{
+		unsigned int pending = mips_read_c0_cause() & mips_read_c0_status() & ST0_IM;
+		unsigned int irq;
+
+		for (irq = 15; irq > 7; irq--) {
+			if (pending & (1 << irq)) {
+				ipl_enable();
+				irq_dispatch(irq - 8);
+				ipl_disable();
+			}
 		}
 	}
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
 }
 
 /**

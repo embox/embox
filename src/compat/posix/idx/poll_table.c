@@ -4,6 +4,8 @@
  * @date Nov 26, 2013
  * @author: Anton Bondarev
  */
+
+#include <assert.h>
 #include <poll.h>
 
 #include <kernel/sched/waitq.h>
@@ -14,10 +16,7 @@
 #include <fs/poll_table.h>
 #include <fs/index_descriptor.h>
 
-#include <assert.h>
 #include <kernel/thread.h>
-
-#include "poll_table.h"
 
 static struct idesc *poll_table_idx2idesc(int idx) {
 	return idx < 0 ? NULL : index_descriptor_get(idx);

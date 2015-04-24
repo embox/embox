@@ -1,0 +1,12 @@
+package embox.kernel.task.resource
+
+module u_area {
+	@IncludeExport(path="kernel/task/resource")
+	source "u_area.h"
+
+	source "u_area.c"
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.compat.libc.assert
+}
+

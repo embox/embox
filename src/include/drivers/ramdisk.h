@@ -11,19 +11,14 @@
 
 
 #include <stddef.h>
-//#include <limits.h>
 
 struct node;
 
 typedef struct ramdisk {
-//	int               idx;
-
 	struct block_dev *bdev;
-//	size_t            size;
 	char             *p_start_addr;
 	size_t            blocks;
 	size_t            block_size;
-//	const char        path[PATH_MAX];
 } ramdisk_t;
 
 extern struct ramdisk *ramdisk_create(char *path, size_t size);

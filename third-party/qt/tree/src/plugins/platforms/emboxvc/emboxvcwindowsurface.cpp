@@ -331,7 +331,7 @@ QEmboxVC::QEmboxVC()
 	emboxVC.name = "emboxvc";
 
 	waitq_init(&visualize);
-	globalEmboxVC->is_visualized = false;
+	is_visualized = false;
 	visualize_thread = thread_create(0, visualizeVCThread, NULL);
 
 	mpx_register_vc(&emboxVC);
@@ -368,10 +368,13 @@ void QEmboxVCWindowSurface::flush(QWidget *widget, const QRegion &region, const 
 
     int i, shift;
 
-    int x = widget->pos().x();
-    int y = widget->pos().y();
-    int width = widget->width();
-    int height = widget->height();
+    int x, y;
+    if (widget) {
+	x = widget->pos().x();
+	y = widget->pos().y();
+    } else {
+	x = y = 0;
+    }
 
     if (!vc->emboxVC.fb || !vc->emboxVCvisualized) {
     	return;

@@ -15,7 +15,6 @@
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
-#include <fs/fat.h>
 #include <fs/hlpr_path.h>
 #include <fs/file_operation.h>
 #include <util/array.h>
@@ -23,7 +22,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
-//#include <drivers/ramdisk.h>
+
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 

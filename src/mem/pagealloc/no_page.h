@@ -16,6 +16,10 @@ static inline struct page_allocator *page_allocator_init(char *start, size_t len
 	return NULL;
 }
 
+static inline int page_belong(struct page_allocator *allocator, void *page) {
+	return 0;
+}
+
 static inline void *page_alloc(struct page_allocator *allocator, size_t page_q) {
 	return NULL;
 }

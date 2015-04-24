@@ -1,0 +1,9 @@
+package embox.kernel.task.resource
+
+module vfork {
+	@IncludeExport(path="kernel/task/resource")
+	source "task_vfork.h"
+
+	source "res_vfork.c"
+}
+

@@ -22,7 +22,6 @@
 
 #include <framework/mod/options.h>
 
-
 extern int backtrace_context(void **buff, int size, struct context *ctx); // XXX
 
 #define MAX_ROWS  OPTION_GET(NUMBER, max_rows)

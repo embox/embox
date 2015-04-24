@@ -7,12 +7,13 @@
  */
 
 #include <stdint.h>
+
 #include <drivers/pins.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <drivers/soft_i2c.h>
 #include <drivers/at91sam7s256.h>
-#include <drivers/at91_timer_counter.h>
+#include <drivers/timer_counter/at91_timer_counter.h>
 #include <hal/reg.h>
 
 #define TIMER 0

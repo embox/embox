@@ -10,8 +10,8 @@
 #include <stdio.h>
 #include <errno.h>
 
-#include <drivers/flash/flash.h>
-#include <drivers/flash/flash_dev.h>
+#include <drivers/block_dev/flash/flash.h>
+#include <drivers/block_dev/flash/flash_dev.h>
 
 static void print_usage(void) {
 	printf("Usage: jffs2 DEV NAME\n");

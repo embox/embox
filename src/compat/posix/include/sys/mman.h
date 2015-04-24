@@ -45,17 +45,10 @@ static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, o
 
 
 
-static inline int munmap(void *addr, size_t size) {
-	(void)size;
-	//printf(">>> munmap(%p)\n",addr);
-	errno = EPERM;
-	return -1;
-}
 #endif
 
 extern void  *mmap(void *, size_t, int, int, int, off_t);
 extern int    mprotect(void *, size_t, int);
-extern int    munmap(void *, size_t);
 
 /* QNX */
 
@@ -68,7 +61,7 @@ extern void *mmap_device_memory(void * addr,
                            int prot,
                            int flags,
                            uint64_t physical);
-
+extern int munmap(void *, size_t);
 
 __END_DECLS
 

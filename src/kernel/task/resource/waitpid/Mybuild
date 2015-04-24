@@ -1,0 +1,14 @@
+package embox.kernel.task.resource
+
+module waitpid {
+	@IncludeExport(path="kernel/task/resource")
+	source "waitpid.h"
+
+	source "waitpid.c"
+
+	depends embox.kernel.sched.wait_queue
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.compat.libc.assert
+}
+
+

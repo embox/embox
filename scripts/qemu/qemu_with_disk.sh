@@ -92,7 +92,7 @@ guess_load_arg() {
 	if [ $AUTOQEMU_ARCH != "arm" ]; then
 		echo "-kernel $KERNEL"
 	else
-		./scripts/omap-uboot-uimage >/dev/null
+		./scripts/uboot-uimage >/dev/null
 		if [ 0 -ne $? ]; then
 			exit 1
 		fi

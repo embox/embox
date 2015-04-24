@@ -11,7 +11,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <fs/fat.h>
 #include <drivers/ide.h>
 #include <embox/block_dev.h>
 #include <mem/phymem.h>

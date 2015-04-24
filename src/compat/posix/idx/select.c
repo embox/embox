@@ -26,7 +26,6 @@
 #include <fs/idesc_event.h>
 #include <fs/poll_table.h>
 #include <util/array.h>
-#include <module/embox/compat/posix/idx/poll_table.h>
 
 static int select_fds2pt(struct idesc_poll_table *pt,
 		int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {

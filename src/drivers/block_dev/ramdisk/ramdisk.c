@@ -80,7 +80,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	ramdisk->blocks = ramdisk_size / RAMDISK_BLOCK_SIZE;
 	ramdisk->block_size = RAMDISK_BLOCK_SIZE;
 
-	ramdisk->p_start_addr = page_alloc(__phymem_allocator, page_n);
+	ramdisk->p_start_addr = phymem_alloc(page_n);
 	if (NULL == (ramdisk->p_start_addr)) {
 		err = ENOMEM;
 		goto err_free_ramdisk;
@@ -104,7 +104,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 err_free_bdev_idx:
 	index_free(&ramdisk_idx, idx);
 err_free_mem:
-	page_free(__phymem_allocator, ramdisk->p_start_addr, page_n);
+	phymem_free(ramdisk->p_start_addr, page_n);
 err_free_ramdisk:
 	pool_free(&ramdisk_pool, ramdisk);
 err_out:

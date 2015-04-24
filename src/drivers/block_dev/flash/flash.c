@@ -26,8 +26,8 @@
 
 #include <embox/block_dev.h>
 
-#include <drivers/flash/flash.h>
-#include <drivers/flash/flash_dev.h>
+#include <drivers/block_dev/flash/flash.h>
+#include <drivers/block_dev/flash/flash_dev.h>
 
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)

@@ -2,7 +2,6 @@
 package embox.compat.posix.idx
 
 module All {
-
 	depends isatty,
 		select,
 		dup,
@@ -16,7 +15,10 @@ static module isatty {
 }
 
 static module poll_table {
-	source "poll_table.c", "poll_table.h"
+	@IncludeExport(path="fs")
+	source "poll_table.h"
+
+	source "poll_table.c"
 
 	depends embox.fs.idesc_event
 	depends embox.kernel.task.idesc
@@ -24,6 +26,9 @@ static module poll_table {
 }
 
 static module select {
+//	@IncludeExport(path="fs")
+//	source "poll_table.h"
+
 	source "select.c"
 
 	depends poll_table
@@ -59,6 +64,9 @@ static module ppty {
 }
 
 static module poll {
+//	@IncludeExport(path="fs")
+//	source "poll_table.h"
+
 	source "poll.c"
 
 	depends poll_table

@@ -60,7 +60,7 @@ void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
 	vmem_unmap_region(mmap->ctx, marea->start, len, marea->is_allocated);
 }
 
-static struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
+struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
 	struct marea *marea;
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		if (INSIDE(vaddr, marea->start, marea->end)) {
@@ -91,6 +91,10 @@ void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
 
+void mmap_del_marea(struct marea *marea) {
+	dlist_del(&marea->mmap_link);
+}
+
 void mmap_init(struct emmap *mmap) {
 	int err;
 	dlist_init(&mmap->marea_list);
@@ -103,10 +107,15 @@ void mmap_init(struct emmap *mmap) {
 }
 
 void mmap_free(struct emmap *mmap) {
+	/*
+	 * To unmap this context we should switch to kernel task virtual context.
+	 * Actually, we can save this context for the later created tasks.
+	 */
+
 	//XXX: Bad code
 	mmu_set_context(1);
 	mmap_clear(mmap);
-	//vmem_free_context(mmap->ctx);
+	vmem_free_context(mmap->ctx);
 }
 
 void mmap_clear(struct emmap *mmap) {
@@ -129,7 +138,7 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		goto error;
 	}
 
-	if (!(marea = marea_create(start, end, flags))) {
+	if (!(marea = marea_create(start, end, flags, true))) {
 		goto error;
 	}
 
@@ -137,7 +146,6 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 		goto error_free;
 	}
 
-	marea->is_allocated = 1;
 	if (vmem_create_space(mmap->ctx, start, end-start, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE)) {
 		goto error_free;
 	}
@@ -208,7 +216,7 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	struct marea *marea, *new_marea;
 
 	dlist_foreach_entry(marea, &p_mmap->marea_list, mmap_link) {
-		if (!(new_marea = marea_create(marea->start, marea->end, marea->flags))) {
+		if (!(new_marea = marea_create(marea->start, marea->end, marea->flags, marea->is_allocated))) {
 			return -ENOMEM;
 		}
 		mmap_add_marea(mmap, new_marea);

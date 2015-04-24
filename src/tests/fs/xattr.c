@@ -9,11 +9,12 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
-
-#include <drivers/ramdisk.h>
-#include <mem/page.h>
 #include <sys/xattr.h>
 #include <sys/socket.h>
+
+//#include <drivers/ramdisk.h>
+#include <mem/page.h>
+
 #include <fs/mount.h>
 
 #include <embox/test.h>

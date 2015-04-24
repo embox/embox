@@ -24,6 +24,7 @@ struct page_allocator {
 
 	size_t free;
 
+	size_t bitmap_len;
 	unsigned long *bitmap;
 };
 
@@ -43,7 +44,8 @@ extern int page_belong(struct page_allocator *allocator, void *page);
 			space, \
 			page_number, \
 			page_size, \
-			page_number, \
+			page_size * page_number, \
+			(sizeof(unsigned long) * page_number/32), \
 			ctrl_space_##name \
 	}
 

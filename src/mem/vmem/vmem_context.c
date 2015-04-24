@@ -43,17 +43,5 @@ int vmem_init_context(mmu_ctx_t *ctx) {
 }
 
 void vmem_free_context(mmu_ctx_t ctx) {
-	/*
-	 * To unmap this context we should switch to kernel task virtual context.
-	 * Actually, we can save this context for the later created tasks.
-	 */
-
-	sched_lock();
-	{
-		//XXX: Bad code
-		mmu_set_context(1);
-
-		vmem_unmap_region(ctx, 0, 0x80000000UL, 0);
-	}
-	sched_unlock();
+	vmem_free_pgd_table(mmu_get_root(ctx));
 }

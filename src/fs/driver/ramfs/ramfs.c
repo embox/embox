@@ -27,14 +27,12 @@
 #include <fs/file_operation.h>
 #include <fs/path.h>
 
+#include <util/math.h>
 #include <util/err.h>
 
 #include <embox/unit.h>
 #include <embox/block_dev.h>
 #include <drivers/ramdisk.h>
-
-
-
 
 /* ramfs filesystem description pool */
 POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor_quantity));
@@ -166,84 +164,34 @@ static int ramfs_write_sector(struct nas *nas, char *buffer,
 }
 
 static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
-	size_t len;
-	size_t current, cnt;
-	uint32_t end_pointer;
-	blkno_t blk;
-	uint32_t bytecount;
-	uint32_t start_block;		/* start of file */
-	struct nas *nas;
-	struct ramfs_fs_info *fsi;
-	struct ramfs_file_info *fi;
+	struct nas *nas = desc->node->nas;
+	struct ramfs_fs_info *fsi = nas->fs->fsi;
+	void *pbuf, *ebuf;
 
-	nas = desc->node->nas;
-	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
+	pbuf = buf;
+	ebuf = buf + min(nas->fi->ni.size - desc->cursor, size);
+	while (pbuf - ebuf > 0) {
+		blkno_t blk = desc->cursor / fsi->block_size;
+		int offset = desc->cursor % fsi->block_size;
+		int read_n;
 
-	fi->pointer = desc->cursor;
+		assert (blk < fsi->block_per_file);
+		assert (blk < fsi->numblocks);
 
-	len = size;
-
-	/* Don't try to read past EOF */
-	if (len > nas->fi->ni.size - fi->pointer) {
-		len = nas->fi->ni.size - fi->pointer;
-	}
-
-	end_pointer = fi->pointer + len;
-	bytecount = 0;
-	start_block = fi->index * fsi->block_per_file;
-
-	while(len) {
-		blk = fi->pointer / fsi->block_size;
-		/* check if block over the file */
-		if(blk >= fsi->block_per_file) {
-			bytecount = 0;
-			break;
-		}
-		else {
-			blk += start_block;
-		}
-		/* check if block over the filesystem */
-		if(blk >= fsi->numblocks) {
-			bytecount = 0;
-			break;
-		}
-		/* calculate pointer in scratch buffer */
-		current = fi->pointer % fsi->block_size;
-
-		/* set the counter how many bytes read from block */
-		if(end_pointer - fi->pointer > fsi->block_size) {
-			if(current) {
-				cnt = fsi->block_size - current;
-			}
-			else {
-				cnt = fsi->block_size;
-			}
-		}
-		else {
-			cnt = end_pointer - fi->pointer;
-		}
-
-		/* one 4096-bytes block read operation */
+		assert(sizeof(sector_buff) == fsi->block_size);
 		if(1 != ramfs_read_sector(nas, sector_buff, 1, blk)) {
-			bytecount = 0;
 			break;
 		}
-		/* get data from block */
-		memcpy (buf, sector_buff + current, cnt);
 
-		bytecount += cnt;
-		/* shift the pointer */
-		fi->pointer += cnt;
-		if(end_pointer >= fi->pointer) {
-			break;
-		}
+		read_n = min(fsi->block_size - offset, pbuf - ebuf);
+		memcpy (buf, sector_buff + offset, read_n);
+
+		desc->cursor += read_n;
+		pbuf += read_n;
 	}
 
-	desc->cursor = fi->pointer;
-	return bytecount;
+	return pbuf - buf;
 }
-
 
 static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	ramfs_file_info_t *fi;

@@ -16,41 +16,41 @@ EMBOX_TEST_SUITE("page allocation test");
 TEST_CASE("single page allocation") {
 	void *page;
 
-	page = page_alloc(__phymem_allocator,1);
+	page = phymem_alloc(1);
 
 	test_assert_not_null(page);
 
-	page_free(__phymem_allocator,page, 1);
+	phymem_free(page, 1);
 }
 
 TEST_CASE("multi page allocation") {
 	void *page;
 
-	page = page_alloc(__phymem_allocator,10);
+	page = phymem_alloc(10);
 
 	test_assert_not_null(page);
 
-	page_free(__phymem_allocator,page, 10);
+	phymem_free(page, 10);
 }
 
 TEST_CASE("Mixed single and multi page allocation") {
 	void *page;
 
-	page = page_alloc(__phymem_allocator,1);
+	page = phymem_alloc(1);
 	test_assert_not_null(page);
-	page_free(__phymem_allocator,page, 1);
+	phymem_free(page, 1);
 
-	page = page_alloc(__phymem_allocator,10);
+	page = phymem_alloc(10);
 	test_assert_not_null(page);
-	page_free(__phymem_allocator,page, 10);
+	phymem_free(page, 10);
 
-	page = page_alloc(__phymem_allocator,1);
+	page = phymem_alloc(1);
 	test_assert_not_null(page);
-	page_free(__phymem_allocator,page, 1);
+	phymem_free(page, 1);
 }
 
 TEST_CASE("Try allocate too lot of pages") {
 
 	/* FIXME */
-	test_assert_null(page_alloc(__phymem_allocator, __phymem_allocator->pages_n + 1));
+	test_assert_null(phymem_alloc(__phymem_allocator->pages_n + 1));
 }

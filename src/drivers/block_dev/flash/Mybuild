@@ -1,8 +1,18 @@
 package embox.driver
 
+module flash_lib {
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "flash.h"
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "flash_dev.h"
+}
+
 module flash {
 	source "flash.c"
+
 	option number dev_quantity=4
+
+	depends flash_lib
 
 	depends embox.fs.node
 	depends embox.mem.page_api

@@ -1,23 +1,5 @@
 package embox.kernel.task.resource
 
-module affinity {
-	source "affinity.c"
-
-	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.assert
-}
-
-module env {
-	option number env_per_task=8
-	option number env_str_len=32
-	source "env.c", "env.h"
-
-	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.assert
-	@NoRuntime depends embox.compat.libc.str
-	@NoRuntime depends embox.util.Array
-}
-
 module errno {
 	source "errno.c"
 
@@ -32,11 +14,6 @@ module idesc_table {
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.kernel.task.idesc
 	@NoRuntime depends embox.compat.libc.assert
-}
-
-module task_heap {
-	source "task_heap.c"
-	depends embox.kernel.task.task_resource
 }
 
 module mmap {
@@ -87,28 +64,3 @@ module thread_key_table {
 	@NoRuntime depends embox.util.indexator
 }
 
-module u_area {
-	source "u_area.c"
-
-	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.assert
-}
-
-module waitpid {
-	source "waitpid.c"
-
-	depends embox.kernel.sched.wait_queue
-	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.compat.libc.assert
-}
-
-module vfork {
-	source "res_vfork.c"
-}
-
-module argv {
-	source "res_argv.c"
-
-	option number args_quantity = 0x8
-	option number arg_length = 0x20
-}

@@ -24,12 +24,19 @@ C_ENTRY(context_switch):
 	sw $s2, CTX_S2($a0)
 	sw $s1, CTX_S1($a0)
 	sw $s0, CTX_S0($a0)
+	mfc0 $s0, $12
+	sw $s0, CTX_CR0_STAT($a0)
 	/* Store the old stack pointer in the old control block */
 	sw $sp, CTX_SP($a0)
 	/* Get the new stack pointer from the new control block */
 	lw $sp, CTX_SP($a1)
 	nop /* delay slot for load */
 	/* Now, restore the registers */
+	andi $s0, $s0, 0xff00 /* preserve interrupt mask */
+	lw $s1, CTX_CR0_STAT($a1)
+	andi $s1, $s1, 0x00ff /* load only status bits */
+	or $s0, $s0, $s1 /* combine them together */
+	mtc0 $s0, $12
 	lw $s0, CTX_S0($a1)
 	lw $s1, CTX_S1($a1)
 	lw $s2, CTX_S2($a1)
@@ -42,6 +49,7 @@ C_ENTRY(context_switch):
 	lw $gp, CTX_GP($a1)
 	lw $ra, CTX_RA($a1)
 	nop /* delay slot for load */
-	j $ra
+	addi $sp, $sp, CTX_SIZE
 	/* and return. */
-	addi $sp, $sp, CTX_SIZE /* in delay slot */
+	jr $ra
+	nop /* in delay slot */

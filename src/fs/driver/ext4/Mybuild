@@ -1,6 +1,9 @@
 package embox.fs.driver
 
 module ext4 {
+	@IncludeExport(path="fs")
+	source "ext4.h"
+
 	source "ext4.c"
 	source "ext4_balloc.c"
 	option number inode_quantity=64

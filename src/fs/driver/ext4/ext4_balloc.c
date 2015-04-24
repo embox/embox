@@ -32,7 +32,7 @@
 #include <embox/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
-#include <drivers/ramdisk.h>
+
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
 

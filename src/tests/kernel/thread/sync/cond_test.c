@@ -11,6 +11,7 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread.h>
 #include <kernel/task.h>
+#include <sys/wait.h>
 #include <util/err.h>
 
 static struct thread *low, *high;
@@ -73,9 +74,13 @@ static void * try_signal_shared(void *unused) {
 }
 
 TEST_CASE("PROCESS_PRIVATE") {
+	int p1, p2;
+
 	cond_init(&c_private, NULL);
-	test_assert(0 <= new_task("", try_signal_private, NULL));
+	test_assert(0 <= (p1 = new_task("", try_signal_private, NULL)));
 	cond_init(&c, NULL);
 	condattr_setpshared(&c.attr, PROCESS_SHARED);
-	test_assert(0 <= new_task("", try_signal_shared, NULL));
+	test_assert(0 <= (p2 = new_task("", try_signal_shared, NULL)));
+	waitpid(p1, NULL, 0);
+	waitpid(p2, NULL, 0);
 }

@@ -12,12 +12,11 @@
 #include <kernel/task/resource/u_area.h>
 
 int main(int argc, char **argv) {
-	int tid;
 	struct task *task;
 
 	printf("PID USER  PR COMMAND\n");
-	for (tid = 0; (tid = task_table_get_first(tid)) >= 0; ++tid) {
-		task = task_table_get(tid);
+
+	task_foreach(task) {
 		printf("%-3d %-4d % 3d %s\n", tid,
 				task_resource_u_area(task)->reuid,
 				task_get_priority(task), task_get_name(task));

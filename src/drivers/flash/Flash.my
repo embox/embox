@@ -7,4 +7,5 @@ module stm32 {
 	source "flash.lds.S"
 
 	depends third_party.bsp.st_f4.core
+	depends embox.driver.flash_lib
 }

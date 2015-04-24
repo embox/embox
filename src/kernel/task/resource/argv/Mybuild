@@ -1,0 +1,12 @@
+package embox.kernel.task.resource
+
+module argv {
+	@IncludeExport(path="kernel/task/resource")
+	source "task_argv.h"
+
+	source "res_argv.c"
+
+	option number args_quantity = 0x8
+	option number arg_length = 0x20
+}
+
