@@ -30,7 +30,7 @@ static int fat_create_dir_entry(struct nas *parent_nas);
 static struct fat_file_info *fat_fi_alloc(struct nas *nas, void *fs) {
 	struct fat_file_info *fi;
 
-	fi = fat_file_pool_alloc();
+	fi = fat_file_alloc();
 	if (fi) {
 		memset(fi, 0, sizeof(*fi));
 		nas->fi->privdata = fi;
@@ -83,11 +83,11 @@ static int fat_mount_files(struct nas *dir_nas) {
 
 		mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
-		if (NULL == (fi = fat_file_pool_alloc())) {
+		if (NULL == (fi = fat_file_alloc())) {
 			return -ENOMEM;
 		}
 		if (NULL == (node = vfs_subtree_create_child(dir_nas->node, (const char *) name, mode))) {
-			fat_file_pool_free(fi);
+			fat_file_free(fi);
 			return -ENOMEM;
 		}
 
@@ -133,14 +133,14 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 			continue;
 		}
 
-		if (NULL == (fi = fat_file_pool_alloc())) {
+		if (NULL == (fi = fat_file_alloc())) {
 			return -ENOMEM;
 		}
 
 		mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
 		if (NULL == (node = vfs_subtree_create_child(parent_nas->node, name, mode))) {
-			fat_file_pool_free(fi);
+			fat_file_free(fi);
 			return -ENOMEM;
 		}
 
@@ -166,13 +166,13 @@ static void fat_free_fs(struct nas *nas) {
 		fsi = nas->fs->fsi;
 
 		if(NULL != fsi) {
-			fat_fs_pool_free(fsi);
+			fat_fs_free(fsi);
 		}
 		filesystem_free(nas->fs);
 	}
 
 	if (NULL != (fi = nas->fi->privdata)) {
-		fat_file_pool_free(fi);
+		fat_file_free(fi);
 	}
 }
 
@@ -185,7 +185,7 @@ static int fat_umount_entry(struct nas *nas) {
 				fat_umount_entry(child->nas);
 			}
 
-			fat_file_pool_free(child->nas->fi->privdata);
+			fat_file_free(child->nas->fi->privdata);
 			vfs_del_leaf(child);
 		}
 	}
@@ -354,7 +354,7 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	dir_nas->fs->bdev = dev_fi->privdata;
 
-	if (NULL == (fsi = fat_fs_pool_alloc())) {
+	if (NULL == (fsi = fat_fs_alloc())) {
 		rc =  -ENOMEM;
 		goto error;
 	}
@@ -362,7 +362,7 @@ static int fatfs_mount(void *dev, void *dir) {
 	dir_nas->fs->fsi = fsi;
 
 	/* allocate this directory info */
-	if (NULL == (fi = fat_file_pool_alloc())) {
+	if (NULL == (fi = fat_file_alloc())) {
 		rc =  -ENOMEM;
 		goto error;
 	}
@@ -432,7 +432,7 @@ static int fatfs_delete(struct node *node) {
 	vfs_get_relative_path(node, path, PATH_MAX);
 
 	if (path[root_path_len] == '\0') {
-		fat_fs_pool_free(fsi);
+		fat_fs_free(fsi);
 	} else {
 		if (node_is_directory(node)) {
 			if (fat_unlike_directory(fi, (uint8_t *) path + root_path_len,
@@ -446,7 +446,7 @@ static int fatfs_delete(struct node *node) {
 			}
 		}
 	}
-	fat_file_pool_free(fi);
+	fat_file_free(fi);
 
 	vfs_del_leaf(node);
 	return 0;
