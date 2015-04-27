@@ -78,6 +78,9 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	assert(parent);
 	assert(path);
 
+	while (*path == '/')
+		path++;
+
 	memcpy(buff, path, len);
 	buff[len] = '\0';
 
@@ -88,7 +91,6 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		};
 		return 0;
 	}
-
 
 	if (strlen(buff) > 1 && path_is_double_dot(buff))
 		return dvfs_path_walk(path + 2, parent->parent, lookup);
