@@ -104,6 +104,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
         });
         modalInstance.result.then(function (new_name) {
             led_pair.name = new_name;
+            led_pair.short_name = new_name.length <= 9 ? new_name : new_name.substr(0, 6) + "...";
             $http.post('cgi-bin/cgi_cmd_wrapper?c=led_names&a=store&a=' + led_pair.index.toString(), new_name);
         });
     }

@@ -35,6 +35,7 @@
 }
 
 .block-caption {
+  font-family: monospace;
   margin: 3px 0px;
   text-align: center;
   -webkit-touch-callout: none;
