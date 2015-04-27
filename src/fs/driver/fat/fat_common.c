@@ -1611,6 +1611,7 @@ POOL_DEF(fat_fs_pool, struct fat_fs_info, 4);
 /* fat file description pool */
 POOL_DEF(fat_file_pool, struct fat_file_info, 16);
 	//OPTION_GET(NUMBER, inode_quantity));
+POOL_DEF(fat_dirinfo_pool, struct dirinfo, 16);
 
 struct fat_fs_info *fat_fs_alloc(void) {
 	return pool_alloc(&fat_fs_pool);
@@ -1626,5 +1627,13 @@ struct fat_file_info *fat_file_alloc(void) {
 
 void fat_file_free(struct fat_file_info *fi) {
 	pool_free(&fat_file_pool, fi);
+}
+
+struct dirinfo *fat_dirinfo_alloc(void) {
+	return pool_alloc(&fat_dirinfo_pool);
+}
+
+void fat_dirinfo_free(struct dirinfo *di) {
+	pool_free(&fat_dirinfo_pool, di);
 }
 

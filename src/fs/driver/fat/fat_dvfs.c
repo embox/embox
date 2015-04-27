@@ -44,31 +44,123 @@ static inline void fat_fi_from_inode(struct inode *inode, struct fat_file_info *
  */
 static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	struct fat_file_info *fi;
-	int res;
+	struct dirinfo *di;
+	struct dirent de;
+	struct volinfo *vi;
+
 	struct inode *node;
+	char tmppath[PATH_MAX];
+	char fat_name[12];
+	int found = 0;
+	int err;
 
 	assert(name);
+	assert(dir->d_inode);
+	assert(dir->d_inode->flags & O_DIRECTORY);
+
+	di = dir->d_inode->i_data;
+	vi = &((struct fat_fs_info*)dir->d_sb->sb_data)->vi;
+
+	if (!di) {
+		/* FAT root folder */
+		/* TODO move into sb init */
+		if (NULL == (di = fat_dirinfo_alloc()))
+			return NULL;
+
+		*di = (struct dirinfo) {
+			.p_scratch = fat_sector_buff,
+		};
+
+		if (vi->filesystem == FAT32) {
+			di->currentcluster = vi->rootdir;
+			err = fat_read_sector(dir->d_sb->sb_data, fat_sector_buff,
+			                      vi->dataarea + (vi->rootdir - 2) * vi->secperclus);
+		} else {
+			di->currentcluster = 0;
+			err = fat_read_sector(dir->d_sb->sb_data, fat_sector_buff, vi->rootdir);
+		}
+
+		if (err != DFS_OK) {
+			fat_dirinfo_free(di);
+			return NULL;
+		}
+
+		dir->d_inode->i_data = di;
+	}
+
+	path_canonical_to_dir(fat_name, (char *) name);
+
+	while (!fat_get_next(dir->d_sb->sb_data, di, &de)) {
+		path_canonical_to_dir(tmppath, (char *) de.name);
+		if (!memcmp(tmppath, fat_name, MSDOS_NAME)) {
+			found = 1;
+			break;
+		}
+	}
+
+	if (!found)
+		return NULL;
 
 	if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
 		return NULL;
-	if (NULL == (fi   = fat_file_alloc())) {
-		dvfs_destroy_inode(node);
-		return NULL;
-	}
-	node->i_data = fi;
-	*fi = (struct fat_file_info) {
-		.fsi = node->i_sb->sb_data,
-		.volinfo = &((struct fat_fs_info*)node->i_sb->sb_data)->vi,
-	};
-	res = fat_open_file(fi, (uint8_t*) name, 0, fat_sector_buff, &node->length);
 
-	if (res == DFS_OK || res == DFS_WRONGRES) {
-		node->flags |= (res == DFS_WRONGRES) ? O_DIRECTORY : 0;
-		return node;
+	if (de.attr & ATTR_DIRECTORY){
+		if (NULL == (di = fat_dirinfo_alloc())) {
+			dvfs_destroy_inode(node);
+			return NULL;
+		}
+
+		memset(di, 0, sizeof(struct dirinfo));
+		node->flags |= O_DIRECTORY;
+		node->i_data = di;
+
+		if (vi->filesystem == FAT32) {
+			di->currentcluster = (uint32_t) de.startclus_l_l |
+			  ((uint32_t) de.startclus_l_h) << 8 |
+			  ((uint32_t) de.startclus_h_l) << 16 |
+			  ((uint32_t) de.startclus_h_h) << 24;
+		} else {
+			di->currentcluster = (uint32_t) de.startclus_l_l |
+			  ((uint32_t) de.startclus_l_h) << 8;
+		}
 	} else {
-		dvfs_destroy_inode(node);
-		return NULL;
+		if (NULL == (fi   = fat_file_alloc())) {
+			dvfs_destroy_inode(node);
+			return NULL;
+		}
+
+		*fi = (struct fat_file_info) {
+			.fsi = node->i_sb->sb_data,
+			.volinfo = vi,
+		};
+
+		if (di->currentcluster == 0) {
+			fi->dirsector = vi->rootdir + di->currentsector;
+		} else {
+			fi->dirsector = vi->dataarea +
+			                ((di->currentcluster - 2) *
+			                vi->secperclus) + di->currentsector;
+		}
+		fi->diroffset = di->currententry - 1;
+		if (vi->filesystem == FAT32) {
+			fi->cluster = (uint32_t) de.startclus_l_l |
+			  ((uint32_t) de.startclus_l_h) << 8 |
+			  ((uint32_t) de.startclus_h_l) << 16 |
+			  ((uint32_t) de.startclus_h_h) << 24;
+		} else {
+			fi->cluster = (uint32_t) de.startclus_l_l |
+			  ((uint32_t) de.startclus_l_h) << 8;
+		}
+		fi->firstcluster = fi->cluster;
+		fi->filelen = (uint32_t) de.filesize_0 |
+				      ((uint32_t) de.filesize_1) << 8 |
+				      ((uint32_t) de.filesize_2) << 16 |
+				      ((uint32_t) de.filesize_3) << 24;
+
+		node->i_data = fi;
 	}
+
+	return node;
 }
 
 /* @brief Create new file or directory
@@ -78,8 +170,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
  *
  * @return Negative error code
  */
-static int fat_create(struct inode *i_new,
-                                struct inode *i_dir, int mode) {
+static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	int res;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;

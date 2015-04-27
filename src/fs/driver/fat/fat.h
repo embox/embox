@@ -245,9 +245,9 @@ struct fat_file_info {
 	uint32_t pointer;			/* current (BYTE) pointer */
 };
 
-void fat_set_filetime(struct dirent *de);
-void fat_get_filename(char *tmppath, char *filename);
-int fat_check_filename(char *filename);
+extern void fat_set_filetime(struct dirent *de);
+extern void fat_get_filename(char *tmppath, char *filename);
+extern int fat_check_filename(char *filename);
 
 extern char *path_canonical_to_dir(char *dest, char *src);
 extern char *path_dir_to_canonical(char *dest, char *src, char dir);
@@ -281,5 +281,7 @@ extern struct fat_fs_info *fat_fs_alloc(void);
 extern void fat_fs_free(struct fat_fs_info *fsi);
 extern struct fat_file_info *fat_file_alloc(void);
 extern void fat_file_free(struct fat_file_info *fi);
+extern struct dirinfo *fat_dirinfo_alloc(void);
+extern void fat_dirinfo_free(struct dirinfo *di);
 
 #endif /* FAT_H_ */
