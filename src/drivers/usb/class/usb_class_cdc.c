@@ -19,37 +19,6 @@ EMBOX_UNIT_INIT(usb_cdc_init);
 
 POOL_DEF(cdc_classes, struct usb_class_cdc, USB_CDC_MAX_DEVS);
 
-#if 0
-static uint32_t line_coding;
-
-static void get_line_coding_conf_hnd(struct usb_request *req, void *arg) {
-}
-
-static void get_line_coding(struct usb_dev *dev) {
-	line_coding = 18;
-
-	usb_endp_control(dev->endpoints[0], get_line_coding_conf_hnd, NULL,
-			0x21,
-			0x20,
-			0,
-		dev->c_config,
-		sizeof line_coding,
-		&line_coding);
-
-	line_coding = 0;
-
-	usb_endp_control(dev->endpoints[0], get_line_coding_conf_hnd, NULL,
-			0xA1,
-			0x21,
-			0,
-		dev->c_config,
-		sizeof line_coding,
-		&line_coding);
-
-	printk("line_coding - %d\n", line_coding);
-}
-#endif
-
 struct usb_desc_configuration config_desc;
 struct usb_desc_interface interface_desc;
 
@@ -72,8 +41,6 @@ static void usb_class_cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	//pool_free(&hid_getconfs, hid->getconf);
 	sysfree(cdc->getconf);
 	cdc->getconf = NULL;
-
-	get_line_coding(dev);
 
 	usb_class_start_handle(dev);
 
