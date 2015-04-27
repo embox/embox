@@ -90,6 +90,16 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	path_canonical_to_dir(fat_name, (char *) name);
 
+	if (vi->filesystem == FAT32)
+		err = fat_read_sector(dir->d_sb->sb_data, fat_sector_buff,
+		                      vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
+	else
+		err = fat_read_sector(dir->d_sb->sb_data, fat_sector_buff, vi->rootdir);
+
+	if (err != DFS_OK)
+		return NULL;
+
+	di->currententry = 0;
 	while (!fat_get_next(dir->d_sb->sb_data, di, &de)) {
 		path_canonical_to_dir(tmppath, (char *) de.name);
 		if (!memcmp(tmppath, fat_name, MSDOS_NAME)) {
@@ -111,6 +121,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 		}
 
 		memset(di, 0, sizeof(struct dirinfo));
+		di->p_scratch = fat_sector_buff;
 		node->flags |= O_DIRECTORY;
 		node->i_data = di;
 
