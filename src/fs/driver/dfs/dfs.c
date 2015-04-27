@@ -1,4 +1,4 @@
-/* @file   dfs.c
+/* @file
  * @brief  DumbFS driver
  * @author Denis Deryugin
  * @date   26 Dec 2014
@@ -415,7 +415,6 @@ size_t dfs_read(struct file *desc, void *buf, size_t size) {
 	assert(l >= 0);
 
 	_read(pos, buf, l);
-	desc->pos += l;
 
 	return l;
 }
