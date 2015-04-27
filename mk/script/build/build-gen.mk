@@ -790,7 +790,7 @@ $(@source_dist) :
 
 __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
-	$(wildcard $(foreach e,*.h *.inc Makefile *.txt *.patch *.diff, \
+	$(wildcard $(foreach e,*.h include/*.h include/*/*.h *.inc Makefile *.txt *.patch *.diff, \
 		$(addsuffix $e,$(__source_dirs)))))
 
 include mk/flags.mk  # INCLUDES_FROM_FLAGS
