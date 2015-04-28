@@ -371,6 +371,9 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 		sb->root = d;
 	}
 
+	if (drv->mount_end)
+		drv->mount_end(sb);
+
 	return 0;
 }
 

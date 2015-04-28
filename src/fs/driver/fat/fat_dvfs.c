@@ -28,7 +28,7 @@ extern struct file_operations fat_fops;
 * @brief Read related dir entries into dir buffer
 *
 * @param fsi Used to determine bdev and fat type (12/16/32)
-* @param di Pointer to dirinfo structure
+* @param di  Pointer to dirinfo structure
 *
 * @return Negative error number
 * @retval 0 Success
@@ -37,7 +37,7 @@ static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
 	struct volinfo *vi = &fsi->vi;
 	if (vi->filesystem == FAT32)
 		return fat_read_sector(fsi, fat_sector_buff,
-		                      vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
+		                       vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
 	else
 		return fat_read_sector(fsi, fat_sector_buff, vi->rootdir);
 }
@@ -69,20 +69,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	di = dir->d_inode->i_data;
 	vi = &((struct fat_fs_info*)sb->sb_data)->vi;
 
-	if (!di) {
-		/* FAT root folder */
-		/* TODO move into sb init */
-		if (NULL == (di = fat_dirinfo_alloc()))
-			return NULL;
-
-		*di = (struct dirinfo) {
-			.p_scratch = fat_sector_buff,
-		};
-
-		di->currentcluster = vi->filesystem == FAT32 ? vi->rootdir : 0;
-
-		dir->d_inode->i_data = di;
-	}
+	assert(di);
 
 	path_canonical_to_dir(fat_name, (char *) name);
 
@@ -329,9 +316,37 @@ static int fat_fill_sb(struct super_block *sb, struct block_dev *dev) {
 	return 0;
 }
 
+/**
+* @brief Initialize dirinfo for root FAT directory
+* @note  Should be called just after mounting FAT FS
+*
+* @param super_block Superblock of just
+*
+* @return Negative error code
+* @retval 0 Success
+*/
+static int fat_mount_end(struct super_block *sb) {
+	struct dirinfo *di;
+	struct volinfo *vi;
+	if (NULL == (di = fat_dirinfo_alloc()))
+		return -ENOMEM;
+
+	vi = &((struct fat_fs_info*)sb->sb_data)->vi;
+
+	*di = (struct dirinfo) {
+		.p_scratch = fat_sector_buff,
+	};
+
+	di->currentcluster = vi->filesystem == FAT32 ? vi->rootdir : 0;
+	sb->root->d_inode->i_data = di;
+
+	return 0;
+}
+
 static struct dumb_fs_driver dfs_fat_driver = {
-	.name    = "vfat",
-	.fill_sb = fat_fill_sb,
+	.name      = "vfat",
+	.fill_sb   = fat_fill_sb,
+	.mount_end = fat_mount_end,
 };
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
