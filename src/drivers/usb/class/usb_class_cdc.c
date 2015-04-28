@@ -51,6 +51,9 @@ static void cdc_set_interface_hnd(struct usb_request *req, void *arg);
 static size_t cdc_skip_func_descs(void *start);
 static size_t cdc_skip_endpoints(void *start);
 
+/* Misc */
+static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc);
+
 /**
  * Skip all functional descriptors.
  * Return size of all functional descriptors.
@@ -118,6 +121,23 @@ void *cdc_get_interface(void *conf, size_t index) {
 	return curp;
 }
 
+/*
+ * TODO It is a toy function to get usb_net interface properly. In future it must be moved into
+ * separate file.
+ */
+static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc) {
+	struct usb_desc_endpoint *ep;
+	struct usb_endp *data_ep;
+	struct usb_desc_interface *data_iface;
+
+	/* Get the second interface (Data Interface) for usb-net*/
+	data_iface = cdc_get_interface(cdc->getconf, 2);
+	ep = (struct usb_desc_endpoint *) ((char *)data_iface +
+			sizeof (struct usb_desc_interface) + 1 * sizeof (struct usb_desc_endpoint));
+	data_ep = usb_endp_alloc(dev, ep);
+	assert(data_ep);
+}
+
 static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
@@ -130,6 +150,9 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 
 	usb_dev_generic_fill_iface(dev, cdc->getconf + INTERFACE_DESC_OFFSET);
 	usb_dev_generic_fill_endps(dev, cdc->getconf + FUNC_DESC_OFFSET + func_desc_len);
+
+	/* XXX */
+	usb_net_hook(dev, cdc);
 
 	/* TODO free resources */
 
