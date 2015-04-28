@@ -409,7 +409,7 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 		.volinfo = &fsi->vi,
 	};
 
-	if (0 != fat_create_file(fi, tmppath, node->mode)) {
+	if (0 != fat_create_file(fi, NULL, tmppath, node->mode)) {
 		return -EIO;
 	}
 
