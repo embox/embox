@@ -1470,9 +1470,9 @@ int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
 	cache = 0;
 
 	/* fat_open_file gives us all the information we need to delete it */
-	if (DFS_OK != fat_open_file(fi, path, O_RDONLY, p_scratch, NULL)) {
+	/* if (DFS_OK != fat_open_file(fi, path, O_RDONLY, p_scratch, NULL)) {
 		return DFS_NOTFOUND;
-	}
+	} */
 
 	/* First, read the directory sector and delete that entry */
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {

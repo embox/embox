@@ -215,17 +215,6 @@ struct volinfo {
  */
 #define DFS_DI_BLANKENT		0x01	/* Searching for blank entry */
 
-/*
- *	Directory search structure (Internal to DOSFS)
- */
-struct dirinfo {
-	uint32_t currentcluster;	/* current cluster in dir */
-	uint8_t currentsector;		/* current sector in cluster */
-	uint8_t currententry;		/* current dir entry in sector */
-	uint8_t *p_scratch;			/* ptr to user-supplied scratch buffer (one sector) */
-	uint8_t flags;				/* internal DOSFS flags */
-};
-
 struct fat_fs_info {
 	struct volinfo vi;
 	struct block_dev *bdev;
@@ -243,6 +232,19 @@ struct fat_file_info {
 
 	uint32_t cluster;			/* current cluster */
 	uint32_t pointer;			/* current (BYTE) pointer */
+};
+
+/*
+ *	Directory search structure (Internal to DOSFS)
+ */
+struct dirinfo {
+	uint32_t currentcluster;	/* current cluster in dir */
+	uint8_t currentsector;		/* current sector in cluster */
+	uint8_t currententry;		/* current dir entry in sector */
+	uint8_t *p_scratch;			/* ptr to user-supplied scratch buffer (one sector) */
+	uint8_t flags;				/* internal DOSFS flags */
+
+	struct fat_file_info fi;
 };
 
 extern void fat_set_filetime(struct dirent *de);
@@ -276,6 +278,8 @@ extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 extern int      fat_root_dir_record(void *bdev);
 extern int      fat_create_file(struct fat_file_info *fi, char *path, int mode);
 extern int      fat_unlike_file(struct fat_file_info *fi, uint8_t *path, uint8_t *p_scratch);
+extern int      fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
+		uint8_t *p_scratch);
 
 extern struct fat_fs_info *fat_fs_alloc(void);
 extern void fat_fs_free(struct fat_fs_info *fsi);
