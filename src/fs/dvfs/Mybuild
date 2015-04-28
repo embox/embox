@@ -1,6 +1,9 @@
 package embox.fs
 
 module dvfs {
+	@IncludeExport(path="fs")
+	source "dvfs.h"
+
 	option number superblock_pool_size=4
 	option number inode_pool_size=64
 	option number dentry_pool_size=64
