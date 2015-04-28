@@ -16,6 +16,7 @@
 #include <drivers/usb/usb_cdc.h>
 #include <kernel/printk.h>
 #include <stdlib.h>
+#include <string.h>
 
 EMBOX_UNIT_INIT(usb_cdc_init);
 
@@ -28,6 +29,7 @@ struct usb_desc_interface interface_desc;
 
 /* Storage for device configuration*/
 static char cdc_conf[16];
+static char *cdc_sendbuf;
 
 #define INTERFACE_DESC_OFFSET          (sizeof (struct usb_desc_configuration))
 #define FUNC_DESC_OFFSET               (INTERFACE_DESC_OFFSET + \
@@ -51,8 +53,10 @@ static void cdc_set_interface_hnd(struct usb_request *req, void *arg);
 static size_t cdc_skip_func_descs(void *start);
 static size_t cdc_skip_endpoints(void *start);
 
-/* Misc */
+/* usb-net specific */
 static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc);
+static void usb_net_bulk_send(struct usb_dev *dev);
+static void usb_net_send_notify_hnd(struct usb_request *req, void *arg);
 
 /**
  * Skip all functional descriptors.
@@ -138,6 +142,27 @@ static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc) {
 	assert(data_ep);
 }
 
+static void usb_net_send_notify_hnd(struct usb_request *req, void *arg) {
+	printk("\nSENT!\n");
+	sysfree(cdc_sendbuf);
+}
+
+/*
+ * Send 64 bytes of raw data
+ */
+static void usb_net_bulk_send(struct usb_dev *dev) {
+	struct usb_endp *intr_endp;
+
+	cdc_sendbuf = sysmalloc(64);
+
+	memset(cdc_sendbuf, 0xe4, 64);
+
+	intr_endp = dev->endpoints[2];
+
+	usb_endp_bulk(intr_endp, usb_net_send_notify_hnd, cdc_sendbuf,
+			intr_endp->max_packet_size - 4);
+}
+
 static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
@@ -153,6 +178,8 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 
 	/* XXX */
 	usb_net_hook(dev, cdc);
+
+	usb_net_bulk_send(dev);
 
 	/* TODO free resources */
 
