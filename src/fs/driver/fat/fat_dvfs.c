@@ -17,22 +17,29 @@
 #include <fs/fat.h>
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
-#include <mem/misc/pool.h>
 #include <util/math.h>
-
-POOL_DEF(fat_dirinfo_pool, struct dirinfo, 4);
 
 #define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
 uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 extern struct file_operations fat_fops;
 
-/* @brief Fill struct fat_file_info according to inode data
- * @param inode Source of data about file
- * @param fi    Structure to be filled
- */
-static inline void fat_fi_from_inode(struct inode *inode, struct fat_file_info *fi) {
-
+/**
+* @brief Read related dir entries into dir buffer
+*
+* @param fsi Used to determine bdev and fat type (12/16/32)
+* @param di Pointer to dirinfo structure
+*
+* @return Negative error number
+* @retval 0 Success
+*/
+static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
+	struct volinfo *vi = &fsi->vi;
+	if (vi->filesystem == FAT32)
+		return fat_read_sector(fsi, fat_sector_buff,
+		                      vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
+	else
+		return fat_read_sector(fsi, fat_sector_buff, vi->rootdir);
 }
 
 /* @brief Figure out if node at specific path exists or not
@@ -47,19 +54,20 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	struct dirinfo *di;
 	struct dirent de;
 	struct volinfo *vi;
+	struct super_block *sb;
 
 	struct inode *node;
 	char tmppath[PATH_MAX];
 	char fat_name[12];
 	int found = 0;
-	int err;
 
 	assert(name);
 	assert(dir->d_inode);
 	assert(dir->d_inode->flags & O_DIRECTORY);
 
+	sb = dir->d_sb;
 	di = dir->d_inode->i_data;
-	vi = &((struct fat_fs_info*)dir->d_sb->sb_data)->vi;
+	vi = &((struct fat_fs_info*)sb->sb_data)->vi;
 
 	if (!di) {
 		/* FAT root folder */
@@ -71,36 +79,18 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 			.p_scratch = fat_sector_buff,
 		};
 
-		if (vi->filesystem == FAT32) {
-			di->currentcluster = vi->rootdir;
-			err = fat_read_sector(dir->d_sb->sb_data, fat_sector_buff,
-			                      vi->dataarea + (vi->rootdir - 2) * vi->secperclus);
-		} else {
-			di->currentcluster = 0;
-			err = fat_read_sector(dir->d_sb->sb_data, fat_sector_buff, vi->rootdir);
-		}
-
-		if (err != DFS_OK) {
-			fat_dirinfo_free(di);
-			return NULL;
-		}
+		di->currentcluster = vi->filesystem == FAT32 ? vi->rootdir : 0;
 
 		dir->d_inode->i_data = di;
 	}
 
 	path_canonical_to_dir(fat_name, (char *) name);
 
-	if (vi->filesystem == FAT32)
-		err = fat_read_sector(dir->d_sb->sb_data, fat_sector_buff,
-		                      vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
-	else
-		err = fat_read_sector(dir->d_sb->sb_data, fat_sector_buff, vi->rootdir);
-
-	if (err != DFS_OK)
+	if (read_dir_buf(sb->sb_data, di) != DFS_OK)
 		return NULL;
 
 	di->currententry = 0;
-	while (!fat_get_next(dir->d_sb->sb_data, di, &de)) {
+	while (!fat_get_next(sb->sb_data, di, &de)) {
 		path_canonical_to_dir(tmppath, (char *) de.name);
 		if (!memcmp(tmppath, fat_name, MSDOS_NAME)) {
 			found = 1;
@@ -111,7 +101,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	if (!found)
 		return NULL;
 
-	if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
+	if (NULL == (node = dvfs_alloc_inode(sb)))
 		return NULL;
 
 	if (de.attr & ATTR_DIRECTORY){
@@ -141,7 +131,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 		}
 
 		*fi = (struct fat_file_info) {
-			.fsi = node->i_sb->sb_data,
+			.fsi = sb->sb_data,
 			.volinfo = vi,
 		};
 
@@ -250,22 +240,12 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 		strcpy(path, ROOT_DIR);
 
 	assert(parent->i_sb);
+
 	fsi = parent->i_sb->sb_data;
-
-	if (ctx->fs_ctx == NULL) {
-		dirinfo = pool_alloc(&fat_dirinfo_pool);
-		*dirinfo = (struct dirinfo) {
-			.p_scratch = fat_sector_buff,
-		};
-		dvfs_pathname(parent, path);
-		fat_open_dir(fsi, (uint8_t*) path, dirinfo);
-		ctx->fs_ctx = dirinfo;
-	}
-
-	dirinfo = ctx->fs_ctx;
+	dirinfo = parent->i_data;
 	if (ctx->pos == 0)
 		dirinfo->currententry = 0;
-	//dirinfo->currententry = ctx->pos;
+	read_dir_buf(fsi, dirinfo);
 	while (DFS_EOF != (res = fat_get_next(fsi, dirinfo, &de))) {
 		if (de.name[0] == 0)
 			continue;
@@ -278,7 +258,6 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 		strcpy(next->i_dentry->name, (char*) de.name);
 		return 0;
 	case DFS_EOF:
-		pool_free(&fat_dirinfo_pool, dirinfo);
 		ctx->fs_ctx = 0;
 		/* Fall through */
 	default:
