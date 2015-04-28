@@ -36,10 +36,13 @@ static char cdc_conf[16];
 	(INTERFACE_DESC_OFFSET + sizeof (struct usb_desc_interface) + \
 			FUNCTIONAL_DESCS_TOTAL_SIZE)
 
-static void cdc_get_conf_len(struct usb_request *req, void *arg);
+static void cdc_get_conf_len_hnd(struct usb_request *req, void *arg);
 static void cdc_get_conf_by_idx(struct usb_dev *dev, struct usb_class_cdc *cdc,
 		size_t idx, size_t len, usb_request_notify_hnd_t cb);
-static void cdc_get_conf_content(struct usb_request *req, void *arg);
+static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg);
+static void cdc_set_interface(struct usb_dev *dev, size_t iface,
+		size_t alternated_cfg, usb_request_notify_hnd_t cb);
+static void cdc_set_interface_hnd(struct usb_request *req, void *arg);
 
 static void usb_class_cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
@@ -59,10 +62,10 @@ static void usb_class_cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	printk("%s: out\n", __func__);
 }
 
-static void cdc_get_conf_len(struct usb_request *req, void *arg) {
+static void cdc_get_conf_len_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 
-	usb_endp_control(dev->endpoints[0], cdc_get_conf_content, NULL,
+	usb_endp_control(dev->endpoints[0], cdc_get_conf_content_hnd, NULL,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -86,7 +89,7 @@ static void cdc_get_conf_by_idx(struct usb_dev *dev, struct usb_class_cdc *cdc,
 		cdc->getconf);
 }
 
-static void cdc_get_conf_content(struct usb_request *req, void *arg) {
+static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 	struct usb_desc_configuration *c;
@@ -99,8 +102,26 @@ static void cdc_get_conf_content(struct usb_request *req, void *arg) {
 			c->w_total_length, usb_class_cdc_get_conf_hnd);
 }
 
+static void cdc_set_interface(struct usb_dev *dev, size_t iface,
+		size_t alternated_cfg, usb_request_notify_hnd_t cb) {
+	/* Set CDC Data Interface */
+	usb_endp_control(dev->endpoints[0], cb, NULL,
+			USB_DEV_REQ_TYPE_WR
+			| USB_DEV_REQ_TYPE_STD
+			| USB_DEV_REQ_TYPE_IFC,
+		0xB,
+		iface,
+		alternated_cfg,
+		0,
+		NULL);
+}
+
+static void cdc_set_interface_hnd(struct usb_request *req, void *arg) {
+	cdc_set_interface(req->endp->dev, 1, 1, cdc_get_conf_len_hnd);
+}
+
 static int usb_class_cdc_get_conf(struct usb_class *cls, struct usb_dev *dev) {
-	usb_endp_control(dev->endpoints[0], cdc_get_conf_len, NULL,
+	usb_endp_control(dev->endpoints[0], cdc_set_interface_hnd, NULL,
 		USB_DEV_REQ_TYPE_WR
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -129,10 +150,6 @@ static struct usb_class usb_class_cdc = {
 #endif
 	.get_conf = usb_class_cdc_get_conf,
 	.get_conf_hnd = usb_class_cdc_get_conf_hnd,
-#if 0
-	.class_handle = usb_class_hid_handle,
-	.class_release = usb_class_hid_release,
-#endif
 };
 
 static int usb_cdc_init(void) {
