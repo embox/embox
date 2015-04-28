@@ -91,7 +91,8 @@ module rootfs extends root_file_system {
 	source "rootfs.c"
 	option string fstype = "initfs"
 	option string bdev = ""
-	depends node, driver.repo
+	depends driver.repo
+	depends node
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
 	depends embox.fs.syslib.file_system

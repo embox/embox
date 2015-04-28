@@ -22,8 +22,6 @@ module flash_settings {
 	depends embox.compat.libc.stdio.file_ops
 	depends embox.compat.posix.util.environ
 
-	depends embox.fs.dvfs
-	depends embox.fs.driver.dfs
 	depends embox.driver.flash.stm32
 	depends embox.net.lib.getifaddrs
 
