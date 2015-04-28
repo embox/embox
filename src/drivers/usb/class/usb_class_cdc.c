@@ -29,33 +29,109 @@ struct usb_desc_interface interface_desc;
 /* Storage for device configuration*/
 static char cdc_conf[16];
 
-#define FUNCTIONAL_DESCS_TOTAL_SIZE    (3 * 5 + 4)
-#define CONFIG_DESC_OFFSET             0
 #define INTERFACE_DESC_OFFSET          (sizeof (struct usb_desc_configuration))
-#define ENDPOINT_DESC_OFFSET           \
-	(INTERFACE_DESC_OFFSET + sizeof (struct usb_desc_interface) + \
-			FUNCTIONAL_DESCS_TOTAL_SIZE)
+#define FUNC_DESC_OFFSET               (INTERFACE_DESC_OFFSET + \
+                                           sizeof (struct usb_desc_interface))
+#define CS_INTERFACE                   0x24
 
+/* Configuration */
 static void cdc_get_conf_len_hnd(struct usb_request *req, void *arg);
-static void cdc_get_conf_by_idx(struct usb_dev *dev, struct usb_class_cdc *cdc,
+static void cdc_get_conf(struct usb_dev *dev, struct usb_class_cdc *cdc,
 		size_t idx, size_t len, usb_request_notify_hnd_t cb);
 static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg);
+static void cdc_get_conf_hnd(struct usb_request *req, void *arg);
+
+/* Interface */
 static void cdc_set_interface(struct usb_dev *dev, size_t iface,
 		size_t alternated_cfg, usb_request_notify_hnd_t cb);
+void *cdc_get_interface(void *conf, size_t index);
 static void cdc_set_interface_hnd(struct usb_request *req, void *arg);
 
-static void usb_class_cdc_get_conf_hnd(struct usb_request *req, void *arg) {
+/* Endpoint */
+static size_t cdc_skip_func_descs(void *start);
+static size_t cdc_skip_endpoints(void *start);
+
+/**
+ * Skip all functional descriptors.
+ * Return size of all functional descriptors.
+ * @see ecm120.pdf (Subclass Specification for
+ *  Ethernet Control Model Devices) Section 5
+ * XXX skip is a default action now, but it is possible to redefine this behavior
+ */
+static size_t cdc_skip_func_descs(void *start) {
+	uint8_t *cur, *func_desc_start;
+
+	func_desc_start = start;
+	cur = func_desc_start;
+
+	while (1) {
+		uint8_t len, type;
+
+		type = *(cur + 1);
+		if (type == CS_INTERFACE) {
+			len = *cur;
+			cur += len;
+		} else {
+			break;
+		}
+	}
+
+	return (cur - func_desc_start);
+}
+
+/*
+ * @see ecm120.pdf (Subclass Specification for
+ *  Ethernet Control Model Devices) Section 5
+ */
+static size_t cdc_skip_endpoints(void *start) {
+	uint8_t *cur, *func_desc_start;
+
+	func_desc_start = start;
+	cur = func_desc_start;
+
+	while (1) {
+		uint8_t len, type;
+
+		type = *(cur + 1);
+		if (type == USB_DESC_TYPE_ENDPOINT) {
+			len = *cur;
+			cur += len;
+		} else {
+			break;
+		}
+	}
+
+	return (cur - func_desc_start);
+}
+
+void *cdc_get_interface(void *conf, size_t index) {
+	size_t cur = 0;
+	char *curp = conf + INTERFACE_DESC_OFFSET;
+
+	while (cur != index) {
+		curp += sizeof (struct usb_desc_interface);
+		curp += cdc_skip_func_descs(curp);
+		curp += cdc_skip_endpoints(curp);
+		cur++;
+	}
+
+	return curp;
+}
+
+static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
+	size_t func_desc_len;
 
 	printk("%s: in\n", __func__);
 
-	usb_dev_generic_fill_iface(dev, cdc->getconf + INTERFACE_DESC_OFFSET);
-	usb_dev_generic_fill_endps(dev, cdc->getconf + ENDPOINT_DESC_OFFSET);
+	func_desc_len = cdc_skip_func_descs(cdc->getconf + INTERFACE_DESC_OFFSET +
+			sizeof (struct usb_desc_interface));
 
-	//pool_free(&hid_getconfs, hid->getconf);
-	sysfree(cdc->getconf);
-	cdc->getconf = NULL;
+	usb_dev_generic_fill_iface(dev, cdc->getconf + INTERFACE_DESC_OFFSET);
+	usb_dev_generic_fill_endps(dev, cdc->getconf + FUNC_DESC_OFFSET + func_desc_len);
+
+	/* TODO free resources */
 
 	usb_class_start_handle(dev);
 
@@ -76,9 +152,9 @@ static void cdc_get_conf_len_hnd(struct usb_request *req, void *arg) {
 		cdc_conf);
 }
 
-static void cdc_get_conf_by_idx(struct usb_dev *dev, struct usb_class_cdc *cdc,
+static void cdc_get_conf(struct usb_dev *dev, struct usb_class_cdc *cdc,
 		size_t idx, size_t len, usb_request_notify_hnd_t cb) {
-	usb_endp_control(dev->endpoints[0], usb_class_cdc_get_conf_hnd, NULL,
+	usb_endp_control(dev->endpoints[0], cb, NULL,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -98,8 +174,8 @@ static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg) {
 
 	cdc->getconf = sysmalloc(c->w_total_length);
 
-	cdc_get_conf_by_idx(dev, cdc, (USB_DESC_TYPE_CONFIG << 8) | 1,
-			c->w_total_length, usb_class_cdc_get_conf_hnd);
+	cdc_get_conf(dev, cdc, (USB_DESC_TYPE_CONFIG << 8) | 1,
+			c->w_total_length, cdc_get_conf_hnd);
 }
 
 static void cdc_set_interface(struct usb_dev *dev, size_t iface,
@@ -149,7 +225,7 @@ static struct usb_class usb_class_cdc = {
 	.class_free = usb_class_cdc_free,
 #endif
 	.get_conf = usb_class_cdc_get_conf,
-	.get_conf_hnd = usb_class_cdc_get_conf_hnd,
+	.get_conf_hnd = cdc_get_conf_hnd,
 };
 
 static int usb_cdc_init(void) {
