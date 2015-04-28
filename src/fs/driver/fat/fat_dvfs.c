@@ -179,7 +179,8 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	fat_flags |= (mode & O_DIRECTORY) ? S_IFDIR : 0;
 
-	res = fat_create_file(fi, i_new->i_dentry->name, fat_flags);
+	read_dir_buf(fsi, i_dir->i_data);
+	res = fat_create_file(fi, i_dir->i_data, i_new->i_dentry->name, fat_flags);
 
 	return res;
 }

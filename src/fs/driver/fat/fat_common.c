@@ -1503,9 +1503,8 @@ int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
  * Returns various DFS_* error states. If the result is DFS_OK, file
  * was created and can be used.
  */
-int fat_create_file(struct fat_file_info *fi, char *path, int mode) {
+int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, int mode) {
 	uint8_t filename[12];
-	struct dirinfo di;
 	struct dirent de;
 	struct volinfo *volinfo;
 	uint32_t cluster, temp;
@@ -1515,21 +1514,12 @@ int fat_create_file(struct fat_file_info *fi, char *path, int mode) {
 	volinfo = &fsi->vi;
 	fi->volinfo = volinfo;
 
-	fat_get_filename(path, (char *) filename);
+	fat_get_filename(name, (char *) filename);
 
-	/*
-	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
-	 *  filename = "FILE    EXT" and  path = "MYDIR/MYDIR2".
-	 */
-	di.p_scratch = fat_sector_buff;
-	if (fat_open_dir(fsi, (uint8_t *) path, &di)) {
-		return DFS_NOTFOUND;
-	}
-
-	while (!fat_get_next(fsi, &di, &de));
+	while (!fat_get_next(fsi, di, &de));
 
 	/* Locate or create a directory entry for this file */
-	if (DFS_OK != fat_get_free_dir_ent(fsi, (uint8_t *) path, &di, &de)) {
+	if (DFS_OK != fat_get_free_dir_ent(fsi, (uint8_t *) name, di, &de)) {
 		return DFS_ERRMISC;
 	}
 
@@ -1552,14 +1542,15 @@ int fat_create_file(struct fat_file_info *fi, char *path, int mode) {
 	 * speedily update the file size, modification date, etc. on a file
 	 * that is opened for writing.
 	 */
-	if (di.currentcluster == 0) {
-		fi->dirsector = volinfo->rootdir + di.currentsector;
+	/* if (di->currentcluster == 0) {
+		fi->dirsector = volinfo->rootdir + di->currentsector;
 	} else {
 		fi->dirsector = volinfo->dataarea +
-				((di.currentcluster - 2) * volinfo->secperclus) +
-				di.currentsector;
-	}
-	fi->diroffset = di.currententry - 1;
+				((di->currentcluster - 2) * volinfo->secperclus) +
+				di->currentsector;
+	} */
+	fi->dirsector = volinfo->dataarea + (di->fi.cluster - 2) * volinfo->secperclus;
+	fi->diroffset = di->currententry - 1;
 	fi->cluster = cluster;
 	fi->firstcluster = cluster;
 	//nas->fi->ni.size = 0;
@@ -1573,7 +1564,7 @@ int fat_create_file(struct fat_file_info *fi, char *path, int mode) {
 	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector)) {
 		return DFS_ERRMISC;
 	}
-	memcpy(&(((struct dirent*) fat_sector_buff)[di.currententry - 1]),
+	memcpy(&(((struct dirent*) fat_sector_buff)[di->currententry - 1]),
 			&de, sizeof(struct dirent));
 	if (fat_write_sector(fsi, fat_sector_buff, fi->dirsector)) {
 		return DFS_ERRMISC;
@@ -1593,7 +1584,7 @@ int fat_create_file(struct fat_file_info *fi, char *path, int mode) {
 
 	if (S_ISDIR(mode)) {
 		/* create . and ..  files of this catalog */
-		fat_set_direntry(di.currentcluster, fi->cluster);
+		fat_set_direntry(di->currentcluster, fi->cluster);
 		cluster = fi->volinfo->dataarea +
 				  ((fi->cluster - 2) * fi->volinfo->secperclus);
 		if (fat_write_sector(fsi, fat_sector_buff, cluster)) {
