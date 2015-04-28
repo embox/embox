@@ -22,9 +22,6 @@ EMBOX_UNIT_INIT(usb_cdc_init);
 
 POOL_DEF(cdc_classes, struct usb_class_cdc, USB_CDC_MAX_DEVS);
 
-struct usb_desc_configuration config_desc;
-struct usb_desc_interface interface_desc;
-
 /* FIXME store all static data in pool */
 
 /* Storage for device configuration*/
@@ -168,8 +165,6 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 	size_t func_desc_len;
 
-	printk("%s: in\n", __func__);
-
 	func_desc_len = cdc_skip_func_descs(cdc->getconf + INTERFACE_DESC_OFFSET +
 			sizeof (struct usb_desc_interface));
 
@@ -184,8 +179,6 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	/* TODO free resources */
 
 	usb_class_start_handle(dev);
-
-	printk("%s: out\n", __func__);
 }
 
 static void cdc_get_conf_len_hnd(struct usb_request *req, void *arg) {
