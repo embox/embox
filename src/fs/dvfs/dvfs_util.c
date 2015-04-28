@@ -169,15 +169,6 @@ int dvfs_destroy_file(struct file *desc) {
 	return 0;
 }
 
-/* struct dvfsmnt *dvfs_alloc_mnt(void) {
-	return pool_alloc(&mnt_pool);
-}
-
-int dvfs_destroy_mnt(struct dvfsmnt *mnt) {
-	pool_free(&mnt_pool, mnt);
-	return 0;
-}*/
-
 /* Fillers */
 /* @brief Fills inode fields according to existing dentry and SB
  * @param inode      The structure to be filled

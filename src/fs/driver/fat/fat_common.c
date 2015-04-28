@@ -810,7 +810,6 @@ uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
 		} else if (tempclus == DFS_EOF) {
 			return DFS_ERRMISC;
 		} else if (tempclus == DFS_ALLOCNEW) {
-			//assert(nas->fs->bdev == fsi->bdev);
 			tempclus = fat_get_free_fat_(fsi, di->p_scratch);
 			if (tempclus == 0x0ffffff7) {
 				return DFS_ERRMISC;
@@ -825,7 +824,6 @@ uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
 				}
 			}
 			i = 0;
-			//assert(nas->fs->bdev == fsi->bdev);
 			fat_set_fat_(fsi,
 					di->p_scratch, &i, di->currentcluster, tempclus);
 
@@ -1062,7 +1060,6 @@ uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 				result = DFS_EOF;
 			}
 			else {
-				//assert(nas->fs->bdev == fsi->bdev);
 				fi->cluster = fat_get_fat_(fsi, p_scratch, &bytesread, fi->cluster);
 			}
 		}
@@ -1224,7 +1221,6 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		  	byteswritten = 0;
 
 			lastcluster = fi->cluster;
-			//assert(nas->fs->bdev == fsi->bdev);
 			fi->cluster = fat_get_fat_(fsi, p_scratch,
 					&byteswritten, fi->cluster);
 
@@ -1236,14 +1232,12 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 					((fi->volinfo->filesystem == FAT32) &&
 					(fi->cluster >= 0x0ffffff8))) {
 			  	uint32_t tempclus;
-				//assert(nas->fs->bdev == fsi->bdev);
 				tempclus = fat_get_free_fat_(fsi, p_scratch);
 				byteswritten = 0; /* invalidate cache */
 				if (tempclus == 0x0ffffff7) {
 					return DFS_ERRMISC;
 				}
 				/* Link new cluster onto file */
-				//assert(nas->fs->bdev == fsi->bdev);
 				fat_set_fat_(fsi, p_scratch,
 						&byteswritten, lastcluster, tempclus);
 				fi->cluster = tempclus;
@@ -1268,7 +1262,6 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 			div(fi->pointer, clastersize).quot) {
 
 			byteswritten = 0;/* invalidate cache */
-			//assert(nas->fs->bdev == fsi->bdev);
 			nextcluster = fat_get_fat_(fsi, p_scratch,
 					&byteswritten, fi->cluster);
 
@@ -1290,7 +1283,6 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 					(fi->volinfo->filesystem == FAT32 &&
 					nextcluster >= 0x0ffffff7))) {
 				lastcluster = nextcluster;
-				//assert(nas->fs->bdev == fsi->bdev);
 				nextcluster = fat_get_fat_(fsi, p_scratch,
 						&byteswritten, nextcluster);
 
@@ -1523,7 +1515,6 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 		return DFS_ERRMISC;
 	}
 
-	//assert(nas->fs->bdev == fsi->bdev);
 	cluster = fat_get_free_fat_(fsi, fat_sector_buff);
 	de = (struct dirent) {
 		.attr = S_ISDIR(mode) ? ATTR_DIRECTORY : 0,
@@ -1542,18 +1533,11 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	 * speedily update the file size, modification date, etc. on a file
 	 * that is opened for writing.
 	 */
-	/* if (di->currentcluster == 0) {
-		fi->dirsector = volinfo->rootdir + di->currentsector;
-	} else {
-		fi->dirsector = volinfo->dataarea +
-				((di->currentcluster - 2) * volinfo->secperclus) +
-				di->currentsector;
-	} */
+
 	fi->dirsector = volinfo->dataarea + (di->fi.cluster - 2) * volinfo->secperclus;
 	fi->diroffset = di->currententry - 1;
 	fi->cluster = cluster;
 	fi->firstcluster = cluster;
-	//nas->fi->ni.size = 0;
 
 	/*
 	 * write the directory entry
@@ -1578,7 +1562,6 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	}
 
 	temp = 0;
-	//assert(nas->fs->bdev == fsi->bdev);
 	fat_set_fat_(fsi,
 			fat_sector_buff, &temp, fi->cluster, cluster);
 
@@ -1595,13 +1578,8 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	return DFS_OK;
 }
 
-/* fat filesystem description pool */
 POOL_DEF(fat_fs_pool, struct fat_fs_info, 4);
-	//OPTION_GET(NUMBER, fat_descriptor_quantity));
-
-/* fat file description pool */
 POOL_DEF(fat_file_pool, struct fat_file_info, 16);
-	//OPTION_GET(NUMBER, inode_quantity));
 POOL_DEF(fat_dirinfo_pool, struct dirinfo, 16);
 
 struct fat_fs_info *fat_fs_alloc(void) {

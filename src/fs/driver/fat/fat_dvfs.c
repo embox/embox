@@ -279,11 +279,7 @@ struct inode_operations fat_iops = {
 	.create   = fat_create,
 	.lookup   = fat_ilookup,
 	.remove   = fat_remove,
-	//.mkdir    = NULL,
-	//.rmdir    = NULL,
 	.iterate  = fat_iterate,
-	//.truncate = fat_itruncate,
-	//.pathname = fat_pathname,
 };
 
 struct file_operations fat_fops = {
@@ -291,7 +287,6 @@ struct file_operations fat_fops = {
 	.close = fat_close,
 	.write = fat_write,
 	.read = fat_read,
-	//.ioctl = NULL,
 };
 
 /* @brief Initializing fat super_block
