@@ -15,9 +15,10 @@ module block {
 
 	depends block_common
 
+	depends embox.fs.buffer_cache
+	depends embox.fs.buffer_crypt_api
+	depends embox.fs.core
 	depends embox.util.LibUtil
 	depends embox.util.indexator
 	depends embox.mem.phymem
-	depends embox.fs.buffer_cache
-	depends embox.fs.buffer_crypt_api
 }

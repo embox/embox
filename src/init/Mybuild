@@ -53,8 +53,9 @@ abstract module diag_fd {
 module diag_fd_old extends diag_fd {
 	source "diag_fd.c"
 
-	depends embox.kernel.task.api
 	depends embox.compat.posix.idx.dup
+	depends embox.fs.idesc
+	depends embox.kernel.task.api
 }
 
 module diag_fd_dvfs extends diag_fd {

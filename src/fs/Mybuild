@@ -64,7 +64,7 @@ module path_helper {
 module core extends fs_api {
 	source "vfs.c"
 
-	//depends filesystem
+	depends filesystem
 	depends path_helper
 	depends node
 

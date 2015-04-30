@@ -39,6 +39,7 @@ module file_system_full extends file_system {
 
 	depends fs_full        // kfile_fill_stat
 
+	depends embox.fs.core
 	depends embox.fs.driver.repo
 	depends embox.fs.file_desc
 	depends embox.fs.syslib.fs_full
@@ -47,7 +48,6 @@ module file_system_full extends file_system {
 	depends embox.compat.posix.fs.open
 	depends embox.compat.posix.util.environ
 	depends embox.util.tree
-	/*depends embox.fs.core // for vfs*/
 
 	option number flock_quantity=128
 }
