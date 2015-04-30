@@ -1,7 +1,7 @@
 package embox.cmd.net
 
 @AutoCmd
-@Cmd(name = "httpd_pthread"",
+@Cmd(name = "httpd_pthread",
 	help = "Start HTTP server",
 	man = '''
 		NAME
