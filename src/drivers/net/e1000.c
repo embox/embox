@@ -283,12 +283,12 @@ static int e1000_open(struct net_device *dev) {
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
 	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
-        struct sk_buff *skb;
-        skb = skb_alloc(ETH_FRAME_LEN);
-        if (skb == NULL)
-		panic("Can't allocate skb %d", i);
-        rx_skbs[i]= skb;
-	rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
+	        struct sk_buff *skb;
+		skb = skb_alloc(ETH_FRAME_LEN);
+		if (skb == NULL)
+			panic("Can't allocate skb %d", i);
+		rx_skbs[i]= skb;
+		rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
 	}
 
 
