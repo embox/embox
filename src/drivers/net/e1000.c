@@ -63,9 +63,6 @@ struct e1000_priv {
 	char link_status;
 };
 
-//static char rx_buf[E1000_RXDESC_NR][E1000_IOBUF_SIZE] ;  //!!!
-/*static char tx_buf[E1000_TXDESC_NR][E1000_IOBUF_SIZE]__attribute__((aligned(16)));*/
-
 struct e1000_rx_desc {
 	uint32_t buffer_address;
 	uint32_t buffer_address_h;
@@ -103,7 +100,7 @@ static volatile uint32_t *e1000_reg(struct net_device *dev, int offset) {
 
 static int e1000_xmit(struct net_device *dev) {
 	uint16_t head;
-	uint16_t tail; 
+	uint16_t tail;
 	struct sk_buff *skb;
 
 	/* Called from kernel space and IRQ. Don't want tail to be handled twice */
@@ -185,7 +182,6 @@ static void e1000_rx(struct net_device *dev) {
 		cur = (1 + tail) % E1000_RXDESC_NR;
 
 		while (cur != head) {
-			//int len;
 
 			if (!(rx_descs[cur].status)) {
 				break;
@@ -194,14 +190,14 @@ static void e1000_rx(struct net_device *dev) {
 			//len = rx_descs[cur].length - 4; /* checksum */
 
 			if (0 != nf_test_raw(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, (void *) rx_descs[cur].buffer_address,
-						ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {                //!
+						ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {
 				goto drop_pack;
 			}
 
 			skb = rx_skbs[cur];
 			assert (skb);
 
-			rx_skbs[cur]= skb_alloc(ETH_FRAME_LEN);//
+			rx_skbs[cur]= skb_alloc(ETH_FRAME_LEN);
 			if (rx_skbs[cur] == NULL)
 				panic("Can't allocate rx_skbs %d", cur);
 			rx_descs[cur].buffer_address = (uint32_t) rx_skbs[cur]->mac.raw;
@@ -244,8 +240,7 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 		} else {
 			printk("e1000: Link down. Please check and insert network cable\n");
 			netdev_flag_down(dev, IFF_RUNNING);
-		}
-			
+		}	
 	}
 
 	return IRQ_HANDLED;
@@ -291,9 +286,9 @@ static int e1000_open(struct net_device *dev) {
         struct sk_buff *skb;
         skb = skb_alloc(ETH_FRAME_LEN);
         if (skb == NULL)
-        	panic("Can't allocate skb %d", i);
+		panic("Can't allocate skb %d", i);
         rx_skbs[i]= skb;
- 		rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
+	rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
 	}
 
 
@@ -369,7 +364,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	nic->drv_ops = &_drv_ops;
 	nic->irq = pci_dev->irq;
 	nic->base_addr = (uintptr_t) mmap_device_memory(
-			(void *) (pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK), 
+			(void *) (pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK),
 			0x6000, /* XXX */
 			PROT_WRITE | PROT_READ, 
 			MAP_FIXED, 
