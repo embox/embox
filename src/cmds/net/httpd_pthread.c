@@ -5,7 +5,7 @@
  * @author Ilia Vaprol
  * @author Anton Kozlov
  */
- 
+
 #define _GNU_SOURCE
 
 #include <stdbool.h>
@@ -43,7 +43,7 @@
 #define HTTPD_LOG_LEVEL HTTPD_LOG_QUIET
 
 #define HTTPD_MAX_PATH 128
-#define BUFF_SZ     1024 
+#define BUFF_SZ     1024
 #define PAGE_INDEX  "index.html"
 #define PAGE_4XX    "404.html"
 #define CGI_PREFIX  "/cgi-bin/"
@@ -54,14 +54,14 @@
 #if HTTPD_LOG_LEVEL >= HTTPD_LOG_DEBUG
 #define HTTPD_DEBUG(_msg, ...) \
 	fprintf(stderr, HTTPD_L_DEBUG _msg, ## __VA_ARGS__)
-#else 
+#else
 #define HTTPD_DEBUG(_msg, ...)
 #endif
 
 #if HTTPD_LOG_LEVEL >= HTTPD_LOG_ERROR
 #define HTTPD_ERROR(_msg, ...) \
 	fprintf(stderr, HTTPD_L _msg, ## __VA_ARGS__)
-#else 
+#else
 #define HTTPD_ERROR(_msg, ...)
 #endif
 
@@ -97,7 +97,7 @@ struct http_req {
 };
 
 
- 
+
 
 static struct client_info clients[MAX_CLIENTS_COUNT];
 static char client_is_free[MAX_CLIENTS_COUNT];
@@ -111,7 +111,7 @@ static int clients_get_free_index(void) {
 			return i;
 		}
 	}
-	return -1; // there are no free index
+	return -1; // there are no free indexes
 }
 
 static char *httpd_parse_uri(char *str, struct http_req_uri *huri) {
@@ -119,7 +119,7 @@ static char *httpd_parse_uri(char *str, struct http_req_uri *huri) {
 	pb = str;
 
 	huri->target = pb;
-	
+
 	pb = strchr(pb, '?');
 	if (pb) {
 		*(pb++) = '\0';
@@ -187,7 +187,7 @@ static char *httpd_parse_headers(char *str, struct http_req *hreq) {
 			if (0 == strncmp(hh_d->name, pb, len)) {
 
 				*(char **) ((void *) hreq + hh_d->hreq_offset) = pb + len;
-				
+
 				pb = strstr(pb + len, "\r\n");
 				*pb = '\0';
 				pb += strlen("\r\n");
@@ -195,7 +195,7 @@ static char *httpd_parse_headers(char *str, struct http_req *hreq) {
 				break;
 			}
 		}
-		
+
 		if (!found) {
 			pb = strstr(pb, "\r\n") + strlen("\r\n");
 		}
@@ -207,7 +207,7 @@ static char *httpd_parse_headers(char *str, struct http_req *hreq) {
 static char *httpd_parse_request(char *str, struct http_req *hreq) {
 	char *pb;
 	pb = str;
-       
+
 	pb = httpd_parse_request_line(str, hreq);
 	if (!pb) {
 		HTTPD_ERROR("%s: can't parse request line\n", __func__);
@@ -303,7 +303,7 @@ static int httpd_send_response_file(const struct client_info *cinfo, const struc
 	while (0 != (read_bytes = fread(httpd_outbuf, 1, sizeof(httpd_outbuf), file))) {
 		const char *pb;
 		int remain_send_bytes;
-		
+
 		pb = httpd_outbuf;
 		remain_send_bytes = read_bytes;
 		while (remain_send_bytes) {
@@ -332,12 +332,12 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 		return -ENOMEM;
 	}
 
-	fprintf(skf, 
+	fprintf(skf,
 		"HTTP/1.1 %d %s\r\n"
 		"Content-Type: %s\r\n"
 		"Connection: close\r\n"
 		"\r\n"
-		"%s", 200, "OK", "text/plain", 
+		"%s", 200, "OK", "text/plain",
 		"Sorry, CGI support is disabled");
 
 	fclose(skf);
@@ -369,12 +369,12 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 			return -ENOMEM;
 		}
 
-		fprintf(skf, 
+		fprintf(skf,
 			"HTTP/1.1 %d %s\r\n"
 			"Content-Type: %s\r\n"
 			"Connection: close\r\n"
 			"\r\n"
-			"%s", 404, "Page not found", "text/plain", 
+			"%s", 404, "Page not found", "text/plain",
 			"");
 
 		fclose(skf);
@@ -403,7 +403,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 			int printed;
 
 			printed = snprintf(ebp, env_sz, "%s=%s",
-						ce_d->name, 
+						ce_d->name,
 						*(char **) ((void *) hreq + ce_d->hreq_offset));
 			if (printed == env_sz) {
 				HTTPD_ERROR("have no space to write environment");
@@ -424,11 +424,11 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 
 #if 0
 		execve(cmdname, argv, envp);
-#else 
+#else
 		for (i_ce = 0; i_ce < ARRAY_SIZE(envp) - 1; i_ce++) {
 			putenv(envp[i_ce]);
 		}
-		
+
 		execv(cmdname, argv);
 #endif
 
@@ -442,7 +442,7 @@ static int httpd_send_response_cgi(const struct client_info *cinfo, const struct
 #endif
 
 static int httpd_read_http_header(const struct client_info *cinfo, char *buf, size_t buf_sz) {
-        
+
         const int sk = cinfo->ci_sock;
 	const char *pattern = "\r\n\r\n";
 	char pattbuf[strlen("\r\n\r\n")];
@@ -481,14 +481,14 @@ static int httpd_client_process(const struct client_info *cinfo) {
 	if (ret < 0) {
 		HTTPD_ERROR("can't read from client socket: %s", strerror(errno));
 		return ret;
-        } 
+        }
 	httpd_inbuf[ret] = '\0';
 
 	if (NULL == httpd_parse_request(httpd_inbuf, &hreq)) {
 		return -EINVAL;
 	}
 
-	HTTPD_DEBUG("%s: method=%s uri_target=%s uri_query=%s\n", __func__, 
+	HTTPD_DEBUG("%s: method=%s uri_target=%s uri_query=%s\n", __func__,
 			hreq.method,
 			hreq.uri.target,
 			hreq.uri.query);
@@ -503,9 +503,10 @@ static int httpd_client_process(const struct client_info *cinfo) {
 	return httpd_send_response_file(cinfo, &hreq);
 }
 
-static void *do_httpd_client_thread(void *cinfo){
-          
+static void *do_httpd_client_thread(void *cinfo) {
+
         struct client_info *ci = (struct client_info *) cinfo;
+
         httpd_client_process(ci);
 	close(ci->ci_sock);
         client_is_free[ci->ci_index]=1;
@@ -562,13 +563,13 @@ int main(int argc, char **argv) {
 		struct client_info *ci;
 		pthread_t thread;
 		int index = clients_get_free_index();
-               
+
 		if (index == -1) {
 			HTTPD_ERROR("%s\n", "There are no more memory for new connection!");
 			continue;
 		}
 
-		ci = &clients[index]; 
+		ci = &clients[index];
 		ci->ci_index=index;
 		ci->ci_addrlen = inaddrlen;
 		ci->ci_sock = accept(host, &ci->ci_addr, &ci->ci_addrlen);
@@ -580,7 +581,7 @@ int main(int argc, char **argv) {
 		ci->ci_basedir = basedir;
 
 		pthread_create(&thread, NULL, do_httpd_client_thread, ci);
-                
+
 		pthread_detach(thread);
 	}
 
