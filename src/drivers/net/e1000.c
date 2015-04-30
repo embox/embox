@@ -240,7 +240,7 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 		} else {
 			printk("e1000: Link down. Please check and insert network cable\n");
 			netdev_flag_down(dev, IFF_RUNNING);
-		}	
+		}
 	}
 
 	return IRQ_HANDLED;
@@ -366,8 +366,8 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	nic->base_addr = (uintptr_t) mmap_device_memory(
 			(void *) (pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK),
 			0x6000, /* XXX */
-			PROT_WRITE | PROT_READ, 
-			MAP_FIXED, 
+			PROT_WRITE | PROT_READ,
+			MAP_FIXED,
 			pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
 	nic_priv = netdev_priv(nic, struct e1000_priv);
 	skb_queue_init(&nic_priv->txing_queue);
