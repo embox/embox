@@ -58,7 +58,7 @@ static int move_road(struct lthread *self) {
 
 	/* Multiple entry points are provided by lthread_resume() and
 	 * lthread_yield() functions. */
-	goto lthread_resume(self, &&update);
+	goto *lthread_resume(self, &&update);
 
 update:
 	is_game_over |= is_obstacle(car_line_nr*RACE_ROAD_LEN + 1);
@@ -81,7 +81,7 @@ wait:
 }
 
 static int move_car(struct lthread* self) {
-	goto lthread_resume(self, &&update);
+	goto *lthread_resume(self, &&update);
 
 update:
 	if (is_game_over)

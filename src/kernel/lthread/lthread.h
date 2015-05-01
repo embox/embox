@@ -24,7 +24,7 @@
  *      // Each time lthread runs it is executed from the beginning of its run
  *      // function. If it is necessary to start from another place, use the
  *      // following pattern.
- *      goto lthread_resume(self, &&start);
+ *      goto *lthread_resume(self, &&start);
  *
  *   start:
  *        // If example() runs for the first time, goto jumps here.
@@ -59,6 +59,8 @@
 #ifndef _KERNEL_LTHREAD_H_
 #define _KERNEL_LTHREAD_H_
 
+#include <stddef.h>
+
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 
@@ -66,7 +68,7 @@
 struct lthread {
 	struct schedee schedee;
 	int (*run)(struct lthread *); /**< Start routine */
-	int label_offset;             /**< Used for calculating label for goto */
+	ptrdiff_t label_offset;       /**< Used for calculating label for goto */
 	/* Auxiliary structure for waiting with timeout. */
 	struct sched_wait_info info;
 	struct schedee *joining; /**< joining schedee with stack */
@@ -104,16 +106,17 @@ extern void lthread_launch(struct lthread *lt);
 
 /**
  * Calculates a label offset in order to call #lthread_resume() with
- * @p target_label.
+ * @p target_lbl.
  * @note
  *   This function should be used in pair with return statement.
- * @param initial_label
+ * @param initial_lbl
  *   The beginning label.
- * @param target_label
+ * @param target_lbl
  *   Label from which lthread should be resumed.
  */
-#define lthread_yield(initial_label, target_label) \
-			(target_label) - (initial_label);
+static inline ptrdiff_t lthread_yield(void *initial_lbl, void *target_lbl) {
+	return target_lbl - initial_lbl;
+}
 
 /**
  * Returns label from which run function should start with.
@@ -121,10 +124,11 @@ extern void lthread_launch(struct lthread *lt);
  *   This function should be used in pair with goto statement.
  * @param lt
  *   The current light thread.
- * @param initial_label
+ * @param initial_lbl
  *   The beginning label.
  */
-#define lthread_resume(lt, initial_label) \
-			*((lt)->label_offset + (initial_label))
+static inline void *lthread_resume(struct lthread *lt, void *initial_lbl) {
+	return initial_lbl + lt->label_offset;
+}
 
 #endif /* _KERNEL_LTHREAD_H_ */
