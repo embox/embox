@@ -73,7 +73,7 @@ static int pnet_rx_action(struct lthread *data) {
 		pnet_entry(skb_pack);
 	}
 
-	return NULL;
+	return 0;
 }
 
 static int unit_init(void) {

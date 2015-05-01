@@ -32,7 +32,7 @@ void runq_init(runq_t *queue) {
 
 void runq_insert(runq_t *queue, struct schedee *schedee) {
 	dlist_add_prev(&schedee->runq_link,
-			&queue->list[schedee_priority_get(&schedee->priority)]);
+			&queue->list[schedee_priority_get(schedee)]);
 }
 
 void runq_remove(runq_t *queue, struct schedee *schedee) {
