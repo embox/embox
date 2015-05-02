@@ -147,6 +147,7 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 	if (dentry->usage_count == 0) {
 		if (dentry->d_inode)
 			dvfs_destroy_inode(dentry->d_inode);
+		dentry->parent->usage_count--;
 		pool_free(&dentry_pool, dentry);
 		return 0;
 	} else
@@ -208,9 +209,10 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 	dlist_init(&dentry->children);
 	dlist_head_init(&dentry->children_lnk);
 
-	if (parent)
+	if (parent) {
 		dlist_add_prev(&dentry->children_lnk, &parent->children);
-
+		parent->usage_count++;
+	}
 	return 0;
 }
 

@@ -75,6 +75,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	char buff[DENTRY_NAME_LEN];
 	struct inode *in;
 	int len = dvfs_path_next_len(path);
+	struct dentry *d;
 	assert(parent);
 	assert(path);
 
@@ -97,6 +98,12 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 
 	if (strlen(buff) > 1 && path_is_single_dot(buff))
 		return dvfs_path_walk(path + 2, parent, lookup);
+
+	/* TODO use cache instead */
+	dlist_foreach_entry(d, &parent->children, children_lnk) {
+		if (!strcmp(d->name, buff))
+			return dvfs_path_walk(path + strlen(buff), d, lookup);
+	}
 
 	assert(parent->d_sb);
 	assert(parent->d_sb->sb_iops);
@@ -354,11 +361,6 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 	struct super_block *sb;
 	struct dentry *d;
 
-	dvfs_lookup(dest, &lookup);
-
-	if (lookup.item == NULL)
-		return -ENOENT;
-
 	drv = dumb_fs_driver_find(fstype);
 	sb  = dvfs_alloc_sb(drv, dev);
 
@@ -366,9 +368,30 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 		set_rootfs_sb(sb);
 		dvfs_update_root();
 	} else {
+		dvfs_lookup(dest, &lookup);
+
+		if (lookup.item == NULL)
+			return -ENOENT;
+
+		assert(lookup.item->flags & O_DIRECTORY);
+
+		/* Hide dentry of the directory */
+		dlist_del(&lookup.item->children_lnk);
+
 		d = dvfs_alloc_dentry();
+		dentry_fill(sb, NULL, d, lookup.parent);
 		d->usage_count++;
 		sb->root = d;
+		d->flags = O_DIRECTORY;
+		strcpy(d->name, lookup.item->name);
+
+		d->d_inode = dvfs_alloc_inode(sb);
+		*d->d_inode = (struct inode) {
+			.flags    = O_DIRECTORY,
+			.i_ops   = sb->sb_iops,
+			.i_sb     = sb,
+			.i_dentry = d,
+		};
 	}
 
 	if (drv->mount_end)

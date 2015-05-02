@@ -56,6 +56,8 @@ static int rootfs_mount(void) {
 		bdev = block_dev_find(dev);
 	}
 
+	dvfs_update_root();
+
 	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0)) {
 		return -errno;
 	}
