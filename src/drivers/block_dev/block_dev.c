@@ -25,8 +25,6 @@
 
 #include <embox/block_dev.h>
 
-#define MAX_DEV_QUANTITY 16 /* XXX */
-
 EMBOX_UNIT_INIT(blockdev_init);
 
 static int bdev_open(struct node *node, struct file_desc *file_desc, int flags) {

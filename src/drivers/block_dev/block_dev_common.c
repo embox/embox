@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include <embox/block_dev.h>
+#include <framework/mod/options.h>
 #include <fs/bcache.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
@@ -18,12 +19,12 @@
 #include <util/indexator.h>
 #include <util/math.h>
 
-#define MAX_DEV_QUANTITY 16 /* XXX */
+#define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
 ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
 POOL_DEF(cache_pool, struct block_dev_cache, MAX_DEV_QUANTITY);
 POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
-INDEX_DEF(block_dev_idx,0,MAX_DEV_QUANTITY);
+INDEX_DEF(block_dev_idx, 0, MAX_DEV_QUANTITY);
 
 static struct block_dev *devtab[MAX_DEV_QUANTITY];
 
