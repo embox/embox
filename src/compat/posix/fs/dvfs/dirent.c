@@ -8,18 +8,18 @@
 
 #include <errno.h>
 #include <posix_errno.h>
+#include <stddef.h>
 #include <string.h>
 
 #include <dirent.h>
-#include <defines/null.h>
 #include <dirent_dvfs_impl.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
-#include <mem/objalloc.h>
+#include <mem/misc/pool.h>
 
 #define MAX_DIR_QUANTITY OPTION_GET(NUMBER, dir_quantity)
 
-OBJALLOC_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
+POOL_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
 
 static inline void fill_dirent(struct dirent *dirent, struct dentry *dentry) {
 	dirent->d_ino = dentry->d_inode->i_no;
@@ -36,7 +36,7 @@ DIR *opendir(const char *path) {
 	}
 
 	l.item->usage_count++;
-	d = objalloc(&dir_pool);
+	d = pool_alloc(&dir_pool);
 	*d = (DIR) {
 		.dir_dentry = l.item,
 	};
@@ -60,7 +60,7 @@ int closedir(DIR *dir) {
 	dir->dir_dentry->usage_count--;
 	dvfs_destroy_dentry(dir->dir_dentry);
 
-	objfree(&dir_pool, dir);
+	pool_free(&dir_pool, dir);
 
 	return 0;
 }

@@ -10,15 +10,13 @@
 
 int fcntl(int fd, int cmd, ...) {
 	va_list args;
-	union {
-		int i;
-	} uargs;
+	int i;
 	switch (cmd) {
 	case F_DUPFD:
 		va_start(args, cmd);
-		uargs.i = va_arg(args, int);
+		i = va_arg(args, int);
 		va_end(args);
-		return file_table_dupfd(fd, uargs.i);
+		return file_table_dupfd(fd, i);
 	}
 
 	return 0;

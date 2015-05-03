@@ -19,7 +19,7 @@ int creat(const char *pathname, mode_t mode) {
 }
 
 int mkdir(const char *pathname, mode_t mode) {
-	return creat(pathname, O_DIRECTORY);
+	return creat(pathname, mode | O_DIRECTORY);
 }
 
 int remove(const char *pathname) {
