@@ -24,6 +24,7 @@ package embox.cmd
 	''')
 module tbprof {
 	source "tbprof.c"
+
 	depends embox.profiler.tracing
 	depends embox.kernel.timer.itimer
 	depends embox.util.hashtable
