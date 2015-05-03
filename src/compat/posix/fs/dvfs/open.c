@@ -6,6 +6,7 @@
  * @date    29 Mar 2015
  */
 
+#include <fcntl.h>
 #include <fs/dvfs.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/file_table.h>
