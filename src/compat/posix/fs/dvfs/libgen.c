@@ -32,11 +32,10 @@ static char *path_final_slash(char *path) {
 }
 
 char * basename(char *path) {
-	static char bname_buff[2];
 	char *sl;
 
 	if (!path || *path == '\0') {
-		return strcpy(bname_buff, ".");
+		return ".";
 	}
 
 	sl = path_final_slash(path);
@@ -53,11 +52,10 @@ char * basename(char *path) {
 }
 
 char * dirname(char *path) {
-	static char bname_buff[2];
 	char *sl;
 
 	if (!path || *path == '\0') {
-		return strcpy(bname_buff, ".");
+		return ".";
 	}
 
 	sl = path_final_slash(path);
@@ -77,3 +75,4 @@ char * dirname(char *path) {
 
 	return path;
 }
+
