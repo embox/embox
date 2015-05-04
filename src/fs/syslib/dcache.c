@@ -10,7 +10,6 @@
 #include <string.h>
 
 #include <fs/dcache.h>
-#include <fs/dvfs.h>
 #include <mem/misc/pool.h>
 #include <util/hashtable.h>
 #include <util/dlist.h>
