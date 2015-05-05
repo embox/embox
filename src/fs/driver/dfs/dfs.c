@@ -62,10 +62,10 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
  * @returns Bytes written or negative error code
  */
 static inline int _write(unsigned long offset, const void *buff, size_t len) {
-	assert(buff);
 	int i;
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(4)));
 	int head = offset & 0x7;
+	assert(buff);
 
 	if (head) {
 		offset -= head;
@@ -118,14 +118,17 @@ static inline int _blkcpy(unsigned int to, unsigned long from) {
  * @returns Bytes written or negative error code
  */
 static int dfs_write_raw(int pos, void *buff, size_t size) {
-	assert(buff);
 	int start_bk = pos / NAND_BLOCK_SIZE;
 	int last_bk = (pos + size) / NAND_BLOCK_SIZE;
-	struct dfs_sb_info *sbi = dfs_sb()->sb_data;
-	int buff_bk = sbi->buff_bk;
+	struct dfs_sb_info *sbi;
+	int buff_bk;
 	int bk;
 	int err;
 
+	assert(buff);
+
+	sbi = dfs_sb()->sb_data;
+	buff_bk = sbi->buff_bk;
 	pos %= NAND_BLOCK_SIZE;
 
 	_erase(buff_bk);
@@ -218,9 +221,9 @@ static int dfs_write_sb_info(struct dfs_sb_info *sbi) {
 }
 
 static int dfs_read_dirent(int n, struct dfs_dir_entry *dtr) {
-	assert(dtr);
 	uint32_t offt = _capacity(sizeof(struct dfs_sb_info)) +
 	                n * _capacity(sizeof(struct dfs_dir_entry));
+	assert(dtr);
 
 	_read(offt, dtr, sizeof(struct dfs_dir_entry));
 
@@ -228,17 +231,17 @@ static int dfs_read_dirent(int n, struct dfs_dir_entry *dtr) {
 }
 
 static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr) {
-	assert(dtr);
 	uint32_t offt = _capacity(sizeof(struct dfs_sb_info)) +
 	                n * _capacity(sizeof(struct dfs_dir_entry));
+	assert(dtr);
 
 	dfs_write_raw(offt, dtr, sizeof(struct dfs_dir_entry));
 	return 0;
 }
 
 int ino_from_path(const char *path) {
-	assert(path);
 	struct dfs_dir_entry dirent;
+	assert(path);
 
 	for (int i = 0; i < DFS_INODES_MAX; i++)
 		if (!dfs_read_dirent(i, &dirent) && strcmp(path, dirent.name) == 0)
@@ -297,8 +300,8 @@ static int dfs_icreate(struct inode *i_new,
 }
 
 static int dfs_itruncate(struct inode *inode, size_t new_len) {
-	assert(inode);
 	int max_l = ((struct dfs_sb_info *)inode->i_sb->sb_data)->max_file_size;
+	assert(inode);
 
 	if (new_len < 0 || new_len > max_l)
 		return -1;
@@ -338,6 +341,8 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
 	struct dfs_dir_entry dirent;
 	assert(ctx);
+	assert(next);
+	assert(parent);
 
 	if (ctx->pos >= ((struct dfs_sb_info *) dfs_sb()->sb_data)->inode_count)
 		return -1;
@@ -390,13 +395,17 @@ static int dfs_close(struct file *desc) {
 }
 
 static size_t dfs_write(struct file *desc, void *buf, size_t size) {
+	int pos;
+	int l;
 	assert(desc);
 	assert(desc->f_inode);
 	assert(buf);
-	int pos = pos_from_page(desc->f_inode->start_pos) + desc->pos;
-	int l   = min(size, desc->f_inode->length - pos);
 
-	assert(l >= 0);
+	pos = pos_from_page(desc->f_inode->start_pos) + desc->pos;
+	l = min(size, desc->f_inode->length - pos);
+
+	if (l < 0)
+		return -1;
 
 	dfs_write_raw(pos, buf, l);
 	desc->pos += l;
@@ -412,7 +421,8 @@ size_t dfs_read(struct file *desc, void *buf, size_t size) {
 	int pos = pos_from_page(desc->f_inode->start_pos) + desc->pos;
 	int l   = min(size, desc->f_inode->length - desc->pos);
 
-	assert(l >= 0);
+	if (l < 0)
+		return -1;
 
 	_read(pos, buf, l);
 

@@ -120,7 +120,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		d = dvfs_alloc_dentry();
 		in->i_dentry = parent;
 		dentry_fill(parent->d_sb, in, d, parent);
-		strncpy(d->name, buff);
+		strcpy(d->name, buff);
 		d->flags = in->flags;
 	}
 
