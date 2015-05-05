@@ -1,4 +1,4 @@
-/* @file   dvfs.c
+/* @file
  * @brief  DVFS interface implementation
  * @author Denis Deryugin
  * @date   11 Mar 2014

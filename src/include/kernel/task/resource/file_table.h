@@ -1,5 +1,5 @@
 /**
- * @file file_table.h
+ * @file
  * @brief Header file for file table task resource
  * @date 28 Mar 2015
  * @author Denis Deryugin

@@ -1,5 +1,5 @@
 /**
- * @file  fat_dvfs.c
+ * @file
  * @brief Implementation of FAT driver for DVFS
  *
  * @date   11 Apr 2015

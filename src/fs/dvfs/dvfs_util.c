@@ -1,4 +1,4 @@
-/* @file   dvfs_util.c
+/* @file
  * @brief  DVFS allocators, fillers and default handlers
  * @author Denis Deryugin
  * @date   8 Apr 2014

@@ -1,5 +1,5 @@
 /**
- * @file   fat_common.c
+ * @file
  * @brief  VFS-independent part of FAT driver
  * @data   9 Apr 2015
  * @author Denis Deryugin

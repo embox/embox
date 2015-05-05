@@ -1,5 +1,5 @@
 /**
- * @file  fat.c
+ * @file
  * @brief Implementation of FAT driver
  *
  * @date 28.03.2012

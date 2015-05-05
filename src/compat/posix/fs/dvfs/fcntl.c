@@ -1,5 +1,5 @@
 /**
- * @file fcntl.c
+ * @file
  * @brief Implementation of the POSIX fcntl function
  * @date 3 Apr 2015
  * @author Denis Deryugin
