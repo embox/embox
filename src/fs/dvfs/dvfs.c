@@ -120,7 +120,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		d = dvfs_alloc_dentry();
 		in->i_dentry = parent;
 		dentry_fill(parent->d_sb, in, d, parent);
-		strcpy(d->name, buff);
+		strncpy(d->name, buff);
 		d->flags = in->flags;
 	}
 
@@ -178,7 +178,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 
 	new_inode = dvfs_alloc_inode(sb);
 	dentry_fill(sb, new_inode, lookup->item, lookup->parent);
-	strcpy(lookup->item->name, name);
+	strncpy(lookup->item->name, name, DENTRY_NAME_LEN);
 	inode_fill(sb, new_inode, lookup->item);
 	res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
 
