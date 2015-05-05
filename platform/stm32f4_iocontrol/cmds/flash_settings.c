@@ -7,8 +7,10 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <ifaddrs.h>
 
@@ -18,8 +20,6 @@
 
 #include "libleddrv.h"
 #include "led_names.h"
-
-#include <fs/dvfs.h>
 
 #define FLASHSET_MAGIC 0x5500AAAA
 #define FLASHSET_WHAT_NET 0x00000001
@@ -38,8 +38,7 @@ static unsigned char fsn_leds_state[LEDDRV_LED_N];
 static int flashset_nic_store(const char *nic_name) {
         struct ifaddrs *i_ifa, *nic_ifa, *ifa;
 	struct in_device *iface_dev;
-	int errcode;
-	struct file file;
+	int errcode, fd;
 
 	ifa = NULL;
         if (-1 == (errcode = getifaddrs(&ifa))) {
@@ -79,24 +78,24 @@ static int flashset_nic_store(const char *nic_name) {
 	memcpy(&fsn_network.fsn_mac, iface_dev->dev->dev_addr,
 		sizeof(fsn_network.fsn_mac));
 
-	dvfs_open("nic", &file, DFS_CREAT);
-	errcode = dvfs_write(&file, (char*) &fsn_network, sizeof(fsn_network));
+	fd = open("nic", O_CREAT);
+	errcode = write(fd, (char*) &fsn_network, sizeof(fsn_network));
 
 outerr:
+	close(fd);
 	return errcode;
 }
 
 static int flashset_nic_restore(const char *nic_name) {
 	struct in_device *iface_dev;
-	int errcode;
-	struct file file;
+	int errcode, fd;
 
-	errcode = dvfs_open("nic", &file, 0);
-	if (errcode)
-		return errcode;
-	errcode = dvfs_read(&file, (char*) &fsn_network, sizeof(fsn_network));
+	fd = open("nic", 0);
+	if (fd < 0)
+		return fd;
+	errcode = read(fd, (char*) &fsn_network, sizeof(fsn_network));
 	if (errcode < 0)
-		return errcode;
+		goto outerr;
 
 	iface_dev = inetdev_get_by_name(nic_name);
 	if (!iface_dev) {
@@ -120,28 +119,34 @@ static int flashset_nic_restore(const char *nic_name) {
 
 	errcode = 0;
 outerr:
+	close(fd);
 	return errcode;
 }
 
 static int flashset_led_store(void) {
-	int errcode;
-	struct file file;
+	int errcode, fd;
 	if (0 > (errcode = leddrv_getstates(fsn_leds_state))) {
 		return errcode;
 	}
 
-	dvfs_open("led", &file, DFS_CREAT);
+	fd = open("led", O_CREAT);
+	if (fd < 0)
+		return fd;
 
-	return dvfs_write(&file, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
+	errcode = write(fd, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
+	close(fd);
+
+	return errcode;
 }
 
 static int flashset_led_restore(void) {
-	struct file file;
-	int errcode;
-	errcode = dvfs_open("led", &file, 0);
-	if (errcode)
-		return errcode;
-	errcode = dvfs_read(&file, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
+	int errcode, fd;
+	fd = open("led", 0);
+	if (fd < 0)
+		return fd;
+	errcode = read(fd, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
+	close(fd);
+
 	if (errcode < 0)
 		return errcode;
 
@@ -149,16 +154,25 @@ static int flashset_led_restore(void) {
 }
 
 static int flashset_lednames_store(void) {
-	struct file file;
-	dvfs_open("led_names", &file, DFS_CREAT);
-	return dvfs_write(&file, (char*) &led_names, sizeof(led_names));
+	int errcode, fd = open("led_names", O_CREAT);
+	if (fd < 0)
+		return fd;
+
+	errcode = write(fd, (char*) &led_names, sizeof(led_names));
+	close(fd);
+
+	return errcode;
 }
 
 static int flashset_lednames_restore(void) {
-	struct file file;
-	if (dvfs_open("led_names", &file, 0))
+	int fd = open("led_names", 0), errcode;
+	if (fd < 0)
 		return -1;
-	return 0 > dvfs_read(&file, (char*) &led_names, sizeof(led_names));;
+
+	errcode = read(fd, (char*) &led_names, sizeof(led_names));;
+	close(fd);
+
+	return errcode;
 }
 
 int main(int argc, char *argv[]) {

@@ -1,0 +1,22 @@
+package embox.fs
+
+module dvfs {
+	@IncludeExport(path="fs")
+	source "dvfs.h"
+
+	option number superblock_pool_size=4
+	option number inode_pool_size=64
+	option number dentry_pool_size=64
+	option number file_pool_size=64
+	option number mnt_pool_size=4
+
+	source "dvfs.c"
+	source "dvfs_util.c"
+
+	depends path_helper
+	depends rootfs_dvfs
+
+	depends embox.kernel.task.resource.file_table
+	depends embox.fs.syslib.dcache
+	depends embox.fs.driver.dvfs_driver
+}

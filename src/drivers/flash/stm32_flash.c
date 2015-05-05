@@ -10,11 +10,13 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <util/math.h>
+
+#include <drivers/block_dev/flash/flash_dev.h>
+#include <fs/node.h>
 #include <hal/reg.h>
 #include <hal/mem.h>
 #include <kernel/printk.h>
-#include <util/math.h>
-#include <drivers/block_dev/flash/flash_dev.h>
 #include <stm32f4xx_flash.h>
 
 #define STM32_FIRST_BLOCK_OFFSET 1

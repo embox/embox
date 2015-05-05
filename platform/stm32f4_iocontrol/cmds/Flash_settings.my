@@ -19,7 +19,9 @@ package stm32f4_iocontrol.cmd
 module flash_settings {
 	source "flash_settings.c"
 
-	depends embox.fs.driver.dfs
+	depends embox.compat.libc.stdio.file_ops
+	depends embox.compat.posix.util.environ
+
 	depends embox.driver.flash.stm32
 	depends embox.net.lib.getifaddrs
 

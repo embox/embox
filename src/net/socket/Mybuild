@@ -42,6 +42,7 @@ module af_inet {
 	option number amount_inet_sock=20
 
 	depends sock
+	depends route
 	depends embox.util.indexator
 	depends embox.framework.LibFrameworkNet
 }

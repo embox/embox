@@ -78,7 +78,7 @@ static int tmpfs_init(void * par) {
 		return res;
 	}
 
-	dev_node = ramdisk->bdev->dev_node;
+	dev_node = ramdisk->bdev->dev_vfs_info;
 	if (!dev_node) {
 		return -1;
 	}

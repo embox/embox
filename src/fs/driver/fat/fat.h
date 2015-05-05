@@ -16,29 +16,30 @@
 
 #define MSDOS_NAME      11
 #define ROOT_DIR        "/"
-#define DIR_SEPARATOR	'/'	/* character separating directory components*/
+#define DIR_SEPARATOR   '/'	/* character separating directory components*/
 
 /* 32-bit error codes */
-#define DFS_OK			0			/* no error */
-#define DFS_EOF			1			/* end of file (not an error) */
-#define DFS_WRITEPROT	2			/* volume is write protected */
-#define DFS_NOTFOUND	3			/* path or file not found */
-#define DFS_PATHLEN		4			/* path too long */
-#define DFS_ALLOCNEW	5			/* must allocate new directory cluster */
-#define DFS_ERRMISC		0xffffffff	/* generic error */
+#define DFS_OK        0          /* no error */
+#define DFS_EOF       1	         /* end of file (not an error) */
+#define DFS_WRITEPROT 2	         /* volume is write protected */
+#define DFS_NOTFOUND  3	         /* path or file not found */
+#define DFS_PATHLEN   4	         /* path too long */
+#define DFS_ALLOCNEW  5	         /* must allocate new directory cluster */
+#define DFS_ERRMISC   0xffffffff /* generic error */
+#define DFS_WRONGRES  6          /* file expected but dir found or vice versa */
 
 /* Internal subformat identifiers */
-#define FAT12			0
-#define FAT16			1
-#define FAT32			2
+#define FAT12 0
+#define FAT16 1
+#define FAT32 2
 
 /* DOS attribute bits  */
-#define ATTR_READ_ONLY	0x01
-#define ATTR_HIDDEN		0x02
-#define ATTR_SYSTEM		0x04
-#define ATTR_VOLUME_ID	0x08
-#define ATTR_DIRECTORY	0x10
-#define ATTR_ARCHIVE	0x20
+#define ATTR_READ_ONLY  0x01
+#define ATTR_HIDDEN     0x02
+#define ATTR_SYSTEM     0x04
+#define ATTR_VOLUME_ID  0x08
+#define ATTR_DIRECTORY  0x10
+#define ATTR_ARCHIVE    0x20
 #define ATTR_LONG_NAME \
 	(ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
 
@@ -214,6 +215,25 @@ struct volinfo {
  */
 #define DFS_DI_BLANKENT		0x01	/* Searching for blank entry */
 
+struct fat_fs_info {
+	struct volinfo vi;
+	struct block_dev *bdev;
+	struct node *root;
+};
+
+struct fat_file_info {
+	struct fat_fs_info *fsi;
+	struct volinfo *volinfo;		/* vol_info_t used to open this file */
+	uint32_t dirsector;			/* physical sector containing dir entry of this file */
+	uint8_t diroffset;			/* # of this entry within the dir sector */
+	int mode;				    /* mode in which this file was opened */
+	uint32_t firstcluster;		/* first cluster of file */
+	uint32_t filelen;			/* byte length of file */
+
+	uint32_t cluster;			/* current cluster */
+	uint32_t pointer;			/* current (BYTE) pointer */
+};
+
 /*
  *	Directory search structure (Internal to DOSFS)
  */
@@ -223,31 +243,49 @@ struct dirinfo {
 	uint8_t currententry;		/* current dir entry in sector */
 	uint8_t *p_scratch;			/* ptr to user-supplied scratch buffer (one sector) */
 	uint8_t flags;				/* internal DOSFS flags */
+
+	struct fat_file_info fi;
 };
 
-struct fat_fs_info {
-	struct volinfo vi;
-	struct block_dev *bdev;
-	struct node *root;
-};
-
-struct fat_file_info {
-	struct volinfo *volinfo;		/* vol_info_t used to open this file */
-	uint32_t dirsector;			/* physical sector containing dir entry of this file */
-	uint8_t diroffset;			/* # of this entry within the dir sector */
-	int mode;				    /* mode in which this file was opened */
-	uint32_t firstcluster;		/* first cluster of file */
-	//uint32_t filelen;			/* byte length of file */
-
-	uint32_t cluster;			/* current cluster */
-	uint32_t pointer;			/* current (BYTE) pointer */
-};
-
-void fat_set_filetime(struct dirent *de);
-void fat_get_filename(char *tmppath, char *filename);
-int fat_check_filename(char *filename);
+extern void fat_set_filetime(struct dirent *de);
+extern void fat_get_filename(char *tmppath, char *filename);
+extern int fat_check_filename(char *filename);
 
 extern char *path_canonical_to_dir(char *dest, char *src);
 extern char *path_dir_to_canonical(char *dest, char *src, char dir);
+extern int      fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
+extern int      fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
+extern uint32_t fat_get_next(struct fat_fs_info *fsi,
+                             struct dirinfo * dirinfo, struct dirent * dirent);
+extern int      fat_create_partition(void *bdev);
+extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
+                                  uint8_t *pptype, uint32_t *psize);
+extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);
+extern uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
+                             uint32_t *p_scratchcache, uint32_t cluster, uint32_t new_contents);
+extern uint32_t fat_get_free_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch);
+extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
+                             uint8_t *dirname, struct dirinfo *dirinfo);
+extern uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
+                             struct dirinfo *di, struct dirent *de);
+extern void     fat_set_direntry (uint32_t dir_cluster, uint32_t cluster);
+extern uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
+		uint8_t *p_scratch, size_t *size);
+extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
+                              uint8_t *buffer, uint32_t *successcount, uint32_t len);
+extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
+                               uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
+extern int      fat_root_dir_record(void *bdev);
+extern int      fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, int mode);
+extern int      fat_unlike_file(struct fat_file_info *fi, uint8_t *path, uint8_t *p_scratch);
+extern int      fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
+		uint8_t *p_scratch);
+
+extern struct fat_fs_info *fat_fs_alloc(void);
+extern void fat_fs_free(struct fat_fs_info *fsi);
+extern struct fat_file_info *fat_file_alloc(void);
+extern void fat_file_free(struct fat_file_info *fi);
+extern struct dirinfo *fat_dirinfo_alloc(void);
+extern void fat_dirinfo_free(struct dirinfo *di);
 
 #endif /* FAT_H_ */

@@ -53,5 +53,7 @@ module pty {
 
 module ttyfs {
 	source "ttyfs.c"
+
+	depends embox.fs.core
 	depends embox.fs.driver.devfs
 }

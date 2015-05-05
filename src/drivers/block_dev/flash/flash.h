@@ -9,10 +9,11 @@
 #ifndef FLASH_H_
 #define FLASH_H_
 
-#include <embox/block_dev.h>
 #include <stddef.h>
 #include <stdint.h>
 
+#include <embox/block_dev.h>
+#include <fs/node.h>
 /* ======== 0x600 FLASH ===============================
  * Get/Set configuration 'key' values for FLASH drivers
  */

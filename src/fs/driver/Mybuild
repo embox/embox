@@ -1,6 +1,15 @@
 package embox.fs.driver
 
-module repo {
+@DefaultImpl(fs_driver)
+abstract module repo {
+}
+
+module fs_driver extends repo {
 	option number drivers_quantity = 16
 	source "fs_driver.c"
+}
+
+module dvfs_driver extends repo {
+	option number drivers_quantity = 16
+	source "dvfs_driver.c"
 }
