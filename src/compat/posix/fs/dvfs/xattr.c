@@ -6,7 +6,7 @@
  * @date    3 Apr 2015
  */
 
-#include <defines/size_t.h>
+#include <stddef.h>
 
 int getxattr(const char *path, const char *name, char *value, size_t size) {
 	return 0;
