@@ -16,8 +16,6 @@ export SUBPLATFORM_TEMPLATE_DIR  = templates/
 export BUILD_DIR       = $(ROOT_DIR)/build/base
 export EXTERNAL_BUILD_DIR  = $(ROOT_DIR)/build/extbld
 
-export INCUDE_INSTALL_DIR  = $(ROOT_DIR)/build/include
-
 export DOC_DIR         = $(ROOT_DIR)/build/doc
 
 export BIN_DIR         = $(BUILD_DIR)/bin
@@ -29,6 +27,9 @@ export GEN_DIR         = $(DIST_BASE_DIR)/gen
 export SRCGEN_DIR      = $(GEN_DIR)
 export MKGEN_DIR       = $(GEN_DIR)
 export AUTOCONF_DIR    = $(GEN_DIR)
+
+export INCUDE_INSTALL_DIR  = $(DIST_BASE_DIR)/include
+
 
 export ROOTFS_DIR      = $(OBJ_DIR)/rootfs
 export ROOTFS_IMAGE    = $(OBJ_DIR)/rootfs.cpio
