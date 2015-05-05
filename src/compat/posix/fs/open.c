@@ -61,12 +61,12 @@ int open(const char *path, int __oflag, ...) {
 	va_end(args);
 
 	strncpy(path_buf, path, PATH_MAX);
-	bname = base_name(path_buf);
+	bname = basename(path_buf);
 
 	if (strlen(bname) >= NAME_MAX)
 		return SET_ERRNO(ENAMETOOLONG);
 
-	strncpy(name, basename(path_buf), NAME_MAX);
+	strncpy(name, bname, NAME_MAX);
 
 	if (0 == strcmp(name, "/")) {
 		return SET_ERRNO(EISDIR);
