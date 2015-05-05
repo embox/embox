@@ -43,6 +43,7 @@ int open(const char *path, int __oflag, ...) {
 	mode_t mode;
 	int rc;
 	char *parent_path;
+	char *bname;
 	DIR *dir;
 	struct node *node;
 	struct path node_path;
@@ -50,7 +51,7 @@ int open(const char *path, int __oflag, ...) {
 
 	assert(~__oflag & O_DIRECTORY);
 
-	if (strlen(path) > PATH_MAX) {
+	if (strlen(path) >= PATH_MAX) {
 		return SET_ERRNO(ENAMETOOLONG);
 	}
 
@@ -59,8 +60,14 @@ int open(const char *path, int __oflag, ...) {
 	mode = umask_modify(mode);
 	va_end(args);
 
-	strcpy(path_buf, path);
-	strcpy(name, basename(path_buf));
+	strncpy(path_buf, path, PATH_MAX);
+	bname = base_name(path_buf);
+
+	if (strlen(bname) >= NAME_MAX)
+		return SET_ERRNO(ENAMETOOLONG);
+
+	strncpy(name, basename(path_buf), NAME_MAX);
+
 	if (0 == strcmp(name, "/")) {
 		return SET_ERRNO(EISDIR);
 	}

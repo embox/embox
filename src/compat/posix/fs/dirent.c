@@ -90,7 +90,7 @@ struct dirent *readdir(DIR *dir) {
 		return NULL;
 	}
 
-	strcpy(dir->current.d_name, child.node->name);
+	strncpy(dir->current.d_name, child.node->name, DIRENT_DNAME_LEN);
 
 	dir->current.d_ino = (ino_t)child.node;
 

@@ -30,7 +30,7 @@ int chdir(const char *path) {
 	}
 
 	if (path[0] != '/') {
-		strcpy(strbuf, getenv("PWD"));
+		strncpy(strbuf, getenv("PWD"), PATH_MAX);
 		strcat(strbuf, "/");
 	}
 	strcat(strbuf, path);
