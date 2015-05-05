@@ -17,20 +17,23 @@ int open(const char *path, int __oflag, ...) {
 	int res;
 
 	file = dvfs_alloc_file();
+	if (file == NULL)
+		return SET_ERRNO(ENOMEM);
+
 	res = dvfs_open(path, file, __oflag);
+	if (res) {
+		dvfs_destroy_file(file);
+		return SET_ERRNO(-res);
+	}
 
 	ft = task_fs();
 	for (res = 0; res < FILE_TABLE_SZ; res++)
 		if (ft->file[res] == NULL) {
 			ft->file[res] = file;
-			break;
+			return 0;
 		}
 
-	if (res == FILE_TABLE_SZ || (file->f_inode == NULL && file->f_dentry == NULL)) {
-		dvfs_destroy_file(file);
-		res = -1;
-	}
-
-	return res;
+	dvfs_destroy_file(file);
+	return SET_ERRNO(ENOMEM);
 }
 
