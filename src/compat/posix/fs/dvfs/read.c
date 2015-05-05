@@ -17,8 +17,8 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	if (fd < FILE_TABLE_SZ && ft->file[fd] != NULL) {
 		file = ft->file[fd];
 		return dvfs_read(file, buf, nbyte);
-	} else {
-		return -1;
 	}
+
+	return -1;
 }
 
