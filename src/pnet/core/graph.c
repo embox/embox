@@ -16,6 +16,10 @@
 #include <pnet/graph.h>
 #include <pnet/node.h>
 
+#include <framework/mod/options.h>
+
+#define CONFIG_PNET_GRAPH_CNT OPTION_GET(NUMBER,pnet_graph_quantity)
+
 OBJALLOC_DEF(graphs, struct pnet_graph, CONFIG_PNET_GRAPH_CNT);
 
 LIST_HEAD(pnet_graphs);

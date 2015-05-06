@@ -2,4 +2,6 @@ package embox.pnet.pack
 
 module PnetPackSimple {
 	source "pack_alone.c"
+
+	option number pnet_pack_quantity
 }
