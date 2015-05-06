@@ -22,11 +22,12 @@ VPATH := $(SRCGEN_DIR)
 %/. :
 	@$(MKDIR) $*
 
-a_prerequisites     = $(common_prereqs)
-o_prerequisites     = $(common_prereqs)
-cc_prerequisites    = $(common_prereqs)
-cpp_prerequisites   = $(common_prereqs)
-extbld_prerequisites= $(common_prereqs)
+a_prerequisites               = $(common_prereqs)
+o_prerequisites               = $(common_prereqs)
+cc_prerequisites              = $(common_prereqs)
+cpp_prerequisites             = $(common_prereqs)
+extbld_prerequisites          = $(common_prereqs)
+include_install_prerequisites = $(common_prereqs)
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
