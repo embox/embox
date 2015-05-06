@@ -52,7 +52,6 @@ static module file_ops_dvfs extends file_ops {
 	source "fcntl.c"
 
 	depends embox.fs.dvfs
-	depends embox.fs.index_operation
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno

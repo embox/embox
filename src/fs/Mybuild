@@ -5,6 +5,7 @@ module node {
 
 	source "node.c"
 
+	depends embox.kernel.thread.mutex
 	depends embox.util.tree
 }
 
@@ -95,7 +96,7 @@ module rootfs extends root_file_system {
 	depends node
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
-	depends embox.fs.syslib.file_system
+	depends embox.fs.syslib.file_system_full
 	depends embox.compat.libc.all
 }
 

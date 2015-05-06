@@ -94,7 +94,7 @@ static module fsop_old extends fsop {
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
 	depends embox.fs.syslib.perm
-	depends embox.fs.syslib.file_system
+	depends embox.fs.syslib.file_system_full
 	depends umask // mkdir
 }
 
