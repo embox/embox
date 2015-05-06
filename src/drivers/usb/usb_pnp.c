@@ -83,9 +83,9 @@ void usb_dev_configured(struct usb_dev *dev) {
 
 	usb_dev_register(dev);
 
-	usb_driver_handle(dev);
-
 	usb_class_handle(dev);
+
+	usb_driver_handle(dev);
 }
 
 void usb_dev_disconnect(struct usb_hub_port *port) {
