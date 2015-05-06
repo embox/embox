@@ -118,6 +118,9 @@ module efm32_leuart extends embox.driver.diag.diag_api {
 	depends diag
 }
 
+module mspdebug_console extends embox.driver.diag.diag_api {
+	source "mspdebug_simio.c"
+}
 
 module msp430usci extends embox.driver.diag.diag_api {
 	source "msp430usci.c"
