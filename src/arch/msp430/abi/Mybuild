@@ -1,0 +1,13 @@
+
+package embox.arch.msp430
+
+@DefaultImpl(eabi)
+abstract module abi { }
+
+module eabi extends abi {
+	source "eabi.h"
+}
+
+module mspgcc extends abi {
+	source "mspgcc.h"
+}
