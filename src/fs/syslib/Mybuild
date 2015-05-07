@@ -19,7 +19,6 @@ module fs_full extends file {
 
 module fs_none extends file {
 	source "nokfile.c"
-	depends embox.fs.core
 }
 
 @DefaultImpl(file_system_none)
