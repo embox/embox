@@ -39,6 +39,21 @@ int lstat(const char *path, struct stat *buf) {
 }
 
 int stat(const char *path, struct stat *buf) {
+	struct lookup l;
+	int res = dvfs_lookup(path, &l);
+	struct dentry *d = l.item;
+
+	if (res < 0)
+		return res;
+
+	*buf = (struct stat) {
+		.st_dev     = d->d_sb->bdev->id,
+		.st_ino     = d->d_inode->i_no,
+		.st_nlink   = 1,
+		.st_size    = d->d_inode->length,
+		.st_blksize = 512,
+	};
+
 	return 0;
 }
 
