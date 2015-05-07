@@ -81,9 +81,10 @@ struct dentry {
 	struct super_block *d_sb;
 
 	struct dentry     *parent;
-	struct dlist_head next;     /* Next element in this directory */
 	struct dlist_head children; /* Subelements of directory */
 	struct dlist_head children_lnk;
+
+	struct dlist_head d_lnk;   /* List for all dentries in system */
 
 	struct dentry_operations *d_ops;
 };

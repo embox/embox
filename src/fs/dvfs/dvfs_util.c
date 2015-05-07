@@ -128,6 +128,11 @@ int dvfs_destroy_inode(struct inode *inode) {
 		return dvfs_default_destroy_inode(inode);
 }
 
+/**
+* @brief Double-linked list of all dentries
+*/
+static DLIST_DEFINE(dentry_dlist);
+
 /* @brief Get new dentry from pool
  *
  * @return Pointer to the new dentry
@@ -135,8 +140,26 @@ int dvfs_destroy_inode(struct inode *inode) {
  */
 struct dentry *dvfs_alloc_dentry(void) {
 	struct dentry *d = pool_alloc(&dentry_pool);
-	if (d)
-		memset(d, 0, sizeof(struct dentry));
+	struct dentry *t = NULL;;
+	if (!d) {
+		/* Freeing unused dentries */
+		dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
+			if (d->usage_count == 0) {
+				t = d;
+				break;
+			}
+		}
+		if (t) {
+			dvfs_destroy_dentry(d);
+			d = pool_alloc(&dentry_pool);
+		} else
+			return NULL;
+	}
+
+	memset(d, 0, sizeof(struct dentry));
+	dlist_head_init(&d->d_lnk);
+	dlist_add_next(&d->d_lnk, &dentry_dlist);
+	dlist_init(&d->children);
 	return d;
 }
 
@@ -148,6 +171,8 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 		if (dentry->d_inode)
 			dvfs_destroy_inode(dentry->d_inode);
 		dentry->parent->usage_count--;
+		dlist_del(&dentry->children_lnk);
+		dlist_del(&dentry->d_lnk);
 		pool_free(&dentry_pool, dentry);
 		return 0;
 	} else
@@ -202,6 +227,7 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 		.d_sb    = sb,
 		.d_ops   = sb ? sb->sb_dops : NULL,
 		.parent  = parent,
+		.d_lnk   = dentry->d_lnk
 	};
 
 	inode->i_dentry = dentry;
@@ -251,7 +277,7 @@ int dvfs_update_root(void) {
 	global_root->d_sb->root = global_root;
 
 	dlist_init(&global_root->children);
-	dlist_head_init(&global_root->children_lnk);
+	dlist_init(&global_root->children_lnk);
 	return 0;
 }
 

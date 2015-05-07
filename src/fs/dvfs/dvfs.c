@@ -76,6 +76,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	struct inode *in;
 	int len = dvfs_path_next_len(path);
 	struct dentry *d;
+	struct dlist_head *l;
 	assert(parent);
 	assert(path);
 
@@ -100,7 +101,11 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return dvfs_path_walk(path + 2, parent, lookup);
 
 	/* TODO use cache instead */
-	dlist_foreach_entry(d, &parent->children, children_lnk) {
+	dlist_foreach(l, &parent->children) {
+		if (l == &parent->children)
+			continue;
+		d = mcast_out(l, struct dentry, children_lnk);
+
 		if (!strcmp(d->name, buff))
 			return dvfs_path_walk(path + strlen(buff), d, lookup);
 	}
