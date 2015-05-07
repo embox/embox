@@ -52,7 +52,6 @@ static size_t initfs_read(struct file *desc, void *buf, size_t size) {
 	}
 
 	memcpy(buf, fi->addr + desc->pos, size);
-	desc->pos += size;
 
 	return size;
 }

@@ -209,6 +209,7 @@ int inode_fill(struct super_block *sb, struct inode *inode,
 		.i_ops     = sb ? sb->sb_iops : NULL,
 		.start_pos = inode->start_pos,
 		.i_no      = inode->i_no,
+		.i_data    = inode->i_data,
 	};
 
 	return 0;
