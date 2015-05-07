@@ -1,10 +1,21 @@
 package embox.fs.driver
 
-module initfs {
+@DefaultImpl(initfs_old)
+abstract module initfs {
 	source "cpio.c", "initfs_cpio.S"
-	source "initfs.c"
 	source "initfs.lds.S"
+}
+
+module initfs_old extends initfs {
+	source "initfs.c"
 	depends embox.fs.core
 	depends embox.mem.pool
 	option number fdesc_quantity=128
+}
+
+module initfs_dvfs extends initfs {
+	source "initfs_dvfs.c"
+	option number fdesc_quantity=128
+
+	depends embox.fs.dvfs
 }
