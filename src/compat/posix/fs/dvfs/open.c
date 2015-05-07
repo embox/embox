@@ -30,7 +30,7 @@ int open(const char *path, int __oflag, ...) {
 	for (res = 0; res < FILE_TABLE_SZ; res++)
 		if (ft->file[res] == NULL) {
 			ft->file[res] = file;
-			return 0;
+			return res;
 		}
 
 	dvfs_destroy_file(file);
