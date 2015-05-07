@@ -15,6 +15,7 @@
 #include <drivers/at91sam7s256.h>
 #include <drivers/timer_counter/at91_timer_counter.h>
 #include <hal/reg.h>
+#include <hal/system.h>
 
 #define TIMER 0
 #define I2C_CLOCK 9600
@@ -234,7 +235,7 @@ static int i2c_unit_init(void) {
 	/* MCLK/2, RC compare trigger */
 	tc_config_input(TIMER, (uint32_t) AT91C_TC_CLKS_TIMER_DIV1_CLOCK);
 	/* running on twice speed i2c_clock*/
-	tc_set_limit(TIMER, (CONFIG_SYS_CLOCK/2)/(2 * I2C_CLOCK));
+	tc_set_limit(TIMER, (SYS_CLOCK/2)/(2 * I2C_CLOCK));
 	tc_limit_int_enable(TIMER, timer_handler);
 	tc_reset(TIMER);
 	return 0;

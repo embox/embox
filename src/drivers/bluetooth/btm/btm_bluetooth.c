@@ -7,15 +7,19 @@
  */
 
 #include <stdint.h>
-#include <embox/unit.h>
+#include <string.h>
+
 #include <hal/reg.h>
+#include <hal/system.h>
+
 #include <kernel/time/ktime.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth/bluetooth.h>
 #include <drivers/bluetooth/btm112.h>
 #include <kernel/time/timer.h>
-#include <string.h>
+
+#include <embox/unit.h>
 
 extern void bt_handle(uint8_t *buff);
 
@@ -71,7 +75,7 @@ static void init_usart(void) {
 	REG_STORE(&(us_dev_regs->US_MR), AT91C_US_USMODE_HWHSH
 			| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
 			| AT91C_US_NBSTOP_1_BIT);
-	REG_STORE(&(us_dev_regs->US_BRGR), CONFIG_SYS_CLOCK / (16 * BTM_BT_BAUD_RATE));
+	REG_STORE(&(us_dev_regs->US_BRGR), SYS_CLOCK / (16 * BTM_BT_BAUD_RATE));
 
 	REG_STORE(&(us_dev_regs->US_IDR), ~0);
 

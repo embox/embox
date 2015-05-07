@@ -10,6 +10,8 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+
+#include <hal/system.h>
 #include <kernel/time/ktime.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
@@ -109,7 +111,7 @@ static void init_usart(void) {
 			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
 	REG_STORE(&(us_dev_regs->US_IDR), ~0);
 	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDRX);
-	REG_STORE(&(us_dev_regs->US_BRGR), CONFIG_SYS_CLOCK / (8 * NXT_BT_BAUD_RATE));
+	REG_STORE(&(us_dev_regs->US_BRGR), SYS_CLOCK / (8 * NXT_BT_BAUD_RATE));
 	REG_STORE(&(us_dev_regs->US_RCR), 0);
 	REG_STORE(&(us_dev_regs->US_TCR), 0);
 	REG_STORE(&(us_dev_regs->US_RNPR), 0);
