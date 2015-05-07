@@ -29,6 +29,10 @@ extern void bt_handle(uint8_t *buff);
 #define BTM_BT_RTS_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,rts_pin)))
 #define BTM_BT_CTS_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,cts_pin)))
 
+#define BTM_BT_RST_PIN   ((uint32_t) (1 << OPTION_GET(NUMBER,rst_pin)))
+#define BTM_BT_LINK_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,link_pin)))
+
+
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_BTM_BT_SERIAL_PORT_OFFSET);
 
 #define BTM_BT_BAUD_RATE 19200
@@ -92,20 +96,20 @@ static void init_usart(void) {
 }
 
 void bluetooth_hw_hard_reset(void) {
-	pin_config_output(CONFIG_BTM_BT_RST_PIN);
-	pin_set_output(CONFIG_BTM_BT_RST_PIN);
+	pin_config_output(BTM_BT_RST_PIN);
+	pin_set_output(BTM_BT_RST_PIN);
 	ksleep(1000);
 
-	pin_clear_output(CONFIG_BTM_BT_RST_PIN);
+	pin_clear_output(BTM_BT_RST_PIN);
 	ksleep(5000);
 
-	pin_config_input(CONFIG_BTM_BT_LINK_PIN);
-	REG_STORE(AT91C_PIOA_PPUER, CONFIG_BTM_BT_LINK_PIN);
-	REG_STORE(AT91C_PIOA_MDDR, CONFIG_BTM_BT_LINK_PIN);
+	pin_config_input(BTM_BT_LINK_PIN);
+	REG_STORE(AT91C_PIOA_PPUER, BTM_BT_LINK_PIN);
+	REG_STORE(AT91C_PIOA_MDDR, BTM_BT_LINK_PIN);
 }
 
 static int btm_bluetooth_init(void) {
-	irq_attach(CONFIG_BTM_BT_US_IRQ, btm_bt_us_handler, 0, NULL, "bt reader");
+	irq_attach(OPTION_GET(NUMBER,irq_num), btm_bt_us_handler, 0, NULL, "bt reader");
 	// TODO error handling?
 
 	init_usart();

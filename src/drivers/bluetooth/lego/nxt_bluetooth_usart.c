@@ -36,6 +36,8 @@
 #define CMD_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,cmd_pin)))
 #define RST_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,rst_pin)))
 
+#define CS_PIN    ((uint32_t) (1 << OPTION_GET(NUMBER,cs_pin)))
+
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_NXT_BT_SERIAL_PORT_OFFSET);
 
 #define NXT_BT_ADC_RATE 50000
@@ -125,10 +127,10 @@ static void init_usart(void) {
 
 static void init_control_pins(void) {
 	/*configure control pins*/
-	REG_STORE(AT91C_PIOA_PPUDR, CONFIG_NXT_BT_CMD_PIN);
-	pin_config_output(CONFIG_NXT_BT_CS_PIN | CONFIG_NXT_BT_RST_PIN | CONFIG_NXT_BT_CMD_PIN);
-	pin_set_output(CONFIG_NXT_BT_CS_PIN | CONFIG_NXT_BT_RST_PIN);
-	pin_clear_output(CONFIG_NXT_BT_CMD_PIN);
+	REG_STORE(AT91C_PIOA_PPUDR, CMD_PIN);
+	pin_config_output(CS_PIN | RST_PIN | CMD_PIN);
+	pin_set_output(CS_PIN | RST_PIN);
+	pin_clear_output(CMD_PIN);
 
 }
 
@@ -177,7 +179,7 @@ static int nxt_bluetooth_init(void) {
 
 	data_pack = NULL;
 
-	irq_attach(CONFIG_NXT_BT_US_IRQ,
+	irq_attach(OPTION_GET(NUMBER,irq_num),
 		nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 	// TODO error handling?
 

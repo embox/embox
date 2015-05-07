@@ -19,7 +19,9 @@
 #include <pnet/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
 
+#include <framework/mod/options.h>
 
+#define CONFIG_BLUETOOTH_PIN OPTION_STRING_GET(bluetooth_pin)
 
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
