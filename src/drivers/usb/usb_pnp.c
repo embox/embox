@@ -8,11 +8,19 @@
 
 #include <util/dlist.h>
 #include <kernel/printk.h>
+#include <kernel/lthread/lthread.h>
 #include <drivers/usb/usb_driver.h>
 
 #include <drivers/usb/usb.h>
 
-DLIST_DEFINE(usb_dev_list);
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(usb_dev_init);
+
+static DLIST_DEFINE(usb_dev_list);
+static DLIST_DEFINE(usb_newdev_list);
+
+static struct lthread usb_newdev_handler;
 
 static int usb_dev_register(struct usb_dev *dev) {
 
@@ -77,15 +85,30 @@ void usb_dev_addr_settled(struct usb_dev *dev) {
 	usb_dev_configure(dev);
 }
 
+static int usb_add_newdev_action(struct lthread *self) {
+	struct usb_dev *dev;
+
+	dlist_foreach_entry(dev, &usb_newdev_list, dev_link) {
+		dlist_del(&dev->dev_link);
+		dlist_head_init(&dev->dev_link);
+
+		usb_dev_register(dev);
+
+		usb_class_handle(dev);
+
+		usb_driver_handle(dev);
+	}
+
+	return 0;
+}
+
 void usb_dev_configured(struct usb_dev *dev) {
 
 	dev->plug_state = USB_DEV_CONFIGURED;
 
-	usb_dev_register(dev);
+	dlist_add_next(&dev->dev_link, &usb_newdev_list);
 
-	usb_class_handle(dev);
-
-	usb_driver_handle(dev);
+	lthread_launch(&usb_newdev_handler);
 }
 
 void usb_dev_disconnect(struct usb_hub_port *port) {
@@ -106,4 +129,10 @@ void usb_dev_disconnect(struct usb_hub_port *port) {
 	usb_dev_request_delete(dev);
 
 	usb_dev_use_dec(dev);
+}
+
+static int usb_dev_init(void) {
+	lthread_init(&usb_newdev_handler, &usb_add_newdev_action);
+	//schedee_priority_set(&usb_newdev_handler.schedee, 200);
+	return 0;
 }
