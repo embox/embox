@@ -63,7 +63,7 @@ static irq_return_t btm_bt_us_handler(unsigned int irq_num, void *dev_id) {
 
 static void init_usart(void) {
 	/* Configure the usart */
-	REG_STORE(AT91C_PMC_PCER, (1 << CONFIG_BTM_BT_US_DEV_ID));
+	REG_STORE(AT91C_PMC_PCER, (1 << OPTION_GET(NUMBER,dev_id)));
 
 	REG_STORE(AT91C_PIOA_PDR, BTM_BT_RX_PIN | BTM_BT_TX_PIN |
 			BTM_BT_SCK_PIN | BTM_BT_RTS_PIN | BTM_BT_CTS_PIN);

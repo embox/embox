@@ -97,7 +97,7 @@ size_t bluetooth_read(size_t len) {
 
 static void init_usart(void) {
 	/* Configure the usart */
-	REG_STORE(AT91C_PMC_PCER, (1 << CONFIG_NXT_BT_US_DEV_ID));
+	REG_STORE(AT91C_PMC_PCER, (1 << OPTION_GET(NUMBER,dev_id)));
 
 	REG_STORE(AT91C_PIOA_PDR, RX_PIN | TX_PIN |
 			SCK_PIN | RTS_PIN | CTS_PIN);

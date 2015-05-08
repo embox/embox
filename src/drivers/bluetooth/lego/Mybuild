@@ -21,6 +21,7 @@ module usart {
 	@Type("irq") @Unique
 	option number irq_num = 7
 
+	option number dev_id = 7
 
 	source "nxt_bluetooth_usart.c"
 
