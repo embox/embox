@@ -1,8 +1,8 @@
-/*
- * usb_cdc.h
+/**
+ * @file
  *
- *  Created on: 2014 4 5
- *      Author: alexander
+ * @author  Alex Kalmuk
+ * @date    05.04.2014
  */
 
 #ifndef USB_CDC_H_
@@ -13,11 +13,12 @@
 #define USB_CLASS_CDC       2
 #define USB_CDC_MAX_DEVS    4
 
-struct input_dev;
-
 struct usb_class_cdc {
+	/* Storage for selected configuration */
 	void *getconf;
-	struct input_dev *indev;
+	/* Index of current configuration of USB device.
+	 * 0 if device is not configured. */
+	unsigned int current_conf;
 };
 
 static inline struct usb_class_cdc *usb2cdcdata(struct usb_dev *dev) {

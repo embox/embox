@@ -39,11 +39,12 @@ static void cdc_get_conf(struct usb_dev *dev, struct usb_class_cdc *cdc,
 		size_t idx, size_t len, usb_request_notify_hnd_t cb);
 static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg);
 static void cdc_get_conf_hnd(struct usb_request *req, void *arg);
+static void cdc_next_conf(struct usb_dev *dev);
 
 /* Interface */
 static void cdc_set_interface(struct usb_dev *dev, size_t iface,
 		size_t alternated_cfg, usb_request_notify_hnd_t cb);
-void *cdc_get_interface(void *conf, size_t index);
+struct usb_desc_interface *cdc_get_interface(void *conf, size_t index);
 static void cdc_set_interface_hnd(struct usb_request *req, void *arg);
 
 /* Endpoint */
@@ -54,6 +55,7 @@ static size_t cdc_skip_endpoints(void *start);
 static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc);
 static void usb_net_bulk_send(struct usb_dev *dev);
 static void usb_net_send_notify_hnd(struct usb_request *req, void *arg);
+static int is_rndis(struct usb_desc_interface *desc);
 
 /**
  * Skip all functional descriptors.
@@ -108,7 +110,7 @@ static size_t cdc_skip_endpoints(void *start) {
 	return (cur - func_desc_start);
 }
 
-void *cdc_get_interface(void *conf, size_t index) {
+struct usb_desc_interface *cdc_get_interface(void *conf, size_t index) {
 	size_t cur = 0;
 	char *curp = conf + INTERFACE_DESC_OFFSET;
 
@@ -119,7 +121,7 @@ void *cdc_get_interface(void *conf, size_t index) {
 		cur++;
 	}
 
-	return curp;
+	return (struct usb_desc_interface *) curp;
 }
 
 /*
@@ -171,6 +173,17 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 	size_t func_desc_len;
+	struct usb_desc_interface *iface;
+
+	iface = cdc_get_interface(cdc->getconf, 0);
+
+	/* Check if the first interface is one of Microsoft's pet,
+	 * and if so then try to skip it. */
+	if (is_rndis(iface)) {
+		sysfree(cdc->getconf);
+		cdc_next_conf(dev);
+		return;
+	}
 
 	func_desc_len = cdc_skip_func_descs(cdc->getconf + INTERFACE_DESC_OFFSET +
 			sizeof (struct usb_desc_interface));
@@ -225,7 +238,7 @@ static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg) {
 	cdc->getconf = sysmalloc(c->w_total_length);
 
 	cdc_get_conf(dev, cdc, (USB_DESC_TYPE_CONFIG << 8) | 1,
-			c->w_total_length, cdc_get_conf_hnd);
+			c->w_total_length, cdc_set_interface_hnd);
 }
 
 static void cdc_set_interface(struct usb_dev *dev, size_t iface,
@@ -243,25 +256,50 @@ static void cdc_set_interface(struct usb_dev *dev, size_t iface,
 }
 
 static void cdc_set_interface_hnd(struct usb_request *req, void *arg) {
-	cdc_set_interface(req->endp->dev, 1, 1, cdc_get_conf_len_hnd);
+	cdc_set_interface(req->endp->dev, 1, 1, cdc_get_conf_hnd);
 }
 
-static int usb_class_cdc_get_conf(struct usb_class *cls, struct usb_dev *dev) {
-	usb_endp_control(dev->endpoints[0], cdc_set_interface_hnd, NULL,
+static int is_rndis(struct usb_desc_interface *desc) {
+	return desc->b_interface_class == 2 /* USB_CLASS_COMM */
+			&& desc->b_interface_subclass == 2
+			&& desc->b_interface_protocol == 0xff;
+}
+
+static void cdc_next_conf(struct usb_dev *dev) {
+	size_t nconfigs;
+	struct usb_class_cdc *cdc = usb2cdcdata(dev);
+
+	nconfigs = dev->dev_desc.i_num_configurations;
+
+	if (cdc->current_conf >= nconfigs) {
+		return;
+	}
+
+	usb_endp_control(dev->endpoints[0], cdc_get_conf_len_hnd, NULL,
 		USB_DEV_REQ_TYPE_WR
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
 		USB_DEV_REQ_SET_CONF,
-		1,
+		++cdc->current_conf,
 		0,
 		0,
 		NULL);
+}
 
+static int usb_class_cdc_get_conf(struct usb_class *cls, struct usb_dev *dev) {
+	cdc_next_conf(dev);
 	return 0;
 }
 
 static void *usb_class_cdc_alloc(struct usb_class *cls, struct usb_dev *dev) {
-	return pool_alloc(&cdc_classes);
+	struct usb_class_cdc *cdc;
+
+	cdc = pool_alloc(&cdc_classes);
+	if (cdc) {
+		cdc->current_conf = 0; /* Default configuration is 0 */
+	}
+
+	return cdc;
 }
 
 static void usb_class_cdc_free(struct usb_class *cls, struct usb_dev *dev, void *spec) {
@@ -270,10 +308,8 @@ static void usb_class_cdc_free(struct usb_class *cls, struct usb_dev *dev, void 
 
 static struct usb_class usb_class_cdc = {
 	.usb_class = USB_CLASS_CDC,
-#if 1
 	.class_alloc = usb_class_cdc_alloc,
 	.class_free = usb_class_cdc_free,
-#endif
 	.get_conf = usb_class_cdc_get_conf,
 	.get_conf_hnd = cdc_get_conf_hnd,
 };
