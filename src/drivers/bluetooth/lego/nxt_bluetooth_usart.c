@@ -38,7 +38,7 @@
 
 #define CS_PIN    ((uint32_t) (1 << OPTION_GET(NUMBER,cs_pin)))
 
-static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_NXT_BT_SERIAL_PORT_OFFSET);
+static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) OPTION_GET(NUMBER,serial_port_offset));
 
 #define NXT_BT_ADC_RATE 50000
 #define NXT_BT_BAUD_RATE 460800

@@ -33,7 +33,7 @@ extern void bt_handle(uint8_t *buff);
 #define BTM_BT_LINK_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,link_pin)))
 
 
-static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_BTM_BT_SERIAL_PORT_OFFSET);
+static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) OPTION_GET(NUMBER,serial_port_offset));
 
 #define BTM_BT_BAUD_RATE 19200
 

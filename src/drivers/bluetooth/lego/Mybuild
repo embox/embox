@@ -23,6 +23,8 @@ module usart {
 
 	option number dev_id = 7
 
+	option number serial_port_offset = 0xFFFC4000
+
 	source "nxt_bluetooth_usart.c"
 
 	depends embox.kernel.timer.sleep_api
