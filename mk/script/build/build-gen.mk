@@ -13,29 +13,6 @@ mod_autocmd_postbuild = \
 	$$(abspath $$(obj_build)) \
 	$$(abspath $$(obj_postbuild))
 
-# Wraps the given rule with a script which compares the command output with
-# the original file (if it exists) and replaces the latter only in case when
-# contents differ.
-#   1. Output file.
-#   2. The complete command which should output its result to the temporary
-#      file specified in the '$OUTFILE' environment variable.
-cmd_notouch = \
-	set_on_error_trap() { trap "$$1" INT QUIT TERM HUP EXIT; };            \
-	COMMAND=$(call sh_quote,set_on_error_trap "$(RM) $$OUTFILE"; { $2; }); \
-	OUTFILE=$(call trim,$1);                                               \
-	if [ ! -f $$OUTFILE ];                                                 \
-	then                                                                   \
-		__OUTDIR=`dirname $$OUTFILE`;                                      \
-		{ [ -d $$__OUTDIR ] || $(MKDIR) $$__OUTDIR; }                      \
-			&& eval "$$COMMAND" && set_on_error_trap -;                    \
-	else                                                                   \
-		__OUTFILE=$$OUTFILE; OUTFILE=$${TMPDIR:-/tmp}/Mybuild.$$$$;        \
-		eval "$$COMMAND"                                                   \
-			&& { cmp -s $$OUTFILE $$__OUTFILE >/dev/null 2>&1              \
-					|| { $(MV) $$OUTFILE $$__OUTFILE                       \
-							&& set_on_error_trap -; }; };                  \
-	fi
-
 # Creates shell script with command if it is too big to be passed through
 # command line. Must be called from recipe.
 #   1. Output file.
@@ -44,16 +21,6 @@ cmd_assemble = \
 	$(ECHO) '$(\h)!/bin/sh' > $1; \
 	$(foreach w,$2,$(ECHO) -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
 
-# cmd_notouch = \
-	OUTFILE=$(call trim,$1); { $2; }
-
-#   1. Output file.
-#   2. The command which outputs its result to stdout.
-cmd_notouch_stdout = \
-	$(call cmd_notouch,$1,{ $2; } > $$OUTFILE)
-
-sh_quote = \
-	'$(subst ','\'',$1)'
 fmt_line = \
 	$(if $2,$1)$(subst $(\n),$(\n)$1,$2)
 
