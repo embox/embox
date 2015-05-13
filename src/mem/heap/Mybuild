@@ -55,9 +55,25 @@ module sysmalloc_task_based extends sysmalloc_api {
 module static_heap {
 	option number heap_size = 1048576
 	option string section = ".bss..reserve"
+	option string start_symbol = "_heap_start"
+	option string end_symbol = "_heap_end"
+	option string allocator_name = "__heap_pgallocator"
 
 	source "heap.lds.S"
 	source "static_heap.c"
+
+	depends embox.mem.bitmask
+}
+
+module static_heap2 {
+	option number heap_size = 1048576
+	option string section = ".bss..reserve"
+	option string start_symbol = "_heap_start2"
+	option string end_symbol = "_heap_end2"
+	option string allocator_name = "__heap_pgallocator2"
+
+	source "heap2.lds.S"
+	source "static_heap2.c"
 
 	depends embox.mem.bitmask
 }

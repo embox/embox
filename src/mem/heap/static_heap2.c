@@ -1,10 +1,11 @@
 /**
  * @file
- * @brief Init page global allocator on static heap.
+ * @brief Full copy of static_heap.c
  *
- * @date 26.12.12
- * @author Alexander Kalmuk
+ * @author  Anton Kozlov
+ * @date    13.05.2015
  */
+
 #include <errno.h>
 
 #include <embox/unit.h>
