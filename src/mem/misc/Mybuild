@@ -9,7 +9,7 @@ module slab {
 	option number heap_size = 524288
 	source "slab.c", "slab_impl.h"
 	provides iobjalloc.alloc
-	depends embox.mem.page_api, embox.mem.heap_lds
+	depends embox.mem.page_api
 	depends embox.mem.phymem
 	depends embox.mem.static_heap
 }

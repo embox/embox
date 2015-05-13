@@ -1,13 +1,6 @@
 package embox.mem
 
-module heap_lds {
-	source "heap.lds.S"
-	@NoRuntime depends heap_api, page_api /* this for including modules files */
-	@NoRuntime depends embox.mem.static_heap
-}
-
 module phymem {
 	source "phymem.c"
-	depends heap_lds /* this for label end of busy memory */
 	depends embox.mem.vmem_api
 }

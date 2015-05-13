@@ -24,7 +24,6 @@ module mspace_malloc {
 	depends boundary_markers
 
 	depends page_api
-	depends heap_lds
 	depends embox.mem.static_heap
 }
 
@@ -41,7 +40,6 @@ module heap_bm extends heap_api {
 module heap_simple extends heap_api {
 	source "heap_simple.c"
 
-	depends heap_lds
 	depends embox.mem.static_heap
 }
 
@@ -58,9 +56,9 @@ module static_heap {
 	option number heap_size = 1048576
 	option string section = ".bss..reserve"
 
+	source "heap.lds.S"
 	source "static_heap.c"
 
-	depends embox.mem.heap_lds
 	depends embox.mem.bitmask
 }
 
