@@ -43,3 +43,11 @@ module pjsua {
 	depends core
 }
 
+@AutoCmd
+@Cmd(name="pjsip_simpleua", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module simpleua {
+	source "^BUILD/extbld/third_party/pjproject/core/install/simpleua.o"
+	depends core
+}
