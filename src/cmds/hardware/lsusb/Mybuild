@@ -1,0 +1,23 @@
+package embox.cmd.hw.lsusb
+
+@AutoCmd
+@Cmd(name = "lsusb",
+	man = '''
+	NAME
+       lsusb - list USB devices
+    SYNOPSIS
+       lsusb [ options ]
+    DESCRIPTION
+       lsusb  is  a  utility for displaying information about USB buses in the
+       system and the devices connected to them.
+	OPTIONS
+			-h
+				Shows usage
+	SEE ALSO
+			lspci
+	AUTHORS
+			Anton Bondarev
+	''')
+module lsusb {
+	source "lsusb.c"
+}
