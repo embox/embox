@@ -41,7 +41,9 @@
 		. = 0x40;                   \
 		*(.trap_table.assert)       \
 		. = 0x134;                  \
-		*(.trap_table.routine_61)
+		*(.trap_table.routine_61)   \
+		. = 0x134;                  \
+		*(.trap_table.routine_77)
 
 #define ARM_M_IRQ_HANDLER_VAR_NAME(irq_num) \
 	arm_m_irq_handler##irq_num
