@@ -26,6 +26,8 @@ static module gai_strerror {
 }
 
 static module getaddrinfo {
+	option number addrinfo_pool_size = 10
+
 	source "getaddrinfo.c"
 
 	depends embox.compat.posix.net.herror
