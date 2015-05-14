@@ -6,6 +6,7 @@ interface Shell {
 
 module shell {
 	option number prompt_len = 80
+	option number history_size = 8
 	option string prompt = "embox> "
 	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
 
