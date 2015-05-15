@@ -10,7 +10,7 @@ module fs_full extends file {
 	source "kfile_node.c"
 
 	depends embox.compat.libc.assert
-
+	depends embox.fs.core
 	depends embox.fs.file_desc
 	depends embox.security.api
 
@@ -28,6 +28,8 @@ abstract module file_system {
 
 module file_system_none extends file_system {
 	source "nokfsop.c"
+
+	depends embox.fs.core
 }
 
 module file_system_full extends file_system {
