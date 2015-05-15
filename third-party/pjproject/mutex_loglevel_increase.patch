@@ -1,0 +1,97 @@
+diff -aur pjproject-2.2.1/pjlib/include/pj/log.h build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjlib/include/pj/log.h
+--- pjproject-2.2.1/pjlib/include/pj/log.h	2013-08-30 08:03:22.000000000 +0400
++++ build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjlib/include/pj/log.h	2015-05-15 15:24:21.214898865 +0300
+@@ -446,6 +446,19 @@
+     #define pj_log_wrapper_6(arg)
+ #endif
+ 
++/**
++ * @def pj_log_wrapper_7(arg)
++ * Internal function to write log with verbosity 7. Will evaluate to
++ * empty expression if PJ_LOG_MAX_LEVEL is below 7.
++ * @param arg       Log expression.
++ */
++#if PJ_LOG_MAX_LEVEL >= 7
++    #define pj_log_wrapper_7(arg)	pj_log_7 arg
++    /** Internal function. */
++    PJ_DECL(void) pj_log_7(const char *src, const char *format, ...);
++#else
++    #define pj_log_wrapper_7(arg)
++#endif
+ 
+ PJ_END_DECL 
+ 
+diff -aur pjproject-2.2.1/pjlib/src/pj/os_core_unix.c build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjlib/src/pj/os_core_unix.c
+--- pjproject-2.2.1/pjlib/src/pj/os_core_unix.c	2014-02-04 14:13:56.000000000 +0400
++++ build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjlib/src/pj/os_core_unix.c	2015-05-15 15:25:03.208932806 +0300
+@@ -1232,11 +1233,11 @@
+     PJ_ASSERT_RETURN(mutex, PJ_EINVAL);
+ 
+ #if PJ_DEBUG
+-    PJ_LOG(6,(mutex->obj_name, "Mutex: thread %s is waiting (mutex owner=%s)",
++    PJ_LOG(7,(mutex->obj_name, "Mutex: thread %s is waiting (mutex owner=%s)",
+ 				pj_thread_this()->obj_name,
+ 				mutex->owner_name));
+ #else
+-    PJ_LOG(6,(mutex->obj_name, "Mutex: thread %s is waiting",
++    PJ_LOG(7,(mutex->obj_name, "Mutex: thread %s is waiting",
+ 				pj_thread_this()->obj_name));
+ #endif
+ 
+@@ -1250,14 +1251,14 @@
+ 	++mutex->nesting_level;
+     }
+ 
+-    PJ_LOG(6,(mutex->obj_name,
++    PJ_LOG(7,(mutex->obj_name,
+ 	      (status==0 ?
+ 		"Mutex acquired by thread %s (level=%d)" :
+ 		"Mutex acquisition FAILED by %s (level=%d)"),
+ 	      pj_thread_this()->obj_name,
+ 	      mutex->nesting_level));
+ #else
+-    PJ_LOG(6,(mutex->obj_name,
++    PJ_LOG(7,(mutex->obj_name,
+ 	      (status==0 ? "Mutex acquired by thread %s" : "FAILED by %s"),
+ 	      pj_thread_this()->obj_name));
+ #endif
+@@ -1290,11 +1291,11 @@
+ 	mutex->owner_name[0] = '\0';
+     }
+ 
+-    PJ_LOG(6,(mutex->obj_name, "Mutex released by thread %s (level=%d)",
++    PJ_LOG(7,(mutex->obj_name, "Mutex released by thread %s (level=%d)",
+ 				pj_thread_this()->obj_name,
+ 				mutex->nesting_level));
+ #else
+-    PJ_LOG(6,(mutex->obj_name, "Mutex released by thread %s",
++    PJ_LOG(7,(mutex->obj_name, "Mutex released by thread %s",
+ 				pj_thread_this()->obj_name));
+ #endif
+ 
+@@ -1332,11 +1333,11 @@
+ 	pj_ansi_strcpy(mutex->owner_name, mutex->owner->obj_name);
+ 	++mutex->nesting_level;
+ 
+-	PJ_LOG(6,(mutex->obj_name, "Mutex acquired by thread %s (level=%d)",
++	PJ_LOG(7,(mutex->obj_name, "Mutex acquired by thread %s (level=%d)",
+ 				   pj_thread_this()->obj_name,
+ 				   mutex->nesting_level));
+ #else
+-	PJ_LOG(6,(mutex->obj_name, "Mutex acquired by thread %s",
++	PJ_LOG(7,(mutex->obj_name, "Mutex acquired by thread %s",
+ 				  pj_thread_this()->obj_name));
+ #endif
+     } else {
+diff -aur pjproject-2.2.1/pjsip/src/pjsip/sip_endpoint.c build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjsip/src/pjsip/sip_endpoint.c
+--- pjproject-2.2.1/pjsip/src/pjsip/sip_endpoint.c	2014-01-16 09:30:46.000000000 +0400
++++ build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjsip/src/pjsip/sip_endpoint.c	2015-05-15 15:24:21.214898865 +0300
+@@ -703,7 +703,7 @@
+     unsigned count = 0, net_event_count = 0;
+     int c;
+ 
+-    PJ_LOG(6, (THIS_FILE, "pjsip_endpt_handle_events()"));
++    PJ_LOG(7, (THIS_FILE, "pjsip_endpt_handle_events()"));
+ 
+     /* Poll the timer. The timer heap has its own mutex for better 
+      * granularity, so we don't need to lock end endpoint. 

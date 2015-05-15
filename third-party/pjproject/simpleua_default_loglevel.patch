@@ -1,0 +1,12 @@
+diff -aur pjproject-2.2.1/pjsip-apps/src/samples/simpleua.c build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjsip-apps/src/samples/simpleua.c
+--- pjproject-2.2.1/pjsip-apps/src/samples/simpleua.c	2012-04-13 12:16:30.000000000 +0400
++++ pjproject-2.2.1/pjsip-apps/src/samples/simpleua.c	2015-05-15 14:40:41.550226964 +0300
+@@ -232,8 +232,6 @@
+     status = pj_init();
+     PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);
+ 
+-    pj_log_set_level(5);
+-
+     /* Then init PJLIB-UTIL: */
+     status = pjlib_util_init();
+     PJ_ASSERT_RETURN(status == PJ_SUCCESS, 1);

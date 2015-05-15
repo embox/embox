@@ -2,6 +2,8 @@
 #define PJ_IOQUEUE_MAX_HANDLES         8
 #define PJ_LOG_USE_STACK_BUFFER        0
 
+#define PJ_LOG_MAX_LEVEL 6
+
 /* make PJSUA slim */
 #define PJSUA_MAX_ACC 3
 #define PJSUA_MAX_CALLS 1
