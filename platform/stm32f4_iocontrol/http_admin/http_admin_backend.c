@@ -18,8 +18,7 @@
 #include <cJSON.h>
 #include <embox/cmd.h>
 
-/* all that needs for NVIC_SystemReset in next include */
-#include <stm32f4xx_wwdg.h>
+#include <hal/arch.h>
 
 EMBOX_CMD(http_admin_main);
 
@@ -147,7 +146,7 @@ static void http_admin_post(char *post_data) {
 
 		system("flash_settings store net");
 
-		NVIC_SystemReset();
+		arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
 	}
 
 outerr:
