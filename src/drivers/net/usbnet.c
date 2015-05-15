@@ -7,6 +7,9 @@
 
 #include <assert.h>
 #include <errno.h>
+
+#include <util/math.h>
+
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
 #include <net/netdevice.h>
@@ -62,15 +65,17 @@ static void usbnet_send_notify_hnd(struct usb_request *req, void *arg) {
 static void usb_net_bulk_send(struct usb_dev *dev, struct sk_buff *skb) {
 	struct usb_endp *endp;
 	size_t i = 0;
+	int len;
 
 	endp = dev->endpoints[2];
 
-	for (i = 0; i < skb->len; i += endp->max_packet_size) {
-		usb_endp_bulk(endp, usbnet_send_notify_hnd, skb->mac.raw + i,
-				endp->max_packet_size);
+	for (i = skb->len, len = min(skb->len, endp->max_packet_size);
+			i != 0; i -= len) {
+		usb_endp_bulk(endp, usbnet_send_notify_hnd,
+				skb->mac.raw + (skb->len - i), len);
 	}
 
-	if (i == skb->len) {
+	if (len == endp->max_packet_size) {
 		usb_endp_bulk(endp, usbnet_send_notify_hnd, skb->mac.raw + i, 0);
 	}
 }
