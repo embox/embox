@@ -8,10 +8,13 @@
 
 #include <stdint.h>
 #include <stddef.h>
+
 #include <kernel/time/ktime.h>
 #include <kernel/irq.h>
 #include <drivers/sound.h>
 #include <drivers/at91sam7s256.h>
+
+#include <hal/system.h>
 #include <hal/reg.h>
 
 #include <embox/unit.h>
@@ -77,7 +80,7 @@ void sound_start_play(uint32_t freq, useconds_t ms,
 		freq = 1000;
 	}
 
-	REG_STORE(AT91C_SSC_CMR, ((CONFIG_SYS_CLOCK / (2L * 512L)) / freq) + 1L);
+	REG_STORE(AT91C_SSC_CMR, ((SYS_CLOCK / (2L * 512L)) / freq) + 1L);
 
 	REG_STORE(AT91C_SSC_TNPR, (uint32_t) next_buff);
 	REG_STORE(AT91C_SSC_TNCR, SAMPLETONENO);

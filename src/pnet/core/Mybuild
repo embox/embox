@@ -2,6 +2,10 @@ package embox.pnet
 
 module core {
 	source "node.c", "repo.c", "graph.c"
+
+	option number pnet_nodes_quantity
+	option number pnet_graph_quantity
+
 	depends prior_path
 	depends pack.PnetPackFactory
 }

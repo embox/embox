@@ -15,6 +15,15 @@ module usart {
 	option number cmd_pin = 27
 	@Type("pin") @Unique
 	option number rst_pin = 11
+	@Type("pin") @Unique
+	option number cs_pin = 31
+
+	@Type("irq") @Unique
+	option number irq_num = 7
+
+	option number dev_id = 7
+
+	option number serial_port_offset = 0xFFFC4000
 
 	source "nxt_bluetooth_usart.c"
 
@@ -25,6 +34,8 @@ module usart {
 
 module blue_core extends embox.driver.Bluetooth {
 	source "blue_core4.c"
+
+	option string bluetooth_pin = "1234"
 
 	depends usart
 }

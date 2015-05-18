@@ -21,6 +21,10 @@ module usart {
 	@Type("irq") @Unique
 	option number irq_num = 6
 
+	option number dev_id = 6
+
+	option number serial_port_offset = 0xFFFC0000
+
 	source "btm_bluetooth.c"
 
 	depends embox.kernel.timer.sleep_api

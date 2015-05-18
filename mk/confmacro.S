@@ -13,16 +13,7 @@
 
 #include "build.conf"
 
-/* Note: $(or __VA_ARGS__) used to extract first arg only (if any). */
-#define option(option, ...) \
-	CONFIG_##option := $(or __VA_ARGS__,1)
-
-#include "options.conf"
-
 #elif defined(__MODS_MK__)
-
-#define option(option, ...) \
-	$(warning Options defined outside "options.conf" are ignored)
 
 #define mod(mod, ...) \
 	MODS_ENABLE += mod $N\
@@ -42,13 +33,6 @@
 	mod($(if $(PLATFORM),$(PLATFORM).cmd.##mod_name))
 
 #include "mods.conf"
-
-#elif defined(__CONFIG_H__)
-
-#define option(option, ...) \
-	$define CONFIG_##option __FIRST_ARG(__VA_ARGS__)
-
-#include "options.conf"
 
 #elif defined(__CONFIG_LDS_H__)
 

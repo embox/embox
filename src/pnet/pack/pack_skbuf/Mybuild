@@ -2,6 +2,9 @@ package embox.pnet.pack
 
 module PnetPackSkbuff {
 	source "pack.c"
+
+	option number pnet_pack_quantity
+
 	depends embox.net.skbuff
 }
 

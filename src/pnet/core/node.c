@@ -7,12 +7,17 @@
  */
 
 #include <stddef.h>
-#include <pnet/types.h>
-#include <mem/objalloc.h>
 #include <assert.h>
 #include <string.h>
 
+#include <mem/objalloc.h>
+
+#include <pnet/types.h>
 #include <pnet/core.h>
+
+#include <framework/mod/options.h>
+
+#define CONFIG_PNET_NODES_QUANTITY OPTION_GET(NUMBER,pnet_nodes_quantity)
 
 OBJALLOC_DEF(net_nodes, struct net_node, CONFIG_PNET_NODES_QUANTITY);
 

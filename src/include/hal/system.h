@@ -8,7 +8,10 @@
 #ifndef HAL_SYSTEM_H_
 #define HAL_SYSTEM_H_
 
+#include <framework/mod/options.h>
 #include <module/embox/arch/system.h>
+
+#include <stdint.h>
 
 typedef uint64_t freq64_t;
 
