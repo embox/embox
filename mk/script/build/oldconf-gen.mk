@@ -34,21 +34,17 @@ HOSTCC_CPPFLAGS := -I $(CONF_DIR) -I-
 endif
 
 build_conf   := $(CONF_DIR)/build.conf
-options_conf := $(CONF_DIR)/options.conf
 lds_conf     := $(CONF_DIR)/lds.conf
 
 build_mk     := $(MKGEN_DIR)/build.mk
-config_h     := $(SRCGEN_DIR)/config.h
 config_lds_h := $(SRCGEN_DIR)/config.lds.h
 
-all : $(build_mk) $(config_h) $(config_lds_h)
+all : $(build_mk) $(config_lds_h)
 
 $(build_mk)     : $(build_conf)
-$(config_h)     : $(options_conf)
 $(config_lds_h) : $(lds_conf)
 
 $(build_mk)     : DEFS := __BUILD_MK__
-$(config_h)     : DEFS := __CONFIG_H__
 $(config_lds_h) : DEFS := __CONFIG_LDS_H__
 
 $(build_mk) :
@@ -57,7 +53,8 @@ $(build_mk) :
 		-MMD -MP -MT $@ -MF $@.d mk/confmacro.S \
 			| $(AWK) '{ gsub("\\$$N","\n"); print }')
 
-$(config_h) $(config_lds_h) :
+
+$(config_lds_h) :
 	@$(call cmd_notouch_stdout,$@, \
 		$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 		-MMD -MT $@ -MF $@.d mk/confmacro.S \
@@ -73,5 +70,5 @@ $(AUTOCONF_DIR)/start_script.inc: $(CONF_DIR)/start_script.inc
 	@$(MKDIR) $*
 
 .SECONDEXPANSION :
-$(build_mk) $(config_h) $(config_lds_h): mk/script/build/oldconf-gen.mk | $$(@D)/.
+$(build_mk) $(config_lds_h): mk/script/build/oldconf-gen.mk | $$(@D)/.
 
