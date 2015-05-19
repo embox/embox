@@ -94,7 +94,7 @@ static int flashset_nic_restore(const char *nic_name, struct flashset_settings *
 	int errcode;
 
 	if (!flashset_is_stored(fl_settings, FLASHSET_WHAT_NET)) {
-		return 0;
+		return -ESRCH;
 	}
 
 	iface_dev = inetdev_get_by_name(nic_name);
@@ -133,7 +133,7 @@ static int flashset_led_store(struct flashset_settings *fl_settings) {
 
 static int flashset_led_restore(struct flashset_settings *fl_settings) {
 	if (!flashset_is_stored(fl_settings, FLASHSET_WHAT_LED)) {
-		return 0;
+		return -ESRCH;
 	}
 	return leddrv_updatestates(fl_settings->fsn_leds_state);
 }
@@ -145,9 +145,10 @@ static int flashset_lednames_store(struct flashset_settings *fl_settings) {
 }
 
 static int flashset_lednames_restore(struct flashset_settings *fl_settings) {
-	if (flashset_is_stored(fl_settings, FLASHSET_WHAT_LEDNAMES)) {
-		memcpy(led_names, fl_settings->fsn_led_names, sizeof(led_names));
+	if (!flashset_is_stored(fl_settings, FLASHSET_WHAT_LEDNAMES)) {
+		return -ESRCH;
 	}
+	memcpy(led_names, fl_settings->fsn_led_names, sizeof(led_names));
 	return 0;
 }
 
@@ -214,16 +215,13 @@ int main(int argc, char *argv[]) {
 			return 0;
 		}
 
-		/* seems to have valid settings */
-		if (0 > (errcode = flashset_nic_restore("eth0", fl_settings))) {
-			return errcode;
-		}
-		if (0 > (errcode = flashset_led_restore(fl_settings))) {
-			return errcode;
-		}
-		if (0 > (errcode = flashset_lednames_restore(fl_settings))) {
-			return errcode;
-		}
+		fprintf(stderr,
+			        "  net       [%s]\n"
+			        "  led       [%s]\n"
+			        "  led_names [%s]\n",
+			flashset_nic_restore("eth0", fl_settings) ? "fail" : " ok ",
+			flashset_led_restore(fl_settings)       ? "fail" : " ok ",
+			flashset_lednames_restore(fl_settings)  ? "fail" : " ok ");
 	}
 
 	return 0;
