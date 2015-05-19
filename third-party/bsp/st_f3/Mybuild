@@ -1,0 +1,117 @@
+package third_party.bsp.st_f3
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildArtifactPath(cppflags="-DSTM32F303xC -DUSE_RTOS=0 -I$(ROOT_DIR)/third-party/bsp/st_f3/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/,STM32F3xx_HAL_Driver/Inc/ CMSIS/Include/ CMSIS/Device/ST/STM32F3xx/Include/ BSP/STM32F3-Discovery/)")
+static module core extends third_party.bsp.st_bsp_api {
+
+	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
+
+	@DefineMacro("STM32F303xC")
+	@DefineMacro("USE_RTOS=0")
+	@DefineMacro("USE_HAL_DRIVER")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/CMSIS/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/CMSIS/Device/ST/STM32F3xx/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/STM32F3xx_HAL_Driver/Inc/")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/st_f3/")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/stm32f3discovery")
+	source "STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_adc.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_adc_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_can.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_cec.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_comp.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_cortex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_crc.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_crc_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_dac.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_dac_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_dma.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_flash.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_flash_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_gpio.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_hrtim.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2c_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2s.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_i2s_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_irda.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_iwdg.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_msp_template.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_nand.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_nor.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_opamp.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_opamp_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pccard.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pcd.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pcd_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_ppp.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pwr.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_pwr_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rcc.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rcc_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rtc.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_rtc_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_sdadc.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_smartcard.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_smartcard_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_smbus.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_spi.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_sram.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tim_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_tsc.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_uart_ex.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_usart.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_hal_wwdg.c",
+		"STM32F3xx_HAL_Driver/Src/stm32f3xx_ll_fmc.c"
+}
+
+@BuildDepends(core)
+static module cmsis extends embox.arch.arm.cmsis {
+	source "cmsis_impl.h"
+	depends core
+}
+
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module system_init {
+	@DefineMacro("STM32F303xC")
+	@DefineMacro("USE_RTOS=0")
+	@DefineMacro("USE_STDPERIPH_DRIVER")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/CMSIS/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/CMSIS/Device/ST/STM32F3xx/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/STM32F3xx_HAL_Driver/inc/")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/st_f3/")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/st_f3/core/stm32f3discovery")
+	source "./Examples/Src/system_stm32f3xx.c"
+}
+
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module sensors {
+	@DefineMacro("STM32F303xC")
+	@DefineMacro("USE_RTOS=0")
+	@DefineMacro("USE_STDPERIPH_DRIVER")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/CMSIS/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/CMSIS/Device/ST/STM32F3xx/Include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f3/core/stm32f3discovery/STM32F3xx_HAL_Driver/inc/")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/st_f3/")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/st_f3/core/stm32f3discovery/BSP")
+	source "./STM32F3-Discovery/stm32f3_discovery_gyroscope.c",
+		"./STM32F3-Discovery/stm32f3_discovery.c",
+		"./STM32F3-Discovery/stm32f3_discovery_accelerometer.c",
+		"./Components/l3gd20/l3gd20.c",
+		"./Components/lsm303dlhc/lsm303dlhc.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+module arch extends embox.arch.arch {
+	source "arch.c"
+
+	depends system_init
+}
+
