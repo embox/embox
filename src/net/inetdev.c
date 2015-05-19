@@ -156,7 +156,7 @@ in_addr_t inetdev_get_addr(struct in_device *in_dev) {
 }
 
 struct in_device * inetdev_get_first(void) {
-	return dlist_prev_entry_or_null(&inetdev_list, struct in_device, lnk);
+	return dlist_next_entry_or_null(&inetdev_list, struct in_device, lnk);
 }
 
 struct in_device * inetdev_get_next(struct in_device *in_dev) {
