@@ -1,0 +1,12 @@
+package stm32f3_sensors.cmd
+
+@AutoCmd
+@Cmd(name="gyro", help="Shows gyroscope data", man="")
+@BuildDepends(third_party.bsp.st_f3.core)
+@BuildDepends(third_party.bsp.st_f3.sensors)
+module gyro {
+	source "gyro.c"
+
+	depends third_party.bsp.st_f3.core
+}
+
