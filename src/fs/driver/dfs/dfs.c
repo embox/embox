@@ -67,6 +67,9 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	int head = offset & 0x7;
 	assert(buff);
 
+	for (i = offset; i < offset + len; i++)
+		bitmap_clear_bit(dfs_free_pages, i);
+
 	if (head) {
 		offset -= head;
 		_read(offset, b, NAND_PAGE_SIZE);
@@ -123,13 +126,26 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	struct dfs_sb_info *sbi;
 	int buff_bk;
 	int bk;
-	int err;
+	int err, i;
 
 	assert(buff);
 
 	sbi = dfs_sb()->sb_data;
 	buff_bk = sbi->buff_bk;
 	pos %= NAND_BLOCK_SIZE;
+
+	/* Check if we do need buffering */
+	err = 0;
+	for (i = pos; i < pos + size; i++)
+		if (bitmap_test_bit(dfs_free_pages, i)) {
+			err = -1;
+			break;
+		}
+
+	if (!err) {
+		_write(pos, buff, size);
+		return size;
+	}
 
 	_erase(buff_bk);
 	_copy(buff_bk * NAND_BLOCK_SIZE, start_bk * NAND_BLOCK_SIZE, pos);
@@ -447,6 +463,8 @@ struct super_block *dfs_sb(void) {
 
 extern struct flash_dev stm32_flash;
 static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
+	int i;
+
 	dfs_super = sb;
 	*sb = (struct super_block) {
 		.fs_drv     = &dfs_dumb_driver,
@@ -463,6 +481,9 @@ static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 
 	dfs_set_dev(&stm32_flash);
 	dfs_read_sb_info(dfs_sb()->sb_data);
+
+	for (i = 0; i < NAND_PAGES_MAX; i++)
+		bitmap_set_bit(dfs_free_pages, i);
 
 	return 0;
 }
