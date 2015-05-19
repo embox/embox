@@ -19,6 +19,8 @@ struct usb_class_cdc {
 	/* Index of current configuration of USB device.
 	 * 0 if device is not configured. */
 	unsigned int current_conf;
+	/* This field can be used by an external driver */
+	void *privdata;
 };
 
 static inline struct usb_class_cdc *usb2cdcdata(struct usb_dev *dev) {

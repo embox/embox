@@ -95,8 +95,6 @@ static int usb_add_newdev_action(struct lthread *self) {
 		usb_dev_register(dev);
 
 		usb_class_handle(dev);
-
-		usb_driver_handle(dev);
 	}
 
 	return 0;

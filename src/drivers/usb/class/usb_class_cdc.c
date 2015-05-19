@@ -14,6 +14,7 @@
 #include <kernel/panic.h>
 #include <embox/unit.h>
 #include <drivers/usb/usb_cdc.h>
+#include <drivers/usb/usb_driver.h>
 #include <kernel/printk.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +43,7 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg);
 static void cdc_next_conf(struct usb_dev *dev);
 
 /* Interface */
-static void cdc_set_interface(struct usb_dev *dev, size_t iface,
+void cdc_set_interface(struct usb_dev *dev, size_t iface,
 		size_t alternated_cfg, usb_request_notify_hnd_t cb);
 struct usb_desc_interface *cdc_get_interface(void *conf, size_t index);
 static void cdc_set_interface_hnd(struct usb_request *req, void *arg);
@@ -130,15 +131,17 @@ struct usb_desc_interface *cdc_get_interface(void *conf, size_t index) {
  */
 static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc) {
 	struct usb_desc_endpoint *ep;
-	struct usb_endp *data_ep;
 	struct usb_desc_interface *data_iface;
+	size_t i;
 
 	/* Get the second interface (Data Interface) for usb-net*/
 	data_iface = cdc_get_interface(cdc->getconf, 2);
-	ep = (struct usb_desc_endpoint *) ((char *)data_iface +
-			sizeof (struct usb_desc_interface) + 1 * sizeof (struct usb_desc_endpoint));
-	data_ep = usb_endp_alloc(dev, ep);
-	assert(data_ep);
+	/* Fill in the IN and OUT endpoints */
+	for (i = 0; i < 2; i ++) {
+		ep = (struct usb_desc_endpoint *) ((char *)data_iface +
+				sizeof (struct usb_desc_interface) + i * sizeof (struct usb_desc_endpoint));
+		assert(usb_endp_alloc(dev, ep));
+	}
 }
 
 static void usb_net_send_notify_hnd(struct usb_request *req, void *arg) {
@@ -157,7 +160,7 @@ static void usb_net_bulk_send(struct usb_dev *dev) {
 	cdc_sendbuf = sysmalloc(len);
 	memset(cdc_sendbuf, 0xe4, len);
 
-	intr_endp = dev->endpoints[2];
+	intr_endp = dev->endpoints[3];
 
 	for (i = 0; i < len; i += intr_endp->max_packet_size) {
 		usb_endp_bulk(intr_endp, usb_net_send_notify_hnd, cdc_sendbuf + i,
@@ -195,6 +198,8 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	usb_net_hook(dev, cdc);
 
 	usb_net_bulk_send(dev);
+
+	usb_driver_handle(req->endp->dev);
 
 	/* TODO free resources */
 
@@ -241,7 +246,7 @@ static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg) {
 			c->w_total_length, cdc_set_interface_hnd);
 }
 
-static void cdc_set_interface(struct usb_dev *dev, size_t iface,
+void cdc_set_interface(struct usb_dev *dev, size_t iface,
 		size_t alternated_cfg, usb_request_notify_hnd_t cb) {
 	/* Set CDC Data Interface */
 	usb_endp_control(dev->endpoints[0], cb, NULL,
