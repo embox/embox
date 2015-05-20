@@ -28,8 +28,6 @@ abstract module file_system {
 
 module file_system_none extends file_system {
 	source "nokfsop.c"
-
-	depends embox.fs.core
 }
 
 module file_system_full extends file_system {
