@@ -42,14 +42,7 @@ static module lseek_dvfs extends lseek {
 }
 
 static module file_ops_dvfs extends file_ops {
-	source "ioctl.c"
-	source "close.c"
-	source "fstat.c"
-	source "fsync.c"
-	source "read.c"
-	source "write.c"
 	source "ftruncate.c"
-	source "fcntl.c"
 
 	depends embox.fs.dvfs
 	depends embox.kernel.task.api

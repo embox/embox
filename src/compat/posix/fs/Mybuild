@@ -63,19 +63,50 @@ static module lseek_old extends lseek {
 	depends embox.kernel.task.resource.errno
 }
 
+module read {
+	source "read.c"
+	depends embox.kernel.task.idesc
+}
+
+module write {
+	source "write.c"
+	depends embox.kernel.task.idesc
+}
+
+module fcntl {
+	source "fcntl.c"
+	depends embox.kernel.task.idesc
+}
+
+module ioctl {
+	source "ioctl.c"
+	depends fcntl
+	depends embox.kernel.task.idesc
+}
+
+module close {
+	source "close.c"
+	depends embox.kernel.task.idesc
+}
+
+module fstat {
+	source "fstat.c"
+	depends embox.kernel.task.idesc
+}
+
+module fsync {
+	source "fsync.c"
+	depends embox.kernel.task.idesc
+}
+
 @DefaultImpl(file_ops_old)
 abstract module file_ops {
+	depends read, write, fcntl, ioctl, close,
+	        fstat, fsync
 }
 
 static module file_ops_old extends file_ops {
-	source "ioctl.c"
-	source "close.c"
-	source "fstat.c"
-	source "fsync.c"
-	source "read.c"
-	source "write.c"
 	source "ftruncate.c"
-	source "fcntl.c"
 
 	depends embox.fs.idesc
 	depends embox.fs.index_operation
