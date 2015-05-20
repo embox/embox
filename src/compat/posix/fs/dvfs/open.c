@@ -9,11 +9,11 @@
 #include <fcntl.h>
 #include <fs/dvfs.h>
 #include <kernel/task.h>
-#include <kernel/task/resource/file_table.h>
+#include <kernel/task/resource/idesc_table.h>
 
 int open(const char *path, int __oflag, ...) {
 	struct file *file;
-	struct file_table *ft;
+	struct idesc_table *it;
 	int res;
 
 	file = dvfs_alloc_file();
@@ -26,12 +26,11 @@ int open(const char *path, int __oflag, ...) {
 		return SET_ERRNO(-res);
 	}
 
-	ft = task_fs();
-	for (res = 0; res < FILE_TABLE_SZ; res++)
-		if (ft->file[res] == NULL) {
-			ft->file[res] = file;
-			return res;
-		}
+	it = task_resource_idesc_table(task_self());
+	res = idesc_table_add(it, (struct idesc *) file, 0);
+
+	if (res >= 0)
+		return res;
 
 	dvfs_destroy_file(file);
 	return SET_ERRNO(ENOMEM);

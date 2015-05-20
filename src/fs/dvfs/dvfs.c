@@ -194,6 +194,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	return res;
 }
 
+extern const struct idesc_ops idesc_file_ops;
 /* @brief Initialize file descriptor for usage according to path
  * @param path Path to the file
  * @param desc The file descriptor to be initailized
@@ -230,6 +231,10 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 		.f_dentry = lookup.item,
 		.f_inode  = i_no,
 		.f_ops    = lookup.item->d_sb->sb_fops,
+		.f_idesc  = {
+			.idesc_amode = FS_MAY_READ | FS_MAY_WRITE,
+			.idesc_ops   = &idesc_file_ops,
+		},
 	};
 
 	if (i_no == NULL || i_no->flags & O_DIRECTORY) {
