@@ -17,8 +17,8 @@ module dvfs {
 	depends path_helper
 	depends rootfs_dvfs
 
-	depends embox.kernel.task.resource.file_table
 	depends embox.fs.syslib.dcache
 	depends embox.fs.driver.dvfs_driver
 	depends embox.fs.idesc
+	depends embox.kernel.task.resource.vfs
 }

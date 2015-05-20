@@ -12,7 +12,7 @@
 #include <embox/block_dev.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
-#include <kernel/task/resource/file_table.h>
+#include <kernel/task/resource/vfs.h>
 
 /* Utility functions */
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);

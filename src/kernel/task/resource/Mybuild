@@ -17,12 +17,6 @@ module idesc_table {
 	@NoRuntime depends embox.compat.libc.assert
 }
 
-module file_table {
-	source "file_table.c"
-
-	depends embox.fs.dvfs
-}
-
 module mmap {
 	source "mmap.c"
 
@@ -42,6 +36,11 @@ module mmap_notify {
 
 module module_ptr {
 	source "module_ptr.c"
+}
+
+module vfs {
+	source "vfs.c"
+	depends embox.fs.dvfs
 }
 
 module security {

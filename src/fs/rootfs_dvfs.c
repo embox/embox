@@ -13,7 +13,6 @@
 #include <embox/block_dev.h>
 #include <embox/device.h>
 #include <embox/unit.h>
-#include <kernel/task/resource/file_table.h>
 
 EMBOX_UNIT_INIT(rootfs_mount);
 
