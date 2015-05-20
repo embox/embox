@@ -4,6 +4,9 @@
 
 #define PJ_LOG_MAX_LEVEL 6
 
+/* disbale pools */
+#define PJ_POOL_DEBUG 1
+
 /* make PJSUA slim */
 #define PJSUA_MAX_ACC 3
 #define PJSUA_MAX_CALLS 1
