@@ -478,6 +478,19 @@ static inline enum usb_request_status ohci_td_stat(struct ohci_td *td) {
 	}
 }
 
+uint32_t ohci_td_received_len(struct ohci_td *td, struct usb_request *req) {
+	assert(((uint32_t) req->buf <= td->buf_p) || !td->buf_p);
+
+	if (!td->buf_p) {
+		/* A value of 0 indicates a zerolength
+		 * data packet or that all bytes have been transferred. */
+		return req->req_stat == USB_REQ_NOERR ? req->len : 0;
+	}
+
+	return td->buf_p - (uint32_t) req->buf;
+}
+
+
 static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 	struct usb_hcd *hcd = data;
 	struct ohci_hcd *ohcd = hcd2ohci(hcd);
@@ -517,6 +530,7 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 			assert(req);
 
 			req->req_stat = ohci_td_stat(td);
+			req->len = ohci_td_received_len(td, req);
 			next_td = ohci_td_next(td);
 
 			ohci_td_free(td);
