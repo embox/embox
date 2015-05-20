@@ -428,7 +428,8 @@ static int ohci_request(struct usb_request *req) {
 		cnt++;
 	}
 	if (req->token & USB_TOKEN_IN) {
-		token = OHCI_TD_IN;
+		/* Use bufferRounding = 1 to read less than was requested if needed. */
+		token = OHCI_TD_IN | OHCI_TD_BUF_ROUND;
 		cnt++;
 	}
 	if (req->token & USB_TOKEN_OUT) {

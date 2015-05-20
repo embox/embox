@@ -56,6 +56,7 @@
 #define OHCI_TD_SETUP                 0x00000000
 #define OHCI_TD_OUT                   0x00080000
 #define OHCI_TD_IN                    0x00100000
+#define OHCI_TD_BUF_ROUND             0x00040000
 #define OHCI_TD_FLAGS_CC_MASK         0xf0000000
 #define OHCI_TD_CC_NOERR              0x00000000
 #define OHCI_TD_CC_STALL              0x40000000
