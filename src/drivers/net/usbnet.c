@@ -154,7 +154,7 @@ static void usb_net_bulk_send(struct usb_dev *dev, struct sk_buff *skb) {
 	endp = dev->endpoints[3];
 
 	for (i = skb->len, len = min(skb->len, endp->max_packet_size);
-			i != 0; i -= len) {
+			i != 0; i -= len, len = min(i, endp->max_packet_size)) {
 		usb_endp_bulk(endp, usbnet_send_notify_hnd,
 				skb->mac.raw + (skb->len - i), len);
 	}
