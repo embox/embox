@@ -2,8 +2,8 @@
 PKG_NAME := luasocket
 PKG_VER  := 321c0c9b1f7b6b83cd83b58e7e259f53eca69373
 
-PKG_SOURCES := https://github.com/diegonehab/$(PKG_NAME)/archive/$(PKG_VER).zip
-PKG_MD5     := dc3028d6deebd935ae80068d5c286534
+PKG_SOURCES := https://github.com/diegonehab/luasocket/archive/$(PKG_VER).tar.gz
+PKG_MD5     := e2d6845e1f75d2e24df5563f643598af
 
 PKG_PATCHES := pkg_patch.txt
 
