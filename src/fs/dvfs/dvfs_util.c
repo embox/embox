@@ -150,7 +150,7 @@ struct dentry *dvfs_alloc_dentry(void) {
 			}
 		}
 		if (t) {
-			dvfs_destroy_dentry(d);
+			dvfs_destroy_dentry(t);
 			d = pool_alloc(&dentry_pool);
 		} else
 			return NULL;
