@@ -35,6 +35,8 @@
 
 #include <kernel/printk.h>
 
+#include <kernel/panic.h>
+
 #include <embox/unit.h>
 
 static const struct pci_id e1000_id_table[] = {
@@ -61,9 +63,6 @@ struct e1000_priv {
 	char link_status;
 };
 
-static char rx_buf[E1000_RXDESC_NR][E1000_IOBUF_SIZE] ;
-/*static char tx_buf[E1000_TXDESC_NR][E1000_IOBUF_SIZE]__attribute__((aligned(16)));*/
-
 struct e1000_rx_desc {
 	uint32_t buffer_address;
 	uint32_t buffer_address_h;
@@ -87,7 +86,7 @@ struct e1000_tx_desc {
 
 static struct e1000_rx_desc rx_descs[E1000_RXDESC_NR] __attribute__((aligned(16)));
 static struct e1000_tx_desc tx_descs[E1000_TXDESC_NR] __attribute__((aligned(16)));
-
+static struct sk_buff *rx_skbs[E1000_RXDESC_NR];
 static void mdelay(int value) {
 	volatile int delay = value;
 
@@ -183,28 +182,30 @@ static void e1000_rx(struct net_device *dev) {
 		cur = (1 + tail) % E1000_RXDESC_NR;
 
 		while (cur != head) {
-			int len;
 
 			if (!(rx_descs[cur].status)) {
 				break;
 			}
 
-			len = rx_descs[cur].length - 4; /* checksum */
+			//len = rx_descs[cur].length - 4; /* checksum */
 
 			if (0 != nf_test_raw(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, (void *) rx_descs[cur].buffer_address,
 						ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {
 				goto drop_pack;
 			}
 
-			if ((skb = skb_alloc(len))) {
-				memcpy(skb->mac.raw, (void *) rx_descs[cur].buffer_address, len);
-				skb->dev = dev;
-				/*stat->rx_packets++;*/
-				/*stat->rx_bytes += skb->len;*/
-				netif_rx(skb);
-			} else {
-				/*stat->rx_dropped++;*/
-			}
+			skb = rx_skbs[cur];
+			assert (skb);
+
+			rx_skbs[cur]= skb_alloc(ETH_FRAME_LEN);
+			if (rx_skbs[cur] == NULL)
+				panic("Can't allocate rx_skbs %d", cur);
+			rx_descs[cur].buffer_address = (uint32_t) rx_skbs[cur]->mac.raw;
+
+
+			skb->dev = dev;
+			netif_rx(skb);
+
 
 drop_pack:
 			tail = cur;
@@ -240,7 +241,6 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 			printk("e1000: Link down. Please check and insert network cable\n");
 			netdev_flag_down(dev, IFF_RUNNING);
 		}
-
 	}
 
 	return IRQ_HANDLED;
@@ -283,12 +283,14 @@ static int e1000_open(struct net_device *dev) {
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
 	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
-		rx_descs[i].buffer_address = (uint32_t) rx_buf[i];
+	        struct sk_buff *skb;
+		skb = skb_alloc(ETH_FRAME_LEN);
+		if (skb == NULL)
+			panic("Can't allocate skb %d", i);
+		rx_skbs[i]= skb;
+		rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
 	}
 
-	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
-		tx_descs[i].buffer_address = (uint32_t) rx_buf[i];
-	}
 
 	mdelay(MDELAY);
 	REG_STORE(e1000_reg(dev, E1000_REG_RDBAL), (uint32_t) rx_descs);
