@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 
 #include <util/math.h>
 
@@ -44,7 +45,8 @@ static int usbnet_xmit(struct net_device *dev, struct sk_buff *skb);
 
 struct usbnet_priv {
 	struct usb_dev *usbdev;
-	void *data;
+	char *data;
+	char *pdata;
 	struct sys_timer timer;
 };
 
@@ -53,12 +55,41 @@ static int usbnet_init(void) {
 }
 
 static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
+	struct usb_endp *in_endp;
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 	struct net_device *nic = (struct net_device *) cdc->privdata;
 	struct usbnet_priv *nic_priv = (struct usbnet_priv *) nic->priv;
 
 	printk(">>>>> usbnet_timer_handler");
+	in_endp = nic_priv->usbdev->endpoints[2];
+
+	switch(req->req_stat) {
+	case USB_REQ_NOERR:
+		memcpy(nic_priv->pdata, req->buf, req->len);
+		nic_priv->pdata += req->len;
+		break;
+	default:
+		return;
+	}
+
+	/* End of packet */
+	if (req->len < in_endp->max_packet_size) {
+		struct sk_buff *skb;
+		size_t len;
+
+		len = nic_priv->pdata - (char *) nic_priv->data;
+		if ((skb = skb_alloc(len))) {
+			memcpy(skb->mac.raw, nic_priv->data, len);
+			skb->dev = nic;
+			netif_rx(skb);
+		} else {
+			printk("usbnet: skbuff allocation failed\n");
+		}
+
+		/* Prepare for copying new packet */
+		nic_priv->pdata = nic_priv->data;
+	}
 
 	timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
 	            USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
@@ -70,7 +101,7 @@ static void usbnet_timer_handler(struct sys_timer *tmr, void *param) {
 
 	in_endp = nic_priv->usbdev->endpoints[2];
 
-	usb_endp_bulk(in_endp, usbnet_rcv_notify, nic_priv->data,
+	usb_endp_bulk(in_endp, usbnet_rcv_notify, nic_priv->pdata,
 			in_endp->max_packet_size);
 }
 
@@ -88,7 +119,7 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 	nic->drv_ops = &usbnet_drv_ops;
 	nic_priv = netdev_priv(nic, struct usbnet_priv);
 	nic_priv->usbdev = dev;
-	nic_priv->data = sysmalloc(ETH_FRAME_LEN);
+	nic_priv->data = nic_priv->pdata = sysmalloc(ETH_FRAME_LEN);
 
 	cdc->privdata = (void *) nic;
 
