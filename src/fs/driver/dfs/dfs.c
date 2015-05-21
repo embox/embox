@@ -137,7 +137,7 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	/* Check if we do need buffering */
 	err = 0;
 	for (i = pos; i < pos + size; i++)
-		if (bitmap_test_bit(dfs_free_pages, i)) {
+		if (!bitmap_test_bit(dfs_free_pages, i)) {
 			err = -1;
 			break;
 		}
@@ -483,7 +483,7 @@ static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 	dfs_read_sb_info(dfs_sb()->sb_data);
 
 	for (i = 0; i < NAND_PAGES_MAX; i++)
-		bitmap_set_bit(dfs_free_pages, i);
+		bitmap_clear_bit(dfs_free_pages, i);
 
 	return 0;
 }
