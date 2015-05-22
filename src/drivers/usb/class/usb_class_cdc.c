@@ -27,7 +27,6 @@ POOL_DEF(cdc_classes, struct usb_class_cdc, USB_CDC_MAX_DEVS);
 
 /* Storage for device configuration*/
 static char cdc_conf[16];
-static char *cdc_sendbuf;
 
 #define INTERFACE_DESC_OFFSET          (sizeof (struct usb_desc_configuration))
 #define FUNC_DESC_OFFSET               (INTERFACE_DESC_OFFSET + \
@@ -54,8 +53,6 @@ static size_t cdc_skip_endpoints(void *start);
 
 /* usb-net specific */
 static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc);
-static void usb_net_bulk_send(struct usb_dev *dev);
-static void usb_net_send_notify_hnd(struct usb_request *req, void *arg);
 static int is_rndis(struct usb_desc_interface *desc);
 
 /**
@@ -144,34 +141,6 @@ static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc) {
 	}
 }
 
-static void usb_net_send_notify_hnd(struct usb_request *req, void *arg) {
-	printk("\nSENT!\n");
-	// XXX Free the whole packet at once sysfree(cdc_sendbuf);
-}
-
-/*
- * Send 1024 bytes of raw data
- */
-static void usb_net_bulk_send(struct usb_dev *dev) {
-	struct usb_endp *intr_endp;
-	size_t i = 0;
-	const size_t len = 1024;
-
-	cdc_sendbuf = sysmalloc(len);
-	memset(cdc_sendbuf, 0xe4, len);
-
-	intr_endp = dev->endpoints[3];
-
-	for (i = 0; i < len; i += intr_endp->max_packet_size) {
-		usb_endp_bulk(intr_endp, usb_net_send_notify_hnd, cdc_sendbuf + i,
-				intr_endp->max_packet_size);
-	}
-
-	if (i == len) {
-		usb_endp_bulk(intr_endp, usb_net_send_notify_hnd, cdc_sendbuf + i, 0);
-	}
-}
-
 static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
@@ -196,8 +165,6 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 
 	/* XXX */
 	usb_net_hook(dev, cdc);
-
-	usb_net_bulk_send(dev);
 
 	usb_driver_handle(req->endp->dev);
 

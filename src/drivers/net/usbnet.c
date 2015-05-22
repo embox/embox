@@ -29,7 +29,7 @@
 
 EMBOX_UNIT_INIT(usbnet_init);
 
-#define USBNET_TIMER_FREQ 10
+#define USBNET_TIMER_FREQ 1
 
 static struct usb_driver usbnet_driver;
 static const struct net_driver usbnet_drv_ops;
@@ -61,7 +61,6 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 	struct net_device *nic = (struct net_device *) cdc->privdata;
 	struct usbnet_priv *nic_priv = (struct usbnet_priv *) nic->priv;
 
-	printk(">>>>> usbnet_timer_handler");
 	in_endp = nic_priv->usbdev->endpoints[2];
 
 	switch(req->req_stat) {
