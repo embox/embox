@@ -59,10 +59,11 @@ int dvfs_default_destroy_inode(struct inode *inode) {
 /* @brief Try to resolve pathname according to the dentry
  * @param inode The inode which is to be path-resolved
  * @param buf   Buffer for the path
+ * @param flags Used to figure out pathname format, see dvfs_pathname doc
  *
  * @retval 0 Ok
  */
-int dvfs_default_pathname(struct inode *inode, char *buf) {
+int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
 	assert(inode);
 	if (inode->i_dentry)
 		strcpy(buf, inode->i_dentry->name);

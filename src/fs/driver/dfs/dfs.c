@@ -376,13 +376,18 @@ static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	return 0;
 }
 
-static int dfs_pathname(struct inode *inode, char *buf) {
+static int dfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct dfs_dir_entry dirent;
 
 	assert(inode);
 
-	dfs_read_dirent(inode->i_no, &dirent);
-	strcpy(buf, dirent.name);
+	if (flags & DVFS_NAME) {
+		dfs_read_dirent(inode->i_no, &dirent);
+		strcpy(buf, dirent.name);
+	} else {
+		*buf = '/';
+		strcpy(buf + 1, dirent.name);
+	}
 
 	return 0;
 }

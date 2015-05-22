@@ -11,6 +11,11 @@
  *	        - rework mount to use cpio_parse_entry
  * @author Denis Deryugin
  *              - port from old VFS
+ *
+ * @note   Initfs is based on CPIO archieve format. By design, this format
+ *         has no directory absraction, as all files are stored with full
+ *         path names. Beacause of this it could be tricky to handle some
+ *         VFS calls.
  */
 
 #include <string.h>
@@ -22,14 +27,15 @@
 
 #include <embox/unit.h>
 #include <fs/dvfs.h>
-#include <fs/node.h>
-#include <kernel/printk.h>
 #include <mem/misc/pool.h>
 #include <util/array.h>
 
+#define INITFS_MAX_PATHLEN 128
+
 struct initfs_file_info {
-	struct node_info ni; /* must be the first member */
 	char *addr;
+	char *header;
+	char *offset;        /* Used to handle directories */
 };
 
 POOL_DEF(fdesc_pool, struct initfs_file_info, OPTION_GET(NUMBER,fdesc_quantity));
@@ -47,8 +53,8 @@ static size_t initfs_read(struct file *desc, void *buf, size_t size) {
 		return -ENOENT;
 	}
 
-	if (size > fi->ni.size - desc->pos) {
-		size = fi->ni.size - desc->pos;
+	if (size > desc->f_inode->length - desc->pos) {
+		size = desc->f_inode->length - desc->pos;
 	}
 
 	memcpy(buf, fi->addr + desc->pos, size);
@@ -72,7 +78,6 @@ static int initfs_ioctl(struct file *desc, int request, ...) {
 	return 0;
 }
 
-
 /**
 * @brief Initialize initfs inode
 *
@@ -94,9 +99,11 @@ static int fill_inode_entry(struct inode *node, char *cpio, struct cpio_entry *e
 		.length    = entry->size,
 		.i_data    = fi,
 	};
-	fi->addr = entry->data;
-	fi->ni.size = entry->size;
-	fi->ni.mtime = entry->mtime;
+
+	*fi = (struct initfs_file_info) {
+		.addr   = entry->data,
+		.header = entry->name,
+	};
 
 	return 0;
 }
@@ -131,24 +138,37 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 	if (!cpio)
 		cpio = &_initfs_start;
 
-	if (NULL == (ctx->fs_ctx = cpio_parse_entry(cpio, &entry)))
+	char *new  = cpio_parse_entry(cpio, &entry);
+
+	ctx->fs_ctx = new;
+	if (ctx->fs_ctx == NULL)
 		return -1;
 
 	if (next->i_data == NULL)
 		fill_inode_entry(next, cpio, &entry);
 
-
 	return 0;
 }
 
-static int initfs_pathname(struct inode *inode, char *buf) {
+static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct cpio_entry entry;
+	char *c;
 
 	if (NULL == cpio_parse_entry((char*) inode->start_pos, &entry))
 		return -1;
 
-	memcpy(buf, entry.name, entry.name_len);
-	buf[entry.name_len] = '\0';
+	switch (flags) {
+	case DVFS_PATH_FS:
+		memcpy(buf, entry.name, entry.name_len);
+		buf[entry.name_len] = '\0';
+		break;
+	case DVFS_NAME:
+		c = strrchr(entry.name, '/');
+		memcpy(buf, c, entry.name_len - (c - entry.name));
+		break;
+	default:
+		return -1;
+	}
 
 	return 0;
 }

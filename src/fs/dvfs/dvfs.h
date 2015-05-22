@@ -19,6 +19,10 @@
 #define DENTRY_NAME_LEN 16
 #define FS_NAME_LEN     16
 
+#define DVFS_PATH_FULL  0x01
+#define DVFS_PATH_FS    0x02
+#define DVFS_NAME       0x04
+
 struct dentry;
 struct dir_ctx;
 struct dumb_fs_driver;
@@ -68,7 +72,7 @@ struct inode_operations {
 	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
 	int           (*rmdir)(struct dentry *dir);
 	int           (*truncate)(struct inode *inode, size_t len);
-	int           (*pathname)(struct inode *inode, char *buf);
+	int           (*pathname)(struct inode *inode, char *buf, int flags);
 	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
 };
 
@@ -162,7 +166,7 @@ extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
-extern int dvfs_pathname(struct inode *inode, char *buf);
+extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 
 extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev);
 

@@ -22,25 +22,32 @@ extern int            dvfs_update_root(void);
 extern struct dentry *dvfs_root(void);
 
 /* Default handlers */
-extern int           dvfs_default_pathname(struct inode *inode, char *buf);
+extern int           dvfs_default_pathname(struct inode *inode, char *buf, int flags);
 
 /* Path-related functions */
 
 /* @brief Get the full path to the inode from task's root dentry
  * @param inode The inode of which the path is to be resolved
  * @param buf   Char buffer where path would be put
+ * @param flags Used to determine how pathname should be formed
+ *                  DVFS_PATH_FULL will result in pathname from process root
+ *                  DVFS_PATH_FS   will result in pathname within given fs
+ *                  DVFS_NAME      will result in file name
  *
  * @retval  0 Success
  * @retval -1 Error
  */
-int dvfs_pathname(struct inode *inode, char *buf) {
+int dvfs_pathname(struct inode *inode, char *buf, int flags) {
 	assert(inode);
 	assert(buf);
 
+	if (flags == 0)
+		flags = DVFS_NAME;
+
 	if (inode->i_ops && inode->i_ops->pathname)
-		return inode->i_ops->pathname(inode, buf);
+		return inode->i_ops->pathname(inode, buf, flags);
 	else
-		return dvfs_default_pathname(inode, buf);
+		return dvfs_default_pathname(inode, buf, flags);
 }
 
 /* @brief Get the length of next element int the path
@@ -450,7 +457,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		dvfs_destroy_dentry(next_dentry);
 		next_dentry = NULL;
 	} else {
-		dvfs_pathname(next_inode, next_dentry->name);
+		dvfs_pathname(next_inode, next_dentry->name, 0);
 		ctx->pos++;
 	}
 
