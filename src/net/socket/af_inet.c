@@ -55,6 +55,7 @@ static int inet_init(struct sock *sk) {
 	in_sk->sk.src_addr = (const struct sockaddr *)&in_sk->src_in;
 	in_sk->sk.dst_addr = (const struct sockaddr *)&in_sk->dst_in;
 	in_sk->sk.addr_len = sizeof(struct sockaddr_in);
+	memset(&in_sk->opt, 0, sizeof in_sk->opt);
 
 	return 0;
 }
