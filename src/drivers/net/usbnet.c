@@ -88,10 +88,14 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 
 		/* Prepare for copying new packet */
 		nic_priv->pdata = nic_priv->data;
-	}
 
-	timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
-	            USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
+		timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
+				USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
+	} else {
+		/* Receive the next part of the packet */
+		usb_endp_bulk(in_endp, usbnet_rcv_notify, nic_priv->pdata,
+				in_endp->max_packet_size);
+	}
 }
 
 static void usbnet_timer_handler(struct sys_timer *tmr, void *param) {
@@ -112,18 +116,24 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 	int res;
 
 	nic = (struct net_device *) etherdev_alloc(sizeof *nic_priv);
-	if (nic == NULL) {
+	if (!nic) {
 		return -ENOMEM;
 	}
 	nic->drv_ops = &usbnet_drv_ops;
 	nic_priv = netdev_priv(nic, struct usbnet_priv);
 	nic_priv->usbdev = dev;
 	nic_priv->data = nic_priv->pdata = sysmalloc(ETH_FRAME_LEN);
+	if (!nic_priv->data) {
+		etherdev_free(nic);
+		return -1;
+	}
 
 	cdc->privdata = (void *) nic;
 
 	res = inetdev_register_dev(nic);
 	if (res < 0) {
+		sysfree(nic_priv->data);
+		etherdev_free(nic);
 		return res;
 	}
 
@@ -134,7 +144,6 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 }
 
 static void usbnet_disconnect(struct usb_dev *dev, void *data) {
-
 }
 
 static struct usb_device_id usbnet_id_table[] = {
@@ -165,13 +174,8 @@ static void usb_net_bulk_send(struct usb_dev *dev, struct sk_buff *skb) {
 
 static int usbnet_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct usbnet_priv *nic_priv;
-	//struct usb_class_cdc *cdc;
 
 	nic_priv = netdev_priv(dev, struct usbnet_priv);
-	//cdc = usb2cdcdata(nic_priv->usbdev);
-
-	// Fill endpoints
-
 	usb_net_bulk_send(nic_priv->usbdev, skb);
 
 	return 0;
