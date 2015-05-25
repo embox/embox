@@ -45,25 +45,21 @@ static int initfs_open(struct inode *node, struct file *file) {
 }
 
 static size_t initfs_read(struct file *desc, void *buf, size_t size) {
-	struct initfs_file_info *fi;
+	struct inode *inode;
 
-	fi = desc->f_inode->i_data;
+	inode = desc->f_inode;
 
-	if (!fi) {
-		return -ENOENT;
+	if (size > inode->length - desc->pos) {
+		size = inode->length - desc->pos;
 	}
 
-	if (size > desc->f_inode->length - desc->pos) {
-		size = desc->f_inode->length - desc->pos;
-	}
-
-	memcpy(buf, fi->addr + desc->pos, size);
+	memcpy(buf, (char *) inode->start_pos + desc->pos, size);
 
 	return size;
 }
 
 static int initfs_ioctl(struct file *desc, int request, ...) {
-	struct initfs_file_info *fi;
+	struct inode *inode = desc->f_inode;
 	char **p_addr;
 	va_list args;
 
@@ -71,9 +67,7 @@ static int initfs_ioctl(struct file *desc, int request, ...) {
 	p_addr = va_arg(args, char **);
 	va_end(args);
 
-	fi = (struct initfs_file_info *) desc->f_inode->i_data;
-	assert(p_addr != NULL);
-	*p_addr = fi->addr;
+	*p_addr = (char*) inode->start_pos;
 
 	return 0;
 }
@@ -95,8 +89,8 @@ static int fill_inode_entry(struct inode *node, char *cpio, struct cpio_entry *e
 
 	*node = (struct inode) {
 		.i_no      = (int) cpio,
-		.start_pos = (int) cpio,
-		.length    = entry->size,
+		.start_pos = (int) entry->data,
+		.length    = (size_t) entry->size,
 		.i_data    = fi,
 	};
 
@@ -154,7 +148,7 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct cpio_entry entry;
 	char *c;
 
-	if (NULL == cpio_parse_entry((char*) inode->start_pos, &entry))
+	if (NULL == cpio_parse_entry((char*) inode->i_no, &entry))
 		return -1;
 
 	switch (flags) {
@@ -164,7 +158,7 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 		break;
 	case DVFS_NAME:
 		c = strrchr(entry.name, '/');
-		memcpy(buf, c, entry.name_len - (c - entry.name));
+		memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
 		break;
 	default:
 		return -1;
