@@ -179,6 +179,13 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 		if (!initfs_ctx)
 			return -1;
 
+		if (!di) {
+			assert(parent->i_dentry == parent->i_sb->root);
+			di = pool_alloc(&initfs_dir_pool);
+			memset(di, 0, sizeof(struct initfs_dir_info));
+			parent->i_data = di;
+		}
+
 		prev = cpio = &_initfs_start;
 		while ((cpio = cpio_parse_entry(cpio, &entry))) {
 			if (!memcmp(di->path, entry.name, di->path_len)) {
@@ -195,11 +202,12 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 			.prev = prev,
 			.next = cpio,
 		};
+		ctx->fs_ctx = initfs_ctx;
 
-		initfs_fill_inode_entry(next,
+		/* initfs_fill_inode_entry(next,
 		                      &_initfs_start,
 		                       &entry,
-		                        child_dir(di, &entry));
+		                        child_dir(di, &entry)); */
 	} else {
 		/* Get the name of last item */
 		cpio = cpio_parse_entry(initfs_ctx->prev, &entry);
