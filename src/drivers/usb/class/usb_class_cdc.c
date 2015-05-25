@@ -50,9 +50,9 @@ static void cdc_set_interface_hnd(struct usb_request *req, void *arg);
 /* Endpoint */
 static size_t cdc_skip_func_descs(void *start);
 static size_t cdc_skip_endpoints(void *start);
+static void cdc_get_endpoints(struct usb_dev *dev, struct usb_class_cdc *cdc);
 
-/* usb-net specific */
-static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc);
+/* Misc */
 static int is_rndis(struct usb_desc_interface *desc);
 
 /**
@@ -122,29 +122,32 @@ struct usb_desc_interface *cdc_get_interface(void *conf, size_t index) {
 	return (struct usb_desc_interface *) curp;
 }
 
-/*
- * TODO It is a toy function to get usb_net interface properly. In future it must be moved into
- * separate file.
- */
-static void usb_net_hook(struct usb_dev *dev, struct usb_class_cdc *cdc) {
+static void cdc_get_endpoints(struct usb_dev *dev, struct usb_class_cdc *cdc) {
 	struct usb_desc_endpoint *ep;
-	struct usb_desc_interface *data_iface;
-	size_t i;
+	struct usb_desc_interface *iface;
+	char *endpoints;
+	struct usb_desc_configuration *conf;
+	size_t i, j;
 
-	/* Get the second interface (Data Interface) for usb-net*/
-	data_iface = cdc_get_interface(cdc->getconf, 2);
-	/* Fill in the IN and OUT endpoints */
-	for (i = 0; i < 2; i ++) {
-		ep = (struct usb_desc_endpoint *) ((char *)data_iface +
-				sizeof (struct usb_desc_interface) + i * sizeof (struct usb_desc_endpoint));
-		assert(usb_endp_alloc(dev, ep));
+	conf = (struct usb_desc_configuration *) cdc->getconf;
+
+	/* TODO conf->b_num_interfaces + 1 must be
+	 * conf->b_num_interfaces + alternated settings */
+	for (i = 0; i < conf->b_num_interfaces + 1; i++) {
+		iface = cdc_get_interface(cdc->getconf, i);
+		endpoints = (char *) iface + sizeof (struct usb_desc_interface);
+		endpoints += cdc_skip_func_descs(endpoints);
+
+		for (j = 0; j < iface->b_num_endpoints; j++) {
+			ep = (struct usb_desc_endpoint *) endpoints + j;
+			assert(usb_endp_alloc(dev, ep));
+		}
 	}
 }
 
 static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
-	size_t func_desc_len;
 	struct usb_desc_interface *iface;
 
 	iface = cdc_get_interface(cdc->getconf, 0);
@@ -157,14 +160,7 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 		return;
 	}
 
-	func_desc_len = cdc_skip_func_descs(cdc->getconf + INTERFACE_DESC_OFFSET +
-			sizeof (struct usb_desc_interface));
-
-	usb_dev_generic_fill_iface(dev, cdc->getconf + INTERFACE_DESC_OFFSET);
-	usb_dev_generic_fill_endps(dev, cdc->getconf + FUNC_DESC_OFFSET + func_desc_len);
-
-	/* XXX */
-	usb_net_hook(dev, cdc);
+	cdc_get_endpoints(dev, cdc);
 
 	usb_driver_handle(req->endp->dev);
 
@@ -175,13 +171,14 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 
 static void cdc_get_conf_len_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
+	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 
 	usb_endp_control(dev->endpoints[0], cdc_get_conf_content_hnd, NULL,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
 		USB_DEV_REQ_GET_DESC,
-		(USB_DESC_TYPE_CONFIG << 8) | 1,
+		(USB_DESC_TYPE_CONFIG << 8) | cdc->current_conf,
 		dev->c_config,
 		9,
 		cdc_conf);
@@ -209,8 +206,9 @@ static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg) {
 
 	cdc->getconf = sysmalloc(c->w_total_length);
 
-	cdc_get_conf(dev, cdc, (USB_DESC_TYPE_CONFIG << 8) | 1,
-			c->w_total_length, cdc_set_interface_hnd);
+	cdc_get_conf(dev, cdc,
+		(USB_DESC_TYPE_CONFIG << 8) | cdc->current_conf,
+		c->w_total_length, cdc_set_interface_hnd);
 }
 
 void cdc_set_interface(struct usb_dev *dev, size_t iface,
