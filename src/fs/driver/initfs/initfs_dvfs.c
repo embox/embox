@@ -18,12 +18,13 @@
  *         VFS calls.
  */
 
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
 #include <cpio.h>
-#include <stdarg.h>
+#include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
+#include <stdarg.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <embox/unit.h>
 #include <fs/dvfs.h>
@@ -94,13 +95,44 @@ static int initfs_ioctl(struct file *desc, int request, ...) {
 *
 * @return Negative error code
 */
-static int fill_inode_entry(struct inode *node, char *cpio, struct cpio_entry *entry) {
+static int initfs_fill_inode_entry(struct inode *node,
+                                   char *cpio,
+                                   struct cpio_entry *entry,
+                                   struct initfs_dir_info *di) {
 	*node = (struct inode) {
 		.i_no      = (int) cpio,
 		.start_pos = (int) entry->data,
 		.length    = (size_t) entry->size,
+		.i_data    = di,
+		.flags     = di ? O_DIRECTORY : 0,
 	};
 	return 0;
+}
+
+static struct initfs_dir_info *child_dir(struct initfs_dir_info *parent,
+                                         struct cpio_entry *entry) {
+	struct initfs_dir_info *di = NULL;
+	char *name;
+	size_t name_len = 0;
+
+	name = entry->name + parent->path_len;
+	while (*(name + name_len) != '/' && *(name + name_len) != '\0' &&
+		parent->path_len + name_len < entry->name_len)
+		name_len++;
+
+	if (*(entry->name + parent->path_len + name_len) == '/') {
+		name_len++;
+		di = pool_alloc(&initfs_dir_pool);
+		assert(di);
+		*di = (struct initfs_dir_info) {
+			.path     = entry->name,
+			.path_len = parent->path_len + name_len,
+			.name     = name,
+			.name_len = name_len,
+		};
+	}
+
+	return di;
 }
 
 static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
@@ -116,7 +148,10 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 			if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
 				return NULL;
 
-			if (fill_inode_entry(node, cpio, &entry)) {
+			if (initfs_fill_inode_entry(node,
+				                    cpio,
+				                   &entry,
+				                    child_dir(di, &entry))) {
 				dvfs_destroy_inode(node);
 				return NULL;
 			}
@@ -147,7 +182,10 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 		prev = cpio = &_initfs_start;
 		while ((cpio = cpio_parse_entry(cpio, &entry))) {
 			if (!memcmp(di->path, entry.name, di->path_len)) {
-				fill_inode_entry(next, prev, &entry);
+				initfs_fill_inode_entry(next,
+				                        prev,
+				                       &entry,
+				                        child_dir(di, &entry));
 				break;
 			}
 			prev = cpio;
@@ -158,7 +196,10 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 			.next = cpio,
 		};
 
-		fill_inode_entry(next, &_initfs_start, &entry);
+		initfs_fill_inode_entry(next,
+		                      &_initfs_start,
+		                       &entry,
+		                        child_dir(di, &entry));
 	} else {
 		/* Get the name of last item */
 		cpio = cpio_parse_entry(initfs_ctx->prev, &entry);
@@ -175,7 +216,7 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 
 		while ((cpio = cpio_parse_entry(cpio, &entry))) {
 			if (memcmp(entry.name, di->path, di->path_len)) {
-				/* This function can work faster, if you
+				/* This function will work faster if you
 				 * simply break the cycle here, but this hack
 				 * requiers CPIO archieve not to be modified
 				 * after creation */
@@ -191,7 +232,10 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 				}
 
 			if (strcmp(last_name, new_name)) {
-				fill_inode_entry(next, initfs_ctx->next, &entry);
+				initfs_fill_inode_entry(next,
+				                        initfs_ctx->next,
+				                       &entry,
+				                        child_dir(di, &entry));
 				initfs_ctx->prev = initfs_ctx->next;
 				initfs_ctx->next = cpio;
 				return 0;
@@ -210,6 +254,7 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 
 static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct cpio_entry entry;
+	struct initfs_dir_info *di = inode->i_data;
 	char *c;
 
 	if (NULL == cpio_parse_entry((char*) inode->i_no, &entry))
@@ -217,12 +262,25 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 
 	switch (flags) {
 	case DVFS_PATH_FS:
-		memcpy(buf, entry.name, entry.name_len);
-		buf[entry.name_len] = '\0';
+		if (di) {
+			assert(inode->flags & O_DIRECTORY);
+			memcpy(buf, di->path, di->path_len);
+			buf[di->path_len] = '\0';
+		} else {
+			memcpy(buf, entry.name, entry.name_len);
+			buf[entry.name_len] = '\0';
+		}
 		break;
 	case DVFS_NAME:
-		c = strrchr(entry.name, '/');
-		memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
+		if (di) {
+			assert(inode->flags & O_DIRECTORY);
+			memcpy(buf, di->name, di->name_len);
+			buf[di->name_len] = '\0';
+		} else {
+			c = strrchr(entry.name, '/');
+			memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
+			buf[entry.name_len - (c ? (c - entry.name) : 0)] = '\0';
+		}
 		break;
 	default:
 		return -1;

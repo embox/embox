@@ -15,7 +15,9 @@ module initfs_old extends initfs {
 
 module initfs_dvfs extends initfs {
 	source "initfs_dvfs.c"
+
 	option number dir_quantity=16
+	option number ctx_quantity=16
 
 	depends embox.fs.dvfs
 }
