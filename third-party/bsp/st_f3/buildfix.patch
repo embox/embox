@@ -12,7 +12,7 @@ diff -aur stm32f3discovery.orig/BSP/Components/l3gd20/l3gd20.h stm32f3discovery/
    * @{
 diff -aur stm32f3discovery.orig/BSP/Components/lsm303dlhc/lsm303dlhc.h stm32f3discovery/BSP/Components/lsm303dlhc/lsm303dlhc.h
 --- stm32f3discovery.orig/BSP/Components/lsm303dlhc/lsm303dlhc.h	2015-05-19 02:19:54.635088563 +0300
-+++ stm32f3discovery/BSP/Components/lsm303dlhc/lsm303dlhc.h	2015-05-19 02:36:39.591081148 +0300
++++ stm32f3discovery/BSP/Components/lsm303dlhc/lsm303dlhc.h	2015-05-23 17:11:00.129864114 +0300
 @@ -46,7 +46,7 @@
  #endif
  
@@ -22,6 +22,18 @@ diff -aur stm32f3discovery.orig/BSP/Components/lsm303dlhc/lsm303dlhc.h stm32f3di
  
  /** @addtogroup LSM303DLHC
    * @{
+diff -aur stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c
+--- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c	2015-05-19 02:19:54.595088563 +0300
++++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c	2015-05-23 17:11:26.593864197 +0300
+@@ -117,7 +117,7 @@
+   /* MEMS configuration ------------------------------------------------------*/
+    /* Fill the accelerometer structure */
+     LSM303DLHC_InitStructure.Power_Mode = LSM303DLHC_NORMAL_MODE;
+-    LSM303DLHC_InitStructure.AccOutput_DataRate = LSM303DLHC_ODR_50_HZ;
++    LSM303DLHC_InitStructure.AccOutput_DataRate = LSM303DLHC_ODR_1344_HZ;
+     LSM303DLHC_InitStructure.Axes_Enable= LSM303DLHC_AXES_ENABLE;
+     LSM303DLHC_InitStructure.AccFull_Scale = LSM303DLHC_FULLSCALE_2G;
+     LSM303DLHC_InitStructure.BlockData_Update = LSM303DLHC_BlockUpdate_Continous;
 diff -aur stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h
 --- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h	2015-05-19 02:19:54.595088563 +0300
 +++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h	2015-05-19 02:36:20.191081292 +0300
