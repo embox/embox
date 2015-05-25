@@ -172,19 +172,14 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 	char *cpio;
 	char *prev;
 
+	assert(di);
+
 	if (!initfs_ctx) {
 		/* Read first entry of directory */
 		initfs_ctx = pool_alloc(&initfs_ctx_pool);
 
 		if (!initfs_ctx)
 			return -1;
-
-		if (!di) {
-			assert(parent->i_dentry == parent->i_sb->root);
-			di = pool_alloc(&initfs_dir_pool);
-			memset(di, 0, sizeof(struct initfs_dir_info));
-			parent->i_data = di;
-		}
 
 		prev = cpio = &_initfs_start;
 		while ((cpio = cpio_parse_entry(cpio, &entry))) {
@@ -297,6 +292,18 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 	return 0;
 }
 
+static int initfs_mount_end(struct super_block *sb) {
+	struct initfs_dir_info *di;
+
+	di = pool_alloc(&initfs_dir_pool);
+	assert(di);
+
+	memset(di, 0, sizeof(struct initfs_dir_info));
+	sb->root->d_inode->i_data = di;
+
+	return 0;
+}
+
 struct inode_operations initfs_iops = {
 	.lookup   = initfs_lookup,
 	.iterate  = initfs_iterate,
@@ -319,6 +326,7 @@ static int initfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 static struct dumb_fs_driver initfs_dumb_driver = {
 	.name      = "initfs",
 	.fill_sb   = initfs_fill_sb,
+	.mount_end = initfs_mount_end,
 };
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
