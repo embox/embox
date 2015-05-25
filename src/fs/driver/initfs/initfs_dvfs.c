@@ -32,13 +32,14 @@
 
 #define INITFS_MAX_PATHLEN 128
 
-struct initfs_file_info {
-	char *addr;
-	char *header;
-	char *offset;        /* Used to handle directories */
+struct initfs_dir_info {
+	char  *path_begin;
+	size_t path_len;
+	char  *name_begin;
+	size_t name_len;
 };
 
-POOL_DEF(fdesc_pool, struct initfs_file_info, OPTION_GET(NUMBER,fdesc_quantity));
+POOL_DEF(initfs_dir_pool, struct initfs_dir_info, OPTION_GET(NUMBER,dir_quantity));
 
 static int initfs_open(struct inode *node, struct file *file) {
 	return 0;
@@ -81,24 +82,11 @@ static int initfs_ioctl(struct file *desc, int request, ...) {
 * @return Negative error code
 */
 static int fill_inode_entry(struct inode *node, char *cpio, struct cpio_entry *entry) {
-	struct initfs_file_info *fi = pool_alloc(&fdesc_pool);
-
-	if (!fi) {
-		return -ENOMEM;
-	}
-
 	*node = (struct inode) {
 		.i_no      = (int) cpio,
 		.start_pos = (int) entry->data,
 		.length    = (size_t) entry->size,
-		.i_data    = fi,
 	};
-
-	*fi = (struct initfs_file_info) {
-		.addr   = entry->data,
-		.header = entry->name,
-	};
-
 	return 0;
 }
 
