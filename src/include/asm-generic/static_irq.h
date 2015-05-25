@@ -13,37 +13,26 @@
 #include <framework/mod/options.h>
 
 #ifdef STATIC_IRQ_EXTENTION
-#define STATIC_IRQ_TABLE            \
-		. = 0x10;                   \
-		*(.trap_table.routine_4)    \
-		. = 0x14;                   \
-		*(.trap_table.routine_5)    \
-		. = 0x18;                   \
-		*(.trap_table.routine_6)    \
-		. = 0x1C;                   \
-		*(.trap_table.routine_7)    \
-		. = 0x20;                   \
-		*(.trap_table.routine_8)    \
-		. = 0x24;                   \
-		*(.trap_table.routine_9)    \
-		. = 0x28;                   \
-		*(.trap_table.routine_10)   \
-		. = 0x2C;                   \
-		*(.trap_table.routine_11)   \
-		. = 0x30;                   \
-		*(.trap_table.routine_12)   \
-		. = 0x34;                   \
-		*(.trap_table.routine_13)   \
-		. = 0x38;                   \
-		*(.trap_table.routine_14)   \
-		. = 0x3C;                   \
-		*(.trap_table.routine_15)   \
-		. = 0x40;                   \
-		*(.trap_table.assert)       \
-		. = 0x134;                  \
-		*(.trap_table.routine_61)   \
-		. = 0x134;                  \
-		*(.trap_table.routine_77)
+
+#define SIRQ_TABLE_ENTRY(n) \
+	. = n * 4; \
+	*(.trap_table.routine_##n);
+
+#define STATIC_IRQ_TABLE \
+	SIRQ_TABLE_ENTRY(4) \
+	SIRQ_TABLE_ENTRY(5) \
+	SIRQ_TABLE_ENTRY(6) \
+	SIRQ_TABLE_ENTRY(7) \
+	SIRQ_TABLE_ENTRY(8) \
+	SIRQ_TABLE_ENTRY(9) \
+	SIRQ_TABLE_ENTRY(10) \
+	SIRQ_TABLE_ENTRY(11) \
+	SIRQ_TABLE_ENTRY(12) \
+	SIRQ_TABLE_ENTRY(13) \
+	SIRQ_TABLE_ENTRY(14) \
+	SIRQ_TABLE_ENTRY(15) \
+	SIRQ_TABLE_ENTRY(63) \
+	SIRQ_TABLE_ENTRY(77)
 
 #define ARM_M_IRQ_HANDLER_VAR_NAME(irq_num) \
 	arm_m_irq_handler##irq_num
@@ -60,7 +49,7 @@
 
 #define STATIC_IRQ_TABLE
 
-#endif
+#endif /* STATIC_IRQ_EXTENTION */
 
 
 #endif /* STATIC_IRQ_H_ */
