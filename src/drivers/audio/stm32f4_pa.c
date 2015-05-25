@@ -332,3 +332,6 @@ static irq_return_t stm32f4_audio_i2s_dma_interrupt(unsigned int irq_num, void *
 	Audio_MAL_I2S_IRQHandler();
 	return IRQ_HANDLED;
 }
+
+static_assert(63 == STM32F4_AUDIO_I2S_DMA_IRQ);
+STATIC_IRQ_ATTACH(63, stm32f4_audio_i2s_dma_interrupt, &pa_stream);
