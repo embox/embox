@@ -30,16 +30,29 @@
 #include <mem/misc/pool.h>
 #include <util/array.h>
 
-#define INITFS_MAX_PATHLEN 128
+#define INITFS_MAX_NAMELEN 32
 
+/**
+* @brief Should be used as inode->i_data, but only for directories
+*/
 struct initfs_dir_info {
-	char  *path_begin;
+	char  *path;
 	size_t path_len;
-	char  *name_begin;
+	char  *name;
 	size_t name_len;
 };
 
 POOL_DEF(initfs_dir_pool, struct initfs_dir_info, OPTION_GET(NUMBER,dir_quantity));
+
+/**
+* @brief Used to handle POSIX readdir
+*/
+struct initfs_ctx {
+	char *prev;
+	char *next;
+};
+
+POOL_DEF(initfs_ctx_pool, struct initfs_ctx, OPTION_GET(NUMBER,ctx_quantity));
 
 static int initfs_open(struct inode *node, struct file *file) {
 	return 0;
@@ -95,9 +108,11 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 	char *cpio = &_initfs_start;
 	struct cpio_entry entry;
 	struct inode *node;
+	struct initfs_dir_info *di = dir->d_inode->i_data;
 
 	while ((cpio = cpio_parse_entry(cpio, &entry)))
-		if (!strncmp(name, entry.name, entry.name_len)) {
+		if (!memcmp(di->path, entry.name, di->path_len) &&
+		    !strncmp(name, entry.name + di->path_len, strlen(name))) {
 			if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
 				return NULL;
 
@@ -113,21 +128,82 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 }
 
 static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
-	char *cpio = ctx->fs_ctx;
+	struct initfs_ctx *initfs_ctx = ctx->fs_ctx;
 	struct cpio_entry entry;
 	extern char _initfs_start;
+	struct initfs_dir_info *di = parent->i_data;
+	char last_name[INITFS_MAX_NAMELEN];
+	char new_name[INITFS_MAX_NAMELEN];
+	char *cpio;
+	char *prev;
 
-	if (!cpio)
-		cpio = &_initfs_start;
+	if (!initfs_ctx) {
+		/* Read first entry of directory */
+		initfs_ctx = pool_alloc(&initfs_ctx_pool);
 
-	char *new  = cpio_parse_entry(cpio, &entry);
+		if (!initfs_ctx)
+			return -1;
 
-	ctx->fs_ctx = new;
-	if (ctx->fs_ctx == NULL)
+		prev = cpio = &_initfs_start;
+		while ((cpio = cpio_parse_entry(cpio, &entry))) {
+			if (!memcmp(di->path, entry.name, di->path_len)) {
+				fill_inode_entry(next, prev, &entry);
+				break;
+			}
+			prev = cpio;
+		}
+
+		*initfs_ctx = (struct initfs_ctx) {
+			.prev = prev,
+			.next = cpio,
+		};
+
+		fill_inode_entry(next, &_initfs_start, &entry);
+	} else {
+		/* Get the name of last item */
+		cpio = cpio_parse_entry(initfs_ctx->prev, &entry);
+		memcpy(last_name, entry.name + di->path_len, entry.name_len - di->path_len);
+		last_name[INITFS_MAX_NAMELEN - 1] = '\0';
+		for (char *prev = last_name; prev < last_name + INITFS_MAX_NAMELEN; prev++)
+			if (*prev == '/') {
+				*prev = '\0';
+				break;
+			}
+
+		initfs_ctx->prev = initfs_ctx->next;
+		initfs_ctx->next = cpio;
+
+		while ((cpio = cpio_parse_entry(cpio, &entry))) {
+			if (memcmp(entry.name, di->path, di->path_len)) {
+				/* This function can work faster, if you
+				 * simply break the cycle here, but this hack
+				 * requiers CPIO archieve not to be modified
+				 * after creation */
+				continue;
+			}
+
+			memcpy(new_name, entry.name + di->path_len, INITFS_MAX_NAMELEN);
+			new_name[INITFS_MAX_NAMELEN - 1] = '\0';
+			for (char *prev = new_name; prev < new_name + INITFS_MAX_NAMELEN; prev++)
+				if (*prev == '/') {
+					*prev = '\0';
+					break;
+				}
+
+			if (strcmp(last_name, new_name)) {
+				fill_inode_entry(next, initfs_ctx->next, &entry);
+				initfs_ctx->prev = initfs_ctx->next;
+				initfs_ctx->next = cpio;
+				return 0;
+			}
+
+			initfs_ctx->next = cpio;
+		}
+
+		/* End of directory */
+		pool_free(&initfs_ctx_pool, initfs_ctx);
 		return -1;
-
-	if (next->i_data == NULL)
-		fill_inode_entry(next, cpio, &entry);
+	}
 
 	return 0;
 }
