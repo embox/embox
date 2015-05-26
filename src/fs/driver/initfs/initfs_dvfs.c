@@ -304,6 +304,16 @@ static int initfs_mount_end(struct super_block *sb) {
 	return 0;
 }
 
+static int initfs_destroy_inode(struct inode *inode) {
+	if (inode->i_data)
+		pool_free(&initfs_dir_pool, inode->i_data);
+	return 0;
+}
+
+struct super_block_operations initfs_sbops = {
+	.destroy_inode = initfs_destroy_inode,
+};
+
 struct inode_operations initfs_iops = {
 	.lookup   = initfs_lookup,
 	.iterate  = initfs_iterate,
@@ -319,7 +329,7 @@ struct file_operations initfs_fops = {
 static int initfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 	sb->sb_iops = &initfs_iops;
 	sb->sb_fops = &initfs_fops;
-
+	sb->sb_ops  = &initfs_sbops;
 	return 0;
 }
 
