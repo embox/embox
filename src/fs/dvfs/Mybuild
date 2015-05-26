@@ -1,6 +1,6 @@
 package embox.fs
 
-module dvfs {
+module dvfs extends fs_api {
 	@IncludeExport(path="fs")
 	source "dvfs.h"
 
