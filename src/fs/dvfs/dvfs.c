@@ -426,6 +426,8 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct inode *next_inode;
 	struct dentry *next_dentry = NULL;
 	int res;
+	struct dentry *d;
+	struct dlist_head *l;
 	assert(lookup);
 	assert(ctx);
 
@@ -453,6 +455,19 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		next_dentry = NULL;
 	} else {
 		dvfs_pathname(next_inode, next_dentry->name, 0);
+
+		dlist_foreach(l, &lookup->parent->children) {
+			if (l == &lookup->parent->children)
+				continue;
+			d = mcast_out(l, struct dentry, children_lnk);
+
+			if (d != next_dentry && !strcmp(d->name, next_dentry->name)) {
+				dvfs_destroy_dentry(next_dentry);
+				next_dentry = d;
+				break;
+			}
+		}
+
 		ctx->pos++;
 	}
 
