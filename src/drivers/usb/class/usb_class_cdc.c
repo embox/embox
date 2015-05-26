@@ -44,8 +44,8 @@ static void cdc_next_conf(struct usb_dev *dev);
 /* Interface */
 void cdc_set_interface(struct usb_dev *dev, size_t iface,
 		size_t alternated_cfg, usb_request_notify_hnd_t cb);
-struct usb_desc_interface *cdc_get_interface(void *conf, size_t index);
-static void cdc_set_interface_hnd(struct usb_request *req, void *arg);
+struct usb_desc_interface *cdc_get_interface(
+		struct usb_desc_configuration *conf, size_t index);
 
 /* Endpoint */
 static size_t cdc_skip_func_descs(void *start);
@@ -108,9 +108,10 @@ static size_t cdc_skip_endpoints(void *start) {
 	return (cur - func_desc_start);
 }
 
-struct usb_desc_interface *cdc_get_interface(void *conf, size_t index) {
+struct usb_desc_interface *cdc_get_interface(
+		struct usb_desc_configuration *conf, size_t index) {
 	size_t cur = 0;
-	char *curp = conf + INTERFACE_DESC_OFFSET;
+	char *curp = (char *) conf + INTERFACE_DESC_OFFSET;
 
 	while (cur != index) {
 		curp += sizeof (struct usb_desc_interface);
@@ -134,7 +135,7 @@ static void cdc_get_endpoints(struct usb_dev *dev, struct usb_class_cdc *cdc) {
 	/* TODO conf->b_num_interfaces + 1 must be
 	 * conf->b_num_interfaces + alternated settings */
 	for (i = 0; i < conf->b_num_interfaces + 1; i++) {
-		iface = cdc_get_interface(cdc->getconf, i);
+		iface = cdc_get_interface((struct usb_desc_configuration *) cdc->getconf, i);
 		endpoints = (char *) iface + sizeof (struct usb_desc_interface);
 		endpoints += cdc_skip_func_descs(endpoints);
 
@@ -150,7 +151,7 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 	struct usb_desc_interface *iface;
 
-	iface = cdc_get_interface(cdc->getconf, 0);
+	iface = cdc_get_interface((struct usb_desc_configuration *) cdc->getconf, 0);
 
 	/* Check if the first interface is one of Microsoft's pet,
 	 * and if so then try to skip it. */
@@ -208,7 +209,7 @@ static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg) {
 
 	cdc_get_conf(dev, cdc,
 		(USB_DESC_TYPE_CONFIG << 8) | cdc->current_conf,
-		c->w_total_length, cdc_set_interface_hnd);
+		c->w_total_length, cdc_get_conf_hnd);
 }
 
 void cdc_set_interface(struct usb_dev *dev, size_t iface,
@@ -223,10 +224,6 @@ void cdc_set_interface(struct usb_dev *dev, size_t iface,
 		alternated_cfg,
 		0,
 		NULL);
-}
-
-static void cdc_set_interface_hnd(struct usb_request *req, void *arg) {
-	cdc_set_interface(req->endp->dev, 1, 1, cdc_get_conf_hnd);
 }
 
 static int is_rndis(struct usb_desc_interface *desc) {

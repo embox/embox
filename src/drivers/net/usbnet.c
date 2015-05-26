@@ -108,12 +108,17 @@ static void usbnet_timer_handler(struct sys_timer *tmr, void *param) {
 			in_endp->max_packet_size);
 }
 
+static void usbnet_iface_hnd(struct usb_request *req, void *arg) {
+}
+
 static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 		void **data) {
 	struct net_device *nic;
 	struct usbnet_priv *nic_priv;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 	int res;
+
+	cdc_set_interface(dev, 1, 1, usbnet_iface_hnd);
 
 	nic = (struct net_device *) etherdev_alloc(sizeof *nic_priv);
 	if (!nic) {

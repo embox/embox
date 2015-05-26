@@ -27,4 +27,10 @@ static inline struct usb_class_cdc *usb2cdcdata(struct usb_dev *dev) {
 	return dev->class_specific;
 }
 
+extern void cdc_set_interface(struct usb_dev *dev, size_t iface,
+        size_t alternated_cfg, usb_request_notify_hnd_t cb);
+
+extern struct usb_desc_interface *cdc_get_interface(
+        struct usb_desc_configuration *conf, size_t index);
+
 #endif /* USB_CDC_H_ */
