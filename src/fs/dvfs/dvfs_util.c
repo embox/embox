@@ -294,3 +294,28 @@ struct dentry *dvfs_root(void) {
 	return global_root;
 }
 
+
+/**
+* @brief Check if element with given name presents as a subelement
+*        of the folder in RAM.
+*
+* @param parent
+* @param name
+*
+* @return Pointer to dentry if found or NULL if not
+*/
+struct dentry *local_lookup(struct dentry *parent, char *name) {
+	struct dentry *d;
+	struct dlist_head *l;
+
+	dlist_foreach(l, &parent->children) {
+		if (l == &parent->children)
+			continue;
+		d = mcast_out(l, struct dentry, children_lnk);
+
+		if (!strcmp(d->name, name))
+			return d;
+	}
+
+	return NULL;
+}

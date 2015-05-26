@@ -69,6 +69,8 @@ int dvfs_path_next_len(const char *path) {
 	return off;
 }
 
+extern struct dentry *local_lookup(struct dentry *parent, char *name);
+
 /* @brief Resolve one more element in the path
  * @param path   Pointer to relative path
  * @param dentry The previous dentry
@@ -83,7 +85,6 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	struct inode *in;
 	int len = dvfs_path_next_len(path);
 	struct dentry *d;
-	struct dlist_head *l;
 	assert(parent);
 	assert(path);
 
@@ -101,6 +102,9 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return 0;
 	}
 
+	if ((d = local_lookup(parent, buff)))
+		return dvfs_path_walk(path + strlen(buff), d, lookup);
+
 	if (strlen(buff) > 1 && path_is_double_dot(buff))
 		return dvfs_path_walk(path + 2, parent->parent, lookup);
 
@@ -108,15 +112,6 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return dvfs_path_walk(path + 2, parent, lookup);
 
 	/* TODO use cache instead */
-	dlist_foreach(l, &parent->children) {
-		if (l == &parent->children)
-			continue;
-		d = mcast_out(l, struct dentry, children_lnk);
-
-		if (!strcmp(d->name, buff))
-			return dvfs_path_walk(path + strlen(buff), d, lookup);
-	}
-
 	assert(parent->d_sb);
 	assert(parent->d_sb->sb_iops);
 	assert(parent->d_sb->sb_iops->lookup);
