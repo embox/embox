@@ -281,6 +281,8 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 			buf[di->name_len] = '\0';
 		} else {
 			c = strrchr(entry.name, '/');
+			if (c)
+				c++;
 			memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
 			buf[entry.name_len - (c ? (c - entry.name) : 0)] = '\0';
 		}
