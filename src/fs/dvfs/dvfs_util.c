@@ -124,9 +124,8 @@ int dvfs_destroy_inode(struct inode *inode) {
 
 	if (inode->i_sb && inode->i_sb->sb_ops &&
 	    inode->i_sb->sb_ops->destroy_inode)
-		return inode->i_sb->sb_ops->destroy_inode(inode);
-	else
-		return dvfs_default_destroy_inode(inode);
+		inode->i_sb->sb_ops->destroy_inode(inode);
+	return dvfs_default_destroy_inode(inode);
 }
 
 /**
