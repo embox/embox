@@ -9,47 +9,46 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <kernel/task.h>
 
-#include <fs/flags.h>
 #include <fs/kfile.h>
 
-extern const struct idesc_ops idesc_file_ops;
+#include <fs/idesc.h>
+
 
 static void idesc_file_ops_close(struct idesc *idesc) {
 	assert(idesc);
-	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	kclose((struct file_desc *)idesc);
 }
 
 static ssize_t idesc_file_ops_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	assert(idesc);
-	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	return kread(buf, nbyte, (struct file_desc *)idesc);
 }
 
 static ssize_t idesc_file_ops_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	assert(idesc);
-	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	return kwrite(buf, nbyte, (struct file_desc *)idesc);
 }
 
 
 static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
 	assert(idesc);
-	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	return kfstat((struct file_desc *)idesc, buf);
 }
 
 static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
 	assert(idesc);
-	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	return kioctl((struct file_desc *)idesc, request, data);
 }
 
 static int idesc_file_ops_status(struct idesc *idesc, int mask) {
 	assert(idesc);
-	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	return 1;
 }
 
