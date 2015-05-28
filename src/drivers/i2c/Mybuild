@@ -7,4 +7,6 @@ module at91_twi {
 
 module i2c {
 	source "i2c.c"
+	@IncludeExport(path="drivers/i2c")
+	source "i2c.h"
 }
