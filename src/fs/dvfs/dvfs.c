@@ -60,9 +60,6 @@ int dvfs_path_next_len(const char *path) {
 	int len = strlen(path);
 	int off = 0;
 
-	while (path[off] == '/')
-		off++;
-
 	while ((path[off] != '/') && (off < len))
 		off++;
 
@@ -83,7 +80,7 @@ extern struct dentry *local_lookup(struct dentry *parent, char *name);
 int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
 	char buff[DENTRY_NAME_LEN];
 	struct inode *in;
-	int len = dvfs_path_next_len(path);
+	int len;
 	struct dentry *d;
 	assert(parent);
 	assert(path);
@@ -91,6 +88,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	while (*path == '/')
 		path++;
 
+	len = dvfs_path_next_len(path);
 	memcpy(buff, path, len);
 	buff[len] = '\0';
 
