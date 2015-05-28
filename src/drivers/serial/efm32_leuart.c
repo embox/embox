@@ -50,7 +50,7 @@
 #include <drivers/serial/diag.h>
 #include <embox/unit.h>
 
-#include <drivers/uart_device.h>
+#include <drivers/serial/uart_device.h>
 
 #include <em_leuart.h>
 #include <em_cmu.h>

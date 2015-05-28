@@ -1,6 +1,8 @@
 package embox.driver
 
 module ramdisk {
+	@IncludeExport(path="drivers/block_dev/ramdisk")
+	source "ramdisk.h"
 	source "ramdisk.c"
 	option number ramdisk_quantity = 8
 

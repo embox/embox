@@ -15,7 +15,7 @@
 #include <fs/fs_driver.h>
 #include <fs/fsop.h>
 
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
 #include <embox/block_dev.h>
 #include <embox/test.h>
 

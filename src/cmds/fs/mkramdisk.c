@@ -9,7 +9,7 @@
 #include <util/err.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #define MKRAMDISK_DEFAULT_SIZE 8192;
 

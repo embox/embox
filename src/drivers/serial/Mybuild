@@ -14,6 +14,9 @@ module core {
 
 	source "core.c"
 
+	@IncludeExport(path="drivers/serial")
+	source "uart_device.h"
+	
 	depends fsnode_api
 	@NoRuntime depends embox.util.indexator
 }

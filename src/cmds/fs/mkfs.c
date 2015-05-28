@@ -16,7 +16,7 @@
 
 #include <fs/kfsop.h>
 #include <fs/fs_driver.h>
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #include <mem/page.h>
 

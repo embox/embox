@@ -15,7 +15,7 @@
 #include <drivers/serial/diag.h>
 #include <embox/unit.h>
 
-#include <drivers/uart_device.h>
+#include <drivers/serial/uart_device.h>
 
 EMBOX_UNIT_INIT(stm32uart_mod_init);
 

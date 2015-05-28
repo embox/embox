@@ -15,7 +15,7 @@
 #include <util/indexator.h>
 #include <drivers/serial/fsnode.h>
 
-#include <drivers/uart_device.h>
+#include <drivers/serial/uart_device.h>
 
 #define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
 

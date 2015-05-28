@@ -23,7 +23,7 @@
 #include <mem/phymem.h>
 
 #include <embox/block_dev.h>
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
