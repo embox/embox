@@ -190,7 +190,7 @@ int dfs_format(void) {
 		.inode_count = 0,
 		.max_inode_count = DFS_INODES_MAX,
 		.buff_bk = 2,
-		.max_file_size = 136,
+		.max_file_size = 2048 / NAND_PAGE_SIZE,
 		.free_space = _capacity(sizeof(struct dfs_sb_info)) +
 		              DFS_INODES_MAX * _capacity(sizeof(struct dfs_dir_entry)),
 	};
@@ -294,7 +294,7 @@ static int dfs_icreate(struct inode *i_new,
 		return -ENOMEM;
 
 	dirent.pos_start = sbi->free_space;
-	dirent.len = 136; /* XXX */
+	dirent.len = 2048 / NAND_PAGE_SIZE; /* XXX */
 	strcpy(dirent.name, i_new->i_dentry->name);
 	dfs_write_dirent(sbi->inode_count, &dirent);
 
