@@ -8,12 +8,10 @@
 #ifndef FS_IDESC_H_
 #define FS_IDESC_H_
 
-#include <fs/flags.h>
-
-#include <kernel/task/idesc_table.h>
-
 struct idesc_ops;
 struct idesc_xattrops;
+
+#include <fs/flags.h>
 typedef int idesc_access_mode_t;
 
 #include <kernel/sched/waitq.h>
@@ -61,16 +59,8 @@ extern int idesc_getxattr(struct idesc *idesc, const char *name, void *value,
 extern int idesc_setxattr(struct idesc *idesc, const char *name, const void *value,
 		size_t size, int flags);
 extern int idesc_listxattr(struct idesc *idesc, char *list, size_t size);
+
 extern int idesc_removexattr(struct idesc *idesc, const char *name);
-
-#if 0
-extern int idesc_read(struct idesc *idesc, char *buff, int size);
-
-extern int idesc_write(struct idesc *idesc,char *buff, int size);
-
-extern int idesc_ctrl(struct idesc *idesc, int cmd, int req, void *buff,
-		int size);
-#endif
 
 extern int idesc_close(struct idesc *idesc, int fd);
 

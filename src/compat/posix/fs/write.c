@@ -8,9 +8,10 @@
 #include <errno.h>
 #include <stddef.h>
 #include <unistd.h>
-#include <kernel/task.h>
+
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
+#include <kernel/task/idesc_table.h>
 
 ssize_t write(int fd, const void *buf, size_t nbyte) {
 	ssize_t ret;

@@ -24,6 +24,7 @@
 #include <fs/file_desc.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <kernel/thread.h>
 
 #define TUN_N 1
 

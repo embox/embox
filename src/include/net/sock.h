@@ -179,6 +179,7 @@ extern int sock_close(struct sock *sk);
 extern int sock_dgram_recvmsg(struct sock *sk, struct msghdr *msg, int flags);
 extern int sock_stream_recvmsg(struct sock *sk, struct msghdr *msg, int flags);
 
+#include <string.h>
 static inline void sock_update_tstamp(struct sock *sk, struct sk_buff *skb) {
 	memcpy(&sk->last_packet_tstamp, &skb->tstamp, sizeof(sk->last_packet_tstamp));
 }
