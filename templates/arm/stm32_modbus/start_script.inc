@@ -6,6 +6,7 @@
 
 "sleep 1000",
 
+"mount -t DumbFS stm32f4_sd_card conf",
 "led_driver init",
 "flash_settings restore",
 "modbus_server &",

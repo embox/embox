@@ -170,6 +170,8 @@ int main(int argc, char *argv[]) {
 	struct flashset_settings *fl_settings = &flashset_g_settings;
 	int errcode;
 
+	chdir("/conf");
+
 	if (0 == strcmp(argv[1], "store")) {
 
 		if (0 > (errcode = flashset_load(flashdev, fl_settings))) {
