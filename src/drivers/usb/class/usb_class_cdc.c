@@ -23,8 +23,6 @@ EMBOX_UNIT_INIT(usb_cdc_init);
 
 POOL_DEF(cdc_classes, struct usb_class_cdc, USB_CDC_MAX_DEVS);
 
-/* FIXME store all static data in pool */
-
 /* Storage for device configuration*/
 static char cdc_conf[16];
 
@@ -40,12 +38,6 @@ static void cdc_get_conf(struct usb_dev *dev, struct usb_class_cdc *cdc,
 static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg);
 static void cdc_get_conf_hnd(struct usb_request *req, void *arg);
 static void cdc_next_conf(struct usb_dev *dev);
-
-/* Interface */
-void cdc_set_interface(struct usb_dev *dev, size_t iface,
-		size_t alternated_cfg, usb_request_notify_hnd_t cb);
-struct usb_desc_interface *cdc_get_interface(
-		struct usb_desc_configuration *conf, size_t index);
 
 /* Endpoint */
 static size_t cdc_skip_func_descs(void *start);
@@ -164,8 +156,6 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	cdc_get_endpoints(dev, cdc);
 
 	usb_driver_handle(req->endp->dev);
-
-	/* TODO free resources */
 
 	usb_class_start_handle(dev);
 }
