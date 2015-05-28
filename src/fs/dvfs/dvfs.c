@@ -412,6 +412,7 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 	return 0;
 }
 
+extern void dentry_upd_flags(struct dentry *dentry);
 /* @brief Get next entry in the directory
  * @param lookup  Contains directory dentry (.parent) and
  *                previous element (.item)
@@ -448,6 +449,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	assert(sb && sb->sb_iops && sb->sb_iops->iterate);
 	res = sb->sb_iops->iterate(next_inode, parent_inode, ctx);
 	inode_fill(sb, next_inode, next_dentry);
+	dentry_upd_flags(next_dentry);
 
 	if (res) {
 		ctx->pos = 0;

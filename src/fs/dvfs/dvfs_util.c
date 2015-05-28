@@ -179,6 +179,18 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 		return -1;
 }
 
+/**
+ * @brief Update dentry flags according to it's inode content
+ *
+ * @param dentry Pointer to dentry to be updated
+ */
+void dentry_upd_flags(struct dentry *dentry) {
+	if (dentry->d_inode) {
+		if (dentry->d_inode->flags & O_DIRECTORY)
+			dentry->flags |= O_DIRECTORY;
+	}
+}
+
 /* @brief Get new file descriptor from pool
  *
  * @return Pointer to the new file descriptor

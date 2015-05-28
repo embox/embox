@@ -16,7 +16,7 @@
  New VFS prototype
  *****************/
 
-#define DENTRY_NAME_LEN 16
+#define DENTRY_NAME_LEN 36
 #define FS_NAME_LEN     16
 
 #define DVFS_PATH_FULL  0x01

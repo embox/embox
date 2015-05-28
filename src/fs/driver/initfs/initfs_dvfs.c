@@ -116,17 +116,18 @@ static struct initfs_dir_info *child_dir(struct initfs_dir_info *parent,
 	size_t name_len = 0;
 
 	name = entry->name + parent->path_len;
+	if (*name == '/')
+		name++;
 	while (*(name + name_len) != '/' && *(name + name_len) != '\0' &&
 		parent->path_len + name_len < entry->name_len)
 		name_len++;
 
-	if (*(entry->name + parent->path_len + name_len) == '/') {
-		name_len++;
+	if (*(name + name_len) == '/') {
 		di = pool_alloc(&initfs_dir_pool);
 		assert(di);
 		*di = (struct initfs_dir_info) {
 			.path     = entry->name,
-			.path_len = parent->path_len + name_len,
+			.path_len = parent->path_len + name_len + (*(entry->name + parent->path_len) == '/' ? 1 : 0),
 			.name     = name,
 			.name_len = name_len,
 		};
@@ -144,7 +145,9 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 
 	while ((cpio = cpio_parse_entry(cpio, &entry)))
 		if (!memcmp(di->path, entry.name, di->path_len) &&
-		    !strncmp(name, entry.name + di->path_len, strlen(name))) {
+		    !strncmp(name,
+		             entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
+		             strlen(name))) {
 			if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
 				return NULL;
 
@@ -206,7 +209,9 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 	} else {
 		/* Get the name of last item */
 		cpio = cpio_parse_entry(initfs_ctx->prev, &entry);
-		memcpy(last_name, entry.name + di->path_len, entry.name_len - di->path_len);
+		memcpy(last_name,
+		       entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
+		       entry.name_len - di->path_len);
 		last_name[INITFS_MAX_NAMELEN - 1] = '\0';
 		for (char *prev = last_name; prev < last_name + INITFS_MAX_NAMELEN; prev++)
 			if (*prev == '/') {
@@ -226,13 +231,18 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 				continue;
 			}
 
-			memcpy(new_name, entry.name + di->path_len, INITFS_MAX_NAMELEN);
+			memcpy(new_name,
+			       entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
+			       INITFS_MAX_NAMELEN);
 			new_name[INITFS_MAX_NAMELEN - 1] = '\0';
 			for (char *prev = new_name; prev < new_name + INITFS_MAX_NAMELEN; prev++)
 				if (*prev == '/') {
 					*prev = '\0';
 					break;
 				}
+
+			if (new_name[0] == '\0')
+				continue;
 
 			if (strcmp(last_name, new_name)) {
 				initfs_fill_inode_entry(next,
@@ -307,8 +317,9 @@ static int initfs_mount_end(struct super_block *sb) {
 }
 
 static int initfs_destroy_inode(struct inode *inode) {
-	if (inode->i_data)
+	if (inode->i_data) {
 		pool_free(&initfs_dir_pool, inode->i_data);
+	}
 	return 0;
 }
 
