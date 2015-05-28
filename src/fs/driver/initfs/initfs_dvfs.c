@@ -24,6 +24,7 @@
 #include <limits.h>
 #include <stdarg.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include <embox/unit.h>
@@ -104,7 +105,7 @@ static int initfs_fill_inode_entry(struct inode *node,
 		.start_pos = (int) entry->data,
 		.length    = (size_t) entry->size,
 		.i_data    = di,
-		.flags     = di ? O_DIRECTORY : 0,
+		.flags     = entry->mode & S_IFDIR ? O_DIRECTORY : 0,
 	};
 	return 0;
 }
@@ -112,24 +113,13 @@ static int initfs_fill_inode_entry(struct inode *node,
 static struct initfs_dir_info *child_dir(struct initfs_dir_info *parent,
                                          struct cpio_entry *entry) {
 	struct initfs_dir_info *di = NULL;
-	char *name;
-	size_t name_len = 0;
 
-	name = entry->name + parent->path_len;
-	if (*name == '/')
-		name++;
-	while (*(name + name_len) != '/' && *(name + name_len) != '\0' &&
-		parent->path_len + name_len < entry->name_len)
-		name_len++;
-
-	if (*(name + name_len) == '/') {
+	if (entry->mode & S_IFDIR) {
 		di = pool_alloc(&initfs_dir_pool);
 		assert(di);
 		*di = (struct initfs_dir_info) {
-			.path     = entry->name,
-			.path_len = parent->path_len + name_len + (*(entry->name + parent->path_len) == '/' ? 1 : 0),
-			.name     = name,
-			.name_len = name_len,
+			.path = entry->name,
+			.path_len = strlen(entry->name),
 		};
 	}
 
@@ -147,17 +137,15 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 		if (!memcmp(di->path, entry.name, di->path_len) &&
 		    !strncmp(name,
 		             entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
-		             strlen(name))) {
+		             strlen(name)) &&
+			strrchr(entry.name + di->path_len + 1, '/') == NULL) {
 			if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
 				return NULL;
 
-			if (initfs_fill_inode_entry(node,
-				                    cpio,
-				                   &entry,
-				                    child_dir(di, &entry))) {
-				dvfs_destroy_inode(node);
-				return NULL;
-			}
+			initfs_fill_inode_entry(node,
+			                        cpio,
+			                        &entry,
+			                        child_dir(di, &entry));
 
 			return node;
 		}
@@ -170,8 +158,6 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 	struct cpio_entry entry;
 	extern char _initfs_start;
 	struct initfs_dir_info *di = parent->i_data;
-	char last_name[INITFS_MAX_NAMELEN];
-	char new_name[INITFS_MAX_NAMELEN];
 	char *cpio;
 	char *prev;
 
@@ -186,7 +172,8 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 
 		prev = cpio = &_initfs_start;
 		while ((cpio = cpio_parse_entry(cpio, &entry))) {
-			if (!memcmp(di->path, entry.name, di->path_len)) {
+			if (!memcmp(di->path, entry.name, di->path_len) &&
+				strrchr(entry.name + di->path_len + 1, '/') == NULL) {
 				initfs_fill_inode_entry(next,
 				                        prev,
 				                       &entry,
@@ -201,60 +188,23 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 			.next = cpio,
 		};
 		ctx->fs_ctx = initfs_ctx;
-
-		/* initfs_fill_inode_entry(next,
-		                      &_initfs_start,
-		                       &entry,
-		                        child_dir(di, &entry)); */
 	} else {
 		/* Get the name of last item */
 		cpio = cpio_parse_entry(initfs_ctx->prev, &entry);
-		memcpy(last_name,
-		       entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
-		       entry.name_len - di->path_len);
-		last_name[INITFS_MAX_NAMELEN - 1] = '\0';
-		for (char *prev = last_name; prev < last_name + INITFS_MAX_NAMELEN; prev++)
-			if (*prev == '/') {
-				*prev = '\0';
-				break;
-			}
-
-		initfs_ctx->prev = initfs_ctx->next;
-		initfs_ctx->next = cpio;
-
-		while ((cpio = cpio_parse_entry(cpio, &entry))) {
+		while ((initfs_ctx->next = cpio, cpio = cpio_parse_entry(cpio, &entry))) {
 			if (memcmp(entry.name, di->path, di->path_len)) {
-				/* This function will work faster if you
-				 * simply break the cycle here, but this hack
-				 * requiers CPIO archieve not to be modified
-				 * after creation */
 				continue;
 			}
 
-			memcpy(new_name,
-			       entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
-			       INITFS_MAX_NAMELEN);
-			new_name[INITFS_MAX_NAMELEN - 1] = '\0';
-			for (char *prev = new_name; prev < new_name + INITFS_MAX_NAMELEN; prev++)
-				if (*prev == '/') {
-					*prev = '\0';
-					break;
-				}
-
-			if (new_name[0] == '\0')
-				continue;
-
-			if (strcmp(last_name, new_name)) {
+			if (strrchr(entry.name + di->path_len + 1, '/') == NULL) {
 				initfs_fill_inode_entry(next,
-				                        initfs_ctx->next,
-				                       &entry,
-				                        child_dir(di, &entry));
+							initfs_ctx->next,
+							&entry,
+							child_dir(di, &entry));
 				initfs_ctx->prev = initfs_ctx->next;
 				initfs_ctx->next = cpio;
 				return 0;
 			}
-
-			initfs_ctx->next = cpio;
 		}
 
 		/* End of directory */
@@ -267,7 +217,6 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 
 static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct cpio_entry entry;
-	struct initfs_dir_info *di = inode->i_data;
 	char *c;
 
 	if (NULL == cpio_parse_entry((char*) inode->i_no, &entry))
@@ -275,27 +224,15 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 
 	switch (flags) {
 	case DVFS_PATH_FS:
-		if (di) {
-			assert(inode->flags & O_DIRECTORY);
-			memcpy(buf, di->path, di->path_len);
-			buf[di->path_len] = '\0';
-		} else {
-			memcpy(buf, entry.name, entry.name_len);
-			buf[entry.name_len] = '\0';
-		}
+		memcpy(buf, entry.name, entry.name_len);
+		buf[entry.name_len] = '\0';
 		break;
 	case DVFS_NAME:
-		if (di) {
-			assert(inode->flags & O_DIRECTORY);
-			memcpy(buf, di->name, di->name_len);
-			buf[di->name_len] = '\0';
-		} else {
-			c = strrchr(entry.name, '/');
-			if (c)
-				c++;
-			memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
-			buf[entry.name_len - (c ? (c - entry.name) : 0)] = '\0';
-		}
+		c = strrchr(entry.name, '/');
+		if (c)
+			c++;
+		memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
+		buf[entry.name_len - (c ? (c - entry.name) : 0)] = '\0';
 		break;
 	default:
 		return -1;
