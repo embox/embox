@@ -12,6 +12,7 @@
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 #include <drivers/usb/usb.h>
+#include <drivers/usb/usb_driver.h>
 
 static struct usb_class *usb_class_find(struct usb_dev *dev);
 
@@ -33,6 +34,8 @@ void usb_class_generic_get_conf_hnd(struct usb_request *req, void *arg) {
 	usb_dev_generic_fill_endps(dev, dev->getconf_data->endp_descs);
 
 	usb_class_start_handle(dev);
+
+	usb_driver_handle(req->endp->dev);
 }
 
 int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
