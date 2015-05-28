@@ -46,16 +46,6 @@ struct initfs_dir_info {
 
 POOL_DEF(initfs_dir_pool, struct initfs_dir_info, OPTION_GET(NUMBER,dir_quantity));
 
-/**
-* @brief Used to handle POSIX readdir
-*/
-struct initfs_ctx {
-	char *prev;
-	char *next;
-};
-
-POOL_DEF(initfs_ctx_pool, struct initfs_ctx, OPTION_GET(NUMBER,ctx_quantity));
-
 static int initfs_open(struct inode *node, struct file *file) {
 	return 0;
 }
@@ -154,65 +144,33 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 }
 
 static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
-	struct initfs_ctx *initfs_ctx = ctx->fs_ctx;
 	struct cpio_entry entry;
 	extern char _initfs_start;
 	struct initfs_dir_info *di = parent->i_data;
-	char *cpio;
+	char *cpio = ctx->fs_ctx;
 	char *prev;
 
 	assert(di);
 
-	if (!initfs_ctx) {
-		/* Read first entry of directory */
-		initfs_ctx = pool_alloc(&initfs_ctx_pool);
+	if (!cpio)
+		cpio = &_initfs_start;
 
-		if (!initfs_ctx)
-			return -1;
+	while ((prev = cpio, cpio = cpio_parse_entry(cpio, &entry))) {
+		if (!memcmp(di->path, entry.name, di->path_len) &&
+			entry.name[di->path_len] != '\0' &&
+			strrchr(entry.name + di->path_len + 1, '/') == NULL) {
 
-		prev = cpio = &_initfs_start;
-		while ((cpio = cpio_parse_entry(cpio, &entry))) {
-			if (!memcmp(di->path, entry.name, di->path_len) &&
-				strrchr(entry.name + di->path_len + 1, '/') == NULL) {
-				initfs_fill_inode_entry(next,
-				                        prev,
-				                       &entry,
-				                        child_dir(di, &entry));
-				break;
-			}
-			prev = cpio;
+			initfs_fill_inode_entry(next,
+						prev,
+					       &entry,
+						child_dir(di, &entry));
+			ctx->fs_ctx = cpio;
+			return 0;
 		}
-
-		*initfs_ctx = (struct initfs_ctx) {
-			.prev = prev,
-			.next = cpio,
-		};
-		ctx->fs_ctx = initfs_ctx;
-	} else {
-		/* Get the name of last item */
-		cpio = cpio_parse_entry(initfs_ctx->prev, &entry);
-		while ((initfs_ctx->next = cpio, cpio = cpio_parse_entry(cpio, &entry))) {
-			if (memcmp(entry.name, di->path, di->path_len)) {
-				continue;
-			}
-
-			if (strrchr(entry.name + di->path_len + 1, '/') == NULL) {
-				initfs_fill_inode_entry(next,
-							initfs_ctx->next,
-							&entry,
-							child_dir(di, &entry));
-				initfs_ctx->prev = initfs_ctx->next;
-				initfs_ctx->next = cpio;
-				return 0;
-			}
-		}
-
-		/* End of directory */
-		pool_free(&initfs_ctx_pool, initfs_ctx);
-		return -1;
 	}
 
-	return 0;
+	/* End of directory */
+	return -1;
 }
 
 static int initfs_pathname(struct inode *inode, char *buf, int flags) {
