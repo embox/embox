@@ -139,28 +139,28 @@ static DLIST_DEFINE(dentry_dlist);
  * @retval NULL Pool is full
  */
 struct dentry *dvfs_alloc_dentry(void) {
-	struct dentry *d = pool_alloc(&dentry_pool);
-	struct dentry *t = NULL;;
-	if (!d) {
+	struct dentry *dentry = pool_alloc(&dentry_pool);
+	struct dentry *temp = NULL;;
+	if (!dentry) {
 		/* Freeing unused dentries */
-		dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
-			if (d->usage_count == 0) {
-				t = d;
+		dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
+			if (dentry->usage_count == 0) {
+				temp = dentry;
 				break;
 			}
 		}
-		if (t) {
-			dvfs_destroy_dentry(t);
-			d = pool_alloc(&dentry_pool);
+		if (temp) {
+			dvfs_destroy_dentry(temp);
+			dentry = pool_alloc(&dentry_pool);
 		} else
 			return NULL;
 	}
 
-	memset(d, 0, sizeof(struct dentry));
-	dlist_head_init(&d->d_lnk);
-	dlist_add_next(&d->d_lnk, &dentry_dlist);
-	dlist_init(&d->children);
-	return d;
+	memset(dentry, 0, sizeof(struct dentry));
+	dlist_head_init(&dentry->d_lnk);
+	dlist_add_next(&dentry->d_lnk, &dentry_dlist);
+	dlist_init(&dentry->children);
+	return dentry;
 }
 
 /* @brief Remove dentry from pool
