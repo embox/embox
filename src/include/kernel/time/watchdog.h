@@ -24,9 +24,6 @@ typedef struct watchdog watchdog_t;
 __BEGIN_DECLS
 extern int watchdog_set(watchdog_t *p_wdog, struct timeval *p_timeout, watchdog_handler_t handler);
 extern int watchdog_start(watchdog_t *p_wdog);
-/*
-extern int watchdog_stop(watchdog_t *p_wdog);
-*/
 extern int watchdog_kick(watchdog_t *p_wdog);
 extern int watchdog_close(watchdog_t *p_wdog);
 __END_DECLS
