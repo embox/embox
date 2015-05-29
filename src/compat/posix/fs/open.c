@@ -17,6 +17,7 @@
 #include <fs/vfs.h>
 
 #include <fs/kfile.h>
+#include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
 
 #include <dirent_impl.h>

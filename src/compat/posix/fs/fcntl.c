@@ -7,12 +7,9 @@
 #include <errno.h>
 #include <fcntl.h>
 
-#include <kernel/task.h>
-
-
 #include <fs/idesc.h>
 #include <fs/index_descriptor.h>
-
+#include <kernel/task/idesc_table.h>
 
 int fcntl(int fd, int cmd, ...) {
 	int ret;

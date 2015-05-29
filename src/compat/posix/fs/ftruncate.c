@@ -11,6 +11,7 @@
 
 #include <fs/index_descriptor.h>
 #include <fs/kfile.h>
+#include <kernel/task/idesc_table.h>
 
 extern const struct idesc_ops idesc_file_ops;
 
