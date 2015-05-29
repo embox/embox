@@ -72,7 +72,7 @@ struct block_dev *block_dev_create_common(char *path, void *driver, void *privda
 		.privdata = privdata,
 	};
 
-	strncpy (bdev->name, path, NAME_MAX);
+	strncpy (bdev->name, strrchr(path, '/') ? strrchr(path, '/') + 1 : path, NAME_MAX);
 
 	return bdev;
 }
