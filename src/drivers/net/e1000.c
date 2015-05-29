@@ -35,8 +35,6 @@
 
 #include <kernel/printk.h>
 
-#include <kernel/panic.h>
-
 #include <embox/unit.h>
 
 static const struct pci_id e1000_id_table[] = {
@@ -170,11 +168,10 @@ static void txed_skb_clean(struct net_device *dev) {
 
 static void e1000_rx(struct net_device *dev) {
 	/*net_device_stats_t stat = get_eth_stat(dev);*/
+	struct sk_buff *skb, *new_skb;
 	uint16_t head;
 	uint16_t tail;
 	uint16_t cur;
-
-	struct sk_buff *skb;
 
 	/* nested irq locked to prevent already handled packets handled once more
 	 * as tail updated at exit
@@ -192,26 +189,27 @@ static void e1000_rx(struct net_device *dev) {
 				break;
 			}
 
+			len = rx_descs[cur].length - E1000_RX_CHECKSUM_LEN;
 
 			if (0 != nf_test_raw(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, (void *) rx_descs[cur].buffer_address,
 						ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {
 				goto drop_pack;
 			}
 
+			new_skb = skb_alloc(E1000_MAX_RX_LEN);
+			if (!new_skb) {
+				goto drop_pack;
+			}
+
 			skb = rx_skbs[cur];
-			assert (skb);
+			rx_skbs[cur] = new_skb;
+			rx_descs[cur].buffer_address = (uint32_t) new_skb->mac.raw;
+			assert(skb);
 
-			rx_skbs[cur] = skb_alloc(E1000_MAX_RX_LEN);
-			if (rx_skbs[cur] == NULL)
-				panic("Can't allocate rx_skbs %d", cur);
-			rx_descs[cur].buffer_address = (uint32_t) rx_skbs[cur]->mac.raw;
-
-			len = rx_descs[cur].length - E1000_RX_CHECKSUM_LEN;
 			skb = skb_realloc(len, skb);
 			if (!skb) {
 				goto drop_pack;
 			}
-
 			skb->dev = dev;
 			netif_rx(skb);
 drop_pack:
@@ -290,11 +288,11 @@ static int e1000_open(struct net_device *dev) {
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
 	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
-	        struct sk_buff *skb;
-		skb = skb_alloc(E1000_MAX_RX_LEN);
-		if (skb == NULL)
-			panic("Can't allocate skb %d", i);
-		rx_skbs[i]= skb;
+	        struct sk_buff *skb = skb_alloc(E1000_MAX_RX_LEN);
+		if (skb == NULL) {
+			return -ENOMEM;
+		}
+		rx_skbs[i] = skb;
 		rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
 	}
 
