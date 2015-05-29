@@ -12,12 +12,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include <fs/fsop.h>
-#include <fs/file_system.h>
 #include <fs/mount.h>
-#include <fs/node.h>
-#include <fs/vfs.h>
-#include <fs/fs_driver.h>
 
 #include <embox/block_dev.h>
 
@@ -27,7 +22,7 @@ static void print_usage(void) {
 	printf("Usage: mount [-h] [-t fstype] dev dir\n");
 }
 
-static void lookup_mounts(struct mount_descriptor *parent) {
+/* static void lookup_mounts(struct mount_descriptor *parent) {
 	struct mount_descriptor *desc;
 	char mount_path[PATH_MAX];
 	struct path path;
@@ -52,7 +47,7 @@ static void show_mount_list(void) {
 	if (NULL != (mount_list = mount_table())) {
 		lookup_mounts(mount_list);
 	}
-}
+} */
 
 int main(int argc, char **argv) {
 	int opt;
@@ -102,7 +97,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	show_mount_list();
+	//show_mount_list();
 
 	return 0;
 }
