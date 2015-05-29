@@ -57,6 +57,10 @@ PCI_DRIVER_TABLE("e1000", e1000_init, e1000_id_table);
 /** Size of each I/O buffer per descriptor. */
 #define E1000_IOBUF_SIZE 2048
 
+#define E1000_RX_CHECKSUM_LEN 4
+
+#define E1000_MAX_RX_LEN (ETH_FRAME_LEN + E1000_RX_CHECKSUM_LEN)
+
 struct e1000_priv {
 	struct sk_buff_head txing_queue;
 	struct sk_buff_head tx_dev_queue;
@@ -182,12 +186,12 @@ static void e1000_rx(struct net_device *dev) {
 		cur = (1 + tail) % E1000_RXDESC_NR;
 
 		while (cur != head) {
+			int len;
 
 			if (!(rx_descs[cur].status)) {
 				break;
 			}
 
-			//len = rx_descs[cur].length - 4; /* checksum */
 
 			if (0 != nf_test_raw(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, (void *) rx_descs[cur].buffer_address,
 						ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {
@@ -197,16 +201,19 @@ static void e1000_rx(struct net_device *dev) {
 			skb = rx_skbs[cur];
 			assert (skb);
 
-			rx_skbs[cur]= skb_alloc(ETH_FRAME_LEN);
+			rx_skbs[cur] = skb_alloc(E1000_MAX_RX_LEN);
 			if (rx_skbs[cur] == NULL)
 				panic("Can't allocate rx_skbs %d", cur);
 			rx_descs[cur].buffer_address = (uint32_t) rx_skbs[cur]->mac.raw;
 
+			len = rx_descs[cur].length - E1000_RX_CHECKSUM_LEN;
+			skb = skb_realloc(len, skb);
+			if (!skb) {
+				goto drop_pack;
+			}
 
 			skb->dev = dev;
 			netif_rx(skb);
-
-
 drop_pack:
 			tail = cur;
 
@@ -284,7 +291,7 @@ static int e1000_open(struct net_device *dev) {
 
 	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
 	        struct sk_buff *skb;
-		skb = skb_alloc(ETH_FRAME_LEN);
+		skb = skb_alloc(E1000_MAX_RX_LEN);
 		if (skb == NULL)
 			panic("Can't allocate skb %d", i);
 		rx_skbs[i]= skb;
