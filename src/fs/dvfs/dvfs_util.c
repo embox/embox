@@ -31,7 +31,7 @@ POOL_DEF(mnt_pool, struct dvfsmnt, MNT_POOL_SIZE);
  * @return Pointer to the new inode
  * @retval NULL inode could not be allocated
  */
-struct inode *dvfs_default_alloc_inode(struct super_block *sb) {
+struct inode *dvfs_alloc_inode(struct super_block *sb) {
 	struct inode *inode;
 	if (!sb)
 		return NULL;
@@ -94,19 +94,6 @@ struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *
 		drv->fill_sb(sb, dev);
 
 	return sb;
-}
-
-/* @brief Try to allocate inode using given superblock
- * @param sb Given superlblock
- *
- * @return Pointer to the new inode
- * @retval NULL inode could not be allocated
- */
-struct inode *dvfs_alloc_inode(struct super_block *sb) {
-	if (sb->sb_ops && sb->sb_ops->alloc_inode)
-		return sb->sb_ops->alloc_inode(sb);
-	else
-		return dvfs_default_alloc_inode(sb);
 }
 
 extern int dvfs_default_destroy_inode(struct inode *);
