@@ -59,6 +59,8 @@ PCI_DRIVER_TABLE("e1000", e1000_init, e1000_id_table);
 
 #define E1000_MAX_RX_LEN (ETH_FRAME_LEN + E1000_RX_CHECKSUM_LEN)
 
+static int e1000_stop(struct net_device *dev);
+
 struct e1000_rx_desc {
 	uint32_t buffer_address;
 	uint32_t buffer_address_h;
@@ -295,15 +297,15 @@ static int e1000_open(struct net_device *dev) {
 	mdelay(MDELAY);
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
-	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
+	for (int i = 0; i < E1000_RXDESC_NR; i ++) {
 	        struct sk_buff *skb = skb_alloc(E1000_MAX_RX_LEN);
 		if (skb == NULL) {
+			e1000_stop(dev);
 			return -ENOMEM;
 		}
 		nic_priv->rx_skbs[i] = skb;
 		nic_priv->rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
 	}
-
 
 	mdelay(MDELAY);
 	REG_STORE(e1000_reg(dev, E1000_REG_RDBAL), (uint32_t) nic_priv->rx_descs);
@@ -332,7 +334,17 @@ static int e1000_open(struct net_device *dev) {
 	return ENOERR;
 }
 
-static int stop(struct net_device *dev) {
+static int e1000_stop(struct net_device *dev) {
+	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+
+	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
+	mdelay(MDELAY);
+
+	for (int i = 0; i < E1000_RXDESC_NR; i ++) {
+		skb_free(nic_priv->rx_skbs[i]);
+		nic_priv->rx_skbs[i] = NULL;
+	}
+
 	return ENOERR;
 }
 
@@ -353,7 +365,7 @@ static int set_mac_address(struct net_device *dev, const void *addr) {
 static const struct net_driver _drv_ops = {
 	.xmit = xmit,
 	.start = e1000_open,
-	.stop = stop,
+	.stop = e1000_stop,
 	.set_macaddr = set_mac_address
 };
 
