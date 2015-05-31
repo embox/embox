@@ -3,6 +3,7 @@
  * @brief
  *
  * @author  Alex Kalmuk
+ * @author  Vita Loginova
  * @date    19.05.2015
  */
 
@@ -21,6 +22,11 @@
 static int16_t x_values[ACC_ARRAY_SIZE];
 static int16_t y_values[ACC_ARRAY_SIZE];
 
+#define g 9.80665f
+#define PI 3.14159265358979f
+
+static float gyro_offset[3], acc_offset[3];
+
 static void stm32f3_delay(void) {
 	size_t i = 0;
 
@@ -37,6 +43,48 @@ static void init_leds(void) {
 	BSP_LED_Init(LED10);
 	BSP_LED_Init(LED8);
 	BSP_LED_Init(LED6);
+}
+
+
+/* mm/s^2 */
+static void acc_data_normalize(int16_t *in, float *out) {
+	for (int i = 0; i < 3; i++)
+		out[i] = (in[i] / 16) * g;
+}
+
+/* mrad/s */
+static void gyro_data_normalize(float *in, float *out) {
+	for (int i = 0; i < 3; i++)
+		out[i] = in[i] * 8.75f / 360 * 2 * PI;
+}
+
+static void gyro_calculate_offset(){
+	float eps = 0.2;
+
+	for (int  i= 0; i < 1000; i++) {
+		float gyro[3] = {0};
+		BSP_GYRO_GetXYZ(gyro);
+
+		for (int j = 0; j < 3; j++)
+			gyro_offset[j] = (1 - eps)*gyro_offset[j] + eps*gyro[j];
+	}
+	gyro_data_normalize(gyro_offset, gyro_offset);
+}
+
+static void acc_calculate_offset(){
+	int16_t temp[3] = {0};
+	float eps = 0.2;
+
+	for (int i=0; i<1000; i++){
+		int16_t acc[3] = {0};
+		BSP_ACCELERO_GetXYZ(acc);
+
+		for (int j = 0; j < 3; j++)
+			temp[j] = (1 - eps) * temp[j] + eps*acc[j];
+	}
+
+	acc_data_normalize(temp, acc_offset);
+	acc_offset[2] -= g*1000;
 }
 
 static void acc_test(void) {
@@ -86,7 +134,11 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 
-	BSP_LED_On(LED3);
+	gyro_calculate_offset();
+	acc_calculate_offset();
+
+	/* Sensors are initialized */
+	BSP_LED_On(LED10);
 
 	acc_test();
 	gyro_test();
