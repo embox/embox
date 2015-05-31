@@ -27,8 +27,6 @@ POOL_DEF(cdc_classes, struct usb_class_cdc, USB_CDC_MAX_DEVS);
 static char cdc_conf[16];
 
 #define INTERFACE_DESC_OFFSET          (sizeof (struct usb_desc_configuration))
-#define FUNC_DESC_OFFSET               (INTERFACE_DESC_OFFSET + \
-                                           sizeof (struct usb_desc_interface))
 #define CS_INTERFACE                   0x24
 
 /* Configuration */
@@ -40,8 +38,8 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg);
 static void cdc_next_conf(struct usb_dev *dev);
 
 /* Endpoint */
-static size_t cdc_skip_func_descs(void *start);
-static size_t cdc_skip_endpoints(void *start);
+static size_t cdc_skip_func_descs(char *start);
+static size_t cdc_skip_endpoints(char *start);
 static void cdc_get_endpoints(struct usb_dev *dev, struct usb_class_cdc *cdc);
 
 /* Misc */
@@ -54,11 +52,8 @@ static int is_rndis(struct usb_desc_interface *desc);
  *  Ethernet Control Model Devices) Section 5
  * XXX skip is a default action now, but it is possible to redefine this behavior
  */
-static size_t cdc_skip_func_descs(void *start) {
-	uint8_t *cur, *func_desc_start;
-
-	func_desc_start = start;
-	cur = func_desc_start;
+static size_t cdc_skip_func_descs(char *start) {
+	char *cur = start;
 
 	while (1) {
 		uint8_t len, type;
@@ -72,18 +67,15 @@ static size_t cdc_skip_func_descs(void *start) {
 		}
 	}
 
-	return (cur - func_desc_start);
+	return (cur - start);
 }
 
 /*
  * @see ecm120.pdf (Subclass Specification for
  *  Ethernet Control Model Devices) Section 5
  */
-static size_t cdc_skip_endpoints(void *start) {
-	uint8_t *cur, *func_desc_start;
-
-	func_desc_start = start;
-	cur = func_desc_start;
+static size_t cdc_skip_endpoints(char *start) {
+	char *cur = start;
 
 	while (1) {
 		uint8_t len, type;
@@ -97,7 +89,7 @@ static size_t cdc_skip_endpoints(void *start) {
 		}
 	}
 
-	return (cur - func_desc_start);
+	return (cur - start);
 }
 
 struct usb_desc_interface *cdc_get_interface(
@@ -148,6 +140,7 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg) {
 	/* Check if the first interface is one of Microsoft's pet,
 	 * and if so then try to skip it. */
 	if (is_rndis(iface)) {
+		printk("%s\n", "CDC: RNDIS detected");
 		sysfree(cdc->getconf);
 		cdc_next_conf(dev);
 		return;
@@ -196,6 +189,10 @@ static void cdc_get_conf_content_hnd(struct usb_request *req, void *arg) {
 	c = (struct usb_desc_configuration*) cdc_conf;
 
 	cdc->getconf = sysmalloc(c->w_total_length);
+	if (!cdc->getconf) {
+		printk("%s\n", "CDC: sysmalloc failed on storage for cdc->getconf allocation");
+		return;
+	}
 
 	cdc_get_conf(dev, cdc,
 		(USB_DESC_TYPE_CONFIG << 8) | cdc->current_conf,

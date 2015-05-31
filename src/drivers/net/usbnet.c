@@ -8,11 +8,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
-
 #include <util/math.h>
 
 #include <net/l2/ethernet.h>
-#include <net/l3/arp.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
@@ -45,8 +43,11 @@ static int usbnet_xmit(struct net_device *dev, struct sk_buff *skb);
 
 struct usbnet_priv {
 	struct usb_dev *usbdev;
+	/* Storage for incoming packet */
 	char *data;
+	/* Current position in packet */
 	char *pdata;
+	/* Timer for polling */
 	struct sys_timer timer;
 };
 
@@ -62,6 +63,7 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 	struct usbnet_priv *nic_priv = (struct usbnet_priv *) nic->priv;
 
 	in_endp = nic_priv->usbdev->endpoints[2];
+	assert(in_endp);
 
 	switch(req->req_stat) {
 	case USB_REQ_NOERR:
@@ -77,7 +79,7 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 		struct sk_buff *skb;
 		size_t len;
 
-		len = nic_priv->pdata - (char *) nic_priv->data;
+		len = nic_priv->pdata - nic_priv->data;
 		if ((skb = skb_alloc(len))) {
 			memcpy(skb->mac.raw, nic_priv->data, len);
 			skb->dev = nic;
@@ -103,6 +105,7 @@ static void usbnet_timer_handler(struct sys_timer *tmr, void *param) {
 	struct usbnet_priv *nic_priv = (struct usbnet_priv *) param;
 
 	in_endp = nic_priv->usbdev->endpoints[2];
+	assert(in_endp);
 
 	usb_endp_bulk(in_endp, usbnet_rcv_notify, nic_priv->pdata,
 			in_endp->max_packet_size);
@@ -118,6 +121,7 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
 	int res;
 
+	/* Enable in/out DATA interface */
 	cdc_set_interface(dev, 1, 1, usbnet_iface_hnd);
 
 	nic = (struct net_device *) etherdev_alloc(sizeof *nic_priv);
@@ -130,22 +134,28 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 	nic_priv->data = nic_priv->pdata = sysmalloc(ETH_FRAME_LEN);
 	if (!nic_priv->data) {
 		etherdev_free(nic);
-		return -1;
+		return -ENOMEM;
 	}
 
 	cdc->privdata = (void *) nic;
 
 	res = inetdev_register_dev(nic);
 	if (res < 0) {
-		sysfree(nic_priv->data);
-		etherdev_free(nic);
-		return res;
+		goto err_out;
 	}
 
-    res = timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
+    timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
             USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
+	if (res < 0) {
+		goto err_out;
+	}
 
-    return res;
+    return 0;
+
+err_out:
+	sysfree(nic_priv->data);
+	etherdev_free(nic);
+	return res;
 }
 
 static void usbnet_disconnect(struct usb_dev *dev, void *data) {
