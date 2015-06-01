@@ -9,6 +9,7 @@ module dvfs extends fs_api {
 	option number dentry_pool_size=64
 	option number file_pool_size=64
 	option number mnt_pool_size=4
+	option boolean use_dcache=false
 
 	source "dvfs.c"
 	source "dvfs_dentry.c"

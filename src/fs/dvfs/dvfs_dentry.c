@@ -12,9 +12,12 @@
 #include <string.h>
 
 #include <embox/block_dev.h>
+#include <framework/mod/options.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
+
+#define DCACHE_ENABLED OPTION_GET(BOOLEAN, use_dcache)
 
 extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *, struct dentry *);
