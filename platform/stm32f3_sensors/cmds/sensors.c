@@ -20,6 +20,8 @@
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 
+#include <kalman_filter.h>
+
 #define ACC_ARRAY_SIZE 2048
 
 static int16_t x_values[ACC_ARRAY_SIZE];
@@ -32,6 +34,8 @@ static float gyro_offset[3], acc_offset[3];
 static float angles[3];
 static float speed = 0;
 static int inited = 0;
+
+static struct kalman_filter kalman[3];
 
 static void stm32f3_delay(void) {
 	size_t i = 0;
@@ -110,6 +114,9 @@ void update_angles(float *acc, float *gyro, float dt) {
 		angles[0] = roll;
 		angles[1] = pitch;
 
+		kalman_filter_init(&kalman[0], roll);
+		kalman_filter_init(&kalman[1], pitch);
+
 		inited = 1;
 		return;
 	}
@@ -117,6 +124,9 @@ void update_angles(float *acc, float *gyro, float dt) {
 	/* complementary filter */
 	angles[0] = (1 - eps) * (angles[0] + gyro[0]/1000 * dt) + eps * roll;
 	angles[1] = (1 - eps) * (angles[1] + gyro[1]/1000 * dt) + eps * pitch;
+
+	kalman_filter_iterate(&kalman[0], roll, gyro[0]/1000, dt);
+	kalman_filter_iterate(&kalman[1], pitch, gyro[1]/1000, dt);
 }
 
 static void speed_test(void) {
@@ -143,7 +153,7 @@ static void speed_test(void) {
 
 		update_angles(acc, gyro, dt);
 
-		compensation = 1000 * sin(angles[1]) * g;
+		compensation = 1000 * sin(kalman[1].value) * g;
 		update_speed(acc[0] - compensation, dt);
 
 		if (speed > 50) {
