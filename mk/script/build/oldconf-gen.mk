@@ -64,7 +64,7 @@ $(config_lds_h) :
 $(AUTOCONF_DIR)/start_script.inc: $(CONF_DIR)/start_script.inc
 	@$(call cmd_notouch_stdout,$@,cat $<)
 
--include $(addsuffix .d,$(build_mk) $(config_h) $(config_lds_h))
+-include $(addsuffix .d,$(build_mk) $(config_lds_h))
 
 %/. :
 	@$(MKDIR) $*
