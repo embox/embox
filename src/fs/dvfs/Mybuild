@@ -11,8 +11,9 @@ module dvfs extends fs_api {
 	option number mnt_pool_size=4
 
 	source "dvfs.c"
-	source "dvfs_util.c"
+	source "dvfs_dentry.c"
 	source "dvfs_idesc_ops.c"
+	source "dvfs_util.c"
 
 	depends path_helper
 	depends rootfs_dvfs
