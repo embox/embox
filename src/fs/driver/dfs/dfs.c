@@ -67,6 +67,9 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	int head = offset & 0x7;
 	assert(buff);
 
+	for (i = offset; i < offset + len; i++)
+		bitmap_clear_bit(dfs_free_pages, i);
+
 	if (head) {
 		offset -= head;
 		_read(offset, b, NAND_PAGE_SIZE);
@@ -123,13 +126,26 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	struct dfs_sb_info *sbi;
 	int buff_bk;
 	int bk;
-	int err;
+	int err, i;
 
 	assert(buff);
 
 	sbi = dfs_sb()->sb_data;
 	buff_bk = sbi->buff_bk;
 	pos %= NAND_BLOCK_SIZE;
+
+	/* Check if we do need buffering */
+	err = 0;
+	for (i = pos; i < pos + size; i++)
+		if (!bitmap_test_bit(dfs_free_pages, i)) {
+			err = -1;
+			break;
+		}
+
+	if (!err) {
+		_write(pos, buff, size);
+		return size;
+	}
 
 	_erase(buff_bk);
 	_copy(buff_bk * NAND_BLOCK_SIZE, start_bk * NAND_BLOCK_SIZE, pos);
@@ -174,7 +190,7 @@ int dfs_format(void) {
 		.inode_count = 0,
 		.max_inode_count = DFS_INODES_MAX,
 		.buff_bk = 2,
-		.max_file_size = 136,
+		.max_file_size = 2048 / NAND_PAGE_SIZE,
 		.free_space = _capacity(sizeof(struct dfs_sb_info)) +
 		              DFS_INODES_MAX * _capacity(sizeof(struct dfs_dir_entry)),
 	};
@@ -278,7 +294,7 @@ static int dfs_icreate(struct inode *i_new,
 		return -ENOMEM;
 
 	dirent.pos_start = sbi->free_space;
-	dirent.len = 136; /* XXX */
+	dirent.len = 2048 / NAND_PAGE_SIZE; /* XXX */
 	strcpy(dirent.name, i_new->i_dentry->name);
 	dfs_write_dirent(sbi->inode_count, &dirent);
 
@@ -360,13 +376,18 @@ static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	return 0;
 }
 
-static int dfs_pathname(struct inode *inode, char *buf) {
+static int dfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct dfs_dir_entry dirent;
 
 	assert(inode);
 
-	dfs_read_dirent(inode->i_no, &dirent);
-	strcpy(buf, dirent.name);
+	if (flags & DVFS_NAME) {
+		dfs_read_dirent(inode->i_no, &dirent);
+		strcpy(buf, dirent.name);
+	} else {
+		*buf = '/';
+		strcpy(buf + 1, dirent.name);
+	}
 
 	return 0;
 }
@@ -447,6 +468,8 @@ struct super_block *dfs_sb(void) {
 
 extern struct flash_dev stm32_flash;
 static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
+	int i;
+
 	dfs_super = sb;
 	*sb = (struct super_block) {
 		.fs_drv     = &dfs_dumb_driver,
@@ -463,6 +486,9 @@ static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 
 	dfs_set_dev(&stm32_flash);
 	dfs_read_sb_info(dfs_sb()->sb_data);
+
+	for (i = 0; i < NAND_PAGES_MAX; i++)
+		bitmap_clear_bit(dfs_free_pages, i);
 
 	return 0;
 }

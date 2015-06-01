@@ -46,23 +46,12 @@ module setup_tty_diag extends setup_tty_api {
 	depends diag_fd
 }
 
-@DefaultImpl(diag_fd_old)
-abstract module diag_fd {
-}
-
-module diag_fd_old extends diag_fd {
+module diag_fd {
 	source "diag_fd.c"
 
 	depends embox.compat.posix.idx.dup
 	depends embox.fs.idesc
 	depends embox.kernel.task.api
-}
-
-module diag_fd_dvfs extends diag_fd {
-	source "diag_fd_dvfs.c"
-	depends embox.kernel.task.api
-	depends embox.kernel.task.resource.file_table
-	depends embox.compat.posix.idx.dup
 }
 
 module start_script {

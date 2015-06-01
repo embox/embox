@@ -13,5 +13,5 @@ static module all {
 	@NoRuntime depends embox.compat.libc.wchar
 
 	depends embox.mem.heap_api
-	depends embox.fs.syslib.file_system_full
+	//depends embox.fs.syslib.file_system_full
 }

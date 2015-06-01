@@ -38,6 +38,8 @@ static module select {
 static module dup {
 	source "dup.c"
 
+	depends embox.compat.posix.fs.close
+	depends embox.compat.posix.fs.fcntl
 	depends embox.kernel.task.api
 }
 

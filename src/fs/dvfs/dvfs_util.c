@@ -31,7 +31,7 @@ POOL_DEF(mnt_pool, struct dvfsmnt, MNT_POOL_SIZE);
  * @return Pointer to the new inode
  * @retval NULL inode could not be allocated
  */
-struct inode *dvfs_default_alloc_inode(struct super_block *sb) {
+struct inode *dvfs_alloc_inode(struct super_block *sb) {
 	struct inode *inode;
 	if (!sb)
 		return NULL;
@@ -59,10 +59,11 @@ int dvfs_default_destroy_inode(struct inode *inode) {
 /* @brief Try to resolve pathname according to the dentry
  * @param inode The inode which is to be path-resolved
  * @param buf   Buffer for the path
+ * @param flags Used to figure out pathname format, see dvfs_pathname doc
  *
  * @retval 0 Ok
  */
-int dvfs_default_pathname(struct inode *inode, char *buf) {
+int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
 	assert(inode);
 	if (inode->i_dentry)
 		strcpy(buf, inode->i_dentry->name);
@@ -95,19 +96,6 @@ struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *
 	return sb;
 }
 
-/* @brief Try to allocate inode using given superblock
- * @param sb Given superlblock
- *
- * @return Pointer to the new inode
- * @retval NULL inode could not be allocated
- */
-struct inode *dvfs_alloc_inode(struct super_block *sb) {
-	if (sb->sb_ops && sb->sb_ops->alloc_inode)
-		return sb->sb_ops->alloc_inode(sb);
-	else
-		return dvfs_default_alloc_inode(sb);
-}
-
 extern int dvfs_default_destroy_inode(struct inode *);
 /* @brief Try to destroy the inode
  * @param inode Pointer to the inode to be destroyed
@@ -123,10 +111,14 @@ int dvfs_destroy_inode(struct inode *inode) {
 
 	if (inode->i_sb && inode->i_sb->sb_ops &&
 	    inode->i_sb->sb_ops->destroy_inode)
-		return inode->i_sb->sb_ops->destroy_inode(inode);
-	else
-		return dvfs_default_destroy_inode(inode);
+		inode->i_sb->sb_ops->destroy_inode(inode);
+	return dvfs_default_destroy_inode(inode);
 }
+
+/**
+* @brief Double-linked list of all dentries
+*/
+static DLIST_DEFINE(dentry_dlist);
 
 /* @brief Get new dentry from pool
  *
@@ -134,10 +126,28 @@ int dvfs_destroy_inode(struct inode *inode) {
  * @retval NULL Pool is full
  */
 struct dentry *dvfs_alloc_dentry(void) {
-	struct dentry *d = pool_alloc(&dentry_pool);
-	if (d)
-		memset(d, 0, sizeof(struct dentry));
-	return d;
+	struct dentry *dentry = pool_alloc(&dentry_pool);
+	struct dentry *temp = NULL;;
+	if (!dentry) {
+		/* Freeing unused dentries */
+		dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
+			if (dentry->usage_count == 0) {
+				temp = dentry;
+				break;
+			}
+		}
+		if (temp) {
+			dvfs_destroy_dentry(temp);
+			dentry = pool_alloc(&dentry_pool);
+		} else
+			return NULL;
+	}
+
+	memset(dentry, 0, sizeof(struct dentry));
+	dlist_head_init(&dentry->d_lnk);
+	dlist_add_next(&dentry->d_lnk, &dentry_dlist);
+	dlist_init(&dentry->children);
+	return dentry;
 }
 
 /* @brief Remove dentry from pool
@@ -148,10 +158,24 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 		if (dentry->d_inode)
 			dvfs_destroy_inode(dentry->d_inode);
 		dentry->parent->usage_count--;
+		dlist_del(&dentry->children_lnk);
+		dlist_del(&dentry->d_lnk);
 		pool_free(&dentry_pool, dentry);
 		return 0;
 	} else
 		return -1;
+}
+
+/**
+ * @brief Update dentry flags according to it's inode content
+ *
+ * @param dentry Pointer to dentry to be updated
+ */
+void dentry_upd_flags(struct dentry *dentry) {
+	if (dentry->d_inode) {
+		if (dentry->d_inode->flags & O_DIRECTORY)
+			dentry->flags |= O_DIRECTORY;
+	}
 }
 
 /* @brief Get new file descriptor from pool
@@ -184,6 +208,8 @@ int inode_fill(struct super_block *sb, struct inode *inode,
 		.i_ops     = sb ? sb->sb_iops : NULL,
 		.start_pos = inode->start_pos,
 		.i_no      = inode->i_no,
+		.i_data    = inode->i_data,
+		.flags     = inode->flags,
 	};
 
 	return 0;
@@ -202,6 +228,7 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 		.d_sb    = sb,
 		.d_ops   = sb ? sb->sb_dops : NULL,
 		.parent  = parent,
+		.d_lnk   = dentry->d_lnk
 	};
 
 	inode->i_dentry = dentry;
@@ -251,7 +278,7 @@ int dvfs_update_root(void) {
 	global_root->d_sb->root = global_root;
 
 	dlist_init(&global_root->children);
-	dlist_head_init(&global_root->children_lnk);
+	dlist_init(&global_root->children_lnk);
 	return 0;
 }
 
@@ -266,3 +293,28 @@ struct dentry *dvfs_root(void) {
 	return global_root;
 }
 
+
+/**
+* @brief Check if element with given name presents as a subelement
+*        of the folder in RAM.
+*
+* @param parent
+* @param name
+*
+* @return Pointer to dentry if found or NULL if not
+*/
+struct dentry *local_lookup(struct dentry *parent, char *name) {
+	struct dentry *d;
+	struct dlist_head *l;
+
+	dlist_foreach(l, &parent->children) {
+		if (l == &parent->children)
+			continue;
+		d = mcast_out(l, struct dentry, children_lnk);
+
+		if (!strcmp(d->name, name))
+			return d;
+	}
+
+	return NULL;
+}

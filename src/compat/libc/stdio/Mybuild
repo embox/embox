@@ -29,6 +29,7 @@ static module open {
 	source "fopen.c"
 	depends file_pool
 	depends embox.compat.posix.fs.open
+	depends embox.compat.posix.fs.close
 	@NoRuntime depends embox.compat.libc.str
 }
 
@@ -52,8 +53,13 @@ static module file_ops {
 
 	source "funopen.c"
 	source "fileno.c"
+
 	source "fread.c"
+	depends embox.compat.posix.fs.read
+
 	source "fwrite.c"
+	depends embox.compat.posix.fs.write
+
 	source "fioctl.c"
 	source "fflush.c"
 	source "fclose.c"

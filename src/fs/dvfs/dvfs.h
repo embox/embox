@@ -8,6 +8,7 @@
 #define _DVFS_H_
 
 #include <embox/block_dev.h>
+#include <fs/idesc.h>
 #include <fs/file_system.h>
 #include <util/dlist.h>
 
@@ -15,8 +16,12 @@
  New VFS prototype
  *****************/
 
-#define DENTRY_NAME_LEN 16
+#define DENTRY_NAME_LEN 36
 #define FS_NAME_LEN     16
+
+#define DVFS_PATH_FULL  0x01
+#define DVFS_PATH_FS    0x02
+#define DVFS_NAME       0x04
 
 struct dentry;
 struct dir_ctx;
@@ -67,7 +72,7 @@ struct inode_operations {
 	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
 	int           (*rmdir)(struct dentry *dir);
 	int           (*truncate)(struct inode *inode, size_t len);
-	int           (*pathname)(struct inode *inode, char *buf);
+	int           (*pathname)(struct inode *inode, char *buf, int flags);
 	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
 };
 
@@ -81,9 +86,10 @@ struct dentry {
 	struct super_block *d_sb;
 
 	struct dentry     *parent;
-	struct dlist_head next;     /* Next element in this directory */
 	struct dlist_head children; /* Subelements of directory */
 	struct dlist_head children_lnk;
+
+	struct dlist_head d_lnk;   /* List for all dentries in system */
 
 	struct dentry_operations *d_ops;
 };
@@ -93,6 +99,8 @@ struct dentry_operations {
 };
 
 struct file {
+	struct idesc f_idesc;
+
 	struct dentry *f_dentry;
 	struct inode  *f_inode;
 
@@ -158,7 +166,7 @@ extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
-extern int dvfs_pathname(struct inode *inode, char *buf);
+extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 
 extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev);
 

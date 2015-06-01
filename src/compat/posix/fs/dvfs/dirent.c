@@ -82,7 +82,6 @@ struct dirent *readdir(DIR *dir) {
 	};
 
 	if (prev) {
-		prev->usage_count--;
 		dvfs_destroy_dentry(prev);
 	}
 

@@ -10,7 +10,7 @@ module fs_full extends file {
 	source "kfile_node.c"
 
 	depends embox.compat.libc.assert
-
+	depends embox.fs.core
 	depends embox.fs.file_desc
 	depends embox.security.api
 

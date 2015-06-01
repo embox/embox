@@ -19,9 +19,7 @@ import embox.compat.posix.LibPosix
 module mount {
 	source "mount.c"
 
-	depends embox.compat.libc.all
+	depends embox.compat.libc.stdio.printf
 	depends embox.compat.posix.util.getopt
-	depends embox.fs.core
-	depends embox.framework.LibFramework
-	depends embox.fs.filesystem
+	depends embox.fs.fs_api
 }

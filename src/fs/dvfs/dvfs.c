@@ -12,7 +12,7 @@
 #include <embox/block_dev.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
-#include <kernel/task/resource/file_table.h>
+#include <kernel/task/resource/vfs.h>
 
 /* Utility functions */
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
@@ -22,25 +22,32 @@ extern int            dvfs_update_root(void);
 extern struct dentry *dvfs_root(void);
 
 /* Default handlers */
-extern int           dvfs_default_pathname(struct inode *inode, char *buf);
+extern int           dvfs_default_pathname(struct inode *inode, char *buf, int flags);
 
 /* Path-related functions */
 
 /* @brief Get the full path to the inode from task's root dentry
  * @param inode The inode of which the path is to be resolved
  * @param buf   Char buffer where path would be put
+ * @param flags Used to determine how pathname should be formed
+ *                  DVFS_PATH_FULL will result in pathname from process root
+ *                  DVFS_PATH_FS   will result in pathname within given fs
+ *                  DVFS_NAME      will result in file name
  *
  * @retval  0 Success
  * @retval -1 Error
  */
-int dvfs_pathname(struct inode *inode, char *buf) {
+int dvfs_pathname(struct inode *inode, char *buf, int flags) {
 	assert(inode);
 	assert(buf);
 
+	if (flags == 0)
+		flags = DVFS_NAME;
+
 	if (inode->i_ops && inode->i_ops->pathname)
-		return inode->i_ops->pathname(inode, buf);
+		return inode->i_ops->pathname(inode, buf, flags);
 	else
-		return dvfs_default_pathname(inode, buf);
+		return dvfs_default_pathname(inode, buf, flags);
 }
 
 /* @brief Get the length of next element int the path
@@ -53,14 +60,13 @@ int dvfs_path_next_len(const char *path) {
 	int len = strlen(path);
 	int off = 0;
 
-	while (path[off] == '/')
-		off++;
-
 	while ((path[off] != '/') && (off < len))
 		off++;
 
 	return off;
 }
+
+extern struct dentry *local_lookup(struct dentry *parent, char *name);
 
 /* @brief Resolve one more element in the path
  * @param path   Pointer to relative path
@@ -74,7 +80,7 @@ int dvfs_path_next_len(const char *path) {
 int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
 	char buff[DENTRY_NAME_LEN];
 	struct inode *in;
-	int len = dvfs_path_next_len(path);
+	int len;
 	struct dentry *d;
 	assert(parent);
 	assert(path);
@@ -82,6 +88,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	while (*path == '/')
 		path++;
 
+	len = dvfs_path_next_len(path);
 	memcpy(buff, path, len);
 	buff[len] = '\0';
 
@@ -93,6 +100,9 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return 0;
 	}
 
+	if ((d = local_lookup(parent, buff)))
+		return dvfs_path_walk(path + strlen(buff), d, lookup);
+
 	if (strlen(buff) > 1 && path_is_double_dot(buff))
 		return dvfs_path_walk(path + 2, parent->parent, lookup);
 
@@ -100,11 +110,6 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return dvfs_path_walk(path + 2, parent, lookup);
 
 	/* TODO use cache instead */
-	dlist_foreach_entry(d, &parent->children, children_lnk) {
-		if (!strcmp(d->name, buff))
-			return dvfs_path_walk(path + strlen(buff), d, lookup);
-	}
-
 	assert(parent->d_sb);
 	assert(parent->d_sb->sb_iops);
 	assert(parent->d_sb->sb_iops->lookup);
@@ -189,6 +194,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	return res;
 }
 
+extern const struct idesc_ops idesc_file_ops;
 /* @brief Initialize file descriptor for usage according to path
  * @param path Path to the file
  * @param desc The file descriptor to be initailized
@@ -225,6 +231,10 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 		.f_dentry = lookup.item,
 		.f_inode  = i_no,
 		.f_ops    = lookup.item->d_sb->sb_fops,
+		.f_idesc  = {
+			.idesc_amode = FS_MAY_READ | FS_MAY_WRITE,
+			.idesc_ops   = &idesc_file_ops,
+		},
 	};
 
 	if (i_no == NULL || i_no->flags & O_DIRECTORY) {
@@ -400,6 +410,7 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 	return 0;
 }
 
+extern void dentry_upd_flags(struct dentry *dentry);
 /* @brief Get next entry in the directory
  * @param lookup  Contains directory dentry (.parent) and
  *                previous element (.item)
@@ -414,6 +425,8 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct inode *next_inode;
 	struct dentry *next_dentry = NULL;
 	int res;
+	struct dentry *d;
+	struct dlist_head *l;
 	assert(lookup);
 	assert(ctx);
 
@@ -434,13 +447,27 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	assert(sb && sb->sb_iops && sb->sb_iops->iterate);
 	res = sb->sb_iops->iterate(next_inode, parent_inode, ctx);
 	inode_fill(sb, next_inode, next_dentry);
+	dentry_upd_flags(next_dentry);
 
 	if (res) {
 		ctx->pos = 0;
 		dvfs_destroy_dentry(next_dentry);
 		next_dentry = NULL;
 	} else {
-		dvfs_pathname(next_inode, next_dentry->name);
+		dvfs_pathname(next_inode, next_dentry->name, 0);
+
+		dlist_foreach(l, &lookup->parent->children) {
+			if (l == &lookup->parent->children)
+				continue;
+			d = mcast_out(l, struct dentry, children_lnk);
+
+			if (d != next_dentry && !strcmp(d->name, next_dentry->name)) {
+				dvfs_destroy_dentry(next_dentry);
+				next_dentry = d;
+				break;
+			}
+		}
+
 		ctx->pos++;
 	}
 
@@ -449,3 +476,18 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	return 0;
 }
 
+/* Handle some calls of old vfs */
+#include <fs/mount.h>
+
+int mount(char *dev, char *dir, char *fs_type) {
+	struct block_dev *bdev;
+	if (dev) {
+		block_devs_init();
+		bdev = block_dev_find(dev);
+	}
+	return dvfs_mount(bdev, dir, fs_type, 0);
+}
+
+int umount(char *dir) {
+	return 0;
+}
