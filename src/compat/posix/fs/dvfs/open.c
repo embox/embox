@@ -9,7 +9,7 @@
 #include <fcntl.h>
 #include <fs/dvfs.h>
 #include <kernel/task.h>
-#include <kernel/task/resource/idesc_table.h>
+#include <kernel/task/idesc_table.h>
 
 int open(const char *path, int __oflag, ...) {
 	struct file *file;
