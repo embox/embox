@@ -10,3 +10,12 @@ module sensors {
 	depends third_party.bsp.st_f3.core
 }
 
+@AutoCmd
+@Cmd(name="motor_control", help="Periodically run motor right or left", man="")
+@BuildDepends(third_party.bsp.st_f3.core)
+@BuildDepends(third_party.bsp.st_f3.sensors)
+module motor_control {
+	source "motor_control.c"
+
+	depends third_party.bsp.st_f3.core
+}
