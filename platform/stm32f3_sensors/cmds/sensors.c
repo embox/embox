@@ -17,6 +17,9 @@
 #include <stm32f3_discovery_gyroscope.h>
 #include <stm32f3_discovery_accelerometer.h>
 
+#include <hal/clock.h>
+#include <kernel/time/time.h>
+
 #define ACC_ARRAY_SIZE 2048
 
 static int16_t x_values[ACC_ARRAY_SIZE];
@@ -26,6 +29,9 @@ static int16_t y_values[ACC_ARRAY_SIZE];
 #define PI 3.14159265358979f
 
 static float gyro_offset[3], acc_offset[3];
+static float angles[3];
+static float speed = 0;
+static int inited = 0;
 
 static void stm32f3_delay(void) {
 	size_t i = 0;
@@ -52,10 +58,108 @@ static void acc_data_normalize(int16_t *in, float *out) {
 		out[i] = (in[i] / 16) * g;
 }
 
+/* mm/s^2, without offset */
+static void acc_data_obtain(float *out) {
+	int16_t acc[3] = {0};
+	BSP_ACCELERO_GetXYZ(acc);
+	acc_data_normalize(acc, out);
+
+	for (int i = 0; i < 3; i++)
+		out[i] -= acc_offset[i];
+}
+
 /* mrad/s */
 static void gyro_data_normalize(float *in, float *out) {
 	for (int i = 0; i < 3; i++)
 		out[i] = in[i] * 8.75f / 360 * 2 * PI;
+}
+
+/* mrad/s, without offset */
+static void gyro_data_obtain(float *out) {
+	float gyro[3] = {0};
+	BSP_GYRO_GetXYZ(gyro);
+	gyro_data_normalize(gyro, out);
+
+	for (int i = 0; i < 3; i++)
+		out[i] -= gyro_offset[i];
+}
+
+/**
+ * speed in mm/s
+ * @param acceleration mm/s^2
+ * @param compensation mm/s^2
+ * @param dt           seconds
+ */
+static void update_speed(float acceleration, float dt) {
+	float eps = 0.2;
+	speed = (1 - eps) * speed + eps * (speed + acceleration * dt);
+}
+
+/**
+ * Update angles, output value in radians
+ * @param acc  mm/s^2
+ * @param gyro mrad/s
+ * @param dt   seconds
+ */
+void update_angles(float *acc, float *gyro, float dt) {
+	float eps = 0.07;
+	float roll  = atan2(acc[1], acc[2]);
+	float pitch = atan(-acc[0] / sqrt(acc[1] * acc[1] + acc[2] * acc[2]));
+
+	if (!inited) {
+		angles[0] = roll;
+		angles[1] = pitch;
+
+		inited = 1;
+		return;
+	}
+
+	/* complementary filter */
+	angles[0] = (1 - eps) * (angles[0] + gyro[0]/1000 * dt) + eps * roll;
+	angles[1] = (1 - eps) * (angles[1] + gyro[1]/1000 * dt) + eps * pitch;
+}
+
+static void speed_test(void) {
+	float acc[3] = {0};
+	float gyro[3] = {0};
+	int prev = 0;
+
+	while(1) {
+		time64_t current;
+		float dt, compensation;
+
+		BSP_LED_Off(LED3);
+		BSP_LED_Off(LED4);
+		BSP_LED_Off(LED5);
+		BSP_LED_Off(LED6);
+		BSP_LED_Off(LED7);
+
+		gyro_data_obtain(gyro);
+		acc_data_obtain(acc);
+
+		current = jiffies2ms(clock_sys_ticks());
+		dt = (current - prev) / 1000.0; /* seconds */
+		prev = current;
+
+		update_angles(acc, gyro, dt);
+
+		compensation = 1000 * sin(angles[1]) * g;
+		update_speed(acc[0] - compensation, dt);
+
+		if (speed > 50) {
+			BSP_LED_On(LED7);
+		} else if (speed > 10) {
+			BSP_LED_On(LED5);
+		} else if (speed < -50) {
+			BSP_LED_On(LED6);
+		} else if (speed < -10) {
+			BSP_LED_On(LED4);
+		} else {
+			BSP_LED_On(LED3);
+		}
+
+		stm32f3_delay();
+	}
 }
 
 static void gyro_calculate_offset(){
@@ -140,8 +244,7 @@ int main(int argc, char *argv[]) {
 	/* Sensors are initialized */
 	BSP_LED_On(LED10);
 
-	acc_test();
-	gyro_test();
+	speed_test();
 
 	return 0;
 }
