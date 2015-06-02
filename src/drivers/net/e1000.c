@@ -268,7 +268,7 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 }
 
 static int e1000_alloc_dma_rx(struct net_device *dev) {
-	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 
 	for (int i = 0; i < E1000_RXDESC_NR; ++i) {
 	        struct sk_buff *skb = skb_alloc(E1000_MAX_RX_LEN);
@@ -281,7 +281,7 @@ static int e1000_alloc_dma_rx(struct net_device *dev) {
 }
 
 static void e1000_free_dma_rx(struct net_device *dev) {
-	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 
 	for (int i = 0; i < E1000_RXDESC_NR; ++i) {
 		skb_free(nic_priv->rx_skbs[i]);
