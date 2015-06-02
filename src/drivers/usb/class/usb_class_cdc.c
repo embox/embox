@@ -38,59 +38,30 @@ static void cdc_get_conf_hnd(struct usb_request *req, void *arg);
 static void cdc_next_conf(struct usb_dev *dev);
 
 /* Endpoint */
-static size_t cdc_skip_func_descs(char *start);
-static size_t cdc_skip_endpoints(char *start);
 static void cdc_get_endpoints(struct usb_dev *dev, struct usb_class_cdc *cdc);
 
 /* Misc */
+static size_t cdc_skip_type(uint8_t *start, uint8_t skip_type);
 static int is_rndis(struct usb_desc_interface *desc);
 
+
 /**
- * Skip all functional descriptors.
- * Return size of all functional descriptors.
+ * Skip all functional descriptors or all endpoints.
+ * Return size of all skipped elements.
  * @see ecm120.pdf (Subclass Specification for
  *  Ethernet Control Model Devices) Section 5
- * XXX skip is a default action now, but it is possible to redefine this behavior
  */
-static size_t cdc_skip_func_descs(char *start) {
-	char *cur = start;
+static size_t cdc_skip_type(uint8_t *start, uint8_t skip_type) {
+	uint8_t *cur = start;
 
-	while (1) {
-		uint8_t len, type;
-
-		type = *(cur + 1);
-		if (type == CS_INTERFACE) {
-			len = *cur;
-			cur += len;
-		} else {
-			break;
-		}
+	while (cur[1] == skip_type) {
+		uint8_t len = *cur;
+		cur += len;
 	}
 
 	return (cur - start);
 }
 
-/*
- * @see ecm120.pdf (Subclass Specification for
- *  Ethernet Control Model Devices) Section 5
- */
-static size_t cdc_skip_endpoints(char *start) {
-	char *cur = start;
-
-	while (1) {
-		uint8_t len, type;
-
-		type = *(cur + 1);
-		if (type == USB_DESC_TYPE_ENDPOINT) {
-			len = *cur;
-			cur += len;
-		} else {
-			break;
-		}
-	}
-
-	return (cur - start);
-}
 
 struct usb_desc_interface *cdc_get_interface(
 		struct usb_desc_configuration *conf, size_t index) {
@@ -99,8 +70,8 @@ struct usb_desc_interface *cdc_get_interface(
 
 	while (cur != index) {
 		curp += sizeof (struct usb_desc_interface);
-		curp += cdc_skip_func_descs(curp);
-		curp += cdc_skip_endpoints(curp);
+		curp += cdc_skip_type((uint8_t*) curp, CS_INTERFACE);
+		curp += cdc_skip_type((uint8_t*) curp, USB_DESC_TYPE_ENDPOINT);
 		cur++;
 	}
 
@@ -121,7 +92,7 @@ static void cdc_get_endpoints(struct usb_dev *dev, struct usb_class_cdc *cdc) {
 	for (i = 0; i < conf->b_num_interfaces + 1; i++) {
 		iface = cdc_get_interface((struct usb_desc_configuration *) cdc->getconf, i);
 		endpoints = (char *) iface + sizeof (struct usb_desc_interface);
-		endpoints += cdc_skip_func_descs(endpoints);
+		endpoints += cdc_skip_type((uint8_t*)endpoints, CS_INTERFACE);
 
 		for (j = 0; j < iface->b_num_endpoints; j++) {
 			ep = (struct usb_desc_endpoint *) endpoints + j;
