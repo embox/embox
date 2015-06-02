@@ -18,6 +18,24 @@
 #include <kernel/task/resource/vfs.h>
 
 #define DCACHE_ENABLED OPTION_GET(BOOLEAN, use_dcache)
+#define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
+
+#if DCACHE_ENABLED
+#include <util/hashtable.h>
+
+static size_t get_dentry_hash(void *key) {
+	return (size_t) key;
+}
+
+static int cmp_dentries(void *key1, void *key2) {
+	return !(key1 == key2);
+}
+
+HASHTABLE_DEF(dentry_ht,
+		DENTRY_POOL_SIZE * sizeof(struct dentry *),
+		get_dentry_hash,
+		cmp_dentries);
+#endif
 
 extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *, struct dentry *);
