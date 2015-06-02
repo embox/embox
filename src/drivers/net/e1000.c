@@ -260,8 +260,35 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
+static int e1000_alloc_dma_rx(struct net_device *dev) {
+	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+
+	for (int i = 0; i < E1000_RXDESC_NR; ++i) {
+	        struct sk_buff *skb = skb_alloc(E1000_MAX_RX_LEN);
+		if (skb == NULL) {
+			return -ENOMEM;
+		}
+		nic_priv->rx_skbs[i] = skb;
+	}
+	return 0;
+}
+
+static void e1000_free_dma_rx(struct net_device *dev) {
+	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+
+	for (int i = 0; i < E1000_RXDESC_NR; ++i) {
+		skb_free(nic_priv->rx_skbs[i]);
+	}
+}
+
 static int e1000_open(struct net_device *dev) {
 	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+	int err;
+
+	if ((err = e1000_alloc_dma_rx(dev))) {
+		e1000_free_dma_rx(dev);
+		return err;
+	}
 
 	mdelay(MDELAY);
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
@@ -298,12 +325,7 @@ static int e1000_open(struct net_device *dev) {
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
 	for (int i = 0; i < E1000_RXDESC_NR; i ++) {
-	        struct sk_buff *skb = skb_alloc(E1000_MAX_RX_LEN);
-		if (skb == NULL) {
-			e1000_stop(dev);
-			return -ENOMEM;
-		}
-		nic_priv->rx_skbs[i] = skb;
+	        struct sk_buff *skb = nic_priv->rx_skbs[i];
 		nic_priv->rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
 	}
 
@@ -335,15 +357,11 @@ static int e1000_open(struct net_device *dev) {
 }
 
 static int e1000_stop(struct net_device *dev) {
-	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
 
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
 	mdelay(MDELAY);
 
-	for (int i = 0; i < E1000_RXDESC_NR; i ++) {
-		skb_free(nic_priv->rx_skbs[i]);
-		nic_priv->rx_skbs[i] = NULL;
-	}
+	e1000_free_dma_rx(dev);
 
 	return ENOERR;
 }
