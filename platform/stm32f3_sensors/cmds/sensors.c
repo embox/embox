@@ -88,6 +88,11 @@ static void gyro_data_obtain(float *out) {
 		out[i] -= gyro_offset[i];
 }
 
+#define INC_WINDOW_SIZE 10
+float incs[INC_WINDOW_SIZE] = {0};
+int inc_index = 0;
+float average_inc = 0;
+
 /**
  * speed in mm/s
  * @param acceleration mm/s^2
@@ -95,8 +100,12 @@ static void gyro_data_obtain(float *out) {
  * @param dt           seconds
  */
 static void update_speed(float acceleration, float dt) {
-	float eps = 0.2;
-	speed = (1 - eps) * speed + eps * (speed + acceleration * dt);
+	float inc = acceleration*dt;
+	average_inc += (inc - incs[inc_index])/INC_WINDOW_SIZE;
+	incs[inc_index] = inc;
+	inc_index = (inc_index + 1) % INC_WINDOW_SIZE;
+
+	speed += average_inc;
 }
 
 /**
