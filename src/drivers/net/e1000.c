@@ -93,6 +93,11 @@ struct e1000_priv {
 	char link_status;
 };
 
+static struct e1000_priv e1000_g_priv;
+static inline struct e1000_priv *e1000_get_priv(struct net_device *dev) {
+	return &e1000_g_priv;
+}
+
 static void mdelay(int value) {
 	volatile int delay = value;
 
@@ -105,7 +110,7 @@ static volatile uint32_t *e1000_reg(struct net_device *dev, int offset) {
 }
 
 static int e1000_xmit(struct net_device *dev) {
-	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 	uint16_t head;
 	uint16_t tail;
 	struct sk_buff *skb;
@@ -120,7 +125,7 @@ static int e1000_xmit(struct net_device *dev) {
 			goto out_unlock;
 		}
 
-		skb = skb_queue_pop(&netdev_priv(dev, struct e1000_priv)->tx_dev_queue);
+		skb = skb_queue_pop(&nic_priv->tx_dev_queue);
 
 		if (skb == NULL) {
 			goto out_unlock;
@@ -138,7 +143,7 @@ static int e1000_xmit(struct net_device *dev) {
 
 		REG_STORE(e1000_reg(dev, E1000_REG_TDT), tail);
 
-		skb_queue_push(&netdev_priv(dev, struct e1000_priv)->txing_queue, skb);
+		skb_queue_push(&nic_priv->txing_queue, skb);
 	}
 out_unlock:
 	irq_unlock();
@@ -146,11 +151,11 @@ out_unlock:
 }
 
 static int xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 
 	irq_lock();
 	{
-		skb_queue_push(&netdev_priv(dev, struct e1000_priv)->tx_dev_queue,
-				skb);
+		skb_queue_push(&nic_priv->tx_dev_queue, skb);
 	}
 	irq_unlock();
 
@@ -161,10 +166,11 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 
 static void txed_skb_clean(struct net_device *dev) {
 	struct sk_buff *skb;
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 
 	irq_lock();
 	{
-		while ((skb = skb_queue_pop(&netdev_priv(dev, struct e1000_priv)->txing_queue))) {
+		while ((skb = skb_queue_pop(&nic_priv->txing_queue))) {
 			skb_free(skb);
 		}
 	}
@@ -173,7 +179,7 @@ static void txed_skb_clean(struct net_device *dev) {
 
 static void e1000_rx(struct net_device *dev) {
 	/*net_device_stats_t stat = get_eth_stat(dev);*/
-	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 	struct sk_buff *skb, *new_skb;
 	uint16_t head;
 	uint16_t tail;
@@ -232,6 +238,7 @@ drop_pack:
 }
 
 static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
+	struct e1000_priv *nic_priv = e1000_get_priv(dev_id);
 	int cause = REG_LOAD(e1000_reg(dev_id, E1000_REG_ICR));
 
 	if (cause & (E1000_REG_ICR_RXO | E1000_REG_ICR_RXT)) {
@@ -246,9 +253,9 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 	if (cause & (E1000_REG_ICR_LSC)) {
 		struct net_device *dev = dev_id;
 
-		netdev_priv(dev, struct e1000_priv)->link_status ^= 1;
+		nic_priv->link_status ^= 1;
 
-		if (netdev_priv(dev, struct e1000_priv)->link_status) {
+		if (nic_priv->link_status) {
 			printk("e1000: Link up\n");
 			netdev_flag_up(dev, IFF_RUNNING);
 		} else {
@@ -282,7 +289,7 @@ static void e1000_free_dma_rx(struct net_device *dev) {
 }
 
 static int e1000_open(struct net_device *dev) {
-	struct e1000_priv *nic_priv = netdev_priv(dev, struct e1000_priv);
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 	int err;
 
 	if ((err = e1000_alloc_dma_rx(dev))) {
@@ -400,7 +407,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	struct net_device *nic;
 	struct e1000_priv *nic_priv;
 
-	nic = (struct net_device *) etherdev_alloc(sizeof(*nic_priv));
+	nic = (struct net_device *) etherdev_alloc(0);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
@@ -412,7 +419,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 			PROT_WRITE | PROT_READ,
 			MAP_FIXED,
 			pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
-	nic_priv = netdev_priv(nic, struct e1000_priv);
+	nic_priv = e1000_get_priv(nic);
 	memset(nic_priv, 0, sizeof(*nic_priv));
 	skb_queue_init(&nic_priv->txing_queue);
 	skb_queue_init(&nic_priv->tx_dev_queue);
