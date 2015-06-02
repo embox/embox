@@ -80,12 +80,13 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 		size_t len;
 
 		len = nic_priv->pdata - nic_priv->data;
-		if ((skb = skb_alloc(len))) {
+		skb = skb_alloc(len);
+		if (!skb) {
+			printk("usbnet: skbuff allocation failed\n");
+		} else {
 			memcpy(skb->mac.raw, nic_priv->data, len);
 			skb->dev = nic;
 			netif_rx(skb);
-		} else {
-			printk("usbnet: skbuff allocation failed\n");
 		}
 
 		/* Prepare for copying new packet */
@@ -126,35 +127,38 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 
 	nic = (struct net_device *) etherdev_alloc(sizeof *nic_priv);
 	if (!nic) {
-		return -ENOMEM;
+		res = -ENOMEM;
+		goto out_ret;
 	}
 	nic->drv_ops = &usbnet_drv_ops;
 	nic_priv = netdev_priv(nic, struct usbnet_priv);
 	nic_priv->usbdev = dev;
 	nic_priv->data = nic_priv->pdata = sysmalloc(ETH_FRAME_LEN);
 	if (!nic_priv->data) {
-		etherdev_free(nic);
-		return -ENOMEM;
+		res = -ENOMEM;
+		goto out_free_nic;
 	}
 
 	cdc->privdata = (void *) nic;
 
 	res = inetdev_register_dev(nic);
 	if (res < 0) {
-		goto err_out;
+		goto out_free_data;
 	}
 
-    timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
-            USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
+	res = timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
+		USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
 	if (res < 0) {
-		goto err_out;
+		goto out_free_data;
 	}
 
-    return 0;
+	return 0;
 
-err_out:
+out_free_data:
 	sysfree(nic_priv->data);
+out_free_nic:
 	etherdev_free(nic);
+out_ret:
 	return res;
 }
 
@@ -172,16 +176,16 @@ static void usbnet_send_notify_hnd(struct usb_request *req, void *arg) {
 static void usb_net_bulk_send(struct usb_dev *dev, struct sk_buff *skb) {
 	struct usb_endp *endp;
 	size_t i = 0;
-	int len;
+	size_t len;
 
 	endp = dev->endpoints[3];
 
-	for (i = skb->len, len = min(skb->len, endp->max_packet_size);
-			i != 0; i -= len, len = min(i, endp->max_packet_size)) {
+	for (i = skb->len; i != 0 && (len = min(i, endp->max_packet_size)); i -= len) {
 		usb_endp_bulk(endp, usbnet_send_notify_hnd,
 				skb->mac.raw + (skb->len - i), len);
 	}
 
+	/* Send zero length packet if skb->len % max_packet_size == 0 */
 	if (len == endp->max_packet_size) {
 		usb_endp_bulk(endp, usbnet_send_notify_hnd, skb->mac.raw + i, 0);
 	}
