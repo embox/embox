@@ -110,7 +110,8 @@ void usb_request_complete(struct usb_request *req) {
 		printk("usb_request %p: failed\n", req);
 	}
 
-	usb_request_remove(req, req->req_stat == USB_REQ_NOERR);
+	/* XXX May be it shouldn't be always True */
+	usb_request_remove(req, true);
 }
 
 static void usb_endp_cancel(struct usb_endp *endp) {

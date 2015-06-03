@@ -11,6 +11,7 @@
 #include <kernel/panic.h>
 #include <embox/unit.h>
 #include <drivers/usb/usb_hid.h>
+#include <drivers/usb/usb_driver.h>
 
 EMBOX_UNIT_INIT(usb_hid_init);
 
@@ -28,6 +29,8 @@ static void usb_class_hid_get_conf_hnd(struct usb_request *req, void *arg) {
 	hid->getconf = NULL;
 
 	usb_class_start_handle(dev);
+
+	usb_driver_handle(req->endp->dev);
 }
 
 static void *usb_class_hid_alloc(struct usb_class *cls, struct usb_dev *dev) {
