@@ -8,6 +8,10 @@
 /tags
 
 ## Stuff
+# Build
+/beagle_nand.img
+
+# Other
 /.dep.inc
 /.dropbox
 /.tmp

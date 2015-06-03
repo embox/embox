@@ -1,0 +1,23 @@
+diff -aru pjproject-2.2.1/pjlib/build/os-auto.mak.in build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjlib/build/os-auto.mak.in
+--- pjproject-2.2.1/pjlib/build/os-auto.mak.in	2014-02-04 11:39:55.000000000 +0400
++++ build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjlib/build/os-auto.mak.in	2015-05-19 19:31:48.925102276 +0300
+@@ -12,7 +12,7 @@
+ 			addr_resolv_sock.o \
+ 			log_writer_stdout.o \
+ 			os_timestamp_common.o \
+-			pool_policy_malloc.o sock_bsd.o sock_select.o
++			pool_policy_kmalloc.o sock_bsd.o sock_select.o
+ 
+ #
+ # TEST_OBJS are operating system specific object files to be included in
+diff -aru pjproject-2.2.1/pjlib/src/pj/pool_policy_kmalloc.c build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjlib/src/pj/pool_policy_kmalloc.c
+--- pjproject-2.2.1/pjlib/src/pj/pool_policy_kmalloc.c	2011-05-05 10:14:19.000000000 +0400
++++ build/extbld/third_party/pjproject/core/pjproject-2.2.1/pjlib/src/pj/pool_policy_kmalloc.c	2015-05-19 19:33:53.937433313 +0300
+@@ -21,6 +21,7 @@
+ #include <pj/except.h>
+ #include <pj/os.h>
+ 
++#include <linux/slab.h>
+ 
+ static void *default_block_alloc(pj_pool_factory *factory, pj_size_t size)
+ {

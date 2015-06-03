@@ -20,7 +20,7 @@
 #define MODOPS_SYSTEM OPTION_STRING_GET(system)
 #define MODOPS_HOSTNAME OPTION_STRING_GET(hostname)
 
-static struct utsname sys_name = {
+static const struct utsname sys_name = {
 	.sysname = MODOPS_SYSTEM,
 	.nodename = MODOPS_HOSTNAME,
 	.release = MODOPS_RELEASE,

@@ -23,10 +23,11 @@ case $EMBOX_GCC_LINK in
 		;;
 esac
 
-case " $@" in
+case " $@ " in
 	*" -c "*) ARG_LINE="$C_CXX_FLAGS";;
 	*" -E "*) ARG_LINE=;;
 	*" -shared "*) echo "Can't build shared objects"; exit 1;;
+	*" -lm "*) echo -e "\n\ERROR!!! Linking with libm\n\n"; exit 1;;
 	*" -l"*) echo -e "\n\nWARNING!!! You're linking something with it\n\n";;
 esac
 

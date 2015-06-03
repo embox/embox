@@ -15,7 +15,6 @@ module page {
 	source "page.c"
 
 	depends embox.mem.page_api
-	depends embox.mem.heap_lds
 	depends embox.mem.phymem
 	depends embox.framework.LibFramework
 }

@@ -8,20 +8,25 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
+#include <stdio.h>
 #include <netdb.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <mem/misc/pool.h>
 #include <errno.h>
 #include <net/util/servent.h>
-#include <stdio.h>
+
+#include <mem/misc/pool.h>
+
+#include <framework/mod/options.h>
+
+#define ADDRINFO_TUPLE_POOL_SZ OPTION_GET(NUMBER, addrinfo_pool_size)
 
 struct addrinfo_tuple {
 	struct addrinfo ai;
 	struct sockaddr_storage __ai_ai_addr_storage;
 };
 
-POOL_DEF(addrinfo_tuple_pool, struct addrinfo_tuple, 10);
+POOL_DEF(addrinfo_tuple_pool, struct addrinfo_tuple, ADDRINFO_TUPLE_POOL_SZ);
 
 static int explore_hints(const struct addrinfo *hints,
 		struct addrinfo *out_hints) {

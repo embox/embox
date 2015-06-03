@@ -57,7 +57,8 @@ module perm {
 
 	depends embox.security.api
 	depends embox.compat.posix.util.environ
-	@NoRuntime depends embox.compat.posix.proc.All
+	depends embox.compat.posix.proc.uid
+
 }
 
 @DefaultImpl(noncache)

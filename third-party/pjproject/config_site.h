@@ -2,12 +2,17 @@
 #define PJ_IOQUEUE_MAX_HANDLES         8
 #define PJ_LOG_USE_STACK_BUFFER        0
 
+#define PJ_LOG_MAX_LEVEL 6
+
+/* disbale pools */
+#define PJ_POOL_DEBUG 1
+
 /* make PJSUA slim */
-#define PJSUA_MAX_ACC 1
+#define PJSUA_MAX_ACC 3
 #define PJSUA_MAX_CALLS 1
 #define PJSUA_MAX_VID_WINS 0
 #define PJSUA_MAX_BUDDIES 1
-#define PJSUA_MAX_CONF_PORTS 1
+#define PJSUA_MAX_CONF_PORTS 4
 #define PJSUA_MAX_PLAYERS 1
 #define PJSUA_MAX_RECORDERS 1
 

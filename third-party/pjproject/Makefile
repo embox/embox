@@ -7,7 +7,10 @@ PKG_MD5     := 6ed4bb7750c827dc1d881e209a3b62db
 
 include $(EXTBLD_LIB)
 
-PKG_PATCHES := pjproject.patch
+PKG_PATCHES := pjproject.patch \
+	simpleua_default_loglevel.patch \
+	mutex_loglevel_increase.patch \
+	kmalloc.patch
 
 DISABLE_FEATURES := \
 	l16-codec   \

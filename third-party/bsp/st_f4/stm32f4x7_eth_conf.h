@@ -60,11 +60,8 @@
 
 /* Uncomment some lines below to make custom configuration of the Ethernet driver buffers */
 /* Redefinition of the Ethernet driver buffers size and count */
-//#define ETH_RX_BUF_SIZE    ETH_MAX_PACKET_SIZE /* buffer size for receive */
-//#define ETH_TX_BUF_SIZE    ETH_MAX_PACKET_SIZE /* buffer size for transmit */
-//#define ETH_RXBUFNB        20                  /* 20 Rx buffers of size ETH_RX_BUF_SIZE */
+#define ETH_RXBUFNB        3                  /* 20 Rx buffers of size ETH_RX_BUF_SIZE */
 #define ETH_TXBUFNB        0
-
 
 /* PHY configuration section **************************************************/
 #ifdef USE_Delay

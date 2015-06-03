@@ -22,7 +22,7 @@ static module getopt {
 static module utsname {
 	option string release="0.3.3"
 	option string system="Embox"
-	option string hostname="embox"
+	option string hostname="localhost"
 	source "utsname.c"
 
 	depends embox.compat.libc.str

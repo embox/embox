@@ -16,6 +16,21 @@
 #include <util/binalign.h>
 #include <util/indexator.h>
 
+static int ind_check(struct indexator *ind, size_t idx) {
+
+	assert(ind);
+
+	if (idx == INDEX_NONE) {
+		return -EINVAL;
+	}
+	
+	if (!((idx >= ind->start) && (idx <= ind->end))) {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 static int ind_get_bit(struct indexator *ind, size_t idx) {
 	size_t word, bit;
 
@@ -187,6 +202,12 @@ size_t index_find(struct indexator *ind, enum index_type type) {
 }
 
 int index_try_lock(struct indexator *ind, size_t idx) {
+	int err;
+
+	if ((err = ind_check(ind, idx))) {
+		return err;
+	}
+
 	if (ind_get_bit(ind, idx)) {
 		return 0;
 	}
@@ -220,10 +241,21 @@ void index_lock(struct indexator *ind, size_t idx) {
 }
 
 int index_locked(struct indexator *ind, size_t idx) {
+	int err;
+
+	if ((err = ind_check(ind, idx))) {
+		return err;
+	}
+
 	return ind_get_bit(ind, idx);
 }
 
 void index_unlock(struct indexator *ind, size_t idx) {
+
+	if (ind_check(ind, idx)) {
+		return ;
+	}
+
 	ind_unset_bit(ind, idx);
 
 	assert(ind != NULL);
