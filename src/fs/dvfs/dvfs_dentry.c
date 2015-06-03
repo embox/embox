@@ -21,10 +21,35 @@
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 
 #if DCACHE_ENABLED
+
 #include <util/hashtable.h>
 
+static const unsigned long long prime = 19, module = 1023;
+static unsigned long long pows[DENTRY_NAME_LEN];
+
+static void hash_init(void) {
+	/* TODO precount in runtime or even in compiletime */
+	int i;
+	pows[0] = 1;
+	for (i = 1; i < DENTRY_NAME_LEN; i++)
+		pows[i] = (pows[i - 1] * prime) % module;
+}
+
+static unsigned long long poly_hash(char *str) {
+	unsigned long long res = 0;
+	char *pos = str;
+
+	hash_init();
+
+	while (*pos) {
+		res += ((int) *str) * pows[pos - str];
+		res %= module;
+	}
+	return res;
+}
+
 static size_t get_dentry_hash(void *key) {
-	return (size_t) key;
+	return (size_t) poly_hash(((struct dentry*)key)->name);
 }
 
 static int cmp_dentries(void *key1, void *key2) {
