@@ -16,6 +16,7 @@
 #include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
+#include <hal/reg.h>
 #include <stm32f4xx.h>
 #include <stm32f4xx_syscfg.h>
 #include <stm32f4xx_gpio.h>
@@ -251,62 +252,69 @@ static void ETH_GPIO_Config(void) {
  *
  */
 
-/* Ethernet Rx & Tx DMA Descriptors */
-extern ETH_DMADESCTypeDef  DMARxDscrTab[ETH_RXBUFNB], DMATxDscrTab[ETH_TXBUFNB];
+/* Minimum value: 2 */
+#define TXTAB_LEN 2
 
-/* Ethernet Driver Receive buffers  */
+typedef ETH_DMADESCTypeDef eth_dma_desc_t;
+
+struct stm32eth_state {
+	eth_dma_desc_t tx_tab[TXTAB_LEN];
+	eth_dma_desc_t *tx_head;
+	eth_dma_desc_t *tx_tail;
+	struct sk_buff *tx_skb[TXTAB_LEN];
+};
+static struct stm32eth_state stm32eth_g_state;
+
+static inline int stm32eth_desc2i(eth_dma_desc_t *base, eth_dma_desc_t *desc) {
+	return ((intptr_t) desc - (intptr_t) base) / sizeof(*desc); 
+}
+
+static void stm32eth_tx_skb_set(struct stm32eth_state *state, struct sk_buff *skb) {
+	int i_desc = stm32eth_desc2i(state->tx_tab, state->tx_tail);
+	assert(state->tx_skb[i_desc] == NULL);
+	state->tx_skb[i_desc] = skb;
+}
+
+static struct sk_buff *stm32eth_tx_skb_get(struct stm32eth_state *state) {
+	int i_desc = stm32eth_desc2i(state->tx_tab, state->tx_head);
+	struct sk_buff *skb = state->tx_skb[i_desc];
+	assert(skb != NULL);
+	state->tx_skb[i_desc] = NULL;
+	return skb;
+}
+
+extern ETH_DMADESCTypeDef  DMARxDscrTab[ETH_RXBUFNB];
 extern uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE];
-
-/* Ethernet Driver Transmit buffers */
-extern uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE];
-
-/* Global pointers to track current transmit and receive descriptors */
-extern ETH_DMADESCTypeDef  *DMATxDescToSet;
 extern ETH_DMADESCTypeDef  *DMARxDescToGet;
-
-/* Global pointer for last received frame infos */
 extern ETH_DMA_Rx_Frame_infos *DMA_RX_FRAME_infos;
+
+static void stm32eth_dma_tx_init(struct stm32eth_state *state) {
+
+	state->tx_head = state->tx_tail = state->tx_tab;
+
+	for (int i = 0; i < TXTAB_LEN - 1; ++i) {
+		state->tx_tab[i].Buffer2NextDescAddr = (uint32_t) &state->tx_tab[i + 1];
+	}
+	state->tx_tab[TXTAB_LEN - 1].Buffer2NextDescAddr = (uint32_t) state->tx_tab;
+
+	REG_STORE(&ETH->DMATDLAR, (uint32_t) state->tx_tab);
+}
 
 static void low_level_init(unsigned char mac[6]) {
 	ETH_MACAddressConfig(ETH_MAC_Address0, mac);
 
-	/* Initialize Tx Descriptors list: Chain Mode */
-	ETH_DMATxDescChainInit(DMATxDscrTab, &Tx_Buff[0][0], ETH_TXBUFNB);
+	stm32eth_dma_tx_init(&stm32eth_g_state);
+
 	/* Initialize Rx Descriptors list: Chain Mode  */
 	ETH_DMARxDescChainInit(DMARxDscrTab, &Rx_Buff[0][0], ETH_RXBUFNB);
-
-#ifdef CHECKSUM_BY_HARDWARE
-	/* Enable the TCP, UDP and ICMP checksum insertion for the Tx frames */
-	for(i=0; i<ETH_TXBUFNB; i++)
-	{
-		ETH_DMATxDescChecksumInsertionConfig(&DMATxDscrTab[i], ETH_DMATxDesc_ChecksumTCPUDPICMPFull);
-	}
-#endif
 
 	/* Clear pending flags */
 	ETH_DMAClearFlag(~0xFFFE1800);
 	/* Enable iterrupts */
-	ETH_DMAITConfig(ETH_DMA_IT_NIS | ETH_DMA_IT_R, ENABLE);
-
-	/* Note: TCP, UDP, ICMP checksum checking for received frame are enabled in DMA config */
+	ETH_DMAITConfig(ETH_DMA_IT_NIS | ETH_DMA_IT_R | ETH_DMA_IT_T, ENABLE);
 
 	/* Enable MAC and DMA transmission and reception */
 	ETH_Start();
-
-}
-
-static int low_level_output(void *buf, size_t sz) {
-	u8 *buffer =  (u8 *)(DMATxDescToSet->Buffer1Addr);
-
-	/* copy frame from pbufs to driver buffers */
-	memcpy(buffer, buf, sz);
-
-	/* Note: padding and CRC for transmitted frame
-	   are automatically inserted by DMA */
-
-	/* Prepare transmit descriptors to give to DMA*/
-	ETH_Prepare_Transmit_Descriptors(sz);
-	return 0;
 }
 
 static struct sk_buff *low_level_input(void) {
@@ -384,33 +392,44 @@ static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
 }
 
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
-	int res = low_level_output(skb->mac.raw, skb->len);
+	struct stm32eth_state *state = &stm32eth_g_state;
+	eth_dma_desc_t *next_tail = (eth_dma_desc_t *) state->tx_tail->Buffer2NextDescAddr;
 
-	if (0 == res) {
-		skb_free(skb);
+	if (next_tail == state->tx_head) {
+		return -EBUSY;
 	}
 
-	return res;
-}
+	state->tx_tail->Buffer1Addr = (uint32_t) skb->mac.raw;
+	state->tx_tail->ControlBufferSize = skb->len & ETH_DMATxDesc_TBS1;
+	state->tx_tail->Status = ETH_DMATxDesc_FS | ETH_DMATxDesc_LS | ETH_DMATxDesc_TCH
+		 | ETH_DMATxDesc_IC | ETH_DMATxDesc_OWN;
+	stm32eth_tx_skb_set(state, skb);
 
-#if 0
-static int stm32eth_setup(struct net_device *dev) {
-	dev->mtu      = (16 * 1024) + 20 + 20 + 12;
-	dev->hdr_len  = ETH_HEADER_SIZE;
-	dev->addr_len = ETH_ALEN;
-	dev->type     = ARP_HRD_LOOPBACK;
-	dev->flags    = IFF_NOARP | IFF_RUNNING;
-	dev->drv_ops  = &stm32eth_ops;
-	dev->ops      = &ethernet_ops;
+	state->tx_tail = next_tail;
+
+	REG_STORE(&ETH->DMATPDR, 0);
 	return 0;
 }
-#endif
+
+static void stm32eth_txed_collect(struct stm32eth_state *state) {
+	while (state->tx_head != state->tx_tail) {
+		if (state->tx_head->Status & ETH_DMATxDesc_OWN) {
+			break;
+		}
+		skb_free(stm32eth_tx_skb_get(state));
+		state->tx_head = (eth_dma_desc_t *) state->tx_head->Buffer2NextDescAddr;
+	}
+}
 
 static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 	struct net_device **nic_p = dev_id;
 	if (!*nic_p) {
 		return IRQ_NONE;
 	}
+
+	ETH_DMAClearITPendingBit(ETH_DMA_IT_NIS | ETH_DMA_IT_R | ETH_DMA_IT_T);
+
+	stm32eth_txed_collect(&stm32eth_g_state);
 
 	while(ETH_CheckFrameReceived()) {
 		struct sk_buff *skb = low_level_input();
@@ -419,8 +438,6 @@ static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 			netif_rx(skb);
 		}
 	}
-
-	ETH_DMAClearITPendingBit(ETH_DMA_IT_NIS | ETH_DMA_IT_R);
 
 	return IRQ_HANDLED;
 }
