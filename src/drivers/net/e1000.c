@@ -93,9 +93,8 @@ struct e1000_priv {
 	char link_status;
 };
 
-static struct e1000_priv e1000_g_priv;
 static inline struct e1000_priv *e1000_get_priv(struct net_device *dev) {
-	return &e1000_g_priv;
+	return netdev_priv(dev, struct e1000_priv);
 }
 
 static void mdelay(int value) {
@@ -407,7 +406,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	struct net_device *nic;
 	struct e1000_priv *nic_priv;
 
-	nic = (struct net_device *) etherdev_alloc(0);
+	nic = (struct net_device *) etherdev_alloc(sizeof(struct e1000_priv));
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
