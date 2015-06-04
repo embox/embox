@@ -22,6 +22,7 @@
 
 #if DCACHE_ENABLED
 
+#include <mem/misc/pool.h>
 #include <util/hashtable.h>
 
 static const unsigned long long prime = 19, module = 1023;
@@ -35,21 +36,22 @@ static void hash_init(void) {
 		pows[i] = (pows[i - 1] * prime) % module;
 }
 
-static unsigned long long poly_hash(char *str) {
+static unsigned long long poly_hash(const char *str) {
 	unsigned long long res = 0;
-	char *pos = str;
+	const char *pos = str;
 
 	hash_init();
 
 	while (*pos) {
 		res += ((int) *str) * pows[pos - str];
 		res %= module;
+		pos++;
 	}
 	return res;
 }
 
 static size_t get_dentry_hash(void *key) {
-	return (size_t) poly_hash(((struct dentry*)key)->name);
+	return (size_t) key;
 }
 
 static int cmp_dentries(void *key1, void *key2) {
@@ -60,13 +62,16 @@ HASHTABLE_DEF(dentry_ht,
 		DENTRY_POOL_SIZE * sizeof(struct dentry *),
 		get_dentry_hash,
 		cmp_dentries);
+
+POOL_DEF(dentry_ht_pool, struct hashtable_item, DENTRY_POOL_SIZE);
 #endif
 
 extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *, struct dentry *);
 extern struct dentry *local_lookup(struct dentry *parent, char *name);
 
-/* @brief Get the length of next element int the path
+/**
+ * @brief Get the length of next element int the path
  * @param path Pointer to the path
  *
  * @return The length of next element in the path
@@ -81,7 +86,6 @@ int dvfs_path_next_len(const char *path) {
 
 	return off;
 }
-
 /**
  * @brief Resolve one more element in the path
  * @param path   Pointer to relative path
@@ -160,6 +164,8 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
  */
 int dvfs_lookup(const char *path, struct lookup *lookup) {
 	struct dentry *dentry;
+	int errcode;
+
 	if (path[0] == '/') {
 		dentry = task_fs()->root;
 		path++;
@@ -169,8 +175,27 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	if (dentry->d_sb == NULL)
 		return -ENOENT;
 
-	/* TODO look in dcache */
-	/* TODO flocks */
+#if DCACHE_ENABLED
+	/* Cache lookup */
+	unsigned long long hash = poly_hash(path);
+	struct dentry *res;
+	/* TODO local path hash offset */
+	res = hashtable_get(&dentry_ht, (void *) *((size_t *) &hash));
+	if (res) {
+		/* TODO walk to root to check */
+		*lookup = (struct lookup) {
+			.item = res,
+			.parent = res->parent,
+		};
+		return 0;
+	}
+#endif
+	errcode = dvfs_path_walk(path, dentry, lookup);
+#if DCACHE_ENABLED
+	struct hashtable_item *ht_item = pool_alloc(&dentry_ht_pool);
+	ht_item = hashtable_item_init(ht_item, (void *) *((size_t *) &hash), lookup->item);
+	hashtable_put(&dentry_ht, ht_item);
+#endif
 
-	return dvfs_path_walk(path, dentry, lookup);
+	return errcode;
 }
