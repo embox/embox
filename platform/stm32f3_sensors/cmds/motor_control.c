@@ -11,9 +11,14 @@
 #include <stm32f3xx_hal_gpio.h>
 #include <stm32f3xx_hal_rcc.h>
 
+/* motor 1*/
 #define MOTOR_ENABLE1  GPIO_PIN_3
 #define MOTOR_INPUT1   GPIO_PIN_5
 #define MOTOR_INPUT2   GPIO_PIN_7
+/* motor 2 */
+#define MOTOR_ENABLE2  GPIO_PIN_2
+#define MOTOR_INPUT3   GPIO_PIN_4
+#define MOTOR_INPUT4   GPIO_PIN_6
 
 struct motor {
 	GPIO_TypeDef  *GPIOx;
@@ -29,6 +34,7 @@ enum motor_run_direction {
 };
 
 static struct motor motor1;
+static struct motor motor2;
 
 static void stm32f3_delay(uint32_t delay) {
 	while(delay--)
@@ -88,21 +94,28 @@ int main(void) {
 
 	__GPIOD_CLK_ENABLE();
 
-	init_pins(GPIOD, MOTOR_ENABLE1 | MOTOR_INPUT1 | MOTOR_INPUT2);
+	init_pins(GPIOD, MOTOR_ENABLE1 | MOTOR_INPUT1 | MOTOR_INPUT2 |
+			MOTOR_ENABLE2 | MOTOR_INPUT3 | MOTOR_INPUT4);
+
 	motor_init(&motor1, GPIOD, MOTOR_ENABLE1, MOTOR_INPUT1, 
 		MOTOR_INPUT2, 0x3);
+	motor_init(&motor2, GPIOD, MOTOR_ENABLE2, MOTOR_INPUT3,
+		MOTOR_INPUT4, 0x3);
 
 	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_GPIO);
 	
 	motor_enable(&motor1);
+	motor_enable(&motor2);
 	while(1) {
 		while(BSP_PB_GetState(BUTTON_USER) != SET)
 			;
 		motor_run(&motor1, MOTOR_RUN_LEFT);
+		motor_run(&motor2, MOTOR_RUN_LEFT);
 		stm32f3_delay(0xFFFF);
 		while(BSP_PB_GetState(BUTTON_USER) != SET)
 			;
 		motor_run(&motor1, MOTOR_RUN_RIGHT);
+		motor_run(&motor2, MOTOR_RUN_RIGHT);
 		stm32f3_delay(0xFFFF);
 	}
 
