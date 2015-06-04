@@ -246,6 +246,7 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 	return res;
 }
 
+extern int dvfs_cache_del(struct dentry *dentry);
 extern int set_rootfs_sb(struct super_block *sb);
 /* @brief Mount file system
  * @param dev    Path to the source device (e.g. /dev/sda1)
@@ -279,6 +280,7 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 
 		/* Hide dentry of the directory */
 		dlist_del(&lookup.item->children_lnk);
+		dvfs_cache_del(lookup.item);
 
 		d = dvfs_alloc_dentry();
 		dentry_fill(sb, NULL, d, lookup.parent);
