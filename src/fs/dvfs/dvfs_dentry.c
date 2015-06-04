@@ -66,6 +66,33 @@ HASHTABLE_DEF(dentry_ht,
 POOL_DEF(dentry_ht_pool, struct hashtable_item, DENTRY_POOL_SIZE);
 #endif
 
+/**
+ * @brief Get full path from global root to given dentry
+ *
+ * @param dentry
+ * @param buf
+ *
+ * @return
+ */
+static int dentry_full_path(struct dentry *dentry, char *buf) {
+	int cur_len = 0;
+	size_t nlen;
+	while (dentry != dvfs_root()) {
+		nlen = strlen(dentry->name);
+		if (cur_len) {
+			nlen++;
+			memmove(buf + nlen, buf, cur_len);
+			buf[nlen - 1] = '/';
+		}
+		memcpy(buf, dentry->name, nlen - 1);
+		cur_len += nlen;
+		dentry = dentry->parent;
+	}
+	buf[cur_len - 1] = '\0';
+
+	return 0;
+}
+
 extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *, struct dentry *);
 extern struct dentry *local_lookup(struct dentry *parent, char *name);
@@ -175,7 +202,13 @@ int dvfs_cache_add(struct dentry *dentry, unsigned long long hash) {
  *
  * @return Negative error code
  */
-int dvfs_cache_del(struct dentry *dentry, unsigned long long hash) {
+int dvfs_cache_del(struct dentry *dentry) {
+	char pathname[DENTRY_NAME_LEN]; /* XXX constant for max pathname ? */
+	unsigned long long hash;
+	if (dentry->name[0] == '\0')
+		return -1;
+	dentry_full_path(dentry, pathname);
+	hash = poly_hash(pathname);
 	hashtable_del(&dentry_ht, (void *) *((size_t *) &hash));
 	return 0;
 }
