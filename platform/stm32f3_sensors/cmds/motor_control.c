@@ -15,8 +15,6 @@
 #define MOTOR_INPUT1   GPIO_PIN_5
 #define MOTOR_INPUT2   GPIO_PIN_7
 
-static uint8_t user_button_pressed;
-
 struct motor {
 	GPIO_TypeDef  *GPIOx;
 	uint16_t enable;
@@ -75,7 +73,7 @@ static void motor_run(struct motor *m, enum motor_run_direction dir) {
 	} else if (dir == MOTOR_RUN_RIGHT) {
 		input = 1;
 	}
-	HAL_GPIO_WritePin(GPIOD, m->input[~input], GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(GPIOD, m->input[!input], GPIO_PIN_RESET);
 	stm32f3_delay(0xFF); /* FIXME may be it is not needed */
 	HAL_GPIO_WritePin(GPIOD, m->input[input], GPIO_PIN_SET);
 }
@@ -83,14 +81,6 @@ static void motor_run(struct motor *m, enum motor_run_direction dir) {
 static void motor_stop(struct motor *m) {
 	HAL_GPIO_WritePin(GPIOD, m->input[0], GPIO_PIN_RESET);
 	HAL_GPIO_WritePin(GPIOD, m->input[1], GPIO_PIN_RESET);
-}
-
-void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-	if (USER_BUTTON_PIN == GPIO_Pin) {
-		user_button_pressed = 1;
-		while (BSP_PB_GetState(BUTTON_USER) != RESET);
-		user_button_pressed = 0;
-	}
 }
 
 int main(void) {
@@ -102,16 +92,18 @@ int main(void) {
 	motor_init(&motor1, GPIOD, MOTOR_ENABLE1, MOTOR_INPUT1, 
 		MOTOR_INPUT2, 0x3);
 
-	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_EXTI);
+	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_GPIO);
 	
 	motor_enable(&motor1);
 	while(1) {
-		while(!user_button_pressed)
+		while(BSP_PB_GetState(BUTTON_USER) != SET)
 			;
 		motor_run(&motor1, MOTOR_RUN_LEFT);
-		while(user_button_pressed)
+		stm32f3_delay(0xFFFF);
+		while(BSP_PB_GetState(BUTTON_USER) != SET)
 			;
 		motor_run(&motor1, MOTOR_RUN_RIGHT);
+		stm32f3_delay(0xFFFF);
 	}
 
 	return 0;
