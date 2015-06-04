@@ -154,6 +154,33 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 /* DVFS interface */
 
 /**
+ * @brief Add dentry to cache
+ *
+ * @param dentry
+ * @param hash Could be calculated from dentry, remove may be?
+ * @return Negative error code
+ */
+int dvfs_cache_add(struct dentry *dentry, unsigned long long hash) {
+	struct hashtable_item *ht_item = pool_alloc(&dentry_ht_pool);
+	ht_item = hashtable_item_init(ht_item, (void *) *((size_t *) &hash), dentry);
+	hashtable_put(&dentry_ht, ht_item);
+	return 0;
+}
+
+/**
+ * @brief Remove dentry from cache
+ * @note Should be used only on unmount and dentry destroy
+ *
+ * @param dentry
+ *
+ * @return Negative error code
+ */
+int dvfs_cache_del(struct dentry *dentry, unsigned long long hash) {
+	hashtable_del(&dentry_ht, (void *) *((size_t *) &hash));
+	return 0;
+}
+
+/**
  * @brief Try to find dentry at specified path
  * @param path   Absolute or relative path
  * @param lookup Structure where result will be stored
@@ -192,9 +219,7 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 #endif
 	errcode = dvfs_path_walk(path, dentry, lookup);
 #if DCACHE_ENABLED
-	struct hashtable_item *ht_item = pool_alloc(&dentry_ht_pool);
-	ht_item = hashtable_item_init(ht_item, (void *) *((size_t *) &hash), lookup->item);
-	hashtable_put(&dentry_ht, ht_item);
+	dvfs_cache_add(lookup->item, hash);
 #endif
 
 	return errcode;
