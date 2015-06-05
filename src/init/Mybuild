@@ -65,6 +65,6 @@ module start_script {
 
 	depends setup_tty_api
 	depends embox.cmd.sh.shell
-	requires embox.cmd.Shell.commandLine
+	depends embox.cmd.sh.shell_api
 	@NoRuntime depends embox.compat.libc.stdio.file_ops
 }
