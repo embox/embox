@@ -191,11 +191,15 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
  * @brief Add dentry to cache
  *
  * @param dentry
- * @param hash Could be calculated from dentry, remove may be?
  * @return Negative error code
  */
-int dvfs_cache_add(struct dentry *dentry, unsigned long long hash) {
+int dvfs_cache_add(struct dentry *dentry) {
+	char pathname[DENTRY_NAME_LEN]; /* XXX constant for max pathname ? */
+	unsigned long long hash;
 	struct hashtable_item *ht_item = pool_alloc(&dentry_ht_pool);
+	assert(ht_item);
+	dentry_full_path(dentry, pathname);
+	hash = poly_hash(pathname);
 	ht_item = hashtable_item_init(ht_item, (void *) *((size_t *) &hash), dentry);
 	hashtable_put(&dentry_ht, ht_item);
 	return 0;
@@ -267,7 +271,7 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 #endif
 	errcode = dvfs_path_walk(path, dentry, lookup);
 #if DCACHE_ENABLED
-	dvfs_cache_add(lookup->item, hash);
+	dvfs_cache_add(lookup->item);
 #endif
 
 	return errcode;
