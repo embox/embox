@@ -275,7 +275,10 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 
 #if DCACHE_ENABLED
 	struct dentry *res;
-	if ((res = dvfs_cache_get((char*)path))) {
+	char full_path[DENTRY_NAME_LEN];
+	dentry_full_path(dentry, full_path);
+	strcat(full_path, path);
+	if ((res = dvfs_cache_get((char*)full_path))) {
 		/* TODO walk to root to check */
 		*lookup = (struct lookup) {
 			.item = res,
