@@ -1,7 +1,5 @@
 package lego_nxt.driver
 
-import lego_nxt.driver.*
-
 module touch_sensor {
 	source "touch.c"
 
