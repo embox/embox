@@ -226,11 +226,19 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	struct dentry *dentry;
 	int errcode;
 
-	if (path[0] == '/') {
+	if (*path == '/') {
 		dentry = task_fs()->root;
 		path++;
 	} else
 		dentry = task_fs()->pwd;
+
+	if (*path == '\0') {
+		*lookup = (struct lookup) {
+			.item = dentry,
+			.parent = dentry->parent,
+		};
+		return 0;
+	}
 
 	if (dentry->d_sb == NULL)
 		return -ENOENT;
