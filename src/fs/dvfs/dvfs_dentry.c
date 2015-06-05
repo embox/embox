@@ -218,13 +218,15 @@ int dvfs_cache_add(struct dentry *dentry) {
 int dvfs_cache_del(struct dentry *dentry) {
 	char pathname[DENTRY_NAME_LEN]; /* XXX constant for max pathname ? */
 	unsigned long long hash;
+	struct hashtable_item *ht_item;
 	if (dentry->name[0] == '\0')
 		return -1;
 	dentry_full_path(dentry, pathname);
 	hash = poly_hash(pathname);
-	if (!hashtable_del(&dentry_ht, (void *) *((size_t *) &hash))) {
+	if (!(ht_item = hashtable_del(&dentry_ht, (void *) *((size_t *) &hash)))) {
 		printk("Remove empty dentry\n");
 	}
+	pool_free(&dentry_ht_pool, ht_item);
 	return 0;
 }
 
