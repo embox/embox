@@ -19,7 +19,7 @@ module timer_test {
 
 	depends embox.kernel.timer.strategy.api
 	depends embox.framework.test
-	depends embox.kernel.time.timer
+	depends embox.kernel.time.timer_handler
 }
 
 @TestFor(embox.kernel.timer.strategy.api)
@@ -27,7 +27,7 @@ module periodic_timer_test {
 	source "periodic_timer_test.c"
 
 	depends embox.kernel.timer.strategy.api
-	depends embox.kernel.time.timer
+	depends embox.kernel.time.timer_handler
 }
 
 @TestFor(embox.kernel.timer.strategy.api)
@@ -35,7 +35,7 @@ module oneshot_timer_test {
 	source "oneshot_timer_test.c"
 
 	depends embox.kernel.timer.strategy.api
-	depends embox.kernel.time.timer
+	depends embox.kernel.time.timer_handler
 }
 
 //@TestFor(embox.kernel.syscall)
