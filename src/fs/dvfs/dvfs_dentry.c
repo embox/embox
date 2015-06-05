@@ -88,6 +88,13 @@ int dentry_full_path(struct dentry *dentry, char *buf) {
 		cur_len += nlen;
 		dentry = dentry->parent;
 	} while (dentry != dvfs_root());
+
+	if (buf[0] != '/') {
+		memmove(buf + 1, buf, cur_len);
+		buf[0] = '/';
+		cur_len++;
+	}
+
 	buf[cur_len] = '\0';
 
 	return 0;
