@@ -74,10 +74,10 @@ POOL_DEF(dentry_ht_pool, struct hashtable_item, DENTRY_POOL_SIZE);
  *
  * @return
  */
-static int dentry_full_path(struct dentry *dentry, char *buf) {
+int dentry_full_path(struct dentry *dentry, char *buf) {
 	int cur_len = 0;
 	size_t nlen;
-	while (dentry != dvfs_root()) {
+	do {
 		nlen = strlen(dentry->name);
 		if (cur_len) {
 			cur_len++;
@@ -87,7 +87,7 @@ static int dentry_full_path(struct dentry *dentry, char *buf) {
 		memcpy(buf, dentry->name, nlen);
 		cur_len += nlen;
 		dentry = dentry->parent;
-	}
+	} while (dentry != dvfs_root());
 	buf[cur_len] = '\0';
 
 	return 0;
