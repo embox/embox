@@ -17,6 +17,8 @@
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
 
+#include <kernel/printk.h>
+
 #define DCACHE_ENABLED OPTION_GET(BOOLEAN, use_dcache)
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 
@@ -220,8 +222,25 @@ int dvfs_cache_del(struct dentry *dentry) {
 		return -1;
 	dentry_full_path(dentry, pathname);
 	hash = poly_hash(pathname);
-	hashtable_del(&dentry_ht, (void *) *((size_t *) &hash));
+	if (!hashtable_del(&dentry_ht, (void *) *((size_t *) &hash))) {
+		printk("Remove empty dentry\n");
+	}
 	return 0;
+}
+
+/**
+ * @brief Try to get dentry with given path from cache
+ *
+ * @param path
+ *
+ * @return
+ */
+struct dentry *dvfs_cache_get(char *path) {
+	unsigned long long hash = poly_hash(path);
+	struct dentry *res;
+	/* TODO local path hash offset */
+	res = hashtable_get(&dentry_ht, (void *) *((size_t *) &hash));
+	return res;
 }
 
 /**
@@ -255,12 +274,8 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 		return -ENOENT;
 
 #if DCACHE_ENABLED
-	/* Cache lookup */
-	unsigned long long hash = poly_hash(path);
 	struct dentry *res;
-	/* TODO local path hash offset */
-	res = hashtable_get(&dentry_ht, (void *) *((size_t *) &hash));
-	if (res) {
+	if ((res = dvfs_cache_get((char*)path))) {
 		/* TODO walk to root to check */
 		*lookup = (struct lookup) {
 			.item = res,
