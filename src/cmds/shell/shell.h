@@ -15,9 +15,9 @@
 #include <framework/mod/self.h>
 
 #include <framework/mod/options.h>
-#include <module/embox/cmd/sh/shell.h>
+#include <module/embox/cmd/sh/shell_registry.h>
 #define SHELL_INPUT_BUFF_SZ \
-	OPTION_MODULE_GET(embox__cmd__sh__shell, NUMBER, input_buff_sz)
+	OPTION_MODULE_GET(embox__cmd__sh__shell_registry, NUMBER, input_buff_sz)
 
 typedef void (*shell_run_ft)(void);
 typedef int  (*shell_exec_ft)(const char *line);

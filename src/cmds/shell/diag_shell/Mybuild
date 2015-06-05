@@ -11,6 +11,6 @@ module shell extends embox.cmd.sh.shell_api {
 
 	depends embox.lib.Tokenizer
 	depends embox.driver.terminal
-	depends embox.cmd.sh.shell
+	depends embox.cmd.sh.shell_registry
 	@NoRuntime depends embox.framework.cmd
 }

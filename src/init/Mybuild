@@ -64,7 +64,7 @@ module start_script {
 	source "start_script.c"
 
 	depends setup_tty_api
-	depends embox.cmd.sh.shell
+	depends embox.cmd.sh.shell_registry
 	depends embox.cmd.sh.shell_api
 	@NoRuntime depends embox.compat.libc.stdio.file_ops
 }
