@@ -8,6 +8,8 @@ module sensors {
 	@IncludePath("$(PLATFORM_DIR)/stm32f3_sensors/include")
 	source "sensors.c"
 
+	depends embox.driver.flash.stm32_f3
+	depends embox.driver.flash_lib
 	depends third_party.bsp.st_f3.core
 	depends stm32f3_sensors.utils.kalman
 }

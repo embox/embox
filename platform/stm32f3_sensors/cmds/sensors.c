@@ -17,15 +17,11 @@
 #include <stm32f3_discovery_gyroscope.h>
 #include <stm32f3_discovery_accelerometer.h>
 
+#include <drivers/block_dev/flash/flash_dev.h>
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 
 #include <kalman_filter.h>
-
-#define ACC_ARRAY_SIZE 2048
-
-static int16_t x_values[ACC_ARRAY_SIZE];
-static int16_t y_values[ACC_ARRAY_SIZE];
 
 #define g 9.80665f
 #define PI 3.14159265358979f
@@ -210,16 +206,28 @@ static void acc_calculate_offset(){
 	acc_offset[2] -= g*1000;
 }
 
+#define ACC_ARRAY_SIZE 2048
+#define ACC_VALUE_SIZE 2 /* Two bytes per value */
+extern struct flash_dev stm32f3_flash;
 static void acc_test(void) {
+	static const uint32_t x_values_offset = 0;
+	static const uint32_t y_values_offset = ACC_VALUE_SIZE * ACC_ARRAY_SIZE;
 	int16_t buf[3] = {0};
+
+	for (size_t i = 0; i < 8; i++)
+		flash_erase(&stm32f3_flash, i);
 
 	for (size_t i = 0; i < ACC_ARRAY_SIZE; i++) {
 		BSP_ACCELERO_GetXYZ(buf);
+		flash_write(&stm32f3_flash,
+				x_values_offset + i * ACC_VALUE_SIZE,
+				&buf[0],
+				ACC_VALUE_SIZE);
 
-		x_values[i] = buf[0];
-		y_values[i] = buf[1];
-
-		stm32f3_delay();
+		flash_write(&stm32f3_flash,
+				y_values_offset + i * ACC_VALUE_SIZE,
+				&buf[1],
+				ACC_VALUE_SIZE);
 	}
 }
 
@@ -244,6 +252,8 @@ int main(int argc, char *argv[]) {
 	HAL_Init();
 
 	init_leds();
+
+	acc_test();
 
 	res = BSP_ACCELERO_Init();
 	if (res != HAL_OK) {
