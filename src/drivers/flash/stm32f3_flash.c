@@ -23,17 +23,19 @@
 #define STM32F3_FLASH_PAGE_SIZE ((uint32_t) 0x800)
 #define STM32F3_ERR_MASK 0x1f3
 
+extern char _flash_start, _flash_end;
+
 static const struct flash_dev_drv stm32f3_flash_drv;
 const struct flash_dev stm32f3_flash = {
 	.bdev = NULL,
 	.drv = &stm32f3_flash_drv,
 	.flags = 0,
-	.start = 0x08006000,
-	.end   = 0x08007000,
+	.start = (uint32_t) &_flash_start,
+	.end   = (uint32_t) &_flash_end,
 	.num_block_infos = 1,
 	.block_info = {
 		.block_size = 0x000800,
-		.blocks = 4
+		.blocks = 32
 	},
 };
 
@@ -42,7 +44,7 @@ static inline int stm32f3_flash_check_range(struct flash_dev *dev, unsigned long
 }
 
 static inline int stm32f3_flash_check_align(unsigned long base, size_t len) {
-	return ((uintptr_t) base & 0x3) == 0 && ((uintptr_t) len  & 0x3) == 0;
+	return ((uintptr_t) base & 0x1) == 0 && ((uintptr_t) len  & 0x1) == 0;
 }
 
 static inline int stm32f3_flash_check_block(struct flash_dev *dev, uint32_t block) {
@@ -118,7 +120,7 @@ static int stm32f3_flash_program(struct flash_dev *dev, uint32_t base, const voi
 	int offset;
 
 	if (!stm32f3_flash_check_align(base, len)
-			|| ((uintptr_t) data & 0x3) != 0) {
+			|| ((uintptr_t) data & 0x1) != 0) {
 		return -EINVAL;
 	}
 
@@ -128,9 +130,9 @@ static int stm32f3_flash_program(struct flash_dev *dev, uint32_t base, const voi
 
 	HAL_FLASH_Unlock();
 
-	/* Write data word by word */
-	for (offset = 0; offset < len; offset += 4) {
-		if (!HAL_FLASH_Program(TYPEPROGRAM_WORD,
+	/* Write data halfword by halfword */
+	for (offset = 0; offset < len; offset += 2) {
+		if (HAL_OK != HAL_FLASH_Program(TYPEPROGRAM_HALFWORD,
 					dev->start + base + offset,
 					*((uint32_t*) data + offset)))
 			return -1; /* TODO: set appropriate code */
