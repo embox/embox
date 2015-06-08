@@ -6,10 +6,21 @@
  * @date    31.05.2015
  */
 
+#include <stdio.h>
+#include <unistd.h>
 #include <stm32f3xx.h>
 #include <stm32f3_discovery.h>
 #include <stm32f3xx_hal_gpio.h>
 #include <stm32f3xx_hal_rcc.h>
+
+#include <stm32f3_discovery_gyroscope.h>
+#include <stm32f3_discovery_accelerometer.h>
+
+#define ACC_ARRAY_SIZE (512 * 4 + 128)
+
+static int16_t x_values[ACC_ARRAY_SIZE];
+static int16_t y_values[ACC_ARRAY_SIZE];
+
 
 /* motor 1*/
 #define MOTOR_ENABLE1  GPIO_PIN_3
@@ -85,14 +96,44 @@ static void motor_run(struct motor *m, enum motor_run_direction dir) {
 }
 
 static void motor_stop(struct motor *m) {
+	stm32f3_delay(1000);
+	HAL_GPIO_WritePin(GPIOD, m->enable, GPIO_PIN_RESET);
+	stm32f3_delay(1000);
 	HAL_GPIO_WritePin(GPIOD, m->input[0], GPIO_PIN_RESET);
+	stm32f3_delay(1000);
 	HAL_GPIO_WritePin(GPIOD, m->input[1], GPIO_PIN_RESET);
+	stm32f3_delay(1000);
+}
+
+static void acc_test(void) {
+    int16_t buf[3] = {0};
+
+    for (size_t l = 0; l < 100; l++) {
+        for (size_t m = 0; m < ACC_ARRAY_SIZE; m++) {
+            BSP_ACCELERO_GetXYZ(buf);
+
+            x_values[m] = buf[0];
+            y_values[m] = buf[1];
+
+            //stm32f3_delay(50);
+        }
+		motor_stop(&motor1);
+        printf(">>");
+    }
 }
 
 int main(void) {
+	int res;
+
 	HAL_Init();
 
 	__GPIOD_CLK_ENABLE();
+
+	res = BSP_ACCELERO_Init();
+    if (res != HAL_OK) {
+        printf("BSP_ACCLEERO_Init failed, returned %d\n", res);
+        return -1;
+    }
 
 	init_pins(GPIOD, MOTOR_ENABLE1 | MOTOR_INPUT1 | MOTOR_INPUT2 |
 			MOTOR_ENABLE2 | MOTOR_INPUT3 | MOTOR_INPUT4);
@@ -105,19 +146,25 @@ int main(void) {
 	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_GPIO);
 	
 	motor_enable(&motor1);
-	motor_enable(&motor2);
-	while(1) {
-		while(BSP_PB_GetState(BUTTON_USER) != SET)
-			;
-		motor_run(&motor1, MOTOR_RUN_LEFT);
-		motor_run(&motor2, MOTOR_RUN_LEFT);
-		stm32f3_delay(0xFFFF);
-		while(BSP_PB_GetState(BUTTON_USER) != SET)
-			;
-		motor_run(&motor1, MOTOR_RUN_RIGHT);
-		motor_run(&motor2, MOTOR_RUN_RIGHT);
-		stm32f3_delay(0xFFFF);
-	}
+	while(BSP_PB_GetState(BUTTON_USER) != SET)
+		;
+	motor_run(&motor1, MOTOR_RUN_RIGHT);
+
+	acc_test();
+
+	//motor_enable(&motor2);
+	//while(1) {
+	//	while(BSP_PB_GetState(BUTTON_USER) != SET)
+	//		;
+	//	motor_run(&motor1, MOTOR_RUN_LEFT);
+	//	//motor_run(&motor2, MOTOR_RUN_LEFT);
+	//	stm32f3_delay(0xFFFF);
+	//	while(BSP_PB_GetState(BUTTON_USER) != SET)
+	//		;
+	//	motor_run(&motor1, MOTOR_RUN_RIGHT);
+	//	//motor_run(&motor2, MOTOR_RUN_RIGHT);
+	//	stm32f3_delay(0xFFFF);
+	//}
 
 	return 0;
 }
