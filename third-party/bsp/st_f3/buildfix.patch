@@ -1,6 +1,6 @@
 diff -aur stm32f3discovery.orig/BSP/Components/l3gd20/l3gd20.h stm32f3discovery/BSP/Components/l3gd20/l3gd20.h
---- stm32f3discovery.orig/BSP/Components/l3gd20/l3gd20.h	2015-05-19 02:19:54.615088563 +0300
-+++ stm32f3discovery/BSP/Components/l3gd20/l3gd20.h	2015-05-19 12:01:42.815331680 +0300
+--- stm32f3discovery.orig/BSP/Components/l3gd20/l3gd20.h	2015-06-09 17:10:16.081243449 +0300
++++ stm32f3discovery/BSP/Components/l3gd20/l3gd20.h	2015-06-09 17:08:48.889240280 +0300
 @@ -45,7 +45,7 @@
  #endif
  
@@ -11,8 +11,8 @@ diff -aur stm32f3discovery.orig/BSP/Components/l3gd20/l3gd20.h stm32f3discovery/
  /** @addtogroup BSP
    * @{
 diff -aur stm32f3discovery.orig/BSP/Components/lsm303dlhc/lsm303dlhc.h stm32f3discovery/BSP/Components/lsm303dlhc/lsm303dlhc.h
---- stm32f3discovery.orig/BSP/Components/lsm303dlhc/lsm303dlhc.h	2015-05-19 02:19:54.635088563 +0300
-+++ stm32f3discovery/BSP/Components/lsm303dlhc/lsm303dlhc.h	2015-05-23 17:11:00.129864114 +0300
+--- stm32f3discovery.orig/BSP/Components/lsm303dlhc/lsm303dlhc.h	2015-06-09 17:10:16.081243449 +0300
++++ stm32f3discovery/BSP/Components/lsm303dlhc/lsm303dlhc.h	2015-06-09 17:08:48.889240280 +0300
 @@ -46,7 +46,7 @@
  #endif
  
@@ -23,8 +23,8 @@ diff -aur stm32f3discovery.orig/BSP/Components/lsm303dlhc/lsm303dlhc.h stm32f3di
  /** @addtogroup LSM303DLHC
    * @{
 diff -aur stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c
---- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c	2015-05-19 02:19:54.595088563 +0300
-+++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c	2015-05-23 17:11:26.593864197 +0300
+--- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c	2015-06-09 17:10:16.081243449 +0300
++++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.c	2015-06-09 17:08:48.889240280 +0300
 @@ -117,7 +117,7 @@
    /* MEMS configuration ------------------------------------------------------*/
     /* Fill the accelerometer structure */
@@ -35,8 +35,8 @@ diff -aur stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelero
      LSM303DLHC_InitStructure.AccFull_Scale = LSM303DLHC_FULLSCALE_2G;
      LSM303DLHC_InitStructure.BlockData_Update = LSM303DLHC_BlockUpdate_Continous;
 diff -aur stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h
---- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h	2015-05-19 02:19:54.595088563 +0300
-+++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h	2015-05-19 02:36:20.191081292 +0300
+--- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h	2015-06-09 17:10:16.081243449 +0300
++++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_accelerometer.h	2015-06-09 17:08:48.889240280 +0300
 @@ -48,7 +48,7 @@
  /* Includes ------------------------------------------------------------------*/
  #include "stm32f3_discovery.h"
@@ -46,9 +46,21 @@ diff -aur stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_accelero
     
  /** @addtogroup BSP
    * @{
+diff -aur stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.c stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.c
+--- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.c	2015-06-09 17:10:16.081243449 +0300
++++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.c	2015-06-09 17:11:16.313245639 +0300
+@@ -115,7 +115,7 @@
+ 
+     /* Configure Mems : data rate, power mode, full scale and axes */
+     L3GD20_InitStructure.Power_Mode = L3GD20_MODE_ACTIVE;
+-    L3GD20_InitStructure.Output_DataRate = L3GD20_OUTPUT_DATARATE_1;
++    L3GD20_InitStructure.Output_DataRate = L3GD20_OUTPUT_DATARATE_4;
+     L3GD20_InitStructure.Axes_Enable = L3GD20_AXES_ENABLE;
+     L3GD20_InitStructure.Band_Width = L3GD20_BANDWIDTH_4;
+     L3GD20_InitStructure.BlockData_Update = L3GD20_BlockDataUpdate_Continous;
 diff -aur stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.h stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.h
---- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.h	2015-05-19 02:19:54.595088563 +0300
-+++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.h	2015-05-19 02:20:37.095088249 +0300
+--- stm32f3discovery.orig/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.h	2015-06-09 17:10:16.081243449 +0300
++++ stm32f3discovery/BSP/STM32F3-Discovery/stm32f3_discovery_gyroscope.h	2015-06-09 17:08:48.893240280 +0300
 @@ -48,7 +48,7 @@
  /* Includes ------------------------------------------------------------------*/
  #include "stm32f3_discovery.h"
