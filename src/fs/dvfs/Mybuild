@@ -18,9 +18,22 @@ module dvfs extends fs_api {
 
 	depends path_helper
 	depends rootfs_dvfs
+	depends cache_strategy
 
 	depends embox.fs.syslib.dcache
 	depends embox.fs.driver.dvfs_driver
 	depends embox.fs.idesc
 	depends embox.kernel.task.resource.vfs
+}
+
+@DefaultImpl(trivial)
+abstract module cache_strategy {
+}
+
+module trivial extends cache_strategy {
+	source "dcache_no.c"
+}
+
+module polynomial extends cache_strategy {
+	source "dcache_polynomial.c"
 }

@@ -168,6 +168,12 @@ extern int dvfs_read(struct file *desc, char *buf, int count);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 
+/* dcache-related stuff */
+extern struct dentry *dvfs_cache_lookup(const char *path, struct dentry *base);
+extern struct dentry *dvfs_cache_get(char *path);
+extern int dvfs_cache_del(struct dentry *dentry);
+extern int dvfs_cache_add(struct dentry *dentry);
+
 extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev);
 
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
