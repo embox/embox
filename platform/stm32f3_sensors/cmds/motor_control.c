@@ -19,7 +19,7 @@
 
 #define ACC_TOTAL (512 * 4 + 128)
 #define ACC_VAL_SIZE (2)
-#define GYRO_TOTAL (512 * 4 + 128)
+#define GYRO_TOTAL ACC_TOTAL
 #define GYRO_VAL_SIZE (4)
 
 extern struct flash_dev stm32f3_flash;
@@ -152,9 +152,16 @@ static void gyro_test(void) {
 	motor_stop(&motor1);
 }
 
+static void acc_gyro_test(void) {
+	for (size_t m = 0; m < ACC_TOTAL; m++) {
+		acc_get_store(m);
+		gyro_get_store(m);
+	}
+	motor_stop(&motor1);
+}
+
 int main(void) {
 	int res;
-
 
 	HAL_Init();
 
@@ -184,12 +191,7 @@ int main(void) {
 		;
 	motor_run(&motor1, MOTOR_RUN_RIGHT);
 
-	acc_test();
-
-	motor_run(&motor1, MOTOR_RUN_RIGHT);
-
-	gyro_test();
-
+	acc_gyro_test();
 
 	//motor_enable(&motor2);
 	//while(1) {
