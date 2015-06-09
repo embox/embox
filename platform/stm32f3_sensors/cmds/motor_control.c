@@ -17,13 +17,19 @@
 #include <stm32f3_discovery_gyroscope.h>
 #include <stm32f3_discovery_accelerometer.h>
 
-#define ACC_ARRAY_SIZE (512 * 4 + 128)
-#define ACC_VALUE_SIZE 2 /* Two bytes per value */
+#define ACC_TOTAL (512 * 4 + 128)
+#define ACC_VAL_SIZE (2)
+#define GYRO_TOTAL (512 * 4 + 128)
+#define GYRO_VAL_SIZE (4)
 
 extern struct flash_dev stm32f3_flash;
-static void *x_values = (void*) 0x0;
-static void *y_values = (void*) 0x2000; /* 8 KiB */
-
+/* Offsets for arrays */
+static const void *acc_x_values = (void*) 0x0;
+static const void *acc_y_values = (void*) (ACC_TOTAL * ACC_VAL_SIZE);
+static const void *acc_z_values = (void*) (2 * ACC_TOTAL * ACC_VAL_SIZE);
+static const void *gyro_x_values = (void*) (3 * (ACC_TOTAL * ACC_VAL_SIZE));
+static const void *gyro_y_values = (void*) (3 * (ACC_TOTAL * ACC_VAL_SIZE) + GYRO_TOTAL * GYRO_VAL_SIZE);
+static const void *gyro_z_values = (void*) (3 * (ACC_TOTAL * ACC_VAL_SIZE) + 2 * GYRO_TOTAL * GYRO_VAL_SIZE);
 
 /* motor 1*/
 #define MOTOR_ENABLE1  GPIO_PIN_3
@@ -108,36 +114,47 @@ static void motor_stop(struct motor *m) {
 	stm32f3_delay(1000);
 }
 
-static void store_val(void *arr, int pos, uint16_t val) {
+static void store_val(const void *arr, int pos, void *data, int size) {
 	flash_write(&stm32f3_flash,
-			(unsigned long) arr + pos * ACC_VALUE_SIZE,
-			&val,
-			ACC_VALUE_SIZE);
+			(unsigned long) arr + pos * size,
+			data,
+			size);
 }
 
+static void acc_get_store(int pos) {
+	int16_t buf[3] = {0, 0, 0};
+	BSP_ACCELERO_GetXYZ(buf);
+
+	store_val(acc_x_values, pos, &buf[0], sizeof(buf[0]));
+	store_val(acc_y_values, pos, &buf[1], sizeof(buf[1]));
+	store_val(acc_z_values, pos, &buf[2], sizeof(buf[2]));
+}
+
+static void gyro_get_store(int pos) {
+	float buf[3] = {0, 0, 0};
+	BSP_GYRO_GetXYZ(buf);
+
+	store_val(gyro_x_values, pos, &buf[0], sizeof(buf[0]));
+	store_val(gyro_y_values, pos, &buf[1], sizeof(buf[1]));
+	store_val(gyro_z_values, pos, &buf[2], sizeof(buf[2]));
+}
+
+
 static void acc_test(void) {
-    int16_t buf[3] = {0};
+	for (size_t m = 0; m < ACC_TOTAL; m++)
+		acc_get_store(m);
+	motor_stop(&motor1);
+}
 
-	for (size_t i = 0; i < 8; i++)
-		flash_erase(&stm32f3_flash, i);
-
-
-    for (size_t l = 0; l < 100; l++) {
-        for (size_t m = 0; m < ACC_ARRAY_SIZE; m++) {
-            BSP_ACCELERO_GetXYZ(buf);
-
-			store_val(x_values, m, buf[0]);
-			store_val(y_values, m, buf[1]);
-
-            //stm32f3_delay(50);
-        }
-		motor_stop(&motor1);
-        printf(">>");
-    }
+static void gyro_test(void) {
+	for (size_t m = 0; m < GYRO_TOTAL; m++)
+		gyro_get_store(m);
+	motor_stop(&motor1);
 }
 
 int main(void) {
 	int res;
+
 
 	HAL_Init();
 
@@ -148,6 +165,9 @@ int main(void) {
         printf("BSP_ACCLEERO_Init failed, returned %d\n", res);
         return -1;
     }
+
+	for (size_t i = 0; i < 32; i++)
+		flash_erase(&stm32f3_flash, i);
 
 	init_pins(GPIOD, MOTOR_ENABLE1 | MOTOR_INPUT1 | MOTOR_INPUT2 |
 			MOTOR_ENABLE2 | MOTOR_INPUT3 | MOTOR_INPUT4);
@@ -165,6 +185,11 @@ int main(void) {
 	motor_run(&motor1, MOTOR_RUN_RIGHT);
 
 	acc_test();
+
+	motor_run(&motor1, MOTOR_RUN_RIGHT);
+
+	gyro_test();
+
 
 	//motor_enable(&motor2);
 	//while(1) {
