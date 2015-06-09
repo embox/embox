@@ -13,13 +13,16 @@
 #include <stm32f3xx_hal_gpio.h>
 #include <stm32f3xx_hal_rcc.h>
 
+#include <drivers/block_dev/flash/flash_dev.h>
 #include <stm32f3_discovery_gyroscope.h>
 #include <stm32f3_discovery_accelerometer.h>
 
 #define ACC_ARRAY_SIZE (512 * 4 + 128)
+#define ACC_VALUE_SIZE 2 /* Two bytes per value */
 
-static int16_t x_values[ACC_ARRAY_SIZE];
-static int16_t y_values[ACC_ARRAY_SIZE];
+extern struct flash_dev stm32f3_flash;
+static void *x_values = (void*) 0x0;
+static void *y_values = (void*) 0x2000; /* 8 KiB */
 
 
 /* motor 1*/
@@ -63,7 +66,7 @@ static void init_pins(GPIO_TypeDef  *GPIOx, uint16_t pins) {
 	HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 }
 
-static void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx, 
+static void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx,
 		uint16_t enable, uint16_t in1, uint16_t in2, uint8_t mask) {
 	m->GPIOx = GPIOx;
 	m->enable = enable;
@@ -105,15 +108,26 @@ static void motor_stop(struct motor *m) {
 	stm32f3_delay(1000);
 }
 
+static void store_val(void *arr, int pos, uint16_t val) {
+	flash_write(&stm32f3_flash,
+			(unsigned long) arr + pos * ACC_VALUE_SIZE,
+			&val,
+			ACC_VALUE_SIZE);
+}
+
 static void acc_test(void) {
     int16_t buf[3] = {0};
+
+	for (size_t i = 0; i < 8; i++)
+		flash_erase(&stm32f3_flash, i);
+
 
     for (size_t l = 0; l < 100; l++) {
         for (size_t m = 0; m < ACC_ARRAY_SIZE; m++) {
             BSP_ACCELERO_GetXYZ(buf);
 
-            x_values[m] = buf[0];
-            y_values[m] = buf[1];
+			store_val(x_values, m, buf[0]);
+			store_val(y_values, m, buf[1]);
 
             //stm32f3_delay(50);
         }
@@ -138,13 +152,13 @@ int main(void) {
 	init_pins(GPIOD, MOTOR_ENABLE1 | MOTOR_INPUT1 | MOTOR_INPUT2 |
 			MOTOR_ENABLE2 | MOTOR_INPUT3 | MOTOR_INPUT4);
 
-	motor_init(&motor1, GPIOD, MOTOR_ENABLE1, MOTOR_INPUT1, 
+	motor_init(&motor1, GPIOD, MOTOR_ENABLE1, MOTOR_INPUT1,
 		MOTOR_INPUT2, 0x3);
 	motor_init(&motor2, GPIOD, MOTOR_ENABLE2, MOTOR_INPUT3,
 		MOTOR_INPUT4, 0x3);
 
 	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_GPIO);
-	
+
 	motor_enable(&motor1);
 	while(BSP_PB_GetState(BUTTON_USER) != SET)
 		;

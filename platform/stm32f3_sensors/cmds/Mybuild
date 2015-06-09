@@ -21,5 +21,6 @@ module sensors {
 module motor_control {
 	source "motor_control.c"
 
+	depends embox.driver.flash.stm32_f3
 	depends third_party.bsp.st_f3.core
 }
