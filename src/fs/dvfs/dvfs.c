@@ -1,4 +1,5 @@
-/* @file
+/**
+ * @file
  * @brief  DVFS interface implementation
  * @author Denis Deryugin
  * @date   11 Mar 2014
@@ -27,7 +28,8 @@ extern int           dvfs_default_pathname(struct inode *inode, char *buf, int f
 
 /* Path-related functions */
 
-/* @brief Get the full path to the inode from task's root dentry
+/**
+ * @brief Get the full path to the inode from task's root dentry
  * @param inode The inode of which the path is to be resolved
  * @param buf   Char buffer where path would be put
  * @param flags Used to determine how pathname should be formed
@@ -51,7 +53,8 @@ int dvfs_pathname(struct inode *inode, char *buf, int flags) {
 		return dvfs_default_pathname(inode, buf, flags);
 }
 
-/* @brief Create new inode
+/**
+ * @brief Create new inode
  * @param name   Directory name for new inode
  * @param lookup Structure containing parent dentry; lookup->item should be NULL
  * @param flags  Flags passed to FS driver
@@ -87,7 +90,8 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 }
 
 extern const struct idesc_ops idesc_file_ops;
-/* @brief Initialize file descriptor for usage according to path
+/**
+ * @brief Initialize file descriptor for usage according to path
  * @param path Path to the file
  * @param desc The file descriptor to be initailized
  * @param mode Defines behavior according to POSIX
@@ -143,7 +147,8 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 	return desc->f_ops->open(i_no, desc);
 }
 
-/* @brief Delete file from storage
+/**
+ * @brief Delete file from storage
  * @param path Path to file
  *
  * @return Negative error code
@@ -176,7 +181,8 @@ int dvfs_remove(const char *path) {
 	return res;
 }
 
-/* @brief Uninitialize file descriptor
+/**
+ * @brief Uninitialize file descriptor
  * @param desc File descriptor to be uninitialized
  *
  * @return Negative error code
@@ -196,7 +202,8 @@ int dvfs_close(struct file *desc) {
 	return 0;
 }
 
-/* @brief Application level interface to write the file
+/**
+ * @brief Application level interface to write the file
  * @param desc  File to be written
  * @param buf   Source of the data
  * @param count Length of the data
@@ -221,7 +228,8 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 	return res;
 }
 
-/* @brief Application level interface to read the file
+/**
+ * @brief Application level interface to read the file
  * @param desc  File to be read
  * @param buf   Destination
  * @param count Length of the data
@@ -248,7 +256,8 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int set_rootfs_sb(struct super_block *sb);
-/* @brief Mount file system
+/**
+ * @brief Mount file system
  * @param dev    Path to the source device (e.g. /dev/sda1)
  * @param dest   Path to the mount point (e.g. /mnt)
  * @param fstype File system type related to FS driver
@@ -308,7 +317,8 @@ extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
 extern struct dentry *dvfs_cache_get(char *path);
 extern int dvfs_cache_add(struct dentry *dentry);
-/* @brief Get next entry in the directory
+/**
+ * @brief Get next entry in the directory
  * @param lookup  Contains directory dentry (.parent) and
  *                previous element (.item)
  * @param dir_ctx Position to be found in directory
