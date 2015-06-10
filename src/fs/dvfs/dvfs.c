@@ -381,19 +381,3 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 
 	return 0;
 }
-
-/* Handle some calls of old vfs */
-#include <fs/mount.h>
-
-int mount(char *dev, char *dir, char *fs_type) {
-	struct block_dev *bdev;
-	if (dev) {
-		block_devs_init();
-		bdev = block_dev_find(dev);
-	}
-	return dvfs_mount(bdev, dir, fs_type, 0);
-}
-
-int umount(char *dir) {
-	return 0;
-}
