@@ -330,8 +330,6 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct inode *next_inode;
 	struct dentry *next_dentry = NULL;
 	int res;
-	//struct dentry *d;
-	//struct dlist_head *l;
 	assert(lookup);
 	assert(ctx);
 
@@ -339,6 +337,8 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	parent_inode = lookup->parent->d_inode;
 	next_inode   = dvfs_alloc_inode(sb);
 	next_dentry  = dvfs_alloc_dentry();
+
+	lookup->item = next_dentry;
 
 	if (!next_inode || !next_dentry) {
 		if (next_dentry)
@@ -364,22 +364,11 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		dentry_full_path(lookup->parent, full_path);
 		dvfs_pathname(next_inode, full_path + strlen(full_path), 0);
 
-		if ((cached = dvfs_cache_get(full_path, NULL))) {
+		if ((cached = dvfs_cache_get(full_path, lookup))) {
 			dvfs_destroy_dentry(next_dentry);
 			next_dentry = cached;
 		} else {
-			dlist_foreach(l, &lookup->parent->children) {
-				if (l == &lookup->parent->children)
-					continue;
-				d = mcast_out(l, struct dentry, children_lnk);
-
-				if (d != next_dentry && !strcmp(d->name, next_dentry->name)) {
-					dvfs_destroy_dentry(next_dentry);
-					next_dentry = d;
-					break;
-				}
-			}
-			dvfs_pathname(next_inode, next_dentry->name, 0);
+		dvfs_pathname(next_inode, next_dentry->name, 0);
 			dvfs_cache_add(next_dentry);
 		}
 		ctx->pos++;
