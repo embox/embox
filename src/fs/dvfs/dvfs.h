@@ -170,7 +170,7 @@ extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 
 /* dcache-related stuff */
 extern struct dentry *dvfs_cache_lookup(const char *path, struct dentry *base);
-extern struct dentry *dvfs_cache_get(char *path);
+extern struct dentry *dvfs_cache_get(char *path, struct lookup *lookup);
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int dvfs_cache_add(struct dentry *dentry);
 

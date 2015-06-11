@@ -106,7 +106,7 @@ int dvfs_cache_del(struct dentry *dentry) {
  *
  * @return
  */
-struct dentry *dvfs_cache_get(char *path) {
+struct dentry *dvfs_cache_get(char *path, struct lookup *lookup) {
 	unsigned long long hash = poly_hash(path);
 	struct dentry *res;
 	/* TODO local path hash offset */
@@ -122,5 +122,5 @@ struct dentry *dvfs_cache_lookup(const char *path,
 
 	/* TODO check path from root */
 
-	return dvfs_cache_get(full_path);
+	return dvfs_cache_get(full_path, NULL);
 }

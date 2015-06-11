@@ -315,8 +315,6 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 
 extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
-extern struct dentry *dvfs_cache_get(char *path);
-extern int dvfs_cache_add(struct dentry *dentry);
 /**
  * @brief Get next entry in the directory
  * @param lookup  Contains directory dentry (.parent) and
@@ -366,21 +364,21 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		dentry_full_path(lookup->parent, full_path);
 		dvfs_pathname(next_inode, full_path + strlen(full_path), 0);
 
-		if ((cached = dvfs_cache_get(full_path))) {
+		if ((cached = dvfs_cache_get(full_path, NULL))) {
 			dvfs_destroy_dentry(next_dentry);
 			next_dentry = cached;
 		} else {
-		/* dlist_foreach(l, &lookup->parent->children) {
-			if (l == &lookup->parent->children)
-				continue;
-			d = mcast_out(l, struct dentry, children_lnk);
+			dlist_foreach(l, &lookup->parent->children) {
+				if (l == &lookup->parent->children)
+					continue;
+				d = mcast_out(l, struct dentry, children_lnk);
 
-			if (d != next_dentry && !strcmp(d->name, next_dentry->name)) {
-				dvfs_destroy_dentry(next_dentry);
-				next_dentry = d;
-				break;
+				if (d != next_dentry && !strcmp(d->name, next_dentry->name)) {
+					dvfs_destroy_dentry(next_dentry);
+					next_dentry = d;
+					break;
+				}
 			}
-		}*/
 			dvfs_pathname(next_inode, next_dentry->name, 0);
 			dvfs_cache_add(next_dentry);
 		}

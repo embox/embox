@@ -12,7 +12,7 @@ struct dentry *dvfs_cache_lookup(const char *path, struct dentry *base) {
 	return NULL;
 }
 
-struct dentry *dvfs_cache_get(char *path) {
+struct dentry *dvfs_cache_get(char *path, struct lookup *lookup) {
 	return NULL;
 }
 
