@@ -361,14 +361,16 @@ void sched_start_switch(struct schedee *next) {
 	__sched_activate(next);
 }
 
+/** locks: sched */
 static void __schedule(int preempt) {
+	ipl_t ipl;
 	struct schedee *prev;
 	struct schedee *next;
 
 	prev = schedee_get_current();
 
 	assert(!sched_in_interrupt());
-	spin_lock_ipl(&rq.lock);
+	ipl = spin_lock_ipl(&rq.lock);
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
@@ -391,17 +393,25 @@ static void __schedule(int preempt) {
 
 		schedee_set_current(next);
 
-		/* next->process has to restore ipl. */
+		/* next->process has to enable ipl. */
 		next = next->process(prev, next);
 
 		if (next) {
 			break;
 		}
 
-		spin_lock_ipl(&rq.lock);
+		/* ipl is enabled, no need to save it. */
+		spin_lock_ipl_disable(&rq.lock);
 	}
 
 	sched_timing_start(next);
+
+	/* FIXME: ipl_disable() should be removed after fixing ipl_restore
+	 * issues. */
+	ipl_disable();
+	/* Restoring ipl is vital as __schedule() can be called both with IRQs
+	 * enabled and disabled. */
+	ipl_restore(ipl);
 }
 
 void schedule(void) {

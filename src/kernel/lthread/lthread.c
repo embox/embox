@@ -34,7 +34,7 @@ static struct schedee *lthread_process(struct schedee *prev,
 	next->ready = false;
 	next->waiting = true;
 
-	/* We have to restore ipl as soon as possible. */
+	/* We have to enable ipl as soon as possible. */
 	ipl_enable();
 
 	lt->label_offset = lt->run(lt);
