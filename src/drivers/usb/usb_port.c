@@ -134,6 +134,7 @@ static void usb_port_st_connected(struct usb_hub_port *port) {
 }
 
 static void usb_port_st_reset_awaiting(struct usb_hub_port *port) {
+	bool timeout = port->changed & USB_HUB_PORT_TIMEOUT;
 
 	usb_hub_ctrl(port, USB_HUB_REQ_PORT_CLEAR, USB_HUB_PORT_RESET);
 
@@ -142,7 +143,7 @@ static void usb_port_st_reset_awaiting(struct usb_hub_port *port) {
 		return;
 	}
 
-	if (port->changed & USB_HUB_PORT_TIMEOUT) {
+	if (timeout) {
 
 		usb_port_set_state(port, usb_port_st_reset_settle);
 		usb_port_post(port, 10);
