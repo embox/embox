@@ -56,7 +56,7 @@ struct schedee {
 	 * the next schedee from the runq. This function performs all necessary
 	 * actions with a specific schedee implementation.
 	 *
-	 * It has to restore ipl as soon as possible.
+	 * It has to enable ipl as soon as possible.
 	 *
 	 * Returns schedee to which context switched.
 	 */
