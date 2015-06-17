@@ -28,7 +28,11 @@ static inline __ipl_t ipl_save(void) {
 }
 
 static inline void ipl_restore(__ipl_t ipl) {
-	__set_msr(__get_msr() | (ipl ? MSR_EE : 0));
+	if (ipl) {
+		__set_msr(__get_msr() | MSR_EE);
+	} else {
+		__set_msr(__get_msr() & ~MSR_EE);
+	}
 }
 
 #endif /* !__ASSEMBLER__ */

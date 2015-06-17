@@ -406,9 +406,6 @@ static void __schedule(int preempt) {
 
 	sched_timing_start(next);
 
-	/* FIXME: ipl_disable() should be removed after fixing ipl_restore
-	 * issues. */
-	ipl_disable();
 	/* Restoring ipl is vital as __schedule() can be called both with IRQs
 	 * enabled and disabled. */
 	ipl_restore(ipl);
