@@ -15,13 +15,15 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <util/sys_log.h>
+#include <util/log.h>
 
 #include <net/lib/rpc/clnt.h>
 #include <net/lib/rpc/rpc.h>
 #include <net/lib/rpc/rpc_msg.h>
 #include <net/lib/rpc/auth.h>
 #include <net/lib/rpc/pmap.h>
+
+LOG_DECLARE_LOGGER();
 
 #define TCP_MSG_MAX_SZ 1024
 
@@ -41,7 +43,7 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 
 	clnt = clnt_alloc(), ath = authnone_create();
 	if ((clnt == NULL) || (ath == NULL)) {
-		LOG_ERROR("clnttcp_create", "clnt_alloc failed");
+		log_error("clnt_alloc failed");
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = ENOMEM;
 		goto exit_with_error;
@@ -59,7 +61,7 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if ((sock < 0)
 			|| (connect(sock, (struct sockaddr *)&sin, sizeof sin) < 0)) {
-		LOG_ERROR("clnttcp_create", "socket or connect error");
+		log_error("socket or connect error");
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
 		close(sock);
@@ -103,7 +105,7 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 
 	if (-1 == setsockopt(clnt->sock, SOL_SOCKET, SO_RCVTIMEO,
 				&timeout, sizeof timeout)) {
-		LOG_ERROR("clnttcp_call", "setsockopt error");
+		log_error("setsockopt error");
 		clnt->err.extra.error = errno;
 		return clnt->err.status = RPC_SYSTEMERROR;
 	}
@@ -164,7 +166,7 @@ static int readtcp(struct client *clnt, char *buff, size_t len) {
 
 	res = recv(clnt->sock, buff, len, 0);
 	if (res == -1) {
-		LOG_ERROR("readtcp", "recv error");
+		log_error("recv error");
 		clnt->err.status = RPC_CANTRECV;
 		clnt->err.extra.error = errno;
 		return -1;
@@ -178,7 +180,7 @@ static int writetcp(struct client *clnt, char *buff, size_t len) {
 
 	res = send(clnt->sock, buff, len, 0);
 	if (res == -1) {
-		LOG_ERROR("writetcp", "send error");
+		log_error("send error");
 		clnt->err.status = RPC_CANTSEND;
 		clnt->err.extra.error = errno;
 		return -1;
