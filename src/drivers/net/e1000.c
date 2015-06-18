@@ -33,9 +33,8 @@
 
 #include <mem/misc/pool.h>
 
+#include <util/binalign.h>
 #include <kernel/printk.h>
-
-#include <kernel/panic.h>
 
 #include <embox/unit.h>
 
@@ -57,11 +56,11 @@ PCI_DRIVER_TABLE("e1000", e1000_init, e1000_id_table);
 /** Size of each I/O buffer per descriptor. */
 #define E1000_IOBUF_SIZE 2048
 
-struct e1000_priv {
-	struct sk_buff_head txing_queue;
-	struct sk_buff_head tx_dev_queue;
-	char link_status;
-};
+#define E1000_RX_CHECKSUM_LEN 4
+
+#define E1000_MAX_RX_LEN (ETH_FRAME_LEN + E1000_RX_CHECKSUM_LEN)
+
+static int e1000_stop(struct net_device *dev);
 
 struct e1000_rx_desc {
 	uint32_t buffer_address;
@@ -84,9 +83,21 @@ struct e1000_tx_desc {
 	uint16_t special;
 };
 
-static struct e1000_rx_desc rx_descs[E1000_RXDESC_NR] __attribute__((aligned(16)));
-static struct e1000_tx_desc tx_descs[E1000_TXDESC_NR] __attribute__((aligned(16)));
-static struct sk_buff *rx_skbs[E1000_RXDESC_NR];
+struct e1000_priv {
+	struct sk_buff_head txing_queue;
+	struct sk_buff_head tx_dev_queue;
+	struct e1000_tx_desc tx_descs[E1000_TXDESC_NR] __attribute__((aligned(16)));
+
+	struct e1000_rx_desc rx_descs[E1000_RXDESC_NR] __attribute__((aligned(16)));
+	struct sk_buff *rx_skbs[E1000_RXDESC_NR];
+
+	char link_status;
+};
+
+static inline struct e1000_priv *e1000_get_priv(struct net_device *dev) {
+	return (struct e1000_priv *) binalign_bound((uintptr_t) netdev_priv(dev, struct e1000_priv), 16);
+}
+
 static void mdelay(int value) {
 	volatile int delay = value;
 
@@ -99,6 +110,7 @@ static volatile uint32_t *e1000_reg(struct net_device *dev, int offset) {
 }
 
 static int e1000_xmit(struct net_device *dev) {
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 	uint16_t head;
 	uint16_t tail;
 	struct sk_buff *skb;
@@ -113,25 +125,25 @@ static int e1000_xmit(struct net_device *dev) {
 			goto out_unlock;
 		}
 
-		skb = skb_queue_pop(&netdev_priv(dev, struct e1000_priv)->tx_dev_queue);
+		skb = skb_queue_pop(&nic_priv->tx_dev_queue);
 
 		if (skb == NULL) {
 			goto out_unlock;
 		}
 
-		tx_descs[tail].buffer_address = (uint32_t) skb->mac.raw;
-		tx_descs[tail].status = 0;
-		tx_descs[tail].cmd = E1000_TX_CMD_EOP |
+		nic_priv->tx_descs[tail].buffer_address = (uint32_t) skb->mac.raw;
+		nic_priv->tx_descs[tail].status = 0;
+		nic_priv->tx_descs[tail].cmd = E1000_TX_CMD_EOP |
 					E1000_TX_CMD_FCS |
 					E1000_TX_CMD_RS;
-		tx_descs[tail].length  = skb->len;
+		nic_priv->tx_descs[tail].length  = skb->len;
 
 		++tail;
 		tail %= E1000_TXDESC_NR;
 
 		REG_STORE(e1000_reg(dev, E1000_REG_TDT), tail);
 
-		skb_queue_push(&netdev_priv(dev, struct e1000_priv)->txing_queue, skb);
+		skb_queue_push(&nic_priv->txing_queue, skb);
 	}
 out_unlock:
 	irq_unlock();
@@ -139,11 +151,11 @@ out_unlock:
 }
 
 static int xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 
 	irq_lock();
 	{
-		skb_queue_push(&netdev_priv(dev, struct e1000_priv)->tx_dev_queue,
-				skb);
+		skb_queue_push(&nic_priv->tx_dev_queue, skb);
 	}
 	irq_unlock();
 
@@ -154,10 +166,11 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 
 static void txed_skb_clean(struct net_device *dev) {
 	struct sk_buff *skb;
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
 
 	irq_lock();
 	{
-		while ((skb = skb_queue_pop(&netdev_priv(dev, struct e1000_priv)->txing_queue))) {
+		while ((skb = skb_queue_pop(&nic_priv->txing_queue))) {
 			skb_free(skb);
 		}
 	}
@@ -166,11 +179,11 @@ static void txed_skb_clean(struct net_device *dev) {
 
 static void e1000_rx(struct net_device *dev) {
 	/*net_device_stats_t stat = get_eth_stat(dev);*/
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
+	struct sk_buff *skb, *new_skb;
 	uint16_t head;
 	uint16_t tail;
 	uint16_t cur;
-
-	struct sk_buff *skb;
 
 	/* nested irq locked to prevent already handled packets handled once more
 	 * as tail updated at exit
@@ -182,31 +195,38 @@ static void e1000_rx(struct net_device *dev) {
 		cur = (1 + tail) % E1000_RXDESC_NR;
 
 		while (cur != head) {
+			int len;
 
-			if (!(rx_descs[cur].status)) {
+			if (!(nic_priv->rx_descs[cur].status)) {
 				break;
 			}
 
-			//len = rx_descs[cur].length - 4; /* checksum */
+			len = nic_priv->rx_descs[cur].length - E1000_RX_CHECKSUM_LEN;
 
-			if (0 != nf_test_raw(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, (void *) rx_descs[cur].buffer_address,
-						ETH_ALEN + (void *) rx_descs[cur].buffer_address, ETH_ALEN)) {
+			if (0 != nf_test_raw(NF_CHAIN_INPUT,
+						NF_TARGET_ACCEPT,
+						(char *) nic_priv->rx_descs[cur].buffer_address,
+						ETH_ALEN + (char *) nic_priv->rx_descs[cur].buffer_address,
+						ETH_ALEN)) {
 				goto drop_pack;
 			}
 
-			skb = rx_skbs[cur];
-			assert (skb);
+			new_skb = skb_alloc(E1000_MAX_RX_LEN);
+			if (!new_skb) {
+				goto drop_pack;
+			}
 
-			rx_skbs[cur]= skb_alloc(ETH_FRAME_LEN);
-			if (rx_skbs[cur] == NULL)
-				panic("Can't allocate rx_skbs %d", cur);
-			rx_descs[cur].buffer_address = (uint32_t) rx_skbs[cur]->mac.raw;
+			skb = nic_priv->rx_skbs[cur];
+			nic_priv->rx_skbs[cur] = new_skb;
+			nic_priv->rx_descs[cur].buffer_address = (uint32_t) new_skb->mac.raw;
+			assert(skb);
 
-
+			skb = skb_realloc(len, skb);
+			if (!skb) {
+				goto drop_pack;
+			}
 			skb->dev = dev;
 			netif_rx(skb);
-
-
 drop_pack:
 			tail = cur;
 
@@ -218,35 +238,68 @@ drop_pack:
 }
 
 static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
+	struct e1000_priv *nic_priv = e1000_get_priv(dev_id);
 	int cause = REG_LOAD(e1000_reg(dev_id, E1000_REG_ICR));
+	irq_return_t ret = IRQ_NONE;
 
 	if (cause & (E1000_REG_ICR_RXO | E1000_REG_ICR_RXT)) {
 		e1000_rx(dev_id);
+		ret = IRQ_HANDLED;
 	}
 
 	if (cause & (E1000_REG_ICR_TXDW | E1000_REG_ICR_TXQE)) {
 		txed_skb_clean(dev_id);
 		e1000_xmit(dev_id);
+		ret = IRQ_HANDLED;
 	}
 
 	if (cause & (E1000_REG_ICR_LSC)) {
 		struct net_device *dev = dev_id;
 
-		netdev_priv(dev, struct e1000_priv)->link_status ^= 1;
+		nic_priv->link_status ^= 1;
 
-		if (netdev_priv(dev, struct e1000_priv)->link_status) {
+		if (nic_priv->link_status) {
 			printk("e1000: Link up\n");
 			netdev_flag_up(dev, IFF_RUNNING);
 		} else {
 			printk("e1000: Link down. Please check and insert network cable\n");
 			netdev_flag_down(dev, IFF_RUNNING);
 		}
+		ret = IRQ_HANDLED;
 	}
 
-	return IRQ_HANDLED;
+	return ret;
+}
+
+static int e1000_alloc_dma_rx(struct net_device *dev) {
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
+
+	for (int i = 0; i < E1000_RXDESC_NR; ++i) {
+	        struct sk_buff *skb = skb_alloc(E1000_MAX_RX_LEN);
+		if (skb == NULL) {
+			return -ENOMEM;
+		}
+		nic_priv->rx_skbs[i] = skb;
+	}
+	return 0;
+}
+
+static void e1000_free_dma_rx(struct net_device *dev) {
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
+
+	for (int i = 0; i < E1000_RXDESC_NR; ++i) {
+		skb_free(nic_priv->rx_skbs[i]);
+	}
 }
 
 static int e1000_open(struct net_device *dev) {
+	struct e1000_priv *nic_priv = e1000_get_priv(dev);
+	int err;
+
+	if ((err = e1000_alloc_dma_rx(dev))) {
+		e1000_free_dma_rx(dev);
+		return err;
+	}
 
 	mdelay(MDELAY);
 	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
@@ -282,18 +335,13 @@ static int e1000_open(struct net_device *dev) {
 	mdelay(MDELAY);
 	REG_ORIN(e1000_reg(dev, E1000_REG_RCTL),  E1000_REG_RCTL_MPE);
 
-	for (size_t i = 0; i < E1000_RXDESC_NR; i ++) {
-	        struct sk_buff *skb;
-		skb = skb_alloc(ETH_FRAME_LEN);
-		if (skb == NULL)
-			panic("Can't allocate skb %d", i);
-		rx_skbs[i]= skb;
-		rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
+	for (int i = 0; i < E1000_RXDESC_NR; i ++) {
+	        struct sk_buff *skb = nic_priv->rx_skbs[i];
+		nic_priv->rx_descs[i].buffer_address = (uint32_t) skb->mac.raw;
 	}
 
-
 	mdelay(MDELAY);
-	REG_STORE(e1000_reg(dev, E1000_REG_RDBAL), (uint32_t) rx_descs);
+	REG_STORE(e1000_reg(dev, E1000_REG_RDBAL), (uint32_t) nic_priv->rx_descs);
 	REG_STORE(e1000_reg(dev, E1000_REG_RDBAH), 0);
 	REG_STORE(e1000_reg(dev, E1000_REG_RDLEN), sizeof(struct e1000_rx_desc) * E1000_RXDESC_NR);
 	REG_STORE(e1000_reg(dev, E1000_REG_RDH), 0);
@@ -301,7 +349,7 @@ static int e1000_open(struct net_device *dev) {
 	REG_ORIN( e1000_reg(dev, E1000_REG_RCTL), E1000_REG_RCTL_EN);
 
 	mdelay(MDELAY);
-	REG_STORE(e1000_reg(dev, E1000_REG_TDBAL), (uint32_t) tx_descs);
+	REG_STORE(e1000_reg(dev, E1000_REG_TDBAL), (uint32_t) nic_priv->tx_descs);
 	REG_STORE(e1000_reg(dev, E1000_REG_TDBAH), 0);
 	REG_STORE(e1000_reg(dev, E1000_REG_TDLEN), sizeof(struct e1000_tx_desc) * E1000_TXDESC_NR);
 	REG_STORE(e1000_reg(dev, E1000_REG_TDH), 0);
@@ -319,7 +367,13 @@ static int e1000_open(struct net_device *dev) {
 	return ENOERR;
 }
 
-static int stop(struct net_device *dev) {
+static int e1000_stop(struct net_device *dev) {
+
+	REG_ORIN(e1000_reg(dev, E1000_REG_CTRL), E1000_REG_CTRL_RST);
+	mdelay(MDELAY);
+
+	e1000_free_dma_rx(dev);
+
 	return ENOERR;
 }
 
@@ -340,7 +394,7 @@ static int set_mac_address(struct net_device *dev, const void *addr) {
 static const struct net_driver _drv_ops = {
 	.xmit = xmit,
 	.start = e1000_open,
-	.stop = stop,
+	.stop = e1000_stop,
 	.set_macaddr = set_mac_address
 };
 
@@ -357,7 +411,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	struct net_device *nic;
 	struct e1000_priv *nic_priv;
 
-	nic = (struct net_device *) etherdev_alloc(sizeof *nic_priv);
+	nic = (struct net_device *) etherdev_alloc(sizeof(struct e1000_priv) + 16);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
@@ -369,10 +423,10 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 			PROT_WRITE | PROT_READ,
 			MAP_FIXED,
 			pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
-	nic_priv = netdev_priv(nic, struct e1000_priv);
+	nic_priv = e1000_get_priv(nic);
+	memset(nic_priv, 0, sizeof(*nic_priv));
 	skb_queue_init(&nic_priv->txing_queue);
 	skb_queue_init(&nic_priv->tx_dev_queue);
-	nic_priv->link_status = 0;
 
 	res = irq_attach(pci_dev->irq, e1000_interrupt, IF_SHARESUP, nic, "e1000");
 	if (res < 0) {

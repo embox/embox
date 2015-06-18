@@ -299,7 +299,9 @@ struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb) {
 void skb_free(struct sk_buff *skb) {
 	ipl_t sp;
 
-	assert(skb != NULL);
+	if (!skb) {
+		return;
+	}
 
 	skb_data_free(skb->data);
 
