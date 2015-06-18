@@ -94,6 +94,6 @@ module socket {
 	depends embox.compat.libc.str
 	depends embox.net.sock
 	depends embox.net.dev //ksocket, netdev_get_by_name
-	depends embox.util.sys_log
+	depends embox.util.log
 	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
 }

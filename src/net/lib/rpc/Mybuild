@@ -10,7 +10,7 @@ module rpc {
 	source "pmap.c"
 	source "rpc_msg.c"
 
-	depends embox.util.sys_log
+	depends embox.util.log
 	depends embox.kernel.time.kernel_time
 	depends embox.compat.libc.all
 }
