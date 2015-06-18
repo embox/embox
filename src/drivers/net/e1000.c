@@ -240,14 +240,17 @@ drop_pack:
 static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 	struct e1000_priv *nic_priv = e1000_get_priv(dev_id);
 	int cause = REG_LOAD(e1000_reg(dev_id, E1000_REG_ICR));
+	irq_return_t ret = IRQ_NONE;
 
 	if (cause & (E1000_REG_ICR_RXO | E1000_REG_ICR_RXT)) {
 		e1000_rx(dev_id);
+		ret = IRQ_HANDLED;
 	}
 
 	if (cause & (E1000_REG_ICR_TXDW | E1000_REG_ICR_TXQE)) {
 		txed_skb_clean(dev_id);
 		e1000_xmit(dev_id);
+		ret = IRQ_HANDLED;
 	}
 
 	if (cause & (E1000_REG_ICR_LSC)) {
@@ -262,9 +265,10 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 			printk("e1000: Link down. Please check and insert network cable\n");
 			netdev_flag_down(dev, IFF_RUNNING);
 		}
+		ret = IRQ_HANDLED;
 	}
 
-	return IRQ_HANDLED;
+	return ret;
 }
 
 static int e1000_alloc_dma_rx(struct net_device *dev) {
