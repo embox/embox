@@ -33,6 +33,13 @@ static module sys_log {
 
 }
 
+static module log {
+	@IncludeExport(path="util")
+	source "log.h"
+
+	source "log.c"
+}
+
 static module ring {
 	source "ring.c"
 	source "ring_buff.c"
