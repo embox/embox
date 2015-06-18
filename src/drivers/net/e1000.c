@@ -33,6 +33,7 @@
 
 #include <mem/misc/pool.h>
 
+#include <util/binalign.h>
 #include <kernel/printk.h>
 
 #include <embox/unit.h>
@@ -94,7 +95,7 @@ struct e1000_priv {
 };
 
 static inline struct e1000_priv *e1000_get_priv(struct net_device *dev) {
-	return netdev_priv(dev, struct e1000_priv);
+	return (struct e1000_priv *) binalign_bound((uintptr_t) netdev_priv(dev, struct e1000_priv), 16);
 }
 
 static void mdelay(int value) {
@@ -406,7 +407,7 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	struct net_device *nic;
 	struct e1000_priv *nic_priv;
 
-	nic = (struct net_device *) etherdev_alloc(sizeof(struct e1000_priv));
+	nic = (struct net_device *) etherdev_alloc(sizeof(struct e1000_priv) + 16);
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
