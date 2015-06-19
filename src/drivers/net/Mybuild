@@ -140,6 +140,8 @@ module usermode {
 }
 
 module lan9118 {
+	option number log_level=3 /* info */
+
 	source "lan9118.c"
 
 	option number irq_pin=16
