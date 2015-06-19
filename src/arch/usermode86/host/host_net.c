@@ -20,7 +20,8 @@
 
 #include <host.h>
 
-#define TAP_DEV_NAME "tap77"
+#define TAP_DEFAULT_DEV_NAME "tap77"
+#define TAP_DEV_ENV_NAME "EMBOX_USERMODE_TAP_NAME"
 
 static HOST_FNX(int, open, CONCAT(const char *path, int flags),
 		path, flags)
@@ -31,6 +32,7 @@ static HOST_FNX(int, fcntl, CONCAT(int fd, int req, int arg),
 		fd, req, arg)
 static HOST_FNX(int, close, int fd, fd)
 static HOST_FNX(int, getpid, void)
+static HOST_FNX(char *, getenv, const char *name, name)
 
 static int tun_alloc(const char *dev, char *out_dev, int len) {
 	struct ifreq ifr;
@@ -58,10 +60,16 @@ static int tun_alloc(const char *dev, char *out_dev, int len) {
 int host_net_cfg(struct host_net_adp *hnet, enum host_net_op op) {
 	int res, fd;
 	char name[16];
+	const char *tap_name;
 
 	switch (op) {
 	case HOST_NET_INIT:
-		if (0 <= (fd = tun_alloc(TAP_DEV_NAME, name, 16))) {
+		tap_name = host_getenv(TAP_DEV_ENV_NAME);
+		if (!tap_name) {
+			tap_name = TAP_DEFAULT_DEV_NAME;
+		}
+
+		if (0 <= (fd = tun_alloc(tap_name, name, 16))) {
 			hnet->fd = fd;
 			return 0;
 		}
