@@ -15,23 +15,18 @@
 #include <string.h>
 #include <util/dlist.h>
 #include <util/array.h>
+#include <util/log.h>
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 
-//#define DEBUG_LOG
-#ifdef DEBUG_LOG
-#include <kernel/printk.h>
-#define dprintf(...) printk(__VA_ARGS__)
-#else
-#define dprintf(...) do {} while (0)
-#endif
-
 #define PCI_BUS_N_TO_SCAN OPTION_GET(NUMBER,bus_n_to_scan)
 
 EMBOX_UNIT_INIT(pci_init);
+
+LOG_DECLARE_LOGGER();
 
 typedef struct pci_slot {
 	uint8_t bus;
@@ -97,7 +92,7 @@ struct pci_slot_dev *pci_insert_dev(char configured,
 	struct pci_slot_dev *new_dev;
 
 	if(NULL == (new_dev = pool_alloc(&devs_pool))) {
-		dprintf("pci dev pool overflow");
+		log_debug("pci dev pool overflow");
 		return NULL;
 	}
 
@@ -112,12 +107,12 @@ struct pci_slot_dev *pci_insert_dev(char configured,
 		pci_get_slot_info(new_dev);
 	}
 	pci_add_dev(new_dev);
-	dprintf("\nAdd pci >> bc %d, sc %d, rev %d, irq %d \n",
+	log_debug("Add pci >> bc %d, sc %d, rev %d, irq %d",
 			new_dev->baseclass, new_dev->subclass, new_dev->rev, new_dev->irq);
 	for (int bar_num = 0; bar_num < ARRAY_SIZE(new_dev->bar); bar_num ++) {
-		dprintf("bar[%d] 0x%X ", bar_num, new_dev->bar[bar_num]);
+		log_raw(LOG_DEBUG, "bar[%d] 0x%X ", bar_num, new_dev->bar[bar_num]);
 	}
-	dprintf("\n fu %d, slot %d \n", new_dev->func, new_dev->slot);
+	log_raw(LOG_DEBUG, "\n fu %d, slot %d \n", new_dev->func, new_dev->slot);
 	return new_dev;
 }
 

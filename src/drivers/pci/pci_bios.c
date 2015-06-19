@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <util/indexator.h>
+#include <util/log.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
@@ -18,15 +19,9 @@
 #define PCI_SPACE_SIZE  OPTION_GET(NUMBER, pci_space_size)
 #define PCI_WINDOW_SIZE OPTION_GET(NUMBER, pci_window_size)
 
-//#define DEBUG_LOG
-#ifdef DEBUG_LOG
-#include <kernel/printk.h>
-#define dprintf(...) printk(__VA_ARGS__)
-#else
-#define dprintf(...) do {} while (0)
-#endif
-
 EMBOX_UNIT_INIT(pci_bios_init);
+
+LOG_DECLARE_LOGGER();
 
 #include <util/binalign.h>
 
@@ -74,8 +69,10 @@ static int pci_slot_configure(uint32_t busn, uint32_t devfn){
 
 		window = space_alloc(&pci_allocator, length, length);
 		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), (uint32_t)window);
-		dprintf("pci bus %d fn = %d bar_num %d bar = 0x%X win = 0x%X len = 0x%X\n",
-			busn, devfn, bar_num, bar, (uint32_t)window, (uint32_t)length);
+		log_debug("pci bus %d fn = %d bar_num %d "
+				  "bar = 0x%X win = 0x%X len = 0x%X\n",
+				   busn, devfn, bar_num,
+				   bar, (uint32_t)window, (uint32_t)length);
 	}
 	return 0;
 }
@@ -100,14 +97,15 @@ static int pci_bridge_configure(int busn, int devfn) {
 	pci_write_config32(busn, devfn, PCI_PRIMARY_BUS,
 			(busn) | (newbusn << 8) | (0xFF << 16));
 
-	dprintf("\nbridge start configure busn %d newbus %d\n*******\n", busn, newbusn);
+	log_debug("bridge start configure busn %d newbus %d\n*******", busn,
+		newbusn);
 
 	pci_bus_configure(newbusn);
 	subord = index_find(&bus_indexator, INDEX_MIN) - 1;
 	pci_write_config32(busn, devfn, PCI_PRIMARY_BUS,
 			(busn) | (newbusn << 8) | (subord << 16));
 
-	dprintf("\nbridge start configure subordinate %d\n*******\n", subord);
+	log_debug("bridge start configure subordinate %d\n*******", subord);
 
 	/* align space at 1Mb and check the difference */
 	space_end = space_alloc(&pci_allocator, 0, PCI_WINDOW_SIZE);

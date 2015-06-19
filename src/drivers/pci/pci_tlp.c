@@ -16,6 +16,7 @@
 #include <drivers/pci/pci_tlp.h>
 #include <endian.h>
 
+//TODO: Remove it or make it use logger from util/log.h
 #define NODEBUG
 #ifdef DEBUG
 #include <kernel/printk.h>
