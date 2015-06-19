@@ -33,6 +33,8 @@ module usart {
 }
 
 module blue_core extends embox.driver.Bluetooth {
+	option number log_level=0
+
 	source "blue_core4.c"
 
 	option string bluetooth_pin = "1234"
