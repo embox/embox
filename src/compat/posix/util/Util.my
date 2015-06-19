@@ -43,6 +43,8 @@ static module times {
 }
 
 static module sleep {
+	option number log_level=0
+
 	source "sleep.c"
 	source "nanosleep.c"
 

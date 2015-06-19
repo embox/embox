@@ -13,12 +13,9 @@
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
 #include <embox/unit.h>
+#include <util/log.h>
 
-//#define NANOSLEEP_DEBUG
-
-#ifdef NANOSLEEP_DEBUG
-#include <kernel/printk.h>
-#endif
+LOG_DECLARE_LOGGER();
 
 EMBOX_UNIT_INIT(nanosleep_init);
 
@@ -106,18 +103,14 @@ static int nanosleep_calibrate(void) {
 	m = ktime_get_ns();
 	m = ktime_get_ns() - m;
 
-#ifdef NANOSLEEP_DEBUG
-	printk("ktime_get_ns execution ns: %d\n", (int) m);
-#endif
+	log_info("ktime_get_ns execution ns: %d", (int) m);
 
 	t = ktime_get_ns();
 	nanosleep(&rqtp, NULL); // calculate nanosleep overhead
 	t = ktime_get_ns() - t;
 	nanosleep_waste_time.tv_nsec = t - m;
 
-#ifdef NANOSLEEP_DEBUG
-	printk("nanosleep execution ns: %d\n", (int) nanosleep_waste_time.tv_nsec);
-#endif
+	log_info("nanosleep execution ns: %d", (int) nanosleep_waste_time.tv_nsec);
 
 	return 0;
 }
