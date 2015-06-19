@@ -11,10 +11,14 @@
 #include <unistd.h>
 #include "httpd.h"
 
+ #include <util/log.h>
+
 #define BUFF_SZ 1024
 #define PAGE_INDEX  "index.html"
 
 static char httpd_g_outbuf[BUFF_SZ];
+
+LOG_DECLARE_LOGGER();
 
 int httpd_try_respond_file(const struct client_info *cinfo, const struct http_req *hreq) {
 	char path[HTTPD_MAX_PATH];
@@ -34,11 +38,11 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 		return -ENOMEM;
 	}
 
-	HTTPD_DEBUG("requested: %s, on fs: %s\n", hreq->uri.target, path);
+	log_debug("requested: %s, on fs: %s", hreq->uri.target, path);
 
 	file = fopen(path, "r");
 	if (!file) {
-		HTTPD_DEBUG("%s: file couldn't be opened (%d)\n", __func__, errno);
+		log_debug("file couldn't be opened (%d)", errno);
 		return 0;
 	}
 

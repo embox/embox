@@ -10,8 +10,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <util/log.h>
 
 #include "httpd.h"
+
+LOG_DECLARE_LOGGER();
 
 static const struct http_header_desc {
 	char *name;
@@ -38,7 +41,7 @@ static char *httpd_parse_uri(char *str, struct http_req_uri *huri) {
 
 	pb = strchr(pb, ' ');
 	if (!pb) {
-		HTTPD_ERROR("%s: can't find URI-Version separator\n", __func__);
+		log_error("can't find URI-Version separator");
 		return NULL;
 	}
 
@@ -59,13 +62,13 @@ static char *httpd_parse_request_line(char *str, struct http_req *hreq) {
 
 	pb = httpd_parse_uri(pb, &hreq->uri);
 	if (!pb) {
-		HTTPD_ERROR("%s: can't parse uri\n", __func__);
+		log_error("can't parse uri");
 		return NULL;
 	}
 
 	pb = strstr(pb, "\r\n");
 	if (!pb) {
-		HTTPD_ERROR("%s: can't find sentinel\n", __func__);
+		log_error("can't find sentinel");
 		return NULL;
 	}
 
@@ -111,7 +114,7 @@ char *httpd_parse_request(char *str, struct http_req *hreq) {
 
 	pb = httpd_parse_request_line(str, hreq);
 	if (!pb) {
-		HTTPD_ERROR("%s: can't parse request line\n", __func__);
+		log_error("can't parse request line");
 		return NULL;
 	}
 
