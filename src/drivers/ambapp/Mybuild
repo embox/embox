@@ -11,6 +11,8 @@ module ambapp extends ambapp_api {
 }
 
 module amba_registry {
+	option number log_level=0
+
 	source "amba_registry.c"
 	source "ambapp.c"
 }
