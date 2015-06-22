@@ -42,7 +42,7 @@ static int blinking_led(void) {
 	sys_timer_t tmr;
 	pin_config_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
 
-	timer_init_msec(&tmr, TIMER_PERIODIC, 1000, timer_hdn, NULL);
+	timer_init_start_msec(&tmr, TIMER_PERIODIC, 1000, timer_hdn, NULL);
 
 	while (count) { } ;
 

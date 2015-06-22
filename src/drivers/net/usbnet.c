@@ -92,7 +92,7 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 		/* Prepare for copying new packet */
 		nic_priv->pdata = nic_priv->data;
 
-		timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
+		timer_init_start_msec(&nic_priv->timer, TIMER_ONESHOT,
 				USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
 	} else {
 		/* Receive the next part of the packet */
@@ -146,7 +146,7 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 		goto out_free_data;
 	}
 
-	res = timer_init_msec(&nic_priv->timer, TIMER_ONESHOT,
+	res = timer_init_start_msec(&nic_priv->timer, TIMER_ONESHOT,
 		USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
 	if (res < 0) {
 		goto out_free_data;

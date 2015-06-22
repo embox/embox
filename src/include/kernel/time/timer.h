@@ -4,7 +4,7 @@
  * @brief Interface of periodical timers with milliseconds precision.
  *
  * @details
- *   for set timer use `timer_init' or `timer_set' functions.
+ *   for set timer use `timer_init_start' or `timer_set' functions.
  *   for emulate non-periodical behavior use timer_close function in the end of handler.
  *
  * @date 20.07.10
@@ -47,7 +47,7 @@ struct sys_timer {
 	sys_timer_handler_t handle;
 	void       *param;
 	unsigned int flags;
-	uint32_t   state; /**< do we use timer_set or timer_init? */
+	uint32_t   state; /**< do we use timer_set or timer_init_start? */
 };
 
 static inline bool timer_is_preallocated(struct sys_timer *tmr) {
@@ -90,7 +90,7 @@ typedef struct sys_timer sys_timer_t;
  * @param handler
  * @param param
  */
-extern int timer_do_init(struct sys_timer *tmr, unsigned int flags,
+extern int timer_init(struct sys_timer *tmr, unsigned int flags,
 		sys_timer_handler_t handler, void *param);
 
 /**
@@ -104,7 +104,7 @@ extern int timer_start(struct sys_timer *tmr, clock_t jiffies);
 
 /**
  * Set 'handle' timer for executing every 'ticks' ms.
- * Memory for set_tmr instance should be allocated before run timer_init.
+ * Memory for set_tmr instance should be allocated before run timer_init_start.
  *
  * @param ptimer is pointer to preallocated buffer for system timer pointer.
  * @param ticks assignable time (quantity of milliseconds)
@@ -114,7 +114,7 @@ extern int timer_start(struct sys_timer *tmr, clock_t jiffies);
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int timer_init_msec(struct sys_timer *tmr, unsigned int flags, uint32_t ticks,
+extern int timer_init_start_msec(struct sys_timer *tmr, unsigned int flags, uint32_t ticks,
 		sys_timer_handler_t handler, void *param);
 
 /**
@@ -124,7 +124,7 @@ extern int timer_init_msec(struct sys_timer *tmr, unsigned int flags, uint32_t t
  * @remarks
  *    This function should call @c handler NO LESS then after @c jiffies ticks.
  */
-extern int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
+extern int timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 		sys_timer_handler_t handler, void *param);
 
 /**
