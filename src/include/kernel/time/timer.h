@@ -82,6 +82,27 @@ static inline bool timer_is_periodic(struct sys_timer *tmr) {
 typedef struct sys_timer sys_timer_t;
 
 /**
+ * Make timer bare initialization.
+ * Note, this not schedules timer.
+ *
+ * @param tmr
+ * @param flags
+ * @param handler
+ * @param param
+ */
+extern int timer_do_init(struct sys_timer *tmr, unsigned int flags,
+		sys_timer_handler_t handler, void *param);
+
+/**
+ * Schedule timer to fire after specified amount of jiffes. Weither timer
+ * will be rescheduled determed by @c flags specified on initialization
+ *
+ * @param tmr
+ * @param jiffies
+ */
+extern int timer_start(struct sys_timer *tmr, clock_t jiffies);
+
+/**
  * Set 'handle' timer for executing every 'ticks' ms.
  * Memory for set_tmr instance should be allocated before run timer_init.
  *
