@@ -105,9 +105,9 @@ static void ohci_ed_free(struct usb_endp *ep, void *spec) {
 		ohci_ed_desched_interrupt(ohcd, ed);
 	} else {
 		ohci_ed_desched(ohcd, ed, (struct ohci_ed **) &ohcd->base->hc_ctrl_head_ed);
+		/* FIXME WTF? */
 		ohci_ed_desched(ohcd, ed, (struct ohci_ed **) &ohcd->base->hc_ctrl_head_ed);
 	}
-
 
 	placeholder_td = ohci_ed_get_tail_td(ed);
 	ohci_td_free(placeholder_td);
@@ -218,12 +218,12 @@ static int ohci_start(struct usb_hcd *hcd) {
 	OHCI_WRITE(ohcd, &ohcd->base->hc_fm_interval, backed_fm_interval);
 
 
-	OHCI_WRITE(ohcd, &ohcd->base->hc_period_cur_ed, 	0);
-	OHCI_WRITE(ohcd, &ohcd->base->hc_ctrl_head_ed, 	0);
-	OHCI_WRITE(ohcd, &ohcd->base->hc_ctrl_cur_ed, 	0);
-	OHCI_WRITE(ohcd, &ohcd->base->hc_bulk_head_ed, 	0);
-	OHCI_WRITE(ohcd, &ohcd->base->hc_bulk_cur_ed, 	0);
-	OHCI_WRITE(ohcd, &ohcd->base->hc_done_head, 		0);
+	OHCI_WRITE(ohcd, &ohcd->base->hc_period_cur_ed, 0);
+	OHCI_WRITE(ohcd, &ohcd->base->hc_ctrl_head_ed,  0);
+	OHCI_WRITE(ohcd, &ohcd->base->hc_ctrl_cur_ed,   0);
+	OHCI_WRITE(ohcd, &ohcd->base->hc_bulk_head_ed,  0);
+	OHCI_WRITE(ohcd, &ohcd->base->hc_bulk_cur_ed,   0);
+	OHCI_WRITE(ohcd, &ohcd->base->hc_done_head,     0);
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_hcca, ohcd->hcca);
 	OHCI_WRITE(ohcd, &ohcd->base->hc_inten, OHCI_INTERRUPT_ALL_BUTSOF);
@@ -251,10 +251,10 @@ static int ohci_stop(struct usb_hcd *hcd) {
 static inline unsigned int ohci_port_stat_map(uint16_t val) {
 	unsigned short ret = 0;
 
-	if (val & OHCI_RH_PORT_CONN) {
+	if (val & OHCI_RH_R_CONN_W_CLREN) {
 		ret |= USB_HUB_PORT_CONNECT;
 	}
-	if (val & OHCI_RH_PORT_POWERST) {
+	if (val & OHCI_RH_R_PWR_W_STPWR) {
 		ret |= USB_HUB_PORT_POWER;
 	}
 
@@ -266,26 +266,33 @@ static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 	struct ohci_hcd *ohcd = hcd2ohci(port->hub->hcd);
 	uint32_t wval = 0;
 
-	if (value & USB_HUB_PORT_ENABLE) {
-		wval |= OHCI_RH_PORT_ENABLE;
-	}
-	if (value & USB_HUB_PORT_POWER) {
-		wval |= OHCI_RH_PORT_POWERST;
-	}
-	if (value & USB_HUB_PORT_RESET) {
-		wval |= OHCI_RH_PORT_RESET;
-	}
+	assert(req == USB_HUB_REQ_PORT_SET || req == USB_HUB_REQ_PORT_CLEAR);
 
-	if (req == USB_HUB_REQ_PORT_CLEAR) {
-		uint32_t portstat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
-		if (value & USB_HUB_PORT_RESET) {
-			/* check if hardware already cleared RESET,
- 			 * otherwise RESET high signal was not long enough
-			 */
-			assert((portstat & OHCI_RH_PORT_RESET) == 0);
+	if (req == USB_HUB_REQ_PORT_SET) {
+		if (value & USB_HUB_PORT_ENABLE) {
+			wval |= OHCI_RH_R_EN_W_STEN;
 		}
-
-		wval = ~wval & portstat;
+		if (value & USB_HUB_PORT_POWER) {
+			wval |= OHCI_RH_R_PWR_W_STPWR;
+		}
+		if (value & USB_HUB_PORT_RESET) {
+			wval |= OHCI_RH_R_RST_W_STRST;
+		}
+	} else {
+		if (value & USB_HUB_PORT_ENABLE) {
+			wval |= OHCI_RH_R_CONN_W_CLREN;
+		}
+		if (value & USB_HUB_PORT_POWER) {
+			wval |= OHCI_RH_R_LOWSPD_W_CLPWR;
+		}
+		if (value & USB_HUB_PORT_RESET) {
+			uint32_t portstat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
+			/* if hardware haven't cleared RESET, 
+			 * then RESET high signal was not long enough */
+			if (portstat & OHCI_RH_R_RST_W_STRST) {
+				return -EAGAIN;
+			}
+		}
 	}
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[port->idx], wval);

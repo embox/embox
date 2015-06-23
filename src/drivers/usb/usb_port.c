@@ -95,17 +95,16 @@ static void usb_hcd_port_reset_done(struct usb_hub_port *port) {
 	}
 }
 
-static int usb_port_if_disconnect(struct usb_hub_port *port) {
-	if (port->changed & USB_HUB_PORT_CONNECT) {
-		if (!(port->status & USB_HUB_PORT_CONNECT)) {
-			usb_port_set_state(port, usb_port_st_idle);
-			usb_hub_ctrl(port, USB_HUB_REQ_PORT_CLEAR,
-				USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
-			return 1;
-		}
+static bool usb_port_if_disconnect(struct usb_hub_port *port) {
+	bool disconn = !(port->status & USB_HUB_PORT_CONNECT);
+
+	if (disconn) {
+		usb_port_set_state(port, usb_port_st_idle);
+		usb_hub_ctrl(port, USB_HUB_REQ_PORT_CLEAR,
+			USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
 	}
 
-	return 0;
+	return disconn;
 }
 
 static void usb_port_st_idle(struct usb_hub_port *port) {
@@ -134,6 +133,7 @@ static void usb_port_st_connected(struct usb_hub_port *port) {
 }
 
 static void usb_port_st_reset_awaiting(struct usb_hub_port *port) {
+	bool timeout = port->changed & USB_HUB_PORT_TIMEOUT;
 
 	usb_hub_ctrl(port, USB_HUB_REQ_PORT_CLEAR, USB_HUB_PORT_RESET);
 
@@ -142,7 +142,7 @@ static void usb_port_st_reset_awaiting(struct usb_hub_port *port) {
 		return;
 	}
 
-	if (port->changed & USB_HUB_PORT_TIMEOUT) {
+	if (timeout) {
 
 		usb_port_set_state(port, usb_port_st_reset_settle);
 		usb_port_post(port, 10);

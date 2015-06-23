@@ -160,6 +160,7 @@ int usb_whitelist_check(struct usb_dev *dev) {
 
 	if (!dev->dev_desc.i_serial_number) {
 		usb_wl_dev_check(dev, USB_WHITELIST_SN_ANY);
+		return 0;
 	}
 
 	tstrs = pool_alloc(&usb_whitelist_temp_strings);

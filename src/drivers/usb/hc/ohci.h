@@ -45,13 +45,13 @@
 
 #define OHCI_RH_DESC_A_N_DOWNP_M      0x000000ff
 
-#define OHCI_RH_PORT_CONN             0x0001
-#define OHCI_RH_PORT_ENABLE           0x0002
-#define OHCI_RH_PORT_SUSP             0x0004
-#define OHCI_RH_PORT_OVERRUN          0x0008
-#define OHCI_RH_PORT_RESET            0x0010
-#define OHCI_RH_PORT_POWERST          0x0100
-#define OHCI_RH_PORT_LOWSPD           0x0200
+#define OHCI_RH_R_CONN_W_CLREN        0x0001
+#define OHCI_RH_R_EN_W_STEN           0x0002
+#define OHCI_RH_R_SUSP_W_STSUSP       0x0004
+#define OHCI_RH_R_OVERC_W_CLSUSP      0x0008
+#define OHCI_RH_R_RST_W_STRST         0x0010
+#define OHCI_RH_R_PWR_W_STPWR         0x0100
+#define OHCI_RH_R_LOWSPD_W_CLPWR      0x0200
 
 #define OHCI_TD_SETUP                 0x00000000
 #define OHCI_TD_OUT                   0x00080000
