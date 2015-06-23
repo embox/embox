@@ -44,7 +44,7 @@ static int timer_init_example(void) {
 	tick_cnt = false;
 
 	if (ENOERR
-			!= (res = timer_init_msec(&timer, TIMER_ONESHOT, TEST_TIMER_TICKS,
+			!= (res = timer_init_start_msec(&timer, TIMER_ONESHOT, TEST_TIMER_TICKS,
 					timer_handler, (void *) &tick_cnt))) {
 		printf("failed to install timer");
 		return res;

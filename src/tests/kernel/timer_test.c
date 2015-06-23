@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <embox/test.h>
 #include <kernel/time/timer.h>
+#include <kernel/time/time.h>
 
 EMBOX_TEST_SUITE("basic timer tests");
 
@@ -86,4 +87,29 @@ TEST_CASE("Testing 2 timer_set, one must occur earlier.") {
 	timer_close(timer2);
 
 	test_assert(0 == data.error);
+}
+
+static void test_timer_handler_fail(sys_timer_t* tmr, void *param) {
+	test_fail("should not occur");
+}
+
+TEST_CASE("Timer could be closed before it's occur") {
+	struct sys_timer tmr;
+
+	test_assert(0 == timer_init_start_msec(&tmr, TIMER_ONESHOT, 50, test_timer_handler_fail, NULL));
+	timer_close(&tmr);
+	usleep(100 * 1000);
+}
+
+TEST_CASE("Timer could be started many times") {
+	struct sys_timer tmr;
+
+	test_assert(0 == timer_init(&tmr, TIMER_ONESHOT, test_timer_handler_fail, NULL));
+
+	for (int try = 0; try < 10; ++try) {
+		timer_start(&tmr, ms2jiffies(50));
+		usleep(40 * 1000);
+	}
+
+	timer_close(&tmr);
 }

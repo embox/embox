@@ -474,7 +474,7 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 static int neighbour_init(void) {
 	int ret;
 
-	ret = timer_init_msec(&neighbour_tmr, TIMER_PERIODIC,
+	ret = timer_init_start_msec(&neighbour_tmr, TIMER_PERIODIC,
 			MODOPS_NEIGHBOUR_TMR_FREQ, nbr_timer_handler, NULL);
 	if (ret != 0) {
 		return ret;

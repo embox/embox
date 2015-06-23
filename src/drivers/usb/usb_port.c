@@ -48,7 +48,7 @@ static void usb_dev_posted_handle(struct sys_timer *timer, void *param) {
 
 static int usb_port_post(struct usb_hub_port *port, unsigned int ms) {
 
-	return timer_init_msec(&port->post_timer, TIMER_ONESHOT, ms, usb_dev_posted_handle,
+	return timer_init_start_msec(&port->post_timer, TIMER_ONESHOT, ms, usb_dev_posted_handle,
 			port);
 }
 
