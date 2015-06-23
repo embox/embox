@@ -87,3 +87,15 @@ TEST_CASE("Testing 2 timer_set, one must occur earlier.") {
 
 	test_assert(0 == data.error);
 }
+
+static void test_timer_handler_fail(sys_timer_t* tmr, void *param) {
+	test_fail("should not occur");
+}
+
+TEST_CASE("Timer could be closed before it's occur") {
+	struct sys_timer tmr;
+
+	test_assert(0 == timer_init_start_msec(&tmr, TIMER_ONESHOT, 50, test_timer_handler_fail, NULL));
+	timer_close(&tmr);
+	usleep(100 * 1000);
+}
