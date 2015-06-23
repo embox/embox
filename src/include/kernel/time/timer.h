@@ -100,7 +100,7 @@ extern int timer_init(struct sys_timer *tmr, unsigned int flags,
  * @param tmr
  * @param jiffies
  */
-extern int timer_start(struct sys_timer *tmr, clock_t jiffies);
+extern void timer_start(struct sys_timer *tmr, clock_t jiffies);
 
 /**
  * Set 'handle' timer for executing every 'ticks' ms.

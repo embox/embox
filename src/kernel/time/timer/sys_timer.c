@@ -17,6 +17,8 @@
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
+static void timer_stop(struct sys_timer *tmr);
+
 int timer_init(struct sys_timer *tmr, unsigned int flags,
 		sys_timer_handler_t handler, void *param) {
 	if (!handler || !tmr) {
@@ -30,7 +32,10 @@ int timer_init(struct sys_timer *tmr, unsigned int flags,
 	return ENOERR;
 }
 
-int timer_start(struct sys_timer *tmr, clock_t jiffies) {
+void timer_start(struct sys_timer *tmr, clock_t jiffies) {
+
+	timer_stop(tmr);
+
 	if (timer_is_periodic(tmr)) {
 		tmr->load = jiffies;
 		tmr->cnt = tmr->load + 1;
@@ -43,8 +48,16 @@ int timer_start(struct sys_timer *tmr, clock_t jiffies) {
 		timer_strat_start(tmr);
 	}
 	sched_unlock();
+}
 
-	return ENOERR;
+static void timer_stop(struct sys_timer *tmr) {
+	if (timer_is_started(tmr)) {
+		sched_lock();
+		{
+			timer_strat_stop(tmr);
+		}
+		sched_unlock();
+	}
 }
 
 int timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
@@ -55,9 +68,7 @@ int timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 		return err;
 	}
 
-	if ((err = timer_start(tmr, jiffies))) {
-		return err;
-	}
+	timer_start(tmr, jiffies);
 
 	return ENOERR;
 }
@@ -97,13 +108,7 @@ int timer_close(struct sys_timer *tmr) {
 		return -EINVAL;
 	}
 
-	if (timer_is_started(tmr)) {
-		sched_lock();
-		{
-			timer_strat_stop(tmr);
-		}
-		sched_unlock();
-	}
+	timer_stop(tmr);
 
 	if (timer_is_preallocated(tmr)) {
 		timer_clear_preallocated(tmr);
