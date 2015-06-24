@@ -23,8 +23,10 @@
 #include <net/netdevice.h>
 #include <stdlib.h>
 #include <string.h>
-#include <util/sys_log.h>
+#include <util/log.h>
 #include <kernel/sched/sched_lock.h>
+
+LOG_DECLARE_LOGGER();
 
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
 
@@ -132,7 +134,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 		skb = skb_wrap(used_elem->len - sizeof(struct virtio_net_hdr),
 				skb_data_cast_out((void *)(uintptr_t)next->addr));
 		if (skb == NULL) {
-			LOG_ERROR("virtio_interrupt", "skb_wrap return NULL");
+			log_error("skb_wrap return NULL");
 			break;
 		}
 		skb->dev = dev;
@@ -144,7 +146,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 		if (new_data == NULL) {
 			skb_extra_free(skb_extra_cast_out((void *)(uintptr_t)desc->addr));
 			desc->addr = next->addr = 0;
-			LOG_ERROR("virtio_interrupt", "skb_data_alloc return NULL");
+			log_error("skb_data_alloc return NULL");
 			break;
 		}
 
