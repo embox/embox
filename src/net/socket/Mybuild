@@ -85,6 +85,8 @@ module af_unix {
 }
 
 module socket {
+	option number log_level=0
+
 	source "ksocket.c"
 	source "socket_desc.c"
 	option number connect_timeout=5000
