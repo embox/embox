@@ -7,7 +7,7 @@
  */
 
 #include <kernel/printk.h>
-#include <util/log.h>
+#include <util/logging.h>
 #include <stdarg.h>
 
 char *log_levels[LOG_DEBUG] = {
@@ -17,8 +17,8 @@ char *log_levels[LOG_DEBUG] = {
 	"debug"
 };
 
-void __log_raw(struct logger *logger, int level, const char* fmt, ...) {
-	if (logger && level <= logger->level) {
+void logging_raw(struct logging *logging, int level, const char* fmt, ...) {
+	if (logging && level <= logging->level) {
 		va_list args;
 
 		va_start(args, fmt);

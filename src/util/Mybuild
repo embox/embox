@@ -37,7 +37,14 @@ static module log {
 	@IncludeExport(path="util")
 	source "log.h"
 
-	source "log.c"
+	depends logging
+}
+
+static module logging {
+	@IncludeExport(path="util")
+	source "logging.h"
+
+	source "logging.c"
 }
 
 static module ring {

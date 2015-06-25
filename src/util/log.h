@@ -9,32 +9,33 @@
 #ifndef UTIL_LOG_H_
 #define UTIL_LOG_H_
 
-enum log_level{
-	LOG_NONE=0,
-	LOG_ERROR,
-	LOG_WARNING,
-	LOG_INFO,
-	LOG_DEBUG
-};
+#include <framework/mod/self.h>
+#include <util/logging.h>
 
 struct logger {
-	char module[50];
-	int level;
+	const struct mod *mod;
+	struct logging logging;
 };
 
-extern char *log_levels[];
+#define LOG_DECLARE_LOGGER() \
+	extern struct logger mod_logger __attribute__ ((weak))
 
-#define LOG_INIT(logger_name, module, level) \
-	static struct logger (logger_name) = {(module), (level)}
+#define log_logp(level, fmt, ...) \
+	if (!&mod_logger) \
+		logging_raw(&mod_logger.logging, level, "%s: %s: " fmt "\n", \
+					log_levels[level-1], __func__, ## __VA_ARGS__)
 
-extern void log_raw(struct logger *logger, int level, const char* fmt, ...);
+#define log_raw(level, fmt, ...) \
+	if (!&mod_logger) \
+		logging_raw(&mod_logger.logging, level, fmt, ## __VA_ARGS__)
 
-#define log_logp(logger, level, message, ...) \
-	log_raw(logger, level, "%s: %s: " message "\n", log_levels[level-1], __func__, ## __VA_ARGS__)
-
-#define log_debug(l, msg, ...)   log_logp(l, LOG_DEBUG, msg, ## __VA_ARGS__)
-#define log_info(l, msg, ...)    log_logp(l, LOG_INFO, msg, ## __VA_ARGS__)
-#define log_warning(l, msg, ...) log_logp(l, LOG_WARNING, msg, ## __VA_ARGS__)
-#define log_error(l, msg, ...)   log_logp(l, LOG_ERROR, msg, ## __VA_ARGS__)
+#define log_debug(fmt, ...) \
+	log_logp(LOG_DEBUG, fmt, ## __VA_ARGS__)
+#define log_info(fmt, ...) \
+	log_logp(LOG_INFO, fmt, ## __VA_ARGS__)
+#define log_warning(fmt, ...) \
+	log_logp(LOG_WARNING, fmt, ## __VA_ARGS__)
+#define log_error(fmt, ...) \
+	log_logp(LOG_ERROR, fmt, ## __VA_ARGS__)
 
 #endif /* UTIL_LOG_H_ */
