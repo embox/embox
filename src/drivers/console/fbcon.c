@@ -385,6 +385,6 @@ static int fbcon_init(void) {
 	make_task(0, true);
 	make_task(1, true);
 
-	return diag_setup(&DIAG_IMPL_NAME(__EMBUILD_MOD__));
-	/*return 0;*/
+	/*return diag_setup(&DIAG_IMPL_NAME(__EMBUILD_MOD__));*/
+	return 0;
 }
