@@ -23,7 +23,6 @@
 
 // #define __MAKEDEPEND__
 
-#define HUGE_VAL 0
 
 
 // because of printf
