@@ -18,10 +18,12 @@ package embox.cmd.user
 module login {
 	source "login.c"
 
+	option boolean security_support = true
+	//depends embox.security.smac
+
 	depends embox.compat.posix.passwd
 	depends embox.compat.posix.utmp_api
 	depends embox.kernel.task.syslib.waitpid
-	depends embox.security.smac
 	depends embox.security.seculog
 	depends embox.compat.posix.crypt
 
