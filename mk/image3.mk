@@ -80,7 +80,7 @@ symbols_c_files = \
 $(symbols_pass1_c) : image_o = $(image_nosymbols_o)
 $(symbols_pass2_c) : image_o = $(image_pass1_o)
 
-SYMBOLS_WITH_FILENAME ?= 1
+SYMBOLS_WITH_FILENAME ?= 0
 
 ifeq ($(SYMBOLS_WITH_FILENAME),1)
 NM_OPTS := --demangle --line-numbers --numeric-sort
