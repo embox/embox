@@ -274,7 +274,7 @@ void *readKbdThread(void *arg) {
 		key = 0;
 		i = 0;
 		while (emboxKeyMap[i].keysym != 0) {
-			if (emboxKeyMap[i].keysym == ascii[i]) {
+			if (emboxKeyMap[i].keysym == ascii[0]) {
 				key = emboxKeyMap[i].keycode;
 				break;
 			}
