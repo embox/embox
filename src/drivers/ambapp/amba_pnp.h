@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include <drivers/ambapp.h>
+#include <drivers/ambapp_id.h>
 
 #define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) \
 	if (-1 == capture_amba_dev(dev, venID, devID, true, true)) { \
