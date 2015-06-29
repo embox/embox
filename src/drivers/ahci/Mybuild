@@ -3,6 +3,9 @@ package embox.driver.ahci
 
 module core {
 	source "ahci_core.c"
+
+	@IncludeExport(path="drivers/ahci")
+	source "ahci.h"
 }
 
 module ti8168 {

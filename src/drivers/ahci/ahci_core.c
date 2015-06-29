@@ -1,5 +1,5 @@
 #include <embox/unit.h>
-#include <drivers/ahci.h>
+#include <drivers/ahci/ahci.h>
 
 EMBOX_UNIT_INIT(ahci_init);
 
