@@ -7,7 +7,7 @@ QWizardPage *createIntroPage()
     QWizardPage *page = new QWizardPage;
     page->setTitle("О редакторе");
 
-    QLabel *label = new QLabel("Текстовый редактор ZarjaEditor версии 1.0.");
+    QLabel *label = new QLabel("Текстовый редактор версии 1.0.");
     label->setWordWrap(true);
 
     QVBoxLayout *layout = new QVBoxLayout;

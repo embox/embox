@@ -1,8 +1,8 @@
-package zrv.cmd
+package third_party.qt.example
 
 @AutoCmd(preserve_locals = true)
 @Cmd(name = "texteditor",
-	help = "demo application for zarya-rv graphic opportunities",
+	help = "demo application for graphic opportunities with desktop-like look",
 	man = '''
 		AUTHORS
 			Dmitriy Aleev
