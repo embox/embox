@@ -18,6 +18,7 @@
 
 #include <embox/device.h>
 #include <drivers/video/fb.h>
+#include <drivers/video/fb_videomodes.h>
 
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>

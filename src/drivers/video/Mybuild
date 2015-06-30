@@ -52,6 +52,9 @@ module generic {
 module fb_videomodes {
 	source "fb_videomodes.c"
 
+	@IncludeExport(path="drivers/video")
+	source "fb_videomodes.h"
+
 	depends vesa_modes
 }
 

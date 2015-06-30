@@ -9,6 +9,8 @@
 #include <drivers/video/vesa_modes.h>
 #include <util/array.h>
 
+#include <drivers/video/fb_videomodes.h>
+
 static const struct fb_videomode vesa_modes[] = {
 	/* 0 640x350-85 VESA */
 	{ NULL, 85, 640, 350, 31746,  96, 32, 60, 32, 64, 3,

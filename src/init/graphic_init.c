@@ -9,6 +9,7 @@
 
 #include <drivers/video/vesa_modes.h>
 #include <drivers/video/fb.h>
+#include <drivers/video/fb_videomodes.h>
 #include <embox/unit.h>
 
 #include <module/embox/arch/x86/boot/multiboot.h>
