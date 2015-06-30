@@ -25,6 +25,7 @@
 #include <util/array.h>
 
 #include <kernel/printk.h>
+#include <kernel/panic.h>
 
 /* TODO make it per task field */
 //static DLIST_DEFINE(task_mem_segments);
@@ -93,47 +94,52 @@ static void *pointer_to_segment(void *ptr, struct dlist_head *mspace) {
 	return NULL;
 }
 
-void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
-	void *block;
+static void *mspace_do_alloc(size_t boundary, size_t size, struct dlist_head *mspace) {
 	struct mm_segment *mm;
-	size_t segment_pages_cnt, segment_bytes_cnt;
-	int iter;
+	dlist_foreach_entry(mm, mspace, link) {
+		void *block = bm_memalign(mm_to_segment(mm), boundary, size);
+		if (block != NULL) {
+			return block;
+		}
+	}
+
+	return NULL;
+}
+
+void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
+	/* No corresponding heap was found */
+	struct mm_segment *mm;
+	size_t segment_pages_cnt;
+	void *block;
 
 	assert(mspace);
 
-	block = NULL;
-	iter = 0;
+	block = mspace_do_alloc(boundary, size, mspace);
+	if (block) {
+		return block;
+	}
 
-	do {
-		assert(iter++ < 2, "%s\n", "memory allocation cyclic");
+	/* XXX allocate more approproate count of pages without redundancy */
+	/* Note, integer overflow may occur */
+	segment_pages_cnt = size / PAGE_SIZE() + boundary / PAGE_SIZE();
+	segment_pages_cnt += (size % PAGE_SIZE() + boundary % PAGE_SIZE() + 2 * PAGE_SIZE()) / PAGE_SIZE();
 
-		dlist_foreach_entry(mm, mspace, link) {
-			block = bm_memalign(mm_to_segment(mm), boundary, size);
-			if (block != NULL) {
-				return block;
-			}
-		}
+	mm = mm_segment_alloc(segment_pages_cnt);
+	if (mm == NULL)
+		return NULL;
 
-		/* No corresponding heap was found */
-		/* XXX allocate more approproate count of pages without redundancy */
-		/* Note, overflow may occur */
-		segment_pages_cnt = size / PAGE_SIZE() + boundary / PAGE_SIZE();
-		segment_pages_cnt += (size % PAGE_SIZE() + boundary % PAGE_SIZE()
-				+ 2 * PAGE_SIZE()) / PAGE_SIZE();
+	mm->size = segment_pages_cnt * PAGE_SIZE();
+	dlist_head_init(&mm->link);
+	dlist_add_next(&mm->link, mspace);
 
-		mm = mm_segment_alloc(segment_pages_cnt);
-		if (mm == NULL)
-			return NULL;
+	bm_init(mm_to_segment(mm), mm->size - sizeof(struct mm_segment));
 
-		mm->size = segment_pages_cnt * PAGE_SIZE();
-		segment_bytes_cnt = mm->size - sizeof *mm;
-		dlist_head_init(&mm->link);
-		dlist_add_next(&mm->link, mspace);
+	block = mspace_do_alloc(boundary, size, mspace);
+	if (!block) {
+		panic("new memory block is not sufficient to allocate requested size");
+	}
 
-		bm_init(mm_to_segment(mm), segment_bytes_cnt);
-	} while(!block);
-
-	return NULL;
+	return block;
 }
 
 void *mspace_malloc(size_t size, struct dlist_head *mspace) {

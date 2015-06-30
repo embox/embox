@@ -22,7 +22,6 @@
 #include <readline/readline.h>
 
 #include <cmd/shell.h>
-#include <security/smac.h>
 
 #include <kernel/task.h>
 
@@ -36,8 +35,6 @@ extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
 
 #define LOGIN_PROMPT "login: "
 #define PASSW_PROMPT "password: "
-
-#define SMAC_USERS "/smac_users"
 
 static int utmp_login(short ut_type, const char *ut_user) {
 	struct utmp utmp;
@@ -69,6 +66,9 @@ struct taskdata {
 	const char *cmd;
 };
 
+#if OPTION_GET(BOOLEAN, security_support)
+#include <security/smac.h>
+#define SMAC_USERS "/smac_users"
 static void login_set_security(struct taskdata *tdata) {
 	const struct spwd *spwd;
 	char *new_smac_label = "_";
@@ -81,6 +81,12 @@ static void login_set_security(struct taskdata *tdata) {
 		printf("can't setup smac label\n");
 	}
 }
+#else
+static void login_set_security(struct taskdata *tdata) {
+
+}
+#endif
+
 
 static void *taskshell(void *data) {
 	const struct shell *shell;

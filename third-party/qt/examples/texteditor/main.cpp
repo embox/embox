@@ -12,13 +12,13 @@
 #include <kernel/thread/waitq.h>
 #include <fcntl.h>
 #include <framework/mod/options.h>
-#include <module/zrv/cmd/texteditor.h>
+#include <module/third_party/qt/example/texteditor.h>
 
 #define DEFAULT_WIDTH \
-		OPTION_MODULE_GET(zrv__cmd__texteditor, NUMBER, root_window_width)
+		OPTION_MODULE_GET(third_party__qt__example__texteditor, NUMBER, root_window_width)
 
 #define DEFAULT_HEIGHT \
-		OPTION_MODULE_GET(zrv__cmd__texteditor, NUMBER, root_window_height)
+		OPTION_MODULE_GET(third_party__qt__example__texteditor, NUMBER, root_window_height)
 
 #define FSIZE 64
 #define SEP ':'
