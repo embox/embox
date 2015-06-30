@@ -14,7 +14,6 @@
 #include <stdint.h>
 
 #include <asm/io.h>
-#include <drivers/i8259.h>
 #include <hal/clock.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
@@ -112,7 +111,7 @@ static struct time_event_device pit_event_device = {
 	.config = pit_clock_setup,
 	.event_hz = PIT_HZ,
 	.irq_nr = IRQ_NR,
-	.pending = i8259_irq_pending
+	.pending = irqctrl_pending
 };
 
 static struct time_counter_device pit_counter_device = {
