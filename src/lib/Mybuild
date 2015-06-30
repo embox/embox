@@ -22,10 +22,6 @@ static module LibElf {
 }
 
 
-static module Tokenizer {
-	source "shell/tokenizer.c"
-}
-
 static module Printk {
 	source "printk.c"
 
