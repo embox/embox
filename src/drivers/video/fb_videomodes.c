@@ -137,8 +137,8 @@ static const struct fb_videomode vesa_modes[] = {
 
 const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp) {
 	int i;
-	for(i = 0; i < ARRAY_SIZE(vesa_modes); i ++) {
-		if(resbpp->x == vesa_modes[i].xres
+	for (i = 0; i < ARRAY_SIZE(vesa_modes); i ++) {
+		if (resbpp->x == vesa_modes[i].xres
 				&& resbpp->y == vesa_modes[i].yres) {
 			return &vesa_modes[i];
 		}

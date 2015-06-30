@@ -15,7 +15,6 @@
 #include <module/embox/arch/x86/boot/multiboot.h>
 
 #define VESA_MODE_NUMBER OPTION_GET(NUMBER,vesa_mode)
-#define FB_NAME OPTION_STRING_GET(fb_name)
 #define FB_INIT OPTION_GET(NUMBER,fb_init)
 
 #define MBOOTMOD embox__arch__x86__boot__multiboot
@@ -37,7 +36,7 @@ static int mode_init(void) {
 	struct fb_var_screeninfo var;
 	int ret;
 
-	fbinfo = fb_lookup(FB_NAME);
+	fbinfo = fb_lookup(0);
 	if (fbinfo == NULL) {
 		return -ENODEV;
 	}

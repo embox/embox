@@ -49,10 +49,6 @@ static const struct fb_ops bochs_ops = {
 	.fb_cursor = fb_cursor
 };
 
-static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
-	.name = "Bochs framebuffer"
-};
-
 static void fill_var(struct fb_var_screeninfo *var) {
 
 	memset(var, 0, sizeof(struct fb_var_screeninfo));
@@ -67,36 +63,28 @@ static void fill_var(struct fb_var_screeninfo *var) {
 }
 
 static int bochs_init(struct pci_slot_dev *pci_dev) {
-	int ret;
+	char *mmap_base = (char *)(pci_dev->bar[0] & ~0xf); /* FIXME */
+	size_t mmap_len = binalign_bound(VBE_DISPI_MAX_XRES 
+			* VBE_DISPI_MAX_YRES 
+			* VBE_DISPI_MAX_BPP / 8, PAGE_SIZE());
 	struct fb_info *info;
-	size_t mmap_len;
 
 	assert(pci_dev != NULL);
 
-	info = fb_alloc();
+	info = fb_create(&bochs_ops, mmap_base, mmap_len);
 	if (info == NULL) {
 		return -ENOMEM;
 	}
 
-	memcpy(&info->fix, &bochs_fix_screeninfo, sizeof info->fix);
 	fill_var(&info->var);
 
-	info->ops = &bochs_ops;
-	info->screen_base = (void *)(pci_dev->bar[0] & ~0xf); /* FIXME */
-	mmap_len = binalign_bound(VBE_DISPI_MAX_XRES * VBE_DISPI_MAX_YRES * VBE_DISPI_MAX_BPP / 8, PAGE_SIZE());
-
-	if (MAP_FAILED == mmap_device_memory(info->screen_base,
+	if (MAP_FAILED == mmap_device_memory(mmap_base,
 				mmap_len,
 			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
 				MAP_FIXED,
-				(unsigned long) info->screen_base)) {
+				(unsigned long) mmap_base)) {
+		fb_delete(info);
 		return -EIO;
-	}
-
-	ret = fb_register(info);
-	if (ret != 0) {
-		fb_release(info);
-		return ret;
 	}
 
 	return 0;

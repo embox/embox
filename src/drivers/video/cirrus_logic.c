@@ -397,10 +397,6 @@ static const struct fb_ops cl_ops = {
 	.fb_cursor    = fb_cursor,
 };
 
-static const struct fb_fix_screeninfo cl_fix_screeninfo = {
-	.name = "cirrus logic framebuffer"
-};
-
 static const struct fb_var_screeninfo cl_default_var_screeninfo = {
 	.xres = 1280,
 	.yres = 1024,

@@ -10,7 +10,6 @@ abstract module setup_tty_api {
 }
 
 module GraphicMode extends Display {
-	option string fb_name="fb0"
 	option number vesa_mode=3
 	option number set_x
 	option number set_y

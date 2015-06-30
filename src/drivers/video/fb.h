@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <util/dlist.h>
 
 __BEGIN_DECLS
 
@@ -58,17 +59,13 @@ struct fb_var_screeninfo {
 	uint32_t vmode;
 };
 
-struct fb_fix_screeninfo {
-	const char *name;
-};
-
 struct fb_info {
-	uint8_t node;
-	struct fb_fix_screeninfo fix;
-	struct fb_var_screeninfo var;
+	int id;
+	struct dlist_head link;
 	const struct fb_ops *ops;
-	uint8_t *screen_base;
+	char *screen_base;
 	size_t screen_size;
+	struct fb_var_screeninfo var;
 };
 
 struct fb_copyarea {
@@ -124,12 +121,9 @@ struct fb_ops {
 	void (*fb_cursor)(struct fb_info *info, const struct fb_cursor *cursor);
 };
 
-extern struct fb_info * fb_alloc(void);
-extern void fb_release(struct fb_info *info);
-
-extern int fb_register(struct fb_info *info);
-extern int fb_unregister(struct fb_info *info);
-extern struct fb_info * fb_lookup(const char *name);
+extern struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size);
+extern struct fb_info *fb_lookup(int id);
+extern void fb_delete(struct fb_info *info);
 
 extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
 
