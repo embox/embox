@@ -13,15 +13,6 @@ module rl_linenoise extends readline_api {
 	depends embox.compat.libc.str_dup
 }
 
-
-static module LibElf {
-	source "elf/elf.c"
-
-	@NoRuntime depends embox.compat.libc.stdio.all
-	@NoRuntime depends embox.compat.libc.str
-}
-
-
 static module Printk {
 	source "printk.c"
 
