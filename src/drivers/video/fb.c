@@ -23,15 +23,21 @@
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
 
-
-
 #define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
 
 POOL_DEF(fb_pool, struct fb_info, MODOPS_FB_AMOUNT);
 static struct fb_info *registered_fb[MODOPS_FB_AMOUNT];
 static unsigned int num_registered_fb = 0;
 
-extern const struct kfile_operations fb_device_ops;
+#define fb_readb(addr)       (*(uint8_t *) (addr))
+#define fb_readw(addr)       (*(uint16_t *) (addr))
+#define fb_readl(addr)       (*(uint32_t *) (addr))
+#define fb_writeb(val, addr) (*(uint8_t *) (addr) = (val))
+#define fb_writew(val, addr) (*(uint16_t *) (addr) = (val))
+#define fb_writel(val, addr) (*(uint32_t *) (addr) = (val))
+#define fb_memset            memset
+#define fb_memcpy_fromfb     memcpy
+#define fb_memcpy_tofb       memcpy
 
 struct fb_info * fb_alloc(void) {
 	struct fb_info *info;

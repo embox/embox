@@ -116,9 +116,6 @@ struct fb_cursor {
 };
 
 struct fb_ops {
-	size_t (*fb_read)(struct fb_info *info, char *buff, size_t size, size_t *ppos);
-	size_t (*fb_write)(struct fb_info *info, const char *buff, size_t size, size_t *ppos);
-	int (*fb_ioctl)(struct fb_info *info, int cmd, va_list args);
 	int (*fb_check_var)(struct fb_var_screeninfo *var, struct fb_info *info);
 	int (*fb_set_par)(struct fb_info *info);
 	void (*fb_copyarea)(struct fb_info *info, const struct fb_copyarea *area);
@@ -144,16 +141,6 @@ extern void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
 extern void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
 extern void fb_imageblit(struct fb_info *info, const struct fb_image *image);
 extern void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor);
-
-#define fb_readb(addr)       (*(uint8_t *) (addr))
-#define fb_readw(addr)       (*(uint16_t *) (addr))
-#define fb_readl(addr)       (*(uint32_t *) (addr))
-#define fb_writeb(val, addr) (*(uint8_t *) (addr) = (val))
-#define fb_writew(val, addr) (*(uint16_t *) (addr) = (val))
-#define fb_writel(val, addr) (*(uint32_t *) (addr) = (val))
-#define fb_memset            memset
-#define fb_memcpy_fromfb     memcpy
-#define fb_memcpy_tofb       memcpy
 
 __END_DECLS
 

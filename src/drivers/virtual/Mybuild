@@ -6,13 +6,6 @@ module tty_device {
 	depends embox.driver.video.fb
 }
 
-module fb_device {
-	source "fb_device.c"
-
-	depends embox.driver.video.fb
-	depends embox.fs.driver.devfs
-}
-
 module diag_device {
 	source "diag_device.c"
 
