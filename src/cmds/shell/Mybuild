@@ -3,6 +3,9 @@ package embox.cmd.sh
 module shell {
 	option number input_buff_sz = 80
 	source "shell.c"
+
+	@IncludeExport(path="cmd")
+	source "shell.h"
 }
 
 abstract module shell_api { }
