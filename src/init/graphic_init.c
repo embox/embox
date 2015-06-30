@@ -34,6 +34,7 @@ static int mode_init(void) {
 		.y = SET_Y,
 		.bpp = SET_BPP,
 	};
+	struct fb_var_screeninfo var;
 	int ret;
 
 	fbinfo = fb_lookup(FB_NAME);
@@ -46,12 +47,10 @@ static int mode_init(void) {
 		return -EINVAL;
 	}
 
-	ret = fb_try_mode(&fbinfo->var, fbinfo, mode, resbpp.bpp);
-	if (ret != 0) {
-		return -EIO;
-	}
+	fb_videomode_to_var(&var, mode);
+	var.bits_per_pixel = SET_BPP;
 
-	ret = fbinfo->ops->fb_set_par(fbinfo);
+	ret = fb_set_var(fbinfo, &var);
 	if (ret != 0) {
 		return -EIO;
 	}

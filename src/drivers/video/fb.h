@@ -16,8 +16,6 @@
 
 __BEGIN_DECLS
 
-struct fb_videomode;
-
 #define ROP_COPY 0
 #define ROP_XOR  1
 
@@ -135,9 +133,6 @@ extern void fb_release(struct fb_info *info);
 extern int fb_register(struct fb_info *info);
 extern int fb_unregister(struct fb_info *info);
 extern struct fb_info * fb_lookup(const char *name);
-
-extern int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
-		const struct fb_videomode *mode, uint32_t bpp);
 
 extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
 

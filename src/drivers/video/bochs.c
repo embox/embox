@@ -64,7 +64,6 @@ static void fill_var(struct fb_var_screeninfo *var) {
 	var->yres_virtual   = vbe_read(VBE_DISPI_INDEX_VIRT_HEIGHT);
 	var->xoffset        = vbe_read(VBE_DISPI_INDEX_X_OFFSET);
 	var->yoffset        = vbe_read(VBE_DISPI_INDEX_Y_OFFSET);
-
 }
 
 static int bochs_init(struct pci_slot_dev *pci_dev) {
