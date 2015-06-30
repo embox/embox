@@ -40,10 +40,10 @@ module fsnode_none extends fsnode_api {
 }
 
 module diag {
-	source "diag.c"
+	source "diag_serial.c"
 
 	@IncludeExport(path="drivers/serial")
-	source "diag.h"
+	source "diag_serial.h"
 }
 
 module apbuart extends embox.driver.diag.diag_api {

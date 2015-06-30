@@ -33,7 +33,7 @@
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <drivers/diag.h>
-#include <drivers/serial/diag.h>
+#include <drivers/serial/diag_serial.h>
 #include <embox/unit.h>
 #include <stm32f4xx_usart.h>
 #include <stm32f4xx_rcc.h>

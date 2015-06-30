@@ -47,7 +47,7 @@
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <drivers/diag.h>
-#include <drivers/serial/diag.h>
+#include <drivers/serial/diag_serial.h>
 #include <embox/unit.h>
 
 #include <drivers/serial/uart_device.h>
