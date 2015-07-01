@@ -7,16 +7,17 @@
 
 #include <errno.h>
 #include <string.h>
-#include <assert.h>
 #include <sys/mman.h>
-#include <util/binalign.h>
-#include <mem/page.h>
+
 #include <drivers/pci/pci.h>
+#include <drivers/pci/pci_driver.h>
+
 #include <drivers/video/fb.h>
 #include <drivers/video/vbe.h>
-#include <drivers/video/vesa_modes.h>
+
+#include <util/binalign.h>
 #include <framework/mod/options.h>
-#include <drivers/pci/pci_driver.h>
+#include <mem/page.h>
 
 PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
@@ -67,8 +68,6 @@ static int bochs_init(struct pci_slot_dev *pci_dev) {
 			* VBE_DISPI_MAX_YRES 
 			* VBE_DISPI_MAX_BPP / 8, PAGE_SIZE());
 	struct fb_info *info;
-
-	assert(pci_dev != NULL);
 
 	if (MAP_FAILED == mmap_device_memory(mmap_base,
 				mmap_len,
