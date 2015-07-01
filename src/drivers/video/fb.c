@@ -25,6 +25,8 @@
 
 #define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
 
+static int fb_update_current_var(struct fb_info *info);
+
 struct mutex fb_static = MUTEX_INIT_STATIC;
 POOL_DEF(fb_pool, struct fb_info, MODOPS_FB_AMOUNT);
 static DLIST_DEFINE(fb_list);
@@ -58,6 +60,9 @@ struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_s
 		info->ops = ops;
 		info->screen_base = map_base;
 		info->screen_size = map_size;
+
+		/* FIXME probably should be in open/start */
+		fb_update_current_var(info);
 	}
 
 	return info;
@@ -90,35 +95,33 @@ struct fb_info *fb_lookup(int id) {
 	return ret;
 }
 
-int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var) {
+int fb_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
 	int ret;
-	struct fb_var_screeninfo old;
 
 	assert(info != NULL);
 	assert(var != NULL);
 
-	if (info->ops->fb_check_var == NULL) {
-		memcpy(var, &info->var, sizeof(struct fb_var_screeninfo));
-		return 0;
-	}
-
-	ret = info->ops->fb_check_var(var, info);
-	if (ret != 0) {
-		return ret;
-	}
-
-	memcpy(&old, &info->var, sizeof(struct fb_var_screeninfo));
-	memcpy(&info->var, var, sizeof(struct fb_var_screeninfo));
-
-	if (info->ops->fb_set_par != NULL) {
-		ret = info->ops->fb_set_par(info);
-		if (ret != 0) {
-			memcpy(&info->var, &old, sizeof(struct fb_var_screeninfo));
+	if (info->ops->fb_set_var != NULL) {
+		ret = info->ops->fb_set_var(info, var);
+		if (ret < 0) {
 			return ret;
 		}
+		memcpy(&info->var, var, sizeof(struct fb_var_screeninfo));
 	}
 
 	return 0;
+}
+
+int fb_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
+	memcpy(&info->var, var, sizeof(struct fb_var_screeninfo));
+	return 0;
+}
+
+static int fb_update_current_var(struct fb_info *info) {
+	if (info->ops->fb_get_var != NULL) {
+		return info->ops->fb_get_var(info, &info->var);
+	}
+	return -ENOENT;
 }
 
 static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,

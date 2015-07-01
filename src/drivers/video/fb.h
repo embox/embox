@@ -62,9 +62,11 @@ struct fb_var_screeninfo {
 struct fb_info {
 	int id;
 	struct dlist_head link;
+
 	const struct fb_ops *ops;
 	char *screen_base;
 	size_t screen_size;
+
 	struct fb_var_screeninfo var;
 };
 
@@ -113,8 +115,8 @@ struct fb_cursor {
 };
 
 struct fb_ops {
-	int (*fb_check_var)(struct fb_var_screeninfo *var, struct fb_info *info);
-	int (*fb_set_par)(struct fb_info *info);
+	int (*fb_get_var)(struct fb_info *info, struct fb_var_screeninfo *var);
+	int (*fb_set_var)(struct fb_info *info, const struct fb_var_screeninfo *var);
 	void (*fb_copyarea)(struct fb_info *info, const struct fb_copyarea *area);
 	void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect);
 	void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
@@ -125,11 +127,8 @@ extern struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_
 extern struct fb_info *fb_lookup(int id);
 extern void fb_delete(struct fb_info *info);
 
-extern int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var);
-
-static inline const struct fb_var_screeninfo *fb_get_var(struct fb_info *info) {
-	return &info->var;
-}
+extern int fb_set_var(struct fb_info *info, const struct fb_var_screeninfo *var);
+extern int fb_get_var(struct fb_info *info, struct fb_var_screeninfo *var);
 
 extern void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
 extern void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
