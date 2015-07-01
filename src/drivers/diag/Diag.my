@@ -5,6 +5,9 @@ module diag {
 
 	source "diag.c"
 
+	@IncludeExport(path="drivers")
+	source "diag.h"
+
 	@NoRuntime depends embox.driver.diag.diag_api
 	@NoRuntime depends embox.driver.tty.termios_ops
 }
