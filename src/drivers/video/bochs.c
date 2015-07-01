@@ -59,10 +59,6 @@ static int bochs_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 static const struct fb_ops bochs_ops = {
 	.fb_set_var = bochs_set_var,
 	.fb_get_var = bochs_get_var,
-	.fb_copyarea = fb_copyarea,
-	.fb_fillrect = fb_fillrect,
-	.fb_imageblit = fb_imageblit,
-	.fb_cursor = fb_cursor
 };
 
 static int bochs_init(struct pci_slot_dev *pci_dev) {

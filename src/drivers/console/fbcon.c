@@ -204,17 +204,16 @@ static void fbcon_vterm_cursor(struct vterm_video *t, unsigned short x, unsigned
 	if (!fb) {
 		return;
 	}
-	assert(fb->ops != NULL);
-	assert(fb->ops->fb_cursor != NULL);
+	assert(fb->ops.fb_cursor != NULL);
 
 	if (prev_y >= 0) {
-		fb->ops->fb_cursor(fb, &cursor);
+		fb->ops.fb_cursor(fb, &cursor);
 	}
 
 	prev_x = cursor.hot.x = x;
 	prev_y = cursor.hot.y = y;
 
-	fb->ops->fb_cursor(fb, &cursor);
+	fb->ops.fb_cursor(fb, &cursor);
 
 }
 
@@ -246,9 +245,8 @@ static void fbcon_vterm_putc(struct vterm_video *t, char ch, unsigned short x, u
 		prev_x = prev_y = -1;
 	}
 
-	assert(fb->ops != NULL);
-	assert(fb->ops->fb_imageblit != NULL);
-	fb->ops->fb_imageblit(fb, &symbol);
+	assert(fb->ops.fb_imageblit != NULL);
+	fb->ops.fb_imageblit(fb, &symbol);
 }
 
 
@@ -273,9 +271,8 @@ static void fbcon_vterm_clear_rows(struct vterm_video *t, short row, unsigned sh
 	if (!fb) {
 		return;
 	}
-	assert(fb->ops != NULL);
-	assert(fb->ops->fb_fillrect != NULL);
-	fb->ops->fb_fillrect(fb, &rect);
+	assert(fb->ops.fb_fillrect != NULL);
+	fb->ops.fb_fillrect(fb, &rect);
 
 	if (prev_y >= row && prev_y < row + count) {
 		prev_y = prev_x = -1;
@@ -305,9 +302,8 @@ static void fbcon_vterm_copy_rows(struct vterm_video *t,
 		return;
 	}
 
-	assert(fb->ops != NULL);
-	assert(fb->ops->fb_copyarea != NULL);
-	fb->ops->fb_copyarea(fb, &area);
+	assert(fb->ops.fb_copyarea != NULL);
+	fb->ops.fb_copyarea(fb, &area);
 
 	if (prev_y >= from && prev_y < from + nrows) {
 		prev_y -= from - to;

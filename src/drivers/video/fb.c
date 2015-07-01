@@ -27,6 +27,11 @@
 
 static int fb_update_current_var(struct fb_info *info);
 
+static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *area);
+static void fb_default_cursor(struct fb_info *info, const struct fb_cursor *cursor);
+static void fb_default_imageblit(struct fb_info *info, const struct fb_image *image);
+static void fb_default_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+
 struct mutex fb_static = MUTEX_INIT_STATIC;
 POOL_DEF(fb_pool, struct fb_info, MODOPS_FB_AMOUNT);
 static DLIST_DEFINE(fb_list);
@@ -41,6 +46,21 @@ static unsigned int fb_count = 0;
 #define fb_memset            memset
 #define fb_memcpy_fromfb     memcpy
 #define fb_memcpy_tofb       memcpy
+
+static void fb_ops_fixup(struct fb_ops *ops) {
+	if (!ops->fb_copyarea) {
+		ops->fb_copyarea = fb_default_copyarea;
+	}
+	if (!ops->fb_imageblit) {
+		ops->fb_imageblit = fb_default_imageblit;
+	}
+	if (!ops->fb_fillrect) {
+		ops->fb_fillrect = fb_default_fillrect;
+	}
+	if (!ops->fb_cursor) {
+		ops->fb_cursor = fb_default_cursor;
+	}
+}
 
 struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
 	struct fb_info *info;
@@ -57,9 +77,12 @@ struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_s
 	mutex_unlock(&fb_static);
 
 	if (info) {
-		info->ops = ops;
 		info->screen_base = map_base;
 		info->screen_size = map_size;
+
+		memcpy(&info->ops, ops, sizeof(struct fb_ops));
+		fb_ops_fixup(&info->ops);
+
 
 		/* FIXME probably should be in open/start */
 		fb_update_current_var(info);
@@ -101,8 +124,8 @@ int fb_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
 	assert(info != NULL);
 	assert(var != NULL);
 
-	if (info->ops->fb_set_var != NULL) {
-		ret = info->ops->fb_set_var(info, var);
+	if (info->ops.fb_set_var != NULL) {
+		ret = info->ops.fb_set_var(info, var);
 		if (ret < 0) {
 			return ret;
 		}
@@ -118,8 +141,8 @@ int fb_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 }
 
 static int fb_update_current_var(struct fb_info *info) {
-	if (info->ops->fb_get_var != NULL) {
-		return info->ops->fb_get_var(info, &info->var);
+	if (info->ops.fb_get_var != NULL) {
+		return info->ops.fb_get_var(info, &info->var);
 	}
 	return -ENOENT;
 }
@@ -316,7 +339,7 @@ static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
 	}
 }
 
-void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
+static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 	uint32_t width, height, *dst, dstn, *src, srcn;
 
 	assert(info != NULL);
@@ -457,7 +480,7 @@ static void bitfill_rev(uint32_t *dst, uint32_t dstn, uint32_t pat,
 	}
 }
 
-void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
+static void fb_default_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 	uint32_t width, height, pat_orig, pat, *dst, dstn, loff, roff;
 	void (*fill_op)(uint32_t *dst, uint32_t dstn, uint32_t pat,
 		uint32_t loff, uint32_t roff, uint32_t len);
@@ -494,7 +517,7 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 	}
 }
 
-void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
+static void fb_default_imageblit(struct fb_info *info, const struct fb_image *image) {
 	/* TODO it's slow version:) */
 	uint32_t i, j;
 	struct fb_fillrect rect;
@@ -512,12 +535,12 @@ void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
 			rect.dx = image->dx + i * rect.width;
 			rect.color = *(uint8_t *)(image->data + j) & (1 << ((image->width - i - 1)))
 					? image->fg_color : image->bg_color;
-			info->ops->fb_fillrect(info, &rect);
+			info->ops.fb_fillrect(info, &rect);
 		}
 	}
 }
 
-void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
+static void fb_default_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
 	uint32_t i, j;
 	struct fb_fillrect rect;
 
@@ -533,7 +556,7 @@ void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
 		rect.dy = cursor->hot.y * cursor->image.height + j * rect.height;
 		for (i = 0; i < cursor->image.width; ++i) {
 			rect.dx = cursor->hot.x * cursor->image.width + i * rect.width;
-			info->ops->fb_fillrect(info, &rect);
+			info->ops.fb_fillrect(info, &rect);
 		}
 	}
 }

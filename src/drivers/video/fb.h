@@ -40,6 +40,8 @@ __BEGIN_DECLS
 #define FB_MODE_IS_FIRST      16
 #define FB_MODE_IS_FROM_VAR   32
 
+struct fb_info;
+
 struct fb_var_screeninfo {
 	uint32_t xres;
 	uint32_t yres;
@@ -57,17 +59,6 @@ struct fb_var_screeninfo {
 	uint32_t vsync_len;
 	uint32_t sync;
 	uint32_t vmode;
-};
-
-struct fb_info {
-	int id;
-	struct dlist_head link;
-
-	const struct fb_ops *ops;
-	char *screen_base;
-	size_t screen_size;
-
-	struct fb_var_screeninfo var;
 };
 
 struct fb_copyarea {
@@ -121,6 +112,17 @@ struct fb_ops {
 	void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect);
 	void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
 	void (*fb_cursor)(struct fb_info *info, const struct fb_cursor *cursor);
+};
+
+struct fb_info {
+	int id;
+	struct dlist_head link;
+
+	struct fb_ops ops;
+	char *screen_base;
+	size_t screen_size;
+
+	struct fb_var_screeninfo var;
 };
 
 extern struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size);
