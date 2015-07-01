@@ -15,8 +15,6 @@
 #include <embox/unit.h>
 #include <util/log.h>
 
-LOG_DECLARE_LOGGER();
-
 EMBOX_UNIT_INIT(nanosleep_init);
 
 struct hw_time {

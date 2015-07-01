@@ -26,8 +26,6 @@
 
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
-LOG_DECLARE_LOGGER();
-
 static int nxt_bluecore_start(struct net_node *node);
 static int data_rx(struct pnet_pack *pack);
 static int ctrl_rx(struct pnet_pack *pack);

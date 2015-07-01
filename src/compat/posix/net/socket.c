@@ -31,8 +31,6 @@
 
 #include <util/macro.h>
 
-LOG_DECLARE_LOGGER();
-
 static int get_index(struct sock *sk) {
 	struct idesc_table *it;
 

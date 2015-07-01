@@ -14,8 +14,6 @@
 
 #include "httpd.h"
 
-LOG_DECLARE_LOGGER();
-
 static const struct http_header_desc {
 	char *name;
 	off_t hreq_offset;

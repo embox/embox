@@ -24,8 +24,7 @@ struct logger {
 /**
  * Declares logger of the module from which macro is called.
  */
-#define LOG_DECLARE_LOGGER() \
-	extern struct logger mod_logger __attribute__ ((weak))
+extern struct logger mod_logger __attribute__ ((weak));
 
 /**
  * Logs a formatted message in a way specified by the module logger. A

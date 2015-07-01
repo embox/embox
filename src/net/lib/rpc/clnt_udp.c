@@ -28,8 +28,6 @@
 
 #include <kernel/time/ktime.h>
 
-LOG_DECLARE_LOGGER();
-
 #define UDP_MSG_MAX_SZ 1024
 
 static const struct clnt_ops clntudp_ops;

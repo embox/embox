@@ -34,8 +34,6 @@
 
 static char httpd_g_inbuf[BUFF_SZ];
 
-LOG_DECLARE_LOGGER();
-
 static int httpd_read_http_header(const struct client_info *cinfo, char *buf, size_t buf_sz) {
 	const int sk = cinfo->ci_sock;
 	const char *pattern = "\r\n\r\n";

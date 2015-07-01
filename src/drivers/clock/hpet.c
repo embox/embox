@@ -22,7 +22,6 @@
 
 #ifdef HPET_DEBUG
 #include <util/log.h>
-LOG_DECLARE_LOGGER();
 #endif
 
 EMBOX_UNIT_INIT(hpet_init);

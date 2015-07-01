@@ -12,8 +12,6 @@
 
 #include "httpd.h"
 
-LOG_DECLARE_LOGGER();
-
 static const char *ext2type_html[] = { ".html", ".htm", NULL };
 static const char *ext2type_jpeg[] = { ".jpeg", ".jpg", NULL };
 static const struct ext2type_table_item {

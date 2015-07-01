@@ -26,8 +26,6 @@
 #include <util/log.h>
 #include <kernel/sched/sched_lock.h>
 
-LOG_DECLARE_LOGGER();
-
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
 
 #define MODOPS_PREP_BUFF_CNT OPTION_GET(NUMBER, prep_buff_cnt)

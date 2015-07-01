@@ -26,8 +26,6 @@
 
 #include <util/err.h>
 
-LOG_DECLARE_LOGGER();
-
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
 
 struct sock *ksocket(int family, int type, int protocol) {

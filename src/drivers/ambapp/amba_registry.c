@@ -12,8 +12,6 @@
 #include <embox/unit.h>
 #include <util/log.h>
 
-LOG_DECLARE_LOGGER();
-
 EMBOX_UNIT_INIT(init);
 
 static amba_registry_device_info_t const devices_table[] = {

@@ -23,8 +23,6 @@
 #include <net/lib/rpc/auth.h>
 #include <net/lib/rpc/pmap.h>
 
-LOG_DECLARE_LOGGER();
-
 #define TCP_MSG_MAX_SZ 1024
 
 static int readtcp(struct client *clnt, char *buf, size_t len);

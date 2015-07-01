@@ -117,8 +117,6 @@
 
 EMBOX_UNIT_INIT(lan9118_init);
 
-LOG_DECLARE_LOGGER();
-
 static uint32_t lan9118_reg_read(struct net_device *dev, int offset) {
 	return REG_LOAD(dev->base_addr + offset);
 }

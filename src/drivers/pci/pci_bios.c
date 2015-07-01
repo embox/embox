@@ -21,8 +21,6 @@
 
 EMBOX_UNIT_INIT(pci_bios_init);
 
-LOG_DECLARE_LOGGER();
-
 #include <util/binalign.h>
 
 struct space_allocator {

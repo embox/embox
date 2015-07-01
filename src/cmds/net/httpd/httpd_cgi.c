@@ -21,8 +21,6 @@
 
 static char httpd_g_envbuf[256];
 
-LOG_DECLARE_LOGGER();
-
 struct cgi_env_descr {
 	char *name;
 	off_t hreq_offset;

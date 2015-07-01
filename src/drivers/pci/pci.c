@@ -26,8 +26,6 @@
 
 EMBOX_UNIT_INIT(pci_init);
 
-LOG_DECLARE_LOGGER();
-
 typedef struct pci_slot {
 	uint8_t bus;
 	uint8_t slot;
