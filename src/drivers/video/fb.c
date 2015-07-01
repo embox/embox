@@ -25,6 +25,17 @@
 
 #define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
 
+struct fb_info {
+	int id;
+	struct dlist_head link;
+
+	struct fb_ops ops;
+	char *screen_base;
+	size_t screen_size;
+
+	struct fb_var_screeninfo var;
+};
+
 static int fb_update_current_var(struct fb_info *info);
 
 static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *area);
@@ -139,6 +150,23 @@ int fb_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	memcpy(&info->var, var, sizeof(struct fb_var_screeninfo));
 	return 0;
 }
+
+void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
+	info->ops.fb_copyarea(info, area);
+}
+
+void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
+	info->ops.fb_cursor(info, cursor);
+}
+
+void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
+	info->ops.fb_imageblit(info, image);
+}
+
+void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
+	info->ops.fb_fillrect(info, rect);
+}
+
 
 static int fb_update_current_var(struct fb_info *info) {
 	if (info->ops.fb_get_var != NULL) {

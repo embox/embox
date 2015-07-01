@@ -114,17 +114,6 @@ struct fb_ops {
 	void (*fb_cursor)(struct fb_info *info, const struct fb_cursor *cursor);
 };
 
-struct fb_info {
-	int id;
-	struct dlist_head link;
-
-	struct fb_ops ops;
-	char *screen_base;
-	size_t screen_size;
-
-	struct fb_var_screeninfo var;
-};
-
 extern struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size);
 extern struct fb_info *fb_lookup(int id);
 extern void fb_delete(struct fb_info *info);

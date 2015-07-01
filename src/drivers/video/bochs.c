@@ -77,7 +77,6 @@ static int bochs_init(struct pci_slot_dev *pci_dev) {
 		return -EIO;
 	}
 
-
 	info = fb_create(&bochs_ops, mmap_base, mmap_len);
 	if (info == NULL) {
 		munmap(mmap_base, mmap_len);
