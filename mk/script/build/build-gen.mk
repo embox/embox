@@ -594,12 +594,14 @@ my_incpath_before_val := \
 		$(call mybuild_resolve_or_die,mybuild.lang.IncludePathBefore.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
 my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
+my_addcflags_val := $(call mybuild_resolve_or_die,mybuild.lang.AddCflags.value)
 my_instrument_val := \
 		$(call mybuild_resolve_or_die,mybuild.lang.InstrumentProfiling.value)
 
 $(@source_rmk) : includes_before = $(call values_of,$(my_incpath_before_val))
 $(@source_rmk) : includes = $(call values_of,$(my_incpath_val))
 $(@source_rmk) : defines  = $(call values_of,$(my_defmacro_val))
+$(@source_rmk) : additional_cflags  = $(call values_of,$(my_addcflags_val))
 $(@source_rmk) : instrument = $(call values_of,$(my_instrument_val))
 
 
@@ -615,7 +617,8 @@ $(@source_rmk) : flags = $(call trim, \
 			-include $(patsubst %,$(value module_config_h_pat), \
 						$(mod_path)) \
 			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
-			$(call check_profiling,$(instrument)))
+			$(call check_profiling,$(instrument)) \
+			$(call get,$(additional_cflags),value))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
