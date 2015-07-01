@@ -147,7 +147,7 @@ int fb_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
 }
 
 int fb_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
-	memcpy(&info->var, var, sizeof(struct fb_var_screeninfo));
+	memcpy(var, &info->var, sizeof(struct fb_var_screeninfo));
 	return 0;
 }
 
