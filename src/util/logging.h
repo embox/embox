@@ -12,13 +12,11 @@
 /**
  * Logging level, decreasing by fatality.
  */
-enum log_level{
-	LOG_NONE=0,
-	LOG_ERROR,
-	LOG_WARNING,
-	LOG_INFO,
-	LOG_DEBUG
-};
+#define LOG_NONE    0
+#define LOG_ERROR   1
+#define LOG_WARNING 2
+#define LOG_INFO    3
+#define LOG_DEBUG   4
 
 /**
  * Logging params

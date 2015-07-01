@@ -32,7 +32,7 @@ struct logger {
  * resulting message has a following format:
  * "level: function: message"
  *
- * @param level Message logging level, see #log_level
+ * @param level Message logging level
  * @param fmt   printf-like format of the message
  */
 #define log_logp(level, fmt, ...) \
