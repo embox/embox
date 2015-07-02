@@ -8,6 +8,9 @@ module ide {
 	source "harddisk_dma.c"
 	source "partition.c"
 
+	@IncludeExport(path="drivers")
+	source "ide.h"
+
 	depends embox.util.LibUtil
 	depends embox.driver.block
 	depends embox.util.indexator

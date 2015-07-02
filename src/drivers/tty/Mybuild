@@ -34,6 +34,8 @@ module tty {
 }
 
 module termios_ops {
+	@IncludeExport(path="drivers/tty")
+	source "termios_ops.h"
 	source "termios_ops.c"
 
 	depends embox.util.ring

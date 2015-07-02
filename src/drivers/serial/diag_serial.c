@@ -7,9 +7,9 @@
  */
 
 #include <drivers/diag.h>
-#include <drivers/uart_device.h>
+#include <drivers/serial/uart_device.h>
 
-#include <drivers/serial/diag.h>
+#include <drivers/serial/diag_serial.h>
 
 static int uart_diag_init(const struct diag *diag) {
 	struct uart_diag *uart_diag = (struct uart_diag *) diag;

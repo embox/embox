@@ -7,6 +7,8 @@ static module symbol {
 @Mandatory
 @DefaultImpl(no_whereami)
 abstract module whereami_api {
+	@IncludeExport(path="debug")
+	source "whereami.h"
 }
 
 module whereami extends whereami_api {

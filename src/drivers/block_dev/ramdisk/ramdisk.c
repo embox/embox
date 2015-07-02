@@ -25,7 +25,7 @@
 
 #include <embox/block_dev.h>
 
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
 #define RAMDISK_BLOCK_SIZE OPTION_GET(NUMBER,block_size)

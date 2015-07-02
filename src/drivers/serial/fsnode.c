@@ -9,7 +9,7 @@
 #include <errno.h>
 
 #include <kernel/irq.h>
-#include <drivers/uart_device.h>
+#include <drivers/serial/uart_device.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/idesc_serial.h>

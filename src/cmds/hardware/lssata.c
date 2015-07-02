@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <drivers/ahci.h>
+#include <drivers/ahci/ahci.h>
 
 struct lssata_cb {
 	int nhosts;

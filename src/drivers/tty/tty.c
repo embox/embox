@@ -7,7 +7,7 @@
  */
 
 #include <drivers/tty.h>
-#include <drivers/termios_ops.h>
+#include <drivers/tty/termios_ops.h>
 
 #include <ctype.h>
 #include <errno.h>

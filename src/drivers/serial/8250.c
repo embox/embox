@@ -10,8 +10,8 @@
 #include <asm/io.h>
 #include <drivers/diag.h>
 #include <drivers/serial/8250.h>
-#include <drivers/uart_device.h>
-#include <drivers/serial/diag.h>
+#include <drivers/serial/uart_device.h>
+#include <drivers/serial/diag_serial.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(uart_init);

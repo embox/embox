@@ -7,6 +7,9 @@ abstract module api { }
 module at91_pins extends pins {
 	source "at91_pins.c"
 
+	@IncludeExport(path="drivers")
+	source "gpio.h"
+
 	depends pins_core
 	depends embox.kernel.irq
 }
@@ -17,15 +20,23 @@ module pins_core {
 
 module rdc_gpio extends api {
 	source "rdc_gpio.c", "rdc_gpio.h"
+
+	@IncludeExport(path="drivers")
+	source "gpio.h"
 }
 
 module stm32 extends api {
 	source "stm32_gpio.c", "stm32_gpio.h"
 
+	@IncludeExport(path="drivers")
+	source "gpio.h"
 }
 
 module omap3_gpio extends api {
 	source "omap3_gpio.c", "omap3_gpio.h"
+
+	@IncludeExport(path="drivers")
+	source "gpio.h"
 
 	depends embox.kernel.irq
 }

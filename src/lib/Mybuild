@@ -1,31 +1,5 @@
 package embox.lib
 
-@DefaultImpl(rl_linenoise)
-abstract module readline_api { }
-
-module rl_linenoise extends readline_api {
-	@IncludePath("$(THIRDPARTY_DIR)/lib/linenoise")
-	source "readline/rl_linenoise.c"
-
-	depends embox.compat.posix.fs.dirent
-	depends embox.compat.libc.all
-	depends third_party.lib.linenoise
-	depends embox.compat.libc.str_dup
-}
-
-
-static module LibElf {
-	source "elf/elf.c"
-
-	@NoRuntime depends embox.compat.libc.stdio.all
-	@NoRuntime depends embox.compat.libc.str
-}
-
-
-static module Tokenizer {
-	source "shell/tokenizer.c"
-}
-
 static module Printk {
 	source "printk.c"
 
