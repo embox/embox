@@ -14,6 +14,7 @@ module mod {
 	source "apps.lds.S"
 
 	depends embox.util.Array
+	depends embox.util.log
 
 	option boolean security_label = true
 
