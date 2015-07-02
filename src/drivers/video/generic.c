@@ -28,29 +28,16 @@
 
 PCI_DRIVER("generic fb", generic_init, VID, PID);
 
-static int bochs_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {
-	return 0;
+static int generic_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
+	return -ENOSYS;
 }
 
-static int bochs_set_par(struct fb_info *info) {
-	return -EINVAL;
-}
-
-static const struct fb_ops bochs_ops = {
-	.fb_check_var = bochs_check_var,
-	.fb_set_par = bochs_set_par,
-	.fb_copyarea = fb_copyarea,
-	.fb_fillrect = fb_fillrect,
-	.fb_imageblit = fb_imageblit,
-	.fb_cursor = fb_cursor
-};
-
-static void fill_var(struct fb_var_screeninfo *var) {
+static int generic_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 
 	memset(var, 0, sizeof(struct fb_var_screeninfo));
 
 	if (!(OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_mode_set))) {
-		return;
+		return -ENOSYS;
 	}
 
 	var->xres           = OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width);
@@ -60,7 +47,13 @@ static void fill_var(struct fb_var_screeninfo *var) {
 	var->xres_virtual = var->xres;
 	var->yres_virtual = var->yres;
 
+	return 0;
 }
+
+static const struct fb_ops generic_ops = {
+	.fb_get_var = generic_get_var,
+	.fb_set_var = generic_set_var,
+};
 
 static int generic_init(struct pci_slot_dev *pci_dev) {
 	char *mmap_base = (char *) (pci_dev->bar[BAR] & ~0xf); /* FIXME */
@@ -69,22 +62,18 @@ static int generic_init(struct pci_slot_dev *pci_dev) {
 			* OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth) / 8, PAGE_SIZE());
 	struct fb_info *info;
 
-	assert(pci_dev != NULL);
-
-	info = fb_create(&bochs_ops, mmap_base, mmap_len);
-	if (info == NULL) {
-		return -ENOMEM;
-	}
-
-	fill_var(&info->var);
-
 	if (MAP_FAILED == mmap_device_memory(mmap_base,
 				mmap_len,
 			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
 				MAP_FIXED,
 				(unsigned long) mmap_base)) {
-		fb_delete(info);
 		return -EIO;
+	}
+
+	info = fb_create(&generic_ops, mmap_base, mmap_len);
+	if (info == NULL) {
+		munmap(mmap_base, mmap_len);
+		return -ENOMEM;
 	}
 
 	return 0;
