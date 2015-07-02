@@ -31,7 +31,7 @@
 #define __MOD_SEC_LABEL_DEF(mod_nm)
 #define __MOD_LABEL_DEF(mod_nm)
 
-#define __MOD_LOGGER(mod_nm, log_level)
+#define __MOD_LOGGER_DEF(mod_nm, log_level)
 
 #define __MOD_APP_DEF(mod_nm)
 #define __MOD_CMD_DEF(mod_nm, cmd_name, cmd_brief, cmd_details) \
