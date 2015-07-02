@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
-#include <util/dlist.h>
 
 __BEGIN_DECLS
 
@@ -112,6 +111,16 @@ struct fb_ops {
 	void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect);
 	void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
 	void (*fb_cursor)(struct fb_info *info, const struct fb_cursor *cursor);
+};
+
+struct fb_info {
+	int id;
+
+	struct fb_ops ops;
+	char *screen_base;
+	size_t screen_size;
+
+	struct fb_var_screeninfo var;
 };
 
 extern struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size);

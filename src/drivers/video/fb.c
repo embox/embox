@@ -15,6 +15,7 @@
 
 #include <kernel/thread/sync/mutex.h>
 
+#include <util/dlist.h>
 #include <util/math.h>
 
 #include <embox/device.h>
@@ -25,15 +26,9 @@
 
 #define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
 
-struct fb_info {
-	int id;
+struct fb_dev {
 	struct dlist_head link;
-
-	struct fb_ops ops;
-	char *screen_base;
-	size_t screen_size;
-
-	struct fb_var_screeninfo var;
+	struct fb_info info;
 };
 
 static int fb_update_current_var(struct fb_info *info);
@@ -44,7 +39,7 @@ static void fb_default_imageblit(struct fb_info *info, const struct fb_image *im
 static void fb_default_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
 
 struct mutex fb_static = MUTEX_INIT_STATIC;
-POOL_DEF(fb_pool, struct fb_info, MODOPS_FB_AMOUNT);
+POOL_DEF(fb_pool, struct fb_dev, MODOPS_FB_AMOUNT);
 static DLIST_DEFINE(fb_list);
 static unsigned int fb_count = 0;
 
@@ -74,15 +69,19 @@ static void fb_ops_fixup(struct fb_ops *ops) {
 }
 
 struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
+	struct fb_dev *dev;
 	struct fb_info *info;
 
 	mutex_lock(&fb_static);
 	{
-		info = pool_alloc(&fb_pool);
-		if (info) {
+		dev = pool_alloc(&fb_pool);
+		if (dev) {
+			info = &dev->info;
 			info->id = fb_count++;
-			dlist_init(&info->link);
-			dlist_add_next(&info->link, &fb_list);
+			dlist_init(&dev->link);
+			dlist_add_next(&dev->link, &fb_list);
+		} else{
+			info = NULL;
 		}
 	}
 	mutex_unlock(&fb_static);
@@ -103,25 +102,28 @@ struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_s
 }
 
 void fb_delete(struct fb_info *info) {
+	struct fb_dev *dev = member_cast_out(info, struct fb_dev, info);
+
 	if (info) {
 		mutex_lock(&fb_static);
 		{
-			dlist_del(&info->link);
-			pool_free(&fb_pool, info);
+			dlist_del(&dev->link);
+			pool_free(&fb_pool, dev);
 		}
 		mutex_unlock(&fb_static);
 	}
 }
 
 struct fb_info *fb_lookup(int id) {
-	struct fb_info *ret = NULL;
-	struct fb_info *fb;
+	struct fb_info *ret;
 
+	ret = NULL;
 	mutex_lock(&fb_static);
 	{
-		dlist_foreach_entry(fb, &fb_list, link) {
-			if (fb->id == id) {
-				ret = fb;
+		struct fb_dev *fb_dev;
+		dlist_foreach_entry(fb_dev, &fb_list, link) {
+			if (fb_dev->info.id == id) {
+				ret = &fb_dev->info;
 			}
 		}
 	}
