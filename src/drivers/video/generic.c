@@ -21,6 +21,10 @@
 #include <module/embox/arch/x86/boot/multiboot.h>
 
 #define MBOOTMOD embox__arch__x86__boot__multiboot
+#define MBOOT_VIDEO_SET OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_mode_set)
+#define MBOOT_VWIDTH OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
+#define MBOOT_VHEIGHT OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
+#define MBOOT_VDEPTH OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth)
 
 #define VID OPTION_GET(NUMBER,vendor_id)
 #define PID OPTION_GET(NUMBER,product_id)
@@ -34,18 +38,15 @@ static int generic_set_var(struct fb_info *info, const struct fb_var_screeninfo 
 
 static int generic_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 
-	memset(var, 0, sizeof(struct fb_var_screeninfo));
-
-	if (!(OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_mode_set))) {
+	if (!MBOOT_VIDEO_SET) {
 		return -ENOSYS;
 	}
 
-	var->xres           = OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width);
-	var->yres           = OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height);
-	var->bits_per_pixel = OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth);
+	memset(var, 0, sizeof(struct fb_var_screeninfo));
 
-	var->xres_virtual = var->xres;
-	var->yres_virtual = var->yres;
+	var->xres_virtual = var->xres = MBOOT_VWIDTH;
+	var->yres_virtual = var->yres = MBOOT_VWIDTH;
+	var->bits_per_pixel = MBOOT_VDEPTH;
 
 	return 0;
 }
@@ -57,9 +58,8 @@ static const struct fb_ops generic_ops = {
 
 static int generic_init(struct pci_slot_dev *pci_dev) {
 	char *mmap_base = (char *) (pci_dev->bar[BAR] & ~0xf); /* FIXME */
-	size_t mmap_len = binalign_bound(OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
-			* OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
-			* OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth) / 8, PAGE_SIZE());
+	size_t mmap_len = binalign_bound(MBOOT_VWIDTH *
+			MBOOT_VHEIGHT * MBOOT_VDEPTH / 8, PAGE_SIZE());
 	struct fb_info *info;
 
 	if (MAP_FAILED == mmap_device_memory(mmap_base,
