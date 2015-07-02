@@ -618,7 +618,7 @@ $(@source_rmk) : flags = $(call trim, \
 						$(mod_path)) \
 			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
 			$(call check_profiling,$(instrument)) \
-			$(call get,$(additional_cflags),value))
+			$(call do_flags,,$(additional_cflags)))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
