@@ -87,7 +87,6 @@ struct fb_image {
 	uint32_t bg_color;
 	uint32_t depth;
 	const char *data;
-//	struct fb_cmap cmap;
 };
 
 struct fbcurpos {
@@ -96,13 +95,16 @@ struct fbcurpos {
 };
 
 struct fb_cursor {
-//	uint16_t set;
 	uint16_t enable;
 	uint16_t rop;
 	const char *mask;
 	struct fbcurpos hot;
 	struct fb_image image;
 };
+
+/**
+ * Solely driver's part
+ */
 
 struct fb_ops {
 	int (*fb_get_var)(struct fb_info *info, struct fb_var_screeninfo *var);
@@ -114,19 +116,24 @@ struct fb_ops {
 };
 
 struct fb_info {
-	int id;
+	int id; /**< ID, monothonically incremented for each fb */
 
-	struct fb_ops ops;
-	char *screen_base;
-	size_t screen_size;
+	struct fb_ops ops; /**< Operations on fb, allowed to be modified by driver */
+	char *screen_base; /**< Start of frame buffer */
+	size_t screen_size; /**< Maximum lenght of frame buffer */
 
-	struct fb_var_screeninfo var;
+	struct fb_var_screeninfo var; /**< Current variable settins */
 };
 
-extern struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size);
-extern struct fb_info *fb_lookup(int id);
+extern struct fb_info *fb_create(const struct fb_ops *ops, char *map_base,
+		size_t map_size);
 extern void fb_delete(struct fb_info *info);
 
+/**
+ * Solely application's part
+ */
+
+extern struct fb_info *fb_lookup(int id);
 extern int fb_set_var(struct fb_info *info, const struct fb_var_screeninfo *var);
 extern int fb_get_var(struct fb_info *info, struct fb_var_screeninfo *var);
 
