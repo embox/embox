@@ -9,6 +9,7 @@
 
 #include <string.h>
 #include <embox/unit.h>
+#include <util/log.h>
 
 #include <drivers/bluetooth/blue_core4.h>
 #include <drivers/bluetooth/bluetooth.h>
@@ -49,16 +50,6 @@ static int (*ctrl_hnd)(void *pack_data) = wait_connect;
 
 static struct bc_msg out_msg;
 
-/*#define DEBUG*/
-#ifdef DEBUG
-#include <kernel/printk.h>
-static void print_msg(struct bc_msg_body *msg) {
-	printk("P%x:", msg->type);
-}
-#else
-#define print_msg(msg)
-#endif
-
 static uint16_t calc_chksumm(struct bc_msg * msg) {
 	uint16_t sum;
 	int i;
@@ -87,7 +78,7 @@ static int process_msg(struct bc_msg_body *msg) {
 	static int bt_bc_handle = 0;
 
 	int res = 0;
-	print_msg(msg);
+	log_debug("P%x:", msg->type);
 
 	switch (msg->type) {
 	case MSG_RESET_INDICATION:

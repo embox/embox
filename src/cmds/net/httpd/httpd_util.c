@@ -8,6 +8,7 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <util/log.h>
 
 #include "httpd.h"
 
@@ -54,7 +55,7 @@ const char *httpd_filename2content_type(const char *filename) {
 		}
 	}
 
-	HTTPD_ERROR("can't determ content type for file: %s\n", filename);
+	log_error("can't determ content type for file: %s", filename);
 	return ext2type_unkwown;
 }
 

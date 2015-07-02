@@ -20,29 +20,6 @@
 #define HTTPD_MAX_PATH 128
 #define CGI_PREFIX  "/cgi-bin/"
 
-#define HTTPD_LOG_QUIET 0
-#define HTTPD_LOG_ERROR 1
-#define HTTPD_LOG_DEBUG 2
-
-#define HTTPD_LOG_LEVEL HTTPD_LOG_DEBUG
-
-#define HTTPD_L       "httpd: "
-#define HTTPD_L_DEBUG HTTPD_L "debug: "
-
-#if HTTPD_LOG_LEVEL >= HTTPD_LOG_DEBUG
-#define HTTPD_DEBUG(_msg, ...) \
-	fprintf(stderr, HTTPD_L_DEBUG _msg, ## __VA_ARGS__)
-#else
-#define HTTPD_DEBUG(_msg, ...)
-#endif
-
-#if HTTPD_LOG_LEVEL >= HTTPD_LOG_ERROR
-#define HTTPD_ERROR(_msg, ...) \
-	fprintf(stderr, HTTPD_L _msg, ## __VA_ARGS__)
-#else
-#define HTTPD_ERROR(_msg, ...)
-#endif
-
 struct client_info {
 	struct sockaddr ci_addr;
 	socklen_t ci_addrlen;

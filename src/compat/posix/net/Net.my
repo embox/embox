@@ -154,11 +154,13 @@ static module inet_addr {
 }
 
 static module socket {
+	option number log_level=0
+
 	source "socket.c"
 	depends embox.kernel.task.idesc
 	depends embox.compat.libc.str
 	depends embox.net.socket
-	depends embox.util.sys_log
+	depends embox.util.log
 
 	source "socket_index_operation.c"
 	depends embox.kernel.task.idesc

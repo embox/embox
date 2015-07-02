@@ -19,6 +19,8 @@ struct mod_ops;
 struct mod_app;
 struct mod_member;
 
+struct logger;
+
 struct mod {
 	const struct mod_ops *ops;
 
@@ -65,6 +67,7 @@ struct mod_build_info {
 	const char *pkg_name; /**< Definition package. */
 	const char *mod_name; /**< Name assigned by EMBuild. */
 	const struct mod_label   *label;   /**< (optional) Security. */
+	struct logger *const logger;
 	/* Null-terminated array with dependency information. */
 	const struct mod *volatile const *requires,
 	      *volatile const *provides; /**< Modules, that this module depends on;

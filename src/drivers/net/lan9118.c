@@ -17,6 +17,7 @@
 #include <hal/pins.h>
 #include <kernel/printk.h>
 #include <kernel/irq.h>
+#include <util/log.h>
 
 #include <string.h>
 #include <net/l2/ethernet.h>
@@ -26,14 +27,6 @@
 #include <net/skbuff.h>
 #include <net/netfilter.h>
 #include <unistd.h>
-
-/*#define LAN9118_DEBUG*/
-
-#ifdef LAN9118_DEBUG
-#define DBG(x) x
-#else
-#define DBG(x)
-#endif
 
 #define LAN9118_GPMC_CS        5 /* GPMC chip-select number */
 #define LAN9118_PORT           OPTION_GET(NUMBER, port)
@@ -138,7 +131,7 @@ static uint32_t lan9118_mac_read(struct net_device *dev, unsigned int offset) {
 	l = lan9118_reg_read(dev, LAN9118_MAC_CSR_CMD);
 
 	if (l & _LAN9118_MAC_CSR_CMD_CSR_BUSY) {
-		printk("MAC is busy\n");
+		log_info("MAC is busy");
 		return 0xFFFFFFFF;
 	}
 
@@ -158,7 +151,7 @@ static void lan9118_mac_write(struct net_device *dev, unsigned int offset, uint3
 	l = lan9118_reg_read(dev, LAN9118_MAC_CSR_CMD);
 
 	if (l & _LAN9118_MAC_CSR_CMD_CSR_BUSY) {
-		printk("MAC is busy\n");
+		log_info("MAC is busy");
 		return;
 	}
 
@@ -180,7 +173,7 @@ static int lan9118_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	freespace = lan9118_reg_read(dev, LAN9118_TX_FIFO_INF) & _LAN9118_TX_FIFO_INF_TDFREE;
 
-	DBG(printk("%s, skb_len - %d, freespace - %d\n", __func__, skb->len, freespace));
+	log_debug("skb_len - %d, freespace - %d", skb->len, freespace);
 
 	irq_lock();
 	{
@@ -242,13 +235,13 @@ repeat:
 		packet_len -= 4; /* checksum */
 
 		if (rx_status & _LAN9118_RX_STS_ES) {
-			DBG(printk("%s: error rx_status - 0x%08x\n", __func__, rx_status));
+			log_debug("error rx_status - 0x%08x", rx_status);
 			irq_unlock();
 			return;
 		}
 
 		if ((skb = skb_alloc(packet_len))) {
-			DBG(printk("%s: packet_len - %d\n", __func__, packet_len));
+			log_debug("packet_len - %d", packet_len);
 
 			src = (uint32_t*) (dev->base_addr + LAN9118_RX_DATA_FIFO);
 			dst = (uint32_t*) skb->mac.raw;
@@ -267,7 +260,7 @@ repeat:
 			netif_rx(skb);
 		} else {
 			//dev->stats.rx_dropped++;
-			DBG(printk("dropped %d\n", packet_len));
+			log_debug("dropped %d", packet_len);
 		}
 
 		rx_status = lan9118_rx_status(dev);
@@ -356,7 +349,7 @@ static int lan9118_open(struct net_device *dev) {
 
 	l = lan9118_mac_read(dev, LAN9118_MAC_CR);
 	l |= (_LAN9118_MAC_CR_TXEN | _LAN9118_MAC_CR_RXEN | _LAN9118_MAC_CR_HBDIS);
-	DBG(printk("LAN9118_MAC_CR: %X\n", l));
+	log_debug("LAN9118_MAC_CR: %X", l);
 	lan9118_mac_write(dev, LAN9118_MAC_CR, l);
 
 	lan9118_reg_write(dev, LAN9118_TX_CFG, _LAN9118_TX_CFG_TX_ON);
@@ -392,7 +385,7 @@ static int lan9118_init(void) {
 		return -1;
 
 	if (lan9118_reg_read(nic, LAN9118_BYTE_TEST) != 0x87654321) {
-		printk("lan9118 bad BYTE_TEST register value - %d\n",
+		log_info("lan9118 bad BYTE_TEST register value - %d",
 				lan9118_reg_read(nic, LAN9118_BYTE_TEST));
 		return -1;
 	}
@@ -400,7 +393,7 @@ static int lan9118_init(void) {
 	res = lan9118_reset(nic);
 
 	if (res < 0) {
-		printk("lan9118 reset failed\n");
+		log_info("lan9118 reset failed");
 		return res;
 	}
 

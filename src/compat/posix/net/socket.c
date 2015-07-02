@@ -25,9 +25,11 @@
 
 #include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
-#include <util/sys_log.h>
+#include <util/log.h>
 
 #include <util/err.h>
+
+#include <util/macro.h>
 
 static int get_index(struct sock *sk) {
 	struct idesc_table *it;
@@ -162,7 +164,7 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 
 	/* TODO remove this */
 	if (flags & (MSG_EOR | MSG_OOB)) {
-		LOG_ERROR("send", "MSG_EOR, MSG_OOB flags are not supported");
+		log_error("MSG_EOR, MSG_OOB flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 
@@ -201,7 +203,7 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 
 	/* TODO remove this */
 	if (flags != 0) {
-		LOG_ERROR("sendto", "flags are not supported");
+		log_error("flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 
@@ -235,7 +237,7 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 
 	/* TODO remove this */
 	if (flags != 0) {
-		LOG_ERROR("sendmsg", "flags are not supported");
+		log_error("flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 
@@ -267,7 +269,7 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 
 	/* TODO remove this */
 	if (flags != 0) {
-		LOG_ERROR("recv", "flags are not supported");
+		log_error("flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 
@@ -304,7 +306,7 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 
 	/* TODO remove this */
 	if (flags != 0) {
-		LOG_ERROR("recv", "flags are not supported");
+		log_error("flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 
@@ -348,7 +350,7 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
 	/* TODO remove this */
 	if (flags != 0) {
-		LOG_ERROR("recv", "flags are not supported");
+		log_error("flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
 

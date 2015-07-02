@@ -18,6 +18,7 @@ module tun {
 
 module virtio {
 	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
+	option number log_level = 0
 	@IncludeExport(path="drivers/net")
 	source "virtio_net.h"
 	source "virtio.c"
@@ -139,6 +140,8 @@ module usermode {
 }
 
 module lan9118 {
+	option number log_level=3 /* info */
+
 	source "lan9118.c"
 
 	option number irq_pin=16

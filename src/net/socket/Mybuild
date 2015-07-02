@@ -85,6 +85,8 @@ module af_unix {
 }
 
 module socket {
+	option number log_level=0
+
 	source "ksocket.c"
 	source "socket_desc.c"
 	option number connect_timeout=5000
@@ -92,6 +94,6 @@ module socket {
 	depends embox.compat.libc.str
 	depends embox.net.sock
 	depends embox.net.dev //ksocket, netdev_get_by_name
-	depends embox.util.sys_log
+	depends embox.util.log
 	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
 }

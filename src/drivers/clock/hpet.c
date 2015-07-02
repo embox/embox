@@ -20,6 +20,10 @@
 
 //#define HPET_DEBUG
 
+#ifdef HPET_DEBUG
+#include <util/log.h>
+#endif
+
 EMBOX_UNIT_INIT(hpet_init);
 
 #define HPET_GEN_CAP_REG    0x000
@@ -90,10 +94,10 @@ static int hpet_init(void) {
 	hpet_start_counter();
 
 #ifdef HPET_DEBUG
-	printk("Hz: %u\n", hpet_counter_device.cycle_hz);
+	log_debug("Hz: %u", hpet_counter_device.cycle_hz);
 	for (int i = 0; i < 10; ++i) {
 		ksleep(1000);
-		printk("%llu\n", (*hpet_clock_source.read)(&hpet_clock_source));
+		log_debug("%llu", (*hpet_clock_source.read)(&hpet_clock_source));
 	}
 #endif
 
