@@ -139,7 +139,6 @@ static void gyro_get_store(int pos) {
 	store_val(gyro_z_values, pos, &buf[2], sizeof(buf[2]));
 }
 
-
 static void acc_test(void) {
 	for (size_t m = 0; m < ACC_TOTAL; m++)
 		acc_get_store(m);
@@ -160,6 +159,73 @@ static void acc_gyro_test(void) {
 	motor_stop(&motor1);
 }
 
+
+// --- fault detection code START
+
+#define THRESHOLD       3000
+#define INC_WINDOW_SIZE 50
+#define EMA_ALPHA ((float) 2.0 / (float) (INC_WINDOW_SIZE + 1))
+
+static float incs[INC_WINDOW_SIZE] = {0};
+static int inc_index = 0;
+static float average_inc = 0;
+static float ema = 0;
+
+#define FD_WIN_SIZE   200
+#define FD_THRESHOLD  2600
+static float f_dv[FD_WIN_SIZE] = {0};
+static int index_l = 0;
+static int index_h = FD_WIN_SIZE / 2;
+static int index = 0;
+static float diff = 0;
+
+static inline float moving_average(float inc) {
+	average_inc += (inc - incs[inc_index]) / INC_WINDOW_SIZE;
+	incs[inc_index] = inc;
+	inc_index = (inc_index + 1) % INC_WINDOW_SIZE;
+	return average_inc;
+}
+
+static inline float filtered_derivative(float inc) {
+	diff += ((inc - 2 * f_dv[index_h] + f_dv[index_l]) / FD_WIN_SIZE);
+	f_dv[index] = inc;
+	index = (index + 1) % FD_WIN_SIZE;
+	index_h = (index_h + 1) % FD_WIN_SIZE;
+	index_l = (index_l + 1) % FD_WIN_SIZE;
+	return diff;
+}
+
+static inline float exp_moving_average(float inc) {
+	ema += (inc - ema) * EMA_ALPHA;
+	return ema;
+}
+
+static inline void fault_handle(void) {
+	BSP_LED_On(LED3);
+	motor_stop(&motor1);
+}
+
+static void fault_detect(void) {
+	int16_t buf[3] = {0, 0, 0};
+	float filtered_val;
+
+	BSP_ACCELERO_GetXYZ(buf);
+	ema = buf[0];
+
+	while(1) {
+		BSP_ACCELERO_GetXYZ(buf);
+		//store_val(acc_x_values, m, &buf[0], sizeof(buf[0]));
+		filtered_val = filtered_derivative(buf[0]);
+		if (filtered_val < -FD_THRESHOLD || filtered_val > FD_THRESHOLD) {
+			fault_handle();
+		}
+	}
+
+	motor_stop(&motor1);
+}
+
+// --- fault detection code END
+
 int main(void) {
 	int res;
 
@@ -173,8 +239,14 @@ int main(void) {
         return -1;
     }
 
-	for (size_t i = 0; i < 32; i++)
-		flash_erase(&stm32f3_flash, i);
+	res = BSP_GYRO_Init();
+    if (res != HAL_OK) {
+        printf("BSP_GYRO_Init failed, returned %d\n", res);
+        return -1;
+    }
+
+	BSP_LED_Init(LED4);
+	BSP_LED_Init(LED3);
 
 	init_pins(GPIOD, MOTOR_ENABLE1 | MOTOR_INPUT1 | MOTOR_INPUT2 |
 			MOTOR_ENABLE2 | MOTOR_INPUT3 | MOTOR_INPUT4);
@@ -189,23 +261,11 @@ int main(void) {
 	motor_enable(&motor1);
 	while(BSP_PB_GetState(BUTTON_USER) != SET)
 		;
+	for (size_t i = 0; i < 32; i++)
+		flash_erase(&stm32f3_flash, i);
 	motor_run(&motor1, MOTOR_RUN_RIGHT);
 
-	acc_gyro_test();
-
-	//motor_enable(&motor2);
-	//while(1) {
-	//	while(BSP_PB_GetState(BUTTON_USER) != SET)
-	//		;
-	//	motor_run(&motor1, MOTOR_RUN_LEFT);
-	//	//motor_run(&motor2, MOTOR_RUN_LEFT);
-	//	stm32f3_delay(0xFFFF);
-	//	while(BSP_PB_GetState(BUTTON_USER) != SET)
-	//		;
-	//	motor_run(&motor1, MOTOR_RUN_RIGHT);
-	//	//motor_run(&motor2, MOTOR_RUN_RIGHT);
-	//	stm32f3_delay(0xFFFF);
-	//}
+	fault_detect();
 
 	return 0;
 }
