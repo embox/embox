@@ -138,12 +138,12 @@ void irqctrl_force(unsigned int irq) {
 	// TODO Emm?.. -- Eldar
 }
 
-int i8259_irq_pending(unsigned int irq) {
+int irqctrl_pending(unsigned int irq) {
 	// TODO Emm?.. -- Anton
 	return 1;
 }
 
-void i8259_send_eoi(unsigned int irq) {
+void irqctrl_eoi(unsigned int irq) {
 	//TODO: irq >= 16
 	lapic_send_eoi();
 }
