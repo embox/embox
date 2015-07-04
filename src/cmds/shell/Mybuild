@@ -1,6 +1,6 @@
 package embox.cmd.sh
 
-module shell {
+module shell_registry {
 	option number input_buff_sz = 80
 	source "shell.c"
 
@@ -8,16 +8,15 @@ module shell {
 	source "shell.h"
 }
 
-abstract module shell_api { }
-
-module tish {
-	option number rich_prompt_support = 0
-
+abstract module shell_api {
 	option string prompt = "embox> "
 	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
-	option string builtin_commands = "cd export exit logout"
+}
 
-	provides embox.cmd.Shell.commandLine
+module tish extends shell_api {
+	option number rich_prompt_support = 0
+
+	option string builtin_commands = "cd export exit logout"
 
 	source "tish.c"
 
@@ -27,7 +26,7 @@ module tish {
 	depends embox.mem.heap_api
 
 	depends embox.framework.LibFramework
-	depends embox.cmd.sh.shell
+	depends embox.cmd.sh.shell_registry
 	depends embox.kernel.task.api
 	depends embox.compat.posix.proc.pid
 	depends embox.compat.posix.proc.uid

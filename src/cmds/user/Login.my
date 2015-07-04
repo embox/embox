@@ -29,7 +29,7 @@ module login {
 
 	depends embox.lib.readline_api
 
-	requires embox.cmd.Shell.commandLine
+	depends embox.cmd.sh.shell_api
 
 	depends embox.security.smac_user_db
 }

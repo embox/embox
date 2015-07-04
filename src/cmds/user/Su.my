@@ -23,6 +23,6 @@ module su {
 	depends embox.kernel.task.resource.u_area
 
 	depends embox.cmd.user.login
-	requires embox.cmd.Shell.commandLine
+	depends embox.cmd.sh.shell_api
 
 }

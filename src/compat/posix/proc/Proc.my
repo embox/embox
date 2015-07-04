@@ -25,7 +25,7 @@ static module exec {
 	depends embox.kernel.task.resource.module_ptr
 	depends embox.kernel.task.resource.argv
 
-	depends embox.cmd.shell
+	depends embox.cmd.sh.shell_registry
 }
 
 @DefaultImpl(fork_copy_everything)
@@ -51,7 +51,7 @@ static module waitpid {
 static module signal {
 	source "signal.c"
 
-	depends embox.kernel.thread.signal
+	depends embox.kernel.thread.signal_impl
 	depends embox.kernel.task.resource.sig_table
 	depends sigset
 }

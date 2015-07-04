@@ -32,7 +32,7 @@ module sched_wait {
 	source "thread_sched_wait.c"
 }
 
-@DefaultImpl(signal)
+@DefaultImpl(signal_impl)
 abstract module signal_api { }
 
 module signal_stub extends signal_api {
@@ -42,7 +42,7 @@ module signal_stub extends signal_api {
 	@NoRuntime depends embox.kernel.thread.signal.lock_stub
 }
 
-module signal extends signal_api {
+module signal_impl extends signal_api {
 	source "signal.c"
 	@NoRuntime depends embox.kernel.thread.signal.sigstate
 	@NoRuntime depends embox.kernel.thread.signal.siginfoq

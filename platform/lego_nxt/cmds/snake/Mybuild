@@ -1,9 +1,8 @@
 package lego_nxt.cmd
 
-import lego_nxt.driver.*
-
 module nxt_snake {
 	source "snake.c"
 
-	depends nxt_lcd, nxt_avr_init
+	depends lego_nxt.driver.nxt_lcd
+	depends lego_nxt.driver.nxt_avr_init
 }

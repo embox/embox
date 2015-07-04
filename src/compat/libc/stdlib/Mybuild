@@ -31,7 +31,7 @@ static module core {
 
 static module system {
 	source "system.c"
-	depends embox.cmd.sh.shell
+	depends embox.cmd.sh.shell_registry
 }
 
 static module all {

@@ -1,14 +1,8 @@
 package embox.mem
 
-interface iobjalloc {
-	feature alloc
-	feature rt_alloc extends alloc
-}
-
 module slab {
 	option number heap_size = 524288
 	source "slab.c", "slab_impl.h"
-	provides iobjalloc.alloc
 	depends embox.mem.page_api
 	depends embox.mem.phymem
 	depends embox.mem.static_heap
@@ -16,6 +10,5 @@ module slab {
 
 module pool {
 	source "pool.c"
-	provides iobjalloc.rt_alloc
 	depends embox.util.SList
 }
