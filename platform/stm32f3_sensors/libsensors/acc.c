@@ -16,7 +16,6 @@
 
 EMBOX_UNIT_INIT(acc_init);
 
-
 static float acc_offset[3];
 
 void acc_get(int16_t *value) {
