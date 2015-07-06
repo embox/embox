@@ -1,0 +1,17 @@
+package stm32f3_sensors.libsensors
+
+@BuildDepends(third_party.bsp.st_f3.sensors)
+module gyro {
+	source "gyro.c"
+
+	@IncludeExport(path="libsensors")
+	source "gyro.h"
+}
+
+@BuildDepends(third_party.bsp.st_f3.sensors)
+module acc{
+	source "acc.c"
+
+	@IncludeExport(path="libsensors")
+	source "acc.h"
+}
