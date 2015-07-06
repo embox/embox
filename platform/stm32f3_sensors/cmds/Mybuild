@@ -12,6 +12,9 @@ module sensors {
 	depends embox.driver.flash_lib
 	depends third_party.bsp.st_f3.core
 	depends stm32f3_sensors.utils.kalman
+
+	depends stm32f3_sensors.libsensors.acc
+	depends stm32f3_sensors.libsensors.gyro
 }
 
 @AutoCmd
@@ -23,4 +26,8 @@ module motor_control {
 
 	depends embox.driver.flash.stm32_f3
 	depends third_party.bsp.st_f3.core
+
+	depends stm32f3_sensors.libsensors.acc
+	depends stm32f3_sensors.libsensors.gyro
+	depends stm32f3_sensors.libactuators.motor
 }
