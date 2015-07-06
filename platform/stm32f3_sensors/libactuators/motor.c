@@ -1,18 +1,29 @@
 /**
  * @file
  *
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> fixup!: Fix libactuators
  * @date 06 july 2015
  * @author Anton Bondarev
  */
 #include <libactuators/motor.h>
 #include <stm32f3xx_hal_gpio.h>
 #include <stm32f3_discovery.h>
+=======
+ * @date 06 july 2015 г.
+ * @author Anton Bondarev
+ */
+#include <libactuators/motor.h>
+>>>>>>> fault-car: Add libactuators lib
 
 static void stm32f3_delay(uint32_t delay) {
 	while(delay--)
 		;
 }
 
+<<<<<<< HEAD
 
 static void init_pins(GPIO_TypeDef  *GPIOx, uint16_t pins) {
 	GPIO_InitTypeDef  GPIO_InitStruct;
@@ -30,12 +41,20 @@ static void init_pins(GPIO_TypeDef  *GPIOx, uint16_t pins) {
 
 void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx, uint16_t enable,
 		uint16_t in1, uint16_t in2) {
+=======
+void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx,
+		uint16_t enable, uint16_t in1, uint16_t in2, uint8_t mask) {
+>>>>>>> fault-car: Add libactuators lib
 	m->GPIOx = GPIOx;
 	m->enable = enable;
 	m->input[0] = in1;
 	m->input[1] = in2;
+<<<<<<< HEAD
 
 	init_pins(GPIOx, enable | in1 | in2);
+=======
+	m->enabled_inputs = mask;
+>>>>>>> fault-car: Add libactuators lib
 }
 
 void motor_enable(struct motor *m) {
