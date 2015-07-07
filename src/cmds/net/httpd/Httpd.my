@@ -25,6 +25,7 @@ module httpd {
 	source "httpd.c"
 	source "httpd_file.c"
 	source "httpd_parselib.c"
+	source "httpd_parselib2.c"
 	source "httpd_util.c"
 	depends httpd_cgi_interface
 

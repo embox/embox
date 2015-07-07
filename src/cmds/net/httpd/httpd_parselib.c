@@ -118,4 +118,3 @@ char *httpd_parse_request(char *str, struct http_req *hreq) {
 
 	return httpd_parse_headers(pb, hreq);
 }
-

@@ -41,6 +41,8 @@ struct http_req {
 };
 
 extern char *httpd_parse_request(char *str, struct http_req *hreq);
+extern int httpd_build_request(struct client_info *cinfo, struct http_req *req, 
+		char *buf, size_t buf_sz);
 
 extern pid_t httpd_try_respond_script(const struct client_info *cinfo, const struct http_req *hreq);
 extern pid_t httpd_try_respond_cmd(const struct client_info *cinfo, const struct http_req *hreq);
