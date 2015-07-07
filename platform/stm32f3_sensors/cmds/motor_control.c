@@ -16,51 +16,10 @@
 #include <libsensors/gyro.h>
 #include <libactuators/motor.h>
 
+#include <libfilters/filtered_derivative.h>
+
 
 // --- fault detection code START
-
-#if 0
-#define INC_WINDOW_SIZE 50
-#define EMA_ALPHA ((float) 2.0 / (float) (INC_WINDOW_SIZE + 1))
-
-static float incs[INC_WINDOW_SIZE] = {0};
-static int inc_index = 0;
-static float average_inc = 0;
-
-static inline float moving_average(float inc) {
-	average_inc += (inc - incs[inc_index]) / INC_WINDOW_SIZE;
-	incs[inc_index] = inc;
-	inc_index = (inc_index + 1) % INC_WINDOW_SIZE;
-	return average_inc;
-}
-
-static inline float exp_moving_average(float inc) {
-	ema += (inc - ema) * EMA_ALPHA;
-	return ema;
-}
-#endif
-
-static float ema = 0;
-
-#define FD_WIN_SIZE   200
-#define FD_THRESHOLD  2600
-
-
-static inline float filtered_derivative(float inc) {
-	static float f_dv[FD_WIN_SIZE] = {0};
-	static int index_l = 0;
-	static int index_h = FD_WIN_SIZE / 2;
-	static int index = 0;
-	static float diff = 0;
-
-	diff += ((inc - 2 * f_dv[index_h] + f_dv[index_l]) / FD_WIN_SIZE);
-	f_dv[index] = inc;
-	index = (index + 1) % FD_WIN_SIZE;
-	index_h = (index_h + 1) % FD_WIN_SIZE;
-	index_l = (index_l + 1) % FD_WIN_SIZE;
-
-	return diff;
-}
 
 static inline void fault_handle(void) {
 	BSP_LED_On(LED3);
@@ -70,14 +29,11 @@ static int fault_detect(void) {
 	int16_t buf[3] = {0, 0, 0};
 	float filtered_val;
 
-	acc_get(buf);
-	ema = buf[0];
-
 	while(1) {
 		acc_get(buf);
 
 		filtered_val = filtered_derivative(buf[0]);
-		if (filtered_val < -FD_THRESHOLD || filtered_val > FD_THRESHOLD) {
+		if (filtered_derivative_check(filtered_val)) {
 			return 1;
 		}
 	}
@@ -100,7 +56,6 @@ int main(int argc, char *argv[]) {
 
 	motor_run(&motor1, MOTOR_RUN_RIGHT);
 	{
-
 		if (fault_detect()) {
 			fault_handle();
 		}

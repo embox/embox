@@ -27,6 +27,7 @@ module motor_control {
 	depends embox.driver.flash.stm32_f3
 	depends third_party.bsp.st_f3.core
 
+	depends stm32f3_sensors.libfilters.filtered_derivative
 	depends stm32f3_sensors.libsensors.acc
 	depends stm32f3_sensors.libsensors.gyro
 	depends stm32f3_sensors.libactuators.motor

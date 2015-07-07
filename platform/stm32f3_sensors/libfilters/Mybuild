@@ -1,0 +1,12 @@
+package stm32f3_sensors.libfilters
+
+module filtered_derivative {
+	source "filtered_derivative.c"
+
+	@IncludeExport(path="libfilters")
+	source "filtered_derivative.h"
+}
+
+module moving_average {
+	source "moving_average.c"
+}
