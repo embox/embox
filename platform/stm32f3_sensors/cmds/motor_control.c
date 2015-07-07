@@ -142,6 +142,7 @@ static void fault_detect(void) {
 // --- fault detection code END
 
 int main(void) {
+#if 0
 	int res;
 
 	HAL_Init();
@@ -159,7 +160,7 @@ int main(void) {
         printf("BSP_GYRO_Init failed, returned %d\n", res);
         return -1;
     }
-
+#endif
 	BSP_LED_Init(LED4);
 	BSP_LED_Init(LED3);
 

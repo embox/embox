@@ -206,31 +206,6 @@ static void acc_calculate_offset(){
 	acc_offset[2] -= g*1000;
 }
 
-#define ACC_ARRAY_SIZE 2048
-#define ACC_VALUE_SIZE 2 /* Two bytes per value */
-extern struct flash_dev stm32f3_flash;
-static void acc_test(void) {
-	static const uint32_t x_values_offset = 0;
-	static const uint32_t y_values_offset = ACC_VALUE_SIZE * ACC_ARRAY_SIZE;
-	int16_t buf[3] = {0};
-
-	for (size_t i = 0; i < 8; i++)
-		flash_erase(&stm32f3_flash, i);
-
-	for (size_t i = 0; i < ACC_ARRAY_SIZE; i++) {
-		BSP_ACCELERO_GetXYZ(buf);
-		flash_write(&stm32f3_flash,
-				x_values_offset + i * ACC_VALUE_SIZE,
-				&buf[0],
-				ACC_VALUE_SIZE);
-
-		flash_write(&stm32f3_flash,
-				y_values_offset + i * ACC_VALUE_SIZE,
-				&buf[1],
-				ACC_VALUE_SIZE);
-	}
-}
-
 static void gyro_test(void) {
 	float buf[3] = {0};
 	float x, y;
@@ -249,12 +224,8 @@ static void gyro_test(void) {
 int main(int argc, char *argv[]) {
 	int res;
 
-	HAL_Init();
-
 	init_leds();
-
-	acc_test();
-
+#if 0
 	res = BSP_ACCELERO_Init();
 	if (res != HAL_OK) {
 		printf("BSP_ACCLEERO_Init failed, returned %d\n", res);
@@ -266,6 +237,7 @@ int main(int argc, char *argv[]) {
 		printf("BSP_GYRO_Init failed, returned %d\n", res);
 		return -1;
 	}
+#endif
 
 	gyro_calculate_offset();
 	acc_calculate_offset();
