@@ -26,6 +26,7 @@ struct client_info {
 	struct sockaddr ci_addr;
 	socklen_t ci_addrlen;
 	int ci_sock;
+	int ci_index;
 
 	const char *ci_basedir;
 };
