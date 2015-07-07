@@ -14,19 +14,18 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <stm32f3_discovery_gyroscope.h>
-#include <stm32f3_discovery_accelerometer.h>
+#include <stm32f3xx.h>
+#include <stm32f3_discovery.h>
 
-#include <drivers/block_dev/flash/flash_dev.h>
+#include <libsensors/acc.h>
+#include <libsensors/gyro.h>
+
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 
 #include <kalman_filter.h>
 
-#define g 9.80665f
-#define PI 3.14159265358979f
 
-static float gyro_offset[3], acc_offset[3];
 static float angles[3];
 static float speed = 0;
 static int inited = 0;
@@ -51,38 +50,6 @@ static void init_leds(void) {
 	BSP_LED_Init(LED6);
 }
 
-
-/* mm/s^2 */
-static void acc_data_normalize(int16_t *in, float *out) {
-	for (int i = 0; i < 3; i++)
-		out[i] = (in[i] / 16) * g;
-}
-
-/* mm/s^2, without offset */
-static void acc_data_obtain(float *out) {
-	int16_t acc[3] = {0};
-	BSP_ACCELERO_GetXYZ(acc);
-	acc_data_normalize(acc, out);
-
-	for (int i = 0; i < 3; i++)
-		out[i] -= acc_offset[i];
-}
-
-/* mrad/s */
-static void gyro_data_normalize(float *in, float *out) {
-	for (int i = 0; i < 3; i++)
-		out[i] = in[i] * 8.75f / 360 * 2 * PI;
-}
-
-/* mrad/s, without offset */
-static void gyro_data_obtain(float *out) {
-	float gyro[3] = {0};
-	BSP_GYRO_GetXYZ(gyro);
-	gyro_data_normalize(gyro, out);
-
-	for (int i = 0; i < 3; i++)
-		out[i] -= gyro_offset[i];
-}
 
 #define INC_WINDOW_SIZE 10
 float incs[INC_WINDOW_SIZE] = {0};
@@ -173,45 +140,20 @@ static void speed_test(void) {
 			BSP_LED_On(LED3);
 		}
 
-		stm32f3_delay();
+		stm32f3_delay(); //TODO nanosleep/usleep?
 	}
 }
 
-static void gyro_calculate_offset(){
-	float eps = 0.2;
 
-	for (int  i= 0; i < 1000; i++) {
-		float gyro[3] = {0};
-		BSP_GYRO_GetXYZ(gyro);
 
-		for (int j = 0; j < 3; j++)
-			gyro_offset[j] = (1 - eps)*gyro_offset[j] + eps*gyro[j];
-	}
-	gyro_data_normalize(gyro_offset, gyro_offset);
-}
 
-static void acc_calculate_offset(){
-	int16_t temp[3] = {0};
-	float eps = 0.2;
-
-	for (int i=0; i<1000; i++){
-		int16_t acc[3] = {0};
-		BSP_ACCELERO_GetXYZ(acc);
-
-		for (int j = 0; j < 3; j++)
-			temp[j] = (1 - eps) * temp[j] + eps*acc[j];
-	}
-
-	acc_data_normalize(temp, acc_offset);
-	acc_offset[2] -= g*1000;
-}
-
+#if 0
 static void gyro_test(void) {
 	float buf[3] = {0};
 	float x, y;
 
 	for (size_t i = 0; i < 100; i++) {
-		BSP_GYRO_GetXYZ(buf);
+		gyro_get(buf);
 
 		x = abs(buf[0]);
 		y = abs(buf[1]);
@@ -220,27 +162,12 @@ static void gyro_test(void) {
 		stm32f3_delay();
 	}
 }
+#endif
 
 int main(int argc, char *argv[]) {
 	int res;
 
 	init_leds();
-#if 0
-	res = BSP_ACCELERO_Init();
-	if (res != HAL_OK) {
-		printf("BSP_ACCLEERO_Init failed, returned %d\n", res);
-		return -1;
-	}
-
-	res = BSP_GYRO_Init();
-	if (res != HAL_OK) {
-		printf("BSP_GYRO_Init failed, returned %d\n", res);
-		return -1;
-	}
-#endif
-
-	gyro_calculate_offset();
-	acc_calculate_offset();
 
 	/* Sensors are initialized */
 	BSP_LED_On(LED10);
