@@ -50,6 +50,7 @@ extern int httpd_try_respond_file(const struct client_info *cinfo, const struct 
 		char *buf, size_t buf_sz);
 
 extern const char *httpd_filename2content_type(const char *filename);
+extern int httpd_header(const struct client_info *cinfo, int st, const char *msg);
 
 #endif /* HTTPD_H_ */
 

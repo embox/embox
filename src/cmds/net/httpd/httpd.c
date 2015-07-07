@@ -35,25 +35,6 @@
 static char httpd_g_inbuf[BUFF_SZ];
 static char httpd_g_outbuf[BUFF_SZ];
 
-static int httpd_header(const struct client_info *cinfo, int st, const char *msg) {
-	FILE *skf = fdopen(cinfo->ci_sock, "rw");
-
-	if (!skf) {
-		log_error("can't allocate FILE for socket");
-		return -ENOMEM;
-	}
-
-	fprintf(skf,
-		"HTTP/1.1 %d %s\r\n"
-		"Content-Type: %s\r\n"
-		"Connection: close\r\n"
-		"\r\n",
-		st, msg, "text/plain");
-
-	fclose(skf);
-	return 0;
-}
-
 static int httpd_wait_cgi_child(pid_t target, int opts) {
 	pid_t child;
 
