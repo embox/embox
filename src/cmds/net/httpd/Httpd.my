@@ -37,6 +37,37 @@ module httpd {
 	depends embox.net.lib.getifaddrs
 }
 
+@AutoCmd
+@Cmd(name = "httpd_pthread",
+	help = "Start HTTP server",
+	man = '''
+		NAME
+			httpd - HTTP server with multithread support
+		SYNOPSIS
+			httpd address
+		DESCRIPTION
+			Start HTTP server
+		EXAMPLES
+			httpd
+			After that try connect to it from web browser
+		AUTHORS
+			Ilia Vaprol
+			Anastasia Vinogradova
+	''')
+module httpd_pthread {
+	option number use_ip_ver=4
+	option boolean use_cgi=false
+	option boolean use_real_cmd=false
+	source "httpd_pthread.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.net.socket
+	depends embox.compat.posix.proc.waitpid
+	depends embox.framework.LibFramework
+	depends embox.net.lib.getifaddrs
+}
+
 @DefaultImpl(httpd_no_cgi)
 abstract module httpd_cgi_interface { }
 
