@@ -18,8 +18,6 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include <util/log.h>
-
 #include "httpd.h"
 
 #ifdef __EMBUILD_MOD__
@@ -44,7 +42,7 @@ static int httpd_wait_cgi_child(pid_t target, int opts) {
 
 	if (child == -1) {
 		int err = errno;
-		log_error("waitpid() : %s", strerror(err));
+		httpd_error("waitpid() : %s", strerror(err));
 		return -err;
 	}
 
@@ -67,10 +65,10 @@ static void httpd_client_process(struct client_info *cinfo) {
 	int err;
 
 	if ((err = httpd_build_request(cinfo, &hreq, httpd_g_inbuf, sizeof(httpd_g_inbuf)))) {
-		log_error("can't build request: %s", strerror(-err));
+		httpd_error("can't build request: %s", strerror(-err));
 	}
 
-	log_debug("method=%s uri_target=%s uri_query=%s",
+	httpd_debug("method=%s uri_target=%s uri_query=%s",
 			   hreq.method, hreq.uri.target, hreq.uri.query);
 
 	if ((cgi_child = httpd_try_respond_script(cinfo, &hreq))) {
@@ -112,18 +110,18 @@ int main(int argc, char **argv) {
 
 	host = socket(family, SOCK_STREAM, IPPROTO_TCP);
 	if (host == -1) {
-		log_error("socket() failure: %s", strerror(errno));
+		httpd_error("socket() failure: %s", strerror(errno));
 		return -errno;
 	}
 
 	if (-1 == bind(host, (struct sockaddr *) &inaddr, inaddrlen)) {
-		log_error("bind() failure: %s", strerror(errno));
+		httpd_error("bind() failure: %s", strerror(errno));
 		close(host);
 		return -errno;
 	}
 
 	if (-1 == listen(host, 3)) {
-		log_error("listen() failure: %s", strerror(errno));
+		httpd_error("listen() failure: %s", strerror(errno));
 		close(host);
 		return -errno;
 	}
@@ -135,7 +133,7 @@ int main(int argc, char **argv) {
 		ci.ci_sock = accept(host, &ci.ci_addr, &ci.ci_addrlen);
 		if (ci.ci_sock == -1) {
 			if (errno != EINTR) {
-				log_error("accept() failure: %s", strerror(errno));
+				httpd_error("accept() failure: %s", strerror(errno));
 				usleep(100000);
 			}
 			continue;

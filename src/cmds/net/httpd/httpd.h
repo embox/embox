@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <sys/socket.h>
 
+#include "httpd_log.h"
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(array) \
 	(sizeof(array) / sizeof(*(array)))

@@ -11,8 +11,6 @@
 #include <unistd.h>
 #include "httpd.h"
 
-#include <util/log.h>
-
 #define PAGE_INDEX  "index.html"
 
 int httpd_try_respond_file(const struct client_info *cinfo, const struct http_req *hreq,
@@ -34,11 +32,11 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 		return -ENOMEM;
 	}
 
-	log_debug("requested: %s, on fs: %s", hreq->uri.target, path);
+	httpd_debug("requested: %s, on fs: %s", hreq->uri.target, path);
 
 	file = fopen(path, "r");
 	if (!file) {
-		log_debug("file couldn't be opened (%d)", errno);
+		httpd_debug("file couldn't be opened (%d)", errno);
 		return 0;
 	}
 

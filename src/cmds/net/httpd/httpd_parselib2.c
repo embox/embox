@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
-#include <util/log.h>
 
 #include "httpd.h"
 
@@ -45,14 +44,14 @@ int httpd_build_request(struct client_info *cinfo, struct http_req *hreq, char *
 
 	nbyte = httpd_read_http_header(cinfo, buf, buf_sz - 1);
 	if (nbyte < 0) {
-		log_error("can't read from client socket: %s", strerror(errno));
+		httpd_error("can't read from client socket: %s", strerror(errno));
 		return nbyte;
 	}
 	buf[nbyte] = '\0';
 
 	memset(hreq, 0, sizeof(*hreq));
 	if (NULL == httpd_parse_request(buf, hreq)) {
-		log_error("can't parse request");
+		httpd_error("can't parse request");
 		return -EINVAL;
 	}
 

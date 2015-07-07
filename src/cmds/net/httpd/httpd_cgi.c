@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
-#include <util/log.h>
 
 #include "httpd.h"
 
@@ -37,7 +36,7 @@ static const struct cgi_env_descr cgi_env[] = {
 static int httpd_execve(const char *path, char *const argv[], char *const envp[]) {
 	for (int i_ce = 0; envp[i_ce]; i_ce++) {
 		if (putenv(envp[i_ce])) {
-			log_error("putenv failed");
+			httpd_error("putenv failed");
 			exit(1);
 		}
 	}
@@ -67,7 +66,7 @@ static int httpd_fill_env(const struct http_req *hreq, char *envp[], int envp_le
 
 		printed = snprintf(ebp, env_sz, "%s=%s", ce_d->name, val);
 		if (env_sz <= printed) {
-			log_error("have no space to write environment");
+			httpd_error("have no space to write environment");
 			exit(1);
 		}
 		envp[n_ce++] = ebp;
@@ -88,7 +87,7 @@ static pid_t httpd_response_cgi(const struct client_info *cinfo, const struct ht
 	pid = vfork();
 	if (pid < 0) {
 		int err = errno;
-		log_error("vfork() error(%d): %s", err, strerror(err));
+		httpd_error("vfork() error(%d): %s", err, strerror(err));
 		return -err;
 	}
 
