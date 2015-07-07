@@ -5,19 +5,37 @@
  * @author Anton Bondarev
  */
 #include <libactuators/motor.h>
+#include <stm32f3xx_hal_gpio.h>
+#include <stm32f3_discovery.h>
 
 static void stm32f3_delay(uint32_t delay) {
 	while(delay--)
 		;
 }
 
-void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx,
-		uint16_t enable, uint16_t in1, uint16_t in2, uint8_t mask) {
+
+static void init_pins(GPIO_TypeDef  *GPIOx, uint16_t pins) {
+	GPIO_InitTypeDef  GPIO_InitStruct;
+
+	//TODO Is this required?
+	__GPIOD_CLK_ENABLE();
+
+	GPIO_InitStruct.Pin = pins;
+	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull = GPIO_PULLUP;
+	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+
+	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
+}
+
+void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx, uint16_t enable,
+		uint16_t in1, uint16_t in2) {
 	m->GPIOx = GPIOx;
 	m->enable = enable;
 	m->input[0] = in1;
 	m->input[1] = in2;
-	m->enabled_inputs = mask;
+
+	init_pins(GPIOx, enable | in1 | in2);
 }
 
 void motor_enable(struct motor *m) {
