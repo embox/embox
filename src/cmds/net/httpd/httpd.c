@@ -33,6 +33,7 @@
 #define BUFF_SZ     1024
 
 static char httpd_g_inbuf[BUFF_SZ];
+static char httpd_g_outbuf[BUFF_SZ];
 
 static int httpd_read_http_header(const struct client_info *cinfo, char *buf, size_t buf_sz) {
 	const int sk = cinfo->ci_sock;
@@ -131,7 +132,8 @@ static void httpd_client_process(const struct client_info *cinfo) {
 		httpd_on_cgi_child(cinfo, cgi_child);
 	} else if (USE_REAL_CMD && (cgi_child = httpd_try_respond_cmd(cinfo, &hreq))) {
 		httpd_on_cgi_child(cinfo, cgi_child);
-	} else if (httpd_try_respond_file(cinfo, &hreq)) {
+	} else if (httpd_try_respond_file(cinfo, &hreq,
+				httpd_g_outbuf, sizeof(httpd_g_outbuf))) {
 		/* file sent, nothing to do */
 	} else {
 		httpd_header(cinfo, 404, "");
