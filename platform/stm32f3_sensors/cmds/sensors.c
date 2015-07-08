@@ -165,8 +165,6 @@ static void gyro_test(void) {
 #endif
 
 int main(int argc, char *argv[]) {
-	int res;
-
 	init_leds();
 
 	/* Sensors are initialized */
