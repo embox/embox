@@ -6,6 +6,7 @@ static module core extends third_party.bsp.st_bsp_api {
 
 	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
 
+	@Cflags("-Wno-unused")
 	@DefineMacro("STM32F303xC")
 	@DefineMacro("USE_RTOS=0")
 	@DefineMacro("USE_HAL_DRIVER")
