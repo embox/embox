@@ -6,9 +6,9 @@
  * @date    15.04.2015
  */
 
+#include <errno.h>
 #include <stddef.h>
 #include <string.h>
-#include <util/log.h>
 
 #include "httpd.h"
 
@@ -55,8 +55,26 @@ const char *httpd_filename2content_type(const char *filename) {
 		}
 	}
 
-	log_error("can't determ content type for file: %s", filename);
+	httpd_error("can't determ content type for file: %s", filename);
 	return ext2type_unkwown;
 }
 
+int httpd_header(const struct client_info *cinfo, int st, const char *msg) {
+	FILE *skf = fdopen(cinfo->ci_sock, "rw");
+
+	if (!skf) {
+		httpd_error("can't allocate FILE for socket");
+		return -ENOMEM;
+	}
+
+	fprintf(skf,
+		"HTTP/1.1 %d %s\r\n"
+		"Content-Type: %s\r\n"
+		"Connection: close\r\n"
+		"\r\n",
+		st, msg, "text/plain");
+
+	fclose(skf);
+	return 0;
+}
 

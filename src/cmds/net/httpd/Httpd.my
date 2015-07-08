@@ -25,8 +25,43 @@ module httpd {
 	source "httpd.c"
 	source "httpd_file.c"
 	source "httpd_parselib.c"
+	source "httpd_parselib2.c"
 	source "httpd_util.c"
 	depends httpd_cgi_interface
+
+	depends embox.compat.libc.all
+	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.net.socket
+	depends embox.compat.posix.proc.waitpid
+	depends embox.framework.LibFramework
+	depends embox.net.lib.getifaddrs
+}
+
+@AutoCmd
+@Cmd(name = "httpd_pthread",
+	help = "Start HTTP server",
+	man = '''
+		NAME
+			httpd - HTTP server with multithread support
+		SYNOPSIS
+			httpd address
+		DESCRIPTION
+			Start HTTP server
+		EXAMPLES
+			httpd
+			After that try connect to it from web browser
+		AUTHORS
+			Ilia Vaprol
+			Anastasia Vinogradova
+	''')
+module httpd_pthread {
+	option number use_ip_ver=4
+
+	source "httpd_pthread.c"
+	source "httpd_file.c"
+	source "httpd_parselib.c"
+	source "httpd_parselib2.c"
+	source "httpd_util.c"
 
 	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix

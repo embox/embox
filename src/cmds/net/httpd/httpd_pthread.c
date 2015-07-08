@@ -1,12 +1,14 @@
 /**
  * @file
  * @brief Simple HTTP server
- * @date 16.04.12
+ * @date 08.07.2015
  * @author Ilia Vaprol
  * @author Anton Kozlov
  * 	- CGI related changes
  * @author Andrey Golikov
  * 	- Linux adaptation
+ * @author Anastasia Vinogradova
+ * 	- multithread support
  */
 
 #include <assert.h>
@@ -14,6 +16,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/wait.h>
+#include <pthread.h>
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -29,62 +32,58 @@
 #endif /* __EMBUILD_MOD__ */
 
 #define BUFF_SZ     1024
+#define MAX_CLIENTS_COUNT 4
 
-static char httpd_g_inbuf[BUFF_SZ];
-static char httpd_g_outbuf[BUFF_SZ];
+static struct client_info clients[MAX_CLIENTS_COUNT];
+static char client_is_free[MAX_CLIENTS_COUNT];
 
-static int httpd_wait_cgi_child(pid_t target, int opts) {
-	pid_t child;
+static int clients_get_free_index(void) {
+	int i;
 
-	do {
-		child = waitpid(target, NULL, opts);
-	} while (child == -1 && errno == EINTR);
-
-	if (child == -1) {
-		int err = errno;
-		httpd_error("waitpid() : %s", strerror(err));
-		return -err;
+	for (i = 0; i < MAX_CLIENTS_COUNT; i++) {
+		if (client_is_free[i]) {
+			client_is_free[i] = 0;
+			return i;
+		}
 	}
-
-	return child;
-}
-
-static void httpd_on_cgi_child(const struct client_info *cinfo, pid_t child) {
-	if (child > 0) {
-	       if (!USE_PARALLEL_CGI) {
-		       httpd_wait_cgi_child(child, 0);
-	       }
-	} else {
-		httpd_header(cinfo, 500, strerror(-child));
-	}
+	return -1; // there are no free indexes
 }
 
 static void httpd_client_process(struct client_info *cinfo) {
 	struct http_req hreq;
-	pid_t cgi_child;
 	int err;
+	char httpd_inbuf[BUFF_SZ];
+	char httpd_outbuf[BUFF_SZ];
 
-	if ((err = httpd_build_request(cinfo, &hreq, httpd_g_inbuf, sizeof(httpd_g_inbuf)))) {
+	if ((err = httpd_build_request(cinfo, &hreq, httpd_inbuf, sizeof(httpd_inbuf)))) {
 		httpd_error("can't build request: %s", strerror(-err));
 	}
 
 	httpd_debug("method=%s uri_target=%s uri_query=%s",
-			   hreq.method, hreq.uri.target, hreq.uri.query);
+			hreq.method, hreq.uri.target, hreq.uri.query);
 
-	if ((cgi_child = httpd_try_respond_script(cinfo, &hreq))) {
-		httpd_on_cgi_child(cinfo, cgi_child);
-	} else if (USE_REAL_CMD && (cgi_child = httpd_try_respond_cmd(cinfo, &hreq))) {
-		httpd_on_cgi_child(cinfo, cgi_child);
-	} else if (httpd_try_respond_file(cinfo, &hreq,
-				httpd_g_outbuf, sizeof(httpd_g_outbuf))) {
+	if (httpd_try_respond_file(cinfo, &hreq,
+				httpd_outbuf, sizeof(httpd_outbuf))) {
 		/* file sent, nothing to do */
 	} else {
 		httpd_header(cinfo, 404, "");
 	}
 }
 
+static void *do_httpd_client_thread(void *cinfo) {
+
+        struct client_info *ci = (struct client_info *) cinfo;
+
+        httpd_client_process(ci);
+	close(ci->ci_sock);
+        client_is_free[ci->ci_index]=1;
+	return NULL;
+}
+
+
 int main(int argc, char **argv) {
 	int host;
+	int i;
 	const char *basedir;
 #if USE_IP_VER == 4
 	struct sockaddr_in inaddr;
@@ -126,33 +125,39 @@ int main(int argc, char **argv) {
 		return -errno;
 	}
 
-	while (1) {
-		struct client_info ci;
 
-		ci.ci_addrlen = inaddrlen;
-		ci.ci_sock = accept(host, &ci.ci_addr, &ci.ci_addrlen);
-		if (ci.ci_sock == -1) {
-			if (errno != EINTR) {
-				httpd_error("accept() failure: %s", strerror(errno));
-				usleep(100000);
-			}
+	for (i = 0; i < MAX_CLIENTS_COUNT; ++i) {
+		client_is_free[i] = 1;
+	}
+
+	while (1) {
+		struct client_info *ci;
+		pthread_t thread;
+		int index = clients_get_free_index();
+
+		if (index == -1) {
+			httpd_error("There are no more memory for new connection!");
 			continue;
 		}
-		assert(ci.ci_addrlen == inaddrlen);
-		ci.ci_basedir = basedir;
 
-		if (USE_PARALLEL_CGI) {
-			while (0 < httpd_wait_cgi_child(-1, WNOHANG)) {
-				/* wait another one */
-			}
+		ci = &clients[index];
+		ci->ci_index=index;
+		ci->ci_addrlen = inaddrlen;
+		ci->ci_sock = accept(host, &ci->ci_addr, &ci->ci_addrlen);
+		if (ci->ci_sock == -1) {
+			httpd_error("accept() failure: %s", strerror(errno));
+			continue;
 		}
+		assert(ci->ci_addrlen == inaddrlen);
+		ci->ci_basedir = basedir;
 
-		httpd_client_process(&ci);
+		pthread_create(&thread, NULL, do_httpd_client_thread, ci);
 
-		close(ci.ci_sock);
+		pthread_detach(thread);
 	}
 
 	close(host);
 
 	return 0;
 }
+
