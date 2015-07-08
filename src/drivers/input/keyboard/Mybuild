@@ -4,7 +4,7 @@ module keyboard {
 	source "keyboard.c"
 
 	@IncludeExport(path="drivers")
-	source "keyboad.h"
+	source "keyboard.h"
 
 	option number register_in_vt = 1
 
