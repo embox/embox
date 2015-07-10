@@ -1,0 +1,6 @@
+
+package embox.arch.arm.raspi
+
+module cpu_reset {
+	source "cpu_reset.S"
+}
