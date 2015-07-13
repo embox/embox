@@ -48,6 +48,14 @@ module cortexm_systick extends embox.arch.clock {
 	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
+module raspi_systick extends embox.arch.clock {
+	source "raspi_systick.c"
+
+	//depends embox.kernel.irq
+	depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.kernel.time.timer_handler
+}
+
 @BuildDepends(embox.arch.arm.cmsis)
 module cmsis_systick extends embox.arch.clock {
 	source "cmsis_systick.c"

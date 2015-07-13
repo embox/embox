@@ -16,7 +16,7 @@ module core {
 
 	@IncludeExport(path="drivers/serial")
 	source "uart_device.h"
-	
+
 	depends fsnode_api
 	@NoRuntime depends embox.util.indexator
 }
@@ -63,6 +63,15 @@ module at91_uart extends embox.driver.diag.diag_api {
 	option number baud_rate
 
 	source "at91_uart.c"
+}
+
+module raspi_uart extends embox.driver.diag.diag_api {
+	option number baud_rate=115200
+
+	source "raspi_uart.c"
+
+	depends core
+	depends diag
 }
 
 module i8250 extends serial {
