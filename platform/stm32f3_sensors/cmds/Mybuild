@@ -15,6 +15,7 @@ module sensors {
 
 	depends stm32f3_sensors.libsensors.acc
 	depends stm32f3_sensors.libsensors.gyro
+	depends stm32f3_sensors.libmisc.led
 }
 
 @AutoCmd
@@ -31,4 +32,6 @@ module motor_control {
 	depends stm32f3_sensors.libsensors.acc
 	depends stm32f3_sensors.libsensors.gyro
 	depends stm32f3_sensors.libactuators.motor
+	depends stm32f3_sensors.libmisc.led
+	depends stm32f3_sensors.libmisc.button
 }

@@ -9,20 +9,16 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <stm32f3xx.h>
-#include <stm32f3_discovery.h>
-
 #include <libsensors/acc.h>
 #include <libsensors/gyro.h>
 #include <libactuators/motor.h>
+#include <libmisc/led.h>
+#include <libmisc/button.h>
 
 #include <libfilters/filtered_derivative.h>
 
-
-// --- fault detection code START
-
 static inline void fault_handle(void) {
-	BSP_LED_On(LED3);
+	led_on(LED3);
 }
 
 static int fault_detect(void) {
@@ -40,19 +36,17 @@ static int fault_detect(void) {
 	return 0;
 }
 
-// --- fault detection code END
-
 int main(int argc, char *argv[]) {
 	struct motor motor1;
 
-	BSP_LED_Init(LED3);
-	BSP_PB_Init(BUTTON_USER, BUTTON_MODE_GPIO);
-
+	led_init(LED3);
+	button_init(BUTTON_USER);
 	motor_init(&motor1, GPIOD, MOTOR_ENABLE1, MOTOR_INPUT1, MOTOR_INPUT2);
 
 	motor_enable(&motor1);
 
-	while(BSP_PB_GetState(BUTTON_USER) != SET) ;
+	/* Wait until button get pressed */
+	button_wait_set(BUTTON_USER);
 
 	motor_run(&motor1, MOTOR_RUN_RIGHT);
 	{

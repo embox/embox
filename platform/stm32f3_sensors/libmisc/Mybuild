@@ -1,0 +1,17 @@
+package stm32f3_sensors.libmisc
+
+@BuildDepends(third_party.bsp.st_f3.core)
+module led {
+	source "led.c"
+
+	@IncludeExport(path="libmisc")
+	source "led.h"
+}
+
+@BuildDepends(third_party.bsp.st_f3.core)
+module button {
+	source "button.c"
+
+	@IncludeExport(path="libmisc")
+	source "button.h"
+}

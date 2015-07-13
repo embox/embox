@@ -19,6 +19,7 @@
 
 #include <libsensors/acc.h>
 #include <libsensors/gyro.h>
+#include <libmisc/led.h>
 
 #include <hal/clock.h>
 #include <kernel/time/time.h>
@@ -40,14 +41,14 @@ static void stm32f3_delay(void) {
 }
 
 static void init_leds(void) {
-	BSP_LED_Init(LED4);
-	BSP_LED_Init(LED3);
-	BSP_LED_Init(LED5);
-	BSP_LED_Init(LED7);
-	BSP_LED_Init(LED9);
-	BSP_LED_Init(LED10);
-	BSP_LED_Init(LED8);
-	BSP_LED_Init(LED6);
+	led_init(LED4);
+	led_init(LED3);
+	led_init(LED5);
+	led_init(LED7);
+	led_init(LED9);
+	led_init(LED10);
+	led_init(LED8);
+	led_init(LED6);
 }
 
 
@@ -110,11 +111,11 @@ static void speed_test(void) {
 		time64_t current;
 		float dt, compensation;
 
-		BSP_LED_Off(LED3);
-		BSP_LED_Off(LED4);
-		BSP_LED_Off(LED5);
-		BSP_LED_Off(LED6);
-		BSP_LED_Off(LED7);
+		led_off(LED3);
+		led_off(LED4);
+		led_off(LED5);
+		led_off(LED6);
+		led_off(LED7);
 
 		gyro_data_obtain(gyro);
 		acc_data_obtain(acc);
@@ -129,15 +130,15 @@ static void speed_test(void) {
 		update_speed(acc[0] - compensation, dt);
 
 		if (speed > 50) {
-			BSP_LED_On(LED7);
+			led_on(LED7);
 		} else if (speed > 10) {
-			BSP_LED_On(LED5);
+			led_on(LED5);
 		} else if (speed < -50) {
-			BSP_LED_On(LED6);
+			led_on(LED6);
 		} else if (speed < -10) {
-			BSP_LED_On(LED4);
+			led_on(LED4);
 		} else {
-			BSP_LED_On(LED3);
+			led_on(LED3);
 		}
 
 		stm32f3_delay(); //TODO nanosleep/usleep?
@@ -168,7 +169,7 @@ int main(int argc, char *argv[]) {
 	init_leds();
 
 	/* Sensors are initialized */
-	BSP_LED_On(LED10);
+	led_on(LED10);
 
 	speed_test();
 
