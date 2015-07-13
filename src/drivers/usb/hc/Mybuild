@@ -18,4 +18,5 @@ module usb_dwc {
 	source "usb_dwc.c", "usb_dwc.h"
 
 	depends embox.driver.usb.core
+	depends embox.kernel.thread.sync
 }

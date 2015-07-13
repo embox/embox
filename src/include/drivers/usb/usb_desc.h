@@ -82,5 +82,16 @@ struct usb_desc_endpoint {
 	uint8_t		b_interval;
 }__attribute__((packed));
 
+struct usb_desc_hub {
+    uint8_t  b_desc_length;
+    uint8_t  b_desc_type;
+    uint8_t  b_nbr_ports;
+    uint16_t w_hub_characteristics;
+    uint8_t  b_pwr_on_2_pwr_good;
+    uint8_t  b_hub_contr_current;
+    uint8_t  var_data[]; /* Variable length field; 64 should be the maximum possible
+                      length (255 ports => 2 x 32 bytes of data) */
+}__attribute__((packed));
+
 #endif /* DRIVERS_USB_DESC_H_ */
 

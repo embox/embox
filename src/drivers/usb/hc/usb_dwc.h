@@ -8,7 +8,10 @@
 #ifndef _USB_DWC_REGS_H_
 #define _USB_DWC_REGS_H_
 
-#include <usb_util.h>
+// #include <usb_util.h>
+#include <assert.h>
+#include <kernel/thread/types.h>
+#include <kernel/thread/sync/semaphore.h>
 
 /**
  * Number of DWC host channels, each of which can be used for an independent
@@ -870,12 +873,79 @@ struct dwc_regs {
  * be compiled into nothing.  */
 static inline void _dwc_check_regs(void)
 {
-	STATIC_ASSERT(offsetof(struct dwc_regs, vendor_id) == 0x40);
-	STATIC_ASSERT(offsetof(struct dwc_regs, host_periodic_tx_fifo_size) == 0x100);
-	STATIC_ASSERT(offsetof(struct dwc_regs, host_configuration) == 0x400);
-	STATIC_ASSERT(offsetof(struct dwc_regs, host_port_ctrlstatus) == 0x440);
-	STATIC_ASSERT(offsetof(struct dwc_regs, reserved_0x800) == 0x800);
-	STATIC_ASSERT(offsetof(struct dwc_regs, power) == 0xe00);
+	static_assert(offsetof(struct dwc_regs, vendor_id) == 0x40);
+	static_assert(offsetof(struct dwc_regs, host_periodic_tx_fifo_size) == 0x100);
+	static_assert(offsetof(struct dwc_regs, host_configuration) == 0x400);
+	static_assert(offsetof(struct dwc_regs, host_port_ctrlstatus) == 0x440);
+	static_assert(offsetof(struct dwc_regs, reserved_0x800) == 0x800);
+	static_assert(offsetof(struct dwc_regs, power) == 0xe00);
 }
+
+/**
+ * @ingroup usbcore
+ *
+ * Specification of an asynchronous (interrupt-driven) USB transfer request.
+ * This can be a control, bulk, or interrupt request.  To get one of these
+ * structures, either call usb_alloc_xfer_request(), or allocate memory manually
+ * in another way and call usb_init_xfer_request().  Submit to to the USB core
+ * using usb_submit_xfer_request() after filling in the
+ * @ref usb_xfer_request::dev "dev",
+ * @ref usb_xfer_request::endpoint_desc "endpoint_desc",
+ * @ref usb_xfer_request::sendbuf "sendbuf" or
+ * @ref usb_xfer_request::recvbuf "recvbuf",
+ * @ref usb_xfer_request::size "size",
+ * and
+ * @ref usb_xfer_request::completion_cb_func "completion_cb_func" members,
+ * and optionally the
+ * @ref usb_xfer_request::private "private" and
+ * @ref usb_xfer_request::setup_data "setup_data" members.
+ */
+struct usb_dwc_request {
+
+	/*********************
+	 * Input variables   *
+	 *********************/
+
+	/** USB device to communicate with.  */
+	struct usb_device *dev;
+
+	/** Setup data for the USB control request.  Must be filled in for control
+	 * transfers; ignored otherwise.  Note: consider using usb_control_msg() for
+	 * control transfers instead.  */
+	// struct usb_control_setup_data setup_data;
+
+	/** Callback function that will be called when this USB transfer has been
+	 * successfully completed or has failed.  */
+	//usb_xfer_completed_t completion_cb_func;
+
+	/*********************
+	 * Output variables   *
+	 *********************/
+
+	/** Actual size of the data transferred.  This should be tested after a
+	 * successful device-to-host (IN) transfer, since it is valid for such a
+	 * transfer to complete with less than the number of bytes requested if for
+	 * whatever reason the device was unable to provide the full size.  */
+	uint32_t actual_size;
+
+	/*****************************************************************
+	 * Private variables (mainly for Host Controller Drivers; do not *
+	 * touch from device drivers).  TODO: a better design might      *
+	 * allow HCDs to customize the variables they can use, perhaps   *
+	 * by embedding the usb_xfer_request in another struct.          *
+	 *****************************************************************/
+	void *cur_data_ptr;
+	uint8_t complete_split : 1;
+	uint8_t short_attempt  : 1;
+	uint8_t need_sof       : 1;
+	uint8_t control_phase  : 2;
+	uint8_t next_data_pid  : 2;
+	uint32_t attempted_size;
+	uint32_t attempted_packets_remaining;
+	uint32_t attempted_bytes_remaining;
+	uint32_t csplit_retries;
+	struct thread *deferer_thread;
+	struct sem deferer_thread_sema;
+};
 
 #endif /* _USB_DWC_REGS_H_ */
