@@ -42,6 +42,7 @@
 
 #include <hal/context.h>
 #include <util/err.h>
+#include <compiler.h>
 
 extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
@@ -52,7 +53,7 @@ static int id_counter = 0; // TODO make it an indexator
  * Wrapper for thread start routine.
  * Called from sched_switch() function with interrupts off.
  */
-static void __attribute__((noreturn)) thread_trampoline(void) {
+static void _NORETURN thread_trampoline(void) {
 	struct thread *current = thread_self();
 	void *res;
 
@@ -261,7 +262,7 @@ void thread_delete(struct thread *t) {
 	}
 }
 
-void __attribute__((noreturn)) thread_exit(void *ret) {
+void _NORETURN thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
 	struct thread *joining;

@@ -27,6 +27,6 @@ extern void arch_init(void);
 
 extern void arch_idle(void);
 
-extern void arch_shutdown(arch_shutdown_mode_t mode) _NORETURN;
+extern void _NORETURN arch_shutdown(arch_shutdown_mode_t mode);
 
 #endif /* HAL_ARCH_H_ */

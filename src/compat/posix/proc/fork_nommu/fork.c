@@ -9,6 +9,7 @@
 #include <kernel/panic.h>
 #include <kernel/sched/sched_lock.h>
 #include <hal/ptrace.h>
+#include <compiler.h>
 
 #include <mem/page.h>
 #include <mem/phymem.h>
@@ -36,7 +37,7 @@ static void *fork_child_trampoline(void *arg) {
 	panic("%s returning", __func__);
 }
 
-void __attribute__((noreturn)) fork_body(struct pt_regs *ptregs) {
+void _NORETURN fork_body(struct pt_regs *ptregs) {
 	struct addr_space *adrspc;
 	struct addr_space *child_adrspc;
 	struct task *parent;

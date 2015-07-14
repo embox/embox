@@ -19,6 +19,7 @@
 #include <kernel/thread/thread_flags.h>
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/sched/current.h>
+#include <compiler.h>
 
 /**
  * Thread control block.
@@ -182,7 +183,7 @@ extern int thread_join(struct thread *thread, void **p_ret);
  *
  * @param ret - return code
  */
-extern void __attribute__((noreturn)) thread_exit(void *ret);
+extern void _NORETURN thread_exit(void *ret);
 
 /** Causes the calling thread to relinquish the CPU. The thread is moved to
  * the end of the queue for its static priority  and  a new thread gets to run.

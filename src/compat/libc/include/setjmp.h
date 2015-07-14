@@ -13,6 +13,7 @@
 #include <asm/setjmp.h>
 
 #include <sys/cdefs.h>
+#include <compiler.h>
 
 __BEGIN_DECLS
 
@@ -49,7 +50,7 @@ extern int setjmp(jmp_buf env);
  * @param env #jmp_buf to restore the context from
  * @param value the return value for @c setjmp call
  */
-extern void longjmp(jmp_buf env, int value) __attribute__ ((noreturn));
+extern void _NORETURN longjmp(jmp_buf env, int value);
 
 __END_DECLS
 

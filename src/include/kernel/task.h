@@ -17,6 +17,7 @@
 #include <module/embox/kernel/task/api.h>
 
 #include <kernel/task/defs.h>
+#include <compiler.h>
 
 struct thread;
 
@@ -78,7 +79,7 @@ extern void task_finish_exit(void);
  *
  * @param res Return code
  */
-extern void __attribute__((noreturn)) task_exit(void *res);
+extern void _NORETURN task_exit(void *res);
 
 extern void task_delete(struct task *tsk);
 
