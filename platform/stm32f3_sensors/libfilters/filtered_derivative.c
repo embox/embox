@@ -24,8 +24,5 @@ float filtered_derivative(float inc) {
 }
 
 int filtered_derivative_check(float val) {
-	if (val < -FD_THRESHOLD || val > FD_THRESHOLD) {
-		return 1;
-	}
-	return 0;
+	return (val < -FD_THRESHOLD || val > FD_THRESHOLD);
 }
