@@ -10,3 +10,10 @@ module filtered_derivative {
 module moving_average {
 	source "moving_average.c"
 }
+
+module dynamic_window {
+	source "dynamic_window.c"
+
+	@IncludeExport(path="libfilters")
+	source "dynamic_window.h"
+}
