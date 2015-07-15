@@ -49,13 +49,13 @@ float dyn_window_avg(float val, float K) {
 
 	data[index] = val;
 
-	k = 0;	
+	k = 0;
 	dk_calc(K, k, interval);
 
 	while (interval[0] < interval[1]) {
+		k++;
 		dk_calc(K, k, interval_new);
 		intersect(interval, interval_new, interval);
-		k++;
 	}
 	res = avg(k);
 

@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 #include <libsensors/acc.h>
 #include <libsensors/gyro.h>
@@ -16,6 +17,9 @@
 #include <libmisc/button.h>
 
 #include <libfilters/filtered_derivative.h>
+#include <libfilters/dynamic_window.h>
+
+#define K 10
 
 static inline void fault_handle(void) {
 	led_on(LED3);
@@ -23,13 +27,16 @@ static inline void fault_handle(void) {
 
 static int fault_detect(void) {
 	int16_t buf[3] = {0, 0, 0};
-	float filtered_val;
+	float val;
 
 	while(1) {
 		acc_get(buf);
 
-		filtered_val = filtered_derivative(buf[0]);
-		if (filtered_derivative_check(filtered_val)) {
+		val = buf[0];
+		val = dyn_window_avg(val, K);
+
+		val = filtered_derivative(abs(val));
+		if (filtered_derivative_check(val)) {
 			return 1;
 		}
 	}
