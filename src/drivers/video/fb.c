@@ -124,6 +124,7 @@ struct fb_info *fb_lookup(int id) {
 		dlist_foreach_entry(fb_dev, &fb_list, link) {
 			if (fb_dev->info.id == id) {
 				ret = &fb_dev->info;
+				break;
 			}
 		}
 	}

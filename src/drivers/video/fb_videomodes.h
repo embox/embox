@@ -9,7 +9,10 @@
 #ifndef VIDEO_FB_VIDEOMODES_H_
 #define VIDEO_FB_VIDEOMODES_H_
 
+#include <stdint.h>
+
 struct video_resbpp;
+struct fb_var_screeninfo;
 
 struct fb_videomode {
 	const char *name;	/* optional */
