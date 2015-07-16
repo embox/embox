@@ -10,10 +10,8 @@ module fb {
 	option number fb_amount=2
 	depends embox.mem.pool
 	@NoRuntime depends embox.compat.libc.all
-	//depends embox.fs.rootfs
 	depends fb_videomodes
 	depends fonts
-	//depends embox.driver.virtual.fb_device
 }
 
 module bochs {
@@ -51,6 +49,9 @@ module generic {
 
 module fb_videomodes {
 	source "fb_videomodes.c"
+
+	@IncludeExport(path="drivers/video")
+	source "fb_videomodes.h"
 
 	depends vesa_modes
 }

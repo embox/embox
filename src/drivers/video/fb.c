@@ -13,8 +13,10 @@
 #include <limits.h>
 #include <errno.h>
 
-#include <util/math.h>
+#include <kernel/thread/sync/mutex.h>
+
 #include <util/dlist.h>
+#include <util/math.h>
 
 #include <embox/device.h>
 #include <drivers/video/fb.h>
@@ -22,125 +24,158 @@
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
 
-
-
 #define MODOPS_FB_AMOUNT OPTION_GET(NUMBER, fb_amount)
 
-POOL_DEF(fb_pool, struct fb_info, MODOPS_FB_AMOUNT);
-static struct fb_info *registered_fb[MODOPS_FB_AMOUNT];
-static unsigned int num_registered_fb = 0;
+struct fb_dev {
+	struct dlist_head link;
+	struct fb_info info;
+};
 
-extern const struct kfile_operations fb_device_ops;
+static int fb_update_current_var(struct fb_info *info);
 
-struct fb_info * fb_alloc(void) {
+static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *area);
+static void fb_default_cursor(struct fb_info *info, const struct fb_cursor *cursor);
+static void fb_default_imageblit(struct fb_info *info, const struct fb_image *image);
+static void fb_default_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
+
+struct mutex fb_static = MUTEX_INIT_STATIC;
+POOL_DEF(fb_pool, struct fb_dev, MODOPS_FB_AMOUNT);
+static DLIST_DEFINE(fb_list);
+static unsigned int fb_count = 0;
+
+#define fb_readb(addr)       (*(uint8_t *) (addr))
+#define fb_readw(addr)       (*(uint16_t *) (addr))
+#define fb_readl(addr)       (*(uint32_t *) (addr))
+#define fb_writeb(val, addr) (*(uint8_t *) (addr) = (val))
+#define fb_writew(val, addr) (*(uint16_t *) (addr) = (val))
+#define fb_writel(val, addr) (*(uint32_t *) (addr) = (val))
+#define fb_memset            memset
+#define fb_memcpy_fromfb     memcpy
+#define fb_memcpy_tofb       memcpy
+
+static void fb_ops_fixup(struct fb_ops *ops) {
+	if (!ops->fb_copyarea) {
+		ops->fb_copyarea = fb_default_copyarea;
+	}
+	if (!ops->fb_imageblit) {
+		ops->fb_imageblit = fb_default_imageblit;
+	}
+	if (!ops->fb_fillrect) {
+		ops->fb_fillrect = fb_default_fillrect;
+	}
+	if (!ops->fb_cursor) {
+		ops->fb_cursor = fb_default_cursor;
+	}
+}
+
+struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
+	struct fb_dev *dev;
 	struct fb_info *info;
 
-	info = pool_alloc(&fb_pool);
-	if (info == NULL) {
-		return NULL;
+	mutex_lock(&fb_static);
+	{
+		dev = pool_alloc(&fb_pool);
+		if (dev) {
+			info = &dev->info;
+			info->id = fb_count++;
+			dlist_init(&dev->link);
+			dlist_add_next(&dev->link, &fb_list);
+		} else{
+			info = NULL;
+		}
+	}
+	mutex_unlock(&fb_static);
+
+	if (info) {
+		info->screen_base = map_base;
+		info->screen_size = map_size;
+
+		memcpy(&info->ops, ops, sizeof(struct fb_ops));
+		fb_ops_fixup(&info->ops);
+
+
+		/* FIXME probably should be in open/start */
+		fb_update_current_var(info);
 	}
 
 	return info;
 }
 
-void fb_release(struct fb_info *info) {
-	assert(info != NULL);
-	pool_free(&fb_pool, info);
-}
+void fb_delete(struct fb_info *info) {
+	struct fb_dev *dev = member_cast_out(info, struct fb_dev, info);
 
-struct fb_list_item {
-	struct dlist_head list;
-	struct fb_info *fb_info;
-};
-
-static DLIST_DEFINE(fb_repo);
-POOL_DEF(fb_repo_pool, struct fb_list_item, 0x4);
-
-int fb_register(struct fb_info *info) {
-	unsigned int num;
-	struct fb_list_item *item;
-
-	assert(info != NULL);
-
-	if (num_registered_fb == sizeof registered_fb / sizeof registered_fb) {
-		return -ENOMEM;
+	if (info) {
+		mutex_lock(&fb_static);
+		{
+			dlist_del(&dev->link);
+			pool_free(&fb_pool, dev);
+		}
+		mutex_unlock(&fb_static);
 	}
+}
 
-	++num_registered_fb;
+struct fb_info *fb_lookup(int id) {
+	struct fb_info *ret;
 
-	for (num = 0; (num < num_registered_fb) && (registered_fb[num] != NULL); ++num);
-
-	registered_fb[num] = info;
-	info->node = num;
-
-	if(NULL == (item = pool_alloc(&fb_repo_pool))) {
-		return -ENOMEM;
+	ret = NULL;
+	mutex_lock(&fb_static);
+	{
+		struct fb_dev *fb_dev;
+		dlist_foreach_entry(fb_dev, &fb_list, link) {
+			if (fb_dev->info.id == id) {
+				ret = &fb_dev->info;
+				break;
+			}
+		}
 	}
-	dlist_add_next(dlist_head_init(&item->list), &fb_repo);
-
-	return ENOERR;
+	mutex_unlock(&fb_static);
+	return ret;
 }
 
-int fb_unregister(struct fb_info *info) {
-	assert(info != NULL);
-	assert(registered_fb[info->node] == info);
-	registered_fb[info->node] = NULL;
-	return 0;
-}
-
-struct fb_info * fb_lookup(const char *name) {
-	unsigned int num;
-
-	assert(name != NULL);
-
-	sscanf(name, "fb%u", &num);
-
-	assert(num < sizeof registered_fb / sizeof registered_fb[0]);
-
-	return registered_fb[num];
-}
-
-int fb_set_var(struct fb_info *info, struct fb_var_screeninfo *var) {
+int fb_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
 	int ret;
-	struct fb_var_screeninfo old;
 
 	assert(info != NULL);
 	assert(var != NULL);
 
-	if (info->ops->fb_check_var == NULL) {
-		memcpy(var, &info->var, sizeof(struct fb_var_screeninfo));
-		return 0;
-	}
-
-	ret = info->ops->fb_check_var(var, info);
-	if (ret != 0) {
-		return ret;
-	}
-
-	memcpy(&old, &info->var, sizeof(struct fb_var_screeninfo));
-	memcpy(&info->var, var, sizeof(struct fb_var_screeninfo));
-
-	if (info->ops->fb_set_par != NULL) {
-		ret = info->ops->fb_set_par(info);
-		if (ret != 0) {
-			memcpy(&info->var, &old, sizeof(struct fb_var_screeninfo));
+	if (info->ops.fb_set_var != NULL) {
+		ret = info->ops.fb_set_var(info, var);
+		if (ret < 0) {
 			return ret;
 		}
+		memcpy(&info->var, var, sizeof(struct fb_var_screeninfo));
 	}
 
 	return 0;
 }
 
-int fb_try_mode(struct fb_var_screeninfo *var, struct fb_info *info,
-		const struct fb_videomode *mode, uint32_t bpp) {
-	fb_videomode_to_var(var, mode);
-	var->bits_per_pixel = bpp;
-
-	if (info->ops->fb_check_var != NULL) {
-		return info->ops->fb_check_var(var, info);
-	}
-
+int fb_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
+	memcpy(var, &info->var, sizeof(struct fb_var_screeninfo));
 	return 0;
+}
+
+void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
+	info->ops.fb_copyarea(info, area);
+}
+
+void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
+	info->ops.fb_cursor(info, cursor);
+}
+
+void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
+	info->ops.fb_imageblit(info, image);
+}
+
+void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
+	info->ops.fb_fillrect(info, rect);
+}
+
+
+static int fb_update_current_var(struct fb_info *info) {
+	if (info->ops.fb_get_var != NULL) {
+		return info->ops.fb_get_var(info, &info->var);
+	}
+	return -ENOENT;
 }
 
 static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
@@ -335,7 +370,7 @@ static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
 	}
 }
 
-void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
+static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *area) {
 	uint32_t width, height, *dst, dstn, *src, srcn;
 
 	assert(info != NULL);
@@ -476,7 +511,7 @@ static void bitfill_rev(uint32_t *dst, uint32_t dstn, uint32_t pat,
 	}
 }
 
-void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
+static void fb_default_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 	uint32_t width, height, pat_orig, pat, *dst, dstn, loff, roff;
 	void (*fill_op)(uint32_t *dst, uint32_t dstn, uint32_t pat,
 		uint32_t loff, uint32_t roff, uint32_t len);
@@ -513,7 +548,7 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 	}
 }
 
-void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
+static void fb_default_imageblit(struct fb_info *info, const struct fb_image *image) {
 	/* TODO it's slow version:) */
 	uint32_t i, j;
 	struct fb_fillrect rect;
@@ -531,12 +566,12 @@ void fb_imageblit(struct fb_info *info, const struct fb_image *image) {
 			rect.dx = image->dx + i * rect.width;
 			rect.color = *(uint8_t *)(image->data + j) & (1 << ((image->width - i - 1)))
 					? image->fg_color : image->bg_color;
-			info->ops->fb_fillrect(info, &rect);
+			info->ops.fb_fillrect(info, &rect);
 		}
 	}
 }
 
-void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
+static void fb_default_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
 	uint32_t i, j;
 	struct fb_fillrect rect;
 
@@ -552,7 +587,7 @@ void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor) {
 		rect.dy = cursor->hot.y * cursor->image.height + j * rect.height;
 		for (i = 0; i < cursor->image.width; ++i) {
 			rect.dx = cursor->hot.x * cursor->image.width + i * rect.width;
-			info->ops->fb_fillrect(info, &rect);
+			info->ops.fb_fillrect(info, &rect);
 		}
 	}
 }
