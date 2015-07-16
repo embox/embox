@@ -10,10 +10,13 @@
 #define COMPAT_POSIX_POSIX_ERRNO_H_
 
 #include <kernel/task/resource/errno.h>
+#include <compiler.h>
 
 #define errno (*task_self_resource_errno())
 
-#define SET_ERRNO(e) \
-	({ errno = e; -1; /* to let 'return SET_ERRNO(...)' */ })
+static inline int SET_ERRNO(int err) {
+	errno = err;
+	return -1;
+}
 
 #endif /* COMPAT_POSIX_POSIX_ERRNO_H_ */
