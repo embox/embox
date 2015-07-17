@@ -37,7 +37,11 @@
 #define likely(x)	(__builtin_constant_p(x) ? !!(x) :  __builtin_expect(!!(x), 1))
 #define unlikely(x)	(__builtin_constant_p(x) ? !!(x) :  __builtin_expect(!!(x), 0))
 
+#if !defined(__STDC__) || !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
+#define __barrier()
+#else
 #define __barrier() \
 	__asm__ __volatile__("" : : : "memory")
 
+#endif
 #endif /* COMPAT_LINUX_LINUX_COMPILER_H_ */
