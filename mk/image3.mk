@@ -48,9 +48,12 @@ include $(__include)
 IMAGE_TARGET ?= executable
 ifeq ($(IMAGE_TARGET),executable)
 image: $(IMAGE)
-image: $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE) $(IMAGE_PIGGY)
+image: $(IMAGE_BIN) $(IMAGE_SREC) $(IMAGE_SIZE)
 ifeq ($(value DISASSEMBLY),y)
 image : $(IMAGE_DIS)
+endif
+ifeq ($(value PIGGY),y)
+image : $(IMAGE_PIGGY)
 endif
 else ifeq ($(IMAGE_TARGET),library)
 image: $(IMAGE_A)
