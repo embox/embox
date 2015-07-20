@@ -12,7 +12,6 @@
 
 #include <util/math.h>
 
-#include <embox/net/pack.h>
 #include <embox/net/sock.h>
 
 #include <kernel/time/time.h>

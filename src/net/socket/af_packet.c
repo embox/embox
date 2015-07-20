@@ -26,6 +26,8 @@
 #include <net/sock_wait.h>
 #include <kernel/sched/sched_lock.h>
 
+#include <embox/net/pack.h>
+
 #include <net/socket/packet.h>
 #include <framework/mod/options.h>
 

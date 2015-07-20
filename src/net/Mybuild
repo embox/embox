@@ -88,3 +88,9 @@ module neighbour {
 module packet {
 	source "packet.c"
 }
+
+module net_pack {
+	source "net_pack.c"
+
+	depends embox.util.Array
+}

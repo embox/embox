@@ -3,7 +3,7 @@ package embox.net
 module arp {
 	source "arp.c"
 
-	@NoRuntime depends embox.framework.net.pack
+	@NoRuntime depends embox.net.net_pack
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.core
@@ -49,7 +49,7 @@ module ndp {
 module rarp {
 	source "rarp.c"
 
-	@NoRuntime depends embox.framework.net.pack
+	@NoRuntime depends embox.net.net_pack
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.core

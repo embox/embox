@@ -8,6 +8,7 @@
  */
 
 #include <assert.h>
+
 #include <embox/net/pack.h>
 #include <net/if_packet.h>
 #include <net/l0/net_crypt.h>

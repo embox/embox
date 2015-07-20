@@ -14,7 +14,6 @@
 
 #include "family.h"
 #include <framework/net/sock/api.h>
-#include <framework/net/pack/api.h>
 
 #include <util/err.h>
 #include <security/security.h>

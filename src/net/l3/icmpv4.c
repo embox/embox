@@ -12,9 +12,13 @@
  * @author Ilia Vaprol
  */
 
-#include <arpa/inet.h>
+
 #include <errno.h>
 #include <assert.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <stdarg.h>
+#include <stdint.h>
 
 #include <util/math.h>
 
@@ -26,11 +30,9 @@
 #include <net/l2/ethernet.h>
 #include <net/if_packet.h>
 #include <net/lib/ipv4.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <stdarg.h>
-#include <stdint.h>
 
+
+#include <embox/net/pack.h>
 #include <embox/net/proto.h>
 
 #include <kernel/time/ktime.h>
