@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include <framework/net/family/api.h>
+#include "family.h"
 #include <stddef.h>
 #include <util/array.h>
 

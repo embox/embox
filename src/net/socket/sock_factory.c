@@ -12,7 +12,7 @@
 #include <net/sock.h>
 #include <fs/flags.h>
 
-#include <framework/net/family/api.h>
+#include "family.h"
 #include <framework/net/sock/api.h>
 #include <framework/net/pack/api.h>
 

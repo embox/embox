@@ -43,6 +43,7 @@ module af_inet {
 
 	depends sock
 	depends route
+	depends family
 	depends embox.util.indexator
 	depends embox.framework.LibFrameworkNet
 }
@@ -52,6 +53,7 @@ module af_inet6 {
 	option number amount_inet6_sock=20
 
 	depends sock
+	depends family
 	depends embox.util.indexator
 	depends embox.framework.LibFrameworkNet
 }
@@ -65,6 +67,7 @@ module af_packet extends af_packet_api {
 
 	depends sock
 	depends packet
+	depends family
 	depends embox.framework.LibFrameworkNet
 }
 
@@ -81,6 +84,7 @@ module af_unix {
 	source "af_unix.c"
 
 	depends sock
+	depends family
 	depends embox.framework.LibFrameworkNet
 }
 
@@ -96,4 +100,10 @@ module socket {
 	depends embox.net.dev //ksocket, netdev_get_by_name
 	depends embox.util.log
 	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
+}
+
+module family {
+	source "family.c"
+
+	depends embox.util.Array
 }
