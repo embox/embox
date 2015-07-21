@@ -7,7 +7,7 @@
  * @author Anton Kozlov
  */
 
-#include <errno.h>
+#include <errno_codes.h>
 #include <stddef.h>
 #include <kernel/panic.h>
 #include <util/ring.h>
