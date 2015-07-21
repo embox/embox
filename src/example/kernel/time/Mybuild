@@ -1,8 +1,0 @@
-package embox.example.kernel.time
-
-
-module itimer {
-	source "itimer.c"
-
-	depends embox.framework.example
-}
