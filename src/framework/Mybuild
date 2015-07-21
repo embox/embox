@@ -1,9 +1,5 @@
 package embox.framework
 
-module LibFrameworkNet {
-	depends net.family, net.pack, net.proto, net.sock
-}
-
 module LibFramework {
 	depends cmd, mod, test, runlevel
 }

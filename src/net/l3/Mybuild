@@ -3,7 +3,7 @@ package embox.net
 module arp {
 	source "arp.c"
 
-	@NoRuntime depends embox.framework.net.pack
+	@NoRuntime depends embox.net.net_pack
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.core
@@ -16,7 +16,7 @@ module arp {
 module icmpv4 {
 	source "icmpv4.c"
 
-	depends embox.framework.net.proto
+	depends proto
 	depends embox.compat.libc.assert
 	depends embox.net.lib.icmpv4
 	depends embox.net.lib.ipv4
@@ -26,7 +26,7 @@ module icmpv4 {
 module icmpv6 {
 	source "icmpv6.c"
 
-	depends embox.framework.net.proto
+	depends embox.net.proto
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
 	depends embox.net.core
@@ -49,7 +49,7 @@ module ndp {
 module rarp {
 	source "rarp.c"
 
-	@NoRuntime depends embox.framework.net.pack
+	@NoRuntime depends embox.net.net_pack
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.core
@@ -66,4 +66,10 @@ module route {
 	depends core /* for inetdev.c */
 	depends embox.mem.pool
 	depends embox.util.DList
+}
+
+module proto {
+	source "proto.c"
+
+	depends embox.util.Array
 }

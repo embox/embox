@@ -14,7 +14,7 @@
 #include <endian.h>
 #include <linux/types.h>
 #include <endian.h>
-#include <embox/net/pack.h>
+
 
 /**
  * Prototypes
@@ -43,6 +43,7 @@ static inline ip6hdr_t *ip6_hdr(const struct sk_buff *skb) {
 	return skb->nh.ip6h;
 }
 
+struct net_pack_out_ops;
 /**
  * IPV6 packet outgoing options
  */

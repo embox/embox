@@ -9,6 +9,10 @@
  */
 
 #include <stdlib.h>
+#include <assert.h>
+#include <errno.h>
+#include <arpa/inet.h>
+
 #include <embox/net/proto.h>
 #include <net/l3/ipv4/ip.h>
 #include <net/l3/ipv6.h>
@@ -16,13 +20,10 @@
 #include <net/lib/udp.h>
 #include <net/l3/icmpv4.h>
 #include <net/l2/ethernet.h>
-#include <assert.h>
-#include <errno.h>
 #include <net/socket/inet_sock.h>
-#include <arpa/inet.h>
+
 #include <net/netdevice.h>
 #include <framework/mod/options.h>
-#include <framework/net/sock/api.h>
 
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>

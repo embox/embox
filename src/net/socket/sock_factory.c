@@ -12,9 +12,8 @@
 #include <net/sock.h>
 #include <fs/flags.h>
 
-#include <framework/net/family/api.h>
-#include <framework/net/sock/api.h>
-#include <framework/net/pack/api.h>
+#include "family.h"
+#include "net_sock.h"
 
 #include <util/err.h>
 #include <security/security.h>

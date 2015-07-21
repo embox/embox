@@ -12,7 +12,7 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <errno.h>
-#include <embox/net/pack.h>
+
 #include <net/l3/ipv4/ip.h>
 #include <net/l3/ipv4/ip_options.h>
 #include <net/l3/icmpv4.h>
@@ -20,11 +20,13 @@
 #include <net/socket/raw.h>
 #include <net/inetdevice.h>
 #include <net/l3/route.h>
-#include <framework/net/proto/api.h>
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/netfilter.h>
 #include <net/l2/ethernet.h>
 #include <net/lib/ipv4.h>
+
+#include <embox/net/proto.h>
+#include <embox/net/pack.h>
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv);
 

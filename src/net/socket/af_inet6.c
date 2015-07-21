@@ -7,18 +7,21 @@
  */
 
 #include <errno.h>
-#include <framework/net/sock/api.h>
 #include <stddef.h>
 #include <arpa/inet.h>
-#include <net/sock.h>
 #include <sys/socket.h>
-#include <net/socket/inet6_sock.h>
-#include <net/inetdevice.h>
-#include <embox/net/family.h>
 #include <string.h>
+
+
+#include "family.h"
+#include "net_sock.h"
+
 #include <mem/misc/pool.h>
+
+#include <net/inetdevice.h>
 #include <net/l3/route.h>
 #include <net/l3/ipv6.h>
+#include <net/sock.h>
 
 #include <net/socket/inet6_sock.h>
 

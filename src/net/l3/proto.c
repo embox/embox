@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-#include <framework/net/proto/api.h>
+#include <embox/net/proto.h>
 #include <stddef.h>
 #include <util/array.h>
 

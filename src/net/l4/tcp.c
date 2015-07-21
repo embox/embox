@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <string.h>
 #include <poll.h>
+#include <arpa/inet.h>
 
 #include <net/l4/tcp.h>
 #include <net/skbuff.h>
@@ -28,6 +29,8 @@
 
 
 #include <kernel/time/timer.h>
+
+#include <embox/net/pack.h>
 #include <embox/net/proto.h>
 #include <embox/unit.h>
 #include <kernel/sched/sched_lock.h>

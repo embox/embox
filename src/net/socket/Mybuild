@@ -3,7 +3,7 @@ package embox.net
 module raw_sock {
 	source "raw_sock.c"
 
-	depends embox.framework.net.sock
+	depends net_sock
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
 	depends embox.net.skbuff
@@ -23,13 +23,13 @@ module tcp_sock {
 	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.libc.str     /* memset, memcpy */
 	depends embox.mem.pool
-	depends embox.framework.LibFrameworkNet
+	depends net_sock
 }
 
 module udp_sock {
 	source "udp_sock.c"
 
-	depends embox.framework.net.sock
+	depends net_sock
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
 	depends embox.net.lib.udp
@@ -43,8 +43,9 @@ module af_inet {
 
 	depends sock
 	depends route
+	depends family
 	depends embox.util.indexator
-	depends embox.framework.LibFrameworkNet
+	depends net_sock
 }
 
 module af_inet6 {
@@ -52,8 +53,9 @@ module af_inet6 {
 	option number amount_inet6_sock=20
 
 	depends sock
+	depends family
 	depends embox.util.indexator
-	depends embox.framework.LibFrameworkNet
+	depends net_sock
 }
 
 @DefaultImpl(no_af_packet)
@@ -65,7 +67,8 @@ module af_packet extends af_packet_api {
 
 	depends sock
 	depends packet
-	depends embox.framework.LibFrameworkNet
+	depends family
+	depends net_sock
 }
 
 module no_af_packet extends af_packet_api {
@@ -74,14 +77,15 @@ module no_af_packet extends af_packet_api {
 
 	depends sock
 	depends packet
-	depends embox.framework.LibFrameworkNet
+	depends net_sock
 }
 
 module af_unix {
 	source "af_unix.c"
 
 	depends sock
-	depends embox.framework.LibFrameworkNet
+	depends family
+	depends net_sock
 }
 
 module socket {
@@ -97,3 +101,16 @@ module socket {
 	depends embox.util.log
 	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
 }
+
+module family {
+	source "family.c"
+
+	depends embox.util.Array
+}
+
+module net_sock {
+	source "net_sock.c"
+
+	depends embox.util.Array
+}
+
