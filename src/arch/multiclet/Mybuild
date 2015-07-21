@@ -4,4 +4,10 @@ package embox.arch.multiclet
 module crt {
 	@Rule(script="$(CP) \"$$(dirname $$(which $(LD)))/../lib/MCp042R100102/crt0.o\" \"$(OBJ_DIR)/src/arch/multiclet\"")
 	source "crt0.o"
+
+	depends main /* FIXME main.c should be here, but relocation linking not supported on lcc */
+}
+
+module main {
+	source "main.c"
 }
