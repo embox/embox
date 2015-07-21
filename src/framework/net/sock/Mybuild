@@ -1,7 +1,7 @@
 package embox.framework.net
 
 module sock {
-	source "core.c"
+//	source "core.c"
 
 	depends embox.util.Array
 }

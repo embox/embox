@@ -13,7 +13,7 @@
 #include <fs/flags.h>
 
 #include "family.h"
-#include <framework/net/sock/api.h>
+#include <embox/net/sock.h>
 
 #include <util/err.h>
 #include <security/security.h>

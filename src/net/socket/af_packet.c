@@ -14,7 +14,7 @@
 #include <mem/misc/pool.h>
 
 
-#include <framework/net/sock/self.h>
+#include <embox/net/sock.h>
 #include "family.h"
 
 #include <net/sock.h>

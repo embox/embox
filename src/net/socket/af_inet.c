@@ -19,7 +19,7 @@
 #include <net/inetdevice.h>
 
 #include "family.h"
-#include <framework/net/sock/api.h>
+#include <embox/net/sock.h>
 
 #include <mem/misc/pool.h>
 
