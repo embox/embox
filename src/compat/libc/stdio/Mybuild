@@ -8,6 +8,7 @@ static module print {
 
 	depends embox.compat.libc.math                   // depends from support_floating value
 	@NoRuntime depends embox.compat.libc.stdlib.core // atoi
+	@NoRuntime depends embox.compat.libc.str         // strlen
 	@NoRuntime depends embox.compat.libc.type
 }
 
