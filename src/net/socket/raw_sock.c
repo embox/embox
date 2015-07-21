@@ -23,7 +23,7 @@
 
 #include <util/dlist.h>
 
-#include <embox/net/sock.h>
+#include "net_sock.h"
 #include <embox/net/pack.h>
 
 static const struct sock_proto_ops raw_sock_ops_struct;

@@ -14,14 +14,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include <embox/net/sock.h>
+#include "net_sock.h"
+#include <embox/net/pack.h>
 
 #include <net/l3/ipv4/ip.h>
 #include <net/l4/udp.h>
 #include <net/lib/udp.h>
 #include <net/sock.h>
 #include <net/socket/inet_sock.h>
-#include <embox/net/pack.h>
 
 #include <util/dlist.h>
 

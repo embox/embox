@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-#include <embox/net/sock.h>
+#include "net_sock.h"
 #include <stddef.h>
 #include <util/array.h>
 
