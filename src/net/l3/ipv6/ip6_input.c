@@ -6,15 +6,18 @@
  * @author Ilia Vaprol
  */
 
-#include <framework/net/proto/api.h>
+#include <arpa/inet.h>
+#include <string.h>
+
+#include <embox/net/proto.h>
 #include <net/skbuff.h>
 #include <embox/net/pack.h>
+
 #include <net/l3/ipv6.h>
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
-#include <arpa/inet.h>
-#include <string.h>
+
 
 EMBOX_NET_PACK(ETH_P_IPV6, ip6_rcv);
 

@@ -14,7 +14,7 @@ module tcp {
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
 	depends embox.kernel.timer.sys_timer
-	depends embox.framework.net.proto
+	depends embox.net.proto
 }
 
 module udp {
@@ -26,5 +26,5 @@ module udp {
 	depends embox.net.icmpv4
 	depends embox.net.sock
 	depends embox.compat.libc.assert
-	depends embox.framework.net.proto
+	depends embox.net.proto
 }
