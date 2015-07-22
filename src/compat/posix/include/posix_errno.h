@@ -9,10 +9,8 @@
 #ifndef COMPAT_POSIX_POSIX_ERRNO_H_
 #define COMPAT_POSIX_POSIX_ERRNO_H_
 
-#include <kernel/task/resource/errno.h>
+#include <module/embox/compat/posix/errno/api.h>
 #include <compiler.h>
-
-#define errno (*task_self_resource_errno())
 
 static inline int SET_ERRNO(int err) {
 	errno = err;
