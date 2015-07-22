@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <drivers/diag.h>
 #include <stdarg.h>
-#include <stdio.h>
 
 #include <module/embox/compat/libc/stdio/print.h>
 
