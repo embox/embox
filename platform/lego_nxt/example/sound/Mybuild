@@ -1,7 +1,0 @@
-
-package lego_nxt.example
-
-module sound {
-	source "sound.c"
-	depends lego_nxt.driver.nxt_sound
-}
