@@ -14,9 +14,9 @@
 
 #include <util/array.h>
 #include <util/member.h>
-#include <framework/mod/api.h>
 
-#include "types.h"
+#include <framework/mod/api.h>
+#include <framework/test/types.h>
 
 #define __test_foreach(test_ptr) \
 	array_spread_foreach(test_ptr, __test_registry)

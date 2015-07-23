@@ -18,7 +18,7 @@
 #include <framework/mod/self.h>
 
 #include <framework/test/api.h>
-#include "types.h"
+#include <framework/test/types.h>
 
 #define __EMBOX_TEST_SUITE(description) \
 	__EMBOX_TEST_SUITE_AUTORUN(description, true)

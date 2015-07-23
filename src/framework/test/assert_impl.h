@@ -14,7 +14,7 @@
 
 #include <util/location.h>
 
-#include "types.h"
+#include <framework/test/types.h>
 #include "emit_impl.h"
 
 EXTERN_C void __test_assertion_handle(int pass,
