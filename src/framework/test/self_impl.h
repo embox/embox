@@ -120,17 +120,6 @@
 #define __TEST_CASES_ARRAY \
 	MACRO_CONCAT(__test_cases_in_suite__, __EMBUILD_MOD__)
 
-/* This is implemented on top of test suite and test case. */
-#define __EMBOX_TEST(_run) \
-	static int _run(void);                     \
-	__EMBOX_TEST_SUITE("generic test suite");  \
-	__TEST_CASE("generic test case") {         \
-		if (_run()) {                          \
-			test_fail("non-zero return code"); \
-		}                                      \
-	}                                          \
-	static int _run(void)
-
 /* Simplify the life of Eclipse CDT. */
 #ifdef __CDT_PARSER__
 
@@ -148,10 +137,6 @@
 	static void MACRO_GUARD(__test_case)(void); \
 	typedef typeof(MACRO_GUARD(__test_case)) __test_case_placeholder; \
 	static void MACRO_GUARD(__test_case)(void)
-
-# undef  __EMBOX_TEST
-# define __EMBOX_TEST(_run) \
-	int _run(void)
 
 #endif /* __CDT_PARSER__ */
 

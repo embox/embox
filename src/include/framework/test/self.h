@@ -2,7 +2,6 @@
  * @file
  * @brief API for registering tests in Embox testing framework.
  *
- * @sa EMBOX_TEST() simple macro used to declare a new test
  *
  * @date 04.06.09
  * @author Anton Bondarev, Alexey Fomin
@@ -41,9 +40,5 @@
 
 #define TEST_TEARDOWN(teardown_each) \
 	  __TEST_TEARDOWN(teardown_each)
-
-/** @deprecated Use #EMBOX_TEST_SUITE() and #TEST_CASE() instead. */
-#define EMBOX_TEST(run) \
-	  __EMBOX_TEST(run)
 
 #endif /* FRAMEWORK_TEST_SELF_H_ */
