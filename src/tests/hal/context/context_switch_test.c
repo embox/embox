@@ -12,7 +12,7 @@
 
 #define STACK_SZ 0x400
 
-EMBOX_TEST(run);
+EMBOX_TEST_SUITE("context switch");
 
 #define TRACE(msg)
 
@@ -43,7 +43,7 @@ static void infinite(void) {
 	context_switch(&infinite_context, &redundant_context);
 }
 
-static int run(void) {
+TEST_CASE("context switch test") {
 	context_init(&entry_context, CONTEXT_PRIVELEGED,
 			entry, entry_stack + STACK_SZ);
 
@@ -53,6 +53,4 @@ static int run(void) {
 	TRACE("test begin\n");
 	context_switch(&redundant_context, &entry_context);
 	TRACE("test end\n");
-
-	return 0;
 }
