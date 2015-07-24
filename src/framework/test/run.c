@@ -22,7 +22,7 @@
 
 #include <framework/test/api.h>
 #include <framework/test/assert.h>
-#include "emit_impl.h"
+#include <framework/test/emit.h>
 
 /**
  * Runtime context for a test case.
