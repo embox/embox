@@ -21,11 +21,6 @@
 #define EMBOX_TEST_SUITE(description) \
 	  __EMBOX_TEST_SUITE(description)
 
-#define EMBOX_TEST_SUITE_EXT(description, suite_setup, suite_teardown, \
-		case_setup, case_teardown) \
-	__EMBOX_TEST_SUITE_EXT(description, suite_setup, suite_teardown, \
-		case_setup, case_teardown)
-
 #define TEST_CASE(description) \
 	  __TEST_CASE(description)
 

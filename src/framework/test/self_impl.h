@@ -38,17 +38,6 @@
 			&__TEST_FIXTURE_OP(case_teardown), test_suite_nm, test_private_nm, \
 			_autorun)
 
-#define __EMBOX_TEST_SUITE_EXT(_description, _suite_setup, _suite_teardown,    \
-		_case_setup, _case_teardown)                                           \
-	__TEST_FIXTURE_OP_DEF(suite_setup, _suite_setup);                          \
-	__TEST_FIXTURE_OP_DEF(suite_teardown, _suite_teardown);                    \
-	__TEST_FIXTURE_OP_DEF(case_setup, _case_setup);                            \
-	__TEST_FIXTURE_OP_DEF(case_teardown, _case_teardown);                      \
-	__EMBOX_TEST_SUITE_NM_EXT("" _description, &__TEST_FIXTURE_OP(suite_setup), \
-			&__TEST_FIXTURE_OP(suite_teardown), &__TEST_FIXTURE_OP(case_setup), \
-			&__TEST_FIXTURE_OP(case_teardown), __test_suite,                   \
-			MACRO_GUARD(__test_private), true)
-
 #define __EMBOX_TEST_SUITE_NM_EXT(_description, _suite_setup, _suite_teardown, \
 		_case_setup, _case_teardown, test_suite_nm, test_private_nm, _autorun) \
 	EXTERN_C const struct mod_ops __test_mod_ops;                    \
