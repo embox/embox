@@ -2,6 +2,7 @@ package embox.net
 
 module tcp {
 	option boolean verify_chksum=true
+	option number log_level = 0
 	source "tcp.c"
 
 	depends embox.fs.idesc_event

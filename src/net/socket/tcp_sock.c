@@ -14,7 +14,6 @@
 
 #include <util/math.h>
 
-
 #include <net/l4/tcp.h>
 #include <net/lib/tcp.h>
 #include <net/l3/ipv4/ip.h>

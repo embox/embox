@@ -20,7 +20,7 @@
 
 #include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
-#include <kernel/printk.h>
+#include <util/log.h>
 #include <framework/mod/options.h>
 
 /**
@@ -425,7 +425,7 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 	switch (rr->rtype) { /* TODO use table of methods instead */
 	default:
 		ret = -ENOSYS;
-		printk("dns_rr_parse: error: can't parse type %d\n", rr->rtype);
+		log_error("dns_rr_parse: error: can't parse type %d\n", rr->rtype);
 		break;
 	case DNS_RR_TYPE_A:
 		ret = dns_rr_a_parse(rr, curr, field_sz, buff, buff_sz);
@@ -470,7 +470,7 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 	}
 
 	if (dm->msg.hdr.rcode != DNS_RESP_CODE_OK) {
-		printk("dns_result_parse: error: DNS result code is %d!\n", dm->msg.hdr.rcode);
+		log_error("dns_result_parse: error: DNS result code is %d!\n", dm->msg.hdr.rcode);
 		return -1;
 	}
 

@@ -12,7 +12,6 @@
 #include <net/inetdevice.h>
 #include <net/l0/net_tx.h>
 #include <net/skbuff.h>
-#include <kernel/printk.h>
 #include <util/math.h>
 #include <embox/net/pack.h>
 #include <net/socket/inet6_sock.h>

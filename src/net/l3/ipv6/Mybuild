@@ -1,6 +1,7 @@
 package embox.net
 
 module ipv6 {
+	option number log_level = 0
 	source "ip6_input.c"
 	depends embox.net.skbuff
 
