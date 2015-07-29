@@ -124,7 +124,8 @@ TEST_CASE("some of descriptors are ready when select() is "
 	fill_pipe(pipes[1]);
 
 	buf = 'a';
-	write(pipes[2][WRITE_END], &buf, 1);
+	ret = write(pipes[2][WRITE_END], &buf, 1);
+	test_assert(ret != -1);
 
 	FD_ZERO(&read_fds);
 	FD_SET(pipes[2][READ_END], &read_fds);
@@ -156,7 +157,8 @@ TEST_CASE("some of descriptors are ready when select() "
 	fill_pipe(pipes[1]);
 
 	buf = 'a';
-	write(pipes[2][WRITE_END], &buf, 1);
+	ret = write(pipes[2][WRITE_END], &buf, 1);
+	test_assert(ret != -1);
 
 	FD_ZERO(&read_fds);
 	FD_SET(pipes[2][READ_END], &read_fds);
@@ -276,7 +278,10 @@ static void fill_pipe(const int pipe_fds[]) {
 
 	flags = fcntl(pipe_fds[WRITE_END], F_GETFL);
 	flags |= O_NONBLOCK;
-	fcntl(pipe_fds[WRITE_END], F_SETFL, flags);
+	ret = fcntl(pipe_fds[WRITE_END], F_SETFL, flags);
+	if(ret == -1) {
+		return;
+	}
 
 	buf = 'a';
 	while (1) {
@@ -289,21 +294,25 @@ static void fill_pipe(const int pipe_fds[]) {
 
 static void *read_from_pipe_after_delay(const int pipe_fds[]) {
 	char buf;
+	int ret;
 
 	usleep(DELAY * 1000);
 
-	read(pipe_fds[READ_END], &buf, 1);
+	ret = read(pipe_fds[READ_END], &buf, 1);
+	test_assert(ret != -1);
 
 	return NULL;
 }
 
 static void *write_to_pipe_after_delay(const int pipe_fds[]) {
 	char buf;
+	int ret;
 
 	usleep(DELAY * 1000);
 
 	buf = 'a';
-	write(pipe_fds[WRITE_END], &buf, 1);
+	ret = write(pipe_fds[WRITE_END], &buf, 1);
+	test_assert(ret != -1);
 
 	return NULL;
 }
