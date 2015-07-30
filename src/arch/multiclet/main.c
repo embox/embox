@@ -10,4 +10,5 @@ extern void kernel_start(void);
 
 int main(void) {
 	kernel_start();
+	return 0;
 }
