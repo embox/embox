@@ -155,9 +155,6 @@ enum dwc_usb_pid {
 	DWC_USB_PID_SETUP = 3,
 };
 
-/** Thread ID of USB transfer request scheduler thread.  */
-static struct thread *dwc_xfer_scheduler;
-
 /** Bitmap of channel free (1) or in-use (0) statuses.  */
 static uint chfree;
 
@@ -1671,67 +1668,16 @@ static void dwc_setup_interrupts(struct usb_hcd *hcd) {
 }
 
 /**
- * Queue of USB transfer requests that have been submitted to the Host
- * Controller Driver but not yet started on a channel.
- */
-//MBOX static mailbox hcd_xfer_mailbox;
-
-/**
- * USB transfer request scheduler thread: This thread repeatedly waits for next
- * USB transfer request that needs to be scheduled, waits for a free channel,
- * then starts the transfer request on that channel. This is obviously a very
- * simplistic scheduler as it does not take into account bandwidth requirements
- * or which endpoint a transfer is for.
- *
- * @return
- *      This thread never returns.
- */
-static void *dwc_schedule_xfer_requests(void* data) {
-	uint chan;
-	struct usb_request *req = NULL;
-
-	while (1) {
-		/* Get next transfer request. */
-		//MBOX req = (struct usb_request*)mailboxReceive(hcd_xfer_mailbox);
-		if (0) {//XXX is_root_hub(req->endp->dev)) {
-			/* Special case: request is to the root hub. Fake it. */
-			dwc_process_root_hub_request(req);
-		} else {
-			/* Normal case: schedule the transfer on some channel. */
-			chan = dwc_get_free_channel();
-			dwc_channel_start_xfer(chan, req);
-		}
-	}
-	return NULL; //XXX
-}
-
-/**
  * Initialize a bitmask and semaphore that keep track of the free/inuse status
  * of the host channels and a queue in which to place submitted USB transfer
  * requests, then start the USB transfer request scheduler thread.
  */
 static enum usb_request_status dwc_start_xfer_scheduler(void) {
-	//MBOX hcd_xfer_mailbox = mailboxAlloc(1024);
-	// if (SYSERR == hcd_xfer_mailbox) {
-	//     return USB_REQ_UNDERRUN;
-	// }
-
 	semaphore_init(&chfree_sema, DWC_NUM_CHANNELS);
-	// if (SYSERR == chfree_sema)
-	// {
-	//     mailboxFree(hcd_xfer_mailbox);
-	//     return USB_REQ_UNDERRUN;
-	// }
+
 	static_assert(DWC_NUM_CHANNELS <= 8 * sizeof(chfree));
 	chfree = (1 << DWC_NUM_CHANNELS) - 1;
 
-	dwc_xfer_scheduler = thread_create(0, &dwc_schedule_xfer_requests, NULL);
-	// if (SYSERR == ready(dwc_xfer_scheduler, RESCHED_NO))
-	// {
-	//     // semfree(chfree_sema);
-	//     mailboxFree(hcd_xfer_mailbox);
-	//     return USB_REQ_NOERR;
-	// }
 	return USB_REQ_NOERR;
 }
 
@@ -1765,19 +1711,9 @@ int hcd_stop(struct usb_hcd *hcd) {
 	/* Disable IRQ line and handler. */
 	irq_detach(IRQ_USB, hcd);
 
-	/* Stop transfer scheduler thread. */
-	// XXX kill(dwc_xfer_scheduler);
-
-	/* Free USB transfer request mailbox. */
-	//MBOX mailboxFree(hcd_xfer_mailbox);
-
 	/* Power off USB hardware. */
 	dwc_power_off();
 
-	return 0;
-}
-
-static int hcd_request(struct usb_request *req) {
 	return 0;
 }
 
@@ -1798,8 +1734,16 @@ static int hcd_request(struct usb_request *req) {
  *
  * Jump to dwc_schedule_xfer_requests() to see what happens next.
  */
-enum usb_request_status hcd_submit_xfer_request(struct usb_request *req) {
-	//MBOX mailboxSend(hcd_xfer_mailbox, (int)req);
+static int hcd_request(struct usb_request *req) {
+	if (0) {//XXX is_root_hub(req->endp->dev)) {
+		/* Special case: request is to the root hub. Fake it. */
+		dwc_process_root_hub_request(req);
+	} else {
+		/* Normal case: schedule the transfer on some channel. */
+		uint chan = dwc_get_free_channel();
+		dwc_channel_start_xfer(chan, req);
+	}
+
 	return USB_REQ_NOERR;
 }
 
