@@ -759,11 +759,6 @@ static enum usb_request_status dwc_root_hub_class_request(struct usb_request *re
 	return USB_REQ_UNDERRUN;
 }
 
-static int hcd_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
-			unsigned short value) {
-	return 0;
-}
-
 /**
  * Fake a control transfer to or from the root hub.
  */
@@ -1735,14 +1730,16 @@ int hcd_stop(struct usb_hcd *hcd) {
  * Jump to dwc_schedule_xfer_requests() to see what happens next.
  */
 static int hcd_request(struct usb_request *req) {
-	if (0) {//XXX is_root_hub(req->endp->dev)) {
-		/* Special case: request is to the root hub. Fake it. */
-		dwc_process_root_hub_request(req);
-	} else {
-		/* Normal case: schedule the transfer on some channel. */
-		uint chan = dwc_get_free_channel();
-		dwc_channel_start_xfer(chan, req);
-	}
+	/* Normal case: schedule the transfer on some channel. */
+	dwc_channel_start_xfer(dwc_get_free_channel(), req);
+
+	return USB_REQ_NOERR;
+}
+
+static int hcd_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
+			unsigned short value) {
+	/* Special case: request is to the root hub. Fake it. */
+	dwc_process_root_hub_request(NULL);
 
 	return USB_REQ_NOERR;
 }
