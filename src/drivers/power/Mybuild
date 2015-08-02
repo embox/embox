@@ -1,0 +1,8 @@
+package embox.driver.power
+
+module bcm2835_power {
+	@IncludeExport(path="drivers")
+	source "bcm2835_power.h"
+
+	source "bcm2835_power.c"
+}

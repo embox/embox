@@ -99,6 +99,7 @@
 
 #include <drivers/usb/usb.h>
 #include <drivers/usb/usb_desc.h>
+#include <drivers/bcm2835_power.h>
 #include <kernel/irq.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread.h>
@@ -258,22 +259,18 @@ static void dwc_release_channel(uint chan) {
 /**
  * Powers on the DWC hardware.
  */
-static enum usb_request_status dwc_power_on(void) {
-	// int retval;
-
+static int dwc_power_on(void) {
 	log_info("Powering on Synopsys DesignWare Hi-Speed  USB 2.0 On-The-Go "
-			 "Controller");
-	// XXX
-	//retval = board_setpower(POWER_USB, TRUE);
-	// return (retval == OK) ? USB_REQ_NOERR : USB_STATUS_HARDWARE_ERROR;
-	return USB_REQ_NOERR;
+			"Controller");
+
+	return bcm2835_setpower(POWER_USB, true);
 }
 
 static void dwc_power_off(void) {
 	log_info("Powering off Synopsys DesignWare Hi-Speed USB 2.0 On-The-Go "
-			 "Controller");
-	// XXX
-	//board_setpower(POWER_USB, false);
+			"Controller");
+
+	bcm2835_setpower(POWER_USB, false);
 }
 
 /**
