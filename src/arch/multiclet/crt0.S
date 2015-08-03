@@ -159,7 +159,7 @@
   .alias sizeof.tsk.retval sizeof.long
   //psw_reset_val: .long
 
-.text
+.section .boot, "ax"
 
 __libc_main:
  wdt_off:

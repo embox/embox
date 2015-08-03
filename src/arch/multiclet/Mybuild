@@ -6,9 +6,4 @@ module crt {
 	//source "crt0.o"
 
 	source "crt0.S"
-	depends main /* FIXME main.c should be here, but relocation linking not supported on lcc */
-}
-
-module main {
-	source "main.c"
 }
