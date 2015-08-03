@@ -16,27 +16,7 @@
 #ifndef FRAMEWORK_TEST_SELF_H_
 #define FRAMEWORK_TEST_SELF_H_
 
-#define EMBOX_TEST_SUITE(description) \
-	  __EMBOX_TEST_SUITE(description)
 
-#define TEST_CASE(description) \
-	  __TEST_CASE(description)
-
-#define TEST_SETUP_SUITE(setup) \
-	  __TEST_SETUP_SUITE(setup)
-
-#define TEST_TEARDOWN_SUITE(teardown) \
-	  __TEST_TEARDOWN_SUITE(teardown)
-
-#define TEST_SETUP(setup_each) \
-	  __TEST_SETUP(setup_each)
-
-#define TEST_TEARDOWN(teardown_each) \
-	  __TEST_TEARDOWN(teardown_each)
-
-/***************
- * Implementation
- */
 #include <stddef.h>
 #include <sys/cdefs.h>
 
@@ -48,12 +28,26 @@
 #include <framework/test/api.h>
 #include <framework/test/types.h>
 
-#define __EMBOX_TEST_SUITE(description) \
-	__EMBOX_TEST_SUITE_AUTORUN(description, true)
-
-#define __EMBOX_TEST_SUITE_AUTORUN(description, autorun) \
+#define EMBOX_TEST_SUITE(description) \
 	__EMBOX_TEST_SUITE_NM("" description, __test_suite, \
-			MACRO_GUARD(__test_private), autorun)
+			MACRO_GUARD(__test_private), true)
+
+#define TEST_CASE(description) \
+	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case_struct), \
+			MACRO_GUARD(__test_case))
+
+#define TEST_SETUP_SUITE(setup) \
+	__TEST_FIXTURE_OP_DEF(suite_setup, setup)
+
+#define TEST_TEARDOWN_SUITE(teardown) \
+	__TEST_FIXTURE_OP_DEF(suite_teardown, teardown)
+
+#define TEST_SETUP(setup_each) \
+	__TEST_FIXTURE_OP_DEF(case_setup, setup_each)
+
+#define TEST_TEARDOWN(teardown_each) \
+	__TEST_FIXTURE_OP_DEF(case_teardown, teardown_each)
+
 
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm,    \
 		_autorun)                                                              \
@@ -92,6 +86,17 @@
 	};                                                               \
 	TEST_ADD(&mod_self.suite)
 
+#define __TEST_CASE_NM(_description, test_case_nm, run_nm) \
+	static void run_nm(void);                            \
+	static const struct test_case test_case_nm = {       \
+		/* .run         = */ run_nm,                     \
+		/* .description = */ _description,               \
+		/* .location    = */ LOCATION_INIT,              \
+	};                                                   \
+	ARRAY_SPREAD_ADD(__TEST_CASES_ARRAY, &test_case_nm); \
+	static void run_nm(void)
+
+
 #define __TEST_FIXTURE_OP(fixture_nm) \
 	MACRO_CONCAT(__test_fixture_, fixture_nm)
 
@@ -104,38 +109,12 @@
 	static const __test_fixture_op_t                     \
 			__TEST_FIXTURE_OP(fixture_nm) = function_nm; \
 	static int function_nm(void)
-#else /* __cplusplus */
-# define __TEST_FIXTURE_OP_DEF(fixture_nm, function_nm)  \
-	static const __test_fixture_op_t                     \
-			__TEST_FIXTURE_OP(fixture_nm) = function_nm
-#endif /* !__cplusplus */
-
-#define __TEST_SETUP_SUITE(function_nm) \
-	__TEST_FIXTURE_OP_DEF(suite_setup, function_nm)
-#define __TEST_TEARDOWN_SUITE(function_nm) \
-	__TEST_FIXTURE_OP_DEF(suite_teardown, function_nm)
-
-#define __TEST_SETUP(function_nm) \
-	__TEST_FIXTURE_OP_DEF(case_setup, function_nm)
-#define __TEST_TEARDOWN(function_nm) \
-	__TEST_FIXTURE_OP_DEF(case_teardown, function_nm)
-
-#define __TEST_CASE(description) \
-	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case_struct), \
-			MACRO_GUARD(__test_case))
-
-#define __TEST_CASE_NM(_description, test_case_nm, run_nm) \
-	static void run_nm(void);                            \
-	static const struct test_case test_case_nm = {       \
-		/* .run         = */ run_nm,                     \
-		/* .description = */ _description,               \
-		/* .location    = */ LOCATION_INIT,              \
-	};                                                   \
-	ARRAY_SPREAD_ADD(__TEST_CASES_ARRAY, &test_case_nm); \
-	static void run_nm(void)
+#endif /* __cplusplus */
 
 #define __TEST_CASES_ARRAY \
 	MACRO_CONCAT(__test_cases_in_suite__, __EMBUILD_MOD__)
+
+
 
 /* Simplify the life of Eclipse CDT. */
 #ifdef __CDT_PARSER__

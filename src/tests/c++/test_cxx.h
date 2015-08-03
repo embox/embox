@@ -10,6 +10,10 @@
 
 #include <framework/test/self.h>
 
+# define __TEST_FIXTURE_OP_DEF(fixture_nm, function_nm)  \
+	static const __test_fixture_op_t                     \
+			__TEST_FIXTURE_OP(fixture_nm) = function_nm
+
 #define EMBOX_TEST_SUITE_EXT(_description, _suite_setup, _suite_teardown,    \
 		_case_setup, _case_teardown)                                           \
 	__TEST_FIXTURE_OP_DEF(suite_setup, _suite_setup);                          \
