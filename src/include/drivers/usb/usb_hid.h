@@ -26,7 +26,7 @@
 struct input_dev;
 
 struct usb_desc_hid {
-	uint8_t b_lenght;
+	uint8_t b_length;
 	uint8_t b_desc_type;
 	uint16_t bcd_hid;
 	uint8_t b_country_code;

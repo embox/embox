@@ -34,7 +34,7 @@ struct usb_control_header {
 } __attribute__((packed));
 
 struct usb_desc_device {
-	uint8_t		b_lenght;
+	uint8_t		b_length;
 	uint8_t 	b_desc_type;
 	uint16_t	bcd_usb;
 	uint8_t 	b_dev_class;
@@ -51,7 +51,7 @@ struct usb_desc_device {
 } __attribute__((packed));
 
 struct usb_desc_configuration {
-	uint8_t		b_lenght;
+	uint8_t		b_length;
 	uint8_t 	b_desc_type;
 	uint16_t	w_total_length;
 	uint8_t 	b_num_interfaces;
@@ -62,7 +62,7 @@ struct usb_desc_configuration {
 } __attribute__((packed));
 
 struct usb_desc_interface {
-	uint8_t		b_lenght;
+	uint8_t		b_length;
 	uint8_t 	b_desc_type;
 	uint8_t 	b_interface_number;
 	uint8_t 	b_alternate_setting;
@@ -74,7 +74,7 @@ struct usb_desc_interface {
 }__attribute__((packed));
 
 struct usb_desc_endpoint {
-	uint8_t		b_lenght;
+	uint8_t		b_length;
 	uint8_t 	b_desc_type;
 	uint8_t 	b_endpoint_address;
 	uint8_t 	bm_attributes;
