@@ -9,140 +9,6 @@
 #ifndef FRAMEWORK_TEST_ASSERT_H_
 #define FRAMEWORK_TEST_ASSERT_H_
 
-/**
- * Fails a test with the given @a reason.
- *
- * This causes the following message to be logged:
-@verbatim
-failed: test_fail(<reason>)
-	at <file>:<line>
-@endverbatim
- *
- * @param reason (optional)
- *   String literal containing the description of the test failure.
- * @note
- *   This macro function never returns.
- */
-#define test_fail(reason) \
-	  __test_fail(reason)
-
-/**
-@verbatim
-failed: test_assert(<#condition>)
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert(condition) \
-	  __test_assert(condition, #condition)
-
-/**
-@verbatim
-failed: test_assert_true(<#value>)
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert_true(value) \
-	  __test_assert_true(value, #value)
-
-/**
-@verbatim
-failed: test_assert_false(<#value>)
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert_false(value) \
-	  __test_assert_false(value, #value)
-
-/**
-@verbatim
-failed: test_assert_zero(<#value>): <value>
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert_zero(value) \
-	  __test_assert_zero(value, #value)
-
-/**
-@verbatim
-failed: test_assert_not_zero(<#value>)
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert_not_zero(value) \
-	  __test_assert_not_zero(value, #value)
-
-/**
-@verbatim
-failed: test_assert_null(<#value>): <value>
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert_null(value) \
-	  __test_assert_null(value, #value)
-
-/**
-@verbatim
-failed: test_assert_not_null(<#value>)
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert_not_null(value) \
-	  __test_assert_not_null(value, #value)
-
-/**
-@verbatim
-failed: test_assert_equal(<#actual>, <#expected>): <actual>, expected <expected>
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert_equal(actual, expected) \
-	  __test_assert_equal(actual, expected, #actual, #expected)
-
-/**
-@verbatim
-failed: test_assert_not_equal(<#actual>, <#expected>): <actual>
-	at <file>:<line>
-@endverbatim
- */
-#define test_assert_not_equal(actual, expected) \
-	  __test_assert_not_equal(actual, expected, #actual, #expected)
-
-#define test_assert_str_equal(actual, expected) \
-	  __test_assert_str_equal(actual, expected, #actual, #expected)
-
-#define test_assert_str_not_equal(actual, expected) \
-	  __test_assert_str_not_equal(actual, expected, #actual, #expected)
-
-#define test_assert_strn_equal(actual, expected, n) \
-	  __test_assert_strn_equal(actual, expected, n, #actual, #expected, #n)
-
-#define test_assert_strn_not_equal(actual, expected, n) \
-	  __test_assert_strn_not_equal(actual, expected, n, #actual, #expected, #n)
-
-#define test_assert_mem_equal(actual, expected, n) \
-	  __test_assert_mem_equal(actual, expected, n, #actual, #expected, #n)
-
-#define test_assert_mem_not_equal(actual, expected, n) \
-	  __test_assert_mem_not_equal(actual, expected, n, #actual, #expected, #n)
-
-#define test_assert_emitted(expected) \
-	  __test_assert_emitted(expected, #expected)
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*********************
- * Implementation
- */
 
 #include <string.h>
 #include <sys/cdefs.h>
@@ -166,91 +32,153 @@ EXTERN_C void __test_assertion_handle(int pass,
 		&__test_assertion_point;            \
 	})
 
-#define __test_fail(reason) \
+/**
+ * Fails a test with the given @a reason.
+ *
+ * This causes the following message to be logged:
+@verbatim
+failed: test_fail(<reason>)
+	at <file>:<line>
+@endverbatim
+ *
+ * @param reason (optional)
+ *   String literal containing the description of the test failure.
+ * @note
+ *   This macro function never returns.
+ */
+#define test_fail(reason) \
 	__test_assertion_handle(0, \
 			__test_assertion_point_ref("test_fail(\"" reason "\")"))
-
-#define __test_assert(condition, condition_str) \
+/**
+@verbatim
+failed: test_assert(<#condition>)
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert(condition) \
 	__test_assertion_handle((int) (condition), \
-			__test_assertion_point_ref("test_assert(" condition_str ")"))
+			__test_assertion_point_ref("test_assert(" #condition ")"))
 
-#define __test_assert_true(value, value_str) \
+/**
+@verbatim
+failed: test_assert_true(<#value>)
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert_true(value) \
 	__test_assertion_handle((value), \
-			__test_assertion_point_ref("test_assert_true(" value_str ")"))
+			__test_assertion_point_ref("test_assert_true(" #value ")"))
 
-#define __test_assert_false(value, value_str) \
+/**
+@verbatim
+failed: test_assert_false(<#value>)
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert_false(value) \
 	__test_assertion_handle(!(value), \
-			__test_assertion_point_ref("test_assert_false(" value_str ")"))
+			__test_assertion_point_ref("test_assert_false(" #value ")"))
 
-#define __test_assert_zero(value, value_str) \
+/**
+@verbatim
+failed: test_assert_zero(<#value>): <value>
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert_zero(value) \
 	__test_assertion_handle(!(value), \
-			__test_assertion_point_ref("test_assert_zero(" value_str ")"))
+			__test_assertion_point_ref("test_assert_zero(" #value ")"))
 
-#define __test_assert_not_zero(value, value_str) \
+/**
+@verbatim
+failed: test_assert_not_zero(<#value>)
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert_not_zero(value) \
 	__test_assertion_handle((value), \
-			__test_assertion_point_ref("test_assert_not_zero(" value_str ")"))
+			__test_assertion_point_ref("test_assert_not_zero(" #value ")"))
 
-#define __test_assert_null(value, value_str) \
+/**
+@verbatim
+failed: test_assert_null(<#value>): <value>
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert_null(value) \
 	__test_assertion_handle(!(value), \
-			__test_assertion_point_ref("test_assert_null(" value_str ")"))
+			__test_assertion_point_ref("test_assert_null(" #value ")"))
 
-#define __test_assert_not_null(value, value_str) \
+/**
+@verbatim
+failed: test_assert_not_null(<#value>)
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert_not_null(value) \
 	__test_assertion_handle((int) (value), \
-			__test_assertion_point_ref("test_assert_not_null(" value_str ")"))
+			__test_assertion_point_ref("test_assert_not_null(" #value ")"))
 
-#define __test_assert_equal(actual, expected, act_str, exp_str) \
+/**
+@verbatim
+failed: test_assert_equal(<#actual>, <#expected>): <actual>, expected <expected>
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert_equal(actual, expected) \
 	__test_assertion_handle((actual) == (expected), \
-			__test_assertion_point_ref( "test_assert_equal(" act_str ", " \
-					exp_str ")"))
+			__test_assertion_point_ref( "test_assert_equal(" #actual ", " \
+					#expected ")"))
 
-#define __test_assert_not_equal(actual, expected, act_str, exp_str) \
+/**
+@verbatim
+failed: test_assert_not_equal(<#actual>, <#expected>): <actual>
+	at <file>:<line>
+@endverbatim
+ */
+#define test_assert_not_equal(actual, expected) \
 	__test_assertion_handle((actual) != (expected), \
-			__test_assertion_point_ref( "test_assert_not_equal(" act_str ", " \
-					exp_str ")"))
+			__test_assertion_point_ref( "test_assert_not_equal(" #actual ", " \
+					#expected ")"))
 
-#define __test_assert_str_equal(actual, expected, \
-		act_str, exp_str) \
+#define test_assert_str_equal(actual, expected) \
 	__test_assertion_handle(((actual) == (expected)) \
 			|| (0 == strcmp((actual), (expected))), \
 			__test_assertion_point_ref( "test_assert_str_equal(" \
-					act_str ", " exp_str ")"))
+					 #actual ", " #expected ")"))
 
-#define __test_assert_str_not_equal(actual, expected, \
-		act_str, exp_str) \
+#define test_assert_str_not_equal(actual, expected) \
 	__test_assertion_handle(((actual) != (expected)) \
 			&& (0 != strcmp((actual), (expected))), \
 			__test_assertion_point_ref( "test_assert_str_not_equal(" \
-					act_str ", " exp_str ")"))
+					#actual ", " #expected ")"))
 
-#define __test_assert_strn_equal(actual, expected, n, \
-		act_str, exp_str, n_str) \
+#define test_assert_strn_equal(actual, expected, n) \
 	__test_assertion_handle(((actual) == (expected)) \
 			|| (0 == strncmp((actual), (expected), (n))), \
 			__test_assertion_point_ref( "test_assert_strn_equal(" \
-					act_str ", " exp_str ")"))
+					#actual ", " #expected ", " #n ")"))
 
-#define __test_assert_strn_not_equal(actual, expected, n, \
-		act_str, exp_str, n_str) \
+#define test_assert_strn_not_equal(actual, expected, n) \
 	__test_assertion_handle(((actual) != (expected)) \
-			&& (0 != strcmp((actual), (expected), (n))), \
+			&& (0 != strncmp((actual), (expected), (n))), \
 			__test_assertion_point_ref( "test_assert_strn_not_equal(" \
-					act_str ", " exp_str ")"))
+					#actual ", " #expected ", " #n ")"))
 
-#define __test_assert_mem_equal(actual, expected, n, \
-		act_str, exp_str, n_str) \
+#define test_assert_mem_equal(actual, expected, n) \
 	__test_assertion_handle(0 == memcmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_mem_equal(" \
-					act_str ", " exp_str ")"))
+					#actual ", " #expected ", " #n ")"))
 
-#define __test_assert_mem_not_equal(actual, expected, n, \
-		act_str, exp_str, n_str) \
+#define test_assert_mem_not_equal(actual, expected, n) \
 	__test_assertion_handle(0 != memcmp((actual), (expected), (n)), \
 			__test_assertion_point_ref( "test_assert_mem_not_equal(" \
-					act_str ", " exp_str ")"))
+					#actual ", " #expected ", " #n ")"))
 
-#define __test_assert_emitted(expected, exp_str) \
+#define test_assert_emitted(expected) \
 	__test_assertion_handle(0 == strcmp(test_get_emitted(), (expected)), \
-			__test_assertion_point_ref( "test_assert_emitted(" exp_str ")"))
+			__test_assertion_point_ref( "test_assert_emitted(" #expected ")"))
+
 
 /* Hide internals from CDT macro expansion. */
 #ifdef __CDT_PARSER__
