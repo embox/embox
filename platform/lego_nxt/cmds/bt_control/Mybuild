@@ -9,4 +9,5 @@ module bt_control {
 	depends embox.pnet.core
 	//depends embox.pnet.core.pack.api
 	depends embox.pnet.pack.PnetPackSimple
+	depends embox.driver.bluetooth.lego.blue_core
 }
