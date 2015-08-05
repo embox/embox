@@ -57,7 +57,7 @@ static void _NORETURN thread_trampoline(void) {
 	struct thread *current = thread_self();
 	void *res;
 
-	assert(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
+	assertf(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
 
 	thread_ack_switched();
 
@@ -172,7 +172,7 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 
 struct thread *thread_self(void) {
 	struct schedee *schedee = schedee_get_current();
-	assert(schedee->process == thread_process, "thread_self is about to return not-thread");
+	assertf(schedee->process == thread_process, "thread_self is about to return not-thread");
 	return mcast_out(schedee, struct thread, schedee);;
 }
 

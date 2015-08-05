@@ -269,7 +269,7 @@ repeat:
 		if (packet_len > 0)
 			goto repeat;
 
-		assert(packet_len == 0, "packet_len - %d\n", packet_len);
+		assertf(packet_len == 0, "packet_len - %d\n", packet_len);
 	}
 	irq_unlock();
 }
