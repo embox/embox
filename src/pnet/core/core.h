@@ -9,7 +9,7 @@
 #ifndef PNET_CORE_H_
 #define PNET_CORE_H_
 
-#include <pnet/types.h>
+#include <pnet/core/types.h>
 
 /**
  * @brief Result code of node handler

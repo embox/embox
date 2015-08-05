@@ -14,10 +14,10 @@
 #include <drivers/bluetooth/blue_core4.h>
 #include <drivers/bluetooth/bluetooth.h>
 
-#include <pnet/core.h>
-#include <pnet/node.h>
-#include <pnet/repo.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/core.h>
+#include <pnet/core/node.h>
+#include <pnet/core/repo.h>
+#include <pnet/pack/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
 
 #include <framework/mod/options.h>

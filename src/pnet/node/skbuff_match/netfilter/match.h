@@ -9,7 +9,7 @@
 #ifndef PNET_MATCH_H_
 #define PNET_MATCH_H_
 
-#include <pnet/node.h>
+#include <pnet/core/node.h>
 
 extern net_node_t matcher_alloc(void);
 extern int matcher_free(net_node_t node);

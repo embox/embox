@@ -12,8 +12,8 @@
 #include <assert.h>
 #include <mem/objalloc.h>
 
-#include <pnet/core.h>
-#include <pnet/graph.h>
+#include <pnet/core/core.h>
+#include <pnet/core/graph.h>
 #include <pnet/core/node.h>
 
 #include <framework/mod/options.h>

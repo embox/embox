@@ -9,14 +9,15 @@
 #ifndef PNET_MATCH_LIN_H_
 #define PNET_MATCH_LIN_H_
 
-#include <pnet/types.h>
+#include <pnet/core/types.h>
 #include <net/l3/ipv4/ip.h>
 #include <net/l4/udp.h>
+#include <net/l2/ethernet.h>
 #include <string.h>
 #include <net/skbuff.h>
-#include <pnet/core.h>
+#include <pnet/core/core.h>
 #include <arpa/inet.h>
-#include <pnet/netfilter/match.h>
+#include <pnet/node/skbuff_match/netfilter/match.h>
 
 #define ETH_P_IP_REV	0x8
 

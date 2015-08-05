@@ -16,9 +16,9 @@
 #include <drivers/nxt/direct_comm.h>
 #include <drivers/bluetooth/bluetooth.h>
 
-#include <pnet/core.h>
-#include <pnet/node.h>
-#include <pnet/repo.h>
+#include <pnet/core/core.h>
+#include <pnet/core/node.h>
+#include <pnet/core/repo.h>
 
 #include <pnet/node/direct_comm.h>
 

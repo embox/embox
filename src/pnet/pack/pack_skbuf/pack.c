@@ -19,8 +19,8 @@
 
 #include <net/skbuff.h>
 
-#include <pnet/core.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/core.h>
+#include <pnet/pack/pnet_pack.h>
 #include <pnet/pack/pack_skbuf.h>
 
 #include <framework/mod/options.h>

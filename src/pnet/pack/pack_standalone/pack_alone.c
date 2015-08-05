@@ -23,9 +23,9 @@
 
 #include <mem/objalloc.h>
 
-#include <pnet/core.h>
+#include <pnet/core/core.h>
 
-#include <pnet/pnet_pack.h>
+#include <pnet/pack/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
 
 #include <framework/mod/options.h>

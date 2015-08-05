@@ -12,8 +12,8 @@
 
 #include <mem/objalloc.h>
 
-#include <pnet/types.h>
-#include <pnet/core.h>
+#include <pnet/core/types.h>
+#include <pnet/core/core.h>
 
 #include <framework/mod/options.h>
 

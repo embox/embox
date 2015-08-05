@@ -20,7 +20,7 @@
 #include <pnet/core/repo.h>
 #include <util/member.h>
 #include <stdio.h>
-#include <pnet/graph.h>
+#include <pnet/core/graph.h>
 #include <util/macro.h>
 
 #define RULE_ELEMS_COUNT 6

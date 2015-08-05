@@ -12,7 +12,7 @@
 
 #include <net/netdevice.h>
 #include <arpa/inet.h>
-#include <pnet/types.h>
+#include <pnet/core/types.h>
 
 struct pnet_path {
 	unsigned char    *own_mac;

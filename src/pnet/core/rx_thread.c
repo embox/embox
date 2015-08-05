@@ -15,8 +15,8 @@
 #include <util/err.h>
 #include <kernel/event.h>
 
-#include <pnet/core.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/core.h>
+#include <pnet/pack/pnet_pack.h>
 
 //#define PNET_THREAD_DEBUG
 

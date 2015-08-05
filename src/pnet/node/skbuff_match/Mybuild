@@ -5,9 +5,15 @@ module matcher {
 	source "skbuff_rule.c"
 	depends embox.pnet.core
 	depends embox.pnet.node.match
+	depends static_rules
 }
 
 module static_rules {
 	@IncludePath("$(CONF_DIR)")
 	source "skbuff_rules_init.c"
+
+	@IncludeExport(path="pnet/node/skbuff_match")
+	source "netfilter/match.h"
+	@IncludeExport(path="pnet/node/skbuff_match")
+	source "netfilter/match_lin.h"
 }

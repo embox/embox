@@ -13,8 +13,8 @@
 #include <net/l2/ethernet.h>
 #include <net/skbuff.h>
 
-#include <pnet/types.h>
-#include <pnet/netfilter/match_lin.h>
+#include <pnet/core/types.h>
+#include <pnet/node/skbuff_match/netfilter/match_lin.h>
 
 OBJALLOC_DEF(match_rules, struct match_rule, MAX_RULE_COUNT);
 

@@ -8,7 +8,7 @@
  *         - add node_for_each
  */
 
-#include <pnet/prior_path.h>
+#include <pnet/core/prior_path.h>
 
 struct sock;
 

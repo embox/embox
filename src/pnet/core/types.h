@@ -74,6 +74,6 @@ struct pnet_pack {
 	struct list_head link;
 };
 
-#include <pnet/proto.h>
+#include <pnet/core/proto.h>
 
 #endif /* PNET_TYPES_H_ */

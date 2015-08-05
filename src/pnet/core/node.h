@@ -9,7 +9,7 @@
 #ifndef PNET_NODE_H_
 #define PNET_NODE_H_
 
-#include <pnet/types.h>
+#include <pnet/core/types.h>
 
 extern net_node_t pnet_node_get(net_node_t node, net_id_t id);
 extern int pnet_node_attach(net_node_t node, net_id_t id, net_node_t parent);
