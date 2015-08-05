@@ -153,3 +153,9 @@ module bpi extends embox.driver.diag.diag_api {
 
 	source "bpi_uart.c"
 }
+
+module pl011 extends embox.driver.diag.diag_api {
+	option number base_addr
+
+	source "pl011.c"
+}
