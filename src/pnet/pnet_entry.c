@@ -11,7 +11,7 @@
 
 #include <pnet/prior_path.h>
 #include <pnet/core.h>
-#include <pnet/node.h>
+#include <pnet/core/node.h>
 
 int pnet_entry(struct pnet_pack *pack) {
 

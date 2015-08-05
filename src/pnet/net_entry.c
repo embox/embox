@@ -14,7 +14,7 @@
 
 #include <pnet/prior_path.h>
 #include <pnet/core.h>
-#include <pnet/node.h>
+#include <pnet/core/node.h>
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
 

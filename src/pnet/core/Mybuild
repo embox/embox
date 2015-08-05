@@ -1,6 +1,8 @@
 package embox.pnet
 
 module core {
+	@IncludeExport(path="pnet/core")
+	source "node.h"
 	source "node.c", "repo.c", "graph.c"
 
 	option number pnet_nodes_quantity
@@ -11,6 +13,8 @@ module core {
 }
 
 module dev {
+	@IncludeExport(path="pnet/core")
+	source "dev.h"
 	source "dev.c"
 	depends embox.pnet.node.null
 	depends embox.pnet.net_entry

@@ -14,7 +14,7 @@
 
 #include <pnet/core.h>
 #include <pnet/graph.h>
-#include <pnet/node.h>
+#include <pnet/core/node.h>
 
 #include <framework/mod/options.h>
 

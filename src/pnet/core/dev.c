@@ -12,10 +12,10 @@
 
 #include <pnet/types.h>
 #include <pnet/core.h>
-#include <pnet/node.h>
+#include <pnet/core/node.h>
 #include <pnet/repo.h>
 #include <pnet/pnet_pack.h>
-#include <pnet/dev.h>
+#include <pnet/core/dev.h>
 
 #include <net/netdevice.h>
 #include <util/hashtable.h>
