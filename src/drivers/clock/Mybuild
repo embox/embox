@@ -130,3 +130,12 @@ module hpet {
 	depends embox.kernel.time.clock_source
 	depends third_party.lib.acpica
 }
+
+module integratorcp_clock extends embox.arch.clock {
+	source "integratorcp_clock.c"
+
+	option number integratorcp_clock_base
+
+	depends embox.kernel.time.clock_source
+	depends embox.driver.interrupt.irqctrl_api
+}
