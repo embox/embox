@@ -20,9 +20,10 @@ module fbcon {
 
 	depends embox.driver.video.fonts
 	depends embox.driver.tty.vterm
-	depends embox.driver.input.keyboard.keyboard
+	// keyboard dependency not mandatory, but very desireable; to ask any input device
+	// depends embox.driver.input.keyboard.keyboard
 	depends mpx_simple
-	depends embox.cmd.user.login //TODO why it required?
+	depends embox.cmd.user.login //fbcon start `login` at every console
 
 	depends embox.cmd.sh.tish
 }
