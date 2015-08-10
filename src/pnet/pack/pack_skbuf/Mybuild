@@ -1,6 +1,8 @@
 package embox.pnet.pack
 
 module PnetPackSkbuff {
+	@IncludeExport(path="pnet/pack")
+	source "pack_skbuf.h"
 	source "pack.c"
 
 	option number pnet_pack_quantity

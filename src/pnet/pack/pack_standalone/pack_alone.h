@@ -16,7 +16,7 @@ struct pnet_pack_data {
 	char buff[PNET_PACK_MAX_DATA_LEN];
 };
 
-#include <pnet/pnet_pack.h>
+#include <pnet/pack/pnet_pack.h>
 #include <assert.h>
 
 static inline char *pnet_pack_get_data(struct pnet_pack *pack) {

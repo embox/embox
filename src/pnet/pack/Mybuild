@@ -1,5 +1,7 @@
 package embox.pnet.pack
 
 module PnetPackFactory {
+	@IncludeExport(path="pnet/pack")
+	source "pnet_pack.h"
 	source "pnet_pack_factory.c"
 }

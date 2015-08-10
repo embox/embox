@@ -14,10 +14,10 @@
 
 #include <kernel/thread.h>
 
-#include <pnet/core.h>
-#include <pnet/repo.h>
-#include <pnet/pnet_pack.h>
-#include <pnet/prior_path.h>
+#include <pnet/core/core.h>
+#include <pnet/core/repo.h>
+#include <pnet/pack/pnet_pack.h>
+#include <pnet/core/prior_path.h>
 
 #include <framework/mod/options.h>
 #include <module/embox/pnet/rx_thread.h>

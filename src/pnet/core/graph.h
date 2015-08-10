@@ -9,7 +9,7 @@
 #ifndef PNET_GRAPH_H_
 #define PNET_GRAPH_H_
 
-#include <pnet/types.h>
+#include <pnet/core/types.h>
 #include <mem/objalloc.h>
 #include <linux/list.h>
 

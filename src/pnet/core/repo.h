@@ -12,7 +12,7 @@
 
 #include <util/array.h>
 #include <util/macro.h>
-#include <pnet/types.h>
+#include <pnet/core/types.h>
 
 struct pnet_module {
 	const char *name;

@@ -10,7 +10,7 @@
 #define PNET_PACK_SKB_H_
 
 #include <net/skbuff.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/pack/pnet_pack.h>
 
 static inline void *pnet_pack_get_data(struct pnet_pack *pack) {
 	struct sk_buff *skb = pack->data;
