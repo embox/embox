@@ -28,6 +28,8 @@ install:
   - sudo apt-get install -qq qemu qemu-system
 
 before_script:
+  - unset CC
+  - export CC
   - make confload-"$TEMPLATE"
   - sed -ie '/eth0\|http/d' conf/start_script.inc  # FIXME
   - make buildgen  # Make as much as possible before the actual build step.
