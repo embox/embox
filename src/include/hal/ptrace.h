@@ -12,13 +12,14 @@
 #include <errno.h>
 #include <asm/ptrace.h>
 #include <kernel/panic.h>
+#include <compiler.h>
 
 struct pt_regs;
 
 #define ptregs_retcode_jmp(ptregs, retcode) ptregs_retcode_err_jmp(ptregs, retcode, ENOERR)
 
 extern void ptregs_retcode(struct pt_regs *ptregs, int retcode);
-extern void __attribute__((noreturn)) ptregs_jmp(struct pt_regs *ptregs);
+extern void _NORETURN ptregs_jmp(struct pt_regs *ptregs);
 
 static inline void ptregs_retcode_err_jmp(struct pt_regs *ptregs, int retcode, int errnum) {
 	if (errnum != ENOERR) {

@@ -35,8 +35,8 @@ struct file_desc *kopen(struct node *node, int flag) {
 	int ret;
 
 	assert(node);
-	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
-	assert(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
+	assertf(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
+	assertf(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
 
 
 	nas = node->nas;

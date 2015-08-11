@@ -42,6 +42,7 @@
 
 #include <hal/context.h>
 #include <util/err.h>
+#include <compiler.h>
 
 extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
@@ -52,11 +53,11 @@ static int id_counter = 0; // TODO make it an indexator
  * Wrapper for thread start routine.
  * Called from sched_switch() function with interrupts off.
  */
-static void __attribute__((noreturn)) thread_trampoline(void) {
+static void _NORETURN thread_trampoline(void) {
 	struct thread *current = thread_self();
 	void *res;
 
-	assert(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
+	assertf(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
 
 	thread_ack_switched();
 
@@ -171,7 +172,7 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 
 struct thread *thread_self(void) {
 	struct schedee *schedee = schedee_get_current();
-	assert(schedee->process == thread_process, "thread_self is about to return not-thread");
+	assertf(schedee->process == thread_process, "thread_self is about to return not-thread");
 	return mcast_out(schedee, struct thread, schedee);;
 }
 
@@ -261,7 +262,7 @@ void thread_delete(struct thread *t) {
 	}
 }
 
-void __attribute__((noreturn)) thread_exit(void *ret) {
+void _NORETURN thread_exit(void *ret) {
 	struct thread *current = thread_self();
 	struct task *task = task_self();
 	struct thread *joining;

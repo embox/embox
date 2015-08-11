@@ -11,6 +11,8 @@
 #ifndef COMPAT_POSIX_UNISTD_H_
 #define COMPAT_POSIX_UNISTD_H_
 
+#include <compiler.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/cdefs.h>
@@ -182,7 +184,7 @@ extern int dup2(int flides, int flides2);
 extern int pipe(int pipefd[2]);
 extern int pipe2(int pipefd[2], int flags);
 
-extern void _exit (int status) __attribute__ ((__noreturn__));
+extern void _NORETURN _exit (int status);
 
 extern uid_t getuid(void);
 extern uid_t geteuid(void);

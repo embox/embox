@@ -160,7 +160,7 @@ void irq_dispatch(unsigned int irq_nr) {
 
 	assert(irq_nr_valid(irq_nr));
 
-	assert(irq_stack_protection() == 0,
+	assertf(irq_stack_protection() == 0,
 			"Stack overflow detected on irq dispatch");
 
 	if (irq_table[irq_nr]) {

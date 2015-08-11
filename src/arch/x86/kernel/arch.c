@@ -11,7 +11,7 @@
 #include <asm/traps.h>
 #include <hal/arch.h>
 #include <hal/ipl.h>
-
+#include <compiler.h>
 
 extern void cpu_triple_reset(void);
 extern void acpi_shutdown(void);
@@ -38,7 +38,7 @@ void arch_idle(void) {
 	__asm__ __volatile__("hlt");
 }
 
-void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
+void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
 
 	switch (mode) {
 	case ARCH_SHUTDOWN_MODE_HALT:

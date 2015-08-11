@@ -197,7 +197,7 @@ size_t index_find(struct indexator *ind, enum index_type type) {
 		return ind->next;
 	}
 
-	assert(0, "unknown type");
+	assertf(0, "unknown type");
 	return INDEX_NONE;
 }
 

@@ -14,8 +14,8 @@
 void *upper_bound(const void *key, const void *base,
               size_t nmemb, size_t size,
               int (*compar)(const void *, const void *)) {
-	void *left = (void *)base,
-		*right = (void *)base + size * nmemb,
+	char *left = (char *)base,
+		*right = (char *)base + size * nmemb,
 		*mid;
 	while (left + size < right) {
 		mid = left + ((right - left) / (size << 1) * size);
@@ -31,8 +31,8 @@ void *upper_bound(const void *key, const void *base,
 void *lower_bound(const void *key, const void *base,
               size_t nmemb, size_t size,
               int (*compar)(const void *, const void *)) {
-	void *left = (void *)base - size,
-		*right = (void *)base + size * (nmemb - 1),
+	char *left = (char *)base - size,
+		*right = (char *)base + size * (nmemb - 1),
 		*mid;
 	while (left + size < right) {
 		mid = left + ((right - left) / (size << 1) * size);
@@ -48,9 +48,9 @@ void *lower_bound(const void *key, const void *base,
 void *bsearch(const void *key, const void *base,
               size_t nmemb, size_t size,
               int (*compar)(const void *, const void *)) {
-	void *left = (void *)base,
-	*right = (void *)base + size * nmemb,
-	*mid;
+	char *left = (char *)base,
+		*right = (char *)base + size * nmemb,
+		*mid;
 	while (left + size < right) {
 		mid = left + ((right - left) / (size << 1) * size);
 		if (compar(key, mid) < 0) {

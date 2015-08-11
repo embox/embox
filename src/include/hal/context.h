@@ -15,9 +15,10 @@
 #define HAL_CONTEXT_H_
 
 #include <module/embox/arch/context.h>
-#include <stdbool.h>
 
 #ifndef __ASSEMBLER__
+
+#include <stdbool.h>
 
 struct context;
 
