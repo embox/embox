@@ -13,6 +13,7 @@ module http_admin {
 	       "index.html",
 	       "angular.min.js",
 	       "angular-route.min.js",
+	       "angular-translate.min.js",
 	       "ui-bootstrap-tpls-0.12.1.min.js",
 	       "app.js"
 
