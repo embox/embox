@@ -11,7 +11,7 @@
 #include <embox/unit.h>
 #include <util/log.h>
 
-#include <drivers/bluetooth/blue_core4.h>
+#include <drivers/bluetooth/lego/blue_core4.h>
 #include <drivers/bluetooth/bluetooth.h>
 
 #include <pnet/core/core.h>

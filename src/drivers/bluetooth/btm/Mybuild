@@ -34,8 +34,8 @@ module usart {
 }
 
 module bt112 extends embox.driver.Bluetooth {
-	@IncludeExport(path="drivers/bluetooth")
-	source "btm_bt112.h"
+	@IncludeExport(path="drivers/bluetooth/btm")
+	source "btm112.h"
 	source "btm_bt112.c"
 }
 
