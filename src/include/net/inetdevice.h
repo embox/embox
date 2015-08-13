@@ -97,7 +97,8 @@ static inline unsigned int inetdev_get_ip_id(struct in_device *in_dev) {
 	return ++in_dev->ip_id_generator;
 }
 
-#include <stdbool.h>
+#define IP_LOCAL_BROADCAST (1 << 0)
+#define IP_LOCAL_MULTICAST (1 << 1)
 /**
  * perform check: does this ip should be processes by local ip stack
  * (This function is intended for external packets processing.
@@ -106,6 +107,6 @@ static inline unsigned int inetdev_get_ip_id(struct in_device *in_dev) {
  * @param check_broadcast - should we check broadcast addresses
  * @param check_multicast - should we check multicast addresses
  */
-extern bool ip_is_local(in_addr_t addr, bool check_broadcast, bool check_multicast);
+extern int ip_is_local(in_addr_t addr, int opts);
 
 #endif /* NET_INETDEVICE_H_ */

@@ -102,7 +102,7 @@ int ip_route(struct sk_buff *skb, struct net_device *wanna_dev,
 	}
 
 	/* if loopback set lo device */
-	if (ip_is_local(daddr, false, false)) {
+	if (ip_is_local(daddr, 0)) {
 		assert(inetdev_get_loopback_dev() != NULL);
 		skb->dev = inetdev_get_loopback_dev()->dev;
 		return 0;
@@ -184,7 +184,7 @@ int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
 	}
 
 	/* if loopback set lo device */
-	if (ip_is_local(dst, false, false)) {
+	if (ip_is_local(dst, 0)) {
 		assert(inetdev_get_loopback_dev() != NULL);
 		*out_dev = inetdev_get_loopback_dev()->dev;
 		return 0;

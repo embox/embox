@@ -56,7 +56,7 @@ static int ip_xmit(struct sk_buff *skb) {
 	hdr_info.dst_hw = NULL;
 
 	/* it's loopback/local or broadcast address? */
-	if (ip_is_local(daddr, true, false)) {
+	if (ip_is_local(daddr, IP_LOCAL_BROADCAST)) {
 		hdr_info.dst_p = NULL;
 	}
 	else {
