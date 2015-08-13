@@ -14,7 +14,7 @@
 
 #include <kernel/task/resource/security.h>
 #include <kernel/task/resource/u_area.h>
-#include <security/smac.h>
+#include <security/smac/smac.h>
 
 int main(int argc, char *argv[]) {
 	struct task_u_area *uarea = task_self_resource_u_area();

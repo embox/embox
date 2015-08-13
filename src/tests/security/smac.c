@@ -11,7 +11,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <security/smac.h>
+#include <security/smac/smac.h>
 #include <fs/vfs.h>
 #include <fs/fsop.h>
 #include <fs/flags.h>
@@ -81,7 +81,7 @@ static int setup_suite(void) {
 }
 
 static int teardown_suite(void) {
-	int res;
+//	int res;
 
 	vfs_get_root()->mode = root_backup_mode;
 

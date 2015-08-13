@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <security/smac.h>
+#include <security/smac/smac.h>
 #include <fs/flags.h>
 #include <errno.h>
 

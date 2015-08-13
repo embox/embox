@@ -2,6 +2,8 @@
 package embox.security
 
 module seculog {
+	@IncludeExport(path="security/seculog")
+	source "seculog.h"
 	source "seculog.c"
 
 	depends embox.util.DList

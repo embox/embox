@@ -2,6 +2,9 @@
 package embox.security
 
 @DefaultImpl(no_security)
-abstract module api { }
+abstract module api {
+	@IncludeExport(path="security")
+	source "security.h"
+}
 
 

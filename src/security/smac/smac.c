@@ -18,9 +18,9 @@
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <embox/unit.h>
-#include <security/seculog.h>
+#include <security/seculog/seculog.h>
 
-#include <security/smac.h>
+#include <security/smac/smac.h>
 #include <kernel/task/resource/security.h>
 #include <config/embox/kernel/task/resource/security.h>
 #include <framework/mod/options.h>
