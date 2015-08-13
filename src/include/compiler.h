@@ -22,7 +22,9 @@
 
 #endif /* __GNUC__ */
 
-#if !defined(__STDC__) || !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
+#if (!defined(__STDC__) || !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L) && \
+	(!defined(__GNUC_GNU_INLINE__) || !__GNUC_GNU_INLINE__) && \
+	(!defined(__GNUC_STDC_INLINE__) || !__GNUC_STDC_INLINE__)
 #define inline /* to nothind */
 #endif
 

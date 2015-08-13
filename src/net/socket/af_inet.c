@@ -124,7 +124,7 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		return -EAFNOSUPPORT;
 	}
 	else if ((addr_in.sin_addr.s_addr != htonl(INADDR_ANY)) &&
-			!ip_is_local(addr_in.sin_addr.s_addr, true, true)) {
+			!ip_is_local(addr_in.sin_addr.s_addr, IP_LOCAL_BROADCAST | IP_LOCAL_MULTICAST)) {
 		return -EADDRNOTAVAIL;
 	}
 
