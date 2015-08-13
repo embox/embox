@@ -18,8 +18,6 @@
 
 #ifndef __ASSEMBLER__
 
-#include <stdbool.h>
-
 struct context;
 
 #define CONTEXT_PRIVELEGED (1 << 0) /* TODO: ? */
