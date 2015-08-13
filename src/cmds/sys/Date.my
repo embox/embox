@@ -16,7 +16,11 @@ package embox.cmd.sys
 module date {
 	source "date.c"
 
+	depends embox.compat.libc.time
+	depends embox.compat.libc.stdio.scanf
+
 	depends embox.compat.posix.util.getopt
+
 	depends embox.kernel.time.clock_source
 	depends embox.kernel.time.timekeeper
 }
