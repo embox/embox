@@ -93,7 +93,7 @@ void JVMSPI_Exit(int code) {
 void JVMSPI_CheckEvents(JVMSPI_BlockedThreadInfo *blocked_threads,
                         int blocked_threads_count,
                         jlong timeout) {
-  assert(blocked_threads_count == 0,
+  assertf(blocked_threads_count == 0,
             "Vanilla VM never calls SNI_BlockThread");
   if (timeout > 0) {
     javacall_time_sleep(timeout);
