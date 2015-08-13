@@ -44,7 +44,7 @@ module vfs {
 }
 
 module security {
-	option number security_size
+	option number security_size=32
 	source "security.c"
 
 	depends embox.kernel.task.task_resource

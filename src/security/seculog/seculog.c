@@ -11,7 +11,7 @@
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
 
-#include <security/seculog.h>
+#include <security/seculog/seculog.h>
 
 #define RECORDS_N 32
 #define REC_HND_N 32

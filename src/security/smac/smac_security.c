@@ -13,7 +13,7 @@
 #include <fs/flags.h>
 #include <fs/idesc.h>
 #include <net/sock.h>
-#include <security/smac.h>
+#include <security/smac/smac.h>
 
 #include <security/security.h>
 
