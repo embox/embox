@@ -99,9 +99,11 @@ static inline int __spin_trylock(spinlock_t *lock) {
 #ifdef SPIN_CONTENTION_LIMIT
 	if (ret)
 		lock->contention_count = SPIN_CONTENTION_LIMIT;
-	else
+	else {
 		// TODO this must be atomic dec
-		assertf(lock->contention_count--, "Possible spin deadlock");
+		lock->contention_count--;
+		assertf(lock->contention_count, "Possible spin deadlock");
+	}
 #endif
 	return ret;
 }
