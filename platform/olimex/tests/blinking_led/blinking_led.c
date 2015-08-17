@@ -11,7 +11,7 @@
 #include <drivers/pins.h>
 #include <unistd.h>
 
-EMBOX_TEST(blinking_led);
+EMBOX_TEST_SUITE("olimex blinking_led");
 
 #define DELAY   0x25000
 #define INC     0x0
@@ -32,7 +32,7 @@ static void led1_off(void) {
 	pin_set_output(OLIMEX_SAM7_LED1);
 }
 
-static int blinking_led(void) {
+TEST_CASE("olimex blinking_led test") {
 	volatile int del = DELAY;
 	pin_config_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
 
@@ -43,6 +43,4 @@ static int blinking_led(void) {
 		delay(del);
 		del += INC;
 	}
-
-	return 0;
 }

@@ -9,6 +9,7 @@
 #include <new>
 
 #include <embox/test.h>
+#include "test_cxx.h"
 
 namespace {
 
