@@ -20,4 +20,9 @@ typedef uint32_t __mmu_pgd_t;
 typedef uint32_t __mmu_pmd_t;
 typedef uint32_t __mmu_pte_t;
 
+/* Section mode */
+#define __MMU_PTE_SHIFT	20
+#define __MMU_PMD_SHIFT	20
+#define __MMU_PGD_SHIFT	20
+
 #endif /* ARM_MMU_H_ */
