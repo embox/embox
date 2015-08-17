@@ -1,5 +1,26 @@
 package embox.arch.arm.armlib
 
+abstract module cpu { }
+
+abstract module setup_exception_table { }
+
+module low_excpt_table extends setup_exception_table {
+	source "low_excpt_table.S"
+	depends lib
+}
+
+module high_excpt_table extends setup_exception_table {
+	source "high_excpt_table.S"
+	depends lib
+}
+
+module arch {
+	depends embox.arch.arm.armlib.locore
+	depends embox.arch.arm.armlib.interrupt
+	depends embox.arch.arm.armlib.context
+	depends embox.arch.arm.libarch
+}
+
 module head {
 	source "head.S"
 }
@@ -19,9 +40,14 @@ module locore extends embox.arch.locore {
 		"exception_handler.c"
 
 	depends head
+	depends setup_exception_table
 }
 
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
 	depends locore
+}
+
+static module lib {
+	source "copy_excpt_table.S"
 }

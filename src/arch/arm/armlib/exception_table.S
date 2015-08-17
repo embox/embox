@@ -25,7 +25,7 @@
 #define IRQ_STACK_SIZE OPTION_GET(NUMBER,irq_stack_size)
 
 .extern irq_handler
-.weak arm_cpu_reset_handler
+.extern setup_excpt_table
 
 .section .trap_table, "x"
 .global arm_trap_table
@@ -80,6 +80,8 @@ reset_handler:
 
     msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
     mov sp, r0
+
+    bl setup_excpt_table
 
     b bootldr_start
 

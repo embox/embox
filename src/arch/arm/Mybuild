@@ -10,5 +10,3 @@ abstract module platform_shutdown { }
 module platform_shutdown_stub extends platform_shutdown {
 	source "platform_shutdown_stub.c"
 }
-
-abstract module cpu_reset { }
