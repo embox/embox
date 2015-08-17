@@ -60,7 +60,7 @@ $(DOWNLOAD_CHECK) : $(DOWNLOAD)
 		echo "different number of sources and MD5"; false)
 	( cd $(DOWNLOAD_DIR); \
 		$(foreach c,$(filter-out %.-,$(join $(PKG_SOURCES),$(addprefix .,$(PKG_MD5)))), \
-			echo "$(subst .,,$(suffix $c))  $(notdir $(basename $c))" | md5sum -c ; ) \
+			$(MD5) $(notdir $(basename $c)) | grep $(subst .,,$(suffix $c)) 2>&1 >/dev/null ; ) \
 	)
 	touch $@
 
@@ -75,7 +75,7 @@ extract : $(EXTRACT)
 $(EXTRACT): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach i,$(sources_extract),\
 		$(if $(filter %zip,$i),unzip $(DOWNLOAD_DIR)/$i -d $(BUILD_DIR),\
-			tar -C $(BUILD_DIR) -axf $(DOWNLOAD_DIR)/$i);)
+			mkdir -p $(BUILD_DIR) && ( cd $(BUILD_DIR); tar -xf $(DOWNLOAD_DIR)/$i) );)
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
 			$(call targets_git,$(sources_git)) \
 			$(filter-out $(sources_extract),$(call targets_download,$(sources_download))))"; \
