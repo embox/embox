@@ -93,13 +93,14 @@ int seculog_unsubscribe(struct seculog_subscb *subscb) {
 static struct seculog_rec_handle *seculog_rec_handle_alloc(struct seculog_record *rec) {
 	struct seculog_rec_handle *rech;
 
-	if (!(rech = pool_alloc(&seculog_rec_handle_pool))) {
-		return NULL;
-	}
+	if (NULL != (rech = pool_alloc(&seculog_rec_handle_pool))) {
+//		return rech;
+
 
 	dlist_head_init(&rech->rh_lnk);
 	rech->record = rec;
 	seculog_record_inc_ref(rec);
+	}
 
 	return rech;
 }
