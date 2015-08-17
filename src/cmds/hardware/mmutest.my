@@ -16,5 +16,5 @@ package embox.cmd.hw
 module  mmutest {
 	source "mmutest.c"
 
-	@NoRuntime depends embox.arch.generic.mmu
+	@NoRuntime depends embox.arch.mmu
 }
