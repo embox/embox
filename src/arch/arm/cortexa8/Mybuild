@@ -6,8 +6,9 @@ module cpu_reset {
 }
 
 module mmu extends embox.arch.mmu {
-	source "mmu_core.S"
 	source "cache.c"
+	source "mmu.h"
+	source "mmu_core.S"
 }
 
 module bundle {
