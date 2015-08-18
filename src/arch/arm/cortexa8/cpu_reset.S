@@ -7,7 +7,6 @@
  */
 
 #include <asm/regs.h>
-#include <module/embox/arch/mmu.h>
 
 .extern arm_trap_table
 
