@@ -22,7 +22,6 @@ static mmu_ctx_t ctx;
 static volatile int exception_flag;
 
 static char page[VMEM_PAGE_SIZE] __attribute__((aligned(VMEM_PAGE_SIZE)));
-//static char PAGE2[VMEM_PAGE_SIZE];
 
 static mmu_paddr_t paddr = (mmu_paddr_t) page;
 
@@ -90,17 +89,7 @@ TEST_CASE("Pagefault should be considered right.") {
 	set_fault_handler(MMU_DATA_MISS, NULL);
 }
 
-/* TODO: Remove this. */
-//static ipl_t ipl;
-
 static int mmu_case_setup(void) {
-#if 0
-	ipl = ipl_save();
-
-	vmem_off();
-	test_assert_zero(vmem_create_context(&ctx));
-	test_assert_zero(vmem_init_context(&ctx));
-#endif
 	ctx = vmem_current_context();
 	vmem_set_context(ctx);
 
@@ -117,9 +106,5 @@ static int mmu_case_teardown(void) {
 	if (vmem_mmu_enabled()) {
 		vmem_off();
 	}
-#if 0
-	vmem_free_context(ctx);
-	ipl_restore(ipl);
-#endif
 	return 0;
 }
