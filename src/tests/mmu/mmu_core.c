@@ -49,7 +49,7 @@ TEST_CASE("Writing to read-only memory should cause exception."
 	mmu_vaddr_t vaddr = (mmu_vaddr_t) BIGADDR;
 	exception_flag = 0;
 
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, dfault_handler);
+	set_fault_handler(MMU_DATA_SECUR, dfault_handler);
 
 	vmem_map_region(ctx, paddr, BIGADDR, VMEM_PAGE_SIZE, 0);
 
@@ -60,7 +60,7 @@ TEST_CASE("Writing to read-only memory should cause exception."
 	test_assert_equal(*((volatile uint32_t *) vaddr), UNIQ_VAL);
 
 	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, NULL);
+	set_fault_handler(MMU_DATA_SECUR, NULL);
 }
 
 static inline int pagefault_handler(uint32_t nr, void *data) {
@@ -78,8 +78,7 @@ static inline int pagefault_handler(uint32_t nr, void *data) {
 TEST_CASE("Pagefault should be considered right.") {
 	exception_flag = 0;
 
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_MISS_FAULT,
-				&pagefault_handler); //data mmu miss
+	set_fault_handler(MMU_DATA_MISS, &pagefault_handler); //data mmu miss
 
 	*((uint32_t *) BIGADDR) = UNIQ_VAL; /* <- exception */
 
@@ -88,7 +87,7 @@ TEST_CASE("Pagefault should be considered right.") {
 	test_assert_equal(*((unsigned long *) BIGADDR), UNIQ_VAL);
 
 	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_MISS_FAULT, NULL);
+	set_fault_handler(MMU_DATA_MISS, NULL);
 }
 
 /* TODO: Remove this. */

@@ -21,6 +21,22 @@
  */
 extern void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler);
 
+typedef trap_handler_t fault_handler_t;
+
+enum fault_type {
+	MMU_DATA_SECUR,
+	MMU_DATA_MISS,
+	DIV_ZERO,
+};
+
+/**
+ * @brief Set handler for IRQ, abort, traps and so on
+ *
+ * @param test_event_type
+ * @param handler
+ */
+extern void set_fault_handler(enum fault_type type, fault_handler_t handler);
+
 /**
  * Causes trap with specified number
  * @param number
