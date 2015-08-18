@@ -22,6 +22,7 @@ module fbcon {
 	depends embox.driver.tty.vterm
 	// keyboard dependency not mandatory, but very desireable; to ask any input device
 	// depends embox.driver.input.keyboard.keyboard
+	depends embox.driver.input.keyboard.kbd_defs
 	depends mpx_simple
 	depends embox.cmd.user.login //fbcon start `login` at every console
 
