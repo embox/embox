@@ -32,6 +32,10 @@
 	__EMBOX_TEST_SUITE_NM("" description, __test_suite, \
 			MACRO_GUARD(__test_private), true)
 
+#define EMBOX_TEST_SUITE_AUTORUN(description, autorun) \
+	__EMBOX_TEST_SUITE_NM("" description, __test_suite, \
+			MACRO_GUARD(__test_private), autorun)
+
 #define TEST_CASE(description) \
 	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case_struct), \
 			MACRO_GUARD(__test_case))
