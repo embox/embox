@@ -9,6 +9,8 @@
 #ifndef ASM_HAL_ENV_TRAPS_CORE_H_
 #define ASM_HAL_ENV_TRAPS_CORE_H_
 
+#include <stdint.h>
+
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);
 
