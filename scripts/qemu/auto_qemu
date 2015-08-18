@@ -89,20 +89,17 @@ guess_kvm() {
 get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 
 guess_load_arg() {
-	if [ $AUTOQEMU_ARCH != "arm" ]; then
-		if [ x$KERNEL = x ]; then
-			KERNEL=./build/base/bin/embox
-		fi
-		echo "-kernel $KERNEL"
+	NAND_SIZE=$(sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p' $LDS_CONF)
+	if [ ! $NAND_SIZE ]; then
+		echo "-kernel ${KERNEL:-./build/base/bin/embox}"
 	else
 		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
 			echo "Making uImage..." >&2
-			OMAP_UBOOT_IMAGE_BOARD=qemu ./scripts/uboot-uimage >/dev/null
+			OMAP_UBOOT_IMAGE_BOARD=overo ./scripts/uboot-uimage >/dev/null
 			if [ 0 -ne $? ]; then
 				exit 1
 			fi
 			echo "Making nand image..." >&2
-			NAND_SIZE=$(sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p' $LDS_CONF)
 			./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage $NAND_SIZE >/dev/null 2>/dev/null
 			rm ./uImage
 		fi
@@ -114,17 +111,37 @@ get_user_empty_guess AUTOQEMU_LOAD_ARG guess_load_arg
 guess_nographic() { echo "-nographic"; }
 get_user_undef_guess AUTOQEMU_NOGRAPHIC_ARG guess_nographic
 
+guess_machine() {
+	case $AUTOQEMU_ARCH in
+		arm)
+			if grep "overo" $BUILD_CONF >/dev/null; then
+				echo "-M overo"
+			fi
+			;;
+		microblaze)
+			echo "-M petalogix-s3adsp1800"
+			;;
+		mips)
+			echo "-M mipssim"
+			;;
+		ppc)
+			echo "-M virtex-ml507"
+			;;
+		sparc)
+			echo "-M leon3_generic -cpu LEON3"
+			;;
+		x86)
+			;;
+	esac
+}
+get_user_undef_guess AUTOQEMU_MACHINE guess_machine
+
 declare -A ARCH2QEMU
 ARCH2QEMU=(
-	[arm]="qemu-system-arm -M overo"
-	[microblaze]="qemu-system-microblaze -M petalogix-s3adsp1800"
-	[mips]="qemu-system-mips -M mipssim"
-	[ppc]="qemu-system-ppc -M virtex-ml507"
-	[sparc]="qemu-system-sparc -M leon3_generic -cpu LEON3"
-	[x86]="qemu-system-i386"
+	[x86]="i386"
 )
 
-QEMU=$AUTOQEMU_PREFIX${ARCH2QEMU[$AUTOQEMU_ARCH]}
+QEMU=${AUTOQEMU_PREFIX}qemu-system-${ARCH2QEMU[$AUTOQEMU_ARCH]:-$AUTOQEMU_ARCH}
 QEMU_VER=$($QEMU --version | sed 's/.*version \([0-9.]\+\).*/\1/;s/\./ /g' | xargs printf "%02d%02d%02d")
 
 if [ $QEMU_VER -gt 010200 ]; then
@@ -169,7 +186,7 @@ if [ $nic_n -gt 0 ]; then
 	done
 fi
 
-ARG_LINE="$sudo $QEMU $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
+ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
 
 info "$ARG_LINE"
 $ARG_LINE
