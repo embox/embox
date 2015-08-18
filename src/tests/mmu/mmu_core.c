@@ -21,9 +21,11 @@ TEST_TEARDOWN(mmu_case_teardown);
 static mmu_ctx_t ctx;
 static volatile int exception_flag;
 
-static char page[VMEM_PAGE_SIZE] __attribute__((aligned(VMEM_PAGE_SIZE)));
-
-static mmu_paddr_t paddr = (mmu_paddr_t) page;
+/* TODO repalce this buffer with page_alloc(). Page size could be like 1MB,
+ * and such static variable will be a bad thing */
+static char mmu_test_buffer[2 * VMEM_PAGE_SIZE];
+static char *page;
+static mmu_paddr_t paddr;
 
 /*mapping to address, assuming there is no mem at here */
 #define BIGADDR 0xf0010000
@@ -97,7 +99,11 @@ static int mmu_case_setup(void) {
 		vmem_on();
 	}
 
-	memset(page, 0, sizeof page);
+	/* XXX hack for page-aligned array. __aligned__ don't work for big pages */
+	page = (char*) (((uintptr_t) mmu_test_buffer + VMEM_PAGE_SIZE - 1) &
+			(~MMU_PAGE_MASK));
+	paddr = (mmu_paddr_t) page;
+	memset(mmu_test_buffer, 0, sizeof mmu_test_buffer);
 
 	return 0;
 }
