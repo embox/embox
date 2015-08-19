@@ -79,15 +79,15 @@ static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
 }
 
 void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
+#if 0
 	struct marea *ma_err;
-
 	if ((ma_err = mmap_find_marea(mmap, marea->start))
 			|| (ma_err = mmap_find_marea(mmap, marea->end))) {
 		panic("%s: intersect existing=%p(%p):%p\n new=%p(%p):%p\n", __func__,
 				(void *) ma_err->start, /* XXX */ (void *) ma_err->start, (void *) ma_err->end,
 				(void *) marea->start, /* XXX */ (void *) marea->start, (void *) marea->end);
 	}
-
+#endif
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
 
