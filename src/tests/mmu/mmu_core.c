@@ -28,7 +28,7 @@ static char *page;
 static mmu_paddr_t paddr;
 
 /*mapping to address, assuming there is no mem at here */
-#define BIGADDR 0xf0010000
+#define BIGADDR (0xf0111111 & ~MMU_PAGE_MASK)
 
 /* Unique values that seems to pretty to accidentally happen in mem,
  * used to read-n-check */
