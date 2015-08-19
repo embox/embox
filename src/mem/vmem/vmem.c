@@ -73,25 +73,6 @@ int vmem_map_kernel(void) {
 	err |= vmem_kernel_map_marea(&_bss_vma, (size_t) &_bss_len_with_reserve,
 			PROT_WRITE | PROT_READ);
 
-#if 0
-	// XXX below
-	// for sparc
-	err |= vmem_map_on_itself(ctx, (void *) 0x80000000, (size_t) 0x100000,
-			VMEM_PAGE_WRITABLE);
-
-	// for sparc greth
-	err |= vmem_map_on_itself(ctx, (void *) 0x90000000, (size_t) 0x1000,
-			VMEM_PAGE_WRITABLE);
-
-	// for microblaze
-	err |= vmem_map_on_itself(ctx, (void *) 0x84000000, (size_t) 0x1000,
-			VMEM_PAGE_WRITABLE);
-
-	// mapping x86 video buffer
-	err |= vmem_map_on_itself(ctx, (void *) 0xB8000, (size_t) 0x1000,
-			VMEM_PAGE_WRITABLE);
-#endif
-
 	return err;
 }
 
