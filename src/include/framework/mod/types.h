@@ -48,6 +48,7 @@ struct __mod_private {
 struct __mod_section {
 	char   *vma;
 	size_t  len;
+	const char *md5sum;
 };
 
 struct mod_label {
