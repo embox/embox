@@ -11,15 +11,12 @@
 
 #include <stdint.h>
 
-#define FB_MAX_DIM			4096
-#define FB_MAX_BIT_DEPTH	32
+#define RASPI_FB_MAX_RES	4096
+#define RASPI_FB_MAX_BPP	32
 
 #define SCREEN_WIDTH	1024
 #define SCREEN_HEIGHT	768
 #define BIT_DEPTH		16		// High Colour
-
-#define CHAR_WIDTH	8
-#define CHAR_HEIGHT 12
 
 /**
  * The Mailbox gives the ability to send/receive messages to/from the processor
@@ -31,6 +28,8 @@
 /* BCM2835 Mailbox Status Flags */
 #define BCM2835_MAILBOX_EMPTY			0x40000000
 #define BCM2835_MAILBOX_FULL			0x80000000
+
+#define BCM2835_FRAMEBUFFER_CHANNEL		1
 
 /**
  * Layout of the Mailbox Registers.
@@ -50,7 +49,7 @@ struct raspi_mailbox_regs {
 /**
  * Format of the messages to the graphics processor.
  */
-struct frame_buffer_info {
+struct raspi_fb_info {
 	uint32_t width_p;	/* width of the physical display */
 	uint32_t height_p;	/* height of the physical display */
 	uint32_t width_v;	/* width of the virtual display */
@@ -63,20 +62,18 @@ struct frame_buffer_info {
 	uint32_t gpu_size;		/* size of the frame buffer in bytes */
 } __attribute__((aligned(16)));
 
-extern struct frame_buffer_info fb_info;
+extern struct raspi_fb_info info;
 
 /**
  * Prototypes
  */
 int mailbox_write(uint32_t data, uint32_t channel);
 uint32_t mailbox_read(uint32_t channel);
-struct frame_buffer_info * init_frame_buffer(uint32_t width, uint32_t height,
+struct raspi_fb_info * init_raspi_fb(uint32_t width, uint32_t height,
 	uint32_t bit_depth);
 
 /* Functions to draw things on the screen */
 void set_pixel(uint32_t x, uint32_t y, uint32_t colour);
-void draw_line(uint32_t x0, uint32_t y0, uint32_t x1, uint32_t y1, uint32_t
-		colour);
 void draw_character(uint32_t x, uint32_t y, char c, uint32_t colour);
 void raspi_putc(const char c, uint32_t colour);
 void draw_string(const char *s, uint32_t colour);
