@@ -31,6 +31,8 @@ module raspi_video {
 	@IncludeExport(path="drivers/video")
 
 	depends raspi_fb
+	@NoRuntime depends fb
+	@NoRuntime depends embox.compat.libc.all
 }
 
 module raspi_fb {
