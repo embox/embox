@@ -7,7 +7,7 @@
         ng-repeat="iface in interfaces">
         <h1>{{iface.name}}</h1>
         <div class="form-group has-feedback" ng-class="{'has-error' : interfaceForm.ipInput.$invalid}">
-          <label for="ipInput{{index}}">IP</label>
+          <label for="ipInput{{index}}">{{ 'IP' | translate }}</label>
           <input type="text" class="form-control" id="ipInput{{index}}" name="ipInput"
             placeholder="x.x.x.x"
             ng-model="iface.ip"
@@ -17,7 +17,7 @@
       	ng-show="interfaceForm.ipInput.$invalid"></span>
         </div>
         <div class="form-group has-feedback" ng-class="{'has-error' : interfaceForm.maskInput.$invalid}">
-          <label for="maskInput{{index}}">Netmask</label>
+          <label for="maskInput{{index}}">{{ 'NETMASK' | translate }}</label>
           <input type="text" class="form-control" id="maskInput{{index}}" name="maskInput"
             placeholder="x.x.x.x"
             ng-model="iface.netmask"
@@ -27,7 +27,7 @@
       	ng-show="interfaceForm.maskInput.$invalid"></span>
         </div>
         <div class="form-group has-feedback" ng-class="{'has-error' : interfaceForm.macInput.$invalid}">
-          <label for="maskInput{{index}}">MAC</label>
+          <label for="maskInput{{index}}">{{ 'MAC' | translate }}</label>
           <input type="text" class="form-control" id="macInput{{index}}" name="macInput"
             placeholder="ff:ff:ff:ff:ff:ff"
             ng-model="iface.mac"
@@ -38,7 +38,7 @@
         </div>
         <button type="submit" class="btn btn-danger"
           ng-disabled="interfaceForm.$invalid"
-          ng-click="update(iface)">Apply settings</button>
+          ng-click="update(iface)">{{ 'APPLY_SETTINGS' | translate }}</button>
       </form>
     {{sent}}
     </div>
