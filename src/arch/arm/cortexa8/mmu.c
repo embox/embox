@@ -9,8 +9,12 @@
 #include <asm/regs.h>
 #include <hal/mmu.h>
 
+/**
+* @brief Turn MMU on
+*
+* @note Set flag CR_M at c1, the control register
+*/
 void mmu_on(void) {
-	/* Setup c1, Control Register */
 #ifndef NOMMU
 	asm volatile (
 		"mrc p15, 0, r0, c1, c0, 0\n\t"
