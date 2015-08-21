@@ -6,9 +6,19 @@
  * @date 2015-08-18
  */
 
+#include <asm/regs.h>
 #include <hal/mmu.h>
 
 void mmu_on(void) {
+	/* Setup c1, Control Register */
+#ifndef NOMMU
+	asm volatile (
+		"mrc p15, 0, r0, c1, c0, 0\n\t"
+		"orr r0, r0, %[flag]\n\t" /* enabling MMU */
+		"mcr p15, 0, r0, c1, c0, 0"
+		: : [flag] "I" (CR_M)
+	);
+#endif
 }
 
 void mmu_off(void) {
