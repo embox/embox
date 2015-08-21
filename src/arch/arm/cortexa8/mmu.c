@@ -21,7 +21,21 @@ void mmu_on(void) {
 #endif
 }
 
+
+/**
+* @brief Turn MMU off
+*
+* @note Clear flag CR_M at c1, the control register
+*/
 void mmu_off(void) {
+#ifndef NOMMU
+	asm volatile (
+		"mrc p15, 0, r0, c1, c0, 0\n\t"
+		"bic r0, r0, %[flag]\n\t"
+		"mcr p15, 0, r0, c1, c0, 0"
+		: : [flag] "I" (CR_M)
+	);
+#endif
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
