@@ -62,20 +62,12 @@ struct raspi_fb_info {
 	uint32_t gpu_size;		/* size of the frame buffer in bytes */
 } __attribute__((aligned(16)));
 
-extern struct raspi_fb_info info;
-
 /**
  * Prototypes
  */
 int mailbox_write(uint32_t data, uint32_t channel);
 uint32_t mailbox_read(uint32_t channel);
-struct raspi_fb_info * init_raspi_fb(uint32_t width, uint32_t height,
-	uint32_t bit_depth);
-
-/* Functions to draw things on the screen */
-void set_pixel(uint32_t x, uint32_t y, uint32_t colour);
-void draw_character(uint32_t x, uint32_t y, char c, uint32_t colour);
-void raspi_putc(const char c, uint32_t colour);
-void draw_string(const char *s, uint32_t colour);
+int init_raspi_fb(uint32_t width, uint32_t height, uint32_t bit_depth,
+	struct raspi_fb_info *fb_info);
 
 #endif

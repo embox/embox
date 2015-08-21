@@ -87,59 +87,35 @@ uint32_t mailbox_read(uint32_t channel) {
 	return data & BCM2835_MAILBOX_DATA_MASK;
 }
 
-struct raspi_fb_info fb_info;
-
 /**
- * Initialise a new frame buffer and return its pointer to the caller.
+ * Initialise a the frame buffer passed as parameter.
  * Input:
  * - width, of the display (must be lower than RASPI_FB_MAX_RES)
  * - height, of the display (must be lower than RASPI_FB_MAX_RES)
  * - bit_depth, number of bits to allocate in each pixel
+ * - fb_info, pointer to a frame buffer information structure
  * Output:
- * - pointer to the frame buffer
+ * - 0 on success
+ * - error code, otherwise
  */
-struct raspi_fb_info * init_raspi_fb(uint32_t width, uint32_t height,
-	   							uint32_t bit_depth) {
+int init_raspi_fb(uint32_t width, uint32_t height, uint32_t bit_depth,
+								struct raspi_fb_info *fb_info) {
 	/* Validate Inputs */
 	if (width > RASPI_FB_MAX_RES || height > RASPI_FB_MAX_RES ||
 		   bit_depth > RASPI_FB_MAX_BPP)
-		return NULL;
-
-	/* TRYING MALLOC INSTEAD OF GLOBAL VARIABLE */
-	/*struct raspi_fb_info *info;
-	info = (struct raspi_fb_info *) sysmalloc(sizeof(struct raspi_fb_info));
-	if (!info)
-		return NULL;
-
-	// Write inputs into the frame buffer
-	info->width_p = width;
-	info->height_p = height;
-	info->width_v = width;
-	info->height_v = height;
-	info->gpu_pitch = 0;
-	info->bit_depth = bit_depth;
-	info->x = 0;
-	info->y = 0;
-	info->gpu_pointer = 0;
-	info->gpu_size = 0;
-
-	mailbox_write(((uint32_t) info)+0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
-	if (mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 || !info->gpu_pointer)
-		return NULL;
-	
-	return info;*/
+		return -EINVAL;
 
 	/* Write inputs into the frame buffer */
-	fb_info.width_p = width;
-	fb_info.height_p = height;
-	fb_info.width_v = width;
-	fb_info.height_v = height;
-	fb_info.gpu_pitch = 0;
-	fb_info.bit_depth = bit_depth;
-	fb_info.x = 0;
-	fb_info.y = 0;
-	fb_info.gpu_pointer = 0;
-	fb_info.gpu_size = 0;
+	fb_info->width_p = width;
+	fb_info->height_p = height;
+	fb_info->width_v = width;
+	fb_info->height_v = height;
+	fb_info->gpu_pitch = 0;
+	fb_info->bit_depth = bit_depth;
+	fb_info->x = 0;
+	fb_info->y = 0;
+	fb_info->gpu_pointer = 0;
+	fb_info->gpu_size = 0;
 
 	/**
 	 * Send the address of the frame buffer + 0x40000000 to the mailbox
@@ -147,9 +123,9 @@ struct raspi_fb_info * init_raspi_fb(uint32_t width, uint32_t height,
 	 * By adding 0x40000000, we tell the GPU not to use its cache for these
 	 * writes, which ensures we will be able to see the change
 	 */
-	mailbox_write(((uint32_t) &fb_info)+0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
-	if (mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 || !fb_info.gpu_pointer)
-		return NULL;
+	mailbox_write(((uint32_t) fb_info)+0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
+	if (mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 || !fb_info->gpu_pointer)
+		return -EAGAIN;
 
-	return &fb_info;
+	return 0;
 }
