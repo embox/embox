@@ -22,7 +22,7 @@
  * The Mailbox gives the ability to send/receive messages to/from the processor
  * and the graphic card.
  */
-#define BCM2835_MAILBOX_BASE 			0x2000B880
+#define BCM2835_MAILBOX_BASE			0x2000B880
 #define BCM2835_MAILBOX_DATA_MASK		0xFFFFFFF0
 #define BCM2835_MAILBOX_CHANNEL_MASK	0x0000000F
 /* BCM2835 Mailbox Status Flags */
@@ -35,14 +35,14 @@
  * Layout of the Mailbox Registers.
  */
 struct raspi_mailbox_regs {
-	uint32_t Read;				/* Receiving mail. 				R- */
+	uint32_t Read;				/* Receiving mail.				R- */
 	uint32_t unused1;
 	uint32_t unused2;
 	uint32_t unused3;
-	uint32_t Poll;				/* Receive without retrieving. 	R- */
-	uint32_t Sender;			/* Sender information. 			R- */
-	uint32_t Status;			/* Information.  				R- */
-	uint32_t Configuration;		/* Settings. 					RW */
+	uint32_t Poll;				/* Receive without retrieving.	R- */
+	uint32_t Sender;			/* Sender information.			R- */
+	uint32_t Status;			/* Information.					R- */
+	uint32_t Configuration;		/* Settings.					RW */
 	uint32_t Write;				/* Sending mail.				-W */
 };
 
