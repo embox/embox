@@ -16,7 +16,7 @@
 */
 void mmu_on(void) {
 #ifndef NOMMU
-	asm volatile (
+	__asm__ __volatile__ (
 		"mrc p15, 0, r0, c1, c0, 0\n\t"
 		"orr r0, r0, %[flag]\n\t" /* enabling MMU */
 		"mcr p15, 0, r0, c1, c0, 0"
@@ -33,7 +33,7 @@ void mmu_on(void) {
 */
 void mmu_off(void) {
 #ifndef NOMMU
-	asm volatile (
+	__asm__ __volatile__ (
 		"mrc p15, 0, r0, c1, c0, 0\n\t"
 		"bic r0, r0, %[flag]\n\t"
 		"mcr p15, 0, r0, c1, c0, 0"
