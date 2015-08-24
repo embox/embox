@@ -103,7 +103,7 @@ uint32_t mailbox_read(uint32_t channel) {
  * - error code, otherwise
  */
 int init_raspi_fb(uint32_t width, uint32_t height, uint32_t bit_depth,
-								struct raspi_fb_info *fb_info) {
+		struct raspi_fb_info *fb_info) {
 	/* Validate Inputs */
 	if (width > RASPI_FB_MAX_RES || height > RASPI_FB_MAX_RES ||
 		bit_depth > RASPI_FB_MAX_BPP) {
@@ -111,16 +111,16 @@ int init_raspi_fb(uint32_t width, uint32_t height, uint32_t bit_depth,
 	}
 
 	/* Write inputs into the frame buffer */
-	fb_info->width_p		= width;
-	fb_info->height_p		= height;
-	fb_info->width_v		= width;
-	fb_info->height_v		= height;
-	fb_info->gpu_pitch		= 0;
-	fb_info->bit_depth		= bit_depth;
-	fb_info->x				= 0;
-	fb_info->y				= 0;
-	fb_info->gpu_pointer	= 0;
-	fb_info->gpu_size 		= 0;
+	fb_info->width_p        = width;
+	fb_info->height_p       = height;
+	fb_info->width_v        = width;
+	fb_info->height_v       = height;
+	fb_info->gpu_pitch      = 0;
+	fb_info->bit_depth      = bit_depth;
+	fb_info->x              = 0;
+	fb_info->y              = 0;
+	fb_info->gpu_pointer    = 0;
+	fb_info->gpu_size       = 0;
 
 	/**
 	 * Send the address of the frame buffer + 0x40000000 to the mailbox

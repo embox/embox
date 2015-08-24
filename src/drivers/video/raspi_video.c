@@ -83,11 +83,11 @@ static struct fb_ops raspi_ops = {
 };
 
 static int raspi_init(void) {
-	struct raspi_fb_info raspi_fb;
+//	struct raspi_fb_info raspi_fb;
 	struct fb_info *info;
 	char *mmap_base;
 	size_t mmap_len;
-	int ret;
+	/*int ret;
 
 	ret = init_raspi_fb(SCREEN_WIDTH, SCREEN_HEIGHT, BIT_DEPTH, &raspi_fb);
 	if (ret < 0) {
@@ -103,10 +103,12 @@ static int raspi_init(void) {
 				(unsigned long) mmap_base)) {
 		return -EIO;
 	}
-
+*/
+	mmap_base = NULL;
+	mmap_len = 0;
 	info = fb_create(&raspi_ops, mmap_base, mmap_len);
 	if (info == NULL) {
-		munmap(mmap_base, mmap_len);
+//		munmap(mmap_base, mmap_len);
 		return -ENOMEM;
 	}
 
