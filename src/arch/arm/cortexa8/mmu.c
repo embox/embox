@@ -23,6 +23,12 @@ static uint8_t translation_table[16384] __attribute__((aligned(1 << 14)));
  */
 static int mmu_init(void) {
 	memset(translation_table, 0, sizeof(translation_table));
+	__asm__ __volatile__ (
+		/* setup c3, Domain Access Control Register */
+		"mov r0, %[dom]\n\t"
+		"mcr p15, 0, r0, c3, c0, 0\n\t"
+		: : [dom] "J" (-1) /* Magic number taken from previous mmu_init */
+	);
 	/* Setup physical address of the first level translation table */
 	__asm__ __volatile__ (
 		"ldr r0, =%[addr]\n\t"
@@ -93,7 +99,7 @@ mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
  * these return values are for supporting secion paging mode
  */
 mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return pgd;
+	return pgd; //(mmu_pmd_t *) (((uint8_t *) pgd - translation_table) * 0x4 + translation_table);
 }
 
 mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
