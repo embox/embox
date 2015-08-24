@@ -207,31 +207,34 @@ $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 	-o $@
 
 gensums_py := mk/gensums.py
-text_md5sum1 := $(OBJ_DIR)/text_md5sum1.o
-text_md5sum2 := $(OBJ_DIR)/text_md5sum2.o
+md5sums1 := $(OBJ_DIR)/md5sums1.o
+md5sums2 := $(OBJ_DIR)/md5sums2.o
 image_nocksum := $(OBJ_DIR)/image_nocksum.o
 
-$(GEN_DIR)/text_md5sum1.c : source = $(image_pass1_o)
-$(GEN_DIR)/text_md5sum2.c : source = $(image_nocksum)
+$(GEN_DIR)/md5sums1.c : source = $(image_pass1_o)
+$(GEN_DIR)/md5sums2.c : source = $(image_nocksum)
 
-$(GEN_DIR)/text_md5sum1.c $(GEN_DIR)/text_md5sum2.c: $$(source)
-	$(OBJCOPY) -j .text -O binary $< $@.text.bin 
-	$(NM) $< | $(gensums_py) $@.text.bin 0x$$(objdump -h $< | grep .text | sed -e 's/ \+/\t/g' | cut -f 5) > $@
+$(GEN_DIR)/md5sums1.c $(GEN_DIR)/md5sums2.c: $$(source)
+	echo "/* Generated md5sums */" > $@
+	for sect in text rodata; do \
+		$(OBJCOPY) -j .$$sect -O binary $< $@.$$sect.bin ; \
+		$(NM) $< | $(gensums_py) $$sect $@.$$sect.bin 0x$$(objdump -h $< | grep .$$sect | sed -e 's/ \+/\t/g' | cut -f 5) >> $@ ; \
+	done
 
-$(image_nocksum): $(image_lds) $(embox_o) $(text_md5sum1) $(symbols_pass2_a) $$(common_prereqs)
+$(image_nocksum): $(image_lds) $(embox_o) $(md5sums1) $(symbols_pass2_a) $$(common_prereqs)
 	$(LD) --relax $(ldflags) \
 	-T $(image_lds) \
 	$(embox_o) \
-	$(text_md5sum1) \
+	$(md5sums1) \
 	$(symbols_pass2_a) \
 	--cref -Map $@.map \
 	-o $@
 
-$(IMAGE): $(image_lds) $(embox_o) $(text_md5sum2) $(symbols_pass2_a) $$(common_prereqs)
+$(IMAGE): $(image_lds) $(embox_o) $(md5sums2) $(symbols_pass2_a) $$(common_prereqs)
 	$(LD) --relax $(ldflags) \
 	-T $(image_lds) \
 	$(embox_o) \
-	$(text_md5sum2) \
+	$(md5sums2) \
 	$(symbols_pass2_a) \
 	--cref -Map $@.map \
 	-o $@

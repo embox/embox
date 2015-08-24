@@ -29,3 +29,14 @@ TEST_CASE("this test should fail integrity check after code modification") {
 
 	*ptr = byte;
 }
+
+TEST_CASE("this test should fail integrity check after rodata modification") {
+	char *ptr = (char *) "INTEGRITY";
+	char byte;
+
+	byte = *ptr;
+	*ptr = (char) ((unsigned char) byte + 1);
+	test_assert_equal(1, mod_integrity_check(test_mod_self()));
+
+	*ptr = byte;
+}
