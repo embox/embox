@@ -22,7 +22,7 @@ static uint8_t translation_table[16384] __attribute__((aligned(1 << 14)));
  * @return
  */
 static int mmu_init(void) {
-	memset(translation_table, 0xff, sizeof(translation_table));
+	memset(translation_table, 0, sizeof(translation_table));
 	/* Setup physical address of the first level translation table */
 	__asm__ __volatile__ (
 		"ldr r0, =%[addr]\n\t"
@@ -76,7 +76,6 @@ mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 void mmu_set_context(mmu_ctx_t ctx) {
 }
 
-
 /**
  * @brief Get address of first translation level
  * @note XXX We have the same ctx for all tasks
@@ -89,12 +88,16 @@ mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
 	return (mmu_pgd_t *) translation_table;
 }
 
+/**
+ * This two functions could seems strange, but
+ * these return values are for supporting secion paging mode
+ */
 mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return 0;
+	return pgd;
 }
 
 mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
-	return 0;
+	return pmd;
 }
 
 mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
@@ -108,7 +111,7 @@ void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
 }
 
 void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
-	*pte = (mmu_pte_t) ((addr & MMU_PAGE_MASK) | ARM_MMU_TYPE_SECTION);
+	*pte = (mmu_pte_t) ((addr & ~MMU_PAGE_MASK) | ARM_MMU_TYPE_SECTION);
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
@@ -119,13 +122,13 @@ void mmu_pte_unset(mmu_pgd_t *pte) {
 }
 
 int mmu_pgd_present(mmu_pgd_t *pgd) {
-	return 0;
+	return 1;
 }
 int mmu_pmd_present(mmu_pmd_t *pmd) {
-	return 0;
+	return 1;
 }
 int mmu_pte_present(mmu_pte_t *pte) {
-	return 0;
+	return (*pte & ARM_MMU_TYPE_SECTION) == ARM_MMU_TYPE_SECTION;
 }
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
