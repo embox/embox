@@ -107,7 +107,8 @@ void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
 void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
 }
 
-void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr) {
+void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
+	*pte = (mmu_pte_t) ((addr & MMU_PAGE_MASK) | ARM_MMU_TYPE_SECTION);
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {

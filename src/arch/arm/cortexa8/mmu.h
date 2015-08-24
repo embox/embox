@@ -25,4 +25,10 @@ typedef uint32_t __mmu_pte_t;
 #define __MMU_PMD_SHIFT	20
 #define __MMU_PGD_SHIFT	20
 
+/* Bits 0:1 are for section mode
+ * Bits 3:2 are for cache and buffer. They are clear for now.
+ * Bit 4 is set for backward compatibility
+ * Bits 10:11 are for access type. Now it's RW for all pages */
+#define ARM_MMU_TYPE_SECTION 0x0C12
+
 #endif /* ARM_MMU_H_ */
