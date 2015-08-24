@@ -76,8 +76,17 @@ mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 void mmu_set_context(mmu_ctx_t ctx) {
 }
 
+
+/**
+ * @brief Get address of first translation level
+ * @note XXX We have the same ctx for all tasks
+ *
+ * @param ctx
+ *
+ * @return Pointer to translation table
+ */
 mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return 0;
+	return (mmu_pgd_t *) translation_table;
 }
 
 mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
