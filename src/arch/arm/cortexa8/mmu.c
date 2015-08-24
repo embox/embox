@@ -7,7 +7,31 @@
  */
 
 #include <asm/regs.h>
+#include <embox/unit.h>
 #include <hal/mmu.h>
+#include <string.h>
+
+EMBOX_UNIT_INIT(mmu_init);
+
+static uint8_t translation_table[16384] __attribute__((aligned(1 << 14)));
+
+/**
+ * @brief Fill translation table and so on
+ * @note Assume MMU is off right now
+ *
+ * @return
+ */
+static int mmu_init(void) {
+	memset(translation_table, 0xff, sizeof(translation_table));
+	/* Setup physical address of the first level translation table */
+	__asm__ __volatile__ (
+		"ldr r0, =%[addr]\n\t"
+		"mcr p15, 0, r0, c2, c0, 0\n\t"
+		"mcr p15, 0, r0, c2, c0, 1"
+		: : [addr] "X" (&translation_table[0])
+	);
+	return 0;
+}
 
 /**
 * @brief Turn MMU on
@@ -24,7 +48,6 @@ void mmu_on(void) {
 	);
 #endif
 }
-
 
 /**
 * @brief Turn MMU off
