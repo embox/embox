@@ -26,13 +26,16 @@ static void mod_print(const struct mod *mod) {
 int main(int argc, char **argv) {
 	const struct mod *mod, *dep;
 	const char *substr_package = NULL, *substr_name = NULL;
-	int print_deps = 0, show_label = 0;
+	int print_deps = 0, show_label = 0, integrity_check = 0;
 	int opt;
 
-	while (-1 != (opt = getopt(argc, argv, "qdlhp:n:"))) {
+	while (-1 != (opt = getopt(argc, argv, "qdclhp:n:"))) {
 		switch (opt) {
 		case 'd':
 			print_deps = 1;
+			break;
+		case 'c':
+			integrity_check = 1;
 			break;
 		case 'h':
 			print_usage();
@@ -53,7 +56,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	printf("\n");
 	mod_foreach(mod) {
 		if ((substr_package && !strstr(mod_pkg_name(mod), substr_package)) ||
 			(substr_name && !strstr(mod_name(mod), substr_name))) {
@@ -62,11 +64,25 @@ int main(int argc, char **argv) {
 		mod_print(mod);
 		printf("\n");
 		if (show_label) {
-			printf("\n\tlabel:%x:%x:%x:%x\n",
+			printf("\tlabel:%x:%x:%x:%x\n",
 					(uint32_t)mod_label(mod)->text.vma,
 					(uint32_t)mod_label(mod)->data.vma,
 					(uint32_t)mod_label(mod)->bss.vma,
 					(uint32_t)mod_label(mod)->rodata.vma);
+		}
+
+		if (integrity_check) {
+			int check = mod_integrity_check(mod);
+
+			printf("\tintegrity: ");
+
+			if (check < 0) {
+				printf("error: %s\n", strerror(-check));
+			} else if (check == 0) {
+				printf("OK\n");
+			} else {
+				printf("FAIL\n");
+			}
 		}
 
 		if (print_deps) {
