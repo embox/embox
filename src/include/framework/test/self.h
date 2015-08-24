@@ -114,7 +114,10 @@
 #define __TEST_CASES_ARRAY \
 	MACRO_CONCAT(__test_cases_in_suite__, __EMBUILD_MOD__)
 
-
+static inline const struct mod *test_mod_self() {
+	extern const struct test_mod mod_self;
+	return &mod_self.mod;
+}
 
 /* Simplify the life of Eclipse CDT. */
 #ifdef __CDT_PARSER__
