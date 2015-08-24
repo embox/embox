@@ -6,8 +6,8 @@
  * @author Michele Di Giorgio
  */
 
-#ifndef RASPI_FRAMEBUFFER_H_
-#define RASPI_FRAMEBUFFER_H_
+#ifndef RASPI_FB_H_
+#define RASPI_FB_H_
 
 #include <stdint.h>
 
@@ -50,14 +50,14 @@ struct raspi_mailbox_regs {
  * Format of the messages to the graphics processor.
  */
 struct raspi_fb_info {
-	uint32_t width_p;	/* width of the physical display */
-	uint32_t height_p;	/* height of the physical display */
-	uint32_t width_v;	/* width of the virtual display */
-	uint32_t height_v;	/* height of the virtual display */
-	uint32_t gpu_pitch;	/* 0 upon request; in response: num bytes between rows*/
-	uint32_t bit_depth;	/* number of bits to allocate in each pixel */
-	uint32_t x;			/* x offset */
-	uint32_t y;			/* y offset */
+	uint32_t width_p;		/* width of the physical display */
+	uint32_t height_p;		/* height of the physical display */
+	uint32_t width_v;		/* width of the virtual display */
+	uint32_t height_v;		/* height of the virtual display */
+	uint32_t gpu_pitch;		/* 0 upon request; in response: num bytes between rows*/
+	uint32_t bit_depth;		/* number of bits to allocate in each pixel */
+	uint32_t x;				/* x offset */
+	uint32_t y;				/* y offset */
 	uint32_t gpu_pointer;	/* actual pointer to the frame buffer */
 	uint32_t gpu_size;		/* size of the frame buffer in bytes */
 } __attribute__((aligned(16)));
@@ -70,4 +70,4 @@ uint32_t mailbox_read(uint32_t channel);
 int init_raspi_fb(uint32_t width, uint32_t height, uint32_t bit_depth,
 	struct raspi_fb_info *fb_info);
 
-#endif
+#endif	/* RASPI_FB_H_ */
