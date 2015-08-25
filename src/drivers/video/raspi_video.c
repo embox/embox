@@ -20,7 +20,7 @@
 EMBOX_UNIT_INIT(raspi_init);
 
 static int raspi_set_var(struct fb_info *info,
-						const struct fb_var_screeninfo *var) {
+		const struct fb_var_screeninfo *var) {
 	struct raspi_fb_info raspi_fb;
 
 	if (var->xres > RASPI_FB_MAX_RES
@@ -39,15 +39,15 @@ static int raspi_set_var(struct fb_info *info,
 	}
 
 	/* Set new frame buffer information */
-	raspi_fb.width_p		= var->xres;
-	raspi_fb.height_p		= var->yres;
-	raspi_fb.bit_depth		= var->bits_per_pixel;
-	raspi_fb.width_v		= var->xres_virtual;
-	raspi_fb.height_v		= var->yres_virtual;
-	raspi_fb.x				= var->xoffset;
-	raspi_fb.y				= var->yoffset;
-	raspi_fb.gpu_pitch		= 0;	// Filled in by the VC
-	raspi_fb.gpu_pointer	= 0;	// Filled in by the VC
+	raspi_fb.width_p        = var->xres;
+	raspi_fb.height_p       = var->yres;
+	raspi_fb.bit_depth      = var->bits_per_pixel;
+	raspi_fb.width_v        = var->xres_virtual;
+	raspi_fb.height_v       = var->yres_virtual;
+	raspi_fb.x              = var->xoffset;
+	raspi_fb.y              = var->yoffset;
+	raspi_fb.gpu_pitch      = 0;    // Filled in by the VC
+	raspi_fb.gpu_pointer    = 0;    // Filled in by the VC
 
 	mailbox_write(((uint32_t) &raspi_fb) + 0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
 	if (mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 ||
@@ -70,9 +70,9 @@ static int raspi_set_var(struct fb_info *info,
 }
 
 static int raspi_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
-	var->xres			= SCREEN_WIDTH;
-	var->yres			= SCREEN_HEIGHT;
-	var->bits_per_pixel	= BIT_DEPTH;
+	var->xres           = SCREEN_WIDTH;
+	var->yres           = SCREEN_HEIGHT;
+	var->bits_per_pixel = BIT_DEPTH;
 
 	return 0;
 }
