@@ -9,7 +9,6 @@ module mmu extends embox.arch.mmu {
 	source "cache.c"
 	source "mmu.c"
 	source "mmu.h"
-	source "mmu_core.S"
 }
 
 module mmu_test extends embox.arch.testtrap {
