@@ -70,11 +70,7 @@ static int raspi_set_var(struct fb_info *info,
 }
 
 static int raspi_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
-	var->xres           = SCREEN_WIDTH;
-	var->yres           = SCREEN_HEIGHT;
-	var->bits_per_pixel = BIT_DEPTH;
-
-	return 0;
+	return -ENOTSUP;
 }
 
 static struct fb_ops raspi_ops = {
