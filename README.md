@@ -50,7 +50,7 @@ $ make
 ```
 
 #### Notes on Mac OS X build
-MacOS's default gcc produces Mach-O binaries, which are unusable outside from MacOS. Crosscompiler should be used in order to build elf. Checkout https://code.google.com/p/embox/source/browse/trunk/crosstool and make
+MacOS's default gcc produces Mach-O binaries, which are unusable outside from MacOS. Crosscompiler should be used in order to build elf. Clone https://github.com/embox/crosstool and make
 ```
 $ ./crosstool.sh i386
 ```
