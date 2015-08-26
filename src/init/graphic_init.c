@@ -12,19 +12,22 @@
 #include <drivers/video/fb_videomodes.h>
 #include <embox/unit.h>
 
-//#include <module/embox/arch/x86/boot/multiboot.h>
-
-#define VESA_MODE_NUMBER OPTION_GET(NUMBER,vesa_mode)
-#define FB_INIT OPTION_GET(NUMBER,fb_init)
+#if !OPTION_GET(BOOLEAN, manual_settings)
+#include <module/embox/arch/x86/boot/multiboot.h>
 
 #define MBOOTMOD embox__arch__x86__boot__multiboot
 
-//#define SET_X   OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
-//#define SET_Y   OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
-//#define SET_BPP OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth)
-#define SET_X   1024	//TODO: remove hardcoded lines
-#define SET_Y   768		//TODO: remove hardcoded lines
-#define SET_BPP 16		//TODO: remove hardcoded lines
+#define SET_X   OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
+#define SET_Y   OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
+#define SET_BPP OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth)
+
+#else
+
+#define SET_X   OPTION_GET(NUMBER, set_x)
+#define SET_Y   OPTION_GET(NUMBER, set_y)
+#define SET_BPP OPTION_GET(NUMBER, set_bpp)
+
+#endif
 
 EMBOX_UNIT_INIT(mode_init);
 
