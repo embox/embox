@@ -168,7 +168,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 	pbuf = buf;
 	ebuf = buf + min(nas->fi->ni.size - desc->cursor, size);
-	while (pbuf - ebuf > 0) {
+	while (pbuf < ebuf) {
 		blkno_t blk = desc->cursor / fsi->block_size;
 		int offset = desc->cursor % fsi->block_size;
 		int read_n;
@@ -181,7 +181,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 			break;
 		}
 
-		read_n = min(fsi->block_size - offset, pbuf - ebuf);
+		read_n = min(fsi->block_size - offset, ebuf - pbuf);
 		memcpy (buf, sector_buff + offset, read_n);
 
 		desc->cursor += read_n;
