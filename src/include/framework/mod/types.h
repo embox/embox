@@ -48,6 +48,7 @@ struct __mod_private {
 struct __mod_section {
 	char   *vma;
 	size_t  len;
+	const char *md5sum;
 };
 
 struct mod_label {
@@ -58,7 +59,7 @@ struct mod_label {
 };
 
 struct mod_sec_label {
-	struct mod_label  label;
+	struct mod_label label;
 	const struct mod *mod;
 };
 
@@ -66,7 +67,7 @@ struct mod_build_info {
 	/* Descriptive information about the module provided by Embuild. */
 	const char *pkg_name; /**< Definition package. */
 	const char *mod_name; /**< Name assigned by EMBuild. */
-	const struct mod_label   *label;   /**< (optional) Security. */
+	const struct mod_label *label;   /**< (optional) Security. */
 	struct logger *const logger;
 	/* Null-terminated array with dependency information. */
 	const struct mod *volatile const *requires,

@@ -121,14 +121,14 @@ extern int mod_activate_app(const struct mod *mod);
  *
  * @param mod
  *
- * @return
- *   Integrity boolean
- * @retval true
- *   If mod is OK
- * @retval false
- *   If mod is broken
+ * @retval -ENOTSUP
+ *   Module integrity check not supported
+ * @retval 0
+ *   Module is OK
+ * @retval 1
+ *   Module is broken
  */
-extern bool mod_check(const struct mod *mod);
+extern int mod_integrity_check(const struct mod *mod);
 
 /**
  * Search for a module with a given FQN (fully.qualified.name)
