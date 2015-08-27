@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
-#include <drivers/video/raspi_fb.h>
+#include <drivers/video/raspi_mailbox.h>
 #include <drivers/video/fb.h>
 #include <mem/page.h>
 #include <util/binalign.h>
@@ -23,6 +23,7 @@ static int raspi_set_var(struct fb_info *info,
 		const struct fb_var_screeninfo *var) {
 	struct raspi_fb_info raspi_fb;
 
+	/* Validate Inputs */
 	if (var->xres > RASPI_FB_MAX_RES
 			|| var->yres > RASPI_FB_MAX_RES
 			|| var->bits_per_pixel > RASPI_FB_MAX_BPP) {
@@ -49,6 +50,12 @@ static int raspi_set_var(struct fb_info *info,
 	raspi_fb.gpu_pitch      = 0;    // Filled in by the VC
 	raspi_fb.gpu_pointer    = 0;    // Filled in by the VC
 
+	/**
+	 * Send the address of the frame buffer + 0x40000000 to the mailbox
+	 *
+	 * By adding 0x40000000, we tell the GPU not to use its cache for these
+	 * writes, which ensures we will be able to see the change
+	 */
 	mailbox_write(((uint32_t) &raspi_fb) + 0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
 	if (mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 ||
 			!raspi_fb.gpu_pointer) {
@@ -79,32 +86,10 @@ static struct fb_ops raspi_ops = {
 };
 
 static int raspi_init(void) {
-//	struct raspi_fb_info raspi_fb;
 	struct fb_info *info;
-	char *mmap_base;
-	size_t mmap_len;
-	/*int ret;
 
-	ret = init_raspi_fb(SCREEN_WIDTH, SCREEN_HEIGHT, BIT_DEPTH, &raspi_fb);
-	if (ret < 0) {
-		return ret;
-	}
-
-	mmap_base = (char *) raspi_fb.gpu_pointer;
-	mmap_len = binalign_bound(raspi_fb.gpu_size, PAGE_SIZE());
-	if (MAP_FAILED == mmap_device_memory(mmap_base,
-				mmap_len,
-					PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) mmap_base)) {
-		return -EIO;
-	}
-*/
-	mmap_base = NULL;
-	mmap_len = 0;
-	info = fb_create(&raspi_ops, mmap_base, mmap_len);
+	info = fb_create(&raspi_ops, NULL, 0);
 	if (info == NULL) {
-//		munmap(mmap_base, mmap_len);
 		return -ENOMEM;
 	}
 

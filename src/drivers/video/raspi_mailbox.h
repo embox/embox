@@ -1,22 +1,18 @@
 /**
  * @file
- * @brief Frame Buffer header for Raspberry Pi
+ * @brief Mailbox Communication mechanism header for Raspberry Pi
  *
  * @date 16.07.15
  * @author Michele Di Giorgio
  */
 
-#ifndef RASPI_FB_H_
-#define RASPI_FB_H_
+#ifndef RASPI_MAILBOX_H_
+#define RASPI_MAILBOX_H_
 
 #include <stdint.h>
 
 #define RASPI_FB_MAX_RES    4096
 #define RASPI_FB_MAX_BPP    32
-
-#define SCREEN_WIDTH     1024
-#define SCREEN_HEIGHT    768
-#define BIT_DEPTH        16		// High Colour
 
 /**
  * The Mailbox gives the ability to send/receive messages to/from the processor
@@ -70,4 +66,4 @@ uint32_t mailbox_read(uint32_t channel);
 int init_raspi_fb(uint32_t width, uint32_t height, uint32_t bit_depth,
 	struct raspi_fb_info *fb_info);
 
-#endif	/* RASPI_FB_H_ */
+#endif	/* RASPI_MAILBOX_H_ */

@@ -1,14 +1,15 @@
 /**
  * @file
- * @brief Frame Buffer implementation for Raspberry Pi
+ * @brief Mailbox Communication mechanism for Raspberry Pi
  *
  * @date 16.07.15
  * @author Michele Di Giorgio
  */
 
 #include <errno.h>
-#include <drivers/video/raspi_fb.h>
-#include <defines/null.h>
+#include <stdint.h>
+
+#include <drivers/video/raspi_mailbox.h>
 
 static volatile struct raspi_mailbox_regs *const mailbox_regs =
 		(volatile struct raspi_mailbox_regs *) BCM2835_MAILBOX_BASE;
@@ -89,50 +90,4 @@ uint32_t mailbox_read(uint32_t channel) {
 	}
 	/* return the message only (top 28 bits of the read data) */
 	return data & BCM2835_MAILBOX_DATA_MASK;
-}
-
-/**
- * Initialise a the frame buffer passed as parameter.
- * Input:
- * - width, of the display (must be lower than RASPI_FB_MAX_RES)
- * - height, of the display (must be lower than RASPI_FB_MAX_RES)
- * - bit_depth, number of bits to allocate in each pixel
- * - fb_info, pointer to a frame buffer information structure
- * Output:
- * - 0 on success
- * - error code, otherwise
- */
-int init_raspi_fb(uint32_t width, uint32_t height, uint32_t bit_depth,
-		struct raspi_fb_info *fb_info) {
-	/* Validate Inputs */
-	if (width > RASPI_FB_MAX_RES || height > RASPI_FB_MAX_RES ||
-		bit_depth > RASPI_FB_MAX_BPP) {
-		return -EINVAL;
-	}
-
-	/* Write inputs into the frame buffer */
-	fb_info->width_p        = width;
-	fb_info->height_p       = height;
-	fb_info->width_v        = width;
-	fb_info->height_v       = height;
-	fb_info->gpu_pitch      = 0;
-	fb_info->bit_depth      = bit_depth;
-	fb_info->x              = 0;
-	fb_info->y              = 0;
-	fb_info->gpu_pointer    = 0;
-	fb_info->gpu_size       = 0;
-
-	/**
-	 * Send the address of the frame buffer + 0x40000000 to the mailbox
-	 *
-	 * By adding 0x40000000, we tell the GPU not to use its cache for these
-	 * writes, which ensures we will be able to see the change
-	 */
-	mailbox_write(((uint32_t) fb_info) + 0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
-	if (mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 ||
-			!fb_info->gpu_pointer) {
-		return -EAGAIN;
-	}
-
-	return 0;
 }
