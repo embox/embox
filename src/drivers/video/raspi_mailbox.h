@@ -63,7 +63,5 @@ struct raspi_fb_info {
  */
 int mailbox_write(uint32_t data, uint32_t channel);
 uint32_t mailbox_read(uint32_t channel);
-int init_raspi_fb(uint32_t width, uint32_t height, uint32_t bit_depth,
-	struct raspi_fb_info *fb_info);
 
 #endif	/* RASPI_MAILBOX_H_ */
