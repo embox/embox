@@ -72,7 +72,13 @@ void mmu_off(void) {
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
-	return 0;
+	mmu_vaddr_t val;
+
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c6, c0, 0" : [out] "=r" (val) :
+	);
+
+	return val;
 }
 
 mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
