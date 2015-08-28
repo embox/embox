@@ -45,25 +45,6 @@ static inline int dfault_handler(uint32_t trap_nr, void *data) {
 	return 1;
 }
 
-TEST_CASE("Writing to read-only memory should cause exception."
-		 " Exception handler should allow write.") {
-	mmu_vaddr_t vaddr = (mmu_vaddr_t) BIGADDR;
-	exception_flag = 0;
-
-	set_fault_handler(MMU_DATA_SECUR, dfault_handler);
-
-	vmem_map_region(ctx, paddr, BIGADDR, VMEM_PAGE_SIZE, 0);
-
-	*((volatile uint32_t *) vaddr) = UNIQ_VAL; /* <- exception */
-
-	test_assert_equal(exception_flag, 1);
-
-	test_assert_equal(*((volatile uint32_t *) vaddr), UNIQ_VAL);
-
-	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
-	set_fault_handler(MMU_DATA_SECUR, NULL);
-}
-
 static inline int pagefault_handler(uint32_t nr, void *data) {
 	int err_addr;
 
