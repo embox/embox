@@ -151,7 +151,7 @@ static inline struct ohci_ed *endp2ohci(struct usb_endp *endp) {
 }
 
 static inline struct usb_endp *ohci2endp(struct ohci_ed *ed) {
-	assert(0, "%s: NYI", __func__);
+	assertf(0, "%s: NYI", __func__);
 	return NULL;
 }
 

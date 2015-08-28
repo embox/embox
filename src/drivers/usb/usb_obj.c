@@ -199,7 +199,7 @@ struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
 	struct usb_request *req;
 
 	req = usb_request_alloc(endp);
-	assert(req, "%s: allocating usb request failed", __func__);
+	assertf(req, "%s: allocating usb request failed", __func__);
 
 	req->endp = endp;
 	req->token = token;

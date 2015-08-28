@@ -197,7 +197,7 @@ static void scsi_sense_input(struct scsi_dev *dev, int res) {
 
 	data = (struct scsi_data_sense *) dev->scsi_data_scratchpad;
 	acode = data->dsns_additional_code;
-	assert(acode == 0x28 || acode == 0x29, "Don't know how to recover "
+	assertf(acode == 0x28 || acode == 0x29, "Don't know how to recover "
 			"unknown error %x", acode);
 
 	/* 0x28 and 0x29 are just required attention, seems that can go on */
@@ -221,7 +221,7 @@ static void scsi_dev_try_release(struct scsi_dev *dev) {
 
 void scsi_dev_recover(struct scsi_dev *dev) {
 
-	assert(dev->holded_state == NULL, "Can't recover recovering procedure");
+	assertf(dev->holded_state == NULL, "Can't recover recovering procedure");
 
 	dev->holded_state = dev->state;
 
