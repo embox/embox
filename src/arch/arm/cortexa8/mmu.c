@@ -135,6 +135,7 @@ void mmu_pgd_unset(mmu_pgd_t *pgd) {
 void mmu_pmd_unset(mmu_pgd_t *pmd) {
 }
 void mmu_pte_unset(mmu_pgd_t *pte) {
+	*pte = 0x0;
 }
 
 int mmu_pgd_present(mmu_pgd_t *pgd) {
