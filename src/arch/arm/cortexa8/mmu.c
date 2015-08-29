@@ -9,6 +9,8 @@
 #include <asm/regs.h>
 #include <embox/unit.h>
 #include <hal/mmu.h>
+#include <mem/vmem.h>
+
 #include <string.h>
 
 EMBOX_UNIT_INIT(mmu_init);
@@ -146,7 +148,8 @@ int mmu_pte_present(mmu_pte_t *pte) {
 }
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
-	*pte = *pte | ARM_MMU_SECTION_WRITE_ACC;
+	if (value & VMEM_PAGE_WRITABLE)
+		*pte |= ARM_MMU_SECTION_WRITE_ACC;
 }
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
 }
