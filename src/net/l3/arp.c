@@ -31,6 +31,14 @@
 #include <net/util/macaddr.h>
 #include <util/log.h>
 
+#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
+
+// Forward declarations
+static void log_arp_hnd_request(const struct arphdr *rarph,
+		uint8_t *dst_paddr, uint8_t *dst_haddr);
+static void log_arp_hnd_reply(const struct arphdr *rarph,
+		const struct arpbody *rarpb);
+
 EMBOX_NET_PACK(ETH_P_ARP, arp_rcv);
 
 static int arp_xmit(struct sk_buff *skb) {
@@ -155,25 +163,9 @@ static int arp_hnd_request(const struct arphdr *arph,
 		return -ENOMEM;
 	}
 
-	log_debug("arp_hnd_request: send reply with ");
-	if (arph->ar_pro == ntohs(ETH_P_IP)) {
-		struct in_addr in;
-		assert(arph->ar_pln == sizeof in);
-		memcpy(&in, dst_paddr, sizeof in);
-		log_debug("%s", inet_ntoa(in));
+	if (LOG_LEVEL >= LOG_DEBUG) {
+		log_arp_hnd_request(arph, &dst_paddr[0], &dst_haddr[0]);
 	}
-	else {
-		log_debug("unknown(%x)", htons(arph->ar_pro));
-	}
-	if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
-		assert(arph->ar_hln == ETH_ALEN);
-		log_debug("[" MACADDR_FMT "]",
-			MACADDR_FMT_ARG(dst_haddr));
-	}
-	else {
-		log_debug("[unknown(%x)]", htons(arph->ar_hrd));
-	}
-	log_debug("\n");
 
 	/* send reply */
 	return arp_send(skb, dev, ntohs(arph->ar_pro), arph->ar_pln,
@@ -194,6 +186,41 @@ static int arp_hnd_reply(const struct arphdr *arph,
 		return ret;
 	}
 
+	if (LOG_LEVEL >= LOG_DEBUG) {
+		log_arp_hnd_reply(arph, arpb);
+	}
+
+	/* free sk_buff */
+	skb_free(skb);
+
+	return 0;
+}
+
+static void log_arp_hnd_request(const struct arphdr *arph,
+		uint8_t *dst_paddr, uint8_t *dst_haddr) {
+		log_debug("arp_hnd_request: send reply with ");
+		if (arph->ar_pro == ntohs(ETH_P_IP)) {
+			struct in_addr in;
+			assert(arph->ar_pln == sizeof in);
+			memcpy(&in, dst_paddr, sizeof in);
+			log_debug("%s", inet_ntoa(in));
+		}
+		else {
+			log_debug("unknown(%x)", htons(arph->ar_pro));
+		}
+		if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
+			assert(arph->ar_hln == ETH_ALEN);
+			log_debug("[" MACADDR_FMT "]",
+				MACADDR_FMT_ARG(dst_haddr));
+		}
+		else {
+			log_debug("[unknown(%x)]", htons(arph->ar_hrd));
+		}
+		log_debug("\n");
+}
+
+static void log_arp_hnd_reply(const struct arphdr *arph,
+		const struct arpbody *arpb) {
 	log_debug("arp_hnd_reply: receive reply with ");
 	if (arph->ar_pro == ntohs(ETH_P_IP)) {
 		struct in_addr in;
@@ -213,11 +240,6 @@ static int arp_hnd_reply(const struct arphdr *arph,
 		log_debug("[unknown(%x)]", htons(arph->ar_hrd));
 	}
 	log_debug("\n");
-
-	/* free sk_buff */
-	skb_free(skb);
-
-	return 0;
 }
 
 static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
