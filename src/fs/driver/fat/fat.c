@@ -92,6 +92,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 		}
 
 		memset(fi, 0, sizeof(struct fat_file_info));
+		fi->fsi = fsi;
 
 		nas = node->nas;
 		nas->fs = dir_nas->fs;
