@@ -27,9 +27,11 @@ static int mmu_init(void) {
 	memset(translation_table, 0, sizeof(translation_table));
 	__asm__ __volatile__ (
 		/* setup c3, Domain Access Control Register */
-		"mov r0, %[dom]\n\t"
+		"mov r0, #0x55\n\t" /* Client for all domains */
+		"orr r0, r0, lsl #8\n\t"
+		"orr r0, r0, lsl #16\n\t"
 		"mcr p15, 0, r0, c3, c0, 0\n\t"
-		: : [dom] "J" (-1) /* Magic number taken from previous mmu_init */
+		: :
 	);
 	/* Setup physical address of the first level translation table */
 	__asm__ __volatile__ (
