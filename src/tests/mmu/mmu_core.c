@@ -72,6 +72,20 @@ TEST_CASE("Pagefault should be considered right.") {
 	set_fault_handler(MMU_DATA_MISS, NULL);
 }
 
+TEST_CASE("Readonly pages shouldn't be written") {
+	exception_flag = 0;
+
+	set_fault_handler(MMU_DATA_MISS, &pagefault_handler); //data mmu miss
+
+	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, 0);
+	*page += 1;
+
+	test_assert_equal(exception_flag, 1);
+
+	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
+	set_fault_handler(MMU_DATA_MISS, NULL);
+}
+
 static int mmu_case_setup(void) {
 	ctx = vmem_current_context();
 	vmem_set_context(ctx);
