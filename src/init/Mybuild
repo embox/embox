@@ -10,19 +10,17 @@ abstract module setup_tty_api {
 }
 
 module GraphicMode extends Display {
-	option number vesa_mode=3
+	option boolean manual_settings = false
+
+	option number set_bpp
 	option number set_x
 	option number set_y
-
-	option number fb_init=1
 
 	source "graphic_init.c"
 
 	depends embox.driver.video.fb
 	depends embox.driver.video.fb_videomodes
 	depends embox.driver.video.vesa_modes
-
-	depends embox.driver.diag
 }
 
 module TextMode extends Display {
