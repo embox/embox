@@ -26,9 +26,8 @@ typedef uint32_t __mmu_pte_t;
 #define __MMU_PGD_SHIFT	20
 
 /* Bits 0:1 are for section mode
- * Bits 3:2 are for cache and buffer. They are clear for now.
- * Bit 4 is set for backward compatibility */
-#define ARM_MMU_TYPE_SECTION 0x0012
+ * Bits 3:2 are for cache and buffer. They are clear for now. */
+#define ARM_MMU_TYPE_SECTION 0x0002
 
 #define ARM_MMU_SECTION_READ_ACC	0x0800
 #define ARM_MMU_SECTION_WRITE_ACC	0x0400
