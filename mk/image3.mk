@@ -218,7 +218,7 @@ $(GEN_DIR)/md5sums1.c $(GEN_DIR)/md5sums2.c: $$(source)
 	echo "/* Generated md5sums */" > $@
 	for sect in text rodata; do \
 		$(OBJCOPY) -j .$$sect -O binary $< $@.$$sect.bin ; \
-		$(NM) $< | $(gensums_py) $$sect $@.$$sect.bin 0x$$(objdump -h $< | grep .$$sect | sed -e 's/ \+/\t/g' | cut -f 5) >> $@ ; \
+		$(NM) $< | $(gensums_py) $$sect $@.$$sect.bin 0x$$($(OBJDUMP) -h $< | grep .$$sect | sed -E "s/ +/ /g" | cut -d " " -f 5) >> $@ ; \
 	done
 
 $(image_nocksum): $(image_lds) $(embox_o) $(md5sums1) $(symbols_pass2_a) $$(common_prereqs)
