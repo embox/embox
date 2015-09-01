@@ -43,6 +43,7 @@ char bootcode[130] =
 	  0x69, 0x6e, 0x20, 0x2e, 0x2e, 0x2e, 0x20, 0x0d, 0x0a, 0x00 };
 
 int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
+	assert(fsi);
 	assert(fsi->bdev);
 	assert(fsi->vi.bytepersec);
 
@@ -579,6 +580,8 @@ static inline int dir_is_root(uint8_t *name) {
 uint32_t fat_open_dir(struct fat_fs_info *fsi,
 		uint8_t *dirname, struct dirinfo *dirinfo) {
 	struct volinfo *volinfo;
+
+	assert(fsi);
 
 	volinfo = &fsi->vi;
 	dirinfo->flags = 0;
