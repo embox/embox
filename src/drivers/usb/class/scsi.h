@@ -135,10 +135,22 @@ struct scsi_cmd_read10 {
 	uint8_t  sr10_control;
 } __attribute__((packed));
 
+
+#define SCSI_CMD_OPCODE_WRITE10 0x2A
+struct scsi_cmd_write10 {
+	uint8_t  sw10_opcode;
+	uint8_t  sw10_flags;
+	uint32_t sw10_lba;
+	uint8_t  sw10_grpnum;
+	uint16_t sw10_transfer_len;
+	uint8_t  sw10_control;
+} __attribute__((packed));
+
 extern const struct scsi_cmd scsi_cmd_template_inquiry;
 extern const struct scsi_cmd scsi_cmd_template_cap10;
 extern const struct scsi_cmd scsi_cmd_template_sense;
 extern const struct scsi_cmd scsi_cmd_template_read10;
+extern const struct scsi_cmd scsi_cmd_template_write10;
 
 int scsi_dev_init(struct scsi_dev *dev);
 void scsi_dev_attached(struct scsi_dev *dev);

@@ -131,7 +131,48 @@ static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
 
 static int scsi_write(block_dev_t *bdev, char *buffer, size_t count,
 		blkno_t blkno) {
-	return -ENOSYS;
+	struct scsi_dev *sdev;
+	int blksize;
+	unsigned int lba;
+	char *bp;
+	int ret;
+
+	assert(bdev);
+	assert(buffer);
+
+	sdev = bdev->privdata;
+	blksize = sdev->blk_size;
+
+	struct scsi_cmd cmd = scsi_cmd_template_write10;
+	cmd.scmd_olen = blksize;
+
+	if (!sdev) {
+		return -ENODEV;
+	}
+
+	scsi_disk_lock(bdev);
+	for (lba = blkno, bp = buffer;
+			count >= blksize;
+			lba++, count -= blksize, bp += blksize) {
+
+		cmd.scmd_lba = lba;
+		cmd.scmd_obuf = bp;
+
+		ret = WAITQ_WAIT(&sdev->wq, scsi_wait_cmd_complete(sdev, &cmd));
+		if (!ret) {
+			ret = scsi_wake_res(sdev);
+		}
+		if (ret) {
+			break;
+		}
+
+	}
+	scsi_disk_unlock(bdev);
+
+	if (ret && bp == buffer) {
+		return ret;
+	}
+	return bp - buffer;
 }
 
 static int scsi_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
