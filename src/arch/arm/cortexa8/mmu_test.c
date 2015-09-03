@@ -8,6 +8,7 @@
 
 #include <string.h>
 
+#include <asm/modes.h>
 #include <hal/test/traps_core.h>
 
 extern void *data_abt_handler_addr;
@@ -22,4 +23,14 @@ void set_fault_handler(enum fault_type type, fault_handler_t handler) {
 		default:
 			return;
 	}
+}
+
+inline void mmu_drop_privileges(void) {
+	__asm__ __volatile__ (
+		"mrs r0, CPSR\n\t"
+		"bic r0, #0xff\n\t"
+		"orr r0, %[mode]\n\t"
+		"msr cpsr, r0\n\t"
+		"mov r0, r0\n\t": : [mode] "J" (ARM_MODE_USR)
+	);
 }
