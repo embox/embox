@@ -47,10 +47,12 @@ arm_trap_table:
 data_abt_prepare:
 	/* Prepare stack and call handler */
 	stmfd r13!, {r14}
-	add r14, pc, #8
+	add r14, pc, #0
 	ldr pc, data_abt_handler_addr
-	sub r13, r13, #8
 	ldmfd r13!, {r14}
+	mrs r0, cpsr
+	orr r0, r0, #0x1F
+	msr cpsr_c, r0
 	mov pc, r14
 
 reset_handler_addr:
