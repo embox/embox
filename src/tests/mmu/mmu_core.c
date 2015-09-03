@@ -78,6 +78,7 @@ TEST_CASE("Readonly pages shouldn't be written") {
 	set_fault_handler(MMU_DATA_MISS, &pagefault_handler); //data mmu miss
 
 	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, 0);
+	mmu_drop_privileges();
 	*page += 1;
 
 	test_assert_equal(exception_flag, 1);
