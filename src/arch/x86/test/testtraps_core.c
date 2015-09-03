@@ -48,3 +48,7 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 traps_env_t *testtraps_env(void) {
 	return test_env;
 }
+
+void mmu_drop_privileges(void) {
+	/* No need to do anything */
+}
