@@ -1,8 +1,18 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import sys
 import re
-import md5
+
+try:
+    # Python2
+    import md5
+    md5factory = md5.new
+    md5dig = lambda m: [ ord(x) for x in m.digest() ]
+except ImportError:
+    # Python3
+    import hashlib
+    md5factory = hashlib.md5
+    md5dig = lambda m: list(m.digest())
 
 def parse(file, sectname):
     vmas = dict()
@@ -28,11 +38,12 @@ def main(nmfile, sectname, sectfile, vma_offset):
     with open(sectfile, 'rb') as f:
         sectdata = f.read()
 
-    for mod, (start, dlen) in stat.iteritems():
+    for mod, (start, dlen) in stat.items():
         datastart = start - vma_offset
-        m = md5.new()
-        m.update(sectdata[datastart : datastart + dlen])
-        print 'const char __module_%s_%s_md5sum[16] = "%s";' % (mod, sectname, ''.join([ '\\x{0:02x}'.format(ord(x)) for x in m.digest() ]))
+        m = md5factory()
+        m.update(bytes(sectdata[datastart : datastart + dlen]))
+        print('const char __module_%s_%s_md5sum[16] = "%s";' %
+                (mod, sectname, ''.join([ '\\x{0:02x}'.format(x) for x in md5dig(m) ])))
 
 if __name__ == '__main__':
     main(sys.stdin, sys.argv[1], sys.argv[2], int(sys.argv[3], 0))
