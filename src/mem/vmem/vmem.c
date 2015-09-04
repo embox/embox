@@ -66,7 +66,8 @@ int vmem_map_kernel(void) {
 
 	uintptr_t kernel_map_start = (uintptr_t) min(
 			min(&_text_vma, &_data_vma),
-			min(&_rodata_vma, &_bss_vma));
+			min(&_rodata_vma, &_bss_vma)
+		) & ~MMU_PAGE_MASK;
 
 	uintptr_t kernel_map_end = (uintptr_t) max(
 			max(	&_text_vma + (size_t) &_text_len,
@@ -75,7 +76,7 @@ int vmem_map_kernel(void) {
 				&_bss_vma + (size_t) &_bss_len_with_reserve));
 
 	err = vmem_kernel_map_marea(
-		(void*) (kernel_map_start & ~MMU_PAGE_MASK),
+		(void*) kernel_map_start,
 		binalign_bound(kernel_map_end - kernel_map_start, MMU_PAGE_SIZE),
 		PROT_WRITE | PROT_READ | PROT_EXEC);
 
