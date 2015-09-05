@@ -31,6 +31,7 @@
 #include <net/util/macaddr.h>
 #include <util/log.h>
 
+#include <framework/mod/options.h>
 #define LOG_LEVEL OPTION_GET(NUMBER, log_level)
 
 // Forward declarations
