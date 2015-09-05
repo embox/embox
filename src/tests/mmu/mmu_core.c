@@ -57,6 +57,11 @@ static inline int pagefault_handler(uint32_t nr, void *data) {
 	return 1; // execute exception-cause instruction once more
 }
 
+static inline int readonly_handler(uint32_t nr, void *data) {
+	exception_flag = 1;
+	return 1;
+}
+
 TEST_CASE("Pagefault should be considered right.") {
 	exception_flag = 0;
 
@@ -68,14 +73,13 @@ TEST_CASE("Pagefault should be considered right.") {
 
 	test_assert_equal(*((unsigned long *) BIGADDR), UNIQ_VAL);
 
-	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
 	set_fault_handler(MMU_DATA_MISS, NULL);
 }
 
 TEST_CASE("Readonly pages shouldn't be written") {
 	exception_flag = 0;
 
-	set_fault_handler(MMU_DATA_MISS, &pagefault_handler); //data mmu miss
+	set_fault_handler(MMU_DATA_MISS, &readonly_handler); //data mmu miss
 
 	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, 0);
 	mmu_drop_privileges();
@@ -83,7 +87,6 @@ TEST_CASE("Readonly pages shouldn't be written") {
 
 	test_assert_equal(exception_flag, 1);
 
-	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
 	set_fault_handler(MMU_DATA_MISS, NULL);
 }
 
@@ -95,11 +98,13 @@ static int mmu_case_setup(void) {
 		vmem_on();
 	}
 
+	vmem_map_region(ctx, (mmu_vaddr_t) page, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, 0);
 	/* XXX hack for page-aligned array. __aligned__ don't work for big pages */
 	page = (char*) (((uintptr_t) mmu_test_buffer + VMEM_PAGE_SIZE - 1) &
 			(~MMU_PAGE_MASK));
 	paddr = (mmu_paddr_t) page;
 	memset(mmu_test_buffer, 0, sizeof mmu_test_buffer);
+	vmem_unmap_region(ctx, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, 0);
 
 	return 0;
 }
