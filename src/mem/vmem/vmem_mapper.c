@@ -26,6 +26,7 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 		vmem_unmap_region(ctx, virt_addr, reg_size, 0);
 	}
 
+	mmu_flush_tlb();
 	return res;
 }
 
