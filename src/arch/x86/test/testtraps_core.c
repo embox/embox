@@ -52,3 +52,7 @@ traps_env_t *testtraps_env(void) {
 void mmu_drop_privileges(void) {
 	/* No need to do anything */
 }
+
+void mmu_sys_privileges(void) {
+	/* No need to do anything */
+}

@@ -59,4 +59,9 @@ extern traps_env_t *testtraps_env(void);
  */
 extern void mmu_drop_privileges(void);
 
+/**
+ * @brief Switch to sys mode to avoid errors in kernel space
+ */
+extern void mmu_sys_privileges(void);
+
 #endif /* TEST_TRAPS_CORE_H_ */

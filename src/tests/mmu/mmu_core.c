@@ -121,6 +121,8 @@ static int mmu_case_teardown(void) {
 	if (vmem_mmu_enabled()) {
 		vmem_off();
 	}
+
+	mmu_sys_privileges();
 	vmem_map_region(ctx, (mmu_vaddr_t) page, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
 	return 0;
 }
