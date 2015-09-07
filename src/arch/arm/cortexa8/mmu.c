@@ -75,6 +75,10 @@ void mmu_off(void) {
 #endif
 }
 
+void mmu_flush_tlb(void) {
+	/* NIY */
+}
+
 mmu_vaddr_t mmu_get_fault_address(void) {
 	mmu_vaddr_t val;
 
