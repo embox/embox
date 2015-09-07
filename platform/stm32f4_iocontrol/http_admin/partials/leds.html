@@ -1,10 +1,10 @@
 <script id="nameChangeDialog" type="text/ng-template">
 	<div class="modal-header">
-		<h3 class="modal-title">Change block name</h3>
+		<h3 class="modal-title">{{ 'CHANGE_TITLE' | translate }}</h3>
 	</div>
 	<div class="modal-body">
 		<form role="form" class="form-group has-feedback" name="nameForm" ng-class="{'has-error' : nameForm.ledPairName.$invalid}">
-			<label for="ledpair_name">Name</label><span> (remain: {{16 - name.length}})</span>
+			<label for="ledpair_name">{{ 'NAME' | translate }}</label><span> ({{ 'REMAIN' | translate }}: {{16 - name.length}})</span>
 			<input type="text" class="form-control" id="ledpair_name" name="ledPairName"
 				ng-maxlength="16"
 				maxlength="16"
@@ -15,8 +15,8 @@
 		</div>
 	</div>
 	<div class="modal-footer">
-		<button class="btn btn-primary" ng-click="ok()">OK</button>
-		<button class="btn btn-warning" ng-click="cancel()">Cancel</button>
+		<button class="btn btn-primary" ng-click="ok()">{{ 'OK' | translate }}</button>
+		<button class="btn btn-warning" ng-click="cancel()">{{ 'CANCEL' | translate }}</button>
 	</div>
 </script>
 
@@ -36,9 +36,9 @@
 		<div ng-repeat="led_pair in block_pair">
 			<div class="block-caption">{{led_pair.index + 1}}</div>
 			<div class="block" ng-class="{'block-error' : led_pair.error}">
-				<led-template led="led_pair.red" led-on="led-red" led-switch="led_switch(led)" led-name="Red"></led-template>
+				<led-template led="led_pair.red" led-on="led-red" led-switch="led_switch(led)" led-name="{{ 'RED' | translate }}"></led-template>
 				<div class="block-desc" ng-dblclick="name_change_request(led_pair)">{{led_pair.name || "&nbsp;" }}</div>
-				<led-template led="led_pair.blue" led-on="led-blue" led-switch="led_switch(led)" led-name="Blue"></led-template>
+				<led-template led="led_pair.blue" led-on="led-blue" led-switch="led_switch(led)" led-name="{{ 'BLUE' | translate }}"></led-template>
 			</div>
 		</div>
 	    <hr>
@@ -47,9 +47,9 @@
 
     <div class="row">
 	<!-- Refresh -->
-	<button type="button" class="btn btn-link" ng-click="update()">Refresh</button>
+	<button type="button" class="btn btn-link" ng-click="update()">{{ 'REFRESH' | translate }}</button>
 	<!-- Save -->
-	<button type="button" class="btn btn-link" ng-click="save()">Save</button>
+	<button type="button" class="btn btn-link" ng-click="save()">{{ 'SAVE' | translate }}</button>
     </div>
 
 </div

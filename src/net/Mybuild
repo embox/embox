@@ -58,10 +58,8 @@ module sock {
 	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
 }
 
-@DefaultImpl(sock_xattr)
-abstract module sock_xattr_api {
-	depends embox.security.smac
-}
+@DefaultImpl(sock_noxattr)
+abstract module sock_xattr_api {}
 
 module sock_xattr extends sock_xattr_api {
 	source "socket/sock_xattr.c"

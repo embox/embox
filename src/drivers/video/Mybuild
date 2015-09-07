@@ -25,6 +25,24 @@ module bochs {
 	@NoRuntime depends embox.compat.libc.all
 }
 
+module raspi_video {
+	source "raspi_video.c"
+
+	@IncludeExport(path="drivers/video")
+	source "raspi_mailbox.h"
+	
+	depends raspi_mailbox
+	@NoRuntime depends fb
+	@NoRuntime depends embox.compat.libc.all
+}
+
+module raspi_mailbox {
+	source "raspi_mailbox.c"
+
+	@IncludeExport(path="drivers/video")
+	source "raspi_mailbox.h"
+}
+
 module cirrus_logic {
 	source "cirrus_logic.c"
 

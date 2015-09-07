@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <embox/test.h>
 
-__EMBOX_TEST_SUITE_AUTORUN("fs write tests", false);
+EMBOX_TEST_SUITE("fs write tests");
 
 #define FS_TEST_MOUNTPOINT "/mnt/fs_test"
 #define FS_TEST_CREAT_MODE 0666

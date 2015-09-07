@@ -13,6 +13,7 @@
 #include <assert.h>
 
 #include <util/array.h>
+#include <lib/crypt/md5.h>
 #include <framework/mod/api.h>
 #include <framework/mod/ops.h>
 #include <framework/mod/types.h>
@@ -98,20 +99,25 @@ int mod_activate_app(const struct mod *mod) {
 	return 0;
 }
 
-bool mod_check(const struct mod *mod) {
-	const struct mod_sec_label *sec_label;
-	assert(mod);
+int mod_integrity_check(const struct mod *mod) {
+	const struct mod_label *label = mod_label(mod);
+	unsigned char md5[16];
 
-	if (!mod->build_info || !mod->build_info->label)
-		return true;
-
-	array_spread_nullterm_foreach(sec_label, __mod_sec_labels) {
-		if (sec_label->mod == mod)
-			return !memcmp(&sec_label->label, mod->build_info->label,
-					sizeof(*mod->build_info->label));
+	if (!label || !label->text.md5sum) {
+		return -ENOTSUP;
 	}
 
-	return true;
+	md5_count((unsigned char *) label->text.vma, label->text.len, md5);
+	if (0 != memcmp(md5, label->text.md5sum, 16)) {
+		return 1;
+	}
+
+	md5_count((unsigned char *) label->rodata.vma, label->rodata.len, md5);
+	if (0 != memcmp(md5, label->rodata.md5sum, 16)) {
+		return 1;
+	}
+
+	return 0;
 }
 
 const struct mod *mod_lookup(const char *fqn) {

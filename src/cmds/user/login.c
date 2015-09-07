@@ -25,7 +25,7 @@
 
 #include <kernel/task.h>
 
-#include <security/seculog.h>
+#include <security/seculog/seculog.h>
 
 #include <crypt.h>
 

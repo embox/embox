@@ -32,6 +32,7 @@ case " $@ " in
 esac
 
 ARG_LINE="$ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
-# echo "$EMBOX_CROSS_COMPILE${cmd#arch-embox-} $@ ${ARG_LINE//$PWD/.}" >&2
-$EMBOX_CROSS_COMPILE${cmd#arch-embox-} "$@" ${ARG_LINE//$PWD/.}
+PWD_ARG_LINE="$(for i in $ARG_LINE; do echo ${i/$PWD/.}; done)"
+# echo "$EMBOX_CROSS_COMPILE${cmd#arch-embox-} $@ $PWD_ARG_LINE" >&2
+$EMBOX_CROSS_COMPILE${cmd#arch-embox-} "$@" $PWD_ARG_LINE
 exit $?

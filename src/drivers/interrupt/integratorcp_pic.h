@@ -1,0 +1,13 @@
+/**
+ * @file
+ *
+ * @data 05 aug 2015
+ * @author: Anton Bondarev
+ */
+
+#ifndef SRC_DRIVERS_INTERRUPT_INTEGRATORCP_PIC_H_
+#define SRC_DRIVERS_INTERRUPT_INTEGRATORCP_PIC_H_
+
+#define __IRQCTRL_IRQS_TOTAL 29
+
+#endif /* SRC_DRIVERS_INTERRUPT_INTEGRATORCP_PIC_H_ */

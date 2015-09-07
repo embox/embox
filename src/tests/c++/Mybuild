@@ -1,6 +1,7 @@
 package embox.test.cxx
 
 module memory {
+	@IncludePath("$(SRC_DIR)/compat/cxx/include")
 	source "memory.cpp"
 
 	depends embox.lib.cxx.lib
