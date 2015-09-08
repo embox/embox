@@ -123,6 +123,12 @@
 		</profile>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
+	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
+	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
+		<pathentry excluding="build/" kind="src" path=""/>
+		<pathentry kind="out" path=""/>
+		<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
+	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
 		<buildTargets>
 			<target name="xconfig" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
@@ -151,6 +157,7 @@
 			</target>
 			<target name="all" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
+				<buildArguments/>
 				<buildTarget>all</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
@@ -254,7 +261,6 @@
 			</target>
 			<target name="config arm stm32_vl" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
 				<buildCommand>make</buildCommand>
-				<buildArguments/>
 				<buildTarget>confload-arm/stm32_vl</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
@@ -268,12 +274,14 @@
 				<useDefaultCommand>false</useDefaultCommand>
 				<runAllBuilders>true</runAllBuilders>
 			</target>
+			<target name="all-docker" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
+				<buildCommand>ssh</buildCommand>
+				<buildArguments>-tti scripts/docker/docker.id_rsa user@${docker_host} -p ${docker_ssh_port} make</buildArguments>
+				<buildTarget>all</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>false</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
 		</buildTargets>
-	</storageModule>
-	<storageModule moduleId="org.eclipse.cdt.core.LanguageSettingsProviders"/>
-	<storageModule moduleId="org.eclipse.cdt.core.pathentry">
-		<pathentry excluding="build/" kind="src" path=""/>
-		<pathentry kind="out" path=""/>
-		<pathentry kind="con" path="org.eclipse.cdt.make.core.DISCOVERED_SCANNER_INFO"/>
 	</storageModule>
 </cproject>
