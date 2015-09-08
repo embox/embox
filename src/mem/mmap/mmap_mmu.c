@@ -20,19 +20,14 @@
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
 
-//static const uint32_t mem_start = 0x04000000;
 static const uint32_t mem_start = 0x40000000;
 static const uint32_t mem_end = 0xFFFFF000;
 
 #define mmu_size_align(size) (((size) + MMU_PAGE_SIZE - 1) & ~(MMU_PAGE_SIZE - 1))
 
 static inline int mmap_active(struct emmap *mmap) {
-#if 0 //TODO this simple version should work
-	return mmap == task_resource_mmap(task_self());
-#else
 	extern int mmap_kernel_inited(void);
 	return mmap_kernel_inited() && mmap == task_resource_mmap(task_self());
-#endif
 }
 
 static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
@@ -79,15 +74,6 @@ static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
 }
 
 void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
-	struct marea *ma_err;
-
-	if ((ma_err = mmap_find_marea(mmap, marea->start))
-			|| (ma_err = mmap_find_marea(mmap, marea->end))) {
-		panic("%s: intersect existing=%p(%p):%p\n new=%p(%p):%p\n", __func__,
-				(void *) ma_err->start, /* XXX */ (void *) ma_err->start, (void *) ma_err->end,
-				(void *) marea->start, /* XXX */ (void *) marea->start, (void *) marea->end);
-	}
-
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
 
@@ -98,8 +84,6 @@ void mmap_del_marea(struct marea *marea) {
 void mmap_init(struct emmap *mmap) {
 	int err;
 	dlist_init(&mmap->marea_list);
-	//mmap->stack_marea = NULL;
-	//mmap->heap_marea = NULL;
 
 	if ((err = vmem_init_context(&mmap->ctx))) {
 		panic("%s: %s\n", __func__, strerror(-err));

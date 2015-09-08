@@ -13,20 +13,31 @@
 #include <hal/mmu.h>
 #include <mem/page.h>
 
+#include <embox/unit.h>
 #include <mem/vmem/vmem_alloc.h>
+#include <util/binalign.h>
 
 #define VIRTUAL_TABLES_COUNT  OPTION_GET(NUMBER, virtual_tables_count)
 #define VIRTUAL_PAGES_COUNT   OPTION_GET(NUMBER, virtual_pages_count)
 
-static char virtual_tables[VIRTUAL_TABLES_COUNT][MMU_PAGE_SIZE] __attribute__((aligned(MMU_PAGE_SIZE)));
-PAGE_ALLOCATOR_DEF(static_table_allocator, virtual_tables, VIRTUAL_TABLES_COUNT, MMU_PAGE_SIZE);
-static struct page_allocator *virt_table_allocator = &static_table_allocator;
+static char *virtual_tables;
+static char *virtual_page_info;
 
+static char virtual_tables_raw[VIRTUAL_TABLES_COUNT + 1][MMU_PAGE_SIZE];
+static struct page_allocator *virt_table_allocator;
+static char virtual_page_info_raw[VIRTUAL_PAGES_COUNT + 1][MMU_PAGE_SIZE];
+static struct page_allocator *virt_page_allocator;
 
-static char virtual_page_info[VIRTUAL_PAGES_COUNT][MMU_PAGE_SIZE] __attribute__((aligned(MMU_PAGE_SIZE)));
-PAGE_ALLOCATOR_DEF(static_page_info_allocator, virtual_page_info, VIRTUAL_PAGES_COUNT, MMU_PAGE_SIZE);
-static struct page_allocator *virt_page_allocator = &static_page_info_allocator;
+EMBOX_UNIT_INIT(vmem_alloc_init);
 
+static int vmem_alloc_init(void) {
+	virtual_tables = (char*) binalign_bound((uintptr_t) virtual_tables_raw, MMU_PAGE_SIZE);
+	virtual_page_info = (char*) binalign_bound((uintptr_t) virtual_page_info_raw, MMU_PAGE_SIZE);
+
+	virt_table_allocator = page_allocator_init(virtual_tables, VIRTUAL_TABLES_COUNT * MMU_PAGE_SIZE, MMU_PAGE_SIZE);
+	virt_page_allocator = page_allocator_init(virtual_page_info, VIRTUAL_PAGES_COUNT * MMU_PAGE_SIZE, MMU_PAGE_SIZE);
+	return 0;
+}
 
 /*
  * ------------------ Alloc ------------------

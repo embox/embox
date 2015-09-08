@@ -5,20 +5,19 @@
  * @date 05.10.2012
  * @author Anton Bulychev
  */
-#include <sys/mman.h>
 
 #include <embox/unit.h>
-
 #include <hal/mmu.h>
+#include <kernel/panic.h>
+#include <kernel/task/resource/mmap.h>
+#include <kernel/task/kernel_task.h>
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 #include <mem/mapping/marea.h>
 #include <mem/mmap.h>
-
-#include <kernel/panic.h>
-
-#include <kernel/task/resource/mmap.h>
-#include <kernel/task/kernel_task.h>
+#include <sys/mman.h>
+#include <util/binalign.h>
+#include <util/math.h>
 
 static int mmu_enabled;
 
@@ -64,33 +63,22 @@ int vmem_map_kernel(void) {
 	int err = 0;
 
 	/* Map sections. */
-	err |= vmem_kernel_map_marea(&_text_vma, (size_t) &_text_len,
-			PROT_WRITE | PROT_READ | PROT_EXEC);
-	err |= vmem_kernel_map_marea(&_data_vma, (size_t) &_data_len,
-			PROT_WRITE | PROT_READ);
-	err |= vmem_kernel_map_marea(&_rodata_vma, (size_t) &_rodata_len,
-			PROT_READ);
-	err |= vmem_kernel_map_marea(&_bss_vma, (size_t) &_bss_len_with_reserve,
-			PROT_WRITE | PROT_READ);
 
-#if 0
-	// XXX below
-	// for sparc
-	err |= vmem_map_on_itself(ctx, (void *) 0x80000000, (size_t) 0x100000,
-			VMEM_PAGE_WRITABLE);
+	uintptr_t kernel_map_start = (uintptr_t) min(
+			min(&_text_vma, &_data_vma),
+			min(&_rodata_vma, &_bss_vma)
+		) & ~MMU_PAGE_MASK;
 
-	// for sparc greth
-	err |= vmem_map_on_itself(ctx, (void *) 0x90000000, (size_t) 0x1000,
-			VMEM_PAGE_WRITABLE);
+	uintptr_t kernel_map_end = (uintptr_t) max(
+			max(	&_text_vma + (size_t) &_text_len,
+				&_data_vma + (size_t) &_data_len),
+			max(	&_rodata_vma + (size_t) &_rodata_len,
+				&_bss_vma + (size_t) &_bss_len_with_reserve));
 
-	// for microblaze
-	err |= vmem_map_on_itself(ctx, (void *) 0x84000000, (size_t) 0x1000,
-			VMEM_PAGE_WRITABLE);
-
-	// mapping x86 video buffer
-	err |= vmem_map_on_itself(ctx, (void *) 0xB8000, (size_t) 0x1000,
-			VMEM_PAGE_WRITABLE);
-#endif
+	err = vmem_kernel_map_marea(
+		(void*) kernel_map_start,
+		binalign_bound(kernel_map_end - kernel_map_start, MMU_PAGE_SIZE),
+		PROT_WRITE | PROT_READ | PROT_EXEC);
 
 	return err;
 }

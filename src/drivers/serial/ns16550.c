@@ -8,7 +8,11 @@
 
 #include <hal/reg.h>
 #include <drivers/diag.h>
+#include <embox/unit.h>
 #include <framework/mod/options.h>
+#include <hal/mmu.h>
+#include <mem/vmem.h>
+#include <util/binalign.h>
 
 #define UART_LSR_DR     0x01            /* Data ready */
 #define UART_LSR_THRE   0x20            /* Xmit holding register empty */
@@ -44,6 +48,20 @@ struct com {
 #define COM3 ((volatile struct com *)COM_BASE)
 #define COM3_RBR (COM3->rbr)
 #define COM3_LSR (COM3->lsr)
+
+EMBOX_UNIT_INIT(ns16550_init);
+
+static int ns16550_init(void) {
+	/* Map one vmem page to handle this device if mmu is used */
+	mmap_device_memory(
+			(void*) (COM_BASE & ~MMU_PAGE_MASK),
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			binalign_bound(sizeof (struct com), MMU_PAGE_SIZE),
+			VMEM_PAGE_WRITABLE,
+			COM_BASE & ~MMU_PAGE_MASK
+			);
+	return 0;
+}
 
 static void ns16550_diag_putc(const struct diag *diag, char ch) {
 	while ((COM3_LSR & UART_LSR_THRE) == 0);

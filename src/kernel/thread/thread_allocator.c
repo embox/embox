@@ -22,7 +22,7 @@ static_assert(STACK_SZ > sizeof(struct thread));
 typedef union thread_pool_entry {
 	struct thread thread;
 	char stack[STACK_SZ];
-} thread_pool_entry_t __attribute__((aligned(PAGE_SIZE())));
+} thread_pool_entry_t;
 
 POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
 

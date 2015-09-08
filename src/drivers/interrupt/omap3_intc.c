@@ -11,7 +11,10 @@
 #include <kernel/critical.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
+#include <hal/mmu.h>
 #include <drivers/irqctrl.h>
+#include <mem/vmem.h>
+#include <util/binalign.h>
 
 #include <kernel/irq.h>
 #include <embox/unit.h>
@@ -69,6 +72,17 @@ void software_init_hook(void) {
 
 
 static int omap3_intc_init(void) {
+	/* Map one vmem page to handle this device if mmu is used */
+	mmap_device_memory(
+			(void*) (OMAP35X_INTC_BASE & ~MMU_PAGE_MASK),
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			binalign_bound(
+				OMAP35X_INTC_ILR(__IRQCTRL_IRQS_TOTAL) - OMAP35X_INTC_BASE,
+				MMU_PAGE_MASK),
+			VMEM_PAGE_WRITABLE,
+			OMAP35X_INTC_BASE & ~MMU_PAGE_MASK
+			);
+
 	return 0;
 }
 

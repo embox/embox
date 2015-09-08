@@ -21,13 +21,14 @@ TEST_TEARDOWN(mmu_case_teardown);
 static mmu_ctx_t ctx;
 static volatile int exception_flag;
 
-static char page[VMEM_PAGE_SIZE] __attribute__((aligned(VMEM_PAGE_SIZE)));
-//static char PAGE2[VMEM_PAGE_SIZE];
-
-static mmu_paddr_t paddr = (mmu_paddr_t) page;
+/* TODO repalce this buffer with page_alloc(). Page size could be like 1MB,
+ * and such static variable will be a bad thing */
+static char mmu_test_buffer[2 * VMEM_PAGE_SIZE];
+static char *page;
+static mmu_paddr_t paddr;
 
 /*mapping to address, assuming there is no mem at here */
-#define BIGADDR 0xf0010000
+#define BIGADDR (0xf0111111 & ~MMU_PAGE_MASK)
 
 /* Unique values that seems to pretty to accidentally happen in mem,
  * used to read-n-check */
@@ -42,25 +43,6 @@ static inline int dfault_handler(uint32_t trap_nr, void *data) {
 
 	/* repeat instruction */
 	return 1;
-}
-
-TEST_CASE("Writing to read-only memory should cause exception."
-		 " Exception handler should allow write.") {
-	mmu_vaddr_t vaddr = (mmu_vaddr_t) BIGADDR;
-	exception_flag = 0;
-
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, dfault_handler);
-
-	vmem_map_region(ctx, paddr, BIGADDR, VMEM_PAGE_SIZE, 0);
-
-	*((volatile uint32_t *) vaddr) = UNIQ_VAL; /* <- exception */
-
-	test_assert_equal(exception_flag, 1);
-
-	test_assert_equal(*((volatile uint32_t *) vaddr), UNIQ_VAL);
-
-	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_SECUR_FAULT, NULL);
 }
 
 static inline int pagefault_handler(uint32_t nr, void *data) {
@@ -78,8 +60,7 @@ static inline int pagefault_handler(uint32_t nr, void *data) {
 TEST_CASE("Pagefault should be considered right.") {
 	exception_flag = 0;
 
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_MISS_FAULT,
-				&pagefault_handler); //data mmu miss
+	set_fault_handler(MMU_DATA_MISS, &pagefault_handler); //data mmu miss
 
 	*((uint32_t *) BIGADDR) = UNIQ_VAL; /* <- exception */
 
@@ -87,21 +68,37 @@ TEST_CASE("Pagefault should be considered right.") {
 
 	test_assert_equal(*((unsigned long *) BIGADDR), UNIQ_VAL);
 
-	vmem_unmap_region(ctx, BIGADDR, VMEM_PAGE_SIZE, 0);
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, MMU_DATA_MISS_FAULT, NULL);
+	set_fault_handler(MMU_DATA_MISS, NULL);
 }
 
-/* TODO: Remove this. */
-//static ipl_t ipl;
+static inline int readonly_handler(uint32_t nr, void *data) {
+	exception_flag = 1;
+
+	/* Remap page with write access */
+	vmem_unmap_region(ctx, (uintptr_t) page, VMEM_PAGE_SIZE, 0);
+	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+
+	return 1;
+}
+
+TEST_CASE("Readonly pages shouldn't be written") {
+	exception_flag = 0;
+
+	set_fault_handler(MMU_DATA_MISS, &readonly_handler); //data mmu miss
+
+	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, 0);
+	mmu_drop_privileges();
+	*page += 1;
+
+	test_assert_equal(exception_flag, 1);
+	test_assert_equal(*page, 1);
+
+	vmem_unmap_region(ctx, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, 0);
+
+	set_fault_handler(MMU_DATA_MISS, NULL);
+}
 
 static int mmu_case_setup(void) {
-#if 0
-	ipl = ipl_save();
-
-	vmem_off();
-	test_assert_zero(vmem_create_context(&ctx));
-	test_assert_zero(vmem_init_context(&ctx));
-#endif
 	ctx = vmem_current_context();
 	vmem_set_context(ctx);
 
@@ -109,7 +106,13 @@ static int mmu_case_setup(void) {
 		vmem_on();
 	}
 
-	memset(page, 0, sizeof page);
+	/* XXX hack for page-aligned array. __aligned__ don't work for big pages */
+	page = (char*) (((uintptr_t) mmu_test_buffer + VMEM_PAGE_SIZE - 1) &
+			(~MMU_PAGE_MASK));
+	paddr = (mmu_paddr_t) page;
+	memset(page, 0, VMEM_PAGE_SIZE);
+
+	vmem_unmap_region(ctx, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, 0);
 
 	return 0;
 }
@@ -118,9 +121,8 @@ static int mmu_case_teardown(void) {
 	if (vmem_mmu_enabled()) {
 		vmem_off();
 	}
-#if 0
-	vmem_free_context(ctx);
-	ipl_restore(ipl);
-#endif
+
+	mmu_sys_privileges();
+	vmem_map_region(ctx, (mmu_vaddr_t) page, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
 	return 0;
 }

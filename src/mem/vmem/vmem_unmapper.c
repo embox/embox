@@ -97,6 +97,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 						try_free_pgd(pgd, ctx);
 					}
 
+					mmu_flush_tlb();
 					return;
 				}
 
@@ -120,5 +121,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 	}
 
 	try_free_pgd(pgd, ctx);
+
+	mmu_flush_tlb();
 }
 

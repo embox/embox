@@ -7,7 +7,6 @@
  */
 
 #include <asm/regs.h>
-#include <module/embox/arch/mmu.h>
 
 .extern arm_trap_table
 
@@ -17,18 +16,8 @@ hardware_init_hook:
 	ldr r0, =arm_trap_table
 	mcr p15, 0, r0, c12, c0, 0
 
-	/* initializing MMU */
-#ifndef NOMMU
-	mov r4, lr
-	bl mmu_init
-	mov lr, r4
-#endif
-
 	/* setup c1, Control Register */
 	mrc p15, 0, r0, c1, c0, 0
-#ifndef NOMMU
-	orr r0, r0, #CR_M /* enabling MMU */
-#endif
 	orr r0, r0, #CR_A /* enabling data abort on unaligned mem access */
 	orr r0, r0, #CR_C /* enabling data caching */
 	orr r0, r0, #CR_Z /* enabling program flow prediction */
