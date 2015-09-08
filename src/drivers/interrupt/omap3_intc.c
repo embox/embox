@@ -72,15 +72,16 @@ void software_init_hook(void) {
 
 
 static int omap3_intc_init(void) {
-#ifndef NOMMU
 	/* Map one vmem page to handle this device if mmu is used */
-	vmem_map_region(0,
-			OMAP35X_INTC_BASE & ~MMU_PAGE_MASK,
-			OMAP35X_INTC_BASE & ~MMU_PAGE_MASK,
-			binalign_bound(	OMAP35X_INTC_ILR(__IRQCTRL_IRQS_TOTAL) - OMAP35X_INTC_BASE,
-					MMU_PAGE_MASK),
-			VMEM_PAGE_WRITABLE);
-#endif
+	mmap_device_memory(
+			(void*) (OMAP35X_INTC_BASE & ~MMU_PAGE_MASK),
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			binalign_bound(
+				OMAP35X_INTC_ILR(__IRQCTRL_IRQS_TOTAL) - OMAP35X_INTC_BASE,
+				MMU_PAGE_MASK),
+			VMEM_PAGE_WRITABLE,
+			OMAP35X_INTC_BASE & ~MMU_PAGE_MASK
+			);
 
 	return 0;
 }

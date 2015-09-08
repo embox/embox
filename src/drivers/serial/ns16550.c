@@ -52,14 +52,14 @@ struct com {
 EMBOX_UNIT_INIT(ns16550_init);
 
 static int ns16550_init(void) {
-#ifndef NOMMU
 	/* Map one vmem page to handle this device if mmu is used */
-	vmem_map_region(0,
-			COM_BASE & ~MMU_PAGE_MASK,
-			COM_BASE & ~MMU_PAGE_MASK,
+	mmap_device_memory(
+			(void*) (COM_BASE & ~MMU_PAGE_MASK),
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
 			binalign_bound(sizeof (struct com), MMU_PAGE_SIZE),
-			VMEM_PAGE_WRITABLE);
-#endif
+			VMEM_PAGE_WRITABLE,
+			COM_BASE & ~MMU_PAGE_MASK
+			);
 	return 0;
 }
 
