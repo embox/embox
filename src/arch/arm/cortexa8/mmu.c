@@ -35,10 +35,9 @@ static int mmu_init(void) {
 	);
 	/* Setup physical address of the first level translation table */
 	__asm__ __volatile__ (
-		"ldr r0, =%[addr]\n\t"
+		"ldr r0, =translation_table\n\t"
 		"mcr p15, 0, r0, c2, c0, 0\n\t"
-		"mcr p15, 0, r0, c2, c0, 1"
-		: : [addr] "X" (&translation_table[0])
+		"mcr p15, 0, r0, c2, c0, 1" : :
 	);
 	return 0;
 }
