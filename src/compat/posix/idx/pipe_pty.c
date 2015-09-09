@@ -151,10 +151,11 @@ static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_op
 	struct idesc_pty *ipty;
 
 	ipty = pool_alloc(&ipty_pool);
-
-	if (ipty) {
-		idesc_init(&ipty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
+	if (!ipty) {
+		return NULL;
 	}
+
+	idesc_init(&ipty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
 
 	ipty->pty = pty;
 
@@ -301,12 +302,12 @@ int ppty(int ptyfds[2]) {
 
 	master = idesc_pty_create(pty, &pty_master_ops);
 	slave = idesc_pty_create(pty, &pty_slave_ops);
-	pty_init(pty, &master->idesc, &slave->idesc);
-
 	if (!master || !slave) {
 		res = ENOMEM;
 		goto out_err;
 	}
+
+	pty_init(pty, &master->idesc, &slave->idesc);
 
 	ptyfds[0] = idesc_table_add(it, &master->idesc, 0);
 	ptyfds[1] = idesc_table_add(it, &slave->idesc, 0);
