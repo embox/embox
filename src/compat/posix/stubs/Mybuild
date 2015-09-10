@@ -5,7 +5,6 @@ static module stubs {
 		"daemon.c",
 		"execl.c",
 		"execlp.c",
-		"execve.c",
 		"execvp.c",
 		"flockfile.c",
 		"ftrylockfile.c",
