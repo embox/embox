@@ -105,6 +105,8 @@ static module perror {
 
 static module scanf {
 	source "scanf.c"
+
+	depends file_ops /* ungetc() */
 }
 
 static module div {
