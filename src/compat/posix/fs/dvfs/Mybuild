@@ -16,15 +16,11 @@ static module file_dvfs extends file {
 	depends lseek_dvfs
 	depends open_dvfs
 	depends ioctl_dvfs
-	depends fstat_dvfs
+	depends fstat
 }
 
 static module ioctl_dvfs {
 	source "ioctl.c"
-}
-
-static module fstat_dvfs {
-	source "fstat.c"
 }
 
 static module chdir_dvfs extends chdir {
