@@ -55,10 +55,10 @@ module file_system_full extends file_system {
 module perm {
 	source "perm.c"
 
-	depends embox.security.api
 	depends embox.compat.posix.util.environ
 	depends embox.compat.posix.proc.uid
-
+	depends embox.fs.core
+	depends embox.security.api
 }
 
 @DefaultImpl(noncache)
