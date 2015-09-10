@@ -20,4 +20,5 @@ package embox.cmd.hw.lsusb
 	''')
 module lsusb {
 	source "lsusb.c"
+	@NoRuntime depends embox.driver.usb.core
 }

@@ -367,7 +367,7 @@ void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request,
 		unsigned short value) {
 	struct usb_hcd *hcd = port->hub->hcd;
 
-	assert(hcd->root_hub == port->hub,
+	assertf(hcd->root_hub == port->hub,
 			"%s: only root hub is supported", __func__);
 
 	hcd->ops->rhub_ctrl(port, request, value);

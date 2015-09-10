@@ -287,7 +287,7 @@ static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 		}
 		if (value & USB_HUB_PORT_RESET) {
 			uint32_t portstat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
-			/* if hardware haven't cleared RESET, 
+			/* if hardware haven't cleared RESET,
 			 * then RESET high signal was not long enough */
 			if (portstat & OHCI_RH_R_RST_W_STRST) {
 				return -EAGAIN;
@@ -387,7 +387,7 @@ static void ohci_ed_sched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 		}
 	}
 
-	assert(i < OHCI_HCCA_INTERRUPT_LIST_N, "%s: there is no empty slot for "
+	assertf(i < OHCI_HCCA_INTERRUPT_LIST_N, "%s: there is no empty slot for "
 			"interrupt request", __func__);
 }
 
@@ -446,7 +446,7 @@ static int ohci_request(struct usb_request *req) {
 		}
 	}
 
-	assert(cnt == 1, "only one token is supported");
+	assertf(cnt == 1, "only one token is supported");
 
 	ohci_ed_fill(ed, req->endp); /* function address could change due bus
 				   enumeration */

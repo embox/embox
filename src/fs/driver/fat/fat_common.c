@@ -43,6 +43,7 @@ char bootcode[130] =
 	  0x69, 0x6e, 0x20, 0x2e, 0x2e, 0x2e, 0x20, 0x0d, 0x0a, 0x00 };
 
 int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
+	assert(fsi);
 	assert(fsi->bdev);
 	assert(fsi->vi.bytepersec);
 
@@ -580,6 +581,8 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 		uint8_t *dirname, struct dirinfo *dirinfo) {
 	struct volinfo *volinfo;
 
+	assert(fsi);
+
 	volinfo = &fsi->vi;
 	dirinfo->flags = 0;
 	dirinfo->currentsector = 0;
@@ -592,7 +595,7 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 					volinfo->dataarea +	((volinfo->rootdir - 2)
 							* volinfo->secperclus));
 		} else {
-			dirinfo->currentcluster = 0;
+			dirinfo->currentcluster = volinfo->rootdir;
 			return fat_read_sector(fsi, dirinfo->p_scratch,
 					volinfo->rootdir);
 		}
@@ -1502,6 +1505,10 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	uint32_t cluster, temp;
 	struct fat_fs_info *fsi;
 
+	assert(fi);
+	assert(di);
+	assert(name);
+
 	fsi = fi->fsi;
 	volinfo = &fsi->vi;
 	fi->volinfo = volinfo;
@@ -1534,7 +1541,9 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	 * that is opened for writing.
 	 */
 
-	fi->dirsector = volinfo->dataarea + (di->fi.cluster - 2) * volinfo->secperclus;
+	//fi->dirsector = volinfo->dataarea + (di->fi.cluster - 2) * volinfo->secperclus;
+	/* 'di' have to be filled already */
+	fi->dirsector = di->currentcluster;
 	fi->diroffset = di->currententry - 1;
 	fi->cluster = cluster;
 	fi->firstcluster = cluster;
@@ -1548,7 +1557,7 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector)) {
 		return DFS_ERRMISC;
 	}
-	memcpy(&(((struct dirent*) fat_sector_buff)[di->currententry - 1]),
+	memcpy(&(((struct dirent*) fat_sector_buff)[fi->diroffset]),
 			&de, sizeof(struct dirent));
 	if (fat_write_sector(fsi, fat_sector_buff, fi->dirsector)) {
 		return DFS_ERRMISC;

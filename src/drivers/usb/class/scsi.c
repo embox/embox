@@ -33,12 +33,19 @@ static void usb_scsi_notify(struct usb_request *req, void *arg) {
 
 int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_t data_len) {
 	struct usb_mass *mass = scsi2mass(sdev);
+	struct scsi_cmd *scmd = cmd;
+	enum usb_direction usb_dir = USB_DIRECTION_IN;
 
 	if (!sdev->attached) {
 		return -ENODEV;
 	}
+	if(scmd->scmd_opcode == 0x2a) {
+		usb_dir = USB_DIRECTION_OUT;
+	} else {
+		usb_dir = USB_DIRECTION_IN;
+	}
 
-	return usb_ms_transfer(mass->usb_dev, cmd, cmd_len, USB_DIRECTION_IN, data, data_len,
+	return usb_ms_transfer(mass->usb_dev, cmd, cmd_len, usb_dir, data, data_len,
 			usb_scsi_notify);
 }
 
@@ -104,6 +111,23 @@ const struct scsi_cmd scsi_cmd_template_read10 = {
 	.scmd_fixup = scsi_fixup_read10,
 };
 
+static void scsi_fixup_write10(void *buf, struct scsi_dev *dev,
+		struct scsi_cmd *cmd) {
+	struct scsi_cmd_write10 *wcmd = buf;
+	const unsigned int blk_size = dev->blk_size;
+
+	assert(blk_size > 0);
+
+	wcmd->sw10_lba = htobe32(cmd->scmd_lba);
+	wcmd->sw10_transfer_len = htobe16(cmd->scmd_olen / blk_size);
+}
+
+const struct scsi_cmd scsi_cmd_template_write10 = {
+	.scmd_opcode = SCSI_CMD_OPCODE_WRITE10,
+	.scmd_len = sizeof(struct scsi_cmd_write10),
+	.scmd_fixup = scsi_fixup_write10,
+};
+
 int scsi_dev_init(struct scsi_dev *dev) {
 	return 0;
 }
@@ -143,7 +167,6 @@ static void scsi_inquiry_input(struct scsi_dev *dev, int res) {
 			!= SCSI_INQIRY_DEVTYPE_BLK) {
 		return;
 	}
-
 
 	scsi_state_transit(dev, &scsi_state_capacity);
 }
@@ -197,7 +220,7 @@ static void scsi_sense_input(struct scsi_dev *dev, int res) {
 
 	data = (struct scsi_data_sense *) dev->scsi_data_scratchpad;
 	acode = data->dsns_additional_code;
-	assert(acode == 0x28 || acode == 0x29, "Don't know how to recover "
+	assertf(acode == 0x28 || acode == 0x29, "Don't know how to recover "
 			"unknown error %x", acode);
 
 	/* 0x28 and 0x29 are just required attention, seems that can go on */
@@ -221,7 +244,7 @@ static void scsi_dev_try_release(struct scsi_dev *dev) {
 
 void scsi_dev_recover(struct scsi_dev *dev) {
 
-	assert(dev->holded_state == NULL, "Can't recover recovering procedure");
+	assertf(dev->holded_state == NULL, "Can't recover recovering procedure");
 
 	dev->holded_state = dev->state;
 

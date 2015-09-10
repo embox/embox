@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <libgen.h>
 
 #include <fs/fat.h>
 #include <fs/file_desc.h>
@@ -92,6 +93,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 		}
 
 		memset(fi, 0, sizeof(struct fat_file_info));
+		fi->fsi = fsi;
 
 		nas = node->nas;
 		nas->fs = dir_nas->fs;
@@ -379,10 +381,32 @@ static int fatfs_mount(void *dev, void *dir) {
 	return rc;
 }
 
+/**
+* @brief Read related dir entries into dir buffer
+*
+* @param fsi Used to determine bdev and fat type (12/16/32)
+* @param di  Pointer to dirinfo structure
+*
+* @return Negative error number
+* @retval 0 Success
+*/
+static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
+	struct volinfo *vi = &fsi->vi;
+	if (vi->filesystem == FAT32)
+		return fat_read_sector(fsi, fat_sector_buff,
+		                       vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
+	else
+		return fat_read_sector(fsi, fat_sector_buff, vi->rootdir);
+}
+
 static int fatfs_create(struct node *parent_node, struct node *node) {
 	struct nas *parent_nas, *nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
+	struct dirinfo di;
+	char dir_buff[FAT_MAX_SECTOR_SIZE];
+	char dir_path[PATH_MAX];
+	char *dpath;
 	int rc;
 	char tmppath[PATH_MAX];
 
@@ -395,6 +419,15 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 	nas = node->nas;
 	parent_nas = parent_node->nas;
 	nas->fi->ni.size = 0;
+
+	memset(&di,0, sizeof(di));
+	di.p_scratch = (uint8_t *) dir_buff;
+
+	vfs_get_relative_path(parent_nas->node, dir_path, PATH_MAX);
+	dpath = basename(dir_path);
+	if (fat_open_dir(parent_nas->fs->fsi, (uint8_t *) dpath, &di)) {
+		return -ENODEV;
+	}
 
 	if (NULL == fat_fi_alloc(nas, parent_nas->fs)) {
 		return -ENOMEM;
@@ -409,7 +442,7 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 		.volinfo = &fsi->vi,
 	};
 
-	if (0 != fat_create_file(fi, NULL, tmppath, node->mode)) {
+	if (0 != fat_create_file(fi, &di, tmppath, node->mode)) {
 		return -EIO;
 	}
 
