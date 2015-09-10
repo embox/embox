@@ -45,23 +45,53 @@ static module fseek {
 static module printf {
 	source "printf.c"
 	source "fprintf.c"
+
+	depends fputc
+	depends fputs
+	/* gcc automatically repalces printf()
+	 * w/ puts() if no arguments after format are given
+	 */
 }
 
-static module file_ops {
+static module fwrite {
+	source "fwrite.c"
+
+	depends embox.compat.posix.fs.write
+	depends funopen
+}
+
+static module fputc {
+	source "fputc.c"
+
+	depends fwrite
+	depends stdio_static
+}
+
+static module fputs {
+	source "fputs.c"
+
+	depends fputc
+}
+
+static module stdio_static {
 	source "stdfile_static.c"
+}
+
+static module funopen {
+	source "funopen.c"
+
+	depends file_pool
+}
+static module file_ops {
 
 	source "fgetc.c"
 	source "ungetc.c"
 	source "fgets.c"
 
-	source "funopen.c"
 	source "fileno.c"
 
 	source "fread.c"
 	depends embox.compat.posix.fs.read
-
-	source "fwrite.c"
-	depends embox.compat.posix.fs.write
 
 	source "fioctl.c"
 	source "fflush.c"
@@ -73,15 +103,15 @@ static module file_ops {
 	depends file_pool
 	depends embox.compat.posix.fs.file_ops
 
-
-	source "fputc.c"
-	source "fputs.c"
-
 	source "printf.c"
 	source "fprintf.c"
 
 	@NoRuntime depends print
 	depends open
+	depends fputc
+	depends fputs
+	depends fwrite
+	depends stdio_static
 }
 
 static module rename {
