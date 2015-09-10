@@ -108,13 +108,7 @@ static struct servent * explore_serv(const char *servname,
 
 	if (hints->ai_protocol != 0) {
 		pe = getprotobynumber(hints->ai_protocol);
-#if 0
-		if (pe == NULL) {
-			return NULL; /* error: bad protocol */
-		}
-#else
 		proto = pe != NULL ? pe->p_name : NULL;
-#endif
 	}
 	else {
 		proto = NULL;

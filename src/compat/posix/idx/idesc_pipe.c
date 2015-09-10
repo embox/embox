@@ -197,23 +197,6 @@ static ssize_t pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 }
 
 static int pipe_fcntl(struct idesc *data, int cmd, void * args) {
-#if 0
-	struct pipe *pipe;
-	size_t size;
-
-	pipe = (struct pipe*) task_idx_desc_data(data);
-
-	switch (cmd) {
-	case F_GETPIPE_SZ:
-		return pipe->buf_size;
-	case F_SETPIPE_SZ:
-		size = va_arg(args, size_t);
-		pipe_set_buf_size(pipe, size);
-		break;
-	default:
-		break;
-	}
-#endif
 	return 0;
 }
 
