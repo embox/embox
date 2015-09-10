@@ -8,4 +8,6 @@ module serial {
 
 	depends tty_repo
 	depends tty
+
+	depends embox.fs.file_desc
 }
