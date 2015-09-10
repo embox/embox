@@ -78,7 +78,9 @@ static module file_ops {
 
 	source "printf.c"
 	source "fprintf.c"
+
 	@NoRuntime depends print
+	depends open
 }
 
 static module rename {
