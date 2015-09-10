@@ -55,16 +55,8 @@ int ch_to_digit(char ch, int base) {
 }
 
 static void unscanchar(const char **str, int ch) {
-	/*	extern int ungetchar();*/
 	if ((unsigned int) str >= 2) {
-#if 1
 		(*str) --;
-
-		/*int *p;
-		 p = *str - 4;
-		 *p = ch;
-		 *str = p;*/
-#endif
 	} else if ((int) str == 1) {
 		ungetc(ch, file);
 	} else {
@@ -136,7 +128,6 @@ static int scan_int(const char **in, int base, int widht, int *res) {
 		}
 		not_empty = 1;
 		dst = base * dst + ch_to_digit(ch, base);
-//		ch = scanchar(in);
 	}
 
 	if (!not_empty) {
@@ -148,38 +139,6 @@ static int scan_int(const char **in, int base, int widht, int *res) {
 	*res = dst;
 	return 0;
 }
-#if 0
-static double scan_double(char **in, int base, int width) {
-	int neg = 0;
-	double dst = 0;
-	int ch;
-	int i;
-
-	trim_leading(in);
-
-	for (i = 0; (ch = scanchar(in)) != EOF; i++) {
-		if (i == 0 && (ch == '-' || ch == '+')) {
-			neg = (ch == '-');
-			continue;
-		}
-
-		if (!isdigit(ch)) {
-			ungetchar(ch);
-			break;
-		}
-		/*for different bases*/
-		if (base >10)
-		dst = dst * base + (ch - '0' - 7);
-		else
-		dst = dst * base + (ch - '0');
-	}
-
-	if (neg)
-	dst = -dst;
-	return dst;
-}
-#endif
-
 #define OPS_LEN_MIN           0x00000040 /* s_char (d, i); u_char (u, o, x, X); s_char* (n) */
 #define OPS_LEN_SHORT         0x00000080 /* short (d, i); u_short (u, o, x, X); short* (n) */
 #define OPS_LEN_LONG          0x00000100 /* long (d, i); u_long (u, o, x, X); wint_t (c); wchar_t(s); long* (n) */
@@ -226,9 +185,6 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 's': {
 				char *dst = va_arg(args, char*);
 				int ch;
-#if 0
-				trim_leading(in);
-#endif
 				while (EOF != (ch = scanchar(in)) && widht--)
 					*dst++ = (char) ch;
 				*dst = '\0';
@@ -239,9 +195,6 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 'c': {
 				int dst;
 
-#if 0
-				trim_leading(in);
-#endif
 				dst = scanchar(in);
 				*va_arg(args, char*) = dst;
 				++converted;
@@ -291,15 +244,6 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				++converted;
 			}
 				break;
-#if 0
-			case 'D': {
-					double dst;
-					dst = scan_double(in,10,widht);
-					*va_arg(args, int*) = dst;
-					++converted;
-				}
-				break;
-#endif
 			case 'o': {
 				int dst;
 				if (0 != scan_int(in, 8, widht, &dst)) {
@@ -311,15 +255,6 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				++converted;
 			}
 				break;
-#if 0
-			case 'O': {
-				double dst;
-				dst = scan_double(in,8,widht);
-				va_arg(args, int) = dst;
-				++converted;
-			}
-				break;
-#endif
 			case 'x': {
 				int dst;
 				if (0 != scan_int(in, 16, widht, &dst)) {
@@ -330,15 +265,6 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				++converted;
 			}
 				break;
-#if 0
-			case 'X': {
-				double dst;
-				dst = scan_double(in, 16, widht);
-				va_arg(args, int) = dst;
-				++converted;
-			}
-				break;
-#endif
 			}
 			fmt++;
 		} else {
