@@ -209,10 +209,12 @@ int inode_fill(struct super_block *sb, struct inode *inode,
 		.i_dentry  = dentry,
 		.i_sb      = sb,
 		.i_ops     = sb ? sb->sb_iops : NULL,
+		/* Explicitly save some old fields. The rest will be zero. */
 		.start_pos = inode->start_pos,
 		.i_no      = inode->i_no,
 		.i_data    = inode->i_data,
 		.flags     = inode->flags,
+		.length    = inode->length,
 	};
 
 	return 0;
