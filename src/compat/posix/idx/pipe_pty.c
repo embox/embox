@@ -42,13 +42,6 @@ struct idesc_pty {
 POOL_DEF(pty_pool, struct pty, MAX_PTY);
 POOL_DEF(ipty_pool, struct idesc_pty, 2 * MAX_PTY);
 
-#if 0
-struct pty {
-	struct pty pty;
-	/*struct idesc *master, *slave;*/
-};
-#endif
-
 static void pty_out_wake(struct tty *t) {
 	struct pty *pty = pty_from_tty(t);
 
@@ -174,38 +167,6 @@ static void idesc_pty_delete(struct idesc_pty *ipty, struct idesc **idesc) {
 
 	pool_free(&ipty_pool, ipty);
 }
-
-#if 0
-static int pty_fixup_error(struct idesc *idesc, int code) {
-	struct pty *pty;
-	struct idesc *idesc_other;
-
-	/* Negative => error, positive => some data read */
-	if (code != 0) {
-		return code;
-	}
-
-	pty = ((struct idesc_pty *) idesc)->pty;
-
-	if (idesc == pty->master) {
-		idesc_other = pty->slave;
-	} else {
-		assert(idesc == pty->slave);
-		idesc_other = pty->master;
-	}
-
-	if (idesc_other == NULL) {
-		return 0;
-	}
-
-//	if (code == -EAGAIN) {
-//		return -EAGAIN;
-//	}
-
-	assert(idesc->idesc_flags & O_NONBLOCK);
-	return -EAGAIN;
-}
-#endif
 
 static void pty_close(struct idesc *idesc) {
 	struct idesc_pty *ipty = (struct idesc_pty *) idesc;

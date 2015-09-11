@@ -150,7 +150,9 @@ struct dentry *dvfs_alloc_dentry(void) {
 	return dentry;
 }
 
-/* @brief Remove dentry from pool
+extern int dvfs_cache_del(struct dentry *dentry);
+/**
+ * @brief Remove dentry from pool
  */
 int dvfs_destroy_dentry(struct dentry *dentry) {
 	assert(dentry->usage_count >= 0);
@@ -160,6 +162,7 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 		dentry->parent->usage_count--;
 		dlist_del(&dentry->children_lnk);
 		dlist_del(&dentry->d_lnk);
+		dvfs_cache_del(dentry);
 		pool_free(&dentry_pool, dentry);
 		return 0;
 	} else
@@ -206,10 +209,12 @@ int inode_fill(struct super_block *sb, struct inode *inode,
 		.i_dentry  = dentry,
 		.i_sb      = sb,
 		.i_ops     = sb ? sb->sb_iops : NULL,
+		/* Explicitly save some old fields. The rest will be zero. */
 		.start_pos = inode->start_pos,
 		.i_no      = inode->i_no,
 		.i_data    = inode->i_data,
 		.flags     = inode->flags,
+		.length    = inode->length,
 	};
 
 	return 0;

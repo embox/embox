@@ -18,4 +18,5 @@ module smac_adm {
 	depends embox.security.smac
 	depends embox.security.smac_user_dynamic_db
 	depends embox.compat.libc.stdlib.system
+	depends embox.compat.libc.stdio.fputs
 }

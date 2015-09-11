@@ -46,11 +46,13 @@ int stat(const char *path, struct stat *buf) {
 	if (res < 0)
 		return res;
 
+	assert(d);
+
 	*buf = (struct stat) {
-		.st_dev     = d->d_sb->bdev->id,
+		.st_dev     = (d && d->d_sb && d->d_sb->bdev) ? d->d_sb->bdev->id : 0,
 		.st_ino     = d->d_inode->i_no,
 		.st_nlink   = 1,
-		.st_size    = d->d_inode->length,
+		.st_size    = (d && d->d_inode) ? d->d_inode->length : 0,
 		.st_blksize = 512,
 		.st_mode    = (d->flags & O_DIRECTORY ? S_IFDIR : S_IFREG),
 	};

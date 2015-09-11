@@ -31,6 +31,7 @@ module virtio {
 	depends embox.net.dev
 	depends embox.net.entry_api
 	depends embox.driver.virtio
+	depends embox.net.core
 }
 
 module ti816x {
