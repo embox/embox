@@ -57,6 +57,8 @@ static module fwrite {
 	source "fwrite.c"
 
 	depends embox.compat.posix.fs.write
+	depends embox.kernel.task.resource.errno
+
 	depends funopen
 }
 
