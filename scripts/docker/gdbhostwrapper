@@ -9,7 +9,10 @@ for i in 1 2 3 9 14 15; do
 	trap "on_sig $i;" $i
 done
 
-EMBOX_DIR=$(dirname $(readlink -f $0))/../..
+function myreadlink() {
+	(cd "$1" && echo "$(pwd -P)")
+}
+EMBOX_DIR=$(myreadlink $(dirname $0)/../../)
 
 $EMBOX_DIR/scripts/docker/docker_run.sh \
 	PROJECT_LOC=$EMBOX_DIR \
