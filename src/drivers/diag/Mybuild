@@ -8,6 +8,12 @@ module mem_diag extends diag_api {
 	source "mem_diag.c"
 }
 
+module xen_diag extends diag_api {
+	option number buffer_len = 128
+	option number buffer_addr = 0
+	source "xen_diag.c"
+}
+
 module no_diag extends diag_api {
 	source "no_diag.c"
 }
