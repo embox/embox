@@ -32,13 +32,16 @@ int pipe_test_teardown(void) {
 }
 
 TEST_CASE("reading small chunks from big data should be successfull") {
+	int ret;
 
-	write(pipe_testfd[1], "abcd", 4);
+	ret = write(pipe_testfd[1], "abcd", 4);
+	test_assert(ret != -1);
 
 	for (int i = 0; i < 4; i++) {
 		char ch;
 
-		test_assert(1 == read(pipe_testfd[0], &ch, 1));
+		ret = read(pipe_testfd[0], &ch, 1);
+		test_assert(1 == ret);
 
 		test_emit(ch);
 	}
@@ -48,16 +51,19 @@ TEST_CASE("reading small chunks from big data should be successfull") {
 
 TEST_CASE("reading big chunk from smalls should be successfull") {
 	char buf[5];
+	int ret;
 
 	for (int i = 0; i < 4; i++) {
 		char ch;
 
 		ch = 'a' + i;
 
-		test_assert(1 == write(pipe_testfd[1], &ch, 1));
+		ret = write(pipe_testfd[1], &ch, 1);
+		test_assert(1 == ret);
 	}
 
-	read(pipe_testfd[0], buf, 4);
+	ret = read(pipe_testfd[0], buf, 4);
+	test_assert(ret == 4);
 
 	test_assert_zero(strncmp(buf, "abcd", 4));
 }

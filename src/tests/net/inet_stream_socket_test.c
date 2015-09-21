@@ -69,8 +69,8 @@ TEST_CASE("accept() fails on non-listening sockets") {
 
 TEST_CASE("accept() can accept incoming connections") {
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
-
-	test_assert(0 <= (a = accept(l, to_sa(&addr), &addrlen)));
+	a = accept(l, to_sa(&addr), &addrlen);
+	test_assert(0 <= a);
 	test_assert_equal(sizeof addr, addrlen);
 
 	test_assert_zero(close(a));
@@ -112,7 +112,8 @@ TEST_CASE("recv(), recvfrom() and recvmsg() fails on listening"
 TEST_CASE("send...() and recv...() works") {
 	struct sockaddr_in tmp;
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
-	test_assert(0 <= (a = accept(l, to_sa(&addr), &addrlen)));
+	a = accept(l, to_sa(&addr), &addrlen);
+	test_assert(0 <= a);
 	test_assert_zero(fcntl(a, F_SETFD, O_NONBLOCK));
 
 	test_assert_equal(0, send(c, NULL, 0, 0));
@@ -142,12 +143,15 @@ TEST_CASE("accept() returns first connected client") {
 	test_assert(other_c >= 0);
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 	test_assert_zero(connect(other_c, to_sa(&addr), addrlen));
-	test_assert(0 <= (a = accept(l, to_sa(&addr), &addrlen)));
+	a = accept(l, to_sa(&addr), &addrlen);
+	test_assert(0 <= a);
 	test_assert_zero(fcntl(a, F_SETFD, O_NONBLOCK));
 
 	test_assert_equal(1, send(c, "a", 1, 0));
 	test_assert_equal(1, recv(a, buf, 2, 0));
 	test_assert_equal('a', buf[0]);
+
+	close(other_c);
 }
 
 TEST_CASE("getsockname() returns not unspecified address when"

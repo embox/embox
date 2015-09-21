@@ -71,7 +71,6 @@ int main(int argc, char **argv) {
 
 	while ((i = getopt(argc, argv, "A:nFV")) != EOF) {
 		switch (i) {
-			case -1:
 			case 'F':
 				break;
 			case 'A':

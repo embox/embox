@@ -278,13 +278,20 @@ static struct pipe *pipe_alloc(void) {
 	struct ring_buff *pipe_buff;
 	void *storage;
 
-	pipe = storage = NULL;
-	pipe_buff = NULL;
-
-	if (!(storage = sysmalloc(DEFAULT_PIPE_BUFFER_SIZE))
-				|| !(pipe = sysmalloc(sizeof(struct pipe)))
-				|| !(pipe_buff = sysmalloc(sizeof(struct ring_buff)))) {
-		goto free_memory;
+	storage = sysmalloc(DEFAULT_PIPE_BUFFER_SIZE);
+	if (!storage) {
+		return NULL;
+	}
+	pipe = sysmalloc(sizeof(struct pipe));
+	if (!pipe) {
+		sysfree(storage);
+		return NULL;
+	}
+	pipe_buff = sysmalloc(sizeof(struct ring_buff));
+	if (!pipe_buff) {
+		sysfree(storage);
+		sysfree(pipe);
+		return NULL;
 	}
 
 	pipe->buff = pipe_buff;
@@ -294,12 +301,6 @@ static struct pipe *pipe_alloc(void) {
 	mutex_init(&pipe->mutex);
 
 	return pipe;
-
-free_memory:
-	if (storage)   sysfree(storage);
-	if (pipe_buff) sysfree(pipe_buff);
-	if (pipe)      sysfree(pipe);
-	return NULL;
 }
 
 static void pipe_free(struct pipe *pipe) {

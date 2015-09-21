@@ -23,8 +23,8 @@ int main(int argc, char **argv) {
 	char buff;
 
 	if (argc < 2) {
-		printf("Please enter correct file name\n");
-		return 0;
+		print_usage();
+		return -EINVAL;
 	}
 
 	while (-1 != (opt = getopt(argc - 1, argv, "nh"))) {
@@ -43,10 +43,6 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (argc < 2) {
-		print_usage();
-		return 0;
-	}
 	if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
 		printf("Can't open file %s\n", argv[argc - 1]);
 		return -errno;
