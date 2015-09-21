@@ -44,17 +44,6 @@ arm_trap_table:
     ldr pc, irq_handler_addr
     ldr pc, fiq_handler_addr
 
-data_abt_prepare:
-	/* Prepare stack and call handler */
-	stmfd r13!, {r14}
-	add r14, pc, #0
-	ldr pc, data_abt_handler_addr
-	ldmfd r13!, {r14}
-	mrs r0, cpsr
-	orr r0, r0, #0x1F
-	msr cpsr_c, r0
-	mov pc, r14
-
 reset_handler_addr:
     .word reset_handler
 undef_handler_addr:
@@ -70,6 +59,17 @@ irq_handler_addr:
     .word irq_handler
 fiq_handler_addr:
     .word fiq_handler
+
+data_abt_prepare:
+	/* Prepare stack and call handler */
+	stmfd r13!, {r14}
+	add r14, pc, #0
+	ldr pc, data_abt_handler_addr
+	ldmfd r13!, {r14}
+	mrs r0, cpsr
+	orr r0, r0, #0x1F
+	msr cpsr_c, r0
+	mov pc, r14
 
 .text
 .global start
