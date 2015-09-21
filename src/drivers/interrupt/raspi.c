@@ -10,11 +10,21 @@
 
 #include <assert.h>
 #include <stdint.h>
+
+#include <sys/mman.h>
+#include <hal/mmu.h>
+#include <mem/vmem.h>
+#include <util/binalign.h>
+
 #include <util/bit.h>
 
 #include <kernel/irq.h>
 #include <drivers/irqctrl.h>
 #include <kernel/panic.h>
+
+#include <embox/unit.h>
+
+EMBOX_UNIT_INIT(this_init);
 
 #define BCM2835_INTERRUPT_BASE 0x2000B200
 
@@ -58,6 +68,19 @@ struct raspi_interrupt_regs {
 
 static volatile struct raspi_interrupt_regs * const regs =
         (volatile struct raspi_interrupt_regs*)((int)BCM2835_INTERRUPT_BASE);
+
+
+static int this_init(void) {
+	/* Map one vmem page to handle this device if mmu is used */
+	mmap_device_memory(
+			(void*) ((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK),
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			binalign_bound(sizeof(struct raspi_interrupt_regs), MMU_PAGE_SIZE),
+			VMEM_PAGE_WRITABLE,
+			((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK)
+			);
+	return 0;
+}
 
 void irqctrl_enable(unsigned int interrupt_nr) {
 	if (interrupt_nr < BANK_CAPACITY) {
@@ -120,3 +143,4 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	panic(__func__);
 }
+
