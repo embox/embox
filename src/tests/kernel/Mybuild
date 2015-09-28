@@ -20,6 +20,7 @@ module timer_test {
 	depends embox.kernel.timer.strategy.api
 	depends embox.framework.test
 	depends embox.kernel.time.timer_handler
+	depends embox.compat.posix.util.sleep
 }
 
 @TestFor(embox.kernel.timer.strategy.api)
