@@ -29,6 +29,7 @@ module file_desc {
 	//depends index_operation
 	depends xattr
 
+	depends embox.fs.syslib.perm
 	depends embox.kernel.task.resource.idesc_table
 }
 
