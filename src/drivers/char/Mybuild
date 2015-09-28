@@ -6,10 +6,17 @@ module terminal {
 	depends embox.driver.terminal.vt
 }
 
-module char_dev {
+@DefaultImpl(char_dev_old)
+abstract module char_dev {
+}
+
+module char_dev_old extends char_dev {
 	source "char_dev.c"
 
 	depends embox.fs.core
 	depends embox.fs.driver.devfs
 }
 
+module char_dev_stub extends char_dev {
+	source "char_dev_stub.c"
+}
