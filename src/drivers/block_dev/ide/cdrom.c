@@ -211,46 +211,31 @@ static block_dev_driver_t idecd_pio_driver = {
 };
 
 static int idecd_init (void *args) {
-//	struct ide_tab *ide;
 	hd_t *drive;
 	size_t size;
-//	int i;
 	char   path[PATH_MAX];
-#if 0
-	ide = ide_get_drive();
+	drive = (hd_t *)args;
+	/* Make new device */
+	if (drive->media == IDE_CDROM) {
+		*path = 0;
+		strcat(path, "/dev/cd#");
+		if (0 > (drive->idx = block_dev_named(path, &idecd_idx))) {
+			return drive->idx;
+		}
+		drive->bdev = block_dev_create(path, &idecd_pio_driver, drive);
 
-	for(i = 0; i < HD_DRIVES; i++) {
-		if (NULL == ide->drive[i]) {
-			continue;
+		if (NULL != drive->bdev) {
+			if (drive->blks <= 0) {
+				drive->blks = atapi_read_capacity(drive);
+			}
+			size = drive->blks * CDSECTORSIZE;
+			block_dev(drive->bdev)->size = size;
+		} else {
+			return -1;
 		}
 
-		drive = (hd_t *) ide->drive[i];
-#endif
-		drive = (hd_t *)args;
-		/* Make new device */
-		if (drive->media == IDE_CDROM) {
-			*path = 0;
-			strcat(path, "/dev/cd#");
-			if (0 > (drive->idx = block_dev_named(path, &idecd_idx))) {
-				return drive->idx;
-			}
-			drive->bdev = block_dev_create(path, &idecd_pio_driver, drive);
-
-			if (NULL != drive->bdev) {
-				if (drive->blks <= 0) {
-					drive->blks = atapi_read_capacity(drive);
-				}
-				size = drive->blks * CDSECTORSIZE;
-				block_dev(drive->bdev)->size = size;
-			} else {
-				return -1;
-			}
-
-			drive->blks = 0;
-		}
-#if 0
+		drive->blks = 0;
 	}
-#endif
 	return 0;
 }
 
