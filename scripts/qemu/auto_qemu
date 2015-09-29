@@ -57,7 +57,7 @@ guess_mem() {
 get_user_empty_guess AUTOQEMU_MEM guess_mem
 
 guess_nics() {
-	sed 's#\(.*\)//.*#\1#p' $MODS_CONF | sed -n 's#.*include\ embox.driver.net.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v loopback | head -n 1;
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.net.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v loopback | head -n 1;
 }
 get_user_undef_guess AUTOQEMU_NICS guess_nics
 
