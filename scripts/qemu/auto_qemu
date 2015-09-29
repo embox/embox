@@ -43,11 +43,13 @@ get_user_empty_guess() {
 	error_empty "$1"
 }
 
-guess_arch() { sed -n 's/ARCH *= *//p' $BUILD_CONF; }
+guess_arch() {
+	cat $BUILD_CONF | gcc -P -E - | sed -n 's/ARCH *= *//p';
+}
 get_user_empty_guess AUTOQEMU_ARCH guess_arch
 
 guess_mem() {
-	ram=$(sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p' $LDS_CONF)
+	ram=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p')
 	if [ $ram ]; then
 		echo $ram
 	else
@@ -56,7 +58,9 @@ guess_mem() {
 }
 get_user_empty_guess AUTOQEMU_MEM guess_mem
 
-guess_nics() { sed -n 's/\t*\(@Runlevel([0-9])\|\) \+include\ embox.driver.net.\([a-z0-9_]\+\)\((.*)\|\)$/\2/p' $MODS_CONF | grep -v loopback | head -n 1; }
+guess_nics() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.net.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v loopback | head -n 1;
+}
 get_user_undef_guess AUTOQEMU_NICS guess_nics
 
 guessed_info AUTOQEMU_NICS_CONFIG "(got)"
@@ -89,7 +93,7 @@ guess_kvm() {
 get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 
 guess_load_arg() {
-	NAND_SIZE=$(sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p' $LDS_CONF)
+	NAND_SIZE=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p')
 	if [ ! $NAND_SIZE ]; then
 		echo "-kernel ${KERNEL:-./build/base/bin/embox}"
 	else
@@ -114,7 +118,7 @@ get_user_undef_guess AUTOQEMU_NOGRAPHIC_ARG guess_nographic
 guess_machine() {
 	case $AUTOQEMU_ARCH in
 		arm)
-			if grep "overo" $BUILD_CONF >/dev/null; then
+			if cat $BUILD_CONF | gcc -P -E - | grep "overo" >/dev/null; then
 				echo "-M overo"
 			fi
 			;;
