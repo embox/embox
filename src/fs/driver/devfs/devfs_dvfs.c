@@ -6,15 +6,76 @@
  * @date 2015-09-28
  */
 
+/* IMPORTANT NOTE
+ *
+ * In current implementation, devfs is supposed to have no nested folders,
+ * so all operations are threated just like you use /dev directory,
+ * or whereever did you mount devfs. Future release should fix it, probably
+ */
+
+#include <framework/mod/options.h>
 #include <fs/dvfs.h>
+#include <kernel/printk.h>
 #include <util/array.h>
 
+#include <module/embox/driver/block_common.h>
+
+#define MAX_BDEV_QUANTITY OPTION_MODULE_GET(embox__driver__block_common, NUMBER, dev_quantity)
+
+/**
+ * @brief Do nothing
+ *
+ * @param inode
+ *
+ * @return
+ */
 static int devfs_destroy_inode(struct inode *inode) {
 	return 0;
 }
 
+void devfs_fill_inode(struct inode *inode, struct block_dev *bdev) {
+}
+
+extern struct block_dev **get_bdev_tab();
+/**
+ * @brief Iterate elements of /dev
+ *
+ * @note Devices are iterated type by type
+ * @note Two least significant bits of fs-specific pointer is dev type, the
+ * rest is dev number in dev tab
+ *
+ * @param next Inode to be filled
+ * @param parent Ignored
+ * @param ctx
+ *
+ * @return Negative error code
+ */
 static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
-	return 0;
+	int i;
+	struct block_dev **bdevtab = get_bdev_tab();
+	switch ((int)ctx->fs_ctx & 3) {
+	case 0:
+		/* Block device */
+		for (i = 1 + ((int) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++)
+			if (bdevtab[i]) {
+				devfs_fill_inode(next, bdevtab[i]);
+				return 0;
+			}
+		/* Fall through */
+	case 1:
+		ctx->fs_ctx = (void*) ((int) ctx->fs_ctx & ~0x03);
+		ctx->fs_ctx = (void*) ((int) ctx->fs_ctx | 0x01);
+		/* Char device */
+	case 2:
+		/* Fall through */
+	case 3:
+	default:
+		/* wtf */
+		return -1;
+	}
+
+	/* End of directory */
+	return -1;
 }
 
 static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
