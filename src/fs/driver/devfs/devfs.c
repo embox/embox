@@ -11,6 +11,7 @@
 
 #include <embox/device.h>
 #include <drivers/block_dev.h>
+#include <drivers/block_dev/flash/flash_dev.h>
 
 static int devfs_init(void *par) {
 	return 0;

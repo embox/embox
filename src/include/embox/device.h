@@ -26,6 +26,5 @@ typedef struct device_module {
 extern int char_dev_init_all(void);
 extern int char_dev_register(const char *name,
 		const struct kfile_operations *ops);
-extern int flash_devs_init(void);
 
 #endif /* DEVICE_H_ */
