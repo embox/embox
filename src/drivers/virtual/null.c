@@ -16,7 +16,7 @@
 static int null_init(void);
 static const struct kfile_operations null_ops;
 
-EMBOX_DEVICE(NULL_DEV_NAME, &null_ops, null_init);
+CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, null_init);
 
 static int null_open(struct node *node, struct file_desc *file_desc, int flags) {
 	return 0;

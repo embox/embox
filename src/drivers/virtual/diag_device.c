@@ -125,4 +125,4 @@ static int diag_ctl(void *file, int request, va_list args) {
 /* doesn't matter if we have fs:
 if have, dependency added automaticly;
 else this have no effect*/
-EMBOX_DEVICE("diag", &file_op);
+CHAR_DEV_DEF("diag", &file_op);
