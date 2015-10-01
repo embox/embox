@@ -1,6 +1,9 @@
 package embox.driver
 
 module block_common {
+	@IncludeExport(path="drivers")
+	source "block_dev.h"
+
 	option number dev_quantity = 16
 
 	source "block_dev_common.c"
@@ -15,9 +18,6 @@ module block_common {
 
 module block {
 	source "block_dev.c"
-
-	@IncludeExport(path="drivers")
-	source "block_dev.h"
 
 	depends block_common
 
