@@ -22,7 +22,7 @@
 #include <util/indexator.h>
 #include <util/binalign.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 

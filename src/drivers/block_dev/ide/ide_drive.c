@@ -46,7 +46,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-
 #include <util/indexator.h>
 
 //TODO asm/io.h wrong place
@@ -57,7 +56,7 @@
 #include <kernel/time/clock_source.h>
 
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/phymem.h>
 
 static hdc_t hdctab[HD_CONTROLLERS];

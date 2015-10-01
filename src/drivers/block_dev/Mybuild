@@ -16,6 +16,9 @@ module block_common {
 module block {
 	source "block_dev.c"
 
+	@IncludeExport(path="drivers")
+	source "block_dev.h"
+
 	depends block_common
 
 	depends embox.fs.buffer_cache

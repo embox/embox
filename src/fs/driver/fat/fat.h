@@ -11,7 +11,6 @@
 
 #include <stdint.h>
 
-#include <embox/block_dev.h>
 #include <fs/mbr.h>
 
 #define MSDOS_NAME      11

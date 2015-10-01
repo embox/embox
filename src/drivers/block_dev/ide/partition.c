@@ -13,9 +13,8 @@
 
 #include <fs/mbr.h>
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/phymem.h>
-#include <util/indexator.h>
 
 static int part_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	struct partition *part = (struct partition *) bdev->privdata;

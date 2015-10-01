@@ -31,7 +31,7 @@
 #include <util/err.h>
 
 #include <embox/unit.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 
 /* ramfs filesystem description pool */

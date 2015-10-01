@@ -9,7 +9,7 @@
 
 #include <sys/ioctl.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 
 #include <embox/test.h>
 

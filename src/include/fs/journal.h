@@ -10,7 +10,7 @@
 #define FS_JOURNAL_H
 
 #include <util/dlist.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <stdint.h>
 
 typedef unsigned int block_t;

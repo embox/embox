@@ -11,7 +11,7 @@
 
 #include <util/dlist.h>
 #include <kernel/thread/sync/mutex.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <fs/journal.h>
 
 #define BH_NEW     0x00000001

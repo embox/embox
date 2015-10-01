@@ -14,7 +14,7 @@
 
 #include <fs/mount.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 
 #include <mem/phymem.h>
 

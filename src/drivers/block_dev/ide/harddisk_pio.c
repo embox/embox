@@ -10,16 +10,16 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <asm/io.h>
 
 #include <kernel/irq_lock.h>
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/phymem.h>
-#include <util/indexator.h>
+
 #include <kernel/time/ktime.h>
-#include <limits.h>
 #include <kernel/thread/waitq.h>
 
 #define HD_WAIT_MS 10

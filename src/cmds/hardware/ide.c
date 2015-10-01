@@ -11,7 +11,7 @@
 #include <stdio.h>
 
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <fs/node.h>
 
 static void print_usage(void) {

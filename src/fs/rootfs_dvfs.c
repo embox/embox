@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include <fs/dvfs.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <embox/device.h>
 #include <embox/unit.h>
 

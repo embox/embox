@@ -6,16 +6,17 @@
  * @author Andrey Gazukin
  */
 
-#include <asm/io.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
+
+#include <asm/io.h>
 
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/phymem.h>
-#include <util/indexator.h>
-#include <limits.h>
+
 
 extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
 

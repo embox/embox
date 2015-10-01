@@ -15,9 +15,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <mem/phymem.h>
-#include <embox/block_dev.h>
 #include <limits.h>
+
+#include <mem/phymem.h>
+#include <drivers/block_dev.h>
+
 
 #define DD_DEFAULT_BS 64
 

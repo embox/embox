@@ -13,7 +13,7 @@
 #include <string.h>
 #include "scsi.h"
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <util/indexator.h>
 
 INDEX_DEF(scsi_disk_idx, 0, 26);

@@ -7,7 +7,7 @@
 #ifndef _DVFS_H_
 #define _DVFS_H_
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <fs/idesc.h>
 #include <fs/file_system.h>
 #include <util/dlist.h>

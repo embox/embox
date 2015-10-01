@@ -10,7 +10,7 @@
 #include <fs/vfs.h>
 
 #include <embox/device.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 
 static int devfs_init(void *par) {
 	return 0;

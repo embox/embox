@@ -12,8 +12,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <embox/block_dev.h>
-#include <fs/node.h>
 /* ======== 0x600 FLASH ===============================
  * Get/Set configuration 'key' values for FLASH drivers
  */
@@ -54,6 +52,7 @@ typedef struct flash_block_info
 	uint32_t         blocks;
 } flash_block_info_t;
 
+struct node;
 extern int flash_emu_dev_init(void *arg);
 extern int flash_emu_dev_create (struct node *bdev_node, /*const*/ char *flash_node_path);
 extern struct flash_dev *flash_create(char *path, size_t size);
