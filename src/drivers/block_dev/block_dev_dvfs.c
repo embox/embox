@@ -23,7 +23,7 @@
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *bdev;
 	char full_path[256];
-	struct lookup lu;
+	struct lookup lu = { .parent = dvfs_root() };
 
 	strcpy(full_path, "/dev/");
 	strcat(full_path, path);
