@@ -6,11 +6,16 @@
  * @date    08.04.2015
  */
 
-#include <drivers/vt.h>
 #include <drivers/diag.h>
 #include <stdio.h>
 
 #include "race.h"
+
+/** ANSI Escape */
+#define ESC		'\033'
+
+/** ANSI Control Sequence Introducer */
+#define CSI		'['
 
 void race_print_road(const char *road) {
 	int i, j;
