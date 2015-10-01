@@ -5,11 +5,12 @@
  * @date 08.09.11
  * @author Anton Kozlov
  */
-
-#include <embox/device.h>
-#include <fs/file_operation.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <drivers/char_dev.h>
+#include <fs/file_operation.h>
+
 
 #define ZERO_DEV_NAME "zero"
 

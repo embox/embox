@@ -9,7 +9,7 @@
  * at the same time.
  */
 
-#include <embox/device.h>
+#include <drivers/char_dev.h>
 
 /**
  * @brief Stub

@@ -16,7 +16,7 @@
 #include <fs/node.h>
 #include <fs/path.h>
 
-#include <embox/device.h> //XXX
+#include <drivers/char_dev.h> //XXX
 
 #include <drivers/serial/fsnode.h>
 

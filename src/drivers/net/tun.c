@@ -19,7 +19,7 @@
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/sched_lock.h>
-#include <embox/device.h> //XXX
+#include <drivers/char_dev.h> //XXX
 #include <fs/node.h>
 #include <fs/file_desc.h>
 #include <kernel/sched/waitq.h>

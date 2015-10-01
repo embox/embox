@@ -9,7 +9,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 
-#include <embox/device.h>
+#include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
 #include <drivers/block_dev/flash/flash_dev.h>
 

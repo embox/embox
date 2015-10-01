@@ -7,12 +7,14 @@
  */
 
 #include <stdint.h>
-#include <fs/file_operation.h>
-#include <drivers/diag.h>
-#include <embox/device.h>
 #include <errno.h>
 
 #include <fcntl.h>
+
+#include <fs/file_operation.h>
+#include <drivers/diag.h>
+#include <drivers/char_dev.h>
+
 
 static int nonblocking = 0;
 

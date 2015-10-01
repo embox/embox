@@ -21,7 +21,7 @@
 #include <fs/file_operation.h>
 #include <fs/node.h>
 
-#include <embox/device.h>
+#include <drivers/char_dev.h>
 
 #define TTY_DEV_NAME "tty0"
 #define DEFAULT_FRAMEBUFFER "fb0"

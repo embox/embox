@@ -9,8 +9,9 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include <fs/file_operation.h>
-#include <embox/device.h>
+#include <drivers/char_dev.h>
 #include <sys/ioctl.h>
 #include <util/math.h>
 #include <mem/misc/pool.h>

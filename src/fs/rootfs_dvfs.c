@@ -11,7 +11,7 @@
 
 #include <fs/dvfs.h>
 #include <drivers/block_dev.h>
-#include <embox/device.h>
+#include <drivers/char_dev.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(rootfs_mount);
