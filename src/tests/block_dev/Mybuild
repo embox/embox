@@ -16,7 +16,7 @@ module ramdisk_test {
 
 module bdev_base_test {
 	option string bdev_name = "/dev/sda"
-	option string block_number = 1
+	option number block_number = 1
 
 	source "bdev_base_test.c"
 	depends embox.fs.driver.devfs
