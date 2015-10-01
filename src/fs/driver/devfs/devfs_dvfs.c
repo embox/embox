@@ -56,8 +56,9 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 	switch ((int)ctx->fs_ctx & 3) {
 	case 0:
 		/* Block device */
-		for (i = 1 + ((int) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++)
+		for (i = ((int) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++)
 			if (bdevtab[i]) {
+				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, bdevtab[i]);
 				return 0;
 			}
