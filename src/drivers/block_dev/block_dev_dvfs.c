@@ -23,23 +23,33 @@
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	block_dev_t *bdev;
 	char full_path[256];
-	struct lookup lu = { .parent = dvfs_root() };
-
-	strcpy(full_path, "/dev/");
-	strcat(full_path, path);
+	struct lookup lu;
 
 	if (NULL == (bdev = block_dev_create_common(path, driver, privdata)))
 		return NULL;
 
 	/* Get root of devfs in smarter way? */
-	if (0 > dvfs_create_new(full_path, &lu, S_IFBLK | S_IRALL | S_IWALL)) {
-		block_dev_free(bdev);
-		return NULL;
-	}
+
+	strcpy(full_path, "/dev/");
+	strcat(full_path, path);
+
+	dvfs_lookup("/dev", &lu);
+	lu.parent = lu.item;
+	lu.item = NULL;
+
+	if (!lu.parent)
+		goto err_free_bdev; /* devfs not mounted */
+
+	if (0 > dvfs_create_new(full_path, &lu, S_IFBLK | S_IRALL | S_IWALL))
+		goto err_free_bdev;
 
 	lu.item->d_inode->i_data = bdev;
 	/* TODO set inode ops */
 	return bdev;
+
+err_free_bdev:
+	block_dev_free(bdev);
+	return NULL;
 }
 
 /**
