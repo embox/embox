@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <fs/dvfs.h>
 
 /**
