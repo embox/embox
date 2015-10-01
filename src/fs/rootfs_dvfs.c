@@ -57,9 +57,11 @@ static int rootfs_mount(void) {
 
 	dvfs_update_root();
 
-	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0)) {
+	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0))
 		return -errno;
-	}
+
+	if (strcmp(fs_type, "devfs") && (fsdrv = dumb_fs_driver_find("devfs")))
+		dvfs_mount(NULL, "/dev", "devfs", 0);
 
 	return 0;
 }
