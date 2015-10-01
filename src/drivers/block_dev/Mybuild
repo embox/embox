@@ -4,6 +4,7 @@ module block_common {
 	option number dev_quantity = 16
 
 	source "block_dev_common.c"
+	source "block_dev_namer.c"
 
 	depends embox.mem.phymem
 	depends embox.fs.buffer_cache
@@ -13,7 +14,7 @@ module block_common {
 }
 
 module block {
-	source "block_dev.c", "block_dev_namer.c"
+	source "block_dev.c"
 
 	depends block_common
 
