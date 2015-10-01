@@ -46,6 +46,7 @@ block_dev_driver_t ramdisk_pio_driver = {
 
 /* XXX not stores index if path have no index placeholder, like * or # */
 struct ramdisk *ramdisk_create(char *path, size_t size) {
+	block_dev_create("hdr0", NULL, NULL);
 	return NULL;
 }
 

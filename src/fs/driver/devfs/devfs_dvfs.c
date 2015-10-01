@@ -13,6 +13,8 @@
  * or whereever did you mount devfs. Future release should fix it, probably
  */
 
+#include <string.h>
+
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 #include <kernel/printk.h>
@@ -34,6 +36,7 @@ static int devfs_destroy_inode(struct inode *inode) {
 }
 
 void devfs_fill_inode(struct inode *inode, struct block_dev *bdev) {
+	inode->i_data = bdev;
 }
 
 extern struct block_dev **get_bdev_tab();
@@ -83,10 +86,6 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 	return NULL;
 }
 
-static int devfs_pathname(struct inode *inode, char *buf, int flags) {
-	return 0;
-}
-
 static int devfs_mount_end(struct super_block *sb) {
 	return 0;
 }
@@ -113,6 +112,18 @@ static size_t devfs_read(struct file *desc, void *buf, size_t size) {
 	return 0;
 }
 
+static int devfs_pathname(struct inode *node, char *buf, int flags) {
+	struct block_dev *bdev = node->i_data;
+
+	strncpy(buf, bdev->name, DENTRY_NAME_LEN);
+
+	return 0;
+}
+
+static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
+	return 0;
+}
+
 static int devfs_ioctl(struct file *desc, int request, ...) {
 	return 0;
 }
@@ -125,6 +136,7 @@ struct inode_operations devfs_iops = {
 	.lookup   = devfs_lookup,
 	.iterate  = devfs_iterate,
 	.pathname = devfs_pathname,
+	.create   = devfs_create,
 };
 
 struct file_operations devfs_fops = {
