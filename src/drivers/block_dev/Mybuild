@@ -25,3 +25,9 @@ module block {
 	depends embox.util.indexator
 	depends embox.mem.phymem
 }
+
+module block_dvfs {
+	source "block_dev_dvfs.c"
+
+	depends block_common
+}
