@@ -25,14 +25,3 @@ module zero {
 	depends embox.compat.libc.all
 	depends embox.fs.driver.devfs
 }
-
-module uart {
-	source "uart.c"
-
-	depends embox.kernel.irq
-	@NoRuntime depends embox.fs.driver.devfs
-	@NoRuntime depends embox.fs.core
-	@NoRuntime depends embox.driver.char_dev
-	@NoRuntime depends embox.driver.tty.serial
-}
-
