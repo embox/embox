@@ -31,6 +31,7 @@
 #define RAMDISK_BLOCK_SIZE OPTION_GET(NUMBER,block_size)
 
 POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
+INDEX_DEF(ramdisk_idx, 0, MAX_DEV_QUANTITY);
 
 static int ram_init(void *arg);
 static int read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
@@ -46,7 +47,12 @@ block_dev_driver_t ramdisk_pio_driver = {
 
 /* XXX not stores index if path have no index placeholder, like * or # */
 struct ramdisk *ramdisk_create(char *path, size_t size) {
-	block_dev_create("hdr0", NULL, NULL);
+	char buf[256];
+	strcpy(buf, "hdr#");
+	if (0 > block_dev_named(buf, &ramdisk_idx))
+		return NULL;
+
+	block_dev_create(buf, NULL, NULL);
 	return NULL;
 }
 
@@ -55,6 +61,7 @@ ramdisk_t *ramdisk_get_param(char *path) {
 }
 
 int ramdisk_delete(const char *name) {
+	/* TODO Delete corresponding idx */
 	return 0;
 }
 
