@@ -25,7 +25,7 @@
 
 #define USB_CBW_CB_MAXLEN 16
 
-#include "scsi.h"
+#include <drivers/scsi.h>
 
 struct usb_mscbw {
 	uint32_t cbw_signature;

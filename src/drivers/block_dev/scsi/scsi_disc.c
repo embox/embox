@@ -11,7 +11,8 @@
 #include <kernel/thread/waitq.h>
 #include <util/math.h>
 #include <string.h>
-#include "scsi.h"
+
+#include <drivers/scsi.h>
 
 #include <drivers/block_dev.h>
 #include <util/indexator.h>
