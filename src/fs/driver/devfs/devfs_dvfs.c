@@ -14,7 +14,9 @@
  */
 
 #include <string.h>
+#include <sys/stat.h>
 
+#include <drivers/char_dev.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 #include <kernel/printk.h>
@@ -35,10 +37,12 @@ static int devfs_destroy_inode(struct inode *inode) {
 	return 0;
 }
 
-void devfs_fill_inode(struct inode *inode, struct block_dev *bdev) {
-	inode->i_data = bdev;
+void devfs_fill_inode(struct inode *inode, void *dev, int flags) {
+	inode->i_data = dev;
+	inode->flags |= flags;
 }
 
+ARRAY_SPREAD_DECLARE(const struct device_module, __char_device_registry);
 extern struct block_dev **get_bdev_tab();
 /**
  * @brief Iterate elements of /dev
@@ -55,6 +59,7 @@ extern struct block_dev **get_bdev_tab();
  */
 static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
 	int i;
+	struct device_module *dev_module;
 	struct block_dev **bdevtab = get_bdev_tab();
 	switch ((int)ctx->fs_ctx & 3) {
 	case 0:
@@ -62,14 +67,21 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 		for (i = ((int) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++)
 			if (bdevtab[i]) {
 				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
-				devfs_fill_inode(next, bdevtab[i]);
+				devfs_fill_inode(next, bdevtab[i], S_IFBLK);
 				return 0;
 			}
 		/* Fall through */
+		ctx->fs_ctx = (void*) ((int) 0x1);
 	case 1:
-		ctx->fs_ctx = (void*) ((int) ctx->fs_ctx & ~0x03);
-		ctx->fs_ctx = (void*) ((int) ctx->fs_ctx | 0x01);
 		/* Char device */
+		i = 0;
+		array_spread_foreach_ptr(dev_module, __char_device_registry) {
+			if (i++ == (int) ctx->fs_ctx >> 2) {
+				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
+				devfs_fill_inode(next, dev_module, S_IFCHR);
+				return 0;
+			}
+		}
 	case 2:
 		/* Fall through */
 	case 3:
@@ -113,9 +125,18 @@ static size_t devfs_read(struct file *desc, void *buf, size_t size) {
 }
 
 static int devfs_pathname(struct inode *node, char *buf, int flags) {
-	struct block_dev *bdev = node->i_data;
+	struct device_module *dev_module;
+	struct block_dev *bdev;
 
-	strncpy(buf, bdev->name, DENTRY_NAME_LEN);
+	if ((node->flags & S_IFBLK) == S_IFBLK) {
+		bdev = node->i_data;
+		strncpy(buf, bdev->name, DENTRY_NAME_LEN);
+	} else if ((node->flags & S_IFCHR) == S_IFCHR) {
+		dev_module = node->i_data;
+		strncpy(buf, dev_module->name, DENTRY_NAME_LEN);
+	} else {
+		return -1; /* Wrong flags */
+	}
 
 	return 0;
 }
