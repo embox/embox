@@ -68,7 +68,7 @@ struct block_dev *block_dev_create_common(char *path, void *driver, void *privda
 		block_dev_free(bdev);
 		return NULL;
 	}
-	devtab[bdev->id] = bdev;
+	devtab[bdev_id] = bdev;
 
 	*bdev = (struct block_dev) {
 		.id = (dev_t)bdev_id,
