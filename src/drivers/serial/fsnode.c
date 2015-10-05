@@ -20,24 +20,24 @@
 
 #include <drivers/serial/fsnode.h>
 
-static int dev_uart_open(struct node *node, struct file_desc *file_desc,
-	int flags);
+//static int dev_uart_open(struct node *node, struct file_desc *file_desc,
+//	int flags);
 //static int dev_uart_close(struct file_desc *desc);
 //static size_t dev_uart_read(struct file_desc *desc, void *buf, size_t size);
 //static size_t dev_uart_write(struct file_desc *desc, void *buf, size_t size);
 //static int dev_uart_ioctl(struct file_desc *desc, int request, ...);
 
-static struct kfile_operations uart_dev_file_op = {
-	.open = dev_uart_open,
+//static struct kfile_operations uart_dev_file_op = {
+//	.open = dev_uart_open,
 	//.close = dev_uart_close,
 	//.read = dev_uart_read,
 	//.write = dev_uart_write,
 	//.ioctl = dev_uart_ioctl
-};
+//};
 
 int serial_register_devfs(struct uart *dev) {
 
-	char_dev_register(dev->dev_name, &uart_dev_file_op);
+	//char_dev_register(dev->dev_name, &uart_dev_file_op);
 
 	return ENOERR;
 }
@@ -45,7 +45,7 @@ int serial_register_devfs(struct uart *dev) {
 /*
  * file_operations
  */
-static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
+/* static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	struct uart *uart_dev = uart_dev_lookup(node->name);
 
 	if (!uart_dev) {
@@ -58,7 +58,7 @@ static int dev_uart_open(struct node *node, struct file_desc *desc, int flags) {
 	idesc_serial_create(desc, uart_dev, flags);
 
 	return 0;
-}
+} */
 #if 0
 static int dev_uart_close(struct file_desc *desc) {
 	struct uart *uart_dev = desc->file_info;
