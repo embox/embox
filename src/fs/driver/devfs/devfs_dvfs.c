@@ -94,7 +94,38 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 	return -1;
 }
 
+
+/**
+ * @brief Find file in directory
+ *
+ * @param name Name of file
+ * @param dir  Pointer to directory
+ *
+ * @return Pointer to inode structure or NULL if failed
+ */
 static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
+	int i;
+	struct inode *node;
+	struct device_module *dev_module;
+	struct block_dev **bdevtab = get_bdev_tab();
+
+	if (NULL == (node = dvfs_alloc_inode(dir->d_sb))) {
+		return NULL;
+	}
+
+	for (i = 0; i < MAX_BDEV_QUANTITY; i++)
+		if (bdevtab[i] && !strcmp(bdevtab[i]->name, name)) {
+			devfs_fill_inode(node, bdevtab[i], S_IFBLK);
+			return node;
+		}
+
+	array_spread_foreach_ptr(dev_module, __char_device_registry) {
+		if (!strcmp(dev_module->name, name)) {
+			devfs_fill_inode(node, dev_module, S_IFCHR);
+			return node;
+		}
+	}
+
 	return NULL;
 }
 
