@@ -155,6 +155,24 @@ static size_t devfs_read(struct file *desc, void *buf, size_t size) {
 	return 0;
 }
 
+static size_t devfs_write(struct file *desc, void *buf, size_t size) {
+	struct block_dev *bdev;
+	struct device_module *cdev;
+
+	switch (desc->f_inode->flags & (S_IFBLK | S_IFCHR)) {
+	case S_IFBLK:
+		bdev = desc->f_inode->i_data;
+		return bdev->driver->write(bdev, buf, size, desc->pos / SECTOR_SIZE);
+	case S_IFCHR:
+		cdev = desc->f_inode->i_data;
+		return cdev->fops->write(desc, buf, size);
+	default:
+		printk("Unknown device type!\n");
+	}
+
+	return 0;
+}
+
 static int devfs_pathname(struct inode *node, char *buf, int flags) {
 	struct device_module *dev_module;
 	struct block_dev *bdev;
@@ -194,6 +212,7 @@ struct inode_operations devfs_iops = {
 struct file_operations devfs_fops = {
 	.open  = devfs_open,
 	.read  = devfs_read,
+	.write = devfs_write,
 	.ioctl = devfs_ioctl,
 };
 
