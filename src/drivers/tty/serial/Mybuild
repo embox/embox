@@ -10,4 +10,5 @@ module serial {
 	depends tty
 
 	depends embox.fs.file_desc
+	depends embox.driver.serial.core
 }
