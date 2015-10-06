@@ -64,14 +64,11 @@ static size_t initfs_read(struct file *desc, void *buf, size_t size) {
 	return size;
 }
 
-static int initfs_ioctl(struct file *desc, int request, ...) {
+static int initfs_ioctl(struct file *desc, int request, void *data) {
 	struct inode *inode = desc->f_inode;
 	char **p_addr;
-	va_list args;
 
-	va_start(args, request);
-	p_addr = va_arg(args, char **);
-	va_end(args);
+	p_addr = data;
 
 	*p_addr = (char*) inode->start_pos;
 

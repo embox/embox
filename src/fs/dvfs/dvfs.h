@@ -114,7 +114,7 @@ struct file_operations {
 	int    (*close)(struct file *desc);
 	size_t (*read)(struct file *desc, void *buf, size_t size);
 	size_t (*write)(struct file *desc, void *buf, size_t size);
-	int    (*ioctl)(struct file *desc, int request, ...);
+	int    (*ioctl)(struct file *desc, int request, void *data);
 };
 
 struct dumb_fs_driver {
