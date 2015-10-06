@@ -23,10 +23,6 @@ struct marea {
 };
 
 struct emmap {
-#if 0
-	struct marea *stack_marea;
-	struct marea *heap_marea;
-#endif
 	void *brk;
 
 	mmu_ctx_t ctx;

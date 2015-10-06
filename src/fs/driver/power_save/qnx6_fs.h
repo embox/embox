@@ -23,11 +23,6 @@
 #ifndef _LINUX_QNX6_FS_H
 #define _LINUX_QNX6_FS_H
 
-#if 0
-#include <linux/types.h>
-#include <linux/magic.h>
-#endif
-
 #define QNX6_SUPER_MAGIC 0x68191122
 
 #define QNX6_ROOT_INO 1
