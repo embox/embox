@@ -9,7 +9,6 @@
 #ifndef EMBOX_NET_PROTO_H_
 #define EMBOX_NET_PROTO_H_
 
-
 struct sk_buff;
 
 /**
@@ -25,10 +24,6 @@ typedef struct net_proto {
 
 extern const struct net_proto * net_proto_lookup(
 		unsigned short pack, unsigned char type);
-#if 0
-extern void net_proto_handle_error_none(const struct sk_buff *skb,
-		int error_info);
-#endif
 static inline void net_proto_handle_error_none(
 		const struct sk_buff *skb, int error_info) { }
 
