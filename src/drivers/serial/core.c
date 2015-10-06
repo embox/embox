@@ -97,8 +97,6 @@ int uart_register(struct uart *uart,
 
 	dlist_add_next(&uart->lnk, &uart_list);
 
-	serial_register_devfs(uart);
-
 	return 0;
 }
 
