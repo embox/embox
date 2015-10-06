@@ -137,21 +137,21 @@ static int devfs_open(struct inode *node, struct file *file) {
 	return 0;
 }
 
-enum device_type { NOT_DEVICE, BLOCK, CHAR, FLASH };
-
 static size_t devfs_read(struct file *desc, void *buf, size_t size) {
-#if 0
-	void *dev = dev_by_desc(desc);
-	enum device_type type = dev_type(dev);
+	struct block_dev *bdev;
+	struct device_module *cdev;
 
-	switch (type) {
-	case BLOCK:
-		block_dev_read( ... );
-		break;
+	switch (desc->f_inode->flags & (S_IFBLK | S_IFCHR)) {
+	case S_IFBLK:
+		bdev = desc->f_inode->i_data;
+		return bdev->driver->read(bdev, buf, size, desc->pos / SECTOR_SIZE);
+	case S_IFCHR:
+		cdev = desc->f_inode->i_data;
+		return cdev->fops->read(desc, buf, size);
 	default:
 		printk("Unknown device type!\n");
 	}
-#endif
+
 	return 0;
 }
 
