@@ -47,8 +47,8 @@
 #include <unistd.h>
 
 #include <util/indexator.h>
+#include <util/log.h>
 
-//TODO asm/io.h wrong place
 #include <asm/io.h>
 
 #include <embox/unit.h>
@@ -98,18 +98,14 @@ static void hd_fixstring(unsigned char *s, int len) {
 
 static void hd_error(char *func, unsigned char error) {
 
-#ifdef DEBUG
-	printk("%s: ", func);
-	if (error & HDCE_BBK)   printk("bad block  ");
-	if (error & HDCE_UNC)   printk("uncorrectable data  ");
-	if (error & HDCE_MC)    printk("media change  ");
-	if (error & HDCE_IDNF)  printk("id not found  ");
-	if (error & HDCE_MCR)   printk("media change requested  ");
-	if (error & HDCE_ABRT)  printk("abort  ");
-	if (error & HDCE_TK0NF) printk("track 0 not found  ");
-	if (error & HDCE_AMNF)  printk("address mark not found  ");
-	printk("\n");
-#endif /*def DEBUG*/
+	if (error & HDCE_BBK)   log_debug("bad block  ");
+	if (error & HDCE_UNC)   log_debug("uncorrectable data  ");
+	if (error & HDCE_MC)    log_debug("media change  ");
+	if (error & HDCE_IDNF)  log_debug("id not found  ");
+	if (error & HDCE_MCR)   log_debug("media change requested  ");
+	if (error & HDCE_ABRT)  log_debug("abort  ");
+	if (error & HDCE_TK0NF) log_debug("track 0 not found  ");
+	if (error & HDCE_AMNF)  log_debug("address mark not found  ");
 
 	return;
 }

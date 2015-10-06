@@ -22,14 +22,13 @@
 #include <util/indexator.h>
 #include <kernel/time/ktime.h>
 
-
 #define CD_WAIT_US 3000
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
-INDEX_DEF(idecd_idx,0,MAX_DEV_QUANTITY);
+INDEX_DEF(idecd_idx, 0, MAX_DEV_QUANTITY);
 
 static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
-		                     int pktlen, char *buffer, size_t bufsize) {
+		int pktlen, char *buffer, size_t bufsize) {
 	hdc_t *hdc;
 	int result;
 	char *bufp;

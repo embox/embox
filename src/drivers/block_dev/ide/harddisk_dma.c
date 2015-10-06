@@ -242,45 +242,31 @@ static block_dev_driver_t idedisk_udma_driver = {
 };
 
 static int idedisk_udma_init (void *args) {
-//	struct ide_tab *ide;
 	hd_t *drive;
 	double size;
 	char   path[PATH_MAX];
 
-#if 0
-	ide = ide_get_drive();
-
-	for(int i = 0; i < HD_DRIVES; i++) {
-		if (NULL == ide->drive[i]) {
-			continue;
-		} else {
-			drive = (hd_t *) ide->drive[i];
-#endif
-			drive = (hd_t *)args;
-			/* Make new device */
-			if ((drive->media == IDE_DISK) && (drive->udmamode != -1)) {
-				*path = 0;
-				strcat(path, "/dev/hd*");
-				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
-					return drive->idx;
-				}
-				drive->bdev = block_dev_create(path,
-						&idedisk_udma_driver, drive);
-				if (NULL != drive->bdev) {
-					size = (double) drive->param.cylinders *
-						   (double) drive->param.heads *
-						   (double) drive->param.unfbytes *
-						   (double) (drive->param.sectors + 1);
-					block_dev(drive->bdev)->size = (size_t) size;
-				} else {
-					return -1;
-				}
-				create_partitions(drive);
-//			} else {
-//				continue;
-//			}
+	drive = (hd_t *)args;
+	/* Make new device */
+	if ((drive->media == IDE_DISK) && (drive->udmamode != -1)) {
+		*path = 0;
+		strcat(path, "/dev/hd*");
+		if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
+			return drive->idx;
 		}
-//	}
+		drive->bdev = block_dev_create(path,
+				&idedisk_udma_driver, drive);
+		if (NULL != drive->bdev) {
+			size = (double) drive->param.cylinders *
+				   (double) drive->param.heads *
+				   (double) drive->param.unfbytes *
+				   (double) (drive->param.sectors + 1);
+			block_dev(drive->bdev)->size = (size_t) size;
+		} else {
+			return -1;
+		}
+		create_partitions(drive);
+	}
 	return 0;
 }
 
