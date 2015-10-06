@@ -18,5 +18,6 @@ module vterm_video {
 	@IncludeExport(path="drivers")
 	source "vterm_video.h", "vtesc.h"
 
+	depends vterm
 	depends embox.driver.terminal.vt
 }
