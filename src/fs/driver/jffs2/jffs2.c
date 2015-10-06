@@ -1380,14 +1380,12 @@ static int jffs2fs_open(struct node *node, struct file_desc *file_desc,
 static int jffs2fs_close(struct file_desc *desc);
 static size_t jffs2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t jffs2fs_write(struct file_desc *desc, void *buf, size_t size);
-static int jffs2fs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations jffs2_fop = {
 	.open = jffs2fs_open,
 	.close = jffs2fs_close,
 	.read = jffs2fs_read,
 	.write = jffs2fs_write,
-	.ioctl = jffs2fs_ioctl,
 };
 
 /*
@@ -1464,10 +1462,6 @@ static size_t jffs2fs_write(struct file_desc *desc, void *buff, size_t size) {
 	nas->fi->ni.size = fi->_inode->i_size;
 
 	return bytecount;
-}
-
-static int jffs2fs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
 }
 
 static int jffs2_free_fs(struct nas *nas) {

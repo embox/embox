@@ -53,14 +53,12 @@ static int qnx6fs_open(struct node *node, struct file_desc *file_desc,
 static int qnx6fs_close(struct file_desc *desc);
 static size_t qnx6fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t qnx6fs_write(struct file_desc *desc, void *buf, size_t size);
-static int qnx6fs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations qnx6_fop = {
 	.open = qnx6fs_open,
 	.close = qnx6fs_close,
 	.read = qnx6fs_read,
 	.write = qnx6fs_write,
-	.ioctl = qnx6fs_ioctl,
 };
 
 
@@ -696,9 +694,6 @@ static size_t qnx6fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return -1;
 }
 
-static int qnx6fs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
-}
 
 static int qnx6fs_init(void * par);
 static int qnx6fs_format(void *path);

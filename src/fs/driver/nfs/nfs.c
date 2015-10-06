@@ -51,14 +51,12 @@ static int    nfsfs_open(struct node *node, struct file_desc *desc, int flags);
 static int    nfsfs_close(struct file_desc *desc);
 static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
-static int    nfsfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations nfsfs_fop = {
 	.open = nfsfs_open,
 	.close = nfsfs_close,
 	.read = nfsfs_read,
 	.write = nfsfs_write,
-	.ioctl = nfsfs_ioctl,
 };
 
 static void unaligned_set_hyper(uint64_t *dst, void *src) {
@@ -178,9 +176,6 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return reply.count;
 }
 
-static int nfsfs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
-}
 
 /*
 static int nfsfs_fseek(void *file, long offset, int whence);
