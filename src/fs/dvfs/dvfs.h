@@ -7,7 +7,7 @@
 #ifndef _DVFS_H_
 #define _DVFS_H_
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <fs/idesc.h>
 #include <fs/file_system.h>
 #include <util/dlist.h>
@@ -167,6 +167,7 @@ extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
+extern int dvfs_create_new(const char *name, struct lookup *lookup, int flags);
 
 /* dcache-related stuff */
 extern struct dentry *dvfs_cache_lookup(const char *path, struct dentry *base);

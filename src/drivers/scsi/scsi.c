@@ -9,10 +9,11 @@
 #include <errno.h>
 #include <endian.h>
 #include <string.h>
-#include <drivers/usb/usb.h>
-#include "usb_mass_storage.h"
 
-#include "scsi.h"
+#include <drivers/usb/usb.h>
+#include <drivers/usb/class/usb_mass_storage.h>
+
+#include <drivers/scsi.h>
 
 static inline struct usb_mass *scsi2mass(struct scsi_dev *dev) {
 	return member_cast_out(dev, struct usb_mass, scsi_dev);

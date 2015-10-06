@@ -5,7 +5,6 @@
  * @date 27.03.2012
  * @author Andrey Gazukin
  */
-
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
@@ -23,7 +22,7 @@
 #include <util/indexator.h>
 #include <util/binalign.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 
@@ -39,10 +38,10 @@ static int write_sectors(struct block_dev *bdev, char *buffer, size_t count, blk
 static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 
 block_dev_driver_t ramdisk_pio_driver = {
-  "ramdisk_drv",
-  ram_ioctl,
-  read_sectors,
-  write_sectors
+	"ramdisk_drv",
+	ram_ioctl,
+	read_sectors,
+	write_sectors
 };
 
 static int ramdisk_get_index(char *path) {
@@ -199,11 +198,5 @@ static int ram_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 	}
 	return -ENOSYS;
 }
-
-/*
-static int flush(void *bdev) {
-	return 0;
-}
-*/
 
 EMBOX_BLOCK_DEV("ramdisk", &ramdisk_pio_driver, ram_init);

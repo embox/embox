@@ -10,16 +10,16 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <asm/io.h>
 
 #include <kernel/irq_lock.h>
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/phymem.h>
-#include <util/indexator.h>
+
 #include <kernel/time/ktime.h>
-#include <limits.h>
 #include <kernel/thread/waitq.h>
 
 #define HD_WAIT_MS 10
@@ -56,16 +56,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 			break;
 		}
 
-#if 0
-		/* Calculate maximum number of sectors we can transfer */
-		if (sectsleft > 256) {
-			nsects = 256;
-		} else {
-			nsects = sectsleft;
-		}
-#else
 		nsects = 1;
-#endif
 
 		/* Prepare transfer */
 		hdc->bufp = bufp;
@@ -129,16 +120,8 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 			hdc->result = -EIO;
 			break;
 		}
-#if 0
-		/* Calculate maximum number of sectors we can transfer */
-		if (sectsleft > 256) {
-			nsects = 256;
-		} else {
-			nsects = sectsleft;
-		}
-#else
+
 		nsects = 1;
-#endif
 
 		/* Prepare transfer */
 		hdc->bufp = bufp;
@@ -208,41 +191,27 @@ static block_dev_driver_t idedisk_pio_driver = {
 };
 
 static int idedisk_init (void *args) {
-//	struct ide_tab *ide;
 	hd_t *drive;
 	size_t size;
 	char path[PATH_MAX];
-#if 0
-	ide = ide_get_drive();
-
-	for(int i = 0; i < HD_DRIVES; i++) {
-		if (NULL == ide->drive[i]) {
-			continue;
-		} else {
-			drive = (hd_t *) ide->drive[i];
-#endif
-			drive = (hd_t *)args;
-			/* Make new device */
-			if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
-				*path = 0;
-				strcat(path, "/dev/hd*");
-				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
-					return drive->idx;
-				}
-				drive->bdev = block_dev_create(path,
-						&idedisk_pio_driver, drive);
-				if (NULL != drive->bdev) {
-					size = drive->blks * SECTOR_SIZE;
-					block_dev(drive->bdev)->size = size;
-				} else {
-					return -1;
-				}
-				create_partitions(drive);
-//			} else {
-//				continue;
-//			}
+	drive = (hd_t *)args;
+	/* Make new device */
+	if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
+		*path = 0;
+		strcat(path, "/dev/hd*");
+		if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
+			return drive->idx;
 		}
-//	}
+		drive->bdev = block_dev_create(path,
+				&idedisk_pio_driver, drive);
+		if (NULL != drive->bdev) {
+			size = drive->blks * SECTOR_SIZE;
+			block_dev(drive->bdev)->size = size;
+		} else {
+			return -1;
+		}
+		create_partitions(drive);
+	}
 	return 0;
 }
 

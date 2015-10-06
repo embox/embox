@@ -10,8 +10,8 @@
 #include <string.h>
 
 #include <fs/dvfs.h>
-#include <embox/block_dev.h>
-#include <embox/device.h>
+#include <drivers/block_dev.h>
+#include <drivers/char_dev.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(rootfs_mount);
@@ -57,9 +57,11 @@ static int rootfs_mount(void) {
 
 	dvfs_update_root();
 
-	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0)) {
+	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0))
 		return -errno;
-	}
+
+	if (strcmp(fs_type, "devfs") && (fsdrv = dumb_fs_driver_find("devfs")))
+		dvfs_mount(NULL, "/dev", "devfs", 0);
 
 	return 0;
 }

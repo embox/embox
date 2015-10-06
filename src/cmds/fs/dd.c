@@ -15,11 +15,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <mem/phymem.h>
-#include <embox/block_dev.h>
 #include <limits.h>
+#include <stddef.h>
 
-#define DD_DEFAULT_BS 64
+#include <util/array.h>
+
+#define DD_DEFAULT_BS        512
+
+#define DD_FORMAT_RAW        "raw"
+#define DD_FORMAT_HEX_C      "hex_c"
 
 struct dd_param {
 	size_t bs;
@@ -29,6 +33,8 @@ struct dd_param {
 
 	const char *ifile;
 	const char *ofile;
+
+	const char *format;
 };
 
 struct dd_param_ent;
@@ -41,8 +47,7 @@ struct dd_param_ent {
 	dd_param_t type;
 };
 
-unsigned int dd_write_stdout_addr;
-static int write_stdout(char *buff, size_t size) {
+static int write_stdout(char *buff, size_t size, unsigned int addr) {
 	size_t cnt;
 	int i_substr, i_str;
 	char *point, *substr_p;
@@ -50,16 +55,15 @@ static int write_stdout(char *buff, size_t size) {
 	substr_p = point = buff;
 
 	for (cnt = 0; cnt < size; cnt += 16) {
-		printf("%08X ", dd_write_stdout_addr);
-		for (i_str = 0; i_str < 4; i_str++) {
-			for (i_substr = 0; i_substr < 4; i_substr++) {
+		printf("%08X: ", addr);
+		for (i_str = 0; i_str < 2; i_str++) {
+			for (i_substr = 0; i_substr < 8; i_substr++) {
 				printf("%02hhX ", (unsigned char) *point++);
 			}
-			if(i_str < 3) {
-				printf("| ");
-			}
+			printf(" ");
 		}
-#if 0
+
+		printf("|");
 		for (i_str = 0; i_str < 16; i_str++) {
 			if (((unsigned char) *substr_p) >= 32) { /*is not service simbol */
 				printf("%c", *substr_p);
@@ -69,14 +73,11 @@ static int write_stdout(char *buff, size_t size) {
 			}
 			substr_p++;
 		}
-#else
-		substr_p = substr_p;
-#endif
-		printf("\n");
-		dd_write_stdout_addr += 16;
+		printf("|\n");
+		addr += 16;
 	}
 
-	return 0;
+	return cnt;
 }
 
 #define DP_FIELD(dp, off, type) \
@@ -105,6 +106,7 @@ static const struct dd_param_ent dd_param_list[] = {
 	DD_PARAM(count, dd_param_type_int),
 	DD_PARAM(skip, dd_param_type_int),
 	DD_PARAM(seek, dd_param_type_int),
+	DD_PARAM(format, dd_param_type_str)
 };
 
 static const struct dd_param_ent *dd_param_ent_find(const char *name) {
@@ -165,6 +167,7 @@ int main(int argc, char **argv) {
 	void *tbuf;
 	int ifd, ofd;
 	int n_read, n_write, err;
+	int format = 0;
 
 	err = dd_param_fill(argc, argv, &dp);
 	if (err) {
@@ -174,6 +177,9 @@ int main(int argc, char **argv) {
 	if (!dp.bs) {
 		dp.bs = DD_DEFAULT_BS;
 	}
+	if (!dp.count) {
+		dp.count = -1;
+	}
 
 	ifd = dd_cond_open(dp.ifile, O_RDONLY, STDIN_FILENO);
 	if (ifd < 0) {
@@ -181,7 +187,7 @@ int main(int argc, char **argv) {
 		goto out;
 	}
 
-	ofd = dd_cond_open(dp.ofile, O_WRONLY, 0);
+	ofd = dd_cond_open(dp.ofile, O_WRONLY, STDOUT_FILENO);
 	if (ofd < 0) {
 		err = ofd;
 		goto out_ifd_close;
@@ -193,22 +199,40 @@ int main(int argc, char **argv) {
 		goto out_ofd_close;
 	}
 
-	do {
-		n_read = read(ifd, tbuf, dp.bs);
+	if(0 == strcmp(dp.format, DD_FORMAT_HEX_C)) {
+		format = 1;
+	}
 
+	while (dp.skip != 0 ) {
+		n_read = read(ifd, tbuf, dp.bs);
+		if (n_read < 0) {
+			err = -errno;
+			goto out_cmd;
+		}
+
+		dp.skip --;
+	} while (dp.skip != 0);
+
+	do {
+		unsigned int addr = 0;
+
+		n_read = read(ifd, tbuf, dp.bs);
 		if (n_read < 0) {
 			err = -errno;
 			break;
 		}
 
-		n_write = ofd ? write(ofd, tbuf, n_read) : write_stdout(tbuf, n_read);
+		n_write = format ? write_stdout(tbuf, n_read, addr) :
+				write(ofd, tbuf, n_read);
 		if (0 > n_write) {
 			err = -errno;
 			break;
 		}
-	} while (n_read > 0);
+		addr += n_read;
+		dp.count --;
+	} while (dp.count != 0);
 
-
+out_cmd:
 	free(tbuf);
 out_ofd_close:
 	close(ofd);

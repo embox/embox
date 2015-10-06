@@ -9,7 +9,7 @@
 
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
-#include <embox/device.h> //XXX
+#include <drivers/char_dev.h> //XXX
 #include <fs/idesc.h>
 #include <fs/file_desc.h>
 

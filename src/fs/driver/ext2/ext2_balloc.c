@@ -30,7 +30,7 @@
 #include <fs/hlpr_path.h>
 #include <util/array.h>
 #include <embox/unit.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 

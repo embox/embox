@@ -1,0 +1,7 @@
+package embox.driver
+
+module scsi {
+	source "scsi.c"
+	@IncludeExport(path="drivers")
+	source "scsi.h"
+}

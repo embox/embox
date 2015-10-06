@@ -13,9 +13,8 @@
 
 #include <fs/mbr.h>
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/phymem.h>
-#include <util/indexator.h>
 
 static int part_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	struct partition *part = (struct partition *) bdev->privdata;
@@ -76,26 +75,6 @@ int create_partitions(struct hd *hd) {
 	if ((mbr->sig_55 != 0x55) || (mbr->sig_aa != 0xAA)) {
 		return -EIO;
 	}
-	/*
-	for (i = 0; i < HD_PARTITIONS; i++) {
-		hd->parts[i].bdev = hd->devno;
-		hd->parts[i].bootid = mbr->ptable[i].active;
-		hd->parts[i].systid = mbr->ptable[i].type;
-		hd->parts[i].start = mbr->ptable[i].relsect;
-		hd->parts[i].len = mbr->ptable[i].numsect;
-
-		if (mbr->parttab[i].systid != 0) {
-			sprintf(devname, "%s%c", ((block_dev_module_t *)
-			&(__block_dev_registry[hd->devno]))->name, 'a' + i);
-			devno = dev_open(devname);
-			if (devno == NODEV) {
-				devno = dev_make(devname, &partition_driver, NULL, &hd->parts[i]);
-			} else {
-				dev_close(devno);
-			}
-		}
-	}
-	*/
 	hd->bdev = block_dev_create("/dev/hda0", &partition_driver, NULL);
 
 	return 0;

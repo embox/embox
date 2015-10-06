@@ -1,6 +1,10 @@
 package embox.fs.driver
 
-module devfs {
+@DefaultImpl(devfs_old)
+abstract module devfs {
+}
+
+module devfs_old extends devfs {
 	source "devfs.c"
 
 	depends embox.fs.core
@@ -9,4 +13,10 @@ module devfs {
 	depends embox.driver.block
 	depends embox.driver.flash
 	@NoRuntime depends embox.driver.char_dev
+}
+
+module devfs_dvfs extends devfs {
+	source "devfs_dvfs.c"
+
+	depends embox.driver.char_dev_dvfs
 }

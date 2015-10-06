@@ -58,7 +58,7 @@
 
 #include <fs/iso9660.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
 #include <arpa/inet.h>

@@ -5,21 +5,22 @@
  * @author Anton Bondarev
  * @author Ilia Vaprol
  */
-
-#include <embox/device.h>
 #include <errno.h>
+#include <stdlib.h>
+
+#include <drivers/char_dev.h>
 #include <fs/file_desc.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/file_operation.h>
-#include <stdlib.h>
+
 #include <util/array.h>
 
-ARRAY_SPREAD_DEF(const device_module_t, __device_registry);
+ARRAY_SPREAD_DEF(const struct device_module, __device_registry);
 
 int char_dev_init_all(void) {
 	int ret;
-	const device_module_t *dev_module;
+	const struct device_module *dev_module;
 
 	array_spread_foreach_ptr(dev_module, __device_registry) {
 		if (dev_module->init != NULL) {

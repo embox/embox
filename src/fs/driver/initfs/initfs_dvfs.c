@@ -95,7 +95,7 @@ static int initfs_fill_inode_entry(struct inode *node,
 		.start_pos = (int) entry->data,
 		.length    = (size_t) entry->size,
 		.i_data    = di,
-		.flags     = entry->mode & S_IFDIR ? O_DIRECTORY : 0,
+		.flags     = entry->mode & S_IFDIR,
 	};
 	return 0;
 }

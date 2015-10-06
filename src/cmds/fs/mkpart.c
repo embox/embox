@@ -17,7 +17,7 @@
 #include <fs/vfs.h>
 #include <fs/node.h>
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 
 #define BSIZE 512
 

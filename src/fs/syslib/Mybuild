@@ -52,13 +52,21 @@ module file_system_full extends file_system {
 	option number flock_quantity=128
 }
 
-module perm {
+@DefaultImpl(perm_full)
+abstract module perm {
+}
+
+module perm_full extends perm {
 	source "perm.c"
 
 	depends embox.compat.posix.util.environ
 	depends embox.compat.posix.proc.uid
 	depends embox.fs.core
 	depends embox.security.api
+}
+
+module perm_stub extends perm {
+	source "perm_stub.c"
 }
 
 @DefaultImpl(noncache)

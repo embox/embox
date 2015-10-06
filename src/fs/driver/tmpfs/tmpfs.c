@@ -22,7 +22,7 @@
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #include <fs/file_system.h>

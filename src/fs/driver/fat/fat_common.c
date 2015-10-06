@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <framework/mod/options.h>
 #include <fs/fat.h>
 #include <mem/misc/pool.h>

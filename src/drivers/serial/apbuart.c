@@ -9,7 +9,7 @@
 #include <errno.h>
 
 #include <drivers/amba_pnp.h>
-#include <embox/device.h>
+#include <drivers/char_dev.h>
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <kernel/irq.h>

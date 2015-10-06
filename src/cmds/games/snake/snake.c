@@ -7,16 +7,11 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <drivers/vt.h>
-#include <drivers/diag.h>
 #include <unistd.h>
 #include <time.h>
 
-#if 0x0 /* fix warnings: function print_usage not used */
-static void print_usage(void) {
-	printf("Usage: snake\n");
-}
-#endif
+#include <drivers/diag.h>
+
 
 #ifndef ESC
 #define ESC 0x1b

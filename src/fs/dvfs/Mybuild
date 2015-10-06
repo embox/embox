@@ -19,9 +19,9 @@ module dvfs extends fs_api {
 	depends path_helper
 	depends rootfs_dvfs
 
+	depends embox.driver.block_dvfs
 	depends embox.fs.dvfs.cache_strategy
 	depends embox.fs.dvfs.compat
-
 	depends embox.fs.syslib.dcache
 	depends embox.fs.driver.dvfs_driver
 	depends embox.fs.idesc

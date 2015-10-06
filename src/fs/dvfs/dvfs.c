@@ -9,8 +9,9 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/stat.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
@@ -69,7 +70,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	int res;
 	assert(lookup);
 	assert(lookup->parent);
-	assert(lookup->parent->flags & O_DIRECTORY);
+	assert(lookup->parent->flags & S_IFDIR);
 
 	sb = lookup->parent->d_sb;
 	lookup->item = dvfs_alloc_dentry();
@@ -133,7 +134,7 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 		},
 	};
 
-	if (i_no == NULL || i_no->flags & O_DIRECTORY) {
+	if (i_no == NULL || i_no->flags & S_IFDIR) {
 		if (lookup.item)
 			dvfs_destroy_dentry(lookup.item);
 		return -ENOENT;
@@ -285,7 +286,7 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 		if (lookup.item == NULL)
 			return -ENOENT;
 
-		assert(lookup.item->flags & O_DIRECTORY);
+		assert(lookup.item->flags & S_IFDIR);
 
 		/* Hide dentry of the directory */
 		dlist_del(&lookup.item->children_lnk);
@@ -295,13 +296,13 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 		dentry_fill(sb, NULL, d, lookup.parent);
 		d->usage_count++;
 		sb->root = d;
-		d->flags = O_DIRECTORY;
+		d->flags = S_IFDIR;
 		strcpy(d->name, lookup.item->name);
 
 		d->d_inode = dvfs_alloc_inode(sb);
 		*d->d_inode = (struct inode) {
-			.flags    = O_DIRECTORY,
-			.i_ops   = sb->sb_iops,
+			.flags    = S_IFDIR,
+			.i_ops    = sb->sb_iops,
 			.i_sb     = sb,
 			.i_dentry = d,
 		};
