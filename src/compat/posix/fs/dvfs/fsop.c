@@ -54,7 +54,7 @@ int stat(const char *path, struct stat *buf) {
 		.st_nlink   = 1,
 		.st_size    = (d && d->d_inode) ? d->d_inode->length : 0,
 		.st_blksize = 512,
-		.st_mode    = (d->flags & O_DIRECTORY ? S_IFDIR : S_IFREG),
+		.st_mode    = d->flags & S_IFMT,
 	};
 
 	return 0;

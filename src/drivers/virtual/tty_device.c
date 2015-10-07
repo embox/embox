@@ -21,7 +21,7 @@
 #include <fs/file_operation.h>
 #include <fs/node.h>
 
-#include <embox/device.h>
+#include <drivers/char_dev.h>
 
 #define TTY_DEV_NAME "tty0"
 #define DEFAULT_FRAMEBUFFER "fb0"
@@ -30,7 +30,7 @@
 static int tty_device_init(void);
 static const struct kfile_operations tty_device_ops;
 
-EMBOX_DEVICE(TTY_DEV_NAME, &tty_device_ops, tty_device_init);
+CHAR_DEV_DEF(TTY_DEV_NAME, &tty_device_ops, tty_device_init);
 
 static int tty_device_open(struct node *node, struct file_desc *file_desc, int flags) {
 	struct fb_info *info;

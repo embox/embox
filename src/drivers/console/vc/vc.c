@@ -9,9 +9,10 @@
 
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
-#include <embox/device.h> //XXX
+#include <drivers/char_dev.h> //XXX
 #include <fs/idesc.h>
 #include <fs/file_desc.h>
+#include <fs/file_operation.h>
 
 #include <embox/unit.h>
 
@@ -19,8 +20,7 @@ EMBOX_UNIT_INIT(vc_init);
 
 static struct vterm vc_vterm;
 
-static int vc_open(struct node *node, struct file_desc *file_desc,
-	int flags);
+static int vc_open(struct node *node, struct file_desc *file_desc, int flags);
 
 static struct kfile_operations vc_file_ops = {
 	.open = vc_open,
@@ -45,7 +45,6 @@ static int vc_open(struct node *node, struct file_desc *desc, int flags) {
 	vc_vterm.tty.idesc = &desc->idesc;
 
 	return 0;
-
 }
 
 static void vc_close(struct idesc *desc) {

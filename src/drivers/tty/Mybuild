@@ -52,10 +52,3 @@ module pty {
 	depends embox.fs.idesc_event
 //	depends embox.kernel.thread.sync /* cond */
 }
-
-module ttyfs {
-	source "ttyfs.c"
-
-	depends embox.fs.core
-	depends embox.fs.driver.devfs
-}

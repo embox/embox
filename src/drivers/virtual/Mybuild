@@ -6,33 +6,36 @@ module tty_device {
 	depends embox.driver.video.fb
 }
 
-module diag_device {
-	source "diag_device.c"
-
-	depends embox.fs.driver.devfs
-	@NoRuntime depends embox.driver.diag.diag_api
+@DefaultImpl(null_old)
+abstract module null {
 }
 
-module null {
+module null_old extends null {
 	source "null.c"
 
 	depends embox.fs.driver.devfs
 }
 
-module zero {
+module null_dvfs extends null {
+	source "null_dvfs.c"
+
+	depends embox.driver.char_dev_dvfs
+	depends embox.fs.driver.devfs_dvfs
+}
+
+@DefaultImpl(zero_old)
+abstract module zero {
+}
+
+module zero_old extends zero {
 	source "zero.c"
 
 	depends embox.compat.libc.all
 	depends embox.fs.driver.devfs
 }
 
-module uart {
-	source "uart.c"
+module zero_dvfs extends zero {
+	source "zero_dvfs.c"
 
-	depends embox.kernel.irq
-	@NoRuntime depends embox.fs.driver.devfs
-	@NoRuntime depends embox.fs.core
-	@NoRuntime depends embox.driver.char_dev
-	@NoRuntime depends embox.driver.tty.serial
+	depends embox.fs.driver.devfs_dvfs
 }
-

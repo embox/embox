@@ -16,7 +16,7 @@
 #include <fs/fsop.h>
 
 #include <drivers/block_dev/ramdisk/ramdisk.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <embox/test.h>
 
 #include <mem/page.h>

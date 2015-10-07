@@ -1,0 +1,5 @@
+package embox.driver.block_dev
+
+module scsi_disk {
+	source "scsi_disc.c"
+}

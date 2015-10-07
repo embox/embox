@@ -6,6 +6,7 @@
 
 #include <fcntl.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
@@ -176,8 +177,8 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
  */
 void dentry_upd_flags(struct dentry *dentry) {
 	if (dentry->d_inode) {
-		if (dentry->d_inode->flags & O_DIRECTORY)
-			dentry->flags |= O_DIRECTORY;
+		if (dentry->d_inode->flags & S_IFDIR)
+			dentry->flags |= S_IFDIR;
 	}
 }
 
@@ -268,13 +269,13 @@ int dvfs_update_root(void) {
 		.d_inode = inode,
 		.parent  = global_root,
 		.name    = "/",
-		.flags   = O_DIRECTORY,
+		.flags   = S_IFDIR,
 		.usage_count = 1,
 	};
 
 	if (global_root->d_inode)
 		*(global_root->d_inode) = (struct inode) {
-			.flags    = O_DIRECTORY,
+			.flags    = S_IFDIR,
 			.i_ops    = sb->sb_iops,
 			.i_sb     = sb,
 			.i_dentry = global_root,

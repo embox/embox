@@ -23,7 +23,7 @@
 #include <fs/bcache.h>
 #include <fs/file_operation.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 
 EMBOX_UNIT_INIT(blockdev_init);
 

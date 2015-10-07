@@ -6,9 +6,6 @@ package embox.driver.serial
 
 abstract module serial { }
 
-@DefaultImpl(fsnode)
-abstract module fsnode_api { }
-
 module core {
 	option number uart_max_n = 4
 
@@ -17,26 +14,7 @@ module core {
 	@IncludeExport(path="drivers/serial")
 	source "uart_device.h"
 
-	depends fsnode_api
 	@NoRuntime depends embox.util.indexator
-}
-
-module fsnode extends fsnode_api {
-	source "fsnode.c"
-
-	@IncludeExport(path="drivers/serial")
-	source "fsnode.h"
-
-	@NoRuntime depends embox.driver.char_dev
-	@NoRuntime depends embox.driver.tty.serial
-	depends embox.fs.driver.devfs
-}
-
-module fsnode_none extends fsnode_api {
-	source "fsnode_none.c"
-
-	@IncludeExport(path="drivers/serial")
-	source "fsnode.h"
 }
 
 module diag {
@@ -54,6 +32,7 @@ module apbuart extends embox.driver.diag.diag_api {
 	source "apbuart.c"
 
 	@NoRuntime depends embox.driver.ambapp_api
+	depends embox.driver.char_dev
 
 	depends core
 	depends diag

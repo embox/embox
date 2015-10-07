@@ -12,7 +12,7 @@
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <limits.h>
 #include <fcntl.h>
 #include <stdlib.h>

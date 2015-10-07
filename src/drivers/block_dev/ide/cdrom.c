@@ -10,25 +10,25 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <asm/io.h>
 
 #include <kernel/sched/sched_lock.h>
 #include <arpa/inet.h>
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/phymem.h>
 #include <util/indexator.h>
 #include <kernel/time/ktime.h>
-#include <limits.h>
 
 #define CD_WAIT_US 3000
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
-INDEX_DEF(idecd_idx,0,MAX_DEV_QUANTITY);
+INDEX_DEF(idecd_idx, 0, MAX_DEV_QUANTITY);
 
 static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
-		                     int pktlen, char *buffer, size_t bufsize) {
+		int pktlen, char *buffer, size_t bufsize) {
 	hdc_t *hdc;
 	int result;
 	char *bufp;
@@ -211,46 +211,31 @@ static block_dev_driver_t idecd_pio_driver = {
 };
 
 static int idecd_init (void *args) {
-//	struct ide_tab *ide;
 	hd_t *drive;
 	size_t size;
-//	int i;
 	char   path[PATH_MAX];
-#if 0
-	ide = ide_get_drive();
+	drive = (hd_t *)args;
+	/* Make new device */
+	if (drive->media == IDE_CDROM) {
+		*path = 0;
+		strcat(path, "/dev/cd#");
+		if (0 > (drive->idx = block_dev_named(path, &idecd_idx))) {
+			return drive->idx;
+		}
+		drive->bdev = block_dev_create(path, &idecd_pio_driver, drive);
 
-	for(i = 0; i < HD_DRIVES; i++) {
-		if (NULL == ide->drive[i]) {
-			continue;
+		if (NULL != drive->bdev) {
+			if (drive->blks <= 0) {
+				drive->blks = atapi_read_capacity(drive);
+			}
+			size = drive->blks * CDSECTORSIZE;
+			block_dev(drive->bdev)->size = size;
+		} else {
+			return -1;
 		}
 
-		drive = (hd_t *) ide->drive[i];
-#endif
-		drive = (hd_t *)args;
-		/* Make new device */
-		if (drive->media == IDE_CDROM) {
-			*path = 0;
-			strcat(path, "/dev/cd#");
-			if (0 > (drive->idx = block_dev_named(path, &idecd_idx))) {
-				return drive->idx;
-			}
-			drive->bdev = block_dev_create(path, &idecd_pio_driver, drive);
-
-			if (NULL != drive->bdev) {
-				if (drive->blks <= 0) {
-					drive->blks = atapi_read_capacity(drive);
-				}
-				size = drive->blks * CDSECTORSIZE;
-				block_dev(drive->bdev)->size = size;
-			} else {
-				return -1;
-			}
-
-			drive->blks = 0;
-		}
-#if 0
+		drive->blks = 0;
 	}
-#endif
 	return 0;
 }
 

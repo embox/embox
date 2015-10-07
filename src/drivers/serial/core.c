@@ -13,7 +13,6 @@
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
-#include <drivers/serial/fsnode.h>
 
 #include <drivers/serial/uart_device.h>
 
@@ -97,8 +96,6 @@ int uart_register(struct uart *uart,
 	}
 
 	dlist_add_next(&uart->lnk, &uart_list);
-
-	serial_register_devfs(uart);
 
 	return 0;
 }

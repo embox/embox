@@ -2,14 +2,30 @@ package embox.driver
 
 module terminal {
 	source "terminal.c"
+	@IncludeExport(path="drivers")
+	source "terminal.h"
 
 	depends embox.driver.terminal.vt
 }
 
-module char_dev {
+@DefaultImpl(char_dev_old)
+abstract module char_dev {
+}
+
+module char_dev_old extends char_dev {
+	@IncludeExport(path="drivers")
+	source "char_dev.h"
+
 	source "char_dev.c"
 
 	depends embox.fs.core
 	depends embox.fs.driver.devfs
+}
+
+module char_dev_stub extends char_dev {
+	@IncludeExport(path="drivers")
+	source "char_dev.h"
+
+	source "char_dev_stub.c"
 }
 

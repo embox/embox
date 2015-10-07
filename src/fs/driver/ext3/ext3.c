@@ -16,7 +16,7 @@
 
 #include <util/array.h>
 #include <embox/unit.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/objalloc.h>
 #include <mem/phymem.h>
 #include <mem/sysmalloc.h>

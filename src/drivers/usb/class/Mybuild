@@ -11,15 +11,13 @@ module hid {
 
 module mass_storage {
 	source "usb_mass_storage.c"
+	@IncludeExport(path="drivers/usb/class")
+	source "usb_mass_storage.h"
 
 	depends embox.driver.usb.core
 
-	depends scsi
-}
-
-module scsi {
-	source "scsi.c",
-	       "scsi_disc.c"
+	depends embox.driver.scsi
+	depends embox.driver.block_dev.scsi_disk
 }
 
 module cdc {
