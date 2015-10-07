@@ -208,7 +208,7 @@ int kioctl(struct file_desc *desc, int request, void *data) {
 	}
 
 	if (NULL == desc->ops->ioctl) {
-		return -EBADF;
+		return -ENOSUPP;
 	}
 
 	ret = desc->ops->ioctl(desc, request, data);

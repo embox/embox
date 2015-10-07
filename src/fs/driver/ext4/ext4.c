@@ -151,14 +151,12 @@ static int ext4fs_open(struct node *node, struct file_desc *file_desc,
 static int ext4fs_close(struct file_desc *desc);
 static size_t ext4fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext4fs_write(struct file_desc *desc, void *buf, size_t size);
-static int ext4fs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations ext4_fop = {
 	.open = ext4fs_open,
 	.close = ext4fs_close,
 	.read = ext4fs_read,
 	.write = ext4fs_write,
-	.ioctl = ext4fs_ioctl,
 };
 
 /* Calculates the physical block from a given logical block and extent */
@@ -638,10 +636,6 @@ static size_t ext4fs_write(struct file_desc *desc, void *buff, size_t size) {
 	nas->fi->ni.size = ext4_file_size(fi->f_di);
 
 	return bytecount;
-}
-
-static int ext4fs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
 }
 
 static int ext4_create(struct nas *nas, struct nas * parents_nas);

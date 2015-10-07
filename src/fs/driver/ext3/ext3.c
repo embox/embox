@@ -47,7 +47,6 @@ static int ext3fs_open(struct node *node, struct file_desc *file_desc,
 static int ext3fs_close(struct file_desc *desc);
 static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
-static int ext3fs_ioctl(struct file_desc *desc, int request, ...);
 
 /* fs operations */
 static int ext3fs_init(void * par);
@@ -118,9 +117,6 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return res;
 }
 
-static int ext3fs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
-}
 
 static int ext3fs_init(void *par) {
 	return 0;
@@ -352,7 +348,6 @@ static struct kfile_operations ext3_fop = {
 	.close = ext3fs_close,
 	.read = ext3fs_read,
 	.write = ext3fs_write,
-	.ioctl = ext3fs_ioctl,
 };
 
 static struct fsop_desc ext3_fsop = {

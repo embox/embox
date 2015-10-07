@@ -54,17 +54,11 @@ static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
 	return n_write;
 }
 
-static int bdev_ioctl(struct file_desc *desc, int request, ...) {
-	return -ENOTSUP;
-}
-
 static struct kfile_operations blockdev_fop = {
 	.open = bdev_open,
 	.close = bdev_close,
 	.read = bdev_read,
 	.write = bdev_write,
-	.ioctl = bdev_ioctl,
-
 };
 
 static struct filesystem *blockdev_fs;
