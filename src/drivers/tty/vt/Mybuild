@@ -16,7 +16,7 @@ module vterm_video {
 	source "vtesc.c"
 
 	@IncludeExport(path="drivers")
-	source "vterm_video.c", "vtesc.c"
+	source "vterm_video.h", "vtesc.h"
 
 	depends embox.driver.terminal.vt
 }
