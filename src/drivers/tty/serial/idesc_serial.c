@@ -15,8 +15,9 @@
 #include <framework/mod/options.h>
 
 #include <drivers/tty.h>
+#include <fs/file_desc.h>
 #include <fs/idesc_serial.h>
-
+#include <drivers/serial/uart_device.h>
 
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)

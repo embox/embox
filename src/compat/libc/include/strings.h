@@ -15,23 +15,6 @@
 #include <sys/cdefs.h>
 __BEGIN_DECLS
 
-#if 0
-/* POSIX.1-2008 removes the specification of bcmp()
- * memcmp() is preferred over this function.*/
-int    bcmp(const void *, const void *, size_t);
-/*
- * For portability to implementations conforming to earlier versions of this
- * specification, memmove() is preferred over this function.
- */
-void   bcopy(const void *, void *, size_t);
-/* memset() is preferred over this function. */
-void   bzero(void *, size_t);
-/* strchr() is preferred over this function. */
-char   *index(const char *, int);
-/* strrchr() is preferred over this function. */
-char   *rindex(const char *, int);
-#endif
-
 /**
  * The  ffs()  function  returns  the position of the first (least significant)
  * bit set in the word i.  The least significant bit is position 1 and the most

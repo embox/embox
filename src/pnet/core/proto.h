@@ -33,24 +33,6 @@ typedef struct pnet_proto {
 	struct pnet_node_actions actions;
 } *pnet_proto_t;
 
-#if 0
-#define __ACCESSOR(fun_name, res_type, fun) \
-	static inline res_type fun_name(struct net_node *node) { \
-		return node->proto->actions.fun;\
-	}
-
-#define __ACCESSOR_PREF(pref, res_type, fun) \
-	__ACCESSOR(pref##fun, res_type, fun)
-
-
-__ACCESSOR_PREF(pnet_proto_, net_hnd, rx_hnd)
-__ACCESSOR_PREF(pnet_proto_, net_hnd, tx_hnd)
-__ACCESSOR_PREF(pnet_proto_, net_node_hnd, start)
-__ACCESSOR_PREF(pnet_proto_, net_node_hnd, stop)
-__ACCESSOR_PREF(pnet_proto_, net_alloc_hnd, alloc)
-__ACCESSOR_PREF(pnet_proto_, net_node_hnd, free)
-#endif
-
 #define __ACCESSOR(pref, res_type, fun) \
 	static inline res_type pref##fun(struct net_node *node) { \
 		return (node->proto ? node->proto->actions.fun : NULL);\

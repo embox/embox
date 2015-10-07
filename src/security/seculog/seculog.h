@@ -64,17 +64,6 @@ struct seculog_desc {
  */
 extern int seculog_subscribe(struct seculog_subscb *subscb);
 
-#if 0
-/**
- * @brief Increment internal reference count of record that prevents it's deletion
- * after callback called. This should be used if record is accessed after callback.
- * Note, that \a seculog_record_free should be called manually after this.
- *
- * @param rec
- */
-extern void seculog_record_inc_ref(struct seculog_record *rec);
-#endif
-
 /**
  * @brief Open security log for sepecified labels
  *
