@@ -45,6 +45,8 @@ static int rootfs_mount(void) {
 	struct dumb_fs_driver *fsdrv;
 	struct block_dev *bdev = NULL;
 	struct auto_mount *auto_mnt;
+	struct lookup lu;
+	char *tmp;
 
 	dev = OPTION_STRING_GET(bdev);
 	fs_type = OPTION_STRING_GET(fstype);
@@ -67,9 +69,15 @@ static int rootfs_mount(void) {
 	array_spread_foreach(auto_mnt, auto_mount_tab) {
 		if (fsdrv == auto_mnt->fs_driver)
 			continue;
-		/* TODO Create virtual directory */
-		/* TODO Mount */
-		//dvfs_mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name, 0);
+
+		dvfs_lookup(auto_mnt->mount_path, &lu);
+		if (lu.item == NULL) {
+			tmp = strrchr(auto_mnt->mount_path, '/');
+			dvfs_create_new(tmp ? tmp + 1: auto_mnt->mount_path,
+					&lu, DVFS_DIR_VIRTUAL | S_IFDIR);
+		}
+		dvfs_mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name, 0);
 	}
+
 	return 0;
 }

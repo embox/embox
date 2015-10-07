@@ -81,8 +81,13 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	dentry_fill(sb, new_inode, lookup->item, lookup->parent);
 	strncpy(lookup->item->name, name, DENTRY_NAME_LEN);
 	inode_fill(sb, new_inode, lookup->item);
-	res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
 
+	if (flags & DVFS_DIR_VIRTUAL) {
+		lookup->item->flags |= flags;
+		lookup->item->usage_count++;
+	} else {
+		res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
+	}
 	if (res) {
 		dvfs_destroy_dentry(lookup->item);
 	}
@@ -268,7 +273,7 @@ extern int set_rootfs_sb(struct super_block *sb);
  * @retval       0 Ok
  * @retval -ENOENT Mount point or device not found
  */
-int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
+int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
 	struct super_block *sb;
