@@ -123,6 +123,11 @@ struct dumb_fs_driver {
 	int (*mount_end)(struct super_block *sb);
 };
 
+struct auto_mount {
+	char mount_path[DENTRY_NAME_LEN];
+	struct dumb_fs_driver *fs_driver;
+};
+
 struct dvfsmnt {
 	struct dvfsmnt *mnt_parent;
 	struct dentry  *mnt_mountpoint;

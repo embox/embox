@@ -13,8 +13,11 @@
 #include <drivers/block_dev.h>
 #include <drivers/char_dev.h>
 #include <embox/unit.h>
+#include <util/array.h>
 
 EMBOX_UNIT_INIT(rootfs_mount);
+
+ARRAY_SPREAD_DEF(struct auto_mount *, auto_mount_tab);
 
 static struct super_block *root_sb;
 
@@ -41,6 +44,7 @@ static int rootfs_mount(void) {
 	const char *dev, *fs_type;
 	struct dumb_fs_driver *fsdrv;
 	struct block_dev *bdev = NULL;
+	struct auto_mount *auto_mnt;
 
 	dev = OPTION_STRING_GET(bdev);
 	fs_type = OPTION_STRING_GET(fstype);
@@ -60,9 +64,12 @@ static int rootfs_mount(void) {
 	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0))
 		return -errno;
 
-	if (strcmp(fs_type, "devfs") && (fsdrv = dumb_fs_driver_find("devfs")))
-		dvfs_mount(NULL, "/dev", "devfs", 0);
-
+	array_spread_foreach(auto_mnt, auto_mount_tab) {
+		if (fsdrv == auto_mnt->fs_driver)
+			continue;
+		/* TODO Create virtual directory */
+		/* TODO Mount */
+		//dvfs_mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name, 0);
+	}
 	return 0;
 }
-

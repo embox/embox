@@ -231,3 +231,11 @@ static struct dumb_fs_driver devfs_dumb_driver = {
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &devfs_dumb_driver);
+
+static struct auto_mount devfs_auto_mount = {
+	.mount_path = "/dev",
+	.fs_driver  = &devfs_dumb_driver,
+};
+
+ARRAY_SPREAD_DECLARE(struct auto_mount *, auto_mount_tab);
+ARRAY_SPREAD_ADD(auto_mount_tab, &devfs_auto_mount);
