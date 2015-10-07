@@ -194,7 +194,7 @@ static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 
-static int devfs_ioctl(struct file *desc, int request, ...) {
+static int devfs_ioctl(struct file *desc, int request, void *data) {
 	return 0;
 }
 
