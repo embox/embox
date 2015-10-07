@@ -1,0 +1,9 @@
+package stm32f3_sensors.libactuators
+
+@BuildDepends(third_party.bsp.st_f3.core)
+module motor {
+	source "motor.c"
+
+	@IncludeExport(path="libactuators")
+	source "motor.h"
+}

@@ -9,3 +9,12 @@ module stm32 {
 	depends third_party.bsp.st_f4.core
 	depends embox.driver.flash_lib
 }
+
+@BuildDepends(third_party.bsp.st_f3.core)
+module stm32_f3 {
+	source "stm32f3_flash.c"
+	source "stm32f3_flash.lds.S"
+
+	depends third_party.bsp.st_f3.core
+	depends embox.driver.flash_lib
+}
