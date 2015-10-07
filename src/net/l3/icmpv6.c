@@ -19,7 +19,7 @@
 #include <net/skbuff.h>
 #include <net/util/checksum.h>
 #include <arpa/inet.h>
-#include <kernel/printk.h>
+#include <util/log.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <string.h>
@@ -249,7 +249,7 @@ static int icmp6_rcv(struct sk_buff *skb) {
 
 	switch (icmp6h->type) {
 	default:
-		//printk("icmp6_rcv: unknown type: %hhu\n", icmp6h->type);
+		log_error("icmp6_rcv: unknown type: %hhu\n", icmp6h->type);
 		break; /* error: unknown type */
 	case ICMP6_ECHO_REQUEST:
 		return icmp6_hnd_echo_request(icmp6h,

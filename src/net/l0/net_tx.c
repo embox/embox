@@ -19,14 +19,7 @@
 #include <util/array.h>
 #include <net/socket/packet.h>
 #include <net/l2/ethernet.h>
-
-#define NET_TX_DEBUG 0
-#if NET_TX_DEBUG
-#include <kernel/printk.h>
-#define DBG(x) x
-#else
-#define DBG(x)
-#endif
+#include <util/log.h>
 
 static int nt_build_hdr(struct sk_buff *skb,
 		struct net_header_info *hdr_info,
@@ -80,7 +73,7 @@ int net_tx(struct sk_buff *skb,
 	assert(dev != NULL);
 
 	if (!(dev->flags & IFF_UP)) {
-		DBG(printk("net_tx: device is down\n"));
+		log_error("net_tx: device is down\n");
 		skb_free(skb);
 		return -ENETDOWN;
 	}
@@ -91,16 +84,14 @@ int net_tx(struct sk_buff *skb,
 				hdr_info->dst_p, hdr_info->p_len,
 				dev, skb);
 		if (ret != 0) {
-			DBG(printk("net_tx: neighbour_send_after_resolve = %d\n",
-						ret));
+			log_debug("net_tx: neighbour_send_after_resolve = %d\n", ret);
 		}
 		return ret;
 	}
 
 	skb_len = skb->len;
 
-	DBG(printk("net_tx: skb %p[%zu] type %#.6hx\n",
-				skb, skb->len, ntohs(skb->mac.ethh->h_proto)));
+	log_debug("net_tx: skb %p[%zu] type %#.6hx\n", skb, skb->len, ntohs(skb->mac.ethh->h_proto));
 
 	/*
 	 * http://www.linuxfoundation.org/collaborate/workgroups/networking/kernel_flow#Transmission_path
@@ -120,7 +111,7 @@ int net_tx(struct sk_buff *skb,
 	assert(dev->drv_ops->xmit != NULL);
 	ret = dev->drv_ops->xmit(dev, skb);
 	if (ret != 0) {
-		DBG(printk("net_tx: xmit = %d\n", ret));
+		log_debug("net_tx: xmit = %d\n", ret);
 		skb_free(skb);
 		dev->stats.tx_err++;
 		return ret;

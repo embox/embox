@@ -7,6 +7,7 @@
  * @author Ilia Vaprol
  * @author Vladimir Sokolov
  */
+
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
@@ -23,6 +24,7 @@
 #include <linux/list.h>
 #include <util/member.h>
 #include <util/binalign.h>
+#include <util/log.h>
 
 #include <sys/uio.h>
 
@@ -54,14 +56,6 @@
 
 #define SKB_DATA_SIZE(size) \
 	IP_ALIGN_SIZE + MODOPS_DATA_SIZE + (size) + sizeof(size_t)
-
-#define SKB_DEBUG 0
-#if SKB_DEBUG
-#include <kernel/printk.h>
-#define DBG(x) x
-#else
-#define DBG(x)
-#endif
 
 struct sk_buff_data_fixed {
 	size_t links;
@@ -101,7 +95,7 @@ static struct sk_buff_data * skb_data_alloc_dynamic(size_t size) {
 	ipl_restore(sp);
 
 	if (skb_data == NULL) {
-		DBG(printk("skb_data_alloc: error: no memory\n"));
+		log_error("skb_data_alloc: error: no memory\n");
 		return NULL; /* error: no memory */
 	}
 
@@ -149,7 +143,7 @@ struct sk_buff_data * skb_data_alloc(void) {
 	ipl_restore(sp);
 
 	if (skb_data == NULL) {
-		DBG(printk("skb_data_alloc: error: no memory\n"));
+		log_error("skb_data_alloc: error: no memory\n");
 		return NULL; /* error: no memory */
 	}
 
@@ -206,7 +200,7 @@ struct sk_buff_extra * skb_extra_alloc(void) {
 	ipl_restore(sp);
 
 	if (skb_extra == NULL) {
-		DBG(printk("skb_extra_alloc: error: no memory\n"));
+		log_error("skb_extra_alloc: error: no memory\n");
 		return NULL; /* error: no memory */
 	}
 
@@ -232,7 +226,7 @@ struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 
 	// TODO move it
 //	if (size > skb_max_size()) {
-//		DBG(printk("skb_wrap: error: size is too big\n"));
+//		log_error("skb_wrap: error: size is too big\n");
 //		return NULL; /* error: invalid argument */
 //	}
 
@@ -245,7 +239,7 @@ struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 	gettimeofday(&skb->tstamp, NULL);
 
 	if (skb == NULL) {
-		DBG(printk("skb_wrap: error: no memory\n"));
+		log_error("skb_wrap: error: no memory\n");
 		return NULL; /* error: no memory */
 	}
 

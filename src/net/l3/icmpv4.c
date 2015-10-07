@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include <util/math.h>
+#include <util/log.h>
 
 #include <net/inetdevice.h>
 #include <net/l3/ipv4/ip.h>
@@ -30,7 +31,6 @@
 #include <net/l2/ethernet.h>
 #include <net/if_packet.h>
 #include <net/lib/ipv4.h>
-
 
 #include <embox/net/pack.h>
 #include <embox/net/proto.h>
@@ -271,7 +271,7 @@ static int icmp_rcv(struct sk_buff *skb) {
 
 	switch (icmph->type) {
 	default:
-		//printk("icmp_rcv: unknown type: %hhu\n", icmph->type);
+		log_error("icmp_rcv: unknown type: %hhu\n", icmph->type);
 		break; /* error: unknown type */
 	case ICMP_ECHO_REPLY:
 	case ICMP_TIMESTAMP_REPLY:

@@ -55,5 +55,10 @@ ARRAY_SPREAD_DECLARE(const struct net_pack, __net_pack_registry);
 				.rcv_pack = _rcv_pack                                    \
 			})
 
+/* Help Eclipse CDT. */
+#ifdef __CDT_PARSER__
+#define EMBOX_NET_PACK(_type, _rcv_pack)
+#endif
+
 
 #endif /* EMBOX_NET_PACK_H_ */

@@ -19,6 +19,7 @@
 #include <kernel/time/timer.h>
 #include <net/l0/net_tx.h>
 #include <util/binalign.h>
+#include <util/log.h>
 
 #include <framework/mod/options.h>
 #include <embox/unit.h>
@@ -26,7 +27,6 @@
 #include <net/l3/arp.h>
 #include <net/l3/ndp.h>
 #include <net/l2/ethernet.h>
-#include <kernel/printk.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 
@@ -159,12 +159,12 @@ static int nbr_build_and_send_pkt(struct sk_buff *skb,
 		/* try to xmit */
 		ret = net_tx(skb, NULL);
 		if (ret != 0) {
-			/*printk("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);*/
+			log_error("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);
 			return ret;
 		}
 	}
 	else {
-		/*printk("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);*/
+		log_error("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);
 		skb_free(skb);
 		return ret;
 	}

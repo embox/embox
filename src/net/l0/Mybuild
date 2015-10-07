@@ -14,6 +14,7 @@ module net_entry extends entry_api {
 }
 
 module net_rx {
+	option number log_level = 0
 	source "net_rx.c"
 
 	depends net_crypt_api
@@ -24,6 +25,7 @@ module net_rx {
 }
 
 module net_tx {
+	option number log_level = 0
 	source "net_tx.c"
 
 	depends net_crypt_api
