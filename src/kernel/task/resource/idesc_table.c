@@ -7,7 +7,6 @@
 
 #include <assert.h>
 #include <kernel/task.h>
-#include <kernel/task/idesc_table.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <stddef.h>
