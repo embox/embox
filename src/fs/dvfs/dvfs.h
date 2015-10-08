@@ -122,6 +122,7 @@ struct file_operations {
 
 struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
+	int (*format)(void *dev);
 	int (*fill_sb)(struct super_block *sb, struct block_dev *dev);
 	int (*mount_end)(struct super_block *sb);
 };
