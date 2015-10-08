@@ -83,6 +83,8 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	inode_fill(sb, new_inode, lookup->item);
 
 	if (flags & DVFS_DIR_VIRTUAL) {
+		res = 0;
+
 		lookup->item->flags |= flags;
 		lookup->item->usage_count++;
 
