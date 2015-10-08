@@ -81,8 +81,15 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	dentry_fill(sb, new_inode, lookup->item, lookup->parent);
 	strncpy(lookup->item->name, name, DENTRY_NAME_LEN);
 	inode_fill(sb, new_inode, lookup->item);
-	res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
 
+	if (flags & DVFS_DIR_VIRTUAL) {
+		lookup->item->flags |= flags;
+		lookup->item->usage_count++;
+
+		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
+	} else {
+		res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
+	}
 	if (res) {
 		dvfs_destroy_dentry(lookup->item);
 	}
@@ -268,7 +275,7 @@ extern int set_rootfs_sb(struct super_block *sb);
  * @retval       0 Ok
  * @retval -ENOENT Mount point or device not found
  */
-int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
+int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
 	struct super_block *sb;
@@ -288,16 +295,24 @@ int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags) {
 
 		assert(lookup.item->flags & S_IFDIR);
 
-		/* Hide dentry of the directory */
-		dlist_del(&lookup.item->children_lnk);
-		dvfs_cache_del(lookup.item);
+		if (!(lookup.item->flags & DVFS_DIR_VIRTUAL)) {
+			/* Hide dentry of the directory */
+			dlist_del(&lookup.item->children_lnk);
+			dvfs_cache_del(lookup.item);
 
-		d = dvfs_alloc_dentry();
-		dentry_fill(sb, NULL, d, lookup.parent);
+			d = dvfs_alloc_dentry();
+
+			dentry_fill(sb, NULL, d, lookup.parent);
+			strcpy(d->name, lookup.item->name);
+			d->flags |= S_IFDIR;
+		} else {
+			d = lookup.item;
+			/* TODO free related inode */
+		}
+		d->d_sb  = sb,
+		d->d_ops = sb ? sb->sb_dops : NULL,
 		d->usage_count++;
 		sb->root = d;
-		d->flags = S_IFDIR;
-		strcpy(d->name, lookup.item->name);
 
 		d->d_inode = dvfs_alloc_inode(sb);
 		*d->d_inode = (struct inode) {
@@ -330,9 +345,14 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct inode *parent_inode;
 	struct inode *next_inode;
 	struct dentry *next_dentry = NULL;
+	struct dlist_head *l;
+	int i;
 	int res;
 	assert(lookup);
 	assert(ctx);
+
+	if (ctx->flags & DVFS_CHILD_VIRTUAL)
+		goto lookup_virt;
 
 	sb = lookup->parent->d_sb;
 	parent_inode = lookup->parent->d_inode;
@@ -356,8 +376,25 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	dentry_upd_flags(next_dentry);
 
 	if (res) {
-		ctx->pos = 0;
 		dvfs_destroy_dentry(next_dentry);
+		if (lookup->parent->flags & DVFS_CHILD_VIRTUAL) {
+			ctx->flags = DVFS_CHILD_VIRTUAL;
+lookup_virt:
+			i = 0;
+			dlist_foreach(l, &lookup->parent->children) {
+				next_dentry = mcast_out(l, struct dentry, children_lnk);
+
+				if (next_dentry->flags & DVFS_DIR_VIRTUAL) {
+					if (i++ == (ctx->flags & ~DVFS_CHILD_VIRTUAL)) {
+						ctx->flags++;
+						lookup->item = next_dentry;
+						return 0;
+					}
+				}
+			}
+		}
+
+		ctx->pos = 0;
 		next_dentry = NULL;
 	} else {
 		char full_path[DENTRY_NAME_LEN];

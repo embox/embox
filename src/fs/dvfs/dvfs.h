@@ -19,9 +19,11 @@
 #define DENTRY_NAME_LEN 36
 #define FS_NAME_LEN     16
 
-#define DVFS_PATH_FULL  0x01
-#define DVFS_PATH_FS    0x02
-#define DVFS_NAME       0x04
+#define DVFS_PATH_FULL     0x01
+#define DVFS_PATH_FS       0x02
+#define DVFS_NAME          0x04
+#define DVFS_DIR_VIRTUAL   0x01
+#define DVFS_CHILD_VIRTUAL 0x10
 
 struct dentry;
 struct dir_ctx;
@@ -123,6 +125,11 @@ struct dumb_fs_driver {
 	int (*mount_end)(struct super_block *sb);
 };
 
+struct auto_mount {
+	char mount_path[DENTRY_NAME_LEN];
+	struct dumb_fs_driver *fs_driver;
+};
+
 struct dvfsmnt {
 	struct dvfsmnt *mnt_parent;
 	struct dentry  *mnt_mountpoint;
@@ -137,6 +144,7 @@ struct dvfsmnt {
 
 struct dir_ctx {
 	int   pos;
+	int   flags;
 	void *fs_ctx;
 };
 
@@ -179,5 +187,5 @@ extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct bloc
 
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
 
-extern int dvfs_mount(struct block_dev *dev, char *dest, char *fstype, int flags);
+extern int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags);
 #endif
