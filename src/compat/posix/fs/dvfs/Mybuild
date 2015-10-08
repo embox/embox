@@ -17,6 +17,7 @@ static module file_dvfs extends file {
 	depends open_dvfs
 	depends ioctl_dvfs
 	depends fstat
+	depends embox.compat.posix.fs.fsync
 }
 
 static module ioctl_dvfs {

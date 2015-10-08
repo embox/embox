@@ -12,12 +12,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <errno.h>
+#include <stddef.h>
 #include <linux/types.h>
 #include <sys/socket.h>
 #include <net/l3/ipv4/ip.h>
 #include <arpa/inet.h>
-#include <errno.h>
-#include <stddef.h>
+
 
 /*
  * Trivial File Transfer Protocol (IEN-133)

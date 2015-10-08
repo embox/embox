@@ -8,8 +8,10 @@
 #ifndef FILE_TABLE_H_
 #define FILE_TABLE_H
 
-#include <fs/dvfs.h>
+
 #include <kernel/task.h>
+
+struct dentry;
 
 struct task_vfs {
 	struct dentry *root;
