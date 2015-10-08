@@ -349,12 +349,27 @@ static int fat_mount_end(struct super_block *sb) {
 	return 0;
 }
 
+
+/**
+ * @brief Format given block device
+ * @param dev Pointer to device
+ * @note Should be block device
+ *
+ * @return Negative error code or 0 if succeed
+ */
+static int fat_format(void *dev) {
+	fat_create_partition(dev);
+	fat_root_dir_record(dev);
+
+	return 0;
+}
+
 static struct dumb_fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,
 	.mount_end = fat_mount_end,
+	.format    = fat_format,
 };
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_fat_driver);
-
