@@ -331,8 +331,6 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
 	return 0;
 }
 
-extern void dentry_upd_flags(struct dentry *dentry);
-extern int dentry_full_path(struct dentry *dentry, char *buf);
 /**
  * @brief Get next entry in the directory
  * @param lookup  Contains directory dentry (.parent) and
