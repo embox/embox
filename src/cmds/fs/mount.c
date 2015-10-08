@@ -18,11 +18,18 @@
 
 #include <mem/phymem.h>
 
+#include <module/embox/fs/fs_api.h>
+
 static void print_usage(void) {
 	printf("Usage: mount [-h] [-t fstype] dev dir\n");
 }
 
-/* static void lookup_mounts(struct mount_descriptor *parent) {
+#ifdef __MODULE__embox__fs__core__H_
+
+#include <fs/vfs.h>
+#include <fs/fs_driver.h>
+
+static void lookup_mounts(struct mount_descriptor *parent) {
 	struct mount_descriptor *desc;
 	char mount_path[PATH_MAX];
 	struct path path;
@@ -47,7 +54,32 @@ static void show_mount_list(void) {
 	if (NULL != (mount_list = mount_table())) {
 		lookup_mounts(mount_list);
 	}
-} */
+}
+
+#elif defined __MODULE__embox__fs__dvfs__H_
+
+#include <fs/dvfs.h>
+
+extern struct dlist_head dentry_dlist;
+
+static void show_mount_list(void) {
+	struct dentry *d;
+	char mount_path[DENTRY_NAME_LEN];
+
+	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
+		if (d->flags & DVFS_MOUNT_POINT) {
+			if (dentry_full_path(d, mount_path))
+				continue;
+
+			printf("%s on %s type %s\n",
+			d->d_sb->fs_drv->name,
+			mount_path,
+			d->d_sb->fs_drv->name);
+		}
+	}
+}
+
+#endif
 
 int main(int argc, char **argv) {
 	int opt;
@@ -97,7 +129,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	//show_mount_list();
+	show_mount_list();
 
 	return 0;
 }
