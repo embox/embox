@@ -11,7 +11,6 @@
 #include <util/dlist.h>
 
 #include <kernel/task.h>
-#include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <fs/idesc.h>
 

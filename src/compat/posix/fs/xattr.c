@@ -13,7 +13,7 @@
 #include <security/security.h>
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
-#include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 
 #include <sys/xattr.h>
 

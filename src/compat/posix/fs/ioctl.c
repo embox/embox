@@ -16,7 +16,7 @@
 #include <poll.h>
 
 #include <fs/index_descriptor.h>
-#include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 
 /* POSIX says, that this way to make read/write nonblocking is old
  * and recommend use fcntl(fd, O_NONBLOCK, ...)

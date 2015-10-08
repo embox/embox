@@ -27,7 +27,6 @@
 
 #include <kernel/thread/thread_sched_wait.h>
 
-#include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <mem/misc/pool.h>
 

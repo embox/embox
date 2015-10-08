@@ -15,7 +15,7 @@
 #include <fs/flags.h>
 #include <fs/poll_table.h>
 
-#include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 
 static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
 		nfds_t nfds) {

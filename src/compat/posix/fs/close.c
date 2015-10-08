@@ -7,7 +7,7 @@
 
 #include <errno.h>
 #include <kernel/task.h>
-#include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 

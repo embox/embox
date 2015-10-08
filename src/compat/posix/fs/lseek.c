@@ -14,7 +14,7 @@
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 
-#include <kernel/task/idesc_table.h>
+#include <kernel/task/resource/idesc_table.h>
 
 off_t lseek(int fd, off_t offset, int origin) {
 	struct file_desc *desc;

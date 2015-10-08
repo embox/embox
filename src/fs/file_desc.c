@@ -18,7 +18,6 @@
 
 #include <fs/file_desc.h>
 #include <kernel/task.h>
-#include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <embox/unit.h>
 #include <util/err.h>

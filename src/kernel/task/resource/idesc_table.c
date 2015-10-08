@@ -2,17 +2,16 @@
  * @file
  *
  * @date Nov 13, 2013
- * @author: Anton Bondarev
+ * @author Anton Bondarev
+ * @author Ilia Vaprol
  */
 
 #include <assert.h>
-#include <kernel/task.h>
-#include <kernel/task/idesc_table.h>
-#include <kernel/task/resource.h>
-#include <kernel/task/resource/idesc_table.h>
 #include <stddef.h>
 
-#include "idesc_table.h"
+#include <kernel/task.h>
+#include <kernel/task/resource.h>
+#include <kernel/task/resource/idesc_table.h>
 
 TASK_RESOURCE_DEF(task_idesc_table_desc, struct idesc_table);
 

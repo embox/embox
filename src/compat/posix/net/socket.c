@@ -23,7 +23,6 @@
 #include <net/sock.h>
 #include <net/socket/socket_desc.h>
 
-#include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <util/log.h>
 
