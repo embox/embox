@@ -100,6 +100,7 @@ module socket {
 	depends embox.net.dev //ksocket, netdev_get_by_name
 	depends embox.util.log
 	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
+	depends embox.kernel.task.resource.idesc_table
 }
 
 module family {
