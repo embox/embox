@@ -13,11 +13,24 @@
 #include <sys/cdefs.h>
 #include <stdint.h>
 
+#include <config/embox/kernel/task/resource/idesc_table.h>
+#include <framework/mod/options.h>
 #include <kernel/task.h>
-#include <module/embox/kernel/task/resource/idesc_table.h>
+#include <util/indexator.h>
 
+#define MODOPS_IDESC_TABLE_SIZE \
+	OPTION_MODULE_GET(embox__kernel__task__resource__idesc_table, \
+			NUMBER, idesc_table_size)
 struct idesc;
-struct idesc_table;
+
+struct idesc_table {
+	struct idesc *idesc_table[MODOPS_IDESC_TABLE_SIZE];
+
+	struct indexator indexator;
+	index_data_t index_buffer[INDEX_DATA_LEN(MODOPS_IDESC_TABLE_SIZE)];
+};
+
+
 
 #define idesc_cloexec_set(desc) \
 	(desc = (struct idesc *)(((uintptr_t)desc) | 0x1))
