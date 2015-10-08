@@ -56,6 +56,29 @@ static void show_mount_list(void) {
 	}
 }
 
+#elif defined __MODULE__embox__fs__dvfs__H_
+
+#include <fs/dvfs.h>
+
+extern struct dlist_head dentry_dlist;
+
+static void show_mount_list(void) {
+	struct dentry *d;
+	char mount_path[DENTRY_NAME_LEN];
+
+	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
+		if (d->flags & DVFS_MOUNT_POINT) {
+			if (dentry_full_path(d, mount_path))
+				continue;
+
+			printf("%s on %s type %s\n",
+			d->d_sb->fs_drv->name,
+			mount_path,
+			d->d_sb->fs_drv->name);
+		}
+	}
+}
+
 #endif
 
 int main(int argc, char **argv) {

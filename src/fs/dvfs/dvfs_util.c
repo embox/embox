@@ -119,7 +119,7 @@ int dvfs_destroy_inode(struct inode *inode) {
 /**
 * @brief Double-linked list of all dentries
 */
-static DLIST_DEFINE(dentry_dlist);
+DLIST_DEFINE(dentry_dlist);
 
 /* @brief Get new dentry from pool
  *
@@ -268,7 +268,7 @@ int dvfs_update_root(void) {
 		.d_inode     = inode,
 		.parent      = global_root,
 		.name        = "/",
-		.flags       = S_IFDIR,
+		.flags       = S_IFDIR | DVFS_DIR_VIRTUAL | DVFS_MOUNT_POINT,
 		.usage_count = 1,
 		.d_lnk       = global_root->d_lnk
 	};
