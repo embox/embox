@@ -304,11 +304,11 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
 
 			dentry_fill(sb, NULL, d, lookup.parent);
 			strcpy(d->name, lookup.item->name);
-			d->flags |= S_IFDIR;
 		} else {
 			d = lookup.item;
 			/* TODO free related inode */
 		}
+		d->flags |= S_IFDIR | DVFS_MOUNT_POINT;
 		d->d_sb  = sb,
 		d->d_ops = sb ? sb->sb_dops : NULL,
 		d->usage_count++;

@@ -24,6 +24,7 @@
 #define DVFS_NAME          0x04
 #define DVFS_DIR_VIRTUAL   0x01
 #define DVFS_CHILD_VIRTUAL 0x10
+#define DVFS_MOUNT_POINT   0x20
 
 struct dentry;
 struct dir_ctx;
