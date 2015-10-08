@@ -52,7 +52,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	if (0 > block_dev_named(buf, &ramdisk_idx))
 		return NULL;
 
-	block_dev_create(buf, NULL, NULL);
+	block_dev_create(buf, &ramdisk_pio_driver, NULL);
 	return NULL;
 }
 
