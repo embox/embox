@@ -30,8 +30,40 @@
 #define DEFAULT_FS_NAME  "vfat"
 #define DEFAULT_FS_TYPE  12
 
+#include <module/embox/fs/fs_api.h>
+
+#ifdef __MODULE__embox__fs__core__H_
 static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
-		unsigned int fs_type, unsigned int operation_flag);
+		unsigned int fs_type, unsigned int operation_flag) {
+	//int rezult;
+
+	if (operation_flag & MKFS_CREATE_RAMDISK) {
+		if (0 == (err(ramdisk_create(path, blocks * PAGE_SIZE())))) {
+			return -errno;
+		}
+	}
+
+	if (operation_flag & MKFS_FORMAT_DEV) {
+		/* if (0 != (rezult = kformat(path, fs_name))) {
+			return rezult;
+		} */
+	}
+	return 0;
+}
+#elif defined __MODULE__embox__fs__dvfs__H_
+	static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
+		int fs_type, int operation_flag) {
+		struct dumb_fs_driver *drv = dumb_fs_driver_find(fs_name);
+		struct lookup lu = {};
+		dvfs_lookup(path, &lu);
+
+		if (!lu.item)
+			return -ENOENT;
+
+		/* TODO pointers check? */
+		return drv->format(lu.item->d_inode->i_data);
+	}
+#endif
 
 static void print_usage(void) {
 	printf("Usage: mkfs [ -t type ] file [ blocks ]\n");
@@ -112,26 +144,7 @@ int main(int argc, char **argv) {
 			path = argv[argc - 1];
 		}
 
-		return mkfs_do_operation(blocks, path,
-				                 fs_name, fs_type, operation_flag);
-	}
-	return 0;
-}
-
-static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
-		unsigned int fs_type, unsigned int operation_flag) {
-	int rezult;
-
-	if (operation_flag & MKFS_CREATE_RAMDISK) {
-		if (0 == (err(ramdisk_create(path, blocks * PAGE_SIZE())))) {
-			return -errno;
-		}
-	}
-
-	if (operation_flag & MKFS_FORMAT_DEV) {
-		if (0 != (rezult = kformat(path, fs_name))) {
-			return rezult;
-		}
+		return mkfs_do_operation(blocks, path, fs_name, fs_type, operation_flag);
 	}
 	return 0;
 }
