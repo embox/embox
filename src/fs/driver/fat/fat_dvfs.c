@@ -63,7 +63,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	assert(name);
 	assert(dir->d_inode);
-	assert(dir->d_inode->flags & O_DIRECTORY);
+	assert(FILE_TYPE(dir->d_inode->flags, S_IFDIR));
 
 	sb = dir->d_sb;
 	di = dir->d_inode->i_data;
@@ -99,7 +99,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 		memset(new_di, 0, sizeof(struct dirinfo));
 		new_di->p_scratch = fat_sector_buff;
-		node->flags |= O_DIRECTORY;
+		node->flags |= S_IFDIR;
 		node->i_data = new_di;
 
 		if (vi->filesystem == FAT32) {
@@ -177,7 +177,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	};
 	i_new->i_data = fi;
 
-	fat_flags |= (mode & O_DIRECTORY) ? S_IFDIR : 0;
+	fat_flags |= FILE_TYPE(mode, S_IFDIR);
 
 	read_dir_buf(fsi, i_dir->i_data);
 	res = fat_create_file(fi, i_dir->i_data, i_new->i_dentry->name, fat_flags);
@@ -260,7 +260,7 @@ static int fat_remove(struct inode *inode) {
 	struct dirinfo *di;
 	int res;
 
-	if (inode->flags & O_DIRECTORY) {
+	if (FILE_TYPE(inode->flags, S_IFDIR)) {
 		di = inode->i_data;
 		res = fat_unlike_directory(&di->fi, NULL, (uint8_t*) fat_sector_buff);
 		if (res == 0)
