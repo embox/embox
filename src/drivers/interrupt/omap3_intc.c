@@ -79,7 +79,7 @@ static int omap3_intc_init(void) {
 			binalign_bound(
 				OMAP35X_INTC_ILR(__IRQCTRL_IRQS_TOTAL) - OMAP35X_INTC_BASE,
 				MMU_PAGE_MASK),
-			VMEM_PAGE_WRITABLE,
+			MAP_FIXED,
 			OMAP35X_INTC_BASE & ~MMU_PAGE_MASK
 			);
 
