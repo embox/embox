@@ -143,7 +143,7 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 		},
 	};
 
-	if (i_no == NULL || i_no->flags & S_IFDIR) {
+	if (i_no == NULL || (i_no->flags & S_IFMT) == S_IFDIR) {
 		if (lookup.item)
 			dvfs_destroy_dentry(lookup.item);
 		return -ENOENT;
