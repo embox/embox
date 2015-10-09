@@ -55,11 +55,18 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		int fs_type, int operation_flag) {
 		struct dumb_fs_driver *drv = dumb_fs_driver_find(fs_name);
 		struct lookup lu = {};
+
+		if (!drv) {
+			printf("Unknown FS type: %s. Check your configuration.\n", fs_name);
+			return 0;
+		}
+
 		dvfs_lookup(path, &lu);
 
-		if (!lu.item)
-			return -ENOENT;
-
+		if (!lu.item) {
+			printf("File %s not found.\n", path);
+			return 0;
+		}
 		/* TODO pointers check? */
 		return drv->format(lu.item->d_inode->i_data);
 	}
