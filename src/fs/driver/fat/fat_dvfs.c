@@ -55,7 +55,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	struct dirent de;
 	struct volinfo *vi;
 	struct super_block *sb;
-
+	uint8_t tmp;
 	struct inode *node;
 	char tmppath[PATH_MAX];
 	char fat_name[12];
@@ -74,8 +74,9 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	path_canonical_to_dir(fat_name, (char *) name);
 
 	if (read_dir_buf(sb->sb_data, di) != DFS_OK)
-		return NULL;
+		goto err_out;
 
+	tmp = di->currententry;
 	di->currententry = 0;
 	while (!fat_get_next(sb->sb_data, di, &de)) {
 		path_canonical_to_dir(tmppath, (char *) de.name);
@@ -86,15 +87,15 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	}
 
 	if (!found)
-		return NULL;
+		goto err_out;
 
 	if (NULL == (node = dvfs_alloc_inode(sb)))
-		return NULL;
+		goto err_out;
 
 	if (de.attr & ATTR_DIRECTORY){
 		if (NULL == (new_di = fat_dirinfo_alloc())) {
 			dvfs_destroy_inode(node);
-			return NULL;
+			goto err_out;
 		}
 
 		memset(new_di, 0, sizeof(struct dirinfo));
@@ -116,7 +117,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	} else {
 		if (NULL == (fi   = fat_file_alloc())) {
 			dvfs_destroy_inode(node);
-			return NULL;
+			goto err_out;
 		}
 		node->i_data = fi;
 	}
@@ -150,7 +151,11 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 			      ((uint32_t) de.filesize_3) << 24;
 
 
+	di->currententry = tmp;
 	return node;
+err_out:
+	di->currententry = tmp;
+	return NULL;
 }
 
 /* @brief Create new file or directory
