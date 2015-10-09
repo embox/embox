@@ -236,12 +236,12 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	if (ctx->pos == 0)
 		dirinfo->currententry = 0;
 	read_dir_buf(fsi, dirinfo);
-	while (DFS_EOF != (res = fat_get_next(fsi, dirinfo, &de))) {
+
+	while (((res = fat_get_next(fsi, dirinfo, &de)) ==  DFS_OK) || res == DFS_ALLOCNEW)
 		if (de.name[0] == 0)
 			continue;
 		else
 			break;
-	}
 
 	switch (res) {
 	case DFS_OK:
