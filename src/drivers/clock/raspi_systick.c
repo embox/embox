@@ -78,7 +78,7 @@ static int this_init(void) {
 			(void*) ((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK),
 			PROT_READ | PROT_WRITE | PROT_NOCACHE,
 			binalign_bound(sizeof(struct raspi_timer_regs), MMU_PAGE_SIZE),
-			VMEM_PAGE_WRITABLE,
+			MAP_FIXED,
 			((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK)
 			);
 

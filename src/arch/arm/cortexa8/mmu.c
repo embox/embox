@@ -6,6 +6,7 @@
  * @date 2015-08-18
  */
 
+#include <asm/hal/mmu.h>
 #include <asm/regs.h>
 #include <embox/unit.h>
 #include <hal/mmu.h>
@@ -137,8 +138,10 @@ void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
 }
+
 void mmu_pmd_unset(mmu_pgd_t *pmd) {
 }
+
 void mmu_pte_unset(mmu_pgd_t *pte) {
 	*pte = 0x0;
 }
@@ -157,9 +160,16 @@ void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
 	if (value & VMEM_PAGE_WRITABLE)
 		*pte |= ARM_MMU_SECTION_WRITE_ACC;
 }
+
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
+	if (value & VMEM_PAGE_CACHEABLE)
+		*pte |= L1D_C;
 }
+
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
 }
-void mmu_pte_set_executable(mmu_pte_t *pte, int val) {
+
+void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
+	if (!(value & VMEM_PAGE_EXECUTABLE))
+		*pte |= L1D_XN;
 }

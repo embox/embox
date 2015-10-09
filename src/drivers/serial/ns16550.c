@@ -57,7 +57,7 @@ static int ns16550_init(void) {
 			(void*) (COM_BASE & ~MMU_PAGE_MASK),
 			PROT_READ | PROT_WRITE | PROT_NOCACHE,
 			binalign_bound(sizeof (struct com), MMU_PAGE_SIZE),
-			VMEM_PAGE_WRITABLE,
+			MAP_FIXED,
 			COM_BASE & ~MMU_PAGE_MASK
 			);
 	return 0;

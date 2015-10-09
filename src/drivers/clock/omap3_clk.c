@@ -112,7 +112,7 @@ static int omap_clk_init(void) {
 			(void*) ((uintptr_t) GPTIMER1_BASE & ~MMU_PAGE_MASK),
 			PROT_READ | PROT_WRITE | PROT_NOCACHE,
 			binalign_bound(sizeof(struct gptimerxx_x), MMU_PAGE_SIZE),
-			VMEM_PAGE_WRITABLE,
+			MAP_FIXED,
 			((uintptr_t) GPTIMER1_BASE & ~MMU_PAGE_MASK)
 			);
 	clock_source_register(&omap3_clk_clock_source);
