@@ -232,15 +232,16 @@ static int hd_identify(hd_t *hd) {
 
 	/* Read parameter data */
 	insw(hd->hdc->iobase + HDC_DATA,
-			(char *) &(hd->param), bdev->block_size / 2);
+			(char *) &(hd->param), sizeof(hd->param));
 
 	/* XXX this was added when ide drive with reported block size equals 64
  	 * However, block dev tries to use this and fails */
-	static_assert(bdev->size == 512);
-	if (hd->param.unfbytes < bdev->block_size) {
-		hd->param.unfbytes = bdev->block_size;
+	if (bdev) {
+		static_assert(bdev->size == 512);
+		if (hd->param.unfbytes < bdev->block_size) {
+			hd->param.unfbytes = bdev->block_size;
+		}
 	}
-
 	/* Fill in drive parameters */
 	hd->cyls = hd->param.cylinders;
 	hd->heads = hd->param.heads;
