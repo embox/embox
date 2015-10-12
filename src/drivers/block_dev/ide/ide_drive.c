@@ -700,10 +700,6 @@ static int ide_init(void) {
 	idedisk_idx = &harddisk_idx;
 
 	if (numhd >= 1)  {
-		/*
-		rc = setup_controller(&hdctab[0], HDC0_IOBASE, HDC0_IRQ,
-						ide ? bmiba : 0, &masterif, &slaveif);
-		*/
 		rc = setup_controller(&hdctab[0], HDC0_IOBASE,
 				HDC0_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
@@ -719,10 +715,6 @@ static int ide_init(void) {
 	}
 
 	if (numhd >= 3) {
-		/*
-		rc = setup_controller(&hdctab[1], HDC1_IOBASE,
-						HDC1_IRQ, ide ? bmiba + 8 : 0, &masterif, &slaveif);
-		*/
 		rc = setup_controller(&hdctab[1], HDC1_IOBASE,
 				HDC1_IRQ, 0, &masterif, &slaveif);
 		if (rc >= 0) {
