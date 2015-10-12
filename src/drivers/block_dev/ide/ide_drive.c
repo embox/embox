@@ -583,7 +583,7 @@ static int ide_create_block_dev(hd_t *hd) {
 		case IDE_CDROM:
 			bdev = block_dev_lookup("idecd");
 			break;
-		case IDE_DISK:	{
+		case IDE_DISK:
 			if (hd->udmamode == -1) {
 				bdev = block_dev_lookup("idedisk");
 			} else {
@@ -591,11 +591,8 @@ static int ide_create_block_dev(hd_t *hd) {
 			}
 
 			break;
-		}
-		default: {
+		default:
 			bdev = NULL;
-			return 0;
-		}
 	}
 	if (bdev == NULL) {
 		return 0;
@@ -610,11 +607,11 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
 	int rc;
 
 	/* Initialize drive block */
-	memset(hd, 0, sizeof(hd_t));
-	hd->hdc = hdc;
-	hd->drvsel = drvsel;
-	hd->iftype = iftype;
-
+	*hd = (struct hd) {
+		.hdc    = hdc,
+		.drvsel = drvsel,
+		.iftype = iftype,
+	};
 	/* Get info block from device */
 	rc = hd_identify(hd);
 	if (rc < 0) {
