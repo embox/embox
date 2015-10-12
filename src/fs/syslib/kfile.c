@@ -87,19 +87,16 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	ssize_t ret;
 
 	if (!file) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
 
 	if (!idesc_check_mode(&file->idesc, FS_MAY_WRITE)) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
 
 	if (NULL == file->ops->write) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
@@ -111,8 +108,6 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	ret = file->ops->write(file, (void *)buf, size);
 
 end:
-	DPRINTF(("write(%s, ...) = %d\n", file->node->name, ret));
-
 	return ret;
 }
 
@@ -120,28 +115,23 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 	ssize_t ret;
 
 	if (NULL == desc) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
 
 	if (!idesc_check_mode(&desc->idesc, FS_MAY_READ)) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
 
 	if (NULL == desc->ops->read) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
 
 	ret = desc->ops->read(desc, buf, size);
 
-	end:
-	DPRINTF(("read(%s, ...) = %d\n", desc->node->name, ret));
-
+end:
 	return ret;
 }
 
@@ -160,7 +150,6 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	struct node_info *ni;
 
 	if (NULL == desc) {
-		DPRINTF(("seek() = EBADF\n"));
 		return -EBADF;
 	}
 
@@ -181,11 +170,8 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 			break;
 
 		default:
-			DPRINTF(("seek() = EINVAL\n"));
 			return -EINVAL;
 	}
-
-	DPRINTF(("seek(%s, %d) = %d\n", desc->node->name, origin, desc->cursor));
 
 	return desc->cursor;
 }
