@@ -22,7 +22,7 @@ static module file_dvfs extends file {
 }
 
 static module ioctl_dvfs {
-	source "ioctl.c"
+	source "../ioctl.c"
 }
 
 static module chdir_dvfs extends chdir {
