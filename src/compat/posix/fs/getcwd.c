@@ -33,7 +33,7 @@ char * getcwd(char *buff, size_t size) {
 		return NULL;
 	}
 
-	strcpy(buff, dir);
+	strncpy(buff, dir, size);
 
 	return buff;
 }

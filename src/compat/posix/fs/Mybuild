@@ -135,11 +135,7 @@ static module fsop_old extends fsop {
 	depends umask // mkdir
 }
 
-@DefaultImpl(getcwd_old)
-abstract module getcwd {
-}
-
-static module getcwd_old extends getcwd {
+static module getcwd {
 	source "getcwd.c"
 
 	depends embox.compat.posix.util.environ
@@ -161,11 +157,7 @@ static module open_old extends open {
 	depends umask
 }
 
-@DefaultImpl(umask_old)
-abstract module umask {
-}
-
-static module umask_old extends umask {
+static module umask {
 	source "umask.c"
 
 	option number default_umask = 0022
@@ -184,11 +176,7 @@ static module xattr_old extends xattr {
 	depends embox.security.api
 }
 
-@DefaultImpl(libgen_old)
-abstract module libgen {
-}
-
-static module libgen_old extends libgen {
+static module libgen {
 	source "libgen.c"
 }
 
