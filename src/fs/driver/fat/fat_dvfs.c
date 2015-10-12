@@ -16,11 +16,9 @@
 
 #include <fs/fat.h>
 #include <fs/dvfs.h>
-#include <framework/mod/options.h>
 #include <util/math.h>
 
-#define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
-uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
+extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 extern struct file_operations fat_fops;
 

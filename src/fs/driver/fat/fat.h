@@ -246,6 +246,9 @@ struct dirinfo {
 	struct fat_file_info fi;
 };
 
+#include <framework/mod/options.h>
+#define FAT_MAX_SECTOR_SIZE OPTION_MODULE_GET(embox__fs__driver__fat, NUMBER, fat_max_sector_size)
+
 extern void fat_set_filetime(struct dirent *de);
 extern void fat_get_filename(char *tmppath, char *filename);
 extern int fat_check_filename(char *filename);

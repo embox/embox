@@ -14,7 +14,6 @@
 #include <string.h>
 
 #include <drivers/block_dev.h>
-#include <framework/mod/options.h>
 #include <fs/fat.h>
 #include <mem/misc/pool.h>
 #include <util/math.h>
@@ -22,7 +21,7 @@
 #define LABEL "EMBOX_DISK"
 #define SYSTEM "FAT12"
 
-extern uint8_t fat_sector_buff[512]; /* XXX */
+uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE]; /* XXX */
 
 uint32_t fat_get_next(struct fat_fs_info *fsi,
 		struct dirinfo * dirinfo, struct dirent * dirent);

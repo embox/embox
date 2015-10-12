@@ -21,11 +21,8 @@
 #include <fs/fs_driver.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
-#include <framework/mod/options.h>
 
-#define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
-uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
-
+extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 static int fat_create_dir_entry(struct nas *parent_nas);
 /* VFS-independent functions */
 static struct fat_file_info *fat_fi_alloc(struct nas *nas, void *fs) {
