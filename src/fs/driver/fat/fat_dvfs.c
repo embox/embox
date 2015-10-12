@@ -360,7 +360,8 @@ static int fat_mount_end(struct super_block *sb) {
  *
  * @return Negative error code or 0 if succeed
  */
-static int fat_format(void *dev) {
+static int fat_format(void *dev, void *priv) {
+	int fat_n = priv ? (int) priv : 12;
 	fat_create_partition(dev);
 	fat_root_dir_record(dev);
 

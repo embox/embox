@@ -34,7 +34,7 @@
 
 #ifdef __MODULE__embox__fs__core__H_
 static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
-		unsigned int fs_type, unsigned int operation_flag) {
+		unsigned int fs_type, unsigned int operation_flag, char *fs_specific) {
 	//int rezult;
 
 	if (operation_flag & MKFS_CREATE_RAMDISK) {
@@ -52,7 +52,7 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 }
 #elif defined __MODULE__embox__fs__dvfs__H_
 	static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
-		int fs_type, int operation_flag) {
+		int fs_type, int operation_flag, char *fs_specific) {
 		struct dumb_fs_driver *drv = dumb_fs_driver_find(fs_name);
 		struct lookup lu = {};
 
@@ -68,7 +68,7 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 			return 0;
 		}
 		/* TODO pointers check? */
-		return drv->format(lu.item->d_inode->i_data);
+		return drv->format(lu.item->d_inode->i_data, NULL);
 	}
 #endif
 
@@ -98,6 +98,7 @@ int main(int argc, char **argv) {
 	char         *path;
 	const char   *fs_name;
 	unsigned int fs_type;
+	char *fs_specific;
 
 	min_argc = MIN_ARGS_OF_MKFS;
 
@@ -107,8 +108,11 @@ int main(int argc, char **argv) {
 	blocks = DEFAULT_BLOCK_QTTY;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "ht:q:"))) {
+	while (-1 != (opt = getopt(argc, argv, "ht:q:F:"))) {
 		switch (opt) {
+		case 'F':
+			fs_specific = optarg;
+			break;
 		case 't':
 			min_argc = 4;
 			fs_name = optarg;
@@ -151,7 +155,7 @@ int main(int argc, char **argv) {
 			path = argv[argc - 1];
 		}
 
-		return mkfs_do_operation(blocks, path, fs_name, fs_type, operation_flag);
+		return mkfs_do_operation(blocks, path, fs_name, fs_type, operation_flag, fs_specific);
 	}
 	return 0;
 }
