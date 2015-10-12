@@ -19,14 +19,6 @@
 
 #include "getumask.h"
 
-int creat(const char *pathname, mode_t mode) {
-	int rc;
-
-	rc = open(pathname, O_CREAT | O_WRONLY | O_TRUNC, mode);
-	DPRINTF(("creat(%s, %d ...) = %d\n", pathname, mode, rc));
-	return rc;
-}
-
 int mkdir(const char *pathname, mode_t mode) {
 	int rc;
 
@@ -59,21 +51,6 @@ int rmdir(const char *pathname) {
 	return rc;
 }
 
-int lstat(const char *path, struct stat *buf) {
-	int rc;
-
-	rc = klstat(path, buf);
-	DPRINTF(("lstat(%s) = %d\n", path, rc));
-	return rc;
-}
-
-int stat(const char *path, struct stat *buf) {
-	int rc;
-
-	rc = lstat(path, buf);
-	DPRINTF(("stat(%s) = %d\n", path, rc));
-	return rc;
-}
 
 int truncate(const char *path, off_t length) {
 	struct path node;

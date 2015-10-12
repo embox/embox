@@ -18,6 +18,7 @@ static module file_dvfs extends file {
 	depends ioctl_dvfs
 	depends fstat
 	depends embox.compat.posix.fs.fsync
+	depends embox.compat.posix.fs.creat
 }
 
 static module ioctl_dvfs {
@@ -59,6 +60,8 @@ static module file_ops_dvfs extends file_ops {
 
 static module fsop_dvfs extends fsop {
 	source "fsop.c"
+	source "../creat.c"
+	source "stat.c"
 
 	depends embox.fs.dvfs
 	depends embox.kernel.task.resource.errno

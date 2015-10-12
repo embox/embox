@@ -99,6 +99,10 @@ module fsync {
 	depends embox.kernel.task.idesc
 }
 
+module creat {
+	source "creat.c"
+}
+
 @DefaultImpl(file_ops_old)
 abstract module file_ops {
 	depends read, write, fcntl, ioctl, close,
@@ -121,6 +125,8 @@ abstract module fsop {
 
 static module fsop_old extends fsop {
 	source "fsop.c"
+	source "creat.c"
+	source "stat.c"
 
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
