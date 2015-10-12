@@ -68,7 +68,7 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 			return 0;
 		}
 		/* TODO pointers check? */
-		return drv->format(lu.item->d_inode->i_data, NULL);
+		return drv->format(lu.item->d_inode->i_data, fs_specific);
 	}
 #endif
 

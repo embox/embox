@@ -72,7 +72,7 @@ int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) 
 	}
 }
 
-int fat_create_partition(void *dev) {
+int fat_create_partition(void *dev, int fat_n) {
 	struct block_dev *bdev = dev;
 	uint16_t bytepersec = bdev->block_size;
 	size_t num_sect = block_dev(bdev)->size / bytepersec;

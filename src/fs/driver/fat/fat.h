@@ -259,7 +259,7 @@ extern int      fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint3
 extern int      fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
 extern uint32_t fat_get_next(struct fat_fs_info *fsi,
                              struct dirinfo * dirinfo, struct dirent * dirent);
-extern int      fat_create_partition(void *bdev);
+extern int      fat_create_partition(void *bdev, int fat_n);
 extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
                                   uint8_t *pptype, uint32_t *psize);
 extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);

@@ -316,7 +316,7 @@ static int fatfs_format(void *dev) {
 
 	dev_nas = dev_node->nas;
 
-	fat_create_partition(dev_nas->fi->privdata);
+	fat_create_partition(dev_nas->fi->privdata, 12);
 	fat_root_dir_record(dev_nas->fi->privdata);
 
 	return 0;
