@@ -95,7 +95,7 @@ static int hd_read_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
+	sectsleft = count / bdev->block_size;
 
 
 	while (sectsleft > 0) {
@@ -116,8 +116,8 @@ static int hd_read_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 			nsects = sectsleft;
 		}
 
-		if (nsects > MAX_DMA_XFER_SIZE / SECTOR_SIZE) {
-			nsects = MAX_DMA_XFER_SIZE / SECTOR_SIZE;
+		if (nsects > MAX_DMA_XFER_SIZE / bdev->block_size) {
+			nsects = MAX_DMA_XFER_SIZE / bdev->block_size;
 		}
 
 		/* Prepare transfer */
@@ -128,7 +128,7 @@ static int hd_read_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 		hd_setup_transfer(hd, blkno, nsects);
 
 		/* Setup DMA */
-		setup_dma(hdc, bufp, nsects * SECTOR_SIZE, BM_CR_WRITE);
+		setup_dma(hdc, bufp, nsects * bdev->block_size, BM_CR_WRITE);
 
 		/* Start read */
 		outb(HDCMD_READDMA, hdc->iobase + HDC_COMMAND);
@@ -148,7 +148,7 @@ static int hd_read_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 
 		/* Advance to next */
 		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
+		bufp += nsects * bdev->block_size;
 	}
 
 	/* Cleanup */
@@ -173,7 +173,7 @@ static int hd_write_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t 
 
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
+	sectsleft = count / bdev->block_size;
 
 	while (sectsleft > 0) {
 		/* Select drive */
@@ -192,8 +192,8 @@ static int hd_write_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t 
 		} else {
 			nsects = sectsleft;
 		}
-		if (nsects > MAX_DMA_XFER_SIZE / SECTOR_SIZE) {
-			nsects = MAX_DMA_XFER_SIZE / SECTOR_SIZE;
+		if (nsects > MAX_DMA_XFER_SIZE / bdev->block_size) {
+			nsects = MAX_DMA_XFER_SIZE / bdev->block_size;
 		}
 
 		/* Prepare transfer */
@@ -204,7 +204,7 @@ static int hd_write_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t 
 		hd_setup_transfer(hd, blkno, nsects);
 
 		/* Setup DMA */
-		setup_dma(hdc, bufp, nsects * SECTOR_SIZE, BM_CR_READ);
+		setup_dma(hdc, bufp, nsects * bdev->block_size, BM_CR_READ);
 
 		/* Start write */
 		outb(HDCMD_WRITEDMA, hdc->iobase + HDC_COMMAND);
@@ -224,7 +224,7 @@ static int hd_write_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t 
 
 		/* Advance to next */
 		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
+		bufp += nsects * bdev->block_size;
 	}
 
 	/* Cleanup */

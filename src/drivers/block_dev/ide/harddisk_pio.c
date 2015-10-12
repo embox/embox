@@ -40,8 +40,8 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	bufp = (char *) buffer;
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
-	if (count % SECTOR_SIZE) {
+	sectsleft = count / bdev->block_size;
+	if (count % bdev->block_size) {
 		sectsleft++;
 	}
 
@@ -78,7 +78,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 
 		/* Advance to next */
 		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
+		bufp += nsects * bdev->block_size;
 		blkno += nsects; /*WTF?*/
 	}
 
@@ -107,7 +107,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 	bufp = (char *) buffer;
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
+	sectsleft = count / bdev->block_size;
 
 
 	while (sectsleft > 0) {
@@ -149,8 +149,8 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 			n = nsects;
 		}
 		while (n-- > 0) {
-			pio_write_buffer(hd, hdc->bufp, SECTOR_SIZE);
-			hdc->bufp += SECTOR_SIZE;
+			pio_write_buffer(hd, hdc->bufp, bdev->block_size);
+			hdc->bufp += bdev->block_size;
 		}
 
 		/* Wait until data written */
@@ -162,7 +162,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 
 		/* Advance to next */
 		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
+		bufp += nsects * bdev->block_size;
 		blkno += nsects; /*WTF?*/
 	}
 
@@ -195,6 +195,7 @@ static int idedisk_init (void *args) {
 	size_t size;
 	char path[PATH_MAX];
 	drive = (hd_t *)args;
+	struct block_dev *bdev = drive->bdev;
 	/* Make new device */
 	if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
 		*path = 0;
@@ -205,7 +206,7 @@ static int idedisk_init (void *args) {
 		drive->bdev = block_dev_create(path,
 				&idedisk_pio_driver, drive);
 		if (NULL != drive->bdev) {
-			size = drive->blks * SECTOR_SIZE;
+			size = drive->blks * bdev->block_size;
 			block_dev(drive->bdev)->size = size;
 		} else {
 			return -1;

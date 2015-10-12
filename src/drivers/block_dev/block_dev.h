@@ -23,8 +23,6 @@
 #define DEV_TYPE_BLOCK          2
 #define DEV_TYPE_PACKET         3
 
-#define SECTOR_SIZE		512		/* sector size in bytes */
-
 typedef struct block_dev {
 	dev_t id;
 	char name[NAME_MAX];
@@ -34,6 +32,7 @@ typedef struct block_dev {
 	void *privdata;
 
 	size_t size;
+	size_t block_size;
 	struct block_dev_cache *cache;
 } block_dev_t;
 

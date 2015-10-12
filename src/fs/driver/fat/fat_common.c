@@ -73,10 +73,11 @@ int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) 
 	}
 }
 
-int fat_create_partition(void *bdev) {
-	uint16_t bytepersec = 512;
+int fat_create_partition(void *dev) {
+	struct block_dev *bdev = dev;
+	uint16_t bytepersec = bdev->block_size;
 	size_t num_sect = block_dev(bdev)->size / bytepersec;
-	uint16_t secperfat = max(1, (uint16_t) 0xFFFF & (num_sect / bytepersec ));
+	uint16_t secperfat = num_sect ? min(0xFFFF, num_sect / bytepersec): 1;
 	uint16_t rootentries = 0x0200; /* 512 for FAT16 */
 
 	struct lbr lbr = {

@@ -33,7 +33,7 @@ static int part_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) 
 static int part_read(struct block_dev *bdev, char *buffer,
 						size_t count, blkno_t blkno) {
 	struct partition *part = (struct partition *) bdev->privdata;
-	if (blkno + count / SECTOR_SIZE > part->len) {
+	if (blkno + count / bdev->block_size > part->len) {
 		return -EFAULT;
 	}
 	return block_dev_read(part->bdev, buffer, count, blkno + part->start);
@@ -42,7 +42,7 @@ static int part_read(struct block_dev *bdev, char *buffer,
 static int part_write(struct block_dev *bdev, char *buffer,
 						size_t count, blkno_t blkno) {
 	struct partition *part = (struct partition *) bdev->privdata;
-	if (blkno + count / SECTOR_SIZE > part->len) {
+	if (blkno + count / bdev->block_size > part->len) {
 		return -EFAULT;
 	}
 	return block_dev_write(part->bdev, buffer, count, blkno + part->start);
@@ -62,9 +62,10 @@ int create_partitions(struct hd *hd) {
 	struct mbr mbrdata;
 	struct mbr *mbr = &mbrdata;
 	int rc;
+	struct block_dev *bdev = hd->bdev;
 
 	/* Read partition table */
-	rc = block_dev_read(hd->bdev, (char *)mbr, SECTOR_SIZE, 0);
+	rc = block_dev_read(hd->bdev, (char *)mbr, bdev->block_size, 0);
 	if (rc < 0) {
 		return rc;
 	}
