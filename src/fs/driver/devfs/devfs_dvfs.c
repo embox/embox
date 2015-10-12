@@ -144,7 +144,7 @@ static size_t devfs_read(struct file *desc, void *buf, size_t size) {
 	switch (desc->f_inode->flags & (S_IFBLK | S_IFCHR)) {
 	case S_IFBLK:
 		bdev = desc->f_inode->i_data;
-		return bdev->driver->read(bdev, buf, size, desc->pos / SECTOR_SIZE);
+		return bdev->driver->read(bdev, buf, size, desc->pos / bdev->block_size);
 	case S_IFCHR:
 		cdev = desc->f_inode->i_data;
 		return cdev->fops->read(desc, buf, size);
@@ -162,7 +162,7 @@ static size_t devfs_write(struct file *desc, void *buf, size_t size) {
 	switch (desc->f_inode->flags & (S_IFBLK | S_IFCHR)) {
 	case S_IFBLK:
 		bdev = desc->f_inode->i_data;
-		return bdev->driver->write(bdev, buf, size, desc->pos / SECTOR_SIZE);
+		return bdev->driver->write(bdev, buf, size, desc->pos / bdev->block_size);
 	case S_IFCHR:
 		cdev = desc->f_inode->i_data;
 		return cdev->fops->write(desc, buf, size);

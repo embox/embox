@@ -213,7 +213,7 @@ void pio_write_buffer(hd_t *hd, char *buffer, int size) {
 
 
 static int hd_identify(hd_t *hd) {
-
+	struct block_dev *bdev = hd->bdev;
 	/* Ignore interrupt for identify command */
 	hd->hdc->dir = HD_XFER_IGNORE;
 
@@ -232,13 +232,13 @@ static int hd_identify(hd_t *hd) {
 
 	/* Read parameter data */
 	insw(hd->hdc->iobase + HDC_DATA,
-			(char *) &(hd->param), SECTOR_SIZE / 2);
+			(char *) &(hd->param), bdev->block_size / 2);
 
 	/* XXX this was added when ide drive with reported block size equals 64
  	 * However, block dev tries to use this and fails */
-	static_assert(SECTOR_SIZE == 512);
-	if (hd->param.unfbytes < SECTOR_SIZE) {
-		hd->param.unfbytes = SECTOR_SIZE;
+	static_assert(bdev->size == 512);
+	if (hd->param.unfbytes < bdev->block_size) {
+		hd->param.unfbytes = bdev->block_size;
 	}
 
 	/* Fill in drive parameters */
@@ -338,6 +338,7 @@ static void hd_read_hndl(hdc_t *hdc) {
 	unsigned char error;
 	int nsects;
 	int n;
+	struct block_dev *bdev = hdc->active->bdev;
 
 	/* Check status */
 	hdc->status = inb(hdc->iobase + HDC_STATUS);
@@ -352,8 +353,8 @@ static void hd_read_hndl(hdc_t *hdc) {
 			nsects = hdc->nsects;
 		}
 		for (n = 0; n < nsects; n++) {
-			pio_read_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
-			hdc->bufp += SECTOR_SIZE;
+			pio_read_buffer(hdc->active, hdc->bufp, bdev->block_size);
+			hdc->bufp += bdev->block_size;
 		}
 		hdc->nsects -= nsects;
 	}
@@ -363,7 +364,7 @@ static void hd_write_hndl(hdc_t *hdc) {
 	unsigned char error;
 	int nsects;
 	int n;
-
+	struct block_dev *bdev = hdc->active->bdev;
 	/* Check status */
 	hdc->status = inb(hdc->iobase + HDC_STATUS);
 	if (hdc->status & HDCS_ERR) {
@@ -386,8 +387,8 @@ static void hd_write_hndl(hdc_t *hdc) {
 			}
 
 			for (n = 0; n < nsects; n++) {
-				pio_write_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
-				hdc->bufp += SECTOR_SIZE;
+				pio_write_buffer(hdc->active, hdc->bufp, bdev->block_size);
+				hdc->bufp += bdev->block_size;
 			}
 		}
 	}
