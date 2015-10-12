@@ -689,39 +689,30 @@ static int ide_init(void) {
 	int masterif;
 	int slaveif;
 	int numhd;
+	int i;
+	int irq[] = {HDC0_IRQ, HDC1_IRQ};
+	int iobase[] = {HDC0_IOBASE, HDC1_IOBASE};
+
 	numhd = HD_DRIVES;
 
 	idedisk_idx = &harddisk_idx;
 
-	if (numhd >= 1)  {
-		rc = setup_controller(&hdctab[0], HDC0_IOBASE,
-				HDC0_IRQ, 0, &masterif, &slaveif);
+	for (i = 0; i < HD_CONTROLLERS; i++) {
+		if (numhd < i * 2 + 1)
+			break;
+
+		rc = setup_controller(&hdctab[i], iobase[i],
+				irq[i], 0, &masterif, &slaveif);
 		if (rc >= 0) {
-			if (numhd >= 1 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[0], &hdctab[0], HD0_DRVSEL,
-						BM_SR_DRV0, masterif, 0);
-			}
-			if (numhd >= 2 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[1], &hdctab[0], HD1_DRVSEL,
-						BM_SR_DRV1, slaveif, 1);
-			}
+			if (numhd >= i * 2 + 1 && masterif > HDIF_UNKNOWN)
+				setup_hd(&hdtab[i * 2], &hdctab[i], HD0_DRVSEL,
+						BM_SR_DRV0, masterif, i * 2);
+			if (numhd >= i * 2 + 2 && slaveif > HDIF_UNKNOWN)
+				setup_hd(&hdtab[i * 2 + 1], &hdctab[i], HD1_DRVSEL,
+						BM_SR_DRV1, slaveif, i * 2 + 1);
 		}
 	}
 
-	if (numhd >= 3) {
-		rc = setup_controller(&hdctab[1], HDC1_IOBASE,
-				HDC1_IRQ, 0, &masterif, &slaveif);
-		if (rc >= 0) {
-			if (numhd >= 3 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[2], &hdctab[1], HD0_DRVSEL,
-						BM_SR_DRV0, masterif, 2);
-			}
-			if (numhd >= 4 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[3], &hdctab[1], HD1_DRVSEL,
-						BM_SR_DRV1, slaveif, 3);
-			}
-		}
-	}
 	return 0;
 }
 
