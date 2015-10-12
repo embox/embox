@@ -507,20 +507,18 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 					int bmregbase, int *masterif, int *slaveif) {
 	int res;
 
-	memset(hdc, 0, sizeof(hdc_t));
-	hdc->iobase = iobase;
-	hdc->irq = irq;
-	hdc->bmregbase = bmregbase;
-	hdc->dir = HD_XFER_IGNORE;
+	*hdc = (struct hdc) {
+		.iobase    = iobase,
+		.irq       = irq,
+		.bmregbase = bmregbase,
+		.dir       = HD_XFER_IGNORE,
+	};
+
 	waitq_init(&hdc->waitq);
 
-	if (hdc->bmregbase) {
-		if (hdc->prds) {
-			phymem_free(hdc->prds, 1);
-		}
+	if (hdc->bmregbase)
 		/* Allocate one page for PRD list */
 		hdc->prds = (struct prd *) phymem_alloc(1);
-	}
 
 	/* Assume no devices connected to controller */
 	*masterif = HDIF_NONE;
@@ -584,10 +582,7 @@ static int ide_create_block_dev(hd_t *hd) {
 	switch (hd->media) {
 		case IDE_CDROM:
 			bdev = block_dev_lookup("idecd");
-
 			break;
-
-
 		case IDE_DISK:	{
 			if (hd->udmamode == -1) {
 				bdev = block_dev_lookup("idedisk");
@@ -609,10 +604,9 @@ static int ide_create_block_dev(hd_t *hd) {
 
 	return 0;
 }
-static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
-					 int udmasel, int iftype, int numslot) {
-	/* static int udma_speed[] = {16, 25, 33, 44, 66, 100}; */
 
+static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
+			int udmasel, int iftype, int numslot) {
 	int rc;
 
 	/* Initialize drive block */
@@ -695,7 +689,7 @@ static int ide_init(void) {
 	int masterif;
 	int slaveif;
 	int numhd;
-	numhd = 4;
+	numhd = HD_DRIVES;
 
 	idedisk_idx = &harddisk_idx;
 
