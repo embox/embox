@@ -27,10 +27,6 @@ int rmdir(const char *pathname) {
 	return 0;
 }
 
-int lstat(const char *path, struct stat *buf) {
-	return 0;
-}
-
 int truncate(const char *path, off_t length) {
 	return 0;
 }

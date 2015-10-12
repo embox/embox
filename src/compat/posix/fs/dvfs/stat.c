@@ -30,3 +30,7 @@ int stat(const char *path, struct stat *buf) {
 
 	return 0;
 }
+
+int lstat(const char *path, struct stat *buf) {
+	return stat(path, buf);
+}
