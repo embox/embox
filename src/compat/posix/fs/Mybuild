@@ -125,14 +125,15 @@ abstract module fsop {
 
 static module fsop_old extends fsop {
 	source "fsop.c"
-	source "creat.c"
 	source "stat.c"
 
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
 	depends embox.fs.syslib.perm
 	depends embox.fs.syslib.file_system_full
-	depends umask // mkdir
+
+	depends creat
+	depends umask
 }
 
 static module getcwd {

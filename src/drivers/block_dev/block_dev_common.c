@@ -19,6 +19,7 @@
 #include <util/indexator.h>
 #include <util/math.h>
 
+#define DEFAULT_BDEV_BLOCK_SIZE OPTION_GET(NUMBER, default_block_size)
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
 ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
@@ -74,6 +75,7 @@ struct block_dev *block_dev_create_common(char *path, void *driver, void *privda
 		.id = (dev_t)bdev_id,
 		.driver = driver,
 		.privdata = privdata,
+		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
 	strncpy (bdev->name, strrchr(path, '/') ? strrchr(path, '/') + 1 : path, NAME_MAX);

@@ -65,18 +65,20 @@ static uint8_t sd_buf[SD_BUF_SIZE];
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	assert(count <= SD_BUF_SIZE);
 	int res;
-	res = SD_ReadBlock((uint8_t*) sd_buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	size_t bsize = bdev->block_size;
+	res = SD_ReadBlock((uint8_t*) sd_buf, blkno * bsize, bsize) ? -1 : bsize;
 	while (SD_GetStatus() != SD_TRANSFER_OK);
 
-	memcpy(buf, sd_buf, SECTOR_SIZE);
+	memcpy(buf, sd_buf, bsize);
 	return res;
 }
 
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	assert(count <= SD_BUF_SIZE);
 	int res;
-	memcpy(sd_buf, buf, SECTOR_SIZE);
-	res = SD_WriteBlock((uint8_t*) sd_buf, blkno * SECTOR_SIZE, SECTOR_SIZE) ? -1 : SECTOR_SIZE;
+	size_t bsize = bdev->block_size;
+	memcpy(sd_buf, buf, bsize);
+	res = SD_WriteBlock((uint8_t*) sd_buf, blkno * bsize, bsize) ? -1 : bsize;
 	while (SD_GetStatus() != SD_TRANSFER_OK);
 	return res;
 }

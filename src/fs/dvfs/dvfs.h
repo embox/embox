@@ -19,12 +19,14 @@
 #define DENTRY_NAME_LEN 36
 #define FS_NAME_LEN     16
 
-#define DVFS_PATH_FULL     0x01
-#define DVFS_PATH_FS       0x02
-#define DVFS_NAME          0x04
-#define DVFS_DIR_VIRTUAL   0x01
-#define DVFS_CHILD_VIRTUAL 0x10
-#define DVFS_MOUNT_POINT   0x20
+#define DVFS_PATH_FULL     0x001
+#define DVFS_PATH_FS       0x002
+#define DVFS_NAME          0x004
+#define DVFS_DIR_VIRTUAL   0x010
+#define DVFS_CHILD_VIRTUAL 0x020
+#define DVFS_MOUNT_POINT   0x040
+
+#define FILE_TYPE(flags, ftype) ((((flags) & S_IFMT) == (ftype)) ? (ftype) : 0)
 
 struct dentry;
 struct dir_ctx;
@@ -122,6 +124,7 @@ struct file_operations {
 
 struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
+	int (*format)(void *dev, void *priv);
 	int (*fill_sb)(struct super_block *sb, struct block_dev *dev);
 	int (*mount_end)(struct super_block *sb);
 };
