@@ -5,22 +5,20 @@ module all_dvfs extends all {
 		chdir_dvfs,
 		dirent_dvfs,
 		fsop_dvfs,
-		getcwd_dvfs,
-		umask_dvfs,
+		getcwd,
+		umask,
 		xattr_dvfs,
-		libgen_dvfs
+		libgen
 }
 
 static module file_dvfs extends file {
 	depends file_ops_dvfs
 	depends lseek_dvfs
 	depends open_dvfs
-	depends ioctl_dvfs
+	depends ioctl
 	depends fstat
-}
-
-static module ioctl_dvfs {
-	source "ioctl.c"
+	depends embox.compat.posix.fs.fsync
+	depends embox.compat.posix.fs.creat
 }
 
 static module chdir_dvfs extends chdir {
@@ -58,17 +56,12 @@ static module file_ops_dvfs extends file_ops {
 
 static module fsop_dvfs extends fsop {
 	source "fsop.c"
+	source "../creat.c"
+	source "stat.c"
 
 	depends embox.fs.dvfs
 	depends embox.kernel.task.resource.errno
-	depends umask_dvfs // mkdir
-}
-
-static module getcwd_dvfs extends getcwd {
-	source "getcwd.c"
-
-	depends embox.compat.posix.util.environ
-	depends embox.compat.libc.str
+	depends umask // mkdir
 }
 
 static module open_dvfs extends open {
@@ -76,16 +69,9 @@ static module open_dvfs extends open {
 
 	depends embox.fs.dvfs
 	depends embox.kernel.task.resource.errno
-	depends libgen_dvfs
+	depends libgen
 	depends dirent_dvfs
-	depends umask_dvfs
-}
-
-static module umask_dvfs extends umask {
-	source "umask.c"
-
-	option number default_umask = 0022
-	depends embox.kernel.task.task_resource
+	depends umask
 }
 
 static module xattr_dvfs extends xattr {
@@ -95,8 +81,3 @@ static module xattr_dvfs extends xattr {
 	//depends embox.fs.syslib.perm
 	depends embox.security.api
 }
-
-static module libgen_dvfs extends libgen {
-	source "libgen.c"
-}
-

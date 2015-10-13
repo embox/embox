@@ -8,6 +8,5 @@
 #include <unistd.h>
 
 int fsync(int fd) {
-	//DPRINTF(("fsync(%d) = %d\n", fd, 0));
 	return 0;
 }

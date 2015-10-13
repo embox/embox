@@ -99,6 +99,10 @@ module fsync {
 	depends embox.kernel.task.idesc
 }
 
+module creat {
+	source "creat.c"
+}
+
 @DefaultImpl(file_ops_old)
 abstract module file_ops {
 	depends read, write, fcntl, ioctl, close,
@@ -121,19 +125,18 @@ abstract module fsop {
 
 static module fsop_old extends fsop {
 	source "fsop.c"
+	source "stat.c"
 
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
 	depends embox.fs.syslib.perm
 	depends embox.fs.syslib.file_system_full
-	depends umask // mkdir
+
+	depends creat
+	depends umask
 }
 
-@DefaultImpl(getcwd_old)
-abstract module getcwd {
-}
-
-static module getcwd_old extends getcwd {
+static module getcwd {
 	source "getcwd.c"
 
 	depends embox.compat.posix.util.environ
@@ -155,11 +158,7 @@ static module open_old extends open {
 	depends umask
 }
 
-@DefaultImpl(umask_old)
-abstract module umask {
-}
-
-static module umask_old extends umask {
+static module umask {
 	source "umask.c"
 
 	option number default_umask = 0022
@@ -178,11 +177,7 @@ static module xattr_old extends xattr {
 	depends embox.security.api
 }
 
-@DefaultImpl(libgen_old)
-abstract module libgen {
-}
-
-static module libgen_old extends libgen {
+static module libgen {
 	source "libgen.c"
 }
 
