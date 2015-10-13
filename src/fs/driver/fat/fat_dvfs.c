@@ -16,11 +16,9 @@
 
 #include <fs/fat.h>
 #include <fs/dvfs.h>
-#include <framework/mod/options.h>
 #include <util/math.h>
 
-#define FAT_MAX_SECTOR_SIZE OPTION_GET(NUMBER, fat_max_sector_size)
-uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
+extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 extern struct file_operations fat_fops;
 
@@ -55,7 +53,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	struct dirent de;
 	struct volinfo *vi;
 	struct super_block *sb;
-
+	uint8_t tmp;
 	struct inode *node;
 	char tmppath[PATH_MAX];
 	char fat_name[12];
@@ -63,7 +61,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	assert(name);
 	assert(dir->d_inode);
-	assert(dir->d_inode->flags & O_DIRECTORY);
+	assert(FILE_TYPE(dir->d_inode->flags, S_IFDIR));
 
 	sb = dir->d_sb;
 	di = dir->d_inode->i_data;
@@ -74,8 +72,9 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	path_canonical_to_dir(fat_name, (char *) name);
 
 	if (read_dir_buf(sb->sb_data, di) != DFS_OK)
-		return NULL;
+		goto err_out;
 
+	tmp = di->currententry;
 	di->currententry = 0;
 	while (!fat_get_next(sb->sb_data, di, &de)) {
 		path_canonical_to_dir(tmppath, (char *) de.name);
@@ -86,20 +85,20 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	}
 
 	if (!found)
-		return NULL;
+		goto err_out;
 
 	if (NULL == (node = dvfs_alloc_inode(sb)))
-		return NULL;
+		goto err_out;
 
 	if (de.attr & ATTR_DIRECTORY){
 		if (NULL == (new_di = fat_dirinfo_alloc())) {
 			dvfs_destroy_inode(node);
-			return NULL;
+			goto err_out;
 		}
 
 		memset(new_di, 0, sizeof(struct dirinfo));
 		new_di->p_scratch = fat_sector_buff;
-		node->flags |= O_DIRECTORY;
+		node->flags |= S_IFDIR;
 		node->i_data = new_di;
 
 		if (vi->filesystem == FAT32) {
@@ -116,7 +115,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	} else {
 		if (NULL == (fi   = fat_file_alloc())) {
 			dvfs_destroy_inode(node);
-			return NULL;
+			goto err_out;
 		}
 		node->i_data = fi;
 	}
@@ -150,7 +149,11 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 			      ((uint32_t) de.filesize_3) << 24;
 
 
+	di->currententry = tmp;
 	return node;
+err_out:
+	di->currententry = tmp;
+	return NULL;
 }
 
 /* @brief Create new file or directory
@@ -177,7 +180,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	};
 	i_new->i_data = fi;
 
-	fat_flags |= (mode & O_DIRECTORY) ? S_IFDIR : 0;
+	fat_flags |= FILE_TYPE(mode, S_IFDIR);
 
 	read_dir_buf(fsi, i_dir->i_data);
 	res = fat_create_file(fi, i_dir->i_data, i_new->i_dentry->name, fat_flags);
@@ -236,12 +239,12 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	if (ctx->pos == 0)
 		dirinfo->currententry = 0;
 	read_dir_buf(fsi, dirinfo);
-	while (DFS_EOF != (res = fat_get_next(fsi, dirinfo, &de))) {
+
+	while (((res = fat_get_next(fsi, dirinfo, &de)) ==  DFS_OK) || res == DFS_ALLOCNEW)
 		if (de.name[0] == 0)
 			continue;
 		else
 			break;
-	}
 
 	switch (res) {
 	case DFS_OK:
@@ -260,7 +263,7 @@ static int fat_remove(struct inode *inode) {
 	struct dirinfo *di;
 	int res;
 
-	if (inode->flags & O_DIRECTORY) {
+	if (FILE_TYPE(inode->flags, S_IFDIR)) {
 		di = inode->i_data;
 		res = fat_unlike_directory(&di->fi, NULL, (uint8_t*) fat_sector_buff);
 		if (res == 0)
@@ -349,12 +352,28 @@ static int fat_mount_end(struct super_block *sb) {
 	return 0;
 }
 
+
+/**
+ * @brief Format given block device
+ * @param dev Pointer to device
+ * @note Should be block device
+ *
+ * @return Negative error code or 0 if succeed
+ */
+static int fat_format(void *dev, void *priv) {
+	int fat_n = priv ? atoi((char*) priv) : 12;
+	fat_create_partition(dev, fat_n);
+	fat_root_dir_record(dev);
+
+	return 0;
+}
+
 static struct dumb_fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,
 	.mount_end = fat_mount_end,
+	.format    = fat_format,
 };
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_fat_driver);
-

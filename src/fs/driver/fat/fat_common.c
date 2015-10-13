@@ -14,20 +14,21 @@
 #include <string.h>
 
 #include <drivers/block_dev.h>
-#include <framework/mod/options.h>
 #include <fs/fat.h>
 #include <mem/misc/pool.h>
 #include <util/math.h>
 
-#define LABEL "EMBOX_DISK"
-#define SYSTEM "FAT12"
+#define LABEL    "EMBOX_DISK " /* Whitespace-padded 11-char string */
+#define SYSTEM12 "FAT12   "
+#define SYSTEM16 "FAT16   "
+#define SYSTEM32 "FAT32   "
 
-extern uint8_t fat_sector_buff[512]; /* XXX */
+uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE]; /* XXX */
 
 uint32_t fat_get_next(struct fat_fs_info *fsi,
 		struct dirinfo * dirinfo, struct dirent * dirent);
 
-char bootcode[130] =
+static const char bootcode[130] =
 	{ 0x0e, 0x1f, 0xbe, 0x5b, 0x7c, 0xac, 0x22, 0xc0, 0x74, 0x0b,
 	  0x56, 0xb4, 0x0e, 0xbb, 0x07, 0x00, 0xcd, 0x10, 0x5e, 0xeb,
 	  0xf0, 0x32, 0xe4, 0xcd, 0x16, 0xcd, 0x19, 0xeb, 0xfe, 0x54,
@@ -73,46 +74,43 @@ int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) 
 	}
 }
 
-int fat_create_partition(void *bdev) {
-	uint16_t bytepersec = 512;
-	size_t num_sect = block_dev(bdev)->size / bytepersec;
-	uint16_t secperfat = max(1, (uint16_t) 0xFFFF & (num_sect / bytepersec ));
-	uint16_t rootentries = 0x0200; /* 512 for FAT16 */
 
-	struct lbr lbr = {
-		.jump = {0xeb, 0x3c, 0x90}, /* JMP 0x3c; NOP; */
-		.oemid = {0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45}, /* ASCII "EEEEEEEE" */
+/**
+ * @brief Format given block device
+ *
+ * @param dev Block device to be formatted
+ * @param fat_n should be 12/16/32 or 0
+ *
+ * @return Negative error code or 0 if succeed
+ */
+int fat_create_partition(void *dev, int fat_n) {
+	struct block_dev *bdev = dev;
+	uint16_t bytepersec = bdev->block_size;
+	size_t num_sect = block_dev(bdev)->size / bytepersec;
+	uint32_t secperfat; /* We have two FA Tables */
+	uint16_t rootentries = 0x0200;             /* 512 for FAT16 */
+	struct lbr lbr = (struct lbr) {
+		.jump = {0xeb, 0x3c, 0x90},        /* JMP 0x3c; NOP; */
+		.oemid = {0x45, 0x45, 0x45, 0x45,
+		          0x45, 0x45, 0x45, 0x45}, /* ASCII "EEEEEEEE" */
 		.bpb = {
-			.bytepersec_l = (uint8_t)(bytepersec & 0xFF),
-			.bytepersec_h = (uint8_t)((bytepersec & 0xFF00) >> 8),
-			.secperclus = 0x04,
-			.reserved_l = 0x01,	/* reserved sectors */
-			.reserved_h = 0x0,
-			.numfats = 0x02,	/* 2 FAT copy */
-			.mediatype = 0xF8,
-			.secpertrk_l = 0x3F,
-			.heads_l = 0xFF,
-			.secperfat_l = (uint8_t)(0x00FF & secperfat),
-			.secperfat_h = (uint8_t)(0x00FF & (secperfat >> 8)),
+			.bytepersec_l  = (uint8_t)(bytepersec & 0xFF),
+			.bytepersec_h  = (uint8_t)((bytepersec & 0xFF00) >> 8),
+			.secperclus    = 0x04,
+			.reserved_l    = 0x01,     /* reserved sectors */
+			.reserved_h    = 0x00,
+			.numfats       = 0x02,     /* 2 FAT copy */
 			.rootentries_l = (uint8_t)(0x00FF & rootentries ),
 			.rootentries_h = (uint8_t)(0x00FF & (rootentries >> 8)),
-		},
-		.ebpb = {
-			.ebpb = {
-				.signature = 0x29,
-				.serial_0 = 0x81,
-				.serial_1 = 0xDB,
-				.serial_2 = 0xF7,
-				.serial_3 = 0xBB,
-				.label = LABEL,
-				.system = SYSTEM,
-			},
+			.mediatype     = 0xF8,     /* Fixed disk */
+			.secpertrk_l   = 0x3F,     /* TODO use actual value? */
+			.heads_l       = 0xFF,     /* TODO use actual value? */
+			/* TODO handle hidden sectors? */
 		},
 		.sig_55 = 0x55,
 		.sig_aa = 0xAA,
 	};
 
-	memcpy(lbr.ebpb.ebpb.system + 8, bootcode, 130);
 
 	if (0xFFFF > num_sect)	{
 		lbr.bpb.sectors_s_l = (uint8_t)(0x00000FF & num_sect);
@@ -122,6 +120,55 @@ int fat_create_partition(void *bdev) {
 		lbr.bpb.sectors_l_1 = (uint8_t)(0x00000FF & (num_sect >> 8));
 		lbr.bpb.sectors_l_2 = (uint8_t)(0x00000FF & (num_sect >> 16));
 		lbr.bpb.sectors_l_3 = (uint8_t)(0x00000FF & (num_sect >> 24));
+	}
+
+	switch (fat_n) {
+	case 12:
+	case 16:
+		secperfat = min(0xFFFF, num_sect / 2);
+		lbr.bpb.secperfat_l   = (uint8_t)(0x00FF & secperfat),
+		lbr.bpb.secperfat_h   = (uint8_t)(0x00FF & (secperfat >> 8)),
+		lbr.ebpb.ebpb = (struct ebpb) {
+			.unit      = 0x80, /* Hard disk */
+			.signature = 0x29,
+			.serial_0  = 0x81, /* We can actually ignore .serial_N */
+			.serial_1  = 0xDB,
+			.serial_2  = 0xF7,
+			.serial_3  = 0xBB,
+		};
+
+		memcpy(lbr.ebpb.ebpb.label, LABEL, sizeof(lbr.ebpb.ebpb.label));
+		memcpy(lbr.ebpb.ebpb.system,
+		       fat_n == 12 ? SYSTEM12:SYSTEM16,
+		       sizeof(lbr.ebpb.ebpb.system));
+
+		memcpy(lbr.ebpb.ebpb.code, bootcode, sizeof(bootcode));
+		break;
+	case 32:
+		secperfat = num_sect / 2;
+		lbr.ebpb.ebpb32 = (struct ebpb32) {
+			.fatsize_0 = (uint8_t) (0xFF & secperfat),
+			.fatsize_1 = (uint8_t) (0xFF & (secperfat >> 8)),
+			.fatsize_2 = (uint8_t) (0xFF & (secperfat >> 16)),
+			.fatsize_3 = (uint8_t) (0xFF & (secperfat >> 24)),
+			/* TODO fill flags? */
+			.fsver_l = 0x1, /* TODO fill actual fat version */
+			.fsver_h = 0x1,
+			.root_0  = 0x2, /* Root directory is in the second cluster */
+			/* TODO fill fsinfo */
+			.unit      = 0x80, /* Hard disk */
+			.signature = 0x29,
+			.serial_0  = 0x81, /* We can actually ignore .serial_N */
+			.serial_1  = 0xDB,
+			.serial_2  = 0xF7,
+			.serial_3  = 0xBB,
+			.label     = LABEL,
+			.system    = SYSTEM32,
+		};
+		memcpy(lbr.ebpb.ebpb32.label, LABEL, sizeof(lbr.ebpb.ebpb32.label));
+		memcpy(lbr.ebpb.ebpb32.system, SYSTEM32, sizeof(lbr.ebpb.ebpb32.system));
+		memcpy(lbr.ebpb.ebpb32.code, bootcode, sizeof(bootcode));
+		break;
 	}
 
 	return 0 < block_dev_write(bdev, (void *) &lbr, sizeof(lbr), 0);

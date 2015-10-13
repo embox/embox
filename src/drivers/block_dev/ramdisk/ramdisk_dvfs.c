@@ -48,11 +48,35 @@ block_dev_driver_t ramdisk_pio_driver = {
 /* XXX not stores index if path have no index placeholder, like * or # */
 struct ramdisk *ramdisk_create(char *path, size_t size) {
 	char buf[256];
+	struct block_dev *bdev;
+	struct ramdisk *ram;
+	const size_t ramdisk_size = binalign_bound(size, RAMDISK_BLOCK_SIZE);
+	const size_t page_n = (ramdisk_size + PAGE_SIZE() - 1) / PAGE_SIZE();
+
+	if (NULL == (ram = pool_alloc(&ramdisk_pool)))
+		goto err_out;
+
+	ram->block_size = RAMDISK_BLOCK_SIZE;
+	ram->blocks = ramdisk_size / RAMDISK_BLOCK_SIZE;
+	ram->p_start_addr = phymem_alloc(page_n);
+	if (NULL == (ram->p_start_addr))
+		goto err_free_ramdisk;
+
 	strcpy(buf, "hdr#");
 	if (0 > block_dev_named(buf, &ramdisk_idx))
-		return NULL;
+		goto err_free_mem;
 
-	block_dev_create(buf, NULL, NULL);
+	bdev = block_dev_create(buf, &ramdisk_pio_driver, NULL);
+	if (!bdev)
+		goto err_free_mem;
+
+	bdev->privdata = ram;
+	bdev->size = ramdisk_size;
+err_free_mem:
+	phymem_free(ram->p_start_addr, page_n);
+err_free_ramdisk:
+	pool_free(&ramdisk_pool, ram);
+err_out:
 	return NULL;
 }
 

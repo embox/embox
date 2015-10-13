@@ -213,7 +213,7 @@ void pio_write_buffer(hd_t *hd, char *buffer, int size) {
 
 
 static int hd_identify(hd_t *hd) {
-
+	struct block_dev *bdev = hd->bdev;
 	/* Ignore interrupt for identify command */
 	hd->hdc->dir = HD_XFER_IGNORE;
 
@@ -232,15 +232,16 @@ static int hd_identify(hd_t *hd) {
 
 	/* Read parameter data */
 	insw(hd->hdc->iobase + HDC_DATA,
-			(char *) &(hd->param), SECTOR_SIZE / 2);
+			(char *) &(hd->param), sizeof(hd->param));
 
 	/* XXX this was added when ide drive with reported block size equals 64
  	 * However, block dev tries to use this and fails */
-	static_assert(SECTOR_SIZE == 512);
-	if (hd->param.unfbytes < SECTOR_SIZE) {
-		hd->param.unfbytes = SECTOR_SIZE;
+	if (bdev) {
+		static_assert(bdev->size == 512);
+		if (hd->param.unfbytes < bdev->block_size) {
+			hd->param.unfbytes = bdev->block_size;
+		}
 	}
-
 	/* Fill in drive parameters */
 	hd->cyls = hd->param.cylinders;
 	hd->heads = hd->param.heads;
@@ -338,6 +339,7 @@ static void hd_read_hndl(hdc_t *hdc) {
 	unsigned char error;
 	int nsects;
 	int n;
+	struct block_dev *bdev = hdc->active->bdev;
 
 	/* Check status */
 	hdc->status = inb(hdc->iobase + HDC_STATUS);
@@ -352,8 +354,8 @@ static void hd_read_hndl(hdc_t *hdc) {
 			nsects = hdc->nsects;
 		}
 		for (n = 0; n < nsects; n++) {
-			pio_read_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
-			hdc->bufp += SECTOR_SIZE;
+			pio_read_buffer(hdc->active, hdc->bufp, bdev->block_size);
+			hdc->bufp += bdev->block_size;
 		}
 		hdc->nsects -= nsects;
 	}
@@ -363,7 +365,7 @@ static void hd_write_hndl(hdc_t *hdc) {
 	unsigned char error;
 	int nsects;
 	int n;
-
+	struct block_dev *bdev = hdc->active->bdev;
 	/* Check status */
 	hdc->status = inb(hdc->iobase + HDC_STATUS);
 	if (hdc->status & HDCS_ERR) {
@@ -386,8 +388,8 @@ static void hd_write_hndl(hdc_t *hdc) {
 			}
 
 			for (n = 0; n < nsects; n++) {
-				pio_write_buffer(hdc->active, hdc->bufp, SECTOR_SIZE);
-				hdc->bufp += SECTOR_SIZE;
+				pio_write_buffer(hdc->active, hdc->bufp, bdev->block_size);
+				hdc->bufp += bdev->block_size;
 			}
 		}
 	}
@@ -506,20 +508,18 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 					int bmregbase, int *masterif, int *slaveif) {
 	int res;
 
-	memset(hdc, 0, sizeof(hdc_t));
-	hdc->iobase = iobase;
-	hdc->irq = irq;
-	hdc->bmregbase = bmregbase;
-	hdc->dir = HD_XFER_IGNORE;
+	*hdc = (struct hdc) {
+		.iobase    = iobase,
+		.irq       = irq,
+		.bmregbase = bmregbase,
+		.dir       = HD_XFER_IGNORE,
+	};
+
 	waitq_init(&hdc->waitq);
 
-	if (hdc->bmregbase) {
-		if (hdc->prds) {
-			phymem_free(hdc->prds, 1);
-		}
+	if (hdc->bmregbase)
 		/* Allocate one page for PRD list */
 		hdc->prds = (struct prd *) phymem_alloc(1);
-	}
 
 	/* Assume no devices connected to controller */
 	*masterif = HDIF_NONE;
@@ -583,11 +583,8 @@ static int ide_create_block_dev(hd_t *hd) {
 	switch (hd->media) {
 		case IDE_CDROM:
 			bdev = block_dev_lookup("idecd");
-
 			break;
-
-
-		case IDE_DISK:	{
+		case IDE_DISK:
 			if (hd->udmamode == -1) {
 				bdev = block_dev_lookup("idedisk");
 			} else {
@@ -595,11 +592,8 @@ static int ide_create_block_dev(hd_t *hd) {
 			}
 
 			break;
-		}
-		default: {
+		default:
 			bdev = NULL;
-			return 0;
-		}
 	}
 	if (bdev == NULL) {
 		return 0;
@@ -608,18 +602,17 @@ static int ide_create_block_dev(hd_t *hd) {
 
 	return 0;
 }
-static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
-					 int udmasel, int iftype, int numslot) {
-	/* static int udma_speed[] = {16, 25, 33, 44, 66, 100}; */
 
+static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
+			int udmasel, int iftype, int numslot) {
 	int rc;
 
 	/* Initialize drive block */
-	memset(hd, 0, sizeof(hd_t));
-	hd->hdc = hdc;
-	hd->drvsel = drvsel;
-	hd->iftype = iftype;
-
+	*hd = (struct hd) {
+		.hdc    = hdc,
+		.drvsel = drvsel,
+		.iftype = iftype,
+	};
 	/* Get info block from device */
 	rc = hd_identify(hd);
 	if (rc < 0) {
@@ -694,47 +687,30 @@ static int ide_init(void) {
 	int masterif;
 	int slaveif;
 	int numhd;
-	numhd = 4;
+	int i;
+	int irq[] = {HDC0_IRQ, HDC1_IRQ};
+	int iobase[] = {HDC0_IOBASE, HDC1_IOBASE};
+
+	numhd = HD_DRIVES;
 
 	idedisk_idx = &harddisk_idx;
 
-	if (numhd >= 1)  {
-		/*
-		rc = setup_controller(&hdctab[0], HDC0_IOBASE, HDC0_IRQ,
-						ide ? bmiba : 0, &masterif, &slaveif);
-		*/
-		rc = setup_controller(&hdctab[0], HDC0_IOBASE,
-				HDC0_IRQ, 0, &masterif, &slaveif);
+	for (i = 0; i < HD_CONTROLLERS; i++) {
+		if (numhd < i * 2 + 1)
+			break;
+
+		rc = setup_controller(&hdctab[i], iobase[i],
+				irq[i], 0, &masterif, &slaveif);
 		if (rc >= 0) {
-			if (numhd >= 1 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[0], &hdctab[0], HD0_DRVSEL,
-						BM_SR_DRV0, masterif, 0);
-			}
-			if (numhd >= 2 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[1], &hdctab[0], HD1_DRVSEL,
-						BM_SR_DRV1, slaveif, 1);
-			}
+			if (numhd >= i * 2 + 1 && masterif > HDIF_UNKNOWN)
+				setup_hd(&hdtab[i * 2], &hdctab[i], HD0_DRVSEL,
+						BM_SR_DRV0, masterif, i * 2);
+			if (numhd >= i * 2 + 2 && slaveif > HDIF_UNKNOWN)
+				setup_hd(&hdtab[i * 2 + 1], &hdctab[i], HD1_DRVSEL,
+						BM_SR_DRV1, slaveif, i * 2 + 1);
 		}
 	}
 
-	if (numhd >= 3) {
-		/*
-		rc = setup_controller(&hdctab[1], HDC1_IOBASE,
-						HDC1_IRQ, ide ? bmiba + 8 : 0, &masterif, &slaveif);
-		*/
-		rc = setup_controller(&hdctab[1], HDC1_IOBASE,
-				HDC1_IRQ, 0, &masterif, &slaveif);
-		if (rc >= 0) {
-			if (numhd >= 3 && masterif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[2], &hdctab[1], HD0_DRVSEL,
-						BM_SR_DRV0, masterif, 2);
-			}
-			if (numhd >= 4 && slaveif > HDIF_UNKNOWN) {
-				setup_hd(&hdtab[3], &hdctab[1], HD1_DRVSEL,
-						BM_SR_DRV1, slaveif, 3);
-			}
-		}
-	}
 	return 0;
 }
 

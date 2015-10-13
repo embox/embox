@@ -5,7 +5,7 @@ module block_common {
 	source "block_dev.h"
 
 	option number dev_quantity = 16
-
+	option number default_block_size = 512
 	source "block_dev_common.c"
 	source "block_dev_namer.c"
 
