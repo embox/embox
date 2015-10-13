@@ -95,7 +95,7 @@ struct bpb {
 	uint8_t rootentries_h;	/* number of root dir entries high byte (0x02 normally) */
 	uint8_t sectors_s_l;	/* small num sectors low byte */
 	uint8_t sectors_s_h;	/* small num sectors high byte */
-	uint8_t mediatype;		/* media descriptor byte */
+	uint8_t mediatype;	/* media descriptor byte */
 	uint8_t secperfat_l;	/* sectors per FAT low byte */
 	uint8_t secperfat_h;	/* sectors per FAT high byte */
 	uint8_t secpertrk_l;	/* sectors per track low byte */
@@ -116,7 +116,7 @@ struct bpb {
  *	Extended BIOS Parameter Block structure (FAT12/16)
  */
 struct ebpb {
-	uint8_t unit;			/* int 13h drive# */
+	uint8_t unit;			/* int 13h drive#: 0x00 for floppy and 0x80 for HDD */
 	uint8_t head;			/* archaic, used by Windows NT-class OSes for flags */
 	uint8_t signature;		/* 0x28 or 0x29 */
 	uint8_t serial_0;		/* serial# */
@@ -125,6 +125,7 @@ struct ebpb {
 	uint8_t serial_3;		/* serial# */
 	uint8_t label[11];		/* volume label */
 	uint8_t system[8];		/* filesystem ID */
+	uint8_t code[448];		/* boot sector code */
 };
 
 /*
@@ -157,10 +158,12 @@ struct ebpb32 {
 	uint8_t serial_3;		/* serial# */
 	uint8_t label[11];		/* volume label */
 	uint8_t system[8];		/* filesystem ID */
+	uint8_t code[420];		/* boot sector code */
 };
 
 /*
  *	Logical Boot Record structure (volume boot sector)
+ *	IMPORTANT NOTE Boot code section is appended to ebpb to fit different offset
  */
 struct lbr {
 	uint8_t jump[3];		/* JMP instruction */
@@ -170,7 +173,6 @@ struct lbr {
 		struct ebpb ebpb;		/* FAT12/16 Extended BIOS Parameter Block */
 		struct ebpb32 ebpb32;	/* FAT32 Extended BIOS Parameter Block */
 	} ebpb;
-	uint8_t code[420];		/* boot sector code */
 	uint8_t sig_55;			/* 0x55 signature byte */
 	uint8_t sig_aa;			/* 0xaa signature byte */
 };
