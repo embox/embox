@@ -42,8 +42,30 @@ static void printer_long(const char *path, stat_t *sb) {
 	struct passwd pwd, *res;
 	struct group grp, *gres;
 	char buf[BUFLEN];
+	char type;
 
-	putchar(sb->st_mode & S_IFDIR ? 'd' : '-');
+	switch (sb->st_mode & S_IFMT) {
+	case S_IFDIR:
+		type = 'd';
+		break;
+	case S_IFBLK:
+		type = 'b';
+		break;
+	case S_IFCHR:
+		type = 'c';
+		break;
+	case S_IFIFO:
+		type = 'p';
+		break;
+	case S_IFSOCK:
+		type = 's';
+		break;
+	default:
+		type = '-';
+		break;
+	}
+
+	putchar(type);
 
 	print_access(sb->st_mode >> 6);
 	print_access(sb->st_mode >> 3);
@@ -65,6 +87,7 @@ static void printer_long(const char *path, stat_t *sb) {
 		printf(" %10s", gres->gr_name);
 	}
 
+	printf(" %10d", sb->st_size);
 	printer_simple(path, sb);
 }
 
