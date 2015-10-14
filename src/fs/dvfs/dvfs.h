@@ -196,5 +196,7 @@ extern int dvfs_umount(struct dentry *d);
 
 extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
+extern int dentry_ref_inc(struct dentry *dentry);
+extern int dentry_ref_dec(struct dentry *dentry);
 
 #endif

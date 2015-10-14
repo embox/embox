@@ -247,6 +247,26 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 	}
 	return 0;
 }
+int dentry_ref_inc(struct dentry *dentry) {
+	dentry->usage_count ++;
+
+	if (dentry->d_sb->root != dentry) {
+		dentry->d_sb->root->usage_count ++;
+	}
+
+	return dentry->usage_count;
+}
+
+int dentry_ref_dec(struct dentry *dentry) {
+	dentry->usage_count --;
+
+	if (dentry->d_sb->root != dentry) {
+		dentry->d_sb->root->usage_count --;
+	}
+
+	return dentry->usage_count;
+
+}
 
 /* Root-related stuff */
 static struct dentry *global_root = NULL;
