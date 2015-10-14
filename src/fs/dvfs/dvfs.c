@@ -89,6 +89,10 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 
 	if (flags & DVFS_DIR_VIRTUAL) {
 		res = 0;
+		if (flags & O_DIRECTORY) {
+			flags &=~O_DIRECTORY;
+			flags |= S_IFDIR;
+		}
 
 		lookup->item->flags |= flags;
 		lookup->item->usage_count++;
