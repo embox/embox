@@ -337,6 +337,9 @@ static int fat_fill_sb(struct super_block *sb, struct block_dev *dev) {
 static int fat_mount_end(struct super_block *sb) {
 	struct dirinfo *di;
 	struct volinfo *vi;
+
+	assert(sb->bdev->block_size <= FAT_MAX_SECTOR_SIZE);
+
 	if (NULL == (di = fat_dirinfo_alloc()))
 		return -ENOMEM;
 

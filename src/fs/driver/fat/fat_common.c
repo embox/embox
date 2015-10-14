@@ -87,6 +87,7 @@ int fat_create_partition(void *dev, int fat_n) {
 	struct block_dev *bdev = dev;
 	uint16_t bytepersec = bdev->block_size;
 	size_t num_sect = block_dev(bdev)->size / bytepersec;
+	assert(bdev->block_size <= FAT_MAX_SECTOR_SIZE);
 	uint32_t secperfat = 1;
 	uint16_t rootentries = 0x0200;             /* 512 for FAT16 */
 	struct lbr lbr = (struct lbr) {
