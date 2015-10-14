@@ -35,5 +35,23 @@ int mount(char *dev, char *dir, char *fs_type) {
 }
 
 int umount(char *dir) {
+	extern struct dlist_head dentry_dlist;
+	struct dentry *d, *dmount;
+	char mount_path[DENTRY_NAME_LEN];
+
+	dmount = NULL;
+
+	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
+		if (d->flags & DVFS_MOUNT_POINT) {
+			if (dentry_full_path(d, mount_path)) {
+				continue;
+			}
+			if (strncmp(mount_path, dir, sizeof(mount_path))) {
+				dmount = d;
+				break;
+			}
+		}
+	}
+	dvfs_umount(dmount);
 	return 0;
 }

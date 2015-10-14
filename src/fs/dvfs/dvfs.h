@@ -192,6 +192,7 @@ extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct bloc
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
 
 extern int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags);
+extern int dvfs_umount(struct dentry *d);
 
 extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);

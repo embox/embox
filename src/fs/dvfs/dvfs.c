@@ -68,6 +68,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	struct super_block *sb;
 	struct inode *new_inode;
 	int res;
+
 	assert(lookup);
 	assert(lookup->parent);
 	assert(lookup->parent->flags & S_IFDIR);
@@ -82,6 +83,10 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	strncpy(lookup->item->name, name, DENTRY_NAME_LEN);
 	inode_fill(sb, new_inode, lookup->item);
 
+	if (!sb->sb_iops->create) {
+		flags |= DVFS_DIR_VIRTUAL;
+	}
+
 	if (flags & DVFS_DIR_VIRTUAL) {
 		res = 0;
 
@@ -92,6 +97,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	} else {
 		res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
 	}
+
 	if (res) {
 		dvfs_destroy_dentry(lookup->item);
 	}
@@ -331,6 +337,9 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
 	return 0;
 }
 
+int dvfs_umount(struct dentry *d) {
+	return ENOERR;
+}
 /**
  * @brief Get next entry in the directory
  * @param lookup  Contains directory dentry (.parent) and
