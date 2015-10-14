@@ -56,7 +56,6 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	if (NULL == (ram = pool_alloc(&ramdisk_pool)))
 		goto err_out;
 
-	ram->block_size = RAMDISK_BLOCK_SIZE;
 	ram->blocks = ramdisk_size / RAMDISK_BLOCK_SIZE;
 	ram->p_start_addr = phymem_alloc(page_n);
 	if (NULL == (ram->p_start_addr))
@@ -71,7 +70,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 		goto err_free_mem;
 
 	bdev->privdata = ram;
-	bdev->block_size = ram->block_size; /* TODO use single block size */
+	bdev->block_size = RAMDISK_BLOCK_SIZE;
 	bdev->size = ramdisk_size;
 err_free_mem:
 	phymem_free(ram->p_start_addr, page_n);
@@ -101,7 +100,7 @@ static int read_sectors(block_dev_t *bdev,
 	char *read_addr;
 
 	ramdisk = (ramdisk_t *) bdev->privdata;
-	read_addr = ramdisk->p_start_addr + (blkno * ramdisk->block_size);
+	read_addr = ramdisk->p_start_addr + (blkno * bdev->block_size);
 
 	memcpy(buffer, read_addr, count);
 	return count;
@@ -114,7 +113,7 @@ static int write_sectors(block_dev_t *bdev,
 	char *write_addr;
 
 	ramdisk = (ramdisk_t *) bdev->privdata;
-	write_addr = ramdisk->p_start_addr + (blkno * ramdisk->block_size);
+	write_addr = ramdisk->p_start_addr + (blkno * bdev->block_size);
 
 	memcpy(write_addr, buffer, count);
 	return count;
@@ -128,7 +127,7 @@ static int ram_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
 		return ramd->blocks;
 
 	case IOCTL_GETBLKSIZE:
-		return ramd->block_size;
+		return bdev->block_size;
 	}
 	return -ENOSYS;
 }
