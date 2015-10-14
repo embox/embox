@@ -71,6 +71,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 		goto err_free_mem;
 
 	bdev->privdata = ram;
+	bdev->block_size = ram->block_size; /* TODO use single block size */
 	bdev->size = ramdisk_size;
 err_free_mem:
 	phymem_free(ram->p_start_addr, page_n);
