@@ -12,8 +12,9 @@
 #include <fs/dvfs.h>
 
 int mkdir(const char *pathname, mode_t mode) {
-	//return creat(pathname, mode | O_DIRECTORY);
-	return open(pathname, O_CREAT | O_WRONLY | O_TRUNC | O_DIRECTORY, mode);
+	struct lookup lu;
+
+	return dvfs_create_new(pathname, &lu, S_IFDIR);
 }
 
 int remove(const char *pathname) {

@@ -4,7 +4,7 @@
  * @data 12 oct. 2015
  * @author: Anton Bondarev
  */
-
+#include <errno.h>
 #include <fcntl.h>
 
 #include <fs/dvfs.h>
@@ -14,8 +14,10 @@ int stat(const char *path, struct stat *buf) {
 	int res = dvfs_lookup(path, &l);
 	struct dentry *d = l.item;
 
-	if (res < 0)
-		return res;
+	if (res < 0) {
+		errno = -res;
+		return -1;
+	}
 
 	assert(d);
 
