@@ -255,12 +255,16 @@ extern struct super_block *rootfs_sb(void);
  *        initialize them if they are empty
  */
 int dvfs_update_root(void) {
-	struct super_block *sb = rootfs_sb();
-	struct inode *inode = global_root->d_inode;
-	if (!global_root)
+	struct super_block *sb;
+	struct inode *inode;
+	if (global_root == NULL)
 		global_root = dvfs_alloc_dentry();
 
-	if (!global_root->d_inode)
+	assert(global_root);
+
+	sb = rootfs_sb();
+	inode = global_root->d_inode;
+	if (inode == NULL)
 		inode = dvfs_alloc_inode(sb);
 
 	*global_root = (struct dentry) {
