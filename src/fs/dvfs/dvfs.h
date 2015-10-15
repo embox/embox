@@ -22,9 +22,9 @@
 #define DVFS_PATH_FULL     0x001
 #define DVFS_PATH_FS       0x002
 #define DVFS_NAME          0x004
-#define DVFS_DIR_VIRTUAL   0x010
-#define DVFS_CHILD_VIRTUAL 0x020
-#define DVFS_MOUNT_POINT   0x040
+#define DVFS_DIR_VIRTUAL   0x01000000
+#define DVFS_CHILD_VIRTUAL 0x02000000
+#define DVFS_MOUNT_POINT   0x04000000
 
 #define FILE_TYPE(flags, ftype) ((((flags) & S_IFMT) == (ftype)) ? (ftype) : 0)
 
@@ -192,8 +192,11 @@ extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct bloc
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
 
 extern int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags);
+extern int dvfs_umount(struct dentry *d);
 
 extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
+extern int dentry_ref_inc(struct dentry *dentry);
+extern int dentry_ref_dec(struct dentry *dentry);
 
 #endif

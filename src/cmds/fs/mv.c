@@ -12,53 +12,36 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <fs/perm.h>
-#include <fs/vfs.h>
-#include <fs/fsop.h>
 #include <util/array.h>
 
 #define MV_RECURSIVE	(0x1 << 0)
 #define MV_FORCE		(0x1 << 1)
+#define DESC_NOT_EXIST  (0x1 << 2)
+#define DESC_IS_DIR     (0x1 << 3)
 
 /* Iterate through array from position 'start', 'count' times
  * and set 'value' to current value on each step */
 
 static void print_usage(void) {
 	printf("Usage: mv [-rfh] path\n"
-			"\t-r - recursive\n"
 			"\t-f - do not prompt before overwrite\n"
 			"\t-h - print this help\n");
 }
 
 int main(int argc, char **argv) {
-	int opt, rc;
-	unsigned int flags = 0;
-	char *oldpathcopy = NULL, *newpathcopy = NULL;
-	char *opc_free, *npc_free;
-	char *oldpath, *newpath = argv[argc - 1];
-	struct path oldnode, newnode;
+	int opt;
+	int flags;
+	int opt_cnt;
+	struct stat sb;
 
-	newpathcopy = strdup(newpath);
-	npc_free = newpathcopy;
+	flags = 0;
+	opt_cnt = 0;
 
-	rc = fs_perm_lookup((const char *) newpathcopy,
-			(const char **) &newpathcopy, &newnode);
-	free(npc_free);
-	if (-ENOENT == rc) {
-		newnode.node = NULL;
-	} else if (0 != rc && -ENOENT != rc) {
-		return rc;
-	}
-
-	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "rfh"))) {
+	while (-1 != (opt = getopt(argc, argv, "fh"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
-			return -ENOERR;
-		case 'r':
-			flags |= MV_RECURSIVE;
-			break;
+			return ENOERR;
 		case 'f':
 			flags |= MV_FORCE;
 			break;
@@ -66,52 +49,50 @@ int main(int argc, char **argv) {
 			printf("mv: invalid option -- '%c'\n", optopt);
 			return -EINVAL;
 		}
+		opt_cnt ++;
 	}
-
-	/* If we are copying many files destination
-	 * should exists and should be directory */
-	if (argc - optind >= 3 &&
-			(NULL == newnode.node || (! node_is_directory(newnode.node)))) {
-		fprintf(stderr,	"mv: target '%s' is not a directory\n", newpath);
-		return -EINVAL;
-	}
-
-	/* If there is directory in old paths than MV_RECURSIVE should be set */
-	array_foreach(oldpath, (argv + optind), (argc - optind - 1)) {
-		/* We wouldn't rename directory without -r */
-		if (! (flags & MV_RECURSIVE)) {
-			oldpathcopy = strdup(oldpath);
-			opc_free = oldpathcopy;
-			rc = fs_perm_lookup((const char *) oldpathcopy,
-					(const char **) &oldpathcopy, &oldnode);
-			free(opc_free);
-			if (-ENOENT == rc) {
-				fprintf(stderr,	"mv: source '%s' does not exist\n", oldpath);
-				return rc;
-			} else if (0 != rc) {
-				return rc;
-			}
-			if (node_is_directory(oldnode.node)) {
-				fprintf(stderr,	"mv: source '%s' is a directory\n", oldpath);
+	/* if desc is directory */
+	if (-1 == stat(argv[argc-1], &sb)) {
+		flags |= DESC_NOT_EXIST;
+	} else {
+		switch (sb.st_mode & S_IFMT) {
+		case S_IFDIR:
+			flags |= DESC_IS_DIR;
+			break;
+		case S_IFREG:
+			if (!(flags & MV_FORCE)) {
+				printf("file '%s' already exist use -f for rewrite it\n", argv[argc-1]);
 				return -EINVAL;
+			} else {
+				remove(argv[argc-1]);
 			}
-		}
-	}
-
-	/* If new path exists and MV_FORCE is not set */
-	if (NULL != newnode.node && (! node_is_directory(newnode.node))) {
-		if (! (flags & MV_FORCE)) {
-			fprintf(stderr,	"mv: destination path '%s' exists\n", newpath);
+			break;
+		default:
+			printf("dest must be directory or regular file\n");
 			return -EINVAL;
 		}
-		remove(newpath);
 	}
-
-	array_foreach(oldpath, (argv + optind), (argc - optind - 1)) {
-		if (-1 == rename(oldpath, newpath)) {
-			return -errno;
+	/* if there are several source files dest must be a directory */
+	if (((argc - opt_cnt) > 3) && !(flags & DESC_IS_DIR)) {
+		if (!(flags & DESC_NOT_EXIST)) {
+			printf("dest '%s' is not a directory\n", argv[argc-1]);
+			return -EINVAL;
+		} else {
+			if(mkdir(argv[argc-1], 0777)) {
+				printf("can't create directory %s\n", argv[argc-1]);
+				return -EINVAL;
+			}
+			flags |= DESC_IS_DIR;
 		}
 	}
+	if (flags & DESC_IS_DIR) {
+		printf("now directory isn't supported");
+		return -ENOSUPP;
+	}
 
-	return -ENOERR;
+	if (rename(argv[argc-2], argv[argc-2])) {
+		return -errno;
+	}
+
+	return ENOERR;
 }

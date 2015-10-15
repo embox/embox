@@ -37,19 +37,12 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	lu.parent = lu.item;
 	lu.item = NULL;
 
-	if (!lu.parent)
-		goto err_free_bdev; /* devfs not mounted */
+	if (!lu.parent) {
+		block_dev_free(bdev);
+		return NULL;
+	}
 
-	if (0 > dvfs_create_new(full_path, &lu, S_IFBLK | S_IRALL | S_IWALL))
-		goto err_free_bdev;
-
-	lu.item->d_inode->i_data = bdev;
-	/* TODO set inode ops */
 	return bdev;
-
-err_free_bdev:
-	block_dev_free(bdev);
-	return NULL;
 }
 
 /**

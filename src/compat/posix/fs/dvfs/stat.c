@@ -4,7 +4,7 @@
  * @data 12 oct. 2015
  * @author: Anton Bondarev
  */
-
+#include <errno.h>
 #include <fcntl.h>
 
 #include <fs/dvfs.h>
@@ -14,8 +14,10 @@ int stat(const char *path, struct stat *buf) {
 	int res = dvfs_lookup(path, &l);
 	struct dentry *d = l.item;
 
-	if (res < 0)
-		return res;
+	if (res < 0) {
+		errno = -res;
+		return -1;
+	}
 
 	assert(d);
 
@@ -25,7 +27,7 @@ int stat(const char *path, struct stat *buf) {
 		.st_nlink   = 1,
 		.st_size    = (d && d->d_inode) ? d->d_inode->length : 0,
 		.st_blksize = 512,
-		.st_mode    = d->flags & S_IFMT,
+		.st_mode    = d->flags & (S_IFMT | S_IRWXA),
 	};
 
 	return 0;
