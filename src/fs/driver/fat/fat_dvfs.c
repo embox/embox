@@ -150,6 +150,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 
 	di->currententry = tmp;
+	node->flags |= S_IRWXA;
 	return node;
 err_out:
 	di->currententry = tmp;
@@ -249,6 +250,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	switch (res) {
 	case DFS_OK:
 		strcpy(next->i_dentry->name, (char*) de.name);
+		next->flags |= S_IRWXA;
 		return 0;
 	case DFS_EOF:
 		ctx->fs_ctx = 0;
