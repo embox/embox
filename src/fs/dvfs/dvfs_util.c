@@ -204,17 +204,10 @@ int dvfs_destroy_file(struct file *desc) {
  */
 int inode_fill(struct super_block *sb, struct inode *inode,
                       struct dentry *dentry) {
-	*inode = (struct inode) {
-		.i_dentry  = dentry,
-		.i_sb      = sb,
-		.i_ops     = sb ? sb->sb_iops : NULL,
-		/* Explicitly save some old fields. The rest will be zero. */
-		.start_pos = inode->start_pos,
-		.i_no      = inode->i_no,
-		.i_data    = inode->i_data,
-		.flags     = inode->flags,
-		.length    = inode->length,
-	};
+	inode->i_dentry = dentry;
+	inode->i_sb     = sb;
+	inode->i_ops    = sb ? sb->sb_iops : NULL;
+	/* Other fields are left without changes on purpose */
 
 	return 0;
 }
