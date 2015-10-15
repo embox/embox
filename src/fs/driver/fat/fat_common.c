@@ -87,7 +87,8 @@ int fat_create_partition(void *dev, int fat_n) {
 	struct block_dev *bdev = dev;
 	uint16_t bytepersec = bdev->block_size;
 	size_t num_sect = block_dev(bdev)->size / bytepersec;
-	uint32_t secperfat; /* We have two FA Tables */
+	assert(bdev->block_size <= FAT_MAX_SECTOR_SIZE);
+	uint32_t secperfat = 1;
 	uint16_t rootentries = 0x0200;             /* 512 for FAT16 */
 	struct lbr lbr = (struct lbr) {
 		.jump = {0xeb, 0x3c, 0x90},        /* JMP 0x3c; NOP; */
@@ -125,7 +126,6 @@ int fat_create_partition(void *dev, int fat_n) {
 	switch (fat_n) {
 	case 12:
 	case 16:
-		secperfat = min(0xFFFF, num_sect / 2);
 		lbr.bpb.secperfat_l   = (uint8_t)(0x00FF & secperfat),
 		lbr.bpb.secperfat_h   = (uint8_t)(0x00FF & (secperfat >> 8)),
 		lbr.ebpb.ebpb = (struct ebpb) {
@@ -145,7 +145,6 @@ int fat_create_partition(void *dev, int fat_n) {
 		memcpy(lbr.ebpb.ebpb.code, bootcode, sizeof(bootcode));
 		break;
 	case 32:
-		secperfat = num_sect / 2;
 		lbr.ebpb.ebpb32 = (struct ebpb32) {
 			.fatsize_0 = (uint8_t) (0xFF & secperfat),
 			.fatsize_1 = (uint8_t) (0xFF & (secperfat >> 8)),
@@ -278,7 +277,6 @@ uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsec
 	else {
 		memcpy(volinfo->label, lbr->ebpb.ebpb.label, MSDOS_NAME);
 		volinfo->label[11] = 0;
-
 	}
 
 	/* note: if rootentries is 0, we must be in a FAT32 volume. */
@@ -295,8 +293,7 @@ uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsec
 
 	if (volinfo->rootentries) {
 		volinfo->rootdir = volinfo->fat1 + (volinfo->secperfat * 2);
-		volinfo->dataarea = volinfo->rootdir + (((volinfo->rootentries * 32) +
-				(volinfo->bytepersec - 1)) / volinfo->bytepersec);
+		volinfo->dataarea = volinfo->rootdir + (((volinfo->rootentries * 32) + (volinfo->bytepersec - 1)) / volinfo->bytepersec);
 	} else {
 		volinfo->dataarea = volinfo->fat1 + (volinfo->secperfat * 2);
 		volinfo->rootdir = (uint32_t) lbr->ebpb.ebpb32.root_0 |
