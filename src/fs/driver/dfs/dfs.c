@@ -27,6 +27,8 @@ static struct flash_dev *dfs_flashdev;
 #define NAND_PAGES_PER_BLOCK (NAND_BLOCK_SIZE / NAND_PAGE_SIZE)
 #define NAND_PAGES_MAX (1024 * 128 / 8 * 3)
 
+#define MIN_FILE_SZ OPTION_GET(NUMBER, minimum_file_size)
+
 BITMAP_DECL(dfs_free_pages, NAND_PAGES_MAX);
 
 extern struct super_block *dfs_sb(void);
@@ -190,7 +192,6 @@ int dfs_format(void) {
 		.inode_count = 0,
 		.max_inode_count = DFS_INODES_MAX,
 		.buff_bk = 2,
-		.max_file_size = 2048 / NAND_PAGE_SIZE,
 		.free_space = _capacity(sizeof(struct dfs_sb_info)) +
 		              DFS_INODES_MAX * _capacity(sizeof(struct dfs_dir_entry)),
 	};
@@ -315,12 +316,39 @@ static int dfs_icreate(struct inode *i_new,
 	return 0;
 }
 
+/**
+ * @brief Change size of file
+ * @note In this FS we can only increase size
+ *
+ * @param inode
+ * @param new_len
+ *
+ * @return Negative error number or 0 if succeed
+ */
 static int dfs_itruncate(struct inode *inode, size_t new_len) {
-	int max_l = ((struct dfs_sb_info *)inode->i_sb->sb_data)->max_file_size;
+	struct dfs_sb_info *sbi;
+	struct dfs_dir_entry *entry;
 	assert(inode);
 
-	if (new_len < 0 || new_len > max_l)
+	if (new_len < inode->length)
 		return -1;
+
+	if (new_len < 0)
+		return -1;
+
+	sbi = dfs_sb()->sb_data;
+
+	if (inode->i_no == sbi->inode_count) {
+		/* This is the latest inode, so we can safely
+		 * increase the length */
+		dfs_read_dirent(inode->i_no, entry);
+		assert(entry->len == inode->length);
+		entry->len = new_len;
+		dfs_write_dirent(inode->i_no, entry);
+	} else {
+		/* We can't truncate old files */
+		return -1;
+	}
 
 	inode->length = new_len;
 
@@ -500,4 +528,3 @@ static struct dumb_fs_driver dfs_dumb_driver = {
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_dumb_driver);
-

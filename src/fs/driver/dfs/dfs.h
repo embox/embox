@@ -19,7 +19,6 @@ struct dfs_sb_info {
 	int  inode_count;
 	int  max_inode_count;
 	int  buff_bk;         /* For buffer-based writing */
-	int  max_file_size;
 	int  free_space;
 };
 

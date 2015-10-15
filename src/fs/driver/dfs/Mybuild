@@ -8,5 +8,6 @@ module dfs {
 
 	option number page_size = 4
 	option number block_size = 131072 /* 128kb */
+	option number minimum_file_size = 2048
 }
 
