@@ -340,6 +340,59 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
 int dvfs_umount(struct dentry *d) {
 	return ENOERR;
 }
+
+static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx) {
+	struct dentry *next_dentry;
+	struct dlist_head *l;
+	int i;
+
+	i = 0;
+	dlist_foreach(l, &lookup->parent->children)
+	{
+		next_dentry = mcast_out(l, struct dentry, children_lnk);
+
+		if (next_dentry->flags & DVFS_DIR_VIRTUAL) {
+			if (i++ == (ctx->flags & ~DVFS_CHILD_VIRTUAL)) {
+				ctx->flags++;
+				lookup->item = next_dentry;
+
+				return next_dentry;
+			}
+		}
+	}
+
+	return NULL;
+}
+
+static struct dentry *iterate_cached(struct super_block *sb,
+		struct lookup *lookup, struct inode *next_inode) {
+	char full_path[DENTRY_NAME_LEN];
+	struct dentry *cached;
+	struct dentry *next_dentry;
+
+	next_dentry = dvfs_alloc_dentry();
+	if (!next_dentry) {
+		dvfs_destroy_inode(next_inode);
+		return NULL;
+	}
+	dentry_fill(sb, next_inode, next_dentry, lookup->parent);
+	inode_fill(sb, next_inode, next_dentry);
+	dentry_upd_flags(next_dentry);
+
+	dentry_full_path(lookup->parent, full_path);
+	dvfs_pathname(next_inode, full_path + strlen(full_path), 0);
+
+	if ((cached = dvfs_cache_get(full_path, lookup))) {
+		dvfs_destroy_dentry(next_dentry);
+		next_dentry = cached;
+	} else {
+		dvfs_pathname(next_inode, next_dentry->name, 0);
+		dvfs_cache_add(next_dentry);
+	}
+
+	return next_dentry;
+}
+
 /**
  * @brief Get next entry in the directory
  * @param lookup  Contains directory dentry (.parent) and
@@ -351,77 +404,49 @@ int dvfs_umount(struct dentry *d) {
  */
 int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct super_block *sb;
-	struct inode *parent_inode;
 	struct inode *next_inode;
-	struct dentry *next_dentry = NULL;
-	struct dlist_head *l;
-	int i;
 	int res;
-	assert(lookup);
-	assert(ctx);
 
-	if (ctx->flags & DVFS_CHILD_VIRTUAL)
-		goto lookup_virt;
+	assert(ctx);
+	assert(lookup);
+	assert(lookup->parent);
+	assert(lookup->parent->d_sb);
+	assert(lookup->parent->d_inode);
 
 	sb = lookup->parent->d_sb;
-	parent_inode = lookup->parent->d_inode;
-	next_inode   = dvfs_alloc_inode(sb);
-	next_dentry  = dvfs_alloc_dentry();
+	assert(sb->sb_iops && sb->sb_iops->iterate);
 
-	lookup->item = next_dentry;
+	if (ctx->flags & DVFS_CHILD_VIRTUAL) {
+		/* we are already in virtual iterate mode */
+		lookup->item = iterate_virtual(lookup, ctx);
 
-	if (!next_inode || !next_dentry) {
-		if (next_dentry)
-			dvfs_destroy_dentry(next_dentry);
-		if (next_inode)
-			dvfs_destroy_inode(next_inode);
+		return 0;
+	}
+
+	next_inode = dvfs_alloc_inode(sb);
+	if (!next_inode) {
 		return -ENOMEM;
 	}
 
-	dentry_fill(sb, next_inode, next_dentry, lookup->parent);
-	assert(sb && sb->sb_iops && sb->sb_iops->iterate);
-	res = sb->sb_iops->iterate(next_inode, parent_inode, ctx);
-	inode_fill(sb, next_inode, next_dentry);
-	dentry_upd_flags(next_dentry);
-
+	res = sb->sb_iops->iterate(next_inode, lookup->parent->d_inode, ctx);
 	if (res) {
-		dvfs_destroy_dentry(next_dentry);
+		/* iterate virtual */
+		dvfs_destroy_inode(next_inode);
+
+		lookup->item = NULL;
 		if (lookup->parent->flags & DVFS_CHILD_VIRTUAL) {
 			ctx->flags = DVFS_CHILD_VIRTUAL;
-lookup_virt:
-			i = 0;
-			dlist_foreach(l, &lookup->parent->children) {
-				next_dentry = mcast_out(l, struct dentry, children_lnk);
 
-				if (next_dentry->flags & DVFS_DIR_VIRTUAL) {
-					if (i++ == (ctx->flags & ~DVFS_CHILD_VIRTUAL)) {
-						ctx->flags++;
-						lookup->item = next_dentry;
-						return 0;
-					}
-				}
-			}
+			lookup->item = iterate_virtual(lookup, ctx);
+
+			return 0;
 		}
-
-		ctx->pos = 0;
-		next_dentry = NULL;
-	} else {
-		char full_path[DENTRY_NAME_LEN];
-		struct dentry *cached;
-		dentry_full_path(lookup->parent, full_path);
-		dvfs_pathname(next_inode, full_path + strlen(full_path), 0);
-
-		if ((cached = dvfs_cache_get(full_path, lookup))) {
-			dvfs_destroy_dentry(next_dentry);
-			next_dentry = cached;
-		} else {
-		dvfs_pathname(next_inode, next_dentry->name, 0);
-			dvfs_cache_add(next_dentry);
-		}
-		ctx->pos++;
 	}
-
-	lookup->item = next_dentry;
+	/* caching found inode */
+	lookup->item = iterate_cached(sb, lookup, next_inode);
+	if (NULL == lookup->item) {
+		return -ENOMEM;
+	}
 
 	return 0;
 }
