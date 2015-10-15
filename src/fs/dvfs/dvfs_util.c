@@ -176,7 +176,7 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
  */
 void dentry_upd_flags(struct dentry *dentry) {
 	if (dentry->d_inode) {
-		dentry->flags |= dentry->d_inode->flags & S_IFMT;
+		dentry->flags |= dentry->d_inode->flags & (S_IFMT | S_IRWXA);
 	}
 }
 

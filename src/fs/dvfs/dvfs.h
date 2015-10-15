@@ -22,9 +22,9 @@
 #define DVFS_PATH_FULL     0x001
 #define DVFS_PATH_FS       0x002
 #define DVFS_NAME          0x004
-#define DVFS_DIR_VIRTUAL   0x010
-#define DVFS_CHILD_VIRTUAL 0x020
-#define DVFS_MOUNT_POINT   0x040
+#define DVFS_DIR_VIRTUAL   0x01000000
+#define DVFS_CHILD_VIRTUAL 0x02000000
+#define DVFS_MOUNT_POINT   0x04000000
 
 #define FILE_TYPE(flags, ftype) ((((flags) & S_IFMT) == (ftype)) ? (ftype) : 0)
 
