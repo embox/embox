@@ -441,6 +441,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 
 			return 0;
 		}
+		return 0;
 	}
 	/* caching found inode */
 	lookup->item = iterate_cached(sb, lookup, next_inode);
