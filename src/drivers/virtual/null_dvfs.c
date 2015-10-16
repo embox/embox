@@ -16,7 +16,6 @@
 #define NULL_DEV_NAME "null"
 
 /* forward declaration */
-static int null_init(void);
 static struct idesc_ops idesc_cdev_null_ops;
 static struct file_operations null_ops;
 
@@ -52,15 +51,10 @@ static struct file_operations null_ops = {
 		.open = null_open,
 };
 
-static int null_init(void) {
-	return char_dev_register(NULL_DEV_NAME, &null_ops);
-}
-
 static struct idesc_ops idesc_cdev_null_ops = {
 	.close = null_close,
 	.read = null_read,
 	.write = null_write,
 };
 
-CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, &idesc_cdev_null_ops, null_init);
-
+CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, &idesc_cdev_null_ops, NULL);
