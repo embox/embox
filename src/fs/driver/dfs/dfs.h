@@ -29,6 +29,7 @@ struct dfs_dir_entry {
 	char name[DFS_NAME_LEN];
 	int  pos_start;
 	int  len;
+	int  flags;
 };
 
 extern int dfs_mount(void);
