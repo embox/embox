@@ -31,7 +31,7 @@ def parse(file, sectname):
         target[k] = int(m.group(1), 16)
 
     assert len(vmas) == len(lens)
-    return { k: (vmas[k], lens[k]) for k in vmas }
+    return dict( (k, (vmas[k], lens[k])) for k in vmas )
 
 def main(nmfile, sectname, sectfile, vma_offset):
     stat = parse(sys.stdin, sectname)
