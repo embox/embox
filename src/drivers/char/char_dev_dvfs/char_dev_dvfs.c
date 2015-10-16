@@ -5,9 +5,17 @@
  * @version 0.1
  * @date 2015-10-05
  */
+#include <errno.h>
+#include <string.h>
+
+#include <util/array.h>
+#include <util/dlist.h>
+
+#include <fs/dvfs.h>
 
 #include <drivers/char_dev.h>
-#include <util/array.h>
+
+DLIST_DEFINE(cdev_repo_list);
 
 ARRAY_SPREAD_DEF(const struct device_module, __char_device_registry);
 
@@ -27,24 +35,11 @@ int char_dev_init_all(void) {
 	return 0;
 }
 
-int char_dev_register(const char *name, struct file_operations *fops) {
-#if 0
-	char full_path[256];
-	struct lookup lu;
+int char_dev_register(struct device_module *cdev) {
+	assert(cdev);
 
-	/* Get root of devfs in smarter way? */
-	strcpy(full_path, "/dev/");
-	strcat(full_path, name);
+	dlist_head_init(&cdev->cdev_list);
+	dlist_add_next(&cdev->cdev_list, &cdev_repo_list);
 
-	dvfs_lookup("/dev", &lu);
-	lu.parent = lu.item;
-	lu.item = NULL;
-
-	if (!lu.parent)
-		return -ENOENT; /* devfs is not mounted */
-
-	if (0 > dvfs_create_new(full_path, &lu, S_IFCHR | S_IRALL | S_IWALL))
-		return -1;
-#endif
 	return 0;
 }

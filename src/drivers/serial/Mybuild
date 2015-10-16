@@ -3,10 +3,21 @@ package embox.driver.serial
 /* FIXME:
  * Unused files: skyeye_uart.c
  */
+@DefaultImpl(core_old)
+abstract module core { }
 
-abstract module serial { }
+module ttys_dvfs extends core {
+	option number uart_max_n = 4
 
-module core {
+	source "ttys_dvfs.c"
+
+	@IncludeExport(path="drivers/serial")
+	source "uart_device.h"
+
+	@NoRuntime depends embox.util.indexator
+}
+
+module core_old extends core {
 	option number uart_max_n = 4
 
 	source "core.c"
@@ -55,7 +66,7 @@ module raspi_uart extends embox.driver.diag.diag_api {
 	depends diag
 }
 
-module i8250 extends serial {
+module i8250 extends embox.driver.diag.diag_api {
 	option number baud_rate
 
 	source "8250.c"
