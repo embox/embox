@@ -77,7 +77,7 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 		_read(offset, b, NAND_PAGE_SIZE);
 		memcpy(b + head, buff, NAND_PAGE_SIZE - head);
 		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
-		buff   += NAND_PAGE_SIZE;
+		buff += NAND_PAGE_SIZE - head;
 		offset += NAND_PAGE_SIZE;
 
 		if (len > NAND_PAGE_SIZE - head)
