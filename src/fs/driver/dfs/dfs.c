@@ -244,6 +244,9 @@ static int dfs_read_dirent(int n, struct dfs_dir_entry *dtr) {
 
 	_read(offt, dtr, sizeof(struct dfs_dir_entry));
 
+	if (dtr->name[0] == '\0')
+		return -ENOENT;
+
 	return 0;
 }
 
@@ -294,8 +297,9 @@ static int dfs_icreate(struct inode *i_new,
 	if (sbi->inode_count > sbi->max_inode_count)
 		return -ENOMEM;
 
+	memset(&dirent, 0, sizeof(dirent));
 	dirent.pos_start = sbi->free_space;
-	dirent.len = 2048 / NAND_PAGE_SIZE; /* XXX */
+	dirent.len = MIN_FILE_SZ;
 	strcpy(dirent.name, i_new->i_dentry->name);
 	dfs_write_dirent(sbi->inode_count, &dirent);
 
@@ -345,6 +349,9 @@ static int dfs_itruncate(struct inode *inode, size_t new_len) {
 		assert(entry->len == inode->length);
 		entry->len = new_len;
 		dfs_write_dirent(inode->i_no, entry);
+		sbi->free_space = entry->pos_start + entry->len;
+		dfs_sb_status = DIRTY;
+		dfs_write_sb_info(sbi);
 	} else {
 		/* We can't truncate old files */
 		return -1;
@@ -450,7 +457,7 @@ static size_t dfs_write(struct file *desc, void *buf, size_t size) {
 	assert(desc->f_inode);
 	assert(buf);
 
-	pos = pos_from_page(desc->f_inode->start_pos) + desc->pos;
+	pos = desc->f_inode->start_pos + desc->pos;
 	l = min(size, desc->f_inode->length - pos);
 
 	if (l < 0)
@@ -467,7 +474,7 @@ size_t dfs_read(struct file *desc, void *buf, size_t size) {
 	assert(desc->f_inode);
 	assert(buf);
 
-	int pos = pos_from_page(desc->f_inode->start_pos) + desc->pos;
+	int pos = desc->f_inode->start_pos + desc->pos;
 	int l   = min(size, desc->f_inode->length - desc->pos);
 
 	if (l < 0)
