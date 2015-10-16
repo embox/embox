@@ -67,6 +67,7 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	int i;
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(4)));
 	int head = offset & 0x7;
+	size_t head_write_cnt = min(len, NAND_PAGE_SIZE - head);
 	assert(buff);
 
 	for (i = offset; i < offset + len; i++)
@@ -75,7 +76,7 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	if (head) {
 		offset -= head;
 		_read(offset, b, NAND_PAGE_SIZE);
-		memcpy(b + head, buff, NAND_PAGE_SIZE - head);
+		memcpy(b + head, buff, head_write_cnt);
 		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
 		buff += NAND_PAGE_SIZE - head;
 		offset += NAND_PAGE_SIZE;
