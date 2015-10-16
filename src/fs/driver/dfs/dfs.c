@@ -464,7 +464,6 @@ static size_t dfs_write(struct file *desc, void *buf, size_t size) {
 		return -1;
 
 	dfs_write_raw(pos, buf, l);
-	desc->pos += l;
 
 	return l;
 }
