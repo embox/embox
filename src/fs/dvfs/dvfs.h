@@ -147,7 +147,6 @@ struct dvfsmnt {
 };
 
 struct dir_ctx {
-	int   pos;
 	int   flags;
 	void *fs_ctx;
 };

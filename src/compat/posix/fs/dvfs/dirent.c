@@ -91,7 +91,6 @@ struct dirent *readdir(DIR *dir) {
 	}
 
 	if (!l.item) {
-		dir->ctx.pos = 0;
 		return NULL;
 	}
 	fill_dirent(&dir->dirent, l.item);

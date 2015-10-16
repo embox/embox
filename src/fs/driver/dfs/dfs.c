@@ -396,18 +396,22 @@ static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	assert(next);
 	assert(parent);
 
-	if (ctx->pos >= ((struct dfs_sb_info *) dfs_sb()->sb_data)->inode_count)
+	int dir_pos = (int) ctx->fs_ctx;
+
+	if (dir_pos >= ((struct dfs_sb_info *) dfs_sb()->sb_data)->inode_count)
 		return -1;
 
-	dfs_read_dirent(ctx->pos, &dirent);
+	dfs_read_dirent(dir_pos, &dirent);
 
 	*next = (struct inode) {
-		.i_no      = ctx->pos,
+		.i_no      = dir_pos,
 		.start_pos = dirent.pos_start,
 		.length    = dirent.len,
 		.i_sb      = dfs_sb(),
 		.i_ops     = &dfs_iops,
 	};
+
+	ctx->fs_ctx = (void*) (1 + (int) ctx->fs_ctx);
 
 	return 0;
 }
