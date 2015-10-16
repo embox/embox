@@ -331,7 +331,7 @@ static int dfs_icreate(struct inode *i_new,
  */
 static int dfs_itruncate(struct inode *inode, size_t new_len) {
 	struct dfs_sb_info *sbi;
-	struct dfs_dir_entry *entry;
+	struct dfs_dir_entry entry;
 	assert(inode);
 
 	if (new_len < inode->length)
@@ -342,14 +342,14 @@ static int dfs_itruncate(struct inode *inode, size_t new_len) {
 
 	sbi = dfs_sb()->sb_data;
 
-	if (inode->i_no == sbi->inode_count) {
+	if (inode->i_no == sbi->inode_count - 1) {
 		/* This is the latest inode, so we can safely
 		 * increase the length */
-		dfs_read_dirent(inode->i_no, entry);
-		assert(entry->len == inode->length);
-		entry->len = new_len;
-		dfs_write_dirent(inode->i_no, entry);
-		sbi->free_space = entry->pos_start + entry->len;
+		dfs_read_dirent(inode->i_no, &entry);
+		assert(entry.len == inode->length);
+		entry.len = new_len;
+		dfs_write_dirent(inode->i_no, &entry);
+		sbi->free_space = entry.pos_start + entry.len;
 		dfs_sb_status = DIRTY;
 		dfs_write_sb_info(sbi);
 	} else {
