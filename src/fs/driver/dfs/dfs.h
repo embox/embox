@@ -16,6 +16,9 @@
 #define DFS_NAME_LEN \
 	OPTION_MODULE_GET(embox__fs__driver__dfs, NUMBER, max_name_len)
 
+#define DFS_POS_MASK 0x00FF
+#define DFS_DIR_MASK 0xFF00
+
 /* Non-VFS declarations */
 struct dfs_sb_info {
 	char magic[2];

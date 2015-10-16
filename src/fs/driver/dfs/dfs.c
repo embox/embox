@@ -32,6 +32,7 @@ static struct flash_dev *dfs_flashdev;
 BITMAP_DECL(dfs_free_pages, NAND_PAGES_MAX);
 
 extern struct super_block *dfs_sb(void);
+static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr);
 
 /* Converting */
 static inline int page_capacity(int bytes) {
@@ -182,6 +183,7 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 
 int dfs_format(void) {
 	struct dfs_sb_info *sbi = dfs_sb()->sb_data;
+	struct dfs_dir_entry root;
 
 	if (!dfs_flashdev) {
 		return -ENOENT;
@@ -197,8 +199,16 @@ int dfs_format(void) {
 		              DFS_INODES_MAX * _capacity(sizeof(struct dfs_dir_entry)),
 	};
 
-	dfs_write_raw(0, sbi, sizeof(struct dfs_sb_info));
+	/* Configure root directory */
+	sbi->inode_count++;
+	strcpy(root.name, "/");
+	root.pos_start = sbi->free_space;
+	root.len       = MIN_FILE_SZ;
+	root.flags     = S_IFDIR;
+	sbi->free_space += MIN_FILE_SZ;
+	dfs_write_dirent(0, &root);
 
+	dfs_write_raw(0, sbi, sizeof(struct dfs_sb_info));
 	return 0;
 }
 
@@ -287,6 +297,9 @@ static int dfs_icreate(struct inode *i_new,
 	struct super_block *sb = i_dir->i_sb;
 	struct dfs_sb_info *sbi = sb->sb_data;
 	struct dfs_dir_entry dirent;
+	char buf[NAND_PAGE_SIZE];
+	int i;
+	char t;
 
 	assert(sb);
 	assert(i_dir);
@@ -316,11 +329,29 @@ static int dfs_icreate(struct inode *i_new,
 		.i_ops     = &dfs_iops,
 	};
 
+	if (FILE_TYPE(S_IFDIR, mode)) {
+		memset(buf, 0xff, sizeof(buf));
+		for (i = 0; i < dirent.len / sizeof(buf); i++)
+			dfs_write_raw(dirent.pos_start + i * sizeof(buf),
+			              buf,
+			              sizeof(buf));
+	}
+
 	sbi->inode_count++;
 	sbi->free_space += dirent.len;
 
 	dfs_sb_status = DIRTY;
 	dfs_write_sb_info(sbi);
+
+	/* Write entry to parent directory */
+	for (i = 0; i < i_dir->length; i++) {
+		_read(i_dir->start_pos + i, &t, 1);
+		if (t != 0xFF)
+			/* Entry taken */
+			continue;
+		_write(i_dir->start_pos + i, &i_new->i_no, 1);
+		break;
+	}
 
 	return 0;
 }
@@ -397,29 +428,37 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 
 static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
 	struct dfs_dir_entry dirent;
+	int candidate = DFS_POS_MASK;
+	int i;
+
 	assert(ctx);
 	assert(next);
 	assert(parent);
 
 	int dir_pos = (int) ctx->fs_ctx;
 
-	if (dir_pos >= ((struct dfs_sb_info *) dfs_sb()->sb_data)->inode_count)
-		return -1;
+	for (i = dir_pos; i < parent->length; i++) {
+		_read(parent->start_pos + i, &candidate, 1);
+		if (candidate == 0xFF)
+			/* Empty entry */
+			continue;
 
-	dfs_read_dirent(dir_pos, &dirent);
+		dfs_read_dirent(candidate, &dirent);
+		*next = (struct inode) {
+			.i_no      = candidate,
+			.start_pos = dirent.pos_start,
+			.length    = dirent.len,
+			.i_sb      = dfs_sb(),
+			.i_ops     = &dfs_iops,
+			.flags     = dirent.flags,
+		};
+		ctx->fs_ctx = (void*) (i + 1);
 
-	*next = (struct inode) {
-		.i_no      = dir_pos,
-		.start_pos = dirent.pos_start,
-		.length    = dirent.len,
-		.i_sb      = dfs_sb(),
-		.i_ops     = &dfs_iops,
-		.flags     = dirent.flags,
-	};
+		return 0;
+	}
 
-	ctx->fs_ctx = (void*) (1 + (int) ctx->fs_ctx);
-
-	return 0;
+	/* End of directory */
+	return -1;
 }
 
 static int dfs_pathname(struct inode *inode, char *buf, int flags) {
@@ -538,9 +577,35 @@ static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 	return 0;
 }
 
+static int dfs_mount_end(struct super_block *sb) {
+	struct inode *inode;
+	struct dfs_sb_info *sbi;
+	char buf[NAND_PAGE_SIZE];
+	int i;
+
+	sbi = sb->sb_data;
+	inode = sb->root->d_inode;
+
+	assert(inode);
+	assert(sbi);
+
+	inode->i_no      = 0;
+	inode->length    = MIN_FILE_SZ;
+	inode->start_pos = _capacity(sizeof(struct dfs_sb_info)) +
+		sbi->max_inode_count * _capacity(sizeof(struct dfs_dir_entry));
+
+	memset(buf, 0xff, sizeof(buf));
+	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++)
+		dfs_write_raw(inode->start_pos + i * sizeof(buf),
+		              buf,
+		              sizeof(buf));
+	return 0;
+}
+
 static struct dumb_fs_driver dfs_dumb_driver = {
-	.name = "DumbFS",
-	.fill_sb = &dfs_fill_sb,
+	.name      = "DumbFS",
+	.fill_sb   = &dfs_fill_sb,
+	.mount_end = dfs_mount_end,
 };
 
 ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
