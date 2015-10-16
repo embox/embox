@@ -230,18 +230,32 @@ int dvfs_close(struct file *desc) {
  */
 int dvfs_write(struct file *desc, char *buf, int count) {
 	int res;
+	int retcode = count;
+	struct inode *inode;
 	if (!desc)
 		return -1;
+
+	inode = desc->f_inode;
+	assert(inode);
+
+	if (inode->length - desc->pos < count) {
+		if (inode->i_ops && inode->i_ops->truncate) {
+			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
+			if (res)
+				retcode = -EFBIG;
+		} else
+			retcode = -EFBIG;
+	}
 
 	if (desc->f_ops && desc->f_ops->write)
 		res = desc->f_ops->write(desc, buf, count);
 	else
-		return -ENOSYS;
+		retcode = -ENOSYS;
 
 	if (res > 0)
 		desc->pos += res;
 
-	return res;
+	return retcode;
 }
 
 /**
