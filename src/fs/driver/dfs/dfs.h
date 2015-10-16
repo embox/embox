@@ -8,10 +8,13 @@
 #define _DFS_H_
 
 #include <drivers/block_dev/flash/flash_dev.h>
+#include <framework/mod/options.h>
 #include <fs/dvfs.h>
 
-#define DFS_INODES_MAX 4
-#define DFS_NAME_LEN 16
+#define DFS_INODES_MAX \
+	OPTION_MODULE_GET(embox__fs__driver__dfs, NUMBER, inode_count)
+#define DFS_NAME_LEN \
+	OPTION_MODULE_GET(embox__fs__driver__dfs, NUMBER, max_name_len)
 
 /* Non-VFS declarations */
 struct dfs_sb_info {
