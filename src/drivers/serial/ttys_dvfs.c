@@ -16,6 +16,7 @@
 
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
+#include <fs/dvfs.h>
 
 #define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
 
@@ -80,6 +81,45 @@ static int uart_setup(struct uart *uart) {
 	return 0;
 }
 POOL_DEF(cdev_serials_pool, struct device_module, 1);
+static struct device_module *cdev_uart;
+
+static int uart_fsop_open(struct inode *node, struct file *desc) {
+	return 0;
+}
+static int uart_fsop_close(struct file *desc){
+	return 0;
+}
+
+static size_t uart_fsop_read(struct file *desc, void *buf, size_t size) {
+	struct uart * uart = cdev_uart->dev;
+	int i;
+	char *b = buf;
+
+	for(i = 0; i < size; i ++) {
+		while(!uart->uart_ops->uart_hasrx(uart)) {
+		}
+		b[i] = uart->uart_ops->uart_getc(uart);
+	}
+
+	return size;
+}
+
+static size_t uart_fsop_write(struct file *desc, void *buf, size_t size) {
+	struct uart * uart = cdev_uart->dev;
+	int i;
+	char *b = buf;
+	for(i = 0; i < size; i ++) {
+		uart->uart_ops->uart_putc(uart, b[i]);
+	}
+	return 0;
+}
+
+static const struct file_operations uart_fops = {
+	.open = uart_fsop_open,
+	.close = uart_fsop_close,
+	.read = uart_fsop_read,
+	.write = uart_fsop_write
+};
 
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
@@ -89,12 +129,13 @@ int uart_register(struct uart *uart,
 	if (!cdev)
 		return -ENOMEM;
 
+	cdev_uart = cdev;
+
 	if (uart_fill_name(uart)) {
 		return -EBUSY;
 	}
 
 	dlist_head_init(&uart->lnk);
-	//uart->tty = NULL;
 
 	if (uart_defparams) {
 		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
@@ -104,9 +145,10 @@ int uart_register(struct uart *uart,
 
 	dlist_add_next(&uart->lnk, &uart_list);
 
-	//char_dev_register(uart->dev_name, NULL);
 	memset(cdev, 0, sizeof(*cdev));
 	cdev->name = uart->dev_name;
+	cdev->fops = &uart_fops;
+	cdev->dev = uart;
 
 	char_dev_register(cdev);
 
