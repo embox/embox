@@ -40,5 +40,14 @@ int main(int argc, char **argv) {
 	}
 	dir = argv[argc - 1];
 
-	return umount(dir);
+	switch(umount(dir)) {
+	case -EBUSY:
+		printf("Can't unmount %s, device is in use!\n", dir);
+		break;
+	case -ENOENT:
+		printf("%s not found!\n");
+		break;
+	}
+
+	return 0;
 }
