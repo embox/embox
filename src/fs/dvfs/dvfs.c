@@ -356,18 +356,46 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
 
 
 /**
+ * @brief Recoursive dentry freeing
+ *
+ * @param d Dentry to be freed
+ *
+ * @return Negative error code or zero if succed
+ */
+static int _dentry_destroy(struct dentry *parent) {
+	struct dentry *child;
+	int err;
+	dlist_foreach_entry(child, &parent->children, children_lnk) {
+		if ((err = _dentry_destroy(child)))
+			/* Something went wrong */
+			return err;
+	}
+
+	return dvfs_destroy_dentry(parent);
+}
+
+/**
  * @brief Perform unmount operation
  *
- * @param d Dentry of FS root
+ * @param mpoint Dentry of FS root
  *
  * @return Negative error code or zero if succeed
+ * @retval 0 Success
  * @retval -ENOBUSY Some files in FS tree are being used, can't unmount
  */
-int dvfs_umount(struct dentry *d) {
-	if (d->usage_count > 1)
-		return -EBUSY;
+int dvfs_umount(struct dentry *mpoint) {
+	int err;
+	struct super_block *sb;
 
-	return ENOERR;
+	sb = mpoint->d_sb;
+
+	mpoint->usage_count--;
+	if ((err = _dentry_destroy(mpoint)))
+		return err;
+
+	dvfs_destroy_sb(sb);
+
+	return 0;
 }
 
 static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx) {

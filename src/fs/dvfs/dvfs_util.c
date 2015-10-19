@@ -315,7 +315,6 @@ struct dentry *dvfs_root(void) {
 	return global_root;
 }
 
-
 /**
 * @brief Check if element with given name presents as a subelement
 *        of the folder in RAM.
@@ -339,4 +338,17 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
 	}
 
 	return NULL;
+}
+
+/**
+ * @brief Free superblock resources
+ *
+ * @param sb Superblock to be destroyed
+ *
+ * @return Negative error code or zero if succeed
+ */
+int dvfs_destroy_sb(struct super_block *sb) {
+	/* TODO fs-specific resource free? */
+	pool_free(&superblock_pool, sb);
+	return 0;
 }
