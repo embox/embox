@@ -4,6 +4,7 @@
  * @date   8 Apr 2014
  */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -166,7 +167,7 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 		pool_free(&dentry_pool, dentry);
 		return 0;
 	} else
-		return -1;
+		return -EBUSY;
 }
 
 /**
