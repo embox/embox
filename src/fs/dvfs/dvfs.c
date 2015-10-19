@@ -87,12 +87,12 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		flags |= DVFS_DIR_VIRTUAL;
 	}
 
+	lookup->item->flags |= flags;
+	new_inode->flags |= flags;
 	if (flags & DVFS_DIR_VIRTUAL) {
 		res = 0;
 
-		lookup->item->flags |= flags;
 		lookup->item->usage_count++;
-
 		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
 	} else {
 		res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
@@ -152,7 +152,10 @@ int dvfs_open(const char *path, struct file *desc, int mode) {
 	if (i_no == NULL || (i_no->flags & S_IFMT) == S_IFDIR) {
 		if (lookup.item)
 			dvfs_destroy_dentry(lookup.item);
-		return -ENOENT;
+		if (i_no == NULL)
+			return -ENOENT;
+		if ((i_no->flags & S_IFMT) == S_IFDIR)
+			return -EISDIR;
 	}
 
 	assert(desc->f_ops);
