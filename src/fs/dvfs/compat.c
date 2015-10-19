@@ -46,7 +46,7 @@ int umount(char *dir) {
 			if (dentry_full_path(d, mount_path)) {
 				continue;
 			}
-			if (strncmp(mount_path, dir, sizeof(mount_path))) {
+			if (!strncmp(mount_path, dir, sizeof(mount_path))) {
 				dmount = d;
 				break;
 			}
