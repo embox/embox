@@ -6,6 +6,7 @@
  * @date 2015-06-10
  */
 
+#include <errno.h>
 #include <string.h>
 
 #include <fs/dvfs.h>
@@ -34,6 +35,17 @@ int mount(char *dev, char *dir, char *fs_type) {
 	return dvfs_mount(bdev, dir, fs_type, 0);
 }
 
+
+/**
+ * @brief Unmount given mount point
+ *
+ * @param dir Path to mount point
+ *
+ * @return Negative error number of zero if succeed
+ * @retval 0 Success
+ * @retval -ENOENT Mount point not found
+ * @retval -EBUSY File system is in use
+ */
 int umount(char *dir) {
 	extern struct dlist_head dentry_dlist;
 	struct dentry *d, *dmount;
@@ -52,6 +64,9 @@ int umount(char *dir) {
 			}
 		}
 	}
+	if (!dmount)
+		return -ENOENT;
+
 	dvfs_umount(dmount);
 	return 0;
 }

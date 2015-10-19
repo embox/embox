@@ -340,7 +340,19 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
 	return 0;
 }
 
+
+/**
+ * @brief Perform unmount operation
+ *
+ * @param d Dentry of FS root
+ *
+ * @return Negative error code or zero if succeed
+ * @retval -ENOBUSY Some files in FS tree are being used, can't unmount
+ */
 int dvfs_umount(struct dentry *d) {
+	if (d->usage_count > 1)
+		return -EBUSY;
+
 	return ENOERR;
 }
 
