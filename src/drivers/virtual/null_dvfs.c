@@ -57,4 +57,4 @@ static struct idesc_ops idesc_cdev_null_ops = {
 	.write = null_write,
 };
 
-CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, &idesc_cdev_null_ops, NULL);
+CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, &idesc_cdev_null_ops);
