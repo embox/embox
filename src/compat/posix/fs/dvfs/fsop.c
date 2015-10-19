@@ -29,16 +29,23 @@ int mkdir(const char *pathname, mode_t mode) {
 		parent[strlen(parent) - 1] = '\0';
 
 	t = strrchr(parent, '/');
-	memset(t, '\0', parent + DENTRY_NAME_LEN - t);
+	if (t) {
+		memset(t, '\0', parent + DENTRY_NAME_LEN - t);
 
-	dvfs_lookup(parent, &lu);
-	if (!lu.item)
-		return SET_ERRNO(ENOENT);
+		dvfs_lookup(parent, &lu);
+		if (!lu.item)
+			return SET_ERRNO(ENOENT);
 
-	lu.parent = lu.item;
-	lu.item = NULL;
+		lu.parent = lu.item;
+		lu.item = NULL;
+	} else {
+		parent[0] = '\0';
+		dvfs_lookup(pathname, &lu);
+	}
 
-	return dvfs_create_new(pathname + strlen(parent), &lu, S_IFDIR);
+	return dvfs_create_new(pathname + strlen(parent),
+	                       &lu,
+			       S_IFDIR | (mode & DVFS_DIR_VIRTUAL));
 }
 
 int remove(const char *pathname) {
