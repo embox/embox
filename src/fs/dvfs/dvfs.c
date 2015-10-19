@@ -85,10 +85,6 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	strncpy(lookup->item->name, name, DENTRY_NAME_LEN);
 	inode_fill(sb, new_inode, lookup->item);
 
-	if (!sb->sb_iops->create) {
-		flags |= DVFS_DIR_VIRTUAL;
-	}
-
 	lookup->item->flags |= flags;
 	new_inode->flags |= flags;
 	if (flags & DVFS_DIR_VIRTUAL) {
@@ -97,11 +93,15 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		lookup->item->usage_count++;
 		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
 	} else {
-		res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
+		if (!sb->sb_iops->create)
+			res = -ENOSUPP;
+		else
+			res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
 	}
 
 	if (res) {
 		dvfs_destroy_dentry(lookup->item);
+		dvfs_destroy_inode(lookup->item->d_inode);
 	}
 
 	return res;
