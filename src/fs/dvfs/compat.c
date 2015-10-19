@@ -35,7 +35,6 @@ int mount(char *dev, char *dir, char *fs_type) {
 	return dvfs_mount(bdev, dir, fs_type, 0);
 }
 
-
 /**
  * @brief Unmount given mount point
  *
@@ -45,28 +44,19 @@ int mount(char *dev, char *dir, char *fs_type) {
  * @retval 0 Success
  * @retval -ENOENT Mount point not found
  * @retval -EBUSY File system is in use
+ * @retval -EINVAL File is not a mount point
  */
 int umount(char *dir) {
-	extern struct dlist_head dentry_dlist;
-	struct dentry *d, *dmount;
-	char mount_path[DENTRY_NAME_LEN];
+	struct lookup lu;
 
-	dmount = NULL;
-
-	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
-		if (d->flags & DVFS_MOUNT_POINT) {
-			if (dentry_full_path(d, mount_path)) {
-				continue;
-			}
-			if (!strncmp(mount_path, dir, sizeof(mount_path))) {
-				dmount = d;
-				break;
-			}
-		}
-	}
-	if (!dmount)
+	dvfs_lookup(dir, &lu);
+	if (!lu.item)
 		return -ENOENT;
 
-	dvfs_umount(dmount);
+	if (!(lu.item->flags & DVFS_MOUNT_POINT))
+		/* Not a mount point */
+		return -EINVAL;
+
+	dvfs_umount(lu.item);
 	return 0;
 }
