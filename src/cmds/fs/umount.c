@@ -45,10 +45,10 @@ int main(int argc, char **argv) {
 		printf("Can't unmount %s, device is in use.\n", dir);
 		break;
 	case -ENOENT:
-		printf("%s not found.\n");
+		printf("%s not found.\n", dir);
 		break;
 	case -EINVAL:
-		printf("%s is not a mount point.\n");
+		printf("%s is not a mount point.\n", dir);
 	}
 
 	return 0;
