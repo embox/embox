@@ -42,11 +42,13 @@ int main(int argc, char **argv) {
 
 	switch(umount(dir)) {
 	case -EBUSY:
-		printf("Can't unmount %s, device is in use!\n", dir);
+		printf("Can't unmount %s, device is in use.\n", dir);
 		break;
 	case -ENOENT:
-		printf("%s not found!\n");
+		printf("%s not found.\n");
 		break;
+	case -EINVAL:
+		printf("%s is not a mount point.\n");
 	}
 
 	return 0;
