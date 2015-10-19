@@ -15,35 +15,30 @@
 
 int mkdir(const char *pathname, mode_t mode) {
 	struct lookup lu;
-	const char *t;
-	size_t namelen;
-	const char *dirname;
-	int i;
+	char *t;
+
+	char parent[DENTRY_NAME_LEN];
 
 	dvfs_lookup(pathname, &lu);
-
-	/* TODO check lu->parent == parent that we want */
 
 	if (lu.item)
 		return SET_ERRNO(EEXIST);
 
-	/* TODO rewrite this piece of code. The problem is optional trailing slash */
-	namelen = strlen(pathname);
-	dirname = t = pathname;
-	for (i = 0; i < namelen; i++) {
-		if (pathname[i] == '/') {
-			dirname = t;
-			t = &pathname[i];
-		}
-	}
+	strncpy(parent, pathname, sizeof(parent));
+	if (parent[strlen(parent) - 1] == '/')
+		parent[strlen(parent) - 1] = '\0';
 
-	if (pathname[namelen - 1] != '/')
-		dirname = t;
+	t = strrchr(parent, '/');
+	memset(t, '\0', parent + DENTRY_NAME_LEN - t);
 
-	if (dirname[0] == '/')
-		dirname++;
+	dvfs_lookup(parent, &lu);
+	if (!lu.item)
+		return SET_ERRNO(ENOENT);
 
-	return dvfs_create_new(dirname, &lu, S_IFDIR);
+	lu.parent = lu.item;
+	lu.item = NULL;
+
+	return dvfs_create_new(pathname + strlen(parent), &lu, S_IFDIR);
 }
 
 int remove(const char *pathname) {
