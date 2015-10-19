@@ -17,7 +17,6 @@ module task_breaking_disable extends task_breaking {
 
 module tty {
 	source "tty.c"
-	source "tty_file_ops.c"
 	option number io_buff_sz = 128
 	option number rx_buff_sz = 100
 
