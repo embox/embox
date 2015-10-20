@@ -90,7 +90,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	if (flags & DVFS_DIR_VIRTUAL) {
 		res = 0;
 
-		lookup->item->usage_count++;
+		dentry_ref_inc(lookup->item);
 		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
 	} else {
 		if (!sb->sb_iops->create)
@@ -144,8 +144,10 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 
 	assert(desc->f_ops);
 	if (desc->f_ops->open) {
+		dentry_ref_inc(lookup->item);
 		res = desc->f_ops->open(i_no, &desc->f_idesc);
 		if (err(res)) {
+			dentry_ref_dec(lookup->item);
 			return res;
 		}
 	}
@@ -198,10 +200,8 @@ int dvfs_close(struct file *desc) {
 	if (!desc || !desc->f_inode || !desc->f_dentry)
 		return -1;
 
-	desc->f_dentry->usage_count--;
-	if (!desc->f_dentry->usage_count) {
+	if (!dentry_ref_dec(desc->f_dentry))
 		dvfs_destroy_dentry(desc->f_dentry);
-	}
 
 	dvfs_destroy_file(desc);
 	return 0;
@@ -322,7 +322,7 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
 		d->flags |= S_IFDIR | DVFS_MOUNT_POINT;
 		d->d_sb  = sb,
 		d->d_ops = sb ? sb->sb_dops : NULL,
-		d->usage_count++;
+		dentry_ref_inc(d);
 		sb->root = d;
 
 		d->d_inode = dvfs_alloc_inode(sb);
@@ -348,16 +348,16 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
  *
  * @return Negative error code or zero if succed
  */
-static int _dentry_destroy(struct dentry *parent) {
+static int _dentry_destroy(struct dentry *parent, int destroy_self) {
 	struct dentry *child;
 	int err;
 	dlist_foreach_entry(child, &parent->children, children_lnk) {
-		if ((err = _dentry_destroy(child)))
+		if ((err = _dentry_destroy(child, 1)))
 			/* Something went wrong */
 			return err;
 	}
 
-	return dvfs_destroy_dentry(parent);
+	return destroy_self ? dvfs_destroy_dentry(parent) : 0;
 }
 
 /**
@@ -375,13 +375,17 @@ int dvfs_umount(struct dentry *mpoint) {
 
 	sb = mpoint->d_sb;
 
-	mpoint->usage_count--;
-	if ((err = _dentry_destroy(mpoint)))
+	if (!(mpoint->flags & DVFS_DIR_VIRTUAL)) {
+		dentry_ref_dec(mpoint);
+		err = _dentry_destroy(mpoint, 1);
+	} else
+		/* Virtual directories should not be freed */
+		err = _dentry_destroy(mpoint, 0);
+
+	if (err)
 		return err;
 
-	dvfs_destroy_sb(sb);
-
-	return 0;
+	return dvfs_destroy_sb(sb);
 }
 
 static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx) {
