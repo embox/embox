@@ -338,6 +338,9 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
  */
 int dvfs_destroy_sb(struct super_block *sb) {
 	/* TODO fs-specific resource free? */
+	if (sb->root)
+		sb->root->d_sb = NULL;
+
 	pool_free(&superblock_pool, sb);
 	return 0;
 }

@@ -89,7 +89,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	new_inode->flags |= flags;
 	if (flags & DVFS_DIR_VIRTUAL) {
 		res = 0;
-
+		lookup->item->d_sb = NULL;
 		dentry_ref_inc(lookup->item);
 		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
 	} else {
@@ -453,6 +453,14 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	assert(ctx);
 	assert(lookup);
 	assert(lookup->parent);
+
+	if (lookup->parent->flags & DVFS_DIR_VIRTUAL &&
+			!lookup->parent->d_sb) {
+		/* Clean virtual dir, no files */
+		lookup->item = NULL;
+		return 0;
+	}
+
 	assert(lookup->parent->d_sb);
 	assert(lookup->parent->d_inode);
 
