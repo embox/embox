@@ -245,7 +245,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 
 	fsi = parent->i_sb->sb_data;
 	dirinfo = parent->i_data;
-	dirinfo->currententry = 0;
+	dirinfo->currententry = (int) ctx->fs_ctx;
 	read_dir_buf(fsi, dirinfo);
 
 	while (((res = fat_get_next(fsi, dirinfo, &de)) ==  DFS_OK) || res == DFS_ALLOCNEW)
@@ -257,6 +257,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	switch (res) {
 	case DFS_OK:
 		fat_fill_inode(next, &de, dirinfo);
+		ctx->fs_ctx = (void*) ((int)dirinfo->currententry);
 		return 0;
 	case DFS_EOF:
 		/* Fall through */
@@ -301,7 +302,7 @@ static int fat_pathname(struct inode *inode, char *buf, int flags) {
 
 		if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector))
 			return -1;
-		strcpy(buf, (char*) ((struct dirent*) fat_sector_buff)[fi->diroffset].name);
+		strncpy(buf, (char*) ((struct dirent*) fat_sector_buff)[fi->diroffset].name, 11);
 		return 0;
 	default:
 		/* NIY */
