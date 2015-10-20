@@ -1631,9 +1631,23 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	return DFS_OK;
 }
 
-POOL_DEF(fat_fs_pool, struct fat_fs_info, 4);
-POOL_DEF(fat_file_pool, struct fat_file_info, 16);
-POOL_DEF(fat_dirinfo_pool, struct dirinfo, 16);
+#include <framework/mod/options.h>
+
+POOL_DEF(fat_fs_pool,
+         struct fat_fs_info,
+	 OPTION_GET(NUMBER, fat_descriptor_quantity));
+
+POOL_DEF(fat_file_pool,
+         struct fat_file_info,
+         OPTION_GET(NUMBER, inode_quantity));
+
+POOL_DEF(fat_dirinfo_pool,
+         struct dirinfo,
+         OPTION_GET(NUMBER, inode_quantity));
+
+POOL_DEF(fat_dirent_pool,
+         struct dirent,
+         OPTION_GET(NUMBER, inode_quantity));
 
 struct fat_fs_info *fat_fs_alloc(void) {
 	return pool_alloc(&fat_fs_pool);
@@ -1658,4 +1672,3 @@ struct dirinfo *fat_dirinfo_alloc(void) {
 void fat_dirinfo_free(struct dirinfo *di) {
 	pool_free(&fat_dirinfo_pool, di);
 }
-
