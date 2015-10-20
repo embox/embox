@@ -160,7 +160,7 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 	if (dentry->usage_count == 0) {
 		if (dentry->d_inode)
 			dvfs_destroy_inode(dentry->d_inode);
-		dentry->parent->usage_count--;
+		dentry_ref_dec(dentry->parent);
 		dlist_del(&dentry->children_lnk);
 		dlist_del(&dentry->d_lnk);
 		dvfs_cache_del(dentry);
@@ -236,29 +236,17 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 
 	if (parent) {
 		dlist_add_prev(&dentry->children_lnk, &parent->children);
-		parent->usage_count++;
+		dentry_ref_inc(parent);
 	}
 	return 0;
 }
+
 int dentry_ref_inc(struct dentry *dentry) {
-	dentry->usage_count ++;
-
-	if (dentry->d_sb->root != dentry) {
-		dentry->d_sb->root->usage_count ++;
-	}
-
-	return dentry->usage_count;
+	return ++dentry->usage_count;
 }
 
 int dentry_ref_dec(struct dentry *dentry) {
-	dentry->usage_count --;
-
-	if (dentry->d_sb->root != dentry) {
-		dentry->d_sb->root->usage_count --;
-	}
-
-	return dentry->usage_count;
-
+	return --dentry->usage_count;
 }
 
 /* Root-related stuff */
