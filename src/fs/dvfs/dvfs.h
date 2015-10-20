@@ -34,6 +34,7 @@ struct dumb_fs_driver;
 struct file;
 struct inode;
 struct super_block;
+struct lookup;
 
 struct super_block {
 	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
@@ -55,6 +56,7 @@ struct super_block_operations {
 	int           (*destroy_inode)(struct inode *inode);
 	int           (*write_inode)(struct inode *inode);
 	int           (*umount_begin)(struct super_block *sb);
+	struct idesc *(*open_idesc)(struct lookup *l);
 };
 
 struct inode {
@@ -115,7 +117,7 @@ struct file {
 };
 
 struct file_operations {
-	int    (*open)(struct inode *node, struct file *desc);
+	int    (*open)(struct inode *node, struct idesc *desc);
 	int    (*close)(struct file *desc);
 	size_t (*read)(struct file *desc, void *buf, size_t size);
 	size_t (*write)(struct file *desc, void *buf, size_t size);
@@ -172,7 +174,7 @@ struct lookup {
 extern struct dentry *dvfs_root(void);
 extern int dvfs_lookup(const char *path, struct lookup *lookup);
 extern int dvfs_remove(const char *path);
-extern int dvfs_open(const char *path, struct file *desc, int mode);
+struct idesc *dvfs_file_open_idesc(struct lookup *lookup);
 extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);

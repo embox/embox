@@ -19,10 +19,6 @@ static struct file_operations null_ops;
 
 CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, null_init);
 
-static int null_open(struct inode *node, struct file *file_desc) {
-	return 0;
-}
-
 static int null_close(struct file *desc) {
 	return 0;
 }
@@ -32,7 +28,6 @@ static size_t null_write(struct file *desc, void *buf, size_t size) {
 }
 
 static struct file_operations null_ops = {
-		.open = null_open,
 		.close = null_close,
 		.write = null_write
 };

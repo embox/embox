@@ -189,14 +189,6 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return res;
 }
 
-static int fat_open(struct inode *node, struct file *desc) {
-	desc->f_inode = node;
-	desc->f_ops   = &fat_fops;
-	desc->pos     = 0;
-
-	return 0;
-}
-
 static int fat_close(struct file *desc) {
 	return 0;
 }
@@ -237,7 +229,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 
 	fsi = parent->i_sb->sb_data;
 	dirinfo = parent->i_data;
-	if (ctx->pos == 0)
+	//if (ctx->pos == 0)
 		dirinfo->currententry = 0;
 	read_dir_buf(fsi, dirinfo);
 
@@ -253,7 +245,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 		next->flags |= S_IRWXA;
 		return 0;
 	case DFS_EOF:
-		ctx->fs_ctx = 0;
+		//ctx->fs_ctx = 0;
 		/* Fall through */
 	default:
 		return -1;
@@ -288,10 +280,13 @@ struct inode_operations fat_iops = {
 };
 
 struct file_operations fat_fops = {
-	.open = fat_open,
 	.close = fat_close,
 	.write = fat_write,
 	.read = fat_read,
+};
+
+struct super_block_operations fat_sbops = {
+	.open_idesc = dvfs_file_open_idesc,
 };
 
 /* @brief Initializing fat super_block
@@ -314,6 +309,7 @@ static int fat_fill_sb(struct super_block *sb, struct block_dev *dev) {
 	sb->sb_data = fsi;
 	sb->sb_iops = &fat_iops;
 	sb->sb_fops = &fat_fops;
+	sb->sb_ops  = &fat_sbops;
 
 	pstart = fat_get_ptn_start(dev, 0, &pactive, &ptype, &psize);
 	if (pstart == 0xffffffff) {

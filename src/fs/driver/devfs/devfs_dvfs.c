@@ -12,9 +12,11 @@
  * so all operations are threated just like you use /dev directory,
  * or whereever did you mount devfs. Future release should fix it, probably
  */
-
+#include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#include <util/err.h>
 
 #include <drivers/char_dev.h>
 #include <framework/mod/options.h>
@@ -133,7 +135,7 @@ static int devfs_mount_end(struct super_block *sb) {
 	return 0;
 }
 
-static int devfs_open(struct inode *node, struct file *file) {
+static int devfs_open(struct inode *node, struct idesc *file) {
 	return 0;
 }
 
@@ -198,7 +200,13 @@ static int devfs_ioctl(struct file *desc, int request, void *data) {
 	return 0;
 }
 
+static struct idesc *dvfs_open_idesc(struct lookup *l) {
+	assert(0);
+	return err_ptr(ENOSYS);
+}
+
 struct super_block_operations devfs_sbops = {
+	.open_idesc = dvfs_open_idesc,
 	.destroy_inode = devfs_destroy_inode,
 };
 

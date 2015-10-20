@@ -20,10 +20,6 @@ static struct file_operations zero_ops;
 
 CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_ops, zero_init);
 
-static int zero_open(struct inode *node, struct file *file_desc) {
-	return 0;
-}
-
 static int zero_close(struct file *desc) {
 	return 0;
 }
@@ -38,7 +34,6 @@ static size_t zero_write(struct file *desc, void *buf, size_t size) {
 }
 
 static struct file_operations zero_ops = {
-		.open = zero_open,
 		.close = zero_close,
 		.read = zero_read,
 		.write = zero_write

@@ -46,10 +46,6 @@ struct initfs_dir_info {
 
 POOL_DEF(initfs_dir_pool, struct initfs_dir_info, OPTION_GET(NUMBER,dir_quantity));
 
-static int initfs_open(struct inode *node, struct file *file) {
-	return 0;
-}
-
 static size_t initfs_read(struct file *desc, void *buf, size_t size) {
 	struct inode *inode;
 
@@ -216,6 +212,7 @@ static int initfs_destroy_inode(struct inode *inode) {
 }
 
 struct super_block_operations initfs_sbops = {
+	.open_idesc = dvfs_file_open_idesc,
 	.destroy_inode = initfs_destroy_inode,
 };
 
@@ -226,7 +223,6 @@ struct inode_operations initfs_iops = {
 };
 
 struct file_operations initfs_fops = {
-	.open  = initfs_open,
 	.read  = initfs_read,
 	.ioctl = initfs_ioctl,
 };

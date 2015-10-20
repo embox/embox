@@ -287,6 +287,7 @@ int ino_from_path(const char *path) {
 extern struct inode_operations dfs_iops;
 
 struct super_block_operations dfs_sbops = {
+	.open_idesc = dvfs_file_open_idesc,
 	.alloc_inode   = NULL,
 	.destroy_inode = NULL,
 	.write_inode   = NULL,
