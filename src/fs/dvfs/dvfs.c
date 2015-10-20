@@ -348,7 +348,7 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
  *
  * @return Negative error code or zero if succed
  */
-static int _dentry_destroy(struct dentry *parent, int destroy_self) {
+static int _dentry_destroy(struct dentry *parent, int self_destroy) {
 	struct dentry *child;
 	int err;
 	dlist_foreach_entry(child, &parent->children, children_lnk) {
@@ -357,7 +357,7 @@ static int _dentry_destroy(struct dentry *parent, int destroy_self) {
 			return err;
 	}
 
-	return destroy_self ? dvfs_destroy_dentry(parent) : 0;
+	return self_destroy ? dvfs_destroy_dentry(parent) : 0;
 }
 
 /**
@@ -375,14 +375,10 @@ int dvfs_umount(struct dentry *mpoint) {
 
 	sb = mpoint->d_sb;
 
-	if (!(mpoint->flags & DVFS_DIR_VIRTUAL)) {
-		dentry_ref_dec(mpoint);
-		err = _dentry_destroy(mpoint, 1);
-	} else
-		/* Virtual directories should not be freed */
-		err = _dentry_destroy(mpoint, 0);
+	dentry_ref_dec(mpoint);
 
-	if (err)
+	if ((err = _dentry_destroy(mpoint,
+	                           !(mpoint->flags & DVFS_DIR_VIRTUAL))))
 		return err;
 
 	return dvfs_destroy_sb(sb);
