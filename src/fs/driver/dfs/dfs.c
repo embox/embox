@@ -184,6 +184,8 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 int dfs_format(void) {
 	struct dfs_sb_info *sbi = dfs_sb()->sb_data;
 	struct dfs_dir_entry root;
+	char buf[NAND_PAGE_SIZE];
+	int i;
 
 	if (!dfs_flashdev) {
 		return -ENOENT;
@@ -207,8 +209,15 @@ int dfs_format(void) {
 	root.flags     = S_IFDIR;
 	sbi->free_space += MIN_FILE_SZ;
 	dfs_write_dirent(0, &root);
+	memset(buf, 0xff, sizeof(buf));
+	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++)
+		dfs_write_raw(root.pos_start + i * sizeof(buf),
+		              buf,
+		              sizeof(buf));
+
 
 	dfs_write_raw(0, sbi, sizeof(struct dfs_sb_info));
+
 	return 0;
 }
 
@@ -581,8 +590,6 @@ static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 static int dfs_mount_end(struct super_block *sb) {
 	struct inode *inode;
 	struct dfs_sb_info *sbi;
-	char buf[NAND_PAGE_SIZE];
-	int i;
 
 	sbi = sb->sb_data;
 	inode = sb->root->d_inode;
@@ -594,12 +601,6 @@ static int dfs_mount_end(struct super_block *sb) {
 	inode->length    = MIN_FILE_SZ;
 	inode->start_pos = _capacity(sizeof(struct dfs_sb_info)) +
 		sbi->max_inode_count * _capacity(sizeof(struct dfs_dir_entry));
-
-	memset(buf, 0xff, sizeof(buf));
-	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++)
-		dfs_write_raw(inode->start_pos + i * sizeof(buf),
-		              buf,
-		              sizeof(buf));
 	return 0;
 }
 
