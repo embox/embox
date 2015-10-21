@@ -925,6 +925,7 @@ int fat_root_dir_record(void *bdev) {
 	uint8_t pactive, ptype;
 	struct dirent de;
 	int dev_blk_size = ((struct block_dev*) bdev)->driver->ioctl(bdev, IOCTL_GETBLKSIZE, 0, 0);
+	int root_dir_sz;
 
 	assert(dev_blk_size > 0);
 
@@ -961,15 +962,30 @@ int fat_root_dir_record(void *bdev) {
 
 	/* we clear other FAT TABLE */
 	memset(fat_sector_buff, 0, sizeof(fat_sector_buff));
-
 	memcpy(&(((struct dirent*) fat_sector_buff)[0]), &de, sizeof(struct dirent));
 
 	if (0 > block_dev_write(	bdev,
 					(char *) fat_sector_buff,
-					sizeof(struct dirent),
+					fsi.vi.bytepersec,
 					fsi.vi.rootdir * fsi.vi.bytepersec / dev_blk_size)) {
 		return DFS_ERRMISC;
 	}
+
+	root_dir_sz = (fsi.vi.rootentries * sizeof(struct dirent) +
+	               fsi.vi.bytepersec - 1) / fsi.vi.bytepersec - 1;
+
+	if (root_dir_sz)
+		memset(fat_sector_buff, 0, sizeof(struct dirent)); /* The rest is zeroes already */
+	/* Clear the rest of root directory */
+	while (root_dir_sz) {
+		block_dev_write(bdev,
+				(char *) fat_sector_buff,
+				fsi.vi.bytepersec,
+				(root_dir_sz + fsi.vi.rootdir) * fsi.vi.bytepersec / dev_blk_size);
+		root_dir_sz--;
+	}
+
+
 	/* Mark newly allocated cluster as end of chain */
 	switch (fsi.vi.filesystem) {
 		case FAT12:		cluster = 0xfff;	break;
