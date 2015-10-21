@@ -633,13 +633,12 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 	dirinfo->currententry = 0;
 
 	if (dir_is_root(dirname)) {
+		dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
 		if (volinfo->filesystem == FAT32) {
-			dirinfo->currentcluster = volinfo->rootdir;
 			return fat_read_sector(fsi, dirinfo->p_scratch,
 					volinfo->dataarea +	((volinfo->rootdir - 2)
 							* volinfo->secperclus));
 		} else {
-			dirinfo->currentcluster = volinfo->rootdir;
 			return fat_read_sector(fsi, dirinfo->p_scratch,
 					volinfo->rootdir);
 		}
@@ -650,7 +649,7 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 		struct dirent de;
 
 		if (volinfo->filesystem == FAT32) {
-			dirinfo->currentcluster = volinfo->rootdir;
+			dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
 			if (fat_read_sector(fsi, dirinfo->p_scratch, volinfo->dataarea +
 					((volinfo->rootdir - 2) * volinfo->secperclus))) {
 				return DFS_ERRMISC;
@@ -688,64 +687,64 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 					  ((uint32_t) de.startclus_h_h) << 24;
 				}
 				else {
-					dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
-					  ((uint32_t) de.startclus_l_h) << 8;
-				}
-				dirinfo->currentsector = 0;
-				dirinfo->currententry = 0;
+						dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
+						  ((uint32_t) de.startclus_l_h) << 8;
+					}
+					dirinfo->currentsector = 0;
+					dirinfo->currententry = 0;
 
-				if (fat_read_sector(fsi, dirinfo->p_scratch, volinfo->dataarea +
-						((dirinfo->currentcluster - 2) *
-								volinfo->secperclus))) {
-					return DFS_ERRMISC;
+					if (fat_read_sector(fsi, dirinfo->p_scratch, volinfo->dataarea +
+							((dirinfo->currentcluster - 2) *
+									volinfo->secperclus))) {
+						return DFS_ERRMISC;
+					}
+				} else if (!memcmp(de.name, tmpfn, MSDOS_NAME) && !(de.attr & ATTR_DIRECTORY)) {
+					return DFS_WRONGRES;
 				}
-			} else if (!memcmp(de.name, tmpfn, MSDOS_NAME) && !(de.attr & ATTR_DIRECTORY)) {
-				return DFS_WRONGRES;
+
+				while (*ptr != DIR_SEPARATOR && *ptr) {
+					ptr++;
+				}
+				if (*ptr == DIR_SEPARATOR) {
+					ptr++;
+				}
 			}
 
-			while (*ptr != DIR_SEPARATOR && *ptr) {
-				ptr++;
-			}
-			if (*ptr == DIR_SEPARATOR) {
-				ptr++;
+			if (!dirinfo->currentcluster) {
+				return DFS_NOTFOUND;
 			}
 		}
-
-		if (!dirinfo->currentcluster) {
-			return DFS_NOTFOUND;
-		}
+		return DFS_OK;
 	}
-	return DFS_OK;
-}
 
-/*
- * Get next entry in opened directory structure.
- * Copies fields into the dirent structure, updates dirinfo. Note that it is
- * the _caller's_ responsibility to	handle the '.' and '..' entries.
- * A deleted file will be returned as a NULL entry (first char of filename=0)
- * by this code. Filenames beginning with 0x05 will be translated to 0xE5
- * automatically. Long file name entries will be returned as NULL.
- * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
- * or DFS_ERRMISC for a media error
- */
-uint32_t fat_get_next(struct fat_fs_info *fsi,
-		struct dirinfo *dirinfo, struct dirent *dirent) {
-	struct volinfo *volinfo;
-	uint32_t tempint;
-	volinfo = &fsi->vi;
+	/*
+	 * Get next entry in opened directory structure.
+	 * Copies fields into the dirent structure, updates dirinfo. Note that it is
+	 * the _caller's_ responsibility to	handle the '.' and '..' entries.
+	 * A deleted file will be returned as a NULL entry (first char of filename=0)
+	 * by this code. Filenames beginning with 0x05 will be translated to 0xE5
+	 * automatically. Long file name entries will be returned as NULL.
+	 * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
+	 * or DFS_ERRMISC for a media error
+	 */
+	uint32_t fat_get_next(struct fat_fs_info *fsi,
+			struct dirinfo *dirinfo, struct dirent *dirent) {
+		struct volinfo *volinfo;
+		uint32_t tempint;
+		volinfo = &fsi->vi;
 
-	/* Do we need to read the next sector of the directory? */
-	if (dirinfo->currententry >= volinfo->bytepersec / sizeof(struct dirent)) {
-		dirinfo->currententry = 0;
-		dirinfo->currentsector++;
+		/* Do we need to read the next sector of the directory? */
+		if (dirinfo->currententry >= volinfo->bytepersec / sizeof(struct dirent)) {
+			dirinfo->currententry = 0;
+			dirinfo->currentsector++;
 
-		/* Root directory; special case handling
-		 * Note that currentcluster will only ever be zero if both:
-		 * (a) this is the root directory, and
-		 * (b) we are on a FAT12/16 volume, where the root dir can't be
-		 * expanded
-		 */
-		if (dirinfo->currentcluster == 0) {
+			/* Root directory; special case handling
+			 * Note that currentcluster will only ever be zero if both:
+			 * (a) this is the root directory, and
+			 * (b) we are on a FAT12/16 volume, where the root dir can't be
+			 * expanded
+			 */
+			if (dirinfo->currentcluster == 0) {
 			/* Trying to read past end of root directory? */
 			if (dirinfo->currentsector * (volinfo->bytepersec / sizeof(struct dirent)) >=
 					volinfo->rootentries) {
