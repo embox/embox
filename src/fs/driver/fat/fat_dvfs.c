@@ -310,6 +310,11 @@ static int fat_pathname(struct inode *inode, char *buf, int flags) {
 	}
 }
 
+static int fat_truncate(struct inode *inode, size_t len) {
+	/* This is a stub, but files should be extended automatically
+	 * with the common part of the driver on write */
+	return 0;
+}
 
 /* Declaration of operations */
 struct inode_operations fat_iops = {
@@ -318,6 +323,7 @@ struct inode_operations fat_iops = {
 	.remove   = fat_remove,
 	.iterate  = fat_iterate,
 	.pathname = fat_pathname,
+	.truncate = fat_truncate,
 };
 
 struct file_operations fat_fops = {
