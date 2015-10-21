@@ -23,7 +23,8 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 		return SET_ERRNO(EBADF);
 	}
 
-	assert(idesc->idesc_ops != NULL);
+	assert(idesc->idesc_ops);
+	assert(idesc->idesc_ops->read);
 	ret = idesc->idesc_ops->read(idesc, buf, nbyte);
 	if (ret < 0) {
 		return SET_ERRNO(-ret);

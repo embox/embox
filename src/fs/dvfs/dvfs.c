@@ -11,6 +11,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include <util/err.h>
+
 #include <drivers/block_dev.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
@@ -117,53 +119,37 @@ extern const struct idesc_ops idesc_file_ops;
  * @retval -ENOENT File is directory or file not found and
  *                 creating is not requested
  */
-int dvfs_open(const char *path, struct file *desc, int mode) {
-	struct lookup lookup;
+struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
+	struct file *desc;
+	struct idesc *res;
 	struct inode  *i_no;
 
-	dvfs_lookup(path, &lookup);
+	assert(lookup);
 
-	assert(desc);
+	desc = dvfs_alloc_file();
+	if (desc == NULL)
+		return err_ptr(ENOMEM);
 
-	if (!lookup.item) {
-		if (mode & O_CREAT) {
-			char *last_name = strrchr(path, '/');
-			if (dvfs_create_new(last_name ? last_name + 1 : path, &lookup, mode))
-				return -ENOSPC;
-		} else {
-			desc->f_inode = NULL;
-			desc->f_dentry = NULL;
-			return -ENOENT;
-		}
-	}
-
-	i_no = lookup.item->d_inode;
+	i_no = lookup->item->d_inode;
 
 	*desc = (struct file) {
-		.f_dentry = lookup.item,
+		.f_dentry = lookup->item,
 		.f_inode  = i_no,
-		.f_ops    = lookup.item->d_sb->sb_fops,
+		.f_ops    = lookup->item->d_sb->sb_fops,
 		.f_idesc  = {
 			.idesc_amode = FS_MAY_READ | FS_MAY_WRITE,
 			.idesc_ops   = &idesc_file_ops,
 		},
 	};
 
-	if (i_no == NULL || (i_no->flags & S_IFMT) == S_IFDIR) {
-		if (lookup.item)
-			dvfs_destroy_dentry(lookup.item);
-		if (i_no == NULL)
-			return -ENOENT;
-		if ((i_no->flags & S_IFMT) == S_IFDIR)
-			return -EISDIR;
-	}
-
 	assert(desc->f_ops);
-	assert(desc->f_ops->open);
-
-	lookup.item->usage_count++;
-
-	return desc->f_ops->open(i_no, desc);
+	if (desc->f_ops->open) {
+		res = desc->f_ops->open(i_no, &desc->f_idesc);
+		if (err(res)) {
+			return res;
+		}
+	}
+	return &desc->f_idesc;
 }
 
 /**
