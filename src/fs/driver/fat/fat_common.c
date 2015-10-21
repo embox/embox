@@ -959,12 +959,6 @@ int fat_root_dir_record(void *bdev) {
 	 * entry, tragically, so we have to re-read it
 	 */
 
-	if (0 > block_dev_read(	bdev,
-				(char *) fat_sector_buff,
-				sizeof(struct dirent),
-				fsi.vi.rootdir * fsi.vi.bytepersec / dev_blk_size)) {
-		return DFS_ERRMISC;
-	}
 	/* we clear other FAT TABLE */
 	memset(fat_sector_buff, 0, sizeof(fat_sector_buff));
 
