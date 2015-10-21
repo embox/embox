@@ -31,19 +31,15 @@ include $(__include_initfs)
 include $(__include)
 
 initfs_cp_prerequisites = $(src_file) $(common_prereqs)
-$(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
-	@mkdir -p $(@D)
-	@touch $@
 
-cp_T_if_supported := $(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
-$(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
+cp_T_if_supported := \
+	$(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
+
+$(ROOTFS_DIR)/% :
 	$(CP) -r $(cp_T_if_supported) $(src_file) $@$(if \
 		$(and $(chmod),$(findstring $(chmod),'')),,;chmod $(chmod) $@)
 	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
-
-$(ROOTFS_DIR)/. :
-	@$(MKDIR) $(@D)
 
 fmt_line = $(addprefix \$(\n)$(\t)$(\t),$1)
 
@@ -51,8 +47,8 @@ initfs_prerequisites = $(cpio_files) \
 	$(wildcard $(USER_ROOTFS_DIR) $(USER_ROOTFS_DIR)/*) $(common_prereqs)
 $(ROOTFS_IMAGE) : rel_cpio_files = \
 		$(patsubst $(abspath $(ROOTFS_DIR))/%,%,$(abspath $(cpio_files)))
-$(ROOTFS_IMAGE) : | $(ROOTFS_DIR)/.
 $(ROOTFS_IMAGE) :
+	@mkdir -p $(ROOTFS_DIR)
 	cd $(ROOTFS_DIR) \
 		&& find $(rel_cpio_files) -depth -print | $(CPIO) -L --quiet -H newc -o -O $(abspath $@)
 	if [ -d $(USER_ROOTFS_DIR) ]; \
