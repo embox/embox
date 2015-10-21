@@ -407,7 +407,7 @@ static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx
 	return NULL;
 }
 
-static struct dentry *iterate_cached(struct super_block *sb,
+static int iterate_cached(struct super_block *sb,
 		struct lookup *lookup, struct inode *next_inode) {
 	char full_path[DENTRY_NAME_LEN];
 	struct dentry *cached;
@@ -416,7 +416,7 @@ static struct dentry *iterate_cached(struct super_block *sb,
 	next_dentry = dvfs_alloc_dentry();
 	if (!next_dentry) {
 		dvfs_destroy_inode(next_inode);
-		return NULL;
+		return -ENOMEM;
 	}
 	dentry_fill(sb, next_inode, next_dentry, lookup->parent);
 	inode_fill(sb, next_inode, next_dentry);
@@ -425,6 +425,8 @@ static struct dentry *iterate_cached(struct super_block *sb,
 	dentry_full_path(lookup->parent, full_path);
 	dvfs_pathname(next_inode, full_path + strlen(full_path), 0);
 
+	lookup->item = next_dentry;
+
 	if ((cached = dvfs_cache_get(full_path, lookup))) {
 		dvfs_destroy_dentry(next_dentry);
 		next_dentry = cached;
@@ -432,8 +434,7 @@ static struct dentry *iterate_cached(struct super_block *sb,
 		dvfs_pathname(next_inode, next_dentry->name, 0);
 		dvfs_cache_add(next_dentry);
 	}
-
-	return next_dentry;
+	return 0;
 }
 
 /**
@@ -495,7 +496,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		return 0;
 	}
 	/* caching found inode */
-	lookup->item = iterate_cached(sb, lookup, next_inode);
+	iterate_cached(sb, lookup, next_inode);
 	if (NULL == lookup->item) {
 		return -ENOMEM;
 	}
