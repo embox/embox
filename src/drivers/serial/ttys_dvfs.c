@@ -83,7 +83,7 @@ static int uart_setup(struct uart *uart) {
 POOL_DEF(cdev_serials_pool, struct device_module, 1);
 static struct device_module *cdev_uart;
 
-static int uart_fsop_open(struct inode *node, struct file *desc) {
+static struct idesc *uart_fsop_open(struct inode *node, struct idesc *desc) {
 	return 0;
 }
 static int uart_fsop_close(struct file *desc){
@@ -114,7 +114,7 @@ static size_t uart_fsop_write(struct file *desc, void *buf, size_t size) {
 	return 0;
 }
 
-static const struct file_operations uart_fops = {
+static struct file_operations uart_fops = {
 	.open = uart_fsop_open,
 	.close = uart_fsop_close,
 	.read = uart_fsop_read,
