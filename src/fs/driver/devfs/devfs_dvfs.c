@@ -128,6 +128,8 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 		}
 	}
 
+	dvfs_destroy_inode(node);
+
 	return NULL;
 }
 
@@ -135,8 +137,16 @@ static int devfs_mount_end(struct super_block *sb) {
 	return 0;
 }
 
-static int devfs_open(struct inode *node, struct idesc *file) {
-	return 0;
+static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
+	struct device_module *cdev;
+
+	assert(node->i_data);
+
+	cdev = node->i_data;
+	assert(cdev->fops);
+	assert(cdev->fops->open);
+
+	return cdev->fops->open(node, desc);
 }
 
 static size_t devfs_read(struct file *desc, void *buf, size_t size) {
@@ -201,8 +211,7 @@ static int devfs_ioctl(struct file *desc, int request, void *data) {
 }
 
 static struct idesc *dvfs_open_idesc(struct lookup *l) {
-	assert(0);
-	return err_ptr(ENOSYS);
+	return devfs_open(l->item->d_inode, NULL);
 }
 
 struct super_block_operations devfs_sbops = {

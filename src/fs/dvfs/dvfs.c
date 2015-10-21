@@ -121,7 +121,7 @@ extern const struct idesc_ops idesc_file_ops;
  */
 struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 	struct file *desc;
-	int res;
+	struct idesc *res;
 	struct inode  *i_no;
 
 	assert(lookup);
@@ -145,8 +145,8 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 	assert(desc->f_ops);
 	if (desc->f_ops->open) {
 		res = desc->f_ops->open(i_no, &desc->f_idesc);
-		if (res) {
-			err_ptr(-res);
+		if (err(res)) {
+			return res;
 		}
 	}
 	return &desc->f_idesc;

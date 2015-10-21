@@ -117,7 +117,7 @@ struct file {
 };
 
 struct file_operations {
-	int    (*open)(struct inode *node, struct idesc *desc);
+	struct idesc *(*open)(struct inode *node, struct idesc *desc);
 	int    (*close)(struct file *desc);
 	size_t (*read)(struct file *desc, void *buf, size_t size);
 	size_t (*write)(struct file *desc, void *buf, size_t size);
