@@ -944,7 +944,7 @@ int fat_root_dir_record(void *bdev) {
 	cluster = fat_get_free_fat_(&fsi, fat_sector_buff);
 
 	de = (struct dirent) {
-		.name = ".          ",
+		.name = "ROOT DIR   ",
 		.attr = ATTR_DIRECTORY,
 		.startclus_l_l = cluster & 0xff,
 		.startclus_l_h = (cluster & 0xff00) >> 8,

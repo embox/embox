@@ -70,7 +70,8 @@ static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo
 		.volinfo = vi,
 	};
 
-	if (di->currentcluster == 0)
+	if (di->currentcluster < 2)
+		/* This file is in root directory */
 		fi->dirsector = vi->rootdir + di->currentsector;
 	else
 		fi->dirsector = vi->dataarea +
@@ -381,21 +382,18 @@ static int fat_fill_sb(struct super_block *sb, struct block_dev *dev) {
 */
 static int fat_mount_end(struct super_block *sb) {
 	struct dirinfo *di;
-	struct volinfo *vi;
-
+	uint8_t tmp[] = { 'R', 'O', 'O', 'T', ' ', 'D',
+	                  'I', 'R', ' ', ' ', ' '};
 	assert(sb->bdev->block_size <= FAT_MAX_SECTOR_SIZE);
 
 	if (NULL == (di = fat_dirinfo_alloc()))
 		return -ENOMEM;
 
-	vi = &((struct fat_fs_info*)sb->sb_data)->vi;
+	if (fat_open_dir(sb->sb_data, tmp, di))
+		return -1;
 
-	*di = (struct dirinfo) {
-		.p_scratch = fat_sector_buff,
-	};
-
-	di->currentcluster = vi->filesystem == FAT32 ? vi->rootdir : 0;
 	sb->root->d_inode->i_data = di;
+	sb->root->d_inode->flags |= S_IFDIR;
 
 	return 0;
 }
