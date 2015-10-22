@@ -477,6 +477,9 @@ static int fat_mount_end(struct super_block *sb) {
  */
 static int fat_format(void *dev, void *priv) {
 	int fat_n = priv ? atoi((char*) priv) : 12;
+	if (!fat_n)
+		fat_n = 12;
+
 	fat_create_partition(dev, fat_n);
 	fat_root_dir_record(dev);
 

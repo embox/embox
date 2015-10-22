@@ -167,6 +167,8 @@ int fat_create_partition(void *dev, int fat_n) {
 		memcpy(lbr.ebpb.ebpb32.system, SYSTEM32, sizeof(lbr.ebpb.ebpb32.system));
 		memcpy(lbr.ebpb.ebpb32.code, bootcode, sizeof(bootcode));
 		break;
+	default:
+		return -1;
 	}
 
 	return 0 < block_dev_write(bdev, (void *) &lbr, sizeof(lbr), 0);
