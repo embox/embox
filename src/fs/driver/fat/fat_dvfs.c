@@ -70,14 +70,7 @@ static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo
 		.volinfo = vi,
 	};
 
-	if (di->currentcluster < 2)
-		/* This file is in root directory */
-		fi->dirsector = vi->rootdir + di->currentsector;
-	else
-		fi->dirsector = vi->dataarea +
-				((di->currentcluster - 2) *
-				vi->secperclus) + di->currentsector;
-
+	fi->dirsector = di->currentsector;
 	fi->diroffset = di->currententry - 1;
 	if (vi->filesystem == FAT32)
 		fi->cluster = (uint32_t) de->startclus_l_l |
