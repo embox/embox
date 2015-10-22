@@ -332,13 +332,9 @@ static int fat_remove(struct inode *inode) {
 	if (FILE_TYPE(inode->flags, S_IFDIR)) {
 		di = inode->i_data;
 		res = fat_unlike_directory(&di->fi, NULL, (uint8_t*) fat_sector_buff);
-		if (res == 0)
-			fat_dirinfo_free(di);
 	} else {
 		fi = inode->i_data;
 		res = fat_unlike_file(fi, NULL, (uint8_t*) fat_sector_buff);
-		if (res == 0)
-			fat_file_free(fi);
 	}
 	return res;
 }
@@ -392,8 +388,27 @@ struct file_operations fat_fops = {
 	.read = fat_read,
 };
 
+static int fat_destroy_inode(struct inode *inode) {
+	struct fat_file_info *fi;
+	struct dirinfo *di;
+
+	if (!inode->i_data)
+		return 0;
+
+	if (FILE_TYPE(inode->flags, S_IFDIR)) {
+		di = inode->i_data;
+		fat_dirinfo_free(di);
+	} else {
+		fi = inode->i_data;
+		fat_file_free(fi);
+	}
+
+	return 0;
+}
+
 struct super_block_operations fat_sbops = {
-	.open_idesc = dvfs_file_open_idesc,
+	.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = fat_destroy_inode,
 };
 
 /* @brief Initializing fat super_block
