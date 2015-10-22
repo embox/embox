@@ -6,6 +6,11 @@
  * @author Anton Kozlov
  */
 
+#include <stdint.h>
+#include <xen/xen.h>
+#include <xen/io/console.h>
+#include <xen/sched.h>
+
 #include <drivers/diag.h>
 #include <string.h>
 
