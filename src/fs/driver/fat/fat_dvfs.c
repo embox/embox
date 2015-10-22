@@ -361,6 +361,7 @@ static int fat_pathname(struct inode *inode, char *buf, int flags) {
 		if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector))
 			return -1;
 		strncpy(buf, (char*) ((struct dirent*) fat_sector_buff)[fi->diroffset].name, 11);
+		buf[11] = '\0';
 		return 0;
 	default:
 		/* NIY */
