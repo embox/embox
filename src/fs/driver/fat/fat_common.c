@@ -721,20 +721,22 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
  * or DFS_ERRMISC for a media error
  */
 uint32_t fat_get_next(struct fat_fs_info *fsi,
-		struct dirinfo *dirinfo, struct dirent *dirent) {
+		struct dirinfo *dir, struct dirent *dirent) {
 	struct volinfo *volinfo;
 	void *dirent_src;
 	uint32_t tempint;
 	int next_ent;
 	int ent_per_sec;
+	int end_of_chain;
+	int read_sector;
 
 	volinfo = &fsi->vi;
 	ent_per_sec = volinfo->bytepersec / sizeof(struct dirent);
 
 	/* Do we need to read the next sector of the directory? */
-	if (dirinfo->currententry >= ent_per_sec) {
-		dirinfo->currententry = 0;
-		dirinfo->currentsector++;
+	if (dir->currententry >= ent_per_sec) {
+		dir->currententry = 0;
+		dir->currentsector++;
 
 		/* Root directory; special case handling
 		 * Note that currentcluster will only ever be zero if both:
@@ -742,31 +744,39 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 		 * (b) we are on a FAT12/16 volume, where the root dir can't be
 		 * expanded
 		 */
-		if (dirinfo->currentcluster == 0) {
+		if (dir->currentcluster == 0) {
 			/* Trying to read past end of root directory? */
-			next_ent  = dirinfo->currentsector * volinfo->bytepersec;
+			next_ent  = dir->currentsector * volinfo->bytepersec;
 			next_ent /= sizeof(struct dirent);
 			if (next_ent >= volinfo->rootentries)
 				return DFS_EOF;
 
 			/* Otherwise try to read the next sector */
-			if (fat_read_sector(fsi, dirinfo->p_scratch, volinfo->rootdir + dirinfo->currentsector))
+			if (fat_read_sector(fsi, dir->p_scratch, dir->currentsector))
 				return DFS_ERRMISC;
 		} else {
-			if (dirinfo->currentsector >= volinfo->secperclus) {
-				dirinfo->currentsector = 0;
-				if ((dirinfo->currentcluster >= 0xff7 &&
-						volinfo->filesystem == FAT12) ||
-						(dirinfo->currentcluster >= 0xfff7 &&
-						volinfo->filesystem == FAT16) ||
-						(dirinfo->currentcluster >= 0xffffff7 &&
-						volinfo->filesystem == FAT32)) {
+			if (dir->currentsector >= volinfo->secperclus) {
+				dir->currentsector = 0;
+				switch (volinfo->filesystem) {
+				case FAT12:
+					end_of_chain = dir->currentcluster >= 0xff7;
+					break;
+				case FAT16:
+					end_of_chain = dir->currentcluster >= 0xfff7;
+					break;
+				case FAT32:
+					end_of_chain = dir->currentcluster >= 0xffffff7;
+					break;
+				default:
+					return DFS_ERRMISC;
+				}
 
+				if (end_of_chain) {
 					/* We are at the end of the directory chain.
 					 * If this is a normal find operation, we should indicate
 					 * that there is nothing more to see.
 					 */
-					if (!(dirinfo->flags & DFS_DI_BLANKENT))
+					if (!(dir->flags & DFS_DI_BLANKENT))
 						return DFS_EOF;
 					/*
 					 * On the other hand, if this is a "find free entry"
@@ -776,22 +786,24 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 					else
 						return DFS_ALLOCNEW;
 				}
-				dirinfo->currentcluster = fat_get_fat_(fsi,
-						dirinfo->p_scratch, &tempint, dirinfo->currentcluster);
+
+				dir->currentcluster = fat_get_fat_(fsi, dir->p_scratch, &tempint, dir->currentcluster);
 			}
-			if (fat_read_sector(fsi, dirinfo->p_scratch,
-					volinfo->dataarea + ((dirinfo->currentcluster - 2)
-						* volinfo->secperclus) + dirinfo->currentsector))
+
+			read_sector  = (dir->currentcluster - 2) * volinfo->secperclus;
+			read_sector += volinfo->dataarea + dir->currentsector;
+
+			if (fat_read_sector(fsi, dir->p_scratch, read_sector))
 				return DFS_ERRMISC;
 		}
 	}
 
-	dirent_src = &((struct dirent*) dirinfo->p_scratch)[dirinfo->currententry];
+	dirent_src = &((struct dirent*) dir->p_scratch)[dir->currententry];
 	memcpy(dirent, dirent_src, sizeof(struct dirent));
 
 	if (dirent->name[0] == '\0') {
-		if (dirinfo->flags & DFS_DI_BLANKENT) {
-			dirinfo->currententry++; // DOSFS 1.03 BUG, currententry was not incremented in this case
+		if (dir->flags & DFS_DI_BLANKENT) {
+			dir->currententry++; // DOSFS 1.03 BUG, currententry was not incremented in this case
 			return DFS_OK;
 		} else
 			return DFS_EOF;
@@ -803,7 +815,7 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 		/* handle kanji filenames beginning with 0xE5 */
 		dirent->name[0] = 0xe5;
 
-	dirinfo->currententry++;
+	dir->currententry++;
 
 	return DFS_OK;
 }
