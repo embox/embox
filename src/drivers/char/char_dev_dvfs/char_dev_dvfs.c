@@ -20,19 +20,6 @@ DLIST_DEFINE(cdev_repo_list);
 ARRAY_SPREAD_DEF(const struct device_module, __char_device_registry);
 
 int char_dev_init_all(void) {
-#if 0
-	int ret;
-	const struct device_module *dev_module;
-
-	array_spread_foreach_ptr(dev_module, __char_device_registry) {
-		if (dev_module->init != NULL) {
-			ret = dev_module->init();
-			if (ret != 0) {
-				return ret;
-			}
-		}
-	}
-#endif
 	return 0;
 }
 
