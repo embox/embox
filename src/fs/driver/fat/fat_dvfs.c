@@ -23,6 +23,40 @@ extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 extern struct file_operations fat_fops;
 
 /**
+ * @brief Read directory info from drive and set currentcluster,
+ * current sector
+ *
+ * @param di Directory to be updated. Di->fi.fsi should be set properly.
+ *
+ * @return Negative error code or zero if succeed
+ */
+static int fat_reset_dir(struct dirinfo *di) {
+	struct fat_fs_info *fsi = di->fi.fsi;
+
+	if (fat_read_sector(fsi, dirinfo->p_scratch, dirinfo->fi.dirsector))
+		return -1;
+
+	de_src = &(((struct dirent*)dirinfo->p_scratch)[dirinfo->fi.diroffset]);
+	memcpy(&de, de_src, sizeof(struct dirent));
+
+	dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
+	  ((uint32_t) de.startclus_l_h) << 8 |
+	  ((uint32_t) de.startclus_h_l) << 16 |
+	  ((uint32_t) de.startclus_h_h) << 24;
+
+	if (dirinfo->currentcluster == 0) {
+		/* This is a root directory */
+		vi = &((struct fat_fs_info*)parent->i_sb->sb_data)->vi;
+		dirinfo->currentsector = vi->rootdir;
+	} else
+		dirinfo->currentsector = 0;
+
+	dirinfo->currententry = 0;
+
+	return 0;
+}
+
+/**
  * @brief Set approptiate flags and i_data for given inode
  *
  * @param inode Inode to be filled
@@ -238,24 +272,9 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	dirinfo = parent->i_data;
 	dirinfo->currententry = (int) ctx->fs_ctx;
 
-	if (dirinfo->currententry == 0) {
+	if (dirinfo->currententry == 0)
 		/* Need to get directory data from drive */
-		fat_read_sector(fsi, dirinfo->p_scratch, dirinfo->fi.dirsector);
-		de_src = &(((struct dirent*)dirinfo->p_scratch)[dirinfo->fi.diroffset]);
-		memcpy(&de, de_src, sizeof(struct dirent));
-
-		dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
-		  ((uint32_t) de.startclus_l_h) << 8 |
-		  ((uint32_t) de.startclus_h_l) << 16 |
-		  ((uint32_t) de.startclus_h_h) << 24;
-
-		if (dirinfo->currentcluster == 0) {
-			/* This is a root directory */
-			vi = &((struct fat_fs_info*)parent->i_sb->sb_data)->vi;
-			dirinfo->currentsector = vi->rootdir;
-		} else
-			dirinfo->currentsector = 0;
-	}
+		fat_reset_dir(dirinfo);
 
 	read_dir_buf(fsi, dirinfo);
 
@@ -276,6 +295,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 		return -1;
 	}
 }
+
 static int fat_remove(struct inode *inode) {
 	struct fat_file_info *fi;
 	struct dirinfo *di;
