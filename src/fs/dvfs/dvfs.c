@@ -409,9 +409,10 @@ static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx
 
 static int iterate_cached(struct super_block *sb,
 		struct lookup *lookup, struct inode *next_inode) {
-	char full_path[DENTRY_NAME_LEN];
+	char full_path[DENTRY_NAME_LEN * 2];
 	struct dentry *cached;
 	struct dentry *next_dentry;
+	int path_end;
 
 	next_dentry = dvfs_alloc_dentry();
 	if (!next_dentry) {
@@ -423,13 +424,18 @@ static int iterate_cached(struct super_block *sb,
 	dentry_upd_flags(next_dentry);
 
 	dentry_full_path(lookup->parent, full_path);
-	dvfs_pathname(next_inode, full_path + strlen(full_path), 0);
-
+	path_end = strlen(full_path);
+	if (full_path[path_end - 1] != '/') {
+		strcat(full_path, "/");
+		path_end++;
+	}
+	dvfs_pathname(next_inode, full_path + path_end, 0);
+	strncpy(next_dentry->name, full_path + path_end, DENTRY_NAME_LEN);
 	lookup->item = next_dentry;
 
 	if ((cached = dvfs_cache_get(full_path, lookup))) {
 		dvfs_destroy_dentry(next_dentry);
-		next_dentry = cached;
+		lookup->item = cached;
 	} else {
 		dvfs_pathname(next_inode, next_dentry->name, 0);
 		dvfs_cache_add(next_dentry);
