@@ -634,14 +634,12 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 
 	if (dir_is_root(dirname)) {
 		dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
-		if (volinfo->filesystem == FAT32) {
-			return fat_read_sector(fsi, dirinfo->p_scratch,
-					volinfo->dataarea +	((volinfo->rootdir - 2)
-							* volinfo->secperclus));
-		} else {
-			return fat_read_sector(fsi, dirinfo->p_scratch,
-					volinfo->rootdir);
-		}
+		if (volinfo->filesystem == FAT32)
+			dirinfo->currentsector = volinfo->dataarea +
+				((volinfo->rootdir - 2) * volinfo->secperclus);
+		else
+			dirinfo->currentsector = volinfo->rootdir;
+		return fat_read_sector(fsi, dirinfo->p_scratch, dirinfo->currentsector);
 	} else {
 		uint8_t tmpfn[12];
 		uint8_t *ptr = dirname;
@@ -1596,7 +1594,7 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 
 	//fi->dirsector = volinfo->dataarea + (di->fi.cluster - 2) * volinfo->secperclus;
 	/* 'di' have to be filled already */
-	fi->dirsector = di->currentcluster;
+	fi->dirsector = di->currentsector;
 	fi->diroffset = di->currententry - 1;
 	fi->cluster = cluster;
 	fi->firstcluster = cluster;
