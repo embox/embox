@@ -226,6 +226,8 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	struct dirent de;
 	char path[PATH_MAX];
 	int res;
+	struct volinfo *vi;
+	void *de_src;
 
 	if (!parent)
 		strcpy(path, ROOT_DIR);
@@ -235,6 +237,26 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	fsi = parent->i_sb->sb_data;
 	dirinfo = parent->i_data;
 	dirinfo->currententry = (int) ctx->fs_ctx;
+
+	if (dirinfo->currententry == 0) {
+		/* Need to get directory data from drive */
+		fat_read_sector(fsi, dirinfo->p_scratch, dirinfo->fi.dirsector);
+		de_src = &(((struct dirent*)dirinfo->p_scratch)[dirinfo->fi.diroffset]);
+		memcpy(&de, de_src, sizeof(struct dirent));
+
+		dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
+		  ((uint32_t) de.startclus_l_h) << 8 |
+		  ((uint32_t) de.startclus_h_l) << 16 |
+		  ((uint32_t) de.startclus_h_h) << 24;
+
+		if (dirinfo->currentcluster == 0) {
+			/* This is a root directory */
+			vi = &((struct fat_fs_info*)parent->i_sb->sb_data)->vi;
+			dirinfo->currentsector = vi->rootdir;
+		} else
+			dirinfo->currentsector = 0;
+	}
+
 	read_dir_buf(fsi, dirinfo);
 
 	while (((res = fat_get_next(fsi, dirinfo, &de)) ==  DFS_OK) || res == DFS_ALLOCNEW)
@@ -370,6 +392,8 @@ static int fat_fill_sb(struct super_block *sb, struct block_dev *dev) {
 */
 static int fat_mount_end(struct super_block *sb) {
 	struct dirinfo *di;
+	struct fat_fs_info *fsi;
+
 	uint8_t tmp[] = { '\0' };
 	assert(sb->bdev->block_size <= FAT_MAX_SECTOR_SIZE);
 
@@ -378,8 +402,17 @@ static int fat_mount_end(struct super_block *sb) {
 
 	di->p_scratch = fat_sector_buff;
 
-	if (fat_open_dir(sb->sb_data, tmp, di))
+	fsi = sb->sb_data;
+	if (fat_open_dir(fsi, tmp, di))
 		return -1;
+
+	di->fi = (struct fat_file_info) {
+		.fsi          = fsi,
+		.volinfo      = &fsi->vi,
+		.dirsector    = fsi->vi.rootdir,
+		.diroffset    = 0,
+		.firstcluster = 0,
+	};
 
 	sb->root->d_inode->i_data = di;
 	sb->root->d_inode->flags |= S_IFDIR;

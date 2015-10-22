@@ -346,12 +346,8 @@ uint32_t fat_get_fat_(struct fat_fs_info *fsi,
 		default:
 			return DFS_BAD_CLUS;
 	}
-	/*
-	 * at this point, offset is the BYTE offset of the desired sector from
-	 * the start of the FAT. Calculate the physical sector containing this
-	 *  FAT entry.
-	 */
-	sector = ldiv(offset, volinfo->bytepersec).quot + volinfo->fat1;
+
+	sector = offset / volinfo->bytepersec + volinfo->fat1;
 
 	if (sector != *p_scratchcache) {
 		if (fat_read_sector(fsi, p_scratch, sector)) {
@@ -372,7 +368,7 @@ uint32_t fat_get_fat_(struct fat_fs_info *fsi,
 	 * always to read two FAT sectors, but that luxury is (by design intent)
 	 * unavailable to DOSFS.
 	 */
-	offset = ldiv(offset, volinfo->bytepersec).rem;
+	offset %= volinfo->bytepersec;
 	if (volinfo->filesystem == FAT12) {
 		/* Special case for sector boundary - Store last byte of current sector
 		 * Then read in the next sector and put the first byte of that sector
@@ -938,7 +934,7 @@ int fat_root_dir_record(void *bdev) {
 		return -1;
 	}
 
-	cluster = fat_get_free_fat_(&fsi, fat_sector_buff);
+	cluster = 0; //fat_get_free_fat_(&fsi, fat_sector_buff);
 
 	de = (struct dirent) {
 		.name = "ROOT DIR   ",
