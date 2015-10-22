@@ -23,6 +23,27 @@ extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 extern struct file_operations fat_fops;
 
 /**
+ * @brief Fill dirent with dirinfo data
+ *
+ * @param di Directory
+ * @param de Dirent to be filled
+ *
+ * @return Negative error code or zero if succeed
+ */
+static int fat_dirent_by_file(struct fat_file_info *fi, struct dirent *de) {
+	struct fat_fs_info *fsi = fi->fsi;
+	void *de_src;
+
+	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector))
+		return -1;
+
+	de_src = &(((struct dirent*)fat_sector_buff)[fi->diroffset]);
+	memcpy(de, de_src, sizeof(struct dirent));
+
+	return 0;
+}
+
+/**
  * @brief Read directory info from drive and set currentcluster,
  * current sector
  *
@@ -31,27 +52,24 @@ extern struct file_operations fat_fops;
  * @return Negative error code or zero if succeed
  */
 static int fat_reset_dir(struct dirinfo *di) {
-	struct fat_fs_info *fsi = di->fi.fsi;
+	struct dirent de;
+	struct volinfo *vi;
 
-	if (fat_read_sector(fsi, dirinfo->p_scratch, dirinfo->fi.dirsector))
-		return -1;
+	fat_dirent_by_file(&di->fi, &de);
 
-	de_src = &(((struct dirent*)dirinfo->p_scratch)[dirinfo->fi.diroffset]);
-	memcpy(&de, de_src, sizeof(struct dirent));
-
-	dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
+	di->currentcluster = (uint32_t) de.startclus_l_l |
 	  ((uint32_t) de.startclus_l_h) << 8 |
 	  ((uint32_t) de.startclus_h_l) << 16 |
 	  ((uint32_t) de.startclus_h_h) << 24;
 
-	if (dirinfo->currentcluster == 0) {
+	if (di->currentcluster == 0) {
 		/* This is a root directory */
-		vi = &((struct fat_fs_info*)parent->i_sb->sb_data)->vi;
-		dirinfo->currentsector = vi->rootdir;
+		vi = &di->fi.fsi->vi;
+		di->currentsector = vi->rootdir;
 	} else
-		dirinfo->currentsector = 0;
+		di->currentsector = 0;
 
-	dirinfo->currententry = 0;
+	di->currententry = 0;
 
 	return 0;
 }
@@ -81,15 +99,10 @@ static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo
 		inode->flags |= S_IFDIR;
 		inode->i_data = new_di;
 
-		if (vi->filesystem == FAT32) {
-			new_di->currentcluster = (uint32_t) de->startclus_l_l |
-			  ((uint32_t) de->startclus_l_h) << 8 |
-			  ((uint32_t) de->startclus_h_l) << 16 |
-			  ((uint32_t) de->startclus_h_h) << 24;
-		} else {
-			new_di->currentcluster = (uint32_t) de->startclus_l_l |
-			  ((uint32_t) de->startclus_l_h) << 8;
-		}
+		new_di->currentcluster = (uint32_t) de->startclus_l_l |
+		  ((uint32_t) de->startclus_l_h) << 8 |
+		  ((uint32_t) de->startclus_h_l) << 16 |
+		  ((uint32_t) de->startclus_h_h) << 24;
 
 		fi = &new_di->fi;
 	} else {
@@ -106,15 +119,10 @@ static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo
 
 	fi->dirsector = di->currentsector;
 	fi->diroffset = di->currententry - 1;
-	if (vi->filesystem == FAT32)
-		fi->cluster = (uint32_t) de->startclus_l_l |
-		  ((uint32_t) de->startclus_l_h) << 8 |
-		  ((uint32_t) de->startclus_h_l) << 16 |
-		  ((uint32_t) de->startclus_h_h) << 24;
-	else
-		fi->cluster = (uint32_t) de->startclus_l_l |
-		  ((uint32_t) de->startclus_l_h) << 8;
-
+	fi->cluster = (uint32_t) de->startclus_l_l |
+	  ((uint32_t) de->startclus_l_h) << 8 |
+	  ((uint32_t) de->startclus_h_l) << 16 |
+	  ((uint32_t) de->startclus_h_h) << 24;
 	fi->firstcluster = fi->cluster;
 	fi->filelen = (uint32_t) de->filesize_0 |
 			      ((uint32_t) de->filesize_1) << 8 |
@@ -142,6 +150,9 @@ static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
 
 /* @brief Figure out if node at specific path exists or not
  * @note  Assume dir is root
+ * @note IMPORTANT: this functions should not be calls in the middle of iterate,
+ * as it wipes dirinfo content
+ *
  * @param name Full path to the extected node
  * @param dir  Not used now
  *
@@ -156,6 +167,9 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	char tmppath[PATH_MAX];
 	char fat_name[12];
 	int found = 0;
+	int sector;
+	int cluster;
+	struct fat_fs_info *fsi;
 
 	assert(name);
 	assert(dir->d_inode);
@@ -168,7 +182,21 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	path_canonical_to_dir(fat_name, (char *) name);
 
-	if (read_dir_buf(sb->sb_data, di) != DFS_OK)
+	if (fat_dirent_by_file(&di->fi, &de))
+		goto err_out;
+
+	cluster = (uint32_t) de.startclus_l_l |
+	  ((uint32_t) de.startclus_l_h) << 8 |
+	  ((uint32_t) de.startclus_h_l) << 16 |
+	  ((uint32_t) de.startclus_h_h) << 24;
+
+	fsi = sb->sb_data;
+	if (cluster == 0) {
+		sector = fsi->vi.rootdir;
+	} else
+		sector = di->fi.dirsector + cluster * fsi->vi.secperclus;
+
+	if (fat_read_sector(sb->sb_data, di->p_scratch, sector))
 		goto err_out;
 
 	tmp = di->currententry;
@@ -190,6 +218,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	if (fat_fill_inode(node, &de, di))
 		goto err_out;
 
+	di->currententry = tmp;
 	return node;
 err_out:
 	di->currententry = tmp;
@@ -260,8 +289,6 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	struct dirent de;
 	char path[PATH_MAX];
 	int res;
-	struct volinfo *vi;
-	void *de_src;
 
 	if (!parent)
 		strcpy(path, ROOT_DIR);
