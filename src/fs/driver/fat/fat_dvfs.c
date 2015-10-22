@@ -103,12 +103,7 @@ err_out:
 * @retval 0 Success
 */
 static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
-	struct volinfo *vi = &fsi->vi;
-	if (vi->filesystem == FAT32)
-		return fat_read_sector(fsi, fat_sector_buff,
-		                       vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
-	else
-		return fat_read_sector(fsi, fat_sector_buff, vi->rootdir);
+	return fat_read_sector(fsi, fat_sector_buff, di->currentsector);
 }
 
 /* @brief Figure out if node at specific path exists or not
