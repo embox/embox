@@ -1,13 +1,7 @@
 package embox.driver.tty
 
 module serial {
-	source "idesc_serial.c"
+	source "idesc_serial_dvfs.c"
 
 	option number serial_quantity = 1
-
-	depends tty_repo
-	depends tty
-
-	depends embox.fs.file_desc
-	depends embox.driver.serial.core
 }

@@ -15,6 +15,7 @@ module ttys_dvfs extends core {
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
+	@NoRuntime depends embox.driver.tty.serial
 }
 
 module core_old extends core {

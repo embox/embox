@@ -9,11 +9,11 @@
 #define IDESC_SERIAL_H_
 
 struct idesc;
-struct file_desc;
+struct file;
 struct uart;
 typedef int idesc_access_mode_t;
 
-extern struct idesc *idesc_serial_create(struct file_desc *fdesc,
+extern struct idesc *idesc_serial_create(
 		struct uart *uart, idesc_access_mode_t mod) ;
 
 #endif /* IDESC_SERIAL_H_ */

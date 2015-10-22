@@ -10,12 +10,15 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <util/err.h>
+
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
+#include <fs/idesc_serial.h>
 #include <fs/dvfs.h>
 
 #define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
@@ -84,14 +87,15 @@ POOL_DEF(cdev_serials_pool, struct device_module, 1);
 static struct device_module *cdev_uart;
 
 static struct idesc *uart_fsop_open(struct inode *node, struct idesc *desc) {
-	return 0;
+	return idesc_serial_create(cdev_uart->dev_data, 0);
 }
-static int uart_fsop_close(struct file *desc){
+
+static int uart_fsop_close(struct file *desc) {
 	return 0;
 }
 
 static size_t uart_fsop_read(struct file *desc, void *buf, size_t size) {
-	struct uart * uart = cdev_uart->dev;
+	struct uart * uart = cdev_uart->dev_data;
 	int i;
 	char *b = buf;
 
@@ -105,7 +109,7 @@ static size_t uart_fsop_read(struct file *desc, void *buf, size_t size) {
 }
 
 static size_t uart_fsop_write(struct file *desc, void *buf, size_t size) {
-	struct uart * uart = cdev_uart->dev;
+	struct uart * uart = cdev_uart->dev_data;
 	int i;
 	char *b = buf;
 	for(i = 0; i < size; i ++) {
@@ -148,7 +152,7 @@ int uart_register(struct uart *uart,
 	memset(cdev, 0, sizeof(*cdev));
 	cdev->name = uart->dev_name;
 	cdev->fops = &uart_fops;
-	cdev->dev = uart;
+	cdev->dev_data = uart;
 
 	char_dev_register(cdev);
 
