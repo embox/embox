@@ -101,7 +101,4 @@ static inline int tty_rx_putc(struct tty *t, char ch, unsigned char flag) {
 extern int tty_out_getc(struct tty *t);
 extern int tty_out_buf(struct tty *t, void *buf, size_t len);
 
-struct kfile_operations;
-extern int tty_register(const char *name, void *dev, const struct kfile_operations *file_ops);
-
 #endif /* DRIVERS_TTY_H_ */
