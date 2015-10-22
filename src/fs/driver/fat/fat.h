@@ -13,9 +13,11 @@
 
 #include <fs/mbr.h>
 
-#define MSDOS_NAME      11
-#define ROOT_DIR        "/"
 #define DIR_SEPARATOR   '/'	/* character separating directory components*/
+#define ROOT_DIR        "/"
+#define MSDOS_NAME      11
+#define MSDOS_DOT     ".          "
+#define MSDOS_DOTDOT  "..         "
 
 /* 32-bit error codes */
 #define DFS_OK        0          /* no error */
@@ -26,7 +28,7 @@
 #define DFS_ALLOCNEW  5	         /* must allocate new directory cluster */
 #define DFS_ERRMISC   0xffffffff /* generic error */
 #define DFS_WRONGRES  6          /* file expected but dir found or vice versa */
-
+#define DFS_BAD_CLUS  0x0ffffff7
 /* Internal subformat identifiers */
 #define FAT12 0
 #define FAT16 1
