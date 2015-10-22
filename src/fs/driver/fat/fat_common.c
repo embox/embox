@@ -455,7 +455,7 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 	 * the start of the FAT.
 	 * Calculate the physical sector containing this FAT entry.
 	 */
-	sector = ldiv(offset, volinfo->bytepersec).quot + volinfo->fat1;
+	sector = offset / volinfo->bytepersec + volinfo->fat1;
 
 	/* If this is not the same sector we last read, then read it into RAM */
 	if (sector != *p_scratchcache) {
@@ -477,7 +477,7 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 	 * is always to read two FAT sectors, but that luxury is (by design intent)
 	 * unavailable to DOSFS.
 	 */
-	offset = ldiv(offset, volinfo->bytepersec).rem;
+	offset %= volinfo->bytepersec;
 
 	switch (volinfo->filesystem) {
 	case FAT12:
@@ -1590,7 +1590,7 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 
 	//fi->dirsector = volinfo->dataarea + (di->fi.cluster - 2) * volinfo->secperclus;
 	/* 'di' have to be filled already */
-	fi->dirsector = di->currentsector;
+	fi->dirsector = di->currentsector + di->currentcluster * volinfo->secperclus;
 	fi->diroffset = di->currententry - 1;
 	fi->cluster = cluster;
 	fi->firstcluster = cluster;
