@@ -856,9 +856,9 @@ uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
 
 	volinfo = &fsi->vi;
 
-	if (fat_open_dir(fsi, path, di)) {
-		return DFS_NOTFOUND;
-	}
+	//if (fat_open_dir(fsi, path, di)) {
+	//	return DFS_NOTFOUND;
+	//}
 
 	di->flags |= DFS_DI_BLANKENT;
 
