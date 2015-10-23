@@ -241,13 +241,12 @@ struct fat_file_info {
  *	Directory search structure (Internal to DOSFS)
  */
 struct dirinfo {
+	struct fat_file_info fi;	/* Must be first field in structure */
 	uint32_t currentcluster;	/* current cluster in dir */
 	uint8_t currentsector;		/* current sector in cluster */
 	uint8_t currententry;		/* current dir entry in sector */
 	uint8_t *p_scratch;			/* ptr to user-supplied scratch buffer (one sector) */
 	uint8_t flags;				/* internal DOSFS flags */
-
-	struct fat_file_info fi;
 };
 
 #include <framework/mod/options.h>
