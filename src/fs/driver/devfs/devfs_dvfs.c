@@ -84,6 +84,15 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 				return 0;
 			}
 		}
+		dlist_foreach_entry(dev_module, &cdev_repo_list, cdev_list) {
+			if (i++ == (int) ctx->fs_ctx >> 2) {
+				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
+				devfs_fill_inode(next, dev_module, S_IFCHR);
+				return 0;
+			}
+		}
+		/* Fall through */
+		ctx->fs_ctx = (void*) ((int) 0x1);
 	case 2:
 		/* Fall through */
 	case 3:
