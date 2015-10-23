@@ -1,15 +1,7 @@
 /**
  * @file
  *
-<<<<<<< HEAD
-<<<<<<< HEAD
  * @date 06 july 2015
-=======
- * @date 06 july 2015 г.
->>>>>>> fault-car: Add libactuators lib
-=======
- * @date 06 july 2015
->>>>>>> fixup!: Fix libactuators
  * @author Anton Bondarev
  */
 
@@ -32,11 +24,6 @@ struct motor {
 	GPIO_TypeDef  *GPIOx;
 	uint16_t enable;
 	uint16_t input[2];
-<<<<<<< HEAD
-=======
-	/* 10, 01, 11 */
-	uint8_t enabled_inputs:2;
->>>>>>> fault-car: Add libactuators lib
 };
 
 enum motor_run_direction {
@@ -44,13 +31,8 @@ enum motor_run_direction {
 	MOTOR_RUN_RIGHT
 };
 
-<<<<<<< HEAD
 extern void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx, uint16_t enable,
 		uint16_t in1, uint16_t in2);
-=======
-extern void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx,
-		uint16_t enable, uint16_t in1, uint16_t in2, uint8_t mask);
->>>>>>> fault-car: Add libactuators lib
 
 extern void motor_enable(struct motor *m);
 
