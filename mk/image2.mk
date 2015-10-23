@@ -35,6 +35,18 @@ initfs_cp_prerequisites = $(src_file) $(common_prereqs)
 cp_T_if_supported := \
 	$(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
 
+# This rule is necessary because otherwise, when considering a rule for
+# creating the $(ROOTFS_DIR) directory (required through $(common_prereqs)
+# using the secondarily-expanded order-only '| $(@D)/.' prerequisite),
+# the '$(ROOTFS_DIR)/%' rule takes precedence over the proper '%/.' one, since
+# the former needs a shorter stem ('.') than the latter ('build/.../rootfs').
+# This is reproduced only on GNU Make >= 3.82, because of the change in how
+# implicit rule search works in Make.
+$(ROOTFS_DIR)/. :
+	@mkdir -p $@
+$(ROOTFS_DIR)/%/. :
+	@mkdir -p $@
+
 $(ROOTFS_DIR)/% :
 	$(CP) -r $(cp_T_if_supported) $(src_file) $@$(if \
 		$(and $(chmod),$(findstring $(chmod),'')),,;chmod $(chmod) $@)
