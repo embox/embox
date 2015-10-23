@@ -195,10 +195,10 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	  ((uint32_t) de.startclus_h_h) << 24;
 
 	fsi = sb->sb_data;
-	if (cluster == 0) {
+	if (cluster == 0)
 		sector = fsi->vi.rootdir;
-	} else
-		sector = di->fi.dirsector + cluster * fsi->vi.secperclus;
+	else
+		sector = cluster * fsi->vi.secperclus;
 
 	if (fat_read_sector(sb->sb_data, di->p_scratch, sector))
 		goto err_out;
