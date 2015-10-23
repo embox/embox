@@ -89,6 +89,12 @@ int fat_create_partition(void *dev, int fat_n) {
 	assert(bdev->block_size <= FAT_MAX_SECTOR_SIZE);
 	uint32_t secperfat = 1;
 	uint16_t rootentries = 0x0200;             /* 512 for FAT16 */
+	int reserved;
+	int err;
+	int i;
+	int fat_size;
+	int blkpersec;
+
 	struct lbr lbr = (struct lbr) {
 		.jump = {0xeb, 0x3c, 0x90},        /* JMP 0x3c; NOP; */
 		.oemid = {0x45, 0x45, 0x45, 0x45,
@@ -171,7 +177,21 @@ int fat_create_partition(void *dev, int fat_n) {
 		return -1;
 	}
 
-	return 0 < block_dev_write(bdev, (void *) &lbr, sizeof(lbr), 0);
+	if (0 > (err = block_dev_write(bdev, (void *) &lbr, sizeof(lbr), 0)))
+		return err;
+
+	/* Clear FAT from garbage */
+	memset(fat_sector_buff, 0, sizeof(fat_sector_buff));
+	reserved = (uint16_t) lbr.bpb.reserved_l |
+		(((uint16_t) lbr.bpb.reserved_h) << 8);
+	fat_size = lbr.bpb.numfats * secperfat;
+	blkpersec = bytepersec / bdev->block_size;
+
+	for (i = reserved; i < reserved + fat_size; i++)
+		if (0 > (err = block_dev_write(bdev, (void*) fat_sector_buff, sizeof(fat_sector_buff), i * blkpersec)))
+			return err;
+
+	return 0;
 }
 
 /**
