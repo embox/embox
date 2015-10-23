@@ -162,7 +162,9 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	struct dirinfo *di;
 	struct dirent de;
 	struct super_block *sb;
-	uint8_t tmp;
+	uint8_t tmp_ent;
+	uint8_t tmp_sec;
+	uint32_t tmp_clus;
 	struct inode *node;
 	char tmppath[PATH_MAX];
 	char fat_name[12];
@@ -199,8 +201,10 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	if (fat_read_sector(sb->sb_data, di->p_scratch, sector))
 		goto err_out;
 
-	tmp = di->currententry;
-	di->currententry = 0;
+	tmp_ent = di->currententry;
+	tmp_sec = di->currentsector;
+	tmp_clus = di->currentcluster;
+	fat_reset_dir(di);
 	while (!fat_get_next(sb->sb_data, di, &de)) {
 		path_canonical_to_dir(tmppath, (char *) de.name);
 		if (!memcmp(tmppath, fat_name, MSDOS_NAME)) {
@@ -218,11 +222,14 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	if (fat_fill_inode(node, &de, di))
 		goto err_out;
 
-	di->currententry = tmp;
-	return node;
+	goto succ_out;
 err_out:
-	di->currententry = tmp;
-	return NULL;
+	node = NULL;
+succ_out:
+	di->currentcluster = tmp_clus;
+	di->currententry = tmp_ent;
+	di->currentsector = tmp_sec;
+	return node;
 }
 
 /* @brief Create new file or directory
