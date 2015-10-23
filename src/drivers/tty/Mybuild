@@ -39,10 +39,3 @@ module termios_ops {
 
 	depends embox.util.ring
 }
-
-module pty {
-	source "pty.c"
-	depends tty
-	depends embox.fs.idesc_event
-//	depends embox.kernel.thread.sync /* cond */
-}
