@@ -145,7 +145,9 @@ err_out:
 * @retval 0 Success
 */
 static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
-	return fat_read_sector(fsi, fat_sector_buff, di->currentsector);
+	return fat_read_sector(fsi,
+	                       di->p_scratch,
+	                       fsi->vi.secperclus * di->currentcluster + di->currentsector);
 }
 
 /* @brief Figure out if node at specific path exists or not
