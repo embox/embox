@@ -30,7 +30,7 @@ int mkdir(const char *pathname, mode_t mode) {
 
 	t = strrchr(parent, '/');
 	if (t) {
-		memset(t, '\0', parent + DENTRY_NAME_LEN - t);
+		memset(t + 1, '\0', parent + DENTRY_NAME_LEN - t);
 
 		dvfs_lookup(parent, &lu);
 		if (!lu.item)
