@@ -16,7 +16,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-#include <kernel/irq_lock.h>
 #include <fs/idesc_event.h>
 
 #include <kernel/thread/thread_sched_wait.h>
@@ -175,9 +174,7 @@ static void tty_rx_do(struct tty *t) {
 	int ich;
 
 	while ((ich = tty_rx_dequeue(t)) != -1) {
-		irq_unlock();
 		tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT));
-		irq_lock();
 	}
 }
 
@@ -282,12 +279,8 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	threadsig_lock();
 	mutex_lock(&t->lock);
 	do {
-		irq_lock();
-		{
-			tty_rx_do(t);
-			rc = idesc_wait_prepare(t->idesc, &iwl);
-		}
-		irq_unlock();
+		tty_rx_do(t);
+		rc = idesc_wait_prepare(t->idesc, &iwl);
 
 		next = tty_read_raw(t, curr, end);
 
