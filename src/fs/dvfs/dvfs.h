@@ -119,6 +119,14 @@ struct file {
 	struct file_operations *f_ops;
 };
 
+/* NOTE ON FILE OPEN
+ *
+ * Basically,  in  regular  file  systems  file  open  driver  function  should
+ * just  return  the same  idesc  that  was  passed as second  parameter.  This
+ * feature  is  required for device-dependent operations, otherwise just return
+ * the second argument.
+ */
+
 struct file_operations {
 	struct idesc *(*open)(struct inode *node, struct idesc *desc);
 	int    (*close)(struct file *desc);

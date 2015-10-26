@@ -497,13 +497,14 @@ struct inode_operations dfs_iops = {
 	.pathname = dfs_pathname,
 };
 
-static int dfs_open(struct inode *node, struct file *desc) {
+static struct idesc *dfs_open(struct inode *node, struct idesc *desc) {
 	if (!desc || !node) {
-		return ENOENT;
+		SET_ERRNO(ENOENT);
+		return NULL;
 	}
 
-	desc->f_ops = &dfs_fops;
-	return 0;
+	((struct file*)desc)->f_ops = &dfs_fops;
+	return desc;
 }
 
 static int dfs_close(struct file *desc) {
