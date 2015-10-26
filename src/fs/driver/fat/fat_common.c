@@ -956,7 +956,7 @@ int fat_root_dir_record(void *bdev) {
 		return -1;
 	}
 
-	cluster = 0; //fat_get_free_fat_(&fsi, fat_sector_buff);
+	cluster = fsi.vi.rootdir / fsi.vi.secperclus;
 
 	de = (struct dirent) {
 		.name = "ROOT DIR   ",
