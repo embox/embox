@@ -209,7 +209,7 @@ int dfs_format(void) {
 	root.flags     = S_IFDIR;
 	sbi->free_space += MIN_FILE_SZ;
 	dfs_write_dirent(0, &root);
-	memset(buf, 0xff, sizeof(buf));
+	memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
 	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++)
 		dfs_write_raw(root.pos_start + i * sizeof(buf),
 		              buf,
@@ -340,7 +340,7 @@ static int dfs_icreate(struct inode *i_new,
 	};
 
 	if (FILE_TYPE(S_IFDIR, mode)) {
-		memset(buf, 0xff, sizeof(buf));
+		memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
 		for (i = 0; i < dirent.len / sizeof(buf); i++)
 			dfs_write_raw(dirent.pos_start + i * sizeof(buf),
 			              buf,
@@ -356,7 +356,7 @@ static int dfs_icreate(struct inode *i_new,
 	/* Write entry to parent directory */
 	for (i = 0; i < i_dir->length; i++) {
 		_read(i_dir->start_pos + i, &t, 1);
-		if (t != 0xFF)
+		if (t != DFS_DIRENT_EMPTY)
 			/* Entry taken */
 			continue;
 		_write(i_dir->start_pos + i, &i_new->i_no, 1);
@@ -449,8 +449,7 @@ static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 
 	for (i = dir_pos; i < parent->length; i++) {
 		_read(parent->start_pos + i, &candidate, 1);
-		if (candidate == 0xFF)
-			/* Empty entry */
+		if (candidate == DFS_DIRENT_EMPTY)
 			continue;
 
 		dfs_read_dirent(candidate, &dirent);
