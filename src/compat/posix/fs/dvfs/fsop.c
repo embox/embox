@@ -24,7 +24,8 @@ int mkdir(const char *pathname, mode_t mode) {
 	if (lu.item)
 		return SET_ERRNO(EEXIST);
 
-	strncpy(parent, pathname, sizeof(parent));
+	parent[0] = '\0';
+	strncat(parent, pathname, sizeof(parent) - 1);
 	if (parent[strlen(parent) - 1] == '/')
 		parent[strlen(parent) - 1] = '\0';
 
