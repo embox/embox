@@ -4,6 +4,7 @@
  * @date   8 Apr 2014
  */
 
+#include <errno.h>
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -159,14 +160,14 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 	if (dentry->usage_count == 0) {
 		if (dentry->d_inode)
 			dvfs_destroy_inode(dentry->d_inode);
-		dentry->parent->usage_count--;
+		dentry_ref_dec(dentry->parent);
 		dlist_del(&dentry->children_lnk);
 		dlist_del(&dentry->d_lnk);
 		dvfs_cache_del(dentry);
 		pool_free(&dentry_pool, dentry);
 		return 0;
 	} else
-		return -1;
+		return -EBUSY;
 }
 
 /**
@@ -235,29 +236,17 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 
 	if (parent) {
 		dlist_add_prev(&dentry->children_lnk, &parent->children);
-		parent->usage_count++;
+		dentry_ref_inc(parent);
 	}
 	return 0;
 }
+
 int dentry_ref_inc(struct dentry *dentry) {
-	dentry->usage_count ++;
-
-	if (dentry->d_sb->root != dentry) {
-		dentry->d_sb->root->usage_count ++;
-	}
-
-	return dentry->usage_count;
+	return ++dentry->usage_count;
 }
 
 int dentry_ref_dec(struct dentry *dentry) {
-	dentry->usage_count --;
-
-	if (dentry->d_sb->root != dentry) {
-		dentry->d_sb->root->usage_count --;
-	}
-
-	return dentry->usage_count;
-
+	return --dentry->usage_count;
 }
 
 /* Root-related stuff */
@@ -315,7 +304,6 @@ struct dentry *dvfs_root(void) {
 	return global_root;
 }
 
-
 /**
 * @brief Check if element with given name presents as a subelement
 *        of the folder in RAM.
@@ -339,4 +327,20 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
 	}
 
 	return NULL;
+}
+
+/**
+ * @brief Free superblock resources
+ *
+ * @param sb Superblock to be destroyed
+ *
+ * @return Negative error code or zero if succeed
+ */
+int dvfs_destroy_sb(struct super_block *sb) {
+	/* TODO fs-specific resource free? */
+	if (sb->root)
+		sb->root->d_sb = NULL;
+
+	pool_free(&superblock_pool, sb);
+	return 0;
 }

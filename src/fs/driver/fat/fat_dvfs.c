@@ -3,7 +3,7 @@
  * @brief Implementation of FAT driver for DVFS
  *
  * @date   11 Apr 2015
- * @author Denis Deryugin
+ * @author Denis Deryugin <deryugin.denis@gmail.com>
  */
 
 #include <errno.h>
@@ -23,6 +23,123 @@ extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 extern struct file_operations fat_fops;
 
 /**
+ * @brief Fill dirent with dirinfo data
+ *
+ * @param di Directory
+ * @param de Dirent to be filled
+ *
+ * @return Negative error code or zero if succeed
+ */
+static int fat_dirent_by_file(struct fat_file_info *fi, struct dirent *de) {
+	struct fat_fs_info *fsi = fi->fsi;
+	void *de_src;
+
+	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector))
+		return -1;
+
+	de_src = &(((struct dirent*)fat_sector_buff)[fi->diroffset]);
+	memcpy(de, de_src, sizeof(struct dirent));
+
+	return 0;
+}
+
+/**
+ * @brief Read directory info from drive and set currentcluster,
+ * current sector
+ *
+ * @param di Directory to be updated. Di->fi.fsi should be set properly.
+ *
+ * @return Negative error code or zero if succeed
+ */
+static int fat_reset_dir(struct dirinfo *di) {
+	struct dirent de;
+	struct volinfo *vi;
+
+	fat_dirent_by_file(&di->fi, &de);
+
+	di->currentcluster = (uint32_t) de.startclus_l_l |
+	  ((uint32_t) de.startclus_l_h) << 8 |
+	  ((uint32_t) de.startclus_h_l) << 16 |
+	  ((uint32_t) de.startclus_h_h) << 24;
+
+	if (di->currentcluster == 0) {
+		/* This is a root directory */
+		vi = &di->fi.fsi->vi;
+		di->currentsector = vi->rootdir;
+	} else
+		di->currentsector = 0;
+
+	di->currententry = 0;
+
+	return 0;
+}
+
+/**
+ * @brief Set approptiate flags and i_data for given inode
+ *
+ * @param inode Inode to be filled
+ * @param di FAT directory entry related to file
+ *
+ * @return Negative error code or zero if succeed
+ */
+static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo *di) {
+	struct fat_file_info *fi;
+	struct dirinfo *new_di;
+	struct volinfo *vi;
+	struct super_block *sb;
+
+	sb = inode->i_sb;
+	vi = &((struct fat_fs_info*)sb->sb_data)->vi;
+	if (de->attr & ATTR_DIRECTORY){
+		if (NULL == (new_di = fat_dirinfo_alloc()))
+			goto err_out;
+
+		memset(new_di, 0, sizeof(struct dirinfo));
+		new_di->p_scratch = fat_sector_buff;
+		inode->flags |= S_IFDIR;
+
+		new_di->currentcluster = (uint32_t) de->startclus_l_l |
+		  ((uint32_t) de->startclus_l_h) << 8 |
+		  ((uint32_t) de->startclus_h_l) << 16 |
+		  ((uint32_t) de->startclus_h_h) << 24;
+
+		fi = &new_di->fi;
+	} else {
+		if (NULL == (fi = fat_file_alloc()))
+			goto err_out;
+
+	}
+
+	inode->i_data = fi;
+
+	*fi = (struct fat_file_info) {
+		.fsi = sb->sb_data,
+		.volinfo = vi,
+	};
+
+	fi->dirsector = di->currentsector +
+		di->currentcluster * vi->secperclus;
+	fi->diroffset = di->currententry - 1;
+	fi->cluster = (uint32_t) de->startclus_l_l |
+	  ((uint32_t) de->startclus_l_h) << 8 |
+	  ((uint32_t) de->startclus_h_l) << 16 |
+	  ((uint32_t) de->startclus_h_h) << 24;
+	fi->firstcluster = fi->cluster;
+	fi->filelen = (uint32_t) de->filesize_0 |
+			      ((uint32_t) de->filesize_1) << 8 |
+			      ((uint32_t) de->filesize_2) << 16 |
+			      ((uint32_t) de->filesize_3) << 24;
+
+	if (de->attr & ATTR_READ_ONLY)
+		inode->flags |= S_IRALL;
+	else
+		inode->flags |= S_IRWXA;
+	return 0;
+err_out:
+	return -1;
+}
+
+/**
 * @brief Read related dir entries into dir buffer
 *
 * @param fsi Used to determine bdev and fat type (12/16/32)
@@ -32,32 +149,35 @@ extern struct file_operations fat_fops;
 * @retval 0 Success
 */
 static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
-	struct volinfo *vi = &fsi->vi;
-	if (vi->filesystem == FAT32)
-		return fat_read_sector(fsi, fat_sector_buff,
-		                       vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
-	else
-		return fat_read_sector(fsi, fat_sector_buff, vi->rootdir);
+	return fat_read_sector(fsi,
+	                       di->p_scratch,
+	                       fsi->vi.secperclus * di->currentcluster + di->currentsector);
 }
 
 /* @brief Figure out if node at specific path exists or not
  * @note  Assume dir is root
+ * @note IMPORTANT: this functions should not be calls in the middle of iterate,
+ * as it wipes dirinfo content
+ *
  * @param name Full path to the extected node
  * @param dir  Not used now
  *
  * @return Pointer of inode or NULL if not found
  */
 static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
-	struct fat_file_info *fi;
-	struct dirinfo *di, *new_di;
+	struct dirinfo *di;
 	struct dirent de;
-	struct volinfo *vi;
 	struct super_block *sb;
-	uint8_t tmp;
+	uint8_t tmp_ent;
+	uint8_t tmp_sec;
+	uint32_t tmp_clus;
 	struct inode *node;
 	char tmppath[PATH_MAX];
 	char fat_name[12];
 	int found = 0;
+	int sector;
+	int cluster;
+	struct fat_fs_info *fsi;
 
 	assert(name);
 	assert(dir->d_inode);
@@ -65,17 +185,33 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	sb = dir->d_sb;
 	di = dir->d_inode->i_data;
-	vi = &((struct fat_fs_info*)sb->sb_data)->vi;
 
 	assert(di);
 
 	path_canonical_to_dir(fat_name, (char *) name);
 
-	if (read_dir_buf(sb->sb_data, di) != DFS_OK)
+	if (fat_dirent_by_file(&di->fi, &de))
 		goto err_out;
 
-	tmp = di->currententry;
-	di->currententry = 0;
+	cluster = (uint32_t) de.startclus_l_l |
+	  ((uint32_t) de.startclus_l_h) << 8 |
+	  ((uint32_t) de.startclus_h_l) << 16 |
+	  ((uint32_t) de.startclus_h_h) << 24;
+
+	fsi = sb->sb_data;
+	if (cluster == 0)
+		sector = fsi->vi.rootdir;
+	else
+		sector = cluster * fsi->vi.secperclus;
+
+	tmp_ent = di->currententry;
+	tmp_sec = di->currentsector;
+	tmp_clus = di->currentcluster;
+	fat_reset_dir(di);
+
+	if (fat_read_sector(sb->sb_data, di->p_scratch, sector))
+		goto err_out;
+
 	while (!fat_get_next(sb->sb_data, di, &de)) {
 		path_canonical_to_dir(tmppath, (char *) de.name);
 		if (!memcmp(tmppath, fat_name, MSDOS_NAME)) {
@@ -90,71 +226,17 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	if (NULL == (node = dvfs_alloc_inode(sb)))
 		goto err_out;
 
-	if (de.attr & ATTR_DIRECTORY){
-		if (NULL == (new_di = fat_dirinfo_alloc())) {
-			dvfs_destroy_inode(node);
-			goto err_out;
-		}
+	if (fat_fill_inode(node, &de, di))
+		goto err_out;
 
-		memset(new_di, 0, sizeof(struct dirinfo));
-		new_di->p_scratch = fat_sector_buff;
-		node->flags |= S_IFDIR;
-		node->i_data = new_di;
-
-		if (vi->filesystem == FAT32) {
-			new_di->currentcluster = (uint32_t) de.startclus_l_l |
-			  ((uint32_t) de.startclus_l_h) << 8 |
-			  ((uint32_t) de.startclus_h_l) << 16 |
-			  ((uint32_t) de.startclus_h_h) << 24;
-		} else {
-			new_di->currentcluster = (uint32_t) de.startclus_l_l |
-			  ((uint32_t) de.startclus_l_h) << 8;
-		}
-
-		fi = &new_di->fi;
-	} else {
-		if (NULL == (fi   = fat_file_alloc())) {
-			dvfs_destroy_inode(node);
-			goto err_out;
-		}
-		node->i_data = fi;
-	}
-
-	*fi = (struct fat_file_info) {
-		.fsi = sb->sb_data,
-		.volinfo = vi,
-	};
-
-	if (di->currentcluster == 0) {
-		fi->dirsector = vi->rootdir + di->currentsector;
-	} else {
-		fi->dirsector = vi->dataarea +
-				((di->currentcluster - 2) *
-				vi->secperclus) + di->currentsector;
-	}
-	fi->diroffset = di->currententry - 1;
-	if (vi->filesystem == FAT32) {
-		fi->cluster = (uint32_t) de.startclus_l_l |
-		  ((uint32_t) de.startclus_l_h) << 8 |
-		  ((uint32_t) de.startclus_h_l) << 16 |
-		  ((uint32_t) de.startclus_h_h) << 24;
-	} else {
-		fi->cluster = (uint32_t) de.startclus_l_l |
-		  ((uint32_t) de.startclus_l_h) << 8;
-	}
-	fi->firstcluster = fi->cluster;
-	fi->filelen = (uint32_t) de.filesize_0 |
-			      ((uint32_t) de.filesize_1) << 8 |
-			      ((uint32_t) de.filesize_2) << 16 |
-			      ((uint32_t) de.filesize_3) << 24;
-
-
-	di->currententry = tmp;
-	node->flags |= S_IRWXA;
-	return node;
+	goto succ_out;
 err_out:
-	di->currententry = tmp;
-	return NULL;
+	node = NULL;
+succ_out:
+	di->currentcluster = tmp_clus;
+	di->currententry = tmp_ent;
+	di->currentsector = tmp_sec;
+	return node;
 }
 
 /* @brief Create new file or directory
@@ -166,27 +248,82 @@ err_out:
  */
 static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	int res;
+	uint32_t temp;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
-	int fat_flags = 0;
+	struct dirinfo *di, *new_di;
+	struct dirent de;
+	uint32_t cluster;
+
 	assert(i_new);
 	assert(i_dir);
-	/* TODO check file exists */
 
+	/* TODO check file exists */
 	fsi = i_dir->i_sb->sb_data;
-	fi = fat_file_alloc();
-	*fi = (struct fat_file_info) {
-		.fsi     = fsi,
-		.volinfo = &fsi->vi,
-	};
+	di = i_dir->i_data;
+
+	fat_reset_dir(di);
+	read_dir_buf(fsi, di);
+
+	/* Find suitable dirent */
+	while (DFS_OK == (res = fat_get_next(fsi, di, &de)));
+
+	if (res != DFS_EOF)
+		/* End of cluster, probably */
+		/* TODO extend cluster chain */
+		return -1;
+
+	cluster = fat_get_free_fat_(fsi, fat_sector_buff);
+	/* Be carefully, this functions explicitly erases de.attr */
+	path_canonical_to_dir((char*) de.name, i_new->i_dentry->name);
+	de.attr = S_ISDIR(mode) ? ATTR_DIRECTORY : 0;
+	de.startclus_l_l = cluster & 0xff;
+	de.startclus_l_h = (cluster & 0xff00) >> 8;
+	de.startclus_h_l = (cluster & 0xff0000) >> 16;
+	de.startclus_h_h = (cluster & 0xff000000) >> 24;
+
+	if (FILE_TYPE(mode, S_IFDIR)) {
+		if (!(new_di = fat_dirinfo_alloc()))
+			return -ENOMEM;
+		di->p_scratch = fat_sector_buff;
+		fi = &new_di->fi;
+	} else {
+		if (!(fi = fat_file_alloc()))
+			return -ENOMEM;
+	}
+
 	i_new->i_data = fi;
 
-	fat_flags |= FILE_TYPE(mode, S_IFDIR);
+	*fi = (struct fat_file_info) {
+		.fsi          = fsi,
+		.volinfo      = &fsi->vi,
+		.dirsector    = di->currentsector +
+			di->currentcluster * fsi->vi.secperclus,
+		.diroffset    = di->currententry,
+		.cluster      = cluster,
+		.firstcluster = cluster,
+	};
 
-	read_dir_buf(fsi, i_dir->i_data);
-	res = fat_create_file(fi, i_dir->i_data, i_new->i_dentry->name, fat_flags);
+	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector))
+		return -1;
 
-	return res;
+	memcpy(&(((struct dirent*) fat_sector_buff)[fi->diroffset]),
+			&de, sizeof(struct dirent));
+	if (fat_write_sector(fsi, fat_sector_buff, fi->dirsector))
+		return -1;
+
+	/* Mark newly allocated cluster as end of chain */
+	switch(fsi->vi.filesystem) {
+		case FAT12:		cluster = 0xfff;	break;
+		case FAT16:		cluster = 0xffff;	break;
+		case FAT32:		cluster = 0x0fffffff;	break;
+		default:		return DFS_ERRMISC;
+	}
+
+	temp = 0;
+	fat_set_fat_(fsi, fat_sector_buff, &temp, fi->cluster, cluster);
+
+	return ENOERR;
 }
 
 static int fat_close(struct file *desc) {
@@ -229,23 +366,26 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 
 	fsi = parent->i_sb->sb_data;
 	dirinfo = parent->i_data;
-	//if (ctx->pos == 0)
-		dirinfo->currententry = 0;
+	dirinfo->currententry = (int) ctx->fs_ctx;
+
+	if (dirinfo->currententry == 0)
+		/* Need to get directory data from drive */
+		fat_reset_dir(dirinfo);
+
 	read_dir_buf(fsi, dirinfo);
 
 	while (((res = fat_get_next(fsi, dirinfo, &de)) ==  DFS_OK) || res == DFS_ALLOCNEW)
-		if (de.name[0] == 0)
+		if (de.name[0] == '\0')
 			continue;
 		else
 			break;
 
 	switch (res) {
 	case DFS_OK:
-		strcpy(next->i_dentry->name, (char*) de.name);
-		next->flags |= S_IRWXA;
+		fat_fill_inode(next, &de, dirinfo);
+		ctx->fs_ctx = (void*) ((int)dirinfo->currententry);
 		return 0;
 	case DFS_EOF:
-		//ctx->fs_ctx = 0;
 		/* Fall through */
 	default:
 		return -1;
@@ -260,15 +400,37 @@ static int fat_remove(struct inode *inode) {
 	if (FILE_TYPE(inode->flags, S_IFDIR)) {
 		di = inode->i_data;
 		res = fat_unlike_directory(&di->fi, NULL, (uint8_t*) fat_sector_buff);
-		if (res == 0)
-			fat_dirinfo_free(di);
 	} else {
 		fi = inode->i_data;
 		res = fat_unlike_file(fi, NULL, (uint8_t*) fat_sector_buff);
-		if (res == 0)
-			fat_file_free(fi);
 	}
 	return res;
+}
+
+static int fat_pathname(struct inode *inode, char *buf, int flags) {
+	struct fat_file_info *fi;
+	struct fat_fs_info *fsi;
+
+	switch (flags) {
+	case DVFS_NAME:
+		fi = inode->i_data;
+		fsi = fi->fsi;
+
+		if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector))
+			return -1;
+		strncpy(buf, (char*) ((struct dirent*) fat_sector_buff)[fi->diroffset].name, 11);
+		buf[11] = '\0';
+		return 0;
+	default:
+		/* NIY */
+		return -ENOSYS;
+	}
+}
+
+static int fat_truncate(struct inode *inode, size_t len) {
+	/* This is a stub, but files should be extended automatically
+	 * with the common part of the driver on write */
+	return 0;
 }
 
 /* Declaration of operations */
@@ -277,6 +439,8 @@ struct inode_operations fat_iops = {
 	.lookup   = fat_ilookup,
 	.remove   = fat_remove,
 	.iterate  = fat_iterate,
+	.pathname = fat_pathname,
+	.truncate = fat_truncate,
 };
 
 struct file_operations fat_fops = {
@@ -285,8 +449,27 @@ struct file_operations fat_fops = {
 	.read = fat_read,
 };
 
+static int fat_destroy_inode(struct inode *inode) {
+	struct fat_file_info *fi;
+	struct dirinfo *di;
+
+	if (!inode->i_data)
+		return 0;
+
+	if (FILE_TYPE(inode->flags, S_IFDIR)) {
+		di = inode->i_data;
+		fat_dirinfo_free(di);
+	} else {
+		fi = inode->i_data;
+		fat_file_free(fi);
+	}
+
+	return 0;
+}
+
 struct super_block_operations fat_sbops = {
-	.open_idesc = dvfs_file_open_idesc,
+	.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = fat_destroy_inode,
 };
 
 /* @brief Initializing fat super_block
@@ -334,21 +517,30 @@ static int fat_fill_sb(struct super_block *sb, struct block_dev *dev) {
 */
 static int fat_mount_end(struct super_block *sb) {
 	struct dirinfo *di;
-	struct volinfo *vi;
+	struct fat_fs_info *fsi;
 
+	uint8_t tmp[] = { '\0' };
 	assert(sb->bdev->block_size <= FAT_MAX_SECTOR_SIZE);
 
 	if (NULL == (di = fat_dirinfo_alloc()))
 		return -ENOMEM;
 
-	vi = &((struct fat_fs_info*)sb->sb_data)->vi;
+	di->p_scratch = fat_sector_buff;
 
-	*di = (struct dirinfo) {
-		.p_scratch = fat_sector_buff,
+	fsi = sb->sb_data;
+	if (fat_open_dir(fsi, tmp, di))
+		return -1;
+
+	di->fi = (struct fat_file_info) {
+		.fsi          = fsi,
+		.volinfo      = &fsi->vi,
+		.dirsector    = fsi->vi.rootdir,
+		.diroffset    = 0,
+		.firstcluster = 0,
 	};
 
-	di->currentcluster = vi->filesystem == FAT32 ? vi->rootdir : 0;
 	sb->root->d_inode->i_data = di;
+	sb->root->d_inode->flags |= S_IFDIR;
 
 	return 0;
 }
@@ -363,6 +555,9 @@ static int fat_mount_end(struct super_block *sb) {
  */
 static int fat_format(void *dev, void *priv) {
 	int fat_n = priv ? atoi((char*) priv) : 12;
+	if (!fat_n)
+		fat_n = 12;
+
 	fat_create_partition(dev, fat_n);
 	fat_root_dir_record(dev);
 

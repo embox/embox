@@ -8,6 +8,7 @@
 #define _DVFS_H_
 
 #include <drivers/block_dev.h>
+#include <framework/mod/options.h>
 #include <fs/idesc.h>
 #include <fs/file_system.h>
 #include <util/dlist.h>
@@ -16,8 +17,10 @@
  New VFS prototype
  *****************/
 
-#define DENTRY_NAME_LEN 36
-#define FS_NAME_LEN     16
+#include <config/embox/fs/dvfs.h>
+#define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs, NUMBER, dentry_name_len)
+#define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs, NUMBER, max_path_len)
+#define FS_NAME_LEN       16
 
 #define DVFS_PATH_FULL     0x001
 #define DVFS_PATH_FS       0x002
@@ -116,6 +119,14 @@ struct file {
 	struct file_operations *f_ops;
 };
 
+/* NOTE ON FILE OPEN
+ *
+ * Basically,  in  regular  file  systems  file  open  driver  function  should
+ * just  return  the same  idesc  that  was  passed as second  parameter.  This
+ * feature  is  required for device-dependent operations, otherwise just return
+ * the second argument.
+ */
+
 struct file_operations {
 	struct idesc *(*open)(struct inode *node, struct idesc *desc);
 	int    (*close)(struct file *desc);
@@ -132,7 +143,7 @@ struct dumb_fs_driver {
 };
 
 struct auto_mount {
-	char mount_path[DENTRY_NAME_LEN];
+	char mount_path[DVFS_MAX_PATH_LEN];
 	struct dumb_fs_driver *fs_driver;
 };
 
@@ -189,7 +200,7 @@ extern int dvfs_cache_del(struct dentry *dentry);
 extern int dvfs_cache_add(struct dentry *dentry);
 
 extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev);
-
+extern int dvfs_destroy_sb(struct super_block *sb);
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
 
 extern int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags);

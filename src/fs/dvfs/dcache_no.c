@@ -21,10 +21,8 @@ struct dentry *dvfs_cache_get(char *path, struct lookup *lookup) {
 			continue;
 		d = mcast_out(l, struct dentry, children_lnk);
 
-		if (d != lookup->item && !strcmp(d->name, lookup->item->name)) {
-			dvfs_destroy_dentry(lookup->item);
+		if (d != lookup->item && !strcmp(d->name, lookup->item->name))
 			return d;
-		}
 	}
 
 	return NULL;

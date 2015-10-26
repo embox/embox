@@ -13,9 +13,11 @@
 
 #include <fs/mbr.h>
 
-#define MSDOS_NAME      11
-#define ROOT_DIR        "/"
 #define DIR_SEPARATOR   '/'	/* character separating directory components*/
+#define ROOT_DIR        "/"
+#define MSDOS_NAME      11
+#define MSDOS_DOT     ".          "
+#define MSDOS_DOTDOT  "..         "
 
 /* 32-bit error codes */
 #define DFS_OK        0          /* no error */
@@ -26,7 +28,7 @@
 #define DFS_ALLOCNEW  5	         /* must allocate new directory cluster */
 #define DFS_ERRMISC   0xffffffff /* generic error */
 #define DFS_WRONGRES  6          /* file expected but dir found or vice versa */
-
+#define DFS_BAD_CLUS  0x0ffffff7
 /* Internal subformat identifiers */
 #define FAT12 0
 #define FAT16 1
@@ -239,13 +241,12 @@ struct fat_file_info {
  *	Directory search structure (Internal to DOSFS)
  */
 struct dirinfo {
+	struct fat_file_info fi;	/* Must be first field in structure */
 	uint32_t currentcluster;	/* current cluster in dir */
 	uint8_t currentsector;		/* current sector in cluster */
 	uint8_t currententry;		/* current dir entry in sector */
 	uint8_t *p_scratch;			/* ptr to user-supplied scratch buffer (one sector) */
 	uint8_t flags;				/* internal DOSFS flags */
-
-	struct fat_file_info fi;
 };
 
 #include <framework/mod/options.h>

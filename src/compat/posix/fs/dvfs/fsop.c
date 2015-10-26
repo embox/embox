@@ -15,35 +15,38 @@
 
 int mkdir(const char *pathname, mode_t mode) {
 	struct lookup lu;
-	const char *t;
-	size_t namelen;
-	const char *dirname;
-	int i;
+	char *t;
+
+	char parent[DVFS_MAX_PATH_LEN];
 
 	dvfs_lookup(pathname, &lu);
-
-	/* TODO check lu->parent == parent that we want */
 
 	if (lu.item)
 		return SET_ERRNO(EEXIST);
 
-	/* TODO rewrite this piece of code. The problem is optional trailing slash */
-	namelen = strlen(pathname);
-	dirname = t = pathname;
-	for (i = 0; i < namelen; i++) {
-		if (pathname[i] == '/') {
-			dirname = t;
-			t = &pathname[i];
-		}
+	parent[0] = '\0';
+	strncat(parent, pathname, sizeof(parent) - 1);
+	if (parent[strlen(parent) - 1] == '/')
+		parent[strlen(parent) - 1] = '\0';
+
+	t = strrchr(parent, '/');
+	if (t) {
+		memset(t + 1, '\0', parent + DVFS_MAX_PATH_LEN - t);
+
+		dvfs_lookup(parent, &lu);
+		if (!lu.item)
+			return SET_ERRNO(ENOENT);
+
+		lu.parent = lu.item;
+		lu.item = NULL;
+	} else {
+		parent[0] = '\0';
+		dvfs_lookup(pathname, &lu);
 	}
 
-	if (pathname[namelen - 1] != '/')
-		dirname = t;
-
-	if (dirname[0] == '/')
-		dirname++;
-
-	return dvfs_create_new(dirname, &lu, S_IFDIR);
+	return dvfs_create_new(pathname + strlen(parent),
+	                       &lu,
+			       S_IFDIR | (mode & DVFS_DIR_VIRTUAL));
 }
 
 int remove(const char *pathname) {
