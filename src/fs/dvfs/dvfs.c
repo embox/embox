@@ -409,7 +409,7 @@ static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx
 
 static int iterate_cached(struct super_block *sb,
 		struct lookup *lookup, struct inode *next_inode) {
-	char full_path[DENTRY_NAME_LEN * 2];
+	char full_path[DVFS_MAX_PATH_LEN];
 	struct dentry *cached;
 	struct dentry *next_dentry;
 	int path_end;

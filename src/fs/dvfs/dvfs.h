@@ -8,6 +8,7 @@
 #define _DVFS_H_
 
 #include <drivers/block_dev.h>
+#include <framework/mod/options.h>
 #include <fs/idesc.h>
 #include <fs/file_system.h>
 #include <util/dlist.h>
@@ -16,8 +17,10 @@
  New VFS prototype
  *****************/
 
-#define DENTRY_NAME_LEN 36
-#define FS_NAME_LEN     16
+#include <config/embox/fs/dvfs.h>
+#define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs, NUMBER, dentry_name_len)
+#define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs, NUMBER, max_path_len)
+#define FS_NAME_LEN       16
 
 #define DVFS_PATH_FULL     0x001
 #define DVFS_PATH_FS       0x002
@@ -132,7 +135,7 @@ struct dumb_fs_driver {
 };
 
 struct auto_mount {
-	char mount_path[DENTRY_NAME_LEN];
+	char mount_path[DVFS_MAX_PATH_LEN];
 	struct dumb_fs_driver *fs_driver;
 };
 

@@ -17,7 +17,7 @@ int mkdir(const char *pathname, mode_t mode) {
 	struct lookup lu;
 	char *t;
 
-	char parent[DENTRY_NAME_LEN];
+	char parent[DVFS_MAX_PATH_LEN];
 
 	dvfs_lookup(pathname, &lu);
 
@@ -30,7 +30,7 @@ int mkdir(const char *pathname, mode_t mode) {
 
 	t = strrchr(parent, '/');
 	if (t) {
-		memset(t + 1, '\0', parent + DENTRY_NAME_LEN - t);
+		memset(t + 1, '\0', parent + DVFS_MAX_PATH_LEN - t);
 
 		dvfs_lookup(parent, &lu);
 		if (!lu.item)
