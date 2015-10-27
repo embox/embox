@@ -33,7 +33,6 @@
 POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
 INDEX_DEF(ramdisk_idx, 0, MAX_DEV_QUANTITY);
 
-static int ram_init(void *arg);
 static int read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 static int write_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
@@ -89,11 +88,6 @@ int ramdisk_delete(const char *name) {
 	return 0;
 }
 
-
-static int ram_init(void *arg) {
-	return 0;
-}
-
 static int read_sectors(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	ramdisk_t *ramdisk;
@@ -132,4 +126,4 @@ static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-EMBOX_BLOCK_DEV("ramdisk", &ramdisk_pio_driver, ram_init);
+EMBOX_BLOCK_DEV("ramdisk", &ramdisk_pio_driver, NULL);
