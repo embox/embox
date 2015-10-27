@@ -6,7 +6,6 @@ module ide {
 	source "cdrom.c"
 	source "harddisk_pio.c"
 	source "harddisk_dma.c"
-	source "partition.c"
 
 	@IncludeExport(path="drivers")
 	source "ide.h"
@@ -15,5 +14,6 @@ module ide {
 	depends embox.driver.block_common
 	depends embox.util.indexator
 	depends embox.compat.posix.util.sleep
+	depends embox.driver.block.partition
 	depends embox.kernel.time.kernel_time
 }

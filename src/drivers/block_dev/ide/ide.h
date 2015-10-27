@@ -352,6 +352,4 @@ extern void pio_write_buffer(hd_t *hd, char *buffer, int size);
 extern void pio_read_buffer(hd_t *hd, char *buffer, int size);
 extern void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects);
 
-extern int create_partitions(hd_t *hd);
-
 #endif /* IDE_H_ */

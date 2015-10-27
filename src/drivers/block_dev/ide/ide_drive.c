@@ -57,6 +57,7 @@
 
 #include <drivers/ide.h>
 #include <drivers/block_dev.h>
+#include <drivers/block_dev/partition.h>
 #include <mem/phymem.h>
 
 static hdc_t hdctab[HD_CONTROLLERS];

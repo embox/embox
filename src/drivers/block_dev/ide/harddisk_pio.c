@@ -17,6 +17,7 @@
 #include <kernel/irq_lock.h>
 #include <drivers/ide.h>
 #include <drivers/block_dev.h>
+#include <drivers/block_dev/partition.h>
 #include <mem/phymem.h>
 
 #include <kernel/time/ktime.h>
