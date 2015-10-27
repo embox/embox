@@ -189,6 +189,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup);
 extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);
+extern int dvfs_fstat(struct file *desc, struct stat *sb);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 extern int dvfs_create_new(const char *name, struct lookup *lookup, int flags);

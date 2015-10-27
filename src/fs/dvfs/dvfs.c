@@ -273,6 +273,16 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 	return res;
 }
 
+int dvfs_fstat(struct file *desc, struct stat *sb) {
+	*sb = (struct stat) {
+		.st_size = desc->f_inode->length,
+		.st_mode = desc->f_inode->flags,
+		.st_uid = 0,
+		.st_gid = 0
+	};
+	return 0;
+}
+
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int set_rootfs_sb(struct super_block *sb);
 /**

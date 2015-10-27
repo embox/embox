@@ -50,6 +50,7 @@ int mutex_lock(struct mutex *m) {
 	int ret, wait_ret;
 
 	assert(m);
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
 	errcheck = (m->attr.type == MUTEX_ERRORCHECK);
 

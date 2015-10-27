@@ -185,7 +185,8 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	}
 
 	errcode = dvfs_path_walk(path, dentry, lookup);
-	dvfs_cache_add(lookup->item);
+	if (!errcode)
+		dvfs_cache_add(lookup->item);
 
 	return errcode;
 }

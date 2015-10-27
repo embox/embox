@@ -38,13 +38,13 @@ static ssize_t idesc_file_ops_write(struct idesc *idesc, const void *buf, size_t
 static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
-	return -1;
+	return dvfs_fstat((struct file *)idesc, buf);;
 }
 
 static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
-	return -1;
+	return ((struct file *)idesc)->f_ops->ioctl((struct file *)idesc, request, data);
 }
 
 static int idesc_file_ops_status(struct idesc *idesc, int mask) {

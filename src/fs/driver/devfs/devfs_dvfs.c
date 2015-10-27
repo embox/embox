@@ -84,6 +84,15 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 				return 0;
 			}
 		}
+		dlist_foreach_entry(dev_module, &cdev_repo_list, cdev_list) {
+			if (i++ == (int) ctx->fs_ctx >> 2) {
+				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
+				devfs_fill_inode(next, dev_module, S_IFCHR);
+				return 0;
+			}
+		}
+		/* Fall through */
+		ctx->fs_ctx = (void*) ((int) 0x1);
 	case 2:
 		/* Fall through */
 	case 3:
@@ -122,6 +131,13 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 		}
 
 	array_spread_foreach_ptr(dev_module, __char_device_registry) {
+		if (!strcmp(dev_module->name, name)) {
+			devfs_fill_inode(node, dev_module, S_IFCHR);
+			return node;
+		}
+	}
+
+	dlist_foreach_entry(dev_module, &cdev_repo_list, cdev_list) {
 		if (!strcmp(dev_module->name, name)) {
 			devfs_fill_inode(node, dev_module, S_IFCHR);
 			return node;
@@ -174,9 +190,13 @@ static size_t devfs_write(struct file *desc, void *buf, size_t size) {
 	switch (desc->f_inode->flags & (S_IFBLK | S_IFCHR)) {
 	case S_IFBLK:
 		bdev = desc->f_inode->i_data;
+		assert(bdev->driver);
+		assert(bdev->driver->write);
 		return bdev->driver->write(bdev, buf, size, desc->pos / bdev->block_size);
 	case S_IFCHR:
 		cdev = desc->f_inode->i_data;
+		assert(cdev->fops);
+		assert(cdev->fops->write);
 		return cdev->fops->write(desc, buf, size);
 	default:
 		printk("Unknown device type!\n");

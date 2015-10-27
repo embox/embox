@@ -127,7 +127,7 @@ void usb_driver_handle(struct usb_dev *dev) {
 				dev->dev_desc.id_vendor,
 				dev->dev_desc.id_product);
 
-		char_dev_register(name_buf, drv->file_ops);
+		char_dev_register(NULL);
 	}
 }
 

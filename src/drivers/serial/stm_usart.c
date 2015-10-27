@@ -77,6 +77,8 @@
 #error Unsupported USARTx
 #endif
 
+EMBOX_UNIT_INIT(uart_init);
+
 static int stm32_uart_putc(struct uart *dev, int ch) {
 	USART_TypeDef *USART = (void *) dev->base_addr;
 	while (USART_GetFlagStatus(USART, USART_FLAG_TXE) == RESET);
@@ -189,3 +191,7 @@ const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
 		.uart = &stm32_uart0,
 		.params = &uart_defparams,
 };
+
+static int uart_init(void) {
+	return uart_register(&stm32_uart0, &uart_defparams);
+}

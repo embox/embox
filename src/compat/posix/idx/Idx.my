@@ -62,7 +62,6 @@ static module ppty {
 
 	depends embox.fs.idesc_event
 	depends embox.kernel.task.api
-	depends embox.driver.tty.pty
 }
 
 static module poll {
