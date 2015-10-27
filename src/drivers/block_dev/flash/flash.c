@@ -140,7 +140,7 @@ static int flashbdev_init(void *arg) {
 	return 0;
 }
 
-static int flashbdev_read(block_dev_t *bdev,
+static int flashbdev_read(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t startpos, endpos;
@@ -164,7 +164,7 @@ static int flashbdev_read(block_dev_t *bdev,
 }
 
 
-static int flashbdev_write(block_dev_t *bdev,
+static int flashbdev_write(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t startpos, endpos;

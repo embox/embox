@@ -25,9 +25,9 @@
 
 #define HD_WAIT_MS 10
 
-extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
+extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 
-static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;
@@ -93,7 +93,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	return result == 0 ? count : result;
 }
 
-static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;

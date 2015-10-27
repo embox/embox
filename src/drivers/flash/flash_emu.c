@@ -36,7 +36,7 @@ static size_t flash_emu_query (struct flash_dev *dev,
 }
 
 static int flash_emu_erase_block (struct flash_dev *dev, uint32_t block_base) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 	int len;
 	char * data;
 	int rc;
@@ -65,7 +65,7 @@ static int flash_emu_erase_block (struct flash_dev *dev, uint32_t block_base) {
 
 static int flash_emu_program (struct flash_dev *dev, uint32_t base,
 		const void* data, size_t len) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 
 	bdev = dev->privdata;
 	if(NULL == bdev) {
@@ -77,7 +77,7 @@ static int flash_emu_program (struct flash_dev *dev, uint32_t base,
 
 static int flash_emu_read (struct flash_dev *dev,
 		uint32_t base, void* data, size_t len) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 
 	bdev = dev->privdata;
 	if(NULL == bdev) {

@@ -21,7 +21,7 @@
  * @return Pointer to created device or NULL if failed
  */
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 	char full_path[256];
 	struct lookup lu;
 

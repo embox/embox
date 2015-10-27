@@ -30,7 +30,7 @@
  * A buffer_head is used to map a single block within a disk
  */
 struct buffer_head {
-	block_dev_t *bdev;              /* device buffer_header is from */
+	struct block_dev *bdev;              /* device buffer_header is from */
 	int block;                      /* start block number */
 	size_t blocksize;               /* size of mapping */
 	int flags;                      /* buffer state bitmap */

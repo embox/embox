@@ -19,7 +19,7 @@
 #include <mem/phymem.h>
 
 
-extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
+extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 
 static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
 	int i;
@@ -81,7 +81,7 @@ static int stop_dma(hdc_t *hdc) {
 	return 0;
 }
 
-static int hd_read_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_read_udma(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;
@@ -159,7 +159,7 @@ static int hd_read_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 	return result == 0 ? count : result;
 }
 
-static int hd_write_udma(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;

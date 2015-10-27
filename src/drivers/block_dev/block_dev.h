@@ -39,9 +39,9 @@ typedef struct block_dev {
 typedef struct block_dev_driver {
 	char *name;
 
-	int (*ioctl)(block_dev_t *bdev, int cmd, void *args, size_t size);
-	int (*read)(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno);
-	int (*write)(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno);
+	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
+	int (*read)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+	int (*write)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 } block_dev_driver_t;
 
 typedef int (* block_dev_module_init_ft)(void *args);
@@ -73,8 +73,8 @@ extern struct block_dev *block_dev(void *bdev);
 extern block_dev_cache_t *block_dev_cache_init(void *bdev, int blocks);
 extern block_dev_cache_t *block_dev_cached_read(void *bdev, blkno_t blkno);
 extern int block_dev_read(void *bdev, char *buffer, size_t count, blkno_t blkno);
-extern int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_t offset);
-extern int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count, size_t offset);
+extern int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, size_t offset);
+extern int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t count, size_t offset);
 extern int block_dev_write(void *bdev, const char *buffer, size_t count, blkno_t blkno);
 extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);

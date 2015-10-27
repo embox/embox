@@ -160,7 +160,7 @@ static int ram_init(void *arg) {
 	return 0;
 }
 
-static int read_sectors(block_dev_t *bdev,
+static int read_sectors(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	ramdisk_t *ramdisk;
 	char *read_addr;
@@ -173,7 +173,7 @@ static int read_sectors(block_dev_t *bdev,
 }
 
 
-static int write_sectors(block_dev_t *bdev,
+static int write_sectors(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	ramdisk_t *ramdisk;
 	char *write_addr;
@@ -185,7 +185,7 @@ static int write_sectors(block_dev_t *bdev,
 	return count;
 }
 
-static int ram_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	ramdisk_t *ramd = (ramdisk_t *) bdev->privdata;
 
 	switch (cmd) {

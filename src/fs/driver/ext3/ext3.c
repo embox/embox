@@ -195,7 +195,7 @@ static int ext3fs_format(void *dev) {
 	return main_mke2fs(argc, argv);
 }
 
-static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
+static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t start) {
     ext3_journal_superblock_t *sb;
     ext3_journal_specific_t *spec = (ext3_journal_specific_t *)jp->j_fs_specific.data;
     char buf[4096];
@@ -298,7 +298,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 	/* XXX Hack to use ext2 functions */
 	dir_nas->fs->drv = &ext3fs_driver;
 	ext3_spec->ext3_journal_inode = dip;
-	if (0 > ext3_journal_load(jp, (block_dev_t *) dev_node->nas->fi->privdata,
+	if (0 > ext3_journal_load(jp, (struct block_dev *) dev_node->nas->fi->privdata,
 			fsbtodb(fsi, dip->i_block[0]))) {
 		return -EIO;
 	}

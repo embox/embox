@@ -90,7 +90,7 @@ static void scsi_disk_unlock(struct block_dev *bdev) {
 	scsi_dev_use_dec(sdev);
 }
 
-static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
+static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 		blkno_t blkno) {
 	struct scsi_dev *sdev = bdev->privdata;
 	int blksize = sdev->blk_size;
@@ -130,7 +130,7 @@ static int scsi_read(block_dev_t *bdev, char *buffer, size_t count,
 	return bp - buffer;
 }
 
-static int scsi_write(block_dev_t *bdev, char *buffer, size_t count,
+static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 		blkno_t blkno) {
 	struct scsi_dev *sdev;
 	int blksize;
@@ -176,7 +176,7 @@ static int scsi_write(block_dev_t *bdev, char *buffer, size_t count,
 	return bp - buffer;
 }
 
-static int scsi_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+static int scsi_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	struct scsi_dev *sdev = bdev->privdata;
 	int ret;
 

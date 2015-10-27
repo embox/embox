@@ -26,6 +26,6 @@ static inline void bcache_buffer_unlock(struct buffer_head *bh) {
  *   Block with number @a block and with size @a size from device @a bdev.
  *   Block is returned in locked state.
  */
-extern struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t size);
+extern struct buffer_head *bcache_getblk_locked(struct block_dev *bdev, int block, size_t size);
 
 #endif /* FS_BCACHE_H_ */

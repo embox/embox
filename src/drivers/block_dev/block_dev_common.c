@@ -34,7 +34,7 @@ struct block_dev **get_bdev_tab() {
 }
 
 static int block_dev_cache_free(void *dev) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 	block_dev_cache_t *cache;
 
 	if (NULL == dev) {
@@ -57,12 +57,12 @@ struct block_dev *block_dev_create_common(char *path, void *driver, void *privda
 	struct block_dev *bdev;
 	size_t bdev_id;
 
-	bdev = (block_dev_t *) pool_alloc(&blockdev_pool);
+	bdev = (struct block_dev *) pool_alloc(&blockdev_pool);
 	if (NULL == bdev) {
 		return NULL;
 	}
 
-	memset(bdev, 0, sizeof(block_dev_t));
+	memset(bdev, 0, sizeof(struct block_dev));
 
 	bdev_id = index_alloc(&block_dev_idx, INDEX_MIN);
 	if (bdev_id == INDEX_NONE) {
@@ -136,7 +136,7 @@ struct block_dev *block_dev(void *dev) {
 	return (struct block_dev *)dev;
 }
 
-int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_t offset) {
+int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, size_t offset) {
 	int blksize, blkno, cplen, cursor;
 	int res, i;
 	struct buffer_head *bh;
@@ -176,7 +176,7 @@ int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_
 	return cursor;
 }
 
-int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count, size_t offset) {
+int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t count, size_t offset) {
 	int blksize, blkno, cplen, cursor;
 	int res, i;
 	struct buffer_head *bh;
@@ -233,7 +233,7 @@ int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count
 }
 
 int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 	int blksize;
 
 	if (NULL == dev) {
@@ -249,7 +249,7 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 }
 
 int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 	int blksize;
 
 	if (NULL == dev) {
@@ -266,7 +266,7 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 }
 
 int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 
 	if (NULL == dev) {
 		return -ENODEV;
@@ -283,7 +283,7 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	int pagecnt;
 	block_dev_cache_t *cache;
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 
 	if (NULL == dev) {
 		return NULL;
@@ -324,7 +324,7 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 
 block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
 	block_dev_cache_t *cache;
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 
 	if (NULL == dev) {
 		return NULL;

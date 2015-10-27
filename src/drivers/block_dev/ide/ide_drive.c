@@ -306,7 +306,7 @@ static int hd_cmd(hd_t *hd, unsigned int cmd,
 	return 0;
 }
 
-int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	struct dev_geometry *geom;
 	hd_t *hd = (hd_t *) bdev->privdata;
 
