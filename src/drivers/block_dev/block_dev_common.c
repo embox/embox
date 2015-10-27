@@ -22,7 +22,7 @@
 #define DEFAULT_BDEV_BLOCK_SIZE OPTION_GET(NUMBER, default_block_size)
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
-ARRAY_SPREAD_DEF(const block_dev_module_t, __block_dev_registry);
+ARRAY_SPREAD_DEF(const struct block_dev_module, __block_dev_registry);
 POOL_DEF(cache_pool, struct block_dev_cache, MAX_DEV_QUANTITY);
 POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
 INDEX_DEF(block_dev_idx, 0, MAX_DEV_QUANTITY);
@@ -93,7 +93,7 @@ void block_dev_free(struct block_dev *dev) {
 
 int block_devs_init(void) {
 	int ret;
-	const block_dev_module_t *bdev_module;
+	const struct block_dev_module *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
 		if (bdev_module->init != NULL) {
@@ -108,8 +108,8 @@ int block_devs_init(void) {
 	return 0;
 }
 
-block_dev_module_t *block_dev_lookup(const char *bd_name) {
-	block_dev_module_t *bdev_module;
+struct block_dev_module *block_dev_lookup(const char *bd_name) {
+	struct block_dev_module *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
 		if (0 == strcmp(bdev_module->name, bd_name)) {

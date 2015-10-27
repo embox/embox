@@ -579,7 +579,7 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 }
 
 static int ide_create_block_dev(hd_t *hd) {
-	const block_dev_module_t *bdev;
+	const struct block_dev_module *bdev;
 
 	switch (hd->media) {
 		case IDE_CDROM:

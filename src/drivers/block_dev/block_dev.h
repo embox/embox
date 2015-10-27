@@ -80,7 +80,7 @@ extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(char *name, struct indexator *indexator);
-extern block_dev_module_t *block_dev_lookup(const char *name);
+extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
 extern struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata);
 extern struct block_dev *block_dev_find(const char *bd_name);
@@ -88,7 +88,7 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 #include <util/array.h>
 
 #define EMBOX_BLOCK_DEV(name, block_dev_driver, init_func) \
-	ARRAY_SPREAD_DECLARE(const block_dev_module_t, __block_dev_registry); \
+	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
 	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})
 
 
