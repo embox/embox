@@ -58,7 +58,7 @@ extern int security_node_permissions(struct node *node, int flags);
 
 /**
  * @brief Checks for mount operation. @a dev is already checked for
- * #FS_MAY_READ and #FS_MAY_EXEC
+ * #S_IROTH and #FS_MAY_EXEC
  *
  * @param dev device node which is mounted
  *

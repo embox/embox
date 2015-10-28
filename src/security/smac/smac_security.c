@@ -7,6 +7,8 @@
  */
 
 #include <string.h>
+#include <sys/types.h>
+
 #include <fs/node.h>
 #include <kernel/task.h>
 #include <fs/xattr.h>
@@ -126,7 +128,7 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 
 	smac_audit_prepare(&audit, __func__, node->name);
 
-	if (1 != (res = security_xattr_is_service_access(name, FS_MAY_READ,
+	if (1 != (res = security_xattr_is_service_access(name, S_IROTH,
 					&audit))) {
 		return res;
 	}
@@ -135,7 +137,7 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 		return res;
 	}
 
-	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, S_IROTH, &audit);
 }
 
 int security_xattr_set(struct node *node, const char *name,
@@ -169,7 +171,7 @@ int security_xattr_list(struct node *node, char *list, size_t len) {
 		return res;
 	}
 
-	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, S_IROTH, &audit);
 }
 
 int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value, size_t len) {
@@ -179,7 +181,7 @@ int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value,
 
 	smac_audit_prepare(&audit, __func__, NULL);
 
-	if (1 != (res = security_xattr_is_service_access(name, FS_MAY_READ,
+	if (1 != (res = security_xattr_is_service_access(name, S_IROTH,
 					&audit))) {
 		return res;
 	}
@@ -188,7 +190,7 @@ int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value,
 		return res;
 	}
 
-	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, S_IROTH, &audit);
 }
 
 int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *value, size_t len, int flags) {
@@ -207,7 +209,7 @@ int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *
 		return res;
 	}
 
-	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, S_IROTH, &audit);
 }
 
 int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len) {
@@ -221,7 +223,7 @@ int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len) {
 		return res;
 	}
 
-	return smac_access(task_self_resource_security(), label, FS_MAY_READ, &audit);
+	return smac_access(task_self_resource_security(), label, S_IROTH, &audit);
 }
 
 int security_sock_create(struct sock *sock) {

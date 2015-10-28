@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <util/err.h>
 
@@ -119,7 +120,7 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 		goto end;
 	}
 
-	if (!idesc_check_mode(&desc->idesc, FS_MAY_READ)) {
+	if (!idesc_check_mode(&desc->idesc, S_IROTH)) {
 		ret = -EBADF;
 		goto end;
 	}

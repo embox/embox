@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 #include <util/ring_buff.h>
 
@@ -118,7 +119,7 @@ static ssize_t pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
-	assert(idesc->idesc_amode == FS_MAY_READ);
+	assert(idesc->idesc_amode == S_IROTH);
 
 	if (!nbyte) {
 		return 0;
@@ -328,7 +329,7 @@ int pipe2(int pipefd[2], int flags) {
 	}
 
 
-	idesc_pipe_init(&pipe->read_desc, pipe, FS_MAY_READ);
+	idesc_pipe_init(&pipe->read_desc, pipe, S_IROTH);
 	idesc_pipe_init(&pipe->write_desc, pipe, FS_MAY_WRITE);
 
 

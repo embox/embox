@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include <fs/perm.h>
 #include <fs/vfs.h>
@@ -48,7 +49,7 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
-	if (0 != fs_perm_check(node_path.node, FS_MAY_READ)) {
+	if (0 != fs_perm_check(node_path.node, S_IROTH)) {
 		SET_ERRNO(EACCES);
 		return NULL;
 	}

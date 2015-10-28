@@ -10,6 +10,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <unistd.h>
+#include <sys/types.h>
+
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
 #include <drivers/console/mpx.h>
@@ -166,7 +168,7 @@ static void *run(void *data) {
 	close(1);
 	close(2);
 
-	idesc_init(&fbcon->idesc, &fbcon_idesc_ops, FS_MAY_READ | FS_MAY_WRITE);
+	idesc_init(&fbcon->idesc, &fbcon_idesc_ops, S_IROTH | FS_MAY_WRITE);
 	fd = index_descriptor_add(&fbcon->idesc);
 	fbcon->vterm.tty.idesc = &fbcon->idesc;
 

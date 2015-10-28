@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <sys/types.h>
 
 
 #include <fs/perm.h>
@@ -51,7 +52,7 @@ struct file_desc *file_desc_create(struct node *node, int flag) {
 		perm_flags |= FS_MAY_WRITE;
 	}
 	if (!(flag & O_WRONLY)) {
-		perm_flags |= FS_MAY_READ;
+		perm_flags |= S_IROTH;
 	}
 
 	if (0 > (ret = fs_perm_check(node, perm_flags))) {

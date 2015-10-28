@@ -5,9 +5,10 @@
  * @author: Anton Bondarev
  */
 #include <assert.h>
+#include <poll.h>
+#include <sys/types.h>
 
 #include <util/err.h>
-#include <poll.h>
 
 #include <mem/misc/pool.h>
 #include <fs/idesc.h>
@@ -178,7 +179,7 @@ struct idesc *idesc_serial_create(struct uart *uart,
 	uart->tty->idesc = &tu->idesc;
 	uart->irq_handler = uart_irq_handler;
 
-	idesc_init(&tu->idesc, &idesc_serial_ops, FS_MAY_READ | FS_MAY_WRITE);
+	idesc_init(&tu->idesc, &idesc_serial_ops, S_IROTH | FS_MAY_WRITE);
 
 	return &tu->idesc;
 }
@@ -189,7 +190,7 @@ static ssize_t serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
-	assert(idesc->idesc_amode & FS_MAY_READ);
+	assert(idesc->idesc_amode & S_IROTH);
 
 	if (!nbyte) {
 		return 0;

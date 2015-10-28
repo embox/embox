@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
@@ -19,7 +20,7 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 
 	if (!idesc_index_valid(fd)
 			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & FS_MAY_READ))) {
+			|| (!(idesc->idesc_amode & S_IROTH))) {
 		return SET_ERRNO(EBADF);
 	}
 

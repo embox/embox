@@ -11,6 +11,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+
 #include <security/smac/smac.h>
 #include <fs/vfs.h>
 #include <fs/mount.h>
@@ -51,7 +53,7 @@ static struct smac_env *backup;
 static struct smac_env test_env = {
 	.n = 2,
 	.entries = {
-		{HIGH, LOW,  FS_MAY_READ },
+		{HIGH, LOW,  S_IROTH },
 		{LOW,  HIGH, FS_MAY_WRITE},
 	},
 };
