@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <util/err.h>
 
@@ -29,7 +29,7 @@ static struct idesc *zero_open(struct inode *node, struct idesc *idesc) {
 	}
 	*file = (struct file) {
 		.f_idesc  = {
-				.idesc_amode = S_IROTH | FS_MAY_WRITE,
+				.idesc_amode = S_IROTH | S_IWOTH,
 				.idesc_ops   = &idesc_cdev_zero_ops,
 		},
 	};

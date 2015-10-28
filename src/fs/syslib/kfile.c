@@ -92,7 +92,7 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		goto end;
 	}
 
-	if (!idesc_check_mode(&file->idesc, FS_MAY_WRITE)) {
+	if (!idesc_check_mode(&file->idesc, S_IWOTH)) {
 		ret = -EBADF;
 		goto end;
 	}

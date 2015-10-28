@@ -13,7 +13,7 @@
 #include <string.h>
 #include <stdio.h> /* snprintf */
 #include <fcntl.h> /* O_CREAT, O_APPEND */
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <fs/flags.h>
 #include <kernel/task.h>
@@ -94,7 +94,7 @@ static void audit_log(const char *subject, const char *object,
 			object,
 			audit->file_name ? audit->file_name : "",
 			may_access & S_IROTH  ? 'r' : '-',
-			may_access & FS_MAY_WRITE ? 'w' : '-',
+			may_access & S_IWOTH ? 'w' : '-',
 			may_access & FS_MAY_EXEC  ? 'x' : '-',
 			ret == 0 ? "ALLOW" : "DENINED",
 			audit->fn_name);
@@ -200,7 +200,7 @@ int smac_flushenv(void) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					FS_MAY_WRITE, &audit))) {
+					S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -217,7 +217,7 @@ int smac_addenv(const char *subject, const char *object, int flags) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					FS_MAY_WRITE, &audit))) {
+					S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -259,7 +259,7 @@ int smac_labelset(const char *label) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					FS_MAY_WRITE, &audit))) {
+					S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -300,7 +300,7 @@ static int smac_init(void) {
 	 * Otherwise boot could hang at mount, etc.
 	 */
  	 smac_addenv(smac_admin, smac_def_file_label,
-			S_IROTH | FS_MAY_WRITE | FS_MAY_EXEC);
+			S_IROTH | S_IWOTH | FS_MAY_EXEC);
 
 	return 0;
 }

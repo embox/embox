@@ -179,7 +179,7 @@ struct idesc *idesc_serial_create(struct uart *uart,
 	uart->tty->idesc = &tu->idesc;
 	uart->irq_handler = uart_irq_handler;
 
-	idesc_init(&tu->idesc, &idesc_serial_ops, S_IROTH | FS_MAY_WRITE);
+	idesc_init(&tu->idesc, &idesc_serial_ops, S_IROTH | S_IWOTH);
 
 	return &tu->idesc;
 }
@@ -211,7 +211,7 @@ static ssize_t serial_write(struct idesc *idesc, const void *buf, size_t nbyte) 
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
-	assert(idesc->idesc_amode & FS_MAY_WRITE);
+	assert(idesc->idesc_amode & S_IWOTH);
 
 	uart = idesc_to_uart(idesc);
 	assert(uart);

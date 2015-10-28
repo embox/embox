@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <fs/node.h>
 #include <kernel/task.h>
@@ -87,7 +87,7 @@ int security_node_create(struct node *dir, mode_t mode) {
 		return res;
 	}
 
-	return smac_access(task_self_resource_security(), label, FS_MAY_WRITE, &audit);
+	return smac_access(task_self_resource_security(), label, S_IWOTH, &audit);
 }
 
 void security_node_cred_fill(struct node *node) {
@@ -148,7 +148,7 @@ int security_xattr_set(struct node *node, const char *name,
 
 	smac_audit_prepare(&audit, __func__, node->name);
 
-	if (1 != (res = security_xattr_is_service_access(name, FS_MAY_WRITE,
+	if (1 != (res = security_xattr_is_service_access(name, S_IWOTH,
 					&audit))) {
 		return res;
 	}
@@ -157,7 +157,7 @@ int security_xattr_set(struct node *node, const char *name,
 		return res;
 	}
 
-	return smac_access(task_self_resource_security(), label, FS_MAY_WRITE, &audit);
+	return smac_access(task_self_resource_security(), label, S_IWOTH, &audit);
 }
 
 int security_xattr_list(struct node *node, char *list, size_t len) {
@@ -200,7 +200,7 @@ int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *
 
 	smac_audit_prepare(&audit, __func__, NULL);
 
-	if (1 != (res = security_xattr_is_service_access(name, FS_MAY_WRITE,
+	if (1 != (res = security_xattr_is_service_access(name, S_IWOTH,
 					&audit))) {
 		return res;
 	}

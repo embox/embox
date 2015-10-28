@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <unistd.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>

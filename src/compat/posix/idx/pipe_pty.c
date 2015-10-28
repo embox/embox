@@ -14,7 +14,7 @@
 #include <string.h>
 #include <termios.h>
 #include <poll.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <util/ring_buff.h>
 #include <util/ring.h>
@@ -155,7 +155,7 @@ static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_op
 		return NULL;
 	}
 
-	idesc_init(&ipty->idesc, ops, S_IROTH | FS_MAY_WRITE);
+	idesc_init(&ipty->idesc, ops, S_IROTH | S_IWOTH);
 
 	ipty->pty = pty;
 

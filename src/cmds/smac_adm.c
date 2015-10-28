@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 #include <errno.h>
 
 #include <security/smac/smac.h>
@@ -37,7 +37,7 @@ static int print_rules(void) {
 	for (ent = env->entries, i = env->n; i > 0; ++ent, --i) {
 		printf("%16s %16s    ", ent->subject, ent->object);
 		putchar(ent->flags & S_IROTH  ? 'r' : '-');
-		putchar(ent->flags & FS_MAY_WRITE ? 'w' : '-');
+		putchar(ent->flags & S_IWOTH ? 'w' : '-');
 		putchar(ent->flags & FS_MAY_EXEC ?  'x' : '-');
 		putchar('\n');
 	}
@@ -50,7 +50,7 @@ static int new_rule(const char *subject, const char *object,
 	int flags = 0;
 
 	flags |= strchr(access, 'r') ? S_IROTH  : 0;
-	flags |= strchr(access, 'w') ? FS_MAY_WRITE : 0;
+	flags |= strchr(access, 'w') ? S_IWOTH : 0;
 	flags |= strchr(access, 'x') ? FS_MAY_EXEC  : 0;
 
 	return smac_addenv(subject, object, flags);

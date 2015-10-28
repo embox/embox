@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <util/math.h>
 #include <util/err.h>
@@ -312,7 +312,7 @@ static struct idesc *usb_whitelist_open(struct inode *node, struct idesc *idesc)
 	}
 	*file = (struct file) {
 		.f_idesc  = {
-				.idesc_amode = S_IROTH | FS_MAY_WRITE,
+				.idesc_amode = S_IROTH | S_IWOTH,
 				.idesc_ops   = &usb_whitelist_iops,
 		},
 	};

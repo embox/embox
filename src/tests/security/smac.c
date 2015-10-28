@@ -11,7 +11,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #include <security/smac/smac.h>
 #include <fs/vfs.h>
@@ -54,7 +53,7 @@ static struct smac_env test_env = {
 	.n = 2,
 	.entries = {
 		{HIGH, LOW,  S_IROTH },
-		{LOW,  HIGH, FS_MAY_WRITE},
+		{LOW,  HIGH, S_IWOTH},
 	},
 };
 

@@ -11,7 +11,7 @@
 /*
  * Below fcntl locking implementation and help functions
  */
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <kernel/spinlock.h>
 #include <kernel/thread.h>
@@ -621,7 +621,7 @@ int vfs_fcntl_lock(int fd, int cmd, struct flock *flock) {
 
 	/* Check permissions to requested operation */
 	if ((!(flock->l_type == F_RDLCK && (perm_flags & S_IROTH))) &&
-			(!(flock->l_type == F_WRLCK && (perm_flags & FS_MAY_WRITE))) &&
+			(!(flock->l_type == F_WRLCK && (perm_flags & S_IWOTH))) &&
 			(!(flock->l_type == F_UNLCK)))
 		return -EPERM;
 

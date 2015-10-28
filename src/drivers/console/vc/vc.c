@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  * @author Anton Kozlov
  */
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
@@ -42,7 +42,7 @@ static int vc_open(struct node *node, struct file_desc *desc, int flags) {
 
 	assert(desc);
 
-	idesc_init(&desc->idesc, &idesc_vc_ops, S_IROTH | FS_MAY_WRITE);
+	idesc_init(&desc->idesc, &idesc_vc_ops, S_IROTH | S_IWOTH);
 	vc_vterm.tty.idesc = &desc->idesc;
 
 	return 0;

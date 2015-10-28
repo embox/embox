@@ -16,7 +16,7 @@ struct node;
 
 /**
  * @brief Checks permission to create node in @a dir with mode @a mode
- * @a dir is already checked for #FS_MAY_WRITE
+ * @a dir is already checked for #S_IWOTH
  *
  * @param dir directory node where new node is creating
  * @param mode mode of creating node
@@ -35,7 +35,7 @@ extern void security_node_cred_fill(struct node *node);
 
 /**
  * @brief Checks permission on node delete. @a dir already checked for
- * #FS_MAY_WRITE
+ * #S_IWOTH
  *
  * @param dir directory node from where node is deletting
  * @param node node is deletting

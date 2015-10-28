@@ -31,7 +31,7 @@ int ktruncate(struct node *node, off_t length) {
 		return -1;
 	}
 
-	if (0 > (ret = fs_perm_check(node, FS_MAY_WRITE))) {
+	if (0 > (ret = fs_perm_check(node, S_IWOTH))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}

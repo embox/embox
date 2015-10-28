@@ -5,7 +5,7 @@
  * @author  Anton Kozlov
  * @date    09.06.2012
  */
-#include <sys/types.h>
+#include <sys/stat.h>
 #include <termios.h>
 
 #include <drivers/diag.h>
@@ -79,7 +79,7 @@ int diag_fd(void) {
 		return -ENOSYS;
 	}
 
-	idesc_init(&diag_idesc, &diag_idx_ops, S_IROTH | FS_MAY_WRITE);
+	idesc_init(&diag_idesc, &diag_idx_ops, S_IROTH | S_IWOTH);
 
 	return idesc_table_add(idesc_table, &diag_idesc, 0);
 }

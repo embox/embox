@@ -6,7 +6,7 @@
  */
 #include <assert.h>
 #include <poll.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <util/err.h>
 
@@ -115,7 +115,7 @@ struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
 	assert(uart);
 	assert(mod);
 
-	idesc_init(&fdesc->idesc, &idesc_serial_ops, S_IROTH | FS_MAY_WRITE);
+	idesc_init(&fdesc->idesc, &idesc_serial_ops, S_IROTH | S_IWOTH);
 
 	if (idesc_uart_bind(uart, &fdesc->idesc)) {
 		return NULL;
@@ -156,7 +156,7 @@ static ssize_t serial_write(struct idesc *idesc, const void *buf, size_t nbyte) 
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
-	assert(idesc->idesc_amode & FS_MAY_WRITE);
+	assert(idesc->idesc_amode & S_IWOTH);
 
 	uart = idesc_to_uart(idesc);
 	assert(uart);
