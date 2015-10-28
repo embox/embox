@@ -15,7 +15,6 @@
 #include <security/smac/smac.h>
 #include <fs/vfs.h>
 #include <fs/mount.h>
-#include <fs/flags.h>
 #include <kernel/task.h>
 #include <sys/xattr.h>
 

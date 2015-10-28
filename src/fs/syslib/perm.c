@@ -13,7 +13,6 @@
 
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>
-#include <fs/flags.h>
 #include <fs/dcache.h>
 
 #include <security/security.h>

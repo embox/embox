@@ -13,7 +13,6 @@
 #include <errno.h>
 
 #include <security/smac/smac.h>
-#include <fs/flags.h>
 
 
 extern int cmd_smac_adm_user_set(const char *name, const char *label);

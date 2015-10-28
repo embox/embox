@@ -15,7 +15,6 @@
 #include <fcntl.h> /* O_CREAT, O_APPEND */
 #include <sys/stat.h>
 
-#include <fs/flags.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <embox/unit.h>

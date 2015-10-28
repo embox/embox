@@ -27,7 +27,6 @@
 #include <kernel/thread/thread_sched_wait.h>
 
 #include <kernel/sched.h>
-#include <fs/flags.h>
 #include <mem/sysmalloc.h>
 
 

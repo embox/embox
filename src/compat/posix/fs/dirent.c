@@ -11,14 +11,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <stdlib.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <fs/perm.h>
 #include <fs/vfs.h>
 #include <fs/dcache.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>
-#include <fs/flags.h>
 #include <framework/mod/options.h>
 
 #include <dirent.h>

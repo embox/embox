@@ -11,7 +11,6 @@
 struct idesc_ops;
 struct idesc_xattrops;
 
-#include <fs/flags.h>
 #include <sys/types.h>
 
 #include <kernel/sched/waitq.h>

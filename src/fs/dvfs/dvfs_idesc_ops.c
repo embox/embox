@@ -12,7 +12,6 @@
 #include <errno.h>
 
 #include <fs/dvfs.h>
-#include <fs/flags.h>
 #include <kernel/task.h>
 
 extern const struct idesc_ops idesc_file_ops;

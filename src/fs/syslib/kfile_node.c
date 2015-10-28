@@ -14,7 +14,6 @@
 
 #include <fs/hlpr_path.h>
 #include <fs/perm.h>
-#include <fs/flags.h>
 #include <security/security.h>
 #include <fs/vfs.h>
 #include <fs/path.h>

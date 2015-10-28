@@ -12,7 +12,6 @@
 #include <fs/node.h>
 #include <kernel/task.h>
 #include <fs/xattr.h>
-#include <fs/flags.h>
 #include <fs/idesc.h>
 #include <net/sock.h>
 #include <security/smac/smac.h>

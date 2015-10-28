@@ -24,7 +24,6 @@
 #include <kernel/task.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
-#include <fs/flags.h>
 
 #include <kernel/thread/thread_sched_wait.h>
 

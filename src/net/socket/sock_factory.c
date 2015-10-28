@@ -11,7 +11,6 @@
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
-#include <fs/flags.h>
 
 #include "family.h"
 #include "net_sock.h"

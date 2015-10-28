@@ -14,7 +14,6 @@
 
 
 #include <fs/perm.h>
-#include <fs/flags.h>
 #include <mem/objalloc.h>
 
 #include <fs/file_desc.h>
