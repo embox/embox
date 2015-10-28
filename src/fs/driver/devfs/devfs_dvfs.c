@@ -152,17 +152,19 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 static int devfs_mount_end(struct super_block *sb) {
 	return 0;
 }
-
+struct dev_wraper {
+	struct file_operations *fops;
+};
 static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
-	struct device_module *cdev;
+	struct dev_wraper *dev;
 
 	assert(node->i_data);
 
-	cdev = node->i_data;
-	assert(cdev->fops);
-	assert(cdev->fops->open);
+	dev = node->i_data;
+	assert(dev->fops);
+	assert(dev->fops->open);
 
-	return cdev->fops->open(node, desc);
+	return dev->fops->open(node, desc);
 }
 
 static size_t devfs_read(struct file *desc, void *buf, size_t size) {

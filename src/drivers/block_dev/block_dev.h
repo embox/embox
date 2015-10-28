@@ -23,7 +23,9 @@
 #define DEV_TYPE_BLOCK          2
 #define DEV_TYPE_PACKET         3
 
+struct file_operations;
 typedef struct block_dev {
+	struct file_operations *dev_ops;
 	dev_t id;
 	char name[NAME_MAX];
 	void *dev_vfs_info;

@@ -19,10 +19,6 @@ DLIST_DEFINE(cdev_repo_list);
 
 ARRAY_SPREAD_DEF(const struct device_module, __char_device_registry);
 
-int char_dev_init_all(void) {
-	return 0;
-}
-
 int char_dev_register(struct device_module *cdev) {
 	assert(cdev);
 
