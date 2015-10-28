@@ -359,7 +359,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 			return -1;
 		}
 
-		if (ENOERR != (res = fs_perm_check(dev_node.node, S_IROTH | FS_MAY_EXEC))) {
+		if (ENOERR != (res = fs_perm_check(dev_node.node, S_IROTH | S_IXOTH))) {
 			errno = EACCES;
 			return -1;
 		}

@@ -38,7 +38,7 @@ static int print_rules(void) {
 		printf("%16s %16s    ", ent->subject, ent->object);
 		putchar(ent->flags & S_IROTH  ? 'r' : '-');
 		putchar(ent->flags & S_IWOTH ? 'w' : '-');
-		putchar(ent->flags & FS_MAY_EXEC ?  'x' : '-');
+		putchar(ent->flags & S_IXOTH ?  'x' : '-');
 		putchar('\n');
 	}
 
@@ -51,7 +51,7 @@ static int new_rule(const char *subject, const char *object,
 
 	flags |= strchr(access, 'r') ? S_IROTH  : 0;
 	flags |= strchr(access, 'w') ? S_IWOTH : 0;
-	flags |= strchr(access, 'x') ? FS_MAY_EXEC  : 0;
+	flags |= strchr(access, 'x') ? S_IXOTH  : 0;
 
 	return smac_addenv(subject, object, flags);
 }

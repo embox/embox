@@ -95,7 +95,7 @@ static void audit_log(const char *subject, const char *object,
 			audit->file_name ? audit->file_name : "",
 			may_access & S_IROTH  ? 'r' : '-',
 			may_access & S_IWOTH ? 'w' : '-',
-			may_access & FS_MAY_EXEC  ? 'x' : '-',
+			may_access & S_IXOTH  ? 'x' : '-',
 			ret == 0 ? "ALLOW" : "DENINED",
 			audit->fn_name);
 
@@ -118,14 +118,14 @@ int smac_access(const char *s_subject, const char *s_object,
 
 	/* 2 */
 	if (0 == strcmp(s_subject, smac_hat)
-		&& 0 == (~(S_IROTH | FS_MAY_EXEC) & may_access)) {
+		&& 0 == (~(S_IROTH | S_IXOTH) & may_access)) {
 		ret = 0;
 		goto out;
 	}
 
 	/* 3 */
 	if (0 == strcmp(s_object, smac_floor)
-		&& 0 == (~(S_IROTH | FS_MAY_EXEC) & may_access)) {
+		&& 0 == (~(S_IROTH | S_IXOTH) & may_access)) {
 		ret = 0;
 		goto out;
 	}
@@ -300,7 +300,7 @@ static int smac_init(void) {
 	 * Otherwise boot could hang at mount, etc.
 	 */
  	 smac_addenv(smac_admin, smac_def_file_label,
-			S_IROTH | S_IWOTH | FS_MAY_EXEC);
+			S_IROTH | S_IWOTH | S_IXOTH);
 
 	return 0;
 }

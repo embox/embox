@@ -9,6 +9,8 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>
 #include <fs/flags.h>
@@ -80,7 +82,7 @@ int fs_perm_lookup(const char *path, const char **pathlast,
 			return 0;
 		}
 
-		if (0 != (ret = fs_perm_check(node_path.node, FS_MAY_EXEC))) {
+		if (0 != (ret = fs_perm_check(node_path.node, S_IXOTH))) {
 			return ret;
 		}
 
@@ -100,7 +102,7 @@ int fs_perm_lookup_relative(const char *path, const char **pathlast,
 	int ret = 0;
 
 	if (0 == quick_lookup(path, nodelast)) {
-		return fs_perm_check(nodelast->node, FS_MAY_EXEC);
+		return fs_perm_check(nodelast->node, S_IXOTH);
 	}
 
 	if (0 != (ret = fs_perm_lookup(path, pathlast, nodelast))) {
