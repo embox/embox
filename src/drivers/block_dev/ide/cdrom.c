@@ -239,4 +239,4 @@ static int idecd_init (void *args) {
 	return 0;
 }
 
-EMBOX_BLOCK_DEV("idecd", &idecd_pio_driver, idecd_init);
+BLOCK_DEV_DEF("idecd", &idecd_pio_driver, idecd_init);

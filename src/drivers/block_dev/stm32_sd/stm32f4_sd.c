@@ -29,7 +29,7 @@ block_dev_driver_t stm32f4_sd_driver = {
 	.write = stm32f4_sd_write,
 };
 
-EMBOX_BLOCK_DEV(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, stm32f4_sd_init);
+BLOCK_DEV_DEF(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, stm32f4_sd_init);
 
 static int stm32f4_sd_init(void *arg) {
 	struct block_dev *bdev;

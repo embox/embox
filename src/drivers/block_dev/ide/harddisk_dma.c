@@ -271,4 +271,4 @@ static int idedisk_udma_init (void *args) {
 	return 0;
 }
 
-EMBOX_BLOCK_DEV("idedisk_udma", &idedisk_udma_driver, idedisk_udma_init);
+BLOCK_DEV_DEF("idedisk_udma", &idedisk_udma_driver, idedisk_udma_init);

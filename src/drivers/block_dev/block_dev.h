@@ -87,7 +87,7 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 
 #include <util/array.h>
 
-#define EMBOX_BLOCK_DEV(name, block_dev_driver, init_func) \
+#define BLOCK_DEV_DEF(name, block_dev_driver, init_func) \
 	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
 	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})
 

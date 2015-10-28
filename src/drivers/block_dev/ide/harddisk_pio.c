@@ -217,4 +217,4 @@ static int idedisk_init (void *args) {
 	return 0;
 }
 
-EMBOX_BLOCK_DEV("idedisk", &idedisk_pio_driver, idedisk_init);
+BLOCK_DEV_DEF("idedisk", &idedisk_pio_driver, idedisk_init);
