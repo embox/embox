@@ -23,7 +23,9 @@
 #define DEV_TYPE_BLOCK          2
 #define DEV_TYPE_PACKET         3
 
+struct file_operations;
 typedef struct block_dev {
+	struct file_operations *dev_ops;
 	dev_t id;
 	char name[NAME_MAX];
 	void *dev_vfs_info;
@@ -39,9 +41,9 @@ typedef struct block_dev {
 typedef struct block_dev_driver {
 	char *name;
 
-	int (*ioctl)(block_dev_t *bdev, int cmd, void *args, size_t size);
-	int (*read)(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno);
-	int (*write)(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno);
+	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
+	int (*read)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+	int (*write)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 } block_dev_driver_t;
 
 typedef int (* block_dev_module_init_ft)(void *args);
@@ -73,22 +75,22 @@ extern struct block_dev *block_dev(void *bdev);
 extern block_dev_cache_t *block_dev_cache_init(void *bdev, int blocks);
 extern block_dev_cache_t *block_dev_cached_read(void *bdev, blkno_t blkno);
 extern int block_dev_read(void *bdev, char *buffer, size_t count, blkno_t blkno);
-extern int block_dev_read_buffered(block_dev_t *bdev, char *buffer, size_t count, size_t offset);
-extern int block_dev_write_buffered(block_dev_t *bdev, const char *buffer, size_t count, size_t offset);
+extern int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, size_t offset);
+extern int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t count, size_t offset);
 extern int block_dev_write(void *bdev, const char *buffer, size_t count, blkno_t blkno);
 extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(char *name, struct indexator *indexator);
-extern block_dev_module_t *block_dev_lookup(const char *name);
+extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
 extern struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata);
 extern struct block_dev *block_dev_find(const char *bd_name);
 
 #include <util/array.h>
 
-#define EMBOX_BLOCK_DEV(name, block_dev_driver, init_func) \
-	ARRAY_SPREAD_DECLARE(const block_dev_module_t, __block_dev_registry); \
+#define BLOCK_DEV_DEF(name, block_dev_driver, init_func) \
+	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
 	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})
 
 

@@ -34,10 +34,10 @@ POOL_DEF(bcach_ht_item_pool, struct hashtable_item, BCACHE_SIZE);
 
 static struct hashtable *bcache = &bcache_ht;
 static struct mutex bcache_mutex;
-static int graw_buffers(block_dev_t *bdev, int block, size_t size);
+static int graw_buffers(struct block_dev *bdev, int block, size_t size);
 static void free_more_memory(size_t size);
 
-struct buffer_head *bcache_getblk_locked(block_dev_t *bdev, int block, size_t size) {
+struct buffer_head *bcache_getblk_locked(struct block_dev *bdev, int block, size_t size) {
 	struct buffer_head key = { .bdev = bdev, .block = block };
 	struct buffer_head *bh;
 
@@ -99,7 +99,7 @@ static void free_more_memory(size_t size) {
 	}
 }
 
-static int graw_buffers(block_dev_t *bdev, int block, size_t size) {
+static int graw_buffers(struct block_dev *bdev, int block, size_t size) {
 	struct buffer_head *bh;
 	struct hashtable_item *ht_item;
 

@@ -11,6 +11,7 @@
 #include <drivers/block_dev.h>
 #include <fs/dvfs.h>
 
+extern struct file_operations bdev_dev_ops;
 /**
  * @brief Create node in devfs
  *
@@ -21,12 +22,14 @@
  * @return Pointer to created device or NULL if failed
  */
 struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
-	block_dev_t *bdev;
+	struct block_dev *bdev;
 	char full_path[256];
 	struct lookup lu;
 
 	if (NULL == (bdev = block_dev_create_common(path, driver, privdata)))
 		return NULL;
+
+	bdev->dev_ops = &bdev_dev_ops;
 
 	/* Get root of devfs in smarter way? */
 

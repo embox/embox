@@ -36,7 +36,6 @@
 POOL_DEF(flash_pool,struct flash_dev,MAX_DEV_QUANTITY);
 INDEX_DEF(flash_idx,0,MAX_DEV_QUANTITY);
 
-static int flashbdev_init(void *arg);
 static int flashbdev_ioctl(struct block_dev *bdev, int kmd, void *buf, size_t size);
 static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
@@ -134,13 +133,7 @@ int flash_delete(const char *name) {
 	return 0;
 }
 
-
-static int flashbdev_init(void *arg) {
-
-	return 0;
-}
-
-static int flashbdev_read(block_dev_t *bdev,
+static int flashbdev_read(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t startpos, endpos;
@@ -164,7 +157,7 @@ static int flashbdev_read(block_dev_t *bdev,
 }
 
 
-static int flashbdev_write(block_dev_t *bdev,
+static int flashbdev_write(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t startpos, endpos;
@@ -319,7 +312,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 	}
 }
 
-EMBOX_BLOCK_DEV("flash", &flashbdev_pio_driver, flashbdev_init);
+BLOCK_DEV_DEF("flash", &flashbdev_pio_driver, NULL);
 
 ARRAY_SPREAD_DEF(const flash_dev_module_t, __flash_dev_registry);
 

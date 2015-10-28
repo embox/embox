@@ -63,7 +63,7 @@ struct qnx6_superblock {
 	unsigned char s_blocksize_bits;
 	unsigned long s_blocksize;
 	void *s_fs_info;
-	block_dev_t *s_bdev;
+	struct block_dev *s_bdev;
 	struct node *s_root;
 };
 
@@ -103,7 +103,7 @@ typedef int (*filldir_t)(void *, const char *, int, loff_t, __u64, unsigned);
 static inline struct buffer_head *sb_bread(struct qnx6_superblock *sb, unsigned int block) {
 	struct buffer_head *bh = bcache_getblk_locked(sb->s_bdev, block, sb->s_blocksize);
 	unsigned fs_blksize = sb->s_blocksize;
-	block_dev_t *bdev = bh->bdev;
+	struct block_dev *bdev = bh->bdev;
 	unsigned bdev_blksize;
 
 	/* FIXME */

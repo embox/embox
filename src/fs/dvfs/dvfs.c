@@ -77,10 +77,15 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 
 	sb = lookup->parent->d_sb;
 	lookup->item = dvfs_alloc_dentry();
-	if (!lookup->item)
+	if (!lookup->item) {
 		return -ENOMEM;
+	}
 
 	new_inode = dvfs_alloc_inode(sb);
+	if (!new_inode) {
+		dvfs_destroy_dentry(lookup->item);
+		return -ENOMEM;
+	}
 	dentry_fill(sb, new_inode, lookup->item, lookup->parent);
 	strncpy(lookup->item->name, name, DENTRY_NAME_LEN);
 	inode_fill(sb, new_inode, lookup->item);
@@ -101,7 +106,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 
 	if (res) {
 		dvfs_destroy_dentry(lookup->item);
-		dvfs_destroy_inode(lookup->item->d_inode);
+		dvfs_destroy_inode(new_inode);
 	}
 
 	return res;

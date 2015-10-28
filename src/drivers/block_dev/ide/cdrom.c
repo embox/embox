@@ -147,7 +147,7 @@ static int atapi_request_sense(hd_t *hd) {
 	return 0;
 }
 
-static int cd_read(block_dev_t *bdev, char *buffer,
+static int cd_read(struct block_dev *bdev, char *buffer,
 					size_t count, blkno_t blkno) {
 	unsigned char pkt[12];
 	unsigned int blks;
@@ -170,12 +170,12 @@ static int cd_read(block_dev_t *bdev, char *buffer,
 	return atapi_packet_read(hd, pkt, 12, buffer, count);
 }
 
-static int cd_write(block_dev_t *bdev, char *buffer,
+static int cd_write(struct block_dev *bdev, char *buffer,
 					size_t count, blkno_t blkno) {
 	return -ENODEV;
 }
 
-static int cd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+static int cd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	hd_t *hd = (hd_t *) bdev->privdata;
 	int rc;
 
@@ -239,4 +239,4 @@ static int idecd_init (void *args) {
 	return 0;
 }
 
-EMBOX_BLOCK_DEV("idecd", &idecd_pio_driver, idecd_init);
+BLOCK_DEV_DEF("idecd", &idecd_pio_driver, idecd_init);

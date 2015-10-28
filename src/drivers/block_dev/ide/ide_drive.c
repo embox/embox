@@ -306,7 +306,7 @@ static int hd_cmd(hd_t *hd, unsigned int cmd,
 	return 0;
 }
 
-int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size) {
+int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	struct dev_geometry *geom;
 	hd_t *hd = (hd_t *) bdev->privdata;
 
@@ -579,7 +579,7 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 }
 
 static int ide_create_block_dev(hd_t *hd) {
-	const block_dev_module_t *bdev;
+	const struct block_dev_module *bdev;
 
 	switch (hd->media) {
 		case IDE_CDROM:

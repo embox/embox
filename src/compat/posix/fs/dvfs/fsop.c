@@ -16,6 +16,7 @@
 int mkdir(const char *pathname, mode_t mode) {
 	struct lookup lu;
 	char *t;
+	int res;
 
 	char parent[DVFS_MAX_PATH_LEN];
 
@@ -44,9 +45,13 @@ int mkdir(const char *pathname, mode_t mode) {
 		dvfs_lookup(pathname, &lu);
 	}
 
-	return dvfs_create_new(pathname + strlen(parent),
-	                       &lu,
+	res = dvfs_create_new(pathname + strlen(parent), &lu,
 			       S_IFDIR | (mode & DVFS_DIR_VIRTUAL));
+	if (res) {
+		return SET_ERRNO(-res);
+	}
+
+	return 0;
 }
 
 int remove(const char *pathname) {
