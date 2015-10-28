@@ -109,8 +109,7 @@ static void idesc_uart_unbind(struct uart *uart) {
 }
 
 struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
-		idesc_access_mode_t mod) {
-	//struct idesc_serial *idesc;
+		mode_t mod) {
 
 	assert(uart);
 	assert(mod);

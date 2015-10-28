@@ -262,7 +262,7 @@ static const struct idesc_ops idesc_pipe_ops = {
 };
 
 static int idesc_pipe_init(struct idesc_pipe *pdesc, struct pipe *pipe,
-		idesc_access_mode_t amode) {
+		mode_t amode) {
 
 	idesc_init(&pdesc->idesc, &idesc_pipe_ops, amode);
 

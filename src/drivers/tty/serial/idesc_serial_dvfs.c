@@ -161,7 +161,7 @@ static irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
 }
 
 struct idesc *idesc_serial_create(struct uart *uart,
-		idesc_access_mode_t mod) {
+		mode_t mod) {
 	struct tty_uart *tu;
 
 	assert(uart);
