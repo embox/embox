@@ -227,7 +227,7 @@ struct file_operations initfs_fops = {
 	.ioctl = initfs_ioctl,
 };
 
-static int initfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
+static int initfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	sb->sb_iops = &initfs_iops;
 	sb->sb_fops = &initfs_fops;
 	sb->sb_ops  = &initfs_sbops;
