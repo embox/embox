@@ -35,13 +35,17 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
-	l.item->usage_count++;
 	d = pool_alloc(&dir_pool);
+	if (!d) {
+		SET_ERRNO(ENOMEM);
+		return NULL;
+	}
 	*d = (DIR) {
 		.dir_dentry = l.item,
 	};
 
 	fill_dirent(&d->dirent, l.item);
+	dentry_ref_inc(l.item);
 
 	return d;
 }
@@ -52,12 +56,7 @@ int closedir(DIR *dir) {
 		return -1;
 	}
 
-	if (dir->prv_dentry) {
-		dir->prv_dentry->usage_count--;
-		dvfs_destroy_dentry(dir->prv_dentry);
-	}
-
-	dir->dir_dentry->usage_count--;
+	dentry_ref_inc(dir->dir_dentry);
 	dvfs_destroy_dentry(dir->dir_dentry);
 
 	pool_free(&dir_pool, dir);
@@ -80,10 +79,6 @@ struct dirent *readdir(DIR *dir) {
 		.parent = dir->dir_dentry,
 		.item   = prev,
 	};
-
-	if (prev) {
-		dvfs_destroy_dentry(prev);
-	}
 
 	if (dvfs_iterate(&l, &dir->ctx)) {
 		SET_ERRNO(EAGAIN);
