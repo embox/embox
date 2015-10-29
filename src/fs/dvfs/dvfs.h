@@ -212,4 +212,7 @@ extern int dentry_full_path(struct dentry *dentry, char *buf);
 extern int dentry_ref_inc(struct dentry *dentry);
 extern int dentry_ref_dec(struct dentry *dentry);
 
+/* String handling */
+extern char *dvfs_last_link(const char *path);
+
 #endif
