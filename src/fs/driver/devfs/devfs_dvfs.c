@@ -152,21 +152,6 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 static int devfs_mount_end(struct super_block *sb) {
 	return 0;
 }
-struct dev_wraper {
-	struct file_operations *fops;
-};
-static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
-	struct dev_wraper *dev;
-
-	assert(node->i_data);
-
-	dev = node->i_data;
-	assert(dev->fops);
-	assert(dev->fops->open);
-
-	return dev->fops->open(node, desc);
-}
-
 
 static int devfs_pathname(struct inode *node, char *buf, int flags) {
 	struct device_module *dev_module;
@@ -189,12 +174,21 @@ static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 
-static int devfs_ioctl(struct file *desc, int request, void *data) {
-	return 0;
-}
-
+struct dev_wraper {
+	struct file_operations *fops;
+};
 static struct idesc *dvfs_open_idesc(struct lookup *l) {
-	return devfs_open(l->item->d_inode, NULL);
+	struct inode *node;
+	struct dev_wraper *dev;
+
+	node = l->item->d_inode;
+	assert(node->i_data);
+
+	dev = node->i_data;
+	assert(dev->fops);
+	assert(dev->fops->open);
+
+	return dev->fops->open(node, NULL);
 }
 
 struct super_block_operations devfs_sbops = {
@@ -209,14 +203,9 @@ struct inode_operations devfs_iops = {
 	.create   = devfs_create,
 };
 
-struct file_operations devfs_fops = {
-	.open  = devfs_open,
-	.ioctl = devfs_ioctl,
-};
-
 static int devfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
 	sb->sb_iops = &devfs_iops;
-	sb->sb_fops = &devfs_fops;
+	sb->sb_fops = NULL;
 	sb->sb_ops  = &devfs_sbops;
 	return 0;
 }
