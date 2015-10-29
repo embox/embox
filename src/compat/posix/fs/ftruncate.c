@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
+#include <sys/types.h>
 
 #include <fs/index_descriptor.h>
 #include <fs/kfile.h>
@@ -25,7 +26,7 @@ int ftruncate(int fd, off_t length) {
 		return SET_ERRNO(EBADF);
 	}
 
-	if (!(idesc->idesc_amode & FS_MAY_READ)) {
+	if (!(idesc->idesc_amode & S_IROTH)) {
 		return SET_ERRNO(EINVAL);
 	}
 

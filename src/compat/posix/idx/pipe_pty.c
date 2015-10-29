@@ -14,6 +14,7 @@
 #include <string.h>
 #include <termios.h>
 #include <poll.h>
+#include <sys/stat.h>
 
 #include <util/ring_buff.h>
 #include <util/ring.h>
@@ -23,7 +24,6 @@
 #include <kernel/task.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
-#include <fs/flags.h>
 
 #include <kernel/thread/thread_sched_wait.h>
 
@@ -154,7 +154,7 @@ static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_op
 		return NULL;
 	}
 
-	idesc_init(&ipty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
+	idesc_init(&ipty->idesc, ops, S_IROTH | S_IWOTH);
 
 	ipty->pty = pty;
 

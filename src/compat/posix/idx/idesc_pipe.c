@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 #include <util/ring_buff.h>
 
@@ -26,7 +27,6 @@
 #include <kernel/thread/thread_sched_wait.h>
 
 #include <kernel/sched.h>
-#include <fs/flags.h>
 #include <mem/sysmalloc.h>
 
 
@@ -118,7 +118,7 @@ static ssize_t pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
-	assert(idesc->idesc_amode == FS_MAY_READ);
+	assert(idesc->idesc_amode == S_IROTH);
 
 	if (!nbyte) {
 		return 0;
@@ -157,7 +157,7 @@ static ssize_t pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
-	assert(idesc->idesc_amode == FS_MAY_WRITE);
+	assert(idesc->idesc_amode == S_IWOTH);
 
 	cbuf = buf;
 	/* nbyte == 0 is ok to passthrough */
@@ -262,7 +262,7 @@ static const struct idesc_ops idesc_pipe_ops = {
 };
 
 static int idesc_pipe_init(struct idesc_pipe *pdesc, struct pipe *pipe,
-		idesc_access_mode_t amode) {
+		mode_t amode) {
 
 	idesc_init(&pdesc->idesc, &idesc_pipe_ops, amode);
 
@@ -328,8 +328,8 @@ int pipe2(int pipefd[2], int flags) {
 	}
 
 
-	idesc_pipe_init(&pipe->read_desc, pipe, FS_MAY_READ);
-	idesc_pipe_init(&pipe->write_desc, pipe, FS_MAY_WRITE);
+	idesc_pipe_init(&pipe->read_desc, pipe, S_IROTH);
+	idesc_pipe_init(&pipe->write_desc, pipe, S_IWOTH);
 
 
 	pipefd[0] = idesc_table_add(it, &pipe->read_desc.idesc, flags);

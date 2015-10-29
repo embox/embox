@@ -10,10 +10,10 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <assert.h>
+#include <sys/stat.h>
 
 
 #include <fs/perm.h>
-#include <fs/flags.h>
 #include <mem/objalloc.h>
 
 #include <fs/file_desc.h>
@@ -48,10 +48,10 @@ struct file_desc *file_desc_create(struct node *node, int flag) {
 	/* setup access mode */
 	perm_flags = 0;
 	if ((flag & O_WRONLY) || (flag & O_RDWR)) {
-		perm_flags |= FS_MAY_WRITE;
+		perm_flags |= S_IWOTH;
 	}
 	if (!(flag & O_WRONLY)) {
-		perm_flags |= FS_MAY_READ;
+		perm_flags |= S_IROTH;
 	}
 
 	if (0 > (ret = fs_perm_check(node, perm_flags))) {

@@ -7,6 +7,7 @@
  */
 #include <errno.h>
 #include <stdlib.h>
+#include <sys/stat.h>
 
 #include <util/err.h>
 
@@ -28,7 +29,6 @@ static struct idesc *null_open(struct inode *node, struct idesc *idesc) {
 	}
 	*file = (struct file) {
 		.f_idesc  = {
-				.idesc_amode = FS_MAY_READ | FS_MAY_WRITE,
 				.idesc_ops   = &idesc_cdev_null_ops,
 		},
 	};

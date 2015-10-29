@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <sys/file.h>
 
@@ -22,7 +22,6 @@
 #include <fs/fs_driver.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
-#include <fs/flags.h>
 #include <fs/file_desc.h>
 #include <fs/dcache.h>
 //#include <fs/file_operation.h>
@@ -92,7 +91,7 @@ int kmkdir(const char *pathname, mode_t mode) {
 
 	if_mounted_follow_down(&node);
 
-	if (0 != fs_perm_check(node.node, FS_MAY_WRITE)) {
+	if (0 != fs_perm_check(node.node, S_IWOTH)) {
 		errno = EACCES;
 		return -1;
 	}
@@ -128,7 +127,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 		return -1;
 	}
 
-	if (0 != (fs_perm_check(dir_path->node, FS_MAY_WRITE))) {
+	if (0 != (fs_perm_check(dir_path->node, S_IWOTH))) {
 		SET_ERRNO(EACCES);
 		return -1;
 	}
@@ -211,7 +210,7 @@ int kunlink(const char *pathname) {
 	}
 
 	vfs_get_parent(&node, &parent);
-	if (0 != fs_perm_check(parent.node, FS_MAY_WRITE)) {
+	if (0 != fs_perm_check(parent.node, S_IWOTH)) {
 		errno = EACCES;
 		return -1;
 	}
@@ -249,7 +248,7 @@ int krmdir(const char *pathname) {
 		return -1;
 	}
 
-	if (0 != (res = fs_perm_check(node.node, FS_MAY_WRITE))) {
+	if (0 != (res = fs_perm_check(node.node, S_IWOTH))) {
 		errno = EACCES;
 		return -1;
 	}
@@ -317,7 +316,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -1;
 	}
 
-	if (0 != (res = fs_perm_check(node.node, FS_MAY_WRITE))) {
+	if (0 != (res = fs_perm_check(node.node, S_IWOTH))) {
 		errno = EACCES;
 		return -1;
 	}
@@ -359,7 +358,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 			return -1;
 		}
 
-		if (ENOERR != (res = fs_perm_check(dev_node.node, FS_MAY_READ | FS_MAY_EXEC))) {
+		if (ENOERR != (res = fs_perm_check(dev_node.node, S_IROTH | S_IXOTH))) {
 			errno = EACCES;
 			return -1;
 		}

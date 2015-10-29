@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <util/err.h>
 
@@ -23,7 +24,6 @@
 #include <fs/kfile.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
-#include <fs/flags.h>
 #include <security/security.h>
 
 extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
@@ -91,7 +91,7 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		goto end;
 	}
 
-	if (!idesc_check_mode(&file->idesc, FS_MAY_WRITE)) {
+	if (!idesc_check_mode(&file->idesc, S_IWOTH)) {
 		ret = -EBADF;
 		goto end;
 	}
@@ -119,7 +119,7 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 		goto end;
 	}
 
-	if (!idesc_check_mode(&desc->idesc, FS_MAY_READ)) {
+	if (!idesc_check_mode(&desc->idesc, S_IROTH)) {
 		ret = -EBADF;
 		goto end;
 	}

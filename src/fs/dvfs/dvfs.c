@@ -142,17 +142,14 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 		.f_inode  = i_no,
 		.f_ops    = lookup->item->d_sb->sb_fops,
 		.f_idesc  = {
-			.idesc_amode = FS_MAY_READ | FS_MAY_WRITE,
 			.idesc_ops   = &idesc_file_ops,
 		},
 	};
 
 	assert(desc->f_ops);
 	if (desc->f_ops->open) {
-		dentry_ref_inc(lookup->item);
 		res = desc->f_ops->open(i_no, &desc->f_idesc);
 		if (err(res)) {
-			dentry_ref_dec(lookup->item);
 			return res;
 		}
 	}
