@@ -1,0 +1,8 @@
+package embox.driver
+
+module common {
+	option number device_name_len=32
+
+	@IncludeExport(path="drivers")
+	source "device.h"
+}
