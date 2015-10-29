@@ -49,7 +49,7 @@ extern int fcntl(int fd, int cmd, ...);
 #define F_DUPFD            12
 
 /* fcntl flags */
-#define O_ACCESS_MASK      0x3
+#define O_ACCESS_MASK      (O_RDONLY|O_WRONLY|O_RDWR)
 #define O_RDONLY           0x0000  /* Open for reading only */
 #define O_WRONLY           0x0001  /* Open for writing only */
 #define O_RDWR             0x0002  /* Open for reading and writing */
