@@ -344,3 +344,45 @@ int dvfs_destroy_sb(struct super_block *sb) {
 	pool_free(&superblock_pool, sb);
 	return 0;
 }
+
+/**
+ * @brief Read from block device pointed by bdev_file
+ * with args similar to old-style bdev usage
+ *
+ * @param bdev_file File pointing to opened device
+ * @param buff Buffer to read from
+ * @param count Number of bytes to be read
+ * @param blkno Number of block of device
+ *
+ * @return Size of read chunk or negative error number
+ * if failed
+ */
+int dvfs_bdev_read(
+		struct file *bdev_file,
+		char *buff,
+		size_t count,
+		int blkno) {
+	struct block_dev *bdev = bdev_file->f_inode->i_data;
+	return block_dev_read(bdev, buff, count, blkno);
+}
+
+/**
+ * @brief Write data to block device using args similar
+ * to old-style bdev usage
+ *
+ * @param bdev_file File pointing to opened block device
+ * @param buff Buffer to be written
+ * @param count Number of bytes to be written
+ * @param blkno Number of block of device
+ *
+ * @return Size of written chunk of negative error number
+ * if failed
+ */
+int dvfs_bdev_write(
+		struct file *bdev_file,
+		char *buff,
+		size_t count,
+		int blkno) {
+	struct block_dev *bdev = bdev_file->f_inode->i_data;
+	return block_dev_write(bdev, buff, count, blkno);
+}

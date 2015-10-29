@@ -213,6 +213,17 @@ extern int dentry_ref_inc(struct dentry *dentry);
 extern int dentry_ref_dec(struct dentry *dentry);
 
 /* String handling */
-extern char *dvfs_last_link(const char *path);
+extern const char *dvfs_last_link(const char *path);
 
+extern int dvfs_bdev_read(
+		struct file *bdev_file,
+		char *buff,
+		size_t count,
+		int blkno);
+
+extern int dvfs_bdev_write(
+		struct file *bdev_file,
+		char *buff,
+		size_t count,
+		int blkno);
 #endif
