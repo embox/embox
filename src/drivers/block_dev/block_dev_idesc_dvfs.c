@@ -54,8 +54,8 @@ static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
 		return err_ptr(ENOMEM);
 	}
 	*file = (struct file) {
+		.f_inode = node,
 		.f_idesc  = {
-				.idesc_amode = S_IROTH | S_IWOTH,
 				.idesc_ops   = &idesc_bdev_ops,
 		},
 	};

@@ -29,7 +29,6 @@ static struct idesc *null_open(struct inode *node, struct idesc *idesc) {
 	}
 	*file = (struct file) {
 		.f_idesc  = {
-				.idesc_amode = S_IROTH | S_IWOTH,
 				.idesc_ops   = &idesc_cdev_null_ops,
 		},
 	};

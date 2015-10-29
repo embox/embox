@@ -179,7 +179,7 @@ struct idesc *idesc_serial_create(struct uart *uart,
 	uart->tty->idesc = &tu->idesc;
 	uart->irq_handler = uart_irq_handler;
 
-	idesc_init(&tu->idesc, &idesc_serial_ops, S_IROTH | S_IWOTH);
+	idesc_init(&tu->idesc, &idesc_serial_ops, mod);
 
 	return &tu->idesc;
 }

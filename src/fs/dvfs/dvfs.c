@@ -142,7 +142,6 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 		.f_inode  = i_no,
 		.f_ops    = lookup->item->d_sb->sb_fops,
 		.f_idesc  = {
-			.idesc_amode = S_IROTH | S_IWOTH,
 			.idesc_ops   = &idesc_file_ops,
 		},
 	};

@@ -29,7 +29,6 @@ static struct idesc *zero_open(struct inode *node, struct idesc *idesc) {
 	}
 	*file = (struct file) {
 		.f_idesc  = {
-				.idesc_amode = S_IROTH | S_IWOTH,
 				.idesc_ops   = &idesc_cdev_zero_ops,
 		},
 	};
