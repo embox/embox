@@ -96,8 +96,8 @@ int block_devs_init(void) {
 	const struct block_dev_module *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
-		if (bdev_module->init != NULL) {
-			ret = bdev_module->init(NULL);
+		if (bdev_module->dev_drv->probe != NULL) {
+			ret = bdev_module->dev_drv->probe(NULL);
 			if (ret != 0) {
 				return ret;
 			}

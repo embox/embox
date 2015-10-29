@@ -26,7 +26,7 @@
 #define HD_WAIT_MS 10
 
 extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
-
+static block_dev_driver_t idedisk_pio_driver;
 static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
@@ -183,14 +183,6 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 	return result == 0 ? count : result;
 }
 
-
-static block_dev_driver_t idedisk_pio_driver = {
-	"idedisk_drv",
-	hd_ioctl,
-	hd_read_pio,
-	hd_write_pio
-};
-
 static int idedisk_init (void *args) {
 	hd_t *drive;
 	struct block_dev *bdev;
@@ -216,4 +208,12 @@ static int idedisk_init (void *args) {
 	return 0;
 }
 
-BLOCK_DEV_DEF("idedisk", &idedisk_pio_driver, idedisk_init);
+static block_dev_driver_t idedisk_pio_driver = {
+	"idedisk_drv",
+	hd_ioctl,
+	hd_read_pio,
+	hd_write_pio,
+	idedisk_init,
+};
+
+BLOCK_DEV_DEF("idedisk", &idedisk_pio_driver);

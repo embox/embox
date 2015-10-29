@@ -599,7 +599,7 @@ static int ide_create_block_dev(hd_t *hd) {
 	if (bdev == NULL) {
 		return 0;
 	}
-	bdev->init(hd);
+	bdev->dev_drv->probe(hd);
 
 	return 0;
 }

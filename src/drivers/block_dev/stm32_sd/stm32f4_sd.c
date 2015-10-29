@@ -23,13 +23,14 @@ static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 #define SD_BUF_SIZE OPTION_GET(NUMBER, sd_buf_size)
 
 block_dev_driver_t stm32f4_sd_driver = {
-	.name = STM32F4_SD_DEVNAME,
+	.name  = STM32F4_SD_DEVNAME,
 	.ioctl = stm32f4_sd_ioctl,
-	.read = stm32f4_sd_read,
+	.read  = stm32f4_sd_read,
 	.write = stm32f4_sd_write,
+	.probe = stm32f4_sd_init,
 };
 
-BLOCK_DEV_DEF(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, stm32f4_sd_init);
+BLOCK_DEV_DEF(STM32F4_SD_DEVNAME, &stm32f4_sd_driver);
 
 static int stm32f4_sd_init(void *arg) {
 	struct block_dev *bdev;
