@@ -42,7 +42,7 @@ struct lookup;
 struct super_block {
 	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
 	struct block_dev *bdev;
-
+	struct file      *bdev_file;
 	struct dentry     *root;
 	struct dlist_head *inode_list;
 
@@ -200,11 +200,11 @@ extern struct dentry *dvfs_cache_get(char *path, struct lookup *lookup);
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int dvfs_cache_add(struct dentry *dentry);
 
-extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev);
+extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct file *bdev_file);
 extern int dvfs_destroy_sb(struct super_block *sb);
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
 
-extern int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags);
+extern int dvfs_mount(char *dev, char *dest, const char *fstype, int flags);
 extern int dvfs_umount(struct dentry *d);
 
 extern void dentry_upd_flags(struct dentry *dentry);

@@ -298,14 +298,32 @@ extern int set_rootfs_sb(struct super_block *sb);
  * @retval       0 Ok
  * @retval -ENOENT Mount point or device not found
  */
-int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags) {
+int dvfs_mount(char *dev, char *dest, const char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
 	struct super_block *sb;
 	struct dentry *d;
+	struct file *bdev_file;
+
+	assert(dest);
+	assert(fstype);
 
 	drv = dumb_fs_driver_find(fstype);
-	sb  = dvfs_alloc_sb(drv, dev);
+
+	assert(drv);
+
+	if (dev) {
+		dvfs_lookup(dev, &lookup);
+		if (!lookup.item)
+			return -ENOENT;
+		bdev_file = dvfs_file_open_idesc(&lookup);
+		if (!bdev_file)
+			return -ENOMEM;
+		sb = dvfs_alloc_sb(drv, bdev_file);
+	} else {
+		bdev_file = NULL;
+	}
+	sb = dvfs_alloc_sb(drv, bdev_file);
 
 	if (!strcmp(dest, "/")) {
 		set_rootfs_sb(sb);

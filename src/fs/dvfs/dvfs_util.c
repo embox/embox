@@ -82,14 +82,14 @@ int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
  * @return Pointer to the new superblock
  * @retval NULL Superblock could not be allocated
  */
-struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev) {
+struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct file *bdev_file) {
 	struct super_block *sb;
 	assert(drv);
 
 	sb = pool_alloc(&superblock_pool);
 	*sb = (struct super_block) {
-		.fs_drv = drv,
-		.bdev   = dev,
+		.fs_drv    = drv,
+		.bdev_file = bdev_file,
 	};
 
 	if (drv->fill_sb)
