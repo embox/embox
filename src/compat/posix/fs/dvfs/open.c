@@ -70,7 +70,7 @@ int open(const char *path, int __oflag, ...) {
 		return SET_ERRNO(-res);
 	}
 
-	lookup.item->usage_count++;
+	dentry_ref_inc(lookup.item);
 
 	return res;
 }

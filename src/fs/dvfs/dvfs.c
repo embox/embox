@@ -148,10 +148,8 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 
 	assert(desc->f_ops);
 	if (desc->f_ops->open) {
-		dentry_ref_inc(lookup->item);
 		res = desc->f_ops->open(i_no, &desc->f_idesc);
 		if (err(res)) {
-			dentry_ref_dec(lookup->item);
 			return res;
 		}
 	}
