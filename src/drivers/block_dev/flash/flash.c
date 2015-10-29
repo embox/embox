@@ -312,8 +312,6 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 	}
 }
 
-BLOCK_DEV_DEF("flash", &flashbdev_pio_driver, NULL);
-
 ARRAY_SPREAD_DEF(const flash_dev_module_t, __flash_dev_registry);
 
 int flash_devs_init(void) {

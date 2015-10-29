@@ -191,5 +191,3 @@ static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	}
 	return -ENOSYS;
 }
-
-BLOCK_DEV_DEF("ramdisk", &ramdisk_pio_driver, NULL);
