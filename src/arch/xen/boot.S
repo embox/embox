@@ -10,6 +10,13 @@
 #include <asm/linkage.h>
 #include <hal/cpu.h>
 
+#define __ASSEMBLY__
+#define CONFIG_X86_PAE
+#define __XEN_INTERFACE_VERSION__ 0x00030203
+#include <xen/arch-x86_32.h>
+
+.globl _start, shared_info, hypercall_page
+
 	.section .text
 	.align 4
 
