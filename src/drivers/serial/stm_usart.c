@@ -57,7 +57,9 @@
 #define EVAL_COM_RX_GPIO_CLK            RCC_AHB1Periph_GPIOC
 #define EVAL_COM_RX_SOURCE              GPIO_PinSource7
 #define EVAL_COM_RX_AF                  GPIO_AF_USART6
-#define EVAL_COM_IRQn                   USART6_IRQn
+/* In Embox we assume that the lower external irq number is 0,
+ * but in the cortexm3 it is -15 */
+#define EVAL_COM_IRQn                   (USART6_IRQn + 16)
 #elif MODOPS_USARTX == 2
 #define EVAL_COM                        USART2
 #define EVAL_COM_CLK                    RCC_APB1Periph_USART2
@@ -72,7 +74,7 @@
 #define EVAL_COM_RX_GPIO_CLK            RCC_AHB1Periph_GPIOD
 #define EVAL_COM_RX_SOURCE              GPIO_PinSource6
 #define EVAL_COM_RX_AF                  GPIO_AF_USART2
-#define EVAL_COM_IRQn                   USART2_IRQn
+#define EVAL_COM_IRQn                   (USART2_IRQn + 16)
 #else
 #error Unsupported USARTx
 #endif
@@ -158,6 +160,11 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 
 	stm32_params2init(params, &USART_InitStruct);
 	USART_Init(EVAL_COM, &USART_InitStruct);
+
+	if (dev->params.irq) {
+		USART_ITConfig(EVAL_COM, USART_IT_RXNE, ENABLE);
+	}
+
 	USART_Cmd(EVAL_COM, ENABLE);
 
 	return 0;
@@ -172,11 +179,19 @@ static const struct uart_ops stm32_uart_ops = {
 
 static struct uart stm32_uart0 = {
 		.uart_ops = &stm32_uart_ops,
-		.irq_num = 0,
+		.irq_num = EVAL_COM_IRQn,
 		.base_addr = (unsigned long) EVAL_COM,
 };
 
 static const struct uart_params uart_defparams = {
+		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = true,
+};
+
+static const struct uart_params diag_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
 		.n_stop = 1,
@@ -189,7 +204,7 @@ const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
 			.ops = &uart_diag_ops,
 		},
 		.uart = &stm32_uart0,
-		.params = &uart_defparams,
+		.params = &diag_defparams,
 };
 
 static int uart_init(void) {
