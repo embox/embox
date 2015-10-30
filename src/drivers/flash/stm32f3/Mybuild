@@ -1,4 +1,3 @@
-
 package embox.driver.flash
 
 @BuildDepends(third_party.bsp.st_f4.core)
