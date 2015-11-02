@@ -10,6 +10,8 @@
 #include <stm32f3xx.h>
 #include <string.h>
 
+#include "communication.h"
+
 /**
  * @brief On STM32F3Discovery we are able to use up to 3 UART interfaces to
  * communicate with other agents. For each interface we have predefined ports
@@ -23,11 +25,50 @@
  *     UART3: RX -> PA1
  *            TX -> PF2
  */
-static GPIO_TypeDef  *uart_ports_rx[] = { GPIOC,      GPIOC,      GPIOA};
+static GPIO_TypeDef  *uart_ports_rx[] = { GPIOC,      GPIOA,      GPIOA};
 static uint16_t       uart_pins_rx[]  = { GPIO_PIN_0, GPIO_PIN_2, GPIO_PIN_1};
-static GPIO_TypeDef  *uart_ports_tx[] = { GPIOC,      GPIOC,      GPIOF};
+static GPIO_TypeDef  *uart_ports_tx[] = { GPIOC,      GPIOA,      GPIOF};
 static uint16_t       uart_pins_tx[]  = { GPIO_PIN_1, GPIO_PIN_3, GPIO_PIN_2};
 static USART_TypeDef *uart_inums[]    = { USART1,     USART2,     USART3};
+
+static uint8_t uart_tx_buf[3][UART_BUFF_SZ];
+static uint8_t uart_rx_buf[3][UART_BUFF_SZ];
+
+static USART_HandleTypeDef uart_handle[] = {
+	{
+		.Instance   = USART1,
+		.pTxBuffPtr = &uart_tx_buf[0][0],
+		.pRxBuffPtr = &uart_rx_buf[0][0],
+		.State      = HAL_USART_STATE_RESET,
+		.Init       = {
+			.BaudRate   = UART_BAUD_RATE,
+			.WordLength = USART_WORDLENGTH_8B,
+			.Mode       = USART_MODE_TX_RX,
+		},
+	},
+	{
+		.Instance = USART2,
+		.pTxBuffPtr = &uart_tx_buf[1][0],
+		.pRxBuffPtr = &uart_rx_buf[1][0],
+		.State = HAL_USART_STATE_RESET,
+		.Init       = {
+			.BaudRate   = UART_BAUD_RATE,
+			.WordLength = USART_WORDLENGTH_8B,
+			.Mode       = USART_MODE_TX_RX,
+		},
+	},
+	{
+		.Instance = USART3,
+		.pTxBuffPtr = &uart_tx_buf[2][0],
+		.pRxBuffPtr = &uart_rx_buf[2][0],
+		.State = HAL_USART_STATE_RESET,
+		.Init       = {
+			.BaudRate   = UART_BAUD_RATE,
+			.WordLength = USART_WORDLENGTH_8B,
+			.Mode       = USART_MODE_TX_RX,
+		},
+	}
+};
 
 static void gpio_clk_enable(void *gpio) {
 	switch ((int)gpio) {
@@ -99,8 +140,6 @@ static void gpio_config(int i_num) {
  * @return Negative error number or 0 if succeed
  */
 static void uart_init(int i_num) {
-	USART_TypeDef *uart;
-
 	switch (i_num) {
 	case 0:
 		__USART1_CLK_ENABLE();
@@ -114,19 +153,13 @@ static void uart_init(int i_num) {
 	default:
 		return;
 	}
-	uart = uart_inums[i_num];
-	uart->BRR  = 72000000 / 115200;
-	uart->CR1 &= ~USART_CR1_M;
-	uart->CR1 &= ~USART_CR1_PCE;
-	uart->CR1 |= USART_CR1_TE;
-	uart->CR1 |= USART_CR1_RE;
-	uart->CR1 |= USART_CR1_UE;
-	uart->CR2 &= ~(USART_CR2_STOP_1 | USART_CR2_STOP_0);
+
+	HAL_USART_Init(&uart_handle[i_num]);
 }
 
 int comm_init(void) {
-	gpio_config(0);
-	uart_init(0);
+	gpio_config(1);
+	uart_init(1);
 
 	return 0;
 }

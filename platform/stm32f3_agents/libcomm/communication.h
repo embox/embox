@@ -6,6 +6,8 @@
  * @date 2015-11-02
  */
 
+#define UART_BUFF_SZ     16
+#define UART_BAUD_RATE   1024
 /**
  * @brief Initialize communication interface
  *
