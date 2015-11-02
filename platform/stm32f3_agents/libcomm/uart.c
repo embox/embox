@@ -103,15 +103,12 @@ static void uart_init(int i_num) {
 
 	switch (i_num) {
 	case 0:
-		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
 		__USART1_CLK_ENABLE();
 		break;
 	case 1:
-		RCC->APB2ENR |= RCC_APB1ENR_USART2EN;
 		__USART2_CLK_ENABLE();
 		break;
 	case 2:
-		RCC->APB2ENR |= RCC_APB1ENR_USART3EN;
 		__USART3_CLK_ENABLE();
 		break;
 	default:
