@@ -12,3 +12,6 @@
  * @return Interface num
  */
 extern int comm_init(void);
+
+extern int send_byte(uint8_t b, int i_num);
+extern uint8_t get_byte(int i_num);

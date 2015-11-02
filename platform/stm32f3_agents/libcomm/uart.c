@@ -23,10 +23,11 @@
  *     UART3: RX -> PA1
  *            TX -> PF2
  */
-static GPIO_TypeDef *uart_ports_rx[] = { GPIOC,      GPIOC,      GPIOA};
-static uint16_t      uart_pins_rx[]  = { GPIO_PIN_0, GPIO_PIN_2, GPIO_PIN_1};
-static GPIO_TypeDef *uart_ports_tx[] = { GPIOC,      GPIOC,      GPIOF};
-static uint16_t      uart_pins_tx[]  = { GPIO_PIN_1, GPIO_PIN_3, GPIO_PIN_2};
+static GPIO_TypeDef  *uart_ports_rx[] = { GPIOC,      GPIOC,      GPIOA};
+static uint16_t       uart_pins_rx[]  = { GPIO_PIN_0, GPIO_PIN_2, GPIO_PIN_1};
+static GPIO_TypeDef  *uart_ports_tx[] = { GPIOC,      GPIOC,      GPIOF};
+static uint16_t       uart_pins_tx[]  = { GPIO_PIN_1, GPIO_PIN_3, GPIO_PIN_2};
+static USART_TypeDef *uart_inums[]    = { USART1,     USART2,     USART3};
 
 static void gpio_clk_enable(void *gpio) {
 	switch ((int)gpio) {
@@ -98,28 +99,25 @@ static void gpio_config(int i_num) {
  * @return Negative error number or 0 if succeed
  */
 static void uart_init(int i_num) {
-	USART_TypeDef * uart;
+	USART_TypeDef *uart;
 
 	switch (i_num) {
 	case 0:
 		RCC->APB2ENR |= RCC_APB2ENR_USART1EN;
-		uart = USART1;
 		__USART1_CLK_ENABLE();
 		break;
 	case 1:
 		RCC->APB2ENR |= RCC_APB1ENR_USART2EN;
-		uart = USART2;
 		__USART2_CLK_ENABLE();
 		break;
 	case 2:
 		RCC->APB2ENR |= RCC_APB1ENR_USART3EN;
-		uart = USART3;
 		__USART3_CLK_ENABLE();
 		break;
 	default:
 		return;
 	}
-
+	uart = uart_inums[i_num];
 	uart->BRR  = 72000000 / 115200;
 	uart->CR1 &= ~USART_CR1_M;
 	uart->CR1 &= ~USART_CR1_PCE;
@@ -134,4 +132,19 @@ int comm_init(void) {
 	uart_init(0);
 
 	return 0;
+}
+
+int send_byte(uint8_t b, int i_num) {
+	USART_TypeDef *uart = uart_inums[i_num];
+
+	while (!(uart->ISR & USART_ISR_TXE));
+	uart->TDR = (b & 0xFF);
+
+	return 0;
+}
+
+uint8_t get_byte(int i_num) {
+	USART_TypeDef *uart = uart_inums[i_num];
+	while (!(uart->ISR & USART_ISR_RXNE));
+	return (uint8_t)(uart->RDR & 0xFF);
 }
