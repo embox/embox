@@ -90,6 +90,7 @@ struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct file *bdev_
 	*sb = (struct super_block) {
 		.fs_drv    = drv,
 		.bdev_file = bdev_file,
+		.bdev      = bdev_file->f_inode->i_data,
 	};
 
 	if (drv->fill_sb)
