@@ -37,3 +37,21 @@ const char *dvfs_last_link(const char *path) {
 
 	return l;
 }
+
+
+/**
+ * @brief Remove traling slashes from string
+ *
+ * @param str String to be trimmed
+ */
+void dvfs_traling_slash_trim(char *str) {
+	char *last = &str[strlen(str) - 1];
+
+	while (*last == '/') {
+		*last = '\0';
+		if (--last < str)
+			return;
+	}
+
+	return;
+}
