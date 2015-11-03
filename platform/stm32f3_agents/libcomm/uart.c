@@ -29,7 +29,7 @@ static GPIO_TypeDef  *uart_ports_rx[] = { GPIOC,      GPIOA,      GPIOA};
 static uint16_t       uart_pins_rx[]  = { GPIO_PIN_0, GPIO_PIN_2, GPIO_PIN_1};
 static GPIO_TypeDef  *uart_ports_tx[] = { GPIOC,      GPIOA,      GPIOF};
 static uint16_t       uart_pins_tx[]  = { GPIO_PIN_1, GPIO_PIN_3, GPIO_PIN_2};
-static USART_TypeDef *uart_inums[]    = { USART1,     USART2,     USART3};
+//static USART_TypeDef *uart_inums[]    = { USART1,     USART2,     USART3};
 
 static uint8_t uart_tx_buf[3][UART_BUFF_SZ];
 static uint8_t uart_rx_buf[3][UART_BUFF_SZ];
@@ -165,16 +165,12 @@ int comm_init(void) {
 }
 
 int send_byte(uint8_t b, int i_num) {
-	USART_TypeDef *uart = uart_inums[i_num];
-
-	while (!(uart->ISR & USART_ISR_TXE));
-	uart->TDR = (b & 0xFF);
-
+	HAL_USART_Transmit(&uart_handle[i_num], &b, 1, 0);
 	return 0;
 }
 
 uint8_t get_byte(int i_num) {
-	USART_TypeDef *uart = uart_inums[i_num];
-	while (!(uart->ISR & USART_ISR_RXNE));
-	return (uint8_t)(uart->RDR & 0xFF);
+	uint8_t res;
+	HAL_USART_Receive(&uart_handle[i_num], &res, 1, 0);
+	return res;
 }
