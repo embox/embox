@@ -1,0 +1,28 @@
+package stm32f3_agents.cmd
+
+@AutoCmd
+@Cmd(name="receiver", help="Read gyroscope and accelerometer", man="")
+@BuildDepends(third_party.bsp.st_f3.core)
+@BuildDepends(third_party.bsp.st_f3.sensors)
+module receiver {
+	@IncludePath("$(PLATFORM_DIR)/stm32f3_agents/include")
+	source "receiver.c"
+
+	depends stm32f3_agents.communication
+	depends embox.driver.flash.stm32_f3
+	depends embox.driver.flash_lib
+	depends third_party.bsp.st_f3.core
+}
+
+@AutoCmd
+@Cmd(name="transmitter", help="Periodically run motor right or left", man="")
+@BuildDepends(third_party.bsp.st_f3.core)
+@BuildDepends(third_party.bsp.st_f3.sensors)
+module transmitter {
+	@IncludePath("$(PLATFORM_DIR)/stm32f3_agents/include")
+	source "transmitter.c"
+
+	depends stm32f3_agents.communication
+	depends embox.driver.flash.stm32_f3
+	depends third_party.bsp.st_f3.core
+}
