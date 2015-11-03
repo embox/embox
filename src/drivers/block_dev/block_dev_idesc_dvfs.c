@@ -41,7 +41,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size
 	return bdev->driver->write(bdev, (void *)buf, size, file->pos / bdev->block_size);
 }
 
-static struct idesc_ops idesc_bdev_ops = {
+struct idesc_ops idesc_bdev_ops = {
 	.close = bdev_idesc_close,
 	.read  = bdev_idesc_read,
 	.write = bdev_idesc_write,
@@ -63,5 +63,5 @@ static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
 }
 
 struct file_operations bdev_dev_ops = {
-		.open = bdev_idesc_open,
+	.open = bdev_idesc_open,
 };

@@ -67,6 +67,7 @@ typedef struct block_dev_cache {
 
 struct indexator;
 struct block_dev;
+struct dev_module;
 
 extern struct block_dev *block_dev_create(char *name, void *driver, void *privdata);
 extern struct block_dev *block_dev(void *bdev);
