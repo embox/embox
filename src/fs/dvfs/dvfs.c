@@ -316,7 +316,7 @@ int dvfs_mount(char *dev, char *dest, const char *fstype, int flags) {
 		dvfs_lookup(dev, &lookup);
 		if (!lookup.item)
 			return -ENOENT;
-		bdev_file = dvfs_file_open_idesc(&lookup);
+		bdev_file = (struct file*) dvfs_file_open_idesc(&lookup);
 		if (!bdev_file)
 			return -ENOMEM;
 		sb = dvfs_alloc_sb(drv, bdev_file);
