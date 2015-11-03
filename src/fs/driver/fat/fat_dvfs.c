@@ -478,10 +478,11 @@ struct super_block_operations fat_sbops = {
  *
  * @return Negative error code
  */
-static int fat_fill_sb(struct super_block *sb, struct block_dev *dev) {
+static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	struct fat_fs_info *fsi;
 	uint32_t pstart, psize;
 	uint8_t pactive, ptype;
+	struct block_dev *dev = bdev_file->f_inode->i_data;
 	assert(sb);
 	assert(dev);
 

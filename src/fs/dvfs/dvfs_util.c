@@ -93,7 +93,7 @@ struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct file *bdev_
 	};
 
 	if (drv->fill_sb)
-		drv->fill_sb(sb, dev);
+		drv->fill_sb(sb, bdev_file);
 
 	return sb;
 }
