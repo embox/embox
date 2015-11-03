@@ -134,7 +134,7 @@ int bcm2835_setpower(enum board_power_feature feature, bool on) {
  */
 static int bcm2835_power_init(void) {
 	bcm2835_set_power_mask(0);
-	bcm2835_power_mask = 0;
+	bcm2835_power_mask = bcm2835_get_power_mask();
 
 	return 0;
 }
