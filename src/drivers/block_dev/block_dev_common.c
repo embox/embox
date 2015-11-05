@@ -271,13 +271,21 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 	if (NULL == dev) {
 		return -ENODEV;
 	}
-	bdev = block_dev(dev);
 
-	if (NULL == bdev->driver->ioctl) {
-		return -ENOSYS;
+	bdev = dev;
+
+	switch (cmd) {
+	case IOCTL_GETDEVSIZE:
+		return bdev->size;
+	case IOCTL_GETBLKSIZE:
+		return bdev->block_size;
+	default:
+		assert(bdev->driver);
+		if (NULL == bdev->driver->ioctl)
+			return -ENOSYS;
+
+		return bdev->driver->ioctl(bdev, cmd, args, 0);
 	}
-
-	return bdev->driver->ioctl(bdev, cmd, args, size);
 }
 
 block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
