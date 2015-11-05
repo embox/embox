@@ -41,10 +41,37 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size
 	return bdev->driver->write(bdev, (void *)buf, size, file->pos / bdev->block_size);
 }
 
+static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
+	struct block_dev *bdev;
+	struct file *file;
+
+	assert(idesc);
+
+	file = (struct file *) idesc;
+	assert(file->f_inode);
+	assert(file->f_inode->i_data);
+
+	bdev = file->f_inode->i_data;
+
+	switch (cmd) {
+	case IOCTL_GETDEVSIZE:
+		return bdev->size;
+	case IOCTL_GETBLKSIZE:
+		return bdev->block_size;
+	default:
+		assert(bdev->driver);
+		if (NULL == bdev->driver->ioctl)
+			return -ENOSYS;
+
+		return bdev->driver->ioctl(bdev, cmd, args, 0);
+	}
+}
+
 struct idesc_ops idesc_bdev_ops = {
 	.close = bdev_idesc_close,
 	.read  = bdev_idesc_read,
 	.write = bdev_idesc_write,
+	.ioctl = bdev_idesc_ioctl,
 };
 
 static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
