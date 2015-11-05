@@ -8,8 +8,10 @@
 
 #include <string.h>
 
+#include <drivers/device.h>
+#include <fs/dvfs.h>
+#include <mem/misc/pool.h>
 #include <util/indexator.h>
-#include <util/pool.h>
 
 POOL_DEF(dev_module_pool, struct dev_module, MAX_DEV_MODULE_COUNT);
 INDEX_DEF(dev_module_idx, 0, MAX_DEV_MODULE_COUNT);
@@ -35,13 +37,14 @@ struct dev_module *dev_module_create(struct device *dev, const char *name,
 
 	devmod = pool_alloc(&dev_module_pool);
 	id = index_alloc(&dev_module_idx, INDEX_MIN);
-	if (bdev_id == INDEX_NONE) {
-		pool_free(devmod, &dev_module_pool);
+	if (id == INDEX_NONE) {
+		pool_free(&dev_module_pool, devmod);
 		return NULL;
 	}
 
 	memset(devmod, 0, sizeof(*devmod));
 	strncpy(devmod->name, name, DEV_NAME_LEN);
+	devmod->dev_idesc.idesc_ops = dev->dev_iops;
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
 	dvfs_traling_slash_trim(devmod->name);
 	devmod->device   = dev;
@@ -57,7 +60,7 @@ struct dev_module *dev_module_create(struct device *dev, const char *name,
  * @return Zero or negative error number if failed
  */
 int dev_module_destroy(struct dev_module *dev) {
-	idx_free(&dev_module_idx, dev->dev_id);
-	pool_free(dev, &dev_module_pool);
+	index_free(&dev_module_idx, dev->dev_id);
+	pool_free(&dev_module_pool, dev);
 	return 0;
 }

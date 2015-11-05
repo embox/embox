@@ -24,7 +24,7 @@
 #include <util/binalign.h>
 
 #include <drivers/block_dev.h>
-
+#include <drivers/device.h>
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
@@ -35,18 +35,17 @@ INDEX_DEF(ramdisk_idx, 0, MAX_DEV_QUANTITY);
 
 static int read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 static int write_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
-static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 
-block_dev_driver_t ramdisk_pio_driver = {
-	"ramdisk_drv",
-	ram_ioctl,
-	read_sectors,
-	write_sectors
+struct block_dev_driver ramdisk_pio_driver = {
+	.name  = "ramdisk_drv",
+	.read  = read_sectors,
+	.write = write_sectors
 };
 
 /* XXX not stores index if path have no index placeholder, like * or # */
 struct ramdisk *ramdisk_create(char *path, size_t size) {
 	char buf[256];
+	struct dev_module *mod;
 	struct block_dev *bdev;
 	struct ramdisk *ram;
 	const size_t ramdisk_size = binalign_bound(size, RAMDISK_BLOCK_SIZE);
@@ -64,9 +63,12 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	if (0 > block_dev_named(buf, &ramdisk_idx))
 		goto err_free_mem;
 
-	bdev = block_dev_create(buf, &ramdisk_pio_driver, NULL);
-	if (!bdev)
+	mod = block_dev_create(buf, &ramdisk_pio_driver, NULL);
+	if (!mod)
 		goto err_free_mem;
+
+	bdev = mod->dev_priv;
+	assert(bdev);
 
 	bdev->privdata = ram;
 	bdev->block_size = RAMDISK_BLOCK_SIZE;
@@ -113,17 +115,4 @@ static int write_sectors(struct block_dev *bdev,
 
 	memcpy(write_addr, buffer, count);
 	return count;
-}
-
-static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-	ramdisk_t *ramd = (ramdisk_t *) bdev->privdata;
-
-	switch (cmd) {
-	case IOCTL_GETDEVSIZE:
-		return ramd->blocks;
-
-	case IOCTL_GETBLKSIZE:
-		return bdev->block_size;
-	}
-	return -ENOSYS;
 }

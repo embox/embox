@@ -11,13 +11,19 @@
 
 #include <config/embox/driver/common.h>
 #include <framework/mod/options.h>
+#include <fs/idesc.h>
 
 #define DEV_NAME_LEN \
 	OPTION_MODULE_GET(embox__driver__common, NUMBER, device_name_len)
 
+#define MAX_DEV_MODULE_COUNT \
+	OPTION_MODULE_GET(embox__driver__common, NUMBER, max_dev_module_count)
+
+
 struct device;
 struct dev_module;
 struct dev_operations;
+struct idesc;
 struct idesc_ops;
 
 struct device {
@@ -31,10 +37,11 @@ struct dev_operations {
 };
 
 struct dev_module {
-	int dev_id;
-	char name[DEV_NAME_LEN];
+	struct idesc dev_idesc;
+	int    dev_id;
+	char   name[DEV_NAME_LEN];
 	struct device *device;
-	void *dev_priv;
+	void  *dev_priv;
 };
 
 extern struct dev_module *dev_module_create(struct device *dev,
