@@ -153,3 +153,11 @@ module pl011 extends embox.driver.diag.diag_api {
 
 	source "pl011.c"
 }
+
+@BuildDepends(third_party.bsp.multiclet.core)
+module multiclet extends embox.driver.diag.diag_api {
+	option number baud_rate
+	source "multiclet_uart.c"
+
+	depends third_party.bsp.multiclet.core
+}
