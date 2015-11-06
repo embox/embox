@@ -304,6 +304,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	struct super_block *sb;
 	struct dentry *d;
 	struct file *bdev_file;
+	int err;
 
 	assert(dest);
 	assert(fstype);
@@ -387,9 +388,18 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 		};
 	}
 
-	if (drv->mount_end)
-		drv->mount_end(sb);
+	if (drv->mount_end) {
+		if ((err = drv->mount_end(sb)))
+			goto err_free_all;
+	}
 
+	goto err_ok;
+err_free_all:
+	dvfs_destroy_inode(d->d_inode);
+	if (bdev_file)
+		dvfs_close(bdev_file);
+	return err;
+err_ok:
 	return 0;
 }
 
