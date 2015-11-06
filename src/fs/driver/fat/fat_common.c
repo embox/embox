@@ -47,36 +47,8 @@ static const char bootcode[130] =
 	  0x74, 0x6f, 0x20, 0x74, 0x72, 0x79, 0x20, 0x61, 0x67, 0x61,
 	  0x69, 0x6e, 0x20, 0x2e, 0x2e, 0x2e, 0x20, 0x0d, 0x0a, 0x00 };
 
-int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
-	assert(fsi);
-	assert(fsi->bdev);
-	assert(fsi->vi.bytepersec);
-
-	int dev_blk_size = bdev_blk_sz(fsi->bdev);
-	assert(dev_blk_size > 0);
-	int sec_size = fsi->vi.bytepersec;
-
-	if (0 > block_dev_read(fsi->bdev, (char *) buffer, sec_size, sector * sec_size / dev_blk_size)) {
-		return DFS_ERRMISC;
-	} else {
-		return DFS_OK;
-	}
-}
-
-int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
-	assert(fsi->bdev);
-	assert(fsi->vi.bytepersec);
-
-	int dev_blk_size = bdev_blk_sz(fsi->bdev);
-	assert(dev_blk_size > 0);
-	int sec_size = fsi->vi.bytepersec;
-
-	if (0 > block_dev_write(fsi->bdev, (char *) buffer, sec_size, sector * sec_size / dev_blk_size)) {
-		return DFS_ERRMISC;
-	} else {
-		return DFS_OK;
-	}
-}
+extern int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
+extern int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
 
 /**
  * @brief Format given block device

@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <limits.h>
 
+#include <drivers/device.h>
 #include <fs/fat.h>
 #include <fs/dvfs.h>
 #include <util/math.h>
@@ -21,6 +22,41 @@
 extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 extern struct file_operations fat_fops;
+
+int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
+	struct dev_module *devmod;
+	size_t ret;
+	int pos;
+
+	devmod = fsi->bdev->dev_module;
+
+	pos = sector * fsi->vi.bytepersec;
+	ret = devmod->dev_file.pos = pos;
+	ret = devmod->dev_file.f_idesc.idesc_ops->read(&devmod->dev_file.f_idesc, buffer, fsi->vi.bytepersec);
+
+	if (ret != fsi->vi.bytepersec)
+		return DFS_ERRMISC;
+	else
+		return DFS_OK;
+}
+
+int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
+	struct dev_module *devmod;
+	size_t ret;
+	int pos;
+
+	devmod = fsi->bdev->dev_module;
+
+	pos = sector * fsi->vi.bytepersec;
+	ret = devmod->dev_file.pos = pos;
+	ret = devmod->dev_file.f_idesc.idesc_ops->write(&devmod->dev_file.f_idesc, buffer, fsi->vi.bytepersec);
+
+
+	if (ret != fsi->vi.bytepersec)
+		return DFS_ERRMISC;
+	else
+		return DFS_OK;
+}
 
 /**
  * @brief Fill dirent with dirinfo data
