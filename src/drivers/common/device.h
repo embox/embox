@@ -11,6 +11,7 @@
 
 #include <config/embox/driver/common.h>
 #include <framework/mod/options.h>
+#include <fs/dvfs.h>
 #include <fs/idesc.h>
 
 #define DEV_NAME_LEN \
@@ -24,6 +25,7 @@ struct device;
 struct dev_module;
 struct dev_operations;
 struct idesc;
+struct file;
 struct idesc_ops;
 
 struct device {
@@ -37,7 +39,7 @@ struct dev_operations {
 };
 
 struct dev_module {
-	struct idesc dev_idesc;
+	struct file dev_file;
 	int    dev_id;
 	char   name[DEV_NAME_LEN];
 	struct device *device;

@@ -10,8 +10,8 @@
 #include <sys/stat.h>
 #include <util/err.h>
 
-
 #include <drivers/block_dev.h>
+#include <drivers/device.h>
 #include <fs/dvfs.h>
 
 static void bdev_idesc_close(struct idesc *desc) {
@@ -75,18 +75,15 @@ struct idesc_ops idesc_bdev_ops = {
 };
 
 static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
-	struct file *file;
-	file = dvfs_alloc_file();
-	if (!file) {
-		return err_ptr(ENOMEM);
-	}
-	*file = (struct file) {
-		.f_inode = node,
-		.f_idesc  = {
-				.idesc_ops   = &idesc_bdev_ops,
-		},
-	};
-	return &file->f_idesc;
+	/* Assume node belongs to /devfs/ */
+	struct dev_module *devmod = ((struct block_dev *)node->i_data)->dev_module;
+
+	devmod->dev_file.f_inode = node;
+	devmod->dev_file.f_dentry = NULL;
+	devmod->dev_file.f_ops = NULL;
+	devmod->dev_file.pos = 0;
+
+	return &devmod->dev_file.f_idesc;
 }
 
 struct file_operations bdev_dev_ops = {

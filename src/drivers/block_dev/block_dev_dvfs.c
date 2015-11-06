@@ -61,6 +61,7 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	}
 
 	devmod = dev_module_create(&block_device, dvfs_last_link(path), bdev);
+	bdev->dev_module = devmod;
 
 	return bdev;
 }

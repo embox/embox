@@ -36,6 +36,8 @@ typedef struct block_dev {
 	size_t size;
 	size_t block_size;
 	struct block_dev_cache *cache;
+
+	struct dev_module *dev_module;
 } block_dev_t;
 
 typedef struct block_dev_driver {

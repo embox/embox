@@ -44,7 +44,7 @@ struct dev_module *dev_module_create(struct device *dev, const char *name,
 
 	memset(devmod, 0, sizeof(*devmod));
 	strncpy(devmod->name, name, DEV_NAME_LEN);
-	devmod->dev_idesc.idesc_ops = dev->dev_iops;
+	devmod->dev_file.f_idesc.idesc_ops = dev->dev_iops;
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
 	dvfs_traling_slash_trim(devmod->name);
 	devmod->device   = dev;
