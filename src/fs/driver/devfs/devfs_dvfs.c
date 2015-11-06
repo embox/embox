@@ -19,6 +19,7 @@
 #include <util/err.h>
 
 #include <drivers/char_dev.h>
+#include <drivers/device.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 #include <kernel/printk.h>
@@ -40,8 +41,25 @@ static int devfs_destroy_inode(struct inode *inode) {
 }
 
 void devfs_fill_inode(struct inode *inode, void *dev, int flags) {
+	struct dev_module *devmod;
+
+	assert(inode);
+	assert(dev);
+
 	inode->i_data = dev;
 	inode->flags |= flags;
+
+	switch (flags) {
+	case S_IFBLK:
+		devmod = ((struct block_dev *)dev)->dev_module;
+		devmod->dev_file.f_inode = inode;
+		break;
+	case S_IFCHR:
+		/* TODO */
+		break;
+	default:
+		break;
+	}
 }
 
 ARRAY_SPREAD_DECLARE(const struct device_module, __char_device_registry);
