@@ -1,5 +1,13 @@
 package embox.driver.block_dev
 
-module scsi_disk {
+@DefaultImpl(scsi_disk_old)
+abstract module scsi_disk {
+	
+}
+module scsi_disk_old extends scsi_disk {
 	source "scsi_disc.c"
+}
+
+module scsi_disk_dvfs extends scsi_disk {
+	source "scsi_disc_dvfs.c"
 }
