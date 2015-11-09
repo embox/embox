@@ -15,7 +15,6 @@
 #include <fs/dvfs.h>
 
 static void bdev_idesc_close(struct idesc *desc) {
-	dvfs_destroy_file((struct file *)desc);
 }
 
 static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
@@ -67,11 +66,23 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	}
 }
 
+static int bdev_idesc_fstat(struct idesc *idesc, void *buff) {
+	struct stat *sb;
+
+	assert(buff);
+	sb = buff;
+	memset(sb, 0, sizeof(struct stat));
+	sb->st_mode = S_IFBLK;
+
+	return 0;
+}
+
 struct idesc_ops idesc_bdev_ops = {
 	.close = bdev_idesc_close,
 	.read  = bdev_idesc_read,
 	.write = bdev_idesc_write,
 	.ioctl = bdev_idesc_ioctl,
+	.fstat = bdev_idesc_fstat
 };
 
 static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
@@ -82,6 +93,7 @@ static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
 	devmod->dev_file.f_dentry = NULL;
 	devmod->dev_file.f_ops = NULL;
 	devmod->dev_file.pos = 0;
+	devmod->dev_file.f_idesc.idesc_ops = &idesc_bdev_ops;
 
 	return &devmod->dev_file.f_idesc;
 }
