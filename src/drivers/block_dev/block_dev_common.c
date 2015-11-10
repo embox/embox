@@ -142,6 +142,7 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 	struct buffer_head *bh;
 
 	assert(bdev);
+	assert(bdev->driver);
 
 	if (NULL == bdev->driver->read) {
 		return -ENOSYS;
