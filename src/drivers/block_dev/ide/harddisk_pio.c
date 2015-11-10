@@ -210,7 +210,7 @@ static int idedisk_init (void *args) {
 		size = drive->blks * bdev->block_size;
 		bdev->size = size;
 		drive->bdev = bdev;
-		create_partitions(drive);
+		create_partitions(bdev);
 	}
 	return 0;
 }

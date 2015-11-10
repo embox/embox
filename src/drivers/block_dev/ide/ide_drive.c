@@ -330,7 +330,7 @@ int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 		return 0;
 
 	case IOCTL_REVALIDATE:
-		return create_partitions(hd);
+		return create_partitions(bdev);
 	}
 
 	return -ENOSYS;

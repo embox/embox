@@ -58,25 +58,22 @@ static struct block_dev_driver partition_driver = {
 struct block_dev_driver *bdev_driver_part = &partition_driver;
 
 /* TODO Create Partition as drive */
-int create_partitions(struct hd *hd) {
+int create_partitions(struct block_dev *bdev) {
 	struct mbr mbrdata;
 	struct mbr *mbr = &mbrdata;
 	int rc;
-	struct block_dev *bdev = hd->bdev;
 
 	/* Read partition table */
-	rc = block_dev_read(hd->bdev, (char *)mbr, bdev->block_size, 0);
+	rc = block_dev_read(bdev, (char *)mbr, bdev->block_size, 0);
 	if (rc < 0) {
 		return rc;
 	}
-
-	mbr->sig_55 = 0;
 
 	/* Create partition devices */
 	if ((mbr->sig_55 != 0x55) || (mbr->sig_aa != 0xAA)) {
 		return -EIO;
 	}
-	hd->bdev = block_dev_create("/dev/hda0", &partition_driver, NULL);
+	block_dev_create("/dev/hda0", &partition_driver, NULL);
 
 	return 0;
 }

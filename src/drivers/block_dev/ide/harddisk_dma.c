@@ -260,7 +260,7 @@ static int idedisk_udma_init (void *args) {
 		} else {
 			return -1;
 		}
-		create_partitions(drive);
+		create_partitions(drive->bdev);
 	}
 	return 0;
 }
