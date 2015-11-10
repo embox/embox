@@ -233,7 +233,7 @@ static int hd_identify(hd_t *hd) {
 
 	/* Read parameter data */
 	insw(hd->hdc->iobase + HDC_DATA,
-			(char *) &(hd->param), sizeof(hd->param));
+			(char *) &(hd->param), sizeof(hd->param) / 2);
 
 	/* XXX this was added when ide drive with reported block size equals 64
  	 * However, block dev tries to use this and fails */
