@@ -28,7 +28,7 @@ uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE]; /* XXX */
 uint32_t fat_get_next(struct fat_fs_info *fsi,
 		struct dirinfo * dirinfo, struct dirent * dirent);
 
-static size_t bdev_blk_sz(struct block_dev *bdev) {
+size_t bdev_blk_sz(struct block_dev *bdev) {
 	return bdev->block_size;
 }
 

@@ -21,7 +21,9 @@
 #include <fs/fs_driver.h>
 #include <fs/node.h>
 #include <fs/vfs.h>
+#include <drivers/block_dev.h>
 
+extern size_t bdev_blk_sz(struct block_dev *bdev);
 int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
 	assert(fsi);
 	assert(fsi->bdev);
