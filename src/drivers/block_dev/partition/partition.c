@@ -59,21 +59,29 @@ struct block_dev_driver *bdev_driver_part = &partition_driver;
 
 /* TODO Create Partition as drive */
 int create_partitions(struct block_dev *bdev) {
-	struct mbr mbrdata;
-	struct mbr *mbr = &mbrdata;
+	struct mbr mbr;
 	int rc;
+	int part_n;
+	char part_name[0x16];
 
 	/* Read partition table */
-	rc = block_dev_read(bdev, (char *)mbr, bdev->block_size, 0);
+	rc = block_dev_read(bdev, (char *)&mbr, bdev->block_size, 0);
 	if (rc < 0) {
 		return rc;
 	}
 
 	/* Create partition devices */
-	if ((mbr->sig_55 != 0x55) || (mbr->sig_aa != 0xAA)) {
-		return -EIO;
+	if ((mbr.sig_55 != 0x55) || (mbr.sig_aa != 0xAA)) {
+		return 0;
 	}
-	block_dev_create("/dev/hda0", &partition_driver, NULL);
+	for (part_n = 0; part_n < 4; part_n ++) {
+
+		if(mbr.ptable[part_n].type == 0) {
+			return part_n;
+		}
+		sprintf(part_name, "%s/%s%d", "/dev/", bdev->name, part_n);
+		block_dev_create(part_name, &partition_driver, NULL);
+	}
 
 	return 0;
 }
