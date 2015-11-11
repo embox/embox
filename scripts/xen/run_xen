@@ -1,0 +1,11 @@
+#!/bin/bash
+DOMCONFIG=$PWD/scripts/xen/embox.cfg
+
+echo name = \"embox\" > $DOMCONFIG
+echo memory = 256 >> $DOMCONFIG
+#echo disk = [ '/home/andrey/root.img,raw,xvda,rw' ] >> $DOMCONFIG
+echo vif = [ \'bridge=xenbr0\' ] >> $DOMCONFIG
+echo kernel = \"$PWD/build/base/bin/embox\" >> $DOMCONFIG
+echo extra = \"debian-installer/exit/always_halt=true -- console=hvc0\" >> $DOMCONFIG
+
+sudo xl create $DOMCONFIG $@
