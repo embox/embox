@@ -193,10 +193,9 @@ static block_dev_driver_t idedisk_pio_driver = {
 
 static int idedisk_init (void *args) {
 	hd_t *drive;
-	size_t size;
+	struct block_dev *bdev;
 	char path[PATH_MAX];
 	drive = (hd_t *)args;
-	struct block_dev *bdev = drive->bdev;
 	/* Make new device */
 	if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
 		*path = 0;
@@ -207,8 +206,8 @@ static int idedisk_init (void *args) {
 		drive->bdev = block_dev_create(path,
 				&idedisk_pio_driver, drive);
 		if (NULL != drive->bdev) {
-			size = drive->blks * bdev->block_size;
-			block_dev(drive->bdev)->size = size;
+			bdev = (struct block_dev *) drive->bdev;
+			bdev->size = drive->blks * bdev->block_size;
 		} else {
 			return -1;
 		}
