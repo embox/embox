@@ -45,7 +45,6 @@ struct block_dev_driver ramdisk_pio_driver = {
 /* XXX not stores index if path have no index placeholder, like * or # */
 struct ramdisk *ramdisk_create(char *path, size_t size) {
 	char buf[256];
-	struct dev_module *mod;
 	struct block_dev *bdev;
 	struct ramdisk *ram;
 	const size_t ramdisk_size = binalign_bound(size, RAMDISK_BLOCK_SIZE);
@@ -63,12 +62,9 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	if (0 > block_dev_named(buf, &ramdisk_idx))
 		goto err_free_mem;
 
-	mod = block_dev_create(buf, &ramdisk_pio_driver, NULL);
-	if (!mod)
+	bdev = block_dev_create(buf, &ramdisk_pio_driver, NULL);
+	if (!bdev)
 		goto err_free_mem;
-
-	bdev = mod->dev_priv;
-	assert(bdev);
 
 	bdev->privdata = ram;
 	bdev->block_size = RAMDISK_BLOCK_SIZE;
