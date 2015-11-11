@@ -20,16 +20,23 @@ static void bdev_idesc_close(struct idesc *desc) {
 static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
 	struct file *file;
 	struct block_dev *bdev;
+	int res;
 
 	file = (struct file *)desc;
 
 	bdev = file->f_inode->i_data;
-	return bdev->driver->read(bdev, buf, size, file->pos / bdev->block_size);
+	res = bdev->driver->read(bdev, buf, size, file->pos / bdev->block_size);
+	if (res < 0) {
+		return res;
+	}
+	file->pos += res;
+	return res;
 }
 
 static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size) {
 	struct file *file;
 	struct block_dev *bdev;
+	int res;
 
 	file = (struct file *)desc;
 
@@ -37,7 +44,12 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size
 	assert(bdev->driver);
 	assert(bdev->driver->write);
 
-	return bdev->driver->write(bdev, (void *)buf, size, file->pos / bdev->block_size);
+	res = bdev->driver->write(bdev, (void *)buf, size, file->pos / bdev->block_size);
+	if (res < 0) {
+		return res;
+	}
+	file->pos += res;
+	return res;
 }
 
 static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
