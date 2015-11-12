@@ -7,7 +7,7 @@
  */
 
 #define UART_BUFF_SZ     16
-#define UART_BAUD_RATE   1024
+#define UART_BAUD_RATE   9600
 /**
  * @brief Initialize communication interface
  *

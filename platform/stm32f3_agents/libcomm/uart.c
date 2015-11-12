@@ -29,43 +29,52 @@ static GPIO_TypeDef  *uart_ports_rx[] = { GPIOC,      GPIOA,      GPIOA};
 static uint16_t       uart_pins_rx[]  = { GPIO_PIN_0, GPIO_PIN_2, GPIO_PIN_1};
 static GPIO_TypeDef  *uart_ports_tx[] = { GPIOC,      GPIOA,      GPIOF};
 static uint16_t       uart_pins_tx[]  = { GPIO_PIN_1, GPIO_PIN_3, GPIO_PIN_2};
-//static USART_TypeDef *uart_inums[]    = { USART1,     USART2,     USART3};
+/*static USART_TypeDef *uart_inums[]    = { USART1,     USART2,     USART3};
 
 static uint8_t uart_tx_buf[3][UART_BUFF_SZ];
-static uint8_t uart_rx_buf[3][UART_BUFF_SZ];
+static uint8_t uart_rx_buf[3][UART_BUFF_SZ]; */
 
-static USART_HandleTypeDef uart_handle[] = {
+static UART_HandleTypeDef uart_handle[] = {
 	{
 		.Instance   = USART1,
-		.pTxBuffPtr = &uart_tx_buf[0][0],
+	/*	.pTxBuffPtr = &uart_tx_buf[0][0],
 		.pRxBuffPtr = &uart_rx_buf[0][0],
 		.State      = HAL_USART_STATE_RESET,
-		.Init       = {
+	*/	.Init       = {
 			.BaudRate   = UART_BAUD_RATE,
-			.WordLength = USART_WORDLENGTH_8B,
-			.Mode       = USART_MODE_TX_RX,
+			.WordLength = UART_WORDLENGTH_8B,
+			.Mode       = UART_MODE_TX_RX,
+			.StopBits   = UART_STOPBITS_1,
+			.Parity     = UART_PARITY_NONE,
+			.HwFlowCtl  = UART_HWCONTROL_NONE,
 		},
 	},
 	{
 		.Instance = USART2,
-		.pTxBuffPtr = &uart_tx_buf[1][0],
+	/*	.pTxBuffPtr = &uart_tx_buf[1][0],
 		.pRxBuffPtr = &uart_rx_buf[1][0],
 		.State = HAL_USART_STATE_RESET,
-		.Init       = {
+	*/	.Init       = {
 			.BaudRate   = UART_BAUD_RATE,
-			.WordLength = USART_WORDLENGTH_8B,
-			.Mode       = USART_MODE_TX_RX,
+			.WordLength = UART_WORDLENGTH_8B,
+			.Mode       = UART_MODE_TX_RX,
+			.StopBits   = UART_STOPBITS_1,
+			.Parity     = UART_PARITY_NONE,
+			.HwFlowCtl  = UART_HWCONTROL_NONE,
 		},
 	},
 	{
 		.Instance = USART3,
-		.pTxBuffPtr = &uart_tx_buf[2][0],
+	/*	.pTxBuffPtr = &uart_tx_buf[2][0],
 		.pRxBuffPtr = &uart_rx_buf[2][0],
 		.State = HAL_USART_STATE_RESET,
-		.Init       = {
+	*/	.Init       = {
 			.BaudRate   = UART_BAUD_RATE,
-			.WordLength = USART_WORDLENGTH_8B,
-			.Mode       = USART_MODE_TX_RX,
+			.WordLength = UART_WORDLENGTH_8B,
+			.Mode       = UART_MODE_TX_RX,
+			.StopBits   = UART_STOPBITS_1,
+			.Parity     = UART_PARITY_NONE,
+			.HwFlowCtl  = UART_HWCONTROL_NONE,
 		},
 	}
 };
@@ -99,17 +108,19 @@ static void gpio_clk_enable(void *gpio) {
 static void fill_gpio_init_rx(GPIO_InitTypeDef *a, int n) {
 	memset(a, 0, sizeof(a));
 	a->Pin       = uart_pins_rx[n];
-	a->Mode      = GPIO_MODE_AF_OD;
-	a->Pull      = GPIO_NOPULL;
+	a->Mode      = GPIO_MODE_AF_PP;
+	a->Pull      = GPIO_PULLUP;
 	a->Speed     = GPIO_SPEED_HIGH;
+	a->Alternate = GPIO_AF7_USART2;
 }
 
 static void fill_gpio_init_tx(GPIO_InitTypeDef *a, int n) {
 	memset(a, 0, sizeof(a));
 	a->Pin       = uart_pins_tx[n];
-	a->Mode      = GPIO_MODE_AF_OD;
-	a->Pull      = GPIO_NOPULL;
+	a->Mode      = GPIO_MODE_AF_PP;
+	a->Pull      = GPIO_PULLUP;
 	a->Speed     = GPIO_SPEED_HIGH;
+	a->Alternate = GPIO_AF7_USART2;
 }
 
 /**
@@ -154,10 +165,36 @@ static void uart_init(int i_num) {
 		return;
 	}
 
-	HAL_USART_Init(&uart_handle[i_num]);
+	HAL_UART_Init(&uart_handle[i_num]);
+}
+
+static void sys_clk_config(void) {
+  RCC_ClkInitTypeDef RCC_ClkInitStruct;
+  RCC_OscInitTypeDef RCC_OscInitStruct;
+
+  /* Enable HSE Oscillator and activate PLL with HSE as source */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
+
+  HAL_RCC_OscConfig(&RCC_OscInitStruct);
+
+  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
+     clocks dividers */
+  RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+
+  HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2);
 }
 
 int comm_init(void) {
+	sys_clk_config();
 	gpio_config(1);
 	uart_init(1);
 
@@ -165,12 +202,12 @@ int comm_init(void) {
 }
 
 int send_byte(uint8_t b, int i_num) {
-	HAL_USART_Transmit(&uart_handle[i_num], &b, 1, 0);
+	HAL_UART_Transmit_DMA(&uart_handle[i_num], &b, 1);
 	return 0;
 }
 
 uint8_t get_byte(int i_num) {
-	uint8_t res;
-	HAL_USART_Receive(&uart_handle[i_num], &res, 1, 0);
+	uint8_t res = 0;
+	HAL_UART_Receive_DMA(&uart_handle[i_num], &res, 1);
 	return res;
 }

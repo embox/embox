@@ -13,6 +13,7 @@
 #include <kernel/time/ktime.h>
 
 int main() {
+	HAL_Init();
 	comm_init();
 
 	while (1) {

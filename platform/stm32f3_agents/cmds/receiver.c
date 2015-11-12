@@ -15,6 +15,8 @@
 int main() {
 	int res;
 
+	HAL_Init();
+
 	comm_init();
 
 	while(1) {
@@ -22,12 +24,13 @@ int main() {
 		res = get_byte(1);
 
 		if (res) {
-			BSP_LED_Init(res++);
+			BSP_LED_Init(res);
 			BSP_LED_On(res);
 		} else
 			continue;
-		ksleep(10);
+		ksleep(50);
 		BSP_LED_Off(res);
+		ksleep(50);
 	}
 
 	return 0;
