@@ -158,3 +158,45 @@ int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
 			buf,
 			bdev->block_size);
 }
+
+int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count) {
+	struct block_dev *bdev;
+	int i, err;
+
+	assert(devmod);
+	assert(buf);
+
+	bdev = devmod->dev_priv;
+
+	for (i = 0; i < count; i++) {
+		err = bdev_write_block(devmod, buf, blk);
+		buf += bdev->block_size;
+		blk++;
+
+		if (err < 0)
+			return err;
+	}
+
+	return count * bdev->block_size;;
+}
+
+int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk, int count) {
+	struct block_dev *bdev;
+	int i, err;
+
+	assert(devmod);
+	assert(buf);
+
+	bdev = devmod->dev_priv;
+
+	for (i = 0; i < count; i++) {
+		err = bdev_read_block(devmod, buf, blk);
+		buf += bdev->block_size;
+		blk++;
+
+		if (err < 0)
+			return err;
+	}
+
+	return count * bdev->block_size;;
+}

@@ -102,5 +102,7 @@ extern int block_devs_init(void);
 struct dev_module;
 extern int bdev_read_block(struct dev_module *devmod, void *buf, int blk);
 extern int bdev_write_block(struct dev_module *devmod, void *buf, int blk);
+extern int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk, int count);
+extern int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count);
 
 #endif /* BLOCK_DEV_H_ */
