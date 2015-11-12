@@ -26,13 +26,12 @@ extern struct file_operations fat_fops;
 int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
 	struct dev_module *devmod;
 	size_t ret;
-	int pos;
-
+	int blk;
+	int blkpersec = fsi->vi.bytepersec / fsi->bdev->block_size;
 	devmod = fsi->bdev->dev_module;
 
-	pos = sector * fsi->vi.bytepersec;
-	ret = devmod->dev_file.pos = pos;
-	ret = devmod->dev_file.f_idesc.idesc_ops->read(&devmod->dev_file.f_idesc, buffer, fsi->vi.bytepersec);
+	blk = sector * blkpersec;
+	ret = bdev_read_blocks(devmod, buffer, blk, blkpersec);
 
 	if (ret != fsi->vi.bytepersec)
 		return DFS_ERRMISC;
@@ -43,14 +42,12 @@ int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
 int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
 	struct dev_module *devmod;
 	size_t ret;
-	int pos;
-
+	int blk;
+	int blkpersec = fsi->vi.bytepersec / fsi->bdev->block_size;
 	devmod = fsi->bdev->dev_module;
 
-	pos = sector * fsi->vi.bytepersec;
-	ret = devmod->dev_file.pos = pos;
-	ret = devmod->dev_file.f_idesc.idesc_ops->write(&devmod->dev_file.f_idesc, buffer, fsi->vi.bytepersec);
-
+	blk = sector * blkpersec;
+	ret = bdev_write_blocks(devmod, buffer, blk, blkpersec);
 
 	if (ret != fsi->vi.bytepersec)
 		return DFS_ERRMISC;
