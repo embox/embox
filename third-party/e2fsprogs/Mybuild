@@ -21,37 +21,31 @@ static module core {
 	@NoRuntime depends embox.compat.posix.proc.uid
 }
 
+@App
+@AutoCmd
 @Cmd(name = "e2freefrag",
 	help = "report filesystem free-space fragmentation",
 	man = '''
 		NAME
 			e2freefrag - report filesystem free-space fragmentation
-		SYNOPSIS
-		AUTHORS
-			Alexander Kalmuk
 	''')
 module e2freefrag {
-	source "e2freefrag_cmd.c"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
 	source "e2freefrag.o"
 
 	@NoRuntime depends core
 }
 
+@App
+@AutoCmd
 @Cmd(name = "dumpe2fs",
 	help = "List the control structures of a second extended filesystem",
 	man = '''
 		NAME
 			dumpe2fs - List the control structures of a second extended filesystem
-		SYNOPSIS
-		AUTHORS
-			Alexander Kalmuk
 	''')
 module dumpe2fs {
-	source "dumpe2fs_cmd.c"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
 	source "dumpe2fs.o"
 
 	@NoRuntime depends core
@@ -62,9 +56,6 @@ module dumpe2fs {
 	man = '''
 		NAME
 			mke2fs - Make a ext2fs filesystem
-		SYNOPSIS
-		AUTHORS
-			Alexander Kalmuk
 	''')
 module mke2fs {
 	source "mke2fs_cmd.c"
@@ -76,19 +67,16 @@ module mke2fs {
 	@NoRuntime depends core
 }
 
+@App
+@AutoCmd
 @Cmd(name = "e2fsck",
 	help = "a consistency checker for the new extended file system",
 	man = '''
 		NAME
 			e2fsck - a consistency checker for the new extended file system
-		SYNOPSIS
-		AUTHORS
-			Alexander Kalmuk
 	''')
 module e2fsck {
-	source "e2fsck_cmd.c"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/e2fsck")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/e2fsck")
 	source "*.o"
 
 	@NoRuntime depends core

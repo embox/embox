@@ -40,7 +40,8 @@ PKG_INSTALL_LIBS :
 
 PKG_INSTALL_PROGS :
 	cd $(PKG_SOURCE_DIR)/../install && \
-	cp -r $(PKG_SOURCE_DIR)/misc/* misc && chmod -R +w misc/*
+	cp -rf $(PKG_SOURCE_DIR)/misc/* misc && \
+	cp -rf $(PKG_SOURCE_DIR)/e2fsck/* e2fsck
 
 $(INSTALL) : PKG_INSTALL_LIBS PKG_INSTALL_PROGS
 	touch $@
