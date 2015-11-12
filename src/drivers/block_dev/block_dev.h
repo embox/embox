@@ -98,4 +98,9 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 
 extern int block_devs_init(void);
 
+/* This part is actually just for dvfs */
+struct dev_module;
+extern int bdev_read_block(struct dev_module *devmod, void *buf, int blk);
+extern int bdev_write_block(struct dev_module *devmod, void *buf, int blk);
+
 #endif /* BLOCK_DEV_H_ */

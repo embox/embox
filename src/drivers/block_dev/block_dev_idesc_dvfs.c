@@ -113,3 +113,48 @@ static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
 struct file_operations bdev_dev_ops = {
 	.open = bdev_idesc_open,
 };
+
+/* Some useful handlers. All this functions do is converting position
+ * into appropriate format for block device */
+
+int bdev_read_block(struct dev_module *devmod, void *buf, int blk) {
+	struct block_dev *bdev;
+
+	assert(devmod);
+	assert(buf);
+	assert(devmod->dev_file.f_idesc.idesc_ops->read);
+
+	bdev = devmod->dev_priv;
+	assert(bdev);
+	/* TODO check if given devmod is really block device. Probably,
+	 * some flags should be added to struct dev_module to check it.
+	 * Or maybe pools bounds could be used to check. */
+
+	devmod->dev_file.pos = blk * bdev->block_size;
+
+	return devmod->dev_file.f_idesc.idesc_ops->read(
+			&devmod->dev_file.f_idesc,
+			buf,
+			bdev->block_size);
+}
+
+int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
+	struct block_dev *bdev;
+
+	assert(devmod);
+	assert(buf);
+	assert(devmod->dev_file.f_idesc.idesc_ops->write);
+
+	bdev = devmod->dev_priv;
+	assert(bdev);
+	/* TODO check if given devmod is really block device. Probably,
+	 * some flags should be added to struct dev_module to check it.
+	 * Or maybe pools bounds could be used to check. */
+
+	devmod->dev_file.pos = blk * bdev->block_size;
+
+	return devmod->dev_file.f_idesc.idesc_ops->write(
+			&devmod->dev_file.f_idesc,
+			buf,
+			bdev->block_size);
+}
