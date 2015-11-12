@@ -1,14 +1,14 @@
 package third_party.e2fsprogs
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/include",
-	ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/lib")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/install/include",
+	ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/install/lib")
 static module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libblkid.a", "libcom_err.a", "libe2p.a",
 		"libext2fs.a", "libquota.a", "libuuid.a"
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/src/e2fsprogs-build/intl")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/intl")
 	source "libintl.a"
 
 	depends embox.compat.posix.stubs
@@ -69,7 +69,7 @@ module dumpe2fs {
 module mke2fs {
 	source "mke2fs_cmd.c"
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
 	source "mke2fs.o", "util.o", "profile.o",
 		"prof_err.o", "default_profile.o"
 
