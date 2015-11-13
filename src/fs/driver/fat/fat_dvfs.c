@@ -14,6 +14,7 @@
 #include <fcntl.h>
 #include <limits.h>
 
+#include <drivers/device.h>
 #include <fs/fat.h>
 #include <fs/dvfs.h>
 #include <util/math.h>
@@ -21,6 +22,38 @@
 extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 extern struct file_operations fat_fops;
+
+int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
+	struct dev_module *devmod;
+	size_t ret;
+	int blk;
+	int blkpersec = fsi->vi.bytepersec / fsi->bdev->block_size;
+	devmod = fsi->bdev->dev_module;
+
+	blk = sector * blkpersec;
+	ret = bdev_read_blocks(devmod, buffer, blk, blkpersec);
+
+	if (ret != fsi->vi.bytepersec)
+		return DFS_ERRMISC;
+	else
+		return DFS_OK;
+}
+
+int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
+	struct dev_module *devmod;
+	size_t ret;
+	int blk;
+	int blkpersec = fsi->vi.bytepersec / fsi->bdev->block_size;
+	devmod = fsi->bdev->dev_module;
+
+	blk = sector * blkpersec;
+	ret = bdev_write_blocks(devmod, buffer, blk, blkpersec);
+
+	if (ret != fsi->vi.bytepersec)
+		return DFS_ERRMISC;
+	else
+		return DFS_OK;
+}
 
 /**
  * @brief Fill dirent with dirinfo data
@@ -478,10 +511,11 @@ struct super_block_operations fat_sbops = {
  *
  * @return Negative error code
  */
-static int fat_fill_sb(struct super_block *sb, struct block_dev *dev) {
+static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	struct fat_fs_info *fsi;
 	uint32_t pstart, psize;
 	uint8_t pactive, ptype;
+	struct block_dev *dev = bdev_file->f_inode->i_data;
 	assert(sb);
 	assert(dev);
 

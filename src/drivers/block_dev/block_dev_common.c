@@ -96,8 +96,8 @@ int block_devs_init(void) {
 	const struct block_dev_module *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
-		if (bdev_module->init != NULL) {
-			ret = bdev_module->init(NULL);
+		if (bdev_module->dev_drv->probe != NULL) {
+			ret = bdev_module->dev_drv->probe(NULL);
 			if (ret != 0) {
 				return ret;
 			}
@@ -142,6 +142,7 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 	struct buffer_head *bh;
 
 	assert(bdev);
+	assert(bdev->driver);
 
 	if (NULL == bdev->driver->read) {
 		return -ENOSYS;
@@ -271,13 +272,21 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 	if (NULL == dev) {
 		return -ENODEV;
 	}
-	bdev = block_dev(dev);
 
-	if (NULL == bdev->driver->ioctl) {
-		return -ENOSYS;
+	bdev = dev;
+
+	switch (cmd) {
+	case IOCTL_GETDEVSIZE:
+		return bdev->size;
+	case IOCTL_GETBLKSIZE:
+		return bdev->block_size;
+	default:
+		assert(bdev->driver);
+		if (NULL == bdev->driver->ioctl)
+			return -ENOSYS;
+
+		return bdev->driver->ioctl(bdev, cmd, args, 0);
 	}
-
-	return bdev->driver->ioctl(bdev, cmd, args, size);
 }
 
 block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {

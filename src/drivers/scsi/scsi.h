@@ -156,12 +156,13 @@ int scsi_dev_init(struct scsi_dev *dev);
 void scsi_dev_attached(struct scsi_dev *dev);
 void scsi_dev_detached(struct scsi_dev *dev);
 void scsi_request_done(struct scsi_dev *dev, int res);
+void scsi_dev_wake(struct scsi_dev *dev, int res);
+void scsi_disk_bdev_try_unbind(struct scsi_dev *sdev);
 
 int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd);
 
 void scsi_dev_recover(struct scsi_dev *dev);
-void scsi_state_transit(struct scsi_dev *dev,
-		const struct scsi_dev_state *to);
+void scsi_state_transit(struct scsi_dev *dev, const struct scsi_dev_state *to);
 void scsi_dev_use_inc(struct scsi_dev *dev);
 void scsi_dev_use_dec(struct scsi_dev *dev);
 

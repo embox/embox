@@ -561,7 +561,7 @@ struct super_block *dfs_sb(void) {
 }
 
 extern struct flash_dev stm32_flash;
-static int dfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
+static int dfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	int i;
 
 	dfs_super = sb;

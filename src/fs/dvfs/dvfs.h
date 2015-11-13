@@ -42,7 +42,7 @@ struct lookup;
 struct super_block {
 	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
 	struct block_dev *bdev;
-
+	struct file      *bdev_file;
 	struct dentry     *root;
 	struct dlist_head *inode_list;
 
@@ -138,7 +138,7 @@ struct file_operations {
 struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
 	int (*format)(void *dev, void *priv);
-	int (*fill_sb)(struct super_block *sb, struct block_dev *dev);
+	int (*fill_sb)(struct super_block *sb, struct file *dev);
 	int (*mount_end)(struct super_block *sb);
 };
 
@@ -200,11 +200,11 @@ extern struct dentry *dvfs_cache_get(char *path, struct lookup *lookup);
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int dvfs_cache_add(struct dentry *dentry);
 
-extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct block_dev *dev);
+extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct file *bdev_file);
 extern int dvfs_destroy_sb(struct super_block *sb);
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
 
-extern int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags);
+extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);
 extern int dvfs_umount(struct dentry *d);
 
 extern void dentry_upd_flags(struct dentry *dentry);
@@ -212,4 +212,19 @@ extern int dentry_full_path(struct dentry *dentry, char *buf);
 extern int dentry_ref_inc(struct dentry *dentry);
 extern int dentry_ref_dec(struct dentry *dentry);
 
+/* String handling */
+extern const char *dvfs_last_link(const char *path);
+extern void dvfs_traling_slash_trim(char *str);
+
+extern int dvfs_bdev_read(
+		struct file *bdev_file,
+		char *buff,
+		size_t count,
+		int blkno);
+
+extern int dvfs_bdev_write(
+		struct file *bdev_file,
+		char *buff,
+		size_t count,
+		int blkno);
 #endif

@@ -36,6 +36,8 @@ typedef struct block_dev {
 	size_t size;
 	size_t block_size;
 	struct block_dev_cache *cache;
+
+	struct dev_module *dev_module;
 } block_dev_t;
 
 typedef struct block_dev_driver {
@@ -44,15 +46,14 @@ typedef struct block_dev_driver {
 	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
 	int (*read)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 	int (*write)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+
+	int (*probe)(void *args);
 } block_dev_driver_t;
 
-typedef int (* block_dev_module_init_ft)(void *args);
 typedef struct block_dev_module {
 	const char * name;
 	block_dev_driver_t *dev_drv;
-	const block_dev_module_init_ft init;
 } block_dev_module_t;
-
 
 typedef struct block_dev_cache {
 	blkno_t blkno;
@@ -68,6 +69,7 @@ typedef struct block_dev_cache {
 
 struct indexator;
 struct block_dev;
+struct dev_module;
 
 extern struct block_dev *block_dev_create(char *name, void *driver, void *privdata);
 extern struct block_dev *block_dev(void *bdev);
@@ -89,11 +91,18 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 
 #include <util/array.h>
 
-#define BLOCK_DEV_DEF(name, block_dev_driver, init_func) \
+#define BLOCK_DEV_DEF(name, block_dev_driver) \
 	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
-	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver, init_func})
+	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver})
 
 
 extern int block_devs_init(void);
+
+/* This part is actually just for dvfs */
+struct dev_module;
+extern int bdev_read_block(struct dev_module *devmod, void *buf, int blk);
+extern int bdev_write_block(struct dev_module *devmod, void *buf, int blk);
+extern int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk, int count);
+extern int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count);
 
 #endif /* BLOCK_DEV_H_ */

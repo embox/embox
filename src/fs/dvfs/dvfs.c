@@ -298,14 +298,56 @@ extern int set_rootfs_sb(struct super_block *sb);
  * @retval       0 Ok
  * @retval -ENOENT Mount point or device not found
  */
-int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags) {
+int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags) {
 	struct lookup lookup;
 	struct dumb_fs_driver *drv;
 	struct super_block *sb;
 	struct dentry *d;
+	struct file *bdev_file;
+	int err;
+
+	assert(dest);
+	assert(fstype);
 
 	drv = dumb_fs_driver_find(fstype);
-	sb  = dvfs_alloc_sb(drv, dev);
+
+	assert(drv);
+	/* Check if devfs is initialized */
+	dvfs_lookup("/dev", &lookup);
+	if (!lookup.item) {
+		/* XXX devfs not present, we should use a really ugly
+		 * hack for pseudo-open() blockdev file. This code
+		 * won't work if devfs driver will be changed. If
+		 * someone knows how to rewrite it, please, do it :) */
+		struct dumb_fs_driver *devfs_drv = dumb_fs_driver_find("devfs");
+		assert(devfs_drv);
+		/* We fill local variable with file operations to
+		 * initialize bdev_file properly */
+		struct super_block devfs_sb;
+		struct block_dev *block_dev = block_dev_find(dev);
+		bdev_file = dvfs_alloc_file();
+		devfs_drv->fill_sb(&devfs_sb, bdev_file);
+		memset(bdev_file, 0, sizeof(struct file));
+		bdev_file->f_inode = dvfs_alloc_inode(&devfs_sb);
+		bdev_file->f_ops   = devfs_sb.sb_fops;
+		bdev_file->f_inode->i_data = block_dev;
+		/* Now we have file object that could be used for fs
+		 * initialization */
+	} else {
+		/* devfs presents, perform usual mount */
+		if (dev) {
+			dvfs_lookup(dev, &lookup);
+			if (!lookup.item) {
+				return -ENOENT;
+			}
+			bdev_file = (struct file*) dvfs_file_open_idesc(&lookup);
+			if (!bdev_file)
+				return -ENOMEM;
+		} else {
+			bdev_file = NULL;
+		}
+	}
+	sb = dvfs_alloc_sb(drv, bdev_file);
 
 	if (!strcmp(dest, "/")) {
 		set_rootfs_sb(sb);
@@ -346,9 +388,18 @@ int dvfs_mount(struct block_dev *dev, char *dest, const char *fstype, int flags)
 		};
 	}
 
-	if (drv->mount_end)
-		drv->mount_end(sb);
+	if (drv->mount_end) {
+		if ((err = drv->mount_end(sb)))
+			goto err_free_all;
+	}
 
+	goto err_ok;
+err_free_all:
+	dvfs_destroy_inode(d->d_inode);
+	if (bdev_file)
+		dvfs_close(bdev_file);
+	return err;
+err_ok:
 	return 0;
 }
 

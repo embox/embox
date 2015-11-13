@@ -22,17 +22,7 @@
  * @return Negative error number or 0 if succeed
  */
 int mount(char *dev, char *dir, char *fs_type) {
-	struct block_dev *bdev;
-	char *t;
-	if (dev) {
-		block_devs_init();
-		/* Get bdev in smarter way? */
-		t = strrchr(dev, '/');
-		if (t)
-			dev = t + 1;
-		bdev = block_dev_find(dev);
-	}
-	return dvfs_mount(bdev, dir, fs_type, 0);
+	return dvfs_mount(dev, dir, fs_type, 0);
 }
 
 /**

@@ -15,7 +15,7 @@
 #include <drivers/scsi.h>
 
 #include <drivers/block_dev.h>
-
+#include <drivers/device.h>
 
 static int scsi_wake_res(struct scsi_dev *dev) {
 	return min(dev->cmd_complete, 0);
@@ -141,33 +141,9 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 	return bp - buffer;
 }
 
-static int scsi_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-	struct scsi_dev *sdev = bdev->privdata;
-	int ret;
-
-	if (!sdev) {
-		return -ENODEV;
-	}
-
-	scsi_disk_lock(bdev);
-	switch (cmd) {
-	case IOCTL_GETDEVSIZE:
-		ret = sdev->blk_n;
-		break;
-	case IOCTL_GETBLKSIZE:
-		ret = sdev->blk_size;
-		break;
-	default:
-		ret = -ENOSYS;
-	}
-	scsi_disk_unlock(bdev);
-
-	return ret;
-}
-
-const block_dev_driver_t bdev_driver_scsi = {
-	"scsi disk",
-	scsi_ioctl,
-	scsi_read,
-	scsi_write
+const struct block_dev_driver bdev_driver_scsi = {
+	.name = "scsi disk",
+	.read = scsi_read,
+	.write = scsi_write
 };
+

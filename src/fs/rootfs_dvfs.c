@@ -43,7 +43,6 @@ struct super_block *rootfs_sb(void) {
 static int rootfs_mount(void) {
 	const char *dev, *fs_type;
 	struct dumb_fs_driver *fsdrv;
-	struct block_dev *bdev = NULL;
 	struct auto_mount *auto_mnt;
 	struct lookup lu;
 	char *tmp;
@@ -56,14 +55,9 @@ static int rootfs_mount(void) {
 	if (fsdrv == NULL)
 		return -ENOENT;
 
-	if (dev) {
-		block_devs_init();
-		bdev = block_dev_find(dev);
-	}
-
 	dvfs_update_root();
 
-	if (-1 == dvfs_mount(bdev, "/", (char *) fs_type, 0))
+	if (-1 == dvfs_mount(dev, "/", (char *) fs_type, 0))
 		return -errno;
 
 	array_spread_foreach(auto_mnt, auto_mount_tab) {

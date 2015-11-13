@@ -57,8 +57,11 @@ static void statvfs_fill_from_file(struct file *file, struct statvfs *buf) {
 	assert(file->f_inode->i_sb);
 
 	sb = file->f_inode->i_sb;
-	buf->f_bsize = buf->f_frsize = sb->bdev->block_size;
-	buf->f_blocks = sb->bdev->block_size / sb->bdev->size;
+	if (sb->bdev) {
+		buf->f_bsize = buf->f_frsize = sb->bdev->block_size;
+		buf->f_blocks = sb->bdev->block_size / sb->bdev->size;
+	}
+	//buf->f_fsid = sb->fs_drv
 }
 
 int fstatvfs(int fd, struct statvfs *buf) {

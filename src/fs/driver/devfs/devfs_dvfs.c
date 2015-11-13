@@ -19,6 +19,7 @@
 #include <util/err.h>
 
 #include <drivers/char_dev.h>
+#include <drivers/device.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 #include <kernel/printk.h>
@@ -40,8 +41,25 @@ static int devfs_destroy_inode(struct inode *inode) {
 }
 
 void devfs_fill_inode(struct inode *inode, void *dev, int flags) {
+	struct dev_module *devmod;
+
+	assert(inode);
+	assert(dev);
+
 	inode->i_data = dev;
 	inode->flags |= flags;
+
+	switch (flags) {
+	case S_IFBLK:
+		devmod = ((struct block_dev *)dev)->dev_module;
+		devmod->dev_file.f_inode = inode;
+		break;
+	case S_IFCHR:
+		/* TODO */
+		break;
+	default:
+		break;
+	}
 }
 
 ARRAY_SPREAD_DECLARE(const struct device_module, __char_device_registry);
@@ -152,6 +170,21 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 static int devfs_mount_end(struct super_block *sb) {
 	return 0;
 }
+struct dev_wraper {
+	struct file_operations *fops;
+};
+static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
+	struct dev_wraper *dev;
+
+	assert(node->i_data);
+
+	dev = node->i_data;
+	assert(dev->fops);
+	assert(dev->fops->open);
+
+	return dev->fops->open(node, desc);
+}
+
 
 static int devfs_pathname(struct inode *node, char *buf, int flags) {
 	struct device_module *dev_module;
@@ -174,9 +207,10 @@ static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 
-struct dev_wraper {
-	struct file_operations *fops;
-};
+static int devfs_ioctl(struct file *desc, int request, void *data) {
+	return 0;
+}
+
 static struct idesc *dvfs_open_idesc(struct lookup *l) {
 	struct inode *node;
 	struct dev_wraper *dev;
@@ -203,9 +237,14 @@ struct inode_operations devfs_iops = {
 	.create   = devfs_create,
 };
 
-static int devfs_fill_sb(struct super_block *sb, struct block_dev *dev) {
+struct file_operations devfs_fops = {
+	.open  = devfs_open,
+	.ioctl = devfs_ioctl,
+};
+
+static int devfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	sb->sb_iops = &devfs_iops;
-	sb->sb_fops = NULL;
+	sb->sb_fops = &devfs_fops;
 	sb->sb_ops  = &devfs_sbops;
 	return 0;
 }

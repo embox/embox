@@ -20,6 +20,7 @@
 
 
 extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
+static block_dev_driver_t idedisk_udma_driver;
 
 static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
 	int i;
@@ -235,13 +236,6 @@ static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blk
 	return result == 0 ? count : result;
 }
 
-static block_dev_driver_t idedisk_udma_driver = {
-	"idedisk_udma_drv",
-	hd_ioctl,
-	hd_read_udma,
-	hd_write_udma
-};
-
 static int idedisk_udma_init (void *args) {
 	hd_t *drive;
 	double size;
@@ -266,9 +260,17 @@ static int idedisk_udma_init (void *args) {
 		} else {
 			return -1;
 		}
-		create_partitions(drive);
+		create_partitions(drive->bdev);
 	}
 	return 0;
 }
 
-BLOCK_DEV_DEF("idedisk_udma", &idedisk_udma_driver, idedisk_udma_init);
+static block_dev_driver_t idedisk_udma_driver = {
+	"idedisk_udma_drv",
+	hd_ioctl,
+	hd_read_udma,
+	hd_write_udma,
+	idedisk_udma_init,
+};
+
+BLOCK_DEV_DEF("idedisk_udma", &idedisk_udma_driver);
