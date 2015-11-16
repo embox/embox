@@ -1,0 +1,12 @@
+package third_party.ext2fuse
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/ext2fuse/core/install/src")
+static module core {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/src")
+	source "*.o"
+	
+	depends embox.compat.posix.fs.statvfs
+	//@NoRuntime depends third_party.e2fsprogs.core
+}
+
