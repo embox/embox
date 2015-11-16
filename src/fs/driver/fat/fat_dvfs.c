@@ -529,15 +529,17 @@ static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	sb->sb_ops  = &fat_sbops;
 
 	pstart = fat_get_ptn_start(dev, 0, &pactive, &ptype, &psize);
-	if (pstart == 0xffffffff) {
-		return -1;
-	}
+	if (pstart == 0xffffffff)
+		goto err_out;
 
-	if (fat_get_volinfo(dev, &fsi->vi, pstart)) {
-		return -1;
-	}
+	if (fat_get_volinfo(dev, &fsi->vi, pstart))
+		goto err_out;
 
 	return 0;
+
+err_out:
+	fat_fs_free(fsi);
+	return -1;
 }
 
 /**
