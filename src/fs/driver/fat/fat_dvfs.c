@@ -513,8 +513,6 @@ struct super_block_operations fat_sbops = {
  */
 static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	struct fat_fs_info *fsi;
-	uint32_t pstart, psize;
-	uint8_t pactive, ptype;
 	struct block_dev *dev = bdev_file->f_inode->i_data;
 	assert(sb);
 	assert(dev);
@@ -528,11 +526,7 @@ static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	sb->sb_fops = &fat_fops;
 	sb->sb_ops  = &fat_sbops;
 
-	pstart = fat_get_ptn_start(dev, 0, &pactive, &ptype, &psize);
-	if (pstart == 0xffffffff)
-		goto err_out;
-
-	if (fat_get_volinfo(dev, &fsi->vi, pstart))
+	if (fat_get_volinfo(dev, &fsi->vi, 0))
 		goto err_out;
 
 	return 0;
