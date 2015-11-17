@@ -42,7 +42,7 @@ int create_partitions(struct block_dev *bdev) {
 		}
 
 		sprintf(part_name, "%s/%s%d", "/dev/", bdev->name, part_n + 1);
-		part_bdev = block_dev_create(part_name, NULL, NULL);
+		part_bdev = block_dev_create(part_name, bdev->driver, NULL);
 		if (!part_bdev) {
 			return -ENOMEM;
 		}
