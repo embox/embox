@@ -5,6 +5,7 @@ module ohci_pci {
 	source "ohci_pci.c"
 
 	depends embox.driver.usb.core
+	depends embox.driver.pci
 }
 
 module ti81xx {
