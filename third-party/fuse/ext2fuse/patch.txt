@@ -1,0 +1,38 @@
+diff -aur -x configure ext2fuse-src-0.8.1/src/ext2fs.c ext2fuse-src-0.8.1-working-copy/src/ext2fs.c
+--- ext2fuse-src-0.8.1/src/ext2fs.c	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1-working-copy/src/ext2fs.c	2015-11-17 17:08:38.068853511 +0300
+@@ -63,9 +63,9 @@
+        st->st_mtimespec.tv_nsec=0;
+        st->st_ctimespec.tv_nsec=0;
+ #else
+-       st->st_atim.tv_nsec = 0;
+-       st->st_mtim.tv_nsec = 0;
+-       st->st_ctim.tv_nsec = 0;
++       //st->st_atim.tv_nsec = 0;
++       //st->st_mtim.tv_nsec = 0;
++       //st->st_ctim.tv_nsec = 0;
+ #endif
+ #endif
+ }
+diff -aur -x configure ext2fuse-src-0.8.1/src/Makefile.am ext2fuse-src-0.8.1-working-copy/src/Makefile.am
+--- ext2fuse-src-0.8.1/src/Makefile.am	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1-working-copy/src/Makefile.am	2015-11-17 17:08:38.068853511 +0300
+@@ -1,5 +1,5 @@
+ bin_PROGRAMS = ext2fuse
+ ext2fuse_SOURCES = ext2fs.c mkdir.c readdir.c symlink.c wipe_block.c fuse-ext2fs.c perms.c rename.c truncate.c ext2fs.h readdir.h symlink.h truncate.h wipe_block.h
+-ext2fuse_CFLAGS = -I/usr/include/fuse -I/usr/local/include/fuse -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
++ext2fuse_CFLAGS = -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
+ ext2fuse_LDADD = ../lib/et/libcom_err.a ../lib/ext2fs/libext2fs.a
+ 
+diff -aur -x configure ext2fuse-src-0.8.1/src/Makefile.in ext2fuse-src-0.8.1-working-copy/src/Makefile.in
+--- ext2fuse-src-0.8.1/src/Makefile.in	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1-working-copy/src/Makefile.in	2015-11-17 17:08:38.072853511 +0300
+@@ -154,7 +154,7 @@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+ ext2fuse_SOURCES = ext2fs.c mkdir.c readdir.c symlink.c wipe_block.c fuse-ext2fs.c perms.c rename.c truncate.c ext2fs.h readdir.h symlink.h truncate.h wipe_block.h
+-ext2fuse_CFLAGS = -I/usr/include/fuse -I/usr/local/include/fuse -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
++ext2fuse_CFLAGS = -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
+ ext2fuse_LDADD = ../lib/et/libcom_err.a ../lib/ext2fs/libext2fs.a
+ all: all-am
+ 
