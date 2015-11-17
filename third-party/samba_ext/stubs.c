@@ -7,3 +7,6 @@
 
 void  syslog(int prio, const char *format, ...) {
 }
+
+void openlog(const char *ident, int option, int facility) {
+}

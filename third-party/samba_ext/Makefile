@@ -37,5 +37,10 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/samba $(PKG_INSTALL_DIR)/samba.o
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/smbclient $(PKG_INSTALL_DIR)/smbclient.o
+	#cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libsmbclient.a $(PKG_INSTALL_DIR)/libsmbclient.a
+	#cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtevent.a $(PKG_INSTALL_DIR)/libtevent.a
+	#cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtalloc.a $(PKG_INSTALL_DIR)/libtalloc.a
+	#cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtdb.a $(PKG_INSTALL_DIR)/libtdb.a
+	#cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libwbclient.a $(PKG_INSTALL_DIR)/libwbclient.a
 	touch $@
