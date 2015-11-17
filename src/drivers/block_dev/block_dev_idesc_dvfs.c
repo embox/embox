@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <stddef.h>
 #include <util/err.h>
 
 #include <drivers/block_dev.h>
@@ -20,15 +21,28 @@ static void bdev_idesc_close(struct idesc *desc) {
 static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
 	struct file *file;
 	struct block_dev *bdev;
+	size_t blk_no;
 	int res;
 
-	file = (struct file *)desc;
+	file = (struct file *) desc;
 
 	bdev = file->f_inode->i_data;
-	res = bdev->driver->read(bdev, buf, size, file->pos / bdev->block_size);
+	if (!bdev->parrent_bdev) {
+		/* It's not a partition */
+		blk_no = file->pos / bdev->block_size;
+	} else {
+		/* It's a partition */
+		blk_no = bdev->start_offset + (file->pos / bdev->block_size);
+		bdev = bdev->parrent_bdev;
+	}
+
+	assert(bdev->driver);
+	assert(bdev->driver->read);
+	res = bdev->driver->read(bdev, buf, size, blk_no);
 	if (res < 0) {
 		return res;
 	}
+
 	file->pos += res;
 	return res;
 }
@@ -36,15 +50,24 @@ static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
 static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size) {
 	struct file *file;
 	struct block_dev *bdev;
+	size_t blk_no;
 	int res;
 
 	file = (struct file *)desc;
 
 	bdev = file->f_inode->i_data;
+	if (!bdev->parrent_bdev) {
+		/* It's not a partition */
+		blk_no = file->pos / bdev->block_size;
+	} else {
+		/* It's a partition */
+		blk_no = bdev->start_offset + (file->pos / bdev->block_size);
+		bdev = bdev->parrent_bdev;
+	}
+
 	assert(bdev->driver);
 	assert(bdev->driver->write);
-
-	res = bdev->driver->write(bdev, (void *)buf, size, file->pos / bdev->block_size);
+	res = bdev->driver->write(bdev, (void *)buf, size, blk_no);
 	if (res < 0) {
 		return res;
 	}
@@ -70,6 +93,9 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	case IOCTL_GETBLKSIZE:
 		return bdev->block_size;
 	default:
+		if (bdev->parrent_bdev) {
+			bdev = bdev->parrent_bdev;
+		}
 		assert(bdev->driver);
 		if (NULL == bdev->driver->ioctl)
 			return -ENOSYS;
