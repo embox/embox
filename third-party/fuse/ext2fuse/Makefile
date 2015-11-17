@@ -9,8 +9,8 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-#EXT2FUSE_CPPFLAGS = -I$(ROOT_DIR)/third-party/ext2fuse/include \
-#    ${EMBOX_IMPORTED_CPPFLAGS}
+EXT2FUSE_CPPFLAGS = -I$(ROOT_DIR)/third-party/fuse/ext2fuse/include \
+    ${EMBOX_IMPORTED_CPPFLAGS}
 
 $(CONFIGURE) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-src-$(PKG_VER) && autoconf && ( \
