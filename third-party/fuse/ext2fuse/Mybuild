@@ -2,6 +2,7 @@ package third_party.ext2fuse
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/ext2fuse/core/install/src")
+@BuildDepends(third_party.fuse.core)
 static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/src")
 	source "*.o"
