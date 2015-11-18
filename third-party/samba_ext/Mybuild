@@ -1,28 +1,7 @@
 package third_party.samba_ext
 
-@Build(stage=2, script="$(EXTERNAL_MAKE)")
-@BuildDepends(third_party.zlib.libs)
-module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	source
-		"libsmbclient.a",
-		"libtevent.a",
-		"libtalloc.a",
-		"libtdb.a",
-		"libwbclient.a"
-
-
-	depends embox.compat.posix.idx.poll
-	depends embox.net.lib.getifaddrs
-
-	depends third_party.zlib.libs
-	depends samba_stubs
-	depends embox.compat.posix.stubs
-}
-
 module samba_stubs {
 	source "stubs.c"
-
 }
 
 @App
@@ -39,7 +18,14 @@ module samba_stubs {
 			fsulima - Adaptation for Embox
 	''')
 module smbclient {
-	depends core
+	depends embox.compat.posix.idx.poll
+	depends embox.net.lib.getifaddrs
+	depends embox.compat.posix.passwd
+
+	depends third_party.zlib.libs
+
+	depends samba_stubs
+	depends embox.compat.posix.stubs
 
 	@Rule(script="true")
 	source "^BUILD/extbld/^MOD_PATH/install/smbclient.o"
