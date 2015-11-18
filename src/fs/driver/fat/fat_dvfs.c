@@ -401,9 +401,16 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	dirinfo = parent->i_data;
 	dirinfo->currententry = (int) ctx->fs_ctx;
 
-	if (dirinfo->currententry == 0)
-		/* Need to get directory data from drive */
-		fat_reset_dir(dirinfo);
+	if (dirinfo->currententry == 0) {
+		if (parent == parent->i_sb->root->d_inode) {
+			if (fat_open_dir(fsi, (uint8_t*)"", dirinfo)) {
+				return -1;
+			}
+		} else {
+			/* Need to get directory data from drive */
+			fat_reset_dir(dirinfo);
+		}
+	}
 
 	read_dir_buf(fsi, dirinfo);
 
@@ -571,7 +578,7 @@ static int fat_get_vi(struct dev_module *devmod, struct volinfo *volinfo) {
 	 */
 
 	if (volinfo->rootentries) {
-		volinfo->rootdir = volinfo->fat1 + (volinfo->secperfat * 2);
+		volinfo->rootdir = volinfo->reservedsecs + lbr->bpb.numfats * volinfo->secperfat;
 		volinfo->dataarea = volinfo->rootdir
 			+ (((volinfo->rootentries * 32) + (volinfo->bytepersec - 1))
 			/ volinfo->bytepersec);
