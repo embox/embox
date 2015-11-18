@@ -88,19 +88,19 @@ static int fat_reset_dir(struct dirinfo *di) {
 	struct dirent de;
 	struct volinfo *vi;
 
-	fat_dirent_by_file(&di->fi, &de);
-
-	di->currentcluster = (uint32_t) de.startclus_l_l |
-	  ((uint32_t) de.startclus_l_h) << 8 |
-	  ((uint32_t) de.startclus_h_l) << 16 |
-	  ((uint32_t) de.startclus_h_h) << 24;
-
-	if (di->currentcluster == 0) {
-		/* This is a root directory */
+	if (di->fi.dirsector == 0) {
+		/* This is root dir */
 		vi = &di->fi.fsi->vi;
-		di->currentsector = vi->rootdir;
-	} else
+		di->currentcluster = (vi->rootdir % vi->secperclus);
+		di->currentsector = vi->rootdir % vi->secperclus;
+	} else {
+		fat_dirent_by_file(&di->fi, &de);
+		di->currentcluster = (uint32_t) de.startclus_l_l |
+		  ((uint32_t) de.startclus_l_h) << 8 |
+		  ((uint32_t) de.startclus_h_l) << 16 |
+		  ((uint32_t) de.startclus_h_h) << 24;
 		di->currentsector = 0;
+	}
 
 	di->currententry = 0;
 
@@ -223,19 +223,22 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	path_canonical_to_dir(fat_name, (char *) name);
 
-	if (fat_dirent_by_file(&di->fi, &de))
-		goto err_out;
-
-	cluster = (uint32_t) de.startclus_l_l |
-	  ((uint32_t) de.startclus_l_h) << 8 |
-	  ((uint32_t) de.startclus_h_l) << 16 |
-	  ((uint32_t) de.startclus_h_h) << 24;
-
 	fsi = sb->sb_data;
-	if (cluster == 0)
+
+	if (dir == dir->d_sb->root) {
+		cluster = 0;
 		sector = fsi->vi.rootdir;
-	else
+	} else {
+		if (fat_dirent_by_file(&di->fi, &de))
+			goto err_out;
+
+		cluster = (uint32_t) de.startclus_l_l |
+		  ((uint32_t) de.startclus_l_h) << 8 |
+		  ((uint32_t) de.startclus_h_l) << 16 |
+		  ((uint32_t) de.startclus_h_h) << 24;
+
 		sector = cluster * fsi->vi.secperclus;
+	}
 
 	tmp_ent = di->currententry;
 	tmp_sec = di->currentsector;
@@ -402,14 +405,8 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	dirinfo->currententry = (int) ctx->fs_ctx;
 
 	if (dirinfo->currententry == 0) {
-		if (parent == parent->i_sb->root->d_inode) {
-			if (fat_open_dir(fsi, (uint8_t*)"", dirinfo)) {
-				return -1;
-			}
-		} else {
-			/* Need to get directory data from drive */
-			fat_reset_dir(dirinfo);
-		}
+		/* Need to get directory data from drive */
+		fat_reset_dir(dirinfo);
 	}
 
 	read_dir_buf(fsi, dirinfo);
@@ -666,7 +663,7 @@ static int fat_mount_end(struct super_block *sb) {
 	di->fi = (struct fat_file_info) {
 		.fsi          = fsi,
 		.volinfo      = &fsi->vi,
-		.dirsector    = fsi->vi.rootdir,
+		.dirsector    = 0,
 		.diroffset    = 0,
 		.firstcluster = 0,
 	};
