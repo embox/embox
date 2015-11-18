@@ -299,14 +299,6 @@ typedef struct hdc  {
 	struct waitq waitq;
 } hdc_t;
 
-struct partition {
-	void *bdev;
-	unsigned int start;
-	unsigned int len;
-	unsigned short bootid;
-	unsigned short systid;
-};
-
 typedef struct dev_geometry {
 	int cyls;
 	int heads;

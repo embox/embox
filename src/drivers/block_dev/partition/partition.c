@@ -6,56 +6,16 @@
  * @author Andrey Gazukin
  */
 
-#include <asm/io.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 
+#include <mem/misc/pool.h>
+
 #include <fs/mbr.h>
-#include <drivers/ide.h>
 #include <drivers/block_dev.h>
-#include <mem/phymem.h>
-
-static int part_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-	struct partition *part = (struct partition *) bdev->privdata;
-
-	switch (cmd) {
-	case IOCTL_GETDEVSIZE:
-		return part->len;
-
-	case IOCTL_GETBLKSIZE:
-		return block_dev_ioctl(part->bdev, IOCTL_GETBLKSIZE, NULL, 0);
-	}
-
-	return -ENOSYS;
-}
-
-static int part_read(struct block_dev *bdev, char *buffer,
-						size_t count, blkno_t blkno) {
-	struct partition *part = (struct partition *) bdev->privdata;
-	if (blkno + count / bdev->block_size > part->len) {
-		return -EFAULT;
-	}
-	return block_dev_read(part->bdev, buffer, count, blkno + part->start);
-}
-
-static int part_write(struct block_dev *bdev, char *buffer,
-						size_t count, blkno_t blkno) {
-	struct partition *part = (struct partition *) bdev->privdata;
-	if (blkno + count / bdev->block_size > part->len) {
-		return -EFAULT;
-	}
-	return block_dev_write(part->bdev, buffer, count, blkno + part->start);
-}
-
-static struct block_dev_driver partition_driver = {
-	"partition_drv",
-	part_ioctl,
-	part_read,
-	part_write
-};
-
-struct block_dev_driver *bdev_driver_part = &partition_driver;
+#include <drivers/block_dev/partition.h>
+#include <framework/mod/options.h>
 
 /* TODO Create Partition as drive */
 int create_partitions(struct block_dev *bdev) {
@@ -63,6 +23,7 @@ int create_partitions(struct block_dev *bdev) {
 	int rc;
 	int part_n;
 	char part_name[0x16];
+	struct block_dev *part_bdev;
 
 	/* Read partition table */
 	rc = block_dev_read(bdev, (char *)&mbr, bdev->block_size, 0);
@@ -79,8 +40,25 @@ int create_partitions(struct block_dev *bdev) {
 		if(mbr.ptable[part_n].type == 0) {
 			return part_n;
 		}
-		sprintf(part_name, "%s/%s%d", "/dev/", bdev->name, part_n);
-		block_dev_create(part_name, &partition_driver, NULL);
+
+		sprintf(part_name, "%s/%s%d", "/dev/", bdev->name, part_n + 1);
+		part_bdev = block_dev_create(part_name, bdev->driver, NULL);
+		if (!part_bdev) {
+			return -ENOMEM;
+		}
+
+		part_bdev->start_offset = (uint32_t)(mbr.ptable[part_n].start_3) << 24 |
+				(uint32_t)(mbr.ptable[part_n].start_2) << 16 |
+				(uint32_t)(mbr.ptable[part_n].start_1) << 8 |
+				(uint32_t)(mbr.ptable[part_n].start_0) << 0;
+
+		part_bdev->size = (uint32_t)(mbr.ptable[part_n].size_3) << 24 |
+				(uint32_t)(mbr.ptable[part_n].size_2) << 16 |
+				(uint32_t)(mbr.ptable[part_n].size_1) << 8 |
+				(uint32_t)(mbr.ptable[part_n].size_0) << 0;
+
+		part_bdev->parrent_bdev = bdev;
+		part_bdev->block_size = bdev->block_size;
 	}
 
 	return 0;

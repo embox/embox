@@ -38,6 +38,10 @@ typedef struct block_dev {
 	struct block_dev_cache *cache;
 
 	struct dev_module *dev_module;
+
+	/* partitions */
+	size_t start_offset;
+	struct block_dev *parrent_bdev;
 } block_dev_t;
 
 typedef struct block_dev_driver {

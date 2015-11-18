@@ -197,7 +197,7 @@ struct volinfo {
  /*	uint8_t oemid[9]; */		/* OEM ID ASCIIZ */
  /*	uint8_t system[9]; */		/* system ID ASCIIZ */
 	uint8_t label[12];			/* volume label ASCIIZ */
-	uint32_t startsector;		/* starting sector of filesystem */
+	uint32_t startsector;		/* starting sector of filesystem */ /* TODO eliminate this field in new vfs as it handles partition on it's own */
 	uint16_t bytepersec;		/* Bytes per sector */
 	uint8_t secperclus;			/* sectors per cluster */
 	uint16_t reservedsecs;		/* reserved sectors */

@@ -4,7 +4,7 @@ module partition {
 	@IncludeExport(path="drivers/block_dev")
 	source "partition.h"
 
-	option number dev_quantity = 4
+	option number part_quantity = 4
 	source "partition.c"
 
 	depends embox.driver.block_common

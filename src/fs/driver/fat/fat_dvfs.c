@@ -88,19 +88,19 @@ static int fat_reset_dir(struct dirinfo *di) {
 	struct dirent de;
 	struct volinfo *vi;
 
-	fat_dirent_by_file(&di->fi, &de);
-
-	di->currentcluster = (uint32_t) de.startclus_l_l |
-	  ((uint32_t) de.startclus_l_h) << 8 |
-	  ((uint32_t) de.startclus_h_l) << 16 |
-	  ((uint32_t) de.startclus_h_h) << 24;
-
-	if (di->currentcluster == 0) {
-		/* This is a root directory */
+	if (di->fi.dirsector == 0) {
+		/* This is root dir */
 		vi = &di->fi.fsi->vi;
-		di->currentsector = vi->rootdir;
-	} else
+		di->currentcluster = (vi->rootdir % vi->secperclus);
+		di->currentsector = vi->rootdir % vi->secperclus;
+	} else {
+		fat_dirent_by_file(&di->fi, &de);
+		di->currentcluster = (uint32_t) de.startclus_l_l |
+		  ((uint32_t) de.startclus_l_h) << 8 |
+		  ((uint32_t) de.startclus_h_l) << 16 |
+		  ((uint32_t) de.startclus_h_h) << 24;
 		di->currentsector = 0;
+	}
 
 	di->currententry = 0;
 
@@ -223,19 +223,22 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	path_canonical_to_dir(fat_name, (char *) name);
 
-	if (fat_dirent_by_file(&di->fi, &de))
-		goto err_out;
-
-	cluster = (uint32_t) de.startclus_l_l |
-	  ((uint32_t) de.startclus_l_h) << 8 |
-	  ((uint32_t) de.startclus_h_l) << 16 |
-	  ((uint32_t) de.startclus_h_h) << 24;
-
 	fsi = sb->sb_data;
-	if (cluster == 0)
+
+	if (dir == dir->d_sb->root) {
+		cluster = 0;
 		sector = fsi->vi.rootdir;
-	else
+	} else {
+		if (fat_dirent_by_file(&di->fi, &de))
+			goto err_out;
+
+		cluster = (uint32_t) de.startclus_l_l |
+		  ((uint32_t) de.startclus_l_h) << 8 |
+		  ((uint32_t) de.startclus_h_l) << 16 |
+		  ((uint32_t) de.startclus_h_h) << 24;
+
 		sector = cluster * fsi->vi.secperclus;
+	}
 
 	tmp_ent = di->currententry;
 	tmp_sec = di->currentsector;
@@ -401,9 +404,10 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	dirinfo = parent->i_data;
 	dirinfo->currententry = (int) ctx->fs_ctx;
 
-	if (dirinfo->currententry == 0)
+	if (dirinfo->currententry == 0) {
 		/* Need to get directory data from drive */
 		fat_reset_dir(dirinfo);
+	}
 
 	read_dir_buf(fsi, dirinfo);
 
@@ -505,6 +509,101 @@ struct super_block_operations fat_sbops = {
 	.destroy_inode = fat_destroy_inode,
 };
 
+
+/**
+ * @brief Fill given volinfo struct with info from first FS sector
+ *
+ * @note Actually, it's copy-paste from old fat driver, but with use
+ * of devmodule, not raw block device.
+ *
+ * @param devmod Module related to block device
+ * @param volinfo Structure to be filled
+ *
+ * @return Error code
+ * @retval -1 Fail
+ * @retval 0  Success
+ */
+static int fat_get_vi(struct dev_module *devmod, struct volinfo *volinfo) {
+	struct lbr *lbr = (struct lbr *) fat_sector_buff;
+	if (0 > bdev_read_block(devmod, lbr, 0))
+		return -1;
+
+	volinfo->bytepersec = lbr->bpb.bytepersec_l + (lbr->bpb.bytepersec_h << 8);
+	volinfo->startsector = 0;
+	volinfo->secperclus = lbr->bpb.secperclus;
+	volinfo->reservedsecs = (uint16_t) lbr->bpb.reserved_l |
+		  (((uint16_t) lbr->bpb.reserved_h) << 8);
+
+	volinfo->numsecs =  (uint16_t) lbr->bpb.sectors_s_l |
+		  (((uint16_t) lbr->bpb.sectors_s_h) << 8);
+
+	if (!volinfo->numsecs)
+		volinfo->numsecs = (uint32_t) lbr->bpb.sectors_l_0 |
+		  (((uint32_t) lbr->bpb.sectors_l_1) << 8) |
+		  (((uint32_t) lbr->bpb.sectors_l_2) << 16) |
+		  (((uint32_t) lbr->bpb.sectors_l_3) << 24);
+
+	/**
+	 * If secperfat is 0, we must be in a FAT32 volume
+	 */
+	volinfo->secperfat =  (uint16_t) lbr->bpb.secperfat_l |
+		  (((uint16_t) lbr->bpb.secperfat_h) << 8);
+
+	if (!volinfo->secperfat) {
+		volinfo->secperfat = (uint32_t) lbr->ebpb.ebpb32.fatsize_0 |
+		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_1) << 8) |
+		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_2) << 16) |
+		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_3) << 24);
+
+		memcpy(volinfo->label, lbr->ebpb.ebpb32.label, MSDOS_NAME);
+		volinfo->label[11] = 0;
+	} else {
+		memcpy(volinfo->label, lbr->ebpb.ebpb.label, MSDOS_NAME);
+		volinfo->label[11] = 0;
+	}
+
+	/* note: if rootentries is 0, we must be in a FAT32 volume. */
+	volinfo->rootentries =  (uint16_t) lbr->bpb.rootentries_l |
+		  (((uint16_t) lbr->bpb.rootentries_h) << 8);
+
+	volinfo->fat1 = volinfo->reservedsecs;
+
+	/**
+	 * The calculation below is designed to round up the root directory size
+	 * for FAT12/16 and to simply ignore the root directory for FAT32, since
+	 * it's a normal, expandable file in that situation.
+	 */
+
+	if (volinfo->rootentries) {
+		volinfo->rootdir = volinfo->reservedsecs + lbr->bpb.numfats * volinfo->secperfat;
+		volinfo->dataarea = volinfo->rootdir
+			+ (((volinfo->rootentries * 32) + (volinfo->bytepersec - 1))
+			/ volinfo->bytepersec);
+	} else {
+		volinfo->dataarea = volinfo->fat1 + (volinfo->secperfat * 2);
+		volinfo->rootdir = (uint32_t) lbr->ebpb.ebpb32.root_0 |
+		  (((uint32_t) lbr->ebpb.ebpb32.root_1) << 8) |
+		  (((uint32_t) lbr->ebpb.ebpb32.root_2) << 16) |
+		  (((uint32_t) lbr->ebpb.ebpb32.root_3) << 24);
+	}
+
+	if (0 == volinfo->secperclus) {
+		return -1;
+	} else {
+		volinfo->numclusters = (volinfo->numsecs - volinfo->dataarea) /
+			volinfo->secperclus;
+	}
+
+	if (volinfo->numclusters < 4085)
+		volinfo->filesystem = FAT12;
+	else if (volinfo->numclusters < 65525)
+		volinfo->filesystem = FAT16;
+	else
+		volinfo->filesystem = FAT32;
+
+	return 0;
+}
+
 /* @brief Initializing fat super_block
  * @param sb  Structure to be initialized
  * @param dev Storage device
@@ -513,8 +612,6 @@ struct super_block_operations fat_sbops = {
  */
 static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	struct fat_fs_info *fsi;
-	uint32_t pstart, psize;
-	uint8_t pactive, ptype;
 	struct block_dev *dev = bdev_file->f_inode->i_data;
 	assert(sb);
 	assert(dev);
@@ -528,16 +625,14 @@ static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	sb->sb_fops = &fat_fops;
 	sb->sb_ops  = &fat_sbops;
 
-	pstart = fat_get_ptn_start(dev, 0, &pactive, &ptype, &psize);
-	if (pstart == 0xffffffff) {
-		return -1;
-	}
-
-	if (fat_get_volinfo(dev, &fsi->vi, pstart)) {
-		return -1;
-	}
+	if (fat_get_vi(dev->dev_module, &fsi->vi))
+		goto err_out;
 
 	return 0;
+
+err_out:
+	fat_fs_free(fsi);
+	return -1;
 }
 
 /**
@@ -568,7 +663,7 @@ static int fat_mount_end(struct super_block *sb) {
 	di->fi = (struct fat_file_info) {
 		.fsi          = fsi,
 		.volinfo      = &fsi->vi,
-		.dirsector    = fsi->vi.rootdir,
+		.dirsector    = 0,
 		.diroffset    = 0,
 		.firstcluster = 0,
 	};

@@ -630,8 +630,8 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 			dirinfo->currentsector = volinfo->dataarea +
 				((volinfo->rootdir - 2) * volinfo->secperclus);
 		else
-			dirinfo->currentsector = volinfo->rootdir;
-		return fat_read_sector(fsi, dirinfo->p_scratch, dirinfo->currentsector);
+			dirinfo->currentsector = (volinfo->rootdir % volinfo->secperclus);
+		return fat_read_sector(fsi, dirinfo->p_scratch, dirinfo->currentsector + dirinfo->currentcluster * volinfo->secperclus);
 	} else {
 		uint8_t tmpfn[12];
 		uint8_t *ptr = dirname;
