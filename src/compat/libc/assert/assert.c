@@ -18,13 +18,7 @@
 
 #include "assert_impl.h"
 
-#ifdef CONFIG_ASSERTION_MESSAGE_BUFF_SZ
-# define MESSAGE_BUFF_SZ CONFIG_ASSERTION_MESSAGE_BUFF_SZ
-#else
-# define MESSAGE_BUFF_SZ 128
-#endif
-
-char __assertion_message_buff[MESSAGE_BUFF_SZ];
+char __assertion_message_buff[ASSERT_MESSAGE_BUFF_SZ];
 static spinlock_t assert_lock = SPIN_STATIC_UNLOCKED;
 static char assert_recursive_lock __cpudata__ = 0;
 

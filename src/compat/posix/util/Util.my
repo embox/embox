@@ -9,7 +9,8 @@ module All {
 		utsname,
 		getpass,
 		gethostname,
-		environ
+		environ,
+		swab
 }
 
 static module getopt {
@@ -77,4 +78,8 @@ static module environ {
 	depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
+}
+
+static module swab {
+	source "swab.c"
 }

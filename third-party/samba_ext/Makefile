@@ -37,5 +37,5 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/samba $(PKG_INSTALL_DIR)/samba.o
+	cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/smbclient $(PKG_INSTALL_DIR)/smbclient.o
 	touch $@
