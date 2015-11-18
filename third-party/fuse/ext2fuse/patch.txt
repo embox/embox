@@ -1,6 +1,6 @@
-diff -aur -x configure ext2fuse-src-0.8.1/src/ext2fs.c ext2fuse-src-0.8.1-working-copy/src/ext2fs.c
---- ext2fuse-src-0.8.1/src/ext2fs.c	2008-06-26 09:34:50.000000000 +0400
-+++ ext2fuse-src-0.8.1-working-copy/src/ext2fs.c	2015-11-17 17:41:55.604892789 +0300
+diff -aur -x configure ext2fuse-src-0.8.1-orig/src/ext2fs.c ext2fuse-src-0.8.1/src/ext2fs.c
+--- ext2fuse-src-0.8.1-orig/src/ext2fs.c	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/src/ext2fs.c	2015-11-17 19:20:42.785009338 +0300
 @@ -63,9 +63,9 @@
         st->st_mtimespec.tv_nsec=0;
         st->st_ctimespec.tv_nsec=0;
@@ -14,25 +14,66 @@ diff -aur -x configure ext2fuse-src-0.8.1/src/ext2fs.c ext2fuse-src-0.8.1-workin
  #endif
  #endif
  }
-diff -aur -x configure ext2fuse-src-0.8.1/src/Makefile.am ext2fuse-src-0.8.1-working-copy/src/Makefile.am
---- ext2fuse-src-0.8.1/src/Makefile.am	2008-06-26 09:34:50.000000000 +0400
-+++ ext2fuse-src-0.8.1-working-copy/src/Makefile.am	2015-11-17 17:41:55.604892789 +0300
-@@ -1,5 +1,5 @@
+diff -aur -x configure ext2fuse-src-0.8.1-orig/src/fuse-ext2fs.c ext2fuse-src-0.8.1/src/fuse-ext2fs.c
+--- ext2fuse-src-0.8.1-orig/src/fuse-ext2fs.c	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/src/fuse-ext2fs.c	2015-11-17 19:36:16.165027692 +0300
+@@ -689,6 +689,11 @@
+ 		
+ }
+ 
++int ext2fs_register(void) {
++	return fuse_lowlevel_new(NULL, &ext2fs_ops,
++				sizeof(ext2fs_ops), "embox_ext2fuse");
++}
++
+ int main(int argc, char *argv[])
+ {
+ 	struct fuse_args custom_args = FUSE_ARGS_INIT(0,NULL);
+diff -aur -x configure ext2fuse-src-0.8.1-orig/src/Makefile.am ext2fuse-src-0.8.1/src/Makefile.am
+--- ext2fuse-src-0.8.1-orig/src/Makefile.am	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/src/Makefile.am	2015-11-17 19:20:42.785009338 +0300
+@@ -1,5 +1,8 @@
  bin_PROGRAMS = ext2fuse
++
++E2FSPROGS_PATH=$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install
++
  ext2fuse_SOURCES = ext2fs.c mkdir.c readdir.c symlink.c wipe_block.c fuse-ext2fs.c perms.c rename.c truncate.c ext2fs.h readdir.h symlink.h truncate.h wipe_block.h
 -ext2fuse_CFLAGS = -I/usr/include/fuse -I/usr/local/include/fuse -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
+-ext2fuse_LDADD = ../lib/et/libcom_err.a ../lib/ext2fs/libext2fs.a
 +ext2fuse_CFLAGS = -I$(ROOT_DIR)/build/extbld/third_party/fuse/core/install/include -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
- ext2fuse_LDADD = ../lib/et/libcom_err.a ../lib/ext2fs/libext2fs.a
++ext2fuse_LDADD = $(E2FSPROGS_PATH)/lib/libcom_err.a $(E2FSPROGS_PATH)/lib/libext2fs.a
  
-diff -aur -x configure ext2fuse-src-0.8.1/src/Makefile.in ext2fuse-src-0.8.1-working-copy/src/Makefile.in
---- ext2fuse-src-0.8.1/src/Makefile.in	2008-06-26 09:34:50.000000000 +0400
-+++ ext2fuse-src-0.8.1-working-copy/src/Makefile.in	2015-11-17 17:41:55.604892789 +0300
-@@ -154,7 +154,7 @@
+diff -aur -x configure ext2fuse-src-0.8.1-orig/src/Makefile.in ext2fuse-src-0.8.1/src/Makefile.in
+--- ext2fuse-src-0.8.1-orig/src/Makefile.in	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/src/Makefile.in	2015-11-17 19:20:42.785009338 +0300
+@@ -14,6 +14,8 @@
+ 
+ @SET_MAKE@
+ 
++E2FSPROGS_PATH=$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install
++
+ srcdir = @srcdir@
+ top_srcdir = @top_srcdir@
+ VPATH = @srcdir@
+@@ -53,8 +55,8 @@
+ 	ext2fuse-fuse-ext2fs.$(OBJEXT) ext2fuse-perms.$(OBJEXT) \
+ 	ext2fuse-rename.$(OBJEXT) ext2fuse-truncate.$(OBJEXT)
+ ext2fuse_OBJECTS = $(am_ext2fuse_OBJECTS)
+-ext2fuse_DEPENDENCIES = ../lib/et/libcom_err.a \
+-	../lib/ext2fs/libext2fs.a
++ext2fuse_DEPENDENCIES = $(E2FSPROGS_PATH)/lib/libcom_err.a \
++	$(E2FSPROGS_PATH)/lib/libext2fs.a
+ DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
+ depcomp = $(SHELL) $(top_srcdir)/depcomp
+ am__depfiles_maybe = depfiles
+@@ -154,8 +156,8 @@
  sysconfdir = @sysconfdir@
  target_alias = @target_alias@
  ext2fuse_SOURCES = ext2fs.c mkdir.c readdir.c symlink.c wipe_block.c fuse-ext2fs.c perms.c rename.c truncate.c ext2fs.h readdir.h symlink.h truncate.h wipe_block.h
 -ext2fuse_CFLAGS = -I/usr/include/fuse -I/usr/local/include/fuse -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
+-ext2fuse_LDADD = ../lib/et/libcom_err.a ../lib/ext2fs/libext2fs.a
 +ext2fuse_CFLAGS = -I$(ROOT_DIR)/build/extbld/third_party/fuse/core/install/include -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
- ext2fuse_LDADD = ../lib/et/libcom_err.a ../lib/ext2fs/libext2fs.a
++ext2fuse_LDADD = $(E2FSPROGS_PATH)/lib/libcom_err.a $(E2FSPROGS_PATH)/lib/libext2fs.a
  all: all-am
  
+ .SUFFIXES:

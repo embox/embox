@@ -19,6 +19,7 @@ $(CONFIGURE) :
             --target=$(AUTOCONF_TARGET_TRIPLET) \
             CC=$(EMBOX_GCC) \
 			CPPFLAGS="$(EXT2FUSE_CPPFLAGS)" \
+			LDFLAGS="$(EMBOX_IMPORTED_LDFLAGS)" \
     )
 	touch $@
 
