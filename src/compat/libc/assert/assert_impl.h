@@ -30,6 +30,8 @@
 
 #else
 
+#define ASSERT_MESSAGE_BUFF_SZ 128
+
 struct __assertion_point {
 	struct location_func location;
 	const char *expression;
@@ -40,8 +42,8 @@ extern "C" {
 #endif
 
 extern void _NORETURN __assertion_handle_failure(const struct __assertion_point *point);
-extern char __assertion_message_buff[];
-extern int sprintf(char *s, const char *format, ...);
+extern char __assertion_message_buff[ASSERT_MESSAGE_BUFF_SZ];
+extern int snprintf(char *s, size_t size, const char *format, ...);
 
 #ifdef __cplusplus
 }
@@ -72,7 +74,8 @@ extern int sprintf(char *s, const char *format, ...);
 
 #define __assert_message_sprintf(fmt, ...) \
 	(void) __assert_switch(sizeof(fmt) != 1,             \
-		sprintf(__assertion_message_buff,                \
+		snprintf(__assertion_message_buff,                \
+				sizeof(__assertion_message_buff),        \
 			__assert_switch(sizeof(fmt) != 1, fmt, " "), \
                 ## __VA_ARGS__), \
 		(int) 0)
