@@ -219,6 +219,7 @@ static inline int access(const char *path, int amode) {
 	return 0;
 }
 
+extern void swab(const void *bfrom, void *bto, ssize_t n);
 #include <getopt.h>
 
 #ifndef environ
