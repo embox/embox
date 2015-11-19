@@ -98,6 +98,8 @@ int rename(const char *src_name, const char *dst_name) {
 				return -1;
 			pos += FS_BUFFER_SZ;
 		}
+
+		dvfs_remove(src_name);
 	}
 
 	return 0;
