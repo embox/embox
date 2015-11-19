@@ -7,24 +7,17 @@ package third_party.ext2fuse
 static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/src")
 	source "*.o"
-
-	source "ext2fuse.c"
 	
 	depends embox.compat.posix.fs.statvfs
 	@NoRuntime depends third_party.e2fsprogs.core
+	@NoRuntime depends third_party.fuse.core
 }
 
-@App
-@AutoCmd
-@Cmd(name = "ext2fuse",
-	help = "report filesystem free-space fragmentation",
-	man = '''
-		NAME
-			ext2fuxe - report filesystem free-space fragmentation
-	''')
-module ext2fuse {
+module ext2fuse_driver {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
 	source "ext2fuse.c"
 
 	@NoRuntime depends core
+	depends embox.fs.core
 }
-

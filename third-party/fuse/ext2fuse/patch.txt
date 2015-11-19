@@ -1,6 +1,6 @@
 diff -aur -x configure ext2fuse-src-0.8.1-orig/src/ext2fs.c ext2fuse-src-0.8.1/src/ext2fs.c
 --- ext2fuse-src-0.8.1-orig/src/ext2fs.c	2008-06-26 09:34:50.000000000 +0400
-+++ ext2fuse-src-0.8.1/src/ext2fs.c	2015-11-19 13:42:40.892008366 +0300
++++ ext2fuse-src-0.8.1/src/ext2fs.c	2015-11-19 13:54:42.608022558 +0300
 @@ -63,9 +63,9 @@
         st->st_mtimespec.tv_nsec=0;
         st->st_ctimespec.tv_nsec=0;
@@ -16,15 +16,14 @@ diff -aur -x configure ext2fuse-src-0.8.1-orig/src/ext2fs.c ext2fuse-src-0.8.1/s
  }
 diff -aur -x configure ext2fuse-src-0.8.1-orig/src/fuse-ext2fs.c ext2fuse-src-0.8.1/src/fuse-ext2fs.c
 --- ext2fuse-src-0.8.1-orig/src/fuse-ext2fs.c	2008-06-26 09:34:50.000000000 +0400
-+++ ext2fuse-src-0.8.1/src/fuse-ext2fs.c	2015-11-19 13:44:58.436011071 +0300
-@@ -689,7 +689,12 @@
++++ ext2fuse-src-0.8.1/src/fuse-ext2fs.c	2015-11-19 18:43:53.848363742 +0300
+@@ -689,7 +689,11 @@
  		
  }
  
 -int main(int argc, char *argv[])
-+int ext2fs_register(void) {
-+	return fuse_lowlevel_new(NULL, &ext2fs_ops,
-+				sizeof(ext2fs_ops), "embox_ext2fuse");
++struct fuse_lowlevel_ops *ext2fs_register(void) {
++	return &ext2fs_ops;
 +}
 +
 +int ext2fuse_main(int argc, char *argv[])
@@ -33,7 +32,7 @@ diff -aur -x configure ext2fuse-src-0.8.1-orig/src/fuse-ext2fs.c ext2fuse-src-0.
  	int err = -1;
 diff -aur -x configure ext2fuse-src-0.8.1-orig/src/Makefile.am ext2fuse-src-0.8.1/src/Makefile.am
 --- ext2fuse-src-0.8.1-orig/src/Makefile.am	2008-06-26 09:34:50.000000000 +0400
-+++ ext2fuse-src-0.8.1/src/Makefile.am	2015-11-19 13:42:40.892008366 +0300
++++ ext2fuse-src-0.8.1/src/Makefile.am	2015-11-19 13:54:42.608022558 +0300
 @@ -1,5 +1,8 @@
  bin_PROGRAMS = ext2fuse
 +
@@ -47,7 +46,7 @@ diff -aur -x configure ext2fuse-src-0.8.1-orig/src/Makefile.am ext2fuse-src-0.8.
  
 diff -aur -x configure ext2fuse-src-0.8.1-orig/src/Makefile.in ext2fuse-src-0.8.1/src/Makefile.in
 --- ext2fuse-src-0.8.1-orig/src/Makefile.in	2008-06-26 09:34:50.000000000 +0400
-+++ ext2fuse-src-0.8.1/src/Makefile.in	2015-11-19 13:42:40.892008366 +0300
++++ ext2fuse-src-0.8.1/src/Makefile.in	2015-11-19 13:54:42.608022558 +0300
 @@ -14,6 +14,8 @@
  
  @SET_MAKE@
