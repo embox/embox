@@ -15,6 +15,7 @@
 #define LOG_INFO    6   /* informational */
 #define LOG_DEBUG   7   /* debug-level messages */
 
-extern void  syslog(int prio, const char *format, ...);
+static inline void syslog(int prio, const char *format, ...) {
+}
 
 #endif /* SYSLOG_H_ */
