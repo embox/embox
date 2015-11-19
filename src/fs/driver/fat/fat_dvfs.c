@@ -163,6 +163,8 @@ static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo
 			      ((uint32_t) de->filesize_2) << 16 |
 			      ((uint32_t) de->filesize_3) << 24;
 
+	inode->length    = fi->filelen;
+	inode->start_pos = fi->firstcluster * fi->volinfo->secperclus * fi->volinfo->bytepersec;
 	if (de->attr & ATTR_READ_ONLY)
 		inode->flags |= S_IRALL;
 	else
