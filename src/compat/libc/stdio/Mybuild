@@ -116,8 +116,22 @@ static module file_ops {
 	depends stdio_static
 }
 
-static module rename {
+@DefaultImpl(rename_old)
+
+abstract module rename {
+}
+
+static module rename_old extends rename {
 	source "rename.c"
+}
+
+static module rename_dvfs extends rename {
+	source "rename_dvfs.c"
+
+	depends embox.fs.dvfs
+	depends embox.compat.libc.str
+	depends open
+	depends file_ops
 }
 
 static module all {

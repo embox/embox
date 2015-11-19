@@ -66,8 +66,48 @@ int rmdir(const char *pathname) {
 	return 0;
 }
 
+/**
+ * @brief Change length of regular file
+ *
+ * @param path Path of the regular file
+ * @param length New length
+ *
+ * @return Negative error code or 0 if succeed
+ *
+ * @note Currently unsupported errors:
+ *    EACCESS
+ *    EFAULT
+ *    EINTR
+ *    EIO
+ *    ENAMETOOLONG
+ *    ENOTDIR
+ *    EROFS
+ **/
 int truncate(const char *path, off_t length) {
-	return 0;
+	struct lookup lu;
+
+	assert(path);
+	if (length < 0)
+		return -EINVAL;
+
+	dvfs_lookup(path, &lu);
+
+	if (!lu.item)
+		return -ENOENT;
+
+	if (FILE_TYPE(lu.item->flags, S_IFDIR))
+		return -EISDIR;
+
+	if (!FILE_TYPE(lu.item->flags, S_IFREG))
+		return -EINVAL;
+
+	assert(lu.item->d_inode);
+	assert(lu.item->d_inode->i_ops);
+
+	if (!lu.item->d_inode->i_ops->truncate)
+		return -EPERM;
+
+	return lu.item->d_inode->i_ops->truncate(lu.item->d_inode, length);
 }
 
 int flock(int fd, int operation) {

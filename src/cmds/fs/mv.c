@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
 		return -ENOSUPP;
 	}
 
-	if (rename(argv[argc-2], argv[argc-2])) {
+	if (rename(argv[argc-2], argv[argc-1])) {
 		return -errno;
 	}
 
