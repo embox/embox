@@ -208,8 +208,6 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	char tmppath[PATH_MAX];
 	char fat_name[12];
 	int found = 0;
-	int sector;
-	int cluster;
 	struct fat_fs_info *fsi;
 
 	assert(name);
@@ -225,30 +223,15 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	fsi = sb->sb_data;
 
-	if (dir == dir->d_sb->root) {
-		cluster = 0;
-		sector = fsi->vi.rootdir;
-	} else {
-		if (fat_dirent_by_file(&di->fi, &de))
-			goto err_out;
-
-		cluster = (uint32_t) de.startclus_l_l |
-		  ((uint32_t) de.startclus_l_h) << 8 |
-		  ((uint32_t) de.startclus_h_l) << 16 |
-		  ((uint32_t) de.startclus_h_h) << 24;
-
-		sector = cluster * fsi->vi.secperclus;
-	}
-
 	tmp_ent = di->currententry;
 	tmp_sec = di->currentsector;
 	tmp_clus = di->currentcluster;
 	fat_reset_dir(di);
 
-	if (fat_read_sector(sb->sb_data, di->p_scratch, sector))
+	if (read_dir_buf(fsi, di))
 		goto err_out;
 
-	while (!fat_get_next(sb->sb_data, di, &de)) {
+	while (!fat_get_next(fsi, di, &de)) {
 		path_canonical_to_dir(tmppath, (char *) de.name);
 		if (!memcmp(tmppath, fat_name, MSDOS_NAME)) {
 			found = 1;
