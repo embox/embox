@@ -84,6 +84,7 @@ struct inode_operations {
 	int           (*truncate)(struct inode *inode, size_t len);
 	int           (*pathname)(struct inode *inode, char *buf, int flags);
 	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
+	int           (*rename)(struct inode *node, struct inode *new_parent, const char *new_name);
 };
 
 struct dentry {
@@ -193,6 +194,7 @@ extern int dvfs_fstat(struct file *desc, struct stat *sb);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 extern int dvfs_create_new(const char *name, struct lookup *lookup, int flags);
+extern int dvfs_rename(struct dentry *from, struct dentry *to);
 
 /* dcache-related stuff */
 extern struct dentry *dvfs_cache_lookup(const char *path, struct dentry *base);
