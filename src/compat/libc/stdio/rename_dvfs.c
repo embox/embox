@@ -86,21 +86,32 @@ int rename(const char *src_name, const char *dst_name) {
 		pos = 0;
 
 		if (!in || !out)
-			return -1;
+			goto err_out;
 
 		while (pos < from->d_inode->length) {
 			err = fread(buf, sizeof(buf[0]), FS_BUFFER_SZ, in);
 			if (err < 0)
-				return -1;
+				goto err_out;
 
 			err = fwrite(buf, sizeof(buf[0]), err, out);
 			if (err < 0)
-				return -1;
+				goto err_out;
+
 			pos += FS_BUFFER_SZ;
 		}
 
 		dvfs_remove(src_name);
 	}
 
+	fclose(in);
+	fclose(out);
+
 	return 0;
+err_out:
+	if (in)
+		fclose(in);
+	if (out)
+		fclose(out);
+
+	return -1;
 }
