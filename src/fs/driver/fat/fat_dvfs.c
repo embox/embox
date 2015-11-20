@@ -513,7 +513,14 @@ static int fat_get_vi(struct dev_module *devmod, struct volinfo *volinfo) {
 	if (0 > bdev_read_block(devmod, lbr, 0))
 		return -1;
 
+	if (lbr->jump[0] != 0xeb || lbr->jump[2] != 0x90 ||
+		lbr->sig_55 != 0x55 || lbr->sig_aa != 0xaa)
+		return -1;
+
 	volinfo->bytepersec = lbr->bpb.bytepersec_l + (lbr->bpb.bytepersec_h << 8);
+	if (volinfo->bytepersec == 0)
+		return -1;
+
 	volinfo->startsector = 0;
 	volinfo->secperclus = lbr->bpb.secperclus;
 	volinfo->reservedsecs = (uint16_t) lbr->bpb.reserved_l |
@@ -528,6 +535,9 @@ static int fat_get_vi(struct dev_module *devmod, struct volinfo *volinfo) {
 		  (((uint32_t) lbr->bpb.sectors_l_2) << 16) |
 		  (((uint32_t) lbr->bpb.sectors_l_3) << 24);
 
+	if (volinfo->numsecs == 0)
+		return -1;
+
 	/**
 	 * If secperfat is 0, we must be in a FAT32 volume
 	 */
@@ -539,6 +549,9 @@ static int fat_get_vi(struct dev_module *devmod, struct volinfo *volinfo) {
 		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_1) << 8) |
 		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_2) << 16) |
 		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_3) << 24);
+
+		if (volinfo->secperfat == 0)
+			return -1;
 
 		memcpy(volinfo->label, lbr->ebpb.ebpb32.label, MSDOS_NAME);
 		volinfo->label[11] = 0;
