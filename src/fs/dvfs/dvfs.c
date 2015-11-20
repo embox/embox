@@ -285,6 +285,63 @@ int dvfs_fstat(struct file *desc, struct stat *sb) {
 	return 0;
 }
 
+static struct file *dvfs_get_mount_bdev(const char *dev_name) {
+	struct file *bdev_file;
+	struct lookup lookup;
+	int res;
+
+	if (!dev_name) {
+		return NULL;
+	}
+	if (!strlen(dev_name)) {
+		return NULL;
+	}
+
+	bdev_file = NULL;
+
+	/* Check if devfs is initialized */
+	res = dvfs_lookup("/dev", &lookup);
+	if (res) {
+		/* XXX devfs not present, we should use a really ugly
+		 * hack for pseudo-open() blockdev file. This code
+		 * won't work if devfs driver will be changed. If
+		 * someone knows how to rewrite it, please, do it :) */
+		struct dumb_fs_driver *devfs_drv;
+		/* We fill local variable with file operations to
+		 * initialize bdev_file properly */
+		struct super_block devfs_sb;
+		struct block_dev *block_dev;
+
+		devfs_drv = dumb_fs_driver_find("devfs");
+		assert(devfs_drv);
+
+		block_dev = block_dev_find(dev_name);
+		bdev_file = dvfs_alloc_file();
+		if (!bdev_file) {
+			return err_ptr(ENOMEM);
+		}
+		devfs_drv->fill_sb(&devfs_sb, bdev_file);
+		memset(bdev_file, 0, sizeof(struct file));
+		bdev_file->f_inode = dvfs_alloc_inode(&devfs_sb);
+		bdev_file->f_ops   = devfs_sb.sb_fops;
+		bdev_file->f_inode->i_data = block_dev;
+		/* Now we have file object that could be used for fs
+		 * initialization */
+		return bdev_file;
+	}
+
+	/* devfs presents, perform usual mount */
+	dvfs_lookup(dev_name, &lookup);
+	if (!lookup.item) {
+		return err_ptr(ENOENT);
+	}
+	bdev_file = (struct file*) dvfs_file_open_idesc(&lookup);
+	if (err(bdev_file)) {
+		return bdev_file;
+	}
+	return bdev_file;
+}
+
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int set_rootfs_sb(struct super_block *sb);
 /**
@@ -310,43 +367,10 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	assert(fstype);
 
 	drv = dumb_fs_driver_find(fstype);
-
 	assert(drv);
-	/* Check if devfs is initialized */
-	dvfs_lookup("/dev", &lookup);
-	if (!lookup.item) {
-		/* XXX devfs not present, we should use a really ugly
-		 * hack for pseudo-open() blockdev file. This code
-		 * won't work if devfs driver will be changed. If
-		 * someone knows how to rewrite it, please, do it :) */
-		struct dumb_fs_driver *devfs_drv = dumb_fs_driver_find("devfs");
-		assert(devfs_drv);
-		/* We fill local variable with file operations to
-		 * initialize bdev_file properly */
-		struct super_block devfs_sb;
-		struct block_dev *block_dev = block_dev_find(dev);
-		bdev_file = dvfs_alloc_file();
-		devfs_drv->fill_sb(&devfs_sb, bdev_file);
-		memset(bdev_file, 0, sizeof(struct file));
-		bdev_file->f_inode = dvfs_alloc_inode(&devfs_sb);
-		bdev_file->f_ops   = devfs_sb.sb_fops;
-		bdev_file->f_inode->i_data = block_dev;
-		/* Now we have file object that could be used for fs
-		 * initialization */
-	} else {
-		/* devfs presents, perform usual mount */
-		if (dev) {
-			dvfs_lookup(dev, &lookup);
-			if (!lookup.item) {
-				return -ENOENT;
-			}
-			bdev_file = (struct file*) dvfs_file_open_idesc(&lookup);
-			if (!bdev_file)
-				return -ENOMEM;
-		} else {
-			bdev_file = NULL;
-		}
-	}
+
+	bdev_file = dvfs_get_mount_bdev(dev);
+
 	sb = dvfs_alloc_sb(drv, bdev_file);
 
 	if (!strcmp(dest, "/")) {
