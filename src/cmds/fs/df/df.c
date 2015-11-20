@@ -38,6 +38,11 @@ int main(int argc, char **argv) {
 	if (-1 == statvfs(argv[argc-1], &st_buf)) {
 		return -errno;
 	}
+	printf("block dev  | file system |   size     |  mount point\n");
+	printf("           |");
+	printf(" %11s |", fsid2fsname(st_buf.f_fsid));
+	printf(" %8lu |", st_buf.f_bsize);
+	printf("           \n");
 
 	return 0;
 }
