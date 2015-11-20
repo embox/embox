@@ -42,7 +42,6 @@ struct block_dev_driver ramdisk_pio_driver = {
 	.write = write_sectors
 };
 
-/* XXX not stores index if path have no index placeholder, like * or # */
 struct ramdisk *ramdisk_create(char *path, size_t size) {
 	char buf[256];
 	struct block_dev *bdev;
@@ -58,8 +57,11 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	if (NULL == (ram->p_start_addr))
 		goto err_free_ramdisk;
 
-	strcpy(buf, "hdr#");
-	if (0 > block_dev_named(buf, &ramdisk_idx))
+	strcpy(buf, dvfs_last_link(path));
+	if (buf[strlen(buf) - 1] == '/')
+		goto err_free_mem;
+
+	if (0 > (ram->idx = block_dev_named(buf, &ramdisk_idx)))
 		goto err_free_mem;
 
 	bdev = block_dev_create(buf, &ramdisk_pio_driver, NULL);
@@ -83,8 +85,32 @@ ramdisk_t *ramdisk_get_param(char *path) {
 	return 0;
 }
 
+/* TODO rewrite it to be device remove function */
 int ramdisk_delete(const char *name) {
-	/* TODO Delete corresponding idx */
+	struct ramdisk *ram;
+	struct block_dev *bdev;
+	size_t ramsize;
+
+	assert(name);
+
+	bdev = block_dev_find(name);
+
+	if (!bdev)
+		return -ENOENT;
+
+	ram = bdev->privdata;
+
+	if (!pool_belong(&ramdisk_pool, ram))
+		return -EINVAL;
+
+	ramsize = ram->blocks * RAMDISK_BLOCK_SIZE + PAGE_SIZE() - 1;
+
+	phymem_free(ram->p_start_addr, ramsize / PAGE_SIZE());
+	index_free(&ramdisk_idx, ram->idx);
+	pool_free(&ramdisk_pool, ram);
+
+	block_dev_free(bdev);
+
 	return 0;
 }
 
