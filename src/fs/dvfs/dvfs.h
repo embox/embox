@@ -205,6 +205,7 @@ extern int dvfs_cache_add(struct dentry *dentry);
 extern struct super_block *dvfs_alloc_sb(struct dumb_fs_driver *drv, struct file *bdev_file);
 extern int dvfs_destroy_sb(struct super_block *sb);
 extern struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
+struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file *bdev);
 
 extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);
 extern int dvfs_umount(struct dentry *d);
