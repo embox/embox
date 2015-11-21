@@ -232,6 +232,11 @@ static int initfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	sb->sb_fops = &initfs_fops;
 	sb->sb_ops  = &initfs_sbops;
 	sb->bdev = NULL;
+
+	if (bdev_file) {
+		return -1;
+	}
+
 	return 0;
 }
 

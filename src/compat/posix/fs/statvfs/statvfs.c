@@ -49,6 +49,39 @@ int statvfs(const char *path, struct statvfs *buf) {
 	return res;
 }
 
+unsigned long fsname2fsid(const char *name) {
+	if (0 == strcmp(name, "vfat")) {
+		return FSID_VFAT;
+	}
+	if (0 == strcmp(name, "ext2")) {
+		return FSID_VFAT;
+	}
+	if (0 == strcmp(name, "ext3")) {
+		return FSID_VFAT;
+	}
+	if (0 == strcmp(name, "ext4")) {
+		return FSID_VFAT;
+	}
+	return 0;
+}
+
+char *fsid2fsname(unsigned long f_sid) {
+	switch(f_sid) {
+	case FSID_VFAT:
+		return "vfat";
+	case FSID_EXT2:
+		return "ext2";
+	case FSID_EXT3:
+		return "ext3";
+	case FSID_EXT4:
+		return "ext4";
+	default:
+		return "unknown";
+	}
+
+	return "unknown";
+}
+
 static void statvfs_fill_from_file(struct file *file, struct statvfs *buf) {
 	struct super_block *sb;
 
@@ -60,8 +93,26 @@ static void statvfs_fill_from_file(struct file *file, struct statvfs *buf) {
 	if (sb->bdev) {
 		buf->f_bsize = buf->f_frsize = sb->bdev->block_size;
 		buf->f_blocks = sb->bdev->block_size / sb->bdev->size;
+		buf->f_fsid = fsname2fsid(sb->fs_drv->name);
 	}
-	//buf->f_fsid = sb->fs_drv
+}
+
+static void statvfs_fill_from_bdev(struct file *bdev, struct statvfs *buf) {
+	struct super_block sb_buf;
+	struct super_block *sb;
+	struct block_dev *dev;
+
+	assert(bdev);
+	memset(&sb_buf, 0, sizeof(struct super_block));
+
+	sb = dumb_fs_fill_sb(&sb_buf, bdev);
+	if (sb) {
+		buf->f_fsid = fsname2fsid(sb->fs_drv->name);
+		dev = bdev->f_inode->i_data;
+		buf->f_bsize = buf->f_frsize = dev->size;
+		buf->f_blocks = dev->size / dev->block_size;
+
+	}
 }
 
 int fstatvfs(int fd, struct statvfs *buf) {
@@ -83,6 +134,7 @@ int fstatvfs(int fd, struct statvfs *buf) {
 
 	switch(st_buf.st_mode & S_IFMT) {
 	case S_IFBLK:
+		statvfs_fill_from_bdev((struct file *)idesc, buf);
 		break;
 	case S_IFDIR:
 	case S_IFREG:

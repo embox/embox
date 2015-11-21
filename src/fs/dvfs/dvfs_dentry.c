@@ -174,8 +174,10 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 		return 0;
 	}
 
-	if (dentry->d_sb == NULL)
+	if (dentry->d_sb == NULL) {
+		lookup->item = NULL;
 		return -ENOENT;
+	}
 
 	/* TODO preprocess path ? Delete "/../" */
 

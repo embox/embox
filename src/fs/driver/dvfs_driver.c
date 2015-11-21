@@ -34,3 +34,23 @@ struct dumb_fs_driver *dumb_fs_driver_find(const char *name) {
 	return NULL;
 }
 
+struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file *bdev) {
+	struct dumb_fs_driver *fs_drv;
+	int res;
+
+	assert(sb);
+	assert(bdev);
+
+	array_spread_foreach(fs_drv, dumb_drv_tab) {
+		if (!fs_drv->fill_sb) {
+			continue;
+		}
+		res = fs_drv->fill_sb(sb, bdev);
+		if (!res) {
+			sb->fs_drv = fs_drv;
+			return sb;
+		}
+	}
+
+	return NULL;
+}

@@ -32,4 +32,14 @@ struct statvfs {
 extern int statvfs(const char *, struct statvfs *);
 extern int fstatvfs(int, struct statvfs *);
 
+
+/* NOT STANDARD */
+extern unsigned long fsname2fsid(const char *name);
+extern char *fsid2fsname(unsigned long f_sid);
+
+#define FSID_VFAT 0x1
+#define FSID_EXT2 0x2
+#define FSID_EXT3 0x3
+#define FSID_EXT4 0x4
+
 #endif /* SRC_COMPAT_POSIX_FS_STATVFS_STATVFS_H_ */
