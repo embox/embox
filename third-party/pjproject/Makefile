@@ -23,7 +23,8 @@ DISABLE_FEATURES := \
 	#g711-codec
 
 PJPROJECT_ROOT := $(ROOT_DIR)/third-party/pjproject
-PJSIP_CPPFLAGS := -I$(PJPROJECT_ROOT)/include $(EMBOX_DEPS_CPPFLAGS) -I$(SRC_DIR)/compat/cxx/include
+PJSIP_CPPFLAGS := -I$(PJPROJECT_ROOT)/include $(EMBOX_DEPS_CPPFLAGS) -I$(SRC_DIR)/compat/cxx/include 
+PJSIP_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
 BUILD_ROOT := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 
 $(CONFIGURE) :
@@ -39,7 +40,7 @@ $(CONFIGURE) :
 			$(DISABLE_FEATURES:%=--disable-%) \
 			--with-external-pa; \
 		echo export CFLAGS+="$(PJSIP_CPPFLAGS)" > user.mak; \
-		echo export CXXFLAGS+="$(PJSIP_CPPFLAGS)" >> user.mak; \
+		echo export CXXFLAGS+="$(EMBOX_CXXFLAGS) $(PJSIP_CPPFLAGS)" >> user.mak; \
 	)
 	cp ./config_site.h $(BUILD_ROOT)/pjlib/include/pj/config_site.h
 	touch $@
