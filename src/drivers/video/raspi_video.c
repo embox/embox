@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
-#include <drivers/video/raspi_mailbox.h>
+#include <drivers/mailbox/bcm2835_mailbox.h>
 #include <drivers/video/fb.h>
 #include <mem/page.h>
 #include <util/binalign.h>
@@ -20,13 +20,13 @@
 EMBOX_UNIT_INIT(raspi_init);
 
 static int raspi_set_var(struct fb_info *info,
-		const struct fb_var_screeninfo *var) {
-	struct raspi_fb_info raspi_fb;
+		struct fb_var_screeninfo const *var) {
+	struct bcm2835_fb_info raspi_fb;
 
 	/* Validate Inputs */
-	if (var->xres > RASPI_FB_MAX_RES
-			|| var->yres > RASPI_FB_MAX_RES
-			|| var->bits_per_pixel > RASPI_FB_MAX_BPP) {
+	if (var->xres > BCM2835_FB_MAX_RES
+			|| var->yres > BCM2835_FB_MAX_RES
+			|| var->bits_per_pixel > BCM2835_FB_MAX_BPP) {
 		return -EINVAL;
 	}
 
@@ -56,8 +56,8 @@ static int raspi_set_var(struct fb_info *info,
 	 * By adding 0x40000000, we tell the GPU not to use its cache for these
 	 * writes, which ensures we will be able to see the change
 	 */
-	mailbox_write(((uint32_t) &raspi_fb) + 0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
-	if (mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 ||
+	bcm2835_mailbox_write(((uint32_t) &raspi_fb) + 0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
+	if (bcm2835_mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 ||
 			!raspi_fb.gpu_pointer) {
 		return -EAGAIN;
 	}

@@ -5,4 +5,5 @@ module bcm2835_power {
 	source "bcm2835_power.h"
 
 	source "bcm2835_power.c"
+	depends embox.driver.mailbox.bcm2835_mailbox
 }
