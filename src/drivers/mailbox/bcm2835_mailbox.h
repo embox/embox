@@ -62,9 +62,22 @@ struct bcm2835_fb_info {
 } __attribute__((aligned(16)));
 
 /**
- * Prototypes
+ * Routine to send a message to a particular mailbox.
+ * @param datas - message to be sent
+ * @param channel - what mailbox to write the message to
+ *
+ * @return 0 - in case of success
+ * @return < 0 - in case of error
  */
 int bcm2835_mailbox_write(uint32_t data, uint32_t channel);
+
+/**
+ * Routine to read a message from a particular mailbox.
+ * @param channel - what mailbox to receive the message from
+ *
+ * @return data read - in case of success
+ * @return < 0 - in case of error
+ */
 uint32_t bcm2835_mailbox_read(uint32_t channel);
 
 #endif	/* BCM2835_MAILBOX_H_ */
