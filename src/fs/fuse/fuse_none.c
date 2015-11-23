@@ -13,7 +13,7 @@ struct fuse_module *fuse_module_lookup(char *fuse_type) {
 	return NULL;
 }
 
-int fuse_module_mount(struct fuse_module *fm) {
+int fuse_module_mount(struct fuse_module *fm, char *dev, char *dest) {
 	return -ENOSUPP;
 }
 

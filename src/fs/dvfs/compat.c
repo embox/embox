@@ -11,6 +11,7 @@
 
 #include <fs/dvfs.h>
 #include <fs/mount.h>
+#include <fs/fuse_module.h>
 
 /**
  * @brief Mount given device on given directory
@@ -22,6 +23,11 @@
  * @return Negative error number or 0 if succeed
  */
 int mount(char *dev, char *dir, char *fs_type) {
+	struct fuse_module *fm;
+	fm = fuse_module_lookup(fs_type);
+	if (fm) {
+		return fuse_module_mount(fm, dev, dir);
+	}
 	return dvfs_mount(dev, dir, fs_type, 0);
 }
 
