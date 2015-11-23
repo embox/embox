@@ -1,0 +1,18 @@
+package embox.fs.fuse
+
+@DefaultImpl(fuse_none)
+abstract module fuse_api {}
+
+module fuse_none extends fuse_api {
+	@IncludeExport(path="fs", target_name="fuse_module.h")
+	source "fuse_module_none.h"
+
+	source "fuse_none.c"
+}
+
+module fuse_linux extends fuse_api {
+	@IncludeExport(path="fs", target_name="fuse_module.h")
+	source "fuse_module_linux.h"
+
+	source "fuse_linux.c"
+}
