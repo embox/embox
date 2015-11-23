@@ -7,7 +7,7 @@ package third_party.ext2fuse
 static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/src")
 	source "*.o"
-	
+
 	depends embox.compat.posix.fs.statvfs
 	@NoRuntime depends third_party.e2fsprogs.core
 	@NoRuntime depends third_party.fuse.core
@@ -20,4 +20,13 @@ module ext2fuse_driver {
 
 	@NoRuntime depends core
 	depends embox.fs.core
+}
+
+module ext2fuse_driver_dvfs {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
+	source "ext2fuse_dvfs.c"
+
+	@NoRuntime depends core
+	depends embox.fs.fuse.fuse_linux
 }

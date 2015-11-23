@@ -8,6 +8,6 @@ static module core {
 	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
 
 	source "fuse.c"
-	
+
 	depends embox.compat.posix.fs.statvfs
 }
