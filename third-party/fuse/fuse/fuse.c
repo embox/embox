@@ -15,9 +15,25 @@
 #include <fuse_opt.h>
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <fs/dvfs.h>
+
+
+#include "fuse_req_alloc.h"
 
 #define EMBOX_FUSE_NIY() printf("EMBOX_FUSE_NIY: %s\n", __func__)
 
+
+	/* EMBOX SPECIFIC */
+struct fuse_req_embox *fuse_req_alloc(void) {
+	return malloc(sizeof(struct fuse_req_embox));
+}
+
+void fuse_req_free(struct fuse_req_embox *req) {
+	free(req);
+}
+
+	/* CTX */
 const struct fuse_ctx *fuse_req_ctx(fuse_req_t req) {
 	EMBOX_FUSE_NIY();
 	return NULL;
@@ -42,7 +58,16 @@ int fuse_reply_create(fuse_req_t req, const struct fuse_entry_param *e,
 }
 
 int fuse_reply_entry(fuse_req_t req, const struct fuse_entry_param *e) {
-	EMBOX_FUSE_NIY();
+	struct fuse_req_embox *emreq = (struct fuse_req_embox *) req;
+	struct inode *node = emreq->node;
+
+	assert(node);
+
+	node->i_no = e->ino;
+	node->start_pos = 0; /* ? */
+	node->length = e->attr.st_size;
+	node->flags = e->attr.st_mode;
+
 	return 0;
 }
 

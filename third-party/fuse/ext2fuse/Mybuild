@@ -16,6 +16,7 @@ static module core {
 module ext2fuse_driver {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
 	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/fuse")
 	source "ext2fuse.c"
 
 	@NoRuntime depends core
