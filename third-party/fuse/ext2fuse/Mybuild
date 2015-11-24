@@ -1,5 +1,6 @@
 package third_party.ext2fuse
 
+
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/ext2fuse/core/install/src")
 @BuildDepends(third_party.fuse.core)
@@ -23,6 +24,22 @@ module ext2fuse_driver {
 	depends embox.fs.core
 }
 
+@App
+@AutoCmd
+@Cmd(name = "ext2fuse",
+	help = "Concatenate files and print on the standard output",
+	man = '''
+		NAME
+			cat - concatenate files and print on the standard output
+		SYNOPSIS
+			cat [OPTION]... [FILE]...
+		DESCRIPTION
+			Concatenate FILE(s) to standard output.
+		OPTIONS
+			-n  number all output lines
+		AUTHORS
+			Nikolay Korotky
+	''')
 module ext2fuse_driver_dvfs {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
 	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
