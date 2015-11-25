@@ -52,9 +52,13 @@ static size_t ext2fuse_read(struct file *desc, void *buf, size_t size) {
 	}
 
 	inode = desc->f_inode;
+	if (size > inode->length - desc->pos) {
+		size = inode->length - desc->pos;
+	}
 	fi = inode->i_data;
 	req->buf = buf;
-	ext2fuse_ops->read(NULL, inode->i_no, size, 0, fi);
+	ext2fuse_ops->read((fuse_req_t) req, inode->i_no, size, desc->pos, fi);
+	memcpy(buf, req->buf, req->buf_size);
 	ret = req->buf_size;
 	fuse_req_free(req);
 
@@ -78,7 +82,7 @@ static struct inode *ext2fuse_lookup(char const *name, struct dentry const *dir)
 
 	node->i_data = fi;
 	req->node = node;
-	ext2fuse_ops->lookup((fuse_req_t) node, dir->d_inode->i_no, name);
+	ext2fuse_ops->lookup((fuse_req_t) req, dir->d_inode->i_no, name);
 	fuse_req_free(req);
 
 	return node;

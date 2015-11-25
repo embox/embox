@@ -15,6 +15,7 @@
 #include <fuse_opt.h>
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <fs/dvfs.h>
 
@@ -72,7 +73,13 @@ int fuse_reply_entry(fuse_req_t req, const struct fuse_entry_param *e) {
 }
 
 int fuse_reply_open(fuse_req_t req, const struct fuse_file_info *fi) {
-	EMBOX_FUSE_NIY();
+	struct fuse_req_embox *emreq;
+	struct fuse_file_info *node_fi;
+
+	emreq = (struct fuse_req_embox *) req;
+	node_fi = emreq->node->i_data;
+	node_fi->fh = fi->fh;
+
 	return 0;
 }
 
@@ -82,7 +89,9 @@ int fuse_reply_write(fuse_req_t req, size_t count) {
 }
 
 int fuse_reply_buf(fuse_req_t req, const char *buf, size_t size) {
-	EMBOX_FUSE_NIY();
+	struct fuse_req_embox *emreq = (struct fuse_req_embox *) req;
+	memcpy(emreq->buf, buf, size);
+	emreq->buf_size = size;
 	return 0;
 }
 
