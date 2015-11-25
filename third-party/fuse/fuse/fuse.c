@@ -128,25 +128,6 @@ void fuse_remove_signal_handlers(struct fuse_session *se) {
 }
 
 
-	/* SESSION */
-void fuse_session_add_chan(struct fuse_session *se, struct fuse_chan *ch) {
-	EMBOX_FUSE_NIY();
-}
-
-int fuse_session_loop_mt(struct fuse_session *se) {
-	EMBOX_FUSE_NIY();
-	return 0;
-}
-
-void fuse_session_destroy(struct fuse_session *se) {
-	EMBOX_FUSE_NIY();
-}
-
-int fuse_session_loop(struct fuse_session *se) {
-	EMBOX_FUSE_NIY();
-	return 0;
-}
-
 	/* MOUNT/UMOUNT  */
 int fuse_mount_compat25(const char *mountpoint, struct fuse_args *args) {
 	EMBOX_FUSE_NIY();
@@ -170,14 +151,3 @@ char *fuse_add_dirent(char *buf, const char *name, const struct stat *stbuf,
 	return NULL;
 }
 
-struct fuse_chan *fuse_kern_chan_new(int fd) {
-	EMBOX_FUSE_NIY();
-	return NULL;
-}
-
-struct fuse_session *fuse_lowlevel_new_compat25(struct fuse_args *args,
-                const struct fuse_lowlevel_ops_compat25 *op,
-                size_t op_size, void *userdata) {
-	EMBOX_FUSE_NIY();
-	return NULL;
-}
