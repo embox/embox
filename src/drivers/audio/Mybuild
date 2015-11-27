@@ -25,6 +25,14 @@ module stm32f4_pa extends portaudio {
 	depends embox.kernel.irq_api
 }
 
+module ac97_pa extends portaudio {
+	source "ac97_pa.c"
+
+	depends embox.compat.posix.util.sleep
+}
+
 module portaudio_stub extends portaudio {
 	source "portaudio_stub.c"
+
+	depends embox.compat.posix.util.sleep
 }
