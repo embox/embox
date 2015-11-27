@@ -1,0 +1,12 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "play",
+     help = "Simple audio player",
+     man  = "Simple audio player")
+
+module play {
+	source "play.c"
+
+	depends embox.driver.audio.portaudio
+}
