@@ -1,6 +1,9 @@
 package embox.driver.audio
 
-abstract module portaudio { }
+abstract module portaudio {
+	@IncludeExport(path="drivers/audio")
+	source "portaudio.h"
+}
 
 @BuildDepends(third_party.bsp.st_f4.core)
 module stm32f4_pa extends portaudio {
@@ -22,8 +25,6 @@ module stm32f4_pa extends portaudio {
 	depends embox.kernel.irq_api
 }
 
-module portaudio_stub {
-	@IncludeExport(path="drivers/audio")
-	source "portaudio.h"
+module portaudio_stub extends portaudio {
 	source "portaudio_stub.c"
 }
