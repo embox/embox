@@ -22,6 +22,8 @@ module core {
 	depends embox.compat.libc.stdio.fseek
 	depends embox.compat.libc.time
 
+	depends embox.driver.audio.portaudio
+
 	depends third_party.STLport.core
 }
 
