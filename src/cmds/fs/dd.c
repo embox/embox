@@ -177,14 +177,21 @@ int main(int argc, char **argv) {
 	if (!dp.bs) {
 		dp.bs = DD_DEFAULT_BS;
 	}
-	if (!dp.count) {
-		dp.count = -1;
-	}
 
 	ifd = dd_cond_open(dp.ifile, O_RDONLY, STDIN_FILENO);
 	if (ifd < 0) {
 		err = ifd;
 		goto out;
+	}
+
+	if (!dp.count) {
+		struct stat buff;
+
+		err = fstat(ifd, &buff);
+		if(err < 0) {
+			goto out;
+		}
+		dp.count = buff.st_size;
 	}
 
 	ofd = dd_cond_open(dp.ofile, O_WRONLY, STDOUT_FILENO);
@@ -209,6 +216,9 @@ int main(int argc, char **argv) {
 			err = -errno;
 			goto out_cmd;
 		}
+		if (n_read == 0) {
+			goto out_cmd;
+		}
 
 		dp.skip --;
 	} while (dp.skip != 0);
@@ -219,6 +229,10 @@ int main(int argc, char **argv) {
 		n_read = read(ifd, tbuf, dp.bs);
 		if (n_read < 0) {
 			err = -errno;
+			break;
+		}
+
+		if (n_read == 0) {
 			break;
 		}
 
