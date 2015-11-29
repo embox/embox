@@ -22,10 +22,8 @@ static struct bcm2835_mailbox_regs volatile *const mailbox_regs =
  *
  * @return data read
  */
-static uint32_t read_mmio(uint32_t volatile *addr)
-{
+static uint32_t read_mmio(uint32_t volatile *addr) {
 	uint32_t n;
-	data_mem_barrier();
 	n = REG_LOAD(addr);
 	data_mem_barrier();
 	return n;
@@ -36,11 +34,9 @@ static uint32_t read_mmio(uint32_t volatile *addr)
  * @param addr - pointer to register address
  * @param val - data to be stored
  */
-static void write_mmio(uint32_t volatile *addr, uint32_t val)
-{
+static void write_mmio(uint32_t volatile *addr, uint32_t val) {
 	data_mem_barrier();
 	REG_STORE(addr, val);
-	data_mem_barrier();
 }
 
 int bcm2835_mailbox_write(uint32_t data, uint32_t channel) {

@@ -27,22 +27,22 @@
 #define BCM2835_MAILBOX_FULL            0x80000000
 
 /* BCM2835 Mailbox Channels */
-#define BCM2835_POWER_MGMT_CHANNEL		0
+#define BCM2835_POWER_MGMT_CHANNEL      0
 #define BCM2835_FRAMEBUFFER_CHANNEL     1
 
 /**
  * Layout of the Mailbox Registers.
  */
 struct bcm2835_mailbox_regs {
-	uint32_t Read;              /* Receiving mail.				R- */
+	uint32_t Read;              /* Receiving mail.              R- */
 	uint32_t unused1;
 	uint32_t unused2;
 	uint32_t unused3;
-	uint32_t Poll;              /* Receive without retrieving.	R- */
-	uint32_t Sender;            /* Sender information.			R- */
-	uint32_t Status;            /* Information.					R- */
-	uint32_t Configuration;     /* Settings.					RW */
-	uint32_t Write;             /* Sending mail.				-W */
+	uint32_t Poll;              /* Receive without retrieving.  R- */
+	uint32_t Sender;            /* Sender information.          R- */
+	uint32_t Status;            /* Information.                 R- */
+	uint32_t Configuration;     /* Settings.                    RW */
+	uint32_t Write;             /* Sending mail.                -W */
 };
 
 /**
@@ -80,4 +80,4 @@ int bcm2835_mailbox_write(uint32_t data, uint32_t channel);
  */
 uint32_t bcm2835_mailbox_read(uint32_t channel);
 
-#endif	/* BCM2835_MAILBOX_H_ */
+#endif /* BCM2835_MAILBOX_H_ */

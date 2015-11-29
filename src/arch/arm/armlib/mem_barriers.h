@@ -1,5 +1,5 @@
 /** 
- * @file	mem_barriers.S
+ * @file	mem_barriers.c
  * @brief	Memory barriers or data cache invalidation/flushing for ARM processors
  *
  * @description Memory barriers or data cache invalidation/flushing may be
@@ -22,10 +22,11 @@
  * @date	23.11.2015
  */
 
-.text
-.global data_mem_barrier
-data_mem_barrier:
-    mov r12, #0
-    mcr p15, 0, r12, c7, c10, 5
-    mov pc, lr
-
+/**
+ * This instruction ensures all data memory accesses are completed before the
+ * next instruction.
+ */
+static inline void data_mem_barrier(void) {
+	__asm__ __volatile__("mcr p15, 0, %0, c7, c10, 5"
+			: : "r" (0) : "memory");
+}
