@@ -26,7 +26,7 @@ void arch_shutdown(arch_shutdown_mode_t mode) {
 	case ARCH_SHUTDOWN_MODE_REBOOT:
 	case ARCH_SHUTDOWN_MODE_ABORT:
 	default:
-
+		break;
 	}
 
 	/* NOTREACHED */

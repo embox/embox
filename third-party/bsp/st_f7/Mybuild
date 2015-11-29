@@ -7,10 +7,14 @@ static module core extends third_party.bsp.st_bsp_api {
 	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
 
 	@Cflags("-Wno-unused")
-	@DefineMacro("STM32F7xx")
+	@DefineMacro("STM32F746xx")
 	@DefineMacro("USE_RTOS=0")
 	@DefineMacro("USE_HAL_DRIVER")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/stm32f7discovery")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f7/core/STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f7/core/STM32Cube_FW_F7_V1.2.0/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f7/core/STM32Cube_FW_F7_V1.2.0/Drivers/CMSIS/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/st_f7/core/STM32Cube_FW_F7_V1.2.0/Projects/STM32746G-Discovery/Examples/BSP/Inc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal.c",
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_adc.c",
@@ -27,7 +31,7 @@ static module core extends third_party.bsp.st_bsp_api {
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dcmi.c",
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dcmi_ex.c",
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma.c",
-		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dac2d.c",
+		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c",
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c",
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_eth.c",
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c",
@@ -68,9 +72,9 @@ static module core extends third_party.bsp.st_bsp_api {
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_uart.c",
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_usart.c",
 		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_wwdg.c",
-		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f3xx_ll_fmc.c",
-		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f3xx_ll_sdmmc.c",
-		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f3xx_ll_usb.c"
+		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c",
+		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_sdmmc.c",
+		"STM32Cube_FW_F7_V1.2.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_usb.c"
 }
 
 @BuildDepends(core)
@@ -83,7 +87,7 @@ static module cmsis extends embox.arch.arm.cmsis {
 @Build(stage=1,script="true")
 @BuildDepends(core)
 static module system_init {
-	@DefineMacro("STM32F7xx")
+	@DefineMacro("STM32F746xx")
 	@DefineMacro("USE_RTOS=0")
 	@DefineMacro("USE_STDPERIPH_DRIVER")
 	@AddPrefix("^BUILD/extbld/third_party/bsp/st_f7/core/stm32f7discovery")
