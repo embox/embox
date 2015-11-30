@@ -9,18 +9,39 @@
 #include <unistd.h>
 
 #include <drivers/pci/pci.h>
+#include <drivers/pci/pci_driver.h>
 #include <drivers/audio/portaudio.h>
+#include <mem/misc/pool.h>
+
+/* Some of this stuff probably shoud be placed into
+ * separate module */
+#define MAX_BUF_LEN 1024
+struct pa_strm {
+	int started;
+	int paused;
+	int completed;
+	int sample_format;
+	PaStreamCallback *callback;
+	void *callback_data;
+	size_t chan_buf_len;
+	uint16_t in_buf[MAX_BUF_LEN];
+	uint16_t out_buf[MAX_BUF_LEN];
+};
+
+#define STREAM_POOL_SZ 16
+
+POOL_DEF(pa_stream_pool, struct pa_strm, STREAM_POOL_SZ);
 
 /* Intel Corporation 82801AA AC'97 Audio Controller,
  * provided by QEMU with flag -soundhw ac97 */
 #define AC97_VID 0x8086
 #define AC97_PID 0x2415
 
-PCI_DRIVER("ac97", ac97_init, AC97_VID, AC97_PID);
-
 static int ac97_init(struct pci_slot_dev *pci_dev) {
 	return 0;
 }
+
+PCI_DRIVER("ac97", ac97_init, AC97_VID, AC97_PID);
 
 PaError Pa_Initialize(void) {
 	return paNoError;
@@ -50,6 +71,21 @@ PaDeviceIndex Pa_GetDefaultOutputDevice(void) {
 	return 0;
 }
 
+/**
+ * @brief Allocate and configure PaStream w/ given parameters
+ * @note Now works only for audio output
+ *
+ * @param stream
+ * @param inputParameters
+ * @param outputParameters
+ * @param sampleRate
+ * @param framesPerBuffer
+ * @param streamFlags
+ * @param streamCallback
+ * @param userData
+ *
+ * @return Error number
+ */
 PaError Pa_OpenStream(PaStream** stream,
                        const PaStreamParameters *inputParameters,
                        const PaStreamParameters *outputParameters,
@@ -58,6 +94,23 @@ PaError Pa_OpenStream(PaStream** stream,
                        PaStreamFlags streamFlags,
                        PaStreamCallback *streamCallback,
                        void *userData) {
+	struct pa_strm *strm = pool_alloc(&pa_stream_pool);
+
+	if (!strm)
+		return paInternalError;
+
+	assert(outputParameters);
+
+	strm->started = 0;
+	strm->paused = 0;
+	strm->completed = 0;
+	strm->sample_format = outputParameters->sampleFormat;
+	strm->chan_buf_len = (MAX_BUF_LEN / framesPerBuffer) * framesPerBuffer;
+	strm->callback = streamCallback;
+	strm->callback_data = userData;
+
+	*stream = strm;
+
 	return paNoError;
 }
 
@@ -70,6 +123,8 @@ PaError Pa_StopStream(PaStream *stream) {
 }
 
 PaError Pa_CloseStream(PaStream *stream) {
+	pool_free(&pa_stream_pool, stream);
+
 	return paNoError;
 }
 
