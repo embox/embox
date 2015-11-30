@@ -8,7 +8,9 @@
 
 #include <unistd.h>
 
+#include <asm/io.h>
 #include <drivers/pci/pci.h>
+#include <drivers/pci/pci_chip/pci_utils.h>
 #include <drivers/pci/pci_driver.h>
 #include <drivers/audio/portaudio.h>
 #include <mem/misc/pool.h>
@@ -58,7 +60,17 @@ POOL_DEF(pa_stream_pool, struct pa_strm, STREAM_POOL_SZ);
 #define AC97_INT_PAGING		0x24
 #define AC97_POWERDOWN		0x26
 
+static int ac97_bus;
+static int ac97_devfn;
+static int ac97_bar;
+
 static int ac97_init(struct pci_slot_dev *pci_dev) {
+	ac97_bus   = pci_dev->busn;
+	ac97_devfn = PCI_DEVFN(pci_dev->slot, pci_dev->func);
+	ac97_bar   = pci_dev->bar[0] & 0xFFFFFFFC;
+	out16(0xFFFF, ac97_bar + AC97_RESET);
+	out16(0x3F3F, ac97_bar + AC97_MASTER);
+
 	return 0;
 }
 
