@@ -29,6 +29,7 @@ module ac97_pa extends portaudio {
 	source "ac97_pa.c"
 
 	depends embox.compat.posix.util.sleep
+	depends embox.driver.pci
 }
 
 module portaudio_stub extends portaudio {

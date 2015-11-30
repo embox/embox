@@ -8,7 +8,19 @@
 
 #include <unistd.h>
 
+#include <drivers/pci/pci.h>
 #include <drivers/audio/portaudio.h>
+
+/* Intel Corporation 82801AA AC'97 Audio Controller,
+ * provided by QEMU with flag -soundhw ac97 */
+#define AC97_VID 0x8086
+#define AC97_PID 0x2415
+
+PCI_DRIVER("ac97", ac97_init, AC97_VID, AC97_PID);
+
+static int ac97_init(struct pci_slot_dev *pci_dev) {
+	return 0;
+}
 
 PaError Pa_Initialize(void) {
 	return paNoError;
