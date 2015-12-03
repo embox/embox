@@ -1,0 +1,11 @@
+package embox.driver.audio
+
+module ac97 {
+	@IncludeExport(path="drivers/audio")
+	source "ac97.h"
+
+	source "ac97.c"
+
+	depends embox.arch.x86
+	depends embox.driver.pci
+}
