@@ -32,12 +32,12 @@ module stm_usart_cube extends embox.driver.diag.diag_api {
 
 abstract module platform_type {}
 
-@BuildDepends(third_party.bsp.st_f4.core)
+@BuildDepends(third_party.bsp.stmf4cube.core)
 module stm_usart_f4 extends platform_type {
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f4.h"
 
-	depends third_party.bsp.st_f4.core
+	depends third_party.bsp.stmf4cube.core
 }
 
 @BuildDepends(third_party.bsp.st_f7.core)
