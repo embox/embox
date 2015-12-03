@@ -89,6 +89,17 @@ static struct inode *ext2fuse_lookup(char const *name, struct dentry const *dir)
 }
 
 static int ext2fuse_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
+	char buf[512];
+	struct fuse_req_embox *req;
+
+	if (NULL == (req = fuse_req_alloc())) {
+		return -1;
+	}
+	req->node = parent;
+	req->buf = buf;
+	ext2fuse_ops->readdir((fuse_req_t) req, parent->i_no, 512, 0, parent->i_data);
+	fuse_req_free(req);
+
 	return -1;
 }
 

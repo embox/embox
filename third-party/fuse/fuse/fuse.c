@@ -13,6 +13,7 @@
 #define FUSE_USE_VERSION 25
 #include <fuse_lowlevel.h>
 #include <fuse_opt.h>
+#include <fuse_kernel.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -141,13 +142,26 @@ void fuse_unmount_compat22(const char *mountpoint) {
 
 	/* DIRENT */
 size_t fuse_dirent_size(size_t namelen) {
-	EMBOX_FUSE_NIY();
-	return 0;
+	return FUSE_DIRENT_ALIGN(FUSE_NAME_OFFSET + namelen);
 }
 
 char *fuse_add_dirent(char *buf, const char *name, const struct stat *stbuf,
               off_t off) {
-	EMBOX_FUSE_NIY();
-	return NULL;
+
+	unsigned namelen = strlen(name);
+	unsigned entlen = FUSE_NAME_OFFSET + namelen;
+	unsigned entsize = fuse_dirent_size(namelen);
+	unsigned padlen = entsize - entlen;
+	struct fuse_dirent *dirent = (struct fuse_dirent *) buf;
+
+	dirent->ino = stbuf->st_ino;
+	dirent->off = off;
+	dirent->namelen = namelen;
+	dirent->type = (stbuf->st_mode & 0170000) >> 12;
+	strncpy(dirent->name, name, namelen);
+	if (padlen)
+	    memset(buf + entlen, 0, padlen);
+
+	return buf + entsize;
 }
 
