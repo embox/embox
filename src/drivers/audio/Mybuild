@@ -29,6 +29,7 @@ module intel_ac_pa extends portaudio {
 	source "intel8201aa.c"
 
 	depends embox.compat.posix.util.sleep
+	depends embox.driver.audio.ac97
 	depends embox.driver.pci
 }
 
