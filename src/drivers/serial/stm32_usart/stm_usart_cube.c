@@ -43,37 +43,27 @@
 EMBOX_UNIT_INIT(uart_init);
 
 static int stm32_uart_putc(struct uart *dev, int ch) {
-#if 0
-	USART_TypeDef *USART = (void *) dev->base_addr;
+	USART_TypeDef *uart = (void *) dev->base_addr;
 
-	while (USART_GetFlagStatus(USART, USART_FLAG_TXE) == RESET);
-	USART_SendData(USART, (uint8_t) ch);
-#endif
+	while ((uart->ISR & USART_FLAG_TXE) == 0);
+
+	uart->TDR = (uint8_t) ch;
+
 	return 0;
 }
 
 static int stm32_uart_hasrx(struct uart *dev) {
-#if 0
-	USART_TypeDef *USART = (void *) dev->base_addr;
-	return USART_GetFlagStatus(USART, USART_FLAG_RXNE) == SET;
-#endif
-	return 0;
+	USART_TypeDef *uart = (void *) dev->base_addr;
+
+	return uart->ISR & USART_FLAG_RXNE;
 }
 
 static int stm32_uart_getc(struct uart *dev) {
-#if 0
-	USART_TypeDef *USART = (void *) dev->base_addr;
-	return USART_ReceiveData(USART);
-#endif
-	return 0;
+	USART_TypeDef *uart = (void *) dev->base_addr;
+
+	return (uint8_t)(uart->RDR & (uint8_t)0xFF);
 }
-#if 1
-void stm32_params2init(const struct uart_params *params, USART_InitTypeDef *USART_InitStruct) {
-	/* TODO */
-	USART_StructInit(USART_InitStruct);
-	USART_InitStruct->USART_BaudRate = params->baud_rate;
-}
-#endif
+
 /*
  *          1. Enable peripheral clock using the follwoing functions
  *             RCC_APB2PeriphClockCmd(RCC_APB2Periph_USARTx, ENABLE) for USART1 and USART6
@@ -98,45 +88,25 @@ void stm32_params2init(const struct uart_params *params, USART_InitTypeDef *USAR
  *
  */
 static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) {
-#if 0
-	GPIO_InitTypeDef GPIO_InitStructure;
-	USART_InitTypeDef USART_InitStruct;
+	UART_HandleTypeDef UartHandle;
 
-	/* Enable GPIO clock */
-	RCC_AHB1PeriphClockCmd(EVAL_COM_TX_GPIO_CLK | EVAL_COM_RX_GPIO_CLK, ENABLE);
+	UartHandle.Instance = USARTx;
 
-	/* Enable UART clock */
-	EVAL_COM_CLK_CMD(EVAL_COM_CLK, ENABLE);
+	UartHandle.Init.BaudRate = params->baud_rate;
+	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+	UartHandle.Init.StopBits = UART_STOPBITS_1;
+	UartHandle.Init.Parity = UART_PARITY_NONE;
+	UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	UartHandle.Init.Mode = UART_MODE_TX_RX;
 
-	/* Connect PXx to USARTx_Tx*/
-	GPIO_PinAFConfig(EVAL_COM_TX_GPIO_PORT, EVAL_COM_TX_SOURCE, EVAL_COM_TX_AF);
-
-	/* Connect PXx to USARTx_Rx*/
-	GPIO_PinAFConfig(EVAL_COM_RX_GPIO_PORT, EVAL_COM_RX_SOURCE, EVAL_COM_RX_AF);
-
-	/* Configure USART Tx as alternate function  */
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-
-	GPIO_InitStructure.GPIO_Pin = EVAL_COM_TX_PIN;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(EVAL_COM_TX_GPIO_PORT, &GPIO_InitStructure);
-
-	/* Configure USART Rx as alternate function  */
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_Pin = EVAL_COM_RX_PIN;
-	GPIO_Init(EVAL_COM_RX_GPIO_PORT, &GPIO_InitStructure);
-
-	stm32_params2init(params, &USART_InitStruct);
-	USART_Init(EVAL_COM, &USART_InitStruct);
-
+	if (HAL_UART_Init(&UartHandle) != HAL_OK) {
+		return -1;
+	}
 	if (dev->params.irq) {
-		USART_ITConfig(EVAL_COM, USART_IT_RXNE, ENABLE);
+	    /* Enable the UART Data Register not empty Interrupt */
+	    __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_RXNE);
 	}
 
-	USART_Cmd(EVAL_COM, ENABLE);
-#endif
 	return 0;
 }
 
@@ -149,8 +119,8 @@ static const struct uart_ops stm32_uart_ops = {
 
 static struct uart stm32_uart0 = {
 		.uart_ops = &stm32_uart_ops,
-		.irq_num = EVAL_COM_IRQn,
-		.base_addr = (unsigned long) EVAL_COM,
+		.irq_num = USARTx_IRQn,
+		.base_addr = (unsigned long) USARTx_IRQn,
 };
 
 static const struct uart_params uart_defparams = {
