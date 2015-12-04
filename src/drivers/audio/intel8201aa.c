@@ -14,13 +14,31 @@
 #include <drivers/pci/pci_chip/pci_utils.h>
 #include <drivers/pci/pci_driver.h>
 #include <drivers/audio/portaudio.h>
+#include <drivers/audio/ac97.h>
 #include <mem/misc/pool.h>
+
+/* You may want to look at "Inte 82801AA (ICH) & Intel 82801AB(ICH0)
+ * IO Controller Hub AC ’97 Programmer’s Reference Manual" for more
+ * technical details */
 
 /* Offsets of registers */
 #define INTEL_AC_COM	0x04 /* Command */
 #define INTEL_AC_NAMBA	0x10 /* Native Audio Mixer Base Address */
 #define INTEL_AC_NABMBA	0x14 /* Native Audio Bus Mastering Base Address */
 #define INTEL_AC_INTLN	0x3c /* Interrupt Line */
+
+#define INTEL_AC_SAMPLE_SZ 2  /* Bytes */
+#define INTEL_AC_BUFFER_SZ 32 /* Buffer descriptors */
+
+struct intel_ac_buff_desc {
+	uint32_t pointer;           /* 2-byte aligned */
+	unsigned int ioc : 1;       /* Interrupt on completion */
+	unsigned int bup : 1;       /* Buffer underrun policy */
+	unsigned int reserved : 14; /* Must be zeroes */
+	unsigned int length : 16;   /* Buffer length in samples */
+} __attribute__((aligned(2)));
+
+//static intel_ac_buff intel_ac_buff_list[INTEL_AC_BUFFER_SZ];
 
 /* Some of this stuff probably shoud be placed into
  * separate module */
@@ -38,7 +56,6 @@ struct pa_strm {
 };
 
 #define STREAM_POOL_SZ 16
-
 POOL_DEF(pa_stream_pool, struct pa_strm, STREAM_POOL_SZ);
 
 /* Intel Corporation 82801AA AC'97 Audio Controller,
@@ -47,6 +64,16 @@ POOL_DEF(pa_stream_pool, struct pa_strm, STREAM_POOL_SZ);
 #define INTEL_AC_PID 0x2415
 
 static int intel_ac_init(struct pci_slot_dev *pci_dev) {
+	int err;
+
+	assert(pci_dev);
+
+	/* Codec init */
+	if ((err = ac97_init(pci_dev)))
+		return err;
+
+	/* DMA init */
+
 	return 0;
 }
 
@@ -54,7 +81,7 @@ PCI_DRIVER("Intel Corporation 82801AA AC'97 Audio Controller", intel_ac_init, IN
 
 /**
  * @brief Configure AC97 codec
- * @note This function does nothing, everything was done on ac97_init
+ * @note This function does nothing, everything was done on intel_ac_init
  * @return PortAudio error code
  */
 PaError Pa_Initialize(void) {
