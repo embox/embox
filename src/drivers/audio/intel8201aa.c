@@ -16,6 +16,12 @@
 #include <drivers/audio/portaudio.h>
 #include <mem/misc/pool.h>
 
+/* Offsets of registers */
+#define INTEL_AC_COM	0x04 /* Command */
+#define INTEL_AC_NAMBA	0x10 /* Native Audio Mixer Base Address */
+#define INTEL_AC_NABMBA	0x14 /* Native Audio Bus Mastering Base Address */
+#define INTEL_AC_INTLN	0x3c /* Interrupt Line */
+
 /* Some of this stuff probably shoud be placed into
  * separate module */
 #define MAX_BUF_LEN 1024
