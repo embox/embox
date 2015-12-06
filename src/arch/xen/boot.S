@@ -11,7 +11,6 @@
 #include <hal/cpu.h>
 
 #define __ASSEMBLY__
-#define CONFIG_X86_PAE
 #define __XEN_INTERFACE_VERSION__ 0x00030203
 #include <xen/arch-x86_32.h>
 
@@ -19,6 +18,7 @@
 
 	.section .text
 	.align 4
+
 
 	/* system entry point */
 C_ENTRY(_start):
@@ -76,9 +76,21 @@ C_ENTRY(_start):
 	addl    $8, %esp
 
 
-	call    kernel_start /* call C code */
+        lss stack_start,%esp
+        push %esi 
+	call    kernel_start_xen /* call C code */
 
 loop:
 	hlt             /* if we return from kernel_start it's error */
 	jmp	loop
+
+stack_start:
+	.long stack+8192, FLAT_KERNEL_SS
+
+        .org 0x1000
+shared_info:
+        .org 0x2000
+
+hypercall_page:
+        .org 0x3000
 
