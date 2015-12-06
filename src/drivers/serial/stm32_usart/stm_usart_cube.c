@@ -45,9 +45,9 @@ EMBOX_UNIT_INIT(uart_init);
 static int stm32_uart_putc(struct uart *dev, int ch) {
 	USART_TypeDef *uart = (void *) dev->base_addr;
 
-	while ((uart->ISR & USART_FLAG_TXE) == 0);
+	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0);
 
-	uart->TDR = (uint8_t) ch;
+	STM32_USART_TXDATA(uart) = (uint8_t) ch;
 
 	return 0;
 }
@@ -55,13 +55,13 @@ static int stm32_uart_putc(struct uart *dev, int ch) {
 static int stm32_uart_hasrx(struct uart *dev) {
 	USART_TypeDef *uart = (void *) dev->base_addr;
 
-	return uart->ISR & USART_FLAG_RXNE;
+	return STM32_USART_FLAGS(uart) & USART_FLAG_RXNE;
 }
 
 static int stm32_uart_getc(struct uart *dev) {
 	USART_TypeDef *uart = (void *) dev->base_addr;
 
-	return (uint8_t)(uart->RDR & (uint8_t)0xFF);
+	return (uint8_t)(STM32_USART_RXDATA(uart) & 0xFF);
 }
 
 /*

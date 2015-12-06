@@ -8,6 +8,7 @@ static module core extends third_party.bsp.st_bsp_api {
 
 	@Cflags("-Wno-unused")
 	@DefineMacro("STM32F407xx")
+	@DefineMacro("HAL_UART_MODULE_ENABLED")
 	@DefineMacro("USE_RTOS=0")
 	@DefineMacro("USE_HAL_DRIVER")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.9.0/Drivers/STM32F4xx_HAL_Driver/Inc")

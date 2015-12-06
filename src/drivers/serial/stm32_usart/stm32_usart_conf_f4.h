@@ -35,4 +35,10 @@
 #define USARTx_IRQn                      USART2_IRQn
 #define USARTx_IRQHandler                USART2_IRQHandler
 
+
+#define STM32_USART_FLAGS(uart)   uart->SR
+#define STM32_USART_RXDATA(uart)  uart->DR
+#define STM32_USART_TXDATA(uart)  uart->DR
+
+
 #endif /* SRC_DRIVERS_SERIAL_STM32_USART_STM32_USART_CONF_F4_H_ */
