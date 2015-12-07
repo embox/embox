@@ -28,7 +28,7 @@
 #define INTEL_AC_INTLN	0x3c /* Interrupt Line */
 
 #define INTEL_AC_PCM_IN_BUF  0x00
-#define INTEL_AC_OCM_OUT_BUF 0x10
+#define INTEL_AC_PCM_OUT_BUF 0x10
 #define INTEL_AC_MIC_BUF     0x20
 
 /* Last Valid Index */
@@ -36,6 +36,10 @@
 #define INTEL_AC_PCM_OUT_LVI 0x15
 #define INTEL_AC_MIC_LVI     0x25
 
+/* Control registers */
+#define INTEL_AC_PCM_IN_CR  0x0B
+#define INTEL_AC_PCM_OUT_CR 0x1B
+#define INTEL_AC_MIC_CR     0x2B
 
 #define INTEL_AC_SAMPLE_SZ 2  /* Bytes */
 #define INTEL_AC_BUFFER_SZ 32 /* Buffer descriptors */
@@ -48,7 +52,8 @@ struct intel_ac_buff_desc {
 	unsigned int length : 16;   /* Buffer length in samples */
 } __attribute__((aligned(2)));
 
-//static intel_ac_buff intel_ac_buff_list[INTEL_AC_BUFFER_SZ];
+/* This buffers could be allocated in runtime */
+static struct intel_ac_buff_desc pcm_out_buff_list[INTEL_AC_BUFFER_SZ];
 
 /* Some of this stuff probably shoud be placed into
  * separate module */
@@ -68,6 +73,11 @@ struct pa_strm {
 #define STREAM_POOL_SZ 16
 POOL_DEF(pa_stream_pool, struct pa_strm, STREAM_POOL_SZ);
 
+static int intel_ac_buf_init(int n) {
+	/* Stub */
+	return 0;
+}
+
 /* Intel Corporation 82801AA AC'97 Audio Controller,
  * provided by QEMU with flag -soundhw ac97 */
 #define INTEL_AC_VID 0x8086
@@ -75,7 +85,9 @@ POOL_DEF(pa_stream_pool, struct pa_strm, STREAM_POOL_SZ);
 
 static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 	int err;
-
+	int i;
+	uint8_t tmp;
+	uint32_t audio_base = pci_dev->bar[1] & 0xFF00;
 	assert(pci_dev);
 
 	/* Codec init */
@@ -83,6 +95,19 @@ static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 		return err;
 
 	/* DMA init */
+	out32((uint32_t)&pcm_out_buff_list, audio_base + INTEL_AC_PCM_OUT_BUF);
+	/* Setup buffers, currently just zeroes */
+	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
+		intel_ac_buf_init(i);
+	}
+
+	/* Setup Last Valid Index */
+	out8(INTEL_AC_BUFFER_SZ - 1, audio_base + INTEL_AC_PCM_OUT_LVI);
+
+	/* Set run bit */
+	tmp = in8(audio_base + INTEL_AC_PCM_OUT_CR);
+	tmp |= 0x1;
+	out8(tmp, audio_base + INTEL_AC_PCM_OUT_CR);
 
 	return 0;
 }
@@ -105,7 +130,6 @@ PaError Pa_Terminate(void) {
 PaHostApiIndex Pa_GetHostApiCount(void) {
 	return 1;
 }
-
 PaHostApiIndex Pa_GetDefaultHostApi(void) {
 	return 0;
 }
