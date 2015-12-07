@@ -27,6 +27,16 @@
 #define INTEL_AC_NABMBA	0x14 /* Native Audio Bus Mastering Base Address */
 #define INTEL_AC_INTLN	0x3c /* Interrupt Line */
 
+#define INTEL_AC_PCM_IN_BUF  0x00
+#define INTEL_AC_OCM_OUT_BUF 0x10
+#define INTEL_AC_MIC_BUF     0x20
+
+/* Last Valid Index */
+#define INTEL_AC_PCM_IN_LVI  0x05
+#define INTEL_AC_PCM_OUT_LVI 0x15
+#define INTEL_AC_MIC_LVI     0x25
+
+
 #define INTEL_AC_SAMPLE_SZ 2  /* Bytes */
 #define INTEL_AC_BUFFER_SZ 32 /* Buffer descriptors */
 
