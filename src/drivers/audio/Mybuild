@@ -26,7 +26,7 @@ module stm32f4_pa extends portaudio {
 }
 
 module intel_ac_pa extends portaudio {
-	source "intel8201aa.c"
+	source "intel82801aa.c"
 
 	depends embox.compat.posix.util.sleep
 	depends embox.driver.audio.ac97

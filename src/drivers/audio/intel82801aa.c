@@ -28,17 +28,17 @@
 #define INTEL_AC_INTLN	0x3c /* Interrupt Line */
 
 #define INTEL_AC_PCM_IN_BUF  0x00
-#define INTEL_AC_PCM_OUT_BUF 0x10
+#define INTEL_AC_PO_BUF 0x10
 #define INTEL_AC_MIC_BUF     0x20
 
 /* Last Valid Index */
 #define INTEL_AC_PCM_IN_LVI  0x05
-#define INTEL_AC_PCM_OUT_LVI 0x15
+#define INTEL_AC_PO_LVI 0x15
 #define INTEL_AC_MIC_LVI     0x25
 
 /* Control registers */
 #define INTEL_AC_PCM_IN_CR  0x0B
-#define INTEL_AC_PCM_OUT_CR 0x1B
+#define INTEL_AC_PO_CR 0x1B
 #define INTEL_AC_MIC_CR     0x2B
 
 #define INTEL_AC_SAMPLE_SZ 2  /* Bytes */
@@ -95,19 +95,19 @@ static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 		return err;
 
 	/* DMA init */
-	out32((uint32_t)&pcm_out_buff_list, audio_base + INTEL_AC_PCM_OUT_BUF);
+	out32((uint32_t)&pcm_out_buff_list, audio_base + INTEL_AC_PO_BUF);
 	/* Setup buffers, currently just zeroes */
 	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
 		intel_ac_buf_init(i);
 	}
 
 	/* Setup Last Valid Index */
-	out8(INTEL_AC_BUFFER_SZ - 1, audio_base + INTEL_AC_PCM_OUT_LVI);
+	out8(INTEL_AC_BUFFER_SZ - 1, audio_base + INTEL_AC_PO_LVI);
 
 	/* Set run bit */
-	tmp = in8(audio_base + INTEL_AC_PCM_OUT_CR);
+	tmp = in8(audio_base + INTEL_AC_PO_CR);
 	tmp |= 0x1;
-	out8(tmp, audio_base + INTEL_AC_PCM_OUT_CR);
+	out8(tmp, audio_base + INTEL_AC_PO_CR);
 
 	return 0;
 }
