@@ -43,7 +43,6 @@
 
 #define INTEL_AC_SAMPLE_SZ 2  /* Bytes */
 #define INTEL_AC_BUFFER_SZ 32 /* Buffer descriptors */
-
 struct intel_ac_buff_desc {
 	uint32_t pointer;           /* 2-byte aligned */
 	unsigned int ioc : 1;       /* Interrupt on completion */
@@ -57,7 +56,7 @@ static struct intel_ac_buff_desc pcm_out_buff_list[INTEL_AC_BUFFER_SZ];
 
 /* Some of this stuff probably shoud be placed into
  * separate module */
-#define MAX_BUF_LEN 1024
+#define MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ)
 struct pa_strm {
 	int started;
 	int paused;
@@ -66,15 +65,22 @@ struct pa_strm {
 	PaStreamCallback *callback;
 	void *callback_data;
 	size_t chan_buf_len;
-	uint16_t in_buf[MAX_BUF_LEN];
-	uint16_t out_buf[MAX_BUF_LEN];
+	uint8_t in_buf[MAX_BUF_LEN];
+	uint8_t out_buf[MAX_BUF_LEN];
 };
 
 #define STREAM_POOL_SZ 16
 POOL_DEF(pa_stream_pool, struct pa_strm, STREAM_POOL_SZ);
 
-static int intel_ac_buf_init(int n) {
-	/* Stub */
+static uint32_t audio_base;
+
+static int intel_ac_buf_init(int n, PaStream *stream) {
+	pcm_out_buff_list[n] = (struct intel_ac_buff_desc) {
+		.pointer = (uint32_t) &((struct pa_strm *)stream)->out_buf + INTEL_AC_SAMPLE_SZ * n,
+		.length  = 0xFFFF,//INTEL_AC_BUFFER_SZ,
+		.bup = 1,
+		.ioc = 1,
+	};
 	return 0;
 }
 
@@ -85,29 +91,11 @@ static int intel_ac_buf_init(int n) {
 
 static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 	int err;
-	int i;
-	uint8_t tmp;
-	uint32_t audio_base = pci_dev->bar[1] & 0xFF00;
 	assert(pci_dev);
 
-	/* Codec init */
+	audio_base = pci_dev->bar[1] & 0xFF00;
 	if ((err = ac97_init(pci_dev)))
 		return err;
-
-	/* DMA init */
-	out32((uint32_t)&pcm_out_buff_list, audio_base + INTEL_AC_PO_BUF);
-	/* Setup buffers, currently just zeroes */
-	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
-		intel_ac_buf_init(i);
-	}
-
-	/* Setup Last Valid Index */
-	out8(INTEL_AC_BUFFER_SZ - 1, audio_base + INTEL_AC_PO_LVI);
-
-	/* Set run bit */
-	tmp = in8(audio_base + INTEL_AC_PO_CR);
-	tmp |= 0x1;
-	out8(tmp, audio_base + INTEL_AC_PO_CR);
 
 	return 0;
 }
@@ -190,6 +178,26 @@ PaError Pa_OpenStream(PaStream** stream,
 }
 
 PaError Pa_StartStream(PaStream *stream) {
+	uint8_t tmp;
+	int i;
+
+	out32((uint32_t)&pcm_out_buff_list, audio_base + INTEL_AC_PO_BUF);
+	/* Setup buffers, currently just zeroes */
+	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
+		intel_ac_buf_init(i, stream);
+	}
+
+	for (i = 0; i < MAX_BUF_LEN; i++) {
+		((struct pa_strm*)stream)->out_buf[i] = 0xff;
+	}
+
+	/* Setup Last Valid Index */
+	out8(INTEL_AC_BUFFER_SZ - 1, audio_base + INTEL_AC_PO_LVI);
+
+	/* Set run bit */
+	tmp = in8(audio_base + INTEL_AC_PO_CR);
+	tmp |= 0xf;
+	out8(tmp, audio_base + INTEL_AC_PO_CR);
 
 	return paNoError;
 }
