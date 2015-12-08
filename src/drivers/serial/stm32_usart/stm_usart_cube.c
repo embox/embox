@@ -98,10 +98,12 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	UartHandle.Init.Parity = UART_PARITY_NONE;
 	UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	UartHandle.Init.Mode = UART_MODE_TX_RX;
+	UartHandle.State = HAL_UART_STATE_RESET;
 
 	if (HAL_UART_Init(&UartHandle) != HAL_OK) {
 		return -1;
 	}
+
 	if (dev->params.irq) {
 	    /* Enable the UART Data Register not empty Interrupt */
 	    __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_RXNE);
@@ -120,7 +122,7 @@ static const struct uart_ops stm32_uart_ops = {
 static struct uart stm32_uart0 = {
 		.uart_ops = &stm32_uart_ops,
 		.irq_num = USARTx_IRQn,
-		.base_addr = (unsigned long) USARTx_IRQn,
+		.base_addr = (unsigned long) USARTx,
 };
 
 static const struct uart_params uart_defparams = {
