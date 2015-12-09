@@ -78,7 +78,7 @@ int fuse_reply_open(fuse_req_t req, const struct fuse_file_info *fi) {
 	struct fuse_file_info *node_fi;
 
 	emreq = (struct fuse_req_embox *) req;
-	node_fi = emreq->node->i_data;
+	node_fi = emreq->fi;
 	node_fi->fh = fi->fh;
 
 	return 0;
