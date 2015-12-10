@@ -14,6 +14,7 @@
 enum fformat {
 	ERR_FILE = -1,
 	TEXT_FILE,
+	RIFF_FILE,
 };
 
 extern enum fformat raw_get_file_format(uint8_t *file);
