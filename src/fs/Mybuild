@@ -146,3 +146,12 @@ abstract module buffer_crypt_api {
 module buffer_no_crypt extends buffer_crypt_api {
 	source "buffer_no_crypt.c"
 }
+
+module file_format {
+	@IncludeExport(path="fs")
+	source "file_format.h"
+
+	source "file_format.c"
+
+	depends embox.compat.libc.all
+}
