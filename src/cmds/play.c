@@ -12,6 +12,7 @@
 #include <errno.h>
 
 #include <drivers/audio/portaudio.h>
+#include <fs/file_format.h>
 
 static void print_usage(void) {
 	printf("Usage: play [WAVAUDIOFILE]\n");
@@ -53,6 +54,11 @@ int main(int argc, char **argv) {
 
 	if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
 		printf("Can't open file %s\n", argv[argc - 1]);
+		return 0;
+	}
+
+	if (libc_get_file_format(fd) != RIFF_FILE) {
+		printf("%s is not a RIFF audio file\n", argv[argc - 1]);
 		return 0;
 	}
 
