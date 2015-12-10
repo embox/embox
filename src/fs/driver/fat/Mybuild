@@ -28,6 +28,6 @@ module fat_dvfs extends fat {
 	source "fat_dvfs.c"
 
 	depends embox.driver.block_common
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 }
 

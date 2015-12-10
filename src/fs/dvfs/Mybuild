@@ -1,6 +1,6 @@
-package embox.fs
+package embox.fs.dvfs
 
-module dvfs extends fs_api {
+module core extends embox.fs.fs_api {
 	@IncludeExport(path="fs")
 	source "dvfs.h"
 
@@ -21,8 +21,8 @@ module dvfs extends fs_api {
 	source "dvfs_util.c"
 	source "dvfs_str.c"
 
-	depends path_helper
-	depends rootfs_dvfs
+	depends embox.fs.path_helper
+	depends embox.fs.rootfs_dvfs
 
 	depends embox.driver.block_dvfs
 	depends embox.fs.dvfs.cache_strategy

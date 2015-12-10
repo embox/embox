@@ -50,7 +50,7 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 	}
 	return 0;
 }
-#elif defined __MODULE__embox__fs__dvfs__H_
+#elif defined __MODULE__embox__fs__dvfs__core__H_
 	static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		int fs_type, int operation_flag, char *fs_specific) {
 		struct dumb_fs_driver *drv = dumb_fs_driver_find(fs_name);
