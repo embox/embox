@@ -7,10 +7,18 @@
  */
 
 #include <fs/file_format.h>
+
+#include <string.h>
 #include <unistd.h>
 
 enum fformat raw_get_file_format(uint8_t *file) {
-	return TEXT_FILE; /* Stub */
+	/* Is it a RIFF file? */
+	if (!memcmp(file, "RIFF", 4)) {
+		/* TODO check file consistency */
+		return RIFF_FILE;
+	}
+
+	return TEXT_FILE; /* Regular text file */
 }
 
 enum fformat posix_get_file_format(int fd) {

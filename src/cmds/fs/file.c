@@ -30,11 +30,17 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	printf("%s: ", argv[argc - 1]);
+
 	switch (libc_get_file_format(fd)) {
 	case TEXT_FILE:
-		printf("%s: Text file\n", argv[argc - 1]);
+		printf("Text file\n");
+		break;
+	case RIFF_FILE:
+		printf("RIFF audio file\n");
 		break;
 	default:
+		printf("Unknown file format\n");
 		break;
 	}
 
