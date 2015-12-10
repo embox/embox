@@ -56,7 +56,7 @@ static void show_mount_list(void) {
 	}
 }
 
-#elif defined __MODULE__embox__fs__dvfs__H_
+#elif defined __MODULE__embox__fs__dvfs__core__H_
 
 #include <fs/dvfs.h>
 

@@ -18,5 +18,5 @@ module initfs_dvfs extends initfs {
 
 	option number dir_quantity=16
 
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 }

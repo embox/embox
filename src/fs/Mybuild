@@ -109,7 +109,7 @@ module rootfs_dvfs extends root_file_system {
 
 	depends embox.driver.block_common
 	depends embox.driver.char_dev
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 	depends embox.fs.driver.dvfs_driver
 	depends embox.kernel.task.api
 }

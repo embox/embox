@@ -128,7 +128,7 @@ static module rename_old extends rename {
 static module rename_dvfs extends rename {
 	source "rename_dvfs.c"
 
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 	depends embox.compat.libc.str
 	depends open
 	depends file_ops
