@@ -32,6 +32,8 @@ int main(int argc, char **argv) {
 	int opt;
 	int err;
 	FILE *fd;
+	uint8_t snd_buf[128 * 1024];
+
 	PaStream *stream = NULL;
 
 	struct PaStreamParameters out_par;
@@ -68,6 +70,8 @@ int main(int argc, char **argv) {
 		goto err_close_fd;
 	}
 
+	fread(snd_buf, 128, 1024, fd);
+
 	out_par = (PaStreamParameters) {
 		.device                    = 0,
 		.channelCount              = 1,
@@ -83,7 +87,7 @@ int main(int argc, char **argv) {
 			256,
 			0,
 			paCallback,
-			NULL);
+			snd_buf);
 
 	if (err != paNoError) {
 		printf("Portaudio error: could not open stream!\n");

@@ -76,7 +76,7 @@ static uint32_t audio_base;
 
 static int intel_ac_buf_init(int n, PaStream *stream) {
 	pcm_out_buff_list[n] = (struct intel_ac_buff_desc) {
-		.pointer = (uint32_t) &((struct pa_strm *)stream)->out_buf + INTEL_AC_SAMPLE_SZ * n,
+		.pointer = (uint32_t)((struct pa_strm *)stream)->callback_data + 0xFFFF * n,
 		.length  = 0xFFFF,//INTEL_AC_BUFFER_SZ,
 		.bup = 1,
 		.ioc = 1,
