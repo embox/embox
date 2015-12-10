@@ -6,6 +6,6 @@ module ac97 {
 
 	source "ac97.c"
 
-	depends embox.arch.x86
+	depends embox.arch.x86.kernel.arch
 	depends embox.driver.pci
 }
