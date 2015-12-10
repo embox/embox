@@ -15,6 +15,7 @@
 #include <fs/dvfs.h>
 #include <kernel/printk.h>
 #include <embox/unit.h>
+#include <kernel/task.h>
 
 // Allocates embox-specific requests for the FUSE
 #include <fuse_req_alloc.h>
@@ -39,6 +40,46 @@ struct ext2fuse_data {
 	char name[EXT2_MAX_NAMELEN];
 };
 
+static struct task *mount_task;
+static struct thread *stub_thread;
+
+
+static struct task *get_mount_task(void) {
+	struct task *t;
+
+	task_foreach(t) {
+		if (!strcmp(task_get_name(t), "ext2fs_mount")) {
+			return t;
+		}
+	}
+	return NULL;
+}
+
+static struct task *fuse_in(void) {
+	struct task *cur_task;
+	struct thread *t = thread_self();
+
+	cur_task = task_self();
+
+	task_thread_register(task_self(), stub_thread);
+	cur_task->tsk_main = stub_thread;
+	task_thread_unregister(task_self(), t);
+	t->task = NULL;
+	task_thread_register(mount_task, t);
+
+	return cur_task;
+}
+
+static void fuse_out(struct task *task) {
+	struct thread *t = thread_self();
+	task_thread_unregister(mount_task, t);
+	t->task = NULL;
+	task_thread_register(task, t);
+	task->tsk_main = t;
+	task_thread_unregister(task, stub_thread);
+	stub_thread->task = NULL;
+}
+
 static void ext2fuse_fill_req(struct fuse_req_embox *req, struct inode *node, void *buf) {
 	struct ext2fuse_data *data = node->i_data;
 
@@ -49,10 +90,14 @@ static void ext2fuse_fill_req(struct fuse_req_embox *req, struct inode *node, vo
 
 static struct idesc *ext2fuse_open(struct inode *node, struct idesc *desc) {
 	struct ext2fuse_data *data;
+	struct task *task;
 
 	data = node->i_data;
 	assert(data);
+
+	task = fuse_in();
 	ext2fuse_ops->open(NULL, node->i_no, &data->fi);
+	fuse_out(task);
 
 	return desc;
 }
@@ -60,13 +105,16 @@ static struct idesc *ext2fuse_open(struct inode *node, struct idesc *desc) {
 static int ext2fuse_close(struct file *desc) {
 	struct inode *inode;
 	struct fuse_req_embox *req;
+	struct task *task;
 
 	if (NULL == (req = fuse_req_alloc())) {
 		return -1;
 	}
 	inode = desc->f_inode;
 	ext2fuse_fill_req(req, inode, NULL);
+	task = fuse_in();
 	ext2fuse_ops->release((fuse_req_t) req, inode->i_no, req->fi);
+	fuse_out(task);
 	free(inode->i_data);
 
 	return 0;
@@ -76,6 +124,7 @@ static size_t ext2fuse_read(struct file *desc, void *buf, size_t size) {
 	struct inode *inode;
 	struct fuse_req_embox *req;
 	size_t ret;
+	struct task *task;
 
 	if (NULL == (req = fuse_req_alloc())) {
 		return 0;
@@ -86,7 +135,9 @@ static size_t ext2fuse_read(struct file *desc, void *buf, size_t size) {
 		size = inode->length - desc->pos;
 	}
 	ext2fuse_fill_req(req, inode, buf);
+	task = fuse_in();
 	ext2fuse_ops->read((fuse_req_t) req, inode->i_no, size, desc->pos, req->fi);
+	fuse_out(task);
 	memcpy(buf, req->buf, req->buf_size);
 	ret = req->buf_size;
 	fuse_req_free(req);
@@ -97,6 +148,7 @@ static size_t ext2fuse_read(struct file *desc, void *buf, size_t size) {
 static struct inode *ext2fuse_lookup(char const *name, struct dentry const *dir) {
 	struct inode *node;
 	struct fuse_req_embox *req;
+	struct task *task;
 
 	if (NULL == (node = dvfs_alloc_inode(dir->d_sb))) {
 		return NULL;
@@ -109,7 +161,9 @@ static struct inode *ext2fuse_lookup(char const *name, struct dentry const *dir)
 	}
 
 	ext2fuse_fill_req(req, node, NULL);
+	task = fuse_in();
 	ext2fuse_ops->lookup((fuse_req_t) req, dir->d_inode->i_no, name);
+	fuse_out(task);
 	fuse_req_free(req);
 
 	return node;
@@ -119,6 +173,7 @@ static int ext2fuse_iterate(struct inode *next, struct inode *parent, struct dir
 	char buf[512];
 	int res = 0;
 	struct fuse_req_embox *req;
+	struct task *task;
 	struct fuse_dirent *dirent;
 	struct ext2fuse_data *data;
 	int idx = (int) ctx->fs_ctx;
@@ -129,7 +184,9 @@ static int ext2fuse_iterate(struct inode *next, struct inode *parent, struct dir
 		return -1;
 	}
 	ext2fuse_fill_req(req, parent, buf);
+	task = fuse_in();
 	ext2fuse_ops->readdir((fuse_req_t) req, parent->i_no, 512, 0, req->fi);
+	fuse_out(task);
 
 	for (i = 0; i < idx + 1; i++) {
 		dirent = (struct fuse_dirent *)(buf  + offset);
@@ -146,7 +203,9 @@ static int ext2fuse_iterate(struct inode *next, struct inode *parent, struct dir
 	strcpy(data->name, dirent->name);
 
 	ext2fuse_fill_req(req, next, NULL);
+	task = fuse_in();
 	ext2fuse_ops->lookup((fuse_req_t) req, parent->i_no, dirent->name);
+	fuse_out(task);
 	// If not found
 	if (next->i_no < 0) {
 		res = -1;
@@ -192,17 +251,47 @@ struct file_operations ext2fuse_fops = {
 
 extern void init_ext2_stuff();
 
-static int ext2fuse_fill_sb(struct super_block *sb, struct file *bdev_file) {
-	sb->sb_iops = &ext2fuse_iops;
-	sb->sb_fops = &ext2fuse_fops;
-	sb->sb_ops  = &ext2fuse_sbops;
-	sb->bdev = NULL;
-
+static void *ext2fuse_mount_task(void *arg) {
 	init_ext2_stuff();
 	ext2fuse_ops = ext2fs_register();
 	// SHOULD BE ext2fuse_ops->init(bdev_file->f_dentry->name);
 	ext2fuse_ops->init("/dev/hda");
 
+	*(int*) arg = 0;
+	while(1) {
+		sleep(0);
+	}
+
+	/* UNREACHABLE */
+	return NULL;
+}
+
+static void * stub_run(void *arg) {
+	while (1) {
+		sleep(0);
+	}
+	return NULL;
+}
+
+static int ext2fuse_fill_sb(struct super_block *sb, struct file *bdev_file) {
+	int res;
+	int flag = 1;
+
+	sb->sb_iops = &ext2fuse_iops;
+	sb->sb_fops = &ext2fuse_fops;
+	sb->sb_ops  = &ext2fuse_sbops;
+	sb->bdev = NULL;
+
+	res = new_task("ext2fs_mount", ext2fuse_mount_task, &flag);
+	mount_task = get_mount_task();
+	stub_thread = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED, stub_run, NULL);
+
+	if (res) {
+		return res;
+	}
+	while (flag) {
+		sleep(0);
+	}
 	if (bdev_file) {
 		return -1;
 	}
