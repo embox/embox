@@ -26,13 +26,14 @@ int paCallback(const void *inputBuffer, void *outputBuffer,
 	return 0;
 }
 
-#define SAMPLE_RATE 44100
-
 int main(int argc, char **argv) {
 	int opt;
 	int err;
 	FILE *fd;
 	static uint8_t snd_buf[128 * 1024];
+	int chan_n;
+	int sample_rate;
+	int bits_per_sample;
 
 	PaStream *stream = NULL;
 
@@ -65,13 +66,17 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	chan_n          = *((uint16_t*) &snd_buf[22]);
+	sample_rate     = *((uint32_t*) &snd_buf[24]);
+	bits_per_sample = *((uint16_t*) &snd_buf[34]);
+
 	printf("File size:             %d bytes\n", *((uint32_t*) &snd_buf[4]));
 	printf("File type header:      %c%c%c%c\n", snd_buf[8], snd_buf[9], snd_buf[10], snd_buf[11]);
 	printf("Length of format data: %d\n", *((uint32_t*) &snd_buf[16]));
 	printf("Type format:           %d\n", *((uint16_t*) &snd_buf[20]));
-	printf("Number of channels:    %d\n", *((uint16_t*) &snd_buf[22]));
-	printf("Sample rate:           %d\n", *((uint32_t*) &snd_buf[24]));
-	printf("Bits per sample:       %d\n", *((uint16_t*) &snd_buf[34]));
+	printf("Number of channels:    %d\n", chan_n);
+	printf("Sample rate:           %d\n", sample_rate);
+	printf("Bits per sample:       %d\n", bits_per_sample);
 	printf("Size of data section:  %d\n", *((uint32_t*) &snd_buf[40]));
 
 	/* Initialize PA */
@@ -80,10 +85,9 @@ int main(int argc, char **argv) {
 		goto err_close_fd;
 	}
 
-
 	out_par = (PaStreamParameters) {
 		.device                    = 0,
-		.channelCount              = 1,
+		.channelCount              = chan_n,
 		.sampleFormat              = paFloat32,
 		.suggestedLatency          = 10,
 		.hostApiSpecificStreamInfo = NULL,
@@ -92,11 +96,11 @@ int main(int argc, char **argv) {
 	err = Pa_OpenStream(&stream,
 			NULL,
 			&out_par,
-			SAMPLE_RATE,
+			sample_rate,
 			256,
 			0,
 			paCallback,
-			snd_buf);
+			&snd_buf[44]);
 
 	if (err != paNoError) {
 		printf("Portaudio error: could not open stream!\n");
