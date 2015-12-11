@@ -15,6 +15,8 @@
 #include <drivers/pci/pci_driver.h>
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/ac97.h>
+#include <kernel/irq.h>
+#include <kernel/printk.h>
 #include <mem/misc/pool.h>
 
 /* You may want to look at "Inte 82801AA (ICH) & Intel 82801AB(ICH0)
@@ -76,8 +78,8 @@ static uint32_t audio_base;
 
 static int intel_ac_buf_init(int n, PaStream *stream) {
 	pcm_out_buff_list[n] = (struct intel_ac_buff_desc) {
-		.pointer = (uint32_t)((struct pa_strm *)stream)->callback_data + 0xFFFF * n,
-		.length  = 0xFFFF,//INTEL_AC_BUFFER_SZ,
+		.pointer = (uint32_t)((struct pa_strm *)stream)->callback_data + 2 * 0xFF00 * n,
+		.length  = 0xFF00,//INTEL_AC_BUFFER_SZ,
 		.bup = 1,
 		.ioc = 1,
 	};
@@ -89,12 +91,20 @@ static int intel_ac_buf_init(int n, PaStream *stream) {
 #define INTEL_AC_VID 0x8086
 #define INTEL_AC_PID 0x2415
 
+static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
+	printk("New irq\n");
+	return IRQ_HANDLED;
+}
+
 static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 	int err;
 	assert(pci_dev);
 
 	audio_base = pci_dev->bar[1] & 0xFF00;
 	if ((err = ac97_init(pci_dev)))
+		return err;
+
+	if ((err = irq_attach(pci_dev->irq, iac_interrupt, 0, 0, "iac")))
 		return err;
 
 	return 0;
@@ -203,6 +213,8 @@ PaError Pa_StartStream(PaStream *stream) {
 }
 
 PaError Pa_StopStream(PaStream *stream) {
+	out8(0x0, audio_base + INTEL_AC_PO_CR);
+
 	return paNoError;
 }
 
