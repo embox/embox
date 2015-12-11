@@ -1,0 +1,13 @@
+package embox.driver.net
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module stm32cube_eth {
+	source "stm32cube_eth.c"
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq_api
+	depends embox.net.dev
+	depends embox.net.core
+	depends embox.net.entry_api
+}
