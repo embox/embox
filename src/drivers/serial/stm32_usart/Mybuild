@@ -15,53 +15,71 @@ module stm_usart extends embox.driver.diag.diag_api {
 	depends third_party.bsp.st_f4.core
 }
 
-@BuildDepends(platform_type)
-module stm_usart_cube extends embox.driver.diag.diag_api {
+@BuildDepends(third_party.bsp.stmf3cube.core)
+module stm_usart_f3 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=6
-	/*option boolean hw_flow = false*/
 
-	source "stm_usart_cube.c"
-
-	/*depends embox.driver.gpio.stm32*/
-	depends embox.driver.serial.core
-	depends embox.driver.serial.diag
-
-	depends platform_type
-}
-
-abstract module platform_type {}
-
-@BuildDepends(third_party.bsp.stmf3cube.core)
-module stm_usart_f3 extends platform_type {
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f3.h"
+
+	source "stm_usart_cube_diag.c"
+
+	depends embox.driver.serial.core
+	depends embox.driver.serial.diag
 
 	depends third_party.bsp.stmf3cube.core
 }
 
 @BuildDepends(third_party.bsp.stmf4cube.core)
-module stm_usart_f4 extends platform_type {
+module stm_usart_f4 extends embox.driver.diag.diag_api {
+	option number baud_rate
+	option number usartx=6
+
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f4.h"
+
+	source "hal_msp_f4.c"
+	source "stm_usart_cube_diag.c"
+
+	depends embox.driver.serial.core
+	depends embox.driver.serial.diag
 
 	depends third_party.bsp.stmf4cube.core
 }
 
-@BuildDepends(third_party.bsp.st_f7.core)
-module stm_usart_f7 extends platform_type {
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm_usart_f7 extends embox.driver.diag.diag_api {
+	option number baud_rate
+	option number usartx=6
+
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f7.h"
 
-	//option number baud_rate
-	//option number usartx=6
-	/*option boolean hw_flow = false*/
+	source "stm_usart_cube_diag.c"
 
-	source "stm_usart_cube.c"
-
-	/*depends embox.driver.gpio.stm32*/
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
 
-	depends third_party.bsp.st_f7.core
+	depends third_party.bsp.stmf7cube.core
+}
+
+@BuildDepends(embox.driver.diag.diag_api)
+module stm_ttyS0 {
+	option number baud_rate
+	option number usartx=6
+
+	source "stm_ttyS0.c"
+
+	depends embox.driver.diag.diag_api
+}
+
+@BuildDepends(embox.driver.diag.diag_api)
+module stm_ttyS1 {
+	option number baud_rate
+	option number usartx=6
+
+	source "stm_ttyS1.c"
+
+	depends embox.driver.diag.diag_api
 }
