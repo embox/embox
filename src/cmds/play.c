@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 	int opt;
 	int err;
 	FILE *fd;
-	uint8_t snd_buf[128 * 1024];
+	static uint8_t snd_buf[128 * 1024];
 
 	PaStream *stream = NULL;
 
@@ -59,10 +59,20 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	if (libc_get_file_format(fd) != RIFF_FILE) {
+	fread(snd_buf, 128, 1024, fd);
+	if (raw_get_file_format(snd_buf) != RIFF_FILE) {
 		printf("%s is not a RIFF audio file\n", argv[argc - 1]);
 		return 0;
 	}
+
+	printf("File size:             %d bytes\n", *((uint32_t*) &snd_buf[4]));
+	printf("File type header:      %c%c%c%c\n", snd_buf[8], snd_buf[9], snd_buf[10], snd_buf[11]);
+	printf("Length of format data: %d\n", *((uint32_t*) &snd_buf[16]));
+	printf("Type format:           %d\n", *((uint16_t*) &snd_buf[20]));
+	printf("Number of channels:    %d\n", *((uint16_t*) &snd_buf[22]));
+	printf("Sample rate:           %d\n", *((uint32_t*) &snd_buf[24]));
+	printf("Bits per sample:       %d\n", *((uint16_t*) &snd_buf[34]));
+	printf("Size of data section:  %d\n", *((uint32_t*) &snd_buf[40]));
 
 	/* Initialize PA */
 	if (paNoError != (err = Pa_Initialize())) {
@@ -70,7 +80,6 @@ int main(int argc, char **argv) {
 		goto err_close_fd;
 	}
 
-	fread(snd_buf, 128, 1024, fd);
 
 	out_par = (PaStreamParameters) {
 		.device                    = 0,
