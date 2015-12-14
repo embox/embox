@@ -85,6 +85,8 @@ int fuse_reply_open(fuse_req_t req, const struct fuse_file_info *fi) {
 }
 
 int fuse_reply_write(fuse_req_t req, size_t count) {
+	struct fuse_req_embox *emreq = (struct fuse_req_embox *) req;
+	emreq->buf_size = count;
 	EMBOX_FUSE_NIY();
 	return 0;
 }

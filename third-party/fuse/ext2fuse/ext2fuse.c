@@ -59,6 +59,8 @@ static struct task *fuse_in(void) {
 	struct task *cur_task;
 	struct thread *t = thread_self();
 
+	sched_lock();
+
 	cur_task = task_self();
 
 	task_thread_register(task_self(), stub_thread);
@@ -67,17 +69,24 @@ static struct task *fuse_in(void) {
 	t->task = NULL;
 	task_thread_register(mount_task, t);
 
+	sched_unlock();
+
 	return cur_task;
 }
 
 static void fuse_out(struct task *task) {
 	struct thread *t = thread_self();
+
+	sched_lock();
+
 	task_thread_unregister(mount_task, t);
 	t->task = NULL;
 	task_thread_register(task, t);
 	task->tsk_main = t;
 	task_thread_unregister(task, stub_thread);
 	stub_thread->task = NULL;
+
+	sched_unlock();
 }
 
 static void ext2fuse_fill_req(struct fuse_req_embox *req, struct inode *node, void *buf) {
@@ -93,6 +102,8 @@ static struct idesc *ext2fuse_open(struct inode *node, struct idesc *desc) {
 	struct task *task;
 
 	data = node->i_data;
+	/* FIXME check this */
+	data->fi.flags = node->flags;
 	assert(data);
 
 	task = fuse_in();
@@ -113,8 +124,10 @@ static int ext2fuse_close(struct file *desc) {
 	inode = desc->f_inode;
 	ext2fuse_fill_req(req, inode, NULL);
 	task = fuse_in();
+	ext2fuse_ops->flush((fuse_req_t) req, inode->i_no, req->fi);
 	ext2fuse_ops->release((fuse_req_t) req, inode->i_no, req->fi);
 	fuse_out(task);
+	fuse_req_free(req);
 	free(inode->i_data);
 
 	return 0;
@@ -139,6 +152,28 @@ static size_t ext2fuse_read(struct file *desc, void *buf, size_t size) {
 	ext2fuse_ops->read((fuse_req_t) req, inode->i_no, size, desc->pos, req->fi);
 	fuse_out(task);
 	memcpy(buf, req->buf, req->buf_size);
+	ret = req->buf_size;
+	fuse_req_free(req);
+
+	return ret;
+}
+
+static size_t ext2fuse_write(struct file *desc, void *buf, size_t size) {
+	struct inode *inode;
+	struct fuse_req_embox *req;
+	size_t ret;
+	struct task *task;
+	char buf_read[32];
+
+	if (NULL == (req = fuse_req_alloc())) {
+		return 0;
+	}
+
+	inode = desc->f_inode;
+	ext2fuse_fill_req(req, inode, buf);
+	task = fuse_in();
+	ext2fuse_ops->write((fuse_req_t) req, inode->i_no, buf, size, desc->pos, req->fi);
+	fuse_out(task);
 	ret = req->buf_size;
 	fuse_req_free(req);
 
@@ -232,21 +267,34 @@ static int ext2fuse_destroy_inode(struct inode *inode) {
 	return 0;
 }
 
+int ext2fuse_umount_begin(struct super_block *sb) {
+	// TODO kill task and thread
+	struct task *task;
+
+	task = fuse_in();
+	ext2fuse_ops->destroy(NULL);
+	fuse_out(task);
+
+	return 0;
+}
+
 struct super_block_operations ext2fuse_sbops = {
 	.open_idesc = dvfs_file_open_idesc,
 	.destroy_inode = ext2fuse_destroy_inode,
+	.umount_begin = ext2fuse_umount_begin
 };
 
 struct inode_operations ext2fuse_iops = {
 	.lookup   = ext2fuse_lookup,
 	.iterate  = ext2fuse_iterate,
-	.pathname = ext2fuse_pathname,
+	.pathname = ext2fuse_pathname
 };
 
 struct file_operations ext2fuse_fops = {
 	.open = ext2fuse_open,
 	.close = ext2fuse_close,
-	.read  = ext2fuse_read
+	.read  = ext2fuse_read,
+	.write  = ext2fuse_write
 };
 
 extern void init_ext2_stuff();
