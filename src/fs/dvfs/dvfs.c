@@ -203,6 +203,11 @@ int dvfs_close(struct file *desc) {
 	if (!desc || !desc->f_inode || !desc->f_dentry)
 		return -1;
 
+	assert(desc->f_ops);
+	if (desc->f_ops->close) {
+		desc->f_ops->close(desc);
+	}
+
 	if (!dentry_ref_dec(desc->f_dentry))
 		dvfs_destroy_dentry(desc->f_dentry);
 
@@ -468,6 +473,11 @@ int dvfs_umount(struct dentry *mpoint) {
 	struct super_block *sb;
 
 	sb = mpoint->d_sb;
+
+	if (sb->sb_ops && sb->sb_ops->umount_begin) {
+		if ((err = sb->sb_ops->umount_begin(sb)))
+			return err;
+	}
 
 	dentry_ref_dec(mpoint);
 
