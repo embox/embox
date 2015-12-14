@@ -26,71 +26,16 @@
 #include <stm32f4xx_hal.h>
 #include <stm32f4xx_hal_eth.h>
 
-//#include <stm32f4xx_syscfg.h>
-//#include <stm32f4xx_gpio.h>
-//#include <stm32f4xx_rcc.h>
-//#include <stm32f4x7_eth.h>
-//#include <misc.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(stm32eth_init);
 
 #define STM32ETH_IRQ (ETH_IRQn + 16)
 
-/**
- ******************************************************************************
- * @file    stm32f4x7_eth_bsp.c
- * @author  MCD Application Team
- * @version V1.0.0
- * @date    31-October-2011
- * @brief   STM32F4x7 Ethernet hardware configuration.
- ******************************************************************************
- * @attention
- *
- * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
- * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
- * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
- * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
- * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
- * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
- *
- * <h2><center>&copy; Portions COPYRIGHT 2011 STMicroelectronics</center></h2>
- ******************************************************************************
- */
-/**
- ******************************************************************************
- * <h2><center>&copy; Portions COPYRIGHT 2012 Embest Tech. Co., Ltd.</center></h2>
- * @file    stm32f4x7_eth_bsp.c
- * @author  CMP Team
- * @version V1.0.0
- * @date    28-December-2012
- * @brief   STM32F4x7 Ethernet hardware configuration.
- *          Modified to support the STM32F4DISCOVERY, STM32F4DIS-BB and
- *          STM32F4DIS-LCD modules.
- ******************************************************************************
- * @attention
- *
- * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
- * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
- * TIME. AS A RESULT, Embest SHALL NOT BE HELD LIABLE FOR ANY DIRECT, INDIRECT
- * OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING FROM THE CONTENT
- * OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE CODING INFORMATION
- * CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
- ******************************************************************************
- */
+#define PHY_ADDRESS       0x01 /* Relative to STM324xG-EVAL Board */
 
-#define LAN8720_PHY_ADDRESS       0x01 /* Relative to STM324xG-EVAL Board */
+static ETH_HandleTypeDef stm32_eth_handler;
 
-static void ETH_GPIO_Config(void);
-static uint32_t ETH_MACDMA_Config(void);
-static uint32_t ETH_BSP_Config(void) {
-
-	/* Configure the GPIO ports for ethernet pins */
-	ETH_GPIO_Config();
-
-	/* Configure the Ethernet MAC/DMA */
-	return ETH_MACDMA_Config();
-}
 
 void HAL_ETH_MspInit(ETH_HandleTypeDef *heth) {
    /*(##) Enable the Ethernet interface clock using
@@ -103,98 +48,21 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth) {
     (##) Configure Ethernet NVIC interrupt (IT mode)
     */
 
-}
-
-#ifndef ETH_SECONDFRAMEOPERATE_ENABLE
-#define ETH_SECONDFRAMEOPERATE_ENABLE   ETH_SECONDFRAMEOPERARTE_ENABLE
-#define ETH_SECONDFRAMEOPERATE_DISABLE  ETH_SECONDFRAMEOPERARTE_DISABLE
-#endif
-
-extern ETH_DMADescTypeDef  DMARxDscrTab[ETH_RXBUFNB];
-extern uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE];
-extern ETH_DMADescTypeDef  *DMARxDescToGet;
-extern ETH_DMARxFrameInfos *DMA_RX_FRAME_infos;
-
-static uint32_t ETH_MACDMA_Config(void) {
-	ETH_HandleTypeDef heth;
-	ETH_MACInitTypeDef ETH_MacInitStructure;
-	ETH_DMAInitTypeDef ETH_DMAInitStructure;
-
-	memset(&heth, 0, sizeof(heth));
-	heth.Instance = (ETH_TypeDef *)ETH_BASE;
-	/* Fill ETH_InitStructure parametrs */
-	heth.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
-	HAL_ETH_Init(&heth);
-
-	/*(#)Initialize the ETH low level resources through the HAL_ETH_MspInit() API:*/
-	HAL_ETH_MspInit(&heth);
-
-	/*------------------------   MAC   -----------------------------------*/
-	memset(&ETH_MacInitStructure, 0, sizeof(ETH_MacInitStructure));
-	ETH_MacInitStructure.LoopbackMode = ETH_LOOPBACKMODE_ENABLE;
-	ETH_MacInitStructure.RetryTransmission = ETH_RETRYTRANSMISSION_DISABLE;
-	ETH_MacInitStructure.AutomaticPadCRCStrip = ETH_AUTOMATICPADCRCSTRIP_DISABLE;
-	ETH_MacInitStructure.ReceiveAll = ETH_RECEIVEAll_DISABLE;
-	ETH_MacInitStructure.BroadcastFramesReception = ETH_BROADCASTFRAMESRECEPTION_ENABLE;
-	ETH_MacInitStructure.PromiscuousMode = ETH_PROMISCUOUS_MODE_DISABLE;
-	ETH_MacInitStructure.MulticastFramesFilter = ETH_MULTICASTFRAMESFILTER_PERFECT;
-	ETH_MacInitStructure.UnicastFramesFilter = ETH_UNICASTFRAMESFILTER_PERFECT;
-
-#ifdef CHECKSUM_BY_HARDWARE
-	ETH_InitStructure.ETH_ChecksumOffload = ETH_ChecksumOffload_Enable;
-#endif
-	HAL_ETH_ConfigMAC(&heth, &ETH_MacInitStructure);
-
-	/*------------------------   DMA   -----------------------------------*/
-
-	/* When we use the Checksum offload feature, we need to enable the Store and Forward mode:
-	   the store and forward guarantee that a whole frame is stored in the FIFO, so the MAC can insert/verify the checksum,
-	   if the checksum is OK the DMA can handle the frame otherwise the frame is dropped */
-	ETH_DMAInitStructure.DropTCPIPChecksumErrorFrame = ETH_DROPTCPIPCHECKSUMERRORFRAME_ENABLE;
-	ETH_DMAInitStructure.ReceiveStoreForward = ETH_RECEIVESTOREFORWARD_ENABLE;
-	ETH_DMAInitStructure.TransmitStoreForward = ETH_TRANSMITSTOREFORWARD_ENABLE;
-
-	ETH_DMAInitStructure.ForwardErrorFrames = ETH_FORWARDERRORFRAMES_DISABLE;
-	ETH_DMAInitStructure.ForwardUndersizedGoodFrames = ETH_FORWARDUNDERSIZEDGOODFRAMES_DISABLE;
-	ETH_DMAInitStructure.SecondFrameOperate = ETH_SECONDFRAMEOPERATE_ENABLE;
-	ETH_DMAInitStructure.AddressAlignedBeats = ETH_ADDRESSALIGNEDBEATS_ENABLE;
-	ETH_DMAInitStructure.FixedBurst = ETH_FIXEDBURST_ENABLE;
-	ETH_DMAInitStructure.RxDMABurstLength = ETH_RXDMABURSTLENGTH_32BEAT;
-	ETH_DMAInitStructure.TxDMABurstLength = ETH_TXDMABURSTLENGTH_32BEAT;
-	ETH_DMAInitStructure.DMAArbitration = ETH_DMAARBITRATION_ROUNDROBIN_RXTX_2_1;
-
-	HAL_ETH_ConfigDMA(&heth, &ETH_DMAInitStructure);
-
-	/*(#)Initialize Ethernet DMA Descriptors in chain mode and point to allocated buffers:*/
-    //HAL_ETH_DMATxDescListInit(); /*for Transmission process*/
-    HAL_ETH_DMARxDescListInit(&heth,DMARxDscrTab, &Rx_Buff[0][0], ETH_RXBUFNB); /*for Reception process*/
-
-   /* (#)Enable MAC and DMA transmission and reception: */
-	HAL_ETH_Start(&heth);
-
-
-
-	/* Configure Ethernet */
-	//return ETH_Init(&ETH_InitStructure, LAN8720_PHY_ADDRESS);
-
-	return 0;
-}
-
-static void ETH_GPIO_Config(void) {
-#if 0
 	volatile uint32_t i;
 	GPIO_InitTypeDef GPIO_InitStructure;
 
 	/* Enable GPIOs clocks */
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB
-			| RCC_AHB1Periph_GPIOC, ENABLE);
-
+	  /* Enable GPIOs clocks */
+	  __HAL_RCC_GPIOA_CLK_ENABLE();
+	  __HAL_RCC_GPIOB_CLK_ENABLE();
+	  __HAL_RCC_GPIOC_CLK_ENABLE();
+#if 0
 	/* Enable SYSCFG clock */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 
 	/* MII/RMII Media interface selection --------------------------------------*/
 	SYSCFG_ETH_MediaInterfaceConfig(SYSCFG_ETH_MediaInterface_RMII);
-
+#endif
 
 	/* Ethernet pins configuration ************************************************/
 	/*
@@ -215,94 +83,68 @@ static void ETH_GPIO_Config(void) {
 	   */
 
 	/* Configure PA1,PA2 and PA7 */
-	GPIO_InitStructure.GPIO_Pin   = GPIO_Pin_1 | GPIO_Pin_2 | GPIO_Pin_7;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL ;
-	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOA, GPIO_PinSource7, GPIO_AF_ETH);
+	GPIO_InitStructure.Pin   = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_7;
+	GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
+	GPIO_InitStructure.Mode  = GPIO_MODE_AF_PP;
+	GPIO_InitStructure.Pull  = GPIO_NOPULL;
+	GPIO_InitStructure.Alternate = GPIO_AF11_ETH;
+	HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
+
 
 	/* Configure PB10,PB11,PB12 and PB13 */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13;
-	GPIO_Init(GPIOB, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource12, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource13, GPIO_AF_ETH);
+	GPIO_InitStructure.Pin = GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
+//	GPIO_InitStructure.Alternate = GPIO_AF11_ETH;
+	HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
+
 
 	/* Configure PC1, PC4 and PC5 */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_4 | GPIO_Pin_5;
-	GPIO_Init(GPIOC, &GPIO_InitStructure);
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource1, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource4, GPIO_AF_ETH);
-	GPIO_PinAFConfig(GPIOC, GPIO_PinSource5, GPIO_AF_ETH);
+	GPIO_InitStructure.Pin = GPIO_PIN_1 | GPIO_PIN_4 | GPIO_PIN_5;
+	//GPIO_InitStructure.Alternate = GPIO_AF11_ETH;
+	HAL_GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+	/* Enable ETHERNET clock  */
+	__HAL_RCC_ETH_CLK_ENABLE();
+
+	if (heth->Init.MediaInterface == ETH_MEDIA_INTERFACE_MII) {
+	    /* Output HSE clock (25MHz) on MCO pin (PA8) to clock the PHY */
+	    HAL_RCC_MCOConfig(RCC_MCO1, RCC_MCO1SOURCE_HSE, RCC_MCODIV_1);
+	}
 
 	/* Configure the PHY RST  pin */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
-	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(GPIOE, &GPIO_InitStructure);
+	GPIO_InitStructure.Pin = GPIO_PIN_2;
+	GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStructure.Pull = GPIO_PULLUP;
+	GPIO_InitStructure.Speed = GPIO_SPEED_MEDIUM;
+	HAL_GPIO_Init(GPIOE, &GPIO_InitStructure);
 
-	GPIO_ResetBits(GPIOE, GPIO_Pin_2);
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_RESET);
 	for (i = 0; i < 20000; i++);
-	GPIO_SetBits(GPIOE, GPIO_Pin_2);
+	HAL_GPIO_WritePin(GPIOE, GPIO_PIN_2, GPIO_PIN_SET);
 	for (i = 0; i < 20000; i++);
-#endif
+
 }
-
-/*********** Portions COPYRIGHT 2012 Embest Tech. Co., Ltd.*****END OF FILE****/
-
-/*
- * Copyright (c) 2001-2004 Swedish Institute of Computer Science.
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice,
- *    this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- * 3. The name of the author may not be used to endorse or promote products
- *    derived from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
- * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
- * SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
- * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
- * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
- * IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY
- * OF SUCH DAMAGE.
- *
- * This file is part of the lwIP TCP/IP stack.
- *
- * Author: Adam Dunkels <adam@sics.se>
- *
- */
 
 /* Minimum value: 2 */
 #define TXTAB_LEN 2
 
-typedef ETH_DMADescTypeDef eth_dma_desc_t;
+
+
+static ETH_DMADescTypeDef  DMARxDscrTab[ETH_RXBUFNB]__attribute__ ((aligned (4)));
+static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] __attribute__ ((aligned (4)));
+
+static ETH_DMADescTypeDef  DMATxDscrTab[TXTAB_LEN]__attribute__ ((aligned (4)));
+static uint8_t Tx_Buff[TXTAB_LEN][ETH_TX_BUF_SIZE] __attribute__ ((aligned (4)));
+
 
 struct stm32eth_state {
-	eth_dma_desc_t tx_tab[TXTAB_LEN];
-	eth_dma_desc_t *tx_head;
-	eth_dma_desc_t *tx_tail;
+	ETH_DMADescTypeDef tx_tab[TXTAB_LEN];
+	ETH_DMADescTypeDef *tx_head;
+	ETH_DMADescTypeDef *tx_tail;
 	struct sk_buff *tx_skb[TXTAB_LEN];
 };
 static struct stm32eth_state stm32eth_g_state;
 
-static inline int stm32eth_desc2i(eth_dma_desc_t *base, eth_dma_desc_t *desc) {
+static inline int stm32eth_desc2i(ETH_DMADescTypeDef *base, ETH_DMADescTypeDef *desc) {
 	return ((intptr_t) desc - (intptr_t) base) / sizeof(*desc);
 }
 
@@ -312,43 +154,31 @@ static void stm32eth_tx_skb_set(struct stm32eth_state *state, struct sk_buff *sk
 	state->tx_skb[i_desc] = skb;
 }
 
-static struct sk_buff *stm32eth_tx_skb_get(struct stm32eth_state *state) {
-	int i_desc = stm32eth_desc2i(state->tx_tab, state->tx_head);
-	struct sk_buff *skb = state->tx_skb[i_desc];
-	assert(skb != NULL);
-	state->tx_skb[i_desc] = NULL;
-	return skb;
-}
-#if 0
-static void stm32eth_dma_tx_init(struct stm32eth_state *state) {
-
-	state->tx_head = state->tx_tail = state->tx_tab;
-
-	for (int i = 0; i < TXTAB_LEN - 1; ++i) {
-		state->tx_tab[i].Buffer2NextDescAddr = (uint32_t) &state->tx_tab[i + 1];
-	}
-	state->tx_tab[TXTAB_LEN - 1].Buffer2NextDescAddr = (uint32_t) state->tx_tab;
-
-	REG_STORE(&ETH->DMATDLAR, (uint32_t) state->tx_tab);
-}
-#endif
 static void low_level_init(unsigned char mac[6]) {
-#if 0
-	ETH_MACAddressConfig(ETH_MAC_Address0, mac);
-
-	stm32eth_dma_tx_init(&stm32eth_g_state);
-
-	/* Initialize Rx Descriptors list: Chain Mode  */
-	ETH_DMARxDescChainInit(DMARxDscrTab, &Rx_Buff[0][0], ETH_RXBUFNB);
-
-	/* Clear pending flags */
-	ETH_DMAClearFlag(~0xFFFE1800);
-	/* Enable iterrupts */
-	ETH_DMAITConfig(ETH_DMA_IT_NIS | ETH_DMA_IT_R | ETH_DMA_IT_T, ENABLE);
-
-	/* Enable MAC and DMA transmission and reception */
-	ETH_Start();
+	memset(&stm32_eth_handler, 0, sizeof(stm32_eth_handler));
+	stm32_eth_handler.Instance = (ETH_TypeDef *)ETH_BASE;
+	/* Fill ETH_InitStructure parametrs */
+	stm32_eth_handler.Init.MACAddr = mac;
+	stm32_eth_handler.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
+	stm32_eth_handler.Init.Speed = ETH_SPEED_100M;
+	stm32_eth_handler.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
+	stm32_eth_handler.Init.MediaInterface = ETH_MEDIA_INTERFACE_MII;
+	stm32_eth_handler.Init.RxMode = ETH_RXPOLLING_MODE;
+	stm32_eth_handler.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
+	stm32_eth_handler.Init.PhyAddress = PHY_ADDRESS;
+	stm32_eth_handler.Init.RxMode = ETH_RXINTERRUPT_MODE;
+#ifdef CHECKSUM_BY_HARDWARE
+	stm32_eth_handler.Init.ChecksumMode = ETH_CHECKSUM_BY_HARDWARE;
 #endif
+
+	HAL_ETH_Init(&stm32_eth_handler);
+
+	/*(#)Initialize Ethernet DMA Descriptors in chain mode and point to allocated buffers:*/
+    HAL_ETH_DMATxDescListInit(&stm32_eth_handler, DMATxDscrTab, &Tx_Buff[0][0], TXTAB_LEN); /*for Transmission process*/
+    HAL_ETH_DMARxDescListInit(&stm32_eth_handler, DMARxDscrTab, &Rx_Buff[0][0], ETH_RXBUFNB); /*for Reception process*/
+
+   /* (#)Enable MAC and DMA transmission and reception: */
+	HAL_ETH_Start(&stm32_eth_handler);
 }
 #if 0
 static struct sk_buff *low_level_input(void) {
@@ -421,14 +251,18 @@ static int stm32eth_open(struct net_device *dev) {
 }
 
 static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
+	//ETH_HandleTypeDef *heth = (ETH_HandleTypeDef *)ETH_BASE;
+
 	memcpy(dev->dev_addr, addr, ETH_ALEN);
-//	ETH_MACAddressConfig(ETH_MAC_Address0, dev->dev_addr);
+
+	//ETH_MACAddressConfig(heth, ETH_MAC_ADDRESS0, dev->dev_addr);
+
 	return ENOERR;
 }
 
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct stm32eth_state *state = &stm32eth_g_state;
-	eth_dma_desc_t *next_tail = (eth_dma_desc_t *) state->tx_tail->Buffer2NextDescAddr;
+	ETH_DMADescTypeDef *next_tail = (ETH_DMADescTypeDef *) state->tx_tail->Buffer2NextDescAddr;
 
 	if (next_tail == state->tx_head) {
 		return -EBUSY;
@@ -446,34 +280,9 @@ static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
 }
 
-static void stm32eth_txed_collect(struct stm32eth_state *state) {
-	while (state->tx_head != state->tx_tail) {
-		if (state->tx_head->Status & ETH_DMATXDESC_OWN) {
-			break;
-		}
-		skb_free(stm32eth_tx_skb_get(state));
-		state->tx_head = (eth_dma_desc_t *) state->tx_head->Buffer2NextDescAddr;
-	}
-}
-
 static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
-	struct net_device **nic_p = dev_id;
-	if (!*nic_p) {
-		return IRQ_NONE;
-	}
+	//struct net_device *nic_p = dev_id;
 
-//	ETH_DMAClearITPendingBit(ETH_DMA_IT_NIS | ETH_DMA_IT_R | ETH_DMA_IT_T);
-
-	stm32eth_txed_collect(&stm32eth_g_state);
-#if 0
-	while(ETH_CheckFrameReceived()) {
-		struct sk_buff *skb = low_level_input();
-		if (skb) {
-			skb->dev = *nic_p;
-			netif_rx(skb);
-		}
-	}
-#endif
 	return IRQ_HANDLED;
 }
 
@@ -482,9 +291,6 @@ static int stm32eth_init(void) {
 	int res;
 	struct net_device *nic;
 
-	if (0 == ETH_BSP_Config()) {
-		return -EIO;
-	}
 
 	nic = (struct net_device *) etherdev_alloc(0);
 	if (nic == NULL) {
@@ -498,7 +304,7 @@ static int stm32eth_init(void) {
 
 	stm32eth_netdev = nic;
 
-	res = irq_attach(nic->irq, stm32eth_interrupt, 0, &stm32eth_netdev, "");
+	res = irq_attach(nic->irq, stm32eth_interrupt, 0, stm32eth_netdev, "");
 	if (res < 0) {
 		return res;
 	}
@@ -510,4 +316,4 @@ static int stm32eth_init(void) {
  * can't expand into int, as STATIC_IRQ_ATTACH require
  */
 static_assert(77 == STM32ETH_IRQ);
-STATIC_IRQ_ATTACH(77, stm32eth_interrupt, &stm32eth_netdev);
+STATIC_IRQ_ATTACH(77, stm32eth_interrupt, stm32eth_netdev);
