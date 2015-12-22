@@ -282,12 +282,16 @@ static int ext2fuse_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct task *task;
 
 	if (NULL == (req = fuse_req_alloc())) {
-		return 0;
+		return -1;
 	}
 
 	ext2fuse_fill_req(req, i_new, NULL);
 	task = fuse_in();
-	ext2fuse_ops->create((fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, mode, req->fi);
+	if (mode & S_IFDIR) {
+		ext2fuse_ops->mkdir((fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, mode);
+	} else {
+		ext2fuse_ops->create((fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, mode, req->fi);
+	}
 	fuse_out(task);
 	fuse_req_free(req);
 
