@@ -101,10 +101,12 @@ static struct idesc *ext2fuse_open(struct inode *node, struct idesc *desc) {
 	struct ext2fuse_data *data;
 	struct task *task;
 
+	if (NULL == (node->i_data = malloc(sizeof(struct ext2fuse_data)))) {
+		return NULL;
+	}
 	data = node->i_data;
 	/* FIXME check this */
 	data->fi.flags = node->flags;
-	assert(data);
 
 	task = fuse_in();
 	ext2fuse_ops->open(NULL, node->i_no, &data->fi);
@@ -128,6 +130,7 @@ static int ext2fuse_close(struct file *desc) {
 	ext2fuse_ops->release((fuse_req_t) req, inode->i_no, req->fi);
 	fuse_out(task);
 	fuse_req_free(req);
+
 	free(inode->i_data);
 
 	return 0;
@@ -163,7 +166,6 @@ static size_t ext2fuse_write(struct file *desc, void *buf, size_t size) {
 	struct fuse_req_embox *req;
 	size_t ret;
 	struct task *task;
-	char buf_read[32];
 
 	if (NULL == (req = fuse_req_alloc())) {
 		return 0;
@@ -188,9 +190,6 @@ static struct inode *ext2fuse_lookup(char const *name, struct dentry const *dir)
 	if (NULL == (node = dvfs_alloc_inode(dir->d_sb))) {
 		return NULL;
 	}
-	if (NULL == (node->i_data = malloc(sizeof(struct ext2fuse_data)))) {
-		return NULL;
-	}
 	if (NULL == (req = fuse_req_alloc())) {
 		return NULL;
 	}
@@ -200,6 +199,11 @@ static struct inode *ext2fuse_lookup(char const *name, struct dentry const *dir)
 	ext2fuse_ops->lookup((fuse_req_t) req, dir->d_inode->i_no, name);
 	fuse_out(task);
 	fuse_req_free(req);
+
+	if (node->i_no == -1) {
+		dvfs_destroy_inode(node);
+		return NULL;
+	}
 
 	return node;
 }
@@ -251,6 +255,23 @@ out:
 	return res;
 }
 
+static int ext2fuse_create(struct inode *i_new, struct inode *i_dir, int mode) {
+	struct fuse_req_embox *req;
+	struct task *task;
+
+	if (NULL == (req = fuse_req_alloc())) {
+		return 0;
+	}
+
+	ext2fuse_fill_req(req, i_new, NULL);
+	task = fuse_in();
+	ext2fuse_ops->create((fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, mode, req->fi);
+	fuse_out(task);
+	fuse_req_free(req);
+
+	return 0;
+}
+
 static int ext2fuse_pathname(struct inode *inode, char *buf, int flags) {
 	struct ext2fuse_data *data = inode->i_data;
 
@@ -287,7 +308,8 @@ struct super_block_operations ext2fuse_sbops = {
 struct inode_operations ext2fuse_iops = {
 	.lookup   = ext2fuse_lookup,
 	.iterate  = ext2fuse_iterate,
-	.pathname = ext2fuse_pathname
+	.pathname = ext2fuse_pathname,
+	.create = ext2fuse_create
 };
 
 struct file_operations ext2fuse_fops = {

@@ -55,7 +55,8 @@ int fuse_reply_attr(fuse_req_t req, const struct stat *attr,
 
 int fuse_reply_create(fuse_req_t req, const struct fuse_entry_param *e,
               const struct fuse_file_info *fi) {
-	EMBOX_FUSE_NIY();
+	// XXX fi is currently unused
+	fuse_reply_entry(req, e);
 	return 0;
 }
 
