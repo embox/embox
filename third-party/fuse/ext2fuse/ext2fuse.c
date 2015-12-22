@@ -136,6 +136,28 @@ static int ext2fuse_close(struct file *desc) {
 	return 0;
 }
 
+static int ext2fuse_remove(struct inode *inode) {
+	struct task *task;
+	struct inode *parent;
+	struct fuse_req_embox *req;
+
+	if (NULL == (req = fuse_req_alloc())) {
+		return -1;
+	}
+
+	parent = inode->i_dentry->parent->d_inode;
+
+	ext2fuse_fill_req(req, inode, NULL);
+	task = fuse_in();
+	ext2fuse_ops->unlink((fuse_req_t) req, parent->i_no, inode->i_dentry->name);
+	fuse_out(task);
+	fuse_req_free(req);
+
+	dvfs_destroy_inode(inode);
+
+	return 0;
+}
+
 static size_t ext2fuse_read(struct file *desc, void *buf, size_t size) {
 	struct inode *inode;
 	struct fuse_req_embox *req;
@@ -309,7 +331,8 @@ struct inode_operations ext2fuse_iops = {
 	.lookup   = ext2fuse_lookup,
 	.iterate  = ext2fuse_iterate,
 	.pathname = ext2fuse_pathname,
-	.create = ext2fuse_create
+	.create = ext2fuse_create,
+	.remove = ext2fuse_remove
 };
 
 struct file_operations ext2fuse_fops = {
