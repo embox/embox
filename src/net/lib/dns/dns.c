@@ -23,10 +23,6 @@
 #include <util/log.h>
 #include <framework/mod/options.h>
 
-/**
- * DNS nameservers
- */
-#define MODOPS_NAMESERVER OPTION_STRING_GET(nameserver)
 
 /**
  * DNS query timeout
@@ -630,8 +626,4 @@ int dns_result_free(struct dns_result *result) {
 	free(result->ns);
 	free(result->ar);
 	return 0;
-}
-
-const char * dns_get_nameserver(void) {
-	return MODOPS_NAMESERVER;
 }

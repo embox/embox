@@ -1,9 +1,20 @@
 package embox.net.lib
 
-module dns {
+@DefaultImpl(dns_fixed)
+abstract module dns {
+	depends dns_query
+}
+
+module dns_fixed extends dns {
+	option string nameserver="10.0.0.11"
+	source "dns_fixed.c"
+	
+	depends dns_query	
+}
+
+module dns_query {
 	option number dns_query_timeout=5000
 	option number log_level = 0
-	option string nameserver="10.0.0.11"
 
 	source "dns.c"
 
