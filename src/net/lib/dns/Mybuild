@@ -1,0 +1,11 @@
+package embox.net.lib
+
+module dns {
+	option number dns_query_timeout=5000
+	option number log_level = 0
+	option string nameserver="10.0.0.11"
+
+	source "dns.c"
+
+	depends embox.compat.posix.net.socket
+}

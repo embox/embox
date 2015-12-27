@@ -11,16 +11,6 @@ module bootp {
 	source "bootp.c"
 }
 
-module dns {
-	option number dns_query_timeout=5000
-	option number log_level = 0
-	option string nameserver="10.0.0.11"
-
-	source "dns.c"
-
-	depends embox.compat.posix.net.socket
-}
-
 //TODO this is a Linux-BSD compatible
 module getifaddrs {
 	option number amount_ifaddrs=3
