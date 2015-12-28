@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <hal/arch.h>
+#include <hal/clock.h>
 
 #include <system_stm32f4xx.h>
 #include <stm32f4xx_hal_cortex.h>
@@ -42,4 +43,8 @@ void arch_shutdown(arch_shutdown_mode_t mode) {
 	while(1) {
 
 	}
+}
+
+uint32_t HAL_GetTick(void) {
+	return clock_sys_ticks();
 }
