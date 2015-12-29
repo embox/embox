@@ -89,10 +89,10 @@
 /* The Speed and Duplex mask values change from a PHY to another, so the user
    have to update this value depending on the used external PHY */
 #define PHY_DUPLEX_SPEED_STATUS_MASK  ((uint16_t)0x001C)
-#define PHY_100BTX_FULL               (18)
-#define PHY_100BTX_HALF								(8)
-#define PHY_10M_FULL									(14)
-#define PHY_10M_HALF									(4)
+#define PHY_100BTX_FULL               (0x18)
+#define PHY_100BTX_HALF								(0x8)
+#define PHY_10M_FULL									(0x14)
+#define PHY_10M_HALF									(0x4)
 
    /* Note : Common PHY registers are defined in stm32f4x7_eth.h file */
 
