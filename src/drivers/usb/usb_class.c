@@ -88,7 +88,7 @@ static void usb_class_fallback_get_conf_hnd(struct usb_request *req, void *arg) 
 		struct usb_desc_endpoint *endp_desc =
 			&dev->getconf_data->endp_descs[i];
 
-		if (endp_desc->b_lenght != sizeof(struct usb_desc_endpoint)
+		if (endp_desc->b_length != sizeof(struct usb_desc_endpoint)
 				|| endp_desc->b_desc_type
 					!= USB_DESC_TYPE_ENDPOINT) {
 

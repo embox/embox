@@ -22,7 +22,7 @@
 static DLIST_DEFINE(usb_hcds);
 
 const struct usb_desc_endpoint usb_desc_endp_control_default = {
-	.b_lenght = sizeof(struct usb_desc_endpoint),
+	.b_length = sizeof(struct usb_desc_endpoint),
 	.b_desc_type = USB_DESC_TYPE_ENDPOINT,
 	.b_endpoint_address = 0,
 	.bm_attributes = 0,

@@ -1,0 +1,7 @@
+package embox.driver.mailbox
+
+module bcm2835_mailbox {
+	@IncludeExport(path="drivers/mailbox")
+	source "bcm2835_mailbox.h",
+		"bcm2835_mailbox.c"
+}

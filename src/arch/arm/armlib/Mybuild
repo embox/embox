@@ -18,6 +18,7 @@ module arch {
 	depends embox.arch.arm.armlib.locore
 	depends embox.arch.arm.armlib.interrupt
 	depends embox.arch.arm.armlib.context
+	depends embox.arch.arm.armlib.mem_barriers
 	depends embox.arch.arm.libarch
 }
 
@@ -51,3 +52,8 @@ module interrupt extends embox.arch.interrupt {
 static module lib {
 	source "copy_excpt_table.S"
 }
+
+module mem_barriers extends embox.arch.mem_barriers {
+	source "mem_barriers.h"
+}
+
