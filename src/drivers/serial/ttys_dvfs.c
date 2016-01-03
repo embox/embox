@@ -94,7 +94,7 @@ static size_t uart_fsop_write(struct file *desc, void *buf, size_t size) {
 	return 0;
 }
 
-static struct file_operations uart_fops = {
+const struct file_operations ttys_fops = {
 	.open = uart_fsop_open,
 	.close = uart_fsop_close,
 	.read = uart_fsop_read,
@@ -123,7 +123,7 @@ int uart_register(struct uart *uart,
 
 	memset(cdev, 0, sizeof(*cdev));
 	cdev->name = uart->dev_name;
-	cdev->fops = &uart_fops;
+	cdev->fops = (struct file_operations*)&ttys_fops;
 	cdev->dev_data = uart;
 
 	char_dev_register(cdev);

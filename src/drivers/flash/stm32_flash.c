@@ -17,13 +17,14 @@
 #include <hal/reg.h>
 #include <hal/mem.h>
 #include <kernel/printk.h>
-#include <stm32f4xx_flash.h>
+
+#include <drivers/block_dev/flash/stm32flash.h>
 
 #define STM32_FIRST_BLOCK_OFFSET 1
 #define STM32_ERR_MASK 0x1f3
 
 static const struct flash_dev_drv stm32_flash_drv;
-const struct flash_dev stm32_flash = {
+static const struct flash_dev stm32_flash = {
 	.bdev = NULL,
 	.drv = &stm32_flash_drv,
 	.flags = 0,
@@ -46,7 +47,7 @@ static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long b
 }
 
 static inline int stm32_flash_check_align(unsigned long base, size_t len) {
-	return ((uintptr_t) base & 0x3) == 0 && ((uintptr_t) len  & 0x3) == 0;
+	return ((uintptr_t) base & STM32_FLASH_WORD_ALIGN ) == 0 && ((uintptr_t) len  & STM32_FLASH_WORD_ALIGN) == 0;
 }
 static inline void stm32_flash_wait(void) {
 	while (REG_LOAD(&FLASH->SR) & FLASH_FLAG_BSY) {
@@ -118,7 +119,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 	int err;
 
 	if (!stm32_flash_check_align(base, len)
-			|| ((uintptr_t) data & 0x3) != 0) {
+			|| ((uintptr_t) data & STM32_FLASH_WORD_ALIGN) != 0) {
 		return -EINVAL;
 	}
 
@@ -157,10 +158,6 @@ static int stm32_flash_copy(struct flash_dev *dev, uint32_t base_dst,
 	return stm32_flash_program(dev, base_dst, (void *) dev->start + base_src, len);
 }
 
-#if 0
-static int stm32_flash_init(void *arg);
-static size_t stm32_flash_query(struct flash_dev *dev, void * data, size_t len);
-#endif
 static const struct flash_dev_drv stm32_flash_drv = {
 	.flash_read = stm32_flash_read,
 	.flash_erase_block = stm32_flash_erase_block,

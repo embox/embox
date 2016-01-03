@@ -1,9 +1,10 @@
+#include <drivers/block_dev/flash/stm32flash_conf.h>
+
 
 SECTIONS {
-	.flash (NOLOAD): ALIGN(0x4000) {
+	.flash (NOLOAD): ALIGN(STM32_FLASH_PAGE_SIZE) {
 		_flash_start = .;
-		. += 0x0000c000;
+		. += STM32_FLASH_FLASH_SIZE;
 		_flash_end = .;
 	}
 }
-

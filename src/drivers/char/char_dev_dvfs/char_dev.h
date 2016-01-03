@@ -18,13 +18,13 @@ struct device_module {
 	struct file_operations *fops;
 	struct idesc_ops *idesc_ops;
 	const char *name;
-	struct dlist_head cdev_list;
 	void *dev_data;
+	struct dlist_head cdev_list;
 };
 
-#define CHAR_DEV_DEF(name, file_op, idesc_op) \
+#define CHAR_DEV_DEF(name, file_op, idesc_op, priv) \
 	ARRAY_SPREAD_DECLARE(const struct device_module, __char_device_registry); \
-	ARRAY_SPREAD_ADD(__char_device_registry, {file_op, idesc_op, name} )
+	ARRAY_SPREAD_ADD(__char_device_registry, {file_op, idesc_op, name, priv} )
 
 extern int char_dev_register(struct device_module *cdev);
 
