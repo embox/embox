@@ -35,7 +35,7 @@ extern struct logger mod_logger __attribute__ ((weak));
  * @param fmt   printf-like format of the message
  */
 #define log_logp(level, fmt, ...) \
-	if (!&mod_logger) \
+	if (&mod_logger) \
 		logging_raw(&mod_logger.logging, level, "%s: %s: " fmt "\n", \
 					log_levels[level-1], __func__, ## __VA_ARGS__)
 
@@ -46,7 +46,7 @@ extern struct logger mod_logger __attribute__ ((weak));
  * @param fmt   printf-like format of the message
  */
 #define log_raw(level, fmt, ...) \
-	if (!&mod_logger) \
+	if (&mod_logger) \
 		logging_raw(&mod_logger.logging, level, fmt, ## __VA_ARGS__)
 
 #define log_debug(fmt, ...) \
