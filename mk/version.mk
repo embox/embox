@@ -1,1 +1,1 @@
-export MYBUILD_VERSION := 0.4
+export EMBOX_VERSION := 0.3.10
