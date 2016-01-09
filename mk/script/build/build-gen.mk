@@ -753,7 +753,8 @@ $(@source_dist) :
 	mk/main-dist.mk \
 	mk/main-stripping.sh \
 	mk/phymem_cc_addon.tmpl.c \
-	mk/variables.mk)
+	mk/variables.mk \
+	mk/version.mk)
 
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
 	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)

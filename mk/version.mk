@@ -1,0 +1,1 @@
+export MYBUILD_VERSION := 0.4

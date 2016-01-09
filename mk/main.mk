@@ -2,11 +2,10 @@
 # Embox main Makefile.
 #
 
-export MYBUILD_VERSION := 0.4
-
 include mk/core/common.mk
 include mk/util/wildcard.mk
 include mk/variables.mk
+include mk/version.mk
 
 .PHONY : all a
 a : all
