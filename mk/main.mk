@@ -348,7 +348,7 @@ help :
 
 define help_main
 Usage: $(MAKE) [targets]
-Mybuild version $(MYBUILD_VERSION).
+Embox version $(EMBOX_VERSION).
 
 Building targets:
   all (a)        - Default build target, alias to '$(MAKE) build'
