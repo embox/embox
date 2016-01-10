@@ -2,11 +2,10 @@
 # Embox main Makefile.
 #
 
-export MYBUILD_VERSION := 0.4
-
 include mk/core/common.mk
 include mk/util/wildcard.mk
 include mk/variables.mk
+include mk/version.mk
 
 .PHONY : all a
 a : all
@@ -349,7 +348,7 @@ help :
 
 define help_main
 Usage: $(MAKE) [targets]
-Mybuild version $(MYBUILD_VERSION).
+Embox version $(EMBOX_VERSION).
 
 Building targets:
   all (a)        - Default build target, alias to '$(MAKE) build'

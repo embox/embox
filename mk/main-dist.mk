@@ -2,10 +2,9 @@
 # Embox main Makefile (distribution).
 #
 
-export MYBUILD_VERSION := 0.4
-
 include mk/core/common.mk
 include mk/variables.mk
+include mk/version.mk
 
 export DIST_BASE_DIR := .
 export EMBOX_DIST_BASE_DIR := $(abspath $(DIST_BASE_DIR))
@@ -103,7 +102,7 @@ help :
 
 define help_main
 Usage: $(MAKE) [targets]
-Mybuild version $(MYBUILD_VERSION) [distibution].
+Embox version $(EMBOX_VERSION) [distibution].
 
 Building targets:
   all (a)        - Default build target, alias to '$(MAKE) build'
