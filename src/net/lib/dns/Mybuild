@@ -12,6 +12,15 @@ module dns_fixed extends dns {
 	depends dns_query	
 }
 
+
+module dns_file extends dns {
+	option string resolv_file="resolv.conf"
+	option string nameserver="8.8.8.8"
+	source "dns_file.c"
+	
+	depends dns_query	
+}
+
 module dns_query {
 	option number dns_query_timeout=5000
 	option number log_level = 0
