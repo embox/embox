@@ -52,7 +52,7 @@ endif
 
 docsgen:
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
-	doxygen
+	doxygen mk/Doxyfile
 	@echo 'Docs generation complete'
 
 MODULE_LIST := $(strip $(call mod_list))
