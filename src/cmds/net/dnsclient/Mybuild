@@ -1,0 +1,29 @@
+package embox.cmd.net
+
+@AutoCmd
+@Cmd(name = "dnsclient",
+	help = "Manipulate dns service",
+	man = '''
+		NAME
+			dnsclient - Manager dns service.
+		SYNOPSIS
+			dnsclient [-his] [addr]
+		DESCRIPTION
+			dnsclient - configure dns server IP address
+		OPTIONS
+			-i - initialize resolv server address
+			-s - setup resolv server address
+			-h - show this help
+		EXAMPLES
+			dnsclient 
+				Show current resolv server address
+			dnsclient -s 8.8.8.8
+				Setup IP address for resolv server
+		SEE ALSO
+			nslookup
+		AUTHORS
+			Anton Bondarev
+	''')
+module dnsclient {
+	source "dnsclient.c"
+}
