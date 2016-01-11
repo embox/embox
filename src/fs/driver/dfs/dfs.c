@@ -186,9 +186,15 @@ int dfs_format(void) {
 	struct dfs_dir_entry root;
 	char buf[NAND_PAGE_SIZE];
 	int i;
+	int err;
 
 	if (!dfs_flashdev) {
 		return -ENOENT;
+	}
+
+	for (i = 0; i < dfs_flashdev->block_info.blocks; i++) {
+		if ((err = flash_erase(dfs_flashdev, i)))
+			return err;
 	}
 
 	/* Empty FS */
@@ -211,7 +217,7 @@ int dfs_format(void) {
 	dfs_write_dirent(0, &root);
 	memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
 	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++)
-		dfs_write_raw(root.pos_start + i * sizeof(buf),
+		_write(root.pos_start + i * sizeof(buf),
 		              buf,
 		              sizeof(buf));
 
