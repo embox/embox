@@ -17,6 +17,7 @@
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
+#include <util/math.h>
 
 /* Utility functions */
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
@@ -261,8 +262,14 @@ int dvfs_write(struct file *desc, char *buf, int count) {
  */
 int dvfs_read(struct file *desc, char *buf, int count) {
 	int res;
+	int sz;
 	if (!desc)
 		return -1;
+
+	sz = min(count, desc->f_inode->length - desc->pos);
+
+	if (sz <= 0)
+		return 0;
 
 	if (desc->f_ops && desc->f_ops->read)
 		res = desc->f_ops->read(desc, buf, count);
