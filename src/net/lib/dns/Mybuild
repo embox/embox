@@ -18,7 +18,7 @@ module dns_file extends dns {
 	option string nameserver="8.8.8.8"
 	source "dns_file.c"
 
-	depends dns_query	
+	depends dns_query
 }
 
 module dns_query {
@@ -27,5 +27,6 @@ module dns_query {
 
 	source "dns.c"
 
+	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.posix.net.socket
 }
