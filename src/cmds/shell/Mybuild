@@ -6,6 +6,8 @@ module shell_registry {
 
 	@IncludeExport(path="cmd")
 	source "shell.h"
+
+	depends embox.util.log
 }
 
 abstract module shell_api {
