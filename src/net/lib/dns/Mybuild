@@ -29,4 +29,6 @@ module dns_query {
 
 	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.posix.net.socket
+	depends embox.net.af_inet
+	depends embox.net.udp_sock
 }
