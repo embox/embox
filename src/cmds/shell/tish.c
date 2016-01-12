@@ -327,6 +327,7 @@ static void tish_run(void) {
 	char *line;
 	char prompt_buf[PROMPT_BUF_LEN];
 	const char *prompt;
+	int err;
 
 	/**
 	 * Set the completion callback. This will be called every time the
@@ -369,7 +370,9 @@ static void tish_run(void) {
 		/* Do something with the string. */
 		if (line[0] != '\0' && line[0] != '/') {
 			add_history(line); /* Add to the history. */
-			tish_exec(line);
+			err = tish_exec(line);
+			if (err)
+				printf("tish error: #%d\n", err);
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
