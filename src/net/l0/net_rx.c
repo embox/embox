@@ -18,6 +18,8 @@
 #include <net/socket/packet.h>
 #include <util/log.h>
 
+#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
+
 int net_rx(struct sk_buff *skb) {
 	struct net_header_info hdr_info;
 	const struct net_pack *npack;
@@ -43,7 +45,8 @@ int net_rx(struct sk_buff *skb) {
 	/* check recipient on L2 layer */
 	switch (pkt_type(skb)) {
 	default:
-		log_debug("net_rx: %p not for us\n", skb);
+		if (LOG_LEVEL >= LOG_DEBUG)
+			log_debug("net_rx: %p not for us\n", skb);
 		skb_free(skb);
 		return 0; /* ok, but: not for us */
 	case PACKET_HOST:
@@ -57,7 +60,8 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb->mac.raw != NULL);
 	skb->nh.raw = skb->mac.raw + skb->dev->hdr_len;
 
-	log_debug("net_rx: %p len %zu type %#.6hx\n", skb, skb->len, hdr_info.type);
+	if (LOG_LEVEL >= LOG_DEBUG)
+		log_debug("net_rx: %p len %zu type %#.6hx\n", skb, skb->len, hdr_info.type);
 
 	/* decrypt packet */
 	skb = net_decrypt(skb);
@@ -73,7 +77,8 @@ int net_rx(struct sk_buff *skb) {
 	 * from Embox kernel's point of view. */
 	npack = net_pack_lookup(hdr_info.type);
 	if (npack == NULL) {
-		log_debug("net_rx: %p unknown type %#.6hx\n", skb, hdr_info.type);
+		if (LOG_LEVEL >= LOG_DEBUG)
+			log_debug("net_rx: %p unknown type %#.6hx\n", skb, hdr_info.type);
 		skb_free(skb);
 		return 0; /* ok, but: not supported */
 	}
