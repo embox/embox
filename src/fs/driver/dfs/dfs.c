@@ -193,7 +193,7 @@ int dfs_format(void) {
 	}
 
 	for (i = 0; i < dfs_flashdev->block_info.blocks; i++) {
-		if ((err = flash_erase(dfs_flashdev, i)))
+		if ((err = _erase(i)))
 			return err;
 	}
 
