@@ -59,8 +59,6 @@ typedef struct bootphdr {
 #define TAG_PAD                 ((unsigned char)   0)
 #define TAG_SUBNET_MASK         ((unsigned char)   1)
 #define TAG_GATEWAY             ((unsigned char)   3)
-#define TAG_DHCP_PARM_REQ_LIST  ((unsigned char)  55)
-#if 0
 #define TAG_TIME_OFFSET         ((unsigned char)   2)
 #define TAG_TIME_SERVER         ((unsigned char)   4)
 #define TAG_NAME_SERVER         ((unsigned char)   5)
@@ -113,6 +111,7 @@ typedef struct bootphdr {
 #define TAG_DHCP_OPTOVER        ((unsigned char)  52)
 #define TAG_DHCP_MESS_TYPE      ((unsigned char)  53)
 #define TAG_DHCP_SERVER_ID      ((unsigned char)  54)
+#define TAG_DHCP_PARM_REQ_LIST  ((unsigned char)  55)
 #define TAG_DHCP_TEXT_MESSAGE   ((unsigned char)  56)
 #define TAG_DHCP_MAX_MSGSZ      ((unsigned char)  57)
 #define TAG_DHCP_RENEWAL_TIME   ((unsigned char)  58)
@@ -120,7 +119,6 @@ typedef struct bootphdr {
 #define TAG_DHCP_CLASSID        ((unsigned char)  60)
 #define TAG_DHCP_CLIENTID       ((unsigned char)  61)
 #define TAG_FQDN                ((unsigned char)  81)
-#endif
 
 extern int bootp_build(struct bootphdr *bph, unsigned char opcode,
 		unsigned char hw_type, unsigned char hw_len,

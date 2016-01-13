@@ -53,7 +53,8 @@ static int bootp_process(struct bootphdr *bph,
 		struct net_device *dev) {
 	struct in_device *in_dev;
 	in_addr_t mask;
-	const unsigned char *tag;
+	unsigned char *tag;
+	unsigned char *tag_len;
 
 	in_dev = inetdev_get_by_dev(dev);
 	if (in_dev == NULL) {
@@ -70,6 +71,8 @@ static int bootp_process(struct bootphdr *bph,
 		switch(*tag) {
 		default:
 			tag++;
+			tag_len = tag;
+			tag += (*tag_len + 1);
 			break;
 		case TAG_PAD:
 			tag++;
@@ -143,6 +146,10 @@ int bootp_client(struct net_device *dev) {
 	/* request option all option list from server */
 	bph_req.vend[4] = TAG_DHCP_PARM_REQ_LIST;
 	bph_req.vend[5] = 0;
+
+	bph_req.vend[6] = TAG_DHCP_MESS_TYPE;
+	bph_req.vend[7] = 1;
+	bph_req.vend[8] = 1;
 
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(BOOTP_SERVER_PORT);
