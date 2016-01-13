@@ -23,16 +23,14 @@ extern FILE *stdio_file_alloc(int fd);
 static int mode2flag(const char *mode) {
 	int flags = 0;
 
-	if (strchr(mode, 'r')) {
-		flags |= O_RDONLY;
-	}
-
-	if (strchr(mode, 'w')) {
+	if (strchr(mode, 'r') && strchr(mode, 'w')) {
+		flags |= O_RDWR | O_TRUNC | O_CREAT;
+	} else if (strchr(mode, 'w')) {
 		flags |= O_WRONLY | O_TRUNC | O_CREAT;
 	}
 
 	if (strchr(mode, 'a')) {
-		flags |= O_APPEND | O_WRONLY | O_CREAT;
+		flags |= O_APPEND | O_CREAT;
 	}
 
 	return flags;
