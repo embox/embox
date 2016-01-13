@@ -7,19 +7,21 @@
  * @author Ilia Vaprol
  */
 
-#include <arpa/inet.h>
 #include <errno.h>
-#include <framework/mod/options.h>
-#include <net/inetdevice.h>
-#include <net/l3/route.h>
-#include <net/lib/bootp.h>
+#include <time.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
+
 #include <util/array.h>
-#include <kernel/time/time.h>
+
+#include <net/inetdevice.h>
+#include <net/l3/route.h>
+#include <net/lib/bootp.h>
+
+#include <framework/mod/options.h>
 
 #define MODOPS_TIMEOUT OPTION_GET(NUMBER, timeout)
 
@@ -49,49 +51,29 @@ static int bootp_prepare(struct net_device *dev) {
 	return 0;
 }
 
-static int bootp_process(struct bootphdr *bph,
-		struct net_device *dev) {
+static int bootp_process(struct bootphdr *bph, struct net_device *dev) {
 	struct in_device *in_dev;
-	in_addr_t mask;
-	unsigned char *tag;
-	unsigned char *tag_len;
+	in_addr_t ip_addr;
+	int ret;
 
 	in_dev = inetdev_get_by_dev(dev);
 	if (in_dev == NULL) {
 		return -EINVAL;
 	}
-
-	if (bph->ciaddr == 0) {
-		inetdev_set_addr(in_dev, bph->yiaddr);
+	ret = bootp_get_ip(bph, &ip_addr);
+	if (ret) {
+		return ret;
 	}
+	inetdev_set_addr(in_dev, ip_addr);
 
-	tag = &bph->vend[0] + sizeof dhcp_magic_cookie;
-	while ((tag < &bph->vend[ARRAY_SIZE(bph->vend)])
-			&& (*tag != TAG_END)) {
-		switch(*tag) {
-		default:
-			tag++;
-			tag_len = tag;
-			tag += (*tag_len + 1);
-			break;
-		case TAG_PAD:
-			tag++;
-			break;
-		case TAG_GATEWAY: /* add default route */
-			tag += 2;
-			rt_add_route(in_dev->dev, INADDR_ANY,
-						INADDR_ANY, *(in_addr_t *)tag, 0);
-			tag += sizeof(in_addr_t);
-			break;
-		case TAG_SUBNET_MASK: /* set mask */
-			tag += 2;
-			mask = *(in_addr_t*)tag;
-			inetdev_set_mask(in_dev, mask);
-			rt_add_route(in_dev->dev, bph->siaddr & mask, mask,
-						INADDR_ANY, 0);
-			tag += sizeof(in_addr_t);
-			break;
-		}
+	ret = bootp_get_gateway(bph, &ip_addr);
+	if (ret == 0) {
+		rt_add_route(in_dev->dev, INADDR_ANY, INADDR_ANY, ip_addr, 0);
+	}
+	ret = bootp_get_mask(bph, &ip_addr);
+	if (ret == 0) {
+		inetdev_set_mask(in_dev, ip_addr);
+		rt_add_route(in_dev->dev, bph->siaddr & ip_addr, ip_addr, INADDR_ANY, 0);
 	}
 
 	return 0;
@@ -136,20 +118,12 @@ int bootp_client(struct net_device *dev) {
 		goto error;
 	}
 
-	ret = bootp_build(&bph_req, BOOTPREQUEST, dev->type,
+	ret = bootp_build_request(&bph_req, BOOTPREQUEST, dev->type,
 			dev->addr_len, &dev->dev_addr[0]);
 	if (ret != 0) {
 		ret = -errno;
 		goto error;
 	}
-
-	/* request option all option list from server */
-	bph_req.vend[4] = TAG_DHCP_PARM_REQ_LIST;
-	bph_req.vend[5] = 0;
-
-	bph_req.vend[6] = TAG_DHCP_MESS_TYPE;
-	bph_req.vend[7] = 1;
-	bph_req.vend[8] = 1;
 
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(BOOTP_SERVER_PORT);
@@ -166,11 +140,6 @@ int bootp_client(struct net_device *dev) {
 		goto error;
 	}
 
-	ret = bootp_valid(&bph_rep, BOOTPREPLY);
-	if (ret != 0) {
-		goto error;
-	}
-
 	ret = bootp_process(&bph_rep, dev);
 error:
 	close(sock);
@@ -180,8 +149,6 @@ error:
 int main(int argc, char **argv) {
 	int opt;
 	struct net_device *dev;
-
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch (opt) {
