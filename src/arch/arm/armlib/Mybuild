@@ -14,6 +14,11 @@ module high_excpt_table extends setup_exception_table {
 	depends lib
 }
 
+module static_excpt_table extends setup_exception_table {
+	source "static_excpt_table.S"
+	depends lib
+}
+
 module arch {
 	depends embox.arch.arm.armlib.locore
 	depends embox.arch.arm.armlib.interrupt
