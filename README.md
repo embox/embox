@@ -15,7 +15,7 @@ Required environment:
 ### Preparing environment
 For Debian-based systems (most packages are installed out of box though):
 ```
-$ sudo apt-get install build-essential gcc-multilib
+$ sudo apt-get install build-essential gcc-multilib curl libmpc-dev
 ```
 
 ### Building Embox
