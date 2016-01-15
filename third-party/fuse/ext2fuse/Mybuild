@@ -22,6 +22,19 @@ module ext2fuse_driver {
 
 	@NoRuntime depends core
 	depends embox.fs.core
+	depends ext2fuse_xattr
+}
+
+module ext2fuse_xattr {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/e2fsprogs/core/install/include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/ext2fuse/core/install/src")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/fuse")
+	source "ext2fuse_xattr.c"
+
+	@NoRuntime depends core
+	depends embox.fs.core
 }
 
 @App
