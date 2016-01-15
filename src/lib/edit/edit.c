@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include <lib/edit.h>
+#include <../../../compat/libc/stdio/file_struct.h>
 
 int fdelete_from_file(int fd, size_t length) {
 	char buf[128];
@@ -77,4 +78,12 @@ int finsert_into_file(int fd, char *buf, size_t length) {
 		return err;
 
 	return 0;
+}
+
+int delete_from_file(FILE *file, size_t length) {
+	return fdelete_from_file(file->fd, length);
+}
+
+int insert_into_file(FILE *file, char *buf, size_t length) {
+	return finsert_into_file(file->fd, buf, length);
 }

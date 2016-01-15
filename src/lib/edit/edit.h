@@ -14,7 +14,7 @@
  *
  * @return Negative error code or zero if succeeded
  */
-int fdelete_from_file(int fd, size_t length);
+extern int fdelete_from_file(int fd, size_t length);
 
 /**
  * @brief Insert given text segment into file file
@@ -25,4 +25,18 @@ int fdelete_from_file(int fd, size_t length);
  *
  * @return Negative error code or zero if succeeded
  */
-int finsert_into_file(int fd, char *buf, size_t length);
+extern int finsert_into_file(int fd, char *buf, size_t length);
+
+/**
+ * @brief Libc-style wrapper for fdelete_from_file
+ *
+ * @return Negative error code or zero if succeeded
+ */
+extern int delete_from_file(FILE *file, size_t length);
+
+/**
+ * @brief Libc-style wrapper for finsert_into_file
+ *
+ * @return Negative error code or zero if succeeded
+ */
+extern int insert_into_file(FILE *file, char *buf, size_t length);
