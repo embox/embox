@@ -30,42 +30,63 @@
 
 #define EXT2_MAX_NAMELEN 255
 
-static void ext2_getxattr(struct ext2_inode *node);
+static int ext2_getxattr(struct ext2_inode *node, const char *name,
+		char *value, size_t size);
 
 extern ext2_filsys fs; // from ext2fuse-src-0.8.1/src/fuse-ext2fs.c
 
-void ext2fuse_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
+void fuse_ext2_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
 			size_t size) {
 	int rc;
+	int value_actual_size;
 	struct ext2_inode inode;
+	char *buf;
+
+	buf = malloc(size);
+	if (!buf) {
+		return;
+	}
 
 	rc = read_inode(EXT2FS_INO(ino), &inode);
 	if (rc) {
 		fuse_reply_err(req, ENOENT);
+		free(buf);
 		return;
 	}
-	
-	ext2_getxattr(&inode);
+
+	value_actual_size = ext2_getxattr(&inode, name, buf, size);
+	fuse_reply_buf(req, buf, value_actual_size);
+	free(buf);
 }
 
-static void ext2_getxattr(struct ext2_inode *node) {
-	struct ext2_inode_large *inode;
+static int ext2_getxattr(struct ext2_inode *node, const char *name,
+		char *value, size_t size) {
+	char *buf, *attr_start;
 	struct ext2_ext_attr_entry *entry;
-	char *start;
-	unsigned int storage_size, remain;
+	char *entry_name;
+	int res = -1;
 
-	inode = (struct ext2_inode_large *) node;
-	storage_size = EXT2_INODE_SIZE(fs->super) - EXT2_GOOD_OLD_INODE_SIZE -
-		inode->i_extra_isize;
-	start = ((char *) inode) + EXT2_GOOD_OLD_INODE_SIZE +
-		inode->i_extra_isize + sizeof(__u32);
-	entry = (struct ext2_ext_attr_entry *) start;
+	buf = malloc(fs->blocksize);
+	if (!buf) {
+		return res;
+	}
+	ext2fs_read_ext_attr(fs, node->i_file_acl, buf);
 
-	remain = storage_size - sizeof(__u32);
+	attr_start = buf + sizeof(struct ext2_ext_attr_header);
+	entry = (struct ext2_ext_attr_entry *) attr_start;
 
-	(void) inode;
-	(void) start;
-	(void) entry;
-	(void) storage_size;
-	(void) remain;
+	while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
+		entry_name = (char *)entry + sizeof(struct ext2_ext_attr_entry);
+
+		if (entry->e_name_len == strlen(name)) {
+			if (!strncmp(entry_name, name, entry->e_name_len)) {
+				memcpy(value, buf + entry->e_value_offs, entry->e_value_size);
+				res = entry->e_value_size;
+				break;
+			}
+		}
+		entry = EXT2_EXT_ATTR_NEXT(entry);
+	}
+	free(buf);
+	return res;
 }
