@@ -54,6 +54,8 @@ static int bootp_prepare(struct net_device *dev) {
 static int bootp_process(struct bootphdr *bph, struct net_device *dev) {
 	struct in_device *in_dev;
 	in_addr_t ip_addr;
+	in_addr_t ip_gate;
+	in_addr_t ip_mask;
 	int ret;
 
 	in_dev = inetdev_get_by_dev(dev);
@@ -66,14 +68,15 @@ static int bootp_process(struct bootphdr *bph, struct net_device *dev) {
 	}
 	inetdev_set_addr(in_dev, ip_addr);
 
-	ret = bootp_get_gateway(bph, &ip_addr);
+	ret = bootp_get_mask(bph, &ip_mask);
 	if (ret == 0) {
-		rt_add_route(in_dev->dev, INADDR_ANY, INADDR_ANY, ip_addr, 0);
+		inetdev_set_mask(in_dev, ip_mask);
+		rt_add_route(in_dev->dev, ip_addr & ip_mask, ip_mask, INADDR_ANY, 0);
 	}
-	ret = bootp_get_mask(bph, &ip_addr);
+
+	ret = bootp_get_gateway(bph, &ip_gate);
 	if (ret == 0) {
-		inetdev_set_mask(in_dev, ip_addr);
-		rt_add_route(in_dev->dev, bph->siaddr & ip_addr, ip_addr, INADDR_ANY, 0);
+		rt_add_route(in_dev->dev, INADDR_ANY, INADDR_ANY, ip_gate, RTF_GATEWAY);
 	}
 
 	return 0;
