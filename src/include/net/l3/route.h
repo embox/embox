@@ -65,6 +65,11 @@ extern int rt_del_route(struct net_device *dev, in_addr_t dst,
 				in_addr_t mask, in_addr_t gw);
 
 /**
+ * Remove all records from route table for a network device.
+ */
+extern int rt_del_route_if(struct net_device *dev);
+
+/**
  * Rebuild sk_buff according to appropriated route.
  * @param skbuff
  * @param route - take this route as best match. Or NULL to define it

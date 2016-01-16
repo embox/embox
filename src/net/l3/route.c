@@ -78,6 +78,21 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
 	return -ENOENT;
 }
 
+int rt_del_route_if(struct net_device *dev) {
+	struct rt_entry_info *rt_info;
+	int ret = 0;
+
+	dlist_foreach_entry(rt_info, &rt_entry_info_list, lnk) {
+		if (rt_info->entry.dev == dev) {
+			dlist_del_init_entry(rt_info, lnk);
+			pool_free(&rt_entry_info_pool, rt_info);
+			ret ++;
+		}
+	}
+
+	return ret ? 0 : -ENOENT;
+}
+
 /* svv: ToDo:
  *      1) this function returns -ENOENT/0, but arp_resolve -1/0
  *         style must be the same
