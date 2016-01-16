@@ -48,6 +48,8 @@ static int bootp_prepare(struct net_device *dev) {
 		return ret;
 	}
 
+	rt_del_route_if(dev);
+
 	return 0;
 }
 
