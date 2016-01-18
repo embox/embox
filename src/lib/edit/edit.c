@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <lib/edit.h>
@@ -20,6 +21,8 @@ int fdelete_from_file(int fd, size_t length) {
 	off_t size;
 	off_t pos;
 	int cnt;
+
+	memset(buf, 0, sizeof(buf));
 
 	pos = lseek(fd, 0, SEEK_CUR);
 	size = lseek(fd, 0, SEEK_END);
@@ -51,6 +54,8 @@ int finsert_into_file(int fd, char *buf, size_t length) {
 	off_t pos;
 	int cnt;
 	assert(buf);
+
+	memset(tmp, 0, sizeof(tmp));
 
 	pos = lseek(fd, 0, SEEK_CUR);
 	size = lseek(fd, 0, SEEK_END);
