@@ -2,7 +2,7 @@
 
 # This script is used to patch an third-party application.
 # For example, if you want to create a patch for third_party/fuse/fuse just do:
-#    ./app_diff.sh fuse-2.9.4 build/extbld/third_party/fuse/core third-party/fuse/fuse
+#    ./scripts/app_diff.sh fuse-2.9.4 build/extbld/third_party/fuse/core third-party/fuse/fuse
 # Args:
 # $1 - application name
 # $2 - path to application within the build folder
