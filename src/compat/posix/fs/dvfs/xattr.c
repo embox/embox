@@ -7,8 +7,25 @@
  */
 
 #include <stddef.h>
+#include <errno.h>
+
+#include <fs/dvfs.h>
 
 int getxattr(const char *path, const char *name, char *value, size_t size) {
+	struct lookup lookup;
+	struct inode *inode;
+
+	dvfs_lookup(path, &lookup);
+
+	if (!lookup.item) {
+		return SET_ERRNO(ENOENT);
+	}
+	inode = lookup.item->d_inode;
+
+	if (inode->i_ops->getxattr) {
+		return inode->i_ops->getxattr(inode, name, value, size);
+	}
+
 	return 0;
 }
 
