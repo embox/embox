@@ -85,7 +85,7 @@ int net_tx(struct sk_buff *skb,
 		ret = neighbour_send_after_resolve(hdr_info->type,
 				hdr_info->dst_p, hdr_info->p_len,
 				dev, skb);
-		if (ret != 0 && LOG_LEVEL >= LOG_DEBUG)
+		if (ret != 0)
 			log_debug("net_tx: neighbour_send_after_resolve = %d\n", ret);
 
 		return ret;
@@ -93,8 +93,7 @@ int net_tx(struct sk_buff *skb,
 
 	skb_len = skb->len;
 
-	if (LOG_LEVEL >= LOG_DEBUG)
-		log_debug("net_tx: skb %p[%zu] type %#.6hx\n", skb, skb->len, ntohs(skb->mac.ethh->h_proto));
+	log_debug("net_tx: skb %p[%zu] type %#.6hx\n", skb, skb->len, ntohs(skb->mac.ethh->h_proto));
 
 	/*
 	 * http://www.linuxfoundation.org/collaborate/workgroups/networking/kernel_flow#Transmission_path
@@ -114,8 +113,7 @@ int net_tx(struct sk_buff *skb,
 	assert(dev->drv_ops->xmit != NULL);
 	ret = dev->drv_ops->xmit(dev, skb);
 	if (ret != 0) {
-		if (LOG_LEVEL >= LOG_DEBUG)
-			log_debug("net_tx: xmit = %d\n", ret);
+		log_debug("net_tx: xmit = %d\n", ret);
 		skb_free(skb);
 		dev->stats.tx_err++;
 		return ret;
