@@ -22,8 +22,22 @@ extern int fuse_module_umount(struct fuse_module *fm);
 
 #include <util/array.h>
 #define FUSE_MODULE_DEF(name, cmd) \
-	static const struct fuse_module fm##name = {name, cmd}; \
-	ARRAY_SPREAD_DECLARE(struct fuse_module *, fuse_module_repo); \
-	ARRAY_SPREAD_ADD( fuse_module_repo, &fm##name)
+	static const struct fuse_module fm##__LINE__ = {name, cmd}; \
+	ARRAY_SPREAD_DECLARE(const struct fuse_module *, fuse_module_repo); \
+	ARRAY_SPREAD_ADD( fuse_module_repo, &fm##__LINE__)
+
+struct fuse_lowlevel_ops;
+struct task;
+struct thread;
+
+struct fuse_sb_priv_data {
+	struct fuse_lowlevel_ops *fuse_lowlevel_ops;
+	struct task *fuse_task;
+	struct thread *stub_thread;
+};
+
+extern const struct super_block_operations fuse_sbops;
+extern const struct inode_operations fuse_iops;
+extern const struct file_operations fuse_fops;
 
 #endif /* SRC_FS_FUSE_FUSE_MODULE_H_ */
