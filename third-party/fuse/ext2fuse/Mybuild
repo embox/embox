@@ -40,22 +40,21 @@ module ext2fuse_xattr {
 @App
 @AutoCmd
 @Cmd(name = "ext2fuse",
-	help = "Concatenate files and print on the standard output",
+	help = "Ext2fuse module",
 	man = '''
 		NAME
-			cat - concatenate files and print on the standard output
+			ext2fuse - start file "ext2" system in userspace
 		SYNOPSIS
-			cat [OPTION]... [FILE]...
+			ext2fuse bdev_name mount_point
 		DESCRIPTION
-			Concatenate FILE(s) to standard output.
 		OPTIONS
-			-n  number all output lines
 		AUTHORS
-			Nikolay Korotky
+			Anton Bondarev
 	''')
-module ext2fuse_driver_dvfs {
+module ext2fuse_module {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
 	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/fuse")
 	source "ext2fuse_dvfs.c"
 
 	@NoRuntime depends core
