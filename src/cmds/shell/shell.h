@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include <errno.h>
+#include <util/log.h>
 #include <util/array.h>
 #include <framework/mod/self.h>
 
@@ -43,6 +44,8 @@ static inline int shell_run(const struct shell *shell) {
 }
 
 static inline int shell_exec(const struct shell *shell, const char *line) {
+	int ret;
+
 	if (shell == NULL) {
 		return -EINVAL;
 	}
@@ -51,7 +54,12 @@ static inline int shell_exec(const struct shell *shell, const char *line) {
 		return -ENOSYS;
 	}
 
-	return shell->exec(line);
+	ret = shell->exec(line);
+
+	if (ret)
+		log_error("Shell exec error #%d", ret);
+
+	return ret;
 }
 
 extern const struct shell * shell_lookup(const char *shell_name);

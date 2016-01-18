@@ -186,9 +186,15 @@ int dfs_format(void) {
 	struct dfs_dir_entry root;
 	char buf[NAND_PAGE_SIZE];
 	int i;
+	int err;
 
 	if (!dfs_flashdev) {
 		return -ENOENT;
+	}
+
+	for (i = 0; i < dfs_flashdev->block_info.blocks; i++) {
+		if ((err = _erase(i)))
+			return err;
 	}
 
 	/* Empty FS */
@@ -211,7 +217,7 @@ int dfs_format(void) {
 	dfs_write_dirent(0, &root);
 	memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
 	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++)
-		dfs_write_raw(root.pos_start + i * sizeof(buf),
+		_write(root.pos_start + i * sizeof(buf),
 		              buf,
 		              sizeof(buf));
 
@@ -334,7 +340,7 @@ static int dfs_icreate(struct inode *i_new,
 	*i_new = (struct inode) {
 		.i_no      = sbi->inode_count,
 		.start_pos = dirent.pos_start,
-		.length    = dirent.len,
+		.length    = 0,
 		.i_sb      = sb,
 		.i_ops     = &dfs_iops,
 	};
@@ -345,6 +351,10 @@ static int dfs_icreate(struct inode *i_new,
 			dfs_write_raw(dirent.pos_start + i * sizeof(buf),
 			              buf,
 			              sizeof(buf));
+	} else {
+		memset(buf, '\0', sizeof(buf));
+		for (i = sbi->free_space; i < sbi->free_space + dirent.len; i++)
+			_write(i, buf, 1);
 	}
 
 	sbi->inode_count++;
@@ -388,11 +398,16 @@ static int dfs_itruncate(struct inode *inode, size_t new_len) {
 
 	sbi = dfs_sb()->sb_data;
 
+	dfs_read_dirent(inode->i_no, &entry);
+	if (entry.len >= inode->length) {
+		/* No need to write changes on drive */
+		inode->length = new_len;
+		return 0;
+	}
+
 	if (inode->i_no == sbi->inode_count - 1) {
 		/* This is the latest inode, so we can safely
 		 * increase the length */
-		dfs_read_dirent(inode->i_no, &entry);
-		assert(entry.len == inode->length);
 		entry.len = new_len;
 		dfs_write_dirent(inode->i_no, &entry);
 		sbi->free_space = entry.pos_start + entry.len;
@@ -520,7 +535,7 @@ static size_t dfs_write(struct file *desc, void *buf, size_t size) {
 	pos = desc->f_inode->start_pos + desc->pos;
 	l = min(size, desc->f_inode->length - desc->pos);
 
-	if (l < 0)
+	if (l <= 0)
 		return -1;
 
 	dfs_write_raw(pos, buf, l);

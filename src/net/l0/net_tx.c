@@ -21,6 +21,8 @@
 #include <net/l2/ethernet.h>
 #include <util/log.h>
 
+#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
+
 static int nt_build_hdr(struct sk_buff *skb,
 		struct net_header_info *hdr_info,
 		struct net_device *dev) {
@@ -83,9 +85,9 @@ int net_tx(struct sk_buff *skb,
 		ret = neighbour_send_after_resolve(hdr_info->type,
 				hdr_info->dst_p, hdr_info->p_len,
 				dev, skb);
-		if (ret != 0) {
+		if (ret != 0)
 			log_debug("net_tx: neighbour_send_after_resolve = %d\n", ret);
-		}
+
 		return ret;
 	}
 

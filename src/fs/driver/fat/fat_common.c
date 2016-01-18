@@ -1304,7 +1304,8 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		}
 	}
 	/* If cleared, then mark free clusters*/
-	if (*size > fi->pointer) {
+	// TODO implement fat truncate
+	if (0 && *size > fi->pointer) {
 		if (div(*size, clastersize).quot !=
 			div(fi->pointer, clastersize).quot) {
 
@@ -1339,7 +1340,7 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		}
 	}
 
-	*size = fi->pointer;
+	//*size = fi->pointer; // TODO implement fat truncate
 
 	/* Update directory entry */
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {

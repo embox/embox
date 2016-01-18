@@ -354,6 +354,7 @@ static int fat_close(struct file *desc) {
 static size_t fat_read(struct file *desc, void *buf, size_t size) {
 	uint32_t res;
 	struct fat_file_info *fi = desc->f_inode->i_data;
+	fi->pointer = desc->pos;
 	fat_read_file(fi, fat_sector_buff, buf, &res, min(size, fi->filelen - desc->pos));
 	return res;
 }
@@ -362,6 +363,7 @@ static size_t fat_write(struct file *desc, void *buf, size_t size) {
 	uint32_t res;
 	struct fat_file_info *fi = desc->f_inode->i_data;
 	fi->mode = O_RDWR; /* XXX */
+	fi->pointer = desc->pos;
 	fat_write_file(fi, fat_sector_buff, buf, &res, size, &desc->f_inode->length);
 	return res;
 }

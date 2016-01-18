@@ -18,6 +18,8 @@
 #include <net/socket/packet.h>
 #include <util/log.h>
 
+#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
+
 int net_rx(struct sk_buff *skb) {
 	struct net_header_info hdr_info;
 	const struct net_pack *npack;
