@@ -24,7 +24,7 @@
 #define STM32_ERR_MASK 0x1f3
 
 static const struct flash_dev_drv stm32_flash_drv;
-static const struct flash_dev stm32_flash = {
+const struct flash_dev stm32_flash = {
 	.bdev = NULL,
 	.drv = &stm32_flash_drv,
 	.flags = 0,
