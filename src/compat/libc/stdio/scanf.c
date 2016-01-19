@@ -185,15 +185,24 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			switch (*fmt) {
 			case 's': {
 				char *dst = va_arg(args, char*);
-				int ch;
-				while (EOF != (ch = scanchar(in)) && width--)
+				char ch;
+				while (isspace(ch = scanchar(in)));
+
+				while (ch != (char) EOF && width--) {
+					if (isspace(ch))
+						break;
+
+					width--;
 					*dst++ = (char) ch;
-				*dst = '\0';
+					ch = scanchar(in);
+				}
 
 				if (width == 80) // XXX
 					converted = EOF;
-				else
+				else {
+					*dst = '\0';
 					++converted;
+				}
 			}
 				break;
 			case 'c': {
@@ -202,7 +211,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				dst = scanchar(in);
 				*va_arg(args, char*) = dst;
 
-				if (dst == EOF)
+				if (dst == (char) EOF)
 					converted = EOF;
 				else
 					++converted;
