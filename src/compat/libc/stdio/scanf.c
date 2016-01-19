@@ -152,6 +152,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 	int widht;
 	int converted = 0;
 	int ops_len;
+	int err;
 
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
@@ -189,7 +190,10 @@ static int scan(const char **in, const char *fmt, va_list args) {
 					*dst++ = (char) ch;
 				*dst = '\0';
 
-				++converted;
+				if (widht == 80) // XXX
+					converted = EOF;
+				else
+					++converted;
 			}
 				break;
 			case 'c': {
@@ -197,13 +201,18 @@ static int scan(const char **in, const char *fmt, va_list args) {
 
 				dst = scanchar(in);
 				*va_arg(args, char*) = dst;
-				++converted;
 
+				if (dst == EOF)
+					converted = EOF;
+				else
+					++converted;
 			}
 				break;
 			case 'u': {
 				int dst;
-				if (0 != scan_int(in, 10, widht, &dst)) {
+				if (0 != (err = scan_int(in, 10, widht, &dst))) {
+					if (err == EOF)
+						converted = EOF;
 					goto out;
 				}
 
@@ -225,7 +234,9 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
 				int dst;
-				if (0 != scan_int(in, 10, widht, &dst)) {
+				if (0 != (err = scan_int(in, 10, widht, &dst))) {
+					if (err == EOF)
+						converted = EOF;
 					goto out;
 				}
 
@@ -246,7 +257,9 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				break;
 			case 'o': {
 				int dst;
-				if (0 != scan_int(in, 8, widht, &dst)) {
+				if (0 != (err = scan_int(in, 8, widht, &dst))) {
+					if (err == EOF)
+						converted = EOF;
 					goto out;
 				}
 
@@ -257,7 +270,9 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				break;
 			case 'x': {
 				int dst;
-				if (0 != scan_int(in, 16, widht, &dst)) {
+				if (0 != (err = scan_int(in, 16, widht, &dst))) {
+					if (err == EOF)
+						converted = EOF;
 					goto out;
 				}
 				*va_arg(args, int*) = dst;
