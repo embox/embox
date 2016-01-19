@@ -70,6 +70,7 @@ module route {
 	depends core /* for inetdev.c */
 	depends embox.mem.pool
 	depends embox.util.DList
+	depends sock_xattr
 }
 
 module proto {
