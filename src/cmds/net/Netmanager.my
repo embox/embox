@@ -1,0 +1,25 @@
+package embox.cmd.net
+
+@AutoCmd
+@Cmd(name = "netmanager",
+	help = "Simple network manager",
+	man = '''
+		SYNOPSIS
+			netmanager [iface]
+		NAME
+			netmanager -- try to receive net parameters
+			automatically or take it from default config
+			if fails
+		OPTIONS
+		AUTHORS
+			Denis Deryugin <deryugin.denis@gmail.com>
+	''')
+
+
+module netmanager {
+	source "netmanager.c"
+
+	depends embox.compat.libc.stdio.print
+	depends embox.compat.libc.stdlib.system
+	depends embox.compat.libc.str
+}
