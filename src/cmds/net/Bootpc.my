@@ -27,4 +27,5 @@ module bootpc {
 	depends embox.net.core
 	depends embox.net.route
 	depends embox.framework.LibFramework
+	depends embox.net.udp
 }
