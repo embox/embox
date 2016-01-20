@@ -36,27 +36,3 @@ module ext2fuse_xattr {
 	@NoRuntime depends core
 	depends embox.fs.core
 }
-
-@App
-@AutoCmd
-@Cmd(name = "ext2fuse",
-	help = "Ext2fuse module",
-	man = '''
-		NAME
-			ext2fuse - start file "ext2" system in userspace
-		SYNOPSIS
-			ext2fuse bdev_name mount_point
-		DESCRIPTION
-		OPTIONS
-		AUTHORS
-			Anton Bondarev
-	''')
-module ext2fuse_module {
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
-	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
-	@IncludePath("$(ROOT_DIR)/third-party/fuse/fuse")
-	source "ext2fuse_dvfs.c"
-
-	@NoRuntime depends core
-	depends embox.fs.fuse.fuse_linux
-}
