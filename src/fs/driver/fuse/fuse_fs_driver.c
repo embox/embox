@@ -316,6 +316,58 @@ static int fuse_pathname(struct inode *inode, char *buf, int flags) {
 	return 0;
 }
 
+static int ext2fuse_getxattr(struct inode *node, const char *name,
+		char *value, size_t size) {
+	struct fuse_req_embox *req;
+	struct task *task;
+	int res;
+	struct fuse_sb_priv_data *sb_fuse_data;
+
+	sb_fuse_data = node->i_sb->sb_data;
+
+	if (NULL == (req = fuse_req_alloc())) {
+		return -1;
+	}
+
+	fuse_fill_req(req, node, value);
+	task = fuse_in(sb_fuse_data);
+
+	assert(sb_fuse_data->fuse_lowlevel_ops->getxattr);
+	sb_fuse_data->fuse_lowlevel_ops->getxattr((fuse_req_t) req, node->i_no, name, size);
+	res = req->buf_size;
+
+	fuse_out(sb_fuse_data, task);
+	fuse_req_free(req);
+
+	return res;
+}
+
+static int ext2fuse_setxattr(struct inode *node, const char *name,
+		const char *value, size_t size, int flags) {
+	struct fuse_req_embox *req;
+	struct task *task;
+	int res;
+	struct fuse_sb_priv_data *sb_fuse_data;
+
+	sb_fuse_data = node->i_sb->sb_data;
+
+	if (NULL == (req = fuse_req_alloc())) {
+		return -1;
+	}
+
+	fuse_fill_req(req, node, NULL);
+	task = fuse_in(sb_fuse_data);
+
+	assert(sb_fuse_data->fuse_lowlevel_ops->getxattr);
+	sb_fuse_data->fuse_lowlevel_ops->setxattr((fuse_req_t) req, node->i_no, name, value, size, flags);
+	res = req->buf_size;
+
+	fuse_out(sb_fuse_data, task);
+	fuse_req_free(req);
+
+	return res;
+}
+
 static int fuse_destroy_inode(struct inode *inode) {
 	return 0;
 }
@@ -345,7 +397,9 @@ const struct inode_operations fuse_iops = {
 	.iterate  = fuse_iterate,
 	.pathname = fuse_pathname,
 	.create = fuse_create,
-	.remove = fuse_remove
+	.remove = fuse_remove,
+	.getxattr = ext2fuse_getxattr,
+	.setxattr = ext2fuse_setxattr
 };
 
 const struct file_operations fuse_fops = {
