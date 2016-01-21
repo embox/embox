@@ -15,8 +15,4 @@ module fuse_linux extends fuse_api {
 	source "fuse_module_linux.h"
 
 	source "fuse_linux.c"
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
-	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
-	@IncludePath("$(ROOT_DIR)/third-party/fuse/fuse")
-	source "fuse_fs_driver.c"
 }

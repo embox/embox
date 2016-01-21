@@ -9,13 +9,15 @@
 #include <unistd.h>
 
 #include <kernel/task.h>
+#include <kernel/thread.h>
 
 #define _FILE_OFFSET_BITS 64
 #define FUSE_USE_VERSION 25
+
 #include <fuse_lowlevel.h>
-#include <fuse_opt.h>
-#include <fuse_kernel.h>
+
 #include <fs/fuse_module.h>
+#include <fs/fuse_driver.h>
 
 extern void init_ext2_stuff();
 extern struct fuse_lowlevel_ops *ext2fs_register(void);
@@ -48,3 +50,5 @@ int main(int argc, char *argv[]) {
 	/* UNREACHABLE */
 	return 0;
 }
+
+FUSE_MODULE_DEF("ext2fuse", "ext2fuse");

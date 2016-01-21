@@ -320,7 +320,7 @@ static int fuse_destroy_inode(struct inode *inode) {
 	return 0;
 }
 
-int fuse_umount_begin(struct super_block *sb) {
+static int fuse_umount_begin(struct super_block *sb) {
 	// TODO kill task and thread
 	struct task *task;
 	struct fuse_sb_priv_data *fuse_data;
@@ -354,27 +354,3 @@ const struct file_operations fuse_fops = {
 	.read  = fuse_read,
 	.write  = fuse_write
 };
-
-#if 0
-static int fuse_fill_sb(struct super_block *sb, struct file *bdev_file) {
-	sb->sb_iops = (struct inode_operations *)&fuse_iops;
-	sb->sb_fops = (struct file_operations *)&fuse_fops;
-	sb->sb_ops  = (struct super_block_operations *)&fuse_sbops;
-	sb->bdev = NULL;
-
-	return 0;
-}
-
-static int fuse_mount_end(struct super_block *sb) {
-	return 0;
-}
-
-struct dumb_fs_driver fuse_driver = {
-	.name      = "fuse",
-	.fill_sb   = fuse_fill_sb,
-	.mount_end = fuse_mount_end,
-};
-
-ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
-ARRAY_SPREAD_ADD(dumb_drv_tab, &fuse_driver);
-#endif

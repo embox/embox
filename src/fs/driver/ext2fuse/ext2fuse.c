@@ -6,30 +6,11 @@
  * @author Alexander Kalmuk
  */
 
-#include <string.h>
-#include <errno.h>
-#include <stdarg.h>
-#include <stdlib.h>
+#include <stddef.h>
 
 #include <fs/dvfs.h>
-#include <kernel/printk.h>
-#include <embox/unit.h>
-// Allocates embox-specific requests for the FUSE
-#include <fuse_req_alloc.h>
 
-// Needed by fuse_common.h
-#define _FILE_OFFSET_BITS 64
-
-// it is from fuse-ext2fs.c
-#define FUSE_USE_VERSION 25
-#include <fuse_lowlevel.h>
-#include <fuse_opt.h>
-#include <fuse_kernel.h>
-
-#define FUSE_MAX_NAMELEN 255
-
-#include <fs/fuse_module.h>
-FUSE_MODULE_DEF("ext2fuse", "ext2fuse");
+#include <fs/fuse_driver.h>
 
 struct fuse_sb_priv_data ext2fuse_sb_priv_data;
 
