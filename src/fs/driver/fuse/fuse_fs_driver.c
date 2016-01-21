@@ -15,8 +15,8 @@
 #include <kernel/task.h>
 
 
-// Allocates embox-specific requests for the FUSE
-#include <fuse_req_alloc.h>
+/* Allocates embox-specific requests for the FUSE */
+#include <fs/fuse_req_alloc.h>
 
 // Needed by fuse_common.h
 #define _FILE_OFFSET_BITS 64

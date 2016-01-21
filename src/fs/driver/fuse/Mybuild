@@ -4,7 +4,6 @@ package embox.fs.driver
 module fuse {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
 	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
-	@IncludePath("$(ROOT_DIR)/third-party/fuse/fuse")
 	source "fuse_fs_driver.c"
 
 	@IncludeExport(path="fs")
