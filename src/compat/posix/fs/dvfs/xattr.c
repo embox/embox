@@ -31,6 +31,20 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 
 int setxattr(const char *path, const char *name, const char *value, size_t size,
 	       	int flags) {
+	struct lookup lookup;
+	struct inode *inode;
+
+	dvfs_lookup(path, &lookup);
+
+	if (!lookup.item) {
+		return SET_ERRNO(ENOENT);
+	}
+	inode = lookup.item->d_inode;
+
+	if (inode->i_ops->setxattr) {
+		return inode->i_ops->setxattr(inode, name, value, size, flags);
+	}
+
 	return 0;
 }
 

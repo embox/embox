@@ -86,6 +86,7 @@ struct inode_operations {
 	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
 	int           (*rename)(struct inode *node, struct inode *new_parent, const char *new_name);
 	int           (*getxattr)(struct inode *node, const char *name, char *value, size_t size);
+	int           (*setxattr)(struct inode *node, const char *name, const char *value, size_t size, int flags);
 };
 
 struct dentry {
