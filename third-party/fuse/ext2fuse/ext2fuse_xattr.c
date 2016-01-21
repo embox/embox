@@ -32,6 +32,8 @@
 
 static int ext2_getxattr(struct ext2_inode *node, const char *name,
 		char *value, size_t size);
+static int ext2_setxattr(struct ext2_inode *node, const char *name,
+		const char *value, size_t size, int flags);
 
 extern ext2_filsys fs; // from ext2fuse-src-0.8.1/src/fuse-ext2fs.c
 
@@ -57,6 +59,23 @@ void fuse_ext2_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
 	value_actual_size = ext2_getxattr(&inode, name, buf, size);
 	fuse_reply_buf(req, buf, value_actual_size);
 	free(buf);
+}
+
+void fuse_ext2_setxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
+              const char *value, size_t size, int flags) {
+	int rc;
+	int written;
+	struct ext2_inode inode;
+
+	rc = read_inode(EXT2FS_INO(ino), &inode);
+	if (rc) {
+		fuse_reply_err(req, ENOENT);
+		return;
+	}
+
+	written = ext2_setxattr(&inode, name, value, size, flags);
+	write_inode(EXT2FS_INO(ino), &inode);
+	fuse_reply_write(req, written);
 }
 
 static int ext2_getxattr(struct ext2_inode *node, const char *name,
@@ -87,6 +106,73 @@ static int ext2_getxattr(struct ext2_inode *node, const char *name,
 		}
 		entry = EXT2_EXT_ATTR_NEXT(entry);
 	}
+
 	free(buf);
 	return res;
+}
+
+static blk_t ext2_alloc_xattr_block(struct ext2_inode *node) {
+	blk_t blknr;
+
+	ext2fs_new_block(fs, 0, 0, &blknr);
+	if (blknr > 0) {
+		node->i_file_acl = blknr;
+	}
+
+	return blknr;
+}
+
+static int ext2_setxattr(struct ext2_inode *node, const char *name,
+		const char *value, size_t size, int flags) {
+	char *buf, *attr_start;
+	struct ext2_ext_attr_entry *entry;
+	struct ext2_ext_attr_header *header;
+	blk_t blknr;
+	// The place within a block from where values start
+	uint32_t e_value_offs = fs->blocksize;
+
+	buf = malloc(fs->blocksize);
+	if (!buf) {
+		return -1;
+	}
+
+	if (!node->i_file_acl) {
+		blknr = ext2_alloc_xattr_block(node);
+		if (blknr < 0) {
+			free(buf);
+			return -1;
+		}
+	}
+
+	ext2fs_read_ext_attr(fs, node->i_file_acl, buf);
+
+	header = (struct ext2_ext_attr_header*)buf;
+	attr_start = buf + sizeof(struct ext2_ext_attr_header);
+	entry = (struct ext2_ext_attr_entry *) attr_start;
+
+	while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
+		e_value_offs = min(e_value_offs, entry->e_value_offs);
+
+		entry = EXT2_EXT_ATTR_NEXT(entry);
+	}
+	entry->e_name_len = strlen(name);
+	entry->e_name_index = 1;
+	entry->e_value_size = size;
+	entry->e_value_offs = e_value_offs - entry->e_value_size;
+	strcpy(EXT2_EXT_ATTR_NAME(entry), name);
+	*(uint32_t*)EXT2_EXT_ATTR_NEXT(entry) = 0;
+	//entry->e_hash = ext2fs_ext_attr_hash_entry(entry, (char *)value);
+
+	/* FIXME: Use ext2fs_adjust_ea_refcount */
+	header->h_magic = EXT2_EXT_ATTR_MAGIC;
+	header->h_refcount = 1;
+	header->h_blocks = 1;
+
+	// TODO: Check that entries do not intersect with values
+
+	memcpy(buf + entry->e_value_offs, value, entry->e_value_size);
+	ext2fs_write_ext_attr2(fs, node->i_file_acl, buf);
+
+	free(buf);
+	return size;
 }

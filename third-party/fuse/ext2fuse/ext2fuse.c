@@ -306,7 +306,8 @@ static int ext2fuse_pathname(struct inode *inode, char *buf, int flags) {
 	return 0;
 }
 
-static int ext2fuse_getxattr(struct inode *node, const char *name, char *value, size_t size) {
+static int ext2fuse_getxattr(struct inode *node, const char *name,
+		char *value, size_t size) {
 	struct fuse_req_embox *req;
 	struct task *task;
 	int res;
@@ -320,6 +321,29 @@ static int ext2fuse_getxattr(struct inode *node, const char *name, char *value, 
 
 	assert(ext2fuse_ops->getxattr);
 	ext2fuse_ops->getxattr((fuse_req_t) req, node->i_no, name, size);
+	res = req->buf_size;
+
+	fuse_out(task);
+	fuse_req_free(req);
+
+	return res;
+}
+
+static int ext2fuse_setxattr(struct inode *node, const char *name,
+		const char *value, size_t size, int flags) {
+	struct fuse_req_embox *req;
+	struct task *task;
+	int res;
+
+	if (NULL == (req = fuse_req_alloc())) {
+		return -1;
+	}
+
+	ext2fuse_fill_req(req, node, NULL);
+	task = fuse_in();
+
+	assert(ext2fuse_ops->getxattr);
+	ext2fuse_ops->setxattr((fuse_req_t) req, node->i_no, name, value, size, flags);
 	res = req->buf_size;
 
 	fuse_out(task);
@@ -359,7 +383,8 @@ struct inode_operations ext2fuse_iops = {
 	.pathname = ext2fuse_pathname,
 	.create = ext2fuse_create,
 	.remove = ext2fuse_remove,
-	.getxattr = ext2fuse_getxattr
+	.getxattr = ext2fuse_getxattr,
+	.setxattr = ext2fuse_setxattr
 };
 
 struct file_operations ext2fuse_fops = {
@@ -372,11 +397,14 @@ struct file_operations ext2fuse_fops = {
 extern void init_ext2_stuff();
 extern void fuse_ext2_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
             size_t size);
+extern void fuse_ext2_setxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
+              const char *value, size_t size, int flags);
 
 static void *ext2fuse_mount_task(void *arg) {
 	init_ext2_stuff();
 	ext2fuse_ops = ext2fs_register();
 	ext2fuse_ops->getxattr = fuse_ext2_getxattr;
+	ext2fuse_ops->setxattr = fuse_ext2_setxattr;
 
 	// SHOULD BE ext2fuse_ops->init(bdev_file->f_dentry->name);
 	ext2fuse_ops->init("/dev/hda");
