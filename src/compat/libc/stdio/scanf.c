@@ -102,7 +102,7 @@ static int trim_leading(const char **str) {
 	return ch;
 }
 
-static int scan_int(const char **in, int base, int widht, int *res) {
+static int scan_int(const char **in, int base, int width, int *res) {
 	int neg = 0;
 	int dst = 0;
 	int ch;
@@ -121,7 +121,7 @@ static int scan_int(const char **in, int base, int widht, int *res) {
 	}
 
 	for (i = 0; (ch = (int) scanchar(in)) != EOF; i++) {
-		if (!(base == 10 ? isdigit(ch) : isxdigit(ch)) || (0 == widht)) {
+		if (!(base == 10 ? isdigit(ch) : isxdigit(ch)) || (0 == width)) {
 			unscanchar(in, ch);
 			/*end conversion*/
 			break;
@@ -149,24 +149,25 @@ static int scan_int(const char **in, int base, int widht, int *res) {
 #define OPS_LEN_LONGFP        0x00002000 /* long double (f, F, e, E, g, G, a, A) */
 
 static int scan(const char **in, const char *fmt, va_list args) {
-	int widht;
+	int width;
 	int converted = 0;
 	int ops_len;
+	int err;
 
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
 			fmt++;
-			widht = 80;
+			width = 80;
 
 			if (*fmt == '\0')
 				break;
 
 			if (isdigit((int) *fmt))
-				widht = 0;
+				width = 0;
 
 			while (isdigit((int) *fmt)) {
 
-				widht = widht * 10 + (*fmt++ - '0');
+				width = width * 10 + (*fmt++ - '0');
 			}
 
 			ops_len = 0;
@@ -184,12 +185,24 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			switch (*fmt) {
 			case 's': {
 				char *dst = va_arg(args, char*);
-				int ch;
-				while (EOF != (ch = scanchar(in)) && widht--)
-					*dst++ = (char) ch;
-				*dst = '\0';
+				char ch;
+				while (isspace(ch = scanchar(in)));
 
-				++converted;
+				while (ch != (char) EOF && width--) {
+					if (isspace(ch))
+						break;
+
+					width--;
+					*dst++ = (char) ch;
+					ch = scanchar(in);
+				}
+
+				if (width == 80) // XXX
+					converted = EOF;
+				else {
+					*dst = '\0';
+					++converted;
+				}
 			}
 				break;
 			case 'c': {
@@ -197,13 +210,18 @@ static int scan(const char **in, const char *fmt, va_list args) {
 
 				dst = scanchar(in);
 				*va_arg(args, char*) = dst;
-				++converted;
 
+				if (dst == (char) EOF)
+					converted = EOF;
+				else
+					++converted;
 			}
 				break;
 			case 'u': {
 				int dst;
-				if (0 != scan_int(in, 10, widht, &dst)) {
+				if (0 != (err = scan_int(in, 10, width, &dst))) {
+					if (err == EOF)
+						converted = EOF;
 					goto out;
 				}
 
@@ -225,7 +243,9 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
 				int dst;
-				if (0 != scan_int(in, 10, widht, &dst)) {
+				if (0 != (err = scan_int(in, 10, width, &dst))) {
+					if (err == EOF)
+						converted = EOF;
 					goto out;
 				}
 
@@ -246,7 +266,9 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				break;
 			case 'o': {
 				int dst;
-				if (0 != scan_int(in, 8, widht, &dst)) {
+				if (0 != (err = scan_int(in, 8, width, &dst))) {
+					if (err == EOF)
+						converted = EOF;
 					goto out;
 				}
 
@@ -257,7 +279,9 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				break;
 			case 'x': {
 				int dst;
-				if (0 != scan_int(in, 16, widht, &dst)) {
+				if (0 != (err = scan_int(in, 16, width, &dst))) {
+					if (err == EOF)
+						converted = EOF;
 					goto out;
 				}
 				*va_arg(args, int*) = dst;

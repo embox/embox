@@ -17,4 +17,6 @@ module seculog_file {
 	source "seculog_file.c"
 
 	depends seculog
+	depends embox.fs.file_desc
+	depends embox.fs.syslib.file
 }

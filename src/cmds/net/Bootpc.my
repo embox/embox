@@ -20,10 +20,12 @@ module bootpc {
 	source "bootpc.c"
 
 	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.net.socket
 	depends embox.compat.libc.all
 	depends embox.net.lib.bootp
 	depends embox.net.dev
 	depends embox.net.core
 	depends embox.net.route
 	depends embox.framework.LibFramework
+	depends embox.net.udp
 }
