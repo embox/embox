@@ -1,0 +1,14 @@
+package embox.fs.fuse
+
+static module core {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
+
+	source "fuse.c", "fuse_session.c"
+
+	@IncludeExport(path="fs")
+	source "fuse_req_alloc.h"
+
+	depends embox.compat.posix.fs.statvfs
+	depends third_party.fuse.core
+}

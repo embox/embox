@@ -1,0 +1,26 @@
+Только в fuse-2.9.4-working-copy: config.log
+Только в fuse-2.9.4-working-copy: config.status
+Только в fuse-2.9.4-working-copy/doc: Makefile
+Только в fuse-2.9.4-working-copy/example: .deps
+Только в fuse-2.9.4-working-copy/example: Makefile
+Только в fuse-2.9.4-working-copy: fuse.pc
+Только в fuse-2.9.4-working-copy/include: config.h
+Только в fuse-2.9.4-working-copy/include: Makefile
+Только в fuse-2.9.4-working-copy/include: stamp-h1
+Только в fuse-2.9.4-working-copy/lib: .deps
+diff -aur fuse-2.9.4/lib/fuse_i.h fuse-2.9.4-working-copy/lib/fuse_i.h
+--- fuse-2.9.4/lib/fuse_i.h	2014-07-04 15:20:34.000000000 +0300
++++ fuse-2.9.4-working-copy/lib/fuse_i.h	2015-11-26 13:14:44.888989548 +0300
+@@ -9,6 +9,7 @@
+ #include "fuse.h"
+ #include "fuse_lowlevel.h"
+ 
++#include <pthread.h>
+ struct fuse_chan;
+ struct fuse_ll;
+ 
+Только в fuse-2.9.4-working-copy/lib: Makefile
+Только в fuse-2.9.4-working-copy: libtool
+Только в fuse-2.9.4-working-copy: Makefile
+Только в fuse-2.9.4-working-copy/util: .deps
+Только в fuse-2.9.4-working-copy/util: Makefile

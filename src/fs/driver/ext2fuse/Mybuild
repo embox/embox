@@ -1,0 +1,12 @@
+package embox.fs.driver
+
+module ext2fuse {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/fuse")
+	source "ext2fuse.c"
+
+	@NoRuntime depends embox.fs.fuse.core
+	depends embox.fs.fuse.fuse_linux
+	depends embox.fs.driver.fuse
+}

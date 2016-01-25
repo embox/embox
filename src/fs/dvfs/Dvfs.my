@@ -14,4 +14,5 @@ module polynomial extends cache_strategy {
 
 module compat {
 	source "compat.c"
+	depends embox.fs.fuse.fuse_api
 }

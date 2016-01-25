@@ -1,0 +1,30 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "ext2fuse",
+	help = "Ext2fuse module",
+	man = '''
+		NAME
+			ext2fuse - start file "ext2" system in userspace
+		SYNOPSIS
+			ext2fuse bdev_name mount_point
+		DESCRIPTION
+		OPTIONS
+		AUTHORS
+			Anton Bondarev
+	''')
+module ext2fuse {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
+	source "ext2fuse.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/e2fsprogs/core/install/include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/ext2fuse/core/install/src")
+	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
+	source "ext2fuse_xattr.c"
+
+	@NoRuntime depends embox.fs.fuse.core
+	depends embox.fs.driver.ext2fuse
+	depends embox.fs.fuse.fuse_linux
+}

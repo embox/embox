@@ -74,6 +74,9 @@ void *realloc(void *ptr, size_t size) {
 		mspace_free(ptr, task_self_mspace());
 		return NULL; /* ok */
 	}
+	if (ptr == NULL) {
+		return malloc(size);
+	}
 	/* XXX same as in free() above */
 	if (0 > err(ret = mspace_realloc(ptr, size, task_self_mspace()))) {
 		printk("***** realloc: pointer is not in current task, try realloc in kernel task...\n");
