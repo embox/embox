@@ -14,10 +14,18 @@
 
 int fioctl(FILE *file, int request, ...) {
 	va_list args;
+	int res;
+	void *data;
+
 	if (NULL == file) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
+
 	va_start(args, request);
-	return ioctl(file->fd, request, args);
+	data = va_arg(args, void*);
+	res = ioctl(file->fd, request, data);
+	va_end(args);
+
+	return res;
 }
