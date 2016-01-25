@@ -2,6 +2,9 @@
  * @file
  * @brief Compute and check MD5 message digest.
  *
+ * @note IMPORTANT NOTE This cmd works only in filesystems
+ * which uses ram addresses to access files
+ *
  * @date 10.03.10
  * @author Nikolay Korotky
  */
@@ -25,11 +28,12 @@ int main(int argc, char **argv) {
 	int opt;
 	FILE *fd;
 	stat_t st;
-	uint32_t addr;
+	char *addr;
 	md5_state_t state;
 	md5_byte_t digest[16];
 	char hex_output[16*2 + 1];
 	int di;
+	int err;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
@@ -48,8 +52,11 @@ int main(int argc, char **argv) {
 		printf("Can't open file %s\n", argv[argc - 1]);
 		return -errno;
 	}
-	fioctl(fd, 0, &addr);
+	err = fioctl(fd, 0, &addr);
 	fclose(fd);
+
+	if (err < 0)
+		printf("Target filesystem not supported!\n");
 	stat((char *) argv[argc - 1], &st);
 	/* Compute MD5 sum */
 	md5_init(&state);
