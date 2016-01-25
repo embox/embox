@@ -11,7 +11,7 @@ static module core {
 
 	depends embox.compat.posix.fs.statvfs
 	@NoRuntime depends third_party.e2fsprogs.core
-	@NoRuntime depends third_party.fuse.core
+	@NoRuntime depends embox.fs.fuse.core
 }
 
 module ext2fuse_driver {

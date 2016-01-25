@@ -24,7 +24,7 @@ module ext2fuse {
 	@IncludePath("$(ROOT_DIR)/third-party/fuse/ext2fuse/include")
 	source "ext2fuse_xattr.c"
 
-	@NoRuntime depends third_party.ext2fuse.core
+	@NoRuntime depends embox.fs.fuse.core
 	depends embox.fs.driver.ext2fuse
 	depends embox.fs.fuse.fuse_linux
 }
