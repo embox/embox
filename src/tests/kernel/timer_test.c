@@ -9,7 +9,9 @@
 #include <embox/test.h>
 #include <kernel/time/timer.h>
 #include <kernel/time/time.h>
-
+#include <kernel/thread/sync/mutex.h>
+#include <kernel/sched/sync/mutex.h>
+#
 EMBOX_TEST_SUITE("basic timer tests");
 
 #define TEST_TIMER_PERIOD      100 /* milliseconds */
@@ -112,4 +114,39 @@ TEST_CASE("Timer could be started many times") {
 	}
 
 	timer_close(&tmr);
+}
+
+static struct mutex test_lock;
+
+static void test_timer_handler_mutex(sys_timer_t *timer, void *param){
+	if (!mutex_trylock(&test_lock) && !mutex_unlock(&test_lock))
+		*((int *) param) += 1;
+}
+
+TEST_CASE("setting mutex inside timer handler") {
+	int i;
+	sys_timer_t *timer;
+	volatile int tick_counter;
+
+	/* Timer value changing means ok */
+	tick_counter = 0;
+	mutex_init(&test_lock);
+	timer_set(&timer, TIMER_PERIODIC, 5000, test_timer_handler_mutex, 0);
+
+	if (timer_set(	&timer,
+			TIMER_ONESHOT,
+			TEST_TIMER_PERIOD,
+			test_timer_handler_mutex,
+			(void *) &tick_counter)) {
+		test_fail("failed to install timer");
+	}
+
+	i = 100000000;
+
+	while (i--) {
+	}
+
+	timer_close(timer);
+
+	test_assert_equal(tick_counter, 1);
 }
