@@ -54,10 +54,8 @@ int getopt_long(int argc, char * const argv[],
 		int consumed;
 		const struct option *lopt;
 
-		if (strncmp(argv[optind], "--", 2)) {
-			optarg = argv[optind++];
-			return 1;
-		}
+		if (strncmp(argv[optind], "--", 2))
+			return -1;
 
 		consumed = getopt_try_long(argc - optind, argv + optind, longopts, &lopt);
 		if (consumed >= 0) {
