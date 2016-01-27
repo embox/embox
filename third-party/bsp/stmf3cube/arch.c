@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include <hal/arch.h>
+#include <hal/clock.h>
 
 #include <system_stm32f3xx.h>
 #include <stm32f3xx_hal.h>
@@ -75,3 +76,13 @@ void arch_shutdown(arch_shutdown_mode_t mode) {
 
 	}
 }
+
+
+HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority) {
+	return HAL_OK;
+}
+
+uint32_t HAL_GetTick(void) {
+	return clock_sys_ticks();
+}
+
