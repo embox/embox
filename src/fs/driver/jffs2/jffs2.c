@@ -268,35 +268,13 @@ static int jffs2_find(jffs2_dirsearch_t * d) {
 static int jffs2_read_super(struct super_block *sb) {
 	struct jffs2_sb_info *c;
 	int err;
-	uint32_t len;
-	flash_getconfig_devsize_t ds;
-	flash_getconfig_blocksize_t bs;
 
 	D1(printk(KERN_DEBUG "jffs2: read_super\n"));
 
 	c = &sb->jffs2_sb;
 
-	len = sizeof (ds);
-	err = sb->bdev->driver->ioctl(sb->bdev,
-			GET_CONFIG_FLASH_DEVSIZE, &ds, len);
-	if (err != ENOERR) {
-		D1(printf
-		   ("jffs2: ioctl failed to get dev size: %d\n", err));
-		return err;
-	}
-
-	len = sizeof (bs);
-	err = sb->bdev->driver->ioctl(sb->bdev,
-			GET_CONFIG_FLASH_BLOCKSIZE, &bs, len);
-	if (err != ENOERR) {
-		D1(printf
-		   ("jffs2: ioctl failed to get block size: %d\n", err));
-		return err;
-	}
-
-	c->sector_size = bs.block_size;
-	c->flash_size = ds.dev_size;
-
+	c->flash_size = sb->bdev->size;
+	c->sector_size = sb->bdev->block_size;
 
 	c->cleanmarker_size = sizeof(struct jffs2_unknown_node);
 
