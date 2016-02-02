@@ -1,0 +1,10 @@
+package embox.driver.flash
+
+@BuildDepends(third_party.bsp.st_f4.core)
+module stm32_f4 {
+	source "stm32f4_flash.c"
+	source "stm32f4_flash.lds.S"
+
+	depends third_party.bsp.st_f4.core
+	depends embox.driver.flash.lib
+}

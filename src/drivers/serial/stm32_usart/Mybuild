@@ -23,6 +23,7 @@ module stm_usart_f3 extends embox.driver.diag.diag_api {
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f3.h"
 
+	source "hal_msp_f3.c"
 	source "stm_usart_cube_diag.c"
 
 	depends embox.driver.serial.core

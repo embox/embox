@@ -287,7 +287,8 @@ int dvfs_update_root(void) {
 			.i_dentry = global_root,
 		};
 
-	global_root->d_sb->root = global_root;
+	if (global_root->d_sb)
+		global_root->d_sb->root = global_root;
 
 	dlist_init(&global_root->children);
 	dlist_init(&global_root->children_lnk);

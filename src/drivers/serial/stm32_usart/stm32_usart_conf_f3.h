@@ -12,6 +12,8 @@
 #include "stm32f3xx_hal.h"
 #include "stm32f3_discovery.h"
 
+//http://myprognote.blogspot.ru/2013/03/usart-stm32f3.html
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 /* User can use this section to tailor USARTx/UARTx instance used and associated
