@@ -38,7 +38,6 @@
 
 #include <stm32f3xx_hal_usart.h>
 
-
 static int stm32_uart_putc(struct uart *dev, int ch) {
 	USART_TypeDef *uart = (void *) dev->base_addr;
 
@@ -50,8 +49,13 @@ static int stm32_uart_putc(struct uart *dev, int ch) {
 }
 
 static int stm32_uart_hasrx(struct uart *dev) {
+	UART_HandleTypeDef UartHandle;
 	USART_TypeDef *uart = (void *) dev->base_addr;
 
+	UartHandle.Instance = USARTx;
+	__HAL_USART_CLEAR_NEFLAG(&UartHandle);
+	__HAL_USART_CLEAR_FEFLAG(&UartHandle);
+	__HAL_USART_CLEAR_OREFLAG(&UartHandle);
 	return STM32_USART_FLAGS(uart) & USART_FLAG_RXNE;
 }
 
