@@ -21,6 +21,6 @@ module jffs2 {
 	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.fs.core
-	depends embox.driver.flash
+	depends embox.driver.flash.core
 	depends embox.framework.LibFramework
 }

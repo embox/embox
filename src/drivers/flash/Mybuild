@@ -1,18 +1,30 @@
-package embox.driver
+package embox.driver.flash
 
-module flash_lib {
+@BuildDepends(third_party.bsp.st_f4.core)
+module stm32 {
+	@IncludeExport(path="drivers/block_dev/flash/",target_name="stm32flash.h")
+	source "stm32_flash.h"
+
+	@IncludeExport(path="drivers/block_dev/flash/")
+	source "stm32flash_conf.h"
+
+	depends third_party.bsp.st_f4.core
+	depends lib
+}
+
+module lib {
 	@IncludeExport(path="drivers/block_dev/flash")
 	source "flash.h"
 	@IncludeExport(path="drivers/block_dev/flash")
 	source "flash_dev.h"
 }
 
-module flash {
+module core {
 	source "flash.c"
 
 	option number dev_quantity=4
 
-	depends flash_lib
+	depends lib
 
 	depends embox.fs.node
 	depends embox.mem.page_api

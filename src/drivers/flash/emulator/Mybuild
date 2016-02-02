@@ -11,5 +11,5 @@ module emulator {
 	depends embox.driver.block
 	depends embox.mem.phymem
 	depends embox.util.indexator
-	depends embox.driver.flash
+	depends embox.driver.flash.core
 }
