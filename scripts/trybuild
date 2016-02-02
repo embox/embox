@@ -12,7 +12,7 @@ PASSWD=trybuild
 
 # project specific
 CONNECT=pb
-VC=svn
+VC=git
 
 # end of params
 
