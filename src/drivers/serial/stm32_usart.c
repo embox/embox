@@ -55,9 +55,9 @@ struct uart_stm32 {
 #define USART_FLAG_RXNE (1 << 5)
 #define USART_FLAG_TXE (1 << 7)
 
-#define USART_FLAG_UE (1 << 13)
-#define USART_FLAG_RE (1 << 2)
-#define USART_FLAG_TE (1 << 3)
+#define USART_FLAG_UE (1 << 13)	/* USART enable		*/
+#define USART_FLAG_RE (1 << 2)	/* Receive enable	*/
+#define USART_FLAG_TE (1 << 3)	/* Transmit enable	*/
 
 #define RCC_APB2ENR_USART1EN (1 << 14)
 
