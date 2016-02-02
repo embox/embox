@@ -67,6 +67,8 @@ struct inode {
 	int    start_pos; /* location on disk */
 	size_t length;
 	int    flags;
+	uid_t i_owner_id;
+	gid_t i_group_id;
 
 	struct dentry *i_dentry;
 	struct super_block *i_sb;
