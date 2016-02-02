@@ -18,6 +18,7 @@ module core {
 	depends embox.compat.posix.proc.exec
 	depends embox.net.lib.getifaddrs
 	depends third_party.zlib.libs
+	depends embox.compat.posix.fs.chown_api
 }
 
 @Build(stage=2,script="true")

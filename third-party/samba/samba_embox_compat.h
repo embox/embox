@@ -163,13 +163,6 @@ unsigned int alarm(unsigned int seconds) {
 	return 0;
 }
 
-static inline
-int chown(const char *path, uid_t owner, gid_t group) {
-	DPRINT();
-	errno = EPERM;
-	return -1;
-}
-
 #include <time.h>
 static inline
 time_t timegm(struct tm *tm) {

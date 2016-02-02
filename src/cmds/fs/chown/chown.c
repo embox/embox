@@ -5,30 +5,35 @@
  * @author  Anton Kozlov
  * @date    07.07.2014
  */
-
+#include <errno.h>
 #include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <fs/path.h>
-#include <fs/vfs.h>
 
 static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group_set) {
 	char **file_p;
+	int res;
 
 	for (file_p = files; *file_p != NULL; file_p++) {
 		char *file = *file_p;
-		struct path node_path;
-		int ret;
+		struct stat st_buf;
 
-		ret = vfs_lookup(file, &node_path);
-		if (ret) {
-			fprintf(stderr, "Can't open %s: %s\n", file, strerror(-ret));
-			return ret;
+		if(!is_group_set) {
+			res = stat(file, &st_buf);
+			if (res) {
+				fprintf(stderr, "stat(%s, ..) return error = %d\n",
+						file, errno);
+				return errno;
+			}
+			group_id = st_buf.st_gid;
 		}
 
-		node_path.node->uid = owner_id;
-		if (is_group_set) {
-			node_path.node->gid = group_id;
+		res = chown(file, owner_id, group_id);
+		if (res) {
+			fprintf(stderr, "chown(%s, %d, %d) return error = %d\n",
+					file, owner_id, group_id, errno);
+			return errno;
 		}
 	}
 

@@ -235,6 +235,8 @@ extern char *getpass(const char *prompt);
 
 extern int gethostname(char *name, size_t len);
 
+extern int chown(const char *path, uid_t owner, gid_t group);
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_UNISTD_H_ */
