@@ -198,13 +198,6 @@ static int jffs2_add_frag_to_fragtree(struct jffs2_sb_info *c,
 				jffs2_free_node_frag(newfrag);
 				return -ENOMEM;
 			}
-			if (this->node) {
-				JFFS2_DBG_FRAGTREE2("split old frag 0x%04x-0x%04x, phys 0x%08x\n",
-					this->ofs, this->ofs+this->size, ref_offset(this->node->raw));
-			} else {
-				JFFS2_DBG_FRAGTREE2("split old hole frag 0x%04x-0x%04x\n",
-					this->ofs, this->ofs+this->size, ref_offset(this->node->raw));
-			}
 			/* New second frag pointing to this's node */
 			newfrag2->ofs = newfrag->ofs + newfrag->size;
 			newfrag2->size = (this->ofs+this->size) - newfrag2->ofs;

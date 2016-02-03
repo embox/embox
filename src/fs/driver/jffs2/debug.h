@@ -19,7 +19,7 @@
 #define CONFIG_JFFS2_FS_DEBUG 0
 #endif
 
-#if CONFIG_JFFS2_FS_DEBUG == 1
+#if CONFIG_JFFS2_FS_DEBUG > 0
 /* Enable "paranoia" checks and dumps */
 #define JFFS2_DBG_PARANOIA_CHECKS
 #define JFFS2_DBG_DUMPS
@@ -54,7 +54,7 @@
 #endif
 
 /* The prefixes of JFFS2 messages */
-#define JFFS2_DBG_MSG_PREFIX "[JFFS2 DBG]"
+#define JFFS2_DBG_MSG_PREFIX "JFFS2 DBG:"
 #define JFFS2_ERR_MSG_PREFIX "JFFS2 error: "
 #define JFFS2_WARN_MSG_PREFIX "JFFS2 warning: "
 #define JFFS2_NOTICE_MSG_PREFIX "JFFS2 notice: "
@@ -62,7 +62,7 @@
 #define JFFS2_ERR_LVL		KERN_ERR
 #define JFFS2_WARN_LVL		KERN_WARNING
 #define JFFS2_NOTICE_LVL	KERN_NOTICE
-#define JFFS2_DBG_LVL		KERN_DEBUG
+#define JFFS2_DBG_LVL		
 
 /* JFFS2 message macros */
 #define JFFS2_ERROR(fmt, ...)						\
