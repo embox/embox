@@ -17,5 +17,7 @@ package embox.cmd
 ''')
 module chown {
 	source "chown.c"
+
+	depends embox.compat.posix.fs.chown_api
 }
 
