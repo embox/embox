@@ -7,6 +7,7 @@ abstract module all {
 module all_old extends all {
 	depends file,
 		chdir,
+		chmod,
 		dirent,
 		fsop,
 		getcwd,
@@ -61,6 +62,15 @@ static module lseek_old extends lseek {
 
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno
+}
+
+
+@DefaultImpl(chmod_old)
+abstract module chmod {
+}
+
+static module chmod_old extends chmod {
+	source "chmod_old.c"
 }
 
 module read {
