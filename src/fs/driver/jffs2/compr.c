@@ -228,7 +228,7 @@ int jffs2_register_compressor(struct jffs2_compressor *comp) {
 	comp->stat_compr_new_size=0;
 	comp->stat_compr_blocks=0;
 	comp->stat_decompr_blocks=0;
-	D1(printk(KERN_DEBUG "Registering JFFS2 compressor \"%s\"\n", comp->name));
+	D1(printk( "Registering JFFS2 compressor \"%s\"\n", comp->name));
 
 	spin_lock(&jffs2_compressor_list_lock);
 
@@ -241,7 +241,7 @@ int jffs2_register_compressor(struct jffs2_compressor *comp) {
 	list_add_tail(&comp->list, &jffs2_compressor_list);
 out:
 	D2(list_for_each_entry(this, &jffs2_compressor_list, list) {
-		printk(KERN_DEBUG "Compressor \"%s\", prio %d\n", this->name, this->priority);
+		printk( "Compressor \"%s\", prio %d\n", this->name, this->priority);
 	})
 
 	spin_unlock(&jffs2_compressor_list_lock);
@@ -252,7 +252,7 @@ out:
 int jffs2_unregister_compressor(struct jffs2_compressor *comp) {
 	D2(struct jffs2_compressor *this;)
 
-	D1(printk(KERN_DEBUG "Unregistering JFFS2 compressor \"%s\"\n", comp->name));
+	D1(printk( "Unregistering JFFS2 compressor \"%s\"\n", comp->name));
 
 	spin_lock(&jffs2_compressor_list_lock);
 
@@ -264,7 +264,7 @@ int jffs2_unregister_compressor(struct jffs2_compressor *comp) {
 	list_del(&comp->list);
 
 	D2(list_for_each_entry(this, &jffs2_compressor_list, list) {
-		printk(KERN_DEBUG "Compressor \"%s\", prio %d\n", this->name, this->priority);
+		printk( "Compressor \"%s\", prio %d\n", this->name, this->priority);
 	})
 	spin_unlock(&jffs2_compressor_list_lock);
 	return 0;

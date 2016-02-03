@@ -87,7 +87,7 @@ void __jffs2_dbg_prewrite_paranoia_check(struct jffs2_sb_info *c,
 	int ret, i;
 	unsigned char *buf;
 
-	buf = kmalloc(len, GFP_KERNEL);
+	buf = sysmalloc(len);
 	if (!buf) {
 		return;
 	}
@@ -96,7 +96,7 @@ void __jffs2_dbg_prewrite_paranoia_check(struct jffs2_sb_info *c,
 	if (ret || (retlen != len)) {
 		JFFS2_WARNING("read %d bytes failed or short. ret %d, retlen %zd.\n",
 				len, ret, retlen);
-		kfree(buf);
+		sysfree(buf);
 		return;
 	}
 
@@ -110,11 +110,11 @@ void __jffs2_dbg_prewrite_paranoia_check(struct jffs2_sb_info *c,
 		JFFS2_ERROR("argh, about to write node to %#08x on flash, but there are data "
 			"already there. The first corrupted byte is at %#08x offset.\n", ofs, ofs + i);
 		__jffs2_dbg_dump_buffer(buf, len, ofs);
-		kfree(buf);
+		sysfree(buf);
 		BUG();
 	}
 
-	kfree(buf);
+	free(buf);
 }
 
 /*
@@ -207,7 +207,6 @@ void __jffs2_dbg_dump_node_refs_nolock(struct jffs2_sb_info *c,
 		return;
 	}
 
-	printk(JFFS2_DBG_LVL);
 	for (ref = jeb->first_node; ; ref = ref->next_phys) {
 		printk("%#08x(%#x)", ref_offset(ref), ref->__totlen);
 		if (ref->next_phys) {
@@ -217,7 +216,6 @@ void __jffs2_dbg_dump_node_refs_nolock(struct jffs2_sb_info *c,
 		}
 		if (++i == 4) {
 			i = 0;
-			printk("\n" JFFS2_DBG_LVL);
 		}
 	}
 	printk("\n");

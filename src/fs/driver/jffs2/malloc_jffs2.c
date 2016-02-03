@@ -90,12 +90,12 @@ void jffs2_free_raw_node_ref(struct jffs2_raw_node_ref *x) {
 
 struct jffs2_inode_cache *jffs2_alloc_inode_cache(void) {
 	struct jffs2_inode_cache *ret = sysmalloc(sizeof(struct jffs2_inode_cache));
-	D1(printk(KERN_DEBUG "Allocated inocache at %p\n", ret));
+	D1(printk( "Allocated inocache at %p\n", ret));
 	return ret;
 }
 
 void jffs2_free_inode_cache(struct jffs2_inode_cache *x) {
-	D1(printk(KERN_DEBUG "Freeing inocache at %p\n", x));
+	D1(printk( "Freeing inocache at %p\n", x));
 	sysfree(x);
 }
 

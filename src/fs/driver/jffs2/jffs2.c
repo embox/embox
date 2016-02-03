@@ -121,7 +121,7 @@ static void icache_evict(struct _inode *root_i, struct _inode *i) {
 static void init_dirsearch(jffs2_dirsearch_t * ds,
 			   struct _inode *dir, const unsigned char *name) {
 	D2(printf("init_dirsearch name = %s\n", name));
-	D2(printf("init_dirsearch dir = %x\n", dir));
+	D2(printf("init_dirsearch dir = %#x\n",(unsigned int) dir));
 
 	dir->i_count++;
 	ds->dir = dir;
@@ -195,7 +195,7 @@ static int find_entry(jffs2_dirsearch_t * ds) {
 
 	D2(printf("find_entry for name = %s\n", ds->path));
 	d = jffs2_lookup(dir, name, namelen);
-	D2(printf("find_entry got dir = %x\n", d));
+	D2(printf("find_entry got dir = %#x\n",(unsigned int) d));
 
 	if (d == NULL) {
 		return ENOENT;
@@ -268,35 +268,20 @@ static int jffs2_find(jffs2_dirsearch_t * d) {
 static int jffs2_read_super(struct super_block *sb) {
 	struct jffs2_sb_info *c;
 	int err;
-	uint32_t len;
-	flash_getconfig_devsize_t ds;
-	flash_getconfig_blocksize_t bs;
 
-	D1(printk(KERN_DEBUG "jffs2: read_super\n"));
+	D1(printk( "jffs2: read_super\n"));
 
 	c = &sb->jffs2_sb;
 
-	len = sizeof (ds);
-	err = sb->bdev->driver->ioctl(sb->bdev,
-			GET_CONFIG_FLASH_DEVSIZE, &ds, len);
-	if (err != ENOERR) {
-		D1(printf
-		   ("jffs2: ioctl failed to get dev size: %d\n", err));
-		return err;
-	}
-
-	len = sizeof (bs);
-	err = sb->bdev->driver->ioctl(sb->bdev,
-			GET_CONFIG_FLASH_BLOCKSIZE, &bs, len);
-	if (err != ENOERR) {
-		D1(printf
-		   ("jffs2: ioctl failed to get block size: %d\n", err));
-		return err;
-	}
-
-	c->sector_size = bs.block_size;
-	c->flash_size = ds.dev_size;
-
+	c->flash_size = sb->bdev->size < 4096 ? 4096 : sb->bdev->size;
+	c->sector_size = sb->bdev->block_size < 4096 ? 4096 : sb->bdev->size;
+	/* Number 4096 is used here beacuse actually there are no real flash
+	 * drives with less than 4KiB erasable block. But if device is provided
+	 * with QEMU, than it's just a block device with 512 bytes block size.
+	 * So, this is generally just for continious testing of OS. If JFFS2
+	 * will detect block or device size incorrectly, then this device was
+	 * detected in wrong way on probe. Changing these values will not fix
+	 * such issue.*/
 
 	c->cleanmarker_size = sizeof(struct jffs2_unknown_node);
 
@@ -304,7 +289,7 @@ static int jffs2_read_super(struct super_block *sb) {
 	if (err) {
 		return -err;
 	}
-	D1(printk(KERN_DEBUG "jffs2_read_super(): Getting root inode\n"));
+	D1(printk( "jffs2_read_super(): Getting root inode\n"));
 	sb->s_root = jffs2_iget(sb, 1);
 	if (IS_ERR(sb->s_root)) {
 		D1(printk(KERN_WARNING "get root inode failed\n"));
@@ -382,7 +367,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 #endif
 
 	jffs2_sb->s_mount_count++;
-	D2(printf("jffs2_mounted superblock at %x\n", mte->root));
+	D2(printf("jffs2_mounted superblock"));
 
 	return ENOERR;
 }
@@ -749,8 +734,8 @@ static int jffs2_extend_file (struct _inode *inode,
 	c = &inode->i_sb->jffs2_sb;
 
 	/* Make new hole frag from old EOF to new page */
-	D1(printk(KERN_DEBUG "Writing new hole frag 0x%x-0x%x between current EOF and new page\n",
-		  (unsigned int)inode->i_size, offset));
+	D1(printk( "Writing new hole frag %#x-%#x between current EOF and new page\n",
+		  (unsigned int)inode->i_size, (unsigned int)offset));
 
 	ret = jffs2_reserve_space(c, sizeof(*ri),
 			&phys_ofs, &alloc_len, ALLOC_NORMAL);
@@ -789,7 +774,7 @@ static int jffs2_extend_file (struct _inode *inode,
 		f->metadata = NULL;
 	}
 	if (ret) {
-		D1(printk(KERN_DEBUG "Eep. add_full_dnode_to_inode() failed in prepare_write, returned %d\n", ret));
+		D1(printk( "Eep. add_full_dnode_to_inode() failed in prepare_write, returned %d\n", ret));
 		jffs2_mark_node_obsolete(c, fn->raw);
 		jffs2_free_full_dnode(fn);
 		up(&f->sem);
@@ -994,7 +979,7 @@ static struct _inode *new_inode(struct super_block *sb) {
 
 	D2(printf
 	   ("malloc new_inode %x ####################################\n",
-	    inode));
+	    (unsigned int)inode));
 
 	memset(inode, 0, sizeof (struct _inode));
 	inode->i_sb = sb;
@@ -1129,7 +1114,7 @@ static void jffs2_clear_inode (struct _inode *inode) {
 
 	c = &inode->i_sb->jffs2_sb;
 
-	D1(printk(KERN_DEBUG "jffs2_clear_inode(): ino #%lu mode %o\n", inode->i_ino, inode->i_mode));
+	D1(printk( "jffs2_clear_inode(): ino #%u mode %o\n", inode->i_ino, inode->i_mode));
 
 	jffs2_do_clear_inode(c, f);
 }
@@ -1147,7 +1132,7 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i,
 	struct jffs2_inode_info *f;
 	int ret;
 
-	D1(printk(KERN_DEBUG "jffs2_new_inode(): dir_i %ld, mode 0x%x\n", dir_i->i_ino, mode));
+	D1(printk( "jffs2_new_inode(): dir_i %d, mode 0x%x\n", dir_i->i_ino, mode));
 
 	c = &sb->jffs2_sb;
 
@@ -1201,7 +1186,7 @@ static int jffs2_read_inode (struct _inode *inode) {
 	struct jffs2_raw_inode latest_node;
 	int ret;
 
-	D1(printk(KERN_DEBUG "jffs2_read_inode(): inode->i_ino == %lu\n", inode->i_ino));
+	D1(printk( "jffs2_read_inode(): inode->i_ino == %d\n", inode->i_ino));
 
 	f = JFFS2_INODE_INFO(inode);
 	c = &inode->i_sb->jffs2_sb;
@@ -1225,7 +1210,7 @@ static int jffs2_read_inode (struct _inode *inode) {
 	inode->i_nlink = f->inocache->nlink;
 	up(&f->sem);
 
-	D1(printk(KERN_DEBUG "jffs2_read_inode() returning\n"));
+	D1(printk( "jffs2_read_inode() returning\n"));
 	return 0;
 }
 
@@ -1260,19 +1245,19 @@ struct jffs2_inode_info *jffs2_gc_fetch_inode(struct jffs2_sb_info *c,
 	 */
 		inode = ilookup(sb, inum);
 		if (!inode) {
-			D1(printk(KERN_DEBUG "ilookup() failed for ino #%u; inode is probably deleted.\n",
+			D1(printk( "ilookup() failed for ino #%u; inode is probably deleted.\n",
 				  inum));
 
 			spin_lock(&c->inocache_lock);
 			ic = jffs2_get_ino_cache(c, inum);
 			if (!ic) {
-				D1(printk(KERN_DEBUG "Inode cache for ino #%u is gone.\n", inum));
+				D1(printk( "Inode cache for ino #%u is gone.\n", inum));
 				spin_unlock(&c->inocache_lock);
 				return NULL;
 			}
 			if (ic->state != INO_STATE_CHECKEDABSENT) {
 				/* Wait for progress. Don't just loop */
-				D1(printk(KERN_DEBUG "Waiting for ino #%u in state %d\n",
+				D1(printk( "Waiting for ino #%u in state %d\n",
 					  ic->ino, ic->state));
 				sleep_on_spinunlock(&c->inocache_wq, &c->inocache_lock);
 			} else {

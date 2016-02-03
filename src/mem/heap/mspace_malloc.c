@@ -112,6 +112,9 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	size_t segment_pages_cnt;
 	void *block;
 
+	if (size == 0)
+		return NULL;
+
 	assert(mspace);
 
 	block = mspace_do_alloc(boundary, size, mspace);

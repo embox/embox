@@ -77,6 +77,10 @@ void *malloc(size_t size) {
 	char *current_location;
 	struct mem_control_block *current_location_mcb;
 	char *memory_location = NULL;
+
+	if (size == 0)
+		return NULL;
+
 	if (!has_initialized) {
 		if(-1 == malloc_init())
 			return NULL;

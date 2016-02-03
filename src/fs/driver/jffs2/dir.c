@@ -70,12 +70,12 @@ int jffs2_create(struct _inode *dir_i, const unsigned char *d_name,
 
 	c = &dir_i->i_sb->jffs2_sb;
 
-	D1(printk(KERN_DEBUG "jffs2_create()\n"));
+	D1(printk( "jffs2_create()\n"));
 
 	inode = jffs2_new_inode(dir_i, mode, ri);
 
 	if (IS_ERR(inode)) {
-		D1(printk(KERN_DEBUG "jffs2_new_inode() failed\n"));
+		D1(printk( "jffs2_new_inode() failed\n"));
 		jffs2_free_raw_inode(ri);
 		return PTR_ERR(inode);
 	}
@@ -96,8 +96,7 @@ int jffs2_create(struct _inode *dir_i, const unsigned char *d_name,
 
 	jffs2_free_raw_inode(ri);
 
-	D1(printk(KERN_DEBUG
-			"jffs2_create: Created ino #%lu with mode %o, nlink %d(%d)\n",
+	D1(printk("jffs2_create: Created ino #%d with mode %o, nlink %d(%d)\n",
 		  inode->i_ino, inode->i_mode, inode->i_nlink, f->inocache->nlink));
     *new_i = inode;
 	return 0;
