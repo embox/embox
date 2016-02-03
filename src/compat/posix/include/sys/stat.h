@@ -118,10 +118,7 @@ typedef struct stat {
 /**
  * Get file status (size, mode, mtime and so on)
  */
-static inline int chmod(const char *path, mode_t mode) {
-	(void)path; (void)mode;
-	return -1;
-}
+extern int chmod(const char *path, mode_t mode);
 //extern int    fchmod(int, mode_t);
 extern int    stat(const char *, struct stat *);
 extern int    lstat(const char *, struct stat *);
