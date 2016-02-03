@@ -8,7 +8,8 @@ module all_dvfs extends all {
 		getcwd,
 		umask,
 		xattr_dvfs,
-		libgen
+		libgen,
+		chmod_dvfs
 }
 
 static module file_dvfs extends file {
@@ -80,4 +81,10 @@ static module xattr_dvfs extends xattr {
 	//depends embox.fs.xattr
 	//depends embox.fs.syslib.perm
 	depends embox.security.api
+}
+
+static module chmod_dvfs extends chmod {
+	source "chmod.c"
+
+	depends embox.fs.dvfs
 }
