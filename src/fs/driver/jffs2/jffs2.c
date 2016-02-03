@@ -273,8 +273,15 @@ static int jffs2_read_super(struct super_block *sb) {
 
 	c = &sb->jffs2_sb;
 
-	c->flash_size = sb->bdev->size;
-	c->sector_size = sb->bdev->block_size;
+	c->flash_size = sb->bdev->size < 4096 ? 4096 : sb->bdev->size;
+	c->sector_size = sb->bdev->block_size < 4096 ? 4096 : sb->bdev->size;
+	/* Number 4096 is used here beacuse actually there are no real flash
+	 * drives with less than 4KiB erasable block. But if device is provided
+	 * with QEMU, than it's just a block device with 512 bytes block size.
+	 * So, this is generally just for continious testing of OS. If JFFS2
+	 * will detect block or device size incorrectly, then this device was
+	 * detected in wrong way on probe. Changing these values will not fix
+	 * such issue.*/
 
 	c->cleanmarker_size = sizeof(struct jffs2_unknown_node);
 
