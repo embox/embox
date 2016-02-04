@@ -34,21 +34,6 @@ module virtio {
 	depends embox.net.core
 }
 
-module ti816x {
-	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
-	@IncludeExport(path="drivers/net")
-	source "ti816x.h"
-	source "ti816x.c"
-
-	depends embox.net.skbuff
-	depends embox.compat.libc.all
-	depends embox.net.l2.ethernet
-	depends embox.kernel.irq
-	depends embox.net.dev
-	depends embox.net.entry_api
-	depends embox.util.DList
-}
-
 module e1000 {
 	@IncludeExport(path="drivers/net")
 	source "e1000.h"
