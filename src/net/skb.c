@@ -11,22 +11,23 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
+#include <sys/uio.h>
 
 #include <util/math.h>
+#include <util/log.h>
+#include <util/member.h>
+#include <util/binalign.h>
 
-#include <net/skbuff.h>
 #include <hal/ipl.h>
+
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
 
-#include <linux/compiler.h>
-#include <framework/mod/options.h>
 #include <linux/list.h>
-#include <util/member.h>
-#include <util/binalign.h>
-#include <util/log.h>
 
-#include <sys/uio.h>
+#include <net/skbuff.h>
+
+#include <framework/mod/options.h>
 
 #define MODOPS_AMOUNT_SKB       OPTION_GET(NUMBER, amount_skb)
 #define MODOPS_AMOUNT_SKB_DATA  OPTION_GET(NUMBER, amount_skb_data)
@@ -236,12 +237,12 @@ struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 	}
 	ipl_restore(sp);
 
-	gettimeofday(&skb->tstamp, NULL);
-
 	if (skb == NULL) {
 		log_error("skb_wrap: error: no memory\n");
 		return NULL; /* error: no memory */
 	}
+
+	gettimeofday(&skb->tstamp, NULL);
 
 	INIT_LIST_HEAD((struct list_head * )skb);
 	skb->dev = NULL;
