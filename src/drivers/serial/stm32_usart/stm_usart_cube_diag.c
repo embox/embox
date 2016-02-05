@@ -36,7 +36,7 @@
 
 #include <drivers/serial/uart_device.h>
 
-#include <stm32f3xx_hal_usart.h>
+#include <drivers/serial/stm_usart.h>
 
 static int stm32_uart_putc(struct uart *dev, int ch) {
 	USART_TypeDef *uart = (void *) dev->base_addr;
