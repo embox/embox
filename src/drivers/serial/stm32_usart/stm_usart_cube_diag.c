@@ -29,6 +29,7 @@
   */
 
 #include <stdint.h>
+#include <string.h>
 
 #include <drivers/serial/diag_serial.h>
 
@@ -91,6 +92,8 @@ static int stm32_uart_getc(struct uart *dev) {
 static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) {
 	UART_HandleTypeDef UartHandle;
 
+	memset(&UartHandle, 0, sizeof(UartHandle));
+
 	UartHandle.Instance = USARTx;
 
 	UartHandle.Init.BaudRate = params->baud_rate;
@@ -99,7 +102,6 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	UartHandle.Init.Parity = UART_PARITY_NONE;
 	UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
 	UartHandle.Init.Mode = UART_MODE_TX_RX;
-	UartHandle.State = HAL_UART_STATE_RESET;
 
 	if (HAL_UART_Init(&UartHandle) != HAL_OK) {
 		return -1;
