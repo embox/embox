@@ -221,4 +221,24 @@ struct emac_desc {
 #define CM_R_MACID0_LO 0x630 /* Ethernet MAC ID0 Low Register */
 #define CM_R_MACID0_HI 0x634 /* Ethernet MAC ID0 High Register */
 
+//TODO remove this when mdio is created
+extern void emac_mdio_config(void);
+
+#include <framework/mod/options.h>
+#if (OPTION_GET(NUMBER, speed) == 100)
+
+#define MACCTRL_INIT (FULLDUPLEX | TXPACE)
+#define RXMBP_INIT \
+	(RXNOCHAIN | RXCSFEN | RXCAFEN | RXBROADEN | RXMULTEN)
+
+#elif (OPTION_GET(NUMBER, speed) == 1000)
+
+#define RXMBP_INIT \
+	(RXCMFEN | RXCSFEN | RXCEFEN | RXCAFEN | RXBROADEN | RXMULTEN)
+#define MACCTRL_INIT (FULLDUPLEX | GIG)
+
+#else
+#error "setup ethernet speed"
+#endif
+
 #endif /* DRIVERS_ETHERNET_TI816X_H_ */
