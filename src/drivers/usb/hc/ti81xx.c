@@ -681,7 +681,7 @@ static int ti81xx_request(struct usb_request *req) {
 	}
 #endif
 
-	assert(host_endp_n < TI81_USB_ENDP_N, "no idle endpoint right now");
+	assertf(host_endp_n < TI81_USB_ENDP_N, "no idle endpoint right now");
 	ti81xx_endp_req_bind(hcdhci, TI81_ENDP_RX, host_endp_n, req);
 
 	if (endp->direction == USB_DIRECTION_IN) {
@@ -718,7 +718,7 @@ static void ti81xx_irq_generic_endp(uint16_t *csr,
 	uint16_t csr_v;
 	uint16_t errmask;
 
-	assert((count && fifo && read_done_mask)
+	assertf((count && fifo && read_done_mask)
 			|| (!count && !fifo && !read_done_mask),
 			"count, fifo, read_done_mask must be specified or "
 			"unspecified simultaneously");
