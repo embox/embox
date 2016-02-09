@@ -107,7 +107,6 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 
 	if (res) {
 		dvfs_destroy_dentry(lookup->item);
-		dvfs_destroy_inode(new_inode);
 	}
 
 	return res;
