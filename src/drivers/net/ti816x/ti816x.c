@@ -186,15 +186,20 @@ static void emac_clear_and_enable_rxunicast(void) {
 }
 
 #define RXNOCHAIN (0x1 << 28) /* single buffer */
+#define RXCMFEN (0x1 << 24) /* short msg */
 #define RXCSFEN (0x1 << 23) /* short msg */
+#define RXCEFEN (0x1 << 22) /* short msg */
 #define RXCAFEN (0x1 << 21) /* promiscuous */
 #define RXBROADEN (0x1 << 13) /* broadcast */
 #define RXMULTEN (0x1 << 5) /* multicast */
 static void emac_enable_rxmbp(void) {
 	REG_STORE(EMAC_BASE + EMAC_R_RXMBPENABLE,
 			RXNOCHAIN | RXCSFEN | RXCAFEN | RXBROADEN | RXMULTEN);
+			//RXCMFEN | RXCSFEN | RXCEFEN | RXCAFEN | RXBROADEN | RXMULTEN);
 }
 
+#define GIG_FORCE (0x1 << 17)
+#define GIG (0x1 << 7)
 #define TXPACE (0x1 << 6)
 #define GMIIEN (0x1 << 5)
 #define FULLDUPLEX (0x1 << 0)
