@@ -22,11 +22,12 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
+
 #include <util/binalign.h>
 #include <util/math.h>
-#include <framework/mod/options.h>
+#include <util/log.h>
 
-#include <kernel/printk.h>
+#include <framework/mod/options.h>
 
 EMBOX_UNIT_INIT(ti816x_init);
 
@@ -186,15 +187,18 @@ static void emac_clear_and_enable_rxunicast(void) {
 }
 
 #define RXNOCHAIN (0x1 << 28) /* single buffer */
+#define RXCMFEN (0x1 << 24) /* short msg */
 #define RXCSFEN (0x1 << 23) /* short msg */
+#define RXCEFEN (0x1 << 22) /* short msg */
 #define RXCAFEN (0x1 << 21) /* promiscuous */
 #define RXBROADEN (0x1 << 13) /* broadcast */
 #define RXMULTEN (0x1 << 5) /* multicast */
 static void emac_enable_rxmbp(void) {
-	REG_STORE(EMAC_BASE + EMAC_R_RXMBPENABLE,
-			RXNOCHAIN | RXCSFEN | RXCAFEN | RXBROADEN | RXMULTEN);
+	REG_STORE(EMAC_BASE + EMAC_R_RXMBPENABLE, RXMBP_INIT);
 }
 
+#define GIG_FORCE (0x1 << 17)
+#define GIG (0x1 << 7)
 #define TXPACE (0x1 << 6)
 #define GMIIEN (0x1 << 5)
 #define FULLDUPLEX (0x1 << 0)
@@ -432,7 +436,7 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE
 				+ EMAC_R_CMRXTHRESHINTSTAT));
 
-	printk("ti816x_interrupt_macrxthr0: unhandled interrupt\n");
+	log_debug("ti816x_interrupt_macrxthr0: unhandled interrupt\n");
 
 	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXTHRESHEOI);
 
@@ -596,7 +600,7 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		unsigned long macstatus;
 
 		macstatus = REG_LOAD(EMAC_BASE + EMAC_R_MACSTATUS);
-		printk("\tMACSTATUS: %#lx\n"
+		log_debug("\tMACSTATUS: %#lx\n"
 				"\t\tidle %lx\n"
 				"\t\ttxerrcode %lx; txerrch %lx\n"
 				"\t\trxerrcode %lx; rxerrch %lx\n"
@@ -617,7 +621,7 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		macinvector &= ~(RXPEND | TXPEND);
 	}
 	if (macinvector) {
-		printk("ti816x_interrupt_macmisc0: unhandled interrupt\n"
+		log_debug("ti816x_interrupt_macmisc0: unhandled interrupt\n"
 				"\tMACINVECTOR: %#lx\n"
 				"\tCMMISCINTSTAT: %#lx\n",
 				macinvector,
@@ -648,6 +652,7 @@ static void ti816x_config(struct net_device *dev) {
 	cm_load_mac(dev);
 
 	/* initialization of EMAC and MDIO modules */
+	emac_mdio_config();
 	emac_clear_ctrl_regs();
 	emac_clear_hdp();
 	emac_set_stat_regs(0);
@@ -657,7 +662,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_set_rxbufoff(0);
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
-	emac_set_macctrl(FULLDUPLEX | TXPACE);
+	emac_set_macctrl(MACCTRL_INIT);
 	emac_enable_rx_and_tx_irq();
 	emac_alloc_rx_queue(MODOPS_PREP_BUFF_CNT,
 			netdev_priv(dev, struct ti816x_priv));

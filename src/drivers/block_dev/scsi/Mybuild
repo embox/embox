@@ -5,6 +5,9 @@ abstract module scsi_disk {
 }
 module scsi_disk_old extends scsi_disk {
 	source "scsi_disc.c"
+	source "scsi_disc_create.c"
+
+	depends embox.driver.block.partition
 }
 
 module scsi_disk_dvfs extends scsi_disk {
