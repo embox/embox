@@ -19,7 +19,7 @@
 #if MODOPS_USARTX == 6
 
 #define USARTx                           USART6
-#define USARTx_CLK_ENABLE()              __HAL_RCC_USART6_CLK_ENABLE();
+#define USARTx_CLK_ENABLE()              __HAL_RCC_USART6_CLK_ENABLE()
 #define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
 
@@ -40,7 +40,7 @@
 
 #elif MODOPS_USARTX == 2
 #define USARTx                           USART2
-#define USARTx_CLK_ENABLE()              __HAL_RCC_USART2_CLK_ENABLE();
+#define USARTx_CLK_ENABLE()              __HAL_RCC_USART2_CLK_ENABLE()
 #define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
 
@@ -66,5 +66,14 @@
 #define STM32_USART_RXDATA(uart)  uart->DR
 #define STM32_USART_TXDATA(uart)  uart->DR
 
+extern void USART_RX_GPIO_CLK_ENABLE(void *usart_base);
+extern void USART_TX_GPIO_CLK_ENABLE(void *usart_base);
+extern void USART_CLK_ENABLE(void *usart_base);
+extern uint16_t USART_RX_PIN(void *usart_base);
+extern uint16_t USART_TX_PIN(void *usart_base);
+extern uint8_t USART_RX_AF(void *usart_base);
+extern uint8_t USART_TX_AF(void *usart_base);
+extern GPIO_TypeDef *USART_RX_GPIO_PORT(void *usart_base);
+extern GPIO_TypeDef *USART_TX_GPIO_PORT(void *usart_base);
 
 #endif /* SRC_DRIVERS_SERIAL_STM32_USART_STM32_USART_CONF_F4_H_ */
