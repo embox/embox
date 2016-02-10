@@ -50,13 +50,7 @@ static int stm32_uart_putc(struct uart *dev, int ch) {
 }
 
 static int stm32_uart_hasrx(struct uart *dev) {
-	UART_HandleTypeDef UartHandle;
 	USART_TypeDef *uart = (void *) dev->base_addr;
-
-	UartHandle.Instance = USARTx;
-	__HAL_USART_CLEAR_NEFLAG(&UartHandle);
-	__HAL_USART_CLEAR_FEFLAG(&UartHandle);
-	__HAL_USART_CLEAR_OREFLAG(&UartHandle);
 	return STM32_USART_FLAGS(uart) & USART_FLAG_RXNE;
 }
 
@@ -94,7 +88,7 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 
 	memset(&UartHandle, 0, sizeof(UartHandle));
 
-	UartHandle.Instance = USARTx;
+	UartHandle.Instance = (void*) dev->base_addr;
 
 	UartHandle.Init.BaudRate = params->baud_rate;
 	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
