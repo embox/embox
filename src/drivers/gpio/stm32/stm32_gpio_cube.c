@@ -7,11 +7,14 @@
  */
 
 #include <assert.h>
+#include <string.h>
 
 #include <drivers/gpio.h>
 #include <drivers/gpio/stm32.h>
 
 static void stm32_gpio_clk_enable(void *gpio_base) {
+	__GPIOB_CLK_ENABLE();
+#if 0
 	if (gpio_base == GPIOA)
 		__HAL_RCC_GPIOA_CLK_ENABLE();
 	else if (gpio_base == GPIOB)
@@ -26,12 +29,15 @@ static void stm32_gpio_clk_enable(void *gpio_base) {
 		__HAL_RCC_GPIOF_CLK_ENABLE();
 	else
 		assert(0);
+#endif
 }
 
 static void stm32_gpio_init(void *gpio_base) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	stm32_gpio_clk_enable(gpio_base);
+	
+	memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
 
 	GPIO_InitStruct.Pin = GPIO_PIN_All;
 	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
