@@ -1,0 +1,26 @@
+package embox.cmd.hardware
+
+@AutoCmd
+@Cmd(name = "pin",
+	man = '''
+	NAME
+		pin  -  Control pin voltage on board
+	SYNOPSIS
+		pin [pin_name] [OPTIONS]
+	DESCRIPTION
+	OPTIONS
+		set	-- set '1'
+		reset	-- set '0'
+		toggle	-- invert
+	AUTHORS
+			Denis Deryugin <deryugin.denis@gmail.com>
+	''')
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module pin {
+	source "pin.c"
+
+	depends embox.compat.libc.stdio.fprintf
+	depends embox.compat.posix.util.getopt
+	depends embox.driver.gpio.api
+}
