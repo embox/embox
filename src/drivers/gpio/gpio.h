@@ -20,22 +20,61 @@ typedef __gpio_mask_t gpio_mask_t;
 #define GPIO_MODE_OUT_SECTION         0x0000FF00
 #define GPIO_MODE_INT_SECTION         0xFF000000
 
+#ifndef GPIO_MODE_INPUT
 #define GPIO_MODE_INPUT             (1 << 0)
+#endif
+
+#ifndef GPIO_MODE_IN_PULL_UP
 #define GPIO_MODE_IN_PULL_UP        (1 << 1)
+#endif
+
+#ifndef GPIO_MODE_IN_PULL_DOWN
 #define GPIO_MODE_IN_PULL_DOWN      (1 << 2)
+#endif
+
+#ifndef GPIO_MODE_IN_SCHMITT
 #define GPIO_MODE_IN_SCHMITT        (1 << 3)
+#endif
 
-#define GPIO_MODE_OUTPUT           (1 << 16)
-#define GPIO_MODE_OUT_PUSH_PULL    (1 << 15)
-#define GPIO_MODE_OUT_OPEN_DRAIN   (1 << 14)
-#define GPIO_MODE_OUT_ALTERNATE    (1 << 13)
+#ifndef GPIO_MODE_OUTPUT           
+#define GPIO_MODE_OUTPUT            (1 << 16)
+#endif
 
-#define GPIO_MODE_IN_INT_EN        (1 << 31)
-#define GPIO_MODE_INT_MODE_RISING  (1 << 30)
-#define GPIO_MODE_INT_MODE_FALLING (1 << 29)
-#define GPIO_MODE_INT_MODE_LEVEL0  (1 << 28)
-#define GPIO_MODE_INT_MODE_LEVEL1  (1 << 27)
-#define GPIO_MODE_IN_INT_DIS       (1 << 25)
+#ifndef GPIO_MODE_OUT_PUSH_PULL    
+#define GPIO_MODE_OUT_PUSH_PULL     (1 << 15)
+#endif
+
+#ifndef GPIO_MODE_OUT_OPEN_DRAIN   
+#define GPIO_MODE_OUT_OPEN_DRAIN    (1 << 14)
+#endif
+
+#ifndef GPIO_MODE_OUT_ALTERNATE    
+#define GPIO_MODE_OUT_ALTERNATE     (1 << 13)
+#endif
+
+#ifndef GPIO_MODE_IN_INT_EN        
+#define GPIO_MODE_IN_INT_EN         (1 << 31)
+#endif
+
+#ifndef GPIO_MODE_INT_MODE_RISING  
+#define GPIO_MODE_INT_MODE_RISING   (1 << 30)
+#endif
+
+#ifndef GPIO_MODE_INT_MODE_FALLING 
+#define GPIO_MODE_INT_MODE_FALLING  (1 << 29)
+#endif
+
+#ifndef GPIO_MODE_INT_MODE_LEVEL0  
+#define GPIO_MODE_INT_MODE_LEVEL0   (1 << 28)
+#endif
+
+#ifndef GPIO_MODE_INT_MODE_LEVEL1  
+#define GPIO_MODE_INT_MODE_LEVEL1   (1 << 27)
+#endif
+
+#ifndef GPIO_MODE_IN_INT_DIS       
+#define GPIO_MODE_IN_INT_DIS        (1 << 25)
+#endif
 
 extern struct gpio *gpio_by_num(int num_port);
 
