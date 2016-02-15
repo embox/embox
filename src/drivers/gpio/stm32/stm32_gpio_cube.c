@@ -13,8 +13,6 @@
 #include <drivers/gpio/stm32.h>
 
 static void stm32_gpio_clk_enable(void *gpio_base) {
-	__GPIOB_CLK_ENABLE();
-#if 0
 	if (gpio_base == GPIOA)
 		__HAL_RCC_GPIOA_CLK_ENABLE();
 	else if (gpio_base == GPIOB)
@@ -29,7 +27,6 @@ static void stm32_gpio_clk_enable(void *gpio_base) {
 		__HAL_RCC_GPIOF_CLK_ENABLE();
 	else
 		assert(0);
-#endif
 }
 
 static void stm32_gpio_init(void *gpio_base) {
@@ -50,4 +47,9 @@ static void stm32_gpio_init(void *gpio_base) {
 void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
 	stm32_gpio_init(gpio);
 	HAL_GPIO_WritePin((void*) gpio, mask, level ? GPIO_PIN_SET : GPIO_PIN_RESET);
+}
+
+extern gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask) {
+	stm32_gpio_init(gpio);
+	return (gpio_mask_t) HAL_GPIO_ReadPin((void*) gpio, mask);
 }
