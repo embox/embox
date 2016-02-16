@@ -76,8 +76,8 @@ C_ENTRY(_start):
 	addl    $8, %esp
 
 
-        lss stack_start,%esp
-        push %esi 
+  lss stack_start,%esp
+  push %esi 
 	call    kernel_start_xen /* call C code */
 
 loop:
