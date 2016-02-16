@@ -73,7 +73,7 @@ static void kernel_init_xen(start_info_t * start_info) {
 
 	ipl_init();
 
-	diag_init(start_info);
+	diag_init();
 }
 
 static int init_xen(start_info_t * start_info) {
