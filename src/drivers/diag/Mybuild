@@ -8,10 +8,6 @@ module mem_diag extends diag_api {
 	source "mem_diag.c"
 }
 
-module xen_diag extends diag_api {
-	source "xen_diag.c"
-}
-
 module no_diag extends diag_api {
 	source "no_diag.c"
 }

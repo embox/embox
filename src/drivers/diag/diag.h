@@ -13,14 +13,10 @@
 
 #include <util/macro.h>
 
-#include <stdint.h>
-#include <xen/xen.h>
-
 struct diag;
 
 struct diag_ops {
-	//int (*init)(const struct diag *diag);
-	int (*init)(const struct diag *diag, start_info_t *start_info);
+	int (*init)(const struct diag *diag);
 	char (*getc)(const struct diag *diag);
 	void (*putc)(const struct diag *diag, char ch);
 	int (*kbhit)(const struct diag *diag);
@@ -41,7 +37,7 @@ enum diag_kbhit_ret {
  *
  * @return 0
  */
-extern int diag_init(start_info_t * start_info);
+extern int diag_init(void);
 
 /**
  * @brief Put char onto diag output.

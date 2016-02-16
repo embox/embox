@@ -30,11 +30,11 @@ static const struct termios diag_tio = {
 	.c_oflag = ONLCR,
 };
 
-int diag_init(start_info_t * start_info) {
+int diag_init(void) {
 	const struct diag *tdiag = cdiag;
 
 	if (tdiag->ops->init) {
-		return tdiag->ops->init(tdiag, start_info);
+		return tdiag->ops->init(tdiag);
 	}
 
 	return 0;
