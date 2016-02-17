@@ -18,6 +18,7 @@
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
 #define UART_NUM 3
+#define MSG_LEN 16
 
 static int current_state;
 
@@ -40,7 +41,7 @@ static void transmit_data(int data, void *uart) {
 	STM32_USART_TXDATA(uart) = (uint8_t) ch;
 }
 
-void transmitter_thread_run(void *arg) {
+static void transmitter_thread_run(void *arg) {
 	int i;
 	int data;
 
@@ -49,6 +50,34 @@ void transmitter_thread_run(void *arg) {
 		data = obtain_data();
 		for (i = 0; i < UART_NUM; i++)
 			transmit_data(data, uart_data[i]);
+	}
+}
+
+static void process_message(char *msg) {
+	/* TODO */
+}
+
+static void receiver_thread_run(void *arg) {
+	int i;
+	char buf[UART_NUM][MSG_LEN];
+	int counter[UART_NUM];
+
+	while (1) {
+		for (i = 0; i < UART_NUM; i++) {
+			if (STM32_USART_FLAGS(uart_base[i]) & USART_FLAG_RXNE) {
+				buf[i][count[i]++] = STM32_USART_RXDATA(uart) & 0xFF;
+				if (count[i] == MSG_LEN) {
+					/* Message finished */
+					if (!message_valid(buf[i])) {
+						count = 0;
+						memset(buf[i], 0, sizeof(buf[i]));
+						continue;
+					} else {
+						process_message(buf[i]);
+					}
+				}
+			}
+		}
 	}
 }
 
