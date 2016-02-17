@@ -8,23 +8,55 @@
 
 #include <agents/communication.h>
 #include <agents/communication.h>
-#include <drivers/diag.h>
 #include <kernel/task.h>
 #include <kernel/time/ktime.h>
 #include <kernel/thread.h>
+
+#include <drivers/serial/stm_usart.h>
+#include <drivers/serial/uart_device.h>
+#include <framework/mod/options.h>
+
+#define AGENT_ID OPTION_GET(NUMBER, agent_id)
+#define UART_NUM 3
+
+static int current_state;
+
+static void *uart_base[UART_NUM] = {
+	(void*) USART1,
+	(void*) USART2,
+	(void*) USART3
+};
+
+static void transmit_delay(void) {
+}
+
+static int obtain_data(void) {
+	return current_state;
+}
+
+static void transmit_data(int data, void *uart) {
+	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0);
+
+	STM32_USART_TXDATA(uart) = (uint8_t) ch;
+}
+
+void transmitter_thread_run(void *arg) {
+	int i;
+	int data;
+
+	while (1) {
+		transmit_delay();
+		data = obtain_data();
+		for (i = 0; i < UART_NUM; i++)
+			transmit_data(data, uart_data[i]);
+	}
+}
 
 /* Receive char via uart and turn on LED */
 void *led_handler(void *arg) {
 	uint8_t ch = 0;
 	while (1) {
 		/* Read port */
-		ch = diag_getc();
-		ch %= 8;
-		BSP_LED_Init(ch);
-		BSP_LED_On(ch);
-		ksleep(50);
-		BSP_LED_Off(ch);
-		ksleep(50);
 	}
 	return NULL;
 }
@@ -35,7 +67,7 @@ int main() {
 	BSP_PB_Init(0, 0);
 	new_task(0, led_handler, NULL);
 
-	while (1) {
+	while (true) {
 		int state = BSP_PB_GetState(0);
 		if (state) {
 			r++;
