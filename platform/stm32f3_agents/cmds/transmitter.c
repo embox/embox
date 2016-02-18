@@ -13,16 +13,48 @@
 #include <kernel/thread.h>
 
 #include <drivers/serial/stm_usart.h>
-#include <drivers/serial/uart_device.h>
 #include <framework/mod/options.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
-#define UART_NUM 3
-#define MSG_LEN 16
+#define UART_NUM	3
+#define MSG_LEN		16
+
+static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3 };
+
+static void leds_off(void) {
+	int i;
+	for (i = 0; i < sizeof(leds); i++)
+		BSP_LED_Off(i);
+}
+
+static void init_leds(void) {
+	int i;
+	for (i = 0; i < sizeof(leds); i++)
+		BSP_LED_Init(i);
+
+	leds_off();
+}
+
+static int leds_cnt = 0;
+
+static void leds_next(void) {
+	if (++leds_cnt == sizeof(leds)) {
+		leds_cnt = 0;
+		leds_off();
+	} else {
+		BSP_LED_On(leds[leds_cnt]);
+	}
+}
+
+static void leds_prev(void) {
+	BSP_LED_Off(leds_cnt);
+	if (--leds_cnt < 0)
+		leds_cnt = 0;
+}
 
 static int current_state;
 
-static void *uart_base[UART_NUM] = {
+static USART_TypeDef *uart_base[UART_NUM] = {
 	(void*) USART1,
 	(void*) USART2,
 	(void*) USART3
@@ -35,13 +67,13 @@ static int obtain_data(void) {
 	return current_state;
 }
 
-static void transmit_data(int data, void *uart) {
+static void transmit_data(int data, USART_TypeDef *uart) {
 	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0);
 
-	STM32_USART_TXDATA(uart) = (uint8_t) ch;
+	STM32_USART_TXDATA(uart) = (uint8_t) data;
 }
 
-static void transmitter_thread_run(void *arg) {
+static void *transmitter_thread_run(void *arg) {
 	int i;
 	int data;
 
@@ -49,15 +81,21 @@ static void transmitter_thread_run(void *arg) {
 		transmit_delay();
 		data = obtain_data();
 		for (i = 0; i < UART_NUM; i++)
-			transmit_data(data, uart_data[i]);
+			transmit_data(data, uart_base[i]);
 	}
+
+	return NULL;
 }
 
 static void process_message(char *msg) {
 	/* TODO */
 }
 
-static void receiver_thread_run(void *arg) {
+static int message_valid(char *msg) {
+	return 1;
+}
+
+static void *receiver_thread_run(void *arg) {
 	int i;
 	char buf[UART_NUM][MSG_LEN];
 	int counter[UART_NUM];
@@ -65,11 +103,11 @@ static void receiver_thread_run(void *arg) {
 	while (1) {
 		for (i = 0; i < UART_NUM; i++) {
 			if (STM32_USART_FLAGS(uart_base[i]) & USART_FLAG_RXNE) {
-				buf[i][count[i]++] = STM32_USART_RXDATA(uart) & 0xFF;
-				if (count[i] == MSG_LEN) {
+				buf[i][counter[i]++] = STM32_USART_RXDATA(uart_base[i]) & 0xFF;
+				if (counter[i] == MSG_LEN) {
 					/* Message finished */
 					if (!message_valid(buf[i])) {
-						count = 0;
+						counter[i] = 0;
 						memset(buf[i], 0, sizeof(buf[i]));
 						continue;
 					} else {
@@ -79,11 +117,12 @@ static void receiver_thread_run(void *arg) {
 			}
 		}
 	}
+
+	return NULL;
 }
 
 /* Receive char via uart and turn on LED */
 void *led_handler(void *arg) {
-	uint8_t ch = 0;
 	while (1) {
 		/* Read port */
 	}
@@ -91,21 +130,10 @@ void *led_handler(void *arg) {
 }
 
 int main() {
-	uint8_t r = 0;
-	diag_init();
 	BSP_PB_Init(0, 0);
-	new_task(0, led_handler, NULL);
 
-	while (true) {
-		int state = BSP_PB_GetState(0);
-		if (state) {
-			r++;
-			r %= 8;
-		}
-		ksleep(100);
-		diag_putc(r);
-		ksleep(100);
-	}
+	thread_create(0, transmitter_thread_run, NULL);
+	receiver_thread_run(NULL);
 
 	return 0;
 }
