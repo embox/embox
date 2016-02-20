@@ -6,20 +6,21 @@
  * @date 2015-10-30
  */
 
-#include <agents/communication.h>
-#include <agents/communication.h>
+#include <unistd.h>
+
 #include <kernel/task.h>
 #include <kernel/time/ktime.h>
 #include <kernel/thread.h>
+#include <kernel/thread/sync/mutex.h>
 
 #include <drivers/serial/stm_usart.h>
 #include <framework/mod/options.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
-#define UART_NUM	3
-#define MSG_LEN		16
+#define UART_NUM	1
+#define MSG_LEN		1
 
-static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3 };
+static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3, 1 };
 
 static void leds_off(void) {
 	int i;
@@ -35,35 +36,49 @@ static void init_leds(void) {
 	leds_off();
 }
 
+struct mutex led_mutex;
+
 static int leds_cnt = 0;
 
 static void leds_next(void) {
-	if (++leds_cnt == sizeof(leds)) {
+	mutex_lock(&led_mutex);
+	if (++leds_cnt == sizeof(leds) + 1) {
 		leds_cnt = 0;
 		leds_off();
 	} else {
 		BSP_LED_On(leds[leds_cnt]);
 	}
+	mutex_unlock(&led_mutex);
 }
 
 static void leds_prev(void) {
-	BSP_LED_Off(leds_cnt);
+	mutex_lock(&led_mutex);
+	BSP_LED_Off(leds[leds_cnt]);
 	if (--leds_cnt < 0)
 		leds_cnt = 0;
+
+	mutex_unlock(&led_mutex);
 }
 
 static int current_state;
 
-static USART_TypeDef *uart_base[UART_NUM] = {
+static USART_TypeDef *uart_base[] = {
 	(void*) USART1,
 	(void*) USART2,
 	(void*) USART3
 };
 
+extern void schedule();
 static void transmit_delay(void) {
+	int t = 0x7FFFFF;
+	while(t--);
+	schedule();
 }
 
 static int obtain_data(void) {
+	mutex_lock(&led_mutex);
+	current_state = leds_cnt;
+	mutex_unlock(&led_mutex);
 	return current_state;
 }
 
@@ -89,6 +104,12 @@ static void *transmitter_thread_run(void *arg) {
 
 static void process_message(char *msg) {
 	/* TODO */
+	mutex_lock(&led_mutex);
+	if (leds_cnt < *msg)
+		leds_next();
+	else if (leds_cnt > *msg)
+		leds_prev();
+	mutex_unlock(&led_mutex);
 }
 
 static int message_valid(char *msg) {
@@ -97,14 +118,28 @@ static int message_valid(char *msg) {
 
 static void *receiver_thread_run(void *arg) {
 	int i;
+	UART_HandleTypeDef UartHandle;
+	UartHandle.Instance = uart_base[0];
 	char buf[UART_NUM][MSG_LEN];
-	int counter[UART_NUM];
+	int counter[UART_NUM] = { 0 };
+	
+	int tt = 0;
+
+	mutex_init(&led_mutex);
 
 	while (1) {
+		tt++;
+		if (tt % 0x20 == 0) {
+			tt = 1;
+			if (BSP_PB_GetState(0))
+				leds_next();
+		}
+
 		for (i = 0; i < UART_NUM; i++) {
 			if (STM32_USART_FLAGS(uart_base[i]) & USART_FLAG_RXNE) {
 				buf[i][counter[i]++] = STM32_USART_RXDATA(uart_base[i]) & 0xFF;
 				if (counter[i] == MSG_LEN) {
+					counter[i] = 0;
 					/* Message finished */
 					if (!message_valid(buf[i])) {
 						counter[i] = 0;
@@ -114,6 +149,12 @@ static void *receiver_thread_run(void *arg) {
 						process_message(buf[i]);
 					}
 				}
+			} else {
+				__HAL_USART_CLEAR_NEFLAG(&UartHandle);
+				__HAL_USART_CLEAR_FEFLAG(&UartHandle);
+				__HAL_USART_CLEAR_OREFLAG(&UartHandle);
+				//uart_base[i]->ICR = 0x0;
+				schedule();
 			}
 		}
 	}
@@ -121,16 +162,11 @@ static void *receiver_thread_run(void *arg) {
 	return NULL;
 }
 
-/* Receive char via uart and turn on LED */
-void *led_handler(void *arg) {
-	while (1) {
-		/* Read port */
-	}
-	return NULL;
-}
-
 int main() {
 	BSP_PB_Init(0, 0);
+	init_leds();
+	//leds_next();
+	leds_prev();
 
 	thread_create(0, transmitter_thread_run, NULL);
 	receiver_thread_run(NULL);
