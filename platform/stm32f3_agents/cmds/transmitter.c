@@ -17,7 +17,7 @@
 #include <framework/mod/options.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
-#define UART_NUM	1
+#define UART_NUM	2
 #define MSG_LEN		1
 
 static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3, 1 };
@@ -70,7 +70,7 @@ static USART_TypeDef *uart_base[] = {
 
 extern void schedule();
 static void transmit_delay(void) {
-	int t = 0x7FFFFF;
+	int t = 0x3FFFFF / UART_NUM;
 	while(t--);
 	schedule();
 }
@@ -85,7 +85,7 @@ static int obtain_data(void) {
 static void transmit_data(int data, USART_TypeDef *uart) {
 	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0);
 
-	STM32_USART_TXDATA(uart) = (uint8_t) data;
+	STM32_USART_TXDATA(uart) = (uint8_t) (data + (int)'0');
 }
 
 static void *transmitter_thread_run(void *arg) {
@@ -93,10 +93,13 @@ static void *transmitter_thread_run(void *arg) {
 	int data;
 
 	while (1) {
-		transmit_delay();
 		data = obtain_data();
-		for (i = 0; i < UART_NUM; i++)
+		for (i = 0; i < UART_NUM; i++) {
+			transmit_data(AGENT_ID, uart_base[i]);
+			transmit_delay();
 			transmit_data(data, uart_base[i]);
+			transmit_delay();
+		}
 	}
 
 	return NULL;
@@ -162,9 +165,28 @@ static void *receiver_thread_run(void *arg) {
 	return NULL;
 }
 
+extern void HAL_UART_MspInit(UART_HandleTypeDef *);
+static void init_uart(void) {
+	int i;
+	UART_HandleTypeDef UartHandle;
+
+	for (i = 0; i < UART_NUM; i++) {
+		memset(&UartHandle, 0, sizeof(UartHandle));
+		UartHandle.Instance = uart_base[i];
+		UartHandle.Init.BaudRate = 115200;
+		UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+		UartHandle.Init.StopBits = UART_STOPBITS_1;
+		UartHandle.Init.Parity = UART_PARITY_NONE;
+		UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+		UartHandle.Init.Mode = UART_MODE_TX_RX;
+		HAL_UART_Init(&UartHandle);
+	}
+}
+
 int main() {
 	BSP_PB_Init(0, 0);
 	init_leds();
+	init_uart();
 	//leds_next();
 	leds_prev();
 
