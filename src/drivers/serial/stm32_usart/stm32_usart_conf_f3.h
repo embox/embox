@@ -71,6 +71,30 @@
 #define USARTx_IRQn                      USART2_IRQn + 16
 #define USARTx_IRQHandler                USART2_IRQHandler
 
+#elif MODOPS_USARTX == 3
+
+#define USARTx                           USART3
+#define USARTx_CLK_ENABLE()              __USART3_CLK_ENABLE();
+#define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
+#define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
+
+#define USARTx_FORCE_RESET()             __USART3_FORCE_RESET()
+#define USARTx_RELEASE_RESET()           __USART3_RELEASE_RESET()
+
+/* Definition for USARTx Pins */
+#define USARTx_TX_PIN                    GPIO_PIN_10
+#define USARTx_TX_GPIO_PORT              GPIOB
+#define USARTx_TX_AF                     GPIO_AF7_USART3
+#define USARTx_RX_PIN                    GPIO_PIN_11
+#define USARTx_RX_GPIO_PORT              GPIOB
+#define USARTx_RX_AF                     GPIO_AF7_USART3
+
+/* Definition for USARTx's NVIC */
+/* In Embox we assume that the lower external irq number is 0,
+ * but in the cortexm3 it is -15 */
+#define USARTx_IRQn                      USART3_IRQn + 16
+#define USARTx_IRQHandler                USART3_IRQHandler
+
 #endif
 
 #define STM32_USART_FLAGS(uart)   uart->ISR
