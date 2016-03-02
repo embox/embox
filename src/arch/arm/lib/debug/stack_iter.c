@@ -14,15 +14,18 @@
 
 #include "stack_iter.h"
 
-void stack_iter_context(stack_iter_t *f, struct context *ctx) {
-}
-
 int stack_iter_next(stack_iter_t *f) {
 	f->fp = (void*) *((int*)f->fp - 3);
 	f->pc = (void*) *((int*)f->fp);
 	f->lr = (void*) *((int*)f->fp - 1);
 
 	return *((int*)f->fp - 3) != 0;
+}
+
+void stack_iter_context(stack_iter_t *f, struct context *ctx) {
+	f->fp = (void*) ctx->system_r[11];	/* R11 is frame pointer */
+	f->pc = (void*) ctx->lr;
+	f->lr = (void*) ctx->lr;		/* R14 is link register */
 }
 
 void stack_iter_current(stack_iter_t *f) {
