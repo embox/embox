@@ -17,6 +17,14 @@
 void stack_iter_context(stack_iter_t *f, struct context *ctx) {
 }
 
+int stack_iter_next(stack_iter_t *f) {
+	f->fp = (void*) *((int*)f->fp - 3);
+	f->pc = (void*) *((int*)f->fp);
+	f->lr = (void*) *((int*)f->fp - 1);
+
+	return *((int*)f->fp - 3) != 0;
+}
+
 void stack_iter_current(stack_iter_t *f) {
 	__asm__ __volatile__ (
 		"mov %[fp], FP\n\t"
@@ -33,20 +41,14 @@ void stack_iter_current(stack_iter_t *f) {
 	 * so we have to make one unwind operation
 	 * by hand */
 
+	stack_iter_next(f);
 	f->fp = (void*) *((int*)f->fp - 3);
-	f->pc = (void*) *((int*)f->fp);
-	f->lr = (void*) *((int*)f->fp - 1);
-	f->fp = (void*) *((int*)f->fp - 3);
-}
-
-int stack_iter_next(stack_iter_t *f) {
-	return 0;
 }
 
 void *stack_iter_get_fp(stack_iter_t *f) {
-	return NULL;
+	return f->fp - 3;
 }
 
 void *stack_iter_get_retpc(stack_iter_t *f) {
-	return NULL;
+	return f->pc;
 }
