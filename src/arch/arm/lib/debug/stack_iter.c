@@ -18,6 +18,25 @@ void stack_iter_context(stack_iter_t *f, struct context *ctx) {
 }
 
 void stack_iter_current(stack_iter_t *f) {
+	__asm__ __volatile__ (
+		"mov %[fp], FP\n\t"
+		"mov %[lr], LR\n\t"
+		"mov %[pc], PC\n\t"
+		: [fp]"=r"(f->fp),
+		  [lr]"=r"(f->lr),
+		  [pc]"=r"(f->pc) : :
+	);
+	
+	/* We can't just take those registers
+	 * because caller requests _his_ context,
+	 * not the context of stack_iter_current(),
+	 * so we have to make one unwind operation
+	 * by hand */
+
+	f->fp = (void*) *((int*)f->fp - 3);
+	f->pc = (void*) *((int*)f->fp);
+	f->lr = (void*) *((int*)f->fp - 1);
+	f->fp = (void*) *((int*)f->fp - 3);
 }
 
 int stack_iter_next(stack_iter_t *f) {
