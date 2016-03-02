@@ -4,6 +4,9 @@
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version 0.1
  * @date 2016-02-29
+ *
+ * @note Remember to add -mapcs-frame option to CFLAGS as 
+ * different frame formats require different offets
  */
 
 #include <stddef.h>
