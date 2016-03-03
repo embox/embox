@@ -18,6 +18,7 @@ static void *boot_stub(void *arg) {
 	panic("Entering boot_stub");
 }
 
+extern void thread_set_current(struct thread *t);
 struct schedee *boot_thread_create(void) {
 	struct thread *bootstrap;
 	extern char _stack_top;
@@ -27,6 +28,7 @@ struct schedee *boot_thread_create(void) {
 			SCHED_PRIORITY_NORMAL, boot_stub, NULL);
 
 	task_set_main(task_kernel_task(), bootstrap);
+	thread_set_current(bootstrap);
 
 	return &bootstrap->schedee;
 }
