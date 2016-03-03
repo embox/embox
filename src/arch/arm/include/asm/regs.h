@@ -38,4 +38,15 @@
  */
 #define ACR_L2EN 0x2 /* L2 cache enabled */
 
+#ifndef __ASSEMBLER__
+static inline void *cpu_get_stack(void) {
+	void * ret;
+	__asm__ __volatile__ (
+		"mov %[res],SP"
+		: [res]"=r"(ret)
+	);
+	return ret;
+}
+#endif
+
 #endif /* ARM_REGS_H_ */

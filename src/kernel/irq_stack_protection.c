@@ -9,21 +9,13 @@
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 
+#include <asm/regs.h>
+
 #include <framework/mod/api.h>
 
 #define STACK_SAFE_BOUND 128
 
 extern struct mod __mod__embox__kernel__thread__core;
-
-static inline void *cpu_get_stack(void) {
-	void * ret;
-	__asm__ __volatile__ (
-		"mov %%esp, %0\n\t"
-		: "=r"(ret)
-	);
-	return ret;
-
-}
 
 static inline int threads_done(void) {
 	return __mod__embox__kernel__thread__core.priv->flags & 1;
@@ -31,8 +23,9 @@ static inline int threads_done(void) {
 
 int irq_stack_protection(void) {
 	struct thread *t;
+	struct schedee *schedee = schedee_get_current();
 
-	if (!threads_done()) {
+	if (!threads_done() || !schedee) {
 		return 0;
 	}
 
