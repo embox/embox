@@ -37,6 +37,7 @@
 #include <kernel/sched/current.h>
 #include <hal/cpu.h>
 #include <kernel/cpu/cpu.h>
+#include <kernel/cpu/cpudata.h>
 
 #include <kernel/panic.h>
 
@@ -48,6 +49,13 @@ extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
 
 static int id_counter = 0; // TODO make it an indexator
+
+static struct thread *__current_thread __cpudata__;
+
+/* Used also in boot_thread.c */
+void thread_set_current(struct thread *t) {
+	cpudata_var(__current_thread) = t;
+}
 
 /**
  * Wrapper for thread start routine.
@@ -156,6 +164,8 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 	next_t = mcast_out(next, struct thread, schedee);
 	prev_t = mcast_out(prev, struct thread, schedee);
 
+	thread_set_current(next_t);
+
 	/* Threads context switch */
 	if (prev != next) {
 		thread_context_switch(prev_t, next_t);
@@ -171,9 +181,7 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 }
 
 struct thread *thread_self(void) {
-	struct schedee *schedee = schedee_get_current();
-	assertf(schedee->process == thread_process, "thread_self is about to return not-thread");
-	return mcast_out(schedee, struct thread, schedee);;
+	return cpudata_var(__current_thread);
 }
 
 void thread_init(struct thread *t, int priority,
