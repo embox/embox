@@ -142,7 +142,7 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 		int flags) {
 	struct packet_sock *psk = sk2packet(sk);
 	struct sk_buff *skb;
-	int n_byte, skb_err;
+	int n_byte = 0, skb_err;
 
 	af_packet_rcv_lock();
 	{
