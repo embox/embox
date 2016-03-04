@@ -64,6 +64,9 @@ static inline void dcache_inval(const void *p, size_t size) { }
 static inline void dcache_flush(const void *p, size_t size) { }
 #endif
 
+
+static void ti816x_config(struct net_device *dev);
+
 static void emac_ctrl_enable_irq(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXTHRESHINTEN, 0xff);
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMRXINTEN, 0xff);
@@ -257,6 +260,7 @@ static void emac_desc_set_next(struct emac_desc_head *hdesc,
 
 static int emac_desc_confirm(struct emac_desc_head *hdesc,
 		unsigned long reg_cp) {
+//	hdesc->desc.flags &= EMAC_DESC_F_OWNER;
 	REG_STORE(EMAC_BASE + reg_cp, (uintptr_t)&hdesc->desc);
 	return (uintptr_t)&hdesc->desc != REG_LOAD(EMAC_BASE + reg_cp);
 }
@@ -453,6 +457,14 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 			| EMAC_DESC_F_OVERRUN | EMAC_DESC_F_CODEERROR    \
 			| EMAC_DESC_F_ALIGNERROR | EMAC_DESC_F_CRCERROR))
 #define RXEOI 0x1 /* MACEOIVECTOR */
+#define CHECK_RXERR_2(x) \
+	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT       \
+			| EMAC_DESC_F_PASSCRC | EMAC_DESC_F_JABBER       \
+			| EMAC_DESC_F_OVERSIZE | EMAC_DESC_F_FRAGMENT    \
+			| EMAC_DESC_F_UNDERSIZED | EMAC_DESC_F_CONTROL   \
+			| EMAC_DESC_F_OVERRUN | EMAC_DESC_F_CODEERROR    \
+			| EMAC_DESC_F_ALIGNERROR))
+
 static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
@@ -473,26 +485,33 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	do {
 		assert(!eoq);
 
+		dcache_inval(&hnext->desc, sizeof hdesc->desc);
+		if (hnext->desc.flags & EMAC_DESC_F_OWNER) {
+			break;
+		}
+
 		hdesc = hnext;
-		assert(hdesc != NULL);
-
-		dcache_inval(&hdesc->desc, sizeof hdesc->desc);
-		assert(CHECK_RXOK(hdesc->desc.flags));
-		assert(!CHECK_RXERR(hdesc->desc.flags));
-
-		data = (void *)(uintptr_t)hdesc->desc.data;
-		dcache_inval(data, hdesc->desc.len);
 
 		hnext = (struct emac_desc_head *)(uintptr_t)hdesc->desc.next;
+		data = (void *)(uintptr_t)hdesc->desc.data;
 		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 
-		skb = skb_wrap(hdesc->desc.len, skb_data_cast_out(data));
-		if (skb == NULL) {
-			skb_data_free(skb_data_cast_out(data));
+		if (!CHECK_RXERR_2(hdesc->desc.flags)) {
+
+			dcache_inval(data, hdesc->desc.len);
+
+			skb = skb_wrap(hdesc->desc.len, skb_data_cast_out(data));
+
+			if (skb == NULL) {
+				skb_data_free(skb_data_cast_out(data));
+			} else {
+				skb->dev = dev_id;
+				netif_rx(skb);
+			}
 		}
 		else {
-			skb->dev = dev_id;
-			netif_rx(skb);
+			log_debug("<eth_drv ASSERT %x>", hdesc->desc.flags);
+			skb_data_free(skb_data_cast_out(data));
 		}
 
 		++need_alloc;
@@ -614,6 +633,8 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 				RXQOSACT(macstatus), RXFLOWACT(macstatus), TXFLOWACT(macstatus));
 
 		emac_reset();
+		ti816x_config((struct net_device *)dev_id);
+
 		macinvector &= ~HOSTPEND;
 	}
 	if (macinvector & (RXPEND | TXPEND)) {
