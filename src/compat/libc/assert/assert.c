@@ -13,6 +13,10 @@
 #include <kernel/printk.h>
 #include <kernel/cpu/cpudata.h>
 
+#include <framework/mod/options.h>
+
+#define BANNER_PRINT OPTION_GET(BOOLEAN, banner_print)
+
 #ifndef NDEBUG
 /*# error "Compiling assert.c for NDEBUG configuration"*/
 
@@ -22,6 +26,7 @@ char __assertion_message_buff[ASSERT_MESSAGE_BUFF_SZ];
 static spinlock_t assert_lock = SPIN_STATIC_UNLOCKED;
 static char assert_recursive_lock __cpudata__ = 0;
 
+#if BANNER_PRINT
 static const char oops_banner[] =
 	"\n  ______"
 	"\n |  ____|                                            __          __"
@@ -35,6 +40,7 @@ static const char oops_banner[] =
 static void print_oops(void) {
 	printk("\n%s", oops_banner);
 }
+#endif
 
 void __assertion_handle_failure(const struct __assertion_point *point) {
 	if (cpudata_var(assert_recursive_lock)) {
@@ -46,7 +52,9 @@ void __assertion_handle_failure(const struct __assertion_point *point) {
 
 	spin_lock_ipl_disable(&assert_lock);
 
+#if BANNER_PRINT
 	print_oops();
+#endif
 	printk(
 		" ASSERTION FAILED on CPU %d\n"
 		LOCATION_FUNC_FMT("\t", "\n") "\n"
