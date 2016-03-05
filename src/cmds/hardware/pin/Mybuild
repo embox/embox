@@ -20,7 +20,7 @@ package embox.cmd.hardware
 module pin {
 	source "pin.c"
 
-	depends embox.compat.libc.stdio.fprintf
+	depends embox.compat.libc.stdio.printf
 	depends embox.compat.posix.util.getopt
 	depends embox.driver.gpio.api
 }
