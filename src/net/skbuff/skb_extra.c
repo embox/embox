@@ -47,7 +47,7 @@ struct sk_buff_extra {
 POOL_DEF(skb_extra_pool, struct sk_buff_extra, MODOPS_AMOUNT_SKB_EXTRA);
 
 
-size_t skb_max_extra_size(void) {
+size_t skb_extra_max_size(void) {
 	return member_sizeof(struct sk_buff_extra, extra);
 }
 

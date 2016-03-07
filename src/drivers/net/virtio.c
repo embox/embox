@@ -193,7 +193,7 @@ static void virtio_config(struct net_device *dev) {
 	uint32_t guest_features;
 
 	/* check extra header size */
-	assert(skb_max_extra_size() == sizeof(struct virtio_net_hdr));
+	assert(skb_extra_max_size() >= sizeof(struct virtio_net_hdr));
 
 	/* reset device */
 	virtio_net_reset(dev);

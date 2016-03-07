@@ -100,7 +100,7 @@ typedef struct sk_buff {        /* Socket buffer */
 } sk_buff_t;
 
 extern size_t skb_max_size(void);
-extern size_t skb_max_extra_size(void);
+extern size_t skb_extra_max_size(void);
 
 extern void * skb_data_cast_in(struct sk_buff_data *skb_data);
 extern struct sk_buff_data * skb_data_cast_out(void *data);
