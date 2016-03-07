@@ -75,12 +75,7 @@ struct sk_buff * skb_alloc(size_t size) {
 	struct sk_buff *skb;
 	struct sk_buff_data *skb_data;
 
-	if (skb_max_size() >= size) {
-		skb_data = skb_data_alloc();
-	} else {
-		assert(0);
-		skb_data = skb_data_alloc_dynamic(size);
-	}
+	skb_data = skb_data_alloc(size);
 	if (skb_data == NULL) {
 		printk("data %d #########################", balance);
 		return NULL; /* error: no memory */
@@ -217,7 +212,7 @@ struct sk_buff * skb_declone(struct sk_buff *skb) {
 		return skb;
 	}
 
-	decloned_data = skb_data_alloc();
+	decloned_data = skb_data_alloc(skb->len);
 	if (decloned_data == NULL) {
 		return NULL; /* error: no memory */
 	}

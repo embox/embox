@@ -65,26 +65,6 @@ void *skb_get_data_pointner(struct sk_buff_data *skb_data) {
 	return skb_data->__data + IP_ALIGN_SIZE;
 }
 
-struct sk_buff_data * skb_data_alloc_dynamic(size_t size) {
-	ipl_t sp;
-	struct sk_buff_data *skb_data;
-
-	sp = ipl_save();
-	{
-		skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
-	}
-	ipl_restore(sp);
-
-	if (skb_data == NULL) {
-		log_error("skb_data_alloc: error: no memory\n");
-		return NULL; /* error: no memory */
-	}
-
-	skb_data->links = 1;
-
-	return skb_data;
-}
-
 size_t skb_max_size(void) {
 	return MODOPS_DATA_SIZE;
 }
@@ -99,18 +79,22 @@ struct sk_buff_data * skb_data_cast_out(void *data) {
 	return member_cast_out(data - IP_ALIGN_SIZE, struct sk_buff_data, __data);
 }
 
-struct sk_buff_data * skb_data_alloc(void) {
+struct sk_buff_data * skb_data_alloc(size_t size) {
 	ipl_t sp;
 	struct sk_buff_data *skb_data;
 
 	sp = ipl_save();
 	{
-		skb_data = pool_alloc(&skb_data_pool);
+		if (skb_max_size() >= size) {
+			skb_data = pool_alloc(&skb_data_pool);
+		} else {
+			skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
+		}
 	}
 	ipl_restore(sp);
 
 	if (skb_data == NULL) {
-		log_error("skb_data_alloc: error: no memory\n");
+		log_error("no memory skb_size = %d", size);
 		return NULL; /* error: no memory */
 	}
 

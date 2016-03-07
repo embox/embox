@@ -11,8 +11,8 @@
 #ifndef NET_SKBUFF_H_
 #define NET_SKBUFF_H_
 
-/* FIXME include this */
-#include <sys/time.h>
+#include <sys/types.h> /* size_t */
+#include <sys/time.h> /* struct timeval */
 
 /* Prototypes */
 struct sk_buff;
@@ -100,10 +100,8 @@ extern struct sk_buff_data * skb_data_cast_out(void *data);
 extern void * skb_extra_cast_in(struct sk_buff_extra *skb_extra);
 extern struct sk_buff_extra * skb_extra_cast_out(void *extra);
 
-extern struct sk_buff_data * skb_data_alloc(void);
-extern struct sk_buff_data * skb_data_alloc_dynamic(size_t size);
-extern struct sk_buff_data * skb_data_clone(
-		struct sk_buff_data *skb_data);
+extern struct sk_buff_data * skb_data_alloc(size_t size);
+extern struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data);
 extern int skb_data_cloned(const struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
 extern void *skb_get_data_pointner(struct sk_buff_data *skb_data);
@@ -114,8 +112,7 @@ extern void skb_extra_free(struct sk_buff_extra *skb_extra);
 /**
  * Wrap sk_buff_data into sk_buff structure
  */
-extern struct sk_buff * skb_wrap(size_t size,
-		struct sk_buff_data *skb_data);
+extern struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data);
 
 /**
  * Allocate one instance of structure sk_buff. With pointed size and flags.
@@ -128,8 +125,7 @@ extern struct sk_buff * skb_wrap(size_t size,
 extern struct sk_buff * skb_alloc(size_t size);
 extern struct sk_buff * skb_alloc_dynamic(size_t size);
 
-extern struct sk_buff * skb_realloc(size_t size,
-		struct sk_buff *skb);
+extern struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb);
 
 /**
  * Free skb allocated by skb_alloc
@@ -180,7 +176,8 @@ extern int skb_buf_iovec(void *buf, int buflen, struct iovec *iov, int iovlen);
  *
  * @return
  */
-extern int skb_iovec_buf(const struct iovec *iov, int iovlen, const void *buf, int buflen);
+extern int skb_iovec_buf(const struct iovec *iov, int iovlen, const void *buf,
+		int buflen);
 
 /**
  * Create copy of skb
@@ -215,7 +212,6 @@ extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
 extern int skb_queue_count(struct sk_buff_head *queue);
 
-//#include <net/netdevice.h>
 
 #define PAD_SIZE(obj_size, padto) \
 	(((padto) - (obj_size) % (padto)) % (padto))
