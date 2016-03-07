@@ -1,0 +1,19 @@
+
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "tt",
+	help = "sleep for specified usec num",
+	man = '''
+		NAME
+			sleep - freezes for specified number of useconds.
+		SYNOPSIS
+			sleep USEC
+		DESCRIPTION
+
+		AUTHOR
+			Anton Kozlov
+	''')
+module tt {
+	source "tt.c"
+}

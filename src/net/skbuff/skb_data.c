@@ -85,11 +85,7 @@ struct sk_buff_data * skb_data_alloc(size_t size) {
 
 	sp = ipl_save();
 	{
-		if (skb_max_size() >= size) {
-			skb_data = pool_alloc(&skb_data_pool);
-		} else {
-			skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
-		}
+		skb_data = pool_alloc(&skb_data_pool);
 	}
 	ipl_restore(sp);
 
