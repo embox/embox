@@ -18,6 +18,7 @@ module skbuff {
 	depends embox.mem.sysmalloc_api
 	
 	source "skb_extra.c"
+	source "skb_data.c"
 
 	source "skb_queue.c"
 	depends embox.arch.interrupt

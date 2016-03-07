@@ -101,10 +101,12 @@ extern void * skb_extra_cast_in(struct sk_buff_extra *skb_extra);
 extern struct sk_buff_extra * skb_extra_cast_out(void *extra);
 
 extern struct sk_buff_data * skb_data_alloc(void);
+extern struct sk_buff_data * skb_data_alloc_dynamic(size_t size);
 extern struct sk_buff_data * skb_data_clone(
 		struct sk_buff_data *skb_data);
 extern int skb_data_cloned(const struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
+extern void *skb_get_data_pointner(struct sk_buff_data *skb_data);
 
 extern struct sk_buff_extra * skb_extra_alloc(void);
 extern void skb_extra_free(struct sk_buff_extra *skb_extra);
