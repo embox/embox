@@ -1,12 +1,12 @@
 /**
- * @file
- * @details sk_buff management API implementation.
- * @date 20.10.09
- *
- * @author Anton Bondarev
- * @author Ilia Vaprol
- * @author Vladimir Sokolov
- */
+* @file
+* @details sk_buff management API implementation.
+* @date 20.10.09
+*
+* @author Anton Bondarev
+* @author Ilia Vaprol
+* @author Vladimir Sokolov
+*/
 
 #include <assert.h>
 #include <string.h>
@@ -77,14 +77,12 @@ struct sk_buff * skb_alloc(size_t size) {
 
 	skb_data = skb_data_alloc(size);
 	if (skb_data == NULL) {
-		printk("data %d #########################", balance);
 		return NULL; /* error: no memory */
 	}
 
 	skb = skb_wrap(size, skb_data);
 	if (skb == NULL) {
 		skb_data_free(skb_data);
-		printk("wrap %d #########################", balance);
 		return NULL; /* error: no memory */
 	}
 	return skb;
