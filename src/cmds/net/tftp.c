@@ -14,11 +14,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <stddef.h>
-#include <linux/types.h>
+#include <assert.h>
 #include <sys/socket.h>
-#include <net/l3/ipv4/ip.h>
 #include <arpa/inet.h>
-
 
 /*
  * Trivial File Transfer Protocol (IEN-133)
@@ -39,20 +37,20 @@
 #define OACK    6	/* options acknowledgment */
 
 struct tftp_msg {
-	__be16 opcode;
+	uint16_t opcode;
 	union {
 		struct {
 			char name_and_mode[2];
 		} cmd /*__attribute__ ((packed))*/;
 		struct {
-			__be16 block_num;
+			uint16_t block_num;
 			char stuff[SEGSIZE];
 		} data /*__attribute__ ((packed))*/;
 		struct {
-			__be16 block_num;
+			uint16_t block_num;
 		} ack /*__attribute__ ((packed))*/;
 		struct {
-			__be16 error_code;
+			uint16_t error_code;
 			char error_msg[1];
 		} err /*__attriibute__ ((packed))*/;
 	} op /*__attribute__ ((packed))*/;
