@@ -212,10 +212,6 @@ extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
 extern int skb_queue_count(struct sk_buff_head *queue);
 
-
-#define PAD_SIZE(obj_size, padto) \
-	(((padto) - (obj_size) % (padto)) % (padto))
-
 #define PAD_SIZE(obj_size, padto) \
 	(((padto) - (obj_size) % (padto)) % (padto))
 
