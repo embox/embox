@@ -12,13 +12,6 @@
 #define NET_SKBUFF_H_
 
 /* FIXME include this */
-//#include <net/netdevice.h>
-//#include <net/l3/ipv4/ip.h>
-//#include <net/l3/icmpv4.h>
-//#include <net/l4/udp.h>
-//#include <net/l4/tcp.h>
-#include <stddef.h>
-#include <sys/types.h>
 #include <sys/time.h>
 
 /* Prototypes */
@@ -220,7 +213,7 @@ extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
 extern int skb_queue_count(struct sk_buff_head *queue);
 
-#include <net/netdevice.h>
+//#include <net/netdevice.h>
 
 #define PAD_SIZE(obj_size, padto) \
 	(((padto) - (obj_size) % (padto)) % (padto))

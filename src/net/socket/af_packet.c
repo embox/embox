@@ -13,7 +13,6 @@
 
 #include <mem/misc/pool.h>
 
-
 #include "net_sock.h"
 #include "family.h"
 
@@ -21,6 +20,7 @@
 #include <net/l3/ipv4/ip.h>
 #include <net/l2/ethernet.h>
 #include <net/if.h>
+#include <net/netdevice.h>
 #include <netpacket/packet.h>
 
 #include <net/sock_wait.h>

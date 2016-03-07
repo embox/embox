@@ -12,6 +12,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <errno.h>
+#include <netinet/in.h>
 
 #include <net/l3/ipv4/ip.h>
 #include <net/l3/icmpv4.h>
@@ -19,7 +20,7 @@
 #include <net/sock.h>
 #include <net/socket/inet_sock.h>
 #include <net/socket/raw.h>
-#include <netinet/in.h>
+#include <net/netdevice.h>
 
 #include <util/dlist.h>
 
