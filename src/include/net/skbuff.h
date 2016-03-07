@@ -222,4 +222,7 @@ extern int skb_queue_count(struct sk_buff_head *queue);
 
 #include <net/netdevice.h>
 
+#define PAD_SIZE(obj_size, padto) \
+	(((padto) - (obj_size) % (padto)) % (padto))
+
 #endif /* NET_SKBUFF_H_ */

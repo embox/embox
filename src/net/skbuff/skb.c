@@ -38,9 +38,6 @@
 #define MODOPS_DATA_PADTO       OPTION_GET(NUMBER, data_padto)
 #define MODOPS_IP_ALIGN         OPTION_GET(BOOLEAN, ip_align)
 #define MODOPS_AMOUNT_SKB_EXTRA OPTION_GET(NUMBER, amount_skb_extra)
-#define MODOPS_EXTRA_SIZE       OPTION_GET(NUMBER, extra_size)
-#define MODOPS_EXTRA_ALIGN      OPTION_GET(NUMBER, extra_align)
-#define MODOPS_EXTRA_PADTO      OPTION_GET(NUMBER, extra_padto)
 
 static int balance = 0;
 
@@ -50,14 +47,6 @@ static int balance = 0;
 	__attribute__((aligned(MODOPS_DATA_ALIGN)))
 #define IP_ALIGN_SIZE \
 	(MODOPS_IP_ALIGN ? 2 : 0)
-
-#define EXTRA_PAD_SIZE \
-	PAD_SIZE(MODOPS_EXTRA_SIZE, MODOPS_EXTRA_PADTO)
-#define EXTRA_ATTR \
-	__attribute__((aligned(MODOPS_EXTRA_ALIGN)))
-
-#define PAD_SIZE(obj_size, padto) \
-	(((padto) - (obj_size) % (padto)) % (padto))
 
 #define SKB_DATA_SIZE(size) \
 	IP_ALIGN_SIZE + MODOPS_DATA_SIZE + (size) + sizeof(size_t)
@@ -76,14 +65,9 @@ struct sk_buff_data {
 	char __data[];
 } DATA_ATTR;
 
-struct sk_buff_extra {
-	unsigned char extra[MODOPS_EXTRA_SIZE];
-	char __extra_pad[EXTRA_PAD_SIZE];
-} EXTRA_ATTR;
 
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 POOL_DEF(skb_data_pool, struct sk_buff_data_fixed, MODOPS_AMOUNT_SKB_DATA);
-POOL_DEF(skb_extra_pool, struct sk_buff_extra, MODOPS_AMOUNT_SKB_EXTRA);
 
 static void *skb_get_data_pointner(struct sk_buff_data *skb_data) {
 	return skb_data->__data + IP_ALIGN_SIZE;
@@ -113,10 +97,6 @@ size_t skb_max_size(void) {
 	return MODOPS_DATA_SIZE;
 }
 
-size_t skb_max_extra_size(void) {
-	return member_sizeof(struct sk_buff_extra, extra);
-}
-
 void * skb_data_cast_in(struct sk_buff_data *skb_data) {
 	assert(skb_data != NULL);
 	return skb_get_data_pointner(skb_data);
@@ -125,16 +105,6 @@ void * skb_data_cast_in(struct sk_buff_data *skb_data) {
 struct sk_buff_data * skb_data_cast_out(void *data) {
 	assert(data != NULL);
 	return member_cast_out(data - IP_ALIGN_SIZE, struct sk_buff_data, __data);
-}
-
-void * skb_extra_cast_in(struct sk_buff_extra *skb_extra) {
-	assert(skb_extra != NULL);
-	return &skb_extra->extra[0];
-}
-
-struct sk_buff_extra * skb_extra_cast_out(void *extra) {
-	assert(extra != NULL);
-	return member_cast_out(extra, struct sk_buff_extra, extra);
 }
 
 struct sk_buff_data * skb_data_alloc(void) {
@@ -192,34 +162,6 @@ void skb_data_free(struct sk_buff_data *skb_data) {
 				sysfree(skb_data);
 			}
 		}
-	}
-	ipl_restore(sp);
-}
-
-struct sk_buff_extra * skb_extra_alloc(void) {
-	ipl_t sp;
-	struct sk_buff_extra *skb_extra;
-
-	sp = ipl_save();
-	{
-		skb_extra = pool_alloc(&skb_extra_pool);
-	}
-	ipl_restore(sp);
-
-	if (skb_extra == NULL) {
-		log_error("skb_extra_alloc: error: no memory\n");
-		return NULL; /* error: no memory */
-	}
-
-	return skb_extra;
-}
-
-void skb_extra_free(struct sk_buff_extra *skb_extra) {
-	ipl_t sp;
-
-	sp = ipl_save();
-	{
-		pool_free(&skb_extra_pool, skb_extra);
 	}
 	ipl_restore(sp);
 }
