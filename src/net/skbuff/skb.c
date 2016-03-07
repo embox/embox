@@ -36,8 +36,9 @@
 #define MODOPS_DATA_SIZE        OPTION_GET(NUMBER, data_size)
 #define MODOPS_DATA_ALIGN       OPTION_GET(NUMBER, data_align)
 #define MODOPS_DATA_PADTO       OPTION_GET(NUMBER, data_padto)
-#define MODOPS_IP_ALIGN         OPTION_GET(BOOLEAN, ip_align)
-#define MODOPS_AMOUNT_SKB_EXTRA OPTION_GET(NUMBER, amount_skb_extra)
+
+#define IP_ALIGN_SIZE \
+	(OPTION_GET(BOOLEAN, ip_align) ? 2 : 0)
 
 static int balance = 0;
 
@@ -45,8 +46,6 @@ static int balance = 0;
 	PAD_SIZE(IP_ALIGN_SIZE + MODOPS_DATA_SIZE, MODOPS_DATA_PADTO)
 #define DATA_ATTR \
 	__attribute__((aligned(MODOPS_DATA_ALIGN)))
-#define IP_ALIGN_SIZE \
-	(MODOPS_IP_ALIGN ? 2 : 0)
 
 #define SKB_DATA_SIZE(size) \
 	IP_ALIGN_SIZE + MODOPS_DATA_SIZE + (size) + sizeof(size_t)
