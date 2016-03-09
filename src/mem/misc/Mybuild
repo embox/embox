@@ -2,13 +2,26 @@ package embox.mem
 
 module slab {
 	option number heap_size = 524288
+
 	source "slab.c", "slab_impl.h"
 	depends embox.mem.page_api
 	depends embox.mem.phymem
 	depends embox.mem.static_heap
 }
 
-module pool {
+@DefaultImpl(pool_ndebug)
+abstract module pool {}
+
+module pool_ndebug extends pool {
 	source "pool.c"
+
 	depends embox.util.SList
+}
+
+module pool_debug extends pool {
+	source "pool_debug.c"
+	source "pool_debug.h"
+
+	depends embox.util.SList
+	depends embox.util.Bitmap
 }

@@ -14,6 +14,9 @@
 #include <stddef.h>
 #include <util/macro.h>
 #include <util/slist.h>
+#include <util/bitmap.h>
+
+#include <module/embox/mem/pool.h>
 
 /** Representation of the pool*/
 struct pool {
@@ -29,7 +32,16 @@ struct pool {
 	size_t pool_size;
 	/* Boundary, after which begin non-allocated memory */
 	void *bound_free;
+#ifdef POOL_DEBUG
+	BITMAP_DECL(blocks, POOL_MAX_OBJECTS);
+#endif
 };
+
+#ifdef POOL_DEBUG
+#define POOL_BLOCKS_INIT .blocks = {0},
+#else
+#define POOL_BLOCKS_INIT
+#endif
 
 /**
  * Create pool descriptor. The memory for pool is allocated in special section
@@ -51,6 +63,7 @@ struct pool {
 			.free_blocks = SLIST_INIT(&name.free_blocks),\
 			.obj_size = sizeof(__pool_storage ## name[0]), \
 			.pool_size = sizeof(__pool_storage ## name), \
+			POOL_BLOCKS_INIT \
 	};
 
 /**
