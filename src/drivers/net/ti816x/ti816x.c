@@ -456,9 +456,11 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	if (desc->next) {
 		/* New queue */
 		dev_priv->rx = emac_queue_reserve(reserve_size);
+		dcache_flush(dev_priv->rx, sizeof(*dev_priv->rx));
 		emac_queue_activate(dev_priv->rx, EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	} else {
 		dev_priv->rx->next = (uintptr_t) emac_queue_reserve(reserve_size);
+		dcache_flush((void*)dev_priv->rx->next, sizeof(struct emac_desc));
 		while (dev_priv->rx->next)
 			dev_priv->rx = (void*) dev_priv->rx->next;
 		emac_queue_activate((void*) desc->next, EMAC_R_RXHDP(DEFAULT_CHANNEL));
