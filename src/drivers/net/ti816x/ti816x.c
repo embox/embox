@@ -53,6 +53,40 @@ struct emac_desc_head *head_from_desc(struct emac_desc *desc) {
 POOL_DEF(emac_rx_desc_pool, struct emac_desc_head, 0x8000);
 POOL_DEF(emac_tx_desc_pool, struct emac_desc_head, 0x8000);
 
+struct emac_desc_head *emac_hdesc_tx_alloc(void) {
+	struct emac_desc_head *res = pool_alloc(&emac_tx_desc_pool);
+	assert(res);
+	memset(res, 0xFF, EMAC_SAFE_PADDING);
+
+	return res;
+}
+
+void emac_hdesc_tx_free(struct emac_desc_head *obj) {
+	int i;
+	assert(obj);
+	for (i = 0; i < EMAC_SAFE_PADDING; i++)
+		assert(obj->buf[i] == 0xFF);
+
+	pool_free(&emac_tx_desc_pool, obj);
+}
+
+struct emac_desc_head *emac_hdesc_rx_alloc(void) {
+	struct emac_desc_head *res = pool_alloc(&emac_rx_desc_pool);
+	assert(res);
+	memset(res, 0xFF, EMAC_SAFE_PADDING);
+
+	return res;
+}
+
+void emac_hdesc_rx_free(struct emac_desc_head *obj) {
+	int i;
+	assert(obj);
+	for (i = 0; i < EMAC_SAFE_PADDING; i++)
+		assert(obj->buf[i] == 0xFF);
+
+	pool_free(&emac_rx_desc_pool, obj);
+}
+
 #if 0
 struct emac_desc_list {
 	struct emac_desc_head *head;
@@ -186,7 +220,6 @@ static void emac_init_rx_regs(void) {
 
 	for (i = 0; i < EMAC_CHANNEL_COUNT; ++i) {
 		REG_STORE(EMAC_BASE + EMAC_R_RXFLOWTHRESH(i), 0);
-
 		REG_STORE(EMAC_BASE + EMAC_R_RXFREEBUFFER(i), MODOPS_PREP_BUFF_CNT);
 	}
 }
@@ -403,8 +436,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct ti816x_priv *dev_priv;
 	ipl_t ipl;
 
-	hdesc = pool_alloc(&emac_tx_desc_pool);
-	assert(hdesc != NULL);
+	hdesc = emac_hdesc_tx_alloc();
 	desc = &hdesc->desc;
 
 	assert(skb->len >= ETH_ZLEN);
@@ -516,7 +548,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		eoq = hdesc->desc.flags & EMAC_DESC_F_EOQ;
 
 		if (!CHECK_RXERR_2(hdesc->desc.flags)) {
-
 			dcache_inval(data, hdesc->desc.len);
 
 			skb = skb_wrap(hdesc->desc.len, skb_data_cast_out(data));
@@ -578,12 +609,13 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 
 		eoq = desc->flags & EMAC_DESC_F_EOQ;
 
+		desc = (void *) desc->next;
+
 		skb_free(hdesc->skb);
-		pool_free(&emac_tx_desc_pool, hdesc);
+		emac_hdesc_tx_free(hdesc);
 
 		emac_desc_confirm(hdesc, EMAC_R_TXCP(DEFAULT_CHANNEL));
 
-		desc = (void *) desc->next;
 	} while (!eoq && desc);
 
 	if (eoq) {
