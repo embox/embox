@@ -26,6 +26,9 @@
 #include <util/binalign.h>
 #include <util/math.h>
 #include <util/log.h>
+#include <util/dlist.h>
+
+#include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
 
@@ -35,10 +38,17 @@ EMBOX_UNIT_INIT(ti816x_init);
 #define DEFAULT_CHANNEL 0
 #define DEFAULT_MASK ((uint8_t)(1 << DEFAULT_CHANNEL))
 
-struct emac_desc_head {
-	struct emac_desc desc;
-};
+#define EMAC_SAFE_PADDING 64
 
+struct emac_desc_head {
+	char buf[EMAC_SAFE_PADDING];
+	struct emac_desc desc;
+} __attribute__ ((aligned (0x4)));
+
+POOL_DEF(emac_rx_desc_pool, struct emac_desc_head, 0x8000);
+POOL_DEF(emac_tx_desc_pool, struct emac_desc_head, 0x8000);
+
+#if 0
 struct emac_desc_list {
 	struct emac_desc_head *head;
 	struct emac_desc_head *tail;
@@ -48,10 +58,11 @@ struct emac_desc_queue {
 	struct emac_desc_list active;
 	struct emac_desc_list pending;
 };
+#endif
 
 struct ti816x_priv {
-	struct emac_desc_queue rx;
-	struct emac_desc_queue tx;
+	struct emac_desc *rx;
+	struct emac_desc *tx;
 };
 
 /* FIXME */
@@ -242,7 +253,7 @@ static void emac_desc_build(struct emac_desc_head *hdesc,
 	hdesc->desc.next = 0; /* use emac_desc_set_next */
 	hdesc->desc.data = (uintptr_t)data;
 	hdesc->desc.data_len = data_len;
-	hdesc->desc.len = len;
+	hdesc->desc.packet_len = len;
 	hdesc->desc.data_off = 0;
 	hdesc->desc.flags = flags;
 	dcache_flush(&hdesc->desc, sizeof hdesc->desc);
@@ -258,6 +269,7 @@ static void emac_desc_set_next(struct emac_desc_head *hdesc,
 	dcache_flush(&hdesc->desc.next, sizeof hdesc->desc.next);
 }
 
+
 static int emac_desc_confirm(struct emac_desc_head *hdesc,
 		unsigned long reg_cp) {
 //	hdesc->desc.flags &= EMAC_DESC_F_OWNER;
@@ -265,6 +277,7 @@ static int emac_desc_confirm(struct emac_desc_head *hdesc,
 	return (uintptr_t)&hdesc->desc != REG_LOAD(EMAC_BASE + reg_cp);
 }
 
+#if 0
 static void emac_list_add(struct emac_desc_list *ldesc,
 		struct emac_desc_head *new_head,
 		struct emac_desc_head *new_tail) {
@@ -369,29 +382,31 @@ static void emac_alloc_rx_queue(int size,
 	emac_queue_activate(&dev_priv->rx,
 				EMAC_R_RXHDP(DEFAULT_CHANNEL));
 }
+#endif
+
+
+static void emac_queue_activate(struct emac_desc *desc,
+		unsigned long reg_hdp) {
+	assert(desc != NULL);
+	REG_STORE(EMAC_BASE + reg_hdp, (uintptr_t)desc);
+}
 
 static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
-	struct sk_buff_extra *skb_extra;
-	struct sk_buff_data *skb_data;
-	void *data;
 	size_t data_len;
 	struct emac_desc_head *hdesc;
+	struct emac_desc *desc;
 	struct ti816x_priv *dev_priv;
 	ipl_t ipl;
 
-	skb_extra = skb_extra_alloc();
-	assert(skb_extra != NULL);
-	skb_data = skb_data_clone(skb->data);
-	assert(skb_data != NULL);
+	hdesc = pool_alloc(&emac_tx_desc_pool);
+	assert(hdesc != NULL);
+	desc = &hdesc->desc;
 
-	data = skb_data_cast_in(skb_data);
-	data_len = max(skb->len, ETH_ZLEN);
+	assert(skb->len >= ETH_ZLEN);
+	data_len = skb->len;
 	dcache_flush(data, data_len);
 
-	skb_free(skb);
-
-	hdesc = skb_extra_cast_in(skb_extra);
-	emac_desc_build(hdesc, data, data_len, data_len,
+	emac_desc_build(hdesc, skb->data, data_len, data_len,
 			EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER);
 
 	dev_priv = netdev_priv(dev, struct ti816x_priv);
@@ -399,13 +414,12 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	ipl = ipl_save();
 	{
-		emac_queue_add(&dev_priv->tx, hdesc, hdesc);
-
-		if (NULL == emac_queue_head(&dev_priv->tx)) {
-			emac_queue_prepare(&dev_priv->tx);
-			emac_queue_activate(&dev_priv->tx,
-					EMAC_R_TXHDP(DEFAULT_CHANNEL));
+		if (dev_priv->tx == NULL) {
+			emac_queue_activate(desc, EMAC_R_TXHDP(DEFAULT_CHANNEL));
+		} else {
+			dev_priv->tx->next = desc;
 		}
+		dev_priv->tx = desc;
 	}
 	ipl_restore(ipl);
 

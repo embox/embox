@@ -183,9 +183,9 @@ struct emac_desc {
 #endif
 #if __BYTE_ORDER == __BIG_ENDIAN
 	uint16_t flags;
-	uint16_t len;
+	uint16_t packet_len;
 #elif __BYTE_ORDER == __LITTLE_ENDIAN
-	uint16_t len;
+	uint16_t packet_len;
 	uint16_t flags;
 #endif
 };
