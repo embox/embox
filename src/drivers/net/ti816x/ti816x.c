@@ -54,20 +54,33 @@ POOL_DEF(emac_rx_desc_pool, struct emac_desc_head, MODOPS_PREP_BUFF_CNT + 0x1);
 POOL_DEF(emac_tx_desc_pool, struct emac_desc_head, MODOPS_PREP_BUFF_CNT + 0x1);
 
 static struct emac_desc_head *emac_hdesc_tx_alloc(void) {
-	struct emac_desc_head *res = pool_alloc(&emac_tx_desc_pool);
-	assert(res);
-	memset(res, 0xFF, EMAC_SAFE_PADDING);
+	ipl_t sp;
+	struct emac_desc_head *res;
+
+	sp = ipl_save();
+	{
+		res = pool_alloc(&emac_tx_desc_pool);
+		assert(res);
+		memset(res, 0xFF, EMAC_SAFE_PADDING);
+	}
+	ipl_restore(sp);
 
 	return res;
 }
 
 static void emac_hdesc_tx_free(struct emac_desc_head *obj) {
+	ipl_t sp;
 	int i;
 	assert(obj);
-	for (i = 0; i < EMAC_SAFE_PADDING; i++)
-		assert(obj->buf[i] == 0xFF);
+	
+	sp = ipl_save();
+	{
+		for (i = 0; i < EMAC_SAFE_PADDING; i++)
+			assert(obj->buf[i] == 0xFF);
 
-	pool_free(&emac_tx_desc_pool, obj);
+		pool_free(&emac_tx_desc_pool, obj);
+	}
+	ipl_restore(sp);
 }
 
 static struct emac_desc_head *emac_hdesc_rx_alloc(void) {
