@@ -1,3 +1,4 @@
+#!/bin/sh
 
 EMBOX_BIN=${1:-"./build/base/bin/embox.bin"}
 UIMAGE=${2:-uImage}
