@@ -265,11 +265,10 @@ static void emac_desc_build(struct emac_desc_head *hdesc,
 		struct sk_buff *skb, size_t data_len, size_t packet_len, int flags) {
 	assert(hdesc != NULL);
 	assert(binalign_check_bound((uintptr_t)hdesc, 4));
-	//assert(data != NULL);
 	assert(data_len != 0);
 	assert(flags & EMAC_DESC_F_OWNER);
 
-	hdesc->desc.next = 0; /* use emac_desc_set_next */
+	hdesc->desc.next = 0;
 	hdesc->desc.data = (uintptr_t)skb->data;
 	hdesc->desc.data_len = data_len;
 	hdesc->desc.packet_len = packet_len;
@@ -421,7 +420,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	dev_priv = netdev_priv(dev_id, struct ti816x_priv);
 	assert(dev_priv != NULL);
 
-	next = dev_priv->rx;
+	next = (void *) REG_LOAD(EMAC_CTRL_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	reserve_size = eoq = 0;
 
 	do {
