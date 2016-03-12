@@ -26,6 +26,7 @@ module stm_usart_f3 extends embox.driver.diag.diag_api {
 	source "hal_msp_f3.c"
 	source "stm_usart_cube_diag.c"
 
+	depends embox.driver.char_dev
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
 
@@ -43,6 +44,7 @@ module stm_usart_f4 extends embox.driver.diag.diag_api {
 	source "hal_msp_f4.c"
 	source "stm_usart_cube_diag.c"
 
+	depends embox.driver.char_dev
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
 
