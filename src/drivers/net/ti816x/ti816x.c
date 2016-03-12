@@ -287,7 +287,7 @@ static void emac_desc_build(struct emac_desc_head *hdesc,
 	assert(flags & EMAC_DESC_F_OWNER);
 
 	hdesc->desc.next = 0;
-	hdesc->desc.data = (uintptr_t)skb->data;
+	hdesc->desc.data = (uintptr_t)(skb_data_cast_in(skb->data));
 	hdesc->desc.data_len = data_len;
 	hdesc->desc.packet_len = packet_len;
 	hdesc->desc.data_off = 0;
@@ -313,7 +313,6 @@ static struct emac_desc *emac_queue_reserve(size_t size) {
 	for (i = 0; i < size; ++i) {
 		hdesc = emac_hdesc_rx_alloc();
 		desc = &hdesc->desc;
-
 		skb = skb_alloc(ETH_FRAME_LEN);
 		assert(skb != NULL);
 
@@ -332,14 +331,29 @@ static void emac_queue_activate(struct emac_desc *desc,
 		unsigned long reg_hdp) {
 	assert(desc != NULL);
 	REG_STORE(EMAC_BASE + reg_hdp, (uintptr_t)desc);
-	dcache_inval((void*)(EMAC_BASE + reg_hdp), sizeof (uintptr_t));
+	dcache_flush((void*)(EMAC_BASE + reg_hdp), sizeof (uintptr_t));
 }
 
 static void emac_alloc_rx_queue(int size,
 		struct ti816x_priv *dev_priv) {
-	dev_priv->rx = emac_queue_reserve(size);
-	emac_queue_activate(dev_priv->rx, EMAC_R_RXHDP(DEFAULT_CHANNEL));
+	dev_priv->rx_head = emac_queue_reserve(size);
+	dev_priv->rx_tail = dev_priv->rx_head;
+	while (dev_priv->rx_tail->next)
+		dev_priv->rx_tail = (void*) dev_priv->rx_tail->next;
+
+	emac_queue_activate(dev_priv->rx_head, EMAC_R_RXHDP(DEFAULT_CHANNEL));
 }
+
+#if 0
+static void emac_desc_owner_set(struct emac_desc *head, int val) {
+	val = !(!val);
+
+	do {
+		head->flags |= EMAC
+		head = (void*) head->next; 
+	} while (head);
+}
+#endif
 
 static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	size_t data_len;
@@ -351,8 +365,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	hdesc = emac_hdesc_tx_alloc();
 	desc = &hdesc->desc;
 
-	assert(skb->len >= ETH_ZLEN);
-	data_len = skb->len;
+	data_len = min(skb->len, ETH_ZLEN);
 	dcache_flush(skb->data, data_len);
 
 	emac_desc_build(hdesc, skb, data_len, data_len,
@@ -363,17 +376,36 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	ipl = ipl_save();
 	{
-		if (dev_priv->tx == NULL) {
-			emac_queue_activate(desc, EMAC_R_TXHDP(DEFAULT_CHANNEL));
+		if (dev_priv->tx_busy) {
+			/* Add packet to the waiting queue */
+			emac_desc_set_next(dev_priv->tx_wait_tail, desc);
+			dev_priv->tx_wait_tail = desc;
 		} else {
-			emac_desc_set_next(dev_priv->tx, desc);
+			/* Process packet immediately */
+			dev_priv->tx_cur_head = desc;
+			tx_busy_set(dev_priv);
+			emac_queue_activate(desc, EMAC_R_TXHDP(DEFAULT_CHANNEL));
 		}
-		dev_priv->tx = desc;
+		
 	}
 	ipl_restore(ipl);
 
 	return 0;
 }
+
+static inline void show_packet(uint8_t *raw, int size, char *title) {
+	int i;
+
+	printk("\nPACKET(%d) %s:", size, title);
+	for (i = 0; i < size; i++) {
+		if (!(i % 16)) {
+			printk("\n");
+		}
+		printk(" %02hhX", *(raw + i));
+	}
+	printk("\n.\n");
+}
+
 
 static int ti816x_set_macaddr(struct net_device *dev, const void *addr) {
 	emac_set_macaddr((unsigned char (*)[6])addr);
@@ -428,12 +460,21 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 			| EMAC_DESC_F_OVERRUN | EMAC_DESC_F_CODEERROR    \
 			| EMAC_DESC_F_ALIGNERROR))
 
+int ti_rx_balance = 0;
 static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
 	int reserve_size, eoq;
 	struct emac_desc *desc, *next;
 	struct emac_desc_head *hdesc;
+	ipl_t sp;
+	sp = ipl_save();
+	{
+		ti_rx_balance++;
+	}
+	ipl_restore(sp);
+
+	log_debug("ti rx int");
 
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE
 				+ EMAC_R_CMRXINTSTAT));
@@ -441,18 +482,22 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	dev_priv = netdev_priv(dev_id, struct ti816x_priv);
 	assert(dev_priv != NULL);
 	
-	dcache_inval((void*)(EMAC_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL)), sizeof (uintptr_t));
-	next = (void *) REG_LOAD(EMAC_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL));
+	//dcache_inval((void*)(EMAC_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL)), sizeof (uintptr_t));
+	//next = (void *) REG_LOAD(EMAC_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL));
+
+	next = dev_priv->rx_head;
 
 	reserve_size = eoq = 0;
 	do {
 		dcache_inval(next, sizeof (struct emac_desc));
 		desc = next;
 		hdesc = head_from_desc(desc);
+		log_debug("desc %#x", (unsigned int)desc);
 		if (next->flags & EMAC_DESC_F_OWNER) {
+			log_debug("ti rx break\n");
 			break;
 		}
-
+	
 		desc = next;
 		hdesc = head_from_desc(desc);
 		eoq = desc->flags & EMAC_DESC_F_EOQ;
@@ -460,6 +505,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		if (!CHECK_RXERR_2(desc->flags)) {
 			dcache_inval((void*)desc->data, desc->data_len);
 			hdesc->skb->dev = dev_id;
+			show_packet((void*)desc->data, desc->data_len, "rx");
 			netif_rx(hdesc->skb);
 		} else {
 			log_debug("<eth_drv ASSERT %x>", desc->flags);
@@ -477,19 +523,31 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	if (reserve_size) {
 		if (!desc->next) {
 			/* New queue */
-			dev_priv->rx = emac_queue_reserve(reserve_size);
-			dcache_flush(dev_priv->rx, sizeof(*dev_priv->rx));
-			emac_queue_activate(dev_priv->rx, EMAC_R_RXHDP(DEFAULT_CHANNEL));
+			dev_priv->rx_head = emac_queue_reserve(reserve_size);
+			dev_priv->rx_tail = dev_priv->rx_head;
+			while (dev_priv->rx_tail->next)
+				dev_priv->rx_tail = (void*) dev_priv->rx_tail->next;
+
+			//dcache_flush(dev_priv->rx_tail, sizeof(*dev_priv->rx_tail));
+			//emac_queue_activate(dev_priv->rx_head, EMAC_R_RXHDP(DEFAULT_CHANNEL));
 		} else {
-			emac_desc_set_next(dev_priv->rx, emac_queue_reserve(reserve_size));
-			while (dev_priv->rx->next)
-				dev_priv->rx = (void*) dev_priv->rx->next;
-			emac_queue_activate((void*) desc->next, EMAC_R_RXHDP(DEFAULT_CHANNEL));
+			/* Add to the tail */
+			emac_desc_set_next(dev_priv->rx_tail, emac_queue_reserve(reserve_size));
+			while (dev_priv->rx_tail->next)
+				dev_priv->rx_tail = (void*) dev_priv->rx_tail->next;
+			dev_priv->rx_head = (void*) desc->next;
 		}
+		emac_queue_activate(dev_priv->rx_head, EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	}
 
 
 	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXEOI);
+	
+	sp = ipl_save();
+	{
+		ti_rx_balance--;
+	}
+	ipl_restore(sp);
 
 	return IRQ_HANDLED;
 }
@@ -502,15 +560,16 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
 	int eoq;
+	ipl_t sp;
 	struct emac_desc *desc, *next;
 	struct emac_desc_head *hdesc;
-
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMTXINTSTAT));
+	log_debug("ti tx int");
 
 	dev_priv = netdev_priv(dev_id, struct ti816x_priv);
 	assert(dev_priv != NULL);
 
-	desc = (void*) REG_LOAD(EMAC_BASE + EMAC_R_TXHDP(DEFAULT_CHANNEL));
+	desc = dev_priv->tx_cur_head;
 
 	do {
 		hdesc = head_from_desc(desc);
@@ -521,20 +580,30 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		eoq = desc->flags & EMAC_DESC_F_EOQ;
 		next = (void*) desc->next;
 		
+		show_packet((void*)desc->data, desc->data_len, "rx");
+
 		skb_free(hdesc->skb);
 		emac_hdesc_tx_free(hdesc);
 		emac_desc_confirm(desc, EMAC_R_TXCP(DEFAULT_CHANNEL));
 		
 		desc = next;
-
 	} while (!eoq && desc);
 	
-	assert(eoq);
 
-	if (desc) {
-		emac_queue_activate(	dev_priv->tx,
-					EMAC_R_TXHDP(DEFAULT_CHANNEL));
+	assert(eoq && !desc);
+	
+	sp = ipl_save();
+	{
+		if (dev_priv->tx_wait_head != NULL) {
+			dev_priv->tx_cur_head = dev_priv->tx_wait_head;
+			emac_queue_activate(	dev_priv->tx_wait_head,
+						EMAC_R_TXHDP(DEFAULT_CHANNEL));
+			dev_priv->tx_wait_head = dev_priv->tx_wait_tail = NULL;
+		} else {
+			tx_busy_reset(dev_priv);
+		}
 	}
+	ipl_restore(sp);
 
 	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, TXEOI);
 
