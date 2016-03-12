@@ -446,7 +446,9 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 
 	reserve_size = eoq = 0;
 	do {
-		dcache_inval(next, sizeof *next);
+		dcache_inval(next, sizeof (struct emac_desc));
+		desc = next;
+		hdesc = head_from_desc(desc);
 		if (next->flags & EMAC_DESC_F_OWNER) {
 			break;
 		}
