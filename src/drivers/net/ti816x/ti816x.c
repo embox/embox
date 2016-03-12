@@ -323,6 +323,8 @@ static struct emac_desc *emac_queue_reserve(size_t size) {
 		prev = desc;
 	}
 
+	assert(desc);
+
 	return desc;
 }
 
@@ -330,6 +332,7 @@ static void emac_queue_activate(struct emac_desc *desc,
 		unsigned long reg_hdp) {
 	assert(desc != NULL);
 	REG_STORE(EMAC_BASE + reg_hdp, (uintptr_t)desc);
+	dcache_inval((void*)(EMAC_BASE + reg_hdp), sizeof (uintptr_t));
 }
 
 static void emac_alloc_rx_queue(int size,
@@ -437,10 +440,11 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 
 	dev_priv = netdev_priv(dev_id, struct ti816x_priv);
 	assert(dev_priv != NULL);
+	
+	dcache_inval((void*)(EMAC_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL)), sizeof (uintptr_t));
+	next = (void *) REG_LOAD(EMAC_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL));
 
-	next = (void *) REG_LOAD(EMAC_CTRL_BASE + EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	reserve_size = eoq = 0;
-
 	do {
 		dcache_inval(next, sizeof *next);
 		if (next->flags & EMAC_DESC_F_OWNER) {
@@ -468,18 +472,18 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		assert(eoq || next);
 	} while (!eoq);
 
-	assert(eoq);
-	
-	if (desc->next) {
-		/* New queue */
-		dev_priv->rx = emac_queue_reserve(reserve_size);
-		dcache_flush(dev_priv->rx, sizeof(*dev_priv->rx));
-		emac_queue_activate(dev_priv->rx, EMAC_R_RXHDP(DEFAULT_CHANNEL));
-	} else {
-		emac_desc_set_next(dev_priv->rx, emac_queue_reserve(reserve_size));
-		while (dev_priv->rx->next)
-			dev_priv->rx = (void*) dev_priv->rx->next;
-		emac_queue_activate((void*) desc->next, EMAC_R_RXHDP(DEFAULT_CHANNEL));
+	if (reserve_size) {
+		if (!desc->next) {
+			/* New queue */
+			dev_priv->rx = emac_queue_reserve(reserve_size);
+			dcache_flush(dev_priv->rx, sizeof(*dev_priv->rx));
+			emac_queue_activate(dev_priv->rx, EMAC_R_RXHDP(DEFAULT_CHANNEL));
+		} else {
+			emac_desc_set_next(dev_priv->rx, emac_queue_reserve(reserve_size));
+			while (dev_priv->rx->next)
+				dev_priv->rx = (void*) dev_priv->rx->next;
+			emac_queue_activate((void*) desc->next, EMAC_R_RXHDP(DEFAULT_CHANNEL));
+		}
 	}
 
 
