@@ -626,9 +626,9 @@ static void ti816x_config(struct net_device *dev) {
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
 	emac_set_macctrl(MACCTRL_INIT);
-	emac_enable_rx_and_tx_irq();
 	emac_alloc_rx_queue(MODOPS_PREP_BUFF_CNT,
 			netdev_priv(dev, struct ti816x_priv));
+	emac_enable_rx_and_tx_irq();
 	emac_enable_rx_and_tx_dma();
 	emac_set_macctrl(GMIIEN);
 
