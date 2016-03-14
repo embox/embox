@@ -110,9 +110,33 @@ static void emac_desc_set_next(struct emac_desc *desc, void *next) {
 }
 
 struct ti816x_priv {
-	struct emac_desc *rx;
-	struct emac_desc *tx;
+	struct emac_desc *rx_head;
+	struct emac_desc *rx_tail;
+	
+	struct emac_desc *tx_cur_head;
+	
+	struct emac_desc *tx_wait_head;
+	struct emac_desc *tx_wait_tail;
+	int tx_busy;
 };
+
+static void tx_busy_set(struct ti816x_priv *priv) {
+	ipl_t sp;
+	sp = ipl_save();
+	{
+		priv->tx_busy = 1;
+	}
+	ipl_restore(sp);
+}
+
+static void tx_busy_reset(struct ti816x_priv *priv) {
+	ipl_t sp;
+	sp = ipl_save();
+	{
+		priv->tx_busy = 0;
+	}
+	ipl_restore(sp);
+}
 
 static void ti816x_config(struct net_device *dev);
 
