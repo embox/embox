@@ -365,7 +365,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	hdesc = emac_hdesc_tx_alloc();
 	desc = &hdesc->desc;
 
-	data_len = min(skb->len, ETH_ZLEN);
+	data_len = max(skb->len, ETH_ZLEN);
 	dcache_flush(skb->data, data_len);
 
 	emac_desc_build(hdesc, skb, data_len, data_len,
@@ -392,20 +392,6 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	return 0;
 }
-
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-	int i;
-
-	printk("\nPACKET(%d) %s:", size, title);
-	for (i = 0; i < size; i++) {
-		if (!(i % 16)) {
-			printk("\n");
-		}
-		printk(" %02hhX", *(raw + i));
-	}
-	printk("\n.\n");
-}
-
 
 static int ti816x_set_macaddr(struct net_device *dev, const void *addr) {
 	emac_set_macaddr((unsigned char (*)[6])addr);
@@ -505,7 +491,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		if (!CHECK_RXERR_2(desc->flags)) {
 			dcache_inval((void*)desc->data, desc->data_len);
 			hdesc->skb->dev = dev_id;
-			show_packet((void*)desc->data, desc->data_len, "rx");
 			netif_rx(hdesc->skb);
 		} else {
 			log_debug("<eth_drv ASSERT %x>", desc->flags);
@@ -580,8 +565,6 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		eoq = desc->flags & EMAC_DESC_F_EOQ;
 		next = (void*) desc->next;
 		
-		show_packet((void*)desc->data, desc->data_len, "rx");
-
 		skb_free(hdesc->skb);
 		emac_hdesc_tx_free(hdesc);
 		emac_desc_confirm(desc, EMAC_R_TXCP(DEFAULT_CHANNEL));
