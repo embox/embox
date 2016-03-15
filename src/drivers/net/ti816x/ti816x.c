@@ -515,6 +515,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		if (!CHECK_RXERR_2(desc->flags)) {
 			dcache_inval((void*)desc->data, desc->data_len);
 			hdesc->skb->dev = dev_id;
+			hdesc->skb->len = desc->data_len;
 			netif_rx(hdesc->skb);
 		} else {
 			log_debug("<eth_drv ASSERT %x>", desc->flags);
