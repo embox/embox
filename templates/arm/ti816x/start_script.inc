@@ -1,3 +1,9 @@
+"ifconfig eth0 192.168.33.107 netmask 255.255.255.0 up",
+"route add 192.168.33.0 netmask 255.255.255.0 eth0",
+"route add default gw 192.168.33.1 eth0",
+//"ping 192.168.33.1"
+
+#if 0
 /* Setup loopback interface */
 "ifconfig lo 127.0.0.1 netmask 255.0.0.0 up",
 "route add 127.0.0.0 netmask 255.0.0.0 lo",
@@ -23,3 +29,4 @@
 "smac_adm -R service -o unclassified  -a r",
 
 "login",
+#endif
