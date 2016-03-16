@@ -371,7 +371,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	ipl = ipl_save();
 	{
-		if (!dev_priv->tx_cur_head) {
+		if (dev_priv->tx_cur_head) {
 			/* Add packet to the waiting queue */
 			if (dev_priv->tx_wait_head) {
 				emac_desc_set_next(dev_priv->tx_wait_head, desc);
