@@ -491,6 +491,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 
 		reserve_size++;
 	} while (!eoq);
+	
 
 	if (reserve_size) {
 		struct emac_desc *emac_q;
@@ -502,13 +503,15 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 			dev_priv->rx_tail = dev_priv->rx_head;
 		} else {
 			/* Add to the tail */
-			dev_priv->rx_head = (void*) desc->next;
+			dev_priv->rx_head = (void*) desc;
 			emac_desc_set_next(dev_priv->rx_tail, emac_q);
 		}
 		/* move the tail */
 		while (dev_priv->rx_tail->next) {
 			dev_priv->rx_tail = (void*) dev_priv->rx_tail->next;
 		}
+		
+		assert((eoq && !desc) || (!eoq && desc));
 		emac_queue_activate(dev_priv->rx_head, EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	}
 
