@@ -234,7 +234,8 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name, struct
 		}
 
 		timeout = min(pinfo->interval, pinfo->timeout);
-		while (timeout >= 0) {
+
+		do {
 
 			switch (poll(&fds, 1, timeout)) {
 			case 0:
@@ -254,10 +255,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name, struct
 				ret = -errno;
 				goto out;
 			}
-
-			timeout -= clock() - started;
-
-		}
+		} while (clock() - started < timeout);
 
 		timeout = clock() - started;
 		if (timeout < pinfo->interval) {
