@@ -325,7 +325,7 @@ static struct emac_desc *emac_queue_reserve(size_t size) {
 	for (i = 0; i < size; ++i) {
 		hdesc = emac_hdesc_rx_alloc();
 		desc = &hdesc->desc;
-		skb = skb_alloc(ETH_FRAME_LEN);
+		skb = skb_alloc_local(ETH_FRAME_LEN, &ti816x_skb_pool);
 		assert(skb != NULL);
 
 		emac_desc_build(hdesc, skb, skb_max_size(), 0, EMAC_DESC_F_OWNER);
