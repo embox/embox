@@ -16,8 +16,10 @@
 #include <kernel/irq.h>
 #include <hal/reg.h>
 #include <drivers/net/ti816x.h>
-#include <net/l0/net_entry.h>
 
+#include <mem/misc/pool.h>
+
+#include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
@@ -34,11 +36,15 @@
 
 EMBOX_UNIT_INIT(ti816x_init);
 
-#define MODOPS_PREP_BUFF_CNT OPTION_GET(NUMBER, prep_buff_cnt)
+#define MODOPS_PREP_BUFF_CNT	OPTION_GET(NUMBER, prep_buff_cnt)
+#define MODOPS_AMOUNT_SKB	OPTION_GET(NUMBER, amount_skb)
+
 #define DEFAULT_CHANNEL 0
 #define DEFAULT_MASK ((uint8_t)(1 << DEFAULT_CHANNEL))
 
 #define EMAC_SAFE_PADDING 64
+
+POOL_DEF(ti816x_skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 
 struct emac_desc_head {
 	char buf[EMAC_SAFE_PADDING];
