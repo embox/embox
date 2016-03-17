@@ -35,9 +35,15 @@
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 
 struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
+	return skb_wrap_local(size, skb_data, &skb_pool);
+}
+
+struct sk_buff * skb_wrap_local(size_t size, struct sk_buff_data *skb_data,
+		struct pool *pl) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
+	assert(pl != NULL);
 	assert(size != 0);
 	assert(skb_data != NULL);
 
@@ -49,7 +55,7 @@ struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 
 	sp = ipl_save();
 	{
-		skb = pool_alloc(&skb_pool);
+		skb = pool_alloc(pl);
 	}
 	ipl_restore(sp);
 
@@ -67,11 +73,16 @@ struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 	skb->data = skb_data;
 	skb->mac.raw = skb_get_data_pointner(skb_data);
 	skb->p_data = skb->p_data_end = NULL;
+	skb->pl = pl;
 
 	return skb;
 }
 
 struct sk_buff * skb_alloc(size_t size) {
+	return skb_alloc_local(size, &skb_pool);
+}
+
+struct sk_buff * skb_alloc_local(size_t size, struct pool *pl) {
 	struct sk_buff *skb;
 	struct sk_buff_data *skb_data;
 
@@ -81,7 +92,7 @@ struct sk_buff * skb_alloc(size_t size) {
 		return NULL; /* error: no memory */
 	}
 
-	skb = skb_wrap(size, skb_data);
+	skb = skb_wrap_local(size, skb_data, pl);
 	if (skb == NULL) {
 		skb_data_free(skb_data);
 		return NULL; /* error: no memory */
@@ -116,7 +127,7 @@ void skb_free(struct sk_buff *skb) {
 	{
 		assert((skb->lnk.prev != NULL) && (skb->lnk.next != NULL));
 		list_del((struct list_head *) skb);
-		pool_free(&skb_pool, skb);
+		pool_free(skb->pl, skb);
 	}
 	ipl_restore(sp);
 }

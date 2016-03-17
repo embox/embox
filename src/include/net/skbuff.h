@@ -39,6 +39,8 @@ typedef struct sk_buff {        /* Socket buffer */
 	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
+	struct pool *pl;	/* Local net driver pool pointer. Zero if default.
+				   Probably, should be joined with *dev field */
 
 		/* Control buffer (used to store layer-specific info e.g. ip options)
 		 * Nowdays it's used only in ip options, so it's a good idea to
@@ -114,6 +116,9 @@ extern void skb_extra_free(struct sk_buff_extra *skb_extra);
  */
 extern struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data);
 
+extern struct sk_buff * skb_wrap_local(size_t size,
+		struct sk_buff_data *skb_data, struct pool *pl);
+
 /**
  * Allocate one instance of structure sk_buff. With pointed size and flags.
  * @return If size is more then mtu (now it is defined by module option
@@ -123,8 +128,8 @@ extern struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data);
  * TODO make skb_queue if `size` more than mtu
  */
 extern struct sk_buff * skb_alloc(size_t size);
+extern struct sk_buff * skb_alloc_local(size_t size, struct pool *pl);
 extern struct sk_buff * skb_alloc_dynamic(size_t size);
-
 extern struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb);
 
 /**
