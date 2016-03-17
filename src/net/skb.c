@@ -13,6 +13,8 @@
 #include <stdint.h>
 #include <sys/uio.h>
 
+#include <kernel/printk.h>
+
 #include <util/math.h>
 #include <util/log.h>
 #include <util/member.h>
@@ -39,6 +41,8 @@
 #define MODOPS_EXTRA_SIZE       OPTION_GET(NUMBER, extra_size)
 #define MODOPS_EXTRA_ALIGN      OPTION_GET(NUMBER, extra_align)
 #define MODOPS_EXTRA_PADTO      OPTION_GET(NUMBER, extra_padto)
+
+static int balance = 0;
 
 #define DATA_PAD_SIZE \
 	PAD_SIZE(IP_ALIGN_SIZE + MODOPS_DATA_SIZE, MODOPS_DATA_PADTO)
@@ -147,7 +151,7 @@ struct sk_buff_data * skb_data_alloc(void) {
 		log_error("skb_data_alloc: error: no memory\n");
 		return NULL; /* error: no memory */
 	}
-
+	balance++;
 	skb_data->links = 1;
 
 	return skb_data;
@@ -181,8 +185,10 @@ void skb_data_free(struct sk_buff_data *skb_data) {
 		if (--skb_data->links == 0) {
 			if (pool_belong(&skb_data_pool, skb_data)) {
 				pool_free(&skb_data_pool, skb_data);
+				balance--;
 			}
 			else {
+				assert(0);
 				sysfree(skb_data);
 			}
 		}
@@ -262,18 +268,20 @@ struct sk_buff * skb_alloc(size_t size) {
 	if (skb_data_pool.obj_size >= size) {
 		skb_data = skb_data_alloc();
 	} else {
+		assert(0);
 		skb_data = skb_data_alloc_dynamic(size);
 	}
 	if (skb_data == NULL) {
+		printk("data %d #########################", balance);
 		return NULL; /* error: no memory */
 	}
 
 	skb = skb_wrap(size, skb_data);
 	if (skb == NULL) {
 		skb_data_free(skb_data);
+		printk("wrap %d #########################", balance);
 		return NULL; /* error: no memory */
 	}
-
 	return skb;
 }
 

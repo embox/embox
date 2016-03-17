@@ -43,7 +43,7 @@ static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group
 int main(int argc, char *argv[]) {
 	uid_t owner_id;
 	bool is_group_set;
-	gid_t group_id;
+	gid_t group_id = 0; /* TODO use current user group id */
 	char *delim;
 
 	if (argc < 3) {
