@@ -98,6 +98,7 @@ static struct emac_desc_head *emac_hdesc_rx_alloc(void) {
 	return res;
 }
 
+#if 0
 static void emac_hdesc_rx_free(struct emac_desc_head *obj) {
 	int i;
 	assert(obj);
@@ -106,6 +107,7 @@ static void emac_hdesc_rx_free(struct emac_desc_head *obj) {
 
 	pool_free(&emac_rx_desc_pool, obj);
 }
+#endif
 
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
@@ -117,7 +119,9 @@ static void emac_desc_set_next(struct emac_desc *desc, void *next) {
 
 struct ti816x_priv {
 	struct emac_desc *rx_head;
-	struct emac_desc *rx_tail;
+
+	struct emac_desc *rx_wait_head;
+	struct emac_desc *rx_wait_tail;
 
 	struct emac_desc *tx_cur_head;
 
@@ -308,6 +312,15 @@ static void emac_desc_build(struct emac_desc_head *hdesc,
 	dcache_flush(&hdesc->desc, sizeof hdesc->desc);
 }
 
+static void emac_hdesc_fill(struct emac_desc_head *hdesc) {
+	struct sk_buff *skb;
+	assert(hdesc);
+	skb = skb_alloc_local(ETH_FRAME_LEN, &ti816x_skb_pool);
+	assert(skb != NULL);
+
+	emac_desc_build(hdesc, skb, skb_max_size(), 0, EMAC_DESC_F_OWNER);
+}
+
 static int emac_desc_confirm(struct emac_desc *desc,
 		unsigned long reg_cp) {
 	REG_STORE(EMAC_BASE + reg_cp, (uintptr_t)desc);
@@ -318,19 +331,15 @@ static struct emac_desc *emac_queue_reserve(size_t size) {
 	size_t i;
 	struct emac_desc *desc, *prev = NULL;
 	struct emac_desc_head *hdesc;
-	struct sk_buff *skb;
 
 	assert(size != 0);
 
 	for (i = 0; i < size; ++i) {
 		hdesc = emac_hdesc_rx_alloc();
+		emac_hdesc_fill(hdesc);
+
 		desc = &hdesc->desc;
-		skb = skb_alloc_local(ETH_FRAME_LEN, &ti816x_skb_pool);
-		assert(skb != NULL);
-
-		emac_desc_build(hdesc, skb, skb_max_size(), 0, EMAC_DESC_F_OWNER);
 		emac_desc_set_next(desc, prev);
-
 		prev = desc;
 	}
 
@@ -349,9 +358,6 @@ static void emac_queue_activate(struct emac_desc *desc,
 static void emac_alloc_rx_queue(int size,
 		struct ti816x_priv *dev_priv) {
 	dev_priv->rx_head = emac_queue_reserve(size);
-	dev_priv->rx_tail = dev_priv->rx_head;
-	while (dev_priv->rx_tail->next)
-		dev_priv->rx_tail = (void*) dev_priv->rx_tail->next;
 
 	emac_queue_activate(dev_priv->rx_head, EMAC_R_RXHDP(DEFAULT_CHANNEL));
 }
@@ -452,7 +458,7 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
-	int reserve_size, eoq;
+	int eoq;
 	struct emac_desc *desc;
 	struct emac_desc_head *hdesc;
 
@@ -466,7 +472,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 
 	desc = dev_priv->rx_head;
 
-	reserve_size = eoq = 0;
+	eoq = 0;
 	do {
 		dcache_inval(desc, sizeof (struct emac_desc));
 
@@ -490,33 +496,23 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		eoq = desc->flags & EMAC_DESC_F_EOQ;
 		emac_desc_confirm(desc, EMAC_R_RXCP(DEFAULT_CHANNEL));
 		desc = (void*) desc->next;
+		dev_priv->rx_head = desc;
 
-		emac_hdesc_rx_free(hdesc);
+		log_debug("reuse %#x", &hdesc->desc);
+		emac_hdesc_fill(hdesc);
+		if (!dev_priv->rx_wait_head) {
+			dev_priv->rx_wait_head = &hdesc->desc;
+		} else {
+			emac_desc_set_next(dev_priv->rx_wait_tail, &hdesc->desc);
+		}
+		dev_priv->rx_wait_tail = &hdesc->desc;
 
 		assert((eoq && !desc) || (!eoq && desc));
-
-		reserve_size++;
 	} while (!eoq);
 
-	if (reserve_size) {
-		struct emac_desc *emac_q;
-
-		emac_q = emac_queue_reserve(reserve_size);
-		if (eoq) {
-			/* New queue */
-			dev_priv->rx_head = emac_q;
-			dev_priv->rx_tail = dev_priv->rx_head;
-		} else {
-			/* Add to the tail */
-			dev_priv->rx_head = (void*) desc;
-			emac_desc_set_next(dev_priv->rx_tail, emac_q);
-		}
-		/* move the tail */
-		while (dev_priv->rx_tail->next) {
-			dev_priv->rx_tail = (void*) dev_priv->rx_tail->next;
-		}
-
-		assert((eoq && !desc) || (!eoq && desc));
+	if (eoq) {
+		log_debug("update rx queue");
+		dev_priv->rx_head = dev_priv->rx_wait_head;
 		emac_queue_activate(dev_priv->rx_head, EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	}
 
