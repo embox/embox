@@ -2,7 +2,7 @@
  * @file
  * @brief It is debug version of fixed-size pool with fixed size objects
  *  We add a bitmap of free blocks in struct pool to catch double freeing.
- *	
+ *
  * @see For more information see pool.c
  *
  * @date	04.03.2016
@@ -28,6 +28,7 @@ void * pool_alloc(struct pool *pl) {
 		obj = (void *)slist_remove_first_link(&pl->free_blocks);
 
 		index = (obj - pl->memory) / pl->obj_size;
+		assert(bitmap_test_bit(pl->blocks, index) == 0);
 		bitmap_set_bit(pl->blocks, index);
 
 		return obj;
@@ -39,6 +40,7 @@ void * pool_alloc(struct pool *pl) {
 		assert(pl->bound_free <= pl->memory + pl->pool_size);
 
 		index = (obj - pl->memory) / pl->obj_size;
+		assert(bitmap_test_bit(pl->blocks, index) == 0);
 		bitmap_set_bit(pl->blocks, index);
 
 		return obj;
