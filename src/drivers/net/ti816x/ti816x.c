@@ -316,11 +316,13 @@ static void emac_queue_activate(struct emac_desc *desc,
 
 static void emac_alloc_rx_queue(struct ti816x_priv *dev_priv) {
 	dev_priv->rx_head = &emac_rx_list[0].desc;
+	dev_priv->rx_wait_head = NULL;
+	dev_priv->rx_wait_tail = NULL;
 
 	for (int i = 0; i < MODOPS_PREP_BUFF_CNT; i++) {
 		emac_hdesc_fill(&emac_rx_list[i]);
-		if (i < MODOPS_PREP_BUFF_CNT - 1)
-			emac_desc_set_next(&emac_rx_list[i].desc, &emac_rx_list[i - 1].desc);
+		if (i > 0)
+			emac_desc_set_next(&emac_rx_list[i - 1].desc, &emac_rx_list[i].desc);
 	}
 
 	emac_queue_activate(dev_priv->rx_head, EMAC_R_RXHDP(DEFAULT_CHANNEL));
@@ -445,7 +447,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 			log_info("ti rx break\n");
 			break;
 		}
-
 		hdesc = head_from_desc(desc);
 		if (!CHECK_RXERR_2(desc->flags)) {
 			dcache_inval((void*)desc->data, desc->data_len);
