@@ -453,7 +453,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		if (!CHECK_RXERR_2(desc->flags)) {
 			dcache_inval((void*)desc->data, desc->data_len);
 
-			skb = skb_alloc_local(ETH_FRAME_LEN, &ti816x_skb_pool);
+			skb = skb_alloc_local(desc->data_len, &ti816x_skb_pool);
 			skb->len = desc->data_len;
 			skb->dev = dev_id;
 			memcpy(skb_data_cast_in(skb->data),
@@ -611,6 +611,10 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
+static void emac_set_max_frame_len(int m) {
+	REG_STORE(EMAC_BASE + EMAC_R_RXMAXLEN, m);
+}
+
 static void ti816x_config(struct net_device *dev) {
 	unsigned char bcast_addr[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
@@ -635,6 +639,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_init_rx_regs();
 	emac_clear_machash();
 	emac_set_rxbufoff(0);
+	emac_set_max_frame_len(0x800);
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
 	emac_set_macctrl(MACCTRL_INIT);
