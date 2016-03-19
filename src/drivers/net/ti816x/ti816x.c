@@ -448,6 +448,8 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		if (desc->flags & EMAC_DESC_F_PASSCRC)
 			desc->data_len -= 4;
 
+		assert(!(desc->flags & EMAC_DESC_F_TDOWNCMPLT));
+
 		if (!CHECK_RXERR_2(desc->flags)) {
 			dcache_inval((void*)desc->data, desc->data_len);
 
