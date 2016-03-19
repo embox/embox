@@ -403,7 +403,7 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 	(!(~(x) & (EMAC_DESC_F_SOP | EMAC_DESC_F_EOP)))
 #define CHECK_RXERR(x) \
 	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT       \
-			| EMAC_DESC_F_PASSCRC | EMAC_DESC_F_JABBER       \
+			| EMAC_DESC_F_JABBER       \
 			| EMAC_DESC_F_OVERSIZE | EMAC_DESC_F_FRAGMENT    \
 			| EMAC_DESC_F_UNDERSIZED | EMAC_DESC_F_CONTROL   \
 			| EMAC_DESC_F_OVERRUN | EMAC_DESC_F_CODEERROR    \
@@ -411,7 +411,7 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 #define RXEOI 0x1 /* MACEOIVECTOR */
 #define CHECK_RXERR_2(x) \
 	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT       \
-			| EMAC_DESC_F_PASSCRC | EMAC_DESC_F_JABBER       \
+			| EMAC_DESC_F_JABBER       \
 			| EMAC_DESC_F_OVERSIZE | EMAC_DESC_F_FRAGMENT    \
 			| EMAC_DESC_F_UNDERSIZED | EMAC_DESC_F_CONTROL   \
 			| EMAC_DESC_F_OVERRUN | EMAC_DESC_F_CODEERROR    \
@@ -443,7 +443,11 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 			log_info("ti rx break\n");
 			break;
 		}
+
 		hdesc = head_from_desc(desc);
+		if (desc->flags & EMAC_DESC_F_PASSCRC)
+			desc->data_len -= 4;
+
 		if (!CHECK_RXERR_2(desc->flags)) {
 			dcache_inval((void*)desc->data, desc->data_len);
 
