@@ -443,6 +443,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 			log_info("ti rx break\n");
 			break;
 		}
+		emac_desc_confirm(desc, EMAC_R_RXCP(DEFAULT_CHANNEL));
 
 		hdesc = head_from_desc(desc);
 		if (desc->flags & EMAC_DESC_F_PASSCRC)
@@ -465,7 +466,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		}
 
 		eoq = desc->flags & EMAC_DESC_F_EOQ;
-		emac_desc_confirm(desc, EMAC_R_RXCP(DEFAULT_CHANNEL));
 		desc = (void*) desc->next;
 		dev_priv->rx_head = desc;
 
