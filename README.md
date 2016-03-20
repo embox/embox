@@ -18,6 +18,11 @@ For Debian-based systems (most packages are installed out of box though):
 $ sudo apt-get install build-essential gcc-multilib curl libmpc-dev
 ```
 
+For Arch Linux:
+```
+$ sudo pacman -S make gcc-multilib cpio curl
+```
+
 ### Building Embox
 First of all:
 ```
@@ -59,7 +64,7 @@ Then modify `CROSS_COMPILE` variable in `conf/build.conf` like
 CROSS_COMPILE = /path/to/toolchain/bin/i386-elf-
 ```
 
-If you've installed toolchain in some directory from `$PATH`, then `CROSS_COMPILE` could be just 
+If you've installed toolchain in some directory from `$PATH`, then `CROSS_COMPILE` could be just
 ```
 CROSS_COMPILE = i386-elf-
 ```
