@@ -50,7 +50,7 @@ export ANNOTATION_HANDLERS  = mk/mybuild/annotation_handlers
 #
 
 # find_tool_impl - finds an utillity to be implementation for requested tool.
-# This should be used to select proper program on different systems, like 
+# This should be used to select proper program on different systems, like
 # 'awk' on linux and 'gawk' on bsd. Returns first utility found.
 #
 # Example: $(call find_tool_impl,AWK,gawk awk nawk mawk,awk)
@@ -65,7 +65,8 @@ for i in $2; do \
 	echo $$i && \
 	exit; \
 done; \
-printf "%s: Found no implementation for %s tool, tried: %s; taking '%s' as default\n" "$0" "$1" "$2" "$3" >&2)
+printf "%s: Found no implementation for %s tool, tried: %s; taking '%s' as default\n" "$0" "$1" "$2" "$3" >&2; \
+echo $3)
 
 export RM     := rm -f
 export CP     := cp
