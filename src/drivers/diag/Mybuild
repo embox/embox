@@ -2,6 +2,10 @@ package embox.driver.diag
 
 module diag_api {}
 
+module xen_diag extends diag_api {
+	source "xen_diag.c"
+}
+
 module mem_diag extends diag_api {
 	option number buffer_len = 128
 	option number buffer_addr = 0
