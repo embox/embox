@@ -49,6 +49,7 @@ extern shared_info_t shared_info;
 extern void handle_input(evtchn_port_t port, struct pt_regs * regs);
 
 shared_info_t *HYPERVISOR_shared_info;
+start_info_t * start_info_global;
 
 static void kernel_init_xen(start_info_t * start_info);
 static int init_xen(start_info_t * start_info);
@@ -57,6 +58,8 @@ void kernel_start_xen(start_info_t * start_info) {
 	HYPERVISOR_update_va_mapping((unsigned long) &shared_info, 
 			__pte(start_info->shared_info | 7),
 			UVMF_INVLPG);
+
+	start_info_global = start_info;
 	HYPERVISOR_shared_info = &shared_info;
 	
 	kernel_init_xen(start_info);
@@ -77,16 +80,14 @@ static void kernel_init_xen(start_info_t * start_info) {
 }
 
 static int init_xen(start_info_t * start_info) {
-	/*int ret;
+	int ret;
 	const runlevel_nr_t target_level = RUNLEVEL_NRS_TOTAL - 1;
 
 	printk("\nEmbox kernel start\n");
 
 	ret = runlevel_set(target_level);
 
-	return ret;*/
-
-	return 0;
+	return ret;
 }
 
 #else
