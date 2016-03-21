@@ -5,7 +5,7 @@ UIMAGE=${2:-uImage}
 MKIMAGE=$(which mkimage)
 
 if [ ! $MKIMAGE ]; then
-	echo "!!!!!!!  ERROR !!!!!!!!!!!!! please install mkimage"   >&2
+	echo "!!!!!!!  ERROR !!!!!!!!!!!!! please install mkimage or uboot-tools"   >&2
 	exit 1
 fi
 
