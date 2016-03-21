@@ -80,17 +80,19 @@ C_ENTRY(_start):
   push %esi 
 	call    kernel_start_xen /* call C code */
 
-loop:
-	hlt             /* if we return from kernel_start it's error */
-	jmp	loop
 
 stack_start:
 	.long stack+8192, FLAT_KERNEL_SS
 
         .org 0x1000
+	.p2align 12
 shared_info:
         .org 0x2000
 
 hypercall_page:
         .org 0x3000
+
+loop:
+	hlt             /* if we return from kernel_start it's error */
+	jmp	loop
 
