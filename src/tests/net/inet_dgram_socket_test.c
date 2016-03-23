@@ -19,6 +19,13 @@
 #include <net/netdevice.h>
 #include <net/l3/route.h>
 
+#include <stddef.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fs/index_descriptor.h>
+#include <fs/idesc.h>
+#include <kernel/task/resource/idesc_table.h>
+
 EMBOX_TEST_SUITE("inet dgram socket test");
 
 TEST_SETUP_SUITE(suite_setup);
@@ -189,6 +196,33 @@ TEST_CASE("getpeername() returns address of peer") {
 	test_assert_zero(getpeername(c, to_sa(&tmp), &addrlen));
 	test_assert_equal(sizeof addr, addrlen);
 	test_assert_mem_equal(&addr, &tmp, addrlen);
+}
+
+TEST_CASE("writev/readv")
+{
+	ssize_t ret;
+
+	char *str0 = "sample ";
+	char *str1 = "text\n";
+	struct iovec iov_w[2];
+	struct iovec iov_r[2];
+
+	iov_w[0].iov_base = str0;
+	iov_w[0].iov_len = strlen(str0);
+	iov_w[1].iov_base = str1;
+	iov_w[1].iov_len = strlen(str1);
+
+	ret = writev(c, iov_w, 2);
+	test_assert_equal(ret, 2);
+
+	ret = readv(c, iov_r, 2);
+	test_assert_equal(ret, 2);
+
+	int i;
+	for (i = 0; i < 2; i++){
+		test_assert_equal(iov_w[i].iov_len, iov_r[i].iov_len);
+		test_assert_mem_equal(iov_w[i].iov_base, iov_r[i].iov_base, iov_w[i].iov_len);
+	}
 }
 
 static int suite_setup(void) {
