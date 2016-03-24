@@ -49,15 +49,34 @@ export ANNOTATION_HANDLERS  = mk/mybuild/annotation_handlers
 # Tools.
 #
 
+# find_tool_impl - finds an utillity to be implementation for requested tool.
+# This should be used to select proper program on different systems, like
+# 'awk' on linux and 'gawk' on bsd. Returns first utility found.
+#
+# Example: $(call find_tool_impl,AWK,gawk awk nawk mawk,awk)
+#
+# Args:
+#   1. tool (uppercase label)
+#   2. space separated list of utillity names to look at
+#   3. default choice
+find_tool_impl = $(shell \
+for i in $2; do \
+	type $$i >/dev/null 2>&1 && \
+	echo $$i && \
+	exit; \
+done; \
+printf "%s: Found no implementation for %s tool, tried: %s; taking '%s' as default\n" "$0" "$1" "$2" "$3" >&2; \
+echo $3)
+
 export RM     := rm -f
 export CP     := cp
 export MV     := mv -f
 export PRINTF := printf
 export MKDIR  := mkdir -p
 export LN     := ln -s
-export MD5    := $(shell for i in md5 md5sum; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
-export CPIO   := $(shell for i in gcpio cpio; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
-export AWK    := $(shell for i in gawk awk nawk mawk; do type $$i >/dev/null 2>&1 && echo $$i && break; done)
+export MD5    := $(call find_tool_impl,MD5,md5 md5sum,md5sum)
+export CPIO   := $(call find_tool_impl,CPIO,gcpio cpio,cpio)
+export AWK    := $(call find_tool_impl,AWK,gawk awk nawk mawk,awk)
 export TSORT  := tsort
 export TAC    := $(if $(shell which tac 2>/dev/null),tac,tail -rq)
 export SEQ    := seq -w
