@@ -453,11 +453,11 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		}
 
 		assert(!(desc->flags & EMAC_DESC_F_TDOWNCMPLT));
+		assert(!hdesc->skb); /* We do not prealloc skb for RX queue */
 
 		if (!CHECK_RXERR_2(desc->flags)) {
 			if (desc->data_len > RX_FRAME_MAX_LEN) {
 				log_debug("<too long frame %x>", desc->flags);
-				skb_free(hdesc->skb);
 			} else {
 				dcache_inval((void*)desc->data, desc->data_len);
 
@@ -471,7 +471,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 			}
 		} else {
 			log_debug("<ASSERT %x>", desc->flags);
-			skb_free(hdesc->skb);
 		}
 
 		eoq = desc->flags & EMAC_DESC_F_EOQ;
