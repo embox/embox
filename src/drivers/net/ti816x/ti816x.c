@@ -337,7 +337,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	desc = &hdesc->desc;
 
 	data_len = max(skb->len, ETH_ZLEN);
-	dcache_flush(skb->data, data_len);
+	dcache_flush(skb_data_cast_in(skb->data), data_len);
 
 	emac_desc_build(hdesc, skb, data_len, data_len,
 			EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER);
