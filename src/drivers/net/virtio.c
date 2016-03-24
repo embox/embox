@@ -140,7 +140,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 
 		++vq->last_seen_used;
 
-		new_data = skb_data_alloc();
+		new_data = skb_data_alloc(skb_max_size());
 		if (new_data == NULL) {
 			skb_extra_free(skb_extra_cast_out((void *)(uintptr_t)desc->addr));
 			desc->addr = next->addr = 0;
@@ -193,7 +193,7 @@ static void virtio_config(struct net_device *dev) {
 	uint32_t guest_features;
 
 	/* check extra header size */
-	assert(skb_max_extra_size() == sizeof(struct virtio_net_hdr));
+	assert(skb_extra_max_size() >= sizeof(struct virtio_net_hdr));
 
 	/* reset device */
 	virtio_net_reset(dev);
@@ -309,7 +309,7 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 		desc = virtqueue_alloc_desc(vq);
 		if (desc == NULL) goto out_nomem;
 
-		skb_data = skb_data_alloc();
+		skb_data = skb_data_alloc(skb_max_size());
 		if (skb_data == NULL) goto out_nomem;
 
 		vring_desc_init(desc,

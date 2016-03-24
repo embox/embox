@@ -11,15 +11,8 @@
 #ifndef NET_SKBUFF_H_
 #define NET_SKBUFF_H_
 
-/* FIXME include this */
-//#include <net/netdevice.h>
-//#include <net/l3/ipv4/ip.h>
-//#include <net/l3/icmpv4.h>
-//#include <net/l4/udp.h>
-//#include <net/l4/tcp.h>
-#include <stddef.h>
-#include <sys/types.h>
-#include <sys/time.h>
+#include <sys/types.h> /* size_t */
+#include <sys/time.h> /* struct timeval */
 
 /* Prototypes */
 struct sk_buff;
@@ -46,6 +39,8 @@ typedef struct sk_buff {        /* Socket buffer */
 	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
+	struct pool *pl;	/* Local net driver pool pointer. Zero if default.
+				   Probably, should be joined with *dev field */
 
 		/* Control buffer (used to store layer-specific info e.g. ip options)
 		 * Nowdays it's used only in ip options, so it's a good idea to
@@ -100,18 +95,18 @@ typedef struct sk_buff {        /* Socket buffer */
 } sk_buff_t;
 
 extern size_t skb_max_size(void);
-extern size_t skb_max_extra_size(void);
+extern size_t skb_extra_max_size(void);
 
 extern void * skb_data_cast_in(struct sk_buff_data *skb_data);
 extern struct sk_buff_data * skb_data_cast_out(void *data);
 extern void * skb_extra_cast_in(struct sk_buff_extra *skb_extra);
 extern struct sk_buff_extra * skb_extra_cast_out(void *extra);
 
-extern struct sk_buff_data * skb_data_alloc(void);
-extern struct sk_buff_data * skb_data_clone(
-		struct sk_buff_data *skb_data);
+extern struct sk_buff_data * skb_data_alloc(size_t size);
+extern struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data);
 extern int skb_data_cloned(const struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
+extern void *skb_get_data_pointner(struct sk_buff_data *skb_data);
 
 extern struct sk_buff_extra * skb_extra_alloc(void);
 extern void skb_extra_free(struct sk_buff_extra *skb_extra);
@@ -119,8 +114,10 @@ extern void skb_extra_free(struct sk_buff_extra *skb_extra);
 /**
  * Wrap sk_buff_data into sk_buff structure
  */
-extern struct sk_buff * skb_wrap(size_t size,
-		struct sk_buff_data *skb_data);
+extern struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data);
+
+extern struct sk_buff * skb_wrap_local(size_t size,
+		struct sk_buff_data *skb_data, struct pool *pl);
 
 /**
  * Allocate one instance of structure sk_buff. With pointed size and flags.
@@ -131,10 +128,9 @@ extern struct sk_buff * skb_wrap(size_t size,
  * TODO make skb_queue if `size` more than mtu
  */
 extern struct sk_buff * skb_alloc(size_t size);
+extern struct sk_buff * skb_alloc_local(size_t size, struct pool *pl);
 extern struct sk_buff * skb_alloc_dynamic(size_t size);
-
-extern struct sk_buff * skb_realloc(size_t size,
-		struct sk_buff *skb);
+extern struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb);
 
 /**
  * Free skb allocated by skb_alloc
@@ -185,7 +181,8 @@ extern int skb_buf_iovec(void *buf, int buflen, struct iovec *iov, int iovlen);
  *
  * @return
  */
-extern int skb_iovec_buf(const struct iovec *iov, int iovlen, const void *buf, int buflen);
+extern int skb_iovec_buf(const struct iovec *iov, int iovlen, const void *buf,
+		int buflen);
 
 /**
  * Create copy of skb
@@ -220,6 +217,7 @@ extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
 extern int skb_queue_count(struct sk_buff_head *queue);
 
-#include <net/netdevice.h>
+#define PAD_SIZE(obj_size, padto) \
+	(((padto) - (obj_size) % (padto)) % (padto))
 
 #endif /* NET_SKBUFF_H_ */

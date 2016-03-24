@@ -1,10 +1,13 @@
 package embox.driver.net
 
 module ti816x {
-	option number log_level = 0
-	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
+	option number log_level		= 0
+	option number prep_buff_cnt	= 128 /* the number of prepared buffers for rxing */
+	option number amount_skb	= 2048
+
 	@IncludeExport(path="drivers/net")
 	source "ti816x.h"
+
 	source "ti816x.c"
 	source "mdio.c"
 

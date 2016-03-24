@@ -1,12 +1,12 @@
 /**
- * @file
- * @details sk_buff management API implementation.
- * @date 20.10.09
- *
- * @author Anton Bondarev
- * @author Ilia Vaprol
- * @author Vladimir Sokolov
- */
+* @file
+* @details sk_buff management API implementation.
+* @date 20.10.09
+*
+* @author Anton Bondarev
+* @author Ilia Vaprol
+* @author Vladimir Sokolov
+*/
 
 #include <assert.h>
 #include <string.h>
@@ -32,202 +32,18 @@
 #include <framework/mod/options.h>
 
 #define MODOPS_AMOUNT_SKB       OPTION_GET(NUMBER, amount_skb)
-#define MODOPS_AMOUNT_SKB_DATA  OPTION_GET(NUMBER, amount_skb_data)
-#define MODOPS_DATA_SIZE        OPTION_GET(NUMBER, data_size)
-#define MODOPS_DATA_ALIGN       OPTION_GET(NUMBER, data_align)
-#define MODOPS_DATA_PADTO       OPTION_GET(NUMBER, data_padto)
-#define MODOPS_IP_ALIGN         OPTION_GET(BOOLEAN, ip_align)
-#define MODOPS_AMOUNT_SKB_EXTRA OPTION_GET(NUMBER, amount_skb_extra)
-#define MODOPS_EXTRA_SIZE       OPTION_GET(NUMBER, extra_size)
-#define MODOPS_EXTRA_ALIGN      OPTION_GET(NUMBER, extra_align)
-#define MODOPS_EXTRA_PADTO      OPTION_GET(NUMBER, extra_padto)
-
-static int balance = 0;
-
-#define DATA_PAD_SIZE \
-	PAD_SIZE(IP_ALIGN_SIZE + MODOPS_DATA_SIZE, MODOPS_DATA_PADTO)
-#define DATA_ATTR \
-	__attribute__((aligned(MODOPS_DATA_ALIGN)))
-#define IP_ALIGN_SIZE \
-	(MODOPS_IP_ALIGN ? 2 : 0)
-
-#define EXTRA_PAD_SIZE \
-	PAD_SIZE(MODOPS_EXTRA_SIZE, MODOPS_EXTRA_PADTO)
-#define EXTRA_ATTR \
-	__attribute__((aligned(MODOPS_EXTRA_ALIGN)))
-
-#define PAD_SIZE(obj_size, padto) \
-	(((padto) - (obj_size) % (padto)) % (padto))
-
-#define SKB_DATA_SIZE(size) \
-	IP_ALIGN_SIZE + MODOPS_DATA_SIZE + (size) + sizeof(size_t)
-
-struct sk_buff_data_fixed {
-	size_t links;
-
-	char __ip_align[IP_ALIGN_SIZE];
-	unsigned char data[MODOPS_DATA_SIZE];
-	char __data_pad[DATA_PAD_SIZE];
-};
-
-struct sk_buff_data {
-	size_t links;
-
-	char __data[];
-} DATA_ATTR;
-
-struct sk_buff_extra {
-	unsigned char extra[MODOPS_EXTRA_SIZE];
-	char __extra_pad[EXTRA_PAD_SIZE];
-} EXTRA_ATTR;
-
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
-POOL_DEF(skb_data_pool, struct sk_buff_data_fixed, MODOPS_AMOUNT_SKB_DATA);
-POOL_DEF(skb_extra_pool, struct sk_buff_extra, MODOPS_AMOUNT_SKB_EXTRA);
-
-static void *skb_get_data_pointner(struct sk_buff_data *skb_data) {
-	return skb_data->__data + IP_ALIGN_SIZE;
-}
-
-static struct sk_buff_data * skb_data_alloc_dynamic(size_t size) {
-	ipl_t sp;
-	struct sk_buff_data *skb_data;
-
-	sp = ipl_save();
-	{
-		skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
-	}
-	ipl_restore(sp);
-
-	if (skb_data == NULL) {
-		log_error("skb_data_alloc: error: no memory\n");
-		return NULL; /* error: no memory */
-	}
-
-	skb_data->links = 1;
-
-	return skb_data;
-}
-
-size_t skb_max_size(void) {
-	return MODOPS_DATA_SIZE;
-}
-
-size_t skb_max_extra_size(void) {
-	return member_sizeof(struct sk_buff_extra, extra);
-}
-
-void * skb_data_cast_in(struct sk_buff_data *skb_data) {
-	assert(skb_data != NULL);
-	return skb_get_data_pointner(skb_data);
-}
-
-struct sk_buff_data * skb_data_cast_out(void *data) {
-	assert(data != NULL);
-	return member_cast_out(data - IP_ALIGN_SIZE, struct sk_buff_data, __data);
-}
-
-void * skb_extra_cast_in(struct sk_buff_extra *skb_extra) {
-	assert(skb_extra != NULL);
-	return &skb_extra->extra[0];
-}
-
-struct sk_buff_extra * skb_extra_cast_out(void *extra) {
-	assert(extra != NULL);
-	return member_cast_out(extra, struct sk_buff_extra, extra);
-}
-
-struct sk_buff_data * skb_data_alloc(void) {
-	ipl_t sp;
-	struct sk_buff_data *skb_data;
-
-	sp = ipl_save();
-	{
-		skb_data = pool_alloc(&skb_data_pool);
-	}
-	ipl_restore(sp);
-
-	if (skb_data == NULL) {
-		log_error("skb_data_alloc: error: no memory\n");
-		return NULL; /* error: no memory */
-	}
-	balance++;
-	skb_data->links = 1;
-
-	return skb_data;
-}
-
-struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data) {
-	ipl_t sp;
-
-	assert(skb_data != NULL);
-
-	sp = ipl_save();
-	{
-		++skb_data->links;
-	}
-	ipl_restore(sp);
-
-	return skb_data;
-}
-
-int skb_data_cloned(const struct sk_buff_data *skb_data) {
-	return skb_data->links != 1;
-}
-
-void skb_data_free(struct sk_buff_data *skb_data) {
-	ipl_t sp;
-
-	assert(skb_data != NULL);
-
-	sp = ipl_save();
-	{
-		if (--skb_data->links == 0) {
-			if (pool_belong(&skb_data_pool, skb_data)) {
-				pool_free(&skb_data_pool, skb_data);
-				balance--;
-			}
-			else {
-				assert(0);
-				sysfree(skb_data);
-			}
-		}
-	}
-	ipl_restore(sp);
-}
-
-struct sk_buff_extra * skb_extra_alloc(void) {
-	ipl_t sp;
-	struct sk_buff_extra *skb_extra;
-
-	sp = ipl_save();
-	{
-		skb_extra = pool_alloc(&skb_extra_pool);
-	}
-	ipl_restore(sp);
-
-	if (skb_extra == NULL) {
-		log_error("skb_extra_alloc: error: no memory\n");
-		return NULL; /* error: no memory */
-	}
-
-	return skb_extra;
-}
-
-void skb_extra_free(struct sk_buff_extra *skb_extra) {
-	ipl_t sp;
-
-	sp = ipl_save();
-	{
-		pool_free(&skb_extra_pool, skb_extra);
-	}
-	ipl_restore(sp);
-}
 
 struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
+	return skb_wrap_local(size, skb_data, &skb_pool);
+}
+
+struct sk_buff * skb_wrap_local(size_t size, struct sk_buff_data *skb_data,
+		struct pool *pl) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
+	assert(pl != NULL);
 	assert(size != 0);
 	assert(skb_data != NULL);
 
@@ -239,7 +55,7 @@ struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 
 	sp = ipl_save();
 	{
-		skb = pool_alloc(&skb_pool);
+		skb = pool_alloc(pl);
 	}
 	ipl_restore(sp);
 
@@ -257,29 +73,28 @@ struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 	skb->data = skb_data;
 	skb->mac.raw = skb_get_data_pointner(skb_data);
 	skb->p_data = skb->p_data_end = NULL;
+	skb->pl = pl;
 
 	return skb;
 }
 
 struct sk_buff * skb_alloc(size_t size) {
+	return skb_alloc_local(size, &skb_pool);
+}
+
+struct sk_buff * skb_alloc_local(size_t size, struct pool *pl) {
 	struct sk_buff *skb;
 	struct sk_buff_data *skb_data;
 
-	if (skb_data_pool.obj_size >= size) {
-		skb_data = skb_data_alloc();
-	} else {
-		assert(0);
-		skb_data = skb_data_alloc_dynamic(size);
-	}
+	skb_data = skb_data_alloc(size);
+
 	if (skb_data == NULL) {
-		printk("data %d #########################", balance);
 		return NULL; /* error: no memory */
 	}
 
-	skb = skb_wrap(size, skb_data);
+	skb = skb_wrap_local(size, skb_data, pl);
 	if (skb == NULL) {
 		skb_data_free(skb_data);
-		printk("wrap %d #########################", balance);
 		return NULL; /* error: no memory */
 	}
 	return skb;
@@ -312,7 +127,7 @@ void skb_free(struct sk_buff *skb) {
 	{
 		assert((skb->lnk.prev != NULL) && (skb->lnk.next != NULL));
 		list_del((struct list_head *) skb);
-		pool_free(&skb_pool, skb);
+		pool_free(skb->pl, skb);
 	}
 	ipl_restore(sp);
 }
@@ -407,7 +222,7 @@ struct sk_buff * skb_declone(struct sk_buff *skb) {
 		return skb;
 	}
 
-	decloned_data = skb_data_alloc();
+	decloned_data = skb_data_alloc(skb->len);
 	if (decloned_data == NULL) {
 		return NULL; /* error: no memory */
 	}
