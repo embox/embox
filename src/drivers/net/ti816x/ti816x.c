@@ -44,8 +44,6 @@ EMBOX_UNIT_INIT(ti816x_init);
 
 #define EMAC_SAFE_PADDING 64
 
-POOL_DEF(ti816x_skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
-
 #define RX_BUFF_LEN       0x800
 #define RX_FRAME_MAX_LEN  \
 	min(min(RX_BUFF_LEN, skb_max_size()), ETH_FRAME_LEN)
@@ -463,7 +461,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 			} else {
 				dcache_inval((void*)desc->data, desc->data_len);
 
-				skb = skb_alloc_local(desc->data_len, &ti816x_skb_pool);
+				skb = skb_alloc(desc->data_len);
 				assert(skb);
 				skb->len = desc->data_len;
 				skb->dev = dev_id;
