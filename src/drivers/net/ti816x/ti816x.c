@@ -316,10 +316,10 @@ static void emac_alloc_rx_queue(struct ti816x_priv *dev_priv) {
 	dev_priv->rx_wait_head = NULL;
 	dev_priv->rx_wait_tail = NULL;
 
-	emac_desc_build(&emac_rx_list[0], 0, RX_FRAME_MAX_LEN, 0, EMAC_DESC_F_OWNER);
+	emac_desc_build(&emac_rx_list[0], 0, RX_BUFF_LEN, 0, EMAC_DESC_F_OWNER);
 
 	for (i = 1; i < MODOPS_PREP_BUFF_CNT; i++) {
-		emac_desc_build(&emac_rx_list[i], 0, RX_FRAME_MAX_LEN, 0, EMAC_DESC_F_OWNER);
+		emac_desc_build(&emac_rx_list[i], 0, RX_BUFF_LEN, 0, EMAC_DESC_F_OWNER);
 		emac_desc_set_next(	&emac_rx_list[i - 1].desc, &emac_rx_list[i].desc);
 	}
 
@@ -479,7 +479,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		dev_priv->rx_head = desc;
 
 		log_debug("reuse %#x", &hdesc->desc);
-		emac_desc_build(hdesc, 0, RX_FRAME_MAX_LEN, 0, EMAC_DESC_F_OWNER);
+		emac_desc_build(hdesc, 0, RX_BUFF_LEN, 0, EMAC_DESC_F_OWNER);
 		if (!dev_priv->rx_wait_head) {
 			dev_priv->rx_wait_head = &hdesc->desc;
 		} else {
