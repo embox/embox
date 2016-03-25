@@ -90,6 +90,7 @@ module msp430sfr extends irqctrl_api {
 
 module no_interrupts extends irqctrl_api {
 	source "no_interrupts.h"
+	source "no_interrupts.c"
 }
 
 module integratorcp_pic extends irqctrl_api {
