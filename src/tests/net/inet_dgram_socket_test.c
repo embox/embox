@@ -202,8 +202,12 @@ TEST_CASE("writev/readv")
 {
 	ssize_t ret;
 
+	char *str[11];
 	char *str0 = "sample ";
-	char *str1 = "text\n";
+	char *str1 = "text";
+	strcpy(str, str0);
+	strcat(str, str1);
+
 	struct iovec iov_w[2];
 	struct iovec iov_r[2];
 
@@ -213,16 +217,18 @@ TEST_CASE("writev/readv")
 	iov_w[1].iov_len = strlen(str1);
 
 	ret = writev(c, iov_w, 2);
-	test_assert_equal(ret, 2);
+	read(c, str, 11);
 
+	test_assert_equal(ret, 2);
+	test_assert_mem_equal(iov_w[0].iov_base, str, iov_w[0].iov_len);
+	test_assert_mem_equal(iov_w[1].iov_base, str + iov_w[0].iov_len, iov_w[1].iov_len);
+
+	write(c, str, 11);
 	ret = readv(c, iov_r, 2);
-	test_assert_equal(ret, 2);
 
-	int i;
-	for (i = 0; i < 2; i++){
-		test_assert_equal(iov_w[i].iov_len, iov_r[i].iov_len);
-		test_assert_mem_equal(iov_w[i].iov_base, iov_r[i].iov_base, iov_w[i].iov_len);
-	}
+	test_assert_equal(ret, 2);
+	test_assert_mem_equal(iov_r[0].iov_base, str, iov_w[0].iov_len);
+	test_assert_mem_equal(iov_r[1].iov_base, str + iov_w[0].iov_len, iov_r[1].iov_len);
 }
 
 static int suite_setup(void) {
