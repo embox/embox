@@ -18,7 +18,7 @@
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
 #define UART_NUM	3
-#define MSG_LEN		2
+#define MSG_LEN		4
 
 static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3, 1 };
 
@@ -102,16 +102,18 @@ static void transmit_data(int data, USART_TypeDef *uart) {
 }
 
 static void *transmitter_thread_run(void *arg) {
-	int i;
+	int i, j;
 	int data;
+	char tx_buf[MSG_LEN] = {0xFF, AGENT_ID, 0, 0xAA};
 
 	while (1) {
 		data = obtain_data();
 		for (i = 0; i < UART_NUM; i++) {
-			transmit_data(0xFF, uart_base[i]);
-			transmit_delay();
-			transmit_data(data, uart_base[i]);
-			transmit_delay();
+			tx_buf[2] = data;
+			for (j = 0; j < MSG_LEN; j++) {
+				transmit_data(tx_buf[j], uart_base[i]);
+				transmit_delay();
+			}
 		}
 	}
 
@@ -119,22 +121,24 @@ static void *transmitter_thread_run(void *arg) {
 }
 
 static int from_neighbour(char *msg) {
-	return 1;
+	return msg[0] == 0xFF;
 }
 
 static void process_message(char *msg) {
+	char tx_buf[MSG_LEN] = {0xFE, msg[1], msg[2], 0xAA};
+	int i;
 	if (from_neighbour(msg)) {
 		mutex_lock(&led_mutex);
-		current_state[msg[0]] = msg[1];
+		current_state[msg[1]] = msg[2];
 		if (get_data() > leds_cnt)
 			leds_next();
 		else if (get_data() < leds_cnt)
 			leds_prev();
 		mutex_unlock(&led_mutex);
-	} else {
-		transmit_data(msg[0], uart_base[0]);
-		transmit_delay();
-		transmit_data(msg[1], uart_base[0]);
+	}
+
+	for (i = 0; i < MSG_LEN; i++) {
+		transmit_data(tx_buf[i], uart_base[0]);
 		transmit_delay();
 	}
 }
@@ -149,7 +153,7 @@ static void *receiver_thread_run(void *arg) {
 	UartHandle.Instance = uart_base[0];
 	char buf[UART_NUM][MSG_LEN];
 	int counter[UART_NUM] = { 0 };
-	
+
 	int tt = 0;
 
 	mutex_init(&led_mutex);
@@ -177,7 +181,7 @@ static void *receiver_thread_run(void *arg) {
 						memset(buf[i], 0, sizeof(buf[i]));
 						continue;
 					} else {
-						buf[i][0] = i;
+						//buf[i][0] = i;
 						process_message(buf[i]);
 					}
 				}
