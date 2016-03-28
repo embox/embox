@@ -12,7 +12,9 @@
 
 #define __ASSEMBLY__
 #define __XEN_INTERFACE_VERSION__ 0x00030203
+#define CONFIG_X86_PAE
 #include <xen/arch-x86_32.h>
+#undef __ASSEMBLY
 
 .globl _start, shared_info, hypercall_page
 
