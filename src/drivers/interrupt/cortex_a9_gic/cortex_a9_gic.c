@@ -11,11 +11,13 @@
 #include <kernel/irq.h>
 #include <drivers/irqctrl.h>
 #include <hal/reg.h>
-
+#include <embox/unit.h>
 #include <framework/mod/options.h>
 
 #define GIC_CPU_BASE           OPTION_GET(NUMBER, cpu_base_addr)
 #define GIC_DISTRIBUTOR_BASE   OPTION_GET(NUMBER, distributor_base_addr)
+
+EMBOX_UNIT_INIT(gic_init);
 
 /* GIC CPU registers */
 #define GICC_CTLR          (GIC_CPU_BASE + 0x00)
@@ -31,18 +33,18 @@
 #define GICC_AEOIR         (GIC_CPU_BASE + 0x24)
 #define GICC_AHPPIR        (GIC_CPU_BASE + 0x28)
 
-
 #define GICC_APR(n)       (GIC_CPU_BASE + 0x0D0 + 4 * (n))
 #define GICC_NSAPR(n)     (GIC_CPU_BASE + 0x0D0 + 4 * (n))
 
 #define GICC_IIDR          (GIC_CPU_BASE + 0xFC)
 #define GICC_DIR           (GIC_CPU_BASE + 0x1000)
 
-
 /* GIC Distributor registers */
 #define GICD_CTLR           (GIC_DISTRIBUTOR_BASE + 0x00)
 #define GICD_TYPER          (GIC_DISTRIBUTOR_BASE + 0x04)
 #define GICD_IIDR           (GIC_DISTRIBUTOR_BASE + 0x08)
+
+#define BITS_PER_REGISTER     32
 
 #define GICD_IGROUPR(n)      (GIC_DISTRIBUTOR_BASE + 0x080 + 4 * (n))
 #define GICD_ISENABLER(n)    (GIC_DISTRIBUTOR_BASE + 0x100 + 4 * (n))
@@ -65,13 +67,28 @@
 #define GICD_CPENDSGIR(n)    (GIC_DISTRIBUTOR_BASE + 0xF10 + 4 * (n))
 #define GICD_SPENDSGIR(n)    (GIC_DISTRIBUTOR_BASE + 0xF20 + 4 * (n))
 
-
-
+static int gic_init(void) {
+	uint32_t tmp = REG_LOAD(GICD_CTLR);
+	REG_STORE(GICD_CTLR, tmp | 0x1);
+	return 0;
+}
 
 void irqctrl_enable(unsigned int irq) {
+	int n = irq / BITS_PER_REGISTER;
+	int m = irq % BITS_PER_REGISTER;
+
+	/* Writing zeroes to this register has no
+	 * effect, so we just write single "1" */
+	REG_STORE(GICD_ISENABLER(n), 1 << m);
 }
 
 void irqctrl_disable(unsigned int irq) {
+	int n = irq / BITS_PER_REGISTER;
+	int m = irq % BITS_PER_REGISTER;
+
+	/* Writing zeroes to this register has no
+	 * effect, so we just write single "1" */
+	REG_STORE(GICD_ICENABLER(n), 1 << m);
 }
 
 void irqctrl_force(unsigned int irq) {
