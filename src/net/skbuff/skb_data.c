@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
-#include <sys/uio.h>
 
 #include <util/math.h>
 #include <util/log.h>
@@ -21,9 +20,6 @@
 #include <hal/ipl.h>
 
 #include <mem/misc/pool.h>
-#include <mem/sysmalloc.h>
-
-#include <linux/list.h>
 
 #include <net/skbuff.h>
 
