@@ -24,7 +24,7 @@ module virtio {
 	source "virtio.c"
 
 	depends embox.net.skbuff
-	//depends embox.compat.libc.all
+	depends embox.net.skbuff_extra
 	depends embox.driver.pci
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
