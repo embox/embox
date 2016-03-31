@@ -78,14 +78,6 @@ static int gic_init(void) {
 	/* Set priority filter level */
 	REG_STORE(GICC_PMR, 0xFF);
 
-	for (int i = 0; i < 3; i++) {
-		REG_STORE(GICD_ISENABLER(i), 0xFFFFFFFF);
-	}
-
-	for (int i = 0; i < 24; i++) {
-		REG_STORE(GICD_SPENDSGIR(i), 0xFFFFFFFF);
-	}
-
 	return 0;
 }
 

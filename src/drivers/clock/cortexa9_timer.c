@@ -27,11 +27,11 @@
 #define PTIMER_AUTO_RELOAD        0x2
 #define PTIMER_IRQ_ENABLE         0x4
 
-#define PTIMER_IRQ                93
+#define PTIMER_IRQ                29
 
 #define PTIMER_PRESCALER_SHIFT    8
 
-#define LOAD_VALUE                1024
+#define LOAD_VALUE                0x00100000
 
 static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
