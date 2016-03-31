@@ -70,6 +70,21 @@ EMBOX_UNIT_INIT(gic_init);
 static int gic_init(void) {
 	uint32_t tmp = REG_LOAD(GICD_CTLR);
 	REG_STORE(GICD_CTLR, tmp | 0x1);
+
+	tmp = REG_LOAD(GICC_CTLR);
+	REG_STORE(GICC_CTLR, tmp | 0x1);
+
+	/* Set priority filter level */
+	REG_STORE(GICC_PMR, 0xFF);
+
+	for (int i = 0; i < 3; i++) {
+		REG_STORE(GICD_ISENABLER(i), 0xFFFFFFFF);
+	}
+
+	for (int i = 0; i < 24; i++) {
+		REG_STORE(GICD_SPENDSGIR(i), 0xFFFFFFFF);
+	}
+
 	return 0;
 }
 
