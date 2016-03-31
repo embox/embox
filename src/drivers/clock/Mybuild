@@ -40,7 +40,7 @@ module pit extends embox.arch.clock {
 	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
-module cortexa9 {
+module cortexa9 extends embox.arch.clock {
 	source "cortexa9_timer.c"
 
 	@NoRuntime depends embox.kernel.time.timer_handler

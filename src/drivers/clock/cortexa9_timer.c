@@ -27,7 +27,7 @@
 #define PTIMER_AUTO_RELOAD        0x2
 #define PTIMER_IRQ_ENABLE         0x4
 
-#define PTIMER_IRQ                39
+#define PTIMER_IRQ                93
 
 #define PTIMER_PRESCALER_SHIFT    8
 
