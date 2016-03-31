@@ -68,6 +68,8 @@ EMBOX_UNIT_INIT(gic_init);
 #define GICD_CPENDSGIR(n)    (GIC_DISTRIBUTOR_BASE + 0xF10 + 4 * (n))
 #define GICD_SPENDSGIR(n)    (GIC_DISTRIBUTOR_BASE + 0xF20 + 4 * (n))
 
+#define SPURIOUS_IRQ          0x3FF
+
 static int gic_init(void) {
 	uint32_t tmp = REG_LOAD(GICD_CTLR);
 	REG_STORE(GICD_CTLR, tmp | 0x1);
@@ -112,40 +114,20 @@ void irqctrl_eoi(unsigned int irq) {
 }
 
 void interrupt_handle(void) {
-	//unsigned int stat;
 	unsigned int irq;
 
 	irq = REG_LOAD(GICC_IAR);
 
+	if (irq == SPURIOUS_IRQ)
+		return;
+
+	/* TODO check if IRQ number is correct */
+
 	irq_dispatch(irq);
 
 	irqctrl_eoi(irq);
-#if 0
-	stat = REG_LOAD(ICU_IRQSTS);
-
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
-	for (irq = 0; irq < IRQCTRL_IRQS_TOTAL; irq++) {
-		if (stat & (uint32_t)(1 << irq))
-			break;
-	}
-
-	irqctrl_disable(irq);
-
-	critical_enter(CRITICAL_IRQ_HANDLER);
-	{
-		ipl_enable();
-
-		irq_dispatch(irq);
-
-		ipl_disable();
-
-	}
-	irqctrl_enable(irq);
-	critical_leave(CRITICAL_IRQ_HANDLER);
-	critical_dispatch_pending();
-#endif
 }
 
 void swi_handle(void) {
-	//printk("swi!\n");
+	printk("swi!\n");
 }
