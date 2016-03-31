@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <kernel/irq.h>
+#include <kernel/printk.h>
 #include <drivers/irqctrl.h>
 #include <hal/reg.h>
 #include <embox/unit.h>
@@ -115,13 +116,19 @@ int irqctrl_pending(unsigned int irq) {
 
 /* Sends an EOI (end of interrupt) signal to the PICs. */
 void irqctrl_eoi(unsigned int irq) {
+	REG_STORE(GICC_EOIR, irq);
 }
 
 void interrupt_handle(void) {
-#if 0
-	unsigned int stat;
+	//unsigned int stat;
 	unsigned int irq;
 
+	irq = REG_LOAD(GICC_IAR);
+
+	irq_dispatch(irq);
+
+	irqctrl_eoi(irq);
+#if 0
 	stat = REG_LOAD(ICU_IRQSTS);
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
