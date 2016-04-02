@@ -14,7 +14,7 @@
 #include <kernel/time/clock_source.h>
 #include <embox/unit.h>
 
-#define PERIPH_BASE_ADDR  0x1E000000
+#define PERIPH_BASE_ADDR OPTION_GET(NUMBER, periph_base_addr)
 
 #define PTIMER_BASE_ADDR (PERIPH_BASE_ADDR + 0x0600)
 
@@ -27,7 +27,7 @@
 #define PTIMER_AUTO_RELOAD        0x2
 #define PTIMER_IRQ_ENABLE         0x4
 
-#define PTIMER_IRQ                29
+#define PTIMER_IRQ                OPTION_GET(NUMBER, irq_num)
 
 #define PTIMER_PRESCALER_SHIFT    8
 
