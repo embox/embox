@@ -8,6 +8,6 @@ module bundle {
 	depends embox.arch.arm.armlib.interrupt
 	depends embox.arch.arm.armlib.locore
 
-	depends embox.arch.arm.armlib.static_excpt_table
+	depends embox.arch.arm.armlib.high_excpt_table
 }
 
