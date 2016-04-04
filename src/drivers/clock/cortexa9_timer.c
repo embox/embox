@@ -10,6 +10,7 @@
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
+#include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 #include <embox/unit.h>
@@ -31,11 +32,12 @@
 
 #define PTIMER_PRESCALER_SHIFT    8
 
-#define LOAD_VALUE                0x00100000
+#define LOAD_VALUE                0x00010000
 
 static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(irq_nr, data);
+	REG_STORE(PTIMER_IS, 0x1);
 	return IRQ_HANDLED;
 }
 
