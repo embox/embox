@@ -46,7 +46,7 @@ EMBOX_UNIT_INIT(ti816x_init);
 
 #define RX_BUFF_LEN       0x800
 #define RX_FRAME_MAX_LEN  \
-	min(min(RX_BUFF_LEN, skb_max_size()), ETH_FRAME_LEN)
+	min(min(RX_BUFF_LEN, skb_max_size()), (ETH_FRAME_LEN + ETH_FCS_LEN))
 
 struct emac_desc_head {
 	char buf[EMAC_SAFE_PADDING];
