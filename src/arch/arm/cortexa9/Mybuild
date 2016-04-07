@@ -2,12 +2,14 @@
 package embox.arch.arm.cortexa9
 
 module bundle {
+	source "cpu_reset.S"
+
 	depends embox.arch.generic.arch
 	depends embox.arch.arm.armlib.context
 	depends embox.arch.arm.armlib.head
 	depends embox.arch.arm.armlib.interrupt
 	depends embox.arch.arm.armlib.locore
 
-	depends embox.arch.arm.armlib.high_excpt_table
+	depends embox.arch.arm.armlib.static_excpt_table
 }
 
