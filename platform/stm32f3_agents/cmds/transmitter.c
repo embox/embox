@@ -16,6 +16,8 @@
 #include <drivers/serial/stm_usart.h>
 #include <framework/mod/options.h>
 
+#include <feather/servo.h>
+
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
 #define UART_NUM	3
 #define MSG_LEN		4
@@ -53,6 +55,8 @@ static void leds_next(void) {
 	mutex_unlock(&led_mutex);
 
 	current_state[UART_NUM] = leds_cnt;
+
+	servo_set(leds_cnt * 100 / 8);
 }
 
 static void leds_prev(void) {
@@ -62,6 +66,8 @@ static void leds_prev(void) {
 		leds_cnt = 0;
 	mutex_unlock(&led_mutex);
 	current_state[UART_NUM] = leds_cnt;
+
+	servo_set(leds_cnt * 100 / 8);
 }
 
 static USART_TypeDef *uart_base[] = {
@@ -220,6 +226,7 @@ int main() {
 	int i;
 	BSP_PB_Init(0, 0);
 	init_leds();
+	servo_init();
 	init_uart();
 	//leds_next();
 	leds_prev();
