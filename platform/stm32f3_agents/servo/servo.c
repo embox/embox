@@ -6,8 +6,7 @@
  * @date 2016-04-04
  */
 
-/* General plan of working with servo is taken from
- * this article: http://www.kaltpost.de/?page_id=412 */
+/* Read "servo.h" for details of how servo actually works */
 
 #include <string.h>
 #include <hal/reg.h>
