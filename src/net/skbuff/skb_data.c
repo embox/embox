@@ -11,7 +11,6 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
-#include <sys/uio.h>
 
 #include <util/math.h>
 #include <util/log.h>
@@ -21,9 +20,6 @@
 #include <hal/ipl.h>
 
 #include <mem/misc/pool.h>
-#include <mem/sysmalloc.h>
-
-#include <linux/list.h>
 
 #include <net/skbuff.h>
 
@@ -83,12 +79,12 @@ struct sk_buff_data * skb_data_alloc(size_t size) {
 	ipl_t sp;
 	struct sk_buff_data *skb_data;
 
+	skb_data = NULL;
+
 	sp = ipl_save();
 	{
 		if (skb_max_size() >= size) {
 			skb_data = pool_alloc(&skb_data_pool);
-		} else {
-			skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
 		}
 	}
 	ipl_restore(sp);
@@ -129,12 +125,9 @@ void skb_data_free(struct sk_buff_data *skb_data) {
 	sp = ipl_save();
 	{
 		if (--skb_data->links == 0) {
-			if (pool_belong(&skb_data_pool, skb_data)) {
-				pool_free(&skb_data_pool, skb_data);
-			}
-			else {
-				sysfree(skb_data);
-			}
+			assert(pool_belong(&skb_data_pool, skb_data));
+
+			pool_free(&skb_data_pool, skb_data);
 		}
 	}
 	ipl_restore(sp);

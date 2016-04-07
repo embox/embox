@@ -46,7 +46,7 @@ EMBOX_UNIT_INIT(ti816x_init);
 
 #define RX_BUFF_LEN       0x800
 #define RX_FRAME_MAX_LEN  \
-	min(min(RX_BUFF_LEN, skb_max_size()), ETH_FRAME_LEN)
+	min(min(RX_BUFF_LEN, skb_max_size()), (ETH_FRAME_LEN + ETH_FCS_LEN))
 
 struct emac_desc_head {
 	char buf[EMAC_SAFE_PADDING];
@@ -337,7 +337,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	desc = &hdesc->desc;
 
 	data_len = max(skb->len, ETH_ZLEN);
-	dcache_flush(skb->data, data_len);
+	dcache_flush(skb_data_cast_in(skb->data), data_len);
 
 	emac_desc_build(hdesc, skb, data_len, data_len,
 			EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER);

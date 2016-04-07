@@ -13,8 +13,6 @@
 #include <stdint.h>
 #include <sys/uio.h>
 
-#include <kernel/printk.h>
-
 #include <util/math.h>
 #include <util/log.h>
 #include <util/member.h>
@@ -23,7 +21,6 @@
 #include <hal/ipl.h>
 
 #include <mem/misc/pool.h>
-#include <mem/sysmalloc.h>
 
 #include <linux/list.h>
 
