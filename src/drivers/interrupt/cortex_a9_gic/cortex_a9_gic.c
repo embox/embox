@@ -114,18 +114,29 @@ void irqctrl_eoi(unsigned int irq) {
 }
 
 void interrupt_handle(void) {
-	unsigned int irq;
-
-	irq = REG_LOAD(GICC_IAR);
+	unsigned int irq = REG_LOAD(GICC_IAR);
 
 	if (irq == SPURIOUS_IRQ)
 		return;
 
 	/* TODO check if IRQ number is correct */
 
-	irq_dispatch(irq);
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
+	irqctrl_disable(irq);
 	irqctrl_eoi(irq);
+	critical_enter(CRITICAL_IRQ_HANDLER);
+	{
+		ipl_enable();
+
+		irq_dispatch(irq);
+
+		ipl_disable();
+
+	}
+	irqctrl_enable(irq);
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
 }
 
 void swi_handle(void) {
