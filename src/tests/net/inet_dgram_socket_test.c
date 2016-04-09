@@ -229,6 +229,16 @@ TEST_CASE("writev/readv")
 	test_assert_equal(ret, 2);
 	test_assert_mem_equal(iov_r[0].iov_base, str, iov_w[0].iov_len);
 	test_assert_mem_equal(iov_r[1].iov_base, str + iov_w[0].iov_len, iov_r[1].iov_len);
+
+	//errors
+	ret = writev(c, iov_w, -1);
+	test_assert_equal(-1, ret);
+	test_assert_equal(EINVAL, errno);
+
+	writev(c, iov_w, 2);
+	ret = readv(c, iov_r, -1);
+	test_assert_equal(-1, ret);
+	test_assert_equal(EINVAL, errno);
 }
 
 static int suite_setup(void) {
