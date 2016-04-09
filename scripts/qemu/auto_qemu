@@ -120,6 +120,8 @@ guess_machine() {
 		arm)
 			if cat $BUILD_CONF | gcc -P -E - | grep "overo" >/dev/null; then
 				echo "-M overo"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "integratorcp" >/dev/null; then
+				echo "-M integratorcp"
 			fi
 			;;
 		microblaze)
@@ -162,6 +164,7 @@ NIC2QEMU=(
 	[virtio]="virtio"
 	[xemaclite]=$MB_XEMACLINE
 	[lan9118]="lan9118"
+	[lan91c111]="smc91c111"
 )
 
 IFS=" " read -a qemu_nics <<< "$AUTOQEMU_NICS"
@@ -180,6 +183,7 @@ if [ $nic_n -gt 0 ]; then
 		fi
 
 		nic_model=${NIC2QEMU[${qemu_nics[$ni]}]}
+		echo 
 		if [ ! $nic_model ]; then
 			error "nic model ${qemu_nics[$ni]} is not supported"
 		fi
