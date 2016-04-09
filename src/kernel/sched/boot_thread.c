@@ -5,6 +5,7 @@
  * @author  Vita Loginova
  * @date    08.12.2014
  */
+#include <util/log.h>
 
 #include <kernel/panic.h>
 
@@ -29,6 +30,8 @@ struct schedee *boot_thread_create(void) {
 
 	task_set_main(task_kernel_task(), bootstrap);
 	thread_set_current(bootstrap);
+
+	log_debug("boot_schedee = %#x", &bootstrap->schedee);
 
 	return &bootstrap->schedee;
 }

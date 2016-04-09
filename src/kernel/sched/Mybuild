@@ -1,6 +1,7 @@
 package embox.kernel.sched
 
 module sched {
+	option number log_level=0
 	source "sched_start.c"
 	depends idle
 	depends boot
@@ -71,6 +72,7 @@ module waitq_protect_link_thread_plugin extends embox.kernel.thread.thread_wait 
 abstract module idle { }
 
 module idle_thread extends idle {
+	option number log_level=0
 	source "idle_thread.c"
 
 	depends embox.kernel.thread.core
@@ -87,6 +89,7 @@ module idle_light extends idle {
 abstract module boot { }
 
 module boot_thread extends boot {
+	option number log_level=0
 	source "boot_thread.c"
 
 	depends embox.kernel.thread.core
