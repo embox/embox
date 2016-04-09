@@ -8,6 +8,7 @@ module skbuff {
 	source "skb.c"
 
 	source "skb_queue.c"
+	depends skbuff_data
 	depends embox.arch.interrupt
 	depends embox.compat.posix.util.gettimeofday
 }
