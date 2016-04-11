@@ -12,7 +12,7 @@
 
 /* Internal I/O space mapping */
 
-#define BANK_BASE_ADDR 0x00000000 /* TODO */
+#define BANK_BASE_ADDR 0xC8000000
 
 /* Bank 0 */
 #define BANK_TCR        (BANK_BASE_ADDR + 0x0)
