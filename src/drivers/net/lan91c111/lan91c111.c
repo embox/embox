@@ -60,6 +60,16 @@
 #define REG16_STORE(addr, val) \
 	do { *((volatile uint16_t *)(addr)) = (val); } while (0)
 
+/* Commands */
+#define CMD_NOP                0
+#define CMD_TX_ALLOC           1
+#define CMD_RESET_MMU          2
+#define CMD_RX_POP             3
+#define CMD_RX_POP_AND_RELEASE 4
+#define CMD_PACKET_FREE        5
+#define CMD_TX_ENQUEUE         6
+#define CMD_TX_FIFO_RESET      7
+
 #define LAN91C111_FRAME_SIZE_MAX 2048
 
 struct lan91c111_frame {
@@ -74,6 +84,20 @@ struct lan91c111_frame {
 static void _set_bank(int n) {
 	assert(0 <= n && n <= 3);
 	REG16_STORE(BANK_BANK, (uint16_t) n);
+}
+
+
+/**
+ * @brief Set approprate opcode
+ */
+static void _set_cmd(int opcode) {
+	assert(0 <= opcode && opcode <= 7);
+
+	_set_bank(2);
+	while (REG16_LOAD(BANK_MMU_CMD) & 0x1) {
+		/* BUSY */
+	}
+	REG16_STORE(BANK_MMU_CMD, (opcode << 5);
 }
 
 /**
