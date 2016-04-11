@@ -4,6 +4,8 @@
  * @data 09.04.2016
  * @author: Anton Bondarev
  */
+#include <kernel/irq.h>
+#include <mem/misc/pool.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <embox/unit.h>
@@ -58,13 +60,40 @@
 #define REG16_STORE(addr, val) \
 	do { *((volatile uint16_t *)(addr)) = (val); } while (0)
 
+#define LAN91C111_FRAME_SIZE_MAX 2048
+
+struct lan91c111_frame {
+	uint16_t status;
+	uint16_t count; /* In bytes, 5 high bits are reserved */
+	uint16_t data[LAN91C111_FRAME_SIZE_MAX];
+};
+
+/**
+ * @brief Set active bank ID
+ */
 static void _set_bank(int n) {
 	assert(0 <= n && n <= 3);
 	REG16_STORE(BANK_BANK, (uint16_t) n);
 }
 
-EMBOX_UNIT_INIT(lan91c111_init);
+/**
+ * @brief Safe allocation from pool
+ */
+static struct lan91c111_frame *_frame_alloc(void) {
+	struct lan91c111_frame *frame;
+
+	frame = NULL;
+
+	return frame;
+}
+
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct lan91c111_frame *tx_frame;
+
+	tx_frame = _frame_alloc();
+	if (tx_frame) {
+	}
+
 	skb_free(skb);
 	return 0;
 }
@@ -83,6 +112,7 @@ static const struct net_driver lan91c111_drv_ops = {
 	.set_macaddr = lan91c111_set_macaddr
 };
 
+EMBOX_UNIT_INIT(lan91c111_init);
 static int lan91c111_init(void) {
 	_set_bank(0); /* Just to use it */
 
