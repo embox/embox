@@ -54,7 +54,7 @@
 #define BANK_RCV      (BANK_BASE_ADDR + 0xC)
 /*      BANK_BANK     (BANK_BASE_ADDR + 0xE) -- already defined above */
 
-#define REG16_LOAD(addr, val) \
+#define REG16_LOAD(addr) \
 	*((volatile uint16_t *)(addr))
 
 #define REG16_STORE(addr, val) \
@@ -86,7 +86,6 @@ static void _set_bank(int n) {
 	REG16_STORE(BANK_BANK, (uint16_t) n);
 }
 
-
 /**
  * @brief Set approprate opcode
  */
@@ -97,26 +96,27 @@ static void _set_cmd(int opcode) {
 	while (REG16_LOAD(BANK_MMU_CMD) & 0x1) {
 		/* BUSY */
 	}
-	REG16_STORE(BANK_MMU_CMD, (opcode << 5);
-}
-
-/**
- * @brief Safe allocation from pool
- */
-static struct lan91c111_frame *_frame_alloc(void) {
-	struct lan91c111_frame *frame;
-
-	frame = NULL;
-
-	return frame;
+	REG16_STORE(BANK_MMU_CMD, (opcode << 5));
 }
 
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
-	struct lan91c111_frame *tx_frame;
+	uint8_t packet_num;
 
-	tx_frame = _frame_alloc();
-	if (tx_frame) {
-	}
+	_set_cmd(CMD_TX_ALLOC);
+
+	_set_bank(2);
+	while (!(REG16_LOAD(BANK_INTERRUPT) & (1 << 3))){
+	};
+
+	packet_num = REG16_LOAD(BANK_PNR) & 0x3F;
+
+	/* TODO set data addr */
+
+	REG16_STORE(BANK_PNR, packet_num << 8);
+
+	_set_cmd(CMD_TX_ENQUEUE);
+
+	/* TODO handle service interrupt */
 
 	skb_free(skb);
 	return 0;
@@ -138,7 +138,8 @@ static const struct net_driver lan91c111_drv_ops = {
 
 EMBOX_UNIT_INIT(lan91c111_init);
 static int lan91c111_init(void) {
-	_set_bank(0); /* Just to use it */
-
+	_set_bank(0);
+	REG16_STORE(BANK_RCR, 0x0100); /* Enable RX interrupts */
+	/* TODO add rx interrupt handle */
 	return 0;
 }
