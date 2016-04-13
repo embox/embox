@@ -182,10 +182,14 @@ static inline struct dlist_head *dlist_prev(const struct dlist_head *list) {
  *
  */
 #define dlist_prev_entry_or_null(list, element_type, link_member) \
-	member_cast_out_or_null(dlist_prev(list), element_type, link_member)
+	member_cast_out_or_null(!dlist_empty(list) ? dlist_prev(list) : NULL, \
+			element_type, \
+			link_member)
 
 #define dlist_next_entry_or_null(list, element_type, link_member) \
-	member_cast_out_or_null(dlist_next(list), element_type, link_member)
+	member_cast_out_or_null(!dlist_empty(list) ? dlist_next(list) : NULL, \
+			element_type, \
+			link_member)
 
 /**
  * @def dlist_next_if_not_last()
