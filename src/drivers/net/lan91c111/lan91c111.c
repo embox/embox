@@ -35,7 +35,7 @@
 #define BANK_BASE            (BANK_BASE_ADDR + 0x2)
 #define BANK_IA01            (BANK_BASE_ADDR + 0x4)
 #define BANK_IA23            (BANK_BASE_ADDR + 0x6)
-#define BANK_IA35            (BANK_BASE_ADDR + 0x8)
+#define BANK_IA45            (BANK_BASE_ADDR + 0x8)
 #define BANK_GENERAL_PURPOSE (BANK_BASE_ADDR + 0xA)
 #define BANK_CONTROL         (BANK_BASE_ADDR + 0xC)
 /*      BANK_BANK            (BANK_BASE_ADDR + 0xE) -- already defined above */
@@ -135,6 +135,21 @@ static int lan91c111_open(struct net_device *dev) {
 }
 
 static int lan91c111_set_macaddr(struct net_device *dev, const void *addr) {
+        uint8_t *mac = (uint8_t*) addr;
+	uint16_t mac_hi, mac_mid, mac_lo;
+
+        assert(mac);
+
+	mac_hi  = (mac[4] << 8) | (mac[5] << 0);
+	mac_mid = (mac[2] << 8) | (mac[3] << 0);
+	mac_lo  = (mac[0] << 8) | (mac[1] << 0);
+
+        _set_bank(1);
+
+        REG16_STORE(BANK_IA01, mac_lo);
+        REG16_STORE(BANK_IA23, mac_mid);
+        REG16_STORE(BANK_IA45, mac_hi);
+
 	return 0;
 }
 
