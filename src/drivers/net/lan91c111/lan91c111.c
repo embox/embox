@@ -4,10 +4,16 @@
  * @data 09.04.2016
  * @author: Anton Bondarev
  */
+#include <errno.h>
+
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
+
 #include <net/skbuff.h>
+#include <net/inetdevice.h>
 #include <net/netdevice.h>
+#include <net/l2/ethernet.h>
+
 #include <embox/unit.h>
 
 /* Internal I/O space mapping */
@@ -123,6 +129,8 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static int lan91c111_open(struct net_device *dev) {
+        _set_bank(0);
+	REG16_STORE(BANK_RCR, 0x0100); /* Enable RX interrupts */
 	return 0;
 }
 
@@ -138,8 +146,15 @@ static const struct net_driver lan91c111_drv_ops = {
 
 EMBOX_UNIT_INIT(lan91c111_init);
 static int lan91c111_init(void) {
-	_set_bank(0);
-	REG16_STORE(BANK_RCR, 0x0100); /* Enable RX interrupts */
-	/* TODO add rx interrupt handle */
-	return 0;
+        struct net_device *nic;
+
+        if (NULL == (nic = etherdev_alloc(0))) {
+                return -ENOMEM;
+        }
+
+        nic->drv_ops = &lan91c111_drv_ops;
+
+        /* TODO add rx interrupt handle */
+
+	return inetdev_register_dev(nic);
 }
