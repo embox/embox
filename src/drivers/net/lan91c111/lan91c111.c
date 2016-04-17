@@ -96,17 +96,21 @@ static void _set_bank(int n) {
  * @brief Set approprate opcode
  */
 static void _set_cmd(int opcode) {
+	uint16_t val;
 	assert(0 <= opcode && opcode <= 7);
 
 	_set_bank(2);
 	while (REG16_LOAD(BANK_MMU_CMD) & 0x1) {
 		/* BUSY */
 	}
-	REG16_STORE(BANK_MMU_CMD, (opcode << 5));
+	val = opcode << 5;
+	REG16_STORE(BANK_MMU_CMD, val);
 }
 
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
-	uint8_t packet_num;
+	uint16_t packet_num;
+	int i;
+	uint16_t *data;
 
 	_set_cmd(CMD_TX_ALLOC);
 
@@ -114,11 +118,19 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	while (!(REG16_LOAD(BANK_INTERRUPT) & (1 << 3))){
 	};
 
-	packet_num = REG16_LOAD(BANK_PNR) & 0x3F;
-
-	/* TODO set data addr */
+	packet_num = (REG16_LOAD(BANK_PNR) >> 8) & 0x3F;
 
 	REG16_STORE(BANK_PNR, packet_num << 8);
+
+	/* TODO write pointer register. WTF it's 8 bit */
+
+	data = (uint16_t*) skb_data_cast_in(skb->data);
+	for (i = 0; i < skb->len; i += 2) {
+		/* This could be done with 32-bit writes,
+		 * but here we just use the usual macro */
+		REG16_STORE(BANK_DATA, *data);
+		data++;
+	}
 
 	_set_cmd(CMD_TX_ENQUEUE);
 
