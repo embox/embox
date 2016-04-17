@@ -8,3 +8,11 @@ module xen_header {
 module boot {
 	source "boot.S"
 }
+
+module traps {
+	source "traps.c"
+}
+
+module event {
+	source "event.c"
+}
