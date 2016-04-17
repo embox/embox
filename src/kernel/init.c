@@ -22,24 +22,7 @@
 #include <hypercall-x86_32.h>
 #include <xen/event_channel.h>
 #include <xen/io/console.h>
-
-struct pt_regs {
-	long ebx;
-	long ecx;
-	long edx;
-	long esi;
-	long edi;
-	long ebp;
-	long eax;
-	int  xds;
-	int  xes;
-	long orig_eax;
-	long eip;
-	int  xcs;
-	long eflags;
-	long esp;
-	int  xss;
-};
+#include "event.h"
 
 char stack[8192];
 
@@ -72,6 +55,8 @@ void kernel_start_xen(start_info_t * start_info) {
 }
 
 static void kernel_init_xen(start_info_t * start_info) {
+	init_events();
+	
 	arch_init();
 
 	ipl_init();
