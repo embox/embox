@@ -6,6 +6,6 @@ echo memory = 256 >> $DOMCONFIG
 #echo disk = [ '/home/andrey/root.img,raw,xvda,rw' ] >> $DOMCONFIG
 #echo vif = [ \'bridge=xenbr0\' ] >> $DOMCONFIG
 echo kernel = \"$PWD/build/base/bin/embox\" >> $DOMCONFIG
-echo extra = \"debian-installer/exit/always_halt=true -- console=hvc0\" >> $DOMCONFIG
+#echo extra = \"debian-installer/exit/always_halt=true -- console=hvc0\" >> $DOMCONFIG
 
 sudo xl -vvv create $DOMCONFIG $@
