@@ -6,7 +6,6 @@
  */
 #include <errno.h>
 
-#include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 
@@ -130,7 +129,9 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	/* Write header */
 	pointer = 2;
 	REG16_STORE(BANK_POINTER, pointer);
-	REG16_STORE(BANK_DATA, (uint16_t) skb->len);
+	REG16_STORE(BANK_DATA, (uint16_t) skb->len + 10);
+	/* Those 10 bytes are 2 for status + 2 for counter + 4 for crc + 1 for control + 1 for odd */
+
 	pointer = 4;
 	REG16_STORE(BANK_POINTER, pointer);
 
@@ -138,7 +139,6 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	 * data with 16-bit writes */
 	data = (uint16_t*) skb_data_cast_in(skb->data);
 	for (i = 0; i < skb->len; i += 2) {
-		printk("driver writes [%d]=%x\n", pointer, *data);
 		/* This could be done with 32-bit writes,
 		 * but here we just use the usual macro */
 		REG16_STORE(BANK_DATA, *data);
@@ -153,7 +153,6 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	/* Write control byte */
 	REG16_STORE(BANK_DATA, (1 << 4)); /* Set CRC */
-
 
 	_set_cmd(CMD_TX_ENQUEUE);
 
