@@ -6,6 +6,7 @@
  */
 #include <errno.h>
 
+#include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 
@@ -111,6 +112,7 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
 	int i;
 	uint16_t *data;
+	uint16_t pointer;
 
 	_set_cmd(CMD_TX_ALLOC);
 
@@ -122,15 +124,36 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	REG16_STORE(BANK_PNR, packet_num << 8);
 
-	/* TODO write pointer register. WTF it's 8 bit */
+	pointer = 0;
+	REG16_STORE(BANK_POINTER, pointer);
 
+	/* Write header */
+	pointer = 2;
+	REG16_STORE(BANK_POINTER, pointer);
+	REG16_STORE(BANK_DATA, (uint16_t) skb->len);
+	pointer = 4;
+	REG16_STORE(BANK_POINTER, pointer);
+
+	/* BANK_DATA register works as FIFO, so we just push
+	 * data with 16-bit writes */
 	data = (uint16_t*) skb_data_cast_in(skb->data);
 	for (i = 0; i < skb->len; i += 2) {
+		printk("driver writes [%d]=%x\n", pointer, *data);
 		/* This could be done with 32-bit writes,
 		 * but here we just use the usual macro */
 		REG16_STORE(BANK_DATA, *data);
 		data++;
+
+		/* Auto-increment for pointer register seems to
+		 * be unsupported by qemu-linaro, so we increment
+		 * it by hand */
+		pointer += 2;
+		REG16_STORE(BANK_POINTER, pointer);
 	}
+
+	/* Write control byte */
+	REG16_STORE(BANK_DATA, (1 << 4)); /* Set CRC */
+
 
 	_set_cmd(CMD_TX_ENQUEUE);
 
@@ -143,6 +166,7 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 static int lan91c111_open(struct net_device *dev) {
         _set_bank(0);
 	REG16_STORE(BANK_RCR, 0x0100); /* Enable RX interrupts */
+	REG16_STORE(BANK_TCR, 0x0001); /* Enable TX */
 	return 0;
 }
 
