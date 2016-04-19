@@ -17,7 +17,7 @@ package embox.cmd.net
 			Ilia Vaprol
 	''')
 module httpd {
-	option number log_level=4 /* debug */
+	option number log_level=0 /* error */
 	option number use_ip_ver=4
 	option boolean use_real_cmd=false
 	option boolean use_parallel_cgi=true

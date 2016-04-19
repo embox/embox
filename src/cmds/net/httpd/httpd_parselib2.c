@@ -45,7 +45,7 @@ int httpd_build_request(struct client_info *cinfo, struct http_req *hreq, char *
 	nbyte = httpd_read_http_header(cinfo, buf, buf_sz - 1);
 	if (nbyte < 0) {
 		httpd_error("can't read from client socket: %s", strerror(errno));
-		return nbyte;
+		return -errno;
 	}
 	buf[nbyte] = '\0';
 

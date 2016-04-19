@@ -55,7 +55,7 @@ static void httpd_client_process(struct client_info *cinfo) {
 	char httpd_inbuf[BUFF_SZ];
 	char httpd_outbuf[BUFF_SZ];
 
-	if ((err = httpd_build_request(cinfo, &hreq, httpd_inbuf, sizeof(httpd_inbuf)))) {
+	if (0 > (err = httpd_build_request(cinfo, &hreq, httpd_inbuf, sizeof(httpd_inbuf)))) {
 		httpd_error("can't build request: %s", strerror(-err));
 	}
 
