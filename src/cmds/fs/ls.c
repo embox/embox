@@ -87,7 +87,7 @@ static void printer_long(const char *path, stat_t *sb) {
 		printf(" %10s", gres->gr_name);
 	}
 
-	printf(" %10d", sb->st_size);
+	printf(" %10d", (int)(sb->st_size));
 	printer_simple(path, sb);
 }
 
