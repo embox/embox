@@ -73,10 +73,8 @@ The resulting image can now be run on QEMU. The simplest way is to execute `./sc
 ```
 $ sudo ./scripts/qemu/auto_qemu
 ```
-`sudo` is requried to setup a TUN/TAP device necessary to emulate networking. Also the above script uses `ethtool` util, that should be installed as well:
-```
-$ sudo apt-get install ethtool
-```
+`sudo` is requried to setup a TUN/TAP device necessary to emulate networking.
+
 After the system is loaded, you’ll see the `embox>` prompt, now you are able to run commands.
 For example, `help` lists all existing commands.
 
