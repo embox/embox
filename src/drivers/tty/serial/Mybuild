@@ -7,11 +7,17 @@ module serial_dvfs {
 	source "ttys_dvfs.c"	
 	source "idesc_serial_dvfs.c"
 
+	@IncludeExport(path="drivers", target_name="ttys.h")
+	source "ttys_dvfs.h"
+
 	option number serial_quantity = 1
 }
 
 module serial_oldfs {	
 	source "idesc_serial.c"
+
+	@IncludeExport(path="drivers", target_name="ttys.h")
+	source "ttys_oldfs.h"
 
 	option number serial_quantity = 1
 }
