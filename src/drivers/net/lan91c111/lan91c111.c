@@ -166,6 +166,7 @@ static int lan91c111_open(struct net_device *dev) {
         _set_bank(0);
 	REG16_STORE(BANK_RCR, 0x0100); /* Enable RX interrupts */
 	REG16_STORE(BANK_TCR, 0x0001); /* Enable TX */
+	REG16_STORE(BANK_RCR, 0x0504); /* Enable RX */
 	return 0;
 }
 
