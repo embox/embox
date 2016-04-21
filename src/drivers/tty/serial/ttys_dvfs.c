@@ -15,7 +15,7 @@
 #include <mem/misc/pool.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
-#include <fs/idesc_serial.h>
+#include "idesc_serial.h"
 #include <fs/dvfs.h>
 
 static struct idesc *uart_fsop_open(struct inode *node, struct idesc *desc) {

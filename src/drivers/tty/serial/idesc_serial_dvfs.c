@@ -17,14 +17,11 @@
 
 #include <drivers/tty.h>
 #include <fs/file_desc.h>
-#include <fs/idesc_serial.h>
 #include <drivers/serial/uart_device.h>
 #include <fs/dvfs.h>
 #include <util/dlist.h>
-#include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
 #include <embox/unit.h>
-#include <hal/ipl.h>
 
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)

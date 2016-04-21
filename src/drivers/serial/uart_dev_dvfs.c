@@ -18,8 +18,6 @@
 
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
-#include <fs/idesc_serial.h>
-#include <fs/dvfs.h>
 
 static inline int uart_state_test(struct uart *uart, int mask) {
 	return uart->state & mask;
