@@ -18,7 +18,7 @@
 static int zero_init(void);
 static const struct kfile_operations zero_ops;
 
-CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_ops, zero_init);
+CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_ops, NULL, zero_init);
 
 static int zero_open(struct node *node, struct file_desc *file_desc, int flags) {
 	return 0;
