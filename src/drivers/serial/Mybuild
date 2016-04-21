@@ -1,8 +1,5 @@
 package embox.driver.serial
 
-/* FIXME:
- * Unused files: skyeye_uart.c
- */
 @DefaultImpl(core_old)
 abstract module core { }
 
