@@ -24,7 +24,7 @@ module core_old extends core {
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
-	//@NoRuntime depends embox.driver.tty.serial_oldfs
+	@NoRuntime depends embox.driver.tty.serial_oldfs
 }
 
 module diag {

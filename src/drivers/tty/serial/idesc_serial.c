@@ -33,6 +33,7 @@ static const struct idesc_ops idesc_serial_ops;
 struct tty_uart {
 	struct tty tty;
 	struct uart *uart;
+	struct idesc idesc;
 };
 
 POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
@@ -83,7 +84,7 @@ static irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int idesc_uart_bind(struct uart *uart, struct idesc *idesc) {
+static int idesc_uart_bind(struct uart *uart) {
 	struct tty_uart *tu;
 
 	tu = pool_alloc(&uart_ttys);
@@ -95,7 +96,7 @@ static int idesc_uart_bind(struct uart *uart, struct idesc *idesc) {
 
 	tu->uart = uart;
 	uart->tty = &tu->tty;
-	uart->tty->idesc = idesc;
+	uart->tty->idesc = &tu->idesc;
 	uart->irq_handler = uart_irq_handler;
 
 	return 0;
@@ -109,15 +110,12 @@ static void idesc_uart_unbind(struct uart *uart) {
 	pool_free(&uart_ttys, tu);
 }
 
-struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
-		mode_t mod) {
+struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
 
 	assert(uart);
 	assert(mod);
 
-	idesc_init(&fdesc->idesc, &idesc_serial_ops, S_IROTH | S_IWOTH);
-
-	if (idesc_uart_bind(uart, &fdesc->idesc)) {
+	if (idesc_uart_bind(uart)) {
 		return NULL;
 	}
 
@@ -125,8 +123,9 @@ struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
 		idesc_uart_unbind(uart);
 		return NULL;
 	}
+	idesc_init(uart->tty->idesc, &idesc_serial_ops, S_IROTH | S_IWOTH);
 
-	return &fdesc->idesc;
+	return uart->tty->idesc;
 }
 
 static ssize_t serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
