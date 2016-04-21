@@ -111,3 +111,61 @@ int uart_get_params(struct uart *uart, struct uart_params *params) {
 	return 0;
 }
 
+
+#define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
+
+INDEX_DEF(serial_indexator, 0, UART_MAX_N);
+
+POOL_DEF(cdev_serials_pool, struct device_module, 1);
+
+
+static int uart_fill_name(struct uart *dev) {
+
+	dev->idx = index_alloc(&serial_indexator, INDEX_MIN);
+	if(dev->idx < 0) {
+		return -EBUSY;
+	}
+
+	snprintf(dev->dev_name, UART_NAME_MAXLEN, "ttyS%d", dev->idx);
+
+	return 0;
+}
+
+
+int uart_register(struct uart *uart,
+		const struct uart_params *uart_defparams) {
+	extern const struct file_operations ttys_fops;
+	struct device_module *cdev;
+
+	cdev = pool_alloc(&cdev_serials_pool);
+	if (!cdev) {
+		return -ENOMEM;
+	}
+
+	if (uart_fill_name(uart)) {
+		pool_free(&cdev_serials_pool, cdev);
+		return -EBUSY;
+	}
+
+	if (uart_defparams) {
+		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
+	} else {
+		memset(&uart->params, 0, sizeof(struct uart_params));
+	}
+
+	memset(cdev, 0, sizeof(*cdev));
+	cdev->name = uart->dev_name;
+	cdev->fops = (struct file_operations*)&ttys_fops;
+	cdev->dev_data = uart;
+
+	char_dev_register(cdev);
+
+	return 0;
+}
+
+void uart_deregister(struct uart *uart) {
+
+	dlist_del(&uart->lnk);
+
+	index_free(&serial_indexator, uart->idx);
+}

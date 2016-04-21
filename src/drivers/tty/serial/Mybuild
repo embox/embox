@@ -3,7 +3,8 @@ package embox.driver.tty
 abstract module serial {
 }
 
-module serial_dvfs {	
+module serial_dvfs {
+	source "ttys_dvfs.c"	
 	source "idesc_serial_dvfs.c"
 
 	option number serial_quantity = 1
