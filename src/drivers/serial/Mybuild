@@ -3,7 +3,7 @@ package embox.driver.serial
 @DefaultImpl(core_old)
 abstract module core { }
 
-module ttys_dvfs extends core {
+module uart_dev_dvfs extends core {
 	option number uart_max_n = 4
 
 	source "ttys_dvfs.c"
@@ -13,7 +13,7 @@ module ttys_dvfs extends core {
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
-	@NoRuntime depends embox.driver.tty.serial
+	@NoRuntime depends embox.driver.tty.serial_dvfs
 }
 
 module core_old extends core {
@@ -25,6 +25,7 @@ module core_old extends core {
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
+	//@NoRuntime depends embox.driver.tty.serial_oldfs
 }
 
 module diag {
