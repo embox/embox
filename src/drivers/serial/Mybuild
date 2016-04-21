@@ -19,7 +19,7 @@ module ttys_dvfs extends core {
 module core_old extends core {
 	option number uart_max_n = 4
 
-	source "core.c"
+	source "uart_dev.c"
 
 	@IncludeExport(path="drivers/serial")
 	source "uart_device.h"
