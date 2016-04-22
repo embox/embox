@@ -79,7 +79,7 @@
 #define CMD_TX_FIFO_RESET      7
 
 #define LAN91C111_FRAME_SIZE_MAX 2048
-
+#define LAN91C111_IRQ            27
 struct lan91c111_frame {
 	uint16_t status;
 	uint16_t count; /* In bytes, 5 high bits are reserved */
@@ -183,7 +183,7 @@ static int lan91c111_open(struct net_device *dev) {
 	REG16_STORE(BANK_RCR, 0x0506); /* Enable RX */
 
 	_set_bank(2);
-	REG16_STORE(BANK_INTERRUPT, 0x0100);
+	REG16_STORE(BANK_INTERRUPT, 0x0300);
 
 	return 0;
 }
@@ -213,19 +213,31 @@ static const struct net_driver lan91c111_drv_ops = {
 	.set_macaddr = lan91c111_set_macaddr
 };
 
-static irq_return_t lan91c111_rx_int(unsigned int irq_num,
+static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		void *dev_id) {
 	struct sk_buff *skb;
 	uint16_t buf;
 	uint16_t len;
+	uint16_t packet;
 	uint8_t *skb_data;
-	printk("rx_int\n");
 
 	_set_bank(2);
 
-	if (!(REG16_LOAD(BANK_INTERRUPT) & 0x1)) {
+	if (REG16_LOAD(BANK_INTERRUPT) & 0x2) {
+		/* TX int */
+		packet = REG16_LOAD(BANK_FIFO_PORTS) & 0xFF;
+		if (!(packet & 0x80)) {
+			/* Queue is not empty */
+			REG16_STORE(BANK_PNR, packet & 0x7F);
+			_set_cmd(CMD_PACKET_FREE);
+		}
+
+		REG16_STORE(BANK_INTERRUPT, 0x302);
 		return 0;
 	}
+
+	if (!(REG16_LOAD(BANK_INTERRUPT) & 0x1))
+		return 0;
 
 	REG16_STORE(BANK_POINTER, 0x8002);
 	len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
@@ -243,13 +255,11 @@ static irq_return_t lan91c111_rx_int(unsigned int irq_num,
 	for (int i = 0; i < skb->len / 2 + skb->len % 2; i++) {
 		REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
 		buf = REG16_LOAD(BANK_DATA);
-		printk("%x %x ", (buf & 0xFF), (buf >> 8));
 		skb_data[i * 2] = buf & 0xFF;
 		skb_data[i * 2 + 1] = buf >> 8;
 	}
 
 	netif_rx(skb);
-	printk("\n");
 
 	_set_cmd(CMD_RX_POP_AND_RELEASE);
 	return 0;
@@ -263,11 +273,9 @@ static int lan91c111_init(void) {
                 return -ENOMEM;
         }
 
-	irq_attach(27, lan91c111_rx_int, 0, nic, "lan91c111");
+	irq_attach(LAN91C111_IRQ, lan91c111_int_handler, 0, nic, "lan91c111");
 
         nic->drv_ops = &lan91c111_drv_ops;
-
-        /* TODO add rx interrupt handle */
 
 	return inetdev_register_dev(nic);
 }
