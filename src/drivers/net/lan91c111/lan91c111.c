@@ -78,8 +78,27 @@
 #define CMD_TX_ENQUEUE         6
 #define CMD_TX_FIFO_RESET      7
 
+/* Various flags */
+#define MMU_BUSY 0x0001
+#define RX_EN    0x0100
+#define TX_EN    0x0001
+
+#define RX_INT   0x0100
+#define TX_INT   0x0200
+#define TX_ACK   0x0002
+
+#define TX_EMPTY 0x80
+
+#define TX_MASK  0x0002
+#define RX_MASK  0x0001
+
+#define CRC_EN   0x0010
+
 #define LAN91C111_FRAME_SIZE_MAX 2048
 #define LAN91C111_IRQ            27
+
+#define PNUM_MASK 0x3F
+
 struct lan91c111_frame {
 	uint16_t status;
 	uint16_t count; /* In bytes, 5 high bits are reserved */
@@ -113,7 +132,7 @@ static void _set_cmd(int opcode) {
 	assert(0 <= opcode && opcode <= 7);
 
 	_set_bank(2);
-	while (REG16_LOAD(BANK_MMU_CMD) & 0x1) {
+	while (REG16_LOAD(BANK_MMU_CMD) & MMU_BUSY) {
 		/* BUSY */
 	}
 	val = opcode << 5;
@@ -129,10 +148,8 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	_set_cmd(CMD_TX_ALLOC);
 
 	_set_bank(2);
-	//while (!(REG16_LOAD(BANK_INTERRUPT) & (1 << 3))){
-	//};
 
-	packet_num = (REG16_LOAD(BANK_PNR) >> 8) & 0x3F;
+	packet_num = (REG16_LOAD(BANK_PNR) >> 8) & PNUM_MASK;
 
 	REG16_STORE(BANK_PNR, packet_num << 8);
 
@@ -166,11 +183,9 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	}
 
 	/* Write control byte */
-	REG16_STORE(BANK_DATA, (1 << 4)); /* Set CRC */
+	REG16_STORE(BANK_DATA, CRC_EN);
 
 	_set_cmd(CMD_TX_ENQUEUE);
-
-	/* TODO handle service interrupt */
 
 	skb_free(skb);
 	return 0;
@@ -178,12 +193,11 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 static int lan91c111_open(struct net_device *dev) {
         _set_bank(0);
-	REG16_STORE(BANK_RCR, 0x0100); /* Enable RX interrupts */
-	REG16_STORE(BANK_TCR, 0x0001); /* Enable TX */
-	REG16_STORE(BANK_RCR, 0x0506); /* Enable RX */
+	REG16_STORE(BANK_RCR, RX_EN);
+	REG16_STORE(BANK_TCR, TX_EN);
 
 	_set_bank(2);
-	REG16_STORE(BANK_INTERRUPT, 0x0300);
+	REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT);
 
 	return 0;
 }
@@ -223,23 +237,22 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 
 	_set_bank(2);
 
-	if (REG16_LOAD(BANK_INTERRUPT) & 0x2) {
+	if (REG16_LOAD(BANK_INTERRUPT) & TX_MASK) {
 		/* TX int */
 		packet = REG16_LOAD(BANK_FIFO_PORTS) & 0xFF;
-		if (!(packet & 0x80)) {
-			/* Queue is not empty */
-			REG16_STORE(BANK_PNR, packet & 0x7F);
+		if (!(packet & TX_EMPTY)) {
+			REG16_STORE(BANK_PNR, packet & PNUM_MASK);
 			_set_cmd(CMD_PACKET_FREE);
 		}
 
-		REG16_STORE(BANK_INTERRUPT, 0x302);
+		REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT | TX_ACK);
 		return 0;
 	}
 
-	if (!(REG16_LOAD(BANK_INTERRUPT) & 0x1))
+	if (!(REG16_LOAD(BANK_INTERRUPT) & RX_MASK))
 		return 0;
 
-	REG16_STORE(BANK_POINTER, 0x8002);
+	REG16_STORE(BANK_POINTER, 2);
 	len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
 	/* In original structure, byte count includes headers, so
 	 * we shrink it to data size */
@@ -257,6 +270,7 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		buf = REG16_LOAD(BANK_DATA);
 		skb_data[i * 2] = buf & 0xFF;
 		skb_data[i * 2 + 1] = buf >> 8;
+		/* TODO buffer overflow if len is odd */
 	}
 
 	netif_rx(skb);
