@@ -6,13 +6,15 @@
  */
 #include <errno.h>
 
+#include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 
-#include <net/skbuff.h>
 #include <net/inetdevice.h>
-#include <net/netdevice.h>
+#include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
+#include <net/netdevice.h>
+#include <net/skbuff.h>
 
 #include <embox/unit.h>
 
@@ -91,6 +93,17 @@ static void _set_bank(int n) {
 	assert(0 <= n && n <= 3);
 	REG16_STORE(BANK_BANK, (uint16_t) n);
 }
+#if 0
+static void _regdump(void) {
+	for (int i = 0; i <= 3; i++) {
+		_set_bank(i);
+		printk("Bank %d\n", i);
+		for (int j = 0; j < 7; j++) {
+			printk("%4x\n", (uint16_t) REG16_LOAD(BANK_BASE_ADDR + 2 * j));
+		}
+	}
+}
+#endif
 
 /**
  * @brief Set approprate opcode
@@ -116,8 +129,8 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	_set_cmd(CMD_TX_ALLOC);
 
 	_set_bank(2);
-	while (!(REG16_LOAD(BANK_INTERRUPT) & (1 << 3))){
-	};
+	//while (!(REG16_LOAD(BANK_INTERRUPT) & (1 << 3))){
+	//};
 
 	packet_num = (REG16_LOAD(BANK_PNR) >> 8) & 0x3F;
 
@@ -130,7 +143,8 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	pointer = 2;
 	REG16_STORE(BANK_POINTER, pointer);
 	REG16_STORE(BANK_DATA, (uint16_t) skb->len + 10);
-	/* Those 10 bytes are 2 for status + 2 for counter + 4 for crc + 1 for control + 1 for odd */
+	/* Those 10 bytes are 2 for status + 2 for counter + 4
+	 * for crc + 1 for control + 1 for odd */
 
 	pointer = 4;
 	REG16_STORE(BANK_POINTER, pointer);
@@ -166,7 +180,11 @@ static int lan91c111_open(struct net_device *dev) {
         _set_bank(0);
 	REG16_STORE(BANK_RCR, 0x0100); /* Enable RX interrupts */
 	REG16_STORE(BANK_TCR, 0x0001); /* Enable TX */
-	REG16_STORE(BANK_RCR, 0x0504); /* Enable RX */
+	REG16_STORE(BANK_RCR, 0x0506); /* Enable RX */
+
+	_set_bank(2);
+	REG16_STORE(BANK_INTERRUPT, 0x0100);
+
 	return 0;
 }
 
@@ -176,9 +194,9 @@ static int lan91c111_set_macaddr(struct net_device *dev, const void *addr) {
 
         assert(mac);
 
-	mac_hi  = (mac[4] << 8) | (mac[5] << 0);
-	mac_mid = (mac[2] << 8) | (mac[3] << 0);
-	mac_lo  = (mac[0] << 8) | (mac[1] << 0);
+	mac_hi  = (mac[5] << 8) | (mac[4] << 0);
+	mac_mid = (mac[3] << 8) | (mac[2] << 0);
+	mac_lo  = (mac[1] << 8) | (mac[0] << 0);
 
         _set_bank(1);
 
@@ -195,6 +213,48 @@ static const struct net_driver lan91c111_drv_ops = {
 	.set_macaddr = lan91c111_set_macaddr
 };
 
+static irq_return_t lan91c111_rx_int(unsigned int irq_num,
+		void *dev_id) {
+	struct sk_buff *skb;
+	uint16_t buf;
+	uint16_t len;
+	uint8_t *skb_data;
+	printk("rx_int\n");
+
+	_set_bank(2);
+
+	if (!(REG16_LOAD(BANK_INTERRUPT) & 0x1)) {
+		return 0;
+	}
+
+	REG16_STORE(BANK_POINTER, 0x8002);
+	len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
+	/* In original structure, byte count includes headers, so
+	 * we shrink it to data size */
+
+	skb = skb_alloc(len);
+	assert(skb);
+	skb->len = len;
+	skb->dev = dev_id;
+
+	skb_data = skb_data_cast_in(skb->data);
+	assert(skb_data);
+
+	for (int i = 0; i < skb->len / 2 + skb->len % 2; i++) {
+		REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
+		buf = REG16_LOAD(BANK_DATA);
+		printk("%x %x ", (buf & 0xFF), (buf >> 8));
+		skb_data[i * 2] = buf & 0xFF;
+		skb_data[i * 2 + 1] = buf >> 8;
+	}
+
+	netif_rx(skb);
+	printk("\n");
+
+	_set_cmd(CMD_RX_POP_AND_RELEASE);
+	return 0;
+}
+
 EMBOX_UNIT_INIT(lan91c111_init);
 static int lan91c111_init(void) {
         struct net_device *nic;
@@ -202,6 +262,8 @@ static int lan91c111_init(void) {
         if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
         }
+
+	irq_attach(27, lan91c111_rx_int, 0, nic, "lan91c111");
 
         nic->drv_ops = &lan91c111_drv_ops;
 
