@@ -4,7 +4,7 @@ abstract module serial {
 }
 
 module serial_dvfs {
-	source "ttys_dvfs.c"	
+	source "ttys_dvfs.c"
 	source "idesc_serial_dvfs.c"
 
 	@IncludeExport(path="drivers", target_name="ttys.h")
@@ -13,7 +13,8 @@ module serial_dvfs {
 	option number serial_quantity = 1
 }
 
-module serial_oldfs {	
+module serial_oldfs {
+	source "ttys_oldfs.c"
 	source "idesc_serial.c"
 
 	@IncludeExport(path="drivers", target_name="ttys.h")
