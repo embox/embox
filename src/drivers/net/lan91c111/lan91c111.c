@@ -68,6 +68,12 @@
 #define REG16_STORE(addr, val) \
 	do { *((volatile uint16_t *)(addr)) = (val); } while (0)
 
+#define REG8_LOAD(addr) \
+	*((volatile uint8_t *)(addr))
+
+#define REG8_STORE(addr, val) \
+	do { *((volatile uint8_t *)(addr)) = (val); } while (0)
+
 /* Commands */
 #define CMD_NOP                0
 #define CMD_TX_ALLOC           1
@@ -92,7 +98,8 @@
 #define TX_MASK  0x0002
 #define RX_MASK  0x0001
 
-#define CRC_EN   0x0010
+#define CRC_CONTROL   0x10
+#define ODD_CONTROL   0x20
 
 #define LAN91C111_FRAME_SIZE_MAX 2048
 #define LAN91C111_IRQ            27
@@ -142,7 +149,7 @@ static void _set_cmd(int opcode) {
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
 	int i;
-	uint16_t *data;
+	uint8_t *data;
 	uint16_t pointer;
 
 	_set_cmd(CMD_TX_ALLOC);
@@ -159,31 +166,47 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	/* Write header */
 	pointer = 2;
 	REG16_STORE(BANK_POINTER, pointer);
-	REG16_STORE(BANK_DATA, (uint16_t) skb->len + 10);
-	/* Those 10 bytes are 2 for status + 2 for counter + 4
-	 * for crc + 1 for control + 1 for odd */
+	REG16_STORE(BANK_DATA, 2 * (1 + 1 + 1 + 2 + (uint16_t) skb->len / 2));
+	/* Those 10 bytes are 2 for status + 2 for counter +
+	 * 4 for crc + 2 for control */
 
 	pointer = 4;
 	REG16_STORE(BANK_POINTER, pointer);
 
 	/* BANK_DATA register works as FIFO, so we just push
 	 * data with 16-bit writes */
-	data = (uint16_t*) skb_data_cast_in(skb->data);
-	for (i = 0; i < skb->len; i += 2) {
+	data = (uint8_t*) skb_data_cast_in(skb->data);
+	for (i = 0; i < skb->len; i++) {
 		/* This could be done with 32-bit writes,
 		 * but here we just use the usual macro */
-		REG16_STORE(BANK_DATA, *data);
+		REG8_STORE(BANK_DATA, *data);
 		data++;
 
 		/* Auto-increment for pointer register seems to
 		 * be unsupported by qemu-linaro, so we increment
 		 * it by hand */
-		pointer += 2;
+		pointer++;
 		REG16_STORE(BANK_POINTER, pointer);
 	}
 
+	for (int i = 0; i < 4; i++) {
+		pointer++;
+		REG16_STORE(BANK_POINTER, pointer);
+		REG8_STORE(BANK_DATA, 0);
+	}
+	/* Miss CRC bytes */
+
 	/* Write control byte */
-	REG16_STORE(BANK_DATA, CRC_EN);
+	if (skb->len % 2) {
+		pointer++;
+		REG8_STORE(BANK_DATA, CRC_CONTROL | ODD_CONTROL);
+	} else {
+		pointer++;
+		REG16_STORE(BANK_POINTER, pointer);
+		REG8_STORE(BANK_DATA, 0x0);
+		pointer++;
+		REG8_STORE(BANK_POINTER, CRC_CONTROL);
+	}
 
 	_set_cmd(CMD_TX_ENQUEUE);
 
