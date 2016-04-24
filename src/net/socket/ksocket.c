@@ -230,7 +230,7 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(sk);
 	assert(msg);
 	assert(msg->msg_iov);
-	assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
+	//assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
 
 	assert(sk->f_ops);
 	assert(sk->f_ops->sendmsg);
@@ -280,7 +280,7 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(sk);
 	assert(msg);
 	assert(msg->msg_iov);
-	assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
+	//assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
 
 //	if (msg->msg_iov->iov_len == 0) {
 //		return 0;
