@@ -201,34 +201,40 @@ TEST_CASE("getpeername() returns address of peer") {
 TEST_CASE("writev/readv")
 {
 	ssize_t ret;
+	struct sockaddr_in tmp;
+	test_assert_zero(connect(c, to_sa(&addr), addrlen));
+	test_assert_zero(getsockname(c, to_sa(&tmp), &addrlen));
+	test_assert_zero(connect(b, to_sa(&tmp), addrlen));
 
-	char *str[11];
+	char str[11];
 	char *str0 = "sample ";
 	char *str1 = "text";
-	strcpy(str, str0);
-	strcat(str, str1);
+	char buf0[7];
+	char buf1[4];
 
 	struct iovec iov_w[2];
 	struct iovec iov_r[2];
 
 	iov_w[0].iov_base = str0;
-	iov_w[0].iov_len = strlen(str0);
+	iov_r[0].iov_base = buf0;
+	iov_r[0].iov_len = iov_w[0].iov_len = strlen(str0);
 	iov_w[1].iov_base = str1;
-	iov_w[1].iov_len = strlen(str1);
+	iov_r[1].iov_base = buf1;
+	iov_r[1].iov_len = iov_w[1].iov_len = strlen(str1);
 
 	ret = writev(c, iov_w, 2);
-	read(c, str, 11);
+	read(b, str, 11);
 
 	test_assert_equal(ret, 2);
 	test_assert_mem_equal(iov_w[0].iov_base, str, iov_w[0].iov_len);
 	test_assert_mem_equal(iov_w[1].iov_base, str + iov_w[0].iov_len, iov_w[1].iov_len);
 
 	write(c, str, 11);
-	ret = readv(c, iov_r, 2);
+	ret = readv(b, iov_r, 2);
 
 	test_assert_equal(ret, 2);
-	test_assert_mem_equal(iov_r[0].iov_base, str, iov_w[0].iov_len);
-	test_assert_mem_equal(iov_r[1].iov_base, str + iov_w[0].iov_len, iov_r[1].iov_len);
+	test_assert_mem_equal(iov_r[0].iov_base, str0, iov_r[0].iov_len);
+	test_assert_mem_equal(iov_r[1].iov_base, str1, iov_r[1].iov_len);
 
 	//errors
 	ret = writev(c, iov_w, -1);
