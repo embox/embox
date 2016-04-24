@@ -113,10 +113,18 @@ module creat {
 	source "creat.c"
 }
 
+module readv {
+	source "readv.c"
+}
+
+module writev {
+	source "writev.c"
+}
+
 @DefaultImpl(file_ops_old)
 abstract module file_ops {
 	depends read, write, fcntl, ioctl, close,
-	        fstat, fsync
+	        fstat, fsync, readv, writev
 }
 
 static module file_ops_old extends file_ops {

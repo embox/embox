@@ -17,6 +17,8 @@
 #include <sys/stat.h>
 #include <sys/cdefs.h>
 
+#include <sys/uio.h>
+
 #include <posix_environ.h>
 
 /*
@@ -149,6 +151,10 @@ extern int usleep(useconds_t useconds);
 extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
 extern ssize_t read(int fd, void *buf, size_t nbyte);
+
+extern ssize_t writev(int fd, const struct iovec *iov, int iovcnt);
+
+extern ssize_t readv(int fd, const struct iovec *iov, int iovcnt);
 
 extern off_t lseek(int fd, off_t offset, int origin);
 
