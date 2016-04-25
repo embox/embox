@@ -31,7 +31,7 @@ static const struct idesc_ops idesc_vc_ops;
 /*
  * file_operations
  */
-static int vc_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *vc_open(struct node *node, struct file_desc *desc, int flags) {
 	struct vterm_video *vc_vga;
 
 	vc_vga = vc_vga_init();
@@ -45,7 +45,7 @@ static int vc_open(struct node *node, struct file_desc *desc, int flags) {
 	idesc_init(&desc->idesc, &idesc_vc_ops, S_IROTH | S_IWOTH);
 	vc_vterm.tty.idesc = &desc->idesc;
 
-	return 0;
+	return &desc->idesc;
 }
 
 static void vc_close(struct idesc *desc) {

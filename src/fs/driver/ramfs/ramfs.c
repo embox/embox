@@ -99,7 +99,7 @@ static int ramfs_ramdisk_fs_init(void) {
 EMBOX_UNIT_INIT(ramfs_ramdisk_fs_init); /*TODO*/
 
 
-static int    ramfs_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *ramfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    ramfs_close(struct file_desc *desc);
 static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -115,7 +115,7 @@ static struct kfile_operations ramfs_fop = {
  * file_operation
  */
 
-static int ramfs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ramfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
 	ramfs_file_info_t *fi;
 
@@ -124,7 +124,7 @@ static int ramfs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	fi->pointer = desc->cursor;
 
-	return 0;
+	return &desc->idesc;
 }
 
 static int ramfs_close(struct file_desc *desc) {

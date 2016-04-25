@@ -19,19 +19,19 @@
 #include <fs/file_operation.h>
 #include <fs/node.h>
 #include <fs/file_desc.h>
+#include <util/err.h>
 
-
-static int uart_fsop_open(struct node *node, struct file_desc *file_desc, int flags)  {
+static struct idesc *uart_fsop_open(struct node *node, struct file_desc *file_desc, int flags)  {
 	struct uart *uart;
+	struct idesc *idesc;
+
 	uart = uart_dev_lookup(node->name);
 	if (!uart) {
-		return -ENOENT;
+		return err_ptr(ENOENT);
 	}
-	file_desc->file_info = uart;
-	idesc_serial_create(uart, flags);
+	idesc = idesc_serial_create(uart, flags);
 
-	//uart_open(uart);
-	return 0;
+	return idesc;
 }
 
 static int uart_fsop_close(struct file_desc *desc) {

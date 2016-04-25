@@ -33,6 +33,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
 	int ret;
+	struct idesc *idesc;
 
 	assert(node);
 	assertf(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
@@ -68,8 +69,16 @@ struct file_desc *kopen(struct node *node, int flag) {
 	}
 	desc->ops = ops;
 
-	if (0 > (ret = desc->ops->open(node, desc, flag))) {
+	idesc = desc->ops->open(node, desc, flag);
+	if (err(idesc)){
+		ret = (int)idesc;
 		goto free_out;
+	}
+	if ((struct idesc *)idesc == &desc->idesc) {
+		goto out;
+	} else {
+		file_desc_destroy(desc);
+		return (struct file_desc *)idesc;
 	}
 
 free_out:
@@ -79,6 +88,7 @@ free_out:
 		return NULL;
 	}
 
+out:
 	return desc;
 }
 

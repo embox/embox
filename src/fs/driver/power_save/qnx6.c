@@ -18,6 +18,7 @@
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>
 #include <util/array.h>
+#include <util/err.h>
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
@@ -46,11 +47,11 @@ static struct kfile_operations qnx6_fop = {
 /*
  * file_operation
  */
-static int qnx6fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *qnx6fs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
-		return -1;
+		return err_ptr(EINVAL);
 	}
 
 	return drv->file_op->open(node, desc, flags);

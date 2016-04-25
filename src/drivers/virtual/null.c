@@ -7,6 +7,7 @@
  */
 #include <stdlib.h>
 
+#include <fs/file_desc.h>
 #include <drivers/char_dev.h>
 #include <fs/file_operation.h>
 
@@ -19,8 +20,8 @@ static const struct kfile_operations null_ops;
 
 CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, NULL, null_init);
 
-static int null_open(struct node *node, struct file_desc *file_desc, int flags) {
-	return 0;
+static struct idesc *null_open(struct node *node, struct file_desc *file_desc, int flags) {
+	return &file_desc->idesc;
 }
 
 static int null_close(struct file_desc *desc) {

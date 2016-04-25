@@ -7,6 +7,8 @@
  */
 
 #include <errno.h>
+#include <util/err.h>
+
 #include <fs/file_operation.h>
 #include <drivers/usb/usb_driver.h>
 #include <drivers/usb/usb_dev_desc.h>
@@ -25,20 +27,20 @@ static void usb_example_disconnect(struct usb_dev *dev, void *data) {
 
 }
 
-static int example_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc * example_open(struct node *node, struct file_desc *file_desc, int flags) {
 	struct usb_dev_desc *ddesc;
 	int res;
 
 	res = usb_driver_open_by_node(node, &ddesc);
 	if (0 != res) {
-		return res;
+		return err_ptr(-res);
 	}
 
 	assert(ddesc);
 
 	file_desc->file_info = ddesc;
 
-	return 0;
+	return &file_desc->idesc;
 }
 
 static int example_close(struct file_desc *desc) {

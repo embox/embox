@@ -644,9 +644,9 @@ static void qnx6_destroy_node(struct node *node)
 /*
  * file_operation
  */
-static int qnx6fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *qnx6fs_open(struct node *node, struct file_desc *desc, int flags) {
 
-	return 0;
+	return &file_desc;
 }
 
 static int qnx6fs_close(struct file_desc *desc) {

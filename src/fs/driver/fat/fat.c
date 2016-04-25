@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <libgen.h>
 
+#include <util/err.h>
 #include <fs/fat.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
@@ -226,7 +227,7 @@ static int fat_umount_entry(struct nas *nas) {
 }
 
 /* File operations */
-static int    fatfs_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *fatfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    fatfs_close(struct file_desc *desc);
 static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -241,22 +242,24 @@ static struct kfile_operations fatfs_fop = {
 /*
  * file_operation
  */
-static int fatfs_open(struct node *node, struct file_desc *desc,  int flag) {
+static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int flag) {
 	struct nas *nas;
 	uint8_t path [PATH_MAX];
 	struct fat_file_info *fi;
+	int res;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
 
 	vfs_get_relative_path(node, (char *) path, PATH_MAX);
 
-	if (DFS_OK == fat_open_file(fi, (uint8_t *)path, flag, fat_sector_buff, &nas->fi->ni.size)) {
+	res = fat_open_file(fi, (uint8_t *)path, flag, fat_sector_buff, &nas->fi->ni.size);
+	if (DFS_OK == res) {
 		fi->pointer = desc->cursor;
-		return 0;
+		return &desc->idesc;
 	}
 
-	return -1;
+	return err_ptr(-res);
 }
 
 static int fatfs_close(struct file_desc *desc) {

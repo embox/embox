@@ -182,8 +182,8 @@ int usb_whitelist_check(struct usb_dev *dev) {
 	return -EBUSY;
 }
 
-static int usb_whitelist_open(struct node *node, struct file_desc *file_desc, int flags) {
-	return 0;
+static struct idesc *usb_whitelist_open(struct node *node, struct file_desc *file_desc, int flags) {
+	return &file_desc->idesc;
 }
 
 static int usb_whitelist_close(struct file_desc *desc) {
