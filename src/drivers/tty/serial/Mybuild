@@ -14,6 +14,7 @@ module serial_dvfs {
 }
 
 module serial_oldfs {
+	source "ttys_processing.c"
 	source "ttys_oldfs.c"
 	source "idesc_serial.c"
 

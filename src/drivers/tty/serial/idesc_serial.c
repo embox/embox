@@ -19,21 +19,24 @@
 #include <fs/file_desc.h>
 #include "idesc_serial.h"
 #include <drivers/serial/uart_device.h>
+#include <kernel/lthread/lthread.h>
 
+
+#include <embox/unit.h>
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
 
 //POOL_DEF(pool_serials, struct idesc_serial, MAX_SERIALS);
 
 #define idesc_to_uart(desc) \
-	(((struct file_desc *)desc)->file_info)
+	(((struct  tty_uart*)desc)->uart)
 
 static const struct idesc_ops idesc_serial_ops;
 
 struct tty_uart {
+	struct idesc idesc;
 	struct tty tty;
 	struct uart *uart;
-	struct idesc idesc;
 };
 
 POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
@@ -72,7 +75,7 @@ static struct tty_ops uart_tty_ops = {
 	.setup = uart_term_setup,
 	.out_wake = uart_out_wake,
 };
-
+#if 0
 static irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
 	struct uart *dev = data;
 
@@ -83,6 +86,8 @@ static irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
 
 	return IRQ_HANDLED;
 }
+#endif
+extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
 static int idesc_uart_bind(struct uart *uart) {
 	struct tty_uart *tu;
