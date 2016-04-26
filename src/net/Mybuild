@@ -3,8 +3,10 @@ package embox.net
 module dev {
 	option number netdev_table_sz=3
 	option number netdev_quantity=8
-	
+
 	source "netdev.c"
+
+	depends embox.mem.sysmalloc_api
 	depends embox.util.DList
 	depends embox.util.hashtable
 }
@@ -60,7 +62,7 @@ module neighbour {
 	option number neighbour_expire=60000
 	option number neighbour_resend=1000
 	option number neighbour_tmr_freq=1000
-	
+
 	source "neighbour.c"
 
 	depends embox.compat.posix.util.time /* for time() */
