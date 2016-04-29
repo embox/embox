@@ -13,6 +13,9 @@ module serial_dvfs {
 	source "ttys_dvfs.h"
 
 	option number serial_quantity = 1
+
+	depends tty
+	depends embox.driver.char_dev_dvfs
 }
 
 module serial_oldfs {
@@ -25,4 +28,7 @@ module serial_oldfs {
 	source "ttys_oldfs.h"
 
 	option number serial_quantity = 1
+
+	depends tty
+	depends embox.driver.char_dev_old
 }
