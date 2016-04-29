@@ -6,7 +6,7 @@ abstract module core { }
 module uart_dev_dvfs extends core {
 	option number uart_max_n = 4
 
-	source "uart_dev_dvfs.c"
+	source "uart_dev.c"
 
 	@IncludeExport(path="drivers/serial")
 	source "uart_device.h"

@@ -39,3 +39,20 @@ static struct idesc *uart_fsop_open(struct inode *node, struct idesc *desc) {
 const struct file_operations ttys_fops = {
 	.open = uart_fsop_open,
 };
+
+POOL_DEF(cdev_serials_pool, struct device_module, 1);
+
+int ttys_register(const char *name, void *dev_info) {
+	struct device_module *cdev;
+
+	cdev = pool_alloc(&cdev_serials_pool);
+	if (!cdev) {
+		return -ENOMEM;
+	}
+	memset(cdev, 0, sizeof(*cdev));
+	cdev->name = name;
+	cdev->fops = (struct file_operations*)&ttys_fops;
+	cdev->dev_data = dev_info;
+
+	return char_dev_register(cdev);
+}
