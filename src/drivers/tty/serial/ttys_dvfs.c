@@ -36,48 +36,6 @@ static struct idesc *uart_fsop_open(struct inode *node, struct idesc *desc) {
 	return idesc;
 }
 
-static int uart_fsop_close(struct file *desc) {
-	return 0;
-}
-
-static size_t uart_fsop_read(struct file *desc, void *buf, size_t size) {
-	struct uart *uart;
-	int i;
-	char *b;
-	struct device_module *cdev;
-
-	b = buf;
-	cdev = desc->f_inode->i_data;
-	uart = cdev->dev_data;
-
-	for(i = 0; i < size; i ++) {
-		while(!uart->uart_ops->uart_hasrx(uart)) {
-		}
-		b[i] = uart->uart_ops->uart_getc(uart);
-	}
-
-	return size;
-}
-
-static size_t uart_fsop_write(struct file *desc, void *buf, size_t size) {
-	struct uart *uart;
-	int i;
-	char *b;
-	struct device_module *cdev;
-
-	b = buf;
-	cdev = desc->f_inode->i_data;
-	uart = cdev->dev_data;
-
-	for(i = 0; i < size; i ++) {
-		uart->uart_ops->uart_putc(uart, b[i]);
-	}
-	return 0;
-}
-
 const struct file_operations ttys_fops = {
 	.open = uart_fsop_open,
-	.close = uart_fsop_close,
-	.read = uart_fsop_read,
-	.write = uart_fsop_write
 };
