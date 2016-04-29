@@ -34,22 +34,6 @@ module diag {
 	source "diag_serial.h"
 }
 
-module apbuart extends embox.driver.diag.diag_api {
-	option number baud_rate
-	option number apbuart_base=0x80000100
-	option number irq_num=2
-
-	source "apbuart.c"
-
-	@NoRuntime depends embox.driver.ambapp_api
-	depends embox.driver.char_dev
-
-	depends embox.driver.char_dev
-
-	depends core
-	depends diag
-}
-
 module at91_uart extends embox.driver.diag.diag_api {
 	option number baud_rate
 
