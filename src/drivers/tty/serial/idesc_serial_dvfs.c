@@ -20,8 +20,11 @@
 #include <drivers/serial/uart_device.h>
 #include <fs/dvfs.h>
 #include <util/dlist.h>
+
+#if 0
 #include <kernel/lthread/lthread.h>
 #include <embox/unit.h>
+#endif
 
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
@@ -29,12 +32,12 @@
 
 #define idesc_to_uart(desc) \
 	(((struct  tty_uart*)desc)->uart)
-
+#if 0
 #define UART_DATA_BUFF_SZ 8
 #define UART_RX_HND_PRIORITY 128
 
 EMBOX_UNIT_INIT(serial_common_init);
-
+#endif
 static const struct idesc_ops idesc_serial_ops;
 
 struct tty_uart {
@@ -42,20 +45,21 @@ struct tty_uart {
 	struct tty tty;
 	struct uart *uart;
 };
-
+#if 0
 struct uart_rx {
 	struct uart *uart;
 	int data;
 	struct dlist_head lnk;
 };
-
+#endif
 POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
+#if 0
 POOL_DEF(uart_rx_buff, struct uart_rx, UART_DATA_BUFF_SZ);
 
 static DLIST_DEFINE(uart_rx_list);
 
 static struct lthread uart_rx_irq_handler;
-
+#endif
 static inline struct uart *tty2uart(struct tty *tty) {
 	struct tty_uart *tu;
 	tu = member_cast_out(tty, struct tty_uart, tty);
@@ -90,7 +94,7 @@ static struct tty_ops uart_tty_ops = {
 	.setup = uart_term_setup,
 	.out_wake = uart_out_wake,
 };
-
+#if 0
 static int uart_rx_buff_put(struct uart *dev, int c) {
 	struct uart_rx *rx;
 
@@ -157,7 +161,8 @@ static irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
 
 	return IRQ_HANDLED;
 }
-
+#endif
+extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 struct idesc *idesc_serial_create(struct uart *uart,
 		mode_t mod) {
 	struct tty_uart *tu;
@@ -294,11 +299,13 @@ static int serial_fstat(struct idesc *data, void *buff) {
 
 }
 
+#if 0
 static int serial_common_init(void) {
 	lthread_init(&uart_rx_irq_handler, &uart_rx_action);
 	schedee_priority_set(&uart_rx_irq_handler.schedee, UART_RX_HND_PRIORITY);
 	return 0;
 }
+#endif
 
 static const struct idesc_ops idesc_serial_ops = {
 		.read = serial_read,

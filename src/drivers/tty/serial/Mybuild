@@ -4,6 +4,7 @@ abstract module serial {
 }
 
 module serial_dvfs {
+	source "ttys_processing.c"
 	source "ttys_dvfs.c"
 	source "idesc_serial_dvfs.c"
 
