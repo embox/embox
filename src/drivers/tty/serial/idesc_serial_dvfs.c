@@ -12,19 +12,13 @@
 
 #include <mem/misc/pool.h>
 #include <fs/idesc.h>
-
-#include <framework/mod/options.h>
+#include <fs/dvfs.h>
 
 #include <drivers/tty.h>
-#include <fs/file_desc.h>
+#include <drivers/ttys.h>
 #include <drivers/serial/uart_device.h>
-#include <fs/dvfs.h>
-#include <util/dlist.h>
 
-#if 0
-#include <kernel/lthread/lthread.h>
-#include <embox/unit.h>
-#endif
+#include <framework/mod/options.h>
 
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
@@ -35,50 +29,12 @@
 
 static const struct idesc_ops idesc_serial_ops;
 
-struct tty_uart {
-	struct idesc idesc;
-	struct tty tty;
-	struct uart *uart;
-};
 
 POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 
-static inline struct uart *tty2uart(struct tty *tty) {
-	struct tty_uart *tu;
-	tu = member_cast_out(tty, struct tty_uart, tty);
-	return tu->uart;
-}
-
-static void uart_out_wake(struct tty *t) {
-	struct uart *uart_dev = tty2uart(t);
-	int ich;
-
-	irq_lock();
-
-	while ((ich = tty_out_getc(t)) != -1)
-		uart_putc(uart_dev, (char) ich);
-
-	irq_unlock();
-}
-
-static void uart_term_setup(struct tty *tty, struct termios *termios) {
-	struct uart *uart_dev = tty2uart(tty);
-	struct uart_params params;
-
-	uart_get_params(uart_dev, &params);
-
-	/* TODO baud rate is ospeed. What's with ispeed ? */
-	params.baud_rate = termios->c_ospeed;
-
-	uart_set_params(uart_dev, &params);
-}
-
-static struct tty_ops uart_tty_ops = {
-	.setup = uart_term_setup,
-	.out_wake = uart_out_wake,
-};
-
+extern struct tty_ops uart_tty_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
+
 struct idesc *idesc_serial_create(struct uart *uart,
 		mode_t mod) {
 	struct tty_uart *tu;

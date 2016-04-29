@@ -8,69 +8,31 @@
 #include <poll.h>
 #include <sys/stat.h>
 
-#include <util/err.h>
 
 #include <mem/misc/pool.h>
+
 #include <fs/idesc.h>
 
-#include <framework/mod/options.h>
-
 #include <drivers/tty.h>
-#include <fs/file_desc.h>
-#include "idesc_serial.h"
+#include <drivers/ttys.h>
 #include <drivers/serial/uart_device.h>
+
+#include "idesc_serial.h"
+
+#include <framework/mod/options.h>
 
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
 
+POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
+
 #define idesc_to_uart(desc) \
 	(((struct  tty_uart*)desc)->uart)
 
+
 static const struct idesc_ops idesc_serial_ops;
 
-struct tty_uart {
-	struct idesc idesc;
-	struct tty tty;
-	struct uart *uart;
-};
-
-POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
-
-static inline struct uart *tty2uart(struct tty *tty) {
-	struct tty_uart *tu;
-	tu = member_cast_out(tty, struct tty_uart, tty);
-	return tu->uart;
-}
-
-static void uart_out_wake(struct tty *t) {
-	struct uart *uart_dev = tty2uart(t);
-	int ich;
-
-	irq_lock();
-
-	while ((ich = tty_out_getc(t)) != -1)
-		uart_putc(uart_dev, (char) ich);
-
-	irq_unlock();
-}
-
-static void uart_term_setup(struct tty *tty, struct termios *termios) {
-	struct uart *uart_dev = tty2uart(tty);
-	struct uart_params params;
-
-	uart_get_params(uart_dev, &params);
-
-	/* TODO baud rate is ospeed. What's with ispeed ? */
-	params.baud_rate = termios->c_ospeed;
-
-	uart_set_params(uart_dev, &params);
-}
-
-static struct tty_ops uart_tty_ops = {
-	.setup = uart_term_setup,
-	.out_wake = uart_out_wake,
-};
-
+extern struct tty_ops uart_tty_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
 static int idesc_uart_bind(struct uart *uart) {
@@ -108,10 +70,6 @@ struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
 		return NULL;
 	}
 
-	if (uart_open(uart)) {
-		idesc_uart_unbind(uart);
-		return NULL;
-	}
 	idesc_init(uart->tty->idesc, &idesc_serial_ops, S_IROTH | S_IWOTH);
 
 	return uart->tty->idesc;
@@ -177,8 +135,6 @@ static void serial_close(struct idesc *idesc) {
 	assert(res == 0); /* TODO */
 
 	idesc_uart_unbind(uart);
-
-	file_desc_destroy((struct file_desc *)idesc);
 }
 
 static int serial_ioctl(struct idesc *idesc, int request, void *data) {

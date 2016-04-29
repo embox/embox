@@ -5,6 +5,7 @@ abstract module serial {
 
 module serial_dvfs {
 	source "ttys_processing.c"
+	source "ttys_term.c"
 	source "ttys_dvfs.c"
 	source "idesc_serial_dvfs.c"
 
@@ -16,6 +17,7 @@ module serial_dvfs {
 
 module serial_oldfs {
 	source "ttys_processing.c"
+	source "ttys_term.c"
 	source "ttys_oldfs.c"
 	source "idesc_serial.c"
 

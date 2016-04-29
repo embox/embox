@@ -24,12 +24,20 @@
 static struct idesc *uart_fsop_open(struct node *node, struct file_desc *file_desc, int flags)  {
 	struct uart *uart;
 	struct idesc *idesc;
+	int res;
 
 	uart = uart_dev_lookup(node->name);
 	if (!uart) {
 		return err_ptr(ENOENT);
 	}
 	idesc = idesc_serial_create(uart, flags);
+	if (err(idesc)) {
+		return idesc;
+	}
+	res = uart_open(uart);
+	if (res) {
+		return err_ptr(-res);
+	}
 
 	return idesc;
 }
