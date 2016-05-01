@@ -225,14 +225,14 @@ TEST_CASE("writev/readv")
 	ret = writev(c, iov_w, 2);
 	read(b, str, 11);
 
-	test_assert_equal(ret, 2);
+	test_assert_equal(ret, 11);
 	test_assert_mem_equal(iov_w[0].iov_base, str, iov_w[0].iov_len);
 	test_assert_mem_equal(iov_w[1].iov_base, str + iov_w[0].iov_len, iov_w[1].iov_len);
 
 	write(c, str, 11);
 	ret = readv(b, iov_r, 2);
 
-	test_assert_equal(ret, 2);
+	test_assert_equal(ret, 11);
 	test_assert_mem_equal(iov_r[0].iov_base, str0, iov_r[0].iov_len);
 	test_assert_mem_equal(iov_r[1].iov_base, str1, iov_r[1].iov_len);
 
