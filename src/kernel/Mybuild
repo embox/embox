@@ -16,4 +16,5 @@ module Kernel {
 
 	depends embox.framework.runlevel
 	depends embox.compat.libc.assert
+	depends embox.init.system_start
 }
