@@ -19,7 +19,8 @@ void print_usage() {
 }
 
 static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name) {
-	int err = 0;;
+	int err = 0;
+	char cmd_line[BUFF_SZ];
 	char ipv4_addr[BUFF_SZ] = "";
 	char netmask[BUFF_SZ] = "";
 	char gw[BUFF_SZ] = "";
@@ -38,33 +39,33 @@ static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name)
 			printf("WARNING: Unknown iface parameter: %s\n", buf);
 	}
 
-	strcpy(buf, "ifconfig ");
-	strcat(buf, iface_name);
-	strcat(buf, " ");
-	strcat(buf, ipv4_addr);
+	strcpy(cmd_line, "ifconfig ");
+	strcat(cmd_line, iface_name);
+	strcat(cmd_line, " ");
+	strcat(cmd_line, ipv4_addr);
 
 	if (netmask[0]) {
-		strcat(buf, " netmask ");
-		strcat(buf, netmask);
+		strcat(cmd_line, " netmask ");
+		strcat(cmd_line, netmask);
 	}
 
 	if (hw_addr[0]) {
-		strcat(buf, " hw ether ");
-		strcat(buf, hw_addr);
+		strcat(cmd_line, " hw ether ");
+		strcat(cmd_line, hw_addr);
 	}
 
-	strcat(buf, " up");
+	strcat(cmd_line, " up");
 
-	if ((err = system(buf)))
+	if ((err = system(cmd_line)))
 		return err;
 
 	if (gw[0]) {
-		strcpy(buf, "route add default gw ");
-		strcat(buf, gw);
-		strcat(buf, " ");
-		strcat(buf, iface_name);
+		strcpy(cmd_line, "route add default gw ");
+		strcat(cmd_line, gw);
+		strcat(cmd_line, " ");
+		strcat(cmd_line, iface_name);
 
-		if ((err = system(buf)))
+		if ((err = system(cmd_line)))
 			return err;
 	}
 	return 0;
@@ -74,10 +75,11 @@ int main(int argc, char **argv) {
 	char buf[BUFF_SZ] = "bootpc ";
 	int err;
 	FILE *input;
+	char ifname[0x20];
 
-	if (argc != 2) {
-		print_usage();
-		return -EINVAL;
+	if (argc == 2) {
+		strncpy(ifname, argv[1], sizeof(ifname)-1);
+		ifname[sizeof(ifname)-1] = '\0';
 	}
 
 	input = fopen(CONFIG_FILE, "r");
@@ -87,13 +89,21 @@ int main(int argc, char **argv) {
 		return -ENOENT;
 	}
 
-	while (fscanf(input, "%s", buf) != EOF) {
+	while (1) {
 		/* iface eth0 inet static */
 		if (strcmp(buf, "iface")) {
-			continue;
+			if (fscanf(input, "%s", buf) == EOF) {
+				break;
+			} else {
+				continue;
+			}
 		}
 		fscanf(input, "%s", buf);
-		if (strcmp(buf, argv[1])) {
+		if (argc < 2) {
+			strncpy(ifname, buf, sizeof(ifname)-1);
+			ifname[sizeof(ifname)-1] = '\0';
+		}
+		if (strcmp(buf, ifname)) {
 			/* Wrong iface*/
 			continue;
 		}
@@ -109,7 +119,7 @@ int main(int argc, char **argv) {
 			/* dynamic (bootp) setup */
 			buf[0] = '\0';
 			strncat(buf, "bootpc ", sizeof(buf));
-			strncat(buf, argv[1], sizeof(buf));
+			strncat(buf, ifname, sizeof(buf));
 			if (0 == (err = system(buf))) {
 				return 0;
 			}
@@ -122,7 +132,7 @@ int main(int argc, char **argv) {
 					break;
 				}
 		}
-		setup_static_config(input, buf, argv[1]);
+		setup_static_config(input, buf, ifname);
 	}
 
 	return 0;
