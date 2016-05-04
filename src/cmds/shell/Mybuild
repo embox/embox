@@ -15,6 +15,15 @@ abstract module shell_api {
 	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
 }
 
+@AutoCmd
+@Cmd(name = "tish",
+	help = "start tish - tiny shell interpretator",
+	man = '''
+		NAME
+			tish - tiny shell
+		AUTHORS
+			Anton Kozlov
+	''')
 module tish extends shell_api {
 	option number rich_prompt_support = 0
 

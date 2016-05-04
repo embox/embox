@@ -392,3 +392,8 @@ SHELL_DEF({
 	.exec = tish_exec,
 	.run  = tish_run,
 	});
+
+int main(int argc, char **argv) {
+	tish_run();
+	return 0;
+}
