@@ -48,20 +48,6 @@ module e1000 {
 	depends embox.net.entry_api
 }
 
-module ne2k_pci {
-	@IncludeExport(path="drivers/net")
-	source "ne2k_pci.h"
-	source "ne2k_pci.c"
-
-	depends embox.net.skbuff
-	depends embox.compat.libc.all
-	depends embox.driver.pci
-	depends embox.net.l2.ethernet
-	depends embox.kernel.irq
-	depends embox.net.dev
-	depends embox.net.entry_api
-}
-
 module rtl8139 {
 	@IncludeExport(path="drivers/net")
 	source "rtl8139.h"
