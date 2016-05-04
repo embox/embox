@@ -37,8 +37,8 @@ struct initfs_file_info {
 POOL_DEF (fdesc_pool, struct initfs_file_info,
 		OPTION_GET(NUMBER,fdesc_quantity));
 
-static int initfs_open(struct node *nod, struct file_desc *desc, int flags) {
-	return 0;
+static struct idesc *initfs_open(struct node *nod, struct file_desc *desc, int flags) {
+	return &desc->idesc;
 }
 
 static int initfs_close(struct file_desc *desc) {

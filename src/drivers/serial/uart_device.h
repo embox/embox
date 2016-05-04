@@ -136,9 +136,4 @@ static inline int uart_hasrx(struct uart *uart) {
 	return uart->uart_ops->uart_hasrx(uart);
 }
 
-#include <drivers/char_dev.h>
-#define TTYS_DEF(name, uart) \
-		extern const struct file_operations ttys_fops; \
-		CHAR_DEV_DEF(name, (struct file_operations *)&ttys_fops, NULL, uart)
-
 #endif /* UART_DEVICE_H_ */

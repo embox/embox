@@ -22,7 +22,7 @@
 #include <fs/hlpr_path.h>
 #include <errno.h>
 #include <endian.h>
-
+#include <util/err.h>
 
 #include <time.h>
 #define __timespec_defined
@@ -464,7 +464,7 @@ error:
 	return -rc;
 }
 
-static int ntfs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ntfs_open(struct node *node, struct file_desc *file_desc,
 		int flags)
 {
 	struct ntfs_file_info *fi;
@@ -481,13 +481,13 @@ static int ntfs_open(struct node *node, struct file_desc *file_desc,
 	//       necessary to keep only ntfs_attr
 	desc = pool_alloc(&ntfs_desc_pool);
 	if (!desc) {
-		return -ENOMEM;
+		return err_ptr(ENOMEM);
 	}
 
 	ni = ntfs_inode_open(fsi->ntfs_vol, fi->mref);
 	if (!ni) {
 		pool_free(&ntfs_desc_pool, desc);
-		return -errno;
+		return err_ptr(errno);
 	}
 
 	attr = ntfs_attr_open(ni, AT_DATA, NULL, 0);
@@ -496,7 +496,7 @@ static int ntfs_open(struct node *node, struct file_desc *file_desc,
 		pool_free(&ntfs_desc_pool, desc);
 		ntfs_inode_close(ni);
 		errno = err;
-		return -errno;
+		return err_ptr(errno);
 	}
 
 	desc->attr = attr;
@@ -506,7 +506,7 @@ static int ntfs_open(struct node *node, struct file_desc *file_desc,
 	// Yet another bullshit: size is not valid until open
 	node->nas->fi->ni.size = attr->data_size;
 
-	return 0;
+	return &file_desc->idesc;
 }
 
 static int ntfs_close(struct file_desc *file_desc)

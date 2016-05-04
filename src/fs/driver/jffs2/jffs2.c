@@ -29,6 +29,7 @@
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>
 #include <util/array.h>
+#include <util/err.h>
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
@@ -1360,7 +1361,7 @@ uint32_t jffs2_to_os_mode (uint32_t jmode) {
 	return 0;
 }
 
-static int jffs2fs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *jffs2fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
 static int jffs2fs_close(struct file_desc *desc);
 static size_t jffs2fs_read(struct file_desc *desc, void *buf, size_t size);
@@ -1376,11 +1377,12 @@ static struct kfile_operations jffs2_fop = {
 /*
  * file_operation
  */
-static int jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
 	char path[PATH_MAX];
+	int res;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
@@ -1390,7 +1392,11 @@ static int jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	vfs_get_relative_path(nas->node, path, PATH_MAX);
 
-	return jffs2_open(fsi->jffs2_sb.s_root, path, flags);
+	res = jffs2_open(fsi->jffs2_sb.s_root, path, flags);
+	if (res) {
+		return err_ptr(-res);
+	}
+	return &desc->idesc;
 }
 
 static int jffs2fs_close(struct file_desc *desc) {

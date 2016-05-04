@@ -16,6 +16,7 @@
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
 #include <embox/unit.h>
+#include <util/err.h>
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/sched_lock.h>
@@ -127,13 +128,13 @@ static inline int tun_netdev_by_desc(const struct file_desc *fdesc,
 	return 0;
 }
 
-static int tun_dev_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc *tun_dev_open(struct node *node, struct file_desc *file_desc, int flags) {
 	struct net_device *netdev;
 	struct tun *tun;
 
 	netdev = tun_netdev_by_node(node);
 	if (!netdev) {
-		return -ENOENT;
+		return err_ptr(ENOENT);
 	}
 
 	tun = netdev_priv(netdev, struct tun);
@@ -149,7 +150,7 @@ static int tun_dev_open(struct node *node, struct file_desc *file_desc, int flag
 
 	file_desc->file_info = netdev;
 
-	return 0;
+	return &file_desc->idesc;
 }
 
 static int tun_dev_close(struct file_desc *desc) {

@@ -123,3 +123,5 @@ const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
+
+//TTYS_DEF("ttyS0", &uart0);

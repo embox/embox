@@ -25,6 +25,7 @@
 #include <fs/file_operation.h>
 
 #include <util/array.h>
+#include <util/err.h>
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
@@ -135,7 +136,7 @@ POOL_DEF(ext2_file_pool, struct ext2_file_info,
 
 /* TODO link counter */
 
-static int ext2fs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ext2fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
 static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
@@ -439,7 +440,7 @@ int ext2_open(struct nas *nas) {
 /*
  * file_operation
  */
-static int ext2fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ext2fs_open(struct node *node, struct file_desc *desc, int flags) {
 	int rc;
 	struct nas *nas;
 	struct ext2_file_info *fi;
@@ -451,18 +452,18 @@ static int ext2fs_open(struct node *node, struct file_desc *desc, int flags) {
 	fi->f_pointer = desc->cursor; /* reset seek pointer */
 
 	if (NULL == (fi->f_buf = ext2_buff_alloc(nas, fsi->s_block_size))) {
-		return -ENOMEM;
+		return err_ptr(ENOMEM);
 	}
 
 	if (0 != (rc = ext2_read_inode(nas, fi->f_num))) {
 		ext2_close(nas);
-		return -rc;
+		return err_ptr(rc);
 	}
 	else {
 		nas->fi->ni.size = fi->f_di.i_size;
 	}
 
-	return 0;
+	return &desc->idesc;
 }
 
 static int ext2fs_close(struct file_desc *desc) {

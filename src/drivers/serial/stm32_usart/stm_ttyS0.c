@@ -10,6 +10,7 @@
 #include <drivers/serial/stm_usart.h>
 
 #include <drivers/serial/uart_device.h>
+#include <drivers/ttys.h>
 
 extern const struct uart_ops stm32_uart_ops;
 

@@ -30,9 +30,9 @@
 static int tty_device_init(void);
 static const struct kfile_operations tty_device_ops;
 
-CHAR_DEV_DEF(TTY_DEV_NAME, &tty_device_ops, tty_device_init);
+CHAR_DEV_DEF(TTY_DEV_NAME, &tty_device_ops, NULL, tty_device_init);
 
-static int tty_device_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc * tty_device_open(struct node *node, struct file_desc *file_desc, int flags) {
 	struct fb_info *info;
 
 	info = fb_lookup(DEFAULT_FRAMEBUFFER);
@@ -40,7 +40,7 @@ static int tty_device_open(struct node *node, struct file_desc *file_desc, int f
 
 	file_desc->file_info = (void *)info;
 
-	return 0;
+	return &file_desc->idesc;
 }
 
 static int tty_device_close(struct file_desc *desc) {

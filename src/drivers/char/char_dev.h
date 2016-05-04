@@ -19,7 +19,7 @@ struct device_module {
 };
 
 #include <util/array.h>
-#define CHAR_DEV_DEF(name, file_op, init_func) \
+#define CHAR_DEV_DEF(name, file_op, idesc_op, init_func) \
 	ARRAY_SPREAD_DECLARE(const struct device_module, __device_registry); \
 	ARRAY_SPREAD_ADD(__device_registry, {name, file_op, init_func})
 

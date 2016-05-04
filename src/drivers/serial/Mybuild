@@ -1,33 +1,30 @@
 package embox.driver.serial
 
-/* FIXME:
- * Unused files: skyeye_uart.c
- */
 @DefaultImpl(core_old)
 abstract module core { }
 
-module ttys_dvfs extends core {
+module uart_dev_dvfs extends core {
 	option number uart_max_n = 4
 
-	source "ttys_dvfs.c"
-	source "uart_dev_dvfs.c"
+	source "uart_dev.c"
 
 	@IncludeExport(path="drivers/serial")
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
-	@NoRuntime depends embox.driver.tty.serial
+	@NoRuntime depends embox.driver.tty.serial_dvfs
 }
 
 module core_old extends core {
 	option number uart_max_n = 4
 
-	source "core.c"
+	source "uart_dev.c"
 
 	@IncludeExport(path="drivers/serial")
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
+	@NoRuntime depends embox.driver.tty.serial_oldfs
 }
 
 module diag {
@@ -35,22 +32,6 @@ module diag {
 
 	@IncludeExport(path="drivers/serial")
 	source "diag_serial.h"
-}
-
-module apbuart extends embox.driver.diag.diag_api {
-	option number baud_rate
-	option number apbuart_base=0x80000100
-	option number irq_num=2
-
-	source "apbuart.c"
-
-	@NoRuntime depends embox.driver.ambapp_api
-	depends embox.driver.char_dev
-
-	depends embox.driver.char_dev
-
-	depends core
-	depends diag
 }
 
 module at91_uart extends embox.driver.diag.diag_api {
@@ -66,18 +47,6 @@ module raspi_uart extends embox.driver.diag.diag_api {
 
 	depends core
 	depends diag
-}
-
-module i8250 extends embox.driver.diag.diag_api {
-	option number baud_rate
-
-	source "8250.c"
-	@IncludeExport(path="drivers/serial")
-	source "8250.h"
-
-	depends core
-	depends diag
-	depends embox.util.LibUtil
 }
 
 module xuartlite extends embox.driver.diag.diag_api {

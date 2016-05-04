@@ -79,6 +79,7 @@ static int uart_setup(struct uart *uart) {
 	return 0;
 }
 
+extern int ttys_register(const char*name, void *dev_info);
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
 
@@ -97,7 +98,7 @@ int uart_register(struct uart *uart,
 
 	dlist_add_next(&uart->lnk, &uart_list);
 
-	return 0;
+	return ttys_register(uart->dev_name, uart);
 }
 
 void uart_deregister(struct uart *uart) {

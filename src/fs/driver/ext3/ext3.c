@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 
 #include <util/array.h>
+#include <util/err.h>
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
 #include <mem/objalloc.h>
@@ -42,7 +43,7 @@
 OBJALLOC_DEF(ext3_journal_cache, ext3_journal_specific_t, EXT3_JOURNAL_CNT);
 
 /* file operations */
-static int ext3fs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ext3fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
 static int ext3fs_close(struct file_desc *desc);
 static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
@@ -62,11 +63,11 @@ static struct fs_driver ext3fs_driver;
 /*
  * file_operation
  */
-static int ext3fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ext3fs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
-		return -1;
+		return err_ptr(EINVAL);
 	}
 
 	return drv->file_op->open(node, desc, flags);

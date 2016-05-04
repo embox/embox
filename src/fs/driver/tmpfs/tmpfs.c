@@ -101,7 +101,7 @@ static int tmp_ramdisk_fs_init(void) {
 EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
 
-static int    tmpfs_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *tmpfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    tmpfs_close(struct file_desc *desc);
 static size_t tmpfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -117,8 +117,8 @@ static struct kfile_operations tmpfs_fop = {
  * file_operation
  */
 
-static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
-	return 0;
+static struct idesc *tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
+	return &desc->idesc;
 }
 
 static int tmpfs_close(struct file_desc *desc) {

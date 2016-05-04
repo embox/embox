@@ -15,7 +15,7 @@ struct node;
 struct file_desc;
 
 struct kfile_operations {
-	int    (*open)(struct node *node, struct file_desc *file_desc, int flags);
+	struct idesc *(*open)(struct node *node, struct file_desc *file_desc, int flags);
 	int    (*close)(struct file_desc *desc);
 	size_t (*read)(struct file_desc *desc, void *buf, size_t size);
 	size_t (*write)(struct file_desc *desc, void *buf, size_t size);
