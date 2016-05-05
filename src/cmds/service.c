@@ -25,7 +25,7 @@ struct cmd_data {
 	const struct cmd *cmd;
 };
 
-static bool srv_cmd_ready_flag = false;
+static volatile bool srv_cmd_ready_flag = false;
 
 static void srv_cmd_data_copy(struct cmd_data *dst, const struct cmd_data *src) {
 	int i_arg;
