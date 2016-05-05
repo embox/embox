@@ -18,8 +18,10 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <sched.h>
 
+#include <util/log.h>
+
+#include <sched.h>
 #include <kernel/sched.h>
 
 #include <hal/context.h>
@@ -319,6 +321,8 @@ static inline void __sched_wakeup_smp_inactive(struct schedee *s) {
 int __sched_wakeup(struct schedee *s) {
 	int was_waiting = (s->waiting && s->waiting != TW_SMP_WAKING);
 
+	log_debug("schedee #%x", s);
+
 	if (was_waiting)
 		/* Check if t->ready state is still set, and we can do
 		 * a fast-path wake up, that just clears t->waiting state.  */
@@ -392,6 +396,7 @@ static void __schedule(int preempt) {
 		spin_unlock(&rq.lock);
 
 		schedee_set_current(next);
+		log_debug("prev: %#x, next: %#x", prev, next);
 
 		/* next->process has to enable ipl. */
 		next = next->process(prev, next);

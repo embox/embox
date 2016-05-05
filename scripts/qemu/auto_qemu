@@ -122,6 +122,8 @@ guess_machine() {
 				echo "-M overo"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "integratorcp" >/dev/null; then
 				echo "-M integratorcp"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "vexpress-a9" > /dev/null; then
+				echo "-M vexpress-a9"
 			fi
 			;;
 		microblaze)

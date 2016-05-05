@@ -40,6 +40,16 @@ module pit extends embox.arch.clock {
 	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
+module cortexa9 extends embox.arch.clock {
+	option number periph_base_addr
+	option number irq_num
+
+	source "cortexa9_timer.c"
+
+	@NoRuntime depends embox.kernel.time.timer_handler
+	depends embox.driver.interrupt.irqctrl_api
+}
+
 module cortexm_systick extends embox.arch.clock {
 	source "cortexm_systick.c"
 
