@@ -66,3 +66,16 @@ module start_script {
 	depends embox.cmd.sh.shell_api
 	depends embox.compat.libc.stdio.printf
 }
+
+@DefaultImpl(no_system_start)
+abstract module system_start {}
+
+module no_system_start extends system_start {
+	source "no_system_start.c"
+}
+
+module system_start_service extends system_start {
+	@IncludePath("$(CONF_DIR)")
+	source "system_start_service.c"
+	depends setup_tty_api
+}

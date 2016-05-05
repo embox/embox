@@ -64,7 +64,7 @@ static void httpd_client_process(struct client_info *cinfo) {
 	pid_t cgi_child;
 	int err;
 
-	if ((err = httpd_build_request(cinfo, &hreq, httpd_g_inbuf, sizeof(httpd_g_inbuf)))) {
+	if (0 > (err = httpd_build_request(cinfo, &hreq, httpd_g_inbuf, sizeof(httpd_g_inbuf)))) {
 		httpd_error("can't build request: %s", strerror(-err));
 	}
 
