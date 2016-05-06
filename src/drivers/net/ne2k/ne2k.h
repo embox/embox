@@ -12,6 +12,8 @@
 #ifndef NET_NE2K_PCI_H_
 #define NET_NE2K_PCI_H_
 
+extern int ne2k_dev_init(struct net_device *nic);
+
 /* Port addresses */
 #define NE_CMD          0x00 /* The command register (for all pages) */
 /* Page 0 register offsets */

@@ -1,9 +1,10 @@
 package embox.driver.net
 
 module ne2k_pci {
-	@IncludeExport(path="drivers/net")
-	source "ne2k_pci.h"
+	//@IncludeExport(path="drivers/net")
+	//source "ne2k.h"
 	source "ne2k_pci.c"
+	source "ne2k.c"
 
 	depends embox.net.skbuff
 	depends embox.compat.libc.all
