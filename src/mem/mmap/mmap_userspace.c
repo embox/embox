@@ -14,7 +14,6 @@
 
 #include <kernel/task/resource/mmap.h>
 
-static const uint32_t mem_start = 0x40000000;
 static const uint32_t mem_end = 0xFFFFF000;
 
 extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
