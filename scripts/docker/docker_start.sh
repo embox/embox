@@ -24,10 +24,10 @@ docker run -d --privileged \
 	embox/emdocker
 
 # wait till docker started, otherwise getting "No 'user' user found"
-until $dr true; do
+until $dr true 2>/dev/null 1>/dev/null; do
 	sleep 0.1
 done
 
 for port in $EMBOX_PORTS; do
-	$dr sudo iptables -A PREROUTING -t nat --dport $(localport $port) -j DNAT --to $EMBOX_IP:$port
+	$dr sudo iptables -A PREROUTING -t nat -p tcp --dport $(localport $port) -j DNAT --to $EMBOX_IP:$port
 done
