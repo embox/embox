@@ -170,7 +170,7 @@ static void _set_cmd(int opcode) {
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
 	int i;
-	uint8_t *data;
+	uint16_t *data;
 	uint16_t pointer;
 
 	_set_cmd(CMD_TX_ALLOC);
@@ -181,15 +181,9 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	REG16_STORE(BANK_PNR, packet_num << 8);
 
-	pointer = 0;
-	REG16_STORE(BANK_POINTER, pointer);
-
 	/* Write header */
 	pointer = 2;
 	REG16_STORE(BANK_POINTER, pointer);
-	//REG16_STORE(BANK_DATA, 2 * (1 + 1 + 1 + 2 + (uint16_t) skb->len / 2));
-	/* Those 10 bytes are 2 for status + 2 for counter +
-	 * 4 for crc + 2 for control */
 	REG16_STORE(BANK_DATA, (uint16_t) (skb->len & 0xfffe) + 6);
 
 	pointer = 4;
@@ -197,36 +191,27 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	/* BANK_DATA register works as FIFO, so we just push
 	 * data with 16-bit writes */
-	data = (uint8_t*) skb_data_cast_in(skb->data);
-	for (i = 0; i < (skb->len & 0xfffe); i++) {
+	data = (uint16_t*) skb_data_cast_in(skb->data);
+	for (i = 0; i < (skb->len & 0xfffe); i += 2) {
 		/* This could be done with 32-bit writes,
 		 * but here we just use the usual macro */
-		REG8_STORE(BANK_DATA, *data);
+		REG16_STORE(BANK_DATA, *data);
 		data++;
 
 		/* Auto-increment for pointer register seems to
 		 * be unsupported by qemu-linaro, so we increment
 		 * it by hand */
-		pointer++;
+		pointer += 2;
 		REG16_STORE(BANK_POINTER, pointer);
 	}
-#if 0
-	for (int i = 0; i < 4; i++) {
-		pointer++;
-		REG16_STORE(BANK_POINTER, pointer);
-		REG8_STORE(BANK_DATA, 0);
-	}
-	/* Miss CRC bytes */
-#endif
+
 	/* Write control byte */
 	if (skb->len & 1) {
-		REG8_STORE(BANK_DATA, *data);
+		REG8_STORE(BANK_DATA, (*data) & 0xFF);
 		pointer++;
 		REG16_STORE(BANK_POINTER, pointer);
 		REG8_STORE(BANK_DATA, 0 | ODD_CONTROL);
 	} else {
-		//pointer++;
-		//REG16_STORE(BANK_POINTER, pointer);
 		REG8_STORE(BANK_DATA, 0x0);
 		pointer++;
 		REG16_STORE(BANK_POINTER, pointer);
