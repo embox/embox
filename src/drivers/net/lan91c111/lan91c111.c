@@ -126,8 +126,14 @@ struct lan91c111_frame {
  * @brief Set active bank ID
  */
 static void _set_bank(int n) {
+	static int cur_bank = -1;
+
 	assert(0 <= n && n <= 3);
-	REG16_STORE(BANK_BANK, (uint16_t) n);
+
+	if (cur_bank != n) {
+		REG16_STORE(BANK_BANK, (uint16_t) n);
+		cur_bank = n;
+	}
 }
 #if 0
 static void _regdump(void) {
@@ -164,15 +170,15 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
  * @brief Set approprate opcode
  */
 static void _set_cmd(int opcode) {
-	uint16_t val;
 	assert(0 <= opcode && opcode <= 7);
 
 	_set_bank(2);
-	while (REG16_LOAD(BANK_MMU_CMD) & MMU_BUSY) {
-		/* BUSY */
+	if (opcode == CMD_RX_POP_AND_RELEASE) {
+		/* MMU is busy by another release cmd */
+		while (REG16_LOAD(BANK_MMU_CMD) & MMU_BUSY) { }
 	}
-	val = opcode << 5;
-	REG16_STORE(BANK_MMU_CMD, val);
+
+	REG16_STORE(BANK_MMU_CMD, opcode << 5);
 }
 
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
@@ -200,13 +206,13 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 		data++;
 	}
 
-	if (skb->len % 4) {
-		REG16_STORE(BANK_DATA, *(data) & 0xFFFF);
+	if (skb->len > 2 && skb->len % 4) {
+		REG16_STORE(BANK_DATA, *data & 0xFFFF);
 	}
 
 	/* Write control byte */
 	if (skb->len % 2) {
-		REG16_STORE(BANK_DATA, (ODD_CONTROL << 8) | (((*data) >> 16) & 0xFF));
+		REG16_STORE(BANK_DATA, (ODD_CONTROL << 8) | ((*data >> 16) & 0xFF));
 	} else {
 		REG16_STORE(BANK_DATA, 0x0);
 	}
@@ -287,22 +293,20 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 
 	for (i = 0; i < len >> 2; i++) {
 		buf = REG32_LOAD(BANK_DATA);
-		skb_data[i * 4] = buf & 0xFF;
-		skb_data[i * 4 + 1] = (buf >> 8) & 0xFF;
-		skb_data[i * 4 + 2] = (buf >> 16) & 0xFF;
-		skb_data[i * 4 + 3] = (buf >> 24) & 0xFF;
+		*((uint32_t *)(skb_data + i * 4)) = buf;
 	}
 
 	if (len % 4) {
 		buf = REG32_LOAD(BANK_DATA);
-		skb_data[i * 4] = buf & 0xFF;
-		skb_data[i * 4 + 1] = (buf >> 8) & 0xFF;
+		*((uint16_t *)(skb_data + i * 4)) = buf & 0xFFFF;
 	}
 
 	/* Skip 4 bytes CRC */
 	buf = REG32_LOAD(BANK_DATA);
 
 	buf = REG16_LOAD(BANK_DATA);
+
+	_set_cmd(CMD_RX_POP_AND_RELEASE);
 
 	if (buf & (ODD_CONTROL << 8)) {
 		skb->len ++;
@@ -311,7 +315,6 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	show_packet(skb_data, len, "rx_pack");
 	netif_rx(skb);
 
-	_set_cmd(CMD_RX_POP_AND_RELEASE);
 	return 0;
 }
 
