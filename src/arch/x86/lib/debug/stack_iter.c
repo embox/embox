@@ -15,6 +15,10 @@
 
 #include "stack_iter.h"
 
+// FIXME include stack_iter api declaration instead of this
+int stack_iter_next(stack_iter_t *f);
+// FIXME end
+
 static inline int is_traps_pc(void *pc) {
 	return check_range((char *) pc,
 		__lang_extern_ref(char, _traps_text_start),
@@ -27,8 +31,10 @@ void stack_iter_context(stack_iter_t *f, struct context *ctx) {
 }
 
 void stack_iter_current(stack_iter_t *f) {
-	f->fp = __builtin_frame_address(1);
-	f->pc = __builtin_return_address(1);
+	f->fp = __builtin_frame_address(0);
+	f->pc = __builtin_return_address(0);
+
+	stack_iter_next(f);
 }
 
 int stack_iter_next(stack_iter_t *f) {
