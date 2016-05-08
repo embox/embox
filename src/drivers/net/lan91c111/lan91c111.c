@@ -217,7 +217,7 @@ static int lan91c111_open(struct net_device *dev) {
 	REG16_STORE(BANK_TCR, TX_EN);
 
 	_set_bank(2);
-	REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT);
+	REG16_STORE(BANK_INTERRUPT, RX_INT);
 
 	return 0;
 }
@@ -252,20 +252,13 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	struct sk_buff *skb;
 	uint16_t buf;
 	uint16_t len;
-	uint16_t packet;
 	uint8_t *skb_data;
 	int i;
 
 	_set_bank(2);
 
 	if (REG16_LOAD(BANK_INTERRUPT) & TX_MASK) {
-		/* TX int */
-		packet = REG16_LOAD(BANK_FIFO_PORTS) & 0xFF;
-		if (!(packet & TX_EMPTY)) {
-			REG16_STORE(BANK_PNR, packet & PNUM_MASK);
-			_set_cmd(CMD_PACKET_FREE);
-		}
-
+		/* TX interrupt */
 		REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT | TX_ACK);
 		return 0;
 	}
@@ -293,8 +286,10 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		/* TODO buffer overflow if len is odd */
 	}
 
-	/* Skip CRC */
-	i = (len >> 1) + 2;
+	/* Skip 4 bytes CRC */
+	buf = REG16_LOAD(BANK_DATA);
+	buf = REG16_LOAD(BANK_DATA);
+
 	buf = REG16_LOAD(BANK_DATA);
 
 	if (buf & (ODD_CONTROL << 8)) {
@@ -319,6 +314,9 @@ static int lan91c111_init(void) {
 	irq_attach(LAN91C111_IRQ, lan91c111_int_handler, 0, nic, "lan91c111");
 
         nic->drv_ops = &lan91c111_drv_ops;
+
+	_set_bank(1);
+	REG16_STORE(BANK_CONTROL, 0x0800);
 
 	return inetdev_register_dev(nic);
 }
