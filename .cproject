@@ -275,8 +275,8 @@
 				<runAllBuilders>true</runAllBuilders>
 			</target>
 			<target name="all-docker" path="" targetID="org.eclipse.cdt.make.MakeTargetBuilder">
-				<buildCommand>ssh</buildCommand>
-				<buildArguments>-tti scripts/docker/docker.id_rsa user@${docker_host} -p ${docker_ssh_port} make</buildArguments>
+				<buildCommand>docker_run.sh</buildCommand>
+				<buildArguments>make</buildArguments>
 				<buildTarget>all</buildTarget>
 				<stopOnError>true</stopOnError>
 				<useDefaultCommand>false</useDefaultCommand>
