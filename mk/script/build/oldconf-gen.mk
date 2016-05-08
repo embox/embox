@@ -15,7 +15,7 @@ GCC_VERSION := \
 
 ifneq ($(GCC_VERSION),)
 GCC_VERSION_MAJOR := $(word 1,$(subst ., ,$(GCC_VERSION)))
-ifeq ($(GCC_VERSION_MAJOR),4)
+ifeq ($(strip $(filter $(GCC_VERSION_MAJOR),1 2 3)),)
 HOSTCC_IQUOTE_SUPPORT:=true
 endif
 endif
