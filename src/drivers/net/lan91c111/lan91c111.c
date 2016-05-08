@@ -322,11 +322,8 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		/* TODO buffer overflow if len is odd */
 	}
 
-	/* skip CRC */
-	for (; i < (len >> 1) + 2; i++) {
-		REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
-		buf = REG16_LOAD(BANK_DATA);
-	}
+	/* Skip CRC */
+	i = (len >> 1) + 2;
 	REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
 	buf = REG16_LOAD(BANK_DATA);
 
