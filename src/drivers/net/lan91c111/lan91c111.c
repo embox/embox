@@ -64,6 +64,12 @@
 #define BANK_RCV      (BANK_BASE_ADDR + 0xC)
 /*      BANK_BANK     (BANK_BASE_ADDR + 0xE) -- already defined above */
 
+#define REG32_LOAD(addr) \
+	*((volatile uint32_t *)(addr))
+
+#define REG32_STORE(addr, val) \
+	do { *((volatile uint32_t *)(addr)) = (val); } while (0)
+
 #define REG16_LOAD(addr) \
 	*((volatile uint16_t *)(addr))
 
@@ -198,11 +204,9 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	/* Write control byte */
 	if (skb->len & 1) {
-		REG8_STORE(BANK_DATA, (*data) & 0xFF);
-		REG8_STORE(BANK_DATA, 0 | ODD_CONTROL);
+		REG16_STORE(BANK_DATA, (ODD_CONTROL << 8) | ((*data) & 0xFF));
 	} else {
-		REG8_STORE(BANK_DATA, 0x0);
-		REG8_STORE(BANK_DATA, 0);
+		REG16_STORE(BANK_DATA, 0x0);
 	}
 
 	_set_cmd(CMD_TX_ENQUEUE);
@@ -287,8 +291,7 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	}
 
 	/* Skip 4 bytes CRC */
-	buf = REG16_LOAD(BANK_DATA);
-	buf = REG16_LOAD(BANK_DATA);
+	buf = REG32_LOAD(BANK_DATA);
 
 	buf = REG16_LOAD(BANK_DATA);
 
