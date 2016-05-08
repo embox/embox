@@ -9,5 +9,11 @@ if [ ! $container ]; then
 	exit 1
 fi
 
+if [ -t 0 ]; then
+	tty_opt="-t"
+else
+	tty_opt=""
+fi
+
 #FIXME Arguments with spaces will break on $*
-docker exec -u user -it $container bash -lc "$*"
+docker exec -u user -i $tty_opt $container bash -lc "$*"
