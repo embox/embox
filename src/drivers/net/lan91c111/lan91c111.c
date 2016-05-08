@@ -178,7 +178,7 @@ static void _set_cmd(int opcode) {
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
 	int i;
-	uint16_t *data;
+	uint32_t *data;
 
 	_set_cmd(CMD_TX_ALLOC);
 
@@ -193,18 +193,20 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	REG16_STORE(BANK_DATA, (uint16_t) (skb->len & 0xfffe) + 6);
 
 	/* BANK_DATA register works as FIFO, so we just push
-	 * data with 16-bit writes */
-	data = (uint16_t*) skb_data_cast_in(skb->data);
-	for (i = 0; i < (skb->len & 0xfffe); i += 2) {
-		/* This could be done with 32-bit writes,
-		 * but here we just use the usual macro */
-		REG16_STORE(BANK_DATA, *data);
+	 * data with 32-bit writes */
+	data = (uint32_t*) skb_data_cast_in(skb->data);
+	for (i = 0; i < skb->len >> 2; i++) {
+		REG32_STORE(BANK_DATA, *data);
 		data++;
 	}
 
+	if (skb->len % 4) {
+		REG16_STORE(BANK_DATA, *(data) & 0xFFFF);
+	}
+
 	/* Write control byte */
-	if (skb->len & 1) {
-		REG16_STORE(BANK_DATA, (ODD_CONTROL << 8) | ((*data) & 0xFF));
+	if (skb->len % 2) {
+		REG16_STORE(BANK_DATA, (ODD_CONTROL << 8) | (((*data) >> 16) & 0xFF));
 	} else {
 		REG16_STORE(BANK_DATA, 0x0);
 	}
@@ -254,7 +256,7 @@ static const struct net_driver lan91c111_drv_ops = {
 static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		void *dev_id) {
 	struct sk_buff *skb;
-	uint16_t buf;
+	uint32_t buf;
 	uint16_t len;
 	uint8_t *skb_data;
 	int i;
@@ -283,11 +285,18 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	skb_data = skb_data_cast_in(skb->data);
 	assert(skb_data);
 
-	for (i = 0; i < len >> 1; i++) {
-		buf = REG16_LOAD(BANK_DATA);
-		skb_data[i * 2] = buf & 0xFF;
-		skb_data[i * 2 + 1] = buf >> 8;
-		/* TODO buffer overflow if len is odd */
+	for (i = 0; i < len >> 2; i++) {
+		buf = REG32_LOAD(BANK_DATA);
+		skb_data[i * 4] = buf & 0xFF;
+		skb_data[i * 4 + 1] = (buf >> 8) & 0xFF;
+		skb_data[i * 4 + 2] = (buf >> 16) & 0xFF;
+		skb_data[i * 4 + 3] = (buf >> 24) & 0xFF;
+	}
+
+	if (len % 4) {
+		buf = REG32_LOAD(BANK_DATA);
+		skb_data[i * 4] = buf & 0xFF;
+		skb_data[i * 4 + 1] = (buf >> 8) & 0xFF;
 	}
 
 	/* Skip 4 bytes CRC */
