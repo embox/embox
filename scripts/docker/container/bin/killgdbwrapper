@@ -1,0 +1,9 @@
+#!/bin/sh
+
+. $(dirname $0)/../gdbwrapper_lib.sh
+
+SIG=$1
+
+[ -f $GDBPID ] && PID=$(cat $GDBPID)
+
+[ $PID ] && kill -s $SIG $PID

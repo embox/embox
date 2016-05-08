@@ -31,3 +31,5 @@ done
 for port in $EMBOX_PORTS; do
 	$dr sudo iptables -A PREROUTING -t nat -p tcp --dport $(localport $port) -j DNAT --to $EMBOX_IP:$port
 done
+
+$dr "echo export PATH=/embox/scripts/docker/container/bin:\$PATH >> /home/user/.bashrc"

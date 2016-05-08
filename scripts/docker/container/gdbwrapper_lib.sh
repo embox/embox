@@ -1,0 +1,1 @@
+GDBPID=/tmp/gdbwrapper.pid

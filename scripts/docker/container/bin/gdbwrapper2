@@ -1,0 +1,18 @@
+#!/bin/sh
+
+. $(dirname $0)/../gdbwrapper_lib.sh
+
+# make alias from host path to container path. After this no
+# path substitution will be reqired (like gdb substitute-path)
+if [ $PROJECT_LOC ]; then
+	sudo mkdir -p $PROJECT_LOC
+	mount | grep -q $PROJECT_LOC
+	if [ $? != 0 ]; then
+		sudo mount --bind $EMBOX_DIR $PROJECT_LOC
+	fi
+fi
+
+echo $$ > $GDBPID
+
+# TODO add gdb cross-compile prefix detection
+exec gdb "$@"
