@@ -108,6 +108,8 @@
 
 #define PNUM_MASK 0x3F
 
+#define AUTO_INCR 0x4000
+
 struct lan91c111_frame {
 	uint16_t status;
 	uint16_t count; /* In bytes, 5 high bits are reserved */
@@ -171,7 +173,6 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
 	int i;
 	uint16_t *data;
-	uint16_t pointer;
 
 	_set_cmd(CMD_TX_ALLOC);
 
@@ -182,12 +183,8 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	REG16_STORE(BANK_PNR, packet_num << 8);
 
 	/* Write header */
-	pointer = 2;
-	REG16_STORE(BANK_POINTER, pointer);
+	REG16_STORE(BANK_POINTER, AUTO_INCR | 2);
 	REG16_STORE(BANK_DATA, (uint16_t) (skb->len & 0xfffe) + 6);
-
-	pointer = 4;
-	REG16_STORE(BANK_POINTER, pointer);
 
 	/* BANK_DATA register works as FIFO, so we just push
 	 * data with 16-bit writes */
@@ -197,24 +194,14 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 		 * but here we just use the usual macro */
 		REG16_STORE(BANK_DATA, *data);
 		data++;
-
-		/* Auto-increment for pointer register seems to
-		 * be unsupported by qemu-linaro, so we increment
-		 * it by hand */
-		pointer += 2;
-		REG16_STORE(BANK_POINTER, pointer);
 	}
 
 	/* Write control byte */
 	if (skb->len & 1) {
 		REG8_STORE(BANK_DATA, (*data) & 0xFF);
-		pointer++;
-		REG16_STORE(BANK_POINTER, pointer);
 		REG8_STORE(BANK_DATA, 0 | ODD_CONTROL);
 	} else {
 		REG8_STORE(BANK_DATA, 0x0);
-		pointer++;
-		REG16_STORE(BANK_POINTER, pointer);
 		REG8_STORE(BANK_DATA, 0);
 	}
 
@@ -286,7 +273,7 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	if (!(REG16_LOAD(BANK_INTERRUPT) & RX_MASK))
 		return 0;
 
-	REG16_STORE(BANK_POINTER, 2);
+	REG16_STORE(BANK_POINTER, (0x8000 | AUTO_INCR | 2));
 	len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
 	/* In original structure, byte count includes headers, so
 	 * we shrink it to data size */
@@ -300,7 +287,6 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	assert(skb_data);
 
 	for (i = 0; i < len >> 1; i++) {
-		REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
 		buf = REG16_LOAD(BANK_DATA);
 		skb_data[i * 2] = buf & 0xFF;
 		skb_data[i * 2 + 1] = buf >> 8;
@@ -309,7 +295,6 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 
 	/* Skip CRC */
 	i = (len >> 1) + 2;
-	REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
 	buf = REG16_LOAD(BANK_DATA);
 
 	if (buf & (ODD_CONTROL << 8)) {
