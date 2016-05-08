@@ -6,6 +6,8 @@
  */
 #include <errno.h>
 
+#include <util/log.h>
+
 #include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
@@ -131,6 +133,25 @@ static void _regdump(void) {
 }
 #endif
 
+#define DEBUG 0
+#if DEBUG
+#include <kernel/printk.h>
+/* Debugging routines */
+static inline void show_packet(uint8_t *raw, int size, char *title) {
+	int i;
+
+	printk("\nPACKET(%d) %s:", size, title);
+	for (i = 0; i < size; i++) {
+		if (!(i % 16)) {
+			printk("\n");
+		}
+		printk(" %02hhX", *(raw + i));
+	}
+	printk("\n.\n");
+}
+#else
+#define show_packet(raw, size,title)
+#endif
 /**
  * @brief Set approprate opcode
  */
@@ -166,9 +187,10 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	/* Write header */
 	pointer = 2;
 	REG16_STORE(BANK_POINTER, pointer);
-	REG16_STORE(BANK_DATA, 2 * (1 + 1 + 1 + 2 + (uint16_t) skb->len / 2));
+	//REG16_STORE(BANK_DATA, 2 * (1 + 1 + 1 + 2 + (uint16_t) skb->len / 2));
 	/* Those 10 bytes are 2 for status + 2 for counter +
 	 * 4 for crc + 2 for control */
+	REG16_STORE(BANK_DATA, (uint16_t) (skb->len & 0xfffe) + 6);
 
 	pointer = 4;
 	REG16_STORE(BANK_POINTER, pointer);
@@ -176,7 +198,7 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	/* BANK_DATA register works as FIFO, so we just push
 	 * data with 16-bit writes */
 	data = (uint8_t*) skb_data_cast_in(skb->data);
-	for (i = 0; i < skb->len; i++) {
+	for (i = 0; i < (skb->len & 0xfffe); i++) {
 		/* This could be done with 32-bit writes,
 		 * but here we just use the usual macro */
 		REG8_STORE(BANK_DATA, *data);
@@ -188,24 +210,27 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 		pointer++;
 		REG16_STORE(BANK_POINTER, pointer);
 	}
-
+#if 0
 	for (int i = 0; i < 4; i++) {
 		pointer++;
 		REG16_STORE(BANK_POINTER, pointer);
 		REG8_STORE(BANK_DATA, 0);
 	}
 	/* Miss CRC bytes */
-
+#endif
 	/* Write control byte */
-	if (skb->len % 2) {
-		pointer++;
-		REG8_STORE(BANK_DATA, CRC_CONTROL | ODD_CONTROL);
-	} else {
+	if (skb->len & 1) {
+		REG8_STORE(BANK_DATA, *data);
 		pointer++;
 		REG16_STORE(BANK_POINTER, pointer);
+		REG8_STORE(BANK_DATA, 0 | ODD_CONTROL);
+	} else {
+		//pointer++;
+		//REG16_STORE(BANK_POINTER, pointer);
 		REG8_STORE(BANK_DATA, 0x0);
 		pointer++;
-		REG8_STORE(BANK_POINTER, CRC_CONTROL);
+		REG16_STORE(BANK_POINTER, pointer);
+		REG8_STORE(BANK_DATA, 0);
 	}
 
 	_set_cmd(CMD_TX_ENQUEUE);
@@ -257,6 +282,7 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	uint16_t len;
 	uint16_t packet;
 	uint8_t *skb_data;
+	int i;
 
 	_set_bank(2);
 
@@ -280,7 +306,7 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	/* In original structure, byte count includes headers, so
 	 * we shrink it to data size */
 
-	skb = skb_alloc(len);
+	skb = skb_alloc(len + 2);
 	assert(skb);
 	skb->len = len;
 	skb->dev = dev_id;
@@ -288,7 +314,7 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	skb_data = skb_data_cast_in(skb->data);
 	assert(skb_data);
 
-	for (int i = 0; i < skb->len / 2 + skb->len % 2; i++) {
+	for (i = 0; i < len >> 1; i++) {
 		REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
 		buf = REG16_LOAD(BANK_DATA);
 		skb_data[i * 2] = buf & 0xFF;
@@ -296,6 +322,19 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		/* TODO buffer overflow if len is odd */
 	}
 
+	/* skip CRC */
+	for (; i < (len >> 1) + 2; i++) {
+		REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
+		buf = REG16_LOAD(BANK_DATA);
+	}
+	REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
+	buf = REG16_LOAD(BANK_DATA);
+
+	if (buf & (ODD_CONTROL << 8)) {
+		skb->len ++;
+		skb_data[skb->len -1] = (uint8_t)(buf & 0xFF);
+	}
+	show_packet(skb_data, len, "rx_pack");
 	netif_rx(skb);
 
 	_set_cmd(CMD_RX_POP_AND_RELEASE);
