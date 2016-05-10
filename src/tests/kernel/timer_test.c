@@ -149,16 +149,16 @@ TEST_CASE("setting mutex inside timer handler") {
 
 	if (timer_set(	&timer,
 			TIMER_ONESHOT,
-			5000,
+			500,
 			test_timer_handler_mutex,
 			&m)) {
 		test_fail("failed to install timer");
 	}
 
-	i = 1000000;
+	i = 10;
 
 	while (i-- && m.counter == 0) {
-		usleep(10);
+		sleep(1);
 	}
 
 	timer_close(timer);

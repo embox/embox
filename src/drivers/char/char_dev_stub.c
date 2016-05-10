@@ -8,7 +8,7 @@
  * This stub is required to have FS and have no char devs
  * at the same time.
  */
-
+#include <errno.h>
 #include <drivers/char_dev.h>
 
 /**
@@ -17,7 +17,7 @@
  * @return Always -1
  */
 int char_dev_init_all(void) {
-	return -1;
+	return -ENOSUPP;
 }
 
 /**
@@ -29,5 +29,5 @@ int char_dev_init_all(void) {
  * @return Always -1
  */
 int char_dev_register(const char *name, const struct kfile_operations *ops) {
-	return -1;
+	return -ENOSUPP;
 }

@@ -6,6 +6,8 @@
  */
 #include <errno.h>
 
+#include <util/log.h>
+
 #include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
@@ -62,6 +64,12 @@
 #define BANK_RCV      (BANK_BASE_ADDR + 0xC)
 /*      BANK_BANK     (BANK_BASE_ADDR + 0xE) -- already defined above */
 
+#define REG32_LOAD(addr) \
+	*((volatile uint32_t *)(addr))
+
+#define REG32_STORE(addr, val) \
+	do { *((volatile uint32_t *)(addr)) = (val); } while (0)
+
 #define REG16_LOAD(addr) \
 	*((volatile uint16_t *)(addr))
 
@@ -106,18 +114,20 @@
 
 #define PNUM_MASK 0x3F
 
-struct lan91c111_frame {
-	uint16_t status;
-	uint16_t count; /* In bytes, 5 high bits are reserved */
-	uint16_t data[LAN91C111_FRAME_SIZE_MAX];
-};
+#define AUTO_INCR 0x4000
 
 /**
  * @brief Set active bank ID
  */
 static void _set_bank(int n) {
+	static int cur_bank = -1;
+
 	assert(0 <= n && n <= 3);
-	REG16_STORE(BANK_BANK, (uint16_t) n);
+
+	if (cur_bank != n) {
+		REG16_STORE(BANK_BANK, (uint16_t) n);
+		cur_bank = n;
+	}
 }
 #if 0
 static void _regdump(void) {
@@ -131,26 +141,55 @@ static void _regdump(void) {
 }
 #endif
 
+#define DEBUG 0
+#if DEBUG
+#include <kernel/printk.h>
+/* Debugging routines */
+static inline void show_packet(uint8_t *raw, int size, char *title) {
+	int i;
+
+	printk("\nPACKET(%d) %s:", size, title);
+	for (i = 0; i < size; i++) {
+		if (!(i % 16)) {
+			printk("\n");
+		}
+		printk(" %02hhX", *(raw + i));
+	}
+	printk("\n.\n");
+}
+#else
+#define show_packet(raw, size,title)
+#endif
 /**
  * @brief Set approprate opcode
  */
 static void _set_cmd(int opcode) {
-	uint16_t val;
 	assert(0 <= opcode && opcode <= 7);
 
 	_set_bank(2);
-	while (REG16_LOAD(BANK_MMU_CMD) & MMU_BUSY) {
-		/* BUSY */
+	if (opcode == CMD_RX_POP_AND_RELEASE) {
+		/* MMU is busy by another release cmd */
+		while (REG16_LOAD(BANK_MMU_CMD) & MMU_BUSY) { }
 	}
-	val = opcode << 5;
-	REG16_STORE(BANK_MMU_CMD, val);
+
+	REG16_STORE(BANK_MMU_CMD, opcode << 5);
+}
+
+static void _push_data(uint8_t *data, int len) {
+	for (int i = 0; i < len >> 2; i++) {
+		REG32_STORE(BANK_DATA, *((uint32_t*)data));
+		data += 4;
+	}
+
+	for (int i = 0; i < len % 4; i++) {
+		REG8_STORE(BANK_DATA, *data);
+		data++;
+	}
 }
 
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
-	int i;
 	uint8_t *data;
-	uint16_t pointer;
 
 	_set_cmd(CMD_TX_ALLOC);
 
@@ -160,52 +199,17 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	REG16_STORE(BANK_PNR, packet_num << 8);
 
-	pointer = 0;
-	REG16_STORE(BANK_POINTER, pointer);
-
 	/* Write header */
-	pointer = 2;
-	REG16_STORE(BANK_POINTER, pointer);
-	REG16_STORE(BANK_DATA, 2 * (1 + 1 + 1 + 2 + (uint16_t) skb->len / 2));
-	/* Those 10 bytes are 2 for status + 2 for counter +
-	 * 4 for crc + 2 for control */
+	REG16_STORE(BANK_POINTER, AUTO_INCR | 2);
+	REG16_STORE(BANK_DATA, (uint16_t) (skb->len & 0xfffe) + 6);
 
-	pointer = 4;
-	REG16_STORE(BANK_POINTER, pointer);
-
-	/* BANK_DATA register works as FIFO, so we just push
-	 * data with 16-bit writes */
 	data = (uint8_t*) skb_data_cast_in(skb->data);
-	for (i = 0; i < skb->len; i++) {
-		/* This could be done with 32-bit writes,
-		 * but here we just use the usual macro */
-		REG8_STORE(BANK_DATA, *data);
-		data++;
+	_push_data(data, skb->len);
 
-		/* Auto-increment for pointer register seems to
-		 * be unsupported by qemu-linaro, so we increment
-		 * it by hand */
-		pointer++;
-		REG16_STORE(BANK_POINTER, pointer);
-	}
-
-	for (int i = 0; i < 4; i++) {
-		pointer++;
-		REG16_STORE(BANK_POINTER, pointer);
-		REG8_STORE(BANK_DATA, 0);
-	}
-	/* Miss CRC bytes */
-
-	/* Write control byte */
 	if (skb->len % 2) {
-		pointer++;
-		REG8_STORE(BANK_DATA, CRC_CONTROL | ODD_CONTROL);
+		REG8_STORE(BANK_DATA, ODD_CONTROL);
 	} else {
-		pointer++;
-		REG16_STORE(BANK_POINTER, pointer);
-		REG8_STORE(BANK_DATA, 0x0);
-		pointer++;
-		REG8_STORE(BANK_POINTER, CRC_CONTROL);
+		REG16_STORE(BANK_DATA, 0x0);
 	}
 
 	_set_cmd(CMD_TX_ENQUEUE);
@@ -220,7 +224,7 @@ static int lan91c111_open(struct net_device *dev) {
 	REG16_STORE(BANK_TCR, TX_EN);
 
 	_set_bank(2);
-	REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT);
+	REG16_STORE(BANK_INTERRUPT, RX_INT);
 
 	return 0;
 }
@@ -253,21 +257,15 @@ static const struct net_driver lan91c111_drv_ops = {
 static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		void *dev_id) {
 	struct sk_buff *skb;
-	uint16_t buf;
+	uint32_t buf;
 	uint16_t len;
-	uint16_t packet;
 	uint8_t *skb_data;
+	int i;
 
 	_set_bank(2);
 
 	if (REG16_LOAD(BANK_INTERRUPT) & TX_MASK) {
-		/* TX int */
-		packet = REG16_LOAD(BANK_FIFO_PORTS) & 0xFF;
-		if (!(packet & TX_EMPTY)) {
-			REG16_STORE(BANK_PNR, packet & PNUM_MASK);
-			_set_cmd(CMD_PACKET_FREE);
-		}
-
+		/* TX interrupt */
 		REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT | TX_ACK);
 		return 0;
 	}
@@ -275,12 +273,12 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	if (!(REG16_LOAD(BANK_INTERRUPT) & RX_MASK))
 		return 0;
 
-	REG16_STORE(BANK_POINTER, 2);
+	REG16_STORE(BANK_POINTER, (0x8000 | AUTO_INCR | 2));
 	len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
 	/* In original structure, byte count includes headers, so
 	 * we shrink it to data size */
 
-	skb = skb_alloc(len);
+	skb = skb_alloc(len + 2);
 	assert(skb);
 	skb->len = len;
 	skb->dev = dev_id;
@@ -288,17 +286,29 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 	skb_data = skb_data_cast_in(skb->data);
 	assert(skb_data);
 
-	for (int i = 0; i < skb->len / 2 + skb->len % 2; i++) {
-		REG16_STORE(BANK_POINTER, 0x8000 + 4 + i * 2);
-		buf = REG16_LOAD(BANK_DATA);
-		skb_data[i * 2] = buf & 0xFF;
-		skb_data[i * 2 + 1] = buf >> 8;
-		/* TODO buffer overflow if len is odd */
+	for (i = 0; i < len >> 2; i++) {
+		buf = REG32_LOAD(BANK_DATA);
+		*((uint32_t *)(skb_data + i * 4)) = buf;
 	}
 
-	netif_rx(skb);
+	if (len % 4 == 2) {
+		buf = REG16_LOAD(BANK_DATA);
+		*((uint16_t *)(skb_data + i * 4)) = buf & 0xFFFF;
+	}
+
+	/* Skip 4 bytes CRC */
+	buf = REG32_LOAD(BANK_DATA);
+	buf = REG16_LOAD(BANK_DATA);
 
 	_set_cmd(CMD_RX_POP_AND_RELEASE);
+
+	if (buf & (ODD_CONTROL << 8)) {
+		skb->len++;
+		skb_data[skb->len -1] = (uint8_t)(buf & 0xFF);
+	}
+	show_packet(skb_data, len, "rx_pack");
+	netif_rx(skb);
+
 	return 0;
 }
 
@@ -313,6 +323,9 @@ static int lan91c111_init(void) {
 	irq_attach(LAN91C111_IRQ, lan91c111_int_handler, 0, nic, "lan91c111");
 
         nic->drv_ops = &lan91c111_drv_ops;
+
+	_set_bank(1);
+	REG16_STORE(BANK_CONTROL, 0x0800);
 
 	return inetdev_register_dev(nic);
 }

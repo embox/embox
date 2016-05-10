@@ -39,7 +39,7 @@ int char_dev_register(const char *name, const struct kfile_operations *ops) {
 	struct nas *dev_nas;
 
 	if (vfs_lookup("/dev", &node)) {
-		return -1;
+		return -ENOENT;
 	}
 
 	if (node.node == NULL) {
