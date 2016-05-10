@@ -175,10 +175,21 @@ static void _set_cmd(int opcode) {
 	REG16_STORE(BANK_MMU_CMD, opcode << 5);
 }
 
+static void _push_data(uint8_t *data, int len) {
+	for (int i = 0; i < len >> 2; i++) {
+		REG32_STORE(BANK_DATA, *((uint32_t*)data));
+		data += 4;
+	}
+
+	for (int i = 0; i < len % 4; i++) {
+		REG8_STORE(BANK_DATA, *data);
+		data++;
+	}
+}
+
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
-	int i;
-	uint32_t *data;
+	uint8_t *data;
 
 	_set_cmd(CMD_TX_ALLOC);
 
@@ -192,21 +203,11 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	REG16_STORE(BANK_POINTER, AUTO_INCR | 2);
 	REG16_STORE(BANK_DATA, (uint16_t) (skb->len & 0xfffe) + 6);
 
-	/* BANK_DATA register works as FIFO, so we just push
-	 * data with 32-bit writes */
-	data = (uint32_t*) skb_data_cast_in(skb->data);
-	for (i = 0; i < skb->len >> 2; i++) {
-		REG32_STORE(BANK_DATA, *data);
-		data++;
-	}
+	data = (uint8_t*) skb_data_cast_in(skb->data);
+	_push_data(data, skb->len);
 
-	if (skb->len % 4 > 1) {
-		REG16_STORE(BANK_DATA, *data & 0xFFFF);
-	}
-
-	/* Write control byte */
 	if (skb->len % 2) {
-		REG16_STORE(BANK_DATA, (ODD_CONTROL << 8) | ((*data >> 16) & 0xFF));
+		REG8_STORE(BANK_DATA, ODD_CONTROL);
 	} else {
 		REG16_STORE(BANK_DATA, 0x0);
 	}
