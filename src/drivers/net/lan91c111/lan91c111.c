@@ -116,12 +116,6 @@
 
 #define AUTO_INCR 0x4000
 
-struct lan91c111_frame {
-	uint16_t status;
-	uint16_t count; /* In bytes, 5 high bits are reserved */
-	uint16_t data[LAN91C111_FRAME_SIZE_MAX];
-};
-
 /**
  * @brief Set active bank ID
  */
