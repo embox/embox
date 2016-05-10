@@ -290,20 +290,19 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		*((uint32_t *)(skb_data + i * 4)) = buf;
 	}
 
-	if (len % 4) {
-		buf = REG32_LOAD(BANK_DATA);
+	if (len % 4 == 2) {
+		buf = REG16_LOAD(BANK_DATA);
 		*((uint16_t *)(skb_data + i * 4)) = buf & 0xFFFF;
 	}
 
 	/* Skip 4 bytes CRC */
 	buf = REG32_LOAD(BANK_DATA);
-
 	buf = REG16_LOAD(BANK_DATA);
 
 	_set_cmd(CMD_RX_POP_AND_RELEASE);
 
 	if (buf & (ODD_CONTROL << 8)) {
-		skb->len ++;
+		skb->len++;
 		skb_data[skb->len -1] = (uint8_t)(buf & 0xFF);
 	}
 	show_packet(skb_data, len, "rx_pack");
