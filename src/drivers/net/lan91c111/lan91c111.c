@@ -200,7 +200,7 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 		data++;
 	}
 
-	if (skb->len > 2 && skb->len % 4) {
+	if (skb->len % 4 > 1) {
 		REG16_STORE(BANK_DATA, *data & 0xFFFF);
 	}
 
