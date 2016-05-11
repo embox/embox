@@ -6,12 +6,19 @@
  */
 
 #include <drivers/diag.h>
+#include <hal/reg.h>
+
+#include <kernel/printk.h>
 
 #define UART(x) (*(volatile unsigned long *)(0x02020000 + (x)))
 
 #define USR2 0x98
-#define USR2_TXFE (1<<14)
+#define USR2_RDR   1
+#define USR2_TXFE (1 << 14)
+
+#define RXR  0x00
 #define TXR  0x40
+
 #define UCR1 0x80
 #define UCR1_UARTEN 1
 
@@ -20,11 +27,11 @@ static int imxuart_diag_init(const struct diag *diag) {
 }
 
 static int imxuart_diag_hasrx(const struct diag *diag) {
-	return 0;
+	return UART(USR2) & USR2_RDR;
 }
 
 static char imxuart_diag_getc(const struct diag *diag) {
-	return 0;
+	return (char)UART(RXR);
 }
 
 static void imxuart_diag_putc(const struct diag *diag, char ch) {
