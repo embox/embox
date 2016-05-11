@@ -47,7 +47,16 @@ static DLIST_DEFINE(packet_sock_list);
 static const struct sock_proto_ops packet_sock_ops_struct = {
 	.sock_list = &packet_sock_list
 };
-EMBOX_NET_SOCK(AF_PACKET, SOCK_RAW, 0x300 /*htons(ETH_P_ALL)*/, 0, packet_sock_ops_struct);
+#if (__BYTE_ORDER == __LITTLE_ENDIAN)
+/* htons(ETH_P_ALL) */
+#define HOST_ETH_P_ALL     0x300
+#elif (__BYTE_ORDER == __BIG_ENDIAN)
+/* htons(ETH_P_ALL) */
+#define HOST_ETH_P_ALL     0x003
+#else
+#error("set endians")
+#endif
+EMBOX_NET_SOCK(AF_PACKET, SOCK_RAW, HOST_ETH_P_ALL, 0, packet_sock_ops_struct);
 
 struct packet_sock {
 	struct sock sk;
