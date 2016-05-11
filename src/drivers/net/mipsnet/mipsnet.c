@@ -22,7 +22,8 @@
 EMBOX_UNIT_INIT(mipsnet_init);
 
 #define BASE_ADDR    OPTION_GET(NUMBER,base_addr)
-#define IRQ_NUM      OPTION_GET(NUMBER,irq_num)
+#define IRQ_NUM      2
+//OPTION_GET(NUMBER,irq_num)
 
 /*
  * Net status/control block as seen by sw in the core.
@@ -108,6 +109,19 @@ struct mipsnet_regs {
 };
 
 static int mipsnet_xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct mipsnet_regs *regs;
+	int i;
+	uint8_t *pdata;
+	log_debug("tx");
+
+	regs = (struct mipsnet_regs *)dev->base_addr;
+	pdata = skb->mac.raw;
+
+	regs->txDataCount = skb->len;
+	for(i = 0; i < skb->len; i++) {
+		regs->txDataBuffer = *pdata++;
+	}
+
 	skb_free(skb);
 	return 0;
 }
@@ -152,7 +166,7 @@ static irq_return_t mipsnet_interrupt_handler(unsigned int irq, void *dev_id) {
 	irq_return_t ret = IRQ_NONE;
 	struct mipsnet_regs *regs;
 
-	log_debug("mipsnet irq");
+	log_debug("irq_num %x", irq);
 
 	if (irq != dev->irq)
 		goto out_badirq;
