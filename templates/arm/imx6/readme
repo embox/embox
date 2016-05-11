@@ -1,0 +1,9 @@
+Brief info to start Embox on imx6
+
+Build Embox and copy build/base/bin/embox.bin into board RAM via tftp.
+Kernel load address: 0x12000000
+
+Example:
+
+tftpboot 0x12000000 embox.bin
+go 0x12000000
