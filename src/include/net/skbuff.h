@@ -217,6 +217,14 @@ extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
 
 extern int skb_queue_count(struct sk_buff_head *queue);
 
+static inline struct sk_buff * skb_queue_next(struct sk_buff *skb) {
+	return skb->lnk.next;
+}
+
+static inline int skb_queue_end(struct sk_buff *skb, struct sk_buff_head *queue) {
+	return (void *) queue == (void *) skb;
+}
+
 #define PAD_SIZE(obj_size, padto) \
 	(((padto) - (obj_size) % (padto)) % (padto))
 
