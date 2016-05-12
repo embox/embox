@@ -1,0 +1,32 @@
+package embox.driver.net
+
+module ne2k_pci {
+	//@IncludeExport(path="drivers/net")
+	//source "ne2k.h"
+	source "ne2k_pci.c"
+	source "ne2k.c"
+
+	depends embox.net.skbuff
+	depends embox.compat.libc.all
+	depends embox.driver.pci
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}
+
+module ne2k_isa {
+	option number base_addr=0x300
+	option number irq_num=9
+
+	source "ne2k_isa.c"
+	source "ne2k.c"
+
+	depends embox.net.skbuff
+	depends embox.compat.libc.all
+	depends embox.driver.pci
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}

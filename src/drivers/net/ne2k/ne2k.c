@@ -25,20 +25,14 @@
 #include <asm/io.h>
 
 
-#include <drivers/pci/pci.h>
-#include <drivers/pci/pci_driver.h>
 #include <kernel/irq.h>
 #include <net/l2/ethernet.h>
-#include <drivers/net/ne2k_pci.h>
+#include "ne2k.h"
 
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
 
-#include <embox/unit.h>
-
-
-PCI_DRIVER("ne2k_pci", ne2k_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
 
 /* The per-packet-header format. */
 struct e8390_pkt_hdr {
@@ -397,26 +391,13 @@ static const struct net_driver _drv_ops = {
 	.set_macaddr = set_mac_address
 };
 
-static int ne2k_init(struct pci_slot_dev *pci_dev) {
+int ne2k_dev_init(struct net_device *nic) {
 	int res;
-	uint32_t nic_base;
-	struct net_device *nic;
 
-	assert(pci_dev != NULL);
-
-	nic_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
-
-	nic = etherdev_alloc(0);
-	if (nic == NULL) {
-		return -ENOMEM;
-	}
 	nic->drv_ops = &_drv_ops;
-	nic->irq = pci_dev->irq;
-	nic->base_addr = nic_base;
-
 	ne2k_get_addr_from_prom(nic);
 
-	res = irq_attach(pci_dev->irq, ne2k_handler, IF_SHARESUP, nic, "ne2k");
+	res = irq_attach(nic->irq, ne2k_handler, IF_SHARESUP, nic, "ne2k");
 	if (res < 0) {
 		return res;
 	}
