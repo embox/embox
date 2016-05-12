@@ -17,13 +17,35 @@
 #include <net/l2/ethernet.h>
 #include <net/inetdevice.h>
 
+#include <asm/io.h>
+
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(mipsnet_init);
 
 #define BASE_ADDR    OPTION_GET(NUMBER,base_addr)
-#define IRQ_NUM      2
-//OPTION_GET(NUMBER,irq_num)
+#define IRQ_NUM      OPTION_GET(NUMBER,irq_num)
+
+
+#define DEBUG 0
+#if DEBUG
+#include <kernel/printk.h>
+/* Debugging routines */
+static inline void show_packet(uint8_t *raw, int size, char *title) {
+	int i;
+
+	printk("\nPACKET(%d) %s:", size, title);
+	for (i = 0; i < size; i++) {
+		if (!(i % 16)) {
+			printk("\n");
+		}
+		printk(" %02hhX", *(raw + i));
+	}
+	printk("\n.\n");
+}
+#else
+#define show_packet(raw, size,title)
+#endif
 
 /*
  * Net status/control block as seen by sw in the core.
@@ -112,14 +134,16 @@ static int mipsnet_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct mipsnet_regs *regs;
 	int i;
 	uint8_t *pdata;
-	log_debug("tx");
+
+	show_packet(skb->mac.raw, skb->len, "xmit");
 
 	regs = (struct mipsnet_regs *)dev->base_addr;
 	pdata = skb->mac.raw;
 
-	regs->txDataCount = skb->len;
+	out32(skb->len, &regs->txDataCount);
 	for(i = 0; i < skb->len; i++) {
-		regs->txDataBuffer = *pdata++;
+		out32((uint32_t)*pdata, &regs->txDataBuffer);
+		pdata++;
 	}
 
 	skb_free(skb);
@@ -142,15 +166,28 @@ static const struct net_driver mipsnet_drv_ops = {
 
 static int mipsnet_rx(struct net_device *dev, size_t len) {
 	struct sk_buff *skb;
+	uint8_t *pdata;
+	struct mipsnet_regs *regs;
 
 	if (!len)
 			return len;
+
+	log_debug("rx_len = %x", len);
+
+	regs = (struct mipsnet_regs *)dev->base_addr;
 
 	skb = skb_alloc(len);
 	if (!skb) {
 			dev->stats.rx_dropped++;
 			return -ENOMEM;
 	}
+	pdata = (uint8_t*) skb->mac.raw;
+	for (; len > 0; len--, pdata++) {
+		*pdata = in32(&regs->rxDataBuffer);
+	}
+
+	show_packet(skb->mac.raw, skb->len, "rx");
+	skb->dev = dev;
 
 	netif_rx(skb);
 
@@ -166,27 +203,26 @@ static irq_return_t mipsnet_interrupt_handler(unsigned int irq, void *dev_id) {
 	irq_return_t ret = IRQ_NONE;
 	struct mipsnet_regs *regs;
 
-	log_debug("irq_num %x", irq);
-
 	if (irq != dev->irq)
 		goto out_badirq;
 
 	regs = (struct mipsnet_regs *)dev->base_addr;
 
 	/* TESTBIT is cleared on read. */
-	int_flags = regs->interruptControl;
+	int_flags = in32(&regs->interruptControl);
+	log_debug("irq_num %x", int_flags);
 	if (int_flags & MIPSNET_INTCTL_TESTBIT) {
 			/* TESTBIT takes effect after a write with 0. */
-			regs->interruptControl = 0;
+			out32(MIPSNET_INTCTL_TESTBIT, &regs->interruptControl);
 			ret = IRQ_HANDLED;
 	} else if (int_flags & MIPSNET_INTCTL_TXDONE) {
 			/* Only one packet at a time, we are done. */
 			dev->stats.tx_packets++;
-			regs->interruptControl &= MIPSNET_INTCTL_TXDONE;
+			out32(MIPSNET_INTCTL_TXDONE, &regs->interruptControl);
 			ret = IRQ_HANDLED;
 	} else if (int_flags & MIPSNET_INTCTL_RXDONE) {
-			mipsnet_rx(dev, regs->rxDataCount);
-			regs->interruptControl &= MIPSNET_INTCTL_RXDONE;
+			mipsnet_rx(dev, in32(&regs->rxDataCount));
+			out32(MIPSNET_INTCTL_RXDONE, &regs->interruptControl);
 			ret = IRQ_HANDLED;
 	}
 

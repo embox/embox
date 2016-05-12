@@ -4,7 +4,7 @@ module mipsnet {
 	option number log_level=4
 
 	option number base_addr=0x4200
-	option number irq_num=1
+	option number irq_num=2
 	source "mipsnet.c"
 
 	option number base_addr
