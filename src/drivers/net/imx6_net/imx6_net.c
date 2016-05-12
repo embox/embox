@@ -12,6 +12,8 @@
 
 #include <hal/reg.h>
 
+#include <kernel/irq.h>
+
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
@@ -114,29 +116,48 @@ static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES];
 static uint8_t _tx_buf[TX_BUF_LEN] __attribute__ ((aligned(16)));
 //static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(16)));
 
+extern void dcache_inval(const void *p, size_t size);
+extern void dcache_flush(const void *p, size_t size);
+
 static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint8_t *data;
+	int desc_num;
+	ipl_t sp;
 
 	assert(dev);
 	assert(skb);
 
-	data = (uint8_t*) skb_data_cast_in(skb->data);
+	sp = ipl_save();
+	{
+		data = (uint8_t*) skb_data_cast_in(skb->data);
 
-	if (!data)
-		return -1;
+		if (!data)
+			return -1;
 
-	skb_free(skb);
+		skb_free(skb);
 
-	memcpy(&_tx_buf[0], data, skb->len);
+		desc_num = 0;
+		memcpy(&_tx_buf[0], data, skb->len);
+		dcache_flush(&_tx_buf[0], skb->len);
 
-	REG32_STORE(ENET_TDAR, 0);
+		memset(&_tx_desc_ring[desc_num], 0, sizeof(struct imx6_buf_desc));
+		_tx_desc_ring[desc_num] = (struct imx6_buf_desc) {
+			.len          = skb->len,
+			.flags1       = FLAG_R | FLAG_L | FLAG_TC,
+			.data_pointer = (uint32_t) &_tx_buf[0]
+		};
+		dcache_flush(&_tx_desc_ring[desc_num], sizeof(struct imx6_buf_desc));
+
+		REG32_STORE(ENET_TDAR, 0);
+
+		while(1);
+	}
+	ipl_restore(sp);
 
 	return 0;
 }
 
 static int imx6_net_open(struct net_device *dev) {
-
-
 	REG32_STORE(ENET_ECR, ETHEREN); /* Note: should be last init step */
 	return 0;
 }
@@ -191,5 +212,5 @@ static int imx6_net_init(void) {
 	assert((RX_BUF_LEN & 0xF) == 0);
 	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
 
-	return inetdev_register_dev(nic);;
+	return inetdev_register_dev(nic);
 }
