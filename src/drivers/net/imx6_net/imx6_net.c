@@ -150,8 +150,12 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 
         assert(mac);
 
-	mac_hi  = (mac[5] << 16) | (mac[4] << 8) | (mac[3] << 0);
-	mac_lo  = (mac[2] << 16) | (mac[1] << 8) | (mac[0] << 0);
+	mac_hi  = (mac[5] << 8)  |
+	          (mac[4] << 0);
+	mac_lo  = (mac[3] << 24) |
+	          (mac[2] << 16) |
+	          (mac[1] << 8)  |
+	          (mac[0] << 0);
 
 	REG32_STORE(MAC_LOW, mac_lo);
 	REG32_STORE(MAC_HI, mac_hi);
