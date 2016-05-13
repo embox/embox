@@ -13,13 +13,14 @@
 #include <hal/reg.h>
 
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
+
+#include <util/log.h>
 
 #include <embox/unit.h>
 
@@ -107,17 +108,17 @@
 #define FLAG_ME     (1 << 31)
 
 static void _reg_dump(void) {
-	printk("ENET_EIR  %10x\n", REG32_LOAD(ENET_EIR ));
-	printk("ENET_EIMR %10x\n", REG32_LOAD(ENET_EIMR));
-	printk("ENET_TDAR %10x\n", REG32_LOAD(ENET_TDAR));
-	printk("ENET_ECR  %10x\n", REG32_LOAD(ENET_ECR ));
-	printk("ENET_RCR  %10x\n", REG32_LOAD(ENET_RCR ));
-	printk("ENET_TCR  %10x\n", REG32_LOAD(ENET_TCR ));
-	printk("MAC_LOW   %10x\n", REG32_LOAD(MAC_LOW  ));
-	printk("MAC_HI    %10x\n", REG32_LOAD(MAC_HI   ));
-	printk("ENET_RDSR %10x\n", REG32_LOAD(ENET_RDSR));
-	printk("ENET_TDSR %10x\n", REG32_LOAD(ENET_TDSR));
-	printk("ENET_MRBR %10x\n", REG32_LOAD(ENET_MRBR));
+	log_debug("ENET_EIR  %10x", REG32_LOAD(ENET_EIR ));
+	log_debug("ENET_EIMR %10x", REG32_LOAD(ENET_EIMR));
+	log_debug("ENET_TDAR %10x", REG32_LOAD(ENET_TDAR));
+	log_debug("ENET_ECR  %10x", REG32_LOAD(ENET_ECR ));
+	log_debug("ENET_RCR  %10x", REG32_LOAD(ENET_RCR ));
+	log_debug("ENET_TCR  %10x", REG32_LOAD(ENET_TCR ));
+	log_debug("MAC_LOW   %10x", REG32_LOAD(MAC_LOW  ));
+	log_debug("MAC_HI    %10x", REG32_LOAD(MAC_HI   ));
+	log_debug("ENET_RDSR %10x", REG32_LOAD(ENET_RDSR));
+	log_debug("ENET_TDSR %10x", REG32_LOAD(ENET_TDSR));
+	log_debug("ENET_MRBR %10x", REG32_LOAD(ENET_MRBR));
 }
 
 static uint8_t _macaddr[6];
@@ -195,9 +196,9 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	}
 	ipl_restore(sp);
 
-	int t = 0xFFFF;
+	int t = 0xFFFFF;
 	while (t--);
-	printk("Errcode %#x\n", REG32_LOAD(ENET_EIR));
+	_reg_dump();
 
 	return 0;
 }
@@ -269,7 +270,7 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	assert(dev);
 	assert(addr);
 
-	memcpy(&_macaddr, (uint8_t *) addr, 6);
+	memcpy(&_macaddr[0], (uint8_t *) addr, 6);
 	_write_macaddr();
 
 	_reg_dump();
