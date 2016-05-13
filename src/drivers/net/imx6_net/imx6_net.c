@@ -26,6 +26,8 @@
 
 #define NIC_BASE OPTION_GET(NUMBER, base_addr)
 
+#define ENET_EIR  (NIC_BASE + 0x0004)
+#define ENET_EIMR (NIC_BASE + 0x0008)
 #define ENET_TDAR (NIC_BASE + 0x0014)
 #define ENET_ECR  (NIC_BASE + 0x0024)
 #define ENET_RCR  (NIC_BASE + 0x0084)
@@ -37,9 +39,16 @@
 #define ENET_MRBR (NIC_BASE + 0x0188)
 
 /* Various flags */
+/* ENET_EIR */
+#define EIR_MASK  0x7FFF8000
+
+/* ENET_EIMR */
+#define EIMR_RXF  (1 << 25)
+#define EIMR_TXF  (1 << 27)
+
 /* ENET_ECR */
-#define ETHEREN  (1 << 1) /* Ethernet enable */
-#define RESET    (1 << 0)
+#define ETHEREN   (1 << 1) /* Ethernet enable */
+#define RESET     (1 << 0)
 
 #define FRAME_LEN     1588
 #define TX_BUF_FRAMES 256
@@ -157,8 +166,60 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
 }
 
-static int imx6_net_open(struct net_device *dev) {
+static void _init_buffers() {
+	struct imx6_buf_desc *desc;
+
+	memset(&_tx_desc_ring[0], 0,
+	        TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+	memset(&_rx_desc_ring[0], 0,
+	        RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+
+	/* Mark last buffer (i.e. set wrap flag) */
+	_rx_desc_ring[RX_BUF_FRAMES - 1].flags1 = FLAG_W;
+	_tx_desc_ring[TX_BUF_FRAMES - 1].flags1 = FLAG_W;
+
+	for (int i = 0; i < RX_BUF_FRAMES; i++) {
+		desc = &_rx_desc_ring[i];
+		desc->data_pointer = (uint32_t) _rx_buf[i * FRAME_LEN];
+		desc->flags1 |= FLAG_E;
+		desc->flags2 |= FLAG_INT_RX;
+	}
+
+	for (int i = 0; i < TX_BUF_FRAMES; i++) {
+		_tx_desc_ring[i].flags2 |= FLAG_INT_TX;
+	}
+
+	dcache_flush(&_tx_desc_ring[0],
+	              TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+	dcache_flush(&_rx_desc_ring[0],
+	              RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+}
+
+static void _reset(void) {
+	REG32_STORE(ENET_ECR, RESET);
+
+	/* Clear pending interrupts */
+	REG32_STORE(ENET_EIR, EIR_MASK);
+
+	assert((RX_BUF_LEN & 0xF) == 0);
+	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
+
+	assert((((uint32_t) &_tx_desc_ring[0]) & 0xF) == 0);
+	REG32_STORE(ENET_TDSR, ((uint32_t) &_tx_desc_ring[0]));
+
+	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
+	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
+
+	_init_buffers();
+
+	REG32_STORE(ENET_EIMR, EIMR_TXF | EIMR_RXF);
+
 	REG32_STORE(ENET_ECR, ETHEREN); /* Note: should be last init step */
+}
+
+static int imx6_net_open(struct net_device *dev) {
+	_reset();
+
 	return 0;
 }
 
@@ -193,7 +254,6 @@ static const struct net_driver imx6_net_drv_ops = {
 EMBOX_UNIT_INIT(imx6_net_init);
 static int imx6_net_init(void) {
 	struct net_device *nic;
-	struct imx6_buf_desc *desc;
 
 	if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
@@ -201,42 +261,7 @@ static int imx6_net_init(void) {
 
 	nic->drv_ops = &imx6_net_drv_ops;
 
-	REG32_STORE(ENET_ECR, RESET);
-
-	/* Setup TX and RX buffers */
-	assert((((uint32_t) &_tx_desc_ring[0]) & 0xF) == 0);
-	REG32_STORE(ENET_TDSR, ((uint32_t) &_tx_desc_ring[0]));
-
-	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
-	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
-
-	assert((RX_BUF_LEN & 0xF) == 0);
-	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
-
-	memset(&_tx_desc_ring[0], 0,
-	        TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
-	memset(&_rx_desc_ring[0], 0,
-	        RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
-
-	/* Mark last buffer (i.e. set wrap flag) */
-	_rx_desc_ring[RX_BUF_FRAMES - 1].flags1 = FLAG_W;
-	_tx_desc_ring[TX_BUF_FRAMES - 1].flags1 = FLAG_W;
-
-	for (int i = 0; i < RX_BUF_FRAMES; i++) {
-		desc = &_rx_desc_ring[i];
-		desc->data_pointer = (uint32_t) _rx_buf[i * FRAME_LEN];
-		desc->flags1 |= FLAG_E;
-		desc->flags2 |= FLAG_INT_RX;
-	}
-
-	for (int i = 0; i < TX_BUF_FRAMES; i++) {
-		_tx_desc_ring[i]->flags2 |= BD_ENET_TX_INT;
-	}
-
-	dcache_flush(&_tx_desc_ring[0],
-	              TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
-	dcache_flush(&_rx_desc_ring[0],
-	              RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+	_reset();
 
 	return inetdev_register_dev(nic);
 }
