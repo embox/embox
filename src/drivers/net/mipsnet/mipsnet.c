@@ -172,8 +172,6 @@ static int mipsnet_rx(struct net_device *dev, size_t len) {
 	if (!len)
 			return len;
 
-	log_debug("rx_len = %x", len);
-
 	regs = (struct mipsnet_regs *)dev->base_addr;
 
 	skb = skb_alloc(len);
@@ -210,10 +208,9 @@ static irq_return_t mipsnet_interrupt_handler(unsigned int irq, void *dev_id) {
 
 	/* TESTBIT is cleared on read. */
 	int_flags = in32(&regs->interruptControl);
-	log_debug("irq_num %x", int_flags);
 	if (int_flags & MIPSNET_INTCTL_TESTBIT) {
 			/* TESTBIT takes effect after a write with 0. */
-			out32(MIPSNET_INTCTL_TESTBIT, &regs->interruptControl);
+			out32(0, &regs->interruptControl);
 			ret = IRQ_HANDLED;
 	} else if (int_flags & MIPSNET_INTCTL_TXDONE) {
 			/* Only one packet at a time, we are done. */
@@ -238,6 +235,7 @@ out_badirq:
 static int mipsnet_init(void) {
 	struct net_device *netdev;
 	int err;
+	struct mipsnet_regs *regs;
 
 	netdev = etherdev_alloc(0);
 	if (!netdev) {
@@ -255,6 +253,9 @@ static int mipsnet_init(void) {
 	if (err) {
 		return err;
 	}
+
+	regs = (struct mipsnet_regs *)netdev->base_addr;
+	out32(MIPSNET_INTCTL_TESTBIT, &regs->interruptControl);
 
 	return inetdev_register_dev(netdev);
 }
