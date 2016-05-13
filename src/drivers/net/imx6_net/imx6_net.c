@@ -114,7 +114,7 @@ static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES];
 static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES];
 
 static uint8_t _tx_buf[TX_BUF_LEN] __attribute__ ((aligned(16)));
-//static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(16)));
+static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(16)));
 
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
@@ -193,6 +193,7 @@ static const struct net_driver imx6_net_drv_ops = {
 EMBOX_UNIT_INIT(imx6_net_init);
 static int imx6_net_init(void) {
 	struct net_device *nic;
+	struct imx6_buf_desc *desc;
 
 	if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
@@ -211,6 +212,31 @@ static int imx6_net_init(void) {
 
 	assert((RX_BUF_LEN & 0xF) == 0);
 	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
+
+	memset(&_tx_desc_ring[0], 0,
+	        TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+	memset(&_rx_desc_ring[0], 0,
+	        RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+
+	/* Mark last buffer (i.e. set wrap flag) */
+	_rx_desc_ring[RX_BUF_FRAMES - 1].flags1 = FLAG_W;
+	_tx_desc_ring[TX_BUF_FRAMES - 1].flags1 = FLAG_W;
+
+	for (int i = 0; i < RX_BUF_FRAMES; i++) {
+		desc = &_rx_desc_ring[i];
+		desc->data_pointer = (uint32_t) _rx_buf[i * FRAME_LEN];
+		desc->flags1 |= FLAG_E;
+		desc->flags2 |= FLAG_INT_RX;
+	}
+
+	for (int i = 0; i < TX_BUF_FRAMES; i++) {
+		_tx_desc_ring[i]->flags2 |= BD_ENET_TX_INT;
+	}
+
+	dcache_flush(&_tx_desc_ring[0],
+	              TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+	dcache_flush(&_rx_desc_ring[0],
+	              RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
 
 	return inetdev_register_dev(nic);
 }
