@@ -13,6 +13,7 @@
 #include <hal/reg.h>
 
 #include <kernel/irq.h>
+#include <kernel/printk.h>
 
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
@@ -105,6 +106,36 @@
 #define FLAG_PE     (1 << 26)
 #define FLAG_ME     (1 << 31)
 
+static void _reg_dump(void) {
+	printk("ENET_EIR  %10x\n", REG32_LOAD(ENET_EIR ));
+	printk("ENET_EIMR %10x\n", REG32_LOAD(ENET_EIMR));
+	printk("ENET_TDAR %10x\n", REG32_LOAD(ENET_TDAR));
+	printk("ENET_ECR  %10x\n", REG32_LOAD(ENET_ECR ));
+	printk("ENET_RCR  %10x\n", REG32_LOAD(ENET_RCR ));
+	printk("ENET_TCR  %10x\n", REG32_LOAD(ENET_TCR ));
+	printk("MAC_LOW   %10x\n", REG32_LOAD(MAC_LOW  ));
+	printk("MAC_HI    %10x\n", REG32_LOAD(MAC_HI   ));
+	printk("ENET_RDSR %10x\n", REG32_LOAD(ENET_RDSR));
+	printk("ENET_TDSR %10x\n", REG32_LOAD(ENET_TDSR));
+	printk("ENET_MRBR %10x\n", REG32_LOAD(ENET_MRBR));
+}
+
+static void _write_macaddr(uint8_t *mac) {
+	uint32_t mac_hi, mac_lo;
+
+        assert(mac);
+
+	mac_hi  = (mac[5] << 16) |
+	          (mac[4] << 24);
+	mac_lo  = (mac[3] <<  0) |
+	          (mac[2] <<  8) |
+	          (mac[1] << 16) |
+	          (mac[0] << 24);
+
+	REG32_STORE(MAC_LOW, mac_lo);
+	REG32_STORE(MAC_HI, mac_hi);
+}
+
 struct imx6_buf_desc {
 	uint16_t len;
 	uint16_t flags1;
@@ -125,8 +156,11 @@ static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES];
 static uint8_t _tx_buf[TX_BUF_LEN] __attribute__ ((aligned(16)));
 static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(16)));
 
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
+//extern void dcache_inval(const void *p, size_t size);
+//extern void dcache_flush(const void *p, size_t size);
+
+#define dcache_flush(x, y) ;
+#define dcache_inval(x, y) ;
 
 static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint8_t *data;
@@ -158,10 +192,12 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 		dcache_flush(&_tx_desc_ring[desc_num], sizeof(struct imx6_buf_desc));
 
 		REG32_STORE(ENET_TDAR, 0);
-
-		while(1);
 	}
 	ipl_restore(sp);
+
+	int t = 0xFFFF;
+	while (t--);
+	printk("Errcode %#x\n", REG32_LOAD(ENET_EIR));
 
 	return 0;
 }
@@ -212,9 +248,11 @@ static void _reset(void) {
 
 	_init_buffers();
 
-	REG32_STORE(ENET_EIMR, EIMR_TXF | EIMR_RXF);
+	REG32_STORE(ENET_EIMR, EIMR_TXF | EIMR_RXF | EIR_MASK);
 
 	REG32_STORE(ENET_ECR, ETHEREN); /* Note: should be last init step */
+
+	_reg_dump();
 }
 
 static int imx6_net_open(struct net_device *dev) {
@@ -223,25 +261,15 @@ static int imx6_net_open(struct net_device *dev) {
 	return 0;
 }
 
-static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
-	uint8_t *mac = (uint8_t *) addr;
-	uint32_t mac_hi, mac_lo;
 
+
+static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	assert(dev);
 	assert(addr);
 
-        assert(mac);
+	_write_macaddr((uint8_t *) addr);
 
-	mac_hi  = (mac[5] << 8)  |
-	          (mac[4] << 0);
-	mac_lo  = (mac[3] << 24) |
-	          (mac[2] << 16) |
-	          (mac[1] << 8)  |
-	          (mac[0] << 0);
-
-	REG32_STORE(MAC_LOW, mac_lo);
-	REG32_STORE(MAC_HI, mac_hi);
-
+	_reg_dump();
 	return 0;
 }
 
