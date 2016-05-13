@@ -120,17 +120,17 @@ static void _reg_dump(void) {
 	printk("ENET_MRBR %10x\n", REG32_LOAD(ENET_MRBR));
 }
 
-static void _write_macaddr(uint8_t *mac) {
+static uint8_t _macaddr[6];
+
+static void _write_macaddr(void) {
 	uint32_t mac_hi, mac_lo;
 
-        assert(mac);
-
-	mac_hi  = (mac[5] << 16) |
-	          (mac[4] << 24);
-	mac_lo  = (mac[3] <<  0) |
-	          (mac[2] <<  8) |
-	          (mac[1] << 16) |
-	          (mac[0] << 24);
+	mac_hi  = (_macaddr[5] << 16) |
+	          (_macaddr[4] << 24);
+	mac_lo  = (_macaddr[3] <<  0) |
+	          (_macaddr[2] <<  8) |
+	          (_macaddr[1] << 16) |
+	          (_macaddr[0] << 24);
 
 	REG32_STORE(MAC_LOW, mac_lo);
 	REG32_STORE(MAC_HI, mac_hi);
@@ -250,6 +250,8 @@ static void _reset(void) {
 
 	REG32_STORE(ENET_EIMR, EIMR_TXF | EIMR_RXF | EIR_MASK);
 
+	_write_macaddr();
+
 	REG32_STORE(ENET_ECR, ETHEREN); /* Note: should be last init step */
 
 	_reg_dump();
@@ -267,7 +269,8 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	assert(dev);
 	assert(addr);
 
-	_write_macaddr((uint8_t *) addr);
+	memcpy(&_macaddr, (uint8_t *) addr, 6);
+	_write_macaddr();
 
 	_reg_dump();
 	return 0;
