@@ -65,6 +65,13 @@ get_user_undef_guess AUTOQEMU_NICS guess_nics
 
 guessed_info AUTOQEMU_NICS_CONFIG "(got)"
 
+guess_sound() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.audio.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v portaudio_stub | head -n 1;
+}
+get_user_undef_guess AUTOQEMU_AUDIO guess_sound
+
+guessed_info AUTOQEMU_AUDIO_CONFIG "(got)"
+
 guess_kvm() {
 	ret=""
 	# Build kvm argument
@@ -197,7 +204,31 @@ if [ $nic_n -gt 0 ]; then
 	done
 fi
 
-ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
+declare -A AUDIO2QEMU
+AUDIO2QEMU=(
+	[intel_ac_pa]="ac97"
+	[es1370]="es1370"
+)
+
+AUDIO_DEV=" " read -a qemu_sound <<< "$AUTOQEMU_AUDIO"
+AUDIO_DEV=" " read -a qemu_sound_config <<< "$AUTOQEMU_AUDIO_CONFIG"
+
+sound_lines=""
+sound_n=${#qemu_sound[*]}
+if [ $sound_n -gt 0 ]; then
+
+	for so in "${!qemu_sound[@]}"; do
+		sound_model=${AUDIO2QEMU[${qemu_sound[$ni]}]}
+		echo 
+		if [ ! $sound_model ]; then
+			error "sound model ${qemu_sound[$ni]} is not supported"
+		fi
+		
+		sound_lines="$sound_lines -soundhw $sound_model"
+	done
+fi
+
+ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
 
 info "$ARG_LINE"
 $ARG_LINE
