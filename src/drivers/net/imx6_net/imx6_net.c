@@ -13,6 +13,7 @@
 #include <hal/reg.h>
 
 #include <kernel/irq.h>
+#include <kernel/printk.h>
 
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
@@ -36,27 +37,33 @@
 #define ENET_TCR  (NIC_BASE + 0x00C4)
 #define MAC_LOW   (NIC_BASE + 0x00E4)
 #define MAC_HI    (NIC_BASE + 0x00E8)
+#define ENET_IAUR (NIC_BASE + 0x0118)
+#define ENET_IALR (NIC_BASE + 0x011C)
+#define ENET_GAUR (NIC_BASE + 0x0120)
+#define ENET_GALR (NIC_BASE + 0x0124)
+#define ENET_TFWR (NIC_BASE + 0x0144)
 #define ENET_RDSR (NIC_BASE + 0x0180)
 #define ENET_TDSR (NIC_BASE + 0x0184)
 #define ENET_MRBR (NIC_BASE + 0x0188)
 
 /* Various flags */
 /* ENET_EIR */
-#define EIR_MASK  0x7FFF8000
+#define EIR_MASK  0xFFFFFFFF
 
 /* ENET_EIMR */
 #define EIMR_RXF  (1 << 25)
 #define EIMR_TXF  (1 << 27)
 
 /* ENET_ECR */
+#define ECR_DBSWP (1 << 8)
 #define ETHEREN   (1 << 1) /* Ethernet enable */
 #define RESET     (1 << 0)
 
 #define FRAME_LEN     1588
-#define TX_BUF_FRAMES 256
+#define TX_BUF_FRAMES 16
 #define TX_BUF_LEN    (FRAME_LEN * TX_BUF_FRAMES)
 #define RX_BUF_FRAMES 256
-#define RX_BUF_LEN    (FRAME_LEN * TX_BUF_FRAMES)
+#define RX_BUF_LEN    (FRAME_LEN * RX_BUF_FRAMES)
 
 /* Descriptor flags */
 /* TX */
@@ -116,6 +123,11 @@ static void _reg_dump(void) {
 	log_debug("ENET_TCR  %10x", REG32_LOAD(ENET_TCR ));
 	log_debug("MAC_LOW   %10x", REG32_LOAD(MAC_LOW  ));
 	log_debug("MAC_HI    %10x", REG32_LOAD(MAC_HI   ));
+	log_debug("ENET_IAUR %10x", REG32_LOAD(ENET_IAUR));
+	log_debug("ENET_IALR %10x", REG32_LOAD(ENET_IALR));
+	log_debug("ENET_GAUR %10x", REG32_LOAD(ENET_GAUR));
+	log_debug("ENET_GALR %10x", REG32_LOAD(ENET_GALR));
+	log_debug("ENET_TFWR %10x", REG32_LOAD(ENET_TFWR));
 	log_debug("ENET_RDSR %10x", REG32_LOAD(ENET_RDSR));
 	log_debug("ENET_TDSR %10x", REG32_LOAD(ENET_TDSR));
 	log_debug("ENET_MRBR %10x", REG32_LOAD(ENET_MRBR));
@@ -166,6 +178,8 @@ static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(16)));
 static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint8_t *data;
 	int desc_num;
+	struct imx6_buf_desc *desc;
+
 	ipl_t sp;
 
 	assert(dev);
@@ -184,20 +198,31 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 		memcpy(&_tx_buf[0], data, skb->len);
 		dcache_flush(&_tx_buf[0], skb->len);
 
-		memset(&_tx_desc_ring[desc_num], 0, sizeof(struct imx6_buf_desc));
-		_tx_desc_ring[desc_num] = (struct imx6_buf_desc) {
-			.len          = skb->len,
-			.flags1       = FLAG_R | FLAG_L | FLAG_TC,
-			.data_pointer = (uint32_t) &_tx_buf[0]
-		};
-		dcache_flush(&_tx_desc_ring[desc_num], sizeof(struct imx6_buf_desc));
+		desc = &_tx_desc_ring[desc_num];
 
-		REG32_STORE(ENET_TDAR, 0);
+		desc->data_pointer = (uint32_t) &_tx_buf[0];
+		desc->len          = skb->len;
+		desc->flags1      &= FLAG_W;
+		desc->flags1      |= FLAG_R | FLAG_L | FLAG_TC;
+		dcache_flush(desc, sizeof(struct imx6_buf_desc));
+
+		printk("Frame status %#4x\n", desc->flags1);
+		int t = 0xFFFFF;
+		while (t--);
+
+		REG32_STORE(ENET_TDAR, 0x01000000);
+
+		t = 0xFFFFFF;
+		while(t--) {
+			if (!(REG32_LOAD(ENET_TDAR) & 0x01000000))
+				break;
+			else
+				printk("wait\n");
+		}
+
 	}
 	ipl_restore(sp);
 
-	int t = 0xFFFFF;
-	while (t--);
 	_reg_dump();
 
 	return 0;
@@ -233,6 +258,8 @@ static void _init_buffers() {
 }
 
 static void _reset(void) {
+	uint32_t t;
+
 	REG32_STORE(ENET_ECR, RESET);
 
 	/* Clear pending interrupts */
@@ -247,15 +274,26 @@ static void _reset(void) {
 	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
 	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
 
+	t  = FRAME_LEN << 16;
+	t |= (1 << 5) | (1 << 2);
+	REG32_STORE(ENET_RCR, t);
+
+	REG32_STORE(ENET_TCR, (1 << 2));
+	/* TODO set FEC clock? */
+
+	REG32_STORE(ENET_IAUR, 0);
+	REG32_STORE(ENET_IALR, 0);
+	REG32_STORE(ENET_GAUR, 0);
+	REG32_STORE(ENET_GALR, 0);
+
 	_init_buffers();
 
 	REG32_STORE(ENET_EIMR, EIMR_TXF | EIMR_RXF | EIR_MASK);
 
 	_write_macaddr();
 
-	REG32_STORE(ENET_ECR, ETHEREN); /* Note: should be last init step */
-
-	_reg_dump();
+	REG32_STORE(ENET_TFWR, (1 << 8));
+	REG32_STORE(ENET_ECR, ETHEREN | ECR_DBSWP); /* Note: should be last init step */
 }
 
 static int imx6_net_open(struct net_device *dev) {
@@ -264,8 +302,6 @@ static int imx6_net_open(struct net_device *dev) {
 	return 0;
 }
 
-
-
 static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	assert(dev);
 	assert(addr);
@@ -273,7 +309,6 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	memcpy(&_macaddr[0], (uint8_t *) addr, 6);
 	_write_macaddr();
 
-	_reg_dump();
 	return 0;
 }
 
