@@ -1,0 +1,10 @@
+package embox.driver.audio
+
+module es1370 extends portaudio {
+	option number log_level=1
+
+	source "es1370.c"
+	source "es1370_portaudio.c"
+
+	depends embox.driver.pci
+}
