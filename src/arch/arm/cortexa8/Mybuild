@@ -6,6 +6,8 @@ module cpu_reset {
 }
 
 module mmu extends embox.arch.mmu {
+	option number domain_access=1
+
 	source "cache.c"
 	source "mmu.c"
 	source "mmu.h"
