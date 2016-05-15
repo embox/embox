@@ -47,11 +47,16 @@ static int mmu_init(void) {
 		: :
 	);
 
+	return 0;
+
 	/* Setup physical address of the first level translation table */
 	__asm__ __volatile__ (
 		"ldr r0, =translation_table\n\t"
 		"mcr p15, 0, r0, c2, c0, 0\n\t"
-		"mcr p15, 0, r0, c2, c0, 1" : :
+#if 0
+		"mcr p15, 0, r0, c2, c0, 1"
+#endif
+		: :
 	);
 
 	return 0;
@@ -63,7 +68,6 @@ static int mmu_init(void) {
 * @note Set flag CR_M at c1, the control register
 */
 void mmu_on(void) {
-	while(1);
 #ifndef NOMMU
 	__asm__ __volatile__ (
 		"mrc p15, 0, r0, c1, c0, 0\n\t"
