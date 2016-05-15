@@ -7,10 +7,29 @@
 #include <stddef.h>
 #include <assert.h>
 #include <unistd.h>
+#include <stdint.h>
+
+#include <util/log.h>
 
 #include <drivers/audio/portaudio.h>
 
-#define PA_STUB_VALID_STREAM ((void *) 0xff0)
+#include "es1370.h"
+
+#define MAX_BUF_LEN 0x10000
+
+struct pa_strm {
+	int started;
+	int paused;
+	int completed;
+	int sample_format;
+	PaStreamCallback *callback;
+	void *callback_data;
+	size_t chan_buf_len;
+	uint8_t in_buf[MAX_BUF_LEN];
+	uint8_t out_buf[MAX_BUF_LEN];
+};
+
+
 
 PaError Pa_Initialize(void) {
 	return paNoError;
@@ -39,7 +58,7 @@ const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
 		.defaultLowOutputLatency = 0,
 		.defaultHighInputLatency = 0,
 		.defaultHighOutputLatency = 0,
-		.defaultSampleRate = 8000
+		.defaultSampleRate = 44100
 	};
 	const PaDeviceInfo *pa_info = device == 0 ? &info : NULL;
 
@@ -55,24 +74,33 @@ const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 		.structVersion = 1,
 		.inputLatency = 0,
 		.outputLatency = 0,
-		.sampleRate = 8000
+		.sampleRate = 44100
 	};
 	PaStreamInfo *pa_info = stream != NULL ? &info : NULL;
 
 	return pa_info;
 }
 
+static struct pa_strm pa_stream;
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
 		double sampleRate, unsigned long framesPerBuffer,
 		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
 		void *userData) {
+	static struct pa_strm *strm = NULL;
+
+	assert(strm == NULL);
 	assert(stream != NULL);
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
 	assert(streamCallback != NULL);
 
-	*stream = PA_STUB_VALID_STREAM;
+	log_debug(": %p %p %f %lu %lu %p %p",
+			stream, inputParameters, outputParameters, sampleRate,
+			framesPerBuffer, streamFlags, streamCallback, userData);
+
+	*stream = &pa_stream;
+
 	return paNoError;
 }
 
@@ -81,6 +109,8 @@ PaError Pa_CloseStream(PaStream *stream) {
 }
 
 PaError Pa_StartStream(PaStream *stream) {
+	log_debug("stream");
+
 	return paNoError;
 }
 
