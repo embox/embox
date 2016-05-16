@@ -188,4 +188,6 @@ struct pci_slot_dev {
 struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
 		uint32_t devfn, uint32_t vendor_reg);
 
+extern void pci_set_master(struct pci_slot_dev * slot_dev);
+
 #endif /* PCI_H_ */

@@ -169,3 +169,22 @@ static int pci_init(void) {
 	return 0;
 
 }
+
+void pci_set_master(struct pci_slot_dev * slot_dev) {
+	uint16_t cmd;
+	uint8_t lat;
+
+	pci_read_config16(slot_dev->busn,slot_dev->func, PCI_COMMAND, &cmd);
+	if (!(cmd & PCI_COMMAND_MASTER)) {
+		log_info("Enabling bus mastering for device %02x:%02x\n",
+				slot_dev->busn, slot_dev->func);
+		cmd |= PCI_COMMAND_MASTER;
+		pci_write_config16(slot_dev->busn,slot_dev->func, PCI_COMMAND, cmd);
+	}
+	pci_read_config8(slot_dev->busn,slot_dev->func, PCI_LATENCY_TIMER, &lat);
+	if (lat < 16) {
+		log_info("Increasing latency timer of device %02x:%02x to 64\n",
+				slot_dev->busn, slot_dev->func);
+		pci_write_config8(slot_dev->busn,slot_dev->func, PCI_LATENCY_TIMER, 64);
+	}
+}
