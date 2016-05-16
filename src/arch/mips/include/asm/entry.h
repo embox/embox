@@ -126,7 +126,11 @@ extern void mips_interrupt_handler(void);
 		LONG_L  $31, (PT_RA) ($sp);
 
 		/* Restore special MIPS registers */
-		LONG_L  $k0, PT_STATUS ($sp);
+		mfc0    $k0, $12
+		andi    $k0, $k0, 0xff00 /* preserve interrupt mask */
+		LONG_L  $k1, PT_STATUS ($sp);
+		andi    $k1, $k1, 0x00ff /* load only status bits */
+		or      $k0, $k0, $k1 /* combine them together */
 		mtc0    $k0, $CP0_STATUS
 		LONG_L  $k0, (PT_HI) ($sp);
 		mthi    $k0;

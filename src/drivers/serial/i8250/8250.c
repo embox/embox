@@ -20,8 +20,8 @@ EMBOX_UNIT_INIT(uart_init);
  * NOTE: The actual I/O addresses used are stored
  *       in a table in the BIOS data area 0000:0400.
  */
-#define COM0_PORT_BASE      0x3f8
-#define COM0_IRQ_NUM        0x4
+#define COM0_PORT_BASE      OPTION_GET(NUMBER,base_addr)
+#define COM0_IRQ_NUM        OPTION_GET(NUMBER,irq_num)
 
 static uint8_t calc_line_stat(const struct uart_params *params) {
 	uint8_t line_stat;
