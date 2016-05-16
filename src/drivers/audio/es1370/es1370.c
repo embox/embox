@@ -4,7 +4,7 @@
  * @date 14.05.2016
  * @author Anton Bondarev
  */
-
+#include <errno.h>
 #include <stdint.h>
 #include <util/log.h>
 
@@ -22,6 +22,49 @@ struct es1370_hw_dev {
 
 struct es1370_hw_dev es1370_hw_dev;
 
+
+int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
+	/* dma length in bytes,
+	 * max is 64k long words for es1370 = 256k bytes
+	 */
+	uint32_t page, frame_count_reg, dma_add_reg;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	switch(chan) {
+		case ADC1_CHAN:
+			page = ADC_MEM_PAGE;
+			frame_count_reg = ES1370_REG_ADC_BUFFER_SIZE;
+			dma_add_reg = ES1370_REG_ADC_PCI_ADDRESS;
+			break;
+		case DAC1_CHAN: page = DAC_MEM_PAGE;
+			frame_count_reg = ES1370_REG_DAC1_BUFFER_SIZE;
+			dma_add_reg = ES1370_REG_DAC1_PCI_ADDRESS;
+			break;
+		case DAC2_CHAN:
+			page = DAC_MEM_PAGE;
+			frame_count_reg = ES1370_REG_DAC2_BUFFER_SIZE;
+			dma_add_reg = ES1370_REG_DAC2_PCI_ADDRESS;
+			break;
+		default:
+			return -EINVAL;
+	}
+	out8(base_addr + ES1370_REG_MEMPAGE, page);
+	out32(base_addr + dma_add_reg, dma_buff);
+
+	/* device expects long word count in stead of bytes */
+	length /= 4;
+
+	/* It seems that register _CURRENT_COUNT is overwritten, but this is
+	 * the way to go. The register frame_count_reg is only longword
+	 * addressable.
+	 * It expects length -1
+	 */
+	out32(base_addr + frame_count_reg, (uint32_t) (length - 1));
+
+	return 0;
+}
 
 static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 	struct es1370_hw_dev *hw_dev;

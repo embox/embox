@@ -24,14 +24,14 @@
 #define ES1370_REG_ADC_SCOUNT       0x2c
 
 #define ES1370_REG_MEMORY           0x30
-#define ES1370_REG_ADC_BUFFER_SIZE 0x34
+#define ES1370_REG_ADC_BUFFER_SIZE  0x34
 #define ES1370_REG_DAC1_BUFFER_SIZE 0x34
 #define ES1370_REG_DAC2_BUFFER_SIZE 0X3c
 #define ES1370_REG_ADC_PCI_ADDRESS  0x30
 #define ES1370_REG_DAC1_PCI_ADDRESS 0x30
 #define ES1370_REG_DAC2_PCI_ADDRESS 0x38
 
-
+#if 0
 #define ES1370_REG_DAC1_FRAMEADR    0xc30
 #define ES1370_REG_DAC1_FRAMECNT    0xc34
 #define ES1370_REG_DAC2_FRAMEADR    0xc38
@@ -40,6 +40,7 @@
 #define ES1370_REG_ADC_FRAMECNT     0xd34
 #define ES1370_REG_PHANTOM_FRAMEADR 0xd38
 #define ES1370_REG_PHANTOM_FRAMECNT 0xd3c
+#endif
 
 #define ES1370_FMT_U8_MONO     0
 #define ES1370_FMT_U8_STEREO   1
@@ -121,5 +122,17 @@
 #define SCTRL_P1SMB       0x00000001  /* 1 = stereo */
 #define SCTRL_P1FMT       0x00000003  /* format mask */
 #define SCTRL_SH_P1FMT    0
+
+
+/* for ES1370_REG_MEMPAGE */
+#define ADC_MEM_PAGE      0x0d
+#define DAC_MEM_PAGE      0x0c /* for DAC1 and DAC2 */
+
+
+/* channels or subdevices */
+#define DAC1_CHAN        0
+#define ADC1_CHAN        1
+#define MIXER            2
+#define DAC2_CHAN        3
 
 #endif /* ES1370_H_ */
