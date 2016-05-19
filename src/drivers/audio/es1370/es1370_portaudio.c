@@ -15,7 +15,6 @@
 
 #include "es1370.h"
 
-#define MAX_BUF_LEN 0x10000
 
 struct pa_strm {
 	int started;
@@ -25,8 +24,8 @@ struct pa_strm {
 	PaStreamCallback *callback;
 	void *callback_data;
 	size_t chan_buf_len;
-	uint8_t in_buf[MAX_BUF_LEN];
-	uint8_t out_buf[MAX_BUF_LEN];
+	uint8_t in_buf[ES1370_MAX_BUF_LEN];
+	uint8_t out_buf[ES1370_MAX_BUF_LEN];
 };
 
 
@@ -100,6 +99,9 @@ PaError Pa_OpenStream(PaStream** stream,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
 	*stream = &pa_stream;
+
+	es1370_setup_dma(userData, ES1370_MAX_BUF_LEN, DAC1_CHAN);
+	es1370_drv_start(DAC1_CHAN);
 
 	return paNoError;
 }

@@ -23,6 +23,32 @@ struct es1370_hw_dev {
 struct es1370_hw_dev es1370_hw_dev;
 
 
+static int fragment_size = ES1370_MAX_BUF_LEN;
+
+int es1370_set_int_cnt(int chan) {
+	/* Write interrupt count for specified channel.
+	   After <DspFragmentSize> bytes, an interrupt will be generated  */
+	int sample_count;
+	uint16_t int_cnt_reg;
+
+	switch(chan) {
+		case ADC1_CHAN: int_cnt_reg = ES1370_REG_ADC_SCOUNT; break;
+		case DAC1_CHAN: int_cnt_reg = ES1370_REG_DAC1_SCOUNT; break;
+		case DAC2_CHAN: int_cnt_reg = ES1370_REG_DAC2_SCOUNT; break;
+		default: return EINVAL;
+	}
+
+	sample_count = fragment_size;
+
+	/* TODO adjust sample count according to sample format */
+
+	/* set the sample count - 1 for the specified channel. */
+	out16(int_cnt_reg, sample_count - 1);
+
+	return 0;
+}
+
+
 int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
 	/* dma length in bytes,
 	 * max is 64k long words for es1370 = 256k bytes
@@ -62,6 +88,137 @@ int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
 	 * It expects length -1
 	 */
 	out32(base_addr + frame_count_reg, (uint32_t) (length - 1));
+
+	return 0;
+}
+
+
+static int es1370_disable_int(int chan) {
+	uint16_t ser_interface, int_en_bit;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	switch(chan) {
+		case ADC1_CHAN: int_en_bit = SCTRL_R1INTEN; break;
+		case DAC1_CHAN: int_en_bit = SCTRL_P1INTEN; break;
+		case DAC2_CHAN: int_en_bit = SCTRL_P2INTEN; break;
+		default: return EINVAL;
+	}
+	/* clear the interrupt */
+	ser_interface = in16(base_addr + ES1370_REG_SERIAL_CONTROL);
+
+	out16(base_addr + ES1370_REG_SERIAL_CONTROL, ser_interface & ~int_en_bit);
+
+	return 0;
+}
+
+int es1370_drv_reenable_int(int chan) {
+	uint16_t ser_interface, int_en_bit;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	switch(chan) {
+		case ADC1_CHAN: int_en_bit = SCTRL_R1INTEN; break;
+		case DAC1_CHAN: int_en_bit = SCTRL_P1INTEN; break;
+		case DAC2_CHAN: int_en_bit = SCTRL_P2INTEN; break;
+		default: return EINVAL;
+	}
+
+	/* clear and reenable an interrupt */
+	ser_interface = in16(base_addr + ES1370_REG_SERIAL_CONTROL);
+	out16(base_addr + ES1370_REG_SERIAL_CONTROL, ser_interface & ~int_en_bit);
+	out16(base_addr + ES1370_REG_SERIAL_CONTROL, ser_interface | int_en_bit);
+
+	return 0;
+}
+
+int es1370_drv_pause(int sub_dev) {
+	uint32_t pause_bit;
+	uint32_t sctrl;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	es1370_disable_int(sub_dev); /* don't send interrupts */
+
+	switch(sub_dev) {
+		case DAC1_CHAN: pause_bit = SCTRL_P1PAUSE;break;
+		case DAC2_CHAN: pause_bit = SCTRL_P2PAUSE;break;
+		default: return EINVAL;
+	}
+
+	sctrl = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
+	/* pause */
+	out32(base_addr + ES1370_REG_SERIAL_CONTROL, sctrl | pause_bit);
+
+	return 0;
+}
+
+
+int es1370_drv_resume(int sub_dev) {
+	uint32_t pause_bit = 0;
+	uint32_t sctrl;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	es1370_drv_reenable_int(sub_dev); /* enable interrupts */
+
+	switch(sub_dev) {
+		case DAC1_CHAN: pause_bit = SCTRL_P1PAUSE; break;
+		case DAC2_CHAN: pause_bit = SCTRL_P2PAUSE; break;
+		default: return EINVAL;
+	}
+
+	sctrl = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
+	/* clear pause bit */
+	out32(base_addr + ES1370_REG_SERIAL_CONTROL, sctrl & ~pause_bit);
+
+	return 0;
+}
+
+int es1370_drv_start(int sub_dev) {
+	uint32_t enable_bit, result = 0;
+	uint32_t status;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	assert(sub_dev == DAC1_CHAN);
+#if 0
+	/* Write default values to device in case user failed to configure.
+	   If user did configure properly, everything is written twice.
+	   please raise your hand if you object against to this strategy...*/
+	result |= set_sample_rate(aud_conf[sub_dev].sample_rate, sub_dev);
+	result |= set_stereo(aud_conf[sub_dev].stereo, sub_dev);
+	result |= set_bits(aud_conf[sub_dev].nr_of_bits, sub_dev);
+	result |= set_sign(aud_conf[sub_dev].sign, sub_dev);
+#endif
+	/* set the interrupt count */
+	result |= es1370_set_int_cnt(sub_dev);
+
+	if (result) {
+		return EIO;
+	}
+
+	/* if device currently paused, resume */
+	es1370_drv_resume(sub_dev);
+
+	switch(sub_dev) {
+		case ADC1_CHAN: enable_bit = CTRL_ADC_EN;break;
+		case DAC1_CHAN: enable_bit = CTRL_DAC1_EN;break;
+		case DAC2_CHAN: enable_bit = CTRL_DAC2_EN;break;
+		default: return EINVAL;
+	}
+
+	/* enable interrupts from 'sub device' */
+	es1370_drv_reenable_int(sub_dev);
+
+	status = in32(base_addr + ES1370_REG_STATUS);
+	/* this means play!!! */
+	out32(base_addr + ES1370_REG_STATUS, status | enable_bit);
 
 	return 0;
 }

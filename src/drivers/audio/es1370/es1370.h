@@ -135,4 +135,12 @@
 #define MIXER            2
 #define DAC2_CHAN        3
 
+
+/*max is 64k long words for es1370 = 256k bytes */
+#define ES1370_MAX_BUF_LEN 0x20000
+
+extern int es1370_setup_dma(void *dma_buff, uint32_t length, int chan);
+
+extern int es1370_drv_start(int sub_dev);
+
 #endif /* ES1370_H_ */
