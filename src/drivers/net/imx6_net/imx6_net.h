@@ -13,12 +13,15 @@
 
 #define ENET_EIR  (NIC_BASE + 0x0004)
 #define ENET_EIMR (NIC_BASE + 0x0008)
+#define ENET_RDAR (NIC_BASE + 0x0010)
 #define ENET_TDAR (NIC_BASE + 0x0014)
 #define ENET_ECR  (NIC_BASE + 0x0024)
+#define ENET_MSCR (NIC_BASE + 0x0044)
 #define ENET_RCR  (NIC_BASE + 0x0084)
 #define ENET_TCR  (NIC_BASE + 0x00C4)
 #define MAC_LOW   (NIC_BASE + 0x00E4)
 #define MAC_HI    (NIC_BASE + 0x00E8)
+#define ENET_OPD  (NIC_BASE + 0x00EC)
 #define ENET_IAUR (NIC_BASE + 0x0118)
 #define ENET_IALR (NIC_BASE + 0x011C)
 #define ENET_GAUR (NIC_BASE + 0x0120)
@@ -40,6 +43,17 @@
 #define ECR_DBSWP (1 << 8)
 #define ETHEREN   (1 << 1) /* Ethernet enable */
 #define RESET     (1 << 0)
+
+/* ENET_RCR */
+#define FRAME_LEN_OFFSET 16
+#define RCR_FCE         (1 << 5)
+#define RCR_MII_MODE    (1 << 2)
+
+/* ENET_TCR */
+#define TCR_FDEN (1 << 2)
+
+/* ENET_TFWR */
+#define TFWR_STRFWD (1 << 8)
 
 #define FRAME_LEN     1588
 #define TX_BUF_FRAMES 16

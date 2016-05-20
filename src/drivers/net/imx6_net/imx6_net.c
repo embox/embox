@@ -32,8 +32,10 @@
 static void _reg_dump(void) {
 	log_debug("ENET_EIR  %10x", REG32_LOAD(ENET_EIR ));
 	log_debug("ENET_EIMR %10x", REG32_LOAD(ENET_EIMR));
+	log_debug("ENET_RDAR %10x", REG32_LOAD(ENET_RDAR));
 	log_debug("ENET_TDAR %10x", REG32_LOAD(ENET_TDAR));
 	log_debug("ENET_ECR  %10x", REG32_LOAD(ENET_ECR ));
+	log_debug("ENET_MSCR %10x", REG32_LOAD(ENET_MSCR));
 	log_debug("ENET_RCR  %10x", REG32_LOAD(ENET_RCR ));
 	log_debug("ENET_TCR  %10x", REG32_LOAD(ENET_TCR ));
 	log_debug("MAC_LOW   %10x", REG32_LOAD(MAC_LOW  ));
@@ -103,17 +105,17 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		desc->data_pointer = (uint32_t) &_tx_buf[0];
 		desc->len          = skb->len;
-		desc->flags1      &= FLAG_W;
+		desc->flags1      |= FLAG_W;
 		desc->flags1      |= FLAG_R | FLAG_L | FLAG_TC;
 		dcache_flush(desc, sizeof(struct imx6_buf_desc));
 
 		printk("Frame status %#4x\n", desc->flags1);
-		int t = 0xFFFFF;
+		int t = 0xFFFFFFF;
 		while (t--);
 
 		REG32_STORE(ENET_TDAR, 0x01000000);
 
-		t = 0xFFFFFF;
+		t = 0xFFFFFFF;
 		while(t--) {
 			if (!(REG32_LOAD(ENET_TDAR) & 0x01000000))
 				break;
@@ -121,6 +123,11 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 				printk("wait\n");
 		}
 
+		printk("Frame status %#4x\n", desc->flags1);
+
+		t = 0xFFFFFFF;
+		while(t--);
+		printk("Frame status %#4x\n", desc->flags1);
 	}
 	ipl_restore(sp);
 
@@ -158,26 +165,33 @@ static void _init_buffers() {
 	              RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
 }
 
-static void _reset(void) {
+static void _setup_mii_speed(void) {
+	/* Value written by u-boot */
+	REG32_STORE(ENET_MSCR, 0x14);
+}
+
+static void _reg_setup(void) {
 	uint32_t t;
 
-	REG32_STORE(ENET_ECR, RESET);
+	/* Disable IRQ */
+	REG32_STORE(ENET_EIMR, 0);
 
 	/* Clear pending interrupts */
 	REG32_STORE(ENET_EIR, EIR_MASK);
 
-	assert((RX_BUF_LEN & 0xF) == 0);
-	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
-
-	assert((((uint32_t) &_tx_desc_ring[0]) & 0xF) == 0);
-	REG32_STORE(ENET_TDSR, ((uint32_t) &_tx_desc_ring[0]));
-
-	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
-	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
-
-	t  = FRAME_LEN << 16;
-	t |= (1 << 5) | (1 << 2);
+	/* Setup RX */
+	t  = FRAME_LEN << FRAME_LEN_OFFSET;
+	t |= RCR_FCE | RCR_MII_MODE;
 	REG32_STORE(ENET_RCR, t);
+
+	_setup_mii_speed();
+}
+#if 0
+static void _reset(void) {
+	REG32_STORE(ENET_ECR, RESET);
+	_reg_dump();
+	_reg_setup();
+
 
 	REG32_STORE(ENET_TCR, (1 << 2));
 	/* TODO set FEC clock? */
@@ -196,10 +210,80 @@ static void _reset(void) {
 	REG32_STORE(ENET_TFWR, (1 << 8));
 	REG32_STORE(ENET_ECR, ETHEREN | ECR_DBSWP); /* Note: should be last init step */
 }
-
+#endif
 static int imx6_net_open(struct net_device *dev) {
-	_reset();
+	//_reset();
+	uint32_t t;
 
+	_write_macaddr();
+
+	_init_buffers();
+	_reg_setup();
+
+	REG32_STORE(ENET_OPD, 0x00010020);
+	REG32_STORE(ENET_TFWR, 0x2);
+
+	REG32_STORE(ENET_GAUR, 0x0);
+	REG32_STORE(ENET_GALR, 0x0);
+
+	assert((RX_BUF_LEN & 0xF) == 0);
+	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
+
+	assert((((uint32_t) &_tx_desc_ring[0]) & 0xF) == 0);
+	REG32_STORE(ENET_TDSR, ((uint32_t) &_tx_desc_ring[0]));
+
+	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
+	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
+
+	//miiphy_restart_aneg
+
+	/* Full duplex, heartbeat disabled */
+	REG32_STORE(ENET_TCR, TCR_FDEN);
+	/* TODO setup RX buf status */
+
+	t  = REG32_LOAD(ENET_ECR);
+	t |= ECR_DBSWP;
+	REG32_STORE(ENET_ECR, t);
+
+	t  = REG32_LOAD(ENET_TFWR);
+	t |= TFWR_STRFWD;
+	REG32_STORE(ENET_TFWR, t);
+
+	t  = REG32_LOAD(ENET_ECR);
+	t |= ETHEREN;
+	REG32_STORE(ENET_ECR, t); /* Note: should be last ENET-related init step */
+
+	t = 0xFFFFF;
+	while(t--);
+
+	/* Some u-boot magic */
+	REG32_STORE(NIC_BASE + 0x308, 0);
+
+	t = 0xFFFFF;
+	while(t--);
+
+	REG32_STORE(NIC_BASE + 0x300, 1);
+
+	REG32_STORE(NIC_BASE + 0x308, 1 << 1);
+
+	t = 0xFFFFF;
+	while(t--);
+
+	/* Phy start up miss */
+
+	t  = REG32_LOAD(ENET_ECR);
+	t &= ~(1 << 5);
+	REG32_STORE(ENET_ECR, t);
+
+	t  = REG32_LOAD(ENET_RCR);
+	t |= (0x200);
+	REG32_STORE(ENET_RCR, t);
+
+	REG32_STORE(ENET_RDAR, (1 << 24));
+
+	t = 0xFFFFFFF;
+	printk("Last NIC init delay...\n");
+	while(t--);
 	return 0;
 }
 
@@ -221,6 +305,7 @@ static const struct net_driver imx6_net_drv_ops = {
 
 EMBOX_UNIT_INIT(imx6_net_init);
 static int imx6_net_init(void) {
+	_reg_dump();
 	struct net_device *nic;
 
 	if (NULL == (nic = etherdev_alloc(0))) {
@@ -229,7 +314,10 @@ static int imx6_net_init(void) {
 
 	nic->drv_ops = &imx6_net_drv_ops;
 
-	_reset();
+	REG32_STORE(ENET_ECR, RESET);
+	_reg_setup();
+
+	/* Here u-boot configures PHY layer, we miss it */
 
 	return inetdev_register_dev(nic);
 }
