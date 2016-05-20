@@ -29,7 +29,6 @@ struct pa_strm {
 };
 
 
-
 PaError Pa_Initialize(void) {
 	return paNoError;
 }
@@ -94,7 +93,8 @@ PaError Pa_OpenStream(PaStream** stream,
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
 	assert(streamCallback != NULL);
 
-	log_debug(": %p %p %f %lu %lu %p %p",
+	log_debug("stream %p input %p output %p rate %f"
+			" framesPerBuffer %lu flags %lu callback %p buffer %p",
 			stream, inputParameters, outputParameters, sampleRate,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 

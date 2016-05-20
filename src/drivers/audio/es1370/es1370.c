@@ -43,7 +43,7 @@ int es1370_set_int_cnt(int chan) {
 	/* TODO adjust sample count according to sample format */
 
 	/* set the sample count - 1 for the specified channel. */
-	out16(int_cnt_reg, sample_count - 1);
+	out16(sample_count - 1, int_cnt_reg);
 
 	return 0;
 }
@@ -56,6 +56,7 @@ int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
 	uint32_t page, frame_count_reg, dma_add_reg;
 	uint32_t base_addr;
 
+	assert(chan == 0);
 	base_addr = es1370_hw_dev.base_addr;
 
 	switch(chan) {
@@ -76,8 +77,8 @@ int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
 		default:
 			return -EINVAL;
 	}
-	out8(base_addr + ES1370_REG_MEMPAGE, page);
-	out32(base_addr + dma_add_reg, dma_buff);
+	out8(page, base_addr + ES1370_REG_MEMPAGE);
+	out32(dma_buff, base_addr + dma_add_reg);
 
 	/* device expects long word count in stead of bytes */
 	length /= 4;
@@ -87,7 +88,7 @@ int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
 	 * addressable.
 	 * It expects length -1
 	 */
-	out32(base_addr + frame_count_reg, (uint32_t) (length - 1));
+	out32((uint32_t) (length - 1), base_addr + frame_count_reg);
 
 	return 0;
 }
@@ -108,7 +109,7 @@ static int es1370_disable_int(int chan) {
 	/* clear the interrupt */
 	ser_interface = in16(base_addr + ES1370_REG_SERIAL_CONTROL);
 
-	out16(base_addr + ES1370_REG_SERIAL_CONTROL, ser_interface & ~int_en_bit);
+	out16(ser_interface & ~int_en_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
 
 	return 0;
 }
@@ -128,8 +129,8 @@ int es1370_drv_reenable_int(int chan) {
 
 	/* clear and reenable an interrupt */
 	ser_interface = in16(base_addr + ES1370_REG_SERIAL_CONTROL);
-	out16(base_addr + ES1370_REG_SERIAL_CONTROL, ser_interface & ~int_en_bit);
-	out16(base_addr + ES1370_REG_SERIAL_CONTROL, ser_interface | int_en_bit);
+	out16(ser_interface & ~int_en_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
+	out16(ser_interface | int_en_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
 
 	return 0;
 }
@@ -151,7 +152,7 @@ int es1370_drv_pause(int sub_dev) {
 
 	sctrl = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
 	/* pause */
-	out32(base_addr + ES1370_REG_SERIAL_CONTROL, sctrl | pause_bit);
+	out32(sctrl | pause_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
 
 	return 0;
 }
@@ -167,14 +168,18 @@ int es1370_drv_resume(int sub_dev) {
 	es1370_drv_reenable_int(sub_dev); /* enable interrupts */
 
 	switch(sub_dev) {
-		case DAC1_CHAN: pause_bit = SCTRL_P1PAUSE; break;
-		case DAC2_CHAN: pause_bit = SCTRL_P2PAUSE; break;
+		case DAC1_CHAN:
+			pause_bit = SCTRL_P1LOOPSEL | SCTRL_P1PAUSE | SCTRL_P1SCTRLD ;
+			break;
+		case DAC2_CHAN:
+			pause_bit = SCTRL_P2LOOPSEL | SCTRL_P2PAUSE | SCTRL_P2DACSEN | SCTRL_P2ENDINC | SCTRL_P2STINC;
+			break;
 		default: return EINVAL;
 	}
 
 	sctrl = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
 	/* clear pause bit */
-	out32(base_addr + ES1370_REG_SERIAL_CONTROL, sctrl & ~pause_bit);
+	out32(sctrl & ~pause_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
 
 	return 0;
 }
@@ -218,7 +223,7 @@ int es1370_drv_start(int sub_dev) {
 
 	status = in32(base_addr + ES1370_REG_STATUS);
 	/* this means play!!! */
-	out32(base_addr + ES1370_REG_STATUS, status | enable_bit);
+	out32(status | enable_bit, base_addr + ES1370_REG_STATUS);
 
 	return 0;
 }
@@ -233,8 +238,9 @@ static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 
 	status = in32(base_addr + ES1370_REG_STATUS);
 	if (!(status & STAT_INTR)) {
-		return IRQ_NONE;
+		//return IRQ_NONE;
 	}
+
 	log_debug("irq status #%X\n", base_addr);
 
 	return IRQ_HANDLED;
@@ -257,7 +263,7 @@ static int es1370_hw_init(uint32_t base_addr) {
 	out32(0, base_addr + ES1370_REG_SERIAL_CONTROL);
 
 	/* enable the codec */
-	chip_sel_ctrl_reg = in32(ES1370_REG_CONTROL);
+	chip_sel_ctrl_reg = in32(base_addr + ES1370_REG_CONTROL);
 	chip_sel_ctrl_reg |= CTRL_XCTL0 | CTRL_CDC_EN;
 	out32(chip_sel_ctrl_reg, base_addr + ES1370_REG_CONTROL);
 
@@ -265,9 +271,9 @@ static int es1370_hw_init(uint32_t base_addr) {
 
 	/* clear all the memory */
 	for (i = 0; i < 0x10; ++i) {
-		out8(ES1370_REG_MEMPAGE, i);
+		out8(base_addr + ES1370_REG_MEMPAGE, i);
 		for (j = 0; j < 0x10; j += 4) {
-			out32(ES1370_REG_MEMORY + j, 0x0UL);
+			out32(0x0UL, base_addr + ES1370_REG_MEMORY + j);
 		}
 	}
 

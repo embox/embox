@@ -48,7 +48,7 @@ static int ak4531_write(uint8_t idx, uint8_t data) {
 		return -EBUSY;
 	}
 
-	out16(ak4531_base_addr, (uint16_t)idx << 8 | data);
+	out16((uint16_t)idx << 8 | data, ak4531_base_addr);
 
 	return 0;
 }
