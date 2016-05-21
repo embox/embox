@@ -99,9 +99,9 @@ PaError Pa_OpenStream(PaStream** stream,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
 	*stream = &pa_stream;
-
-	es1370_setup_dma(userData, ES1370_MAX_BUF_LEN, DAC1_CHAN);
 	es1370_drv_start(DAC1_CHAN);
+	es1370_setup_dma(userData, ES1370_MAX_BUF_LEN, DAC1_CHAN);
+
 
 	return paNoError;
 }

@@ -7,6 +7,8 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include <util/log.h>
+
 #include <asm/io.h>
 
 #include "es1370.h"
@@ -33,10 +35,10 @@ static uint8_t mixer_values[0x20] = {
 
 static int ak4531_finished(void) {
 	int i;
-	uint16_t cstat;
+	uint32_t cstat;
 	for (i = 0; i < 0x40000; i++) {
-		cstat = in16(ak4531_status_reg);
-		if (!(cstat & STAT_CWRIP)) {
+		cstat = in32(ak4531_status_reg);
+		if (!(cstat & STAT_CSTAT)) {
 			return 1;
 		}
 	}
@@ -53,12 +55,12 @@ static int ak4531_write(uint8_t idx, uint8_t data) {
 	return 0;
 }
 
-int ak4531_init(uint32_t base_addr, uint32_t status, uint32_t poll_addr) {
+int ak4531_init(uint32_t base_addr, uint32_t status_addr, uint32_t poll_addr) {
 	int i;
 
 	ak4531_base_addr = base_addr;
 	ak4531_poll_reg = poll_addr;
-	ak4531_status_reg = status;
+	ak4531_status_reg = status_addr;
 
 	for (i=0; i<100; i++) {
 		in8(poll_addr);

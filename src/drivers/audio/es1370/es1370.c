@@ -23,9 +23,14 @@ struct es1370_hw_dev {
 struct es1370_hw_dev es1370_hw_dev;
 
 
-static int fragment_size = ES1370_MAX_BUF_LEN;
+static int fragment_size = 0x8000;
 
 int es1370_set_int_cnt(int chan) {
+	uint32_t base_addr;
+
+	assert(chan == 0);
+	base_addr = es1370_hw_dev.base_addr;
+
 	/* Write interrupt count for specified channel.
 	   After <DspFragmentSize> bytes, an interrupt will be generated  */
 	int sample_count;
@@ -43,7 +48,7 @@ int es1370_set_int_cnt(int chan) {
 	/* TODO adjust sample count according to sample format */
 
 	/* set the sample count - 1 for the specified channel. */
-	out16(sample_count - 1, int_cnt_reg);
+	out16(sample_count - 1, base_addr + int_cnt_reg);
 
 	return 0;
 }
@@ -65,7 +70,8 @@ int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
 			frame_count_reg = ES1370_REG_ADC_BUFFER_SIZE;
 			dma_add_reg = ES1370_REG_ADC_PCI_ADDRESS;
 			break;
-		case DAC1_CHAN: page = DAC_MEM_PAGE;
+		case DAC1_CHAN:
+			page = DAC_MEM_PAGE;
 			frame_count_reg = ES1370_REG_DAC1_BUFFER_SIZE;
 			dma_add_reg = ES1370_REG_DAC1_PCI_ADDRESS;
 			break;
@@ -115,7 +121,7 @@ static int es1370_disable_int(int chan) {
 }
 
 int es1370_drv_reenable_int(int chan) {
-	uint16_t ser_interface, int_en_bit;
+	uint32_t ser_interface, int_en_bit;
 	uint32_t base_addr;
 
 	base_addr = es1370_hw_dev.base_addr;
@@ -128,9 +134,9 @@ int es1370_drv_reenable_int(int chan) {
 	}
 
 	/* clear and reenable an interrupt */
-	ser_interface = in16(base_addr + ES1370_REG_SERIAL_CONTROL);
-	out16(ser_interface & ~int_en_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
-	out16(ser_interface | int_en_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
+	ser_interface = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
+	out32(ser_interface & ~int_en_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
+	out32(ser_interface | int_en_bit, base_addr + ES1370_REG_SERIAL_CONTROL);
 
 	return 0;
 }
@@ -184,6 +190,69 @@ int es1370_drv_resume(int sub_dev) {
 	return 0;
 }
 
+static int set_sample_rate(uint32_t rate, int sub_dev) {
+	/* currently only 44.1kHz */
+	uint32_t controlRegister;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	controlRegister = in32(base_addr + ES1370_REG_CONTROL);
+	controlRegister |= CTRL_WTSRSEL | CTRL_DAC1_EN;
+	out32(controlRegister, base_addr + ES1370_REG_CONTROL);
+
+	return 0;
+}
+
+static int set_bits(uint32_t nr_of_bits, int sub_dev) {
+	/* set format bits for specified channel. */
+	uint16_t size_16_bit, ser_interface;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	switch(sub_dev) {
+		case ADC1_CHAN: size_16_bit = SCTRL_R1SEB; break;
+		case DAC1_CHAN: size_16_bit = SCTRL_P1SEB; break;
+		case DAC2_CHAN: size_16_bit = SCTRL_P2SEB; break;
+		default: return EINVAL;
+	}
+
+	ser_interface = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
+	ser_interface &= ~size_16_bit;
+	switch(nr_of_bits) {
+		case 16: ser_interface |= size_16_bit;break;
+		case  8: break;
+		default: return EINVAL;
+	}
+	out32(ser_interface, base_addr + ES1370_REG_SERIAL_CONTROL);
+
+	return 0;
+}
+
+static int set_stereo(uint32_t stereo, int sub_dev) {
+	/* set format bits for specified channel. */
+	uint32_t stereo_bit, ser_interface;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
+
+	switch(sub_dev) {
+		case ADC1_CHAN: stereo_bit = SCTRL_R1SMB; break;
+		case DAC1_CHAN: stereo_bit = SCTRL_P1SMB; break;
+		case DAC2_CHAN: stereo_bit = SCTRL_P2SMB; break;
+		default: return EINVAL;
+	}
+	ser_interface = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
+	ser_interface &= ~stereo_bit;
+	if (stereo) {
+		ser_interface |= stereo_bit;
+	}
+	out32(ser_interface, base_addr + ES1370_REG_SERIAL_CONTROL);
+
+	return 0;
+}
+
 int es1370_drv_start(int sub_dev) {
 	uint32_t enable_bit, result = 0;
 	uint32_t status;
@@ -192,15 +261,14 @@ int es1370_drv_start(int sub_dev) {
 	base_addr = es1370_hw_dev.base_addr;
 
 	assert(sub_dev == DAC1_CHAN);
-#if 0
+
 	/* Write default values to device in case user failed to configure.
 	   If user did configure properly, everything is written twice.
 	   please raise your hand if you object against to this strategy...*/
-	result |= set_sample_rate(aud_conf[sub_dev].sample_rate, sub_dev);
-	result |= set_stereo(aud_conf[sub_dev].stereo, sub_dev);
-	result |= set_bits(aud_conf[sub_dev].nr_of_bits, sub_dev);
-	result |= set_sign(aud_conf[sub_dev].sign, sub_dev);
-#endif
+	result |= set_sample_rate(44100, sub_dev);
+	result |= set_stereo(1, sub_dev);
+	result |= set_bits(16, sub_dev);
+
 	/* set the interrupt count */
 	result |= es1370_set_int_cnt(sub_dev);
 
@@ -210,7 +278,6 @@ int es1370_drv_start(int sub_dev) {
 
 	/* if device currently paused, resume */
 	es1370_drv_resume(sub_dev);
-
 	switch(sub_dev) {
 		case ADC1_CHAN: enable_bit = CTRL_ADC_EN;break;
 		case DAC1_CHAN: enable_bit = CTRL_DAC1_EN;break;
@@ -222,8 +289,12 @@ int es1370_drv_start(int sub_dev) {
 	es1370_drv_reenable_int(sub_dev);
 
 	status = in32(base_addr + ES1370_REG_STATUS);
+	log_debug("\n******************************");
+	log_debug("START en_bit = enable_bit %x", enable_bit);
+	log_debug("*******************************\n");
 	/* this means play!!! */
 	out32(status | enable_bit, base_addr + ES1370_REG_STATUS);
+
 
 	return 0;
 }
@@ -238,19 +309,18 @@ static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 
 	status = in32(base_addr + ES1370_REG_STATUS);
 	if (!(status & STAT_INTR)) {
-		//return IRQ_NONE;
+		return IRQ_NONE;
 	}
 
-	log_debug("irq status #%X\n", base_addr);
+	log_debug("irq status #%X\n\n", base_addr);
 
 	return IRQ_HANDLED;
 }
 
-extern int ak4531_init(uint32_t base_addr, uint32_t poll_addr);
+extern int ak4531_init(uint32_t base_addr, uint32_t status_addr, uint32_t poll_addr);
 static int es1370_hw_init(uint32_t base_addr) {
 	uint32_t chip_sel_ctrl_reg;
 	int i,j;
-
 
 	/* turn everything off */
 	out32(0, base_addr + ES1370_REG_CONTROL);
@@ -267,11 +337,11 @@ static int es1370_hw_init(uint32_t base_addr) {
 	chip_sel_ctrl_reg |= CTRL_XCTL0 | CTRL_CDC_EN;
 	out32(chip_sel_ctrl_reg, base_addr + ES1370_REG_CONTROL);
 
-	ak4531_init(base_addr + ES1370_REG_CODEC, base_addr + ES1370_REG_STATUS);
+	ak4531_init(base_addr + ES1370_REG_CODEC, base_addr + ES1370_REG_STATUS, base_addr + ES1370_REG_STATUS);
 
 	/* clear all the memory */
 	for (i = 0; i < 0x10; ++i) {
-		out8(base_addr + ES1370_REG_MEMPAGE, i);
+		out8(i, base_addr + ES1370_REG_MEMPAGE);
 		for (j = 0; j < 0x10; j += 4) {
 			out32(0x0UL, base_addr + ES1370_REG_MEMORY + j);
 		}
@@ -290,7 +360,7 @@ static int es1370_init(struct pci_slot_dev *pci_dev) {
 #endif
 	pci_set_master(pci_dev);
 
-	es1370_hw_dev.base_addr = pci_dev->bar[1] & 0xFF00;
+	es1370_hw_dev.base_addr = pci_dev->bar[0] & 0xFF00;
 
 	if ((err = irq_attach(pci_dev->irq, es1370_interrupt, IF_SHARESUP, &es1370_hw_dev, "iac"))) {
 		log_error("can't alloc irq");
