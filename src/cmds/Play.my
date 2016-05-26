@@ -9,4 +9,5 @@ module play {
 	source "play.c"
 
 	depends embox.driver.audio.portaudio
+	depends embox.fs.file_format
 }
