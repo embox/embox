@@ -23,6 +23,8 @@ For Arch Linux:
 $ sudo pacman -S make gcc-multilib cpio curl
 ```
 
+For Mac OS X instructions please refer to Emdocker wiki page https://github.com/embox/embox/wiki/Emdocker
+
 ### Building Embox
 First of all:
 ```
@@ -54,20 +56,6 @@ After configuring the project just run `make` to build:
 $ make
 ```
 
-#### Notes on Mac OS X build
-MacOS's default gcc produces Mach-O binaries, which are unusable outside from MacOS. Crosscompiler should be used in order to build elf. Clone https://github.com/embox/crosstool and make
-```
-$ ./crosstool.sh i386
-```
-Then modify `CROSS_COMPILE` variable in `conf/build.conf` like
-```
-CROSS_COMPILE = /path/to/toolchain/bin/i386-elf-
-```
-
-If you've installed toolchain in some directory from `$PATH`, then `CROSS_COMPILE` could be just
-```
-CROSS_COMPILE = i386-elf-
-```
 ### Running on QEMU
 The resulting image can now be run on QEMU. The simplest way is to execute `./scripts/qemu/auto_qemu` script:
 ```
