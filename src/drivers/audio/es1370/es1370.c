@@ -10,6 +10,8 @@
 
 #include <asm/io.h>
 
+#include <kernel/lthread/lthread.h>
+
 #include <drivers/pci/pci.h>
 #include <kernel/irq.h>
 #include <drivers/pci/pci_driver.h>
@@ -301,10 +303,11 @@ int es1370_drv_start(int sub_dev) {
 	return 0;
 }
 
+extern struct lthread es1370_lthread;
 static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 	struct es1370_hw_dev *hw_dev;
 	uint32_t base_addr;
-	uint32_t status;
+	uint32_t status, sctl;
 
 	hw_dev = dev_id;
 	base_addr = hw_dev->base_addr;
@@ -313,6 +316,18 @@ static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 	if (!(status & STAT_INTR)) {
 		return IRQ_NONE;
 	}
+	sctl = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
+
+	if (status & STAT_ADC)
+		sctl &= ~SCTRL_R1INTEN;
+	if (status & STAT_DAC1)
+		sctl &= ~SCTRL_P1INTEN;
+	if (status & STAT_DAC2)
+		sctl &= ~SCTRL_P2INTEN;
+
+	out32(sctl, base_addr + ES1370_REG_SERIAL_CONTROL);
+	//outl(s->sctrl, s->io+ES1370_REG_SERIAL_CONTROL);
+	lthread_launch(&es1370_lthread);
 
 	log_debug("irq status #%X\n\n", base_addr);
 
@@ -370,6 +385,8 @@ static int es1370_init(struct pci_slot_dev *pci_dev) {
 	}
 
 	es1370_hw_init(es1370_hw_dev.base_addr);
+
+
 
 	return 0;
 }

@@ -11,10 +11,16 @@
 
 #include <util/log.h>
 
+
+
+#include <kernel/lthread/lthread.h>
+
 #include <drivers/audio/portaudio.h>
 
 #include "es1370.h"
 
+
+struct lthread es1370_lthread;
 
 struct pa_strm {
 	int started;
@@ -79,6 +85,10 @@ const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 	return pa_info;
 }
 
+static int es1370_lthread_handle(struct lthread *self) {
+	return 0;
+}
+
 static struct pa_strm pa_stream;
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
@@ -99,9 +109,9 @@ PaError Pa_OpenStream(PaStream** stream,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
 	*stream = &pa_stream;
+	lthread_init(&es1370_lthread, es1370_lthread_handle);
 	es1370_drv_start(DAC1_CHAN);
 	es1370_setup_dma(userData, ES1370_MAX_BUF_LEN, DAC1_CHAN);
-
 
 	return paNoError;
 }
