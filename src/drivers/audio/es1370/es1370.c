@@ -33,8 +33,8 @@ int es1370_set_int_cnt(int chan) {
 
 	/* Write interrupt count for specified channel.
 	   After <DspFragmentSize> bytes, an interrupt will be generated  */
-	int sample_count;
-	uint16_t int_cnt_reg;
+	uint32_t sample_count;
+	uint32_t int_cnt_reg;
 
 	switch(chan) {
 		case ADC1_CHAN: int_cnt_reg = ES1370_REG_ADC_SCOUNT; break;
@@ -48,7 +48,7 @@ int es1370_set_int_cnt(int chan) {
 	/* TODO adjust sample count according to sample format */
 
 	/* set the sample count - 1 for the specified channel. */
-	out16(sample_count - 1, base_addr + int_cnt_reg);
+	out32(sample_count - 1, base_addr + int_cnt_reg);
 
 	return 0;
 }
@@ -254,18 +254,19 @@ static int set_stereo(uint32_t stereo, int sub_dev) {
 }
 
 int es1370_drv_start(int sub_dev) {
-	uint32_t enable_bit, result = 0;
-	uint32_t status;
-	uint32_t base_addr;
+	//uint32_t enable_bit;
+	int result = 0;
+	//uint32_t status;
+	//uint32_t base_addr;
 
-	base_addr = es1370_hw_dev.base_addr;
+	//base_addr = es1370_hw_dev.base_addr;
 
 	assert(sub_dev == DAC1_CHAN);
 
 	/* Write default values to device in case user failed to configure.
 	   If user did configure properly, everything is written twice.
 	   please raise your hand if you object against to this strategy...*/
-	result |= set_sample_rate(44100, sub_dev);
+	//result |= set_sample_rate(44100, sub_dev);
 	result |= set_stereo(1, sub_dev);
 	result |= set_bits(16, sub_dev);
 
@@ -278,22 +279,23 @@ int es1370_drv_start(int sub_dev) {
 
 	/* if device currently paused, resume */
 	es1370_drv_resume(sub_dev);
-	switch(sub_dev) {
+/*	switch(sub_dev) {
 		case ADC1_CHAN: enable_bit = CTRL_ADC_EN;break;
 		case DAC1_CHAN: enable_bit = CTRL_DAC1_EN;break;
 		case DAC2_CHAN: enable_bit = CTRL_DAC2_EN;break;
 		default: return EINVAL;
 	}
-
+*/
 	/* enable interrupts from 'sub device' */
 	es1370_drv_reenable_int(sub_dev);
+	result |= set_sample_rate(44100, sub_dev);
 
-	status = in32(base_addr + ES1370_REG_STATUS);
-	log_debug("\n******************************");
-	log_debug("START en_bit = enable_bit %x", enable_bit);
-	log_debug("*******************************\n");
+	//status = in32(base_addr + ES1370_REG_STATUS);
+	//log_debug("\n******************************");
+	//log_debug("START en_bit = enable_bit %x", enable_bit);
+	//log_debug("*******************************\n");
 	/* this means play!!! */
-	out32(status | enable_bit, base_addr + ES1370_REG_STATUS);
+	//out32(status | enable_bit, base_addr + ES1370_REG_STATUS);
 
 
 	return 0;
