@@ -329,7 +329,7 @@ static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 	//outl(s->sctrl, s->io+ES1370_REG_SERIAL_CONTROL);
 	lthread_launch(&es1370_lthread);
 
-	log_debug("irq status #%X\n\n", base_addr);
+	log_debug("irq status #%X\n\n", status);
 
 	return IRQ_HANDLED;
 }
