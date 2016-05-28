@@ -10,6 +10,8 @@
 
 #include <asm/io.h>
 
+#include <drivers/audio/portaudio.h>
+
 #include <kernel/lthread/lthread.h>
 
 #include <drivers/pci/pci.h>
@@ -303,7 +305,6 @@ int es1370_drv_start(int sub_dev) {
 	return 0;
 }
 
-extern struct lthread es1370_lthread;
 static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 	struct es1370_hw_dev *hw_dev;
 	uint32_t base_addr;
@@ -327,7 +328,8 @@ static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 
 	out32(sctl, base_addr + ES1370_REG_SERIAL_CONTROL);
 	//outl(s->sctrl, s->io+ES1370_REG_SERIAL_CONTROL);
-	lthread_launch(&es1370_lthread);
+	//lthread_launch(&es1370_lthread);
+	Pa_StartStream(NULL);
 
 	log_debug("irq status #%X\n\n", status);
 
@@ -368,15 +370,10 @@ static int es1370_hw_init(uint32_t base_addr) {
 
 	return 0;
 }
+
 static int es1370_init(struct pci_slot_dev *pci_dev) {
 	int err;
-#if 0
-	/* PCI command register
-	 * enable the SERR# driver, PCI bus mastering and I/O access
-	 */
-	pci_config_write16(pci_dev->busn, pci_dev->func,
-			PCI_COMMAND, PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_IO);
-#endif
+
 	pci_set_master(pci_dev);
 
 	es1370_hw_dev.base_addr = pci_dev->bar[0] & 0xFF00;
@@ -387,8 +384,6 @@ static int es1370_init(struct pci_slot_dev *pci_dev) {
 	}
 
 	es1370_hw_init(es1370_hw_dev.base_addr);
-
-
 
 	return 0;
 }

@@ -23,13 +23,13 @@
 struct lthread es1370_lthread;
 
 struct pa_strm {
-	int started;
-	int paused;
-	int completed;
-	int sample_format;
+	uint8_t devid;
+	uint8_t number_of_chan;
+	uint32_t sample_format;
+
 	PaStreamCallback *callback;
-	void *callback_data;
-	size_t chan_buf_len;
+	void *user_data;
+	uint32_t samples_per_buffer;
 	uint8_t in_buf[ES1370_MAX_BUF_LEN];
 	uint8_t out_buf[ES1370_MAX_BUF_LEN];
 };
@@ -85,20 +85,26 @@ const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 	return pa_info;
 }
 
+static struct pa_strm pa_stream;
+
 static int es1370_lthread_handle(struct lthread *self) {
+	if (!pa_stream.callback) {
+		return 0;
+	}
+	pa_stream.callback(NULL, pa_stream.out_buf, pa_stream.samples_per_buffer, NULL,  0, pa_stream.user_data);
+
+	es1370_setup_dma(pa_stream.out_buf, pa_stream.samples_per_buffer, DAC1_CHAN);
+
 	return 0;
 }
 
-static struct pa_strm pa_stream;
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
 		double sampleRate, unsigned long framesPerBuffer,
 		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
 		void *userData) {
-	static struct pa_strm *strm = NULL;
 
-	assert(strm == NULL);
 	assert(stream != NULL);
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
 	assert(streamCallback != NULL);
@@ -108,10 +114,16 @@ PaError Pa_OpenStream(PaStream** stream,
 			stream, inputParameters, outputParameters, sampleRate,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
+	pa_stream.number_of_chan = outputParameters->channelCount;
+	pa_stream.devid = outputParameters->device;
+	pa_stream.sample_format = outputParameters->sampleFormat;
+	pa_stream.samples_per_buffer = framesPerBuffer;
+	pa_stream.user_data = streamCallback;
+
 	*stream = &pa_stream;
 	lthread_init(&es1370_lthread, es1370_lthread_handle);
 	es1370_drv_start(DAC1_CHAN);
-	es1370_setup_dma(userData, ES1370_MAX_BUF_LEN, DAC1_CHAN);
+
 
 	return paNoError;
 }
@@ -121,8 +133,7 @@ PaError Pa_CloseStream(PaStream *stream) {
 }
 
 PaError Pa_StartStream(PaStream *stream) {
-	log_debug("stream");
-
+	lthread_launch(&es1370_lthread);
 	return paNoError;
 }
 
