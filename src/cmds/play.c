@@ -88,7 +88,7 @@ int main(int argc, char **argv) {
 	out_par = (PaStreamParameters) {
 		.device                    = 0,
 		.channelCount              = chan_n,
-		.sampleFormat              = paFloat32,
+		.sampleFormat              = paInt16,
 		.suggestedLatency          = 10,
 		.hostApiSpecificStreamInfo = NULL,
 	};
