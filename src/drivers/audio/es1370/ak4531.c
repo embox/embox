@@ -66,7 +66,9 @@ int ak4531_init(uint32_t base_addr, uint32_t status_addr, uint32_t poll_addr) {
 		in8(poll_addr);
 	}
 
-	ak4531_write(RESET_AND_POWER_DOWN, PD | RST); /* no RST, PD */
+	if (ak4531_write(RESET_AND_POWER_DOWN, PD | RST)) { /* no RST, PD */
+		return -1;
+	}
 
 	for (i=0; i<100; i++) {
 		in8(poll_addr);

@@ -354,7 +354,9 @@ static int es1370_hw_init(uint32_t base_addr) {
 	chip_sel_ctrl_reg |= CTRL_XCTL0 | CTRL_CDC_EN;
 	out32(chip_sel_ctrl_reg, base_addr + ES1370_REG_CONTROL);
 
-	ak4531_init(base_addr + ES1370_REG_CODEC, base_addr + ES1370_REG_STATUS, base_addr + ES1370_REG_STATUS);
+	if (ak4531_init(base_addr + ES1370_REG_CODEC, base_addr + ES1370_REG_STATUS, base_addr + ES1370_REG_STATUS)) {
+		log_error("Could not init ak4531\n");
+	}
 
 	/* clear all the memory */
 	for (i = 0; i < 0x10; ++i) {
