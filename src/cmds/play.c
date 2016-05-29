@@ -15,7 +15,8 @@
 #include <fs/file_format.h>
 
 static void print_usage(void) {
-	printf("Usage: play [WAVAUDIOFILE]\n");
+	printf("Usage: play [WAVAUDIOFILE]\n"
+	       "       play -s\n");
 }
 
 double _sin(double x) {
@@ -31,13 +32,11 @@ double _sin(double x) {
 
 static int _sin_w = 10;
 static int _sin_h = 30000;
-
-int sinCallback(const void *inputBuffer, void *outputBuffer,
+static int sin_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
-	FILE *file;
 	uint16_t *data;
 
 	data = outputBuffer;
@@ -51,7 +50,7 @@ int sinCallback(const void *inputBuffer, void *outputBuffer,
 	return 0;
 }
 
-int fdCallback(const void *inputBuffer, void *outputBuffer,
+static int fd_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
@@ -76,7 +75,7 @@ int main(int argc, char **argv) {
 	int chan_n;
 	int sample_rate;
 	int bits_per_sample;
-
+	PaStreamCallback *callback;
 	PaStream *stream = NULL;
 
 	struct PaStreamParameters out_par;
@@ -86,41 +85,47 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc - 1, argv, "nh"))) {
+	callback = &fd_callback;
+
+	while (-1 != (opt = getopt(argc, argv, "nsh"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
+		case 's':
+			callback = &sin_callback;
+			break;
 		default:
 			printf("Unknown argument: %c", opt);
 			return 0;
 		}
 	}
 
-	if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
-		printf("Can't open file %s\n", argv[argc - 1]);
-		return 0;
+	if (callback == fd_callback) {
+		if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
+			printf("Can't open file %s\n", argv[argc - 1]);
+			return 0;
+		}
+
+		fread(fmt_buf, 1, 44, fd);
+		if (raw_get_file_format(fmt_buf) != RIFF_FILE) {
+			printf("%s is not a RIFF audio file\n", argv[argc - 1]);
+			return 0;
+		}
+
+		chan_n          = *((uint16_t*) &fmt_buf[22]);
+		sample_rate     = *((uint32_t*) &fmt_buf[24]);
+		bits_per_sample = *((uint16_t*) &fmt_buf[34]);
+
+		printf("File size:             %d bytes\n", *((uint32_t*) &fmt_buf[4]));
+		printf("File type header:      %c%c%c%c\n", fmt_buf[8], fmt_buf[9], fmt_buf[10], fmt_buf[11]);
+		printf("Length of format data: %d\n", *((uint32_t*) &fmt_buf[16]));
+		printf("Type format:           %d\n", *((uint16_t*) &fmt_buf[20]));
+		printf("Number of channels:    %d\n", chan_n);
+		printf("Sample rate:           %d\n", sample_rate);
+		printf("Bits per sample:       %d\n", bits_per_sample);
+		printf("Size of data section:  %d\n", *((uint32_t*) &fmt_buf[40]));
 	}
-
-	fread(fmt_buf, 1, 44, fd);
-	if (raw_get_file_format(fmt_buf) != RIFF_FILE) {
-		printf("%s is not a RIFF audio file\n", argv[argc - 1]);
-		return 0;
-	}
-
-	chan_n          = *((uint16_t*) &fmt_buf[22]);
-	sample_rate     = *((uint32_t*) &fmt_buf[24]);
-	bits_per_sample = *((uint16_t*) &fmt_buf[34]);
-
-	printf("File size:             %d bytes\n", *((uint32_t*) &fmt_buf[4]));
-	printf("File type header:      %c%c%c%c\n", fmt_buf[8], snd_buf[9], snd_buf[10], snd_buf[11]);
-	printf("Length of format data: %d\n", *((uint32_t*) &fmt_buf[16]));
-	printf("Type format:           %d\n", *((uint16_t*) &fmt_buf[20]));
-	printf("Number of channels:    %d\n", chan_n);
-	printf("Sample rate:           %d\n", sample_rate);
-	printf("Bits per sample:       %d\n", bits_per_sample);
-	printf("Size of data section:  %d\n", *((uint32_t*) &fmt_buf[40]));
-
 	/* Initialize PA */
 	if (paNoError != (err = Pa_Initialize())) {
 		printf("Portaudio error: could not initialize!\n");
@@ -141,7 +146,7 @@ int main(int argc, char **argv) {
 			sample_rate,
 			256,
 			0,
-			fdCallback,
+			callback,
 			fd);
 
 	if (err != paNoError) {

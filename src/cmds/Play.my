@@ -3,7 +3,17 @@ package embox.cmd
 @AutoCmd
 @Cmd(name = "play",
      help = "Simple audio player",
-     man  = "Simple audio player")
+     man  = '''
+     	NAME
+		play - simple audio player
+	SYNOPSIS
+		play [OPTION] [FILE]
+	DESCRIPTION
+	OPTIONS
+		-s Use simple sinusiod instead of file
+	AUTHORS
+		Denis Deryugin <deryugin.denis@gmail.com>
+	''')
 
 module play {
 	source "play.c"
