@@ -30,8 +30,8 @@ struct pa_strm {
 	PaStreamCallback *callback;
 	void *user_data;
 	uint32_t samples_per_buffer;
-	uint8_t in_buf[ES1370_MAX_BUF_LEN];
-	uint8_t out_buf[ES1370_MAX_BUF_LEN];
+	uint8_t in_buf[ES1370_MAX_BUF_LEN]__attribute__ ((aligned(0x1000)));
+	uint8_t out_buf[ES1370_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
 };
 
 
