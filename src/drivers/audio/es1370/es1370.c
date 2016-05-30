@@ -28,7 +28,6 @@ struct es1370_hw_dev {
 
 struct es1370_hw_dev es1370_hw_dev;
 
-
 int es1370_set_int_cnt(int chan, uint32_t sample_count) {
 	uint32_t base_addr;
 
@@ -303,7 +302,9 @@ int es1370_drv_start(int sub_dev) {
 	result |= set_bits(16, sub_dev);
 
 	/* set the interrupt count */
-	result |= es1370_set_int_cnt(sub_dev, 256);
+	/* Here we divide buffer length by BYTES_PER_SAMPLE and by channel
+	 * count, so it's 2 * 2 for stereao */
+	result |= es1370_set_int_cnt(sub_dev, ES1370_MAX_BUF_LEN / 4);
 
 	if (result) {
 		return EIO;
