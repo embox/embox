@@ -79,10 +79,10 @@ int main(int argc, char **argv) {
 	int err;
 	FILE *fd;
 	static uint8_t fmt_buf[128];
-	int chan_n;
-	int sample_rate;
-	int bits_per_sample;
-	int fdata_len;
+	int chan_n = 1;
+	int sample_rate = 44100;
+	int bits_per_sample = 16;
+	int fdata_len = 0x100000;
 	int sleep_msec;
 
 	PaStreamCallback *callback;
