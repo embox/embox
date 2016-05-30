@@ -13,6 +13,7 @@
 
 #include <drivers/audio/portaudio.h>
 #include <fs/file_format.h>
+#include <util/math.h>
 
 static void print_usage(void) {
 	printf("Usage: play [WAVAUDIOFILE]\n"
@@ -50,18 +51,16 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 }
 
 static uint8_t _fbuffer[64 * 1024 * 1024];
-static int _ptr = 0;
 static int _bl = 64 * 1024 * 1024;
 static int fd_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
+	static int _ptr = 0;
         int read_bytes;
 
-	read_bytes = framesPerBuffer * 2 * 2; /* Stereo 16-bit */
-	if (read_bytes > _bl - _ptr)
-		read_bytes = _bl - _ptr;
+	read_bytes = min(_bl - _ptr, framesPerBuffer * 2 * 2); /* Stereo 16-bit */
 	memcpy(outputBuffer, &_fbuffer[_ptr], read_bytes);
 	_ptr += read_bytes;
 
@@ -128,8 +127,10 @@ int main(int argc, char **argv) {
 		sample_rate     = *((uint32_t*) &fmt_buf[24]);
 		bits_per_sample = *((uint16_t*) &fmt_buf[34]);
 		fdata_len       = *((uint32_t*) &fmt_buf[40]);
-		printf("File size:             %d bytes\n", *((uint32_t*) &fmt_buf[4]));
-		printf("File type header:      %c%c%c%c\n", fmt_buf[8], fmt_buf[9], fmt_buf[10], fmt_buf[11]);
+		printf("File size:             %d bytes\n",
+		       *((uint32_t*) &fmt_buf[4]));
+		printf("File type header:      %c%c%c%c\n",
+		        fmt_buf[8], fmt_buf[9], fmt_buf[10], fmt_buf[11]);
 		printf("Length of format data: %d\n", *((uint32_t*) &fmt_buf[16]));
 		printf("Type format:           %d\n", *((uint16_t*) &fmt_buf[20]));
 		printf("Number of channels:    %d\n", chan_n);
@@ -137,10 +138,8 @@ int main(int argc, char **argv) {
 		printf("Bits per sample:       %d\n", bits_per_sample);
 		printf("Size of data section:  %d\n", fdata_len);
 		printf("Progress:\n");
-		int t = fread(_fbuffer, 1, 64 * 1024 * 1024, fd);
 
-		if (_bl > t)
-			_bl = t;
+		_bl = min(fread(_fbuffer, 1, 64 * 1024 * 1024, fd), _bl);
 	}
 
 	/* Initialize PA */
@@ -176,7 +175,8 @@ int main(int argc, char **argv) {
 		goto err_terminate_pa;
 	}
 
-	sleep_msec = 1000 * (fdata_len / (bits_per_sample / 8 * sample_rate * chan_n));
+	sleep_msec = 1000 * (fdata_len /
+	           (bits_per_sample / 8 * sample_rate * chan_n));
 	Pa_Sleep(sleep_msec);
 
 	if (paNoError != (err = Pa_StopStream(stream))) {
