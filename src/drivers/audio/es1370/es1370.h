@@ -142,5 +142,6 @@
 extern int es1370_setup_dma(void *dma_buff, uint32_t length, int chan);
 
 extern int es1370_drv_start(int sub_dev);
+extern int es1370_drv_pause(int sub_dev);
 
 #endif /* ES1370_H_ */

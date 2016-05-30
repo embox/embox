@@ -169,6 +169,7 @@ PaError Pa_OpenStream(PaStream** stream,
 }
 
 PaError Pa_CloseStream(PaStream *stream) {
+	es1370_drv_pause(DAC1_CHAN);
 	return paNoError;
 }
 
