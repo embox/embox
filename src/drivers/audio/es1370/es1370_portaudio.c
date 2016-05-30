@@ -30,6 +30,8 @@ struct pa_strm {
 	uint32_t samples_per_buffer;
 	uint8_t out_buf[ES1370_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
 	uint32_t cur_buff_offset;
+
+	int active;
 };
 
 PaError Pa_Initialize(void) {
@@ -113,20 +115,24 @@ extern int es1370_update_dma(uint32_t length, int chan);
 
 static int es1370_lthread_handle(struct lthread *self) {
 	int buf_len;
+	int retval;
 
-	if (!pa_stream.callback) {
+	if (!pa_stream.callback || !pa_stream.active) {
 		return 0;
 	}
 
-	pa_stream.callback(NULL,
-	                   pa_stream_cur_ptr(&pa_stream),
-	                   pa_stream.samples_per_buffer,
-	                   NULL,
-	                   0,
-	                   pa_stream.user_data);
+	retval = pa_stream.callback(NULL,
+	                            pa_stream_cur_ptr(&pa_stream),
+	                            pa_stream.samples_per_buffer,
+	                            NULL,
+	                            0,
+	                            pa_stream.user_data);
 
 	buf_len = pa_stream.samples_per_buffer * _bytes_per_sample(&pa_stream);
 	es1370_update_dma(buf_len, DAC1_CHAN);
+
+	if (retval != paContinue)
+		pa_stream.active = 0;
 
 	return 0;
 }
@@ -153,6 +159,7 @@ PaError Pa_OpenStream(PaStream** stream,
 	pa_stream.samples_per_buffer = framesPerBuffer;
 	pa_stream.callback = streamCallback;
 	pa_stream.user_data = userData;
+	pa_stream.active = 1;
 
 	*stream = &pa_stream;
 	lthread_init(&es1370_lthread, es1370_lthread_handle);
@@ -171,7 +178,6 @@ PaError Pa_StartStream(PaStream *stream) {
 
 	strm = &pa_stream; // TODO fix
 
-	lthread_launch(&es1370_lthread);
 	lthread_launch(&es1370_lthread);
 
 	buf_len = strm->samples_per_buffer * _bytes_per_sample(strm);
