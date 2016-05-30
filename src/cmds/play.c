@@ -42,8 +42,8 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 	data = outputBuffer;
 	for (int i = 0; i < framesPerBuffer; i++) {
 		double x = 1. * (i % _sin_w) / _sin_w * 3.14;
-		*data++ = (int) ((1. + _sin(x)) * _sin_h); /* Left channel  */
-		*data++ = (int) ((1. + _sin(x)) * _sin_h); /* Right channel */
+		*data++ = (int) ((_sin(x)) * _sin_h); /* Left channel  */
+		*data++ = (int) ((_sin(x)) * _sin_h); /* Right channel */
 	}
 
 	return 0;
@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
 		goto err_terminate_pa;
 	}
 
-	sleep_msec = fdata_len / (bits_per_sample * sample_rate * chan_n);
+	sleep_msec = 1000 * (fdata_len / (bits_per_sample / 8 * sample_rate * chan_n));
 	Pa_Sleep(sleep_msec);
 
 	if (paNoError != (err = Pa_StopStream(stream))) {
