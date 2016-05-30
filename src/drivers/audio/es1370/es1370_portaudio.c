@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <errno.h>
 
 #include <util/log.h>
 
@@ -30,8 +31,8 @@ struct pa_strm {
 	PaStreamCallback *callback;
 	void *user_data;
 	uint32_t samples_per_buffer;
-	uint8_t in_buf[ES1370_MAX_BUF_LEN]__attribute__ ((aligned(0x1000)));
 	uint8_t out_buf[ES1370_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
+	uint32_t cur_buff_offset;
 };
 
 
@@ -87,13 +88,35 @@ const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 
 static struct pa_strm pa_stream;
 
+static int sample_format_in_bytes(uint32_t pa_format) {
+	switch (pa_format) {
+	case paInt16:
+		return 2;
+	case paInt8:
+		return 1;
+	default:
+		log_error("Unsupport stream format");
+		return -EINVAL;
+	}
+	return -EINVAL;
+}
+
+static uint8_t *pa_stream_cur_ptr(struct pa_strm *stream) {
+	stream->cur_buff_offset += stream->cur_buff_offset +
+			stream->samples_per_buffer * stream->number_of_chan * sample_format_in_bytes(stream->sample_format);
+	stream->cur_buff_offset &= (sizeof(stream->out_buf) - 1);
+	return &stream->out_buf[stream->cur_buff_offset];
+}
+
+extern int es1370_update_dma(uint32_t length, int chan);
+
 static int es1370_lthread_handle(struct lthread *self) {
 	if (!pa_stream.callback) {
 		return 0;
 	}
-	pa_stream.callback(NULL, pa_stream.out_buf, pa_stream.samples_per_buffer, NULL,  0, pa_stream.user_data);
+	pa_stream.callback(NULL, pa_stream_cur_ptr(&pa_stream), pa_stream.samples_per_buffer, NULL,  0, pa_stream.user_data);
 
-	es1370_setup_dma(pa_stream.out_buf, pa_stream.samples_per_buffer, DAC1_CHAN);
+	es1370_update_dma(pa_stream.samples_per_buffer, DAC1_CHAN);
 
 	return 0;
 }
@@ -134,6 +157,10 @@ PaError Pa_CloseStream(PaStream *stream) {
 
 PaError Pa_StartStream(PaStream *stream) {
 	lthread_launch(&es1370_lthread);
+	lthread_launch(&es1370_lthread);
+
+	es1370_setup_dma(pa_stream.out_buf, pa_stream.samples_per_buffer, DAC1_CHAN);
+
 	return paNoError;
 }
 
