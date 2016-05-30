@@ -141,7 +141,8 @@ PaError Pa_OpenStream(PaStream** stream,
 	pa_stream.devid = outputParameters->device;
 	pa_stream.sample_format = outputParameters->sampleFormat;
 	pa_stream.samples_per_buffer = framesPerBuffer;
-	pa_stream.user_data = streamCallback;
+	pa_stream.callback = streamCallback;
+	pa_stream.user_data = userData;
 
 	*stream = &pa_stream;
 	lthread_init(&es1370_lthread, es1370_lthread_handle);
