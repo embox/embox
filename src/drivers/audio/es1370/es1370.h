@@ -137,7 +137,7 @@
 
 
 /*max is 64k long words for es1370 = 256k bytes */
-#define ES1370_MAX_BUF_LEN 0x20000
+#define ES1370_MAX_BUF_LEN 0x40000
 
 extern int es1370_setup_dma(void *dma_buff, uint32_t length, int chan);
 
