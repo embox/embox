@@ -347,8 +347,6 @@ static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 
 	Pa_StartStream(NULL);
 
-	log_debug("irq handled");
-
 	return IRQ_HANDLED;
 }
 
