@@ -110,8 +110,6 @@ static uint8_t *pa_stream_cur_ptr(struct pa_strm *stream) {
 	return &stream->out_buf[stream->cur_buff_offset];
 }
 
-extern int es1370_update_dma(uint32_t length, int chan);
-
 static int es1370_lthread_handle(struct lthread *self) {
 	int buf_len;
 	int retval;
@@ -133,6 +131,8 @@ static int es1370_lthread_handle(struct lthread *self) {
 	if (retval != paContinue)
 		pa_stream.active = 0;
 
+	es1370_drv_resume(DAC1_CHAN);
+
 	return 0;
 }
 
@@ -148,7 +148,7 @@ PaError Pa_OpenStream(PaStream** stream,
 	assert(streamCallback != NULL);
 
 	log_debug("stream %p input %p output %p rate %f"
-			" framesPerBuffer %lu flags %lu callback %p buffer %p",
+			" framesPerBuffer %lu flags %lu callback %p user_data %p",
 			stream, inputParameters, outputParameters, sampleRate,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
@@ -176,14 +176,16 @@ PaError Pa_StartStream(PaStream *stream) {
 	int buf_len;
 	struct pa_strm *strm = stream;
 
-	strm = &pa_stream; // TODO fix
-
 	lthread_launch(&es1370_lthread);
 
-	buf_len = strm->samples_per_buffer * _bytes_per_sample(strm);
-	es1370_setup_dma(strm->out_buf,
-	                 buf_len,
-	                 DAC1_CHAN);
+	if (stream != NULL) {
+		/* Called not from IRQ */ /* This should be rewritten */
+		strm = &pa_stream; // TODO fix
+		buf_len = strm->samples_per_buffer * _bytes_per_sample(strm);
+		es1370_setup_dma(strm->out_buf,
+		                 buf_len,
+		                 DAC1_CHAN);
+	}
 
 	return paNoError;
 }

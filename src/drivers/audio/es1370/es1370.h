@@ -140,8 +140,11 @@
 #define ES1370_MAX_BUF_LEN 0x40000
 
 extern int es1370_setup_dma(void *dma_buff, uint32_t length, int chan);
+extern int es1370_update_dma(uint32_t length, int chan);
 
 extern int es1370_drv_start(int sub_dev);
 extern int es1370_drv_pause(int sub_dev);
+extern int es1370_drv_resume(int sub_dev);
+extern int es1370_drv_reenable_int(int sub_dev);
 
 #endif /* ES1370_H_ */
