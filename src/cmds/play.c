@@ -41,10 +41,11 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 	uint16_t *data;
 
 	data = outputBuffer;
+
 	for (int i = 0; i < framesPerBuffer; i++) {
 		double x = 1. * (i % _sin_w) / _sin_w * 3.14;
-		*data++ = (int) ((_sin(x)) * _sin_h); /* Left channel  */
-		*data++ = (int) ((_sin(x)) * _sin_h); /* Right channel */
+		*data++ = (uint16_t) ((_sin(x)) * _sin_h); /* Left channel  */
+		*data++ = (uint16_t) ((_sin(x)) * _sin_h); /* Right channel */
 	}
 
 	return 0;
@@ -79,7 +80,7 @@ int main(int argc, char **argv) {
 	int err;
 	FILE *fd;
 	static uint8_t fmt_buf[128];
-	int chan_n = 1;
+	int chan_n = 2;
 	int sample_rate = 44100;
 	int bits_per_sample = 16;
 	int fdata_len = 0x100000;
