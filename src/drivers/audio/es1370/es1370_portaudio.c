@@ -99,15 +99,14 @@ static int sample_format_in_bytes(uint32_t pa_format) {
 	return -EINVAL;
 }
 
-static uint8_t _bytes_per_sample(struct pa_strm *stream) {
-	return stream->samples_per_buffer *
-	       stream->number_of_chan *
+static int _bytes_per_sample(struct pa_strm *stream) {
+	return stream->number_of_chan *
 	       sample_format_in_bytes(stream->sample_format);
 }
 
 static uint8_t *pa_stream_cur_ptr(struct pa_strm *stream) {
-	stream->cur_buff_offset += stream->cur_buff_offset + _bytes_per_sample(stream);
-	stream->cur_buff_offset &= (sizeof(stream->out_buf) - 1);
+	stream->cur_buff_offset += stream->cur_buff_offset + stream->samples_per_buffer * _bytes_per_sample(stream);
+	stream->cur_buff_offset %= sizeof(stream->out_buf);
 	return &stream->out_buf[stream->cur_buff_offset];
 }
 
