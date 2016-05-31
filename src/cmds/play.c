@@ -21,14 +21,17 @@ static void print_usage(void) {
 }
 
 double _sin(double x) {
-	if (x > 0) {
-		while (x > 3.14)
-			x -= 3.14;
-	} else {
-		while (x < -3.14)
-			x += 3.14;
+	double m = 1.;
+	while (x > 2. * 3.14)
+		x -= 2. * 3.14;
+
+	if (x > 3.14) {
+		x -= 3.14;
+		m = -1.;
 	}
-	return x - x * x * x / 6. + x * x * x * x * x / 120.;
+	return m * (x - x * x * x / 6. + x * x * x * x * x / 120.
+		- x * x * x * x * x * x * x / (120 * 6 * 7)
+		+ x * x * x * x * x * x * x * x * x/ (120 * 6 * 7 * 8 * 9));
 }
 
 static int _sin_w = 100;
@@ -43,9 +46,9 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 	data = outputBuffer;
 
 	for (int i = 0; i < framesPerBuffer; i++) {
-		double x = 1. * (i % _sin_w) / _sin_w * 3.14;
-		*data++ = (uint16_t) ((_sin(x)) * _sin_h); /* Left channel  */
-		*data++ = (uint16_t) ((_sin(x)) * _sin_h); /* Right channel */
+		double x = 2 * 3.14 * (i % _sin_w) / _sin_w;
+		*data++ = (uint16_t) ((1. + _sin(x)) * _sin_h); /* Left channel  */
+		*data++ = (uint16_t) ((1. + _sin(x)) * _sin_h); /* Right channel */
 	}
 
 	return 0;
