@@ -370,7 +370,7 @@ static int es1370_hw_init(uint32_t base_addr) {
 	chip_sel_ctrl_reg |= CTRL_XCTL0 | CTRL_CDC_EN;
 	out32(chip_sel_ctrl_reg, base_addr + ES1370_REG_CONTROL);
 
-	if (ak4531_init(base_addr + ES1370_REG_CODEC, base_addr + ES1370_REG_STATUS, base_addr + ES1370_REG_STATUS)) {
+	if (ak4531_init(base_addr + ES1370_REG_CODEC, base_addr + ES1370_REG_STATUS, base_addr + ES1370_REG_CONTROL)) {
 		log_error("Could not init ak4531\n");
 	}
 
