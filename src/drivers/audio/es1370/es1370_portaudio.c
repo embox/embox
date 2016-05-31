@@ -105,7 +105,7 @@ static int _bytes_per_sample(struct pa_strm *stream) {
 }
 
 static uint8_t *pa_stream_cur_ptr(struct pa_strm *stream) {
-	stream->cur_buff_offset += stream->cur_buff_offset + stream->samples_per_buffer * _bytes_per_sample(stream);
+	stream->cur_buff_offset += stream->samples_per_buffer * _bytes_per_sample(stream);
 	stream->cur_buff_offset %= sizeof(stream->out_buf);
 	return &stream->out_buf[stream->cur_buff_offset];
 }
