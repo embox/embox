@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 #include <fs/file_operation.h>
+#include <fs/file_desc.h>
 #include <drivers/char_dev.h>
 #include <sys/ioctl.h>
 #include <util/math.h>
