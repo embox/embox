@@ -37,7 +37,6 @@
 EMBOX_UNIT_INIT(ti816x_init);
 
 #define MODOPS_PREP_BUFF_CNT	OPTION_GET(NUMBER, prep_buff_cnt)
-#define MODOPS_AMOUNT_SKB	OPTION_GET(NUMBER, amount_skb)
 
 #define DEFAULT_CHANNEL 0
 #define DEFAULT_MASK ((uint8_t)(1 << DEFAULT_CHANNEL))
@@ -69,8 +68,12 @@ static struct emac_desc_head *emac_hdesc_tx_alloc(void) {
 	sp = ipl_save();
 	{
 		res = pool_alloc(&emac_tx_desc_pool);
-		assert(res);
-		memset(res, 0xFF, EMAC_SAFE_PADDING);
+#if 0
+		if (res) {
+			assert(res);
+			memset(res, 0xFF, EMAC_SAFE_PADDING);
+		}
+#endif
 	}
 	ipl_restore(sp);
 
@@ -79,14 +82,15 @@ static struct emac_desc_head *emac_hdesc_tx_alloc(void) {
 
 static void emac_hdesc_tx_free(struct emac_desc_head *obj) {
 	ipl_t sp;
-	int i;
 	assert(obj);
 
 	sp = ipl_save();
 	{
+#if 0
+		int i;
 		for (i = 0; i < EMAC_SAFE_PADDING; i++)
 			assert(obj->buf[i] == 0xFF);
-
+#endif
 		pool_free(&emac_tx_desc_pool, obj);
 	}
 	ipl_restore(sp);
@@ -286,13 +290,20 @@ static void emac_desc_build(struct emac_desc_head *hdesc, struct sk_buff *skb,
 	assert(flags & EMAC_DESC_F_OWNER);
 
 	hdesc->desc.next = 0;
+#if 0
+	memset(hdesc->data, 0, RX_BUFF_LEN);
+#endif
 	hdesc->desc.data = (uintptr_t)(skb ? skb_data_cast_in(skb->data) : &hdesc->data[0]);
+
 	hdesc->desc.data_len = data_len;
 	hdesc->desc.packet_len = packet_len;
 	hdesc->desc.data_off = 0;
 	hdesc->desc.flags = flags;
+
+	dcache_flush(&hdesc->desc, sizeof hdesc->desc);
 	hdesc->skb = skb;
 	dcache_flush(&hdesc->desc, sizeof hdesc->desc);
+	dcache_inval(&hdesc->desc, sizeof hdesc->desc);
 }
 
 static int emac_desc_confirm(struct emac_desc *desc,
@@ -334,6 +345,10 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	ipl_t ipl;
 
 	hdesc = emac_hdesc_tx_alloc();
+	if (!hdesc) {
+		skb_free(skb);
+		return 0;
+	}
 	desc = &hdesc->desc;
 
 	data_len = max(skb->len, ETH_ZLEN);
@@ -478,7 +493,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		dev_priv->rx_head = desc;
 
 		log_debug("reuse %#x", &hdesc->desc);
-		emac_desc_build(hdesc, 0, RX_BUFF_LEN, 0, EMAC_DESC_F_OWNER);
+		emac_desc_build(hdesc, 0, RX_FRAME_MAX_LEN, 0, EMAC_DESC_F_OWNER);
 		if (!dev_priv->rx_wait_head) {
 			dev_priv->rx_wait_head = &hdesc->desc;
 		} else {
@@ -588,7 +603,7 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		unsigned long macstatus;
 
 		macstatus = REG_LOAD(EMAC_BASE + EMAC_R_MACSTATUS);
-		log_debug("\tMACSTATUS: %#lx\n"
+		log_error("\tMACSTATUS: %#lx\n"
 				"\t\tidle %lx\n"
 				"\t\ttxerrcode %lx; txerrch %lx\n"
 				"\t\trxerrcode %lx; rxerrch %lx\n"
