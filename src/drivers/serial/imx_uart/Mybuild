@@ -1,6 +1,6 @@
 package embox.driver.serial
 
 module imx_uart {
-	option number base_addr
+	option number base_addr=0x02020000
 	source "imx_uart.c"
 }
