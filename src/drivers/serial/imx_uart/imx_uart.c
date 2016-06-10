@@ -20,10 +20,15 @@
 #define RXR  0x00
 #define TXR  0x40
 #define UCR1 0x80
+#define UCR2 0x84
 
-#define UCR1_UARTEN 1
+#define UCR1_UARTEN (1 << 0)
+#define UCR2_TXEN   (1 << 2)
+#define UCR2_RXEN   (1 << 1)
 
 static int imxuart_diag_init(const struct diag *diag) {
+	UART(UCR1)  = UCR1_UARTEN;
+	UART(UCR2) |= UCR2_RXEN | UCR2_TXEN;
 	return 0;
 }
 
@@ -38,12 +43,13 @@ static char imxuart_diag_getc(const struct diag *diag) {
 static void imxuart_diag_putc(const struct diag *diag, char ch) {
 	while (!(UART(USR2) & USR2_TXFE)) {
 	}
+
 	UART(TXR) = ch;
 }
 
 DIAG_OPS_DECLARE(
-		.init = imxuart_diag_init,
-		.putc = imxuart_diag_putc,
-		.getc = imxuart_diag_getc,
-		.kbhit = imxuart_diag_hasrx,
+	.init = imxuart_diag_init,
+	.putc = imxuart_diag_putc,
+	.getc = imxuart_diag_getc,
+	.kbhit = imxuart_diag_hasrx,
 );
