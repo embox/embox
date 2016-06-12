@@ -62,6 +62,10 @@ static int imx6_gpt_init(void) {
 	uint32_t t;
 	REG32_STORE(GPT_CR, GPT_CR_SWR);
 
+	/* We can configure GPT only when disabled */
+	REG32_STORE(GPT_CR,   0);
+	REG32_STORE(GPT_IR,   0);
+
 	REG32_STORE(GPT_PR, GPT_PRESCALER);
 
 	REG32_STORE(GPT_OCR1, 1024); /* XXX */
@@ -72,6 +76,8 @@ static int imx6_gpt_init(void) {
 	t |= CLKSRC_PERIPH << GPT_CR_CLKSRC_OFFT;
 
 	REG32_STORE(GPT_CR, t);
+
+	clock_source_register(&imx6_gpt_clock_source);
 
 	return irq_attach(GPT_IRQ,
 	                  clock_handler,
