@@ -1,0 +1,11 @@
+package embox.driver.clock
+
+module imx6_gpt extends embox.arch.clock {
+	source "imx6_gpt.c"
+
+	option number base_addr=0x02098000
+	option number irq_nr=0x1
+
+	depends embox.kernel.time.clock_source
+	depends embox.driver.interrupt.irqctrl_api
+}
