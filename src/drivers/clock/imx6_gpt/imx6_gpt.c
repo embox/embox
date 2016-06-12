@@ -85,7 +85,7 @@ static int imx6_gpt_config(struct time_dev_conf * conf) {
 }
 
 static cycle_t imx6_gpt_read(void) {
-	return 0;
+	return REG32_LOAD(GPT_CNT);
 }
 
 static struct time_event_device imx6_gpt_event = {
