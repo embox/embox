@@ -26,12 +26,11 @@ struct es1370_hw_dev {
 	uint32_t sctrl;
 };
 
-struct es1370_hw_dev es1370_hw_dev;
+static struct es1370_hw_dev es1370_hw_dev;
 
 int es1370_set_int_cnt(int chan, uint32_t sample_count) {
 	uint32_t base_addr;
 
-	assert(chan == 0);
 	base_addr = es1370_hw_dev.base_addr;
 
 	/* Write interrupt count for specified channel.
@@ -61,7 +60,6 @@ int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
 	uint32_t page, frame_count_reg, dma_add_reg;
 	uint32_t base_addr;
 
-	assert(chan == 0);
 	base_addr = es1370_hw_dev.base_addr;
 
 	switch(chan) {
@@ -208,8 +206,6 @@ int es1370_drv_resume(int sub_dev) {
 
 	base_addr = es1370_hw_dev.base_addr;
 
-//	es1370_drv_reenable_int(sub_dev); /* enable interrupts */
-
 	switch(sub_dev) {
 		case DAC1_CHAN:
 			pause_bit = SCTRL_P1LOOPSEL | SCTRL_P1PAUSE | SCTRL_P1SCTRLD ;
@@ -292,8 +288,6 @@ static int set_stereo(uint32_t stereo, int sub_dev) {
 
 int es1370_drv_start(int sub_dev) {
 	int result = 0;
-
-	assert(sub_dev == DAC1_CHAN);
 
 	/* Write default values to device in case user failed to configure.
 	   If user did configure properly, everything is written twice.

@@ -126,12 +126,12 @@ static int es1370_lthread_handle(struct lthread *self) {
 	                            pa_stream.user_data);
 
 	buf_len = pa_stream.samples_per_buffer * _bytes_per_sample(&pa_stream);
-	es1370_update_dma(buf_len, DAC1_CHAN);
+	es1370_update_dma(buf_len, pa_stream.devid);
 
 	if (retval != paContinue)
 		pa_stream.active = 0;
 
-	es1370_drv_resume(DAC1_CHAN);
+	es1370_drv_resume(pa_stream.devid);
 
 	return 0;
 }
@@ -162,13 +162,17 @@ PaError Pa_OpenStream(PaStream** stream,
 
 	*stream = &pa_stream;
 	lthread_init(&es1370_lthread, es1370_lthread_handle);
-	es1370_drv_start(DAC1_CHAN);
+	es1370_drv_start(pa_stream.devid);
 
 	return paNoError;
 }
 
 PaError Pa_CloseStream(PaStream *stream) {
-	es1370_drv_pause(DAC1_CHAN);
+	struct pa_strm *strm;
+
+	strm = (struct pa_strm *)stream;
+
+	es1370_drv_pause(strm->devid);
 	return paNoError;
 }
 
@@ -184,7 +188,7 @@ PaError Pa_StartStream(PaStream *stream) {
 		buf_len = strm->samples_per_buffer * _bytes_per_sample(strm);
 		es1370_setup_dma(strm->out_buf,
 		                 buf_len,
-		                 DAC1_CHAN);
+		                 strm->devid);
 	}
 
 	return paNoError;
