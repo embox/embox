@@ -15,6 +15,7 @@
 #include <kernel/lthread/lthread.h>
 
 #include <drivers/audio/portaudio.h>
+#include <drivers/audio/audio_dev.h>
 
 #include "es1370.h"
 
@@ -113,6 +114,7 @@ static uint8_t *pa_stream_cur_ptr(struct pa_strm *stream) {
 static int es1370_lthread_handle(struct lthread *self) {
 	int buf_len;
 	int retval;
+	struct audio_dev *audio_dev;
 
 	if (!pa_stream.callback || !pa_stream.active) {
 		return 0;
@@ -131,7 +133,8 @@ static int es1370_lthread_handle(struct lthread *self) {
 	if (retval != paContinue)
 		pa_stream.active = 0;
 
-	es1370_drv_resume(pa_stream.devid);
+	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
+	audio_dev->ad_ops->ad_ops_resume(audio_dev);
 
 	return 0;
 }
@@ -142,6 +145,7 @@ PaError Pa_OpenStream(PaStream** stream,
 		double sampleRate, unsigned long framesPerBuffer,
 		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
 		void *userData) {
+	struct audio_dev *audio_dev;
 
 	assert(stream != NULL);
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
@@ -162,17 +166,22 @@ PaError Pa_OpenStream(PaStream** stream,
 
 	*stream = &pa_stream;
 	lthread_init(&es1370_lthread, es1370_lthread_handle);
-	es1370_drv_start(pa_stream.devid);
+
+	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
+	audio_dev->ad_ops->ad_ops_start(audio_dev);
 
 	return paNoError;
 }
 
 PaError Pa_CloseStream(PaStream *stream) {
 	struct pa_strm *strm;
+	struct audio_dev *audio_dev;
 
 	strm = (struct pa_strm *)stream;
 
-	es1370_drv_pause(strm->devid);
+	audio_dev = audio_dev_get_by_idx(strm->devid);
+	audio_dev->ad_ops->ad_ops_pause(audio_dev);
+
 	return paNoError;
 }
 

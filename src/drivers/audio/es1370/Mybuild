@@ -8,4 +8,5 @@ module es1370 extends portaudio_api {
 	source "ak4531.c"
 
 	depends embox.driver.pci
+	depends embox.driver.audio.audio_dev
 }

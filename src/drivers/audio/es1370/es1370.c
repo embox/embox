@@ -11,6 +11,7 @@
 #include <asm/io.h>
 
 #include <drivers/audio/portaudio.h>
+#include <drivers/audio/audio_dev.h>
 
 #include <kernel/lthread/lthread.h>
 
@@ -397,3 +398,61 @@ static int es1370_init(struct pci_slot_dev *pci_dev) {
 }
 
 PCI_DRIVER("es1370 Audio Controller", es1370_init, 0x1274, 0x5000);
+
+
+struct es1370_dev_priv {
+	struct es1370_hw_dev *hw_dev;
+	int devid;
+};
+
+static void es1370_dev_start(struct audio_dev *dev) {
+	struct es1370_dev_priv *priv;
+
+	priv = dev->ad_priv;
+	es1370_drv_start(priv->devid);
+
+}
+static void es1370_dev_pause(struct audio_dev *dev) {
+	struct es1370_dev_priv *priv;
+
+	priv = dev->ad_priv;
+	es1370_drv_pause(priv->devid);
+}
+
+static void es1370_dev_resume(struct audio_dev *dev) {
+	struct es1370_dev_priv *priv;
+
+	priv = dev->ad_priv;
+	es1370_drv_resume(priv->devid);
+}
+
+static void es1370_dev_stop(struct audio_dev *dev) {
+
+}
+
+static const struct audio_dev_ops es1370_dev_ops = {
+	.ad_ops_start = es1370_dev_start,
+	.ad_ops_pause = es1370_dev_pause,
+	.ad_ops_resume = es1370_dev_resume,
+	.ad_ops_stop = es1370_dev_stop,
+};
+
+struct es1370_dev_priv es1370_dac1 = {
+	.hw_dev = &es1370_hw_dev,
+	.devid  = DAC1_CHAN
+};
+
+static struct es1370_dev_priv es1370_dac2 = {
+	.hw_dev = &es1370_hw_dev,
+	.devid  = DAC1_CHAN
+};
+
+static struct es1370_dev_priv es1370_adc1 = {
+	.hw_dev = &es1370_hw_dev,
+	.devid  = ADC1_CHAN
+};
+
+
+AUDIO_DEV_DEF("es1370_dac1", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_dac1);
+AUDIO_DEV_DEF("es1370_dac2", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_dac2);
+AUDIO_DEV_DEF("es1370_adc1", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_adc1);

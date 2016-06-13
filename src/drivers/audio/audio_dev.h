@@ -21,11 +21,16 @@ struct audio_dev_ops {
 
 struct audio_dev {
 	struct audio_dev_ops *ad_ops;
+	const char *ad_name;
 	void *ad_priv;
 };
 
-#define AUDIO_DEV_DEF(ops, priv) \
+#define AUDIO_DEV_DEF(name, ops, priv) \
 	ARRAY_SPREAD_DECLARE(const struct audio_dev, __audio_device_registry); \
-	ARRAY_SPREAD_ADD(__audio_device_registry, {ops, priv} )
+	ARRAY_SPREAD_ADD(__audio_device_registry, {ops,name, priv} )
+
+extern struct audio_dev *audio_dev_get_by_idx(int idx);
+
+extern struct audio_dev *audio_dev_get_by_name(char name[]);
 
 #endif /* AUDIO_DEV_H_ */
