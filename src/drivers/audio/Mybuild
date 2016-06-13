@@ -1,5 +1,12 @@
 package embox.driver.audio
 
+module audio_dev {
+	source "audio_dev.c"
+
+	@IncludeExport(path="drivers/audio")
+	source "audio_dev.h"
+}
+
 abstract module portaudio_api {
 	@IncludeExport(path="drivers/audio")
 	source "portaudio.h"
