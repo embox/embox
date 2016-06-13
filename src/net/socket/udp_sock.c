@@ -124,7 +124,7 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	const size_t iov_data_len = iov_msg_len(msg->msg_iov, msg->msg_iovlen);
 
-	// TODO msg->msg_name could be NULL, see around. Will NULL be OK?
+	// msg->msg_name could be NULL, sockaddr is OK to be NULL
 	const struct sockaddr *sockaddr = (const struct sockaddr *)msg->msg_name;
 
 	const int out_data_len = iov_dgram_make_queue(iov_data_len, UDP_HEADER_SIZE, &queue, sk, sockaddr);
