@@ -22,7 +22,7 @@ module core {
 	depends embox.compat.libc.stdio.fseek
 	depends embox.compat.libc.time
 
-	depends embox.driver.audio.portaudio
+	depends embox.driver.audio.portaudio_api
 
 	depends third_party.STLport.core
 }

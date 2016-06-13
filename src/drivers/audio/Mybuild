@@ -1,12 +1,12 @@
 package embox.driver.audio
 
-abstract module portaudio {
+abstract module portaudio_api {
 	@IncludeExport(path="drivers/audio")
 	source "portaudio.h"
 }
 
 @BuildDepends(third_party.bsp.st_f4.core)
-module stm32f4_pa extends portaudio {
+module stm32f4_pa extends portaudio_api {
 	option number volume=70
 	option number sample_rate
 	option number buf_cnt=0x4
@@ -25,7 +25,7 @@ module stm32f4_pa extends portaudio {
 	depends embox.kernel.irq_api
 }
 
-module intel_ac_pa extends portaudio {
+module intel_ac_pa extends portaudio_api {
 	source "intel82801aa.c"
 
 	depends embox.compat.posix.util.sleep
@@ -33,7 +33,7 @@ module intel_ac_pa extends portaudio {
 	depends embox.driver.pci
 }
 
-module portaudio_stub extends portaudio {
+module portaudio_stub extends portaudio_api {
 	source "portaudio_stub.c"
 
 	depends embox.compat.posix.util.sleep

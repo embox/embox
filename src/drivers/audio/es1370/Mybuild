@@ -1,6 +1,6 @@
 package embox.driver.audio
 
-module es1370 extends portaudio {
+module es1370 extends portaudio_api {
 	option number log_level=4
 
 	source "es1370.c"

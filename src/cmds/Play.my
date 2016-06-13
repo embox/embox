@@ -18,6 +18,6 @@ package embox.cmd
 module play {
 	source "play.c"
 
-	depends embox.driver.audio.portaudio
+	depends embox.driver.audio.portaudio_api
 	depends embox.fs.file_format
 }
