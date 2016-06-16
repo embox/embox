@@ -19,7 +19,7 @@
 
 #include "es1370.h"
 
-struct lthread es1370_lthread;
+static struct lthread portaudio_lthread;
 
 struct pa_strm {
 	uint8_t devid;
@@ -35,7 +35,62 @@ struct pa_strm {
 	int active;
 };
 
+static struct pa_strm pa_stream;
+
+static int sample_format_in_bytes(uint32_t pa_format) {
+	switch (pa_format) {
+	case paInt16:
+		return 2;
+	case paInt8:
+		return 1;
+	default:
+		log_error("Unsupport stream format");
+		return -EINVAL;
+	}
+	return -EINVAL;
+}
+
+static int _bytes_per_sample(struct pa_strm *stream) {
+	return stream->number_of_chan *
+	       sample_format_in_bytes(stream->sample_format);
+}
+
+static uint8_t *pa_stream_cur_ptr(struct pa_strm *stream) {
+	stream->cur_buff_offset += stream->samples_per_buffer * _bytes_per_sample(stream);
+	stream->cur_buff_offset %= sizeof(stream->out_buf);
+	return &stream->out_buf[stream->cur_buff_offset];
+}
+
+static int portaudio_lthread_handle(struct lthread *self) {
+	int buf_len;
+	int retval;
+	struct audio_dev *audio_dev;
+
+	if (!pa_stream.callback || !pa_stream.active) {
+		return 0;
+	}
+
+	retval = pa_stream.callback(NULL,
+	                            pa_stream_cur_ptr(&pa_stream),
+	                            pa_stream.samples_per_buffer,
+	                            NULL,
+	                            0,
+	                            pa_stream.user_data);
+
+	buf_len = pa_stream.samples_per_buffer * _bytes_per_sample(&pa_stream);
+	es1370_update_dma(buf_len, pa_stream.devid);
+
+	if (retval != paContinue)
+		pa_stream.active = 0;
+
+	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
+	audio_dev->ad_ops->ad_ops_resume(audio_dev);
+
+	return 0;
+}
+
 PaError Pa_Initialize(void) {
+	lthread_init(&portaudio_lthread, portaudio_lthread_handle);
 	return paNoError;
 }
 
@@ -85,59 +140,6 @@ const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 	return pa_info;
 }
 
-static struct pa_strm pa_stream;
-
-static int sample_format_in_bytes(uint32_t pa_format) {
-	switch (pa_format) {
-	case paInt16:
-		return 2;
-	case paInt8:
-		return 1;
-	default:
-		log_error("Unsupport stream format");
-		return -EINVAL;
-	}
-	return -EINVAL;
-}
-
-static int _bytes_per_sample(struct pa_strm *stream) {
-	return stream->number_of_chan *
-	       sample_format_in_bytes(stream->sample_format);
-}
-
-static uint8_t *pa_stream_cur_ptr(struct pa_strm *stream) {
-	stream->cur_buff_offset += stream->samples_per_buffer * _bytes_per_sample(stream);
-	stream->cur_buff_offset %= sizeof(stream->out_buf);
-	return &stream->out_buf[stream->cur_buff_offset];
-}
-
-static int es1370_lthread_handle(struct lthread *self) {
-	int buf_len;
-	int retval;
-	struct audio_dev *audio_dev;
-
-	if (!pa_stream.callback || !pa_stream.active) {
-		return 0;
-	}
-
-	retval = pa_stream.callback(NULL,
-	                            pa_stream_cur_ptr(&pa_stream),
-	                            pa_stream.samples_per_buffer,
-	                            NULL,
-	                            0,
-	                            pa_stream.user_data);
-
-	buf_len = pa_stream.samples_per_buffer * _bytes_per_sample(&pa_stream);
-	es1370_update_dma(buf_len, pa_stream.devid);
-
-	if (retval != paContinue)
-		pa_stream.active = 0;
-
-	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
-	audio_dev->ad_ops->ad_ops_resume(audio_dev);
-
-	return 0;
-}
 
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
@@ -165,7 +167,6 @@ PaError Pa_OpenStream(PaStream** stream,
 	pa_stream.active = 1;
 
 	*stream = &pa_stream;
-	lthread_init(&es1370_lthread, es1370_lthread_handle);
 
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
 	audio_dev->ad_ops->ad_ops_start(audio_dev);
@@ -189,12 +190,13 @@ PaError Pa_StartStream(PaStream *stream) {
 	int buf_len;
 	struct pa_strm *strm = stream;
 
-	lthread_launch(&es1370_lthread);
+	lthread_launch(&portaudio_lthread);
 
 	if (stream != NULL) {
 		/* Called not from IRQ */ /* This should be rewritten */
 		strm = &pa_stream; // TODO fix
-		buf_len = strm->samples_per_buffer * _bytes_per_sample(strm);
+		//buf_len = strm->samples_per_buffer * _bytes_per_sample(strm);
+		buf_len = sizeof(strm->out_buf);
 		es1370_setup_dma(strm->out_buf,
 		                 buf_len,
 		                 strm->devid);
