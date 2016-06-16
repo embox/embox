@@ -27,6 +27,16 @@ struct es1370_hw_dev {
 	uint32_t sctrl;
 };
 
+struct es1370_dev_priv {
+	struct es1370_hw_dev *hw_dev;
+	int devid;
+	uint8_t *out_buf;
+	uint32_t out_buf_len;
+	uint8_t *in_buf;
+
+	uint32_t cur_buff_offset;
+};
+
 static struct es1370_hw_dev es1370_hw_dev;
 
 int es1370_set_int_cnt(int chan, uint32_t sample_count) {
@@ -315,6 +325,17 @@ int es1370_drv_start(int sub_dev) {
 	return 0;
 }
 
+uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
+	struct es1370_dev_priv *priv;
+
+	priv = audio_dev->ad_priv;
+
+	priv->cur_buff_offset += audio_dev->samples_per_buffer *
+			audio_dev->num_of_chan * 2;
+	priv->cur_buff_offset %= priv->out_buf_len;
+	return &priv->out_buf[priv->cur_buff_offset];
+}
+
 static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 	struct es1370_hw_dev *hw_dev;
 	uint32_t base_addr;
@@ -400,15 +421,12 @@ static int es1370_init(struct pci_slot_dev *pci_dev) {
 PCI_DRIVER("es1370 Audio Controller", es1370_init, 0x1274, 0x5000);
 
 
-struct es1370_dev_priv {
-	struct es1370_hw_dev *hw_dev;
-	int devid;
-};
-
 static void es1370_dev_start(struct audio_dev *dev) {
 	struct es1370_dev_priv *priv;
 
 	priv = dev->ad_priv;
+
+	es1370_setup_dma(priv->out_buf, priv->out_buf_len,priv->devid);
 	es1370_drv_start(priv->devid);
 
 }
@@ -437,9 +455,13 @@ static const struct audio_dev_ops es1370_dev_ops = {
 	.ad_ops_stop = es1370_dev_stop,
 };
 
+static uint8_t dac1_out_buf[ES1370_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
+
 struct es1370_dev_priv es1370_dac1 = {
 	.hw_dev = &es1370_hw_dev,
-	.devid  = DAC1_CHAN
+	.devid  = DAC1_CHAN,
+	.out_buf = dac1_out_buf,
+	.out_buf_len = sizeof(dac1_out_buf)
 };
 
 static struct es1370_dev_priv es1370_dac2 = {
