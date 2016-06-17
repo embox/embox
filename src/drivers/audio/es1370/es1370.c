@@ -242,7 +242,7 @@ static int set_sample_rate(uint32_t rate, int sub_dev) {
 	base_addr = es1370_hw_dev.base_addr;
 
 	controlRegister = in32(base_addr + ES1370_REG_CONTROL);
-	controlRegister |= CTRL_WTSRSEL | CTRL_DAC1_EN;
+	controlRegister |= CTRL_WTSRSEL;
 	out32(controlRegister, base_addr + ES1370_REG_CONTROL);
 
 	return 0;
@@ -299,6 +299,11 @@ static int set_stereo(uint32_t stereo, int sub_dev) {
 
 int es1370_drv_start(int sub_dev) {
 	int result = 0;
+	uint32_t en_bit;
+	uint32_t controlRegister;
+	uint32_t base_addr;
+
+	base_addr = es1370_hw_dev.base_addr;
 
 	/* Write default values to device in case user failed to configure.
 	   If user did configure properly, everything is written twice.
@@ -321,6 +326,17 @@ int es1370_drv_start(int sub_dev) {
 	/* enable interrupts from 'sub device' */
 	es1370_drv_reenable_int(sub_dev);
 	result |= set_sample_rate(44100, sub_dev);
+	switch(sub_dev) {
+	case ADC1_CHAN: en_bit = CTRL_ADC_EN; break;
+	case DAC1_CHAN: en_bit = CTRL_DAC1_EN; break;
+	case DAC2_CHAN: en_bit = CTRL_DAC2_EN; break;
+	default:
+		break;
+	}
+
+	controlRegister = in32(base_addr + ES1370_REG_CONTROL);
+	controlRegister |= en_bit ;
+	out32(controlRegister, base_addr + ES1370_REG_CONTROL);
 
 	return 0;
 }
