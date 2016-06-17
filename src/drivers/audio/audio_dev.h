@@ -19,6 +19,7 @@ struct audio_dev_ops {
 	void (*ad_ops_pause)(struct audio_dev *dev);
 	void (*ad_ops_resume)(struct audio_dev *dev);
 	void (*ad_ops_stop)(struct audio_dev *dev);
+	void (*ad_ops_add_sample)(struct audio_dev *dev, uint8_t *buf);
 };
 
 struct audio_dev {

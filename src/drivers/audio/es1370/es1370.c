@@ -64,7 +64,7 @@ int es1370_set_int_cnt(int chan, uint32_t sample_count) {
 }
 
 
-int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
+static int es1370_setup_dma(void *dma_buff, uint32_t length, int chan) {
 	/* dma length in bytes,
 	 * max is 64k long words for es1370 = 256k bytes
 	 */
@@ -133,7 +133,7 @@ int es1370_update_dma(uint32_t length, int chan) {
 	}
 	out8(page, base_addr + ES1370_REG_MEMPAGE);
 
-	/* device expects long word count in stead of bytes */
+	/* device expects long word count instead of bytes */
 	length /= 4;
 
 	/* It seems that register _CURRENT_COUNT is overwritten, but this is
@@ -325,6 +325,7 @@ int es1370_drv_start(int sub_dev) {
 	return 0;
 }
 
+
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	struct es1370_dev_priv *priv;
 
@@ -426,7 +427,7 @@ static void es1370_dev_start(struct audio_dev *dev) {
 
 	priv = dev->ad_priv;
 
-	es1370_setup_dma(priv->out_buf, priv->out_buf_len,priv->devid);
+	es1370_setup_dma(priv->out_buf, priv->out_buf_len, priv->devid);
 	es1370_drv_start(priv->devid);
 
 }
@@ -439,8 +440,13 @@ static void es1370_dev_pause(struct audio_dev *dev) {
 
 static void es1370_dev_resume(struct audio_dev *dev) {
 	struct es1370_dev_priv *priv;
+	uint32_t buf_len;
+
+	buf_len = dev->samples_per_buffer *	dev->num_of_chan * 2;
 
 	priv = dev->ad_priv;
+
+	es1370_update_dma(buf_len, priv->devid);
 	es1370_drv_resume(priv->devid);
 }
 

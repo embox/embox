@@ -17,8 +17,6 @@
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
 
-#include "es1370.h"
-
 static struct lthread portaudio_lthread;
 
 struct pa_strm {
@@ -28,13 +26,12 @@ struct pa_strm {
 
 	PaStreamCallback *callback;
 	void *user_data;
-	//uint32_t samples_per_buffer;
 
 	int active;
 };
 
 static struct pa_strm pa_stream;
-
+#if 0
 static int sample_format_in_bytes(uint32_t pa_format) {
 	switch (pa_format) {
 	case paInt16:
@@ -52,11 +49,8 @@ static int _bytes_per_sample(struct pa_strm *stream) {
 	return stream->number_of_chan *
 	       sample_format_in_bytes(stream->sample_format);
 }
-
-
-
+#endif
 static int portaudio_lthread_handle(struct lthread *self) {
-	int buf_len;
 	int retval;
 	struct audio_dev *audio_dev;
 	uint8_t *out_buf;
@@ -74,9 +68,6 @@ static int portaudio_lthread_handle(struct lthread *self) {
 			NULL,
 			0,
 			pa_stream.user_data);
-
-	buf_len = audio_dev->samples_per_buffer * _bytes_per_sample(&pa_stream);
-	es1370_update_dma(buf_len, pa_stream.devid);
 
 	if (retval != paContinue)
 		pa_stream.active = 0;
@@ -137,7 +128,6 @@ const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 	return pa_info;
 }
 
-
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
@@ -158,7 +148,6 @@ PaError Pa_OpenStream(PaStream** stream,
 	pa_stream.number_of_chan = outputParameters->channelCount;
 	pa_stream.devid = outputParameters->device;
 	pa_stream.sample_format = outputParameters->sampleFormat;
-	//pa_stream.samples_per_buffer = framesPerBuffer;
 	pa_stream.callback = streamCallback;
 	pa_stream.user_data = userData;
 	pa_stream.active = 1;
