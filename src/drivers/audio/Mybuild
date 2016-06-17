@@ -12,6 +12,10 @@ abstract module portaudio_api {
 	source "portaudio.h"
 }
 
+module portaudio_lib extends portaudio_api {
+	source "portaudio_lib.c"
+}
+
 @BuildDepends(third_party.bsp.st_f4.core)
 module stm32f4_pa extends portaudio_api {
 	option number volume=70
