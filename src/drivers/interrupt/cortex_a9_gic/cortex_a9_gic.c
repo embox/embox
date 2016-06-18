@@ -65,8 +65,6 @@ EMBOX_UNIT_INIT(gic_init);
 
 #define GICD_ITARGETSR(n)    (GIC_DISTRIBUTOR_BASE + 0x800 + 4 * (n))
 
-#define GICD_ITARGETSR(n)    (GIC_DISTRIBUTOR_BASE + 0x800 + 4 * (n))
-
 #define GICD_ICFGR(n)        (GIC_DISTRIBUTOR_BASE + 0xC00 + 4 * (n))
 #define GICD_NSACR(n)        (GIC_DISTRIBUTOR_BASE + 0xE00 + 4 * (n))
 
@@ -102,10 +100,21 @@ static int gic_init(void) {
 void irqctrl_enable(unsigned int irq) {
 	int n = irq / BITS_PER_REGISTER;
 	int m = irq % BITS_PER_REGISTER;
+	uint32_t tmp;
 
 	/* Writing zeroes to this register has no
 	 * effect, so we just write single "1" */
 	REG_STORE(GICD_ISENABLER(n), 1 << m);
+
+	/* N-N irq model: all CPUs receive this IRQ */
+	REG_STORE(GICD_ICFGR(n), 1 << m);
+
+	/* All CPUs do listen to this IRQ */
+	n = irq / 4;
+	m = irq % 4;
+	tmp  = REG_LOAD(GICD_ITARGETSR(n));
+	tmp |= 0xFF << (8 * m);
+	REG_STORE(GICD_ITARGETSR(n), tmp);
 }
 
 void irqctrl_disable(unsigned int irq) {
@@ -131,7 +140,6 @@ void irqctrl_eoi(unsigned int irq) {
 
 void interrupt_handle(void) {
 	unsigned int irq = REG_LOAD(GICC_IAR);
-
 	if (irq == SPURIOUS_IRQ)
 		return;
 
