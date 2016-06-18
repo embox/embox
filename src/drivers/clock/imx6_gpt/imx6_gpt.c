@@ -8,14 +8,16 @@
 
 #include <hal/reg.h>
 #include <kernel/irq.h>
+#include <kernel/printk.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time_device.h>
 
 #include <framework/mod/options.h>
 #include <embox/unit.h>
 
-#define GPT_BASE OPTION_GET(NUMBER, base_addr)
-#define GPT_IRQ  OPTION_GET(NUMBER, irq_nr)
+#define GPT_BASE      OPTION_GET(NUMBER, base_addr)
+#define GPT_IRQ       OPTION_GET(NUMBER, irq_nr)
+#define GPT_TARGET_HZ OPTION_GET(NUMBER, freq)
 
 #define GPT_PRESCALER 0 /* 2^0 */
 
@@ -51,10 +53,16 @@
 
 #define GPT_IR_OF1IE (1 << 0)
 
-#define CLKSRC_PERIPH 1
+#define CLKSRC_PERIPH  1
+#define CLKSRC_LOWFREQ 4
+
+/* By default, periphal clock source is PPL2, 528MHz */
+#define _BASE_HZ     528000000
+#define _BASE_SCALER 8
 
 static struct clock_source imx6_gpt_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
+	REG32_STORE(GPT_SR, 0x3F);
 	return IRQ_HANDLED;
 }
 
@@ -66,9 +74,15 @@ static int imx6_gpt_init(void) {
 	REG32_STORE(GPT_CR,   0);
 	REG32_STORE(GPT_IR,   0);
 
+	t = REG32_LOAD(0x20C4000 + 0x14);
+	printk("STATUS %#x\n", t);
+	t &= ~(1 << 25);
+
+	REG32_STORE(0x20C4000, t);
+
 	REG32_STORE(GPT_PR, GPT_PRESCALER);
 
-	REG32_STORE(GPT_OCR1, 1024); /* XXX */
+	REG32_STORE(GPT_OCR1, _BASE_HZ / _BASE_SCALER / GPT_TARGET_HZ); /* XXX */
 	/* Generate interrupt on OutputCompare1 overflow */
 	REG32_STORE(GPT_IR, GPT_IR_OF1IE);
 
@@ -96,13 +110,13 @@ static cycle_t imx6_gpt_read(void) {
 
 static struct time_event_device imx6_gpt_event = {
 	.config   = imx6_gpt_config,
-	.event_hz = 1000,
+	.event_hz = GPT_TARGET_HZ,
 	.irq_nr   = GPT_IRQ,
 };
 
 static struct time_counter_device imx6_gpt_counter = {
 	.read     = imx6_gpt_read,
-	.cycle_hz = 1000,
+	.cycle_hz = GPT_TARGET_HZ,
 };
 
 static struct clock_source imx6_gpt_clock_source = {
