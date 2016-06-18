@@ -14,6 +14,7 @@
 #include <hal/reg.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
+#include <util/log.h>
 
 #define GIC_CPU_BASE           OPTION_GET(NUMBER, cpu_base_addr)
 #define GIC_DISTRIBUTOR_BASE   OPTION_GET(NUMBER, distributor_base_addr)
@@ -44,6 +45,11 @@ EMBOX_UNIT_INIT(gic_init);
 #define GICD_CTLR           (GIC_DISTRIBUTOR_BASE + 0x00)
 #define GICD_TYPER          (GIC_DISTRIBUTOR_BASE + 0x04)
 #define GICD_IIDR           (GIC_DISTRIBUTOR_BASE + 0x08)
+
+#define GICD_TYPER_ITLINES(x)   ((x) & 0x1F)
+#define GICD_TYPER_CPUNR(x)     (((x) & (0x7 << 5)) >> 5)
+#define GICD_TYPER_SECEXT(x)    ((x) & (1 << 10))
+#define GICD_TYPER_LSPI(x)      (((x) & (0x1F << 11)) >> 11)
 
 #define BITS_PER_REGISTER     32
 
@@ -80,6 +86,16 @@ static int gic_init(void) {
 	/* Set priority filter level */
 	REG_STORE(GICC_PMR, 0xFF);
 
+	tmp = REG_LOAD(GICD_TYPER);
+	log_debug("\nNumber of SPI: %d\n"
+	          "Number of supported CPU interfaces: %d\n"
+	          "Secutity Extension %simplemented\n%s",
+	           GICD_TYPER_ITLINES(tmp) * 32,
+	           1 + GICD_TYPER_CPUNR(tmp),
+	           GICD_TYPER_SECEXT(tmp) ? "" : "not ");
+	if (tmp & (1 << 10))
+		log_debug("Number of LSPI: %d\n",
+		           GICD_TYPER_LSPI(tmp));
 	return 0;
 }
 
