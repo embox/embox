@@ -1,0 +1,8 @@
+package third_party.lib
+
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+static module libcoap {
+	source "^BUILD/extbld/^MOD_PATH/install/libcoap.a"
+	source "coap.h"
+}
