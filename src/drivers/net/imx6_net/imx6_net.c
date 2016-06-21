@@ -189,7 +189,7 @@ static void _reg_setup(void) {
 	/* Enable IRQ */
 	REG32_STORE(ENET_EIMR, 0x7FFF0000);
 }
-#if 0
+
 static void _reset(void) {
 	REG32_STORE(ENET_ECR, RESET);
 	_reg_dump();
@@ -213,7 +213,7 @@ static void _reset(void) {
 	REG32_STORE(ENET_TFWR, (1 << 8));
 	REG32_STORE(ENET_ECR, ETHEREN | ECR_DBSWP); /* Note: should be last init step */
 }
-#endif
+
 static int imx6_net_open(struct net_device *dev) {
 	//_reset();
 	uint32_t t;
@@ -310,16 +310,23 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 	if (state & EIR_EBERR) {
 		log_error("Ethernet bus error, resetting ENET!\n");
 		REG32_STORE(ENET_ECR, RESET);
-		_reg_setup();
+		_reset();
 
 		return IRQ_HANDLED;
 	}
 
 	if (state & EIR_RXB) {
 		int id = 0;
-		log_debug("RX interrupt; len %d bytes; status %#08x\n", _rx_desc_ring[id].len, _rx_desc_ring[id].flags1);
+		log_debug("RX interrupt; len %d bytes; status %#010x\n", _rx_desc_ring[id].len, _rx_desc_ring[id].flags1);
 
 		REG32_STORE(ENET_EIR, EIR_RXB);
+	}
+
+	if (state & (EIR_TXB | EIR_TXF)) {
+		int id = 0;
+		log_debug("finished TX; len %d bytes; status %#010x\n", _tx_desc_ring[id].len, _tx_desc_ring[id].flags1);
+
+		REG32_STORE(ENET_EIR, EIR_TXB | EIR_TXF);
 	}
 
 	return IRQ_HANDLED;
