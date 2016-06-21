@@ -8,9 +8,9 @@ include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && autoconf && ( \
-		./configure \
-			CC=$(EMBOX_GCC) \
+		./configure CC=$(EMBOX_GCC) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
+			--enable-documentation=no \
 	)
 	touch $@
 
