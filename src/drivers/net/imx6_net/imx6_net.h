@@ -10,6 +10,7 @@
 #define DRIVERS_IMX6_NET_H_
 
 #define NIC_BASE OPTION_GET(NUMBER, base_addr)
+#define ENET_IRQ OPTION_GET(NUMBER, irq_nr)
 
 #define ENET_EIR  (NIC_BASE + 0x0004)
 #define ENET_EIMR (NIC_BASE + 0x0008)
@@ -34,6 +35,8 @@
 /* Various flags */
 /* ENET_EIR */
 #define EIR_MASK  0xFFFFFFFF
+#define EIR_EBERR (1 << 22)   /* Ethernet bus error */
+#define EIR_RXB   (1 << 24)   /* Receive buffer */
 
 /* ENET_EIMR */
 #define EIMR_RXF  (1 << 25)

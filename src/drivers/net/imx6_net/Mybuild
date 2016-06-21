@@ -5,7 +5,7 @@ module imx6_net {
 	source "imx6_net.c"
 
 	option number base_addr=0x02188000
-
+	option number irq_nr=150
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq_api

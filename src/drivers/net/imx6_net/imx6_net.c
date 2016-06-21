@@ -110,12 +110,12 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 		dcache_flush(desc, sizeof(struct imx6_buf_desc));
 
 		printk("Frame status %#4x\n", desc->flags1);
-		int t = 0xFFFFFFF;
+		int t = 0xFFFFF;
 		while (t--);
 
 		REG32_STORE(ENET_TDAR, 0x01000000);
 
-		t = 0xFFFFFFF;
+		t = 0xFFFFF;
 		while(t--) {
 			if (!(REG32_LOAD(ENET_TDAR) & 0x01000000))
 				break;
@@ -125,7 +125,7 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		printk("Frame status %#4x\n", desc->flags1);
 
-		t = 0xFFFFFFF;
+		t = 0xFFFFF;
 		while(t--);
 		printk("Frame status %#4x\n", desc->flags1);
 	}
@@ -185,6 +185,9 @@ static void _reg_setup(void) {
 	REG32_STORE(ENET_RCR, t);
 
 	_setup_mii_speed();
+
+	/* Enable IRQ */
+	REG32_STORE(ENET_EIMR, 0x7FFF0000);
 }
 #if 0
 static void _reset(void) {
@@ -281,7 +284,7 @@ static int imx6_net_open(struct net_device *dev) {
 
 	REG32_STORE(ENET_RDAR, (1 << 24));
 
-	t = 0xFFFFFFF;
+	t = 0xFFFFFF;
 	printk("Last NIC init delay...\n");
 	while(t--);
 	return 0;
@@ -297,6 +300,31 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	return 0;
 }
 
+static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
+	uint32_t state;
+
+	state = REG32_LOAD(ENET_EIR);
+
+	log_debug("Interrupt mask %#08x\n", state);
+
+	if (state & EIR_EBERR) {
+		log_error("Ethernet bus error, resetting ENET!\n");
+		REG32_STORE(ENET_ECR, RESET);
+		_reg_setup();
+
+		return IRQ_HANDLED;
+	}
+
+	if (state & EIR_RXB) {
+		int id = 0;
+		log_debug("RX interrupt; len %d bytes; status %#08x\n", _rx_desc_ring[id].len, _rx_desc_ring[id].flags1);
+
+		REG32_STORE(ENET_EIR, EIR_RXB);
+	}
+
+	return IRQ_HANDLED;
+}
+
 static const struct net_driver imx6_net_drv_ops = {
 	.xmit = imx6_net_xmit,
 	.start = imx6_net_open,
@@ -307,6 +335,7 @@ EMBOX_UNIT_INIT(imx6_net_init);
 static int imx6_net_init(void) {
 	_reg_dump();
 	struct net_device *nic;
+	int tmp;
 
 	if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
@@ -314,6 +343,9 @@ static int imx6_net_init(void) {
 
 	nic->drv_ops = &imx6_net_drv_ops;
 
+	tmp = irq_attach(ENET_IRQ, imx6_irq_handler, 0, nic, "i.MX6 enet");
+	if (tmp)
+		return tmp;
 	REG32_STORE(ENET_ECR, RESET);
 	_reg_setup();
 
