@@ -11,6 +11,7 @@ $(CONFIGURE) :
 		./configure \
 			CC=$(EMBOX_GCC) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
+			CPPFLAGS=-Drpl_malloc=malloc \
 	)
 	touch $@
 
