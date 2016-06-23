@@ -263,10 +263,10 @@ static int set_bits(uint32_t nr_of_bits, int sub_dev) {
 	}
 
 	ser_interface = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
-	ser_interface &= ~size_16_bit;
+
 	switch(nr_of_bits) {
-		case 16: ser_interface |= size_16_bit;break;
-		case  8: break;
+		case 16: ser_interface |= size_16_bit; break;
+		case  8: ser_interface &= ~size_16_bit; break;
 		default: return EINVAL;
 	}
 	out32(ser_interface, base_addr + ES1370_REG_SERIAL_CONTROL);
@@ -288,9 +288,10 @@ static int set_stereo(uint32_t stereo, int sub_dev) {
 		default: return EINVAL;
 	}
 	ser_interface = in32(base_addr + ES1370_REG_SERIAL_CONTROL);
-	ser_interface &= ~stereo_bit;
 	if (stereo) {
 		ser_interface |= stereo_bit;
+	} else {
+		ser_interface &= ~stereo_bit;
 	}
 	out32(ser_interface, base_addr + ES1370_REG_SERIAL_CONTROL);
 
@@ -310,6 +311,7 @@ int es1370_drv_start(int sub_dev) {
 	   please raise your hand if you object against to this strategy...*/
 	result |= set_stereo(1, sub_dev);
 	result |= set_bits(16, sub_dev);
+	result |= set_sample_rate(44100, sub_dev);
 
 	/* set the interrupt count */
 	/* Here we divide buffer length by BYTES_PER_SAMPLE and by channel
@@ -325,7 +327,6 @@ int es1370_drv_start(int sub_dev) {
 
 	/* enable interrupts from 'sub device' */
 	es1370_drv_reenable_int(sub_dev);
-	result |= set_sample_rate(44100, sub_dev);
 	switch(sub_dev) {
 	case ADC1_CHAN: en_bit = CTRL_ADC_EN; break;
 	case DAC1_CHAN: en_bit = CTRL_DAC1_EN; break;
