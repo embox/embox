@@ -156,8 +156,9 @@ PaError Pa_OpenStream(PaStream** stream,
 
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
 	audio_dev->samples_per_buffer = framesPerBuffer;
-	audio_dev->ad_ops->ad_ops_start(audio_dev);
 	audio_dev->num_of_chan = outputParameters->channelCount;
+
+	audio_dev->ad_ops->ad_ops_start(audio_dev);
 
 	return paNoError;
 }
