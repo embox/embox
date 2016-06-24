@@ -250,7 +250,7 @@ static int set_sample_rate(uint32_t rate, int sub_dev) {
 
 static int set_bits(uint32_t nr_of_bits, int sub_dev) {
 	/* set format bits for specified channel. */
-	uint16_t size_16_bit, ser_interface;
+	uint32_t size_16_bit, ser_interface;
 	uint32_t base_addr;
 
 	base_addr = es1370_hw_dev.base_addr;
