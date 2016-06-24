@@ -37,12 +37,16 @@ module stm32f4_pa extends portaudio_api {
 	depends embox.kernel.irq_api
 }
 
-module intel_ac_pa extends portaudio_api {
+module intel_ac_pa {
+	option number log_level = 1
+
 	source "intel82801aa.c"
 
 	depends embox.compat.posix.util.sleep
 	depends embox.driver.audio.ac97
 	depends embox.driver.pci
+	depends embox.driver.audio.portaudio_lib
+	depends embox.driver.audio.audio_dev
 }
 
 module portaudio_stub extends portaudio_api {
