@@ -17,3 +17,21 @@ static module libcoap {
 	@NoRuntime depends embox.compat.posix.net.All
 	@NoRuntime depends embox.kernel.task.resource.errno
 }
+
+@AutoCmd
+@Cmd(name="coap_client", help="", man="")
+@BuildDepends(libcoap)
+@Build(stage=2,script="true")
+module coap_client {
+	source "^BUILD/extbld/^MOD_PATH/install/client.o"
+	depends libcoap
+}
+
+@AutoCmd
+@Cmd(name="coap_server", help="", man="")
+@BuildDepends(libcoap)
+@Build(stage=2,script="true")
+module coap_server {
+	source "^BUILD/extbld/^MOD_PATH/install/server.o"
+	depends libcoap
+}

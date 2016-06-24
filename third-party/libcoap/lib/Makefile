@@ -7,6 +7,7 @@ PKG_MD5     := ff1af4bd9893c1728e765aa08a816e41
 include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
+	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && autoconf && ( \
 		./configure \
 			CC=$(EMBOX_GCC) \
@@ -24,4 +25,6 @@ $(BUILD) :
 $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/libcoap.a $(PKG_INSTALL_DIR)/
 	cp $(PKG_SOURCE_DIR)/*.h $(PKG_INSTALL_DIR)/
+	cp $(PKG_SOURCE_DIR)/examples/server.o $(PKG_INSTALL_DIR)/../../coap_server/install/
+	cp $(PKG_SOURCE_DIR)/examples/client.o $(PKG_INSTALL_DIR)/../../coap_client/install/
 	touch $@
