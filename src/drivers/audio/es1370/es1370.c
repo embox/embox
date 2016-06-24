@@ -491,7 +491,7 @@ static const struct audio_dev_ops es1370_dev_ops = {
 
 static uint8_t dac1_out_buf[ES1370_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
 
-struct es1370_dev_priv es1370_dac1 = {
+static struct es1370_dev_priv es1370_dac1 = {
 	.hw_dev = &es1370_hw_dev,
 	.devid  = DAC1_CHAN,
 	.out_buf = dac1_out_buf,
