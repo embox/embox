@@ -459,7 +459,7 @@ static void es1370_dev_resume(struct audio_dev *dev) {
 	struct es1370_dev_priv *priv;
 	uint32_t buf_len;
 
-	buf_len = dev->samples_per_buffer *	dev->num_of_chan * 2;
+	buf_len = dev->samples_per_buffer * dev->num_of_chan * 2;
 
 	priv = dev->ad_priv;
 
@@ -471,11 +471,22 @@ static void es1370_dev_stop(struct audio_dev *dev) {
 
 }
 
+static int es1370_ioctl(struct audio_dev *dev, int cmd, void *args) {
+	switch(cmd) {
+	case ADIOCTL_SUPPORT:
+		return AD_STEREO_SUPPORT |
+		       AD_16BIT_SUPPORT;
+	}
+	SET_ERRNO(EINVAL);
+	return -1;
+}
+
 static const struct audio_dev_ops es1370_dev_ops = {
-	.ad_ops_start = es1370_dev_start,
-	.ad_ops_pause = es1370_dev_pause,
+	.ad_ops_start  = es1370_dev_start,
+	.ad_ops_pause  = es1370_dev_pause,
 	.ad_ops_resume = es1370_dev_resume,
-	.ad_ops_stop = es1370_dev_stop,
+	.ad_ops_stop   = es1370_dev_stop,
+	.ad_ops_ioctl  = es1370_ioctl,
 };
 
 static uint8_t dac1_out_buf[ES1370_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));

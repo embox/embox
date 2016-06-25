@@ -56,6 +56,7 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 
 static uint8_t _fbuffer[64 * 1024 * 1024];
 static int _bl = 64 * 1024 * 1024;
+static int _fchan = 2;
 static int fd_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
@@ -64,7 +65,7 @@ static int fd_callback(const void *inputBuffer, void *outputBuffer,
 	static int _ptr = 0;
         int read_bytes;
 
-	read_bytes = min(_bl - _ptr, framesPerBuffer * 2 * 2); /* Stereo 16-bit */
+	read_bytes = min(_bl - _ptr, framesPerBuffer * _fchan * 2); /* Stereo 16-bit */
 	memcpy(outputBuffer, &_fbuffer[_ptr], read_bytes);
 	_ptr += read_bytes;
 
@@ -74,6 +75,7 @@ static int fd_callback(const void *inputBuffer, void *outputBuffer,
 		return paContinue;
 	} else {
 		printf("\n");
+		_ptr = 0;
 		return paComplete;
 	}
 }
@@ -144,6 +146,7 @@ int main(int argc, char **argv) {
 		printf("Progress:\n");
 
 		_bl = min(fread(_fbuffer, 1, 64 * 1024 * 1024, fd), _bl);
+		_fchan = chan_n;
 	}
 
 	/* Initialize PA */

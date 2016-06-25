@@ -20,6 +20,7 @@ struct audio_dev_ops {
 	void (*ad_ops_resume)(struct audio_dev *dev);
 	void (*ad_ops_stop)(struct audio_dev *dev);
 	void (*ad_ops_add_sample)(struct audio_dev *dev, uint8_t *buf);
+	int (*ad_ops_ioctl)(struct audio_dev *dev, int cmd, void *args);
 };
 
 struct audio_dev {
@@ -40,5 +41,14 @@ extern struct audio_dev *audio_dev_get_by_idx(int idx);
 extern struct audio_dev *audio_dev_get_by_name(char name[]);
 
 extern uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev);
+
+/* ioctl commands */
+#define ADIOCTL_SUPPORT 2
+
+/* ioctl support list */
+#define AD_MONO_SUPPORT    (1 << 0)
+#define AD_STEREO_SUPPORT   (1 << 1)
+#define AD_8BIT_SUPPORT    (1 << 3)
+#define AD_16BIT_SUPPORT   (1 << 4)
 
 #endif /* AUDIO_DEV_H_ */
