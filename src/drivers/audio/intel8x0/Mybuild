@@ -1,0 +1,13 @@
+package embox.driver.audio
+
+module intel_ac_pa {
+	option number log_level = 1
+
+	source "intel8x0.c"
+
+	depends embox.compat.posix.util.sleep
+	depends embox.driver.audio.ac97
+	depends embox.driver.pci
+	depends embox.driver.audio.portaudio_lib
+	depends embox.driver.audio.audio_dev
+}
