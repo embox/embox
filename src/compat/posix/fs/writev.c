@@ -31,5 +31,5 @@ ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
 		return SET_ERRNO(-ret);
 	}
 
-	return iovcnt;
+	return ret;
 }

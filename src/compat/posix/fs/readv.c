@@ -31,5 +31,5 @@ ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
 		return SET_ERRNO(-ret);
 	}
 
-	return msg.msg_iovlen;
+	return ret;
 }
