@@ -35,11 +35,14 @@ EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1,
 		udp_sock_ops_struct);
 
 static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	size_t total_len, data_len, actual_len, skb_len;
+	int ret;
+	size_t data_len, total_len, actual_len;
 	struct sk_buff *skb;
 	const struct sockaddr_in *to;
 	const struct sockaddr *sockaddr;
-	int i, ret;
+	int i, size;
+	void* buf;
+	void* buf_;
 
 	assert(sk);
 	assert(sk->o_ops);
@@ -53,10 +56,22 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		data_len += msg->msg_iov[i].iov_len;
 	}
 
-	total_len = data_len + UDP_HEADER_SIZE;
+	total_len = actual_len = UDP_HEADER_SIZE + data_len;
 
 	skb = NULL;
 	sockaddr = (const struct sockaddr *)msg->msg_name;
+
+	ret = sk->o_ops->make_pack(sk, sockaddr, &actual_len, &skb);
+	if (ret != 0) {
+		return ret;
+	}
+
+#if 0
+	if (actual_len < total_len) {
+		skb_free(skb);
+		return -EMSGSIZE;
+	}
+#endif
 
 	if (msg->msg_name != NULL) {
 		to = (const struct sockaddr_in *)msg->msg_name;
@@ -64,43 +79,28 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		to = (const struct sockaddr_in *)&to_inet_sock(sk)->dst_in;
 	}
 
-	skb_len = i = 0;
-	while (i < msg->msg_iovlen) {
-		data_len -= skb_len;
-		actual_len = data_len + UDP_HEADER_SIZE;
+	assert(skb);
+	assert(skb->h.uh);
 
-		ret = sk->o_ops->make_pack(sk, sockaddr, &actual_len, &skb);
+	udp_build(skb->h.uh, sock_inet_get_src_port(sk), to->sin_port, total_len);
 
-		if (ret != 0) {
-			return ret;
-		}
-
-		assert(skb);
-		assert(skb->h.uh);
-
-		skb_len = 0;
-
-		while (i < msg->msg_iovlen && skb_len + msg->msg_iov[i].iov_len <= actual_len) {
-			skb_len += msg->msg_iov[i].iov_len;
-			i++;
-		}
-
-		skb_buf_iovec(skb->h.uh + 1, skb_len, msg->msg_iov, msg->msg_iovlen);
-
-		udp_build(skb->h.uh, sock_inet_get_src_port(sk), to->sin_port,
-				skb_len + UDP_HEADER_SIZE);
-
-		udp4_set_check_field(skb->h.uh, skb->nh.iph);
-
-		assert(sk->o_ops->snd_pack);
-		ret = sk->o_ops->snd_pack(skb);
-
-		if (0 > ret) {
-			return ret;
-		}
+	size = sizeof(msg->msg_iov[i].iov_base[0]);
+	buf = buf_ = malloc(data_len);
+	for (i = 0; i < msg->msg_iovlen; i++) {
+		memcpy(buf_, msg->msg_iov[i].iov_base, msg->msg_iov[i].iov_len);
+		buf_ += msg->msg_iov[i].iov_len * size;
 	}
+	memcpy(skb->h.uh + 1, buf, data_len);
 
-	return total_len - UDP_HEADER_SIZE;
+	udp4_set_check_field(skb->h.uh, skb->nh.iph);
+
+	assert(sk->o_ops->snd_pack);
+	ret = sk->o_ops->snd_pack(skb);
+
+	if (0 > ret) {
+		return ret;
+	}
+	return data_len;
 }
 
 static DLIST_DEFINE(udp_sock_list);
