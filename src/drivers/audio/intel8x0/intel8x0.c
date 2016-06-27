@@ -8,6 +8,7 @@
  */
 
 #include <unistd.h>
+#include <errno.h>
 
 #include <util/log.h>
 
@@ -23,7 +24,8 @@
 
 
 struct intel_ac_hw_dev {
-	uint32_t base_addr;
+	uint32_t base_addr_nam;
+	uint32_t base_addr_namb;
 };
 
 struct intel_ac_dev_priv {
@@ -110,12 +112,13 @@ static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 
 	pci_set_master(pci_dev);
 
-	intel_ac_hw_dev.base_addr = pci_dev->bar[1] & 0xFF00;
+	intel_ac_hw_dev.base_addr_nam = pci_dev->bar[0] & 0xFF00;
+	intel_ac_hw_dev.base_addr_namb = pci_dev->bar[1] & 0xFF00;
 
 	if ((err = ac97_init(pci_dev)))
 		return err;
 
-	if ((err = irq_attach(pci_dev->irq, iac_interrupt, 0, 0, "iac")))
+	if ((err = irq_attach(pci_dev->irq, iac_interrupt, IF_SHARESUP, &intel_ac_hw_dev, "iac")))
 		return err;
 
 	return 0;
@@ -128,7 +131,7 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	uint8_t tmp;
 	int i;
 
-	out32((uint32_t)&pcm_out_buff_list, intel_ac_hw_dev.base_addr + INTEL_AC_PO_BUF);
+	out32((uint32_t)&pcm_out_buff_list, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_BUF);
 
 	/* Setup buffers, currently just zeroes */
 	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
@@ -136,17 +139,17 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	}
 
 	/* Setup Last Valid Index */
-	out8(INTEL_AC_BUFFER_SZ - 1, intel_ac_hw_dev.base_addr + INTEL_AC_PO_LVI);
+	out8(INTEL_AC_BUFFER_SZ - 1, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_LVI);
 
 	/* Set run bit */
-	tmp = in8(intel_ac_hw_dev.base_addr + INTEL_AC_PO_CR);
+	tmp = in8(intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_CR);
 	tmp |= 0xf;
-	out8(tmp, intel_ac_hw_dev.base_addr + INTEL_AC_PO_CR);
+	out8(tmp, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_CR);
 
 }
 
 static void intel_ac_dev_pause(struct audio_dev *dev) {
-	out8(0x0, intel_ac_hw_dev.base_addr + INTEL_AC_PO_CR);
+	out8(0x0, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_CR);
 }
 
 static void intel_ac_dev_resume(struct audio_dev *dev) {
@@ -154,7 +157,17 @@ static void intel_ac_dev_resume(struct audio_dev *dev) {
 }
 
 static void intel_ac_dev_stop(struct audio_dev *dev) {
-	out8(0x0, intel_ac_hw_dev.base_addr + INTEL_AC_PO_CR);
+	out8(0x0, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_CR);
+}
+
+static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
+	switch(cmd) {
+	case ADIOCTL_SUPPORT:
+		return AD_STEREO_SUPPORT |
+		       AD_16BIT_SUPPORT;
+	}
+	SET_ERRNO(EINVAL);
+	return -1;
 }
 
 static const struct audio_dev_ops intel_ac_dev_ops = {
@@ -162,6 +175,7 @@ static const struct audio_dev_ops intel_ac_dev_ops = {
 	.ad_ops_pause = intel_ac_dev_pause,
 	.ad_ops_resume = intel_ac_dev_resume,
 	.ad_ops_stop = intel_ac_dev_stop,
+	.ad_ops_ioctl = intel_ac_ioctl
 };
 
 static uint8_t dac1_out_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
