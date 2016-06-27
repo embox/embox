@@ -24,8 +24,6 @@
 
 struct intel_ac_hw_dev {
 	uint32_t base_addr;
-	uint32_t ctrl;
-	uint32_t sctrl;
 };
 
 struct intel_ac_dev_priv {
@@ -77,22 +75,23 @@ struct intel_ac_buff_desc {
 /* This buffers could be allocated in runtime */
 static struct intel_ac_buff_desc pcm_out_buff_list[INTEL_AC_BUFFER_SZ];
 
-/* Some of this stuff probably shoud be placed into
+/* Some of this stuff probably should be placed into
  * separate module */
 #define INTEL_AC_MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ)
 
-static uint32_t audio_base;
-#if 0
-static int intel_ac_buf_init(int n, PaStream *stream) {
+static int intel_ac_buf_init(int n, struct audio_dev *dev) {
+	struct intel_ac_dev_priv *priv;
+
+	priv = dev->ad_priv;
+
 	pcm_out_buff_list[n] = (struct intel_ac_buff_desc) {
-		.pointer = (uint32_t)((struct pa_strm *)stream)->callback_data + 2 * 0xFF00 * n,
+		.pointer = (uint32_t)(priv->out_buf) + 2 * 0xFF00 * n,
 		.length  = 0xFF00,//INTEL_AC_BUFFER_SZ,
 		.bup = 1,
 		.ioc = 1,
 	};
 	return 0;
 }
-#endif
 
 /* Intel Corporation 82801AA AC'97 Audio Controller,
  * provided by QEMU with flag -soundhw ac97 */
@@ -111,7 +110,8 @@ static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 
 	pci_set_master(pci_dev);
 
-	audio_base = pci_dev->bar[1] & 0xFF00;
+	intel_ac_hw_dev.base_addr = pci_dev->bar[1] & 0xFF00;
+
 	if ((err = ac97_init(pci_dev)))
 		return err;
 
@@ -126,30 +126,27 @@ PCI_DRIVER("Intel Corporation 82801AA AC'97 Audio Controller", intel_ac_init, IN
 
 static void intel_ac_dev_start(struct audio_dev *dev) {
 	uint8_t tmp;
+	int i;
 
-	out32((uint32_t)&pcm_out_buff_list, audio_base + INTEL_AC_PO_BUF);
-#if 0
+	out32((uint32_t)&pcm_out_buff_list, intel_ac_hw_dev.base_addr + INTEL_AC_PO_BUF);
+
 	/* Setup buffers, currently just zeroes */
 	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
-		intel_ac_buf_init(i, stream);
+		intel_ac_buf_init(i, dev);
 	}
 
-	for (i = 0; i < MAX_BUF_LEN; i++) {
-		((struct pa_strm*)stream)->out_buf[i] = 0xff;
-	}
-#endif
 	/* Setup Last Valid Index */
-	out8(INTEL_AC_BUFFER_SZ - 1, audio_base + INTEL_AC_PO_LVI);
+	out8(INTEL_AC_BUFFER_SZ - 1, intel_ac_hw_dev.base_addr + INTEL_AC_PO_LVI);
 
 	/* Set run bit */
-	tmp = in8(audio_base + INTEL_AC_PO_CR);
+	tmp = in8(intel_ac_hw_dev.base_addr + INTEL_AC_PO_CR);
 	tmp |= 0xf;
-	out8(tmp, audio_base + INTEL_AC_PO_CR);
+	out8(tmp, intel_ac_hw_dev.base_addr + INTEL_AC_PO_CR);
 
 }
 
 static void intel_ac_dev_pause(struct audio_dev *dev) {
-	out8(0x0, audio_base + INTEL_AC_PO_CR);
+	out8(0x0, intel_ac_hw_dev.base_addr + INTEL_AC_PO_CR);
 }
 
 static void intel_ac_dev_resume(struct audio_dev *dev) {
@@ -157,7 +154,7 @@ static void intel_ac_dev_resume(struct audio_dev *dev) {
 }
 
 static void intel_ac_dev_stop(struct audio_dev *dev) {
-	out8(0x0, audio_base + INTEL_AC_PO_CR);
+	out8(0x0, intel_ac_hw_dev.base_addr + INTEL_AC_PO_CR);
 }
 
 static const struct audio_dev_ops intel_ac_dev_ops = {
@@ -199,5 +196,6 @@ uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	priv->cur_buff_offset += audio_dev->samples_per_buffer *
 			audio_dev->num_of_chan * 2;
 	priv->cur_buff_offset %= priv->out_buf_len;
+
 	return &priv->out_buf[priv->cur_buff_offset];
 }
