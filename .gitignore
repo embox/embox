@@ -7,11 +7,10 @@
 *~
 /tags
 
-## Stuff
-# Build
-/beagle_nand.img
+## Build
+/*.img
 
-# Other
+## Other
 /.dep.inc
 /.dropbox
 /.tmp
