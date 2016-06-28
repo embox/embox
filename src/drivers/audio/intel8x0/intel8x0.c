@@ -22,6 +22,28 @@
 #include <kernel/irq.h>
 
 
+/* values for each busmaster block */
+
+/* LVI */
+#define ICH_REG_LVI_MASK		0x1f
+
+/* SR */
+#define ICH_FIFOE			0x10	/* FIFO error */
+#define ICH_BCIS			0x08	/* buffer completion interrupt status */
+#define ICH_LVBCI			0x04	/* last valid buffer completion interrupt */
+#define ICH_CELV			0x02	/* current equals last valid */
+#define ICH_DCH				0x01	/* DMA controller halted */
+
+/* PIV */
+#define ICH_REG_PIV_MASK		0x1f	/* mask */
+
+/* CR */
+#define ICH_IOCE			0x10	/* interrupt on completion enable */
+#define ICH_FEIE			0x08	/* fifo error interrupt enable */
+#define ICH_LVBIE			0x04	/* last valid buffer interrupt enable */
+#define ICH_RESETREGS		0x02	/* reset busmaster registers */
+#define ICH_STARTBM			0x01	/* start busmaster operation */
+
 
 struct intel_ac_hw_dev {
 	//uint32_t base_addr_nam;
@@ -135,8 +157,8 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	out8(INTEL_AC_BUFFER_SZ - 1, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_LVI);
 
 	/* Set run bit */
-	tmp = in8(intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
-	tmp |= 0xf;
+	//tmp = in8(intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
+	tmp = ICH_IOCE | ICH_STARTBM | ICH_FEIE | ICH_LVBIE;
 	out8(tmp, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
 
 }
