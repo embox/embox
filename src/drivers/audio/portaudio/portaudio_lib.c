@@ -78,7 +78,6 @@ static int _dev_chan_support(struct audio_dev *dev, int chan_n) {
 	return 0;
 }
 
-
 /**
  * @brief Duplicate left channel for the buffer
  */
@@ -114,6 +113,8 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	}
 
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
+	assert(audio_dev);
+
 	out_buf = audio_dev_get_out_cur_ptr(audio_dev);
 
 	/* Device buffer and input buffer size can be different
@@ -145,6 +146,7 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	if (retval != paContinue)
 		pa_stream.active = 0;
 
+	assert(audio_dev->ad_ops && audio_dev->ad_ops->ad_ops_resume);
 	audio_dev->ad_ops->ad_ops_resume(audio_dev);
 
 	return 0;
@@ -159,7 +161,6 @@ PaError Pa_Terminate(void) {
 	return paNoError;
 }
 
-
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
@@ -167,6 +168,7 @@ PaError Pa_OpenStream(PaStream** stream,
 		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
 		void *userData) {
 	struct audio_dev *audio_dev;
+	int actual_frames;
 
 	assert(stream != NULL);
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
@@ -180,25 +182,26 @@ PaError Pa_OpenStream(PaStream** stream,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
 	pa_stream.number_of_chan = channel_cnt;
-	pa_stream.devid = outputParameters->device;
-	pa_stream.sample_format = outputParameters->sampleFormat;
-	pa_stream.callback = streamCallback;
-	pa_stream.user_data = userData;
-	pa_stream.active = 1;
+	pa_stream.devid          = outputParameters->device;
+	pa_stream.sample_format  = outputParameters->sampleFormat;
+	pa_stream.callback       = streamCallback;
+	pa_stream.user_data      = userData;
+	pa_stream.active         = 1;
 
 	*stream = &pa_stream;
 
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
-	audio_dev->samples_per_buffer = framesPerBuffer;
 
 	/* TODO rewrite */
 	if (_dev_chan_support(audio_dev, channel_cnt)) {
 		audio_dev->num_of_chan = channel_cnt;
+		actual_frames = framesPerBuffer;
 	} else {
 		if (channel_cnt == 2) {
 			if (_dev_chan_support(audio_dev, 1)) {
 				/* We will convert stereo to mono */
 				audio_dev->num_of_chan = 1;
+				actual_frames = framesPerBuffer / 2;
 			} else {
 				return paInvalidChannelCount;
 			}
@@ -206,6 +209,7 @@ PaError Pa_OpenStream(PaStream** stream,
 			if (_dev_chan_support(audio_dev, 2)) {
 				/* We will convert mono to stereo */
 				audio_dev->num_of_chan = 2;
+				actual_frames = framesPerBuffer * 2;
 			} else {
 				return paInvalidChannelCount;
 			}
@@ -214,6 +218,9 @@ PaError Pa_OpenStream(PaStream** stream,
 		}
 	}
 
+	audio_dev->samples_per_buffer = actual_frames;
+
+	assert(audio_dev->ad_ops && audio_dev->ad_ops->ad_ops_start);
 	audio_dev->ad_ops->ad_ops_start(audio_dev);
 
 	return paNoError;
