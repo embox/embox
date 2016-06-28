@@ -174,12 +174,12 @@ PaError Pa_OpenStream(PaStream** stream,
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
 	assert(streamCallback != NULL);
 
-	int channel_cnt = outputParameters->channelCount;
-
 	log_debug("stream %p input %p output %p rate %f"
 			" framesPerBuffer %lu flags %lu callback %p user_data %p",
 			stream, inputParameters, outputParameters, sampleRate,
 			framesPerBuffer, streamFlags, streamCallback, userData);
+
+	int channel_cnt = outputParameters->channelCount;
 
 	pa_stream.number_of_chan = channel_cnt;
 	pa_stream.devid          = outputParameters->device;
@@ -191,6 +191,8 @@ PaError Pa_OpenStream(PaStream** stream,
 	*stream = &pa_stream;
 
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
+	if (audio_dev == NULL)
+		return paInvalidDevice;
 
 	/* TODO rewrite */
 	if (_dev_chan_support(audio_dev, channel_cnt)) {
@@ -227,25 +229,37 @@ PaError Pa_OpenStream(PaStream** stream,
 }
 
 PaError Pa_CloseStream(PaStream *stream) {
-	struct pa_strm *strm;
-	struct audio_dev *audio_dev;
-
-	strm = (struct pa_strm *)stream;
-
-	audio_dev = audio_dev_get_by_idx(strm->devid);
-	audio_dev->ad_ops->ad_ops_pause(audio_dev);
-
-	return paNoError;
+	/* We don't actually allocate any resources on
+	 * Pa_OpenStream, so it's ok to simply stop the stream */
+	return Pa_StopStream(stream);
 }
 
 PaError Pa_StartStream(PaStream *stream) {
-
 	lthread_launch(&portaudio_lthread);
 
 	return paNoError;
 }
 
 PaError Pa_StopStream(PaStream *stream) {
+	struct pa_strm *strm;
+	struct audio_dev *audio_dev;
+
+	strm = (struct pa_strm *)stream;
+
+	audio_dev = audio_dev_get_by_idx(strm->devid);
+	assert(audio_dev);
+	assert(audio_dev->ad_ops);
+
+	if (audio_dev->ad_ops->ad_ops_pause)
+		audio_dev->ad_ops->ad_ops_pause(audio_dev);
+	else
+		log_error("Stream pause not supported!\n");
+
+	if (audio_dev->ad_ops->ad_ops_stop)
+		audio_dev->ad_ops->ad_ops_stop(audio_dev);
+	else
+		log_error("Stream stop not supported!\n");
+
 	return paNoError;
 }
 
