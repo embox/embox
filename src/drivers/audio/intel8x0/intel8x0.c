@@ -81,12 +81,19 @@ static struct intel_ac_hw_dev intel_ac_hw_dev;
 
 #define INTEL_AC_SAMPLE_SZ 2  /* Bytes */
 #define INTEL_AC_BUFFER_SZ 32 /* Buffer descriptors */
+
+#define DESC_IOC (1 << 31)
+#define DESC_BUP (1 << 30)
+
 struct intel_ac_buff_desc {
 	uint32_t pointer;           /* 2-byte aligned */
-	unsigned int ioc : 1;       /* Interrupt on completion */
-	unsigned int bup : 1;       /* Buffer underrun policy */
-	unsigned int reserved : 14; /* Must be zeroes */
-	unsigned int length : 16;   /* Buffer length in samples */
+	uint32_t header;
+	/* Header bits from high to low are
+	 *     1 bit    Interrupt on completion
+	 *     1 bit    Buffer underrun policy
+	 *    14 bits   Reserved, must be zeroes
+	 *    16 bits   Buffer length in samples
+	 */
 } __attribute__((aligned(2)));
 
 /* This buffers could be allocated in runtime */
@@ -103,9 +110,7 @@ static int intel_ac_buf_init(int n, struct audio_dev *dev) {
 
 	pcm_out_buff_list[n] = (struct intel_ac_buff_desc) {
 		.pointer = (uint32_t)(priv->out_buf) + 2 * 0xFF00 * n,
-		.length  = 0xFF00,//INTEL_AC_BUFFER_SZ,
-		.bup = 1,
-		.ioc = 1,
+		.header = DESC_IOC | DESC_BUP | 0xFF00
 	};
 	return 0;
 }
