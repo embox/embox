@@ -21,7 +21,7 @@ EMBOX_UNIT_INIT(vc_init);
 
 static struct vterm vc_vterm;
 
-static int vc_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *vc_open(struct node *node, struct file_desc *file_desc, int flags);
 
 static struct kfile_operations vc_file_ops = {
 	.open = vc_open,
