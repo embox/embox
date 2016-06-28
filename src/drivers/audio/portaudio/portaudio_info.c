@@ -11,12 +11,56 @@
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
 
+#include <util/log.h>
+
+#define MAX_DEV_CNT OPTION_GET(NUMBER, max_dev_count)
+
+ARRAY_SPREAD_DECLARE(const struct audio_dev, __audio_device_registry);
+
+static int pa_info_init(void);
+EMBOX_UNIT_INIT(pa_info_init);
+
+static int _dev_cnt;
+static PaDeviceInfo _info[MAX_DEV_CNT];
+
+static int pa_info_init(void) {
+	struct audio_dev *dev;
+
+	_dev_cnt = ARRAY_SPREAD_SIZE(__audio_device_registry);
+
+	if (_dev_cnt > MAX_DEV_CNT) {
+		log_error("Increase max_dev_count option!"
+		          " Need %d, have %d\n",
+		          _dev_cnt, MAX_DEV_CNT);
+
+		_dev_cnt = MAX_DEV_CNT;
+	}
+
+	for (int i = 0; i < _dev_cnt; i++) {
+		dev = audio_dev_get_by_idx(i);
+		_info[i] = (PaDeviceInfo) {
+			.structVersion = 1,
+			.name = dev->ad_name,
+			.hostApi = 0,
+			.maxInputChannels = 1,
+			.maxOutputChannels = 1,
+			.defaultLowInputLatency = 0,
+			.defaultLowOutputLatency = 0,
+			.defaultHighInputLatency = 0,
+			.defaultHighOutputLatency = 0,
+			.defaultSampleRate = 44100
+		};
+	}
+
+	return 0;
+}
+
 PaHostApiIndex Pa_GetHostApiCount(void) {
 	return 1;
 }
 
 PaDeviceIndex Pa_GetDeviceCount(void) {
-	return 1;
+	return _dev_cnt;
 }
 
 PaDeviceIndex Pa_GetDefaultOutputDevice(void) {
@@ -28,21 +72,10 @@ const char *Pa_GetErrorText(PaError errorCode) {
 }
 
 const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
-	static const PaDeviceInfo info = {
-		.structVersion = 1,
-		.name = "es1370 portaudio",
-		.hostApi = 0,
-		.maxInputChannels = 1,
-		.maxOutputChannels = 1,
-		.defaultLowInputLatency = 0,
-		.defaultLowOutputLatency = 0,
-		.defaultHighInputLatency = 0,
-		.defaultHighOutputLatency = 0,
-		.defaultSampleRate = 44100
-	};
-	const PaDeviceInfo *pa_info = device == 0 ? &info : NULL;
-
-	return pa_info;
+	if (device >= _dev_cnt)
+		return NULL;
+	else
+		return (const PaDeviceInfo *) &_info[device];
 }
 
 const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
