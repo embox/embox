@@ -24,7 +24,7 @@
 
 
 struct intel_ac_hw_dev {
-	uint32_t base_addr_nam;
+	//uint32_t base_addr_nam;
 	uint32_t base_addr_namb;
 };
 
@@ -43,13 +43,6 @@ static struct intel_ac_hw_dev intel_ac_hw_dev;
 /* You may want to look at "Intel 82801AA (ICH) & Intel 82801AB(ICH0)
  * IO Controller Hub AC ’97 Programmer’s Reference Manual" for more
  * technical details */
-
-/* Offsets of registers */
-#define INTEL_AC_COM	0x04 /* Command */
-#define INTEL_AC_NAMBA	0x10 /* Native Audio Mixer Base Address */
-#define INTEL_AC_NABMBA	0x14 /* Native Audio Bus Mastering Base Address */
-#define INTEL_AC_INTLN	0x3c /* Interrupt Line */
-
 #define INTEL_AC_PCM_IN_BUF  0x00
 #define INTEL_AC_PO_BUF 0x10
 #define INTEL_AC_MIC_BUF     0x20
@@ -112,7 +105,7 @@ static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 
 	pci_set_master(pci_dev);
 
-	intel_ac_hw_dev.base_addr_nam = pci_dev->bar[0] & 0xFF00;
+	//intel_ac_hw_dev.base_addr_nam = pci_dev->bar[0] & 0xFF00;
 	intel_ac_hw_dev.base_addr_namb = pci_dev->bar[1] & 0xFF00;
 
 	if ((err = ac97_init(pci_dev)))
@@ -131,7 +124,7 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	uint8_t tmp;
 	int i;
 
-	out32((uint32_t)&pcm_out_buff_list, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_BUF);
+	out32((uint32_t)&pcm_out_buff_list, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_BUF);
 
 	/* Setup buffers, currently just zeroes */
 	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
@@ -139,17 +132,17 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	}
 
 	/* Setup Last Valid Index */
-	out8(INTEL_AC_BUFFER_SZ - 1, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_LVI);
+	out8(INTEL_AC_BUFFER_SZ - 1, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_LVI);
 
 	/* Set run bit */
-	tmp = in8(intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_CR);
+	tmp = in8(intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
 	tmp |= 0xf;
-	out8(tmp, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_CR);
+	out8(tmp, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
 
 }
 
 static void intel_ac_dev_pause(struct audio_dev *dev) {
-	out8(0x0, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_CR);
+	out8(0x0, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
 }
 
 static void intel_ac_dev_resume(struct audio_dev *dev) {
@@ -157,7 +150,7 @@ static void intel_ac_dev_resume(struct audio_dev *dev) {
 }
 
 static void intel_ac_dev_stop(struct audio_dev *dev) {
-	out8(0x0, intel_ac_hw_dev.base_addr_nam + INTEL_AC_PO_CR);
+	out8(0x0, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
 }
 
 static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {

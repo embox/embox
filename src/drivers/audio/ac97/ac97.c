@@ -18,8 +18,6 @@
 #include <drivers/audio/ac97.h>
 #include <drivers/audio/portaudio.h>
 
-static int ac97_bus;
-static int ac97_devfn;
 static int ac97_bar;
 
 /**
@@ -71,8 +69,6 @@ int ac97_get_vol(void) {
  * @return Negative error number
  */
 int ac97_init(struct pci_slot_dev *pci_dev) {
-	ac97_bus   = pci_dev->busn;
-	ac97_devfn = PCI_DEVFN(pci_dev->slot, pci_dev->func);
 	ac97_bar   = pci_dev->bar[0] & 0xFFFFFFFC;
 
 	ac97_reset();
