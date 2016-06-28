@@ -6,6 +6,9 @@ PKG_MD5     := ff1af4bd9893c1728e765aa08a816e41
 
 include $(EXTBLD_LIB)
 
+coap_cppflags = -include $(ROOT_DIR)/third-party/libcoap/lib/libcoap_embox_compat.h \
+			-Drpl_malloc=malloc
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && autoconf && ( \
@@ -13,14 +16,14 @@ $(CONFIGURE) :
 			CC=$(EMBOX_GCC) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
-			CPPFLAGS=-Drpl_malloc=malloc \
-			CFLAGS=-m32 \
+			CPPFLAGS="$(coap_cppflags)" \
 	)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make; \
+		make \
+                	CC=$(EMBOX_GCC) \
 	)
 	touch $@
 
