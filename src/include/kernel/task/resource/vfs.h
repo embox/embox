@@ -6,7 +6,7 @@
  */
 
 #ifndef FILE_TABLE_H_
-#define FILE_TABLE_H
+#define FILE_TABLE_H_
 
 
 #include <kernel/task.h>
