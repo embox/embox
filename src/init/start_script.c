@@ -13,6 +13,9 @@
 #include <cmd/shell.h>
 #include <stdio.h>
 
+#include <mem/vmem.h>
+#include <mem/vmem/vmem_alloc.h>
+
 #include "setup_tty.h"
 
 #define START_SHELL OPTION_GET(NUMBER,shell_start)
