@@ -1,10 +1,10 @@
 #include <mem/vmem.h>
 #include <kernel/thread.h>
 
-void stack_protect(struct thread *t, size_t size);
-void stack_protect_release(struct thread *t);
+extern void stack_protect(struct thread *t, size_t size);
+extern void stack_protect_release(struct thread *t);
 
-void stack_protect_enable();
-void stack_protect_disable();
+extern void stack_protect_enable();
+extern void stack_protect_disable();
 
-int stack_protect_enabled();
+extern int stack_protect_enabled();

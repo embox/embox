@@ -25,7 +25,8 @@ typedef union thread_pool_entry {
 	char stack[STACK_SZ];
 } thread_pool_entry_t;
 
-POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ, __attribute__ ((aligned (4096))));
+POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
+    __attribute__ ((aligned (VMEM_PAGE_SIZE))));
 
 struct thread *thread_alloc(void) {
 	thread_pool_entry_t *block;
