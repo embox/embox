@@ -1,8 +1,5 @@
 #include <kernel/thread/stack_protect.h>
 
-#include <assert.h>
-#include <util/binalign.h>
-#include <hal/mmu.h>
 #include <mem/vmem/vmem_alloc.h>
 
 static int enabled = 0;
