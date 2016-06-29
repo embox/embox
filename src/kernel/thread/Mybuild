@@ -25,6 +25,8 @@ module core {
 
 	depends embox.kernel.cpu.common
 	depends embox.kernel.sched.current.api
+
+	depends stack_protect
 }
 
 module sched_wait {
@@ -101,4 +103,8 @@ abstract module thread_wait { }
 module thread_wait_stub extends thread_wait {
 	source "thread_wait_stub.c"
 	source "thread_wait_stub.h"
+}
+
+module stack_protect {
+	source "stack_protect.c"
 }
