@@ -41,3 +41,9 @@ module slab {
 	depends embox.mem.slab
 	depends embox.framework.LibFramework
 }
+
+module mmap {
+	source "mmap.c"
+
+	depends embox.mem.vmem
+}
