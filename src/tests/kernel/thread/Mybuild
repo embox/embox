@@ -18,6 +18,7 @@ module thread_priority_test {
 module stack_protect_test {
 	source "stack_protect_test.c"
 
+	depends embox.kernel.thread.stack_protect
 	depends embox.kernel.thread.core
 	depends embox.framework.LibFramework
 }
