@@ -123,6 +123,9 @@ static struct servent * explore_serv(const char *servname,
 	}
 
 	if (NULL == result) {
+		if (0 == strcmp(servname, "")) {
+			return servent_make(NULL, 0, proto);
+		}
 		if (1 == sscanf(servname, "%hu", &port)) {
 			result = servent_make(NULL, port, proto);
 		}
