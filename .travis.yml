@@ -33,9 +33,16 @@ before_script:
   - make confload-"$TEMPLATE"
   - sed -ie '/eth0\|http/d' conf/start_script.inc  # FIXME
   - make buildgen  # Make as much as possible before the actual build step.
+  - |
+    if [ "${COVERITY_SCAN_BRANCH}" != 1 ]
+    then
+      function run() { echo -e '$' "${ANSI_GREEN}$@${ANSI_RESET}"; "$@"; }
+    else
+      function run() { echo "Not running '$@': Coverity scan build"; }
+    fi
 
 script:
-  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make && ./scripts/continuous/run.sh "$TEMPLATE"; fi
+  - run make && run ./scripts/continuous/run.sh "$TEMPLATE"
 
 addons:
   coverity_scan:
