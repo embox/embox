@@ -30,6 +30,8 @@ __BEGIN_DECLS
 
 #define MAP_FAILED (void*)-1
 
+#include <module/embox/mem/vmem_api.h>
+
 extern int mprotect(void *, size_t, int);
 
 /* todo: implement for InitFS files */
@@ -41,7 +43,6 @@ extern int munmap(void *, size_t);
 #define PROT_NOCACHE 0x80
 
 /* TODO move to compat/qnx */
-#include <module/embox/mem/vmem_api.h>
 extern void *mmap_device_memory(void * addr,
                            size_t len,
                            int prot,
