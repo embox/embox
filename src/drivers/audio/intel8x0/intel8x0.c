@@ -224,7 +224,7 @@ static void intel_ac_dev_pause(struct audio_dev *dev) {
 }
 
 static void intel_ac_dev_resume(struct audio_dev *dev) {
-
+	intel_ac_dev_start(dev);
 }
 
 static void intel_ac_dev_stop(struct audio_dev *dev) {
