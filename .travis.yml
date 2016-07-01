@@ -35,7 +35,7 @@ before_script:
   - make buildgen  # Make as much as possible before the actual build step.
 
 script:
-  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make && ./scripts/continuous/run.sh "$TEMPLATE"; fi
+  - if [ "${COVERITY_SCAN_BRANCH}" != 1 ]; then make && ./scripts/continuous/run.sh "$TEMPLATE"; fi
 
 addons:
   coverity_scan:
