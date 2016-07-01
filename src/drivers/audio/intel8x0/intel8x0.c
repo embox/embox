@@ -9,7 +9,6 @@
 
 #include <unistd.h>
 #include <errno.h>
-
 #include <util/log.h>
 
 #include <asm/io.h>
@@ -20,7 +19,6 @@
 #include <drivers/audio/audio_dev.h>
 #include <drivers/audio/ac97.h>
 #include <kernel/irq.h>
-
 
 /* values for each busmaster block */
 
@@ -73,6 +71,11 @@ static struct intel_ac_hw_dev intel_ac_hw_dev;
 #define INTEL_AC_PCM_IN_LVI  0x05
 #define INTEL_AC_PO_LVI 0x15
 #define INTEL_AC_MIC_LVI     0x25
+
+/* Status registers */
+#define INTEL_AC_PCM_IN_SR   0x06
+#define INTEL_AC_PO_SR       0x16
+#define INTEL_AC_MIC_SR      0x26
 
 /* Control registers */
 #define INTEL_AC_PCM_IN_CR  0x0B
@@ -156,24 +159,20 @@ static int intel_ac_buf_init(int n, struct audio_dev *dev) {
 #define INTEL_AC_PID 0x2415
 
 static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
-	uint32_t status;
-	uint32_t base_addr;
+	uint8_t status;
+	status = in8(intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_SR);
+	log_debug("Status Register = %#x\n", status);
 
-	base_addr = intel_ac_hw_dev.base_addr_namb;
-
-	status = in32(base_addr + INTEL_AC_GLOB_STA);
-	if (status == 0xffffffff)	/* we are not yet resumed */
+	if (!(status & 0xFF))
 		return IRQ_NONE;
 
-	if (!(status & 0xff)) {
-		return IRQ_NONE;
-	}
-	/* ack */
-	out32(status, base_addr + INTEL_AC_GLOB_STA);
-
-	log_debug("status = %#x", status);
-
+	out8(0x0, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
 	Pa_StartStream(NULL);
+
+	out16(0x1C, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_SR);
+	out16(0x1C, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PCM_IN_SR);
+
+	out32((1 << 15) | (1 << 11) | (1 << 10) | 1, intel_ac_hw_dev.base_addr_namb + INTEL_AC_GLOB_STA);
 
 	return IRQ_HANDLED;
 }
