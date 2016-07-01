@@ -135,7 +135,8 @@ static struct intel_ac_buff_desc pcm_out_buff_list[INTEL_AC_BUFFER_SZ];
 
 /* Some of this stuff probably should be placed into
  * separate module */
-#define INTEL_AC_MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ)
+#define INTEL_AC_DESC_LEN    0xFF00
+#define INTEL_AC_MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ * 2 * INTEL_AC_DESC_LEN)
 
 static int intel_ac_buf_init(int n, struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
@@ -143,8 +144,8 @@ static int intel_ac_buf_init(int n, struct audio_dev *dev) {
 	priv = dev->ad_priv;
 
 	pcm_out_buff_list[n] = (struct intel_ac_buff_desc) {
-		.pointer = (uint32_t)(priv->out_buf) + 2 * 0xFF00 * n,
-		.header = DESC_IOC | DESC_BUP | 0xFF00
+		.pointer = (uint32_t)(priv->out_buf) + 2 * INTEL_AC_DESC_LEN * n,
+		.header = INTEL_AC_DESC_LEN
 	};
 	return 0;
 }
