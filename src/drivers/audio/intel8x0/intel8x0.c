@@ -183,7 +183,6 @@ static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 
 	pci_set_master(pci_dev);
 
-	//intel_ac_hw_dev.base_addr_nam = pci_dev->bar[0] & 0xFF00;
 	intel_ac_hw_dev.base_addr_namb = pci_dev->bar[1] & 0xFF00;
 
 	if ((err = ac97_init(pci_dev)))
@@ -213,10 +212,8 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	out8(INTEL_AC_BUFFER_SZ - 1, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_LVI);
 
 	/* Set run bit */
-	//tmp = in8(intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
 	tmp = ICH_IOCE | ICH_STARTBM | ICH_FEIE | ICH_LVBIE;
 	out8(tmp, intel_ac_hw_dev.base_addr_namb + INTEL_AC_PO_CR);
-
 }
 
 static void intel_ac_dev_pause(struct audio_dev *dev) {
