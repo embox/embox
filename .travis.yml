@@ -55,5 +55,6 @@ addons:
 
 notifications:
   slack:
-    secure: ATPx+JnB3aMwuyXlJElYv47Z17o5h7rVN2xGOdwKyvuB0HKiGxkUfxAOK37CkLVTZ1i1Jozb1aoDGojTO+zmo4kCfKP3VXRLW9RTVhxt96MlUM0FCRed1bxi1A9rswpaEfWQXpuk9GjUPZOYgSK8D+IV63rhT5F9m4b3Z8WLkr0=
-    on_success: :change
+    secure: XIP8diNjLokES+oeQJtSQLiGAGxvqlBdoKZqccLsOZWtYToDMoNlILAurNI9wCkb1i9TmNbaNYaGqm4h6jbt/+2gOsi6u1Nu4QpTF+g294hqgE4ztxmqcX7JSOGldLxdG+o+eu6D+yUEwFbrBA0WSEVgB26Sd3JQ0jvnxAk4sJw=
+    on_success: change
+    on_failure: always
