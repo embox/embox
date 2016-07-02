@@ -278,9 +278,9 @@ uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 
 	priv = audio_dev->ad_priv;
 
-	priv->cur_buff_offset += audio_dev->samples_per_buffer *
-			audio_dev->num_of_chan * 2;
+	/* priv->cur_buff_offset += audio_dev->buf_len;
 	priv->cur_buff_offset %= priv->out_buf_len;
+	return &priv->out_buf[priv->cur_buff_offset]; */
 
-	return &priv->out_buf[priv->cur_buff_offset];
+	return &priv->out_buf[0];
 }

@@ -348,10 +348,12 @@ uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 
 	priv = audio_dev->ad_priv;
 
-	priv->cur_buff_offset += audio_dev->samples_per_buffer *
+	/* priv->cur_buff_offset += audio_dev->samples_per_buffer *
 			audio_dev->num_of_chan * 2;
 	priv->cur_buff_offset %= priv->out_buf_len;
-	return &priv->out_buf[priv->cur_buff_offset];
+	return &priv->out_buf[priv->cur_buff_offset]; */
+
+	return &priv->out_buf[0];
 }
 
 static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
@@ -457,13 +459,10 @@ static void es1370_dev_pause(struct audio_dev *dev) {
 
 static void es1370_dev_resume(struct audio_dev *dev) {
 	struct es1370_dev_priv *priv;
-	uint32_t buf_len;
-
-	buf_len = dev->samples_per_buffer * dev->num_of_chan * 2;
 
 	priv = dev->ad_priv;
 
-	es1370_update_dma(buf_len, priv->devid);
+	es1370_update_dma(ES1370_MAX_BUF_LEN, priv->devid);
 	es1370_drv_resume(priv->devid);
 }
 
