@@ -476,6 +476,8 @@ static int es1370_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	case ADIOCTL_SUPPORT:
 		return AD_STEREO_SUPPORT |
 		       AD_16BIT_SUPPORT;
+	case ADIOCTL_BUFLEN:
+		return ES1370_MAX_BUF_LEN;
 	}
 	SET_ERRNO(EINVAL);
 	return -1;
