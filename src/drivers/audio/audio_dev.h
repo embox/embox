@@ -27,7 +27,7 @@ struct audio_dev {
 	struct audio_dev_ops *ad_ops;
 	const char *ad_name;
 	void *ad_priv;
-	uint32_t samples_per_buffer;
+	size_t buf_len;
 	uint8_t num_of_chan;
 	uint8_t max_chan;
 };

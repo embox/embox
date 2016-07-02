@@ -49,8 +49,6 @@ static int _bytes_per_sample(struct pa_strm *stream) {
 	return stream->number_of_chan *
 	       sample_format_in_bytes(stream->sample_format);
 }
-#endif
-
 
 /**
  * @brief Check if given device support given number of channels
@@ -77,6 +75,7 @@ static int _dev_chan_support(struct audio_dev *dev, int chan_n) {
 
 	return 0;
 }
+#endif
 
 /**
  * @brief Duplicate left channel for the buffer
@@ -104,8 +103,6 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	int retval;
 	struct audio_dev *audio_dev;
 	uint8_t *out_buf;
-	int dev_buff_sz;
-	int inp_buff_sz;
 	int inp_frames;
 
 	if (!pa_stream.callback || !pa_stream.active) {
@@ -117,11 +114,9 @@ static int portaudio_lthread_handle(struct lthread *self) {
 
 	out_buf = audio_dev_get_out_cur_ptr(audio_dev);
 
-	/* Device buffer and input buffer size can be different
-	 * because of channel number and bps rate */
-	dev_buff_sz = audio_dev->samples_per_buffer * audio_dev->num_of_chan * 2;
-	inp_buff_sz = dev_buff_sz / audio_dev->num_of_chan * pa_stream.number_of_chan;
-	inp_frames = inp_buff_sz / pa_stream.number_of_chan / 2;
+	inp_frames = audio_dev->buf_len / 2; /* 16 bit sample */
+	if (pa_stream.number_of_chan == 2)
+		inp_frames /= 2;
 
 	retval = pa_stream.callback(NULL,
 			out_buf,
@@ -133,9 +128,9 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	/* Sort out problems related to the number of channels */
 	if (pa_stream.number_of_chan != audio_dev->num_of_chan) {
 		if (pa_stream.number_of_chan == 1 && audio_dev->num_of_chan == 2) {
-			_mono_to_stereo(out_buf, audio_dev->samples_per_buffer);
+			_mono_to_stereo(out_buf, inp_frames);
 		} else if (pa_stream.number_of_chan == 2 && audio_dev->num_of_chan == 1) {
-			_stereo_to_mono(out_buf, audio_dev->samples_per_buffer);
+			_stereo_to_mono(out_buf, inp_frames);
 		} else {
 			log_error("Audio configuration is broken!"
 			          "Check the number of channels.\n");
@@ -168,7 +163,6 @@ PaError Pa_OpenStream(PaStream** stream,
 		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
 		void *userData) {
 	struct audio_dev *audio_dev;
-	int actual_frames;
 
 	assert(stream != NULL);
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
@@ -194,7 +188,13 @@ PaError Pa_OpenStream(PaStream** stream,
 	if (audio_dev == NULL)
 		return paInvalidDevice;
 
-	/* TODO rewrite */
+	assert(audio_dev->ad_ops);
+	assert(audio_dev->ad_ops->ad_ops_ioctl);
+	audio_dev->buf_len = audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_BUFLEN, NULL);
+
+	/* TODO work on mono sound device */
+	audio_dev->num_of_chan = 2;
+#if 0
 	if (_dev_chan_support(audio_dev, channel_cnt)) {
 		audio_dev->num_of_chan = channel_cnt;
 		actual_frames = framesPerBuffer;
@@ -219,9 +219,7 @@ PaError Pa_OpenStream(PaStream** stream,
 			return paInvalidChannelCount;
 		}
 	}
-
-	audio_dev->samples_per_buffer = actual_frames;
-
+#endif
 	assert(audio_dev->ad_ops && audio_dev->ad_ops->ad_ops_start);
 	audio_dev->ad_ops->ad_ops_start(audio_dev);
 
