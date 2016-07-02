@@ -141,7 +141,7 @@ static struct intel_ac_buff_desc pcm_out_buff_list[INTEL_AC_BUFFER_SZ];
 /* Some of this stuff probably should be placed into
  * separate module */
 #define INTEL_AC_DESC_LEN    0xFF00
-#define INTEL_AC_MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ * 2 * INTEL_AC_DESC_LEN)
+#define INTEL_AC_MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ * INTEL_AC_DESC_LEN)
 
 static int intel_ac_buf_init(int n, struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
