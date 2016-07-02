@@ -39,7 +39,7 @@
 /* Every array entry, group of entries or marker symbols are backed by an
  * individual array (empty for markers) defined as follows. */
 #define __ARRAY_SPREAD_ENTRY_DEF(type, array_nm, entry_nm, section_order_tag) \
-	type volatile const entry_nm[] __attribute__ ((used,                  \
+	type volatile entry_nm[] __attribute__ ((used,                  \
 			section(__ARRAY_SPREAD_SECTION(array_nm, section_order_tag)), \
 			aligned(__alignof__(array_nm[0]))))
 
@@ -65,7 +65,7 @@
  *  - first time is for define its type, and
  *  - second time - to add necessary attributes (alignment in particular). */
 #define __ARRAY_SPREAD_DEF_TERMINATED(element_t, array_nm, terminator) \
-	element_t volatile const array_nm[] __attribute__ ((used,          \
+	element_t volatile array_nm[] __attribute__ ((used,          \
 		/* Some versions of GCC do not take into an account section    \
 		 * attribute if it appears after the definition. */            \
 			section(__ARRAY_SPREAD_SECTION(array_nm, "0_head")))) =    \
@@ -81,7 +81,7 @@
 /* Spread declaration */
 
 #define __ARRAY_SPREAD_DECLARE(element_t, array_nm) \
-	EXTERN_C element_t volatile const array_nm[]
+	EXTERN_C element_t volatile array_nm[]
 
 /* Spread element addition. */
 
@@ -196,7 +196,7 @@
 
 # undef  __ARRAY_SPREAD_DEF_TERMINATED
 # define __ARRAY_SPREAD_DEF_TERMINATED(element_t, array_nm, terminator) \
-	element_t volatile const array_nm[]
+	element_t volatile array_nm[]
 
 # undef  __ARRAY_SPREAD_ADD
 # define __ARRAY_SPREAD_ADD(array_nm, ...) \

@@ -17,15 +17,15 @@ env:
     - TEMPLATE=x86/test/lang
 
 before_install:
-  - sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
-  - sudo apt-get update -qq
+  - travis_retry sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
+  - travis_retry sudo apt-get update -qq
 
 # TODO make it template-specific
 install:
-  - sudo apt-get install -qq gcc-arm-embedded
-  - sudo apt-get install -qq gcc-multilib
-  - sudo apt-get install -qq u-boot-tools
-  - sudo apt-get install -qq qemu qemu-system
+  - travis_retry sudo apt-get install -qq gcc-arm-embedded
+  - travis_retry sudo apt-get install -qq gcc-multilib
+  - travis_retry sudo apt-get install -qq u-boot-tools
+  - travis_retry sudo apt-get install -qq qemu qemu-system
 
 before_script:
   - unset CC
@@ -33,9 +33,16 @@ before_script:
   - make confload-"$TEMPLATE"
   - sed -ie '/eth0\|http/d' conf/start_script.inc  # FIXME
   - make buildgen  # Make as much as possible before the actual build step.
+  - |
+    if [ "${COVERITY_SCAN_BRANCH}" != 1 ]
+    then
+      function run() { echo -e '$' "${ANSI_GREEN}$@${ANSI_RESET}"; "$@"; }
+    else
+      function run() { echo "Not running '$@': Coverity scan build"; }
+    fi
 
 script:
-  - if [ ${COVERITY_SCAN_BRANCH} != 1 ]; then make && ./scripts/continuous/run.sh "$TEMPLATE"; fi
+  - run make && run ./scripts/continuous/run.sh "$TEMPLATE"
 
 addons:
   coverity_scan:
@@ -48,5 +55,6 @@ addons:
 
 notifications:
   slack:
-    secure: ATPx+JnB3aMwuyXlJElYv47Z17o5h7rVN2xGOdwKyvuB0HKiGxkUfxAOK37CkLVTZ1i1Jozb1aoDGojTO+zmo4kCfKP3VXRLW9RTVhxt96MlUM0FCRed1bxi1A9rswpaEfWQXpuk9GjUPZOYgSK8D+IV63rhT5F9m4b3Z8WLkr0=
-    on_success: :change
+    secure: XIP8diNjLokES+oeQJtSQLiGAGxvqlBdoKZqccLsOZWtYToDMoNlILAurNI9wCkb1i9TmNbaNYaGqm4h6jbt/+2gOsi6u1Nu4QpTF+g294hqgE4ztxmqcX7JSOGldLxdG+o+eu6D+yUEwFbrBA0WSEVgB26Sd3JQ0jvnxAk4sJw=
+    on_success: change
+    on_failure: always

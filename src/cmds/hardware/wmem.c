@@ -23,12 +23,6 @@ enum access_type {
 	MEM_AT_LONG,
 };
 
-static const size_t aalign[] = {
-	sizeof(char),
-	sizeof(short),
-	sizeof(long),
-};
-
 static void print_usage(void) {
 	printf("Usage: wmem [-h] [-l -s -c] -a addr -v value\n");
 }
