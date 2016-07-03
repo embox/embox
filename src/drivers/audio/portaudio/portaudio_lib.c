@@ -116,8 +116,10 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	out_buf = audio_dev_get_out_cur_ptr(audio_dev);
 
 	inp_frames = audio_dev->buf_len / 2; /* 16 bit sample */
-	if (pa_stream.number_of_chan == 2)
-		inp_frames /= 2;
+	/* Even if source is mono channel,
+	 * we will anyway put twice as much data
+	 * to fill right channel as well */
+	inp_frames /= 2;
 
 	memset(out_buf, 0, audio_dev->buf_len);
 
