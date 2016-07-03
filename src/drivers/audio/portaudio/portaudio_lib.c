@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <string.h>
 #include <errno.h>
 
 #include <util/log.h>
@@ -117,6 +118,8 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	inp_frames = audio_dev->buf_len / 2; /* 16 bit sample */
 	if (pa_stream.number_of_chan == 2)
 		inp_frames /= 2;
+
+	memset(out_buf, 0, audio_dev->buf_len);
 
 	retval = pa_stream.callback(NULL,
 			out_buf,
