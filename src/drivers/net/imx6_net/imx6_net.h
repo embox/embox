@@ -127,6 +127,6 @@ struct imx6_buf_desc {
 	uint16_t flags3;           /* Used only for RX */
 	uint32_t timestamp;
 	uint16_t pad2[4];          /* Unused */
-} __attribute__ ((aligned(16)));
+} __attribute__ ((aligned(0x1000)));
 
 #endif /* DRIVERS_IMX6_NET_H_ */

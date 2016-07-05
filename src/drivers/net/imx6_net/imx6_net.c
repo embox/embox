@@ -69,8 +69,8 @@ static void _write_macaddr(void) {
 static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES];
 static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES];
 
-static uint8_t _tx_buf[TX_BUF_LEN] __attribute__ ((aligned(16)));
-static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(16)));
+static uint8_t _tx_buf[TX_BUF_LEN] __attribute__ ((aligned(0x10000)));
+static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(0x10000)));
 
 //extern void dcache_inval(const void *p, size_t size);
 //extern void dcache_flush(const void *p, size_t size);
