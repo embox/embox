@@ -119,6 +119,7 @@ struct imx6_buf_desc {
 	uint16_t len;
 	uint16_t flags1;
 	uint32_t data_pointer;
+#if 0
 	uint32_t flags2;
 	uint16_t payload_checksum; /* Used only for RX */
 	uint8_t  protocol;         /* Used only for RX */
@@ -127,6 +128,7 @@ struct imx6_buf_desc {
 	uint16_t flags3;           /* Used only for RX */
 	uint32_t timestamp;
 	uint16_t pad2[4];          /* Unused */
-} __attribute__ ((aligned(0x1000)));
+#endif
+} __attribute__ ((aligned(0x10000)));
 
 #endif /* DRIVERS_IMX6_NET_H_ */
