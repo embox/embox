@@ -60,8 +60,8 @@
 /* ENET_TFWR */
 #define TFWR_STRFWD (1 << 8)
 
-#define FRAME_LEN     1588
-#define TX_BUF_FRAMES 16
+#define FRAME_LEN     2048
+#define TX_BUF_FRAMES 256
 #define TX_BUF_LEN    (FRAME_LEN * TX_BUF_FRAMES)
 #define RX_BUF_FRAMES 256
 #define RX_BUF_LEN    (FRAME_LEN * RX_BUF_FRAMES)
