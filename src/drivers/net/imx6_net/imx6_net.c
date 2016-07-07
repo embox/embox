@@ -50,6 +50,15 @@ static void _reg_dump(void) {
 	log_debug("ENET_MRBR %10x", REG32_LOAD(ENET_MRBR));
 }
 
+static uint32_t _uboot_regs[128];
+static void _mem_dump(void) {
+	printk("IMX6 ENET MEMORY REGISTERS DUMP\n");
+	for (int i = 0; i < 128; i++) {
+		_uboot_regs[i] = REG32_LOAD(NIC_BASE + i * 4);
+		printk("%#010x: %#010x\n", NIC_BASE + i * 4, _uboot_regs[i]);
+	}
+}
+
 static uint8_t _macaddr[6];
 
 static void _write_macaddr(void) {
