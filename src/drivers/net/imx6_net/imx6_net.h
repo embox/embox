@@ -17,7 +17,9 @@
 #define ENET_RDAR (NIC_BASE + 0x0010)
 #define ENET_TDAR (NIC_BASE + 0x0014)
 #define ENET_ECR  (NIC_BASE + 0x0024)
+#define ENET_MMFR (NIC_BASE + 0x0040)
 #define ENET_MSCR (NIC_BASE + 0x0044)
+#define ENET_MIBC (NIC_BASE + 0x0064)
 #define ENET_RCR  (NIC_BASE + 0x0084)
 #define ENET_TCR  (NIC_BASE + 0x00C4)
 #define MAC_LOW   (NIC_BASE + 0x00E4)
@@ -28,9 +30,18 @@
 #define ENET_GAUR (NIC_BASE + 0x0120)
 #define ENET_GALR (NIC_BASE + 0x0124)
 #define ENET_TFWR (NIC_BASE + 0x0144)
+#define ENET_WTF1 (NIC_BASE + 0x014C) /* Not mentioned             */
+#define ENET_WTF2 (NIC_BASE + 0x0150) /*      in the specification */
 #define ENET_RDSR (NIC_BASE + 0x0180)
 #define ENET_TDSR (NIC_BASE + 0x0184)
 #define ENET_MRBR (NIC_BASE + 0x0188)
+#define ENET_RAEM (NIC_BASE + 0x0198)
+#define ENET_RAFL (NIC_BASE + 0x019C)
+#define ENET_TAEM (NIC_BASE + 0x01A4)
+#define ENET_TAFL (NIC_BASE + 0x01A8)
+#define ENET_TIPG (NIC_BASE + 0x01AC)
+#define ENET_FTRL (NIC_BASE + 0x01B0)
+
 
 /* Various flags */
 /* ENET_EIR */
