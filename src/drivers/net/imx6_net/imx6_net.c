@@ -52,10 +52,14 @@ static void _reg_dump(void) {
 
 static uint32_t _uboot_regs[128];
 static void _mem_dump(void) {
-	printk("IMX6 ENET MEMORY REGISTERS DUMP\n");
 	for (int i = 0; i < 128; i++) {
 		_uboot_regs[i] = REG32_LOAD(NIC_BASE + i * 4);
-		printk("%#010x: %#010x\n", NIC_BASE + i * 4, _uboot_regs[i]);
+	}
+}
+
+static void _mem_restore(void) {
+	for (int i = 0; i < 128; i++) {
+		REG32_STORE(NIC_BASE + i * 4,_uboot_regs[i]);
 	}
 }
 
