@@ -306,10 +306,12 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	state = REG32_LOAD(ENET_EIR);
 
-	log_debug("Interrupt mask %#08x\n", state);
+	log_debug("Interrupt mask %#08x", state);
+
+	REG32_STORE(ENET_EIR, state);
 
 	if (state & EIR_EBERR) {
-		log_error("Ethernet bus error, resetting ENET!\n");
+		log_error("Ethernet bus error, resetting ENET!");
 		REG32_STORE(ENET_ECR, RESET);
 		_reset();
 
@@ -317,17 +319,17 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 	}
 
 	if (state & EIR_RXB) {
-		int id = 0;
-		log_debug("RX interrupt; len %d bytes; status %#010x\n", _rx_desc_ring[id].len, _rx_desc_ring[id].flags1);
-
-		REG32_STORE(ENET_EIR, EIR_RXB);
+		log_debug("RX interrupt");
 	}
 
 	if (state & (EIR_TXB | EIR_TXF)) {
-		int id = 0;
-		log_debug("finished TX; len %d bytes; status %#010x\n", _tx_desc_ring[id].len, _tx_desc_ring[id].flags1);
+		log_debug("finished TX");
+	}
 
-		REG32_STORE(ENET_EIR, EIR_TXB | EIR_TXF);
+	for (int id = 0; id < TX_BUF_FRAMES; id++) {
+		dcache_inval(&_tx_desc_ring[id], sizeof(struct imx6_buf_desc));
+		if (_tx_desc_ring[id].flags1 != 0x8c00 && _tx_desc_ring[id].flags1 != 0x0 && _tx_desc_ring[id].flags1 != 0x2000 && _tx_desc_ring[id].flags1 != 0xac00)
+			log_debug("Frame %2d status %#06x", id, _tx_desc_ring[id].flags1);
 	}
 
 	return IRQ_HANDLED;
@@ -343,7 +345,6 @@ EMBOX_UNIT_INIT(imx6_net_init);
 static int imx6_net_init(void) {
 	struct net_device *nic;
 	int tmp;
-
 
 	if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
