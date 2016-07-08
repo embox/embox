@@ -29,6 +29,7 @@
 
 #include "imx6_net.h"
 
+#if 0
 static void _reg_dump(void) {
 	log_debug("ENET_EIR  %10x", REG32_LOAD(ENET_EIR ));
 	log_debug("ENET_EIMR %10x", REG32_LOAD(ENET_EIMR));
@@ -49,7 +50,7 @@ static void _reg_dump(void) {
 	log_debug("ENET_TDSR %10x", REG32_LOAD(ENET_TDSR));
 	log_debug("ENET_MRBR %10x", REG32_LOAD(ENET_MRBR));
 }
-
+#endif
 static uint32_t _uboot_regs[128];
 static void _mem_dump(void) {
 	for (int i = 0; i < 128; i++) {
@@ -178,11 +179,7 @@ static void _init_buffers() {
 	              RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
 }
 
-static void _setup_mii_speed(void) {
-	/* Value written by u-boot */
-	REG32_STORE(ENET_MSCR, 0x14);
-}
-
+#if 0
 static void _reg_setup(void) {
 	uint32_t t;
 
@@ -190,10 +187,10 @@ static void _reg_setup(void) {
 	REG32_STORE(ENET_EIMR, 0);
 
 	/* Clear pending interrupts */
-	REG32_STORE(ENET_EIR, EIR_MASK);
+	//REG32_STORE(ENET_EIR, EIR_MASK);
 
 	/* Setup RX */
-	t  = FRAME_LEN << FRAME_LEN_OFFSET;
+	t  = (FRAME_LEN - 1) << FRAME_LEN_OFFSET;
 	t |= RCR_FCE | RCR_MII_MODE;
 	REG32_STORE(ENET_RCR, t);
 
@@ -202,6 +199,7 @@ static void _reg_setup(void) {
 	/* Enable IRQ */
 	REG32_STORE(ENET_EIMR, 0x7FFF0000);
 }
+#endif
 
 static void _reset(void) {
 	log_debug("ENET reset...\n");
@@ -290,78 +288,6 @@ static void _reset(void) {
 }
 
 static int imx6_net_open(struct net_device *dev) {
-	//_reset();
-	uint32_t t;
-
-	_write_macaddr();
-
-	_init_buffers();
-	_reg_setup();
-
-	REG32_STORE(ENET_OPD, 0x00010020);
-	REG32_STORE(ENET_TFWR, 0x2);
-
-	REG32_STORE(ENET_GAUR, 0x0);
-	REG32_STORE(ENET_GALR, 0x0);
-
-	assert((RX_BUF_LEN & 0xF) == 0);
-	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
-
-	assert((((uint32_t) &_tx_desc_ring[0]) & 0xF) == 0);
-	REG32_STORE(ENET_TDSR, ((uint32_t) &_tx_desc_ring[0]));
-
-	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
-	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
-
-	//miiphy_restart_aneg
-
-	/* Full duplex, heartbeat disabled */
-	REG32_STORE(ENET_TCR, TCR_FDEN);
-	/* TODO setup RX buf status */
-
-	t  = REG32_LOAD(ENET_ECR);
-	t |= ECR_DBSWP;
-	REG32_STORE(ENET_ECR, t);
-
-	t  = REG32_LOAD(ENET_TFWR);
-	t |= TFWR_STRFWD;
-	REG32_STORE(ENET_TFWR, t);
-
-	t  = REG32_LOAD(ENET_ECR);
-	t |= ETHEREN;
-	REG32_STORE(ENET_ECR, t); /* Note: should be last ENET-related init step */
-
-	t = 0xFFFFF;
-	while(t--);
-
-	/* Some u-boot magic */
-	REG32_STORE(NIC_BASE + 0x308, 0);
-
-	t = 0xFFFFF;
-	while(t--);
-
-	REG32_STORE(NIC_BASE + 0x300, 1);
-
-	REG32_STORE(NIC_BASE + 0x308, 1 << 1);
-
-	t = 0xFFFFF;
-	while(t--);
-
-	/* Phy start up miss */
-
-	t  = REG32_LOAD(ENET_ECR);
-	t &= ~(1 << 5);
-	REG32_STORE(ENET_ECR, t);
-
-	t  = REG32_LOAD(ENET_RCR);
-	t |= (0x200);
-	REG32_STORE(ENET_RCR, t);
-
-	REG32_STORE(ENET_RDAR, (1 << 24));
-
-	t = 0xFFFFFF;
-	printk("Last NIC init delay...\n");
-	while(t--);
 	return 0;
 }
 
