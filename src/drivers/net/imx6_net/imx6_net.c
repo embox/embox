@@ -86,16 +86,18 @@ static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES];
 static uint8_t _tx_buf[TX_BUF_LEN] __attribute__ ((aligned(0x10000)));
 static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(0x10000)));
 
-//extern void dcache_inval(const void *p, size_t size);
-//extern void dcache_flush(const void *p, size_t size);
+extern void dcache_inval(const void *p, size_t size);
+extern void dcache_flush(const void *p, size_t size);
 
 #define dcache_flush(x, y) ;
 #define dcache_inval(x, y) ;
 
 static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint8_t *data;
-	int desc_num;
+	static int desc_num = 0;
 	struct imx6_buf_desc *desc;
+
+	log_debug("Transmitting packet %2d", desc_num);
 
 	ipl_t sp;
 
@@ -104,48 +106,46 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	sp = ipl_save();
 	{
+		REG32_STORE(ENET_TCR, (1 << 2));
 		data = (uint8_t*) skb_data_cast_in(skb->data);
 
-		if (!data)
+		if (!data) {
+			log_error("No skb data!\n");
+			ipl_restore(sp);
 			return -1;
+		}
+		memcpy(&_tx_buf[desc_num], data, skb->len);
+		dcache_flush(&_tx_buf[desc_num], skb->len);
 
 		skb_free(skb);
 
-		desc_num = 0;
-		memcpy(&_tx_buf[0], data, skb->len);
-		dcache_flush(&_tx_buf[0], skb->len);
-
 		desc = &_tx_desc_ring[desc_num];
 
-		desc->data_pointer = (uint32_t) &_tx_buf[0];
+		desc->data_pointer = (uint32_t) &_tx_buf[desc_num];
 		desc->len          = skb->len;
-		desc->flags1      |= FLAG_W;
-		desc->flags1      |= FLAG_R | FLAG_L | FLAG_TC;
-		dcache_flush(desc, sizeof(struct imx6_buf_desc));
+		desc->flags1       = FLAG_R | FLAG_L | FLAG_TC;
 
-		printk("Frame status %#4x\n", desc->flags1);
-		int t = 0xFFFFF;
-		while (t--);
+		if (desc_num == TX_BUF_FRAMES - 1)
+			desc->flags1 |= FLAG_W;
+
+		dcache_flush(desc, sizeof(struct imx6_buf_desc));
 
 		REG32_STORE(ENET_TDAR, 0x01000000);
 
-		t = 0xFFFFF;
-		while(t--) {
+		int timeout = 0xFF;
+		while(timeout--) {
 			if (!(REG32_LOAD(ENET_TDAR) & 0x01000000))
 				break;
-			else
-				printk("wait\n");
 		}
 
-		printk("Frame status %#4x\n", desc->flags1);
+		if (timeout == 0)
+			log_debug("TX timeout...");
 
-		t = 0xFFFFF;
-		while(t--);
-		printk("Frame status %#4x\n", desc->flags1);
+		REG32_STORE(ENET_TCR, (1 << 2) | 1);
 	}
 	ipl_restore(sp);
 
-	_reg_dump();
+	desc_num = (desc_num + 1) % TX_BUF_FRAMES;
 
 	return 0;
 }
