@@ -166,12 +166,16 @@ static void _init_buffers() {
 		desc = &_rx_desc_ring[i];
 		desc->data_pointer = (uint32_t) _rx_buf[i * FRAME_LEN];
 		desc->flags1 |= FLAG_E;
-		desc->flags2 |= FLAG_INT_RX;
 	}
 
-	for (int i = 0; i < TX_BUF_FRAMES; i++) {
-		_tx_desc_ring[i].flags2 |= FLAG_INT_TX;
-	}
+	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
+	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
+
+	assert((((uint32_t) &_tx_desc_ring[0]) & 0xF) == 0);
+	REG32_STORE(ENET_TDSR, ((uint32_t) &_tx_desc_ring[0]));
+
+	assert((RX_BUF_LEN & 0xF) == 0);
+	REG32_STORE(ENET_MRBR, (FRAME_LEN - 1));
 
 	dcache_flush(&_tx_desc_ring[0],
 	              TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
