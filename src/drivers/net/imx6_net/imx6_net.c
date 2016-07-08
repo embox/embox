@@ -204,18 +204,79 @@ static void _reg_setup(void) {
 }
 
 static void _reset(void) {
+	log_debug("ENET reset...\n");
+	_mem_dump();
 	REG32_STORE(ENET_ECR, RESET);
-	_reg_dump();
-	_reg_setup();
+	_mem_restore();
+	_init_buffers();
 
-
+	REG32_STORE(ENET_EIMR, 0x7FFF0000);
+	REG32_STORE(ENET_EIR, 0x7FFF0000);
+	REG32_STORE(ENET_RDAR, (1 << 24));
 	REG32_STORE(ENET_TCR, (1 << 2));
-	/* TODO set FEC clock? */
+
+	uint32_t t = REG32_LOAD(ENET_ECR);
+	t |= ETHEREN;
+	REG32_STORE(ENET_ECR, t); /* Note: should be last ENET-related init step */
+
+#if 0
+	int tmp = 10000;
+
+
+	REG32_STORE(ENET_ECR, RESET);
+	while(tmp--);
+
+	_write_macaddr();
+
+	//REG32_STORE(ENET_EIR, 0xFFC00000);
 
 	REG32_STORE(ENET_IAUR, 0);
 	REG32_STORE(ENET_IALR, 0);
 	REG32_STORE(ENET_GAUR, 0);
 	REG32_STORE(ENET_GALR, 0);
+
+	assert((RX_BUF_LEN & 0xF) == 0);
+	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
+
+	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
+	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
+
+	assert((((uint32_t) &_tx_desc_ring[0]) & 0xF) == 0);
+	REG32_STORE(ENET_TDSR, ((uint32_t) &_tx_desc_ring[0]));
+
+	/* dirty_tx, cur_tx, cur_rx */
+
+	for (int i = 0; i < TX_BUF_FRAMES; i++)
+		memset(&_tx_desc_ring[i], 0, sizeof(_tx_desc_ring[i]));
+
+	REG32_STORE(ENET_TCR, (1 << 2) | 1);
+
+	//REG32_STORE(ENET_MSCR, 0x8); /* TODO fix? */
+	_setup_mii_speed();
+
+	uint32_t rcntl = 0x40000000 | 0x00000020;
+	rcntl &= ~(1 << 8);
+	/* 10 mbps */
+	rcntl |= (1 << 9);
+	REG32_STORE(ENET_RCR, rcntl);
+
+	uint32_t ecntl = 0x2 | (1 << 8);
+	REG32_STORE(ENET_TFWR, (1 << 8));
+
+	REG32_STORE(ENET_ECR, ecntl);
+
+	REG32_STORE(ENET_RDAR, 0);
+
+	REG32_STORE(ENET_EIMR, 0x0A800000);
+
+	return;
+
+	_reg_dump();
+	_reg_setup();
+
+
+	/* TODO set FEC clock? */
+
 
 	_init_buffers();
 
@@ -223,8 +284,9 @@ static void _reset(void) {
 
 	_write_macaddr();
 
-	REG32_STORE(ENET_TFWR, (1 << 8));
+	REG32_STORE(ENET_TFWR, (1 << 8) | 0x1);
 	REG32_STORE(ENET_ECR, ETHEREN | ECR_DBSWP); /* Note: should be last init step */
+#endif
 }
 
 static int imx6_net_open(struct net_device *dev) {
@@ -353,9 +415,9 @@ static const struct net_driver imx6_net_drv_ops = {
 
 EMBOX_UNIT_INIT(imx6_net_init);
 static int imx6_net_init(void) {
-	_reg_dump();
 	struct net_device *nic;
 	int tmp;
+
 
 	if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
@@ -366,10 +428,8 @@ static int imx6_net_init(void) {
 	tmp = irq_attach(ENET_IRQ, imx6_irq_handler, 0, nic, "i.MX6 enet");
 	if (tmp)
 		return tmp;
-	REG32_STORE(ENET_ECR, RESET);
-	_reg_setup();
 
-	/* Here u-boot configures PHY layer, we miss it */
+	_reset();
 
 	return inetdev_register_dev(nic);
 }
