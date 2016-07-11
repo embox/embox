@@ -27,6 +27,7 @@ EMBOX_UNIT_INIT(uart_init);
 #define UCR3 0x88
 #define UCR4 0x8C
 #define UFCR 0x90
+#define USR1 0x94 /* Status Register 1 */
 #define USR2 0x98
 #define UBIR 0xA4
 #define UBMR 0xA8
@@ -34,12 +35,27 @@ EMBOX_UNIT_INIT(uart_init);
 #define UCR1_UARTEN (1 << 0)
 #define UCR2_TXEN   (1 << 2)
 #define UCR2_RXEN   (1 << 1)
+#define UCR1_RRDYEN (1 << 9)
+#define USR1_RRDY   (1 << 9)
+#define USR1_RTSD       (1<<12) /* RTS delta */
 
 static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
 	//UART(UCR1) = UCR1_UARTEN;
 	//UART(UCR2) = 0x2127;//|= UCR2_RXEN | UCR2_TXEN;
 	//UART(UCR3) = 0x0704;
 	//UART(UCR4) = 0x7C00;
+	if (params->irq) {
+		uint32_t reg;
+
+		reg = UART(UFCR);
+		reg &= ~0x1F;
+		reg |= 0x1; /* one character in RxFIFO */
+		UART(UFCR) = reg;
+
+		reg = UART(UCR1);
+		reg |= UCR1_RRDYEN;
+		UART(UCR1) = reg;
+	}
 	return 0;
 }
 
