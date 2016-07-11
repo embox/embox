@@ -80,8 +80,8 @@ static void _write_macaddr(void) {
 	REG32_STORE(MAC_HI, mac_hi);
 }
 
-static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES];
-static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES];
+static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned(0x10000)));
+static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(0x10000)));
 
 static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10000)));
 static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10000)));

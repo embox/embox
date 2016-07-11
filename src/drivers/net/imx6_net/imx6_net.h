@@ -141,6 +141,6 @@ struct imx6_buf_desc {
 	uint32_t timestamp;
 	uint16_t pad2[4];          /* Unused */
 #endif
-} __attribute__ ((aligned(0x10000)));
+};
 
 #endif /* DRIVERS_IMX6_NET_H_ */
