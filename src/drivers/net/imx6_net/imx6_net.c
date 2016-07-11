@@ -83,8 +83,8 @@ static void _write_macaddr(void) {
 static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES];
 static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES];
 
-static uint8_t _tx_buf[TX_BUF_LEN] __attribute__ ((aligned(0x10000)));
-static uint8_t _rx_buf[RX_BUF_LEN] __attribute__ ((aligned(0x10000)));
+static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10000)));
+static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10000)));
 
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
@@ -114,16 +114,15 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 			ipl_restore(sp);
 			return -1;
 		}
-		memcpy(&_tx_buf[desc_num], data, skb->len);
-		dcache_flush(&_tx_buf[desc_num], skb->len);
-
-		skb_free(skb);
+		memcpy(&_tx_buf[desc_num][0], data, skb->len);
+		dcache_flush(&_tx_buf[desc_num][0], skb->len);
 
 		desc = &_tx_desc_ring[desc_num];
-
-		desc->data_pointer = (uint32_t) &_tx_buf[desc_num];
+		desc->data_pointer = (uint32_t) &_tx_buf[desc_num][0];
 		desc->len          = skb->len;
 		desc->flags1       = FLAG_R | FLAG_L | FLAG_TC;
+
+		skb_free(skb);
 
 		if (desc_num == TX_BUF_FRAMES - 1)
 			desc->flags1 |= FLAG_W;
@@ -164,7 +163,7 @@ static void _init_buffers() {
 
 	for (int i = 0; i < RX_BUF_FRAMES; i++) {
 		desc = &_rx_desc_ring[i];
-		desc->data_pointer = (uint32_t) _rx_buf[i * FRAME_LEN];
+		desc->data_pointer = (uint32_t) &_rx_buf[i][0];
 		desc->flags1 |= FLAG_E;
 	}
 
@@ -322,7 +321,7 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 		return IRQ_HANDLED;
 	}
 
-	if (state & EIR_RXB) {
+	if (state & (EIR_RXB | EIR_RXF)) {
 		log_debug("RX interrupt");
 	}
 

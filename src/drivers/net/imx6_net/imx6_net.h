@@ -48,6 +48,7 @@
 #define EIR_MASK  0xFFFFFFFF
 #define EIR_EBERR (1 << 22)   /* Ethernet bus error */
 #define EIR_RXB   (1 << 24)   /* Receive buffer     */
+#define EIR_RXF   (1 << 25)   /* Receive frame      */
 #define EIR_TXB   (1 << 26)   /* Transmit buffer    */
 #define EIR_TXF   (1 << 27)   /* Transmit frame     */
 
