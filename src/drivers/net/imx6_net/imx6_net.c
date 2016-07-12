@@ -83,11 +83,15 @@ static void _write_macaddr(void) {
 	REG32_STORE(MAC_HI, mac_hi);
 }
 
-static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned(0x10000)));
-static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(0x10000)));
+static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned(0x100000)));
+static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(0x100000)));
 
-static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10000)));
-static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10000)));
+static int _cur_rx = 0;
+static int _dirty_tx = 0;
+static int _cur_tx = 0;
+
+static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x100000)));
+static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x100000)));
 
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
@@ -97,10 +101,9 @@ extern void dcache_flush(const void *p, size_t size);
 
 static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint8_t *data;
-	static int desc_num = 0;
 	struct imx6_buf_desc *desc;
 
-	log_debug("Transmitting packet %2d", desc_num);
+	log_debug("Transmitting packet %2d", _cur_tx);
 
 	ipl_t sp;
 
@@ -114,40 +117,43 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		if (!data) {
 			log_error("No skb data!\n");
-			ipl_restore(sp);
+			//ipl_restore(sp);
 			return -1;
 		}
-		memcpy(&_tx_buf[desc_num][0], data, skb->len);
-		dcache_flush(&_tx_buf[desc_num][0], skb->len);
+		memset(&_tx_buf[_cur_tx][0], 0, 2048);
+		memcpy(&_tx_buf[_cur_tx][0], data, skb->len);
+		dcache_flush(&_tx_buf[_cur_tx][0], skb->len);
 
-		desc = &_tx_desc_ring[desc_num];
-		desc->data_pointer = (uint32_t) &_tx_buf[desc_num][0];
+		desc = &_tx_desc_ring[_cur_tx];
+		desc->data_pointer = (uint32_t) &_tx_buf[_cur_tx][0];
 		desc->len          = skb->len;
-		desc->flags1       = FLAG_R | FLAG_L | FLAG_TC;
+		desc->flags1       = FLAG_L | FLAG_TC;
 
 		skb_free(skb);
 
-		if (desc_num == TX_BUF_FRAMES - 1)
+		if (_cur_tx == TX_BUF_FRAMES - 1)
 			desc->flags1 |= FLAG_W;
+
+		desc->flags1 |= FLAG_R;
 
 		dcache_flush(desc, sizeof(struct imx6_buf_desc));
 
-		REG32_STORE(ENET_TDAR, 0x01000000);
+		REG32_STORE(ENET_TDAR, 0xFFFFFFFF);
 
 		int timeout = 0xFF;
 		while(timeout--) {
-			if (!(REG32_LOAD(ENET_TDAR) & 0x01000000))
+			if (!(REG32_LOAD(ENET_TDAR)))
 				break;
 		}
 
 		if (timeout == 0)
 			log_debug("TX timeout...");
 
-		REG32_STORE(ENET_TCR, (1 << 2) | 1);
+		//REG32_STORE(ENET_TCR, (1 << 2) | 1);
 	}
 	ipl_restore(sp);
 
-	desc_num = (desc_num + 1) % TX_BUF_FRAMES;
+	_cur_tx = (_cur_tx + 1) % TX_BUF_FRAMES;
 
 	return 0;
 }
@@ -170,6 +176,11 @@ static void _init_buffers() {
 		desc->flags1 |= FLAG_E;
 	}
 
+	dcache_flush(&_tx_desc_ring[0],
+	              TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+	dcache_flush(&_rx_desc_ring[0],
+	              RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
+
 	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
 	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
 
@@ -178,11 +189,6 @@ static void _init_buffers() {
 
 	assert((RX_BUF_LEN & 0xF) == 0);
 	REG32_STORE(ENET_MRBR, (FRAME_LEN - 1));
-
-	dcache_flush(&_tx_desc_ring[0],
-	              TX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
-	dcache_flush(&_rx_desc_ring[0],
-	              RX_BUF_FRAMES * sizeof(struct imx6_buf_desc));
 }
 
 #if 0
