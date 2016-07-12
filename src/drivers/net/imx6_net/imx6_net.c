@@ -29,7 +29,6 @@
 
 #include "imx6_net.h"
 
-#if 0
 static void _reg_dump(void) {
 	log_debug("ENET_EIR  %10x", REG32_LOAD(ENET_EIR ));
 	log_debug("ENET_EIMR %10x", REG32_LOAD(ENET_EIMR));
@@ -50,7 +49,7 @@ static void _reg_dump(void) {
 	log_debug("ENET_TDSR %10x", REG32_LOAD(ENET_TDSR));
 	log_debug("ENET_MRBR %10x", REG32_LOAD(ENET_MRBR));
 }
-#endif
+
 static uint32_t _uboot_regs[128];
 static void _mem_dump(void) {
 	for (int i = 0; i < 128; i++) {
@@ -60,7 +59,11 @@ static void _mem_dump(void) {
 
 static void _mem_restore(void) {
 	for (int i = 0; i < 128; i++) {
-		REG32_STORE(NIC_BASE + i * 4,_uboot_regs[i]);
+		uint32_t addr = NIC_BASE + i * 4;
+		if (addr != ENET_TDAR &&
+		    addr != ENET_RDAR &&
+		    addr != ENET_ECR)
+		REG32_STORE(addr, _uboot_regs[i]);
 	}
 }
 
