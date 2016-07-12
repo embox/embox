@@ -306,12 +306,18 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 
 static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 	uint32_t state;
+	struct imx6_buf_desc *desc;
 
 	state = REG32_LOAD(ENET_EIR);
 
-	log_debug("Interrupt mask %#08x", state);
+	log_debug("Interrupt mask %#010x", state);
 
 	REG32_STORE(ENET_EIR, state);
+
+	REG32_STORE(ENET_RDAR, 1 << 24);
+
+	if (state == 0x10000000)
+		return IRQ_HANDLED;
 
 	if (state & EIR_EBERR) {
 		log_error("Ethernet bus error, resetting ENET!");
@@ -323,17 +329,49 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	if (state & (EIR_RXB | EIR_RXF)) {
 		log_debug("RX interrupt");
+		desc = &_rx_desc_ring[_cur_rx];
+		dcache_inval(desc, sizeof(struct imx6_buf_desc));
+		dcache_inval(desc->data_pointer, 2048);
+
+		if (desc->flags1 & FLAG_E) {
+			log_error("Current RX descriptor is empty!");
+		} else {
+			struct sk_buff *skb = skb_alloc(desc->len);
+			assert(skb);
+			skb->len = desc->len;
+			skb->dev = dev_id;
+			memcpy(skb_data_cast_in(skb->data),
+				(void*)desc->data_pointer, desc->len);
+			netif_rx(skb);
+
+			desc->flags1 = FLAG_E;
+			if (_cur_rx == RX_BUF_FRAMES - 1)
+				desc->flags1 |= FLAG_W;
+			dcache_flush(desc, sizeof(struct imx6_buf_desc));
+			_cur_rx = (_cur_rx + 1) % RX_BUF_FRAMES;
+		}
 	}
 
 	if (state & (EIR_TXB | EIR_TXF)) {
 		log_debug("finished TX");
+		_flag = 0;
+		desc = &_tx_desc_ring[_dirty_tx];
+		dcache_inval(desc, sizeof(struct imx6_buf_desc));
+		if (desc->flags1 & FLAG_R)
+			log_error("No single frame transmitted!");
+
+		while (!(desc->flags1 & FLAG_R)) {
+			assert(desc->data_pointer == (uint32_t) &_tx_buf[_dirty_tx]);
+			log_debug("Frame %2d transmitted", _dirty_tx);
+			_dirty_tx = (_dirty_tx + 1) % TX_BUF_FRAMES;
+			desc = &_tx_desc_ring[_dirty_tx];
+			dcache_inval(desc, sizeof(struct imx6_buf_desc));
+		}
 	}
 
-	for (int id = 0; id < TX_BUF_FRAMES; id++) {
-		dcache_inval(&_tx_desc_ring[id], sizeof(struct imx6_buf_desc));
-		if (_tx_desc_ring[id].flags1 != 0x8c00 && _tx_desc_ring[id].flags1 != 0x0 && _tx_desc_ring[id].flags1 != 0x2000 && _tx_desc_ring[id].flags1 != 0xac00)
-			log_debug("Frame %2d status %#06x", id, _tx_desc_ring[id].flags1);
-	}
+	REG32_STORE(ENET_TCR, 0x4);
+
+	_reg_dump();
 
 	return IRQ_HANDLED;
 }
