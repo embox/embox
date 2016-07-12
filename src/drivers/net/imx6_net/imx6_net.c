@@ -214,20 +214,48 @@ static void _reg_setup(void) {
 #endif
 
 static void _reset(void) {
+	static int pp = 1;
+	if (!pp)
+		return;
+	pp = 0;
 	log_debug("ENET reset...\n");
 	_mem_dump();
 	REG32_STORE(ENET_ECR, RESET);
+	REG32_STORE(ENET_ECR, 0xF0000100);
 	_mem_restore();
 	_init_buffers();
 
-	REG32_STORE(ENET_EIMR, 0x7FFF0000);
-	REG32_STORE(ENET_EIR, 0x7FFF0000);
-	REG32_STORE(ENET_RDAR, (1 << 24));
+	REG32_STORE(ENET_EIMR, 0xFFFFFFFF);
+	REG32_STORE(ENET_EIR, 0xFFFFFFFF);
+	//REG32_STORE(ENET_EIMR, 0x7FFF0000);
+	//REG32_STORE(ENET_EIR, 0x7FFF0000);
 	REG32_STORE(ENET_TCR, (1 << 2));
 
-	uint32_t t = REG32_LOAD(ENET_ECR);
+	//REG32_STORE(ENET_TFWR, 0x0);
+
+	uint32_t t = 0x08000124;
+	REG32_STORE(ENET_RCR, t);
+
+	t = REG32_LOAD(ENET_ECR);
 	t |= ETHEREN;
 	REG32_STORE(ENET_ECR, t); /* Note: should be last ENET-related init step */
+	_reg_dump();
+
+	REG32_STORE(ENET_RDAR, (1 << 24));
+/*
+	while(REG32_LOAD(ENET_RDAR)) {
+		log_debug("ENET_RDAR not zero");
+		for (int id = 0; id < RX_BUF_FRAMES; id++) {
+			dcache_inval(&_rx_desc_ring[id], sizeof(struct imx6_buf_desc));
+			if (!(_rx_desc_ring[id].flags1 & FLAG_E))
+				log_debug("Frame %2d status %#06x", id, _rx_desc_ring[id].flags1);
+		}
+	}
+*/
+	//uint32_t t = REG32_LOAD(ENET_RCR);
+	//t |= 1;
+	//REG32_STORE(ENET_RCR, t);
+
 
 #if 0
 	int tmp = 10000;
