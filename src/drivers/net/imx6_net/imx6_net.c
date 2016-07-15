@@ -50,54 +50,75 @@ static void _reg_dump(void) {
 	log_debug("ENET_MRBR %10x", REG32_LOAD(ENET_MRBR));
 }
 
-static uint32_t _uboot_regs[128];
+static uint32_t _uboot_regs[0x200];
 static void _mem_dump(void) {
-	for (int i = 0; i < 128; i++) {
-		_uboot_regs[i] = REG32_LOAD(NIC_BASE + i * 4);
-	}
+	_uboot_regs[ENET_EIR  >> 2] = REG32_LOAD(ENET_EIR );
+	_uboot_regs[ENET_EIMR >> 2] = REG32_LOAD(ENET_EIMR);
+	_uboot_regs[ENET_RDAR >> 2] = REG32_LOAD(ENET_RDAR);
+	_uboot_regs[ENET_TDAR >> 2] = REG32_LOAD(ENET_TDAR);
+	_uboot_regs[ENET_ECR  >> 2] = REG32_LOAD(ENET_ECR );
+	_uboot_regs[ENET_MSCR >> 2] = REG32_LOAD(ENET_MSCR);
+	_uboot_regs[ENET_RCR  >> 2] = REG32_LOAD(ENET_RCR );
+	_uboot_regs[ENET_TCR  >> 2] = REG32_LOAD(ENET_TCR );
+	_uboot_regs[MAC_LOW   >> 2] = REG32_LOAD(MAC_LOW  );
+	_uboot_regs[MAC_HI    >> 2] = REG32_LOAD(MAC_HI   );
+	_uboot_regs[ENET_IAUR >> 2] = REG32_LOAD(ENET_IAUR);
+	_uboot_regs[ENET_IALR >> 2] = REG32_LOAD(ENET_IALR);
+	_uboot_regs[ENET_GAUR >> 2] = REG32_LOAD(ENET_GAUR);
+	_uboot_regs[ENET_GALR >> 2] = REG32_LOAD(ENET_GALR);
+	_uboot_regs[ENET_TFWR >> 2] = REG32_LOAD(ENET_TFWR);
+	_uboot_regs[ENET_RDSR >> 2] = REG32_LOAD(ENET_RDSR);
+	_uboot_regs[ENET_TDSR >> 2] = REG32_LOAD(ENET_TDSR);
+	_uboot_regs[ENET_MRBR >> 2] = REG32_LOAD(ENET_MRBR);
 }
 
 static void _mem_restore(void) {
-	for (int i = 0; i < 128; i++) {
-		uint32_t addr = NIC_BASE + i * 4;
-		if (addr != ENET_TDAR &&
-		    addr != ENET_RDAR &&
-		    addr != ENET_ECR)
-		REG32_STORE(addr, _uboot_regs[i]);
-	}
+	REG32_LOAD(ENET_EIR ) = _uboot_regs[ENET_EIR  >> 2];
+	REG32_LOAD(ENET_EIMR) = _uboot_regs[ENET_EIMR >> 2];
+	REG32_LOAD(ENET_RDAR) = _uboot_regs[ENET_RDAR >> 2];
+	REG32_LOAD(ENET_TDAR) = _uboot_regs[ENET_TDAR >> 2];
+	REG32_LOAD(ENET_ECR ) = _uboot_regs[ENET_ECR  >> 2];
+	REG32_LOAD(ENET_MSCR) = _uboot_regs[ENET_MSCR >> 2];
+	REG32_LOAD(ENET_RCR ) = _uboot_regs[ENET_RCR  >> 2];
+	REG32_LOAD(ENET_TCR ) = _uboot_regs[ENET_TCR  >> 2];
+	REG32_LOAD(MAC_LOW  ) = _uboot_regs[MAC_LOW   >> 2];
+	REG32_LOAD(MAC_HI   ) = _uboot_regs[MAC_HI    >> 2];
+	REG32_LOAD(ENET_IAUR) = _uboot_regs[ENET_IAUR >> 2];
+	REG32_LOAD(ENET_IALR) = _uboot_regs[ENET_IALR >> 2];
+	REG32_LOAD(ENET_GAUR) = _uboot_regs[ENET_GAUR >> 2];
+	REG32_LOAD(ENET_GALR) = _uboot_regs[ENET_GALR >> 2];
+	REG32_LOAD(ENET_TFWR) = _uboot_regs[ENET_TFWR >> 2];
+	REG32_LOAD(ENET_RDSR) = _uboot_regs[ENET_RDSR >> 2];
+	REG32_LOAD(ENET_TDSR) = _uboot_regs[ENET_TDSR >> 2];
+	REG32_LOAD(ENET_MRBR) = _uboot_regs[ENET_MRBR >> 2];
 }
 
-static uint8_t _macaddr[6];
-
-static void _write_macaddr(void) {
+static void emac_set_macaddr(unsigned char (*_macaddr)[6]) {
 	uint32_t mac_hi, mac_lo;
 
-	mac_hi  = (_macaddr[5] << 16) |
-	          (_macaddr[4] << 24);
-	mac_lo  = (_macaddr[3] <<  0) |
-	          (_macaddr[2] <<  8) |
-	          (_macaddr[1] << 16) |
-	          (_macaddr[0] << 24);
+	mac_hi  = (*_macaddr[5] << 16) |
+	          (*_macaddr[4] << 24);
+	mac_lo  = (*_macaddr[3] <<  0) |
+	          (*_macaddr[2] <<  8) |
+	          (*_macaddr[1] << 16) |
+	          (*_macaddr[0] << 24);
 
 	REG32_STORE(MAC_LOW, mac_lo);
 	REG32_STORE(MAC_HI, mac_hi);
 }
 
-static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned(0x100000)));
-static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(0x100000)));
+static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned(0x10)));
+static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(0x10)));
 
 static int _cur_rx = 0;
 static int _dirty_tx = 0;
 static int _cur_tx = 0;
 
-static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x100000)));
-static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x100000)));
+static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
+static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
 
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
-
-#define dcache_flush(x, y) ;
-#define dcache_inval(x, y) ;
 
 static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint8_t *data;
@@ -117,7 +138,7 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		if (!data) {
 			log_error("No skb data!\n");
-			//ipl_restore(sp);
+			ipl_restore(sp);
 			return -1;
 		}
 		memset(&_tx_buf[_cur_tx][0], 0, 2048);
@@ -158,7 +179,7 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
 }
 
-static void _init_buffers() {
+static void _init_buffers(void) {
 	struct imx6_buf_desc *desc;
 
 	memset(&_tx_desc_ring[0], 0,
@@ -214,15 +235,21 @@ static void _reg_setup(void) {
 #endif
 
 static void _reset(void) {
-	static int pp = 1;
-	if (!pp)
-		return;
-	pp = 0;
+	int cnt = 0;
+
 	log_debug("ENET reset...\n");
 	_mem_dump();
+
 	REG32_STORE(ENET_ECR, RESET);
-	REG32_STORE(ENET_ECR, 0xF0000100);
+	while(REG32_LOAD(ENET_ECR) & RESET){
+		if (cnt ++ > 100000) {
+			log_error("enet can't be reset");
+			break;
+		}
+	}
+	//REG32_STORE(ENET_ECR, 0xF0000100);
 	_mem_restore();
+
 	_init_buffers();
 
 	REG32_STORE(ENET_EIMR, 0xFFFFFFFF);
@@ -335,8 +362,7 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	assert(dev);
 	assert(addr);
 
-	memcpy(&_macaddr[0], (uint8_t *) addr, 6);
-	_write_macaddr();
+	emac_set_macaddr((unsigned char (*)[6])addr);
 
 	return 0;
 }
@@ -368,7 +394,7 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 		log_debug("RX interrupt");
 		desc = &_rx_desc_ring[_cur_rx];
 		dcache_inval(desc, sizeof(struct imx6_buf_desc));
-		dcache_inval(desc->data_pointer, 2048);
+		dcache_inval((void *)desc->data_pointer, 2048);
 
 		if (desc->flags1 & FLAG_E) {
 			log_error("Current RX descriptor is empty!");
@@ -391,7 +417,7 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	if (state & (EIR_TXB | EIR_TXF)) {
 		log_debug("finished TX");
-		_flag = 0;
+		//_flag = 0;
 		desc = &_tx_desc_ring[_dirty_tx];
 		dcache_inval(desc, sizeof(struct imx6_buf_desc));
 		if (desc->flags1 & FLAG_R)
