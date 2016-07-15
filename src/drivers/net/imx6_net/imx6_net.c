@@ -29,6 +29,17 @@
 
 #include "imx6_net.h"
 
+struct fec_priv {
+	uint32_t base_addr;
+	struct imx6_buf_desc *rbd_base;
+	int rbd_index;
+	int _cur_rx;
+	int _dirty_tx;
+	int _cur_tx;
+};
+
+static struct fec_priv fec_priv;
+
 static void _reg_dump(void) {
 	log_debug("ENET_EIR  %10x", REG32_LOAD(ENET_EIR ));
 	log_debug("ENET_EIMR %10x", REG32_LOAD(ENET_EIMR));
@@ -52,10 +63,10 @@ static void _reg_dump(void) {
 
 static uint32_t _uboot_regs[0x200];
 static void _mem_dump(void) {
-	_uboot_regs[ENET_EIR  >> 2] = REG32_LOAD(ENET_EIR );
-	_uboot_regs[ENET_EIMR >> 2] = REG32_LOAD(ENET_EIMR);
-	_uboot_regs[ENET_RDAR >> 2] = REG32_LOAD(ENET_RDAR);
-	_uboot_regs[ENET_TDAR >> 2] = REG32_LOAD(ENET_TDAR);
+	//_uboot_regs[ENET_EIR  >> 2] = REG32_LOAD(ENET_EIR );
+	//_uboot_regs[ENET_EIMR >> 2] = REG32_LOAD(ENET_EIMR);
+	//_uboot_regs[ENET_RDAR >> 2] = REG32_LOAD(ENET_RDAR);
+	//_uboot_regs[ENET_TDAR >> 2] = REG32_LOAD(ENET_TDAR);
 	_uboot_regs[ENET_ECR  >> 2] = REG32_LOAD(ENET_ECR );
 	_uboot_regs[ENET_MSCR >> 2] = REG32_LOAD(ENET_MSCR);
 	_uboot_regs[ENET_RCR  >> 2] = REG32_LOAD(ENET_RCR );
@@ -73,11 +84,11 @@ static void _mem_dump(void) {
 }
 
 static void _mem_restore(void) {
-	REG32_LOAD(ENET_EIR ) = _uboot_regs[ENET_EIR  >> 2];
-	REG32_LOAD(ENET_EIMR) = _uboot_regs[ENET_EIMR >> 2];
-	REG32_LOAD(ENET_RDAR) = _uboot_regs[ENET_RDAR >> 2];
-	REG32_LOAD(ENET_TDAR) = _uboot_regs[ENET_TDAR >> 2];
-	REG32_LOAD(ENET_ECR ) = _uboot_regs[ENET_ECR  >> 2];
+	//REG32_LOAD(ENET_EIR ) = _uboot_regs[ENET_EIR  >> 2];
+	//REG32_LOAD(ENET_EIMR) = _uboot_regs[ENET_EIMR >> 2];
+	//REG32_LOAD(ENET_RDAR) = _uboot_regs[ENET_RDAR >> 2];
+	//REG32_LOAD(ENET_TDAR) = _uboot_regs[ENET_TDAR >> 2];
+	REG32_LOAD(ENET_ECR ) = _uboot_regs[ENET_ECR  >> 2] & ~ETHEREN;
 	REG32_LOAD(ENET_MSCR) = _uboot_regs[ENET_MSCR >> 2];
 	REG32_LOAD(ENET_RCR ) = _uboot_regs[ENET_RCR  >> 2];
 	REG32_LOAD(ENET_TCR ) = _uboot_regs[ENET_TCR  >> 2];
@@ -119,6 +130,32 @@ static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
 
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
+
+static void fec_rbd_init(struct fec_priv *fec, int count, int dsize) {
+	uint32_t size;
+	uint8_t *data;
+	int i;
+
+	/*
+	 * Reload the RX descriptors with default values and wipe
+	 * the RX buffers.
+	 */
+	size = dsize;
+	for (i = 0; i < count; i++) {
+		data = (uint8_t *)fec->rbd_base[i].data_pointer;
+		memset(data, 0, dsize);
+		dcache_flush(data, size);
+
+		fec->rbd_base[i].flags1 = FLAG_R;
+		fec->rbd_base[i].len = 0;
+	}
+
+	/* Mark the last RBD to close the ring. */
+	fec->rbd_base[i - 1].flags1 = FLAG_W | FLAG_R;
+	fec->rbd_index = 0;
+
+	dcache_flush((void *)fec->rbd_base, size);
+}
 
 static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint8_t *data;
@@ -212,29 +249,7 @@ static void _init_buffers(void) {
 	REG32_STORE(ENET_MRBR, (FRAME_LEN - 1));
 }
 
-#if 0
-static void _reg_setup(void) {
-	uint32_t t;
-
-	/* Disable IRQ */
-	REG32_STORE(ENET_EIMR, 0);
-
-	/* Clear pending interrupts */
-	//REG32_STORE(ENET_EIR, EIR_MASK);
-
-	/* Setup RX */
-	t  = (FRAME_LEN - 1) << FRAME_LEN_OFFSET;
-	t |= RCR_FCE | RCR_MII_MODE;
-	REG32_STORE(ENET_RCR, t);
-
-	_setup_mii_speed();
-
-	/* Enable IRQ */
-	REG32_STORE(ENET_EIMR, 0x7FFF0000);
-}
-#endif
-
-static void _reset(void) {
+static void _reset(struct net_device *dev) {
 	int cnt = 0;
 
 	log_debug("ENET reset...\n");
@@ -251,17 +266,26 @@ static void _reset(void) {
 	_mem_restore();
 
 	_init_buffers();
-
-	REG32_STORE(ENET_EIMR, 0xFFFFFFFF);
+	fec_rbd_init(dev->priv, RX_BUF_FRAMES, 1514);
+	/*
+	 * Set interrupt mask register
+	 */
+	REG32_STORE(ENET_EIMR, 0);
+	/*
+	 * Clear FEC-Lite interrupt event register(IEVENT)
+	 */
 	REG32_STORE(ENET_EIR, 0xFFFFFFFF);
-	//REG32_STORE(ENET_EIMR, 0x7FFF0000);
-	//REG32_STORE(ENET_EIR, 0x7FFF0000);
-	REG32_STORE(ENET_TCR, (1 << 2));
+
+	/* Full-Duplex Enable */
+	/* REG32_STORE(ENET_TCR, (1 << 2)); */
 
 	//REG32_STORE(ENET_TFWR, 0x0);
 
 	uint32_t t = 0x08000124;
-	REG32_STORE(ENET_RCR, t);
+	/* MAX_FL frame length*/
+	/* Enables 10-Mbit/s mode of the RMII or RGMII ?*/
+	/* MII or RMII mode, as indicated by the RMII_MODE field. */
+	/* REG32_STORE(ENET_RCR, t); */
 
 	t = REG32_LOAD(ENET_ECR);
 	t |= ETHEREN;
@@ -269,92 +293,11 @@ static void _reset(void) {
 	_reg_dump();
 
 	REG32_STORE(ENET_RDAR, (1 << 24));
-/*
-	while(REG32_LOAD(ENET_RDAR)) {
-		log_debug("ENET_RDAR not zero");
-		for (int id = 0; id < RX_BUF_FRAMES; id++) {
-			dcache_inval(&_rx_desc_ring[id], sizeof(struct imx6_buf_desc));
-			if (!(_rx_desc_ring[id].flags1 & FLAG_E))
-				log_debug("Frame %2d status %#06x", id, _rx_desc_ring[id].flags1);
-		}
-	}
-*/
-	//uint32_t t = REG32_LOAD(ENET_RCR);
-	//t |= 1;
-	//REG32_STORE(ENET_RCR, t);
-
-
-#if 0
-	int tmp = 10000;
-
-
-	REG32_STORE(ENET_ECR, RESET);
-	while(tmp--);
-
-	_write_macaddr();
-
-	//REG32_STORE(ENET_EIR, 0xFFC00000);
-
-	REG32_STORE(ENET_IAUR, 0);
-	REG32_STORE(ENET_IALR, 0);
-	REG32_STORE(ENET_GAUR, 0);
-	REG32_STORE(ENET_GALR, 0);
-
-	assert((RX_BUF_LEN & 0xF) == 0);
-	REG32_STORE(ENET_MRBR, RX_BUF_LEN);
-
-	assert((((uint32_t) &_rx_desc_ring[0]) & 0xF) == 0);
-	REG32_STORE(ENET_RDSR, ((uint32_t) &_rx_desc_ring[0]));
-
-	assert((((uint32_t) &_tx_desc_ring[0]) & 0xF) == 0);
-	REG32_STORE(ENET_TDSR, ((uint32_t) &_tx_desc_ring[0]));
-
-	/* dirty_tx, cur_tx, cur_rx */
-
-	for (int i = 0; i < TX_BUF_FRAMES; i++)
-		memset(&_tx_desc_ring[i], 0, sizeof(_tx_desc_ring[i]));
-
-	REG32_STORE(ENET_TCR, (1 << 2) | 1);
-
-	//REG32_STORE(ENET_MSCR, 0x8); /* TODO fix? */
-	_setup_mii_speed();
-
-	uint32_t rcntl = 0x40000000 | 0x00000020;
-	rcntl &= ~(1 << 8);
-	/* 10 mbps */
-	rcntl |= (1 << 9);
-	REG32_STORE(ENET_RCR, rcntl);
-
-	uint32_t ecntl = 0x2 | (1 << 8);
-	REG32_STORE(ENET_TFWR, (1 << 8));
-
-	REG32_STORE(ENET_ECR, ecntl);
-
-	REG32_STORE(ENET_RDAR, 0);
-
-	REG32_STORE(ENET_EIMR, 0x0A800000);
-
-	return;
-
-	_reg_dump();
-	_reg_setup();
-
-
-	/* TODO set FEC clock? */
-
-
-	_init_buffers();
-
-	REG32_STORE(ENET_EIMR, EIMR_TXF | EIMR_RXF | EIR_MASK);
-
-	_write_macaddr();
-
-	REG32_STORE(ENET_TFWR, (1 << 8) | 0x1);
-	REG32_STORE(ENET_ECR, ETHEREN | ECR_DBSWP); /* Note: should be last init step */
-#endif
 }
 
 static int imx6_net_open(struct net_device *dev) {
+
+	_reset(dev);
 	return 0;
 }
 
@@ -384,8 +327,8 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	if (state & EIR_EBERR) {
 		log_error("Ethernet bus error, resetting ENET!");
-		REG32_STORE(ENET_ECR, RESET);
-		_reset();
+		//REG32_STORE(ENET_ECR, RESET);
+		_reset(dev_id);
 
 		return IRQ_HANDLED;
 	}
@@ -417,7 +360,6 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	if (state & (EIR_TXB | EIR_TXF)) {
 		log_debug("finished TX");
-		//_flag = 0;
 		desc = &_tx_desc_ring[_dirty_tx];
 		dcache_inval(desc, sizeof(struct imx6_buf_desc));
 		if (desc->flags1 & FLAG_R)
@@ -451,16 +393,18 @@ static int imx6_net_init(void) {
 	int tmp;
 
 	if (NULL == (nic = etherdev_alloc(0))) {
-                return -ENOMEM;
-        }
+		return -ENOMEM;
+	}
 
 	nic->drv_ops = &imx6_net_drv_ops;
+	fec_priv.rbd_base = (struct imx6_buf_desc *)NIC_BASE;
+	fec_priv.rbd_base =  _rx_desc_ring;
+	nic->priv = &fec_priv;
+
 
 	tmp = irq_attach(ENET_IRQ, imx6_irq_handler, 0, nic, "i.MX6 enet");
 	if (tmp)
 		return tmp;
-
-	_reset();
 
 	return inetdev_register_dev(nic);
 }
