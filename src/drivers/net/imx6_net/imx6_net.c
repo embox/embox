@@ -83,19 +83,6 @@ static void _reg_dump(void) {
 	log_debug("ENET_MRBR %10x", REG32_LOAD(ENET_MRBR));
 }
 
-static uint32_t _uboot_regs[0x200];
-static void _mem_dump(void) {
-	_uboot_regs[0] = REG32_LOAD(ENET_ECR );
-	_uboot_regs[1] = REG32_LOAD(ENET_MSCR);
-	_uboot_regs[2] = REG32_LOAD(ENET_RCR );
-}
-
-static void _mem_restore(void) {
-	REG32_STORE(ENET_ECR , _uboot_regs[0] & ~ETHEREN);
-	REG32_STORE(ENET_MSCR, _uboot_regs[1]);
-	REG32_STORE(ENET_RCR , _uboot_regs[2]);
-}
-
 static void emac_set_macaddr(unsigned char _macaddr[6]) {
 	uint32_t mac_hi, mac_lo;
 	const uint8_t *tmp = _macaddr;
@@ -138,9 +125,9 @@ static void fec_tbd_init(struct fec_priv *fec)
 
 	fec->tbd_base[TX_BUF_FRAMES - 1].flags1 = FLAG_W;
 
-	fec->tbd_index = 0;
 	dcache_flush(fec->tbd_base, size);
 
+	fec->tbd_index = 0;
 	REG32_STORE(ENET_TDSR, ((uint32_t) fec->tbd_base));
 }
 
@@ -183,6 +170,7 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	assert(dev);
 	assert(skb);
 
+
 	res = 0;
 
 	data = (uint8_t*) skb_data_cast_in(skb->data);
@@ -196,11 +184,15 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	show_packet(data, skb->len, "tx");
 
 	priv = dev->priv;
+	assert((uint32_t)_tx_desc_ring == REG32_LOAD(ENET_TDSR));
 
 	sp = ipl_save();
 	{
 		cur_tx_desc = priv->tbd_index;
 		log_debug("Transmitting packet %2d", cur_tx_desc);
+		if (skb->len < 0x40) {
+			skb->len = 0x40;
+		}
 
 		memcpy(&_tx_buf[cur_tx_desc][0], data, skb->len);
 		dcache_flush(&_tx_buf[cur_tx_desc][0], skb->len);
@@ -210,12 +202,12 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 		dcache_inval(desc, sizeof(struct imx6_buf_desc));
 		if (desc->flags1 & FLAG_R) {
 			log_error("tx desc still busy");
+			goto out1;
 
 		}
 		desc->data_pointer = (uint32_t)&_tx_buf[cur_tx_desc][0];
 		//desc->data_pointer = (uint32_t)data;
-		//desc->len          = skb->len;
-		desc->len          = 256;
+		desc->len          = skb->len;
 		desc->flags1       |= FLAG_L | FLAG_TC | FLAG_R;
 		dcache_flush(desc, sizeof(struct imx6_buf_desc));
 		log_debug("desc = %x", desc);
@@ -226,6 +218,7 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 		REG32_LOAD(desc + sizeof(*desc) - 4);
 
 		REG32_STORE(ENET_TDAR, 1 << 24);
+		__asm__("nop");
 
 		int timeout = 0xFF;
 		while(--timeout) {
@@ -257,6 +250,7 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		priv->tbd_index = (priv->tbd_index + 1) % TX_BUF_FRAMES;
 	}
+out1:
 	ipl_restore(sp);
 
 out:
@@ -284,8 +278,6 @@ static void _reset(struct net_device *dev) {
 	log_debug("ENET dump uboot...\n");
 	_reg_dump();
 
-	_mem_dump();
-
 	REG32_STORE(ENET_ECR, RESET);
 	while(REG32_LOAD(ENET_ECR) & RESET){
 		if (cnt ++ > 100000) {
@@ -293,9 +285,7 @@ static void _reset(struct net_device *dev) {
 			break;
 		}
 	}
-	//REG32_STORE(ENET_ECR, 0xF0000100);
-
-	_mem_restore();
+	REG32_STORE(ENET_ECR, 0xF0000100);
 
 	_init_buffers();
 	fec_rbd_init(dev->priv, RX_BUF_FRAMES, 0x600);
@@ -318,25 +308,30 @@ static void _reset(struct net_device *dev) {
 	 */
 	REG32_STORE(ENET_EIR, 0xffc00000);
 
+	/* set mii speed */
+	REG32_STORE(ENET_MSCR, 0x1a);
+
 	/* Full-Duplex Enable */
 	 REG32_STORE(ENET_TCR, (1 << 2));
 
 	 /* Transmit FIFO Write 64 bytes */
 	REG32_STORE(ENET_TFWR, 0x100);
-	//REG32_STORE(ENET_TFWR, 0x0);
 
 	//uint32_t t = 0x08000124;
 	/* MAX_FL frame length*/
 	/* Enables 10-Mbit/s mode of the RMII or RGMII ?*/
 	/* MII or RMII mode, as indicated by the RMII_MODE field. */
-	/* REG32_STORE(ENET_RCR, t); */
+	REG32_STORE(ENET_RCR, 0x5ee0104);
 
 	/* Maximum Receive Buffer Size Register
 	 * Receive buffer size in bytes. This value, concatenated with the four
 	 * least-significant bits of this register (which are always zero),
 	 * is the effective maximum receive buffer size.
 	 */
-	REG32_STORE(ENET_MRBR, 0x600);
+	REG32_STORE(ENET_MRBR, 0x5f0);
+
+	REG32_STORE(MAC_LOW, 0x001213dd);
+	REG32_STORE(MAC_HI, 0x54a38808);
 
 	REG32_STORE(ENET_ECR, REG32_LOAD(ENET_ECR) | ETHEREN); /* Note: should be last ENET-related init step */
 
@@ -348,6 +343,7 @@ static void _reset(struct net_device *dev) {
 static int imx6_net_open(struct net_device *dev) {
 
 	_reset(dev);
+
 	return 0;
 }
 
@@ -355,11 +351,7 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	assert(dev);
 	assert(addr);
 
-	const uint8_t *tmp = addr;
-	log_debug("addr = %x:%x:%x:%x:%x:%x", tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
-	_reset(dev);
 	emac_set_macaddr((unsigned char *)addr);
-	_reg_dump();
 
 	return 0;
 }
@@ -427,8 +419,6 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 			dcache_inval(desc, sizeof(struct imx6_buf_desc));
 		}
 	}
-
-	//REG32_STORE(ENET_TCR, 0x4);
 
 	_reg_dump();
 
