@@ -143,4 +143,36 @@ struct imx6_buf_desc {
 #endif
 };
 
+
+/* the defins of MII operation */
+#define FEC_MII_ST      0x40000000
+#define FEC_MII_OP_OFF  28
+#define FEC_MII_OP_MASK 0x03
+#define FEC_MII_OP_RD   0x02
+#define FEC_MII_OP_WR   0x01
+#define FEC_MII_PA_OFF  23
+#define FEC_MII_PA_MASK 0xFF
+#define FEC_MII_RA_OFF  18
+#define FEC_MII_RA_MASK 0xFF
+#define FEC_MII_TA      0x00020000
+#define FEC_MII_DATA_OFF 0
+#define FEC_MII_DATA_MASK 0x0000FFFF
+
+#define FEC_MII_FRAME   \
+	(FEC_MII_ST | FEC_MII_TA)
+#define FEC_MII_OP(x)   \
+	(((x) & FEC_MII_OP_MASK) << FEC_MII_OP_OFF)
+#define FEC_MII_PA(pa)  \
+	(((pa) & FEC_MII_PA_MASK) << FEC_MII_PA_OFF)
+#define FEC_MII_RA(ra)  \
+	(((ra) & FEC_MII_RA_MASK) << FEC_MII_RA_OFF)
+#define FEC_MII_SET_DATA(v) \
+	(((v) & FEC_MII_DATA_MASK) << FEC_MII_DATA_OFF)
+#define FEC_MII_GET_DATA(v) \
+	(((v) >> FEC_MII_DATA_OFF) & FEC_MII_DATA_MASK)
+#define FEC_MII_READ(pa, ra) \
+	((FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_RD)) | FEC_MII_PA(pa) | FEC_MII_RA(ra))
+#define FEC_MII_WRITE(pa, ra, v) \
+	(FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_WR)|	FEC_MII_PA(pa) | FEC_MII_RA(ra) | FEC_MII_SET_DATA(v))
+
 #endif /* DRIVERS_IMX6_NET_H_ */
