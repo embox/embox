@@ -63,24 +63,29 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
 #endif
 
 static void _reg_dump(void) {
-	log_debug("ENET_EIR  %10x", REG32_LOAD(ENET_EIR ));
-	log_debug("ENET_EIMR %10x", REG32_LOAD(ENET_EIMR));
-	log_debug("ENET_RDAR %10x", REG32_LOAD(ENET_RDAR));
-	log_debug("ENET_TDAR %10x", REG32_LOAD(ENET_TDAR));
-	log_debug("ENET_ECR  %10x", REG32_LOAD(ENET_ECR ));
-	log_debug("ENET_MSCR %10x", REG32_LOAD(ENET_MSCR));
-	log_debug("ENET_RCR  %10x", REG32_LOAD(ENET_RCR ));
-	log_debug("ENET_TCR  %10x", REG32_LOAD(ENET_TCR ));
-	log_debug("MAC_LOW   %10x", REG32_LOAD(MAC_LOW  ));
-	log_debug("MAC_HI    %10x", REG32_LOAD(MAC_HI   ));
-	log_debug("ENET_IAUR %10x", REG32_LOAD(ENET_IAUR));
-	log_debug("ENET_IALR %10x", REG32_LOAD(ENET_IALR));
-	log_debug("ENET_GAUR %10x", REG32_LOAD(ENET_GAUR));
-	log_debug("ENET_GALR %10x", REG32_LOAD(ENET_GALR));
-	log_debug("ENET_TFWR %10x", REG32_LOAD(ENET_TFWR));
-	log_debug("ENET_RDSR %10x", REG32_LOAD(ENET_RDSR));
-	log_debug("ENET_TDSR %10x", REG32_LOAD(ENET_TDSR));
-	log_debug("ENET_MRBR %10x", REG32_LOAD(ENET_MRBR));
+	log_debug("ENET_EIR  %10x %10x", ENET_EIR, REG32_LOAD(ENET_EIR ));
+	log_debug("ENET_EIMR %10x %10x", ENET_EIMR, REG32_LOAD(ENET_EIMR));
+	log_debug("ENET_RDAR %10x %10x", ENET_RDAR, REG32_LOAD(ENET_RDAR));
+	log_debug("ENET_TDAR %10x %10x", ENET_TDAR, REG32_LOAD(ENET_TDAR));
+	log_debug("ENET_ECR  %10x %10x", ENET_ECR, REG32_LOAD(ENET_ECR ));
+	log_debug("ENET_MMFR %10x %10x", ENET_MMFR, REG32_LOAD(ENET_MMFR));
+	log_debug("ENET_MSCR %10x %10x", ENET_MSCR, REG32_LOAD(ENET_MSCR));
+	log_debug("ENET_MIBC %10x %10x", ENET_MIBC, REG32_LOAD(ENET_MIBC));
+	log_debug("ENET_RCR  %10x %10x", ENET_RCR, REG32_LOAD(ENET_RCR ));
+	log_debug("ENET_TCR  %10x %10x", ENET_TCR, REG32_LOAD(ENET_TCR ));
+	log_debug("MAC_LOW   %10x %10x", MAC_LOW, REG32_LOAD(MAC_LOW  ));
+	log_debug("MAC_HI    %10x %10x", MAC_HI, REG32_LOAD(MAC_HI   ));
+	log_debug("ENET_OPD  %10x %10x", ENET_OPD, REG32_LOAD(ENET_OPD));
+	log_debug("ENET_IAUR %10x %10x", ENET_IAUR, REG32_LOAD(ENET_IAUR));
+	log_debug("ENET_IALR %10x %10x", ENET_IALR, REG32_LOAD(ENET_IALR));
+	log_debug("ENET_GAUR %10x %10x", ENET_GAUR, REG32_LOAD(ENET_GAUR));
+	log_debug("ENET_GALR %10x %10x", ENET_GALR, REG32_LOAD(ENET_GALR));
+	log_debug("ENET_TFWR %10x %10x", ENET_TFWR, REG32_LOAD(ENET_TFWR));
+	log_debug("ENET_WTF1 %10x %10x", ENET_WTF1, REG32_LOAD(ENET_WTF1));
+	log_debug("ENET_WTF2 %10x %10x", ENET_WTF2, REG32_LOAD(ENET_WTF2));
+	log_debug("ENET_RDSR %10x %10x", ENET_RDSR, REG32_LOAD(ENET_RDSR));
+	log_debug("ENET_TDSR %10x %10x", ENET_TDSR, REG32_LOAD(ENET_TDSR));
+	log_debug("ENET_MRBR %10x %10x", ENET_MRBR, REG32_LOAD(ENET_MRBR));
 }
 
 static void emac_set_macaddr(unsigned char _macaddr[6]) {
@@ -109,7 +114,6 @@ static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned
 static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(0x10)));
 
 static int _cur_rx = 0;
-static int _dirty_tx = 0;
 
 static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
 static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
@@ -133,7 +137,6 @@ static void fec_tbd_init(struct fec_priv *fec)
 
 static void fec_rbd_init(struct fec_priv *fec, int count, int dsize) {
 	uint32_t size;
-	uint8_t *data;
 	int i;
 
 	/*
@@ -142,16 +145,14 @@ static void fec_rbd_init(struct fec_priv *fec, int count, int dsize) {
 	 */
 	size = count * sizeof(struct imx6_buf_desc);
 	for (i = 0; i < count; i++) {
-		data = (uint8_t *)fec->rbd_base[i].data_pointer;
-		memset(data, 0, dsize);
-		dcache_flush(data, dsize);
-
-		fec->rbd_base[i].flags1 = FLAG_R;
+		fec->rbd_base[i].data_pointer = (uint32_t)&_rx_buf[i][0];
 		fec->rbd_base[i].len = 0;
+		fec->rbd_base[i].flags1 = FLAG_R;
 	}
 
 	/* Mark the last RBD to close the ring. */
 	fec->rbd_base[count - 1].flags1 = FLAG_W | FLAG_R;
+
 	fec->rbd_index = 0;
 
 	dcache_flush((void *)fec->rbd_base, size);
@@ -190,9 +191,6 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	{
 		cur_tx_desc = priv->tbd_index;
 		log_debug("Transmitting packet %2d", cur_tx_desc);
-		if (skb->len < 0x40) {
-			skb->len = 0x40;
-		}
 
 		memcpy(&_tx_buf[cur_tx_desc][0], data, skb->len);
 		dcache_flush(&_tx_buf[cur_tx_desc][0], skb->len);
@@ -203,17 +201,13 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 		if (desc->flags1 & FLAG_R) {
 			log_error("tx desc still busy");
 			goto out1;
-
 		}
+
 		desc->data_pointer = (uint32_t)&_tx_buf[cur_tx_desc][0];
 		//desc->data_pointer = (uint32_t)data;
 		desc->len          = skb->len;
 		desc->flags1       |= FLAG_L | FLAG_TC | FLAG_R;
 		dcache_flush(desc, sizeof(struct imx6_buf_desc));
-		log_debug("desc = %x", desc);
-		log_debug("->data_pointer = %x", desc->data_pointer);
-		log_debug("->len = %x", desc->len);
-		log_debug("->flags1 = %x", desc->flags1);
 
 		REG32_LOAD(desc + sizeof(*desc) - 4);
 
@@ -225,28 +219,22 @@ static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 			if (!(REG32_LOAD(ENET_TDAR))) {
 				break;
 			}
-			log_debug("ENET_TDAR not zero");
 		}
 
-		log_debug("TX timeout %d", timeout);
 		if (timeout == 0) {
-			log_debug("TX timeout ENET_TDAR is not zero...");
+			log_error("TX timeout ENET_TDAR is not zero...");
 		}
 
 		timeout = 0xFFFFFF;
 		while(--timeout) {
 			dcache_inval(desc, sizeof(struct imx6_buf_desc));
 			if (!(desc->flags1 & FLAG_R)) {
-				log_debug("************\n->data_pointer = %x", desc->data_pointer);
-				log_debug("->len = %x", desc->len);
-				log_debug("->flags1 = %x", desc->flags1);
 				break;
 			}
 		}
 		if (timeout == 0) {
-			log_debug("TX timeout bit READY still set...");
+			log_error("TX timeout bit READY still set...");
 		}
-		log_debug("TX timeout %d", timeout);
 
 		priv->tbd_index = (priv->tbd_index + 1) % TX_BUF_FRAMES;
 	}
@@ -257,19 +245,6 @@ out:
 	skb_free(skb);
 
 	return res;
-}
-
-static void _init_buffers(void) {
-	int i;
-
-	for (i = 0; i < RX_BUF_FRAMES; i++) {
-		_rx_desc_ring[i].data_pointer = (uint32_t)&_rx_buf[i][0];
-	}
-#if 0
-	for (i = 0; i < TX_BUF_FRAMES; i++) {
-		_tx_desc_ring[i].data_pointer = (uint32_t)& _tx_buf[i][0];
-	}
-#endif
 }
 
 static void _reset(struct net_device *dev) {
@@ -285,13 +260,10 @@ static void _reset(struct net_device *dev) {
 			break;
 		}
 	}
-	REG32_STORE(ENET_ECR, 0xF0000100);
 
-	_init_buffers();
-	fec_rbd_init(dev->priv, RX_BUF_FRAMES, 0x600);
-
-	fec_tbd_init(dev->priv);
-
+	/* set mii speed */
+	REG32_STORE(ENET_MSCR, 0x1a);
+	//REG32_STORE(ENET_MMFR, 0x6006782d);
 
 	/*
 	 * Set interrupt mask register
@@ -302,20 +274,14 @@ static void _reset(struct net_device *dev) {
 	 * Receive Frame Interrupt
 	 * Receive Buffer Interrupt
 	 */
-	REG32_STORE(ENET_EIMR, 0x00000000);
+	REG32_STORE(ENET_EIMR, 0x0 | EIR_RXB | EIR_RXF);
 	/*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
 	 */
 	REG32_STORE(ENET_EIR, 0xffc00000);
 
-	/* set mii speed */
-	REG32_STORE(ENET_MSCR, 0x1a);
-
 	/* Full-Duplex Enable */
 	 REG32_STORE(ENET_TCR, (1 << 2));
-
-	 /* Transmit FIFO Write 64 bytes */
-	REG32_STORE(ENET_TFWR, 0x100);
 
 	//uint32_t t = 0x08000124;
 	/* MAX_FL frame length*/
@@ -330,8 +296,17 @@ static void _reset(struct net_device *dev) {
 	 */
 	REG32_STORE(ENET_MRBR, 0x5f0);
 
-	REG32_STORE(MAC_LOW, 0x001213dd);
-	REG32_STORE(MAC_HI, 0x54a38808);
+	//REG32_STORE(MAC_LOW, 0x001213dd);
+	//REG32_STORE(MAC_HI, 0x54a38808);
+
+	fec_rbd_init(dev->priv, RX_BUF_FRAMES, 0x600);
+
+	fec_tbd_init(dev->priv);
+
+	REG32_STORE(ENET_ECR, 0xF0000100);
+
+	 /* Transmit FIFO Write 64 bytes */
+	REG32_STORE(ENET_TFWR, 0x100);
 
 	REG32_STORE(ENET_ECR, REG32_LOAD(ENET_ECR) | ETHEREN); /* Note: should be last ENET-related init step */
 
@@ -403,7 +378,7 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 			_cur_rx = (_cur_rx + 1) % RX_BUF_FRAMES;
 		}
 	}
-
+#if 0
 	if (state & (EIR_TXB | EIR_TXF)) {
 		log_debug("finished TX");
 		desc = &_tx_desc_ring[_dirty_tx];
@@ -419,8 +394,8 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 			dcache_inval(desc, sizeof(struct imx6_buf_desc));
 		}
 	}
-
-	_reg_dump();
+#endif
+	//_reg_dump();
 
 	return IRQ_HANDLED;
 }
