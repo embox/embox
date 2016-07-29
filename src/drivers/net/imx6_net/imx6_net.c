@@ -35,9 +35,6 @@ struct fec_priv {
 	int rbd_index;
 	struct imx6_buf_desc *tbd_base;
 	int tbd_index;
-
-	int _cur_rx;
-	int _dirty_tx;
 };
 
 static struct fec_priv fec_priv;
@@ -112,8 +109,6 @@ static void emac_set_macaddr(unsigned char _macaddr[6]) {
 
 static struct imx6_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned(0x10)));
 static struct imx6_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(0x10)));
-
-static int _cur_rx = 0;
 
 static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
 static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
@@ -331,20 +326,52 @@ static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
 	return 0;
 }
 
+static int imx6_receive(struct net_device *dev_id, struct fec_priv *priv) {
+	struct imx6_buf_desc *desc;
+	struct sk_buff *skb;
+	int res = 0;
+
+	while(1) {
+		desc = &_rx_desc_ring[priv->rbd_index];
+		dcache_inval(desc, sizeof(struct imx6_buf_desc));
+		if (desc->flags1 & FLAG_E) {
+			break;
+		}
+
+		skb = skb_alloc(desc->len);
+		if (!skb) {
+			log_error("can't allocate skb");
+			break;
+		}
+		dcache_inval((void *)desc->data_pointer, desc->len);
+		memcpy(skb_data_cast_in(skb->data),
+				(void*)desc->data_pointer, desc->len);
+		skb->len = desc->len - 4; /*without CRC */
+		skb->dev = dev_id;
+		netif_rx(skb);
+
+		priv->rbd_index = (priv->rbd_index + 1) % RX_BUF_FRAMES;
+
+		desc->flags1 |= FLAG_R;
+		dcache_flush(desc, sizeof(struct imx6_buf_desc));
+
+		REG32_STORE(ENET_RDAR, (1 << 24));
+	}
+
+	return res;
+}
+
 static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 	uint32_t state;
-	struct imx6_buf_desc *desc;
+	struct fec_priv *priv;
+
+	assert(dev_id);
+
+	priv = ((struct net_device *)dev_id)->priv;
 
 	state = REG32_LOAD(ENET_EIR);
 
 	log_debug("Interrupt mask %#010x", state);
-
-	REG32_STORE(ENET_EIR, state);
-
-	REG32_STORE(ENET_RDAR, 1 << 24);
-
-	if (state == 0x10000000)
-		return IRQ_HANDLED;
 
 	if (state & EIR_EBERR) {
 		log_error("Ethernet bus error, resetting ENET!");
@@ -356,46 +383,10 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	if (state & (EIR_RXB | EIR_RXF)) {
 		log_debug("RX interrupt");
-		desc = &_rx_desc_ring[_cur_rx];
-		dcache_inval(desc, sizeof(struct imx6_buf_desc));
-		dcache_inval((void *)desc->data_pointer, 2048);
-
-		if (desc->flags1 & FLAG_E) {
-			log_error("Current RX descriptor is empty!");
-		} else {
-			struct sk_buff *skb = skb_alloc(desc->len);
-			assert(skb);
-			skb->len = desc->len;
-			skb->dev = dev_id;
-			memcpy(skb_data_cast_in(skb->data),
-				(void*)desc->data_pointer, desc->len);
-			netif_rx(skb);
-
-			desc->flags1 = FLAG_E;
-			if (_cur_rx == RX_BUF_FRAMES - 1)
-				desc->flags1 |= FLAG_W;
-			dcache_flush(desc, sizeof(struct imx6_buf_desc));
-			_cur_rx = (_cur_rx + 1) % RX_BUF_FRAMES;
-		}
+		imx6_receive(dev_id, priv);
 	}
-#if 0
-	if (state & (EIR_TXB | EIR_TXF)) {
-		log_debug("finished TX");
-		desc = &_tx_desc_ring[_dirty_tx];
-		dcache_inval(desc, sizeof(struct imx6_buf_desc));
-		if (desc->flags1 & FLAG_R)
-			log_error("No single frame transmitted!");
 
-		while (!(desc->flags1 & FLAG_R)) {
-			assert(desc->data_pointer == (uint32_t) &_tx_buf[_dirty_tx]);
-			log_debug("Frame %2d transmitted", _dirty_tx);
-			_dirty_tx = (_dirty_tx + 1) % TX_BUF_FRAMES;
-			desc = &_tx_desc_ring[_dirty_tx];
-			dcache_inval(desc, sizeof(struct imx6_buf_desc));
-		}
-	}
-#endif
-	//_reg_dump();
+	REG32_STORE(ENET_EIR, state);
 
 	return IRQ_HANDLED;
 }
@@ -420,7 +411,6 @@ static int imx6_net_init(void) {
 	fec_priv.rbd_base =  _rx_desc_ring;
 	fec_priv.tbd_base =  _tx_desc_ring;
 	nic->priv = &fec_priv;
-
 
 	tmp = irq_attach(ENET_IRQ, imx6_irq_handler, 0, nic, "i.MX6 enet");
 	if (tmp)
