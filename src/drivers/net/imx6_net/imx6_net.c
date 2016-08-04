@@ -39,7 +39,7 @@ struct fec_priv {
 
 static struct fec_priv fec_priv;
 
-#define DEBUG 1
+#define DEBUG 0
 #if DEBUG
 #include <kernel/printk.h>
 /* Debugging routines */
@@ -282,8 +282,11 @@ static void _reset(struct net_device *dev) {
 	/* MAX_FL frame length*/
 	/* Enables 10-Mbit/s mode of the RMII or RGMII ?*/
 	/* MII or RMII mode, as indicated by the RMII_MODE field. */
-	REG32_STORE(ENET_RCR, 0x5ee0104);
-
+#if (OPTION_GET(NUMBER, speed) == 1000)
+	 REG32_STORE(ENET_RCR, 0x5ee0044);
+#else
+	 REG32_STORE(ENET_RCR, 0x5ee0104);
+#endif
 	/* Maximum Receive Buffer Size Register
 	 * Receive buffer size in bytes. This value, concatenated with the four
 	 * least-significant bits of this register (which are always zero),
@@ -346,8 +349,11 @@ static int imx6_receive(struct net_device *dev_id, struct fec_priv *priv) {
 		dcache_inval((void *)desc->data_pointer, desc->len);
 		memcpy(skb_data_cast_in(skb->data),
 				(void*)desc->data_pointer, desc->len);
-		skb->len = desc->len - 4; /*without CRC */
+		skb->len = desc->len; /* without CRC */
 		skb->dev = dev_id;
+
+		show_packet(skb_data_cast_in(skb->data), skb->len, "rx");
+
 		netif_rx(skb);
 
 		priv->rbd_index = (priv->rbd_index + 1) % RX_BUF_FRAMES;

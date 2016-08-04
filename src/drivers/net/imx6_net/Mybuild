@@ -2,10 +2,14 @@ package embox.driver.net
 
 module imx6_net {
 	option number log_level=0
-	source "imx6_net.c"
 
 	option number base_addr=0x02188000
 	option number irq_nr=150
+
+	option number speed=100
+
+	source "imx6_net.c"
+
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq_api
