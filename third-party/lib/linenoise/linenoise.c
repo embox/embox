@@ -578,7 +578,11 @@ void linenoiseEditBackspace(struct linenoiseState *l) {
         l->pos--;
         l->len--;
         l->buf[l->len] = '\0';
-        refreshLine(l);
+	/* Erase last symbol */
+	write(l->fdout, "\b \b", 3);
+#if 0
+	refreshLine(l);
+#endif
     }
 }
 
