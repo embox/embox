@@ -1,10 +1,4 @@
-/**
- * @file imx6_net.c
- * @brief iMX6 MAC-NET driver
- * @author Denis Deryugin <deryugin.denis@gmail.com>
- * @version 0.1
- * @date 2016-05-11
- */
+#include "../fec/fec.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -27,7 +21,6 @@
 
 #include <framework/mod/options.h>
 
-#include "imx6_net.h"
 
 struct fec_priv {
 	uint32_t base_addr;
