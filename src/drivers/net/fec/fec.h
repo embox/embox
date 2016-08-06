@@ -14,65 +14,65 @@
 #define NIC_BASE OPTION_GET(NUMBER, base_addr)
 #define ENET_IRQ OPTION_GET(NUMBER, irq_nr)
 
-#define ENET_EIR  (NIC_BASE + 0x0004)
-#define ENET_EIMR (NIC_BASE + 0x0008)
-#define ENET_RDAR (NIC_BASE + 0x0010)
-#define ENET_TDAR (NIC_BASE + 0x0014)
-#define ENET_ECR  (NIC_BASE + 0x0024)
-#define ENET_MMFR (NIC_BASE + 0x0040)
-#define ENET_MSCR (NIC_BASE + 0x0044)
-#define ENET_MIBC (NIC_BASE + 0x0064)
-#define ENET_RCR  (NIC_BASE + 0x0084)
-#define ENET_TCR  (NIC_BASE + 0x00C4)
-#define MAC_LOW   (NIC_BASE + 0x00E4)
-#define MAC_HI    (NIC_BASE + 0x00E8)
-#define ENET_OPD  (NIC_BASE + 0x00EC)
-#define ENET_IAUR (NIC_BASE + 0x0118)
-#define ENET_IALR (NIC_BASE + 0x011C)
-#define ENET_GAUR (NIC_BASE + 0x0120)
-#define ENET_GALR (NIC_BASE + 0x0124)
-#define ENET_TFWR (NIC_BASE + 0x0144)
-#define ENET_WTF1 (NIC_BASE + 0x014C) /* Not mentioned             */
-#define ENET_WTF2 (NIC_BASE + 0x0150) /*      in the specification */
-#define ENET_RDSR (NIC_BASE + 0x0180)
-#define ENET_TDSR (NIC_BASE + 0x0184)
-#define ENET_MRBR (NIC_BASE + 0x0188)
-#define ENET_RAEM (NIC_BASE + 0x0198)
-#define ENET_RAFL (NIC_BASE + 0x019C)
-#define ENET_TAEM (NIC_BASE + 0x01A4)
-#define ENET_TAFL (NIC_BASE + 0x01A8)
-#define ENET_TIPG (NIC_BASE + 0x01AC)
-#define ENET_FTRL (NIC_BASE + 0x01B0)
+#define ENET_EIR       (NIC_BASE + 0x0004)
+#define ENET_EIMR      (NIC_BASE + 0x0008)
+#define ENET_RDAR      (NIC_BASE + 0x0010)
+#define ENET_TDAR      (NIC_BASE + 0x0014)
+#define ENET_ECR       (NIC_BASE + 0x0024)
+#define ENET_MMFR      (NIC_BASE + 0x0040)
+#define ENET_MSCR      (NIC_BASE + 0x0044)
+#define ENET_MIBC      (NIC_BASE + 0x0064)
+#define ENET_RCR       (NIC_BASE + 0x0084)
+#define ENET_TCR       (NIC_BASE + 0x00C4)
+#define ENET_MAC_LOW   (NIC_BASE + 0x00E4)
+#define ENET_MAC_HI    (NIC_BASE + 0x00E8)
+#define ENET_OPD       (NIC_BASE + 0x00EC)
+#define ENET_IAUR      (NIC_BASE + 0x0118)
+#define ENET_IALR      (NIC_BASE + 0x011C)
+#define ENET_GAUR      (NIC_BASE + 0x0120)
+#define ENET_GALR      (NIC_BASE + 0x0124)
+#define ENET_TFWR      (NIC_BASE + 0x0144)
+#define ENET_WTF1      (NIC_BASE + 0x014C) /* Not mentioned             */
+#define ENET_WTF2      (NIC_BASE + 0x0150) /*      in the specification */
+#define ENET_RDSR      (NIC_BASE + 0x0180)
+#define ENET_TDSR      (NIC_BASE + 0x0184)
+#define ENET_MRBR      (NIC_BASE + 0x0188)
+#define ENET_RAEM      (NIC_BASE + 0x0198)
+#define ENET_RAFL      (NIC_BASE + 0x019C)
+#define ENET_TAEM      (NIC_BASE + 0x01A4)
+#define ENET_TAFL      (NIC_BASE + 0x01A8)
+#define ENET_TIPG      (NIC_BASE + 0x01AC)
+#define ENET_FTRL      (NIC_BASE + 0x01B0)
 
 
 /* Various flags */
 /* ENET_EIR */
-#define EIR_MASK  0xFFFFFFFF
-#define EIR_EBERR (1 << 22)   /* Ethernet bus error */
-#define EIR_RXB   (1 << 24)   /* Receive buffer     */
-#define EIR_RXF   (1 << 25)   /* Receive frame      */
-#define EIR_TXB   (1 << 26)   /* Transmit buffer    */
-#define EIR_TXF   (1 << 27)   /* Transmit frame     */
+#define ENET_EIR_MASK  0xFFFFFFFF
+#define ENET_EIR_EBERR (1 << 22)   /* Ethernet bus error */
+#define ENET_EIR_RXB   (1 << 24)   /* Receive buffer     */
+#define ENET_EIR_RXF   (1 << 25)   /* Receive frame      */
+#define ENET_EIR_TXB   (1 << 26)   /* Transmit buffer    */
+#define ENET_EIR_TXF   (1 << 27)   /* Transmit frame     */
 
 /* ENET_EIMR */
-#define EIMR_RXF  (1 << 25)
-#define EIMR_TXF  (1 << 27)
+#define ENET_EIMR_RXF  (1 << 25)
+#define ENET_EIMR_TXF  (1 << 27)
 
 /* ENET_ECR */
-#define ECR_DBSWP (1 << 8)
-#define ETHEREN   (1 << 1) /* Ethernet enable */
-#define RESET     (1 << 0)
+#define ENET_ECR_DBSWP (1 << 8)
+#define ENET_ETHEREN   (1 << 1) /* Ethernet enable */
+#define ENET_RESET     (1 << 0)
 
 /* ENET_RCR */
-#define FRAME_LEN_OFFSET 16
-#define RCR_FCE         (1 << 5)
-#define RCR_MII_MODE    (1 << 2)
+#define ENET_FRAME_LEN_OFFSET 16
+#define ENET_RCR_FCE         (1 << 5)
+#define ENET_RCR_MII_MODE    (1 << 2)
 
 /* ENET_TCR */
-#define TCR_FDEN (1 << 2)
+#define ENET_TCR_FDEN (1 << 2)
 
 /* ENET_TFWR */
-#define TFWR_STRFWD (1 << 8)
+#define ENET_TFWR_STRFWD (1 << 8)
 
 #define FRAME_LEN     2048
 #define TX_BUF_FRAMES 256
@@ -129,7 +129,7 @@
 #define FLAG_PE     (1 << 26)
 #define FLAG_ME     (1 << 31)
 
-struct imx6_buf_desc {
+struct fec_buf_desc {
 	uint16_t len;
 	uint16_t flags1;
 	uint32_t data_pointer;
