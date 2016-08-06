@@ -9,6 +9,8 @@
 #ifndef DRIVERS_IMX6_NET_H_
 #define DRIVERS_IMX6_NET_H_
 
+#include <stdint.h>
+
 #define NIC_BASE OPTION_GET(NUMBER, base_addr)
 #define ENET_IRQ OPTION_GET(NUMBER, irq_nr)
 

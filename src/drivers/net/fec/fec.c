@@ -1,4 +1,4 @@
-#include "../fec/fec.h"
+#include "fec.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -7,7 +7,6 @@
 #include <hal/reg.h>
 
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
@@ -52,7 +51,9 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
 #define show_packet(raw, size,title)
 #endif
 
-static void _reg_dump(void) {
+static void fec_reg_dump(const char * title) {
+	log_debug("%s", title);
+
 	log_debug("ENET_EIR  %10x %10x", ENET_EIR, REG32_LOAD(ENET_EIR ));
 	log_debug("ENET_EIMR %10x %10x", ENET_EIMR, REG32_LOAD(ENET_EIMR));
 	log_debug("ENET_RDAR %10x %10x", ENET_RDAR, REG32_LOAD(ENET_RDAR));
@@ -148,7 +149,7 @@ static void fec_rbd_init(struct fec_priv *fec, int count, int dsize) {
 	REG32_STORE(ENET_RDSR, (uint32_t)fec->rbd_base);
 }
 
-static int imx6_net_xmit(struct net_device *dev, struct sk_buff *skb) {
+static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint8_t *data;
 	struct imx6_buf_desc *desc;
 	int res;
@@ -238,8 +239,7 @@ out:
 static void _reset(struct net_device *dev) {
 	int cnt = 0;
 
-	log_debug("ENET dump uboot...\n");
-	_reg_dump();
+	fec_reg_dump("ENET dump uboot...");
 
 	REG32_STORE(ENET_ECR, RESET);
 	while(REG32_LOAD(ENET_ECR) & RESET){
@@ -251,7 +251,6 @@ static void _reset(struct net_device *dev) {
 
 	/* set mii speed */
 	REG32_STORE(ENET_MSCR, 0x1a);
-	//REG32_STORE(ENET_MMFR, 0x6006782d);
 
 	/*
 	 * Set interrupt mask register
@@ -271,7 +270,6 @@ static void _reset(struct net_device *dev) {
 	/* Full-Duplex Enable */
 	 REG32_STORE(ENET_TCR, (1 << 2));
 
-	//uint32_t t = 0x08000124;
 	/* MAX_FL frame length*/
 	/* Enables 10-Mbit/s mode of the RMII or RGMII ?*/
 	/* MII or RMII mode, as indicated by the RMII_MODE field. */
@@ -287,9 +285,6 @@ static void _reset(struct net_device *dev) {
 	 */
 	REG32_STORE(ENET_MRBR, 0x5f0);
 
-	//REG32_STORE(MAC_LOW, 0x001213dd);
-	//REG32_STORE(MAC_HI, 0x54a38808);
-
 	fec_rbd_init(dev->priv, RX_BUF_FRAMES, 0x600);
 
 	fec_tbd_init(dev->priv);
@@ -302,18 +297,18 @@ static void _reset(struct net_device *dev) {
 	REG32_STORE(ENET_ECR, REG32_LOAD(ENET_ECR) | ETHEREN); /* Note: should be last ENET-related init step */
 
 	REG32_STORE(ENET_RDAR, (1 << 24));
-	log_debug("ENET dump embox...\n");
-	_reg_dump();
+
+	fec_reg_dump("ENET dump embox...\n");
 }
 
-static int imx6_net_open(struct net_device *dev) {
+static int fec_open(struct net_device *dev) {
 
 	_reset(dev);
 
 	return 0;
 }
 
-static int imx6_net_set_macaddr(struct net_device *dev, const void *addr) {
+static int fec_set_macaddr(struct net_device *dev, const void *addr) {
 	assert(dev);
 	assert(addr);
 
@@ -381,7 +376,6 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 	}
 
 	if (state & (EIR_RXB | EIR_RXF)) {
-		log_debug("RX interrupt");
 		imx6_receive(dev_id, priv);
 	}
 
@@ -390,14 +384,14 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static const struct net_driver imx6_net_drv_ops = {
-	.xmit = imx6_net_xmit,
-	.start = imx6_net_open,
-	.set_macaddr = imx6_net_set_macaddr
+static const struct net_driver fec_drv_ops = {
+	.xmit = fec_xmit,
+	.start = fec_open,
+	.set_macaddr = fec_set_macaddr
 };
 
-EMBOX_UNIT_INIT(imx6_net_init);
-static int imx6_net_init(void) {
+EMBOX_UNIT_INIT(fec_init);
+static int fec_init(void) {
 	struct net_device *nic;
 	int tmp;
 
@@ -405,7 +399,7 @@ static int imx6_net_init(void) {
 		return -ENOMEM;
 	}
 
-	nic->drv_ops = &imx6_net_drv_ops;
+	nic->drv_ops = &fec_drv_ops;
 	fec_priv.base_addr = NIC_BASE;
 	fec_priv.rbd_base =  _rx_desc_ring;
 	fec_priv.tbd_base =  _tx_desc_ring;
