@@ -6,15 +6,20 @@
  * @date 2015-08-18
  */
 
+#include <string.h>
+
 #include <asm/hal/mmu.h>
 #include <asm/regs.h>
 #include <embox/unit.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
 
-#include <string.h>
+#include <framework/mod/options.h>
+#include <kernel/printk.h>
 
 EMBOX_UNIT_INIT(mmu_init);
+
+#define DOMAIN_ACCESS OPTION_GET(NUMBER, domain_access)
 
 static uint8_t translation_table[16384] __attribute__((aligned(1 << 14)));
 
@@ -26,20 +31,34 @@ static uint8_t translation_table[16384] __attribute__((aligned(1 << 14)));
  */
 static int mmu_init(void) {
 	memset(translation_table, 0, sizeof(translation_table));
+
 	__asm__ __volatile__ (
 		/* setup c3, Domain Access Control Register */
+#if DOMAIN_ACCESS == 1
 		"mov r0, #0x55\n\t" /* Client for all domains */
+#elif DOMAIN_ACCESS == 3
+		"mov r0, #0xff\n\t" /* Manager for all domains */
+#else
+#error Given domain access level is not supported
+#endif
 		"orr r0, r0, lsl #8\n\t"
 		"orr r0, r0, lsl #16\n\t"
 		"mcr p15, 0, r0, c3, c0, 0\n\t"
 		: :
 	);
+
+	return 0;
+
 	/* Setup physical address of the first level translation table */
 	__asm__ __volatile__ (
 		"ldr r0, =translation_table\n\t"
 		"mcr p15, 0, r0, c2, c0, 0\n\t"
-		"mcr p15, 0, r0, c2, c0, 1" : :
+#if 0
+		"mcr p15, 0, r0, c2, c0, 1"
+#endif
+		: :
 	);
+
 	return 0;
 }
 
