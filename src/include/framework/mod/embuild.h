@@ -243,7 +243,7 @@
 		}, \
 		.mod = &__MOD(mod_nm), \
 	}; \
-	ARRAY_SPREAD_DECLARE(const struct mod_sec_label *, __mod_sec_labels); \
+	ARRAY_SPREAD_DECLARE(const struct mod_sec_label *const, __mod_sec_labels); \
 	ARRAY_SPREAD_ADD(__mod_sec_labels, &__MOD_SEC_LABEL(mod_nm))
 #endif /* __MOD_SEC_LABEL_DEF */
 
