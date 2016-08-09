@@ -48,18 +48,6 @@ static int mmu_init(void) {
 	);
 
 	return 0;
-
-	/* Setup physical address of the first level translation table */
-	__asm__ __volatile__ (
-		"ldr r0, =translation_table\n\t"
-		"mcr p15, 0, r0, c2, c0, 0\n\t"
-#if 0
-		"mcr p15, 0, r0, c2, c0, 1"
-#endif
-		: :
-	);
-
-	return 0;
 }
 
 /**
@@ -113,6 +101,12 @@ mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
+	void *table = &translation_table;
+
+	__asm__ __volatile__ (
+		"mcr p15, 0, %[addr], c2, c0, 0\n\t"
+		: [addr] "=r" (table) :
+	);
 }
 
 /**
