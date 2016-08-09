@@ -86,7 +86,7 @@ struct clock_source_head {
     ARRAY_SPREAD_ADD(__event_devices, ted);
 
 #define TIME_COUNTER_DEVICE(tcd) \
-	ARRAY_SPREAD_DECLARE(const struct time_counter_device *, \
+	ARRAY_SPREAD_DECLARE(const struct time_counter_device *const, \
 			__counter_devices); \
     ARRAY_SPREAD_ADD(__counter_devices, tcd);
 
