@@ -17,7 +17,7 @@
 
 EMBOX_UNIT_INIT(rootfs_mount);
 
-ARRAY_SPREAD_DEF(struct auto_mount *, auto_mount_tab);
+ARRAY_SPREAD_DEF(const struct auto_mount *const, auto_mount_tab);
 
 static struct super_block *root_sb;
 
@@ -43,7 +43,7 @@ struct super_block *rootfs_sb(void) {
 static int rootfs_mount(void) {
 	const char *dev, *fs_type;
 	struct dumb_fs_driver *fsdrv;
-	struct auto_mount *auto_mnt;
+	const struct auto_mount *auto_mnt;
 	struct lookup lu;
 	char *tmp;
 
