@@ -23,7 +23,7 @@ extern int fuse_module_umount(struct fuse_module *fm);
 #include <util/array.h>
 #define FUSE_MODULE_DEF(name, cmd) \
 	static const struct fuse_module fm##__LINE__ = {name, cmd}; \
-	ARRAY_SPREAD_DECLARE(const struct fuse_module *, fuse_module_repo); \
+	ARRAY_SPREAD_DECLARE(const struct fuse_module *const, fuse_module_repo); \
 	ARRAY_SPREAD_ADD( fuse_module_repo, &fm##__LINE__)
 
 

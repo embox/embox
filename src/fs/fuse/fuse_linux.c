@@ -17,7 +17,7 @@
 #include <embox/cmd.h>
 #include <fs/fuse_module.h>
 
-ARRAY_SPREAD_DEF(struct fuse_module *, fuse_module_repo);
+ARRAY_SPREAD_DEF(const struct fuse_module *const, fuse_module_repo);
 
 struct fuse_module *fuse_module_lookup(char *fuse_type) {
 	struct fuse_module *fm;
