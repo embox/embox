@@ -17,10 +17,10 @@
 #define cmd_foreach(cmd) \
 	array_spread_foreach(cmd, __cmd_registry)
 
-ARRAY_SPREAD_DECLARE(const struct cmd *, __cmd_registry);
+ARRAY_SPREAD_DECLARE(const struct cmd * const, __cmd_registry);
 
 #define CMD_ADD(_cmd_ptr) \
-	ARRAY_SPREAD_DECLARE(const struct cmd *, __cmd_registry); \
+	ARRAY_SPREAD_DECLARE(const struct cmd * const, __cmd_registry); \
 	ARRAY_SPREAD_ADD(__cmd_registry, _cmd_ptr)
 
 static inline const char *cmd_name(const struct cmd *cmd) {
