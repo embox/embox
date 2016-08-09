@@ -246,5 +246,5 @@ static struct dumb_fs_driver initfs_dumb_driver = {
 	.mount_end = initfs_mount_end,
 };
 
-ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
+ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &initfs_dumb_driver);

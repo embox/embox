@@ -22,20 +22,20 @@ struct dvfs_driver_head {
 	struct dumb_fs_driver *drv;
 };
 
-ARRAY_SPREAD_DEF(struct dumb_fs_driver *, dumb_drv_tab);
+ARRAY_SPREAD_DEF(const struct dumb_fs_driver *const, dumb_drv_tab);
 
 struct dumb_fs_driver *dumb_fs_driver_find(const char *name) {
-	struct dumb_fs_driver *fs_drv;
+	const struct dumb_fs_driver *fs_drv;
 	array_spread_foreach(fs_drv, dumb_drv_tab) {
 		if (!strcmp(name, fs_drv->name)) {
-			return fs_drv;
+			return (struct dumb_fs_driver *)fs_drv;
 		}
 	}
 	return NULL;
 }
 
 struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file *bdev) {
-	struct dumb_fs_driver *fs_drv;
+	const struct dumb_fs_driver *fs_drv;
 	int res;
 
 	assert(sb);

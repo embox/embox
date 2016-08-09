@@ -258,7 +258,7 @@ static struct dumb_fs_driver devfs_dumb_driver = {
 	.mount_end = devfs_mount_end,
 };
 
-ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
+ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &devfs_dumb_driver);
 
 static struct auto_mount devfs_auto_mount = {
