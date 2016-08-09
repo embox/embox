@@ -81,7 +81,7 @@ struct clock_source_head {
 };
 
 #define TIME_EVENT_DEVICE(ted) \
-	ARRAY_SPREAD_DECLARE(const struct time_event_device *, \
+	ARRAY_SPREAD_DECLARE(const struct time_event_device *const, \
 			__event_devices) \
     ARRAY_SPREAD_ADD(__event_devices, ted);
 
