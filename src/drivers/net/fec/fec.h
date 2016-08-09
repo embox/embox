@@ -131,7 +131,7 @@
 
 struct fec_buf_desc {
 	uint16_t len;
-	uint16_t flags1;
+	uint16_t flags;
 	uint32_t data_pointer;
 #if 0
 	uint32_t flags2;
