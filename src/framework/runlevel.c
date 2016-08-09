@@ -19,11 +19,11 @@
 
 static runlevel_nr_t init_level = -1;
 
-ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel0);
-ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel1);
-ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel2);
-ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel3);
-ARRAY_SPREAD_DEF(const struct mod *, __mod_runlevel4);
+ARRAY_SPREAD_DEF(const struct mod *const, __mod_runlevel0);
+ARRAY_SPREAD_DEF(const struct mod *const, __mod_runlevel1);
+ARRAY_SPREAD_DEF(const struct mod *const, __mod_runlevel2);
+ARRAY_SPREAD_DEF(const struct mod *const, __mod_runlevel3);
+ARRAY_SPREAD_DEF(const struct mod *const, __mod_runlevel4);
 
 static const struct mod *const volatile*mod_runlevels_start[RUNLEVEL_NRS_TOTAL] = {
 	__mod_runlevel0, __mod_runlevel1, __mod_runlevel2, __mod_runlevel3,
