@@ -35,8 +35,6 @@ struct fuse_mount_params {
 	char *dest;
 };
 
-extern struct dumb_fs_driver ext2fuse_dumb_driver;
-
 extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *, struct dentry *);
 static int fuse_fill_dentry(struct super_block *sb, char *dest) {
