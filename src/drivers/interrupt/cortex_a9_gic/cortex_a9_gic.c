@@ -7,6 +7,7 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <sys/mman.h>
 
 #include <kernel/irq.h>
 #include <kernel/printk.h>
@@ -94,6 +95,25 @@ static int gic_init(void) {
 	if (tmp & (1 << 10))
 		log_debug("Number of LSPI: %d\n",
 		           GICD_TYPER_LSPI(tmp));
+
+	if (NULL == mmap_device_memory(
+		(void*) GIC_CPU_BASE,
+		0x1010,
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		MAP_FIXED,
+		(unsigned long) GIC_CPU_BASE)) {
+		return -1;
+	}
+
+	if (NULL == mmap_device_memory(
+		(void*) GIC_DISTRIBUTOR_BASE,
+		0x1010,
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		MAP_FIXED,
+		(unsigned long) GIC_DISTRIBUTOR_BASE)) {
+		return -1;
+	}
+
 	return 0;
 }
 
