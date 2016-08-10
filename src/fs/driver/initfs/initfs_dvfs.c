@@ -240,7 +240,7 @@ static int initfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	return 0;
 }
 
-static struct dumb_fs_driver initfs_dumb_driver = {
+static const struct dumb_fs_driver initfs_dumb_driver = {
 	.name      = "initfs",
 	.fill_sb   = initfs_fill_sb,
 	.mount_end = initfs_mount_end,
