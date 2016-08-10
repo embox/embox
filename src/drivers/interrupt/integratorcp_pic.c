@@ -6,6 +6,7 @@
  */
 #include <assert.h>
 #include <stdint.h>
+#include <sys/mman.h>
 
 #include <kernel/critical.h>
 #include <hal/reg.h>
@@ -24,11 +25,21 @@ EMBOX_UNIT_INIT(integratorcp_pit_init);
 #define ICU_IRQENSET (ICU_BASE + 0x08)
 #define ICU_IRQENCLR (ICU_BASE + 0x0C)
 
-
 /**
  * Initialize the PIC
  */
 static int integratorcp_pit_init(void) {
+	if (NULL == mmap_device_memory(
+		(void*) ICU_BASE,
+		0x10,
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		MAP_FIXED,
+		(unsigned long) ICU_BASE)) {
+		return -1;
+	}
+
+
+
 	REG_STORE(ICU_IRQENCLR, ((1 << IRQCTRL_IRQS_TOTAL) - 1));
 	return 0;
 }
