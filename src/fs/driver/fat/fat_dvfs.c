@@ -693,7 +693,7 @@ static int fat_format(void *dev, void *priv) {
 	return 0;
 }
 
-static struct dumb_fs_driver dfs_fat_driver = {
+static const struct dumb_fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,
 	.mount_end = fat_mount_end,
