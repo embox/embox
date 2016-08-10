@@ -4,6 +4,8 @@
  * @data 05 aug 2015
  * @author: Anton Bondarev
  */
+#include <sys/mman.h>
+
 #include <hal/reg.h>
 #include <hal/clock.h>
 #include <kernel/time/clock_source.h>
@@ -45,6 +47,15 @@
 EMBOX_UNIT_INIT(integratorcp_init);
 
 static int integratorcp_clock_setup(struct time_dev_conf * conf) {
+	if (NULL == mmap_device_memory(
+		(void*) TIMER_BASE,
+		0x28,
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		MAP_FIXED,
+		(unsigned long) TIMER_BASE)) {
+		return -1;
+	}
+
 	/* Setup counter value */
 	REG_STORE(TMR_CTRL, TCTRL_DISABLE);
 	REG_STORE(TMR_LOAD, TIMER_COUNT);
