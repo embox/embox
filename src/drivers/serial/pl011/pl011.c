@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <stdint.h>
+#include <sys/mman.h>
 
 #include <hal/reg.h>
 #include <drivers/diag.h>
@@ -39,9 +40,19 @@ EMBOX_UNIT_INIT(uart_init);
 #define IMSC_RXIM   (0x1 << 4)
 
 static int pl011_setup(struct uart *dev, const struct uart_params *params) {
+	if (NULL == mmap_device_memory(
+		(void*) UART_BASE,
+		0x48,
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		MAP_FIXED,
+		(unsigned long) UART_BASE)) {
+		return -1;
+	}
+
 	if (params->irq) {
 		REG_ORIN(UART_IMSC, IMSC_RXIM);
 	}
+
 	return 0;
 }
 
