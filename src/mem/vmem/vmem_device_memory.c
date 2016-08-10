@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <sys/mman.h>
 
+#include <hal/mmu.h>
 #include <kernel/task/resource/mmap.h>
 #include <mem/mapping/marea.h>
 #include <mem/mmap.h>
@@ -51,7 +52,10 @@ void *mmap_device_memory(void *addr,
 	struct emmap *emmap = self_mmap();
 	struct marea *marea;
 
-	marea = marea_create(physical, len + physical, prot, false);
+	marea = marea_create(physical & ~MMU_PAGE_MASK,
+			(len + physical + MMU_PAGE_MASK) & ~MMU_PAGE_MASK,
+			prot, false);
+
 	if (NULL == marea) {
 		return NULL;
 	}

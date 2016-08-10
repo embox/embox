@@ -10,10 +10,12 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 
+#include <hal/mmu.h>
+
 #include <mem/mmap.h>
 #include <mem/vmem.h>
-
 #include <mem/mapping/marea.h>
+
 #include <kernel/task/resource/mmap.h>
 #include <kernel/panic.h>
 
@@ -47,7 +49,11 @@ static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
 int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
 	size_t len = mmu_size_align(marea->end - marea->start);
 
-	return vmem_map_region(mmap->ctx, marea->start, marea->start, len,  marea_to_vmem_flags(marea->flags));
+	return vmem_map_region(mmap->ctx,
+			marea->start,
+			marea->start,
+			len,
+			marea_to_vmem_flags(marea->flags));
 }
 
 void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
