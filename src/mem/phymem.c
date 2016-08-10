@@ -31,13 +31,15 @@ static int phymem_init(void) {
 
 	printk("start=%p, end=%p, size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
 
-	__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
-
 	va = mmap_device_memory(phymem_alloc_start,
 			binalign_bound(sizeof(struct page_allocator) + __phymem_allocator->bitmap_len, PAGE_SIZE()),
 			PROT_WRITE | PROT_READ,
 			MAP_FIXED,
 			(uintptr_t) phymem_alloc_start);
+
+	if (va)
+		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
+
 	return phymem_alloc_start == va ? 0 : -EIO;
 }
 
