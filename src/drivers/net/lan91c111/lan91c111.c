@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <errno.h>
+#include <sys/mman.h>
 
 #include <util/log.h>
 
@@ -315,6 +316,15 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 EMBOX_UNIT_INIT(lan91c111_init);
 static int lan91c111_init(void) {
         struct net_device *nic;
+
+	if (NULL == mmap_device_memory(
+		(void*) BANK_BASE_ADDR,
+		0x10,
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		MAP_FIXED,
+		(unsigned long) BANK_BASE_ADDR)) {
+		return -1;
+	}
 
         if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
