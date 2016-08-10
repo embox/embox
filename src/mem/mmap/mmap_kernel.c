@@ -13,6 +13,8 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/mmap.h>
 
+#include <mem/vmem.h>
+
 #include <module/embox/mem/mmap_mmu.h>
 
 static struct emmap early_emmap = {
@@ -46,6 +48,10 @@ int mmap_kernel_init(void) {
 	early_emmap.ctx = -1;
 
 	mmap_mapping(emmap);
+
+	mmu_set_context(emmap->ctx);
+
+	vmem_on();
 
 	return 0;
 }
