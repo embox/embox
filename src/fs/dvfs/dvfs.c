@@ -317,7 +317,7 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 		 * hack for pseudo-open() blockdev file. This code
 		 * won't work if devfs driver will be changed. If
 		 * someone knows how to rewrite it, please, do it :) */
-		struct dumb_fs_driver *devfs_drv;
+		const struct dumb_fs_driver *devfs_drv;
 		/* We fill local variable with file operations to
 		 * initialize bdev_file properly */
 		struct super_block devfs_sb;
@@ -368,7 +368,7 @@ extern int set_rootfs_sb(struct super_block *sb);
  */
 int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags) {
 	struct lookup lookup;
-	struct dumb_fs_driver *drv;
+	const struct dumb_fs_driver *drv;
 	struct super_block *sb;
 	struct dentry *d;
 	struct file *bdev_file;

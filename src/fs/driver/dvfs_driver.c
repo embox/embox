@@ -24,11 +24,11 @@ struct dvfs_driver_head {
 
 ARRAY_SPREAD_DEF(const struct dumb_fs_driver *const, dumb_drv_tab);
 
-struct dumb_fs_driver *dumb_fs_driver_find(const char *name) {
+const struct dumb_fs_driver *dumb_fs_driver_find(const char *name) {
 	const struct dumb_fs_driver *fs_drv;
 	array_spread_foreach(fs_drv, dumb_drv_tab) {
 		if (!strcmp(name, fs_drv->name)) {
-			return (struct dumb_fs_driver *)fs_drv;
+			return fs_drv;
 		}
 	}
 	return NULL;
