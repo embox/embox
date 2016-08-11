@@ -9,12 +9,13 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
-#include <kernel/irq.h>
-#include <kernel/printk.h>
+#include <drivers/common/memory.h>
 #include <drivers/irqctrl.h>
-#include <hal/reg.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
+#include <hal/reg.h>
+#include <kernel/irq.h>
+#include <kernel/printk.h>
 #include <util/log.h>
 
 #define GIC_CPU_BASE           OPTION_GET(NUMBER, cpu_base_addr)
@@ -96,24 +97,6 @@ static int gic_init(void) {
 		log_debug("Number of LSPI: %d\n",
 		           GICD_TYPER_LSPI(tmp));
 
-	if (NULL == mmap_device_memory(
-		(void*) GIC_CPU_BASE,
-		0x1010,
-		PROT_READ | PROT_WRITE | PROT_NOCACHE,
-		MAP_FIXED,
-		(unsigned long) GIC_CPU_BASE)) {
-		return -1;
-	}
-
-	if (NULL == mmap_device_memory(
-		(void*) GIC_DISTRIBUTOR_BASE,
-		0x1010,
-		PROT_READ | PROT_WRITE | PROT_NOCACHE,
-		MAP_FIXED,
-		(unsigned long) GIC_DISTRIBUTOR_BASE)) {
-		return -1;
-	}
-
 	return 0;
 }
 
@@ -186,3 +169,10 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	printk("swi!\n");
 }
+
+static struct periph_memory_desc gic_mem = {
+	.start = GIC_CPU_BASE,
+	.end   = GIC_CPU_BASE + 0x2020,
+};
+
+PERIPH_MEMORY_DEFINE(gic_mem);

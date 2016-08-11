@@ -9,6 +9,7 @@
 
 #include <sys/mman.h>
 
+#include <drivers/common/memory.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
@@ -44,15 +45,6 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 }
 
 static int this_init(void) {
-	if (NULL == mmap_device_memory(
-		(void*) PTIMER_BASE_ADDR,
-		0x10,
-		PROT_READ | PROT_WRITE | PROT_NOCACHE,
-		MAP_FIXED,
-		(unsigned long) PTIMER_BASE_ADDR)) {
-		return -1;
-	}
-
 	clock_source_register(&this_clock_source);
 	return irq_attach(PTIMER_IRQ,
 	                  clock_handler,
@@ -100,3 +92,10 @@ static struct clock_source this_clock_source = {
 EMBOX_UNIT_INIT(this_init);
 
 STATIC_IRQ_ATTACH(PTIMER_IRQ, clock_handler, &this_clock_source);
+
+static struct periph_memory_desc cortexa9_timer_mem = {
+	.start = PTIMER_BASE_ADDR,
+	.end   = PTIMER_BASE_ADDR + 0x10,
+};
+
+PERIPH_MEMORY_DEFINE(cortexa9_timer_mem);
