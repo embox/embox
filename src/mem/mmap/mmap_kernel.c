@@ -28,7 +28,6 @@ static struct emmap early_emmap = {
 	DLIST_INIT(early_emmap.marea_list)
 };
 
-extern int mmap_mapping(struct emmap *emmap);
 extern int vmem_map_kernel(void);
 
 int mmap_kernel_init(void) {

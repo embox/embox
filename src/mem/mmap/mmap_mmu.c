@@ -28,7 +28,6 @@ static const uint32_t mem_end = 0xFFFFF000;
 #define mmu_size_align(size) (((size) + MMU_PAGE_SIZE - 1) & ~(MMU_PAGE_SIZE - 1))
 
 static inline int mmap_active(struct emmap *mmap) {
-	extern int mmap_kernel_inited(void);
 	return mmap_kernel_inited() && mmap == task_resource_mmap(task_self());
 }
 

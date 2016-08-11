@@ -15,14 +15,6 @@
 #include <mem/mmap.h>
 #include <mem/phymem.h>
 
-extern int mmap_kernel_inited(void);
-
-extern struct emmap *mmap_early_emmap(void);
-
-extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
-extern void mmap_del_marea(struct marea *marea);
-extern struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr);
-
 static struct emmap *self_mmap(void) {
 	if (0 == mmap_kernel_inited()) {
 		return mmap_early_emmap();
