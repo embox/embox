@@ -7,4 +7,6 @@ module cortex_a9_gic extends embox.driver.interrupt.irqctrl_api {
 
 	source "cortex_a9_gic.c"
 	source "cortex_a9_gic.h"
+
+	depends embox.driver.periph_memory
 }
