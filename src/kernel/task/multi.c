@@ -254,6 +254,18 @@ void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 	task_resource_init(tsk);
 }
 
+static void task_make_children_daemons(struct task *task) {
+	struct task *child;
+	struct task *krn_task = task_kernel_task();
+
+	dlist_foreach_entry(child, &task->child_list, child_lnk) {
+		dlist_del_init(&child->child_lnk);
+
+		child->parent = krn_task;
+		dlist_add_prev(&child->child_lnk, &krn_task->child_list);
+	}
+}
+
 void task_do_exit(struct task *task, int status) {
 	struct thread *thr, *main_thr;
 
@@ -266,6 +278,10 @@ void task_do_exit(struct task *task, int status) {
 
 	/* Deinitialize all resources */
 	task_resource_deinit(task);
+
+	/* Make all children of the specified task daemons (or, more generally, orphans).
+	 * It is made by simply setting up the parent task of each child to kernel_task. */
+	task_make_children_daemons(task);
 
 	/*
 	 * Terminate all threads except main thread. If we terminate current
