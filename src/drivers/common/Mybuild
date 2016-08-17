@@ -20,6 +20,7 @@ module periph_memory {
 
 	source "memory.c"
 
+	depends embox.arch.mmu
 	depends embox.mem.mmap_api
 	depends embox.util.Array
 }
