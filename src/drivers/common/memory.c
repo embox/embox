@@ -10,6 +10,10 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 
+#include <module/embox/arch/mmu.h>
+
+#ifndef NOMMU
+
 #include <drivers/common/memory.h>
 #include <hal/mmu.h>
 #include <kernel/task/resource/mmap.h>
@@ -91,3 +95,5 @@ static int periph_memory_init(void) {
 
 	return 0;
 }
+
+#endif /* NOMMU */

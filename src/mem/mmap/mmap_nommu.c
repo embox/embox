@@ -130,3 +130,33 @@ static int fini() {
 
 	return 0;
 }
+
+/* More stubs */
+int mmap_kernel_init(void) {
+	return 0;
+}
+
+int mmap_kernel_inited(void) {
+	return 0;
+}
+
+struct emmap *mmap_early_emmap(void) {
+	return NULL;
+}
+
+struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags, bool is_allocated) {
+	return NULL;
+}
+
+void marea_destroy(struct marea *marea) {
+}
+
+void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
+}
+
+void mmap_del_marea(struct marea *marea) {
+}
+
+int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
+	return -1;
+}
