@@ -32,7 +32,7 @@ static int phymem_init(void) {
 	printk("start=%p, end=%p, size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
 
 	va = mmap_device_memory(phymem_alloc_start,
-			binalign_bound(sizeof(struct page_allocator) + __phymem_allocator->bitmap_len, PAGE_SIZE()),
+			binalign_bound(mem_len, PAGE_SIZE()),
 			PROT_WRITE | PROT_READ,
 			MAP_FIXED,
 			(uintptr_t) phymem_alloc_start);
