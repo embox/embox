@@ -23,7 +23,8 @@
 static char *virtual_tables;
 static char *virtual_page_info;
 
-static char virtual_tables_raw[VIRTUAL_TABLES_COUNT + 1][MMU_PAGE_SIZE];
+/* TODO virtual tables could have a different size */
+static char virtual_tables_raw[VIRTUAL_TABLES_COUNT + 1][MMU_PGD_SIZE];
 static struct page_allocator *virt_table_allocator;
 static char virtual_page_info_raw[VIRTUAL_PAGES_COUNT + 1][MMU_PAGE_SIZE];
 static struct page_allocator *virt_page_allocator;
