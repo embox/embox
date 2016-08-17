@@ -44,17 +44,7 @@ static int phymem_init(void) {
 }
 
 void *phymem_alloc(size_t page_number) {
-	void *ptr = page_alloc(__phymem_allocator, page_number);
-	if (ptr) {
-		void *mptr = mmap_device_memory(ptr, page_number * PAGE_SIZE(), PROT_WRITE | PROT_READ,
-				MAP_FIXED, (uintptr_t) ptr);
-		if (ptr != mptr) {
-			munmap(mptr, PAGE_SIZE());
-			page_free(__phymem_allocator, ptr, page_number);
-			return NULL;
-		}
-	}
-	return ptr;
+	return page_alloc(__phymem_allocator, page_number);
 }
 
 void phymem_free(void *page, size_t page_number) {
