@@ -16,6 +16,7 @@
 #include <mem/vmem.h>
 #include <mem/mapping/marea.h>
 
+#include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/mmap.h>
 #include <kernel/panic.h>
 
@@ -100,9 +101,11 @@ void mmap_free(struct emmap *mmap) {
 	 * To unmap this context we should switch to kernel task virtual context.
 	 * Actually, we can save this context for the later created tasks.
 	 */
+	struct emmap *emmap;
+	emmap = task_resource_mmap(task_kernel_task());
 
-	//XXX: Bad code
-	mmu_set_context(1);
+	mmu_set_context(emmap->ctx);
+
 	mmap_clear(mmap);
 	vmem_free_context(mmap->ctx);
 }
