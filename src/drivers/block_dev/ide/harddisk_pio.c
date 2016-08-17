@@ -192,7 +192,7 @@ static int idedisk_init (void *args) {
 
 	drive = (hd_t *)args;
 	/* Make new device */
-	if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
+	if (drive && (drive->media == IDE_DISK) && (drive->udmamode == -1)) {
 		*path = 0;
 		strcat(path, "/dev/hd*");
 		if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {

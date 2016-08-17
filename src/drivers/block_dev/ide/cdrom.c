@@ -211,7 +211,7 @@ static int idecd_init (void *args) {
 	char   path[PATH_MAX];
 	drive = (hd_t *)args;
 	/* Make new device */
-	if (drive->media == IDE_CDROM) {
+	if (drive && drive->media == IDE_CDROM) {
 		*path = 0;
 		strcat(path, "/dev/cd#");
 		if (0 > (drive->idx = block_dev_named(path, &idecd_idx))) {
