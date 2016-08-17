@@ -107,7 +107,7 @@ static int uart_init(void) {
 
 static struct periph_memory_desc pl011_mem = {
 	.start = UART_BASE,
-	.end   = UART_BASE + 0x48,
+	.len   = 0x48,
 };
 
 PERIPH_MEMORY_DEFINE(pl011_mem);

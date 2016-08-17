@@ -172,7 +172,7 @@ void swi_handle(void) {
 
 static struct periph_memory_desc gic_mem = {
 	.start = GIC_CPU_BASE,
-	.end   = GIC_CPU_BASE + 0x2020,
+	.len   = 0x2020,
 };
 
 PERIPH_MEMORY_DEFINE(gic_mem);

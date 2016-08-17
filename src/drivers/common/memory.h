@@ -13,7 +13,7 @@
 
 struct periph_memory_desc {
 	uint32_t start;
-	uint32_t end;
+	uint32_t len;
 };
 
 #define PERIPH_MEMORY_DEFINE(_mem_desc)	\

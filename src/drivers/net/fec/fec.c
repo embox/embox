@@ -423,7 +423,7 @@ static int fec_init(void) {
 
 static struct periph_memory_desc fec_mem = {
 	.start = NIC_BASE,
-	.end   = NIC_BASE + 0x200,
+	.len   = 0x200,
 };
 
 PERIPH_MEMORY_DEFINE(fec_mem);

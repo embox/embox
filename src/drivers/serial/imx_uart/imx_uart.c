@@ -120,7 +120,7 @@ static int uart_init(void) {
 
 static struct periph_memory_desc imx_uart_mem = {
 	.start = UART_BASE,
-	.end   = UART_BASE + 0xAC,
+	.len   = 0xAC,
 };
 
 PERIPH_MEMORY_DEFINE(imx_uart_mem);

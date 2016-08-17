@@ -54,7 +54,7 @@ static int periph_memory_init(void) {
 	array_spread_foreach(desc, __periph_mem_registry) {
 		_segments[seg_cnt++] = (struct _segment) {
 			.start = desc->start / MMU_PAGE_SIZE,
-			.end   = (desc->end + MMU_PAGE_MASK) / MMU_PAGE_SIZE,
+			.end   = (desc->start + desc->len + MMU_PAGE_MASK) / MMU_PAGE_SIZE,
 		};
 	}
 
