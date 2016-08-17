@@ -662,8 +662,10 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
         switch(c) {
         case 10:    /* '\n' enter */
         case 13:    /* '\r' enter */
-            history_len--;
-            sysfree(history[history_len]);
+	    if (history_len) {
+                history_len--;
+                sysfree(history[history_len]);
+	    }
             return (int)l.len;
         case 3:     /* ctrl-c */
             errno = EAGAIN;
@@ -677,8 +679,10 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
             if (l.len > 0) {
                 linenoiseEditDelete(&l);
             } else {
-                history_len--;
-                sysfree(history[history_len]);
+                if (history_len) {
+                    history_len--;
+                    sysfree(history[history_len]);
+                }
                 return -1;
             }
             break;
