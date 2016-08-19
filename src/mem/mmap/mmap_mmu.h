@@ -30,5 +30,11 @@ struct emmap {
 	struct dlist_head marea_list;
 };
 
+extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
+extern void mmap_del_marea(struct marea *marea);
+extern struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr);
+extern int mmap_kernel_inited(void);
+extern struct emmap *mmap_early_emmap(void);
+extern int mmap_mapping(struct emmap *emmap);
 
 #endif /* MEM_MMAP_MMU_H_ */

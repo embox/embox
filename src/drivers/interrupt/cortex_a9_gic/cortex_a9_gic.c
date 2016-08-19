@@ -7,13 +7,15 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <sys/mman.h>
 
-#include <kernel/irq.h>
-#include <kernel/printk.h>
+#include <drivers/common/memory.h>
 #include <drivers/irqctrl.h>
-#include <hal/reg.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
+#include <hal/reg.h>
+#include <kernel/irq.h>
+#include <kernel/printk.h>
 #include <util/log.h>
 
 #define GIC_CPU_BASE           OPTION_GET(NUMBER, cpu_base_addr)
@@ -94,6 +96,7 @@ static int gic_init(void) {
 	if (tmp & (1 << 10))
 		log_debug("Number of LSPI: %d\n",
 		           GICD_TYPER_LSPI(tmp));
+
 	return 0;
 }
 
@@ -166,3 +169,10 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	printk("swi!\n");
 }
+
+static struct periph_memory_desc gic_mem = {
+	.start = GIC_CPU_BASE,
+	.len   = 0x2020,
+};
+
+PERIPH_MEMORY_DEFINE(gic_mem);

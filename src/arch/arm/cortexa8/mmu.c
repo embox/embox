@@ -20,8 +20,7 @@
 EMBOX_UNIT_INIT(mmu_init);
 
 #define DOMAIN_ACCESS OPTION_GET(NUMBER, domain_access)
-
-static uint8_t translation_table[16384] __attribute__((aligned(1 << 14)));
+#define CTX_NUMBER    32 /* TODO: make it related to number of tasks */
 
 /**
  * @brief Fill translation table and so on
@@ -30,8 +29,6 @@ static uint8_t translation_table[16384] __attribute__((aligned(1 << 14)));
  * @return
  */
 static int mmu_init(void) {
-	memset(translation_table, 0, sizeof(translation_table));
-
 	__asm__ __volatile__ (
 		/* setup c3, Domain Access Control Register */
 #if DOMAIN_ACCESS == 1
@@ -44,18 +41,6 @@ static int mmu_init(void) {
 		"orr r0, r0, lsl #8\n\t"
 		"orr r0, r0, lsl #16\n\t"
 		"mcr p15, 0, r0, c3, c0, 0\n\t"
-		: :
-	);
-
-	return 0;
-
-	/* Setup physical address of the first level translation table */
-	__asm__ __volatile__ (
-		"ldr r0, =translation_table\n\t"
-		"mcr p15, 0, r0, c2, c0, 0\n\t"
-#if 0
-		"mcr p15, 0, r0, c2, c0, 1"
-#endif
 		: :
 	);
 
@@ -109,10 +94,14 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 }
 
 mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
-	return 0;
+	return (mmu_ctx_t) pgd;
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
+	__asm__ __volatile__ (
+		"mcr p15, 0, %[addr], c2, c0, 0\n\t"
+		: [addr] "=r" (ctx) :
+	);
 }
 
 /**
@@ -124,7 +113,7 @@ void mmu_set_context(mmu_ctx_t ctx) {
  * @return Pointer to translation table
  */
 mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return (mmu_pgd_t *) translation_table;
+	return (void*) ctx;
 }
 
 /**

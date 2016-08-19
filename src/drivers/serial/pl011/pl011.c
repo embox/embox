@@ -5,8 +5,10 @@
  * @author: Anton Bondarev
  */
 #include <stdint.h>
+#include <sys/mman.h>
 
 #include <hal/reg.h>
+#include <drivers/common/memory.h>
 #include <drivers/diag.h>
 #include <drivers/serial/uart_device.h>
 #include <drivers/serial/diag_serial.h>
@@ -42,6 +44,7 @@ static int pl011_setup(struct uart *dev, const struct uart_params *params) {
 	if (params->irq) {
 		REG_ORIN(UART_IMSC, IMSC_RXIM);
 	}
+
 	return 0;
 }
 
@@ -102,3 +105,9 @@ static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
 
+static struct periph_memory_desc pl011_mem = {
+	.start = UART_BASE,
+	.len   = 0x48,
+};
+
+PERIPH_MEMORY_DEFINE(pl011_mem);

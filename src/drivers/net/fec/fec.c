@@ -1,11 +1,20 @@
+/**
+ * @file fec.c
+ * @brief
+ * @author Denis Deryugin <deryugin.denis@gmail.com>
+ * @version
+ * @date 2016-08-11
+ */
+
 #include "fec.h"
 
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
 
-#include <hal/reg.h>
+#include <drivers/common/memory.h>
 
+#include <hal/reg.h>
 #include <kernel/irq.h>
 
 #include <net/inetdevice.h>
@@ -411,3 +420,10 @@ static int fec_init(void) {
 
 	return inetdev_register_dev(nic);
 }
+
+static struct periph_memory_desc fec_mem = {
+	.start = NIC_BASE,
+	.len   = 0x200,
+};
+
+PERIPH_MEMORY_DEFINE(fec_mem);

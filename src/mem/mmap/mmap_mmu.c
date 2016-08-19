@@ -10,10 +10,13 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 
+#include <hal/mmu.h>
+
 #include <mem/mmap.h>
 #include <mem/vmem.h>
-
 #include <mem/mapping/marea.h>
+
+#include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/mmap.h>
 #include <kernel/panic.h>
 
@@ -26,7 +29,6 @@ static const uint32_t mem_end = 0xFFFFF000;
 #define mmu_size_align(size) (((size) + MMU_PAGE_SIZE - 1) & ~(MMU_PAGE_SIZE - 1))
 
 static inline int mmap_active(struct emmap *mmap) {
-	extern int mmap_kernel_inited(void);
 	return mmap_kernel_inited() && mmap == task_resource_mmap(task_self());
 }
 
@@ -47,7 +49,11 @@ static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
 int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
 	size_t len = mmu_size_align(marea->end - marea->start);
 
-	return vmem_map_region(mmap->ctx, marea->start, marea->start, len,  marea_to_vmem_flags(marea->flags));
+	return vmem_map_region(mmap->ctx,
+			marea->start,
+			marea->start,
+			len,
+			marea_to_vmem_flags(marea->flags));
 }
 
 void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
@@ -95,9 +101,11 @@ void mmap_free(struct emmap *mmap) {
 	 * To unmap this context we should switch to kernel task virtual context.
 	 * Actually, we can save this context for the later created tasks.
 	 */
+	struct emmap *emmap;
+	emmap = task_resource_mmap(task_kernel_task());
 
-	//XXX: Bad code
-	mmu_set_context(1);
+	mmu_set_context(emmap->ctx);
+
 	mmap_clear(mmap);
 	vmem_free_context(mmap->ctx);
 }

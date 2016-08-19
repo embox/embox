@@ -7,6 +7,9 @@
  * @date 2016-03-28
  */
 
+#include <sys/mman.h>
+
+#include <drivers/common/memory.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
@@ -89,3 +92,10 @@ static struct clock_source this_clock_source = {
 EMBOX_UNIT_INIT(this_init);
 
 STATIC_IRQ_ATTACH(PTIMER_IRQ, clock_handler, &this_clock_source);
+
+static struct periph_memory_desc cortexa9_timer_mem = {
+	.start = PTIMER_BASE_ADDR,
+	.len   = 0x10,
+};
+
+PERIPH_MEMORY_DEFINE(cortexa9_timer_mem);

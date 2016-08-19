@@ -16,8 +16,6 @@
 
 static const uint32_t mem_end = 0xFFFFF000;
 
-extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
-
 uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size) {
 	struct marea *marea;
 	void *phy_addr;

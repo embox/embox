@@ -13,3 +13,14 @@ module common {
 	depends embox.fs.driver.devfs_dvfs
 	depends embox.util.indexator
 }
+
+module periph_memory {
+	@IncludeExport(path="drivers/common")
+	source "memory.h"
+
+	source "memory.c"
+
+	depends embox.arch.mmu
+	depends embox.mem.mmap_api
+	depends embox.util.Array
+}

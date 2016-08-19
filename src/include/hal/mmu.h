@@ -35,9 +35,9 @@ typedef __mmu_pte_t mmu_pte_t;
 #define MMU_PAGE_SIZE     (1UL << MMU_PTE_SHIFT)
 #define MMU_PAGE_MASK     (MMU_PAGE_SIZE - 1)
 
-#define MMU_PGD_SIZE      (1UL << MMU_PGD_SHIFT)
-#define MMU_PMD_SIZE      (1UL << MMU_PMD_SHIFT)
-#define MMU_PTE_SIZE      (1UL << MMU_PTE_SHIFT)
+#define MMU_PGD_SIZE      (MMU_PGD_ENTRIES * sizeof(mmu_vaddr_t))
+#define MMU_PMD_SIZE      (MMU_PMD_ENTRIES * sizeof(mmu_vaddr_t))
+#define MMU_PTE_SIZE      (MMU_PTE_ENTRIES * sizeof(mmu_vaddr_t))
 
 extern void mmu_on(void);
 extern void mmu_off(void);

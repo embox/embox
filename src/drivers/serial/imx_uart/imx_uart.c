@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 
+#include <drivers/common/memory.h>
 #include <drivers/diag.h>
 #include <drivers/serial/uart_device.h>
 #include <drivers/serial/diag_serial.h>
@@ -116,3 +117,10 @@ const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
+
+static struct periph_memory_desc imx_uart_mem = {
+	.start = UART_BASE,
+	.len   = 0xAC,
+};
+
+PERIPH_MEMORY_DEFINE(imx_uart_mem);

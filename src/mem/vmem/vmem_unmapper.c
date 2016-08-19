@@ -74,7 +74,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 
 	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
-			virt_addr = binalign_bound(virt_addr, MMU_PGD_SIZE);
+			virt_addr = binalign(virt_addr, MMU_PGD_SHIFT);
 			pte_idx = pmd_idx = 0;
 			continue;
 		}
@@ -83,7 +83,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 
 		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 			if (!mmu_pmd_present(pmd + pmd_idx)) {
-				virt_addr = binalign_bound(virt_addr, MMU_PMD_SIZE);
+				virt_addr = binalign(virt_addr, MMU_PMD_SHIFT);
 				pte_idx = 0;
 				continue;
 			}

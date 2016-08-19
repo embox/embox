@@ -31,28 +31,20 @@ static int phymem_init(void) {
 
 	printk("start=%p, end=%p, size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
 
-	__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
-
 	va = mmap_device_memory(phymem_alloc_start,
-			binalign_bound(sizeof(struct page_allocator) + __phymem_allocator->bitmap_len, PAGE_SIZE()),
+			binalign_bound(mem_len, PAGE_SIZE()),
 			PROT_WRITE | PROT_READ,
 			MAP_FIXED,
 			(uintptr_t) phymem_alloc_start);
+
+	if (va)
+		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
+
 	return phymem_alloc_start == va ? 0 : -EIO;
 }
 
 void *phymem_alloc(size_t page_number) {
-	void *ptr = page_alloc(__phymem_allocator, page_number);
-	if (ptr) {
-		void *mptr = mmap_device_memory(ptr, page_number * PAGE_SIZE(), PROT_WRITE | PROT_READ,
-				MAP_FIXED, (uintptr_t) ptr);
-		if (ptr != mptr) {
-			munmap(mptr, PAGE_SIZE());
-			page_free(__phymem_allocator, ptr, page_number);
-			return NULL;
-		}
-	}
-	return ptr;
+	return page_alloc(__phymem_allocator, page_number);
 }
 
 void phymem_free(void *page, size_t page_number) {
