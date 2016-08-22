@@ -569,7 +569,7 @@ struct file_operations dfs_fops = {
 
 static struct dfs_sb_info dfs_info;
 static struct super_block *dfs_super;
-static struct dumb_fs_driver dfs_dumb_driver;
+static const struct dumb_fs_driver dfs_dumb_driver;
 
 struct super_block *dfs_sb(void) {
 	return dfs_super;
@@ -619,11 +619,11 @@ static int dfs_mount_end(struct super_block *sb) {
 	return 0;
 }
 
-static struct dumb_fs_driver dfs_dumb_driver = {
+static const struct dumb_fs_driver dfs_dumb_driver = {
 	.name      = "DumbFS",
 	.fill_sb   = &dfs_fill_sb,
 	.mount_end = dfs_mount_end,
 };
 
-ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
+ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_dumb_driver);

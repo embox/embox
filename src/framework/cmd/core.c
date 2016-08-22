@@ -16,7 +16,7 @@
 
 #include <util/array.h>
 
-ARRAY_SPREAD_DEF(const struct cmd *, __cmd_registry);
+ARRAY_SPREAD_DEF(const struct cmd * const, __cmd_registry);
 
 extern void getopt_init(void);
 

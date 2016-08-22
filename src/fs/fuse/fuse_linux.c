@@ -17,7 +17,7 @@
 #include <embox/cmd.h>
 #include <fs/fuse_module.h>
 
-ARRAY_SPREAD_DEF(struct fuse_module *, fuse_module_repo);
+ARRAY_SPREAD_DEF(const struct fuse_module *const, fuse_module_repo);
 
 struct fuse_module *fuse_module_lookup(char *fuse_type) {
 	struct fuse_module *fm;
@@ -34,8 +34,6 @@ struct fuse_mount_params {
 	char *dev;
 	char *dest;
 };
-
-extern struct dumb_fs_driver ext2fuse_dumb_driver;
 
 extern int dentry_fill(struct super_block *, struct inode *,
                        struct dentry *, struct dentry *);
@@ -82,7 +80,7 @@ static void *fuse_module_mount_process(void *arg) {
 	struct fuse_mount_params *params;
 	const struct cmd *cmd;
 	struct super_block *sb;
-	struct dumb_fs_driver *fs_drv;
+	const struct dumb_fs_driver *fs_drv;
 	char *argv[3];
 	char argv0[0x20];
 	char argv1[0x20];

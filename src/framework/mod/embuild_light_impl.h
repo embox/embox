@@ -21,7 +21,7 @@
 	\
 	extern const struct mod __MOD(mod_nm) __attribute__((weak)); \
 	\
-	ARRAY_SPREAD_DECLARE(const struct mod *,      \
+	ARRAY_SPREAD_DECLARE(const struct mod *const,      \
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) /* TODO don't like it. -- Eldar */
 #else

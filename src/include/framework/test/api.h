@@ -19,10 +19,10 @@
 #define test_foreach(test_ptr) \
 	array_spread_foreach(test_ptr, __test_registry)
 
-ARRAY_SPREAD_DECLARE(const struct test_suite *, __test_registry);
+ARRAY_SPREAD_DECLARE(const struct test_suite * const, __test_registry);
 
 #define TEST_ADD(_suite_ptr) \
-	ARRAY_SPREAD_DECLARE(const struct test_suite *, __test_registry);\
+	ARRAY_SPREAD_DECLARE(const struct test_suite * const, __test_registry);\
 	ARRAY_SPREAD_ADD(__test_registry, _suite_ptr)
 
 static inline const struct test_mod *__test_mod(const struct test_suite *test) {

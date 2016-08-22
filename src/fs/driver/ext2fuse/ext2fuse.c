@@ -31,11 +31,11 @@ static int ext2fuse_mount_end(struct super_block *sb) {
 	return 0;
 }
 
-struct dumb_fs_driver ext2fuse_dumb_driver = {
+static const struct dumb_fs_driver ext2fuse_dumb_driver = {
 	.name      = "ext2fuse",
 	.fill_sb   = ext2fuse_fill_sb,
 	.mount_end = ext2fuse_mount_end,
 };
 
-ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
+ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &ext2fuse_dumb_driver);

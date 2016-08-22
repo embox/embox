@@ -15,7 +15,7 @@
 
 #include "types.h"
 
-ARRAY_SPREAD_DECLARE(const struct mod *, __mod_registry);
+ARRAY_SPREAD_DECLARE(const struct mod *const, __mod_registry);
 
 /**
  * TODO Module info emitted by EMBuild dependency injection model generator.

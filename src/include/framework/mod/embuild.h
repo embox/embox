@@ -157,7 +157,7 @@
 	extern const struct mod __MOD(mod_nm); \
 	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL); \
 	\
-	ARRAY_SPREAD_DECLARE(const struct mod *,      \
+	ARRAY_SPREAD_DECLARE(const struct mod * const,      \
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
 #endif /* __MOD_DEF */
@@ -243,7 +243,7 @@
 		}, \
 		.mod = &__MOD(mod_nm), \
 	}; \
-	ARRAY_SPREAD_DECLARE(const struct mod_sec_label *, __mod_sec_labels); \
+	ARRAY_SPREAD_DECLARE(const struct mod_sec_label *const, __mod_sec_labels); \
 	ARRAY_SPREAD_ADD(__mod_sec_labels, &__MOD_SEC_LABEL(mod_nm))
 #endif /* __MOD_SEC_LABEL_DEF */
 

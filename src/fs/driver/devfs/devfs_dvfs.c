@@ -252,19 +252,19 @@ static int devfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	return 0;
 }
 
-static struct dumb_fs_driver devfs_dumb_driver = {
+static const struct dumb_fs_driver devfs_dumb_driver = {
 	.name      = "devfs",
 	.fill_sb   = devfs_fill_sb,
 	.mount_end = devfs_mount_end,
 };
 
-ARRAY_SPREAD_DECLARE(struct dumb_fs_driver *, dumb_drv_tab);
+ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
 ARRAY_SPREAD_ADD(dumb_drv_tab, &devfs_dumb_driver);
 
 static struct auto_mount devfs_auto_mount = {
 	.mount_path = "/dev",
-	.fs_driver  = &devfs_dumb_driver,
+	.fs_driver  = (struct dumb_fs_driver *)&devfs_dumb_driver,
 };
 
-ARRAY_SPREAD_DECLARE(struct auto_mount *, auto_mount_tab);
+ARRAY_SPREAD_DECLARE(const struct auto_mount *const, auto_mount_tab);
 ARRAY_SPREAD_ADD(auto_mount_tab, &devfs_auto_mount);

@@ -26,7 +26,7 @@ const struct mod_ops __test_mod_ops = {
 	.enable = &test_mod_enable,
 };
 
-ARRAY_SPREAD_DEF(const struct test_suite *, __test_registry);
+ARRAY_SPREAD_DEF(const struct test_suite * const, __test_registry);
 
 static int test_mod_enable(const struct mod *mod) {
 	struct test_mod *test_mod = (struct test_mod *) mod;

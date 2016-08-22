@@ -35,8 +35,8 @@
 #define mod_flag_set(mod, mask) do (mod)->priv->flags |=  (mask); while (0)
 #define mod_flag_clr(mod, mask) do (mod)->priv->flags &= ~(mask); while (0)
 
-ARRAY_SPREAD_DEF_TERMINATED(const struct mod *, __mod_registry, NULL);
-ARRAY_SPREAD_DEF_TERMINATED(const struct mod_sec_label *, __mod_sec_labels, NULL);
+ARRAY_SPREAD_DEF_TERMINATED(const struct mod *const, __mod_registry, NULL);
+ARRAY_SPREAD_DEF_TERMINATED(const struct mod_sec_label *const, __mod_sec_labels, NULL);
 
 bool mod_is_running(const struct mod *mod) {
 	assert(mod);
