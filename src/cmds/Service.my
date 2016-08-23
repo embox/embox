@@ -20,7 +20,9 @@ module service {
 	source "service.c"
 
 	depends embox.compat.libc.stdio.printf
-	depends embox.lib.Tokenizer
+	depends embox.arch.vfork_entry
+	depends embox.compat.posix.proc.vfork_exchanged
+	depends embox.compat.posix.proc.exec_exchanged
 	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
