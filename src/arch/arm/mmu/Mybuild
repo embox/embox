@@ -1,0 +1,13 @@
+package embox.arch.arm
+
+module mmu extends embox.arch.mmu {
+	option number domain_access=1
+
+	source "cache.c"
+	source "mmu_section.c"
+	source "mmu.h"
+}
+
+module mmu_test extends embox.arch.testtrap {
+	source "mmu_test.c"
+}
