@@ -25,21 +25,22 @@ mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 }
 
 void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
+	*pgd = (mmu_pgd_t) ((((uint32_t)pmd) & ~MMU_PAGE_MASK)
+		| ARM_MMU_TYPE_PAGE | 0x10);
+
 }
 
 void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
-	*pmd = (mmu_pmd_t) ((((uint32_t)pte) & ~MMU_PAGE_MASK)
-			| ARM_MMU_TYPE_PAGE);
 }
 
 void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 	*pte = (mmu_pte_t) ((((uint32_t)addr) & ~MMU_PAGE_MASK)
 			| ARM_MMU_PAGE_READ_ACC
-			| ARM_MMU_TYPE_PAGE);
+			| ARM_MMU_SMALL_PAGE);
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
-	/* Do nothing */
+	*pgd = 0x0;
 }
 
 void mmu_pmd_unset(mmu_pgd_t *pmd) {
@@ -51,11 +52,11 @@ void mmu_pte_unset(mmu_pgd_t *pte) {
 }
 
 int mmu_pgd_present(mmu_pgd_t *pgd) {
-	return 1;
+	return (((uint32_t)*pgd) & ARM_MMU_TYPE_PAGE) == ARM_MMU_TYPE_PAGE;
 }
 
 int mmu_pmd_present(mmu_pmd_t *pmd) {
-	return (((uint32_t)*pmd) & ARM_MMU_TYPE_PAGE) == ARM_MMU_TYPE_PAGE;
+	return 1;
 }
 
 int mmu_pte_present(mmu_pte_t *pte) {

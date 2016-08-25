@@ -2,7 +2,7 @@ package embox.arch.arm
 
 @DefaultImpl(mmu_section)
 module mmu extends embox.arch.mmu {
-	option number domain_access=1
+	option number domain_access=3
 
 	source "mmu.h"
 

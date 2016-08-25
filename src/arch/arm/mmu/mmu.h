@@ -30,7 +30,7 @@ typedef uint32_t __mmu_pte_t;
 #elif defined __MODULE__embox__arch__arm__mmu_small_page__H_
 /* Small page mode */
 #define __MMU_PTE_SHIFT	12
-#define __MMU_PMD_SHIFT	20
+#define __MMU_PMD_SHIFT	12
 #define __MMU_PGD_SHIFT	20
 #else
 #error Unsupported paging mode
@@ -47,7 +47,7 @@ typedef uint32_t __mmu_pte_t;
 #define ARM_MMU_SECTION_READ_ACC   0x0800
 #define ARM_MMU_SECTION_WRITE_ACC  0x0400
 
-#define ARM_MMU_PAGE_READ_ACC      0x00AA
-#define ARM_MMU_PAGE_WRITE_ACC     0x0055
+#define ARM_MMU_PAGE_READ_ACC      0x0AA0
+#define ARM_MMU_PAGE_WRITE_ACC     0x0550
 
 #endif /* ARM_MMU_H_ */
