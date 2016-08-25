@@ -13,7 +13,7 @@
 #include <mem/vmem.h>
 
 mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return pgd;
+	return (mmu_pmd_t*) (((uint32_t)*pgd) & ~MMU_PAGE_MASK);
 }
 
 mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
