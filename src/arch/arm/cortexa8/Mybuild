@@ -12,7 +12,6 @@ module bundle {
 	depends embox.arch.arm.armlib.context
 	depends embox.arch.arm.armlib.interrupt
 	depends embox.arch.arm.armlib.locore
-	depends embox.arch.arm.mmu
 	depends embox.arch.arm.mmu_test
 }
 

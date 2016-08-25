@@ -1,7 +1,7 @@
 package embox.arch.arm
 
 @DefaultImpl(mmu_section)
-abstract module mmu extends embox.arch.mmu {
+module mmu extends embox.arch.mmu {
 	option number domain_access=1
 
 	source "mmu.h"
@@ -12,6 +12,10 @@ abstract module mmu extends embox.arch.mmu {
 
 module mmu_section extends mmu {
 	source "mmu_section.c"
+}
+
+module mmu_small_page extends mmu {
+	source "mmu_small_page.c"
 }
 
 module mmu_test extends embox.arch.testtrap {
