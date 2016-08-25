@@ -54,6 +54,7 @@ struct intel_ac_dev_priv {
 	uint8_t *out_buf;
 	uint32_t out_buf_len;
 	uint8_t *in_buf;
+	uint32_t in_buf_len;
 
 	uint32_t cur_buff_offset;
 };
@@ -243,20 +244,21 @@ static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
 }
 
 static const struct audio_dev_ops intel_ac_dev_ops = {
-	.ad_ops_start = intel_ac_dev_start,
-	.ad_ops_pause = intel_ac_dev_pause,
+	.ad_ops_start  = intel_ac_dev_start,
+	.ad_ops_pause  = intel_ac_dev_pause,
 	.ad_ops_resume = intel_ac_dev_resume,
-	.ad_ops_stop = intel_ac_dev_stop,
-	.ad_ops_ioctl = intel_ac_ioctl
+	.ad_ops_stop   = intel_ac_dev_stop,
+	.ad_ops_ioctl  = intel_ac_ioctl
 };
 
 static uint8_t dac1_out_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
+static uint8_t adc1_in_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
 
 static struct intel_ac_dev_priv intel_ac_dac1 = {
-	.hw_dev = &intel_ac_hw_dev,
-	.devid  = 0,
-	.out_buf = dac1_out_buf,
-	.out_buf_len = sizeof(dac1_out_buf)
+	.hw_dev      = &intel_ac_hw_dev,
+	.devid       = 0,
+	.out_buf     = dac1_out_buf,
+	.out_buf_len = sizeof(dac1_out_buf),
 };
 
 static struct intel_ac_dev_priv intel_ac_dac2 = {
@@ -265,8 +267,10 @@ static struct intel_ac_dev_priv intel_ac_dac2 = {
 };
 
 static struct intel_ac_dev_priv intel_ac_adc1 = {
-	.hw_dev = &intel_ac_hw_dev,
-	.devid  = 2
+	.hw_dev      = &intel_ac_hw_dev,
+	.devid       = 2,
+	.in_buf      = adc1_in_buf,
+	.in_buf_len  = sizeof(adc1_out_buf)
 };
 
 AUDIO_DEV_DEF("intel_ac_dac1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_dac1);
