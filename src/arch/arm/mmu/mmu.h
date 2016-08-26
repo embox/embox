@@ -20,7 +20,7 @@ typedef uint32_t __mmu_pgd_t;
 typedef uint32_t __mmu_pmd_t;
 typedef uint32_t __mmu_pte_t;
 
-#include <module/embox/arch/arm/mmu.h>
+#include <module/embox/arch/mmu.h>
 
 #ifdef __MODULE__embox__arch__arm__mmu_section__H_
 /* Section mode */
