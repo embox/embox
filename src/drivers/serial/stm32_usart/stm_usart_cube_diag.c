@@ -120,6 +120,7 @@ static struct uart stm32_diag = {
 		.base_addr = (unsigned long) USARTx,
 };
 
+#if 0
 static const struct uart_params uart_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
@@ -127,7 +128,7 @@ static const struct uart_params uart_defparams = {
 		.n_bits = 8,
 		.irq = true,
 };
-
+#endif
 static const struct uart_params diag_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
 		.parity = 0,
