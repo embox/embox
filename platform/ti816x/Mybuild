@@ -9,7 +9,7 @@ module platform_shutdown extends embox.arch.arch {
 	depends embox.arch.arm.armlib.locore
 
 	depends embox.arch.arm.cortexa8.cpu_reset
-	depends embox.arch.arm.cortexa8.mmu
-	depends embox.arch.arm.cortexa8.mmu_test
+	depends embox.arch.arm.mmu_small_page
+	depends embox.arch.arm.mmu_test
 	depends embox.arch.arm.armlib.static_excpt_table
 }

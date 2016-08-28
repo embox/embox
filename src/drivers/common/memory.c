@@ -64,13 +64,17 @@ static int periph_memory_init(void) {
 	int l = 0, r = 1;
 
 	while (l < seg_cnt) {
+		uint32_t addr_start = _segments[l].start;
+		uint32_t addr_end = _segments[r - 1].end;
 		while (r < seg_cnt &&
-			_segments[r].end == _segments[r - 1].start + 1) {
+			(_segments[r].start <= addr_end)) {
+			if (_segments[r].end > addr_end)
+				addr_end = _segments[r].end;
 			r++;
 		}
 
-		uint32_t addr_start = _segments[l].start * MMU_PAGE_SIZE;
-		uint32_t addr_end = _segments[r - 1].end * MMU_PAGE_SIZE;
+		addr_start *= MMU_PAGE_SIZE;
+		addr_end   *= MMU_PAGE_SIZE;
 
 		struct marea *marea = marea_create(
 			addr_start,

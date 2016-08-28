@@ -12,8 +12,10 @@
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/mmap.h>
+#include <kernel/panic.h>
 
 #include <mem/vmem.h>
+
 
 #include <module/embox/mem/mmap_mmu.h>
 
@@ -46,7 +48,9 @@ int mmap_kernel_init(void) {
 
 	early_emmap.ctx = -1;
 
-	mmap_mapping(emmap);
+	if (mmap_mapping(emmap)) {
+		panic("Memory map initialization error!");
+	}
 
 	mmu_set_context(emmap->ctx);
 
