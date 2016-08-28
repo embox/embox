@@ -1,6 +1,6 @@
 /**
  * @file stm32_gpio_cube.c
- * @brief 
+ * @brief
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version 0.1
  * @date 2016-02-12
@@ -33,11 +33,11 @@ static void stm32_gpio_init(void *gpio_base) {
 	GPIO_InitTypeDef GPIO_InitStruct;
 
 	stm32_gpio_clk_enable(gpio_base);
-	
+
 	memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
 
 	GPIO_InitStruct.Pin = GPIO_PIN_All;
-	GPIO_InitStruct.Speed = GPIO_SPEED_FAST;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_NOPULL;
 

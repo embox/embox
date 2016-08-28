@@ -7,3 +7,11 @@ module stm32_gpio_f4 extends api {
 
 	source "stm32_gpio_cube.c"
 }
+
+@BuildDepends(third_party.bsp.stmf3cube.core)
+module stm32_gpio_f3 extends api {
+	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
+	source "stm32_gpio_conf_f3.h"
+
+	source "stm32_gpio_cube.c"
+}
