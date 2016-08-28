@@ -100,7 +100,7 @@ mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 void mmu_set_context(mmu_ctx_t ctx) {
 	__asm__ __volatile__ (
 		"mcr p15, 0, %[addr], c2, c0, 0\n\t"
-		: [addr] "=r" (ctx) :
+		: : [addr] "r" (ctx) :
 	);
 }
 
