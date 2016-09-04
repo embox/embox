@@ -1,0 +1,13 @@
+
+package embox.arch.arm.arm9.arm926ejs
+
+module cpu extends embox.arch.arm.armlib.cpu {
+	depends embox.arch.generic.arch
+	depends embox.arch.arm.armlib.arch
+	/* exception table location must setup also 
+	 * embox.arch.arm.armlib.high_excpt_table
+	 *                       static_excpt_table
+	 *  or                   low_excpt_table 
+	 * depends on CFGHIVECS signal on you schematics
+	 * */
+}
