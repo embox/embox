@@ -1,7 +1,7 @@
 
-package embox.arch.arm.raspi
+package embox.arch.arm.armv6
 
-module cpu extends embox.arch.arm.armlib.cpu {
+module arm11 extends embox.arch.arm.armlib.cpu {
 	depends embox.arch.arm.armlib.arch
 	depends embox.arch.arm.armlib.low_excpt_table
 	depends embox.arch.generic.arch
