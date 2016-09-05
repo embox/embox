@@ -8,7 +8,6 @@ module cpu_reset {
 module bundle {
 	depends cpu_reset
 
-	depends embox.arch.generic.arch
 	depends embox.arch.arm.armlib.context
 	depends embox.arch.arm.armlib.interrupt
 	depends embox.arch.arm.armlib.locore
