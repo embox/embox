@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <pthread.h>
 
+#include <mem/vmem.h>
+#include <hal/mmu.h>
 #include <hal/test/traps_core.h>
 #include <kernel/thread/stack_protect.h>
 

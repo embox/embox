@@ -13,6 +13,10 @@
 
 #include <stdint.h>
 
+#define __MMU_PGD_SHIFT         24
+#define __MMU_PMD_SHIFT         18
+#define __MMU_PTE_SHIFT         12
+
 typedef uintptr_t __mmu_paddr_t;
 typedef uintptr_t __mmu_vaddr_t;
 
