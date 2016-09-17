@@ -25,8 +25,12 @@ typedef union thread_pool_entry {
 	char stack[STACK_SZ];
 } thread_pool_entry_t;
 
+#ifndef NOMMU
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
     __attribute__ ((aligned (VMEM_PAGE_SIZE))));
+#else
+POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
+#endif
 
 struct thread *thread_alloc(void) {
 	thread_pool_entry_t *block;
