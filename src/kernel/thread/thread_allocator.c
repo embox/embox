@@ -6,6 +6,8 @@
  * @author Anton Bondarev
  */
 
+#include <hal/mmu.h>
+
 #include <kernel/thread/thread_alloc.h>
 #include <mem/page.h>
 
