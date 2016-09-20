@@ -54,7 +54,7 @@ static struct file_operations zero_ops = {
 
 static struct idesc_ops idesc_cdev_zero_ops = {
 	.close = zero_close,
-	.read  = zero_read,
+	.id_readv  = zero_read,
 	.write = zero_write,
 };
 

@@ -113,7 +113,7 @@ static int pty_slave_status(struct idesc *idesc, int mask);
 
 static const struct idesc_ops pty_master_ops = {
 		.write = pty_master_write,
-		.read  = pty_master_read,
+		.id_readv  = pty_master_read,
 		.close = pty_close,
 		.ioctl = pty_ioctl,
 		/*.fstat = pty_fstat,*/
@@ -122,7 +122,7 @@ static const struct idesc_ops pty_master_ops = {
 
 static const struct idesc_ops pty_slave_ops = {
 		.write  = pty_slave_write,
-		.read   = pty_slave_read,
+		.id_readv   = pty_slave_read,
 		.close  = pty_close,
 		.ioctl  = pty_ioctl,
 		.fstat  = pty_fstat,

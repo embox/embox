@@ -301,7 +301,7 @@ static int usb_whitelist_dev_init(void) {
 
 static struct idesc_ops usb_whitelist_iops = {
 	.ioctl = usb_whitelist_ioctl,
-	.read  = usb_whitelist_read,
+	.id_readv  = usb_whitelist_read,
 	.close = usb_whitelist_close,
 };
 

@@ -25,8 +25,8 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	}
 
 	assert(idesc->idesc_ops);
-	assert(idesc->idesc_ops->read);
-	ret = idesc->idesc_ops->read(idesc, buf, nbyte);
+	assert(idesc->idesc_ops->id_readv);
+	ret = idesc->idesc_ops->id_readv(idesc, buf, nbyte);
 	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}

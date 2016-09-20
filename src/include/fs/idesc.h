@@ -28,7 +28,7 @@ struct idesc {
  * Specify operations index descriptor can implement itself
  */
 struct idesc_ops {
-	ssize_t (*read)(struct idesc *idesc, void *buf, size_t nbyte);
+	ssize_t (*id_readv)(struct idesc *idesc, void *buf, size_t nbyte);
 	ssize_t (*write)(struct idesc *idesc, const void *buf, size_t nbyte);
 	void (*close)(struct idesc *idesc);
 	int (*ioctl)(struct idesc *idesc, int request, void *data);

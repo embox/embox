@@ -53,7 +53,7 @@ static struct file_operations null_ops = {
 
 static struct idesc_ops idesc_cdev_null_ops = {
 	.close = null_close,
-	.read = null_read,
+	.id_readv = null_read,
 	.write = null_write,
 };
 
