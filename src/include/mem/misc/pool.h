@@ -50,13 +50,14 @@ struct pool {
  * @param name of cache
  * @param type of objects in cache
  * @param count of objects in cache
+ * @param specific attributes like aligned
  */
-#define POOL_DEF(name, object_type, size) \
+#define POOL_DEF_ATTR(name, object_type, size, attr) \
 	static union { \
 		object_type object; \
 		struct slist_link free_link; \
 	} __pool_storage ## name[size] \
-		__attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \
+		attr __attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \
 	static struct pool name = { \
 			.memory = __pool_storage ## name, \
 			.bound_free = __pool_storage ## name, \
@@ -65,6 +66,18 @@ struct pool {
 			.pool_size = sizeof(__pool_storage ## name), \
 			POOL_BLOCKS_INIT \
 	};
+
+
+/**
+ * Create pool descriptor. The memory for pool is allocated in special section
+ * "reserve.pool".
+ *
+ * @param name of cache
+ * @param type of objects in cache
+ * @param count of objects in cache
+ */
+ #define POOL_DEF(name, object_type, size) POOL_DEF_ATTR(name, object_type, size, )
+
 
 /**
  * allocate single object from the cache and return it to the caller

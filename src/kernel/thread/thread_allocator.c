@@ -6,6 +6,8 @@
  * @author Anton Bondarev
  */
 
+#include <hal/mmu.h>
+
 #include <kernel/thread/thread_alloc.h>
 #include <mem/page.h>
 
@@ -13,6 +15,7 @@
 #include <mem/misc/pool.h>
 #include <assert.h>
 
+#include <kernel/thread/stack_protect.h>
 
 #define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
 static_assert(STACK_SZ > sizeof(struct thread));
@@ -24,7 +27,13 @@ typedef union thread_pool_entry {
 	char stack[STACK_SZ];
 } thread_pool_entry_t;
 
+#ifndef NOMMU
+#include <mem/vmem.h>
+POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
+    __attribute__ ((aligned (VMEM_PAGE_SIZE))));
+#else
 POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
+#endif
 
 struct thread *thread_alloc(void) {
 	thread_pool_entry_t *block;
@@ -39,6 +48,8 @@ struct thread *thread_alloc(void) {
 
 	thread_stack_init(t, STACK_SZ);
 
+    stack_protect(t, STACK_SZ);
+
 	return t;
 }
 
@@ -49,6 +60,9 @@ void thread_free(struct thread *t) {
 
 	// TODO may be this is not the best way... -- Eldar
 	block = member_cast_out(t, thread_pool_entry_t, thread);
+
+    stack_protect_release(t);
+
 	memset(block, 0xa5, sizeof(*block));
 
 	pool_free(&thread_pool, block);
