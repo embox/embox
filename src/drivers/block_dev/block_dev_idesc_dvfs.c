@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 #include <stddef.h>
 #include <util/err.h>
 
@@ -18,11 +19,18 @@
 static void bdev_idesc_close(struct idesc *desc) {
 }
 
-static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
+static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 	struct file *file;
 	struct block_dev *bdev;
 	size_t blk_no;
 	int res;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 
 	file = (struct file *) desc;
 
@@ -38,7 +46,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
 
 	assert(bdev->driver);
 	assert(bdev->driver->read);
-	res = bdev->driver->read(bdev, buf, size, blk_no);
+	res = bdev->driver->read(bdev, buf, nbyte, blk_no);
 	if (res < 0) {
 		return res;
 	}

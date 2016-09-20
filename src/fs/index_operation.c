@@ -9,6 +9,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <sys/uio.h>
 
 #include <fs/kfile.h>
 
@@ -21,8 +22,15 @@ static void idesc_file_ops_close(struct idesc *idesc) {
 	kclose((struct file_desc *)idesc);
 }
 
-static ssize_t idesc_file_ops_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
+
 	assert(idesc);
+	assert(iov);
+
+	buf = iov->iov_base;
+	nbyte = iov->iov_len;
 
 	return kread(buf, nbyte, (struct file_desc *)idesc);
 }

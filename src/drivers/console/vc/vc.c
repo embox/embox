@@ -7,6 +7,7 @@
  * @author Anton Kozlov
  */
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
@@ -52,9 +53,16 @@ static void vc_close(struct idesc *desc) {
 	vc_vterm.tty.idesc = NULL;
 }
 
-static ssize_t vc_read(struct idesc *desc, void *buff, size_t size) {
+static ssize_t vc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 
-	return tty_read(&vc_vterm.tty, (char *) buff, size);
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
+
+	return tty_read(&vc_vterm.tty, (char *) buf, nbyte);
 }
 
 static ssize_t vc_write(struct idesc *desc, const void *buff, size_t size) {

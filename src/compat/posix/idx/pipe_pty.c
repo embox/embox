@@ -15,6 +15,7 @@
 #include <termios.h>
 #include <poll.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/ring_buff.h>
 #include <util/ring.h>
@@ -104,9 +105,9 @@ struct pty *pty_init(struct pty *p, struct idesc *master, struct idesc *slave) {
 static void pty_close(struct idesc *idesc);
 static int pty_ioctl(struct idesc *idesc, int request, void *data);
 static int pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte);
-static int pty_slave_read(struct idesc *idesc, void *buf, size_t nbyte);
+static int pty_slave_read(struct idesc *idesc, const struct iovec *iov, int cnt);
 static int pty_master_write(struct idesc *desc, const void *buf, size_t nbyte);
-static int pty_master_read(struct idesc *idesc, void *buf, size_t nbyte);
+static int pty_master_read(struct idesc *idesc, const struct iovec *iov, int cnt);
 static int pty_fstat(struct idesc *data, void *buff);
 static int pty_master_status(struct idesc *idesc, int mask);
 static int pty_slave_status(struct idesc *idesc, int mask);
@@ -207,10 +208,12 @@ static ssize_t pty_master_write(struct idesc *desc, const void *buf, size_t nbyt
 	return pty_write(ipty->pty, buf, nbyte);
 }
 
-static ssize_t pty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
+static ssize_t pty_master_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	assert(ipty != NULL);
-	return pty_read(ipty->pty, desc, buf, nbyte);
+	assert(iov);
+	assert(cnt == 1);
+	return pty_read(ipty->pty, desc, iov->iov_base, iov->iov_len);
 }
 
 static ssize_t pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
@@ -219,10 +222,12 @@ static ssize_t pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte
 	return tty_write(pty_to_tty(ipty->pty), buf, nbyte);
 }
 
-static ssize_t pty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
+static ssize_t pty_slave_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	assert(ipty != NULL);
-	return tty_read(pty_to_tty(ipty->pty), buf, nbyte);
+	assert(iov);
+	assert(cnt == 1);
+	return tty_read(pty_to_tty(ipty->pty), iov->iov_base, iov->iov_len);
 }
 
 static int pty_fstat(struct idesc *data, void *buff) {

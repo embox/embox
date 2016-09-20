@@ -14,6 +14,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/ring_buff.h>
 
@@ -111,10 +112,16 @@ static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 		mutex_lock(&pipe->mutex));
 }
 
-static ssize_t pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
 	struct pipe *pipe;
 	ssize_t res;
+	void *buf;
+	size_t nbyte;
 
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);

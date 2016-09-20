@@ -9,20 +9,21 @@
 
 #include <stddef.h>
 #include <errno.h>
+#include <sys/uio.h>
+#include <sys/socket.h>
+#include <poll.h>
 
 #include <net/socket/ksocket.h>
 
 #include <linux/net_tstamp.h>
-#include <sys/socket.h>
-#include <poll.h>
 
 const struct idesc_ops task_idx_ops_socket;
 
-static ssize_t socket_read(struct idesc *desc, void *buff,
-		size_t size) {
+static ssize_t socket_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	int ret;
+	ssize_t ret_size;
+	int i;
 	struct msghdr msg;
-	struct iovec iov;
 	struct sock *sk = (struct sock *)desc;
 
 	assert(desc);
@@ -34,19 +35,21 @@ static ssize_t socket_read(struct idesc *desc, void *buff,
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
+	msg.msg_iov = (struct iovec *)iov;
+	msg.msg_iovlen = cnt;
 	msg.msg_flags = 0;
-
-	iov.iov_base = buff;
-	iov.iov_len = size;
 
 	ret = krecvmsg(sk, &msg, desc->idesc_flags);
 	if (ret != 0) {
 		return ret;
 	}
 
-	return iov.iov_len;
+	ret_size = 0;
+	for (i = 0; i < cnt; i++) {
+		ret_size += iov[i].iov_len;
+	}
+
+	return ret_size;
 }
 
 static ssize_t socket_write(struct idesc *desc, const void *buff,

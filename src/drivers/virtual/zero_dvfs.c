@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/err.h>
 
@@ -39,9 +40,18 @@ static void zero_close(struct idesc *desc) {
 	dvfs_destroy_file((struct file *)desc);
 }
 
-static ssize_t zero_read(struct idesc *desc, void *buf, size_t size) {
-	memset(buf, 0, size);
-	return size;
+static ssize_t zero_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
+
+	memset(buf, 0, nbyte);
+
+	return nbyte;
 }
 
 static ssize_t zero_write(struct idesc *desc, const void *buf, size_t size) {

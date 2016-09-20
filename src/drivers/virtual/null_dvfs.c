@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/err.h>
 
@@ -43,7 +44,7 @@ static ssize_t null_write(struct idesc *desc, const void *buf, size_t size) {
 	return size;
 }
 
-static ssize_t null_read(struct idesc *desc, void *buf, size_t size) {
+static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return 0;
 }
 

@@ -5,7 +5,9 @@
  * @author  Anton Kozlov
  * @date    09.06.2012
  */
+#include <assert.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 #include <termios.h>
 
 #include <drivers/diag.h>
@@ -16,14 +18,20 @@
 
 static struct idesc diag_idesc;
 
-static ssize_t diag_read(struct idesc *data, void *buf, size_t nbyte) {
-	char *cbuf = (char *) buf;
+static ssize_t diag_read(struct idesc *data, const struct iovec *iov, int cnt) {
+	size_t nbyte;
+	char *cbuf;
+
+	assert(iov);
+	assert(cnt == 1);
+
+	cbuf = iov->iov_base;
 
 	while (nbyte--) {
 		*cbuf++ = diag_getc();
 	}
 
-	return (void *) cbuf - buf;
+	return (void *) cbuf - iov->iov_base;
 }
 
 static ssize_t diag_write(struct idesc *data, const void *buf, size_t nbyte) {

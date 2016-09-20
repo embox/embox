@@ -7,6 +7,7 @@
 #include <assert.h>
 #include <poll.h>
 #include <sys/types.h>
+#include <sys/uio.h>
 
 #include <util/err.h>
 
@@ -58,8 +59,15 @@ struct idesc *idesc_serial_create(struct uart *uart,
 	return &tu->idesc;
 }
 
-static ssize_t serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 	struct uart *uart;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 
 	assert(buf);
 	assert(idesc);

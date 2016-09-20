@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
@@ -103,8 +104,15 @@ static inline struct fbcon *data2fbcon(struct idesc *idesc) {
 	return member_cast_out(idesc, struct fbcon, idesc);
 }
 
-static ssize_t fbcon_idesc_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t fbcon_idesc_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 	struct fbcon *fbcon = data2fbcon(idesc);
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 
 	return tty_read(&fbcon->vterm.tty, buf, nbyte);
 }
