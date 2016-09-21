@@ -35,6 +35,7 @@ module core {
 	@NoRuntime depends third_party.STLport.core
 	@NoRuntime depends embox.compat.posix.pthread_key
 	@NoRuntime depends embox.compat.posix.regex_trex
+	@NoRuntime depends embox.compat.posix.sys.mman.msync
 }
 
 @Build(stage=2,script="true")

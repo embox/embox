@@ -132,17 +132,6 @@ static inline pid_t fork() {
 #include <sys/mman.h>
 
 
-#define MS_ASYNC 1
-static inline
-int msync(void *addr, size_t length, int flags) {
-	(void)addr;
-	(void)length;
-	(void)flags;
-	printf(">>> msync(%p)\n",addr);
-	errno = ENOMEM;
-	return -1;
-}
-
 #include <sys/socket.h>
 static inline
 int socketpair(int domain, int type, int protocol, int sv[2]) {

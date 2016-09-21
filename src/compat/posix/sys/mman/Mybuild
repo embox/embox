@@ -1,0 +1,9 @@
+package embox.compat.posix.sys.mman
+
+static module msync {
+	source "msync.c"
+}
+
+static module libmman {
+	depends msync
+}
