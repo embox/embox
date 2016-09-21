@@ -14,6 +14,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/ring_buff.h>
 
@@ -111,10 +112,16 @@ static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 		mutex_lock(&pipe->mutex));
 }
 
-static ssize_t pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
 	struct pipe *pipe;
 	ssize_t res;
+	void *buf;
+	size_t nbyte;
 
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
@@ -148,18 +155,22 @@ static ssize_t pipe_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	return res;
 }
 
-static ssize_t pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t pipe_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	size_t nbyte;
 	struct pipe *pipe;
 	const void *cbuf;
 	int len;
 	ssize_t res;
 
-	assert(buf);
+	assert(iov);
+	assert(iov->iov_base);
+	assert(cnt == 1);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
 	assert(idesc->idesc_amode == S_IWOTH);
 
-	cbuf = buf;
+	cbuf = iov->iov_base;
+	nbyte = iov->iov_len;
 	/* nbyte == 0 is ok to passthrough */
 
 	pipe = idesc_to_pipe(idesc);
@@ -184,7 +195,7 @@ static ssize_t pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 
 		/* Have nothing to write, exit*/
 		if (!nbyte) {
-			res = cbuf - buf;
+			res = cbuf - iov->iov_base;
 			break;
 		}
 
@@ -253,8 +264,8 @@ out:
 }
 
 static const struct idesc_ops idesc_pipe_ops = {
-		.read = pipe_read,
-		.write = pipe_write,
+		.id_readv = pipe_read,
+		.id_writev = pipe_write,
 		.close = pipe_close,
 		.ioctl = pipe_fcntl,
 		.status = idesc_pipe_status

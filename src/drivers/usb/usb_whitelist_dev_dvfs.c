@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/math.h>
 #include <util/err.h>
@@ -192,10 +193,22 @@ static void usb_whitelist_close(struct idesc *desc) {
 	dvfs_destroy_file((struct file *)desc);
 }
 
-static ssize_t usb_whitelist_read(struct idesc *desc, void *buf, size_t size) {
-	struct usb_whitelist_conf *wl_conf = &whitelist_conf;
-	int req_rules = min(size / sizeof(struct usb_whitelist_rule), wl_conf->rules_n);
-	ssize_t req_size =  req_rules * sizeof(struct usb_whitelist_rule);
+static ssize_t usb_whitelist_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+	struct usb_whitelist_conf *wl_conf;
+	int req_rules;
+	ssize_t req_size;
+	void *buf;
+	size_t nbyte;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
+
+	wl_conf = &whitelist_conf;
+	req_rules = min(nbyte / sizeof(struct usb_whitelist_rule), wl_conf->rules_n);
+
+	req_size =  req_rules * sizeof(struct usb_whitelist_rule);
 
 	memcpy(buf, whitelist_conf.rules, req_size);
 
@@ -301,7 +314,7 @@ static int usb_whitelist_dev_init(void) {
 
 static struct idesc_ops usb_whitelist_iops = {
 	.ioctl = usb_whitelist_ioctl,
-	.read  = usb_whitelist_read,
+	.id_readv  = usb_whitelist_read,
 	.close = usb_whitelist_close,
 };
 

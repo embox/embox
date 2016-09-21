@@ -1,8 +1,9 @@
 /**
  * @file
+ * @brief
  *
- * @date 15.11.13
- * @author Anton Bondarev
+ * @date 28.04.2016
+ * @author Denis Chusovitin
  */
 
 #include <errno.h>
@@ -15,22 +16,25 @@
 #include <fs/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
 
-ssize_t write(int fd, const void *buf, size_t nbyte) {
-	ssize_t ret;
+ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
+	int ret;
 	struct idesc *idesc;
-	struct iovec iov;
+
+	if (iovcnt < 0) {
+		return SET_ERRNO(EINVAL);
+	}
 
 	if (!idesc_index_valid(fd)
 			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & S_IWOTH))) {
+			|| (!(idesc->idesc_amode & S_IROTH))) {
 		return SET_ERRNO(EBADF);
 	}
 
-	iov.iov_base = (void *)buf;
-	iov.iov_len = nbyte;
+	assert(idesc->idesc_ops);
+	assert(idesc->idesc_ops->id_readv);
 
-	assert(idesc->idesc_ops != NULL);
-	ret = idesc->idesc_ops->id_writev(idesc, &iov, 1);
+	ret = idesc->idesc_ops->id_readv(idesc, iov, iovcnt);
+
 	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}

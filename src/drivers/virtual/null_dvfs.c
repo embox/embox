@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/err.h>
 
@@ -39,11 +40,19 @@ static void null_close(struct idesc *desc) {
 	dvfs_destroy_file((struct file *)desc);
 }
 
-static ssize_t null_write(struct idesc *desc, const void *buf, size_t size) {
-	return size;
+static ssize_t null_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+	int i;
+	ssize_t ret_size;
+
+	ret_size = 0;
+	for (i = 0; i < cnt; i++) {
+		ret_size += iov[i].iov_len;
+	}
+
+	return ret_size;
 }
 
-static ssize_t null_read(struct idesc *desc, void *buf, size_t size) {
+static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return 0;
 }
 
@@ -53,8 +62,8 @@ static struct file_operations null_ops = {
 
 static struct idesc_ops idesc_cdev_null_ops = {
 	.close = null_close,
-	.read = null_read,
-	.write = null_write,
+	.id_readv = null_read,
+	.id_writev = null_write,
 };
 
 CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, &idesc_cdev_null_ops, NULL);

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/err.h>
 
@@ -39,13 +40,32 @@ static void zero_close(struct idesc *desc) {
 	dvfs_destroy_file((struct file *)desc);
 }
 
-static ssize_t zero_read(struct idesc *desc, void *buf, size_t size) {
-	memset(buf, 0, size);
-	return size;
+static ssize_t zero_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+	int i;
+	ssize_t ret_size;
+
+	assert(iov);
+
+	ret_size = 0;
+	for (i = 0; i < cnt; i++) {
+		memset(iov[i].iov_base, 0, iov[i].iov_len);
+
+		ret_size += iov[i].iov_len;
+	}
+
+	return ret_size;
 }
 
-static ssize_t zero_write(struct idesc *desc, const void *buf, size_t size) {
-	return size;
+static ssize_t zero_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+	int i;
+	ssize_t ret_size;
+
+	ret_size = 0;
+	for (i = 0; i < cnt; i++) {
+		ret_size += iov[i].iov_len;
+	}
+
+	return ret_size;
 }
 
 static struct file_operations zero_ops = {
@@ -54,8 +74,8 @@ static struct file_operations zero_ops = {
 
 static struct idesc_ops idesc_cdev_zero_ops = {
 	.close = zero_close,
-	.read  = zero_read,
-	.write = zero_write,
+	.id_readv  = zero_read,
+	.id_writev = zero_write,
 };
 
 CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_ops, &idesc_cdev_zero_ops, NULL);

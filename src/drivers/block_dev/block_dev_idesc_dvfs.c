@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 #include <stddef.h>
 #include <util/err.h>
 
@@ -18,11 +19,18 @@
 static void bdev_idesc_close(struct idesc *desc) {
 }
 
-static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
+static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 	struct file *file;
 	struct block_dev *bdev;
 	size_t blk_no;
 	int res;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 
 	file = (struct file *) desc;
 
@@ -38,7 +46,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
 
 	assert(bdev->driver);
 	assert(bdev->driver->read);
-	res = bdev->driver->read(bdev, buf, size, blk_no);
+	res = bdev->driver->read(bdev, buf, nbyte, blk_no);
 	if (res < 0) {
 		return res;
 	}
@@ -47,11 +55,15 @@ static ssize_t bdev_idesc_read(struct idesc *desc, void *buf, size_t size) {
 	return res;
 }
 
-static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size) {
+static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
 	struct file *file;
 	struct block_dev *bdev;
 	size_t blk_no;
 	int res;
+
+	assert(desc);
+	assert(iov);
+	assert(cnt == 1);
 
 	file = (struct file *)desc;
 
@@ -67,11 +79,12 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size
 
 	assert(bdev->driver);
 	assert(bdev->driver->write);
-	res = bdev->driver->write(bdev, (void *)buf, size, blk_no);
+	res = bdev->driver->write(bdev, (void *)iov->iov_base, iov->iov_len, blk_no);
 	if (res < 0) {
 		return res;
 	}
 	file->pos += res;
+
 	return res;
 }
 
@@ -117,8 +130,8 @@ static int bdev_idesc_fstat(struct idesc *idesc, void *buff) {
 
 struct idesc_ops idesc_bdev_ops = {
 	.close = bdev_idesc_close,
-	.read  = bdev_idesc_read,
-	.write = bdev_idesc_write,
+	.id_readv  = bdev_idesc_read,
+	.id_writev = bdev_idesc_write,
 	.ioctl = bdev_idesc_ioctl,
 	.fstat = bdev_idesc_fstat
 };
@@ -148,7 +161,7 @@ int bdev_read_block(struct dev_module *devmod, void *buf, int blk) {
 
 	assert(devmod);
 	assert(buf);
-	assert(devmod->dev_file.f_idesc.idesc_ops->read);
+	assert(devmod->dev_file.f_idesc.idesc_ops->id_readv);
 
 	bdev = devmod->dev_priv;
 	assert(bdev);
@@ -158,7 +171,7 @@ int bdev_read_block(struct dev_module *devmod, void *buf, int blk) {
 
 	devmod->dev_file.pos = blk * bdev->block_size;
 
-	return devmod->dev_file.f_idesc.idesc_ops->read(
+	return devmod->dev_file.f_idesc.idesc_ops->id_readv(
 			&devmod->dev_file.f_idesc,
 			buf,
 			bdev->block_size);
@@ -169,7 +182,7 @@ int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
 
 	assert(devmod);
 	assert(buf);
-	assert(devmod->dev_file.f_idesc.idesc_ops->write);
+	assert(devmod->dev_file.f_idesc.idesc_ops->id_writev);
 
 	bdev = devmod->dev_priv;
 	assert(bdev);
@@ -179,7 +192,7 @@ int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
 
 	devmod->dev_file.pos = blk * bdev->block_size;
 
-	return devmod->dev_file.f_idesc.idesc_ops->write(
+	return devmod->dev_file.f_idesc.idesc_ops->id_writev(
 			&devmod->dev_file.f_idesc,
 			buf,
 			bdev->block_size);

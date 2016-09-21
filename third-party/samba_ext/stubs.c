@@ -38,33 +38,6 @@ unsigned int alarm(unsigned int seconds) {
 	return 0;
 }
 
-ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
-	errno = ENOSYS;
-	return -1;
-}
-
-ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
-	int i;
-	size_t bw = 0;
-	for(i=0; i<iovcnt; i++) {
-		int res;
-		if (iov[i].iov_len) {
-			res = write(fd, iov[i].iov_base, iov[i].iov_len);
-		} else {
-			res = 0;
-		}
-		if (res<0) {
-			return -1;
-		}
-		if (res != iov[i].iov_len) {
-			errno = EIO;
-			return -1;
-		}
-		bw += res;
-	}
-	return bw;
-}
-
 
 #include <dirent.h>
 void seekdir(DIR *dirp, long offset) {

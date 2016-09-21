@@ -7,6 +7,7 @@
  * @author Anton Kozlov
  */
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
@@ -52,20 +53,31 @@ static void vc_close(struct idesc *desc) {
 	vc_vterm.tty.idesc = NULL;
 }
 
-static ssize_t vc_read(struct idesc *desc, void *buff, size_t size) {
+static ssize_t vc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 
-	return tty_read(&vc_vterm.tty, (char *) buff, size);
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
+
+	return tty_read(&vc_vterm.tty, (char *) buf, nbyte);
 }
 
-static ssize_t vc_write(struct idesc *desc, const void *buff, size_t size) {
-	size_t cnt;
+static ssize_t vc_write(struct idesc *desc,  const struct iovec *iov, int cnt) {
+	int i;
 	char *b;
 
-	for (cnt = size, b = (char *) buff; cnt > 0; b++, cnt--) {
-		vterm_putc(&vc_vterm, *b);
+	assert(iov);
+	assert(cnt == 1);
+
+	b = (char *) iov->iov_base;
+	for (i = iov->iov_len; i > 0; i--) {
+		vterm_putc(&vc_vterm, *b++);
 	}
 
-	return (ssize_t)size;
+	return (ssize_t)iov->iov_len;
 }
 
 static int vc_ioctl(struct idesc *desc, int request, void *data) {
@@ -88,8 +100,8 @@ static int vc_status(struct idesc *idesc, int mask) {
 }
 
 static const struct idesc_ops idesc_vc_ops = {
-		.read = vc_read,
-		.write = vc_write,
+		.id_readv = vc_read,
+		.id_writev = vc_write,
 		.ioctl = vc_ioctl,
 		.close = vc_close,
 		.status = vc_status,

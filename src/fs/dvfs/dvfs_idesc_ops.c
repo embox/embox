@@ -10,6 +10,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <sys/uio.h>
 
 #include <fs/dvfs.h>
 #include <kernel/task.h>
@@ -22,15 +23,35 @@ static void idesc_file_ops_close(struct idesc *idesc) {
 	dvfs_close((struct file *)idesc);
 }
 
-static ssize_t idesc_file_ops_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
+
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
+
+	assert(iov);
+	assert(cnt == 1);
+
+	buf = iov->iov_base;
+	nbyte = iov->iov_len;
+
 	return dvfs_read((struct file *) idesc, buf, nbyte);
 }
 
-static ssize_t idesc_file_ops_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t idesc_file_ops_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
+
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
+
+	assert(iov);
+	assert(cnt == 1);
+
+	buf = iov->iov_base;
+	nbyte = iov->iov_len;
+
 	return dvfs_write((struct file *)idesc, (char *)buf, nbyte);
 }
 
@@ -54,8 +75,8 @@ static int idesc_file_ops_status(struct idesc *idesc, int mask) {
 
 const struct idesc_ops idesc_file_ops = {
 	.close = idesc_file_ops_close,
-	.read  = idesc_file_ops_read,
-	.write = idesc_file_ops_write,
+	.id_readv  = idesc_file_ops_read,
+	.id_writev = idesc_file_ops_write,
 	.ioctl = idesc_file_ops_ioctl,
 	.fstat = idesc_file_ops_stat,
 	.status = idesc_file_ops_status,
