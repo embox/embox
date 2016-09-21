@@ -154,7 +154,7 @@ static void fbcon_idesc_close(struct idesc *idesc) {
 
 static const struct idesc_ops fbcon_idesc_ops = {
 	.id_readv   = fbcon_idesc_read,
-	.write  = fbcon_idesc_write,
+	.id_writev  = fbcon_idesc_write,
 	.close  = fbcon_idesc_close,
 	.ioctl  = fbcon_idesc_ioctl,
 	.fstat  = fbcon_idesc_fstat,

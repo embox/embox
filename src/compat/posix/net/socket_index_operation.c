@@ -128,7 +128,7 @@ static void socket_close(struct idesc *desc) {
 
 const struct idesc_ops task_idx_ops_socket = {
 	.id_readv   = socket_read,
-	.write  = socket_write,
+	.id_writev  = socket_write,
 	.ioctl  = socket_ioctl,
 	.status = socket_status,
 	.close  = socket_close,

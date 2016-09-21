@@ -97,7 +97,7 @@ static int vc_status(struct idesc *idesc, int mask) {
 
 static const struct idesc_ops idesc_vc_ops = {
 		.id_readv = vc_read,
-		.write = vc_write,
+		.id_writev = vc_write,
 		.ioctl = vc_ioctl,
 		.close = vc_close,
 		.status = vc_status,

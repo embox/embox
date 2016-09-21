@@ -73,7 +73,7 @@ static int diag_ioctl(struct idesc *desc, int request, void *data) {
 
 static const struct idesc_ops diag_idx_ops = {
 	.id_readv = diag_read,
-	.write = diag_write,
+	.id_writev = diag_write,
 	.close = diag_close,
 	.fstat = diag_fstat,
 	.ioctl = diag_ioctl,

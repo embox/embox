@@ -65,7 +65,7 @@ static int idesc_file_ops_status(struct idesc *idesc, int mask) {
 const struct idesc_ops idesc_file_ops = {
 	.close = idesc_file_ops_close,
 	.id_readv  = idesc_file_ops_read,
-	.write = idesc_file_ops_write,
+	.id_writev = idesc_file_ops_write,
 	.ioctl = idesc_file_ops_ioctl,
 	.fstat = idesc_file_ops_stat,
 	.status = idesc_file_ops_status,

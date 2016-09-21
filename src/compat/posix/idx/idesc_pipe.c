@@ -261,7 +261,7 @@ out:
 
 static const struct idesc_ops idesc_pipe_ops = {
 		.id_readv = pipe_read,
-		.write = pipe_write,
+		.id_writev = pipe_write,
 		.close = pipe_close,
 		.ioctl = pipe_fcntl,
 		.status = idesc_pipe_status

@@ -55,7 +55,7 @@ static struct file_operations null_ops = {
 static struct idesc_ops idesc_cdev_null_ops = {
 	.close = null_close,
 	.id_readv = null_read,
-	.write = null_write,
+	.id_writev = null_write,
 };
 
 CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, &idesc_cdev_null_ops, NULL);

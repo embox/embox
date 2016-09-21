@@ -181,7 +181,7 @@ static int serial_fstat(struct idesc *data, void *buff) {
 
 static const struct idesc_ops idesc_serial_ops = {
 		.id_readv = serial_read,
-		.write = serial_write,
+		.id_writev = serial_write,
 		.ioctl = serial_ioctl,
 		.close = serial_close,
 		.status = serial_status,

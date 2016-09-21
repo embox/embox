@@ -25,7 +25,7 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 	}
 
 	assert(idesc->idesc_ops != NULL);
-	ret = idesc->idesc_ops->write(idesc, buf, nbyte);
+	ret = idesc->idesc_ops->id_writev(idesc, buf, nbyte);
 	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}

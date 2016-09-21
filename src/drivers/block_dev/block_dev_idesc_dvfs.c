@@ -126,7 +126,7 @@ static int bdev_idesc_fstat(struct idesc *idesc, void *buff) {
 struct idesc_ops idesc_bdev_ops = {
 	.close = bdev_idesc_close,
 	.id_readv  = bdev_idesc_read,
-	.write = bdev_idesc_write,
+	.id_writev = bdev_idesc_write,
 	.ioctl = bdev_idesc_ioctl,
 	.fstat = bdev_idesc_fstat
 };
@@ -177,7 +177,7 @@ int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
 
 	assert(devmod);
 	assert(buf);
-	assert(devmod->dev_file.f_idesc.idesc_ops->write);
+	assert(devmod->dev_file.f_idesc.idesc_ops->id_writev);
 
 	bdev = devmod->dev_priv;
 	assert(bdev);
@@ -187,7 +187,7 @@ int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
 
 	devmod->dev_file.pos = blk * bdev->block_size;
 
-	return devmod->dev_file.f_idesc.idesc_ops->write(
+	return devmod->dev_file.f_idesc.idesc_ops->id_writev(
 			&devmod->dev_file.f_idesc,
 			buf,
 			bdev->block_size);
