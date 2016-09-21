@@ -104,9 +104,9 @@ struct pty *pty_init(struct pty *p, struct idesc *master, struct idesc *slave) {
 }
 static void pty_close(struct idesc *idesc);
 static int pty_ioctl(struct idesc *idesc, int request, void *data);
-static int pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte);
+static int pty_slave_write(struct idesc *desc, const struct iovec *iov, int cnt);
 static int pty_slave_read(struct idesc *idesc, const struct iovec *iov, int cnt);
-static int pty_master_write(struct idesc *desc, const void *buf, size_t nbyte);
+static int pty_master_write(struct idesc *desc, const struct iovec *iov, int cnt);
 static int pty_master_read(struct idesc *idesc, const struct iovec *iov, int cnt);
 static int pty_fstat(struct idesc *data, void *buff);
 static int pty_master_status(struct idesc *idesc, int mask);
@@ -202,24 +202,38 @@ static void pty_close(struct idesc *idesc) {
 	sched_unlock();
 }
 
-static ssize_t pty_master_write(struct idesc *desc, const void *buf, size_t nbyte) {
+static ssize_t pty_master_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+	size_t nbyte;
 	struct idesc_pty *ipty = (struct idesc_pty *)desc;
-	assert(ipty != NULL);
-	return pty_write(ipty->pty, buf, nbyte);
+
+	assert(ipty);
+	assert(iov);
+	assert(iov->iov_base);
+	assert(cnt == 1);
+
+	nbyte = iov->iov_len;
+	return pty_write(ipty->pty, iov->iov_base, nbyte);
 }
 
 static ssize_t pty_master_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
-	assert(ipty != NULL);
+	assert(ipty);
 	assert(iov);
 	assert(cnt == 1);
 	return pty_read(ipty->pty, desc, iov->iov_base, iov->iov_len);
 }
 
-static ssize_t pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
+static ssize_t pty_slave_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+	size_t nbyte;
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
-	assert(ipty != NULL);
-	return tty_write(pty_to_tty(ipty->pty), buf, nbyte);
+
+	assert(ipty);
+	assert(iov);
+	assert(iov->iov_base);
+	assert(cnt == 1);
+
+	nbyte = iov->iov_len;
+	return tty_write(pty_to_tty(ipty->pty), iov->iov_base, nbyte);
 }
 
 static ssize_t pty_slave_read(struct idesc *desc, const struct iovec *iov, int cnt) {

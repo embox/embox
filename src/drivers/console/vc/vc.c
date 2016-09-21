@@ -65,15 +65,19 @@ static ssize_t vc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return tty_read(&vc_vterm.tty, (char *) buf, nbyte);
 }
 
-static ssize_t vc_write(struct idesc *desc, const void *buff, size_t size) {
-	size_t cnt;
+static ssize_t vc_write(struct idesc *desc,  const struct iovec *iov, int cnt) {
+	int i;
 	char *b;
 
-	for (cnt = size, b = (char *) buff; cnt > 0; b++, cnt--) {
-		vterm_putc(&vc_vterm, *b);
+	assert(iov);
+	assert(cnt == 1);
+
+	b = (char *) iov->iov_base;
+	for (i = iov->iov_len; i > 0; i--) {
+		vterm_putc(&vc_vterm, *b++);
 	}
 
-	return (ssize_t)size;
+	return (ssize_t)iov->iov_len;
 }
 
 static int vc_ioctl(struct idesc *desc, int request, void *data) {

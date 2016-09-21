@@ -55,11 +55,15 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	return res;
 }
 
-static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size) {
+static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
 	struct file *file;
 	struct block_dev *bdev;
 	size_t blk_no;
 	int res;
+
+	assert(desc);
+	assert(iov);
+	assert(cnt == 1);
 
 	file = (struct file *)desc;
 
@@ -75,11 +79,12 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const void *buf, size_t size
 
 	assert(bdev->driver);
 	assert(bdev->driver->write);
-	res = bdev->driver->write(bdev, (void *)buf, size, blk_no);
+	res = bdev->driver->write(bdev, (void *)iov->iov_base, iov->iov_len, blk_no);
 	if (res < 0) {
 		return res;
 	}
 	file->pos += res;
+
 	return res;
 }
 

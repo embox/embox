@@ -117,15 +117,21 @@ static ssize_t fbcon_idesc_read(struct idesc *idesc, const struct iovec *iov, in
 	return tty_read(&fbcon->vterm.tty, buf, nbyte);
 }
 
-static ssize_t fbcon_idesc_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t fbcon_idesc_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
 	struct fbcon *fbcon = data2fbcon(idesc);
-	char *cbuf = (char *) buf;
+	char *cbuf;
+	size_t nbyte;
+
+	assert(iov);
+	cbuf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 
 	while (nbyte--) {
 		vterm_putc(&fbcon->vterm, *cbuf++);
 	}
 
-	return (ssize_t)((uintptr_t)cbuf - (uintptr_t)buf);
+	return (ssize_t)((uintptr_t)cbuf - (uintptr_t)iov->iov_base);
 }
 
 static int fbcon_idesc_ioctl(struct idesc *idesc, int request, void *data) {
@@ -140,7 +146,6 @@ static int fbcon_idesc_fstat(struct idesc *idesc, void *buff) {
        st->st_mode = S_IFCHR;
 
        return 0;
-
 }
 
 static int fbcon_idesc_status(struct idesc *idesc, int mask) {

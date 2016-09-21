@@ -155,18 +155,22 @@ static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov, int cnt) 
 	return res;
 }
 
-static ssize_t pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t pipe_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	size_t nbyte;
 	struct pipe *pipe;
 	const void *cbuf;
 	int len;
 	ssize_t res;
 
-	assert(buf);
+	assert(iov);
+	assert(iov->iov_base);
+	assert(cnt == 1);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
 	assert(idesc->idesc_amode == S_IWOTH);
 
-	cbuf = buf;
+	cbuf = iov->iov_base;
+	nbyte = iov->iov_len;
 	/* nbyte == 0 is ok to passthrough */
 
 	pipe = idesc_to_pipe(idesc);
@@ -191,7 +195,7 @@ static ssize_t pipe_write(struct idesc *idesc, const void *buf, size_t nbyte) {
 
 		/* Have nothing to write, exit*/
 		if (!nbyte) {
-			res = cbuf - buf;
+			res = cbuf - iov->iov_base;
 			break;
 		}
 

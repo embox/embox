@@ -34,14 +34,20 @@ static ssize_t diag_read(struct idesc *data, const struct iovec *iov, int cnt) {
 	return (void *) cbuf - iov->iov_base;
 }
 
-static ssize_t diag_write(struct idesc *data, const void *buf, size_t nbyte) {
-	char *cbuf = (char *) buf;
+static ssize_t diag_write(struct idesc *data, const struct iovec *iov, int cnt) {
+	size_t nbyte;
+	char *cbuf;
+
+	assert(iov);
+	assert(cnt == 1);
+
+	cbuf = iov->iov_base;
 
 	while (nbyte--) {
 		diag_putc(*cbuf++);
 	}
 
-	return (void *) cbuf - buf;
+	return (void *) cbuf - iov->iov_base;
 }
 
 static void diag_close(struct idesc *data) {

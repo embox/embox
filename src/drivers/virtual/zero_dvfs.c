@@ -41,21 +41,31 @@ static void zero_close(struct idesc *desc) {
 }
 
 static ssize_t zero_read(struct idesc *desc, const struct iovec *iov, int cnt) {
-	void *buf;
-	size_t nbyte;
+	int i;
+	ssize_t ret_size;
 
 	assert(iov);
-	buf = iov->iov_base;
-	assert(cnt == 1);
-	nbyte = iov->iov_len;
 
-	memset(buf, 0, nbyte);
+	ret_size = 0;
+	for (i = 0; i < cnt; i++) {
+		memset(iov[i].iov_base, 0, iov[i].iov_len);
 
-	return nbyte;
+		ret_size += iov[i].iov_len;
+	}
+
+	return ret_size;
 }
 
-static ssize_t zero_write(struct idesc *desc, const void *buf, size_t size) {
-	return size;
+static ssize_t zero_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+	int i;
+	ssize_t ret_size;
+
+	ret_size = 0;
+	for (i = 0; i < cnt; i++) {
+		ret_size += iov[i].iov_len;
+	}
+
+	return ret_size;
 }
 
 static struct file_operations zero_ops = {

@@ -102,16 +102,24 @@ static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt
 	return tty_read(uart->tty, (char *) buf, nbyte);
 }
 
-static ssize_t serial_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t serial_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 	int ch;
 	struct uart *uart;
-	size_t written, left = nbyte;
+	size_t written, left;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
 	assert(idesc->idesc_amode & S_IWOTH);
 
+	left = nbyte;
 	uart = idesc_to_uart(idesc);
 	assert(uart);
 	assert(uart->tty);

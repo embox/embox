@@ -52,11 +52,11 @@ static ssize_t socket_read(struct idesc *desc, const struct iovec *iov, int cnt)
 	return ret_size;
 }
 
-static ssize_t socket_write(struct idesc *desc, const void *buff,
-		size_t size) {
+static ssize_t socket_write(struct idesc *desc, const struct iovec *iov, int cnt) {
 	int ret;
+	ssize_t ret_size;
+	int i;
 	struct msghdr msg;
-	struct iovec iov;
 	struct sock *sk = (struct sock *)desc;
 
 	assert(desc);
@@ -67,19 +67,21 @@ static ssize_t socket_write(struct idesc *desc, const void *buff,
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
-	msg.msg_iov = &iov;
-	msg.msg_iovlen = 1;
+	msg.msg_iov = (struct iovec *)iov;
+	msg.msg_iovlen = cnt;
 	msg.msg_flags = 0;
-
-	iov.iov_base = (void *)buff;
-	iov.iov_len = size;
 
 	ret = ksendmsg(sk, &msg, desc->idesc_flags);
 	if (ret != 0) {
 		return ret;
 	}
 
-	return iov.iov_len;
+	ret_size = 0;
+	for (i = 0; i < cnt; i++) {
+		ret_size += iov[i].iov_len;
+	}
+
+	return ret_size;
 }
 
 static int socket_ioctl(struct idesc *idesc, int request, void *data) {

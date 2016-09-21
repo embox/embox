@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
@@ -17,6 +18,7 @@
 ssize_t write(int fd, const void *buf, size_t nbyte) {
 	ssize_t ret;
 	struct idesc *idesc;
+	struct iovec iov;
 
 	if (!idesc_index_valid(fd)
 			|| (NULL == (idesc = index_descriptor_get(fd)))
@@ -24,8 +26,11 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 		return SET_ERRNO(EBADF);
 	}
 
+	iov.iov_base = (void *)buf;
+	iov.iov_len = nbyte;
+
 	assert(idesc->idesc_ops != NULL);
-	ret = idesc->idesc_ops->id_writev(idesc, buf, nbyte);
+	ret = idesc->idesc_ops->id_writev(idesc, &iov, 1);
 	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
