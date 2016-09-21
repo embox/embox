@@ -99,6 +99,7 @@ module greth {
 	depends embox.net.dev
 	depends embox.net.entry_api
 	depends embox.net.core
+	depends embox.net.util.show_packet
 	depends embox.compat.posix.util.sleep
 }
 

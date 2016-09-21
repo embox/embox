@@ -15,4 +15,5 @@ module mipsnet {
 	depends embox.net.dev
 	depends embox.net.core
 	depends embox.net.entry_api
+	depends embox.net.util.show_packet
 }
