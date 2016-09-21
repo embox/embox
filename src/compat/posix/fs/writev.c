@@ -6,27 +6,30 @@
  * @author Denis Chusovitin
  */
 
-#include "vec_common.h"
+#include <errno.h>
+#include <stddef.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
+
+#include <fs/index_descriptor.h>
+#include <fs/idesc.h>
+#include <kernel/task/resource/idesc_table.h>
 
 ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
 	int ret;
-	struct msghdr msg;
-	struct sock *sk;
+	struct idesc *idesc;
 
 	if (iovcnt < 0) {
 		return SET_ERRNO(EINVAL);
 	}
+	if (!idesc_index_valid(fd)
+			|| (NULL == (idesc = index_descriptor_get(fd)))
+			|| (!(idesc->idesc_amode & S_IWOTH))) {
+		return SET_ERRNO(EBADF);
+	}
 
-	socket_idesc_check(fd, sk);
-
-	msg.msg_name = NULL;
-	msg.msg_namelen = 0;
-	msg.msg_iov = (struct iovec*)iov;
-	msg.msg_iovlen = iovcnt;
-	msg.msg_flags = 0;
-
-	ret = ksendmsg(sk, &msg, sk->idesc.idesc_flags);
-
+	assert(idesc->idesc_ops != NULL);
+	ret = idesc->idesc_ops->id_writev(idesc, iov, iovcnt);
 	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
