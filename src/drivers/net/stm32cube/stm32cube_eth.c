@@ -20,6 +20,7 @@
 #include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
+#include <net/util/show_packet.h>
 
 #include <stm32f4xx.h>
 #include <stm32f4xx_hal.h>
@@ -178,30 +179,6 @@ static void low_level_init(unsigned char mac[6]) {
 	HAL_ETH_WritePHYRegister(&stm32_eth_handler, PHY_MISR, regvalue);
 #endif
 }
-
-
-#define DEBUG 0
-#if DEBUG
-#include <kernel/printk.h>
-/* Debugging routines */
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-	int i;
-
-	irq_lock();
-	printk("\nPACKET(%d) %s:", size, title);
-	for (i = 0; i < size; i++) {
-		if (!(i % 16)) {
-			printk("\n");
-		}
-		printk(" %02hhX", *(raw + i));
-	}
-	printk("\n.\n");
-	irq_unlock();
-}
-#else
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-}
-#endif
 
 static struct sk_buff *low_level_input(void) {
 	struct sk_buff *skb;

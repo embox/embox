@@ -22,6 +22,7 @@
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
+#include <net/util/show_packet.h>
 
 #include <util/log.h>
 
@@ -39,26 +40,6 @@ struct fec_priv {
 };
 
 static struct fec_priv fec_priv;
-
-#define DEBUG 0
-#if DEBUG
-#include <kernel/printk.h>
-/* Debugging routines */
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-	int i;
-
-	printk("\nPACKET(%d) %s:", size, title);
-	for (i = 0; i < size; i++) {
-		if (!(i % 16)) {
-			printk("\n");
-		}
-		printk(" %02hhX", *(raw + i));
-	}
-	printk("\n.\n");
-}
-#else
-#define show_packet(raw, size,title)
-#endif
 
 static void fec_reg_dump(const char * title) {
 	log_debug("%s", title);

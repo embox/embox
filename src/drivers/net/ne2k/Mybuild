@@ -29,4 +29,5 @@ module ne2k_isa {
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
+	depends embox.net.util.show_packet
 }

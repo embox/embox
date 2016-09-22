@@ -32,7 +32,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
-
+#include <net/util/show_packet.h>
 
 /* The per-packet-header format. */
 struct e8390_pkt_hdr {
@@ -40,24 +40,6 @@ struct e8390_pkt_hdr {
 	uint8_t next;   /* pointer to next packet. */
 	uint16_t count; /* header + packet lenght in bytes */
 };
-
-#define DEBUG 0
-#if DEBUG
-#include <kernel/printk.h>
-/* Debugging routines */
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-	int i;
-
-	printk("\nPACKET(%d) %s:", size, title);
-	for (i = 0; i < size; i++) {
-		if (!(i % 16)) {
-			printk("\n");
-		}
-		printk(" %02hhX", *(raw + i));
-	}
-	printk("\n.\n");
-}
-#endif
 
 static void ne2k_get_addr_from_prom(struct net_device *dev) {
 	uint8_t i;
@@ -180,9 +162,7 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 	/* Wait for transmission to complete. */
 	while (in8(base_addr + NE_CMD) & E8390_TRANS);
 
-#if DEBUG
 	show_packet(skb->mac.raw, skb->len, "send");
-#endif
 	skb_free(skb); /* free packet */
 
 	return ENOERR;
@@ -199,9 +179,7 @@ static struct sk_buff * get_skb_from_card(uint16_t total_length,
 
 	skb->dev = dev;
 	copy_data_from_card(offset, skb->mac.raw, total_length, dev->base_addr);
-#if DEBUG
 	show_packet(skb->mac.raw, skb->len, "recv");
-#endif
 
 	return skb;
 }
