@@ -16,7 +16,10 @@
 #include <sys/types.h>
 
 #include <sys/cdefs.h>
+
 __BEGIN_DECLS
+
+#include <module/embox/mem/vmem_api.h>
 
 #define PROT_NONE     0x00
 #define PROT_READ     0x01
@@ -30,13 +33,19 @@ __BEGIN_DECLS
 
 #define MAP_FAILED (void*)-1
 
-#include <module/embox/mem/vmem_api.h>
-
 extern int mprotect(void *, size_t, int);
+
 
 /* todo: implement for InitFS files */
 extern void *mmap(void *, size_t, int, int, int, off_t);
 extern int munmap(void *, size_t);
+
+/* The following flags shall be defined for msync(): */
+#define MS_ASYNC       0x100 /* Perform asynchronous writes. */
+#define MS_SYNC        0x200 /* Perform synchronous writes. */
+#define MS_INVALIDATE  0x400 /* Invalidate mappings. */
+
+extern int msync(void *addr, size_t len, int flags);
 
 /* QNX */
 

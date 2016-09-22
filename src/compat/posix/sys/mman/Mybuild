@@ -1,0 +1,13 @@
+package embox.compat.posix.sys.mman
+
+static module msync {
+	option number log_level = 3
+
+	source "msync.c"
+
+	depends embox.util.log
+}
+
+static module libmman {
+	depends msync
+}

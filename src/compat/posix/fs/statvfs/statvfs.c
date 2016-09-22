@@ -54,13 +54,13 @@ unsigned long fsname2fsid(const char *name) {
 		return FSID_VFAT;
 	}
 	if (0 == strcmp(name, "ext2")) {
-		return FSID_VFAT;
+		return FSID_EXT2;
 	}
 	if (0 == strcmp(name, "ext3")) {
-		return FSID_VFAT;
+		return FSID_EXT3;
 	}
 	if (0 == strcmp(name, "ext4")) {
-		return FSID_VFAT;
+		return FSID_EXT4;
 	}
 	return 0;
 }

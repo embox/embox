@@ -21,6 +21,8 @@ module smbclient {
 	depends embox.compat.posix.idx.poll
 	depends embox.net.lib.getifaddrs
 	depends embox.compat.posix.passwd
+	depends embox.compat.posix.fs.statvfs
+	depends embox.compat.posix.sys.mman.msync
 
 	depends third_party.zlib.libs
 
