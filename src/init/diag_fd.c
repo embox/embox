@@ -26,6 +26,7 @@ static ssize_t diag_read(struct idesc *data, const struct iovec *iov, int cnt) {
 	assert(cnt == 1);
 
 	cbuf = iov->iov_base;
+	nbyte = iov->iov_len;
 
 	while (nbyte--) {
 		*cbuf++ = diag_getc();
@@ -42,6 +43,7 @@ static ssize_t diag_write(struct idesc *data, const struct iovec *iov, int cnt) 
 	assert(cnt == 1);
 
 	cbuf = iov->iov_base;
+	nbyte = iov->iov_len;
 
 	while (nbyte--) {
 		diag_putc(*cbuf++);
