@@ -9,11 +9,13 @@
 
 #include <sys/mman.h>
 
+#include <util/log.h>
+
 int msync(void *addr, size_t length, int flags) {
 	(void)addr;
 	(void)length;
 	(void)flags;
-	printf(">>> msync(%p)\n",addr);
+	log_debug(">>> msync(%p)", addr);
 	errno = ENOMEM;
 	return -1;
 }
