@@ -1,8 +1,0 @@
-
-package embox.arch.arm.omap137
-
-module cpu extends embox.arch.arm.armlib.cpu {
-	depends embox.arch.arm.armlib.arch
-	depends embox.arch.arm.armlib.high_excpt_table
-	depends embox.arch.generic.arch
-}

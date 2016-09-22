@@ -3,10 +3,3 @@ package embox.arch.arm
 
 
 abstract module cmsis { }
-
-@DefaultImpl(platform_shutdown_stub)
-abstract module platform_shutdown { }
-
-module platform_shutdown_stub extends platform_shutdown {
-	source "platform_shutdown_stub.c"
-}
