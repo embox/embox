@@ -1,0 +1,5 @@
+package embox.driver.audio
+
+module aaci_pl041 {
+	source "aaci_pl041.c"
+}
