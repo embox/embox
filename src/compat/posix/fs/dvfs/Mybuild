@@ -33,7 +33,7 @@ static module dirent_dvfs extends dirent {
 	option number dir_quantity=4
 	source "dirent.c"
 
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 	depends embox.mem.objalloc
 	depends embox.compat.libc.str
 	depends embox.compat.posix.fs.getcwd
@@ -49,7 +49,7 @@ static module lseek_dvfs extends lseek {
 static module file_ops_dvfs extends file_ops {
 	source "ftruncate.c"
 
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno
@@ -60,7 +60,7 @@ static module fsop_dvfs extends fsop {
 	source "../creat.c"
 	source "stat.c"
 
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 	depends embox.kernel.task.resource.errno
 	depends umask // mkdir
 }
@@ -68,7 +68,7 @@ static module fsop_dvfs extends fsop {
 static module open_dvfs extends open {
 	source "open.c"
 
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 	depends embox.kernel.task.resource.errno
 	depends libgen
 	depends dirent_dvfs

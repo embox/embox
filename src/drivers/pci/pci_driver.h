@@ -8,6 +8,7 @@
 #ifndef PCI_DRIVER_H_
 #define PCI_DRIVER_H_
 
+#include <stdint.h>
 #include <framework/mod/api.h>
 #include <framework/mod/self.h>
 #include <util/array.h>

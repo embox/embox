@@ -17,9 +17,9 @@
  New VFS prototype
  *****************/
 
-#include <config/embox/fs/dvfs.h>
-#define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs, NUMBER, dentry_name_len)
-#define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs, NUMBER, max_path_len)
+#include <config/embox/fs/dvfs/core.h>
+#define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, dentry_name_len)
+#define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, max_path_len)
 #define FS_NAME_LEN       16
 
 #define DVFS_PATH_FULL     0x001

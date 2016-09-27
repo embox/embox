@@ -1,0 +1,19 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "file",
+	help = "Get file format info",
+	man = '''
+		NAME
+			Get file type
+		SYNOPSIS
+		DESCRIPTION
+		OPTIONS
+		AUTHORS
+			Denis Deryugin
+	''')
+module file {
+	source "file.c"
+
+	depends embox.fs.file_format
+}
