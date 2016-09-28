@@ -118,8 +118,8 @@ int main(int argc, char **argv) {
 		if (strcmp(buf, "static")) {
 			/* dynamic (bootp) setup */
 			buf[0] = '\0';
-			strncat(buf, "bootpc ", sizeof(buf));
-			strncat(buf, ifname, sizeof(buf));
+			strcat(buf, "bootpc ");
+			strncat(buf, ifname, sizeof(buf)-strlen(buf)-1);
 			if (0 == (err = system(buf))) {
 				return 0;
 			}

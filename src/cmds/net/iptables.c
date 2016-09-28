@@ -348,7 +348,7 @@ after_rule_num:
 		if ((oper == 'R') || (oper == 'D')) {
 			printf("iptables: no rule_num specified\n");
 			return -EINVAL;
-		} else if ((oper == 'I')) {
+		} else if (oper == 'I') {
 			rule_num = 0;
 		}
 	}
