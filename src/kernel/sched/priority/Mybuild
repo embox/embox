@@ -4,11 +4,7 @@ package embox.kernel.sched.priority
 abstract module priority { }
 
 module inherit extends priority {
-	source "inherit.h"
-}
-
-module simple extends priority {
-	source "simple.h"
+	source "inherit.h", "inherit.c"
 }
 
 module none extends priority {

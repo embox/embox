@@ -9,6 +9,7 @@
 #include <kernel/panic.h>
 #include <kernel/task/resource.h>
 #include <kernel/task.h>
+#include <compiler.h>
 
 void task_init(struct task *tsk, int id, struct task *parent,
 		const char *name, struct thread *main_thread,
@@ -34,6 +35,6 @@ void task_start_exit(void) {
 	panic("single task %s called\n", __func__);
 }
 
-void __attribute__((noreturn)) task_finish_exit(void) {
+void _NORETURN task_finish_exit(void) {
 	panic("single task %s called\n", __func__);
 }

@@ -1,0 +1,8 @@
+
+package embox.driver.terminal
+
+module vt {
+	source "vtbuild.c", "vtparse.c", "vtparse_state.c"
+	@IncludeExport(path="drivers")
+	source "vtbuild.h", "vtparse.h", "vtparse_state.h", "vt.h"
+}

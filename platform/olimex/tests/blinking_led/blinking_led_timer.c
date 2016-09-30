@@ -12,7 +12,7 @@
 #include <kernel/time/timer.h>
 #include <unistd.h>
 
-EMBOX_TEST(blinking_led);
+EMBOX_TEST_SUITE("olimex blinking_led_timer");
 
 static volatile int count = 6;
 
@@ -37,12 +37,11 @@ static void timer_hdn(sys_timer_t *tmd, void *param) {
 	led1_off();
 }
 
-
-static int blinking_led(void) {
+TEST_CASE("olimex blinking_led_timer test") {
 	sys_timer_t tmr;
 	pin_config_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
 
-	timer_init_msec(&tmr, TIMER_PERIODIC, 1000, timer_hdn, NULL);
+	timer_init_start_msec(&tmr, TIMER_PERIODIC, 1000, timer_hdn, NULL);
 
 	while (count) { } ;
 

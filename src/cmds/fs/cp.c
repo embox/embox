@@ -17,8 +17,7 @@
 #include <libgen.h>
 #include <dirent.h>
 
-#include <mem/page.h>
-
+#define CP_BLOCK_SIZE 512
 #define MSG_INFO "cp: "
 
 #define CP_MKDIR_MODE 0777
@@ -63,7 +62,7 @@ static void cp_target_add_basename(const char *src, char *dst) {
 }
 
 static int cp_file(const char *src_path, const char *dst_path) {
-	char buf[PAGE_SIZE()];
+	char buf[CP_BLOCK_SIZE];
 	int src_file, dst_file;
 	int ret, bytesread;
 
@@ -81,7 +80,7 @@ static int cp_file(const char *src_path, const char *dst_path) {
 
 	lseek(dst_file, 0, SEEK_SET);
 
-	// buf optimized for whole block write
+	/* buf optimized for whole block write */
 	bytesread = 0;
 	while ((bytesread = read(src_file, buf, sizeof(buf))) > 0) {
 		if (write (dst_file, buf, bytesread)<=0) {
@@ -161,7 +160,6 @@ int main(int argc, char **argv) {
 	int opt;
 	bool recursively = false;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hrR"))) {
 		switch(opt) {
 		case 'h':

@@ -9,8 +9,6 @@
 
 #include <hal/cpu.h>
 #include <kernel/sched.h>
-#include <kernel/thread.h>
-#include <kernel/sched/schedee.h>
 
 #include <kernel/time/timer.h>
 #include <kernel/cpu/cpu.h>
@@ -50,14 +48,14 @@ void sched_ticker_fini(void) {
 	timer_close(sched_tick_timer);  // TODO err check?
 }
 
-void sched_ticker_switch(struct schedee *prev, struct schedee *next) {
-	if (prev->policy == SCHED_FIFO &&
-		next->policy != SCHED_FIFO) {
+void sched_ticker_switch(int prev_policy, int next_policy) {
+	if (prev_policy == SCHED_FIFO &&
+		next_policy != SCHED_FIFO) {
 		sched_ticker_init();
 	}
 
-	if (prev->policy != SCHED_FIFO &&
-		next->policy == SCHED_FIFO) {
+	if (prev_policy != SCHED_FIFO &&
+		next_policy == SCHED_FIFO) {
 		sched_ticker_fini();
 	}
 }

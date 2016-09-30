@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <embox/unit.h>
-#include <drivers/i2c.h>
+#include <drivers/i2c/i2c.h>
 
 EMBOX_UNIT_INIT(i2c_init);
 

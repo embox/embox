@@ -17,8 +17,9 @@
 
 #include <kernel/thread/types.h>
 #include <kernel/thread/thread_flags.h>
-#include <kernel/thread/thread_priority.h>
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/sched/current.h>
+#include <compiler.h>
 
 /**
  * Thread control block.
@@ -129,7 +130,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
  * @param run - the same in create_thread()
  * @param arg - the same in create_thread()
  */
-extern void thread_init(struct thread *t, sched_priority_t priority,
+extern void thread_init(struct thread *t, int priority,
 		void *(*run)(void *), void *arg);
 
 /**
@@ -144,7 +145,7 @@ extern void thread_init(struct thread *t, sched_priority_t priority,
  * @return Pointer to new thread
  */
 extern struct thread *thread_init_stack(void *stack, size_t stack_sz,
-	       	sched_priority_t priority, void *(*run)(void *), void *arg);
+	       	int priority, void *(*run)(void *), void *arg);
 
 /**
  * Marks the thread identified by thread as detached. When a detached
@@ -182,7 +183,7 @@ extern int thread_join(struct thread *thread, void **p_ret);
  *
  * @param ret - return code
  */
-extern void __attribute__((noreturn)) thread_exit(void *ret);
+extern void _NORETURN thread_exit(void *ret);
 
 /** Causes the calling thread to relinquish the CPU. The thread is moved to
  * the end of the queue for its static priority  and  a new thread gets to run.
@@ -219,10 +220,6 @@ extern int thread_terminate(struct thread *thread);
 extern int thread_launch(struct thread *thread);
 
 extern void thread_delete(struct thread *t);
-
-extern int thread_set_priority(struct thread *t, sched_priority_t priority);
-
-extern sched_priority_t thread_get_priority(struct thread *thread);
 
 extern void thread_set_run_arg(struct thread *t, void *run_arg);
 

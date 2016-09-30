@@ -6,15 +6,14 @@
  */
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <hal/ipl.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
-#include <fs/flags.h>
 
-#include <framework/net/family/api.h>
-#include <framework/net/sock/api.h>
-#include <framework/net/pack/api.h>
+#include "family.h"
+#include "net_sock.h"
 
 #include <util/err.h>
 #include <security/security.h>
@@ -129,7 +128,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sk->addr_len = 0;
 	sk->err = 0;
 
-	idesc_init(&sk->idesc, &task_idx_ops_socket, FS_MAY_READ | FS_MAY_WRITE);
+	idesc_init(&sk->idesc, &task_idx_ops_socket, S_IROTH | S_IWOTH);
 	sock_xattr_init(sk);
 	security_sock_create(sk);
 }

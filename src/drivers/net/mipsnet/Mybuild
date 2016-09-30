@@ -1,0 +1,19 @@
+package embox.driver.net
+
+module mipsnet {
+	option number log_level=1
+
+	option number base_addr=0x4200
+	option number irq_num=2
+	source "mipsnet.c"
+
+	option number base_addr
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq_api
+	depends embox.net.dev
+	depends embox.net.core
+	depends embox.net.entry_api
+	depends embox.net.util.show_packet
+}

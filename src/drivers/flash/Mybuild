@@ -1,15 +1,23 @@
-package embox.driver
+package embox.driver.flash
 
-module flash_emu {
-	source "flash_emu.c"
+module lib {
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "flash.h"
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "flash_dev.h"
+}
+
+module core {
+	source "flash.c"
+
 	option number dev_quantity=4
+
+	depends lib
 
 	depends embox.fs.node
 	depends embox.mem.page_api
-	depends embox.mem.sysmalloc_api
 	depends embox.mem.pool
 	depends embox.driver.block
 	depends embox.mem.phymem
 	depends embox.util.indexator
-	depends embox.driver.flash
 }

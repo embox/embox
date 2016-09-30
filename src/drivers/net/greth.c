@@ -21,6 +21,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
+#include <net/util/show_packet.h>
 #include <util/binalign.h>
 
 
@@ -141,30 +142,6 @@ static void greth_rings_init(struct greth_dev *dev) {
 	greth_alloc_rx_bd(dev, skb);
 
 }
-
-#define DEBUG 0
-#if DEBUG
-#include <kernel/printk.h>
-/* Debugging routines */
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-	int i;
-
-	irq_lock();
-	printk("\nPACKET(%d) %s:", size, title);
-	for (i = 0; i < size; i++) {
-		if (!(i % 16)) {
-			printk("\n");
-		}
-		printk(" %02hhX", *(raw + i));
-	}
-	printk("\n.\n");
-	irq_unlock();
-}
-#else
-static inline void show_packet(uint8_t *raw, int size, char *title) {
-}
-#endif
-
 
 static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	volatile struct greth_bd *bd;

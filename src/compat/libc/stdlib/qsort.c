@@ -23,8 +23,9 @@ static inline void swap(void *fst, void *snd, size_t size) {
 	memcpy(fst, temp, size);
 }
 
-void qsort(void *base, size_t nmemb, size_t size,
+void qsort(void *vbase, size_t nmemb, size_t size,
 		int(*compar)(const void *, const void *)) {
+	char *base = (char *) vbase;
 
 	if (nmemb < 4) {
 		if (nmemb == 2) {
@@ -44,11 +45,11 @@ void qsort(void *base, size_t nmemb, size_t size,
 		}
 		return;
 	} else {
-		void *pos = (rand() % nmemb) * size + base;
-		void *key = alloca(size);
-		void *i = base, *j = base + (size * (nmemb - 1));
+		char *pos = (rand() % nmemb) * size + base;
+		char *key = alloca(size);
+		char *i = base, *j = base + (size * (nmemb - 1));
 
-	    memcpy(key, pos, size);
+		memcpy(key, pos, size);
 
 		while (i <= j) {
 			while (compar(i, key) < 0) {

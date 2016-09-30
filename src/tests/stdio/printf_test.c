@@ -55,14 +55,19 @@ TEST_CASE("Test of specifier with type integer") {
 }
 
 TEST_CASE("Test of specifier with type string") {
-	char *null;
-
-	null = NULL;
-
 	TEST_STR_FMT("c", "%c", 'c');
-;
+
 	TEST_STR_FMT("hello!", "%s!", "hello");
-	TEST_STR_FMT("(null) - is NULL", "%s - is NULL", null);
+	TEST_STR_FMT("(null) - is NULL", "%s - is NULL", NULL);
+
+	TEST_STR_FMT("", "%.0s", NULL);
+	TEST_STR_FMT("(", "%.1s", NULL);
+	TEST_STR_FMT("(n", "%.2s", NULL);
+	TEST_STR_FMT("(nu", "%.3s", NULL);
+	TEST_STR_FMT("(nul", "%.4s", NULL);
+	TEST_STR_FMT("(null", "%.5s", NULL);
+	TEST_STR_FMT("(null)", "%.6s", NULL);
+	TEST_STR_FMT("(null)", "%.7s", NULL);
 }
 
 TEST_CASE("Test of specifier with type pointer") {
@@ -86,8 +91,9 @@ TEST_CASE("Test print with width, precision and alignement") {
 }
 
 TEST_CASE("Test print with sign specifiers") {
-	TEST_STR_FMT("+23 -23", "%+d %+d", 23, -23);
-	TEST_STR_FMT(" 23 -23", "% .0f % d", 23.0, -23);
+	TEST_STR_FMT("+23", "%+d", 23);
+	TEST_STR_FMT("-23", "%+d", -23);
+	TEST_STR_FMT("-23", "% d", -23);
 }
 
 TEST_CASE("Test print % symbol") {
@@ -104,13 +110,20 @@ TEST_CASE("Test of %n specifier") {
 	test_assert_equal(strlen(answer), size);
 }
 
-TEST_CASE("Test of snprintf with zero size") {
+TEST_CASE("Test of snprintf with truncated output") {
 	char random_char, backup_char;
+	char dest[4];
 
 	backup_char = random_char = 17;
 
 	test_assert_equal(3, snprintf(&random_char, 0, "012"));
 	test_assert_equal(random_char, backup_char);
+
+	test_assert_equal(4, snprintf(dest, 4, "1234"));
+	test_assert_str_equal(dest, "123");
+
+	test_assert_equal(8, snprintf(dest, 2, "12345678"));
+	test_assert_str_equal(dest, "1");
 }
 
 TEST_CASE("Test of printing with mistake in format") {
@@ -121,7 +134,9 @@ TEST_CASE("Test of printing with mistake in format") {
 }
 
 #if 0
-/* Float is disabled until the reasons (r11423) */
+/* FIXME this test should respect support_floating option of 
+ * embox.compat.libc.stdio.print. Until then, disabled
+ */
 TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("2.00", "%.2f", 1.997);
 	TEST_STR_FMT("2.0", "%.1f", 1.983183456);
@@ -140,5 +155,7 @@ TEST_CASE("Test of specifier with type float") {
 	TEST_STR_FMT("1.000000e+100", "%e", 10e+99);
 	TEST_STR_FMT("1.234560e+02", "%e", 123.456);
 	TEST_STR_FMT("+008.2346E-03", "%+013.4E", 0.00823456);
+
+	TEST_STR_FMT(" 23", "% .0f", 23.0);
 }
 #endif

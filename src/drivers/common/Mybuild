@@ -1,0 +1,26 @@
+package embox.driver
+
+module common {
+	option number device_name_len=32
+	option number max_dev_module_count=16
+
+	@IncludeExport(path="drivers")
+	source "device.h"
+
+	source "device.c"
+
+	depends embox.compat.libc.str
+	depends embox.fs.driver.devfs_dvfs
+	depends embox.util.indexator
+}
+
+module periph_memory {
+	@IncludeExport(path="drivers/common")
+	source "memory.h"
+
+	source "memory.c"
+
+	depends embox.arch.mmu
+	depends embox.mem.mmap_api
+	depends embox.util.Array
+}

@@ -1,0 +1,15 @@
+
+package embox.compat.posix.errno
+
+@Mandatory // FIXME modules should have explicit dependency on this
+@DefaultImpl(task_local)
+abstract module api { }
+
+module errno_static extends api {
+	source "errno_static.c"
+	source "errno_static.h"
+}
+
+module task_local extends api {
+	source "errno.h"
+}

@@ -40,7 +40,7 @@ static const char * sock_state_str(enum sock_state st) {
 	case SS_CLOSED:        return "CLOSED";
 	}
 
-	assert(0, "illegal socket state %d", st);
+	assertf(0, "illegal socket state %d", st);
 	return NULL;
 }
 
@@ -61,7 +61,7 @@ static const char * tcp_sock_state_str(enum tcp_sock_state st) {
 	case TCP_TIMEWAIT:     return "TIME_WAIT";
 	}
 
-	assert(0, "illegal tcp socket state %d", st);
+	assertf(0, "illegal tcp socket state %d", st);
 	return NULL;
 }
 

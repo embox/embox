@@ -27,7 +27,7 @@ typedef struct fs_driver_head {
 
 POOL_DEF(fs_driver_pool, struct fs_driver_head, OPTION_GET(NUMBER,drivers_quantity));
 
-ARRAY_SPREAD_DEF(const struct fs_driver *, __fs_drivers_registry);
+ARRAY_SPREAD_DEF(const struct fs_driver *const, __fs_drivers_registry);
 
 static DLIST_DEFINE(file_systems);
 

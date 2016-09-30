@@ -2,6 +2,8 @@ package embox.profiler
 
 @DefaultImpl(no_tracing)
 abstract module trace {
+	@IncludeExport(path="profiler/tracing")
+	source "trace.h"
 }
 
 module no_tracing extends trace {
@@ -33,4 +35,6 @@ module coverage {
 static module cyg_profile {
 	source "__cyg_profile.c"
 	source "cyg_profile.h"
+
+	depends trace
 }

@@ -18,13 +18,13 @@
 #include <net/l3/ipv4/ip.h>
 #include <net/l4/udp.h>
 
-#include <pnet/node.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/node.h>
+#include <pnet/pack/pnet_pack.h>
 
-#include <pnet/repo.h>
-#include <pnet/netfilter/match_lin.h>
-#include <pnet/core.h>
-#include <pnet/types.h>
+#include <pnet/core/repo.h>
+#include <pnet/node/skbuff_match/netfilter/match_lin.h>
+#include <pnet/core/core.h>
+#include <pnet/core/types.h>
 
 
 #define NET_NODES_CNT 0x10

@@ -1,0 +1,1 @@
+"netmanager eth0"

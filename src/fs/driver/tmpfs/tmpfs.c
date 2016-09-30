@@ -22,8 +22,8 @@
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 
-#include <embox/block_dev.h>
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
@@ -78,7 +78,7 @@ static int tmpfs_init(void * par) {
 		return res;
 	}
 
-	dev_node = ramdisk->bdev->dev_node;
+	dev_node = ramdisk->bdev->dev_vfs_info;
 	if (!dev_node) {
 		return -1;
 	}
@@ -101,26 +101,24 @@ static int tmp_ramdisk_fs_init(void) {
 EMBOX_UNIT_INIT(tmp_ramdisk_fs_init); /*TODO*/
 
 
-static int    tmpfs_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *tmpfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    tmpfs_close(struct file_desc *desc);
 static size_t tmpfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size);
-static int    tmpfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations tmpfs_fop = {
 	.open = tmpfs_open,
 	.close = tmpfs_close,
 	.read = tmpfs_read,
 	.write = tmpfs_write,
-	.ioctl = tmpfs_ioctl,
 };
 
 /*
  * file_operation
  */
 
-static int tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
-	return 0;
+static struct idesc *tmpfs_open(struct node *node, struct file_desc *desc, int flags) {
+	return &desc->idesc;
 }
 
 static int tmpfs_close(struct file_desc *desc) {
@@ -316,9 +314,6 @@ static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return bytecount;
 }
 
-static int tmpfs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
-}
 
 /*
 static int tmpfs_seek(void *file, long offset, int whence);

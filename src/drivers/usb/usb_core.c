@@ -22,7 +22,7 @@
 static DLIST_DEFINE(usb_hcds);
 
 const struct usb_desc_endpoint usb_desc_endp_control_default = {
-	.b_lenght = sizeof(struct usb_desc_endpoint),
+	.b_length = sizeof(struct usb_desc_endpoint),
 	.b_desc_type = USB_DESC_TYPE_ENDPOINT,
 	.b_endpoint_address = 0,
 	.bm_attributes = 0,
@@ -367,7 +367,7 @@ void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request,
 		unsigned short value) {
 	struct usb_hcd *hcd = port->hub->hcd;
 
-	assert(hcd->root_hub == port->hub,
+	assertf(hcd->root_hub == port->hub,
 			"%s: only root hub is supported", __func__);
 
 	hcd->ops->rhub_ctrl(port, request, value);

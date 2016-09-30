@@ -14,7 +14,7 @@
 #include <stdbool.h>
 
 #define CMDLINE_MAX_LENGTH      OPTION_GET(NUMBER, prompt_len)
-#define CMDLINE_HISTORY_SIZE    8
+#define CMDLINE_HISTORY_SIZE    OPTION_GET(NUMBER, history_size)
 
 /**
  * Command line editing history

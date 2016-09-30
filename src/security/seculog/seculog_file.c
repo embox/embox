@@ -10,7 +10,7 @@
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
 #include <fs/vfs.h>
-#include <security/seculog.h>
+#include <security/seculog/seculog.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(seculog_file_init);

@@ -56,3 +56,5 @@ abstract module cpu_info { }
 
 abstract module vfork_entry { }
 abstract module fork_entry { }
+
+abstract module mem_barriers { }

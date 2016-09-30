@@ -1,9 +1,0 @@
-package embox.test.hw
-
-module memtest {
-	option number base
-	option number offset
-	source "memory.c"
-
-	depends embox.framework.LibFramework
-}

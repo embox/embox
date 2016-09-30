@@ -22,11 +22,12 @@ VPATH := $(SRCGEN_DIR)
 %/. :
 	@$(MKDIR) $*
 
-a_prerequisites     = $(common_prereqs)
-o_prerequisites     = $(common_prereqs)
-cc_prerequisites    = $(common_prereqs)
-cpp_prerequisites   = $(common_prereqs)
-extbld_prerequisites= $(common_prereqs)
+a_prerequisites               = $(common_prereqs)
+o_prerequisites               = $(common_prereqs)
+cc_prerequisites              = $(common_prereqs)
+cpp_prerequisites             = $(common_prereqs)
+extbld_prerequisites          = $(common_prereqs)
+include_install_prerequisites = $(common_prereqs)
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
@@ -46,7 +47,28 @@ $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
-# XXX GCC built for Windows doesn't recognize /cygdrive/... absolute paths -- Eldar
-.SHELLFLAGS = -c$(if $(filter %.o %.lds,$(value @)), '$(SHELL) -c "$${0//$$PWD/.}"')
+ifeq ($(value OSTYPE),cygwin)
+# GCC built for Windows doesn't recognize /cygdrive/... absolute paths. As a
+# workaround, for every rule calling GCC (determined through the target
+# extension: .o and .lds) we invoke a sub-shell, passing a patched command to
+# it. That is,
+#
+#     sh -c 'gcc ... /cygdrive/path/to/embox/src/file.c'
+#
+# Becomes:
+#
+#     sh -c "${0//$PWD/.}" "sh -c 'gcc ... /cygdrive/path/to/embox/src/file.c'"
+#
+# Which, in turn, expands by the outer shell to (roughly) the following:
+#
+#     sh -c "sh -c 'gcc ... ./src/file.c'"
+#
+# This is a _really_ dirty hack. It also breaks the build in case of using dash
+# as a shell, since the latter doesn't understand ${PARAMETER//PATTERN/STRING}
+# expansions, resulting in a 'Bad substitution' error.
+.SHELLFLAGS = \
+	-c$(if $(filter %.o %.lds,$(value @)), \
+		'$(SHELL) -c "$${0//$$PWD/.}"')
+endif
 
 endif

@@ -224,4 +224,8 @@ extern int dns_result_free(struct dns_result *result);
  */
 extern const char * dns_get_nameserver(void);
 
+extern char *dns_set_nameserver(char *nameserver);
+
+extern char *dns_init_nameserver(char *nameserver);
+
 #endif /* NET_LIB_DNS_H_ */

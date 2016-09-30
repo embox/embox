@@ -24,17 +24,17 @@ static __trap_handler testtrap_handlers[TRAP_TABLE_SIZE];
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 	switch(type) {
 	case TRAP_TYPE_HARDTRAP:
-		assert(number + CONFIG_MIN_HWTRAP_NUMBER < CONFIG_MIN_INTERRUPT_NUMBER,
+		assertf(number + CONFIG_MIN_HWTRAP_NUMBER < CONFIG_MIN_INTERRUPT_NUMBER,
 				"hard trap - 0x%x\n", number);
 		testtrap_handlers[number + CONFIG_MIN_HWTRAP_NUMBER] = handler;
 		break;
 	case TRAP_TYPE_INTERRUPT:
-		assert(number + CONFIG_MIN_INTERRUPT_NUMBER < CONFIG_MIN_SOFTTRAP_NUMBER,
+		assertf(number + CONFIG_MIN_INTERRUPT_NUMBER < CONFIG_MIN_SOFTTRAP_NUMBER,
 				"irq trap - 0x%x\n", number);
 		testtrap_handlers[number + CONFIG_MIN_INTERRUPT_NUMBER] = handler;
 		break;
 	case TRAP_TYPE_SOFTTRAP:
-		assert(number + CONFIG_MIN_SOFTTRAP_NUMBER < TRAP_TABLE_SIZE,
+		assertf(number + CONFIG_MIN_SOFTTRAP_NUMBER < TRAP_TABLE_SIZE,
 				"soft trap - 0x%x\n", number);
 		testtrap_handlers[number + CONFIG_MIN_SOFTTRAP_NUMBER] = handler;
 		break;

@@ -7,6 +7,7 @@ static module passwd {
 
 	depends passwd_db
 	depends crypt
+	depends embox.compat.libc.stdio.file_ops
 }
 
 @DefaultImpl(passwd_db_static)

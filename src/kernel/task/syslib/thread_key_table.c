@@ -41,7 +41,7 @@ out:
 }
 
 int task_thread_key_destroy(struct task *task, size_t idx) {
-	int res;
+	int res = ENOERR;
 	struct thread_key_table *kt;
 
 	kt = task_resource_thread_key_table(task);

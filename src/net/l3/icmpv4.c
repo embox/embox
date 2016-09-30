@@ -12,11 +12,16 @@
  * @author Ilia Vaprol
  */
 
-#include <arpa/inet.h>
+
 #include <errno.h>
 #include <assert.h>
+#include <string.h>
+#include <arpa/inet.h>
+#include <stdarg.h>
+#include <stdint.h>
 
 #include <util/math.h>
+#include <util/log.h>
 
 #include <net/inetdevice.h>
 #include <net/l3/ipv4/ip.h>
@@ -26,11 +31,8 @@
 #include <net/l2/ethernet.h>
 #include <net/if_packet.h>
 #include <net/lib/ipv4.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <stdarg.h>
-#include <stdint.h>
 
+#include <embox/net/pack.h>
 #include <embox/net/proto.h>
 
 #include <kernel/time/ktime.h>
@@ -269,7 +271,7 @@ static int icmp_rcv(struct sk_buff *skb) {
 
 	switch (icmph->type) {
 	default:
-		//printk("icmp_rcv: unknown type: %hhu\n", icmph->type);
+		log_error("icmp_rcv: unknown type: %hhu\n", icmph->type);
 		break; /* error: unknown type */
 	case ICMP_ECHO_REPLY:
 	case ICMP_TIMESTAMP_REPLY:
@@ -316,8 +318,8 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	uint8_t *body_msg;
 	size_t body_msg_sz;
 
-	if (!(ip_is_local(ip_hdr(skb)->saddr, false, false)
-				|| ip_is_local(ip_hdr(skb)->daddr, false, false))
+	if (!(ip_is_local(ip_hdr(skb)->saddr, 0)
+				|| ip_is_local(ip_hdr(skb)->daddr, 0))
 			|| (ip_hdr(skb)->frag_off & htons(IP_OFFSET))
 			|| (ip_data_length(ip_hdr(skb)) < ICMP_DISCARD_MIN_SIZE)
 			|| (ip_hdr(skb)->proto != IPPROTO_ICMP)
@@ -329,11 +331,11 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 
 	switch (type) {
 	default:
-		assert(0, "bad type for discard");
+		assertf(0, "bad type for discard");
 		body_msg = (uint8_t *)&body.__body_msg_storage[0];
 		break; /* error: bad type for discard */
 	case ICMP_DEST_UNREACH:
-		assert(code < __ICMP_DEST_UNREACH_MAX,
+		assertf(code < __ICMP_DEST_UNREACH_MAX,
 				"incorrect code for type");
 		va_start(extra, code);
 		body.dest_unreach.zero = 0;
@@ -343,12 +345,12 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		body_msg = &body.dest_unreach.msg[0];
 		break;
 	case ICMP_SOURCE_QUENCH:
-		assert(code == 0, "incorrect code for type");
+		assertf(code == 0, "incorrect code for type");
 		body.source_quench.zero = 0;
 		body_msg = &body.source_quench.msg[0];
 		break;
 	case ICMP_REDIRECT:
-		assert(code < __ICMP_REDIRECT_MAX,
+		assertf(code < __ICMP_REDIRECT_MAX,
 				"incorrect code for type");
 		va_start(extra, code);
 		memcpy(&body.redirect.gateway,
@@ -358,13 +360,13 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		body_msg = &body.redirect.msg[0];
 		break;
 	case ICMP_TIME_EXCEED:
-		assert(code < __ICMP_TIME_EXCEED_MAX,
+		assertf(code < __ICMP_TIME_EXCEED_MAX,
 				"incorrect code for type");
 		body.time_exceed.zero = 0;
 		body_msg = &body.time_exceed.msg[0];
 		break;
 	case ICMP_PARAM_PROB:
-		assert(code < __ICMP_PARAM_PROB_MAX,
+		assertf(code < __ICMP_PARAM_PROB_MAX,
 				"incorrect code for type");
 		va_start(extra, code);
 		body.param_prob.ptr = code != ICMP_PTR_ERROR ? 0

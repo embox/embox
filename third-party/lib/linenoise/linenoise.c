@@ -341,7 +341,7 @@ void linenoiseAddCompletion(linenoiseCompletions_t *lc, char *str) {
  * Rewrite the currently edited line accordingly to the buffer content,
  * cursor position, and number of columns of the terminal. */
 static void refreshSingleLine(struct linenoiseState *l) {
-    char seq[64];
+    char seq[80];
     size_t plen = strlen(l->prompt);
     /*int fdin = l->fdin;*/
     int fdout = l->fdout;
@@ -358,6 +358,16 @@ static void refreshSingleLine(struct linenoiseState *l) {
         len--;
     }
 
+    if (write(fdout, "\r", 1) == -1) return;
+    //seq[0] = '\r';
+    memset(seq, ' ', sizeof(seq));
+    //seq[sizeof(seq) - 1] = '\r';
+    //memcpy(seq + 1, l->prompt, strlen(l->prompt));
+    if (write(fdout, seq, sizeof(seq)) == -1) return;
+    if (write(fdout, "\r", 1) == -1) return;
+    if (write(fdout,l->prompt,strlen(l->prompt)) == -1) return;
+    if (write(fdout,buf,len) == -1) return;
+#if 0
     /* Cursor to left edge */
     snprintf(seq,64,"\x1b[0G");
     if (write(fdout,seq,strlen(seq)) == -1) return;
@@ -369,7 +379,7 @@ static void refreshSingleLine(struct linenoiseState *l) {
     if (write(fdout,seq,strlen(seq)) == -1) return;
     /* Move cursor to original position. */
     snprintf(seq,64,"\x1b[0G\x1b[%dC", (int)(pos+plen));
-    if (write(fdout,seq,strlen(seq)) == -1) return;
+#endif
 }
 
 /* Multi line low level line refresh.
@@ -568,7 +578,11 @@ void linenoiseEditBackspace(struct linenoiseState *l) {
         l->pos--;
         l->len--;
         l->buf[l->len] = '\0';
-        refreshLine(l);
+	/* Erase last symbol */
+	write(l->fdout, "\b \b", 3);
+#if 0
+	refreshLine(l);
+#endif
     }
 }
 
@@ -648,8 +662,10 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
         switch(c) {
         case 10:    /* '\n' enter */
         case 13:    /* '\r' enter */
-            history_len--;
-            sysfree(history[history_len]);
+	    if (history_len) {
+                history_len--;
+                sysfree(history[history_len]);
+	    }
             return (int)l.len;
         case 3:     /* ctrl-c */
             errno = EAGAIN;
@@ -663,8 +679,10 @@ static int linenoiseEdit(int fdin, int fdout, char *buf, size_t buflen, const ch
             if (l.len > 0) {
                 linenoiseEditDelete(&l);
             } else {
-                history_len--;
-                sysfree(history[history_len]);
+                if (history_len) {
+                    history_len--;
+                    sysfree(history[history_len]);
+                }
                 return -1;
             }
             break;

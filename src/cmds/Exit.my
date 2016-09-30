@@ -6,6 +6,8 @@ package embox.cmd
 	man="")
 module exit {
 	source "exit.c"
+	depends embox.compat.posix.proc.exit
+	depends embox.compat.libc.stdlib.core
 }
 
 @AutoCmd
@@ -14,4 +16,5 @@ module exit {
 	man="")
 module logout {
 	source "logout.c"
+	depends embox.compat.posix.proc.exit
 }

@@ -12,9 +12,13 @@
 #include <assert.h>
 #include <mem/objalloc.h>
 
-#include <pnet/core.h>
-#include <pnet/graph.h>
-#include <pnet/node.h>
+#include <pnet/core/core.h>
+#include <pnet/core/graph.h>
+#include <pnet/core/node.h>
+
+#include <framework/mod/options.h>
+
+#define CONFIG_PNET_GRAPH_CNT OPTION_GET(NUMBER,pnet_graph_quantity)
 
 OBJALLOC_DEF(graphs, struct pnet_graph, CONFIG_PNET_GRAPH_CNT);
 

@@ -10,6 +10,9 @@ package embox.cmd.fs
 			mkdir [ -m MODE ] directory_name
 		DESCRIPTION
 			mkdir is used to create a directory
+		OPTIONS
+			-v
+				Create virtual directory. Could be useful for readonly FS.
 		AUTHORS
 			Nikolay Korotky
 	''')
@@ -18,7 +21,6 @@ module mkdir {
 
 	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
-	depends embox.fs.core
 	depends embox.framework.LibFramework
 	depends embox.compat.posix.fs.umask
 }

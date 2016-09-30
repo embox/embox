@@ -9,16 +9,9 @@
 
 #include <drivers/diag.h>
 
-char diag_getc(void) {
-	return 0;
+static void diag_stub_putc(const struct diag *diag, char ch)  {
 }
 
-void diag_putc(char ch) {
-}
-
-int diag_kbhit(void) {
-	return 0;
-}
-
-void diag_init(void) {
-}
+DIAG_OPS_DECLARE(
+	.putc = diag_stub_putc,
+);

@@ -103,28 +103,6 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 
 	return NULL;
 }
-#if 0
-uint32_t mmap_create_stack(struct emmap *mmap) {
-	mmap->stack_marea = mmap_alloc_marea(mmap, 1024, 0);
-
-	if (!mmap->stack_marea) {
-		return 0;
-	}
-
-	return mmap->stack_marea->end;
-}
-
-void* mmap_create_heap(struct emmap *mmap) {
-	mmap->heap_marea = mmap_alloc_marea(mmap, 4096, 0);
-
-	if (!mmap->heap_marea) {
-		return NULL;
-	}
-
-	mmap->brk = (void *) mmap->heap_marea->start;
-	return mmap->brk;
-}
-#endif
 
 int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 	return 0;
@@ -135,8 +113,6 @@ static int init() {
  	 * Initializing this module early was lead to all except 32 pages
 	 * belong to mmap_nommu, and I see no reason to do it. Anton Kozlov
 	 */
-
-	/*mem_page_count = (__phymem_allocator->free / PAGE_SIZE()) - 32;*/
 
 	mem_page_count = 1;
 
@@ -153,4 +129,34 @@ static int fini() {
 	phymem_free((void *) mem_start, mem_page_count);
 
 	return 0;
+}
+
+/* More stubs */
+int mmap_kernel_init(void) {
+	return 0;
+}
+
+int mmap_kernel_inited(void) {
+	return 0;
+}
+
+struct emmap *mmap_early_emmap(void) {
+	return NULL;
+}
+
+struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags, bool is_allocated) {
+	return NULL;
+}
+
+void marea_destroy(struct marea *marea) {
+}
+
+void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
+}
+
+void mmap_del_marea(struct marea *marea) {
+}
+
+int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
+	return -1;
 }

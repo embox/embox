@@ -9,17 +9,20 @@
 
 #include <string.h>
 #include <embox/unit.h>
+#include <util/log.h>
 
-#include <drivers/bluetooth/blue_core4.h>
+#include <drivers/bluetooth/lego/blue_core4.h>
 #include <drivers/bluetooth/bluetooth.h>
 
-#include <pnet/core.h>
-#include <pnet/node.h>
-#include <pnet/repo.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/core.h>
+#include <pnet/core/node.h>
+#include <pnet/core/repo.h>
+#include <pnet/pack/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
 
+#include <framework/mod/options.h>
 
+#define CONFIG_BLUETOOTH_PIN OPTION_STRING_GET(bluetooth_pin)
 
 EMBOX_UNIT_INIT(nxt_bluecore_init);
 
@@ -46,16 +49,6 @@ static int (*data_hnd)(void *pack_data) = get_length;
 static int (*ctrl_hnd)(void *pack_data) = wait_connect;
 
 static struct bc_msg out_msg;
-
-/*#define DEBUG*/
-#ifdef DEBUG
-#include <kernel/printk.h>
-static void print_msg(struct bc_msg_body *msg) {
-	printk("P%x:", msg->type);
-}
-#else
-#define print_msg(msg)
-#endif
 
 static uint16_t calc_chksumm(struct bc_msg * msg) {
 	uint16_t sum;
@@ -85,7 +78,7 @@ static int process_msg(struct bc_msg_body *msg) {
 	static int bt_bc_handle = 0;
 
 	int res = 0;
-	print_msg(msg);
+	log_debug("P%x:", msg->type);
 
 	switch (msg->type) {
 	case MSG_RESET_INDICATION:

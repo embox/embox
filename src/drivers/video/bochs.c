@@ -7,53 +7,42 @@
 
 #include <errno.h>
 #include <string.h>
-#include <assert.h>
 #include <sys/mman.h>
-#include <util/binalign.h>
-#include <mem/page.h>
+
 #include <drivers/pci/pci.h>
+#include <drivers/pci/pci_driver.h>
+
 #include <drivers/video/fb.h>
 #include <drivers/video/vbe.h>
-#include <drivers/video/vesa_modes.h>
+
+#include <util/binalign.h>
 #include <framework/mod/options.h>
-#include <drivers/pci/pci_driver.h>
+#include <mem/page.h>
 
 PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
-static int bochs_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {
-	return 0;
-}
+static int bochs_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
 
-static int bochs_set_par(struct fb_info *info) {
-	info->screen_size = info->var.xres * info->var.yres
-			* (info->var.bits_per_pixel / 8);
+	if (var->xres > VBE_DISPI_MAX_XRES 
+			|| var->yres > VBE_DISPI_MAX_YRES 
+			|| var->bits_per_pixel > VBE_DISPI_MAX_BPP) {
+		return -EINVAL;
+	}
+
 	vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_DISABLED);
-	vbe_write(VBE_DISPI_INDEX_XRES, info->var.xres);
-	vbe_write(VBE_DISPI_INDEX_YRES, info->var.yres);
-	vbe_write(VBE_DISPI_INDEX_BPP, info->var.bits_per_pixel);
-	vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, info->var.xres_virtual);
-	vbe_write(VBE_DISPI_INDEX_VIRT_HEIGHT, info->var.yres_virtual);
-	vbe_write(VBE_DISPI_INDEX_X_OFFSET, info->var.xoffset);
-	vbe_write(VBE_DISPI_INDEX_Y_OFFSET, info->var.yoffset);
+	vbe_write(VBE_DISPI_INDEX_XRES, var->xres);
+	vbe_write(VBE_DISPI_INDEX_YRES, var->yres);
+	vbe_write(VBE_DISPI_INDEX_BPP, var->bits_per_pixel);
+	vbe_write(VBE_DISPI_INDEX_VIRT_WIDTH, var->xres_virtual);
+	vbe_write(VBE_DISPI_INDEX_VIRT_HEIGHT, var->yres_virtual);
+	vbe_write(VBE_DISPI_INDEX_X_OFFSET, var->xoffset);
+	vbe_write(VBE_DISPI_INDEX_Y_OFFSET, var->yoffset);
 	vbe_write(VBE_DISPI_INDEX_ENABLE, VBE_DISPI_ENABLED | VBE_DISPI_LFB_ENABLED);
 
 	return 0;
 }
 
-static const struct fb_ops bochs_ops = {
-	.fb_check_var = bochs_check_var,
-	.fb_set_par = bochs_set_par,
-	.fb_copyarea = fb_copyarea,
-	.fb_fillrect = fb_fillrect,
-	.fb_imageblit = fb_imageblit,
-	.fb_cursor = fb_cursor
-};
-
-static const struct fb_fix_screeninfo bochs_fix_screeninfo = {
-	.name = "Bochs framebuffer"
-};
-
-static void fill_var(struct fb_var_screeninfo *var) {
+static int bochs_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 
 	memset(var, 0, sizeof(struct fb_var_screeninfo));
 
@@ -65,39 +54,33 @@ static void fill_var(struct fb_var_screeninfo *var) {
 	var->xoffset        = vbe_read(VBE_DISPI_INDEX_X_OFFSET);
 	var->yoffset        = vbe_read(VBE_DISPI_INDEX_Y_OFFSET);
 
+	return 0;
 }
 
+static const struct fb_ops bochs_ops = {
+	.fb_set_var = bochs_set_var,
+	.fb_get_var = bochs_get_var,
+};
+
 static int bochs_init(struct pci_slot_dev *pci_dev) {
-	int ret;
+	char *mmap_base = (char *)(pci_dev->bar[0] & ~0xf); /* FIXME */
+	size_t mmap_len = binalign_bound(VBE_DISPI_MAX_XRES 
+			* VBE_DISPI_MAX_YRES 
+			* VBE_DISPI_MAX_BPP / 8, PAGE_SIZE());
 	struct fb_info *info;
-	size_t mmap_len;
 
-	assert(pci_dev != NULL);
-
-	info = fb_alloc();
-	if (info == NULL) {
-		return -ENOMEM;
-	}
-
-	memcpy(&info->fix, &bochs_fix_screeninfo, sizeof info->fix);
-	fill_var(&info->var);
-
-	info->ops = &bochs_ops;
-	info->screen_base = (void *)(pci_dev->bar[0] & ~0xf); /* FIXME */
-	mmap_len = binalign_bound(VBE_DISPI_MAX_XRES * VBE_DISPI_MAX_YRES * VBE_DISPI_MAX_BPP / 8, PAGE_SIZE());
-
-	if (MAP_FAILED == mmap_device_memory(info->screen_base,
+	if (MAP_FAILED == mmap_device_memory(mmap_base,
 				mmap_len,
 			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
 				MAP_FIXED,
-				(unsigned long) info->screen_base)) {
+				(unsigned long) mmap_base)) {
 		return -EIO;
 	}
 
-	ret = fb_register(info);
-	if (ret != 0) {
-		fb_release(info);
-		return ret;
+	info = fb_create(&bochs_ops, mmap_base, mmap_len);
+	if (info == NULL) {
+		munmap(mmap_base, mmap_len);
+		return -ENOMEM;
 	}
 
 	return 0;

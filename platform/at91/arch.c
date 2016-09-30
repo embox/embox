@@ -10,6 +10,12 @@
 #include <drivers/watchdog.h>
 #include <drivers/at91sam7s256.h>
 
+
+#include <framework/mod/options.h>
+
+#define CONFIG_SYS_CLK_MUL OPTION_GET(NUMBER,sys_clk_mul)
+#define CONFIG_SYS_CLK_DIV OPTION_GET(NUMBER,sys_clk_div)
+
 static void initialize_main_clock(void) {
 	REG_STORE(AT91C_CKGR_MOR,
 		AT91C_CKGR_MOSCEN | (AT91C_CKGR_OSCOUNT & (6 << 8)));

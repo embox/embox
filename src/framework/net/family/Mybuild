@@ -1,7 +1,0 @@
-package embox.framework.net
-
-module family {
-	source "core.c"
-
-	depends embox.util.Array
-}

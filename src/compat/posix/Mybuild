@@ -1,7 +1,7 @@
 package embox.compat.posix
 
 module LibPosix {
-	depends embox.compat.posix.fs.All
+	depends embox.compat.posix.fs.all
 	depends embox.compat.posix.idx.All
 	depends embox.compat.posix.net.All
 	depends embox.compat.posix.proc.All

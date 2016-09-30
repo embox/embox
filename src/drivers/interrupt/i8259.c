@@ -14,7 +14,6 @@
 #include <asm/io.h>
 #include <asm/regs.h>
 #include <asm/traps.h>
-#include <drivers/i8259.h>
 #include <drivers/irqctrl.h>
 #include <hal/arch.h>
 #include <hal/reg.h>
@@ -82,7 +81,7 @@ void irqctrl_force(unsigned int irq) {
 	// TODO Emm?.. -- Eldar
 }
 
-int i8259_irq_pending(unsigned int irq) {
+int irqctrl_pending(unsigned int irq) {
 	if (irq < 8) {
 		return in8(PIC1_COMMAND) & (1 << irq);
 	} else {
@@ -91,7 +90,7 @@ int i8259_irq_pending(unsigned int irq) {
 }
 
 /* Sends an EOI (end of interrupt) signal to the PICs. */
-void i8259_send_eoi(unsigned int irq) {
+void irqctrl_eoi(unsigned int irq) {
 	if (irq >= 8) {
 		/* Send reset signal to slave. */
 		out8(NON_SPEC_EOI, PIC2_COMMAND);

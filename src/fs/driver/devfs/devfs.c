@@ -9,8 +9,9 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 
-#include <embox/device.h>
-#include <embox/block_dev.h>
+#include <drivers/char_dev.h>
+#include <drivers/block_dev.h>
+#include <drivers/block_dev/flash/flash_dev.h>
 
 static int devfs_init(void *par) {
 	return 0;

@@ -6,10 +6,10 @@
  * @author Anton Kozlov
  */
 
-#include <pnet/core.h>
-#include <pnet/node.h>
-#include <pnet/repo.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/core.h>
+#include <pnet/core/node.h>
+#include <pnet/core/repo.h>
+#include <pnet/pack/pnet_pack.h>
 
 static int net_null_tx_hnd(struct pnet_pack *pack) {
 	pnet_pack_destroy(pack);

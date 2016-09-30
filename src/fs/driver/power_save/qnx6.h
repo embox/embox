@@ -63,7 +63,7 @@ struct qnx6_superblock {
 	unsigned char s_blocksize_bits;
 	unsigned long s_blocksize;
 	void *s_fs_info;
-	block_dev_t *s_bdev;
+	struct block_dev *s_bdev;
 	struct node *s_root;
 };
 
@@ -103,7 +103,7 @@ typedef int (*filldir_t)(void *, const char *, int, loff_t, __u64, unsigned);
 static inline struct buffer_head *sb_bread(struct qnx6_superblock *sb, unsigned int block) {
 	struct buffer_head *bh = bcache_getblk_locked(sb->s_bdev, block, sb->s_blocksize);
 	unsigned fs_blksize = sb->s_blocksize;
-	block_dev_t *bdev = bh->bdev;
+	struct block_dev *bdev = bh->bdev;
 	unsigned bdev_blksize;
 
 	/* FIXME */
@@ -176,74 +176,32 @@ enum {
 
 static inline __u64 fs64_to_cpu(struct qnx6_sb_info *sbi, __fs64 n)
 {
-	//XXX
-#if 0
-	if (sbi->s_bytesex == BYTESEX_LE)
-		return le64_to_cpu(n);
-	else
-		return be64_to_cpu(n);
-#endif
 	return n;
 
 }
 
 static inline __fs64 cpu_to_fs64(struct qnx6_sb_info *sbi, __u64 n)
 {
-	//XXX
-#if 0
-	if (sbi->s_bytesex == BYTESEX_LE)
-		return (__force __fs64)cpu_to_le64(n);
-	else
-		return (__force __fs64)cpu_to_be64(n);
-#endif
 	return n;
 }
 
 static inline __u32 fs32_to_cpu(struct qnx6_sb_info *sbi, __fs32 n)
 {
-	//XXX
-#if 0
-	if (sbi->s_bytesex == BYTESEX_LE)
-		return le32_to_cpu((__force __le32)n);
-	else
-		return be32_to_cpu((__force __be32)n);
-#endif
 	return n;
 }
 
 static inline __fs32 cpu_to_fs32(struct qnx6_sb_info *sbi, __u32 n)
 {
-	//XXX
-#if 0
-	if (sbi->s_bytesex == BYTESEX_LE)
-		return (__force __fs32)cpu_to_le32(n);
-	else
-		return (__force __fs32)cpu_to_be32(n);
-#endif
 	return n;
 }
 
 static inline __u16 fs16_to_cpu(struct qnx6_sb_info *sbi, __fs16 n)
 {
-	//XXX
-#if 0
-	if (sbi->s_bytesex == BYTESEX_LE)
-		return le16_to_cpu((__force __le16)n);
-	else
-		return be16_to_cpu((__force __be16)n);
-#endif
 	return n;
 }
 
 static inline __fs16 cpu_to_fs16(struct qnx6_sb_info *sbi, __u16 n)
 {
-	//XXX
-#if 0
-	if (sbi->s_bytesex == BYTESEX_LE)
-		return (__force __fs16)cpu_to_le16(n);
-	else
-		return (__force __fs16)cpu_to_be16(n);
-#endif
 	return n;
 }
 
@@ -263,4 +221,3 @@ extern int qnx6_readdir(struct qnx_file *filp, void *dirent, filldir_t filldir);
 
 extern struct buffer_head *qnx6_get_block(struct node *node, unsigned int iblock,
 			int create);
-

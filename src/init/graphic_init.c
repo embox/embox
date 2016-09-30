@@ -9,19 +9,25 @@
 
 #include <drivers/video/vesa_modes.h>
 #include <drivers/video/fb.h>
+#include <drivers/video/fb_videomodes.h>
 #include <embox/unit.h>
 
+#if !OPTION_GET(BOOLEAN, manual_settings)
 #include <module/embox/arch/x86/boot/multiboot.h>
-
-#define VESA_MODE_NUMBER OPTION_GET(NUMBER,vesa_mode)
-#define FB_NAME OPTION_STRING_GET(fb_name)
-#define FB_INIT OPTION_GET(NUMBER,fb_init)
 
 #define MBOOTMOD embox__arch__x86__boot__multiboot
 
 #define SET_X   OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_width)
 #define SET_Y   OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_height)
 #define SET_BPP OPTION_MODULE_GET(MBOOTMOD,NUMBER,video_depth)
+
+#else
+
+#define SET_X   OPTION_GET(NUMBER, set_x)
+#define SET_Y   OPTION_GET(NUMBER, set_y)
+#define SET_BPP OPTION_GET(NUMBER, set_bpp)
+
+#endif
 
 EMBOX_UNIT_INIT(mode_init);
 
@@ -33,9 +39,10 @@ static int mode_init(void) {
 		.y = SET_Y,
 		.bpp = SET_BPP,
 	};
+	struct fb_var_screeninfo var;
 	int ret;
 
-	fbinfo = fb_lookup(FB_NAME);
+	fbinfo = fb_lookup(0);
 	if (fbinfo == NULL) {
 		return -ENODEV;
 	}
@@ -45,12 +52,10 @@ static int mode_init(void) {
 		return -EINVAL;
 	}
 
-	ret = fb_try_mode(&fbinfo->var, fbinfo, mode, resbpp.bpp);
-	if (ret != 0) {
-		return -EIO;
-	}
+	fb_videomode_to_var(&var, mode);
+	var.bits_per_pixel = SET_BPP;
 
-	ret = fbinfo->ops->fb_set_par(fbinfo);
+	ret = fb_set_var(fbinfo, &var);
 	if (ret != 0) {
 		return -EIO;
 	}

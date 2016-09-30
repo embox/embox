@@ -9,9 +9,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <security/smac.h>
-#include <fs/flags.h>
+#include <sys/stat.h>
 #include <errno.h>
+
+#include <security/smac/smac.h>
+
 
 extern int cmd_smac_adm_user_set(const char *name, const char *label);
 extern int cmd_smac_adm_user_get(const char *name, char *buf, size_t buflen);
@@ -33,9 +35,9 @@ static int print_rules(void) {
 
 	for (ent = env->entries, i = env->n; i > 0; ++ent, --i) {
 		printf("%16s %16s    ", ent->subject, ent->object);
-		putchar(ent->flags & FS_MAY_READ  ? 'r' : '-');
-		putchar(ent->flags & FS_MAY_WRITE ? 'w' : '-');
-		putchar(ent->flags & FS_MAY_EXEC ?  'x' : '-');
+		putchar(ent->flags & S_IROTH  ? 'r' : '-');
+		putchar(ent->flags & S_IWOTH ? 'w' : '-');
+		putchar(ent->flags & S_IXOTH ?  'x' : '-');
 		putchar('\n');
 	}
 
@@ -46,9 +48,9 @@ static int new_rule(const char *subject, const char *object,
 		const char *access) {
 	int flags = 0;
 
-	flags |= strchr(access, 'r') ? FS_MAY_READ  : 0;
-	flags |= strchr(access, 'w') ? FS_MAY_WRITE : 0;
-	flags |= strchr(access, 'x') ? FS_MAY_EXEC  : 0;
+	flags |= strchr(access, 'r') ? S_IROTH  : 0;
+	flags |= strchr(access, 'w') ? S_IWOTH : 0;
+	flags |= strchr(access, 'x') ? S_IXOTH  : 0;
 
 	return smac_addenv(subject, object, flags);
 }

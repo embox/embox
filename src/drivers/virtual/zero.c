@@ -5,11 +5,13 @@
  * @date 08.09.11
  * @author Anton Kozlov
  */
-
-#include <embox/device.h>
-#include <fs/file_operation.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <drivers/char_dev.h>
+#include <fs/file_operation.h>
+#include <fs/file_desc.h>
+
 
 #define ZERO_DEV_NAME "zero"
 
@@ -17,10 +19,10 @@
 static int zero_init(void);
 static const struct kfile_operations zero_ops;
 
-EMBOX_DEVICE(ZERO_DEV_NAME, &zero_ops, zero_init);
+CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_ops, NULL, zero_init);
 
-static int zero_open(struct node *node, struct file_desc *file_desc, int flags) {
-	return 0;
+static struct idesc *zero_open(struct node *node, struct file_desc *file_desc, int flags) {
+	return &file_desc->idesc;
 }
 
 static int zero_close(struct file_desc *desc) {

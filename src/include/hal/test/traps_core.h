@@ -21,6 +21,22 @@
  */
 extern void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler);
 
+typedef trap_handler_t fault_handler_t;
+
+enum fault_type {
+	MMU_DATA_SECUR,
+	MMU_DATA_MISS,
+	DIV_ZERO,
+};
+
+/**
+ * @brief Set handler for IRQ, abort, traps and so on
+ *
+ * @param test_event_type
+ * @param handler
+ */
+extern void set_fault_handler(enum fault_type type, fault_handler_t handler);
+
 /**
  * Causes trap with specified number
  * @param number
@@ -36,5 +52,16 @@ extern int testtraps_fire_softtrap(uint32_t number, void *data);
  * @retval NULL on fail
  */
 extern traps_env_t *testtraps_env(void);
+
+
+/**
+ * @brief Switch to user mode to have some faults
+ */
+extern void mmu_drop_privileges(void);
+
+/**
+ * @brief Switch to sys mode to avoid errors in kernel space
+ */
+extern void mmu_sys_privileges(void);
 
 #endif /* TEST_TRAPS_CORE_H_ */

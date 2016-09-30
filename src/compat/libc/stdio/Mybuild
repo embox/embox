@@ -8,6 +8,7 @@ static module print {
 
 	depends embox.compat.libc.math                   // depends from support_floating value
 	@NoRuntime depends embox.compat.libc.stdlib.core // atoi
+	@NoRuntime depends embox.compat.libc.str         // strlen
 	@NoRuntime depends embox.compat.libc.type
 }
 
@@ -29,7 +30,10 @@ static module open {
 	source "fopen.c"
 	depends file_pool
 	depends embox.compat.posix.fs.open
+	depends embox.compat.posix.fs.close
 	@NoRuntime depends embox.compat.libc.str
+	depends embox.compat.libc.str_dup
+	depends embox.compat.posix.idx.dup
 }
 
 static module fseek {
@@ -40,19 +44,57 @@ static module fseek {
 
 static module printf {
 	source "printf.c"
+	source "fprintf.c"
+
+	depends fputc
+	depends fputs
+	/* gcc automatically repalces printf()
+	 * w/ puts() if no arguments after format are given
+	 */
 }
 
-static module file_ops {
+static module fwrite {
+	source "fwrite.c"
+
+	depends embox.compat.posix.fs.write
+	depends embox.kernel.task.resource.errno
+
+	depends funopen
+}
+
+static module fputc {
+	source "fputc.c"
+
+	depends fwrite
+	depends stdio_static
+}
+
+static module fputs {
+	source "fputs.c"
+
+	depends fputc
+}
+
+static module stdio_static {
 	source "stdfile_static.c"
+}
+
+static module funopen {
+	source "funopen.c"
+
+	depends file_pool
+}
+static module file_ops {
 
 	source "fgetc.c"
 	source "ungetc.c"
 	source "fgets.c"
 
-	source "funopen.c"
 	source "fileno.c"
+
 	source "fread.c"
-	source "fwrite.c"
+	depends embox.compat.posix.fs.read
+
 	source "fioctl.c"
 	source "fflush.c"
 	source "fclose.c"
@@ -63,17 +105,33 @@ static module file_ops {
 	depends file_pool
 	depends embox.compat.posix.fs.file_ops
 
-
-	source "fputc.c"
-	source "fputs.c"
-
 	source "printf.c"
 	source "fprintf.c"
+
 	@NoRuntime depends print
+	depends open
+	depends fputc
+	depends fputs
+	depends fwrite
+	depends stdio_static
 }
 
-static module rename {
+@DefaultImpl(rename_old)
+
+abstract module rename {
+}
+
+static module rename_old extends rename {
 	source "rename.c"
+}
+
+static module rename_dvfs extends rename {
+	source "rename_dvfs.c"
+
+	depends embox.fs.dvfs.core
+	depends embox.compat.libc.str
+	depends open
+	depends file_ops
 }
 
 static module all {
@@ -93,6 +151,8 @@ static module perror {
 
 static module scanf {
 	source "scanf.c"
+
+	depends file_ops /* ungetc() */
 }
 
 static module div {

@@ -11,6 +11,7 @@
 #include <stddef.h>
 
 extern int path_is_double_dot(const char *path);
+extern int path_is_single_dot(const char *path);
 
 /**
  * @brief Get stripped from leading '/' path and lenght of first node's name

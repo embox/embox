@@ -1,0 +1,8 @@
+package embox.driver
+
+module char_dev_dvfs extends char_dev {
+	@IncludeExport(path="drivers")
+	source "char_dev.h"
+
+	source "char_dev_dvfs.c"
+}

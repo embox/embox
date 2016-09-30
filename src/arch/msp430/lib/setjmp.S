@@ -7,42 +7,45 @@
  */
 
 #include <asm/setjmp.h>
+#include <module/embox/arch/msp430/abi.h>
+
+#define RET_ADDR_REG MSP430_SARG4
 
 .global setjmp
 setjmp:
-	pop	r14
+	pop	RET_ADDR_REG
 
-	mov 	r1, 0(r15)
-	mov 	r2, 2(r15)
-	mov 	r4, 4(r15)
-	mov 	r5, 6(r15)
-	mov 	r6, 8(r15)
-	mov 	r7, 10(r15)
-	mov 	r8, 12(r15)
-	mov 	r9, 14(r15)
-	mov 	r10, 16(r15)
-	mov 	r11, 18(r15)
+	mov 	r1, 0(MSP430_SARG1)
+	mov 	r2, 2(MSP430_SARG1)
+	mov 	r4, 4(MSP430_SARG1)
+	mov 	r5, 6(MSP430_SARG1)
+	mov 	r6, 8(MSP430_SARG1)
+	mov 	r7, 10(MSP430_SARG1)
+	mov 	r8, 12(MSP430_SARG1)
+	mov 	r9, 14(MSP430_SARG1)
+	mov 	r10, 16(MSP430_SARG1)
+	mov 	r11, 18(MSP430_SARG1)
 
-	mov 	r14, 20(r15)
+	mov 	RET_ADDR_REG, 20(MSP430_SARG1)
 
-	clr 	r15
-	br	r14
+	clr 	MSP430_SRET
+	br	RET_ADDR_REG
 
 
 .global longjmp
 longjmp:
-	mov 	@r15+, r1
-	mov 	@r15+, r2
-	mov 	@r15+, r4
-	mov 	@r15+, r5
-	mov 	@r15+, r6
-	mov 	@r15+, r7
-	mov 	@r15+, r8
-	mov 	@r15+, r9
-	mov 	@r15+, r10
-	mov 	@r15+, r11
+	mov 	@MSP430_SARG1+, r1
+	mov 	@MSP430_SARG1+, r2
+	mov 	@MSP430_SARG1+, r4
+	mov 	@MSP430_SARG1+, r5
+	mov 	@MSP430_SARG1+, r6
+	mov 	@MSP430_SARG1+, r7
+	mov 	@MSP430_SARG1+, r8
+	mov 	@MSP430_SARG1+, r9
+	mov 	@MSP430_SARG1+, r10
+	mov 	@MSP430_SARG1+, r11
 
-	mov 	@r15, r13
-	mov 	r14, r15
-	br	r13
+	mov 	@MSP430_SARG1, RET_ADDR_REG
 
+	mov 	MSP430_SARG2, MSP430_SRET
+	br	RET_ADDR_REG

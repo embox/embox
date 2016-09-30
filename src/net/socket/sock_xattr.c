@@ -10,7 +10,7 @@
 #include <util/member.h>
 #include <fs/xattr_list.h>
 #include <kernel/task/resource/security.h>
-#include <security/smac.h>
+#include <security/smac/smac.h>
 
 #include <fs/idesc.h>
 

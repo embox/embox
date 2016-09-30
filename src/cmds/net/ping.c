@@ -46,7 +46,7 @@ struct ping_info {
 	int count;           /* Stop after sending count ECHO_REQUEST packets. */
 	int padding_size;    /* The number of data bytes to be sent. */
 	int timeout;         /* Time  to wait for a response, in seconds. */
-	int interval;        /* Wait  interval seconds between sending each packet. */
+	int interval;        /* Wait  interval milliseconds between sending each packet. */
 	int pattern;         /* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
 	int ttl;             /* IP Time to Live. */
 	struct in_addr dst;  /* Destination host */
@@ -234,7 +234,8 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name, struct
 		}
 
 		timeout = min(pinfo->interval, pinfo->timeout);
-		while (timeout >= 0) {
+
+		do {
 
 			switch (poll(&fds, 1, timeout)) {
 			case 0:
@@ -254,14 +255,11 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name, struct
 				ret = -errno;
 				goto out;
 			}
-
-			timeout -= clock() - started;
-
-		}
+		} while (clock() - started < timeout);
 
 		timeout = clock() - started;
 		if (timeout < pinfo->interval) {
-			sleep(pinfo->interval - timeout);
+			sleep((pinfo->interval - timeout) / 1000);
 		}
 	}
 

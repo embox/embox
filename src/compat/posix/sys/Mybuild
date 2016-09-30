@@ -1,9 +1,0 @@
-package embox.compat.posix.sys
-
-module mman_mmu {
-	source "mman_mmu.c"
-}
-
-module mman_stub {
-	source "mman_stub.c"
-}

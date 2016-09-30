@@ -8,22 +8,25 @@
  */
 
 #include <errno.h>
-#include <framework/net/sock/api.h>
+
 #include <stddef.h>
 #include <arpa/inet.h>
-#include <net/sock.h>
 #include <sys/socket.h>
-#include <net/socket/inet_sock.h>
-#include <net/inetdevice.h>
-#include <embox/net/family.h>
 #include <string.h>
-#include <mem/misc/pool.h>
-#include <net/l3/route.h>
-#include <net/l3/ipv4/ip.h>
 #include <netinet/in.h>
 
-#include <net/socket/inet_sock.h>
+#include <net/sock.h>
+#include <net/inetdevice.h>
 
+#include "family.h"
+#include "net_sock.h"
+
+#include <mem/misc/pool.h>
+
+#include <net/l3/route.h>
+#include <net/l3/ipv4/ip.h>
+
+#include <net/socket/inet_sock.h>
 #include <framework/mod/options.h>
 
 #define MODOPS_AMOUNT_INET_SOCK OPTION_GET(NUMBER, amount_inet_sock)
@@ -55,6 +58,7 @@ static int inet_init(struct sock *sk) {
 	in_sk->sk.src_addr = (const struct sockaddr *)&in_sk->src_in;
 	in_sk->sk.dst_addr = (const struct sockaddr *)&in_sk->dst_in;
 	in_sk->sk.addr_len = sizeof(struct sockaddr_in);
+	memset(&in_sk->opt, 0, sizeof in_sk->opt);
 
 	return 0;
 }
@@ -120,7 +124,7 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		return -EAFNOSUPPORT;
 	}
 	else if ((addr_in.sin_addr.s_addr != htonl(INADDR_ANY)) &&
-			!ip_is_local(addr_in.sin_addr.s_addr, true, true)) {
+			!ip_is_local(addr_in.sin_addr.s_addr, IP_LOCAL_BROADCAST | IP_LOCAL_MULTICAST)) {
 		return -EADDRNOTAVAIL;
 	}
 

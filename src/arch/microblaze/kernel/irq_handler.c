@@ -9,8 +9,8 @@
  */
 
 #include <assert.h>
+
 #include <drivers/irqctrl.h>
-#include <asm/msr.h>
 #include <kernel/irq.h>
 
 /* we havn't interrupts acknowledgment in microblaze architecture
@@ -18,45 +18,35 @@
  * pending register
  */
 void irq_handler(void) {
-	unsigned int pending = 0;
-	int cnt = 0;
-
-	if (critical_inside(CRITICAL_IRQ_LOCK)) {
-		cnt = 1;
-	}
-
-	cnt = cnt;
-
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-		while (0 != (pending = mb_intc_get_pending())) {
-			unsigned int irq_num;
-			for (irq_num = 0; irq_num < IRQCTRL_IRQS_TOTAL; irq_num++) {
-				if (pending & (1 << irq_num)) {
-					/* disable interrupt and clear it later, since ack
- 					 * have no effect on level interrupt */
-					irqctrl_disable(irq_num);
+		unsigned int irq_num;
+		for (irq_num = 0; irq_num < IRQCTRL_IRQS_TOTAL; irq_num++) {
+			if (irqctrl_pending(irq_num)) {
+				/* disable interrupt and clear it later, since ack
+					 * have no effect on level interrupt */
+				irqctrl_disable(irq_num);
 
-					/*now we allow nested irq*/
-					ipl_enable();
+				/*now we allow nested irq*/
+				ipl_enable();
 
-					irq_dispatch(irq_num);
+				irq_dispatch(irq_num);
 
-					ipl_disable();
+				ipl_disable();
 
-					/* clear interrupt, for level interrupts it's dispatcher
- 					 * should set line low, edge gets it's ack too */
-					/* FIXME possible miss of edge interrupt happend while in self
- 					 * dispatcher */
-					irqctrl_clear(irq_num);
+				/* clear interrupt, for level interrupts it's dispatcher
+				* should set line low, edge gets it's ack too */
+				/* FIXME possible miss of edge interrupt happend while in self
+				* dispatcher */
+				irqctrl_clear(irq_num);
 
-					irqctrl_enable(irq_num);
-				}
+				irqctrl_enable(irq_num);
 			}
 		}
 	}
+
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
 }

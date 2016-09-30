@@ -6,7 +6,7 @@
  * @author Anton Bulychev
  */
 
-#include <kernel/sched/schedee.h>
+#include <kernel/sched.h>
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/sched/sched_strategy.h>
 
@@ -21,7 +21,7 @@ void runq_init(runq_t *queue) {
 }
 
 void runq_insert(runq_t *queue, struct schedee *s) {
-	s->runq_link.prio = -schedee_priority_get(&s->priority);
+	s->runq_link.prio = -schedee_priority_get(s);
 	priolist_add(&s->runq_link, queue);
 }
 

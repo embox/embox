@@ -71,7 +71,7 @@ static void lcd_write(int reg, int val) {
 }
 
 static void lcd_wait_busy(void) {
-	while (lcd_read(0) & 0x80);
+	while (lcd_read(0) & BUSY_FLAG);
 }
 
 static void lcd_write_wait(int reg, char ch) {
@@ -117,8 +117,7 @@ static void newline(void) {
 	go_to(LINE_N - 1, 0);
 }
 
-
-static void lcd_putc(char ch) {
+void lcd_putc(char ch) {
 
 	if (ch == '\n') {
 		newline();

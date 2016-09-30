@@ -54,6 +54,7 @@ package embox.cmd.net
 module ifconfig {
 	source "ifconfig.c"
 
+	depends embox.compat.libc.stdio.printf
 	depends embox.compat.posix.net.inet_addr
 	depends embox.net.core
 	depends embox.net.util.macaddr

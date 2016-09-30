@@ -8,11 +8,11 @@
 
 #include <stddef.h>
 #include <embox/cmd.h>
-#include <pnet/repo.h>
-#include <pnet/types.h>
-#include <pnet/graph.h>
+#include <pnet/core/repo.h>
+#include <pnet/core/types.h>
+#include <pnet/core/graph.h>
 #include <pnet/node/direct_comm.h>
-#include <drivers/bluetooth/blue_core4.h>
+#include <drivers/bluetooth/lego/blue_core4.h>
 
 EMBOX_CMD(bt_main);
 

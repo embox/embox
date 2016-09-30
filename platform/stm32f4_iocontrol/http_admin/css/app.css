@@ -24,7 +24,7 @@
 
 .block-pair {
   float: left;
-  min-width: 10%;
+  width: 10%;
 }
 
 .block {
@@ -35,8 +35,16 @@
 }
 
 .block-caption {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.block-desc {
   margin: 3px 0px;
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   -khtml-user-select: none;
@@ -45,7 +53,7 @@
   user-select: none;
 }
 
-.block-caption:hover {
+.block-desc:hover {
   background: #ddd;
   border-radius: 3px;
 }

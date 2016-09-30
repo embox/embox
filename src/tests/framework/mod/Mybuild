@@ -1,0 +1,6 @@
+package embox.test.framework.mod
+
+module integrity {
+	source "integrity_test.c"
+}
+

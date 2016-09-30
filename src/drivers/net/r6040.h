@@ -12,19 +12,10 @@
 #include <net/netdevice.h>
 
 #define R6040_RX_DESCRIPTORS 32
-#if 0
-/* setup descriptors, start packet reception */
-extern void r6040_init(void);
-#endif
 
 extern void r6040_rx_enable(void);
 
 extern int r6040_open(struct net_device *dev);
-
-#if 0
-/* Disable packet reception */
-extern void r6040_done(void);
-#endif
 
 /* queue packet for transmission */
 extern void r6040_tx(unsigned char* pkt, size_t length);

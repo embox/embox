@@ -156,7 +156,7 @@ in_addr_t inetdev_get_addr(struct in_device *in_dev) {
 }
 
 struct in_device * inetdev_get_first(void) {
-	return dlist_prev_entry_or_null(&inetdev_list, struct in_device, lnk);
+	return dlist_next_entry_or_null(&inetdev_list, struct in_device, lnk);
 }
 
 struct in_device * inetdev_get_next(struct in_device *in_dev) {
@@ -173,19 +173,18 @@ struct in_device * inetdev_get_next(struct in_device *in_dev) {
 }
 
 #include <linux/in.h>
-bool ip_is_local(in_addr_t addr, bool check_broadcast,
-		bool check_multicast) {
+int ip_is_local(in_addr_t addr, int opts) {
 	struct in_device *in_dev;
 
 	if (ipv4_is_loopback(addr)) {
 		return true;
 	}
 
-	if (check_broadcast && ipv4_is_broadcast(addr)) {
+	if ((opts & IP_LOCAL_BROADCAST) && ipv4_is_broadcast(addr)) {
 		return true;
 	}
 
-	if (check_multicast && ipv4_is_multicast(addr)) {
+	if ((opts & IP_LOCAL_MULTICAST) && ipv4_is_multicast(addr)) {
 		return true;
 	}
 
@@ -193,7 +192,7 @@ bool ip_is_local(in_addr_t addr, bool check_broadcast,
 		if (in_dev->ifa_address == addr) {
 			return true;
 		}
-		if (check_broadcast && (in_dev->ifa_broadcast == addr)) {
+		if ((opts & IP_LOCAL_BROADCAST) && (in_dev->ifa_broadcast == addr)) {
 			return true;
 		}
 	}

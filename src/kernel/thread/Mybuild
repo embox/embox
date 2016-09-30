@@ -15,16 +15,18 @@ module core {
 	@NoRuntime depends embox.arch.context
 
 
-	@NoRuntime depends stack_api
-	@NoRuntime depends thread_local
-	@NoRuntime depends thread_cancel
-	@NoRuntime depends signal_api
-	@NoRuntime depends thread_wait
+	depends stack_api
+	depends thread_local
+	depends thread_cancel
+	depends signal_api
+	depends thread_wait
 
-	@NoRuntime depends embox.compat.libc.assert
+	depends embox.compat.libc.assert
 
 	depends embox.kernel.cpu.common
 	depends embox.kernel.sched.current.api
+
+	depends stack_protect
 }
 
 module sched_wait {
@@ -32,7 +34,7 @@ module sched_wait {
 	source "thread_sched_wait.c"
 }
 
-@DefaultImpl(signal)
+@DefaultImpl(signal_impl)
 abstract module signal_api { }
 
 module signal_stub extends signal_api {
@@ -42,7 +44,7 @@ module signal_stub extends signal_api {
 	@NoRuntime depends embox.kernel.thread.signal.lock_stub
 }
 
-module signal extends signal_api {
+module signal_impl extends signal_api {
 	source "signal.c"
 	@NoRuntime depends embox.kernel.thread.signal.sigstate
 	@NoRuntime depends embox.kernel.thread.signal.siginfoq
@@ -101,4 +103,16 @@ abstract module thread_wait { }
 module thread_wait_stub extends thread_wait {
 	source "thread_wait_stub.c"
 	source "thread_wait_stub.h"
+}
+
+
+@DefaultImpl(stack_protect_none)
+abstract module stack_protect { }
+
+module stack_protect_impl extends stack_protect {
+	source "stack_protect.c"
+}
+
+module stack_protect_none extends stack_protect {
+	source "stack_protect_none.c"
 }

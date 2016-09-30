@@ -32,7 +32,8 @@ static void task_waitpid_deinit(const struct task *task) {
 	struct task *parent;
 
 	assert(task);
-	assert(parent = task_get_parent(task));
+	parent = task_get_parent(task);
+	assert(parent);
 
 	waitq = task_resource_waitpid(parent);
 	assert(waitq != NULL);

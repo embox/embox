@@ -9,6 +9,7 @@
 #include <hal/arch.h>
 #include <asm/cache.h>
 #include <hal/ipl.h>
+#include <compiler.h>
 
 void arch_init(void) {
 	cache_enable();
@@ -33,7 +34,7 @@ unsigned int arch_excep_disable(void) {
 	return ret;
 }
 
-void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
+void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
 
 	ipl_disable();
 	arch_excep_disable();

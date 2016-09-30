@@ -13,3 +13,11 @@ module ramdisk_test {
 	depends embox.compat.posix.fs.fsop
 	depends embox.framework.LibFramework
 }
+
+module bdev_base_test {
+	option string bdev_name = "/dev/sda"
+	option number block_number = 1
+
+	source "bdev_base_test.c"
+	depends embox.fs.driver.devfs
+}

@@ -12,7 +12,7 @@
 #include <dirent.h>
 #include <embox/test.h>
 
-__EMBOX_TEST_SUITE_AUTORUN("fs read tests", false);
+EMBOX_TEST_SUITE("fs read tests");
 
 #define FS_TEST_MOUNTPOINT "/mnt/fs_test"
 

@@ -1,0 +1,21 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "df",
+	help = "report file system disk space usage",
+	man = '''
+		NAME
+			df - report file system disk space usage
+		SYNOPSIS
+			cd [dir]
+		DESCRIPTION
+			df displays the amount of disk space available on the file system
+            containing each file
+       name  argument
+		AUTHORS
+			Anton Bondarev
+	''')
+module df {
+	source "df.c"
+	depends embox.compat.posix.fs.statvfs
+}

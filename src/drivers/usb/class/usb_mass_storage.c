@@ -13,8 +13,8 @@
 #include <embox/unit.h>
 #include <drivers/usb/usb.h>
 
-#include "usb_mass_storage.h"
-#include "scsi.h"
+#include <drivers/usb/class/usb_mass_storage.h>
+#include <drivers/scsi.h>
 
 #define USB_MS_MIGHTY_TAG 0xff00ff00
 

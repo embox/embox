@@ -41,7 +41,7 @@ main_rename_name=main_$MODULE_ID
 # to be '-D"__impl_x(...)=..."' which isn't considered by gcc as macro
 # definition ('-D__impl_x(...)=...' isn't as well).
 # Next line expands '-D"__impl_x(...)=..."' to -D"__impl_x(...)=..."
-EMBOX_CPPFLAGS=$(eval echo $EMBOX_CPPFLAGS)
+#EMBOX_CPPFLAGS=$(eval echo $EMBOX_CPPFLAGS)
 
 if [ ${MAIN_STRIPPING_LOCALS:-no} = yes ]; then
 	$OBJDUMP -t $SOURCE_OBJ | grep " g " | tr -s ' ' | cut -d \  -f 5 | \

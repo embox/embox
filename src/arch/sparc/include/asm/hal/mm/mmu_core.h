@@ -160,13 +160,6 @@
  * it must contain the value 1.
  */
 #define MMU_ET_PTD           0x1
-#if 0
-typedef unsigned long pte_t;
-typedef unsigned long pmd_t;
-typedef unsigned long pld_t;
-typedef unsigned long pgd_t;
-typedef unsigned long ctxd_t;
-#endif
 
 #define pte_val(x)    (x)
 #define pmd_val(x)    (x)

@@ -12,7 +12,9 @@ module tmpfs {
 	option number tmpfs_file_size=32
 	option number tmpfs_filesystem_size=4000
 
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.core
+	depends embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.driver.block
 	depends embox.mem.page_api
 	depends embox.mem.pool

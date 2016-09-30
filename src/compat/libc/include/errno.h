@@ -3,8 +3,9 @@
  * @brief ISO C99 Standard: 7.5 Errors.
  * @details Integer constants which represent error codes.
  *
- * @date 01.10.09
+ * @date 21.07.2015
  * @author Andrey Baboshin
+ * @author Anton Kozlov
  */
 
 #ifndef ERRNO_H_

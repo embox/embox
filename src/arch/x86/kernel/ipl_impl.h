@@ -49,6 +49,8 @@ static inline unsigned int ipl_save(void) {
 static inline void ipl_restore(unsigned int ipl) {
 	if (ipl & X86_EFLAGS_IF) {
 		__asm__ __volatile__ ("sti;\n\t" : : : "memory");
+	} else {
+		__asm__ __volatile__ ("cli;\n\t" : : : "memory");
 	}
 }
 

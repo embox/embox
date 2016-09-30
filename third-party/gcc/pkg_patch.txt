@@ -125,3 +125,40 @@ diff -aur gcc-4.8.1/gcc/config/arm/bpabi.h gcc/gcc/config/arm/bpabi.h
        __gthread_mutex_t _M_c_string_lock;
  #endif
 
+--- gcc-4.8.1/libstdc++-v3/include/ext/pb_ds/detail/bin_search_tree_/traits.hpp	2013-02-03 21:54:05.000000000 +0400
++++ gcc/libstdc++-v3/include/ext/pb_ds/detail/bin_search_tree_/traits.hpp	2013-02-03 21:54:05.000000000 +0400
+@@ -55,7 +55,7 @@
+ 	     class Cmp_Fn,
+ 	     template<typename Node_CItr,
+ 		      class Node_Itr,
+-		      class Cmp_Fn,
++		      class Cmp_Fn_,
+ 		      typename _Alloc>
+ 	     class Node_Update,
+ 	     class Node,
+@@ -161,7 +161,7 @@
+ 	     class Cmp_Fn,
+ 	     template<typename Node_CItr,
+ 		      class Node_Itr,
+-		      class Cmp_Fn,
++		      class Cmp_Fn_,
+ 		      typename _Alloc>
+ 	     class Node_Update,
+ 	     class Node,
+
+--- gcc-4.8.1/libstdc++-v3/include/ext/pointer.h	2013-02-03 21:54:05.000000000 +0400
++++ gcc/libstdc++-v3/include/ext/pointer.h	2013-02-03 21:54:05.000000000 +0400
+@@ -578,9 +578,9 @@
+       /// Type used to represent the difference between two pointers
+       typedef typename pointer::difference_type         difference_type;
+ 
+-      template<typename _Up>
+-        using rebind = typename __gnu_cxx::_Pointer_adapter<
+-	typename pointer_traits<_Storage_policy>::rebind<_Up>>;
++      //template<typename _Up>
++      //  using rebind = typename __gnu_cxx::_Pointer_adapter<
++	//typename pointer_traits<_Storage_policy>::rebind<_Up>>;
+ 
+       static pointer pointer_to(typename pointer::reference __r) noexcept
+       { return pointer(std::addressof(__r)); }
+

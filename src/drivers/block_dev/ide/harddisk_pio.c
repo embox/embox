@@ -10,23 +10,24 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <asm/io.h>
 
 #include <kernel/irq_lock.h>
 #include <drivers/ide.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
+#include <drivers/block_dev/partition.h>
 #include <mem/phymem.h>
-#include <util/indexator.h>
+
 #include <kernel/time/ktime.h>
-#include <limits.h>
 #include <kernel/thread/waitq.h>
 
 #define HD_WAIT_MS 10
 
-extern int hd_ioctl(block_dev_t *bdev, int cmd, void *args, size_t size);
-
-static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno) {
+extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
+static block_dev_driver_t idedisk_pio_driver;
+static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;
@@ -40,8 +41,8 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	bufp = (char *) buffer;
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
-	if (count % SECTOR_SIZE) {
+	sectsleft = count / bdev->block_size;
+	if (count % bdev->block_size) {
 		sectsleft++;
 	}
 
@@ -56,16 +57,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 			break;
 		}
 
-#if 0
-		/* Calculate maximum number of sectors we can transfer */
-		if (sectsleft > 256) {
-			nsects = 256;
-		} else {
-			nsects = sectsleft;
-		}
-#else
 		nsects = 1;
-#endif
 
 		/* Prepare transfer */
 		hdc->bufp = bufp;
@@ -87,7 +79,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 
 		/* Advance to next */
 		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
+		bufp += nsects * bdev->block_size;
 		blkno += nsects; /*WTF?*/
 	}
 
@@ -101,7 +93,7 @@ static int hd_read_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t bl
 	return result == 0 ? count : result;
 }
 
-static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;
@@ -116,7 +108,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 	bufp = (char *) buffer;
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
-	sectsleft = count / SECTOR_SIZE;
+	sectsleft = count / bdev->block_size;
 
 
 	while (sectsleft > 0) {
@@ -129,16 +121,8 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 			hdc->result = -EIO;
 			break;
 		}
-#if 0
-		/* Calculate maximum number of sectors we can transfer */
-		if (sectsleft > 256) {
-			nsects = 256;
-		} else {
-			nsects = sectsleft;
-		}
-#else
+
 		nsects = 1;
-#endif
 
 		/* Prepare transfer */
 		hdc->bufp = bufp;
@@ -166,8 +150,8 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 			n = nsects;
 		}
 		while (n-- > 0) {
-			pio_write_buffer(hd, hdc->bufp, SECTOR_SIZE);
-			hdc->bufp += SECTOR_SIZE;
+			pio_write_buffer(hd, hdc->bufp, bdev->block_size);
+			hdc->bufp += bdev->block_size;
 		}
 
 		/* Wait until data written */
@@ -179,7 +163,7 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 
 		/* Advance to next */
 		sectsleft -= nsects;
-		bufp += nsects * SECTOR_SIZE;
+		bufp += nsects * bdev->block_size;
 		blkno += nsects; /*WTF?*/
 	}
 
@@ -199,51 +183,44 @@ static int hd_write_pio(block_dev_t *bdev, char *buffer, size_t count, blkno_t b
 	return result == 0 ? count : result;
 }
 
+static int idedisk_init (void *args) {
+	hd_t *drive;
+	size_t size;
+	char path[PATH_MAX];
+	struct block_dev *bdev;
+
+
+	drive = (hd_t *)args;
+	/* Make new device */
+	if (drive && (drive->media == IDE_DISK) && (drive->udmamode == -1)) {
+		*path = 0;
+		strcat(path, "/dev/hd*");
+		if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
+			return drive->idx;
+		}
+		drive->bdev = block_dev_create(path,
+				&idedisk_pio_driver, drive);
+		if (NULL != drive->bdev) {
+			bdev = (struct block_dev *) drive->bdev;
+			bdev->size = drive->blks * bdev->block_size;
+		} else {
+			return -1;
+		}
+		bdev->block_size = 512;
+		size = drive->blks * bdev->block_size;
+		bdev->size = size;
+		drive->bdev = bdev;
+		create_partitions(bdev);
+	}
+	return 0;
+}
 
 static block_dev_driver_t idedisk_pio_driver = {
 	"idedisk_drv",
 	hd_ioctl,
 	hd_read_pio,
-	hd_write_pio
+	hd_write_pio,
+	idedisk_init,
 };
 
-static int idedisk_init (void *args) {
-//	struct ide_tab *ide;
-	hd_t *drive;
-	size_t size;
-	char path[PATH_MAX];
-#if 0
-	ide = ide_get_drive();
-
-	for(int i = 0; i < HD_DRIVES; i++) {
-		if (NULL == ide->drive[i]) {
-			continue;
-		} else {
-			drive = (hd_t *) ide->drive[i];
-#endif
-			drive = (hd_t *)args;
-			/* Make new device */
-			if ((drive->media == IDE_DISK) && (drive->udmamode == -1)) {
-				*path = 0;
-				strcat(path, "/dev/hd*");
-				if (0 > (drive->idx = block_dev_named(path, idedisk_idx))) {
-					return drive->idx;
-				}
-				drive->bdev = block_dev_create(path,
-						&idedisk_pio_driver, drive);
-				if (NULL != drive->bdev) {
-					size = drive->blks * SECTOR_SIZE;
-					block_dev(drive->bdev)->size = size;
-				} else {
-					return -1;
-				}
-				create_partitions(drive);
-//			} else {
-//				continue;
-//			}
-		}
-//	}
-	return 0;
-}
-
-EMBOX_BLOCK_DEV("idedisk", &idedisk_pio_driver, idedisk_init);
+BLOCK_DEV_DEF("idedisk", &idedisk_pio_driver);

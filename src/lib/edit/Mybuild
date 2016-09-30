@@ -1,0 +1,8 @@
+package embox.lib
+
+module edit {
+	@IncludeExport(path="lib")
+	source "edit.h"
+
+	source "edit.c"
+}

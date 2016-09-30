@@ -8,10 +8,10 @@
  */
 #include <errno.h>
 
-#include <pnet/core.h>
-#include <pnet/graph.h>
-#include <pnet/pnet_pack.h>
-#include <pnet/node.h>
+#include <pnet/core/core.h>
+#include <pnet/core/graph.h>
+#include <pnet/pack/pnet_pack.h>
+#include <pnet/core/node.h>
 
 static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_node) {
 	net_node_t node;

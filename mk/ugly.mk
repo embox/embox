@@ -51,6 +51,14 @@ $(for n <- $(subst .,__,$(get 2->qualifiedName)),
 	$(\h)endif /* __MODULE__$n__H_ */$(\n))
 endef
 
+define __inherited_option_id
+$(subst \
+	$(subst .,__,$(get $(invoke 1->eContainerOfType,
+								$(EModel_ENamedObject)).qualifiedName)),
+	$(subst .,__,$(get 2->qualifiedName)),
+		$(invoke 1->getId))
+endef
+
 # 1. ModuleInstance of most specified module in hierarchy
 # 2. ModuleType for which to generate an output
 define __module_config_h_template
@@ -64,14 +72,27 @@ $(for n <- $(subst .,__,$(get 2->qualifiedName)),
 	$(if $(eq $(suffix $t),$(suffix $2)),
 		// This is the most specific implementation type$(\n)
 
-		$(with $(strip $(get 1->options)),
+		$(with $(strip $(get 1->options)),$2,
 			$(if $1,$(for op <- $1,
-				optionId <- $(subst .,__,$(invoke op->option>getId)),
+				optionId <- $(call __inherited_option_id,$(get op->option),$t),
 				$(\n)
 				$(\h)ifndef $(optionId)$(\n)
 				$(\h)define $(optionId) $(invoke op->value>toString)$(\n)
 				$(\h)endif$(\n)),
-				// (no config options)$(\n))),
+				// (no config options)$(\n)))
+
+		$(for 2 <- $(filter-out %$(suffix $t),$(get t->allSuperTypes)),
+			$(with $(strip $(get 1->options)),
+					$(strip $(get 2->allOptions)),
+				$(if $2,$(for superType <- $2,
+					superName <- $(get superType->name),
+					superId <- $(invoke superType->getId),
+					optionId <- $(call __inherited_option_id,$(superType),$t),
+					$(\n)
+					$(\h)ifndef $(superId)$(\n)
+					$(\h)define $(superId) \$(\n)
+					$(\t)$(\t)$(optionId)$(\n)
+					$(\h)endif$(\n))))),
 
 		// This is a base type of $(get t->qualifiedName)$(\n)
 		$(\h)include <config/$(subst .,/,$(get t->qualifiedName)).h>$(\n))

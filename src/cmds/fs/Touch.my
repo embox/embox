@@ -18,6 +18,5 @@ module touch {
 
 	depends embox.compat.posix.fs.fsop
 	depends embox.compat.posix.util.getopt
-	depends embox.fs.core
 	depends embox.framework.LibFramework
 }

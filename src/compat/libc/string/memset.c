@@ -12,12 +12,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "inhibit_libcall.h"
+
 #define BLOCK_SZ (sizeof(unsigned long))
 
 /* Nonzero if X is not aligned on a "long" boundary.  */
 #define unaligned(x)   ((unsigned long) x & (sizeof(unsigned long) - 1))
 
-__attribute__ ((__optimize__ ("-fno-tree-loop-distribute-patterns")))
+inhibit_loop_to_libcall
 void *memset(void *addr_, int c, size_t n) {
 	char *addr = addr_;
 	unsigned long *aligned_addr;

@@ -68,8 +68,9 @@ static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	pc = 0;
 	len = strlen(str);
-	max_len = max_len ? max_len : len;
-	len = min(max_len, len);
+	if (ops & OPS_PREC_IS_GIVEN) {
+		len = min(max_len, len);
+	}
 	space_count = width > len ? width - len : 0;
 
 	if (!(ops & OPS_FLAG_LEFT_ALIGN)) {

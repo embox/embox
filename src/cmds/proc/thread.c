@@ -37,19 +37,15 @@ static void print_stat(void) {
 	{
 		task_foreach(task) {
 			task_foreach_thread(t, task) {
-				// sched_priority_t prior;
-
-				// prior = sched_priority_thread(task->priority,
-				// 						thread_priority_get(t));
-
 				printf(" %4d %4d %8d %c %c %c %c %9lds\n",
 					t->id, task_get_id(t->task),
-					thread_get_priority(t),
+					schedee_priority_get(&t->schedee),
 					(t == thread_self()) ? '*' : ' ',
 					sched_active(&t->schedee) ? 'A' : ' ',
 					t->schedee.ready        ? 'R' : ' ',
 					t->schedee.waiting      ? 'W' : ' ',
 					thread_get_running_time(t)/CLOCKS_PER_SEC);
+
 				if (t->schedee.ready || sched_active(&t->schedee))
 					running++;
 				else
@@ -58,6 +54,7 @@ static void print_stat(void) {
 		}
 	}
 	sched_unlock();
+
 	total = running + sleeping;
 
 	printf("Total %d threads: \n"
@@ -75,7 +72,6 @@ static struct thread *thread_lookup(thread_id_t id) {
 			task_foreach_thread(t, task) {
 				if (t->id == id) {
 					goto out;
-
 				}
 			}
 		}

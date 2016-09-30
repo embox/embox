@@ -2,11 +2,10 @@
 # Embox main Makefile.
 #
 
-export MYBUILD_VERSION := 0.4
-
 include mk/core/common.mk
 include mk/util/wildcard.mk
 include mk/variables.mk
+include mk/version.mk
 
 .PHONY : all a
 a : all
@@ -278,6 +277,15 @@ Usage: $(MAKE) disasm
   Disassembly image file
 endef # disasm
 
+.PHONY : piggy
+piggy :
+	+@$(make_mybuild) build PIGGY=y
+
+define help-piggy
+Usage: $(MAKE) piggy
+  Make `piggy' image
+endef # piggy
+
 #
 # Cleaning targets.
 #
@@ -340,7 +348,7 @@ help :
 
 define help_main
 Usage: $(MAKE) [targets]
-Mybuild version $(MYBUILD_VERSION).
+Embox version $(EMBOX_VERSION).
 
 Building targets:
   all (a)        - Default build target, alias to '$(MAKE) build'
@@ -354,6 +362,8 @@ Building targets:
                    program (requires 'dialog')
   xbuild (xb)    - Interactively select a configuration to build using GTK
                    client (requires 'Xdialog')
+  disasm         - Build and make disassembly of image
+  piggy          - Build and prepare `piggy image'
 
 Configuration targets:
   confload       - List available configuration templates
@@ -394,7 +404,8 @@ help_entries := \
 	confclean \
 	cacheclean \
 	distclean \
-	disasm
+	disasm \
+	piggy
 help_targets := $(help_entries:%=help-%)
 
 # Fixup documentation variables escaping colons (':' -> '$$:').

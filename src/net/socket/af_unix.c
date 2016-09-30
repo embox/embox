@@ -8,8 +8,10 @@
  */
 #include <errno.h>
 #include <sys/socket.h>
+
 #include <net/sock.h>
-#include <embox/net/family.h>
+
+#include "family.h"
 
 EMBOX_NET_FAMILY(AF_UNIX, unix_create);
 

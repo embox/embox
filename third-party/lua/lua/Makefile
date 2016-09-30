@@ -1,9 +1,9 @@
 
 PKG_NAME := lua
-PKG_VER  := 5.2.3
+PKG_VER  := 5.3.0
 
 PKG_SOURCES := http://www.lua.org/ftp/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := dc7f94ec6ff15c985d2d6ad0f1b35654
+PKG_MD5     := a1b0a7e92d0c85bbff7a8d27bf29f8af
 
 PKG_PATCHES := pkg_patch.txt
 
@@ -16,9 +16,6 @@ endef
 LUA_CPPFLAGS :=
 ifneq (0,$(call option_get,luasocket_support))
 LUA_CPPFLAGS += -DLUASOCKET_SUPPORT
-endif
-ifneq (0,$(call option_get,luabitop_support))
-LUA_CPPFLAGS += -DLUABITOP_SUPPORT
 endif
 
 $(BUILD) :

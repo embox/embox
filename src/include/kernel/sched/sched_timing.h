@@ -11,6 +11,7 @@
 #include <module/embox/kernel/sched/timing/timing.h>
 
 struct sched_timing;
+struct schedee;
 
 extern void sched_timing_init(struct schedee *s);
 extern clock_t sched_timing_get(struct schedee *s);

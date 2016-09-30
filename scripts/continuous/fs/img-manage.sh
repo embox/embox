@@ -17,7 +17,7 @@ do_mount() {
 }
 
 do_unmount() {
-	sudo umount -f $MOUNT_POINT
+	$SUDO umount -f $MOUNT_POINT
 }
 
 is_inlist() {
@@ -61,10 +61,10 @@ build() {
 
 		case $FS in
 			jffs2)
-				mkfs.jffs2 -p 0x10000 -r $tmp_dir -o $IMG
+				$SUDO mkfs.jffs2 -p 0x10000 -r $tmp_dir -o $IMG
 				;;
 			iso9660)
-				mkisofs -o $IMG $tmp_dir
+				$SUDO mkisofs -o $IMG $tmp_dir
 				;;
 		esac
 
@@ -76,13 +76,13 @@ build() {
 
 	case $FS in
 		ext?)
-			mkfs.$FS -F -b 1024 $IMG
+			$SUDO mkfs.$FS -F -b 1024 $IMG
 			;;
 		ntfs)
-			mkntfs -F $IMG
+			$SUDO mkntfs -F $IMG
 			;;
 		*)
-			mkfs.$FS $IMG
+			$SUDO mkfs.$FS $IMG
 			;;
 	esac
 

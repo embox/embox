@@ -30,9 +30,9 @@ static void print_statistic(void *stat) {
 		filestat->st_dev, filestat->st_ino, filestat->st_nlink);
 	printf("Access: %d    Uid: %d    Gid: %d  \n",
 		filestat->st_mode, filestat->st_uid, filestat->st_gid);
-	printf("Access: %d  \n", filestat->st_atime);
-	printf("Modify: %d  \n", filestat->st_mtime);
-	printf("Change: %d  \n", filestat->st_ctime);
+	printf("Access: %ld  \n", (long)filestat->st_atime);
+	printf("Modify: %ld  \n", (long)filestat->st_mtime);
+	printf("Change: %ld  \n", (long)filestat->st_ctime);
 }
 
 int main(int argc, char **argv) {

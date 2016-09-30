@@ -1,6 +1,10 @@
 
 package ti816x
 
-module platform_shutdown extends embox.arch.arm.platform_shutdown {
-	source "platform_shutdown.c"
+module platform_shutdown extends embox.arch.arch {
+	source "ti816x_arch.c"
+
+	depends embox.arch.arm.cortexa8.bundle
+	depends embox.arch.arm.mmu_small_page
+	depends embox.arch.arm.armlib.static_excpt_table
 }

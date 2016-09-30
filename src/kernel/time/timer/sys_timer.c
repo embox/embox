@@ -17,7 +17,9 @@
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
-int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
+static void timer_stop(struct sys_timer *tmr);
+
+int timer_init(struct sys_timer *tmr, unsigned int flags,
 		sys_timer_handler_t handler, void *param) {
 	if (!handler || !tmr) {
 		return -EINVAL;
@@ -27,6 +29,12 @@ int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 	tmr->handle = handler;
 	tmr->param = param;
 	tmr->flags = flags;
+	return ENOERR;
+}
+
+void timer_start(struct sys_timer *tmr, clock_t jiffies) {
+
+	timer_stop(tmr);
 
 	if (timer_is_periodic(tmr)) {
 		tmr->load = jiffies;
@@ -40,31 +48,58 @@ int timer_init(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 		timer_strat_start(tmr);
 	}
 	sched_unlock();
+}
+
+static void timer_stop(struct sys_timer *tmr) {
+	if (timer_is_started(tmr)) {
+		sched_lock();
+		{
+			timer_strat_stop(tmr);
+		}
+		sched_unlock();
+	}
+}
+
+int timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
+		sys_timer_handler_t handler, void *param) {
+	int err;
+
+	if ((err = timer_init(tmr, flags, handler, param))) {
+		return err;
+	}
+
+	timer_start(tmr, jiffies);
 
 	return ENOERR;
 }
 
-int timer_init_msec(struct sys_timer *tmr, unsigned int flags, uint32_t msec,
+int timer_init_start_msec(struct sys_timer *tmr, unsigned int flags, uint32_t msec,
 		sys_timer_handler_t handler, void *param) {
 
-	return timer_init(tmr, flags, ms2jiffies(msec), handler, param);
+	return timer_init_start(tmr, flags, ms2jiffies(msec), handler, param);
 }
 
 int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t msec,
 		sys_timer_handler_t handler, void *param) {
+	int err;
+	struct sys_timer *tmr;
 
 	if (NULL == handler || NULL == ptimer) {
 		return -EINVAL;
 	}
 
-	if (NULL == (*ptimer = (sys_timer_t*) pool_alloc(&timer_pool))) {
+	if (NULL == (tmr = (sys_timer_t*) pool_alloc(&timer_pool))) {
 		return -ENOMEM;
 	}
 
-	/* we know that init will be success (right ptimer and handler) */
-	timer_init_msec(*ptimer, flags, msec, handler, param);
-	timer_set_preallocated(*ptimer);
+	if ((err = timer_init_start_msec(tmr, flags, msec, handler, param))) {
+		pool_free(&timer_pool, tmr);
+		return err;
+	}
 
+	timer_set_preallocated(tmr);
+
+	*ptimer = tmr;
 	return ENOERR;
 }
 
@@ -73,13 +108,7 @@ int timer_close(struct sys_timer *tmr) {
 		return -EINVAL;
 	}
 
-	if (timer_is_started(tmr)) {
-		sched_lock();
-		{
-			timer_strat_stop(tmr);
-		}
-		sched_unlock();
-	}
+	timer_stop(tmr);
 
 	if (timer_is_preallocated(tmr)) {
 		timer_clear_preallocated(tmr);

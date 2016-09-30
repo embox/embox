@@ -21,8 +21,8 @@
 #include <util/location.h>
 
 #include <framework/test/api.h>
-#include "assert_impl.h"
-#include "emit_impl.h"
+#include <framework/test/assert.h>
+#include <framework/test/emit.h>
 
 /**
  * Runtime context for a test case.

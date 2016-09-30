@@ -15,7 +15,9 @@
 #include <linux/kernel.h>
 #include "nodelist.h"
 
+#include <drivers/block_dev.h>
 #include <drivers/block_dev/flash/flash.h>
+#include <drivers/block_dev.h>
 #include <mem/sysmalloc.h>
 
 bool jffs2_flash_read(struct jffs2_sb_info * c,

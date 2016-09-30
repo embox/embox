@@ -14,6 +14,9 @@
 #include <stddef.h>
 #include <util/macro.h>
 #include <util/slist.h>
+#include <util/bitmap.h>
+
+#include <module/embox/mem/pool.h>
 
 /** Representation of the pool*/
 struct pool {
@@ -29,7 +32,41 @@ struct pool {
 	size_t pool_size;
 	/* Boundary, after which begin non-allocated memory */
 	void *bound_free;
+#ifdef POOL_DEBUG
+	BITMAP_DECL(blocks, POOL_MAX_OBJECTS);
+#endif
 };
+
+#ifdef POOL_DEBUG
+#define POOL_BLOCKS_INIT .blocks = {0},
+#else
+#define POOL_BLOCKS_INIT
+#endif
+
+/**
+ * Create pool descriptor. The memory for pool is allocated in special section
+ * "reserve.pool".
+ *
+ * @param name of cache
+ * @param type of objects in cache
+ * @param count of objects in cache
+ * @param specific attributes like aligned
+ */
+#define POOL_DEF_ATTR(name, object_type, size, attr) \
+	static union { \
+		object_type object; \
+		struct slist_link free_link; \
+	} __pool_storage ## name[size] \
+		attr __attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \
+	static struct pool name = { \
+			.memory = __pool_storage ## name, \
+			.bound_free = __pool_storage ## name, \
+			.free_blocks = SLIST_INIT(&name.free_blocks),\
+			.obj_size = sizeof(__pool_storage ## name[0]), \
+			.pool_size = sizeof(__pool_storage ## name), \
+			POOL_BLOCKS_INIT \
+	};
+
 
 /**
  * Create pool descriptor. The memory for pool is allocated in special section
@@ -39,19 +76,8 @@ struct pool {
  * @param type of objects in cache
  * @param count of objects in cache
  */
-#define POOL_DEF(name, object_type, size) \
-	static union { \
-		object_type object; \
-		struct slist_link free_link; \
-	} __pool_storage ## name[size] \
-		__attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \
-	static struct pool name = { \
-			.memory = __pool_storage ## name, \
-			.bound_free = __pool_storage ## name, \
-			.free_blocks = SLIST_INIT(&name.free_blocks),\
-			.obj_size = sizeof(__pool_storage ## name[0]), \
-			.pool_size = sizeof(__pool_storage ## name), \
-	};
+ #define POOL_DEF(name, object_type, size) POOL_DEF_ATTR(name, object_type, size, )
+
 
 /**
  * allocate single object from the cache and return it to the caller

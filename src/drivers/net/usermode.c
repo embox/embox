@@ -17,6 +17,7 @@
 #include <embox/unit.h>
 #include <net/l0/net_entry.h>
 
+#include <kernel/printk.h>
 #include <kernel/host.h>
 
 EMBOX_UNIT_INIT(umether_init);
@@ -90,7 +91,8 @@ static int umether_init(void) {
 	res = host_net_cfg(hnet, HOST_NET_INIT);
 	if (res < 0) {
 		etherdev_free(nic);
-		return res;
+		printk("usermode: can't init network: %s\n", strerror(-res));
+		return 0;
 	}
 
 	res = irq_attach(HOST_NET_IRQ, umether_irq, IF_SHARESUP, nic,

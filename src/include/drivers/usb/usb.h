@@ -71,6 +71,18 @@ typedef void (*usb_request_notify_hnd_t)(struct usb_request *req, void *arg);
 #define USB_HUB_PORT_POWER              0x0020
 #define USB_HUB_PORT_TIMEOUT            0x0040
 
+enum __usb_hub_request {
+    USB_HUB_REQ_GET_STATUS       = 0,
+    USB_HUB_REQ_CLEAR_FEATURE    = 1,
+    USB_HUB_REQ_SET_FEATURE      = 3,
+    USB_HUB_REQ_GET_DESCRIPTOR   = 6,
+    USB_HUB_REQ_SET_DESCRIPTOR   = 7,
+    USB_HUB_REQ_CLEAR_TT_BUFFER  = 8,
+    USB_HUB_REQ_RESET_TT         = 9,
+    USB_HUB_REQ_GET_TT_STATE     = 10,
+    USB_HUB_REQ_STOP_TT          = 11,
+};
+
 enum usb_hub_request {
 	USB_HUB_REQ_PORT_SET,
 	USB_HUB_REQ_PORT_CLEAR,
@@ -111,6 +123,12 @@ enum usb_direction {
 enum usb_dev_event_type {
 	USB_DEV_EVENT_PORT,
 	USB_DEV_EVENT_POSTED,
+};
+
+enum usb_speed {
+    USB_SPEED_HIGH = 0,
+    USB_SPEED_FULL = 1,
+    USB_SPEED_LOW  = 2,
 };
 
 struct usb_hcd_ops {
@@ -214,6 +232,8 @@ struct usb_dev {
 
 	struct usb_driver *drv;
 	void *drv_data;
+
+	enum usb_speed speed;
 };
 
 static inline struct usb_desc_device *usb_dev_get_desc(struct usb_dev *dev) {
@@ -221,6 +241,56 @@ static inline struct usb_desc_device *usb_dev_get_desc(struct usb_dev *dev) {
 }
 
 typedef void (*usb_hub_port_state_t)(struct usb_hub_port *port);
+
+struct usb_hub_status {
+    union {
+        uint16_t w_hub_status;
+        struct {
+            uint16_t local_power : 1;
+            uint16_t overcurrent : 1;
+            uint16_t wHubStatus_reserved : 14;
+        };
+    };
+    union {
+        uint16_t w_hub_change;
+        struct {
+            uint16_t local_power_changed : 1;
+            uint16_t overcurrent_changed : 1;
+            uint16_t wHubChange_reserved : 14;
+        };
+    };
+} __attribute__((packed));
+
+struct usb_port_status {
+    union {
+        uint16_t port_status;
+        struct {
+            uint16_t connected : 1;
+            uint16_t enabled : 1;
+            uint16_t suspended : 1;
+            uint16_t overcurrent : 1;
+            uint16_t reset : 1;
+            uint16_t wPortStatus_reserved1 : 3;
+            uint16_t powered : 1;
+            uint16_t low_speed_attached : 1;
+            uint16_t high_speed_attached : 1;
+            uint16_t test_mode : 1;
+            uint16_t indicator_control : 1;
+            uint16_t wPortStatus_reserved2 : 3;
+        };
+    };
+    union {
+        uint16_t port_change;
+        struct {
+            uint16_t connected_changed : 1;
+            uint16_t enabled_changed : 1;
+            uint16_t suspended_changed : 1;
+            uint16_t overcurrent_changed : 1;
+            uint16_t reset_changed : 1;
+            uint16_t wPortChange_reserved : 11;
+        };
+    };
+} __attribute__((packed));
 
 struct usb_hub_port {
 	struct usb_hub *hub;

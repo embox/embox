@@ -7,7 +7,7 @@
  */
 
 #include <drivers/bluetooth/bluetooth.h>
-#include <drivers/bluetooth/btm112.h>
+#include <drivers/bluetooth/btm/btm112.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(btm112_init);

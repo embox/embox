@@ -18,38 +18,19 @@ struct schedee_priority {
 
 typedef struct schedee_priority __schedee_priority_t;
 
-static inline int schedee_priority_set(struct schedee *s,
-		sched_priority_t new_priority) {
+static inline int schedee_priority_set(struct schedee *s, int new_priority) {
 	return 0;
 }
 
-static inline sched_priority_t schedee_priority_get(struct schedee *s) {
+static inline int schedee_priority_get(struct schedee *s) {
 	return 0;
 }
 
-static inline sched_priority_t schedee_priority_inherit(struct schedee *s,
-		sched_priority_t priority) {
+static inline int schedee_priority_inherit(struct schedee *s, int priority) {
 	return 0;
 }
 
-static inline sched_priority_t schedee_priority_reverse(struct schedee *s) {
-	return 0;
-}
-
-static inline sched_priority_t thread_priority_get(struct thread *t) {
-	return 0;
-}
-
-static inline int thread_priority_set(struct thread *t, sched_priority_t new_priority) {
-	return 0;
-}
-
-static inline sched_priority_t thread_priority_inherit(struct thread *t,
-		sched_priority_t priority) {
-	return 0;
-}
-
-static inline sched_priority_t thread_priority_reverse(struct thread *t) {
+static inline int schedee_priority_reverse(struct schedee *s) {
 	return 0;
 }
 

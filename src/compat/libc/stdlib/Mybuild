@@ -23,6 +23,7 @@ static module core {
 	source "strtoll.c"
 	source "strtoull.c"
 	source "atol.c"
+	source "itoa.c"
 
 	depends config
 	@NoRuntime depends rand /* qsort required*/
@@ -30,7 +31,7 @@ static module core {
 
 static module system {
 	source "system.c"
-	depends embox.cmd.sh.shell
+	depends embox.cmd.sh.shell_registry
 }
 
 static module all {

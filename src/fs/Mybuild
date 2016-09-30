@@ -5,6 +5,7 @@ module node {
 
 	source "node.c"
 
+	depends embox.kernel.thread.mutex
 	depends embox.util.tree
 }
 
@@ -25,28 +26,30 @@ module file_desc {
 	source "file_xattr.c"
 
 	depends idesc
-	depends index_operation
 	depends xattr
 
+	depends embox.fs.syslib.perm
 	depends embox.kernel.task.resource.idesc_table
 }
 
 module idesc {
 	source "idesc.c"
+
+	depends embox.kernel.task.resource.idesc_table
 }
 
 module idesc_event {
 	source "idesc_event.c"
 }
 
-@DefaultImpl(NoFileSystem)
+@DefaultImpl(no_file_system)
 abstract module fs_api {
 
 }
 
-module NoFileSystem extends fs_api{
-	depends SysLibFsNone
-	depends SysLibFileSystemNone
+module no_file_system extends fs_api{
+	depends embox.fs.syslib.fs_none
+	depends embox.fs.syslib.file_system_none
 }
 
 module xattr {
@@ -57,11 +60,15 @@ module xattr_list {
 	source "xattr_list.c"
 }
 
+module path_helper {
+	source "hlpr_path.c"
+}
+
 module core extends fs_api {
 	source "vfs.c"
-	source "hlpr_path.c"
 
 	depends filesystem
+	depends path_helper
 	depends node
 
 	depends embox.compat.libc.str
@@ -75,19 +82,36 @@ module core extends fs_api {
 module index_operation {
 	source "index_operation.c"
 
-	depends embox.fs.SysLibFile
-	depends embox.fs.SysLibFileSystem
+	depends embox.fs.syslib.file
+	depends fs_api
 }
 
-module rootfs {
+@DefaultImpl(rootfs)
+abstract module root_file_system {
+}
+
+module rootfs extends root_file_system {
 	source "rootfs.c"
 	option string fstype = "initfs"
 	option string bdev = ""
-	depends node, driver.repo
+	depends driver.repo
+	depends node
 	depends embox.fs.filesystem
 	depends embox.kernel.task.api
-	depends SysLibFileSystem
+	depends embox.fs.syslib.file_system_full
 	depends embox.compat.libc.all
+}
+
+module rootfs_dvfs extends root_file_system {
+	source "rootfs_dvfs.c"
+	option string fstype = "initfs"
+	option string bdev = ""
+
+	depends embox.driver.block_common
+	depends embox.driver.char_dev
+	depends embox.fs.dvfs.core
+	depends embox.fs.driver.dvfs_driver
+	depends embox.kernel.task.api
 }
 
 module journal {
@@ -121,4 +145,13 @@ abstract module buffer_crypt_api {
 
 module buffer_no_crypt extends buffer_crypt_api {
 	source "buffer_no_crypt.c"
+}
+
+module file_format {
+	@IncludeExport(path="fs")
+	source "file_format.h"
+
+	source "file_format.c"
+
+	depends embox.compat.libc.all
 }

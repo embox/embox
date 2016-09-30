@@ -10,7 +10,7 @@
 #define FS_JOURNAL_H
 
 #include <util/dlist.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <stdint.h>
 
 typedef unsigned int block_t;
@@ -261,7 +261,7 @@ struct journal_s {
      * Device, blocksize and starting block offset for the location where we
      * store the journal.
      */
-    block_dev_t *j_dev;
+    struct block_dev *j_dev;
     size_t j_blocksize;
     size_t j_disk_sectorsize;
     block_t j_blk_offset;

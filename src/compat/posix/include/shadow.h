@@ -26,16 +26,6 @@ struct spwd {
 	unsigned long int  sp_flag;
 };
 
-#if 0
-extern struct spwd *getspent(void);
-
-extern void setspent(void);
-
-extern int lckpwdf(void);
-
-extern int ulckpwdf(void);
-#endif
-
 extern struct spwd *fgetspent(FILE *file);
 
 /**

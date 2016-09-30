@@ -17,6 +17,7 @@
 #include <defines/size_t.h>
 #include <defines/wchar_t.h>
 #include <defines/null.h>
+#include <compiler.h>
 
 /* In addition, the following symbolic names and macros shall be defined as in
  * <sys/wait.h> , for use in decoding the return value from system():
@@ -166,7 +167,7 @@ extern void abort(void);
 
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
-extern void exit(int status) __attribute__ ((__noreturn__));
+extern void _NORETURN exit(int status);
 
 /**
  * Returns the absolute value of an argument. If the argument is not negative,

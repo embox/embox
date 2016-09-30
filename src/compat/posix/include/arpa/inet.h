@@ -34,6 +34,12 @@ extern in_addr_t inet_addr(const char *cp);
 extern char * inet_ntoa(struct in_addr in);
 extern int inet_aton(const char *cp, struct in_addr *addr);
 
+/* function takes the Internet network number specified by net and the local
+ * network address specified by lna, both in host byte order, and constructs
+ * an Internet address from them.
+ */
+extern struct in_addr inet_makeaddr(in_addr_t net, in_addr_t lna);
+
 /**
  * Convert IPv4 and IPv6 addresses between binary and text form
  */

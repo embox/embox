@@ -47,6 +47,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <fcntl.h>
+#include <arpa/inet.h>
+
+#include <util/err.h>
 
 #include <fs/node.h>
 #include <fs/vfs.h>
@@ -58,10 +61,9 @@
 
 #include <fs/iso9660.h>
 
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
-#include <arpa/inet.h>
 
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
@@ -779,22 +781,21 @@ void cdfs_init(void) {
 */
 
 /* File operations */
-static int    cdfsfs_open(struct node *node, struct file_desc *desc, int flags);
+static struct idesc *cdfsfs_open(struct node *node, struct file_desc *desc, int flags);
 static int    cdfsfs_close(struct file_desc *desc);
 static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size);
-static int    cdfsfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations cdfsfs_fop = {
 	.open = cdfsfs_open,
 	.close = cdfsfs_close,
 	.read = cdfsfs_read,
-	.ioctl = cdfsfs_ioctl,
 };
 
-static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	char path [PATH_MAX];
 	struct nas *nas;
 	struct cdfs_file_info *fi;
+	int res;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
@@ -803,10 +804,11 @@ static int cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	vfs_get_relative_path(node, path, PATH_MAX);
 
-	if(0 == cdfs_open(node->nas, path)) {
-		return 0;
+	res = cdfs_open(node->nas, path);
+	if (res) {
+		return err_ptr(-res);
 	}
-	return -1;
+	return &desc->idesc;
 }
 
 static int cdfsfs_close(struct file_desc *desc) {
@@ -833,10 +835,6 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	fi->pos += rezult;
 
 	return rezult;
-}
-
-static int cdfsfs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
 }
 
 /* File system operations*/

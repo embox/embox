@@ -1,0 +1,6 @@
+package stm32f3_sensors.utils
+
+module kalman {
+	@IncludePath("$(PLATFORM_DIR)/stm32f3_sensors/include")
+	source "kalman_filter.c"
+}

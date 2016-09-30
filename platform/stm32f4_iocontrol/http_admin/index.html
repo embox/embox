@@ -8,6 +8,7 @@
   <script src="angular.min.js"></script>
   <script src="angular-route.min.js"></script>
   <script src="ui-bootstrap-tpls-0.12.1.min.js"></script>
+  <script src="angular-translate.min.js"></script>
   <script src="app.js"></script>
 </head>
 <body>
@@ -22,15 +23,22 @@
 	<span class="icon-bar"></span>
 	<span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="#">Embox Panel</a>
+      <a class="navbar-brand" href="#">{{'PANEL_TITLE' | translate }}</a>
     </div>
 
     <!-- Collect the nav links, forms, and other content for toggling -->
     <div class="collapse navbar-collapse" ng-class="!navCollapsed && 'in'" ng-click="navCollapsed=true">
 
       <ul class="nav navbar-nav">
-	<li ng-class="{'active' : isActive('leds')}"><a href="#/leds">Leds</a></li>
-	<li ng-class="{'active' : isActive('interfaces')}"><a href="#/interfaces">Network</a></li>
+        <li ng-class="{'active' : isActive('leds')}"><a href="#/leds">{{ 'LEDS' | translate }}</a></li>
+	<li ng-class="{'active' : isActive('interfaces')}"><a href="#/interfaces">{{ 'NETWORK' | translate }}</a></li>
+	<li class="dropdown" ng-class="!dd1Collapsed && 'open'" ng-init="dd1Collapsed = true" ng-click="dd1Collapsed = !dd1Collapsed">
+	  <a href="" >{{ 'LANG' | translate }} <span class="caret"></span></a>
+	  <ul class="dropdown-menu">
+	    <li><a href="" ng-click="changeLanguage('en')">English</a></li>
+	    <li><a href="" ng-click="changeLanguage('ru')">Русский</a></li>
+	  </ul>
+	</li>
       </ul>
     </div><!-- /.navbar-collapse -->
   </nav>

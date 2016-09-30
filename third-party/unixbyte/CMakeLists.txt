@@ -6,7 +6,7 @@ ExternalProject_Add(
    unixbyte
    PREFIX .
    DOWNLOAD_DIR $ENV{EMBOX_ROOT}/download
-   URL https://byte-unixbench.googlecode.com/files/UnixBench5.1.3.tgz
+   URL https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/byte-unixbench/UnixBench5.1.3.tgz
 
    URL_MD5 21edc4a9e41ad1f9b0297d7b6d45c99a
 

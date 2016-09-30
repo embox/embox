@@ -44,6 +44,7 @@ extern void vmem_handle_page_fault(mmu_vaddr_t virt_addr);
 extern void vmem_on(void);
 extern void vmem_off(void);
 extern int vmem_mmu_enabled(void);
+extern void mmu_flush_tlb(void);
 
 extern void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx);
 

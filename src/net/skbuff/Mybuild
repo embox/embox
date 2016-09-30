@@ -1,0 +1,37 @@
+package embox.net
+
+module skbuff {
+	option number log_level = 0
+
+	option number amount_skb=4000
+
+	source "skb.c"
+
+	source "skb_queue.c"
+	depends skbuff_data
+	depends embox.arch.interrupt
+	depends embox.compat.posix.util.gettimeofday
+}
+
+module skbuff_data {
+	option number log_level = 0
+
+	option boolean ip_align=false
+
+	option number amount_skb_data=4000
+	option number data_align=1
+	option number data_padto=1
+	option number data_size=1514
+
+	source "skb_data.c"
+
+	depends embox.arch.interrupt
+}
+module skbuff_extra {
+	option number amount_skb_extra=0
+	option number extra_align=1
+	option number extra_padto=1
+	option number extra_size=0
+
+	source "skb_extra.c"
+}

@@ -41,7 +41,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		} else {
 			ret = read(file->fd,  buf, size * count);
 		}
-		if (ret == 0) {
+		if (ret <= 0) {
 			break; /* errors */
 		}
 		cnt += ret;

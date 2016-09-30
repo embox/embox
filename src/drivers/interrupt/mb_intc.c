@@ -73,10 +73,6 @@ void irqctrl_clear(unsigned int irq) {
 	REG_STORE(&irqc->iar, 1UL << irq);
 }
 
-/*
- * Microblaze specific functions:
- */
-
-unsigned int mb_intc_get_pending(void) {
-	return REG_LOAD(&irqc->isr);
+int irqctrl_pending(unsigned int irq) {
+	return REG_LOAD(&irqc->isr) & (1 << irq);
 }

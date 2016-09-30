@@ -10,7 +10,7 @@
 #include <stdio.h>
 
 #include <util/dlist.h>
-#include <embox/device.h>
+#include <drivers/char_dev.h>
 #include <drivers/usb/usb.h>
 #include <drivers/usb/usb_dev_desc.h>
 #include <fs/node.h>
@@ -127,7 +127,7 @@ void usb_driver_handle(struct usb_dev *dev) {
 				dev->dev_desc.id_vendor,
 				dev->dev_desc.id_product);
 
-		char_dev_register(name_buf, drv->file_ops);
+		char_dev_register(NULL, NULL);
 	}
 }
 

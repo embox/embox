@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 #include <util/math.h>
-#include <util/sys_log.h>
+#include <util/log.h>
 
 #include <net/sock.h>
 #include <net/socket/ksocket.h>
@@ -47,7 +47,7 @@ void ksocket_close(struct sock *sk) {
 	sock_set_state(sk, SS_DISCONNECTING);
 
 	if (0 != sock_close(sk)) {
-		LOG_WARN("ksocket_close", "can't close socket");
+		log_warning("can't close socket");
 	}
 	/* sock_set_state(sk, SS_CLOSED); */
 }
@@ -131,8 +131,7 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 		}
 	}
 	if (ret != 0) {
-		LOG_ERROR("ksocket_connect",
-				"unable to connect on socket");
+		log_error("unable to connect on socket");
 		sock_set_state(sk, SS_BOUND);
 		if (ret == -EINPROGRESS) { /* FIXME */
 			sock_set_state(sk, SS_CONNECTED);
@@ -177,8 +176,7 @@ int klisten(struct sock *sk, int backlog) {
 
 	ret = sk->f_ops->listen(sk, backlog);
 	if (ret != 0) {
-		LOG_ERROR("ksocket_listen",
-				"error setting socket in listening state");
+		log_error("error setting socket in listening state");
 		return ret;
 	}
 
@@ -204,8 +202,7 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 	else if (!sock_state_listening(sk)) {
-		LOG_ERROR("ksocket_accept",
-				"accepting socket should be in listening state");
+		log_error("accepting socket should be in listening state");
 		return -EINVAL;
 	}
 
@@ -216,8 +213,7 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 
 	ret = sk->f_ops->accept(sk, addr, addrlen, flags, &new_sk);
 	if (ret != 0) {
-		LOG_ERROR("ksocket_accept",
-				"error while accepting a connection");
+		log_error("error while accepting a connection");
 		return ret;
 	}
 
@@ -234,7 +230,6 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(sk);
 	assert(msg);
 	assert(msg->msg_iov);
-	assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
 
 	assert(sk->f_ops);
 	assert(sk->f_ops->sendmsg);
@@ -284,7 +279,6 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	assert(sk);
 	assert(msg);
 	assert(msg->msg_iov);
-	assert(msg->msg_iovlen == 1); // FIXME add support of scatter gather
 
 //	if (msg->msg_iov->iov_len == 0) {
 //		return 0;

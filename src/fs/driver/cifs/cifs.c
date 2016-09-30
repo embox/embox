@@ -15,12 +15,13 @@
 #include <string.h>
 #include <errno.h>
 
+#include <util/err.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/fs_driver.h>
 #include <libsmbclient.h>
 #include <fs/vfs.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
 #include <fs/hlpr_path.h>
@@ -259,7 +260,7 @@ error:
 	return -rc;
 }
 
-static int cifs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *cifs_open(struct node *node, struct file_desc *file_desc,
 		int flags)
 {
 	struct cifs_fs_info *fsi;
@@ -281,12 +282,12 @@ static int cifs_open(struct node *node, struct file_desc *file_desc,
 	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX);
 
 	if (smbc_getFunctionStat(fsi->ctx)(fsi->ctx, fileurl, &st)) {
-		return -errno;
+		return err_ptr(errno);
 	}
 
 	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,flags,0);
 	if(!file) {
-		return -errno;
+		return err_ptr(errno);
 	}
 
 	file_desc->file_info = file;
@@ -294,7 +295,7 @@ static int cifs_open(struct node *node, struct file_desc *file_desc,
 	// Yet another bullshit: size is not valid until open
 	node->nas->fi->ni.size = st.st_size;
 
-	return 0;
+	return &file_desc->idesc;
 }
 
 static int cifs_close(struct file_desc *file_desc)

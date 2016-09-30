@@ -12,6 +12,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <util/err.h>
 
@@ -23,7 +24,6 @@
 #include <fs/kfile.h>
 #include <fs/kfsop.h>
 #include <fs/perm.h>
-#include <fs/flags.h>
 #include <security/security.h>
 
 extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
@@ -33,10 +33,11 @@ struct file_desc *kopen(struct node *node, int flag) {
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
 	int ret;
+	struct idesc *idesc;
 
 	assert(node);
-	assert(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
-	assert(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
+	assertf(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
+	assertf(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
 
 
 	nas = node->nas;
@@ -68,8 +69,16 @@ struct file_desc *kopen(struct node *node, int flag) {
 	}
 	desc->ops = ops;
 
-	if (0 > (ret = desc->ops->open(node, desc, flag))) {
+	idesc = desc->ops->open(node, desc, flag);
+	if (err(idesc)){
+		ret = (int)idesc;
 		goto free_out;
+	}
+	if ((struct idesc *)idesc == &desc->idesc) {
+		goto out;
+	} else {
+		file_desc_destroy(desc);
+		return (struct file_desc *)idesc;
 	}
 
 free_out:
@@ -79,6 +88,7 @@ free_out:
 		return NULL;
 	}
 
+out:
 	return desc;
 }
 
@@ -87,19 +97,16 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	ssize_t ret;
 
 	if (!file) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
 
-	if (!idesc_check_mode(&file->idesc, FS_MAY_WRITE)) {
-		DPRINTF(("EBADF "));
+	if (!idesc_check_mode(&file->idesc, S_IWOTH)) {
 		ret = -EBADF;
 		goto end;
 	}
 
 	if (NULL == file->ops->write) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
@@ -111,8 +118,6 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	ret = file->ops->write(file, (void *)buf, size);
 
 end:
-	DPRINTF(("write(%s, ...) = %d\n", file->node->name, ret));
-
 	return ret;
 }
 
@@ -120,28 +125,23 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 	ssize_t ret;
 
 	if (NULL == desc) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
 
-	if (!idesc_check_mode(&desc->idesc, FS_MAY_READ)) {
-		DPRINTF(("EBADF "));
+	if (!idesc_check_mode(&desc->idesc, S_IROTH)) {
 		ret = -EBADF;
 		goto end;
 	}
 
 	if (NULL == desc->ops->read) {
-		DPRINTF(("EBADF "));
 		ret = -EBADF;
 		goto end;
 	}
 
 	ret = desc->ops->read(desc, buf, size);
 
-	end:
-	DPRINTF(("read(%s, ...) = %d\n", desc->node->name, ret));
-
+end:
 	return ret;
 }
 
@@ -160,7 +160,6 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	struct node_info *ni;
 
 	if (NULL == desc) {
-		DPRINTF(("seek() = EBADF\n"));
 		return -EBADF;
 	}
 
@@ -181,11 +180,8 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 			break;
 
 		default:
-			DPRINTF(("seek() = EINVAL\n"));
 			return -EINVAL;
 	}
-
-	DPRINTF(("seek(%s, %d) = %d\n", desc->node->name, origin, desc->cursor));
 
 	return desc->cursor;
 }
@@ -208,7 +204,7 @@ int kioctl(struct file_desc *desc, int request, void *data) {
 	}
 
 	if (NULL == desc->ops->ioctl) {
-		return -EBADF;
+		return -ENOSUPP;
 	}
 
 	ret = desc->ops->ioctl(desc, request, data);

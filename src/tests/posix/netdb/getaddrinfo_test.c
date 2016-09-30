@@ -231,6 +231,16 @@ TEST_CASE("getaddrinfo() returns addrinfo with port 0 if"
 	test_assert_null(NEXT_AI());
 }
 
+TEST_CASE("getaddrinfo() doesn't return error if"
+		" servname is empty string") {
+
+	hints_.ai_socktype = SOCK_DGRAM;
+	hints_.ai_family = AF_UNSPEC;
+	hints_.ai_flags = 0;
+
+	test_assert_equal(0, GET_AI(NODE_NAME, ""));
+}
+
 static int case_setup(void) {
 	memset(&hints_, 0, sizeof hints_);
 	hints_.ai_flags = AI_NUMERICHOST | AI_NUMERICSERV;

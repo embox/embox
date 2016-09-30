@@ -14,11 +14,11 @@ QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h \
 	-I$(ROOT_DIR)/build/extbld/third_party/STLport/core/include/stlport \
 	-I$(ROOT_DIR)/build/extbld/third_party/gcc/core/install/include \
 	-I$(SRC_DIR)/compat/cxx/include \
-	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include"
+	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include"
 
-QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/lib"
+QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/lib"
 
-QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/include;$(ROOT_DIR)/third-party/qpid/include"
+QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include;$(ROOT_DIR)/third-party/qpid/include"
 
 $(CONFIGURE) :
 	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp || true

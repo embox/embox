@@ -8,20 +8,25 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
+#include <stdio.h>
 #include <netdb.h>
 #include <string.h>
 #include <sys/socket.h>
-#include <mem/misc/pool.h>
 #include <errno.h>
 #include <net/util/servent.h>
-#include <stdio.h>
+
+#include <mem/misc/pool.h>
+
+#include <framework/mod/options.h>
+
+#define ADDRINFO_TUPLE_POOL_SZ OPTION_GET(NUMBER, addrinfo_pool_size)
 
 struct addrinfo_tuple {
 	struct addrinfo ai;
 	struct sockaddr_storage __ai_ai_addr_storage;
 };
 
-POOL_DEF(addrinfo_tuple_pool, struct addrinfo_tuple, 10);
+POOL_DEF(addrinfo_tuple_pool, struct addrinfo_tuple, ADDRINFO_TUPLE_POOL_SZ);
 
 static int explore_hints(const struct addrinfo *hints,
 		struct addrinfo *out_hints) {
@@ -103,13 +108,7 @@ static struct servent * explore_serv(const char *servname,
 
 	if (hints->ai_protocol != 0) {
 		pe = getprotobynumber(hints->ai_protocol);
-#if 0
-		if (pe == NULL) {
-			return NULL; /* error: bad protocol */
-		}
-#else
 		proto = pe != NULL ? pe->p_name : NULL;
-#endif
 	}
 	else {
 		proto = NULL;
@@ -124,6 +123,9 @@ static struct servent * explore_serv(const char *servname,
 	}
 
 	if (NULL == result) {
+		if (0 == strcmp(servname, "")) {
+			return servent_make(NULL, 0, proto);
+		}
 		if (1 == sscanf(servname, "%hu", &port)) {
 			result = servent_make(NULL, port, proto);
 		}

@@ -161,7 +161,7 @@ int netdev_open(struct net_device *dev) {
 		return 0;
 	}
 
-	if (dev->drv_ops->start != NULL) {
+	if (dev->drv_ops != NULL && dev->drv_ops->start != NULL) {
 		ret = dev->drv_ops->start(dev);
 		if (ret != 0) {
 			return ret;

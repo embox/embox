@@ -1,6 +1,8 @@
 package embox.security
 
 module smac extends api {
+	@IncludeExport(path="security/smac")
+	source "smac.h"
 	source "smac.c",
 	       "smac_security.c"
 
@@ -16,6 +18,8 @@ module smac extends api {
 
 	option string default_file_label="*"
 
+	depends embox.compat.posix.passwd
+	depends embox.compat.posix.proc.uid
 	depends embox.fs.xattr
 	depends embox.kernel.task.resource.security
 	depends embox.kernel.task.api

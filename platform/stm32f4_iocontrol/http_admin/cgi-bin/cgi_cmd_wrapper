@@ -16,7 +16,7 @@ if [ $REQUEST_METHOD = "GET" ]; then
 			echo [ $(printf "0, %.0s" {1..79}) 1 ]
 			;;
 		"c=led_names&a1=serialize")
-			echo '[ "one", "two" ]'
+			echo '[ "one", "two", "WWWWWWWWWWWWWWWW", "W W W W W W W W " ]'
 			;;
 	esac
 elif [ $REQUEST_METHOD = "POST" ]; then

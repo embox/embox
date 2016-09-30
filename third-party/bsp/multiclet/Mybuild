@@ -1,0 +1,11 @@
+package third_party.bsp.multiclet
+
+@Build(stage=1,script="true")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/third-party/bsp/multiclet/include/")
+static module core {
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/multiclet/include")
+	source "libs/source/uart/uart_init.c",
+	       "libs/source/uart/uart_send_char.c",
+	       "libs/source/uart/uart_dm2uart.c"
+
+}

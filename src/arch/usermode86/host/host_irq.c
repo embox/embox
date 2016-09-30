@@ -81,10 +81,13 @@ int host_ipl_save(void) {
 void host_ipl_restore(int ipl) {
 	sigset_t iset;
 
-	if (!ipl) {
+	if (ipl) {
+		host_sigfillset(&iset);
+	} else {
 		host_sigemptyset(&iset);
-		host_sigprocmask(SIG_SETMASK, &iset, NULL);
 	}
+
+	host_sigprocmask(SIG_SETMASK, &iset, NULL);
 }
 
 void host_signal_send_self(int sig_nr) {

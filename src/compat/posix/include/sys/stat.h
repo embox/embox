@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <sys/cdefs.h>
 #include <limits.h>
-
+#include <time.h>
 __BEGIN_DECLS
 
 #define S_IFMT   0170000   /* File type mask */
@@ -90,9 +90,16 @@ typedef struct stat {
 	size_t    st_size;    /* total size, in bytes */
 	size_t    st_blksize; /* blocksize for file system I/O */
 	int       st_blocks;  /* number of 512B blocks allocated */
-	unsigned  st_atime;   /* time of last access */
-	unsigned  st_mtime;   /* time of last modification */
-	unsigned  st_ctime;   /* time of last status change */
+//	unsigned  st_atime;   /* time of last access */
+//	unsigned  st_mtime;   /* time of last modification */
+//	unsigned  st_ctime;   /* time of last status change */
+
+    struct timespec st_atim;  /* time of last access */
+    struct timespec st_mtim;  /* time of last modification */
+    struct timespec st_ctim;  /* time of last status change */
+#define st_atime st_atim.tv_sec      /* Backward compatibility */
+#define st_mtime st_mtim.tv_sec
+#define st_ctime st_ctim.tv_sec
 } stat_t;
 
 /* typedef struct statfs  { */
@@ -111,10 +118,7 @@ typedef struct stat {
 /**
  * Get file status (size, mode, mtime and so on)
  */
-static inline int chmod(const char *path, mode_t mode) {
-	(void)path; (void)mode;
-	return -1;
-}
+extern int chmod(const char *path, mode_t mode);
 //extern int    fchmod(int, mode_t);
 extern int    stat(const char *, struct stat *);
 extern int    lstat(const char *, struct stat *);
@@ -123,6 +127,13 @@ extern int    mkfifo(const char *, mode_t);
 extern int    mknod(const char *, mode_t, dev_t);
 extern int    mkdir (const char *, mode_t );
 extern mode_t umask(mode_t mode);
+
+
+/*
+ * Special values for utimensat and futimens
+ */
+#define UTIME_NOW       ((1 << 30) - 1)
+#define UTIME_OMIT      ((1 << 30) - 2)
 
 __END_DECLS
 

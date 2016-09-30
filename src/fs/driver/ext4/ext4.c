@@ -15,8 +15,9 @@
 #include <limits.h>
 
 #include <util/array.h>
+#include <util/err.h>
 #include <embox/unit.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 #include <lib/crypt/crc16.h>
@@ -146,19 +147,17 @@ POOL_DEF(ext4_file_pool, struct ext4_file_info, 128);
 
 /* TODO link counter */
 
-static int ext4fs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ext4fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
 static int ext4fs_close(struct file_desc *desc);
 static size_t ext4fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext4fs_write(struct file_desc *desc, void *buf, size_t size);
-static int ext4fs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations ext4_fop = {
 	.open = ext4fs_open,
 	.close = ext4fs_close,
 	.read = ext4fs_read,
 	.write = ext4fs_write,
-	.ioctl = ext4fs_ioctl,
 };
 
 /* Calculates the physical block from a given logical block and extent */
@@ -545,7 +544,7 @@ int ext4_open(struct nas *nas) {
 /*
  * file_operation
  */
-static int ext4fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ext4fs_open(struct node *node, struct file_desc *desc, int flags) {
 	int rc;
 	struct nas *nas;
 	struct ext4_file_info *fi;
@@ -557,18 +556,18 @@ static int ext4fs_open(struct node *node, struct file_desc *desc, int flags) {
 	fi->f_pointer = desc->cursor; /* reset seek pointer */
 
 	if (NULL == (fi->f_buf = ext4_buff_alloc(nas, fsi->s_block_size))) {
-		return -ENOMEM;
+		return err_ptr(ENOMEM);
 	}
 
 	if (0 != (rc = ext4_read_inode(nas, fi->f_num))) {
 		ext4_close(nas);
-		return -rc;
+		return err_ptr(rc);
 	}
 	else {
 		nas->fi->ni.size = ext4_file_size(fi->f_di);
 	}
 
-	return 0;
+	return &desc->idesc;
 }
 
 static int ext4fs_close(struct file_desc *desc) {
@@ -638,10 +637,6 @@ static size_t ext4fs_write(struct file_desc *desc, void *buff, size_t size) {
 	nas->fi->ni.size = ext4_file_size(fi->f_di);
 
 	return bytecount;
-}
-
-static int ext4fs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
 }
 
 static int ext4_create(struct nas *nas, struct nas * parents_nas);

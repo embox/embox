@@ -19,4 +19,6 @@ AUTHORS
 ''')
 module chmod {
 	source "chmod.c"
+
+	depends embox.compat.posix.fs.chmod
 }

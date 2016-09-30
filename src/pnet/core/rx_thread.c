@@ -15,8 +15,8 @@
 #include <util/err.h>
 #include <kernel/event.h>
 
-#include <pnet/core.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/core.h>
+#include <pnet/pack/pnet_pack.h>
 
 //#define PNET_THREAD_DEBUG
 
@@ -68,7 +68,7 @@ static int rx_thread_init(void) {
 			return -1;
 		}
 
-		thread_set_priority(pnet_rx_threads[i], THREAD_PRIORITY_DEFAULT + 1 + i);
+		schedee_priority_set(&pnet_rx_threads[i]->schedee, SCHED_PRIORITY_NORMAL + 1 + i);
 	}
 
 	return 0;

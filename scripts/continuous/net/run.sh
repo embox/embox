@@ -13,6 +13,7 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
+HOST_DNS_IP=10.0.0.11
 
 TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
 
@@ -87,7 +88,7 @@ test_end() {
 }
 
 determ_dns() {
-	cat /etc/resolv.conf | sed -n 's/nameserver[\ \t]\+//p' | head -n 1 | sed 's/\(127\.0\.0\.1\|localhost\)/$HOST_IP/'
+	cat /etc/resolv.conf | sed -n 's/nameserver[\ \t]\+//p' | head -n 1 | sed 's/\(127\..\..\..\|localhost\)/$HOST_DNS_IP/'
 }
 
 tap_up() {

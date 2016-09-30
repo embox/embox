@@ -87,7 +87,7 @@ $(info $(file_header))
 $(call print_section,$(app_ids),data,,.apps)
 $(call print_section,$(app_ids),bss,,.apps)
 
-#$(call print_section,$(module_ids),text,DEFAULT_TEXT_ALIGNMENT)
+$(call print_section,$(module_ids),text,DEFAULT_TEXT_ALIGNMENT)
 $(call print_section,$(module_ids),rodata)
 $(call print_section,$(noapp_ids),data)
 $(call print_section,$(noapp_ids),bss)

@@ -26,7 +26,7 @@ int ksleep(useconds_t msec) {
 
 	wait_flag = 1;
 
-	if (timer_init_msec(&timer, TIMER_ONESHOT, msec , &wake_up, (void *) &wait_flag)) {
+	if (timer_init_start_msec(&timer, TIMER_ONESHOT, msec , &wake_up, (void *) &wait_flag)) {
 		return 1;
 	}
 	while (wait_flag) {

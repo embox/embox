@@ -25,7 +25,7 @@
 #define IRQ_STACK_SIZE OPTION_GET(NUMBER,irq_stack_size)
 
 .extern irq_handler
-.weak arm_cpu_reset_handler
+.extern setup_excpt_table
 
 .section .trap_table, "x"
 .global arm_trap_table
@@ -39,7 +39,7 @@ arm_trap_table:
     ldr pc, undef_handler_addr
     ldr pc, swi_handler_addr
     ldr pc, prefetch_abt_handler_addr
-    ldr pc, data_abt_handler_addr
+    b data_abt_prepare
     nop /*bad exception not_used:		.word not_used*/
     ldr pc, irq_handler_addr
     ldr pc, fiq_handler_addr
@@ -52,12 +52,24 @@ swi_handler_addr:
     .word swi_handler
 prefetch_abt_handler_addr:
     .word prefetch_abt_handler
+.global data_abt_handler_addr
 data_abt_handler_addr:
     .word data_abt_handler
 irq_handler_addr:
     .word irq_handler
 fiq_handler_addr:
     .word fiq_handler
+
+data_abt_prepare:
+	/* Prepare stack and call handler */
+	stmfd r13!, {r14}
+	add r14, pc, #0
+	ldr pc, data_abt_handler_addr
+	ldmfd r13!, {r14}
+	mrs r0, cpsr
+	orr r0, r0, #0x1F
+	msr cpsr_c, r0
+	mov pc, r14
 
 .text
 .global start
@@ -81,6 +93,8 @@ reset_handler:
     msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
     mov sp, r0
 
+    bl setup_excpt_table
+
     b bootldr_start
 
 undef_handler:
@@ -88,6 +102,7 @@ prefetch_abt_handler:
 fiq_handler:
     sub r14, r14, #4
     b arm_unresolvable_exception
+.global data_abt_handler
 data_abt_handler:
     sub r14, r14, #8
 

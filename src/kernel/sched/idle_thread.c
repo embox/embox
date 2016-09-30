@@ -5,7 +5,7 @@
  * @author  Vita Loginova
  * @date    08.12.2014
  */
-
+#include <util/log.h>
 #include <util/err.h>
 #include <hal/arch.h>
 
@@ -31,7 +31,8 @@ int idle_thread_create(void) {
 	}
 
 	task_thread_register(task_kernel_task(), t);
-	thread_set_priority(t, SCHED_PRIORITY_MIN);
+	schedee_priority_set(&t->schedee, SCHED_PRIORITY_MIN);
+	log_debug("idle_schedee = %#x", &t->schedee);
 
 	cpu_init(cpu_get_id(), t);
 	thread_launch(t);

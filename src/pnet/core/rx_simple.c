@@ -7,8 +7,8 @@
  * @author Anton Kozlov
  */
 
-#include <pnet/core.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/core.h>
+//#include <pnet/pack/pnet_pack.h>
 
 int pnet_rx_thread_add(struct pnet_pack * pack) {
 	pnet_process(pack);

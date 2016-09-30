@@ -24,7 +24,7 @@
 #include <net/lib/rpc/pmap.h>
 
 
-#include <util/sys_log.h>
+#include <util/log.h>
 
 #include <kernel/time/ktime.h>
 
@@ -130,13 +130,13 @@ send_again:
 	ktime_get_timeval(&sent);
 	if (res == -1) {
 		if (errno != EAGAIN) {
-			LOG_ERROR("clntudp_call", "sendto error");
+			log_error("sendto error");
 			clnt->err.status = RPC_CANTSEND;
 			clnt->err.extra.error = errno;
 			goto exit_with_status;
 		}
 		if (timercmp(&sent, &until, >=)) {
-			LOG_ERROR("clntudp_call", "sendto timeout error");
+			log_error("sendto timeout error");
 			clnt->err.status = RPC_TIMEDOUT;
 			goto exit_with_status;
 		}
@@ -148,13 +148,13 @@ recv_again:
 	ktime_get_timeval(&tmp);
 	if (res == -1) {
 		if (errno != EAGAIN) {
-			LOG_ERROR("clntudp_call", "recvfrom error");
+			log_error("recvfrom error");
 			clnt->err.status = RPC_CANTRECV;
 			clnt->err.extra.error = errno;
 			goto exit_with_status;
 		}
 		if (timercmp(&tmp, &until, >=)) {
-			LOG_ERROR("clntudp_call", "recvfrom timeout error");
+			log_error("recvfrom timeout error");
 			clnt->err.status = RPC_TIMEDOUT;
 			goto exit_with_status;
 		}

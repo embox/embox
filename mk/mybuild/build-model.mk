@@ -119,6 +119,11 @@ define class-ModuleInstance
 	$(eobject-reference Build_ModuleInstance_noRuntimeDepends,
 		noRuntimeDepends,ModuleInstance,,changeable many)
 
+	# 1. Option name
+	$(method getOptionValueStringByName,
+		$(strip $(for op <- $(get options),
+				$(if $(eq $(get op->option>name),$(strip $1)),
+					$(invoke op->value>toString)))))
 	# PROTECTED REGION END
 endef
 

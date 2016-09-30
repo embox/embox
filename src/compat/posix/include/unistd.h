@@ -11,9 +11,13 @@
 #ifndef COMPAT_POSIX_UNISTD_H_
 #define COMPAT_POSIX_UNISTD_H_
 
+#include <compiler.h>
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/cdefs.h>
+
+#include <sys/uio.h>
 
 #include <posix_environ.h>
 
@@ -148,6 +152,10 @@ extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
 extern ssize_t read(int fd, void *buf, size_t nbyte);
 
+extern ssize_t writev(int fd, const struct iovec *iov, int iovcnt);
+
+extern ssize_t readv(int fd, const struct iovec *iov, int iovcnt);
+
 extern off_t lseek(int fd, off_t offset, int origin);
 
 extern int close(int fd);
@@ -182,7 +190,7 @@ extern int dup2(int flides, int flides2);
 extern int pipe(int pipefd[2]);
 extern int pipe2(int pipefd[2], int flags);
 
-extern void _exit (int status) __attribute__ ((__noreturn__));
+extern void _NORETURN _exit (int status);
 
 extern uid_t getuid(void);
 extern uid_t geteuid(void);
@@ -217,6 +225,7 @@ static inline int access(const char *path, int amode) {
 	return 0;
 }
 
+extern void swab(const void *bfrom, void *bto, ssize_t n);
 #include <getopt.h>
 
 #ifndef environ
@@ -231,6 +240,8 @@ extern char **environ;
 extern char *getpass(const char *prompt);
 
 extern int gethostname(char *name, size_t len);
+
+extern int chown(const char *path, uid_t owner, gid_t group);
 
 __END_DECLS
 

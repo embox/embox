@@ -14,10 +14,13 @@ module mod {
 	source "apps.lds.S"
 
 	depends embox.util.Array
+	depends embox.util.log
+	depends embox.lib.LibCrypt
 
 	option boolean security_label = true
 
 	depends embuild
+
 }
 
 @DefaultImpl(embuild_full)

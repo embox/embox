@@ -6,10 +6,10 @@
  * @author Alexander Kalmuk
  */
 
-#include <pnet/netfilter/match_lin.h>
-#include <pnet/core.h>
-#include <pnet/types.h>
-#include <pnet/node.h>
+#include <pnet/node/skbuff_match/netfilter/match_lin.h>
+#include <pnet/core/core.h>
+#include <pnet/core/types.h>
+#include <pnet/core/node.h>
 #include <util/array.h>
 #include <embox/unit.h>
 #include <ctype.h>
@@ -17,10 +17,10 @@
 #include <net/util/macaddr.h>
 #include <arpa/inet.h>
 #include <net/l2/ethernet.h>
-#include <pnet/repo.h>
+#include <pnet/core/repo.h>
 #include <util/member.h>
 #include <stdio.h>
-#include <pnet/graph.h>
+#include <pnet/core/graph.h>
 #include <util/macro.h>
 
 #define RULE_ELEMS_COUNT 6
@@ -119,6 +119,7 @@ static int init(void) {
 
 	new_rule = pnet_rule_alloc();
 
+	graph = NULL;
 	for(i = 0; i < ARRAY_SIZE(rules); i++) {
 		rule_elem = rules[i];
 

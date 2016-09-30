@@ -146,7 +146,7 @@ int vfs_lookup(const char *str_path, struct path *path) {
 void vfs_create_child(struct path *parent, const char *name, mode_t mode,
 		struct path *child) {
 	assert(parent);
-	assert(mode & S_IFMT, "Must provide a type of node, see S_IFXXX");
+	assertf(mode & S_IFMT, "Must provide a type of node, see S_IFXXX");
 
 	if_mounted_follow_down(parent);
 

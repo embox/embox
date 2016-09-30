@@ -22,7 +22,7 @@ int watchdog_set(watchdog_t *p_wdog, struct timeval *p_timeout, watchdog_handler
 
 int watchdog_start(watchdog_t *p_wdog)
 {
-	return timer_init_msec(&(p_wdog->timer), 0, timeval_to_ms(&(p_wdog->time_period)),
+	return timer_init_start_msec(&(p_wdog->timer), 0, timeval_to_ms(&(p_wdog->time_period)),
 			p_wdog->handler, NULL);
 }
 

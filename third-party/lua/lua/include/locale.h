@@ -3,6 +3,6 @@
 
 #include_next <locale.h>
 
-#define getlocaledecpoint() '.'
+#define l_getlocaledecpoint() '.'
 
 #endif /* LUA_LOCALE_H_ */

@@ -12,27 +12,26 @@
 //http://www.osdever.net/FreeVGA/vga/crtcreg.htm
 
 //CIRRUS_LOGIC_GD_5446
+
 #include <stdint.h>
 #include <errno.h>
 #include <string.h>
+#include <sys/mman.h>
 
+#include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <drivers/pci/pci_id.h>
 
-#include <drivers/video/vga.h>
-
-#include <drivers/video/fb.h>
-
 #include <drivers/video/cirrus_logic.h>
-
-#include <drivers/pci/pci.h>
+#include <drivers/video/vga.h>
+#include <drivers/video/fb.h>
 
 struct cirrus_chip_info {
 	unsigned int *regbase;
-	struct fb_var_screeninfo *screen_info;
+	const struct fb_var_screeninfo *screen_info;
 	int doubleVCLK;
 	int multiplexing;
-	uint8_t *screen_base;
+	char *screen_base;
 };
 
 static struct cirrus_chip_info cirrus_chip_info;
@@ -212,7 +211,7 @@ static void setup_resolution(struct cirrus_chip_info *cinfo) {
 	int hdispend, hsyncstart, hsyncend, htotal;
 	int tmp;
 	unsigned int *regbase = cinfo->regbase;
-	struct fb_var_screeninfo *var = cinfo->screen_info;
+	const struct fb_var_screeninfo *var = cinfo->screen_info;
 
 	hsyncstart = var->xres + var->right_margin;
 	hsyncend = hsyncstart + var->hsync_len;
@@ -324,12 +323,11 @@ static void setup_resolution(struct cirrus_chip_info *cinfo) {
 
 }
 
-
 static int cirrus_setup_bpp16(struct cirrus_chip_info *cinfo) {
 	unsigned int *regbase = cinfo->regbase;
 
 	/* Extended Sequencer Mode: 256c col. mode */
-	vga_wseq(regbase, CL_SEQR7,	cinfo->doubleVCLK ? 0xa3 : 0xa7);
+	vga_wseq(regbase, CL_SEQR7, cinfo->doubleVCLK ? 0xa3 : 0xa7);
 	/* mode register: 256 color mode */
 	vga_wgfx(regbase, VGA_GFX_MODE, 64);
 
@@ -338,15 +336,11 @@ static int cirrus_setup_bpp16(struct cirrus_chip_info *cinfo) {
 	return 0;
 }
 
-/******************************************************
- * 24 bpp
- */
 static int cirrus_setup_bpp24(struct cirrus_chip_info *cinfo) {
 	unsigned int *regbase = cinfo->regbase;
 
 	/* Extended Sequencer Mode: 256c col. mode */
 	vga_wseq(regbase, CL_SEQR7, 0xa5);
-
 
 	/* mode register: 256 color mode */
 	vga_wgfx(regbase, VGA_GFX_MODE, 64);
@@ -366,15 +360,10 @@ static int cirrus_setup_bits_per_pixel(struct cirrus_chip_info *cinfo) {
 	return 0;
 }
 
-
-static int cl_check_var(struct fb_var_screeninfo *var, struct fb_info *info) {
-	return 0;
-}
-
-static int cl_set_par(struct fb_info *info) {
+static int cl_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
 	cirrus_chip_info.doubleVCLK = 0;
 	cirrus_chip_info.multiplexing = 0;
-	cirrus_chip_info.screen_info = (struct fb_var_screeninfo *)&info->var;
+	cirrus_chip_info.screen_info = var;
 	cirrus_chip_info.screen_base = info->screen_base;
 
 	chipset_init(&cirrus_chip_info);
@@ -388,45 +377,37 @@ static int cl_set_par(struct fb_info *info) {
 	return 0;
 }
 
+static int cl_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
+
+	var->xres = 1280;
+	var->yres = 1024;
+	var->bits_per_pixel = 16;
+	
+	return 0;
+}
+
 static const struct fb_ops cl_ops = {
-	.fb_check_var = cl_check_var,
-	.fb_set_par = cl_set_par,
-	.fb_copyarea = fb_copyarea,
-	.fb_fillrect = fb_fillrect,
-	.fb_imageblit = fb_imageblit,
-	.fb_cursor    = fb_cursor,
-};
-
-static const struct fb_fix_screeninfo cl_fix_screeninfo = {
-	.name = "cirrus logic framebuffer"
-};
-
-static const struct fb_var_screeninfo cl_default_var_screeninfo = {
-	.xres = 1280,
-	.yres = 1024,
-	.bits_per_pixel = 16
+	.fb_get_var = cl_get_var,
+	.fb_set_var = cl_set_var,
 };
 
 static int cirrus_init(struct pci_slot_dev *pci_dev) {
-	int ret;
+	char *mmap_base = (char *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK); /* FIXME */
+	size_t mmap_len = 1024 * 1280 * 16 / 8;
 	struct fb_info *info;
 
-	assert(pci_dev != NULL);
-
-	info = fb_alloc();
-	if (info == NULL) {
-		return -ENOMEM;
+	if (MAP_FAILED == mmap_device_memory(mmap_base,
+				mmap_len,
+			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
+				MAP_FIXED,
+				(unsigned long) mmap_base)) {
+		return -EIO;
 	}
 
-	memcpy(&info->fix, &cl_fix_screeninfo, sizeof(info->fix));
-	memcpy(&info->var, &cl_default_var_screeninfo, sizeof(info->var));
-	info->ops = &cl_ops;
-	info->screen_base = (void *)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
-
-	ret = fb_register(info);
-	if (ret != 0) {
-		fb_release(info);
-		return ret;
+	info = fb_create(&cl_ops, mmap_base, mmap_len);
+	if (info == NULL) {
+		munmap(mmap_base, mmap_len);
+		return -ENOMEM;
 	}
 
 	return 0;

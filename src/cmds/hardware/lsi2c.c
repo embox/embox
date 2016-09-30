@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <drivers/i2c.h>
+#include <drivers/i2c/i2c.h>
 
 struct lsi2c_cb {
 	int nbuses;

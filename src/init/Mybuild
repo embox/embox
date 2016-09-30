@@ -10,20 +10,17 @@ abstract module setup_tty_api {
 }
 
 module GraphicMode extends Display {
-	option string fb_name="fb0"
-	option number vesa_mode=3
+	option boolean manual_settings = false
+
+	option number set_bpp
 	option number set_x
 	option number set_y
-
-	option number fb_init=1
 
 	source "graphic_init.c"
 
 	depends embox.driver.video.fb
 	depends embox.driver.video.fb_videomodes
 	depends embox.driver.video.vesa_modes
-
-	depends embox.driver.diag
 }
 
 module TextMode extends Display {
@@ -49,9 +46,10 @@ module setup_tty_diag extends setup_tty_api {
 module diag_fd {
 	source "diag_fd.c"
 
-	depends embox.kernel.task.api
 	depends embox.compat.posix.idx.dup
 	depends embox.fs.idesc
+	depends embox.kernel.task.api
+	depends embox.kernel.task.resource.idesc_table
 }
 
 module start_script {
@@ -64,7 +62,20 @@ module start_script {
 	source "start_script.c"
 
 	depends setup_tty_api
-	depends embox.cmd.sh.shell
-	requires embox.cmd.Shell.commandLine
-	@NoRuntime depends embox.compat.libc.stdio.file_ops
+	depends embox.cmd.sh.shell_registry
+	depends embox.cmd.sh.shell_api
+	depends embox.compat.libc.stdio.printf
+}
+
+@DefaultImpl(no_system_start)
+abstract module system_start {}
+
+module no_system_start extends system_start {
+	source "no_system_start.c"
+}
+
+module system_start_service extends system_start {
+	@IncludePath("$(CONF_DIR)")
+	source "system_start_service.c"
+	depends setup_tty_api
 }

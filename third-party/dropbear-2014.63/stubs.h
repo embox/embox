@@ -55,13 +55,6 @@ static inline pid_t setsid(void) {
 	return 0;
 }
 
-static inline int chown(const char *path, uid_t owner, gid_t group) {
-	(void) path;
-	(void) owner;
-	(void) group;
-	return SET_ERRNO(ENOSYS);
-}
-
 static inline int initgroups(const char *user, gid_t group) {
 	(void) user;
 	(void) group;

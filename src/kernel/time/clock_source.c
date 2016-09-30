@@ -28,8 +28,8 @@
 
 #include <embox/unit.h>
 
-ARRAY_SPREAD_DEF(const struct time_event_device *, __event_devices);
-ARRAY_SPREAD_DEF(const struct time_counter_device *, __counter_devices);
+ARRAY_SPREAD_DEF(const struct time_event_device *const, __event_devices);
+ARRAY_SPREAD_DEF(const struct time_counter_device *const, __counter_devices);
 
 POOL_DEF(clock_source_pool, struct clock_source_head,
 						OPTION_GET(NUMBER, clocks_quantity));

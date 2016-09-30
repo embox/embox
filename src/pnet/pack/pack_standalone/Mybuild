@@ -1,5 +1,9 @@
 package embox.pnet.pack
 
 module PnetPackSimple {
+	@IncludeExport(path="pnet/pack")
+	source "pack_alone.h"
 	source "pack_alone.c"
+
+	option number pnet_pack_quantity
 }

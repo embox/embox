@@ -14,6 +14,8 @@
 #include <string.h>
 #include <termios.h>
 #include <poll.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <util/ring_buff.h>
 #include <util/ring.h>
@@ -23,11 +25,9 @@
 #include <kernel/task.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
-#include <fs/flags.h>
 
 #include <kernel/thread/thread_sched_wait.h>
 
-#include <kernel/task/idesc_table.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <mem/misc/pool.h>
 
@@ -41,13 +41,6 @@ struct idesc_pty {
 #define MAX_PTY 20
 POOL_DEF(pty_pool, struct pty, MAX_PTY);
 POOL_DEF(ipty_pool, struct idesc_pty, 2 * MAX_PTY);
-
-#if 0
-struct pty {
-	struct pty pty;
-	/*struct idesc *master, *slave;*/
-};
-#endif
 
 static void pty_out_wake(struct tty *t) {
 	struct pty *pty = pty_from_tty(t);
@@ -111,17 +104,17 @@ struct pty *pty_init(struct pty *p, struct idesc *master, struct idesc *slave) {
 }
 static void pty_close(struct idesc *idesc);
 static int pty_ioctl(struct idesc *idesc, int request, void *data);
-static int pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte);
-static int pty_slave_read(struct idesc *idesc, void *buf, size_t nbyte);
-static int pty_master_write(struct idesc *desc, const void *buf, size_t nbyte);
-static int pty_master_read(struct idesc *idesc, void *buf, size_t nbyte);
+static int pty_slave_write(struct idesc *desc, const struct iovec *iov, int cnt);
+static int pty_slave_read(struct idesc *idesc, const struct iovec *iov, int cnt);
+static int pty_master_write(struct idesc *desc, const struct iovec *iov, int cnt);
+static int pty_master_read(struct idesc *idesc, const struct iovec *iov, int cnt);
 static int pty_fstat(struct idesc *data, void *buff);
 static int pty_master_status(struct idesc *idesc, int mask);
 static int pty_slave_status(struct idesc *idesc, int mask);
 
 static const struct idesc_ops pty_master_ops = {
-		.write = pty_master_write,
-		.read  = pty_master_read,
+		.id_writev = pty_master_write,
+		.id_readv  = pty_master_read,
 		.close = pty_close,
 		.ioctl = pty_ioctl,
 		/*.fstat = pty_fstat,*/
@@ -129,8 +122,8 @@ static const struct idesc_ops pty_master_ops = {
 };
 
 static const struct idesc_ops pty_slave_ops = {
-		.write  = pty_slave_write,
-		.read   = pty_slave_read,
+		.id_writev  = pty_slave_write,
+		.id_readv   = pty_slave_read,
 		.close  = pty_close,
 		.ioctl  = pty_ioctl,
 		.fstat  = pty_fstat,
@@ -158,10 +151,11 @@ static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_op
 	struct idesc_pty *ipty;
 
 	ipty = pool_alloc(&ipty_pool);
-
-	if (ipty) {
-		idesc_init(&ipty->idesc, ops, FS_MAY_READ | FS_MAY_WRITE);
+	if (!ipty) {
+		return NULL;
 	}
+
+	idesc_init(&ipty->idesc, ops, S_IROTH | S_IWOTH);
 
 	ipty->pty = pty;
 
@@ -174,38 +168,6 @@ static void idesc_pty_delete(struct idesc_pty *ipty, struct idesc **idesc) {
 
 	pool_free(&ipty_pool, ipty);
 }
-
-#if 0
-static int pty_fixup_error(struct idesc *idesc, int code) {
-	struct pty *pty;
-	struct idesc *idesc_other;
-
-	/* Negative => error, positive => some data read */
-	if (code != 0) {
-		return code;
-	}
-
-	pty = ((struct idesc_pty *) idesc)->pty;
-
-	if (idesc == pty->master) {
-		idesc_other = pty->slave;
-	} else {
-		assert(idesc == pty->slave);
-		idesc_other = pty->master;
-	}
-
-	if (idesc_other == NULL) {
-		return 0;
-	}
-
-//	if (code == -EAGAIN) {
-//		return -EAGAIN;
-//	}
-
-	assert(idesc->idesc_flags & O_NONBLOCK);
-	return -EAGAIN;
-}
-#endif
 
 static void pty_close(struct idesc *idesc) {
 	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
@@ -240,28 +202,46 @@ static void pty_close(struct idesc *idesc) {
 	sched_unlock();
 }
 
-static ssize_t pty_master_write(struct idesc *desc, const void *buf, size_t nbyte) {
+static ssize_t pty_master_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+	size_t nbyte;
 	struct idesc_pty *ipty = (struct idesc_pty *)desc;
-	assert(ipty != NULL);
-	return pty_write(ipty->pty, buf, nbyte);
+
+	assert(ipty);
+	assert(iov);
+	assert(iov->iov_base);
+	assert(cnt == 1);
+
+	nbyte = iov->iov_len;
+	return pty_write(ipty->pty, iov->iov_base, nbyte);
 }
 
-static ssize_t pty_master_read(struct idesc *desc, void *buf, size_t nbyte) {
+static ssize_t pty_master_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
-	assert(ipty != NULL);
-	return pty_read(ipty->pty, desc, buf, nbyte);
+	assert(ipty);
+	assert(iov);
+	assert(cnt == 1);
+	return pty_read(ipty->pty, desc, iov->iov_base, iov->iov_len);
 }
 
-static ssize_t pty_slave_write(struct idesc *desc, const void *buf, size_t nbyte) {
+static ssize_t pty_slave_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+	size_t nbyte;
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
-	assert(ipty != NULL);
-	return tty_write(pty_to_tty(ipty->pty), buf, nbyte);
+
+	assert(ipty);
+	assert(iov);
+	assert(iov->iov_base);
+	assert(cnt == 1);
+
+	nbyte = iov->iov_len;
+	return tty_write(pty_to_tty(ipty->pty), iov->iov_base, nbyte);
 }
 
-static ssize_t pty_slave_read(struct idesc *desc, void *buf, size_t nbyte) {
+static ssize_t pty_slave_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	struct idesc_pty *ipty = (struct idesc_pty *) desc;
 	assert(ipty != NULL);
-	return tty_read(pty_to_tty(ipty->pty), buf, nbyte);
+	assert(iov);
+	assert(cnt == 1);
+	return tty_read(pty_to_tty(ipty->pty), iov->iov_base, iov->iov_len);
 }
 
 static int pty_fstat(struct idesc *data, void *buff) {
@@ -340,12 +320,12 @@ int ppty(int ptyfds[2]) {
 
 	master = idesc_pty_create(pty, &pty_master_ops);
 	slave = idesc_pty_create(pty, &pty_slave_ops);
-	pty_init(pty, &master->idesc, &slave->idesc);
-
 	if (!master || !slave) {
 		res = ENOMEM;
 		goto out_err;
 	}
+
+	pty_init(pty, &master->idesc, &slave->idesc);
 
 	ptyfds[0] = idesc_table_add(it, &master->idesc, 0);
 	ptyfds[1] = idesc_table_add(it, &slave->idesc, 0);

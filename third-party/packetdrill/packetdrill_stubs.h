@@ -88,15 +88,6 @@ static inline FILE *fropen(void *cookie, int (*readfn)(void *, char *, int)) {
 }
 
 #include <sys/types.h>
-static inline ssize_t readv(int fildes, const struct iovec *iov, int iovcnt) {
-	PD_STUB_USE();
-	return -1;
-}
-
-static inline ssize_t writev(int fildes, const struct iovec *iov, int iovcnt) {
-	PD_STUB_USE();
-	return -1;
-}
 
 #endif /* PACKETDRILL_STUBS_H_ */
 

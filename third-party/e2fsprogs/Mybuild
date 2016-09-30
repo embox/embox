@@ -1,14 +1,14 @@
 package third_party.e2fsprogs
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/include",
-	ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/lib")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/install/include",
+	ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/install/lib")
 static module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libblkid.a", "libcom_err.a", "libe2p.a",
 		"libext2fs.a", "libquota.a", "libuuid.a"
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/src/e2fsprogs-build/intl")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/intl")
 	source "libintl.a"
 
 	depends embox.compat.posix.stubs
@@ -21,37 +21,31 @@ static module core {
 	@NoRuntime depends embox.compat.posix.proc.uid
 }
 
+@App
+@AutoCmd
 @Cmd(name = "e2freefrag",
 	help = "report filesystem free-space fragmentation",
 	man = '''
 		NAME
 			e2freefrag - report filesystem free-space fragmentation
-		SYNOPSIS
-		AUTHORS
-			Alexander Kalmuk
 	''')
 module e2freefrag {
-	source "e2freefrag_cmd.c"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
 	source "e2freefrag.o"
 
 	@NoRuntime depends core
 }
 
+@App
+@AutoCmd
 @Cmd(name = "dumpe2fs",
 	help = "List the control structures of a second extended filesystem",
 	man = '''
 		NAME
 			dumpe2fs - List the control structures of a second extended filesystem
-		SYNOPSIS
-		AUTHORS
-			Alexander Kalmuk
 	''')
 module dumpe2fs {
-	source "dumpe2fs_cmd.c"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
 	source "dumpe2fs.o"
 
 	@NoRuntime depends core
@@ -62,33 +56,27 @@ module dumpe2fs {
 	man = '''
 		NAME
 			mke2fs - Make a ext2fs filesystem
-		SYNOPSIS
-		AUTHORS
-			Alexander Kalmuk
 	''')
 module mke2fs {
 	source "mke2fs_cmd.c"
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/misc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
 	source "mke2fs.o", "util.o", "profile.o",
 		"prof_err.o", "default_profile.o"
 
 	@NoRuntime depends core
 }
 
+@App
+@AutoCmd
 @Cmd(name = "e2fsck",
 	help = "a consistency checker for the new extended file system",
 	man = '''
 		NAME
 			e2fsck - a consistency checker for the new extended file system
-		SYNOPSIS
-		AUTHORS
-			Alexander Kalmuk
 	''')
 module e2fsck {
-	source "e2fsck_cmd.c"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/src/e2fsprogs-build/e2fsck")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/e2fsck")
 	source "*.o"
 
 	@NoRuntime depends core

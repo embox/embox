@@ -16,14 +16,6 @@
 #include <net/util/servent.h>
 #include <stdio.h>
 
-#if 0
-int getnameinfo(const struct sockaddr *sa, socklen_t salen,
-		char *node, socklen_t nodelen, char *serv,
-		socklen_t servlen, int flags) {
-	SET_ERRNO(ENOSYS);
-	return -1;
-}
-#else
 /**
  * FIXME Stub from Dropbear's fake-rfc2553.c
  */
@@ -63,4 +55,3 @@ int getnameinfo(const struct sockaddr *sa, socklen_t salen, char *host,
 	}
 	return (0);
 }
-#endif

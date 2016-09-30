@@ -107,7 +107,7 @@ char *path_get_next_name(const char *path, char *node_name, int buff_len) {
 	return NULL;
 }
 
-static inline int path_is_single_dot(const char *path) {
+int path_is_single_dot(const char *path) {
 	char nc = *(path + 1);
 
 	return *path == '.' && (nc == '/' || nc == '\0');

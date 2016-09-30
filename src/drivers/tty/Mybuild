@@ -17,7 +17,6 @@ module task_breaking_disable extends task_breaking {
 
 module tty {
 	source "tty.c"
-	source "tty_file_ops.c"
 	option number io_buff_sz = 128
 	option number rx_buff_sz = 100
 
@@ -34,24 +33,9 @@ module tty {
 }
 
 module termios_ops {
+	@IncludeExport(path="drivers/tty")
+	source "termios_ops.h"
 	source "termios_ops.c"
 
 	depends embox.util.ring
-}
-
-module tty_repo {
-	source "tty_repo.c"
-	depends embox.mem.pool
-}
-
-module pty {
-	source "pty.c"
-	depends tty
-	depends embox.fs.idesc_event
-//	depends embox.kernel.thread.sync /* cond */
-}
-
-module ttyfs {
-	source "ttyfs.c"
-	depends embox.fs.driver.devfs
 }

@@ -41,8 +41,8 @@ static inline struct ring *ring_init(struct ring *r) {
 }
 
 static inline void __ring_assert_invariants(struct ring *r, size_t r_size) {
-	assert(r->head < r_size, "Did you forget to call %s?", "ring_fixup_head");
-	assert(r->tail < r_size, "Did you forget to call %s?", "ring_fixup_tail");
+	assertf(r->head < r_size, "Did you forget to call %s?", "ring_fixup_head");
+	assertf(r->tail < r_size, "Did you forget to call %s?", "ring_fixup_tail");
 }
 
 /**
@@ -67,7 +67,7 @@ static inline int ring_empty(struct ring *r) {
  */
 static inline int ring_full(struct ring *r, size_t r_size) {
 	__ring_assert_invariants(r, r_size);
-	return r->head == (r->tail ?: r_size) - 1;
+	return r->head == (r->tail ? r->tail : r_size) - 1;
 }
 
 /**

@@ -15,8 +15,9 @@
 #include <arpa/inet.h>
 
 #include <util/array.h>
+#include <util/err.h>
 #include <embox/unit.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/objalloc.h>
 #include <mem/phymem.h>
 #include <mem/sysmalloc.h>
@@ -42,12 +43,11 @@
 OBJALLOC_DEF(ext3_journal_cache, ext3_journal_specific_t, EXT3_JOURNAL_CNT);
 
 /* file operations */
-static int ext3fs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ext3fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
 static int ext3fs_close(struct file_desc *desc);
 static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
-static int ext3fs_ioctl(struct file_desc *desc, int request, ...);
 
 /* fs operations */
 static int ext3fs_init(void * par);
@@ -63,11 +63,11 @@ static struct fs_driver ext3fs_driver;
 /*
  * file_operation
  */
-static int ext3fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ext3fs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
-		return -1;
+		return err_ptr(EINVAL);
 	}
 
 	return drv->file_op->open(node, desc, flags);
@@ -118,9 +118,6 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return res;
 }
 
-static int ext3fs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
-}
 
 static int ext3fs_init(void *par) {
 	return 0;
@@ -199,7 +196,7 @@ static int ext3fs_format(void *dev) {
 	return main_mke2fs(argc, argv);
 }
 
-static int ext3_journal_load(journal_t *jp, block_dev_t *jdev, block_t start) {
+static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t start) {
     ext3_journal_superblock_t *sb;
     ext3_journal_specific_t *spec = (ext3_journal_specific_t *)jp->j_fs_specific.data;
     char buf[4096];
@@ -302,7 +299,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 	/* XXX Hack to use ext2 functions */
 	dir_nas->fs->drv = &ext3fs_driver;
 	ext3_spec->ext3_journal_inode = dip;
-	if (0 > ext3_journal_load(jp, (block_dev_t *) dev_node->nas->fi->privdata,
+	if (0 > ext3_journal_load(jp, (struct block_dev *) dev_node->nas->fi->privdata,
 			fsbtodb(fsi, dip->i_block[0]))) {
 		return -EIO;
 	}
@@ -352,7 +349,6 @@ static struct kfile_operations ext3_fop = {
 	.close = ext3fs_close,
 	.read = ext3fs_read,
 	.write = ext3fs_write,
-	.ioctl = ext3fs_ioctl,
 };
 
 static struct fsop_desc ext3_fsop = {

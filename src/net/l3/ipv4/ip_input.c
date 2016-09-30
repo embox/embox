@@ -12,7 +12,9 @@
 #include <arpa/inet.h>
 #include <string.h>
 #include <errno.h>
-#include <embox/net/pack.h>
+
+#include <util/log.h>
+
 #include <net/l3/ipv4/ip.h>
 #include <net/l3/ipv4/ip_options.h>
 #include <net/l3/icmpv4.h>
@@ -20,22 +22,15 @@
 #include <net/socket/raw.h>
 #include <net/inetdevice.h>
 #include <net/l3/route.h>
-#include <framework/net/proto/api.h>
 #include <net/l3/ipv4/ip_fragment.h>
 #include <net/netfilter.h>
 #include <net/l2/ethernet.h>
 #include <net/lib/ipv4.h>
 
-EMBOX_NET_PACK(ETH_P_IP, ip_rcv);
+#include <embox/net/proto.h>
+#include <embox/net/pack.h>
 
-#define IP_DEBUG 0
-#if IP_DEBUG
-#include <arpa/inet.h>
-#include <kernel/printk.h>
-#define DBG(x) x
-#else
-#define DBG(x)
-#endif
+EMBOX_NET_PACK(ETH_P_IP, ip_rcv);
 
 static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	net_device_stats_t *stats = &dev->stats;
@@ -57,7 +52,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	if (skb->len < dev->hdr_len + IP_MIN_HEADER_SIZE
 			|| IP_HEADER_SIZE(iph) < IP_MIN_HEADER_SIZE
 			|| skb->len < dev->hdr_len + IP_HEADER_SIZE(iph)) {
-		DBG(printk("ip_rcv: invalid IPv4 header length\n"));
+		log_debug("ip_rcv: invalid IPv4 header length");
 		stats->rx_length_errors++;
 		skb_free(skb);
 		return 0; /* error: invalid header length */
@@ -65,7 +60,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 
 	if (iph->version != 4) {
-		DBG(printk("ip_rcv: invalid IPv4 version\n"));
+		log_debug("ip_rcv: invalid IPv4 version");
 		stats->rx_err++;
 		skb_free(skb);
 		return 0; /* error: not ipv4 */
@@ -74,8 +69,8 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	old_check = iph->check;
 	ip_set_check_field(iph);
 	if (old_check != iph->check) {
-		DBG(printk("ip_rcv: invalid checksum %hx(%hx)\n",
-				ntohs(old_check), ntohs(iph->check)));
+		log_debug("ip_rcv: invalid checksum %hx(%hx)",
+				ntohs(old_check), ntohs(iph->check));
 		stats->rx_crc_errors++;
 		skb_free(skb);
 		return 0; /* error: invalid crc */
@@ -84,7 +79,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	ip_len = ntohs(iph->tot_len);
 	if (ip_len < IP_HEADER_SIZE(iph)
 			|| skb->len < dev->hdr_len + ip_len) {
-		DBG(printk("ip_rcv: invalid IPv4 length\n"));
+		log_debug("ip_rcv: invalid IPv4 length");
 		stats->rx_length_errors++;
 		skb_free(skb);
 		return 0; /* error: invalid length */
@@ -95,7 +90,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	/* Validating */
 	if (0 != nf_test_skb(NF_CHAIN_INPUT, NF_TARGET_ACCEPT, skb)) {
-		DBG(printk("ip_rcv: dropped by input netfilter\n"));
+		log_debug("ip_rcv: dropped by input netfilter");
 		stats->rx_dropped++;
 		skb_free(skb);
 		return 0; /* error: dropped */
@@ -114,9 +109,9 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		 * Check the destination address, and if it doesn't match
 		 * any of own addresses, retransmit packet according to the routing table.
 		 */
-		if (!ip_is_local(iph->daddr, true, false)) {
+		if (!ip_is_local(iph->daddr, IP_LOCAL_BROADCAST)) {
 			if (0 != nf_test_skb(NF_CHAIN_FORWARD, NF_TARGET_ACCEPT, skb)) {
-				DBG(printk("ip_rcv: dropped by forward netfilter\n"));
+				log_debug("ip_rcv: dropped by forward netfilter");
 				stats->rx_dropped++;
 				skb_free(skb);
 				return 0; /* error: dropped */
@@ -138,13 +133,13 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		memset(skb->cb, 0, sizeof(skb->cb));
 		opts->optlen = optlen;
 		if (ip_options_compile(skb, opts)) {
-			DBG(printk("ip_rcv: invalid options\n"));
+			log_debug("ip_rcv: invalid options");
 			stats->rx_err++;
 			skb_free(skb);
 			return 0; /* error: bad ops */
 		}
 		if (ip_options_handle_srr(skb)) {
-			DBG(printk("ip_rcv: can't handle options\n"));
+			log_debug("ip_rcv: can't handle options");
 			stats->tx_err++;
 			skb_free(skb);
 			return 0; /* error: can't handle ops */
@@ -178,7 +173,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		return nproto->handle(skb);
 	}
 
-	DBG(printk("ip_rcv: unknown protocol\n"));
+	log_debug("ip_rcv: unknown protocol %d", iph->proto);
 	skb_free(skb);
 	return 0; /* error: nobody wants this packet */
 }

@@ -23,10 +23,14 @@
 
 #include <mem/objalloc.h>
 
-#include <pnet/core.h>
+#include <pnet/core/core.h>
 
-#include <pnet/pnet_pack.h>
+#include <pnet/pack/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
+
+#include <framework/mod/options.h>
+
+#define CONFIG_PNET_PACKETS_QUANTITY OPTION_GET(NUMBER,pnet_pack_quantity)
 
 OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
 OBJALLOC_DEF(net_packs_data,struct pnet_pack_data, CONFIG_PNET_PACKETS_QUANTITY);

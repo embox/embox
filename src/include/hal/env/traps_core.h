@@ -52,17 +52,4 @@ extern void traps_save_env(traps_env_t *env);
  */
 extern void traps_restore_env(traps_env_t *env);
 
-#if 0
-may be not necessary
-/**
- * Allows traps in system
- */
-extern void traps_enable(void);
-
-/**
- * Prohibits traps in system
- */
-extern void traps_disable(void);
-#endif
-
 #endif /* TRAPS_CORE_H_ */

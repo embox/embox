@@ -12,7 +12,6 @@
 #include <kernel/time/timer.h>
 
 #include <kernel/sched/current.h>
-#include <kernel/sched/schedee.h>
 
 #include <kernel/thread.h>
 
@@ -46,7 +45,7 @@ static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 	struct sys_timer _tmr;
 
 #define SCHED_WAIT_TIMER_INIT(_tmr, ...) \
-	timer_init(&_tmr, __VA_ARGS__)
+	timer_init_start(&_tmr, __VA_ARGS__)
 
 #define SCHED_WAIT_TIMER_CLOSE(_tmr) \
 	timer_close(&_tmr)

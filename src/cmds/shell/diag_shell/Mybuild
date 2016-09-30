@@ -1,15 +1,8 @@
 package embox.cmd
 
-interface Shell {
-	feature commandLine
-}
-
-module shell {
+module shell extends embox.cmd.sh.shell_api {
 	option number prompt_len = 80
-	option string prompt = "embox> "
-	option string welcome_msg = "Welcome to Embox and have a lot of fun!"
-
-	provides Shell.commandLine
+	option number history_size = 8
 
 	@IncludePath("$(CONF_DIR)")
 	source "shell.c", "console/console.c",
@@ -18,6 +11,6 @@ module shell {
 
 	depends embox.lib.Tokenizer
 	depends embox.driver.terminal
-	depends embox.cmd.sh.shell
+	depends embox.cmd.sh.shell_registry
 	@NoRuntime depends embox.framework.cmd
 }

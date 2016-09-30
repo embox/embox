@@ -12,7 +12,7 @@
 #include <fs/vfs.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <limits.h>
 #include <fcntl.h>
 #include <stdlib.h>
@@ -22,7 +22,7 @@
 #include <fs/hlpr_path.h>
 #include <errno.h>
 #include <endian.h>
-
+#include <util/err.h>
 
 #include <time.h>
 #define __timespec_defined
@@ -464,7 +464,7 @@ error:
 	return -rc;
 }
 
-static int ntfs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ntfs_open(struct node *node, struct file_desc *file_desc,
 		int flags)
 {
 	struct ntfs_file_info *fi;
@@ -481,13 +481,13 @@ static int ntfs_open(struct node *node, struct file_desc *file_desc,
 	//       necessary to keep only ntfs_attr
 	desc = pool_alloc(&ntfs_desc_pool);
 	if (!desc) {
-		return -ENOMEM;
+		return err_ptr(ENOMEM);
 	}
 
 	ni = ntfs_inode_open(fsi->ntfs_vol, fi->mref);
 	if (!ni) {
 		pool_free(&ntfs_desc_pool, desc);
-		return -errno;
+		return err_ptr(errno);
 	}
 
 	attr = ntfs_attr_open(ni, AT_DATA, NULL, 0);
@@ -496,7 +496,7 @@ static int ntfs_open(struct node *node, struct file_desc *file_desc,
 		pool_free(&ntfs_desc_pool, desc);
 		ntfs_inode_close(ni);
 		errno = err;
-		return -errno;
+		return err_ptr(errno);
 	}
 
 	desc->attr = attr;
@@ -506,7 +506,7 @@ static int ntfs_open(struct node *node, struct file_desc *file_desc,
 	// Yet another bullshit: size is not valid until open
 	node->nas->fi->ni.size = attr->data_size;
 
-	return 0;
+	return &file_desc->idesc;
 }
 
 static int ntfs_close(struct file_desc *file_desc)
@@ -561,7 +561,7 @@ static size_t ntfs_write(struct file_desc *file_desc, void *buf, size_t size) {
 
 
 struct ntfs_bdev_desc {
-	block_dev_t *dev;
+	struct block_dev *dev;
 	size_t pos;
 };
 
@@ -729,7 +729,7 @@ static s64 ntfs_device_bdev_io_write(struct ntfs_device *dev, const void *buf,
 static s64 ntfs_device_bdev_io_pread(struct ntfs_device *dev, void *buf,
 		s64 count, s64 offset)
 {
-	block_dev_t *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
+	struct block_dev *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
 	//int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 	if (count == block_dev_read_buffered(bdev, buf, count, offset)) {
 		return count;
@@ -752,7 +752,7 @@ static s64 ntfs_device_bdev_io_pread(struct ntfs_device *dev, void *buf,
 static s64 ntfs_device_bdev_io_pwrite(struct ntfs_device *dev, const void *buf,
 		s64 count, s64 offset)
 {
-	block_dev_t *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
+	struct block_dev *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
 	//int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 	if (NDevReadOnly(dev)) {
 		errno = EROFS;
@@ -817,7 +817,7 @@ static int ntfs_device_bdev_io_stat(struct ntfs_device *dev, struct stat *buf)
 static int ntfs_device_bdev_io_ioctl(struct ntfs_device *dev, int request,
 		void *argp)
 {
-	block_dev_t *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
+	struct block_dev *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
 	return block_dev_ioctl(bdev, request, argp, 0);
 }
 

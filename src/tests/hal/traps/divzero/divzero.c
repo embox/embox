@@ -32,7 +32,7 @@ TEST_CASE("division by zero must generate an exception") {
 	traps_save_env(&old_env);
 	traps_set_env(testtraps_env());
 
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, DIVZERO_FAULT, dfault_handler);
+	set_fault_handler(DIVZERO_FAULT, dfault_handler);
 
 	a = (23 / zero);
 

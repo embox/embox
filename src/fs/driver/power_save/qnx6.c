@@ -18,8 +18,9 @@
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>
 #include <util/array.h>
+#include <util/err.h>
 #include <embox/unit.h>
-#include <embox/block_dev.h>
+#include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 
@@ -35,24 +36,22 @@ static int qnx6fs_open(struct node *node, struct file_desc *file_desc,
 static int qnx6fs_close(struct file_desc *desc);
 static size_t qnx6fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t qnx6fs_write(struct file_desc *desc, void *buf, size_t size);
-static int qnx6fs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations qnx6_fop = {
 	.open = qnx6fs_open,
 	.close = qnx6fs_close,
 	.read = qnx6fs_read,
 	.write = qnx6fs_write,
-	.ioctl = qnx6fs_ioctl,
 };
 
 /*
  * file_operation
  */
-static int qnx6fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *qnx6fs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
-		return -1;
+		return err_ptr(EINVAL);
 	}
 
 	return drv->file_op->open(node, desc, flags);
@@ -88,9 +87,6 @@ static size_t qnx6fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return drv->file_op->write(desc, buff, size);
 }
 
-static int qnx6fs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
-}
 
 static int qnx6fs_init(void * par);
 static int qnx6fs_format(void *path);

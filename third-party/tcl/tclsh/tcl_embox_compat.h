@@ -35,11 +35,6 @@ static inline double ldexp(double x, int exp) {
 	return -1;
 }
 
-static inline int chown(const char *path, uid_t owner, gid_t group) {
-	printf("tcl>>> %s\n", __func__);
-	return -1;
-}
-
 static inline void rewinddir(char *dirp) {
 	printf("tcl>>> %s\n", __func__);
 }

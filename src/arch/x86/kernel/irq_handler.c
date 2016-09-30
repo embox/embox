@@ -8,13 +8,9 @@
 
 #include <assert.h>
 
-#include <asm/io.h>
-#include <asm/regs.h>
 #include <asm/traps.h>
 #include <asm/linkage.h>
 #include <drivers/irqctrl.h>
-#include <drivers/i8259.h>
-#include <hal/reg.h>
 #include <kernel/irq.h>
 
 fastcall void irq_handler(pt_regs_t *regs) {
@@ -37,7 +33,7 @@ fastcall void irq_handler(pt_regs_t *regs) {
 
 		ipl_disable();
 
-		i8259_send_eoi(irq);
+		irqctrl_eoi(irq);
 
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);

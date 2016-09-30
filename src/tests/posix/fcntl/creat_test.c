@@ -8,7 +8,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
+#include <fs/mount.h>
 #include <fs/fsop.h>
 
 #include <embox/test.h>

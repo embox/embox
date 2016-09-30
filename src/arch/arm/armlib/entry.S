@@ -8,60 +8,80 @@
 
 #include <asm/modes.h>
 
-.data
-this_spsr_lr:
-	.word 0x0
-	.word 0x0
-
 .text
 .align 4
 .global	swi_handler
 .global	irq_handler
 
 irq_handler:
-	sub	LR, LR, #4
+	sub    LR, LR, #4
 
-	stmfd	sp!, {r0, r1}
-	ldr	r0, =this_spsr_lr
-	mrs	r1, SPSR
-	stmia	r0, {r1, lr}
-	ldmfd	sp!, {r0, r1}
+	/* save temp register*/
+	stmfd  sp!, {r0}
+	/* storing LP */
+	stmfd  sp!, {lr}
+	/*storing SPSR and valuable regs*/
+	mrs    lr, SPSR
+	/* storing SPSR */
+	stmfd  sp!, {lr}
+	/* pointer to saved on special stack registers */
+	mov    r0, sp
+	/* return stack pointer to normal value */
+	add    sp, sp, #(4 * 3)
 
-	msr	CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
-	stmfd	sp!, {r0-r12, lr}
+	/* return to previous CPU mode with disabled interrupts */
+	//orr    lr, lr, #I_BIT | F_BIT
+	//msr    CPSR, lr
+	msr    CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
 
-	ldr	r0, =this_spsr_lr
-	ldmia	r0, {r1, r2}
-	stmfd	sp!,{r0, r1, r2}
+	/* now we have previous mode and sp */
+	stmfd  sp!, {r1-r12, lr}
 
-	ldr	lr, =irq_leave
-	msr	CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
+	/* restore spsr, lr, tmp reg */
+	ldmfd  r0!, {r1} /* spsr */
+	ldmfd  r0!, {r2} /* lr */
+	ldmfd  r0!, {r3} /* tmp reg */
 
-	msr	SPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
+	stmfd  sp!, {r3}  /* store tmp reg on the stack */
+	/* store sp */
+	add    r3, sp, #(14 * 4)
+	stmfd  sp!, {r3}
 
-	ldr	r0, =interrupt_handle
-	stmfd	sp!, {r0}
-	ldmfd   sp!, {pc}^
+	/* store lr */
+	stmfd  sp!, {r2}
 
-irq_leave:
-	ldmfd	sp!, {r0, r1, r2}
-	stmia	r0, {r1, r2}
+	/* store spsr */
+	stmfd  sp!, {r1}
 
-	ldmfd	sp!, {r0-r12, lr}
-	msr	CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
+	mov    r0, sp
 
-	stmfd	sp!, {r0, r1}
-	ldr	r0, =this_spsr_lr
-	ldmia	r0, {r1, lr}
-	msr	SPSR_cxsf, r1
+	bl     interrupt_handle
 
-	ldmfd	sp!, {r0, r1}
+	mov    r0, sp
+	msr    CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
 
-	stmfd	sp!, {lr}
-	ldmfd   sp!, {pc}^
+	/* restore spsr */
+	ldmfd  r0!, {r1}
+	msr    SPSR, r1
 
-	/*What a Terrible Failure? */
-	b die
+	/* restore lr */
+	ldmfd  r0!, {lr}
+
+	msr    CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
+	mov    sp, r0
+	/* restore sp */
+	ldmfd  sp!, {r3} /* only for balance */
+	/* restore tmp reg */
+	ldmfd  sp!, {r0}
+
+	ldmfd  sp!, {r1-r12, lr}
+
+	msr    CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
+	stmfd  sp!, {lr}
+	/*regs & SPSR on theirs places, as before handler */
+	/*returning from interrupt handler, CPSR <- SPSR */
+	ldmfd  sp!, {pc}^
+	/*continue from place, where interrupt raised */
 
 swi_handler:
 
@@ -88,3 +108,4 @@ swi_handler:
 
 die:
 	b die
+

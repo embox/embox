@@ -30,3 +30,8 @@ module servent {
 	option number max_proto_len=32
 	source "servent.c"
 }
+
+module show_packet {
+	@IncludeExport(path="net/util")
+	source "show_packet.h"
+}

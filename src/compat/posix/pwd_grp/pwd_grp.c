@@ -298,7 +298,8 @@ int getgrnam_r(const char *name, struct group *grp,
 }
 
 struct group * getgrgid(gid_t gid) {
-	struct group grp, *result;
+	static struct group *result;
+	struct group grp;
 	char buf[64];
 	int ret;
 

@@ -4,10 +4,10 @@ PKG_VER := ef29d06db1b57c415cbee51b90b492ae89812b5d
 
 PKG_DOWNLOADS_SEPARATE := true
 
-PKG_SOURCES := https://github.com/JuliaLang/$(PKG_NAME)/archive/$(PKG_VER).zip
-PKG_PATCHES := openlibm_embox.patch
+PKG_SOURCES := https://github.com/JuliaLang/openlibm/archive/$(PKG_VER).tar.gz
+PKG_MD5 := 4bc22ffc211f959080173587e81742ec
 
-PKG_MD5 := a8d4531e2d35384d244977fce009dbe2
+PKG_PATCHES := openlibm_embox.patch
 
 include $(EXTBLD_LIB)
 

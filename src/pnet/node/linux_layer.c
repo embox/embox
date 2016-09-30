@@ -8,16 +8,16 @@
  */
 
 #include <arpa/inet.h>
-#include <pnet/prior_path.h>
+#include <pnet/core/prior_path.h>
 #include <kernel/thread.h>
 #include <net/skbuff.h>
 #include <net/l0/net_rx.h>
 
-#include <pnet/core.h>
+#include <pnet/core/core.h>
 
 #include <embox/unit.h>
-#include <pnet/repo.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/repo.h>
+#include <pnet/pack/pnet_pack.h>
 
 static int pnet_linux_rx(struct pnet_pack *pack) {
 	struct sk_buff *skb;

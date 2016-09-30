@@ -106,7 +106,7 @@ static inline struct slist_link *slist_remove_first_link(struct slist *list) {
 }
 
 #define slist_remove_first(slist, member_t) \
-	member_to_object_or_null(slist_remove_first_link(slist, member_t))
+	member_to_object_or_null(slist_remove_first_link(slist), member_t)
 #define slist_remove_first_element(slist, element_type, link_member) \
 	member_cast_out_or_null(slist_remove_first_link(slist), element_type, \
 			link_member)

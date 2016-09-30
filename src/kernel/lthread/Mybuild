@@ -1,18 +1,14 @@
 package embox.kernel.lthread
 
-@DefaultImpl(no_lthread)
-abstract module lthread_api {
-}
-
-module no_lthread extends lthread_api {
-}
-
-module lthread extends lthread_api {
-	option number lthread_pool_size=512
+module lthread {
+	@IncludeExport(path="kernel/lthread")
+	source "lthread.h", "lthread_sched_wait.h", "waitq.h"
 
 	source "lthread.c"
 	source "lthread_sched_wait.c"
 
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.current.api
+
+	depends embox.compat.posix.util.time
 }

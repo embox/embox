@@ -14,6 +14,7 @@
 #endif /* __EMBUILD__ */
 
 #include <util/array.h>
+#include <util/log.h>
 
 #include <framework/mod/decls.h>
 #include <framework/mod/types.h>
@@ -78,6 +79,9 @@
 # define MOD_LABEL_DEF(mod_nm)
 # define MOD_SEC_LABEL_DEF(mod_nm)
 #endif
+
+# define MOD_LOGGER_DEF(mod_nm, log_level) \
+	__MOD_LOGGER_DEF(mod_nm, log_level)
 
 /**
  * Cmd-specific definitions.
@@ -153,7 +157,7 @@
 	extern const struct mod __MOD(mod_nm); \
 	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL); \
 	\
-	ARRAY_SPREAD_DECLARE(const struct mod *,      \
+	ARRAY_SPREAD_DECLARE(const struct mod * const,      \
 			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) // TODO don't like it. -- Eldar
 #endif /* __MOD_DEF */
@@ -161,6 +165,8 @@
 #ifndef __MOD_BUILDINFO_DEF
 #define __MOD_BUILDINFO_DEF(_mod_nm, _package_name, _mod_name) \
 	extern const struct mod_label __MOD_LABEL(_mod_nm)       \
+			__attribute__ ((weak));                          \
+	extern struct logger __MOD_LOGGER(_mod_nm)         \
 			__attribute__ ((weak));                          \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
 			__MOD_REQUIRES(_mod_nm), NULL);                  \
@@ -174,6 +180,7 @@
 		.pkg_name   = _package_name,                         \
 		.mod_name   = _mod_name,                             \
 		.label      = &__MOD_LABEL(_mod_nm),                 \
+		.logger     = &__MOD_LOGGER(_mod_nm),                \
 		.requires   = __MOD_REQUIRES(_mod_nm),               \
 		.provides   = __MOD_PROVIDES(_mod_nm),               \
 		.after_deps = __MOD_AFTER_DEPS(_mod_nm),             \
@@ -189,19 +196,23 @@
 
 #ifndef __MOD_LABEL_DEF
 #define __MOD_LABEL_DEF(mod_nm) \
-	/* extern char __module_ ## mod_nm ## _text_vma;  */\
-	/* extern char __module_ ## mod_nm ## _text_len;  */\
+	extern char __module_ ## mod_nm ## _text_vma;  \
+	extern char __module_ ## mod_nm ## _text_len;  \
+	extern const char __module_ ## mod_nm ## _text_md5sum[] __attribute__((weak));  \
 	extern char __module_ ## mod_nm ## _rodata_vma; \
 	extern char __module_ ## mod_nm ## _rodata_len; \
+	extern const char __module_ ## mod_nm ## _rodata_md5sum[] __attribute__((weak));  \
 	extern char __module_ ## mod_nm ## _data_vma; \
 	extern char __module_ ## mod_nm ## _data_len; \
 	extern char __module_ ## mod_nm ## _bss_vma;  \
 	extern char __module_ ## mod_nm ## _bss_len;  \
 	const struct mod_label __MOD_LABEL(mod_nm) = { \
-		/* .text.vma   =          &__module_ ## mod_nm ## _text_vma,  */\
-		/* .text.len   = (size_t) &__module_ ## mod_nm ## _text_len,  */\
+		.text.vma   =          &__module_ ## mod_nm ## _text_vma,  \
+		.text.len   = (size_t) &__module_ ## mod_nm ## _text_len,  \
+		.text.md5sum = __module_ ## mod_nm ## _text_md5sum,  \
 		.rodata.vma =          &__module_ ## mod_nm ## _rodata_vma, \
 		.rodata.len = (size_t) &__module_ ## mod_nm ## _rodata_len, \
+		.rodata.md5sum = __module_ ## mod_nm ## _rodata_md5sum,  \
 		.data.vma   =          &__module_ ## mod_nm ## _data_vma, \
 		.data.len   = (size_t) &__module_ ## mod_nm ## _data_len, \
 		.bss.vma    =          &__module_ ## mod_nm ## _bss_vma, \
@@ -211,6 +222,8 @@
 
 #ifndef __MOD_SEC_LABEL_DEF
 #define __MOD_SEC_LABEL_DEF(mod_nm) \
+	extern char __module_ ## mod_nm ## _text_vma; \
+	extern char __module_ ## mod_nm ## _text_len; \
 	extern char __module_ ## mod_nm ## _rodata_vma; \
 	extern char __module_ ## mod_nm ## _rodata_len; \
 	extern char __module_ ## mod_nm ## _data_vma; \
@@ -219,8 +232,8 @@
 	extern char __module_ ## mod_nm ## _bss_len;  \
 	static const struct mod_sec_label __MOD_SEC_LABEL(mod_nm) = { \
 		.label =  { \
-			/* .text.vma   =          &__module_ ## mod_nm ## _text_vma,  */\
-			/* .text.len   = (size_t) &__module_ ## mod_nm ## _text_len,  */\
+			.text.vma   =          &__module_ ## mod_nm ## _text_vma,  \
+			.text.len   = (size_t) &__module_ ## mod_nm ## _text_len,  \
 			.rodata.vma =          &__module_ ## mod_nm ## _rodata_vma, \
 			.rodata.len = (size_t) &__module_ ## mod_nm ## _rodata_len, \
 			.data.vma   =          &__module_ ## mod_nm ## _data_vma, \
@@ -230,9 +243,19 @@
 		}, \
 		.mod = &__MOD(mod_nm), \
 	}; \
-	ARRAY_SPREAD_DECLARE(const struct mod_sec_label *, __mod_sec_labels); \
+	ARRAY_SPREAD_DECLARE(const struct mod_sec_label *const, __mod_sec_labels); \
 	ARRAY_SPREAD_ADD(__mod_sec_labels, &__MOD_SEC_LABEL(mod_nm))
 #endif /* __MOD_SEC_LABEL_DEF */
+
+#ifndef __MOD_LOGGER_DEF
+#define __MOD_LOGGER_DEF(mod_nm, log_level) \
+	struct logger __MOD_LOGGER(mod_nm) = { \
+		.mod   = &__MOD(mod_nm), \
+		.logging = { \
+			.level = log_level, \
+		}, \
+	}
+#endif /* __MOD_LOGGER_DEF */
 
 #ifndef __MOD_CMD_DEF
 #define __MOD_CMD_DEF(mod_nm, cmd_name, cmd_brief, cmd_details) \

@@ -26,24 +26,27 @@
 #include <string.h>
 #include <util/math.h>
 
-EMBOX_NET_PACK(ETH_P_RARP, rarp_rcv);
-
-#define RARP_DEBUG 0
-#if RARP_DEBUG
 #include <arpa/inet.h>
-#include <kernel/printk.h>
 #include <net/util/macaddr.h>
-#define DBG(x) x
-#else
-#define DBG(x)
-#endif
+#include <util/log.h>
+
+#include <framework/mod/options.h>
+#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
+
+// Forward declarations
+static void log_rarp_hnd_request(const struct arphdr *rarph,
+		uint8_t *dst_paddr, uint8_t *dst_haddr);
+static void log_rarp_hnd_reply(const struct arphdr *rarph,
+		const struct arpbody *rarpb);
+
+EMBOX_NET_PACK(ETH_P_RARP, rarp_rcv);
 
 static int rarp_xmit(struct sk_buff *skb) {
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
 	if (skb->dev->flags & IFF_NOARP) {
-		DBG(printk("rarp_xmit: rarp doesn't supported by device %s\n",
-					&skb->dev->name[0]));
+		log_error("rarp_xmit: rarp doesn't supported by device %s\n",
+					&skb->dev->name[0]);
 		skb_free(skb);
 		return 0; /* error: rarp doesn't supported by device */
 	}
@@ -71,15 +74,15 @@ static int rarp_send(struct sk_buff *skb, struct net_device *dev,
 
 	size = dev->hdr_len + ARP_CALC_HEADER_SIZE(dev->addr_len, pln);
 	if (size > min(dev->mtu, skb_max_size())) {
-		DBG(printk("rarp_send: hdr size %zu is too big (max %zu)\n",
-					size, min(dev->mtu, skb_max_size())));
+		log_error("rarp_send: hdr size %zu is too big (max %zu)\n",
+					size, min(dev->mtu, skb_max_size()));
 		if (skb) skb_free(skb); /* TODO */
 		return -EMSGSIZE; /* error: hdr size is too big */
 	}
 
 	skb = skb_realloc(size, skb);
 	if (skb == NULL) {
-		DBG(printk("rarp_send: no memory\n"));
+		log_error("rarp_send: no memory\n");
 		return -ENOMEM; /* error: no memory */
 	}
 
@@ -95,7 +98,7 @@ static int rarp_send(struct sk_buff *skb, struct net_device *dev,
 	assert(dev->ops->build_hdr != NULL);
 	ret = dev->ops->build_hdr(skb, &hdr_info);
 	if (ret != 0) {
-		DBG(printk("rarp_send: can't build device header\n"));
+		log_error("rarp_send: can't build device header\n");
 		skb_free(skb);
 		return ret;
 	}
@@ -123,7 +126,7 @@ static int rarp_hnd_request(const struct arphdr *rarph,
 	/* check protocol capabilities */
 	if ((rarph->ar_pro != htons(ETH_P_IP))
 			|| (rarph->ar_pln != sizeof in_dev->ifa_address)) {
-		DBG(printk("rarp_hnd_request: only IPv4 is supported\n"));
+		log_error("rarp_hnd_request: only IPv4 is supported\n");
 		skb_free(skb);
 		return 0; /* FIXME error: only IPv4 is supported */
 	}
@@ -137,7 +140,7 @@ static int rarp_hnd_request(const struct arphdr *rarph,
 			dev, ntohs(rarph->ar_pro), rarph->ar_pln,
 			&dst_paddr[0]);
 	if (ret != 0) {
-		DBG(printk("rarp_hnd_request: paddr not found in neighbour\n"));
+		log_error("rarp_hnd_request: paddr not found in neighbour\n");
 		skb_free(skb);
 		return ret != -ENOENT ? ret : 0;
 	}
@@ -147,32 +150,14 @@ static int rarp_hnd_request(const struct arphdr *rarph,
 
 	/* declone sk_buff */
 	if (NULL == skb_declone(skb)) {
-		DBG(printk("rarp_hnd_request: no memory\n"));
+		log_error("rarp_hnd_request: no memory\n");
 		skb_free(skb);
 		return -ENOMEM;
 	}
 
-	DBG({
-		printk("rarp_hnd_request: send reply with ");
-		if (rarph->ar_pro == ntohs(ETH_P_IP)) {
-			struct in_addr in;
-			assert(rarph->ar_pln == sizeof in);
-			memcpy(&in, dst_paddr, sizeof in);
-			printk("%s", inet_ntoa(in));
-		}
-		else {
-			printk("unknown(%x)", htons(rarph->ar_pro));
-		}
-		if (rarph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
-			assert(rarph->ar_hln == ETH_ALEN);
-			printk("[" MACADDR_FMT "]",
-				MACADDR_FMT_ARG(dst_haddr));
-		}
-		else {
-			printk("[unknown(%x)]", htons(rarph->ar_hrd));
-		}
-		printk("\n");
-	});
+	if (LOG_LEVEL >= LOG_DEBUG) {
+		log_rarp_hnd_request(rarph, &dst_paddr[0], &dst_haddr[0]);
+	}
 
 	/* send reply */
 	return rarp_send(skb, dev, ntohs(rarph->ar_pro),
@@ -194,37 +179,65 @@ static int rarp_hnd_reply(const struct arphdr *rarph,
 			rarph->ar_pln, dev, ntohs(rarph->ar_hrd),
 			rarpb->ar_tha, rarph->ar_hln, 0);
 	if (ret != 0) {
-		DBG(printk("rarp_hnd_reply: can't update neighbour\n"));
+		log_error("rarp_hnd_reply: can't update neighbour\n");
 		skb_free(skb);
 		return ret;
 	}
 
-	DBG({
-		printk("rarp_hnd_reply: receive reply with ");
-		if (rarph->ar_pro == ntohs(ETH_P_IP)) {
-			struct in_addr in;
-			assert(rarph->ar_pln == sizeof in);
-			memcpy(&in, rarpb->ar_tpa, sizeof in);
-			printk("%s", inet_ntoa(in));
-		}
-		else {
-			printk("unknown(%x)", htons(rarph->ar_pro));
-		}
-		if (rarph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
-			assert(rarph->ar_hln == ETH_ALEN);
-			printk("[" MACADDR_FMT "]",
-				MACADDR_FMT_ARG(rarpb->ar_tha));
-		}
-		else {
-			printk("[unknown(%x)]", htons(rarph->ar_hrd));
-		}
-		printk("\n");
-	});
+	if (LOG_LEVEL >= LOG_DEBUG) {
+		log_rarp_hnd_reply(rarph, rarpb);
+	}
 
 	/* free sk_buff */
 	skb_free(skb);
 
 	return 0;
+}
+
+static void log_rarp_hnd_request(const struct arphdr *rarph,
+		uint8_t *dst_paddr, uint8_t *dst_haddr) {
+	log_debug("rarp_hnd_request: send reply with ");
+	if (rarph->ar_pro == ntohs(ETH_P_IP)) {
+		struct in_addr in;
+		assert(rarph->ar_pln == sizeof in);
+		memcpy(&in, dst_paddr, sizeof in);
+		log_debug("%s", inet_ntoa(in));
+	}
+	else {
+		log_debug("unknown(%x)", htons(rarph->ar_pro));
+	}
+	if (rarph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
+		assert(rarph->ar_hln == ETH_ALEN);
+		log_debug("[" MACADDR_FMT "]",
+			MACADDR_FMT_ARG(dst_haddr));
+	}
+	else {
+		log_debug("[unknown(%x)]", htons(rarph->ar_hrd));
+	}
+	log_debug("\n");
+}
+
+static void log_rarp_hnd_reply(const struct arphdr *rarph,
+		const struct arpbody *rarpb) {
+	log_debug("rarp_hnd_reply: receive reply with ");
+	if (rarph->ar_pro == ntohs(ETH_P_IP)) {
+		struct in_addr in;
+		assert(rarph->ar_pln == sizeof in);
+		memcpy(&in, rarpb->ar_tpa, sizeof in);
+		log_debug("%s", inet_ntoa(in));
+	}
+	else {
+		log_debug("unknown(%x)", htons(rarph->ar_pro));
+	}
+	if (rarph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
+		assert(rarph->ar_hln == ETH_ALEN);
+		log_debug("[" MACADDR_FMT "]",
+			MACADDR_FMT_ARG(rarpb->ar_tha));
+	}
+	else {
+		log_debug("[unknown(%x)]", htons(rarph->ar_hrd));
+	}
+	log_debug("\n");
 }
 
 static int rarp_rcv(struct sk_buff *skb, struct net_device *dev) {

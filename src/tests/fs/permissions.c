@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <dirent.h>
 
-#include <fs/fsop.h>
+#include <fs/mount.h>
 
 #include <embox/test.h>
 

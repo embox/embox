@@ -11,15 +11,6 @@
 #include <stddef.h>
 #include <asm/io.h>
 
-#if 0
-//FIXME this is temporary
-/* CauseWay DOS extender only */
-#define peekb(S,O)	      *(unsigned char *)(16uL * (S) + (O))
-#define pokeb(S,O,V)	    *(unsigned char *)(16uL * (S) + (O)) = (V)
-#define pokew(S,O,V)	    *(unsigned short *)(16uL * (S) + (O)) = (V)
-#define _vmemwr(DS,DO,S,N)      memcpy((char *)((DS) * 16 + (DO)), S, N)
-#endif
-
 #define VGA_PEL_MSK    0x3C6   /* PEL mask register */
 
 /* AC - attribute controller */
@@ -116,34 +107,6 @@
 #define VGA_ATC_OVERSCAN       0x11 /* Overscan (Border) Color */
 #define VGA_ATC_PLANE_ENABLE   0x12 /* Color Plane Enable */
 #define VGA_ATC_COLOR_PAGE     0x14 /* Color Select */
-
-#if 0
-#define VGA_NUM_SEQ_REGS   5
-#define VGA_NUM_CRTC_REGS  25
-#define VGA_NUM_GC_REGS    9
-#define VGA_NUM_AC_REGS    21
-
-#include <stdint.h>
-#include <asm/io.h>
-
-struct vga_registers {
-	uint16_t seq[VGA_NUM_SEQ_REGS];
-	uint16_t crtc[VGA_NUM_CRTC_REGS];
-	uint16_t gc[VGA_NUM_GC_REGS];
-	uint16_t ac[VGA_NUM_AC_REGS];
-};
-
-
-#define VGA_NUM_REGS	    \
-	(1 + VGA_NUM_SEQ_REGS + VGA_NUM_CRTC_REGS + VGA_NUM_GC_REGS + VGA_NUM_AC_REGS)
-
-
-extern void vga_read_regs(unsigned char *regs);
-
-extern void vga_write_regs(unsigned char *regs);
-#endif
-
-
 
 static inline void vga_misc_write(unsigned char value) {
 	out8(value, VGA_MISC_WRITE);

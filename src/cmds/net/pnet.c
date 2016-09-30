@@ -16,11 +16,11 @@
 #include <arpa/inet.h>
 #include <util/hashtable.h>
 
-#include <pnet/netfilter/match_lin.h>
-#include <pnet/core.h>
-#include <pnet/node.h>
-#include <pnet/repo.h>
-#include <pnet/graph.h>
+#include <pnet/node/skbuff_match/netfilter/match_lin.h>
+#include <pnet/core/core.h>
+#include <pnet/core/node.h>
+#include <pnet/core/repo.h>
+#include <pnet/core/graph.h>
 
 ARRAY_SPREAD_DECLARE(const struct pnet_module, __pnet_mod_repo);
 

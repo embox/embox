@@ -8,7 +8,7 @@
 
 #include <fcntl.h>
 
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
 #include <embox/test.h>
 #include <fs/vfs.h>
 #include <mem/page.h>

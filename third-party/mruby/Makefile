@@ -2,8 +2,8 @@
 PKG_NAME := mruby
 PKG_VER  := 1.1.0
 
-PKG_SOURCES := https://github.com/mruby/mruby/archive/$(PKG_VER).zip
-PKG_MD5     := 3897db6c8efc3b946b015489d3ddd1f9
+PKG_SOURCES := https://github.com/mruby/mruby/archive/$(PKG_VER).tar.gz
+PKG_MD5     := 60d75ea704c9285f3c80b3ad1d2b68de
 
 PKG_PATCHES := pkg_patch.txt
 

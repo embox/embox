@@ -1,6 +1,0 @@
-package lego_nxt.example
-
-module motor {
-	source "motor.c"
-	depends lego_nxt.driver.nxt_motor
-}

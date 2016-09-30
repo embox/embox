@@ -31,7 +31,7 @@ typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *ne
 			__attribute__((aligned(sizeof(void *)), \
 						section(".bss.ktask.resource"))); \
 	static const struct task_resource_desc desc; \
-	ARRAY_SPREAD_DECLARE(const struct task_resource_desc *, \
+	ARRAY_SPREAD_DECLARE(const struct task_resource_desc *const, \
 			task_resource_desc_array); \
 	ARRAY_SPREAD_ADD(task_resource_desc_array, &desc)
 
@@ -60,7 +60,7 @@ extern int task_resource_inherit(const struct task *task,
 extern void task_resource_deinit(const struct task *task);
 extern void task_resource_exec(const struct task *task, const char *path, char *const argv[]);
 
-ARRAY_SPREAD_DECLARE(const struct task_resource_desc *,
+ARRAY_SPREAD_DECLARE(const struct task_resource_desc *const,
 		task_resource_desc_array);
 ARRAY_SPREAD_DECLARE(const task_notifing_resource_hnd,
 		task_notifing_resource);

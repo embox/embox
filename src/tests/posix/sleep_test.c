@@ -32,9 +32,14 @@ TEST_CASE("one sleep") {
 
 	cur_time = clock();
 	usleep(TIME_TO_SLEEP);
-	epsilon = abs((int) (clock() - cur_time)
-			- (int) (TIME_TO_SLEEP / USEC_PER_MSEC));
-	test_assert_true(epsilon < EPSILON_BORDER);
+	epsilon = clock();
+
+	test_assert_true(epsilon >= cur_time);
+	epsilon = epsilon - cur_time;
+
+	test_assert_true(TIME_TO_SLEEP / USEC_PER_MSEC < epsilon);
+
+	test_assert_true(epsilon < (TIME_TO_SLEEP / USEC_PER_MSEC + EPSILON_BORDER));
 }
 
 static void * handler_timeout(void* args) {

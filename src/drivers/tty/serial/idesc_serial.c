@@ -5,83 +5,38 @@
  * @author: Anton Bondarev
  */
 #include <assert.h>
-
-#include <util/err.h>
 #include <poll.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
+
 
 #include <mem/misc/pool.h>
+
 #include <fs/idesc.h>
 
-#include <framework/mod/options.h>
-
 #include <drivers/tty.h>
-#include <fs/idesc_serial.h>
+#include <drivers/ttys.h>
+#include <drivers/serial/uart_device.h>
 
+#include "idesc_serial.h"
+
+#include <framework/mod/options.h>
 
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
 
-//POOL_DEF(pool_serials, struct idesc_serial, MAX_SERIALS);
+POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 
 #define idesc_to_uart(desc) \
-	(((struct file_desc *)desc)->file_info)
+	(((struct  tty_uart*)desc)->uart)
+
 
 static const struct idesc_ops idesc_serial_ops;
 
-struct tty_uart {
-	struct tty tty;
-	struct uart *uart;
-};
+extern struct tty_ops uart_tty_ops;
+extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
-
-static inline struct uart *tty2uart(struct tty *tty) {
-	struct tty_uart *tu;
-	tu = member_cast_out(tty, struct tty_uart, tty);
-	return tu->uart;
-}
-
-static void uart_out_wake(struct tty *t) {
-	struct uart *uart_dev = tty2uart(t);
-	int ich;
-
-	irq_lock();
-
-	while ((ich = tty_out_getc(t)) != -1)
-		uart_putc(uart_dev, (char) ich);
-
-	irq_unlock();
-}
-
-static void uart_term_setup(struct tty *tty, struct termios *termios) {
-	struct uart *uart_dev = tty2uart(tty);
-	struct uart_params params;
-
-	uart_get_params(uart_dev, &params);
-
-	/* TODO baud rate is ospeed. What's with ispeed ? */
-	params.baud_rate = termios->c_ospeed;
-
-	uart_set_params(uart_dev, &params);
-}
-
-static struct tty_ops uart_tty_ops = {
-	.setup = uart_term_setup,
-	.out_wake = uart_out_wake,
-};
-
-static irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
-	struct uart *dev = data;
-
-	if (dev->tty) {
-		while (uart_hasrx(dev))
-			tty_rx_putc(dev->tty, uart_getc(dev), 0);
-	}
-
-	return IRQ_HANDLED;
-}
-
-static int idesc_uart_bind(struct uart *uart, struct idesc *idesc) {
+static int idesc_uart_bind(struct uart *uart) {
 	struct tty_uart *tu;
 
 	tu = pool_alloc(&uart_ttys);
@@ -93,7 +48,7 @@ static int idesc_uart_bind(struct uart *uart, struct idesc *idesc) {
 
 	tu->uart = uart;
 	uart->tty = &tu->tty;
-	uart->tty->idesc = idesc;
+	uart->tty->idesc = &tu->idesc;
 	uart->irq_handler = uart_irq_handler;
 
 	return 0;
@@ -107,34 +62,34 @@ static void idesc_uart_unbind(struct uart *uart) {
 	pool_free(&uart_ttys, tu);
 }
 
-struct idesc *idesc_serial_create(struct file_desc *fdesc, struct uart *uart,
-		idesc_access_mode_t mod) {
-	//struct idesc_serial *idesc;
+struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
 
 	assert(uart);
 	assert(mod);
 
-	idesc_init(&fdesc->idesc, &idesc_serial_ops, FS_MAY_READ | FS_MAY_WRITE);
-
-	if (idesc_uart_bind(uart, &fdesc->idesc)) {
+	if (idesc_uart_bind(uart)) {
 		return NULL;
 	}
 
-	if (uart_open(uart)) {
-		idesc_uart_unbind(uart);
-		return NULL;
-	}
+	idesc_init(uart->tty->idesc, &idesc_serial_ops, S_IROTH | S_IWOTH);
 
-	return &fdesc->idesc;
+	return uart->tty->idesc;
 }
 
-static ssize_t serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
+static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 	struct uart *uart;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
-	assert(idesc->idesc_amode & FS_MAY_READ);
+	assert(idesc->idesc_amode & S_IROTH);
 
 	if (!nbyte) {
 		return 0;
@@ -147,16 +102,24 @@ static ssize_t serial_read(struct idesc *idesc, void *buf, size_t nbyte) {
 	return tty_read(uart->tty, (char *) buf, nbyte);
 }
 
-static ssize_t serial_write(struct idesc *idesc, const void *buf, size_t nbyte) {
+static ssize_t serial_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+	void *buf;
+	size_t nbyte;
 	int ch;
 	struct uart *uart;
-	size_t written, left = nbyte;
+	size_t written, left;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
 
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
-	assert(idesc->idesc_amode & FS_MAY_WRITE);
+	assert(idesc->idesc_amode & S_IWOTH);
 
+	left = nbyte;
 	uart = idesc_to_uart(idesc);
 	assert(uart);
 	assert(uart->tty);
@@ -188,8 +151,6 @@ static void serial_close(struct idesc *idesc) {
 	assert(res == 0); /* TODO */
 
 	idesc_uart_unbind(uart);
-
-	file_desc_destroy((struct file_desc *)idesc);
 }
 
 static int serial_ioctl(struct idesc *idesc, int request, void *data) {
@@ -244,8 +205,8 @@ static int serial_fstat(struct idesc *data, void *buff) {
 }
 
 static const struct idesc_ops idesc_serial_ops = {
-		.read = serial_read,
-		.write = serial_write,
+		.id_readv = serial_read,
+		.id_writev = serial_write,
 		.ioctl = serial_ioctl,
 		.close = serial_close,
 		.status = serial_status,

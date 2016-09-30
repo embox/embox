@@ -1,0 +1,18 @@
+package embox.fs.dvfs
+
+@DefaultImpl(trivial)
+abstract module cache_strategy {
+}
+
+module trivial extends cache_strategy {
+	source "dcache_no.c"
+}
+
+module polynomial extends cache_strategy {
+	source "dcache_polynomial.c"
+}
+
+module compat {
+	source "compat.c"
+	depends embox.fs.fuse.fuse_api
+}

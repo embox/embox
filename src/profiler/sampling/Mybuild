@@ -2,6 +2,9 @@
 package embox.profiler.sampling
 
 module timer {
+	@IncludeExport(path="profiler/sampling")
+	source "sample.h"
+
 	option number interval = 100
 
 	source "sample.c"

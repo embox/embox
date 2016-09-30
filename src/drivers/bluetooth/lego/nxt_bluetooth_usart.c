@@ -10,19 +10,21 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+
+#include <hal/system.h>
 #include <kernel/time/ktime.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/pins.h>
 #include <drivers/bluetooth/bluetooth.h>
-#include <drivers/bluetooth/blue_core4.h>
+#include <drivers/bluetooth/lego/blue_core4.h>
 #include <kernel/time/timer.h>
 
 #include <embox/unit.h>
 
 
-#include <pnet/core.h>
-#include <pnet/repo.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/core.h>
+#include <pnet/core/repo.h>
+#include <pnet/pack/pnet_pack.h>
 #include <pnet/pack/pack_alone.h>
 
 #define RX_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,rx_pin)))
@@ -34,7 +36,9 @@
 #define CMD_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,cmd_pin)))
 #define RST_PIN ((uint32_t) (1 << OPTION_GET(NUMBER,rst_pin)))
 
-static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) CONFIG_NXT_BT_SERIAL_PORT_OFFSET);
+#define CS_PIN    ((uint32_t) (1 << OPTION_GET(NUMBER,cs_pin)))
+
+static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) OPTION_GET(NUMBER,serial_port_offset));
 
 #define NXT_BT_ADC_RATE 50000
 #define NXT_BT_BAUD_RATE 460800
@@ -93,7 +97,7 @@ size_t bluetooth_read(size_t len) {
 
 static void init_usart(void) {
 	/* Configure the usart */
-	REG_STORE(AT91C_PMC_PCER, (1 << CONFIG_NXT_BT_US_DEV_ID));
+	REG_STORE(AT91C_PMC_PCER, (1 << OPTION_GET(NUMBER,dev_id)));
 
 	REG_STORE(AT91C_PIOA_PDR, RX_PIN | TX_PIN |
 			SCK_PIN | RTS_PIN | CTS_PIN);
@@ -109,7 +113,7 @@ static void init_usart(void) {
 			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
 	REG_STORE(&(us_dev_regs->US_IDR), ~0);
 	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDRX);
-	REG_STORE(&(us_dev_regs->US_BRGR), CONFIG_SYS_CLOCK / (8 * NXT_BT_BAUD_RATE));
+	REG_STORE(&(us_dev_regs->US_BRGR), SYS_CLOCK / (8 * NXT_BT_BAUD_RATE));
 	REG_STORE(&(us_dev_regs->US_RCR), 0);
 	REG_STORE(&(us_dev_regs->US_TCR), 0);
 	REG_STORE(&(us_dev_regs->US_RNPR), 0);
@@ -123,10 +127,10 @@ static void init_usart(void) {
 
 static void init_control_pins(void) {
 	/*configure control pins*/
-	REG_STORE(AT91C_PIOA_PPUDR, CONFIG_NXT_BT_CMD_PIN);
-	pin_config_output(CONFIG_NXT_BT_CS_PIN | CONFIG_NXT_BT_RST_PIN | CONFIG_NXT_BT_CMD_PIN);
-	pin_set_output(CONFIG_NXT_BT_CS_PIN | CONFIG_NXT_BT_RST_PIN);
-	pin_clear_output(CONFIG_NXT_BT_CMD_PIN);
+	REG_STORE(AT91C_PIOA_PPUDR, CMD_PIN);
+	pin_config_output(CS_PIN | RST_PIN | CMD_PIN);
+	pin_set_output(CS_PIN | RST_PIN);
+	pin_clear_output(CMD_PIN);
 
 }
 
@@ -175,7 +179,7 @@ static int nxt_bluetooth_init(void) {
 
 	data_pack = NULL;
 
-	irq_attach(CONFIG_NXT_BT_US_IRQ,
+	irq_attach(OPTION_GET(NUMBER,irq_num),
 		nxt_bt_us_handler, 0, NULL, "nxt bt reader");
 	// TODO error handling?
 

@@ -1,0 +1,14 @@
+
+package embox.arch.arm.cortexa8
+
+module bundle {
+	source "cpu_reset.S"
+
+	depends embox.arch.arm.armlib.head
+	depends embox.arch.arm.armlib.context
+	depends embox.arch.arm.armlib.interrupt
+	depends embox.arch.arm.armlib.locore
+	
+	depends embox.arch.arm.armlib.arch
+}
+

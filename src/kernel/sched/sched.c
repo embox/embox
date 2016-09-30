@@ -18,8 +18,10 @@
 
 #include <assert.h>
 #include <stdbool.h>
-#include <sched.h>
 
+#include <util/log.h>
+
+#include <sched.h>
 #include <kernel/sched.h>
 
 #include <hal/context.h>
@@ -28,9 +30,7 @@
 
 #include <kernel/critical.h>
 #include <kernel/spinlock.h>
-#include <kernel/sched/sched_timing.h>
 #include <kernel/sched/sched_strategy.h>
-#include <kernel/sched/schedee.h>
 #include <kernel/sched/current.h>
 
 // XXX
@@ -67,6 +67,26 @@ int sched_init(struct schedee *current) {
 	return 0;
 }
 
+int schedee_init(struct schedee *schedee, int priority,
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next))
+{
+	runq_item_init(&schedee->runq_link);
+
+	schedee->lock = SPIN_UNLOCKED;
+
+	schedee->process = process;
+
+	schedee->ready = false;
+	schedee->active = false;
+	schedee->waiting = true;
+
+	schedee_priority_init(schedee, priority);
+	sched_affinity_init(&schedee->affinity);
+	sched_timing_init(schedee);
+
+	return 0;
+}
+
 void sched_set_current(struct schedee *schedee) {
 	assert(schedee_get_current() == NULL);
 	__schedee_set_current(schedee);
@@ -78,8 +98,8 @@ void sched_set_current(struct schedee *schedee) {
 
 static void sched_check_preempt(struct schedee *t) {
 	// TODO ask runq
-	if (schedee_priority_get(&schedee_get_current()->priority) <
-			schedee_priority_get(&t->priority))
+	if (schedee_priority_get(schedee_get_current()) <
+			schedee_priority_get(t))
 		sched_post_switch(); // TODO SMP
 }
 
@@ -109,7 +129,8 @@ int sched_active(struct schedee *s) {
 	return s->active;
 }
 
-int sched_change_priority(struct schedee *s, sched_priority_t prior) {
+int sched_change_priority(struct schedee *s, int prior,
+		int (*set_priority)(struct schedee_priority *, int)) {
 	ipl_t ipl;
 	int in_rq;
 
@@ -120,7 +141,7 @@ int sched_change_priority(struct schedee *s, sched_priority_t prior) {
 
 	if (in_rq)
 		__sched_dequeue(s);
-	schedee_priority_set(&s->priority, prior);
+	set_priority(&s->priority, prior);
 	if (in_rq)
 		__sched_enqueue(s);
 
@@ -300,6 +321,8 @@ static inline void __sched_wakeup_smp_inactive(struct schedee *s) {
 int __sched_wakeup(struct schedee *s) {
 	int was_waiting = (s->waiting && s->waiting != TW_SMP_WAKING);
 
+	log_debug("schedee #%x", s);
+
 	if (was_waiting)
 		/* Check if t->ready state is still set, and we can do
 		 * a fast-path wake up, that just clears t->waiting state.  */
@@ -342,14 +365,16 @@ void sched_start_switch(struct schedee *next) {
 	__sched_activate(next);
 }
 
+/** locks: sched */
 static void __schedule(int preempt) {
+	ipl_t ipl;
 	struct schedee *prev;
 	struct schedee *next;
 
 	prev = schedee_get_current();
 
 	assert(!sched_in_interrupt());
-	spin_lock_ipl(&rq.lock);
+	ipl = spin_lock_ipl(&rq.lock);
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
@@ -370,17 +395,25 @@ static void __schedule(int preempt) {
 		 * during the 'sched_switch' (if any). */
 		spin_unlock(&rq.lock);
 
-		/* next->process has to restore ipl. */
+		schedee_set_current(next);
+		log_debug("prev: %#x, next: %#x", prev, next);
+
+		/* next->process has to enable ipl. */
 		next = next->process(prev, next);
 
 		if (next) {
 			break;
 		}
 
-		spin_lock_ipl(&rq.lock);
+		/* ipl is enabled, no need to save it. */
+		spin_lock_ipl_disable(&rq.lock);
 	}
 
 	sched_timing_start(next);
+
+	/* Restoring ipl is vital as __schedule() can be called both with IRQs
+	 * enabled and disabled. */
+	ipl_restore(ipl);
 }
 
 void schedule(void) {

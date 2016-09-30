@@ -46,9 +46,11 @@ static inline void ipl_restore(__ipl_t ipl) {
 
 	/* read status registers for cleaning interrupts mask */
 	c0_reg = mips_read_c0_status();
-	if((ipl & ST0_IE) && !(c0_reg & ST0_IE)) {
-		c0_reg |= ST0_IE;              /* restore interrupts mask */
-		mips_write_c0_status(c0_reg);  /* enable interrupts */
+
+	if (ipl & ST0_IE) {
+		mips_write_c0_status(c0_reg | ST0_IE);
+	} else {
+		mips_write_c0_status(c0_reg & ~ST0_IE);
 	}
 }
 

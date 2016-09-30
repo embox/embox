@@ -9,12 +9,17 @@
 #ifndef COMPAT_POSIX_SYS_MMAN_H_
 #define COMPAT_POSIX_SYS_MMAN_H_
 
+#include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <mem/page.h>
 #include <sys/types.h>
 
 #include <sys/cdefs.h>
+
 __BEGIN_DECLS
+
+#include <module/embox/mem/vmem_api.h>
 
 #define PROT_NONE     0x00
 #define PROT_READ     0x01
@@ -28,40 +33,30 @@ __BEGIN_DECLS
 
 #define MAP_FAILED (void*)-1
 
-#if 1
-#include <errno.h>
-static inline void  *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
-	// ToDo: implement for InitFS files
-	(void)addr;
-	(void)len;
-	(void)prot;
-	(void)flags;
-	(void)fd;
-	(void)off;
-	//printf(">>> mmap(%i)\n",fd);
-	errno = EPERM;
-	return NULL;
-}
+extern int mprotect(void *, size_t, int);
 
 
+/* todo: implement for InitFS files */
+extern void *mmap(void *, size_t, int, int, int, off_t);
+extern int munmap(void *, size_t);
 
-#endif
+/* The following flags shall be defined for msync(): */
+#define MS_ASYNC       0x100 /* Perform asynchronous writes. */
+#define MS_SYNC        0x200 /* Perform synchronous writes. */
+#define MS_INVALIDATE  0x400 /* Invalidate mappings. */
 
-extern void  *mmap(void *, size_t, int, int, int, off_t);
-extern int    mprotect(void *, size_t, int);
+extern int msync(void *addr, size_t len, int flags);
 
 /* QNX */
 
 #define PROT_NOCACHE 0x80
 
 /* TODO move to compat/qnx */
-#include <module/embox/mem/vmem_api.h>
 extern void *mmap_device_memory(void * addr,
                            size_t len,
                            int prot,
                            int flags,
                            uint64_t physical);
-extern int munmap(void *, size_t);
 
 __END_DECLS
 

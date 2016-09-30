@@ -1,0 +1,34 @@
+package embox.fs.dvfs
+
+module core extends embox.fs.fs_api {
+	@IncludeExport(path="fs")
+	source "dvfs.h"
+
+	option number superblock_pool_size=4
+	option number inode_pool_size=64
+	option number dentry_pool_size=64
+	option number file_pool_size=64
+	option number mnt_pool_size=4
+
+	option boolean use_dcache=false
+
+	option number dentry_name_len=36
+	option number max_path_len=128
+
+	source "dvfs.c"
+	source "dvfs_dentry.c"
+	source "dvfs_idesc_ops.c"
+	source "dvfs_util.c"
+	source "dvfs_str.c"
+
+	depends embox.fs.path_helper
+	depends embox.fs.rootfs_dvfs
+
+	depends embox.driver.block_dvfs
+	depends embox.fs.dvfs.cache_strategy
+	depends embox.fs.dvfs.compat
+	depends embox.fs.syslib.dcache
+	depends embox.fs.driver.dvfs_driver
+	depends embox.fs.idesc
+	depends embox.kernel.task.resource.vfs
+}

@@ -1,0 +1,28 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "service",
+	help = "Starts services (like commands running in background)",
+	man = '''
+		NAME
+			service - Starts services (like commands running in background)
+		SYNOPSIS
+			service NAME
+		DESCRIPTION
+			Starts specified services
+		OPTIONS
+			-h
+				Shows usage
+		AUTHORS
+			Alex Kalmuk
+	''')
+module service {
+	source "service.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.arch.vfork_entry
+	depends embox.compat.posix.proc.vfork_exchanged
+	depends embox.compat.posix.proc.exec_exchanged
+	depends embox.compat.libc.all
+	depends embox.framework.LibFramework
+}

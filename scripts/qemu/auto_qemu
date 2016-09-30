@@ -43,11 +43,13 @@ get_user_empty_guess() {
 	error_empty "$1"
 }
 
-guess_arch() { sed -n 's/ARCH *= *//p' $BUILD_CONF; }
+guess_arch() {
+	cat $BUILD_CONF | gcc -P -E - | sed -n 's/ARCH *= *//p';
+}
 get_user_empty_guess AUTOQEMU_ARCH guess_arch
 
 guess_mem() {
-	ram=$(sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p' $LDS_CONF)
+	ram=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p')
 	if [ $ram ]; then
 		echo $ram
 	else
@@ -56,10 +58,19 @@ guess_mem() {
 }
 get_user_empty_guess AUTOQEMU_MEM guess_mem
 
-guess_nics() { sed -n 's/\t*\(@Runlevel([0-9])\|\) \+include\ embox.driver.net.\([a-z0-9_]\+\)\((.*)\|\)$/\2/p' $MODS_CONF | grep -v loopback | head -n 1; }
+guess_nics() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.net.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v loopback | head -n 1;
+}
 get_user_undef_guess AUTOQEMU_NICS guess_nics
 
 guessed_info AUTOQEMU_NICS_CONFIG "(got)"
+
+guess_sound() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.audio.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v portaudio_stub | head -n 1;
+}
+get_user_undef_guess AUTOQEMU_AUDIO guess_sound
+
+guessed_info AUTOQEMU_AUDIO_CONFIG "(got)"
 
 guess_kvm() {
 	ret=""
@@ -89,20 +100,17 @@ guess_kvm() {
 get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 
 guess_load_arg() {
-	if [ $AUTOQEMU_ARCH != "arm" ]; then
-		if [ x$KERNEL = x ]; then
-			KERNEL=./build/base/bin/embox
-		fi
-		echo "-kernel $KERNEL"
+	NAND_SIZE=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p')
+	if [ ! $NAND_SIZE ]; then
+		echo "-kernel ${KERNEL:-./build/base/bin/embox}"
 	else
 		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
 			echo "Making uImage..." >&2
-			OMAP_UBOOT_IMAGE_BOARD=qemu ./scripts/uboot-uimage >/dev/null
+			OMAP_UBOOT_IMAGE_BOARD=overo ./scripts/uboot-uimage >/dev/null
 			if [ 0 -ne $? ]; then
 				exit 1
 			fi
 			echo "Making nand image..." >&2
-			NAND_SIZE=$(sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p' $LDS_CONF)
 			./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage $NAND_SIZE >/dev/null 2>/dev/null
 			rm ./uImage
 		fi
@@ -114,17 +122,41 @@ get_user_empty_guess AUTOQEMU_LOAD_ARG guess_load_arg
 guess_nographic() { echo "-nographic"; }
 get_user_undef_guess AUTOQEMU_NOGRAPHIC_ARG guess_nographic
 
+guess_machine() {
+	case $AUTOQEMU_ARCH in
+		arm)
+			if cat $BUILD_CONF | gcc -P -E - | grep "overo" >/dev/null; then
+				echo "-M overo"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "integratorcp" >/dev/null; then
+				echo "-M integratorcp"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "vexpress-a9" > /dev/null; then
+				echo "-M vexpress-a9"
+			fi
+			;;
+		microblaze)
+			echo "-M petalogix-s3adsp1800"
+			;;
+		mips)
+			echo "-M mipssim"
+			;;
+		ppc)
+			echo "-M virtex-ml507"
+			;;
+		sparc)
+			echo "-M leon3_generic -cpu LEON3"
+			;;
+		x86)
+			;;
+	esac
+}
+get_user_undef_guess AUTOQEMU_MACHINE guess_machine
+
 declare -A ARCH2QEMU
 ARCH2QEMU=(
-	[arm]="qemu-system-arm -M overo"
-	[microblaze]="qemu-system-microblaze -M petalogix-s3adsp1800"
-	[mips]="qemu-system-mips -M mipssim"
-	[ppc]="qemu-system-ppc -M virtex-ml507"
-	[sparc]="qemu-system-sparc -M leon3_generic -cpu LEON3"
-	[x86]="qemu-system-i386"
+	[x86]="i386"
 )
 
-QEMU=$AUTOQEMU_PREFIX${ARCH2QEMU[$AUTOQEMU_ARCH]}
+QEMU=${AUTOQEMU_PREFIX}qemu-system-${ARCH2QEMU[$AUTOQEMU_ARCH]:-$AUTOQEMU_ARCH}
 QEMU_VER=$($QEMU --version | sed 's/.*version \([0-9.]\+\).*/\1/;s/\./ /g' | xargs printf "%02d%02d%02d")
 
 if [ $QEMU_VER -gt 010200 ]; then
@@ -141,6 +173,8 @@ NIC2QEMU=(
 	[virtio]="virtio"
 	[xemaclite]=$MB_XEMACLINE
 	[lan9118]="lan9118"
+	[lan91c111]="smc91c111"
+	[mipsnet]="mipsnet"
 )
 
 IFS=" " read -a qemu_nics <<< "$AUTOQEMU_NICS"
@@ -159,6 +193,7 @@ if [ $nic_n -gt 0 ]; then
 		fi
 
 		nic_model=${NIC2QEMU[${qemu_nics[$ni]}]}
+		echo 
 		if [ ! $nic_model ]; then
 			error "nic model ${qemu_nics[$ni]} is not supported"
 		fi
@@ -169,7 +204,31 @@ if [ $nic_n -gt 0 ]; then
 	done
 fi
 
-ARG_LINE="$sudo $QEMU $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
+declare -A AUDIO2QEMU
+AUDIO2QEMU=(
+	[intel_ac_pa]="ac97"
+	[es1370]="es1370"
+)
+
+AUDIO_DEV=" " read -a qemu_sound <<< "$AUTOQEMU_AUDIO"
+AUDIO_DEV=" " read -a qemu_sound_config <<< "$AUTOQEMU_AUDIO_CONFIG"
+
+sound_lines=""
+sound_n=${#qemu_sound[*]}
+if [ $sound_n -gt 0 ]; then
+
+	for so in "${!qemu_sound[@]}"; do
+		sound_model=${AUDIO2QEMU[${qemu_sound[$ni]}]}
+		echo 
+		if [ ! $sound_model ]; then
+			error "sound model ${qemu_sound[$ni]} is not supported"
+		fi
+
+		sound_lines="$sound_lines -soundhw $sound_model"
+	done
+fi
+
+ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
 
 info "$ARG_LINE"
 $ARG_LINE

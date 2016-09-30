@@ -8,13 +8,13 @@
 
 #include <util/dlist.h>
 
-#include <kernel/sched/schedee.h>
 #include <kernel/task.h>
 #include <kernel/sched/sched_strategy.h>
 
 #include <module/embox/arch/smp.h>
 #include <kernel/cpu/cpu.h>
 
+struct schedee;
 
 void runq_item_init(runq_item_t *runq_link) {
 	dlist_head_init(runq_link);
@@ -32,7 +32,7 @@ void runq_init(runq_t *queue) {
 
 void runq_insert(runq_t *queue, struct schedee *schedee) {
 	dlist_add_prev(&schedee->runq_link,
-			&queue->list[schedee_priority_get(&schedee->priority)]);
+			&queue->list[schedee_priority_get(schedee)]);
 }
 
 void runq_remove(runq_t *queue, struct schedee *schedee) {

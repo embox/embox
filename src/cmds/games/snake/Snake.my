@@ -1,0 +1,17 @@
+package embox.cmd.games
+
+@AutoCmd
+@Cmd(name = "snake",
+	help = "Simple game with Vi-like control",
+	man = '''
+		NAME
+			snake - simple game
+		SYNOPSIS
+			snake
+		AUTHORS
+			Anton Kozlov
+	''')
+module snake {
+	source "snake.c"
+}
+

@@ -1,8 +1,14 @@
 package embox.driver.gpio
 
-abstract module pins { }
+abstract module pins {
+	@IncludeExport(path="drivers")
+	source "gpio.h"
+}
 
-abstract module api { }
+abstract module api {
+	@IncludeExport(path="drivers")
+	source "gpio.h"
+}
 
 module at91_pins extends pins {
 	source "at91_pins.c"
@@ -17,11 +23,11 @@ module pins_core {
 
 module rdc_gpio extends api {
 	source "rdc_gpio.c", "rdc_gpio.h"
+
 }
 
 module stm32 extends api {
 	source "stm32_gpio.c", "stm32_gpio.h"
-
 }
 
 module omap3_gpio extends api {

@@ -1,9 +1,12 @@
 'use strict';
 
-angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
-.controller("NavBarCtrl", ['$scope', '$location', function($scope, $location) {
+angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap', 'pascalprecht.translate'])
+.controller("NavBarCtrl", ['$scope', '$location', '$translate', function($scope, $location, $translate) {
     $scope.isActive = function(id) {
         return $location.path().indexOf('/' + id) == 0;
+    };
+    $scope.changeLanguage = function(key) {
+        $translate.use(key);
     };
 }])
 .controller("InterfacesAdminCtrl", ['$scope', '$http', function($scope, $http) {
@@ -31,7 +34,8 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
     };
 
 }])
-.controller("LedsCtrl", ['$scope', '$http', '$window', '$modal', '$interval', function($scope, $http, $window, $modal, $interval) {
+.controller("LedsCtrl", ['$scope', '$http', '$window', '$modal', '$interval', '$translate',
+        function($scope, $http, $window, $modal, $interval, $translate) {
 
     $scope.leds_state = [];
 
@@ -110,7 +114,9 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
 
     $scope.save = function() {
         $http.get('cgi-bin/cgi_cmd_wrapper?c=flash_settings&a=store&a=led&a=led_names').success(function (data) {
-            $window.alert('Led configuration saved!');
+            $translate('CONF_SAVED').then(function (translation) {
+                $window.alert(translation);
+            });
         });
     };
 
@@ -154,6 +160,49 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
     otherwise({
         redirectTo: '/leds'
     });
+}])
+.config(['$translateProvider', function($translateProvider) {
+    $translateProvider.translations('en', {
+        'PANEL_TITLE' : 'Embox Panel',
+        'NETWORK' : 'Network',
+        'LEDS' : 'Leds',
+        'LANG' : 'Lang',
+        'RED' : 'Red',
+        'BLUE' : 'Blue',
+        'REFRESH' : 'Refresh',
+        'SAVE' : 'Save',
+        'CONF_SAVED' : 'Led configuration saved!',
+        'IP' : 'IP address',
+        'NETMASK' : 'Netmask',
+        'MAC' : 'MAC address',
+        'APPLY_SETTINGS' : 'Apply settings',
+        'CHANGE_TITLE' : 'Change block name',
+        'NAME' : 'Name',
+        'REMAIN' : 'remain',
+        'OK' : 'OK',
+        'CANCEL' : 'Cancel'
+    });
+    $translateProvider.translations('ru', {
+        'PANEL_TITLE' : 'Панель Embox',
+        'NETWORK' : 'Сеть',
+        'LEDS' : 'Управление',
+        'LANG' : 'Язык',
+        'RED' : 'Красный',
+        'BLUE' : 'Синий',
+        'REFRESH' : 'Обновить',
+        'SAVE' : 'Сохранить',
+        'CONF_SAVED' : 'Кофигурация сохранена!',
+        'IP' : 'IP адрес',
+        'NETMASK' : 'Маска подсети',
+        'MAC' : 'MAC адрес',
+        'APPLY_SETTINGS' : 'Применить',
+        'CHANGE_TITLE' : 'Изменение имени блока',
+        'NAME' : 'Имя',
+        'REMAIN' : 'осталось',
+        'OK' : 'OK',
+        'CANCEL' : 'Отменить'
+    });
+    $translateProvider.preferredLanguage('en');
 }])
 .directive('ledTemplate', function() {
     return {

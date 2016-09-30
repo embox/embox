@@ -10,10 +10,9 @@ module fb {
 	option number fb_amount=2
 	depends embox.mem.pool
 	@NoRuntime depends embox.compat.libc.all
-	//depends embox.fs.rootfs
 	depends fb_videomodes
 	depends fonts
-	//depends embox.driver.virtual.fb_device
+	depends embox.driver.char_dev
 }
 
 module bochs {
@@ -23,6 +22,14 @@ module bochs {
 	source "vbe.h"
 
 	depends embox.driver.pci
+	@NoRuntime depends fb
+	@NoRuntime depends embox.compat.libc.all
+}
+
+module raspi_video {
+	source "raspi_video.c"
+
+	depends embox.driver.mailbox.bcm2835_mailbox
 	@NoRuntime depends fb
 	@NoRuntime depends embox.compat.libc.all
 }
@@ -51,6 +58,9 @@ module generic {
 
 module fb_videomodes {
 	source "fb_videomodes.c"
+
+	@IncludeExport(path="drivers/video")
+	source "fb_videomodes.h"
 
 	depends vesa_modes
 }

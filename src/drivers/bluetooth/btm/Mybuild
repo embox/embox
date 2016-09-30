@@ -21,16 +21,21 @@ module usart {
 	@Type("irq") @Unique
 	option number irq_num = 6
 
+	option number dev_id = 6
+
+	option number serial_port_offset = 0xFFFC0000
+
 	source "btm_bluetooth.c"
 
 	depends embox.kernel.timer.sleep_api
 	depends embox.kernel.irq
 	depends embox.driver.gpio.at91_pins
+	depends bt112
 }
 
 module bt112 extends embox.driver.Bluetooth {
+	@IncludeExport(path="drivers/bluetooth/btm")
+	source "btm112.h"
 	source "btm_bt112.c"
-
-	depends usart
 }
 

@@ -1,10 +1,18 @@
 package embox.driver
 
 module virtio {
+	@IncludeExport(path="drivers/virtio")
+	source "virtio_io.h"
+	@IncludeExport(path="drivers/virtio")
+	source "virtio.h"
+	@IncludeExport(path="drivers/virtio")
+	source "virtio_ring.h"
 	source "virtio_ring.c"
 	depends embox.compat.libc.assert
 	/* depends embox.util.binalign */
 
+	@IncludeExport(path="drivers/virtio")
+	source "virtio_queue.h"
 	source "virtio_queue.c"
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str

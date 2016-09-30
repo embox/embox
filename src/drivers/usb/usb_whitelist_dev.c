@@ -9,8 +9,10 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+
 #include <fs/file_operation.h>
-#include <embox/device.h>
+#include <fs/file_desc.h>
+#include <drivers/char_dev.h>
 #include <sys/ioctl.h>
 #include <util/math.h>
 #include <mem/misc/pool.h>
@@ -160,6 +162,7 @@ int usb_whitelist_check(struct usb_dev *dev) {
 
 	if (!dev->dev_desc.i_serial_number) {
 		usb_wl_dev_check(dev, USB_WHITELIST_SN_ANY);
+		return 0;
 	}
 
 	tstrs = pool_alloc(&usb_whitelist_temp_strings);
@@ -180,8 +183,8 @@ int usb_whitelist_check(struct usb_dev *dev) {
 	return -EBUSY;
 }
 
-static int usb_whitelist_open(struct node *node, struct file_desc *file_desc, int flags) {
-	return 0;
+static struct idesc *usb_whitelist_open(struct node *node, struct file_desc *file_desc, int flags) {
+	return &file_desc->idesc;
 }
 
 static int usb_whitelist_close(struct file_desc *desc) {
@@ -198,37 +201,32 @@ static size_t usb_whitelist_read(struct file_desc *desc, void *buf, size_t size)
 	return req_size;
 }
 
-static int usb_whitelist_ioctl(struct file_desc *desc, int request, ...) {
+static int usb_whitelist_ioctl(struct file_desc *desc, int request, void *data) {
 	struct usb_whitelist_conf *wl_conf = &whitelist_conf;
 	struct usb_whitelist_rule *wl_rule = NULL;
 	int rule_id;
-	va_list va;
 	int ret;
-
-	va_start(va, request);
 
 	switch (request) {
 	case USB_WHITELIST_IO_ADD:
-		wl_rule = va_arg(va, struct usb_whitelist_rule *);
+		wl_rule = data;
 		ret = usb_whitelist_conf_add(wl_conf, wl_rule);
 		break;
 	case USB_WHITELIST_IO_DEL:
-		rule_id = * va_arg(va, int *);
+		rule_id = *((int *)data);
 		ret = usb_whitelist_conf_del(wl_conf, rule_id);
 		break;
 	case USB_WHITELIST_IO_FLUSH:
 		ret = usb_whitelist_conf_init(wl_conf);
 		break;
 	case USB_WHITELIST_IO_GETN:
-		* va_arg(va, int *) = wl_conf->rules_n;
+		*((int *)data) = wl_conf->rules_n;
 		ret = 0;
 		break;
 	default:
 		ret = -ENOSYS;
 		break;
 	}
-
-	va_end(va);
 
 	return ret;
 }

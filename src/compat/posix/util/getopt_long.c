@@ -14,10 +14,6 @@ static int getopt_try_long(int argl, char *const arg[], const struct option *lon
 		const struct option **out_lopt) {
 	const struct option *lopt;
 
-	if (strncmp(arg[0], "--", 2)) {
-		return -EINVAL;
-	}
-
 	for (lopt = longopts; lopt->name; lopt++) {
 		const char *opt = arg[0] + 2;
 		char *optarg_sep = strchrnul(opt, '=');
@@ -57,6 +53,9 @@ int getopt_long(int argc, char * const argv[],
 	if (optind < argc) {
 		int consumed;
 		const struct option *lopt;
+
+		if (strncmp(argv[optind], "--", 2))
+			return -1;
 
 		consumed = getopt_try_long(argc - optind, argv + optind, longopts, &lopt);
 		if (consumed >= 0) {

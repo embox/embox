@@ -13,29 +13,6 @@ mod_autocmd_postbuild = \
 	$$(abspath $$(obj_build)) \
 	$$(abspath $$(obj_postbuild))
 
-# Wraps the given rule with a script which compares the command output with
-# the original file (if it exists) and replaces the latter only in case when
-# contents differ.
-#   1. Output file.
-#   2. The complete command which should output its result to the temporary
-#      file specified in the '$OUTFILE' environment variable.
-cmd_notouch = \
-	set_on_error_trap() { trap "$$1" INT QUIT TERM HUP EXIT; };            \
-	COMMAND=$(call sh_quote,set_on_error_trap "$(RM) $$OUTFILE"; { $2; }); \
-	OUTFILE=$(call trim,$1);                                               \
-	if [ ! -f $$OUTFILE ];                                                 \
-	then                                                                   \
-		__OUTDIR=`dirname $$OUTFILE`;                                      \
-		{ [ -d $$__OUTDIR ] || $(MKDIR) $$__OUTDIR; }                      \
-			&& eval "$$COMMAND" && set_on_error_trap -;                    \
-	else                                                                   \
-		__OUTFILE=$$OUTFILE; OUTFILE=$${TMPDIR:-/tmp}/Mybuild.$$$$;        \
-		eval "$$COMMAND"                                                   \
-			&& { cmp -s $$OUTFILE $$__OUTFILE >/dev/null 2>&1              \
-					|| { $(MV) $$OUTFILE $$__OUTFILE                       \
-							&& set_on_error_trap -; }; };                  \
-	fi
-
 # Creates shell script with command if it is too big to be passed through
 # command line. Must be called from recipe.
 #   1. Output file.
@@ -44,16 +21,6 @@ cmd_assemble = \
 	$(ECHO) '$(\h)!/bin/sh' > $1; \
 	$(foreach w,$2,$(ECHO) -n $(strip $(call sh_quote,$w)) ""  >> $1$(\n))
 
-# cmd_notouch = \
-	OUTFILE=$(call trim,$1); { $2; }
-
-#   1. Output file.
-#   2. The command which outputs its result to stdout.
-cmd_notouch_stdout = \
-	$(call cmd_notouch,$1,{ $2; } > $$OUTFILE)
-
-sh_quote = \
-	'$(subst ','\'',$1)'
 fmt_line = \
 	$(if $2,$1)$(subst $(\n),$(\n)$1,$2)
 
@@ -627,12 +594,14 @@ my_incpath_before_val := \
 		$(call mybuild_resolve_or_die,mybuild.lang.IncludePathBefore.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
 my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
+my_cflags_val := $(call mybuild_resolve_or_die,mybuild.lang.Cflags.value)
 my_instrument_val := \
 		$(call mybuild_resolve_or_die,mybuild.lang.InstrumentProfiling.value)
 
 $(@source_rmk) : includes_before = $(call values_of,$(my_incpath_before_val))
 $(@source_rmk) : includes = $(call values_of,$(my_incpath_val))
 $(@source_rmk) : defines  = $(call values_of,$(my_defmacro_val))
+$(@source_rmk) : additional_cflags  = $(call values_of,$(my_cflags_val))
 $(@source_rmk) : instrument = $(call values_of,$(my_instrument_val))
 
 
@@ -648,7 +617,8 @@ $(@source_rmk) : flags = $(call trim, \
 			-include $(patsubst %,$(value module_config_h_pat), \
 						$(mod_path)) \
 			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
-			$(call check_profiling,$(instrument)))
+			$(call check_profiling,$(instrument)) \
+			$(call do_flags,,$(additional_cflags)))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
@@ -682,11 +652,11 @@ $(@source_mk_rmk):
 		$(gen_banner); \
 		$(call gen_make_include,$(file)))
 
-source_initfs_cp_target_dir=$(call get,$(call source_annotation_values,$s,$(my_initfs_target_dir)),value)
+source_initfs_cp_target_dir = $(call get,$(call source_annotation_values,$s,$(my_initfs_target_dir)),value)/
 source_initfs_cp_target_name=$(or $(strip \
 	$(call get,$(call source_annotation_values,$s,$(my_initfs_target_name)),value)),$(call get,$s,fileName))
 source_initfs_cp_out = $(addprefix $$(ROOTFS_DIR)/, \
-	       $(foreach s,$1,$(source_initfs_cp_target_dir)/$(source_initfs_cp_target_name)))
+		$(foreach s,$1,$(source_initfs_cp_target_dir:/%=%)$(source_initfs_cp_target_name)))
 
 $(@source_initfs_cp_rmk) : out = $(call source_initfs_cp_out,$@)
 $(@source_initfs_cp_rmk) : src_file = $(file)
@@ -783,14 +753,15 @@ $(@source_dist) :
 	mk/main-dist.mk \
 	mk/main-stripping.sh \
 	mk/phymem_cc_addon.tmpl.c \
-	mk/variables.mk)
+	mk/variables.mk \
+	mk/version.mk)
 
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
 	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
 
 __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
-	$(wildcard $(foreach e,*.h *.inc Makefile *.txt *.patch *.diff, \
+	$(wildcard $(foreach e,*.h include/*.h include/*/*.h *.inc Makefile *.txt *.patch *.diff, \
 		$(addsuffix $e,$(__source_dirs)))))
 
 include mk/flags.mk  # INCLUDES_FROM_FLAGS
@@ -798,7 +769,6 @@ include mk/flags.mk  # INCLUDES_FROM_FLAGS
 @dist_includes := $(addprefix dist-includes-/,$(sort \
 	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_BASE_DIR)/%, \
 		$(filter-out $(abspath \
-				$(DIST_BASE_DIR) $(DIST_BASE_DIR)/% \
 				$(CONF_DIR) $(CONF_DIR)/% \
 				$(EXTERNAL_BUILD_DIR) $(EXTERNAL_BUILD_DIR)/%),$(abspath \
 			$(call expand,$(call get, \

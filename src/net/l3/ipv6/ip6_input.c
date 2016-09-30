@@ -6,19 +6,22 @@
  * @author Ilia Vaprol
  */
 
-#include <framework/net/proto/api.h>
+#include <arpa/inet.h>
+#include <string.h>
+
+#include <embox/net/proto.h>
 #include <net/skbuff.h>
 #include <embox/net/pack.h>
+
 #include <net/l3/ipv6.h>
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
-#include <arpa/inet.h>
-#include <string.h>
+
 
 EMBOX_NET_PACK(ETH_P_IPV6, ip6_rcv);
 
-#include <kernel/printk.h>
+#include <util/log.h>
 static int ip6_rcv(struct sk_buff *skb, struct net_device *dev) {
 	ip6hdr_t *ip6h = ip6_hdr(skb);
 	const struct net_proto *nproto;
@@ -53,7 +56,7 @@ static int ip6_rcv(struct sk_buff *skb, struct net_device *dev) {
 		return nproto->handle(skb);
 	}
 
-//	printk("ipv6 packet accepted, %#x\n", ip6h->nexthdr);
+	log_debug("ipv6 packet accepted, %#x\n", ip6h->nexthdr);
 
 	skb_free(skb);
 	return 0; /* error: nobody wants this packet */

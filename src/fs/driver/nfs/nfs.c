@@ -30,6 +30,7 @@
 #include <net/lib/rpc/clnt.h>
 #include <net/lib/rpc/xdr.h>
 #include <util/math.h>
+#include <util/err.h>
 
 
 static int nfs_create_dir_entry(node_t *parent);
@@ -47,18 +48,16 @@ POOL_DEF (nfs_file_pool, struct nfs_file_info, OPTION_GET(NUMBER,inode_quantity)
 
 /* File operations */
 
-static int    nfsfs_open(struct node *node, struct file_desc *desc, int flags);
+static struct idesc *nfsfs_open(struct node *node, struct file_desc *desc, int flags);
 static int    nfsfs_close(struct file_desc *desc);
 static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
-static int    nfsfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations nfsfs_fop = {
 	.open = nfsfs_open,
 	.close = nfsfs_close,
 	.read = nfsfs_read,
 	.write = nfsfs_write,
-	.ioctl = nfsfs_ioctl,
 };
 
 static void unaligned_set_hyper(uint64_t *dst, void *src) {
@@ -68,7 +67,7 @@ static void unaligned_set_hyper(uint64_t *dst, void *src) {
 /*
  * file_operation
  */
-static int nfsfs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *nfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	nfs_file_info_t *fi;
 	struct nas *nas;
 
@@ -80,9 +79,9 @@ static int nfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	if(0 == nfs_lookup(nas)) {
 		nas->fi->ni.size = fi->attr.size;
-		return 0;
+		return &desc->idesc;
 	}
-	return -1;
+	return err_ptr(ENOENT);
 }
 
 static int nfsfs_close(struct file_desc *desc) {
@@ -178,9 +177,6 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return reply.count;
 }
 
-static int nfsfs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
-}
 
 /*
 static int nfsfs_fseek(void *file, long offset, int whence);

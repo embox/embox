@@ -1,0 +1,24 @@
+package embox.cmd.hardware
+
+@AutoCmd
+@Cmd(name = "lorawan",
+	help = "Simple RN2483 diagnostic",
+	man = '''
+		Type `exit` in shell to exit app.
+	''')
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module lorawan {
+	option number usartx=2
+	
+	source "lorawan.c"
+	
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.posix.util.getopt
+	depends embox.driver.gpio.api
+	depends embox.lib.LibCrypt
+	depends embox.compat.libc.all
+	depends embox.compat.posix.LibPosix
+	depends embox.fs.core
+	depends embox.framework.LibFramework
+}

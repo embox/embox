@@ -12,15 +12,14 @@
 #include <linux/list.h>
 #include <stdio.h>
 
-#include <pnet/prior_path.h>
-#include <pnet/core.h>
-#include <pnet/node.h>
-#include <pnet/repo.h>
-#include <pnet/pnet_pack.h>
+#include <pnet/core/prior_path.h>
+#include <pnet/core/core.h>
+#include <pnet/core/node.h>
+#include <pnet/core/repo.h>
+#include <pnet/pack/pnet_pack.h>
 
+#include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
-#include <kernel/lthread/lthread_priority.h>
-#include <util/err.h>
 
 #define PNET_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
@@ -29,7 +28,7 @@ EMBOX_UNIT_INIT(unit_init);
 static LIST_HEAD(skb_queue);
 static LIST_HEAD(pnet_queue);
 
-static struct lthread *pnet_rx_handler_lt;
+static struct lthread pnet_rx_handler_lt;
 
 int netif_rx(void *data) {
 	struct pnet_pack *pack;
@@ -50,14 +49,14 @@ int netif_rx(void *data) {
 		list_add_tail(&pack->link, &pnet_queue);
 	}
 
-	lthread_launch(pnet_rx_handler_lt);
+	lthread_launch(&pnet_rx_handler_lt);
 
 	return NET_RX_SUCCESS;
 }
 
 static net_node_t entry;
 
-static void *pnet_rx_action(void *data) {
+static int pnet_rx_action(struct lthread *data) {
 	struct pnet_pack *pack, *safe;
 	struct list_head *curr, *n;
 	struct pnet_pack *skb_pack;
@@ -74,15 +73,14 @@ static void *pnet_rx_action(void *data) {
 		pnet_entry(skb_pack);
 	}
 
-	return NULL;
+	return 0;
 }
 
 static int unit_init(void) {
 	entry = pnet_get_module("pnet entry");
 
-	pnet_rx_handler_lt = lthread_create(&pnet_rx_action, NULL);
-	assert(!err(pnet_rx_handler_lt));
-	lthread_priority_set(pnet_rx_handler_lt, PNET_RX_HND_PRIORITY);
+	lthread_init(&pnet_rx_handler_lt, &pnet_rx_action);
+	schedee_priority_set(&pnet_rx_handler_lt.schedee, PNET_RX_HND_PRIORITY);
 
 	return 0;
 }

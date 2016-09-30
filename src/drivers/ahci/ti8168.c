@@ -1,5 +1,5 @@
 #include <embox/unit.h>
-#include <drivers/ahci.h>
+#include <drivers/ahci/ahci.h>
 #include <hal/reg.h>
 #include <kernel/printk.h>
 

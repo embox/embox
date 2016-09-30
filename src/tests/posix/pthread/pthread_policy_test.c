@@ -19,7 +19,7 @@ static void *medium_run(void *arg);
 static void *high_run(void *arg);
 
 TEST_CASE("SCHED_FIFO corectness") {
-	sched_priority_t low_p = 200, medium_p = 245, high_p = 250;
+	int low_p = 200, medium_p = 245, high_p = 250;
 	struct sched_param low_param, medium_param, high_param;
 	pthread_attr_t low_attr, medium_attr, high_attr;
 

@@ -11,10 +11,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <security/smac.h>
+
+#include <security/smac/smac.h>
 #include <fs/vfs.h>
-#include <fs/fsop.h>
-#include <fs/flags.h>
+#include <fs/mount.h>
 #include <kernel/task.h>
 #include <sys/xattr.h>
 
@@ -51,8 +51,8 @@ static struct smac_env *backup;
 static struct smac_env test_env = {
 	.n = 2,
 	.entries = {
-		{HIGH, LOW,  FS_MAY_READ },
-		{LOW,  HIGH, FS_MAY_WRITE},
+		{HIGH, LOW,  S_IROTH },
+		{LOW,  HIGH, S_IWOTH},
 	},
 };
 
@@ -81,7 +81,7 @@ static int setup_suite(void) {
 }
 
 static int teardown_suite(void) {
-	int res;
+//	int res;
 
 	vfs_get_root()->mode = root_backup_mode;
 

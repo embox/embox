@@ -31,8 +31,8 @@
 #include <util/err.h>
 
 #include <embox/unit.h>
-#include <embox/block_dev.h>
-#include <drivers/ramdisk.h>
+#include <drivers/block_dev.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
 
 /* ramfs filesystem description pool */
 POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor_quantity));
@@ -79,7 +79,7 @@ static int ramfs_init(void * par) {
 		return err(ramdisk);
 	}
 
-	dev_node = ramdisk->bdev->dev_node;
+	dev_node = ramdisk->bdev->dev_vfs_info;
 	assert(dev_node != NULL);
 
 	/* format filesystem */
@@ -99,25 +99,23 @@ static int ramfs_ramdisk_fs_init(void) {
 EMBOX_UNIT_INIT(ramfs_ramdisk_fs_init); /*TODO*/
 
 
-static int    ramfs_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *ramfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    ramfs_close(struct file_desc *desc);
 static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
-static int    ramfs_ioctl(struct file_desc *desc, int request, ...);
 
 static struct kfile_operations ramfs_fop = {
 	.open = ramfs_open,
 	.close = ramfs_close,
 	.read = ramfs_read,
 	.write = ramfs_write,
-	.ioctl = ramfs_ioctl,
 };
 
 /*
  * file_operation
  */
 
-static int ramfs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ramfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
 	ramfs_file_info_t *fi;
 
@@ -126,7 +124,7 @@ static int ramfs_open(struct node *node, struct file_desc *desc, int flags) {
 
 	fi->pointer = desc->cursor;
 
-	return 0;
+	return &desc->idesc;
 }
 
 static int ramfs_close(struct file_desc *desc) {
@@ -170,7 +168,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 	pbuf = buf;
 	ebuf = buf + min(nas->fi->ni.size - desc->cursor, size);
-	while (pbuf - ebuf > 0) {
+	while (pbuf < ebuf) {
 		blkno_t blk = desc->cursor / fsi->block_size;
 		int offset = desc->cursor % fsi->block_size;
 		int read_n;
@@ -183,7 +181,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 			break;
 		}
 
-		read_n = min(fsi->block_size - offset, pbuf - ebuf);
+		read_n = min(fsi->block_size - offset, ebuf - pbuf);
 		memcpy (buf, sector_buff + offset, read_n);
 
 		desc->cursor += read_n;
@@ -277,9 +275,6 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return bytecount;
 }
 
-static int ramfs_ioctl(struct file_desc *desc, int request, ...) {
-	return 0;
-}
 
 /*
 static int ramfs_seek(void *file, long offset, int whence);

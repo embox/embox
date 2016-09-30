@@ -11,6 +11,7 @@
 #include <embox/unit.h>
 #include <kernel/panic.h>
 #include <hal/reg.h>
+#include <hal/system.h>
 #include <drivers/at91sam7s256.h>
 
 #include <drivers/twi.h>
@@ -18,7 +19,7 @@
 EMBOX_UNIT_INIT(twi_init);
 
 #define   TWICLK           400000L //TODO move to global config -- special to system where runs
-#define   CLDIV            (((CONFIG_SYS_CLOCK/TWICLK)/2)-3)
+#define   CLDIV            (((SYS_CLOCK/TWICLK)/2)-3)
 
 static uint32_t twi_pending;
 static uint8_t *twi_ptr;

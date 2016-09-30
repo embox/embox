@@ -8,10 +8,17 @@
 #define _DFS_H_
 
 #include <drivers/block_dev/flash/flash_dev.h>
+#include <framework/mod/options.h>
 #include <fs/dvfs.h>
 
-#define DFS_INODES_MAX 4
-#define DFS_NAME_LEN 16
+#define DFS_INODES_MAX \
+	OPTION_MODULE_GET(embox__fs__driver__dfs, NUMBER, inode_count)
+#define DFS_NAME_LEN \
+	OPTION_MODULE_GET(embox__fs__driver__dfs, NUMBER, max_name_len)
+
+#define DFS_POS_MASK     0x00FF
+#define DFS_DIR_MASK     0xFF00
+#define DFS_DIRENT_EMPTY 0xFF
 
 /* Non-VFS declarations */
 struct dfs_sb_info {
@@ -19,7 +26,6 @@ struct dfs_sb_info {
 	int  inode_count;
 	int  max_inode_count;
 	int  buff_bk;         /* For buffer-based writing */
-	int  max_file_size;
 	int  free_space;
 };
 
@@ -27,6 +33,7 @@ struct dfs_dir_entry {
 	char name[DFS_NAME_LEN];
 	int  pos_start;
 	int  len;
+	int  flags;
 };
 
 extern int dfs_mount(void);

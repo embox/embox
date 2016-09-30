@@ -6,10 +6,9 @@
  * @date    14.09.2012
  */
 
-
 #include <hal/arch.h>
-
 #include <hal/reg.h>
+#include <compiler.h>
 
 #define SYSKEY 0xBF80F230
 
@@ -44,6 +43,6 @@ void arch_idle(void) {
 
 }
 
-void __attribute__ ((noreturn)) arch_shutdown(arch_shutdown_mode_t mode) {
+void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
 	while (1) {}
 }

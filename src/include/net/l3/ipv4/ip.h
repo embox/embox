@@ -16,7 +16,6 @@
 #include <net/skbuff.h>
 #include <endian.h>
 #include <linux/types.h>
-#include <embox/net/pack.h>
 
 
 /**
@@ -66,6 +65,7 @@ static inline iphdr_t *ip_hdr(const struct sk_buff *skb) {
 	return skb->nh.iph;
 }
 
+struct net_pack_out_ops;
 /**
  * IP packet outgoing options
  */

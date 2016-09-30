@@ -6,7 +6,7 @@
  * @author Eldar Abusalimov
  */
 
-#include "emit_impl.h"
+#include <framework/test/emit.h>
 
 #include <hal/ipl.h>
 

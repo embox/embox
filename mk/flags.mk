@@ -10,16 +10,16 @@ LDFLAGS ?=
 
 CROSS_COMPILE ?=
 
-CC      := $(CROSS_COMPILE)gcc
-CPP     := $(CC) -E
-CXX     := $(CROSS_COMPILE)g++
-AR      := $(CROSS_COMPILE)ar
-AS      := $(CROSS_COMPILE)as
-LD      := $(CROSS_COMPILE)ld
-NM      := $(CROSS_COMPILE)nm
-OBJDUMP := $(CROSS_COMPILE)objdump
-OBJCOPY := $(CROSS_COMPILE)objcopy
-SIZE    := $(CROSS_COMPILE)size
+CC      ?= $(CROSS_COMPILE)gcc
+CPP     ?= $(CC) -E
+CXX     ?= $(CROSS_COMPILE)g++
+AR      ?= $(CROSS_COMPILE)ar
+AS      ?= $(CROSS_COMPILE)as
+LD      ?= $(CROSS_COMPILE)ld
+NM      ?= $(CROSS_COMPILE)nm
+OBJDUMP ?= $(CROSS_COMPILE)objdump
+OBJCOPY ?= $(CROSS_COMPILE)objcopy
+SIZE    ?= $(CROSS_COMPILE)size
 
 comma_sep_list = $(subst $(\s),$(,),$(strip $1))
 
@@ -143,8 +143,7 @@ cppflags_fn = \
 	-U__linux__ -Ulinux -U__linux \
 	-D__EMBOX__ \
 	-D__unix \
-	-D"__impl_x(path)=<../path>" \
-	-imacros $(call $1,$(AUTOCONF_DIR))/config.h \
+	-imacros $(call $1,$(AUTOCONF_DIR))/config.lds.h \
 	-I$(call $1,$(INCUDE_INSTALL_DIR)) \
 	-I$(call $1,$(SRC_DIR))/include \
 	-I$(call $1,$(SRC_DIR))/arch/$(ARCH)/include \
@@ -178,7 +177,14 @@ override ASFLAGS += $(asflags)
 override COMMON_CCFLAGS := $(COMMON_FLAGS)
 override COMMON_CCFLAGS += -fno-strict-aliasing -fno-common
 override COMMON_CCFLAGS += -Wall -Werror
-override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
+override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts 
+
+# GCC 6 seems to have many library functions declared as __nonnull__, like
+# fread, fwrite, fprintf, ...  Since accessing NULL in embox without MMU 
+# support could cause real damage to whole system in contrast with segfault of 
+# application, we decided to keep explicit null checks and disable the warning.
+override COMMON_CCFLAGS += -Wno-nonnull-compare
+
 override COMMON_CCFLAGS += -Wformat
 
 cxxflags := $(CXXFLAGS)

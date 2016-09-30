@@ -8,12 +8,14 @@
  * @author Anton Kozlov
  * @author Ilia Vaprol
  */
+
 #include <time.h>
 #include <errno.h>
 #include <assert.h>
 #include <sys/time.h>
 #include <string.h>
 #include <poll.h>
+#include <arpa/inet.h>
 
 #include <net/l4/tcp.h>
 #include <net/skbuff.h>
@@ -28,6 +30,8 @@
 
 
 #include <kernel/time/timer.h>
+
+#include <embox/net/pack.h>
 #include <embox/net/proto.h>
 #include <embox/unit.h>
 #include <kernel/sched/sched_lock.h>
@@ -37,7 +41,8 @@
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 
-#include <kernel/printk.h>
+#include <util/log.h>
+#include <stdarg.h>
 
 #include <net/lib/ipv4.h>
 #include <net/lib/ipv6.h>
@@ -51,12 +56,6 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 #define MODOPS_VERIFY_CHKSUM OPTION_GET(BOOLEAN, verify_chksum)
 
 #define TCP_DEBUG 0
-#if TCP_DEBUG
-#include <stdarg.h>
-#define DBG(x) x
-#else
-#define DBG(x)
-#endif
 
 /** TODO
  * +1. Create default socket for resetting
@@ -127,7 +126,7 @@ void debug_print(__u8 code, const char *msg, ...) {
 //	case 10: /* pre_process */
 //	case 11: /* tcp_handle */
 		sched_lock();
-		vprintk(msg, args);
+		log_debug(msg, args);
 		sched_unlock();
 		break;
 	}
@@ -354,7 +353,7 @@ static void tcp_xmit(struct sk_buff *skb,
 	if (out_ops != NULL) {
 		int ret = out_ops->snd_pack(skb);
 		if (ret != 0) {
-			DBG(printk("tcp_xmit: snd_pack = %d\n", ret));
+			log_debug("tcp_xmit: snd_pack = %d\n", ret);
 		}
 	}
 }
@@ -546,7 +545,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 				list_del_init(&tcp_newsk->conn_lnk);
 				/* will add it to conn_wait list, no free_wait_queue_len adjustment */
 			} else {
-				DBG(printk("tcp_st_listen: can't alloc socket\n");)
+				log_error("tcp_st_listen: can't alloc socket\n");
 				tcp_newsk = NULL;
 				/* maybe calling thread could allocate more? */
 				sock_notify(to_sock(tcp_sk), POLLIN);
@@ -1033,10 +1032,10 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 		tcp_set_check_field((struct tcphdr *)tcph,
 				skb->nh.raw);
 		if (old_check != tcph->check) {
-			DBG(printk("pre_process: error: invalid checksum %hx(%hx)"
+			log_error("pre_process: error: invalid checksum %hx(%hx)"
 						" sk %p skb %p\n",
-					ntohs(old_check), ntohs(tcph->check),
-					to_sock(tcp_sk), skb);)
+						ntohs(old_check), ntohs(tcph->check),
+						to_sock(tcp_sk), skb);
 			return TCP_RET_DROP;
 		}
 	}
@@ -1392,7 +1391,7 @@ static int tcp_init(void) {
 	int ret;
 
 	/* Create default timer */
-	ret = timer_init_msec(&tcp_tmr_default, TIMER_PERIODIC,
+	ret = timer_init_start_msec(&tcp_tmr_default, TIMER_PERIODIC,
 			TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
 	if (ret != 0) {
 		return ret;

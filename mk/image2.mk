@@ -31,19 +31,27 @@ include $(__include_initfs)
 include $(__include)
 
 initfs_cp_prerequisites = $(src_file) $(common_prereqs)
-$(ROOTFS_DIR)/%/. : | $(ROOTFS_DIR)/.
-	@mkdir -p $(@D)
-	@touch $@
 
-cp_T_if_supported := $(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
-$(ROOTFS_DIR)/% : | $(ROOTFS_DIR)/.
+cp_T_if_supported := \
+	$(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
+
+# This rule is necessary because otherwise, when considering a rule for
+# creating the $(ROOTFS_DIR) directory (required through $(common_prereqs)
+# using the secondarily-expanded order-only '| $(@D)/.' prerequisite),
+# the '$(ROOTFS_DIR)/%' rule takes precedence over the proper '%/.' one, since
+# the former needs a shorter stem ('.') than the latter ('build/.../rootfs').
+# This is reproduced only on GNU Make >= 3.82, because of the change in how
+# implicit rule search works in Make.
+$(ROOTFS_DIR)/. :
+	@mkdir -p $@
+$(ROOTFS_DIR)/%/. :
+	@mkdir -p $@
+
+$(ROOTFS_DIR)/% :
 	$(CP) -r $(cp_T_if_supported) $(src_file) $@$(if \
 		$(and $(chmod),$(findstring $(chmod),'')),,;chmod $(chmod) $@)
 	@touch $@ # workaround when copying directories
 	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
-
-$(ROOTFS_DIR)/. :
-	@$(MKDIR) $(@D)
 
 fmt_line = $(addprefix \$(\n)$(\t)$(\t),$1)
 
@@ -51,8 +59,8 @@ initfs_prerequisites = $(cpio_files) \
 	$(wildcard $(USER_ROOTFS_DIR) $(USER_ROOTFS_DIR)/*) $(common_prereqs)
 $(ROOTFS_IMAGE) : rel_cpio_files = \
 		$(patsubst $(abspath $(ROOTFS_DIR))/%,%,$(abspath $(cpio_files)))
-$(ROOTFS_IMAGE) : | $(ROOTFS_DIR)/.
 $(ROOTFS_IMAGE) :
+	@mkdir -p $(ROOTFS_DIR)
 	cd $(ROOTFS_DIR) \
 		&& find $(rel_cpio_files) -depth -print | $(CPIO) -L --quiet -H newc -o -O $(abspath $@)
 	if [ -d $(USER_ROOTFS_DIR) ]; \
@@ -83,7 +91,7 @@ endif
 module_prereqs = $(o_files) $(a_files) $(common_prereqs)
 
 $(OBJ_DIR)/module/% : objcopy_flags = \
-	$(foreach s,rodata data bss,--rename-section .$s=.$s.module.$(module_id))
+	$(foreach s,text rodata data bss,--rename-section .$s=.$s.module.$(module_id))
 
 ar_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.a : mk/arhelper.mk

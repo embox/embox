@@ -14,10 +14,7 @@
 
 #include <kernel/task/resource/mmap.h>
 
-static const uint32_t mem_start = 0x40000000;
 static const uint32_t mem_end = 0xFFFFF000;
-
-extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
 
 uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size) {
 	struct marea *marea;
@@ -37,15 +34,20 @@ void *mmap_userspace_add(void *addr, size_t len, int prot) {
 	struct marea *marea;
 	void *phy_addr;
 	struct emmap *emmap;
+	size_t pages;
+
+	pages = (len + MMU_PAGE_SIZE - 1) / MMU_PAGE_SIZE;
+	phy_addr = phymem_alloc(pages);
+
+	if (addr == NULL) {
+		return phy_addr;
+	}
 
 	emmap = task_self_resource_mmap();
 
-	marea = marea_create((uint32_t)addr, (uint32_t)addr + len, PROT_READ | PROT_WRITE | PROT_EXEC, false);
+	marea = marea_create((uint32_t)addr, (uint32_t)addr + len, PROT_READ | PROT_WRITE | PROT_EXEC, true);
 	mmap_add_marea(emmap, marea);
-
-	phy_addr = phymem_alloc(len / MMU_PAGE_SIZE);
 
 	vmem_map_region(emmap->ctx, (mmu_paddr_t)phy_addr, (uint32_t)addr, len, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
 	return addr;
-
 }

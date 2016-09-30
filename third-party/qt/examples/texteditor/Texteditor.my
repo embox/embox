@@ -1,0 +1,18 @@
+package third_party.qt.example
+
+@AutoCmd(preserve_locals = true)
+@Cmd(name = "texteditor",
+	help = "demo application for graphic opportunities with desktop-like look",
+	man = '''
+		AUTHORS
+			Dmitriy Aleev
+	''')
+@BuildDepends(third_party.qt.core)
+@Build(script="$(EXTERNAL_MAKE_PRO)")
+module texteditor {
+	option number root_window_width=0
+	option number root_window_height=0
+	source "^BUILD/extbld/^MOD_PATH/texteditor.embox.o"
+
+	@NoRuntime depends third_party.qt.core
+}

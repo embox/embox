@@ -1,9 +1,10 @@
 package embox.net
 
 module arp {
+	option number log_level = 0
 	source "arp.c"
 
-	@NoRuntime depends embox.framework.net.pack
+	@NoRuntime depends embox.net.net_pack
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.core
@@ -14,9 +15,10 @@ module arp {
 }
 
 module icmpv4 {
+	option number log_level = 0
 	source "icmpv4.c"
 
-	depends embox.framework.net.proto
+	depends proto
 	depends embox.compat.libc.assert
 	depends embox.net.lib.icmpv4
 	depends embox.net.lib.ipv4
@@ -24,9 +26,10 @@ module icmpv4 {
 }
 
 module icmpv6 {
+	option number log_level = 0
 	source "icmpv6.c"
 
-	depends embox.framework.net.proto
+	depends embox.net.proto
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
 	depends embox.net.core
@@ -47,9 +50,10 @@ module ndp {
 }
 
 module rarp {
+	option number log_level = 0
 	source "rarp.c"
 
-	@NoRuntime depends embox.framework.net.pack
+	@NoRuntime depends embox.net.net_pack
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.core
@@ -60,10 +64,17 @@ module rarp {
 }
 
 module route {
-	source "route.c"
 	option number route_table_size=8
+	source "route.c"
 
 	depends core /* for inetdev.c */
 	depends embox.mem.pool
 	depends embox.util.DList
+	depends sock_xattr
+}
+
+module proto {
+	source "proto.c"
+
+	depends embox.util.Array
 }

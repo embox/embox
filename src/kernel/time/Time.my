@@ -29,7 +29,7 @@ module jiffies {
 	depends slowdown
 }
 
-module timer {
+module timer_handler {
 	option number hnd_priority = 200
 	source "timer.c"
 	depends jiffies

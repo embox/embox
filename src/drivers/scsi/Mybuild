@@ -1,0 +1,9 @@
+package embox.driver
+
+module scsi {
+	source "scsi.c"
+	@IncludeExport(path="drivers")
+	source "scsi.h"
+
+	depends embox.driver.block_dev.scsi_disk
+}

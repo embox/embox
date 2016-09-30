@@ -2,7 +2,7 @@
 PKG_NAME := tinypy
 PKG_VER  := 1.1
 
-PKG_SOURCES := http://tinypy.googlecode.com/files/tinypy-1.1.tar.gz
+PKG_SOURCES := https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/tinypy/tinypy-1.1.tar.gz
 PKG_MD5     := 1091300b72fcc1f75cafb91bea92772e
 
 PKG_PATCHES := setup.patch

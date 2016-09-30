@@ -3,7 +3,6 @@ package stm32f4_iocontrol
 
 @Cmd(name="http_admin_backend", help="", man="")
 @BuildDepends(third_party.lib.cjson)
-@BuildDepends(third_party.bsp.st_f4.core)
 module http_admin {
 
 	source "http_admin_backend.c"
@@ -14,6 +13,7 @@ module http_admin {
 	       "index.html",
 	       "angular.min.js",
 	       "angular-route.min.js",
+	       "angular-translate.min.js",
 	       "ui-bootstrap-tpls-0.12.1.min.js",
 	       "app.js"
 

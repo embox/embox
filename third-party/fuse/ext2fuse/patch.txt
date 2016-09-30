@@ -1,0 +1,653 @@
+diff -aur -x configure ext2fuse-src-0.8.1-orig/src/ext2fs.c ext2fuse-src-0.8.1/src/ext2fs.c
+--- ext2fuse-src-0.8.1-orig/src/ext2fs.c	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/src/ext2fs.c	2015-11-19 13:54:42.608022558 +0300
+@@ -63,9 +63,9 @@
+        st->st_mtimespec.tv_nsec=0;
+        st->st_ctimespec.tv_nsec=0;
+ #else
+-       st->st_atim.tv_nsec = 0;
+-       st->st_mtim.tv_nsec = 0;
+-       st->st_ctim.tv_nsec = 0;
++       //st->st_atim.tv_nsec = 0;
++       //st->st_mtim.tv_nsec = 0;
++       //st->st_ctim.tv_nsec = 0;
+ #endif
+ #endif
+ }
+diff -aur -x configure ext2fuse-src-0.8.1-orig/src/fuse-ext2fs.c ext2fuse-src-0.8.1/src/fuse-ext2fs.c
+--- ext2fuse-src-0.8.1-orig/src/fuse-ext2fs.c	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/src/fuse-ext2fs.c	2015-11-19 18:43:53.848363742 +0300
+@@ -689,7 +689,11 @@
+ 		
+ }
+ 
+-int main(int argc, char *argv[])
++struct fuse_lowlevel_ops *ext2fs_register(void) {
++	return &ext2fs_ops;
++}
++
++int ext2fuse_main(int argc, char *argv[])
+ {
+ 	struct fuse_args custom_args = FUSE_ARGS_INIT(0,NULL);
+ 	int err = -1;
+diff -aur -x configure ext2fuse-src-0.8.1-orig/src/Makefile.am ext2fuse-src-0.8.1/src/Makefile.am
+--- ext2fuse-src-0.8.1-orig/src/Makefile.am	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/src/Makefile.am	2015-11-19 13:54:42.608022558 +0300
+@@ -1,5 +1,8 @@
+ bin_PROGRAMS = ext2fuse
++
++E2FSPROGS_PATH=$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install
++
+ ext2fuse_SOURCES = ext2fs.c mkdir.c readdir.c symlink.c wipe_block.c fuse-ext2fs.c perms.c rename.c truncate.c ext2fs.h readdir.h symlink.h truncate.h wipe_block.h
+-ext2fuse_CFLAGS = -I/usr/include/fuse -I/usr/local/include/fuse -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
+-ext2fuse_LDADD = ../lib/et/libcom_err.a ../lib/ext2fs/libext2fs.a
++ext2fuse_CFLAGS = -I$(ROOT_DIR)/build/extbld/third_party/fuse/core/install/include -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
++ext2fuse_LDADD = $(E2FSPROGS_PATH)/lib/libcom_err.a $(E2FSPROGS_PATH)/lib/libext2fs.a
+ 
+diff -aur -x configure ext2fuse-src-0.8.1-orig/src/Makefile.in ext2fuse-src-0.8.1/src/Makefile.in
+--- ext2fuse-src-0.8.1-orig/src/Makefile.in	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/src/Makefile.in	2015-11-19 13:54:42.608022558 +0300
+@@ -14,6 +14,8 @@
+ 
+ @SET_MAKE@
+ 
++E2FSPROGS_PATH=$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install
++
+ srcdir = @srcdir@
+ top_srcdir = @top_srcdir@
+ VPATH = @srcdir@
+@@ -53,8 +55,8 @@
+ 	ext2fuse-fuse-ext2fs.$(OBJEXT) ext2fuse-perms.$(OBJEXT) \
+ 	ext2fuse-rename.$(OBJEXT) ext2fuse-truncate.$(OBJEXT)
+ ext2fuse_OBJECTS = $(am_ext2fuse_OBJECTS)
+-ext2fuse_DEPENDENCIES = ../lib/et/libcom_err.a \
+-	../lib/ext2fs/libext2fs.a
++ext2fuse_DEPENDENCIES = $(E2FSPROGS_PATH)/lib/libcom_err.a \
++	$(E2FSPROGS_PATH)/lib/libext2fs.a
+ DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
+ depcomp = $(SHELL) $(top_srcdir)/depcomp
+ am__depfiles_maybe = depfiles
+@@ -154,8 +156,8 @@
+ sysconfdir = @sysconfdir@
+ target_alias = @target_alias@
+ ext2fuse_SOURCES = ext2fs.c mkdir.c readdir.c symlink.c wipe_block.c fuse-ext2fs.c perms.c rename.c truncate.c ext2fs.h readdir.h symlink.h truncate.h wipe_block.h
+-ext2fuse_CFLAGS = -I/usr/include/fuse -I/usr/local/include/fuse -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
+-ext2fuse_LDADD = ../lib/et/libcom_err.a ../lib/ext2fs/libext2fs.a
++ext2fuse_CFLAGS = -I$(ROOT_DIR)/build/extbld/third_party/fuse/core/install/include -I../lib -I../lib/et -I../lib/ext2fs -D_FILE_OFFSET_BITS=64 
++ext2fuse_LDADD = $(E2FSPROGS_PATH)/lib/libcom_err.a $(E2FSPROGS_PATH)/lib/libext2fs.a
+ all: all-am
+ 
+ .SUFFIXES:
+
+diff -aur -x configure ext2fuse-src-0.8.1-orig/lib/ext2fs/bitops.h ext2fuse-src-0.8.1/lib/ext2fs/bitops.h
+--- ext2fuse-src-0.8.1-orig/lib/ext2fs/bitops.h	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/lib/ext2fs/bitops.h	2015-11-19 13:54:42.608022558 +0300
+@@ -1,27 +1,27 @@
+ /*
+  * bitops.h --- Bitmap frobbing code.  The byte swapping routines are
+  * 	also included here.
+- * 
++ *
+  * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+  *
+  * %Begin-Header%
+  * This file may be redistributed under the terms of the GNU Public
+  * License.
+  * %End-Header%
+- * 
++ *
+  * i386 bitops operations taken from <asm/bitops.h>, Copyright 1992,
+  * Linus Torvalds.
+  */
+ 
+ 
+-extern int ext2fs_set_bit(unsigned int nr,void * addr);
+-extern int ext2fs_clear_bit(unsigned int nr, void * addr);
+-extern int ext2fs_test_bit(unsigned int nr, const void * addr);
+-extern void ext2fs_fast_set_bit(unsigned int nr,void * addr);
+-extern void ext2fs_fast_clear_bit(unsigned int nr, void * addr);
+-extern __u16 ext2fs_swab16(__u16 val);
+-extern __u32 ext2fs_swab32(__u32 val);
+-extern __u64 ext2fs_swab64(__u64 val);
++static int ext2fs_set_bit(unsigned int nr,void * addr);
++static int ext2fs_clear_bit(unsigned int nr, void * addr);
++static int ext2fs_test_bit(unsigned int nr, const void * addr);
++static void ext2fs_fast_set_bit(unsigned int nr,void * addr);
++static void ext2fs_fast_clear_bit(unsigned int nr, void * addr);
++static __u16 ext2fs_swab16(__u16 val);
++static __u32 ext2fs_swab32(__u32 val);
++static __u64 ext2fs_swab64(__u64 val);
+ 
+ #ifdef WORDS_BIGENDIAN
+ #define ext2fs_cpu_to_le64(x) ext2fs_swab64((x))
+@@ -52,66 +52,66 @@
+  */
+ 
+ /* Support for sending warning messages from the inline subroutines */
+-extern const char *ext2fs_block_string;
+-extern const char *ext2fs_inode_string;
+-extern const char *ext2fs_mark_string;
+-extern const char *ext2fs_unmark_string;
+-extern const char *ext2fs_test_string;
+-extern void ext2fs_warn_bitmap(errcode_t errcode, unsigned long arg,
++static const char *ext2fs_block_string;
++static const char *ext2fs_inode_string;
++static const char *ext2fs_mark_string;
++static const char *ext2fs_unmark_string;
++static const char *ext2fs_test_string;
++static void ext2fs_warn_bitmap(errcode_t errcode, unsigned long arg,
+ 			       const char *description);
+-extern void ext2fs_warn_bitmap2(ext2fs_generic_bitmap bitmap,
++static void ext2fs_warn_bitmap2(ext2fs_generic_bitmap bitmap,
+ 				int code, unsigned long arg);
+ 
+-extern int ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
+-extern int ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
++static int ext2fs_mark_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
++static int ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
+ 				       blk_t block);
+-extern int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
++static int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap, blk_t block);
+ 
+-extern int ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap, ext2_ino_t inode);
+-extern int ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
++static int ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap, ext2_ino_t inode);
++static int ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+ 				       ext2_ino_t inode);
+-extern int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap, ext2_ino_t inode);
++static int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap, ext2_ino_t inode);
+ 
+-extern void ext2fs_fast_mark_block_bitmap(ext2fs_block_bitmap bitmap,
++static void ext2fs_fast_mark_block_bitmap(ext2fs_block_bitmap bitmap,
+ 					  blk_t block);
+-extern void ext2fs_fast_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
++static void ext2fs_fast_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
+ 					    blk_t block);
+-extern int ext2fs_fast_test_block_bitmap(ext2fs_block_bitmap bitmap,
++static int ext2fs_fast_test_block_bitmap(ext2fs_block_bitmap bitmap,
+ 					 blk_t block);
+ 
+-extern void ext2fs_fast_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
++static void ext2fs_fast_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+ 					  ext2_ino_t inode);
+-extern void ext2fs_fast_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
++static void ext2fs_fast_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+ 					    ext2_ino_t inode);
+-extern int ext2fs_fast_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
++static int ext2fs_fast_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
+ 					 ext2_ino_t inode);
+-extern blk_t ext2fs_get_block_bitmap_start(ext2fs_block_bitmap bitmap);
+-extern ext2_ino_t ext2fs_get_inode_bitmap_start(ext2fs_inode_bitmap bitmap);
+-extern blk_t ext2fs_get_block_bitmap_end(ext2fs_block_bitmap bitmap);
+-extern ext2_ino_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap);
++static blk_t ext2fs_get_block_bitmap_start(ext2fs_block_bitmap bitmap);
++static ext2_ino_t ext2fs_get_inode_bitmap_start(ext2fs_inode_bitmap bitmap);
++static blk_t ext2fs_get_block_bitmap_end(ext2fs_block_bitmap bitmap);
++static ext2_ino_t ext2fs_get_inode_bitmap_end(ext2fs_inode_bitmap bitmap);
+ 
+-extern void ext2fs_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
++static void ext2fs_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
+ 					   blk_t block, int num);
+-extern void ext2fs_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
++static void ext2fs_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
+ 					     blk_t block, int num);
+-extern int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
++static int ext2fs_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
+ 					  blk_t block, int num);
+-extern void ext2fs_fast_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
++static void ext2fs_fast_mark_block_bitmap_range(ext2fs_block_bitmap bitmap,
+ 						blk_t block, int num);
+-extern void ext2fs_fast_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
++static void ext2fs_fast_unmark_block_bitmap_range(ext2fs_block_bitmap bitmap,
+ 						  blk_t block, int num);
+-extern int ext2fs_fast_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
++static int ext2fs_fast_test_block_bitmap_range(ext2fs_block_bitmap bitmap,
+ 					       blk_t block, int num);
+-extern void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
++static void ext2fs_set_bitmap_padding(ext2fs_generic_bitmap map);
+ 
+ /* These two routines moved to gen_bitmap.c */
+-extern int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
++static int ext2fs_mark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+ 					 __u32 bitno);
+-extern int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
++static int ext2fs_unmark_generic_bitmap(ext2fs_generic_bitmap bitmap,
+ 					   blk_t bitno);
+ /*
+  * The inline routines themselves...
+- * 
++ *
+  * If NO_INLINE_FUNCS is defined, then we won't try to do inline
+  * functions at all; they will be included as normal functions in
+  * inline.c
+@@ -127,12 +127,12 @@
+ 
+ #if (defined(INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
+ #ifdef INCLUDE_INLINE_FUNCS
+-#define _INLINE_ extern
++#define _INLINE_ static
+ #else
+ #ifdef __GNUC__
+-#define _INLINE_ extern __inline__
++#define _INLINE_ static __inline__
+ #else				/* For Watcom C */
+-#define _INLINE_ extern inline
++#define _INLINE_ static inline
+ #endif
+ #endif
+ 
+@@ -178,7 +178,7 @@
+  */
+ struct __dummy_h { unsigned long a[100]; };
+ #define EXT2FS_ADDR (*(struct __dummy_h *) addr)
+-#define EXT2FS_CONST_ADDR (*(const struct __dummy_h *) addr)	
++#define EXT2FS_CONST_ADDR (*(const struct __dummy_h *) addr)
+ 
+ _INLINE_ int ext2fs_set_bit(unsigned int nr, void * addr)
+ {
+@@ -223,7 +223,7 @@
+ 		return 0;
+ 	/* This looks at memory. Mark it volatile to tell gcc not to move it around */
+ 	__asm__ __volatile__(
+-		"cld\n\t"			     
++		"cld\n\t"
+ 		"xorl %%eax,%%eax\n\t"
+ 		"xorl %%edx,%%edx\n\t"
+ 		"repe; scasl\n\t"
+@@ -243,7 +243,7 @@
+ {
+ 	unsigned long * p = ((unsigned long *) addr) + (offset >> 5);
+ 	int set = 0, bit = offset & 31, res;
+-	
++
+ 	if (bit) {
+ 		/*
+ 		 * Look for zero in first byte
+@@ -370,7 +370,7 @@
+ 	d0 = ffs(*cp);
+ 	if (d0 == 0)
+ 		return size;
+-	
++
+ 	return res + d0 - 1;
+ }
+ 
+@@ -378,10 +378,10 @@
+ {
+ 	unsigned char * p;
+ 	int set = 0, bit = offset & 7, res = 0, d0;
+-	
++
+ 	res = offset >> 3;
+ 	p = ((unsigned char *) addr) + res;
+-	
++
+ 	if (bit) {
+ 		set = ffs(*p & ~((1 << bit) - 1));
+ 		if (set)
+@@ -399,7 +399,7 @@
+ 
+ 	return (res + d0 - 1);
+ }
+-#endif	
++#endif
+ 
+ _INLINE_ int ext2fs_test_generic_bitmap(ext2fs_generic_bitmap bitmap,
+ 					blk_t bitno);
+@@ -425,35 +425,35 @@
+ _INLINE_ int ext2fs_unmark_block_bitmap(ext2fs_block_bitmap bitmap,
+ 					 blk_t block)
+ {
+-	return ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
++	return ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap,
+ 					    block);
+ }
+ 
+ _INLINE_ int ext2fs_test_block_bitmap(ext2fs_block_bitmap bitmap,
+ 				       blk_t block)
+ {
+-	return ext2fs_test_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
++	return ext2fs_test_generic_bitmap((ext2fs_generic_bitmap) bitmap,
+ 					  block);
+ }
+ 
+ _INLINE_ int ext2fs_mark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+ 				       ext2_ino_t inode)
+ {
+-	return ext2fs_mark_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
++	return ext2fs_mark_generic_bitmap((ext2fs_generic_bitmap) bitmap,
+ 					  inode);
+ }
+ 
+ _INLINE_ int ext2fs_unmark_inode_bitmap(ext2fs_inode_bitmap bitmap,
+ 					 ext2_ino_t inode)
+ {
+-	return ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
++	return ext2fs_unmark_generic_bitmap((ext2fs_generic_bitmap) bitmap,
+ 				     inode);
+ }
+ 
+ _INLINE_ int ext2fs_test_inode_bitmap(ext2fs_inode_bitmap bitmap,
+ 				       ext2_ino_t inode)
+ {
+-	return ext2fs_test_generic_bitmap((ext2fs_generic_bitmap) bitmap, 
++	return ext2fs_test_generic_bitmap((ext2fs_generic_bitmap) bitmap,
+ 					  inode);
+ }
+ 
+@@ -466,7 +466,7 @@
+ 				   bitmap->description);
+ 		return;
+ 	}
+-#endif	
++#endif
+ 	ext2fs_fast_set_bit(block - bitmap->start, bitmap->bitmap);
+ }
+ 
+@@ -595,7 +595,7 @@
+ 					     blk_t block, int num)
+ {
+ 	int	i;
+-	
++
+ 	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+ 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_MARK, block,
+ 				   bitmap->description);
+@@ -609,14 +609,14 @@
+ 						  blk_t block, int num)
+ {
+ 	int	i;
+-	
++
+ #ifdef EXT2FS_DEBUG_FAST_OPS
+ 	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+ 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_MARK, block,
+ 				   bitmap->description);
+ 		return;
+ 	}
+-#endif	
++#endif
+ 	for (i=0; i < num; i++)
+ 		ext2fs_fast_set_bit(block + i - bitmap->start, bitmap->bitmap);
+ }
+@@ -625,14 +625,14 @@
+ 					       blk_t block, int num)
+ {
+ 	int	i;
+-	
++
+ 	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+ 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_UNMARK, block,
+ 				   bitmap->description);
+ 		return;
+ 	}
+ 	for (i=0; i < num; i++)
+-		ext2fs_fast_clear_bit(block + i - bitmap->start, 
++		ext2fs_fast_clear_bit(block + i - bitmap->start,
+ 				      bitmap->bitmap);
+ }
+ 
+@@ -640,18 +640,17 @@
+ 						    blk_t block, int num)
+ {
+ 	int	i;
+-	
++
+ #ifdef EXT2FS_DEBUG_FAST_OPS
+ 	if ((block < bitmap->start) || (block+num-1 > bitmap->end)) {
+ 		ext2fs_warn_bitmap(EXT2_ET_BAD_BLOCK_UNMARK, block,
+ 				   bitmap->description);
+ 		return;
+ 	}
+-#endif	
++#endif
+ 	for (i=0; i < num; i++)
+-		ext2fs_fast_clear_bit(block + i - bitmap->start, 
++		ext2fs_fast_clear_bit(block + i - bitmap->start,
+ 				      bitmap->bitmap);
+ }
+ #undef _INLINE_
+ #endif
+-
+diff -aur -x configure ext2fuse-src-0.8.1-orig/lib/ext2fs/ext2fs ext2fuse-src-0.8.1/lib/ext2fs/ext2fs
+--- ext2fuse-src-0.8.1-orig/lib/ext2fs/ext2fs.h	2008-06-26 09:34:50.000000000 +0400
++++ ext2fuse-src-0.8.1/lib/ext2fs/ext2fs.h	2015-11-19 13:54:42.608022558 +0300
+@@ -1,6 +1,6 @@
+ /*
+  * ext2fs.h --- ext2fs
+- * 
++ *
+  * Copyright (C) 1993, 1994, 1995, 1996 Theodore Ts'o.
+  *
+  * %Begin-Header%
+@@ -268,7 +268,7 @@
+  * This is used by ext2fs_expand_dir() to be able to add a new block
+  * to an inode.  It can also be used for programs that want to be able
+  * to deal with files that contain "holes".
+- * 
++ *
+  * BLOCK_FLAG_DEPTH_TRAVERSE indicates that the iterator function for
+  * the indirect, doubly indirect, etc. blocks should be called after
+  * all of the blocks containined in the indirect blocks are processed.
+@@ -300,7 +300,7 @@
+ /*
+  * Flags for ext2fs_move_blocks
+  */
+-#define EXT2_BMOVE_GET_DBLIST	0x0001	
++#define EXT2_BMOVE_GET_DBLIST	0x0001
+ #define EXT2_BMOVE_DEBUG	0x0002
+ #endif
+ 
+@@ -489,7 +489,7 @@
+ 				    char *block_buf, blk_t *ret);
+ 
+ /* alloc_sb.c */
+-extern int ext2fs_reserve_super_and_bgd(ext2_filsys fs, 
++extern int ext2fs_reserve_super_and_bgd(ext2_filsys fs,
+ 					dgrp_t group,
+ 					ext2fs_block_bitmap bmap);
+ 
+@@ -599,7 +599,7 @@
+ 
+ /* bmap.c */
+ extern errcode_t ext2fs_bmap(ext2_filsys fs, ext2_ino_t ino,
+-			     struct ext2_inode *inode, 
++			     struct ext2_inode *inode,
+ 			     char *block_buf, int bmap_flags,
+ 			     blk_t block, blk_t *phys_blk);
+ 
+@@ -619,7 +619,7 @@
+ extern errcode_t ext2fs_close(ext2_filsys fs);
+ extern errcode_t ext2fs_flush(ext2_filsys fs);
+ extern int ext2fs_bg_has_super(ext2_filsys fs, int group_block);
+-extern int ext2fs_super_and_bgd_loc(ext2_filsys fs, 
++extern int ext2fs_super_and_bgd_loc(ext2_filsys fs,
+ 				    dgrp_t group,
+ 				    blk_t *ret_super_blk,
+ 				    blk_t *ret_old_desc_blk,
+@@ -684,7 +684,7 @@
+ 
+ 
+ /* dir_iterate.c */
+-extern errcode_t ext2fs_dir_iterate(ext2_filsys fs, 
++extern errcode_t ext2fs_dir_iterate(ext2_filsys fs,
+ 			      ext2_ino_t dir,
+ 			      int flags,
+ 			      char *block_buf,
+@@ -694,7 +694,7 @@
+ 					  char	*buf,
+ 					  void	*priv_data),
+ 			      void *priv_data);
+-extern errcode_t ext2fs_dir_iterate2(ext2_filsys fs, 
++extern errcode_t ext2fs_dir_iterate2(ext2_filsys fs,
+ 			      ext2_ino_t dir,
+ 			      int flags,
+ 			      char *block_buf,
+@@ -785,10 +785,10 @@
+ extern void ext2fs_free_icount(ext2_icount_t icount);
+ extern errcode_t ext2fs_create_icount_tdb(ext2_filsys fs, char *tdb_dir,
+ 					  int flags, ext2_icount_t *ret);
+-extern errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags, 
++extern errcode_t ext2fs_create_icount2(ext2_filsys fs, int flags,
+ 				       unsigned int size,
+ 				       ext2_icount_t hint, ext2_icount_t *ret);
+-extern errcode_t ext2fs_create_icount(ext2_filsys fs, int flags, 
++extern errcode_t ext2fs_create_icount(ext2_filsys fs, int flags,
+ 				      unsigned int size,
+ 				      ext2_icount_t *ret);
+ extern errcode_t ext2fs_icount_fetch(ext2_icount_t icount, ext2_ino_t ino,
+@@ -804,9 +804,9 @@
+ 
+ /* inode.c */
+ extern errcode_t ext2fs_flush_icache(ext2_filsys fs);
+-extern errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan, 
++extern errcode_t ext2fs_get_next_inode_full(ext2_inode_scan scan,
+ 					    ext2_ino_t *ino,
+-					    struct ext2_inode *inode, 
++					    struct ext2_inode *inode,
+ 					    int bufsize);
+ extern errcode_t ext2fs_open_inode_scan(ext2_filsys fs, int buffer_blocks,
+ 				  ext2_inode_scan *ret_scan);
+@@ -825,12 +825,12 @@
+ extern int ext2fs_inode_scan_flags(ext2_inode_scan scan, int set_flags,
+ 				   int clear_flags);
+ extern errcode_t ext2fs_read_inode_full(ext2_filsys fs, ext2_ino_t ino,
+-					struct ext2_inode * inode, 
++					struct ext2_inode * inode,
+ 					int bufsize);
+ extern errcode_t ext2fs_read_inode (ext2_filsys fs, ext2_ino_t ino,
+ 			    struct ext2_inode * inode);
+ extern errcode_t ext2fs_write_inode_full(ext2_filsys fs, ext2_ino_t ino,
+-					 struct ext2_inode * inode, 
++					 struct ext2_inode * inode,
+ 					 int bufsize);
+ extern errcode_t ext2fs_write_inode(ext2_filsys fs, ext2_ino_t ino,
+ 			    struct ext2_inode * inode);
+@@ -841,12 +841,12 @@
+ 
+ /* inode_io.c */
+ extern io_manager inode_io_manager;
+-extern errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino, 
++extern errcode_t ext2fs_inode_io_intern(ext2_filsys fs, ext2_ino_t ino,
+ 					char **name);
+ extern errcode_t ext2fs_inode_io_intern2(ext2_filsys fs, ext2_ino_t ino,
+ 					 struct ext2_inode *inode,
+ 					 char **name);
+-	
++
+ /* ismounted.c */
+ extern errcode_t ext2fs_check_if_mounted(const char *file, int *mount_flags);
+ extern errcode_t ext2fs_check_mount_point(const char *device, int *mount_flags,
+@@ -887,11 +887,11 @@
+ extern errcode_t ext2fs_open(const char *name, int flags, int superblock,
+ 			     unsigned int block_size, io_manager manager,
+ 			     ext2_filsys *ret_fs);
+-extern errcode_t ext2fs_open2(const char *name, const char *io_options, 
+-			      int flags, int superblock, 
++extern errcode_t ext2fs_open2(const char *name, const char *io_options,
++			      int flags, int superblock,
+ 			      unsigned int block_size, io_manager manager,
+ 			      ext2_filsys *ret_fs);
+-extern blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block, 
++extern blk_t ext2fs_descriptor_block_loc(ext2_filsys fs, blk_t group_block,
+ 					 dgrp_t i);
+ errcode_t ext2fs_get_data_io(ext2_filsys fs, io_channel *old_io);
+ errcode_t ext2fs_set_data_io(ext2_filsys fs, io_channel new_io);
+@@ -912,14 +912,14 @@
+ 				      ext2_badblocks_list *bb_list);
+ 
+ /* read_bb_file.c */
+-extern errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f, 
++extern errcode_t ext2fs_read_bb_FILE2(ext2_filsys fs, FILE *f,
+ 				      ext2_badblocks_list *bb_list,
+ 				      void *priv_data,
+ 				      void (*invalid)(ext2_filsys fs,
+ 						      blk_t blk,
+ 						      char *badstr,
+ 						      void *priv_data));
+-extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f, 
++extern errcode_t ext2fs_read_bb_FILE(ext2_filsys fs, FILE *f,
+ 				     ext2_badblocks_list *bb_list,
+ 				     void (*invalid)(ext2_filsys fs,
+ 						     blk_t blk));
+@@ -939,7 +939,7 @@
+ 				    ext2fs_generic_bitmap *dest);
+ 
+ /* swapfs.c */
+-extern void ext2fs_swap_ext_attr(char *to, char *from, int bufsize, 
++extern void ext2fs_swap_ext_attr(char *to, char *from, int bufsize,
+ 				 int has_header);
+ extern void ext2fs_swap_super(struct ext2_super_block * super);
+ extern void ext2fs_swap_group_desc(struct ext2_group_desc *gdp);
+@@ -964,27 +964,27 @@
+ 
+ 
+ /* inline functions */
+-extern errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
+-extern errcode_t ext2fs_free_mem(void *ptr);
+-extern errcode_t ext2fs_resize_mem(unsigned long old_size,
++static errcode_t ext2fs_get_mem(unsigned long size, void *ptr);
++static errcode_t ext2fs_free_mem(void *ptr);
++static errcode_t ext2fs_resize_mem(unsigned long old_size,
+ 				   unsigned long size, void *ptr);
+-extern void ext2fs_mark_super_dirty(ext2_filsys fs);
+-extern void ext2fs_mark_changed(ext2_filsys fs);
+-extern int ext2fs_test_changed(ext2_filsys fs);
+-extern void ext2fs_mark_valid(ext2_filsys fs);
+-extern void ext2fs_unmark_valid(ext2_filsys fs);
+-extern int ext2fs_test_valid(ext2_filsys fs);
+-extern void ext2fs_mark_ib_dirty(ext2_filsys fs);
+-extern void ext2fs_mark_bb_dirty(ext2_filsys fs);
+-extern int ext2fs_test_ib_dirty(ext2_filsys fs);
+-extern int ext2fs_test_bb_dirty(ext2_filsys fs);
+-extern int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk);
+-extern int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino);
+-extern blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group);
+-extern blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group);
+-extern blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
++static void ext2fs_mark_super_dirty(ext2_filsys fs);
++static void ext2fs_mark_changed(ext2_filsys fs);
++static int ext2fs_test_changed(ext2_filsys fs);
++static void ext2fs_mark_valid(ext2_filsys fs);
++static void ext2fs_unmark_valid(ext2_filsys fs);
++static int ext2fs_test_valid(ext2_filsys fs);
++static void ext2fs_mark_ib_dirty(ext2_filsys fs);
++static void ext2fs_mark_bb_dirty(ext2_filsys fs);
++static int ext2fs_test_ib_dirty(ext2_filsys fs);
++static int ext2fs_test_bb_dirty(ext2_filsys fs);
++static int ext2fs_group_of_blk(ext2_filsys fs, blk_t blk);
++static int ext2fs_group_of_ino(ext2_filsys fs, ext2_ino_t ino);
++static blk_t ext2fs_group_first_block(ext2_filsys fs, dgrp_t group);
++static blk_t ext2fs_group_last_block(ext2_filsys fs, dgrp_t group);
++static blk_t ext2fs_inode_data_blocks(ext2_filsys fs,
+ 				      struct ext2_inode *inode);
+-extern unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
++static unsigned int ext2fs_div_ceil(unsigned int a, unsigned int b);
+ 
+ /*
+  * The actual inlined functions definitions themselves...
+@@ -994,12 +994,12 @@
+  */
+ #if (defined(INCLUDE_INLINE_FUNCS) || !defined(NO_INLINE_FUNCS))
+ #ifdef INCLUDE_INLINE_FUNCS
+-#define _INLINE_ extern
++#define _INLINE_ static
+ #else
+ #ifdef __GNUC__
+-#define _INLINE_ extern __inline__
++#define _INLINE_ static __inline__
+ #else				/* For Watcom C */
+-#define _INLINE_ extern inline
++#define _INLINE_ static inline
+ #endif
+ #endif
+ 
+@@ -1032,7 +1032,7 @@
+ 	memcpy(ptr, &p, sizeof(p));
+ 	return 0;
+ }
+-	
++
+ /*
+  *  Resize memory
+  */

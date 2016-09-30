@@ -11,7 +11,7 @@
 
 #include <util/dlist.h>
 
-#include <kernel/sched/sched_priority.h>
+#include <kernel/sched/schedee_priority.h>
 
 
 struct runq_queue {

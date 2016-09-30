@@ -1,11 +1,15 @@
 package embox.driver
 
-module ramdisk {
-	source "ramdisk.c"
+@DefaultImpl(ramdisk_old)
+abstract module ramdisk {
 	option number ramdisk_quantity = 8
-
 	option number block_size = 4096
+}
 
+module ramdisk_old extends ramdisk {
+	@IncludeExport(path="drivers/block_dev/ramdisk")
+	source "ramdisk.h"
+	source "ramdisk.c"
 
 	depends embox.fs.node
 	depends embox.mem.page_api
@@ -13,4 +17,11 @@ module ramdisk {
 	depends embox.driver.block
 	depends embox.mem.phymem
 	depends embox.util.indexator
+}
+
+module ramdisk_dvfs extends ramdisk {
+	@IncludeExport(path="drivers/block_dev/ramdisk")
+	source "ramdisk.h"
+
+	source "ramdisk_dvfs.c"
 }

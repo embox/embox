@@ -155,7 +155,7 @@ static int vc_mpx_init(void) {
 		}
 	}
 
-	if (NULL == (curfb = fb_lookup("fb0"))) {
+	if (NULL == (curfb = fb_lookup(0))) {
 		return -ENOENT;
 	}
 	return 0;

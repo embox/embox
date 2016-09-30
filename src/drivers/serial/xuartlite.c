@@ -83,16 +83,3 @@ DIAG_OPS_DECLARE(
 		.getc = xuartlite_diag_getc,
 		.kbhit = xuartlite_diag_has_symbol,
 );
-
-/* TODO uart_set_irq_handler haven't to be used*/
-#if 0
-int uart_set_irq_handler(irq_handler_t pfunc) {
-	// TODO check return code.
-	irq_attach(CONFIG_XILINX_UARTLITE_IRQ_NUM, pfunc, 0, "xil_uartlite", NULL);
-	return 0;
-}
-
-int uart_remove_irq_handler(void) {
-	return 0;
-}
-#endif

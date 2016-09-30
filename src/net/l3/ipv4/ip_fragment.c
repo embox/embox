@@ -8,9 +8,10 @@
 
 #include <errno.h>
 #include <string.h>
-
 #include <arpa/inet.h>
+
 #include <net/l3/ipv4/ip_fragment.h>
+#include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/l3/icmpv4.h>
 #include <net/l3/ipv4/ip.h>
