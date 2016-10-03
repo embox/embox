@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <limits.h>
 #include <netinet/in.h>
 #include <stddef.h>
@@ -77,7 +78,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 	}
 
 	for (i = 0; i < zs_max_ind; ++i) {
-		ret = snprintf(buff, buff_sz, "%hx:", ntohs(in6->s6_addr16[i]));
+		ret = snprintf(buff, buff_sz, "%" PRIu16 ":", ntohs(in6->s6_addr16[i]));
 		if (ret < 0) {
 			return -EIO;
 		}
@@ -88,7 +89,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 		buff_sz -= ret;
 	}
 
-	ret = zs_max_len <= 1 ? snprintf(buff, buff_sz, "%hx", ntohs(in6->s6_addr16[i]))
+	ret = zs_max_len <= 1 ? snprintf(buff, buff_sz, "%" PRIu16, ntohs(in6->s6_addr16[i]))
 			: i + zs_max_len == ARRAY_SIZE(in6->s6_addr16) ? i == 0
 				? snprintf(buff, buff_sz, "::")
 				: snprintf(buff, buff_sz, ":")
@@ -105,7 +106,7 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 	i += zs_max_len <= 1 ? 1 : zs_max_len;
 
 	for (; i < ARRAY_SIZE(in6->s6_addr16); ++i) {
-		ret = snprintf(buff, buff_sz, ":%hx", ntohs(in6->s6_addr16[i]));
+		ret = snprintf(buff, buff_sz, ":%" PRIu16, ntohs(in6->s6_addr16[i]));
 		if (ret < 0) {
 			return -EIO;
 		}

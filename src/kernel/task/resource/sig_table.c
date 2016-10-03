@@ -32,6 +32,15 @@ static void task_sig_handler_ignore(int sig) {
 #define Core task_sig_handler_terminate /* FIXME */
 #define Stop task_sig_handler_terminate /* FIXME */
 #define Cont task_sig_handler_ignore    /* FIXME */
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Winitializer-overrides"
+#endif
+
+// When we initialize array below some keys override previous ones
+// because they are defined as the some integers. So, warning is disabled
+
 typedef void (*_task_sig_handler_t)(int);
 static const _task_sig_handler_t default_sig_action[] = {
 	[SIGHUP]	= Term,
@@ -68,6 +77,12 @@ static const _task_sig_handler_t default_sig_action[] = {
 	[SIGPWR]	= Term,
 	[SIGSYS]	= Core,
 };
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
+
 #undef Term
 #undef Ign
 #undef Core

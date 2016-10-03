@@ -125,7 +125,7 @@ static int utmp_login(short ut_type, const char *host) {
 
 	utmp.ut_type = ut_type;
 	utmp.ut_pid = getpid();
-	snprintf(utmp.ut_id, UT_IDSIZE, "/%hd", utmp.ut_pid);
+	snprintf(utmp.ut_id, UT_IDSIZE, "/%d", utmp.ut_pid);
 	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
 	strncpy(utmp.ut_host, host, UT_HOSTSIZE);
 	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));

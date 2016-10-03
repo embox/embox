@@ -117,7 +117,7 @@ static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 void vtparse(struct vtparse *parser, unsigned char ch) {
 	/* A state change is an action and/or a new state to transition to. */
 	vtparse_state_t new_state = vtparse_state_transition(parser->state, ch);
-	vt_action_t action = vtparse_state_action(parser->state, ch);
+	vt_action_t action = (vt_action_t)vtparse_state_action(parser->state, ch);
 
 	if (new_state) {
 		/* Perform up to three actions:

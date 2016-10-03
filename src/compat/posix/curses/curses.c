@@ -12,6 +12,7 @@
 #include <string.h>
 #include <termios.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #include <util/math.h>
 #include <util/array.h>
@@ -236,7 +237,7 @@ int doupdate(void) {
 		y = offset / COLS;
 		x = offset % COLS;
 
-		fprintf(screen.out, "\x1b[%hu;%huH", y + 1, x + 1);
+		fprintf(screen.out, "\x1b[%" PRIu16 ";%" PRIu16 "H", y + 1, x + 1);
 
 		for (; (std_ptr < std_end) && (*std_ptr != *cur_ptr);
 				++std_ptr, ++cur_ptr) {

@@ -84,7 +84,7 @@ void print_inet_sock_info(const struct sock *sk) {
 			: "unknown");
 
 	if (in_sk->src_in.sin_family == AF_INET) {
-		printf("%*s:%-5hu ", INET_ADDRSTRLEN,
+		printf("%*s:%-5d ", INET_ADDRSTRLEN,
 				inet_ntoa(in_sk->src_in.sin_addr),
 				ntohs(in_sk->src_in.sin_port));
 	}
@@ -96,7 +96,7 @@ void print_inet_sock_info(const struct sock *sk) {
 
 
 	if (in_sk->dst_in.sin_family == AF_INET) {
-		printf("%s:%hu ", inet_ntoa(in_sk->dst_in.sin_addr),
+		printf("%s:%d ", inet_ntoa(in_sk->dst_in.sin_addr),
 				ntohs(in_sk->dst_in.sin_port));
 	}
 	else {

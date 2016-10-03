@@ -4,7 +4,7 @@
  */
 
 #ifndef CYG_PROFILE_H_
-#define CYG_PROFILE_H
+#define CYG_PROFILE_H_
 
 typedef void (*cyg_func)(void *, void *);
 
