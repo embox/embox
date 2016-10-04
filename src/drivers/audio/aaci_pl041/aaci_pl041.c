@@ -12,6 +12,7 @@
 #include <util/log.h>
 
 #include <hal/reg.h>
+#include <kernel/irq.h>
 
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
@@ -23,6 +24,7 @@
 EMBOX_UNIT_INIT(aaci_pl041_init);
 
 #define BASE_ADDR    OPTION_GET(NUMBER, base_addr)
+#define IRQ_NUM      OPTION_GET(NUMBER, irq_num)
 
 #define AACI_MAXBUF_LEN_MAX_BUF_LEN 0x10000
 
@@ -161,6 +163,51 @@ static int aaci_size_fifo(struct aaci_pl041_hw_dev *hw_dev) {
 
 	return i;
 }
+/*
+ * Interrupt support.
+ */
+static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
+
+	if (mask & AACI_ISR_ORINTR) {
+		REG32_STORE(base + AACI_INTCLR, AACI_ICLR_RXOEC1 << channel);
+	}
+
+	if (mask & AACI_ISR_RXTOINTR) {
+		REG32_STORE(base + AACI_INTCLR, AACI_ICLR_RXTOFEC1 << channel);
+	}
+
+	if (mask & AACI_ISR_RXINTR) {
+	}
+
+	if (mask & AACI_ISR_URINTR) {
+		REG32_STORE(base + AACI_INTCLR, AACI_ICLR_TXUEC1 << channel);
+	}
+
+	if (mask & AACI_ISR_TXINTR) {
+	}
+}
+
+
+
+static irq_return_t aaci_pl041_irq_handler(unsigned int irq_num, void *dev_id) {
+	uint32_t mask;
+	int i;
+	uint32_t base;
+
+	base = aaci_pl041_hw_dev.base_addr;
+
+	mask = REG32_LOAD(base + AACI_ALLINTS);
+	if (mask) {
+		uint32_t m = mask;
+		for (i = 0; i < 4; i++, m >>= 7) {
+			if (m & 0x7f) {
+				aaci_fifo_irq(base, i, m);
+			}
+		}
+	}
+
+	return mask ? IRQ_HANDLED : IRQ_NONE;
+}
 
 static int aaci_pl041_init(void) {
 	int i;
@@ -203,6 +250,11 @@ static int aaci_pl041_init(void) {
 	 * This is the number of entries in the FIFO.
 	 */
 	aaci_pl041_hw_dev.fifo_depth = aaci_size_fifo(&aaci_pl041_hw_dev);
+
+	ret = irq_attach(IRQ_NUM, aaci_pl041_irq_handler, IF_SHARESUP, NULL, "aaci_pl041");
+	if (ret) {
+		goto out;
+	}
 
 out:
 	return ret;

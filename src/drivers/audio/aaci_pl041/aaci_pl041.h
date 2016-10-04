@@ -77,13 +77,13 @@
 #define AACI_SR_TXFE          (1 << 1)
 #define AACI_SR_RXFE          (1 << 0)
 
-#define AACI_ISR_RXTOFE       (1 << 6)
-#define AACI_ISR_UR           (1 << 5)
-#define AACI_ISR_OR           (1 << 4)
-#define AACI_ISR_RX           (1 << 3)
-#define AACI_ISR_TX           (1 << 2)
-#define AACI_ISR_RXTO         (1 << 1)
-#define AACI_ISR_TXC          (1 << 0)
+#define AACI_ISR_RXTOFEINTR   (1 << 6)
+#define AACI_ISR_URINTR       (1 << 5)
+#define AACI_ISR_ORINTR       (1 << 4)
+#define AACI_ISR_RXINTR       (1 << 3)
+#define AACI_ISR_TXINTR       (1 << 2)
+#define AACI_ISR_RXTOINTR     (1 << 1)
+#define AACI_ISR_TXCINTR      (1 << 0)
 
 /* interrupt enable */
 #define AACI_IE_RXTOFE        (1 << 6)
