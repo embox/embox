@@ -27,9 +27,16 @@ EMBOX_UNIT_INIT(aaci_pl041_init);
 #define AACI_MAXBUF_LEN_MAX_BUF_LEN 0x10000
 
 
+struct aaci_runtime {
+	void *base;
+	void *fifo;
+};
+
 struct aaci_pl041_hw_dev {
 	uint32_t base_addr;
 	uint32_t maincr;
+	struct aaci_runtime aaci_runtime;
+	uint32_t fifo_depth;
 };
 
 static struct aaci_pl041_hw_dev aaci_pl041_hw_dev;
@@ -117,6 +124,43 @@ static int aaci_pl041_probe_ac97(uint32_t base) {
 	return 0;
 }
 
+static int aaci_size_fifo(struct aaci_pl041_hw_dev *hw_dev) {
+	struct aaci_runtime *aacirun;
+	int i;
+
+	aacirun = &hw_dev->aaci_runtime;
+	/*
+	 * Enable the channel, but don't assign it to any slots, so
+	 * it won't empty onto the AC'97 link.
+	 */
+	REG32_STORE(aacirun->base + AACI_TXCR, AACI_CR_FEN | AACI_CR_SZ16 | AACI_CR_EN);
+
+	for (i = 0; !(REG32_LOAD(aacirun->base + AACI_SR) & AACI_SR_TXFF) && i < 4096; i++) {
+		REG32_STORE(aacirun->fifo, 0);
+	}
+
+	REG32_STORE(aacirun->base + AACI_TXCR, 0);
+
+	/*
+	 * Re-initialise the AACI after the FIFO depth test, to
+	 * ensure that the FIFOs are empty.  Unfortunately, merely
+	 * disabling the channel doesn't clear the FIFO.
+	 */
+	REG32_STORE(hw_dev->base_addr + AACI_MAINCR, hw_dev->maincr & ~AACI_MAINCR_IE);
+	REG32_LOAD(hw_dev->base_addr + AACI_MAINCR);
+	//udelay(1);
+	REG32_STORE(hw_dev->base_addr + AACI_MAINCR, hw_dev->maincr);
+
+	/*
+	 * If we hit 4096 entries, we failed.  Go back to the specified
+	 * fifo depth.
+	 */
+	if (i == 4096) {
+		i = 8;
+	}
+
+	return i;
+}
 
 static int aaci_pl041_init(void) {
 	int i;
@@ -131,6 +175,9 @@ static int aaci_pl041_init(void) {
 	/* Set MAINCR to allow slot 1 and 2 data IO */
 	aaci_pl041_hw_dev.maincr = AACI_MAINCR_IE | AACI_MAINCR_SL1RXEN | AACI_MAINCR_SL1TXEN |
 			AACI_MAINCR_SL2RXEN | AACI_MAINCR_SL2TXEN;
+
+	aaci_pl041_hw_dev.aaci_runtime.base = (void *)aaci_pl041_hw_dev.base_addr + AACI_CTRL_CH1;
+	aaci_pl041_hw_dev.aaci_runtime.fifo = (void *)aaci_pl041_hw_dev.base_addr + AACI_DR1;
 
 	for (i = 0; i < 4; i++) {
 		void *base = (void *)(aaci_pl041_hw_dev.base_addr + i * 0x14);
@@ -148,6 +195,15 @@ static int aaci_pl041_init(void) {
 	 */
 	REG32_LOAD(BASE_ADDR + AACI_CTRL_CH1);
 	ret = aaci_pl041_probe_ac97(BASE_ADDR);
+	if (ret)
+		goto out;
 
+	/*
+	 * Size the FIFOs (must be multiple of 16).
+	 * This is the number of entries in the FIFO.
+	 */
+	aaci_pl041_hw_dev.fifo_depth = aaci_size_fifo(&aaci_pl041_hw_dev);
+
+out:
 	return ret;
 }
