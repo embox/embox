@@ -138,4 +138,21 @@
 #define AACI_MAINCR_LOOPBK    (1 << 1)
 #define AACI_MAINCR_IE        (1 << 0)
 
+/*
+ * Reset register bits. P65
+ */
+#define RESET_NRST   (1 << 0)
+
+/*
+ * Sync register bits. P65
+ */
+#define SYNC_FORCE   (1 << 0)
+
+/*
+ * Main flag register bits. P66
+ */
+#define MAINFR_TXB   (1 << 1)	/* transmit busy */
+#define MAINFR_RXB   (1 << 0)	/* receive busy */
+
+
 #endif /* AACI_PL041_H_ */

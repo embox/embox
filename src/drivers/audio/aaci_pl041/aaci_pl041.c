@@ -7,19 +7,29 @@
 
 #include <errno.h>
 #include <stdint.h>
+#include <sys/mman.h>
 
 #include <util/log.h>
+
+#include <hal/reg.h>
 
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
 
+#include <embox/unit.h>
+
 #include "aaci_pl041.h"
+
+EMBOX_UNIT_INIT(aaci_pl041_init);
+
+#define BASE_ADDR    OPTION_GET(NUMBER, base_addr)
 
 #define AACI_MAXBUF_LEN_MAX_BUF_LEN 0x10000
 
 
 struct aaci_pl041_hw_dev {
 	uint32_t base_addr;
+	uint32_t maincr;
 };
 
 static struct aaci_pl041_hw_dev aaci_pl041_hw_dev;
@@ -89,4 +99,55 @@ AUDIO_DEV_DEF("aaci_pl041_adc1", (struct audio_dev_ops *)&aaci_pl041_dev_ops, &a
 
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	return NULL;
+}
+
+static int aaci_pl041_probe_ac97(uint32_t base) {
+	/*
+	 * Assert AACIRESET for 2us
+	 */
+	REG32_STORE(base + AACI_RESET, 0);
+	//udelay(2);
+	REG32_STORE(base + AACI_RESET, RESET_NRST);
+
+	/*
+	 * Give the AC'97 codec more than enough time
+	 * to wake up. (42us = ~2 frames at 48kHz.)
+	 */
+	//udelay(FRAME_PERIOD_US * 2);
+	return 0;
+}
+
+
+static int aaci_pl041_init(void) {
+	int i;
+	int ret;
+
+	aaci_pl041_hw_dev.base_addr = (uintptr_t)mmap_device_memory(
+			(void*)BASE_ADDR,
+			0x1000,
+			PROT_WRITE | PROT_READ,
+			MAP_FIXED,
+			BASE_ADDR);
+	/* Set MAINCR to allow slot 1 and 2 data IO */
+	aaci_pl041_hw_dev.maincr = AACI_MAINCR_IE | AACI_MAINCR_SL1RXEN | AACI_MAINCR_SL1TXEN |
+			AACI_MAINCR_SL2RXEN | AACI_MAINCR_SL2TXEN;
+
+	for (i = 0; i < 4; i++) {
+		void *base = (void *)(aaci_pl041_hw_dev.base_addr + i * 0x14);
+
+		REG32_STORE(base + AACI_IE, 0);
+		REG32_STORE(base + AACI_TXCR, 0);
+		REG32_STORE(base + AACI_RXCR, 0);
+	}
+
+	REG32_STORE(BASE_ADDR + AACI_INTCLR, 0x1fff);
+	REG32_STORE(BASE_ADDR + AACI_MAINCR, aaci_pl041_hw_dev.maincr);
+	/*
+	 * Fix: ac97 read back fail errors by reading
+	 * from any arbitrary aaci register.
+	 */
+	REG32_LOAD(BASE_ADDR + AACI_CTRL_CH1);
+	ret = aaci_pl041_probe_ac97(BASE_ADDR);
+
+	return ret;
 }

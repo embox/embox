@@ -2,6 +2,7 @@ package embox.driver.audio
 
 module aaci_pl041 {
 	option number log_level = 1
+	option number base_addr
 
 	source "aaci_pl041.c"
 
