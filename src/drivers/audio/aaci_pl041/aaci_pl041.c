@@ -56,18 +56,30 @@ struct aaci_pl041_dev_priv {
 };
 
 static void aaci_pl041_dev_start(struct audio_dev *dev) {
+	log_debug("dev = 0x%X", dev);
 }
 
 static void aaci_pl041_dev_pause(struct audio_dev *dev) {
+	log_debug("dev = 0x%X", dev);
 }
 
 static void aaci_pl041_dev_resume(struct audio_dev *dev) {
+	log_debug("dev = 0x%X", dev);
 }
 
 static void aaci_pl041_dev_stop(struct audio_dev *dev) {
+	log_debug("dev = 0x%X", dev);
 }
 
 static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
+	log_debug("dev = 0x%X", dev);
+	switch(cmd) {
+	case ADIOCTL_SUPPORT:
+		return AD_STEREO_SUPPORT |
+		       AD_16BIT_SUPPORT;
+	case ADIOCTL_BUFLEN:
+		return AACI_MAXBUF_LEN_MAX_BUF_LEN;
+	}
 	SET_ERRNO(EINVAL);
 	return -1;
 }
@@ -107,7 +119,11 @@ AUDIO_DEV_DEF("aaci_pl041_dac2", (struct audio_dev_ops *)&aaci_pl041_dev_ops, &a
 AUDIO_DEV_DEF("aaci_pl041_adc1", (struct audio_dev_ops *)&aaci_pl041_dev_ops, &aaci_pl041_adc1);
 
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
-	return NULL;
+	struct aaci_pl041_dev_priv *priv;
+
+	priv = audio_dev->ad_priv;
+
+	return priv->out_buf;
 }
 
 static int aaci_pl041_probe_ac97(uint32_t base) {
@@ -197,6 +213,7 @@ static irq_return_t aaci_pl041_irq_handler(unsigned int irq_num, void *dev_id) {
 	base = aaci_pl041_hw_dev.base_addr;
 
 	mask = REG32_LOAD(base + AACI_ALLINTS);
+	log_debug("mask = 0x%X", mask);
 	if (mask) {
 		uint32_t m = mask;
 		for (i = 0; i < 4; i++, m >>= 7) {
