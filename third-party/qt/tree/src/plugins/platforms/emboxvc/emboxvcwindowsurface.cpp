@@ -81,7 +81,7 @@ static const struct {
 static QList<QEmboxVCWindowSurface*> __emboxVCcollection;
 extern QEmboxVC *globalEmboxVC;
 extern void emboxRootWindowShow(int width, int height);
-static const struct fb_var_screeninfo globalEmboxVC_vinfo;
+static struct fb_var_screeninfo globalEmboxVC_vinfo;
 
 static void flushAll() {
 	QRegion region;
