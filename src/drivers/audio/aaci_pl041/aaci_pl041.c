@@ -28,6 +28,7 @@ EMBOX_UNIT_INIT(aaci_pl041_init);
 
 #define AACI_MAXBUF_LEN_MAX_BUF_LEN 0x10000
 
+#define FRAME_PERIOD_US  50
 
 struct aaci_runtime {
 	void *base;
@@ -125,6 +126,56 @@ uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 
 	return priv->out_buf;
 }
+
+
+static void aaci_ac97_select_codec(struct aaci_pl041_hw_dev *hw_dev) {
+	uint32_t v;
+	uint32_t maincr = hw_dev->maincr;
+
+	/*
+	 * Ensure that the slot 1/2 RX registers are empty.
+	 */
+	v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR);
+	if (v & AACI_SLFR_2RXV)
+		REG32_LOAD(hw_dev->base_addr + AACI_SL2RX);
+	if (v & AACI_SLFR_1RXV)
+		REG32_LOAD(hw_dev->base_addr + AACI_SL1RX);
+
+	if (maincr != REG32_LOAD(hw_dev->base_addr + AACI_MAINCR)) {
+		REG32_STORE(hw_dev->base_addr + AACI_MAINCR, maincr);
+		REG32_LOAD(hw_dev->base_addr + AACI_MAINCR);
+		//udelay(1);
+	}
+}
+
+void aaci_ac97_write(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg,
+			unsigned short val) {
+	int timeout;
+	uint32_t v;
+
+	aaci_ac97_select_codec(hw_dev);
+
+	/*
+	 * P54: You must ensure that AACI_SL2TX is always written
+	 * to, if required, before data is written to AACI_SL1TX.
+	 */
+	REG32_STORE(hw_dev->base_addr + AACI_SL2TX, val << 4);
+	REG32_STORE(hw_dev->base_addr + AACI_SL1TX, reg << 12);
+
+	/* Initially, wait one frame period */
+	//udelay(FRAME_PERIOD_US);
+
+	/* And then wait an additional eight frame periods for it to be sent */
+	timeout = FRAME_PERIOD_US * 8;
+	do {
+		//udelay(1);
+		v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR);
+	} while ((v & (AACI_SLFR_1TXB | AACI_SLFR_2TXB)) && --timeout);
+
+	if (v & (AACI_SLFR_1TXB | AACI_SLFR_2TXB))
+		log_error("timeout waiting for write to complete\n");
+}
+
 
 static int aaci_pl041_probe_ac97(uint32_t base) {
 	/*
