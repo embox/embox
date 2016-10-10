@@ -81,7 +81,7 @@ static const struct {
 static QList<QEmboxVCWindowSurface*> __emboxVCcollection;
 extern QEmboxVC *globalEmboxVC;
 extern void emboxRootWindowShow(int width, int height);
-static const struct fb_var_screeninfo *globalEmboxVC_vinfo;
+static struct fb_var_screeninfo globalEmboxVC_vinfo;
 
 static void flushAll() {
 	QRegion region;
@@ -97,11 +97,11 @@ static void __emboxVCsetMode(struct vc *vc, int mode) {
 }
 
 static void __visualization(struct vc *vc, struct fb_info *info) {
-	globalEmboxVC_vinfo = fb_get_var(info);
+	fb_get_var(info, &globalEmboxVC_vinfo);
 
 	__emboxVCsetMode(vc, 1);
 
-	emboxRootWindowShow(globalEmboxVC_vinfo->xres, globalEmboxVC_vinfo->yres);
+	emboxRootWindowShow(globalEmboxVC_vinfo.xres, globalEmboxVC_vinfo.yres);
 
 	globalEmboxVC->is_visualized = true;
 	waitq_wakeup_all(&globalEmboxVC->visualize);

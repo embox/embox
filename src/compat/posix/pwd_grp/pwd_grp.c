@@ -72,7 +72,7 @@ static int read_int_field(FILE *stream, const char *format, void *field, int del
 	sscanf("0", format, field);
 
 	ret = fscanf(stream, format, field);
-	if (0 > ret) {
+	if (0 > ret && ferror(stream)) {
 		return -ret;
 	}
 
