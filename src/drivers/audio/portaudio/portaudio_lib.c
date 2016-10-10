@@ -114,13 +114,13 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	assert(audio_dev);
 
 	out_buf = audio_dev_get_out_cur_ptr(audio_dev);
-
+	assert(out_buf);
 	inp_frames = audio_dev->buf_len / 2; /* 16 bit sample */
 	/* Even if source is mono channel,
 	 * we will anyway put twice as much data
 	 * to fill right channel as well */
 	inp_frames /= 2;
-
+	log_debug("out_buf = 0x%X, buf_len %d", out_buf, audio_dev->buf_len);
 	memset(out_buf, 0, audio_dev->buf_len);
 
 	retval = pa_stream.callback(NULL,
@@ -196,6 +196,10 @@ PaError Pa_OpenStream(PaStream** stream,
 	assert(audio_dev->ad_ops);
 	assert(audio_dev->ad_ops->ad_ops_ioctl);
 	audio_dev->buf_len = audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_BUFLEN, NULL);
+	if (audio_dev->buf_len == -1) {
+		return paInvalidDevice;
+	}
+
 
 	/* TODO work on mono sound device */
 	audio_dev->num_of_chan = 2;
