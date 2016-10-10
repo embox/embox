@@ -176,6 +176,67 @@ void aaci_ac97_write(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg,
 		log_error("timeout waiting for write to complete\n");
 }
 
+unsigned short aaci_ac97_read(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg) {
+	int timeout, retries = 10;
+	uint32_t v;
+
+
+	aaci_ac97_select_codec(hw_dev);
+
+	/*
+	 * Write the register address to slot 1.
+	 */
+	REG32_STORE(hw_dev->base_addr + AACI_SL1TX, (reg << 12) | (1 << 19));
+
+	/* Initially, wait one frame period */
+//	udelay(FRAME_PERIOD_US);
+
+	/* And then wait an additional eight frame periods for it to be sent */
+	timeout = FRAME_PERIOD_US * 8;
+	do {
+		//udelay(1);
+		v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR);
+	} while ((v & AACI_SLFR_1TXB) && --timeout);
+
+	if (v & AACI_SLFR_1TXB) {
+		log_error("timeout on slot 1 TX busy");
+		v = ~0;
+		goto out;
+	}
+
+	/* Now wait for the response frame */
+	//udelay(FRAME_PERIOD_US);
+
+	/* And then wait an additional eight frame periods for data */
+	timeout = FRAME_PERIOD_US * 8;
+	do {
+		//udelay(1);
+		//cond_resched();
+		v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR) & (AACI_SLFR_1RXV | AACI_SLFR_2RXV);
+	} while ((v != (AACI_SLFR_1RXV|AACI_SLFR_2RXV)) && --timeout);
+
+	if (v != (AACI_SLFR_1RXV|AACI_SLFR_2RXV)) {
+		log_error("timeout on RX valid");
+		v = ~0;
+		goto out;
+	}
+
+	do {
+		v = REG32_LOAD(hw_dev->base_addr + AACI_SL1RX) >> 12;
+		if (v == reg) {
+			v = REG32_LOAD(hw_dev->base_addr + AACI_SL2RX) >> 4;
+			break;
+		} else if (--retries) {
+			log_warning("ac97 read back fail.  retry");
+			continue;
+		} else {
+			log_warning("wrong ac97 register read back (%x != %x)", v, reg);
+			v = ~0;
+		}
+	} while (retries);
+ out:
+	return v;
+}
 
 static int aaci_pl041_probe_ac97(uint32_t base) {
 	/*
