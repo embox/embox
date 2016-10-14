@@ -64,19 +64,28 @@ int mmu_pte_present(mmu_pte_t *pte) {
 }
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
-	if (value & VMEM_PAGE_WRITABLE)
+	if (value & VMEM_PAGE_WRITABLE) {
 		*pte |= ARM_MMU_PAGE_WRITE_ACC;
+	} else {
+		*pte &= ~ARM_MMU_PAGE_WRITE_ACC;
+	}
 }
 
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
-	if (value & VMEM_PAGE_CACHEABLE)
+	if (value & VMEM_PAGE_CACHEABLE) {
 		*pte |= L1D_C;
+	} else {
+		*pte &= ~L1D_C;
+	}
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
 }
 
 void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
-	if (!(value & VMEM_PAGE_EXECUTABLE))
+	if (!(value & VMEM_PAGE_EXECUTABLE)) {
 		*pte |= L1D_XN;
+	} else {
+		*pte &= ~L1D_XN;
+	}
 }
