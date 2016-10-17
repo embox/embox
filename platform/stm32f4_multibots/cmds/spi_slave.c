@@ -86,12 +86,6 @@ static void spi_sync(void) {
 	printf("Slave trying to sync\n");
 	uint8_t txackbytes = SPI_SLAVE_SYNBYTE, rxackbytes = 0x00;
 
-	printf("slave recv in\n");
-	if (HAL_SPI_Receive(&SpiHandle, &rxackbytes, 1, SPI_TIMEOUT_MAX) != HAL_OK) {
-		printf("HAL_SPI_Receive error\n");
-	}
-	printf("slave recv out\n");
-
 	do {
 		rxackbytes = 0x0;
 		/* Call SPI write function to send command to slave */
