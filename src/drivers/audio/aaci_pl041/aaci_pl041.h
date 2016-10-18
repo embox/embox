@@ -86,13 +86,13 @@
 #define AACI_ISR_TXCINTR      (1 << 0)
 
 /* interrupt enable */
-#define AACI_IE_RXTOFE        (1 << 6)
-#define AACI_IE_UR            (1 << 5)
-#define AACI_IE_OR            (1 << 4)
-#define AACI_IE_RX            (1 << 3)
-#define AACI_IE_TX            (1 << 2)
-#define AACI_IE_RXTO          (1 << 1)
-#define AACI_IE_TXC           (1 << 0)
+#define AACI_IE_RXTOIE        (1 << 6)
+#define AACI_IE_URIE          (1 << 5)
+#define AACI_IE_ORIE          (1 << 4)
+#define AACI_IE_RXIE          (1 << 3)
+#define AACI_IE_TXIE          (1 << 2)
+#define AACI_IE_RXTIE        (1 << 1)
+#define AACI_IE_TXCIE         (1 << 0)
 
 /* slot flag register bits */
 #define AACI_SLFR_RWIS        (1 << 13)

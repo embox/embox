@@ -33,6 +33,7 @@ EMBOX_UNIT_INIT(aaci_pl041_init);
 struct aaci_runtime {
 	void *base;
 	void *fifo;
+	uint32_t cr;
 };
 
 struct aaci_pl041_hw_dev {
@@ -56,20 +57,65 @@ struct aaci_pl041_dev_priv {
 	uint32_t cur_buff_offset;
 };
 
+static void aaci_chan_wait_ready(struct aaci_runtime *aacirun, uint32_t mask) {
+	uint32_t val;
+	int timeout = 5000;
+
+	do {
+		//udelay(1);
+		val = REG32_LOAD(aacirun->base + AACI_SR);
+	} while (val & mask && timeout--);
+}
+
 static void aaci_pl041_dev_start(struct audio_dev *dev) {
+	uint32_t ie;
+	struct aaci_pl041_dev_priv *priv;
+	struct aaci_pl041_hw_dev *hw_dev;
+	struct aaci_runtime *aacirun;
+
+	priv = dev->ad_priv;
+	hw_dev = priv->hw_dev;
+	aacirun = &hw_dev->aaci_runtime;
+
 	log_debug("dev = 0x%X", dev);
+
+
+	aaci_chan_wait_ready(aacirun, AACI_SR_TXB);
+	aacirun->cr |= AACI_CR_EN;
+
+	ie = REG32_LOAD(aacirun->base + AACI_IE);
+	ie |= AACI_IE_URIE | AACI_IE_TXIE;
+	REG32_STORE(aacirun->base + AACI_IE, ie);
+	REG32_STORE(aacirun->base + AACI_TXCR, aacirun->cr);
+}
+
+static void aaci_pl041_dev_stop(struct audio_dev *dev) {
+	uint32_t ie;
+	struct aaci_pl041_dev_priv *priv;
+	struct aaci_pl041_hw_dev *hw_dev;
+	struct aaci_runtime *aacirun;
+
+	priv = dev->ad_priv;
+	hw_dev = priv->hw_dev;
+	aacirun = &hw_dev->aaci_runtime;
+
+	log_debug("dev = 0x%X", dev);
+	ie = REG32_LOAD(aacirun->base + AACI_IE);
+	ie &= ~(AACI_IE_URIE | AACI_IE_TXIE);
+	REG32_STORE(aacirun->base + AACI_IE, ie);
+	aacirun->cr &= ~AACI_CR_EN;
+	aaci_chan_wait_ready(aacirun, AACI_SR_TXB);
+	REG32_STORE(aacirun->base + AACI_TXCR, aacirun->cr);
 }
 
 static void aaci_pl041_dev_pause(struct audio_dev *dev) {
 	log_debug("dev = 0x%X", dev);
+	aaci_pl041_dev_stop(dev);
 }
 
 static void aaci_pl041_dev_resume(struct audio_dev *dev) {
 	log_debug("dev = 0x%X", dev);
-}
-
-static void aaci_pl041_dev_stop(struct audio_dev *dev) {
-	log_debug("dev = 0x%X", dev);
+	aaci_pl041_dev_start(dev);
 }
 
 static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
@@ -263,7 +309,8 @@ static int aaci_size_fifo(struct aaci_pl041_hw_dev *hw_dev) {
 	 * Enable the channel, but don't assign it to any slots, so
 	 * it won't empty onto the AC'97 link.
 	 */
-	REG32_STORE(aacirun->base + AACI_TXCR, AACI_CR_FEN | AACI_CR_SZ16 | AACI_CR_EN);
+	aacirun->cr = AACI_CR_FEN | AACI_CR_SZ16 | AACI_CR_EN;
+	REG32_STORE(aacirun->base + AACI_TXCR, aacirun->cr);
 
 	for (i = 0; !(REG32_LOAD(aacirun->base + AACI_SR) & AACI_SR_TXFF) && i < 4096; i++) {
 		REG32_STORE(aacirun->fifo, 0);
