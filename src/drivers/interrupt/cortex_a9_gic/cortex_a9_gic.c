@@ -87,15 +87,19 @@ static int gic_init(void) {
 	REG_STORE(GICC_PMR, 0xFF);
 
 	tmp = REG_LOAD(GICD_TYPER);
-	log_debug("\nNumber of SPI: %d\n"
-	          "Number of supported CPU interfaces: %d\n"
-	          "Secutity Extension %simplemented\n%s",
-	           GICD_TYPER_ITLINES(tmp) * 32,
-	           1 + GICD_TYPER_CPUNR(tmp),
-	           GICD_TYPER_SECEXT(tmp) ? "" : "not ");
-	if (tmp & (1 << 10))
-		log_debug("Number of LSPI: %d\n",
-		           GICD_TYPER_LSPI(tmp));
+	printk("\n"
+			"\t\tNumber of SPI: %d\n"
+			"\t\tNumber of supported CPU interfaces: %d\n"
+			"\t\tSecutity Extension %s implemented\n",
+			GICD_TYPER_ITLINES(tmp) * 32,
+			1 + GICD_TYPER_CPUNR(tmp),
+			GICD_TYPER_SECEXT(tmp) ? "" : "not ");
+	if (tmp & (1 << 10)) {
+		printk("\t\tNumber of LSPI: %d", GICD_TYPER_LSPI(tmp));
+	} else {
+		printk("\t\tLSPI not implemented");
+	}
+	printk("\n\t");
 
 	return 0;
 }

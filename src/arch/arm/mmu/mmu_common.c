@@ -80,7 +80,11 @@ void mmu_off(void) {
 }
 
 void mmu_flush_tlb(void) {
-	/* NIY */
+	uint32_t zero = 0;
+
+	__asm__ __volatile__ (
+			"mcr p15, 0, %[zero], c8, c7, 0" : : [zero] "r" (zero) :
+	);
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
