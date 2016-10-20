@@ -56,13 +56,17 @@ struct aaci_pl041_dev_priv {
 
 	uint32_t cur_buff_offset;
 };
+static void udelay(int delay) {
+	volatile int i;
 
+	for (i = delay * 10; i != 0; i-- );
+}
 static void aaci_chan_wait_ready(struct aaci_runtime *aacirun, uint32_t mask) {
 	uint32_t val;
 	int timeout = 5000;
 
 	do {
-		//udelay(1);
+		udelay(1);
 		val = REG32_LOAD(aacirun->base + AACI_SR);
 	} while (val & mask && timeout--);
 }
@@ -78,7 +82,6 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	aacirun = &hw_dev->aaci_runtime;
 
 	log_debug("dev = 0x%X", dev);
-
 
 	aaci_chan_wait_ready(aacirun, AACI_SR_TXB);
 	aacirun->cr |= AACI_CR_EN;
@@ -190,7 +193,7 @@ static void aaci_ac97_select_codec(struct aaci_pl041_hw_dev *hw_dev) {
 	if (maincr != REG32_LOAD(hw_dev->base_addr + AACI_MAINCR)) {
 		REG32_STORE(hw_dev->base_addr + AACI_MAINCR, maincr);
 		REG32_LOAD(hw_dev->base_addr + AACI_MAINCR);
-		//udelay(1);
+		udelay(1);
 	}
 }
 
@@ -209,12 +212,12 @@ void aaci_ac97_write(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg,
 	REG32_STORE(hw_dev->base_addr + AACI_SL1TX, reg << 12);
 
 	/* Initially, wait one frame period */
-	//udelay(FRAME_PERIOD_US);
+	udelay(FRAME_PERIOD_US);
 
 	/* And then wait an additional eight frame periods for it to be sent */
 	timeout = FRAME_PERIOD_US * 8;
 	do {
-		//udelay(1);
+		udelay(1);
 		v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR);
 	} while ((v & (AACI_SLFR_1TXB | AACI_SLFR_2TXB)) && --timeout);
 
@@ -235,12 +238,12 @@ unsigned short aaci_ac97_read(struct aaci_pl041_hw_dev *hw_dev, unsigned short r
 	REG32_STORE(hw_dev->base_addr + AACI_SL1TX, (reg << 12) | (1 << 19));
 
 	/* Initially, wait one frame period */
-//	udelay(FRAME_PERIOD_US);
+	udelay(FRAME_PERIOD_US);
 
 	/* And then wait an additional eight frame periods for it to be sent */
 	timeout = FRAME_PERIOD_US * 8;
 	do {
-		//udelay(1);
+		udelay(1);
 		v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR);
 	} while ((v & AACI_SLFR_1TXB) && --timeout);
 
@@ -251,12 +254,12 @@ unsigned short aaci_ac97_read(struct aaci_pl041_hw_dev *hw_dev, unsigned short r
 	}
 
 	/* Now wait for the response frame */
-	//udelay(FRAME_PERIOD_US);
+	udelay(FRAME_PERIOD_US);
 
 	/* And then wait an additional eight frame periods for data */
 	timeout = FRAME_PERIOD_US * 8;
 	do {
-		//udelay(1);
+		udelay(1);
 		//cond_resched();
 		v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR) & (AACI_SLFR_1RXV | AACI_SLFR_2RXV);
 	} while ((v != (AACI_SLFR_1RXV|AACI_SLFR_2RXV)) && --timeout);
@@ -289,14 +292,14 @@ static int aaci_pl041_probe_ac97(uint32_t base) {
 	 * Assert AACIRESET for 2us
 	 */
 	REG32_STORE(base + AACI_RESET, 0);
-	//udelay(2);
+	udelay(2);
 	REG32_STORE(base + AACI_RESET, RESET_NRST);
 
 	/*
 	 * Give the AC'97 codec more than enough time
 	 * to wake up. (42us = ~2 frames at 48kHz.)
 	 */
-	//udelay(FRAME_PERIOD_US * 2);
+	udelay(FRAME_PERIOD_US * 2);
 	return 0;
 }
 
@@ -325,7 +328,7 @@ static int aaci_size_fifo(struct aaci_pl041_hw_dev *hw_dev) {
 	 */
 	REG32_STORE(hw_dev->base_addr + AACI_MAINCR, hw_dev->maincr & ~AACI_MAINCR_IE);
 	REG32_LOAD(hw_dev->base_addr + AACI_MAINCR);
-	//udelay(1);
+	udelay(1);
 	REG32_STORE(hw_dev->base_addr + AACI_MAINCR, hw_dev->maincr);
 
 	/*
