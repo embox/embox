@@ -7,6 +7,8 @@
 
 #include <errno.h>
 #include <stdint.h>
+#include <assert.h>
+
 #include <sys/mman.h>
 
 #include <util/log.h>
@@ -16,6 +18,8 @@
 
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
+
+#include "../ac97/ac97.h"
 
 #include <embox/unit.h>
 
@@ -388,6 +392,64 @@ static irq_return_t aaci_pl041_irq_handler(unsigned int irq_num, void *dev_id) {
 	return mask ? IRQ_HANDLED : IRQ_NONE;
 }
 
+/********************************************
+ * AC'97
+ ********************************************/
+int ac97_reset(void) {
+	/* Actually we can write anything to
+	 * this register to reset codec */
+	aaci_ac97_write(&aaci_pl041_hw_dev, AC97_RESET, 0xFFFF);
+
+	return 0;
+}
+
+/**
+ * @brief Changle volume settings
+ *
+ * @param vol New volume from 0x0...0x3F range
+ *
+ * @return Negative error code
+ */
+int ac97_set_vol(int vol) {
+	assert(vol <= 0x3F);
+	assert(vol >= 0);
+
+	aaci_ac97_write(&aaci_pl041_hw_dev, AC97_MASTER, vol);
+	aaci_ac97_write(&aaci_pl041_hw_dev, AC97_HEADPHONE, vol);
+	aaci_ac97_write(&aaci_pl041_hw_dev, AC97_MASTER_MONO, vol);
+
+	return 0;
+}
+
+/**
+ * @brief Get master volume value
+ *
+ * @return Master volume value from 0x0...0x3F range
+ */
+int ac97_get_vol(void) {
+	return 0x3F & aaci_ac97_read(&aaci_pl041_hw_dev, AC97_MASTER);
+}
+
+/**
+ * @brief Initialize codec, setup static values and so on
+ *
+ * @param pci_dev PCI device of Intel Audio Controller
+ * TODO handle other sound cards
+ *
+ * @return Negative error number
+ */
+int aaci_ac97_init(void) {
+	ac97_reset();
+	/* Set maximum master volume */
+	ac97_set_vol(0x3F);
+
+	return 0;
+}
+
+/**************************************************
+ * End of AC'97
+ **************************************************/
+
 static int aaci_pl041_init(void) {
 	int i;
 	int ret;
@@ -429,6 +491,11 @@ static int aaci_pl041_init(void) {
 	 * This is the number of entries in the FIFO.
 	 */
 	aaci_pl041_hw_dev.fifo_depth = aaci_size_fifo(&aaci_pl041_hw_dev);
+
+	if ((ret = aaci_ac97_init())) {
+		return ret;
+	}
+
 
 	ret = irq_attach(IRQ_NUM, aaci_pl041_irq_handler, IF_SHARESUP, NULL, "aaci_pl041");
 	if (ret) {
