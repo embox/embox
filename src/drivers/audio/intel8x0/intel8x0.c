@@ -270,7 +270,7 @@ static struct intel_ac_dev_priv intel_ac_adc1 = {
 	.hw_dev      = &intel_ac_hw_dev,
 	.devid       = 2,
 	.in_buf      = adc1_in_buf,
-	.in_buf_len  = sizeof(adc1_out_buf)
+	.in_buf_len  = sizeof(adc1_in_buf)
 };
 
 AUDIO_DEV_DEF("intel_ac_dac1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_dac1);
