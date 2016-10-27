@@ -9,6 +9,7 @@ module syscall_stub extends embox.arch.syscall {
 }
 
 module nommu extends embox.arch.mmu {
+	option number page_size=4
 	source "nommu.h"
 }
 
