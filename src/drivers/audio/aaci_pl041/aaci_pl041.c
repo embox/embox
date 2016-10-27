@@ -74,9 +74,12 @@ static void aaci_chan_wait_ready(struct aaci_runtime *aacirun, uint32_t mask) {
 		val = REG32_LOAD(aacirun->base + AACI_SR);
 	} while (val & mask && timeout--);
 }
+static uint32_t aaci_pl041_test_array[4096];
 
 static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	uint32_t ie;
+	uint32_t len;
+	void *ptr;
 	struct aaci_pl041_dev_priv *priv;
 	struct aaci_pl041_hw_dev *hw_dev;
 	struct aaci_runtime *aacirun;
@@ -86,6 +89,20 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	aacirun = &hw_dev->aaci_runtime;
 
 	log_debug("dev = 0x%X", dev);
+
+	//ptr = audio_dev_get_out_cur_ptr(dev);
+	ptr = aaci_pl041_test_array;
+	len = 4096; 
+	/* writing 16 bytes at a time */
+	for ( ; len > 0; len -= 16) {
+		asm(
+			"ldmia	%0!, {r0, r1, r2, r3}\n\t"
+			"stmia	%1, {r0, r1, r2, r3}"
+			: "+r" (ptr)
+			: "r" (aacirun->fifo)
+			: "r0", "r1", "r2", "r3", "cc");
+
+	}
 
 	aaci_chan_wait_ready(aacirun, AACI_SR_TXB);
 	aacirun->cr |= AACI_CR_EN;
@@ -201,7 +218,7 @@ static void aaci_ac97_select_codec(struct aaci_pl041_hw_dev *hw_dev) {
 	}
 }
 
-void aaci_ac97_write(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg,
+static void aaci_ac97_write(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg,
 			unsigned short val) {
 	int timeout;
 	uint32_t v;
@@ -229,7 +246,7 @@ void aaci_ac97_write(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg,
 		log_error("timeout waiting for write to complete\n");
 }
 
-unsigned short aaci_ac97_read(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg) {
+static unsigned short aaci_ac97_read(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg) {
 	int timeout, retries = 10;
 	uint32_t v;
 
