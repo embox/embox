@@ -1,6 +1,8 @@
 #ifndef STACK_PROTECT_H_
 #define STACK_PROTECT_H_
 
+#include <module/embox/kernel/thread/stack_protect.h>
+
 #include <stddef.h>
 
 struct thread;

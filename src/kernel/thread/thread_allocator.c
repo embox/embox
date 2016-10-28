@@ -27,7 +27,7 @@ typedef union thread_pool_entry {
 	char stack[STACK_SZ];
 } thread_pool_entry_t;
 
-#ifndef NOMMU
+#ifdef STACK_PROTECT_MMU
 #include <mem/vmem.h>
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
     __attribute__ ((aligned (VMEM_PAGE_SIZE))));
