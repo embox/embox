@@ -1,56 +1,95 @@
-#ifndef _NRF24_H
-#define _NRF24_H
-//
-//FROM https://github.com/LonelyWolf/stm32/blob/master/Nrf24l01/nRF24L01.h
-// --alexkalmuk
+/*
+* ----------------------------------------------------------------------------
+* “THE COFFEEWARE LICENSE” (Revision 1):
+* <ihsan@kehribar.me> wrote this file. As long as you retain this notice you
+* can do whatever you want with this stuff. If we meet some day, and you think
+* this stuff is worth it, you can buy me a coffee in return.
+* -----------------------------------------------------------------------------
+* This library is based on this library: 
+*   https://github.com/aaronds/arduino-nrf24l01
+* Which is based on this library: 
+*   http://www.tinkerer.eu/AVRLib/nRF24L01
+* -----------------------------------------------------------------------------
+*/
+#ifndef NRF24
+#define NRF24
 
-/* nRF24L0 commands */
-#define nRF24_CMD_RREG             0x00  // R_REGISTER -> Read command and status registers
-#define nRF24_CMD_WREG             0x20  // W_REGISTER -> Write command and status registers
-#define nRF24_CMD_R_RX_PAYLOAD     0x61  // R_RX_PAYLOAD -> Read RX payload
-#define nRF24_CMD_W_TX_PAYLOAD     0xA0  // W_TX_PAYLOAD -> Write TX payload
-#define nRF24_CMD_FLUSH_TX         0xE1  // FLUSH_TX -> Flush TX FIFO
-#define nRF24_CMD_FLUSH_RX         0xE2  // FLUSH_RX -> Flush RX FIFO
-#define nRF24_CMD_REUSE_TX_PL      0xE3  // REUSE_TX_PL -> Reuse last transmitted payload
-#define nRF24_CMD_NOP              0xFF  // No operation (to read status register)
+#include "nRF24L01.h"
+#include <stdint.h>
 
-/* nRF24L0 registers */
-#define nRF24_REG_CONFIG           0x00  // Configuration register
-#define nRF24_REG_EN_AA            0x01  // Enable "Auto acknowledgment"
-#define nRF24_REG_EN_RXADDR        0x02  // Enable RX addresses
-#define nRF24_REG_SETUP_AW         0x03  // Setup of address widths
-#define nRF24_REG_SETUP_RETR       0x04  // Setup of automatic retranslation
-#define nRF24_REG_RF_CH            0x05  // RF channel
-#define nRF24_REG_RF_SETUP         0x06  // RF setup register
-#define nRF24_REG_STATUS           0x07  // Status register
-#define nRF24_REG_OBSERVE_TX       0x08  // Transmit observe register
-#define nRF24_REG_CD               0x09  // Carrier detect
-#define nRF24_REG_RX_ADDR_P0       0x0A  // Receive address data pipe 0
-#define nRF24_REG_RX_ADDR_P1       0x0B  // Receive address data pipe 1
-#define nRF24_REG_RX_ADDR_P2       0x0C  // Receive address data pipe 2
-#define nRF24_REG_RX_ADDR_P3       0x0D  // Receive address data pipe 3
-#define nRF24_REG_RX_ADDR_P4       0x0E  // Receive address data pipe 4
-#define nRF24_REG_RX_ADDR_P5       0x0F  // Receive address data pipe 5
-#define nRF24_REG_TX_ADDR          0x10  // Transmit address
-#define nRF24_REG_RX_PW_P0         0x11  // Number of bytes in RX payload id data pipe 0
-#define nRF24_REG_RX_PW_P1         0x12  // Number of bytes in RX payload id data pipe 1
-#define nRF24_REG_RX_PW_P2         0x13  // Number of bytes in RX payload id data pipe 2
-#define nRF24_REG_RX_PW_P3         0x14  // Number of bytes in RX payload id data pipe 3
-#define nRF24_REG_RX_PW_P4         0x15  // Number of bytes in RX payload id data pipe 4
-#define nRF24_REG_RX_PW_P5         0x16  // Number of bytes in RX payload id data pipe 5
-#define nRF24_REG_FIFO_STATUS      0x17  // FIFO status register
-#define nRF24_REG_DYNPD            0x1C  // Enable dynamic payload length
-#define nRF24_REG_FEATURE          0x1D  // Feature register
+#define LOW 0
+#define HIGH 1
 
-/* nRF24L0 bits */
-#define nRF24_MASK_RX_DR           0x40  // Mask interrupt caused by RX_DR
-#define nRF24_MASK_TX_DS           0x20  // Mask interrupt caused by TX_DS
-#define nRF24_MASK_MAX_RT          0x10  // Mask interrupt caused by MAX_RT
-#define nRF24_FIFO_RX_EMPTY        0x01  // RX FIFO empty flag
-#define nRF24_FIFO_RX_FULL         0x02  // RX FIFO full flag
+#define nrf24_ADDR_LEN 5
+#define nrf24_CONFIG ((1<<EN_CRC)|(0<<CRCO))
 
-/* Some constants */
-#define nRF24_RX_ADDR_WIDTH        5    // nRF24 RX address width
-#define nRF24_TX_ADDR_WIDTH        5    // nRF24 TX address width
+#define NRF24_TRANSMISSON_OK 0
+#define NRF24_MESSAGE_LOST   1
 
-#endif /* _NRF24_H */
+/* adjustment functions */
+void    nrf24_init();
+void    nrf24_rx_address(uint8_t* adr);
+void    nrf24_tx_address(uint8_t* adr);
+void    nrf24_config(uint8_t channel, uint8_t pay_length);
+
+/* state check functions */
+uint8_t nrf24_dataReady();
+uint8_t nrf24_isSending();
+uint8_t nrf24_getStatus();
+uint8_t nrf24_rxFifoEmpty();
+
+/* core TX / RX functions */
+void    nrf24_send(uint8_t* value);
+void    nrf24_getData(uint8_t* data);
+
+/* use in dynamic length mode */
+uint8_t nrf24_payloadLength();
+
+/* post transmission analysis */
+uint8_t nrf24_lastMessageStatus();
+uint8_t nrf24_retransmissionCount();
+
+/* Returns the payload length */
+uint8_t nrf24_payload_length();
+
+/* power management */
+void    nrf24_powerUpRx();
+void    nrf24_powerUpTx();
+void    nrf24_powerDown();
+
+/* low level interface ... */
+uint8_t spi_transfer(uint8_t tx);
+void    nrf24_transmitSync(uint8_t* dataout,uint8_t len);
+void    nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len);
+void    nrf24_configRegister(uint8_t reg, uint8_t value);
+void    nrf24_readRegister(uint8_t reg, uint8_t* value, uint8_t len);
+void    nrf24_writeRegister(uint8_t reg, uint8_t* value, uint8_t len);
+
+/* -------------------------------------------------------------------------- */
+/* You should implement the platform spesific functions in your code */
+/* -------------------------------------------------------------------------- */
+
+/* -------------------------------------------------------------------------- */
+/* In this function you should do the following things:
+ *    - Set MISO pin input
+ *    - Set MOSI pin output
+ *    - Set SCK pin output
+ *    - Set CSN pin output
+ *    - Set CE pin output     */
+/* -------------------------------------------------------------------------- */
+extern void nrf24_setupPins();
+
+/* -------------------------------------------------------------------------- */
+/* nrf24 CE pin control function
+ *    - state:1 => Pin HIGH
+ *    - state:0 => Pin LOW     */
+/* -------------------------------------------------------------------------- */
+extern void nrf24_ce_digitalWrite(uint8_t state);
+
+/* -------------------------------------------------------------------------- */
+/* nrf24 CE pin control function
+ *    - state:1 => Pin HIGH
+ *    - state:0 => Pin LOW     */
+/* -------------------------------------------------------------------------- */
+extern void nrf24_csn_digitalWrite(uint8_t state);
+#endif
