@@ -35,17 +35,21 @@ $(DOWNLOAD_DIR) $(BUILD_DIR) $(PKG_INSTALL_DIR):
 	mkdir -p $@
 
 PKG_SOURCES ?=
+# Name of an archive where package will be saved to.
+PKG_ARCHIVE_NAME ?=""
 sources_git      := $(filter %.git,$(PKG_SOURCES))
 targets_git	  = $(basename $(notdir $1))
 sources_download := $(filter-out %.git,$(PKG_SOURCES))
-targets_download  = $(notdir $1)
-sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(call targets_download,$(sources_download)))
+# Return PKG_ARCHIVE_NAME of the specified package in case if
+# the url does not contain package name
+pkg_archive_name  = $(if $(call eq,$(PKG_ARCHIVE_NAME),""),$(call notdir,$1),$(PKG_ARCHIVE_NAME))
+sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(call pkg_archive_name,$(sources_download)))
 
 DOWNLOAD  := $(BUILD_DIR)/.downloaded
 $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach d,$(sources_download), \
-		if [ ! -f $(DOWNLOAD_DIR)/$(call targets_download,$d) ]; then \
-			cd $(DOWNLOAD_DIR) && (curl -O -k -L $d); \
+		if [ ! -f $(DOWNLOAD_DIR)/$(call pkg_archive_name,$d) ]; then \
+			cd $(DOWNLOAD_DIR) && (curl -o $(call pkg_archive_name,$d) -k -L '$d'); \
 		fi;)
 	$(foreach g,$(sources_git), \
 		if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
@@ -60,14 +64,14 @@ $(DOWNLOAD_CHECK) : $(DOWNLOAD)
 		echo "different number of sources and MD5"; false)
 	( cd $(DOWNLOAD_DIR); \
 		$(foreach c,$(filter-out %.-,$(join $(PKG_SOURCES),$(addprefix .,$(PKG_MD5)))), \
-			$(MD5) $(notdir $(basename $c)) | grep $(subst .,,$(suffix $c)) 2>&1 >/dev/null ; ) \
+			$(MD5) $(call pkg_archive_name,$(basename $c)) | grep $(subst .,,$(suffix $c)) 2>&1 >/dev/null ; ) \
 	)
 	touch $@
 
 download : $(DOWNLOAD) $(DOWNLOAD_CHECK)
 md5_gen : $(DOWNLOAD)
 	@echo PKG_MD5 := \\
-	@$(foreach s,$(notdir $(PKG_SOURCES)),md5=$$(md5sum $(DOWNLOAD_DIR)/$s 2>/dev/null) && echo -e "\\t$${md5%%  *} \\" || echo -- "-";)
+	@$(foreach s,$(PKG_SOURCES),md5=$$(md5sum $(DOWNLOAD_DIR)/$(call pkg_archive_name,$s) 2>/dev/null) && echo -e "\\t$${md5%%  *} \\" || echo -- "-";)
 	@echo
 
 EXTRACT  := $(BUILD_DIR)/.extracted
@@ -78,7 +82,7 @@ $(EXTRACT): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 			mkdir -p $(BUILD_DIR) && ( cd $(BUILD_DIR); tar -xf $(DOWNLOAD_DIR)/$i) );)
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
 			$(call targets_git,$(sources_git)) \
-			$(filter-out $(sources_extract),$(call targets_download,$(sources_download))))"; \
+			$(filter-out $(sources_extract),$(call pkg_archive_name,$(sources_download))))"; \
 		if [ "$$COPY_FILES" ]; then \
 			cp -R $$COPY_FILES $(BUILD_DIR); \
 		fi
