@@ -6,7 +6,8 @@ module xen_header {
 }
 
 module boot {
-	source "boot.S"
+	source "boot.S",
+		"kernel_init.c"
 }
 
 module traps {
