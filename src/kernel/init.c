@@ -24,8 +24,6 @@
 #include <xen/io/console.h>
 #include "event.h"
 
-char stack[8192];
-
 uint8_t xen_features[XENFEAT_NR_SUBMAPS * 32];
 
 extern shared_info_t shared_info;

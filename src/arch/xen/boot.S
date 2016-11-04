@@ -1,9 +1,10 @@
 /**
  * @file
- * @brief bootstrap the kernel
+ * @brief bootstrap the Xen kernel
  *
  * @date 10.11.10
  * @author Nikolay Korotky
+ * @author Andrey Golikov
  */
 
 #include <asm/linkage.h>
@@ -20,27 +21,16 @@
 
 	/* system entry point */
 C_ENTRY(_start):
-//	jmp	multiboot_entry
-
-//multiboot_entry:
 	/* interrrupts disable */
-	
 	cld
 
 	/* Initialize the stack pointer. */
-	//movl    $_stack_top, %esp  /* load base address for system stack */
+	movl    $_stack_top, %esp  /* load base address for system stack */
+
 
 	/* Reset EFLAGS. */
 	pushl   $0
 	popf
-
-	/* if we use multiboot header we must save registers which was set by loader
-	eax = magic value and ebx = address of Multiboot information structure */
-	/* Push the pointer to the Multiboot information structure. */
-	pushl   %ebx
-	/* Push the magic value. */
-	pushl   %eax
-
 
 	/* Clean up bss section */
 	pushl   $_bss_len          /* push bss len as 3 parameter on the stack */
@@ -62,33 +52,22 @@ C_ENTRY(_start):
 	addl    $0xc, %esp
 1:
 
-	//call    gdt_init
-	//call    idt_init
-
+#if 0 // TODO smp is not supported on Xen
 #if NCPU > 1
 	call    cpudata_init
 #endif /* NCPU > 1 */
+#endif
 
-/* we already save eax and ebx on the stack */
-	//call    multiboot_save_info
-	addl    $8, %esp
-
-
-  lss stack_start,%esp
-  push %esi 
+	push %esi
 	call    kernel_start_xen /* call C code */
 
-
-C_LABEL(stack_start):
-	.long stack+8192, FLAT_KERNEL_SS
-
-  .org 0x1000
+	.org 0x1000
 	.p2align 12
 C_LABEL(shared_info):
-  .org 0x2000
+	.org 0x2000
 
 C_LABEL(hypercall_page):
-  .org 0x3000
+	.org 0x3000
 
 loop:
 	hlt             /* if we return from kernel_start it's error */
