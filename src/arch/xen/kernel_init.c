@@ -10,10 +10,10 @@
 #include <xen/features.h>
 #include <stdint.h>
 #include <xen/xen.h>
-#include <hypercall-x86_32.h>
+#include <xen_hypercall-x86_32.h>
 #include <xen/event_channel.h>
 #include <xen/io/console.h>
-#include "event.h"
+#include <xen/event.h>
 
 /* Embox interface */
 extern void kernel_start(void);

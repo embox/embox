@@ -5,10 +5,13 @@
  * @date 10.11.10
  * @author Nikolay Korotky
  * @author Andrey Golikov
+ * @author Anton Kozlov
  */
 
-#include <asm/linkage.h>
 #include <hal/cpu.h>
+
+#define C_ENTRY(name) .globl name; .align 2; name
+#define C_LABEL(name) .globl name; name
 
 #define __ASSEMBLY__
 #define __XEN_INTERFACE_VERSION__ 0x00030203

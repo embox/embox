@@ -1,13 +1,14 @@
 #include <stdint.h>
 #include <xen/xen.h>
-#include "event.h"
-//#include "console.h"
-#include <barrier.h>
+#include <xen/event.h>
+
+// headers below have xen_ prefix added to name 
+#include <xen_barrier.h>
 
 #if defined(__i386__)
-#include <hypercall-x86_32.h>
+#include <xen_hypercall-x86_32.h>
 #elif defined(__x86_64__)
-#include <hypercall-x86_64.h>
+#include <xen_hypercall-x86_64.h>
 #else
 #error "Unsupported architecture"
 #endif

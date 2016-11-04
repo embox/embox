@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <xen/xen.h>
 
-#include <hypercall-x86_32.h>
+#include <xen_hypercall-x86_32.h>
 
 /*
  * These are assembler stubs in entry.S.

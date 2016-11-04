@@ -3,6 +3,7 @@
  * @brief
  *
  * @date 17.03.2012
+ * @author Andrey Golikov
  * @author Anton Kozlov
  */
 
@@ -11,11 +12,11 @@
 #include <stdint.h>
 #include <xen/xen.h>
 #include <xen/io/console.h>
-#include <hypercall-x86_32.h>
+#include <xen_hypercall-x86_32.h>
 
 #include <xen/sched.h>
-#include <barrier.h>
-#include "event.h"
+#include <xen_barrier.h>
+#include <xen/event.h>
 
 static evtchn_port_t console_evt;
 extern char _text_vma;
