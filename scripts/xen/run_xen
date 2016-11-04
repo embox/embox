@@ -1,11 +1,18 @@
-#!/bin/bash
-DOMCONFIG=$PWD/scripts/xen/embox.cfg
+#!/bin/sh
 
-echo name = \"embox\" > $DOMCONFIG
-echo memory = 256 >> $DOMCONFIG
-#echo disk = [ '/home/andrey/root.img,raw,xvda,rw' ] >> $DOMCONFIG
-#echo vif = [ \'bridge=xenbr0\' ] >> $DOMCONFIG
-echo kernel = \"$PWD/build/base/bin/embox\" >> $DOMCONFIG
-#echo extra = \"debian-installer/exit/always_halt=true -- console=hvc0\" >> $DOMCONFIG
+# Start debug run of xen embox. Only one instance of the script allowed to run
+# on single machine.
 
-sudo xl -vvv create $DOMCONFIG $@
+set -e
+
+DIR="$(dirname $0)"
+ROOD_DIR="$DIR/../../"
+SRC_DOMCONFIG="$DIR/embox.cfg"
+DOMCONFIG="/tmp/xen_embox.cfg"
+
+# copy image to well-known location, hardcoded in xen embox.cfg
+cp $ROOD_DIR/build/base/bin/embox /tmp/xen_embox
+# copy config to well-accessable location, avoid problems with sshfs and sudo
+cp $SRC_DOMCONFIG $DOMCONFIG
+
+sudo xl -vvv create -c $DOMCONFIG $@

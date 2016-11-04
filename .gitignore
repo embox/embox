@@ -30,7 +30,6 @@ scripts/qemu/debug_qemu
 scripts/qemu/start_script_my
 scripts/qemu/stop_script_my
 scripts/qemu/tap_dev
-scripts/xen/embox.cfg
 third-party/qt/.downloaded
 third-party/qt/qt-everywhere-opensource-src-4.8.4.tar.gz
 third-party/ti/ipc_1_24_00_16
