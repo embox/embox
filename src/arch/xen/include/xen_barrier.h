@@ -1,5 +1,6 @@
 /*
  * Definitions of memory barriers used by Xen.
+ * https://github.com/Shmuma/xen-oses/blob/211d76cc628b48fe4a5473c4f9e4c0b3b59ac384/06-comm/client/include/barrier.h
  */
 
 #if defined(__i386__)
