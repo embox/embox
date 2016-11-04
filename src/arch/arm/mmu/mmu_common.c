@@ -47,6 +47,8 @@ static int mmu_init(void) {
 	return 0;
 }
 
+void mmu_regs(void);
+
 /**
 * @brief Turn MMU on
 *
@@ -61,6 +63,8 @@ void mmu_on(void) {
 		: : [flag] "I" (CR_M)
 	);
 #endif
+
+	mmu_regs();
 }
 
 /**
@@ -118,4 +122,189 @@ void mmu_set_context(mmu_ctx_t ctx) {
  */
 mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
 	return (void*) ctx;
+}
+
+/* Software accessible MMU registers */
+uint32_t _get_mmu_tlb_type(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_control(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c1, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_nonsecure_access_control(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c1, c1, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_translation_table_base_0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c2, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_translation_table_base_1(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c2, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_domain_access_control(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c3, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_data_fault_status(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c5, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_instruction_fault_status(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c5, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_data_fault_address(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c6, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_instruction_fault_address(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c6, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_tlb_lockdown(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c10, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_primary_region_remap(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c10, c2, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_normal_memory_remap(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c10, c2, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_fsce_pid(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c13, c2, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_context_id(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c13, c2, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_peripheral_port_memory_remap(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c2, 4" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_tlb_lockdown_index(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c4, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_tlb_lockdown_va(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c5, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_tlb_lockdown_pa(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c6, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+uint32_t _get_mmu_tlb_lockdown_attributes(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c7, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+void mmu_regs(void) {
+	printk("ARM MMU registers summary:\n");
+	printk("TLB Type:                  %#10x\n", _get_mmu_tlb_type());
+	printk("Control:                   %#10x\n", _get_mmu_control());
+	printk("Non-Secure Access Control: %#10x\n", _get_mmu_nonsecure_access_control());
+	printk("Translation Table Base 0:  %#10x\n", _get_mmu_translation_table_base_0());
+	printk("Translation Table Base 1:  %#10x\n", _get_mmu_translation_table_base_1());
+	printk("Domain Access Conrol:      %#10x\n", _get_mmu_domain_access_control());
+	printk("Data Fault Status:         %#10x\n", _get_mmu_data_fault_status());
+	printk("Instruction Fault Status:  %#10x\n", _get_mmu_instruction_fault_status());
+	printk("Data Fault Address:        %#10x\n", _get_mmu_data_fault_address());
+	printk("Instruction Fault Address: %#10x\n", _get_mmu_instruction_fault_address());
+	printk("TLB lockdown:              %#10x\n", _get_mmu_tlb_lockdown());
+	printk("Primary Region Remap:      %#10x\n", _get_mmu_primary_region_remap());
+	printk("Normal Memory Remap:       %#10x\n", _get_mmu_normal_memory_remap());
+	printk("FSCE PID:                  %#10x\n", _get_mmu_fsce_pid());
+	printk("Context ID:                %#10x\n", _get_mmu_context_id());
+	printk("Peripheral port remap:     %#10x\n", _get_mmu_peripheral_port_memory_remap());
+	printk("TLB Lockdown Index:        %#10x\n", _get_mmu_tlb_lockdown_index());
+	printk("TLB Lockdown VA:           %#10x\n", _get_mmu_tlb_lockdown_va());
+	printk("TLB Lockdown PA:           %#10x\n", _get_mmu_tlb_lockdown_pa());
+	printk("TLB Lockdown Attribues:    %#10x\n", _get_mmu_tlb_lockdown_attributes());
 }
