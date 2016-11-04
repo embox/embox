@@ -22,12 +22,12 @@ extern char _text_vma;
 struct xencons_interface * console;
 
 static int diag_xen_init(const struct diag *diag) {
-  extern start_info_t * start_info_global;
+	extern start_info_t *xen_start_info_global;
 	console = (struct xencons_interface*)
-		((machine_to_phys_mapping[start_info_global->console.domU.mfn] << 12)
+		((machine_to_phys_mapping[xen_start_info_global->console.domU.mfn] << 12)
 		 +
 		((unsigned long)&_text_vma));
-	console_evt = start_info_global->console.domU.evtchn;
+	console_evt = xen_start_info_global->console.domU.evtchn;
 	/* TODO: Set up the event channel */
 	return 0;
 }

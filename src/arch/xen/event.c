@@ -20,7 +20,7 @@
 #define CLEAR_BIT(field, bit) __asm__ __volatile__ ("lock btrl %1,%0":"=m" ((field)):"Ir"((bit)):"memory")
 
 /* Locations in the bootstrapping code */
-extern shared_info_t shared_info;
+extern shared_info_t xen_shared_info;
 void hypervisor_callback(void);
 void failsafe_callback(void);
 
@@ -48,17 +48,17 @@ void init_events(void)
 	for(unsigned int i=0 ; i<NUM_CHANNELS ; i++)
 	{
 		handlers[i] = EVT_IGN;
-		SET_BIT(i,shared_info.evtchn_mask[0]);
+		SET_BIT(i,xen_shared_info.evtchn_mask[0]);
 	}
 	/* Allow upcalls. */
-	shared_info.vcpu_info[0].evtchn_upcall_mask = 0;          
+	xen_shared_info.vcpu_info[0].evtchn_upcall_mask = 0;
 }
 
 /* Register an event handler and unmask the port */
 void register_event(evtchn_port_t port, evtchn_handler_t handler)
 {
 	handlers[port] = handler;
-	CLEAR_BIT(shared_info.evtchn_mask, port);
+	CLEAR_BIT(xen_shared_info.evtchn_mask, port);
 }
 
 static inline unsigned long int first_bit(unsigned long int word)
@@ -101,7 +101,7 @@ void do_hypervisor_callback(struct pt_regs *regs)
 {
 	unsigned int pending_selector;
 	unsigned int next_event_offset;
-	vcpu_info_t *vcpu = &shared_info.vcpu_info[0];
+	vcpu_info_t *vcpu = &xen_shared_info.vcpu_info[0];
 	/* Make sure we don't lose the edge on new events... */
 	vcpu->evtchn_upcall_pending = 0;
 	/* Set the pending selector to 0 and get the old value atomically */
@@ -115,9 +115,9 @@ void do_hypervisor_callback(struct pt_regs *regs)
 
 		/* While there are events pending on unmasked channels */
 		while(( event =
-		(shared_info.evtchn_pending[pending_selector] 
+		(xen_shared_info.evtchn_pending[pending_selector] 
 		 & 
-		~shared_info.evtchn_mask[pending_selector]))
+		~xen_shared_info.evtchn_mask[pending_selector]))
 		 != 0)
 		{
 			/* Find the first waiting event */
@@ -128,7 +128,7 @@ void do_hypervisor_callback(struct pt_regs *regs)
 			/* Handler the event */
 			handlers[port](port, regs);
 			/* Clear the pending flag */
-			CLEAR_BIT(shared_info.evtchn_pending[0], event_offset);
+			CLEAR_BIT(xen_shared_info.evtchn_pending[0], event_offset);
 		}
 	}
 }

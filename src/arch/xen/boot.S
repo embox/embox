@@ -58,12 +58,12 @@ C_ENTRY(_start):
 #endif /* NCPU > 1 */
 #endif
 
-	push %esi
-	call    kernel_start_xen /* call C code */
+	push 	%esi
+	call    xen_kernel_start /* call C code */
 
 	.org 0x1000
 	.p2align 12
-C_LABEL(shared_info):
+C_LABEL(xen_shared_info):
 	.org 0x2000
 
 C_LABEL(hypercall_page):
