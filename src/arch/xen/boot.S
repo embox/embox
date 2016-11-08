@@ -64,14 +64,6 @@ C_ENTRY(_start):
 	push 	%esi
 	call    xen_kernel_start /* call C code */
 
-	.org 0x1000
-	.p2align 12
-C_LABEL(xen_shared_info):
-	.org 0x2000
-
-C_LABEL(hypercall_page):
-	.org 0x3000
-
 loop:
 	hlt             /* if we return from kernel_start it's error */
 	jmp	loop

@@ -21,7 +21,11 @@ _ram_size = LENGTH(RAM);
 
 SECTIONS {
 	.text : {
-		*(.multiboot)
+		. = ALIGN(0x1000);
+		hypercall_page = .;
+		. += 0x1000;
+		xen_shared_info = .;
+		. += 0x1000;
 		_traps_text_start = .;
 		*(.traps.*)
 		_traps_text_end = .;
