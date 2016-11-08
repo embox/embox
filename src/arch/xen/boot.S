@@ -9,9 +9,7 @@
  */
 
 #include <hal/cpu.h>
-
-#define C_ENTRY(name) .globl name; .align 2; name
-#define C_LABEL(name) .globl name; name
+#include <asm/linkage.h>
 
 #define __ASSEMBLY__
 #define __XEN_INTERFACE_VERSION__ 0x00030203
@@ -20,8 +18,6 @@
 #undef __ASSEMBLY
 
 .section .text
-.align 4
-
 	/* system entry point */
 C_ENTRY(_start):
 	/* interrrupts disable */
@@ -54,12 +50,6 @@ C_ENTRY(_start):
 	call    memcpy              /* copy data section */
 	addl    $0xc, %esp
 1:
-
-#if 0 // TODO smp is not supported on Xen
-#if NCPU > 1
-	call    cpudata_init
-#endif /* NCPU > 1 */
-#endif
 
 	push 	%esi
 	call    xen_kernel_start /* call C code */
