@@ -1,0 +1,6 @@
+package embox.arch.xen
+
+static module libarch extends embox.arch.libarch {
+	source "setjmp.S"
+}
+

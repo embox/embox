@@ -1,0 +1,18 @@
+#!/bin/sh
+
+# Start debug run of xen embox. Only one instance of the script allowed to run
+# on single machine.
+
+set -e
+
+DIR="$(dirname $0)"
+ROOD_DIR="$DIR/../../"
+SRC_DOMCONFIG="$DIR/embox.cfg"
+DOMCONFIG="/tmp/xen_embox.cfg"
+
+# copy image to well-known location, hardcoded in xen embox.cfg
+cp $ROOD_DIR/build/base/bin/embox /tmp/xen_embox
+# copy config to well-accessable location, avoid problems with sshfs and sudo
+cp $SRC_DOMCONFIG $DOMCONFIG
+
+sudo xl -vvv create -c $DOMCONFIG $@
