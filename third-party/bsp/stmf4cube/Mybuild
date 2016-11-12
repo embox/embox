@@ -1,7 +1,7 @@
 package third_party.bsp.stmf4cube
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
-@BuildArtifactPath(cppflags="-DSTM32F407xx -DUSE_RTOS=0 -I$(ROOT_DIR)/third-party/bsp/stmf4cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.12.0/,Drivers/STM32F4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F4xx/Include Drivers/CMSIS/Include Drivers/BSP/STM32F4-Discovery)")
+@BuildArtifactPath(cppflags="-DSTM32F407xx -DUSE_RTOS=0 -I$(ROOT_DIR)/third-party/bsp/stmf4cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/,Drivers/STM32F4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F4xx/Include Drivers/CMSIS/Include Drivers/BSP/STM32F4-Discovery)")
 static module core extends third_party.bsp.st_bsp_api {
 
 	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
@@ -13,72 +13,72 @@ static module core extends third_party.bsp.st_bsp_api {
 	@DefineMacro("HAL_ETH_MODULE_ENABLED")
 	@DefineMacro("USE_RTOS=0")
 	@DefineMacro("USE_HAL_DRIVER")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Inc")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.12.0/Drivers/CMSIS/Device/ST/STM32F4xx/Include")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.12.0/Drivers/CMSIS/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/CMSIS/Device/ST/STM32F4xx/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/CMSIS/Include")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cec.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dcmi.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dcmi_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma2d.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dsi.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_eth.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_hash.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_hash_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_hcd.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_irda.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_iwdg.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_lptim.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_ltdc.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_msp_template.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_nand.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_nor.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pccard.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sai.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sai_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sdram.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_smartcard.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spdifrx.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sram.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_wwdg.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fmc.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c",
-		"STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c"
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_adc_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_can.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cec.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cortex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_crc.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_cryp_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dac_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dcmi.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dcmi_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma2d.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dma_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_dsi.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_eth.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_flash_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_gpio.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_hash.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_hash_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_hcd.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2s.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_irda.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_iwdg.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_lptim.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_ltdc.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_msp_template.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_nand.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_nor.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pccard.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pcd_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_pwr_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_qspi.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rcc_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rng.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_rtc_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sai.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sai_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sd.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sdram.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_smartcard.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spdifrx.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_sram.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim_ex.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_uart.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_wwdg.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fmc.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c"
 
 
 		@IncludeExport(path="")
@@ -98,11 +98,11 @@ static module system_init {
 	@DefineMacro("STM32F407xx")
 	@DefineMacro("USE_RTOS=0")
 	@DefineMacro("USE_STDPERIPH_DRIVER")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.12.0/Drivers/STM32F4xx_HAL_Driver/Inc")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.12.0/Drivers/CMSIS/Device/ST/STM32F4xx/Include")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.12.0/Drivers/CMSIS/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/CMSIS/Device/ST/STM32F4xx/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/CMSIS/Include")
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/core")
-	source "./STM32Cube_FW_F4_V1.12.0/Projects/STM32F4-Discovery/Examples/BSP/Src/system_stm32f4xx.c"
+	source "./STM32Cube_FW_F4_V1.13.0/Projects/STM32F4-Discovery/Examples/BSP/Src/system_stm32f4xx.c"
 }
 
 
