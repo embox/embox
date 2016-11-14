@@ -1,14 +1,13 @@
 package third_party.bsp.stmf7cube
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
-@BuildArtifactPath(cppflags="-DSTM32F746xx -DUSE_RTOS=0 -I$(ROOT_DIR)/third-party/bsp/stmf7cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/,Drivers/STM32F7xx_HAL_Driver/Inc  Drivers/BSP/STM32746G-Discovery/ Drivers/CMSIS/Device/ST/STM32F7xx/Include Drivers/CMSIS/Include Projects/STM32746G-Discovery/Examples/BSP/Inc)")
+@BuildArtifactPath(cppflags="-DSTM32F746xx -I$(ROOT_DIR)/third-party/bsp/stmf7cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/,Drivers/STM32F7xx_HAL_Driver/Inc  Drivers/BSP/STM32746G-Discovery/ Drivers/CMSIS/Device/ST/STM32F7xx/Include Drivers/CMSIS/Include Projects/STM32746G-Discovery/Examples/BSP/Inc)")
 static module core extends third_party.bsp.st_bsp_api {
 
 	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
 
 	@Cflags("-Wno-unused")
 	@DefineMacro("STM32F746xx")
-	@DefineMacro("USE_RTOS=0")
 	@DefineMacro("USE_HAL_DRIVER")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Inc")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
@@ -88,7 +87,6 @@ static module cmsis extends embox.arch.arm.cmsis {
 @BuildDepends(core)
 static module system_init {
 	@DefineMacro("STM32F746xx")
-	@DefineMacro("USE_RTOS=0")
 	@DefineMacro("USE_STDPERIPH_DRIVER")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Inc")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
