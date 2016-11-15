@@ -16,7 +16,14 @@ ifneq ($(filter x86 usermode86,$(ARCH)),)
 OLIBM_ARCH := i386
 endif
 ifeq ($(ARCH), arm)
+OLIBM_CPU  := $(subst -mcpu=,,$(filter -mcpu=%,$(CFLAGS)))
+ifeq ($(strip $(OLIBM_CPU)),cortex-m7)
+# We do not pass -march=armv7e-m because it does not working together with -mcpu=cortex-m7
+# See https://bugs.launchpad.net/gcc-arm-embedded/+bug/1592635
+OLIBM_ARCH :=""
+else
 OLIBM_ARCH := $(subst -march=,,$(filter -march=%,$(CFLAGS)))
+endif
 ifeq ($(strip $(OLIBM_ARCH)),)
 $(error OLIBM_ARCH -march is undefined)
 endif
