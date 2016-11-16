@@ -6,7 +6,6 @@ package stm32f4_multibot.cmd
 module spi_master {
 	option number spi=1
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
 	source "spi_master.c"
 
 	depends third_party.bsp.stmf4cube.stm32f4_discovery
@@ -19,7 +18,6 @@ module spi_master {
 module spi_slave {
 	option number spi=2
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
 	source "spi_slave.c"
 
 	depends third_party.bsp.stmf4cube.stm32f4_discovery
@@ -32,7 +30,6 @@ module spi_slave {
 module nrf24_test {
 	option number spi=2
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
 	source "nrf24_test.c"
 
 	depends third_party.bsp.stmf4cube.stm32f4_discovery
@@ -45,7 +42,6 @@ module nrf24_test {
 module nrf24_tx {
 	option number spi=2
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
 	source "nrf24_tx.c"
 
 	depends third_party.bsp.stmf4cube.stm32f4_discovery
@@ -58,8 +54,7 @@ module nrf24_tx {
 module nrf24_rx {
 	option number spi=2
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
-	source "nrf24_rx.c"
+	source "nrf24_rx_irq.c"
 
 	depends third_party.bsp.stmf4cube.stm32f4_discovery
 	depends nrf24_lib
@@ -69,7 +64,6 @@ module nrf24_rx {
 static module nrf24_lib {
 	option number spi=2
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
 	source "nrf24.c",
 		"nrf24_hw.c"
 
@@ -81,7 +75,6 @@ static module nrf24_lib {
 static module spi_lib {
 	option number spi=2
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
 	source "spi_lib.c"
 
 	depends third_party.bsp.stmf4cube.stm32f4_discovery
