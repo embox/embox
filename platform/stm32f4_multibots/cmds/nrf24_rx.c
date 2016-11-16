@@ -26,7 +26,8 @@ static void nrf24_test(void) {
 	uint8_t addr[10] = {0x1};
 	uint8_t val = 0x17;
 	uint8_t reg;
-	uint8_t data_array[4];
+	uint8_t data_array[6];
+	uint32_t counter = 0;
 
 	spi_delay(1000000);
 	/* init hardware pins */
@@ -89,7 +90,7 @@ static void nrf24_test(void) {
 #endif
 
 	/* Channel #2 , payload length: 4 */
-	nrf24_config(2,4);
+	nrf24_config(16,6);
 
     nrf24_readRegister(FIFO_STATUS,&reg,1);
 	printf("!> 1 FIFO_STATUS = %2X\n", reg);
@@ -131,6 +132,7 @@ static void nrf24_test(void) {
 	while(1) {
 		if(nrf24_dataReady())
 		{
+			counter = 0;
 			//reg = nrf24_getStatus();
 			//printf("STATUS = %x\n", reg);
 			nrf24_getData(data_array);
@@ -138,9 +140,17 @@ static void nrf24_test(void) {
 			printf("%2X ",data_array[0]);
 			printf("%2X ",data_array[1]);
 			printf("%2X ",data_array[2]);
-			printf("%2X\r\n",data_array[3]);
+			printf("%2X ",data_array[3]);
+			printf("%2X ",data_array[4]);
+			printf("%2X\r\n",data_array[5]);
 			//spi_delay(1000);
+		} else if (counter > 100000) {
+			reg = nrf24_getStatus();
+			printf("(counter > 100000) STATUS = %2X\n", reg);
+			nrf24_readRegister(FIFO_STATUS,&reg,1);
+			printf("(counter > 100000) FIFO_STATUS = %2X\n", reg);
 		}
+		counter++;
 	}
 }
 

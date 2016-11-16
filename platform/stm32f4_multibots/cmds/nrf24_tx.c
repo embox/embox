@@ -26,7 +26,7 @@ static void nrf24_test(void) {
 	uint8_t reg;
 	uint8_t temp;
 	uint8_t q = 0;
-	uint8_t data_array[4];
+	uint8_t data_array[6];
 
 	spi_delay(1000000);
     /* init hardware pins */
@@ -85,7 +85,7 @@ static void nrf24_test(void) {
 #endif
 
 	/* Channel #2 , payload length: 4 */
-	nrf24_config(2,4);
+	nrf24_config(16,6);
 
 	spi_delay(1000000);
 
@@ -123,8 +123,10 @@ static void nrf24_test(void) {
         /* Fill the data buffer */
         data_array[0] = 0x00;
         data_array[1] = 0x00;
-        data_array[2] = 0x83;
-        data_array[3] = 0x75 + q++;                                    
+        data_array[2] = q++;
+        data_array[3] = 0x25;
+        data_array[4] = 0x75 + q;
+        data_array[5] = data_array[4];                                    
 
         /* Automatically goes to TX mode */
         nrf24_send(data_array);        
