@@ -105,27 +105,24 @@ uint8_t nrf24_dataReady()
     if ( status & (1 << RX_DR) ) 
     {
 		if ((status & (0x7 << RX_P_NO)) == 0xE) {
+			nrf24_configRegister(STATUS,(1<<RX_DR));
 			return 0;
 		} else {
         	return 1;
 		}
     }
 
-    return 0;;
+    return !nrf24_rxFifoEmpty();
 }
 
 /* Checks if receive FIFO is empty or not */
 uint8_t nrf24_rxFifoEmpty()
 {
     uint8_t fifoStatus;
-	uint8_t reg;
 
     nrf24_readRegister(FIFO_STATUS,&fifoStatus,1);
 	//printf(">> FIFO_STATUS = %2X;  ", fifoStatus);
     
-    nrf24_readRegister(CONFIG,&reg,1);
-	//printf(">> CONFIG = %2X\n", reg);
-
     return (fifoStatus & (1 << RX_EMPTY));
 }
 
