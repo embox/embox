@@ -82,9 +82,8 @@ static struct intel_ac_hw_dev intel_ac_hw_dev;
 
 /* Control registers */
 #define INTEL_AC_PCM_IN_CR  0x0B
-#define INTEL_AC_PO_CR 0x1B
+#define INTEL_AC_PO_CR      0x1B
 #define INTEL_AC_MIC_CR     0x2B
-
 
 #define INTEL_AC_GLOB_CNT   0x2c
 #define INTEL_AC_GLOB_STA   0x30
@@ -222,7 +221,6 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 		log_error("Unsupported AC97 device id!");
 		return;
 	}
-	printf("DEVID IS %d\n", ((struct intel_ac_dev_priv*)dev->ad_priv)->devid);
 	out32((uint32_t)&pcm_out_buff_list, NAMB_REG(buf));
 
 	/* Setup buffers, currently just zeroes */
@@ -277,10 +275,14 @@ static void intel_ac_dev_stop(struct audio_dev *dev) {
 }
 
 static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
+	int devid = ((struct intel_ac_dev_priv*)dev->ad_priv)->devid;
 	switch(cmd) {
-	case ADIOCTL_SUPPORT:
-		return AD_STEREO_SUPPORT |
-		       AD_16BIT_SUPPORT;
+	case ADIOCTL_IN_SUPPORT:
+		return devid == 2 ?
+			AD_MONO_SUPPORT | AD_16BIT_SUPPORT : 0;
+	case ADIOCTL_OUT_SUPPORT:
+		return devid == 0 ?
+			AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
 	case ADIOCTL_BUFLEN:
 		return INTEL_AC_MAX_BUF_LEN;
 	}

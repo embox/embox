@@ -472,7 +472,9 @@ static void es1370_dev_stop(struct audio_dev *dev) {
 
 static int es1370_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	switch(cmd) {
-	case ADIOCTL_SUPPORT:
+	case ADIOCTL_IN_SUPPORT:
+		return 0;
+	case ADIOCTL_OUT_SUPPORT:
 		return AD_STEREO_SUPPORT |
 		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:
