@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <util/log.h>
-
+#include <stdio.h>
 #include <asm/io.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_chip/pci_utils.h>
@@ -203,8 +203,27 @@ PCI_DRIVER("Intel Corporation 82801AA AC'97 Audio Controller", intel_ac_init, IN
 static void intel_ac_dev_start(struct audio_dev *dev) {
 	uint8_t tmp;
 	int i;
+	uint8_t buf;
+	uint8_t lvi;
+	uint8_t cr;
 
-	out32((uint32_t)&pcm_out_buff_list, NAMB_REG(INTEL_AC_PO_BUF));
+	switch (((struct intel_ac_dev_priv*)dev->ad_priv)->devid) {
+	case 0:
+		buf = INTEL_AC_PO_BUF;
+		lvi = INTEL_AC_PO_LVI;
+		cr  = INTEL_AC_PO_CR;
+		break;
+	case 2:
+		buf = INTEL_AC_MIC_BUF;
+		lvi = INTEL_AC_MIC_LVI;
+		cr  = INTEL_AC_MIC_CR;
+		break;
+	default:
+		log_error("Unsupported AC97 device id!");
+		return;
+	}
+	printf("DEVID IS %d\n", ((struct intel_ac_dev_priv*)dev->ad_priv)->devid);
+	out32((uint32_t)&pcm_out_buff_list, NAMB_REG(buf));
 
 	/* Setup buffers, currently just zeroes */
 	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
@@ -212,15 +231,28 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	}
 
 	/* Setup Last Valid Index */
-	out8(INTEL_AC_BUFFER_SZ - 1, NAMB_REG(INTEL_AC_PO_LVI));
+	out8(INTEL_AC_BUFFER_SZ - 1, NAMB_REG(lvi));
 
 	/* Set run bit */
 	tmp = ICH_IOCE | ICH_STARTBM | ICH_FEIE | ICH_LVBIE;
-	out8(tmp, NAMB_REG(INTEL_AC_PO_CR));
+	out8(tmp, NAMB_REG(cr));
 }
 
 static void intel_ac_dev_pause(struct audio_dev *dev) {
-	out8(0x0, NAMB_REG(INTEL_AC_PO_CR));
+	uint8_t cr;
+	switch (((struct intel_ac_dev_priv*)dev->ad_priv)->devid) {
+	case 0:
+		cr  = INTEL_AC_PO_CR;
+		break;
+	case 2:
+		cr  = INTEL_AC_MIC_CR;
+		break;
+	default:
+		log_error("Unsupported AC97 device id!");
+		return;
+	}
+
+	out8(0x0, NAMB_REG(cr));
 }
 
 static void intel_ac_dev_resume(struct audio_dev *dev) {
@@ -228,7 +260,20 @@ static void intel_ac_dev_resume(struct audio_dev *dev) {
 }
 
 static void intel_ac_dev_stop(struct audio_dev *dev) {
-	out8(0x0, NAMB_REG(INTEL_AC_PO_CR));
+	uint8_t cr;
+	switch (((struct intel_ac_dev_priv*)dev->ad_priv)->devid) {
+	case 0:
+		cr  = INTEL_AC_PO_CR;
+		break;
+	case 2:
+		cr  = INTEL_AC_MIC_CR;
+		break;
+	default:
+		log_error("Unsupported AC97 device id!");
+		return;
+	}
+
+	out8(0x0, NAMB_REG(cr));
 }
 
 static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
