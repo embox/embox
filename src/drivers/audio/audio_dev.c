@@ -15,6 +15,10 @@ ARRAY_SPREAD_DEF(const struct audio_dev, __audio_device_registry);
 
 
 struct audio_dev *audio_dev_get_by_idx(int idx) {
+	if (idx < 0 || idx >= ARRAY_SPREAD_SIZE(__audio_device_registry)) {
+		return NULL;
+	}
+
 	return (struct audio_dev *)&__audio_device_registry[idx];
 }
 
