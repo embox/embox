@@ -1,0 +1,23 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "record",
+     help = "Simple audio recorder",
+     man  = '''
+     	NAME
+		record - simple audio recorder
+	SYNOPSIS
+		record [OPTION] [FILE]
+	DESCRIPTION
+		Writes up to 10 seconds to FILE in WAV format.
+	OPTIONS
+	AUTHORS
+		Denis Deryugin <deryugin.denis@gmail.com>
+	''')
+
+module record {
+	source "record.c"
+
+	depends embox.driver.audio.portaudio_api
+	depends embox.fs.file_format
+}
