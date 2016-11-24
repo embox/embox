@@ -40,8 +40,7 @@ void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 			| ARM_MMU_SMALL_PAGE);
 #endif
 	*pte = (mmu_pte_t) ((((uint32_t)addr) & ~MMU_PAGE_MASK)
-			| 0x432);
-			//| 0x032);
+			| 0x436);
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
