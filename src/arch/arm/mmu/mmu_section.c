@@ -37,9 +37,7 @@ void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 			| ARM_MMU_SECTION_READ_ACC);
 #endif
 	*pte = (mmu_pte_t) ((addr & ~MMU_PAGE_MASK)
-			| 0x10C02); 
-			//| ARM_MMU_TYPE_SECTION
-			//| ( 0x403 << 10) ); /* XN = 0, Dom=0; AP=11, TEX = 0, APX=0 */
+			| 0x00C06); /* B=0, XN = 0, Dom=0; AP=11, TEX = 0, APX=0 */
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
