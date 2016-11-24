@@ -32,7 +32,9 @@ abstract module context { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nommu)
-abstract module mmu { }
+abstract module mmu {
+	option number page_size
+}
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.syscall_stub)

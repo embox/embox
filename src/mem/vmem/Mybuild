@@ -32,6 +32,7 @@ module vmem_alloc {
 	option number pte_align = 0
 
 	source "vmem_alloc.c"
+	source "vmem_page.lds.S"
 
 	depends embox.mem.page_api
 	depends embox.arch.mmu

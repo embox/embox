@@ -1,6 +1,7 @@
 package embox.arch.sparc
 
 module mmu extends embox.arch.mmu {
+	option number page_size=4096
 	option number asi_m_mmuregs=0x19
 
 	source "mmu.c", "mmu.h"

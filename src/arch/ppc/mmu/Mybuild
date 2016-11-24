@@ -1,5 +1,6 @@
 package embox.arch.ppc
 
 module mmu extends embox.arch.mmu {
+	option number page_size=4096
 	source "mmu.c", "mmu.h"
 }

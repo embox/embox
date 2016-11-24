@@ -50,7 +50,7 @@ static struct page_allocator *pgd_allocator;
 static struct page_allocator *pmd_allocator;
 static struct page_allocator *pte_allocator;
 
-static char virtual_page_raw[(VIRTUAL_PAGES_COUNT + 1) * MMU_PAGE_SIZE] __attribute__ ((aligned(MMU_PAGE_SIZE)));
+static char virtual_page_raw[(VIRTUAL_PAGES_COUNT + 1) * MMU_PAGE_SIZE] __attribute__ ((section(".bss.vmem_pages")));
 static struct page_allocator *virt_page_allocator;
 
 EMBOX_UNIT_INIT(vmem_alloc_init);

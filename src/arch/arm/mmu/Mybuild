@@ -1,6 +1,7 @@
 package embox.arch.arm
 
 module mmu_section extends embox.arch.mmu {
+	option number page_size=0x100000
 	option number domain_access=3
 
 	source "mmu.h"
@@ -12,6 +13,7 @@ module mmu_section extends embox.arch.mmu {
 }
 
 module mmu_small_page extends embox.arch.mmu {
+	option number page_size=4096
 	option number domain_access=3
 
 	source "mmu.h"
