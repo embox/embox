@@ -52,7 +52,7 @@ static int mmu_case_setup(void) {
 }
 
 static int mmu_case_teardown(void) {
-	vmem_unmap_region(ctx, (mmu_vaddr_t) TEST_VIRT_ADDR_MAP, VMEM_PAGE_SIZE, 0);
+	vmem_unmap_region(ctx, (mmu_vaddr_t) TEST_VIRT_ADDR_MAP, VMEM_PAGE_SIZE);
 
 	return 0;
 }

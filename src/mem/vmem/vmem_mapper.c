@@ -23,7 +23,7 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, 
 	int res = do_map_region(ctx, phy_addr, virt_addr, reg_size, flags);
 
 	if (res) {
-		vmem_unmap_region(ctx, virt_addr, reg_size, 0);
+		vmem_unmap_region(ctx, virt_addr, reg_size);
 	}
 
 	mmu_flush_tlb();
@@ -34,7 +34,7 @@ int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vme
 	int res = do_create_space(ctx, virt_addr, reg_size, flags);
 
 	if (res) {
-		vmem_unmap_region(ctx, virt_addr, reg_size, 1);
+		vmem_unmap_region(ctx, virt_addr, reg_size);
 	}
 
 	return res;

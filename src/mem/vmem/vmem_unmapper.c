@@ -56,7 +56,7 @@ static inline int try_free_pgd(mmu_pgd_t *pgd, mmu_ctx_t ctx) {
 	return 1;
 }
 
-void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, int free_pages) {
+void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
@@ -95,7 +95,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 					goto out_free;
 
 				if (mmu_pte_present(pte + pte_idx)) {
-					if (free_pages && mmu_pte_present(pte + pte_idx)) {
+					if (mmu_pte_present(pte + pte_idx)) {
 						addr = (void *) mmu_pte_value(pte + pte_idx);
 						vmem_free_page(addr);
 					}
