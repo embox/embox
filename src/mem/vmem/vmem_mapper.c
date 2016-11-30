@@ -122,7 +122,7 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
 	}
 
 #define GET_PTE(pte, pmd) \
-	if (!mmu_pmd_present(pmd)) { \
+	if (MMU_PMD_SHIFT != MMU_PTE_SHIFT && !mmu_pmd_present(pmd)) { \
 		pte = vmem_alloc_pte_table(); \
 		if (pte == NULL) { \
 			return -ENOMEM;	\
