@@ -13,6 +13,7 @@
 #include <embox/unit.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
+#include <util/log.h>
 
 #include <framework/mod/options.h>
 #include <kernel/printk.h>
@@ -21,7 +22,7 @@ EMBOX_UNIT_INIT(mmu_init);
 
 #define DOMAIN_ACCESS OPTION_GET(NUMBER, domain_access)
 #define CTX_NUMBER    32 /* TODO: make it related to number of tasks */
-
+#define LOG_LEVEL     OPTION_GET(NUMBER, log_level)
 /**
  * @brief Fill translation table and so on
  * @note Assume MMU is off right now
@@ -47,7 +48,7 @@ static int mmu_init(void) {
 	return 0;
 }
 
-void mmu_regs(void);
+void _print_mmu_regs(void);
 
 /**
 * @brief Turn MMU on
@@ -64,7 +65,7 @@ void mmu_on(void) {
 	);
 #endif
 
-	mmu_regs();
+	_print_mmu_regs();
 }
 
 /**
@@ -535,69 +536,69 @@ uint32_t _get_csselr(void) {
 	);
 	return val;
 }
-void mmu_regs(void) {
-	printk("ARM MMU registers summary:\n");
-	printk("TLB Type:                  %#10x\n", _get_mmu_tlb_type());
-	printk("SCTRL:                     %#10x\n", _get_sctrl_control());
-	printk("ACTRL:                     %#10x\n", _get_actrl_control());
-	printk("CPACR:                     %#10x\n", _get_cpacr_control());
-	printk("Non-Secure Access Control: %#10x\n", _get_mmu_nonsecure_access_control());
-	printk("Translation Table Base 0:  %#10x\n", _get_mmu_translation_table_base_0());
-	printk("Translation Table Base 1:  %#10x\n", _get_mmu_translation_table_base_1());
-	printk("Domain Access Conrol:      %#10x\n", _get_mmu_domain_access_control());
-	printk("Data Fault Status:         %#10x\n", _get_mmu_data_fault_status());
-	printk("Instruction Fault Status:  %#10x\n", _get_mmu_instruction_fault_status());
-	printk("Data Fault Address:        %#10x\n", _get_mmu_data_fault_address());
-	printk("Instruction Fault Address: %#10x\n", _get_mmu_instruction_fault_address());
-	printk("TLB lockdown:              %#10x\n", _get_mmu_tlb_lockdown());
-	printk("Primary Region Remap:      %#10x\n", _get_mmu_primary_region_remap());
-	printk("Normal Memory Remap:       %#10x\n", _get_mmu_normal_memory_remap());
-	printk("FSCE PID:                  %#10x\n", _get_mmu_fsce_pid());
-	printk("Context ID:                %#10x\n", _get_mmu_context_id());
-	printk("Peripheral port remap:     %#10x\n", _get_mmu_peripheral_port_memory_remap());
-	printk("TLB Lockdown Index:        %#10x\n", _get_mmu_tlb_lockdown_index());
-	printk("TLB Lockdown VA:           %#10x\n", _get_mmu_tlb_lockdown_va());
-	printk("TLB Lockdown PA:           %#10x\n", _get_mmu_tlb_lockdown_pa());
-	printk("TLB Lockdown Attribues:    %#10x\n", _get_mmu_tlb_lockdown_attributes());
+void _print_mmu_regs(void) {
+	/* Sometimes accessing this registers crushes the emulator */
+#if LOG_LEVEL > 0
+	log_debug("ARM MMU registers summary:");
+	log_debug("TLB Type:                  %#10x", _get_mmu_tlb_type());
+	log_debug("SCTRL:                     %#10x", _get_sctrl_control());
+	log_debug("ACTRL:                     %#10x", _get_actrl_control());
+	log_debug("CPACR:                     %#10x", _get_cpacr_control());
+	log_debug("Non-Secure Access Control: %#10x", _get_mmu_nonsecure_access_control());
+	log_debug("Translation Table Base 0:  %#10x", _get_mmu_translation_table_base_0());
+	log_debug("Translation Table Base 1:  %#10x", _get_mmu_translation_table_base_1());
+	log_debug("Domain Access Conrol:      %#10x", _get_mmu_domain_access_control());
+	log_debug("Data Fault Status:         %#10x", _get_mmu_data_fault_status());
+	log_debug("Instruction Fault Status:  %#10x", _get_mmu_instruction_fault_status());
+	log_debug("Data Fault Address:        %#10x", _get_mmu_data_fault_address());
+	log_debug("Instruction Fault Address: %#10x", _get_mmu_instruction_fault_address());
+	log_debug("TLB lockdown:              %#10x", _get_mmu_tlb_lockdown());
+	log_debug("Primary Region Remap:      %#10x", _get_mmu_primary_region_remap());
+	log_debug("Normal Memory Remap:       %#10x", _get_mmu_normal_memory_remap());
+	log_debug("FSCE PID:                  %#10x", _get_mmu_fsce_pid());
+	log_debug("Context ID:                %#10x", _get_mmu_context_id());
+	log_debug("Peripheral port remap:     %#10x", _get_mmu_peripheral_port_memory_remap());
+	log_debug("TLB Lockdown Index:        %#10x", _get_mmu_tlb_lockdown_index());
+	log_debug("TLB Lockdown VA:           %#10x", _get_mmu_tlb_lockdown_va());
+	log_debug("TLB Lockdown PA:           %#10x", _get_mmu_tlb_lockdown_pa());
+	log_debug("TLB Lockdown Attribues:    %#10x", _get_mmu_tlb_lockdown_attributes());
 
-	printk("PLEIDR:                    %#10x\n", _get_pleidr());
+	log_debug("PLEIDR:                    %#10x", _get_pleidr());
 	
 	if (_get_pleidr()) {
-		printk("PLEASR:                    %#10x\n", _get_pleasr());
-		printk("PLESFR:                    %#10x\n", _get_plesfr());
-		printk("PLEAUR:                    %#10x\n", _get_pleuar());
-		printk("PLEPCR:                    %#10x\n", _get_plepcr());
+		log_debug("PLEASR:                    %#10x", _get_pleasr());
+		log_debug("PLESFR:                    %#10x", _get_plesfr());
+		log_debug("PLEAUR:                    %#10x", _get_pleuar());
+		log_debug("PLEPCR:                    %#10x", _get_plepcr());
 	}
 
 
-	printk("MIDR:                      %#10x\n", _get_midr());
-	printk("CTR:                       %#10x\n", _get_ctr());
-	printk("TCMTR:                     %#10x\n", _get_tcmtr());
-	printk("TLBTR:                     %#10x\n", _get_tlbtr());
-	printk("MPIDR:                     %#10x\n", _get_mpidr());
-	printk("REVIDR:                    %#10x\n", _get_revidr());
+	log_debug("MIDR:                      %#10x", _get_midr());
+	log_debug("CTR:                       %#10x", _get_ctr());
+	log_debug("TCMTR:                     %#10x", _get_tcmtr());
+	log_debug("TLBTR:                     %#10x", _get_tlbtr());
+	log_debug("MPIDR:                     %#10x", _get_mpidr());
+	log_debug("REVIDR:                    %#10x", _get_revidr());
 
-	printk("PFR0:                      %#10x\n", _get_pfr0());
-	printk("PFR1:                      %#10x\n", _get_pfr1());
-	printk("DFR0:                      %#10x\n", _get_dfr0());
-	printk("AFR0:                      %#10x\n", _get_afr0());
+	log_debug("PFR0:                      %#10x", _get_pfr0());
+	log_debug("PFR1:                      %#10x", _get_pfr1());
+	log_debug("DFR0:                      %#10x", _get_dfr0());
+	log_debug("AFR0:                      %#10x", _get_afr0());
 
-	printk("MMFR0:                      %#10x\n", _get_mmfr0());
-	printk("MMFR1:                      %#10x\n", _get_mmfr1());
-	printk("MMFR2:                      %#10x\n", _get_mmfr2());
-	printk("MMFR3:                      %#10x\n", _get_mmfr3());
+	log_debug("MMFR0:                      %#10x", _get_mmfr0());
+	log_debug("MMFR1:                      %#10x", _get_mmfr1());
+	log_debug("MMFR2:                      %#10x", _get_mmfr2());
+	log_debug("MMFR3:                      %#10x", _get_mmfr3());
 
-	printk("ISAR0:                      %#10x\n", _get_isar0());
-	printk("ISAR1:                      %#10x\n", _get_isar1());
-	printk("ISAR2:                      %#10x\n", _get_isar2());
-	printk("ISAR3:                      %#10x\n", _get_isar3());
-	printk("ISAR4:                      %#10x\n", _get_isar4());
+	log_debug("ISAR0:                      %#10x", _get_isar0());
+	log_debug("ISAR1:                      %#10x", _get_isar1());
+	log_debug("ISAR2:                      %#10x", _get_isar2());
+	log_debug("ISAR3:                      %#10x", _get_isar3());
+	log_debug("ISAR4:                      %#10x", _get_isar4());
 
-	printk("CCSIDR:                     %#10x\n", _get_ccsidr());
-	printk("CLIDR:                      %#10x\n", _get_clidr());
-	printk("AIDR:                       %#10x\n", _get_aidr());
-	printk("CSSELR:                     %#10x\n", _get_csselr());
-
+	log_debug("CCSIDR:                     %#10x", _get_ccsidr());
+	log_debug("CLIDR:                      %#10x", _get_clidr());
+	log_debug("AIDR:                       %#10x", _get_aidr());
+	log_debug("CSSELR:                     %#10x", _get_csselr());
+#endif
 }
-
-
