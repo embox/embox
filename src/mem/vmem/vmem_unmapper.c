@@ -20,8 +20,8 @@ static inline int try_free_pte(mmu_pte_t *pte, mmu_pmd_t *pmd) {
 		}
 	}
 
-#if MMU_PTE_SHIFT != MMU_PMD_SHIFT
 	mmu_pmd_unset(pmd);
+#if MMU_PTE_SHIFT != MMU_PMD_SHIFT
 	vmem_free_pte_table(pte);
 #endif
 
@@ -56,7 +56,7 @@ static inline int try_free_pgd(mmu_pgd_t *pgd, mmu_ctx_t ctx) {
 	return 1;
 }
 
-void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, int free_pages) {
+void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
@@ -91,18 +91,11 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 			pte = mmu_pmd_value(pmd + pmd_idx);
 
 			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
-				if (virt_addr >= v_end) {
-					// Try to free pte, pmd, pgd
-					if (try_free_pte(pte, pmd + pmd_idx) && try_free_pmd(pmd, pgd + pgd_idx)) {
-						try_free_pgd(pgd, ctx);
-					}
-
-					mmu_flush_tlb();
-					return;
-				}
+				if (virt_addr >= v_end)
+					goto out_free;
 
 				if (mmu_pte_present(pte + pte_idx)) {
-					if (free_pages && mmu_pte_present(pte + pte_idx)) {
+					if (mmu_pte_present(pte + pte_idx)) {
 						addr = (void *) mmu_pte_value(pte + pte_idx);
 						vmem_free_page(addr);
 					}
@@ -111,6 +104,11 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 				}
 
 				virt_addr += VMEM_PAGE_SIZE;
+				if (virt_addr >= v_end) {
+					try_free_pte(pte, pmd + pmd_idx);
+					goto out_free;
+				}
+
 			}
 			try_free_pte(pte, pmd + pmd_idx);
 			pte_idx = 0;
@@ -120,8 +118,9 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, in
 		pmd_idx = 0;
 	}
 
+out_free:
+	try_free_pmd(pmd, pgd + pgd_idx);
 	try_free_pgd(pgd, ctx);
 
 	mmu_flush_tlb();
 }
-

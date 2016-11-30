@@ -20,7 +20,7 @@ void stack_protect(struct thread *t, size_t size)
     ctx = vmem_current_context();
     vmem_set_context(ctx);
 
-    vmem_unmap_region(ctx, (mmu_vaddr_t)t, size, 0);
+    vmem_unmap_region(ctx, (mmu_vaddr_t)t, size);
     vmem_map_region(ctx, (mmu_vaddr_t)t, (mmu_vaddr_t)t, size, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
 
     vmem_page_set_flags(ctx, (mmu_vaddr_t)t + VMEM_PAGE_SIZE, 0);

@@ -60,11 +60,11 @@ int mmu_pgd_present(mmu_pgd_t *pgd) {
 }
 
 int mmu_pmd_present(mmu_pmd_t *pmd) {
-	return 1;
+	return (((uint32_t)*pmd) & ARM_MMU_SMALL_PAGE) == ARM_MMU_SMALL_PAGE;
 }
 
 int mmu_pte_present(mmu_pte_t *pte) {
-	return (((uint32_t)*pte) & ARM_MMU_SMALL_PAGE) == ARM_MMU_SMALL_PAGE;
+	return 0;
 }
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {

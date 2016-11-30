@@ -24,7 +24,7 @@ static mmu_vaddr_t page;
 static inline int soverflow_handler(uint32_t nr, void *data) {
 	exception_flag = 1;
 
-    vmem_unmap_region(ctx, page, VMEM_PAGE_SIZE, 0);
+	vmem_unmap_region(ctx, page, VMEM_PAGE_SIZE);
 	vmem_map_region(ctx, page, page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
 
 	return 1;
