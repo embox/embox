@@ -54,7 +54,7 @@ static size_t task_mmap_offset;
 static const struct task_resource_desc task_mmap_desc = {
 	.init = task_mmap_init,
 	.inherit = task_mmap_inherit,
-	/* .deinit = task_mmap_deinit, */
+	.deinit = task_mmap_deinit,
 	.resource_size = sizeof(struct emmap),
 	.resource_offset = &task_mmap_offset
 };
