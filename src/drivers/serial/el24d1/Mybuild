@@ -1,0 +1,12 @@
+package embox.driver.serial
+
+module el24d1_uart extends embox.driver.diag.diag_api {
+	option number base_addr=0x38028000
+	option number irq_num=58
+	option number baud_rate=115200
+
+	source "el24d1.c"
+
+	depends core
+	depends diag
+}

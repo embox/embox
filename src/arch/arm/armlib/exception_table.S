@@ -75,6 +75,10 @@ data_abt_prepare:
 .global start
 start:
 reset_handler:
+    /* Make sure MMU is off */
+    mrc p15, 0, r0, c1, c0, 0
+    and r0, r0, #~CR_M
+    mcr p15, 0, r0, c1, c0, 0
 
     ldr r0, =_stack_top
 
