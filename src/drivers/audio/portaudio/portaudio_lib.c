@@ -32,51 +32,6 @@ struct pa_strm {
 };
 
 static struct pa_strm pa_stream;
-#if 0
-static int sample_format_in_bytes(uint32_t pa_format) {
-	switch (pa_format) {
-	case paInt16:
-		return 2;
-	case paInt8:
-		return 1;
-	default:
-		log_error("Unsupport stream format");
-		return -EINVAL;
-	}
-	return -EINVAL;
-}
-
-static int _bytes_per_sample(struct pa_strm *stream) {
-	return stream->number_of_chan *
-	       sample_format_in_bytes(stream->sample_format);
-}
-
-/**
- * @brief Check if given device support given number of channels
- *
- * @param dev    Audio device
- * @param chan_n Number of channels
- *
- * @retval 0 No support
- * @retval 1 Support
- */
-static int _dev_chan_support(struct audio_dev *dev, int chan_n) {
-	int supp;
-
-	if (NULL == dev->ad_ops->ad_ops_ioctl)
-		return 0;
-
-	supp = dev->ad_ops->ad_ops_ioctl(dev, ADIOCTL_SUPPORT, NULL);
-
-	if (chan_n == 1 && (supp & AD_MONO_SUPPORT))
-		return 1;
-
-	if (chan_n == 2 && (supp & AD_STEREO_SUPPORT))
-		return 1;
-
-	return 0;
-}
-#endif
 
 /**
  * @brief Duplicate left channel for the buffer
@@ -203,32 +158,7 @@ PaError Pa_OpenStream(PaStream** stream,
 
 	/* TODO work on mono sound device */
 	audio_dev->num_of_chan = 2;
-#if 0
-	if (_dev_chan_support(audio_dev, channel_cnt)) {
-		audio_dev->num_of_chan = channel_cnt;
-		actual_frames = framesPerBuffer;
-	} else {
-		if (channel_cnt == 2) {
-			if (_dev_chan_support(audio_dev, 1)) {
-				/* We will convert stereo to mono */
-				audio_dev->num_of_chan = 1;
-				actual_frames = framesPerBuffer / 2;
-			} else {
-				return paInvalidChannelCount;
-			}
-		} else if (channel_cnt == 1) {
-			if (_dev_chan_support(audio_dev, 2)) {
-				/* We will convert mono to stereo */
-				audio_dev->num_of_chan = 2;
-				actual_frames = framesPerBuffer * 2;
-			} else {
-				return paInvalidChannelCount;
-			}
-		} else {
-			return paInvalidChannelCount;
-		}
-	}
-#endif
+
 	assert(audio_dev->ad_ops && audio_dev->ad_ops->ad_ops_start);
 	audio_dev->ad_ops->ad_ops_start(audio_dev);
 
