@@ -124,6 +124,9 @@ static struct intel_ac_hw_dev intel_ac_hw_dev;
 #define DESC_IOC (1 << 31)
 #define DESC_BUP (1 << 30)
 
+#define INTEL_AC_DESC_LEN    0xFF00
+#define INTEL_AC_MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ * INTEL_AC_DESC_LEN)
+
 struct intel_ac_buff_desc {
 	uint32_t pointer;           /* 2-byte aligned */
 	uint32_t header;
@@ -137,21 +140,49 @@ struct intel_ac_buff_desc {
 
 /* This buffers could be allocated in runtime */
 static struct intel_ac_buff_desc pcm_out_buff_list[INTEL_AC_BUFFER_SZ];
+static struct intel_ac_buff_desc pcm_in_buff_list[INTEL_AC_BUFFER_SZ];
+static uint8_t dac1_out_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
+static uint8_t adc1_in_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
 
-/* Some of this stuff probably should be placed into
- * separate module */
-#define INTEL_AC_DESC_LEN    0xFF00
-#define INTEL_AC_MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ * INTEL_AC_DESC_LEN)
+static uint8_t *_buf_by_dev(struct audio_dev *dev) {
+	struct intel_ac_dev_priv *priv;
+	priv = dev->ad_priv;
+	
+	switch(priv->devid) {
+	case 0:
+		return &dac1_out_buf[0];
+	case 2:
+		return &adc1_in_buf[0];
+	default:
+		return NULL;
+	}
+}
+
+static struct intel_ac_buff_desc *_desc_list_by_dev(struct audio_dev *dev) {
+	struct intel_ac_dev_priv *priv;
+	priv = dev->ad_priv;
+	
+	switch(priv->devid) {
+	case 0:
+		return &pcm_out_buff_list[0];
+	case 2:
+		return &pcm_in_buff_list[0];
+	default:
+		return NULL;
+	}
+}
 
 static int intel_ac_buf_init(int n, struct audio_dev *dev) {
-	struct intel_ac_dev_priv *priv;
+	uint32_t buf = (uint32_t) _buf_by_dev(dev);
+	struct intel_ac_buff_desc *desc_list = _desc_list_by_dev(dev);
+	assert(buf);
+	assert(desc_list);
 
-	priv = dev->ad_priv;
-
-	pcm_out_buff_list[n] = (struct intel_ac_buff_desc) {
-		.pointer = (uint32_t)(priv->out_buf) + 2 * INTEL_AC_DESC_LEN * n,
+	desc_list[n] = (struct intel_ac_buff_desc) {
+		.pointer = buf + 2 * INTEL_AC_DESC_LEN * n,
 		.header = INTEL_AC_DESC_LEN
 	};
+
 	return 0;
 }
 
@@ -169,10 +200,13 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 		return IRQ_NONE;
 
 	out8(0x0, NAMB_REG(INTEL_AC_PO_CR));
+	out8(0x0, NAMB_REG(INTEL_AC_MIC_CR));
 	Pa_StartStream(NULL);
 
 	out16(0x1C, NAMB_REG(INTEL_AC_PO_SR));
 	out16(0x1C, NAMB_REG(INTEL_AC_PCM_IN_SR));
+	out16(0x1C, NAMB_REG(INTEL_AC_MIC_SR));
+
 
 	out32((1 << 15) | (1 << 11) | (1 << 10) | 1, NAMB_REG(INTEL_AC_GLOB_STA));
 
@@ -182,7 +216,6 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 	int err;
 	assert(pci_dev);
-
 	pci_set_master(pci_dev);
 
 	intel_ac_hw_dev.base_addr_namb = pci_dev->bar[1] & 0xFF00;
@@ -205,7 +238,6 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	uint8_t buf;
 	uint8_t lvi;
 	uint8_t cr;
-
 	switch (((struct intel_ac_dev_priv*)dev->ad_priv)->devid) {
 	case 0:
 		buf = INTEL_AC_PO_BUF;
@@ -221,7 +253,7 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 		log_error("Unsupported AC97 device id!");
 		return;
 	}
-	out32((uint32_t)&pcm_out_buff_list, NAMB_REG(buf));
+	out32((uint32_t)_desc_list_by_dev(dev), NAMB_REG(buf));
 
 	/* Setup buffers, currently just zeroes */
 	for (i = 0; i < INTEL_AC_BUFFER_SZ; i++) {
@@ -298,9 +330,6 @@ static const struct audio_dev_ops intel_ac_dev_ops = {
 	.ad_ops_ioctl  = intel_ac_ioctl
 };
 
-static uint8_t dac1_out_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
-static uint8_t adc1_in_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
-
 static struct intel_ac_dev_priv intel_ac_dac1 = {
 	.hw_dev      = &intel_ac_hw_dev,
 	.devid       = 0,
@@ -325,13 +354,5 @@ AUDIO_DEV_DEF("intel_ac_dac2", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel
 AUDIO_DEV_DEF("intel_ac_adc1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_adc1);
 
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
-	struct intel_ac_dev_priv *priv;
-
-	priv = audio_dev->ad_priv;
-
-	/* priv->cur_buff_offset += audio_dev->buf_len;
-	priv->cur_buff_offset %= priv->out_buf_len;
-	return &priv->out_buf[priv->cur_buff_offset]; */
-
-	return &priv->out_buf[0];
+	return _buf_by_dev(audio_dev);
 }
