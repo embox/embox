@@ -30,7 +30,7 @@ struct wave_header {
 	uint16_t NumChannels;    /* 1 for mono, 2 for stereo, etc. */
 	uint32_t SampleRate;     /* 8000, 44100, etc */
 	uint32_t ByteRate;       /* == SampleRate * NumChannels * BitsPerSample/8 */
-	uint32_t BlockAlign;	 /* == NumChannels * BitsPerSample/8 */
+	uint16_t BlockAlign;	 /* == NumChannels * BitsPerSample/8 */
 	uint16_t BitsPerSample;
 	/* data subchunk */
 	uint8_t Subchunk2ID[4];    /* "data" in ASCII */
@@ -44,6 +44,7 @@ static inline void _wave_header_fill(struct wave_header *hdr, int nchan,
 					int sample_rate, int bits_per_sample, int len) {
 	*hdr = (struct wave_header) {
 		.ChunkID       = "RIFF",
+		.ChunkSize     = 4 + (8 + 16) + (8 + len),
 		.Format        = "WAVE",
 		.Subchunk1ID   = "fmt ",
 		.Subchunk1Size = 16,
