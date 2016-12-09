@@ -143,11 +143,18 @@ int main(int argc, char **argv) {
 		printf("Sample rate:           %d\n", sample_rate);
 		printf("Bits per sample:       %d\n", bits_per_sample);
 		printf("Size of data section:  %d\n", fdata_len);
+
+		if (bits_per_sample * sample_rate * chan_n == 0) {
+			printf("Check bps, sample rate and channel number, they should not be zero!\n");
+			goto err_close_fd;
+		}
+
 		printf("Progress:\n");
 
 		_bl = min(fread(_fbuffer, 1, 64 * 1024 * 1024, fd), _bl);
 		_fchan = chan_n;
 	}
+
 
 	/* Initialize PA */
 	if (paNoError != (err = Pa_Initialize())) {
