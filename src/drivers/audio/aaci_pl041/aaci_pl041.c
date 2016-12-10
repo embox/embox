@@ -74,7 +74,6 @@ static void aaci_chan_wait_ready(struct aaci_runtime *aacirun, uint32_t mask) {
 		val = REG32_LOAD(aacirun->base + AACI_SR);
 	} while (val & mask && timeout--);
 }
-static uint32_t aaci_pl041_test_array[4096];
 
 static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	uint32_t ie;
@@ -90,9 +89,9 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 
 	log_debug("dev = 0x%X", dev);
 
-	//ptr = audio_dev_get_out_cur_ptr(dev);
-	ptr = aaci_pl041_test_array;
-	len = 4096; 
+	ptr = audio_dev_get_out_cur_ptr(dev);
+	len = hw_dev->fifo_depth;
+
 	/* writing 16 bytes at a time */
 	for ( ; len > 0; len -= 16) {
 		asm(
@@ -105,7 +104,7 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	}
 
 	aaci_chan_wait_ready(aacirun, AACI_SR_TXB);
-	aacirun->cr |= AACI_CR_EN;
+	aacirun->cr |= AACI_CR_EN | 0x8; /* TODO 4 slot but don't clear why it is required */
 
 	ie = REG32_LOAD(aacirun->base + AACI_IE);
 	ie |= AACI_IE_URIE | AACI_IE_TXIE;
@@ -366,6 +365,7 @@ static int aaci_size_fifo(struct aaci_pl041_hw_dev *hw_dev) {
  * Interrupt support.
  */
 static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
+	log_debug("base = 0x%X channel = %d mask = 0x%X", base, channel, mask);
 
 	if (mask & AACI_ISR_ORINTR) {
 		REG32_STORE(base + AACI_INTCLR, AACI_ICLR_RXOEC1 << channel);
@@ -512,7 +512,6 @@ static int aaci_pl041_init(void) {
 	if ((ret = aaci_ac97_init())) {
 		return ret;
 	}
-
 
 	ret = irq_attach(IRQ_NUM, aaci_pl041_irq_handler, IF_SHARESUP, NULL, "aaci_pl041");
 	if (ret) {
