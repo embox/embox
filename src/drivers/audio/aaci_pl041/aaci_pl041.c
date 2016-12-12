@@ -111,9 +111,9 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 
 	ie = REG32_LOAD(aacirun->base + AACI_IE);
 	if (stat & AACI_SR_TXHE) {
-		ie |= AACI_IE_URIE | AACI_IE_TXIE;
-	} else {
 		Pa_StartStream(NULL);
+	} else {
+		ie |= AACI_IE_URIE | AACI_IE_TXIE;
 	}
 	//ie |= AACI_IE_URIE | AACI_IE_TXIE;
 	REG32_STORE(aacirun->base + AACI_IE, ie);
