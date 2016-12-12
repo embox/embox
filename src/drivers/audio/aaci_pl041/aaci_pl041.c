@@ -78,6 +78,7 @@ static void aaci_chan_wait_ready(struct aaci_runtime *aacirun, uint32_t mask) {
 static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	uint32_t ie;
 	uint32_t len;
+	uint32_t stat;
 	void *ptr;
 	struct aaci_pl041_dev_priv *priv;
 	struct aaci_pl041_hw_dev *hw_dev;
@@ -87,7 +88,7 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	hw_dev = priv->hw_dev;
 	aacirun = &hw_dev->aaci_runtime;
 
-	log_debug("dev = 0x%X", dev);
+	//log_debug("dev = 0x%X", dev);
 
 	ptr = audio_dev_get_out_cur_ptr(dev);
 	len = hw_dev->fifo_depth;
@@ -103,13 +104,22 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 
 	}
 
-	aaci_chan_wait_ready(aacirun, AACI_SR_TXB);
+	//
+	//aaci_chan_wait_ready(aacirun, AACI_SR_TXB);
+	stat = REG32_LOAD(aacirun->base + AACI_SR);
 	aacirun->cr |= AACI_CR_EN | 0x8; /* TODO 4 slot but don't clear why it is required */
 
 	ie = REG32_LOAD(aacirun->base + AACI_IE);
-	ie |= AACI_IE_URIE | AACI_IE_TXIE;
+	if (stat & AACI_SR_TXHE) {
+		ie |= AACI_IE_URIE | AACI_IE_TXIE;
+	} else {
+		Pa_StartStream(NULL);
+	}
+	//ie |= AACI_IE_URIE | AACI_IE_TXIE;
 	REG32_STORE(aacirun->base + AACI_IE, ie);
 	REG32_STORE(aacirun->base + AACI_TXCR, aacirun->cr);
+
+
 }
 
 static void aaci_pl041_dev_stop(struct audio_dev *dev) {
@@ -148,7 +158,7 @@ static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
 		return AD_STEREO_SUPPORT |
 		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:
-		return AACI_MAXBUF_LEN_MAX_BUF_LEN;
+		return aaci_pl041_hw_dev.fifo_depth;
 	}
 	SET_ERRNO(EINVAL);
 	return -1;
@@ -365,7 +375,7 @@ static int aaci_size_fifo(struct aaci_pl041_hw_dev *hw_dev) {
  * Interrupt support.
  */
 static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
-	log_debug("base = 0x%X channel = %d mask = 0x%X", base, channel, mask);
+	//log_debug("base = 0x%X channel = %d mask = 0x%X", base, channel, mask);
 
 	if (mask & AACI_ISR_ORINTR) {
 		REG32_STORE(base + AACI_INTCLR, AACI_ICLR_RXOEC1 << channel);
@@ -397,7 +407,7 @@ static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
 		aacirun = &aaci_pl041_hw_dev.aaci_runtime;
 		/* we must disable irq because fulling fifo will be in light thread */
 		val = REG32_LOAD(aacirun->base + AACI_IE);
-		val &= ~AACI_IE_TXIE;
+		val &= ~( AACI_IE_URIE | AACI_IE_TXIE);
 		REG32_STORE(aacirun->base + AACI_IE, val);
 
 		Pa_StartStream(NULL);
