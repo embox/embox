@@ -1,0 +1,10 @@
+package stm32f7.cmd
+
+@AutoCmd
+@Cmd(name="stm32f7_test", help="STM32F7 test")
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32f7_test {
+	source "stm32f7_test.c"
+
+	depends third_party.bsp.stmf7cube.stm32f7_discovery
+}
