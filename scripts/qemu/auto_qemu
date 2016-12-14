@@ -208,6 +208,7 @@ declare -A AUDIO2QEMU
 AUDIO2QEMU=(
 	[intel_ac_pa]="ac97"
 	[es1370]="es1370"
+	[aaci_pl041]="default"
 )
 
 AUDIO_DEV=" " read -a qemu_sound <<< "$AUTOQEMU_AUDIO"
@@ -220,11 +221,14 @@ if [ $sound_n -gt 0 ]; then
 	for so in "${!qemu_sound[@]}"; do
 		sound_model=${AUDIO2QEMU[${qemu_sound[$ni]}]}
 		echo 
-		if [ ! $sound_model ]; then
-			error "sound model ${qemu_sound[$ni]} is not supported"
+		if [ $sound_model = "default" ]; then
+			sound_lines="$sound_lines"
+		else
+			if [ ! $sound_model ]; then
+				error "sound model ${qemu_sound[$ni]} is not supported"
+			fi
+			sound_lines="$sound_lines -soundhw $sound_model"
 		fi
-
-		sound_lines="$sound_lines -soundhw $sound_model"
 	done
 fi
 
