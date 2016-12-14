@@ -182,7 +182,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 		}
 
 		read_n = min(fsi->block_size - offset, ebuf - pbuf);
-		memcpy (buf, sector_buff + offset, read_n);
+		memcpy (pbuf, sector_buff + offset, read_n);
 
 		desc->cursor += read_n;
 		pbuf += read_n;
@@ -260,6 +260,7 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 			break;
 		}
 		bytecount += cnt;
+		buf = (void*) (((uint8_t*) buf) + cnt);
 		/* shift the pointer */
 		fi->pointer += cnt;
 		if(end_pointer <= fi->pointer) {
