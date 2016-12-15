@@ -7,8 +7,7 @@ module ramfs {
 	source "ramfs.c"
 	option number inode_quantity=64
 	option number ramfs_descriptor_quantity=4
-	option number ramfs_file_size=32
-	option number ramfs_filesystem_size=4000
+	option number ramfs_file_size=4096
 
 	depends embox.mem.pool
 
