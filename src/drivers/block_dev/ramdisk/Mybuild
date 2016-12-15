@@ -3,7 +3,7 @@ package embox.driver
 @DefaultImpl(ramdisk_old)
 abstract module ramdisk {
 	option number ramdisk_quantity = 8
-	option number block_size = 4096
+	option number size = 1048576
 }
 
 module ramdisk_old extends ramdisk {
