@@ -147,7 +147,7 @@ static uint8_t adc1_in_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)
 static uint8_t *_buf_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
-	
+
 	switch(priv->devid) {
 	case 0:
 		return &dac1_out_buf[0];
@@ -161,7 +161,7 @@ static uint8_t *_buf_by_dev(struct audio_dev *dev) {
 static uint8_t *_out_buf_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
-	
+
 	switch(priv->devid) {
 	case 0:
 		return &dac1_out_buf[0];
@@ -173,7 +173,7 @@ static uint8_t *_out_buf_by_dev(struct audio_dev *dev) {
 static uint8_t *_in_buf_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
-	
+
 	switch(priv->devid) {
 	case 2:
 		return &adc1_in_buf[0];
@@ -185,7 +185,7 @@ static uint8_t *_in_buf_by_dev(struct audio_dev *dev) {
 static struct intel_ac_buff_desc *_desc_list_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
-	
+
 	switch(priv->devid) {
 	case 0:
 		return &pcm_out_buff_list[0];
@@ -218,7 +218,11 @@ static int intel_ac_buf_init(int n, struct audio_dev *dev) {
 static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 	uint8_t status;
 	status = in8(NAMB_REG(INTEL_AC_PO_SR));
-	log_debug("Status Register = %#x\n", status);
+	log_debug("PO  Status Register = %#x", status);
+	status = in8(NAMB_REG(INTEL_AC_MIC_SR));
+	log_debug("MIC Status Register = %#x", status);
+	status = in8(NAMB_REG(INTEL_AC_PCM_IN_SR));
+	log_debug("PCM Status Register = %#x", status);
 
 	if (!(status & 0xFF))
 		return IRQ_NONE;
@@ -227,9 +231,9 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 	out8(0x0, NAMB_REG(INTEL_AC_MIC_CR));
 	Pa_StartStream(NULL);
 
-	out16(0x1C, NAMB_REG(INTEL_AC_PO_SR));
-	out16(0x1C, NAMB_REG(INTEL_AC_PCM_IN_SR));
-	out16(0x1C, NAMB_REG(INTEL_AC_MIC_SR));
+	out16(0x1F, NAMB_REG(INTEL_AC_PO_SR));
+	out16(0x1F, NAMB_REG(INTEL_AC_PCM_IN_SR));
+	out16(0x1F, NAMB_REG(INTEL_AC_MIC_SR));
 
 
 	out32((1 << 15) | (1 << 11) | (1 << 10) | 1, NAMB_REG(INTEL_AC_GLOB_STA));

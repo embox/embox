@@ -78,8 +78,11 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	 * we will anyway put twice as much data
 	 * to fill right channel as well */
 	inp_frames /= 2;
+
 	log_debug("out_buf = 0x%X, buf_len %d", out_buf, audio_dev->buf_len);
-	memset(out_buf, 0, audio_dev->buf_len);
+
+	if (out_buf)
+		memset(out_buf, 0, audio_dev->buf_len);
 
 	retval = pa_stream.callback(in_buf,
 			out_buf,
