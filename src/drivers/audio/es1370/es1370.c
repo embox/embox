@@ -342,6 +342,9 @@ int es1370_drv_start(int sub_dev) {
 	return 0;
 }
 
+uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
+	return NULL;
+}
 
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	struct es1370_dev_priv *priv;

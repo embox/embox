@@ -158,6 +158,30 @@ static uint8_t *_buf_by_dev(struct audio_dev *dev) {
 	}
 }
 
+static uint8_t *_out_buf_by_dev(struct audio_dev *dev) {
+	struct intel_ac_dev_priv *priv;
+	priv = dev->ad_priv;
+	
+	switch(priv->devid) {
+	case 0:
+		return &dac1_out_buf[0];
+	default:
+		return NULL;
+	}
+}
+
+static uint8_t *_in_buf_by_dev(struct audio_dev *dev) {
+	struct intel_ac_dev_priv *priv;
+	priv = dev->ad_priv;
+	
+	switch(priv->devid) {
+	case 2:
+		return &adc1_in_buf[0];
+	default:
+		return NULL;
+	}
+}
+
 static struct intel_ac_buff_desc *_desc_list_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
@@ -353,6 +377,10 @@ AUDIO_DEV_DEF("intel_ac_dac1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel
 AUDIO_DEV_DEF("intel_ac_dac2", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_dac2);
 AUDIO_DEV_DEF("intel_ac_adc1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_adc1);
 
+uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
+	return _in_buf_by_dev(audio_dev);
+}
+
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
-	return _buf_by_dev(audio_dev);
+	return _out_buf_by_dev(audio_dev);
 }

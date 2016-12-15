@@ -29,6 +29,7 @@ struct pa_strm {
 	void *user_data;
 
 	int active;
+	int lthread_start;
 };
 
 static struct pa_strm pa_stream;
@@ -59,6 +60,7 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	int retval;
 	struct audio_dev *audio_dev;
 	uint8_t *out_buf;
+	uint8_t *in_buf;
 	int inp_frames;
 
 	if (!pa_stream.callback || !pa_stream.active) {
@@ -69,7 +71,8 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	assert(audio_dev);
 
 	out_buf = audio_dev_get_out_cur_ptr(audio_dev);
-	assert(out_buf);
+	in_buf = audio_dev_get_in_cur_ptr(audio_dev);
+
 	inp_frames = audio_dev->buf_len / 2; /* 16 bit sample */
 	/* Even if source is mono channel,
 	 * we will anyway put twice as much data
@@ -78,7 +81,7 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	log_debug("out_buf = 0x%X, buf_len %d", out_buf, audio_dev->buf_len);
 	memset(out_buf, 0, audio_dev->buf_len);
 
-	retval = pa_stream.callback(NULL,
+	retval = pa_stream.callback(in_buf,
 			out_buf,
 			inp_frames,
 			NULL,
@@ -116,6 +119,7 @@ PaError Pa_Terminate(void) {
 	return paNoError;
 }
 
+/* XXX Now we support either only input of ouput streams, bot not both at the same time */
 PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
@@ -133,11 +137,18 @@ PaError Pa_OpenStream(PaStream** stream,
 			stream, inputParameters, outputParameters, sampleRate,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
-	int channel_cnt = outputParameters->channelCount;
+	if (outputParameters != NULL) {
+		pa_stream.lthread_start   = 1;
+		pa_stream.number_of_chan  = outputParameters->channelCount;
+		pa_stream.devid           = outputParameters->device;
+		pa_stream.sample_format   = outputParameters->sampleFormat;
+	} else {
+		pa_stream.lthread_start   = 0;
+		pa_stream.number_of_chan  = inputParameters->channelCount;
+		pa_stream.devid           = inputParameters->device;
+		pa_stream.sample_format   = inputParameters->sampleFormat;
+	}
 
-	pa_stream.number_of_chan = channel_cnt;
-	pa_stream.devid          = outputParameters->device;
-	pa_stream.sample_format  = outputParameters->sampleFormat;
 	pa_stream.callback       = streamCallback;
 	pa_stream.user_data      = userData;
 	pa_stream.active         = 1;
@@ -172,7 +183,11 @@ PaError Pa_CloseStream(PaStream *stream) {
 }
 
 PaError Pa_StartStream(PaStream *stream) {
-	lthread_launch(&portaudio_lthread);
+	if (pa_stream.lthread_start) {
+		lthread_launch(&portaudio_lthread);
+	}
+
+	pa_stream.lthread_start = 1;
 
 	return paNoError;
 }
