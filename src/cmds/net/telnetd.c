@@ -21,9 +21,6 @@
 
 #include <utmp.h>
 
-#include <net/l3/ipv4/ip.h>
-#include <net/inetdevice.h>
-
 #include <util/math.h>
 
 #include <kernel/task.h>
