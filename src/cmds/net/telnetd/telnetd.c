@@ -61,7 +61,6 @@ static struct {
 	int fd;
 	struct sockaddr_in addr_in;
 } clients[TELNETD_MAX_CONNECTIONS];
-static int listening_descr;
 
 static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
 	unsigned char cmd[3];
@@ -352,6 +351,7 @@ out:
 }
 
 int main(int argc, char **argv) {
+	int listening_descr;
 	int res;
 	struct sockaddr_in listening_socket;
 	struct sockaddr_in client_socket;
@@ -383,10 +383,12 @@ int main(int argc, char **argv) {
 
 	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
-		int client_descr = accept(listening_descr, (struct sockaddr *)&client_socket,
-								  &client_socket_len);
+		int client_descr;
 		struct thread *thread;
 		size_t i;
+
+		client_descr = accept(listening_descr,
+				(struct sockaddr *)&client_socket, &client_socket_len);
 
 		if (client_descr < 0) {
 			MD(printf("accept() failed. code=%d\n", -errno));
@@ -404,7 +406,7 @@ int main(int argc, char **argv) {
 
 		if (i == TELNETD_MAX_CONNECTIONS) {
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			MD(printf("limit of connections exceded\n"));
+			MD(printf("limit of connections exceeded\n"));
 			continue;
 		}
 
