@@ -8,6 +8,7 @@ abstract module portaudio_api {
 module portaudio_lib extends portaudio_api {
 	option number log_level=1
 	option number max_dev_count=4
+	option number log_level=0
 
 	source "portaudio_lib.c"
 	source "portaudio_info.c"
