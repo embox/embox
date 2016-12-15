@@ -22,15 +22,15 @@ static void print_usage(void) {
 
 static void write_wave(char *name, uint8_t *buf, int len) {
 	struct wave_header hdr;
-	int fd = open(name, O_CREAT);
-	
-	_wave_header_fill(&hdr, 1, 44100, 16, len);
+	int fd = open(name, O_CREAT | O_RDWR);
+
+	_wave_header_fill(&hdr, 2, 44100, 16, len);
 
 	write(fd, &hdr, sizeof(hdr));
 	write(fd, buf, len);
 }
 
-static uint8_t in_buf[1024 * 256];
+static uint32_t in_buf[4 * 2 * 32 / 4 * 0xff00]; /* Hardcoded 4x intel-ac buffer size */
 static int cur_ptr;
 
 static int record_callback(const void *inputBuffer, void *outputBuffer,
@@ -38,26 +38,27 @@ static int record_callback(const void *inputBuffer, void *outputBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
-	printf("Much recording, wow\n");
-	for (int i = 0; i < 256; i++) {
-		printf("%x ", ((int*) inputBuffer)[i]);
-	}
-	printf("\n");
+	int i;
+	framesPerBuffer = 2 * 32 / 4 * 0xff00; /* XXX */
 
-	for (int i = 0; i < framesPerBuffer; i++) {
-		in_buf[cur_ptr + i] = ((int*)inputBuffer)[i];
+	for (i = 0; i < framesPerBuffer; i++) {
+		if (cur_ptr > sizeof(in_buf))
+			break;
+		in_buf[cur_ptr] = ((int*)inputBuffer)[i];
+		cur_ptr++;
 	}
-	cur_ptr += framesPerBuffer;
 
+	if (cur_ptr * 4 > sizeof(in_buf))
+		return paComplete;
 	return paContinue;
 }
-	
+
 
 int main(int argc, char **argv) {
 	int opt;
 	int err;
 	int sample_rate = 44100;
-	int sleep_msec = 100000;
+	int sleep_msec = 50000;
 	PaStream *stream = NULL;
 
 	struct PaStreamParameters in_par;
@@ -86,8 +87,8 @@ int main(int argc, char **argv) {
 	}
 
 	in_par = (PaStreamParameters) {
-		.device                    = 0,
-		.channelCount              = 1,
+		.device                    = Pa_GetDefaultInputDevice(),
+		.channelCount              = 2,
 		.sampleFormat              = paInt16,
 		.suggestedLatency          = 10,
 		.hostApiSpecificStreamInfo = NULL,
@@ -99,8 +100,8 @@ int main(int argc, char **argv) {
 			sample_rate,
 			256 * 1024 / 4,
 			0,
-			NULL,
-			record_callback);
+			record_callback,
+			NULL);
 
 	if (err != paNoError) {
 		printf("Portaudio error: could not open stream!\n");
@@ -126,7 +127,7 @@ int main(int argc, char **argv) {
 		goto err_terminate_pa;
 	}
 
-	write_wave(argv[1], in_buf, sizeof(in_buf));
+	write_wave(argv[1], (uint8_t*)in_buf, cur_ptr * 4);
 
 err_terminate_pa:
 	if (paNoError != (err = Pa_Terminate()))
