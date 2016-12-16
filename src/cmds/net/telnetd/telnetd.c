@@ -59,7 +59,6 @@ extern int ppty(int pptyfds[2]);
 
 static struct {
 	int fd;
-	struct sockaddr_in addr_in;
 } clients[TELNETD_MAX_CONNECTIONS];
 
 static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
@@ -139,8 +138,16 @@ static int utmp_login(short ut_type, const char *host) {
 static void *shell_hnd(void* args) {
 	int ret;
 	int *msg = (int*)args;
+	struct sockaddr_in sockaddr;
+	socklen_t socklen;
 
-	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(clients[msg[2]].addr_in.sin_addr));
+	ret = getpeername(msg[3], (struct sockaddr *)&sockaddr, &socklen);
+	if (ret != 0) {
+		MD(printf("getpeername return error: %d\n", ret));
+		_exit(ret);
+	}
+
+	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(sockaddr.sin_addr));
 	if (ret != 0) {
 		MD(printf("utmp_login LOGIN error: %d\n", ret));
 	}
@@ -201,7 +208,7 @@ static void *telnet_thread_handler(void* args) {
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
 	int client_num = (int) args;
 	int sock = clients[client_num].fd;
-	int msg[3];
+	int msg[4];
 	int pptyfd[2];
 	int tid;
 	int nfds;
@@ -229,6 +236,7 @@ static void *telnet_thread_handler(void* args) {
 
 	msg[0] = msg[1] = pptyfd[1];
 	msg[2] = client_num;
+	msg[3] = sock;
 	if ((tid = new_task("telnetd user", shell_hnd, &msg)) < 0) {
 		MD(printf("new task error: %d\n", -tid));
 		close(sock);
@@ -411,7 +419,6 @@ int main(int argc, char **argv) {
 		}
 
 		clients[i].fd = client_descr;
-		memcpy(&clients[i].addr_in, &client_socket, sizeof(client_socket));
 
 		if (pthread_create(&thread, NULL, telnet_thread_handler, (void *) i)) {
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
