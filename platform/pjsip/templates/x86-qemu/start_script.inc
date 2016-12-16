@@ -1,4 +1,4 @@
-"mkdir mnt",
+//"mkdir mnt",
 "mount -t ramfs /dev/ram0 /mnt"
 //"record file.wav"
 #if 0
