@@ -342,6 +342,9 @@ int es1370_drv_start(int sub_dev) {
 	return 0;
 }
 
+uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
+	return NULL;
+}
 
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	struct es1370_dev_priv *priv;
@@ -472,7 +475,9 @@ static void es1370_dev_stop(struct audio_dev *dev) {
 
 static int es1370_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	switch(cmd) {
-	case ADIOCTL_SUPPORT:
+	case ADIOCTL_IN_SUPPORT:
+		return 0;
+	case ADIOCTL_OUT_SUPPORT:
 		return AD_STEREO_SUPPORT |
 		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:

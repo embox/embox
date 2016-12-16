@@ -44,7 +44,7 @@ INDEX_DEF(ramfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 
 /* define sizes in 4096 blocks */
 #define MAX_FILE_SIZE OPTION_GET(NUMBER,ramfs_file_size)
-#define FILESYSTEM_SIZE OPTION_GET(NUMBER,ramfs_filesystem_size)
+#define FILESYSTEM_SIZE (MAX_FILE_SIZE * OPTION_GET(NUMBER,inode_quantity))
 
 
 #define RAMFS_DEV  "/dev/ram#"
@@ -74,8 +74,7 @@ static int ramfs_init(void * par) {
 		return -ENOENT;
 	}
 
-	if (err(ramdisk = ramdisk_create(ramfs_dev,
-					FILESYSTEM_SIZE * PAGE_SIZE()))) {
+	if (err(ramdisk = ramdisk_create(ramfs_dev, FILESYSTEM_SIZE))) {
 		return err(ramdisk);
 	}
 
@@ -182,7 +181,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 		}
 
 		read_n = min(fsi->block_size - offset, ebuf - pbuf);
-		memcpy (buf, sector_buff + offset, read_n);
+		memcpy (pbuf, sector_buff + offset, read_n);
 
 		desc->cursor += read_n;
 		pbuf += read_n;
@@ -260,6 +259,7 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 			break;
 		}
 		bytecount += cnt;
+		buf = (void*) (((uint8_t*) buf) + cnt);
 		/* shift the pointer */
 		fi->pointer += cnt;
 		if(end_pointer <= fi->pointer) {
@@ -419,7 +419,7 @@ static int ramfs_format(void *dev) {
 	dev_nas = dev_node->nas;
 	dev_fi = dev_nas->fi;
 
-	if(MAX_FILE_SIZE > block_dev(dev_fi->privdata)->size / PAGE_SIZE()) {
+	if(MAX_FILE_SIZE > block_dev(dev_fi->privdata)->size) {
 		return -ENOSPC;
 	}
 	return 0;
@@ -454,7 +454,7 @@ static int ramfs_mount(void *dev, void *dir) {
 	memset(fsi, 0, sizeof(struct ramfs_fs_info));
 	dir_nas->fs->fsi = fsi;
 
-	fsi->block_per_file = MAX_FILE_SIZE;
+	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
 	fsi->block_size = PAGE_SIZE();
 	fsi->numblocks = block_dev(dev_fi->privdata)->size / PAGE_SIZE();
 

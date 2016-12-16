@@ -113,5 +113,6 @@ void vmem_free_pte_table(mmu_pte_t *pte) {
 }
 
 void vmem_free_page(void *addr) {
-	page_free(virt_page_allocator, addr, 1);
+	if (page_belong(virt_page_allocator, addr))
+		page_free(virt_page_allocator, addr, 1);
 }

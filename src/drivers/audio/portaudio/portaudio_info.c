@@ -63,8 +63,32 @@ PaDeviceIndex Pa_GetDeviceCount(void) {
 	return _dev_cnt;
 }
 
-PaDeviceIndex Pa_GetDefaultOutputDevice(void) {
-	return 0;
+PaDeviceIndex Pa_GetDefaultInputDevice (void) {
+	struct audio_dev *audio_dev;
+	
+	for (int i = 0; i < _dev_cnt; i++) {
+		audio_dev = audio_dev_get_by_idx(i);
+		if (!audio_dev || !audio_dev->ad_ops || !audio_dev->ad_ops->ad_ops_ioctl)
+			continue;
+		if (audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_IN_SUPPORT, NULL) != 0)
+			return i;
+	}
+
+	return paNoDevice;
+}
+
+PaDeviceIndex Pa_GetDefaultOutputDevice (void) {
+	struct audio_dev *audio_dev;
+	
+	for (int i = 0; i < _dev_cnt; i++) {
+		audio_dev = audio_dev_get_by_idx(i);
+		if (!audio_dev || !audio_dev->ad_ops || !audio_dev->ad_ops->ad_ops_ioctl)
+			continue;
+		if (audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_OUT_SUPPORT, NULL) != 0)
+			return i;
+	}
+
+	return paNoDevice;
 }
 
 const char *Pa_GetErrorText(PaError errorCode) {

@@ -39,7 +39,8 @@ static unsigned int search_first_free(struct page_allocator *allocator,
 
 static unsigned int check_n_free(struct page_allocator *allocator,
 		unsigned int start_page, unsigned int page_q) {
-
+	assert(allocator);
+	assert(start_page + page_q <= allocator->pages_n);
 	return bitmap_find_bit(allocator->bitmap, page_q + start_page, start_page) \
 		- start_page;
 }
@@ -48,6 +49,8 @@ static void mark_n_busy(struct page_allocator *allocator,
 		unsigned int start_page, unsigned int page_q) {
 	unsigned int page_i;
 
+	assert(allocator);
+	assert(start_page + page_q <= allocator->pages_n);
 	for (page_i = start_page; page_i < start_page + page_q; page_i++) {
 		bitmap_set_bit(allocator->bitmap, page_i);
 	}
@@ -59,6 +62,8 @@ static void mark_n_free(struct page_allocator *allocator,
 		unsigned int start_page, unsigned int page_q) {
 	unsigned int page_i;
 
+	assert(allocator);
+	assert(start_page + page_q <= allocator->pages_n);
 	for (page_i = start_page; page_i < start_page + page_q; page_i++) {
 		bitmap_clear_bit(allocator->bitmap, page_i);
 	}

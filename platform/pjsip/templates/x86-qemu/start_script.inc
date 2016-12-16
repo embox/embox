@@ -1,3 +1,7 @@
+//"mkdir mnt",
+"mount -t ramfs /dev/ram0 /mnt"
+//"record file.wav"
+#if 0
 /* Setup loopback interface */
 "ifconfig lo 127.0.0.1 netmask 255.0.0.0 up",
 "route add 127.0.0.0 netmask 255.0.0.0 lo",
@@ -8,3 +12,4 @@
 
 "export PWD=/",
 "export HOME=/",
+#endif

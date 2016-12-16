@@ -10,7 +10,6 @@
 #include <limits.h>
 #include <stdio.h>
 #include <ctype.h>
-
 #include <util/err.h>
 #include <embox/unit.h>
 #include <fs/vfs.h>
@@ -27,7 +26,7 @@
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
-#define RAMDISK_BLOCK_SIZE OPTION_GET(NUMBER,block_size)
+#define RAMDISK_SIZE OPTION_GET(NUMBER,size)
 
 POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
 INDEX_DEF(ramdisk_idx,0,MAX_DEV_QUANTITY);
@@ -67,7 +66,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	int idx;
 	int err;
 
-	const size_t ramdisk_size = binalign_bound(size, RAMDISK_BLOCK_SIZE);
+	const size_t ramdisk_size = binalign_bound(size, RAMDISK_SIZE);
 	const size_t page_n = (ramdisk_size + PAGE_SIZE() - 1) / PAGE_SIZE();
 
 	if (NULL == (ramdisk = pool_alloc(&ramdisk_pool))) {
@@ -75,7 +74,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 		goto err_out;
 	}
 
-	ramdisk->blocks = ramdisk_size / RAMDISK_BLOCK_SIZE;
+	ramdisk->blocks = ramdisk_size / PAGE_SIZE();
 
 	ramdisk->p_start_addr = phymem_alloc(page_n);
 	if (NULL == (ramdisk->p_start_addr)) {
@@ -95,7 +94,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	}
 
 	ramdisk->bdev->size = ramdisk_size;
-	ramdisk->bdev->block_size = RAMDISK_BLOCK_SIZE;
+	ramdisk->bdev->block_size = PAGE_SIZE();
 	return ramdisk;
 
 err_free_bdev_idx:
