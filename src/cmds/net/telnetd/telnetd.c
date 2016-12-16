@@ -28,14 +28,15 @@
 #include <cmd/shell.h>
 
 #define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
-	/* Telnetd address bind to */
+
+/* Telnetd address bind to */
 #define TELNETD_ADDR INADDR_ANY
-	/* Telnetd port bind to */
+/* Telnetd port bind to */
 #define TELNETD_PORT 23
 
 #define XBUFF_LEN 128
 
-	/* Allow to turn off/on extra debugging information */
+/* Allow to turn off/on extra debugging information */
 #if 0
 #	define MD(x) do {\
 		x;\
@@ -45,15 +46,16 @@
 	} while (0);
 #endif
 
-#define T_WILL		251
-#define T_WONT		252
-#define T_DO		253
-#define T_DONT		254
-#define T_IAC		255
+/* http://www.tcpipguide.com/free/t_TelnetProtocolCommands-3.htm */
+#define T_WILL      251
+#define T_WONT      252
+#define T_DO        253
+#define T_DONT      254
+#define T_IAC       255
 #define T_INTERRUPT 244
 
-#define O_ECHO		1		/* Manage ECHO, RFC 857 */
-#define O_GO_AHEAD	3		/* Disable GO AHEAD, RFC 858 */
+#define O_ECHO      1     /* Manage ECHO, RFC 857 */
+#define O_GO_AHEAD  3     /* Disable GO AHEAD, RFC 858 */
 
 extern int ppty(int pptyfds[2]);
 
