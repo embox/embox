@@ -349,7 +349,6 @@ out_close:
 	close(sock);
 	telnet_connections_count --;
 
-
 	waitpid(tid, NULL, 0);
 
 out:
@@ -363,7 +362,7 @@ int main(int argc, char **argv) {
 	int res;
 	struct sockaddr_in listening_socket;
 	struct sockaddr_in client_socket;
-	int client_socket_len = sizeof(client_socket);
+	socklen_t client_socket_len = sizeof(client_socket);
 
 	telnet_connections_count = 0;
 
@@ -400,12 +399,12 @@ int main(int argc, char **argv) {
 		client_descr = accept(listening_descr,
 				(struct sockaddr *)&client_socket, &client_socket_len);
 
-		telnet_connections_count ++;
-
 		if (client_descr < 0) {
 			MD(printf("accept() failed. code=%d\n", -errno));
 			continue;
 		}
+
+		telnet_connections_count ++;
 
 		MD(printf("Attempt to connect from address %s:%d\n",
 			inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)));
@@ -420,5 +419,6 @@ int main(int argc, char **argv) {
 listen_failed:
 	res = -errno;
 	close(listening_descr);
+
 	return res;
 }
