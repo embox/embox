@@ -33,6 +33,7 @@ PaError Pa_Terminate(void) {
 PaHostApiIndex Pa_GetHostApiCount(void) { return 1; }
 PaDeviceIndex Pa_GetDeviceCount(void) { return 1; }
 PaDeviceIndex Pa_GetDefaultOutputDevice(void) { return 0; }
+PaDeviceIndex Pa_GetDefaultInputDevice(void) { return 0; }
 
 const char * Pa_GetErrorText(PaError errorCode) {
 	D("errcode=%d", errorCode);
