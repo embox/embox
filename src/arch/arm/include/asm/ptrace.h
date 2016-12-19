@@ -27,10 +27,10 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 #else /* __ASSEMBLER__ */
 
 #define CALL_WPTREGS \
-	sub 	sp, sp, #68;  \
-	stmia 	sp, {r0 - r12, r14}; \
+	sub     sp, sp, #68;  \
+	stmia   sp, {r0 - r12, r14}; \
 	str     sp, [sp, #56]; \
-	mov	r0, sp;       \
+	mov     r0, sp;       \
 	bl
 
 
