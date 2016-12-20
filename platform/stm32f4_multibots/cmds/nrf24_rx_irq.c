@@ -95,6 +95,10 @@ static void nrf24_test(void) {
 	/* Channel #2 , payload length: 4 */
 	nrf24_config(16,6);
 
+	if (EXTILine0_Config() < 0) {
+		printf("EXTILine0_Config error!!!!!\n");
+	}
+
     nrf24_readRegister(FIFO_STATUS,&reg,1);
 	printf("!> 1 FIFO_STATUS = %2X\n", reg);
 
@@ -122,11 +126,6 @@ static void nrf24_test(void) {
 
 	nrf24_readRegister(FIFO_STATUS,&reg,1);
 	printf("!!!!!!> 3 FIFO_STATUS = %2X\n", reg);
-
-
-	if (EXTILine0_Config() < 0) {
-		printf("EXTILine0_Config error!!!!!\n");
-	}
 
 	while (1)
 		;
