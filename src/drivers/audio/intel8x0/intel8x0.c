@@ -216,16 +216,17 @@ static int intel_ac_buf_init(int n, struct audio_dev *dev) {
 #define INTEL_AC_PID 0x2415
 
 static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
-	uint8_t status;
-	status = in8(NAMB_REG(INTEL_AC_PO_SR));
-	log_debug("PO  Status Register = %#x", status);
-	status = in8(NAMB_REG(INTEL_AC_MIC_SR));
-	log_debug("MIC Status Register = %#x", status);
-	status = in8(NAMB_REG(INTEL_AC_PCM_IN_SR));
-	log_debug("PCM Status Register = %#x", status);
+	uint8_t po_status, mic_status, pcm_status;
+	po_status = in8(NAMB_REG(INTEL_AC_PO_SR));
+	mic_status = in8(NAMB_REG(INTEL_AC_MIC_SR));
+	pcm_status = in8(NAMB_REG(INTEL_AC_PCM_IN_SR));
 
-	if (!(status & 0xFF))
+	if (!((po_status | mic_status | pcm_status) & 0xFE))
 		return IRQ_NONE;
+
+	log_debug("PO  Status Register = %#x", po_status);
+	log_debug("MIC Status Register = %#x", mic_status);
+	log_debug("PCM Status Register = %#x", pcm_status);
 
 	out8(0x0, NAMB_REG(INTEL_AC_PO_CR));
 	out8(0x0, NAMB_REG(INTEL_AC_MIC_CR));

@@ -154,6 +154,8 @@ static void aaci_pl041_dev_resume(struct audio_dev *dev) {
 static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	log_debug("dev = 0x%X", dev);
 	switch(cmd) {
+	case ADIOCTL_IN_SUPPORT:
+		return 0;
 	case ADIOCTL_OUT_SUPPORT:
 		return AD_STEREO_SUPPORT |
 		       AD_16BIT_SUPPORT;
@@ -206,6 +208,9 @@ uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	return priv->out_buf;
 }
 
+uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
+	return NULL;
+}
 
 static void aaci_ac97_select_codec(struct aaci_pl041_hw_dev *hw_dev) {
 	uint32_t v;
