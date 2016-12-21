@@ -32,12 +32,16 @@ typedef struct pt_regs {
 	unsigned int gp; /* global pointer r28 */
 	unsigned int sp; /* stack pointer r29 */
 	unsigned int fp; /* frame pointer r30 */
-	unsigned int ra; /* return address 31*/
+	unsigned int ra; /* return address 31 */
 	unsigned int lo;
 	unsigned int hi;
 	unsigned int cp0_status;
 	unsigned int pc;
-}pt_regs_t;
+} pt_regs_t;
+
+static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
+	ptregs->reg[1] = retcode; /* $v0 ($2) */
+}
 
 #else /* assembler */
 
