@@ -105,6 +105,13 @@ static module system_init {
 	source "./STM32Cube_FW_F4_V1.13.0/Projects/STM32F4-Discovery/Examples/BSP/Src/system_stm32f4xx.c"
 }
 
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module stm32f4_discovery {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/core")
+	source "./STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery.c"
+}
 
 @Build(stage=1,script="true")
 @BuildDepends(core)
