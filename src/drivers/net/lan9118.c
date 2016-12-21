@@ -8,8 +8,8 @@
 
 #include <assert.h>
 #include <arpa/inet.h>
-#include <drivers/gpmc.h>
-#include <drivers/gpio.h>
+//#include <drivers/gpmc.h>
+//#include <drivers/gpio.h>
 #include <errno.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -26,12 +26,31 @@
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
 #include <net/netfilter.h>
+#include <net/inetdevice.h>
 #include <unistd.h>
 
-#define LAN9118_GPMC_CS        5 /* GPMC chip-select number */
-#define LAN9118_PORT           OPTION_GET(NUMBER, port)
-#define LAN9118_PIN            OPTION_GET(NUMBER, irq_pin)
-#define SIZE_16M               0x1000000
+#include <drivers/common/memory.h>
+
+#define LAN9118_IRQ_GPIO          0
+#define LAN9118_IRQ_NO_GPIO       1
+#define LAN9118_IRQ_TYPE          OPTION_GET(NUMBER, irq_type)
+
+#if LAN9118_IRQ_TYPE == LAN9118_IRQ_GPIO
+
+#define LAN9118_GPMC_CS           5 /* GPMC chip-select number */
+#define LAN9118_PORT              OPTION_GET(NUMBER, port)
+#define LAN9118_PIN               OPTION_GET(NUMBER, irq_pin)
+#define LAN9118_MEMORY_REG_SIZE   OPTION_GET(NUMBER, memory_region_size)
+
+#elif LAN9118_IRQ_TYPE == LAN9118_IRQ_NO_GPIO
+
+#define LAN9118_BASE_ADDRESS      OPTION_GET(NUMBER, base_address)
+#define LAN9118_MEMORY_REG_SIZE   OPTION_GET(NUMBER, memory_region_size)
+#define LAN9118_IRQ_NR            OPTION_GET(NUMBER, irq_nr)
+
+#else
+#error LAN9118: not supported IRQ type. Please select from usual one and GPIO irq.
+#endif
 
 #define LAN9118_RX_DATA_FIFO   0x00
 
@@ -333,10 +352,14 @@ static int lan9118_open(struct net_device *dev) {
 			_LAN9118_IRQ_CFG_POL |
 			_LAN9118_IRQ_CFG_TYPE);
 
+#if LAN9118_IRQ_TYPE == LAN9118_IRQ_GPIO
 	gpio_pin_irq_attach(gpio_by_num(LAN9118_PORT), 1 << LAN9118_PIN,
 				lan9118_irq_handler,
 				GPIO_MODE_INT_MODE_LEVEL1,
 				dev);
+#else
+	irq_attach(LAN9118_IRQ_NR, lan9118_irq_handler, 0, dev, "lan9118 INTERRUPT");
+#endif
 
 	lan9118_reg_write(dev, LAN9118_HW_CFG, 0x00050000);
 
@@ -369,7 +392,7 @@ static const struct net_driver lan9118_drv_ops = {
 };
 
 static int lan9118_init(void) {
-	int res;
+	int res = 0;
 	struct net_device *nic;
 
 	nic = etherdev_alloc(0);
@@ -379,7 +402,11 @@ static int lan9118_init(void) {
 
 	nic->drv_ops = &lan9118_drv_ops;
 
-	res = gpmc_cs_init(LAN9118_GPMC_CS, (uint32_t *) &nic->base_addr, SIZE_16M);
+#if LAN9118_IRQ_TYPE == LAN9118_IRQ_GPIO
+	res = gpmc_cs_init(LAN9118_GPMC_CS, (uint32_t *) &nic->base_addr, LAN9118_MEMORY_REG_SIZE);
+#else
+	nic->base_addr = LAN9118_BASE_ADDRESS;
+#endif
 
 	if (res < 0)
 		return -1;
@@ -399,3 +426,13 @@ static int lan9118_init(void) {
 
 	return inetdev_register_dev(nic);
 }
+
+#if LAN9118_IRQ_TYPE != LAN9118_IRQ_GPIO
+/* Static memory (CS3) Ethernet 0x4E000000-0x4EFFFFFF (SMC) 16MB */
+static struct periph_memory_desc lan9118_mem = {
+	.start = LAN9118_BASE_ADDRESS,
+	.len   = LAN9118_MEMORY_REG_SIZE,
+};
+
+PERIPH_MEMORY_DEFINE(lan9118_mem);
+#endif
