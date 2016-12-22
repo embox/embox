@@ -112,13 +112,37 @@ module usermode {
 	depends embox.net.entry_api
 }
 
-module lan9118 {
+abstract module lan9118 {}
+
+/* Version of LAN9118 driver with usual interrupt controller */
+module lan9118_non_gpio_irq extends lan9118 {
+	option number log_level=3 /* info */
+
+	source "lan9118.c"
+	
+	option number irq_type = 1 /* Interrupt controller ("usual" interrupt) */
+	option number memory_region_size = 0x1000000 /* 16 Mb */
+	option number base_address = 0x4E000000
+	option number irq_nr = 47
+
+	depends embox.net.skbuff
+	depends embox.compat.libc.all
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}
+
+/* Version of LAN9118 driver with GPIO irq */
+module lan9118_gpio_irq extends lan9118 {
 	option number log_level=3 /* info */
 
 	source "lan9118.c"
 
+	option number irq_type = 0 /* GPIO irq */
 	option number irq_pin=16
 	option number port=6
+	option number memory_region_size = 0x1000000 /* 16 Mb */
 
 	depends embox.driver.gpmc.gpmc_api
 	depends embox.driver.gpio.api
