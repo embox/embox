@@ -7,10 +7,11 @@
  */
 
 #include <assert.h>
-#include <arpa/inet.h>
-//#include <drivers/gpmc.h>
-//#include <drivers/gpio.h>
 #include <errno.h>
+#include <unistd.h>
+#include <string.h>
+#include <arpa/inet.h>
+
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
@@ -19,15 +20,11 @@
 #include <kernel/irq.h>
 #include <util/log.h>
 
-#include <string.h>
 #include <net/l2/ethernet.h>
 #include <net/l0/net_entry.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
-#include <net/netfilter.h>
-#include <net/inetdevice.h>
-#include <unistd.h>
 
 #include <drivers/common/memory.h>
 
@@ -35,15 +32,16 @@
 #define LAN9118_IRQ_NO_GPIO       1
 #define LAN9118_IRQ_TYPE          OPTION_GET(NUMBER, irq_type)
 
-#if LAN9118_IRQ_TYPE == LAN9118_IRQ_GPIO
+#if LAN9118_IRQ_TYPE == LAN9118_IRQ_GPIO /* If GPIO irq */
+#include <drivers/gpmc.h>
+#include <drivers/gpio.h>
 
 #define LAN9118_GPMC_CS           5 /* GPMC chip-select number */
 #define LAN9118_PORT              OPTION_GET(NUMBER, port)
 #define LAN9118_PIN               OPTION_GET(NUMBER, irq_pin)
 #define LAN9118_MEMORY_REG_SIZE   OPTION_GET(NUMBER, memory_region_size)
 
-#elif LAN9118_IRQ_TYPE == LAN9118_IRQ_NO_GPIO
-
+#elif LAN9118_IRQ_TYPE == LAN9118_IRQ_NO_GPIO /* If interrupt controller ("usual" irq) */
 #define LAN9118_BASE_ADDRESS      OPTION_GET(NUMBER, base_address)
 #define LAN9118_MEMORY_REG_SIZE   OPTION_GET(NUMBER, memory_region_size)
 #define LAN9118_IRQ_NR            OPTION_GET(NUMBER, irq_nr)
