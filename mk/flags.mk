@@ -181,6 +181,9 @@ override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 
 override COMMON_CCFLAGS += -Wno-gnu-designator
 
+# This option conflicts with some third-party stuff, so we disable it.
+override COMMON_CCFLAGS += -Wno-misleading-indentation
+
 
 # GCC 6 seems to have many library functions declared as __nonnull__, like
 # fread, fwrite, fprintf, ...  Since accessing NULL in embox without MMU 
