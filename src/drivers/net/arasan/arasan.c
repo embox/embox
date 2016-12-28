@@ -138,6 +138,20 @@ static irq_return_t arasan_int_handler(unsigned int irq_num, void *dev_id) {
 EMBOX_UNIT_INIT(arasan_init);
 static int arasan_init(void) {
         struct net_device *nic;
+	uint32_t reg;
+
+	REG32_STORE(MAC_ADDRESS_CONTROL, 1);
+	REG32_STORE(MAC_TRANSMIT_FIFO_ALMOST_FULL, (512 - 8));
+	REG32_STORE(MAC_TRANSMIT_PACKET_START_THRESHOLD, 128);
+	REG32_STORE(MAC_RECEIVE_PACKET_START_THRESHOLD, 64);
+
+	reg = REG32_LOAD(MAC_RECEIVE_CONTROL);
+	reg |= MAC_RECEIVE_CONTROL_STORE_AND_FORWARD;
+	REG32_STORE(MAC_RECEIVE_CONTROL, reg);
+
+	reg = REG32_LOAD(DMA_CONFIGURATION);
+	reg |= DMA_CONFIGURATION_WAIT_FOR_DONE;
+	REG32_STORE(DMA_CONFIGURATION, reg);
 
         if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
