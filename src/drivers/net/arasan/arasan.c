@@ -23,6 +23,7 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/util/show_packet.h>
+#include <util/log.h>
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -30,6 +31,10 @@
 /* Internal I/O space mapping */
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
 #define ARASAN_IRQ OPTION_GET(NUMBER, irq_num)
+
+#define MAC_ADDRESS1_HIGH  (BASE_ADDR + 0x0120)
+#define MAC_ADDRESS1_MED   (BASE_ADDR + 0x0124)
+#define MAC_ADDRESS1_LOW   (BASE_ADDR + 0x0128)
 
 static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
@@ -40,6 +45,26 @@ static int arasan_open(struct net_device *dev) {
 }
 
 static int arasan_set_macaddr(struct net_device *dev, const void *addr) {
+	uint32_t mac_hi, mac_mid, mac_lo;
+	const uint8_t *_macaddr = addr;
+
+	log_debug("addr = %x:%x:%x:%x:%x:%x",
+		_macaddr[0], _macaddr[1], _macaddr[2],
+		_macaddr[3], _macaddr[4], _macaddr[5]);
+
+	mac_lo  = (_macaddr[5] << 8) |
+	          (_macaddr[4] << 0);
+
+	mac_mid = (_macaddr[3] << 8) |
+	          (_macaddr[2] << 0);
+
+	mac_hi  = (_macaddr[1] << 8) |
+	          (_macaddr[0] << 0);
+
+	REG32_STORE(MAC_ADDRESS1_HIGH, mac_hi);
+	REG32_STORE(MAC_ADDRESS1_MED, mac_mid);
+	REG32_STORE(MAC_ADDRESS1_LOW, mac_lo);
+
 	return 0;
 }
 
