@@ -92,6 +92,50 @@
 #define MAC_VLAN_TPID2                            (BASE_ADDR + 0x01EC)
 #define MAC_VLAN_TPID3                            (BASE_ADDR + 0x01F0)
 
+#define MAC_RECEIVE_CONTROL_RECEIVE_ENABLE            (1 << 0)
+#define MAC_RECEIVE_CONTROL_STORE_AND_FORWARD         (1 << 3)
+
+#define DMA_CONFIGURATION_SOFT_RESET                  (1 << 0)
+#define DMA_CONFIGURATION_WAIT_FOR_DONE               (1 << 16)
+
+#define DMA_CONTROL_START_TRANSMIT_DMA                (1 << 0)
+#define DMA_CONTROL_START_RECEIVE_DMA                 (1 << 1)
+
+#define DMA_STATUS_AND_IRQ_TRANSFER_DONE              (1 << 0)
+#define DMA_STATUS_AND_IRQ_TRANS_DESC_UNVAIL          (1 << 1)
+#define DMA_STATUS_AND_IRQ_TX_DMA_STOPPED             (1 << 2)
+#define DMA_STATUS_AND_IRQ_RECEIVE_DONE               (1 << 4)
+#define DMA_STATUS_AND_IRQ_RX_DMA_STOPPED             (1 << 6)
+#define DMA_STATUS_AND_IRQ_MAC_INTERRUPT              (1 << 11)
+
+/* DMA descriptor fields */
+#define DMA_RDES0_OWN_BIT      (1 << 31)
+#define DMA_RDES0_FD           (1 << 30)
+#define DMA_RDES0_LD           (1 << 29)
+
+#define DMA_RDES1_EOR          (1 << 26)
+
+#define DMA_TDES0_OWN_BIT      (1 << 31)
+#define DMA_TDES1_IOC          (1 << 31)
+#define DMA_TDES1_LS           (1 << 30)
+#define DMA_TDES1_FS           (1 << 29)
+#define DMA_TDES1_EOR          (1 << 26)
+
+struct arasan_dma_desc {
+	uint32_t status;
+	uint32_t misc;
+	uint32_t buffer1;
+	uint32_t buffer2;
+};
+
+#define TX_RING_SIZE 8
+#define RX_RING_SIZE 128
+
+static struct arasan_dma_desc _rx_ring[RX_RING_SIZE];
+static struct arasan_dma_desc _tx_ring[TX_RING_SIZE];
+static int _tx_head, _tx_tail;
+static int _rx_head, _rx_tail;
+
 static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
 }
@@ -140,6 +184,7 @@ static int arasan_init(void) {
         struct net_device *nic;
 	uint32_t reg;
 
+	/* Setup registers */
 	REG32_STORE(MAC_ADDRESS_CONTROL, 1);
 	REG32_STORE(MAC_TRANSMIT_FIFO_ALMOST_FULL, (512 - 8));
 	REG32_STORE(MAC_TRANSMIT_PACKET_START_THRESHOLD, 128);
@@ -153,6 +198,22 @@ static int arasan_init(void) {
 	reg |= DMA_CONFIGURATION_WAIT_FOR_DONE;
 	REG32_STORE(DMA_CONFIGURATION, reg);
 
+	/* Setup TX descriptors */
+	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
+	_tx_head = _tx_tail = 0;
+	REG32_STORE(DMA_TRANSMIT_BASE_ADDRESS, (uint32_t)_tx_ring);
+
+	/* Setup RX descriptors */
+	for (int i = 0; i < RX_RING_SIZE; i++) {
+		_rx_ring[i] = (struct arasan_dma_desc) {
+			.misc = skb_max_size()
+		};
+	}
+	_rx_ring[RX_RING_SIZE - 1].misc |= DMA_RDES1_EOR;
+	_rx_head = _rx_tail = 0;
+	REG32_STORE(DMA_RECEIVE_BASE_ADDRESS,  (uint32_t)_rx_ring);
+
+	/* Setup etherdev */
         if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
         }
