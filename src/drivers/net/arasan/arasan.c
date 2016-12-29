@@ -184,6 +184,21 @@ static int arasan_init(void) {
         struct net_device *nic;
 	uint32_t reg;
 
+	/* Setup TX descriptors */
+	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
+	_tx_head = _tx_tail = 0;
+	REG32_STORE(DMA_TRANSMIT_BASE_ADDRESS, (uint32_t)_tx_ring);
+
+	/* Setup RX descriptors */
+	for (int i = 0; i < RX_RING_SIZE; i++) {
+		_rx_ring[i] = (struct arasan_dma_desc) {
+			.misc = skb_max_size()
+		};
+	}
+	_rx_ring[RX_RING_SIZE - 1].misc |= DMA_RDES1_EOR;
+	_rx_head = _rx_tail = 0;
+	REG32_STORE(DMA_RECEIVE_BASE_ADDRESS, (uint32_t)_rx_ring);
+
 	/* Setup registers */
 	REG32_STORE(MAC_ADDRESS_CONTROL, 1);
 	REG32_STORE(MAC_TRANSMIT_FIFO_ALMOST_FULL, (512 - 8));
@@ -198,20 +213,28 @@ static int arasan_init(void) {
 	reg |= DMA_CONFIGURATION_WAIT_FOR_DONE;
 	REG32_STORE(DMA_CONFIGURATION, reg);
 
-	/* Setup TX descriptors */
-	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
-	_tx_head = _tx_tail = 0;
-	REG32_STORE(DMA_TRANSMIT_BASE_ADDRESS, (uint32_t)_tx_ring);
+	/* schedule a link state check */
+	//phy_start
+	//napi_enable
+	/* Enable interrupts */
+	REG32_STORE(DMA_INTERRUPT_ENABLE,
+			DMA_INTERRUPT_ENABLE_RECEIVE_DONE |
+			DMA_INTERRUPT_ENABLE_TRANSMIT_DONE);
 
-	/* Setup RX descriptors */
-	for (int i = 0; i < RX_RING_SIZE; i++) {
-		_rx_ring[i] = (struct arasan_dma_desc) {
-			.misc = skb_max_size()
-		};
-	}
-	_rx_ring[RX_RING_SIZE - 1].misc |= DMA_RDES1_EOR;
-	_rx_head = _rx_tail = 0;
-	REG32_STORE(DMA_RECEIVE_BASE_ADDRESS,  (uint32_t)_rx_ring);
+	/* Enable packet transmission */
+	reg = REG32_LOAD(MAC_TRANSMIT_CONTROL);
+	reg |= MAC_TRANSMIT_CONTROL_TRANSMIT_ENABLE;
+	REG32_STORE(MAC_TRANSMIT_CONTROL, reg);
+
+	/* Enable packet reception */
+	reg = REG32_LOAD(MAC_RECEIVE_CONTROL);
+	reg |= MAC_RECEIVE_CONTROL_RECEIVE_ENABLE;
+	REG32_STORE(MAC_RECEIVE_CONTROL, reg);
+
+	/* Start transmit and receive DMA */
+	REG32_STORE(DMA_CONTROL,
+			DMA_CONTROL_START_RECEIVE_DMA |
+			DMA_CONTROL_START_TRANSMIT_DMA);
 
 	/* Setup etherdev */
         if (NULL == (nic = etherdev_alloc(0))) {
