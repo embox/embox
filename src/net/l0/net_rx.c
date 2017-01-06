@@ -28,7 +28,7 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb != NULL);
 	assert(skb->dev != NULL);
 	if (skb->len < skb->dev->hdr_len) {
-		log_error("net_rx: %p invalid length %zu\n", skb, skb->len);
+		log_error("%p invalid length %zu", skb, skb->len);
 		skb_free(skb);
 		return 0; /* error: invalid size */
 	}
@@ -37,7 +37,7 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb->dev->ops != NULL);
 	assert(skb->dev->ops->parse_hdr != NULL);
 	if (0 != skb->dev->ops->parse_hdr(skb, &hdr_info)) {
-		log_error("net_rx: %p can't parse header\n", skb);
+		log_error("%p can't parse header", skb);
 		skb_free(skb);
 		return 0; /* error: can't parse L2 header */
 	}
@@ -45,7 +45,7 @@ int net_rx(struct sk_buff *skb) {
 	/* check recipient on L2 layer */
 	switch (pkt_type(skb)) {
 	default:
-		log_debug("net_rx: %p not for us\n", skb);
+		log_debug("%p not for us", skb);
 		skb_free(skb);
 		return 0; /* ok, but: not for us */
 	case PACKET_HOST:
@@ -59,7 +59,7 @@ int net_rx(struct sk_buff *skb) {
 	assert(skb->mac.raw != NULL);
 	skb->nh.raw = skb->mac.raw + skb->dev->hdr_len;
 
-	log_debug("net_rx: %p len %zu type %#.6hx\n", skb, skb->len, hdr_info.type);
+	log_debug("%p len %zu type %#.6hx", skb, skb->len, hdr_info.type);
 
 	/* decrypt packet */
 	skb = net_decrypt(skb);
@@ -75,7 +75,7 @@ int net_rx(struct sk_buff *skb) {
 	 * from Embox kernel's point of view. */
 	npack = net_pack_lookup(hdr_info.type);
 	if (npack == NULL) {
-		log_debug("net_rx: %p unknown type %#.6hx\n", skb, hdr_info.type);
+		log_debug("%p unknown type %#.6hx", skb, hdr_info.type);
 		skb_free(skb);
 		return 0; /* ok, but: not supported */
 	}
