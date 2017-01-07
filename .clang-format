@@ -1,0 +1,28 @@
+BasedOnStyle: LLVM
+SortIncludes: false
+
+IndentWidth: 4
+TabWidth: 4
+#UseTab: ForIdentation
+UseTab: ForContinuationAndIndentation
+
+AllowShortIfStatementsOnASingleLine: false
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: false
+IndentCaseLabels: false
+
+AlignAfterOpenBracket: DontAlign
+ContinuationIndentWidth: 8
+
+#AllowAllParametersOfDeclarationOnNextLine: false
+#BinPackParameters: false
+#BinPackArguments: false
+#AlignAfterOpenBracket: Align
+#AlignAfterOpenBracket: AlwaysBreak
+
+#PenaltyBreakBeforeFirstCallParameter: 100
+#PenaltyBreakComment: 100
+#PenaltyBreakFirstLessLess: 600
+#PenaltyBreakString: 500
+#PenaltyExcessCharacter: 1000
+#PenaltyReturnTypeOnItsOwnLine: 1000
