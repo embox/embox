@@ -86,5 +86,5 @@ static module xattr_dvfs extends xattr {
 static module chmod_dvfs extends chmod {
 	source "chmod.c"
 
-	depends embox.fs.dvfs
+	depends embox.fs.dvfs.core
 }
