@@ -121,6 +121,33 @@
 #define DMA_TDES1_FS           (1 << 29)
 #define DMA_TDES1_EOR          (1 << 26)
 
+extern void dcache_inval(const void *p, size_t size);
+extern void dcache_flush(const void *p, size_t size);
+
+static void _reg_dump() {
+	dcache_flush((void*)BASE_ADDR, 0x200);
+	dcache_inval((void*)BASE_ADDR, 0x200);
+	printk("Arasan ethernet DMA registers:\n");
+	printk("======================================================\n");
+	printk("CONFIGURATION                       %8x\n", REG32_LOAD(DMA_CONFIGURATION));
+	printk("CONTROL                             %8x\n", REG32_LOAD(DMA_CONTROL));
+	printk("STATUS_AND_IRQ                      %8x\n", REG32_LOAD(DMA_STATUS_AND_IRQ));
+	printk("INTERRUPT_ENABLE                    %8x\n", REG32_LOAD(DMA_INTERRUPT_ENABLE));
+	printk("TRANSMIT_AUTO_POLL_COUNTER          %8x\n", REG32_LOAD(DMA_TRANSMIT_AUTO_POLL_COUNTER));
+	printk("TRANSMIT_POLL_DEMAND                %8x\n", REG32_LOAD(DMA_TRANSMIT_POLL_DEMAND));
+	printk("RECEIVE_POLL_DEMAND                 %8x\n", REG32_LOAD(DMA_RECEIVE_POLL_DEMAND));
+	printk("TRANSMIT_BASE_ADDRESS               %8x\n", REG32_LOAD(DMA_TRANSMIT_BASE_ADDRESS));
+	printk("RECEIVE_BASE_ADDRESS                %8x\n", REG32_LOAD(DMA_RECEIVE_BASE_ADDRESS));
+	printk("MISSED_FRAME_COUNTER                %8x\n", REG32_LOAD(DMA_MISSED_FRAME_COUNTER));
+	printk("STOP_FLUSH_COUNTER                  %8x\n", REG32_LOAD(DMA_STOP_FLUSH_COUNTER));
+	printk("RECEIVE_INTERRUPT_MITIGATION        %8x\n", REG32_LOAD(DMA_RECEIVE_INTERRUPT_MITIGATION));
+	printk("CURRENT_TRANSMIT_DESCRIPTOR_POINTER %8x\n", REG32_LOAD(DMA_CURRENT_TRANSMIT_DESCRIPTOR_POINTER));
+	printk("CURRENT_TRANSMIT_BUFFER_POINTER     %8x\n", REG32_LOAD(DMA_CURRENT_TRANSMIT_BUFFER_POINTER));
+	printk("CURRENT_RECEIVE_DESCRIPTOR_POINTER  %8x\n", REG32_LOAD(DMA_CURRENT_RECEIVE_DESCRIPTOR_POINTER));
+	printk("CURRENT_RECEIVE_BUFFER_POINTER      %8x\n", REG32_LOAD(DMA_CURRENT_RECEIVE_BUFFER_POINTER));
+	printk("======================================================\n");
+}
+
 struct arasan_dma_desc {
 	uint32_t status;
 	uint32_t misc;
@@ -235,6 +262,8 @@ static int arasan_init(void) {
 	REG32_STORE(DMA_CONTROL,
 			DMA_CONTROL_START_RECEIVE_DMA |
 			DMA_CONTROL_START_TRANSMIT_DMA);
+
+	_reg_dump();
 
 	/* Setup etherdev */
         if (NULL == (nic = etherdev_alloc(0))) {
