@@ -46,6 +46,7 @@ static int icmp_send(uint8_t type, uint8_t code, const void *body,
 	size_t size;
 
 	if (ip_out_ops == NULL) {
+		log_error("ip_out_ops not implemented");
 		skb_free(skb);
 		return -ENOSYS; /* error: not implemented */
 	}
@@ -54,10 +55,12 @@ static int icmp_send(uint8_t type, uint8_t code, const void *body,
 	assert(ip_out_ops->make_pack != NULL);
 	ret = ip_out_ops->make_pack(NULL, NULL, &size, &skb);
 	if (ret != 0) {
+		log_error("make_pack return %d", ret);
 		skb_free(skb);
 		return ret; /* error: see ret */
 	}
 	else if (size != sizeof *icmp_hdr(skb) + body_sz) {
+		log_error("message is too big");
 		skb_free(skb);
 		return -EMSGSIZE; /* error: message is too big */
 	}
@@ -82,16 +85,19 @@ static int icmp_notify_an_error(const struct icmphdr *icmph,
 			|| (IP_HEADER_SIZE(emb_iph) < IP_MIN_HEADER_SIZE)
 			|| (ntohs(emb_iph->tot_len) < IP_HEADER_SIZE(emb_iph))
 			|| (msg_sz < IP_HEADER_SIZE(emb_iph))) {
+		log_error("invalid length");
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
 
 	if (!ip_check_version(emb_iph)) {
+		log_error("not ipv4");
 		skb_free(skb);
 		return 0; /* error: not ipv4 */
 	}
 
 	if (ip_hdr(skb)->daddr != emb_iph->saddr) {
+		log_error("not my embedded packet");
 		skb_free(skb);
 		return 0; /* error: not my embedded packet */
 	}
@@ -132,6 +138,7 @@ static int icmp_hnd_dest_unreach(const struct icmphdr *icmph,
 
 	len = ip_data_length(ip_hdr(skb));
 	if (sizeof *icmph + sizeof *dest_unreach > len) {
+		log_error("invalid length %zu", len);
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
@@ -149,12 +156,14 @@ static int icmp_hnd_source_quench(const struct icmphdr *icmph,
 	size_t len;
 
 	if (icmph->code != 0) {
+		log_error("bad code 0x%x", icmph->code);
 		skb_free(skb);
 		return 0; /* error: bad code */
 	}
 
 	len = ip_data_length(ip_hdr(skb));
 	if (sizeof *icmph + sizeof *source_quench > len) {
+		log_error("invalid length %zu", len);
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
@@ -171,12 +180,14 @@ static int icmp_hnd_echo_request(const struct icmphdr *icmph,
 	struct icmpbody_echo *echo_rep;
 
 	if (icmph->code != 0) {
+		log_error("bad code 0x%x", icmph->code);
 		skb_free(skb);
 		return 0; /* error: bad code */
 	}
 
 	len = ip_data_length(ip_hdr(skb));
 	if (sizeof *icmph + sizeof *echo_req > len) {
+		log_error("invalid length %zu", len);
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
@@ -195,6 +206,7 @@ static int icmp_hnd_param_prob(const struct icmphdr *icmph,
 
 	switch (icmph->code) {
 	default:
+		log_error("bad code 0x%x", icmph->code);
 		skb_free(skb);
 		return 0; /* error: bad code */
 	case ICMP_PTR_ERROR:
@@ -249,12 +261,16 @@ static int icmp_rcv(struct sk_buff *skb) {
 	struct icmphdr *icmph;
 	uint16_t old_check;
 
+	log_debug("%p len %zu", skb, skb->len);
 	if (sizeof *icmph > ip_data_length(ip_hdr(skb))) {
+		log_error("invalid length (%zu > %zu)",
+				sizeof *icmph, ip_data_length(ip_hdr(skb)));
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
 
 	if (NULL == skb_declone(skb)) {
+		log_error("can't declone data");
 		skb_free(skb);
 		return -ENOMEM; /* error: can't declone data */
 	}
@@ -265,6 +281,7 @@ static int icmp_rcv(struct sk_buff *skb) {
 	old_check = icmph->check;
 	icmp_set_check_field(icmph, ip_hdr(skb));
 	if (old_check != icmph->check) {
+		log_error("bad checksum");
 		skb_free(skb);
 		return 0; /* error: bad checksum */
 	}
@@ -278,8 +295,7 @@ static int icmp_rcv(struct sk_buff *skb) {
 	case ICMP_INFO_REPLY:
 		break;
 	case ICMP_DEST_UNREACH:
-		return icmp_hnd_dest_unreach(icmph,
-				&icmph->body[0].dest_unreach, skb);
+		return icmp_hnd_dest_unreach(icmph, &icmph->body[0].dest_unreach, skb);
 	case ICMP_SOURCE_QUENCH:
 		return icmp_hnd_source_quench(icmph,
 				&icmph->body[0].source_quench, skb);
@@ -288,11 +304,9 @@ static int icmp_rcv(struct sk_buff *skb) {
 	case ICMP_INFO_REQUEST:
 		break; /* error: not implemented */
 	case ICMP_ECHO_REQUEST:
-		return icmp_hnd_echo_request(icmph, &icmph->body[0].echo,
-				skb);
+		return icmp_hnd_echo_request(icmph, &icmph->body[0].echo, skb);
 	case ICMP_PARAM_PROB:
-		return icmp_hnd_param_prob(icmph,
-				&icmph->body[0].param_prob, skb);
+		return icmp_hnd_param_prob(icmph, &icmph->body[0].param_prob, skb);
 	case ICMP_TIMESTAMP_REQUEST:
 		return icmp_hnd_timestamp_request(icmph,
 				&icmph->body[0].timestamp, skb);
@@ -318,13 +332,15 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	uint8_t *body_msg;
 	size_t body_msg_sz;
 
-	if (!(ip_is_local(ip_hdr(skb)->saddr, 0)
-				|| ip_is_local(ip_hdr(skb)->daddr, 0))
+	if (!(ip_is_local(
+			ip_hdr(skb)->saddr, 0)
+			|| ip_is_local(ip_hdr(skb)->daddr, 0))
 			|| (ip_hdr(skb)->frag_off & htons(IP_OFFSET))
 			|| (ip_data_length(ip_hdr(skb)) < ICMP_DISCARD_MIN_SIZE)
 			|| (ip_hdr(skb)->proto != IPPROTO_ICMP)
 			|| (skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(ip_hdr(skb)),
-				ICMP_TYPE_ERROR(icmp_hdr(skb)->type))) {
+			ICMP_TYPE_ERROR(icmp_hdr(skb)->type))) {
+		log_error("inappropriate packet");
 		skb_free(skb);
 		return 0; /* error: inappropriate packet */
 	}
@@ -382,11 +398,12 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	memcpy(body_msg, ip_hdr(skb), body_msg_sz);
 
 	if (NULL == skb_declone(skb)) {
+		log_error("can't declone data");
 		skb_free(skb);
 		return -ENOMEM; /* error: can't declone data */
 	}
 
-	return icmp_send(type, code, &body, sizeof body
-				- sizeof body.__body_msg_storage + body_msg_sz,
+	return icmp_send(type, code, &body,
+			sizeof body - sizeof body.__body_msg_storage + body_msg_sz,
 			skb);
 }
