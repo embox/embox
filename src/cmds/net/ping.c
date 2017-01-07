@@ -19,7 +19,8 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <ctype.h>
-
+#include <poll.h>
+#include <signal.h>
 #include <errno.h>
 #include <netdb.h>
 
@@ -30,8 +31,7 @@
 #include <net/inetdevice.h>
 #include <net/util/checksum.h>
 #include <net/util/macaddr.h>
-#include <poll.h>
-#include <signal.h>
+
 
 /* Constants */
 #define DEFAULT_COUNT    4
@@ -107,14 +107,16 @@ static void parse_result(struct packet_in *rx_pack,
 	char *dst_addr_str;
 	struct iphdr *emb_iph;
 	struct icmphdr *emb_icmph;
+	struct icmpbody_echo *echo_req;
+	struct icmpbody_echo *echo_rep;
 
 	switch (rx_pack->icmp.hdr.type) {
 	case ICMP_ECHO_REPLY:
+		echo_req = &tx_pack->icmp.body.echo_req;
+		echo_rep = &rx_pack->icmp.body.echo_rep;
 		if ((to->sin_addr.s_addr != rx_pack->ip.hdr.saddr)
-				|| (tx_pack->icmp.body.echo_req.id
-					!= rx_pack->icmp.body.echo_rep.id)
-				|| (ntohs(tx_pack->icmp.body.echo_req.seq)
-					< ntohs(rx_pack->icmp.body.echo_rep.seq))) {
+				|| (echo_req->id != echo_rep->id)
+				|| (ntohs(echo_req->seq) < ntohs(echo_rep->seq))) {
 			break;
 		}
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->ip.hdr.saddr);
