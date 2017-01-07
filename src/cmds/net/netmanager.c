@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 #define BUFF_SZ 128
 #define CONFIG_FILE "network"
@@ -20,11 +21,15 @@ void print_usage() {
 
 static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name) {
 	int err = 0;
+	int if_netmask;
+	int if_ipv4_addr;
+	int if_net;
 	char cmd_line[BUFF_SZ];
-	char ipv4_addr[BUFF_SZ] = "";
-	char netmask[BUFF_SZ] = "";
-	char gw[BUFF_SZ] = "";
-	char hw_addr[BUFF_SZ] = "";
+	char ipv4_addr[32] = "";
+	char netmask[32] = "255.255.255.255";
+	char gw[32] = "";
+	char hw_addr[32] = "";
+	char net[32] = "";
 
 	while (fscanf(input, "%s", buf) != EOF && strcmp(buf, "iface")) {
 		if (!strcmp(buf, "address"))
@@ -37,6 +42,17 @@ static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name)
 			fscanf(input, "%s", hw_addr);
 		else
 			printf("WARNING: Unknown iface parameter: %s\n", buf);
+	}
+
+	if (1 != inet_pton(AF_INET, netmask, &if_netmask)) {
+		printf("netmanager: iface(%s) wrong netmask %s", iface_name, netmask);
+	}
+	if (1 != inet_pton(AF_INET, ipv4_addr, &if_ipv4_addr)) {
+		printf("netmanager: iface(%s) wrong ipaddr %s", iface_name, ipv4_addr);
+	}
+	if_net = if_ipv4_addr & if_netmask;
+	if (NULL == inet_ntop(AF_INET, &if_net, net, sizeof(net))) {
+		printf("netmanager: iface(%s) wrong net", iface_name);
 	}
 
 	strcpy(cmd_line, "ifconfig ");
@@ -59,6 +75,17 @@ static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name)
 	if ((err = system(cmd_line)))
 		return err;
 
+	/* route */
+	strcpy(cmd_line, "route add ");
+	strcat(cmd_line, net);
+	strcat(cmd_line, " netmask ");
+	strcat(cmd_line, netmask);
+	strcat(cmd_line, " ");
+	strcat(cmd_line, iface_name);
+
+	if ((err = system(cmd_line)))
+		return err;
+
 	if (gw[0]) {
 		strcpy(cmd_line, "route add default gw ");
 		strcat(cmd_line, gw);
@@ -68,6 +95,7 @@ static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name)
 		if ((err = system(cmd_line)))
 			return err;
 	}
+
 	return 0;
 }
 
