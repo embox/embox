@@ -108,6 +108,10 @@
 #define DMA_STATUS_AND_IRQ_RX_DMA_STOPPED             (1 << 6)
 #define DMA_STATUS_AND_IRQ_MAC_INTERRUPT              (1 << 11)
 
+#define DMA_INTERRUPT_ENABLE_TRANSMIT_DONE            (1 << 0)
+#define DMA_INTERRUPT_ENABLE_RECEIVE_DONE             (1 << 4)
+#define MAC_TRANSMIT_CONTROL_TRANSMIT_ENABLE          (1 << 0)
+
 /* DMA descriptor fields */
 #define DMA_RDES0_OWN_BIT      (1 << 31)
 #define DMA_RDES0_FD           (1 << 30)
@@ -164,6 +168,20 @@ static int _tx_head, _tx_tail;
 static int _rx_head, _rx_tail;
 
 static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
+	printk("Arasan xmit\n");
+	struct arasan_dma_desc *d;
+
+	_tx_tail = (_tx_tail + 1) % TX_RING_SIZE;
+
+	d = &_tx_ring[_tx_tail];
+
+	d->buffer1 = (uint32_t) skb_get_data_pointner(skb->data);
+	d->misc    = (DMA_TDES1_LS | DMA_TDES1_FS | (skb->len & 0xFFF));
+	d->status  = DMA_TDES0_OWN_BIT | DMA_TDES1_IOC;
+
+	REG32_STORE(DMA_TRANSMIT_POLL_DEMAND, 1);
+
+	_reg_dump();
 	return 0;
 }
 
