@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Check associative arrays support
+[ ${BASH_VERSION:0:1} -ge 4 ] || { echo "Bash 4.0 or later is required"; exit 1; }
+
 DATADIR="$(dirname "$0")"
 CONFDIR=./conf
 
@@ -75,7 +78,7 @@ guessed_info AUTOQEMU_AUDIO_CONFIG "(got)"
 guess_kvm() {
 	ret=""
 	# Build kvm argument
-	if [ $AUTOQEMU_ARCH = "x86" ]; then
+	if [ "$AUTOQEMU_ARCH" = "x86" -a "$OSTYPE" = "linux-gnu" ]; then
 		egrep '(vmx|svm)' /proc/cpuinfo > /dev/null
 		if [ $? -eq 0 ]; then
 			ret="-enable-kvm"
@@ -157,7 +160,8 @@ ARCH2QEMU=(
 )
 
 QEMU=${AUTOQEMU_PREFIX}qemu-system-${ARCH2QEMU[$AUTOQEMU_ARCH]:-$AUTOQEMU_ARCH}
-QEMU_VER=$($QEMU --version | sed 's/.*version \([0-9.]\+\).*/\1/;s/\./ /g' | xargs printf "%02d%02d%02d")
+AWK=$(which gawk >/dev/null && echo gawk || echo awk)
+QEMU_VER=$($QEMU --version | $AWK '{ if(match($0,".*version ([0-9.]+).*", m)) {n=split(m[1],a,".");for(i=0;++i<=n;)printf "%02d",a[i]} }')
 
 if [ $QEMU_VER -gt 010200 ]; then
 	MB_XEMACLINE="xlnx.xps-ethernetlite"
