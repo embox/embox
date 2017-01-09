@@ -78,7 +78,7 @@ EXTRACT  := $(BUILD_DIR)/.extracted
 extract : $(EXTRACT)
 $(EXTRACT): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach i,$(sources_extract),\
-		$(if $(filter %zip,$i),unzip $(DOWNLOAD_DIR)/$i -d $(BUILD_DIR),\
+		$(if $(filter %zip,$i),unzip -q $(DOWNLOAD_DIR)/$i -d $(BUILD_DIR),\
 			mkdir -p $(BUILD_DIR) && ( cd $(BUILD_DIR); tar -xf $(DOWNLOAD_DIR)/$i) );)
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
 			$(call targets_git,$(sources_git)) \
