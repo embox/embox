@@ -33,4 +33,5 @@ module telnetd {
 	depends embox.framework.LibFramework
 	depends embox.compat.posix.idx.ppty
 	depends embox.compat.posix.proc.waitpid
+	depends embox.arch.vfork_entry
 }
