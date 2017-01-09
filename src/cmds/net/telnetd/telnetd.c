@@ -23,8 +23,6 @@
 
 #include <util/math.h>
 
-//#include <kernel/task.h>
-
 #include <cmd/shell.h>
 
 #define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
@@ -410,8 +408,6 @@ int main(int argc, char **argv) {
 
 	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
-		//int client_descr;
-		//struct thread *thread;
 		int child_pid;
 		char *child_argv[3];
 		char client_desc_str[5];
@@ -444,12 +440,6 @@ int main(int argc, char **argv) {
 			continue;
 		}
 
-#if 0
-		if (pthread_create(&thread, NULL, telnet_thread_handler, (void *) client_descr)) {
-			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			MD(printf("thread_create() returned with code=%d\n", res));
-		}
-#endif
 		child_pid = vfork();
 		if (child_pid < 0) {
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
