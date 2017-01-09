@@ -20,10 +20,15 @@ $ sudo apt-get install build-essential gcc-multilib curl libmpc-dev python
 
 For Arch Linux:
 ```
-$ sudo pacman -S make gcc-multilib cpio curl
+$ sudo pacman -S make gcc-multilib cpio qemu
 ```
 
-For Mac OS X instructions please refer to Emdocker wiki page https://github.com/embox/embox/wiki/Emdocker
+For MAC OS X (requires [MacPorts](https://www.macports.org/install.php) installed):
+```
+$ sudo port install i386-elf-gcc i386-elf-binutils cpio gawk qemu
+```
+
+For alternative instructions please refer to Emdocker wiki page https://github.com/embox/embox/wiki/Emdocker
 
 ### Building Embox
 First of all:
