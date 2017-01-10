@@ -23,7 +23,6 @@
 
 #include <util/math.h>
 
-#include <cmd/shell.h>
 
 #define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
 
@@ -169,10 +168,7 @@ static void *shell_hnd(void* args) {
 		MD(printf("dup2 STDERR_FILENO error: %d\n", errno));
 	}
 
-	ret = shell_run(shell_lookup("tish"));
-	if (ret != 0) {
-		MD(printf("shell_run error: %d\n", ret));
-	}
+	system("tish");
 
 	ret = utmp_login(DEAD_PROCESS, "");
 	if (ret != 0) {
