@@ -28,6 +28,11 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
+/* */
+#define CMCTR_BASE    0x38094000
+
+#define GATE_SYS_CTR (CMCTR_BASE + 0x04c)
+
 /* Internal I/O space mapping */
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
 #define ARASAN_IRQ OPTION_GET(NUMBER, irq_num)
@@ -150,6 +155,20 @@ static void _reg_dump() {
 	printk("CURRENT_RECEIVE_DESCRIPTOR_POINTER  %8x\n", REG32_LOAD(DMA_CURRENT_RECEIVE_DESCRIPTOR_POINTER));
 	printk("CURRENT_RECEIVE_BUFFER_POINTER      %8x\n", REG32_LOAD(DMA_CURRENT_RECEIVE_BUFFER_POINTER));
 	printk("======================================================\n");
+	printk("Arasan ethernet MAC registers:\n");
+	printk("======================================================\n");
+	printk("MAC_GLOBAL_CONTROL                  %8x\n", REG32_LOAD(MAC_GLOBAL_CONTROL);
+	printk("MAC_TRANSMIT_CONTROL                %8x\n", REG32_LOAD(MAC_TRANSMIT_CONTROL);
+	printk("MAC_RECEIVE_CONTROL                 %8x\n", REG32_LOAD(MAC_RECEIVE_CONTROL);
+	printk("MAC_MAXIMUM_FRAME_SIZE              %8x\n", REG32_LOAD(MAC_MAXIMUM_FRAME_SIZE);
+	printk("MAC_TRANSMIT_JABBER_SIZE            %8x\n", REG32_LOAD(MAC_TRANSMIT_JABBER_SIZE);
+	printk("MAC_RECEIVE_JABBER_SIZE             %8x\n", REG32_LOAD(MAC_RECEIVE_JABBER_SIZE);
+	printk("MAC_ADDRESS_CONTROL                 %8x\n", REG32_LOAD(MAC_ADDRESS_CONTROL);
+	printk("MAC_MDIO_CLOCK_DIVISION_CONTROL     %8x\n", REG32_LOAD(MAC_MDIO_CLOCK_DIVISION_CONTROL);
+	printk("MAC_ADDRESS1_HIGH                   %8x\n", REG32_LOAD(MAC_ADDRESS1_HIGH);
+	printk("MAC_ADDRESS1_MED                    %8x\n", REG32_LOAD(MAC_ADDRESS1_MED);
+	printk("MAC_ADDRESS1_LOW                    %8x\n", REG32_LOAD(MAC_ADDRESS1_LOW);
+	printk("======================================================\n");
 }
 
 struct arasan_dma_desc {
@@ -229,6 +248,11 @@ static int arasan_init(void) {
         struct net_device *nic;
 	uint32_t reg;
 
+	/* Enable EMAC */
+	reg = REG32_LOAD(GATE_SYS_CTR);
+	reg |= (1 << 4);
+	REG32_STORE(GATE_SYS_CTR, reg);
+
 	/* Setup TX descriptors */
 	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
 	_tx_head = _tx_tail = 0;
@@ -301,3 +325,10 @@ static struct periph_memory_desc arasan_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(arasan_mem);
+
+static struct periph_memory_desc cmctr_mem = {
+	.start = CMCTR_BASE,
+	.len   = 0x200
+};
+
+PERIPH_MEMORY_DEFINE(cmctr_mem);
