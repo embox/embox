@@ -59,8 +59,6 @@
 extern int ppty(int pptyfds[2]);
 
 
-static int volatile telnet_connections_count;
-
 static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
 	unsigned char cmd[3];
 
@@ -356,7 +354,6 @@ out_kill:
 out_close:
 	close(pptyfd[0]);
 	close(sock);
-	telnet_connections_count --;
 
 	//waitpid(tid, NULL, 0);
 
@@ -374,6 +371,7 @@ int main(int argc, char **argv) {
 	struct sockaddr_in client_socket;
 	socklen_t client_socket_len;
 	int client_descr;
+	int telnet_connections_count;
 
 	if (argc > 1) {
 		client_descr = atoi(argv[1]);
@@ -387,7 +385,6 @@ int main(int argc, char **argv) {
 	listening_socket.sin_family = AF_INET;
 	listening_socket.sin_port = htons(TELNETD_PORT);
 	listening_socket.sin_addr.s_addr = htonl(TELNETD_ADDR);
-
 
 	if ((listening_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
 		printf("can't create socket\n");
@@ -418,7 +415,11 @@ int main(int argc, char **argv) {
 		}
 
 		if (telnet_connections_count > 0) {
-			waitpid(-1, NULL, WNOHANG);
+			child_pid = waitpid(-1, NULL, WNOHANG);
+			if (child_pid > 0) {
+				MD(printf("Child process with pid = %d exited\n", child_pid));
+				telnet_connections_count --;
+			}
 		}
 
 		client_descr = accept(listening_descr,
