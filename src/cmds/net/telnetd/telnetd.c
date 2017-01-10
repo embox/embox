@@ -193,7 +193,7 @@ static int telnet_fix_crnul(unsigned char *buf, int len) {
 }
 
 /* Shell thread for telnet */
-static void *telnet_thread_handler(void* args) {
+static void *telnetd_client_handler(void* args) {
 	/* Choose tmpbuff size a half of size of pbuff to make
 	 * replacement: \n\n...->\r\n\r\n... */
 	unsigned char sbuff[XBUFF_LEN], pbuff[XBUFF_LEN];
@@ -372,7 +372,7 @@ int main(int argc, char **argv) {
 	if (argc > 1) {
 		client_descr = atoi(argv[1]);
 		MD(printf("telnetd: %d\n", client_descr));
-		telnet_thread_handler((void *)client_descr);
+		telnetd_client_handler((void *)client_descr);
 		_exit(0);
 	}
 
