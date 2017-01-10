@@ -73,7 +73,8 @@ static module core extends third_party.bsp.st_bsp_api {
 		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_wwdg.c",
 		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c",
 		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_sdmmc.c",
-		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_usb.c"
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_usb.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c"
 }
 
 @BuildDepends(core)
@@ -102,6 +103,14 @@ static module stm32f7_discovery {
     @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery")
     @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/core")
     source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module stm32f7_discovery_lcd {
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/core")
+    source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_lcd.c"
 }
 
 @Build(stage=1,script="true")
