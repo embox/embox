@@ -82,6 +82,7 @@ int execv(const char *path, char *const argv[]) {
 		strncat(cmd_name, " ", MAX_TASK_NAME_LEN);
 		cmd_name[MAX_TASK_NAME_LEN - 1] = '\0';
 
+		/* this code is required the only if argv is not NULL terminated */
 		if (i >= 3){
 			// TODO for protection from a lot of arguments
 			break;
