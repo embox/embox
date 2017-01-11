@@ -18,27 +18,22 @@
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
-
 #include <utmp.h>
-
-#include <net/l3/ipv4/ip.h>
-#include <net/inetdevice.h>
+#include <stdlib.h>
 
 #include <util/math.h>
 
-#include <kernel/task.h>
-
-#include <cmd/shell.h>
 
 #define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
-	/* Telnetd address bind to */
+
+/* Telnetd address bind to */
 #define TELNETD_ADDR INADDR_ANY
-	/* Telnetd port bind to */
+/* Telnetd port bind to */
 #define TELNETD_PORT 23
 
 #define XBUFF_LEN 128
 
-	/* Allow to turn off/on extra debugging information */
+/* Allow to turn off/on extra debugging information */
 #if 0
 #	define MD(x) do {\
 		x;\
@@ -48,23 +43,20 @@
 	} while (0);
 #endif
 
-#define T_WILL		251
-#define T_WONT		252
-#define T_DO		253
-#define T_DONT		254
-#define T_IAC		255
+/* http://www.tcpipguide.com/free/t_TelnetProtocolCommands-3.htm */
+#define T_WILL      251
+#define T_WONT      252
+#define T_DO        253
+#define T_DONT      254
+#define T_IAC       255
 #define T_INTERRUPT 244
 
-#define O_ECHO		1		/* Manage ECHO, RFC 857 */
-#define O_GO_AHEAD	3		/* Disable GO AHEAD, RFC 858 */
+#define O_ECHO      1     /* Manage ECHO, RFC 857 */
+#define O_GO_AHEAD  3     /* Disable GO AHEAD, RFC 858 */
 
+//TODO is not posix. Must be posix_openpt() and friends
 extern int ppty(int pptyfds[2]);
 
-static struct {
-	int fd;
-	struct sockaddr_in addr_in;
-} clients[TELNETD_MAX_CONNECTIONS];
-static int listening_descr;
 
 static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
 	unsigned char cmd[3];
@@ -137,14 +129,21 @@ static int utmp_login(short ut_type, const char *host) {
 	}
 
 	return 0;
-
 }
 
 static void *shell_hnd(void* args) {
 	int ret;
 	int *msg = (int*)args;
+	struct sockaddr_in sockaddr;
+	socklen_t socklen;
 
-	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(clients[msg[2]].addr_in.sin_addr));
+	ret = getpeername(msg[2], (struct sockaddr *)&sockaddr, &socklen);
+	if (ret != 0) {
+		MD(printf("getpeername return error: %d\n", ret));
+		_exit(ret);
+	}
+
+	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(sockaddr.sin_addr));
 	if (ret != 0) {
 		MD(printf("utmp_login LOGIN error: %d\n", ret));
 	}
@@ -169,16 +168,14 @@ static void *shell_hnd(void* args) {
 		MD(printf("dup2 STDERR_FILENO error: %d\n", errno));
 	}
 
-	ret = shell_run(shell_lookup("tish"));
-	if (ret != 0) {
-		MD(printf("shell_run error: %d\n", ret));
-	}
+	system("tish");
 
 	ret = utmp_login(DEAD_PROCESS, "");
 	if (ret != 0) {
 		MD(printf("utmp_login DEAD error: %d\n", ret));
 	}
 
+	_exit(0);
 	return NULL;
 }
 
@@ -196,21 +193,20 @@ static int telnet_fix_crnul(unsigned char *buf, int len) {
 }
 
 /* Shell thread for telnet */
-static void *telnet_thread_handler(void* args) {
+static void *telnetd_client_handler(void* args) {
 	/* Choose tmpbuff size a half of size of pbuff to make
 	 * replacement: \n\n...->\r\n\r\n... */
 	unsigned char sbuff[XBUFF_LEN], pbuff[XBUFF_LEN];
 	unsigned char *s = sbuff, *p = pbuff;
 	int sock_data_len = 0; /* len of rest of socket data in local buffer sbuff */
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
-	int client_num = (int) args;
-	int sock = clients[client_num].fd;
+	int sock = (int) args;
 	int msg[3];
 	int pptyfd[2];
-	int tid;
 	int nfds;
 	fd_set readfds, writefds, exceptfds;
 	struct timeval timeout;
+	pthread_t thread;
 
 	MD(printf("starting telnet_thread_handler\n"));
 	/* Set socket to be nonblock. See ignore_telnet_options() */
@@ -232,16 +228,15 @@ static void *telnet_thread_handler(void* args) {
 	fcntl(sock, F_SETFL, 0); /* O_NONBLOCK */
 
 	msg[0] = msg[1] = pptyfd[1];
-	msg[2] = client_num;
-	if ((tid = new_task("telnetd user", shell_hnd, &msg)) < 0) {
-		MD(printf("new task error: %d\n", -tid));
+	msg[2] = sock;
+
+	if (pthread_create(&thread, NULL, shell_hnd, (void *) &msg)) {
+		telnet_cmd(sock, T_INTERRUPT, 0);
 		close(sock);
 		close(pptyfd[0]);
 		close(pptyfd[1]);
 		goto out;
 	}
-
-	close(pptyfd[1]);
 
 	/* Preparations for select call */
 	nfds = max(sock, pptyfd[0]) + 1;
@@ -340,29 +335,34 @@ static void *telnet_thread_handler(void* args) {
 	} /* while(1) */
 
 out_kill:
-	kill(tid, 9);
 out_close:
 	close(pptyfd[0]);
 	close(sock);
-	clients[client_num].fd = -1;
-
-	waitpid(tid, NULL, 0);
 
 out:
 	MD(printf("exiting from telnet_thread_handler\n"));
+	_exit(0);
 
 	return NULL;
 }
 
 int main(int argc, char **argv) {
+	int listening_descr;
 	int res;
 	struct sockaddr_in listening_socket;
 	struct sockaddr_in client_socket;
-	int client_socket_len = sizeof(client_socket);
+	socklen_t client_socket_len;
+	int client_descr;
+	int telnet_connections_count;
 
-	for (res = 0; res < TELNETD_MAX_CONNECTIONS; res++) {
-		clients[res].fd = -1;
+	if (argc > 1) {
+		client_descr = atoi(argv[1]);
+		MD(printf("telnetd: %d\n", client_descr));
+		telnetd_client_handler((void *)client_descr);
+		_exit(0);
 	}
+
+	telnet_connections_count = 0;
 
 	listening_socket.sin_family = AF_INET;
 	listening_socket.sin_port = htons(TELNETD_PORT);
@@ -373,6 +373,7 @@ int main(int argc, char **argv) {
 		return -errno;
 	}
 
+	client_socket_len = sizeof(client_socket);
 	if (bind(listening_descr, (struct sockaddr *)&listening_socket,
 											sizeof(listening_socket)) < 0) {
 		printf("bind() failed\n");
@@ -386,10 +387,25 @@ int main(int argc, char **argv) {
 
 	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
-		int client_descr = accept(listening_descr, (struct sockaddr *)&client_socket,
-								  &client_socket_len);
-		struct thread *thread;
-		size_t i;
+		int child_pid;
+		char *child_argv[3];
+		char client_desc_str[5];
+
+		if (telnet_connections_count >= TELNETD_MAX_CONNECTIONS) {
+			sleep(1);
+			continue;
+		}
+
+		if (telnet_connections_count > 0) {
+			child_pid = waitpid(-1, NULL, WNOHANG);
+			if (child_pid > 0) {
+				MD(printf("Child process with pid = %d exited\n", child_pid));
+				telnet_connections_count --;
+			}
+		}
+
+		client_descr = accept(listening_descr,
+				(struct sockaddr *)&client_socket, &client_socket_len);
 
 		if (client_descr < 0) {
 			MD(printf("accept() failed. code=%d\n", -errno));
@@ -399,30 +415,38 @@ int main(int argc, char **argv) {
 		MD(printf("Attempt to connect from address %s:%d\n",
 			inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)));
 
-		for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
-			if (clients[i].fd == -1) {
-				break;
-			}
-		}
-
-		if (i == TELNETD_MAX_CONNECTIONS) {
+		if (client_descr >= 1000) {
+			/* there are 4 digit buffer for an accepted descriptor */
+			MD(printf("too big descriptor number=%d\n", client_descr));
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			MD(printf("limit of connections exceded\n"));
+			close(client_descr);
 			continue;
 		}
 
-		clients[i].fd = client_descr;
-		memcpy(&clients[i].addr_in, &client_socket, sizeof(client_socket));
-
-		if (pthread_create(&thread, NULL, telnet_thread_handler, (void *) i)) {
+		child_pid = vfork();
+		if (child_pid < 0) {
 			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			MD(printf("thread_create() returned with code=%d\n", res));
-			clients[i].fd = -1;
+			MD(printf("cannot vfork process err=%d\n", child_pid));
+			close(client_descr);
+			continue;
 		}
+		child_argv[0] = "telnetd";
+		child_argv[1] = itoa(client_descr, client_desc_str, 10);
+		child_argv[2] = NULL;
+		if (child_pid == 0) {
+			res = execv("telnetd", child_argv);
+			if (res == -1) {
+				MD(printf("cannot execv process err=%d\n", errno));
+			}
+		}
+
+		close(client_descr);
+		telnet_connections_count ++;
 	}
 
 listen_failed:
 	res = -errno;
 	close(listening_descr);
+
 	return res;
 }

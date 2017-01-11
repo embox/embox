@@ -37,11 +37,16 @@ static int service_run(const char *path, char *const argv[]) {
 int main(int argc, char **argv) {
 	const char *command;
 
+	if (argc == 0) {
+		return -EINVAL;
+	}
+
 	if (argv[1] == NULL) {
 		srv_print_services();
 		return 0;
 	}
 	command = argv[1];
+	argv[argc] = NULL;
 	printf("Starting service: %s\n", command);
 
 	return service_run(command, &argv[1]);

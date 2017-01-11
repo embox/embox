@@ -8,20 +8,25 @@
 
 #include <utmp.h>
 #include <stddef.h>
+#include <errno.h>
 
 struct utmp *getutent(void) {
+	errno = ENOSYS;
 	return NULL;
 }
 
 struct utmp *getutid(struct utmp *ut) {
+	errno = ENOSYS;
 	return NULL;
 }
 
 struct utmp *getutline(struct utmp *ut) {
+	errno = ENOSYS;
 	return NULL;
 }
 
 struct utmp *pututline(struct utmp *ut) {
+	errno = ENOSYS;
 	return NULL;
 }
 
@@ -34,6 +39,7 @@ void endutent(void) {
 }
 
 int utmpname(const char *file) {
+	errno = ENOSYS;
 	return -1;
 }
 
