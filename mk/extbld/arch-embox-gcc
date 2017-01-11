@@ -9,9 +9,9 @@ fi
 
 cmd=$(basename $0)
 case $cmd in
-	*-gcc) C_CXX_FLAGS="$EMBOX_IMPORTED_CPPFLAGS $EMBOX_IMPORTED_CFLAGS";;
-	*-g++) C_CXX_FLAGS="$EMBOX_IMPORTED_CPPFLAGS $EMBOX_IMPORTED_CXXFLAGS";;
-	*)     echo "Unknown flags for $cmd"; exit 1;;
+	*-gcc|*-clang) C_CXX_FLAGS="$EMBOX_IMPORTED_CPPFLAGS $EMBOX_IMPORTED_CFLAGS";;
+	*-g++)         C_CXX_FLAGS="$EMBOX_IMPORTED_CPPFLAGS $EMBOX_IMPORTED_CXXFLAGS";;
+	*)             echo "Unknown flags for $cmd"; exit 1;;
 esac
 
 case $EMBOX_GCC_LINK in
@@ -34,5 +34,11 @@ esac
 ARG_LINE="$ARG_LINE $EMBOX_IMPORTED_CPPFLAGS"
 PWD_ARG_LINE="$(for i in $ARG_LINE; do echo ${i/$PWD/.}; done)"
 # echo "$EMBOX_CROSS_COMPILE${cmd#arch-embox-} $@ $PWD_ARG_LINE" >&2
-$EMBOX_CROSS_COMPILE${cmd#arch-embox-} "$@" $PWD_ARG_LINE
-exit $?
+
+if [[ "$cmd" == *clang ]]; then
+	clang "$@" -target arm-none-eabi $PWD_ARG_LINE
+	exit $?
+else
+	$EMBOX_CROSS_COMPILE${cmd#arch-embox-} "$@" $PWD_ARG_LINE
+	exit $?
+fi
