@@ -41,7 +41,7 @@ struct vt_token {
 	vt_action_t action;
 	char        ch;
 	char        attrs[VT_TOKEN_ATTRS_MAX];
-	char        attrs_len;
+	int         attrs_len;
 	short      *params;
 	int         params_len;
 };
