@@ -13,12 +13,11 @@
 
 #include <util/log.h>
 
-#include <kernel/lthread/lthread.h>
+#include <kernel/thread.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
-
-static struct lthread portaudio_lthread;
 
 struct pa_strm {
 	uint8_t devid;
@@ -29,9 +28,9 @@ struct pa_strm {
 	void *user_data;
 
 	int active;
-	int lthread_start;
 };
 
+static struct thread *pa_thread;
 static struct pa_strm pa_stream;
 
 /**
@@ -56,22 +55,27 @@ static void _stereo_to_mono(void *buf, int len) {
 	}
 }
 
-static int portaudio_lthread_handle(struct lthread *self) {
-	int retval;
+static void *pa_thread_hnd(void *arg) {
+	int err;
 	struct audio_dev *audio_dev;
 	uint8_t *out_buf;
 	uint8_t *in_buf;
 	int inp_frames;
 
-	if (!pa_stream.callback || !pa_stream.active) {
-		return 0;
-	}
-
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
 	assert(audio_dev);
+	assert(audio_dev->ad_ops);
+	assert(audio_dev->ad_ops->ad_ops_start);
+	assert(audio_dev->ad_ops->ad_ops_resume);
 
-	out_buf = audio_dev_get_out_cur_ptr(audio_dev);
-	in_buf = audio_dev_get_in_cur_ptr(audio_dev);
+	if (!pa_stream.callback) {
+		log_debug("No callback provided for PA thread. "
+				"That's probably not what you want.");
+		return NULL;
+	}
+
+	SCHED_WAIT(pa_stream.active);
+	audio_dev->ad_ops->ad_ops_start(audio_dev);
 
 	inp_frames = audio_dev->buf_len / 2; /* 16 bit sample */
 	/* Even if source is mono channel,
@@ -79,42 +83,50 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	 * to fill right channel as well */
 	inp_frames /= 2;
 
-	log_debug("out_buf = 0x%X, buf_len %d", out_buf, audio_dev->buf_len);
+	while (1) {
+		SCHED_WAIT(pa_stream.active);
 
-	if (out_buf)
-		memset(out_buf, 0, audio_dev->buf_len);
+		out_buf = audio_dev_get_out_cur_ptr(audio_dev);
+		in_buf  = audio_dev_get_in_cur_ptr(audio_dev);
 
-	retval = pa_stream.callback(in_buf,
-			out_buf,
-			inp_frames,
-			NULL,
-			0,
-			pa_stream.user_data);
+		log_debug("out_buf = 0x%X, buf_len %d", out_buf, audio_dev->buf_len);
 
-	/* Sort out problems related to the number of channels */
-	if (pa_stream.number_of_chan != audio_dev->num_of_chan) {
-		if (pa_stream.number_of_chan == 1 && audio_dev->num_of_chan == 2) {
-			_mono_to_stereo(out_buf, inp_frames);
-		} else if (pa_stream.number_of_chan == 2 && audio_dev->num_of_chan == 1) {
-			_stereo_to_mono(out_buf, inp_frames);
-		} else {
-			log_error("Audio configuration is broken!"
-			          "Check the number of channels.\n");
-			return 0;
+		if (out_buf)
+			memset(out_buf, 0, audio_dev->buf_len);
+
+		err = pa_stream.callback(in_buf,
+				out_buf,
+				inp_frames,
+				NULL,
+				0,
+				pa_stream.user_data);
+
+		if (err) {
+			log_error("User callback error: %d", err);
 		}
-	}
 
-	if (retval != paContinue)
+		/* Sort out problems related to the number of channels */
+		if (pa_stream.number_of_chan != audio_dev->num_of_chan) {
+			if (pa_stream.number_of_chan == 1 && audio_dev->num_of_chan == 2) {
+				_mono_to_stereo(out_buf, inp_frames);
+			} else if (pa_stream.number_of_chan == 2 && audio_dev->num_of_chan == 1) {
+				_stereo_to_mono(out_buf, inp_frames);
+			} else {
+				log_error("Audio configuration is broken!"
+					  "Check the number of channels.\n");
+				return NULL;
+			}
+		}
+
 		pa_stream.active = 0;
 
-	assert(audio_dev->ad_ops && audio_dev->ad_ops->ad_ops_resume);
-	audio_dev->ad_ops->ad_ops_resume(audio_dev);
+		audio_dev->ad_ops->ad_ops_resume(audio_dev);
+	}
 
-	return 0;
+	return NULL;
 }
 
 PaError Pa_Initialize(void) {
-	lthread_init(&portaudio_lthread, portaudio_lthread_handle);
 	return paNoError;
 }
 
@@ -141,12 +153,12 @@ PaError Pa_OpenStream(PaStream** stream,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
 	if (outputParameters != NULL) {
-		pa_stream.lthread_start   = 1;
+		pa_stream.active          = 1;
 		pa_stream.number_of_chan  = outputParameters->channelCount;
 		pa_stream.devid           = outputParameters->device;
 		pa_stream.sample_format   = outputParameters->sampleFormat;
 	} else {
-		pa_stream.lthread_start   = 0;
+		pa_stream.active          = 0;
 		pa_stream.number_of_chan  = inputParameters->channelCount;
 		pa_stream.devid           = inputParameters->device;
 		pa_stream.sample_format   = inputParameters->sampleFormat;
@@ -154,7 +166,6 @@ PaError Pa_OpenStream(PaStream** stream,
 
 	pa_stream.callback       = streamCallback;
 	pa_stream.user_data      = userData;
-	pa_stream.active         = 1;
 
 	*stream = &pa_stream;
 
@@ -164,17 +175,17 @@ PaError Pa_OpenStream(PaStream** stream,
 
 	assert(audio_dev->ad_ops);
 	assert(audio_dev->ad_ops->ad_ops_ioctl);
+	assert(audio_dev->ad_ops->ad_ops_start);
+
 	audio_dev->buf_len = audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_BUFLEN, NULL);
 	if (audio_dev->buf_len == -1) {
 		return paInvalidDevice;
 	}
 
-
 	/* TODO work on mono sound device */
 	audio_dev->num_of_chan = 2;
 
-	assert(audio_dev->ad_ops && audio_dev->ad_ops->ad_ops_start);
-	audio_dev->ad_ops->ad_ops_start(audio_dev);
+	pa_thread = thread_create(0, pa_thread_hnd, NULL);
 
 	return paNoError;
 }
@@ -186,11 +197,7 @@ PaError Pa_CloseStream(PaStream *stream) {
 }
 
 PaError Pa_StartStream(PaStream *stream) {
-	if (pa_stream.lthread_start) {
-		lthread_launch(&portaudio_lthread);
-	}
-
-	pa_stream.lthread_start = 1;
+	pa_stream.active = 1;
 
 	return paNoError;
 }
