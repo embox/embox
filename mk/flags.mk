@@ -9,9 +9,6 @@ ARFLAGS ?=
 LDFLAGS ?=
 
 CROSS_COMPILE ?=
-
-CC      ?= $(CROSS_COMPILE)gcc
-CPP     ?= $(CC) -E
 CXX     ?= $(CROSS_COMPILE)g++
 AR      ?= $(CROSS_COMPILE)ar
 AS      ?= $(CROSS_COMPILE)as
@@ -20,6 +17,15 @@ NM      ?= $(CROSS_COMPILE)nm
 OBJDUMP ?= $(CROSS_COMPILE)objdump
 OBJCOPY ?= $(CROSS_COMPILE)objcopy
 SIZE    ?= $(CROSS_COMPILE)size
+
+ifeq ($(COMPILER),clang)
+CC      ?= clang
+# for clang LIBGCC_FINDER will be set externally to arm-none-eabi-gcc or something like that
+else
+CC      ?= $(CROSS_COMPILE)gcc
+LIBGCC_FINDER=$(CC) $(CFLAGS)
+endif
+CPP     ?= $(CC) -E
 
 comma_sep_list = $(subst $(\s),$(,),$(strip $1))
 
@@ -90,6 +96,7 @@ EXTERNAL_MAKE_FLAGS = \
 			CACHE_DIR, \
 		$(path_var)=$(abspath $($(path_var)))) \
 	BUILD_DIR=$(abspath $(mod_build_dir)) \
+	COMPILER=$(COMPILER) \
 	EMBOX_ARCH='$(ARCH)' \
 	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
 	EMBOX_MAKEFLAGS='$(MAKEFLAGS)' \
@@ -177,19 +184,21 @@ override ASFLAGS += $(asflags)
 override COMMON_CCFLAGS := $(COMMON_FLAGS)
 override COMMON_CCFLAGS += -fno-strict-aliasing -fno-common
 override COMMON_CCFLAGS += -Wall -Werror
-override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts 
+override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 
 override COMMON_CCFLAGS += -Wno-gnu-designator
 
+ifneq ($(COMPILER),clang)
+# Not clang means gcc
 # This option conflicts with some third-party stuff, so we disable it.
 override COMMON_CCFLAGS += -Wno-misleading-indentation
 
-
 # GCC 6 seems to have many library functions declared as __nonnull__, like
-# fread, fwrite, fprintf, ...  Since accessing NULL in embox without MMU 
-# support could cause real damage to whole system in contrast with segfault of 
+# fread, fwrite, fprintf, ...  Since accessing NULL in embox without MMU
+# support could cause real damage to whole system in contrast with segfault of
 # application, we decided to keep explicit null checks and disable the warning.
 override COMMON_CCFLAGS += -Wno-nonnull-compare
+endif
 
 override COMMON_CCFLAGS += -Wformat
 
@@ -222,4 +231,3 @@ CCFLAGS ?=
 
 INCLUDES_FROM_FLAGS := \
 	$(patsubst -I%,%,$(filter -I%,$(CPPFLAGS) $(CXXFLAGS)))
-
