@@ -203,7 +203,6 @@ static void *telnetd_client_handler(void* args) {
 	int sock = (int) args;
 	int msg[3];
 	int pptyfd[2];
-	//int tid;
 	int nfds;
 	fd_set readfds, writefds, exceptfds;
 	struct timeval timeout;
@@ -230,15 +229,7 @@ static void *telnetd_client_handler(void* args) {
 
 	msg[0] = msg[1] = pptyfd[1];
 	msg[2] = sock;
-#if 0
-	if ((tid = new_task("telnetd user", shell_hnd, &msg)) < 0) {
-		MD(printf("new task error: %d\n", -tid));
-		close(sock);
-		close(pptyfd[0]);
-		close(pptyfd[1]);
-		goto out;
-	}
-#endif
+
 	if (pthread_create(&thread, NULL, shell_hnd, (void *) &msg)) {
 		telnet_cmd(sock, T_INTERRUPT, 0);
 		close(sock);
@@ -246,8 +237,6 @@ static void *telnetd_client_handler(void* args) {
 		close(pptyfd[1]);
 		goto out;
 	}
-
-	//close(pptyfd[1]);
 
 	/* Preparations for select call */
 	nfds = max(sock, pptyfd[0]) + 1;
@@ -346,12 +335,9 @@ static void *telnetd_client_handler(void* args) {
 	} /* while(1) */
 
 out_kill:
-	//kill(tid, 9);
 out_close:
 	close(pptyfd[0]);
 	close(sock);
-
-	//waitpid(tid, NULL, 0);
 
 out:
 	MD(printf("exiting from telnet_thread_handler\n"));
