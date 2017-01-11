@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 	command = argv[1];
-	argv[argc-1] = NULL;
+	argv[argc] = NULL;
 	printf("Starting service: %s\n", command);
 
 	return service_run(command, &argv[1]);
