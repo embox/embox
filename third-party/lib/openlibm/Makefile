@@ -10,11 +10,7 @@ PKG_MD5 := 4bc22ffc211f959080173587e81742ec
 PKG_PATCHES := openlibm_embox.patch
 
 include $(EXTBLD_LIB)
-include $(ROOT_DIR)/mk/core/compiler.mk
 
-ifeq ($(COMPILER),clang)
-
-else
 OLIBM_ARCH ?=
 ifneq ($(filter x86 usermode86,$(ARCH)),)
 OLIBM_ARCH := i386
@@ -30,7 +26,6 @@ OLIBM_ARCH := $(subst -march=,,$(filter -march=%,$(CFLAGS)))
 endif
 ifeq ($(strip $(OLIBM_ARCH)),)
 $(error OLIBM_ARCH -march is undefined)
-endif
 endif
 endif
 
