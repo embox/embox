@@ -103,6 +103,9 @@ static void *pa_thread_hnd(void *arg) {
 
 		if (err) {
 			log_error("User callback error: %d", err);
+			if(err == paComplete) {
+				Pa_CloseStream(&pa_stream);
+			}
 		}
 
 		/* Sort out problems related to the number of channels */
@@ -198,7 +201,7 @@ PaError Pa_CloseStream(PaStream *stream) {
 
 PaError Pa_StartStream(PaStream *stream) {
 	pa_stream.active = 1;
-
+	sched_wakeup(&pa_thread->schedee);
 	return paNoError;
 }
 
