@@ -262,6 +262,19 @@ out:
 	return res;
 }
 
+static int fec_phy_id = 0;
+static int phy_discovery(void) {
+	int id;
+	int bus;
+	for (bus = 0; bus < 32; bus ++) {
+		id = phy_read_reg(bus, MII_PHYSID1) & 0xFFFF;
+		if (id != 0xFFFF && id != 0x0 ) {
+			return bus;		
+		}
+	}
+	return -1;
+}
+
 static void _reset(struct net_device *dev) {
 	int cnt = 0;
 
@@ -326,7 +339,8 @@ static void _reset(struct net_device *dev) {
 
 	fec_reg_dump("ENET dump embox...\n");
 
-	phy_reg_dump("PHY %x reg dump\n", 0x1);
+	fec_phy_id = phy_discovery();
+	phy_reg_dump("PHY %x reg dump\n", fec_phy_id);
 }
 
 static int fec_open(struct net_device *dev) {
