@@ -126,5 +126,9 @@ endif
 AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_ARCH)-unknown-none
 endif
 
+ifeq ($(COMPILER),clang)
+EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-clang
+else
 EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-gcc
 EMBOX_GXX := $(ROOT_DIR)/mk/extbld/arch-embox-g++
+endif
