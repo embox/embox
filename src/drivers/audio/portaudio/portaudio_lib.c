@@ -15,6 +15,9 @@
 
 #include <kernel/thread.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <kernel/sched.h>
+#include <kernel/printk.h>
+#include <time.h>
 
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
@@ -32,6 +35,15 @@ struct pa_strm {
 
 static struct thread *pa_thread;
 static struct pa_strm pa_stream;
+
+static void _buf_scale(void *buf, int len1, int len2) {
+	uint16_t *b16 = buf;
+	if (len2 > len1) {
+		for (int i = len2 - 1; i >= 0; i--) {
+			b16[i] = b16[i * len1 / len2];
+		}
+	}
+}
 
 /**
  * @brief Duplicate left channel for the buffer
@@ -94,12 +106,21 @@ static void *pa_thread_hnd(void *arg) {
 		if (out_buf)
 			memset(out_buf, 0, audio_dev->buf_len);
 
-		err = pa_stream.callback(in_buf,
+		if ((err = 0))
+			err = pa_stream.callback(in_buf,
 				out_buf,
 				inp_frames,
 				NULL,
 				0,
 				pa_stream.user_data);
+
+		inp_frames *= 2;
+		_mono_to_stereo(out_buf, inp_frames);
+		_buf_scale(out_buf, inp_frames, inp_frames);
+
+		/* for (int i = 0; i < 8 * 0x1000 * 32 * 2; i++) {
+			((uint8_t*)out_buf)[i] = i % 255;
+		} */
 
 		if (err) {
 			log_error("User callback error: %d", err);
@@ -107,7 +128,6 @@ static void *pa_thread_hnd(void *arg) {
 				Pa_CloseStream(&pa_stream);
 			}
 		}
-
 		/* Sort out problems related to the number of channels */
 		if (pa_stream.number_of_chan != audio_dev->num_of_chan) {
 			if (pa_stream.number_of_chan == 1 && audio_dev->num_of_chan == 2) {
