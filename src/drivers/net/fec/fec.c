@@ -200,7 +200,7 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 	show_packet(data, skb->len, "tx");
 
 	priv = dev->priv;
-	assert((uint32_t)_tx_desc_ring == REG32_LOAD(ENET_TDSR));
+	assert((uint32_t)priv->tbd_base == REG32_LOAD(ENET_TDSR));
 
 	sp = ipl_save();
 	{
@@ -211,7 +211,7 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 		dcache_flush(&_tx_buf[cur_tx_desc][0], skb->len);
 		//dcache_flush(data, skb->len);
 
-		desc = &_tx_desc_ring[cur_tx_desc];
+		desc = &priv->tbd_base[cur_tx_desc];
 		dcache_inval(desc, sizeof(struct fec_buf_desc));
 		if (desc->flags & FLAG_R) {
 			log_error("tx desc still busy");
