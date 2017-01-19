@@ -107,7 +107,6 @@ static char *httpd_parse_headers(char *str, struct http_req *hreq) {
 
 char *httpd_parse_request(char *str, struct http_req *hreq) {
 	char *pb;
-	pb = str;
 
 	pb = httpd_parse_request_line(str, hreq);
 	if (!pb) {

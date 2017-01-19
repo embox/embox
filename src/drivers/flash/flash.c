@@ -139,10 +139,9 @@ static int flashbdev_read(struct block_dev *bdev,
 	uint32_t startpos, endpos;
 
 	flash = (struct flash_dev *)bdev->privdata;
-
-	flash = (struct flash_dev *) bdev->privdata;
 	startpos = flash->start + (blkno * flash->block_info.block_size);
 	endpos = startpos + count - 1;
+
 	if ( startpos < flash->start ) {
 		return -EINVAL;
 	}
@@ -163,11 +162,9 @@ static int flashbdev_write(struct block_dev *bdev,
 	uint32_t startpos, endpos;
 
 	flash = (struct flash_dev *)bdev->privdata;
-
-	flash = (struct flash_dev *) bdev->privdata;
 	startpos = flash->start + (blkno * flash->block_info.block_size);
-
 	endpos = startpos + count - 1;
+
 	if ( startpos < flash->start ) {
 		return -EINVAL;
 	}
