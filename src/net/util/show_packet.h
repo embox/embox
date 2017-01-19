@@ -20,8 +20,7 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
 	if (!&mod_logger)
 		return;
 
-	if (&mod_logger.logging &&
-		mod_logger.logging.level >= LOG_DEBUG - 1) {
+	if (mod_logger.logging.level >= LOG_DEBUG - 1) {
 
 		log_raw(LOG_DEBUG, "PACKET(%d) %s:\n", size, title);
 		int rows = (size + STR_BYTES - 1) / STR_BYTES;

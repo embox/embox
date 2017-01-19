@@ -6,9 +6,11 @@
  * @author Vita Loginova
  */
 
+#include <assert.h>
+#include <stdarg.h>
+
 #include <kernel/printk.h>
 #include <util/logging.h>
-#include <stdarg.h>
 
 char *log_levels[LOG_DEBUG] = {
 	"error",
@@ -18,7 +20,9 @@ char *log_levels[LOG_DEBUG] = {
 };
 
 void logging_raw(struct logging *logging, int level, const char* fmt, ...) {
-	if (logging && level <= logging->level) {
+	assert(logging);
+
+	if (level <= logging->level) {
 		va_list args;
 
 		va_start(args, fmt);
