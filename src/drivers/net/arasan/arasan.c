@@ -28,11 +28,6 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
-/* */
-#define CMCTR_BASE    0x38094000
-
-#define GATE_SYS_CTR (CMCTR_BASE + 0x04c)
-
 /* Internal I/O space mapping */
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
 #define ARASAN_IRQ OPTION_GET(NUMBER, irq_num)
@@ -117,6 +112,13 @@
 #define DMA_INTERRUPT_ENABLE_RECEIVE_DONE             (1 << 4)
 #define MAC_TRANSMIT_CONTROL_TRANSMIT_ENABLE          (1 << 0)
 
+
+#define MAC_MDIO_CONTROL_READ_WRITE(VAL)              ((VAL) << 10)
+#define MAC_MDIO_CONTROL_REG_ADDR(VAL)                ((VAL) << 5)
+#define MAC_MDIO_CONTROL_PHY_ADDR(VAL)                ((VAL) << 0)
+#define MAC_MDIO_CONTROL_START_FRAME(VAL)             ((VAL) << 15)
+
+
 /* DMA descriptor fields */
 #define DMA_RDES0_OWN_BIT      (1 << 31)
 #define DMA_RDES0_FD           (1 << 30)
@@ -154,20 +156,6 @@ static void _reg_dump() {
 	printk("CURRENT_TRANSMIT_BUFFER_POINTER     %8x\n", REG32_LOAD(DMA_CURRENT_TRANSMIT_BUFFER_POINTER));
 	printk("CURRENT_RECEIVE_DESCRIPTOR_POINTER  %8x\n", REG32_LOAD(DMA_CURRENT_RECEIVE_DESCRIPTOR_POINTER));
 	printk("CURRENT_RECEIVE_BUFFER_POINTER      %8x\n", REG32_LOAD(DMA_CURRENT_RECEIVE_BUFFER_POINTER));
-	printk("======================================================\n");
-	printk("Arasan ethernet MAC registers:\n");
-	printk("======================================================\n");
-	printk("MAC_GLOBAL_CONTROL                  %8x\n", REG32_LOAD(MAC_GLOBAL_CONTROL);
-	printk("MAC_TRANSMIT_CONTROL                %8x\n", REG32_LOAD(MAC_TRANSMIT_CONTROL);
-	printk("MAC_RECEIVE_CONTROL                 %8x\n", REG32_LOAD(MAC_RECEIVE_CONTROL);
-	printk("MAC_MAXIMUM_FRAME_SIZE              %8x\n", REG32_LOAD(MAC_MAXIMUM_FRAME_SIZE);
-	printk("MAC_TRANSMIT_JABBER_SIZE            %8x\n", REG32_LOAD(MAC_TRANSMIT_JABBER_SIZE);
-	printk("MAC_RECEIVE_JABBER_SIZE             %8x\n", REG32_LOAD(MAC_RECEIVE_JABBER_SIZE);
-	printk("MAC_ADDRESS_CONTROL                 %8x\n", REG32_LOAD(MAC_ADDRESS_CONTROL);
-	printk("MAC_MDIO_CLOCK_DIVISION_CONTROL     %8x\n", REG32_LOAD(MAC_MDIO_CLOCK_DIVISION_CONTROL);
-	printk("MAC_ADDRESS1_HIGH                   %8x\n", REG32_LOAD(MAC_ADDRESS1_HIGH);
-	printk("MAC_ADDRESS1_MED                    %8x\n", REG32_LOAD(MAC_ADDRESS1_MED);
-	printk("MAC_ADDRESS1_LOW                    %8x\n", REG32_LOAD(MAC_ADDRESS1_LOW);
 	printk("======================================================\n");
 }
 
@@ -243,15 +231,60 @@ static irq_return_t arasan_int_handler(unsigned int irq_num, void *dev_id) {
 	return 0;
 }
 
+static int arasan_gemac_mdio_read(int mii_id, int regnum) {
+	int value;
+
+	REG32_STORE(MAC_MDIO_CONTROL,
+			MAC_MDIO_CONTROL_READ_WRITE(1) |
+			MAC_MDIO_CONTROL_REG_ADDR(regnum) |
+			MAC_MDIO_CONTROL_PHY_ADDR(mii_id) |
+			MAC_MDIO_CONTROL_START_FRAME(1));
+
+	/* wait for end of transfer */
+	while ((REG32_LOAD(MAC_MDIO_CONTROL) >> 15)) {
+	}
+
+
+	value = REG32_LOAD(MAC_MDIO_DATA);
+
+	return value;
+}
+
+int arasan_gemac_mdio_write(int mii_id, int regnum, uint16_t value)
+{
+	REG32_STORE(MAC_MDIO_DATA, value);
+
+	REG32_STORE(MAC_MDIO_CONTROL,
+			MAC_MDIO_CONTROL_START_FRAME(1) |
+			MAC_MDIO_CONTROL_PHY_ADDR(mii_id) |
+			MAC_MDIO_CONTROL_REG_ADDR(regnum) |
+			MAC_MDIO_CONTROL_READ_WRITE(0));
+
+	/* wait for end of transfer */
+	while ((REG32_LOAD(MAC_MDIO_CONTROL) >> 15)) {
+	}
+
+	return 0;
+}
+#define MII_PHYSID1     0x2 /* PHY ID #1 */
+#define MII_PHYSID2     0x3 /* PHY ID #2 */
+static int phy_discovery(void) {
+	int id;
+	int bus;
+	for (bus = 0; bus < 32; bus ++) {
+		id = arasan_gemac_mdio_read(bus, MII_PHYSID1) & 0xFFFF;
+		if (id != 0xFFFF && id != 0x0 ) {
+			return bus;
+		}
+	}
+	return -1;
+}
+
 EMBOX_UNIT_INIT(arasan_init);
 static int arasan_init(void) {
-        struct net_device *nic;
+	struct net_device *nic;
 	uint32_t reg;
-
-	/* Enable EMAC */
-	reg = REG32_LOAD(GATE_SYS_CTR);
-	reg |= (1 << 4);
-	REG32_STORE(GATE_SYS_CTR, reg);
+	int mii_id;
 
 	/* Setup TX descriptors */
 	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
@@ -307,6 +340,12 @@ static int arasan_init(void) {
 
 	_reg_dump();
 
+	mii_id = phy_discovery();
+	if (mii_id != -1) {
+		printk("mii_id = %d\n", mii_id);
+	} else {
+		printk("phy is not found\n");
+	}
 	/* Setup etherdev */
         if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
@@ -325,10 +364,3 @@ static struct periph_memory_desc arasan_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(arasan_mem);
-
-static struct periph_memory_desc cmctr_mem = {
-	.start = CMCTR_BASE,
-	.len   = 0x200
-};
-
-PERIPH_MEMORY_DEFINE(cmctr_mem);
