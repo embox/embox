@@ -154,9 +154,6 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	 */
 	if (ntohs(skb->nh.iph->frag_off) & (IP_MF | IP_OFFSET)) {
 		if ((complete_skb = ip_defrag(skb)) == NULL) {
-			if (skb == NULL) {
-				return 0; /* error: */
-			}
 			return 0;
 		} else {
 			skb = complete_skb;

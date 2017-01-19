@@ -194,11 +194,14 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name, struct
 	if (sk == -1) {
 		printf("socket failed. error=%d\n", sk);
 		free(tx_pack);
+		free(rx_pack);
 		return -errno;
 	}
 
 	if (in_dev != NULL) {
 		if (-1 == setsockopt(sk, SOL_SOCKET, SO_BINDTODEVICE, &in_dev->dev->name[0], strlen(&in_dev->dev->name[0]))) {
+			free(tx_pack);
+			free(rx_pack);
 			return -errno;
 		}
 	}
