@@ -23,6 +23,7 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/util/show_packet.h>
+#include <net/mii.h>
 
 #include <util/log.h>
 
@@ -30,6 +31,14 @@
 
 #include <framework/mod/options.h>
 
+/* FEC MII MMFR bits definition */
+#define FEC_MMFR_ST     (1 << 30)
+#define FEC_MMFR_OP_READ    (2 << 28)
+#define FEC_MMFR_OP_WRITE   (1 << 28)
+#define FEC_MMFR_PA(v)      ((v & 0x1f) << 23)
+#define FEC_MMFR_RA(v)      ((v & 0x1f) << 18)
+#define FEC_MMFR_TA     (2 << 16)
+#define FEC_MMFR_DATA(v)    (v & 0xffff)
 
 struct fec_priv {
 	uint32_t base_addr;
@@ -40,6 +49,8 @@ struct fec_priv {
 };
 
 static struct fec_priv fec_priv;
+
+static int volatile phy_wait_flag;
 
 static void fec_reg_dump(const char * title) {
 	log_debug("%s", title);
@@ -67,6 +78,32 @@ static void fec_reg_dump(const char * title) {
 	log_debug("ENET_RDSR %10x %10x", ENET_RDSR, REG32_LOAD(ENET_RDSR));
 	log_debug("ENET_TDSR %10x %10x", ENET_TDSR, REG32_LOAD(ENET_TDSR));
 	log_debug("ENET_MRBR %10x %10x", ENET_MRBR, REG32_LOAD(ENET_MRBR));
+}
+
+static int phy_read_reg(int mii_id, int regnum) {
+	phy_wait_flag = 0;
+	REG32_STORE(ENET_MMFR, FEC_MMFR_ST | FEC_MMFR_OP_READ |
+		FEC_MMFR_PA(mii_id) | FEC_MMFR_RA(regnum) |
+		FEC_MMFR_TA);
+
+	while (!phy_wait_flag)
+		;
+
+	return REG32_LOAD(ENET_MMFR);
+}
+
+static void phy_reg_dump(const char *title, int mii_id) {
+	log_debug("%s\n", title);
+
+	log_debug("MII_BMCR       %10x %10x", MII_BMCR, phy_read_reg(mii_id, MII_BMCR));
+	log_debug("MII_BMSR       %10x %10x", MII_BMSR, phy_read_reg(mii_id, MII_BMSR));
+	log_debug("MII_PHYSID1    %10x %10x", MII_PHYSID1, phy_read_reg(mii_id, MII_PHYSID1));
+	log_debug("MII_PHYSID2    %10x %10x", MII_PHYSID2, phy_read_reg(mii_id, MII_PHYSID2));
+	log_debug("MII_ADVERTISE  %10x %10x", MII_ADVERTISE, phy_read_reg(mii_id, MII_ADVERTISE));
+	log_debug("MII_LPA        %10x %10x", MII_LPA, phy_read_reg(mii_id, MII_LPA));
+	log_debug("MII_EXPANSION  %10x %10x", MII_EXPANSION, phy_read_reg(mii_id, MII_EXPANSION));
+
+	log_debug("\n");
 }
 
 static void emac_set_macaddr(unsigned char _macaddr[6]) {
@@ -150,7 +187,6 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 	assert(dev);
 	assert(skb);
 
-
 	res = 0;
 
 	data = (uint8_t*) skb_data_cast_in(skb->data);
@@ -164,7 +200,7 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 	show_packet(data, skb->len, "tx");
 
 	priv = dev->priv;
-	assert((uint32_t)_tx_desc_ring == REG32_LOAD(ENET_TDSR));
+	assert((uint32_t)priv->tbd_base == REG32_LOAD(ENET_TDSR));
 
 	sp = ipl_save();
 	{
@@ -175,7 +211,7 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 		dcache_flush(&_tx_buf[cur_tx_desc][0], skb->len);
 		//dcache_flush(data, skb->len);
 
-		desc = &_tx_desc_ring[cur_tx_desc];
+		desc = &priv->tbd_base[cur_tx_desc];
 		dcache_inval(desc, sizeof(struct fec_buf_desc));
 		if (desc->flags & FLAG_R) {
 			log_error("tx desc still busy");
@@ -226,6 +262,19 @@ out:
 	return res;
 }
 
+static int fec_phy_id = 0;
+static int phy_discovery(void) {
+	int id;
+	int bus;
+	for (bus = 0; bus < 32; bus ++) {
+		id = phy_read_reg(bus, MII_PHYSID1) & 0xFFFF;
+		if (id != 0xFFFF && id != 0x0 ) {
+			return bus;		
+		}
+	}
+	return -1;
+}
+
 static void _reset(struct net_device *dev) {
 	int cnt = 0;
 
@@ -251,7 +300,7 @@ static void _reset(struct net_device *dev) {
 	 * Receive Frame Interrupt
 	 * Receive Buffer Interrupt
 	 */
-	REG32_STORE(ENET_EIMR, 0x0 | ENET_EIR_RXB | ENET_EIR_RXF);
+	REG32_STORE(ENET_EIMR, 0x0 | ENET_EIR_RXB | ENET_EIR_RXF | ENET_EIR_MII);
 	/*
 	 * Clear FEC-Lite interrupt event register(IEVENT)
 	 */
@@ -289,6 +338,9 @@ static void _reset(struct net_device *dev) {
 	REG32_STORE(ENET_RDAR, (1 << 24));
 
 	fec_reg_dump("ENET dump embox...\n");
+
+	fec_phy_id = phy_discovery();
+	phy_reg_dump("PHY %x reg dump\n", fec_phy_id);
 }
 
 static int fec_open(struct net_device *dev) {
@@ -367,6 +419,10 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	if (state & (ENET_EIR_RXB | ENET_EIR_RXF)) {
 		imx6_receive(dev_id, priv);
+	}
+
+	if (state & ENET_EIR_MII) {
+		phy_wait_flag = 1;
 	}
 
 	REG32_STORE(ENET_EIR, state);

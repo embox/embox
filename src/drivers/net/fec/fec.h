@@ -49,6 +49,7 @@
 /* ENET_EIR */
 #define ENET_EIR_MASK  0xFFFFFFFF
 #define ENET_EIR_EBERR (1 << 22)   /* Ethernet bus error */
+#define ENET_EIR_MII   (1 << 23)   /* MII Interrupt Mask */
 #define ENET_EIR_RXB   (1 << 24)   /* Receive buffer     */
 #define ENET_EIR_RXF   (1 << 25)   /* Receive frame      */
 #define ENET_EIR_TXB   (1 << 26)   /* Transmit buffer    */
