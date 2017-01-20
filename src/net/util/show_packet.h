@@ -9,31 +9,32 @@
 #ifndef SHOW_PACKET_H
 #define SHOW_PACKET_H
 
-#include <kernel/printk.h>
 #include <util/log.h>
+#include <stdint.h>
+
 
 #define STR_BYTES 16
 
-extern struct logger mod_logger __attribute__ ((weak));
 
 static inline void show_packet(uint8_t *raw, int size, char *title) {
 	if (!&mod_logger)
 		return;
 
-	if (&mod_logger.logging &&
-		mod_logger.logging.level >= LOG_DEBUG - 1) {
+	if (mod_logger.logging.level >= LOG_DEBUG - 1) {
 
-		printk("\nPACKET(%d) %s:\n", size, title);
+		log_raw(LOG_DEBUG, "PACKET(%d) %s:\n", size, title);
 		int rows = (size + STR_BYTES - 1) / STR_BYTES;
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < STR_BYTES; j++) {
 				int pos = i * STR_BYTES + j;
-				if (pos < size)
-					printk(" %02hhX", *(raw + pos));
-				else
-					printk("   ");
+				if (pos < size) {
+					log_raw(LOG_DEBUG, " %02hhX", *(raw + pos));
+				}
+				else {
+					log_raw(LOG_DEBUG, "   ");
+				}
 			}
-			printk("   ");
+			log_raw(LOG_DEBUG, "   ");
 			for (int j = 0; j < STR_BYTES; j++) {
 				int pos = i * STR_BYTES + j;
 				if (pos < size) {
@@ -41,10 +42,10 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
 					if (c < 33 || c > 126)
 						c = '.';
 
-					printk("%c", c);
+					log_raw(LOG_DEBUG, "%c", c);
 				}
 			}
-			printk("\n");
+			log_raw(LOG_DEBUG, "\n");
 		}
 	}
 }
