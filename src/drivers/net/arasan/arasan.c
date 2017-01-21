@@ -24,6 +24,7 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/util/show_packet.h>
+#include <net/mii.h>
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -283,8 +284,6 @@ static void phy_reset(void) {
 	gpio_set_level(gpio_port, 1 << PHY_RESET_PIN, 1);
 }
 
-#define MII_PHYSID1     0x2 /* PHY ID #1 */
-#define MII_PHYSID2     0x3 /* PHY ID #2 */
 static int phy_discovery(void) {
 	int id;
 	int bus;
