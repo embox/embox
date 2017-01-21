@@ -1,0 +1,7 @@
+package embox.driver.gpio
+
+module dwapb_gpio extends api {
+	source "dwapb_gpio.c"
+	
+	source "dwapb_gpio.h"
+}
