@@ -11,6 +11,7 @@
 
 #include <util/log.h>
 
+#include <drivers/gpio.h>
 #include <drivers/common/memory.h>
 #include <hal/reg.h>
 #include <kernel/printk.h>
@@ -23,7 +24,6 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/util/show_packet.h>
-#include <util/log.h>
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -31,6 +31,9 @@
 /* Internal I/O space mapping */
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
 #define ARASAN_IRQ OPTION_GET(NUMBER, irq_num)
+
+#define PHY_RESET_PORT 2 /* port B */
+#define PHY_RESET_PIN  0 /* pin 0 */
 
 #define DMA_CONFIGURATION                         (BASE_ADDR + 0x0000)
 #define DMA_CONTROL                               (BASE_ADDR + 0x0004)
@@ -244,7 +247,6 @@ static int arasan_gemac_mdio_read(int mii_id, int regnum) {
 	while ((REG32_LOAD(MAC_MDIO_CONTROL) >> 15)) {
 	}
 
-
 	value = REG32_LOAD(MAC_MDIO_DATA);
 
 	return value;
@@ -266,6 +268,21 @@ int arasan_gemac_mdio_write(int mii_id, int regnum, uint16_t value)
 
 	return 0;
 }
+
+static void phy_reset(void) {
+	struct gpio *gpio_port;
+	volatile int i;
+
+	gpio_port = gpio_by_num(PHY_RESET_PORT);
+
+	gpio_settings(gpio_port, 1 << PHY_RESET_PIN, GPIO_MODE_OUTPUT);
+
+	for (i=100000; i > 0; i--) {
+	}
+
+	gpio_set_level(gpio_port, 1 << PHY_RESET_PIN, 1);
+}
+
 #define MII_PHYSID1     0x2 /* PHY ID #1 */
 #define MII_PHYSID2     0x3 /* PHY ID #2 */
 static int phy_discovery(void) {
@@ -285,6 +302,8 @@ static int arasan_init(void) {
 	struct net_device *nic;
 	uint32_t reg;
 	int mii_id;
+
+	phy_reset();
 
 	/* Setup TX descriptors */
 	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
