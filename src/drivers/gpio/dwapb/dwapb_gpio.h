@@ -12,4 +12,9 @@
 
 typedef uint32_t __gpio_mask_t;
 
+struct gpio {
+	uint32_t port_id;
+};
+
+
 #endif /* DWAPB_GPIO_H_ */
