@@ -4,9 +4,16 @@
  * @date 20.01.2017
  * @author Anton Bondarev
  */
+#include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <assert.h>
+#include <sys/mman.h>
+
+#include <util/log.h>
+
+#include <hal/reg.h>
+#include <drivers/common/memory.h>
 
 #include <drivers/gpio.h>
 
@@ -33,13 +40,51 @@ struct gpio *gpio_by_num(int num_port) {
 }
 
 int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
+	struct gpio_dwapb_port *gpio_port;
+	uint32_t direction;
+
+	gpio_port = (void *)(BASE_CTRL_ADDR + gpio->port_id * sizeof(struct gpio_dwapb_port));
+
+	log_debug("%p mask 0x%X mode %d", gpio_port, mask, mode);
+	REG32_STORE(&gpio_port->ctl, 0xFFFFFFFF); /* all hardware pins */
+	switch (mode) {
+	case GPIO_MODE_OUTPUT:
+		break;
+	default:
+		log_error("wrong gpio mode");
+		return -EINVAL;
+	}
+
+	direction = REG32_LOAD(&gpio_port->ddr);
+	REG32_STORE(&gpio_port->ddr, direction | mask);
+
 	return 0;
 }
 
 void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
+	struct gpio_dwapb_port *gpio_port;
+	uint32_t dr;
 
+	gpio_port = (void *)(BASE_CTRL_ADDR + gpio->port_id * sizeof(struct gpio_dwapb_port));
+	dr = REG32_LOAD(&gpio_port->dr);
+	if (level) {
+		dr |= mask;
+
+	} else {
+		dr &= ~mask;
+	}
+	log_debug("%p mask 0x%X mode %d", gpio_port, mask, level);
+	REG32_STORE(&gpio_port->dr, dr);
 }
 
 gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask) {
 	return 0;
 }
+
+static struct periph_memory_desc arasan_mem = {
+	.start = BASE_CTRL_ADDR,
+	.len   = 0x200
+};
+
+PERIPH_MEMORY_DEFINE(arasan_mem);
+
