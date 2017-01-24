@@ -29,12 +29,18 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
+
+/* */
+#define CMCTR_BASE    0x38094000
+
+#define GATE_SYS_CTR (CMCTR_BASE + 0x04c)
+
 /* Internal I/O space mapping */
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
 #define ARASAN_IRQ OPTION_GET(NUMBER, irq_num)
 
 #define PHY_RESET_PORT 2 /* port B */
-#define PHY_RESET_PIN  0 /* pin 0 */
+#define PHY_RESET_PIN  1 /* pin 1 */
 
 #define DMA_CONFIGURATION                         (BASE_ADDR + 0x0000)
 #define DMA_CONTROL                               (BASE_ADDR + 0x0004)
@@ -302,6 +308,10 @@ static int arasan_init(void) {
 	uint32_t reg;
 	int mii_id;
 
+	reg = REG32_LOAD(GATE_SYS_CTR);
+	reg |= (1 << 4);
+	REG32_STORE(GATE_SYS_CTR, reg);
+
 	phy_reset();
 
 	/* Setup TX descriptors */
@@ -382,3 +392,12 @@ static struct periph_memory_desc arasan_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(arasan_mem);
+
+
+
+static struct periph_memory_desc cmctr_mem = {
+	.start = CMCTR_BASE,
+	.len   = 0x200
+};
+
+PERIPH_MEMORY_DEFINE(cmctr_mem);
