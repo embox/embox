@@ -42,11 +42,14 @@ struct gpio *gpio_by_num(int num_port) {
 int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	struct gpio_dwapb_port *gpio_port;
 	uint32_t direction;
+	uint32_t ctl;
 
 	gpio_port = (void *)(BASE_CTRL_ADDR + gpio->port_id * sizeof(struct gpio_dwapb_port));
 
 	log_debug("%p mask 0x%X mode %d", gpio_port, mask, mode);
-	REG32_STORE(&gpio_port->ctl, 0xFFFFFFFF); /* all hardware pins */
+	ctl = REG32_LOAD(&gpio_port->ctl);
+	ctl &= ~mask;
+	REG32_STORE(&gpio_port->ctl, ctl); /* all hardware pins */
 	switch (mode) {
 	case GPIO_MODE_OUTPUT:
 		break;
