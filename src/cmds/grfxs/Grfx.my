@@ -1,0 +1,17 @@
+
+package embox.cmd.grfxs
+
+@AutoCmd
+@Cmd(name="grfx",
+	help="print that is Sasha's code",
+	man='''
+		NAME
+			grfx just print that it is Sasha's.
+		SYNOPSIS
+			printing 
+		AUTHORS
+Aleksandra Butrova ;)
+	''')
+module grfx {
+	source "grfx.c"
+}
