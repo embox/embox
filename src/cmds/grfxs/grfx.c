@@ -15,6 +15,11 @@
 #include "nuklear.h"
 
 
+//include embox.cmd.grfxs.grfx
+
+
+#include <stdio.h>
+
 /* includes from fbcon */
 #include <drivers/console/mpx.h>
 #include <drivers/console/fbcon.h>
@@ -26,6 +31,9 @@
 static void inpevent(struct vc *vc, struct input_event *ev)
 {
     printf("\nWhat are doing with graphic window??	\n");
+static void inpevent(struct vc *vc, struct input_event *ev)
+{
+    printf("\nI do not want do anything ._.\n");
 }
 
 static void visd(struct vc *vc, struct fb_info *fbinfo)
