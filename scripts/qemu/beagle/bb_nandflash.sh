@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/env bash
 # Copyright (C) 2008 yajin (yajin@vm-kernel.org)
 #
 # Put the xloader,u-boot,kernel and rootfs into nand flash image.

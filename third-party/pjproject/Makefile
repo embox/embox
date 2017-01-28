@@ -47,8 +47,8 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(BUILD_ROOT) && ( \
-		make -j1 dep; \
-		make -j1 MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) -j1 dep; \
+		$(MAKE) -j1 MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 

@@ -22,7 +22,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make \
+		$(MAKE) \
                 	CC=$(EMBOX_GCC) \
 	)
 	touch $@

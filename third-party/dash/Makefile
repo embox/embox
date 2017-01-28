@@ -21,13 +21,13 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
-		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' CC=$(EMBOX_GCC) ;\
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' CC=$(EMBOX_GCC) ;\
 	)
 	touch $@
 
 $(INSTALL) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
-		make DESTDIR=$(PKG_INSTALL_DIR) install; \
+		$(MAKE) DESTDIR=$(PKG_INSTALL_DIR) install; \
 		mv $(PKG_INSTALL_DIR)/usr/local/bin/dash $(PKG_INSTALL_DIR)/dash.o; \
 	)
 	touch $@

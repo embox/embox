@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Gotta have a grub 0.97-like installed on your system
 #
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check associative arrays support
 [ ${BASH_VERSION:0:1} -ge 4 ] || { echo "Bash 4.0 or later is required"; exit 1; }

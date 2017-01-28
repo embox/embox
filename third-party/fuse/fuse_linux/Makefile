@@ -25,7 +25,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
-		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 

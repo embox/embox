@@ -22,13 +22,13 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make DESTDIR=$(PKG_INSTALL_DIR) install; \
+		$(MAKE) DESTDIR=$(PKG_INSTALL_DIR) install; \
 	)
 	cp $(PKG_INSTALL_DIR)/lib/libpcre*.a $(PKG_INSTALL_DIR)
 
