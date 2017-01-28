@@ -2,7 +2,7 @@
 
 
 #include <stdio.h>
-
+#include "nuklear.h"
 /* includes from fbcon */
 #include <drivers/console/mpx.h>
 #include <drivers/console/fbcon.h>
