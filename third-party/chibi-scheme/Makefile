@@ -14,7 +14,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make CC=$(EMBOX_GCC) SEXP_USE_DL=0 chibi-scheme-static; \
+		$(MAKE) CC=$(EMBOX_GCC) SEXP_USE_DL=0 chibi-scheme-static; \
 	)
 	touch $@
 

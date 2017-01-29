@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 DATADIR="$(dirname "$0")"
 CONFDIR=./conf

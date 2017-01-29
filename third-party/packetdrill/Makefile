@@ -13,7 +13,7 @@ include $(EXTBLD_LIB)
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make -f Makefile.common \
+		$(MAKE) -f Makefile.common \
 			MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS+="-I$(abspath $(CURDIR))/include -include $(abspath $(CURDIR))/packetdrill_stubs.h" \

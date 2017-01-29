@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ $EMBOX_GCC_ENV ] && [ -f $EMBOX_GCC_ENV ]; then
 	. $EMBOX_GCC_ENV

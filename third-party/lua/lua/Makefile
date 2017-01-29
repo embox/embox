@@ -20,7 +20,7 @@ endif
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make posix MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
+		$(MAKE) posix MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS="-I$(ROOT_DIR)/third-party/lua/lua/include/ \
 				$(LUA_CPPFLAGS)"; \

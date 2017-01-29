@@ -30,7 +30,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix  && ( \
-		make tclsh MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) tclsh MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
@@ -39,6 +39,6 @@ $(INSTALL) :
 	cp $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix/libtcl8.6.a $(PKG_INSTALL_DIR)/libtcl8.6.a
 	cp $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix/libtclstub8.6.a $(PKG_INSTALL_DIR)/libtclstub8.6.a
 	cd $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix && ( \
-		make install-headers \
+		$(MAKE) install-headers \
 	)
 	touch $@

@@ -29,13 +29,13 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 PKG_INSTALL_LIBS :
 	cd $(PKG_SOURCE_DIR) && \
-	make install-libs && \
+	$(MAKE) install-libs && \
 	cp $(PKG_SOURCE_DIR)/intl/libintl.a $(PKG_SOURCE_DIR)/../install/intl
 
 PKG_INSTALL_PROGS :

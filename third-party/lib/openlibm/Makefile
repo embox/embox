@@ -39,7 +39,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make \
+		$(MAKE) \
 			USEGCC=1 \
 			ARCH=$(OLIBM_ARCH) \
 			OS=Embox \

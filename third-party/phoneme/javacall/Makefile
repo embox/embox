@@ -14,7 +14,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(BUILD_DIR) && ( \
-		make -C src/configuration/stubs/linux MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
+		$(MAKE) -C src/configuration/stubs/linux MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 			USE_DEBUG=true \
 			JAVACALL_DIR=$(JAVACALL_DIR) JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
 			TOOLS_DIR=$(TOOLS_DIR) \

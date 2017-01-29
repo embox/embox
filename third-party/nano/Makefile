@@ -40,7 +40,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 

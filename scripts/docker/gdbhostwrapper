@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function myreadlink() {
 	(cd "$1" && echo "$(pwd -P)")

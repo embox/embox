@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Network perfomance test with `httperf' utillity
 # Author: Anastasia Novoselova

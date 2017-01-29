@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # Network perfomance test with `ab' utillity
 # Author: Anastasia Novoselova
