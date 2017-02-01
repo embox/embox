@@ -187,16 +187,20 @@ static int _rx_head, _rx_tail;
 static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
 	printk("Arasan xmit\n");
 	struct arasan_dma_desc *d;
-
-	_tx_tail = (_tx_tail + 1) % TX_RING_SIZE;
+	uint32_t misc = 0;
 
 	d = &_tx_ring[_tx_tail];
 
+	if (_tx_tail == TX_RING_SIZE - 1) {
+		misc |= DMA_TDES1_EOR;
+	}
 	d->buffer1 = (uint32_t) skb_get_data_pointner(skb->data);
-	d->misc    = (DMA_TDES1_LS | DMA_TDES1_FS | (skb->len & 0xFFF));
+	d->misc    = misc | (DMA_TDES1_LS | DMA_TDES1_FS | (skb->len & 0xFFF));
 	d->status  = DMA_TDES0_OWN_BIT | DMA_TDES1_IOC;
 
 	REG32_STORE(DMA_TRANSMIT_POLL_DEMAND, 1);
+
+	_tx_tail = (_tx_tail + 1) % TX_RING_SIZE;
 
 	_reg_dump();
 	return 0;
@@ -317,6 +321,7 @@ static int arasan_init(void) {
 	/* Setup TX descriptors */
 	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
 	_tx_head = _tx_tail = 0;
+	_tx_ring[TX_RING_SIZE - 1].misc |= DMA_TDES1_EOR;
 	REG32_STORE(DMA_TRANSMIT_BASE_ADDRESS, (uint32_t)_tx_ring);
 
 	/* Setup RX descriptors */
