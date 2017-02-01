@@ -145,6 +145,47 @@
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
 
+
+static void time_delay( int delay) {
+	volatile int i = delay * 0x100;
+	while(i--);
+}
+
+static int arasan_gemac_mdio_read(int mii_id, int regnum) {
+	int value;
+
+	REG32_STORE(MAC_MDIO_CONTROL,
+			MAC_MDIO_CONTROL_READ_WRITE(1) |
+			MAC_MDIO_CONTROL_REG_ADDR(regnum) |
+			MAC_MDIO_CONTROL_PHY_ADDR(mii_id) |
+			MAC_MDIO_CONTROL_START_FRAME(1));
+
+	/* wait for end of transfer */
+	while ((REG32_LOAD(MAC_MDIO_CONTROL) >> 15)) {
+	}
+
+	value = REG32_LOAD(MAC_MDIO_DATA);
+
+	return value;
+}
+
+int arasan_gemac_mdio_write(int mii_id, int regnum, uint16_t value)
+{
+	REG32_STORE(MAC_MDIO_DATA, value);
+
+	REG32_STORE(MAC_MDIO_CONTROL,
+			MAC_MDIO_CONTROL_START_FRAME(1) |
+			MAC_MDIO_CONTROL_PHY_ADDR(mii_id) |
+			MAC_MDIO_CONTROL_REG_ADDR(regnum) |
+			MAC_MDIO_CONTROL_READ_WRITE(0));
+
+	/* wait for end of transfer */
+	while ((REG32_LOAD(MAC_MDIO_CONTROL) >> 15)) {
+	}
+
+	return 0;
+}
+
 static void _reg_dump() {
 	dcache_flush((void*)BASE_ADDR, 0x200);
 	dcache_inval((void*)BASE_ADDR, 0x200);
@@ -206,7 +247,87 @@ static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
 	return 0;
 }
 
+static int arasan_phy_discovery(void) {
+	int id;
+	int bus;
+	for (bus = 0; bus < 32; bus ++) {
+		id = arasan_gemac_mdio_read(bus, MII_PHYSID1) & 0xFFFF;
+		if (id != 0xFFFF && id != 0x0 ) {
+			return bus;
+		}
+	}
+	return -1;
+}
+
+static void arasan_tx_ring_init(void) {
+	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
+	_tx_head = _tx_tail = 0;
+	_tx_ring[TX_RING_SIZE - 1].misc |= DMA_TDES1_EOR;
+	REG32_STORE(DMA_TRANSMIT_BASE_ADDRESS, (uint32_t)_tx_ring);
+}
+
+static void arasan_rx_ring_init(void) {
+	for (int i = 0; i < RX_RING_SIZE; i++) {
+		_rx_ring[i] = (struct arasan_dma_desc) {
+			.misc = skb_max_size()
+		};
+	}
+	_rx_ring[RX_RING_SIZE - 1].misc |= DMA_RDES1_EOR;
+	_rx_head = _rx_tail = 0;
+	REG32_STORE(DMA_RECEIVE_BASE_ADDRESS, (uint32_t)_rx_ring);
+}
+
 static int arasan_open(struct net_device *dev) {
+	uint32_t reg;
+	int mii_id;
+
+	/* Setup TX descriptors */
+	arasan_tx_ring_init();
+
+	/* Setup RX descriptors */
+	arasan_rx_ring_init();
+
+	/* Setup registers */
+	REG32_STORE(MAC_ADDRESS_CONTROL, 1);
+	REG32_STORE(MAC_TRANSMIT_FIFO_ALMOST_FULL, (512 - 8));
+	REG32_STORE(MAC_TRANSMIT_PACKET_START_THRESHOLD, 128);
+	REG32_STORE(MAC_RECEIVE_PACKET_START_THRESHOLD, 64);
+
+	reg = REG32_LOAD(MAC_RECEIVE_CONTROL);
+	REG32_STORE(MAC_RECEIVE_CONTROL,
+			reg | MAC_RECEIVE_CONTROL_STORE_AND_FORWARD);
+
+	reg = REG32_LOAD(DMA_CONFIGURATION);
+	REG32_STORE(DMA_CONFIGURATION, reg | DMA_CONFIGURATION_WAIT_FOR_DONE);
+
+	/* Enable interrupts */
+	REG32_STORE(DMA_INTERRUPT_ENABLE,
+			DMA_INTERRUPT_ENABLE_RECEIVE_DONE |
+			DMA_INTERRUPT_ENABLE_TRANSMIT_DONE);
+
+	/* Enable packet transmission */
+	reg = REG32_LOAD(MAC_TRANSMIT_CONTROL);
+	REG32_STORE(MAC_TRANSMIT_CONTROL,
+			reg | MAC_TRANSMIT_CONTROL_TRANSMIT_ENABLE);
+
+	/* Enable packet reception */
+	reg = REG32_LOAD(MAC_RECEIVE_CONTROL);
+	REG32_STORE(MAC_RECEIVE_CONTROL, reg | MAC_RECEIVE_CONTROL_RECEIVE_ENABLE);
+
+	/* Start transmit and receive DMA */
+	REG32_STORE(DMA_CONTROL,
+			DMA_CONTROL_START_RECEIVE_DMA |
+			DMA_CONTROL_START_TRANSMIT_DMA);
+
+	_reg_dump();
+
+	mii_id = arasan_phy_discovery();
+	if (mii_id != -1) {
+		printk("mii_id = %d\n", mii_id);
+	} else {
+		printk("phy is not found\n");
+	}
+
 	return 0;
 }
 
@@ -245,42 +366,9 @@ static irq_return_t arasan_int_handler(unsigned int irq_num, void *dev_id) {
 	return 0;
 }
 
-static int arasan_gemac_mdio_read(int mii_id, int regnum) {
-	int value;
 
-	REG32_STORE(MAC_MDIO_CONTROL,
-			MAC_MDIO_CONTROL_READ_WRITE(1) |
-			MAC_MDIO_CONTROL_REG_ADDR(regnum) |
-			MAC_MDIO_CONTROL_PHY_ADDR(mii_id) |
-			MAC_MDIO_CONTROL_START_FRAME(1));
 
-	/* wait for end of transfer */
-	while ((REG32_LOAD(MAC_MDIO_CONTROL) >> 15)) {
-	}
-
-	value = REG32_LOAD(MAC_MDIO_DATA);
-
-	return value;
-}
-
-int arasan_gemac_mdio_write(int mii_id, int regnum, uint16_t value)
-{
-	REG32_STORE(MAC_MDIO_DATA, value);
-
-	REG32_STORE(MAC_MDIO_CONTROL,
-			MAC_MDIO_CONTROL_START_FRAME(1) |
-			MAC_MDIO_CONTROL_PHY_ADDR(mii_id) |
-			MAC_MDIO_CONTROL_REG_ADDR(regnum) |
-			MAC_MDIO_CONTROL_READ_WRITE(0));
-
-	/* wait for end of transfer */
-	while ((REG32_LOAD(MAC_MDIO_CONTROL) >> 15)) {
-	}
-
-	return 0;
-}
-
-static void phy_reset(void) {
+static void arasan_phy_reset(void) {
 	struct gpio *gpio_port;
 	volatile int i;
 
@@ -294,99 +382,39 @@ static void phy_reset(void) {
 	gpio_set_level(gpio_port, 1 << PHY_RESET_PIN, 1);
 }
 
-static int phy_discovery(void) {
-	int id;
-	int bus;
-	for (bus = 0; bus < 32; bus ++) {
-		id = arasan_gemac_mdio_read(bus, MII_PHYSID1) & 0xFFFF;
-		if (id != 0xFFFF && id != 0x0 ) {
-			return bus;
-		}
-	}
-	return -1;
+
+static void arasan_dma_soft_reset(void) {
+	uint32_t reg;
+
+	reg = REG32_LOAD(DMA_CONFIGURATION);
+	REG32_STORE(DMA_CONFIGURATION, reg | DMA_CONFIGURATION_SOFT_RESET);
+
+	time_delay(100);
+
+	REG32_STORE(DMA_CONFIGURATION, reg);
 }
 
 EMBOX_UNIT_INIT(arasan_init);
 static int arasan_init(void) {
 	struct net_device *nic;
 	uint32_t reg;
-	int mii_id;
 
 	reg = REG32_LOAD(GATE_SYS_CTR);
 	reg |= (1 << 4);
 	REG32_STORE(GATE_SYS_CTR, reg);
 
-	phy_reset();
+	arasan_phy_reset();
 
-	/* Setup TX descriptors */
-	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
-	_tx_head = _tx_tail = 0;
-	_tx_ring[TX_RING_SIZE - 1].misc |= DMA_TDES1_EOR;
-	REG32_STORE(DMA_TRANSMIT_BASE_ADDRESS, (uint32_t)_tx_ring);
+	arasan_dma_soft_reset();
 
-	/* Setup RX descriptors */
-	for (int i = 0; i < RX_RING_SIZE; i++) {
-		_rx_ring[i] = (struct arasan_dma_desc) {
-			.misc = skb_max_size()
-		};
-	}
-	_rx_ring[RX_RING_SIZE - 1].misc |= DMA_RDES1_EOR;
-	_rx_head = _rx_tail = 0;
-	REG32_STORE(DMA_RECEIVE_BASE_ADDRESS, (uint32_t)_rx_ring);
-
-	/* Setup registers */
-	REG32_STORE(MAC_ADDRESS_CONTROL, 1);
-	REG32_STORE(MAC_TRANSMIT_FIFO_ALMOST_FULL, (512 - 8));
-	REG32_STORE(MAC_TRANSMIT_PACKET_START_THRESHOLD, 128);
-	REG32_STORE(MAC_RECEIVE_PACKET_START_THRESHOLD, 64);
-
-	reg = REG32_LOAD(MAC_RECEIVE_CONTROL);
-	reg |= MAC_RECEIVE_CONTROL_STORE_AND_FORWARD;
-	REG32_STORE(MAC_RECEIVE_CONTROL, reg);
-
-	reg = REG32_LOAD(DMA_CONFIGURATION);
-	reg |= DMA_CONFIGURATION_WAIT_FOR_DONE;
-	REG32_STORE(DMA_CONFIGURATION, reg);
-
-	/* schedule a link state check */
-	//phy_start
-	//napi_enable
-	/* Enable interrupts */
-	REG32_STORE(DMA_INTERRUPT_ENABLE,
-			DMA_INTERRUPT_ENABLE_RECEIVE_DONE |
-			DMA_INTERRUPT_ENABLE_TRANSMIT_DONE);
-
-	/* Enable packet transmission */
-	reg = REG32_LOAD(MAC_TRANSMIT_CONTROL);
-	reg |= MAC_TRANSMIT_CONTROL_TRANSMIT_ENABLE;
-	REG32_STORE(MAC_TRANSMIT_CONTROL, reg);
-
-	/* Enable packet reception */
-	reg = REG32_LOAD(MAC_RECEIVE_CONTROL);
-	reg |= MAC_RECEIVE_CONTROL_RECEIVE_ENABLE;
-	REG32_STORE(MAC_RECEIVE_CONTROL, reg);
-
-	/* Start transmit and receive DMA */
-	REG32_STORE(DMA_CONTROL,
-			DMA_CONTROL_START_RECEIVE_DMA |
-			DMA_CONTROL_START_TRANSMIT_DMA);
-
-	_reg_dump();
-
-	mii_id = phy_discovery();
-	if (mii_id != -1) {
-		printk("mii_id = %d\n", mii_id);
-	} else {
-		printk("phy is not found\n");
-	}
 	/* Setup etherdev */
-        if (NULL == (nic = etherdev_alloc(0))) {
-                return -ENOMEM;
-        }
+	if (NULL == (nic = etherdev_alloc(0))) {
+		return -ENOMEM;
+	}
 
 	irq_attach(ARASAN_IRQ, arasan_int_handler, 0, nic, "arasan");
 
-        nic->drv_ops = &arasan_drv_ops;
+	nic->drv_ops = &arasan_drv_ops;
 
 	return inetdev_register_dev(nic);
 }
