@@ -235,6 +235,7 @@ static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
 	if (_tx_tail == TX_RING_SIZE - 1) {
 		misc |= DMA_TDES1_EOR;
 	}
+
 	d->buffer1 = (uint32_t) skb_get_data_pointner(skb->data);
 	d->misc    = misc | (DMA_TDES1_LS | DMA_TDES1_FS | (skb->len & 0xFFF));
 	d->status  = DMA_TDES0_OWN_BIT | DMA_TDES1_IOC;
@@ -269,6 +270,7 @@ static void arasan_tx_ring_init(void) {
 static void arasan_rx_ring_init(void) {
 	for (int i = 0; i < RX_RING_SIZE; i++) {
 		_rx_ring[i] = (struct arasan_dma_desc) {
+			.status = DMA_RDES0_OWN_BIT,
 			.misc = skb_max_size()
 		};
 	}
@@ -362,11 +364,22 @@ static const struct net_driver arasan_drv_ops = {
 };
 
 static irq_return_t arasan_int_handler(unsigned int irq_num, void *dev_id) {
+	uint32_t int_status, ints_to_clear;
+
+	ints_to_clear = 0;
+	int_status = REG32_LOAD(DMA_STATUS_AND_IRQ);
+
+	if (int_status & DMA_STATUS_AND_IRQ_RECEIVE_DONE) {
+		printk(">>>>>>>>>>>>> DMA_STATUS_AND_IRQ_RECEIVE_DONE\n");
+		ints_to_clear |= DMA_STATUS_AND_IRQ_RECEIVE_DONE;
+	} else if (int_status & DMA_STATUS_AND_IRQ_TRANSFER_DONE) {
+		ints_to_clear |= DMA_STATUS_AND_IRQ_TRANSFER_DONE;
+	}
+
+	REG32_STORE(DMA_STATUS_AND_IRQ, ints_to_clear);
 
 	return 0;
 }
-
-
 
 static void arasan_phy_reset(void) {
 	struct gpio *gpio_port;
