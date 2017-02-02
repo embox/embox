@@ -1,0 +1,12 @@
+diff -aur -x configure ../nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b-orig/nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h
+--- ../nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b-orig/nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h	2017-01-25 01:06:59.000000000 +0300
++++ nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h	2017-02-03 15:19:11.812864622 +0300
+@@ -272,7 +272,7 @@
+  */
+ #ifndef NK_API
+ #ifdef NK_PRIVATE
+-#define NK_API static
++#define NK_API static inline
+ #else
+ #define NK_API extern
+ #endif
