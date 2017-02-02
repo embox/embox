@@ -5,7 +5,7 @@ module arasan {
 	source "arasan.c"
 
 	option number base_addr
-	option number irq_num=73
+	option number irq_num=105
 
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
