@@ -1,6 +1,8 @@
 PKG_NAME := libcoap
 PKG_VER  := 4.1.1
 
+PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
+
 PKG_SOURCES := https://github.com/obgm/$(PKG_NAME)/archive/v$(PKG_VER).tar.gz
 PKG_MD5     := ff1af4bd9893c1728e765aa08a816e41
 
