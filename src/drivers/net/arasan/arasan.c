@@ -217,9 +217,11 @@ struct arasan_dma_desc {
 	uint32_t buffer2;
 };
 
+#define ARASAN_MAX_PKT_SZ      ETH_FRAME_LEN
 #define TX_RING_SIZE 8
 #define RX_RING_SIZE 128
 
+static struct sk_buff * _rx_skbs[RX_RING_SIZE];
 static struct arasan_dma_desc _rx_ring[RX_RING_SIZE];
 static struct arasan_dma_desc _tx_ring[TX_RING_SIZE];
 static int _tx_head, _tx_tail;
@@ -260,6 +262,24 @@ static int arasan_phy_discovery(void) {
 	return -1;
 }
 
+static int arasan_alloc_rx_buff(uint32_t idx) {
+	struct sk_buff *skb;
+
+	skb = skb_alloc(ARASAN_MAX_PKT_SZ);
+	if (!skb) {
+		printk("arasan: skb_alloc failed in rx_poll\n");
+		return -1;
+	}
+	_rx_skbs[idx] = skb;
+	_rx_ring[idx].buffer1 = (uint32_t) skb->mac.raw;
+	_rx_ring[idx].status = DMA_RDES0_OWN_BIT;
+	_rx_ring[idx].misc = ARASAN_MAX_PKT_SZ;
+	if (idx == RX_RING_SIZE - 1) {
+		_rx_ring[idx].misc |= DMA_RDES1_EOR;
+	}
+	return 0;
+}
+
 static void arasan_tx_ring_init(void) {
 	memset(_tx_ring, 0, TX_RING_SIZE * sizeof(struct arasan_dma_desc));
 	_tx_head = _tx_tail = 0;
@@ -269,12 +289,8 @@ static void arasan_tx_ring_init(void) {
 
 static void arasan_rx_ring_init(void) {
 	for (int i = 0; i < RX_RING_SIZE; i++) {
-		_rx_ring[i] = (struct arasan_dma_desc) {
-			.status = DMA_RDES0_OWN_BIT,
-			.misc = skb_max_size()
-		};
+		arasan_alloc_rx_buff(i);
 	}
-	_rx_ring[RX_RING_SIZE - 1].misc |= DMA_RDES1_EOR;
 	_rx_head = _rx_tail = 0;
 	REG32_STORE(DMA_RECEIVE_BASE_ADDRESS, (uint32_t)_rx_ring);
 }
@@ -363,14 +379,54 @@ static const struct net_driver arasan_drv_ops = {
 	.set_macaddr = arasan_set_macaddr
 };
 
+void arasan_rx_poll(struct net_device *dev) {
+	uint32_t dma_intr_ena;
+	struct arasan_dma_desc *d;
+	struct sk_buff *skb;
+	uint32_t packet_len;
+
+	dma_intr_ena = REG_LOAD(DMA_INTERRUPT_ENABLE);
+	dma_intr_ena &= (~DMA_INTERRUPT_ENABLE_RECEIVE_DONE);
+	REG_STORE(DMA_INTERRUPT_ENABLE, dma_intr_ena);
+
+	d = &_rx_ring[_rx_tail];
+
+	if ((d->status & DMA_RDES0_OWN_BIT) == 0) {
+		assert(d->status & DMA_RDES0_LD);
+
+		packet_len = (d->status & 0x3fff);
+		skb = _rx_skbs[_rx_tail];
+		skb = skb_realloc(packet_len, skb);
+		if (!skb) {
+			printk("arasan: skb_realloc failed\n");
+			goto error;
+		}
+
+		skb->dev = dev;
+		//show_packet(skb->mac.raw, packet_len, "rx");
+
+		netif_rx(skb);
+
+		arasan_alloc_rx_buff(_rx_tail);
+
+		_rx_tail = (_rx_tail + 1) % RX_RING_SIZE;
+	}
+
+error:
+	dma_intr_ena = REG_LOAD(DMA_INTERRUPT_ENABLE);
+	dma_intr_ena |= DMA_INTERRUPT_ENABLE_RECEIVE_DONE;
+	REG_STORE(DMA_INTERRUPT_ENABLE, dma_intr_ena);
+}
+
 static irq_return_t arasan_int_handler(unsigned int irq_num, void *dev_id) {
 	uint32_t int_status, ints_to_clear;
+	struct net_device *dev = dev_id;
 
 	ints_to_clear = 0;
 	int_status = REG32_LOAD(DMA_STATUS_AND_IRQ);
 
 	if (int_status & DMA_STATUS_AND_IRQ_RECEIVE_DONE) {
-		printk(">>>>>>>>>>>>> DMA_STATUS_AND_IRQ_RECEIVE_DONE\n");
+		arasan_rx_poll(dev);
 		ints_to_clear |= DMA_STATUS_AND_IRQ_RECEIVE_DONE;
 	} else if (int_status & DMA_STATUS_AND_IRQ_TRANSFER_DONE) {
 		ints_to_clear |= DMA_STATUS_AND_IRQ_TRANSFER_DONE;
