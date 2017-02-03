@@ -278,7 +278,7 @@ extern "C" {
 #endif
 #endif
 
-#define NK_INTERN static
+//#define NK_INTERN static
 #define NK_STORAGE static
 #define NK_GLOBAL static
 
