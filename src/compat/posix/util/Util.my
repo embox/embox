@@ -17,16 +17,17 @@ static module getopt {
 	source "getopt.c"
 	source "getopt_long.c"
 
-	depends embox.compat.libc.str
+	@NoRuntime depends embox.compat.libc.str
 }
 
 static module utsname {
+	/* FIXME static release version 0.3.3 */
 	option string release="0.3.3"
 	option string system="Embox"
 	option string hostname="localhost"
 	source "utsname.c"
 
-	depends embox.compat.libc.str
+	@NoRuntime depends embox.compat.libc.str
 }
 
 static module time {
