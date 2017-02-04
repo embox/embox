@@ -4,9 +4,6 @@ package embox.compat.posix.proc
 module All {
 
 	depends exec,
-		//vfork,
-		//waitpid,
-		//signal,
 		exit,
 		uid,
 		nice,
@@ -64,8 +61,10 @@ static module sigset {
 static module exit {
 	source "exit.c"
 
+	/*TODO tsort loop
 	depends vfork
 	depends exec
+	*/
 	depends signal
 }
 
