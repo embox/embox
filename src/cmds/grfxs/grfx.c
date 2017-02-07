@@ -32,11 +32,29 @@ static void inpevent(struct vc *vc, struct input_event *ev)
 static void visd(struct vc *vc, struct fb_info *fbinfo)
 {
     struct fb_var_screeninfo var;
+    struct fb_info *fb = vc->fb;
 
     if (0 != fb_get_var(fbinfo, &var)) {
 	 	return;
 	}
 
+    
+    /* portable */
+    struct fb_fillrect rect;
+    rect.dx = 200;
+    rect.dy = 200;
+    rect.width = 200;
+    rect.height = 200;
+    rect.color = 0xf00;
+    rect.rop = ROP_COPY;
+    fb_fillrect(vc->fb, &rect);
+
+    /* VERY not portable */
+    for (int i = 0; i < 200; ++i) {
+	    for (int j = 0; j < 200; ++j) {
+		    *(((uint16_t*)fb->screen_base) + i * var.xres + j) = ((i * 32 / 200) << 11) + (0x1f & (j * 32 / 200));
+	    }
+    }
 }
 
 static void devisn(struct vc *vc) {
@@ -53,6 +71,15 @@ const struct vc_callbacks thiscbs = {
 
 
 int main(int argc, char *argv[]) {
+	struct vc this_vc = {
+		.name = "simple app",
+		.callbacks = &thiscbs,
+	};
+
+	mpx_register_vc(&this_vc);
+
+	while(1) { }
+#if 0
 
 	struct nk_font_atlas atlas;
 	//const void *img;
@@ -112,11 +139,9 @@ int main(int argc, char *argv[]) {
 	// // End of example
 
 
+#endif
 
-
-
-
-    printf("\nThere is Sasha's command! :)\n\n");
+	printf("\nThere is Sasha's command! :)\n\n");
 	return 0;
 }
 
