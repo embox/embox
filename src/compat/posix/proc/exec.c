@@ -81,8 +81,10 @@ int execv(const char *path, char *const argv[]) {
 
 	for (i = 0; argv[i] != NULL; i ++) {
 		len = strlen(cmd_name);
+		if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
+			break;
+		}
 		strncat(cmd_name, argv[i], MAX_TASK_NAME_LEN - len - 1);
-		cmd_name[MAX_TASK_NAME_LEN - 1] = '\0';
 		if (argv[i + 1] == NULL) {
 			break;
 		}
@@ -93,9 +95,11 @@ int execv(const char *path, char *const argv[]) {
 			break;
 		}
 
+		len = strlen(cmd_name);
+		if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
+			break;
+		}
 		strncat(cmd_name, " ", MAX_TASK_NAME_LEN - len - 1);
-		cmd_name[MAX_TASK_NAME_LEN - 1] = '\0';
-
 	}
 
 	task_set_name(task, cmd_name);
