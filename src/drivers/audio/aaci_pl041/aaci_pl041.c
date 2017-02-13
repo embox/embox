@@ -491,7 +491,7 @@ int ac97_get_vol(void) {
 int aaci_ac97_init(void) {
 	ac97_reset();
 	/* Set maximum master volume */
-	ac97_set_vol(0x3F);
+	ac97_set_vol(0x0);
 
 	return 0;
 }

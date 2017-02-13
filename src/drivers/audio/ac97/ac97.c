@@ -73,7 +73,7 @@ int ac97_init(struct pci_slot_dev *pci_dev) {
 
 	ac97_reset();
 	/* Set maximum master volume */
-	ac97_set_vol(0x3F);
+	ac97_set_vol(0x0);
 
 	return 0;
 }
