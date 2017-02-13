@@ -47,6 +47,7 @@ int ac97_set_vol(int vol) {
 	out16(vol | (vol << 8), ac97_bar + AC97_MASTER);
 	out16(vol | (vol << 8), ac97_bar + AC97_HEADPHONE);
 	out16(vol | (vol << 8), ac97_bar + AC97_MASTER_MONO);
+	out16(vol | (vol << 8), ac97_bar + AC97_PCM);
 
 	return 0;
 }
