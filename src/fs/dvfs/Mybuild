@@ -30,5 +30,5 @@ module core extends embox.fs.fs_api {
 	depends embox.fs.syslib.dcache
 	depends embox.fs.driver.dvfs_driver
 	depends embox.fs.idesc
-	depends embox.kernel.task.resource.vfs
+	@NoRuntime depends embox.kernel.task.resource.vfs
 }
