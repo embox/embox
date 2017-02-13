@@ -9,4 +9,5 @@ module aaci_pl041 {
 
 	depends embox.driver.audio.portaudio_lib
 	depends embox.driver.audio.audio_dev
+	depends embox.driver.audio.ac97
 }

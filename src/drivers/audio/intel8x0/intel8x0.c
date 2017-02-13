@@ -144,6 +144,22 @@ static struct intel_ac_buff_desc pcm_in_buff_list[INTEL_AC_BUFFER_SZ];
 static uint8_t dac1_out_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
 static uint8_t adc1_in_buf[INTEL_AC_MAX_BUF_LEN] __attribute__ ((aligned(0x1000)));
 
+static int ac97_bar;
+
+uint16_t ac97_reg_read(uint16_t reg) {
+	assert((reg % 2) == 0);
+	assert(reg < 0x70);
+
+	return in16(ac97_bar + reg);
+}
+
+void ac97_reg_write(uint16_t reg, uint16_t val) {
+	assert((reg % 2) == 0);
+	assert(reg < 0x70);
+
+	out16(val, ac97_bar + reg);
+}
+
 static uint8_t *_buf_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
@@ -247,9 +263,11 @@ static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 	assert(pci_dev);
 	pci_set_master(pci_dev);
 
+	ac97_bar   = pci_dev->bar[0] & 0xFFFFFFFC;
+
 	intel_ac_hw_dev.base_addr_namb = pci_dev->bar[1] & 0xFF00;
 
-	if ((err = ac97_init(pci_dev)))
+	if ((err = ac97_init()))
 		return err;
 
 	if ((err = irq_attach(pci_dev->irq, iac_interrupt, IF_SHARESUP, &intel_ac_hw_dev, "iac")))
