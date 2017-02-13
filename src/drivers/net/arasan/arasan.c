@@ -225,10 +225,10 @@ static struct sk_buff * _rx_skbs[RX_RING_SIZE];
 static struct arasan_dma_desc _rx_ring[RX_RING_SIZE];
 static struct arasan_dma_desc _tx_ring[TX_RING_SIZE];
 static int _tx_head, _tx_tail;
-static int _rx_head, _rx_tail;
+//static int _rx_head, _rx_tail;
 
 static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
-	printk("Arasan xmit\n");
+	//printk("Arasan xmit\n");
 	struct arasan_dma_desc *d;
 	uint32_t misc = 0;
 
@@ -249,7 +249,7 @@ static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	_tx_tail = (_tx_tail + 1) % TX_RING_SIZE;
 
-	_reg_dump();
+	//_reg_dump();
 	return 0;
 }
 
@@ -304,7 +304,7 @@ static void arasan_rx_ring_init(void) {
 	for (int i = 0; i < RX_RING_SIZE; i++) {
 		arasan_alloc_rx_buff(i);
 	}
-	_rx_head = _rx_tail = 0;
+	//_rx_head = _rx_tail = 0;
 	REG32_STORE(DMA_RECEIVE_BASE_ADDRESS, (uint32_t)_rx_ring);
 }
 
@@ -397,35 +397,35 @@ void arasan_rx_poll(struct net_device *dev) {
 	struct arasan_dma_desc *d;
 	struct sk_buff *skb;
 	uint32_t packet_len;
+	uint32_t i;
 
 	dma_intr_ena = REG_LOAD(DMA_INTERRUPT_ENABLE);
 	dma_intr_ena &= (~DMA_INTERRUPT_ENABLE_RECEIVE_DONE);
 	REG_STORE(DMA_INTERRUPT_ENABLE, dma_intr_ena);
 
-	d = &_rx_ring[_rx_tail];
-	dcache_inval(d, sizeof(*d));
+	for (i = 0; i < RX_RING_SIZE; i++) {
+		d = &_rx_ring[i];
+		dcache_inval(d, sizeof(*d));
+		if ((d->status & DMA_RDES0_OWN_BIT) == 0) {
+			assert(d->status & DMA_RDES0_LD);
 
-	if ((d->status & DMA_RDES0_OWN_BIT) == 0) {
-		assert(d->status & DMA_RDES0_LD);
+			packet_len = (d->status & 0x3fff);
+			skb = _rx_skbs[i];
+			skb = skb_realloc(packet_len, skb);
+			if (!skb) {
+				printk("arasan: skb_realloc failed\n");
+				goto error;
+			}
 
-		packet_len = (d->status & 0x3fff);
-		skb = _rx_skbs[_rx_tail];
-		skb = skb_realloc(packet_len, skb);
-		if (!skb) {
-			printk("arasan: skb_realloc failed\n");
-			goto error;
+			dcache_inval(skb->mac.raw, packet_len);
+
+			skb->dev = dev;
+			//show_packet(skb->mac.raw, packet_len, "rx");
+
+			netif_rx(skb);
+
+			arasan_alloc_rx_buff(i);
 		}
-
-		dcache_inval(skb->mac.raw, packet_len);
-
-		skb->dev = dev;
-		//show_packet(skb->mac.raw, packet_len, "rx");
-
-		netif_rx(skb);
-
-		arasan_alloc_rx_buff(_rx_tail);
-
-		_rx_tail = (_rx_tail + 1) % RX_RING_SIZE;
 	}
 
 error:
