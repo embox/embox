@@ -106,16 +106,15 @@ static void *pa_thread_hnd(void *arg) {
 		if (out_buf)
 			memset(out_buf, 0, audio_dev->buf_len);
 
-		if ((err = 0))
-			err = pa_stream.callback(in_buf,
-				out_buf,
-				inp_frames,
-				NULL,
-				0,
-				pa_stream.user_data);
+		err = pa_stream.callback(in_buf,
+			out_buf,
+			inp_frames,
+			NULL,
+			0,
+			pa_stream.user_data);
 
 		inp_frames *= 2;
-		_mono_to_stereo(out_buf, inp_frames);
+		//_mono_to_stereo(out_buf, inp_frames);
 		_buf_scale(out_buf, inp_frames, inp_frames);
 
 		/* for (int i = 0; i < 8 * 0x1000 * 32 * 2; i++) {
