@@ -73,6 +73,7 @@ static void *pa_thread_hnd(void *arg) {
 	uint8_t *out_buf;
 	uint8_t *in_buf;
 	int inp_frames;
+	int out_frames;
 
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
 	assert(audio_dev);
@@ -89,12 +90,34 @@ static void *pa_thread_hnd(void *arg) {
 	SCHED_WAIT(pa_stream.active);
 	audio_dev->ad_ops->ad_ops_start(audio_dev);
 
-	inp_frames = audio_dev->buf_len / 2; /* 16 bit sample */
+	out_frames = audio_dev->buf_len; /* This one is in bytes */
+
+	switch (pa_stream.sample_format) {
+	case paInt8:
+	case paUInt8:
+		/* Leave it as is */
+		break;
+	case paInt16:
+		out_frames /= 2;
+		break;
+	case paInt24:
+		out_frames /= 3;
+	case paFloat32:
+	case paInt32:
+		out_frames /= 4;
+		break;
+	default:
+		log_error("Unknown sample format: %d\n", pa_stream.sample_format);
+	}
+
 	/* Even if source is mono channel,
 	 * we will anyway put twice as much data
 	 * to fill right channel as well */
-	inp_frames /= 2;
+	out_frames /= 2; /* XXX work with mono-support devices */
 
+	/* TODO Handle bitrate problems */
+
+	inp_frames = out_frames;
 	while (1) {
 		SCHED_WAIT(pa_stream.active);
 
@@ -113,13 +136,7 @@ static void *pa_thread_hnd(void *arg) {
 			0,
 			pa_stream.user_data);
 
-		inp_frames *= 2;
-		//_mono_to_stereo(out_buf, inp_frames);
-		_buf_scale(out_buf, inp_frames, inp_frames);
-
-		/* for (int i = 0; i < 8 * 0x1000 * 32 * 2; i++) {
-			((uint8_t*)out_buf)[i] = i % 255;
-		} */
+		_buf_scale(out_buf, inp_frames, out_frames);
 
 		if (err) {
 			log_error("User callback error: %d", err);
