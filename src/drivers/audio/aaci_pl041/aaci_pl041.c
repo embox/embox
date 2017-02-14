@@ -31,7 +31,7 @@ EMBOX_UNIT_INIT(aaci_pl041_init);
 #define IRQ_NUM      OPTION_GET(NUMBER, irq_num)
 
 #define AACI_MAXBUF_LEN_MAX_BUF_LEN 0x10000
-
+#define FIFO_SAMPLE_SZ   4 /* 32 bits */
 #define FRAME_PERIOD_US  50
 
 struct aaci_runtime {
@@ -159,7 +159,7 @@ static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
 		return AD_STEREO_SUPPORT |
 		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:
-		return aaci_pl041_hw_dev.fifo_depth;
+		return aaci_pl041_hw_dev.fifo_depth * FIFO_SAMPLE_SZ;
 	}
 	SET_ERRNO(EINVAL);
 	return -1;
