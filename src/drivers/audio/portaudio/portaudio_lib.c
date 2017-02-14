@@ -207,7 +207,7 @@ PaError Pa_OpenStream(PaStream** stream,
 	/* TODO work on mono sound device */
 	audio_dev->num_of_chan = 2;
 
-	pa_thread = thread_create(0, pa_thread_hnd, NULL);
+	pa_thread = thread_create(THREAD_FLAG_SUSPENDED, pa_thread_hnd, NULL);
 
 	return paNoError;
 }
