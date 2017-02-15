@@ -498,7 +498,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 	char *point;
 	nfs_file_info_t *parent_fi;
 	nfs_filehandle_t *fh;
-	readdir_desc_t *predesc;
+	readdir_desc_t *predesc = NULL;
 
 	char *rcv_buf;
 

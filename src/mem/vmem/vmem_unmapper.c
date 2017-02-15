@@ -91,8 +91,10 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 			pte = mmu_pmd_value(pmd + pmd_idx);
 
 			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
-				if (virt_addr >= v_end)
+				if (virt_addr >= v_end) {
+					try_free_pmd(pmd, pgd + pgd_idx);
 					goto out_free;
+				}
 
 				if (mmu_pte_present(pte + pte_idx)) {
 					if (mmu_pte_present(pte + pte_idx)) {
@@ -106,6 +108,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 				virt_addr += VMEM_PAGE_SIZE;
 				if (virt_addr >= v_end) {
 					try_free_pte(pte, pmd + pmd_idx);
+					try_free_pmd(pmd, pgd + pgd_idx);
 					goto out_free;
 				}
 
@@ -119,7 +122,6 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 	}
 
 out_free:
-	try_free_pmd(pmd, pgd + pgd_idx);
 	try_free_pgd(pgd, ctx);
 
 	mmu_flush_tlb();

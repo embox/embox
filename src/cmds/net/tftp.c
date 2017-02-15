@@ -327,7 +327,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 	socklen_t remote_addr_len;
 	FILE *fp = NULL;
 	struct tftp_msg snd, rcv;
-	size_t snd_len, rcv_len;
+	size_t snd_len, rcv_len = 0;
 	uint16_t pkg_number;
 
 	ret = make_remote_addr(hostname,
@@ -409,7 +409,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 	socklen_t remote_addr_len;
 	FILE *fp = NULL;
 	struct tftp_msg snd, rcv;
-	size_t snd_len, rcv_len, data_len;
+	size_t snd_len, rcv_len = 0, data_len;
 	uint16_t pkg_number;
 
 	ret = make_remote_addr(hostname,

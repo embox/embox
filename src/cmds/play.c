@@ -83,7 +83,7 @@ static int fd_callback(const void *inputBuffer, void *outputBuffer,
 int main(int argc, char **argv) {
 	int opt;
 	int err;
-	FILE *fd;
+	FILE *fd = NULL;
 	static uint8_t fmt_buf[128];
 	int chan_n = 2;
 	int sample_rate = 44100;
@@ -208,6 +208,7 @@ err_terminate_pa:
 		printf("Portaudio error: could not terminate!\n");
 
 err_close_fd:
-	fclose(fd);
+	if (fd)
+		fclose(fd);
 	return 0;
 }
