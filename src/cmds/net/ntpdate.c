@@ -58,7 +58,7 @@ static int make_socket(const struct timeval *timeout, int *out_sock,
 
 static int ntpdate_exec(struct ntphdr *req, in_addr_t server_addr,
 		const struct timeval *timeout, struct ntphdr *out_rep) {
-	int ret, sock;
+	int ret, sock = 0;
 	struct sockaddr_in addr;
 
 	assert(req != NULL);
