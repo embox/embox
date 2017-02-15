@@ -154,7 +154,7 @@ static void aaci_pl041_dev_resume(struct audio_dev *dev) {
 static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	log_debug("dev = 0x%X", dev);
 	switch(cmd) {
-	case ADIOCTL_SUPPORT:
+	case ADIOCTL_OUT_SUPPORT:
 		return AD_STEREO_SUPPORT |
 		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:
@@ -394,7 +394,7 @@ static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
 
 	if (mask & AACI_ISR_TXINTR) {
 	/*
-	AACITXINTR 1-4 
+	AACITXINTR 1-4
 	If the FIFO is enabled, the FIFO transmit interrupt is asserted
 	when the PrimeCell AACI transmit FIFO is less than, or equal to,
 	half-empty and the mask bit TxIE is set. The FIFO transmit
