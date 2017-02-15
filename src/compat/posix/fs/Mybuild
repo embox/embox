@@ -148,7 +148,9 @@ static module fsop_old extends fsop {
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
 	depends embox.fs.syslib.perm
-	depends embox.fs.syslib.file_system_full
+	/* TODO tsort loop
+	 * depends embox.fs.syslib.file_system_full
+	 */
 
 	depends creat
 	depends umask
@@ -170,7 +172,9 @@ static module open_old extends open {
 
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core /* if_mounted_follow_down */
-	depends embox.fs.syslib.file_system
+	/* TODO tsort loop
+	 * depends embox.fs.syslib.file_system
+	 */
 	depends libgen
 	depends dirent
 	depends umask

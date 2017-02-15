@@ -19,8 +19,11 @@ module mmap_mmu extends mmap_api {
 	source "mmap_kernel.c"
 	source "mmap_userspace.c"
 
+	
 	depends embox.kernel.task.resource.mmap
 	depends embox.kernel.task.resource.mmap_notify
-	depends embox.arch.mmu
+	/* TODO tsort loop
 	depends embox.mem.vmem
+	*/
+	depends embox.arch.mmu
 }

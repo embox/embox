@@ -35,6 +35,4 @@ module coverage {
 static module cyg_profile {
 	source "__cyg_profile.c"
 	source "cyg_profile.h"
-
-	depends trace
 }

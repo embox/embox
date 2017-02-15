@@ -61,8 +61,10 @@ module perm_full extends perm {
 
 	depends embox.compat.posix.util.environ
 	depends embox.compat.posix.proc.uid
+	/* TODO tsort loop
 	depends embox.fs.core
 	depends embox.security.api
+	*/
 }
 
 module perm_stub extends perm {

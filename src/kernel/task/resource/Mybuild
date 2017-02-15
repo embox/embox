@@ -14,7 +14,7 @@ module idesc_table {
 	option number idesc_table_size=64
 	source "idesc_table.c"
 
-	depends embox.fs.idesc
+	@NoRuntime depends embox.fs.idesc
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.kernel.task.idesc
 	@NoRuntime depends embox.compat.libc.assert
