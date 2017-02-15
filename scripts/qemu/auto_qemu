@@ -75,6 +75,14 @@ get_user_undef_guess AUTOQEMU_AUDIO guess_sound
 
 guessed_info AUTOQEMU_AUDIO_CONFIG "(got)"
 
+
+guess_graphic() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.video.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | head -n 3;
+}
+get_user_undef_guess AUTOQEMU_GRAPHIC guess_graphic
+
+guessed_info AUTOQEMU_GRAPHIC_CONFIG "(got)"
+
 guess_kvm() {
 	ret=""
 	# Build kvm argument
@@ -121,9 +129,6 @@ guess_load_arg() {
 	fi
 }
 get_user_empty_guess AUTOQEMU_LOAD_ARG guess_load_arg
-
-guess_nographic() { echo "-nographic"; }
-get_user_undef_guess AUTOQEMU_NOGRAPHIC_ARG guess_nographic
 
 guess_machine() {
 	case $AUTOQEMU_ARCH in
@@ -223,7 +228,7 @@ sound_n=${#qemu_sound[*]}
 if [ $sound_n -gt 0 ]; then
 
 	for so in "${!qemu_sound[@]}"; do
-		sound_model=${AUDIO2QEMU[${qemu_sound[$ni]}]}
+		sound_model=${AUDIO2QEMU[${qemu_sound[$so]}]}
 		echo 
 		if [ $sound_model = "default" ]; then
 			sound_lines="$sound_lines"
@@ -236,7 +241,36 @@ if [ $sound_n -gt 0 ]; then
 	done
 fi
 
-ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} $@"
+
+#-vga [std|cirrus|vmware|qxl|xenfb|tcx|cg3|none]
+declare -A GRAPHIC2QEMU
+GRAPHIC2QEMU=(
+	[bochs]="std"
+	[cirrus_logic]="cirrus"
+)
+
+qemu_graphic=$(guess_graphic)
+graphic_lines=""
+graphic_n=${#qemu_graphic[*]}
+if [ $graphic_n -gt 0 ]; then
+	if [ -z "${AUTOQEMU_NOGRAPHIC_ARG+defined}" ]; then
+		for so in $qemu_graphic; do
+			graphic_model=${GRAPHIC2QEMU[$so]}
+			if [ ! $graphic_model ]; then
+				graphic_lines="-nographic"
+			else
+				graphic_lines="-vga $graphic_model"
+				break
+			fi
+		done
+
+	else
+		graphic_lines=$AUTOQEMU_NOGRAPHIC_ARG
+	fi	
+
+fi
+
+ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines $graphic_lines $@"
 
 info "$ARG_LINE"
 $ARG_LINE
