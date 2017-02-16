@@ -83,6 +83,14 @@ get_user_undef_guess AUTOQEMU_GRAPHIC guess_graphic
 
 guessed_info AUTOQEMU_GRAPHIC_CONFIG "(got)"
 
+guess_diag() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's/.*embox.driver.diag*[^"]*"\([^"]*\).*/\1/p' | head -n 1;
+}
+get_user_undef_guess AUTOQEMU_DIAG guess_diag
+
+guessed_info AUTOQEMU_DIAG_CONFIG "(got)"
+
+
 guess_kvm() {
 	ret=""
 	# Build kvm argument
@@ -250,7 +258,7 @@ GRAPHIC2QEMU=(
 )
 
 qemu_graphic=$(guess_graphic)
-graphic_lines=""
+graphic_lines="-nographic"
 graphic_n=${#qemu_graphic[*]}
 if [ $graphic_n -gt 0 ]; then
 	if [ -z "${AUTOQEMU_NOGRAPHIC_ARG+defined}" ]; then
@@ -259,10 +267,15 @@ if [ $graphic_n -gt 0 ]; then
 			if [ ! $graphic_model ]; then
 				graphic_lines="-nographic"
 			else
-				graphic_lines="-vga $graphic_model"
+				graphic_lines="-vga $graphic_model -serial stdio"
 				break
 			fi
 		done
+		if [ $graphic_lines = "-nographic" ]; then
+			if [ $(guess_diag) = "embox__driver__console__vc__vga" ]; then
+				graphic_lines="-vga std"
+			fi
+		fi
 
 	else
 		graphic_lines=$AUTOQEMU_NOGRAPHIC_ARG
