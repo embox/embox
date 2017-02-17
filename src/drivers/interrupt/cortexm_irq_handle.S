@@ -1,0 +1,67 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Alex Kalmuk
+ * @date    27.03.2017
+ */
+
+.text
+.thumb
+.syntax unified
+.global interrupt_handle_enter
+interrupt_handle_enter:
+
+    mov    r0, sp
+    sub    sp, #58
+    str    r0, [sp, #56]
+    stmia  sp, {r0 - r12}
+    str    lr, [sp, #52]
+
+    mov    r0, sp
+    bl     interrupt_handle
+
+.text
+.thumb
+.syntax unified
+.global __irq_trampoline
+__irq_trampoline:
+
+    cpsid  i
+    # r0 is a pointer to struct irq_saved_state
+    ldr    sp,  [r0, #32]
+    ldr    r14, [r0, #36]
+    bx     r14
+
+.text
+.thumb
+.syntax unified
+.global __pendsv_handle
+__pendsv_handle:
+
+    # 32 == sizeof (struct cpu_saved_ctx)
+    add    sp, #32
+    bx     r14
+
+.text
+.thumb
+.syntax unified
+.global __pending_handle
+__pending_handle:
+
+    # push initial saved context (state.ctx) on top of the stack
+    add    r0, #32
+    ldmdb  r0, {r4 - r11}
+    push   {r4 - r11}
+
+    add    r1, r1, #52
+    ldmdb  r1, {r2 - r12}
+
+    cpsie  i
+    bl     critical_dispatch_pending
+    cpsid  i
+
+    bl     nvic_set_pendsv
+    cpsie  i
+    # DO NOT RETURN
+1: b       1
