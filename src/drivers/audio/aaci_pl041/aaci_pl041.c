@@ -396,7 +396,7 @@ static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
 		REG32_STORE(base + AACI_INTCLR, AACI_ICLR_TXUEC1 << channel);
 	}
 
-	if (mask & AACI_ISR_TXINTR) {
+	if (mask & AACI_ISR_TXCINTR) {
 	/*
 	AACITXINTR 1-4
 	If the FIFO is enabled, the FIFO transmit interrupt is asserted
