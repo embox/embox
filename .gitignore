@@ -19,6 +19,7 @@
 /conf
 /core
 /dist
+/.vscode
 /download
 mk/.cache
 mk/GNUmakefile
