@@ -77,8 +77,6 @@ int main(int argc, char *argv[]) {
 
 	/* initial items for nuklear */
     struct nk_font_atlas atlas;
-
-	struct nk_font_atlas atlas;
 	struct nk_font *font;
 	struct nk_context ctx;
 	
@@ -93,9 +91,7 @@ int main(int argc, char *argv[]) {
 	nk_init_default(&ctx, &font->handle);
 	
 	/* start of work with nuklear buffers */
-	struct nk_buffer dev_cmds;
 	
-	nk_buffer_init_default(&dev_cmds);
 
 	while(1) {}
 
