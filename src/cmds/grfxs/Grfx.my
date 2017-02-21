@@ -12,6 +12,9 @@ package embox.cmd.grfxs
 		AUTHORS
 Aleksandra Butrova ;)
 	''')
+@BuildDepends(third_party.lib.nuklear)
 module grfx {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/nuklear/install")
 	source "grfx.c"
+	depends third_party.lib.nuklear
 }
