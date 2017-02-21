@@ -81,3 +81,10 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef *hltdc)
   HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_PORT, LCD_BL_CTRL_PIN, GPIO_PIN_SET);
   
 }
+
+void HAL_Delay(__IO uint32_t Delay) {
+	int i = 1000 * Delay;
+
+	while (i--)
+		;
+}

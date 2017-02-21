@@ -1,1 +1,1 @@
-"stm32f7_test"
+"stm32f7_lcd_test"
