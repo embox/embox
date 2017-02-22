@@ -8,6 +8,7 @@
 
 #include <framework/mod/options.h>
 
+#include <assert.h>
 #include <errno.h>
 #include <string.h>
 #include <hal/mmu.h>
@@ -66,7 +67,11 @@ static int vmem_alloc_init(void) {
 }
 
 mmu_pgd_t *vmem_alloc_pgd_table(void) {
-	void *addr = page_alloc(pgd_allocator, 1);
+	void *addr;
+
+	assert(pgd_allocator);
+
+	addr = page_alloc(pgd_allocator, 1);
 
 	if (addr)
 		memset(addr, 0, MMU_PGD_SIZE);
@@ -75,7 +80,11 @@ mmu_pgd_t *vmem_alloc_pgd_table(void) {
 }
 
 mmu_pmd_t *vmem_alloc_pmd_table(void) {
-	void *addr = page_alloc(pmd_allocator, 1);
+	void *addr;
+
+	assert(pmd_allocator);
+
+	addr = page_alloc(pmd_allocator, 1);
 
 	if (addr)
 		memset(addr, 0, MMU_PMD_SIZE);
@@ -84,7 +93,11 @@ mmu_pmd_t *vmem_alloc_pmd_table(void) {
 }
 
 mmu_pte_t *vmem_alloc_pte_table(void) {
-	void *addr = page_alloc(pte_allocator, 1);
+	void *addr;
+
+	assert(pte_allocator);
+
+	addr = page_alloc(pte_allocator, 1);
 
 	if (addr)
 		memset(addr, 0, MMU_PTE_SIZE);
@@ -93,6 +106,8 @@ mmu_pte_t *vmem_alloc_pte_table(void) {
 }
 
 void *vmem_alloc_page() {
+	assert(virt_page_allocator);
+
 	return page_alloc(virt_page_allocator, 1);
 }
 
