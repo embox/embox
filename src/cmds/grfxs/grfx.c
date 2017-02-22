@@ -25,6 +25,7 @@ static void inpevent(struct vc *vc, struct input_event *ev){
     printf("\nWhat are doing with graphic window??	\n");
 }
 
+
 static void visd(struct vc *vc, struct fb_info *fbinfo)
 {
     struct fb_var_screeninfo var;
@@ -83,7 +84,7 @@ int main(int argc, char *argv[]) {
 	
 	nk_font_atlas_init_default(&atlas);
 	nk_font_atlas_begin(&atlas);
-
+	
 	font = nk_font_atlas_add_default(&atlas, 13, 0);
 	nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
 	nk_font_atlas_end(&atlas, nk_handle_id(0), 0);
@@ -91,7 +92,10 @@ int main(int argc, char *argv[]) {
 	nk_init_default(&ctx, &font->handle);
 	
 	/* start of work with nuklear buffers */
+	const struct nk_draw_command *cmd;
+	struct nk_buffer dev_cmds;
 	
+	nk_buffer_init_default(&dev_cmds);
 
 	while(1) {}
 
