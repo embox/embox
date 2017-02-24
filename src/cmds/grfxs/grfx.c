@@ -21,7 +21,8 @@
 #include <drivers/input/input_dev.h>
 
 /* callbacks */
-static void inpevent(struct vc *vc, struct input_event *ev){
+static void inpevent(struct vc *vc, struct input_event *ev)
+{
     printf("\nWhat are doing with graphic window??	\n");
 }
 
@@ -92,7 +93,6 @@ int main(int argc, char *argv[]) {
 	nk_init_default(&ctx, &font->handle);
 	
 	/* start of work with nuklear buffers */
-	const struct nk_draw_command *cmd;
 	struct nk_buffer dev_cmds;
 	
 	nk_buffer_init_default(&dev_cmds);
@@ -103,7 +103,7 @@ int main(int argc, char *argv[]) {
     nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
 	
-    /* checking working command */
+	/* checking working command */
 	printf("\nJob's done! :)\n\n");
 
 	return 0;
