@@ -102,8 +102,7 @@ int main(int argc, char *argv[]) {
 	/* end of work */
     nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
-        
-
+	
     /* checking working command */
 	printf("\nJob's done! :)\n\n");
 
