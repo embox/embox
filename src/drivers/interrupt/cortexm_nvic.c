@@ -118,3 +118,17 @@ void irqctrl_force(unsigned int interrupt_nr) {
 	}
 }
 
+static void hnd_stub(void) {
+	/* It's just a stub. DO NOTHING */
+}
+
+void nvic_table_fill_stubs(void) {
+	int i;
+
+	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
+		exception_table[i] = ((int) hnd_stub) | 1;
+	}
+
+	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
+			(int) exception_table);
+}
