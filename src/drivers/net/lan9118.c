@@ -241,8 +241,7 @@ static void lan9118_rx(struct net_device *dev) {
 	uint32_t rx_status;
 	int packet_len;
 	struct sk_buff *skb;
-	uint32_t *src, *dst;
-	uint32_t trash;
+	uint32_t *dst;
 
 	irq_lock();
 	{
@@ -262,16 +261,14 @@ repeat:
 		if ((skb = skb_alloc(packet_len))) {
 			log_debug("packet_len - %d", packet_len);
 
-			src = (uint32_t*) (dev->base_addr + LAN9118_RX_DATA_FIFO);
 			dst = (uint32_t*) skb->mac.raw;
 
 			while (packet_len > 0) {
-				*dst++ = *src;
+				*dst++ = lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
 				packet_len -= 4;
 			}
 			/* and read the last word */
-			trash = *src;
-			(void) trash;
+			lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
 
 			skb->dev = dev;
 			//dev->stats.rx_packets++;
