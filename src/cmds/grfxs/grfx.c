@@ -3,7 +3,7 @@
 /* includes for nuklear*/
 #define NK_PRIVATE
 #define NK_API
-#define NK_INTERN
+#define NK_INTERN static
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
@@ -79,13 +79,13 @@ int main(int argc, char *argv[]) {
 
 	/* initial items for nuklear */
     struct nk_font_atlas atlas;
+	int w, h;
 	struct nk_font *font;
 	struct nk_context ctx;
 	
 	
 	nk_font_atlas_init_default(&atlas);
 	nk_font_atlas_begin(&atlas);
-	
 	font = nk_font_atlas_add_default(&atlas, 13, 0);
 	nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
 	nk_font_atlas_end(&atlas, nk_handle_id(0), 0);
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 	/* end of work */
     nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
-	
+    
 	/* checking working command */
 	printf("\nJob's done! :)\n\n");
 
