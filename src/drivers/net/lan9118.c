@@ -128,6 +128,8 @@
 
 /* MAC */
 #define LAN9118_MAC_CR         0x01
+#define LAN9118_MAC_ADDRH      0x02
+#define LAN9118_MAC_ADDRL      0x03
 #define _LAN9118_MAC_CR_HBDIS              0x10000000
 #define _LAN9118_MAC_CR_TXEN               0x00000008
 #define _LAN9118_MAC_CR_RXEN               0x00000004
@@ -239,8 +241,7 @@ static void lan9118_rx(struct net_device *dev) {
 	uint32_t rx_status;
 	int packet_len;
 	struct sk_buff *skb;
-	uint32_t *src, *dst;
-	uint32_t trash;
+	uint32_t *dst;
 
 	irq_lock();
 	{
@@ -260,16 +261,14 @@ repeat:
 		if ((skb = skb_alloc(packet_len))) {
 			log_debug("packet_len - %d", packet_len);
 
-			src = (uint32_t*) (dev->base_addr + LAN9118_RX_DATA_FIFO);
 			dst = (uint32_t*) skb->mac.raw;
 
 			while (packet_len > 0) {
-				*dst++ = *src;
+				*dst++ = lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
 				packet_len -= 4;
 			}
 			/* and read the last word */
-			trash = *src;
-			(void) trash;
+			lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
 
 			skb->dev = dev;
 			//dev->stats.rx_packets++;
@@ -378,7 +377,25 @@ static int lan9118_open(struct net_device *dev) {
 	return 0;
 }
 
+static void lan9119_get_macaddr(struct net_device *dev, void *addr) {
+	*(uint32_t *) addr       = lan9118_mac_read(dev, LAN9118_MAC_ADDRL);
+	*(uint16_t *) (addr + 4) = lan9118_mac_read(dev, LAN9118_MAC_ADDRH);
+}
+
 int lan9118_set_macaddr(struct net_device *dev, const void *addr) {
+	char data[6];
+
+	lan9119_get_macaddr(dev, data);
+	log_debug("Before set_macaddr: %x:%x:%x:%x:%x:%x\n", data[0], data[1], data[2],
+		data[3], data[4], data[5]);
+
+	lan9118_mac_write(dev, LAN9118_MAC_ADDRL, *(uint32_t *) addr);
+	lan9118_mac_write(dev, LAN9118_MAC_ADDRH, *(uint32_t *) (addr + 4));
+
+	lan9119_get_macaddr(dev, data);
+	log_debug("After set_macaddr: %x:%x:%x:%x:%x:%x\n", data[0], data[1], data[2],
+		data[3], data[4], data[5]);
+
 	return 0;
 }
 
