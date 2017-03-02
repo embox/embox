@@ -23,6 +23,7 @@ module block {
 
 	depends embox.fs.buffer_cache
 	depends embox.fs.buffer_crypt_api
+	depends embox.fs.rootfs
 	depends embox.fs.core
 	depends embox.util.LibUtil
 	depends embox.util.indexator
