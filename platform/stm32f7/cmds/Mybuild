@@ -17,12 +17,22 @@ module stm32f7_lcd_test {
 
 	depends third_party.bsp.stmf7cube.stm32f7_discovery
 	depends third_party.bsp.stmf7cube.stm32f7_discovery_lcd
-	depends stm32f7_lcd_lib
+}
+
+@AutoCmd
+@Cmd(name="stm32f7_ltdc_test", help="STM32F7 low-level LCD test")
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32f7_ltdc_test {
+	source "stm32f7_ltdc_test.c"
+
+	depends third_party.bsp.stmf7cube.stm32f7_discovery
+	depends third_party.bsp.stmf7cube.stm32f7_discovery_lcd
+	depends stm32f7_ltdc_lib
 }
 
 @BuildDepends(third_party.bsp.stmf7cube.core)
-module stm32f7_lcd_lib {
-	source "stm32f7_lcd_lib.c"
+module stm32f7_ltdc_lib {
+	source "stm32f7_ltdc_lib.c"
 
 	depends third_party.bsp.stmf7cube.stm32f7_discovery
 	depends third_party.bsp.stmf7cube.stm32f7_discovery_lcd
