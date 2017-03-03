@@ -17,15 +17,13 @@
 #define  RK043FN48H_VBP              ((uint16_t)2)    /* Vertical back porch        */
 #define  RK043FN48H_VFP              ((uint16_t)2)    /* Vertical front porch       */
 
-#define DISPLAY_WIDTH    300
-#define DISPLAY_HEIGHT   200
+#define DISPLAY_WIDTH    480
+#define DISPLAY_HEIGHT   272
 
 /** 
   * @brief  RK043FN48H frequency divider  
   */
 #define  RK043FN48H_FREQUENCY_DIVIDER    5            /* LCD Frequency divider      */
-
-//static uint16_t RAM_ARRAY[DISPLAY_WIDTH * DISPLAY_HEIGHT];
 
 static uint32_t LCD_FRAMEBUFFER;
 
@@ -34,7 +32,7 @@ static void LCD_Config(void)
   static LTDC_HandleTypeDef hltdc_F;
   LTDC_LayerCfgTypeDef      pLayerCfg;
   
-	printf(">>>>> LCD_Config start\n");
+  printf(">>>>> LCD_Config start\n");
 
   /* LTDC Initialization -------------------------------------------------------*/
   
@@ -117,7 +115,6 @@ static void LCD_Config(void)
 	printf(">>>> HAL_LTDC_ConfigLayer error!\n");
     /* Initialization Error */
   }  
-	printf(">>>>> LCD_Config end\n");
 }
 
 static void init_lcd() {
@@ -134,14 +131,13 @@ static void init_lcd() {
 int main(int argc, char *argv[]) {
 	int i, j;
 
-	printf("STM32F7 LCD test start 1\n");
+	printf("STM32F7 LTDC test start\n");
 
 	if (BSP_SDRAM_Init() != SDRAM_OK) {
 		printf(">>> BSP_SDRAM_Init failed\n");
 	}
 
 	LCD_FRAMEBUFFER = SDRAM_DEVICE_ADDR;
-	//LCD_FRAMEBUFFER = (uint32_t) RAM_ARRAY;
 
 	init_lcd();
 
@@ -149,23 +145,12 @@ int main(int argc, char *argv[]) {
 		*(volatile uint16_t*)(LCD_FRAMEBUFFER + 2 * i) = 0xFFFF;
 	}
 
-	for (j = 0; j < 100; j++) {
-		for (i = 0; i < 25; i++) {
+	for (j = 0; j < DISPLAY_HEIGHT / 2; j++) {
+		for (i = 0; i < DISPLAY_WIDTH / 2; i++) {
 			*(volatile uint16_t*)(LCD_FRAMEBUFFER + 2 * (j * DISPLAY_WIDTH + i)) = 0xEB20;
 		}
 	}
 
-	while (1) {
-		//uint32_t val = 0xEB20;
-		//for (j = 0; j < 100; j++) {
-		//	for (i = 0; i < 25; i++) {
-		//		val = *(volatile uint32_t*)(LCD_FRAMEBUFFER + 2 * (j * DISPLAY_WIDTH + i));
-		//		if (val == 0x0000) {
-		//			printf(" ERRROR \n");
-		//		}
-		//	}
-		//}
-	}
 
 	return 0;
 }
