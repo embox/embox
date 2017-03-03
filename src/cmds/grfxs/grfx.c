@@ -16,9 +16,8 @@
 
 /* includes from fbcon */
 #include <drivers/console/mpx.h>
-#include <drivers/console/fbcon.h>
 #include <drivers/video/fb.h>
-#include <drivers/input/input_dev.h>
+//#include <drivers/input/input_dev.h>
 
 /* callbacks */
 static void inpevent(struct vc *vc, struct input_event *ev)
