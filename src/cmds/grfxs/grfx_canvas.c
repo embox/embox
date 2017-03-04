@@ -82,15 +82,15 @@ device_draw( struct vc *vc, struct device *dev, struct nk_context *ctx, int widt
     /* iterate over and execute each draw command */
     nk_draw_foreach(cmd, ctx, &dev->cmds)
     {
-        // if (!cmd->elem_count) continue;
-        // struct fb_fillrect rect;
-        // rect.dx = cmd->clip_rect.x;
-        // rect.dy = cmd->clip_rect.y;
-        // rect.width = cmd->clip_rect.w;
-        // rect.height = cmd->clip_rect.h;
-        // rect.color = 0xf00;
-        // rect.rop = ROP_COPY;
-        // fb_fillrect(vc->fb, &rect);
+        if (!cmd->elem_count) continue;
+        struct fb_fillrect rect;
+        rect.dx = cmd->clip_rect.x;
+        rect.dy = cmd->clip_rect.y;
+        rect.width = cmd->clip_rect.w;
+        rect.height = cmd->clip_rect.h;
+        rect.color = 0xf00;
+        rect.rop = ROP_COPY;
+        fb_fillrect(vc->fb, &rect);
         offset += cmd->elem_count;
     }
     nk_clear(ctx);
