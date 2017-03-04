@@ -1,0 +1,27 @@
+package embox.cmd.grfxs
+
+@AutoCmd
+@Cmd(name="grfx_canvas",
+	help="This command just run example with nuklear graphics.",
+	man='''
+		NAME
+			grfx_canvas
+		SYNOPSIS
+			It provides graphics by nuklear GUI.
+		AUTHORS
+Aleksandra Butrova ;)
+	''')
+@BuildDepends(third_party.lib.nuklear)
+@BuildDepends(third_party.lib.stb)
+module grfx_canvas {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/nuklear/install")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/stb/install")
+	source "grfx_canvas.c"
+	depends third_party.lib.nuklear
+	depends third_party.lib.stb
+
+	@InitFS
+	source "SPBGU_logo.png"
+
+	depends platform.nuklear.nk_embox_renderer
+}
