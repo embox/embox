@@ -1,0 +1,39 @@
+package stm32f7.cmd
+
+@AutoCmd
+@Cmd(name="stm32f7_led_blinking", help="STM32F7 led blinking")
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32f7_led_blinking {
+	source "stm32f7_led_blinking.c"
+
+	depends third_party.bsp.stmf7cube.stm32f7_discovery
+}
+
+@AutoCmd
+@Cmd(name="stm32f7_lcd_test", help="STM32F7 LCD test")
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32f7_lcd_test {
+	source "stm32f7_lcd_test.c"
+
+	depends third_party.bsp.stmf7cube.stm32f7_discovery
+	depends third_party.bsp.stmf7cube.stm32f7_discovery_lcd
+}
+
+@AutoCmd
+@Cmd(name="stm32f7_ltdc_test", help="STM32F7 low-level LCD test")
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32f7_ltdc_test {
+	source "stm32f7_ltdc_test.c"
+
+	depends third_party.bsp.stmf7cube.stm32f7_discovery
+	depends third_party.bsp.stmf7cube.stm32f7_discovery_lcd
+	depends stm32f7_ltdc_lib
+}
+
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32f7_ltdc_lib {
+	source "stm32f7_ltdc_lib.c"
+
+	depends third_party.bsp.stmf7cube.stm32f7_discovery
+	depends third_party.bsp.stmf7cube.stm32f7_discovery_lcd
+}
