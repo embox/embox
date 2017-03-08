@@ -7,8 +7,8 @@ include $(SRCGEN_DIR)/image.rule.mk
 
 EMBOX_IMPORTED_CPPFLAGS  = $(filter -D% -U% -I% -nostdinc,$(filter-out -D"% -D'%,$(EMBOX_EXPORT_CPPFLAGS)))
 
-EMBOX_IMPORTED_CFLAGS    = $(filter -g% -f% -m% -O% -G% -E%,$(CFLAGS))
-EMBOX_IMPORTED_CXXFLAGS  = $(filter -g% -f% -m% -O% -G% -E%,$(CXXFLAGS))
+EMBOX_IMPORTED_CFLAGS    = $(filter -g% -f% -m% -O% -G% -E% -Wa%,$(CFLAGS))
+EMBOX_IMPORTED_CXXFLAGS  = $(filter -g% -f% -m% -O% -G% -E% -Wa%,$(CXXFLAGS))
 
 EMBOX_IMPORTED_LDFLAGS   = $(filter -static -nostdlib -E%,$(LDFLAGS))
 EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m elf_i386,$(LDFLAGS)))
