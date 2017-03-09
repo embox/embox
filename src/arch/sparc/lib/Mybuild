@@ -8,3 +8,10 @@ static module libarch extends embox.arch.libarch {
 	source "cmpxchg_impl.h"
 	source "embox_register_eh_frame_once.c"
 }
+
+static module vfork extends embox.arch.vfork_entry {
+	source "vfork.S"
+	source "ptregs_jmp.S"
+
+	depends embox.compat.posix.proc.vfork_entry
+}
