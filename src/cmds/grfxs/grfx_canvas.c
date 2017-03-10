@@ -42,6 +42,7 @@ static void
 device_draw( struct vc *vc, struct device *dev, struct nk_context *ctx, int width, int height,
     enum nk_anti_aliasing AA)
 {
+     printf("\ndraw begin\n");
     /* convert from command queue into draw list and draw to screen */
     const struct nk_draw_command *cmd;
     //void *vertices, *elements;
@@ -73,15 +74,16 @@ device_draw( struct vc *vc, struct device *dev, struct nk_context *ctx, int widt
     config.global_alpha = 1.0f;
     config.shape_AA = AA;
     config.line_AA = AA;
-
-    nk_convert(ctx, &dev->cmds, &vbuf, &ebuf, &config);
     
+    nk_convert(ctx, &dev->cmds, &vbuf, &ebuf, &config);
+    printf("\nmeowwww\n");
     //struct fb_info *fb = vc->fb;
 
 
     /* iterate over and execute each draw command */
     nk_draw_foreach(cmd, ctx, &dev->cmds)
     {
+        
         if (!cmd->elem_count) continue;
         struct fb_fillrect rect;
         rect.dx = cmd->clip_rect.x;
@@ -94,7 +96,7 @@ device_draw( struct vc *vc, struct device *dev, struct nk_context *ctx, int widt
         offset += cmd->elem_count;
     }
     nk_clear(ctx);
-
+    printf("\ndraw end\n");
 }
 
 
@@ -102,36 +104,41 @@ static void
 canvas_begin(struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
     int x, int y, int width, int height, struct nk_color background_color)
 {
+    printf("\ncanvas begin begin\n");
     /* save style properties which will be overwritten */
     canvas->panel_padding = ctx->style.window.padding;
     canvas->item_spacing = ctx->style.window.spacing;
     canvas->window_background = ctx->style.window.fixed_background;
-
+    
     /* use the complete window space and set background */
     ctx->style.window.spacing = nk_vec2(0,0);
     ctx->style.window.padding = nk_vec2(0,0);
     ctx->style.window.fixed_background = nk_style_item_color(background_color);
-
+    
     /* create/update window and set position + size */
     flags = flags & ~NK_WINDOW_DYNAMIC;
+    printf("\nmeow\n");
     nk_begin(ctx, "Window", nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR|flags);
     nk_window_set_bounds(ctx, nk_rect(x, y, width, height));
-
+    
     /* allocate the complete window space for drawing */
     {struct nk_rect total_space;
     total_space = nk_window_get_content_region(ctx);
     nk_layout_row_dynamic(ctx, total_space.h, 1);
     nk_widget(&total_space, ctx);
     canvas->painter = nk_window_get_canvas(ctx);}
+    printf("\ncanvas begin end\n");
 }
 
 static void
 canvas_end(struct nk_context *ctx, struct nk_canvas *canvas)
 {
+    printf("\ncanvas end begin\n");
     nk_end(ctx);
     ctx->style.window.spacing = canvas->panel_padding;
     ctx->style.window.padding = canvas->item_spacing;
     ctx->style.window.fixed_background = canvas->window_background;
+    printf("\ncanvas end end\n");
 }
 
 
@@ -213,10 +220,10 @@ int main(int argc, char *argv[]) {
     nk_init_default(&ctx, &font->handle);
     
     printf("Hello there"); 
-    struct nk_canvas canvas;
-    while (1) 
+     struct nk_canvas canvas;
+     while (1) 
     {
-        
+        printf("\nwhile begin\n");
         /* draw */
         
         canvas_begin(&ctx, &canvas, 0, 0, 0, width, height, nk_rgb(250,250,250));
@@ -246,9 +253,10 @@ int main(int argc, char *argv[]) {
         }
         canvas_end(&ctx, &canvas);
 
-        /* Draw */
-        device_draw(&this_vc, &device, &ctx, width, height, NK_ANTI_ALIASING_ON);
-    }
+         /* Draw */
+         device_draw(&this_vc, &device, &ctx, width, height, NK_ANTI_ALIASING_ON);
+         printf("\nwhile end\n");
+     }
     
     
     
