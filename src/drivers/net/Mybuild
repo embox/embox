@@ -73,10 +73,12 @@ module r6040 {
 }
 
 module xemaclite {
-	source "xilinx_emaclite.c"
+	option number log_level = 0
 
 	option number xemaclite_base
 	option number irq_num
+
+	source "xilinx_emaclite.c"
 
 	depends embox.compat.libc.all
 	depends embox.net.skbuff
@@ -84,8 +86,8 @@ module xemaclite {
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
+	depends embox.net.util.show_packet
 }
-
 
 module greth {
 	source "greth.c"

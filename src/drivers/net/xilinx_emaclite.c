@@ -10,15 +10,16 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
+#include <util/log.h>
+#include <net/util/show_packet.h>
 
 #include <kernel/irq.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/l2/ethernet.h>
-
-#include <arpa/inet.h>
 #include <net/l0/net_entry.h>
 
 #include <embox/unit.h>
@@ -180,10 +181,9 @@ static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 	memcpy32((uint32_t*) TX_PACK, aligned_data, skb->len);
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
-
+	show_packet(skb->mac.raw, skb->len, "TX");
 	skb_free(skb);
 
-	//return skb->len;
 	return 0;
 }
 
@@ -200,12 +200,14 @@ static void pack_receiving(void *dev_id) {
 	/* Get the protocol type of the ethernet frame that arrived */
 	tmp = *(volatile uint32_t *) (RX_PACK + 0xC);
 	proto_type = (tmp >> 0x10) & 0xFFFF;
+	log_debug("proto_type = %x", proto_type);
 
 	/* Check if received ethernet frame is a raw ethernet frame
 	 * or an IP packet or an ARP packet */
 	switch (proto_type) {
 	case ETH_P_IP:
 		len = (((*(volatile uint32_t *) (RX_PACK + 0x10))) >> 16) & 0xFFFF;
+		log_debug("len = %x", len);
 		len += ETH_HLEN + ETH_FCS_LEN;
 		break;
 	case ETH_P_ARP:
@@ -222,7 +224,7 @@ static void pack_receiving(void *dev_id) {
 
 	skb = skb_alloc(len + 4);
 	if (NULL == skb) {
-		//LOG_ERROR("Can't allocate packet, pack_pool is full\n");
+		log_error("Can't allocate packet, pack_pool is full\n");
 		current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 		switch_rx_buff();
 		return;
@@ -243,6 +245,7 @@ static void pack_receiving(void *dev_id) {
 	stats->rx_packets++;
 	stats->rx_bytes += skb->len;
 
+	show_packet(skb->mac.raw, skb->len, "RX");
 	rx_rc = netif_rx(skb);
 	if (NET_RX_DROP == rx_rc) {
 		stats->rx_dropped++;
@@ -253,13 +256,14 @@ static void pack_receiving(void *dev_id) {
  * IRQ handler
  */
 static irq_return_t emaclite_irq_handler(unsigned int irq_num, void *dev_id) {
+	log_debug("irq_hendler");
 	if (NULL != get_rx_buff()) {
 		pack_receiving(dev_id);
 	}
 	return IRQ_HANDLED;
 }
 /*default 00-00-5E-00-FA-CE*/
-const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
+static const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
 		0xCE };
 
 static int emaclite_open(struct net_device *dev) {
