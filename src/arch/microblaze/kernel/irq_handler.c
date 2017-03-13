@@ -13,6 +13,7 @@
 #include <drivers/irqctrl.h>
 #include <kernel/irq.h>
 
+extern unsigned int irqctrl_get_irq_num(void);
 /* we havn't interrupts acknowledgment in microblaze architecture
  * and must receive interrupt number our self and then clear pending bit in
  * pending register
@@ -23,27 +24,27 @@ void irq_handler(void) {
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
 		unsigned int irq_num;
-		for (irq_num = 0; irq_num < IRQCTRL_IRQS_TOTAL; irq_num++) {
-			if (irqctrl_pending(irq_num)) {
-				/* disable interrupt and clear it later, since ack
-					 * have no effect on level interrupt */
-				irqctrl_disable(irq_num);
+		irq_num = irqctrl_get_irq_num();
 
-				/*now we allow nested irq*/
-				ipl_enable();
+		if (irqctrl_pending(irq_num)) {
+			/* disable interrupt and clear it later, since ACK
+			 * have no effect on level interrupt */
+			irqctrl_disable(irq_num);
 
-				irq_dispatch(irq_num);
+			/*now we allow nested IRQ*/
+			ipl_enable();
 
-				ipl_disable();
+			irq_dispatch(irq_num);
 
-				/* clear interrupt, for level interrupts it's dispatcher
-				* should set line low, edge gets it's ack too */
-				/* FIXME possible miss of edge interrupt happend while in self
-				* dispatcher */
-				irqctrl_clear(irq_num);
+			ipl_disable();
 
-				irqctrl_enable(irq_num);
-			}
+			/* clear interrupt, for level interrupts it's dispatcher
+			* should set line low, edge gets it's ACK too */
+			/* FIXME possible miss of edge interrupt happened while in self
+			* dispatcher */
+			irqctrl_clear(irq_num);
+
+			irqctrl_enable(irq_num);
 		}
 	}
 
