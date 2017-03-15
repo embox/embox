@@ -117,20 +117,6 @@ extern bool mod_is_running(const struct mod *mod);
 extern int mod_activate_app(const struct mod *mod);
 
 /**
- * Check module for integrity.
- *
- * @param mod
- *
- * @retval -ENOTSUP
- *   Module integrity check not supported
- * @retval 0
- *   Module is OK
- * @retval 1
- *   Module is broken
- */
-extern int mod_integrity_check(const struct mod *mod);
-
-/**
  * Search for a module with a given FQN (fully.qualified.name)
  * @param fqn
  *   Module name, including packages.

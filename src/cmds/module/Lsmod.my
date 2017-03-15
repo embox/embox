@@ -25,5 +25,6 @@ module lsmod {
 
 	depends embox.lib.LibCrypt
 	depends embox.compat.libc.all
+	depends embox.framework.mod_integrity
 	depends embox.framework.LibFramework
 }

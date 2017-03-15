@@ -15,12 +15,16 @@ module mod {
 
 	depends embox.util.Array
 	depends embox.util.log
-	depends embox.lib.LibCrypt
 
 	option boolean security_label = true
 
 	depends embuild
 
+}
+
+module mod_integrity {
+	source "mod_integrity.c"
+	depends embox.lib.LibCrypt
 }
 
 @DefaultImpl(embuild_full)

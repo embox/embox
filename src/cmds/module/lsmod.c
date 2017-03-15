@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include <framework/mod/api.h>
+#include <framework/mod/integrity.h>
 
 static void print_usage(void) {
 	printf("Usage: lsmod [-qdlhp:n:]\n");
