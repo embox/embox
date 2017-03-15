@@ -99,6 +99,7 @@ module vfork_test {
 	source "vfork_test.c"
 
 	depends embox.compat.posix.proc.vfork
+	depends embox.compat.posix.proc.exec
 }
 
 module sigchld_test {
