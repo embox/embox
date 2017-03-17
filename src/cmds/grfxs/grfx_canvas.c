@@ -38,8 +38,11 @@ struct nk_canvas {
     struct nk_style_item window_background;
 };
 
-int nk_color_to_hex(struct nk_color color){
-    return color.a / 16 + (color.b) / 16 *(2 << 3)+ (color.g) /16 *(2 << 7) + (color.r) /16 * (2<<11);
+int nk_color_converter(struct nk_color color){
+    int b = (color.b / 8)  & (0x1f);
+    int g = ((color.g / 8)<<6) & (0x7e0);
+    int r = ((color.r / 8)<<11) & 0xf800;
+    return r + g + b;
 }
 static void
 device_draw( struct vc *vc, struct nk_context *ctx, int width, int height)
@@ -67,9 +70,8 @@ device_draw( struct vc *vc, struct nk_context *ctx, int width, int height)
             rect.dy = r->y;
             rect.width = r->w;
             rect.height = r->h;
-            rect.color = nk_color_to_hex(r->color);
-            printf("color = %x\n", rect.color );
-            rect.rop = ROP_COPY;
+            rect.color = nk_color_converter(r->color);
+            rect.rop = 0;
             fb_fillrect(vc->fb, &rect);
             break;
         }
@@ -123,12 +125,17 @@ static void inpevent(struct vc *vc, struct input_event *ev)
 }
 
 static void visd(struct vc *vc, struct fb_info *fbinfo){
+    /* fill all window with white */
     struct fb_fillrect rect;
     rect.dx = 0;
     rect.dy = 0;
     rect.width = 1024;
     rect.height = 1024;
     rect.rop = ROP_COPY;
+    rect.color = 0x1204;
+
+    fb_fillrect(vc->fb, &rect);
+
     rect.color = 0xffff;
 
     fb_fillrect(vc->fb, &rect);
@@ -183,7 +190,7 @@ int main(int argc, char *argv[]) {
         {
             nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(50, 0, 250));
             nk_fill_rect(canvas.painter, nk_rect(280,100,100,100), 5, nk_rgb(0, 174, 118));
-            nk_fill_rect(canvas.painter, nk_rect(250,20,50,50), 0, nk_rgb(180,0,0));
+            nk_fill_rect(canvas.painter, nk_rect(250,20,100,100), 0, nk_rgb(180,0,0));
         }
         canvas_end(&ctx, &canvas);
 
