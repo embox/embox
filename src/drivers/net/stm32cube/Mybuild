@@ -1,7 +1,7 @@
 package embox.driver.net
 
 @BuildDepends(third_party.bsp.stmf4cube.core)
-module stm32cube_eth {
+module stm32f4cube_eth {
 	source "stm32cube_eth.c"
 
 	option number log_level=0
