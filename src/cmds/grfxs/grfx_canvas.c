@@ -17,7 +17,6 @@
 /* includes from fbcon */
 #include <drivers/console/mpx.h>
 #include <drivers/video/fb.h>
-//#include <drivers/input/input_dev.h>
 
 struct nk_glfw_vertex {
     float position[2];
@@ -39,6 +38,9 @@ struct nk_canvas {
     struct nk_style_item window_background;
 };
 
+int nk_color_to_hex(struct nk_color color){
+    return color.a / 16 + (color.b) / 16 *(2 << 3)+ (color.g) /16 *(2 << 7) + (color.r) /16 * (2<<11);
+}
 static void
 device_draw( struct vc *vc, struct nk_context *ctx, int width, int height)
 {
@@ -65,7 +67,8 @@ device_draw( struct vc *vc, struct nk_context *ctx, int width, int height)
             rect.dy = r->y;
             rect.width = r->w;
             rect.height = r->h;
-            rect.color = 0x1234;
+            rect.color = nk_color_to_hex(r->color);
+            printf("color = %x\n", rect.color );
             rect.rop = ROP_COPY;
             fb_fillrect(vc->fb, &rect);
             break;
@@ -102,7 +105,6 @@ canvas_begin(struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
     nk_layout_row_dynamic(ctx, total_space.h, 1);
     nk_widget(&total_space, ctx);
     canvas->painter = nk_window_get_canvas(ctx);}
-    //printf("\ncanvas begin end\n");
 }
 
 static void
@@ -122,7 +124,6 @@ static void inpevent(struct vc *vc, struct input_event *ev)
 
 static void visd(struct vc *vc, struct fb_info *fbinfo){
     struct fb_fillrect rect;
-    
     rect.dx = 0;
     rect.dy = 0;
     rect.width = 1024;
@@ -171,7 +172,7 @@ int main(int argc, char *argv[]) {
     nk_font_atlas_begin(&atlas);
     font = nk_font_atlas_add_default(&atlas, 13, 0);
     nk_font_atlas_bake(&atlas, &width, &height, NK_FONT_ATLAS_RGBA32);
-    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex), &device.null);
+    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex)/*nk_handle_id(0)*/, &device.null);
 
     nk_init_default(&ctx, &font->handle);   
     struct nk_canvas canvas;
@@ -180,7 +181,9 @@ int main(int argc, char *argv[]) {
         /* what to draw */
         canvas_begin(&ctx, &canvas, 0, 0, 0, width, height, nk_rgb(100,100,100));
         {
-            nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(50, 0, 250)); 
+            nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(50, 0, 250));
+            nk_fill_rect(canvas.painter, nk_rect(280,100,100,100), 5, nk_rgb(0, 174, 118));
+            nk_fill_rect(canvas.painter, nk_rect(250,20,50,50), 0, nk_rgb(180,0,0));
         }
         canvas_end(&ctx, &canvas);
 
