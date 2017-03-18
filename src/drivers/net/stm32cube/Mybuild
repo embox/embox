@@ -3,6 +3,9 @@ package embox.driver.net
 @BuildDepends(third_party.bsp.stmf4cube.core)
 module stm32f4cube_eth {
 	source "stm32cube_eth.c"
+	source "stm32f4cube_eth.c"
+	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
+	source"stm32f4cube_eth.h"
 
 	option number log_level=0
 	depends embox.net.skbuff
