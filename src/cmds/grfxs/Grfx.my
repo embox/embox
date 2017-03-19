@@ -15,6 +15,6 @@ Aleksandra Butrova ;)
 @BuildDepends(third_party.lib.nuklear)
 module grfx {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/nuklear/install")
-	source "grfx.c"
+	source "grfx_canvas.c"
 	depends third_party.lib.nuklear
 }
