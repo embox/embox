@@ -1,6 +1,6 @@
-#include <stdio.h>
 
 /* includes for nuklear*/
+#include <stdio.h>
 #define NK_PRIVATE
 #define NK_API
 #define NK_INTERN static
@@ -17,12 +17,6 @@
 /* includes from fbcon */
 #include <drivers/console/mpx.h>
 #include <drivers/video/fb.h>
-
-struct nk_glfw_vertex {
-    float position[2];
-    float uv[2];
-    nk_byte col[4];
-};
 
 struct device {
     struct nk_buffer cmds;
@@ -47,12 +41,13 @@ int nk_color_converter(struct nk_color color){
 static void
 device_draw( struct vc *vc, struct nk_context *ctx, int width, int height)
 {
+    
     /* shouldn't draw when window is off */
     if (!vc->fb) {
         nk_clear(ctx);
         return;
     }
-    
+
     const struct nk_command *cmd;
     
     /* iterate over and execute each draw command */
@@ -79,6 +74,9 @@ device_draw( struct vc *vc, struct nk_context *ctx, int width, int height)
         }
     }
     nk_clear(ctx);
+
+    /* delay for remove flickering */
+    for (int i = 0; i<100000000; i++){}
 }
 
 
@@ -121,10 +119,11 @@ canvas_end(struct nk_context *ctx, struct nk_canvas *canvas)
 /* callbacks */
 static void inpevent(struct vc *vc, struct input_event *ev)
 {
-    printf("\nWhat are doing with graphic window??	\n");
+   printf("\nWhat are doing with graphic window??	\n");
 }
 
 static void visd(struct vc *vc, struct fb_info *fbinfo){
+
     /* fill all window with white */
     struct fb_fillrect rect;
     rect.dx = 0;
@@ -132,10 +131,6 @@ static void visd(struct vc *vc, struct fb_info *fbinfo){
     rect.width = 1024;
     rect.height = 1024;
     rect.rop = ROP_COPY;
-    rect.color = 0x1204;
-
-    fb_fillrect(vc->fb, &rect);
-
     rect.color = 0xffff;
 
     fb_fillrect(vc->fb, &rect);
@@ -181,7 +176,9 @@ int main(int argc, char *argv[]) {
     nk_font_atlas_bake(&atlas, &width, &height, NK_FONT_ATLAS_RGBA32);
     nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex)/*nk_handle_id(0)*/, &device.null);
 
-    nk_init_default(&ctx, &font->handle);   
+    nk_init_default(&ctx, &font->handle);
+
+    /* Draw */
     struct nk_canvas canvas;
     while (1) 
     {
@@ -194,7 +191,7 @@ int main(int argc, char *argv[]) {
         }
         canvas_end(&ctx, &canvas);
 
-         /* Draw */
+         /* Draw each element */
          device_draw(&this_vc, &ctx, width, height);
      }
     
