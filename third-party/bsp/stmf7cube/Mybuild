@@ -8,6 +8,7 @@ static module core extends third_party.bsp.st_bsp_api {
 
 	@Cflags("-Wno-unused")
 	@DefineMacro("STM32F746xx")
+	@DefineMacro("HAL_ETH_MODULE_ENABLED")
 	@DefineMacro("USE_HAL_DRIVER")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Inc")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
