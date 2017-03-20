@@ -63,7 +63,7 @@ static void SystemClock_Config(void)
 extern void nvic_table_fill_stubs(void);
 
 void arch_init(void) {
-	static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 144000000);
+	static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 216000000);
 
 	SystemInit();
 	HAL_Init();
