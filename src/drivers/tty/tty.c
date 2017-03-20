@@ -23,57 +23,59 @@
 #include <util/math.h>
 #include <util/member.h>
 
-#define TC_I(t, flag) ((t)->termios.c_iflag & (flag))
-#define TC_O(t, flag) ((t)->termios.c_oflag & (flag))
-#define TC_C(t, flag) ((t)->termios.c_cflag & (flag))
-#define TC_L(t, flag) ((t)->termios.c_lflag & (flag))
+#define TC_L(t, flag) (termios_get_lflag(&(t)->termios, (flag)))
+#define IS_CANON(t) (termios_get_lflag(&(t)->termios, ICANON))
+#define GET_CC(t, flag) (termios_get_cc(&(t)->termios, (flag)))
 
 extern void tty_task_break_check(struct tty *t, char ch);
 
 static inline void tty_notify(struct tty *t, int mask) {
-	assert(t);
-	if (t->idesc)
-		idesc_notify(t->idesc, mask);
+    assert(t);
+    if (t->idesc)
+        idesc_notify(t->idesc, mask);
 }
 
 #define MUTEX_UNLOCKED_DO(expr, m) \
-		__lang_surround(expr, mutex_unlock(m), mutex_lock(m))
+        __lang_surround(expr, mutex_unlock(m), mutex_lock(m))
 
 static inline void tty_out_wake(struct tty *t) {
-	t->ops->out_wake(t);
+    t->ops->out_wake(t);
 }
 
 /* called from mutex locked context */
 static int tty_output(struct tty *t, char ch) {
-	// TODO locks? context? -- Eldar
-	int len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
-	if (len > 0) {
-		MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
-	}
-	return len;
-	// t->ops->tx_char(t, ch);
+    // TODO locks? context? -- Eldar
+    int len = 
+    	termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+    
+    if (len > 0) {
+        MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
+    }
+    return len;
+    // t->ops->tx_char(t, ch);
 }
 
 /* called from mutex locked context */
 static void tty_echo(struct tty *t, char ch) {
-	termios_gotc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
-	MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
+    termios_gotc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+    MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
 }
 
 static void tty_echo_erase(struct tty *t) {
-	cc_t *cc = t->termios.c_cc;
+    if (!TC_L(t, ECHO)) {
+        return;
+    }
 
-	if (!TC_L(t, ECHO))
-		return;
-
-	/* See also http://users.sosdg.org/~qiyong/mxr/source/drivers/tty/tty.c#L1430
-	 * as example of how ECHOE flag is handled in Minix. */
-	if (!TC_L(t, ECHOE))
-		tty_output(t, cc[VERASE]);
-
-	else
-		for (char *ch = "\b \b"; *ch; ++ch)
-			tty_output(t, *ch);
+    /* See also http://users.sosdg.org/~qiyong/mxr/source/drivers/tty/tty.c#L1430
+     * as example of how ECHOE flag is handled in Minix. */
+    if (!TC_L(t, ECHOE)) {
+        tty_output(t, GET_CC(t, VERASE));
+    }
+    else {
+        for (char *ch = "\b \b"; *ch; ++ch) {
+            tty_output(t, *ch);
+        }
+    }
 }
 
 /*
@@ -91,417 +93,400 @@ static void tty_echo_erase(struct tty *t) {
  */
 
 static struct ring *tty_raw_ring(struct tty *t, struct ring *r) {
-	r->tail = t->i_ring.tail;
-	r->head = t->i_canon_ring.tail;
-	return r;
+    r->tail = t->i_ring.tail;
+    r->head = t->i_canon_ring.tail;
+    return r;
 }
 
 static struct ring *tty_edit_ring(struct tty *t, struct ring *r) {
-	r->tail = t->i_canon_ring.head;
-	r->head = t->i_ring.head;
-	return r;
+    r->tail = t->i_canon_ring.head;
+    r->head = t->i_ring.head;
+    return r;
 }
 
 static int tty_input(struct tty *t, char ch, unsigned char flag) {
-	cc_t *cc = t->termios.c_cc;
-	int ignore_cr;
-	int raw_mode;
-	int is_eol;
-	int got_data;
+    int ignore_cr;
+    int raw_mode;
+    int is_eol;
+    int got_data;
 
-	raw_mode = !TC_L(t, ICANON);
+    raw_mode = !IS_CANON(t);
 
-	/* Newline control: IGNCR, ICRNL, INLCR */
-	ignore_cr = TC_I(t, IGNCR) && ch == '\r';
-	if (!ignore_cr) {
-		if (TC_I(t, ICRNL) && ch == '\r') ch = '\n';
-		if (TC_I(t, INLCR) && ch == '\n') ch = '\r';
-	}
-	is_eol = (ch == '\n' || ch == cc[VEOL]);
+    ignore_cr = termios_handle_newline(&t->termios, ch, &is_eol);
+    
+    if (ignore_cr) {
+        goto done;
+    }
 
-	if (ignore_cr)
-		goto done;
+    /* Handle erase/kill */
+    if (!raw_mode) {
+        int erase_all;
+        if (termios_handle_erase(&t->termios, ch, &erase_all)) {
 
-	/* Handle erase/kill */
-	if (!raw_mode) {
-		int erase_all = (ch == cc[VKILL]);
-		if (erase_all || ch == cc[VERASE] || ch == '\b') {
+            struct ring edit_ring;
+            size_t erase_len = ring_data_size(
+                        tty_edit_ring(t, &edit_ring), TTY_IO_BUFF_SZ);
 
-			struct ring edit_ring;
-			size_t erase_len = ring_data_size(
-						tty_edit_ring(t, &edit_ring), TTY_IO_BUFF_SZ);
+            if (erase_len) {
+                if (!erase_all)
+                    erase_len = 1;
 
-			if (erase_len) {
-				if (!erase_all)
-					erase_len = 1;
+                t->i_ring.head -= erase_len - TTY_IO_BUFF_SZ;
+                ring_fixup_head(&t->i_ring, TTY_IO_BUFF_SZ);
 
-				t->i_ring.head -= erase_len - TTY_IO_BUFF_SZ;
-				ring_fixup_head(&t->i_ring, TTY_IO_BUFF_SZ);
+                while (erase_len--) {
+                    tty_echo_erase(t);
+                }
+            }
 
-				while (erase_len--)
-					tty_echo_erase(t);
-			}
+            goto done;
+        }
+    }
 
-			goto done;
-		}
-	}
+    /* Finally, store and echo the char.
+     *
+     * When i_ring is near to become full, only raw or a line ending chars are
+     * handled. This lets canonical read to see the line with \n or EOL at the
+     * end, even when some chars are missing. */
 
-	/* Finally, store and echo the char.
-	 *
-	 * When i_ring is near to become full, only raw or a line ending chars are
-	 * handled. This lets canonical read to see the line with \n or EOL at the
-	 * end, even when some chars are missing. */
-
-	if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > !(raw_mode || is_eol))
-		if (ring_write_all_from(&t->i_ring, t->i_buff, TTY_IO_BUFF_SZ, &ch, 1))
-			tty_echo(t, ch);
+    if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > !(raw_mode || is_eol)) {
+        if (ring_write_all_from(&t->i_ring, t->i_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
+            tty_echo(t, ch);
+        }
+    }
 
 done:
-	got_data = (raw_mode || is_eol || ch == cc[VEOF]);
+    got_data = (raw_mode || is_eol || ch == GET_CC(t, VEOF));
 
-	if (got_data) {
-		t->i_canon_ring.head = t->i_ring.head;
+    if (got_data) {
+        t->i_canon_ring.head = t->i_ring.head;
 
-		if (raw_mode)
-			/* maintain it empty */
-			t->i_canon_ring.tail = t->i_canon_ring.head;
-	}
+        if (raw_mode) {
+            /* maintain it empty */
+            t->i_canon_ring.tail = t->i_canon_ring.head;
+        }
+    }
 
-	return got_data;
+    return got_data;
 }
 
 static void tty_rx_do(struct tty *t) {
-	int ich;
+    int ich;
 
-	while ((ich = tty_rx_dequeue(t)) != -1) {
-		tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT));
-	}
+    while ((ich = tty_rx_dequeue(t)) != -1) {
+        tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT));
+    }
 }
 
 static char *tty_read_raw(struct tty *t, char *buff, char *end) {
-	struct ring raw_ring;
-	size_t block_size;
+    struct ring raw_ring;
+    size_t block_size;
 
-	while ((block_size = ring_can_read(
-				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, end - buff))) {
+    while ((block_size = ring_can_read(
+                tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, end - buff))) {
 
-		/* No processing is required to read raw data. */
-		memcpy(buff, t->i_buff + raw_ring.tail, block_size);
-		buff += block_size;
+        /* No processing is required to read raw data. */
+        memcpy(buff, t->i_buff + raw_ring.tail, block_size);
+        buff += block_size;
 
-		ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
-	}
+        ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
+    }
 
-	return buff;
+    return buff;
 }
 
-static size_t find_line_len(cc_t eol, cc_t eof,
-		const char *buff, ssize_t size, int *is_eof) {
-	size_t offset;
+static size_t find_line_len(struct tty *t,
+        const char *buff, ssize_t size, int *is_eof) {
+    size_t offset;
 
-	*is_eof = 0;
-	for (offset = 0; offset < size; ++offset) {
-		char ch = buff[offset];
-		if (ch == '\n' || ch == eol || ch == eof) {
-			*is_eof = (ch == eof);
-			break;
-		}
-	}
+    *is_eof = 0;
+    for (offset = 0; offset < size; ++offset) {
+        char ch = buff[offset];
 
-	return offset;
+        if (termios_check_end(&t->termios, ch, is_eof)) {
+            break;
+        }
+    }
+
+    return offset;
 }
 
 static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
-	cc_t eol, eof;
-	size_t block_size;
+    size_t block_size;
 
-	assert(TC_L(t, ICANON));
+    assert(IS_CANON(t));
 
-	eol = t->termios.c_cc[VEOL];
-	eof = t->termios.c_cc[VEOF];
+    while ((block_size = ring_can_read(
+                &t->i_canon_ring, TTY_IO_BUFF_SZ, end - buff))) {
+        const char *line_start = t->i_buff + t->i_canon_ring.tail;
+        size_t line_len;
+        int got_line;
+        int is_eof;
 
-	while ((block_size = ring_can_read(
-				&t->i_canon_ring, TTY_IO_BUFF_SZ, end - buff))) {
-		const char *line_start = t->i_buff + t->i_canon_ring.tail;
-		size_t line_len;
-		int got_line;
-		int is_eof;
+        line_len = find_line_len(t, line_start, block_size, &is_eof);
 
-		line_len = find_line_len(eol, eof, line_start, block_size, &is_eof);
+        got_line = (line_len < block_size);
+        block_size = line_len;
 
-		got_line = (line_len < block_size);
-		block_size = line_len;
+        if (got_line) {
+             ++block_size;  /* Line end char is always consumed... */
 
-		if (got_line) {
- 			++block_size;  /* Line end char is always consumed... */
+            if (!is_eof) { /* ...but EOF is discarded and not copied to user. */
+                 ++line_len;
+            }
+        }
 
-			if (!is_eof)  /* ...but EOF is discarded and not copied to user. */
-	 			++line_len;
-		}
+        memcpy(buff, line_start, line_len);
+        buff += line_len;
 
-		memcpy(buff, line_start, line_len);
-		buff += line_len;
+        ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
+        ring_just_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, block_size);
 
-		ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
-		ring_just_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, block_size);
+        if (got_line) {
+            break;
+        }
+    }
 
-		if (got_line)
-			break;
-	}
-
-	return buff;
+    return buff;
 }
 
 size_t tty_read(struct tty *t, char *buff, size_t size) {
-	struct idesc_wait_link iwl;
-	int rc;
-	cc_t vmin, vtime;
-	char *curr, *next, *end;
-	unsigned long timeout;
-	size_t count;
+    struct idesc_wait_link iwl;
+    int rc;
+    char *curr, *next, *end;
+    unsigned long timeout;
+    size_t count;
 
-	vmin = t->termios.c_cc[VMIN];
-	vtime = t->termios.c_cc[VTIME];
-	curr = buff;
-	end = buff + size;
+    curr = buff;
+    end = buff + size;
 
-	if (((vmin == 0) && (vtime == 0))) {
-		size = 0;
-		timeout = 0;
-	} else {
-		size = vtime == 0 ? min(size, vmin) : 1;
-		timeout = vmin > 0 ? SCHED_TIMEOUT_INFINITE
-				: vtime * 100; /* deciseconds to milliseconds */
-	}
+    size = termios_get_size(&t->termios, size, &timeout);
 
-	idesc_wait_init(&iwl, POLLIN | POLLERR);
+    idesc_wait_init(&iwl, POLLIN | POLLERR);
 
-	threadsig_lock();
-	mutex_lock(&t->lock);
-	do {
-		tty_rx_do(t);
-		rc = idesc_wait_prepare(t->idesc, &iwl);
+    threadsig_lock();
+    mutex_lock(&t->lock);
+    do {
+        tty_rx_do(t);
+        rc = idesc_wait_prepare(t->idesc, &iwl);
 
-		next = tty_read_raw(t, curr, end);
+        next = tty_read_raw(t, curr, end);
 
-		/* TODO serialize termios access with ioctl. -- Eldar */
-		if (TC_L(t, ICANON)) {
-			next = tty_read_cooked(t, next, end);
-		}
+        /* TODO serialize termios access with ioctl. -- Eldar */
+        if (IS_CANON(t)) {
+            next = tty_read_cooked(t, next, end);
+        }
 
-		count = next - curr;
-		curr = next;
-		if (size <= count) {
-			idesc_wait_cleanup(t->idesc, &iwl);
-			rc = curr - buff;
-			break;
-		}
-		size -= count;
+        count = next - curr;
+        curr = next;
+        if (size <= count) {
+            idesc_wait_cleanup(t->idesc, &iwl);
+            rc = curr - buff;
+            break;
+        }
+        size -= count;
 
-		if (!rc) {
-			mutex_unlock(&t->lock);
+        if (!rc) {
+            mutex_unlock(&t->lock);
 
-			rc = sched_wait_timeout(timeout, NULL);
+            rc = sched_wait_timeout(timeout, NULL);
 
-			mutex_lock(&t->lock);
+            mutex_lock(&t->lock);
 
-		}
-		idesc_wait_cleanup(t->idesc, &iwl);
-	} while (!rc);
-	mutex_unlock(&t->lock);
-	threadsig_unlock();
+        }
+        idesc_wait_cleanup(t->idesc, &iwl);
+    } while (!rc);
+    mutex_unlock(&t->lock);
+    threadsig_unlock();
 
-	return rc;
+    return rc;
 }
 
 static int tty_blockin_output(struct tty *t, char ch) {
-	struct idesc_wait_link iwl;
-	int ret;
+    struct idesc_wait_link iwl;
+    int ret;
 
-	idesc_wait_init(&iwl, POLLOUT | POLLERR);
+    idesc_wait_init(&iwl, POLLOUT | POLLERR);
 
-	do {
-		if (tty_output(t, ch))
-			return 0;
+    do {
+        if (tty_output(t, ch)) {
+            return 0;
+        }
 
-		if (!t->idesc)
-			return -EBADF;
+        if (!t->idesc) {
+            return -EBADF;
+        }
 
-		ret = idesc_wait_prepare(t->idesc, &iwl);
-		if (!ret) {
-			mutex_unlock(&t->lock);
+        ret = idesc_wait_prepare(t->idesc, &iwl);
+        if (!ret) {
+            mutex_unlock(&t->lock);
 
-			tty_out_wake(t);
-			ret = sched_wait();
+            tty_out_wake(t);
+            ret = sched_wait();
 
-			mutex_lock(&t->lock);
-		}
-		idesc_wait_cleanup(t->idesc, &iwl);
-	} while (!ret);
+            mutex_lock(&t->lock);
+        }
+        idesc_wait_cleanup(t->idesc, &iwl);
+    } while (!ret);
 
-	return ret;
+    return ret;
 }
 
 size_t tty_write(struct tty *t, const char *buff, size_t size) {
-	size_t count;
-	int ret = 0;
+    size_t count;
+    int ret = 0;
 
-	threadsig_lock();
-	mutex_lock(&t->lock);
+    threadsig_lock();
+    mutex_lock(&t->lock);
 
-	for (count = size; count > 0; count--, buff++)
-		if ((ret = tty_blockin_output(t, *buff)))
-			break;
+    for (count = size; count > 0; count--, buff++) {
+        if ((ret = tty_blockin_output(t, *buff))) {
+            break;
+        }
+    }
 
-	mutex_unlock(&t->lock);
-	threadsig_unlock();
+    mutex_unlock(&t->lock);
+    threadsig_unlock();
 
-	tty_out_wake(t);
+    tty_out_wake(t);
 
-	if (!(size - count)) {
-		return ret;
-	}
-	return size - count;
+    if (!(size - count)) {
+        return ret;
+    }
+
+    return size - count;
 }
 
 int tty_ioctl(struct tty *t, int request, void *data) {
-	int ret = 0;
+    int ret = 0;
 
-	mutex_lock(&t->lock);
+    mutex_lock(&t->lock);
 
-	switch (request) {
-	case TIOCGETA:
-		memcpy(data, &t->termios, sizeof(struct termios));
-		break;
-	case TIOCSETAF:
-	case TIOCSETAW:
-	case TIOCSETA:
-		memcpy(&t->termios, data, sizeof(struct termios));
-		if (!TC_L(t,ICANON)) {
-			t->i_canon_ring.tail = t->i_canon_ring.head = t->i_ring.head;
-		}
-		break;
-	case TIOCGPGRP:
-		memcpy(data, &t->pgrp, sizeof(pid_t));
-		break;
-	case TIOCSPGRP:
-		memcpy(&t->pgrp, data, sizeof(pid_t));
-		break;
-	default:
-		ret = -ENOSYS;
-		break;
-	}
+    switch (request) {
+    case TIOCGETA:
+        memcpy(data, &t->termios, sizeof(struct termios));
+        break;
+    case TIOCSETAF:
+    case TIOCSETAW:
+    case TIOCSETA:
+        memcpy(&t->termios, data, sizeof(struct termios));
+        if (!IS_CANON(t)) {
+            t->i_canon_ring.tail = t->i_canon_ring.head = t->i_ring.head;
+        }
+        break;
+    case TIOCGPGRP:
+        memcpy(data, &t->pgrp, sizeof(pid_t));
+        break;
+    case TIOCSPGRP:
+        memcpy(&t->pgrp, data, sizeof(pid_t));
+        break;
+    default:
+        ret = -ENOSYS;
+        break;
+    }
 
-	mutex_unlock(&t->lock);
+    mutex_unlock(&t->lock);
 
-	return ret;
+    return ret;
 }
 
 size_t tty_status(struct tty *t, int status_nr) {
-	struct ring raw_ring;
-	int res = 0;
+    struct ring raw_ring;
+    int res = 0;
 
-	assert(t);
+    assert(t);
 
-	mutex_lock(&t->lock);
-	switch (status_nr) {
-	case POLLIN:
-		IRQ_LOCKED_DO(tty_rx_do(t));
+    mutex_lock(&t->lock);
+    switch (status_nr) {
+    case POLLIN:
+        IRQ_LOCKED_DO(tty_rx_do(t));
 
-		res = ring_can_read(tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, 1) ||
-			(TC_L(t, ICANON)
-			 	&& ring_can_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, 1));
-		break;
-	case POLLOUT:
-		res = ring_can_write(&t->o_ring, TTY_IO_BUFF_SZ, 1);
-		break;
-	case POLLERR:
-		res = 0; /* FIXME: HUP isn't implemented */
-		break;
-	}
-	mutex_unlock(&t->lock);
+        res = ring_can_read(tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, 1) ||
+            (IS_CANON(t) && ring_can_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, 1));
+        break;
+    case POLLOUT:
+        res = ring_can_write(&t->o_ring, TTY_IO_BUFF_SZ, 1);
+        break;
+    case POLLERR:
+        res = 0; /* FIXME: HUP isn't implemented */
+        break;
+    }
+    mutex_unlock(&t->lock);
 
-	return res;
+    return res;
 }
 
 struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
-	assert(t && ops);
+    assert(t && ops);
 
-	t->idesc = NULL;
-	t->ops = ops;
+    t->idesc = NULL;
+    t->ops = ops;
 
-	{
-		struct termios *termios = &t->termios;
-		cc_t cc_init[NCCS] = TTY_TERMIOS_CC_INIT;
+    termios_init(&t->termios);
 
-		memcpy(termios->c_cc, cc_init, sizeof(cc_init));
-		termios->c_iflag = TTY_TERMIOS_IFLAG_INIT;
-		termios->c_oflag = TTY_TERMIOS_OFLAG_INIT;
-		termios->c_cflag = TTY_TERMIOS_CFLAG_INIT;
-		termios->c_lflag = TTY_TERMIOS_LFLAG_INIT;
-	}
+    mutex_init(&t->lock);
 
-	mutex_init(&t->lock);
+    ring_init(&t->rx_ring);
 
-	ring_init(&t->rx_ring);
+    ring_init(&t->i_ring);
+    ring_init(&t->i_canon_ring);
 
-	ring_init(&t->i_ring);
-	ring_init(&t->i_canon_ring);
+    ring_init(&t->o_ring);
 
-	ring_init(&t->o_ring);
+    t->pgrp = -1;
 
-	t->pgrp = -1;
-
-	return t;
+    return t;
 }
 
 int tty_rx_locked(struct tty *t, char ch, unsigned char flag) {
-	uint16_t *slot = t->rx_buff + t->rx_ring.head;
+    uint16_t *slot = t->rx_buff + t->rx_ring.head;
 
-	/* Some input must be processed immediatly, like Ctrl-C.
-	 * All other data will be stored as unprocecessed (raw) data
-	 * and will be processed only at tty_read (if called)
-	 */
+    /* Some input must be processed immediatly, like Ctrl-C.
+     * All other data will be stored as unprocecessed (raw) data
+     * and will be processed only at tty_read (if called)
+     */
 
-	tty_task_break_check(t, ch);
+    tty_task_break_check(t, ch);
 
-	if (!ring_write(&t->rx_ring, TTY_RX_BUFF_SZ, 1))
-		return -1;
+    if (!ring_write(&t->rx_ring, TTY_RX_BUFF_SZ, 1)) {
+        return -1;
+    }
 
-	*slot = (flag<<CHAR_BIT) | (unsigned char) ch;
+    *slot = (flag<<CHAR_BIT) | (unsigned char) ch;
 
-	tty_notify(t, POLLIN);
+    tty_notify(t, POLLIN);
 
-	return 0;
+    return 0;
 }
 
-
 int tty_rx_dequeue(struct tty *t) {
-	uint16_t *slot = t->rx_buff + t->rx_ring.tail;
+    uint16_t *slot = t->rx_buff + t->rx_ring.tail;
 
-	if (!ring_read(&t->rx_ring, TTY_RX_BUFF_SZ, 1))
-		return -1;
+    if (!ring_read(&t->rx_ring, TTY_RX_BUFF_SZ, 1)) {
+        return -1;
+    }
 
-	return (int) *slot;
+    return (int) *slot;
 }
 
 int tty_out_getc(struct tty *t) {
-	char ch;
-	/* TODO Locks */
-	if (!ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1))
-		return -1;
+    char ch;
+    /* TODO Locks */
+    if (!ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
+        return -1;
+    }
 
-	tty_notify(t, POLLOUT);
+    tty_notify(t, POLLOUT);
 
-	return (int) ch;
+    return (int) ch;
 }
 
 int tty_out_buf(struct tty *t, void *buf, size_t len) {
-	int ret;
+    int ret;
 
-	ret = ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, buf, len);
+    ret = ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, buf, len);
 
-	tty_notify(t, POLLOUT);
+    tty_notify(t, POLLOUT);
 
-	return ret;
+    return ret;
 }
