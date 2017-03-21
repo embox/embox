@@ -67,6 +67,7 @@ EMBOX_UNIT_INIT(uart_init);
 #define ONEMS		0xB0
 #define UTS		0xB4
 # define UTS_RST	(1 << 0)
+# define UTS_TXEMPTY	(1 << 6)
 #define UMCR		0xB8
 
 #include <kernel/printk.h>
@@ -155,7 +156,7 @@ static int imxuart_getc(struct uart *dev) {
 static int imxuart_putc(struct uart *dev, int ch) {
 	UART(TXR) = ch;
 
-	while (!(UART(UTS) & (1 << 6))) {
+	while (!(UART(UTS) & UTS_TXEMPTY)) {
 	}
 
 	return 0;
