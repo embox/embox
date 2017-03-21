@@ -10,19 +10,19 @@
 #define DRIVERS_TERMIOS_OPS_H_
 
 #define TTY_TERMIOS_CC_INIT \
-    { \
-        [VEOF]   = __TTY_CTRL('d'),  \
-        [VEOL]   = ((cc_t) ~0), /* undef */ \
-        [VERASE] = 0177,             \
-        [VINTR]  = __TTY_CTRL('c'),  \
-        [VKILL]  = __TTY_CTRL('u'),  \
-        [VMIN]   = 1,                \
-        [VQUIT]  = __TTY_CTRL('\\'), \
-        [VTIME]  = 0,                \
-        [VSUSP]  = __TTY_CTRL('z'),  \
-        [VSTART] = __TTY_CTRL('q'),  \
-        [VSTOP]  = __TTY_CTRL('s'),  \
-    }
+	{ \
+		[VEOF]   = __TTY_CTRL('d'),  \
+		[VEOL]   = ((cc_t) ~0), /* undef */ \
+		[VERASE] = 0177,             \
+		[VINTR]  = __TTY_CTRL('c'),  \
+		[VKILL]  = __TTY_CTRL('u'),  \
+		[VMIN]   = 1,                \
+		[VQUIT]  = __TTY_CTRL('\\'), \
+		[VTIME]  = 0,                \
+		[VSUSP]  = __TTY_CTRL('z'),  \
+		[VSTART] = __TTY_CTRL('q'),  \
+		[VSTOP]  = __TTY_CTRL('s'),  \
+	}
 
 #define __TTY_CTRL(ch)  (cc_t) ((ch) & 0x1f)
 
@@ -30,7 +30,7 @@
 #define TTY_TERMIOS_OFLAG_INIT  (tcflag_t) (OPOST | ONLCR | OXTABS)
 #define TTY_TERMIOS_CFLAG_INIT  (tcflag_t) (CREAD | CS8 | HUPCL)
 #define TTY_TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
-            ECHO | ECHOE | ECHOK | ECHONL)
+			ECHO | ECHOE | ECHOK | ECHONL)
 
 struct ring;
 struct termios;
@@ -48,7 +48,7 @@ struct termios;
  * @return Number of writed symbols
  */
 extern int termios_putc(const struct termios *tio, char ch,
-        struct ring *ring, char *buf, size_t buflen);
+		struct ring *ring, char *buf, size_t buflen);
 
 /**
  * @brief Does associated with termios mapping of symbol to it's visual
@@ -63,32 +63,30 @@ extern int termios_putc(const struct termios *tio, char ch,
  * @return
  */
 extern int termios_gotc(const struct termios *tio, char ch,
-        struct ring *ring, char *buf, size_t buflen);
-
-// TODO: Write comments for functions below.
+		struct ring *ring, char *buf, size_t buflen);
 
 /**
- * @brief 
+ * @brief Encapsulates a call to the c_lflag field.
  *
  * @param tio
  * @param flag
  *
- * @return
+ * @return Value of specified bit.
  */
-extern int termios_get_lflag(const struct termios *tio, int flag);
+extern int termios_check_lflag(const struct termios *tio, int flag);
 
 /**
- * @brief 
+ * @brief Encapsulates a call to the c_cc field.
  *
  * @param tio
  * @param flag
  *
- * @return
+ * @return Specified character from c_cc.
  */
 extern int termios_get_cc(const struct termios *tio, int flag);
 
 /**
- * @brief Newline control: IGNCR, ICRNL, INLCR
+ * @brief Provides newline control: IGNCR, ICRNL, INLCR.
  *
  * @param tio
  * @param ch
@@ -96,11 +94,11 @@ extern int termios_get_cc(const struct termios *tio, int flag);
  *
  * @return
  */
-extern int termios_handle_newline(const struct termios *tio, 
-        char ch, int *is_eol);
+extern int termios_handle_newline(const struct termios *tio,
+		char ch, int *is_eol);
 
 /**
- * @brief
+ * @brief Provides erase/kill control: VKILL, VERASE.
  *
  * @param tio
  * @param ch
@@ -108,8 +106,8 @@ extern int termios_handle_newline(const struct termios *tio,
  *
  * @return
  */
-extern int termios_handle_erase(const struct termios *tio, 
-        char ch, int *erase_all);
+extern int termios_handle_erase(const struct termios *tio,
+		char ch, int *erase_all);
 
 /**
  * @brief
@@ -131,11 +129,11 @@ extern int termios_check_end(const struct termios *tio, char ch, int *is_eof);
  *
  * @return
  */
-extern size_t termios_get_size(const struct termios *tio, 
-        size_t size, unsigned long *timeout);
+extern size_t termios_get_size(const struct termios *tio,
+		size_t size, unsigned long *timeout);
 
 /**
- * @brief Init
+ * @brief Initializes termios.
  *
  * @param tio
  *
