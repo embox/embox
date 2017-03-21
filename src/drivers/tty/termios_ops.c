@@ -77,7 +77,7 @@ int termios_handle_newline(const struct termios *t, char ch, int *is_eol) {
 int termios_handle_erase(const struct termios *t, char ch, int *erase_all) {
 	*erase_all = (ch == t->c_cc[VKILL]);
 
-	if (erase_all || ch == t->c_cc[VERASE] || ch == '\b') {
+	if (*erase_all || ch == t->c_cc[VERASE] || ch == '\b') {
 		return 1;
 	}
 
