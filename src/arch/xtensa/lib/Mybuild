@@ -1,0 +1,8 @@
+
+package embox.arch.xtensa
+
+static module libarch extends embox.arch.libarch {
+}
+
+static module locore extends embox.arch.locore {
+}
