@@ -35,7 +35,9 @@
 
 #define PTIMER_PRESCALER_SHIFT    8
 
-#define LOAD_VALUE                0x00010000
+#define PERIPHCLK (SYS_CLOCK / 2)
+#define TARGET_FREQ		OPTION_GET(NUMBER, freq)
+#define LOAD_VALUE		(PERIPHCLK / TARGET_FREQ - 1)
 
 static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
@@ -55,7 +57,7 @@ static int this_init(void) {
 
 static int this_config(struct time_dev_conf * conf) {
 	uint32_t tmp;
-	uint8_t  prescaler = 1;
+	uint8_t  prescaler = 0;
 
 	REG_STORE(PTIMER_LOAD, LOAD_VALUE);
 
