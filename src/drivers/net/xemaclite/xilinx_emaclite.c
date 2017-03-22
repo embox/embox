@@ -10,15 +10,16 @@
 #include <stddef.h>
 #include <string.h>
 #include <errno.h>
+#include <arpa/inet.h>
 
+#include <util/log.h>
+#include <net/util/show_packet.h>
 
 #include <kernel/irq.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/l2/ethernet.h>
-
-#include <arpa/inet.h>
 #include <net/l0/net_entry.h>
 
 #include <embox/unit.h>
@@ -89,12 +90,14 @@ static pingpong_regs_t *current_tx_regs = NULL;
 #define TX_CTRL_REG  current_tx_regs->ctrl
 #define RX_CTRL_REG  current_rx_regs->ctrl
 
+#define PINPONG_BUFFER
+
 static void switch_rx_buff(void) {
 #ifdef PINPONG_BUFFER
-	if (current_rx_regs == emaclite->rx_ping) {
-		current_rx_regs = emaclite->rx_ping;
+	if (current_rx_regs == &emaclite->rx_ping) {
+		current_rx_regs = &emaclite->rx_ping;
 	} else {
-		current_rx_regs = emaclite->rx_pong;
+		current_rx_regs = &emaclite->rx_pong;
 	}
 #else
 	current_rx_regs = &emaclite->rx_ping;
@@ -103,10 +106,10 @@ static void switch_rx_buff(void) {
 
 static void switch_tx_buff(void) {
 #ifdef PINPONG_BUFFER
-	if (current_tx_regs == emaclite->tx_ping) {
-		current_tx_regs = emaclite->tx_ping;
+	if (current_tx_regs == &emaclite->tx_ping) {
+		current_tx_regs = &emaclite->tx_ping;
 	} else {
-		current_tx_regs = emaclite->tx_pong;
+		current_tx_regs = &emaclite->tx_pong;
 	}
 #else
 	current_tx_regs = &emaclite->tx_ping;
@@ -130,9 +133,7 @@ static pingpong_regs_t *get_rx_buff(void) {
 	}
 	return NULL;
 }
-#if 0
-static uint8_t etherrxbuff[PKTSIZE]; /* Receive buffer */
-#endif
+
 /*FIXME bad function (may be use if dest and src align 4)*/
 static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 	size_t lenw = (size_t) ((len & (~3)) >> 2);
@@ -180,10 +181,9 @@ static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 	memcpy32((uint32_t*) TX_PACK, aligned_data, skb->len);
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
-
+	show_packet(skb->mac.raw, skb->len, "TX");
 	skb_free(skb);
 
-	//return skb->len;
 	return 0;
 }
 
@@ -222,7 +222,7 @@ static void pack_receiving(void *dev_id) {
 
 	skb = skb_alloc(len + 4);
 	if (NULL == skb) {
-		//LOG_ERROR("Can't allocate packet, pack_pool is full\n");
+		log_error("Can't allocate packet, pack_pool is full\n");
 		current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 		switch_rx_buff();
 		return;
@@ -233,9 +233,9 @@ static void pack_receiving(void *dev_id) {
 		memmove(skb->mac.raw, word_aligned_addr(skb->mac.raw), len);
 	}
 
+	skb->len -= 8;
 	/* Acknowledge the frame */
 	current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
-	switch_rx_buff();
 
 	/* update device statistic */
 	skb->dev = dev_id;
@@ -243,6 +243,7 @@ static void pack_receiving(void *dev_id) {
 	stats->rx_packets++;
 	stats->rx_bytes += skb->len;
 
+	show_packet(skb->mac.raw, skb->len, "RX");
 	rx_rc = netif_rx(skb);
 	if (NET_RX_DROP == rx_rc) {
 		stats->rx_dropped++;
@@ -253,13 +254,13 @@ static void pack_receiving(void *dev_id) {
  * IRQ handler
  */
 static irq_return_t emaclite_irq_handler(unsigned int irq_num, void *dev_id) {
-	if (NULL != get_rx_buff()) {
+	while (NULL != get_rx_buff()) {
 		pack_receiving(dev_id);
 	}
 	return IRQ_HANDLED;
 }
 /*default 00-00-5E-00-FA-CE*/
-const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
+static const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
 		0xCE };
 
 static int emaclite_open(struct net_device *dev) {
@@ -285,11 +286,9 @@ static int emaclite_open(struct net_device *dev) {
 	/*
 	 * RX - RX_PING & RX_PONG initialization
 	 */
-	//TRACE("emaclite->rx_ctrl addr = 0x%X\n", (unsigned int)&RX_CTRL_REG);
 	RX_CTRL_REG = XEL_RSR_RECV_IE_MASK;
 #ifdef PINPONG_BUFFER
 	switch_rx_buff();
-	TRACE("emaclite->rx_ctrl addr = 0x%X\n", &RX_CTRL_REG);
 	RX_CTRL_REG = XEL_RSR_RECV_IE_MASK;
 	switch_rx_buff();
 #endif

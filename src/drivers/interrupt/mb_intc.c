@@ -76,3 +76,8 @@ void irqctrl_clear(unsigned int irq) {
 int irqctrl_pending(unsigned int irq) {
 	return REG_LOAD(&irqc->isr) & (1 << irq);
 }
+
+/* microblaze specific */
+unsigned int irqctrl_get_irq_num(void) {
+	return REG_LOAD(&irqc->ivr);
+}

@@ -22,6 +22,10 @@ typedef struct pt_regs {
 	reg_t fsr;
 } pt_regs_t;
 
+static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
+	ptregs->regs[3] = retcode;
+}
+
 #endif /* __ASSEMBLER__ */
 
 /* this reserved for callee parameters (r5, r6, r7) save */
