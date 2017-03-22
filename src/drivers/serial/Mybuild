@@ -86,6 +86,10 @@ module msp430usci extends embox.driver.diag.diag_api {
 	source "msp430usci.c"
 }
 
+module esp8266uart extends embox.driver.diag.diag_api {
+	source "esp8266uart.c"
+}
+
 module pic32mx_uart extends embox.driver.diag.diag_api {
 	source "pic32mx_uart.c"
 }
