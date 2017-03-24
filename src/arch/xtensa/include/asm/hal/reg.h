@@ -2,8 +2,8 @@
  * @file
  * @brief
  *
- * @author  Anton Kozlov
- * @date    02.08.2013
+ * @author  Ilya Nozhkin
+ * @date    22.03.2017
  */
 
 #ifndef XTENSA_REG_H_

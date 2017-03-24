@@ -2,12 +2,12 @@
  * @file
  * @brief
  *
- * @author  Anton Kozlov
- * @date    07.08.2013
+ * @author  Ilya Nozhkin
+ * @date    22.03.2017
  */
 
-#ifndef MSP430_SETJMP_H_
-#define MSP430_SETJMP_H_
+#ifndef ESP8266_SETJMP_H_
+#define ESP8266_SETJMP_H_
 
 #define _JBLEN 20
 
@@ -17,4 +17,4 @@ typedef	int __jmp_buf[_JBLEN];
 
 #endif
 
-#endif /* MSP430_SETJMP_H_ */
+#endif /* ESP8266_SETJMP_H_ */

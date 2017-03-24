@@ -2,8 +2,8 @@
  * @file
  * @brief
  *
- * @author  Anton Kozlov
- * @date    06.08.2013
+ * @author  Ilya Nozhkin
+ * @date    22.03.2017
  */
 
 #ifndef ASM_LIMITS_H_

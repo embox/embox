@@ -1,16 +1,16 @@
 /**
  * @file
- * @brief MSP430's universal serial communication interface, uart mode
+ * @brief ESP8266's universal serial communication interface, uart mode
  *
- * @author  Anton Kozlov
- * @date    02.08.2013
+ * @author  Ilya Nozhkin
+ * @date    22.03.2017
  */
 
 #include <hal/reg.h>
 #include <drivers/diag.h>
+#include <drivers/diag.h>
 
 static int esp8266uart_diag_init(const struct diag *diag) {
-
 	return 0;
 }
 

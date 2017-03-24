@@ -1,13 +1,14 @@
 /**
  * @file
+ * @brief
  *
- * @date Aug 28, 2013
- * @author: Anton Bondarev
+ * @author  Ilya Nozhkin
+ * @date    22.03.2017
  */
 
-#ifndef MSP430_TYPES_H_
-#define MSP430_TYPES_H_
+#ifndef ESP8266_TYPES_H_
+#define ESP8266_TYPES_H_
 
 #include <asm-generic/types32.h>
 
-#endif /* MSP430_TYPES_H_ */
+#endif /* ESP8266_TYPES_H_ */
