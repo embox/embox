@@ -1,0 +1,8 @@
+package embox.driver.video
+
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32f7_lcd {
+	depends embox.driver.video.fb
+
+	source "stm32f7_lcd.c"
+}
