@@ -21,4 +21,10 @@
 #define L1D_NG      0x20000 /* not global */
 #define L1D_BASE(n) (0x100000 + n) /* section base address */
 
+#define L1D_TEX_OFFSET	5
+#define L1D_TEX_MASK	(0x7 << L1D_TEX_OFFSET)
+#define L1D_TEX_B	(1 << L1D_TEX_OFFSET)
+#define L1D_TEX_C	(2 << L1D_TEX_OFFSET)
+#define L1D_TEX_USE	(4 << L1D_TEX_OFFSET)
+
 #endif /* ARM_HAL_MMU_H_ */
