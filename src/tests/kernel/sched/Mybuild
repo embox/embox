@@ -4,3 +4,7 @@ package embox.test.kernel.sched
 module waitq {
 	source "waitq.c"
 }
+
+module running_threads_test {
+	source "running_threads_test.c"
+}
