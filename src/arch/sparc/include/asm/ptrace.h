@@ -27,7 +27,14 @@ struct pt_regs {
 	uint32_t y;          /**< MUL/DIV flags. */
 	uint32_t globals[8]; /**< Global registers. */
 	uint32_t ins[8];     /**< Input registers. */
+	uint32_t reserved[2];/**< Only for res_vfork alignment */
 }__attribute__ ((aligned (8)));
+
+#define PT_REGS_ALIGN    8
+
+static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
+	ptregs->ins[0] = retcode;
+}
 
 #else /* __ASSEMBLER__ */
 
