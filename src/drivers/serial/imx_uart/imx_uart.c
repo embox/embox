@@ -93,6 +93,7 @@ static void imxuart_configure_pins(void) {
 		break;
 	case 1:
 		/* Nothing to done */
+		break;
 	case 2:
 		/* TX */
 		REG32_STORE(IOMUXC_BASE + 0x0B4, 2);
