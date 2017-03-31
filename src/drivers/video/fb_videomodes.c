@@ -133,6 +133,9 @@ static const struct fb_videomode vesa_modes[] = {
 	/* 33 1920x1440-75 VESA */
 	{ NULL, 75, 1920, 1440, 3367, 352, 144, 56, 1, 224, 3,
 	  FB_SYNC_VERT_HIGH_ACT, FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
+	/* 34 480x272 STM32F7 LCD */
+	{ NULL, 85, 480, 272, 31746,  96, 32, 60, 32, 64, 3,
+	  FB_SYNC_HOR_HIGH_ACT, FB_VMODE_NONINTERLACED},
 };
 
 const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp) {
