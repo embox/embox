@@ -13,6 +13,7 @@ module ne2k_pci {
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
+	depends embox.net.util.show_packet
 }
 
 module ne2k_isa {
