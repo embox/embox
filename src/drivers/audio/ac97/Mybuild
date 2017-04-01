@@ -5,7 +5,4 @@ module ac97 {
 	source "ac97.h"
 
 	source "ac97.c"
-
-	depends embox.arch.x86.kernel.arch
-	depends embox.driver.pci
 }

@@ -31,7 +31,7 @@ EMBOX_UNIT_INIT(aaci_pl041_init);
 #define IRQ_NUM      OPTION_GET(NUMBER, irq_num)
 
 #define AACI_MAXBUF_LEN_MAX_BUF_LEN 0x10000
-
+#define FIFO_SAMPLE_SZ   4 /* 32 bits */
 #define FRAME_PERIOD_US  50
 
 struct aaci_runtime {
@@ -48,7 +48,6 @@ struct aaci_pl041_hw_dev {
 };
 
 static struct aaci_pl041_hw_dev aaci_pl041_hw_dev;
-
 
 struct aaci_pl041_dev_priv {
 	struct aaci_pl041_hw_dev *hw_dev;
@@ -154,11 +153,13 @@ static void aaci_pl041_dev_resume(struct audio_dev *dev) {
 static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	log_debug("dev = 0x%X", dev);
 	switch(cmd) {
+	case ADIOCTL_IN_SUPPORT:
+		return 0;
 	case ADIOCTL_OUT_SUPPORT:
 		return AD_STEREO_SUPPORT |
 		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:
-		return aaci_pl041_hw_dev.fifo_depth;
+		return aaci_pl041_hw_dev.fifo_depth * FIFO_SAMPLE_SZ;
 	}
 	SET_ERRNO(EINVAL);
 	return -1;
@@ -206,6 +207,9 @@ uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	return priv->out_buf;
 }
 
+uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
+	return NULL;
+}
 
 static void aaci_ac97_select_codec(struct aaci_pl041_hw_dev *hw_dev) {
 	uint32_t v;
@@ -227,11 +231,11 @@ static void aaci_ac97_select_codec(struct aaci_pl041_hw_dev *hw_dev) {
 	}
 }
 
-static void aaci_ac97_write(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg,
-			unsigned short val) {
+void ac97_reg_write(unsigned short reg, unsigned short val) {
 	int timeout;
 	uint32_t v;
 
+	struct aaci_pl041_hw_dev *hw_dev = &aaci_pl041_hw_dev;
 	aaci_ac97_select_codec(hw_dev);
 
 	/*
@@ -255,10 +259,10 @@ static void aaci_ac97_write(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg
 		log_error("timeout waiting for write to complete\n");
 }
 
-static unsigned short aaci_ac97_read(struct aaci_pl041_hw_dev *hw_dev, unsigned short reg) {
+uint16_t ac97_reg_read(unsigned short reg) {
 	int timeout, retries = 10;
 	uint32_t v;
-
+	struct aaci_pl041_hw_dev *hw_dev = &aaci_pl041_hw_dev;
 
 	aaci_ac97_select_codec(hw_dev);
 
@@ -313,7 +317,7 @@ static unsigned short aaci_ac97_read(struct aaci_pl041_hw_dev *hw_dev, unsigned 
 			v = ~0;
 		}
 	} while (retries);
- out:
+out:
 	return v;
 }
 
@@ -392,7 +396,7 @@ static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
 		REG32_STORE(base + AACI_INTCLR, AACI_ICLR_TXUEC1 << channel);
 	}
 
-	if (mask & AACI_ISR_TXINTR) {
+	if (mask & AACI_ISR_TXCINTR) {
 	/*
 	AACITXINTR 1-4
 	If the FIFO is enabled, the FIFO transmit interrupt is asserted
@@ -414,8 +418,6 @@ static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
 	}
 }
 
-
-
 static irq_return_t aaci_pl041_irq_handler(unsigned int irq_num, void *dev_id) {
 	uint32_t mask;
 	int i;
@@ -435,60 +437,6 @@ static irq_return_t aaci_pl041_irq_handler(unsigned int irq_num, void *dev_id) {
 	}
 
 	return mask ? IRQ_HANDLED : IRQ_NONE;
-}
-
-/********************************************
- * AC'97
- ********************************************/
-int ac97_reset(void) {
-	/* Actually we can write anything to
-	 * this register to reset codec */
-	aaci_ac97_write(&aaci_pl041_hw_dev, AC97_RESET, 0xFFFF);
-
-	return 0;
-}
-
-/**
- * @brief Changle volume settings
- *
- * @param vol New volume from 0x0...0x3F range
- *
- * @return Negative error code
- */
-int ac97_set_vol(int vol) {
-	assert(vol <= 0x3F);
-	assert(vol >= 0);
-
-	aaci_ac97_write(&aaci_pl041_hw_dev, AC97_MASTER, vol);
-	aaci_ac97_write(&aaci_pl041_hw_dev, AC97_HEADPHONE, vol);
-	aaci_ac97_write(&aaci_pl041_hw_dev, AC97_MASTER_MONO, vol);
-
-	return 0;
-}
-
-/**
- * @brief Get master volume value
- *
- * @return Master volume value from 0x0...0x3F range
- */
-int ac97_get_vol(void) {
-	return 0x3F & aaci_ac97_read(&aaci_pl041_hw_dev, AC97_MASTER);
-}
-
-/**
- * @brief Initialize codec, setup static values and so on
- *
- * @param pci_dev PCI device of Intel Audio Controller
- * TODO handle other sound cards
- *
- * @return Negative error number
- */
-int aaci_ac97_init(void) {
-	ac97_reset();
-	/* Set maximum master volume */
-	ac97_set_vol(0x3F);
-
-	return 0;
 }
 
 /**************************************************
@@ -537,7 +485,7 @@ static int aaci_pl041_init(void) {
 	 */
 	aaci_pl041_hw_dev.fifo_depth = aaci_size_fifo(&aaci_pl041_hw_dev);
 
-	if ((ret = aaci_ac97_init())) {
+	if ((ret = ac97_init())) {
 		return ret;
 	}
 

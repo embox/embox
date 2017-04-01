@@ -32,8 +32,10 @@
 #define AC97_DAC_SLOT_MAP	0x6C
 #define AC97_ADC_SLOT_MAP	0x6E
 
-struct pci_slot_dev;
-extern int ac97_init(struct pci_slot_dev *pci_dev);
+extern int ac97_init(void);
 extern int ac97_reset(void);
 extern int ac97_set_vol(int vol);
 extern int ac97_get_vol(void);
+
+extern uint16_t ac97_reg_read(uint16_t reg);
+extern void ac97_reg_write(uint16_t reg, uint16_t val);
