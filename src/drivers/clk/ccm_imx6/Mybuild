@@ -1,0 +1,10 @@
+package embox.driver.clk
+
+
+module ccm_imx6 {
+	option number log_level=0
+
+	option number base_addr=0x020C4000
+
+	source "ccm_imx6.c"
+}
