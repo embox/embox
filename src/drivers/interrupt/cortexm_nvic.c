@@ -68,7 +68,7 @@ struct irq_saved_state {
 	uint32_t lr;
 };
 
-extern void __irq_trampoline(struct irq_saved_state *state, struct context *regs);
+extern void __irq_trampoline(uint32_t sp, uint32_t lr);
 extern void __pending_handle(void);
 extern void __pendsv_handle(void);
 extern void interrupt_handle_enter(void);
@@ -134,7 +134,7 @@ void interrupt_handle(struct context *regs) {
 	ctx->pc = ctx->lr;
 
 	/* Now return from interrupt context into __pending_handle */
-	__irq_trampoline(&state, regs);
+	__irq_trampoline(state.sp, state.lr);
 }
 
 void nvic_set_pendsv(void) {

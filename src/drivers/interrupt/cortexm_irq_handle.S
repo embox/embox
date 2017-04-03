@@ -26,22 +26,25 @@ interrupt_handle_enter:
 __irq_trampoline:
 
     cpsid  i
-    # r0 is a pointer to struct irq_saved_state
-    ldr    sp,  [r0, #32]
-    ldr    r14, [r0, #36]
-    bx     r14
+    # r0 contains SP stored on interrupt handler entry. So we keep some data
+    # behind SP for a while, but interrupts are disabled by 'cpsid i'
+    mov    sp,  r0
+    # Return from interrupt handling to usual mode
+    bx     r1
 
 .global __pendsv_handle
 __pendsv_handle:
 
     # 32 == sizeof (struct cpu_saved_ctx)
     add    sp, #32
+    # Return to the place we were interrupted at,
+    # i.e. before interrupt_handle_enter
     bx     r14
 
 .global __pending_handle
 __pending_handle:
 
-    # push initial saved context (state.ctx) on top of the stack
+    # Push initial saved context (state.ctx) on top of the stack
     add    r0, #32
     ldmdb  r0, {r4 - r11}
     push   {r4 - r11}
@@ -52,7 +55,7 @@ __pending_handle:
     cpsie  i
     bl     critical_dispatch_pending
     cpsid  i
-
+    # Generate PendSV interrupt
     bl     nvic_set_pendsv
     cpsie  i
     # DO NOT RETURN
