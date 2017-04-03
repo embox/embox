@@ -79,9 +79,9 @@ extern void interrupt_handle_enter(void);
  *         |
  *         |
  *         v
- *         |--------> interrupt_handle (irq context)
- *                        |
- *         <--------------|
+ *         |----irq enter----> interrupt_handle (irq context)
+ *                                |
+ *         <----irq exit----------|
  *         |
  *         |
  *         v
@@ -91,14 +91,14 @@ extern void interrupt_handle_enter(void);
  *         |
  *         |
  *         v
- *         |---------> interrupt_handle (irq context)
+ *         |---irq enter------> interrupt_handle (irq context)
  *                        |
  *                        |
- *               __irq_trampoline------------> __pending_handle (non-irq context)
+ *               __irq_trampoline---- irq exit--------> __pending_handle (non-irq context)
  *                                                   |
- *                                                   |----------> __pendsv_handle (irq context)
- *                                                                         |
- *          <--------------------------------------------------------------|
+ *                                                   |----irq enter------> __pendsv_handle (irq context)
+ *                                                                                 |
+ *          <--------------------------irq exit------------------------------------|
  *          |
  *          |
  *          v
@@ -149,6 +149,7 @@ static int nvic_init(void) {
 	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
 		exception_table[i] = ((int) interrupt_handle_enter) | 1;
 	}
+	assert(EXCEPTION_TABLE_SZ >= 14);
 	exception_table[14] = ((int) __pendsv_handle) | 1;
 
 	/* load head from bootstrap table */

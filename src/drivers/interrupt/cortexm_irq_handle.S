@@ -17,15 +17,11 @@ interrupt_handle_enter:
     # due to ARMv7-M manual (see AAPCS 5.2.1.2)
     sub    sp, #64
     str    r0, [sp, #56]
-    stmia  sp, {r0 - r12}
-    str    lr, [sp, #52]
+    stmia  sp, {r0 - r12, lr}
 
     mov    r0, sp
     bl     interrupt_handle
 
-.text
-.thumb
-.syntax unified
 .global __irq_trampoline
 __irq_trampoline:
 
@@ -35,9 +31,6 @@ __irq_trampoline:
     ldr    r14, [r0, #36]
     bx     r14
 
-.text
-.thumb
-.syntax unified
 .global __pendsv_handle
 __pendsv_handle:
 
@@ -45,9 +38,6 @@ __pendsv_handle:
     add    sp, #32
     bx     r14
 
-.text
-.thumb
-.syntax unified
 .global __pending_handle
 __pending_handle:
 
