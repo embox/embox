@@ -13,7 +13,9 @@
 interrupt_handle_enter:
 
     mov    r0, sp
-    sub    sp, #58
+    # It should be a size of struct context, but we align it up to multiple of 8
+    # due to ARMv7-M manual (see AAPCS 5.2.1.2)
+    sub    sp, #64
     str    r0, [sp, #56]
     stmia  sp, {r0 - r12}
     str    lr, [sp, #52]
