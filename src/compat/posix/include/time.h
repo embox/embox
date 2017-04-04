@@ -60,8 +60,13 @@ struct tm {
 };
 
 struct timespec {
-	time_t tv_sec;  /*Seconds */
-	long   tv_nsec; /*Nanoseconds */
+	time_t tv_sec;  /* Seconds */
+	long   tv_nsec; /* Nanoseconds */
+};
+
+struct itimerspec {
+	struct timespec it_interval;  /* Interval for periodic timer */
+	struct timespec it_value;     /* Initial expiration */
 };
 
 
