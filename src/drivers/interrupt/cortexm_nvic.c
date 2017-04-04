@@ -8,10 +8,12 @@
 
 #include <assert.h>
 #include <stdint.h>
+#include <string.h>
 
 #include <kernel/critical.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
+#include <hal/context.h>
 #include <drivers/irqctrl.h>
 
 #include <kernel/irq.h>
@@ -26,10 +28,15 @@
 #define NVIC_PRIOR_BASE (NVIC_BASE + 0x300)
 
 #define SCB_BASE 0xe000ed00
-#define SCB_ICSR (SCB_BASE + 0x04)
-#define SCB_VTOR (SCB_BASE + 0x08)
+#define SCB_ICSR  (SCB_BASE + 0x04)
+#define SCB_VTOR  (SCB_BASE + 0x08)
+#define SCB_SHPR1 (SCB_BASE + 0x18)
+#define SCB_SHPR3 (SCB_BASE + 0x20)
 
 #define EXCEPTION_TABLE_SZ OPTION_GET(NUMBER,irq_table_size)
+
+// Table 2.17. Exception return behavior in Cortex-M4 doc
+#define interrupted_from_fpu_mode(lr) ((lr & 0xF0) == 0xE0)
 
 /**
  * ENABLE, CLEAR, SET_PEND, CLR_PEND, ACTIVE is a base of bit arrays
@@ -48,8 +55,58 @@ static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128
 extern void *trap_table_start;
 extern void *trap_table_end;
 
-void interrupt_handle(void) {
+struct cpu_saved_ctx {
+	uint32_t r[5];
+	uint32_t lr;
+	uint32_t pc;
+	uint32_t psr;
+};
+
+struct irq_saved_state {
+	struct cpu_saved_ctx ctx;
+	uint32_t sp;
+	uint32_t lr;
+};
+
+extern void __irq_trampoline(uint32_t sp, uint32_t lr);
+extern void __pending_handle(void);
+extern void __pendsv_handle(void);
+extern void interrupt_handle_enter(void);
+
+/*
+ * Usual interrupt handling:
+ *     execution flow
+ *         |
+ *         |
+ *         v
+ *         |----irq enter----> interrupt_handle (irq context)
+ *                                |
+ *         <----irq exit----------|
+ *         |
+ *         |
+ *         v
+ *
+ * This method:
+ *     execution flow
+ *         |
+ *         |
+ *         v
+ *         |---irq enter------> interrupt_handle (irq context)
+ *                        |
+ *                        |
+ *               __irq_trampoline---- irq exit--------> __pending_handle (non-irq context)
+ *                                                   |
+ *                                                   |----irq enter------> __pendsv_handle (irq context)
+ *                                                                                 |
+ *          <--------------------------irq exit------------------------------------|
+ *          |
+ *          |
+ *          v
+ */
+void interrupt_handle(struct context *regs) {
 	uint32_t source;
+	struct irq_saved_state state;
+	struct cpu_saved_ctx *ctx;
 
 	source = REG_LOAD(SCB_ICSR) & 0x1ff;
 
@@ -61,8 +118,27 @@ void interrupt_handle(void) {
 
 	critical_leave(CRITICAL_IRQ_HANDLER);
 
-	critical_dispatch_pending();
+	state.sp = regs->sp;
+	state.lr = regs->lr;
+	assert(!interrupted_from_fpu_mode(state.lr));
+	ctx = (struct cpu_saved_ctx*) state.sp;
+	memcpy(&state.ctx, ctx, sizeof *ctx);
 
+	/* It does not matter what value of psr is, just set up sime correct value.
+	 * This value is only used to go further, after return from interrupt_handle.
+	 * 0x01000000 is a default value of psr and (ctx->psr & 0xFF) is irq number if any. */
+	ctx->psr = 0x01000000 | (ctx->psr & 0xFF);
+	ctx->r[0] = (uint32_t) &state; // we want pass the state to __pending_handle()
+	ctx->r[1] = (uint32_t) regs; // we want pass the registers to __pending_handle()
+	ctx->lr = (uint32_t) __pending_handle;
+	ctx->pc = ctx->lr;
+
+	/* Now return from interrupt context into __pending_handle */
+	__irq_trampoline(state.sp, state.lr);
+}
+
+void nvic_set_pendsv(void) {
+	REG_STORE(SCB_ICSR, 1 << 28);
 }
 
 static int nvic_init(void) {
@@ -71,8 +147,10 @@ static int nvic_init(void) {
 	void *ptr;
 
 	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
-		exception_table[i] = ((int) interrupt_handle) | 1;
+		exception_table[i] = ((int) interrupt_handle_enter) | 1;
 	}
+	assert(EXCEPTION_TABLE_SZ >= 14);
+	exception_table[14] = ((int) __pendsv_handle) | 1;
 
 	/* load head from bootstrap table */
 	for (ptr = &trap_table_start, i = 0; ptr != &trap_table_end; ptr += 4, i++) {
@@ -85,6 +163,7 @@ static int nvic_init(void) {
 			(int) exception_table);
 
 	ipl_restore(ipl);
+
 	return 0;
 }
 
