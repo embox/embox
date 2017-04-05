@@ -2,23 +2,6 @@ package embox.arch.arm.armlib
 
 abstract module cpu { }
 
-abstract module setup_exception_table { }
-
-module low_excpt_table extends setup_exception_table {
-	source "low_excpt_table.S"
-	depends lib
-}
-
-module high_excpt_table extends setup_exception_table {
-	source "high_excpt_table.S"
-	depends lib
-}
-
-module static_excpt_table extends setup_exception_table {
-	source "static_excpt_table.S"
-	depends lib
-}
-
 module arch {
 	depends embox.arch.arm.armlib.locore
 	depends embox.arch.arm.armlib.interrupt
@@ -27,9 +10,6 @@ module arch {
 	depends embox.arch.arm.libarch
 }
 
-module head {
-	source "head.S"
-}
 
 module locore extends embox.arch.locore {
 
@@ -48,9 +28,6 @@ module interrupt extends embox.arch.interrupt {
 	depends locore
 }
 
-static module lib {
-	source "copy_excpt_table.S"
-}
 
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
