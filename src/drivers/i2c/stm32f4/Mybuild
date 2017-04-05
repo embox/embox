@@ -1,0 +1,15 @@
+package embox.driver.i2c.stm32f4
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module i2c {
+	option number i2cx=1
+	option number log_level=4
+
+	@IncludeExport(path="drivers/i2c/stm32f4")
+	source "stm32f4_i2c.h"
+
+	source "stm32f4_i2c.c"
+	source "i2c_hal_msp_f4.c"
+
+	depends third_party.bsp.stmf4cube.core
+}
