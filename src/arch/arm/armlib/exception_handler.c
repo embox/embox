@@ -26,5 +26,6 @@ void arm_exception_handler(unsigned int *regs) {
 				regs[10], regs[11], regs[12], regs[13],
 				regs[14], regs[15],
 				regs[0], regs[1]);
+		while(1);
 	}
 }
