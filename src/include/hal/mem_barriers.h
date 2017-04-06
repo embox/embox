@@ -11,6 +11,8 @@
 
 #include <module/embox/arch/mem_barriers.h>
 
+#ifndef __ASSEMBLER__
 extern void data_mem_barrier(void);
+#endif /* __ASSEMBLER__ */
 
 #endif /* HAL_MEM_BARRIERS_H_ */
