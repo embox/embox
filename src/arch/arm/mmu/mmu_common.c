@@ -10,6 +10,7 @@
 
 #include <asm/hal/mmu.h>
 #include <asm/regs.h>
+#include <asm/cp15.h>
 #include <embox/unit.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
@@ -134,29 +135,6 @@ uint32_t _get_mmu_tlb_type(void) {
 	return val;
 }
 
-uint32_t _get_sctrl_control(void) {
-	uint32_t val;
-	__asm__ __volatile__ (
-		"mrc p15, 0, %[out], c1, c0, 0" : [out] "=r" (val) :
-	);
-	return val;
-}
-
-uint32_t _get_actrl_control(void) {
-	uint32_t val;
-	__asm__ __volatile__ (
-		"mrc p15, 0, %[out], c1, c0, 1" : [out] "=r" (val) :
-	);
-	return val;
-}
-/* Coprocessor Access Control Register */
-uint32_t _get_cpacr_control(void) {
-	uint32_t val;
-	__asm__ __volatile__ (
-		"mrc p15, 0, %[out], c1, c0, 2" : [out] "=r" (val) :
-	);
-	return val;
-}
 
 uint32_t _get_mmu_nonsecure_access_control(void) {
 	uint32_t val;
@@ -541,9 +519,9 @@ void _print_mmu_regs(void) {
 #if LOG_LEVEL > 0
 	log_debug("ARM MMU registers summary:");
 	log_debug("TLB Type:                  %#10x", _get_mmu_tlb_type());
-	log_debug("SCTRL:                     %#10x", _get_sctrl_control());
-	log_debug("ACTRL:                     %#10x", _get_actrl_control());
-	log_debug("CPACR:                     %#10x", _get_cpacr_control());
+	log_debug("SCTRL:                     %#10x", cp15_get_sctrl());
+	log_debug("ACTRL:                     %#10x", cp15_get_actrl());
+	log_debug("CPACR:                     %#10x", cp15_get_cpacr());
 	log_debug("Non-Secure Access Control: %#10x", _get_mmu_nonsecure_access_control());
 	log_debug("Translation Table Base 0:  %#10x", _get_mmu_translation_table_base_0());
 	log_debug("Translation Table Base 1:  %#10x", _get_mmu_translation_table_base_1());
