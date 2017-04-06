@@ -29,7 +29,7 @@ static inline void cp15_set_sctrl(uint32_t val)
 
 static inline uint32_t cp15_get_actrl(void) {
 	uint32_t val;
-	asm("mrc p15, 0, %0, c1, c0, 1    @ get ACTLR" : "=r" (val));
+	asm("mrc p15, 0, %0, c1, c0, 1    @ get ACTLR" : "=r" (val) : : "cc");
 	return val;
 }
 
@@ -44,8 +44,7 @@ static inline void cp15_set_actrl(uint32_t val)
 static inline uint32_t cp15_get_cpacr(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
-		"mrc p15, 0, %[out], c1, c0, 2    @ get CPACR" : [out] "=r" (val) :
-	);
+		"mrc p15, 0, %0, c1, c0, 2    @ get CPACR" : "=r" (val) : : "cc");
 	return val;
 }
 
@@ -55,6 +54,44 @@ static inline void cp15_set_cpacr(uint32_t val) {
 	isb();
 }
 
+static inline uint32_t cp15_get_scr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %0, c1, c1, 0    @ get SCR" : "=r" (val) : : "cc");
+	return val;
+}
+
+static inline void cp15_set_scr(uint32_t val) {
+	asm volatile("mcr p15, 0, %0, c1, c1, 0    @ set SCR"
+	  : : "r" (val) : "cc");
+	isb();
+}
+
+static inline uint32_t cp15_get_sder(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %0, c1, c1, 1    @ get SDER" : "=r" (val) : : "cc");
+	return val;
+}
+
+static inline void cp15_set_sder(uint32_t val) {
+	asm volatile("mcr p15, 0, %0, c1, c1, 1    @ set SDER"
+	  : : "r" (val) : "cc");
+	isb();
+}
+
+static inline uint32_t cp15_get_nsacr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %0, c1, c1, 2    @ get NSACR" : "=r" (val) : : "cc");
+	return val;
+}
+
+static inline void cp15_set_nsacr(uint32_t val) {
+	asm volatile("mcr p15, 0, %0, c1, c1, 2    @ set NSACR"
+	  : : "r" (val) : "cc");
+	isb();
+}
 
 #endif
 

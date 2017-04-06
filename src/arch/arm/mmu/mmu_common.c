@@ -136,14 +136,6 @@ uint32_t _get_mmu_tlb_type(void) {
 }
 
 
-uint32_t _get_mmu_nonsecure_access_control(void) {
-	uint32_t val;
-	__asm__ __volatile__ (
-		"mrc p15, 0, %[out], c1, c1, 2" : [out] "=r" (val) :
-	);
-	return val;
-}
-
 uint32_t _get_mmu_translation_table_base_0(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
@@ -522,7 +514,7 @@ void _print_mmu_regs(void) {
 	log_debug("SCTRL:                     %#10x", cp15_get_sctrl());
 	log_debug("ACTRL:                     %#10x", cp15_get_actrl());
 	log_debug("CPACR:                     %#10x", cp15_get_cpacr());
-	log_debug("Non-Secure Access Control: %#10x", _get_mmu_nonsecure_access_control());
+	log_debug("Non-Secure Access Control: %#10x", cp15_get_nsacr());
 	log_debug("Translation Table Base 0:  %#10x", _get_mmu_translation_table_base_0());
 	log_debug("Translation Table Base 1:  %#10x", _get_mmu_translation_table_base_1());
 	log_debug("Domain Access Conrol:      %#10x", _get_mmu_domain_access_control());
