@@ -14,6 +14,7 @@
 #include <limits.h>
 #include <util/binalign.h>
 #include <util/bitmap.h>
+#include <util/math.h>
 
 #include <mem/page.h>
 #include <embox/unit.h>
@@ -40,9 +41,8 @@ static unsigned int search_first_free(struct page_allocator *allocator,
 static unsigned int check_n_free(struct page_allocator *allocator,
 		unsigned int start_page, unsigned int page_q) {
 	assert(allocator);
-	assert(start_page + page_q <= allocator->pages_n);
-	return bitmap_find_bit(allocator->bitmap, page_q + start_page, start_page) \
-		- start_page;
+	const int nbits = min(start_page + page_q, allocator->pages_n);
+	return bitmap_find_bit(allocator->bitmap, nbits, start_page) - start_page;
 }
 
 static void mark_n_busy(struct page_allocator *allocator,
