@@ -52,16 +52,15 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
     			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
     			((rt_info->entry.dev == dev) || (INADDR_ANY == dev))) {
 			flag = false;
+			return 0;
 		}
 	}
 
 	if (flag) {
 		rt_info = (struct rt_entry_info *)pool_alloc(&rt_entry_info_pool);
-
 		if (rt_info == NULL) {
 			return -ENOMEM;
 		}
-
 		rt_info->entry.dev = dev;
 		rt_info->entry.rt_dst = dst; /* We assume that host bits are zeroes here */
 		rt_info->entry.rt_mask = mask;
