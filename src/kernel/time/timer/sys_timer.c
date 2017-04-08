@@ -17,8 +17,6 @@
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
-static void timer_stop(struct sys_timer *tmr);
-
 int timer_init(struct sys_timer *tmr, unsigned int flags,
 		sys_timer_handler_t handler, void *param) {
 	if (!handler || !tmr) {
@@ -50,7 +48,7 @@ void timer_start(struct sys_timer *tmr, clock_t jiffies) {
 	sched_unlock();
 }
 
-static void timer_stop(struct sys_timer *tmr) {
+void timer_stop(struct sys_timer *tmr) {
 	if (timer_is_started(tmr)) {
 		sched_lock();
 		{
