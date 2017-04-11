@@ -64,6 +64,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf);
 
 static inline void buf_set_deleted(struct dgram_buf *buf) {
 	buf->is_deleted = 1;
+	skb_queue_purge(&buf->fragments);
 }
 
 static inline int ip_offset(struct sk_buff *skb) {
@@ -92,7 +93,7 @@ static void ttl_handler(struct sys_timer *timer, void *param) {
 			/*icmp_send(buf->next_skbuff, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);*/
 			buf_set_deleted(buf);
 		} else {
-			*(volatile int *)buf->buf_ttl -= 1;
+			buf->buf_ttl -= 1;
 		}
 	}
 
@@ -127,7 +128,9 @@ static void ip_buf_add_skb(struct dgram_buf *buf, struct sk_buff *skb) {
 
 	assert(buf && skb);
 
-	buf->buf_ttl = max(buf->buf_ttl, ntohs(skb->nh.iph->ttl));
+	/* We use ttl >> 4 just to make sure time to wait is not very big.
+	 * Usually, ttl is 64, so ttl >> 4 = 4 seconds */
+	buf->buf_ttl = max(buf->buf_ttl, skb->nh.iph->ttl >> 4);
 
 	offset = ip_offset(skb);
 
@@ -218,7 +221,6 @@ static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 }
 
 static void buf_delete(struct dgram_buf *buf) {
-	skb_queue_purge(&buf->fragments);
 	dlist_del(&buf->next_buf);
 	objfree(&__dgram_bufs, (void*)buf);
 }
