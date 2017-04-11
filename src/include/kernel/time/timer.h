@@ -78,6 +78,10 @@ static inline bool timer_is_periodic(struct sys_timer *tmr) {
 	return tmr->flags & TIMER_PERIODIC;
 }
 
+static inline int timer_is_inited(struct sys_timer *tmr) {
+	return tmr->handle ? 1 : 0;
+}
+
 /** Type declaration for system timer structure */
 typedef struct sys_timer sys_timer_t;
 
@@ -101,6 +105,8 @@ extern int timer_init(struct sys_timer *tmr, unsigned int flags,
  * @param jiffies
  */
 extern void timer_start(struct sys_timer *tmr, clock_t jiffies);
+
+extern void timer_stop(struct sys_timer *tmr);
 
 /**
  * Set 'handle' timer for executing every 'ticks' ms.

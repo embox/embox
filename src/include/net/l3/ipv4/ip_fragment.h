@@ -11,7 +11,9 @@
 #include <stdint.h>
 #include <net/skbuff.h>
 
-#define MSL          2*60*1000 /* Maximum Segment Lifetime is 2 minutes */
+/* 1 second - Minimum Segment Lifetime. Just some suitable constant,
+ * not from any document */
+#define   MSL          1
 
 
 struct sk_buff;
