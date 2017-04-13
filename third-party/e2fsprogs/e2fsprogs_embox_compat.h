@@ -41,11 +41,12 @@ typedef uint64_t u_int64_t;
 typedef unsigned int uint;
 
 
-
+#if 0
 static inline dev_t makedev(int maj, int min) {
 	printf(">>> makedev, maj - %d, min - %d\n", maj, min);
 	return -1;
 }
+#endif
 
 static inline int fchmod(int fd, mode_t mode) {
 	printf(">>> fchmod, fd - %d, mode - %d\n", fd, mode);
