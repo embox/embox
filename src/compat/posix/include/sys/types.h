@@ -35,11 +35,6 @@ typedef unsigned long useconds_t;
 
 typedef __u32 gfp_t;
 
-typedef struct {
-	volatile int counter;
-} atomic_t;
-
-
 #include <defines/time_t.h>
 #include <defines/timer_t.h>
 
