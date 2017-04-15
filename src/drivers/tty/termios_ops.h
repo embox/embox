@@ -7,29 +7,32 @@
  */
 
 #ifndef DRIVERS_TERMIOS_OPS_H_
+
+#include <util/ring.h>
+
 #define DRIVERS_TERMIOS_OPS_H_
 
-#define TTY_TERMIOS_CC_INIT \
+#define TERMIOS_CC_INIT \
 	{ \
-		[VEOF]   = __TTY_CTRL('d'),  \
+		[VEOF]   = __TERMIOS_CTRL('d'),  \
 		[VEOL]   = ((cc_t) ~0), /* undef */ \
 		[VERASE] = 0177,             \
-		[VINTR]  = __TTY_CTRL('c'),  \
-		[VKILL]  = __TTY_CTRL('u'),  \
+		[VINTR]  = __TERMIOS_CTRL('c'),  \
+		[VKILL]  = __TERMIOS_CTRL('u'),  \
 		[VMIN]   = 1,                \
-		[VQUIT]  = __TTY_CTRL('\\'), \
+		[VQUIT]  = __TERMIOS_CTRL('\\'), \
 		[VTIME]  = 0,                \
-		[VSUSP]  = __TTY_CTRL('z'),  \
-		[VSTART] = __TTY_CTRL('q'),  \
-		[VSTOP]  = __TTY_CTRL('s'),  \
+		[VSUSP]  = __TERMIOS_CTRL('z'),  \
+		[VSTART] = __TERMIOS_CTRL('q'),  \
+		[VSTOP]  = __TERMIOS_CTRL('s'),  \
 	}
 
-#define __TTY_CTRL(ch)  (cc_t) ((ch) & 0x1f)
+#define __TERMIOS_CTRL(ch)  (cc_t) ((ch) & 0x1f)
 
-#define TTY_TERMIOS_IFLAG_INIT  (tcflag_t) (BRKINT | ICRNL | IXON)
-#define TTY_TERMIOS_OFLAG_INIT  (tcflag_t) (OPOST | ONLCR | OXTABS)
-#define TTY_TERMIOS_CFLAG_INIT  (tcflag_t) (CREAD | CS8 | HUPCL)
-#define TTY_TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
+#define TERMIOS_IFLAG_INIT  (tcflag_t) (BRKINT | ICRNL | IXON)
+#define TERMIOS_OFLAG_INIT  (tcflag_t) (OPOST | ONLCR | OXTABS)
+#define TERMIOS_CFLAG_INIT  (tcflag_t) (CREAD | CS8 | HUPCL)
+#define TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
 			ECHO | ECHOE | ECHOK | ECHONL)
 
 struct ring;
@@ -38,12 +41,6 @@ struct termios;
 /**
  * @brief Does associated with termios mapping of input symbol to string,
  * i.e. \r -> \r\n
- *
- * @param tio
- * @param ch
- * @param ring
- * @param buf
- * @param buflen
  *
  * @return Number of writed symbols
  */
@@ -54,45 +51,22 @@ extern int termios_putc(const struct termios *tio, char ch,
  * @brief Does associated with termios mapping of symbol to it's visual
  * representation string.
  *
- * @param tio
- * @param ch
- * @param ring
- * @param buf
- * @param buflen
- *
  * @return
  */
 extern int termios_gotc(const struct termios *tio, char ch,
 		struct ring *ring, char *buf, size_t buflen);
 
 /**
- * @brief Encapsulates a call to the c_lflag field.
+ * @brief
  *
- * @param tio
- * @param flag
- *
- * @return Value of specified bit.
+ * @return
  */
-extern int termios_check_lflag(const struct termios *tio, int flag);
-
-/**
- * @brief Encapsulates a call to the c_cc field.
- *
- * @param tio
- * @param flag
- *
- * @return Specified character from c_cc.
- */
-extern int termios_get_cc(const struct termios *tio, int flag);
+extern int termios_get_status(const struct termios *tio, char *verase);
 
 /**
  * @brief Provides newline control: IGNCR, ICRNL, INLCR.
  *
- * @param tio
- * @param ch
- * @param is_eol
- *
- * @return
+ * @return Value that shows if newline was handled.
  */
 extern int termios_handle_newline(const struct termios *tio,
 		char ch, int *is_eol);
@@ -100,44 +74,51 @@ extern int termios_handle_newline(const struct termios *tio,
 /**
  * @brief Provides erase/kill control: VKILL, VERASE.
  *
- * @param tio
- * @param ch
- * @param erase_all
- *
  * @return
  */
-extern int termios_handle_erase(const struct termios *tio,
-		char ch, int *erase_all);
+extern int termios_handle_erase(const struct termios *tio, char ch, int *raw_mode,
+		struct ring *ring, struct ring *canon_ring, size_t buflen);
 
 /**
  * @brief
  *
- * @param tio
- * @param ch
- * @param is_eof
- *
  * @return
  */
-extern int termios_check_end(const struct termios *tio, char ch, int *is_eof);
+extern int termios_get_data(const struct termios *tio, char ch,
+		struct ring *ring, struct ring *canon_ring);
 
 /**
  * @brief
  *
- * @param tio
- * @param size
- * @param timeout
+ * @return
+ */
+extern char *termios_read(const struct termios *tio, char *buff, char *end,
+		struct ring *ring, struct ring *canon_ring, char *i_buff, size_t buflen);
+
+/**
+ * @brief
  *
  * @return
  */
-extern size_t termios_get_size(const struct termios *tio,
+extern size_t termios_update_size(const struct termios *tio,
 		size_t size, unsigned long *timeout);
 
 /**
- * @brief Initializes termios.
- *
- * @param tio
+ * @brief
+ */
+extern void termios_update_ring(const struct termios *tio, 
+		struct ring *ring, struct ring *canon_ring);
+
+/**
+ * @brief
  *
  * @return
+ */
+extern int termios_get_result(const struct termios *tio,
+		struct ring *ring, struct ring *canon_ring, size_t buflen);
+
+/**
+ * @brief Initializes termios.
  */
 extern void termios_init(struct termios *tio);
 
