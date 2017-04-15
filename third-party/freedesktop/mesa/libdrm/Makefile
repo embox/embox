@@ -28,7 +28,7 @@ $(CONFIGURE) :
 			--disable-nouveau \
 			--disable-freedreno \
 			--enable-cairo-tests=no \
-		        CC=$(EMBOX_GCC) \
+			CC=$(EMBOX_GCC) \
 			CPPFLAGS="${EMBOX_IMPORTED_CPPFLAGS}" \
 			LDFLAGS="$(EMBOX_IMPORTED_LDFLAGS)" \
 	)

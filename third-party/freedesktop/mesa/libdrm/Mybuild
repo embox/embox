@@ -3,4 +3,5 @@ package third_party.freedesktop.mesa
 @Build(script="$(EXTERNAL_MAKE)")
 module  libdrm_imx6 {
 	source "^BUILD/extbld/^MOD_PATH/install/libdrm.a"
+	source "^BUILD/extbld/^MOD_PATH/install/libdrm_etnaviv.a"
 }
