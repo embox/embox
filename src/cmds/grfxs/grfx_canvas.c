@@ -14,6 +14,11 @@
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+#define STBI_NO_SIMD
+
 /* includes from fbcon */
 #include <drivers/console/mpx.h>
 #include <drivers/vterm_video.h>
@@ -131,6 +136,13 @@ int main(int argc, char *argv[]) {
 
     nk_init_default(&ctx, &font->handle);
 
+
+    int x,y,n;
+    unsigned char * data = stbi_load("200.png", &x, &y, &n, 0);
+    if (data == NULL)
+        printf("\nstbi_load не сработал. :(\n");
+    //printf("\nx = %i   y = %i   n = %i", x, y, n);
+    //stbi_image_free(data);
     /* Draw */
     struct nk_canvas canvas;
     while (1) 
@@ -163,6 +175,9 @@ int main(int argc, char *argv[]) {
             nk_stroke_curve(canvas.painter, 380, 200, 405, 270, 455, 120, 480, 200, 2, nk_rgb(0,150,220));
             nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
+
+           // nk_draw_image(canvas.painter, nk_rect(150, 370, 100, 100), im, nk_rgb(0, 0, 0));
+            
         }
         canvas_end(&ctx, &canvas);
 
