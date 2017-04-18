@@ -6,9 +6,11 @@
 .*.sw[a-z]
 *~
 /tags
+*.png
 
 ## Build
 /*.img
+
 
 ## Other
 /.dep.inc
