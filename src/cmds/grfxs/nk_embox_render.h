@@ -1,3 +1,6 @@
+#include <drivers/video/font.h>
+
+
 #define ABS(a) (((a) < 0) ? -(a) : (a)) 
 #define MIN(a, b) ((a < b) ? a : b) 
 #define MAX(a, b) ((a > b) ? a : b) 
@@ -9,10 +12,11 @@ int nk_color_converter(struct nk_color color){
     return r + g + b;
 }
 
+extern const struct font_desc font_vga_8x8, font_vga_8x16;
 
 void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int col, float thickness){
 
-    float th = thickness/2;
+    float th = thickness / 2;
 
     struct fb_fillrect rect;
     rect.dx = 0;
@@ -247,7 +251,26 @@ void embox_stroke_circle(struct vc *vc, int cx, int cy, int r, int col, float th
 
 
 }
+void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, const char *text, int len){
+    struct fb_image symbol;
+    symbol.dx = x;
+    symbol.dy = y;
+    symbol.width = 8; //t->w
+    symbol.height = 16; //t->h
+    symbol.fg_color = fg_color;
+    symbol.bg_color = bg_color;
+    symbol.depth = 1;
 
+    char *cbuf = (char *) text;
+    size_t nbyte = len;
+    
+    while (nbyte--) {
+        symbol.data = (char *)(font_vga_8x16.data) + (unsigned char)(*cbuf++)*16; 
+        fb_imageblit(vc->fb, &symbol);
+        symbol.dx += 8;
+    } 
+
+}
 static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
 {
     
@@ -378,31 +401,7 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
         // } break;
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
-
-            struct fb_image symbol;
-
-            symbol.dx = t->x;//x * data->font->width;
-            symbol.dy = t->y;//y * data->font->height;
-            symbol.width = 8;//t->w;//data->font->width;
-            symbol.height = t->h;//data->font->height;
-            symbol.fg_color = nk_color_converter(t->foreground);//data->fg_color;
-            symbol.bg_color = 0xffff;//data->bg_color;
-            symbol.depth = 1;
-            char ch = 0;
-            //(char *)(&font_vga_8x16)
-            symbol.data = (char *)(t->string)+ (unsigned char)ch * (unsigned char)t->height * (unsigned char)t->height / 8;
-                
-            char *cbuf = (char *) t->string;
-	        size_t nbyte = t->length;
-            
-            while (nbyte--) {
-	        	//vterm_video_putc(vi, *cbuf++);
-                 symbol.data = (char *)t->string + (unsigned char)(*cbuf++) * (unsigned char)t->height * (unsigned char)t->height / 8;
-                 
-
-                fb_imageblit(vc->fb, &symbol);
-                symbol.dx =- 8;
-	        } 
+            embox_add_text(vc, t->x, t->y, nk_color_converter(t->foreground), nk_color_converter(t->background), t->string, t->length );
             // nk_draw_list_add_text(&ctx->draw_list, t->font, nk_rect(t->x, t->y, t->w, t->h),
             //     t->string, t->length, t->height, t->foreground);
         } break;
