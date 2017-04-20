@@ -1,5 +1,22 @@
 #include <drivers/video/font.h>
 
+/* includes for nuklear*/
+#include <stdio.h>
+#define NK_PRIVATE
+#define NK_API
+#define NK_INTERN static
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_STANDARD_IO
+#define NK_INCLUDE_DEFAULT_ALLOCATOR
+#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
+#define NK_INCLUDE_FONT_BAKING
+#define NK_INCLUDE_DEFAULT_FONT
+
+/* includes from fbcon */
+#include <drivers/console/mpx.h>
+#include <drivers/vterm_video.h>
+#include <drivers/video/fb.h>
+
 
 #define ABS(a) (((a) < 0) ? -(a) : (a)) 
 #define MIN(a, b) ((a < b) ? a : b) 
