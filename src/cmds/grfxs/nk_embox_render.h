@@ -271,6 +271,27 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
     } 
 
 }
+void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, int h, int color){
+    struct fb_image image;
+    image.dx = x;
+    image.dy = y;
+    image.width = 8; //t->w
+    image.height = 8; //t->h
+    image.fg_color = color;//fg_color;
+    image.bg_color = 0;//bg_color;
+    image.depth = 1 ;
+
+    
+    //char *cbuf = (char *) text;
+   // size_t nbyte = len;
+    
+   // while (nbyte--) {
+        image.data = (char *)img.handle.ptr;// + (unsigned char)(*cbuf++)*16; 
+        fb_imageblit(vc->fb, &image);
+        //symbol.dx += 8;
+    //} 
+}
+
 static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
 {
     
@@ -286,14 +307,6 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
     /* iterate over and execute each draw command */
     nk_foreach(cmd, ctx)
     {
-
-    //     for (int i = 0; i < 200; ++i) {
-	//     for (int j = 0; j < 200; ++j) {
-	// 	    *(((uint16_t*)fb->screen_base) + i * var.xres + j) = ((i * 32 / 200) << 11) + (0x1f & (j * 32 / 200));
-	//     }
-    // }
-
-
         switch (cmd->type) {
         case NK_COMMAND_NOP: break;
     
@@ -402,13 +415,12 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
             embox_add_text(vc, t->x, t->y, nk_color_converter(t->foreground), nk_color_converter(t->background), t->string, t->length );
-            // nk_draw_list_add_text(&ctx->draw_list, t->font, nk_rect(t->x, t->y, t->w, t->h),
-            //     t->string, t->length, t->height, t->foreground);
         } break;
-        // case NK_COMMAND_IMAGE: {
-        //     const struct nk_command_image *i = (const struct nk_command_image*)cmd;
-        //     nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
-        // } break;
+        case NK_COMMAND_IMAGE: {
+            const struct nk_command_image *i = (const struct nk_command_image*)cmd;
+            embox_add_image(vc, i->img, i->x, i->y, i->w, i->h, nk_color_converter(i->col));
+            // nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
+        } break;
         default: break;
         }
     }

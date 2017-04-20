@@ -17,14 +17,13 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define STBI_NO_SIMD
+#include "nk_embox_render.h"
 
 /* includes from fbcon */
 #include <drivers/console/mpx.h>
 #include <drivers/vterm_video.h>
 #include <drivers/video/fb.h>
 
-#include "nk_embox_render.h"
 
 
 struct device {
@@ -121,13 +120,14 @@ int main(int argc, char *argv[]) {
     struct nk_font_atlas atlas;
     struct nk_font *font;
     struct nk_context ctx;
+    struct nk_canvas canvas;
 
     int width = 0, 
         height = 0;
 
     
     nk_buffer_init_default(&device.cmds);
-     
+ 
     nk_font_atlas_init_default(&atlas);
     nk_font_atlas_begin(&atlas);
     font = nk_font_atlas_add_default(&atlas, 13, 0);
@@ -136,15 +136,34 @@ int main(int argc, char *argv[]) {
 
     nk_init_default(&ctx, &font->handle);
 
-
+    /* work with images */
     int x,y,n;
     unsigned char * data = stbi_load("200.png", &x, &y, &n, 0);
     if (data == NULL)
-        printf("\nstbi_load не сработал. :(\n");
-    //printf("\nx = %i   y = %i   n = %i", x, y, n);
-    //stbi_image_free(data);
+        printf("\nstbi_load doesn't work. :(\n");
+    else
+        printf("\nx = %i   y = %i   n = %i\n", x, y, n);
+    
+    struct nk_image im;
+    im.handle.ptr = data;
+    im.handle.id = 1234;
+    im.w = x;
+    im.h = y;
+    im.region[0] = 0;
+    im.region[1] = 0;
+    im.region[2] = x;
+    im.region[3] = y;
+
+    // for (int i = 0; i < 200; i++){
+    //     for (int j = 0; j < 200; j++)
+    //     {
+    //         printf("%i ", ((int *)im.handle.ptr)[i*100 + j]);
+    //     }
+    //     printf("\n");
+    // }
+
+    //struct nk_image {nk_handle handle;unsigned short w,h;unsigned short region[4];};
     /* Draw */
-    struct nk_canvas canvas;
     while (1) 
     {
         /* what to draw */
@@ -176,7 +195,7 @@ int main(int argc, char *argv[]) {
             nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
 
-           // nk_draw_image(canvas.painter, nk_rect(150, 370, 100, 100), im, nk_rgb(0, 0, 0));
+            nk_draw_image(canvas.painter, nk_rect(150, 370, 100, 100), & im, nk_rgb(0, 0, 0));
             
         }
         canvas_end(&ctx, &canvas);
@@ -184,7 +203,8 @@ int main(int argc, char *argv[]) {
          /* Draw each element */
          draw(&this_vc, &ctx, width, height);
      }
-    
+
+    stbi_image_free(data);
     nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
     nk_buffer_free(&device.cmds);
