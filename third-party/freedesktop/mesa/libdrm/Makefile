@@ -19,6 +19,7 @@ $(CONFIGURE) :
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--enable-etnaviv-experimental-api \
 			--enable-static \
+			--disable-shared \
 			--disable-tegra-experimental-api \
 			--disable-vmwgfx \
 			--disable-libkms \
@@ -27,6 +28,7 @@ $(CONFIGURE) :
 			--disable-amdgpu \
 			--disable-nouveau \
 			--disable-freedreno \
+			--disable-vc4 \
 			--enable-cairo-tests=no \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS="${EMBOX_IMPORTED_CPPFLAGS}" \
