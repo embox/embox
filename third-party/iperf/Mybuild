@@ -19,6 +19,7 @@ module iperf {
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.iperf.o"
 
+	depends embox.compat.posix.proc.atexit_api
 	@NoRuntime depends iperf_stubs
 	@NoRuntime depends embox.compat.posix.net.inet_addr
 	@NoRuntime depends embox.compat.posix.pthreads
@@ -31,6 +32,7 @@ module iperf_stubs {
 	@IncludePathBefore("$(THIRDPARTY_DIR)/iperf/include")
 	source "stubs.c"
 
+	depends embox.compat.posix.proc.atexit_api
 	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.compat.libc.str

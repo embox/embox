@@ -6,6 +6,7 @@ static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libgcc.a", "libsupc++.a"
 
+	depends embox.compat.posix.proc.atexit_api
 	@NoRuntime depends gcc_stubs
 	@NoRuntime depends embox.lib.cxx.libsupcxx
 }
@@ -17,4 +18,5 @@ module gcc_stubs {
 	@NoRuntime depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.lib.Printk
+	depends embox.compat.posix.proc.atexit_api
 }

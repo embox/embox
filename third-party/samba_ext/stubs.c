@@ -64,10 +64,6 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 	return -1;
 }
 
-void atexit(void *addr) {
-}
-
-
 int fork(void) {
 	return -1;
 }
