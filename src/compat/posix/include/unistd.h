@@ -27,8 +27,9 @@
 #define _SC_PAGESIZE          1
 #define _SC_PAGE_SIZE         _SC_PAGESIZE
 #define _SC_CLK_TCK           2
+#define _SC_GETPW_R_SIZE_MAX  3
 /*not posix */
-#define _SC_NPROCESSORS_ONLN  3
+#define _SC_NPROCESSORS_ONLN  103
 #define _SC_NPROCESSORS_CONF  _SC_NPROCESSORS_ONLN
 
 /*

@@ -21,6 +21,8 @@ long int sysconf(int name) {
 	case _SC_NPROCESSORS_ONLN:
 	//http://www.gnu.org/software/libc/manual/html_node/Processor-Resources.html
 		return NCPU;
+	case _SC_GETPW_R_SIZE_MAX:
+		return 0x200;
 	default:
 		return -EINVAL;
 	}

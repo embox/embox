@@ -12,6 +12,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #include <pwd.h>
 #include <grp.h>
@@ -146,6 +147,11 @@ int getpwnam_r(const char *name, struct passwd *pwd,
 	int res;
 	FILE *file;
 
+	if (buflen > sysconf(_SC_GETPW_R_SIZE_MAX)) {
+		*result = NULL;
+		return -ERANGE;
+	}
+
 	if (0 != (res = open_db(PASSWD_FILE, &file))) {
 		*result = NULL;
 		return res;
@@ -171,8 +177,10 @@ struct passwd *getpwnam(const char *name) {
 	static struct passwd getpwnam_buffer;
 	static char buff[0x80];
 	struct passwd *res;
+	int ret;
 
-	if (0 != getpwnam_r(name, &getpwnam_buffer, buff, 0x80,  &res)) {
+	if (0 != (ret = getpwnam_r(name, &getpwnam_buffer, buff, 0x80,  &res))) {
+		SET_ERRNO(-ret);
 		return NULL;
 	}
 
@@ -209,9 +217,10 @@ struct passwd *getpwuid(uid_t uid) {
 	static struct passwd getpwuid_buffer;
 	static char buff[0x80];
 	struct passwd *res;
+	int ret;
 
-	if (0 != getpwuid_r(uid, &getpwuid_buffer, buff, 80, &res)) {
-		//TODO errno must be set
+	if (0 != (ret = getpwuid_r(uid, &getpwuid_buffer, buff, 80, &res))) {
+		SET_ERRNO(-ret);
 		return NULL;
 	}
 
