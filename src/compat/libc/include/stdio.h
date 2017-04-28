@@ -226,6 +226,9 @@ extern int setvbuf(FILE *stream, char *buf, int mode, size_t size);
 extern void setbuffer(FILE *stream, char *buf, size_t size);
 extern void setbuf(FILE *stream, char *buf);
 
+/* #define _GNU_SOURCE  */
+extern int asprintf(char **strp, const char *fmt, ...);
+
 __END_DECLS
 
 #endif /* STDIO_H_ */
