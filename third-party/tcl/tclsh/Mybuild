@@ -25,6 +25,7 @@ static module core {
 
 	depends tclsh_export_scripts
 	depends embox.compat.posix.fs.chown_api
+	depends embox.compat.posix.fs.rewinddir_api
 }
 
 @App

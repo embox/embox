@@ -177,10 +177,12 @@ long telldir(DIR *dirp) {
 	return -1;
 }
 
+#if 0
 static inline
 void rewinddir(DIR *dirp) {
 	DPRINT();
 }
+#endif
 
 static inline
 int fnmatch(const char *pattern, const char *string, int flags) {

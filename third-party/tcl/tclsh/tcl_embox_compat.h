@@ -35,10 +35,6 @@ static inline double ldexp(double x, int exp) {
 	return -1;
 }
 
-static inline void rewinddir(char *dirp) {
-	printf("tcl>>> %s\n", __func__);
-}
-
 static inline char *realpath(const char *path, char *resolved_path) {
 	printf("tcl>>> %s\n", __func__);
 	return (char *)0;

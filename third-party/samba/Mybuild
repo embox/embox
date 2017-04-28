@@ -20,6 +20,7 @@ module core {
 	depends embox.mem.vmem
 	depends third_party.zlib.libs
 	depends embox.compat.posix.fs.chown_api
+	depends embox.compat.posix.fs.rewinddir_api
 }
 
 @Build(stage=2,script="true")
