@@ -15,11 +15,13 @@ include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
+	export PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79:$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79/etnaviv;\
 	cd $(PKG_SOURCE_DIR) && aclocal && autoconf &&( \
 		./configure --host=arm-none-eabi --target=arm-none-eabi \
 			--enable-static  --disable-shared \
 			--with-gallium-drivers=etnaviv --enable-dri=no --enable-gbm=no \
 			--disable-egl \
+			--disable-largefile --enable-gallium-llvm=no --enable-valgrind=no \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS="${EMBOX_IMPORTED_CPPFLAGS}" \
 			LDFLAGS="$(EMBOX_IMPORTED_LDFLAGS)" \
