@@ -31,7 +31,7 @@ static struct _segment {
 	uint32_t end;
 } _segments[64];
 
-static struct emmap *self_mmap(void) {
+static struct emmap * self_mmap(void) {
 	if (0 == mmap_kernel_inited()) {
 		return mmap_early_emmap();
 	} else {
@@ -41,7 +41,7 @@ static struct emmap *self_mmap(void) {
 
 static int _seg_cmp(const void *fst, const void *snd) {
 	return ((struct _segment *) fst)->start -
-		((struct _segment *) snd)->start;
+		   ((struct _segment *) snd)->start;
 }
 
 /**
@@ -68,8 +68,9 @@ static int periph_memory_init(void) {
 		uint32_t addr_end = _segments[r - 1].end;
 		while (r < seg_cnt &&
 			(_segments[r].start <= addr_end)) {
-			if (_segments[r].end > addr_end)
+			if (_segments[r].end > addr_end) {
 				addr_end = _segments[r].end;
+			}
 			r++;
 		}
 
@@ -77,11 +78,11 @@ static int periph_memory_init(void) {
 		addr_end   *= MMU_PAGE_SIZE;
 
 		struct marea *marea = marea_create(
-			addr_start,
-			addr_end,
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			false
-		);
+				addr_start,
+				addr_end,
+				PROT_READ | PROT_WRITE | PROT_NOCACHE,
+				false
+			);
 
 		if (NULL == marea) {
 			return -ENOMEM;

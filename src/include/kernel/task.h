@@ -9,7 +9,6 @@
 #ifndef TASK_H_
 #define TASK_H_
 
-
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
@@ -46,7 +45,7 @@ extern void task_set_clock(struct task *tsk, clock_t new_clock);
  *
  * @return Pointer to self task
  */
-extern struct task *task_self(void);
+extern struct task * task_self(void);
 
 /**
  * @brief Create new task
@@ -59,8 +58,8 @@ extern struct task *task_self(void);
 extern int new_task(const char *name, void *(*run)(void *), void *arg);
 
 extern void task_init(struct task *tsk, int id, struct task *parent,
-		const char *name, struct thread *main_thread,
-		task_priority_t priority);
+	const char *name, struct thread *main_thread,
+	task_priority_t priority);
 
 extern void task_start_exit(void);
 /**
@@ -91,7 +90,6 @@ extern pid_t task_waitpid_posix(pid_t pid, int *status, int options);
 extern int task_prepare(const char *name);
 extern int task_start(struct task *task, void * (*run)(void *), void *arg);
 
-
 __END_DECLS
 
 #include <util/dlist.h>
@@ -100,19 +98,17 @@ __END_DECLS
 	th = task_get_main(tsk); \
 	for (struct thread *nxt = dlist_entry(th->thread_link.next, \
 				struct thread, thread_link), \
-			*loop = NULL; \
-			(th != task_get_main(tsk)) || !loop; \
-			loop = th, th = nxt, nxt = dlist_entry(th->thread_link.next, \
+		*loop = NULL; \
+		(th != task_get_main(tsk)) || !loop; \
+		loop = th, th = nxt, nxt = dlist_entry(th->thread_link.next, \
 				struct thread, thread_link))
 
 #include <kernel/task/task_table.h>
 
 #define task_foreach(tsk) \
 	for (int tid = 1; \
-			(tid = task_table_get_first(tid)) >= 0 \
-				&& (tsk = task_table_get(tid), assert(tsk != NULL), 1); \
-			tid = task_get_id(tsk) + 1)
-
-
+		(tid = task_table_get_first(tid)) >= 0 \
+		&& (tsk = task_table_get(tid), assert(tsk != NULL), 1); \
+		tid = task_get_id(tsk) + 1)
 
 #endif /* TASK_H_ */

@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 
-
 typedef void (*ctor_func_t)(void);
 
 void cxx_invoke_constructors(void) {
@@ -14,8 +13,8 @@ void cxx_invoke_constructors(void) {
 	int n_entries;
 
 	for (func = (ctor_func_t *) &_ctors_start, n_entries = 0;
-			*func && (func != (ctor_func_t *) &_ctors_end);
-			func++, n_entries++) {
-				(*func)();
+		*func && (func != (ctor_func_t *) &_ctors_end);
+		func++, n_entries++) {
+		(*func)();
 	}
 }

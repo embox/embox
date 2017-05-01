@@ -42,8 +42,8 @@ uint16_t smac_label_to_secure_level(const char *label) {
 	return htons(0x1000);
 }
 
-const char *smac_secure_level_to_label(uint16_t level) {
-	switch(level) {
+const char * smac_secure_level_to_label(uint16_t level) {
+	switch (level) {
 	case 0x8000:
 		return "secret";
 	case 0x4000:
@@ -120,4 +120,3 @@ uint16_t sock_get_secure_level(struct sock *sk) {
 
 	return smac_label_to_secure_level(label);
 }
-

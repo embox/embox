@@ -17,7 +17,7 @@
 #define SPARC_TBR_H_
 
 #define TBR_TBA 0xFFFFF000
-#define TBR_TT	0x00000FF0
+#define TBR_TT  0x00000FF0
 
 #ifndef __ASSEMBLER__
 
@@ -26,7 +26,7 @@
 static inline uint32_t tbr_tba_get(void) {
 	register unsigned tba;
 	__asm__ __volatile__ (
-		"rd 	%%tbr, %0\n\t"
+		"rd     %%tbr, %0\n\t"
 		: "=r" (tba)
 	);
 	return tba & TBR_TBA;

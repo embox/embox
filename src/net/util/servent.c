@@ -72,7 +72,8 @@ int servent_add_alias(struct servent *se, const char *alias) {
 
 	memcpy(&sentry_aliases_storage[sentry_aliases_sz][0], alias, alias_sz);
 
-	sentry_aliases[sentry_aliases_sz] = &sentry_aliases_storage[sentry_aliases_sz][0];
+	sentry_aliases[sentry_aliases_sz] =
+		&sentry_aliases_storage[sentry_aliases_sz][0];
 	sentry_aliases[++sentry_aliases_sz] = NULL;
 
 	return 0;
@@ -108,7 +109,7 @@ int servent_set_proto(struct servent *se, const char *proto) {
 }
 
 struct servent * servent_make(const char *name, int port,
-		const char *proto) {
+	const char *proto) {
 	struct servent *se;
 
 	se = servent_create();

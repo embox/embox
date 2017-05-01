@@ -21,7 +21,6 @@
 
 #include <embox/unit.h>
 
-
 #include <pnet/core/core.h>
 #include <pnet/core/repo.h>
 #include <pnet/pack/pnet_pack.h>
@@ -38,7 +37,8 @@
 
 #define CS_PIN    ((uint32_t) (1 << OPTION_GET(NUMBER,cs_pin)))
 
-static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) OPTION_GET(NUMBER,serial_port_offset));
+static volatile AT91PS_USART us_dev_regs =
+	((AT91PS_USART) OPTION_GET(NUMBER,serial_port_offset));
 
 #define NXT_BT_ADC_RATE 50000
 #define NXT_BT_BAUD_RATE 460800
@@ -100,17 +100,18 @@ static void init_usart(void) {
 	REG_STORE(AT91C_PMC_PCER, (1 << OPTION_GET(NUMBER,dev_id)));
 
 	REG_STORE(AT91C_PIOA_PDR, RX_PIN | TX_PIN |
-			SCK_PIN | RTS_PIN | CTS_PIN);
+		SCK_PIN | RTS_PIN | CTS_PIN);
 	REG_STORE(AT91C_PIOA_ASR, RX_PIN | TX_PIN |
-			SCK_PIN | RTS_PIN | CTS_PIN);
+		SCK_PIN | RTS_PIN | CTS_PIN);
 
 	REG_STORE(&(us_dev_regs->US_PTCR), (AT91C_PDC_RXTDIS | AT91C_PDC_TXTDIS));
-	REG_STORE(&(us_dev_regs->US_CR),  AT91C_US_RSTSTA | AT91C_US_RSTRX | AT91C_US_RSTTX);
+	REG_STORE(&(us_dev_regs->US_CR),
+		AT91C_US_RSTSTA | AT91C_US_RSTRX | AT91C_US_RSTTX);
 	REG_STORE(&(us_dev_regs->US_CR), AT91C_US_STTTO);
 	REG_STORE(&(us_dev_regs->US_RTOR), 10000);
 	REG_STORE(&(us_dev_regs->US_MR), (AT91C_US_USMODE_HWHSH & ~AT91C_US_SYNC)
-			| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
-			| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
+		| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
+		| AT91C_US_NBSTOP_1_BIT | AT91C_US_OVER);
 	REG_STORE(&(us_dev_regs->US_IDR), ~0);
 	REG_STORE(&(us_dev_regs->US_IER), AT91C_US_ENDRX);
 	REG_STORE(&(us_dev_regs->US_BRGR), SYS_CLOCK / (8 * NXT_BT_BAUD_RATE));
@@ -139,9 +140,9 @@ static void init_adc(void) {
 	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_ADC));
 	REG_STORE(AT91C_ADC_MR, 0);
 	REG_ORIN(AT91C_ADC_MR, AT91C_ADC_TRGEN_DIS);
-	REG_ORIN(AT91C_ADC_MR, 0x00000500); // 4MHz
-	REG_ORIN(AT91C_ADC_MR, 0x001f0000); // 64uS
-	REG_ORIN(AT91C_ADC_MR, 0x03000000); // 750nS
+	REG_ORIN(AT91C_ADC_MR, 0x00000500); /* 4MHz */
+	REG_ORIN(AT91C_ADC_MR, 0x001f0000); /* 64uS */
+	REG_ORIN(AT91C_ADC_MR, 0x03000000); /* 750nS */
 	REG_STORE(AT91C_ADC_CHER, AT91C_ADC_CH6 | AT91C_ADC_CH4);
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
@@ -151,11 +152,12 @@ static void init_adc(void) {
  *  mode.
  */
 static void  nxt_bt_timer_handler(struct sys_timer *timer, void *param) {
-	static int bt_last_state; //TODO init state? //inited with 0, ok
+	static int bt_last_state; /*TODO init state? //inited with 0, ok */
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
 
 	if (bt_last_state != bt_state) {
-		struct pnet_pack *pack = pnet_pack_create(NULL, 1, PNET_PACK_TYPE_SINGLE);
+		struct pnet_pack *pack =
+			pnet_pack_create(NULL, 1, PNET_PACK_TYPE_SINGLE);
 		assert(pack);
 		pack->node = &this_ctrl;
 
@@ -181,12 +183,13 @@ static int nxt_bluetooth_init(void) {
 
 	irq_attach(OPTION_GET(NUMBER,irq_num),
 		nxt_bt_us_handler, 0, NULL, "nxt bt reader");
-	// TODO error handling?
+	/* TODO error handling? */
 
 	init_usart();
 	init_control_pins();
 	init_adc();
 
-	//TODO may be it must set when bt has been connected?
-	return timer_set(&ntx_bt_timer, TIMER_PERIODIC, 200, nxt_bt_timer_handler, NULL);
+	/*TODO may be it must set when bt has been connected? */
+	return timer_set(&ntx_bt_timer, TIMER_PERIODIC, 200, nxt_bt_timer_handler,
+			NULL);
 }

@@ -25,11 +25,13 @@ static int phymem_init(void) {
 	char *const phymem_alloc_start = (char *)
 		binalign_bound((uintptr_t) &_reserve_end, PAGE_SIZE());
 	char *const phymem_alloc_end = (char *)
-		binalign_bound((uintptr_t) &_ram_base + (size_t) &_ram_size, PAGE_SIZE());
+		binalign_bound((uintptr_t) &_ram_base + (size_t) &_ram_size,
+			PAGE_SIZE());
 	const size_t mem_len = phymem_alloc_end - phymem_alloc_start;
 	void *va;
 
-	printk("start=%p, end=%p, size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
+	printk("start=%p, end=%p, size=%zu\n", phymem_alloc_start, phymem_alloc_end,
+		mem_len);
 
 	va = mmap_device_memory(phymem_alloc_start,
 			binalign_bound(mem_len, PAGE_SIZE()),
@@ -37,13 +39,15 @@ static int phymem_init(void) {
 			MAP_FIXED,
 			(uintptr_t) phymem_alloc_start);
 
-	if (va)
-		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
+	if (va) {
+		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len,
+				PAGE_SIZE());
+	}
 
 	return phymem_alloc_start == va ? 0 : -EIO;
 }
 
-void *phymem_alloc(size_t page_number) {
+void * phymem_alloc(size_t page_number) {
 	return page_alloc(__phymem_allocator, page_number);
 }
 

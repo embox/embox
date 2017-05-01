@@ -32,7 +32,7 @@ enum motor_run_direction {
 };
 
 extern void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx, uint16_t enable,
-		uint16_t in1, uint16_t in2);
+	uint16_t in1, uint16_t in2);
 
 extern void motor_enable(struct motor *m);
 

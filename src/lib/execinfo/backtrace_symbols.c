@@ -19,8 +19,6 @@
 
 #include <framework/mod/options.h>
 
-
-
 #define MODOPS_ROW_COUNT OPTION_GET(NUMBER, row_count)
 #define MODOPS_ROW_SIZE OPTION_GET(NUMBER, row_size)
 
@@ -41,7 +39,7 @@ int backtrace_symbol_buf(void *ptr, char *out, int size) {
 	return res;
 }
 
-char **backtrace_symbols(void *const *buff, int size) {
+char ** backtrace_symbols(void *const *buff, int size) {
 	char **out;
 
 	out = malloc(size * sizeof(*out));

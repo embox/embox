@@ -39,40 +39,40 @@ struct neighbour {
 #define NEIGHBOUR_FLAG_PERMANENT 0x01 /* Permanent entity */
 
 extern int neighbour_add(unsigned short ptype, const void *paddr,
-		unsigned char plen, struct net_device *dev,
-		unsigned short htype, const void *haddr, unsigned char hlen,
-		unsigned int flags);
+	unsigned char plen, struct net_device *dev,
+	unsigned short htype, const void *haddr, unsigned char hlen,
+	unsigned int flags);
 
 extern int neighbour_set_haddr(unsigned short ptype,
-		const void *paddr, struct net_device *dev,
-		const void *haddr);
+	const void *paddr, struct net_device *dev,
+	const void *haddr);
 
 extern int neighbour_get_haddr(unsigned short ptype,
-		const void *paddr, struct net_device *dev,
-		unsigned short htype, unsigned char hlen_max,
-		void *out_haddr);
+	const void *paddr, struct net_device *dev,
+	unsigned short htype, unsigned char hlen_max,
+	void *out_haddr);
 
 extern int neighbour_get_paddr(unsigned short htype,
-		const void *haddr, struct net_device *dev,
-		unsigned short ptype, unsigned char plen_max,
-		void *out_paddr);
+	const void *haddr, struct net_device *dev,
+	unsigned short ptype, unsigned char plen_max,
+	void *out_paddr);
 
 extern int neighbour_del(unsigned short ptype,
-		const void *paddr, struct net_device *dev);
+	const void *paddr, struct net_device *dev);
 
 extern int neighbour_clean(struct net_device *dev);
 
 extern int neighbour_wait(unsigned short ptype,
-		const void *paddr, struct net_device *dev,
-		struct sk_buff *skb);
+	const void *paddr, struct net_device *dev,
+	struct sk_buff *skb);
 
 typedef int (*neighbour_foreach_ft)(const struct neighbour *nbr,
-		void *args);
+	void *args);
 
 extern int neighbour_foreach(neighbour_foreach_ft func, void *args);
 
 extern int neighbour_send_after_resolve(unsigned short ptype,
-		const void *paddr, unsigned char plen,
-		struct net_device *dev, struct sk_buff *skb);
+	const void *paddr, unsigned char plen,
+	struct net_device *dev, struct sk_buff *skb);
 
 #endif /* NET_NEIGHBOUR_H_ */

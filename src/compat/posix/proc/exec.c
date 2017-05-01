@@ -26,7 +26,7 @@ static const char * exec_cmd_name(const char *path) {
 
 	path_len = strlen(path);
 	if (path_len >= strlen(".lua")
-			&& !strcmp(path + path_len - strlen(".lua"), ".lua")) {
+		&& !strcmp(path + path_len - strlen(".lua"), ".lua")) {
 		return "lua";
 	}
 
@@ -42,8 +42,9 @@ int exec_call(void) {
 	int c;
 	char **v;
 
-	if (strcmp(cmd_name, path))
+	if (strcmp(cmd_name, path)) {
 		task_resource_argv_insert(task, cmd_name, 0);
+	}
 
 	c = task_resource_argv_argc(task);
 	v = task_resource_argv_argv(task);
@@ -85,4 +86,3 @@ int execv(const char *path, char *const argv[]) {
 int execve(const char *path, char *const argv[], char *const envp[]) {
 	return execv(path, argv);
 }
-

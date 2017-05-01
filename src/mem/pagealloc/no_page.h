@@ -12,7 +12,9 @@
 
 #ifndef __LDS__
 
-static inline struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_size) {
+static inline struct page_allocator * page_allocator_init(char *start,
+	size_t len,
+	size_t page_size) {
 	return NULL;
 }
 
@@ -20,15 +22,18 @@ static inline int page_belong(struct page_allocator *allocator, void *page) {
 	return 0;
 }
 
-static inline void *page_alloc(struct page_allocator *allocator, size_t page_q) {
+static inline void * page_alloc(struct page_allocator *allocator,
+	size_t page_q) {
 	return NULL;
 }
 
-static inline void *page_alloc_zero(struct page_allocator *allocator, size_t page_q) {
+static inline void * page_alloc_zero(struct page_allocator *allocator,
+	size_t page_q) {
 	return NULL;
 }
 
-static inline void page_free(struct page_allocator *allocator, void *page, size_t page_q) {
+static inline void page_free(struct page_allocator *allocator, void *page,
+	size_t page_q) {
 
 }
 

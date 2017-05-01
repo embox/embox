@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			return ENOERR;
@@ -47,9 +47,9 @@ int main(int argc, char **argv) {
 				clock_t total = cpu_get_total_time(i);
 
 				printf("%3d  %3ds    %2d%%\n",
-						i,
-						(int) (total / CLOCKS_PER_SEC),
-						(int) (idle * 100 / total));
+					i,
+					(int) (total / CLOCKS_PER_SEC),
+					(int) (idle * 100 / total));
 
 				atotal += total;
 				aidle  += idle;

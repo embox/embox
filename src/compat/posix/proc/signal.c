@@ -29,11 +29,12 @@ static void sighandler_ignore(int sig) {
 }
 
 int sigaction(int sig, const struct sigaction *restrict act,
-		struct sigaction *restrict oact) {
+	struct sigaction *restrict oact) {
 	struct sigaction *sig_table = task_self_resource_sig_table();
 
-	if (!check_range(sig, 0, _SIG_TOTAL))
+	if (!check_range(sig, 0, _SIG_TOTAL)) {
 		return SET_ERRNO(EINVAL);
+	}
 
 	if (oact) {
 		sighandler_t ofunc = sig_table[sig].sa_handler;
@@ -65,8 +66,12 @@ int sigaction(int sig, const struct sigaction *restrict act,
 }
 
 sighandler_t signal(int sig, sighandler_t func) {
-	struct sigaction act  = { 0 };
-	struct sigaction oact = { 0 };
+	struct sigaction act  = {
+		0
+	};
+	struct sigaction oact = {
+		0
+	};
 	int err;
 
 	act.sa_handler = func;
@@ -87,23 +92,24 @@ int sigqueue(int tid, int sig, const union sigval value) {
 	int err;
 
 	task = task_table_get(tid);
-	if (!task)
+	if (!task) {
 		return SET_ERRNO(ESRCH);
+	}
 
 	sigstate = &task_get_main(task)->sigstate;
 
-	// TODO prepare it
+	/* TODO prepare it */
 	info.si_value = value;
 
 	err = sigstate_send(sigstate, sig, &info);
-	if (err)
+	if (err) {
 		return SET_ERRNO(err);
+	}
 
 	sched_signal(&task_get_main(task)->schedee);
 
 	return 0;
 }
-
 
 int pthread_kill(pthread_t thread, int sig) {
 	struct sigstate *sigstate;
@@ -113,8 +119,9 @@ int pthread_kill(pthread_t thread, int sig) {
 
 	sigstate = &thread->sigstate;
 	err = sigstate_send(sigstate, sig, NULL);
-	if (err)
+	if (err) {
 		return SET_ERRNO(err);
+	}
 
 	sched_signal(&thread->schedee);
 
@@ -130,8 +137,9 @@ int kill(int tid, int sig) {
 	}
 
 	task = task_table_get(tid);
-	if (!task)
+	if (!task) {
 		return SET_ERRNO(ESRCH);
+	}
 
 	return pthread_kill(task_get_main(task), sig);
 }

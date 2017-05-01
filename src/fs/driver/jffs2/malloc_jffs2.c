@@ -21,7 +21,7 @@
 # define CYGNUM_FS_JFFS2_RAW_NODE_REF_CACHE_POOL_SIZE 0
 #endif
 
-struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize) {
+struct jffs2_full_dirent * jffs2_alloc_full_dirent(int namesize) {
 	return sysmalloc(sizeof(struct jffs2_full_dirent) + namesize);
 }
 
@@ -29,7 +29,7 @@ void jffs2_free_full_dirent(struct jffs2_full_dirent *x) {
 	sysfree(x);
 }
 
-struct jffs2_full_dnode *jffs2_alloc_full_dnode(void) {
+struct jffs2_full_dnode * jffs2_alloc_full_dnode(void) {
 	return sysmalloc(sizeof(struct jffs2_full_dnode));
 }
 
@@ -37,7 +37,7 @@ void jffs2_free_full_dnode(struct jffs2_full_dnode *x) {
 	sysfree(x);
 }
 
-struct jffs2_raw_dirent *jffs2_alloc_raw_dirent(void) {
+struct jffs2_raw_dirent * jffs2_alloc_raw_dirent(void) {
 	return sysmalloc(sizeof(struct jffs2_raw_dirent));
 }
 
@@ -45,7 +45,7 @@ void jffs2_free_raw_dirent(struct jffs2_raw_dirent *x) {
 	sysfree(x);
 }
 
-struct jffs2_raw_inode *jffs2_alloc_raw_inode(void) {
+struct jffs2_raw_inode * jffs2_alloc_raw_inode(void) {
 	return sysmalloc(sizeof(struct jffs2_raw_inode));
 }
 
@@ -53,7 +53,7 @@ void jffs2_free_raw_inode(struct jffs2_raw_inode *x) {
 	sysfree(x);
 }
 
-struct jffs2_tmp_dnode_info *jffs2_alloc_tmp_dnode_info(void) {
+struct jffs2_tmp_dnode_info * jffs2_alloc_tmp_dnode_info(void) {
 	return sysmalloc(sizeof(struct jffs2_tmp_dnode_info));
 }
 
@@ -61,7 +61,7 @@ void jffs2_free_tmp_dnode_info(struct jffs2_tmp_dnode_info *x) {
 	sysfree(x);
 }
 
-struct jffs2_node_frag *jffs2_alloc_node_frag(void) {
+struct jffs2_node_frag * jffs2_alloc_node_frag(void) {
 	return sysmalloc(sizeof(struct jffs2_node_frag));
 }
 
@@ -78,7 +78,7 @@ int jffs2_create_slab_caches(void) {
 void jffs2_destroy_slab_caches(void) {
 }
 
-struct jffs2_raw_node_ref *jffs2_alloc_raw_node_ref(void) {
+struct jffs2_raw_node_ref * jffs2_alloc_raw_node_ref(void) {
 	return sysmalloc(sizeof(struct jffs2_raw_node_ref));
 }
 
@@ -88,7 +88,7 @@ void jffs2_free_raw_node_ref(struct jffs2_raw_node_ref *x) {
 
 #endif /* CYGNUM_FS_JFFS2_RAW_NODE_REF_CACHE_POOL_SIZE == 0 */
 
-struct jffs2_inode_cache *jffs2_alloc_inode_cache(void) {
+struct jffs2_inode_cache * jffs2_alloc_inode_cache(void) {
 	struct jffs2_inode_cache *ret = sysmalloc(sizeof(struct jffs2_inode_cache));
 	D1(printk( "Allocated inocache at %p\n", ret));
 	return ret;
@@ -98,4 +98,3 @@ void jffs2_free_inode_cache(struct jffs2_inode_cache *x) {
 	D1(printk( "Freeing inocache at %p\n", x));
 	sysfree(x);
 }
-

@@ -34,19 +34,20 @@ const struct passwd root_passwd = {
 
 static int passwdcmp(const struct passwd *p1, const struct passwd *p2) {
 	return strcmp(p1->pw_name, p2->pw_name) ||
-		strcmp(p1->pw_passwd, p2->pw_passwd) ||
-		(p1->pw_uid == p2->pw_uid ? 0 : 1) ||
-		(p1->pw_gid == p2->pw_gid ? 0 : 1) ||
-		strcmp(p1->pw_gecos, p2->pw_gecos) ||
-		strcmp(p1->pw_dir, p2->pw_dir) ||
-		strcmp(p1->pw_shell, p2->pw_shell);
+		   strcmp(p1->pw_passwd, p2->pw_passwd) ||
+		   (p1->pw_uid == p2->pw_uid ? 0 : 1) ||
+		   (p1->pw_gid == p2->pw_gid ? 0 : 1) ||
+		   strcmp(p1->pw_gecos, p2->pw_gecos) ||
+		   strcmp(p1->pw_dir, p2->pw_dir) ||
+		   strcmp(p1->pw_shell, p2->pw_shell);
 }
 
 TEST_CASE("Existing entry should be find by name") {
 	char buf[BUF_LEN];
 	struct passwd pwd, *result;
 
-	test_assert_zero(getpwnam_r(root_passwd.pw_name, &pwd, buf, BUF_LEN, &result));
+	test_assert_zero(getpwnam_r(root_passwd.pw_name, &pwd, buf, BUF_LEN,
+		&result));
 
 	test_assert_zero(passwdcmp(&root_passwd, result));
 }
@@ -55,7 +56,8 @@ TEST_CASE("Existing entry should be find by uid") {
 	char buf[BUF_LEN];
 	struct passwd pwd, *result;
 
-	test_assert_zero(getpwuid_r(root_passwd.pw_uid, &pwd, buf, BUF_LEN, &result));
+	test_assert_zero(getpwuid_r(root_passwd.pw_uid, &pwd, buf, BUF_LEN,
+		&result));
 
 	test_assert_zero(passwdcmp(&root_passwd, result));
 }
@@ -73,7 +75,8 @@ TEST_CASE("fgetpwent should return ERANGE on small buffer") {
 	struct passwd pwd, *result;
 	FILE *f = fopen(PASSWD_FILE, "r");
 
-	test_assert_equal(fgetpwent_r(f, &pwd, buf, SMALL_BUF_LEN, &result), ERANGE);
+	test_assert_equal(fgetpwent_r(f, &pwd, buf, SMALL_BUF_LEN, &result),
+		ERANGE);
 
 	fclose(f);
 }
@@ -103,4 +106,3 @@ TEST_CASE("getpwnam should return passwd same as getpwnam_r") {
 
 	test_assert_zero(passwdcmp(getpwnam(root_passwd.pw_name), result));
 }
-

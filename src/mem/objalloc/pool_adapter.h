@@ -19,7 +19,7 @@
 typedef struct pool __objalloc_t;
 
 static inline int objalloc_init(__objalloc_t *allocator, size_t object_sz,
-		size_t objects_nr) {
+	size_t objects_nr) {
 	return 0;
 }
 

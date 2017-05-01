@@ -14,7 +14,6 @@
 #include <fs/hlpr_path.h>
 #include <assert.h>
 
-
 /*
  * remove the top directory name from path
  */
@@ -47,7 +46,7 @@ int path_nip_tail(char *head, char *tail) {
 		}
 	} while ('/' != *p_tail);
 
-	strcpy (tail, p_tail);
+	strcpy(tail, p_tail);
 	*p_tail = '\0';
 
 	return 0;
@@ -59,27 +58,27 @@ int path_nip_tail(char *head, char *tail) {
 int path_increase_tail(char *head, char *tail) {
 	char *p_tail;
 
-		p_tail = head + strlen(head);
-		strcat(head, tail);
+	p_tail = head + strlen(head);
+	strcat(head, tail);
 
-		do {
-			if ('\0' == *p_tail) {
-				break;
-			}
-			p_tail++;
-		} while ('/' != *p_tail);
+	do {
+		if ('\0' == *p_tail) {
+			break;
+		}
+		p_tail++;
+	} while ('/' != *p_tail);
 
-		strcpy (tail, p_tail);
-		*p_tail = '\0';
+	strcpy(tail, p_tail);
+	*p_tail = '\0';
 
-		return 0;
+	return 0;
 }
 
 /*
  * Save first node name in path into node_name parameter.
  * Return the remaining part of path.
  */
-char *path_get_next_name(const char *path, char *node_name, int buff_len) {
+char * path_get_next_name(const char *path, char *node_name, int buff_len) {
 	char *p = (char *) path;
 	char *nm = node_name;
 
@@ -113,7 +112,7 @@ int path_is_single_dot(const char *path) {
 	return *path == '.' && (nc == '/' || nc == '\0');
 }
 
-const char *path_next(const char *path, size_t *p_len) {
+const char * path_next(const char *path, size_t *p_len) {
 
 	if (!path) {
 		return NULL;
@@ -152,5 +151,5 @@ int path_is_dotname(const char *name, size_t name_len) {
 
 int path_is_double_dot(const char *path) {
 	return *path == '.' && *(path + 1) == '.'
-		&& (*(path + 2) == '/' || *(path + 2) == '\0');
+		   && (*(path + 2) == '/' || *(path + 2) == '\0');
 }

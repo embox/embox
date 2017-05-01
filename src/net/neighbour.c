@@ -65,7 +65,7 @@ static void nbr_free(struct neighbour *nbr) {
 }
 
 static struct neighbour * nbr_lookup_by_paddr(unsigned short ptype,
-		const void *paddr, struct net_device *dev) {
+	const void *paddr, struct net_device *dev) {
 	struct neighbour *nbr;
 
 	assert(paddr != NULL);
@@ -73,8 +73,8 @@ static struct neighbour * nbr_lookup_by_paddr(unsigned short ptype,
 
 	dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 		if ((nbr->ptype == ptype)
-				&& (0 == memcmp(&nbr->paddr[0], paddr, nbr->plen))
-				&& (nbr->dev == dev)) {
+			&& (0 == memcmp(&nbr->paddr[0], paddr, nbr->plen))
+			&& (nbr->dev == dev)) {
 			return nbr;
 		}
 	}
@@ -83,7 +83,7 @@ static struct neighbour * nbr_lookup_by_paddr(unsigned short ptype,
 }
 
 static struct neighbour * nbr_lookup_by_haddr(unsigned short htype,
-		const void *haddr, struct net_device *dev) {
+	const void *haddr, struct net_device *dev) {
 	struct neighbour *nbr;
 
 	assert(haddr != NULL);
@@ -91,8 +91,8 @@ static struct neighbour * nbr_lookup_by_haddr(unsigned short htype,
 
 	dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 		if ((nbr->htype == htype)
-				&& (0 == memcmp(&nbr->haddr[0], haddr, nbr->hlen))
-				&& (nbr->dev == dev)) {
+			&& (0 == memcmp(&nbr->haddr[0], haddr, nbr->hlen))
+			&& (nbr->dev == dev)) {
 			return nbr;
 		}
 	}
@@ -120,15 +120,15 @@ static int nbr_send_request(struct neighbour *nbr) {
 		assert(nbr->ptype == ETH_P_IPV6);
 		nbr_solicit.body.zero = 0;
 		memcpy(&nbr_solicit.body.target, &nbr->paddr[0],
-				sizeof nbr_solicit.body.target);
+			sizeof nbr_solicit.body.target);
 		nbr_solicit.ops.hdr.type = NDP_SOURCE_LL_ADDR;
 		nbr_solicit.ops.hdr.len = binalign_bound(sizeof nbr_solicit.ops
 				+ nbr->dev->addr_len, 8) / 8;
 		memcpy(nbr_solicit.ops.ll_addr, &nbr->dev->dev_addr[0],
-				nbr->dev->addr_len);
+			nbr->dev->addr_len);
 		return ndp_send(NDP_NEIGHBOR_SOLICIT, 0, &nbr_solicit,
 				sizeof nbr_solicit.body + sizeof nbr_solicit.ops
-					+ nbr->dev->addr_len, nbr->dev);
+				+ nbr->dev->addr_len, nbr->dev);
 	}
 }
 
@@ -144,7 +144,7 @@ static void nbr_drop_w_queue(struct neighbour *nbr) {
 }
 
 static int nbr_build_and_send_pkt(struct sk_buff *skb,
-		const struct net_header_info *hdr_info) {
+	const struct net_header_info *hdr_info) {
 	int ret;
 
 	assert(skb != NULL);
@@ -159,12 +159,16 @@ static int nbr_build_and_send_pkt(struct sk_buff *skb,
 		/* try to xmit */
 		ret = net_tx(skb, NULL);
 		if (ret != 0) {
-			log_error("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);
+			log_error(
+				"nbr_build_and_send_pkt: error: can't xmit over device, code %d\n",
+				ret);
 			return ret;
 		}
 	}
 	else {
-		log_error("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);
+		log_error(
+			"nbr_build_and_send_pkt: error: can't build after resolving, code %d\n",
+			ret);
 		skb_free(skb);
 		return ret;
 	}
@@ -186,16 +190,16 @@ static void nbr_flush_w_queue(struct neighbour *nbr) {
 }
 
 int neighbour_add(unsigned short ptype, const void *paddr,
-		unsigned char plen, struct net_device *dev,
-		unsigned short htype, const void *haddr, unsigned char hlen,
-		unsigned int flags) {
+	unsigned char plen, struct net_device *dev,
+	unsigned short htype, const void *haddr, unsigned char hlen,
+	unsigned int flags) {
 	int exist;
 	struct neighbour *nbr;
 
 	if ((paddr == NULL) || (plen == 0)
-			|| (plen > ARRAY_SIZE(nbr->paddr)) || (dev == NULL)
-			|| (haddr == NULL) || (hlen == 0)
-			|| (hlen > ARRAY_SIZE(nbr->haddr))) {
+		|| (plen > ARRAY_SIZE(nbr->paddr)) || (dev == NULL)
+		|| (haddr == NULL) || (hlen == 0)
+		|| (hlen > ARRAY_SIZE(nbr->haddr))) {
 		return -EINVAL;
 	}
 
@@ -240,8 +244,8 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 }
 
 int neighbour_get_haddr(unsigned short ptype,  const void *paddr,
-		struct net_device *dev, unsigned short htype,
-		unsigned char hlen_max, void *out_haddr) {
+	struct net_device *dev, unsigned short htype,
+	unsigned char hlen_max, void *out_haddr) {
 	struct neighbour *nbr;
 
 	if ((paddr == NULL) || (dev == NULL) || (out_haddr == NULL)) {
@@ -276,8 +280,8 @@ int neighbour_get_haddr(unsigned short ptype,  const void *paddr,
 }
 
 int neighbour_get_paddr(unsigned short htype, const void *haddr,
-		struct net_device *dev, unsigned short ptype,
-		unsigned char plen_max, void *out_paddr) {
+	struct net_device *dev, unsigned short ptype,
+	unsigned char plen_max, void *out_paddr) {
 	struct neighbour *nbr;
 
 	if ((haddr == NULL) || (dev == NULL) || (out_paddr == NULL)) {
@@ -308,7 +312,7 @@ int neighbour_get_paddr(unsigned short htype, const void *haddr,
 }
 
 int neighbour_del(unsigned short ptype, const void *paddr,
-		struct net_device *dev) {
+	struct net_device *dev) {
 	struct neighbour *nbr;
 
 	if ((paddr == NULL) || (dev == NULL)) {
@@ -372,8 +376,8 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 }
 
 int neighbour_send_after_resolve(unsigned short ptype,
-		const void *paddr, unsigned char plen,
-		struct net_device *dev, struct sk_buff *skb) {
+	const void *paddr, unsigned char plen,
+	struct net_device *dev, struct sk_buff *skb) {
 	int allocated, resolved;
 	struct neighbour *nbr;
 	struct net_header_info hdr_info;

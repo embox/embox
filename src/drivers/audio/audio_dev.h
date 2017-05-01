@@ -36,11 +36,11 @@ struct audio_dev {
 	ARRAY_SPREAD_DECLARE(const struct audio_dev, __audio_device_registry); \
 	ARRAY_SPREAD_ADD(__audio_device_registry, {ops,name, priv} )
 
-extern struct audio_dev *audio_dev_get_by_idx(int idx);
+extern struct audio_dev * audio_dev_get_by_idx(int idx);
 
-extern struct audio_dev *audio_dev_get_by_name(char name[]);
+extern struct audio_dev * audio_dev_get_by_name(char name[]);
 
-extern uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev);
+extern uint8_t * audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev);
 
 /* ioctl commands */
 #define ADIOCTL_SUPPORT 2

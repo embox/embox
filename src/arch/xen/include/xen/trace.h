@@ -1,6 +1,6 @@
 /******************************************************************************
  * include/public/trace.h
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -43,7 +43,7 @@
 #define TRC_ALL      0x0ffff000
 #define TRC_HD_TO_EVENT(x) ((x)&0x0fffffff)
 #define TRC_HD_CYCLE_FLAG (1UL<<31)
-#define TRC_HD_INCLUDES_CYCLE_COUNT(x) ( !!( (x) & TRC_HD_CYCLE_FLAG ) )
+#define TRC_HD_INCLUDES_CYCLE_COUNT(x) (!!((x) & TRC_HD_CYCLE_FLAG))
 #define TRC_HD_EXTRA(x)    (((x)>>TRACE_EXTRA_SHIFT)&TRACE_EXTRA_MAX)
 
 /* Trace subclasses */
@@ -81,9 +81,9 @@
 
 /* Per-scheduler tracing */
 #define TRC_SCHED_CLASS_EVT(_c, _e) \
-  ( ( TRC_SCHED_CLASS | \
-      ((TRC_SCHED_##_c << TRC_SCHED_ID_SHIFT) & TRC_SCHED_ID_MASK) ) + \
-    (_e & TRC_SCHED_EVT_MASK) )
+	((TRC_SCHED_CLASS | \
+	((TRC_SCHED_ ## _c << TRC_SCHED_ID_SHIFT) & TRC_SCHED_ID_MASK)) + \
+	(_e & TRC_SCHED_EVT_MASK))
 
 /* Trace classes for Hardware */
 #define TRC_HW_PM           0x00801000   /* Power management traces */
@@ -276,18 +276,18 @@
 
 /* This structure represents a single trace buffer record. */
 struct t_rec {
-    uint32_t event:28;
-    uint32_t extra_u32:3;         /* # entries in trailing extra_u32[] array */
-    uint32_t cycles_included:1;   /* u.cycles or u.no_cycles? */
-    union {
-        struct {
-            uint32_t cycles_lo, cycles_hi; /* cycle counter timestamp */
-            uint32_t extra_u32[7];         /* event data items */
-        } cycles;
-        struct {
-            uint32_t extra_u32[7];         /* event data items */
-        } nocycles;
-    } u;
+	uint32_t event : 28;
+	uint32_t extra_u32 : 3;         /* # entries in trailing extra_u32[] array */
+	uint32_t cycles_included : 1;   /* u.cycles or u.no_cycles? */
+	union {
+		struct {
+			uint32_t cycles_lo, cycles_hi; /* cycle counter timestamp */
+			uint32_t extra_u32[7];         /* event data items */
+		} cycles;
+		struct {
+			uint32_t extra_u32[7];         /* event data items */
+		} nocycles;
+	} u;
 };
 
 /*
@@ -295,17 +295,17 @@ struct t_rec {
  * field, indexes into an array of struct t_rec's.
  */
 struct t_buf {
-    /* Assume the data buffer size is X.  X is generally not a power of 2.
-     * CONS and PROD are incremented modulo (2*X):
-     *     0 <= cons < 2*X
-     *     0 <= prod < 2*X
-     * This is done because addition modulo X breaks at 2^32 when X is not a
-     * power of 2:
-     *     (((2^32 - 1) % X) + 1) % X != (2^32) % X
-     */
-    uint32_t cons;   /* Offset of next item to be consumed by control tools. */
-    uint32_t prod;   /* Offset of next item to be produced by Xen.           */
-    /*  Records follow immediately after the meta-data header.    */
+	/* Assume the data buffer size is X.  X is generally not a power of 2.
+	 * CONS and PROD are incremented modulo (2*X):
+	 *     0 <= cons < 2*X
+	 *     0 <= prod < 2*X
+	 * This is done because addition modulo X breaks at 2^32 when X is not a
+	 * power of 2:
+	 *     (((2^32 - 1) % X) + 1) % X != (2^32) % X
+	 */
+	uint32_t cons;   /* Offset of next item to be consumed by control tools. */
+	uint32_t prod;   /* Offset of next item to be produced by Xen.           */
+	/*  Records follow immediately after the meta-data header.    */
 };
 
 /* Structure used to pass MFNs to the trace buffers back to trace consumers.
@@ -313,9 +313,9 @@ struct t_buf {
  * MFNs will be at ((unsigned long *)(t_info))+(t_info->cpu_offset[cpu]).
  */
 struct t_info {
-    uint16_t tbuf_size; /* Size in pages of each trace buffer */
-    uint16_t mfn_offset[];  /* Offset within t_info structure of the page list per cpu */
-    /* MFN lists immediately after the header */
+	uint16_t tbuf_size; /* Size in pages of each trace buffer */
+	uint16_t mfn_offset[];  /* Offset within t_info structure of the page list per cpu */
+	/* MFN lists immediately after the header */
 };
 
 #endif /* __XEN_PUBLIC_TRACE_H__ */

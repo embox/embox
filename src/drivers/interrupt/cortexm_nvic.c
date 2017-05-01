@@ -43,7 +43,8 @@
 
 EMBOX_UNIT_INIT(nvic_init);
 
-static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
+static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned(128
+	* sizeof(int))));
 
 extern void *trap_table_start;
 extern void *trap_table_end;
@@ -75,14 +76,15 @@ static int nvic_init(void) {
 	}
 
 	/* load head from bootstrap table */
-	for (ptr = &trap_table_start, i = 0; ptr != &trap_table_end; ptr += 4, i++) {
-		exception_table[i] = * (int32_t *) ptr;
+	for (ptr = &trap_table_start, i = 0; ptr != &trap_table_end;
+		ptr += 4, i++) {
+		exception_table[i] = *(int32_t *) ptr;
 	}
 
 	ipl = ipl_save();
 
 	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
-			(int) exception_table);
+		(int) exception_table);
 
 	ipl_restore(ipl);
 	return 0;
@@ -117,4 +119,3 @@ void irqctrl_force(unsigned int interrupt_nr) {
 		REG_STORE(NVIC_SET_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
 	}
 }
-

@@ -32,14 +32,14 @@ void runq_init(runq_t *queue) {
 
 void runq_insert(runq_t *queue, struct schedee *schedee) {
 	dlist_add_prev(&schedee->runq_link,
-			&queue->list[schedee_priority_get(schedee)]);
+		&queue->list[schedee_priority_get(schedee)]);
 }
 
 void runq_remove(runq_t *queue, struct schedee *schedee) {
 	dlist_del(&schedee->runq_link);
 }
 
-struct schedee *runq_extract(runq_t *queue) {
+struct schedee * runq_extract(runq_t *queue) {
 	const unsigned int mask = 1 << cpu_get_id();
 	struct schedee *schedee = NULL;
 	int i;

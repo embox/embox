@@ -12,8 +12,8 @@
 #include <sys/time.h>
 
 static HOST_FNX(int, setitimer,
-		CONCAT(int what, const struct itimerval *it, struct itimerval *oit),
-		what, it, oit)
+	CONCAT(int what, const struct itimerval *it, struct itimerval *oit),
+	what, it, oit)
 
 void host_timer_config(int usec) {
 	struct itimerval itv = {

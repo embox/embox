@@ -32,7 +32,6 @@ static const struct utsname sys_name = {
 	.machine = __PLATFORM_ARCH
 };
 
-
 int uname(struct utsname *name) {
 	memcpy(name, &sys_name, sizeof(sys_name));
 

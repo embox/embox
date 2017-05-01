@@ -30,9 +30,9 @@ struct pnet_graph {
 	struct list_head lnk;
 };
 
-extern struct pnet_graph *pnet_get_graph(int sock);
+extern struct pnet_graph * pnet_get_graph(int sock);
 
-extern struct pnet_graph *pnet_graph_create(char *name);
+extern struct pnet_graph * pnet_graph_create(char *name);
 
 extern int pnet_graph_start(struct pnet_graph *graph);
 extern int pnet_graph_stop(struct pnet_graph *graph);

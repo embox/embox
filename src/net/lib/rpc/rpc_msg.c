@@ -24,7 +24,7 @@ int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
 
 	ar_stat = ar->stat;
 	if (!xdr_opaque_auth(xs, &ar->verf)
-			|| !xdr_enum(xs, &ar_stat)) {
+		|| !xdr_enum(xs, &ar_stat)) {
 		return XDR_FAILURE;
 	}
 
@@ -34,7 +34,8 @@ int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
 		break;
 	case SUCCESS:
 		assert(ar->d.result.decoder != NULL);
-		return (*(xdrproc_t)ar->d.result.decoder)(xs, ar->d.result.param, XDR_LAST_UINT32);
+		return (*(xdrproc_t)ar->d.result.decoder)(xs, ar->d.result.param,
+				XDR_LAST_UINT32);
 	case PROG_MISMATCH:
 		return xdr_mismatch_info(xs, &ar->d.mminfo);
 	}
@@ -44,9 +45,9 @@ int xdr_accepted_reply(struct xdr *xs, struct accepted_reply *ar) {
 
 int xdr_rejected_reply(struct xdr *xs, struct rejected_reply *rr) {
 	static const struct xdr_discrim reject_dscrm[] = {
-			{ RPC_MISMATCH, (xdrproc_t)xdr_mismatch_info },
-			{ AUTH_ERROR, (xdrproc_t)xdr_enum },
-			{ 0, NULL }
+		{ RPC_MISMATCH, (xdrproc_t)xdr_mismatch_info },
+		{ AUTH_ERROR, (xdrproc_t)xdr_enum },
+		{ 0, NULL }
 	};
 	int32_t rr_stat;
 
@@ -66,15 +67,15 @@ int xdr_call_body(struct xdr *xs, struct call_body *cb) {
 	assert(cb != NULL);
 
 	return xdr_u_int(xs, &cb->rpcvers) && xdr_u_int(xs, &cb->prog)
-			&& xdr_u_int(xs, &cb->vers) && xdr_u_int(xs, &cb->proc)
-			&& xdr_opaque_auth(xs, &cb->cred) && xdr_opaque_auth(xs, &cb->verf);
+		   && xdr_u_int(xs, &cb->vers) && xdr_u_int(xs, &cb->proc)
+		   && xdr_opaque_auth(xs, &cb->cred) && xdr_opaque_auth(xs, &cb->verf);
 }
 
 int xdr_reply_body(struct xdr *xs, struct reply_body *rb) {
 	static const struct xdr_discrim reply_dscrm[] = {
-			{ MSG_ACCEPTED, (xdrproc_t)xdr_accepted_reply },
-			{ MSG_DENIED, (xdrproc_t)xdr_rejected_reply },
-			{ 0, NULL }
+		{ MSG_ACCEPTED, (xdrproc_t)xdr_accepted_reply },
+		{ MSG_DENIED, (xdrproc_t)xdr_rejected_reply },
+		{ 0, NULL }
 	};
 	int32_t rb_stat;
 
@@ -92,9 +93,9 @@ int xdr_reply_body(struct xdr *xs, struct reply_body *rb) {
 
 int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
 	static const struct xdr_discrim msg_dscrm[] = {
-			{ CALL, (xdrproc_t)xdr_call_body },
-			{ REPLY, (xdrproc_t)xdr_reply_body },
-			{ 0, NULL }
+		{ CALL, (xdrproc_t)xdr_call_body },
+		{ REPLY, (xdrproc_t)xdr_reply_body },
+		{ 0, NULL }
 	};
 	int32_t msg_type;
 
@@ -102,7 +103,7 @@ int xdr_rpc_msg(struct xdr *xs, struct rpc_msg *msg) {
 
 	msg_type = msg->type;
 	if (!xdr_u_int(xs, &msg->xid)
-			|| !xdr_union(xs, &msg_type, &msg->b, msg_dscrm, NULL)) {
+		|| !xdr_union(xs, &msg_type, &msg->b, msg_dscrm, NULL)) {
 		return XDR_FAILURE;
 	}
 

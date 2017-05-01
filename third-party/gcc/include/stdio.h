@@ -14,4 +14,3 @@ extern char * tmpnam(char *s);
 __END_DECLS
 
 #endif /* GCC_STDIO_H_ */
-

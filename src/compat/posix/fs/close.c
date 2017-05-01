@@ -16,7 +16,7 @@ int close(int fd) {
 	struct idesc *idesc;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))) {
 		return SET_ERRNO(EBADF);
 	}
 

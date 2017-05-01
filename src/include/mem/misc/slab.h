@@ -42,7 +42,7 @@ typedef struct cache cache_t;
  * TODO
  */
 #define CACHE_DEF(cache_nm, object_t, objects_nr) \
-          __CACHE_DEF(cache_nm, object_t, objects_nr)
+	__CACHE_DEF(cache_nm, object_t, objects_nr)
 
 /**
  * Create of cache
@@ -50,7 +50,7 @@ typedef struct cache cache_t;
  * @param obj_size is size of contained objects
  * @param obj_num is number of object reserved at first
  */
-extern cache_t *cache_create(char *name, size_t obj_size, size_t obj_num);
+extern cache_t * cache_create(char *name, size_t obj_size, size_t obj_num);
 
 extern int cache_init(cache_t *cache, size_t obj_size, size_t obj_num);
 
@@ -64,14 +64,14 @@ extern int cache_destroy(cache_t *cache_ptr);
  * Return pointer to object for which allocate memory
  * @param cachep is pointer to cache which must contain object of this type
  */
-extern void *cache_alloc(cache_t *cachep);
+extern void * cache_alloc(cache_t *cachep);
 
 /**
  * Free memory from something object
  * @param cachep is pointer to cache which must contain object of this type
  * @param objp is object which must be deleted
  */
-extern void cache_free(cache_t *cachep, void* objp);
+extern void cache_free(cache_t *cachep, void *objp);
 
 /**
  * Remove all free slabs from cache

@@ -15,7 +15,6 @@
 #include <kernel/time/clock_source.h>
 #include <stdint.h>
 
-
 EMBOX_UNIT_INIT(ppc_clk_init);
 
 /** Test for different frequancy (300K ticks -- i.e. 5min)
@@ -39,7 +38,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 static int ppc_clk_config(struct time_dev_conf *conf) {
 	__set_dec(PPCCLK_DECR);
 	__set_decar(PPCCLK_DECR);
-    __set_tcr(TCR_DIE | TCR_ARE);
+	__set_tcr(TCR_DIE | TCR_ARE);
 	return 0;
 }
 
@@ -74,5 +73,6 @@ static struct clock_source ppc_clk_clock_source = {
 
 static int ppc_clk_init(void) {
 	clock_source_register(&ppc_clk_clock_source);
-	return irq_attach(PPCCLK_IRQ, clock_handler, 0, &ppc_clk_clock_source, "ppc_clk");
+	return irq_attach(PPCCLK_IRQ, clock_handler, 0, &ppc_clk_clock_source,
+			"ppc_clk");
 }

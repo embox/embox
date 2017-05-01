@@ -20,22 +20,22 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/mmap.h>
 
-#define AT_NULL		0		/* End of vector */
-#define AT_IGNORE	1		/* Entry should be ignored */
-#define AT_EXECFD	2		/* File descriptor of program */
-#define AT_PHDR		3		/* Program headers for program */
-#define AT_PHENT	4		/* Size of program header entry */
-#define AT_PHNUM	5		/* Number of program headers */
-#define AT_PAGESZ	6		/* System page size */
-#define AT_BASE		7		/* Base address of interpreter */
-#define AT_FLAGS	8		/* Flags */
-#define AT_ENTRY	9		/* Entry point of program */
-#define AT_NOTELF	10		/* Program is not ELF */
-#define AT_UID		11		/* Real uid */
-#define AT_EUID		12		/* Effective uid */
-#define AT_GID		13		/* Real gid */
-#define AT_EGID		14		/* Effective gid */
-#define AT_CLKTCK	17		/* Frequency of times() */
+#define AT_NULL     0       /* End of vector */
+#define AT_IGNORE   1       /* Entry should be ignored */
+#define AT_EXECFD   2       /* File descriptor of program */
+#define AT_PHDR     3       /* Program headers for program */
+#define AT_PHENT    4       /* Size of program header entry */
+#define AT_PHNUM    5       /* Number of program headers */
+#define AT_PAGESZ   6       /* System page size */
+#define AT_BASE     7       /* Base address of interpreter */
+#define AT_FLAGS    8       /* Flags */
+#define AT_ENTRY    9       /* Entry point of program */
+#define AT_NOTELF   10      /* Program is not ELF */
+#define AT_UID      11      /* Real uid */
+#define AT_EUID     12      /* Effective uid */
+#define AT_GID      13      /* Real gid */
+#define AT_EGID     14      /* Effective gid */
+#define AT_CLKTCK   17      /* Frequency of times() */
 
 typedef struct {
 	uint32_t entry;
@@ -46,7 +46,6 @@ typedef struct {
 	uint32_t phent;
 	const char *filename;
 } exec_t;
-
 
 static inline uint32_t stack_push_str(uint32_t *stack, const char *str) {
 	*stack -= strlen(str) + 1;
@@ -60,12 +59,14 @@ static inline uint32_t stack_push_int(uint32_t *stack, uint32_t val) {
 	return *stack;
 }
 
-static inline void stack_push_aux(uint32_t *stack, uint32_t type, uint32_t val) {
+static inline void stack_push_aux(uint32_t *stack, uint32_t type,
+	uint32_t val) {
 	stack_push_int(stack, val);
 	stack_push_int(stack, type);
 }
 
-static void fill_stack(uint32_t *stack, exec_t *exec, char *const argv[], char *const envp[]) {
+static void fill_stack(uint32_t *stack, exec_t *exec, char *const argv[],
+	char *const envp[]) {
 	int argc = 0, envc = 0;
 	uint32_t sp;
 
@@ -73,7 +74,7 @@ static void fill_stack(uint32_t *stack, exec_t *exec, char *const argv[], char *
 	while (argv[argc]) argc++;
 	while (envp[envc]) envc++;
 
-	// End marker. Is it necessary?
+	/* End marker. Is it necessary? */
 	sp = stack_push_int(stack, 0);
 
 	/* Pushing envp strings */
@@ -86,7 +87,7 @@ static void fill_stack(uint32_t *stack, exec_t *exec, char *const argv[], char *
 		stack_push_str(stack, argv[i]);
 	}
 
-	// Padding. Is it necessary?
+	/* Padding. Is it necessary? */
 	stack_push_int(stack, 0);
 
 	/* Pushing auxiliary data */
@@ -103,7 +104,7 @@ static void fill_stack(uint32_t *stack, exec_t *exec, char *const argv[], char *
 	stack_push_aux(stack, AT_PHNUM, exec->phnum);
 	stack_push_aux(stack, AT_PHENT, exec->phent);
 
-	// What is it?
+	/* What is it? */
 	stack_push_aux(stack, AT_UID, 1000);
 	stack_push_aux(stack, AT_EUID, 1000);
 	stack_push_aux(stack, AT_GID, 1000);
@@ -155,7 +156,6 @@ static int load_interp(char *filename, exec_t *exec) {
 	}
 	elf_read_ph_table(fd, &header, ph_table);
 
-
 	size = 0;
 	for (int i = 0; i < header.e_phnum; i++) {
 		ph = &ph_table[i];
@@ -170,14 +170,15 @@ static int load_interp(char *filename, exec_t *exec) {
 		return -ENOMEM;
 	}
 
-	//base_addr = marea_get_start(marea);
+	/*base_addr = marea_get_start(marea); */
 	base_addr = marea->start;
 
 	for (int i = 0; i < header.e_phnum; i++) {
 		ph = &ph_table[i];
 
 		if (ph->p_type == PT_LOAD) {
-			if ((err = elf_read_segment(fd, ph, (void *) base_addr + ph->p_vaddr))) {
+			if ((err =
+				elf_read_segment(fd, ph, (void *) base_addr + ph->p_vaddr))) {
 				free(ph_table);
 				return err;
 			}
@@ -199,7 +200,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 	Elf32_Phdr *ph_table;
 	Elf32_Phdr *ph;
 	struct marea *marea;
-	//void *pa;
+	/*void *pa; */
 	int err;
 	char interp[255];
 	int has_interp = 0;
@@ -246,18 +247,22 @@ static int load_exec(const char *filename, exec_t *exec) {
 			continue;
 		}
 #if 0
-		pa = mmap((void *)ph->p_vaddr, ph->p_memsz, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_FIXED, 0, 0);
+		pa = mmap((void *)ph->p_vaddr, ph->p_memsz,
+				PROT_EXEC | PROT_READ | PROT_WRITE, MAP_FIXED, 0, 0);
 		if (MAP_FAILED == pa) {
 			free(ph_table);
 			return -1;
 		}
 #else
 
-		marea = mmap_place_marea(task_self_resource_mmap(), ph->p_vaddr, ph->p_vaddr + ph->p_memsz, 0);
+		marea = mmap_place_marea(
+				task_self_resource_mmap(), ph->p_vaddr, ph->p_vaddr + ph->p_memsz,
+				0);
 
 		/* XXX brk is a max of ph's right sides. It unaligned now! */
 		mmap_set_brk(task_self_resource_mmap(),
-			max(mmap_get_brk(task_self_resource_mmap()), (void *) ph->p_vaddr + ph->p_memsz));
+			max(mmap_get_brk(task_self_resource_mmap()),
+			(void *) ph->p_vaddr + ph->p_memsz));
 
 		if (!marea) {
 			free(ph_table);
@@ -288,21 +293,22 @@ static int load_exec(const char *filename, exec_t *exec) {
 }
 
 uint32_t mmap_create_stack(struct emmap *mmap) {
-	struct marea * marea;
+	struct marea *marea;
 	marea = mmap_alloc_marea(mmap, 4096, 0);
 
 	return marea->end;
 }
 
-//extern uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size);
-int execve_syscall(const char *filename, char *const argv[], char *const envp[]) {
+/*extern uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size); */
+int execve_syscall(const char *filename, char *const argv[],
+	char *const envp[]) {
 	struct ue_data ue_data;
 	uint32_t entry;
 	uint32_t stack;
 	int err;
 	exec_t exec;
 	struct emmap *emmap;
-	//struct marea *marea;
+	/*struct marea *marea; */
 
 	emmap = task_self_resource_mmap();
 
@@ -318,8 +324,8 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 	}
 
 	stack = mmap_create_stack(emmap);
-	//stack = mmap_userspace_create(emmap, 0x1000);
-	//marea = mmap_place_marea(emmap, 0xFFFF8000, 0xFFFFF000, 0);
+	/*stack = mmap_userspace_create(emmap, 0x1000); */
+	/*marea = mmap_place_marea(emmap, 0xFFFF8000, 0xFFFFF000, 0); */
 
 	fill_stack(&stack, &exec, argv, envp);
 

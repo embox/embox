@@ -46,9 +46,10 @@ struct clock_source {
 	uint32_t counter_shift;
 };
 
-extern struct clock_source *clock_source_get_best(enum clock_source_property property);
+extern struct clock_source * clock_source_get_best(
+	enum clock_source_property property);
 
-extern struct dlist_head *clock_source_get_list(void);
+extern struct dlist_head * clock_source_get_list(void);
 
 #define clock_source_foreach(csh) \
 	dlist_foreach_entry(csh, clock_source_get_list(), lnk)
@@ -63,7 +64,7 @@ extern struct dlist_head *clock_source_get_list(void);
  * @return count of nanoseconds from moment when clock source started
  */
 extern struct timespec clock_source_read(struct clock_source *cs);
-//extern time64_t clock_source_counter_read(struct clock_source *cs);
+/*extern time64_t clock_source_counter_read(struct clock_source *cs); */
 
 extern int clock_source_register(struct clock_source *cs);
 extern int clock_source_unregister(struct clock_source *cs);
@@ -82,12 +83,12 @@ struct clock_source_head {
 
 #define TIME_EVENT_DEVICE(ted) \
 	ARRAY_SPREAD_DECLARE(const struct time_event_device *const, \
-			__event_devices) \
-    ARRAY_SPREAD_ADD(__event_devices, ted);
+		__event_devices) \
+	ARRAY_SPREAD_ADD(__event_devices, ted);
 
 #define TIME_COUNTER_DEVICE(tcd) \
 	ARRAY_SPREAD_DECLARE(const struct time_counter_device *const, \
-			__counter_devices); \
-    ARRAY_SPREAD_ADD(__counter_devices, tcd);
+		__counter_devices); \
+	ARRAY_SPREAD_ADD(__counter_devices, tcd);
 
 #endif /* KERNEL_CLOCK_SOURCE_H_ */

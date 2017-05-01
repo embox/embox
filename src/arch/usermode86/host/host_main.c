@@ -12,19 +12,19 @@
 #include <termios.h>
 
 HOST_FNX(int, write,
-		CONCAT(int fd, const void *buf, int c),
-		fd, buf, c)
+	CONCAT(int fd, const void *buf, int c),
+	fd, buf, c)
 HOST_FNX(int, read,
-		CONCAT(int fd, void *buf, int c),
-		fd, buf, c)
+	CONCAT(int fd, void *buf, int c),
+	fd, buf, c)
 HOST_FNX(int, pause, void)
 
 static HOST_FNX(int, tcgetattr,
-		CONCAT(int fd, struct termios *tio),
-		fd, tio)
+	CONCAT(int fd, struct termios *tio),
+	fd, tio)
 static HOST_FNX(int, tcsetattr,
-		CONCAT(int fd, int opt_act, const struct termios *tio),
-		fd, opt_act, tio)
+	CONCAT(int fd, int opt_act, const struct termios *tio),
+	fd, opt_act, tio)
 
 static void host_set_input_mode(int fd) {
 	struct termios tio;
@@ -44,4 +44,5 @@ int main(int argc, char *argv[]) {
 
 #include <setjmp.h>
 #include <host.h>
-_Static_assert(HOST_JMPBUF_LEN >= sizeof(jmp_buf), "HOST_JMPBUF_LEN less that sizeof(jmp_buf)");
+_Static_assert(HOST_JMPBUF_LEN >= sizeof(jmp_buf),
+	"HOST_JMPBUF_LEN less that sizeof(jmp_buf)");

@@ -68,8 +68,8 @@ struct newc_hdr_parsed {
 
 #define STR_LEN_TUPLE(str) (str), (sizeof(str) - 1)
 
-static char *cpio_parse_newc(const struct newc_hdr *hdr,
-		struct cpio_entry *entry) {
+static char * cpio_parse_newc(const struct newc_hdr *hdr,
+	struct cpio_entry *entry) {
 	char *raw = (char *) hdr + sizeof(hdr->c_magic);
 	struct newc_hdr_parsed parsed;
 	char field_buff[NEWC_FIELD_SZ + 1];
@@ -77,8 +77,8 @@ static char *cpio_parse_newc(const struct newc_hdr *hdr,
 	field_buff[NEWC_FIELD_SZ] = '\0';
 
 	for (unsigned long *p_field = (unsigned long *) &parsed;
-	     p_field < (unsigned long *) (&parsed + 1);
-	     ++p_field, raw += NEWC_FIELD_SZ) {
+		p_field < (unsigned long *) (&parsed + 1);
+		++p_field, raw += NEWC_FIELD_SZ) {
 		unsigned long tmp;
 
 		memcpy(field_buff, raw, NEWC_FIELD_SZ);
@@ -116,7 +116,7 @@ static char *cpio_parse_newc(const struct newc_hdr *hdr,
 	return raw;
 }
 
-char *cpio_parse_entry(const char *cpio, struct cpio_entry *entry) {
+char * cpio_parse_entry(const char *cpio, struct cpio_entry *entry) {
 	if (memcmp(cpio, STR_LEN_TUPLE(OLD_BIN_MAGIC)) == 0) {
 		printk("Use -H newc option for create CPIO archive\n");
 		return NULL;
@@ -128,4 +128,3 @@ char *cpio_parse_entry(const char *cpio, struct cpio_entry *entry) {
 
 	return cpio_parse_newc((struct newc_hdr *) cpio, entry);
 }
-

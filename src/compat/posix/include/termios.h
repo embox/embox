@@ -112,24 +112,24 @@
 #define TCIOFF             3    /* transmit a STOP character on the line */
 #define TCION              4    /* transmit a START character on the line */
 
-typedef unsigned char   cc_t;
-typedef unsigned int    speed_t;
-typedef unsigned int    tcflag_t;
+typedef unsigned char cc_t;
+typedef unsigned int speed_t;
+typedef unsigned int tcflag_t;
 
 struct termios {
 	tcflag_t c_iflag;     /* input mode flags */
 	tcflag_t c_oflag;     /* output mode flags */
 	tcflag_t c_cflag;     /* control mode flags */
 	tcflag_t c_lflag;     /* local mode flags */
-	cc_t     c_cc[NCCS];  /* control characters */
+	cc_t c_cc[NCCS];      /* control characters */
 
 	/* TODO non-standard fields. */
-	cc_t     c_line;      /* line discipline */
-	speed_t  c_ispeed;
-	speed_t  c_ospeed;
+	cc_t c_line;          /* line discipline */
+	speed_t c_ispeed;
+	speed_t c_ospeed;
 };
 
-// TODO part of tty_ioctl, not termios -- Eldar
+/* TODO part of tty_ioctl, not termios -- Eldar */
 struct winsize {
 	unsigned short ws_row;
 	unsigned short ws_col;
@@ -163,15 +163,15 @@ static inline int cfsetospeed(struct termios *termios, speed_t speed) {
 
 /* TODO IOCTL numbers are not included in standard <termios.h>.  -- Eldar */
 
-#define	TIOCGETA	_IOR('t', 1, struct termios)  /* get termios struct */
-#define	TIOCSETA	_IOW('t', 2, struct termios)  /* set termios struct */
-#define	TIOCSETAW	_IOW('t', 3, struct termios)  /* drain output, set */
-#define	TIOCSETAF	_IOW('t', 4, struct termios)  /* drn out, fls in, set */
+#define TIOCGETA    _IOR('t', 1, struct termios)  /* get termios struct */
+#define TIOCSETA    _IOW('t', 2, struct termios)  /* set termios struct */
+#define TIOCSETAW   _IOW('t', 3, struct termios)  /* drain output, set */
+#define TIOCSETAF   _IOW('t', 4, struct termios)  /* drn out, fls in, set */
 
-#define	TIOCGWINSZ	_IOR('t', 5, struct winsize)  /* get window size */
-#define	TIOCSWINSZ	_IOW('t', 6, struct winsize)  /* set window size */
+#define TIOCGWINSZ  _IOR('t', 5, struct winsize)  /* get window size */
+#define TIOCSWINSZ  _IOW('t', 6, struct winsize)  /* set window size */
 
-#define TIOCSPGRP	_IOR('t', 7, pid_t)  /* set process group */
-#define TIOCGPGRP	_IO('t', 8)  /* get process group */
+#define TIOCSPGRP   _IOR('t', 7, pid_t)  /* set process group */
+#define TIOCGPGRP   _IO('t', 8)  /* get process group */
 
 #endif /* TERMIOS_H_ */

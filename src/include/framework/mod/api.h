@@ -137,7 +137,7 @@ extern int mod_integrity_check(const struct mod *mod);
  * @return
  *   Found module, if any, NULL otherwise.
  */
-extern const struct mod *mod_lookup(const char *fqn);
+extern const struct mod * mod_lookup(const char *fqn);
 
 /**
  * Iterates over a list of all mods registered in the system
@@ -150,7 +150,8 @@ extern const struct mod *mod_lookup(const char *fqn);
 	array_spread_nullterm_foreach(mod, __mod_registry)
 
 #define __mod_foreach_field(_i, _mod, _field) \
-	array_spread_nullterm_foreach(_i, (_mod)->build_info ? (_mod)->build_info->_field : NULL)
+	array_spread_nullterm_foreach(_i, \
+		(_mod)->build_info ? (_mod)->build_info->_field : NULL)
 
 /**
  * Iterates over a list of mods on which the specified one depends.
@@ -176,15 +177,15 @@ extern const struct mod *mod_lookup(const char *fqn);
 #define mod_foreach_provides(dep, mod) \
 	__mod_foreach_field(dep, mod, provides)
 
-static inline const char *mod_name(const struct mod *mod) {
+static inline const char * mod_name(const struct mod *mod) {
 	return mod->build_info ? mod->build_info->mod_name : NULL;
 }
 
-static inline const char *mod_pkg_name(const struct mod *mod) {
+static inline const char * mod_pkg_name(const struct mod *mod) {
 	return mod->build_info ? mod->build_info->pkg_name : NULL;
 }
 
-static inline const struct mod_label *mod_label(const struct mod *mod) {
+static inline const struct mod_label * mod_label(const struct mod *mod) {
 	return mod->build_info ? mod->build_info->label : NULL;
 }
 

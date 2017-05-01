@@ -11,7 +11,7 @@
 
 #include <module/embox/mem/mmap_api.h>
 
-//TODO:
+/*TODO: */
 #define MAREA_ALIGMENT            0x1000
 #define MAREA_ALIGMENT_MASK       (MAREA_ALIGMENT - 1)
 
@@ -26,15 +26,17 @@ extern void mmap_free(struct emmap *mmap);
 
 extern int mmap_inherit(struct emmap *mmap, struct emmap *parent_mmap);
 
-extern struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags);
+extern struct marea * mmap_place_marea(struct emmap *mmap, uint32_t start,
+	uint32_t end, uint32_t flags);
 
-extern struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags);
+extern struct marea * mmap_alloc_marea(struct emmap *mmap, size_t size,
+	uint32_t flags);
 
 static inline uint32_t marea_get_start(struct marea *marea) {
 	return marea->start;
 }
 
-static inline void *mmap_get_brk(struct emmap *mmap) {
+static inline void * mmap_get_brk(struct emmap *mmap) {
 	return mmap->brk;
 }
 

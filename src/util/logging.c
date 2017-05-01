@@ -17,7 +17,7 @@ char *log_levels[LOG_DEBUG] = {
 	"debug"
 };
 
-void logging_raw(struct logging *logging, int level, const char* fmt, ...) {
+void logging_raw(struct logging *logging, int level, const char *fmt, ...) {
 	if (logging && level <= logging->level) {
 		va_list args;
 

@@ -25,7 +25,7 @@ const struct net_family * net_family_lookup(int family) {
 }
 
 const struct net_family_type * net_family_type_lookup(
-		const struct net_family *nfamily, int type) {
+	const struct net_family *nfamily, int type) {
 	const struct net_family_type *nftype;
 
 	if (nfamily == NULL) {

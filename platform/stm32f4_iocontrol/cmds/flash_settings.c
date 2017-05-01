@@ -29,26 +29,26 @@
 struct flashset_network_settings {
 	struct sockaddr fsn_addr;
 	struct sockaddr fsn_mask;
-	unsigned char   fsn_mac[MAX_ADDR_LEN];
+	unsigned char fsn_mac[MAX_ADDR_LEN];
 };
 
 static struct flashset_network_settings fsn_network;
 static unsigned char fsn_leds_state[LEDDRV_LED_N];
 
 static int flashset_nic_store(const char *nic_name) {
-        struct ifaddrs *i_ifa, *nic_ifa, *ifa;
+	struct ifaddrs *i_ifa, *nic_ifa, *ifa;
 	struct in_device *iface_dev;
 	int errcode, fd;
 
 	ifa = NULL;
-        if (-1 == (errcode = getifaddrs(&ifa))) {
+	if (-1 == (errcode = getifaddrs(&ifa))) {
 		goto outerr;
-        }
+	}
 
 	nic_ifa = NULL;
-        for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
+	for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
 
-                if (i_ifa->ifa_addr == NULL ||
+		if (i_ifa->ifa_addr == NULL ||
 			i_ifa->ifa_addr->sa_family != AF_INET) {
 			continue;
 		}
@@ -79,9 +79,9 @@ static int flashset_nic_store(const char *nic_name) {
 		sizeof(fsn_network.fsn_mac));
 
 	fd = open("nic", O_CREAT);
-	errcode = write(fd, (char*) &fsn_network, sizeof(fsn_network));
+	errcode = write(fd, (char *) &fsn_network, sizeof(fsn_network));
 
-outerr:
+	outerr:
 	close(fd);
 	return errcode;
 }
@@ -91,11 +91,13 @@ static int flashset_nic_restore(const char *nic_name) {
 	int errcode, fd;
 
 	fd = open("nic", 0);
-	if (fd < 0)
+	if (fd < 0) {
 		return fd;
-	errcode = read(fd, (char*) &fsn_network, sizeof(fsn_network));
-	if (errcode < 0)
+	}
+	errcode = read(fd, (char *) &fsn_network, sizeof(fsn_network));
+	if (errcode < 0) {
 		goto outerr;
+	}
 
 	iface_dev = inetdev_get_by_name(nic_name);
 	if (!iface_dev) {
@@ -104,12 +106,14 @@ static int flashset_nic_restore(const char *nic_name) {
 	}
 
 	if ((errcode = inetdev_set_addr(iface_dev,
-		((struct sockaddr_in *) &fsn_network.fsn_addr)->sin_addr.s_addr))) {
+				((struct sockaddr_in *) &fsn_network.fsn_addr)->sin_addr.s_addr)))
+	{
 		goto outerr;
 	}
 
 	if ((errcode = inetdev_set_mask(iface_dev,
-		((struct sockaddr_in *) &fsn_network.fsn_mask)->sin_addr.s_addr))) {
+				((struct sockaddr_in *) &fsn_network.fsn_mask)->sin_addr.s_addr)))
+	{
 		goto outerr;
 	}
 
@@ -118,7 +122,7 @@ static int flashset_nic_restore(const char *nic_name) {
 	}
 
 	errcode = 0;
-outerr:
+	outerr:
 	close(fd);
 	return errcode;
 }
@@ -130,10 +134,11 @@ static int flashset_led_store(void) {
 	}
 
 	fd = open("led", O_CREAT);
-	if (fd < 0)
+	if (fd < 0) {
 		return fd;
+	}
 
-	errcode = write(fd, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
+	errcode = write(fd, (char *) &fsn_leds_state, sizeof(fsn_leds_state));
 	close(fd);
 
 	return errcode;
@@ -142,41 +147,47 @@ static int flashset_led_store(void) {
 static int flashset_led_restore(void) {
 	int errcode, fd;
 	fd = open("led", 0);
-	if (fd < 0)
+	if (fd < 0) {
 		return fd;
-	errcode = read(fd, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
+	}
+	errcode = read(fd, (char *) &fsn_leds_state, sizeof(fsn_leds_state));
 	close(fd);
 
-	if (errcode < 0)
+	if (errcode < 0) {
 		return errcode;
+	}
 
 	return leddrv_updatestates(fsn_leds_state);
 }
 
 static int flashset_lednames_store(void) {
 	int errcode, fd = open("led_names", O_CREAT);
-	if (fd < 0)
+	if (fd < 0) {
 		return fd;
+	}
 
-	errcode = write(fd, (char*) &led_names, sizeof(led_names));
+	errcode = write(fd, (char *) &led_names, sizeof(led_names));
 	close(fd);
 
-	if (errcode < 0)
+	if (errcode < 0) {
 		return errcode;
+	}
 
 	return 0;
 }
 
 static int flashset_lednames_restore(void) {
 	int fd = open("led_names", 0), errcode;
-	if (fd < 0)
+	if (fd < 0) {
 		return -1;
+	}
 
-	errcode = read(fd, (char*) &led_names, sizeof(led_names));;
+	errcode = read(fd, (char *) &led_names, sizeof(led_names));;
 	close(fd);
 
-	if (errcode < 0)
+	if (errcode < 0) {
 		return errcode;
+	}
 
 	return 0;
 }
@@ -215,9 +226,9 @@ int main(int argc, char *argv[]) {
 			"  net       [%s]\n"
 			"  led       [%s]\n"
 			"  led_names [%s]\n",
-		flashset_nic_restore("eth0") ? "fail" : " ok ",
-		flashset_led_restore()       ? "fail" : " ok ",
-		flashset_lednames_restore()  ? "fail" : " ok ");
+			flashset_nic_restore("eth0") ? "fail" : " ok ",
+			flashset_led_restore()       ? "fail" : " ok ",
+			flashset_lednames_restore()  ? "fail" : " ok ");
 	}
 
 	return 0;

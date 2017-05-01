@@ -33,7 +33,7 @@ EMBOX_UNIT_INIT(r6040_init);
 /* RDC MAC I/O Size */
 #define R6040_IO_SIZE   256
 
-//TODO: get from PCI
+/*TODO: get from PCI */
 #define IOADDR         0xe800
 
 /* MAC registers */
@@ -89,8 +89,8 @@ EMBOX_UNIT_INIT(r6040_init);
 #define TX_DCNT         0x80    /* TX descriptor count */
 #define RX_DCNT         0x80    /* RX descriptor count */
 #define MAX_BUF_SIZE    0x600
-//#define RX_DESC_SIZE    (RX_DCNT * sizeof(struct eth_desc))
-//#define TX_DESC_SIZE    (TX_DCNT * sizeof(struct eth_desc))
+/*#define RX_DESC_SIZE    (RX_DCNT * sizeof(struct eth_desc)) */
+/*#define TX_DESC_SIZE    (TX_DCNT * sizeof(struct eth_desc)) */
 #define MBCR_DEFAULT    0x012A  /* MAC Bus Control Register */
 
 /* Descriptor status */
@@ -119,7 +119,7 @@ EMBOX_UNIT_INIT(r6040_init);
  */
 typedef struct eth_desc {
 	volatile uint16_t status;
-	uint16_t       dlen;
+	uint16_t dlen;
 	unsigned char *buf;
 	struct eth_desc *DNX;
 	unsigned short HIDX;
@@ -133,7 +133,7 @@ static uint8_t descrxbuff[0x800];
 static uint8_t etherrxbuff[0x800];
 
 /* Pass in the next pointer */
-static eth_desc_t *rxd_init(size_t pkt_size) {
+static eth_desc_t * rxd_init(size_t pkt_size) {
 	eth_desc_t *rxd = (eth_desc_t *) descrxbuff;
 	unsigned char *pkt = (unsigned char *) etherrxbuff;
 
@@ -166,21 +166,21 @@ static void r6040_tx_disable(void) {
 void r6040_rx_enable(void) {
 	unsigned short tmp = in16(MCR0);
 	out16(tmp | (1 << 1), MCR0);
-//	out16(2, MCR0);
+/*	out16(2, MCR0); */
 }
 
 static void r6040_rx_disable(void) {
 	out8(0, MCR0);
 }
 
-static void r6040_set_tx_start(eth_desc_t* desc) {
+static void r6040_set_tx_start(eth_desc_t *desc) {
 	unsigned long tmp = (unsigned long) desc;
 	out16((tmp & 0xffff), TX_START_LOW);
 	tmp >>= 16;
 	out16((tmp & 0xffff), TX_START_HIGH);
 }
 
-static void r6040_set_rx_start(eth_desc_t* desc) {
+static void r6040_set_rx_start(eth_desc_t *desc) {
 	unsigned long tmp = (unsigned long) desc;
 	out16((tmp & 0xffff), RX_START_LOW);
 	tmp >>= 16;
@@ -206,7 +206,7 @@ static irq_return_t irq_handler(unsigned int irq_num, void *dev_id) {
 		out16(misr, MIER);
 		return IRQ_NONE;
 	}
-	//TODO:
+	/*TODO: */
 
 	/* Restore RDC MAC interrupt */
 	out16(misr, MIER);
@@ -235,7 +235,7 @@ static void discard_descriptor(void) {
 }
 
 /* Returns size of pkt, or zero if none received */
-size_t r6040_rx(unsigned char* pkt, size_t max_len) {
+size_t r6040_rx(unsigned char *pkt, size_t max_len) {
 	size_t ret = 0;
 	printk("MIER=0x%08x\n", *((unsigned int *) MIER));
 	printk("MISR=0x%08x\n", *((unsigned int *) MISR));
@@ -269,7 +269,7 @@ size_t r6040_rx(unsigned char* pkt, size_t max_len) {
 }
 
 /* queue packet for transmission */
-void r6040_tx(unsigned char* pkt, size_t length) {
+void r6040_tx(unsigned char *pkt, size_t length) {
 	r6040_tx_disable();
 
 	/* copy this packet into the transmit descriptor */
@@ -284,7 +284,7 @@ void r6040_tx(unsigned char* pkt, size_t length) {
 	/* Make the mac own it */
 	g_tx_descriptor_next->status = DSC_OWNER_MAC;
 
-	//desc_dump(g_tx_descriptor_next);
+	/*desc_dump(g_tx_descriptor_next); */
 
 	/* Start xmit */
 	r6040_tx_enable();
@@ -294,13 +294,13 @@ void r6040_tx(unsigned char* pkt, size_t length) {
 	/* Stop any other activity */
 	r6040_tx_disable();
 
-	//desc_dump(g_tx_descriptor_next);
+	/*desc_dump(g_tx_descriptor_next); */
 }
 
 unsigned short r6040_mdio_read(int reg, int phy) {
 	out8(MDIO_READ + reg + (phy << 8), MMDIO);
 	/* Wait for the read bit to be cleared */
-	while (in16(MMDIO) & MDIO_READ);
+	while (in16(MMDIO) & MDIO_READ) ;
 	return in16(MMRD);
 }
 
@@ -339,13 +339,12 @@ static int r6040_stop(struct net_device *dev) {
 }
 
 static const struct net_driver r6040_drv_ops = {
-//	.xmit = r6040_xmit,
+/*	.xmit = r6040_xmit, */
 	.start       = r6040_open,
 	.stop       = r6040_stop,
-//	.set_macaddr = set_mac_address
+/*	.set_macaddr = set_mac_address */
 };
 #endif
-
 
 /* setup descriptors, start packet reception */
 static int r6040_init(void) {
@@ -361,7 +360,8 @@ static int r6040_init(void) {
 		}
 	}
 	/* Make ring buffer */
-	g_rx_descriptor_list[R6040_RX_DESCRIPTORS - 1]->DNX = g_rx_descriptor_list[0];
+	g_rx_descriptor_list[R6040_RX_DESCRIPTORS -
+	1]->DNX = g_rx_descriptor_list[0];
 	r6040_set_rx_start(g_rx_descriptor_list[0]);
 	g_rx_descriptor_next = g_rx_descriptor_list[0];
 	g_tx_descriptor_next = rxd_init(1536);

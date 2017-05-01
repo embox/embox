@@ -21,7 +21,7 @@
 static struct idesc_ops idesc_cdev_null_ops;
 static struct file_operations null_ops;
 
-static struct idesc *null_open(struct inode *node, struct idesc *idesc) {
+static struct idesc * null_open(struct inode *node, struct idesc *idesc) {
 	struct file *file;
 
 	file = dvfs_alloc_file();
@@ -30,7 +30,7 @@ static struct idesc *null_open(struct inode *node, struct idesc *idesc) {
 	}
 	*file = (struct file) {
 		.f_idesc  = {
-				.idesc_ops   = &idesc_cdev_null_ops,
+			.idesc_ops   = &idesc_cdev_null_ops,
 		},
 	};
 	return &file->f_idesc;
@@ -40,7 +40,8 @@ static void null_close(struct idesc *desc) {
 	dvfs_destroy_file((struct file *)desc);
 }
 
-static ssize_t null_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t null_write(struct idesc *desc, const struct iovec *iov,
+	int cnt) {
 	int i;
 	ssize_t ret_size;
 
@@ -57,7 +58,7 @@ static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 }
 
 static struct file_operations null_ops = {
-		.open = null_open,
+	.open = null_open,
 };
 
 static struct idesc_ops idesc_cdev_null_ops = {

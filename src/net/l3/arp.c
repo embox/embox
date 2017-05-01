@@ -34,11 +34,11 @@
 #include <framework/mod/options.h>
 #define LOG_LEVEL OPTION_GET(NUMBER, log_level)
 
-// Forward declarations
+/* Forward declarations */
 static void log_arp_hnd_request(const struct arphdr *rarph,
-		uint8_t *dst_paddr, uint8_t *dst_haddr);
+	uint8_t *dst_paddr, uint8_t *dst_haddr);
 static void log_arp_hnd_reply(const struct arphdr *rarph,
-		const struct arpbody *rarpb);
+	const struct arpbody *rarpb);
 
 EMBOX_NET_PACK(ETH_P_ARP, arp_rcv);
 
@@ -47,7 +47,7 @@ static int arp_xmit(struct sk_buff *skb) {
 	assert(skb->dev != NULL);
 	if (skb->dev->flags & IFF_NOARP) {
 		log_error("arp_xmit: arp doesn't supported by device %s\n",
-					&skb->dev->name[0]);
+			&skb->dev->name[0]);
 		skb_free(skb);
 		return 0; /* error: arp doesn't supported by device */
 	}
@@ -57,8 +57,8 @@ static int arp_xmit(struct sk_buff *skb) {
 }
 
 static int arp_send(struct sk_buff *skb, struct net_device *dev,
-		uint16_t pro, uint8_t pln, uint16_t op, const void *sha,
-		const void *spa, const void *tha, const void *tpa) {
+	uint16_t pro, uint8_t pln, uint16_t op, const void *sha,
+	const void *spa, const void *tha, const void *tpa) {
 	int ret;
 	size_t size;
 	struct net_header_info hdr_info;
@@ -73,8 +73,10 @@ static int arp_send(struct sk_buff *skb, struct net_device *dev,
 	size = dev->hdr_len + ARP_CALC_HEADER_SIZE(dev->addr_len, pln);
 	if (size > min(dev->mtu, skb_max_size())) {
 		log_error("arp_send: hdr size %zu is too big (max %zu)\n",
-					size, min(dev->mtu, skb_max_size()));
-		if (skb) skb_free(skb); /* TODO */
+			size, min(dev->mtu, skb_max_size()));
+		if (skb) {
+			skb_free(skb);      /* TODO */
+		}
 		return -EMSGSIZE; /* error: hdr size is too big */
 	}
 
@@ -103,14 +105,14 @@ static int arp_send(struct sk_buff *skb, struct net_device *dev,
 
 	/* build ARP header */
 	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln,
-			op, sha, spa, tha, tpa);
+		op, sha, spa, tha, tpa);
 
 	/* and send */
 	return arp_xmit(skb);
 }
 
 static int arp_update_neighbour(const struct arphdr *arph,
-		const struct arpbody *arpb, struct net_device *dev) {
+	const struct arpbody *arpb, struct net_device *dev) {
 	assert(arph != NULL);
 	assert(arpb != NULL);
 
@@ -120,8 +122,8 @@ static int arp_update_neighbour(const struct arphdr *arph,
 }
 
 static int arp_hnd_request(const struct arphdr *arph,
-		const struct arpbody *arpb, struct sk_buff *skb,
-		struct net_device *dev) {
+	const struct arpbody *arpb, struct sk_buff *skb,
+	struct net_device *dev) {
 	uint8_t src_paddr[MAX_ADDR_LEN];
 	uint8_t dst_haddr[MAX_ADDR_LEN], dst_paddr[MAX_ADDR_LEN];
 	struct in_device *in_dev;
@@ -131,7 +133,7 @@ static int arp_hnd_request(const struct arphdr *arph,
 
 	/* check protocol capabilities */
 	if ((arph->ar_pro != htons(ETH_P_IP))
-			|| (arph->ar_pln != sizeof in_dev->ifa_address)) {
+		|| (arph->ar_pln != sizeof in_dev->ifa_address)) {
 		log_error("arp_hnd_request: only IPv4 is supported\n");
 		skb_free(skb);
 		return 0; /* FIXME error: only IPv4 is supported */
@@ -144,7 +146,7 @@ static int arp_hnd_request(const struct arphdr *arph,
 
 	/* check recipient */
 	if (0 != memcmp(arpb->ar_tpa, &in_dev->ifa_address,
-				arph->ar_pln)) {
+		arph->ar_pln)) {
 		log_error("arp_hnd_request: not for us\n");
 		skb_free(skb);
 		return 0; /* error: not for us */
@@ -175,8 +177,8 @@ static int arp_hnd_request(const struct arphdr *arph,
 }
 
 static int arp_hnd_reply(const struct arphdr *arph,
-		const struct arpbody *arpb, struct sk_buff *skb,
-		struct net_device *dev) {
+	const struct arpbody *arpb, struct sk_buff *skb,
+	struct net_device *dev) {
 	int ret;
 
 	/* update translation table */
@@ -198,30 +200,30 @@ static int arp_hnd_reply(const struct arphdr *arph,
 }
 
 static void log_arp_hnd_request(const struct arphdr *arph,
-		uint8_t *dst_paddr, uint8_t *dst_haddr) {
-		log_debug("arp_hnd_request: send reply with ");
-		if (arph->ar_pro == ntohs(ETH_P_IP)) {
-			struct in_addr in;
-			assert(arph->ar_pln == sizeof in);
-			memcpy(&in, dst_paddr, sizeof in);
-			log_debug("%s", inet_ntoa(in));
-		}
-		else {
-			log_debug("unknown(%x)", htons(arph->ar_pro));
-		}
-		if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
-			assert(arph->ar_hln == ETH_ALEN);
-			log_debug("[" MACADDR_FMT "]",
-				MACADDR_FMT_ARG(dst_haddr));
-		}
-		else {
-			log_debug("[unknown(%x)]", htons(arph->ar_hrd));
-		}
-		log_debug("\n");
+	uint8_t *dst_paddr, uint8_t *dst_haddr) {
+	log_debug("arp_hnd_request: send reply with ");
+	if (arph->ar_pro == ntohs(ETH_P_IP)) {
+		struct in_addr in;
+		assert(arph->ar_pln == sizeof in);
+		memcpy(&in, dst_paddr, sizeof in);
+		log_debug("%s", inet_ntoa(in));
+	}
+	else {
+		log_debug("unknown(%x)", htons(arph->ar_pro));
+	}
+	if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
+		assert(arph->ar_hln == ETH_ALEN);
+		log_debug("[" MACADDR_FMT "]",
+			MACADDR_FMT_ARG(dst_haddr));
+	}
+	else {
+		log_debug("[unknown(%x)]", htons(arph->ar_hrd));
+	}
+	log_debug("\n");
 }
 
 static void log_arp_hnd_reply(const struct arphdr *arph,
-		const struct arpbody *arpb) {
+	const struct arpbody *arpb) {
 	log_debug("arp_hnd_reply: receive reply with ");
 	if (arph->ar_pro == ntohs(ETH_P_IP)) {
 		struct in_addr in;
@@ -253,7 +255,7 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	/* check device flags */
 	if (dev->flags & IFF_NOARP) {
 		log_error("arp_rcv: aro doesn't supported by device %s\n",
-					&dev->name[0]);
+			&dev->name[0]);
 		return 0; /* error: arp doesn't supported by device */
 	}
 
@@ -266,10 +268,9 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 		return 0; /* error: bad packet */
 	}
 
-
 	/* check device capabilities */
 	if ((arph->ar_hrd != htons(dev->type))
-			|| (arph->ar_hln != dev->addr_len)) {
+		|| (arph->ar_hln != dev->addr_len)) {
 		log_error("arp_rcv: invalid hardware type or address length\n");
 		skb_free(skb);
 		return 0; /* error: invalid hardware address info */
@@ -294,7 +295,7 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 }
 
 int arp_discover(struct net_device *dev, uint16_t pro,
-		uint8_t pln, const void *spa, const void *tpa) {
+	uint8_t pln, const void *spa, const void *tpa) {
 	return arp_send(NULL, dev, pro, pln, ARP_OP_REQUEST,
 			&dev->dev_addr[0], spa, &dev->broadcast[0], tpa);
 }

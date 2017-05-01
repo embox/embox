@@ -11,7 +11,8 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group_set) {
+static int chown_do(char *files[], uid_t owner_id, gid_t group_id,
+	bool is_group_set) {
 	char **file_p;
 	int res;
 
@@ -19,11 +20,11 @@ static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group
 		char *file = *file_p;
 		struct stat st_buf;
 
-		if(!is_group_set) {
+		if (!is_group_set) {
 			res = stat(file, &st_buf);
 			if (res) {
 				fprintf(stderr, "stat(%s, ..) return error = %d\n",
-						file, errno);
+					file, errno);
 				return errno;
 			}
 			group_id = st_buf.st_gid;
@@ -32,7 +33,7 @@ static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group
 		res = chown(file, owner_id, group_id);
 		if (res) {
 			fprintf(stderr, "chown(%s, %d, %d) return error = %d\n",
-					file, owner_id, group_id, errno);
+				file, owner_id, group_id, errno);
 			return errno;
 		}
 	}

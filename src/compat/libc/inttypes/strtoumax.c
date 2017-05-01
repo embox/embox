@@ -48,7 +48,7 @@
 #include <errno.h>
 
 uintmax_t strtoumax(const char *restrict nptr, char **restrict endptr,
-		int base) {
+	int base) {
 	const char *s = nptr;
 	uintmax_t acc;
 	int c;
@@ -64,10 +64,11 @@ uintmax_t strtoumax(const char *restrict nptr, char **restrict endptr,
 	if (c == '-') {
 		neg = 1;
 		c = *s++;
-	} else if (c == '+')
+	} else if (c == '+') {
 		c = *s++;
+	}
 	if ((base == 0 || base == 16) &&
-	    c == '0' && (*s == 'x' || *s == 'X')) {
+		c == '0' && (*s == 'x' || *s == 'X')) {
 		c = s[1];
 		s += 2;
 		base = 16;

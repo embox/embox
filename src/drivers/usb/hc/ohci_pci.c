@@ -24,8 +24,8 @@
 
 #define OHCI_WRITE_STATE(ohcd, state) \
 	OHCI_WRITE(ohcd, &ohcd->base->hc_control, \
-			(OHCI_READ(ohcd, &ohcd->base->hc_control) & \
-				~OHCI_CTRL_FUNC_STATE_MASK) | state)
+		(OHCI_READ(ohcd, &ohcd->base->hc_control) & \
+		~OHCI_CTRL_FUNC_STATE_MASK) | state)
 
 /* OHCI private stuff */
 /* HCCAs are in separate pool to prevent huge padding */
@@ -34,12 +34,12 @@ POOL_DEF(ohci_hcds, struct ohci_hcd, USB_MAX_HCD);
 POOL_DEF(ohci_eds, struct ohci_ed, USB_MAX_ENDP);
 POOL_DEF(ohci_tds, struct ohci_td, OHCI_MAX_REQUESTS);
 
-static struct ohci_td *ohci_ed_get_tail_td(struct ohci_ed *ed);
+static struct ohci_td * ohci_ed_get_tail_td(struct ohci_ed *ed);
 static int ohci_ed_desched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed);
 static int ohci_ed_desched(struct ohci_hcd *ohcd, struct ohci_ed *ed,
-		struct ohci_ed **ed_queue);
+	struct ohci_ed **ed_queue);
 
-static void *ohci_hcd_alloc(struct usb_hcd *hcd, void *args) {
+static void * ohci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	struct ohci_hcd *ohcd = pool_alloc(&ohci_hcds);
 	struct ohci_hcca *hcca = pool_alloc(&ohci_hccas);
 	unsigned int rh_port_n;
@@ -73,7 +73,7 @@ static void ohci_hcd_free(struct usb_hcd *hcd, void *spec) {
 	pool_free(&ohci_hccas, ohcd);
 }
 
-static struct ohci_td *ohci_td_alloc(void) {
+static struct ohci_td * ohci_td_alloc(void) {
 	struct ohci_td *td = pool_alloc(&ohci_tds);
 	return td;
 }
@@ -82,7 +82,7 @@ static void ohci_td_free(struct ohci_td *td) {
 	pool_free(&ohci_tds, td);
 }
 
-static void *ohci_ed_alloc(struct usb_endp *ep) {
+static void * ohci_ed_alloc(struct usb_endp *ep) {
 	struct ohci_td *sentinel_td = ohci_td_alloc();
 	struct ohci_ed *ed = pool_alloc(&ohci_eds);
 
@@ -104,9 +104,11 @@ static void ohci_ed_free(struct usb_endp *ep, void *spec) {
 	if (ep->type == USB_COMM_INTERRUPT) {
 		ohci_ed_desched_interrupt(ohcd, ed);
 	} else {
-		ohci_ed_desched(ohcd, ed, (struct ohci_ed **) &ohcd->base->hc_ctrl_head_ed);
+		ohci_ed_desched(ohcd, ed,
+			(struct ohci_ed **) &ohcd->base->hc_ctrl_head_ed);
 		/* FIXME WTF? */
-		ohci_ed_desched(ohcd, ed, (struct ohci_ed **) &ohcd->base->hc_ctrl_head_ed);
+		ohci_ed_desched(ohcd, ed,
+			(struct ohci_ed **) &ohcd->base->hc_ctrl_head_ed);
 	}
 
 	placeholder_td = ohci_ed_get_tail_td(ed);
@@ -116,8 +118,8 @@ static void ohci_ed_free(struct usb_endp *ep, void *spec) {
 }
 /* === end === */
 
-static struct ohci_td *ohci_td_fill(struct ohci_td *td, uint32_t flags,
-		void *buf, size_t size, struct usb_request *req) {
+static struct ohci_td * ohci_td_fill(struct ohci_td *td, uint32_t flags,
+	void *buf, size_t size, struct usb_request *req) {
 
 	if (!td) {
 		return NULL;
@@ -132,16 +134,16 @@ static struct ohci_td *ohci_td_fill(struct ohci_td *td, uint32_t flags,
 	return td;
 }
 
-static inline struct ohci_td *ohci_td_next(struct ohci_td *td) {
+static inline struct ohci_td * ohci_td_next(struct ohci_td *td) {
 	return (struct ohci_td *) REG_LOAD(&td->next_td);
 }
 
-static struct ohci_td *ohci_ed_get_tail_td(struct ohci_ed *ed) {
+static struct ohci_td * ohci_ed_get_tail_td(struct ohci_ed *ed) {
 	return (void *) REG_LOAD(&ed->tail_td);
 }
 
 static int ohci_td_enque_tail(struct ohci_ed *ed,
-		struct ohci_td *placeholder_td) {
+	struct ohci_td *placeholder_td) {
 	struct ohci_td *td = ohci_ed_get_tail_td(ed);
 
 	REG_STORE(&td->next_td, (unsigned long) placeholder_td);
@@ -187,7 +189,7 @@ static int ohci_start(struct usb_hcd *hcd) {
 
 		/* poll */
 		while ((hc_ctrl = OHCI_READ(ohcd, &ohcd->base->hc_control))
-				& OHCI_CTRL_INT_ROUT) {
+			& OHCI_CTRL_INT_ROUT) {
 
 		}
 	} else if (hc_state != OHCI_CTRL_FUNC_STATE_RST) {
@@ -207,8 +209,8 @@ static int ohci_start(struct usb_hcd *hcd) {
 
 	backed_fm_interval = OHCI_READ(ohcd, &ohcd->base->hc_fm_interval);
 	OHCI_WRITE(ohcd, &ohcd->base->hc_cmdstat,
-			OHCI_READ(ohcd, &ohcd->base->hc_cmdstat) |
-				OHCI_CMD_RESET);
+		OHCI_READ(ohcd, &ohcd->base->hc_cmdstat) |
+		OHCI_CMD_RESET);
 
 	/* poll */
 	while (OHCI_READ(ohcd, &ohcd->base->hc_cmdstat) & OHCI_CMD_RESET) {
@@ -216,7 +218,6 @@ static int ohci_start(struct usb_hcd *hcd) {
 	}
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_fm_interval, backed_fm_interval);
-
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_period_cur_ed, 0);
 	OHCI_WRITE(ohcd, &ohcd->base->hc_ctrl_head_ed,  0);
@@ -229,15 +230,15 @@ static int ohci_start(struct usb_hcd *hcd) {
 	OHCI_WRITE(ohcd, &ohcd->base->hc_inten, OHCI_INTERRUPT_ALL_BUTSOF);
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_control,
-			OHCI_READ(ohcd, &ohcd->base->hc_control)
-				| OHCI_CTRL_PERIOD_EN
-				| OHCI_CTRL_ISOCHR_EN
-				| OHCI_CTRL_CTRL_EN
-				| OHCI_CTRL_BULK_EN);
+		OHCI_READ(ohcd, &ohcd->base->hc_control)
+		| OHCI_CTRL_PERIOD_EN
+		| OHCI_CTRL_ISOCHR_EN
+		| OHCI_CTRL_CTRL_EN
+		| OHCI_CTRL_BULK_EN);
 
 	OHCI_WRITE(ohcd, &ohcd->base->hc_period_start,
-			(9 * (OHCI_READ(ohcd, &ohcd->base->hc_fm_interval)
-				       	& OHCI_FM_INTERVAL_FI_MASK)) / 10);
+		(9 * (OHCI_READ(ohcd, &ohcd->base->hc_fm_interval)
+		& OHCI_FM_INTERVAL_FI_MASK)) / 10);
 
 	OHCI_WRITE_STATE(ohcd, OHCI_CTRL_FUNC_STATE_OPRT);
 
@@ -262,7 +263,7 @@ static inline unsigned int ohci_port_stat_map(uint16_t val) {
 }
 
 static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
-			unsigned short value) {
+	unsigned short value) {
 	struct ohci_hcd *ohcd = hcd2ohci(port->hub->hcd);
 	uint32_t wval = 0;
 
@@ -286,7 +287,8 @@ static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 			wval |= OHCI_RH_R_LOWSPD_W_CLPWR;
 		}
 		if (value & USB_HUB_PORT_RESET) {
-			uint32_t portstat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
+			uint32_t portstat =
+				OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[port->idx]);
 			/* if hardware haven't cleared RESET,
 			 * then RESET high signal was not long enough */
 			if (portstat & OHCI_RH_R_RST_W_STRST) {
@@ -298,7 +300,7 @@ static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 	OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[port->idx], wval);
 
 	port->status = ohci_port_stat_map(OHCI_READ(ohcd,
-				&ohcd->base->hc_rh_port_stat[port->idx]));
+			&ohcd->base->hc_rh_port_stat[port->idx]));
 
 	return 0;
 }
@@ -331,11 +333,11 @@ static void ohci_ed_sched(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 
 	cmdstat = OHCI_READ(ohcd, &ohcd->base->hc_cmdstat);
 	OHCI_WRITE(ohcd, &ohcd->base->hc_cmdstat, cmdstat |
-			OHCI_CMD_CONTROL_FILLED);
+		OHCI_CMD_CONTROL_FILLED);
 }
 
 static int ohci_ed_desched(struct ohci_hcd *ohcd, struct ohci_ed *ed,
-		struct ohci_ed **ed_queue) {
+	struct ohci_ed **ed_queue) {
 	struct ohci_ed **p_ed, *c_ed, *n_ed;
 
 	if (!ohci_common_issched(ohcd, ed)) {
@@ -378,7 +380,8 @@ static void ohci_ed_sched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 
 	/* just leave somewhere! */
 	for (i = 0; i < OHCI_HCCA_INTERRUPT_LIST_N; i++) {
-		struct ohci_ed *next_ed = (struct ohci_ed *) REG_LOAD(&hcca->interrupt_table[i]);
+		struct ohci_ed *next_ed = (struct ohci_ed *) REG_LOAD(
+				&hcca->interrupt_table[i]);
 
 		if (!next_ed) {
 			REG_STORE(&ed->next_ed, (unsigned long) next_ed);
@@ -388,10 +391,11 @@ static void ohci_ed_sched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 	}
 
 	assertf(i < OHCI_HCCA_INTERRUPT_LIST_N, "%s: there is no empty slot for "
-			"interrupt request", __func__);
+											"interrupt request", __func__);
 }
 
-static int ohci_ed_desched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
+static int ohci_ed_desched_interrupt(struct ohci_hcd *ohcd,
+	struct ohci_ed *ed) {
 	struct ohci_hcca *hcca = ohcd->hcca;
 	int i;
 
@@ -400,7 +404,8 @@ static int ohci_ed_desched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) 
 	}
 
 	for (i = 0; i < OHCI_HCCA_INTERRUPT_LIST_N; i++) {
-		struct ohci_ed *i_ed = (struct ohci_ed *) REG_LOAD(&hcca->interrupt_table[i]);
+		struct ohci_ed *i_ed = (struct ohci_ed *) REG_LOAD(
+				&hcca->interrupt_table[i]);
 
 		if (i_ed == ed) {
 			REG_STORE(&hcca->interrupt_table[i], (unsigned long) NULL);
@@ -413,7 +418,7 @@ static int ohci_ed_desched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) 
 }
 
 static void ohci_transfer(struct ohci_ed *ed, uint32_t token, void *buf,
-		size_t len, struct usb_request *req) {
+	size_t len, struct usb_request *req) {
 	struct ohci_td *td, *next_td;
 
 	next_td = ohci_td_alloc();
@@ -449,7 +454,7 @@ static int ohci_request(struct usb_request *req) {
 	assertf(cnt == 1, "only one token is supported");
 
 	ohci_ed_fill(ed, req->endp); /* function address could change due bus
-				   enumeration */
+	               enumeration */
 
 	ohci_transfer(ed, token, req->buf, req->len, req);
 
@@ -498,7 +503,6 @@ uint32_t ohci_td_received_len(struct ohci_td *td, struct usb_request *req) {
 	return td->buf_p - (uint32_t) req->buf;
 }
 
-
 static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 	struct usb_hcd *hcd = data;
 	struct ohci_hcd *ohcd = hcd2ohci(hcd);
@@ -512,14 +516,15 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 		OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_RHUB);
 
 		for (int i = 0; i < rhub->port_n; i++) {
-			uint32_t port_stat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[i]);
+			uint32_t port_stat =
+				OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[i]);
 
 			rhub->ports[i].status = ohci_port_stat_map(port_stat & 0xffff);
 			rhub->ports[i].changed = ohci_port_stat_map(port_stat >> 16);
 
 			if (port_stat >> 16) {
 				OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[i],
-						port_stat & 0xffff0000);
+					port_stat & 0xffff0000);
 			}
 		}
 
@@ -530,7 +535,7 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 		struct ohci_td *td, *next_td;
 		struct usb_request *req;
 
-                td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
+		td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
 
 		do {
 			req = ohci2req(td);
@@ -558,7 +563,7 @@ static inline int ohci_verify(struct ohci_reg *base) {
 }
 
 PCI_DRIVER("Apple OHCI usb host", ohci_pci_init, PCI_VENDOR_ID_APPLE,
-		PCI_DEV_ID_APPLE_OHCI_HOST);
+	PCI_DEV_ID_APPLE_OHCI_HOST);
 
 static int ohci_pci_init(struct pci_slot_dev *pci_dev) {
 	struct ohci_reg *base = (struct ohci_reg *) pci_dev->bar[0];
@@ -581,4 +586,3 @@ static int ohci_pci_init(struct pci_slot_dev *pci_dev) {
 
 	return usb_hcd_register(hcd);
 }
-

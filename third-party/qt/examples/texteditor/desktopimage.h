@@ -5,27 +5,26 @@
 
 class DesktopImageDialog : public QWidget
 {
-    Q_OBJECT
+Q_OBJECT
 public:
-    explicit DesktopImageDialog(QStringList &images);
+explicit DesktopImageDialog(QStringList &images);
 
 private slots:
-    void openFileOfItem(int row, int column);
-    void handleOk();
-    void fontChanged(int);
+void openFileOfItem(int row, int column);
+void handleOk();
+void fontChanged(int);
 private:
-    void showFiles(const QStringList &files);
-    QComboBox *createComboBox(const QString &text = QString());
-    void createFilesTable();
-    int selectedWallpaperRow;
-    QSpinBox *fontPt;
+void showFiles(const QStringList &files);
+QComboBox * createComboBox(const QString &text = QString());
+void createFilesTable();
+int selectedWallpaperRow;
+QSpinBox *fontPt;
 
+QComboBox *fontBox;
 
-    QComboBox *fontBox;
-
-    QLabel *filesFoundLabel;
-    QTableWidget *filesTable;
-    QMdiSubWindow *subwindow;
+QLabel *filesFoundLabel;
+QTableWidget *filesTable;
+QMdiSubWindow *subwindow;
 };
 
 #endif /* DESKTOPIMAGE_H_ */

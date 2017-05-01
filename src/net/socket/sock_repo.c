@@ -15,7 +15,9 @@ struct sock * sock_iter(const struct sock_proto_ops *p_ops) {
 		return NULL; /* error: invalid argument */
 	}
 
-	return !dlist_empty(p_ops->sock_list) ? dlist_first_entry(p_ops->sock_list, struct sock, lnk) : NULL;
+	return !dlist_empty(p_ops->sock_list) ? dlist_first_entry(p_ops->sock_list,
+			struct sock,
+			lnk) : NULL;
 }
 
 struct sock * sock_next(const struct sock *sk) {
@@ -33,9 +35,9 @@ struct sock * sock_next(const struct sock *sk) {
 }
 
 struct sock * sock_lookup(const struct sock *sk,
-		const struct sock_proto_ops *p_ops,
-		sock_lookup_tester_ft tester,
-		const struct sk_buff *skb) {
+	const struct sock_proto_ops *p_ops,
+	sock_lookup_tester_ft tester,
+	const struct sk_buff *skb) {
 	ipl_t ipl;
 	struct sock *next_sk;
 
@@ -61,8 +63,8 @@ struct sock * sock_lookup(const struct sock *sk,
 }
 
 int sock_addr_is_busy(const struct sock_proto_ops *p_ops,
-		sock_addr_tester_ft tester, const struct sockaddr *addr,
-		socklen_t addrlen) {
+	sock_addr_tester_ft tester, const struct sockaddr *addr,
+	socklen_t addrlen) {
 	const struct sock *sk;
 
 	assert(p_ops != NULL);
@@ -70,7 +72,7 @@ int sock_addr_is_busy(const struct sock_proto_ops *p_ops,
 
 	sock_foreach(sk, p_ops) {
 		if ((sk->addr_len == addrlen)
-				&& tester(addr, sk->src_addr)) {
+			&& tester(addr, sk->src_addr)) {
 			return 1;
 		}
 	}
@@ -79,8 +81,8 @@ int sock_addr_is_busy(const struct sock_proto_ops *p_ops,
 }
 
 int sock_addr_alloc_port(const struct sock_proto_ops *p_ops,
-		in_port_t *addrport, sock_addr_tester_ft tester,
-		const struct sockaddr *addr, socklen_t addrlen) {
+	in_port_t *addrport, sock_addr_tester_ft tester,
+	const struct sockaddr *addr, socklen_t addrlen) {
 	in_port_t port;
 
 	assert(addrport != NULL);

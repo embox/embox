@@ -31,7 +31,7 @@ static int writetcp(struct client *clnt, char *buf, size_t len);
 static const struct clnt_ops clnttcp_ops;
 
 struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
-		uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz) {
+	uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz) {
 	struct client *clnt;
 	struct auth *ath;
 	int sock;
@@ -49,7 +49,8 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 
 	memcpy(&sin, raddr, sizeof *raddr);
 	if (sin.sin_port == 0) {
-		sin.sin_port = htons(pmap_getport(raddr, prognum, versnum, IPPROTO_TCP));
+		sin.sin_port =
+			htons(pmap_getport(raddr, prognum, versnum, IPPROTO_TCP));
 		if (sin.sin_port == 0) {
 			goto exit_with_error;
 		}
@@ -58,7 +59,7 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	assert(*psock < 0);
 	sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if ((sock < 0)
-			|| (connect(sock, (struct sockaddr *)&sin, sizeof sin) < 0)) {
+		|| (connect(sock, (struct sockaddr *)&sin, sizeof sin) < 0)) {
 		log_error("socket or connect error");
 		rpc_create_error.stat = RPC_SYSTEMERROR;
 		rpc_create_error.err.extra.error = errno;
@@ -78,15 +79,15 @@ struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	*psock = sock;
 
 	return clnt;
-exit_with_error:
+	exit_with_error:
 	auth_destroy(ath);
 	clnt_free(clnt);
 	return NULL;
 }
 
 static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
-		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
-		struct timeval timeout) {
+	xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
+	struct timeval timeout) {
 	struct xdr xstream;
 	struct rpc_msg msg_reply, msg_call;
 
@@ -102,20 +103,20 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 	memcpy(&msg_call.b.call.verf, &clnt->ath->verf, sizeof clnt->ath->verf);
 
 	if (-1 == setsockopt(clnt->sock, SOL_SOCKET, SO_RCVTIMEO,
-				&timeout, sizeof timeout)) {
+		&timeout, sizeof timeout)) {
 		log_error("setsockopt error");
 		clnt->err.extra.error = errno;
 		return clnt->err.status = RPC_SYSTEMERROR;
 	}
 
 	xdrrec_create(&xstream, clnt->extra.tcp.sendsz, clnt->extra.tcp.recvsz,
-			(char *)clnt, (xdrrec_hnd_t)readtcp, (xdrrec_hnd_t)writetcp);
+		(char *)clnt, (xdrrec_hnd_t)readtcp, (xdrrec_hnd_t)writetcp);
 
 	xstream.oper = XDR_ENCODE;
 
 	clnt->err.status = RPC_SUCCESS;
 	if (!xdr_rpc_msg(&xstream, &msg_call)
-			|| !(*inproc)(&xstream, in)) {
+		|| !(*inproc)(&xstream, in)) {
 		if (clnt->err.status == RPC_SUCCESS) {
 			clnt->err.status = RPC_CANTENCODEARGS;
 		}
@@ -140,7 +141,7 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 	}
 
 	assert(clnt->err.status == RPC_SUCCESS);
-exit_with_status:
+	exit_with_status:
 	xdr_destroy(&xstream);
 	return clnt->err.status;
 }
@@ -188,7 +189,7 @@ static int writetcp(struct client *clnt, char *buff, size_t len) {
 }
 
 static const struct clnt_ops clnttcp_ops = {
-		.call = clnttcp_call,
-		.geterr = clnttcp_geterr,
-		.destroy = clnttcp_destroy
+	.call = clnttcp_call,
+	.geterr = clnttcp_geterr,
+	.destroy = clnttcp_destroy
 };

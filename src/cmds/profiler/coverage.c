@@ -15,7 +15,7 @@
 #include <debug/symbol.h>
 
 extern int coverage_getstat(const struct symbol **sym_table,
-		const unsigned long **cov_bitmap);
+	const unsigned long **cov_bitmap);
 
 int main(int argc, char *argv[]) {
 	const char *outfile = NULL;
@@ -47,11 +47,11 @@ int main(int argc, char *argv[]) {
 		out = stdout;
 	}
 
-
 	sym_n = coverage_getstat(&sym_table, &cov_bitmap);
 	if (sym_n <= 0) {
-		if (outfile)
+		if (outfile) {
 			fclose(out);
+		}
 		return sym_n;
 	}
 
@@ -59,12 +59,13 @@ int main(int argc, char *argv[]) {
 	for (i = 0; i < sym_n; i++) {
 
 		fprintf(out, "%21s@0x%08lx\t%8s\n", sym_table[i].name,
-				(unsigned long) sym_table[i].addr,
-				bitmap_test_bit(cov_bitmap, i) ? "true" : "false");
+			(unsigned long) sym_table[i].addr,
+			bitmap_test_bit(cov_bitmap, i) ? "true" : "false");
 	}
 
-	if (outfile)
+	if (outfile) {
 		fclose(out);
+	}
 
 	return 0;
 }

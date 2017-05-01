@@ -32,7 +32,6 @@ struct vc {
 	struct fb_info *fb; /**< current fb to draw, NULL is valid */
 };
 
-
 extern int mpx_register_vc(struct vc *);
 extern int mpx_deregister_vc(struct vc *);
 extern int mpx_devisualized(struct vc *vc);

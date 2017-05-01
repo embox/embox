@@ -16,7 +16,7 @@ int pthread_setspecific(pthread_key_t key, const void *value) {
 	return thread_local_set(pt, key, (void *)value);
 }
 
-void *pthread_getspecific(pthread_key_t key) {
+void * pthread_getspecific(pthread_key_t key) {
 	pthread_t pt = pthread_self();
 
 	return thread_local_get(pt, key);

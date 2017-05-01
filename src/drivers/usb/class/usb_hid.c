@@ -54,7 +54,7 @@ static void usb_hid_intr_request(struct usb_hid_indev *hindev) {
 	assert(intr_endp->max_packet_size <= USB_HID_MAX_INPUT_LEN);
 
 	usb_endp_interrupt(intr_endp, usb_hid_notify, hindev->input_data,
-			intr_endp->max_packet_size);
+		intr_endp->max_packet_size);
 }
 
 static void usb_hid_notify(struct usb_request *req, void *arg) {

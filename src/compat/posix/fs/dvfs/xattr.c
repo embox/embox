@@ -30,7 +30,7 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 }
 
 int setxattr(const char *path, const char *name, const char *value, size_t size,
-	       	int flags) {
+	int flags) {
 	struct lookup lookup;
 	struct inode *inode;
 
@@ -52,7 +52,8 @@ int listxattr(const char *path, char *list, size_t size) {
 	return 0;
 }
 
-int fsetxattr(int fd, const char *name, const char *value, size_t size, int flags) {
+int fsetxattr(int fd, const char *name, const char *value, size_t size,
+	int flags) {
 	return 0;
 }
 
@@ -63,4 +64,3 @@ int fgetxattr(int fd, const char *name, void *value, size_t size) {
 int flistxattr(int fd, char *list, size_t size) {
 	return 0;
 }
-

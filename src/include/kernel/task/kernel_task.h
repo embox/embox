@@ -20,7 +20,7 @@ __BEGIN_DECLS
  *
  * @return Pointer to kernel task
  */
-extern struct task *task_kernel_task(void);
+extern struct task * task_kernel_task(void);
 
 __END_DECLS
 

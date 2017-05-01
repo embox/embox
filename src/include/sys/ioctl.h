@@ -50,14 +50,14 @@
 #define _IOC_DIRSHIFT   (_IOC_SIZESHIFT + _IOC_SIZEBITS)
 
 #define _IOC(dir, type, nr, size) \
-	(((dir)  << _IOC_DIRSHIFT)  | \
-	 ((type) << _IOC_TYPESHIFT) | \
-	 ((nr)   << _IOC_NRSHIFT)   | \
-	 ((size) << _IOC_SIZESHIFT))
+	(((dir) << _IOC_DIRSHIFT)  | \
+	((type) << _IOC_TYPESHIFT) | \
+	((nr) << _IOC_NRSHIFT)   | \
+	((size) << _IOC_SIZESHIFT))
 
 /* Ioctls applicable to any descriptor */
 #define FIONBIO   _IOW('a', 0, const int)
-#define FIONREAD  _IO ('a', 1)
+#define FIONREAD  _IO('a', 1)
 
 __BEGIN_DECLS
 

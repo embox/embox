@@ -44,7 +44,7 @@ static int shadow(char *name, char *new_name, char *pswd) {
 }
 
 static int usermod(char *name, char *home, char *shell, char *pswd,
-		char *gecos, char *new_name, int group) {
+	char *gecos, char *new_name, int group) {
 	struct passwd pwd, *pwd_res;
 	FILE *pswdf, *temp_pswdf;
 	char buf_pswd[80];
@@ -83,12 +83,12 @@ static int usermod(char *name, char *home, char *shell, char *pswd,
 
 static void print_help(void) {
 	printf("Usage:\tusermod [option] LOGIN\n"
-			"Options: see 'man usage'\n");
+		   "Options: see 'man usage'\n");
 }
 
 int main(int argc, char **argv) {
 	char name[15], home[20] = "", shell[20] = "", _pswd[15] = "",
-			*pswd = NULL, gecos[15] = "", new_name[15] = "";
+		*pswd = NULL, gecos[15] = "", new_name[15] = "";
 	int group = -1;
 	int opt;
 
@@ -98,11 +98,11 @@ int main(int argc, char **argv) {
 
 			switch (opt) {
 			case 'd':
-				//todo: isdir
+				/*todo: isdir */
 				strcpy(home, optarg);
 				break;
 			case 's':
-				//todo: isshell
+				/*todo: isshell */
 				strcpy(shell, optarg);
 				break;
 			case 'p':
@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
 		return usermod(name, home, shell, pswd, gecos, new_name, group);
 	}
 
-out:
+	out:
 	print_help();
 	return 0;
 }

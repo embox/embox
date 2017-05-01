@@ -19,23 +19,27 @@
 #include <feather/servo.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
-#define UART_NUM	3
-#define MSG_LEN		4
+#define UART_NUM    3
+#define MSG_LEN     4
 
-static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3, 1 };
+static Led_TypeDef leds[] = {
+	0, 2, 4, 6, 7, 5, 3, 1
+};
 
 static int current_state[UART_NUM + 1];
 
 static void leds_off(void) {
 	int i;
-	for (i = 0; i < sizeof(leds); i++)
+	for (i = 0; i < sizeof(leds); i++) {
 		BSP_LED_Off(i);
+	}
 }
 
 static void init_leds(void) {
 	int i;
-	for (i = 0; i < sizeof(leds); i++)
+	for (i = 0; i < sizeof(leds); i++) {
 		BSP_LED_Init(i);
+	}
 
 	leds_off();
 }
@@ -62,8 +66,9 @@ static void leds_next(void) {
 static void leds_prev(void) {
 	mutex_lock(&led_mutex);
 	BSP_LED_Off(leds[leds_cnt]);
-	if (--leds_cnt < 0)
+	if (--leds_cnt < 0) {
 		leds_cnt = 0;
+	}
 	mutex_unlock(&led_mutex);
 	current_state[UART_NUM] = leds_cnt;
 
@@ -71,15 +76,15 @@ static void leds_prev(void) {
 }
 
 static USART_TypeDef *uart_base[] = {
-	(void*) USART1,
-	(void*) USART2,
-	(void*) USART3
+	(void *) USART1,
+	(void *) USART2,
+	(void *) USART3
 };
 
 extern void schedule();
 static void transmit_delay(void) {
 	int t = 0x16FF / UART_NUM;
-	while(t--)
+	while (t--)
 		schedule();
 }
 
@@ -88,11 +93,12 @@ static double get_data(void) {
 	int cnt = 1;
 	int i;
 
-	for (i = 0; i < UART_NUM; i++)
+	for (i = 0; i < UART_NUM; i++) {
 		if (current_state[i] > 0) {
 			res += current_state[i];
 			cnt++;
 		}
+	}
 
 	return res / cnt;
 }
@@ -102,15 +108,17 @@ static int obtain_data(void) {
 }
 
 static void transmit_data(int data, USART_TypeDef *uart) {
-	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0);
+	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0) ;
 
 	STM32_USART_TXDATA(uart) = (uint8_t) (data + 0);
 }
 
-static void *transmitter_thread_run(void *arg) {
+static void * transmitter_thread_run(void *arg) {
 	int i, j;
 	int data;
-	char tx_buf[MSG_LEN] = {0xFF, AGENT_ID, 0, 0xAA};
+	char tx_buf[MSG_LEN] = {
+		0xFF, AGENT_ID, 0, 0xAA
+	};
 
 	while (1) {
 		data = obtain_data();
@@ -131,15 +139,19 @@ static int from_neighbour(char *msg) {
 }
 
 static void process_message(char *msg) {
-	char tx_buf[MSG_LEN] = {0xFE, msg[1], msg[2], 0xAA};
+	char tx_buf[MSG_LEN] = {
+		0xFE, msg[1], msg[2], 0xAA
+	};
 	int i;
 	if (from_neighbour(msg)) {
 		mutex_lock(&led_mutex);
 		current_state[msg[1]] = msg[2];
-		if (get_data() > leds_cnt)
+		if (get_data() > leds_cnt) {
 			leds_next();
-		else if (get_data() < leds_cnt)
+		}
+		else if (get_data() < leds_cnt) {
 			leds_prev();
+		}
 		mutex_unlock(&led_mutex);
 	}
 
@@ -153,12 +165,14 @@ static int message_valid(char *msg) {
 	return 1;
 }
 
-static void *receiver_thread_run(void *arg) {
+static void * receiver_thread_run(void *arg) {
 	int i;
 	UART_HandleTypeDef UartHandle;
 	UartHandle.Instance = uart_base[0];
 	char buf[UART_NUM][MSG_LEN];
-	int counter[UART_NUM] = { 0 };
+	int counter[UART_NUM] = {
+		0
+	};
 
 	int tt = 0;
 
@@ -168,8 +182,9 @@ static void *receiver_thread_run(void *arg) {
 		tt++;
 		if (tt % 0x180 == 0) {
 			tt = 1;
-			if (BSP_PB_GetState(0))
+			if (BSP_PB_GetState(0)) {
 				leds_next();
+			}
 		}
 
 		for (i = 0; i < UART_NUM; i++) {
@@ -187,7 +202,7 @@ static void *receiver_thread_run(void *arg) {
 						memset(buf[i], 0, sizeof(buf[i]));
 						continue;
 					} else {
-						//buf[i][0] = i;
+						/*buf[i][0] = i; */
 						process_message(buf[i]);
 					}
 				}
@@ -195,7 +210,7 @@ static void *receiver_thread_run(void *arg) {
 				__HAL_USART_CLEAR_NEFLAG(&UartHandle);
 				__HAL_USART_CLEAR_FEFLAG(&UartHandle);
 				__HAL_USART_CLEAR_OREFLAG(&UartHandle);
-				//uart_base[i]->ICR = 0x0;
+				/*uart_base[i]->ICR = 0x0; */
 				schedule();
 			}
 		}
@@ -228,11 +243,12 @@ int main() {
 	init_leds();
 	servo_init();
 	init_uart();
-	//leds_next();
+	/*leds_next(); */
 	leds_prev();
 
-	for (i = 0; i < UART_NUM; i++)
+	for (i = 0; i < UART_NUM; i++) {
 		current_state[i] = -1;
+	}
 
 	current_state[UART_NUM] = 0;
 

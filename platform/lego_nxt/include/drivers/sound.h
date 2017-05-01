@@ -10,9 +10,9 @@
 
 #include <stdint.h>
 
-#define   DURATION_MIN          10        // [mS]
-#define   FREQUENCY_MIN         220       // [Hz]
-#define   FREQUENCY_MAX         14080     // [Hz]
+#define   DURATION_MIN          10        /* [mS] */
+#define   FREQUENCY_MIN         220       /* [Hz] */
+#define   FREQUENCY_MAX         14080     /* [Hz] */
 #define   SAMPLETONENO          16
 #define   SAMPLEWORDBITS        (sizeof(uint32_t) * 8)
 #define   SAMPLEWORDS           8
@@ -36,7 +36,7 @@ typedef sample_t (*sound_handler_t)(void);
  * @param freq Samplerate frequency
  * @param ms ms to playing
  * @note ms = 0: continuous playing, stops only at explicit stop
- * 		 ms != 0: playing specified time
+ *       ms != 0: playing specified time
  * @param buff First sample
  * @param next_buff Second sample
  * @param sound_hnd Sound handler which gives next samples

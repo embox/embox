@@ -20,7 +20,7 @@ __BEGIN_DECLS
 #define KEY_INS  0x84
 #define KEY_DEL  0x85
 #define KEY_HOME 0x86
-#define KEY_END	 0x87
+#define KEY_END  0x87
 #define KEY_PGUP 0x88
 #define KEY_PGDN 0x89
 #define KEY_UP   0x8a
@@ -43,7 +43,8 @@ __BEGIN_DECLS
 
 struct input_event;
 
-extern int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4]);
+extern int keymap_to_ascii(struct input_event *event,
+	unsigned char ascii_buff[4]);
 
 extern int keymap_kbd(struct input_event *event);
 

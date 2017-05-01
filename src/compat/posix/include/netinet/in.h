@@ -31,9 +31,9 @@ struct in_addr {
  * Socket address for IP protocol
  */
 struct sockaddr_in {
-	sa_family_t      sin_family;  /* AF_INET */
-	in_port_t		 sin_port;    /* Port number (BE) */
-	struct in_addr   sin_addr;    /* IP address (BE) */
+	sa_family_t sin_family;       /* AF_INET */
+	in_port_t sin_port;           /* Port number (BE) */
+	struct in_addr sin_addr;      /* IP address (BE) */
 };
 
 /**
@@ -109,27 +109,27 @@ extern const struct in6_addr in6addr_loopback; /* ::1 */
  */
 #define IN6_IS_ADDR_UNSPECIFIED(a) \
 	({ \
-	 	const struct in6_addr *__a = (const struct in6_addr *)(a); \
-	 	(__a->s6_addr32[0] == 0) && (__a->s6_addr32[1] == 0) \
-	 			&& (__a->s6_addr32[2] == 0) && (__a->s6_addr32[3] == 0); \
+		const struct in6_addr *__a = (const struct in6_addr *)(a); \
+		(__a->s6_addr32[0] == 0) && (__a->s6_addr32[1] == 0) \
+		&& (__a->s6_addr32[2] == 0) && (__a->s6_addr32[3] == 0); \
 	})
 #define IN6_IS_ADDR_LOOPBACK(a) \
 	({ \
-	 	const struct in6_addr *__a = (const struct in6_addr *)(a); \
-	 	(__a->s6_addr32[0] == 0) && (__a->s6_addr32[1] == 0) \
-	 			&& (__a->s6_addr32[2] == 0) && (__a->s6_addr32[3] == htonl(1)); \
+		const struct in6_addr *__a = (const struct in6_addr *)(a); \
+		(__a->s6_addr32[0] == 0) && (__a->s6_addr32[1] == 0) \
+		&& (__a->s6_addr32[2] == 0) && (__a->s6_addr32[3] == htonl(1)); \
 	})
 #define IN6_IS_ADDR_V4MAPPED(a) \
 	({ \
 		const struct in6_addr *__a = (const struct in6_addr *)(a); \
 		(__a->s6_addr32[0] == 0) && (__a->s6_addr32[1] == 0) \
-				&& (__a->s6_addr32[2] == htonl(0xffff)); \
+		&& (__a->s6_addr32[2] == htonl(0xffff)); \
 	})
 #define IN6_IS_ADDR_V4COMPAT(a) \
 	({ \
 		const struct in6_addr *__a = (const struct in6_addr *)(a); \
 		(__a->s6_addr32[0] == 0) && (__a->s6_addr32[1] == 0) \
-				&& (__a->s6_addr32[2] == 0) && (htonl(__a->s6_addr32[3]) > 1); \
+		&& (__a->s6_addr32[2] == 0) && (htonl(__a->s6_addr32[3]) > 1); \
 	})
 #define IN6_IS_ADDR_MULTICAST(a) \
 	(((const struct in6_addr *)(a))->s6_addr == 0xFF)
@@ -138,9 +138,9 @@ extern const struct in6_addr in6addr_loopback; /* ::1 */
  * Ports
  */
 #define IPPORT_RESERVED     1024 /* Ports < IPPORT_RESERVED are reserved
-									for superuser use */
+	                                for superuser use */
 #define IPPORT_USERRESERVED 5000 /* Ports >= IPPORT_USERRESERVED are
-									reserved for explicit use */
+	                                reserved for explicit use */
 
 #include <arpa/inet.h>
 

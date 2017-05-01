@@ -20,7 +20,7 @@
 
 static const struct net_pack_out_ops ip6_out_ops_struct;
 const struct net_pack_out_ops *const ip6_out_ops
-		= &ip6_out_ops_struct;
+	= &ip6_out_ops_struct;
 
 static int ip6_xmit(struct sk_buff *skb) {
 	const struct in6_addr *daddr;
@@ -48,8 +48,8 @@ static int ip6_xmit(struct sk_buff *skb) {
 }
 
 static int ip6_make(const struct sock *sk,
-		const struct sockaddr *to,
-		size_t *data_size, struct sk_buff **out_skb) {
+	const struct sockaddr *to,
+	size_t *data_size, struct sk_buff **out_skb) {
 	size_t hdr_size, max_size;
 	struct sk_buff *skb;
 	struct net_device *dev;
@@ -68,15 +68,15 @@ static int ip6_make(const struct sock *sk,
 	to_in6 = (const struct sockaddr_in6 *)to;
 
 	assert((to_in6 == NULL)
-			|| (to_in6->sin6_family == AF_INET6));
+		|| (to_in6->sin6_family == AF_INET6));
 
 	memcpy(&dst_ip6, to_in6 != NULL ? &to_in6->sin6_addr
-				: in6_sk != NULL ? &in6_sk->dst_in6.sin6_addr
-				: &(*out_skb)->nh.ip6h->saddr, /* make a reply */
-			sizeof dst_ip6);
+		: in6_sk != NULL ? &in6_sk->dst_in6.sin6_addr
+		: &(*out_skb)->nh.ip6h->saddr,         /* make a reply */
+		sizeof dst_ip6);
 	/* FIXME use route */
 	if (0 == memcmp(&dst_ip6, &in6addr_loopback,
-				sizeof dst_ip6)) {
+		sizeof dst_ip6)) {
 		dev = netdev_get_by_name("lo");
 	}
 	else {
@@ -88,7 +88,7 @@ static int ip6_make(const struct sock *sk,
 	src_ip6 = &inetdev_get_by_dev(dev)->ifa6_address;
 
 	nexthdr = in6_sk != NULL ? in6_sk->sk.opt.so_protocol
-			: (*out_skb)->nh.ip6h->nexthdr;
+		: (*out_skb)->nh.ip6h->nexthdr;
 
 	hdr_size = dev->hdr_len + IP6_HEADER_SIZE;
 	max_size = min(dev->mtu, skb_max_size());
@@ -108,7 +108,7 @@ static int ip6_make(const struct sock *sk,
 	skb->h.raw = skb->nh.raw + IP6_HEADER_SIZE;
 
 	ip6_build(skb->nh.ip6h, *data_size, nexthdr, 64, src_ip6,
-			&dst_ip6);
+		&dst_ip6);
 
 	*out_skb = skb;
 

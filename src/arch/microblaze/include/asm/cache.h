@@ -12,20 +12,18 @@
 #include <framework/mod/options.h>
 #include <module/embox/arch/microblaze/kernel/arch.h>
 
-
-
 #define CONFIG_ICACHE_BYTE_SIZE \
 	OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
-			NUMBER, icache_size)
+		NUMBER, icache_size)
 #define CONFIG_ICACHE_LINE_LENGTH \
 	OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
-			NUMBER, icache_line)
+		NUMBER, icache_line)
 #define CONFIG_DCHACE_BYTE_SIZE \
-		OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
-			NUMBER, dcache_size)
+	OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
+		NUMBER, dcache_size)
 #define CONFIG_DCACHE_LINE_LENGTH \
-		OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
-			NUMBER, dcache_line)
+	OPTION_MODULE_GET(embox__arch__microblaze__kernel__arch, \
+		NUMBER, dcache_line)
 
 #include <asm/msr.h>
 
@@ -63,7 +61,7 @@ static inline void icache_flush(void) {
 		" 1:	wic	%1, r0;\n\t"
 		"cmpu	%0, %1, %2;\n\t"
 		"bgtid	%0, 1b;\n\t"
-		"addk	%1, %1, %3;" : :
+		"addk	%1, %1, %3;": :
 		"r" (temp), "r" (start), "r" (end), "r" (line_length)
 		: "memory"
 	);
@@ -79,7 +77,7 @@ static inline void dcache_flush(void) {
 		" 1:	wdc	%1, r0;\n\t"
 		"cmpu	%0, %1, %2;\n\t"
 		"bgtid	%0, 1b;\n\t"
-		"addk	%1, %1, %3;" : :
+		"addk	%1, %1, %3;": :
 		"r" (temp), "r" (start), "r" (end), "r" (line_length)
 		: "memory"
 	);

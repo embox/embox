@@ -17,8 +17,9 @@
 extern struct logger mod_logger __attribute__ ((weak));
 
 static inline void show_packet(uint8_t *raw, int size, char *title) {
-	if (!&mod_logger)
+	if (!&mod_logger) {
 		return;
+	}
 
 	if (&mod_logger.logging &&
 		mod_logger.logging.level >= LOG_DEBUG - 1) {
@@ -28,18 +29,21 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
 		for (int i = 0; i < rows; i++) {
 			for (int j = 0; j < STR_BYTES; j++) {
 				int pos = i * STR_BYTES + j;
-				if (pos < size)
+				if (pos < size) {
 					printk(" %02hhX", *(raw + pos));
-				else
+				}
+				else {
 					printk("   ");
+				}
 			}
 			printk("   ");
 			for (int j = 0; j < STR_BYTES; j++) {
 				int pos = i * STR_BYTES + j;
 				if (pos < size) {
 					char c = (char) *(raw + pos);
-					if (c < 33 || c > 126)
+					if (c < 33 || c > 126) {
 						c = '.';
+					}
 
 					printk("%c", c);
 				}

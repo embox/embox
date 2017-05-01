@@ -20,9 +20,9 @@
  *
  *  // Suppose you have a compound type defined as above:
  *  struct foo {
- *  	...
- *  	int bar; // Here is your member.
- *  	...
+ *      ...
+ *      int bar; // Here is your member.
+ *      ...
  *  };
  *
  *  // The following line defines a type 'foo_bar' which describes
@@ -48,28 +48,25 @@
 		} /* unnamed */;                                      \
 	}
 
-
 /** &foo --> &foo.bar;  @a struct_ptr must not be null; @see #member_t() */
 #define member_of_object(struct_ptr, member_type) \
 	member_cast_in(member_cast_out(struct_ptr, \
-			member_type, object), member)
+		member_type, object), member)
 
 /** &foo --> &foo.bar; NULL --> NULL;  @see #member_t() */
 #define member_of_object_or_null(struct_ptr, member_type) \
 	member_cast_in_or_null(member_cast_out_or_null(struct_ptr, \
-			member_type, object), member)
-
+		member_type, object), member)
 
 /** &foo.bar --> &foo;  @a member_ptr must not be null; @see #member_t() */
 #define member_to_object(member_ptr, member_type) \
 	member_cast_in(member_cast_out(member_ptr, \
-			member_type, member), object)
+		member_type, member), object)
 
 /** &foo.bar --> &foo; NULL --> NULL;  @see #member_t() */
 #define member_to_object_or_null(member_ptr, member_type) \
 	member_cast_in_or_null(member_cast_out_or_null(member_ptr, \
-			member_type, member), object)
-
+		member_type, member), object)
 
 /** typeof(foo.bar);  @a type is (an expr of) a struct or a union */
 #define member_typeof(type, member_nm) \
@@ -78,7 +75,6 @@
 /** sizeof(foo.bar);  @a type is (an expr of) a struct or a union */
 #define member_sizeof(type, member_nm) \
 	sizeof(((typeof(type) *) 0x0)->member_nm)
-
 
 /** &foo --> &foo.bar;  @a struct_ptr must not be null */
 #define mcast_in(struct_ptr, member) \
@@ -91,19 +87,18 @@
 	member_cast_in_or_null(struct_ptr, member)
 #define member_cast_in_or_null(struct_ptr, member) \
 	({ \
-		typeof(struct_ptr) __member_expr__ = (struct_ptr); \
+		typeof(struct_ptr)__member_expr__ = (struct_ptr); \
 		__member_expr__                                    \
-			? &__member_expr__->member                 \
-			: (typeof(&__member_expr__->member)) NULL; \
+		? &__member_expr__->member                 \
+		: (typeof(&__member_expr__->member))NULL; \
 	})
-
 
 /** &foo.bar --> &foo;  @a member_ptr must not be null */
 #define mcast_out(member_ptr, type, member) \
 	member_cast_out(member_ptr, type, member)
 #define member_cast_out(member_ptr, type, member) \
 	((type *) ((char *) __member_check_notnull(member_ptr) \
-			- offsetof(type, member)))
+	- offsetof(type, member)))
 
 /** &foo.bar --> &foo; NULL --> NULL; */
 #define mcast_out_or_null(member_ptr, type, member) \
@@ -112,14 +107,13 @@
 	({                                                                \
 		char *__member_expr__ = (char *) (member_ptr);            \
 		(type *) (__member_expr__ ?                               \
-			__member_expr__ - offsetof(type, member) : NULL); \
+		__member_expr__ - offsetof(type, member) : NULL); \
 	})
-
 
 #ifndef NDEBUG
 # define __member_check_notnull(expr) \
 	({                                             \
-		typeof(expr) __member_expr__ = (expr); \
+		typeof(expr)__member_expr__ = (expr); \
 		assert(__member_expr__ != NULL);       \
 		__member_expr__;                       \
 	})

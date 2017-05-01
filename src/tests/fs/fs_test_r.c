@@ -19,7 +19,8 @@ EMBOX_TEST_SUITE("fs read tests");
 static char fs_test_temp_buf[512];
 
 static const char fs_test_rd_file[] = FS_TEST_MOUNTPOINT "/rd_file";
-static const char fs_test_rd_file_content[] = "This is read-only file with original content string\n";
+static const char fs_test_rd_file_content[] =
+	"This is read-only file with original content string\n";
 TEST_CASE("Test read operation on fs") {
 	int fd;
 	int nread;
@@ -30,7 +31,7 @@ TEST_CASE("Test read operation on fs") {
 
 	test_assert_equal(nread, sizeof(fs_test_rd_file_content) - 1);
 	test_assert_zero(memcmp(fs_test_temp_buf, fs_test_rd_file_content,
-				sizeof(fs_test_rd_file_content) - 1));
+		sizeof(fs_test_rd_file_content) - 1));
 
 	close(fd);
 }

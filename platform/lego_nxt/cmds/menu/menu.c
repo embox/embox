@@ -15,8 +15,12 @@
 EMBOX_CMD(menu_start);
 
 /*pointer*/
-static uint8_t pointer_buff[8] = {0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00};
-static uint8_t space_buff[8] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+static uint8_t pointer_buff[8] = {
+	0x00, 0x18, 0x3C, 0x7E, 0x7E, 0x3C, 0x18, 0x00
+};
+static uint8_t space_buff[8] = {
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
 
 /* Get number of test*/
 static int n_of_t(void) {
@@ -31,7 +35,7 @@ static int n_of_t(void) {
 /*This function print list of test on lcd  */
 static void print_list_test(int first) {
 	size_t i;
-	for (i = 0; i<8; i++) {
+	for (i = 0; i < 8; i++) {
 		tab_display( __test_registry[first + i].mod->name );
 	}
 }
@@ -65,8 +69,10 @@ static int menu_start(int argc, char **argv) {
 				}
 			} else {
 				current_test++;
-				display_draw(0, current_test - min_cur_test, 1, 8, &pointer_buff[0]);
-				display_draw(0, current_test - 1 - min_cur_test, 1, 8, &space_buff[0]);
+				display_draw(0, current_test - min_cur_test, 1, 8,
+					&pointer_buff[0]);
+				display_draw(0, current_test - 1 - min_cur_test, 1, 8,
+					&space_buff[0]);
 			}
 		}
 		if (buts & BT_LEFT) {
@@ -81,8 +87,10 @@ static int menu_start(int argc, char **argv) {
 				}
 			} else {
 				current_test--;
-				display_draw(0, current_test - min_cur_test, 1, 8, &pointer_buff[0]);
-				display_draw(0, current_test + 1 - min_cur_test, 1, 8, &space_buff[0]);
+				display_draw(0, current_test - min_cur_test, 1, 8,
+					&pointer_buff[0]);
+				display_draw(0, current_test + 1 - min_cur_test, 1, 8,
+					&space_buff[0]);
 			}
 		}
 		if ( buts & BT_ENTER) {

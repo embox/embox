@@ -26,10 +26,12 @@ static inline void fault_handle(void) {
 }
 
 static int fault_detect(void) {
-	int16_t buf[3] = {0, 0, 0};
+	int16_t buf[3] = {
+		0, 0, 0
+	};
 	float val;
 
-	while(1) {
+	while (1) {
 		acc_get(buf);
 
 		val = buf[0];

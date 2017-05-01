@@ -29,10 +29,10 @@
 #include <net/neighbour.h>
 
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_ICMPV6, icmp6_rcv,
-		net_proto_handle_error_none);
+	net_proto_handle_error_none);
 
 int icmp6_send(struct sk_buff *skb, uint8_t type, uint8_t code,
-		const void *body, size_t body_sz) {
+	const void *body, size_t body_sz) {
 	struct in_device *in_dev;
 	struct ip6hdr *ip6h;
 	struct in6_addr src_ip6, dst_ip6;
@@ -52,7 +52,7 @@ int icmp6_send(struct sk_buff *skb, uint8_t type, uint8_t code,
 	memcpy(&src_ip6, &in_dev->ifa6_address, sizeof src_ip6);
 	memcpy(&dst_ip6, &ip6h->saddr, sizeof dst_ip6);
 	ip6_build(ip6h, ip6_data_length(ip6h),
-			IPPROTO_ICMPV6, 255, &src_ip6, &dst_ip6);
+		IPPROTO_ICMPV6, 255, &src_ip6, &dst_ip6);
 
 	icmp6_build(icmp6_hdr(skb), type, code, body, body_sz);
 	icmp6_set_check_field(icmp6_hdr(skb), ip6h);
@@ -66,8 +66,8 @@ int icmp6_send(struct sk_buff *skb, uint8_t type, uint8_t code,
 }
 
 static int icmp6_hnd_echo_request(const struct icmp6hdr *icmp6h,
-		const struct icmp6body_echo *echo_req,
-		struct sk_buff *skb) {
+	const struct icmp6body_echo *echo_req,
+	struct sk_buff *skb) {
 	struct icmp6body_echo echo_rep;
 
 	if (icmp6h->code != 0) {
@@ -76,7 +76,7 @@ static int icmp6_hnd_echo_request(const struct icmp6hdr *icmp6h,
 	}
 
 	if (sizeof *icmp6h + sizeof *echo_req > ip6_data_length(
-				ip6_hdr(skb))) {
+		ip6_hdr(skb))) {
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
@@ -89,8 +89,8 @@ static int icmp6_hnd_echo_request(const struct icmp6hdr *icmp6h,
 }
 
 static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
-		const struct ndpbody_neighbor_solicit *nbr_solicit,
-		struct sk_buff *skb) {
+	const struct ndpbody_neighbor_solicit *nbr_solicit,
+	struct sk_buff *skb) {
 	struct in_device *in_dev;
 	size_t len;
 	const struct ndpoptions_ll_addr *ops;
@@ -121,7 +121,7 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 	assert(in_dev != NULL);
 
 	if (0 != memcmp(&in_dev->ifa6_address, &nbr_solicit->target,
-				sizeof in_dev->ifa6_address)) {
+		sizeof in_dev->ifa6_address)) {
 		skb_free(skb);
 		return 0; /* error: not for us */
 	}
@@ -154,23 +154,23 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 	nbr_advert.body.override = 0;
 	nbr_advert.body.zero1 = nbr_advert.body.zero2 = 0;
 	memcpy(&nbr_advert.body.target, &in_dev->ifa6_address,
-			sizeof nbr_advert.body.target);
+		sizeof nbr_advert.body.target);
 	nbr_advert.ops.hdr.type = NDP_TARGET_LL_ADDR;
 	nbr_advert.ops.hdr.len = binalign_bound(sizeof nbr_advert.ops
 			+ in_dev->dev->addr_len, 8) / 8;
 	assert(in_dev->dev->addr_len
-			<= sizeof nbr_advert.__ops_ll_addr_storage);
+		<= sizeof nbr_advert.__ops_ll_addr_storage);
 	memcpy(nbr_advert.ops.ll_addr, &in_dev->dev->dev_addr[0],
-			in_dev->dev->addr_len);
+		in_dev->dev->addr_len);
 
 	return icmp6_send(skb, NDP_NEIGHBOR_ADVERT, 0,
 			&nbr_advert, sizeof nbr_advert.body
-				+ sizeof nbr_advert.ops + in_dev->dev->addr_len);
+			+ sizeof nbr_advert.ops + in_dev->dev->addr_len);
 }
 
 static int ndp_hnd_neighbor_advert(const struct icmp6hdr *icmp6h,
-		const struct ndpbody_neighbor_advert *nbr_advert,
-		struct sk_buff *skb) {
+	const struct ndpbody_neighbor_advert *nbr_advert,
+	struct sk_buff *skb) {
 	int ret;
 	size_t len;
 	const struct ndpoptions_ll_addr *ops;

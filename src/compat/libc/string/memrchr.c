@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-void *memrchr(const void *s, int c, size_t n) {
+void * memrchr(const void *s, int c, size_t n) {
 	const unsigned char *src = (const unsigned char *) s + n - 1;
 	unsigned char d = c;
 
@@ -20,4 +20,3 @@ void *memrchr(const void *s, int c, size_t n) {
 
 	return NULL;
 }
-

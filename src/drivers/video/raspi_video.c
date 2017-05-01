@@ -20,20 +20,20 @@
 EMBOX_UNIT_INIT(raspi_init);
 
 static int raspi_set_var(struct fb_info *info,
-		struct fb_var_screeninfo const *var) {
+	struct fb_var_screeninfo const *var) {
 	struct bcm2835_fb_info raspi_fb;
 
 	/* Validate Inputs */
 	if (var->xres > BCM2835_FB_MAX_RES
-			|| var->yres > BCM2835_FB_MAX_RES
-			|| var->bits_per_pixel > BCM2835_FB_MAX_BPP) {
+		|| var->yres > BCM2835_FB_MAX_RES
+		|| var->bits_per_pixel > BCM2835_FB_MAX_BPP) {
 		return -EINVAL;
 	}
 
 	if (info == NULL) {
 		return -EFAULT;
 	}
-	
+
 	/* Unmap old frame buffer if any */
 	if (info->screen_base != NULL) {
 		munmap(info->screen_base, info->screen_size);
@@ -47,8 +47,8 @@ static int raspi_set_var(struct fb_info *info,
 	raspi_fb.height_v       = var->yres_virtual;
 	raspi_fb.x              = var->xoffset;
 	raspi_fb.y              = var->yoffset;
-	raspi_fb.gpu_pitch      = 0;    // Filled in by the VC
-	raspi_fb.gpu_pointer    = 0;    // Filled in by the VC
+	raspi_fb.gpu_pitch      = 0;    /* Filled in by the VC */
+	raspi_fb.gpu_pointer    = 0;    /* Filled in by the VC */
 
 	/**
 	 * Send the address of the frame buffer + 0x40000000 to the mailbox
@@ -56,9 +56,10 @@ static int raspi_set_var(struct fb_info *info,
 	 * By adding 0x40000000, we tell the GPU not to use its cache for these
 	 * writes, which ensures we will be able to see the change
 	 */
-	bcm2835_mailbox_write(((uint32_t) &raspi_fb) + 0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
+	bcm2835_mailbox_write(((uint32_t) &raspi_fb) + 0x40000000,
+		BCM2835_FRAMEBUFFER_CHANNEL);
 	if (bcm2835_mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 ||
-			!raspi_fb.gpu_pointer) {
+		!raspi_fb.gpu_pointer) {
 		return -EAGAIN;
 	}
 
@@ -66,10 +67,10 @@ static int raspi_set_var(struct fb_info *info,
 	info->screen_base = (char *) raspi_fb.gpu_pointer;
 	info->screen_size = binalign_bound(raspi_fb.gpu_size, PAGE_SIZE());
 	if (MAP_FAILED == mmap_device_memory(info->screen_base,
-				info->screen_size,
-					PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) info->screen_base)) {
+		info->screen_size,
+		PROT_READ|PROT_WRITE|PROT_NOCACHE,
+		MAP_FIXED,
+		(unsigned long) info->screen_base)) {
 		return -EIO;
 	}
 

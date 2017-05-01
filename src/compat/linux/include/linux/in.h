@@ -35,5 +35,4 @@ static inline bool ipv4_is_broadcast(in_addr_t addr) {
 	return addr == htonl(INADDR_BROADCAST);
 }
 
-
 #endif /* COMPAT_LINUX_LINUX_IN_H_ */

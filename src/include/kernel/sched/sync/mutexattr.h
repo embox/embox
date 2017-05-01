@@ -11,19 +11,18 @@
 
 /* Mutex does not detect deadlock. A thread attempting to relock this mutex
  * without first unlocking it will deadlock */
-#define MUTEX_NORMAL 		0
+#define MUTEX_NORMAL        0
 /* Mutex provides error checking.  If a thread attempts to relock a mutex that
  * it has already locked, an error shall be returned. If a thread attempts to
  * unlock a mutex that it has not locked or a mutex which is unlocked, an error
  * shall be returned. */
-#define MUTEX_ERRORCHECK 	1
+#define MUTEX_ERRORCHECK    1
 /* Recursive locking acceptable. Multiple locks of this mutex require the same
  * number of unlocks. If a thread attempts to unlock a mutex that it has not
  * locked or a mutex which is unlocked, an error shall be returned */
-#define MUTEX_RECURSIVE 	2
+#define MUTEX_RECURSIVE     2
 /* Doesn't provide any checking, actually it is the same as MUTEX_NORMAL */
-#define MUTEX_DEFAULT 		MUTEX_NORMAL
-
+#define MUTEX_DEFAULT       MUTEX_NORMAL
 
 struct mutexattr {
 	int type;
@@ -40,7 +39,7 @@ extern int mutexattr_init(struct mutexattr *attr);
  * @param mutexattr dest_attr destination mutexattr
  */
 extern int mutexattr_copy(const struct mutexattr *source_attr,
-		struct mutexattr *dest_attr);
+	struct mutexattr *dest_attr);
 /**
  * makes given mutexattr uninitialized
  * @param mutexattr attr to destroy

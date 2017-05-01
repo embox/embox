@@ -10,8 +10,9 @@
 #include <string.h>
 #include <getopt.h>
 
-static int getopt_try_long(int argl, char *const arg[], const struct option *longopts,
-		const struct option **out_lopt) {
+static int getopt_try_long(int argl, char *const arg[],
+	const struct option *longopts,
+	const struct option **out_lopt) {
 	const struct option *lopt;
 
 	for (lopt = longopts; lopt->name; lopt++) {
@@ -46,18 +47,20 @@ static int getopt_try_long(int argl, char *const arg[], const struct option *lon
 	return -ENOENT;
 }
 
-int getopt_long(int argc, char * const argv[],
-                  const char *optstring,
-                  const struct option *longopts, int *longindex) {
+int getopt_long(int argc, char *const argv[],
+	const char *optstring,
+	const struct option *longopts, int *longindex) {
 
 	if (optind < argc) {
 		int consumed;
 		const struct option *lopt;
 
-		if (strncmp(argv[optind], "--", 2))
+		if (strncmp(argv[optind], "--", 2)) {
 			return -1;
+		}
 
-		consumed = getopt_try_long(argc - optind, argv + optind, longopts, &lopt);
+		consumed =
+			getopt_try_long(argc - optind, argv + optind, longopts, &lopt);
 		if (consumed >= 0) {
 
 			optind += consumed;
@@ -75,4 +78,3 @@ int getopt_long(int argc, char * const argv[],
 
 	return -1;
 }
-

@@ -40,15 +40,16 @@
 #include <stddef.h>
 
 typedef struct linenoiseCompletions {
-  size_t len;
-  char **cvec;
+	size_t len;
+	char **cvec;
 } linenoiseCompletions_t;
 
-typedef void(linenoiseCompletionCallback)(const char *, linenoiseCompletions_t *);
+typedef void (linenoiseCompletionCallback)(const char *,
+	linenoiseCompletions_t *);
 void linenoiseSetCompletionCallback(linenoiseCompletionCallback *);
 void linenoiseAddCompletion(linenoiseCompletions_t *, char *);
 
-char *linenoise(const char *prompt);
+char * linenoise(const char *prompt);
 int linenoiseHistoryAdd(const char *line);
 int linenoiseHistorySetMaxLen(int len);
 int linenoiseHistorySave(char *filename);

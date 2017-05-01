@@ -17,7 +17,7 @@
 #include <util/binalign.h>
 
 void tcp_build(struct tcphdr *tcph, in_port_t dst_prt,
-		in_port_t src_prt, uint8_t data_off, uint16_t window) {
+	in_port_t src_prt, uint8_t data_off, uint16_t window) {
 	assert(tcph != NULL);
 	tcph->dest = dst_prt;
 	tcph->source = src_prt;
@@ -26,7 +26,7 @@ void tcp_build(struct tcphdr *tcph, in_port_t dst_prt,
 	assert(binalign_check_bound(data_off, 4));
 	tcph->doff = data_off / 4;
 	tcph->res1 = tcph->cwr = tcph->ece = tcph->urg = tcph->ack
-			= tcph->psh = tcph->rst = tcph->syn = tcph->fin = 0;
+						= tcph->psh = tcph->rst = tcph->syn = tcph->fin = 0;
 	tcph->window = htons(window);
 	tcph->check = 0; /* use tcp_set_check_field */
 	tcph->urg_ptr = 0;
@@ -44,7 +44,7 @@ void tcp_set_ack_field(struct tcphdr *tcph, uint32_t ack_seq) {
 }
 
 void tcp4_set_check_field(struct tcphdr *tcph,
-		const struct iphdr *iph) {
+	const struct iphdr *iph) {
 	struct ip_pseudohdr ipph;
 
 	assert(tcph != NULL);
@@ -57,7 +57,7 @@ void tcp4_set_check_field(struct tcphdr *tcph,
 }
 
 void tcp6_set_check_field(struct tcphdr *tcph,
-		const struct ip6hdr *ip6h) {
+	const struct ip6hdr *ip6h) {
 	struct ip6_pseudohdr ip6ph;
 
 	assert(tcph != NULL);
@@ -70,7 +70,7 @@ void tcp6_set_check_field(struct tcphdr *tcph,
 }
 
 void tcp_set_check_field(struct tcphdr *tcph,
-		const void *nhhdr) {
+	const void *nhhdr) {
 	if (ip_check_version((const struct iphdr *)nhhdr)) {
 		tcp4_set_check_field(tcph, (const struct iphdr *)nhhdr);
 	}
@@ -81,7 +81,7 @@ void tcp_set_check_field(struct tcphdr *tcph,
 }
 
 size_t tcp4_data_length(const struct tcphdr *tcph,
-		const struct iphdr *iph) {
+	const struct iphdr *iph) {
 	assert(tcph != NULL);
 	assert(ip_data_length(iph) >= TCP_HEADER_SIZE(tcph));
 
@@ -89,7 +89,7 @@ size_t tcp4_data_length(const struct tcphdr *tcph,
 }
 
 size_t tcp6_data_length(const struct tcphdr *tcph,
-		const struct ip6hdr *ip6h) {
+	const struct ip6hdr *ip6h) {
 	assert(tcph != NULL);
 	assert(ip6_data_length(ip6h) >= TCP_HEADER_SIZE(tcph));
 
@@ -97,7 +97,7 @@ size_t tcp6_data_length(const struct tcphdr *tcph,
 }
 
 size_t tcp_data_length(const struct tcphdr *tcph,
-		const void *nhhdr) {
+	const void *nhhdr) {
 	if (ip_check_version((const struct iphdr *)nhhdr)) {
 		return tcp4_data_length(tcph,
 				(const struct iphdr *)nhhdr);
@@ -108,21 +108,21 @@ size_t tcp_data_length(const struct tcphdr *tcph,
 }
 
 size_t tcp4_seq_length(const struct tcphdr *tcph,
-		const struct iphdr *iph) {
+	const struct iphdr *iph) {
 	assert(tcph != NULL);
 
 	return tcp4_data_length(tcph, iph) + (tcph->syn | tcph->fin);
 }
 
 size_t tcp6_seq_length(const struct tcphdr *tcph,
-		const struct ip6hdr *ip6h) {
+	const struct ip6hdr *ip6h) {
 	assert(tcph != NULL);
 
 	return tcp6_data_length(tcph, ip6h) + (tcph->syn | tcph->fin);
 }
 
 size_t tcp_seq_length(const struct tcphdr *tcph,
-		const void *nhhdr) {
+	const void *nhhdr) {
 	assert(tcph != NULL);
 
 	return tcp_data_length(tcph, nhhdr) + (tcph->syn | tcph->fin);

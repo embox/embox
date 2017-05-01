@@ -5,30 +5,31 @@
 
 class SaveFileDialog : public QWidget
 {
-    Q_OBJECT
+Q_OBJECT
 public:
-    explicit SaveFileDialog(QTextEdit *textEdit, QString *fileName, QMainWindow *mainWindow);
+explicit SaveFileDialog(QTextEdit *textEdit, QString *fileName,
+	QMainWindow *mainWindow);
 
 signals:
 
 private slots:
-    void save();
-    void close();
+void save();
+void close();
 
 private:
-    QPushButton *createButton(const QString &text, const char *member);
+QPushButton * createButton(const QString &text, const char *member);
 
-    QLineEdit *fileNameEdit;
+QLineEdit *fileNameEdit;
 
-    QLabel *fileNameLabel;
+QLabel *fileNameLabel;
 
-    QPushButton *okButton;
-    QPushButton *cancelButton;
-    QDir currentDir;
-    QString *fileName;
-    QMainWindow *mainWindow;
-    QTextEdit *textEdit;
-    QMdiSubWindow *subwindow;
+QPushButton *okButton;
+QPushButton *cancelButton;
+QDir currentDir;
+QString *fileName;
+QMainWindow *mainWindow;
+QTextEdit *textEdit;
+QMdiSubWindow *subwindow;
 };
 
-#endif // SAVEFILEDIALOG_H
+#endif /* SAVEFILEDIALOG_H */

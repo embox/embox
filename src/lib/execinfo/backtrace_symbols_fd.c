@@ -35,8 +35,8 @@ void backtrace_symbols_fd(void *const *buff, int size, int fd) {
 		if (s != NULL) {
 			offset = (char *)buff[i] - (char *)s->addr;
 			fprintf(fp, " <%s+%#tx>",
-					offset >= 0 ? s->name : "__unknown__",
-					offset);
+				offset >= 0 ? s->name : "__unknown__",
+				offset);
 		}
 
 		fprintf(fp, "\n");

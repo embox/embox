@@ -4,7 +4,7 @@
  * @date 20.01.13
  * @author Alexander Kalmuk
  * @author Anton Kozlov:
- * 	splitted with fs, simplifying
+ *  splitted with fs, simplifying
  */
 
 #include <errno.h>
@@ -61,7 +61,7 @@ int input_dev_input(struct input_dev *dev) {
 		}
 		lthread_launch(&indev_handler_lt);
 	}
-out_unlock:
+	out_unlock:
 	irq_unlock();
 
 	return 0;
@@ -106,7 +106,6 @@ int input_dev_register(struct input_dev *dev) {
 		return -EINVAL;
 	}
 
-
 	if (!dev->ops || !dev->ops->event_get) {
 		return -EINVAL;
 	}
@@ -114,7 +113,7 @@ int input_dev_register(struct input_dev *dev) {
 	dev->event_cb = NULL;
 
 	ring_buff_init(&dev->rbuf, sizeof(struct input_event),
-			INPUT_DEV_EVENT_QUEUE_LEN, &dev->event_buf);
+		INPUT_DEV_EVENT_QUEUE_LEN, &dev->event_buf);
 
 	dev->curprocessd = NULL;
 
@@ -132,7 +131,7 @@ int input_dev_event(struct input_dev *dev, struct input_event *ev) {
 
 	cnt = ring_buff_get_cnt(&dev->rbuf);
 	if ((cnt == 0)
-			|| ((dev->curprocessd != NULL) && (cnt == 1))) {
+		|| ((dev->curprocessd != NULL) && (cnt == 1))) {
 		return -ENOENT;
 	}
 
@@ -194,7 +193,7 @@ int input_dev_close(struct input_dev *dev) {
 	return 0;
 }
 
-struct input_dev *input_dev_lookup(const char *name) {
+struct input_dev * input_dev_lookup(const char *name) {
 	struct input_dev *dev;
 
 	dlist_foreach_entry(dev,  &input_devices, global_indev_list) {

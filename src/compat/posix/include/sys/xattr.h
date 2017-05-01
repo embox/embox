@@ -22,7 +22,8 @@
  * @return Number of bytes successfully written or number of bytes
  * needed to complete
  */
-extern int getxattr(const char *path, const char *name, char *value, size_t size);
+extern int getxattr(const char *path, const char *name, char *value,
+	size_t size);
 
 /**
  * @brief Get xattr
@@ -49,7 +50,7 @@ extern int fgetxattr(int fd, const char *name, void *value, size_t size);
  * @return Zero on succes, -1 otherwise and errno setted
  */
 extern int setxattr(const char *path, const char *name, const char *value,
-		size_t len, int flags);
+	size_t len, int flags);
 
 /**
  * @brief Set xattr
@@ -63,7 +64,7 @@ extern int setxattr(const char *path, const char *name, const char *value,
  * @return Zero on succes, -1 otherwise and errno setted
  */
 extern int fsetxattr(int fd, const char *name, const char *value,
-		size_t len, int flags);
+	size_t len, int flags);
 /**
  * @brief List xattr keys separated by \0
  *

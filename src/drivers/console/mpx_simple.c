@@ -21,7 +21,7 @@ static struct vc *curvc;
 static struct vc *postvc;
 static struct fb_info *curfb;
 
-static struct vc **vcs_find(struct vc **vcs, struct vc *vc) {
+static struct vc ** vcs_find(struct vc **vcs, struct vc *vc) {
 	int i;
 	for (i = 0; i < VC_MPX_N; i++) {
 		if (vcs[i] != vc) {
@@ -71,8 +71,8 @@ int mpx_register_vc(struct vc *vc) {
 
 	cbs = vc->callbacks;
 	if (!(cbs && cbs->handle_input_event
-			&& cbs->visualized
-			&& cbs->schedule_devisualization)) {
+		&& cbs->visualized
+		&& cbs->schedule_devisualization)) {
 		return -EINVAL;
 	}
 
@@ -142,7 +142,9 @@ static int indev_event_cb(struct input_dev *indev) {
 
 static int vc_mpx_init(void) {
 	struct input_dev *indev;
-	const char *devlist[] = {"keyboard", "mouse", NULL};
+	const char *devlist[] = {
+		"keyboard", "mouse", NULL
+	};
 	const char **p;
 
 	for (p = devlist; *p != NULL; p++) {
@@ -160,4 +162,3 @@ static int vc_mpx_init(void) {
 	}
 	return 0;
 }
-

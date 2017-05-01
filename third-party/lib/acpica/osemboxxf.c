@@ -54,38 +54,37 @@ ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer(void) {
 }
 
 ACPI_STATUS AcpiOsPredefinedOverride(
-		const ACPI_PREDEFINED_NAMES *InitVal,
-		ACPI_STRING *NewVal) {
-    if (!InitVal || !NewVal) {
-        return AE_BAD_PARAMETER;
-    }
+	const ACPI_PREDEFINED_NAMES *InitVal,
+	ACPI_STRING *NewVal) {
+	if (!InitVal || !NewVal) {
+		return AE_BAD_PARAMETER;
+	}
 
 	PRINTD("AcpiOsPredefinedOverride() called");
 
-    *NewVal = NULL;
+	*NewVal = NULL;
 
-    return AE_OK;
+	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsTableOverride(
-		ACPI_TABLE_HEADER *ExistingTable,
-		ACPI_TABLE_HEADER **NewTable) {
-    if (!ExistingTable || !NewTable) {
-        return AE_BAD_PARAMETER;
-    }
+	ACPI_TABLE_HEADER *ExistingTable,
+	ACPI_TABLE_HEADER **NewTable) {
+	if (!ExistingTable || !NewTable) {
+		return AE_BAD_PARAMETER;
+	}
 
 	PRINTD("AcpiOsTableOverride() called");
 
-    *NewTable = NULL;
+	*NewTable = NULL;
 
-    return AE_OK;
+	return AE_OK;
 }
 
-
 ACPI_STATUS AcpiOsPhysicalTableOverride(
-		ACPI_TABLE_HEADER       *ExistingTable,
-		ACPI_PHYSICAL_ADDRESS   *NewAddress,
-		UINT32                  *NewTableLength) {
+	ACPI_TABLE_HEADER       *ExistingTable,
+	ACPI_PHYSICAL_ADDRESS   *NewAddress,
+	UINT32                  *NewTableLength) {
 	if (!ExistingTable || !NewAddress || !NewTableLength) {
 		return AE_BAD_PARAMETER;
 	}
@@ -98,7 +97,7 @@ ACPI_STATUS AcpiOsPhysicalTableOverride(
 	return AE_OK;
 }
 
-void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE Length) {
+void * AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE Length) {
 	PRINTD("AcpiOsMapMemory() called");
 
 	return ACPI_PHYSADDR_TO_PTR(Where);
@@ -109,8 +108,8 @@ void AcpiOsUnmapMemory(void *LogicalAddress, ACPI_SIZE Size) {
 }
 
 ACPI_STATUS AcpiOsGetPhysicalAddress(
-		void *LogicalAddress,
-		ACPI_PHYSICAL_ADDRESS *PhysicalAddress) {
+	void *LogicalAddress,
+	ACPI_PHYSICAL_ADDRESS *PhysicalAddress) {
 	PRINTD("AcpiOsGetPhysicalAddress() called");
 
 	if (!LogicalAddress || !PhysicalAddress) {
@@ -122,7 +121,7 @@ ACPI_STATUS AcpiOsGetPhysicalAddress(
 	return AE_OK;
 }
 
-void *AcpiOsAllocate(ACPI_SIZE Size) {
+void * AcpiOsAllocate(ACPI_SIZE Size) {
 	PRINTD("AcpiOsAllocate() called");
 
 	return malloc(Size);
@@ -153,9 +152,9 @@ ACPI_THREAD_ID AcpiOsGetThreadId(void) {
 }
 
 ACPI_STATUS AcpiOsExecute(
-		ACPI_EXECUTE_TYPE Type,
-		ACPI_OSD_EXEC_CALLBACK Function,
-		void *Context) {
+	ACPI_EXECUTE_TYPE Type,
+	ACPI_OSD_EXEC_CALLBACK Function,
+	void *Context) {
 	PRINTD("Not implemented AcpiOsExecute() called");
 
 	/* Not implemented. */
@@ -182,9 +181,9 @@ void AcpiOsWaitEventsComplete(void) {
 }
 
 ACPI_STATUS AcpiOsCreateSemaphore(
-		UINT32 MaxUnits,
-		UINT32 InitialUnits,
-		ACPI_SEMAPHORE *OutHandle) {
+	UINT32 MaxUnits,
+	UINT32 InitialUnits,
+	ACPI_SEMAPHORE *OutHandle) {
 	PRINTD("Not implemented AcpiOsCreateSemaphore() called");
 
 	/* Not implemented. */
@@ -201,9 +200,9 @@ ACPI_STATUS AcpiOsDeleteSemaphore(ACPI_SEMAPHORE Handle) {
 }
 
 ACPI_STATUS AcpiOsWaitSemaphore(
-		ACPI_SEMAPHORE Handle,
-		UINT32 Units,
-		UINT16 Timeout) {
+	ACPI_SEMAPHORE Handle,
+	UINT32 Units,
+	UINT16 Timeout) {
 	PRINTD("Not implemented AcpiOsWaitSemaphore() called");
 
 	/* Not implemented. */
@@ -248,9 +247,9 @@ void AcpiOsReleaseLock(ACPI_SPINLOCK Handle, ACPI_CPU_FLAGS Flags) {
 }
 
 ACPI_STATUS AcpiOsInstallInterruptHandler(
-		UINT32 InterruptNumber,
-		ACPI_OSD_HANDLER ServiceRoutine,
-		void *Context) {
+	UINT32 InterruptNumber,
+	ACPI_OSD_HANDLER ServiceRoutine,
+	void *Context) {
 	PRINTD("Not implemented AcpiOsInstallInterruptHandler() called");
 
 	/* Not implemented. */
@@ -259,8 +258,8 @@ ACPI_STATUS AcpiOsInstallInterruptHandler(
 }
 
 ACPI_STATUS AcpiOsRemoveInterruptHandler(
-		UINT32 InterruptNumber,
-		ACPI_OSD_HANDLER ServiceRoutine) {
+	UINT32 InterruptNumber,
+	ACPI_OSD_HANDLER ServiceRoutine) {
 	PRINTD("Not implemented AcpiOsRemoveInterruptHandler() called");
 
 	/* Not implemented. */
@@ -269,9 +268,9 @@ ACPI_STATUS AcpiOsRemoveInterruptHandler(
 }
 
 ACPI_STATUS AcpiOsReadPort(
-		ACPI_IO_ADDRESS Address,
-		UINT32 *Value,
-		UINT32 Width) {
+	ACPI_IO_ADDRESS Address,
+	UINT32 *Value,
+	UINT32 Width) {
 	PRINTD("AcpiOsReadPort() called");
 
 	if (!Value) {
@@ -279,57 +278,57 @@ ACPI_STATUS AcpiOsReadPort(
 	}
 
 	switch (Width) {
-		case 8: {
-			*Value = in8(Address);
-			break;
-		}
-		case 16: {
-			*Value = in16(Address);
-			break;
-		}
-		case 32: {
-			*Value = in32(Address);
-			break;
-		}
-		default: {
-			return AE_BAD_PARAMETER;
-		}
+	case 8: {
+		*Value = in8(Address);
+		break;
+	}
+	case 16: {
+		*Value = in16(Address);
+		break;
+	}
+	case 32: {
+		*Value = in32(Address);
+		break;
+	}
+	default: {
+		return AE_BAD_PARAMETER;
+	}
 	}
 
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsWritePort(
-		ACPI_IO_ADDRESS Address,
-		UINT32 Value,
-		UINT32 Width) {
+	ACPI_IO_ADDRESS Address,
+	UINT32 Value,
+	UINT32 Width) {
 	PRINTD("AcpiOsWritePort() called");
 
 	switch (Width) {
-		case 8: {
-			out8((uint8_t) Value, Address);
-			break;
-		}
-		case 16: {
-			out16((uint16_t) Value, Address);
-			break;
-		}
-		case 32: {
-			out32(Value, Address);
-			break;
-		}
-		default: {
-			return AE_BAD_PARAMETER;
-		}
+	case 8: {
+		out8((uint8_t) Value, Address);
+		break;
+	}
+	case 16: {
+		out16((uint16_t) Value, Address);
+		break;
+	}
+	case 32: {
+		out32(Value, Address);
+		break;
+	}
+	default: {
+		return AE_BAD_PARAMETER;
+	}
 	}
 
 	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsReadMemory(
-		ACPI_PHYSICAL_ADDRESS Address,
-		UINT64 *Value,
-		UINT32 Width) {
+	ACPI_PHYSICAL_ADDRESS Address,
+	UINT64 *Value,
+	UINT32 Width) {
 	PRINTD("Not implemented AcpiOsReadMemory() called");
 
 	/* Not implemented. */
@@ -338,9 +337,9 @@ ACPI_STATUS AcpiOsReadMemory(
 }
 
 ACPI_STATUS AcpiOsWriteMemory(
-		ACPI_PHYSICAL_ADDRESS Address,
-		UINT64 Value,
-		UINT32 Width) {
+	ACPI_PHYSICAL_ADDRESS Address,
+	UINT64 Value,
+	UINT32 Width) {
 	PRINTD("Not implemented AcpiOsWriteMemory() called");
 
 	/* Not implemented. */
@@ -349,10 +348,10 @@ ACPI_STATUS AcpiOsWriteMemory(
 }
 
 ACPI_STATUS AcpiOsReadPciConfiguration(
-		ACPI_PCI_ID *PciId,
-		UINT32 Reg,
-		UINT64 *Value,
-		UINT32 Width) {
+	ACPI_PCI_ID *PciId,
+	UINT32 Reg,
+	UINT64 *Value,
+	UINT32 Width) {
 	PRINTD("Not implemented AcpiOsReadPciConfiguration() called");
 
 	/* Not implemented. */
@@ -361,10 +360,10 @@ ACPI_STATUS AcpiOsReadPciConfiguration(
 }
 
 ACPI_STATUS AcpiOsWritePciConfiguration(
-		ACPI_PCI_ID *PciId,
-		UINT32 Reg,
-		UINT64 Value,
-		UINT32 Width) {
+	ACPI_PCI_ID *PciId,
+	UINT32 Reg,
+	UINT64 Value,
+	UINT32 Width) {
 	PRINTD("Not implemented AcpiOsWritePciConfiguration() called");
 
 	/* Not implemented. */

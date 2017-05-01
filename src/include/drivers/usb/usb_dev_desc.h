@@ -27,7 +27,7 @@ typedef void (*usb_notify_hnd_t)(struct usb_request *req, void *arg);
  * @return Pointer usb_dev_desc on success
  * @return NULL on error
  */
-extern struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid);
+extern struct usb_dev_desc * usb_dev_open(uint16_t vid, uint16_t pid);
 
 /**
  * @brief Close usb device
@@ -46,8 +46,9 @@ extern void usb_dev_desc_close(struct usb_dev_desc *ddesc);
  * @return 0 on success
  * @return Negative on error
  */
-extern int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_device *desc,
-		struct usb_desc_interface *idesc);
+extern int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc,
+	struct usb_desc_device *desc,
+	struct usb_desc_interface *idesc);
 
 /**
  * @brief Get endpoint descriptor
@@ -60,7 +61,7 @@ extern int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_dev
  * @return Negative on error
  */
 extern int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
-		struct usb_desc_endpoint *desc);
+	struct usb_desc_endpoint *desc);
 
 /**
  * @brief Make request to endpoint and wait till complete.
@@ -74,8 +75,9 @@ extern int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
  * @return 0 on success
  * @return Negative on error
  */
-extern int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
-		void *buf, size_t len);
+extern int usb_request(struct usb_dev_desc *ddesc, int endp_n,
+	usb_token_t token,
+	void *buf, size_t len);
 
 /**
  * @brief Make request to endpoint and call callback when it's done.
@@ -90,8 +92,8 @@ extern int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token
  * @return 0 on success
  * @return Negative on error
  */
-extern int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
-		void *buf, size_t len, usb_notify_hnd_t notify_hnd, void *arg);
+extern int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n,
+	usb_token_t token,
+	void *buf, size_t len, usb_notify_hnd_t notify_hnd, void *arg);
 
 #endif /* DRIVERS_USB_DEV_DESC_H_ */
-

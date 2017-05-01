@@ -34,7 +34,7 @@ static void print_usage(void) {
 }
 
 static int send_request(struct net_device *dev, uint16_t pro,
-		uint8_t pln, const void *tha) {
+	uint8_t pln, const void *tha) {
 	int ret;
 	struct sk_buff *skb;
 	struct net_header_info hdr_info;
@@ -60,7 +60,7 @@ static int send_request(struct net_device *dev, uint16_t pro,
 	}
 
 	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln,
-			RARP_OP_REQUEST, &dev->dev_addr[0], NULL, tha, NULL);
+		RARP_OP_REQUEST, &dev->dev_addr[0], NULL, tha, NULL);
 
 	return net_tx(skb, NULL);
 }
@@ -92,10 +92,10 @@ int main(int argc, char **argv) {
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		case 'h':
 			print_usage();
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		default:
 			return 0;
 		}
@@ -128,13 +128,14 @@ int main(int argc, char **argv) {
 	for (size_t i = 1; i <= cnt; i++) {
 		neighbour_clean(in_dev->dev);
 		send_request(in_dev->dev, ETH_P_IP, sizeof in_dev->ifa_address,
-				&tha[0]);
+			&tha[0]);
 		usleep(DEFAULT_INTERVAL);
 		ret = neighbour_get_paddr(ARP_HRD_ETHERNET, &tha[0], in_dev->dev,
 				ETH_P_IP, pln, &tpa[0]);
 		if (ret == 0) {
 			strcpy(&tpa_str[0], inet_ntoa(*(struct in_addr *)&tpa[0]));
-			printf("Unicast reply from %s(%s)  %dms\n", &tha_str[0], &tpa_str[0], -1);
+			printf("Unicast reply from %s(%s)  %dms\n", &tha_str[0],
+				&tpa_str[0], -1);
 			cnt_resp++;
 		}
 	}

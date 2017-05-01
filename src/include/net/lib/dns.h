@@ -60,23 +60,23 @@ enum dns_resp_code {
 typedef struct dnshdr {
 	__be16 id;      /* unique id */
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
-	__u16 rd:1,
-		tc:1,
-		aa:1,
-		opcode:4,
-		qr:1,
-		rcode:4,
-		z:3,
-		ra:1;
+	__u16 rd : 1,
+		tc : 1,
+		aa : 1,
+		opcode : 4,
+		qr : 1,
+		rcode : 4,
+		z : 3,
+		ra : 1;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
-	__u16 qr:1,     /* type of the message */
-		opcode:4,   /* type of the operation */
-		aa:1,       /* authoritative answer */
-		tc:1,       /* truncation */
-		rd:1,       /* recursion desired */
-		ra:1,       /* recursion available */
-		z:3,        /* reserved (must be zero) */
-		rcode:4;    /* response code */
+	__u16 qr : 1,     /* type of the message */
+		opcode : 4,   /* type of the operation */
+		aa : 1,       /* authoritative answer */
+		tc : 1,       /* truncation */
+		rd : 1,       /* recursion desired */
+		ra : 1,       /* recursion available */
+		z : 3,        /* reserved (must be zero) */
+		rcode : 4;    /* response code */
 #endif
 	__be16 qdcount; /* number of questions */
 	__be16 ancount; /* number of answers */
@@ -117,25 +117,57 @@ enum dns_type {
 /**
  * Resource data formats
  */
-struct dns_rr_a {  char address[IP_ADDR_LEN]; }; /* Host address format */
-struct dns_rr_ns { char nsdname[DNS_MAX_NAME_SZ]; }; /* Authoritative name server format */
-struct dns_rr_md { char madname[DNS_MAX_NAME_SZ]; }; /* Mail destination format */
-struct dns_rr_mf { char madname[DNS_MAX_NAME_SZ]; }; /* Mail forwarder format */
-struct dns_rr_cname { char cname[DNS_MAX_NAME_SZ]; }; /* Canonical name format */
-struct dns_rr_soa { char mname[DNS_MAX_NAME_SZ]; char rname[DNS_MAX_NAME_SZ]; uint32_t serial;
-		int32_t refresh; int32_t retry; int32_t expire; int32_t minimum; }; /* SOA mark format */
-struct dns_rr_mb { char madname[DNS_MAX_NAME_SZ]; }; /* Mailbox domain name format */
-struct dns_rr_mg { char mgmname[DNS_MAX_NAME_SZ]; }; /* Mail group member format */
-struct dns_rr_mr { char newname[DNS_MAX_NAME_SZ]; }; /* Mail rename domain name format */
+struct dns_rr_a {
+	char address[IP_ADDR_LEN];
+};                                               /* Host address format */
+struct dns_rr_ns {
+	char nsdname[DNS_MAX_NAME_SZ];
+};                                                   /* Authoritative name server format */
+struct dns_rr_md {
+	char madname[DNS_MAX_NAME_SZ];
+};                                                   /* Mail destination format */
+struct dns_rr_mf {
+	char madname[DNS_MAX_NAME_SZ];
+};                                                   /* Mail forwarder format */
+struct dns_rr_cname {
+	char cname[DNS_MAX_NAME_SZ];
+};                                                    /* Canonical name format */
+struct dns_rr_soa {
+	char mname[DNS_MAX_NAME_SZ]; char rname[DNS_MAX_NAME_SZ]; uint32_t serial;
+	int32_t refresh; int32_t retry; int32_t expire; int32_t minimum;
+};                                                                          /* SOA mark format */
+struct dns_rr_mb {
+	char madname[DNS_MAX_NAME_SZ];
+};                                                   /* Mailbox domain name format */
+struct dns_rr_mg {
+	char mgmname[DNS_MAX_NAME_SZ];
+};                                                   /* Mail group member format */
+struct dns_rr_mr {
+	char newname[DNS_MAX_NAME_SZ];
+};                                                   /* Mail rename domain name format */
 struct dns_rr_null { }; /* NULL RR format */
-struct dns_rr_wks { uint32_t address; uint8_t protocol; char *bit_map; }; /* WKS description format */
-struct dns_rr_ptr { char ptrdname[DNS_MAX_NAME_SZ]; }; /* Domain name pointer format */
-struct dns_rr_hinfo { char *cpu; char *os; }; /* Host information format */
-struct dns_rr_minfo { char rmailbx[DNS_MAX_NAME_SZ];
-		char emailbx[DNS_MAX_NAME_SZ]; }; /* Mailbox (mail list) information format */
-struct dns_rr_mx { int16_t preference; char exchange[DNS_MAX_NAME_SZ]; }; /* Mail exchange format */
-struct dns_rr_txt { char *txt_data; }; /* Text strings format */
-struct dns_rr_aaaa {  char address[IPv6_ADDR_LEN]; }; /* Host IPv6 address format */
+struct dns_rr_wks {
+	uint32_t address; uint8_t protocol; char *bit_map;
+};                                                                        /* WKS description format */
+struct dns_rr_ptr {
+	char ptrdname[DNS_MAX_NAME_SZ];
+};                                                     /* Domain name pointer format */
+struct dns_rr_hinfo {
+	char *cpu; char *os;
+};                                            /* Host information format */
+struct dns_rr_minfo {
+	char rmailbx[DNS_MAX_NAME_SZ];
+	char emailbx[DNS_MAX_NAME_SZ];
+};                                        /* Mailbox (mail list) information format */
+struct dns_rr_mx {
+	int16_t preference; char exchange[DNS_MAX_NAME_SZ];
+};                                                                        /* Mail exchange format */
+struct dns_rr_txt {
+	char *txt_data;
+};                                     /* Text strings format */
+struct dns_rr_aaaa {
+	char address[IPv6_ADDR_LEN];
+};                                                    /* Host IPv6 address format */
 
 /**
  * DNS Classes
@@ -211,8 +243,9 @@ struct dns_result {
 /**
  * dns_query - make query with specified type and class
  */
-extern int dns_query(const char *query, enum dns_type qtype, enum dns_class qclass,
-		struct dns_result *out_result);
+extern int dns_query(const char *query, enum dns_type qtype,
+	enum dns_class qclass,
+	struct dns_result *out_result);
 
 /**
  * dns_result_free - free resource from dns_result structure
@@ -224,8 +257,8 @@ extern int dns_result_free(struct dns_result *result);
  */
 extern const char * dns_get_nameserver(void);
 
-extern char *dns_set_nameserver(char *nameserver);
+extern char * dns_set_nameserver(char *nameserver);
 
-extern char *dns_init_nameserver(char *nameserver);
+extern char * dns_init_nameserver(char *nameserver);
 
 #endif /* NET_LIB_DNS_H_ */

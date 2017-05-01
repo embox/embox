@@ -27,13 +27,13 @@
 
 OBJALLOC_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
 
-DIR *opendir(const char *path) {
+DIR * opendir(const char *path) {
 	struct path node_path;
 	DIR *d;
 	int res;
 
 	if (!strcmp(path, ".")) {
-		path = "";//getcwd(cur_path, PATH_MAX);
+		path = "";/*getcwd(cur_path, PATH_MAX); */
 	}
 
 	res = fs_perm_lookup(path, NULL, &node_path);
@@ -75,7 +75,7 @@ int closedir(DIR *dir) {
 	return 0;
 }
 
-struct dirent *readdir(DIR *dir) {
+struct dirent * readdir(DIR *dir) {
 	struct path child;
 
 	SET_ERRNO(0);
@@ -86,7 +86,7 @@ struct dirent *readdir(DIR *dir) {
 	}
 
 	if ( 0 != vfs_get_child_next(&dir->path,
-			(struct node *)dir->current.d_ino, &child)) {
+		(struct node *)dir->current.d_ino, &child)) {
 		return NULL;
 	}
 

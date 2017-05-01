@@ -76,6 +76,6 @@ static inline struct arphdr * arp_hdr(const struct sk_buff *skb) {
  * Discover hardware address by protocol address
  */
 extern int arp_discover(struct net_device *dev, uint16_t pro,
-		uint8_t pln, const void *spa, const void *tpa);
+	uint8_t pln, const void *spa, const void *tpa);
 
 #endif /* NET_L3_ARP_H_ */

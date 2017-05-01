@@ -30,7 +30,6 @@
 
 #include <framework/mod/options.h>
 
-
 struct fec_priv {
 	uint32_t base_addr;
 	struct fec_buf_desc *rbd_base;
@@ -41,7 +40,7 @@ struct fec_priv {
 
 static struct fec_priv fec_priv;
 
-static void fec_reg_dump(const char * title) {
+static void fec_reg_dump(const char *title) {
 	log_debug("%s", title);
 
 	log_debug("ENET_EIR  %10x %10x", ENET_EIR, REG32_LOAD(ENET_EIR ));
@@ -54,8 +53,10 @@ static void fec_reg_dump(const char * title) {
 	log_debug("ENET_MIBC %10x %10x", ENET_MIBC, REG32_LOAD(ENET_MIBC));
 	log_debug("ENET_RCR  %10x %10x", ENET_RCR, REG32_LOAD(ENET_RCR ));
 	log_debug("ENET_TCR  %10x %10x", ENET_TCR, REG32_LOAD(ENET_TCR ));
-	log_debug("ENET_MAC_LOW   %10x %10x", ENET_MAC_LOW, REG32_LOAD(ENET_MAC_LOW  ));
-	log_debug("ENET_MAC_HI    %10x %10x", ENET_MAC_HI, REG32_LOAD(ENET_MAC_HI   ));
+	log_debug("ENET_MAC_LOW   %10x %10x", ENET_MAC_LOW, REG32_LOAD(
+		ENET_MAC_LOW  ));
+	log_debug("ENET_MAC_HI    %10x %10x", ENET_MAC_HI, REG32_LOAD(
+		ENET_MAC_HI   ));
 	log_debug("ENET_OPD  %10x %10x", ENET_OPD, REG32_LOAD(ENET_OPD));
 	log_debug("ENET_IAUR %10x %10x", ENET_IAUR, REG32_LOAD(ENET_IAUR));
 	log_debug("ENET_IALR %10x %10x", ENET_IALR, REG32_LOAD(ENET_IALR));
@@ -78,21 +79,24 @@ static void emac_set_macaddr(unsigned char _macaddr[6]) {
 	REG32_STORE(ENET_GAUR, 0);
 	REG32_STORE(ENET_GALR, 0);
 
-	log_debug("addr = %x:%x:%x:%x:%x:%x", tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],tmp[5]);
+	log_debug("addr = %x:%x:%x:%x:%x:%x", tmp[0],tmp[1],tmp[2],tmp[3],tmp[4],
+		tmp[5]);
 
 	mac_hi  = (_macaddr[5] << 16) |
-	          (_macaddr[4] << 24);
+		(_macaddr[4] << 24);
 	mac_lo  = (_macaddr[3] <<  0) |
-	          (_macaddr[2] <<  8) |
-	          (_macaddr[1] << 16) |
-	          (_macaddr[0] << 24);
+		(_macaddr[2] <<  8) |
+		(_macaddr[1] << 16) |
+		(_macaddr[0] << 24);
 
 	REG32_STORE(ENET_MAC_LOW, mac_lo);
 	REG32_STORE(ENET_MAC_HI, mac_hi | 0x8808);
 }
 
-static struct fec_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned(0x10)));
-static struct fec_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(0x10)));
+static struct fec_buf_desc _tx_desc_ring[TX_BUF_FRAMES] __attribute__ ((aligned(
+	0x10)));
+static struct fec_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(
+	0x10)));
 
 static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
 static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
@@ -150,10 +154,9 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 	assert(dev);
 	assert(skb);
 
-
 	res = 0;
 
-	data = (uint8_t*) skb_data_cast_in(skb->data);
+	data = (uint8_t *) skb_data_cast_in(skb->data);
 
 	if (!data) {
 		log_error("No skb data!\n");
@@ -173,7 +176,7 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		memcpy(&_tx_buf[cur_tx_desc][0], data, skb->len);
 		dcache_flush(&_tx_buf[cur_tx_desc][0], skb->len);
-		//dcache_flush(data, skb->len);
+		/*dcache_flush(data, skb->len); */
 
 		desc = &_tx_desc_ring[cur_tx_desc];
 		dcache_inval(desc, sizeof(struct fec_buf_desc));
@@ -183,7 +186,7 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 		}
 
 		desc->data_pointer = (uint32_t)&_tx_buf[cur_tx_desc][0];
-		//desc->data_pointer = (uint32_t)data;
+		/*desc->data_pointer = (uint32_t)data; */
 		desc->len          = skb->len;
 		desc->flags       |= FLAG_L | FLAG_TC | FLAG_R;
 		dcache_flush(desc, sizeof(struct fec_buf_desc));
@@ -191,10 +194,10 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 		REG32_LOAD(desc + sizeof(*desc) - 4);
 
 		REG32_STORE(ENET_TDAR, 1 << 24);
-		__asm__("nop");
+		__asm__ ("nop");
 
 		int timeout = 0xFF;
-		while(--timeout) {
+		while (--timeout) {
 			if (!(REG32_LOAD(ENET_TDAR))) {
 				break;
 			}
@@ -205,7 +208,7 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 		}
 
 		timeout = 0xFFFFFF;
-		while(--timeout) {
+		while (--timeout) {
 			dcache_inval(desc, sizeof(struct fec_buf_desc));
 			if (!(desc->flags & FLAG_R)) {
 				break;
@@ -217,10 +220,10 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		priv->tbd_index = (priv->tbd_index + 1) % TX_BUF_FRAMES;
 	}
-out1:
+	out1:
 	ipl_restore(sp);
 
-out:
+	out:
 	skb_free(skb);
 
 	return res;
@@ -232,8 +235,8 @@ static void _reset(struct net_device *dev) {
 	fec_reg_dump("ENET dump uboot...");
 
 	REG32_STORE(ENET_ECR, ENET_RESET);
-	while(REG32_LOAD(ENET_ECR) & ENET_RESET){
-		if (cnt ++ > 100000) {
+	while (REG32_LOAD(ENET_ECR) & ENET_RESET) {
+		if (cnt++ > 100000) {
 			log_error("enet can't be reset");
 			break;
 		}
@@ -258,15 +261,15 @@ static void _reset(struct net_device *dev) {
 	REG32_STORE(ENET_EIR, 0xffc00000);
 
 	/* Full-Duplex Enable */
-	 REG32_STORE(ENET_TCR, (1 << 2));
+	REG32_STORE(ENET_TCR, (1 << 2));
 
 	/* MAX_FL frame length*/
 	/* Enables 10-Mbit/s mode of the RMII or RGMII ?*/
 	/* MII or RMII mode, as indicated by the RMII_MODE field. */
 #if (OPTION_GET(NUMBER, speed) == 1000)
-	 REG32_STORE(ENET_RCR, 0x5ee0044);
+	REG32_STORE(ENET_RCR, 0x5ee0044);
 #else
-	 REG32_STORE(ENET_RCR, 0x5ee0104);
+	REG32_STORE(ENET_RCR, 0x5ee0104);
 #endif
 	/* Maximum Receive Buffer Size Register
 	 * Receive buffer size in bytes. This value, concatenated with the four
@@ -281,7 +284,7 @@ static void _reset(struct net_device *dev) {
 
 	REG32_STORE(ENET_ECR, 0xF0000100);
 
-	 /* Transmit FIFO Write 64 bytes */
+	/* Transmit FIFO Write 64 bytes */
 	REG32_STORE(ENET_TFWR, 0x100);
 
 	REG32_STORE(ENET_ECR, REG32_LOAD(ENET_ECR) | ENET_ETHEREN); /* Note: should be last ENET-related init step */
@@ -312,7 +315,7 @@ static int imx6_receive(struct net_device *dev_id, struct fec_priv *priv) {
 	struct sk_buff *skb;
 	int res = 0;
 
-	while(1) {
+	while (1) {
 		desc = &_rx_desc_ring[priv->rbd_index];
 		dcache_inval(desc, sizeof(struct fec_buf_desc));
 		if (desc->flags & FLAG_E) {
@@ -326,7 +329,7 @@ static int imx6_receive(struct net_device *dev_id, struct fec_priv *priv) {
 		}
 		dcache_inval((void *)desc->data_pointer, desc->len);
 		memcpy(skb_data_cast_in(skb->data),
-				(void*)desc->data_pointer, desc->len);
+			(void *)desc->data_pointer, desc->len);
 		skb->len = desc->len; /* without CRC */
 		skb->dev = dev_id;
 
@@ -359,7 +362,7 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	if (state & ENET_EIR_EBERR) {
 		log_error("Ethernet bus error, resetting ENET!");
-		//REG32_STORE(ENET_ECR, RESET);
+		/*REG32_STORE(ENET_ECR, RESET); */
 		_reset(dev_id);
 
 		return IRQ_HANDLED;
@@ -396,8 +399,9 @@ static int fec_init(void) {
 	nic->priv = &fec_priv;
 
 	tmp = irq_attach(ENET_IRQ, imx6_irq_handler, 0, nic, "i.MX6 enet");
-	if (tmp)
+	if (tmp) {
 		return tmp;
+	}
 
 	return inetdev_register_dev(nic);
 }

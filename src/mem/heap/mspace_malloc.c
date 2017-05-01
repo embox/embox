@@ -28,18 +28,18 @@
 #include <kernel/panic.h>
 
 /* TODO make it per task field */
-//static DLIST_DEFINE(task_mem_segments);
+/*static DLIST_DEFINE(task_mem_segments); */
 
-//#define DEBUG
+/*#define DEBUG */
 
 extern struct page_allocator *__heap_pgallocator;
 extern struct page_allocator *__heap_pgallocator2 __attribute__((weak));
-static struct page_allocator ** const mm_page_allocs[] = {
+static struct page_allocator **const mm_page_allocs[] = {
 	&__heap_pgallocator,
 	&__heap_pgallocator2,
 };
 
-static void *mm_segment_alloc(int page_cnt) {
+static void * mm_segment_alloc(int page_cnt) {
 	void *ret;
 	int i;
 	for (i = 0; i < ARRAY_SIZE(mm_page_allocs); i++) {
@@ -68,16 +68,17 @@ struct mm_segment {
 	size_t size;
 };
 
-static inline int pointer_inside_segment(void *segment, size_t size, void *pointer) {
+static inline int pointer_inside_segment(void *segment, size_t size,
+	void *pointer) {
 	return (pointer > segment && pointer < (segment + size));
 }
 
-static inline void *mm_to_segment(struct mm_segment *mm) {
+static inline void * mm_to_segment(struct mm_segment *mm) {
 	assert(mm);
 	return ((char *) mm + sizeof *mm);
 }
 
-static void *pointer_to_segment(void *ptr, struct dlist_head *mspace) {
+static void * pointer_to_segment(void *ptr, struct dlist_head *mspace) {
 	struct mm_segment *mm;
 	void *segment;
 
@@ -94,7 +95,8 @@ static void *pointer_to_segment(void *ptr, struct dlist_head *mspace) {
 	return NULL;
 }
 
-static void *mspace_do_alloc(size_t boundary, size_t size, struct dlist_head *mspace) {
+static void * mspace_do_alloc(size_t boundary, size_t size,
+	struct dlist_head *mspace) {
 	struct mm_segment *mm;
 	dlist_foreach_entry(mm, mspace, link) {
 		void *block = bm_memalign(mm_to_segment(mm), boundary, size);
@@ -106,14 +108,16 @@ static void *mspace_do_alloc(size_t boundary, size_t size, struct dlist_head *ms
 	return NULL;
 }
 
-void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
+void * mspace_memalign(size_t boundary, size_t size,
+	struct dlist_head *mspace) {
 	/* No corresponding heap was found */
 	struct mm_segment *mm;
 	size_t segment_pages_cnt;
 	void *block;
 
-	if (size == 0)
+	if (size == 0) {
 		return NULL;
+	}
 
 	assert(mspace);
 
@@ -125,11 +129,14 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	/* XXX allocate more approproate count of pages without redundancy */
 	/* Note, integer overflow may occur */
 	segment_pages_cnt = size / PAGE_SIZE() + boundary / PAGE_SIZE();
-	segment_pages_cnt += (size % PAGE_SIZE() + boundary % PAGE_SIZE() + 2 * PAGE_SIZE()) / PAGE_SIZE();
+	segment_pages_cnt +=
+		(size % PAGE_SIZE() + boundary % PAGE_SIZE() + 2 * PAGE_SIZE()) /
+		PAGE_SIZE();
 
 	mm = mm_segment_alloc(segment_pages_cnt);
-	if (mm == NULL)
+	if (mm == NULL) {
 		return NULL;
+	}
 
 	mm->size = segment_pages_cnt * PAGE_SIZE();
 	dlist_head_init(&mm->link);
@@ -145,7 +152,7 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	return block;
 }
 
-void *mspace_malloc(size_t size, struct dlist_head *mspace) {
+void * mspace_malloc(size_t size, struct dlist_head *mspace) {
 	assert(mspace);
 	return mspace_memalign(8, size, mspace);
 }
@@ -171,7 +178,7 @@ int mspace_free(void *ptr, struct dlist_head *mspace) {
 	return 0;
 }
 
-void *mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace) {
+void * mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace) {
 	void *ret;
 
 	assert(mspace);
@@ -198,7 +205,7 @@ void *mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace) {
 	return ret;
 }
 
-void *mspace_calloc(size_t nmemb, size_t size, struct dlist_head *mspace) {
+void * mspace_calloc(size_t nmemb, size_t size, struct dlist_head *mspace) {
 	void *ret;
 	size_t total_size;
 
@@ -242,8 +249,8 @@ size_t mspace_deep_copy_size(struct dlist_head *mspace) {
 	return ret;
 }
 
-
-void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
+void mspace_deep_store(struct dlist_head *mspace,
+	struct dlist_head *store_space, void *buf) {
 	struct mm_segment *mm;
 	void *p;
 
@@ -267,7 +274,8 @@ void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space
 	dlist_add_prev(mspace, mspace->next);
 }
 
-void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
+void mspace_deep_restore(struct dlist_head *mspace,
+	struct dlist_head *store_space, void *buf) {
 	struct dlist_head *raw_mm;
 	void *p;
 

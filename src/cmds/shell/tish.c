@@ -23,7 +23,6 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
-
 #include <cmd/cmdline.h>
 #include <cmd/shell.h>
 
@@ -33,8 +32,6 @@
 #include <embox/unit.h>
 
 #include <kernel/task.h>
-
-
 
 #define PROMPT_FMT OPTION_STRING_GET(prompt)
 
@@ -79,9 +76,8 @@ static char * cmd_generator(const char *text, int state) {
 }
 
 static char ** cmd_completion(const char *text, int start,
-		int end) {
+	int end) {
 	char **matches;
-
 
 	if (start == 0) {
 		matches = rl_completion_matches((char *)text,
@@ -103,7 +99,7 @@ static int is_builtin(const char *cname) {
 
 	while (1) {
 		if ((0 == strncmp(cname, tmp, cname_len))
-				&& ((tmp[cname_len] == ' ') || (tmp[cname_len] == '\0'))) {
+			&& ((tmp[cname_len] == ' ') || (tmp[cname_len] == '\0'))) {
 			return 1;
 		}
 
@@ -125,11 +121,10 @@ static int process_builtin(struct cmd_data *cdata) {
 	ret = cmd_exec(cdata->cmd, cdata->argc, cdata->argv);
 	if (ret != 0) {
 		printf("tish: %s: Command returned with code %d: %s\n",
-				cmd_name(cdata->cmd), ret, strerror(-ret));
+			cmd_name(cdata->cmd), ret, strerror(-ret));
 
 		return ret;
 	}
-
 
 	return 0;
 }
@@ -171,7 +166,7 @@ static void * run_cmd(void *data) {
 	ret = cmd_exec(cdata.cmd, cdata.argc, cdata.argv);
 	if (ret != 0) {
 		printf("%s: Command returned with code %d: %s\n",
-				cmd_name(cdata.cmd), ret, strerror(-ret));
+			cmd_name(cdata.cmd), ret, strerror(-ret));
 		return (void *)ret; /* error: ret */
 	}
 
@@ -299,7 +294,7 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 			break;
 		case 'u':
 			ret = pwd != NULL ? snprintf(buf, len, "%s", pwd->pw_name)
-					: snprintf(buf, len, "%d", uid);
+				: snprintf(buf, len, "%d", uid);
 			break;
 		case 'h':
 			ret = snprintf(buf, len, "embox");
@@ -371,8 +366,9 @@ static void tish_run(void) {
 		if (line[0] != '\0' && line[0] != '/') {
 			add_history(line); /* Add to the history. */
 			err = tish_exec(line);
-			if (err)
+			if (err) {
 				printf("tish error: #%d\n", err);
+			}
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
@@ -388,9 +384,9 @@ static void tish_run(void) {
 }
 
 SHELL_DEF({
-	.name = "tish",
-	.exec = tish_exec,
-	.run  = tish_run,
+		.name = "tish",
+		.exec = tish_exec,
+		.run  = tish_run,
 	});
 
 int main(int argc, char **argv) {

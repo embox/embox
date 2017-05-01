@@ -27,7 +27,8 @@
 
 extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 static block_dev_driver_t idedisk_pio_driver;
-static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count,
+	blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;
@@ -68,7 +69,7 @@ static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno
 
 		hd_setup_transfer(hd, blkno, nsects);
 		outb(hd->multsect > 1 ? HDCMD_MULTREAD : HDCMD_READ,
-				hdc->iobase + HDC_COMMAND);
+			hdc->iobase + HDC_COMMAND);
 
 		/* Wait until data read */
 		WAITQ_WAIT(&hdc->waitq, hdc->result);
@@ -93,7 +94,8 @@ static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno
 	return result == 0 ? count : result;
 }
 
-static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
+static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count,
+	blkno_t blkno) {
 	hd_t *hd;
 	hdc_t *hdc;
 	int sectsleft;
@@ -109,7 +111,6 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
-
 
 	while (sectsleft > 0) {
 		/* Select drive */
@@ -133,7 +134,7 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 
 		hd_setup_transfer(hd, blkno, nsects);
 		outb(hd->multsect > 1 ? HDCMD_MULTWRITE : HDCMD_WRITE,
-				hdc->iobase + HDC_COMMAND);
+			hdc->iobase + HDC_COMMAND);
 
 		/* Wait for data ready */
 		if (!(inb(hdc->iobase + HDC_ALT_STATUS) & HDCS_DRQ)) {
@@ -183,12 +184,11 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 	return result == 0 ? count : result;
 }
 
-static int idedisk_init (void *args) {
+static int idedisk_init(void *args) {
 	hd_t *drive;
 	size_t size;
 	char path[PATH_MAX];
 	struct block_dev *bdev;
-
 
 	drive = (hd_t *)args;
 	/* Make new device */

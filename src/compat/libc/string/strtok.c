@@ -6,7 +6,7 @@
  */
 #include <string.h>
 
-char *strtok_r(char *str, const char *delim, char **saveptr) {
+char * strtok_r(char *str, const char *delim, char **saveptr) {
 	char ch;
 
 	if (str == NULL && (NULL == (str = *saveptr))) {
@@ -18,7 +18,7 @@ char *strtok_r(char *str, const char *delim, char **saveptr) {
 		if ('\0' == (ch = *str++)) {
 			return NULL;
 		}
-	} while(strchr(delim, ch));
+	} while (strchr(delim, ch));
 
 	/* skip not delimiting characters */
 	*saveptr = str + strcspn(str, delim);
@@ -31,7 +31,7 @@ char *strtok_r(char *str, const char *delim, char **saveptr) {
 	return --str;
 }
 
-char *strtok(char *str, const char *delim) {
+char * strtok(char *str, const char *delim) {
 	static char *saveptr;
 	return strtok_r(str, delim, &saveptr);
 }

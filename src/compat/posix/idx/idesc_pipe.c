@@ -30,11 +30,8 @@
 #include <kernel/sched.h>
 #include <mem/sysmalloc.h>
 
-
-
 #define DEFAULT_PIPE_BUFFER_SIZE OPTION_GET(NUMBER, pipe_buffer_size)
 #define MAX_PIPE_BUFFER_SIZE     OPTION_GET(NUMBER, max_pipe_buffer_size)
-
 
 #define idesc_to_pipe(desc) ((struct idesc_pipe *) desc)->pipe
 
@@ -107,12 +104,13 @@ static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 	struct idesc_wait_link wl;
 
 	return IDESC_WAIT_LOCKED(
-		mutex_unlock(&pipe->mutex),
-		idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
-		mutex_lock(&pipe->mutex));
+			mutex_unlock(&pipe->mutex),
+			idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
+			mutex_lock(&pipe->mutex));
 }
 
-static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov,
+	int cnt) {
 	struct pipe *pipe;
 	ssize_t res;
 	void *buf;
@@ -143,7 +141,7 @@ static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov, int cnt) 
 
 		if (res > 0) {
 			/* Smth read, notify write end (can't be closed,
- 			 * checked already) */
+			 * checked already) */
 			idesc_notify(&pipe->write_desc.idesc, POLLOUT);
 			break;
 		}
@@ -155,7 +153,8 @@ static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov, int cnt) 
 	return res;
 }
 
-static ssize_t pipe_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t pipe_write(struct idesc *idesc, const struct iovec *iov,
+	int cnt) {
 	size_t nbyte;
 	struct pipe *pipe;
 	const void *cbuf;
@@ -186,7 +185,7 @@ static ssize_t pipe_write(struct idesc *idesc, const struct iovec *iov, int cnt)
 		len = ring_buff_enqueue(pipe->buff, (void *) cbuf, nbyte);
 		if (len > 0) {
 			/* Notzero was written, adjust pointers and notify
- 			 * (read end can't be closed) */
+			 * (read end can't be closed) */
 			cbuf += len;
 			nbyte -= len;
 
@@ -206,7 +205,7 @@ static ssize_t pipe_write(struct idesc *idesc, const struct iovec *iov, int cnt)
 	return res;
 }
 
-static int pipe_fcntl(struct idesc *data, int cmd, void * args) {
+static int pipe_fcntl(struct idesc *data, int cmd, void *args) {
 	return 0;
 }
 
@@ -235,7 +234,7 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 		goto out;
 	case POLLERR:
 		/* is there any exeptions */
-		res = 0; //TODO Where is errors counter
+		res = 0; /*TODO Where is errors counter */
 		goto out;
 	default:
 		res = 0;
@@ -254,36 +253,35 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 
 	if (mask & POLLERR) {
 		/* is there any exeptions */
-		res += 0; //TODO Where is errors counter
+		res += 0; /*TODO Where is errors counter */
 	}
 
-out:
+	out:
 	mutex_unlock(&pipe->mutex);
 
 	return res;
 }
 
 static const struct idesc_ops idesc_pipe_ops = {
-		.id_readv = pipe_read,
-		.id_writev = pipe_write,
-		.close = pipe_close,
-		.ioctl = pipe_fcntl,
-		.status = idesc_pipe_status
-		/*.fcntl = pipe_fcntl,*/
+	.id_readv = pipe_read,
+	.id_writev = pipe_write,
+	.close = pipe_close,
+	.ioctl = pipe_fcntl,
+	.status = idesc_pipe_status
+	    /*.fcntl = pipe_fcntl,*/
 };
 
 static int idesc_pipe_init(struct idesc_pipe *pdesc, struct pipe *pipe,
-		mode_t amode) {
+	mode_t amode) {
 
 	idesc_init(&pdesc->idesc, &idesc_pipe_ops, amode);
 
 	pdesc->pipe = pipe;
 
-
 	return 0;
 }
 
-static struct pipe *pipe_alloc(void) {
+static struct pipe * pipe_alloc(void) {
 	struct pipe *pipe;
 	struct ring_buff *pipe_buff;
 	void *storage;
@@ -331,17 +329,14 @@ int pipe2(int pipefd[2], int flags) {
 	it = task_resource_idesc_table(task_self());
 	assert(it);
 
-
 	pipe = pipe_alloc();
 	if (!pipe) {
 		res = ENOMEM;
 		goto out_err;
 	}
 
-
 	idesc_pipe_init(&pipe->read_desc, pipe, S_IROTH);
 	idesc_pipe_init(&pipe->write_desc, pipe, S_IWOTH);
-
 
 	pipefd[0] = idesc_table_add(it, &pipe->read_desc.idesc, flags);
 	pipefd[1] = idesc_table_add(it, &pipe->write_desc.idesc, flags);
@@ -353,7 +348,7 @@ int pipe2(int pipefd[2], int flags) {
 
 	return 0;
 
-out_err:
+	out_err:
 	if (pipefd[1] >= 0) {
 		idesc_table_del(it, pipefd[1]);
 	}

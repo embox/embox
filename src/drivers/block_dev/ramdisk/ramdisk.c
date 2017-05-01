@@ -32,8 +32,10 @@
 POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
 INDEX_DEF(ramdisk_idx,0,MAX_DEV_QUANTITY);
 
-static int read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
-static int write_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+static int read_sectors(struct block_dev *bdev, char *buffer, size_t count,
+	blkno_t blkno);
+static int write_sectors(struct block_dev *bdev, char *buffer, size_t count,
+	blkno_t blkno);
 static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 
 block_dev_driver_t ramdisk_pio_driver = {
@@ -47,12 +49,12 @@ static int ramdisk_get_index(char *path) {
 	char *dev_name;
 	int idx;
 
-	if(NULL == (dev_name = strstr(path, "ram"))) {
+	if (NULL == (dev_name = strstr(path, "ram"))) {
 		return -1;
 	}
 	dev_name += sizeof("ram");
 
-	if(!isdigit((int)dev_name[0])) {
+	if (!isdigit((int)dev_name[0])) {
 		return -1;
 	}
 
@@ -62,7 +64,7 @@ static int ramdisk_get_index(char *path) {
 }
 
 /* XXX not stores index if path have no index placeholder, like * or # */
-struct ramdisk *ramdisk_create(char *path, size_t size) {
+struct ramdisk * ramdisk_create(char *path, size_t size) {
 	struct ramdisk *ramdisk;
 	int idx;
 	int err;
@@ -98,18 +100,18 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	ramdisk->bdev->block_size = RAMDISK_BLOCK_SIZE;
 	return ramdisk;
 
-err_free_bdev_idx:
+	err_free_bdev_idx:
 	index_free(&ramdisk_idx, idx);
-err_free_mem:
+	err_free_mem:
 	phymem_free(ramdisk->p_start_addr, page_n);
-err_free_ramdisk:
+	err_free_ramdisk:
 	pool_free(&ramdisk_pool, ramdisk);
-err_out:
+	err_out:
 	return err_ptr(err);
 
 }
 
-ramdisk_t *ramdisk_get_param(char *path) {
+ramdisk_t * ramdisk_get_param(char *path) {
 	struct path ramdisk_node;
 	struct nas *nas;
 	struct node_fi *node_fi;
@@ -143,19 +145,20 @@ int ramdisk_delete(const char *name) {
 
 	nas = ramdisk_node.node->nas;
 	node_fi = nas->fi;
-	if (NULL != (ramdisk = (ramdisk_t *) block_dev(node_fi->privdata)->privdata)) {
+	if (NULL !=
+		(ramdisk = (ramdisk_t *) block_dev(node_fi->privdata)->privdata)) {
 		if (-1 != (idx = ramdisk_get_index((char *)name))) {
 			index_free(&ramdisk_idx, idx);
 		}
 		pool_free(&ramdisk_pool, ramdisk);
-		block_dev_destroy (node_fi->privdata);
+		block_dev_destroy(node_fi->privdata);
 		vfs_del_leaf(ramdisk_node.node);
 	}
 	return 0;
 }
 
 static int read_sectors(struct block_dev *bdev,
-		char *buffer, size_t count, blkno_t blkno) {
+	char *buffer, size_t count, blkno_t blkno) {
 	ramdisk_t *ramdisk;
 	char *read_addr;
 
@@ -166,9 +169,8 @@ static int read_sectors(struct block_dev *bdev,
 	return count;
 }
 
-
 static int write_sectors(struct block_dev *bdev,
-		char *buffer, size_t count, blkno_t blkno) {
+	char *buffer, size_t count, blkno_t blkno) {
 	ramdisk_t *ramdisk;
 	char *write_addr;
 

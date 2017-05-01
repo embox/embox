@@ -13,7 +13,7 @@
 /* NOTE #strcasestr is #strstr with #tolower calls. If you change this,
  * change #strstr() too
  */
-char *strcasestr(const char *haystack, const char *needle) {
+char * strcasestr(const char *haystack, const char *needle) {
 	if (!*needle) {
 		return (char *) haystack;
 	}

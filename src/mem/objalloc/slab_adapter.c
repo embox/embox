@@ -10,7 +10,7 @@
 #include <mem/misc/slab.h>
 #include <mem/objalloc.h>
 
-void *objalloc(objalloc_t *allocator) {
+void * objalloc(objalloc_t *allocator) {
 	return cache_alloc(allocator);
 }
 

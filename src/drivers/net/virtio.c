@@ -66,11 +66,15 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	sched_lock();
 	{
 		desc_id = vq->next_free_desc;
-		do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
+		do {
+			desc = virtqueue_alloc_desc(vq);
+		} while (desc == NULL);
 		vring_desc_init(desc, hdr, sizeof *hdr, VRING_DESC_F_NEXT);
 		desc->next = vq->next_free_desc;
 
-		do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
+		do {
+			desc = virtqueue_alloc_desc(vq);
+		} while (desc == NULL);
 		vring_desc_init(desc, skb_data_cast_in(skb_data), skb->len, 0);
 
 		vring_push_desc(desc_id, &vq->ring);
@@ -85,7 +89,7 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static irq_return_t virtio_interrupt(unsigned int irq_num,
-		void *dev_id) {
+	void *dev_id) {
 	struct net_device *dev;
 	struct virtqueue *vq;
 	struct vring_used_elem *used_elem;
@@ -200,7 +204,7 @@ static void virtio_config(struct net_device *dev) {
 
 	/* it's known device */
 	virtio_net_add_status(VIRTIO_CONFIG_S_ACKNOWLEDGE
-			| VIRTIO_CONFIG_S_DRIVER, dev);
+		| VIRTIO_CONFIG_S_DRIVER, dev);
 
 	guest_features = 0;
 
@@ -225,14 +229,14 @@ static void virtio_config(struct net_device *dev) {
 }
 
 static void virtio_priv_fini(struct virtio_priv *dev_priv,
-		struct net_device *dev) {
+	struct net_device *dev) {
 	struct virtqueue *vq;
 	struct vring_desc *desc;
 
 	/* free transmit queue */
 	vq = &dev_priv->tq;
 	for (desc = &vq->ring.desc[0];
-			desc < &vq->ring.desc[vq->ring.num]; ++desc) {
+		desc < &vq->ring.desc[vq->ring.num]; ++desc) {
 		if (desc->addr != 0) {
 			skb_extra_free(skb_extra_cast_out((void *)(uintptr_t)desc->addr));
 			desc->addr = 0;
@@ -250,7 +254,7 @@ static void virtio_priv_fini(struct virtio_priv *dev_priv,
 	/* free receive queue */
 	vq = &dev_priv->rq;
 	for (desc = &vq->ring.desc[0];
-			desc < &vq->ring.desc[vq->ring.num]; ++desc) {
+		desc < &vq->ring.desc[vq->ring.num]; ++desc) {
 		if (desc->addr != 0) {
 			skb_extra_free(skb_extra_cast_out((void *)(uintptr_t)desc->addr));
 			desc->addr = 0;
@@ -267,7 +271,7 @@ static void virtio_priv_fini(struct virtio_priv *dev_priv,
 }
 
 static int virtio_priv_init(struct virtio_priv *dev_priv,
-		struct net_device *dev) {
+	struct net_device *dev) {
 	int ret, i;
 	struct sk_buff_extra *skb_extra;
 	struct sk_buff_data *skb_data;
@@ -291,30 +295,40 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 
 	/* add receive buffer */
 	vq = &dev_priv->rq;
-	if (MODOPS_PREP_BUFF_CNT * 2 > vq->ring.num) goto out_nomem;
+	if (MODOPS_PREP_BUFF_CNT * 2 > vq->ring.num) {
+		goto out_nomem;
+	}
 
 	for (i = 0; i < MODOPS_PREP_BUFF_CNT; ++i) {
 		desc_id = vq->next_free_desc;
 		desc = virtqueue_alloc_desc(vq);
-		if (desc == NULL) goto out_nomem;
+		if (desc == NULL) {
+			goto out_nomem;
+		}
 
 		skb_extra = skb_extra_alloc();
-		if (skb_extra == NULL) goto out_nomem;
+		if (skb_extra == NULL) {
+			goto out_nomem;
+		}
 
 		vring_desc_init(desc, skb_extra_cast_in(skb_extra),
-				sizeof(struct virtio_net_hdr),
-				VRING_DESC_F_WRITE | VRING_DESC_F_NEXT);
+			sizeof(struct virtio_net_hdr),
+			VRING_DESC_F_WRITE | VRING_DESC_F_NEXT);
 		desc->next = vq->next_free_desc;
 
 		desc = virtqueue_alloc_desc(vq);
-		if (desc == NULL) goto out_nomem;
+		if (desc == NULL) {
+			goto out_nomem;
+		}
 
 		skb_data = skb_data_alloc(skb_max_size());
-		if (skb_data == NULL) goto out_nomem;
+		if (skb_data == NULL) {
+			goto out_nomem;
+		}
 
 		vring_desc_init(desc,
-				skb_data_cast_in(skb_data), skb_max_size(),
-				VRING_DESC_F_WRITE);
+			skb_data_cast_in(skb_data), skb_max_size(),
+			VRING_DESC_F_WRITE);
 
 		vring_push_desc(desc_id, &vq->ring);
 	}
@@ -322,7 +336,7 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 
 	return 0;
 
-out_nomem:
+	out_nomem:
 	virtio_priv_fini(dev_priv, dev);
 	return -ENOMEM;
 }

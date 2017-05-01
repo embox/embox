@@ -43,8 +43,8 @@ static int setup_suite(void) {
 	}
 
 /*	if (0 != mkdir(FS_DIR, MKDIR_PERM)) {
-		return -errno;
-	}
+        return -errno;
+    }
 */
 	/* mount filesystem */
 	if (0 != (res = mount(FS_DEV, FS_DIR, FS_NAME))) {
@@ -62,8 +62,8 @@ static int teardown_suite(void) {
 	}
 
 /*	if (0 != rmdir(FS_DIR)) {
-		return res;
-	}
+        return res;
+    }
 */
 	if (0 != (res = ramdisk_delete(FS_DEV))) {
 		return res;

@@ -13,7 +13,8 @@
 #include <pnet/pack/pnet_pack.h>
 #include <pnet/core/node.h>
 
-static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_node) {
+static int step_process(struct pnet_pack *pack, net_hnd hnd,
+	net_node_t next_node) {
 	net_node_t node;
 	net_id_t res = NET_HND_FORWARD_DEFAULT;
 
@@ -28,7 +29,7 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 	}
 
 	if (node->proto != NULL) {
-		if(NULL != hnd) {
+		if (NULL != hnd) {
 			res = hnd(pack);
 		}
 	}
@@ -37,7 +38,7 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 	case NET_HND_FORWARD_DEFAULT:
 		assert(next_node);
 		pack->node = next_node;
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case NET_HND_FORWARD:
 		pnet_rx_thread_add(pack);
 		break;
@@ -56,7 +57,9 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 
 int pnet_process(struct pnet_pack *pack) {
 	if (pack->dir == PNET_PACK_DIRECTION_RX) {
-		return step_process(pack, pnet_proto_rx_hnd(pack->node), pack->node->rx_dfault);
+		return step_process(pack, pnet_proto_rx_hnd(
+				pack->node), pack->node->rx_dfault);
 	}
-	return step_process(pack, pnet_proto_tx_hnd(pack->node), pack->node->tx_dfault);
+	return step_process(pack, pnet_proto_tx_hnd(
+			pack->node), pack->node->tx_dfault);
 }

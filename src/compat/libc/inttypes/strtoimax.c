@@ -47,7 +47,7 @@
 #include <limits.h>
 
 intmax_t strtoimax(const char *restrict nptr, char **restrict endptr,
-		int base) {
+	int base) {
 	const char *s = nptr;
 	uintmax_t acc;
 	unsigned char c;
@@ -95,7 +95,8 @@ intmax_t strtoimax(const char *restrict nptr, char **restrict endptr,
 	 * Set any if any `digits' consumed; make it negative to indicate
 	 * overflow.
 	 */
-	cutoff = neg ? (uintmax_t)-(INTMAX_MIN + INTMAX_MAX) + INTMAX_MAX : INTMAX_MAX;
+	cutoff = neg ? (uintmax_t)-(INTMAX_MIN + INTMAX_MAX) +
+		INTMAX_MAX : INTMAX_MAX;
 	cutlim = cutoff % (unsigned long) base;
 	cutoff /= (unsigned long) base;
 

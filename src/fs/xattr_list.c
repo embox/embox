@@ -23,7 +23,7 @@ void xattr_list_init(struct xattr_list *xlst) {
 	dlist_init(&xlst->xl_head);
 }
 
-struct xattr_list *xattr_list_create(void) {
+struct xattr_list * xattr_list_create(void) {
 	struct xattr_list *xlst;
 
 	xlst = pool_alloc(&xattr_list_pool);
@@ -39,7 +39,7 @@ void xattr_list_delete(struct xattr_list *xlst) {
 }
 
 static void xattr_ent_value_update(struct xattr_ent *xent, const char *value,
-		size_t vlen) {
+	size_t vlen) {
 
 	assert(vlen <= XATTR_MAX_VSIZE);
 
@@ -47,8 +47,8 @@ static void xattr_ent_value_update(struct xattr_ent *xent, const char *value,
 	xent->xe_len = vlen;
 }
 
-static struct xattr_ent *xattr_ent_create(struct dlist_head *add_next,
-		const char *name, const char *value, size_t vlen) {
+static struct xattr_ent * xattr_ent_create(struct dlist_head *add_next,
+	const char *name, const char *value, size_t vlen) {
 	struct xattr_ent *xent;
 
 	assert(strlen(name) < XATTR_MAX_NSIZE && vlen <= XATTR_MAX_VSIZE);
@@ -71,8 +71,8 @@ static void xattr_ent_delete(struct xattr_ent *xent) {
 	pool_free(&xattr_ent_pool, xent);
 }
 
-static struct xattr_ent *xattr_find(struct xattr_list *xlnk, const char *name,
-		struct dlist_head **add_next_p) {
+static struct xattr_ent * xattr_find(struct xattr_list *xlnk, const char *name,
+	struct dlist_head **add_next_p) {
 	struct xattr_ent *xent, *xent_out;
 	struct dlist_head *add_next;
 
@@ -104,7 +104,7 @@ static struct xattr_ent *xattr_find(struct xattr_list *xlnk, const char *name,
 }
 
 int getxattr_generic(struct xattr_list *xlst, const char *name,
-		char *value, size_t len) {
+	char *value, size_t len) {
 	struct xattr_ent *xent;
 
 	if (strlen(name) >= XATTR_MAX_NSIZE || len > XATTR_MAX_VSIZE) {
@@ -126,7 +126,7 @@ int getxattr_generic(struct xattr_list *xlst, const char *name,
 }
 
 int setxattr_generic(struct xattr_list *xlst, const char *name,
-			const char *value, size_t len, int flags) {
+	const char *value, size_t len, int flags) {
 	struct xattr_ent *xent;
 	struct dlist_head *add_next;
 

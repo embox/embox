@@ -51,16 +51,16 @@ static inline int pagefault_handler(uint32_t nr, void *data) {
 	err_addr = mmu_get_fault_address();
 
 	vmem_map_region(ctx, (mmu_paddr_t) ((unsigned long) page),
-			(mmu_vaddr_t) err_addr, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+		(mmu_vaddr_t) err_addr, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
 
 	exception_flag = 1;
-	return 1; // execute exception-cause instruction once more
+	return 1; /* execute exception-cause instruction once more */
 }
 
 TEST_CASE("Pagefault should be considered right.") {
 	exception_flag = 0;
 
-	set_fault_handler(MMU_DATA_MISS, &pagefault_handler); //data mmu miss
+	set_fault_handler(MMU_DATA_MISS, &pagefault_handler); /*data mmu miss */
 
 	*((uint32_t *) BIGADDR) = UNIQ_VAL; /* <- exception */
 
@@ -76,7 +76,8 @@ static inline int readonly_handler(uint32_t nr, void *data) {
 
 	/* Remap page with write access */
 	vmem_unmap_region(ctx, (uintptr_t) page, VMEM_PAGE_SIZE);
-	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE,
+		VMEM_PAGE_WRITABLE);
 
 	return 1;
 }
@@ -84,7 +85,7 @@ static inline int readonly_handler(uint32_t nr, void *data) {
 TEST_CASE("Readonly pages shouldn't be written") {
 	exception_flag = 0;
 
-	set_fault_handler(MMU_DATA_MISS, &readonly_handler); //data mmu miss
+	set_fault_handler(MMU_DATA_MISS, &readonly_handler); /*data mmu miss */
 
 	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, 0);
 	mmu_drop_privileges();
@@ -107,8 +108,8 @@ static int mmu_case_setup(void) {
 	}
 
 	/* XXX hack for page-aligned array. __aligned__ don't work for big pages */
-	page = (char*) (((uintptr_t) mmu_test_buffer + VMEM_PAGE_SIZE - 1) &
-			(~MMU_PAGE_MASK));
+	page = (char *) (((uintptr_t) mmu_test_buffer + VMEM_PAGE_SIZE - 1) &
+		(~MMU_PAGE_MASK));
 	paddr = (mmu_paddr_t) page;
 	memset(page, 0, VMEM_PAGE_SIZE);
 
@@ -123,6 +124,7 @@ static int mmu_case_teardown(void) {
 	}
 
 	mmu_sys_privileges();
-	vmem_map_region(ctx, (mmu_vaddr_t) page, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+	vmem_map_region(ctx, (mmu_vaddr_t) page, (mmu_vaddr_t) page, VMEM_PAGE_SIZE,
+		VMEM_PAGE_WRITABLE);
 	return 0;
 }

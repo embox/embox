@@ -10,7 +10,7 @@
 
 #include <string.h>
 
-char *strndup(const char *s, size_t size) {
+char * strndup(const char *s, size_t size) {
 	char *ret;
 	size_t len = min(strlen(s), size);
 

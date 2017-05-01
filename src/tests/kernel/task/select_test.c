@@ -22,7 +22,7 @@ static int active_desc_cnt;
 static fd_set readfds;
 static bool select_hnd_exist = true;
 
-static void *select_hnd(void *arg) {
+static void * select_hnd(void *arg) {
 	int nfds = max(pipefd1[0], pipefd2[0]) + 1;
 
 	FD_ZERO(&readfds);

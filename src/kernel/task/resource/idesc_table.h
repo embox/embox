@@ -20,7 +20,7 @@
 
 #define MODOPS_IDESC_TABLE_SIZE \
 	OPTION_MODULE_GET(embox__kernel__task__resource__idesc_table, \
-			NUMBER, idesc_table_size)
+		NUMBER, idesc_table_size)
 struct idesc;
 
 struct idesc_table {
@@ -29,8 +29,6 @@ struct idesc_table {
 	struct indexator indexator;
 	index_data_t index_buffer[INDEX_DATA_LEN(MODOPS_IDESC_TABLE_SIZE)];
 };
-
-
 
 #define idesc_cloexec_set(desc) \
 	(desc = (struct idesc *)(((uintptr_t)desc) | 0x1))
@@ -45,12 +43,12 @@ __BEGIN_DECLS
 extern int idesc_index_valid(int idx);
 
 extern int idesc_table_add(struct idesc_table *t, struct idesc *idesc,
-		int cloexec);
+	int cloexec);
 
 extern void idesc_table_del(struct idesc_table *t, int idx);
 
 extern int idesc_table_lock(struct idesc_table *t, struct idesc *idesc, int idx,
-		int cloexec);
+	int cloexec);
 
 extern int idesc_table_locked(struct idesc_table *t, int idx);
 
@@ -60,10 +58,10 @@ extern void idesc_table_finit(struct idesc_table *t);
 
 extern int idesc_table_fork(struct idesc_table *t, struct idesc_table *par_tab);
 
-extern struct idesc *idesc_table_get(struct idesc_table *t, int idx);
+extern struct idesc * idesc_table_get(struct idesc_table *t, int idx);
 
 extern struct idesc_table * task_resource_idesc_table(
-		const struct task *task);
+	const struct task *task);
 
 #define task_self_resource_idesc_table() \
 	task_resource_idesc_table(task_self())

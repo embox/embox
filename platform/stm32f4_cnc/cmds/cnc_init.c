@@ -10,7 +10,9 @@
 int main(int argc, char *argv[]) {
 	int pipe_fds[2];
 	char ipc_var[CNCIPC_ENV_LEN];
-	char *cmd[] = { "httpd", "http_admin", NULL };
+	char *cmd[] = {
+		"httpd", "http_admin", NULL
+	};
 	int err;
 
 	if ((err = pipe(pipe_fds))) {

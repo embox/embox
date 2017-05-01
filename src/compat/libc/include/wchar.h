@@ -30,6 +30,6 @@
 #endif
 
 extern int wcscmp(const wchar_t *s1, const wchar_t *s2);
-extern wchar_t *wcsncpy(wchar_t *dst, const wchar_t *src, size_t n);
+extern wchar_t * wcsncpy(wchar_t *dst, const wchar_t *src, size_t n);
 
 #endif /* WCHAR_H_ */

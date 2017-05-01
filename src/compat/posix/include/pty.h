@@ -12,10 +12,9 @@
 #include <termios.h>
 
 extern int openpty(int *amaster, int *aslave, char *name,
-		const struct termios *termp, const struct winsize *winp);
+	const struct termios *termp, const struct winsize *winp);
 
 extern pid_t forkpty(int *amaster, char *name, const struct termios *termp,
-		const struct winsize *winp);
+	const struct winsize *winp);
 
 #endif /* POSIX_PTY_H_ */
-

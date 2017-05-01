@@ -24,5 +24,5 @@ TEST_CASE("Initialize pthread_cond with PTHREAD_COND_INITIALIZER macro") {
 	ret = pthread_cond_timedwait(&cond, &mut, &timeout);
 	pthread_mutex_unlock(&mut);
 
-	test_assert (ret == ETIMEDOUT);
+	test_assert(ret == ETIMEDOUT);
 }

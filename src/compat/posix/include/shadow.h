@@ -17,16 +17,16 @@ __BEGIN_DECLS
 struct spwd {
 	char               *sp_namp;
 	char               *sp_pwdp;
-	long int           sp_lstchg;
-	long int           sp_min;
-	long int           sp_max;
-	long int           sp_warn;
-	long int           sp_inact;
-	long int           sp_expire;
-	unsigned long int  sp_flag;
+	long int sp_lstchg;
+	long int sp_min;
+	long int sp_max;
+	long int sp_warn;
+	long int sp_inact;
+	long int sp_expire;
+	unsigned long int sp_flag;
 };
 
-extern struct spwd *fgetspent(FILE *file);
+extern struct spwd * fgetspent(FILE *file);
 
 /**
  * @brief This will search entire DB for matching entry,
@@ -38,15 +38,15 @@ extern struct spwd *fgetspent(FILE *file);
  * @return pointer to @a spwd
  * @return NULL
  */
-extern struct spwd *getspnam_f(const char *name);
+extern struct spwd * getspnam_f(const char *name);
 
-extern struct spwd *getspnam(char *name);
+extern struct spwd * getspnam(char *name);
 
 extern int putspent(struct spwd *p, FILE *fp);
 
 /* non-standart extention */
 
-extern struct spwd *spwd_find(const char *spwd_path, const char *name);
+extern struct spwd * spwd_find(const char *spwd_path, const char *name);
 __END_DECLS
 
 #endif /* COMPAT_POSIX_SHADOW_H_ */

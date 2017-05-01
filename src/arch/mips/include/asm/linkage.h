@@ -20,9 +20,9 @@
 #define LEAF(symbol)                       \
 	.globl symbol;                         \
 	.align 2;                              \
-	.type  symbol, @function;              \
-	.ent   symbol, 0;                      \
-symbol:    .frame  $sp, 0, $ra
+	.type symbol, @function;              \
+	.ent symbol, 0;                      \
+	symbol:.frame $sp, 0, $ra
 
 /*
  * NESTED - declare nested routine entry point
@@ -30,16 +30,15 @@ symbol:    .frame  $sp, 0, $ra
 #define NESTED(symbol, framesize, rpc)    \
 	.globl symbol;                        \
 	.align 2;                             \
-	.type  symbol, @function;             \
-	.ent   symbol, 0;                     \
-symbol:    .frame $sp, framesize, rpc
-
+	.type symbol, @function;             \
+	.ent symbol, 0;                     \
+	symbol:.frame $sp, framesize, rpc
 
 /*
  * END - mark end of function
  */
 #define END(function)                     \
-	.end  function;                       \
+	.end function;                       \
 	.size function, .-function
 
 #endif /* __ASEEMBLER__ */

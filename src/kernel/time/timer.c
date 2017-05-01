@@ -14,7 +14,8 @@
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
 
-#define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
+#define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, \
+		shift)
 #define CLOCK_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
 EMBOX_UNIT_INIT(init);
@@ -38,7 +39,8 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 			return;
 		}
 
-		if (cs_jiffies->event_device &&	irq_num == cs_jiffies->event_device->irq_nr) {
+		if (cs_jiffies->event_device &&
+			irq_num == cs_jiffies->event_device->irq_nr) {
 			lthread_launch(&clock_handler_lt);
 		}
 	}

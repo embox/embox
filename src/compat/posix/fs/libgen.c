@@ -9,7 +9,7 @@
 #include <string.h>
 #include <libgen.h>
 
-static char *path_final_slash(char *path) {
+static char * path_final_slash(char *path) {
 	size_t path_len = strlen(path);
 	char *c;
 
@@ -41,10 +41,11 @@ char * basename(char *path) {
 	sl = path_final_slash(path);
 
 	if (!sl) {
-		if (!*path)
+		if (!*path) {
 			/* path wasn't empty, but now it does =>
- 			 * only trailing /// was presented */
+			 * only trailing /// was presented */
 			return strcpy(path, "/");
+		}
 		return path;
 	}
 
@@ -60,10 +61,11 @@ char * dirname(char *path) {
 
 	sl = path_final_slash(path);
 	if (!sl) {
-		if (!*path)
+		if (!*path) {
 			/* path wasn't empty, but now it does =>
- 			 * only trailing /// was presented */
+			 * only trailing /// was presented */
 			return strcpy(path, "/");
+		}
 		return strcpy(path, ".");
 	}
 
@@ -75,4 +77,3 @@ char * dirname(char *path) {
 
 	return path;
 }
-

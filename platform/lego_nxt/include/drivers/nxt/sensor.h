@@ -41,7 +41,7 @@ typedef struct nxt_sensor nxt_sensor_t;
  * Get structure of sensor for specific port. You should use macros
  * NXT_SENSOR_X instead this function
  */
-extern struct nxt_sensor *nxt_get_sensor(int num);
+extern struct nxt_sensor * nxt_get_sensor(int num);
 
 #define NXT_SENSOR_1     nxt_get_sensor(0)
 #define NXT_SENSOR_2     nxt_get_sensor(1)
@@ -68,7 +68,8 @@ typedef void (*sensor_handler_t)(nxt_sensor_t *sensor, sensor_val_t sensor_val);
  * @param sensor Sensor to be configured
  * @param handler #sensor_handler_t or NULL as sensor value changed handler
  */
-extern void nxt_sensor_conf_pass(nxt_sensor_t *sensor, sensor_handler_t handler);
+extern void nxt_sensor_conf_pass(nxt_sensor_t *sensor,
+	sensor_handler_t handler);
 
 /**
  * Configure sensor as active
@@ -92,6 +93,7 @@ extern sensor_val_t nxt_sensor_get_val(nxt_sensor_t *sensor);
  * @param command Special id of value. Special for each sensor
  * @return
  */
-extern sensor_val_t nxt_sensor_active_get_val(nxt_sensor_t *sensor, uint8_t command);
+extern sensor_val_t nxt_sensor_active_get_val(nxt_sensor_t *sensor,
+	uint8_t command);
 
 #endif /* NXT_SENSOR_H_ */

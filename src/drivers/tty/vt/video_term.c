@@ -20,7 +20,7 @@
 #include <drivers/input/keymap.h>
 #include <drivers/tty.h>
 
-static const char *vterm_key_to_esc(int keycode){
+static const char * vterm_key_to_esc(int keycode){
 	switch (keycode) {
 	case KEY_INS: return "2~";
 	case KEY_DEL: return "3~";
@@ -69,14 +69,16 @@ int vterm_input(struct vterm *vt, struct input_event *event) {
 		tty_rx_putc(&vt->tty, 0x1B, 0);
 		tty_rx_putc(&vt->tty, '[', 0);
 
-		for (const char *pch = esc_body; *pch; ++pch)
+		for (const char *pch = esc_body; *pch; ++pch) {
 			tty_rx_putc(&vt->tty, *pch, 0);
+		}
 
 	} else {
 		char ch = vterm_key_to_char(keycode);
 
-		if (ch)
+		if (ch) {
 			tty_rx_putc(&vt->tty, ch, 0);
+		}
 	}
 
 	return 0;
@@ -115,7 +117,7 @@ const struct tty_ops vterm_tty_ops = {
 };
 
 void vterm_init(struct vterm *vt, struct vterm_video *video,
-		struct input_dev *indev) {
+	struct input_dev *indev) {
 	assert(video && video->ops && video->ops->init);
 
 	vt->video = video;

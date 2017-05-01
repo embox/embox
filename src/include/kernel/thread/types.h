@@ -36,38 +36,38 @@ struct task;
  * Thread control block.
  */
 struct thread {
-	struct schedee    schedee;     /**< Schedee interface for scheduler */
+	struct schedee schedee;        /**< Schedee interface for scheduler */
 
-	void              *(*run)(void *); /**< Start routine */
+	void              * (*run)(void *); /**< Start routine */
 	void              *run_arg;        /**< Argument to be passed to run */
 
-	unsigned int       critical_count;
-	unsigned int       siglock;
+	unsigned int critical_count;
+	unsigned int siglock;
 
-	unsigned int       state;        /**< Thread-specific state. */
+	unsigned int state;              /**< Thread-specific state. */
 
-	struct context     context;      /**< Architecture-dependent CPU state. */
+	struct context context;          /**< Architecture-dependent CPU state. */
 
 	union {
 		void          *run_ret;      /**< Return value of the routine. */
 		void          *joining;      /**< A joining thread (if any). */
 	} /* unnamed */;
 
-	thread_stack_t     stack;        /**< Handler for work with thread stack */
+	thread_stack_t stack;            /**< Handler for work with thread stack */
 
-	thread_id_t        id;           /**< Unique identifier. */
+	thread_id_t id;                  /**< Unique identifier. */
 
 	struct task       *task;         /**< Task belong to. */
-	struct dlist_head  thread_link;  /**< list's link holding task threads. */
+	struct dlist_head thread_link;   /**< list's link holding task threads. */
 
-	struct sigstate    sigstate;     /**< Pending signal(s). */
+	struct sigstate sigstate;        /**< Pending signal(s). */
 
-	thread_local_t     local;
-	thread_cancel_t    cleanups;
+	thread_local_t local;
+	thread_cancel_t cleanups;
 
 	struct thread_wait thread_wait;
 
-	int                policy;
+	int policy;
 };
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

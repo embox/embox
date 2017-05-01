@@ -11,7 +11,7 @@
 #include <hal/context.h>
 
 void context_init(struct context *ctx, unsigned int flags,
-		void (*routine_fn)(void), void *sp) {
+	void (*routine_fn)(void), void *sp) {
 
 }
 

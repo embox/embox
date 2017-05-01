@@ -29,19 +29,19 @@
 
 static const struct sock_proto_ops raw_sock_ops_struct;
 const struct sock_proto_ops *const raw_sock_ops
-		= &raw_sock_ops_struct;
+	= &raw_sock_ops_struct;
 
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_ICMP, 0,
-		raw_sock_ops_struct);
+	raw_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_UDP, 0,
-		raw_sock_ops_struct);
+	raw_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_TCP, 0,
-		raw_sock_ops_struct);
+	raw_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET, SOCK_RAW, IPPROTO_RAW, 0,
-		raw_sock_ops_struct);
+	raw_sock_ops_struct);
 
 static int raw_rcv_tester(const struct sock *sk,
-		const struct sk_buff *skb) {
+	const struct sk_buff *skb) {
 	const struct inet_sock *in_sk;
 
 	in_sk = (const struct inet_sock *)sk;
@@ -53,12 +53,12 @@ static int raw_rcv_tester(const struct sock *sk,
 	assert(skb->nh.iph != NULL);
 
 	return ((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
-				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
-			&& ((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
-				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
-			&& (in_sk->sk.opt.so_protocol == skb->nh.iph->proto)
-			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
-				|| (in_sk->sk.opt.so_bindtodevice == NULL));
+		   || (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+		   && ((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+		   || (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+		   && (in_sk->sk.opt.so_protocol == skb->nh.iph->proto)
+		   && ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+		   || (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
 extern uint16_t skb_get_secure_level(const struct sk_buff *skb);
@@ -80,7 +80,7 @@ int raw_rcv(const struct sk_buff *skb) {
 			break;
 		}
 		/* if we have socket with secure label we have to check secure level */
-		if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
+		if (sock_get_secure_level(sk) > skb_get_secure_level(skb)) {
 			return 0;
 		}
 
@@ -90,14 +90,14 @@ int raw_rcv(const struct sk_buff *skb) {
 		}
 
 		sock_rcv(sk, cloned, cloned->nh.raw,
-				cloned->len - skb->dev->hdr_len);
+			cloned->len - skb->dev->hdr_len);
 	}
 
 	return 0;
 }
 
 static int raw_err_tester(const struct sock *sk,
-		const struct sk_buff *skb) {
+	const struct sk_buff *skb) {
 	const struct inet_sock *in_sk;
 	const struct iphdr *emb_pack_iphdr;
 
@@ -109,17 +109,17 @@ static int raw_err_tester(const struct sock *sk,
 	assert(skb != NULL);
 	assert(skb->h.raw != NULL);
 	emb_pack_iphdr = (const struct iphdr *)(skb->h.raw
-			+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_MIN_HEADER_SIZE);
+		+ IP_HEADER_SIZE(skb->nh.iph) + ICMP_MIN_HEADER_SIZE);
 
 	return (((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
-					&& (in_sk->src_in.sin_addr.s_addr == emb_pack_iphdr->saddr))
-				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
-			&& (((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
-					&& (in_sk->dst_in.sin_addr.s_addr == emb_pack_iphdr->daddr))
-				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
-			&& (in_sk->sk.opt.so_protocol == skb->nh.iph->proto)
-			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
-				|| (in_sk->sk.opt.so_bindtodevice == NULL));
+		   && (in_sk->src_in.sin_addr.s_addr == emb_pack_iphdr->saddr))
+		   || (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+		   && (((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+		   && (in_sk->dst_in.sin_addr.s_addr == emb_pack_iphdr->daddr))
+		   || (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+		   && (in_sk->sk.opt.so_protocol == skb->nh.iph->proto)
+		   && ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+		   || (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
 void raw_err(const struct sk_buff *skb, int error_info) {

@@ -16,24 +16,24 @@
  * VirtIO IO operations
  */
 #define __VIRTIO_LOAD(b)                                   \
-	static inline uint##b##_t virtio_load##b(uint32_t reg, \
-			unsigned long base_addr) {                     \
-		return in##b(base_addr + reg);                     \
+	static inline uint ## b ## _t virtio_load ## b(uint32_t reg, \
+		unsigned long base_addr) {                     \
+		return in ## b(base_addr + reg);                     \
 	}
 #define __VIRTIO_STORE(b)                               \
-	static inline void virtio_store##b(uint##b##_t val, \
-			uint32_t reg, unsigned long base_addr ) {   \
-		out##b(val, base_addr + reg);                   \
+	static inline void virtio_store ## b(uint ## b ## _t val, \
+		uint32_t reg, unsigned long base_addr ) {   \
+		out ## b(val, base_addr + reg);                   \
 	}
 #define __VIRTIO_ORIN(b)                                       \
-	static inline void virtio_orin##b(uint##b##_t val,         \
-			uint32_t reg, unsigned long base_addr) {           \
-		out##b(val | in##b(base_addr + reg), base_addr + reg); \
+	static inline void virtio_orin ## b(uint ## b ## _t val,         \
+		uint32_t reg, unsigned long base_addr) {           \
+		out ## b(val | in ## b(base_addr + reg), base_addr + reg); \
 	}
 #define __VIRTIO_ANDIN(b)                                      \
-	static inline void virtio_andin##b(uint##b##_t val,        \
-			uint32_t reg, unsigned long base_addr) {           \
-		out##b(val & in##b(base_addr + reg), base_addr + reg); \
+	static inline void virtio_andin ## b(uint ## b ## _t val,        \
+		uint32_t reg, unsigned long base_addr) {           \
+		out ## b(val & in ## b(base_addr + reg), base_addr + reg); \
 	}
 
 __VIRTIO_LOAD(8)

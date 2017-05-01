@@ -30,9 +30,9 @@ static struct hostent * get_hostent_from_ip(const char *ip_str) {
 	}
 
 	if (((he = hostent_create()) == NULL)
-			|| (hostent_set_name(he, inet_ntoa(ip_addr)) != 0)
-			|| (hostent_set_addr_info(he, AF_INET, sizeof ip_addr) != 0)
-			|| (hostent_add_addr(he, (char *)&ip_addr) != 0)) {
+		|| (hostent_set_name(he, inet_ntoa(ip_addr)) != 0)
+		|| (hostent_set_addr_info(he, AF_INET, sizeof ip_addr) != 0)
+		|| (hostent_add_addr(he, (char *)&ip_addr) != 0)) {
 		return NULL; /* error occurred */
 	}
 
@@ -83,8 +83,8 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 	addr_len = result.an->rdlength;
 
 	if (((he = hostent_create()) == NULL)
-			|| (hostent_set_name(he, hostname) != 0)
-			|| (hostent_set_addr_info(he, AF_INET, addr_len) != 0)) {
+		|| (hostent_set_name(he, hostname) != 0)
+		|| (hostent_set_addr_info(he, AF_INET, addr_len) != 0)) {
 		dns_result_free(&result);
 		return NULL;
 	}
@@ -107,7 +107,7 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 			break;
 		}
 
-		switch(ret) {
+		switch (ret) {
 		case 0:
 			/* continue processing */
 			break;
@@ -121,7 +121,7 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 			goto out_rr_loop;
 		}
 	}
-out_rr_loop:
+	out_rr_loop:
 
 	dns_result_free(&result);
 

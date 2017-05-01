@@ -37,48 +37,47 @@ struct raspi_interrupt_regs {
 	/**
 	 * Shows which interrupt are pending.
 	 */
-    uint32_t irq_basic_pending;
-    uint32_t irq_pending_1;
-    uint32_t irq_pending_2;
+	uint32_t irq_basic_pending;
+	uint32_t irq_pending_1;
+	uint32_t irq_pending_2;
 
-    /**
-     * TODO: not used yet.
-     * There is no priority for any interrupt. If one interrupt is much more
-     * important then all others it can be routed to the FIQ.
-     */
-    uint32_t fiq_control;
+	/**
+	 * TODO: not used yet.
+	 * There is no priority for any interrupt. If one interrupt is much more
+	 * important then all others it can be routed to the FIQ.
+	 */
+	uint32_t fiq_control;
 
-    /**
-     * Writing a 1 to a bit will set the corresponding IRQ enable bit. All
-     * other IRQ enable bits are unaffected. Only bits which are enabled
-     * can be seen in the basic pending register.
-     */
-    uint32_t enable_irqs_1;
-    uint32_t enable_irqs_2;
-    uint32_t enable_basic_irqs;
+	/**
+	 * Writing a 1 to a bit will set the corresponding IRQ enable bit. All
+	 * other IRQ enable bits are unaffected. Only bits which are enabled
+	 * can be seen in the basic pending register.
+	 */
+	uint32_t enable_irqs_1;
+	uint32_t enable_irqs_2;
+	uint32_t enable_basic_irqs;
 
-    /**
-     * Writing a 1 to a bit will clear the corresponding IRQ enable bit.
-     * All other IRQ enable bits are unaffected.
-     */
-    uint32_t disable_irqs_1;
-    uint32_t disable_irqs_2;
-    uint32_t disable_basic_irqs;
+	/**
+	 * Writing a 1 to a bit will clear the corresponding IRQ enable bit.
+	 * All other IRQ enable bits are unaffected.
+	 */
+	uint32_t disable_irqs_1;
+	uint32_t disable_irqs_2;
+	uint32_t disable_basic_irqs;
 };
 
-static volatile struct raspi_interrupt_regs * const regs =
-        (volatile struct raspi_interrupt_regs*)((int)BCM2835_INTERRUPT_BASE);
-
+static volatile struct raspi_interrupt_regs *const regs =
+	(volatile struct raspi_interrupt_regs *)((int)BCM2835_INTERRUPT_BASE);
 
 static int this_init(void) {
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
-			(void*) ((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK),
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			binalign_bound(sizeof(struct raspi_interrupt_regs), MMU_PAGE_SIZE),
-			MAP_FIXED,
-			((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK)
-			);
+		(void *) ((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK),
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		binalign_bound(sizeof(struct raspi_interrupt_regs), MMU_PAGE_SIZE),
+		MAP_FIXED,
+		((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK)
+	);
 	return 0;
 }
 
@@ -113,7 +112,7 @@ void irqctrl_force(unsigned int interrupt_nr) {
 static void __raspi__dispatch_bank(uint32_t pend_bank, int32_t add_to) {
 	uint32_t bit;
 
-	while(pend_bank) {
+	while (pend_bank) {
 		bit = bit_ffs(pend_bank) - 1;
 		pend_bank ^= (1 << bit);
 		irq_dispatch(bit + add_to);
@@ -143,4 +142,3 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	panic(__func__);
 }
-

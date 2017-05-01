@@ -17,8 +17,12 @@
 
 static const struct xdr_ops xdrrec_ops;
 
-static xdr_unit_t encode_unit(xdr_unit_t u) { return htonl(u); }
-static xdr_unit_t decode_unit(xdr_unit_t u) { return ntohl(u); }
+static xdr_unit_t encode_unit(xdr_unit_t u) {
+	return htonl(u);
+}
+static xdr_unit_t decode_unit(xdr_unit_t u) {
+	return ntohl(u);
+}
 
 #define LAST_DATA     1
 #define NOT_LAST_DATA 0
@@ -29,21 +33,25 @@ static int flush_data(struct xdr *xs, char is_last);
 static int prepare_data(struct xdr *xs, uint32_t necessary);
 
 void xdrrec_create(struct xdr *xs, size_t sendsz, size_t recvsz,
-		char *handle, xdrrec_hnd_t readit, xdrrec_hnd_t writeit) {
+	char *handle, xdrrec_hnd_t readit, xdrrec_hnd_t writeit) {
 	char *buff;
 
 	assert((xs != NULL) && (handle != NULL)
-			&& (readit != NULL) && (writeit != NULL));
+		&& (readit != NULL) && (writeit != NULL));
 
-	if (sendsz == 0) { sendsz = BUFF_SEND_SZ; }
-	if (recvsz == 0) { recvsz = BUFF_RECV_SZ; }
+	if (sendsz == 0) {
+		sendsz = BUFF_SEND_SZ;
+	}
+	if (recvsz == 0) {
+		recvsz = BUFF_RECV_SZ;
+	}
 
 	sendsz += BYTES_PER_XDR_UNIT + (BYTES_PER_XDR_UNIT
-			- sendsz % BYTES_PER_XDR_UNIT) % BYTES_PER_XDR_UNIT;
+		- sendsz % BYTES_PER_XDR_UNIT) % BYTES_PER_XDR_UNIT;
 	recvsz += BYTES_PER_XDR_UNIT + (BYTES_PER_XDR_UNIT
-			- sendsz % BYTES_PER_XDR_UNIT) % BYTES_PER_XDR_UNIT;
-	assert(sendsz % BYTES_PER_XDR_UNIT == 0); // TODO debug
-	assert(recvsz % BYTES_PER_XDR_UNIT == 0); // TODO debug
+		- sendsz % BYTES_PER_XDR_UNIT) % BYTES_PER_XDR_UNIT;
+	assert(sendsz % BYTES_PER_XDR_UNIT == 0); /* TODO debug */
+	assert(recvsz % BYTES_PER_XDR_UNIT == 0); /* TODO debug */
 
 	buff = (char *)malloc(sendsz + recvsz);
 	assert(buff != NULL);
@@ -86,8 +94,9 @@ static int xdrrec_getunit(struct xdr *xs, xdr_unit_t *to) {
 static int xdrrec_putunit(struct xdr *xs, const xdr_unit_t *from) {
 	assert((xs != NULL) && (from != NULL));
 
-	if ((xs->extra.rec.out_boundry - xs->extra.rec.out_curr < BYTES_PER_XDR_UNIT)
-			&& !flush_data(xs, NOT_LAST_DATA)) {
+	if ((xs->extra.rec.out_boundry - xs->extra.rec.out_curr <
+		BYTES_PER_XDR_UNIT)
+		&& !flush_data(xs, NOT_LAST_DATA)) {
 		return XDR_FAILURE;
 	}
 
@@ -120,7 +129,7 @@ static int xdrrec_putbytes(struct xdr *xs, const char *from, size_t size) {
 	while (size > 0) {
 		assert(xs->extra.rec.out_curr <= xs->extra.rec.out_boundry);
 		if ((xs->extra.rec.out_boundry == xs->extra.rec.out_curr) &&
-				!flush_data(xs, NOT_LAST_DATA)) {
+			!flush_data(xs, NOT_LAST_DATA)) {
 			return XDR_FAILURE;
 		}
 		bytes = min(size, xs->extra.rec.out_boundry - xs->extra.rec.out_curr);
@@ -152,7 +161,8 @@ int xdrrec_endofrecord(struct xdr *xs, int sendnow) {
 		return flush_data(xs, LAST_DATA);
 	}
 
-	hdr.h.len = xs->extra.rec.out_curr - xs->extra.rec.out_hdr - sizeof(union xdrrec_hdr);
+	hdr.h.len = xs->extra.rec.out_curr - xs->extra.rec.out_hdr -
+		sizeof(union xdrrec_hdr);
 	hdr.h.is_last = LAST_DATA;
 	*(xdr_unit_t *)xs->extra.rec.out_hdr = encode_unit(hdr.unit);
 
@@ -172,7 +182,7 @@ static int flush_data(struct xdr *xs, char is_last) {
 
 	bytes = xs->extra.rec.out_curr - xs->extra.rec.out_base;
 	if ((*xs->extra.rec.out_hnd)(xs->extra.rec.handle,
-			xs->extra.rec.out_hdr, bytes) != bytes) {
+		xs->extra.rec.out_hdr, bytes) != bytes) {
 		return XDR_FAILURE;
 	}
 
@@ -198,11 +208,11 @@ static int prepare_data(struct xdr *xs, uint32_t necessary) {
 	else {
 		union xdrrec_hdr hdr;
 		if ((xs->extra.rec.in_prep != 0)
-				&& xs->extra.rec.in_last) {
+			&& xs->extra.rec.in_last) {
 			return XDR_FAILURE;
 		}
 		if ((*xs->extra.rec.in_hnd)(xs->extra.rec.handle,
-				(char *)&hdr, sizeof hdr) != sizeof hdr) {
+			(char *)&hdr, sizeof hdr) != sizeof hdr) {
 			return XDR_FAILURE;
 		}
 		hdr.unit = decode_unit(hdr.unit);
@@ -211,9 +221,13 @@ static int prepare_data(struct xdr *xs, uint32_t necessary) {
 	}
 
 	/* Prepare memory for in-coming bytes */
-	assert(xs->extra.rec.in_curr + xs->extra.rec.in_prep <= xs->extra.rec.in_boundry);
-	if (xs->extra.rec.in_boundry - xs->extra.rec.in_curr - xs->extra.rec.in_prep < len) {
-		memmove(xs->extra.rec.in_base, xs->extra.rec.in_curr, xs->extra.rec.in_prep);
+	assert(
+		xs->extra.rec.in_curr + xs->extra.rec.in_prep <=
+		xs->extra.rec.in_boundry);
+	if (xs->extra.rec.in_boundry - xs->extra.rec.in_curr -
+		xs->extra.rec.in_prep < len) {
+		memmove(xs->extra.rec.in_base, xs->extra.rec.in_curr,
+			xs->extra.rec.in_prep);
 		xs->extra.rec.in_curr = xs->extra.rec.in_base;
 	}
 
@@ -236,11 +250,11 @@ static int prepare_data(struct xdr *xs, uint32_t necessary) {
 }
 
 static const struct xdr_ops xdrrec_ops = {
-		.destroy = &xdrrec_destroy,
-		.getunit = &xdrrec_getunit,
-		.putunit = &xdrrec_putunit,
-		.getbytes = &xdrrec_getbytes,
-		.putbytes = &xdrrec_putbytes,
-		.getpos = &xdrrec_getpos,
-		.setpos = &xdrrec_setpos,
+	.destroy = &xdrrec_destroy,
+	.getunit = &xdrrec_getunit,
+	.putunit = &xdrrec_putunit,
+	.getbytes = &xdrrec_getbytes,
+	.putbytes = &xdrrec_putbytes,
+	.getpos = &xdrrec_getpos,
+	.setpos = &xdrrec_setpos,
 };

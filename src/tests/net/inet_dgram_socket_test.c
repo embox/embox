@@ -85,7 +85,7 @@ TEST_CASE("send() works on connected socket") {
 
 TEST_CASE("sendto() and sendmsg() works on disconnected socket") {
 	test_assert_equal(1, sendto(c, "a", 1, 0, to_sa(&addr),
-				addrlen));
+		addrlen));
 
 	test_assert_equal(1, recv(b, buf, 2, 0));
 	test_assert_equal('a', buf[0]);
@@ -94,13 +94,13 @@ TEST_CASE("sendto() and sendmsg() works on disconnected socket") {
 }
 
 TEST_CASE("sendto() and sendmsg() with not-null address pointer works"
-		" on connected socket") {
+		  " on connected socket") {
 	addr.sin_port = htons(OTHER_PORT);
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 
 	addr.sin_port = htons(PORT);
 	test_assert_equal(1, sendto(c, "a", 1, 0, to_sa(&addr),
-				addrlen));
+		addrlen));
 
 	test_assert_equal(1, recv(b, buf, 2, 0));
 	test_assert_equal('a', buf[0]);
@@ -127,7 +127,7 @@ TEST_CASE("recv() works on connected socket") {
 	addr.sin_port = htons(BAD_PORT);
 	test_assert_equal(1, send(c, "a", 1, 0));
 	test_assert_equal(1, sendto(c, "b", 1, 0, to_sa(&addr),
-				addrlen));
+		addrlen));
 	test_assert_equal(1, sendto(c, "c", 1, 0, NULL, 0));
 
 	test_assert_equal(0, recv(b, buf, 0, 0));
@@ -137,7 +137,7 @@ TEST_CASE("recv() works on connected socket") {
 
 #if 0
 TEST_CASE("recvfrom() and recvmsg() works on disconnected"
-		" socket") {
+		  " socket") {
 	struct sockaddr_in tmp;
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 	test_assert_zero(getsockname(c, to_sa(&addr), &addrlen));
@@ -146,7 +146,7 @@ TEST_CASE("recvfrom() and recvmsg() works on disconnected"
 	test_assert_equal(1, send(c, "b", 1, 0));
 
 	test_assert_equal(0, recvfrom(b, buf, 0, 0, to_sa(&tmp),
-				&addrlen));
+		&addrlen));
 	test_assert_equal(sizeof addr, addrlen);
 	test_assert_mem_equal(&addr, &tmp, addrlen);
 	test_assert_equal(1, recvfrom(b, buf, 2, 0, NULL, NULL));
@@ -165,11 +165,11 @@ TEST_CASE("recvfrom() and recvmsg() works on connected socket") {
 	addr.sin_port = htons(BAD_PORT);
 	test_assert_equal(1, send(c, "a", 1, 0));
 	test_assert_equal(1, sendto(c, "b", 1, 0, to_sa(&addr),
-				addrlen));
+		addrlen));
 	test_assert_equal(1, sendto(c, "c", 1, 0, NULL, 0));
 
 	test_assert_equal(0, recvfrom(b, buf, 0, 0, to_sa(&addr),
-				&addrlen));
+		&addrlen));
 	test_assert_equal(sizeof addr, addrlen);
 	test_assert_mem_equal(&addr, &tmp, addrlen);
 	test_assert_equal(1, recv(b, buf, 2, 0));
@@ -179,7 +179,7 @@ TEST_CASE("recvfrom() and recvmsg() works on connected socket") {
 }
 
 TEST_CASE("getsockname() returns not unspecified address when"
-		" a socket was connected") {
+		  " a socket was connected") {
 	struct sockaddr_in tmp;
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 
@@ -227,7 +227,8 @@ TEST_CASE("writev/readv")
 
 	test_assert_equal(ret, 11);
 	test_assert_mem_equal(iov_w[0].iov_base, str, iov_w[0].iov_len);
-	test_assert_mem_equal(iov_w[1].iov_base, str + iov_w[0].iov_len, iov_w[1].iov_len);
+	test_assert_mem_equal(iov_w[1].iov_base, str + iov_w[0].iov_len,
+		iov_w[1].iov_len);
 
 	write(c, str, 11);
 	ret = readv(b, iov_r, 2);
@@ -236,7 +237,7 @@ TEST_CASE("writev/readv")
 	test_assert_mem_equal(iov_r[0].iov_base, str0, iov_r[0].iov_len);
 	test_assert_mem_equal(iov_r[1].iov_base, str1, iov_r[1].iov_len);
 
-	//errors
+	/*errors */
 	ret = writev(c, iov_w, -1);
 	test_assert_equal(-1, ret);
 	test_assert_equal(EINVAL, errno);

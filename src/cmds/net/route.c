@@ -20,8 +20,12 @@
 
 #define FLAG_N 0x01
 
-enum route_action {ADD, DEL};
-enum target_type {NET, HOST};
+enum route_action {
+	ADD, DEL
+};
+enum target_type {
+	NET, HOST
+};
 
 static int route_show(int flags) {
 	struct rt_entry *rt;
@@ -30,10 +34,10 @@ static int route_show(int flags) {
 
 	for (rt = rt_fib_get_first(); rt != NULL; rt = rt_fib_get_next(rt)) {
 		printf("%-15s ", (rt->rt_dst != INADDR_ANY) || (flags & FLAG_N)
-				? inet_ntoa(*(struct in_addr *)&rt->rt_dst) : "default");
+			? inet_ntoa(*(struct in_addr *)&rt->rt_dst) : "default");
 
 		printf("%-15s ", (rt->rt_gateway != INADDR_ANY) || (flags & FLAG_N)
-				? inet_ntoa(*(struct in_addr *)&rt->rt_gateway) : "*");
+			? inet_ntoa(*(struct in_addr *)&rt->rt_gateway) : "*");
 
 		printf("%-15s ", inet_ntoa(*(struct in_addr *)&rt->rt_mask));
 
@@ -52,7 +56,7 @@ static int route_show(int flags) {
 
 static void print_help() {
 	printf("route [-hn] [-A family] {add|del} <target> [gw <Gw]"
-					"[netmask <Nm>] [[dev] If]\n");
+		   "[netmask <Nm>] [[dev] If]\n");
 }
 
 int main(int argc, char **argv) {
@@ -71,20 +75,20 @@ int main(int argc, char **argv) {
 
 	while ((i = getopt(argc, argv, "A:nFV")) != EOF) {
 		switch (i) {
-			case 'F':
-				break;
-			case 'A':
-				if (strcmp(optarg, "inet")) {
-					/* NIY */
-					return -EINVAL;
-				}
-				break;
-			case 'n':
-				d_flags |= FLAG_N;
-				break;
-			default:
-				print_help();
-				return 0;
+		case 'F':
+			break;
+		case 'A':
+			if (strcmp(optarg, "inet")) {
+				/* NIY */
+				return -EINVAL;
+			}
+			break;
+		case 'n':
+			d_flags |= FLAG_N;
+			break;
+		default:
+			print_help();
+			return 0;
 		}
 	}
 
@@ -138,12 +142,13 @@ int main(int argc, char **argv) {
 			return -EINVAL;
 		}
 		netmask = inet_addr(argv[0]);
-		if (netmask == INADDR_BROADCAST &&strcmp(argv[0], "255.255.255.255")) {
+		if (netmask == INADDR_BROADCAST && strcmp(argv[0], "255.255.255.255")) {
 			printf("Unknown netmask: %s.\n", argv[0]);
 			return -EINVAL;
 		}
 
-		if ((tar_t == NET && ~netmask & target) || (tar_t == HOST && netmask != INADDR_BROADCAST)) {
+		if ((tar_t == NET && ~netmask & target) ||
+			(tar_t == HOST && netmask != INADDR_BROADCAST)) {
 			printf("Mask %s does not fit target.\n", argv[0]);
 			return -EINVAL;
 		}
@@ -194,9 +199,8 @@ int main(int argc, char **argv) {
 
 	if (rt_act == ADD) {
 		return rt_add_route(netdev, target, netmask, gw,
-					gw == INADDR_ANY ? RTF_UP : RTF_UP | RTF_GATEWAY);
+				gw == INADDR_ANY ? RTF_UP : RTF_UP | RTF_GATEWAY);
 	} else {
 		return rt_del_route(netdev, target, netmask, gw);
 	}
 }
-

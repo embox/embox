@@ -32,9 +32,9 @@ static inline void usb_queue_link_init(struct usb_queue_link *l) {
 	dlist_head_init(&l->l);
 }
 
-struct usb_queue_link *usb_queue_last(struct usb_queue *q);
+struct usb_queue_link * usb_queue_last(struct usb_queue *q);
 
-struct usb_queue_link *usb_queue_peek(struct usb_queue *q);
+struct usb_queue_link * usb_queue_peek(struct usb_queue *q);
 
 /**
  * @brief Add link to the tail of queue
@@ -70,4 +70,3 @@ int usb_queue_done(struct usb_queue *q, struct usb_queue_link *l);
 int usb_queue_remove(struct usb_queue *q, struct usb_queue_link *l);
 
 #endif /* USB_QUEUE_H_ */
-

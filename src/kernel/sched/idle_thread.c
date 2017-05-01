@@ -25,7 +25,9 @@ static void * idle_run(void *arg) {
 int idle_thread_create(void) {
 	struct thread *t;
 
-	t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED, idle_run, NULL);
+	t =
+		thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED, idle_run,
+			NULL);
 	if (err(t)) {
 		log_error(" Couldn't create thread err=%d", err(t));
 		return err(t);

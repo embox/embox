@@ -13,8 +13,8 @@
 #include <string.h>
 
 void arp_build(struct arphdr *arph, uint16_t hrd, uint16_t pro,
-		uint8_t hln, uint8_t pln, uint16_t op, const void *sha,
-		const void *spa, const void *tha, const void *tpa) {
+	uint8_t hln, uint8_t pln, uint16_t op, const void *sha,
+	const void *spa, const void *tha, const void *tpa) {
 	struct arpbody arpb;
 
 	assert(arph != NULL);
@@ -52,7 +52,7 @@ void arp_build(struct arphdr *arph, uint16_t hrd, uint16_t pro,
 }
 
 void arp_make_body(struct arphdr *arph,
-		struct arpbody *out_arpb) {
+	struct arpbody *out_arpb) {
 	assert(arph != NULL);
 	assert(out_arpb != NULL);
 	out_arpb->ar_sha = &arph->ar_body[0];

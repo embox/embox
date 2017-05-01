@@ -26,7 +26,7 @@ TEST_CASE("General") {
 	test_assert_emitted("abcde");
 }
 
-static void *low_run(void *arg) {
+static void * low_run(void *arg) {
 	test_emit('a');
 	test_assert_zero(thread_launch(high));
 	test_emit('c');
@@ -35,7 +35,7 @@ static void *low_run(void *arg) {
 	return NULL;
 }
 
-static void *high_run(void *arg) {
+static void * high_run(void *arg) {
 	test_emit('b');
 	barrier_wait(&b);
 	test_emit('d');

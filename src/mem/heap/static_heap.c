@@ -24,7 +24,8 @@ extern char HEAP_END;
 static int heap_init(void) {
 	size_t heap_size = (size_t)&HEAP_END - (size_t)&HEAP_START;
 
-	ALLOCATOR_NAME = page_allocator_init((char *)&HEAP_START, heap_size, PAGE_SIZE());
+	ALLOCATOR_NAME = page_allocator_init((char *)&HEAP_START, heap_size,
+			PAGE_SIZE());
 	if (NULL == ALLOCATOR_NAME) {
 		return -ENOSUPP;
 	}

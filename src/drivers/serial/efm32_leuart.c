@@ -73,7 +73,7 @@ static int efm32_uart_putc(struct uart *dev, int ch) {
 
 static int efm32_uart_hasrx(struct uart *dev) {
 #if 1
-static unsigned int neg_cnt;
+	static unsigned int neg_cnt;
 	while (1)
 		if (!GPIO_PinInGet(BSP_BCC_RXPORT, BSP_BCC_RXPIN)) {
 			LEUART_Tx((void *) dev->base_addr, '0');
@@ -87,7 +87,8 @@ static int efm32_uart_getc(struct uart *dev) {
 	return LEUART_Rx((void *) dev->base_addr);
 }
 
-static int efm32_uart_setup(struct uart *dev, const struct uart_params *params) {
+static int efm32_uart_setup(struct uart *dev,
+	const struct uart_params *params) {
 
 	LEUART_TypeDef      *leuart = (void *) dev->base_addr;
 	LEUART_Init_TypeDef init    = LEUART_INIT_DEFAULT;
@@ -121,8 +122,10 @@ static int efm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	LEUART_Init(leuart, &init);
 
 	/* Enable the switch that enables UART communication. */
-	GPIO_PinModeSet( BSP_BCC_ENABLE_PORT, BSP_BCC_ENABLE_PIN, gpioModePushPull, 1 );
-	BSP_BCC_LEUART->ROUTE |= LEUART_ROUTE_RXPEN | LEUART_ROUTE_TXPEN | BSP_BCC_LOCATION;
+	GPIO_PinModeSet( BSP_BCC_ENABLE_PORT, BSP_BCC_ENABLE_PIN, gpioModePushPull,
+		1 );
+	BSP_BCC_LEUART->ROUTE |= LEUART_ROUTE_RXPEN | LEUART_ROUTE_TXPEN |
+		BSP_BCC_LOCATION;
 
 	/* Finally enable it */
 	LEUART_Enable(leuart, leuartEnable);
@@ -131,30 +134,30 @@ static int efm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 }
 
 static const struct uart_ops efm32_uart_ops = {
-		.uart_getc = efm32_uart_getc,
-		.uart_putc = efm32_uart_putc,
-		.uart_hasrx = efm32_uart_hasrx,
-		.uart_setup = efm32_uart_setup,
+	.uart_getc = efm32_uart_getc,
+	.uart_putc = efm32_uart_putc,
+	.uart_hasrx = efm32_uart_hasrx,
+	.uart_setup = efm32_uart_setup,
 };
 
 static struct uart efm32_uart0 = {
-		.uart_ops = &efm32_uart_ops,
-		.irq_num = 0,
-		.base_addr = (unsigned long) LEUART0,
+	.uart_ops = &efm32_uart_ops,
+	.irq_num = 0,
+	.base_addr = (unsigned long) LEUART0,
 };
 
 static const struct uart_params uart_defparams = {
-		.baud_rate = 115200,
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+	.baud_rate = 115200,
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = false,
 };
 
 const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &efm32_uart0,
-		.params = &uart_defparams,
+	.diag = {
+		.ops = &uart_diag_ops,
+	},
+	.uart = &efm32_uart0,
+	.params = &uart_defparams,
 };

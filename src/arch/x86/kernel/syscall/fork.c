@@ -17,13 +17,12 @@
 #include <kernel/task.h>
 #include <mem/misc/pool.h>
 
-
 /* Simultaneous number of task creation */
 #define PT_REGS_POOL_SIZE 5
 
 POOL_DEF(pt_regs_pool, struct pt_regs, PT_REGS_POOL_SIZE);
 
-static void *fork_trampoline(void *data) {
+static void * fork_trampoline(void *data) {
 	extern void fork_leave(void *regs);
 	struct pt_regs regs;
 

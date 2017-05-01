@@ -50,14 +50,13 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	 *   4.  Doesn't have a bogus length
 	 */
 	if (skb->len < dev->hdr_len + IP_MIN_HEADER_SIZE
-			|| IP_HEADER_SIZE(iph) < IP_MIN_HEADER_SIZE
-			|| skb->len < dev->hdr_len + IP_HEADER_SIZE(iph)) {
+		|| IP_HEADER_SIZE(iph) < IP_MIN_HEADER_SIZE
+		|| skb->len < dev->hdr_len + IP_HEADER_SIZE(iph)) {
 		log_debug("ip_rcv: invalid IPv4 header length");
 		stats->rx_length_errors++;
 		skb_free(skb);
 		return 0; /* error: invalid header length */
 	}
-
 
 	if (iph->version != 4) {
 		log_debug("ip_rcv: invalid IPv4 version");
@@ -70,7 +69,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	ip_set_check_field(iph);
 	if (old_check != iph->check) {
 		log_debug("ip_rcv: invalid checksum %hx(%hx)",
-				ntohs(old_check), ntohs(iph->check));
+			ntohs(old_check), ntohs(iph->check));
 		stats->rx_crc_errors++;
 		skb_free(skb);
 		return 0; /* error: invalid crc */
@@ -78,7 +77,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	ip_len = ntohs(iph->tot_len);
 	if (ip_len < IP_HEADER_SIZE(iph)
-			|| skb->len < dev->hdr_len + ip_len) {
+		|| skb->len < dev->hdr_len + ip_len) {
 		log_debug("ip_rcv: invalid IPv4 length");
 		stats->rx_length_errors++;
 		skb_free(skb);
@@ -128,7 +127,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		 * but smart people who wrote linux kernel
 		 * say that this is extremely rarely needed
 		 */
-		ip_options_t *opts = (ip_options_t*)(skb->cb);
+		ip_options_t *opts = (ip_options_t *)(skb->cb);
 
 		memset(skb->cb, 0, sizeof(skb->cb));
 		opts->optlen = optlen;

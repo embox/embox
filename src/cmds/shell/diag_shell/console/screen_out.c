@@ -25,7 +25,7 @@ static void transmit_move_cursor_by(SCREEN *this, int by) {
 	}
 
 	terminal_transmit_va(this->terminal, by > 0 ? TERMINAL_TOKEN_CURSOR_RIGHT
-			: TERMINAL_TOKEN_CURSOR_LEFT, 1, by > 0 ? by : -by);
+		: TERMINAL_TOKEN_CURSOR_LEFT, 1, by > 0 ? by : -by);
 }
 
 static void move_cursor_to(SCREEN *this, int col) {
@@ -43,7 +43,6 @@ static void move_cursor_to(SCREEN *this, int col) {
 	}
 
 }
-
 
 void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 	int i;
@@ -88,7 +87,7 @@ void screen_out_puts(SCREEN *this, const char *str) {
 }
 
 void screen_out_show_prompt(SCREEN *this, const char *prompt) {
-	static const char * default_prompt = "";
+	static const char *default_prompt = "";
 	if (this == NULL) {
 		return;
 	}
@@ -100,13 +99,12 @@ void screen_out_show_prompt(SCREEN *this, const char *prompt) {
 	this->cursor = 0;
 
 	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_SGR, 1,
-			TERMINAL_TOKEN_PARAM_SGR_FG_RED);
+		TERMINAL_TOKEN_PARAM_SGR_FG_RED);
 	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_SGR, 1,
-			TERMINAL_TOKEN_PARAM_SGR_INTENSITY_BOLD);
+		TERMINAL_TOKEN_PARAM_SGR_INTENSITY_BOLD);
 
 	transmit_string(this, prompt);
 
-
 	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_SGR, 1,
-			TERMINAL_TOKEN_PARAM_SGR_RESET);
+		TERMINAL_TOKEN_PARAM_SGR_RESET);
 }

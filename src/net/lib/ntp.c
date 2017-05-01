@@ -31,9 +31,9 @@
 	} while (0)
 
 int ntp_build(struct ntphdr *ntph, int leap, int mode,
-		int stratum, int poll, int precision,
-		struct ntp_data_l *ref, struct ntp_data_l *org,
-		struct ntp_data_l *rec, struct ntp_data_l *xmt) {
+	int stratum, int poll, int precision,
+	struct ntp_data_l *ref, struct ntp_data_l *org,
+	struct ntp_data_l *rec, struct ntp_data_l *xmt) {
 	if (ntph == NULL) {
 		return -EINVAL;
 	}
@@ -54,7 +54,7 @@ int ntp_build(struct ntphdr *ntph, int leap, int mode,
 }
 
 static void ndl_to_ts(const struct ntp_data_l *ndl,
-		struct timespec *out_ts) {
+	struct timespec *out_ts) {
 	assert(ndl != NULL);
 	assert(out_ts != NULL);
 	out_ts->tv_sec = ntohl(ndl->sec) - SECONDS_1900_1970;
@@ -62,7 +62,7 @@ static void ndl_to_ts(const struct ntp_data_l *ndl,
 }
 
 int ntp_data_l_to_timespec(const struct ntp_data_l *ndl,
-		struct timespec *out_ts) {
+	struct timespec *out_ts) {
 	if ((ndl == NULL) || (out_ts == NULL)) {
 		return -EINVAL;
 	}
@@ -73,7 +73,7 @@ int ntp_data_l_to_timespec(const struct ntp_data_l *ndl,
 }
 
 static void ts_to_ndl(const struct timespec *ts,
-		struct ntp_data_l *out_ndl) {
+	struct ntp_data_l *out_ndl) {
 	assert(ts != NULL);
 	assert(out_ndl != NULL);
 	out_ndl->sec = htonl((__be32)ts->tv_sec + SECONDS_1900_1970);
@@ -81,7 +81,7 @@ static void ts_to_ndl(const struct timespec *ts,
 }
 
 int ntp_timespec_to_data_l(const struct timespec *ts,
-		struct ntp_data_l *out_ndl) {
+	struct ntp_data_l *out_ndl) {
 	if ((ts == NULL) || (out_ndl == NULL)) {
 		return -EINVAL;
 	}
@@ -97,7 +97,7 @@ int ntp_mode_client(const struct ntphdr *ntph) {
 	}
 
 	return (ntph->mode == NTP_MOD_CLIENT)
-			|| (ntph->mode == NTP_MOD_BROADCAST_CLIENT);
+		   || (ntph->mode == NTP_MOD_BROADCAST_CLIENT);
 }
 
 int ntp_mode_server(const struct ntphdr *ntph) {
@@ -106,7 +106,7 @@ int ntp_mode_server(const struct ntphdr *ntph) {
 	}
 
 	return (ntph->mode == NTP_MOD_SERVER)
-			|| (ntph->mode == NTP_MOD_BROADCAST);
+		   || (ntph->mode == NTP_MOD_BROADCAST);
 }
 
 const char * ntp_stratum_error(const struct ntphdr *ntph) {
@@ -119,23 +119,23 @@ const char * ntp_stratum_error(const struct ntphdr *ntph) {
 		{ "AUTO", "Autokey sequence failed" },
 		{ "BCST", "The association belongs to a broadcast server" },
 		{ "CRYP", "Cryptographic authentication or identification"
-				" failed" },
+				  " failed" },
 		{ "DENY", "Access denied by remote server" },
 		{ "DROP", "Lost peer in symmetric mode" },
 		{ "RSTR", "Access denied due to local policy" },
 		{ "INIT", "The association has not yet synchronized for"
-				" the first time" },
+				  " the first time" },
 		{ "MCST", "The association belongs to a manycast server" },
 		{ "NKEY", "No key found. Either the key was never"
-				" installed or is not trusted" },
+				  " installed or is not trusted" },
 		{ "RATE", "Rate exceeded. The server has temporarily"
-				" denied access because the client exceeded the"
-				" rate threshold" },
+				  " denied access because the client exceeded the"
+				  " rate threshold" },
 		{ "RMOT", "Somebody is tinkering with the association"
-				" from a remote host running ntpdc. Not to worry"
-				" unless some rascal has stolen your keys" },
+				  " from a remote host running ntpdc. Not to worry"
+				  " unless some rascal has stolen your keys" },
 		{ "STEP", "A step change in system time has occurred,"
-				" but the association has not yet resynchronized" }
+				  " but the association has not yet resynchronized" }
 	};
 	size_t i;
 
@@ -145,7 +145,7 @@ const char * ntp_stratum_error(const struct ntphdr *ntph) {
 
 	for (i = 0; i < ARRAY_SIZE(errors); ++i) {
 		if (0 == strncmp(&ntph->refid[0], errors[i].code,
-					ARRAY_SIZE(ntph->refid))) {
+			ARRAY_SIZE(ntph->refid))) {
 			return errors[i].info;
 		}
 	}
@@ -162,11 +162,11 @@ int ntp_valid_stratum(const struct ntphdr *ntph) {
 	}
 
 	return (ntph->stratum > NTP_STRATUM_UNSPEC)
-			&& (ntph->stratum < NTP_STRATUM_UNSYNC);
+		   && (ntph->stratum < NTP_STRATUM_UNSYNC);
 }
 
 int ntp_delay(const struct ntphdr *ntph,
-		struct timespec *recv_time, struct timespec *out_ts) {
+	struct timespec *recv_time, struct timespec *out_ts) {
 	struct timespec client_x, server_r, server_x;
 
 	if ((ntph == NULL) || (out_ts == NULL)) {
@@ -184,7 +184,7 @@ int ntp_delay(const struct ntphdr *ntph,
 }
 
 int ntp_offset(const struct ntphdr *ntph,
-		struct timespec *recv_time, struct timespec *out_ts) {
+	struct timespec *recv_time, struct timespec *out_ts) {
 	struct timespec client_x, server_r, server_x;
 
 	if ((ntph == NULL) || (out_ts == NULL)) {

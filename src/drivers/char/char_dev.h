@@ -11,9 +11,9 @@
 
 struct kfile_operations;
 
-typedef int (* device_module_init_ft)(void);
+typedef int (*device_module_init_ft)(void);
 struct device_module {
-	const char * name;
+	const char *name;
 	const struct kfile_operations *fops;
 	const device_module_init_ft init;
 };
@@ -25,6 +25,6 @@ struct device_module {
 
 extern int char_dev_init_all(void);
 extern int char_dev_register(const char *name,
-		const struct kfile_operations *ops);
+	const struct kfile_operations *ops);
 
 #endif /* DEVICE_H_ */

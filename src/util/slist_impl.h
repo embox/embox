@@ -22,7 +22,7 @@ struct __slist_link {
 	}
 
 static inline void __slist_bind(struct __slist_link *prev,
-		struct __slist_link *next) {
+	struct __slist_link *next) {
 	prev->next = next;
 }
 
@@ -35,14 +35,14 @@ static inline void __slist_link_init(struct __slist_link *link) {
 }
 
 static inline void __slist_insert_chain(struct __slist_link *first,
-		struct __slist_link *last, struct __slist_link *prev,
-		struct __slist_link *next) {
+	struct __slist_link *last, struct __slist_link *prev,
+	struct __slist_link *next) {
 	__slist_bind(prev, first);
 	__slist_bind(last, next);
 }
 
 static inline void __slist_insert_link(struct __slist_link *link,
-		struct __slist_link *prev, struct __slist_link *next) {
+	struct __slist_link *prev, struct __slist_link *next) {
 	__slist_insert_chain(link, link, prev, next);
 }
 
@@ -82,8 +82,8 @@ static inline void __slist_insert_link(struct __slist_link *link,
 	({ \
 		struct slist_link *__slist_link__ = (link);                \
 		__slist_link__                                             \
-				? slist_element(__slist_link__, type, m_link) \
-				: NULL;                                            \
+		? slist_element(__slist_link__, type, m_link) \
+		: NULL;                                            \
 	})
 
 #define __slist_first(slist, type, m_link) \
@@ -94,10 +94,9 @@ static inline void __slist_insert_link(struct __slist_link *link,
 
 #define __slist_insert_after(element, slist_element, m_link) \
 	slist_insert_after_link(&__slist_check(element)->m_link, \
-			&__slist_check(slist_element)->m_link)
+		&__slist_check(slist_element)->m_link)
 
 #define __slist_remove_first(slist, type, m_link) \
 	__slist_link_safe_cast(slist_remove_first_link(slist), type, m_link)
-
 
 #endif /* UTIL_SLIST_IMPL_H_ */

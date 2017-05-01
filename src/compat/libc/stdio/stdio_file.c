@@ -16,7 +16,7 @@
 
 POOL_DEF(file_pool, FILE, FILE_QUANTITY);
 
-FILE *stdio_file_alloc(int fd) {
+FILE * stdio_file_alloc(int fd) {
 	FILE *file = pool_alloc(&file_pool);
 
 	if (!file) {
@@ -30,7 +30,7 @@ FILE *stdio_file_alloc(int fd) {
 }
 
 void stdio_file_free(FILE *file) {
-	if ((file != stdin) && (file != stdout)	&& (file != stderr)) {
+	if ((file != stdin) && (file != stdout) && (file != stderr)) {
 		pool_free(&file_pool, file);
 	}
 }

@@ -54,7 +54,8 @@ int main(int argc, char *argv[]) {
 		if (0 == strcmp(action, "serialize")) {
 			return lednames_serialize();
 		} else if (0 == strcmp(action, "store")) {
-			return lednames_store(atoi(argv[2]), atoi(getenv("CONTENT_LENGTH")));
+			return lednames_store(atoi(argv[2]),
+					atoi(getenv("CONTENT_LENGTH")));
 		}
 	}
 

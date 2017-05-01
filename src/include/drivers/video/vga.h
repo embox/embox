@@ -36,12 +36,11 @@
 #define VGA_GC_DATA         0x3CF
 
 /* COLOR emulation	 MONO emulation */
-#define VGA_CRTC_INDEX      0x3D4	   /* 0x3B4 */
-#define VGA_CRTC_DATA       0x3D5	   /* 0x3B5 */
+#define VGA_CRTC_INDEX      0x3D4      /* 0x3B4 */
+#define VGA_CRTC_DATA       0x3D5      /* 0x3B5 */
 
 /* Input status register */
 #define VGA_INSTAT_READ     0x3DA
-
 
 #define VGA_CRTC_H_TOTAL       0x0
 #define VGA_CRTC_H_DISP_END    0x1
@@ -116,7 +115,8 @@ static inline unsigned char vga_misc_read(void) {
 	return in8(VGA_MISC_READ);
 }
 
-static inline void vga_wcrt(uint32_t *regbase, unsigned char index, unsigned char value) {
+static inline void vga_wcrt(uint32_t *regbase, unsigned char index,
+	unsigned char value) {
 	out8(index, VGA_CRTC_INDEX);
 	out8(value, VGA_CRTC_DATA);
 }
@@ -126,7 +126,8 @@ static inline unsigned char vga_rcrt(uint32_t *regbase, unsigned index) {
 	return in8(VGA_CRTC_DATA);
 }
 
-static inline void vga_wseq(uint32_t *regbase, unsigned char index, unsigned char value) {
+static inline void vga_wseq(uint32_t *regbase, unsigned char index,
+	unsigned char value) {
 	out8(index, VGA_SEQ_INDEX);
 	out8(value, VGA_SEQ_DATA);
 }
@@ -136,18 +137,20 @@ static inline unsigned char vga_rseq(uint32_t *regbase, unsigned char index) {
 	return in8(VGA_SEQ_DATA);
 }
 
-
-static inline void vga_wgfx(unsigned int *regbase, unsigned char index, unsigned char value) {
+static inline void vga_wgfx(unsigned int *regbase, unsigned char index,
+	unsigned char value) {
 	out8(index, VGA_GC_INDEX);
 	out8(value, VGA_GC_DATA);
 }
 
-static inline unsigned char vga_rgfx(unsigned int *regbase, unsigned char index) {
+static inline unsigned char vga_rgfx(unsigned int *regbase,
+	unsigned char index) {
 	out8(index, VGA_GC_INDEX);
 	return in8(VGA_GC_DATA);
 }
 
-static inline void vga_wattr(uint32_t *regbase, unsigned char index, unsigned char value) {
+static inline void vga_wattr(uint32_t *regbase, unsigned char index,
+	unsigned char value) {
 	in8(VGA_INSTAT_READ);
 	out8(index, VGA_AC_INDEX);
 	out8(value, VGA_AC_WRITE);

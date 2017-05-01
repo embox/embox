@@ -10,7 +10,7 @@
 __BEGIN_DECLS
 
 extern int setitimer(int which, const struct itimerval *value,
-		struct itimerval *ovalue);
+	struct itimerval *ovalue);
 
 __END_DECLS
 

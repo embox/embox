@@ -32,7 +32,7 @@ struct context;
  * @param sp Context's SP (stack pointer)
  */
 extern void context_init(struct context *ctx, unsigned int flags,
-		void (*routine_fn)(void), void *sp);
+	void (*routine_fn)(void), void *sp);
 
 /**
  * Changes current thread context. Save previous thread context and load
@@ -46,9 +46,9 @@ extern void context_init(struct context *ctx, unsigned int flags,
 extern void context_switch(struct context *prev, struct context *next);
 
 #define CONTEXT_JMP_NEW_STACK(routine, sp) \
-	struct context ctx##__LINE__, old_ctx##__LINE__; \
-	context_init(&ctx##__LINE__, CONTEXT_PRIVELEGED, routine, sp); \
-	context_switch(&old_ctx##__LINE__, &ctx##__LINE__)
+	struct context ctx ## __LINE__, old_ctx ## __LINE__; \
+	context_init(&ctx ## __LINE__, CONTEXT_PRIVELEGED, routine, sp); \
+	context_switch(&old_ctx ## __LINE__, &ctx ## __LINE__)
 
 #endif /* __ASSEMBLER__ */
 

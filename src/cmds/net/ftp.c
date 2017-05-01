@@ -39,7 +39,9 @@ enum {
 /* Useful commands */
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
 #define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
-static void split_word(char *ptr) { skip_word(ptr); *ptr = '\0'; }
+static void split_word(char *ptr) {
+	skip_word(ptr); *ptr = '\0';
+}
 
 /* Status code for first digit (X pos) of result (*YZ) */
 enum {
@@ -81,27 +83,31 @@ struct fm_info {
 static int fs_cmd_open(struct fs_info *session);
 static int fs_cmd_close(struct fs_info *session);
 static int fs_cmd_user(struct fs_info *session);
-static int fs_cmd_cd(struct fs_info *session/*, const char *remote_dir*/);
+static int fs_cmd_cd(struct fs_info *session /*, const char *remote_dir*/);
 static int fs_cmd_pwd(struct fs_info *session);
-static int fs_cmd_mkdir(struct fs_info *session/*, const char *remote_dir*/);
-static int fs_cmd_rmdir(struct fs_info *session/*, const char *remote_dir*/);
-static int fs_cmd_mv(struct fs_info *session/*, const char *remote_old, const char *remote_new*/);
-static int fs_cmd_ls(struct fs_info *session/*, const char *remote_dir*/);
-static int fs_cmd_get(struct fs_info *session/*, const char *remote_file, const char *local_file*/);
-static int fs_cmd_put(struct fs_info *session/*, const char *local_file, const char *remote_file*/);
-static int fs_cmd_rm(struct fs_info *session/*, const char *remote_file*/);
+static int fs_cmd_mkdir(struct fs_info *session /*, const char *remote_dir*/);
+static int fs_cmd_rmdir(struct fs_info *session /*, const char *remote_dir*/);
+static int fs_cmd_mv(struct fs_info *session /*, const char *remote_old, const char *remote_new*/);
+static int fs_cmd_ls(struct fs_info *session /*, const char *remote_dir*/);
+static int fs_cmd_get(struct fs_info *session /*, const char *remote_file, const char *local_file*/);
+static int fs_cmd_put(struct fs_info *session /*, const char *local_file, const char *remote_file*/);
+static int fs_cmd_rm(struct fs_info *session /*, const char *remote_file*/);
 static int fs_cmd_help(struct fs_info *session);
 static int fs_cmd_bye(struct fs_info *session);
 
 /* Table of FTP Methods */
 static struct fm_info ftp_mtds[] = {
-	{ "open", "open <host-name> [port]", "connect to remote ftp", &fs_cmd_open },
+	{ "open", "open <host-name> [port]", "connect to remote ftp",
+	  &fs_cmd_open },
 	{ "close", "close", "terminate ftp session", &fs_cmd_close },
 	{ "user", "user <user-name>", "login on remote ftp", &fs_cmd_user },
-	{ "cd", "cd <remote-directory>", "change remote working directory", &fs_cmd_cd },
+	{ "cd", "cd <remote-directory>", "change remote working directory",
+	  &fs_cmd_cd },
 	{ "pwd", "pwd", "print remote working directory", &fs_cmd_pwd },
-	{ "mkdir", "mkdir <directory-name>", "make directory on the remote machine", &fs_cmd_mkdir },
-	{ "rmdir", "rmdir <directory-name>", "remove directory on the remote machine", &fs_cmd_rmdir },
+	{ "mkdir", "mkdir <directory-name>", "make directory on the remote machine",
+	  &fs_cmd_mkdir },
+	{ "rmdir", "rmdir <directory-name>",
+			"remove directory on the remote machine", &fs_cmd_rmdir },
 	{ "mv", "mv <from-name> <to-name>", "move files", &fs_cmd_mv },
 	{ "ls", "ls [remote-directory]", "list contents of remote directory", &fs_cmd_ls },
 	{ "get", "get <remote-file> [local-file]", "receive file", &fs_cmd_get },
@@ -275,11 +281,11 @@ static int make_data_socket(struct fs_info *session, int *out_sock) {
 
 	/* Parse destonation address */
 	if (!(tmp = strchr(&session->buff[0], '(')) || (sscanf(++tmp, "%d", &ip_part[0]) != 1)
-			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[1]) != 1)
-			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[2]) != 1)
-			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[3]) != 1)
-			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &port_part[0]) != 1)
-			|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &port_part[1]) != 1)) {
+		|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[1]) != 1)
+		|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[2]) != 1)
+		|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &ip_part[3]) != 1)
+		|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &port_part[0]) != 1)
+		|| !(tmp = strchr(tmp, ',')) || (sscanf(++tmp, "%d", &port_part[1]) != 1)) {
 		fprintf(stderr, "Can't parse remote address.\n");
 		return FTP_RET_FAIL;
 	}
@@ -346,7 +352,6 @@ static int flush_file_to_socket(FILE *file, int sock, char *buff, size_t buff_sz
 
 	return FTP_RET_OK;
 }
-
 
 /**
  * Realization of ftp client's commands
@@ -674,7 +679,7 @@ static int fs_cmd_ls(struct fs_info *session) {
 	close(data_sock);
 
 	if (FTP_STAT_TYPE_POSITIVE_PRELIMINARY
-			== FTP_STAT_TYPE(session->stat_code)) {
+		== FTP_STAT_TYPE(session->stat_code)) {
 		ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
 		if (ret != FTP_RET_OK) {
 			return ret;
@@ -897,7 +902,7 @@ int main(int argc, char **argv) {
 		}
 		cmd_name = &fsi.cmd_buff[0];
 		snprintf(&fsi.cmd_buff[0], sizeof fsi.cmd_buff, "open %s %s",
-				argv[1], argc == 3 ? argv[2] : "");
+			argv[1], argc == 3 ? argv[2] : "");
 		goto parse_cmd;
 	}
 
@@ -910,7 +915,7 @@ int main(int argc, char **argv) {
 			break;
 		}
 
-parse_cmd:
+		parse_cmd:
 		/* Skip spaces */
 		skip_spaces(cmd_name);
 

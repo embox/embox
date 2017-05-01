@@ -12,11 +12,11 @@
 #include <hal/mmu.h>
 #include <mem/vmem.h>
 
-mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return (mmu_pmd_t*) (((uint32_t)*pgd) & ~MMU_PAGE_MASK);
+mmu_pmd_t * mmu_pgd_value(mmu_pgd_t *pgd) {
+	return (mmu_pmd_t *) (((uint32_t)*pgd) & ~MMU_PAGE_MASK);
 }
 
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
+mmu_pte_t * mmu_pmd_value(mmu_pmd_t *pmd) {
 	return pmd;
 }
 
@@ -36,11 +36,11 @@ void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
 void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 #if 0
 	*pte = (mmu_pte_t) ((((uint32_t)addr) & ~MMU_PAGE_MASK)
-			| ARM_MMU_PAGE_READ_ACC
-			| ARM_MMU_SMALL_PAGE);
+		| ARM_MMU_PAGE_READ_ACC
+		| ARM_MMU_SMALL_PAGE);
 #endif
 	*pte = (mmu_pte_t) ((((uint32_t)addr) & ~MMU_PAGE_MASK)
-			| 0x036);
+		| 0x036);
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {

@@ -29,7 +29,7 @@ struct addrinfo_tuple {
 POOL_DEF(addrinfo_tuple_pool, struct addrinfo_tuple, ADDRINFO_TUPLE_POOL_SZ);
 
 static int explore_hints(const struct addrinfo *hints,
-		struct addrinfo *out_hints) {
+	struct addrinfo *out_hints) {
 	static const struct addrinfo hints_default = {
 		.ai_flags = AI_V4MAPPED | AI_ADDRCONFIG,
 		.ai_family = AF_UNSPEC,
@@ -40,7 +40,7 @@ static int explore_hints(const struct addrinfo *hints,
 	assert(out_hints != NULL);
 
 	memcpy(out_hints, hints != NULL ? hints : &hints_default,
-			sizeof *out_hints);
+		sizeof *out_hints);
 
 	switch (out_hints->ai_family) {
 	default:
@@ -96,7 +96,7 @@ static int explore_hints(const struct addrinfo *hints,
 }
 
 static struct servent * explore_serv(const char *servname,
-		const struct addrinfo *hints) {
+	const struct addrinfo *hints) {
 	const char *proto;
 	unsigned short port;
 	struct protoent *pe;
@@ -136,8 +136,8 @@ static struct servent * explore_serv(const char *servname,
 }
 
 static int ai_make(int family, int socktype, int protocol,
-		socklen_t addrlen, struct sockaddr *addr,
-		struct addrinfo **ai_list) {
+	socklen_t addrlen, struct sockaddr *addr,
+	struct addrinfo **ai_list) {
 	struct addrinfo_tuple *ait;
 
 	assert(addr != NULL);
@@ -165,14 +165,26 @@ static int ai_make(int family, int socktype, int protocol,
 }
 
 static int explore_node(const char *nodename,
-		const struct addrinfo *hints, const struct servent *se,
-		struct addrinfo **out_ai) {
-	static const int all_family[] = { AF_INET, AF_INET6, -1 },
-		all_socktype[] = { SOCK_STREAM, SOCK_DGRAM, SOCK_RAW, -1 },
-		all_protocol[] = { IPPROTO_TCP, IPPROTO_UDP, 0 };
-	int one_family[2] = { -1, -1 },
-		one_socktype[2] = { -1, -1 },
-		one_protocol[1] = { -1 };
+	const struct addrinfo *hints, const struct servent *se,
+	struct addrinfo **out_ai) {
+	static const int all_family[] = {
+		AF_INET, AF_INET6, -1
+	},
+		all_socktype[] = {
+		SOCK_STREAM, SOCK_DGRAM, SOCK_RAW, -1
+	},
+		all_protocol[] = {
+		IPPROTO_TCP, IPPROTO_UDP, 0
+	};
+	int one_family[2] = {
+		-1, -1
+	},
+		one_socktype[2] = {
+		-1, -1
+	},
+		one_protocol[1] = {
+		-1
+	};
 	const int *family_set, *socktype_set, *protocol_set;
 	const int *family, *socktype, *protocol;
 	struct addrinfo *ai_head, **ai_last_ptr;
@@ -191,11 +203,11 @@ static int explore_node(const char *nodename,
 	assert(out_ai != NULL);
 
 	family_set = hints->ai_family == 0 ? all_family
-			: (one_family[0] = hints->ai_family, one_family);
+		: (one_family[0] = hints->ai_family, one_family);
 	socktype_set = hints->ai_socktype == 0 ? all_socktype
-			: (one_socktype[0] = hints->ai_socktype, one_socktype);
+		: (one_socktype[0] = hints->ai_socktype, one_socktype);
 	protocol_set = hints->ai_socktype == 0 ? all_protocol
-			: (one_protocol[0] = hints->ai_protocol, one_protocol);
+		: (one_protocol[0] = hints->ai_protocol, one_protocol);
 
 	ai_head = NULL;
 	ai_last_ptr = &ai_head;
@@ -209,16 +221,16 @@ static int explore_node(const char *nodename,
 		if (hints->ai_flags & AI_PASSIVE) {
 			addr.in.sin_addr.s_addr = htonl(INADDR_ANY);
 			memcpy(&addr.in6.sin6_addr, &in6addr_any,
-					sizeof addr.in6.sin6_addr);
+				sizeof addr.in6.sin6_addr);
 		}
 		else {
 			addr.in.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 			memcpy(&addr.in6.sin6_addr, &in6addr_loopback,
-					sizeof addr.in6.sin6_addr);
+				sizeof addr.in6.sin6_addr);
 		}
 		for (family = family_set; *family != -1; ++family) {
 			for (socktype = socktype_set, protocol = protocol_set;
-					*socktype != -1; ++socktype, ++protocol) {
+				*socktype != -1; ++socktype, ++protocol) {
 				if (*family == AF_INET) {
 					sa = (struct sockaddr *)&addr.in;
 					salen = sizeof addr.in;
@@ -247,7 +259,7 @@ static int explore_node(const char *nodename,
 			salen = sizeof addr.in;
 		}
 		else if (1 == inet_pton(AF_INET6, nodename,
-					&addr.in6.sin6_addr)) {
+			&addr.in6.sin6_addr)) {
 			sa = (struct sockaddr *)&addr.in6;
 			salen = sizeof addr.in6;
 		}
@@ -256,7 +268,7 @@ static int explore_node(const char *nodename,
 		}
 		for (family = family_set; *family != -1; ++family) {
 			for (socktype = socktype_set, protocol = protocol_set;
-					*socktype != -1; ++socktype, ++protocol) {
+				*socktype != -1; ++socktype, ++protocol) {
 				if (*family != sa->sa_family) {
 					continue;
 				}
@@ -290,7 +302,7 @@ static int explore_node(const char *nodename,
 	for (he_addr = he->h_addr_list; *he_addr != NULL; ++he_addr) {
 		for (family = family_set; *family != -1; ++family) {
 			for (socktype = socktype_set, protocol = protocol_set;
-					*socktype != -1; ++socktype, ++protocol) {
+				*socktype != -1; ++socktype, ++protocol) {
 				if (*family != he->h_addrtype) {
 					continue;
 				}
@@ -327,7 +339,7 @@ static int explore_node(const char *nodename,
 }
 
 int getaddrinfo(const char *nodename, const char *servname,
-		const struct addrinfo *hints, struct addrinfo **res) {
+	const struct addrinfo *hints, struct addrinfo **res) {
 	int ret;
 	struct servent *se;
 	struct addrinfo hints_, *res_;

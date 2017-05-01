@@ -59,13 +59,13 @@ struct nf_rule;
  * @return not zero if rule matches
  */
 typedef int (*nf_test_hnd)(const struct nf_rule *r,
-		void *data);
+	void *data);
 
 /**
  * Netfilter rule structure
  */
 #define NF_DECL_NOT_FIELD(name, type) \
-	typeof(type) name; char set_##name; char not_##name;
+	typeof(type)name; char set_ ## name; char not_ ## name;
 
 struct nf_rule {
 	struct dlist_head lnk;
@@ -92,34 +92,34 @@ extern struct dlist_head nf_output_rules;
  * Convertion between nf_chain and string
  */
 extern int nf_chain_get_by_name(const char *chain_name);
-extern const char *nf_chain_to_str(int chain);
+extern const char * nf_chain_to_str(int chain);
 
 /**
  * Convertion between nf_target and string
  */
 extern enum nf_target nf_target_get_by_name(const char *target_name);
-extern const char *nf_target_to_str(enum nf_target target);
+extern const char * nf_target_to_str(enum nf_target target);
 
 /**
  * Convertion between nf_proto and string
  */
 extern enum nf_proto nf_proto_get_by_name(const char *proto_name);
-extern const char *nf_proto_to_str(enum nf_proto proto);
+extern const char * nf_proto_to_str(enum nf_proto proto);
 
 /**
  * Netfilter getters/setters
  */
-extern struct dlist_head *nf_get_chain(int chain);
+extern struct dlist_head * nf_get_chain(int chain);
 extern enum nf_target nf_get_chain_target(int chain);
 extern int nf_set_chain_target(int chain, enum nf_target target);
-extern struct nf_rule *nf_get_rule_by_num(int chain, size_t r_num);
+extern struct nf_rule * nf_get_rule_by_num(int chain, size_t r_num);
 
 /**
  * Netfilter rule utility
  */
 extern int nf_rule_init(struct nf_rule *r);
 extern int nf_rule_copy(struct nf_rule *r_dst,
-		const struct nf_rule *r_src);
+	const struct nf_rule *r_src);
 
 /**
  * Main netfilter API
@@ -127,27 +127,27 @@ extern int nf_rule_copy(struct nf_rule *r_dst,
 #define NF_SET_NOT_FIELD(r, field, not, value) \
 	do {                                       \
 		(r)->field = value;                    \
-		(r)->set_##field = 1;                  \
-		(r)->not_##field = not;                \
+		(r)->set_ ## field = 1;                  \
+		(r)->not_ ## field = not;                \
 	} while (0)
 #define NF_SET_NOT_FIELD_PTR(r, field, not,    \
 		val_ptr, val_len)                      \
 	do {                                       \
 		assert(val_len <= sizeof (r)->field);  \
 		memcpy(&(r)->field, val_ptr, val_len); \
-		(r)->set_##field = 1;                  \
-		(r)->not_##field = not;                \
+		(r)->set_ ## field = 1;                  \
+		(r)->not_ ## field = not;                \
 	} while (0)
 
 extern int nf_add_rule(int chain, const struct nf_rule *r);
 extern int nf_insert_rule(int chain, const struct nf_rule *r, size_t r_num);
 extern int nf_set_rule(int chain, const struct nf_rule *r,
-		size_t r_num);
+	size_t r_num);
 extern int nf_del_rule(int chain, size_t r_num);
 extern int nf_clear(int chain);
 extern int nf_test_rule(int chain, const struct nf_rule *test_r);
 extern int nf_test_skb(int chain, enum nf_target target,
-		const struct sk_buff *test_skb);
+	const struct sk_buff *test_skb);
 
 /**
  * @brief Perform netfitler test on hw addresses before any parsing has occured.
@@ -162,5 +162,5 @@ extern int nf_test_skb(int chain, enum nf_target target,
  * @return
  */
 extern int nf_test_raw(int chain, enum nf_target target, const void *hwaddr_dst,
-		const void *hwaddr_src, size_t hwaddr_len);
+	const void *hwaddr_src, size_t hwaddr_len);
 #endif /* NET_NETFILTER_H_ */

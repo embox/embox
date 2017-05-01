@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-char *strchrnul(const char *str, int ch) {
+char * strchrnul(const char *str, int ch) {
 	char c = (char) ch;
 
 	while (*str && *str != c) {
@@ -17,4 +17,3 @@ char *strchrnul(const char *str, int ch) {
 
 	return (char *) str;
 }
-

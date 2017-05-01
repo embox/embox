@@ -19,7 +19,7 @@ int fcntl(int fd, int cmd, ...) {
 	} uargs;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == index_descriptor_get(fd))) {
+		|| (NULL == index_descriptor_get(fd))) {
 		return SET_ERRNO(EBADF);
 	}
 
@@ -63,4 +63,3 @@ int fcntl(int fd, int cmd, ...) {
 
 	return 0;
 }
-

@@ -11,14 +11,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
 #include <mem/vmem.h>
 
 static void print_usage(void) {
-	printf("Usage: mmumap [-h][-p pid][-a phy_addr] [-s size] [-o page_options][-v virt_addr] \n");
+	printf(
+		"Usage: mmumap [-h][-p pid][-a phy_addr] [-s size] [-o page_options][-v virt_addr] \n");
 }
 
-int mmumap(pid_t pid, uintptr_t virt_addr, uintptr_t phy_addr, size_t region_size, uint32_t region_options) {
+int mmumap(pid_t pid, uintptr_t virt_addr, uintptr_t phy_addr,
+	size_t region_size, uint32_t region_options) {
 	return 0;
 }
 

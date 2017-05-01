@@ -69,7 +69,8 @@ int protoent_add_alias(struct protoent *pe, const char *alias) {
 
 	memcpy(&pentry_aliases_storage[pentry_aliases_sz][0], alias, alias_sz);
 
-	pentry_aliases[pentry_aliases_sz] = &pentry_aliases_storage[pentry_aliases_sz][0];
+	pentry_aliases[pentry_aliases_sz] =
+		&pentry_aliases_storage[pentry_aliases_sz][0];
 	pentry_aliases[++pentry_aliases_sz] = NULL;
 
 	return 0;

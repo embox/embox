@@ -8,7 +8,6 @@
 #ifndef FS_MOUNT_H_
 #define FS_MOUNT_H_
 
-
 #include <util/dlist.h>
 
 struct node;
@@ -24,14 +23,15 @@ struct mount_descriptor {
 	char mnt_dev[MOUNT_DESC_STRINFO_LEN];
 };
 
-extern struct mount_descriptor *mount_table(void);
+extern struct mount_descriptor * mount_table(void);
 
-extern struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
-		struct node *root, const char *dev);
+extern struct mount_descriptor * mount_table_add(struct path *mnt_point_path,
+	struct node *root, const char *dev);
 
 extern int mount_table_del(struct mount_descriptor *mdesc);
 
-extern struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, struct node *mnt_point);
+extern struct mount_descriptor * mount_table_get_child(
+	struct mount_descriptor *parent, struct node *mnt_point);
 
 extern int mount(char *dev,  char *dir, char *fs_type);
 

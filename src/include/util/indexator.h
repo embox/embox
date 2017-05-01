@@ -66,31 +66,31 @@ typedef unsigned long index_data_t;
  */
 #define INDEX_INIT(start, capacity, data)      \
 	__INDEX_INIT(start, start + capacity - 1,  \
-			data, start, start + capacity - 1)
+		data, start, start + capacity - 1)
 /**
  * Indexator with clamp initialization
  */
 #define INDEX_CLAMP_INIT(start, capacity, data, \
 		clamp_min, clamp_max)                   \
 	__INDEX_INIT(start, start + capacity - 1,   \
-			data, clamp_min, clamp_max - 1)
+		data, clamp_min, clamp_max - 1)
 
 /**
  * Indexator definition
  */
 #define INDEX_DEF(name, start, capacity)             \
-	INDEX_DATA_DEF(name##_data, capacity);           \
+	INDEX_DATA_DEF(name ## _data, capacity);           \
 	static struct indexator name = INDEX_INIT(start, \
-			capacity, &name##_data[0])
+		capacity, &name ## _data[0])
 
 /**
  * Indexator with clamp definition
  */
 #define INDEX_CLAMP_DEF(name, start, capacity, clamp_min,    \
 		clamp_max)                                           \
-	INDEX_DATA_DEF(name##_data, capacity);                   \
+	INDEX_DATA_DEF(name ## _data, capacity);                   \
 	static struct indexator name = INDEX_CLAMP_INIT(start,   \
-			capacity, &name##_data[0], clamp_min, clamp_max)
+		capacity, &name ## _data[0], clamp_min, clamp_max)
 
 /**
  * Index not found
@@ -106,7 +106,7 @@ typedef unsigned long index_data_t;
  * @param data - index storage
  */
 extern void index_init(struct indexator *ind, size_t start,
-		size_t capacity, void *data);
+	size_t capacity, void *data);
 
 /**
  * Clamp indexes allocated by index_alloc().
@@ -116,7 +116,7 @@ extern void index_init(struct indexator *ind, size_t start,
  * @param max - maximum index that can be allocated
  */
 extern void index_clamp(struct indexator *ind, size_t min,
-		size_t max);
+	size_t max);
 
 /**
  * Clean up indexator and unlock the all locked indexes.
@@ -173,7 +173,7 @@ extern size_t index_clamp_max(struct indexator *ind);
  * @return index according to type
  */
 extern size_t index_find(struct indexator *ind,
-		enum index_type type);
+	enum index_type type);
 
 /**
  * Try lock the index from indexator.
@@ -217,7 +217,7 @@ extern void index_unlock(struct indexator *ind, size_t idx);
  * @return index according to type
  */
 extern size_t index_alloc(struct indexator *ind,
-		enum index_type type);
+	enum index_type type);
 
 /**
  * Free the index from indexator allocated by index_alloc().
@@ -227,7 +227,6 @@ extern size_t index_alloc(struct indexator *ind,
  * @param idx - index to unlock
  */
 extern void index_free(struct indexator *ind, size_t idx);
-
 
 #define __INDEX_INIT(start_, end_, data, \
 		clamp_min_, clamp_max_)          \

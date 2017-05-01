@@ -42,12 +42,12 @@ typedef void (*sys_timer_handler_t)(struct sys_timer *timer, void *param);
 struct sys_timer {
 	sys_timer_queue_t lnk;
 
-	uint32_t   load;
-	uint32_t   cnt;
+	uint32_t load;
+	uint32_t cnt;
 	sys_timer_handler_t handle;
 	void       *param;
 	unsigned int flags;
-	uint32_t   state; /**< do we use timer_set or timer_init_start? */
+	uint32_t state;   /**< do we use timer_set or timer_init_start? */
 };
 
 static inline bool timer_is_preallocated(struct sys_timer *tmr) {
@@ -91,7 +91,7 @@ typedef struct sys_timer sys_timer_t;
  * @param param
  */
 extern int timer_init(struct sys_timer *tmr, unsigned int flags,
-		sys_timer_handler_t handler, void *param);
+	sys_timer_handler_t handler, void *param);
 
 /**
  * Schedule timer to fire after specified amount of jiffes. Weither timer
@@ -114,8 +114,9 @@ extern void timer_start(struct sys_timer *tmr, clock_t jiffies);
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int timer_init_start_msec(struct sys_timer *tmr, unsigned int flags, uint32_t ticks,
-		sys_timer_handler_t handler, void *param);
+extern int timer_init_start_msec(struct sys_timer *tmr, unsigned int flags,
+	uint32_t ticks,
+	sys_timer_handler_t handler, void *param);
 
 /**
  * Set @c handle timer for executing every @c jiffies of hardware timer ticks.
@@ -124,8 +125,9 @@ extern int timer_init_start_msec(struct sys_timer *tmr, unsigned int flags, uint
  * @remarks
  *    This function should call @c handler NO LESS then after @c jiffies ticks.
  */
-extern int timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
-		sys_timer_handler_t handler, void *param);
+extern int timer_init_start(struct sys_timer *tmr, unsigned int flags,
+	clock_t jiffies,
+	sys_timer_handler_t handler, void *param);
 
 /**
  * Set 'handle' timer for executing every 'ticks' ms.
@@ -139,8 +141,9 @@ extern int timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t j
  * @retval 0 if the timer is set
  * @retval non-0 if the timer isn't set
  */
-extern int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t ticks,
-		sys_timer_handler_t handler, void *param);
+extern int timer_set(struct sys_timer **ptimer, unsigned int flags,
+	uint32_t ticks,
+	sys_timer_handler_t handler, void *param);
 
 /**
  * Shut down timer with system_tmr_t identity

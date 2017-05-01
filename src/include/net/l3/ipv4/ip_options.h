@@ -28,52 +28,52 @@ struct sk_buff;
  * @var ts_needaddr - Need to record addr of outgoing dev
  */
 typedef struct ip_options {
-	in_addr_t       faddr;
-	unsigned char   optlen;
-	unsigned char   srr;
-	unsigned char   rr;
-	unsigned char   ts;
+	in_addr_t faddr;
+	unsigned char optlen;
+	unsigned char srr;
+	unsigned char rr;
+	unsigned char ts;
 	unsigned char
-			is_strictroute:1,
-			srr_is_hit:1,
-			is_changed:1,
-			rr_needaddr:1,
-			ts_needtime:1,
-			ts_needaddr:1;
-	unsigned char   router_alert;
-	unsigned char   cipso;
-	unsigned char   __pad2;
+		is_strictroute : 1,
+		srr_is_hit : 1,
+		is_changed : 1,
+		rr_needaddr : 1,
+		ts_needtime : 1,
+		ts_needaddr : 1;
+	unsigned char router_alert;
+	unsigned char cipso;
+	unsigned char __pad2;
 	unsigned char __data;
 } ip_options_t;
 
 /* IP options */
-#define IPOPT_COPY		0x80
-#define IPOPT_CLASS_MASK	0x60
-#define IPOPT_NUMBER_MASK	0x1f
+#define IPOPT_COPY      0x80
+#define IPOPT_CLASS_MASK    0x60
+#define IPOPT_NUMBER_MASK   0x1f
 
-#define	IPOPT_COPIED(o)		((o)&IPOPT_COPY)
-#define	IPOPT_CLASS(o)		((o)&IPOPT_CLASS_MASK)
-#define	IPOPT_NUMBER(o)		((o)&IPOPT_NUMBER_MASK)
+#define IPOPT_COPIED(o)     ((o)&IPOPT_COPY)
+#define IPOPT_CLASS(o)      ((o)&IPOPT_CLASS_MASK)
+#define IPOPT_NUMBER(o)     ((o)&IPOPT_NUMBER_MASK)
 
-#define	IPOPT_CONTROL		0x00
-#define	IPOPT_RESERVED1		0x20
-#define	IPOPT_MEASUREMENT	0x40
-#define	IPOPT_RESERVED2		0x60
+#define IPOPT_CONTROL       0x00
+#define IPOPT_RESERVED1     0x20
+#define IPOPT_MEASUREMENT   0x40
+#define IPOPT_RESERVED2     0x60
 
-#define IPOPT_END	(0 |IPOPT_CONTROL)
-#define IPOPT_NOOP	(1 |IPOPT_CONTROL)
-#define IPOPT_SEC	(2 |IPOPT_CONTROL | IPOPT_COPY)
-#define IPOPT_LSRR	(3 |IPOPT_CONTROL | IPOPT_COPY)
-#define IPOPT_TIMESTAMP	(4 |IPOPT_MEASUREMENT)
-//#define IPOPT_CIPSO	(6 |IPOPT_CONTROL|IPOPT_COPY)
-#define IPOPT_RR	(7 |IPOPT_CONTROL)
-#define IPOPT_SID	(8 |IPOPT_CONTROL | IPOPT_COPY)
-#define IPOPT_SSRR	(9 |IPOPT_CONTROL | IPOPT_COPY)
-#define IPOPT_RA	(20|IPOPT_CONTROL |IPOPT_COPY) /* ip router arert */
+#define IPOPT_END   (0 |IPOPT_CONTROL)
+#define IPOPT_NOOP  (1 |IPOPT_CONTROL)
+#define IPOPT_SEC   (2 |IPOPT_CONTROL | IPOPT_COPY)
+#define IPOPT_LSRR  (3 |IPOPT_CONTROL | IPOPT_COPY)
+#define IPOPT_TIMESTAMP (4 |IPOPT_MEASUREMENT)
+/*#define IPOPT_CIPSO	(6 |IPOPT_CONTROL|IPOPT_COPY) */
+#define IPOPT_RR    (7 |IPOPT_CONTROL)
+#define IPOPT_SID   (8 |IPOPT_CONTROL | IPOPT_COPY)
+#define IPOPT_SSRR  (9 |IPOPT_CONTROL | IPOPT_COPY)
+#define IPOPT_RA    (20|IPOPT_CONTROL |IPOPT_COPY) /* ip router arert */
 
-#define	IPOPT_TS_TSONLY		0		/* timestamps only */
-#define	IPOPT_TS_TSANDADDR	1		/* timestamps and addresses */
-#define	IPOPT_TS_PRESPEC	3		/* specified modules only */
+#define IPOPT_TS_TSONLY     0       /* timestamps only */
+#define IPOPT_TS_TSANDADDR  1       /* timestamps and addresses */
+#define IPOPT_TS_PRESPEC    3       /* specified modules only */
 
 /*
  * Parses a block of options from an IP header

@@ -41,9 +41,8 @@ int utimes(const char *path, const struct timeval times[2]) {
 }
 
 void * mremap(void *old_addr, size_t old_len, size_t new_len,
-		int flags, ... /* void *new_addr */) {
+	int flags, ... /* void *new_addr */) {
 	printk(">>> %s %p %zu %zu %d\n", __func__, old_addr, old_len,
-			new_len, flags);
+		new_len, flags);
 	return SET_ERRNO(ENOSYS), MAP_FAILED;
 }
-

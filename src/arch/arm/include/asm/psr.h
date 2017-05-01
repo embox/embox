@@ -14,7 +14,7 @@
 
 static inline unsigned int __get_cpsr(void) {
 	unsigned long retval;
-	__asm__ __volatile__(
+	__asm__ __volatile__ (
 		"mrs  %0, cpsr\n"
 		: "=r" (retval)
 		:
@@ -24,7 +24,7 @@ static inline unsigned int __get_cpsr(void) {
 }
 
 static inline void __set_cpsr(unsigned val) {
-	__asm__ __volatile__(
+	__asm__ __volatile__ (
 		"msr  cpsr, %0\n"
 		: /* no outputs */
 		: "r" (val)

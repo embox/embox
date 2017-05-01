@@ -38,10 +38,10 @@ static void usermode_trampoline(struct ue_data *data) {
 	usermode_entry(&s_data);
 }
 
-#define TRAMPOLINE ((void * (*)(void *)) usermode_trampoline)
+#define TRAMPOLINE ((void * (*)(void *))usermode_trampoline)
 
 int user_thread_create(struct thread **p_thread, unsigned int flags,
-		void *ip, void *sp) {
+	void *ip, void *sp) {
 	struct ue_data *data;
 	int res;
 	struct thread *t;
@@ -93,4 +93,3 @@ int user_task_create(void *ip, void *sp) {
 
 	return res;
 }
-

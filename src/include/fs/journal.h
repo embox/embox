@@ -64,11 +64,10 @@ typedef struct journal_block_s {
 	 * XXX suppose the better solution will be add *bh not *bh[8]
 	 */
 	struct buffer_head *bh[8]; /** Corresponding buffer_heads (up to 8) */
-    block_t blocknr;	 /** Block number. */
-    char *data;		 /** Pointer to in-memory data. */
-    struct dlist_head b_next; /** Linked list entry. */
+	block_t blocknr;     /** Block number. */
+	char *data;      /** Pointer to in-memory data. */
+	struct dlist_head b_next; /** Linked list entry. */
 } journal_block_t;
-
 
 /*********** File system specific ***********/
 
@@ -108,13 +107,12 @@ typedef int (*journal_trans_freespace_t)(journal_t *jp, size_t nblocks);
 typedef struct journal_fs_specific_s {
 	journal_commit_t commit;
 	journal_update_t update;
-    journal_bmap_t bmap;
-    journal_trans_freespace_t trans_freespace;
+	journal_bmap_t bmap;
+	journal_trans_freespace_t trans_freespace;
 	void *data;
 } journal_fs_specific_t;
 
 /*********** File system specific ***********/
-
 
 /**
  * struct handle_s - The handle_s type is the concrete type associated with
@@ -123,8 +121,8 @@ typedef struct journal_fs_specific_s {
  * @h_buffer_credits: Number of remaining buffers we are allowed to dirty.
  */
 struct journal_handle_s {
-    transaction_t *h_transaction;
-    int h_buffer_credits;
+	transaction_t *h_transaction;
+	int h_buffer_credits;
 };
 
 /*
@@ -144,64 +142,64 @@ struct journal_handle_s {
  * flushed to home for finished transactions.
  */
 struct transaction_s {
-    /* Pointer to the journal for this transaction. [no locking] */
-    journal_t *t_journal;
+	/* Pointer to the journal for this transaction. [no locking] */
+	journal_t *t_journal;
 
-    /* Sequence number for this transaction [no locking] */
-    uint32_t t_tid;
+	/* Sequence number for this transaction [no locking] */
+	uint32_t t_tid;
 
-    /*
-     * Transaction's current state
-     * [no locking - only kjournald alters this]
-     * FIXME: needs barriers
-     * KLUDGE: [use j_state_lock]
-     */
-    enum {
-        T_RUNNING,
-        T_LOCKED,
-        T_RUNDOWN,
-        T_FLUSH,
-        T_COMMIT,
-        T_FINISHED
-    } t_state;
+	/*
+	 * Transaction's current state
+	 * [no locking - only kjournald alters this]
+	 * FIXME: needs barriers
+	 * KLUDGE: [use j_state_lock]
+	 */
+	enum {
+		T_RUNNING,
+		T_LOCKED,
+		T_RUNDOWN,
+		T_FLUSH,
+		T_COMMIT,
+		T_FINISHED
+	} t_state;
 
-    /*
-     * Where in the log does this transaction's commit start? [no locking]
-     */
-    unsigned long t_log_start;
+	/*
+	 * Where in the log does this transaction's commit start? [no locking]
+	 */
+	unsigned long t_log_start;
 
-    /* Number of committed blocks used in the log by this transaction. */
-    unsigned long t_log_blocks;
+	/* Number of committed blocks used in the log by this transaction. */
+	unsigned long t_log_blocks;
 
-    /* Number of buffers on the t_buffers list [j_list_lock] */
-    int t_nr_buffers;
+	/* Number of buffers on the t_buffers list [j_list_lock] */
+	int t_nr_buffers;
 
-    /*
-     * Doubly-linked circular list of all buffers reserved but not yet
-     * modified by this transaction [j_list_lock]
-     */
-    struct dlist_head t_reserved_list;
+	/*
+	 * Doubly-linked circular list of all buffers reserved but not yet
+	 * modified by this transaction [j_list_lock]
+	 */
+	struct dlist_head t_reserved_list;
 
-    /*
-     * Doubly-linked circular list of all metadata buffers owned by this
-     * transaction [j_list_lock]
-     */
-    struct dlist_head t_buffers;
+	/*
+	 * Doubly-linked circular list of all metadata buffers owned by this
+	 * transaction [j_list_lock]
+	 */
+	struct dlist_head t_buffers;
 
-    /*
-     * Number of buffers reserved for use by all handles in this transaction
-     * handle but not yet modified. [t_handle_lock]
-     */
-    int t_outstanding_credits;
+	/*
+	 * Number of buffers reserved for use by all handles in this transaction
+	 * handle but not yet modified. [t_handle_lock]
+	 */
+	int t_outstanding_credits;
 
-    /* Reference count of handlers [j_list_lock] */
-    int t_ref;
+	/* Reference count of handlers [j_list_lock] */
+	int t_ref;
 
-    /*
-     * Forward and backward links for the circular list of all transactions
-     * awaiting checkpoint. [j_list_lock]
-     */
-    struct dlist_head t_next;
+	/*
+	 * Forward and backward links for the circular list of all transactions
+	 * awaiting checkpoint. [j_list_lock]
+	 */
+	struct dlist_head t_next;
 };
 
 /**
@@ -214,81 +212,81 @@ struct journal_s {
 	 */
 	journal_fs_specific_t j_fs_specific;
 
-    /*
-     * Transactions: The current running transaction...
-     * [j_state_lock] [caller holding open handle]
-     */
-    transaction_t *j_running_transaction;
+	/*
+	 * Transactions: The current running transaction...
+	 * [j_state_lock] [caller holding open handle]
+	 */
+	transaction_t *j_running_transaction;
 
-    /*
-     * the transaction we are pushing to disk
-     * [j_state_lock] [caller holding open handle]
-     */
-    transaction_t *j_committing_transaction;
+	/*
+	 * the transaction we are pushing to disk
+	 * [j_state_lock] [caller holding open handle]
+	 */
+	transaction_t *j_committing_transaction;
 
-    /*
-     * ... and a linked circular list of all transactions waiting for
-     * checkpointing. [j_list_lock]
-     */
-    struct dlist_head j_checkpoint_transactions;
+	/*
+	 * ... and a linked circular list of all transactions waiting for
+	 * checkpointing. [j_list_lock]
+	 */
+	struct dlist_head j_checkpoint_transactions;
 
-    /*
-     * Journal head: identifies the first unused block in the journal.
-     * [j_state_lock]
-     */
-    unsigned long j_head;
+	/*
+	 * Journal head: identifies the first unused block in the journal.
+	 * [j_state_lock]
+	 */
+	unsigned long j_head;
 
-    /*
-     * Journal tail: identifies the oldest still-used block in the journal.
-     * [j_state_lock]
-     */
-    unsigned long j_tail;
+	/*
+	 * Journal tail: identifies the oldest still-used block in the journal.
+	 * [j_state_lock]
+	 */
+	unsigned long j_tail;
 
-    /*
-     * Journal free: how many free blocks are there in the journal?
-     * [j_state_lock]
-     */
-    unsigned long j_free;
+	/*
+	 * Journal free: how many free blocks are there in the journal?
+	 * [j_state_lock]
+	 */
+	unsigned long j_free;
 
-    /*
-     * Journal start and end: the block numbers of the first usable block
-     * and one beyond the last usable block in the journal. [j_state_lock]
-     */
-    unsigned long j_first;
-    unsigned long j_last;
+	/*
+	 * Journal start and end: the block numbers of the first usable block
+	 * and one beyond the last usable block in the journal. [j_state_lock]
+	 */
+	unsigned long j_first;
+	unsigned long j_last;
 
-    /*
-     * Device, blocksize and starting block offset for the location where we
-     * store the journal.
-     */
-    struct block_dev *j_dev;
-    size_t j_blocksize;
-    size_t j_disk_sectorsize;
-    block_t j_blk_offset;
+	/*
+	 * Device, blocksize and starting block offset for the location where we
+	 * store the journal.
+	 */
+	struct block_dev *j_dev;
+	size_t j_blocksize;
+	size_t j_disk_sectorsize;
+	block_t j_blk_offset;
 
-    /* Total maximum capacity of the journal region on disk. */
-    size_t j_maxlen;
+	/* Total maximum capacity of the journal region on disk. */
+	size_t j_maxlen;
 
-    /*
-     * Sequence number of the oldest transaction in the log [j_state_lock]
-     */
-    uint32_t j_tail_sequence;
+	/*
+	 * Sequence number of the oldest transaction in the log [j_state_lock]
+	 */
+	uint32_t j_tail_sequence;
 
-     /*
-     * Sequence number of the next transaction to grant [j_state_lock]
-     */
-    uint32_t j_transaction_sequence;
+	/*
+	* Sequence number of the next transaction to grant [j_state_lock]
+	*/
+	uint32_t j_transaction_sequence;
 };
 
-extern journal_t *journal_create(journal_fs_specific_t *spec);
+extern journal_t * journal_create(journal_fs_specific_t *spec);
 extern int journal_delete(journal_t *jp);
 extern journal_handle_t * journal_start(journal_t *jp, size_t nblocks);
 extern int journal_stop(journal_handle_t *handle);
 
-extern journal_block_t *journal_new_block(journal_t *jp, block_t nr);
+extern journal_block_t * journal_new_block(journal_t *jp, block_t nr);
 extern void journal_free_block(journal_t *jp, journal_block_t *jb);
 
-extern transaction_t *journal_new_trans(journal_t *journal);
+extern transaction_t * journal_new_trans(journal_t *journal);
 extern void journal_free_trans(journal_t *journal, transaction_t *t);
 extern int journal_checkpoint_transactions(journal_t *jp);
 
@@ -304,7 +302,8 @@ extern int journal_checkpoint_transactions(journal_t *jp);
  */
 extern int journal_dirty_block(journal_t *jp, journal_block_t *block);
 
-extern int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t cnt);
+extern int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks,
+	size_t cnt);
 extern int journal_write_block(journal_t *jp, char *data, int cnt, int blkno);
 
 static inline int journal_wrap(journal_t *jp, int var) {
@@ -315,9 +314,9 @@ static inline int journal_wrap(journal_t *jp, int var) {
 }
 
 #define journal_db2jb(jp, block) \
-		(block / (jp->j_blocksize / jp->j_disk_sectorsize))
+	(block / (jp->j_blocksize / jp->j_disk_sectorsize))
 
 #define journal_jb2db(jp, block) \
-		(block * (jp->j_blocksize / jp->j_disk_sectorsize))
+	(block * (jp->j_blocksize / jp->j_disk_sectorsize))
 
 #endif /* FS_JOURNAL_H */

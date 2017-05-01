@@ -33,7 +33,7 @@
  *  @param objects_nr   - initial count of objects in allocator
  */
 #define OBJALLOC_DEF(allocator_nm, object_t, objects_nr) \
-	  __OBJALLOC_DEF(allocator_nm, object_t, objects_nr)
+	__OBJALLOC_DEF(allocator_nm, object_t, objects_nr)
 
 /**
  * Structure represents storage for object you save.
@@ -50,7 +50,7 @@ typedef __objalloc_t objalloc_t;
  *         ERROR_CODE - if allocator was not destroyed
  */
 extern int objalloc_init(objalloc_t *allocator, size_t object_sz,
-		size_t objects_nr);
+	size_t objects_nr);
 
 /**
  *
@@ -65,13 +65,13 @@ extern int objalloc_destroy(objalloc_t *allocator);
  * @param allocator corresponding to allocating object
  * @return the address of allocated object or NULL if allocator is full
  */
-extern void *objalloc(objalloc_t *allocator);
+extern void * objalloc(objalloc_t *allocator);
 
 /**
  * ree memory function.
  * @param allocator corresponding to freeing object
  * @param object pointer at start address of the memory, that must be free
  */
-extern void objfree(objalloc_t *allocator, void* object);
+extern void objfree(objalloc_t *allocator, void *object);
 
 #endif /*MEM_OBJ_ALLOC_H_ */

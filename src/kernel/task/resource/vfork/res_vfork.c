@@ -12,7 +12,6 @@
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_vfork.h>
 
-
 TASK_RESOURCE_DEF(task_vfork_desc, struct task_vfork);
 
 static void task_vfork_init(const struct task *task, void *vfork_buff) {
@@ -20,7 +19,7 @@ static void task_vfork_init(const struct task *task, void *vfork_buff) {
 }
 
 static int task_vfork_inherit(const struct task *task,
-		const struct task *parent) {
+	const struct task *parent) {
 	return 0;
 }
 
@@ -33,7 +32,7 @@ static const struct task_resource_desc task_vfork_desc = {
 	.resource_offset = &task_vfork_offset
 };
 
-struct task_vfork *task_resource_vfork(const struct task *task) {
+struct task_vfork * task_resource_vfork(const struct task *task) {
 	assert(task != NULL);
 	return (void *)task->resources + task_vfork_offset;
 }

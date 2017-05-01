@@ -14,14 +14,14 @@
 #define __HAVE_ARCH_CMPXCHG
 
 static inline unsigned long cmpxchg(unsigned long *ptr,
-		unsigned long old_val, unsigned long new_val) {
+	unsigned long old_val, unsigned long new_val) {
 	unsigned long ret;
 
 	__asm__ __volatile__ (
-			"lock cmpxchgl %2, %1"
-			: "=a" (ret), "+m" (*ptr)
-			: "r" (new_val), "0" (old_val)
-			: "memory"
+		"lock cmpxchgl %2, %1"
+		: "=a" (ret), "+m" (*ptr)
+		: "r" (new_val), "0" (old_val)
+		: "memory"
 	);
 
 	return ret;

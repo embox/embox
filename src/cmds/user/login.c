@@ -29,7 +29,7 @@
 
 #include <crypt.h>
 
-extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
+extern char * getpass_r(const char *prompt, char *buf, size_t buflen);
 
 #define BUF_LEN 64
 
@@ -87,8 +87,7 @@ static void login_set_security(struct taskdata *tdata) {
 }
 #endif
 
-
-static void *taskshell(void *data) {
+static void * taskshell(void *data) {
 	const struct shell *shell;
 	struct taskdata *tdata = data;
 
@@ -141,7 +140,7 @@ static unsigned char stdin_vintr;
 static unsigned char vdisable = -1;
 
 static int fileno_vintr_disable(int fd) {
-    struct termios t;
+	struct termios t;
 
 	if (-1 == tcgetattr(fd, &t)) {
 		return -errno;
@@ -158,7 +157,7 @@ static int fileno_vintr_disable(int fd) {
 }
 
 static int fileno_vintr_enable(int fd) {
-    struct termios t;
+	struct termios t;
 
 	if (-1 == tcgetattr(fd, &t)) {
 		return -errno;
@@ -175,11 +174,11 @@ static int fileno_vintr_enable(int fd) {
 
 static inline void seculog_make_rec(const char *username, char allowed) {
 	char seculog_msg[64];
-	snprintf(seculog_msg, 64, "login=%s,action=%s\n", username, allowed ? "ALLOW" : "DENY");
+	snprintf(seculog_msg, 64, "login=%s,action=%s\n", username,
+		allowed ? "ALLOW" : "DENY");
 
 	seculog_record(SECULOG_LABEL_LOGIN_ACT, seculog_msg);
 }
-
 
 static int login_user(const char *name, const char *cmd, char with_pass) {
 	char pwdbuf[BUF_LEN], passbuf[BUF_LEN];
@@ -200,7 +199,7 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 	}
 
 	if ((res = getpwnam_r(name, &pwd, pwdbuf, BUF_LEN, &result)) ||
-			result == NULL) {
+		result == NULL) {
 		goto errret;
 	}
 
@@ -239,7 +238,7 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 
 	return 0;
 
-errret:
+	errret:
 	seculog_make_rec(name, 0);
 
 	sleep(3);
@@ -261,7 +260,7 @@ int main(int argc, char **argv) {
 		getopt_init();
 
 		while (-1 != (opt = getopt(argc, argv, "pc:"))) {
-			switch(opt) {
+			switch (opt) {
 			case 'c':
 				cmd = optarg;
 				break;
@@ -276,7 +275,6 @@ int main(int argc, char **argv) {
 		if (optind < argc) {
 			name = argv[optind];
 		}
-
 
 		return login_user(name, cmd, with_pass);
 	}
@@ -294,7 +292,7 @@ int main(int argc, char **argv) {
 
 		free(name);
 
-	} while(1);
+	} while (1);
 
 	return 0;
 }

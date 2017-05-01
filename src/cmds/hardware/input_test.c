@@ -16,7 +16,7 @@ static void usage(char *argv0) {
 	printf("Usage: %s -i INPUT_DEV\n", argv0);
 }
 
-static char *dev_type_map(enum input_dev_type type) {
+static char * dev_type_map(enum input_dev_type type) {
 	switch (type) {
 	case INPUT_DEV_KBD:
 		return "KEYBOARD";
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "i:"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'i':
 			indev_name = optarg;
 			break;

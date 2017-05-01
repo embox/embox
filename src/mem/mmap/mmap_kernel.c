@@ -16,7 +16,6 @@
 
 #include <mem/vmem.h>
 
-
 #include <module/embox/mem/mmap_mmu.h>
 
 static struct emmap early_emmap = {
@@ -67,6 +66,6 @@ int mmap_kernel_inited(void) {
 	return 0;
 }
 
-struct emmap *mmap_early_emmap(void) {
+struct emmap * mmap_early_emmap(void) {
 	return &early_emmap;
 }

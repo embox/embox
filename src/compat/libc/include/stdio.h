@@ -18,7 +18,6 @@
 #include <defines/size_t.h>
 #include <defines/null.h>
 
-
 #define EOF (-1)
 
 #define _IONBF        0
@@ -29,7 +28,6 @@
 #define FILENAME_MAX  0x20
 
 #define P_tmpdir   "/tmp"
-
 
 /* Values for the WHENCE argument to lseek. */
 #define SEEK_SET        0   /* Seek from beginning of file. */
@@ -55,7 +53,6 @@ static inline int getc(FILE *f) {
 	return fgetc(f);
 }
 
-
 /**
  * Writes the string s and a trailing newline to stdout.
  */
@@ -68,9 +65,9 @@ extern int putchar(int c);
  * Read a line from stdin into the buffer pointed to by s until
  * either a terminating newline or EOF
  */
-extern char *gets(char *s);
+extern char * gets(char *s);
 
-extern char *fgets(char *s, int n, FILE *stream);
+extern char * fgets(char *s, int n, FILE *stream);
 
 extern int getchar(void);
 
@@ -125,7 +122,7 @@ extern int sscanf(const char *out, const char *format, ...);
  * Open the file whose name is the string pointed to by path
  * and associates a stream with it.
  */
-extern FILE *fopen(const char *path, const char *mode);
+extern FILE * fopen(const char *path, const char *mode);
 
 /**
  * @brief Opens file descriptor with generic functions
@@ -138,23 +135,23 @@ extern FILE *fopen(const char *path, const char *mode);
  *
  * @return FILE *
  */
-extern FILE *funopen(const void *cookie,
-		int (*readfn)(void *, char *, int),
-		int (*writefn)(void *, const char *, int),
-		fpos_t (*seekfn)(void *, fpos_t, int),
-		int (*closefn)(void *));
+extern FILE * funopen(const void *cookie,
+	int (*readfn)(void *, char *, int),
+	int (*writefn)(void *, const char *, int),
+	fpos_t (*seekfn)(void *, fpos_t, int),
+	int (*closefn)(void *));
 /**
  * Opens the file whose file descriptor is the fd
  * and associates a stream with it.
  * FIXME mode ignored
  */
-extern FILE *fdopen(int fd, const char *mode);
+extern FILE * fdopen(int fd, const char *mode);
 
 /**
  * Opens the file whose name is the string pointed to by
  * path and associates the stream pointed to by stream with it
  */
-extern FILE *freopen(const char *path, const char *mode, FILE *stream);
+extern FILE * freopen(const char *path, const char *mode, FILE *stream);
 
 /**
  * Read nmemb elements of data, each size bytes long, from the stream

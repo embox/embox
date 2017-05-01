@@ -16,4 +16,3 @@
 void rewinddir(DIR *dirp) {
 	printk(">>> %s %p\n", __func__, dirp);
 }
-

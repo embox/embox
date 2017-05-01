@@ -11,11 +11,10 @@
 #define VT_TOKEN_ATTRS_MAX     2
 
 /** ANSI Escape */
-#define ESC		'\033'
+#define ESC     '\033'
 
 /** ANSI Control Sequence Introducer */
-#define CSI		'['
-
+#define CSI     '['
 
 enum vt_action {
 	VT_ACTION_NONE         = 0,
@@ -39,11 +38,11 @@ typedef enum vt_action vt_action_t;
 
 struct vt_token {
 	vt_action_t action;
-	char        ch;
-	char        attrs[VT_TOKEN_ATTRS_MAX];
-	char        attrs_len;
+	char ch;
+	char attrs[VT_TOKEN_ATTRS_MAX];
+	char attrs_len;
 	short      *params;
-	int         params_len;
+	int params_len;
 };
 
 #endif /* VT_H_ */

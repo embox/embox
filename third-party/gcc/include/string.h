@@ -14,4 +14,3 @@ extern size_t strxfrm(char *s1, const char *s2, size_t n);
 __END_DECLS
 
 #endif /* GCC_STRING_H_ */
-

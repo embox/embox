@@ -18,7 +18,7 @@
 
 EMBOX_UNIT_INIT(twi_init);
 
-#define   TWICLK           400000L //TODO move to global config -- special to system where runs
+#define   TWICLK           400000L /*TODO move to global config -- special to system where runs */
 #define   CLDIV            (((SYS_CLOCK/TWICLK)/2)-3)
 
 static uint32_t twi_pending;
@@ -41,7 +41,7 @@ static void twi_reset(void) {
 	REG_STORE(AT91C_TWI_IDR, ~0);
 
 	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_PIOA) |  /* Need PIO too */
-			(1 << AT91C_ID_TWI));    /* TWI clock domain */
+		(1 << AT91C_ID_TWI));        /* TWI clock domain */
 
 	/* MAGIC Set up pin as an IO pin for clocking till clean */
 	/* Why we need to clock? */
@@ -69,7 +69,7 @@ static void twi_reset(void) {
 	REG_STORE(AT91C_TWI_CWGR, ((CLDIV << 8) | CLDIV));
 	/* Enable as master */
 	REG_STORE(AT91C_TWI_CR, AT91C_TWI_MSEN);
-	//*AT91C_TWI_IER = AT91C_TWI_NACK;
+	/**AT91C_TWI_IER = AT91C_TWI_NACK; */
 	twi_mask = 0;
 }
 
@@ -88,12 +88,12 @@ void twi_write(uint32_t dev_addr, const uint8_t *data, uint32_t nBytes) {
 	twi_pending--;
 
 	while (twi_pending > 0) {
-		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXRDY));
+		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXRDY)) ;
 		REG_STORE(AT91C_TWI_THR, *twi_ptr++);
 		twi_pending--;
 	}
 
-	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP));
+	while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_TXCOMP)) ;
 }
 
 void twi_send(uint32_t dev_addr, const uint8_t *data, uint32_t count) {
@@ -120,11 +120,11 @@ int twi_receive(uint32_t dev_addr, uint8_t *data, uint32_t count) {
 	uint8_t checkbyte = 0;
 
 	REG_STORE(AT91C_TWI_MMR, AT91C_TWI_IADRSZ_NO |
-			AT91C_TWI_MREAD | ((dev_addr & 0x7f) << 16));
+		AT91C_TWI_MREAD | ((dev_addr & 0x7f) << 16));
 	REG_STORE(AT91C_TWI_CR, AT91C_TWI_START);
 
 	while (count-- > 1) {
-		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY));
+		while (!(REG_LOAD(AT91C_TWI_SR) & AT91C_TWI_RXRDY)) ;
 
 		*ptr = REG_LOAD(AT91C_TWI_RHR);
 		checkbyte += *ptr;

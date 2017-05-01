@@ -26,6 +26,6 @@ struct symbol {
  * @return
  *   A symbol if any has been found, or @c NULL otherwise.
  */
-extern const struct symbol *symbol_lookup(void *addr);
+extern const struct symbol * symbol_lookup(void *addr);
 
 #endif /* LIB_EXECINFO_SYMBOL_H_ */

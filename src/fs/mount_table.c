@@ -9,7 +9,6 @@
 #include <string.h>
 #include <errno.h>
 
-
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
 
@@ -19,11 +18,13 @@
 
 #include <mem/misc/pool.h>
 
-POOL_DEF(mount_desc_pool, struct mount_descriptor, OPTION_GET(NUMBER,mount_desc_quantity));
+POOL_DEF(mount_desc_pool, struct mount_descriptor,
+	OPTION_GET(NUMBER,mount_desc_quantity));
 
 static struct mount_descriptor *mnt_root = NULL;
 
-struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, struct node *mnt_point) {
+struct mount_descriptor * mount_table_get_child(struct mount_descriptor *parent,
+	struct node *mnt_point) {
 	struct mount_descriptor *desc;
 
 	if (parent->mnt_point == mnt_point ) {
@@ -40,23 +41,23 @@ struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, 
 	return NULL;
 }
 
-struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
-		struct node *root, const char *dev) {
+struct mount_descriptor * mount_table_add(struct path *mnt_point_path,
+	struct node *root, const char *dev) {
 	struct mount_descriptor *mdesc;
 
 	assert(mnt_point_path->mnt_desc != NULL ||
-			(mnt_point_path->mnt_desc == NULL && mnt_root == NULL));
+		(mnt_point_path->mnt_desc == NULL && mnt_root == NULL));
 
-	if(mnt_point_path->node == NULL) {
+	if (mnt_point_path->node == NULL) {
 		return NULL;
 	}
 
-	if(mnt_root != NULL && mnt_point_path->node ==
-			mnt_point_path->mnt_desc->mnt_root) {
+	if (mnt_root != NULL && mnt_point_path->node ==
+		mnt_point_path->mnt_desc->mnt_root) {
 		return NULL;
 	}
 
-	if(NULL == (mdesc = pool_alloc(&mount_desc_pool))) {
+	if (NULL == (mdesc = pool_alloc(&mount_desc_pool))) {
 		return NULL;
 	}
 
@@ -77,7 +78,8 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 		mnt_root = mdesc;
 	} else {
 		mdesc->mnt_parent = mnt_point_path->mnt_desc;
-		dlist_add_next(&mdesc->mnt_child, &mnt_point_path->mnt_desc->mnt_mounts);
+		dlist_add_next(&mdesc->mnt_child,
+			&mnt_point_path->mnt_desc->mnt_mounts);
 	}
 
 	strncpy(mdesc->mnt_dev, dev, MOUNT_DESC_STRINFO_LEN);
@@ -88,7 +90,7 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 
 int mount_table_del(struct mount_descriptor *mdesc) {
 
-	if(mdesc == NULL) {
+	if (mdesc == NULL) {
 		return -EINVAL;
 	}
 
@@ -107,6 +109,6 @@ int mount_table_del(struct mount_descriptor *mdesc) {
 	return ENOERR;
 }
 
-struct mount_descriptor *mount_table(void) {
+struct mount_descriptor * mount_table(void) {
 	return mnt_root;
 }

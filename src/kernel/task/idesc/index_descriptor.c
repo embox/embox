@@ -14,7 +14,7 @@
 
 #include <fs/index_descriptor.h>
 
-static inline struct idesc_table *task_self_idesc_table(void) {
+static inline struct idesc_table * task_self_idesc_table(void) {
 	struct idesc_table *it;
 
 	it = task_resource_idesc_table(task_self());
@@ -28,7 +28,7 @@ int index_descriptor_add(struct idesc *idesc) {
 	return idesc_table_add(task_self_idesc_table(), idesc, 0);
 }
 
-struct idesc *index_descriptor_get(int idx) {
+struct idesc * index_descriptor_get(int idx) {
 
 	return idesc_table_get(task_self_idesc_table(), idx);
 }

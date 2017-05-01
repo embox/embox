@@ -22,7 +22,8 @@ struct vterm {
 	struct tty tty;
 };
 
-extern void vterm_init(struct vterm *t, struct vterm_video *video, struct input_dev *indev);
+extern void vterm_init(struct vterm *t, struct vterm_video *video,
+	struct input_dev *indev);
 extern void vterm_open_indev(struct vterm *t, const char *name);
 
 static inline void vterm_putc(struct vterm *t, char ch) {

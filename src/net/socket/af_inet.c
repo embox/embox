@@ -76,7 +76,7 @@ static int inet_close(struct sock *sk) {
 }
 
 static void __inet_bind(struct inet_sock *in_sk,
-		const struct sockaddr_in *addr_in) {
+	const struct sockaddr_in *addr_in) {
 	assert(in_sk != NULL);
 	assert(addr_in != NULL);
 	assert(addr_in->sin_family == AF_INET);
@@ -84,7 +84,7 @@ static void __inet_bind(struct inet_sock *in_sk,
 }
 
 static int inet_addr_tester(const struct sockaddr *lhs_sa,
-		const struct sockaddr *rhs_sa) {
+	const struct sockaddr *rhs_sa) {
 	static const struct in_addr inaddr_any = {
 		{ .s_addr = htonl(INADDR_ANY) }
 	};
@@ -98,17 +98,17 @@ static int inet_addr_tester(const struct sockaddr *lhs_sa,
 
 	assert(lhs_in->sin_family == AF_INET);
 	return (lhs_in->sin_family == rhs_in->sin_family)
-			&& ((0 == memcmp(&lhs_in->sin_addr, &rhs_in->sin_addr,
-							sizeof lhs_in->sin_addr))
-					|| (0 == memcmp(&lhs_in->sin_addr, &inaddr_any,
-							sizeof lhs_in->sin_addr))
-					|| (0 == memcmp(&rhs_in->sin_addr, &inaddr_any,
-							sizeof rhs_in->sin_addr)))
-			&& (lhs_in->sin_port == rhs_in->sin_port);
+		   && ((0 == memcmp(&lhs_in->sin_addr, &rhs_in->sin_addr,
+		   sizeof lhs_in->sin_addr))
+		   || (0 == memcmp(&lhs_in->sin_addr, &inaddr_any,
+		   sizeof lhs_in->sin_addr))
+		   || (0 == memcmp(&rhs_in->sin_addr, &inaddr_any,
+		   sizeof rhs_in->sin_addr)))
+		   && (lhs_in->sin_port == rhs_in->sin_port);
 }
 
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
-		socklen_t addrlen) {
+	socklen_t addrlen) {
 	struct sockaddr_in addr_in;
 
 	assert(sk);
@@ -124,7 +124,8 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		return -EAFNOSUPPORT;
 	}
 	else if ((addr_in.sin_addr.s_addr != htonl(INADDR_ANY)) &&
-			!ip_is_local(addr_in.sin_addr.s_addr, IP_LOCAL_BROADCAST | IP_LOCAL_MULTICAST)) {
+		!ip_is_local(addr_in.sin_addr.s_addr,
+		IP_LOCAL_BROADCAST | IP_LOCAL_MULTICAST)) {
 		return -EADDRNOTAVAIL;
 	}
 
@@ -133,13 +134,14 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		 * is not POSIX-specified behavior, but it used in Linux, BSD, Windows.
 		 * E.g. manual for Linux - http://man7.org/linux/man-pages/man7/ip.7.html */
 		if (!sock_addr_alloc_port(sk->p_ops, &addr_in.sin_port,
-					inet_addr_tester, (const struct sockaddr *)&addr_in,
-					sizeof addr_in)) {
+			inet_addr_tester, (const struct sockaddr *)&addr_in,
+			sizeof addr_in)) {
 			return -ENOMEM;
 		}
 	}
-	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
-				addrlen)) {
+	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester,
+		(struct sockaddr *)&addr_in,
+		addrlen)) {
 		/* TODO consider opt.so_reuseaddr */
 		return -EADDRINUSE;
 	}
@@ -158,8 +160,8 @@ static int inet_bind_local(struct sock *sk) {
 	addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (!sock_addr_alloc_port(sk->p_ops, &addr_in.sin_port,
-				inet_addr_tester, (const struct sockaddr *)&addr_in,
-				sizeof addr_in)) {
+		inet_addr_tester, (const struct sockaddr *)&addr_in,
+		sizeof addr_in)) {
 		return -ENOMEM;
 	}
 
@@ -169,7 +171,7 @@ static int inet_bind_local(struct sock *sk) {
 }
 
 static int __inet_connect(struct inet_sock *in_sk,
-		const struct sockaddr_in *addr_in) {
+	const struct sockaddr_in *addr_in) {
 	int ret;
 	in_addr_t src_ip;
 
@@ -183,7 +185,7 @@ static int __inet_connect(struct inet_sock *in_sk,
 	}
 
 	if ((in_sk->src_in.sin_addr.s_addr != htonl(INADDR_ANY))
-			&& (in_sk->src_in.sin_addr.s_addr != src_ip)) {
+		&& (in_sk->src_in.sin_addr.s_addr != src_ip)) {
 		return -EINVAL;
 	}
 
@@ -195,8 +197,8 @@ static int __inet_connect(struct inet_sock *in_sk,
 }
 
 static int inet_stream_connect(struct sock *sk,
-		const struct sockaddr *addr, socklen_t addrlen,
-		int flags) {
+	const struct sockaddr *addr, socklen_t addrlen,
+	int flags) {
 	int ret;
 	const struct sockaddr_in *addr_in;
 
@@ -226,8 +228,8 @@ static int inet_stream_connect(struct sock *sk,
 }
 
 static int inet_nonstream_connect(struct sock *sk,
-		const struct sockaddr *addr, socklen_t addrlen,
-		int flags) {
+	const struct sockaddr *addr, socklen_t addrlen,
+	int flags) {
 	int ret;
 	const struct sockaddr_in *addr_in;
 
@@ -269,7 +271,7 @@ static int inet_listen(struct sock *sk, int backlog) {
 }
 
 static int inet_accept(struct sock *sk, struct sockaddr *addr,
-		socklen_t *addrlen, int flags, struct sock **out_sk) {
+	socklen_t *addrlen, int flags, struct sock **out_sk) {
 	int ret;
 	struct sockaddr_in *addr_in = (struct sockaddr_in *)addr;
 
@@ -302,7 +304,7 @@ static int inet_accept(struct sock *sk, struct sockaddr *addr,
 }
 
 static int inet_sendmsg(struct sock *sk, struct msghdr *msg,
-		int flags) {
+	int flags) {
 	const struct sockaddr_in *addr_in;
 
 	assert(sk);
@@ -310,8 +312,8 @@ static int inet_sendmsg(struct sock *sk, struct msghdr *msg,
 
 	addr_in = (const struct sockaddr_in *)msg->msg_name;
 	if ((addr_in != NULL) &&
-			((msg->msg_namelen != sizeof *addr_in)
-				|| (addr_in->sin_family != AF_INET))) {
+		((msg->msg_namelen != sizeof *addr_in)
+		|| (addr_in->sin_family != AF_INET))) {
 		return -EINVAL;
 	}
 
@@ -324,7 +326,7 @@ static int inet_sendmsg(struct sock *sk, struct msghdr *msg,
 }
 
 static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
-		int flags) {
+	int flags) {
 	struct sockaddr_in *addr_in;
 
 	assert(sk);
@@ -349,7 +351,7 @@ static int inet_recvmsg(struct sock *sk, struct msghdr *msg,
 }
 
 static int inet_getsockname(struct sock *sk,
-		struct sockaddr *addr, socklen_t *addrlen) {
+	struct sockaddr *addr, socklen_t *addrlen) {
 	struct sockaddr_in *addr_in;
 
 	assert(sk);
@@ -364,7 +366,7 @@ static int inet_getsockname(struct sock *sk,
 	memcpy(addr_in, &to_inet_sock(sk)->src_in, sizeof *addr_in);
 #if 0
 	assert((addr_in->sin_family == AF_UNSPEC)
-			|| (addr_in->sin_family == AF_INET));
+		|| (addr_in->sin_family == AF_INET));
 #else
 	addr_in->sin_family = AF_INET;
 #endif
@@ -374,7 +376,7 @@ static int inet_getsockname(struct sock *sk,
 }
 
 static int inet_getpeername(struct sock *sk,
-		struct sockaddr *addr, socklen_t *addrlen) {
+	struct sockaddr *addr, socklen_t *addrlen) {
 	struct sockaddr_in *addr_in;
 
 	assert(sk);
@@ -389,7 +391,7 @@ static int inet_getpeername(struct sock *sk,
 	memcpy(addr_in, &to_inet_sock(sk)->dst_in, sizeof *addr_in);
 #if 0
 	assert((addr_in->sin_family == AF_UNSPEC)
-			|| (addr_in->sin_family == AF_INET));
+		|| (addr_in->sin_family == AF_INET));
 #else
 	addr_in->sin_family = AF_INET;
 #endif
@@ -399,7 +401,7 @@ static int inet_getpeername(struct sock *sk,
 }
 
 static int inet_getsockopt(struct sock *sk, int level,
-		int optname, void *optval, socklen_t *optlen) {
+	int optname, void *optval, socklen_t *optlen) {
 	assert(sk);
 	assert(optval);
 	assert(optlen);
@@ -423,7 +425,7 @@ static int inet_getsockopt(struct sock *sk, int level,
 }
 
 static int inet_setsockopt(struct sock *sk, int level,
-		int optname, const void *optval, socklen_t optlen) {
+	int optname, const void *optval, socklen_t optlen) {
 	struct inet_sock *inet;
 	int val = 0;
 

@@ -13,10 +13,10 @@
 
 #include <hal/mmu.h>
 
-extern mmu_pgd_t *vmem_alloc_pgd_table(void);
-extern mmu_pmd_t *vmem_alloc_pmd_table(void);
-extern mmu_pte_t *vmem_alloc_pte_table(void);
-extern void *vmem_alloc_page(void);
+extern mmu_pgd_t * vmem_alloc_pgd_table(void);
+extern mmu_pmd_t * vmem_alloc_pmd_table(void);
+extern mmu_pte_t * vmem_alloc_pte_table(void);
+extern void * vmem_alloc_page(void);
 
 extern void vmem_free_pgd_table(mmu_pgd_t *pgd);
 extern void vmem_free_pmd_table(mmu_pmd_t *pmd);

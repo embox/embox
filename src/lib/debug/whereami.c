@@ -22,7 +22,7 @@
 
 #include <framework/mod/options.h>
 
-extern int backtrace_context(void **buff, int size, struct context *ctx); // XXX
+extern int backtrace_context(void **buff, int size, struct context *ctx); /* XXX */
 
 #define MAX_ROWS  OPTION_GET(NUMBER, max_rows)
 #define MAX_DEPTH OPTION_GET(NUMBER, max_depth)
@@ -34,7 +34,7 @@ static void *bt_buff[MAX_DEPTH];
 
 #define tb_safe_snprintf(p, sz, fmt, ...) \
 	({ ptrdiff_t __sz = sz; assert(__sz >= 0); \
-		__sz ? min(snprintf(p, __sz, fmt, ##__VA_ARGS__), __sz-1) : 0; })
+	   __sz ? min(snprintf(p, __sz, fmt, ## __VA_ARGS__), __sz-1) : 0; })
 
 static inline int tb_decimal_width(int i) {
 	char buff[11];
@@ -55,19 +55,22 @@ static size_t tb_snprint_symbol(char *buff, size_t buff_sz, void *addr) {
 	p += tb_safe_snprintf(p, end-p, "%p", addr);
 
 	sym = symbol_lookup(addr);
-	if (!sym)
+	if (!sym) {
 		goto out;
+	}
 
 	p += tb_safe_snprintf(p, end-p, " <%s+%#tx> ",
-		sym->name, (char *) addr - (char *) sym->addr);
+			sym->name, (char *) addr - (char *) sym->addr);
 
 	loc = &sym->loc;
-	if (!loc->file)
+	if (!loc->file) {
 		goto out;
+	}
 
 	lineno_len = tb_decimal_width(loc->line) + 1;  /* including a colon */
-	if (end-p <= strlen(ELLI) + lineno_len)
+	if (end-p <= strlen(ELLI) + lineno_len) {
 		goto out;
+	}
 
 	fname = loc->file;
 	fname_len = strlen(fname);
@@ -77,18 +80,19 @@ static size_t tb_snprint_symbol(char *buff, size_t buff_sz, void *addr) {
 		fname += strlen(ELLI) - fname_padding;
 		p += tb_safe_snprintf(p, end-p, "%s", ELLI);
 	} else {
-		for (int i = 0; i < fname_padding; ++i)
+		for (int i = 0; i < fname_padding; ++i) {
 			p += tb_safe_snprintf(p, end-p, " ");
+		}
 	}
 
 	p += tb_safe_snprintf(p, end-p, "%s:%d", fname, loc->line);
 
-out:
+	out:
 	return end-p;
 }
 
 static size_t tb_snprint_stack_frame(char *buff, size_t buff_sz,
-		int nr, void *addr) {
+	int nr, void *addr) {
 	char *p = buff;
 	char *end = buff + buff_sz;
 
@@ -97,7 +101,7 @@ static size_t tb_snprint_stack_frame(char *buff, size_t buff_sz,
 }
 
 static size_t tb_snprint_thread_run(char *buff, size_t buff_sz,
-		struct thread *t) {
+	struct thread *t) {
 	char *p = buff;
 	char *end = buff + buff_sz;
 
@@ -106,19 +110,19 @@ static size_t tb_snprint_thread_run(char *buff, size_t buff_sz,
 }
 
 static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
-		struct thread *t) {
+	struct thread *t) {
 	char *p = buff;
 	char *end = buff + buff_sz;
 	int is_current = (t == thread_self());
 
 	p += tb_safe_snprintf(p, end-p,
-		" --   %08x %c %c %c %c  thread %d  task %d ",
-		t->critical_count,
-		is_current      ? '*' : ' ',
-		sched_active(&t->schedee) ? 'A' : ' ',
-		t->schedee.ready        ? 'R' : ' ',
-		t->schedee.waiting      ? 'W' : ' ',
-		t->id, task_get_id(t->task));
+			" --   %08x %c %c %c %c  thread %d  task %d ",
+			t->critical_count,
+			is_current      ? '*' : ' ',
+			sched_active(&t->schedee) ? 'A' : ' ',
+			t->schedee.ready        ? 'R' : ' ',
+			t->schedee.waiting      ? 'W' : ' ',
+			t->id, task_get_id(t->task));
 
 	memset(p, '-', end-p-1);
 	*(end-1) = '\0';
@@ -132,8 +136,9 @@ void traceback_dump_thread(struct thread *t) {
 	int size, limit;
 	char buff[ROW_SZ];
 
-	if (!t)
+	if (!t) {
 		t = thread_self();
+	}
 	is_current = (t == thread_self());
 
 	ctx  = is_current ? NULL : &t->context;
@@ -165,8 +170,9 @@ void whereami(void) {
 
 	task_foreach(task) {
 		task_foreach_thread(t, task) {
-			if (t != thread_self())
+			if (t != thread_self()) {
 				traceback_dump_thread(t);
+			}
 		}
 	}
 }

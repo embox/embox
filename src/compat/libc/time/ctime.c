@@ -24,35 +24,36 @@ static long days_of_month(int year, int month);
 static bool is_leap_year(int year);
 
 #define year_length(year) \
-		(is_leap_year(year) ? 31622400 : 31536000)
+	(is_leap_year(year) ? 31622400 : 31536000)
 
 static bool is_leap_year(int year) {
 	if (year % 400 == 0) {
 		return true;
 	} else if (year % 100 == 0) {
-	   return false;
+		return false;
 	} else if (year % 4 == 0) {
-	   return true;
+		return true;
 	}
 
 	return false;
 }
 
-char *ctime_r(const time_t *t, char *buff) {
+char * ctime_r(const time_t *t, char *buff) {
 	struct tm *time = gmtime(t);
 
 	sprintf(buff, "%04d-%02d-%02d %02d:%02d:%02d",
-			time->tm_year + YEAR_1900, time->tm_mon + 1, time->tm_mday, time->tm_hour,
-			time->tm_min, time->tm_sec);
+		time->tm_year + YEAR_1900, time->tm_mon + 1, time->tm_mday,
+		time->tm_hour,
+		time->tm_min, time->tm_sec);
 	return buff;
 }
 
-char *ctime(const time_t *t) {
+char * ctime(const time_t *t) {
 	static char __buff[30];
 	return ctime_r(t, &__buff[0]);
 }
 
-struct tm *gmtime_r(const time_t *timep, struct tm *result) {
+struct tm * gmtime_r(const time_t *timep, struct tm *result) {
 	time_t time = *timep;
 	long day_of_month = MONTH_31;
 
@@ -70,7 +71,9 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result) {
 	while (time - day_of_month >= 0) {
 		time -= day_of_month;
 		result->tm_mon++;
-		day_of_month = days_of_month(result->tm_year, result->tm_mon + 1 /*0..11 -> 1..12*/);
+		day_of_month =
+			days_of_month(result->tm_year,
+				result->tm_mon + 1 /*0..11 -> 1..12*/);
 	}
 	while (time - DAY_LENGHT >= 0) {
 		time -= DAY_LENGHT;
@@ -90,7 +93,7 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result) {
 	return result;
 }
 
-struct tm *gmtime(const time_t *timep) {
+struct tm * gmtime(const time_t *timep) {
 	static struct tm __tm;
 	return gmtime_r(timep, &__tm);
 }
@@ -127,33 +130,31 @@ static long days_of_month(int year, int month) {
 	return days_of_month;
 }
 
+char * asctime(const struct tm *timeptr) {
+	static char wday_name[7][4] = {
+		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+	};
+	static char mon_name[12][4] = {
+		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+	};
+	static char result[26];
 
-char *asctime(const struct tm *timeptr) {
-    static char wday_name[7][4] = {
-        "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-    };
-    static char mon_name[12][4] = {
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-    };
-    static char result[26];
-
-
-    sprintf(result, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",
-        wday_name[timeptr->tm_wday],
-        mon_name[timeptr->tm_mon],
-        timeptr->tm_mday, timeptr->tm_hour,
-        timeptr->tm_min, timeptr->tm_sec,
-        1900 + timeptr->tm_year);
-    return result;
+	sprintf(result, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",
+		wday_name[timeptr->tm_wday],
+		mon_name[timeptr->tm_mon],
+		timeptr->tm_mday, timeptr->tm_hour,
+		timeptr->tm_min, timeptr->tm_sec,
+		1900 + timeptr->tm_year);
+	return result;
 }
 
-struct tm *localtime_r(const time_t *timep, struct tm *result) {
-	//TODO local time not use timezone now
+struct tm * localtime_r(const time_t *timep, struct tm *result) {
+	/*TODO local time not use timezone now */
 	return gmtime_r(timep, result);
 }
 
-struct tm *localtime(const time_t *timep) {
-	//TODO local time not use timezone now
+struct tm * localtime(const time_t *timep) {
+	/*TODO local time not use timezone now */
 	return gmtime(timep);
 }

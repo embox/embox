@@ -29,7 +29,7 @@ INDEX_DEF(block_dev_idx, 0, MAX_DEV_QUANTITY);
 
 static struct block_dev *devtab[MAX_DEV_QUANTITY];
 
-struct block_dev **get_bdev_tab() {
+struct block_dev ** get_bdev_tab() {
 	return &devtab[0];
 }
 
@@ -50,10 +50,11 @@ static int block_dev_cache_free(void *dev) {
 	phymem_free(cache->pool, cache->depth * cache->blkfactor);
 	pool_free(&cache_pool, cache);
 
-	return  0;
+	return 0;
 }
 
-struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata) {
+struct block_dev * block_dev_create_common(char *path, void *driver,
+	void *privdata) {
 	struct block_dev *bdev;
 	size_t bdev_id;
 
@@ -78,7 +79,8 @@ struct block_dev *block_dev_create_common(char *path, void *driver, void *privda
 		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
-	strncpy (bdev->name, strrchr(path, '/') ? strrchr(path, '/') + 1 : path, NAME_MAX);
+	strncpy(bdev->name, strrchr(path, '/') ? strrchr(path,
+		'/') + 1 : path, NAME_MAX);
 
 	return bdev;
 }
@@ -108,7 +110,7 @@ int block_devs_init(void) {
 	return 0;
 }
 
-struct block_dev_module *block_dev_lookup(const char *bd_name) {
+struct block_dev_module * block_dev_lookup(const char *bd_name) {
 	struct block_dev_module *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
@@ -120,7 +122,7 @@ struct block_dev_module *block_dev_lookup(const char *bd_name) {
 	return NULL;
 }
 
-struct block_dev *block_dev_find(const char *bd_name) {
+struct block_dev * block_dev_find(const char *bd_name) {
 	int i;
 
 	for (i = 0; i < MAX_DEV_QUANTITY; i++) {
@@ -132,11 +134,12 @@ struct block_dev *block_dev_find(const char *bd_name) {
 	return NULL;
 }
 
-struct block_dev *block_dev(void *dev) {
+struct block_dev * block_dev(void *dev) {
 	return (struct block_dev *)dev;
 }
 
-int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, size_t offset) {
+int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count,
+	size_t offset) {
 	int blksize, blkno, cplen, cursor;
 	int res, i;
 	struct buffer_head *bh;
@@ -158,18 +161,21 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 	cplen = min(count, blksize - offset % blksize);
 
 	for (cursor = 0, i = 0; count != 0;
-			i++, count -= cplen, cursor += cplen, cplen = min(count, blksize)) {
+		i++, count -= cplen, cursor += cplen, cplen = min(count, blksize)) {
 		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
 		{
 			if (buffer_new(bh)) {
-				if (blksize != (res = bdev->driver->read(bdev, bh->data, blksize, blkno + i))
-						|| 0 != (res = buffer_decrypt(bh))) {
+				if (blksize !=
+					(res =
+					bdev->driver->read(bdev, bh->data, blksize, blkno + i))
+					|| 0 != (res = buffer_decrypt(bh))) {
 					bcache_buffer_unlock(bh);
 					return res;
 				}
 				buffer_clear_flag(bh, BH_NEW);
 			}
-			memcpy(buffer + cursor, bh->data + (i == 0 ? offset % blksize : 0), cplen);
+			memcpy(buffer + cursor, bh->data + (i == 0 ? offset % blksize : 0),
+				cplen);
 		}
 		bcache_buffer_unlock(bh);
 	}
@@ -177,7 +183,8 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 	return cursor;
 }
 
-int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t count, size_t offset) {
+int block_dev_write_buffered(struct block_dev *bdev, const char *buffer,
+	size_t count, size_t offset) {
 	int blksize, blkno, cplen, cursor;
 	int res, i;
 	struct buffer_head *bh;
@@ -200,27 +207,30 @@ int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t 
 	cplen = min(count, blksize - offset % blksize);
 
 	for (cursor = 0, i = 0; count != 0;
-			i++, count -= cplen, cursor += cplen, cplen = min(count, blksize)) {
+		i++, count -= cplen, cursor += cplen, cplen = min(count, blksize)) {
 		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
 		{
 			if (buffer_new(bh)) {
 				if (cplen < blksize) {
-					if (blksize != (res = bdev->driver->read(bdev, bh->data, blksize, blkno + i))
-							|| 0 != (res = buffer_decrypt(bh))) {
+					if (blksize !=
+						(res =
+						bdev->driver->read(bdev, bh->data, blksize, blkno + i))
+						|| 0 != (res = buffer_decrypt(bh))) {
 						bcache_buffer_unlock(bh);
 						return res;
 					}
 				}
 				buffer_clear_flag(bh, BH_NEW);
 			}
-			memcpy(bh->data + (i == 0 ? offset % blksize : 0), buffer + cursor, cplen);
+			memcpy(bh->data + (i == 0 ? offset % blksize : 0), buffer + cursor,
+				cplen);
 			/**
 			 * Blocks are stored in the buffer cache in a decrypted state.
 			 * Therefore first we encrypt block, then write it onto disk and then decrypt block.
 			 */
 			buffer_encrypt(bh);
 			if (blksize != (res = bdev->driver->write(bdev, bh->data,
-					blksize, blkno + i))) {
+						blksize, blkno + i))) {
 				buffer_decrypt(bh);
 				bcache_buffer_unlock(bh);
 				return res;
@@ -249,7 +259,8 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	return block_dev_read_buffered(bdev, buffer, count, blkno * blksize);
 }
 
-int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) {
+int block_dev_write(void *dev, const char *buffer, size_t count,
+	blkno_t blkno) {
 	struct block_dev *bdev;
 	int blksize;
 
@@ -282,14 +293,15 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 		return bdev->block_size;
 	default:
 		assert(bdev->driver);
-		if (NULL == bdev->driver->ioctl)
+		if (NULL == bdev->driver->ioctl) {
 			return -ENOSYS;
+		}
 
 		return bdev->driver->ioctl(bdev, cmd, args, 0);
 	}
 }
 
-block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
+block_dev_cache_t * block_dev_cache_init(void *dev, int blocks) {
 	int pagecnt;
 	block_dev_cache_t *cache;
 	struct block_dev *bdev;
@@ -309,15 +321,15 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	cache->buff_cntr = -1;
 
 	if (0 >= (cache->blksize =
-			block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0))) {
+		block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0))) {
 		return NULL;
 	}
 
 	/* cache size is a multiple of the memory page */
 	pagecnt = 1;
-	if(cache->blksize > PAGE_SIZE()) {
+	if (cache->blksize > PAGE_SIZE()) {
 		pagecnt = cache->blksize / PAGE_SIZE();
-		if(cache->blksize % PAGE_SIZE()) {
+		if (cache->blksize % PAGE_SIZE()) {
 			pagecnt++;
 		}
 	}
@@ -328,10 +340,10 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	}
 	cache->depth = blocks;
 
-	return  cache;
+	return cache;
 }
 
-block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
+block_dev_cache_t * block_dev_cached_read(void *dev, blkno_t blkno) {
 	block_dev_cache_t *cache;
 	struct block_dev *bdev;
 
@@ -340,16 +352,17 @@ block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
 	}
 	bdev = block_dev(dev);
 
-	if(NULL == (cache = bdev->cache)) {
+	if (NULL == (cache = bdev->cache)) {
 		return NULL;
 	}
 
 	/* set pointer to the buffer in pool */
-	if(cache->lastblkno != blkno) {
+	if (cache->lastblkno != blkno) {
 		cache->buff_cntr++;
 		cache->buff_cntr %= cache->depth;
 
-		cache->data = cache->pool + cache->buff_cntr * PAGE_SIZE() * cache->blkfactor;
+		cache->data = cache->pool + cache->buff_cntr * PAGE_SIZE() *
+			cache->blkfactor;
 		cache->blkno = blkno;
 
 		block_dev_read(bdev, cache->data, cache->blksize, cache->blkno);
@@ -358,4 +371,3 @@ block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
 
 	return cache;
 }
-

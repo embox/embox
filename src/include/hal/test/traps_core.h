@@ -19,7 +19,8 @@
  * @param number set row's number in the trap table
  * @param handler is a pointer ro handler func
  */
-extern void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler);
+extern void testtraps_set_handler(uint32_t type, int number,
+	trap_handler_t handler);
 
 typedef trap_handler_t fault_handler_t;
 
@@ -51,8 +52,7 @@ extern int testtraps_fire_softtrap(uint32_t number, void *data);
  * @retval pointer to trap_env structure on success
  * @retval NULL on fail
  */
-extern traps_env_t *testtraps_env(void);
-
+extern traps_env_t * testtraps_env(void);
 
 /**
  * @brief Switch to user mode to have some faults

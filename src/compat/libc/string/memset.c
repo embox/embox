@@ -20,7 +20,7 @@
 #define unaligned(x)   ((unsigned long) x & (sizeof(unsigned long) - 1))
 
 inhibit_loop_to_libcall
-void *memset(void *addr_, int c, size_t n) {
+void * memset(void *addr_, int c, size_t n) {
 	char *addr = addr_;
 	unsigned long *aligned_addr;
 	unsigned long buffer;

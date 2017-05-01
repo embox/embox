@@ -14,7 +14,7 @@
 #include <framework/mod/types.h>
 #include <string.h>
 
-static inline const struct mod_app *task_app_get(void) {
+static inline const struct mod_app * task_app_get(void) {
 	const struct mod *mod = task_module_ptr_get(task_self());
 	return mod ? mod->app : NULL;
 }
@@ -68,4 +68,3 @@ void fork_static_cleanup(struct static_space *sspc) {
 	sspc->bss_store = NULL;
 	sspc->data_store = NULL;
 }
-

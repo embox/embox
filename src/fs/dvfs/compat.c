@@ -46,12 +46,14 @@ int umount(char *dir) {
 	struct lookup lu;
 
 	dvfs_lookup(dir, &lu);
-	if (!lu.item)
+	if (!lu.item) {
 		return -ENOENT;
+	}
 
-	if (!(lu.item->flags & DVFS_MOUNT_POINT))
+	if (!(lu.item->flags & DVFS_MOUNT_POINT)) {
 		/* Not a mount point */
 		return -EINVAL;
+	}
 
 	dvfs_umount(lu.item);
 	return 0;

@@ -38,7 +38,7 @@ static int kernel_task_init(void) {
 	 * by thread.core module in the file idle_thread.c by the
 	 * idle_thread_create() function */
 	task_init(ktask, ktask_id, NULL, "kernel", task_get_main(ktask),
-			TASK_PRIORITY_DEFAULT);
+		TASK_PRIORITY_DEFAULT);
 
 	mmap_kernel_init();
 

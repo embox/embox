@@ -71,7 +71,7 @@ extern void auth_free(struct auth *ath);
 
 extern struct auth * authnone_create(void);
 extern struct auth * authunix_create(char *host, int uid, int gid,
-		int user_gids_len, int *user_gids);
+	int user_gids_len, int *user_gids);
 
 extern void auth_destroy(struct auth *ath);
 

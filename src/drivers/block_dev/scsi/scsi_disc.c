@@ -16,7 +16,6 @@
 
 #include <drivers/block_dev.h>
 
-
 static int scsi_wake_res(struct scsi_dev *dev) {
 	return min(dev->cmd_complete, 0);
 }
@@ -56,7 +55,7 @@ static void scsi_disk_unlock(struct block_dev *bdev) {
 }
 
 static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
-		blkno_t blkno) {
+	blkno_t blkno) {
 	struct scsi_dev *sdev = bdev->privdata;
 	int blksize = sdev->blk_size;
 	unsigned int lba;
@@ -72,8 +71,8 @@ static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 
 	scsi_disk_lock(bdev);
 	for (lba = blkno, bp = buffer;
-			count >= blksize;
-			lba++, count -= blksize, bp += blksize) {
+		count >= blksize;
+		lba++, count -= blksize, bp += blksize) {
 
 		cmd.scmd_lba = lba;
 		cmd.scmd_obuf = bp;
@@ -96,7 +95,7 @@ static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 }
 
 static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
-		blkno_t blkno) {
+	blkno_t blkno) {
 	struct scsi_dev *sdev;
 	int blksize;
 	unsigned int lba;
@@ -118,8 +117,8 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 
 	scsi_disk_lock(bdev);
 	for (lba = blkno, bp = buffer;
-			count >= blksize;
-			lba++, count -= blksize, bp += blksize) {
+		count >= blksize;
+		lba++, count -= blksize, bp += blksize) {
 
 		cmd.scmd_lba = lba;
 		cmd.scmd_obuf = bp;
@@ -141,7 +140,8 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 	return bp - buffer;
 }
 
-static int scsi_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
+static int scsi_ioctl(struct block_dev *bdev, int cmd, void *args,
+	size_t size) {
 	struct scsi_dev *sdev = bdev->privdata;
 	int ret;
 

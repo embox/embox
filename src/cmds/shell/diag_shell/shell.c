@@ -19,12 +19,13 @@
 
 #include "console/console.h"
 
-// XXX just for now -- Eldar
+/* XXX just for now -- Eldar */
 EMBOX_UNIT(shell_start, shell_stop);
 
 static int diag_shell_exec(const char *cmdline);
 
-static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline) {
+static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
+	char *cmdline) {
 	diag_shell_exec(cmdline);
 }
 
@@ -34,8 +35,8 @@ static void exec_callback(CONSOLE_CALLBACK *cb, CONSOLE *console, char *cmdline)
  * -- Eldar
  */
 static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
-		const char* line, const int max_proposals, int *proposals_len,
-		const char *proposals[], int *offset, int *common) {
+	const char *line, const int max_proposals, int *proposals_len,
+	const char *proposals[], int *offset, int *common) {
 	const struct cmd *cmd = NULL;
 	int cursor = strlen(line);
 	int start = cursor, i;
@@ -74,7 +75,6 @@ static void guess_callback(CONSOLE_CALLBACK *cb, CONSOLE *console,
 
 static CONSOLE console[1];
 
-
 static int shell_start(void) {
 	static CONSOLE_CALLBACK callback[1];
 
@@ -111,7 +111,7 @@ static int diag_shell_exec(const char *cmdline) {
 	ret = cmd_exec(cmd, argc, argv);
 	if (ret != 0) {
 		printf("%s: Command returned with code %d: %s\n",
-				cmd_name(cmd), ret, strerror(-ret));
+			cmd_name(cmd), ret, strerror(-ret));
 		return ret;
 	}
 
@@ -119,7 +119,7 @@ static int diag_shell_exec(const char *cmdline) {
 }
 
 static void diag_shell_run(void) {
-	static const char* prompt = OPTION_STRING_GET(prompt);
+	static const char *prompt = OPTION_STRING_GET(prompt);
 
 	printf("\n%s", OPTION_STRING_GET(welcome_msg));
 	console_start(console, prompt);
@@ -131,7 +131,7 @@ static int shell_stop(void) {
 }
 
 SHELL_DEF({
-	.name = "diag_shell",
-	.exec = diag_shell_exec,
-	.run  = diag_shell_run,
+		.name = "diag_shell",
+		.exec = diag_shell_exec,
+		.run  = diag_shell_run,
 	});

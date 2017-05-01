@@ -29,14 +29,15 @@ static inline void memcondcp(void *dst, const void *src, size_t sz) {
 	}
 }
 
-void ethhdr_build(struct ethhdr *ethh, const void *ethdst, const void *ethsrc, short h_proto) {
+void ethhdr_build(struct ethhdr *ethh, const void *ethdst, const void *ethsrc,
+	short h_proto) {
 	ethh->h_proto = htons(h_proto);
 	memcondcp(ethh->h_dest, ethdst, ETH_ALEN);
 	memcondcp(ethh->h_source, ethsrc, ETH_ALEN);
 }
 
 static int ethernet_build_hdr(struct sk_buff *skb,
-		const struct net_header_info *hdr_info) {
+	const struct net_header_info *hdr_info) {
 	const void *ethdst;
 
 	assert(skb != NULL);
@@ -58,7 +59,7 @@ static int ethernet_build_hdr(struct sk_buff *skb,
 }
 
 static int ethernet_parse_hdr(struct sk_buff *skb,
-		struct net_header_info *out_hdr_info) {
+	struct net_header_info *out_hdr_info) {
 	const struct ethhdr *ethh;
 
 	assert(skb != NULL);
@@ -94,10 +95,12 @@ static int ethernet_setup(struct net_device *dev) {
 
 	strcpy(name_fmt, dev->name);
 	ret = snprintf(dev->name, ARRAY_SIZE(dev->name), name_fmt, eth_id);
-	if (ret < 0)
+	if (ret < 0) {
 		return -EIO;
-	if (ret >= ARRAY_SIZE(dev->name))
+	}
+	if (ret >= ARRAY_SIZE(dev->name)) {
 		return -ENOMEM;
+	}
 
 	++eth_id;
 

@@ -15,7 +15,7 @@
 #include <string.h>
 
 void icmp_build(struct icmphdr *icmph, uint8_t type,
-		uint8_t code, const void *body, size_t body_sz) {
+	uint8_t code, const void *body, size_t body_sz) {
 	assert(icmph != NULL);
 	icmph->type = type;
 	icmph->code = code;
@@ -24,7 +24,7 @@ void icmp_build(struct icmphdr *icmph, uint8_t type,
 }
 
 void icmp_set_check_field(struct icmphdr *icmph,
-		const struct iphdr *iph) {
+	const struct iphdr *iph) {
 	assert(icmph != NULL);
 	icmph->check = 0;
 	icmph->check = ptclbsum(icmph, ip_data_length(iph)) & 0xFFFF;

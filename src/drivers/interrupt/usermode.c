@@ -26,7 +26,7 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 
 void irqctrl_force(unsigned int interrupt_nr) {
 
-        host_signal_send_self(interrupt_nr);
+	host_signal_send_self(interrupt_nr);
 }
 
 void irq_entry(int irq_nr) {

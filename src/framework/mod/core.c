@@ -21,7 +21,7 @@
 #define MOD_FLAG_ENABLED       (1 << 0)
 
 #define MOD_FLAG_OPINPROGRESS  (1 << 2)
-// TODO unused for now... -- Eldar
+/* TODO unused for now... -- Eldar */
 #define MOD_FLAG_OPFAILED      (0 << 1)
 
 #define APP_DATA_RESERVE_OFFSET ({ \
@@ -31,12 +31,13 @@
 
 #define mod_flag_tst(mod, mask)   ((mod)->priv->flags &   (mask))
 #define mod_flag_cmp(mod, mask) (~((mod)->priv->flags ^   (mask)))
-#define mod_flag_tgl(mod, mask) do (mod)->priv->flags ^=  (mask); while (0)
-#define mod_flag_set(mod, mask) do (mod)->priv->flags |=  (mask); while (0)
-#define mod_flag_clr(mod, mask) do (mod)->priv->flags &= ~(mask); while (0)
+#define mod_flag_tgl(mod, mask) do {(mod)->priv->flags ^=  (mask);} while (0)
+#define mod_flag_set(mod, mask) do {(mod)->priv->flags |=  (mask);} while (0)
+#define mod_flag_clr(mod, mask) do {(mod)->priv->flags &= ~(mask);} while (0)
 
 ARRAY_SPREAD_DEF_TERMINATED(const struct mod *const, __mod_registry, NULL);
-ARRAY_SPREAD_DEF_TERMINATED(const struct mod_sec_label *const, __mod_sec_labels, NULL);
+ARRAY_SPREAD_DEF_TERMINATED(const struct mod_sec_label *const, __mod_sec_labels,
+	NULL);
 
 bool mod_is_running(const struct mod *mod) {
 	assert(mod);
@@ -68,17 +69,19 @@ static int invoke_member_fini(const struct mod_member *member) {
 static void mod_init_app(const struct mod *mod) {
 	const struct mod_app *app = mod->app;
 
-	if (app)
+	if (app) {
 		/* No need to traverse deps here, they are already initialized. */
 		memcpy(app->data + APP_DATA_RESERVE_OFFSET, app->data, app->data_sz);
+	}
 }
 
 int mod_activate_app(const struct mod *mod) {
 	const struct mod_app *app;
 	struct __mod_private priv;
 
-	if (!mod_is_running(mod))
+	if (!mod_is_running(mod)) {
 		return -ENOENT;
+	}
 
 	app = mod->app;
 	if (app) {
@@ -86,8 +89,9 @@ int mod_activate_app(const struct mod *mod) {
 
 		mod_foreach_requires(dep, mod) {
 			int ret = mod_activate_app(dep);
-			if (ret)
+			if (ret) {
 				return ret;
+			}
 		}
 
 		priv = *mod->priv;
@@ -120,7 +124,7 @@ int mod_integrity_check(const struct mod *mod) {
 	return 0;
 }
 
-const struct mod *mod_lookup(const char *fqn) {
+const struct mod * mod_lookup(const char *fqn) {
 	const struct mod *mod;
 	const char *mod_nm = strrchr(fqn, '.');
 	size_t pkg_name_len;
@@ -140,7 +144,7 @@ const struct mod *mod_lookup(const char *fqn) {
 			continue;
 		}
 		if (strncmp(mod_pkg_name(mod), fqn, pkg_name_len) ||
-		    mod_pkg_name(mod)[pkg_name_len]) {
+			mod_pkg_name(mod)[pkg_name_len]) {
 			continue;
 		}
 		return mod;
@@ -173,7 +177,7 @@ int mod_enable(const struct mod *mod) {
 	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
 
 	return 0;
-opfailed:
+	opfailed:
 	mod_flag_set(mod, MOD_FLAG_OPFAILED);
 	return -EINTR;
 }
@@ -201,7 +205,7 @@ int mod_disable(const struct mod *mod) {
 	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
 	return 0;
 
-opfailed:
+	opfailed:
 	mod_flag_set(mod, MOD_FLAG_OPFAILED);
 	return -EINTR;
 }

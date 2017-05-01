@@ -35,7 +35,8 @@ static ssize_t diag_read(struct idesc *data, const struct iovec *iov, int cnt) {
 	return (void *) cbuf - iov->iov_base;
 }
 
-static ssize_t diag_write(struct idesc *data, const struct iovec *iov, int cnt) {
+static ssize_t diag_write(struct idesc *data, const struct iovec *iov,
+	int cnt) {
 	size_t nbyte;
 	char *cbuf;
 
@@ -66,7 +67,7 @@ static int diag_fstat(struct idesc *data, void *buff) {
 
 static int diag_ioctl(struct idesc *desc, int request, void *data) {
 
-	switch(request) {
+	switch (request) {
 	case TIOCGETA:
 	case TIOCSETA:
 	case TIOCSETAW:

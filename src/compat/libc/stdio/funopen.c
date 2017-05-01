@@ -9,14 +9,14 @@
 #include <stdio.h>
 #include "file_struct.h"
 
-extern FILE *stdio_file_alloc(int fd);
+extern FILE * stdio_file_alloc(int fd);
 
 #define FUNOPEN_FD_MARK (-1)
-FILE *funopen(const void *cookie,
-		int (*readfn)(void *, char *, int),
-		int (*writefn)(void *, const char *, int),
-		fpos_t (*seekfn)(void *, fpos_t, int),
-		int (*closefn)(void *)) {
+FILE * funopen(const void *cookie,
+	int (*readfn)(void *, char *, int),
+	int (*writefn)(void *, const char *, int),
+	fpos_t (*seekfn)(void *, fpos_t, int),
+	int (*closefn)(void *)) {
 	FILE *file;
 
 	if ((file = stdio_file_alloc(FUNOPEN_FD_MARK))) {

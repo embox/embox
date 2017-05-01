@@ -26,13 +26,13 @@
 #include <limits.h>
 
 typedef struct ldiv {
-   long int quot;
-   long int rem;
+	long int quot;
+	long int rem;
 } ldiv_t;
 
 typedef struct div {
-   int quot;
-   int rem;
+	int quot;
+	int rem;
 } div_t;
 
 #define RAND_MAX INT_MAX
@@ -74,7 +74,8 @@ extern unsigned long int strtoul(const char *nptr, char **endptr, int base);
 
 extern double strtod(const char *nptr, char **endptr);
 
-extern unsigned long long int strtoull(const char *nptr, char **endptr, int base);
+extern unsigned long long int strtoull(const char *nptr, char **endptr,
+	int base);
 
 extern long long int strtoll(const char *nptr, char **endptr, int base);
 
@@ -87,33 +88,31 @@ extern long long int strtoll(const char *nptr, char **endptr, int base);
  * @param base Base for the conversion. 1 < base < 37.
  * @return Pointer to buf.
  */
-extern char *itoa( int num, char *buf, unsigned short int base );
+extern char * itoa( int num, char *buf, unsigned short int base );
 
 /* Allocate and free dynamic memory */
-extern void *calloc(size_t nmemb, size_t size);
-extern void *malloc(size_t size);
+extern void * calloc(size_t nmemb, size_t size);
+extern void * malloc(size_t size);
 extern void free(void *ptr);
-extern void *realloc(void *ptr, size_t size);
-extern void *memalign(size_t boundary, size_t size);
-
+extern void * realloc(void *ptr, size_t size);
+extern void * memalign(size_t boundary, size_t size);
 
 extern void qsort(void *base, size_t nmemb, size_t size,
-		int(*compar)(const void *, const void *));
+	int (*compar)(const void *, const void *));
 
-extern void *bsearch(const void *key, const void *base,
-              size_t nmemb, size_t size,
-              int (*compar)(const void *, const void *));
+extern void * bsearch(const void *key, const void *base,
+	size_t nmemb, size_t size,
+	int (*compar)(const void *, const void *));
 
 /** Find the smallest element, greater or equals to specified. */
-extern void *lower_bound(const void *key, const void *base,
-              size_t nmemb, size_t size,
-              int (*compar)(const void *, const void *));
+extern void * lower_bound(const void *key, const void *base,
+	size_t nmemb, size_t size,
+	int (*compar)(const void *, const void *));
 
 /** Find the smallest element, strictly greater than specified. */
-extern void *upper_bound(const void *key, const void *base,
-              size_t nmemb, size_t size,
-              int (*compar)(const void *, const void *));
-
+extern void * upper_bound(const void *key, const void *base,
+	size_t nmemb, size_t size,
+	int (*compar)(const void *, const void *));
 
 extern int rand(void);
 extern int rand_r(unsigned int *seedp);
@@ -121,32 +120,32 @@ extern void srand(unsigned int seed);
 
 extern long int random(void);
 extern void srandom(unsigned int seed);
-extern char *initstate(unsigned int seed, char *state, size_t n);
-extern char *setstate(char *state);
+extern char * initstate(unsigned int seed, char *state, size_t n);
+extern char * setstate(char *state);
 
 /* glibc extention */
 #include <stdint.h>
 struct random_data
-  {
-    int32_t *fptr;		/* Front pointer.  */
-    int32_t *rptr;		/* Rear pointer.  */
-    int32_t *state;		/* Array of state values.  */
-    int rand_type;		/* Type of random number generator.  */
-    int rand_deg;		/* Degree of random number generator.  */
-    int rand_sep;		/* Distance between front and rear.  */
-    int32_t *end_ptr;		/* Pointer behind state table.  */
-  };
+{
+	int32_t *fptr;      /* Front pointer.  */
+	int32_t *rptr;      /* Rear pointer.  */
+	int32_t *state;     /* Array of state values.  */
+	int rand_type;      /* Type of random number generator.  */
+	int rand_deg;       /* Degree of random number generator.  */
+	int rand_sep;       /* Distance between front and rear.  */
+	int32_t *end_ptr;       /* Pointer behind state table.  */
+};
 
 extern int random_r(struct random_data *buf, int32_t *result);
 extern int srandom_r(unsigned int seed, struct random_data *buf);
 extern int initstate_r(unsigned int seed, char *statebuf,
-                       size_t statelen, struct random_data *buf);
+	size_t statelen, struct random_data *buf);
 extern int setstate_r(char *statebuf, struct random_data *buf);
 
 extern ldiv_t ldiv(long num, long denom);
 extern div_t div(int num, int denom);
 
-//FIXME atof atoi and so on
+/*FIXME atof atoi and so on */
 extern double atof(const char *nptr);
 extern int atoi(const char *nptr);
 extern long atol(const char *nptr);
@@ -178,9 +177,12 @@ extern void _NORETURN exit(int status);
  *
  * @return the absolute value of the argument
  */
-static inline int abs(int x) { return x < 0 ? -x : x; } // TODO move from here
-static inline long labs(long x) { return x < 0 ? -x : x; }
-
+static inline int abs(int x) {
+	return x < 0 ? -x : x;
+}                                                       /* TODO move from here */
+static inline long labs(long x) {
+	return x < 0 ? -x : x;
+}
 
 extern char * getenv(const char *name);
 extern int putenv(char *string);

@@ -20,7 +20,7 @@ int ftruncate(int fd, off_t length) {
 	int ret;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))) {
 		return SET_ERRNO(EBADF);
 	}
 
@@ -29,13 +29,15 @@ int ftruncate(int fd, off_t length) {
 	assert(file->f_inode);
 	assert(file->f_inode->i_ops);
 
-	if (!file->f_inode->i_ops->truncate)
+	if (!file->f_inode->i_ops->truncate) {
 		return -EPERM;
+	}
 
 	ret = file->f_inode->i_ops->truncate(file->f_inode, length);
 
-	if (ret == 0)
+	if (ret == 0) {
 		file->f_inode->length = length;
+	}
 
 	return ret;
 }

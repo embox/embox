@@ -14,6 +14,3 @@ int getgroups(int gidsetsize, gid_t grouplist[]) {
 	fprintf(stderr, ">>>%s\n", __func__);
 	return -ENOSYS;
 }
-
-
-

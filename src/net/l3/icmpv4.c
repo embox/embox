@@ -6,12 +6,11 @@
  * @date 14.03.09
  * @author Alexander Batyukov
  * @author Nikolay Korotky
- * 		- remove callback interface
- * 		- major refactoring
+ *      - remove callback interface
+ *      - major refactoring
  * @author Vladimir Sokolov
  * @author Ilia Vaprol
  */
-
 
 #include <errno.h>
 #include <assert.h>
@@ -38,10 +37,10 @@
 #include <kernel/time/ktime.h>
 
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_ICMP, icmp_rcv,
-		net_proto_handle_error_none);
+	net_proto_handle_error_none);
 
 static int icmp_send(uint8_t type, uint8_t code, const void *body,
-		size_t body_sz, struct sk_buff *skb) {
+	size_t body_sz, struct sk_buff *skb) {
 	int ret;
 	size_t size;
 
@@ -70,8 +69,8 @@ static int icmp_send(uint8_t type, uint8_t code, const void *body,
 }
 
 static int icmp_notify_an_error(const struct icmphdr *icmph,
-		const void *msg, size_t msg_sz, uint16_t extra_info,
-		int only_raw, struct sk_buff *skb) {
+	const void *msg, size_t msg_sz, uint16_t extra_info,
+	int only_raw, struct sk_buff *skb) {
 	const struct iphdr *emb_iph;
 	uint32_t error_info;
 
@@ -79,9 +78,9 @@ static int icmp_notify_an_error(const struct icmphdr *icmph,
 	assert(emb_iph != NULL);
 
 	if ((msg_sz < IP_MIN_HEADER_SIZE)
-			|| (IP_HEADER_SIZE(emb_iph) < IP_MIN_HEADER_SIZE)
-			|| (ntohs(emb_iph->tot_len) < IP_HEADER_SIZE(emb_iph))
-			|| (msg_sz < IP_HEADER_SIZE(emb_iph))) {
+		|| (IP_HEADER_SIZE(emb_iph) < IP_MIN_HEADER_SIZE)
+		|| (ntohs(emb_iph->tot_len) < IP_HEADER_SIZE(emb_iph))
+		|| (msg_sz < IP_HEADER_SIZE(emb_iph))) {
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
@@ -113,8 +112,8 @@ static int icmp_notify_an_error(const struct icmphdr *icmph,
 }
 
 static int icmp_hnd_dest_unreach(const struct icmphdr *icmph,
-		const struct icmpbody_dest_unreach *dest_unreach,
-		struct sk_buff *skb) {
+	const struct icmpbody_dest_unreach *dest_unreach,
+	struct sk_buff *skb) {
 	size_t len;
 
 	switch (icmph->code) {
@@ -139,13 +138,13 @@ static int icmp_hnd_dest_unreach(const struct icmphdr *icmph,
 
 	return icmp_notify_an_error(icmph, &dest_unreach->msg[0], len,
 			icmph->code == ICMP_FRAG_NEEDED
-				? ntohs(dest_unreach->mtu) : 0,
+			? ntohs(dest_unreach->mtu) : 0,
 			icmph->code == ICMP_FRAG_NEEDED, skb);
 }
 
 static int icmp_hnd_source_quench(const struct icmphdr *icmph,
-		const struct icmpbody_source_quench *source_quench,
-		struct sk_buff *skb) {
+	const struct icmpbody_source_quench *source_quench,
+	struct sk_buff *skb) {
 	size_t len;
 
 	if (icmph->code != 0) {
@@ -165,8 +164,8 @@ static int icmp_hnd_source_quench(const struct icmphdr *icmph,
 }
 
 static int icmp_hnd_echo_request(const struct icmphdr *icmph,
-		const struct icmpbody_echo *echo_req,
-		struct sk_buff *skb) {
+	const struct icmpbody_echo *echo_req,
+	struct sk_buff *skb) {
 	size_t len;
 	struct icmpbody_echo *echo_rep;
 
@@ -189,8 +188,8 @@ static int icmp_hnd_echo_request(const struct icmphdr *icmph,
 }
 
 static int icmp_hnd_param_prob(const struct icmphdr *icmph,
-		const struct icmpbody_param_prob *param_prob,
-		struct sk_buff *skb) {
+	const struct icmpbody_param_prob *param_prob,
+	struct sk_buff *skb) {
 	size_t len;
 
 	switch (icmph->code) {
@@ -212,14 +211,14 @@ static int icmp_hnd_param_prob(const struct icmphdr *icmph,
 	return icmp_notify_an_error(icmph, &param_prob->msg[0], len,
 			icmph->code == ICMP_PTR_ERROR ? param_prob->ptr : 0,
 			(icmph->code == ICMP_PTR_ERROR)
-				&& (param_prob->ptr < IP_HEADER_SIZE(
-						(const struct iphdr *)&param_prob->msg[0])),
+			&& (param_prob->ptr < IP_HEADER_SIZE(
+			(const struct iphdr *)&param_prob->msg[0])),
 			skb);
 }
 
 static int icmp_hnd_timestamp_request(const struct icmphdr *icmph,
-		const struct icmpbody_timestamp *tstamp_req,
-		struct sk_buff *skb) {
+	const struct icmpbody_timestamp *tstamp_req,
+	struct sk_buff *skb) {
 	uint32_t msec_since_12am;
 	struct icmpbody_timestamp *tstamp_rep;
 
@@ -229,13 +228,13 @@ static int icmp_hnd_timestamp_request(const struct icmphdr *icmph,
 	}
 
 	if (sizeof *icmph + sizeof *tstamp_req
-			!= ip_data_length(ip_hdr(skb))) {
+		!= ip_data_length(ip_hdr(skb))) {
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
 
 	msec_since_12am = (ktime_get_ns() / NSEC_PER_MSEC) % (
-				SEC_PER_DAY * MSEC_PER_SEC);
+		SEC_PER_DAY * MSEC_PER_SEC);
 
 	tstamp_rep = &icmp_hdr(skb)->body[0].timestamp;
 	tstamp_rep->orig = tstamp_req->trans;
@@ -303,7 +302,7 @@ static int icmp_rcv(struct sk_buff *skb) {
 }
 
 int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
-		...) {
+	...) {
 	struct {
 		union {
 			struct icmpbody_dest_unreach dest_unreach;
@@ -319,12 +318,12 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	size_t body_msg_sz;
 
 	if (!(ip_is_local(ip_hdr(skb)->saddr, 0)
-				|| ip_is_local(ip_hdr(skb)->daddr, 0))
-			|| (ip_hdr(skb)->frag_off & htons(IP_OFFSET))
-			|| (ip_data_length(ip_hdr(skb)) < ICMP_DISCARD_MIN_SIZE)
-			|| (ip_hdr(skb)->proto != IPPROTO_ICMP)
-			|| (skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(ip_hdr(skb)),
-				ICMP_TYPE_ERROR(icmp_hdr(skb)->type))) {
+		|| ip_is_local(ip_hdr(skb)->daddr, 0))
+		|| (ip_hdr(skb)->frag_off & htons(IP_OFFSET))
+		|| (ip_data_length(ip_hdr(skb)) < ICMP_DISCARD_MIN_SIZE)
+		|| (ip_hdr(skb)->proto != IPPROTO_ICMP)
+		|| (skb->h.raw = skb->nh.raw + IP_HEADER_SIZE(ip_hdr(skb)),
+		ICMP_TYPE_ERROR(icmp_hdr(skb)->type))) {
 		skb_free(skb);
 		return 0; /* error: inappropriate packet */
 	}
@@ -340,7 +339,7 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		va_start(extra, code);
 		body.dest_unreach.zero = 0;
 		body.dest_unreach.mtu = code != ICMP_FRAG_NEEDED ? 0
-				: htons((uint16_t)va_arg(extra, int));
+			: htons((uint16_t)va_arg(extra, int));
 		va_end(extra);
 		body_msg = &body.dest_unreach.msg[0];
 		break;
@@ -370,7 +369,7 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 				"incorrect code for type");
 		va_start(extra, code);
 		body.param_prob.ptr = code != ICMP_PTR_ERROR ? 0
-				: (uint8_t)va_arg(extra, int);
+			: (uint8_t)va_arg(extra, int);
 		body.param_prob.zero1 = body.param_prob.zero2 = 0;
 		va_end(extra);
 		body_msg = &body.param_prob.msg[0];
@@ -387,6 +386,6 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	}
 
 	return icmp_send(type, code, &body, sizeof body
-				- sizeof body.__body_msg_storage + body_msg_sz,
+			- sizeof body.__body_msg_storage + body_msg_sz,
 			skb);
 }

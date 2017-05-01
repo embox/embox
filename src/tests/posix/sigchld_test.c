@@ -17,15 +17,15 @@ static void run_wait_task(void *(*fn)(void *), void *arg) {
 
 	p = new_task("", fn, NULL);
 
-	while (-EINTR == task_waitpid(p));
+	while (-EINTR == task_waitpid(p)) ;
 }
 
-static void *sigchld_test_child(void *arg) {
+static void * sigchld_test_child(void *arg) {
 	test_emit('a');
 	_exit(0);
 }
 
-static void *sigchld_test_without_handler(void *arg) {
+static void * sigchld_test_without_handler(void *arg) {
 	run_wait_task(sigchld_test_child, NULL);
 	test_emit('b');
 	return NULL;
@@ -40,7 +40,7 @@ void sigchld_handler(int signal) {
 	test_emit('b');
 }
 
-static void *sigchld_test_with_handler(void *arg) {
+static void * sigchld_test_with_handler(void *arg) {
 	signal(SIGCHLD, sigchld_handler);
 
 	run_wait_task(sigchld_test_child, NULL);
@@ -52,5 +52,3 @@ TEST_CASE("sigchld handler should be triggered") {
 	run_wait_task(sigchld_test_with_handler, NULL);
 	test_assert_emitted("abc");
 }
-
-

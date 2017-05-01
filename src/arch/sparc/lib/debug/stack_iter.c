@@ -16,8 +16,8 @@
 #define RETPC_OFFSET 8
 
 void stack_iter_context(stack_iter_t *f, struct context *ctx) {
-	// XXX stub -- Eldar
-	(*f) = (void*)ctx->kregs.ksp;
+	/* XXX stub -- Eldar */
+	(*f) = (void *)ctx->kregs.ksp;
 }
 
 void stack_iter_current(stack_iter_t *f) {
@@ -29,17 +29,18 @@ int stack_iter_next(stack_iter_t *f) {
 	void *fp = (*f)->reg_window.fp;
 	*f = fp;
 
-	if (((*f)->reg_window.fp == NULL) || ((uint32_t)(*f)->reg_window.fp & 0x7)) {
+	if (((*f)->reg_window.fp == NULL) ||
+		((uint32_t)(*f)->reg_window.fp & 0x7)) {
 		return 0;
 	} else {
 		return 1;
 	}
 }
 
-void* stack_iter_get_fp(stack_iter_t *f) {
+void * stack_iter_get_fp(stack_iter_t *f) {
 	return (*f)->reg_window.fp;
 }
 
-void* stack_iter_get_retpc(stack_iter_t *f) {
+void * stack_iter_get_retpc(stack_iter_t *f) {
 	return (*f)->reg_window.ret_pc + RETPC_OFFSET;
 }

@@ -16,7 +16,6 @@
 #include <drivers/gpio.h>
 #include <drivers/serial/uart_device.h>
 
-
 #include <drivers/serial/stm_usart.h>
 
 #include <drivers/serial/uart_device.h>
@@ -34,7 +33,7 @@ static int _getc(void) {
 static int _putc(char ch) {
 	USART_TypeDef *uart = (void *) USARTx;
 
-	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0);
+	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0) ;
 
 	STM32_USART_TXDATA(uart) = (uint8_t) ch;
 
@@ -50,7 +49,7 @@ int main(int argc, char **argv) {
 
 	memset(&UartHandle, 0, sizeof(UartHandle));
 
-	UartHandle.Instance = (void*) USARTx;
+	UartHandle.Instance = (void *) USARTx;
 
 	UartHandle.Init.BaudRate = 57600;
 	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
@@ -62,7 +61,7 @@ int main(int argc, char **argv) {
 	if (HAL_UART_Init(&UartHandle) != HAL_OK) {
 		return -1;
 	}
-	
+
 	printf("\n");
 	while (1) {
 		memset(cur_str, 0, sizeof(cur_str));
@@ -73,7 +72,7 @@ int main(int argc, char **argv) {
 		diag_putc('>');
 		diag_putc(' ');
 
-		while(1) {
+		while (1) {
 			scanf("%c", &c);
 			if (c == 255) {
 				diag_putc('\n');
@@ -89,19 +88,23 @@ int main(int argc, char **argv) {
 				continue;
 			}
 			diag_putc(c);
-			if (c == 255)
+			if (c == 255) {
 				break;
+			}
 			request[count++] = c;
 		}
 
-		if (count == 0)
+		if (count == 0) {
 			continue;
-			
-		if (!strcmp(request, "exit"))
-			break;
+		}
 
-		for (i = 0; i < count; i++)
+		if (!strcmp(request, "exit")) {
+			break;
+		}
+
+		for (i = 0; i < count; i++) {
 			_putc(request[i]);
+		}
 
 		_putc('\r');
 		_putc('\n');

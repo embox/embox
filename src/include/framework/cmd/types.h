@@ -36,7 +36,7 @@ struct cmd_mod {
 	struct cmd cmd;
 };
 
-static inline const struct mod *cmd2mod(const struct cmd *cmd) {
+static inline const struct mod * cmd2mod(const struct cmd *cmd) {
 	return &member_cast_out(cmd, const struct cmd_mod, cmd)->mod;
 }
 

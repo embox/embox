@@ -11,10 +11,10 @@
 
 #ifdef __ASSEMBLER__
 
-	.macro ENTRY name
-		.globl \name
-		\name\():
-	.endm
+.macro ENTRY name
+.globl \ name
+\ name \ () :
+.endm
 
 #endif /* __ASSEMBLER__ */
 

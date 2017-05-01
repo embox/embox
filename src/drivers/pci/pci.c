@@ -64,7 +64,7 @@ static int pci_get_slot_info(struct pci_slot_dev *dev) {
 	pci_read_config8(dev->busn, devfn, PCI_REVISION_ID, &dev->rev);
 	pci_read_config8(dev->busn, devfn, PCI_INTERRUPT_LINE, &dev->irq);
 
-	for (bar_num = 0; bar_num < ARRAY_SIZE(dev->bar); bar_num ++) {
+	for (bar_num = 0; bar_num < ARRAY_SIZE(dev->bar); bar_num++) {
 		pci_read_config32(dev->busn, devfn,
 			PCI_BASE_ADDR_REG_0 + (bar_num << 2), &dev->bar[bar_num]);
 	}
@@ -81,15 +81,15 @@ static size_t dev_cnt = 0;
 static inline int pci_add_dev(struct pci_slot_dev *dev) {
 	dlist_head_init(&dev->lst);
 	dlist_add_prev(&dev->lst, &__pci_devs_list);
-	dev_cnt ++;
+	dev_cnt++;
 	return 0;
 }
 
-struct pci_slot_dev *pci_insert_dev(char configured,
-			uint32_t bus, uint32_t devfn, uint32_t vendor_reg) {
+struct pci_slot_dev * pci_insert_dev(char configured,
+	uint32_t bus, uint32_t devfn, uint32_t vendor_reg) {
 	struct pci_slot_dev *new_dev;
 
-	if(NULL == (new_dev = pool_alloc(&devs_pool))) {
+	if (NULL == (new_dev = pool_alloc(&devs_pool))) {
 		log_debug("pci dev pool overflow");
 		return NULL;
 	}
@@ -106,8 +106,8 @@ struct pci_slot_dev *pci_insert_dev(char configured,
 	}
 	pci_add_dev(new_dev);
 	log_debug("Add pci >> bc %d, sc %d, rev %d, irq %d",
-			new_dev->baseclass, new_dev->subclass, new_dev->rev, new_dev->irq);
-	for (int bar_num = 0; bar_num < ARRAY_SIZE(new_dev->bar); bar_num ++) {
+		new_dev->baseclass, new_dev->subclass, new_dev->rev, new_dev->irq);
+	for (int bar_num = 0; bar_num < ARRAY_SIZE(new_dev->bar); bar_num++) {
 		log_raw(LOG_DEBUG, "bar[%d] 0x%X ", bar_num, new_dev->bar[bar_num]);
 	}
 	log_raw(LOG_DEBUG, "\n fu %d, slot %d \n", new_dev->func, new_dev->slot);
@@ -170,7 +170,7 @@ static int pci_init(void) {
 
 }
 
-void pci_set_master(struct pci_slot_dev * slot_dev) {
+void pci_set_master(struct pci_slot_dev *slot_dev) {
 	uint16_t cmd;
 	uint8_t lat;
 	uint16_t devfn = PCI_DEVFN(slot_dev->slot, slot_dev->func);
@@ -183,7 +183,7 @@ void pci_set_master(struct pci_slot_dev * slot_dev) {
 	pci_read_config8(slot_dev->busn, devfn, PCI_LATENCY_TIMER, &lat);
 	if (lat < 16) {
 		log_info("Increasing latency timer of device %02x:%02x to 64\n",
-				slot_dev->busn, devfn);
+			slot_dev->busn, devfn);
 		pci_write_config8(slot_dev->busn, devfn, PCI_LATENCY_TIMER, 64);
 	}
 }

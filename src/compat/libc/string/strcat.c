@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-char *strcat(char *dest, const char *src) {
+char * strcat(char *dest, const char *src) {
 	char *s1 = dest;
 	const char *s2 = src;
 	char c;

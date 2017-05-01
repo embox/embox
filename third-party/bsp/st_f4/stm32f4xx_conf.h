@@ -1,5 +1,4 @@
 
-
 #ifndef ST_F4_STM32F4XX_CONF_H_
 #define ST_F4_STM32F4XX_CONF_H_
 
@@ -39,6 +38,7 @@
 #include <module/third_party/bsp/st_f4/core.h>
 
 #undef  HSE_VALUE
-#define HSE_VALUE OPTION_MODULE_GET(third_party__bsp__st_f4__core, NUMBER, hse_freq_hz)
+#define HSE_VALUE OPTION_MODULE_GET(third_party__bsp__st_f4__core, NUMBER, \
+		hse_freq_hz)
 
 #endif /* ST_F4_STM32F4XX_CONF_H_ */

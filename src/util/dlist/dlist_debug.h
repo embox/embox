@@ -21,7 +21,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
-// #include <assert.h> /*it's required for assertion operation */
+/* #include <assert.h> / *it's required for assertion operation * / */
 
 /**
  * Double list head structure with an additional field 'list_id'. It contains
@@ -29,7 +29,7 @@
  * not initialized now.
  */
 struct dlist_head {
-	uintptr_t          poison; /**< Valid value is zero or ~&head. */
+	uintptr_t poison;          /**< Valid value is zero or ~&head. */
 	struct dlist_head *next;   /**<pointer to next item in the list*/
 	struct dlist_head *prev;   /**<pointer to previous item in the list*/
 	/**
@@ -44,10 +44,9 @@ struct dlist_head {
 
 extern void __dlist_debug_check(const struct dlist_head *head);
 
-
 /* Only for internal using */
 static inline void __dlist_add(struct dlist_head *_new, struct dlist_head *next,
-		struct dlist_head *prev) {
+	struct dlist_head *prev) {
 	__dlist_debug_check(prev);
 	__dlist_debug_check(next);
 	_new->prev = prev;
@@ -68,7 +67,7 @@ static inline int __is_linked(struct dlist_head *head) {
  * Initialize the item head. Set list_is as NULL it means that item head is not
  * in any list
  */
-static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
+static inline struct dlist_head * dlist_head_init(struct dlist_head *head) {
 	head->next = head->prev = head;
 	head->poison = ~(uintptr_t) head;
 	head->list_id = NULL; /* mark it's not in a list */
@@ -84,7 +83,7 @@ static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
  * It means that this list head now is owned the specify list and the list id
  * is address of this list head.
  */
-static inline struct dlist_head *dlist_init(struct dlist_head *head) {
+static inline struct dlist_head * dlist_init(struct dlist_head *head) {
 	head->next = head->prev = head; /* closure list */
 	head->poison = ~(uintptr_t) head;
 	head->list_id = head; /* mark it's in a list and this head is list entry */
@@ -100,14 +99,14 @@ static inline struct dlist_head *dlist_init(struct dlist_head *head) {
  * And at the and it add the new element into the list after list head element.
  */
 static inline void dlist_add_next(struct dlist_head *_new,
-		struct dlist_head *list) {
+	struct dlist_head *list) {
 	/* we can't add not initialized element.
 	 * use #dlist_head_init before using _new element*/
-	// assert(!__is_linked(_new)); /* re-add element */
+	/* assert(!__is_linked(_new)); / * re-add element * / */
 	/* we can't use list head without initialization.
 	* Use macro #DLIST_INIT for static or #dlist_init for dynamic
 	* initialization */
-	// assert(__is_linked(list)); /* add to not initialized list */
+	/* assert(__is_linked(list)); / * add to not initialized list * / */
 
 	_new->list_id = list->list_id; /* mark item head as added to this list */
 
@@ -127,14 +126,14 @@ static inline void dlist_add_next(struct dlist_head *_new,
  * the list head.
  */
 static inline void dlist_add_prev(struct dlist_head *_new,
-		struct dlist_head *list) {
+	struct dlist_head *list) {
 	/* we can't add not initialized element.
 	 * use #dlist_head_init before using new element*/
-	// assert(!__is_linked(_new)); /* re-add element */
+	/* assert(!__is_linked(_new)); / * re-add element * / */
 	/* we can't use list head without initialization.
 	 * Use macro #DLIST_INIT for static or #dlist_init for dynamic
 	 * initialization */
-	// assert(__is_linked(list)); /* add to not initialized list */
+	/* assert(__is_linked(list)); / * add to not initialized list * / */
 
 	_new->list_id = list->list_id; /* mark item head as added to this list */
 
@@ -153,7 +152,7 @@ static inline void dlist_add_prev(struct dlist_head *_new,
  * previous). And at the end the head is marked 'initialize' (not in a list)
  */
 static inline void dlist_del(struct dlist_head *head) {
-	// assert(__is_linked(head)); /* we can't remove initialized element */
+	/* assert(__is_linked(head)); / * we can't remove initialized element * / */
 
 	/* close the list
 	 * the previous element refer to the next element and next element refer to

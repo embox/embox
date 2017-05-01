@@ -12,7 +12,6 @@
 #include <string.h>
 #include <netinet/in.h>
 
-
 #include <ifaddrs.h>
 
 #include <framework/mod/options.h>
@@ -65,7 +64,7 @@ static void ifa_free(struct ifaddrs *ifa) {
 }
 
 static void sa_init(struct sockaddr *sa, sa_family_t family,
-		void *addr) {
+	void *addr) {
 	union sockaddr_tuple *sa_t;
 
 	assert(sa != NULL);
@@ -109,16 +108,16 @@ int getifaddrs(struct ifaddrs **out_ifa) {
 		}
 
 		strncpy((*ifa_ptr)->ifa_name, &in_dev->dev->name[0],
-				member_sizeof(struct ifaddrs_tuple, name));
+			member_sizeof(struct ifaddrs_tuple, name));
 		(*ifa_ptr)->ifa_name[member_sizeof(struct ifaddrs_tuple,
-				name) - 1] = '\0';
+		name) - 1] = '\0';
 		(*ifa_ptr)->ifa_flags = in_dev->dev->flags;
 		sa_init((*ifa_ptr)->ifa_addr, AF_INET,
-				&in_dev->ifa_address);
+			&in_dev->ifa_address);
 		sa_init((*ifa_ptr)->ifa_netmask, AF_INET,
-				&in_dev->ifa_mask);
+			&in_dev->ifa_mask);
 		sa_init((*ifa_ptr)->ifa_broadaddr, AF_INET,
-				&in_dev->ifa_broadcast);
+			&in_dev->ifa_broadcast);
 		(*ifa_ptr)->ifa_data = NULL;
 
 		ifa_ptr = &(*ifa_ptr)->ifa_next;

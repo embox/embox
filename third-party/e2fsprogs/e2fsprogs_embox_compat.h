@@ -31,7 +31,7 @@
 #include <sys/mman.h>
 
 #define O_ACCMODE       00000003
-//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+/*#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0) */
 #define OPEN_MAX      64
 
 #include <stdint.h>
@@ -39,8 +39,6 @@ typedef uint16_t u_int16_t;
 typedef uint32_t u_int32_t;
 typedef uint64_t u_int64_t;
 typedef unsigned int uint;
-
-
 
 static inline dev_t makedev(int maj, int min) {
 	printf(">>> makedev, maj - %d, min - %d\n", maj, min);
@@ -57,14 +55,15 @@ static inline ssize_t pread(int fd, void *buf, size_t count, off_t offset) {
 	return -1;
 }
 
-static inline ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset) {
+static inline ssize_t pwrite(int fd, const void *buf, size_t count,
+	off_t offset) {
 	printf(">>> pwrite, fd - %d, offset - %d\n", fd, offset);
 	return -1;
 }
 
 /****************** Functions for mke2fs *******************/
 
-static inline FILE *popen(const char *command, const char *type) {
+static inline FILE * popen(const char *command, const char *type) {
 	printf(">>> popen, command - %s, type - %s\n", command, type);
 	return NULL;
 }
@@ -81,17 +80,17 @@ static inline int pclose(FILE *stream) {
 struct sigaction;
 
 static inline int sigaction(int sig, const struct sigaction *act,
-		struct sigaction *oact) {
+	struct sigaction *oact) {
 	printf(">>> sigaction, sig - %d\n", sig);
 	return -1;
 }
 
-static inline void *sbrk(intptr_t increment) {
+static inline void * sbrk(intptr_t increment) {
 	printf(">>> sbrk, increment - %d\n", increment);
 	return NULL;
 }
 
-static inline void tzset (void) {
+static inline void tzset(void) {
 	printf(">>> tzset\n");
 }
 
@@ -104,7 +103,7 @@ static inline int daemon(int nochdir, int noclose) {
 	return -1;
 }
 
-static inline char *getwd(char *buf) {
+static inline char * getwd(char *buf) {
 	printf("getwd, buf - %p\n", buf);
 	return NULL;
 }

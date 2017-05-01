@@ -36,7 +36,7 @@ static void usbnet_timer_handler(struct sys_timer *tmr, void *param);
 static void usbnet_rcv_notify(struct usb_request *req, void *arg);
 static int usbnet_init(void);
 static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
-		void **data);
+	void **data);
 static void usbnet_disconnect(struct usb_dev *dev, void *data);
 static void usb_net_bulk_send(struct usb_dev *dev, struct sk_buff *skb);
 static int usbnet_xmit(struct net_device *dev, struct sk_buff *skb);
@@ -65,7 +65,7 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 	in_endp = nic_priv->usbdev->endpoints[2];
 	assert(in_endp);
 
-	switch(req->req_stat) {
+	switch (req->req_stat) {
 	case USB_REQ_NOERR:
 		memcpy(nic_priv->pdata, req->buf, req->len);
 		nic_priv->pdata += req->len;
@@ -93,11 +93,11 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 		nic_priv->pdata = nic_priv->data;
 
 		timer_init_start_msec(&nic_priv->timer, TIMER_ONESHOT,
-				USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
+			USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
 	} else {
 		/* Receive the next part of the packet */
 		usb_endp_bulk(in_endp, usbnet_rcv_notify, nic_priv->pdata,
-				in_endp->max_packet_size);
+			in_endp->max_packet_size);
 	}
 }
 
@@ -109,14 +109,14 @@ static void usbnet_timer_handler(struct sys_timer *tmr, void *param) {
 	assert(in_endp);
 
 	usb_endp_bulk(in_endp, usbnet_rcv_notify, nic_priv->pdata,
-			in_endp->max_packet_size);
+		in_endp->max_packet_size);
 }
 
 static void usbnet_iface_hnd(struct usb_request *req, void *arg) {
 }
 
 static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
-		void **data) {
+	void **data) {
 	struct net_device *nic;
 	struct usbnet_priv *nic_priv;
 	struct usb_class_cdc *cdc = usb2cdcdata(dev);
@@ -147,18 +147,18 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 	}
 
 	res = timer_init_start_msec(&nic_priv->timer, TIMER_ONESHOT,
-		USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
+			USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
 	if (res < 0) {
 		goto out_free_data;
 	}
 
 	return 0;
 
-out_free_data:
+	out_free_data:
 	sysfree(nic_priv->data);
-out_free_nic:
+	out_free_nic:
 	etherdev_free(nic);
-out_ret:
+	out_ret:
 	return res;
 }
 
@@ -180,9 +180,10 @@ static void usb_net_bulk_send(struct usb_dev *dev, struct sk_buff *skb) {
 
 	endp = dev->endpoints[3];
 
-	for (i = skb->len; i != 0 && (len = min(i, endp->max_packet_size)); i -= len) {
+	for (i = skb->len; i != 0 && (len = min(i, endp->max_packet_size));
+		i -= len) {
 		usb_endp_bulk(endp, usbnet_send_notify_hnd,
-				skb->mac.raw + (skb->len - i), len);
+			skb->mac.raw + (skb->len - i), len);
 	}
 
 	/* Send zero length packet if skb->len % max_packet_size == 0 */

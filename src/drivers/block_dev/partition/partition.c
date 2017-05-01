@@ -36,9 +36,9 @@ int create_partitions(struct block_dev *bdev) {
 	if ((mbr.sig_55 != 0x55) || (mbr.sig_aa != 0xAA)) {
 		return 0;
 	}
-	for (part_n = 0; part_n < 4; part_n ++) {
+	for (part_n = 0; part_n < 4; part_n++) {
 
-		if(mbr.ptable[part_n].type == 0) {
+		if (mbr.ptable[part_n].type == 0) {
 			return part_n;
 		}
 
@@ -49,14 +49,14 @@ int create_partitions(struct block_dev *bdev) {
 		}
 
 		part_bdev->start_offset = (uint32_t)(mbr.ptable[part_n].start_3) << 24 |
-				(uint32_t)(mbr.ptable[part_n].start_2) << 16 |
-				(uint32_t)(mbr.ptable[part_n].start_1) << 8 |
-				(uint32_t)(mbr.ptable[part_n].start_0) << 0;
+			(uint32_t)(mbr.ptable[part_n].start_2) << 16 |
+			(uint32_t)(mbr.ptable[part_n].start_1) << 8 |
+			(uint32_t)(mbr.ptable[part_n].start_0) << 0;
 
 		part_bdev->size = (uint32_t)(mbr.ptable[part_n].size_3) << 24 |
-				(uint32_t)(mbr.ptable[part_n].size_2) << 16 |
-				(uint32_t)(mbr.ptable[part_n].size_1) << 8 |
-				(uint32_t)(mbr.ptable[part_n].size_0) << 0;
+			(uint32_t)(mbr.ptable[part_n].size_2) << 16 |
+			(uint32_t)(mbr.ptable[part_n].size_1) << 8 |
+			(uint32_t)(mbr.ptable[part_n].size_0) << 0;
 
 		part_bdev->parrent_bdev = bdev;
 		part_bdev->block_size = bdev->block_size;

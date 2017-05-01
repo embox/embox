@@ -44,7 +44,6 @@
 #define ENET_TIPG      (NIC_BASE + 0x01AC)
 #define ENET_FTRL      (NIC_BASE + 0x01B0)
 
-
 /* Various flags */
 /* ENET_EIR */
 #define ENET_EIR_MASK  0xFFFFFFFF
@@ -136,15 +135,14 @@ struct fec_buf_desc {
 #if 0
 	uint32_t flags2;
 	uint16_t payload_checksum; /* Used only for RX */
-	uint8_t  protocol;         /* Used only for RX */
-	uint8_t  header_len;       /* Used only for RX */
+	uint8_t protocol;          /* Used only for RX */
+	uint8_t header_len;        /* Used only for RX */
 	uint16_t pad1;             /* Unused */
 	uint16_t flags3;           /* Used only for RX */
 	uint32_t timestamp;
 	uint16_t pad2[4];          /* Unused */
 #endif
 };
-
 
 /* the defins of MII operation */
 #define FEC_MII_ST      0x40000000
@@ -173,8 +171,10 @@ struct fec_buf_desc {
 #define FEC_MII_GET_DATA(v) \
 	(((v) >> FEC_MII_DATA_OFF) & FEC_MII_DATA_MASK)
 #define FEC_MII_READ(pa, ra) \
-	((FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_RD)) | FEC_MII_PA(pa) | FEC_MII_RA(ra))
+	((FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_RD)) | FEC_MII_PA(pa) | \
+	FEC_MII_RA(ra))
 #define FEC_MII_WRITE(pa, ra, v) \
-	(FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_WR)|	FEC_MII_PA(pa) | FEC_MII_RA(ra) | FEC_MII_SET_DATA(v))
+	(FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_WR)| FEC_MII_PA(pa) | \
+	FEC_MII_RA(ra) | FEC_MII_SET_DATA(v))
 
 #endif /* DRIVERS_IMX6_NET_H_ */

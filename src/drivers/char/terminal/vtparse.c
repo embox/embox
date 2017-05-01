@@ -16,7 +16,7 @@
 #include <drivers/vtparse_state.h>
 #include <stddef.h>
 
-struct vtparse *vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
+struct vtparse * vtparse_init(struct vtparse *parser, vtparse_callback_t cb) {
 	if (parser == NULL) {
 		return NULL;
 	}
@@ -95,21 +95,21 @@ static void do_action(struct vtparse *parser, vt_action_t action, char ch) {
 	case VT_ACTION_OSC_START:
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:
-		/* Operating System Command */
-		/* ignore them as unused in our system
-		  -- Eldar*/
+	/* Operating System Command */
+	/* ignore them as unused in our system
+	  -- Eldar*/
 	case VT_ACTION_HOOK:
 	case VT_ACTION_PUT:
 	case VT_ACTION_UNHOOK:
-		/* device control strings */
-		/* ignore them as unused in our system
-		  -- Eldar*/
+	/* device control strings */
+	/* ignore them as unused in our system
+	  -- Eldar*/
 	case VT_ACTION_IGNORE:
 		/* do nothing */
 		break;
 
 	default:
-		//LOG_ERROR("vtparse: unknown action %d\n", action);
+		/*LOG_ERROR("vtparse: unknown action %d\n", action); */
 		break;
 	}
 }
@@ -129,14 +129,17 @@ void vtparse(struct vtparse *parser, unsigned char ch) {
 		vt_action_t leave_action = vtparse_state_action_leave(parser->state);
 		vt_action_t enter_action = vtparse_state_action_enter(new_state);
 
-		if (leave_action)
+		if (leave_action) {
 			do_action(parser, leave_action, 0);
+		}
 
-		if (action)
+		if (action) {
 			do_action(parser, action, ch);
+		}
 
-		if (enter_action)
+		if (enter_action) {
 			do_action(parser, enter_action, 0);
+		}
 
 		parser->state = new_state;
 	} else {

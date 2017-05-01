@@ -27,7 +27,9 @@
 
 EMBOX_UNIT_INIT(smac_init);
 
-static_assert(sizeof(struct smac_task) == OPTION_MODULE_GET(embox__kernel__task__resource__security, NUMBER, security_size));
+static_assert(sizeof(struct smac_task) ==
+	OPTION_MODULE_GET(embox__kernel__task__resource__security, NUMBER,
+	security_size));
 
 #define SMAC_MAX_ENTS OPTION_GET(NUMBER, max_entries)
 #define SMAC_AUDIT OPTION_GET(NUMBER, audit)
@@ -51,8 +53,8 @@ static int smac_env_n;
 #define foreach_entry(ent) \
 	for (ent = smac_env; ent != smac_env + smac_env_n; ++ent)
 
-
-int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char *file_name) {
+int smac_audit_prepare(struct smac_audit *audit, const char *fn_name,
+	const char *file_name) {
 
 	audit->fn_name = fn_name;
 	audit->file_name = file_name;
@@ -63,7 +65,7 @@ int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char
 /* RFC 868 */
 #define SECONDS_1900_1970 2208988800L
 static void audit_log(const char *subject, const char *object,
-		int may_access, int ret, struct smac_audit *audit) {
+	int may_access, int ret, struct smac_audit *audit) {
 	static char no_audit;
 	char line[AUDITLINE_LEN];
 	uid_t uid;
@@ -85,18 +87,18 @@ static void audit_log(const char *subject, const char *object,
 	getnsofday(&ts, NULL);
 	time = (time_t)((uint32_t)ts.tv_sec - SECONDS_1900_1970);
 	snprintf(line, AUDITLINE_LEN,
-			"[%s] cmd=%s subject=%s(label=%s), object=%s, file=%s, request=%c%c%c, action=%s, function=%s\n",
-			ctime(&time),
-			task_self() != task_kernel_task() ? task_get_name(task_self()) : "init",
-			pwd ? pwd->pw_name : "?",
-			subject,
-			object,
-			audit->file_name ? audit->file_name : "",
-			may_access & S_IROTH  ? 'r' : '-',
-			may_access & S_IWOTH ? 'w' : '-',
-			may_access & S_IXOTH  ? 'x' : '-',
-			ret == 0 ? "ALLOW" : "DENINED",
-			audit->fn_name);
+		"[%s] cmd=%s subject=%s(label=%s), object=%s, file=%s, request=%c%c%c, action=%s, function=%s\n",
+		ctime(&time),
+		task_self() != task_kernel_task() ? task_get_name(task_self()) : "init",
+		pwd ? pwd->pw_name : "?",
+		subject,
+		object,
+		audit->file_name ? audit->file_name : "",
+		may_access & S_IROTH  ? 'r' : '-',
+		may_access & S_IWOTH ? 'w' : '-',
+		may_access & S_IXOTH  ? 'x' : '-',
+		ret == 0 ? "ALLOW" : "DENINED",
+		audit->fn_name);
 
 	seculog_record(SECULOG_LABEL_MANDATORY, line);
 }
@@ -105,7 +107,7 @@ static void audit_log(const char *subject, const char *object,
  * steps below is from smack deciding order
  */
 int smac_access(const char *s_subject, const char *s_object,
-		int may_access, struct smac_audit *audit) {
+	int may_access, struct smac_audit *audit) {
 	struct smac_entry *ent;
 	int ret = 0;
 
@@ -144,7 +146,7 @@ int smac_access(const char *s_subject, const char *s_object,
 	/* 6 */
 	foreach_entry(ent) {
 		if (0 == strcmp(s_subject, ent->subject)
-				&& 0 == strcmp(s_object, ent->object)) {
+			&& 0 == strcmp(s_object, ent->object)) {
 			if (~ent->flags & may_access) {
 				ret = -EACCES;
 				goto out;
@@ -156,11 +158,11 @@ int smac_access(const char *s_subject, const char *s_object,
 
 	/* 7 */
 	ret = -EACCES;
-out:
+	out:
 
 #if SMAC_AUDIT
 	if ((ret == -EACCES && (SMAC_AUDIT & 1))
-			|| (ret == 0 && (SMAC_AUDIT & 2))) {
+		|| (ret == 0 && (SMAC_AUDIT & 2))) {
 		audit_log(s_subject, s_object, may_access, ret, audit);
 	}
 #endif /* SMAC_AUDIT */
@@ -177,11 +179,12 @@ int smac_getenv(void *buf, size_t buflen, struct smac_env **oenv) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IROTH, &audit))) {
+				S_IROTH, &audit))) {
 		return res;
 	}
 
-	if (buflen < sizeof(struct smac_env) + smac_env_n * sizeof(struct smac_entry)) {
+	if (buflen <
+		sizeof(struct smac_env) + smac_env_n * sizeof(struct smac_entry)) {
 		return -ERANGE;
 	}
 
@@ -199,7 +202,7 @@ int smac_flushenv(void) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IWOTH, &audit))) {
+				S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -216,13 +219,13 @@ int smac_addenv(const char *subject, const char *object, int flags) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IWOTH, &audit))) {
+				S_IWOTH, &audit))) {
 		return res;
 	}
 
 	foreach_entry(ent) {
 		if (0 == strcmp(ent->subject, subject)
-				&& 0 == strcmp(ent->object, subject)) {
+			&& 0 == strcmp(ent->object, subject)) {
 			ent->flags = flags;
 			return 0;
 		}
@@ -258,7 +261,7 @@ int smac_labelset(const char *label) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IWOTH, &audit))) {
+				S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -278,7 +281,7 @@ int smac_labelget(char *label, size_t len) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IROTH, &audit))) {
+				S_IROTH, &audit))) {
 		return res;
 	}
 
@@ -292,14 +295,16 @@ int smac_labelget(char *label, size_t len) {
 }
 
 static int smac_init(void) {
-	strcpy(((struct smac_task *) task_self_resource_security())->label, smac_admin);
+	strcpy(
+		((struct smac_task *) task_self_resource_security())->label,
+		smac_admin);
 
 	/* should allow ourself do anything with not labeled file as there is no
- 	 * security at all.
+	 * security at all.
 	 * Otherwise boot could hang at mount, etc.
 	 */
- 	 smac_addenv(smac_admin, smac_def_file_label,
-			S_IROTH | S_IWOTH | S_IXOTH);
+	smac_addenv(smac_admin, smac_def_file_label,
+		S_IROTH | S_IWOTH | S_IXOTH);
 
 	return 0;
 }

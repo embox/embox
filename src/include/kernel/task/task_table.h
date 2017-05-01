@@ -32,7 +32,7 @@ extern int task_table_add(struct task *tsk);
  *
  * @return
  */
-extern struct task *task_table_get(int tid);
+extern struct task * task_table_get(int tid);
 
 /**
  * @brief Delete task from a task table

@@ -31,32 +31,32 @@
 #include <cmd/shell.h>
 
 #define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
-	/* Telnetd address bind to */
+/* Telnetd address bind to */
 #define TELNETD_ADDR INADDR_ANY
-	/* Telnetd port bind to */
+/* Telnetd port bind to */
 #define TELNETD_PORT 23
 
 #define XBUFF_LEN 128
 
-	/* Allow to turn off/on extra debugging information */
+/* Allow to turn off/on extra debugging information */
 #if 0
-#	define MD(x) do {\
-		x;\
-	} while (0);
+#   define MD(x) do { \
+		x; \
+} while (0);
 #else
-#	define MD(x) do{\
-	} while (0);
+#   define MD(x) do { \
+} while (0);
 #endif
 
-#define T_WILL		251
-#define T_WONT		252
-#define T_DO		253
-#define T_DONT		254
-#define T_IAC		255
+#define T_WILL      251
+#define T_WONT      252
+#define T_DO        253
+#define T_DONT      254
+#define T_IAC       255
 #define T_INTERRUPT 244
 
-#define O_ECHO		1		/* Manage ECHO, RFC 857 */
-#define O_GO_AHEAD	3		/* Disable GO AHEAD, RFC 858 */
+#define O_ECHO      1       /* Manage ECHO, RFC 857 */
+#define O_GO_AHEAD  3       /* Disable GO AHEAD, RFC 858 */
 
 extern int ppty(int pptyfds[2]);
 
@@ -88,7 +88,8 @@ static void ignore_telnet_options(int sock, int pptyfd) {
 		if (ch == T_IAC) {
 			read(sock, &op_type, 1);
 
-			if (op_type == T_WILL || op_type == T_DO || op_type == T_WONT || op_type == T_DONT) {
+			if (op_type == T_WILL || op_type == T_DO || op_type == T_WONT ||
+				op_type == T_DONT) {
 				read(sock, &param, 1);
 			}
 
@@ -140,11 +141,12 @@ static int utmp_login(short ut_type, const char *host) {
 
 }
 
-static void *shell_hnd(void* args) {
+static void * shell_hnd(void *args) {
 	int ret;
-	int *msg = (int*)args;
+	int *msg = (int *)args;
 
-	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(clients[msg[2]].addr_in.sin_addr));
+	ret =
+		utmp_login(LOGIN_PROCESS, inet_ntoa(clients[msg[2]].addr_in.sin_addr));
 	if (ret != 0) {
 		MD(printf("utmp_login LOGIN error: %d\n", ret));
 	}
@@ -196,7 +198,7 @@ static int telnet_fix_crnul(unsigned char *buf, int len) {
 }
 
 /* Shell thread for telnet */
-static void *telnet_thread_handler(void* args) {
+static void * telnet_thread_handler(void *args) {
 	/* Choose tmpbuff size a half of size of pbuff to make
 	 * replacement: \n\n...->\r\n\r\n... */
 	unsigned char sbuff[XBUFF_LEN], pbuff[XBUFF_LEN];
@@ -252,7 +254,7 @@ static void *telnet_thread_handler(void* args) {
 	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
 	 * and than receive from it the result of command running, and send it back to
 	 * client. */
-	while(1) {
+	while (1) {
 		int len;
 		int fd_cnt;
 
@@ -287,7 +289,7 @@ static void *telnet_thread_handler(void* args) {
 			fcntl(sock, F_SETFL, 0);
 
 			/* preventing further execution since some fds is set,
- 			 * but they are not active and will block (fd_cnt == 0)
+			 * but they are not active and will block (fd_cnt == 0)
 			 */
 #endif
 			continue;
@@ -307,7 +309,7 @@ static void *telnet_thread_handler(void* args) {
 			}
 		}
 
-		if (FD_ISSET(pptyfd[0], &readfds)){
+		if (FD_ISSET(pptyfd[0], &readfds)) {
 			p = pbuff;
 			if ((pipe_data_len = read(pptyfd[0], pbuff, XBUFF_LEN)) <= 0) {
 				MD(printf("read on pptyfd: %d %d\n", pipe_data_len, errno));
@@ -327,7 +329,7 @@ static void *telnet_thread_handler(void* args) {
 			}
 		}
 
-		if (FD_ISSET(sock, &readfds)){
+		if (FD_ISSET(sock, &readfds)) {
 			s = sbuff;
 			if ((sock_data_len = read(sock, s, XBUFF_LEN)) <= 0) {
 				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
@@ -339,16 +341,16 @@ static void *telnet_thread_handler(void* args) {
 		}
 	} /* while(1) */
 
-out_kill:
+	out_kill:
 	kill(tid, 9);
-out_close:
+	out_close:
 	close(pptyfd[0]);
 	close(sock);
 	clients[client_num].fd = -1;
 
 	waitpid(tid, NULL, 0);
 
-out:
+	out:
 	MD(printf("exiting from telnet_thread_handler\n"));
 
 	return NULL;
@@ -374,7 +376,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (bind(listening_descr, (struct sockaddr *)&listening_socket,
-											sizeof(listening_socket)) < 0) {
+		sizeof(listening_socket)) < 0) {
 		printf("bind() failed\n");
 		goto listen_failed;
 	}
@@ -386,8 +388,9 @@ int main(int argc, char **argv) {
 
 	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
-		int client_descr = accept(listening_descr, (struct sockaddr *)&client_socket,
-								  &client_socket_len);
+		int client_descr = accept(listening_descr,
+				(struct sockaddr *)&client_socket,
+				&client_socket_len);
 		struct thread *thread;
 		size_t i;
 
@@ -421,7 +424,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-listen_failed:
+	listen_failed:
 	res = -errno;
 	close(listening_descr);
 	return res;

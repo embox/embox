@@ -32,7 +32,7 @@ int setreuid(uid_t ruid, uid_t euid) {
 
 	if (ruid != (uid_t)-1) {
 		if (u_area->euid == ROOT_UID || ruid == u_area->reuid
-				|| ruid == u_area->euid) {
+			|| ruid == u_area->euid) {
 			u_area->reuid = ruid;
 		} else {
 			SET_ERRNO(EPERM);
@@ -42,7 +42,7 @@ int setreuid(uid_t ruid, uid_t euid) {
 
 	if (euid != (uid_t)-1) {
 		if (u_area->euid == ROOT_UID || euid == u_area->reuid
-				|| euid == u_area->euid) {
+			|| euid == u_area->euid) {
 			u_area->euid = euid;
 		} else {
 			SET_ERRNO(EPERM);
@@ -73,7 +73,7 @@ int seteuid(uid_t uid) {
 	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (u_area->euid == ROOT_UID || u_area->reuid == uid) {
-	       u_area->euid = uid;
+		u_area->euid = uid;
 	} else {
 		SET_ERRNO(EPERM);
 		return -1;
@@ -87,7 +87,7 @@ int setregid(gid_t rgid, gid_t egid) {
 
 	if (rgid != (gid_t)-1) {
 		if (u_area->egid == ROOT_UID || rgid == u_area->regid
-				|| rgid == u_area->egid) {
+			|| rgid == u_area->egid) {
 			u_area->regid = rgid;
 		} else {
 			SET_ERRNO(EPERM);
@@ -97,7 +97,7 @@ int setregid(gid_t rgid, gid_t egid) {
 
 	if (egid != (gid_t)-1) {
 		if (u_area->egid == ROOT_UID || egid == u_area->regid
-				|| egid == u_area->egid) {
+			|| egid == u_area->egid) {
 			u_area->egid = egid;
 		} else {
 			SET_ERRNO(EPERM);
@@ -128,7 +128,7 @@ int setegid(gid_t gid) {
 	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (u_area->egid == ROOT_UID || u_area->regid == gid) {
-	       u_area->egid = gid;
+		u_area->egid = gid;
 	} else {
 		SET_ERRNO(EPERM);
 		return -1;

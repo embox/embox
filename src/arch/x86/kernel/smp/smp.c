@@ -24,12 +24,11 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/spinlock.h>
 
-
 #include <module/embox/driver/interrupt/lapic.h>
 #include <module/embox/kernel/thread/core.h>
 
 #define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \
-			NUMBER,thread_stack_size)
+		NUMBER,thread_stack_size)
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -37,11 +36,11 @@ EMBOX_UNIT_INIT(unit_init);
 extern void idt_load(void);
 
 static char ap_stack[NCPU][THREAD_STACK_SIZE]
-		__attribute__((aligned(THREAD_STACK_SIZE)));
+__attribute__((aligned(THREAD_STACK_SIZE)));
 static int ap_ack;
 static spinlock_t startup_lock = SPIN_STATIC_UNLOCKED;
 
-static void *bs_idle_run(void *arg) {
+static void * bs_idle_run(void *arg) {
 	panic("%s runned\n", __func__);
 }
 
@@ -75,7 +74,7 @@ static inline void init_trampoline(void) {
 	gdt_set_gdtr(&__ap_gdtr, __ap_gdt);
 
 	memcpy((void *) TRAMPOLINE_ADDR, &__ap_trampoline,
-			(uint32_t) &__ap_trampoline_end - (uint32_t) &__ap_trampoline);
+		(uint32_t) &__ap_trampoline_end - (uint32_t) &__ap_trampoline);
 }
 
 /* TODO: FIX THIS! */
@@ -100,8 +99,9 @@ static int unit_init(void) {
 	/* Start all CPUs */
 	self_id = cpu_get_id();
 	for (i = 0; i < NCPU; i++) {
-		if (i != self_id)
+		if (i != self_id) {
 			cpu_start(i);
+		}
 	}
 
 	return 0;
@@ -118,4 +118,3 @@ void resched(void) {
 
 	sched_post_switch();
 }
-

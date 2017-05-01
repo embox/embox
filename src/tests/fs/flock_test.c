@@ -6,8 +6,6 @@
  * @author Anton Bondarev
  */
 
-
-
 #include <unistd.h>
 #include <sys/file.h>
 #include <fs/vfs.h>
@@ -28,13 +26,17 @@
  */
 TEST_CASE("vfs_fcntl advisory locking tests") {
 	int fd;
-	struct flock shlock = { F_RDLCK, SEEK_SET, 0, 0, 0 };
-	struct flock exlock = { F_WRLCK, SEEK_SET, 0, 0, 0 };
+	struct flock shlock = {
+		F_RDLCK, SEEK_SET, 0, 0, 0
+	};
+	struct flock exlock = {
+		F_WRLCK, SEEK_SET, 0, 0, 0
+	};
 
 	printk("\n\n========= vfs_fcntl test =========	\n");
 
 	/*fd = open("/tmp/vfs_fcntl_test_file", O_CREAT | O_RDONLY | O_TRUNC,
-			S_IRUSR | S_IWUSR);*/
+	        S_IRUSR | S_IWUSR);*/
 	fd = open("/tmp/vfs_fcntl_test_file", O_CREAT | O_RDWR | O_TRUNC,
 			S_IRUSR | S_IWUSR);
 

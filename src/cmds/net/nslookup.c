@@ -33,11 +33,11 @@ int main(int argc, char **argv) {
 
 	/* answer */
 	printf("\n%s:\n", result.nscount != 0 ? "Authoritative answer"
-			: "Non-authoritative answer");
+		: "Non-authoritative answer");
 	for (i = 0, rr = result.an; i < result.ancount; ++i, ++rr) {
 		if (rr->rtype == DNS_RR_TYPE_A) {
 			printf("Name: %s\tAddress: %s\n", &rr->rname[0],
-					inet_ntoa(*(struct in_addr *)&rr->rdata.a.address[0]));
+				inet_ntoa(*(struct in_addr *)&rr->rdata.a.address[0]));
 		}
 	}
 
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 		printf("\nAuthoritative nameservers:\n");
 		for (i = 0, rr = result.ns; i < result.nscount; ++i, ++rr) {
 			printf("Name: %s\tNameserver: %s\n", &rr->rname[0],
-					&rr->rdata.ns.nsdname[0]);
+				&rr->rdata.ns.nsdname[0]);
 		}
 	}
 

@@ -12,7 +12,8 @@
 
 #include "httpd.h"
 
-static int httpd_read_http_header(const struct client_info *cinfo, char *buf, size_t buf_sz) {
+static int httpd_read_http_header(const struct client_info *cinfo, char *buf,
+	size_t buf_sz) {
 	const int sk = cinfo->ci_sock;
 	const char *pattern = "\r\n\r\n";
 	char pattbuf[strlen("\r\n\r\n")];
@@ -39,7 +40,8 @@ static int httpd_read_http_header(const struct client_info *cinfo, char *buf, si
 	return pb + sizeof(pattbuf) - buf;
 }
 
-int httpd_build_request(struct client_info *cinfo, struct http_req *hreq, char *buf, size_t buf_sz) {
+int httpd_build_request(struct client_info *cinfo, struct http_req *hreq,
+	char *buf, size_t buf_sz) {
 	int nbyte;
 
 	nbyte = httpd_read_http_header(cinfo, buf, buf_sz - 1);
@@ -57,4 +59,3 @@ int httpd_build_request(struct client_info *cinfo, struct http_req *hreq, char *
 
 	return nbyte;
 }
-

@@ -93,7 +93,8 @@ static struct pci_reg bridge_regs[] = {
 };
 
 static void print_usage(void) {
-	printf("Usage: lspci [-f] [-h] [-x] [-b bus] [-s slot] [-u func] [-n] [-l len] [-o off]\n");
+	printf(
+		"Usage: lspci [-f] [-h] [-x] [-b bus] [-s slot] [-u func] [-n] [-l len] [-o off]\n");
 	printf("\t[-f]      - full info\n");
 	printf("\t[-x]      - hex dump of config space\n");
 	printf("\t[-b bus]  - select bus\n");
@@ -110,7 +111,7 @@ static void print_error(void) {
 	printf("Wrong parameters\n");
 }
 
-static inline char *pci_get_region_type(uint32_t region_reg) {
+static inline char * pci_get_region_type(uint32_t region_reg) {
 	if (region_reg & 0x1) {
 		return "I/O";
 	} else {
@@ -127,58 +128,69 @@ static inline size_t pci_get_region_size(uint32_t region_reg) {
 
 static void show_device(struct pci_slot_dev *pci_dev, int full) {
 	printf("%02d:%2x.%d (PCI dev %04X:%04X) [%d %d]\n"
-				"\t %s: %s %s (rev %02d)\n",
-				pci_dev->busn,
-				pci_dev->slot,
-				pci_dev->func,
-				pci_dev->vendor,
-				pci_dev->device,
-				pci_dev->baseclass,
-				pci_dev->subclass,
-				find_class_name(pci_dev->baseclass, pci_dev->subclass),
-				find_vendor_name(pci_dev->vendor),
-				find_device_name(pci_dev->device),
-				pci_dev->rev);
+		   "\t %s: %s %s (rev %02d)\n",
+		pci_dev->busn,
+		pci_dev->slot,
+		pci_dev->func,
+		pci_dev->vendor,
+		pci_dev->device,
+		pci_dev->baseclass,
+		pci_dev->subclass,
+		find_class_name(pci_dev->baseclass, pci_dev->subclass),
+		find_vendor_name(pci_dev->vendor),
+		find_device_name(pci_dev->device),
+		pci_dev->rev);
 	if (full != 0) {
 		int bar_num;
 		printf("\t  IRQ number: %d\n", pci_dev->irq);
 
-		for (bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num ++) {
+		for (bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num++) {
 			uintptr_t base_addr = pci_dev->bar[bar_num];
 			if (0 == base_addr) {
 				continue;
 			}
 			printf("\t  Region (%s): Base: 0x%lX [0x%lX]\n",
-					pci_get_region_type(base_addr),
-					base_addr & ~((1 << 4) - 1),
-					(base_addr & ~((1 << 4) - 1)) +
-					(pci_get_region_size(base_addr) - 1));
+				pci_get_region_type(base_addr),
+				base_addr & ~((1 << 4) - 1),
+				(base_addr & ~((1 << 4) - 1)) +
+				(pci_get_region_size(base_addr) - 1));
 		}
 	}
 }
 
-static void dump_regs(struct pci_slot_dev *pci_dev, uint32_t offset, uint32_t length) {
+static void dump_regs(struct pci_slot_dev *pci_dev, uint32_t offset,
+	uint32_t length) {
 	int i;
 	uint8_t val;
 	uint32_t ret;
 
-	if (offset % 16) printf("%x: ", offset);
+	if (offset % 16) {
+		printf("%x: ", offset);
+	}
 	for (i = offset; i < offset+length; i++)
 	{
-		if (i % 16 == 0) printf("%x: ", i);
-		ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, i, &val);
-		if (ret != PCIUTILS_SUCCESS)
+		if (i % 16 == 0) {
+			printf("%x: ", i);
+		}
+		ret = pci_read_config8(pci_dev->busn,
+				(pci_dev->slot << 3) | pci_dev->func, i, &val);
+		if (ret != PCIUTILS_SUCCESS) {
 			printf("E%d", ret);
-		else
+		}
+		else {
 			printf("%x%x", val/16, val%16);
+		}
 
-		if (i % 16 == 15)
+		if (i % 16 == 15) {
 			printf("\n");
-		else
+		}
+		else {
 			printf(" ");
+		}
 	}
-	if (i % 16)
+	if (i % 16) {
 		printf("\n");
+	}
 }
 
 static void dump_regs2(struct pci_slot_dev *pci_dev)
@@ -190,29 +202,37 @@ static void dump_regs2(struct pci_slot_dev *pci_dev)
 
 	struct pci_reg *regs = endpoint_regs;
 
-	ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, PCI_HEADER_TYPE, &val8);
+	ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func,
+			PCI_HEADER_TYPE, &val8);
 	if (ret != 0)
 	{
 		printk("Unable to read device type: %d\n", ret);
 		return;
 	}
-	if ((val8 & 0x7F) == 1)
+	if ((val8 & 0x7F) == 1) {
 		regs = bridge_regs;
+	}
 	while (regs[i].width != 0)
 	{
 		if (regs[i].width == 1)
 		{
-			ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val8);
+			ret = pci_read_config8(pci_dev->busn,
+					(pci_dev->slot << 3) | pci_dev->func,
+					regs[i].offset, &val8);
 			val = val8;
 		}
 		else if (regs[i].width == 2)
 		{
-			ret = pci_read_config16(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val16);
+			ret = pci_read_config16(pci_dev->busn,
+					(pci_dev->slot << 3) | pci_dev->func,
+					regs[i].offset, &val16);
 			val = val16;
 		}
 		else if (regs[i].width == 4)
 		{
-			ret = pci_read_config32(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val32);
+			ret = pci_read_config32(pci_dev->busn,
+					(pci_dev->slot << 3) | pci_dev->func,
+					regs[i].offset, &val32);
 			val = val32;
 		}
 		else {
@@ -220,14 +240,17 @@ static void dump_regs2(struct pci_slot_dev *pci_dev)
 			return;
 		}
 
-		if (ret == 0)
-			printf("%s (%x, %d): %x\n", regs[i].name, regs[i].offset, regs[i].width, val);
-		else
-			printf("%s (%x, %d): ERROR %d\n", regs[i].name, regs[i].offset, regs[i].width, ret);
+		if (ret == 0) {
+			printf("%s (%x, %d): %x\n", regs[i].name, regs[i].offset,
+				regs[i].width, val);
+		}
+		else {
+			printf("%s (%x, %d): ERROR %d\n", regs[i].name, regs[i].offset,
+				regs[i].width, ret);
+		}
 		i++;
 	}
 }
-
 
 int main(int argc, char **argv) {
 	int opt;
@@ -242,9 +265,9 @@ int main(int argc, char **argv) {
 
 	uint32_t busn = 0;
 	int busn_set = 0;
-	uint8_t  slot = 0;
+	uint8_t slot = 0;
 	int slot_set = 0;
-	uint8_t  func = 0;
+	uint8_t func = 0;
 	int func_set = 0;
 
 	if (argc == 1) {
@@ -291,18 +314,25 @@ int main(int argc, char **argv) {
 		}
 	}/*else have some parameters*/
 
-
 	pci_foreach_dev(pci_dev) {
-		if (busn_set && pci_dev->busn != busn) continue;
-		if (slot_set && pci_dev->slot != slot) continue;
-		if (func_set && pci_dev->func != func) continue;
+		if (busn_set && pci_dev->busn != busn) {
+			continue;
+		}
+		if (slot_set && pci_dev->slot != slot) {
+			continue;
+		}
+		if (func_set && pci_dev->func != func) {
+			continue;
+		}
 		show_device(pci_dev, full);
 
 		if (dump) {
-			if (names)
+			if (names) {
 				dump_regs2(pci_dev);
-			else
+			}
+			else {
 				dump_regs(pci_dev, offset, length);
+			}
 		}
 	}
 

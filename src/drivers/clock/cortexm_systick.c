@@ -44,10 +44,11 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 
 static int this_init(void) {
 	clock_source_register(&this_clock_source);
-	return irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source, "stm32 systick timer");
+	return irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source,
+			"stm32 systick timer");
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_config(struct time_dev_conf *conf) {
 	REG_STORE(SYSTICK_CTRL, 0);
 
 	REG_STORE(SYSTICK_RELOAD, RELOAD_VALUE - 1);
@@ -55,7 +56,7 @@ static int this_config(struct time_dev_conf * conf) {
 	REG_STORE(SYSTICK_VAL, 0);
 
 	REG_STORE(SYSTICK_CTRL, SYSTICK_ENABLE | SYSTICK_TICKINT |
-			SYSTICK_CLOCKINIT);
+		SYSTICK_CLOCKINIT);
 
 	return 0;
 }
@@ -69,7 +70,6 @@ static struct time_event_device this_event = {
 	.event_hz = 1000,
 	.irq_nr = SYSTICK_IRQ,
 };
-
 
 static struct time_counter_device this_counter = {
 	.read = this_read,

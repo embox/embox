@@ -42,10 +42,10 @@ static pthread_attr_t attr;
 static void fill_pipe(const int pipe_fds[]);
 
 /* Read one byte from the pipe after a delay. */
-static void *read_from_pipe_after_delay(const int pipe_fds[]);
+static void * read_from_pipe_after_delay(const int pipe_fds[]);
 
 /* Write one byte to the pipe after a delay. */
-static void *write_to_pipe_after_delay(const int pipe_fds[]);
+static void * write_to_pipe_after_delay(const int pipe_fds[]);
 
 TEST_CASE("descriptor becomes ready to read after a time") {
 	fd_set read_fds;
@@ -69,7 +69,7 @@ TEST_CASE("descriptor becomes ready to read after a time") {
 	timeout.tv_usec = 0;
 
 	pthread_create(&thread, &attr,
-			(void *(*)(void *)) &write_to_pipe_after_delay, pipes[2]);
+		(void *(*)(void *)) &write_to_pipe_after_delay, pipes[2]);
 
 	ret = select(max_fd + 1, &read_fds, &write_fds, NULL, &timeout);
 
@@ -102,7 +102,7 @@ TEST_CASE("descriptor becomes ready to write after a time") {
 	timeout.tv_usec = 0;
 
 	pthread_create(&thread, &attr,
-			(void *(*)(void *)) &read_from_pipe_after_delay, pipes[0]);
+		(void *(*)(void *)) &read_from_pipe_after_delay, pipes[0]);
 
 	ret = select(max_fd + 1, &read_fds, &write_fds, NULL, &timeout);
 
@@ -114,7 +114,7 @@ TEST_CASE("descriptor becomes ready to write after a time") {
 }
 
 TEST_CASE("some of descriptors are ready when select() is "
-		"called (zero timeout)") {
+		  "called (zero timeout)") {
 	fd_set read_fds;
 	fd_set write_fds;
 	struct timeval timeout;
@@ -148,7 +148,7 @@ TEST_CASE("some of descriptors are ready when select() is "
 }
 
 TEST_CASE("some of descriptors are ready when select() "
-		"is called (no timeout)") {
+		  "is called (no timeout)") {
 	fd_set read_fds;
 	fd_set write_fds;
 	int ret;
@@ -279,7 +279,7 @@ static void fill_pipe(const int pipe_fds[]) {
 	flags = fcntl(pipe_fds[WRITE_END], F_GETFL);
 	flags |= O_NONBLOCK;
 	ret = fcntl(pipe_fds[WRITE_END], F_SETFL, flags);
-	if(ret == -1) {
+	if (ret == -1) {
 		return;
 	}
 
@@ -292,7 +292,7 @@ static void fill_pipe(const int pipe_fds[]) {
 	}
 }
 
-static void *read_from_pipe_after_delay(const int pipe_fds[]) {
+static void * read_from_pipe_after_delay(const int pipe_fds[]) {
 	char buf;
 	int ret;
 
@@ -304,7 +304,7 @@ static void *read_from_pipe_after_delay(const int pipe_fds[]) {
 	return NULL;
 }
 
-static void *write_to_pipe_after_delay(const int pipe_fds[]) {
+static void * write_to_pipe_after_delay(const int pipe_fds[]) {
 	char buf;
 	int ret;
 

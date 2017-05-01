@@ -12,7 +12,7 @@
 #include <net/skbuff.h>
 #include <pnet/pack/pnet_pack.h>
 
-static inline void *pnet_pack_get_data(struct pnet_pack *pack) {
+static inline void * pnet_pack_get_data(struct pnet_pack *pack) {
 	struct sk_buff *skb = pack->data;
 	return skb->mac.raw;
 }

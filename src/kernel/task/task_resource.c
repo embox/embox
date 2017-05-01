@@ -19,7 +19,8 @@
 
 EMBOX_UNIT_INIT(task_resource_module_init);
 
-ARRAY_SPREAD_DEF(const struct task_resource_desc *const, task_resource_desc_array);
+ARRAY_SPREAD_DEF(const struct task_resource_desc *const,
+	task_resource_desc_array);
 ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
 
 void task_resource_init(const struct task *task) {
@@ -28,14 +29,15 @@ void task_resource_init(const struct task *task) {
 	task_resource_foreach(res) {
 		assert(res->resource_offset != NULL);
 		assert(binalign_check_bound(
-				*res->resource_offset, sizeof(void *)));
+			*res->resource_offset, sizeof(void *)));
 		if (res->init != NULL) {
 			res->init(task, (void *) task->resources + *res->resource_offset);
 		}
 	}
 }
 
-void task_resource_exec(const struct task *task, const char* path, char *const argv[]) {
+void task_resource_exec(const struct task *task, const char *path,
+	char *const argv[]) {
 	const struct task_resource_desc *res;
 
 	task_resource_foreach(res) {
@@ -46,7 +48,7 @@ void task_resource_exec(const struct task *task, const char* path, char *const a
 }
 
 static void task_resource_deinit_before(const struct task *task,
-		const struct task_resource_desc *before) {
+	const struct task_resource_desc *before) {
 	const struct task_resource_desc *res;
 
 	task_resource_foreach(res) {
@@ -86,7 +88,6 @@ void task_resource_deinit(const struct task *task) {
 
 	task_resource_deinit_before(task, NULL); /* deinit all */
 }
-
 
 static int task_resource_module_init(void) {
 	size_t offset;

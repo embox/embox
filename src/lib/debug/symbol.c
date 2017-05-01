@@ -12,7 +12,7 @@
 extern const struct symbol __symbol_table[];
 extern const size_t __symbol_table_size;
 
-const struct symbol *symbol_lookup(void *addr) {
+const struct symbol * symbol_lookup(void *addr) {
 	/* Binary search */
 	size_t l = 0, r = __symbol_table_size - 1, m;
 

@@ -37,7 +37,7 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 }
 
 int setxattr(const char *path, const char *name, const char *value, size_t size,
-	       	int flags) {
+	int flags) {
 	int res;
 	struct path node;
 
@@ -75,12 +75,13 @@ int listxattr(const char *path, char *list, size_t size) {
 	return res;
 }
 
-int fsetxattr(int fd, const char *name, const char *value, size_t size, int flags) {
+int fsetxattr(int fd, const char *name, const char *value, size_t size,
+	int flags) {
 	struct idesc *idesc;
 	int res;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))) {
 		return SET_ERRNO(EBADF);
 	}
 
@@ -100,7 +101,7 @@ int fgetxattr(int fd, const char *name, void *value, size_t size) {
 	int res;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))) {
 		return SET_ERRNO(EBADF);
 	}
 
@@ -120,7 +121,7 @@ int flistxattr(int fd, char *list, size_t size) {
 	int res;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))) {
 		return SET_ERRNO(EBADF);
 	}
 

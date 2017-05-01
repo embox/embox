@@ -33,9 +33,11 @@ static struct space_allocator pci_allocator = {
 	.space_size = PCI_SPACE_SIZE,
 };
 
-void *space_alloc(struct space_allocator *allocator, size_t win, size_t align) {
+void * space_alloc(struct space_allocator *allocator, size_t win,
+	size_t align) {
 	void *ret;
-	allocator->space_base = (void*)binalign_bound((size_t)allocator->space_base, align);
+	allocator->space_base = (void *)binalign_bound(
+			(size_t)allocator->space_base, align);
 
 	ret = allocator->space_base;
 	allocator->space_base = (void *)((size_t)(allocator->space_base) + win);
@@ -43,7 +45,7 @@ void *space_alloc(struct space_allocator *allocator, size_t win, size_t align) {
 	return ret;
 }
 
-void *space_current(struct space_allocator *allocator) {
+void * space_current(struct space_allocator *allocator) {
 	return allocator->space_base;
 }
 
@@ -55,22 +57,26 @@ static int pci_slot_configure(uint32_t busn, uint32_t devfn){
 	uint32_t bar;
 	void *window;
 
-	for (bar_num = 0; bar_num < 6; bar_num ++) {
+	for (bar_num = 0; bar_num < 6; bar_num++) {
 		/* Write all '1' */
-		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), 0xFFFFFFFF);
+		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2),
+			0xFFFFFFFF);
 		/* Read back size */
-		pci_read_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), &bar);
+		pci_read_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2),
+			&bar);
 		/* if no bar available */
-		if (bar == 0)
+		if (bar == 0) {
 			continue;
+		}
 		length = 1 + ~(bar & 0xFFFFFFF0);
 
 		window = space_alloc(&pci_allocator, length, length);
-		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), (uint32_t)window);
+		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2),
+			(uint32_t)window);
 		log_debug("pci bus %d fn = %d bar_num %d "
 				  "bar = 0x%X win = 0x%X len = 0x%X\n",
-				   busn, devfn, bar_num,
-				   bar, (uint32_t)window, (uint32_t)length);
+			busn, devfn, bar_num,
+			bar, (uint32_t)window, (uint32_t)length);
 	}
 	return 0;
 }
@@ -93,7 +99,7 @@ static int pci_bridge_configure(int busn, int devfn) {
 	 */
 
 	pci_write_config32(busn, devfn, PCI_PRIMARY_BUS,
-			(busn) | (newbusn << 8) | (0xFF << 16));
+		(busn) | (newbusn << 8) | (0xFF << 16));
 
 	log_debug("bridge start configure busn %d newbus %d\n*******", busn,
 		newbusn);
@@ -101,7 +107,7 @@ static int pci_bridge_configure(int busn, int devfn) {
 	pci_bus_configure(newbusn);
 	subord = index_find(&bus_indexator, INDEX_MIN) - 1;
 	pci_write_config32(busn, devfn, PCI_PRIMARY_BUS,
-			(busn) | (newbusn << 8) | (subord << 16));
+		(busn) | (newbusn << 8) | (subord << 16));
 
 	log_debug("bridge start configure subordinate %d\n*******", subord);
 
@@ -116,9 +122,9 @@ static int pci_bridge_configure(int busn, int devfn) {
 
 	return 0;
 }
-extern uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) ;
+extern uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn);
 static void pci_bus_configure(uint32_t busn) {
-	uint32_t  devfn, vendor_reg;
+	uint32_t devfn, vendor_reg;
 	uint8_t hdr_type, is_multi = 0;
 
 	for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
@@ -148,14 +154,15 @@ static void pci_bus_configure(uint32_t busn) {
 		 * PCI-PCI bridge.*/
 		if ((hdr_type & 0x7F) == 1) { /* bridge */
 			/*		    new_dev->baseclass == PCI_BASE_CLASS_BRIDGE &&
-		    new_dev->subclass == PCI_CLASS_BRIDGE_PCI)
-		     */
+			new_dev->subclass == PCI_CLASS_BRIDGE_PCI)
+			 */
 			pci_bridge_configure(busn, devfn);
 		} else { /* not bridge */
 			pci_slot_configure(busn, devfn);
 		}
 		/* Enable bus mastering and memory requests processing */
-		pci_write_config32(busn, devfn, PCI_COMMAND, PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER);
+		pci_write_config32(busn, devfn, PCI_COMMAND,
+			PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER);
 	}
 }
 

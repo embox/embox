@@ -21,8 +21,8 @@
 #include "compr.h"
 
 int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
-		     struct jffs2_full_dnode *fd, unsigned char *buf,
-		     int ofs, int len) {
+	struct jffs2_full_dnode *fd, unsigned char *buf,
+	int ofs, int len) {
 	struct jffs2_raw_inode *ri;
 	size_t readlen;
 	uint32_t crc;
@@ -39,42 +39,46 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			sizeof(*ri), &readlen, (unsigned char *)ri);
 	if (ret) {
 		jffs2_free_raw_inode(ri);
-		printk(KERN_WARNING "Error reading node from 0x%08x: %d\n", ref_offset(fd->raw), ret);
+		printk(KERN_WARNING "Error reading node from 0x%08x: %d\n",
+			ref_offset(fd->raw), ret);
 		return ret;
 	}
 	if (readlen != sizeof(*ri)) {
 		jffs2_free_raw_inode(ri);
-		printk(KERN_WARNING "Short read from 0x%08x: wanted 0x%zx bytes, got 0x%zx\n",
-		       ref_offset(fd->raw), sizeof(*ri), readlen);
+		printk(
+			KERN_WARNING "Short read from 0x%08x: wanted 0x%zx bytes, got 0x%zx\n",
+			ref_offset(fd->raw), sizeof(*ri), readlen);
 		return -EIO;
 	}
 	crc = crc32(0, ri, sizeof(*ri)-8);
 
-	D1(printk( "Node read from %08x: node_crc %08x, calculated CRC %08x. dsize %x, csize %x, offset %x, buf %p\n",
-		  ref_offset(fd->raw), je32_to_cpu(ri->node_crc),
-		  crc, je32_to_cpu(ri->dsize), je32_to_cpu(ri->csize),
-		  je32_to_cpu(ri->offset), buf));
+	D1(printk(
+		"Node read from %08x: node_crc %08x, calculated CRC %08x. dsize %x, csize %x, offset %x, buf %p\n",
+		ref_offset(fd->raw), je32_to_cpu(ri->node_crc),
+		crc, je32_to_cpu(ri->dsize), je32_to_cpu(ri->csize),
+		je32_to_cpu(ri->offset), buf));
 	if (crc != je32_to_cpu(ri->node_crc)) {
-		printk(KERN_WARNING "Node CRC %08x != calculated CRC %08x for node at %08x\n",
-		       je32_to_cpu(ri->node_crc), crc, ref_offset(fd->raw));
+		printk(
+			KERN_WARNING "Node CRC %08x != calculated CRC %08x for node at %08x\n",
+			je32_to_cpu(ri->node_crc), crc, ref_offset(fd->raw));
 		ret = -EIO;
 		goto out_ri;
 	}
 	/* There was a bug where we wrote hole nodes out with csize/dsize
 	   swapped. Deal with it */
 	if (ri->compr == JFFS2_COMPR_ZERO && !je32_to_cpu(ri->dsize) &&
-	    je32_to_cpu(ri->csize)) {
+		je32_to_cpu(ri->csize)) {
 		ri->dsize = ri->csize;
 		ri->csize = cpu_to_je32(0);
 	}
 
-	D1(if(ofs + len > je32_to_cpu(ri->dsize)) {
-		printk(KERN_WARNING "jffs2_read_dnode() asked for %d bytes at %d from %d-byte node\n",
-		       len, ofs, je32_to_cpu(ri->dsize));
-		ret = -EINVAL;
-		goto out_ri;
-	});
-
+	D1(if (ofs + len > je32_to_cpu(ri->dsize)) {
+			printk(KERN_WARNING
+			"jffs2_read_dnode() asked for %d bytes at %d from %d-byte node\n",
+			len, ofs, je32_to_cpu(ri->dsize));
+			ret = -EINVAL;
+			goto out_ri;
+		});
 
 	if (ri->compr == JFFS2_COMPR_ZERO) {
 		memset(buf, 0, len);
@@ -111,9 +115,9 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	}
 
 	D2(printk( "Read %d bytes to %p\n", je32_to_cpu(ri->csize),
-		  readbuf));
+		readbuf));
 	ret = jffs2_flash_read(c, (ref_offset(fd->raw)) + sizeof(*ri),
-			       je32_to_cpu(ri->csize), &readlen, readbuf);
+			je32_to_cpu(ri->csize), &readlen, readbuf);
 
 	if (!ret && readlen != je32_to_cpu(ri->csize)) {
 		ret = -EIO;
@@ -124,15 +128,17 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 
 	crc = crc32(0, readbuf, je32_to_cpu(ri->csize));
 	if (crc != je32_to_cpu(ri->data_crc)) {
-		printk(KERN_WARNING "Data CRC %08x != calculated CRC %08x for node at %08x\n",
-		       je32_to_cpu(ri->data_crc), crc, ref_offset(fd->raw));
+		printk(
+			KERN_WARNING "Data CRC %08x != calculated CRC %08x for node at %08x\n",
+			je32_to_cpu(ri->data_crc), crc, ref_offset(fd->raw));
 		ret = -EIO;
 		goto out_decomprbuf;
 	}
 	D2(printk( "Data CRC matches calculated CRC %08x\n", crc));
 	if (ri->compr != JFFS2_COMPR_NONE) {
 		D2(printk( "Decompress %d bytes from %p to %d bytes at %p\n",
-			  je32_to_cpu(ri->csize), readbuf, je32_to_cpu(ri->dsize), decomprbuf));
+			je32_to_cpu(ri->csize), readbuf, je32_to_cpu(ri->dsize),
+			decomprbuf));
 		ret = jffs2_decompress(c, f, ri->compr | (ri->usercompr << 8), readbuf,
 				decomprbuf, je32_to_cpu(ri->csize), je32_to_cpu(ri->dsize));
 		if (ret) {
@@ -144,51 +150,55 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	if (len < je32_to_cpu(ri->dsize)) {
 		memcpy(buf, decomprbuf + ofs, len);
 	}
- out_decomprbuf:
-	if(decomprbuf != buf && decomprbuf != readbuf) {
+	out_decomprbuf:
+	if (decomprbuf != buf && decomprbuf != readbuf) {
 		kfree(decomprbuf);
 	}
- out_readbuf:
-	if(readbuf != buf) {
+	out_readbuf:
+	if (readbuf != buf) {
 		kfree(readbuf);
 	}
- out_ri:
+	out_ri:
 	jffs2_free_raw_inode(ri);
 
 	return ret;
 }
 
 int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
-			   unsigned char *buf, uint32_t offset, uint32_t len)
+	unsigned char *buf, uint32_t offset, uint32_t len)
 {
 	uint32_t end = offset + len;
 	struct jffs2_node_frag *frag;
 	int ret;
 
 	D1(printk( "jffs2_read_inode_range: ino #%u, range 0x%08x-0x%08x\n",
-		  f->inocache->ino, offset, offset + len));
+		f->inocache->ino, offset, offset + len));
 
 	frag = jffs2_lookup_node_frag(&f->fragtree, offset);
 
 	/* XXX FIXME: Where a single physical node actually shows up in two
 	   frags, we read it twice. Don't do that. */
 	/* Now we're pointing at the first frag which overlaps our page */
-	while(offset < end) {
+	while (offset < end) {
 		D2(printk( "jffs2_read_inode_range: offset %d, end %d\n", offset, end));
 		if (unlikely(!frag || frag->ofs > offset)) {
 			uint32_t holesize = end - offset;
 			if (frag) {
-				D1(printk(KERN_NOTICE "Eep. Hole in ino #%u fraglist. frag->ofs = 0x%08x, offset = 0x%08x\n", f->inocache->ino, frag->ofs, offset));
+				D1(printk(KERN_NOTICE
+					"Eep. Hole in ino #%u fraglist. frag->ofs = 0x%08x, offset = 0x%08x\n",
+					f->inocache->ino, frag->ofs, offset));
 				holesize = min(holesize, frag->ofs - offset);
 			}
-			D1(printk( "Filling non-frag hole from %d-%d\n", offset, offset+holesize));
+			D1(printk( "Filling non-frag hole from %d-%d\n", offset,
+				offset+holesize));
 			memset(buf, 0, holesize);
 			buf += holesize;
 			offset += holesize;
 			continue;
 		} else if (unlikely(!frag->node)) {
 			uint32_t holeend = min(end, frag->ofs + frag->size);
-			D1(printk( "Filling frag hole from %d-%d (frag 0x%x 0x%x)\n", offset, holeend, frag->ofs, frag->ofs + frag->size));
+			D1(printk( "Filling frag hole from %d-%d (frag 0x%x 0x%x)\n",
+				offset, holeend, frag->ofs, frag->ofs + frag->size));
 			memset(buf, 0, holeend - offset);
 			buf += holeend - offset;
 			offset = holeend;
@@ -201,8 +211,8 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			fragofs = offset - frag->ofs;
 			readlen = min(frag->size - fragofs, end - offset);
 			D1(printk( "Reading %d-%d from node at 0x%08x (%d)\n",
-				  frag->ofs + fragofs, frag->ofs + fragofs + readlen,
-				  ref_offset(frag->node->raw), ref_flags(frag->node->raw)));
+				frag->ofs + fragofs, frag->ofs + fragofs + readlen,
+				ref_offset(frag->node->raw), ref_flags(frag->node->raw)));
 			ret = jffs2_read_dnode(c, f, frag->node, buf,
 					fragofs + frag->ofs - frag->node->ofs, readlen);
 			D2(printk( "node read done\n"));
@@ -219,4 +229,3 @@ int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	}
 	return 0;
 }
-

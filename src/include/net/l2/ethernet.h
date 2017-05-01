@@ -46,8 +46,8 @@ struct sk_buff;
  * Ethernet Header Structure
  */
 struct ethhdr {
-	uint8_t  h_dest[ETH_ALEN];   /* Destination ethernet address */
-	uint8_t  h_source[ETH_ALEN]; /* Source ethernet address */
+	uint8_t h_dest[ETH_ALEN];    /* Destination ethernet address */
+	uint8_t h_source[ETH_ALEN];  /* Source ethernet address */
 	uint16_t h_proto;            /* Packet type ID */
 } __attribute__((packed));
 
@@ -60,7 +60,7 @@ static inline struct ethhdr * eth_hdr(const struct sk_buff *skb) {
 }
 
 extern void ethhdr_build(struct ethhdr *ethh, const void *ethdst,
-		const void *ethsrc, short h_proto);
+	const void *ethsrc, short h_proto);
 /**
  * Ethernet device options
  */

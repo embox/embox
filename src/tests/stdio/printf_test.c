@@ -21,8 +21,7 @@ EMBOX_TEST_SUITE("stdio/printf test");
 		const char *fmt = format;                  \
 		snprintf(buff, buff_sz, fmt, __VA_ARGS__); \
 		test_assert_str_equal(answer, buff);       \
-	} while(0)
-
+	} while (0)
 
 TEST_CASE("Test of specifier with type integer") {
 	/* test zero */
@@ -106,7 +105,8 @@ TEST_CASE("Test of %n specifier") {
 
 	answer = " 1'm not stupid   ";
 
-	TEST_STR_FMT(answer, "% 1.1d'%-*cnot %-9.6s%n", 1, 2, 'm', "stupid!!", &size);
+	TEST_STR_FMT(answer, "% 1.1d'%-*cnot %-9.6s%n", 1, 2, 'm', "stupid!!",
+		&size);
 	test_assert_equal(strlen(answer), size);
 }
 
@@ -134,7 +134,7 @@ TEST_CASE("Test of printing with mistake in format") {
 }
 
 #if 0
-/* FIXME this test should respect support_floating option of 
+/* FIXME this test should respect support_floating option of
  * embox.compat.libc.stdio.print. Until then, disabled
  */
 TEST_CASE("Test of specifier with type float") {

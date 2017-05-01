@@ -6,10 +6,8 @@
  * @author Andrey Gazukin
  */
 
-
 #ifndef ISO9660_H_
 #define ISO9660_H_
-
 
 /*
  * iso9660.h
@@ -49,13 +47,11 @@
 
 typedef int64_t off64_t;
 
-
 #define CDFS_BLOCKSIZE         2048
 #define CDFS_POOLDEPTH         10
 
 #define PS1                     '/'     /* Primary path separator */
 #define PS2                     '\\'    /* Alternate path separator */
-
 
 typedef struct cdfs {
 	void *bdev;

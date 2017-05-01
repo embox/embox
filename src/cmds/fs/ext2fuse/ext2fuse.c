@@ -20,7 +20,7 @@
 #include <fs/fuse_driver.h>
 
 extern void init_ext2_stuff();
-extern struct fuse_lowlevel_ops *ext2fs_register(void);
+extern struct fuse_lowlevel_ops * ext2fs_register(void);
 
 static struct fuse_lowlevel_ops *ext2fuse_ops;
 
@@ -34,9 +34,9 @@ static void * stub_run(void *arg) {
 }
 
 extern void fuse_ext2_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
-            size_t size);
+	size_t size);
 extern void fuse_ext2_setxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
-              const char *value, size_t size, int flags);
+	const char *value, size_t size, int flags);
 
 int main(int argc, char *argv[]) {
 	init_ext2_stuff();
@@ -46,12 +46,12 @@ int main(int argc, char *argv[]) {
 
 	ext2fuse_sb_priv_data.fuse_lowlevel_ops = ext2fuse_ops;
 	ext2fuse_sb_priv_data.fuse_task = task_self();
-	ext2fuse_sb_priv_data.stub_thread = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED, stub_run, NULL);
+	ext2fuse_sb_priv_data.stub_thread = thread_create(
+			THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED, stub_run, NULL);
 
 	ext2fuse_ops->init(argv[1]);
 
-
-	while(1) {
+	while (1) {
 		sleep(0);
 	}
 

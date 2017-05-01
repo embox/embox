@@ -29,12 +29,13 @@ EMBOX_UNIT_INIT(usb_mass_init);
 POOL_DEF(usb_mass_classes, struct usb_mass, USB_MASS_MAX_DEVS);
 
 static int usb_cbw_fill(struct usb_mscbw *cbw, uint32_t tag, uint32_t tr_len,
-		enum usb_direction dir, uint8_t lun, void *cb, size_t len) {
+	enum usb_direction dir, uint8_t lun, void *cb, size_t len) {
 
 	cbw->cbw_signature = USB_CBW_SIGNATURE;
 	cbw->cbw_tag = tag;
 	cbw->cbw_transfer_len = tr_len;
-	cbw->cbw_flags = dir == USB_DIRECTION_IN ? USB_CBW_FLAGS_IN : USB_CBW_FLAGS_OUT;
+	cbw->cbw_flags = dir ==
+		USB_DIRECTION_IN ? USB_CBW_FLAGS_IN : USB_CBW_FLAGS_OUT;
 	cbw->cbw_lun = lun;
 
 	memcpy(cbw->cbw_cb, cb, len);
@@ -52,7 +53,7 @@ static void usb_ms_transfer_done(struct usb_request *req, void *arg) {
 
 	req_ctx = &mass->req_ctx;
 
-	switch(req_ctx->req_state) {
+	switch (req_ctx->req_state) {
 	case USB_MASS_REQST_CBW:
 		data_endp_i = req_ctx->dir == USB_DIRECTION_IN ? mass->blkin
 			: mass->blkout;
@@ -75,8 +76,8 @@ static void usb_ms_transfer_done(struct usb_request *req, void *arg) {
 }
 
 int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
-		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len,
-	       	usb_request_notify_hnd_t notify_hnd) {
+	size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len,
+	usb_request_notify_hnd_t notify_hnd) {
 	struct usb_mass *mass = usb2massdata(dev);
 	struct usb_mass_request_ctx *req_ctx;
 	int res;
@@ -98,7 +99,7 @@ int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
 			&req_ctx->cbw, sizeof(struct usb_mscbw));
 }
 
-static void *usb_class_mass_alloc(struct usb_class *cls, struct usb_dev *dev) {
+static void * usb_class_mass_alloc(struct usb_class *cls, struct usb_dev *dev) {
 	struct usb_mass *mass = pool_alloc(&usb_mass_classes);
 
 	if (mass) {
@@ -107,7 +108,8 @@ static void *usb_class_mass_alloc(struct usb_class *cls, struct usb_dev *dev) {
 	return mass;
 }
 
-static void usb_class_mass_free(struct usb_class *cls, struct usb_dev *dev, void *spec) {
+static void usb_class_mass_free(struct usb_class *cls, struct usb_dev *dev,
+	void *spec) {
 	pool_free(&usb_mass_classes, spec);
 }
 
@@ -125,11 +127,11 @@ static void usb_mass_reset_hnd(struct usb_request *req, void *arg) {
 	struct usb_mass *mass = usb2massdata(dev);
 
 	usb_endp_control(dev->endpoints[0], usb_mass_maxlun_hnd, NULL,
-			USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_CLS
-				| USB_DEV_REQ_TYPE_IFC,
-			USB_REQ_MASS_MAXLUN, 0,
-			dev->iface_desc.b_interface_number, 1,
-			&mass->maxlun);
+		USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_CLS
+		| USB_DEV_REQ_TYPE_IFC,
+		USB_REQ_MASS_MAXLUN, 0,
+		dev->iface_desc.b_interface_number, 1,
+		&mass->maxlun);
 }
 #endif
 
@@ -154,17 +156,17 @@ static void usb_mass_handle(struct usb_class *cls, struct usb_dev *dev) {
 
 #if 0
 	usb_endp_control(dev->endpoints[0], usb_mass_reset_hnd, NULL,
-			USB_DEV_REQ_TYPE_WR | USB_DEV_REQ_TYPE_CLS
-				| USB_DEV_REQ_TYPE_IFC,
-			USB_REQ_MASS_RESET, 0,
-			dev->iface_desc.b_interface_number, 0, NULL);
+		USB_DEV_REQ_TYPE_WR | USB_DEV_REQ_TYPE_CLS
+		| USB_DEV_REQ_TYPE_IFC,
+		USB_REQ_MASS_RESET, 0,
+		dev->iface_desc.b_interface_number, 0, NULL);
 #endif
 	usb_endp_control(dev->endpoints[0], usb_mass_maxlun_hnd, NULL,
-			USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_CLS
-				| USB_DEV_REQ_TYPE_IFC,
-			USB_REQ_MASS_MAXLUN, 0,
-			dev->iface_desc.b_interface_number, 1,
-			&mass->maxlun);
+		USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_CLS
+		| USB_DEV_REQ_TYPE_IFC,
+		USB_REQ_MASS_MAXLUN, 0,
+		dev->iface_desc.b_interface_number, 1,
+		&mass->maxlun);
 }
 
 static void usb_mass_release(struct usb_class *cls, struct usb_dev *dev) {

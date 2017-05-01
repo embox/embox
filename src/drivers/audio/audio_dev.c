@@ -13,12 +13,11 @@
 
 ARRAY_SPREAD_DEF(const struct audio_dev, __audio_device_registry);
 
-
-struct audio_dev *audio_dev_get_by_idx(int idx) {
+struct audio_dev * audio_dev_get_by_idx(int idx) {
 	return (struct audio_dev *)&__audio_device_registry[idx];
 }
 
-struct audio_dev *audio_dev_get_by_name(char name[]) {
+struct audio_dev * audio_dev_get_by_name(char name[]) {
 	const struct audio_dev *audio_dev;
 
 	array_spread_foreach_ptr(audio_dev, __audio_device_registry) {

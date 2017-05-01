@@ -1,23 +1,23 @@
 /******************************************************************************
  * hypercall-x86_32.h
- * 
+ *
  * Copied from XenLinux.
- * 
+ *
  * Copyright (c) 2002-2004, K A Fraser
- * 
+ *
  * This file may be distributed separately from the Linux kernel, or
  * incorporated into other software packages, subject to the following license:
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this source file (the "Software"), to deal in the Software without
  * restriction, including without limitation the rights to use, copy, modify,
  * merge, publish, distribute, sublicense, and/or sell copies of the Software,
  * and to permit persons to whom the Software is furnished to do so, subject to
  * the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,98 +33,102 @@
 #include <xen/xen.h>
 #include <xen/sched.h>
 #include <xen/nmi.h>
-//#include <x86_mm.h>
+/*#include <x86_mm.h> */
 
 #define __STR(x) #x
 #define STR(x) __STR(x)
 
 typedef uint64_t u64;
 #if !defined(CONFIG_X86_PAE)
-typedef struct { unsigned long pte_low; } pte_t;
+typedef struct {
+	unsigned long pte_low;
+} pte_t;
 #else
-typedef struct { unsigned long pte_low, pte_high; } pte_t;
+typedef struct {
+	unsigned long pte_low, pte_high;
+} pte_t;
 #endif /* CONFIG_X86_PAE */
 
 #if !defined(CONFIG_X86_PAE)
-#define __pte(x) ((pte_t) { (x) } )
+#define __pte(x) ((pte_t) { (x) })
 #else
 #define __pte(x) ({ unsigned long long _x = (x);        \
-    ((pte_t) {(unsigned long)(_x), (unsigned long)(_x>>32)}); })
+					((pte_t) {(unsigned long)(_x), (unsigned long)(_x>>32)}); })
 #endif
 extern char hypercall_page[4096];
 
-#define _hypercall0(type, name)			\
-({						\
-	long __res;				\
-	__asm volatile (				\
-		"call hypercall_page + ("STR(__HYPERVISOR_##name)" * 32)"\
-		: "=a" (__res)			\
-		:				\
-		: "memory" );			\
-	(type)__res;				\
-})
+#define _hypercall0(type, name)         \
+	({                      \
+		long __res;             \
+		__asm volatile (                \
+			"call hypercall_page + ("STR (__HYPERVISOR_ ## name) " * 32)" \
+			: "=a" (__res)          \
+			:               \
+			: "memory");           \
+		(type)__res;                \
+	})
 
-#define _hypercall1(type, name, a1)				\
-({								\
-	long __res, __ign1;					\
-	__asm volatile (						\
-		"call hypercall_page + ("STR(__HYPERVISOR_##name)" * 32)"\
-		: "=a" (__res), "=b" (__ign1)			\
-		: "1" ((long)(a1))				\
-		: "memory" );					\
-	(type)__res;						\
-})
+#define _hypercall1(type, name, a1)             \
+	({                              \
+		long __res, __ign1;                 \
+		__asm volatile (                        \
+			"call hypercall_page + ("STR (__HYPERVISOR_ ## name) " * 32)" \
+			: "=a" (__res), "=b" (__ign1)           \
+			: "1" ((long)(a1))              \
+			: "memory");                   \
+		(type)__res;                        \
+	})
 
-#define _hypercall2(type, name, a1, a2)				\
-({								\
-	long __res, __ign1, __ign2;				\
-	__asm volatile (						\
-		"call hypercall_page + ("STR(__HYPERVISOR_##name)" * 32)"\
-		: "=a" (__res), "=b" (__ign1), "=c" (__ign2)	\
-		: "1" ((long)(a1)), "2" ((long)(a2))		\
-		: "memory" );					\
-	(type)__res;						\
-})
+#define _hypercall2(type, name, a1, a2)             \
+	({                              \
+		long __res, __ign1, __ign2;             \
+		__asm volatile (                        \
+			"call hypercall_page + ("STR (__HYPERVISOR_ ## name) " * 32)" \
+			: "=a" (__res), "=b" (__ign1), "=c" (__ign2)    \
+			: "1" ((long)(a1)), "2" ((long)(a2))        \
+			: "memory");                   \
+		(type)__res;                        \
+	})
 
-#define _hypercall3(type, name, a1, a2, a3)			\
-({								\
-	long __res, __ign1, __ign2, __ign3;			\
-	__asm volatile (						\
-		"call hypercall_page + ("STR(__HYPERVISOR_##name)" * 32)"\
-		: "=a" (__res), "=b" (__ign1), "=c" (__ign2), 	\
-		"=d" (__ign3)					\
-		: "1" ((long)(a1)), "2" ((long)(a2)),		\
-		"3" ((long)(a3))				\
-		: "memory" );					\
-	(type)__res;						\
-})
+#define _hypercall3(type, name, a1, a2, a3)         \
+	({                              \
+		long __res, __ign1, __ign2, __ign3;         \
+		__asm volatile (                        \
+			"call hypercall_page + ("STR (__HYPERVISOR_ ## name) " * 32)" \
+			: "=a" (__res), "=b" (__ign1), "=c" (__ign2),   \
+			"=d" (__ign3)                   \
+			: "1" ((long)(a1)), "2" ((long)(a2)),       \
+			"3" ((long)(a3))                \
+			: "memory");                   \
+		(type)__res;                        \
+	})
 
-#define _hypercall4(type, name, a1, a2, a3, a4)			\
-({								\
-	long __res, __ign1, __ign2, __ign3, __ign4;		\
-	__asm volatile (						\
-		"call hypercall_page + ("STR(__HYPERVISOR_##name)" * 32)"\
-		: "=a" (__res), "=b" (__ign1), "=c" (__ign2),	\
-		"=d" (__ign3), "=S" (__ign4)			\
-		: "1" ((long)(a1)), "2" ((long)(a2)),		\
-		"3" ((long)(a3)), "4" ((long)(a4))		\
-		: "memory" );					\
-	(type)__res;						\
-})
+#define _hypercall4(type, name, a1, a2, a3, a4)         \
+	({                              \
+		long __res, __ign1, __ign2, __ign3, __ign4;     \
+		__asm volatile (                        \
+			"call hypercall_page + ("STR (__HYPERVISOR_ ## name) " * 32)" \
+			: "=a" (__res), "=b" (__ign1), "=c" (__ign2),   \
+			"=d" (__ign3), "=S" (__ign4)            \
+			: "1" ((long)(a1)), "2" ((long)(a2)),       \
+			"3" ((long)(a3)), "4" ((long)(a4))      \
+			: "memory");                   \
+		(type)__res;                        \
+	})
 
-#define _hypercall5(type, name, a1, a2, a3, a4, a5)		\
-({								\
-	long __res, __ign1, __ign2, __ign3, __ign4, __ign5;	\
-	__asm volatile (						\
-		"call hypercall_page + ("STR(__HYPERVISOR_##name)" * 32)"\
-		: "=a" (__res), "=b" (__ign1), "=c" (__ign2),	\
-		"=d" (__ign3), "=S" (__ign4), "=D" (__ign5)	\
-		: "1" ((long)(a1)), "2" ((long)(a2)),		\
-		"3" ((long)(a3)), "4" ((long)(a4)),		\
-		"5" ((long)(a5))				\
-		: "memory" );					\
-	(type)__res;						\
-})
+#define _hypercall5(type, name, a1, a2, a3, a4, a5)     \
+	({                              \
+		long __res, __ign1, __ign2, __ign3, __ign4, __ign5; \
+		__asm volatile (                        \
+			"call hypercall_page + ("STR (__HYPERVISOR_ ## name) " * 32)" \
+			: "=a" (__res), "=b" (__ign1), "=c" (__ign2),   \
+			"=d" (__ign3), "=S" (__ign4), "=D" (__ign5) \
+			: "1" ((long)(a1)), "2" ((long)(a2)),       \
+			"3" ((long)(a3)), "4" ((long)(a4)),     \
+			"5" ((long)(a5))                \
+			: "memory");                   \
+		(type)__res;                        \
+	})
 
 static inline int
 HYPERVISOR_set_trap_table(
@@ -167,8 +171,8 @@ HYPERVISOR_set_callbacks(
 	unsigned long failsafe_selector, unsigned long failsafe_address)
 {
 	return _hypercall4(int, set_callbacks,
-			   event_selector, event_address,
-			   failsafe_selector, failsafe_address);
+			event_selector, event_address,
+			failsafe_selector, failsafe_address);
 }
 
 static inline int
@@ -238,7 +242,7 @@ HYPERVISOR_update_va_mapping(
 	pte_hi = new_val.pte_high;
 #endif
 	return _hypercall4(int, update_va_mapping, va,
-			   new_val.pte_low, pte_hi, flags);
+			new_val.pte_low, pte_hi, flags);
 }
 
 static inline int
@@ -285,7 +289,7 @@ HYPERVISOR_update_va_mapping_otherdomain(
 	pte_hi = new_val.pte_high;
 #endif
 	return _hypercall5(int, update_va_mapping_otherdomain, va,
-			   new_val.pte_low, pte_hi, flags, domid);
+			new_val.pte_low, pte_hi, flags, domid);
 }
 
 static inline int
@@ -307,7 +311,7 @@ HYPERVISOR_suspend(
 	unsigned long srec)
 {
 	return _hypercall3(int, sched_op, SCHEDOP_shutdown,
-			   SHUTDOWN_suspend, srec);
+			SHUTDOWN_suspend, srec);
 }
 
 static inline int

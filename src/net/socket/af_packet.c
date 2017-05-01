@@ -40,7 +40,8 @@ static const struct net_family_type packet_types[] = {
 	{ SOCK_RAW, &packet_raw_ops }
 };
 static const struct net_pack_out_ops packet_out_ops_struct;
-static const struct net_pack_out_ops *const packet_out_ops = &packet_out_ops_struct;
+static const struct net_pack_out_ops *const packet_out_ops =
+	&packet_out_ops_struct;
 EMBOX_NET_FAMILY(AF_PACKET, packet_types, packet_out_ops);
 
 static DLIST_DEFINE(packet_sock_list);
@@ -54,7 +55,7 @@ static const struct sock_proto_ops packet_sock_ops_struct = {
 /* htons(ETH_P_ALL) */
 #define HOST_ETH_P_ALL     0x003
 #else
-#error("set endians")
+#error ("set endians")
 #endif
 EMBOX_NET_SOCK(AF_PACKET, SOCK_RAW, HOST_ETH_P_ALL, 0, packet_sock_ops_struct);
 
@@ -69,7 +70,7 @@ POOL_DEF(packet_sock_pool, struct packet_sock, 2);
 
 static DLIST_DEFINE(packet_g_sock_list);
 
-static inline struct packet_sock *sk2packet(struct sock *sk) {
+static inline struct packet_sock * sk2packet(struct sock *sk) {
 	return member_cast_out(sk, struct packet_sock, sk);
 }
 
@@ -112,7 +113,7 @@ static int packet_sock_close(struct sock *sk) {
 }
 
 static int packet_sock_bind(struct sock *sk, const struct sockaddr *addr,
-		socklen_t addrlen) {
+	socklen_t addrlen) {
 	struct packet_sock *psk = sk2packet(sk);
 	struct sockaddr_ll *newsll = (struct sockaddr_ll *) addr;
 
@@ -148,7 +149,7 @@ static void packet_sll_fill(struct sockaddr_ll *sll, struct sk_buff *skb) {
 }
 
 static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
-		int flags) {
+	int flags) {
 	struct packet_sock *psk = sk2packet(sk);
 	struct sk_buff *skb;
 	int n_byte = 0, skb_err;
@@ -195,7 +196,8 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 			n_byte = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen,
 					skb->nh.raw, skb->len - (skb->nh.raw - skb->mac.raw));
 		} else {
-			n_byte = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen, skb->mac.raw, skb->len);
+			n_byte = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen, skb->mac.raw,
+					skb->len);
 		}
 	}
 
@@ -208,7 +210,7 @@ static int packet_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 }
 
 static int packet_sock_setsockopt(struct sock *sk, int level,
-		int optname, const void *optval, socklen_t optlen) {
+	int optname, const void *optval, socklen_t optlen) {
 
 	if (optname == SO_ATTACH_FILTER) {
 		return 0;
@@ -233,10 +235,10 @@ void sock_packet_add(struct sk_buff *skb, unsigned short protocol) {
 
 	dlist_foreach_entry(psk, &packet_g_sock_list, lnk) {
 		proto_check = (psk->sll.sll_protocol == htons(ETH_P_ALL)
-				|| psk->sll.sll_protocol == protocol);
+			|| psk->sll.sll_protocol == protocol);
 
 		iface_check = (psk->sll.sll_ifindex == 0
-				|| psk->sll.sll_ifindex == skb->dev->index);
+			|| psk->sll.sll_ifindex == skb->dev->index);
 
 		if (proto_check && iface_check) {
 			skb_queue_push(&psk->rx_q, skb_clone(skb));

@@ -16,7 +16,7 @@
 int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 	struct iphdr *iph;
 
-	uint8_t * endopts;
+	uint8_t *endopts;
 
 	/* curropt points to current option in question
 	 * optsfault points to first problem occurred in options
@@ -27,16 +27,16 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 	uint8_t *optsfault = NULL;
 	_Bool secappeared = false;
 	_Bool sidappeared = false;
-	unsigned int* timestamp = NULL;
+	unsigned int *timestamp = NULL;
 
 	iph = ip_hdr(skb);
-	curropt	= (unsigned char*) iph + IP_MIN_HEADER_SIZE;
+	curropt = (unsigned char *) iph + IP_MIN_HEADER_SIZE;
 	endopts = curropt + opt->optlen;
 
 	for (; curropt < endopts; ) {
 		switch (*curropt) {
 		case IPOPT_END:
-			for (++curropt ; curropt < endopts; ++curropt) {
+			for (++curropt; curropt < endopts; ++curropt) {
 				if (IPOPT_END != *curropt) {
 					*curropt = IPOPT_END;
 					opt->is_changed = 1;
@@ -53,7 +53,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 			goto error;
 		}
 
-		switch(*curropt) {
+		switch (*curropt) {
 		case IPOPT_SEC:
 			if (secappeared) {
 				optsfault = curropt;
@@ -80,7 +80,7 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 				optsfault = curropt + 2;
 				goto error;
 			}
-			opt->srr = (unsigned char) (curropt - (unsigned char*) iph);
+			opt->srr = (unsigned char) (curropt - (unsigned char *) iph);
 			opt->is_strictroute = (*curropt == IPOPT_SSRR);
 			break;
 		case IPOPT_RR:
@@ -101,13 +101,14 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 					optsfault = curropt + 2;
 					goto error;
 				}
-				//TODO ask whether ...->ifa_address is a correct transmitter (i.e. our) address
-				*(in_addr_t *)(curropt + curropt[2] - 1) = inetdev_get_by_dev(skb->dev)->ifa_address;
+				/*TODO ask whether ...->ifa_address is a correct transmitter (i.e. our) address */
+				*(in_addr_t *)(curropt + curropt[2] - 1) = inetdev_get_by_dev(
+						skb->dev)->ifa_address;
 				curropt[2] += 4;
 				opt->is_changed = 1;
 				opt->rr_needaddr = 1;
 			}
-			opt->rr = (unsigned char) (curropt - (unsigned char*) iph);
+			opt->rr = (unsigned char) (curropt - (unsigned char *) iph);
 			break;
 		case IPOPT_SID:
 			if (sidappeared) {
@@ -137,11 +138,11 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 					optsfault = curropt + 2;
 					goto error;
 				}
-				switch(curropt[3]&0x0F) {
+				switch (curropt[3]&0x0F) {
 				case IPOPT_TS_TSONLY:
-					opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
+					opt->ts = (unsigned char) (curropt - (unsigned char *) iph);
 					opt->ts_needtime = 1;
-					timestamp = (unsigned int*)(&curropt[curropt[2]-1]);
+					timestamp = (unsigned int *)(&curropt[curropt[2]-1]);
 					curropt[2] += 4;
 					break;
 				case IPOPT_TS_TSANDADDR:
@@ -150,9 +151,10 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 						optsfault = curropt + 2;
 						goto error;
 					}
-					*(in_addr_t *)(curropt + curropt[2] - 1) = inetdev_get_by_dev(skb->dev)->ifa_address;
-					timestamp = (unsigned int*)(&curropt[curropt[2]+3]);
-					opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
+					*(in_addr_t *)(curropt + curropt[2] -
+					1) = inetdev_get_by_dev(skb->dev)->ifa_address;
+					timestamp = (unsigned int *)(&curropt[curropt[2]+3]);
+					opt->ts = (unsigned char) (curropt - (unsigned char *) iph);
 					opt->ts_needaddr = 1;
 					opt->ts_needtime = 1;
 					curropt[2] += 8;
@@ -163,15 +165,15 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 						optsfault = curropt + 2;
 						goto error;
 					}
-					opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
-					//TODO i still don't understand meaning of this option
+					opt->ts = (unsigned char) (curropt - (unsigned char *) iph);
+					/*TODO i still don't understand meaning of this option */
 					break;
 				default:
 					optsfault = curropt + 3;
 					goto error;
 				}
 				if (timestamp) {
-					//TODO get timestamp and record, gettimeofday seems to be unimplemented
+					/*TODO get timestamp and record, gettimeofday seems to be unimplemented */
 					opt->is_changed = 1;
 				}
 			}
@@ -185,10 +187,10 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 				curropt[3] &= 0x0F;
 				curropt[3] |= (++tsoverflow) << 4;
 				opt->is_changed = 1;
-				opt->ts = (unsigned char) (curropt - (unsigned char*) iph);
+				opt->ts = (unsigned char) (curropt - (unsigned char *) iph);
 			}
 			break;
-		// TODO case IPOPT_CIPSO - don't still know what to do here
+		/* TODO case IPOPT_CIPSO - don't still know what to do here */
 		case IPOPT_RA:
 			opt->router_alert = curropt[3];
 			break;
@@ -201,31 +203,31 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 
 	}
 
-end:
+	end:
 	if (!optsfault)
 	{
 		return 0;
 	}
 
-error:
-	curroptlen = (int) (optsfault - (unsigned char*) iph);
+	error:
+	curroptlen = (int) (optsfault - (unsigned char *) iph);
 	icmp_discard(skb, ICMP_PARAM_PROB, ICMP_PTR_ERROR,
-			(uint8_t)curroptlen);
-	//TODO : is it an adequate return value? maybe -EINVAL will suit better?
+		(uint8_t)curroptlen);
+	/*TODO : is it an adequate return value? maybe -EINVAL will suit better? */
 	return -1;
 
 }
 
 int ip_options_handle_srr(sk_buff_t *skb)
 {
-	ip_options_t *opt = (ip_options_t*)(skb->cb);
-//	iphdr_t *iph = ip_hdr(skb);
+	ip_options_t *opt = (ip_options_t *)(skb->cb);
+/*	iphdr_t *iph = ip_hdr(skb); */
 
 	if (!opt->srr) {
 		return 0;
 	}
 
-	//TODO search for addresses consequently, try to route
+	/*TODO search for addresses consequently, try to route */
 
 	return 0;
 }

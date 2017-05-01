@@ -23,11 +23,12 @@ EMBOX_TEST_SUITE("slab allocator test");
 struct big_object {
 	char some_stuff[MAX_SIZE];
 };
-CACHE_DEF(static_cache, struct big_object , 0);
+CACHE_DEF(static_cache, struct big_object, 0);
 
-TEST_CASE("Allocation in cache created throw CACHE_DEF without cache growing.") {
+TEST_CASE("Allocation in cache created throw CACHE_DEF without cache growing.")
+{
 #if 0
-	void* obj;
+	void *obj;
 
 	/* Test initial cache's property: no slabs */
 	test_assert_equal(static_cache.slab_order, 0);
@@ -114,7 +115,7 @@ TEST_CASE("Slab size.") {
 	size_t obj_size = MAX_SIZE - (MAX_SIZE / MAX_INT_FRAGM_ORDER);
 
 	/* Create object with wastage greater than (1 / MAX_INT_FRAGM_ORDER) * 100% */
-	cache = cache_create("test_cache", obj_size , 1);
+	cache = cache_create("test_cache", obj_size, 1);
 	num = cache->num;
 	while (num-- > 0) {
 		cache_alloc(cache);
@@ -122,8 +123,9 @@ TEST_CASE("Slab size.") {
 	slab_size = PAGE_SIZE() << cache->slab_order;
 	/* Test if full slab have wastage lower than (1 / MAX_INT_FRAGM_ORDER) * 100% or slab has
 	 * maximum size */
-	test_assert(((obj_size * cache->num) / slab_size) <= (1 / MAX_INT_FRAGM_ORDER) ||
-			(MAX_SLAB_ORDER == cache->slab_order));
+	test_assert(((obj_size * cache->num) / slab_size) <=
+		(1 / MAX_INT_FRAGM_ORDER) ||
+		(MAX_SLAB_ORDER == cache->slab_order));
 
 	cache_destroy(cache);
 #endif

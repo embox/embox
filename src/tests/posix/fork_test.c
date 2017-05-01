@@ -24,7 +24,7 @@ EMBOX_TEST_SUITE("fork() testsuite");
 		} \
 	} while (0)
 
-static void *test_fork_basic(void *arg) {
+static void * test_fork_basic(void *arg) {
 	pid_t pid;
 	pid_t parent_pid;
 	int cnt = 5;
@@ -50,7 +50,7 @@ static void *test_fork_basic(void *arg) {
 		exit(0);
 	}
 
-	while(cnt-- > 0) {
+	while (cnt-- > 0) {
 		sleep(0);
 	}
 
@@ -101,7 +101,7 @@ static pid_t fork_proxy(void) {
 	return pid;
 }
 
-static void *test_fork_stack_crash(void *arg) {
+static void * test_fork_stack_crash(void *arg) {
 	pid_t pid;
 	int res;
 
@@ -129,7 +129,7 @@ TEST_CASE("fork'ed child is allowed to crash parent stack") {
 }
 
 #define TEST_FORK_MALLOC_SZ 128
-static void *test_fork_heap_crash(void *arg) {
+static void * test_fork_heap_crash(void *arg) {
 	pid_t pid;
 	int i, res;
 
@@ -171,7 +171,7 @@ TEST_CASE("fork'ed child is allowed to crash heap") {
 	test_assert_zero(res);
 }
 
-static void *test_fork_static_crash(void *arg) {
+static void * test_fork_static_crash(void *arg) {
 
 	execv("test_fork_static", NULL);
 
@@ -190,7 +190,7 @@ TEST_CASE("fork'ed child is allowed to crash static memory") {
 	test_assert_zero(res);
 }
 
-static void *thr1_hnd(void *arg) {
+static void * thr1_hnd(void *arg) {
 	pid_t pid;
 	int res, cnt = 0x5;
 	int tmp;
@@ -218,7 +218,7 @@ static void *thr1_hnd(void *arg) {
 	return NULL;
 }
 
-static void *thr2_hnd(void *arg) {
+static void * thr2_hnd(void *arg) {
 	pid_t pid;
 	int cnt = 0x5;
 	int tmp, res;
@@ -245,7 +245,7 @@ static void *thr2_hnd(void *arg) {
 	return NULL;
 }
 
-static void *test_fork_multithread(void *arg) {
+static void * test_fork_multithread(void *arg) {
 	struct thread *t1, *t2;
 	int cnt = 0x5;
 
@@ -271,4 +271,3 @@ TEST_CASE("multithread task forking") {
 
 	test_assert_zero(res);
 }
-

@@ -25,7 +25,6 @@ struct logging {
 	int level; /**< Filtering log level */
 };
 
-
 /**
  * Array mapping a log_level on its text view.
  * log_level - 1 -> "level"
@@ -40,6 +39,6 @@ extern char *log_levels[];
  * @param fmt     printf-like format of the message
  */
 extern void logging_raw(struct logging *logging, int level,
-	const char* fmt, ...);
+	const char *fmt, ...);
 
 #endif /* UTIL_LOGGING_H_ */

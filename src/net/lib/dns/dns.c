@@ -23,7 +23,6 @@
 #include <util/log.h>
 #include <framework/mod/options.h>
 
-
 /**
  * DNS query timeout
  */
@@ -77,7 +76,7 @@ static int name_to_label(const char *name, char *buff, size_t buff_sz) {
 }
 
 static int label_to_name(const char *label, const char *buff, size_t buff_sz,
-		size_t max_name_sz, char *out_name, size_t *out_field_sz) {
+	size_t max_name_sz, char *out_name, size_t *out_field_sz) {
 	size_t bytes_left, field_sz;
 	uint8_t label_sz;
 	uint16_t offset;
@@ -139,10 +138,10 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 
 	if (out_field_sz != NULL) {
 		*out_field_sz = field_sz
-				+ (one_line /* if it's haven't labels */
-						? sizeof(char) /* plus one byte at the end
-										  of the loop */
-						: 0);
+			+ (one_line     /* if it's haven't labels */
+			? sizeof(char)             /* plus one byte at the end
+		                                  of the loop */
+			: 0);
 	}
 
 	return 0;
@@ -183,7 +182,8 @@ static int dns_q_format(struct dns_q *query, char *buff, size_t buff_sz) {
 	return 0;
 }
 
-static int dns_query_format(struct dns_q *query, union dns_msg *dm, size_t *out_dm_sz) {
+static int dns_query_format(struct dns_q *query, union dns_msg *dm,
+	size_t *out_dm_sz) {
 	int ret;
 	size_t data_sz;
 
@@ -204,14 +204,14 @@ static int dns_query_format(struct dns_q *query, union dns_msg *dm, size_t *out_
 
 	/* Save the total size fo message */
 	data_sz = sizeof(query->qclass) + sizeof(query->qtype) +
-			(strlen(&query->qname[0]) + 2) * sizeof(uint8_t);
+		(strlen(&query->qname[0]) + 2) * sizeof(uint8_t);
 	*out_dm_sz = sizeof dm->msg.hdr + data_sz;
 
 	return 0;
 }
 
 static int dns_query_execute(union dns_msg *req, size_t req_sz,
-		union dns_msg *rep, size_t *out_rep_sz) {
+	union dns_msg *rep, size_t *out_rep_sz) {
 	static const struct timeval timeout = {
 		.tv_sec = MODOPS_DNS_QUERY_TIMEOUT / MSEC_PER_SEC,
 		.tv_usec = (MODOPS_DNS_QUERY_TIMEOUT % MSEC_PER_SEC) * USEC_PER_MSEC,
@@ -235,13 +235,13 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	}
 
 	if (-1 == connect(sock, (struct sockaddr *)&nameserver_addr,
-				sizeof nameserver_addr)) {
+		sizeof nameserver_addr)) {
 		close(sock);
 		return -errno;
 	}
 
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-				&timeout, sizeof timeout)) {
+		&timeout, sizeof timeout)) {
 		close(sock);
 		return -errno;
 	}
@@ -282,7 +282,7 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 }
 
 static int dns_q_parse(struct dns_q *q, const char *data,
-		const char *buff, size_t buff_sz, size_t *out_field_sz) {
+	const char *buff, size_t buff_sz, size_t *out_field_sz) {
 	int ret;
 	size_t field_sz;
 	uint16_t field_val;
@@ -323,7 +323,7 @@ static int dns_q_parse(struct dns_q *q, const char *data,
 }
 
 static int dns_rr_a_parse(struct dns_rr *rr, const char *data, size_t field_sz,
-		const char *buff, size_t buff_sz) {
+	const char *buff, size_t buff_sz) {
 	if (field_sz != sizeof rr->rdata.a.address) {
 		return -EINVAL;
 	}
@@ -332,25 +332,28 @@ static int dns_rr_a_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 }
 
 static int dns_rr_ns_parse(struct dns_rr *rr, const char *data, size_t field_sz,
-		const char *buff, size_t buff_sz) {
+	const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ns.nsdname,
 			&rr->rdata.ns.nsdname[0], NULL);
 }
 
-static int dns_rr_cname_parse(struct dns_rr *rr, const char *data, size_t field_sz,
-		const char *buff, size_t buff_sz) {
+static int dns_rr_cname_parse(struct dns_rr *rr, const char *data,
+	size_t field_sz,
+	const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.cname.cname,
 			&rr->rdata.cname.cname[0], NULL);
 }
 
-static int dns_rr_ptr_parse(struct dns_rr *rr, const char *data, size_t field_sz,
-		const char *buff, size_t buff_sz) {
+static int dns_rr_ptr_parse(struct dns_rr *rr, const char *data,
+	size_t field_sz,
+	const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ptr.ptrdname,
 			&rr->rdata.ptr.ptrdname[0], NULL);
 }
 
-static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data, size_t field_sz,
-		const char *buff, size_t buff_sz) {
+static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data,
+	size_t field_sz,
+	const char *buff, size_t buff_sz) {
 	if (field_sz != sizeof rr->rdata.aaaa.address) {
 		return -EINVAL;
 	}
@@ -359,7 +362,7 @@ static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data, size_t field_s
 }
 
 static int dns_rr_parse(struct dns_rr *rr, const char *data,
-		const char *buff, size_t buff_sz, size_t *out_field_sz) {
+	const char *buff, size_t buff_sz, size_t *out_field_sz) {
 	int ret;
 	size_t field_sz;
 	uint16_t field_val16;
@@ -450,7 +453,7 @@ static int dns_rr_parse(struct dns_rr *rr, const char *data,
 }
 
 static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
-		struct dns_result *out_result) {
+	struct dns_result *out_result) {
 	int ret;
 	const char *curr;
 	struct dns_q *qs;
@@ -466,7 +469,8 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 	}
 
 	if (dm->msg.hdr.rcode != DNS_RESP_CODE_OK) {
-		log_error("dns_result_parse: error: DNS result code is %d!\n", dm->msg.hdr.rcode);
+		log_error("dns_result_parse: error: DNS result code is %d!\n",
+			dm->msg.hdr.rcode);
 		return -1;
 	}
 
@@ -574,7 +578,7 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 	/* All ok, done */
 	return 0;
 
-error:
+	error:
 	dns_result_free(out_result);
 	return ret;
 }
@@ -604,7 +608,7 @@ static int dns_execute(struct dns_q *query, struct dns_result *out_result) {
 }
 
 int dns_query(const char *qname, enum dns_type qtype, enum dns_class qclass,
-		struct dns_result *out_result) {
+	struct dns_result *out_result) {
 	struct dns_q query;
 	size_t qname_sz;
 

@@ -39,9 +39,9 @@ struct idesc_ops {
 
 struct idesc_xattrops {
 	int (*getxattr)(struct idesc *idesc, const char *name, void *value,
-			size_t size);
+		size_t size);
 	int (*setxattr)(struct idesc *idesc, const char *name,
-			const void *value, size_t size, int flags);
+		const void *value, size_t size, int flags);
 	int (*listxattr)(struct idesc *idesc, char *list, size_t size);
 	int (*removexattr)(struct idesc *idesc, const char *name);
 };
@@ -50,14 +50,15 @@ struct idesc_xattrops {
 __BEGIN_DECLS
 
 extern int idesc_init(struct idesc *idesc, const struct idesc_ops *ops,
-		mode_t amode);
+	mode_t amode);
 
 extern int idesc_check_mode(struct idesc *idesc, mode_t amode);
 
 extern int idesc_getxattr(struct idesc *idesc, const char *name, void *value,
-		size_t size);
-extern int idesc_setxattr(struct idesc *idesc, const char *name, const void *value,
-		size_t size, int flags);
+	size_t size);
+extern int idesc_setxattr(struct idesc *idesc, const char *name,
+	const void *value,
+	size_t size, int flags);
 extern int idesc_listxattr(struct idesc *idesc, char *list, size_t size);
 
 extern int idesc_removexattr(struct idesc *idesc, const char *name);

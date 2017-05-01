@@ -27,7 +27,7 @@ static int usb_dev_register(struct usb_dev *dev) {
 	dlist_add_next(&dev->dev_link, &usb_dev_list);
 
 	printk("usb_core: vendor=%04x product=%04x is ready\n",
-			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
+		dev->dev_desc.id_vendor, dev->dev_desc.id_product);
 	return 0;
 }
 
@@ -41,7 +41,7 @@ static void usb_dev_unregister(struct usb_dev *dev) {
 	dlist_head_init(&dev->dev_link);
 }
 
-struct usb_dev *usb_dev_iterate(struct usb_dev *dev) {
+struct usb_dev * usb_dev_iterate(struct usb_dev *dev) {
 	struct dlist_head *dev_link;
 
 	if (dev) {
@@ -131,6 +131,6 @@ void usb_dev_disconnect(struct usb_hub_port *port) {
 
 static int usb_dev_init(void) {
 	lthread_init(&usb_newdev_handler, &usb_add_newdev_action);
-	//schedee_priority_set(&usb_newdev_handler.schedee, 200);
+	/*schedee_priority_set(&usb_newdev_handler.schedee, 200); */
 	return 0;
 }

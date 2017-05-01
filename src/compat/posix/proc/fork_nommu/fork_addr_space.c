@@ -42,7 +42,7 @@ void fork_addr_space_finish_switch(void *safe_point) {
 	}
 }
 
-struct addr_space *fork_addr_space_create(struct addr_space *parent) {
+struct addr_space * fork_addr_space_create(struct addr_space *parent) {
 	struct addr_space *adrspc;
 
 	adrspc = sysmalloc(sizeof(*adrspc));
@@ -65,7 +65,8 @@ void fork_addr_space_store(struct addr_space *adrspc) {
 	fork_static_store(&adrspc->static_space);
 }
 
-void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) {
+void fork_addr_space_restore(struct addr_space *adrspc,
+	void *stack_safe_point) {
 	fork_stack_restore(adrspc, stack_safe_point);
 	fork_heap_restore(&adrspc->heap_space);
 	fork_static_restore(&adrspc->static_space);
@@ -74,7 +75,8 @@ void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) 
 static void fork_addr_space_child_del(struct addr_space *child) {
 	struct addr_space *parent;
 
-	assert(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
+	assert(child->child_count == 0,
+		"%s: deleting address space with childs is NIY", __func__);
 
 	parent = child->parent_addr_space;
 	if (!parent) {
@@ -100,13 +102,13 @@ static void fork_addr_space_deinit(const struct task *task) {
 }
 
 TASK_RESOURCE_DECLARE(static,
-		fork_addr_space,
-		struct addr_space *,
+	fork_addr_space,
+	struct addr_space *,
 	.init = fork_addr_space_init,
 	.deinit = fork_addr_space_deinit,
 );
 
-struct addr_space *fork_addr_space_get(const struct task *task) {
+struct addr_space * fork_addr_space_get(const struct task *task) {
 	return *((struct addr_space **) task_resource(task, &fork_addr_space));
 }
 
@@ -120,8 +122,9 @@ void fork_addr_space_delete(struct task *task) {
 	struct addr_space *adrspc;
 	adrspc = fork_addr_space_get(task);
 
-	if (!adrspc)
+	if (!adrspc) {
 		return;
+	}
 
 	fork_stack_cleanup(adrspc);
 	fork_heap_cleanup(&adrspc->heap_space);

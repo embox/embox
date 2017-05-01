@@ -18,45 +18,44 @@
 
 #define ERROR_STR_MAX_SZ 256
 
-struct rpc_createerr rpc_create_error; // TODO rename and move
+struct rpc_createerr rpc_create_error; /* TODO rename and move */
 
 /* List of AUTH errors */
 static char *auth_errlist[AUTH_MAX] = {
-		[AUTH_OK] = "Authentication OK",
-		[AUTH_BADCRED] = "Invalid client credential",
-		[AUTH_REJECTEDCRED] = "Server rejected credential",
-		[AUTH_BADVERF] = "Invalid client verifier",
-		[AUTH_REJECTEDVERF] = "Server rejected verifier",
-		[AUTH_TOOWEAK] = "Client credential too weak",
-		[AUTH_INVALIDRESP] = "Invalid server verifier",
-		[AUTH_FAILED] = "Failed (unspecified error)"
+	[AUTH_OK] = "Authentication OK",
+	[AUTH_BADCRED] = "Invalid client credential",
+	[AUTH_REJECTEDCRED] = "Server rejected credential",
+	[AUTH_BADVERF] = "Invalid client verifier",
+	[AUTH_REJECTEDVERF] = "Server rejected verifier",
+	[AUTH_TOOWEAK] = "Client credential too weak",
+	[AUTH_INVALIDRESP] = "Invalid server verifier",
+	[AUTH_FAILED] = "Failed (unspecified error)"
 };
 
 /* List of RPC errors */
 static char *rpc_errlist[RPC_MAX] = {
-		[RPC_SUCCESS] = "RPC: Success",
-		[RPC_CANTENCODEARGS] = "RPC: Can't encode arguments",
-		[RPC_CANTDECODERES] = "RPC: Can't decode result",
-		[RPC_CANTSEND] = "RPC: Unable to send",
-		[RPC_CANTRECV] = "RPC: Unable to receive",
-		[RPC_TIMEDOUT] = "RPC: Timed out",
-		[RPC_VERSMISMATCH] = "RPC: Incompatible versions of RPC",
-		[RPC_AUTHERROR] = "RPC: Authentication error",
-		[RPC_PROGUNAVAIL] = "RPC: Program unavailable",
-		[RPC_PROGVERSMISMATCH] = "RPC: Program/version mismatch",
-		[RPC_PROCUNAVAIL] = "RPC: Procedure unavailable",
-		[RPC_CANTDECODEARGS] = "RPC: Server can't decode arguments",
-		[RPC_SYSTEMERROR] = "RPC: Remote system error",
-		[RPC_UNKNOWNHOST] = "RPC: Unknown host",
-		[RPC_PMAPFAILURE] = "RPC: Port mapper failure",
-		[RPC_PROGNOTREGISTERED] = "RPC: Program not registered",
-		[RPC_FAILED] = "RPC: Failed (unspecified error)",
-		[RPC_UNKNOWNPROTO] = "RPC: Unknown protocol"
+	[RPC_SUCCESS] = "RPC: Success",
+	[RPC_CANTENCODEARGS] = "RPC: Can't encode arguments",
+	[RPC_CANTDECODERES] = "RPC: Can't decode result",
+	[RPC_CANTSEND] = "RPC: Unable to send",
+	[RPC_CANTRECV] = "RPC: Unable to receive",
+	[RPC_TIMEDOUT] = "RPC: Timed out",
+	[RPC_VERSMISMATCH] = "RPC: Incompatible versions of RPC",
+	[RPC_AUTHERROR] = "RPC: Authentication error",
+	[RPC_PROGUNAVAIL] = "RPC: Program unavailable",
+	[RPC_PROGVERSMISMATCH] = "RPC: Program/version mismatch",
+	[RPC_PROCUNAVAIL] = "RPC: Procedure unavailable",
+	[RPC_CANTDECODEARGS] = "RPC: Server can't decode arguments",
+	[RPC_SYSTEMERROR] = "RPC: Remote system error",
+	[RPC_UNKNOWNHOST] = "RPC: Unknown host",
+	[RPC_PMAPFAILURE] = "RPC: Port mapper failure",
+	[RPC_PROGNOTREGISTERED] = "RPC: Program not registered",
+	[RPC_FAILED] = "RPC: Failed (unspecified error)",
+	[RPC_UNKNOWNPROTO] = "RPC: Unknown protocol"
 };
 
-
 struct client * clnt_create(const char *host, __u32 prognum,
-		__u32 versnum, const char *prot) {
+	__u32 versnum, const char *prot) {
 	struct sockaddr_in raddr;
 	struct timeval tv;
 	int sock;
@@ -81,7 +80,7 @@ struct client * clnt_create(const char *host, __u32 prognum,
 }
 
 enum clnt_stat clnt_call(struct client *clnt, __u32 procnum, xdrproc_t inproc,
-		char *in, xdrproc_t outproc, char *out, struct timeval wait) {
+	char *in, xdrproc_t outproc, char *out, struct timeval wait) {
 	assert(clnt != NULL);
 	assert(clnt->ops != NULL);
 	assert(clnt->ops->call != NULL);
@@ -123,21 +122,23 @@ char * clnt_spcreateerror(const char *msg) {
 	default:
 		break;
 	case RPC_PMAPFAILURE:
-		curr += sprintf(curr, " - %s", clnt_sperrno(rpc_create_error.err.status));
+		curr +=
+			sprintf(curr, " - %s", clnt_sperrno(rpc_create_error.err.status));
 		break;
 	case RPC_SYSTEMERROR:
-		curr += sprintf(curr, " - %s", strerror(rpc_create_error.err.extra.error));
+		curr += sprintf(curr, " - %s", strerror(
+				rpc_create_error.err.extra.error));
 		break;
 	}
 
-	assert(curr < buff + sizeof buff); // TODO remove this
+	assert(curr < buff + sizeof buff); /* TODO remove this */
 
 	return buff;
 }
 
 char * clnt_sperrno(enum clnt_stat stat) {
 	return (((0 <= stat) && (stat < RPC_MAX))
-			? rpc_errlist[stat] : "RPC: (unknown error code)");
+		   ? rpc_errlist[stat] : "RPC: (unknown error code)");
 }
 
 char * clnt_sperror(struct client *clnt, const char *msg) {
@@ -195,7 +196,7 @@ char * clnt_sperror(struct client *clnt, const char *msg) {
 		break;
 	}
 
-	assert(curr < buff + sizeof buff); // TODO remove this
+	assert(curr < buff + sizeof buff); /* TODO remove this */
 
 	return buff;
 }

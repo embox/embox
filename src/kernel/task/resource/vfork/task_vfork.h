@@ -12,6 +12,6 @@
 #include <module/embox/compat/posix/proc/vfork.h>
 
 struct task;
-extern struct task_vfork *task_resource_vfork(const struct task *task);
+extern struct task_vfork * task_resource_vfork(const struct task *task);
 
 #endif /* TASK_VFORK_H_ */

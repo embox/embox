@@ -19,7 +19,7 @@ typedef struct udphdr {
 	__be16 check;
 } __attribute__((packed)) udphdr_t;
 
-#define UDP_HEADER_SIZE	(sizeof(udphdr_t))
+#define UDP_HEADER_SIZE (sizeof(udphdr_t))
 
 static inline struct udphdr * udp_hdr(const struct sk_buff *skb) {
 	return skb->h.uh;

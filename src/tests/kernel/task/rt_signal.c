@@ -22,8 +22,10 @@ static void test_sig_handler(int sig, siginfo_t *info, void *ctx) {
 	test_emit('0' + (char) info->si_value.sival_int);
 }
 
-static void *test_task_entry(void *data) {
-	struct sigaction act  = { 0 };
+static void * test_task_entry(void *data) {
+	struct sigaction act  = {
+		0
+	};
 	int err;
 
 	act.sa_flags = (SA_SIGINFO);
@@ -32,7 +34,7 @@ static void *test_task_entry(void *data) {
 	err = sigaction(MY_SIGRT, &act, NULL);
 	test_assert_zero(err);
 
-	while(1)
+	while (1)
 		sleep(0);
 
 	return NULL;
@@ -48,7 +50,7 @@ static void test_send_sigval(int tid, int val) {
 }
 
 TEST_CASE("send 3 rt signals of the same type between two tasks and check"
-		" of handling count and order") {
+		  " of handling count and order") {
 	int tid;
 
 	tid = new_task("", test_task_entry, NULL);

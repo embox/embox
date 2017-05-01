@@ -38,7 +38,7 @@ void threadsig_unlock(void) {
 			thread_signal_handle();
 		} else {
 			/* Ensure that signal will be handled after *_unlock()
- 			 * of all locks (sched_lock and harder) */
+			 * of all locks (sched_lock and harder) */
 			sched_post_switch();
 		}
 	}

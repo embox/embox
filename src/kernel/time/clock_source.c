@@ -24,7 +24,8 @@
 #include <module/embox/kernel/time/slowdown.h>
 
 /* XXX used by x86/test/packetdrill */
-#define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
+#define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, \
+		shift)
 
 #include <embox/unit.h>
 
@@ -32,7 +33,7 @@ ARRAY_SPREAD_DEF(const struct time_event_device *const, __event_devices);
 ARRAY_SPREAD_DEF(const struct time_counter_device *const, __counter_devices);
 
 POOL_DEF(clock_source_pool, struct clock_source_head,
-						OPTION_GET(NUMBER, clocks_quantity));
+	OPTION_GET(NUMBER, clocks_quantity));
 
 DLIST_DEFINE(clock_source_list);
 
@@ -41,10 +42,11 @@ static struct timespec cs_event_read(struct clock_source *cs);
 static struct timespec cs_counter_read(struct clock_source *cs);
 
 static inline cycle_t cs_jiffies(struct clock_source *cs) {
-	return (((cycle_t) cs->jiffies) << SLOWDOWN_SHIFT) + (cycle_t) cs->jiffies_cnt;
+	return (((cycle_t) cs->jiffies) << SLOWDOWN_SHIFT) +
+		   (cycle_t) cs->jiffies_cnt;
 }
 
-static struct clock_source_head *clock_source_find(struct clock_source *cs) {
+static struct clock_source_head * clock_source_find(struct clock_source *cs) {
 	struct clock_source_head *csh;
 
 	dlist_foreach_entry(csh, &clock_source_list, lnk) {
@@ -105,13 +107,16 @@ struct timespec clock_source_read(struct clock_source *cs) {
 	} else if (cs->counter_device) {
 		ret = cs_counter_read(cs);
 	} else {
-		panic("all clock sources must have at least one device (event or counter)\n");
+		panic(
+			"all clock sources must have at least one device (event or counter)\n");
 	}
 
 	/* Divide ret by (1 << SLOWDOWN_SHIFT) */
 	if (SLOWDOWN_SHIFT != 0) {
 		uint32_t t;
-		struct timespec tmp = {0, 0};
+		struct timespec tmp = {
+			0, 0
+		};
 
 		t = ret.tv_sec % (1 << SLOWDOWN_SHIFT);
 		tmp.tv_nsec = ((uint64_t)t * NSEC_PER_SEC) >> SLOWDOWN_SHIFT;
@@ -174,10 +179,11 @@ static struct timespec cs_event_read(struct clock_source *cs) {
 }
 
 static struct timespec cs_counter_read(struct clock_source *cs) {
-	return cycles64_to_timespec(cs->counter_device->cycle_hz, cs->counter_device->read());
+	return cycles64_to_timespec(cs->counter_device->cycle_hz,
+			cs->counter_device->read());
 }
 
-struct clock_source *clock_source_get_best(enum clock_source_property pr) {
+struct clock_source * clock_source_get_best(enum clock_source_property pr) {
 	struct clock_source *cs, *best;
 	struct clock_source_head *csh;
 	uint32_t best_resolution = 0;
@@ -189,29 +195,29 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 		cs = csh->clock_source;
 
 		switch (pr) {
-			case CS_ANY:
-			case CS_WITH_IRQ:
-				if (cs->event_device) {
-					resolution = cs->event_device->event_hz;
-				}
+		case CS_ANY:
+		case CS_WITH_IRQ:
+			if (cs->event_device) {
+				resolution = cs->event_device->event_hz;
+			}
 
-				if (pr == CS_ANY && cs->counter_device) {
-					resolution = max(resolution, cs->counter_device->cycle_hz);
-				}
-				if (resolution > best_resolution) {
-					best_resolution = resolution;
-					best = cs;
-				}
+			if (pr == CS_ANY && cs->counter_device) {
+				resolution = max(resolution, cs->counter_device->cycle_hz);
+			}
+			if (resolution > best_resolution) {
+				best_resolution = resolution;
+				best = cs;
+			}
 			break;
 
-			case CS_WITHOUT_IRQ:
-				if (cs->counter_device) {
-					resolution = cs->counter_device->cycle_hz;
-				}
-				if (resolution > best_resolution) {
-					best_resolution = resolution;
-					best = cs;
-				}
+		case CS_WITHOUT_IRQ:
+			if (cs->counter_device) {
+				resolution = cs->counter_device->cycle_hz;
+			}
+			if (resolution > best_resolution) {
+				best_resolution = resolution;
+				best = cs;
+			}
 			break;
 		}
 	}
@@ -219,7 +225,7 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	return best;
 }
 
-struct dlist_head *clock_source_get_list(void) {
+struct dlist_head * clock_source_get_list(void) {
 	return &clock_source_list;
 }
 

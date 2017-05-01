@@ -29,15 +29,15 @@ static void irq_def_handler(void) {
 static int unit_init(void) {
 
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0 |
-			1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
+				1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA20_IRQ0 |
-			AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
+		AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
 	REG_STORE(AT91C_PIOA_BSR, AT91C_PA20_IRQ0 |
-			AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
+		AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
 	for (int i = 0; i < 32; i++) {
 		REG_STORE(AT91C_AIC_SVR[i],(uint32_t) &irq_def_handler);
 		REG_STORE(AT91C_AIC_SMR + i,
-				AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
+			AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
 	}
 
 	REG_STORE(AT91C_AIC_IDCR, ~0); /* disabling all interrupts */
@@ -48,7 +48,7 @@ static int unit_init(void) {
 
 void irqctrl_enable(unsigned int interrupt_nr) {
 	REG_STORE(AT91C_AIC_SMR + interrupt_nr,
-			AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
+		AT91C_AIC_SRCTYPE_INT_EDGE_TRIGGERED);
 	REG_STORE(AT91C_AIC_SVR + interrupt_nr, 0);
 	REG_STORE(AT91C_AIC_IECR, 1 << interrupt_nr);
 }

@@ -56,7 +56,7 @@ static void scsi_disk_unlock(struct block_dev *bdev) {
 }
 
 static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
-		blkno_t blkno) {
+	blkno_t blkno) {
 	struct scsi_dev *sdev = bdev->privdata;
 	int blksize = sdev->blk_size;
 	unsigned int lba;
@@ -72,8 +72,8 @@ static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 
 	scsi_disk_lock(bdev);
 	for (lba = blkno, bp = buffer;
-			count >= blksize;
-			lba++, count -= blksize, bp += blksize) {
+		count >= blksize;
+		lba++, count -= blksize, bp += blksize) {
 
 		cmd.scmd_lba = lba;
 		cmd.scmd_obuf = bp;
@@ -96,7 +96,7 @@ static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 }
 
 static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
-		blkno_t blkno) {
+	blkno_t blkno) {
 	struct scsi_dev *sdev;
 	int blksize;
 	unsigned int lba;
@@ -118,8 +118,8 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 
 	scsi_disk_lock(bdev);
 	for (lba = blkno, bp = buffer;
-			count >= blksize;
-			lba++, count -= blksize, bp += blksize) {
+		count >= blksize;
+		lba++, count -= blksize, bp += blksize) {
 
 		cmd.scmd_lba = lba;
 		cmd.scmd_obuf = bp;
@@ -146,4 +146,3 @@ const struct block_dev_driver bdev_driver_scsi = {
 	.read = scsi_read,
 	.write = scsi_write
 };
-

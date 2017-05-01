@@ -48,7 +48,7 @@ static int sample_format_in_bytes(uint32_t pa_format) {
 
 static int _bytes_per_sample(struct pa_strm *stream) {
 	return stream->number_of_chan *
-	       sample_format_in_bytes(stream->sample_format);
+		   sample_format_in_bytes(stream->sample_format);
 }
 
 /**
@@ -63,16 +63,19 @@ static int _bytes_per_sample(struct pa_strm *stream) {
 static int _dev_chan_support(struct audio_dev *dev, int chan_n) {
 	int supp;
 
-	if (NULL == dev->ad_ops->ad_ops_ioctl)
+	if (NULL == dev->ad_ops->ad_ops_ioctl) {
 		return 0;
+	}
 
 	supp = dev->ad_ops->ad_ops_ioctl(dev, ADIOCTL_SUPPORT, NULL);
 
-	if (chan_n == 1 && (supp & AD_MONO_SUPPORT))
+	if (chan_n == 1 && (supp & AD_MONO_SUPPORT)) {
 		return 1;
+	}
 
-	if (chan_n == 2 && (supp & AD_STEREO_SUPPORT))
+	if (chan_n == 2 && (supp & AD_STEREO_SUPPORT)) {
 		return 1;
+	}
 
 	return 0;
 }
@@ -134,17 +137,19 @@ static int portaudio_lthread_handle(struct lthread *self) {
 	if (pa_stream.number_of_chan != audio_dev->num_of_chan) {
 		if (pa_stream.number_of_chan == 1 && audio_dev->num_of_chan == 2) {
 			_mono_to_stereo(out_buf, inp_frames);
-		} else if (pa_stream.number_of_chan == 2 && audio_dev->num_of_chan == 1) {
+		} else if (pa_stream.number_of_chan == 2 &&
+			audio_dev->num_of_chan == 1) {
 			_stereo_to_mono(out_buf, inp_frames);
 		} else {
 			log_error("Audio configuration is broken!"
-			          "Check the number of channels.\n");
+					  "Check the number of channels.\n");
 			return 0;
 		}
 	}
 
-	if (retval != paContinue)
+	if (retval != paContinue) {
 		pa_stream.active = 0;
+	}
 
 	assert(audio_dev->ad_ops && audio_dev->ad_ops->ad_ops_resume);
 	audio_dev->ad_ops->ad_ops_resume(audio_dev);
@@ -161,12 +166,12 @@ PaError Pa_Terminate(void) {
 	return paNoError;
 }
 
-PaError Pa_OpenStream(PaStream** stream,
-		const PaStreamParameters *inputParameters,
-		const PaStreamParameters *outputParameters,
-		double sampleRate, unsigned long framesPerBuffer,
-		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
-		void *userData) {
+PaError Pa_OpenStream(PaStream **stream,
+	const PaStreamParameters *inputParameters,
+	const PaStreamParameters *outputParameters,
+	double sampleRate, unsigned long framesPerBuffer,
+	PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
+	void *userData) {
 	struct audio_dev *audio_dev;
 
 	assert(stream != NULL);
@@ -174,9 +179,9 @@ PaError Pa_OpenStream(PaStream** stream,
 	assert(streamCallback != NULL);
 
 	log_debug("stream %p input %p output %p rate %f"
-			" framesPerBuffer %lu flags %lu callback %p user_data %p",
-			stream, inputParameters, outputParameters, sampleRate,
-			framesPerBuffer, streamFlags, streamCallback, userData);
+			  " framesPerBuffer %lu flags %lu callback %p user_data %p",
+		stream, inputParameters, outputParameters, sampleRate,
+		framesPerBuffer, streamFlags, streamCallback, userData);
 
 	int channel_cnt = outputParameters->channelCount;
 
@@ -190,12 +195,14 @@ PaError Pa_OpenStream(PaStream** stream,
 	*stream = &pa_stream;
 
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
-	if (audio_dev == NULL)
+	if (audio_dev == NULL) {
 		return paInvalidDevice;
+	}
 
 	assert(audio_dev->ad_ops);
 	assert(audio_dev->ad_ops->ad_ops_ioctl);
-	audio_dev->buf_len = audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_BUFLEN, NULL);
+	audio_dev->buf_len = audio_dev->ad_ops->ad_ops_ioctl(audio_dev,
+			ADIOCTL_BUFLEN, NULL);
 
 	/* TODO work on mono sound device */
 	audio_dev->num_of_chan = 2;
@@ -253,15 +260,19 @@ PaError Pa_StopStream(PaStream *stream) {
 	assert(audio_dev);
 	assert(audio_dev->ad_ops);
 
-	if (audio_dev->ad_ops->ad_ops_pause)
+	if (audio_dev->ad_ops->ad_ops_pause) {
 		audio_dev->ad_ops->ad_ops_pause(audio_dev);
-	else
+	}
+	else {
 		log_error("Stream pause not supported!\n");
+	}
 
-	if (audio_dev->ad_ops->ad_ops_stop)
+	if (audio_dev->ad_ops->ad_ops_stop) {
 		audio_dev->ad_ops->ad_ops_stop(audio_dev);
-	else
+	}
+	else {
 		log_error("Stream stop not supported!\n");
+	}
 
 	return paNoError;
 }

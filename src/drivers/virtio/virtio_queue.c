@@ -18,7 +18,7 @@
 #include <string.h>
 
 int virtqueue_create(struct virtqueue *vq, uint16_t q_id,
-		unsigned long base_addr) {
+	unsigned long base_addr) {
 	uint16_t queue_sz;
 	size_t ring_sz;
 	void *ring_mem;
@@ -47,7 +47,7 @@ int virtqueue_create(struct virtqueue *vq, uint16_t q_id,
 }
 
 void virtqueue_destroy(struct virtqueue *vq,
-		unsigned long base_addr) {
+	unsigned long base_addr) {
 	assert(vq != NULL);
 
 	virtio_select_queue(vq->id, base_addr);

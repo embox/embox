@@ -11,7 +11,7 @@
 struct path;
 
 extern int dcache_add(const char *prefix, const char *rest, struct path *path);
-extern struct path *dcache_get(const char *prefix, const char *rest);
+extern struct path * dcache_get(const char *prefix, const char *rest);
 extern int dcache_delete(const char *prefix, const char *rest);
 
 #endif /* DCACHE_H_ */

@@ -24,8 +24,8 @@
 #include <drivers/ethernet/rtl8139.h>
 #include <net/l0/net_entry.h>
 
-PCI_DRIVER("rtl8139", rtl8139_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8139);
-
+PCI_DRIVER("rtl8139", rtl8139_init, PCI_VENDOR_ID_REALTEK,
+	PCI_DEV_ID_REALTEK_8139);
 
 #define RX_BUF_SIZE (32 * 1024)
 #define TX_BUF_SIZE 1536
@@ -52,7 +52,7 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static inline void wrap_copy(uint8_t *dst, const unsigned char *ring,
-				uint32_t offset, size_t size) {
+	uint32_t offset, size_t size) {
 	uint32_t left = RX_BUF_SIZE - offset;
 
 	if (size > left) {
@@ -78,7 +78,8 @@ static void rtl8139_rx(struct net_device *dev) {
 
 		skb = skb_alloc(pkt_len);
 		assert(skb);
-		wrap_copy(skb->mac.raw, rx_buf, (ring_offset + 4) % RX_BUF_SIZE, skb->len);
+		wrap_copy(skb->mac.raw, rx_buf, (ring_offset + 4) % RX_BUF_SIZE,
+			skb->len);
 		skb->dev = dev;
 
 		stat->rx_packets++;
@@ -150,7 +151,7 @@ static int open(struct net_device *dev) {
 
 	/* make sure RxTx has started */
 	if (!(in8(dev->base_addr + RTL8139_CR) & CR_RX_ENABLE) ||
-	    !(in8(dev->base_addr + RTL8139_CR) & CR_TX_ENABLE)) {
+		!(in8(dev->base_addr + RTL8139_CR) & CR_TX_ENABLE)) {
 		out8(CR_RX_ENABLE | CR_TX_ENABLE, dev->base_addr + RTL8139_CR);
 	}
 

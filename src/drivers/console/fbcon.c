@@ -35,7 +35,8 @@ static void inpevent(struct vc *vc, struct input_event *ev);
 static void visd(struct vc *vc, struct fb_info *fbinfo);
 static void devisn(struct vc *vc);
 
-static void fbcon_vterm_clear_rows(struct vterm_video *t, short row, unsigned short count);
+static void fbcon_vterm_clear_rows(struct vterm_video *t, short row,
+	unsigned short count);
 
 const struct vc_callbacks thiscbs = {
 	.handle_input_event = inpevent,
@@ -84,8 +85,9 @@ static void visd(struct vc *vc, struct fb_info *fbinfo) {
 	fbcon->resbpp.y = var.yres;
 	fbcon->resbpp.bpp = var.bits_per_pixel;
 
-	vterm_reinit(&fbcon->vterm_video, fbcon->resbpp.x / fbcon_displ_data.font->width,
-		       	fbcon->resbpp.y / fbcon_displ_data.font->height);
+	vterm_reinit(&fbcon->vterm_video,
+		fbcon->resbpp.x / fbcon_displ_data.font->width,
+		fbcon->resbpp.y / fbcon_displ_data.font->height);
 
 	fbcon_vterm_clear_rows(&fbcon->vterm_video, 0, fbcon->vterm_video.height);
 
@@ -100,11 +102,12 @@ static void devisn(struct vc *vc) {
 	mpx_devisualized(vc);
 }
 
-static inline struct fbcon *data2fbcon(struct idesc *idesc) {
+static inline struct fbcon * data2fbcon(struct idesc *idesc) {
 	return member_cast_out(idesc, struct fbcon, idesc);
 }
 
-static ssize_t fbcon_idesc_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t fbcon_idesc_read(struct idesc *idesc, const struct iovec *iov,
+	int cnt) {
 	void *buf;
 	size_t nbyte;
 	struct fbcon *fbcon = data2fbcon(idesc);
@@ -117,7 +120,8 @@ static ssize_t fbcon_idesc_read(struct idesc *idesc, const struct iovec *iov, in
 	return tty_read(&fbcon->vterm.tty, buf, nbyte);
 }
 
-static ssize_t fbcon_idesc_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t fbcon_idesc_write(struct idesc *idesc, const struct iovec *iov,
+	int cnt) {
 	struct fbcon *fbcon = data2fbcon(idesc);
 	char *cbuf;
 	size_t nbyte;
@@ -141,11 +145,11 @@ static int fbcon_idesc_ioctl(struct idesc *idesc, int request, void *data) {
 }
 
 static int fbcon_idesc_fstat(struct idesc *idesc, void *buff) {
-       struct stat *st = buff;
+	struct stat *st = buff;
 
-       st->st_mode = S_IFCHR;
+	st->st_mode = S_IFCHR;
 
-       return 0;
+	return 0;
 }
 
 static int fbcon_idesc_status(struct idesc *idesc, int mask) {
@@ -166,7 +170,7 @@ static const struct idesc_ops fbcon_idesc_ops = {
 	.status = fbcon_idesc_status,
 };
 
-static void *run(void *data) {
+static void * run(void *data) {
 	int fd;
 	const struct shell *sh;
 	struct fbcon *fbcon = (struct fbcon *) data;
@@ -201,7 +205,8 @@ static void fbcon_vterm_init(struct vterm_video *t) {
 
 static int prev_x = -1, prev_y = -1;
 
-static void fbcon_vterm_cursor(struct vterm_video *t, unsigned short x, unsigned short y) {
+static void fbcon_vterm_cursor(struct vterm_video *t, unsigned short x,
+	unsigned short y) {
 	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
 	struct fbcon_displ_data *data = fbcon->fbcon_disdata;
 	struct fb_cursor cursor;
@@ -236,7 +241,8 @@ static void fbcon_vterm_cursor(struct vterm_video *t, unsigned short x, unsigned
 
 }
 
-static void fbcon_vterm_putc(struct vterm_video *t, char ch, unsigned short x, unsigned short y) {
+static void fbcon_vterm_putc(struct vterm_video *t, char ch, unsigned short x,
+	unsigned short y) {
 	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
 	struct fb_image symbol;
 	struct fbcon_displ_data *data = fbcon->fbcon_disdata;
@@ -253,7 +259,8 @@ static void fbcon_vterm_putc(struct vterm_video *t, char ch, unsigned short x, u
 	symbol.fg_color = data->fg_color;
 	symbol.bg_color = data->bg_color;
 	symbol.depth = 1;
-	symbol.data = data->font->data + (unsigned char)ch * data->font->height * data->font->width / 8;
+	symbol.data = data->font->data + (unsigned char)ch * data->font->height *
+		data->font->width / 8;
 
 	fb = fbcon->vc_this.fb;
 	if (!fb) {
@@ -267,8 +274,8 @@ static void fbcon_vterm_putc(struct vterm_video *t, char ch, unsigned short x, u
 	fb_imageblit(fb, &symbol);
 }
 
-
-static void fbcon_vterm_clear_rows(struct vterm_video *t, short row, unsigned short count){
+static void fbcon_vterm_clear_rows(struct vterm_video *t, short row,
+	unsigned short count){
 	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
 	struct fb_fillrect rect;
 	struct fbcon_displ_data *data = fbcon->fbcon_disdata;
@@ -297,7 +304,7 @@ static void fbcon_vterm_clear_rows(struct vterm_video *t, short row, unsigned sh
 }
 
 static void fbcon_vterm_copy_rows(struct vterm_video *t,
-		unsigned short to, unsigned short from, short nrows) {
+	unsigned short to, unsigned short from, short nrows) {
 	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
 	struct fb_copyarea area;
 	struct fbcon_displ_data *data = fbcon->fbcon_disdata;
@@ -327,11 +334,11 @@ static void fbcon_vterm_copy_rows(struct vterm_video *t,
 }
 
 static const struct vterm_video_ops fbcon_vterm_video_ops = {
-		.init = &fbcon_vterm_init,
-		.cursor = &fbcon_vterm_cursor,
-		.putc = &fbcon_vterm_putc,
-		.clear_rows = &fbcon_vterm_clear_rows,
-		.copy_rows = &fbcon_vterm_copy_rows
+	.init = &fbcon_vterm_init,
+	.cursor = &fbcon_vterm_cursor,
+	.putc = &fbcon_vterm_putc,
+	.clear_rows = &fbcon_vterm_clear_rows,
+	.copy_rows = &fbcon_vterm_copy_rows
 };
 
 extern int COLS __attribute__((weak)), LINES __attribute__((weak));
@@ -359,7 +366,7 @@ static int make_task(int i, char innewtask) {
 	fbcon->fbcon_disdata = &fbcon_displ_data;
 
 	vterm_video_init(&fbcon->vterm_video, &fbcon_vterm_video_ops,
-			0, 0);
+		0, 0);
 
 	vterm_init(&fbcon->vterm, &fbcon->vterm_video, NULL);
 
@@ -383,7 +390,6 @@ static void fbcon_diag_putc(const struct diag *diag, char ch) {
 	if (!fbcon_current) {
 		return;
 	}
-
 
 	vterm_putc(&fbcon_current->vterm, ch);
 }

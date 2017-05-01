@@ -15,7 +15,7 @@
 #include <kernel/printk.h>
 #define D(fmt, ...) \
 	do { \
-		printk("%s: " fmt "\n", __func__, ##__VA_ARGS__); \
+		printk("%s: " fmt "\n", __func__, ## __VA_ARGS__); \
 	} while (0)
 
 #define PA_STUB_VALID_STREAM ((void *) 0xff0)
@@ -30,9 +30,15 @@ PaError Pa_Terminate(void) {
 	return paNoError;
 }
 
-PaHostApiIndex Pa_GetHostApiCount(void) { return 1; }
-PaDeviceIndex Pa_GetDeviceCount(void) { return 1; }
-PaDeviceIndex Pa_GetDefaultOutputDevice(void) { return 0; }
+PaHostApiIndex Pa_GetHostApiCount(void) {
+	return 1;
+}
+PaDeviceIndex Pa_GetDeviceCount(void) {
+	return 1;
+}
+PaDeviceIndex Pa_GetDefaultOutputDevice(void) {
+	return 0;
+}
 
 const char * Pa_GetErrorText(PaError errorCode) {
 	D("errcode=%d", errorCode);
@@ -76,20 +82,20 @@ const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 	return pa_info;
 }
 
-PaError Pa_OpenStream(PaStream** stream,
-		const PaStreamParameters *inputParameters,
-		const PaStreamParameters *outputParameters,
-		double sampleRate, unsigned long framesPerBuffer,
-		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
-		void *userData) {
+PaError Pa_OpenStream(PaStream **stream,
+	const PaStreamParameters *inputParameters,
+	const PaStreamParameters *outputParameters,
+	double sampleRate, unsigned long framesPerBuffer,
+	PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
+	void *userData) {
 	assert(stream != NULL);
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
 	assert(streamCallback != NULL);
 
 	D("stream=%p in_param=%p out_param=%p samplerate=%f"
-			" frames/buffer=%lu flags=%lu callback=%p data=%p",
-			stream, inputParameters, outputParameters, sampleRate,
-			framesPerBuffer, streamFlags, streamCallback, userData);
+	  " frames/buffer=%lu flags=%lu callback=%p data=%p",
+		stream, inputParameters, outputParameters, sampleRate,
+		framesPerBuffer, streamFlags, streamCallback, userData);
 
 	*stream = PA_STUB_VALID_STREAM;
 	return paNoError;

@@ -16,7 +16,6 @@
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 
-
 static inline int task_table_add(struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return 0;

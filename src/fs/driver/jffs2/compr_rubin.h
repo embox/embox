@@ -9,7 +9,6 @@
 #define UPPER_BIT_RUBIN    (((long) 1)<<(RUBIN_REG_SIZE-1))
 #define LOWER_BITS_RUBIN   ((((long) 1)<<(RUBIN_REG_SIZE-1))-1)
 
-
 struct rubin_state {
 	unsigned long p;
 	unsigned long q;

@@ -75,7 +75,8 @@ int hostent_add_alias(struct hostent *he, const char *alias) {
 
 	memcpy(&hentry_aliases_storage[hentry_aliases_sz][0], alias, alias_sz);
 
-	hentry_aliases[hentry_aliases_sz] = &hentry_aliases_storage[hentry_aliases_sz][0];
+	hentry_aliases[hentry_aliases_sz] =
+		&hentry_aliases_storage[hentry_aliases_sz][0];
 	hentry_aliases[++hentry_aliases_sz] = NULL;
 
 	return 0;
@@ -114,7 +115,7 @@ int hostent_add_addr(struct hostent *he, const void *addr) {
 }
 
 struct hostent * hostent_make(const char *name, int addrtype,
-		int addrlen, const void *addr) {
+	int addrlen, const void *addr) {
 	struct hostent *he;
 
 	he = hostent_create();

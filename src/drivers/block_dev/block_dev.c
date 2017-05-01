@@ -27,7 +27,8 @@
 
 EMBOX_UNIT_INIT(blockdev_init);
 
-static struct idesc *bdev_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc * bdev_open(struct node *node, struct file_desc *file_desc,
+	int flags) {
 	return &file_desc->idesc;
 }
 
@@ -36,7 +37,8 @@ static int bdev_close(struct file_desc *desc) {
 }
 
 static size_t bdev_read(struct file_desc *desc, void *buf, size_t size) {
-	int n_read = block_dev_read_buffered((struct block_dev *) desc->node->nas->fi->privdata,
+	int n_read = block_dev_read_buffered(
+			(struct block_dev *) desc->node->nas->fi->privdata,
 			buf, size, desc->cursor);
 	if (n_read > 0) {
 		desc->cursor += n_read;
@@ -45,7 +47,8 @@ static size_t bdev_read(struct file_desc *desc, void *buf, size_t size) {
 }
 
 static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
-	int n_write = block_dev_write_buffered((struct block_dev *) desc->node->nas->fi->privdata,
+	int n_write = block_dev_write_buffered(
+			(struct block_dev *) desc->node->nas->fi->privdata,
 			buf, size, desc->cursor);
 	if (n_write > 0) {
 		desc->cursor += n_write;
@@ -70,7 +73,7 @@ static int blockdev_init(void) {
 	return 0;
 }
 
-struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
+struct block_dev * block_dev_create(char *path, void *driver, void *privdata) {
 	struct block_dev *bdev;
 	struct path node, root;
 	struct nas *nas;
@@ -108,4 +111,3 @@ int block_dev_destroy(void *dev) {
 
 	return 0;
 }
-

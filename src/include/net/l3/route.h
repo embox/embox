@@ -23,10 +23,10 @@ struct net_device;
  */
 typedef struct rt_entry {
 	struct net_device *dev;
-	in_addr_t    rt_dst;
-	uint32_t     rt_flags;
-	in_addr_t    rt_mask;
-	in_addr_t    rt_gateway;
+	in_addr_t rt_dst;
+	uint32_t rt_flags;
+	in_addr_t rt_mask;
+	in_addr_t rt_gateway;
 } rt_entry_t;
 
 /**< Flags */
@@ -52,7 +52,7 @@ typedef struct rt_entry {
  * @param gw Gateway
  */
 extern int rt_add_route(struct net_device *dev, in_addr_t dst,
-				in_addr_t mask, in_addr_t gw, int flags);
+	in_addr_t mask, in_addr_t gw, int flags);
 
 /**
  * Remove route from table.
@@ -62,7 +62,7 @@ extern int rt_add_route(struct net_device *dev, in_addr_t dst,
  * @param gw Gateway
  */
 extern int rt_del_route(struct net_device *dev, in_addr_t dst,
-				in_addr_t mask, in_addr_t gw);
+	in_addr_t mask, in_addr_t gw);
 
 /**
  * Remove all records from route table for a network device.
@@ -75,7 +75,7 @@ extern int rt_del_route_if(struct net_device *dev);
  * @param route - take this route as best match. Or NULL to define it
  */
 extern int ip_route(sk_buff_t *skb, struct net_device *wanna_dev,
-		struct rt_entry *suggested_route);
+	struct rt_entry *suggested_route);
 
 /**
  * Get IP address of the next machine after routing
@@ -94,10 +94,10 @@ extern int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr);
  * @return error code
  */
 extern int rt_fib_source_ip(in_addr_t dst, struct net_device *dev,
-		in_addr_t *out_src);
+	in_addr_t *out_src);
 
 extern int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
-		struct net_device **out_dev);
+	struct net_device **out_dev);
 
 /**
  * @param dst - ip address of destination
@@ -105,7 +105,8 @@ extern int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
  * @return pointer to best match entity for dst
  * @retval NULL if entity not found
  */
-extern struct rt_entry* rt_fib_get_best(in_addr_t dst, struct net_device *out_dev);
+extern struct rt_entry * rt_fib_get_best(in_addr_t dst,
+	struct net_device *out_dev);
 
 /**
  * Get first element from route from table.

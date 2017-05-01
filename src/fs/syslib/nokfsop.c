@@ -29,7 +29,6 @@ int krmdir(const char *pathname) {
 	return -1;
 }
 
-
 int klstat(const char *path, stat_t *buf) {
 	return -1;
 }

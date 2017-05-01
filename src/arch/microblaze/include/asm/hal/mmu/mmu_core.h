@@ -11,7 +11,7 @@
 
 #include <stdint.h>
 #include <asm/bitops.h>
-//#include <hal/mm/mmu_types.h>
+/*#include <hal/mm/mmu_types.h> */
 
 #define RTLBLO_I_BIT           REVERSE_BIT(29)
 #define RTLBLO_EX_BIT          REVERSE_BIT(22)
@@ -35,13 +35,13 @@
 
 #define RTLBLO_SET(var, phy_addr, cacheable, ex, wr)  \
 	var = (phy_addr |                             \
-			(cacheable << RTLBLO_I_BIT) | \
-			(ex << RTLBLO_EX_BIT)       | \
-			(wr << RTLBLO_WR_BIT))
+		(cacheable << RTLBLO_I_BIT) | \
+		(ex << RTLBLO_EX_BIT)       | \
+		(wr << RTLBLO_WR_BIT))
 
 #define RTLBHI_SET(var, virt_addr, size) \
 	var = (virt_addr | (size << RTLBHI_SIZE_BIT) | \
-			(1 << RTLBHI_V_BIT))
+		(1 << RTLBHI_V_BIT))
 
 /* quantity of utlb records */
 #define UTLB_QUANTITY_RECORDS    0x40

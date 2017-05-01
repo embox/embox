@@ -33,7 +33,7 @@ CMDLINE * cmdline_init(CMDLINE *this) {
 
 static bool cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	int new_pos;
-	CMDLINE_HISTORY * history = cmdline->history;
+	CMDLINE_HISTORY *history = cmdline->history;
 	if (to < 0) {
 		to = to + (-to / CMDLINE_HISTORY_SIZE + 1) * CMDLINE_HISTORY_SIZE;
 	}
@@ -47,7 +47,7 @@ static bool cmdline_history_move_to(CMDLINE *cmdline, int to) {
 
 	if (cmdline->history_cursor == history->index) {
 		strncpy(history->array[history->index], cmdline->string,
-				ARRAY_SIZE(history->array[history->index]));
+			ARRAY_SIZE(history->array[history->index]));
 	}
 
 	cmdline->history_cursor = new_pos;
@@ -71,13 +71,13 @@ bool cmdline_history_forward(CMDLINE *cmdline) {
 
 bool cmdline_history_new_entry(CMDLINE *cmdline) {
 	bool ret = true;
-	CMDLINE_HISTORY * history = cmdline->history;
+	CMDLINE_HISTORY *history = cmdline->history;
 	if (cmdline->string[0] == '\0') {
 		return false;
 	}
 
 	if (0 == strcmp(cmdline->string, history->array[(history->index
-			+ CMDLINE_HISTORY_SIZE - 1) % CMDLINE_HISTORY_SIZE])) {
+		+ CMDLINE_HISTORY_SIZE - 1) % CMDLINE_HISTORY_SIZE])) {
 		ret = false;
 	} else {
 		strcpy(history->array[history->index], cmdline->string);

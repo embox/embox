@@ -31,7 +31,6 @@
 #include <hal/ipl.h>
 #include <mem/objalloc.h>
 
-
 struct irq_entry {
 	irq_handler_t handler;
 	void *dev_id;
@@ -62,7 +61,7 @@ OBJALLOC_DEF(irq_entries, struct irq_entry, IRQ_ENTRY_N);
 static struct irq_action *irq_table[IRQ_NRS_TOTAL];
 
 int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
-		void *dev_id, const char *dev_name) {
+	void *dev_id, const char *dev_name) {
 	struct irq_action *action;
 	int ret = ENOERR;
 
@@ -75,20 +74,20 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 	/* Check if irq exists and device support sharing
 	 * and new device also support sharing */
 	if (irq_table[irq_nr]) {
-		if(! (irq_table[irq_nr]->sharing_supported && (flags & IF_SHARESUP))) {
+		if (!(irq_table[irq_nr]->sharing_supported && (flags & IF_SHARESUP))) {
 			/* IRQ sharing is not supported for this IRQ number */
 			ret = -EBUSY;
 			goto out_unlock;
 		}
 		action = irq_table[irq_nr];
-	/* Else action allocation */
-	} else if (! (action = objalloc(&irq_actions))) {
+		/* Else action allocation */
+	} else if (!(action = objalloc(&irq_actions))) {
 		ret = -ENOMEM;
 		goto out_unlock;
 	}
 
 	/* Action entry allocation */
-	if (! (action->entry = objalloc(&irq_entries))) {
+	if (!(action->entry = objalloc(&irq_entries))) {
 		if (dlist_empty(&(irq_table[irq_nr]->entry_list))) {
 			objfree(&irq_actions, action);
 		}
@@ -103,13 +102,13 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 	if (irq_table[irq_nr]) {
 		/* Add new device to list */
 		dlist_add_next(dlist_head_init(&(action->entry->action_link)),
-				&(irq_table[irq_nr]->entry_list));
+			&(irq_table[irq_nr]->entry_list));
 	} else {
 		/* Initialize list if it is first device on this IRQ line */
 		irq_table[irq_nr] = action;
 		dlist_init(&action->entry_list);
 		dlist_add_next(dlist_head_init(&(action->entry->action_link)),
-				&(irq_table[irq_nr]->entry_list));
+			&(irq_table[irq_nr]->entry_list));
 		irqctrl_enable(irq_nr);
 	}
 
@@ -161,12 +160,12 @@ void irq_dispatch(unsigned int irq_nr) {
 	assert(irq_nr_valid(irq_nr));
 
 	assertf(irq_stack_protection() == 0,
-			"Stack overflow detected on irq dispatch");
+		"Stack overflow detected on irq dispatch");
 
 	if (irq_table[irq_nr]) {
 		ipl = ipl_save();
 		dlist_foreach_entry(entry, &(irq_table[irq_nr]->entry_list),
-				action_link) {
+			action_link) {
 			assert(NULL != entry);
 
 			handler = entry->handler;

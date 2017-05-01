@@ -29,7 +29,9 @@ struct leddrv_pin_desc {
 
 #if LEDBLOCK_MAJOR == 0
 static const struct leddrv_pin_desc leddrv_clk =
-	{ .gpio = GPIOE, .pin = GPIO_Pin_7 };
+{
+	.gpio = GPIOE, .pin = GPIO_Pin_7
+};
 
 static const struct leddrv_pin_desc leddrv_datas[] = {
 	/* prototype register numeration */
@@ -48,7 +50,9 @@ static const struct leddrv_pin_desc leddrv_datas[] = {
 
 #if LEDBLOCK_MAJOR == 1 && LEDBLOCK_MINOR == 0
 static const struct leddrv_pin_desc leddrv_clk =
-	{ .gpio = GPIOE, .pin = GPIO_Pin_7 };
+{
+	.gpio = GPIOE, .pin = GPIO_Pin_7
+};
 
 static const struct leddrv_pin_desc leddrv_datas[] = {
 	/* v1 register numeration, forward, wrong */
@@ -67,7 +71,9 @@ static const struct leddrv_pin_desc leddrv_datas[] = {
 
 #if LEDBLOCK_MAJOR == 1 && LEDBLOCK_MINOR == 1
 static const struct leddrv_pin_desc leddrv_clk =
-	{ .gpio = GPIOE, .pin = GPIO_Pin_8 };
+{
+	.gpio = GPIOE, .pin = GPIO_Pin_8
+};
 
 static const struct leddrv_pin_desc leddrv_datas[] = {
 	/* prototype register numeration */
@@ -86,9 +92,13 @@ static const struct leddrv_pin_desc leddrv_datas[] = {
 
 #if LEDBLOCK_MAJOR == 2
 static const struct leddrv_pin_desc leddrv_shf_clk =
-	{ .gpio = GPIOE, .pin = GPIO_Pin_8 };
+{
+	.gpio = GPIOE, .pin = GPIO_Pin_8
+};
 static const struct leddrv_pin_desc leddrv_str_clk =
-	{ .gpio = GPIOD, .pin = GPIO_Pin_9 };
+{
+	.gpio = GPIOD, .pin = GPIO_Pin_9
+};
 static const struct leddrv_pin_desc leddrv_datas[] = {
 	{ .gpio = GPIOE, .pin = GPIO_Pin_11 },
 	{ .gpio = GPIOE, .pin = GPIO_Pin_13 },
@@ -121,10 +131,12 @@ static_assert(ARRAY_SIZE(leddrv_alarms) == LINES_N);
 
 int leddrv_ll_error(int n) {
 	int line = n / LEDS_PER_LINE;
-	return !(GPIO_ReadInputData(leddrv_alarms[line].gpio) & leddrv_alarms[line].pin);
+	return !(GPIO_ReadInputData(leddrv_alarms[line].gpio) &
+		   leddrv_alarms[line].pin);
 }
 
-static inline void leddrv_pin_init(const struct leddrv_pin_desc *pd, unsigned int mode) {
+static inline void leddrv_pin_init(const struct leddrv_pin_desc *pd,
+	unsigned int mode) {
 	GPIO_InitTypeDef GPIO_InitStructure = {
 		.GPIO_Speed = GPIO_Speed_50MHz,
 		.GPIO_Mode  = mode,
@@ -138,12 +150,12 @@ static inline void leddrv_pin_init(const struct leddrv_pin_desc *pd, unsigned in
 void leddrv_ll_init(void) {
 	/* Enable GPIOs clocks */
 	RCC_AHB1PeriphClockCmd(
-			RCC_AHB1Periph_GPIOA |
-			RCC_AHB1Periph_GPIOB |
-			RCC_AHB1Periph_GPIOC |
-			RCC_AHB1Periph_GPIOD |
-			RCC_AHB1Periph_GPIOE,
-			ENABLE);
+		RCC_AHB1Periph_GPIOA |
+		RCC_AHB1Periph_GPIOB |
+		RCC_AHB1Periph_GPIOC |
+		RCC_AHB1Periph_GPIOD |
+		RCC_AHB1Periph_GPIOE,
+		ENABLE);
 
 	leddrv_pin_init(&leddrv_shf_clk, GPIO_Mode_OUT);
 	leddrv_pin_init(&leddrv_str_clk, GPIO_Mode_OUT);
@@ -157,7 +169,8 @@ void leddrv_ll_init(void) {
 }
 
 #if LEDBLOCK_MAJOR == 1
-static void leddrv_ll_shift_out(int led_in_line, unsigned char leds_state[LEDDRV_LED_N]) {
+static void leddrv_ll_shift_out(int led_in_line,
+	unsigned char leds_state[LEDDRV_LED_N]) {
 
 	/* set clock low */
 	GPIO_ResetBits(leddrv_clk.gpio, leddrv_clk.pin);
@@ -179,7 +192,6 @@ static void leddrv_ll_shift_out(int led_in_line, unsigned char leds_state[LEDDRV
 	/* make clock high, shift data to regsiter */
 	GPIO_SetBits(leddrv_clk.gpio, leddrv_clk.pin);
 }
-
 
 void leddrv_ll_update(unsigned char leds_state[LEDDRV_LED_N]) {
 

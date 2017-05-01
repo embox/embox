@@ -15,7 +15,7 @@
 
 #define tree_element(link, element_type, link_member) \
 	(link == NULL ? NULL \
-		 : member_cast_out(link, element_type, link_member))
+	: member_cast_out(link, element_type, link_member))
 
 /**
  * Link on element of tree, keeping in each element.
@@ -42,7 +42,7 @@ typedef int (*tree_predicate_t)(struct tree_link *link, void *arg);
  * @param link Link to initialize.
  * @return The argument.
  */
-extern struct tree_link *tree_link_init(struct tree_link *link);
+extern struct tree_link * tree_link_init(struct tree_link *link);
 
 /**
  * Add element to tree by adding new link into list of children of another node.
@@ -65,7 +65,7 @@ extern void tree_move_link(struct tree_link *parent, struct tree_link *link);
  *   This parent can not exist.
  * @param link Unlinked element
  * @return
- * 	true, if element was in the tree before deletion.
+ *  true, if element was in the tree before deletion.
  */
 extern int tree_unlink_link(struct tree_link *link);
 
@@ -75,7 +75,8 @@ extern int tree_unlink_link(struct tree_link *link);
  * @param link Link, what subtree will be deleted.
  * @param dispose Dispose method for each element.
  */
-extern void tree_delete_link(struct tree_link *link, void dispose(struct tree_link *));
+extern void tree_delete_link(struct tree_link *link, void dispose(
+	struct tree_link *));
 
 /**
  * 'Next' link in the tree according to selected order. Used for iteration.
@@ -84,19 +85,19 @@ extern void tree_delete_link(struct tree_link *link, void dispose(struct tree_li
  * @param link Current node.
  * @return Next node in the tree.
  */
-extern struct tree_link *tree_postorder_next(struct tree_link *link);
+extern struct tree_link * tree_postorder_next(struct tree_link *link);
 
 /**
  * First node for enumeration.
  * @param tree Tree to enumerate.
  */
-extern struct tree_link *tree_postorder_begin(struct tree_link *tree);
+extern struct tree_link * tree_postorder_begin(struct tree_link *tree);
 
 /**
  * End of iteration (exclusive).
  * @param tree Tree to enumerate.
  */
-extern struct tree_link *tree_postorder_end(struct tree_link *tree);
+extern struct tree_link * tree_postorder_end(struct tree_link *tree);
 
 /**
  * Searches for a child of the given node, for which the specified predicate
@@ -109,8 +110,8 @@ extern struct tree_link *tree_postorder_end(struct tree_link *tree);
  * @return
  *   The first child which satisfies the predicate (if any), NULL otherwise.
  */
-extern struct tree_link *tree_lookup_child(struct tree_link *node,
-		tree_predicate_t predicate, void *arg);
+extern struct tree_link * tree_lookup_child(struct tree_link *node,
+	tree_predicate_t predicate, void *arg);
 
 /**
  * Find element of subtree, for what specified predicate is true.
@@ -120,14 +121,14 @@ extern struct tree_link *tree_lookup_child(struct tree_link *node,
  *
  * @return Node, for what predicate is true, or NULL, if it doesn't exist.
  */
-extern struct tree_link *tree_lookup(struct tree_link *tree,
-		tree_predicate_t predicate, void *arg);
+extern struct tree_link * tree_lookup(struct tree_link *tree,
+	tree_predicate_t predicate, void *arg);
 
-extern struct tree_link *tree_children_begin(struct tree_link *tree);
+extern struct tree_link * tree_children_begin(struct tree_link *tree);
 
-extern struct tree_link *tree_children_end(struct tree_link *tree);
+extern struct tree_link * tree_children_end(struct tree_link *tree);
 
-extern struct tree_link *tree_children_next(struct tree_link *tree);
+extern struct tree_link * tree_children_next(struct tree_link *tree);
 
 /**
  * Iteration on tree. Elements are links (without casting from links).
@@ -140,9 +141,8 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
 
 #define __tree_foreach_link(link, end_link, tree, begin, end, next) \
 	for (struct tree_link *end_link = (link = begin(tree), end(tree)); \
-			link != end_link; \
-			link = next(link))
-
+		link != end_link; \
+		link = next(link))
 
 /**
  * Iteration on tree. Elements are links (without casting from links).
@@ -154,12 +154,14 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
  *   'Next' function must not cause an error if it's applyed to end of enumeration.
  */
 #define tree_foreach_link_safe(link, tree, begin, end, next) \
-	__tree_foreach_link_safe(link, MACRO_GUARD(next_link), MACRO_GUARD(end_link), \
-			tree, begin, end, next)
+	__tree_foreach_link_safe(link, MACRO_GUARD(next_link), MACRO_GUARD( \
+		end_link), \
+		tree, begin, end, next)
 
-#define __tree_foreach_link_safe(link, next_link, end_link, tree, begin, end, next) \
+#define __tree_foreach_link_safe(link, next_link, end_link, tree, begin, end, \
+		next) \
 	for (struct tree_link *next_link = (link = begin(tree), next(link)) \
-			, *end_link = end(tree); \
+		, *end_link = end(tree); \
 		link != end_link; \
 		link = next_link, next_link = next(link))
 
@@ -171,14 +173,14 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
  */
 #define tree_foreach(element, tree, link_member, begin, end, next) \
 	__tree_foreach(MACRO_GUARD(link), MACRO_GUARD(end_link), \
-			element, tree, link_member, begin, end, next)
+		element, tree, link_member, begin, end, next)
 
 #define __tree_foreach(link, end_link, \
-			element, tree, link_member, begin, end, next) \
+		element, tree, link_member, begin, end, next) \
 	for (struct tree_link *link = begin(tree), \
-			*end_link = end(tree);\
+		*end_link = end(tree); \
 		link != end_link \
-			&& (element = tree_element(link, typeof(*element), link_member)); \
+		&& (element = tree_element(link, typeof(*element), link_member)); \
 		link = next(link))
 
 /** Iterating only on children of node (not all subtree). */

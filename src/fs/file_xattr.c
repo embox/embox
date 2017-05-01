@@ -12,10 +12,11 @@
 
 #include <fs/idesc.h>
 
-static int file_idesc_getxattr(struct idesc *idesc, const char *name, void *value,
-		size_t size);
+static int file_idesc_getxattr(struct idesc *idesc, const char *name,
+	void *value,
+	size_t size);
 static int file_idesc_setxattr(struct idesc *idesc, const char *name,
-		const void *value, size_t size, int flags);
+	const void *value, size_t size, int flags);
 static int file_idesc_listxattr(struct idesc *idesc, char *list, size_t size);
 static int file_idesc_removexattr(struct idesc *idesc, const char *name);
 
@@ -26,8 +27,9 @@ const struct idesc_xattrops file_idesc_xattrops = {
 	.removexattr = file_idesc_removexattr,
 };
 
-static int file_idesc_getxattr(struct idesc *idesc, const char *name, void *value,
-		size_t size) {
+static int file_idesc_getxattr(struct idesc *idesc, const char *name,
+	void *value,
+	size_t size) {
 	struct file_desc *desc;
 
 	desc = member_cast_out(idesc, struct file_desc, idesc);
@@ -36,7 +38,7 @@ static int file_idesc_getxattr(struct idesc *idesc, const char *name, void *valu
 }
 
 static int file_idesc_setxattr(struct idesc *idesc, const char *name,
-		const void *value, size_t size, int flags) {
+	const void *value, size_t size, int flags) {
 	struct file_desc *desc;
 
 	desc = member_cast_out(idesc, struct file_desc, idesc);
@@ -59,4 +61,3 @@ static int file_idesc_removexattr(struct idesc *idesc, const char *name) {
 
 	return kfile_xattr_set(desc->node, name, NULL, 0, XATTR_REMOVE);
 }
-

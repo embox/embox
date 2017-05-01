@@ -19,8 +19,9 @@ static void print_usage(void) {
 }
 
 static void mod_print(const struct mod *mod) {
-	int enabled = mod->priv->flags & 0x1; // XXX fix later
-	printf(" %c  %s.%s ", enabled ? '*' : ' ', mod_pkg_name(mod), mod_name(mod));
+	int enabled = mod->priv->flags & 0x1; /* XXX fix later */
+	printf(" %c  %s.%s ", enabled ? '*' : ' ', mod_pkg_name(mod),
+		mod_name(mod));
 }
 
 int main(int argc, char **argv) {
@@ -65,10 +66,10 @@ int main(int argc, char **argv) {
 		printf("\n");
 		if (show_label) {
 			printf("\tlabel:%x:%x:%x:%x\n",
-					(uint32_t)mod_label(mod)->text.vma,
-					(uint32_t)mod_label(mod)->data.vma,
-					(uint32_t)mod_label(mod)->bss.vma,
-					(uint32_t)mod_label(mod)->rodata.vma);
+				(uint32_t)mod_label(mod)->text.vma,
+				(uint32_t)mod_label(mod)->data.vma,
+				(uint32_t)mod_label(mod)->bss.vma,
+				(uint32_t)mod_label(mod)->rodata.vma);
 		}
 
 		if (integrity_check) {

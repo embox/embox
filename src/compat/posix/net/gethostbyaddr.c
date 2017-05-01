@@ -19,7 +19,7 @@
 #include <util/array.h>
 
 struct hostent * gethostbyaddr(const void *addr, socklen_t len,
-		int type) {
+	int type) {
 	int ret;
 	struct hostent *he;
 	struct dns_result result;
@@ -36,7 +36,7 @@ struct hostent * gethostbyaddr(const void *addr, socklen_t len,
 	in.s_addr = swab32(in.s_addr);
 
 	if (0 > snprintf(&hostaddr[0], ARRAY_SIZE(hostaddr),
-			"%s.in-addr.arpa", inet_ntoa(in))) {
+		"%s.in-addr.arpa", inet_ntoa(in))) {
 		return NULL;
 	}
 
@@ -47,8 +47,8 @@ struct hostent * gethostbyaddr(const void *addr, socklen_t len,
 	}
 
 	if (((he = hostent_create()) == NULL)
-			|| (hostent_set_addr_info(he, AF_INET, len) != 0)
-			|| (hostent_add_addr(he, addr) != 0)) {
+		|| (hostent_set_addr_info(he, AF_INET, len) != 0)
+		|| (hostent_add_addr(he, addr) != 0)) {
 		dns_result_free(&result);
 		return NULL;
 	}

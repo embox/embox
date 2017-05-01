@@ -5,5 +5,4 @@
  * @author: Anton Bondarev
  */
 
-
 #include <fcntl.h>

@@ -31,7 +31,7 @@
 /**
  * Magic code
  */
-//extern const unsigned char dhcp_magic_cookie[4];
+/*extern const unsigned char dhcp_magic_cookie[4]; */
 
 typedef struct bootphdr {
 	__u8 op;          /* message type */
@@ -123,7 +123,7 @@ typedef struct bootphdr {
 #define TAG_FQDN                ((unsigned char)  81)
 
 extern int bootp_build_request(struct bootphdr *bph, uint8_t opcode,
-		uint8_t hw_type, uint8_t hw_len, uint8_t *hw_addr);
+	uint8_t hw_type, uint8_t hw_len, uint8_t *hw_addr);
 
 extern int bootp_get_ip(struct bootphdr *bph, in_addr_t *ip);
 

@@ -38,17 +38,18 @@ static int parse_addr_option(char *optarg, int opt, char **addr_p) {
 	*addr_p = (char *) number;
 	return 0;
 
-inval:
+	inval:
 	print_usage();
 	return -EINVAL;
 }
 
-static void _NORETURN load_and_run(char *image_vma, char *image_lma, size_t image_len) {
+static void _NORETURN load_and_run(char *image_vma, char *image_lma,
+	size_t image_len) {
 	unsigned int irq;
 	void (*callme)(void) __attribute__ ((noreturn));
 
 	printf("load: copying image into 0x%08x, from 0x%08x, size %d bytes\n",
-			(unsigned int) image_vma, (unsigned int) image_lma, image_len);
+		(unsigned int) image_vma, (unsigned int) image_lma, image_len);
 	memcpy(image_vma, image_lma, image_len);
 
 	printf("load: calling 0x%08x ...\n", (unsigned int) image_vma);
@@ -58,7 +59,7 @@ static void _NORETURN load_and_run(char *image_vma, char *image_lma, size_t imag
 		irqctrl_disable(irq);
 	}
 
-	callme = (typeof(callme)) image_vma;
+	callme = (typeof(callme))image_vma;
 	callme();
 }
 
@@ -84,7 +85,7 @@ int main(int argc, char **argv) {
 		case '?':
 		case 'h':
 			print_usage();
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		default:
 			return 0;
 		}

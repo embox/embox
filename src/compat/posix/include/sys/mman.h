@@ -31,10 +31,9 @@ __BEGIN_DECLS
 #define MAP_FIXED     0x40
 #define MAP_ANONYMOUS 0x80
 
-#define MAP_FAILED (void*)-1
+#define MAP_FAILED (void *)-1
 
 extern int mprotect(void *, size_t, int);
-
 
 /* todo: implement for InitFS files */
 extern void *mmap(void *, size_t, int, int, int, off_t);
@@ -52,11 +51,11 @@ extern int msync(void *addr, size_t len, int flags);
 #define PROT_NOCACHE 0x80
 
 /* TODO move to compat/qnx */
-extern void *mmap_device_memory(void * addr,
-                           size_t len,
-                           int prot,
-                           int flags,
-                           uint64_t physical);
+extern void * mmap_device_memory(void *addr,
+	size_t len,
+	int prot,
+	int flags,
+	uint64_t physical);
 
 __END_DECLS
 

@@ -21,11 +21,11 @@ typedef struct net_proto {
 	void (*handle_error)(const struct sk_buff *skb, int error_info);
 } net_proto_t;
 
-
 extern const struct net_proto * net_proto_lookup(
-		unsigned short pack, unsigned char type);
+	unsigned short pack, unsigned char type);
 static inline void net_proto_handle_error_none(
-		const struct sk_buff *skb, int error_info) { }
+	const struct sk_buff *skb, int error_info) {
+}
 
 #include <util/array.h>
 
@@ -39,11 +39,11 @@ ARRAY_SPREAD_DECLARE(const struct net_proto, __net_proto_registry);
 	static void _handle_error(const struct sk_buff *skb, int error_info);    \
 	ARRAY_SPREAD_DECLARE(const struct net_proto, __net_proto_registry);      \
 	ARRAY_SPREAD_ADD_NAMED(__net_proto_registry,                             \
-			__net_proto_##_pack##_type, {                                    \
-				.pack = _pack,                                               \
-				.type = _type,                                               \
-				.handle = _handle,                                           \
-				.handle_error = _handle_error                                \
-			})
+		__net_proto_ ## _pack ## _type, {                                    \
+			.pack = _pack,                                               \
+			.type = _type,                                               \
+			.handle = _handle,                                           \
+			.handle_error = _handle_error                                \
+		})
 
 #endif /* EMBOX_NET_PROTO_H_ */

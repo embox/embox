@@ -16,7 +16,7 @@
 TASK_RESOURCE_DEF(task_u_area_desc, struct task_u_area);
 
 static void task_u_area_init(const struct task *task,
-		void *u_area_space) {
+	void *u_area_space) {
 	struct task_u_area *u_area;
 
 	assert(u_area_space == task_resource_u_area(task));
@@ -28,7 +28,7 @@ static void task_u_area_init(const struct task *task,
 }
 
 static int task_u_area_inherit(const struct task *task,
-		const struct task *parent) {
+	const struct task *parent) {
 	struct task_u_area *task_u_area, *parent_u_area;
 
 	task_u_area = task_resource_u_area(task);

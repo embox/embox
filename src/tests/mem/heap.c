@@ -39,24 +39,24 @@ TEST_CASE("Allocates big object") {
 	free(obj);
 }
 
-#define MAX_MALLOC_SIZE (HEAP_SIZE/2 - 8) //XXX based on current impl
+#define MAX_MALLOC_SIZE (HEAP_SIZE/2 - 8) /*XXX based on current impl */
 #define BIG_MALLOC_SIZE (1024 * 1024)
 
 #if BIG_MALLOC_SIZE + 100 <= MAX_MALLOC_SIZE
 /* + align */
 
-TEST_CASE("Allocate really big size with align, fill 0's, free, allocate again") {
-		void *big = memalign(8,BIG_MALLOC_SIZE);
-		test_assert_not_null(big);
-		memset(big, 0, BIG_MALLOC_SIZE); // comment this out, and everything is OK
-		free(big);
+TEST_CASE("Allocate really big size with align, fill 0's, free, allocate again")
+{
+	void *big = memalign(8,BIG_MALLOC_SIZE);
+	test_assert_not_null(big);
+	memset(big, 0, BIG_MALLOC_SIZE);     /* comment this out, and everything is OK */
+	free(big);
 
-		big = malloc(BIG_MALLOC_SIZE);
-		test_assert_not_null(big);
-		free(big);
+	big = malloc(BIG_MALLOC_SIZE);
+	test_assert_not_null(big);
+	free(big);
 }
 #endif
-
 
 TEST_CASE("Allocates unaligned object") {
 	void *obj = malloc(sizeof(struct unaligned_struct));
@@ -80,7 +80,9 @@ TEST_CASE("Allocates several objects with different size") {
 	free(obj);
 }
 
-TEST_CASE("Allocates several objects with different size and fill them than free them") {
+TEST_CASE(
+	"Allocates several objects with different size and fill them than free them")
+{
 	struct small_struct *small;
 	struct unaligned_struct *unaligned;
 	struct big_struct *big;
@@ -95,16 +97,15 @@ TEST_CASE("Allocates several objects with different size and fill them than free
 	small = malloc(sizeof(struct small_struct));
 	test_assert_not_null(small);
 
-
 	unaligned->data = 0x55;
 	small->data = 0x12345678;
-	for(i = 0; i < ARRAY_SIZE(big->data); i ++) {
+	for (i = 0; i < ARRAY_SIZE(big->data); i++) {
 		big->data[i] = 0x87654321;
 	}
 
 	test_assert_equal(unaligned->data, 0x55);
 	test_assert_equal(small->data, 0x12345678);
-	for(i = 0; i < ARRAY_SIZE(big->data); i ++) {
+	for (i = 0; i < ARRAY_SIZE(big->data); i++) {
 		test_assert_equal(big->data[i], 0x87654321);
 	}
 
@@ -125,11 +126,12 @@ TEST_CASE("Allocates many objects with different size") {
 	test_assert_not_null(arr);
 
 	for (alloc_sz = ALLOC_FROM, i = 0; alloc_sz < ALLOC_TO;
-			alloc_sz += ALLOC_STEP, ++i) {
+		alloc_sz += ALLOC_STEP, ++i) {
 		assert(i < ALLOC_COUNT);
 		arr[i] = malloc(alloc_sz);
-		if (arr[i] == NULL)
+		if (arr[i] == NULL) {
 			break;
+		}
 		memset(arr[i], 0x77, alloc_sz);
 	}
 
@@ -141,6 +143,6 @@ TEST_CASE("Allocates many objects with different size") {
 }
 
 TEST_CASE("malloc fails when trying to allocate a very large"
-		" chunk of memory") {
+		  " chunk of memory") {
 	test_assert_null(malloc(4294966160));
 }

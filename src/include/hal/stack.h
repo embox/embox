@@ -9,7 +9,6 @@
 #ifndef HAL_STACK_H_
 #define HAL_STACK_H_
 
-extern void *stack_ptr(void);
+extern void * stack_ptr(void);
 
 #endif /* HAL_STACK_H_ */
-

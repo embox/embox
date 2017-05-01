@@ -11,10 +11,11 @@
 
 EMBOX_TEST_SUITE("math/common routines's tests");
 
-
 TEST_CASE("Test for signbit") {
 	size_t i;
-	const double values[] = { 0.0, 0.131321312312, 21.3, 2883321.0 };
+	const double values[] = {
+		0.0, 0.131321312312, 21.3, 2883321.0
+	};
 
 	/* signbit */
 	for (i = 0; i < sizeof values / sizeof values[0]; ++i) {

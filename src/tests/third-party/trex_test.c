@@ -34,7 +34,6 @@ static int match_string(char *pattern, char *request) {
 	return 0;
 }
 
-
 TEST_CASE("Trex test") {
 	test_assert_true(match_string("#[-\\w_]*", "#ab-sF"));
 	test_assert_false(match_string("#[-\\w_]*", "ab-sF"));
@@ -48,5 +47,3 @@ TEST_CASE("Trex test") {
 	test_assert_false(
 		match_string("Simple\\s[a-zA-Z]+\\stest", "Simpl simple test"));
 }
-
-

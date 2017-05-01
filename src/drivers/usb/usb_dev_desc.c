@@ -24,7 +24,7 @@ struct usb_dev_desc {
 
 POOL_DEF(usb_dev_descs, struct usb_dev_desc, 2);
 
-struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
+struct usb_dev_desc * usb_dev_open(uint16_t vid, uint16_t pid) {
 	struct usb_dev_desc *ddesc;
 	struct usb_dev *dev;
 
@@ -32,7 +32,7 @@ struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 	do {
 		dev = usb_dev_iterate(dev);
 	} while (dev && (vid != dev->dev_desc.id_vendor
-				&& pid != dev->dev_desc.id_product));
+		&& pid != dev->dev_desc.id_product));
 
 	if (!dev) {
 		return NULL;
@@ -54,8 +54,9 @@ void usb_dev_desc_close(struct usb_dev_desc *ddesc) {
 	usb_dev_use_dec(dev);
 }
 
-int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_device *desc,
-		struct usb_desc_interface *idesc) {
+int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc,
+	struct usb_desc_device *desc,
+	struct usb_desc_interface *idesc) {
 
 	if (!ddesc) {
 		return -EINVAL;
@@ -68,7 +69,7 @@ int usb_dev_desc_get_desc(struct usb_dev_desc *ddesc, struct usb_desc_device *de
 }
 
 int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
-		struct usb_desc_endpoint *desc) {
+	struct usb_desc_endpoint *desc) {
 
 	return -ENOTSUP;
 
@@ -83,12 +84,12 @@ int usb_dev_desc_get_endp_desc(struct usb_dev_desc *ddesc, int endp,
 }
 
 int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
-		void *buf, size_t len, usb_notify_hnd_t notify_hnd, void *arg) {
+	void *buf, size_t len, usb_notify_hnd_t notify_hnd, void *arg) {
 	struct usb_request *req;
 	struct usb_endp *endp;
 
 	if ((token & USB_TOKEN_OUT && token & USB_TOKEN_IN) ||
-		       (!(token & USB_TOKEN_OUT) && !(token & USB_TOKEN_IN))) {
+		(!(token & USB_TOKEN_OUT) && !(token & USB_TOKEN_IN))) {
 		return -EINVAL;
 	}
 
@@ -100,11 +101,11 @@ int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 
 	if (endp->direction != USB_DIRECTION_BI) {
 		if (endp->direction == USB_DIRECTION_OUT &&
-				token & USB_TOKEN_IN) {
+			token & USB_TOKEN_IN) {
 			return -EINVAL;
 		}
 		if (endp->direction == USB_DIRECTION_IN &&
-				token & USB_TOKEN_OUT) {
+			token & USB_TOKEN_OUT) {
 			return -EINVAL;
 		}
 	}
@@ -132,7 +133,7 @@ static void usb_req_notify(struct usb_request *req, void *arg) {
 }
 
 int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
-		void *buf, size_t len) {
+	void *buf, size_t len) {
 	int res;
 	struct usb_req_data wait_data;
 
@@ -140,14 +141,13 @@ int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 	wait_data.thr = thread_self();
 
 	irq_lock();
-		res = usb_request_cb(ddesc, endp_n, token, buf, len,
-				usb_req_notify, &wait_data);
-		if (res != 0) {
-			return res;
-		}
+	res = usb_request_cb(ddesc, endp_n, token, buf, len,
+			usb_req_notify, &wait_data);
+	if (res != 0) {
+		return res;
+	}
 	irq_unlock();
 	res = SCHED_WAIT(wait_data.res);
 
 	return res;
 }
-

@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <fs/kfile.h>
 
-struct file_desc *kopen(struct node *node, int flag) {
+struct file_desc * kopen(struct node *node, int flag) {
 	return NULL;
 }
 
@@ -21,7 +21,6 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 	return -ENOSYS;
 }
-
 
 void kclose(struct file_desc *desc) {
 }

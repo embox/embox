@@ -20,7 +20,7 @@
 EMBOX_UNIT_INIT(loopback_init);
 
 static int loopback_xmit(struct net_device *dev,
-		struct sk_buff *skb) {
+	struct sk_buff *skb) {
 	struct net_device_stats *lb_stats;
 	size_t skb_len;
 

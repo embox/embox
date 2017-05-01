@@ -47,9 +47,9 @@
  *                others access it with s->lock held and interrupts off
  */
 struct schedee {
-	runq_item_t       runq_link;
+	runq_item_t runq_link;
 
-	spinlock_t        lock; /**< Protects wait state and others. */
+	spinlock_t lock;        /**< Protects wait state and others. */
 
 	/**
 	 * Process function is called in the function schedule() after extracting
@@ -60,15 +60,15 @@ struct schedee {
 	 *
 	 * Returns schedee to which context switched.
 	 */
-	struct schedee    *(*process)(struct schedee *prev, struct schedee *next);
+	struct schedee    * (*process)(struct schedee *prev, struct schedee *next);
 
 	/* Fields corresponding to the state in the scheduler state machine. */
 	unsigned int active;  /**< Running on a CPU. TODO SMP-only. */
 	unsigned int ready;   /**< Managed by the scheduler. */
 	unsigned int waiting; /**< Waiting for an event. */
 
-	struct affinity         affinity;
-	struct sched_timing     sched_timing;
+	struct affinity affinity;
+	struct sched_timing sched_timing;
 	struct schedee_priority priority;
 
 	struct waitq_link waitq_link; /**< Used as a link in different waitqs. */
@@ -125,7 +125,7 @@ extern int sched_active(struct schedee *s);
  *   field of the schedee structure.
  */
 extern int sched_change_priority(struct schedee *schedee, int prior,
-		int (*set_priority)(struct schedee_priority *, int));
+	int (*set_priority)(struct schedee_priority *, int));
 
 extern void sched_wait_prepare(void);
 extern void sched_wait_cleanup(void);
@@ -165,6 +165,5 @@ extern void sched_start_switch(struct schedee *next);
 void sched_signal(struct schedee *schedee);
 
 __END_DECLS
-
 
 #endif /* KERNEL_SCHED_H_ */

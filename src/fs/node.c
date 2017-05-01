@@ -7,7 +7,6 @@
  * @author Eldar Abusalimov
  */
 
-
 #include <string.h>
 #include <embox/unit.h>
 
@@ -43,7 +42,7 @@ static inline int flock_init(node_t *node) {
 	return ENOERR;
 }
 
-node_t *node_alloc(const char *name, size_t name_len) {
+node_t * node_alloc(const char *name, size_t name_len) {
 	struct node_tuple *nt;
 
 	struct node *node;

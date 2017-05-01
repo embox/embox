@@ -24,20 +24,18 @@
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
 
-
 #define idesc_to_uart(desc) \
-	(((struct  tty_uart*)desc)->uart)
+	(((struct  tty_uart *)desc)->uart)
 
 static const struct idesc_ops idesc_serial_ops;
-
 
 POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 
 extern struct tty_ops uart_tty_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-struct idesc *idesc_serial_create(struct uart *uart,
-		mode_t mod) {
+struct idesc * idesc_serial_create(struct uart *uart,
+	mode_t mod) {
 	struct tty_uart *tu;
 
 	assert(uart);
@@ -59,7 +57,8 @@ struct idesc *idesc_serial_create(struct uart *uart,
 	return &tu->idesc;
 }
 
-static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov,
+	int cnt) {
 	void *buf;
 	size_t nbyte;
 	struct uart *uart;
@@ -85,7 +84,8 @@ static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt
 	return tty_read(uart->tty, (char *) buf, nbyte);
 }
 
-static ssize_t serial_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t serial_write(struct idesc *idesc, const struct iovec *iov,
+	int cnt) {
 	void *buf;
 	size_t nbyte;
 	int ch;
@@ -171,7 +171,7 @@ static int serial_status(struct idesc *idesc, int mask) {
 
 	if (mask & POLLERR) {
 		/* is there any exeptions */
-		res += 0; //TODO Where is errors counter
+		res += 0; /*TODO Where is errors counter */
 	}
 
 	return res;
@@ -187,10 +187,10 @@ static int serial_fstat(struct idesc *data, void *buff) {
 }
 
 static const struct idesc_ops idesc_serial_ops = {
-		.id_readv = serial_read,
-		.id_writev = serial_write,
-		.ioctl = serial_ioctl,
-		.close = serial_close,
-		.status = serial_status,
-		.fstat = serial_fstat,
+	.id_readv = serial_read,
+	.id_writev = serial_write,
+	.ioctl = serial_ioctl,
+	.close = serial_close,
+	.status = serial_status,
+	.fstat = serial_fstat,
 };

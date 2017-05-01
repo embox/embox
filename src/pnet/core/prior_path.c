@@ -12,26 +12,26 @@
 
 struct sock;
 
-struct pnet_path *pnet_get_dev_prior(struct net_device *dev) {
+struct pnet_path * pnet_get_dev_prior(struct net_device *dev) {
 	return NULL;
 }
 
-static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap
+static struct pnet_path prior_table[0x10]; /*TODO convert it to list or heap */
 static int prior_cnt = 0;
 
-struct pnet_path *pnet_calc_socket_path(struct sock *sock) {
+struct pnet_path * pnet_calc_socket_path(struct sock *sock) {
 	prior_table[prior_cnt].prior_level = 0x10;
 	prior_cnt++;
 	return NULL;
 }
 
-struct pnet_path *pnet_calc_netdev_path(struct net_device *netdev) {
+struct pnet_path * pnet_calc_netdev_path(struct net_device *netdev) {
 	prior_table[prior_cnt++].own_mac = netdev->dev_addr;
 	prior_cnt++;
 	return NULL;
 }
 
-struct pnet_path *pnet_calc_chardev_path(char *dev_name) {
+struct pnet_path * pnet_calc_chardev_path(char *dev_name) {
 	prior_table[prior_cnt++].prior_level = 0x10;
 	prior_cnt++;
 	return NULL;

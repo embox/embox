@@ -9,8 +9,8 @@
 #include <stdio.h>
 
 char * fgets(char *s, int n, FILE *file) {
-	int c = EOF; // has to add it, since compiler claims it's uninited --Anton Kozlov
-		     // if 'while' below not taken, c in test for EOF really undefined
+	int c = EOF; /* has to add it, since compiler claims it's uninited --Anton Kozlov */
+	/* if 'while' below not taken, c in test for EOF really undefined */
 	char *ptr;
 
 	if (n <= 0) {
@@ -34,7 +34,7 @@ char * fgets(char *s, int n, FILE *file) {
 	return s;
 }
 
-char *gets(char *s) {
+char * gets(char *s) {
 	int c;
 	char *ptr;
 

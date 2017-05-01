@@ -60,7 +60,8 @@ extern void fork_addr_space_finish_switch(void *safe_point);
 /* Stack */
 struct thread;
 extern void fork_stack_store(struct addr_space *adrspc);
-extern void fork_stack_restore(struct addr_space *adrspc, void *stack_safe_point);
+extern void fork_stack_restore(struct addr_space *adrspc,
+	void *stack_safe_point);
 extern void fork_stack_cleanup(struct addr_space *adrspc);
 
 /* Heap */
@@ -74,4 +75,3 @@ extern void fork_static_restore(struct static_space *sspc);
 extern void fork_static_cleanup(struct static_space *sspc);
 
 #endif /* FORK_COPY_ADDR_SPACE_H_ */
-

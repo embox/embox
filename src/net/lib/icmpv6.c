@@ -15,7 +15,7 @@
 #include <string.h>
 
 void icmp6_build(struct icmp6hdr *icmp6h, uint8_t type,
-		uint8_t code, const void *body, size_t body_sz) {
+	uint8_t code, const void *body, size_t body_sz) {
 	assert(icmp6h != NULL);
 	icmp6h->type = type;
 	icmp6h->code = code;
@@ -24,7 +24,7 @@ void icmp6_build(struct icmp6hdr *icmp6h, uint8_t type,
 }
 
 void icmp6_set_check_field(struct icmp6hdr *icmp6h,
-		const struct ip6hdr *ip6h) {
+	const struct ip6hdr *ip6h) {
 	struct ip6_pseudohdr ip6ph;
 
 	assert(icmp6h != NULL);

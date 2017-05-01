@@ -14,9 +14,9 @@
 /**
  * Each test case implements this interface.
  */
-typedef void(*test_case_run_t)(void);
+typedef void (*test_case_run_t)(void);
 
-typedef int(*__test_fixture_op_t)(void);
+typedef int (*__test_fixture_op_t)(void);
 
 struct test_suite;
 struct test_case;

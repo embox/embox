@@ -69,8 +69,8 @@ static void timer_handler(struct sys_timer *timer, void *param) {
 		++param_->poll;
 		timer_close(param_->tmr);
 		timer_set(&param_->tmr, TIMER_PERIODIC,
-				(1 << param_->poll) * MSEC_PER_SEC,
-				timer_handler, param);
+			(1 << param_->poll) * MSEC_PER_SEC,
+			timer_handler, param);
 	}
 
 	param_->replied = 0;
@@ -97,7 +97,7 @@ static int make_socket(int *out_sock, in_addr_t server) {
 	addr.sin_addr.s_addr = server;
 
 	if (-1 == connect(ret, (struct sockaddr *)&addr,
-				sizeof addr)) {
+		sizeof addr)) {
 		close(ret);
 		perror("ntpd: connect() failure");
 		return -errno;
@@ -125,7 +125,7 @@ static int serve(struct ntpd_param *param) {
 			continue;
 		}
 		else if (ntp_mode_client(&rep)
-				|| !ntp_valid_stratum(&rep)) {
+			|| !ntp_valid_stratum(&rep)) {
 			continue;
 		}
 
@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
 	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hS"))) {
-		switch(opt) {
+		switch (opt) {
 		default:
 			return -EINVAL;
 		case 'h':
@@ -203,9 +203,9 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 	else if (!inet_aton(argv[optind],
-				(struct in_addr *)&param.addr)) {
+		(struct in_addr *)&param.addr)) {
 		printf("%s: error: invalid address '%s`\n",
-				argv[0], argv[optind]);
+			argv[0], argv[optind]);
 		return -EINVAL;
 	}
 

@@ -17,18 +17,18 @@
 extern void irq_entry(int irq_nr);
 
 static HOST_FNX(int, sigaddset,
-		CONCAT(sigset_t * set, int nr),
-		set, nr)
+	CONCAT(sigset_t * set, int nr),
+	set, nr)
 static HOST_FNX(int, sigemptyset, sigset_t * set, set)
 static HOST_FNX(int, sigismember,
-		CONCAT(const sigset_t *set, int nr),
-		set, nr)
+	CONCAT(const sigset_t *set, int nr),
+	set, nr)
 static HOST_FNX(int, sigprocmask,
-		CONCAT(int what, const sigset_t *set, sigset_t *oset),
-		what, set, oset)
+	CONCAT(int what, const sigset_t *set, sigset_t *oset),
+	what, set, oset)
 static HOST_FNX(int, sigaction,
-		CONCAT(int sig, const struct sigaction *act, struct sigaction *oact),
-		sig, act, oact)
+	CONCAT(int sig, const struct sigaction *act, struct sigaction *oact),
+	sig, act, oact)
 static HOST_FNX(int, raise, int nr, nr)
 
 static inline void host_sigfillset(sigset_t *set) {
@@ -94,4 +94,3 @@ void host_signal_send_self(int sig_nr) {
 
 	host_raise(sig_nr);
 }
-

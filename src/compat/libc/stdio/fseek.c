@@ -17,7 +17,7 @@ int fseek(FILE *file, long int offset, int origin) {
 	off_t ret;
 
 	if (origin != SEEK_SET && origin != SEEK_CUR
-			&& origin != SEEK_END) {
+		&& origin != SEEK_END) {
 		SET_ERRNO(EINVAL);
 		return -1;
 	}

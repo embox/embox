@@ -37,7 +37,9 @@ int vsnprintf(char *str, size_t size, const char *format, va_list args) {
 	data.str = str;
 	data.left = size ? size - 1 : 0;
 	ret = __print(strn_printchar, &data, format, args);
-	if (size) *data.str = '\0';
+	if (size) {
+		*data.str = '\0';
+	}
 
 	return ret;
 }

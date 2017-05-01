@@ -14,7 +14,8 @@ EMBOX_TEST_SUITE("lib/shell/tokenizer test");
 TEST_CASE("double quotes should be considered right") {
 	char *argv[10];
 
-	test_assert_equal(3, cmdline_tokenize("test      \"test    test\"     test", argv));
+	test_assert_equal(3,
+		cmdline_tokenize("test      \"test    test\"     test", argv));
 
 	test_assert_zero(strcmp(argv[0], "test"));
 	test_assert_zero(strcmp(argv[1], "test    test"));

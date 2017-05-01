@@ -29,7 +29,7 @@ int pkt_type(const struct sk_buff *skb) {
 	/* it's multicast/broadcast? */
 	if (is_multicast_ether_addr(&skb->mac.ethh->h_dest[0])) {
 		if (0 == compare_ether_addr(&skb->mac.ethh->h_dest[0],
-					&skb->dev->broadcast[0])) {
+			&skb->dev->broadcast[0])) {
 			return PACKET_BROADCAST;
 		}
 		else {
@@ -39,17 +39,16 @@ int pkt_type(const struct sk_buff *skb) {
 
 	/* it's for me? */
 	if (0 == compare_ether_addr(&skb->mac.ethh->h_dest[0],
-				&skb->dev->dev_addr[0])) {
+		&skb->dev->dev_addr[0])) {
 		return PACKET_HOST;
 	}
 
 	/* it's from me? */
 	if (0 == compare_ether_addr(&skb->mac.ethh->h_source[0],
-				&skb->dev->dev_addr[0])) {
+		&skb->dev->dev_addr[0])) {
 		return PACKET_OUTGOING;
 	}
 
 	/* it's not for me :( */
 	return PACKET_OTHERHOST;
 }
-

@@ -35,8 +35,12 @@ static int client_tcp(size_t nbyte, struct sockaddr_in *in) {
 	}
 
 	memset(&buff[0], 0, sizeof buff);
-	for (i = 1; i < 11; ++i) buff[i] = i;
-	for (i = 1; i < 11; ++i) buff[sizeof buff - 1 - i] = i;
+	for (i = 1; i < 11; ++i) {
+		buff[i] = i;
+	}
+	for (i = 1; i < 11; ++i) {
+		buff[sizeof buff - 1 - i] = i;
+	}
 
 	while (nbyte != 0) {
 		ssize_t ret;
@@ -77,7 +81,7 @@ int main(int argc, char *argv[]) {
 		case '?':
 		case 'h':
 			printf("%s: [-K <bytes K>] [-M <bytes M>] [-G <bytes G>]"
-					"protocol://address:port\n", argv[0]);
+				   "protocol://address:port\n", argv[0]);
 			return 0;
 		case 'K':
 		case 'M':
@@ -87,9 +91,9 @@ int main(int argc, char *argv[]) {
 				return -EINVAL;
 			}
 			nbyte += count * (
-					opt == 'K' ? 1024
-					: opt == 'M' ? 1024 * 1024
-					: 1024 * 1024 * 1024);
+				opt == 'K' ? 1024
+				: opt == 'M' ? 1024 * 1024
+				: 1024 * 1024 * 1024);
 			break;
 		}
 	}
@@ -103,7 +107,7 @@ int main(int argc, char *argv[]) {
 		tmp = strstr(protocol, "://");
 		if (tmp == NULL) {
 			printf("%s: bad target format '%s`\n",
-					argv[0], argv[optind]);
+				argv[0], argv[optind]);
 			return -EINVAL;
 		}
 		*tmp = '\0';
@@ -111,19 +115,19 @@ int main(int argc, char *argv[]) {
 		tmp = strchr(address, ':');
 		if (tmp == NULL) {
 			printf("%s: bad target format '%s`\n",
-					argv[0], argv[optind]);
+				argv[0], argv[optind]);
 			return -EINVAL;
 		}
 		*tmp = '\0';
 		if (0 == inet_aton(address, &in.sin_addr)) {
 			printf("%s: invalid address '%s`\n",
-					argv[0], address);
+				argv[0], address);
 			return -EINVAL;
 		}
 		port = tmp + 1;
 		if (1 != sscanf(port, "%hu", &in.sin_port)) {
 			printf("%s: invalid port '%s`\n",
-					argv[0], port);
+				argv[0], port);
 			return -EINVAL;
 		}
 		in.sin_port = htons(in.sin_port);
@@ -134,6 +138,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	printf("%s: protocol '%s` not supported\n",
-			argv[0], protocol);
+		argv[0], protocol);
 	return -EINVAL;
 }

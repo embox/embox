@@ -16,7 +16,7 @@
 
 POOL_DEF(itimer_pool, struct itimer, OPTION_GET(NUMBER, itimer_quantity));
 
-struct itimer *itimer_alloc(void) {
+struct itimer * itimer_alloc(void) {
 	return pool_alloc(&itimer_pool);
 }
 
@@ -25,7 +25,7 @@ void itimer_free(struct itimer *it) {
 }
 
 void itimer_init(struct itimer *it, struct clock_source *cs,
-		time64_t start_tstamp) {
+	time64_t start_tstamp) {
 	struct timespec ts;
 	assert(it && cs && cs->read);
 

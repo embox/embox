@@ -34,7 +34,7 @@ static pid_t task_collect(pid_t target_pid, int *status) {
 		pid_t child_pid = task_get_id(task);
 
 		if ((target_pid == (pid_t)-1 || target_pid == child_pid) &&
-				task->status & (TASKST_EXITED_MASK | TASKST_SIGNALD_MASK)) {
+			task->status & (TASKST_EXITED_MASK | TASKST_SIGNALD_MASK)) {
 			if (status) {
 				*status = task->status ^ TASKST_EXITED_MASK;
 			}
@@ -54,7 +54,7 @@ pid_t task_waitpid_posix(pid_t pid, int *status, int options) {
 	}
 
 	while (0 > WAITQ_WAIT(task_resource_waitpid(task_self()),
-			(ret = task_collect(pid, status))));
+		(ret = task_collect(pid, status)))) ;
 
 	return ret;
 

@@ -26,7 +26,7 @@ const struct mod_ops __test_mod_ops = {
 	.enable = &test_mod_enable,
 };
 
-ARRAY_SPREAD_DEF(const struct test_suite * const, __test_registry);
+ARRAY_SPREAD_DEF(const struct test_suite *const, __test_registry);
 
 static int test_mod_enable(const struct mod *mod) {
 	struct test_mod *test_mod = (struct test_mod *) mod;
@@ -38,7 +38,7 @@ static int test_mod_enable(const struct mod *mod) {
 	return test_suite_run(&test_mod->suite);
 }
 
-const struct test_suite *test_lookup(const char *name) {
+const struct test_suite * test_lookup(const char *name) {
 	const struct test_suite *test = NULL;
 
 	test_foreach(test) {

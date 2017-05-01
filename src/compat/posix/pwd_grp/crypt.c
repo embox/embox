@@ -12,7 +12,7 @@
 
 #include <crypt.h>
 
-char *crypt(const char *key, const char *salt) {
+char * crypt(const char *key, const char *salt) {
 	md5_state_t state;
 	md5_byte_t digest[16*2 + 1];
 	static char hex_output[16*2 + 1];

@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-char *strrchr(const char *str, int ch) {
+char * strrchr(const char *str, int ch) {
 	char c = (char) ch;
 	const char *found = NULL;
 

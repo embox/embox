@@ -16,7 +16,7 @@
 TASK_RESOURCE_DEF(task_waitpid_desc, struct waitq);
 
 static void task_waitpid_init(const struct task *task,
-		void *waitpid_space) {
+	void *waitpid_space) {
 	struct waitq *waitq;
 
 	assert(waitpid_space == task_resource_waitpid(task));

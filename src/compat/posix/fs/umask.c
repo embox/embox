@@ -14,10 +14,11 @@
 #define DEFAULT_UMASK OPTION_GET(NUMBER,default_umask)
 
 static void task_umask_init(const struct task *task, void *space);
-static int task_umask_inherit(const struct task *task, const struct task *parent);
+static int task_umask_inherit(const struct task *task,
+	const struct task *parent);
 TASK_RESOURCE_DECLARE(static,
-		task_resource_umask,
-		mode_t,
+	task_resource_umask,
+	mode_t,
 	.init = task_umask_init,
 	.inherit = task_umask_inherit,
 );
@@ -28,7 +29,8 @@ static void task_umask_init(const struct task *task, void *space) {
 	*umask_p = DEFAULT_UMASK;
 }
 
-static int task_umask_inherit(const struct task *task, const struct task *parent) {
+static int task_umask_inherit(const struct task *task,
+	const struct task *parent) {
 	mode_t *task_umask_p = task_resource(task, &task_resource_umask);
 	mode_t *parent_umask_p = task_resource(parent, &task_resource_umask);
 

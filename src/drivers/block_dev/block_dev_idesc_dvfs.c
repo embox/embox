@@ -19,7 +19,8 @@
 static void bdev_idesc_close(struct idesc *desc) {
 }
 
-static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov,
+	int cnt) {
 	void *buf;
 	size_t nbyte;
 	struct file *file;
@@ -55,7 +56,8 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	return res;
 }
 
-static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov,
+	int cnt) {
 	struct file *file;
 	struct block_dev *bdev;
 	size_t blk_no;
@@ -79,7 +81,8 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 
 	assert(bdev->driver);
 	assert(bdev->driver->write);
-	res = bdev->driver->write(bdev, (void *)iov->iov_base, iov->iov_len, blk_no);
+	res =
+		bdev->driver->write(bdev, (void *)iov->iov_base, iov->iov_len, blk_no);
 	if (res < 0) {
 		return res;
 	}
@@ -110,8 +113,9 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 			bdev = bdev->parrent_bdev;
 		}
 		assert(bdev->driver);
-		if (NULL == bdev->driver->ioctl)
+		if (NULL == bdev->driver->ioctl) {
 			return -ENOSYS;
+		}
 
 		return bdev->driver->ioctl(bdev, cmd, args, 0);
 	}
@@ -136,7 +140,7 @@ struct idesc_ops idesc_bdev_ops = {
 	.fstat = bdev_idesc_fstat
 };
 
-static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
+static struct idesc * bdev_idesc_open(struct inode *node, struct idesc *idesc) {
 	/* Assume node belongs to /devfs/ */
 	struct dev_module *devmod = ((struct block_dev *)node->i_data)->dev_module;
 
@@ -198,7 +202,8 @@ int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
 			bdev->block_size);
 }
 
-int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count) {
+int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk,
+	int count) {
 	struct block_dev *bdev;
 	int i, err;
 
@@ -212,8 +217,9 @@ int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count) 
 		buf += bdev->block_size;
 		blk++;
 
-		if (err < 0)
+		if (err < 0) {
 			return err;
+		}
 	}
 
 	return count * bdev->block_size;;
@@ -233,8 +239,9 @@ int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk, int count) {
 		buf += bdev->block_size;
 		blk++;
 
-		if (err < 0)
+		if (err < 0) {
 			return err;
+		}
 	}
 
 	return count * bdev->block_size;;

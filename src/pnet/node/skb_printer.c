@@ -47,6 +47,6 @@ static int handler(struct pnet_pack *pack) {
 }
 
 PNET_NODE_DEF("skb printer", {
-	.rx_hnd = handler,
-	.tx_hnd = NULL
-});
+		.rx_hnd = handler,
+		.tx_hnd = NULL
+	});

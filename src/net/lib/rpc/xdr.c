@@ -58,7 +58,8 @@ static int xdr_align(struct xdr *xs, size_t size) {
 
 	assert(xs != NULL);
 
-	round_up = (BYTES_PER_XDR_UNIT - size % BYTES_PER_XDR_UNIT) % BYTES_PER_XDR_UNIT;
+	round_up = (BYTES_PER_XDR_UNIT - size % BYTES_PER_XDR_UNIT) %
+		BYTES_PER_XDR_UNIT;
 
 	if (xs->oper == XDR_DECODE) {
 		return xdr_getbytes(xs, (char *)&trash, round_up);
@@ -70,7 +71,6 @@ static int xdr_align(struct xdr *xs, size_t size) {
 
 	return xdr_putbytes(xs, (char *)&trash, round_up);
 }
-
 
 /*
  * Standard specification functions
@@ -195,14 +195,14 @@ int xdr_bool(struct xdr *xs, int32_t *pb) {
 }
 
 int xdr_array(struct xdr *xs, char **parr, uint32_t *psize, uint32_t maxsize,
-		uint32_t elem_size, xdrproc_t elem_proc) {
+	uint32_t elem_size, xdrproc_t elem_proc) {
 	size_t s;
 	uint32_t i, size;
 	uint8_t need_free;
 	char *pelem;
 
 	assert((xs != NULL) && (parr != NULL) && (psize != NULL)
-			&& (elem_size != 0) && (elem_proc != NULL));
+		&& (elem_size != 0) && (elem_proc != NULL));
 
 	XDR_SAVE(xs, s);
 
@@ -225,8 +225,8 @@ int xdr_array(struct xdr *xs, char **parr, uint32_t *psize, uint32_t maxsize,
 			need_free = 0;
 		}
 		for (i = 0, pelem = *parr;
-				(*elem_proc)(xs, pelem, XDR_LAST_UINT32);
-				++i, pelem += elem_size) {
+			(*elem_proc)(xs, pelem, XDR_LAST_UINT32);
+			++i, pelem += elem_size) {
 			if (i == size) {
 				*psize = size;
 				return XDR_SUCCESS;
@@ -240,8 +240,10 @@ int xdr_array(struct xdr *xs, char **parr, uint32_t *psize, uint32_t maxsize,
 	case XDR_ENCODE:
 		if ((*psize <= maxsize) && xdr_u_int(xs, psize)) {
 			for (i = 0, pelem = *parr;
-					(i < *psize) && (*elem_proc)(xs, pelem, XDR_LAST_UINT32);
-					++i, pelem += elem_size);
+				(i < *psize) && (*elem_proc)(xs, pelem, XDR_LAST_UINT32);
+				++i, pelem += elem_size) {
+				;
+			}
 			if (i == *psize) {
 				return XDR_SUCCESS;
 			}
@@ -301,7 +303,7 @@ int xdr_bytes(struct xdr *xs, char **ppc, uint32_t *psize, uint32_t maxsize) {
 			break;
 		}
 		if (xdr_u_int(xs, psize) && xdr_putbytes(xs, *ppc, *psize)
-				&& xdr_align(xs, *psize)) {
+			&& xdr_align(xs, *psize)) {
 			return XDR_SUCCESS;
 		}
 		break;
@@ -387,7 +389,7 @@ int xdr_string(struct xdr *xs, char **pstr, uint32_t maxsize) {
 			break;
 		}
 		if (xdr_u_int(xs, &size) && xdr_putbytes(xs, *pstr, size)
-				&& xdr_align(xs, size)) {
+			&& xdr_align(xs, size)) {
 			return XDR_SUCCESS;
 		}
 		break;
@@ -409,7 +411,7 @@ int xdr_wrapstring(struct xdr *xs, char **pstr) {
 }
 
 int xdr_union(struct xdr *xs, int32_t *pdscm, void *pun,
-		const struct xdr_discrim *choices, xdrproc_t dfault) {
+	const struct xdr_discrim *choices, xdrproc_t dfault) {
 	size_t s;
 
 	assert((pdscm != NULL) && (choices != NULL));

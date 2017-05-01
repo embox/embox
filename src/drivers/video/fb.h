@@ -24,7 +24,6 @@ __BEGIN_DECLS
 #define FB_SYNC_EXT             4       /* external sync                */
 #define FB_SYNC_COMP_HIGH_ACT   8       /* composite sync high active   */
 
-
 #define FB_VMODE_NONINTERLACED  0       /* non interlaced */
 #define FB_VMODE_INTERLACED     1       /* interlaced   */
 #define FB_VMODE_DOUBLE         2       /* double scan */
@@ -108,7 +107,8 @@ struct fb_cursor {
 
 struct fb_ops {
 	int (*fb_get_var)(struct fb_info *info, struct fb_var_screeninfo *var);
-	int (*fb_set_var)(struct fb_info *info, const struct fb_var_screeninfo *var);
+	int (*fb_set_var)(struct fb_info *info,
+		const struct fb_var_screeninfo *var);
 	void (*fb_copyarea)(struct fb_info *info, const struct fb_copyarea *area);
 	void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect);
 	void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
@@ -125,16 +125,17 @@ struct fb_info {
 	struct fb_var_screeninfo var; /**< Current variable settins */
 };
 
-extern struct fb_info *fb_create(const struct fb_ops *ops, char *map_base,
-		size_t map_size);
+extern struct fb_info * fb_create(const struct fb_ops *ops, char *map_base,
+	size_t map_size);
 extern void fb_delete(struct fb_info *info);
 
 /**
  * Solely application's part
  */
 
-extern struct fb_info *fb_lookup(int id);
-extern int fb_set_var(struct fb_info *info, const struct fb_var_screeninfo *var);
+extern struct fb_info * fb_lookup(int id);
+extern int fb_set_var(struct fb_info *info,
+	const struct fb_var_screeninfo *var);
 extern int fb_get_var(struct fb_info *info, struct fb_var_screeninfo *var);
 
 extern void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area);

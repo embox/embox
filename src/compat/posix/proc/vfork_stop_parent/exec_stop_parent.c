@@ -6,7 +6,7 @@
  * @date 13.09.2011
  * @author Anton Bondarev
  * @author Anton Kozlov
- * 	- shell invocation
+ *  - shell invocation
  */
 
 #include <string.h>
@@ -32,18 +32,18 @@ static void exec_trampoline(void) {
 	_exit(exec_call());
 }
 
-void *task_exec_callback(void *arg) {
+void * task_exec_callback(void *arg) {
 	struct thread *t;
 
 	sched_lock();
 	t = thread_self();
 
-	CONTEXT_JMP_NEW_STACK(exec_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
+	CONTEXT_JMP_NEW_STACK(exec_trampoline, thread_stack_get(
+		t) + thread_stack_get_size(t));
 
 	return NULL;
 }
 
-void *task_exit_callback(void *arg) {
+void * task_exit_callback(void *arg) {
 	return arg;
 }
-

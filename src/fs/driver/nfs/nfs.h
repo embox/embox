@@ -6,7 +6,6 @@
  * @author Andrey Gazukin
  */
 
-
 #ifndef NFS_H_
 #define NFS_H_
 
@@ -24,11 +23,11 @@
 #define PMAP_VER 2
 #define PMAP_PORT 111
 
-#define	PMAPPROC_NULL		0
-#define	PMAPPROC_SET		1
-#define	PMAPPROC_UNSET		2
-#define	PMAPPROC_GETPORT	3
-#define	PMAPPROC_DUMP		4
+#define PMAPPROC_NULL       0
+#define PMAPPROC_SET        1
+#define PMAPPROC_UNSET      2
+#define PMAPPROC_GETPORT    3
+#define PMAPPROC_DUMP       4
 #define PMAPPROC_CALLIT     5
 
 /*
@@ -116,21 +115,21 @@
 #define MNTNAMLEN     255  /* Maximum bytes in a name */
 #define FHSIZE3        64  /* Maximum bytes in a V3 file handle */
 
-#define	STATUS_OK		        0x00000000
-#define	VALUE_FOLLOWS_YES		0x00000001
-#define	NFS_EOF         		0x00000001
-#define	NFS_FILE_NODE_TYPE      0x1
-#define	NFS_DIRECTORY_NODE_TYPE 0x2
+#define STATUS_OK               0x00000000
+#define VALUE_FOLLOWS_YES       0x00000001
+#define NFS_EOF                 0x00000001
+#define NFS_FILE_NODE_TYPE      0x1
+#define NFS_DIRECTORY_NODE_TYPE 0x2
 
-#define	DIRCOUNT     1024
-#define	MAXDIRCOUNT  2048
+#define DIRCOUNT     1024
+#define MAXDIRCOUNT  2048
 
-#define	EMBOX_MACHNAME  "embox"
+#define EMBOX_MACHNAME  "embox"
 
 typedef struct create_params {
-	const char      path[PATH_MAX];
-	const char      fs_name[NAME_MAX];
-	unsigned int    fs_type;
+	const char path[PATH_MAX];
+	const char fs_name[NAME_MAX];
+	unsigned int fs_type;
 } create_params_t;
 
 /* RPC string */
@@ -143,7 +142,6 @@ typedef struct rpc_fh_string {
 	size_t len;
 	char data[FHSIZE3];
 } rpc_fh_string_t;
-
 
 typedef struct nfs_filehandle {
 	rpc_fh_string_t name_fh;
@@ -159,7 +157,6 @@ typedef struct export_dir {
 	size_t dir_len;
 	char dir_name[PATH_MAX];
 } export_dir_t;
-
 
 /* Body of a RPC MOUNT service replay */
 typedef struct mount_service {
@@ -322,8 +319,8 @@ typedef struct nfs_file_info {
 	file_name_t name_dsc;
 	file_attribute_rep_t attr;
 	nfs_filehandle_t fh;
-	int mode;				/* mode in which this file was opened */
-	__u64 offset;			/* current (BYTE) pointer */
+	int mode;               /* mode in which this file was opened */
+	__u64 offset;           /* current (BYTE) pointer */
 } nfs_file_info_t;
 
 #endif /* NFS_H_ */

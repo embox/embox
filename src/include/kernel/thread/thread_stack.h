@@ -20,9 +20,9 @@ extern void thread_stack_init(struct thread *t, size_t size);
 
 extern void thread_stack_set(struct thread *t, void *stack);
 extern void thread_stack_set_size(struct thread *t, size_t size);
-//extern int thread_stack_reserve(struct thread *t, size_t size);
+/*extern int thread_stack_reserve(struct thread *t, size_t size); */
 
-extern void *thread_stack_get(struct thread *t);
+extern void * thread_stack_get(struct thread *t);
 
 extern size_t thread_stack_get_size(struct thread *t);
 

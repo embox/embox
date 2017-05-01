@@ -13,7 +13,6 @@
 #include <kernel/task/resource/mmap.h>
 #include <mem/mmap.h>
 
-
 TASK_RESOURCE_DEF(task_mmap_desc, struct emmap);
 
 static void task_mmap_init(const struct task *task, void *mmap_space) {
@@ -28,7 +27,7 @@ static void task_mmap_init(const struct task *task, void *mmap_space) {
 }
 
 static int task_mmap_inherit(const struct task *task,
-		const struct task *parent) {
+	const struct task *parent) {
 	struct emmap *mmap, *parent_mmap;
 
 	mmap = task_resource_mmap(task);

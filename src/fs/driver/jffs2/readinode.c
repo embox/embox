@@ -21,8 +21,8 @@
 #include <linux/compiler.h>
 #include "nodelist.h"
 
-void jffs2_truncate_fragtree (struct jffs2_sb_info *c,
-					struct rb_root *list, uint32_t size) {
+void jffs2_truncate_fragtree(struct jffs2_sb_info *c,
+	struct rb_root *list, uint32_t size) {
 	struct jffs2_node_frag *frag = jffs2_lookup_node_frag(list, size);
 
 	JFFS2_DBG_FRAGTREE("truncating fragtree to 0x%08x bytes\n", size);
@@ -30,7 +30,8 @@ void jffs2_truncate_fragtree (struct jffs2_sb_info *c,
 	/* We know frag->ofs <= size. That's what lookup does for us */
 	if (frag && frag->ofs != size) {
 		if (frag->ofs+frag->size >= size) {
-			JFFS2_DBG_FRAGTREE2("truncating frag 0x%08x-0x%08x\n", frag->ofs, frag->ofs+frag->size);
+			JFFS2_DBG_FRAGTREE2("truncating frag 0x%08x-0x%08x\n", frag->ofs,
+				frag->ofs+frag->size);
 			frag->size = size - frag->ofs;
 		}
 		frag = frag_next(frag);
@@ -38,7 +39,8 @@ void jffs2_truncate_fragtree (struct jffs2_sb_info *c,
 	while (frag && frag->ofs >= size) {
 		struct jffs2_node_frag *next = frag_next(frag);
 
-		JFFS2_DBG_FRAGTREE("removing frag 0x%08x-0x%08x\n", frag->ofs, frag->ofs+frag->size);
+		JFFS2_DBG_FRAGTREE("removing frag 0x%08x-0x%08x\n", frag->ofs,
+			frag->ofs+frag->size);
 		frag_erase(frag, list);
 		jffs2_obsolete_node_frag(c, frag);
 		frag = next;
@@ -49,10 +51,11 @@ void jffs2_truncate_fragtree (struct jffs2_sb_info *c,
  * Put a new tmp_dnode_info into the temporaty RB-tree, keeping the list in
  * order of increasing version.
  */
-static void jffs2_add_tn_to_tree(struct jffs2_tmp_dnode_info *tn, struct rb_root *list)
+static void jffs2_add_tn_to_tree(struct jffs2_tmp_dnode_info *tn,
+	struct rb_root *list)
 {
 	struct rb_node **p = &list->rb_node;
-	struct rb_node * parent = NULL;
+	struct rb_node *parent = NULL;
 	struct jffs2_tmp_dnode_info *this;
 
 	while (*p) {
@@ -120,12 +123,13 @@ static void jffs2_free_full_dirent_list(struct jffs2_full_dirent *fd) {
 
 /* Returns first valid node after 'ref'. May return 'ref' */
 static struct jffs2_raw_node_ref
-			*jffs2_first_valid_node(struct jffs2_raw_node_ref *ref) {
+* jffs2_first_valid_node(struct jffs2_raw_node_ref *ref) {
 	while (ref && ref->next_in_ino) {
 		if (!ref_obsolete(ref)) {
 			return ref;
 		}
-		JFFS2_DBG_NODEREF("node at 0x%08x is obsoleted. Ignoring.\n", ref_offset(ref));
+		JFFS2_DBG_NODEREF("node at 0x%08x is obsoleted. Ignoring.\n", ref_offset(
+			ref));
 		ref = ref->next_in_ino;
 	}
 	return NULL;
@@ -136,13 +140,13 @@ static struct jffs2_raw_node_ref
  * It is called every time an directory entry node is found.
  *
  * Returns: 0 on succes;
- * 	    1 if the node should be marked obsolete;
- * 	    negative error code on failure.
+ *      1 if the node should be marked obsolete;
+ *      negative error code on failure.
  */
 static inline int read_direntry(struct jffs2_sb_info *c,
-	      struct jffs2_raw_node_ref *ref, struct jffs2_raw_dirent *rd,
-	      uint32_t read, struct jffs2_full_dirent **fdp,
-	      uint32_t *latest_mctime, uint32_t *mctime_ver) {
+	struct jffs2_raw_node_ref *ref, struct jffs2_raw_dirent *rd,
+	uint32_t read, struct jffs2_full_dirent **fdp,
+	uint32_t *latest_mctime, uint32_t *mctime_ver) {
 	struct jffs2_full_dirent *fd;
 
 	/* The direntry nodes are checked during the flash scanning */
@@ -151,9 +155,11 @@ static inline int read_direntry(struct jffs2_sb_info *c,
 	BUG_ON(ref_obsolete(ref));
 
 	/* Sanity check */
-	if (unlikely(PAD((rd->nsize + sizeof(*rd))) != PAD(je32_to_cpu(rd->totlen)))) {
-		JFFS2_ERROR("illegal nsize in node at %#08x: nsize %#02x, totlen %#04x\n",
-		       ref_offset(ref), rd->nsize, je32_to_cpu(rd->totlen));
+	if (unlikely(PAD((rd->nsize + sizeof(*rd))) !=
+		PAD(je32_to_cpu(rd->totlen)))) {
+		JFFS2_ERROR(
+			"illegal nsize in node at %#08x: nsize %#02x, totlen %#04x\n",
+			ref_offset(ref), rd->nsize, je32_to_cpu(rd->totlen));
 		return 1;
 	}
 
@@ -168,7 +174,7 @@ static inline int read_direntry(struct jffs2_sb_info *c,
 	fd->type = rd->type;
 
 	/* Pick out the mctime of the latest dirent */
-	if(fd->version > *mctime_ver) {
+	if (fd->version > *mctime_ver) {
 		*mctime_ver = fd->version;
 		*latest_mctime = je32_to_cpu(rd->mctime);
 	}
@@ -179,7 +185,7 @@ static inline int read_direntry(struct jffs2_sb_info *c,
 	 */
 	if (read > sizeof(*rd)) {
 		memcpy(&fd->name[0], &rd->name[0],
-		       min_t(uint32_t, rd->nsize, (read - sizeof(*rd)) ));
+			min_t(uint32_t, rd->nsize, (read - sizeof(*rd)) ));
 	}
 
 	/* Do we need to copy any more of the name directly from the flash? */
@@ -218,13 +224,13 @@ static inline int read_direntry(struct jffs2_sb_info *c,
  * It is called every time an inode node is found.
  *
  * Returns: 0 on succes;
- * 	    1 if the node should be marked obsolete;
- * 	    negative error code on failure.
+ *      1 if the node should be marked obsolete;
+ *      negative error code on failure.
  */
 static inline int read_dnode(struct jffs2_sb_info *c,
-	   struct jffs2_raw_node_ref *ref, struct jffs2_raw_inode *rd,
-	   uint32_t read, struct rb_root *tnp, uint32_t *latest_mctime,
-	   	   	   	   	   	   	   	   	   	   	   uint32_t *mctime_ver) {
+	struct jffs2_raw_node_ref *ref, struct jffs2_raw_inode *rd,
+	uint32_t read, struct rb_root *tnp, uint32_t *latest_mctime,
+	uint32_t *mctime_ver) {
 	struct jffs2_eraseblock *jeb;
 	struct jffs2_tmp_dnode_info *tn;
 
@@ -237,16 +243,19 @@ static inline int read_dnode(struct jffs2_sb_info *c,
 
 		crc = crc32(0, rd, sizeof(*rd) - 8);
 		if (unlikely(crc != je32_to_cpu(rd->node_crc))) {
-			JFFS2_NOTICE("header CRC failed on node at %#08x: read %#08x, calculated %#08x\n",
-					ref_offset(ref), je32_to_cpu(rd->node_crc), crc);
+			JFFS2_NOTICE(
+				"header CRC failed on node at %#08x: read %#08x, calculated %#08x\n",
+				ref_offset(ref), je32_to_cpu(rd->node_crc), crc);
 			return 1;
 		}
 
 		/* Sanity checks */
 		if (unlikely(je32_to_cpu(rd->offset) > je32_to_cpu(rd->isize)) ||
-		    unlikely(PAD(je32_to_cpu(rd->csize) + sizeof(*rd)) != PAD(je32_to_cpu(rd->totlen)))) {
-				JFFS2_WARNING("inode node header CRC is corrupted at %#08x\n", ref_offset(ref));
-				jffs2_dbg_dump_node(c, ref_offset(ref));
+			unlikely(PAD(je32_to_cpu(rd->csize) + sizeof(*rd)) !=
+			PAD(je32_to_cpu(rd->totlen)))) {
+			JFFS2_WARNING("inode node header CRC is corrupted at %#08x\n", ref_offset(
+				ref));
+			jffs2_dbg_dump_node(c, ref_offset(ref));
 			return 1;
 		}
 
@@ -254,14 +263,15 @@ static inline int read_dnode(struct jffs2_sb_info *c,
 			unsigned char *buf = NULL;
 			uint32_t pointed = 0;
 			int err;
-			if(!pointed){
+			if (!pointed) {
 				buf = kmalloc(je32_to_cpu(rd->csize), GFP_KERNEL);
 				if (!buf) {
 					return -ENOMEM;
 				}
 
-				err = jffs2_flash_read(c, ref_offset(ref) + sizeof(*rd), je32_to_cpu(rd->csize),
-							&read, buf);
+				err = jffs2_flash_read(c, ref_offset(
+						ref) + sizeof(*rd), je32_to_cpu(rd->csize),
+						&read, buf);
 				if (unlikely(read != je32_to_cpu(rd->csize)) && likely(!err)) {
 					err = -EIO;
 				}
@@ -271,12 +281,13 @@ static inline int read_dnode(struct jffs2_sb_info *c,
 				}
 			}
 			crc = crc32(0, buf, je32_to_cpu(rd->csize));
-			if(!pointed) {
+			if (!pointed) {
 				kfree(buf);
 			}
 
 			if (crc != je32_to_cpu(rd->data_crc)) {
-				JFFS2_NOTICE("data CRC failed on node at %#08x: read %#08x, calculated %#08x\n",
+				JFFS2_NOTICE(
+					"data CRC failed on node at %#08x: read %#08x, calculated %#08x\n",
 					ref_offset(ref), je32_to_cpu(rd->data_crc), crc);
 				return 1;
 			}
@@ -301,13 +312,15 @@ static inline int read_dnode(struct jffs2_sb_info *c,
 		 * when the overlapping node(s) get added to the tree anyway.
 		 */
 		if ((je32_to_cpu(rd->dsize) >= PAGE_CACHE_SIZE) ||
-		    ( ((je32_to_cpu(rd->offset) & (PAGE_CACHE_SIZE-1)) == 0) &&
-		      (je32_to_cpu(rd->dsize) + je32_to_cpu(rd->offset) ==
-		    		  	  	  	  	  	  	  	  je32_to_cpu(rd->isize)))) {
-			JFFS2_DBG_READINODE("marking node at %#08x REF_PRISTINE\n", ref_offset(ref));
+			(((je32_to_cpu(rd->offset) & (PAGE_CACHE_SIZE-1)) == 0) &&
+			(je32_to_cpu(rd->dsize) + je32_to_cpu(rd->offset) ==
+			je32_to_cpu(rd->isize)))) {
+			JFFS2_DBG_READINODE("marking node at %#08x REF_PRISTINE\n", ref_offset(
+				ref));
 			ref->flash_offset = ref_offset(ref) | REF_PRISTINE;
 		} else {
-			JFFS2_DBG_READINODE("marking node at %#08x REF_NORMAL\n", ref_offset(ref));
+			JFFS2_DBG_READINODE("marking node at %#08x REF_NORMAL\n", ref_offset(
+				ref));
 			ref->flash_offset = ref_offset(ref) | REF_NORMAL;
 		}
 		spin_unlock(&c->erase_completion_lock);
@@ -334,14 +347,15 @@ static inline int read_dnode(struct jffs2_sb_info *c,
 	 * csize/dsize swapped. Deal with it
 	 */
 	if (rd->compr == JFFS2_COMPR_ZERO && !je32_to_cpu(rd->dsize)
-										&& je32_to_cpu(rd->csize)) {
+		&& je32_to_cpu(rd->csize)) {
 		tn->fn->size = je32_to_cpu(rd->csize);
-	} 	else { /* normal case... */
+	}   else { /* normal case... */
 		tn->fn->size = je32_to_cpu(rd->dsize);
 	}
 
 	JFFS2_DBG_READINODE("dnode @%08x: ver %u, offset %#04x, dsize %#04x\n",
-		  ref_offset(ref), je32_to_cpu(rd->version), je32_to_cpu(rd->offset), je32_to_cpu(rd->dsize));
+		ref_offset(ref), je32_to_cpu(rd->version), je32_to_cpu(
+		rd->offset), je32_to_cpu(rd->dsize));
 
 	jffs2_add_tn_to_tree(tn, tnp);
 
@@ -353,30 +367,32 @@ static inline int read_dnode(struct jffs2_sb_info *c,
  * It is called every time an unknown node is found.
  *
  * Returns: 0 on succes;
- * 	    1 if the node should be marked obsolete;
- * 	    negative error code on failure.
+ *      1 if the node should be marked obsolete;
+ *      negative error code on failure.
  */
 static inline int read_unknown(struct jffs2_sb_info *c,
-	     struct jffs2_raw_node_ref *ref,
-	     struct jffs2_unknown_node *un, uint32_t read) {
+	struct jffs2_raw_node_ref *ref,
+	struct jffs2_unknown_node *un, uint32_t read) {
 	/* We don't mark unknown nodes as REF_UNCHECKED */
 	BUG_ON(ref_flags(ref) == REF_UNCHECKED);
 
 	un->nodetype = cpu_to_je16(JFFS2_NODE_ACCURATE |
-							je16_to_cpu(un->nodetype));
+			je16_to_cpu(un->nodetype));
 
 	if (crc32(0, un, sizeof(struct jffs2_unknown_node) - 4) !=
-									je32_to_cpu(un->hdr_crc)) {
+		je32_to_cpu(un->hdr_crc)) {
 		/* Hmmm. This should have been caught at scan time. */
-		JFFS2_NOTICE("node header CRC failed at %#08x. But it must have been OK earlier.\n", ref_offset(ref));
+		JFFS2_NOTICE(
+			"node header CRC failed at %#08x. But it must have been OK earlier.\n",
+			ref_offset(ref));
 		jffs2_dbg_dump_node(c, ref_offset(ref));
 		return 1;
 	} else {
-		switch(je16_to_cpu(un->nodetype) & JFFS2_COMPAT_MASK) {
+		switch (je16_to_cpu(un->nodetype) & JFFS2_COMPAT_MASK) {
 
 		case JFFS2_FEATURE_INCOMPAT:
 			JFFS2_ERROR("unknown INCOMPAT nodetype %#04X at %#08x\n",
-				je16_to_cpu(un->nodetype), ref_offset(ref));
+					je16_to_cpu(un->nodetype), ref_offset(ref));
 			/* EEP */
 			BUG();
 			break;
@@ -406,10 +422,11 @@ static inline int read_unknown(struct jffs2_sb_info *c,
  *  Get tmp_dnode_info and full_dirent for all non-obsolete nodes associated
  * with this ino, returning the former in order of version
  */
-static int jffs2_get_inode_nodes(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
-				 struct rb_root *tnp, struct jffs2_full_dirent **fdp,
-				 uint32_t *highest_version, uint32_t *latest_mctime,
-				 uint32_t *mctime_ver) {
+static int jffs2_get_inode_nodes(struct jffs2_sb_info *c,
+	struct jffs2_inode_info *f,
+	struct rb_root *tnp, struct jffs2_full_dirent **fdp,
+	uint32_t *highest_version, uint32_t *latest_mctime,
+	uint32_t *mctime_ver) {
 	struct jffs2_raw_node_ref *ref, *valid_ref;
 	struct rb_root ret_tn = RB_ROOT;
 	struct jffs2_full_dirent *ret_fd = NULL;
@@ -444,17 +461,20 @@ static int jffs2_get_inode_nodes(struct jffs2_sb_info *c, struct jffs2_inode_inf
 
 		/* FIXME: point() */
 		err = jffs2_flash_read(c, (ref_offset(ref)),
-				       min_t(uint32_t, ref_totlen(c, NULL, ref), sizeof(node)),
-				       &retlen, (void *)&node);
+				min_t(uint32_t, ref_totlen(c, NULL, ref), sizeof(node)),
+				&retlen, (void *)&node);
 		if (err) {
-			JFFS2_ERROR("error %d reading node at 0x%08x in get_inode_nodes()\n", err, ref_offset(ref));
+			JFFS2_ERROR(
+				"error %d reading node at 0x%08x in get_inode_nodes()\n", err, ref_offset(
+				ref));
 			goto free_out;
 		}
 
 		switch (je16_to_cpu(node.u.nodetype)) {
 
 		case JFFS2_NODETYPE_DIRENT:
-			JFFS2_DBG_READINODE("node at %08x (%d) is a dirent node\n", ref_offset(ref), ref_flags(ref));
+			JFFS2_DBG_READINODE("node at %08x (%d) is a dirent node\n", ref_offset(
+					ref), ref_flags(ref));
 
 			if (retlen < sizeof(node.d)) {
 				JFFS2_ERROR("short read dirent at %#08x\n", ref_offset(ref));
@@ -508,7 +528,8 @@ static int jffs2_get_inode_nodes(struct jffs2_sb_info *c, struct jffs2_inode_inf
 		default:
 			/* Check we've managed to read at least the common node header */
 			if (retlen < sizeof(struct jffs2_unknown_node)) {
-				JFFS2_ERROR("short read unknown node at %#08x\n", ref_offset(ref));
+				JFFS2_ERROR("short read unknown node at %#08x\n", ref_offset(
+					ref));
 				return -EIO;
 			}
 
@@ -530,15 +551,15 @@ static int jffs2_get_inode_nodes(struct jffs2_sb_info *c, struct jffs2_inode_inf
 
 	return 0;
 
- free_out:
+	free_out:
 	jffs2_free_tmp_dnode_info_list(&ret_tn);
 	jffs2_free_full_dirent_list(ret_fd);
 	return err;
 }
 
 static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
-					struct jffs2_inode_info *f,
-					struct jffs2_raw_inode *latest_node) {
+	struct jffs2_inode_info *f,
+	struct jffs2_raw_inode *latest_node) {
 	struct jffs2_tmp_dnode_info *tn = NULL;
 	struct rb_root tn_list;
 	struct rb_node *rb, *repl_rb;
@@ -550,14 +571,16 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 	size_t retlen;
 	int ret;
 
-	JFFS2_DBG_READINODE("ino #%u nlink is %d\n", f->inocache->ino, f->inocache->nlink);
+	JFFS2_DBG_READINODE("ino #%u nlink is %d\n", f->inocache->ino,
+		f->inocache->nlink);
 
 	/* Grab all nodes relevant to this ino */
 	ret = jffs2_get_inode_nodes(c, f, &tn_list,
 			&fd_list, &f->highest_version, &latest_mctime, &mctime_ver);
 
 	if (ret) {
-		JFFS2_ERROR("cannot read nodes for ino %u, returned error is %d\n", f->inocache->ino, ret);
+		JFFS2_ERROR("cannot read nodes for ino %u, returned error is %d\n",
+			f->inocache->ino, ret);
 		if (f->inocache->state == INO_STATE_READING) {
 			jffs2_set_inocache_state(c, f->inocache, INO_STATE_CHECKEDABSENT);
 		}
@@ -573,7 +596,8 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 
 		if (f->metadata) {
 			if (likely(tn->version >= mdata_ver)) {
-				JFFS2_DBG_READINODE("obsoleting old metadata at 0x%08x\n", ref_offset(f->metadata->raw));
+				JFFS2_DBG_READINODE("obsoleting old metadata at 0x%08x\n", ref_offset(
+					f->metadata->raw));
 				jffs2_mark_node_obsolete(c, f->metadata->raw);
 				jffs2_free_full_dnode(f->metadata);
 				f->metadata = NULL;
@@ -581,8 +605,10 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 				mdata_ver = 0;
 			} else {
 				/* This should never happen. */
-				JFFS2_ERROR("Er. New metadata at 0x%08x with ver %d is actually older than previous ver %d at 0x%08x\n",
-					  ref_offset(fn->raw), tn->version, mdata_ver, ref_offset(f->metadata->raw));
+				JFFS2_ERROR(
+					"Er. New metadata at 0x%08x with ver %d is actually older than previous ver %d at 0x%08x\n",
+					ref_offset(fn->raw), tn->version, mdata_ver,
+					ref_offset(f->metadata->raw));
 				jffs2_mark_node_obsolete(c, fn->raw);
 				jffs2_free_full_dnode(fn);
 				/* Fill in latest_node from the metadata, not this one we're about to free... */
@@ -595,11 +621,12 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 			jffs2_add_full_dnode_to_inode(c, f, fn);
 		} else {
 			/* Zero-sized node at end of version list. Just a metadata update */
-			JFFS2_DBG_READINODE("metadata @%08x: ver %d\n", ref_offset(fn->raw), tn->version);
+			JFFS2_DBG_READINODE("metadata @%08x: ver %d\n", ref_offset(
+				fn->raw), tn->version);
 			f->metadata = fn;
 			mdata_ver = tn->version;
 		}
-	next_tn:
+		next_tn:
 		BUG_ON(rb->rb_left);
 		if (rb->rb_parent && rb->rb_parent->rb_left == rb) {
 			/* We were then left-hand child of our parent. We need
@@ -635,11 +662,12 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 	if (!fn) {
 		/* No data nodes for this inode. */
 		if (f->inocache->ino != 1) {
-			JFFS2_WARNING("no data nodes found for ino #%u\n", f->inocache->ino);
+			JFFS2_WARNING("no data nodes found for ino #%u\n",
+				f->inocache->ino);
 			if (!fd_list) {
 				if (f->inocache->state == INO_STATE_READING) {
 					jffs2_set_inocache_state(c,
-							f->inocache, INO_STATE_CHECKEDABSENT);
+						f->inocache, INO_STATE_CHECKEDABSENT);
 				}
 				return -EIO;
 			}
@@ -661,37 +689,40 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 	ret = jffs2_flash_read(c, ref_offset(fn->raw),
 			sizeof(*latest_node), &retlen, (void *)latest_node);
 	if (ret || retlen != sizeof(*latest_node)) {
-		JFFS2_ERROR("failed to read from flash: error %d, %zd of %zd bytes read\n",
+		JFFS2_ERROR(
+			"failed to read from flash: error %d, %zd of %zd bytes read\n",
 			ret, retlen, sizeof(*latest_node));
 		/* FIXME: If this fails, there seems to be a memory leak. Find it. */
 		up(&f->sem);
 		jffs2_do_clear_inode(c, f);
-		return ret?ret:-EIO;
+		return ret ? ret : -EIO;
 	}
 
 	crc = crc32(0, latest_node, sizeof(*latest_node)-8);
 	if (crc != je32_to_cpu(latest_node->node_crc)) {
-		JFFS2_ERROR("CRC failed for read_inode of inode %u at physical location 0x%x\n",
+		JFFS2_ERROR(
+			"CRC failed for read_inode of inode %u at physical location 0x%x\n",
 			f->inocache->ino, ref_offset(fn->raw));
 		up(&f->sem);
 		jffs2_do_clear_inode(c, f);
 		return -EIO;
 	}
 
-	switch(jemode_to_cpu(latest_node->mode) & S_IFMT) {
+	switch (jemode_to_cpu(latest_node->mode) & S_IFMT) {
 	case S_IFDIR:
 		if (mctime_ver > je32_to_cpu(latest_node->version)) {
 			/* The times in the latest_node are actually older than
 			 * mctime in the latest dirent. Cheat.
 			 */
-			latest_node->ctime = latest_node->mtime = cpu_to_je32(latest_mctime);
+			latest_node->ctime = latest_node->mtime =
+					cpu_to_je32(latest_mctime);
 		}
 		break;
 
-
 	case S_IFREG:
 		/* If it was a regular file, truncate it to the latest node's isize */
-		jffs2_truncate_fragtree(c, &f->fragtree, je32_to_cpu(latest_node->isize));
+		jffs2_truncate_fragtree(c, &f->fragtree,
+				je32_to_cpu(latest_node->isize));
 		break;
 
 	case S_IFLNK:
@@ -708,9 +739,12 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 			/* Symlink's inode data is the target path. Read it and
 			 * keep in RAM to facilitate quick follow symlink
 			 * operation. */
-			f->target = kmalloc(je32_to_cpu(latest_node->csize) + 1, GFP_KERNEL);
+			f->target =
+				kmalloc(je32_to_cpu(latest_node->csize) + 1, GFP_KERNEL);
 			if (!f->target) {
-				JFFS2_ERROR("can't allocate %d bytes of memory for the symlink target path cache\n", je32_to_cpu(latest_node->csize));
+				JFFS2_ERROR(
+					"can't allocate %d bytes of memory for the symlink target path cache\n",
+					je32_to_cpu(latest_node->csize));
 				up(&f->sem);
 				jffs2_do_clear_inode(c, f);
 				return -ENOMEM;
@@ -718,7 +752,7 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 
 			ret = jffs2_flash_read(c, ref_offset(fn->raw) +
 					sizeof(*latest_node), je32_to_cpu(latest_node->csize),
-										&retlen, (unsigned char *)f->target);
+					&retlen, (unsigned char *)f->target);
 
 			if (ret  || retlen != je32_to_cpu(latest_node->csize)) {
 				if (retlen != je32_to_cpu(latest_node->csize)) {
@@ -742,23 +776,26 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 		 * kept as the metadata node
 		 */
 		if (f->metadata) {
-			JFFS2_ERROR("Argh. Special inode #%u with mode 0%o had metadata node\n",
-			       f->inocache->ino, jemode_to_cpu(latest_node->mode));
+			JFFS2_ERROR(
+				"Argh. Special inode #%u with mode 0%o had metadata node\n",
+				f->inocache->ino, jemode_to_cpu(latest_node->mode));
 			up(&f->sem);
 			jffs2_do_clear_inode(c, f);
 			return -EIO;
 		}
 		if (!frag_first(&f->fragtree)) {
-			JFFS2_ERROR("Argh. Special inode #%u with mode 0%o has no fragments\n",
-			       f->inocache->ino, jemode_to_cpu(latest_node->mode));
+			JFFS2_ERROR(
+				"Argh. Special inode #%u with mode 0%o has no fragments\n",
+				f->inocache->ino, jemode_to_cpu(latest_node->mode));
 			up(&f->sem);
 			jffs2_do_clear_inode(c, f);
 			return -EIO;
 		}
 		/* ASSERT: f->fraglist != NULL */
 		if (frag_next(frag_first(&f->fragtree))) {
-			JFFS2_ERROR("Argh. Special inode #%u with mode 0x%x had more than one node\n",
-			       f->inocache->ino, jemode_to_cpu(latest_node->mode));
+			JFFS2_ERROR(
+				"Argh. Special inode #%u with mode 0x%x had more than one node\n",
+				f->inocache->ino, jemode_to_cpu(latest_node->mode));
 			/* FIXME: Deal with it - check crc32, check for duplicate node, check times and discard the older one */
 			up(&f->sem);
 			jffs2_do_clear_inode(c, f);
@@ -779,16 +816,16 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 
 /* Scan the list of all nodes present for this ino, build map of versions, etc. */
 int jffs2_do_read_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
-			uint32_t ino, struct jffs2_raw_inode *latest_node) {
+	uint32_t ino, struct jffs2_raw_inode *latest_node) {
 	JFFS2_DBG_READINODE("read inode #%u\n", ino);
 
- retry_inocache:
+	retry_inocache:
 	spin_lock(&c->inocache_lock);
 	f->inocache = jffs2_get_ino_cache(c, ino);
 
 	if (f->inocache) {
 		/* Check its state. We may need to wait before we can use it */
-		switch(f->inocache->state) {
+		switch (f->inocache->state) {
 		case INO_STATE_UNCHECKED:
 		case INO_STATE_CHECKEDABSENT:
 			f->inocache->state = INO_STATE_READING;
@@ -800,7 +837,8 @@ int jffs2_do_read_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			 * to wait for whoever's got it to finish and
 			 * put it back.
 			 */
-			JFFS2_DBG_READINODE("waiting for ino #%u in state %d\n", ino, f->inocache->state);
+			JFFS2_DBG_READINODE("waiting for ino #%u in state %d\n", ino,
+					f->inocache->state);
 			sleep_on_spinunlock(&c->inocache_wq, &c->inocache_lock);
 			goto retry_inocache;
 
@@ -809,7 +847,9 @@ int jffs2_do_read_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			/* Eep. This should never happen. It can happen if Linux calls
 			 * read_inode() again before clear_inode() has finished though.
 			 */
-			JFFS2_ERROR("Eep. Trying to read_inode #%u when it's already in state %d!\n", ino, f->inocache->state);
+			JFFS2_ERROR(
+					"Eep. Trying to read_inode #%u when it's already in state %d!\n", ino,
+					f->inocache->state);
 			/* Fail. That's probably better than allowing it to succeed */
 			f->inocache = NULL;
 			break;
@@ -844,7 +884,7 @@ int jffs2_do_read_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 }
 
 int jffs2_do_crccheck_inode(struct jffs2_sb_info *c,
-						struct jffs2_inode_cache *ic) {
+	struct jffs2_inode_cache *ic) {
 	struct jffs2_raw_inode n;
 	struct jffs2_inode_info *f = kmalloc(sizeof(*f), GFP_KERNEL);
 	int ret;
@@ -862,12 +902,12 @@ int jffs2_do_crccheck_inode(struct jffs2_sb_info *c,
 		up(&f->sem);
 		jffs2_do_clear_inode(c, f);
 	}
-	kfree (f);
+	kfree(f);
 	return ret;
 }
 
 void jffs2_do_clear_inode(struct jffs2_sb_info *c,
-						struct jffs2_inode_info *f) {
+	struct jffs2_inode_info *f) {
 	struct jffs2_full_dirent *fd, *fds;
 	int deleted;
 
@@ -885,7 +925,7 @@ void jffs2_do_clear_inode(struct jffs2_sb_info *c,
 		jffs2_free_full_dnode(f->metadata);
 	}
 
-	jffs2_kill_fragtree(&f->fragtree, deleted?c:NULL);
+	jffs2_kill_fragtree(&f->fragtree, deleted ? c : NULL);
 
 	if (f->target) {
 		kfree(f->target);
@@ -893,7 +933,7 @@ void jffs2_do_clear_inode(struct jffs2_sb_info *c,
 	}
 
 	fds = f->dents;
-	while(fds) {
+	while (fds) {
 		fd = fds;
 		fds = fd->next;
 		jffs2_free_full_dirent(fd);

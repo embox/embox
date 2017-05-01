@@ -8,12 +8,13 @@
 
 #include <string.h>
 
-char *strlwr (char *string) {
+char * strlwr(char *string) {
 	char *cp;
 
 	for (cp = string; *cp; ++cp) {
-		if ('A' <= *cp && *cp <= 'Z')
+		if ('A' <= *cp && *cp <= 'Z') {
 			*cp += 'a' - 'A';
+		}
 	}
 
 	return string;

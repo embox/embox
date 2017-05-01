@@ -10,7 +10,6 @@
 
 #include <errno.h>
 
-
 struct pthread_local {
 };
 typedef struct pthread_local __thread_local_t;
@@ -20,7 +19,7 @@ static inline int thread_local_alloc(struct thread *t, size_t size) {
 	return 0;
 }
 
-static inline void *thread_local_get(struct thread *t, size_t idx) {
+static inline void * thread_local_get(struct thread *t, size_t idx) {
 	(void)t; (void)idx;
 	return NULL;
 }

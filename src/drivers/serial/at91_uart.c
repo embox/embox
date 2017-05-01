@@ -30,12 +30,12 @@ static int at91uart_diag_init(const struct diag *diag) {
 	REG_STORE(AT91C_PIOA_ASR, AT91C_PA5_RXD0 | AT91C_PA6_TXD0);
 	/*resetting & disabling RX, TX */
 	REG_STORE(AT91C_US0_CR, AT91C_US_RXDIS | AT91C_US_TXDIS | \
-					AT91C_US_RSTRX | AT91C_US_RSTTX);
+		AT91C_US_RSTRX | AT91C_US_RSTTX);
 	/* was 0x8c0, now there is Even Parity */
-	//REG_STORE(AT91C_US0_MR, AT91C_US_CHRL_8_BITS | AT91C_US_CLKS_CLOCK);
+	/*REG_STORE(AT91C_US0_MR, AT91C_US_CHRL_8_BITS | AT91C_US_CLKS_CLOCK); */
 	REG_STORE(AT91C_US0_BRGR, UART_CLOCK_DIVIDER);
 	REG_STORE(AT91C_US0_MR,  AT91C_US_PAR_NONE | \
-			AT91C_US_CHRL_8_BITS | AT91C_US_CLKS_CLOCK);
+		AT91C_US_CHRL_8_BITS | AT91C_US_CLKS_CLOCK);
 	/* enabling clocking USART */
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_US0);
 	/* enabling RX, TX */
@@ -58,8 +58,8 @@ static void at91uart_diag_putc(const struct diag *diag, char ch) {
 }
 
 DIAG_OPS_DECLARE(
-		.init = at91uart_diag_init,
-		.putc = at91uart_diag_putc,
-		.getc = at91uart_diag_getc,
-		.kbhit = at91uart_diag_hasrx,
+	.init = at91uart_diag_init,
+	.putc = at91uart_diag_putc,
+	.getc = at91uart_diag_getc,
+	.kbhit = at91uart_diag_hasrx,
 );

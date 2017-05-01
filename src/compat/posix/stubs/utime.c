@@ -14,8 +14,7 @@
 #include <utime.h>
 
 int utime(const char *path,
-		const struct utimbuf *times) {
+	const struct utimbuf *times) {
 	printk(">>> %s %s %p\n", __func__, path, times);
 	return SET_ERRNO(ENOSYS);
 }
-

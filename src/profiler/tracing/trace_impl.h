@@ -57,33 +57,33 @@ struct __trace_block {
 };
 
 #define __TRACE_POINT_DEF(_name, tp_name)   \
-		struct __trace_point _name = {      \
-			.name = tp_name,                \
-			.location = LOCATION_FUNC_INIT, \
-			.count = 0,                     \
-			.active = true,                 \
-		};                                  \
-		ARRAY_SPREAD_DECLARE(struct __trace_point *, \
-				__trace_points_array);               \
-		ARRAY_SPREAD_ADD(__trace_points_array, &_name)
+	struct __trace_point _name = {      \
+		.name = tp_name,                \
+		.location = LOCATION_FUNC_INIT, \
+		.count = 0,                     \
+		.active = true,                 \
+	};                                  \
+	ARRAY_SPREAD_DECLARE(struct __trace_point *, \
+		__trace_points_array);               \
+	ARRAY_SPREAD_ADD(__trace_points_array, &_name)
 
 #define __trace_point_set(tp_pointer) \
-		__tracepoint_handle(tp_pointer)
+	__tracepoint_handle(tp_pointer)
 
-#define __TRACE_BLOCK_DEF(tb_name)                  	\
-	static struct __trace_block tb_name  = {        	\
-			.name  = #tb_name,							\
-			.location = LOCATION_FUNC_INIT,				\
-			.time  = 0,									\
-			.max_time = 0,								\
-			.count = 0,									\
-			.depth = 0,									\
-			.active = true, 							\
-			.is_entered = false,						\
-			.time_list_head = NULL,						\
-	};                                              	\
-	ARRAY_SPREAD_DECLARE(struct __trace_block *,		\
-			__trace_blocks_array);              		\
+#define __TRACE_BLOCK_DEF(tb_name)                      \
+	static struct __trace_block tb_name  = {            \
+		.name  = #tb_name,                          \
+		.location = LOCATION_FUNC_INIT,             \
+		.time  = 0,                                 \
+		.max_time = 0,                              \
+		.count = 0,                                 \
+		.depth = 0,                                 \
+		.active = true,                             \
+		.is_entered = false,                        \
+		.time_list_head = NULL,                     \
+	};                                                  \
+	ARRAY_SPREAD_DECLARE(struct __trace_block *,        \
+		__trace_blocks_array);                      \
 	ARRAY_SPREAD_ADD(__trace_blocks_array, &tb_name)
 
 #define __tp_ref(__name) \
@@ -95,7 +95,7 @@ struct __trace_block {
 			.active = true,                                   \
 		};                                                    \
 		ARRAY_SPREAD_DECLARE(struct __trace_point *,          \
-				__trace_points_array);                        \
+		__trace_points_array);                        \
 		ARRAY_SPREAD_ADD(__trace_points_array, &__tp);        \
 		&__tp;                                                \
 	})

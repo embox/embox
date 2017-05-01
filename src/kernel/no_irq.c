@@ -8,7 +8,7 @@
 #include <kernel/irq.h>
 
 int irq_attach(unsigned int irq_nr, irq_handler_t handler,
-		unsigned int flags, void *data, const char *dev_name) {
+	unsigned int flags, void *data, const char *dev_name) {
 	return 0;
 }
 

@@ -46,9 +46,9 @@ extern struct timespec ns_to_timespec(const __s64 nsec);
 extern struct timeval ns_to_timeval(const __s64 nsec);
 
 extern struct timespec timespec_add(struct timespec t1,
-		struct timespec t2);
+	struct timespec t2);
 extern struct timespec timespec_sub(struct timespec t1,
-		struct timespec t2);
+	struct timespec t2);
 extern struct timespec timespec_add_ns(struct timespec t, time64_t ns);
 
 static inline time64_t timespec_to_ns(const struct timespec *ts) {
@@ -57,7 +57,8 @@ static inline time64_t timespec_to_ns(const struct timespec *ts) {
 }
 
 static inline uint64_t timespec_to_hw(const struct timespec *ts, uint32_t hz) {
-	return (uint64_t) ts->tv_sec * hz + ((uint64_t)ts->tv_nsec * hz) / NSEC_PER_SEC;
+	return (uint64_t) ts->tv_sec * hz + ((uint64_t)ts->tv_nsec * hz) /
+		   NSEC_PER_SEC;
 }
 
 static inline unsigned long timeval_to_ms(const struct timeval *tv) {
@@ -87,22 +88,32 @@ static inline clock_t ns_to_clock(uint32_t hz, time64_t ns) {
 	return (ns * hz + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
 }
 
-static inline struct timespec cycles64_to_timespec(uint32_t hz, uint64_t cycles) {
-	struct timespec ts = {0, 0};
+static inline struct timespec cycles64_to_timespec(uint32_t hz,
+	uint64_t cycles) {
+	struct timespec ts = {
+		0, 0
+	};
 	assert(hz != 0);
 	ts.tv_sec = cycles / hz;
 	ts.tv_nsec = ((cycles % hz) * NSEC_PER_SEC) / hz;
 	return ts;
 }
 
-static inline struct timespec cycles32_to_timespec(uint32_t cycles, uint32_t mult, uint32_t shift) {
-	struct timespec ts = {0, 0};
+static inline struct timespec cycles32_to_timespec(uint32_t cycles,
+	uint32_t mult,
+	uint32_t shift) {
+	struct timespec ts = {
+		0, 0
+	};
 	ts.tv_nsec = ((uint64_t)cycles * mult) >> shift;
 	return ts;
 }
 
-static inline struct timespec jiffies_to_timespec(uint32_t hz, uint32_t jiffies) {
-	struct timespec ts = {0, 0};
+static inline struct timespec jiffies_to_timespec(uint32_t hz,
+	uint32_t jiffies) {
+	struct timespec ts = {
+		0, 0
+	};
 	assert(hz != 0);
 	ts.tv_sec = jiffies / hz;
 	ts.tv_nsec = (NSEC_PER_SEC / hz) * (jiffies % hz);

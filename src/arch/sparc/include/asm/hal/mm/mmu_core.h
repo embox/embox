@@ -26,7 +26,7 @@
 #define LEON_CNR_FADDR       0x00000400 /** Fault Address Register */
 
 #define LEON_CNR_CTX_NCTX    256        /** number of MMU ctx */
-//#define LEON_CNR_CTRL_TLBDIS 0x80000000
+/*#define LEON_CNR_CTRL_TLBDIS 0x80000000 */
 
 /** Control Register's fields */
 
@@ -124,8 +124,8 @@
 #define MMU_PTE_REF          0x20
 #define MMU_PTE_EXEC         0x08
 #define MMU_PTE_WRITE        0x04
-//#define MMU_PTE_PRIV         0x1c
-//#define MMU_PTE_PRIV_RDONLY  0x18
+/*#define MMU_PTE_PRIV         0x1c */
+/*#define MMU_PTE_PRIV_RDONLY  0x18 */
 #define MMU_PTE_ET           0x2
 
 /** Accesses Allowed:
@@ -148,7 +148,6 @@
 #define __MMU_PAGE_CACHEABLE   MMU_PTE_CACHE
 #define __MMU_PAGE_WRITEABLE   MMU_PTE_WRITE
 #define __MMU_PAGE_EXECUTEABLE MMU_PTE_EXEC
-
 
 /* Physical page extraction from PTP's and PTE's. */
 #define MMU_CTX_PMASK      0xfffffff0
@@ -189,8 +188,8 @@
 #define MMU_MTABLE_MASK_OFFSET __MMU_MTABLE_MASK_OFFSET
 #define MMU_PTABLE_MASK_OFFSET __MMU_PTABLE_MASK_OFFSET
 
-typedef void (*mmu_page_table_set_t)(mmu_pte_t * ptd, mmu_pte_t * pte);
-typedef mmu_pmd_t* (*mmu_page_table_get_t)(mmu_pte_t ptd);
+typedef void (*mmu_page_table_set_t)(mmu_pte_t *ptd, mmu_pte_t *pte);
+typedef mmu_pmd_t * (*mmu_page_table_get_t)(mmu_pte_t ptd);
 
 extern unsigned long mmu_page_table_sizes[];
 
@@ -204,11 +203,11 @@ extern mmu_page_table_get_t mmu_page_table_gets[];
 
 /** Set MMU reg */
 static inline void mmu_set_mmureg(unsigned long addr_reg,
-				unsigned long regval) {
-	__asm__ __volatile__(
+	unsigned long regval) {
+	__asm__ __volatile__ (
 		"sta %0, [%1] %2\n\t"
 		:
-		: "r"(regval), "r"(addr_reg), "i"(ASI_M_MMUREGS)
+		: "r" (regval), "r" (addr_reg), "i" (ASI_M_MMUREGS)
 		: "memory"
 	);
 }
@@ -216,7 +215,7 @@ static inline void mmu_set_mmureg(unsigned long addr_reg,
 /** Get MMU reg */
 static inline unsigned long mmu_get_mmureg(unsigned long addr_reg) {
 	register int retval;
-	__asm__ __volatile__(
+	__asm__ __volatile__ (
 		"lda [%1] %2, %0\n\t"
 		: "=r" (retval)
 		: "r" (addr_reg), "i" (ASI_M_MMUREGS)
@@ -241,7 +240,7 @@ static inline unsigned long mmu_get_ctable_ptr(void) {
 #define mmu_get_context() mmu_get_mmureg(LEON_CNR_CTX)
 
 static inline void mmu_flush_cache_all(void) {
-	__asm__ __volatile__(
+	__asm__ __volatile__ (
 		"flush\n\t"
 		"sta %%g0, [%%g0] %0\n\t"
 		:
@@ -252,7 +251,7 @@ static inline void mmu_flush_cache_all(void) {
 
 static inline void mmu_flush_tlb_all(void) {
 	mmu_flush_cache_all();
-	__asm__ __volatile__(
+	__asm__ __volatile__ (
 		"sta %%g0, [%0] %1\n\t"
 		:
 		: "r" (0x400), "i" (0x18) /* magic number detected */
@@ -265,8 +264,8 @@ static inline void mmu_flush_tlb_all(void) {
  * swap instruction.  This insures the mmu and the cpu are in sync
  * with respect to ref/mod bits in the page tables.
  */
-static  unsigned long mmu_swap(unsigned long *addr, unsigned long value) {
-	__asm__ __volatile__(
+static unsigned long mmu_swap(unsigned long *addr, unsigned long value) {
+	__asm__ __volatile__ (
 		"swap [%2], %0"
 		: "=&r" (value)
 		: "0" (value), "r" (addr)
@@ -285,21 +284,21 @@ static inline void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp) {
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pgdp) >> 4)));
 }
 
-static inline void mmu_pgd_set(mmu_pgd_t * pgdp, mmu_pmd_t * pmdp) {
+static inline void mmu_pgd_set(mmu_pgd_t *pgdp, mmu_pmd_t *pmdp) {
 	mmu_set_pte((mmu_pte_t *) pgdp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) pmdp) >> 4)));
 }
 
-static inline void mmu_pmd_set(mmu_pmd_t * pmdp, mmu_pte_t * ptep) {
+static inline void mmu_pmd_set(mmu_pmd_t *pmdp, mmu_pte_t *ptep) {
 	mmu_set_pte((mmu_pte_t *) pmdp,
 		(MMU_ET_PTD | (__nocache_pa((unsigned long) ptep) >> 4)));
 }
 
-static inline mmu_pmd_t *mmu_pgd_get(mmu_pgd_t * pgdp) {
+static inline mmu_pmd_t * mmu_pgd_get(mmu_pgd_t *pgdp) {
 	return (mmu_pmd_t *) ((((unsigned long) *pgdp) & MMU_PTD_PMASK) << 4);
 }
 
-static inline mmu_pte_t *mmu_pmd_get(mmu_pmd_t * pmdp) {
+static inline mmu_pte_t * mmu_pmd_get(mmu_pmd_t *pmdp) {
 	return (mmu_pte_t *) ((((unsigned long) *pmdp) & MMU_PTD_PMASK) << 4);
 }
 

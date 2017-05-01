@@ -19,13 +19,13 @@
 struct siginfoq;
 
 struct sigstate {
-	sigset_t        pending;
+	sigset_t pending;
 	struct siginfoq infoq;
 };
 
 __BEGIN_DECLS
 
-extern struct siginfoq *siginfoq_init(struct siginfoq *);
+extern struct siginfoq * siginfoq_init(struct siginfoq *);
 
 extern int siginfoq_enqueue(struct siginfoq *, int, const siginfo_t *);
 extern int siginfoq_dequeue(struct siginfoq *, int, siginfo_t *);

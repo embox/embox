@@ -56,7 +56,7 @@ static inline bool timers_need_schedule(void) {
 		return false;
 	}
 
-	if (0 == --((sys_timer_t*)sys_timers_list.next)->cnt) {
+	if (0 == --((sys_timer_t *)sys_timers_list.next)->cnt) {
 		return true;
 	} else {
 		return false;

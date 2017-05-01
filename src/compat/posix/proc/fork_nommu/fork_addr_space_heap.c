@@ -15,10 +15,12 @@
 #include <sys/types.h>
 
 extern size_t mspace_deep_copy_size(struct dlist_head *mspace);
-extern void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf);
-extern void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_space, void *buf);
+extern void mspace_deep_store(struct dlist_head *mspace,
+	struct dlist_head *store_space, void *buf);
+extern void mspace_deep_restore(struct dlist_head *mspace,
+	struct dlist_head *store_space, void *buf);
 
-static inline struct dlist_head *task_mspace(void) {
+static inline struct dlist_head * task_mspace(void) {
 	struct task_heap *task_heap;
 
 	task_heap = task_heap_get(task_self());
@@ -53,4 +55,3 @@ void fork_heap_cleanup(struct heap_space *hpspc) {
 	phymem_free(hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
 	hpspc->heap = NULL;
 }
-

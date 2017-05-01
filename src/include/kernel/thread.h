@@ -33,7 +33,7 @@ struct thread;
  * @return
  *   The currently executing thread.
  */
-extern struct thread *thread_self(void);
+extern struct thread * thread_self(void);
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
@@ -118,7 +118,8 @@ __BEGIN_DECLS
  * @retval -ENOMEM
  *   If the system lacked the necessary resources to create a new thread.
  */
-struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg);
+struct thread * thread_create(unsigned int flags, void *(*run)(
+	void *), void *arg);
 
 /**
  * This is a kernel internal function. It use only for initializing field of a
@@ -131,7 +132,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
  * @param arg - the same in create_thread()
  */
 extern void thread_init(struct thread *t, int priority,
-		void *(*run)(void *), void *arg);
+	void *(*run)(void *), void *arg);
 
 /**
  * @brief Init thread at the bottom of given stack
@@ -144,8 +145,8 @@ extern void thread_init(struct thread *t, int priority,
  *
  * @return Pointer to new thread
  */
-extern struct thread *thread_init_stack(void *stack, size_t stack_sz,
-	       	int priority, void *(*run)(void *), void *arg);
+extern struct thread * thread_init_stack(void *stack, size_t stack_sz,
+	int priority, void *(*run)(void *), void *arg);
 
 /**
  * Marks the thread identified by thread as detached. When a detached

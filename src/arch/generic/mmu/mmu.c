@@ -17,7 +17,7 @@ mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 	return ctx;
 }
 
-mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
+mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
 	return (mmu_pgd_t *) mmu_get_ptd_ptr(context_table[ctx]);
 }
 
@@ -37,11 +37,11 @@ void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 
 /* Value functions */
 
-mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
+mmu_pmd_t * mmu_pgd_value(mmu_pgd_t *pgd) {
 	return (mmu_pmd_t *) mmu_get_ptd_ptr(*pgd);
 }
 
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t * pmd) {
+mmu_pte_t * mmu_pmd_value(mmu_pmd_t *pmd) {
 	return (mmu_pte_t *) mmu_get_ptd_ptr(*pmd);
 }
 

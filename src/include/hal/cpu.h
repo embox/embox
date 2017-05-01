@@ -19,7 +19,8 @@
 #elif OPTION_MODULE_DEFINED(embox__arch__generic__onecpu, NUMBER, cpu_count)
 # define NCPU OPTION_MODULE_GET(embox__arch__generic__onecpu, NUMBER, cpu_count)
 #elif OPTION_MODULE_DEFINED(embox__arch__x86__kernel__cpu, NUMBER, cpu_count)
-# define NCPU OPTION_MODULE_GET(embox__arch__x86__kernel__cpu, NUMBER, cpu_count)
+# define NCPU OPTION_MODULE_GET(embox__arch__x86__kernel__cpu, NUMBER, \
+		cpu_count)
 #endif
 
 #ifndef NOSMP

@@ -66,9 +66,9 @@ net_node_t pnet_get_dev_by_name(char *name) {
 }
 
 PNET_NODE_DEF("devs resolver", {
-	.rx_hnd = net_dev_rx_hnd,
-	.tx_hnd = NULL,
-});
+		.rx_hnd = net_dev_rx_hnd,
+		.tx_hnd = NULL,
+	});
 
 static int init(void) {
 	net_node_t entry, resolver;

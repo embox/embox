@@ -20,7 +20,7 @@
  * @return pointer to the memory of the requested size.
  * @retval 0 if there are no memory
  */
-extern void *sysmalloc(size_t size /*, int priority */);
+extern void * sysmalloc(size_t size /*, int priority */);
 
 /**
  * Free memory function.
@@ -29,8 +29,8 @@ extern void *sysmalloc(size_t size /*, int priority */);
  */
 extern void sysfree(void *ptr);
 
-extern void *sysmemalign(size_t boundary, size_t size);
-extern void *sysrealloc(void *ptr, size_t size);
-extern void *syscalloc(size_t nmemb, size_t size);
+extern void * sysmemalign(size_t boundary, size_t size);
+extern void * sysrealloc(void *ptr, size_t size);
+extern void * syscalloc(size_t nmemb, size_t size);
 
 #endif /* MEM_SYSMALLOC_H_ */

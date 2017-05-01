@@ -8,7 +8,7 @@
 #ifndef ERR_H_
 #define ERR_H_
 
-static inline void *err_ptr(int err_code) {
+static inline void * err_ptr(int err_code) {
 	return (void *) -err_code;
 }
 

@@ -26,4 +26,3 @@ struct context {
 #endif /* __ASSEMBLER__ */
 
 #endif /* SRC_ARCH_ARM_CORTEXA8_KERNEL_CONTEXT_H_ */
-

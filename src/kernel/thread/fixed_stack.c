@@ -18,7 +18,7 @@ void thread_stack_set(struct thread *t, void *stack) {
 	t->stack.stack = stack;
 }
 
-void *thread_stack_get(struct thread *t) {
+void * thread_stack_get(struct thread *t) {
 	return t->stack.stack;
 }
 

@@ -54,7 +54,7 @@ static inline int lock_apb_slot(uint16_t slot, amba_dev_t *dev) {
 }
 
 static inline int lock_amba_slot(uint16_t slot, amba_dev_t *dev,
-					bool is_ahb, bool is_master) {
+	bool is_ahb, bool is_master) {
 	LOCK_SLOT lock_handler;
 	if (!is_ahb) {
 		lock_handler = lock_apb_slot;
@@ -100,7 +100,7 @@ static inline int find_apbdev_slotnum(uint8_t ven_id, uint16_t dev_id) {
 	size_t cur_slotnum;
 	for (cur_slotnum = 0; cur_slotnum < APB_QUANTITY; cur_slotnum++) {
 		if ((ven_id == get_ven(pslotbase[cur_slotnum].id_reg))
-		    && (dev_id == get_dev(pslotbase[cur_slotnum].id_reg))) {
+			&& (dev_id == get_dev(pslotbase[cur_slotnum].id_reg))) {
 			return cur_slotnum;
 		}
 	}
@@ -114,14 +114,15 @@ static inline int find_apbdev_slotnum(uint8_t ven_id, uint16_t dev_id) {
  * @param is_master master/slave
  * @return slotnumber or -1
  */
-static inline int find_ahbdev_slotnum(uint8_t ven_id, uint16_t dev_id, bool is_master) {
+static inline int find_ahbdev_slotnum(uint8_t ven_id, uint16_t dev_id,
+	bool is_master) {
 	ahb_slot_t *pslotbase = (ahb_slot_t *)
-				(is_master ? AHB_MASTER_BASE : AHB_SLAVE_BASE);
+		(is_master ? AHB_MASTER_BASE : AHB_SLAVE_BASE);
 	size_t maxdevs = is_master ? AHB_MASTERS_QUANTITY : AHB_SLAVES_QUANTITY;
 	size_t cur_slotnum;
 	for (cur_slotnum = 0; cur_slotnum < maxdevs; cur_slotnum++) {
 		if ((ven_id == get_ven(pslotbase[cur_slotnum].id_reg))
-		    && (dev_id == get_dev(pslotbase[cur_slotnum].id_reg))) {
+			&& (dev_id == get_dev(pslotbase[cur_slotnum].id_reg))) {
 			return cur_slotnum;
 		}
 	}
@@ -179,14 +180,16 @@ static inline void fill_apb_bar_info(amba_bar_info_t *bar, uint32_t ba_reg) {
  * @param dev_info device info struct
  * @param id_reg Id Register
  */
-static inline void fill_amba_dev_info(amba_dev_info_t *dev_info, uint32_t id_reg) {
+static inline void fill_amba_dev_info(amba_dev_info_t *dev_info,
+	uint32_t id_reg) {
 	dev_info->venID = get_ven(id_reg);
 	dev_info->devID = get_dev(id_reg);
 	dev_info->irq = get_irq(id_reg);
 	dev_info->version = get_version(id_reg);
 }
 
-int fill_amba_dev(amba_dev_t *dev, uint8_t slot_number, bool is_ahb, bool is_master) {
+int fill_amba_dev(amba_dev_t *dev, uint8_t slot_number, bool is_ahb,
+	bool is_master) {
 	/* ATTENTION! DON'T USE ANY printf IN THIS FUNCTION */
 	ahb_slot_t *slot;
 	if (!is_ahb) {
@@ -217,7 +220,7 @@ int fill_amba_dev(amba_dev_t *dev, uint8_t slot_number, bool is_ahb, bool is_mas
 }
 
 int capture_amba_dev(amba_dev_t *dev, uint8_t ven_id,
-		uint16_t dev_id, bool is_ahb, bool is_master) {
+	uint16_t dev_id, bool is_ahb, bool is_master) {
 	int slot_number;
 	if (dev == NULL) {
 		return -1;
@@ -240,6 +243,6 @@ int capture_amba_dev(amba_dev_t *dev, uint8_t ven_id,
 }
 
 int free_amba_dev(amba_dev_t *dev) {
-	//TODO: we can't free device
+	/*TODO: we can't free device */
 	return 0;
 }

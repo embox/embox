@@ -17,13 +17,13 @@ struct sigstate { };  /* stub */
 
 __BEGIN_DECLS
 
-static inline struct sigstate *sigstate_init(
-		struct sigstate *sigstate) {
+static inline struct sigstate * sigstate_init(
+	struct sigstate *sigstate) {
 	return sigstate;
 }
 
 static inline int sigstate_send(struct sigstate *data, int sig,
-		const siginfo_t *info) {
+	const siginfo_t *info) {
 	(void)data; (void)sig; (void)info;
 	return -ENOSYS;
 }

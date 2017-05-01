@@ -64,7 +64,7 @@ int nf_chain_get_by_name(const char *chain_name) {
 	}
 }
 
-const char *nf_chain_to_str(int chain) {
+const char * nf_chain_to_str(int chain) {
 	switch (chain) {
 	default: return NULL;
 	case NF_CHAIN_INPUT: return "INPUT";
@@ -88,7 +88,7 @@ enum nf_target nf_target_get_by_name(const char *target_name) {
 	}
 }
 
-const char *nf_target_to_str(enum nf_target target) {
+const char * nf_target_to_str(enum nf_target target) {
 	switch (target) {
 	default: return NULL;
 	case NF_TARGET_DROP: return "DROP";
@@ -117,7 +117,7 @@ enum nf_proto nf_proto_get_by_name(const char *proto_name) {
 	}
 }
 
-const char *nf_proto_to_str(enum nf_proto proto) {
+const char * nf_proto_to_str(enum nf_proto proto) {
 	switch (proto) {
 	default: return NULL;
 	case NF_PROTO_ALL: return "all";
@@ -127,7 +127,7 @@ const char *nf_proto_to_str(enum nf_proto proto) {
 	}
 }
 
-struct dlist_head *nf_get_chain(int chain) {
+struct dlist_head * nf_get_chain(int chain) {
 	switch (chain) {
 	default: return NULL;
 	case NF_CHAIN_INPUT: return &nf_input_rules;
@@ -166,7 +166,7 @@ int nf_set_chain_target(int chain, enum nf_target target) {
 	return 0;
 }
 
-struct nf_rule *nf_get_rule_by_num(int chain, size_t r_num) {
+struct nf_rule * nf_get_rule_by_num(int chain, size_t r_num) {
 	struct dlist_head *rules;
 	size_t i;
 	struct nf_rule *r;
@@ -199,7 +199,7 @@ int nf_rule_init(struct nf_rule *r) {
 }
 
 int nf_rule_copy(struct nf_rule *r_dst,
-		const struct nf_rule *r_src) {
+	const struct nf_rule *r_src) {
 	struct dlist_head dst_link;
 
 	if ((r_dst == NULL) || (r_src == NULL)) {
@@ -214,7 +214,7 @@ int nf_rule_copy(struct nf_rule *r_dst,
 }
 
 static int nf_chain_rule_prepare(int chain, const struct nf_rule *r,
-		struct dlist_head **rules_p, struct nf_rule **new_r_p) {
+	struct dlist_head **rules_p, struct nf_rule **new_r_p) {
 	struct dlist_head *rules;
 	struct nf_rule *new_r;
 
@@ -240,7 +240,6 @@ static int nf_chain_rule_prepare(int chain, const struct nf_rule *r,
 
 	return 0;
 }
-
 
 int nf_add_rule(int chain, const struct nf_rule *r) {
 	struct dlist_head *rules;
@@ -324,11 +323,11 @@ int nf_clear(int chain) {
 }
 
 #define NF_TEST_NOT_FIELD(test_r, r, field)         \
-	(!r->set_##field ? 1 : !test_r->set_##field ? 0 \
-		: (assert(!test_r->not_##field),            \
-			(0 == memcmp(&test_r->field, &r->field, \
-					sizeof test_r->field))          \
-				!= !!r->not_##field))
+	(!r->set_ ## field ? 1 : !test_r->set_ ## field ? 0 \
+	: (assert(!test_r->not_ ## field),            \
+	(0 == memcmp(&test_r->field, &r->field, \
+	sizeof test_r->field))          \
+	!= !!r->not_ ## field))
 
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
 	struct dlist_head *rules;
@@ -345,20 +344,20 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 
 	dlist_foreach_entry(r, rules, lnk) {
 		if ((r->target != NF_TARGET_UNKNOWN)
-				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_src)
-				&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_dst)
-				&& NF_TEST_NOT_FIELD(test_r, r, saddr)
-				&& NF_TEST_NOT_FIELD(test_r, r, daddr)
-				&& (((test_r->proto != NF_PROTO_ALL)
-						&& (r->proto != NF_PROTO_ALL)
-						&& NF_TEST_NOT_FIELD(test_r, r, proto))
-					|| ((test_r->proto == NF_PROTO_ALL) && !test_r->not_proto
-						&& (r->proto == NF_PROTO_ALL) && !r->not_proto)
-					|| ((test_r->proto != NF_PROTO_ALL)
-						&& ((r->proto == NF_PROTO_ALL) && !r->not_proto)))
-				&& NF_TEST_NOT_FIELD(test_r, r, sport)
-				&& NF_TEST_NOT_FIELD(test_r, r, dport)
-				&& (!r->test_hnd ? 1 : r->test_hnd(test_r, r->test_hnd_data))) {
+			&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_src)
+			&& NF_TEST_NOT_FIELD(test_r, r, hwaddr_dst)
+			&& NF_TEST_NOT_FIELD(test_r, r, saddr)
+			&& NF_TEST_NOT_FIELD(test_r, r, daddr)
+			&& (((test_r->proto != NF_PROTO_ALL)
+			&& (r->proto != NF_PROTO_ALL)
+			&& NF_TEST_NOT_FIELD(test_r, r, proto))
+			|| ((test_r->proto == NF_PROTO_ALL) && !test_r->not_proto
+			&& (r->proto == NF_PROTO_ALL) && !r->not_proto)
+			|| ((test_r->proto != NF_PROTO_ALL)
+			&& ((r->proto == NF_PROTO_ALL) && !r->not_proto)))
+			&& NF_TEST_NOT_FIELD(test_r, r, sport)
+			&& NF_TEST_NOT_FIELD(test_r, r, dport)
+			&& (!r->test_hnd ? 1 : r->test_hnd(test_r, r->test_hnd_data))) {
 
 			return test_r->target != r->target;
 		}
@@ -368,7 +367,7 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 }
 
 int nf_test_skb(int chain, enum nf_target target,
-		const struct sk_buff *test_skb) {
+	const struct sk_buff *test_skb) {
 	struct nf_rule rule;
 
 	if (test_skb == NULL) {
@@ -378,9 +377,9 @@ int nf_test_skb(int chain, enum nf_target target,
 	nf_rule_init(&rule);
 	rule.target = target;
 	NF_SET_NOT_FIELD_PTR(&rule, saddr, 0, &test_skb->nh.iph->saddr,
-			sizeof test_skb->nh.iph->saddr);
+		sizeof test_skb->nh.iph->saddr);
 	NF_SET_NOT_FIELD_PTR(&rule, daddr, 0, &test_skb->nh.iph->daddr,
-			sizeof test_skb->nh.iph->daddr);
+		sizeof test_skb->nh.iph->daddr);
 	switch (test_skb->nh.iph->proto) {
 	case IPPROTO_ICMP:
 		NF_SET_NOT_FIELD(&rule, proto, 0, NF_PROTO_ICMP);
@@ -401,7 +400,7 @@ int nf_test_skb(int chain, enum nf_target target,
 }
 
 int nf_test_raw(int chain, enum nf_target target, const void *hwaddr_dst,
-		const void *hwaddr_src, size_t hwaddr_len) {
+	const void *hwaddr_src, size_t hwaddr_len) {
 
 	struct nf_rule rule;
 
@@ -409,9 +408,9 @@ int nf_test_raw(int chain, enum nf_target target, const void *hwaddr_dst,
 
 	rule.target = target;
 	NF_SET_NOT_FIELD_PTR(&rule, hwaddr_src, 0, hwaddr_src,
-			hwaddr_len);
+		hwaddr_len);
 	NF_SET_NOT_FIELD_PTR(&rule, hwaddr_dst, 0, hwaddr_dst,
-			hwaddr_len);
+		hwaddr_len);
 
 	return nf_test_rule(chain, &rule);
 }

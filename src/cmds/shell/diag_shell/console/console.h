@@ -22,10 +22,10 @@ struct _CONSOLE;
 
 typedef struct _CONSOLE_CALLBACK {
 	void (*exec)(struct _CONSOLE_CALLBACK *, struct _CONSOLE *console,
-			char *line);
+		char *line);
 	void (*guess)(struct _CONSOLE_CALLBACK *, struct _CONSOLE *console,
-			const char* line, const int max_proposals, int *proposals_len,
-			const char *proposals[], int *offset, int *common);
+		const char *line, const int max_proposals, int *proposals_len,
+		const char *proposals[], int *offset, int *common);
 	void *user_data;
 } CONSOLE_CALLBACK;
 

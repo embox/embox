@@ -18,11 +18,11 @@ static int utmp_f_pos, utmp_f_end;
 static struct utmp utmp_f[MAX_ENT_COUNT];
 static struct utmp result;
 
-static struct utmp *ret_result(struct utmp *ut) {
+static struct utmp * ret_result(struct utmp *ut) {
 	return memcpy(&result, ut, sizeof(struct utmp));
 }
 
-struct utmp *getutent(void) {
+struct utmp * getutent(void) {
 	if (utmp_f_pos >= utmp_f_end) {
 		errno = EEOF;
 		return NULL;
@@ -31,7 +31,7 @@ struct utmp *getutent(void) {
 	return ret_result(&utmp_f[utmp_f_pos++]);
 }
 
-struct utmp *getutid(struct utmp *ut) {
+struct utmp * getutid(struct utmp *ut) {
 	int mode;
 
 	switch (ut->ut_type) {
@@ -54,7 +54,7 @@ struct utmp *getutid(struct utmp *ut) {
 
 	while (utmp_f_pos < utmp_f_end) {
 		if ((!mode && ut->ut_type == utmp_f[utmp_f_pos].ut_type) ||
-				(mode && 0 == strcmp(ut->ut_id, utmp_f[utmp_f_pos].ut_id))) {
+			(mode && 0 == strcmp(ut->ut_id, utmp_f[utmp_f_pos].ut_id))) {
 			return ret_result(&utmp_f[utmp_f_pos++]);
 		}
 		utmp_f_pos++;
@@ -64,7 +64,7 @@ struct utmp *getutid(struct utmp *ut) {
 	return NULL;
 }
 
-struct utmp *getutline(struct utmp *ut) {
+struct utmp * getutline(struct utmp *ut) {
 	while (utmp_f_pos < utmp_f_end) {
 		short utt = utmp_f[utmp_f_pos].ut_type;
 
@@ -80,7 +80,7 @@ struct utmp *getutline(struct utmp *ut) {
 	return NULL;
 }
 
-struct utmp *pututline(struct utmp *ut) {
+struct utmp * pututline(struct utmp *ut) {
 	struct utmp *rec;
 
 	setutent();
@@ -114,4 +114,3 @@ int utmpname(const char *file) {
 	errno = ENOMEM;
 	return -1;
 }
-

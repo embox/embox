@@ -83,7 +83,7 @@ static inline unsigned char * skb_pull(struct sk_buff *skb, unsigned int len) {
 }
 
 static inline void skb_copy_mac_header(struct sk_buff *to,
-		const struct sk_buff *from) {
+	const struct sk_buff *from) {
 	size_t mac_len;
 	assert(to && to->mac.raw && from && from->mac.raw && from->nh.raw);
 	mac_len = from->nh.raw - from->mac.raw;
@@ -92,7 +92,7 @@ static inline void skb_copy_mac_header(struct sk_buff *to,
 }
 
 static inline void skb_copy_network_header(struct sk_buff *to,
-		const struct sk_buff *from) {
+	const struct sk_buff *from) {
 	size_t nh_len;
 	assert(to && to->nh.raw && from && from->nh.raw && from->h.raw);
 	nh_len = from->h.raw - from->nh.raw;
@@ -101,7 +101,7 @@ static inline void skb_copy_network_header(struct sk_buff *to,
 }
 
 static inline void skb_copy_transport_header_and_data(struct sk_buff *to,
-		const struct sk_buff *from) {
+	const struct sk_buff *from) {
 	assert(to && to->h.raw && from && from->h.raw);
 	memcpy(to->h.raw, from->h.raw, from->len - (from->h.raw - from->mac.raw));
 }
@@ -110,7 +110,8 @@ static inline struct sk_buff * skb_peek(struct sk_buff_head *list) {
 	return skb_queue_front(list);
 }
 
-static inline void skb_queue_tail(struct sk_buff_head *list, struct sk_buff *newsk) {
+static inline void skb_queue_tail(struct sk_buff_head *list,
+	struct sk_buff *newsk) {
 	skb_queue_push(list, newsk);
 }
 

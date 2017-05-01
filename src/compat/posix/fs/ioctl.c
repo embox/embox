@@ -55,7 +55,7 @@ int ioctl(int fd, int request, ...) {
 	}
 
 	switch (request) {
-  	case FIONBIO:
+	case FIONBIO:
 		va_start(args, request);
 		rc = io_fionbio(fd, args);
 		va_end(args);
@@ -68,7 +68,7 @@ int ioctl(int fd, int request, ...) {
 		break;
 	default:
 		va_start(args, request);
-		data = va_arg(args, void*);
+		data = va_arg(args, void *);
 		va_end(args);
 
 		rc = index_descriptor_ioctl(fd, request, data);
@@ -80,6 +80,3 @@ int ioctl(int fd, int request, ...) {
 
 	return rc;
 }
-
-
-

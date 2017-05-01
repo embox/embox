@@ -32,8 +32,8 @@ extern void bt_handle(uint8_t *buff);
 #define BTM_BT_RST_PIN   ((uint32_t) (1 << OPTION_GET(NUMBER,rst_pin)))
 #define BTM_BT_LINK_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,link_pin)))
 
-
-static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) OPTION_GET(NUMBER,serial_port_offset));
+static volatile AT91PS_USART us_dev_regs =
+	((AT91PS_USART) OPTION_GET(NUMBER,serial_port_offset));
 
 #define BTM_BT_BAUD_RATE 19200
 
@@ -66,19 +66,20 @@ static void init_usart(void) {
 	REG_STORE(AT91C_PMC_PCER, (1 << OPTION_GET(NUMBER,dev_id)));
 
 	REG_STORE(AT91C_PIOA_PDR, BTM_BT_RX_PIN | BTM_BT_TX_PIN |
-			BTM_BT_SCK_PIN | BTM_BT_RTS_PIN | BTM_BT_CTS_PIN);
+		BTM_BT_SCK_PIN | BTM_BT_RTS_PIN | BTM_BT_CTS_PIN);
 	REG_STORE(AT91C_PIOA_ASR, BTM_BT_RX_PIN | BTM_BT_TX_PIN |
-			BTM_BT_SCK_PIN | BTM_BT_RTS_PIN | BTM_BT_CTS_PIN);
+		BTM_BT_SCK_PIN | BTM_BT_RTS_PIN | BTM_BT_CTS_PIN);
 
 	REG_STORE(&(us_dev_regs->US_PTCR), (AT91C_PDC_RXTDIS | AT91C_PDC_TXTDIS));
 
 	REG_STORE(&(us_dev_regs->US_CR),  AT91C_US_RXDIS | AT91C_US_TXDIS);
-	REG_STORE(&(us_dev_regs->US_CR),  AT91C_US_RSTSTA | AT91C_US_RSTRX | AT91C_US_RSTTX);
+	REG_STORE(&(us_dev_regs->US_CR),
+		AT91C_US_RSTSTA | AT91C_US_RSTRX | AT91C_US_RSTTX);
 	REG_STORE(&(us_dev_regs->US_CR), AT91C_US_STTTO);
 
 	REG_STORE(&(us_dev_regs->US_MR), AT91C_US_USMODE_HWHSH
-			| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
-			| AT91C_US_NBSTOP_1_BIT);
+		| AT91C_US_CLKS_CLOCK | AT91C_US_CHRL_8_BITS | AT91C_US_PAR_NONE
+		| AT91C_US_NBSTOP_1_BIT);
 	REG_STORE(&(us_dev_regs->US_BRGR), SYS_CLOCK / (16 * BTM_BT_BAUD_RATE));
 
 	REG_STORE(&(us_dev_regs->US_IDR), ~0);
@@ -109,8 +110,9 @@ void bluetooth_hw_hard_reset(void) {
 }
 
 static int btm_bluetooth_init(void) {
-	irq_attach(OPTION_GET(NUMBER,irq_num), btm_bt_us_handler, 0, NULL, "bt reader");
-	// TODO error handling?
+	irq_attach(OPTION_GET(NUMBER,
+		irq_num), btm_bt_us_handler, 0, NULL, "bt reader");
+	/* TODO error handling? */
 
 	init_usart();
 	return 0;

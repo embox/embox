@@ -12,7 +12,8 @@ int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
 	return 0;
 }
 
-int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr) {
+int pthread_rwlock_init(pthread_rwlock_t *rwlock,
+	const pthread_rwlockattr_t *attr) {
 	if (attr != NULL) {
 		return -ENOSYS;
 	}
@@ -48,7 +49,8 @@ int pthread_rwlockattr_destroy(pthread_rwlockattr_t *attr) {
 	return -ENOSYS;
 }
 
-int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *rwlock, int *pshared) {
+int pthread_rwlockattr_getpshared(const pthread_rwlockattr_t *rwlock,
+	int *pshared) {
 	return -ENOSYS;
 }
 

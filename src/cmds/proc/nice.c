@@ -59,7 +59,8 @@ int main(int argc, char **argv) {
 		return -errno;
 	}
 
-	strlcpy(backup_task_name, task_get_name(task_self()), sizeof(backup_task_name));
+	strlcpy(backup_task_name, task_get_name(task_self()),
+		sizeof(backup_task_name));
 	task_set_name(task_self(), argv[ind]);
 
 	ret = cmd_exec(cmd, argc - ind, argv + ind); /* TODO create new task */

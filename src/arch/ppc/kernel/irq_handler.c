@@ -19,11 +19,11 @@ void irq_handler(unsigned int irq) {
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-//		ipl_enable();
+/*		ipl_enable(); */
 
 		irq_dispatch(irq);
 
-//		ipl_disable();
+/*		ipl_disable(); */
 	}
 	irqctrl_enable(irq);
 	critical_leave(CRITICAL_IRQ_HANDLER);

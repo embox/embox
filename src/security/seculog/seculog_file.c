@@ -34,7 +34,7 @@ static int audit_log_open(struct file_desc **log_desc_p) {
 	}
 
 	/* This is `forever' file_desc, prevent it from to be free */
-	log_desc->idesc.idesc_count ++;
+	log_desc->idesc.idesc_count++;
 	close(fd);
 
 	*log_desc_p = log_desc;
@@ -42,7 +42,8 @@ static int audit_log_open(struct file_desc **log_desc_p) {
 	return 0;
 }
 
-static int seculog_file_cb(struct seculog_subscb *subcb, struct seculog_record *record) {
+static int seculog_file_cb(struct seculog_subscb *subcb,
+	struct seculog_record *record) {
 	static char no_audit;
 
 	if (no_audit) {

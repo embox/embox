@@ -17,7 +17,7 @@ extern int index_descritor_cloexec_get(int fd);
 
 extern int index_descriptor_cloexec_set(int fd, int cloexec);
 
-extern struct idesc *index_descriptor_get(int idx);
+extern struct idesc * index_descriptor_get(int idx);
 
 extern int index_descriptor_add(struct idesc *idesc);
 
@@ -37,6 +37,5 @@ struct stat;
 extern int index_descriptor_fstat(int fd, struct stat *buff);
 
 __END_DECLS
-
 
 #endif /* INDEX_DESCRIPTOR_H_ */

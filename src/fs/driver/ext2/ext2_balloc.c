@@ -40,7 +40,7 @@
 /* help function */
 
 static int ext2_check_block_number(uint32_t block, struct ext2_fs_info *fsi,
-				struct ext2_gd *gd)
+	struct ext2_gd *gd)
 {
 	/* Check if we allocated a data block, but not control (system) block.
 	 * Only major bug can cause us to allocate wrong block. If it happens,
@@ -114,7 +114,7 @@ int ext2_unsetbit(uint32_t *bitmap, uint32_t bit)
 	/* Unset specified bit. If requested bit is already free return -1,
 	* otherwise return 0.
 	*/
-	unsigned int word;		/* bit_returned word in bitmap */
+	unsigned int word;      /* bit_returned word in bitmap */
 	uint32_t k, mask;
 
 	word = bit / FS_BITCHUNK_BITS;
@@ -131,7 +131,8 @@ int ext2_unsetbit(uint32_t *bitmap, uint32_t bit)
 	return 0;
 }
 
-struct ext2_gd *ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi) {
+struct ext2_gd * ext2_get_group_desc(unsigned int bnum,
+	struct ext2_fs_info *fsi) {
 	if (bnum >= fsi->s_groups_count) {
 		return NULL;
 	}
@@ -139,8 +140,8 @@ struct ext2_gd *ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi)
 }
 
 static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allocate near this block */
-	uint32_t block;	/* allocated block */
-	int word;			/* word in block bitmap */
+	uint32_t block; /* allocated block */
+	int word;           /* word in block bitmap */
 	uint32_t bit;
 	int group;
 	char update_bsearch = 0;
@@ -169,13 +170,14 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 
 	/* Figure out where to start the bit search. */
 	word = ((goal - fsi->e2sb.s_first_data_block) %
-			fsi->e2sb.s_blocks_per_group) / FS_BITCHUNK_BITS;
+		fsi->e2sb.s_blocks_per_group) / FS_BITCHUNK_BITS;
 
 	/* Try to allocate block at any group starting from the goal's group.
 	* First time goal's group is checked from the word=goal, after all
 	* groups checked, it's checked again from word=0, that's why "i <=".
 	*/
-	group = (goal - fsi->e2sb.s_first_data_block) / fsi->e2sb.s_blocks_per_group;
+	group = (goal - fsi->e2sb.s_first_data_block) /
+		fsi->e2sb.s_blocks_per_group;
 	for (i = 0; i <= fsi->s_groups_count; i++, group++) {
 
 		if (group >= fsi->s_groups_count) {
@@ -189,7 +191,8 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 
 		ext2_read_sector(nas, fi->f_buf, 1, gd->block_bitmap);
 
-		bit = ext2_setbit(b_bitmap(fi->f_buf), fsi->e2sb.s_blocks_per_group, word);
+		bit = ext2_setbit(b_bitmap(
+				fi->f_buf), fsi->e2sb.s_blocks_per_group, word);
 		if (-1 == bit) {
 			if (0 == word) {
 				/* allocator failed to allocate a bit in bitmap	with free bits.*/
@@ -200,7 +203,8 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 			}
 		}
 
-		block = fsi->e2sb.s_first_data_block + group * fsi->e2sb.s_blocks_per_group + bit;
+		block = fsi->e2sb.s_first_data_block + group *
+			fsi->e2sb.s_blocks_per_group + bit;
 		if (ext2_check_block_number(block, fsi, gd)) {
 			return 0;
 		}
@@ -225,8 +229,8 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 
 void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	/* Return a block by turning off its bitmap bit. */
-	int group;		/* group number of bit_returned */
-	int bit;		/* bit_returned number within its group */
+	int group;      /* group number of bit_returned */
+	int bit;        /* bit_returned number within its group */
 	struct ext2_gd *gd;
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
@@ -242,8 +246,10 @@ void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	/* At first search group, to which bit_returned belongs to
 	* and figure out in what word bit is stored.
 	*/
-	group = (bit_returned - fsi->e2sb.s_first_data_block) / fsi->e2sb.s_blocks_per_group;
-	bit = (bit_returned - fsi->e2sb.s_first_data_block) % fsi->e2sb.s_blocks_per_group;
+	group = (bit_returned - fsi->e2sb.s_first_data_block) /
+		fsi->e2sb.s_blocks_per_group;
+	bit = (bit_returned - fsi->e2sb.s_first_data_block) %
+		fsi->e2sb.s_blocks_per_group;
 
 	gd = ext2_get_group_desc(group, fsi);
 
@@ -262,7 +268,6 @@ void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 		return; /*Tried to free unused block*/
 	}
 	ext2_write_sector(nas, (char *) fi->f_buf, 1, gd->block_bitmap);
-
 
 	fsi->e2sb.s_free_blocks_count++;
 	ext2_write_sblock(nas);
@@ -297,7 +302,8 @@ uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
 		goal = block;
 	} else {
 		group = (fi->f_num - 1) / fsi->e2sb.s_inodes_per_group;
-		goal = fsi->e2sb.s_blocks_per_group * group + fsi->e2sb.s_first_data_block;
+		goal = fsi->e2sb.s_blocks_per_group * group +
+			fsi->e2sb.s_first_data_block;
 	}
 
 	b = ext2_alloc_block_bit(nas, goal);
@@ -306,4 +312,3 @@ uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
 	}
 	return b;
 }
-

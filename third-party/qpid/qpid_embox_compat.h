@@ -8,7 +8,6 @@
 #ifndef QPID_EMBOX_COMPAT_H_
 #define QPID_EMBOX_COMPAT_H_
 
-
 #ifdef linux
 #undef linux
 #endif
@@ -29,7 +28,6 @@
 
 #include <ctype.h>
 
-
 #include <errno.h>
 
 __BEGIN_DECLS
@@ -41,7 +39,8 @@ static inline int pthread_rwlock_destroy(pthread_rwlock_t *rwlock) {
 	return 0;
 }
 
-static inline int pthread_rwlock_init(pthread_rwlock_t *rwlock, const pthread_rwlockattr_t *attr) {
+static inline int pthread_rwlock_init(pthread_rwlock_t *rwlock,
+	const pthread_rwlockattr_t *attr) {
 	(void)rwlock;
 	(void)attr;
 	DPRINT();
@@ -77,7 +76,7 @@ static inline int pthread_rwlock_trywrlock(pthread_rwlock_t *rwlock) {
 	return 0;
 }
 
-//#include <dirent.h>
+/*#include <dirent.h> */
 static inline
 int alphasort(const struct dirent **a, const struct dirent **b) {
 	(void)a;
@@ -87,8 +86,8 @@ int alphasort(const struct dirent **a, const struct dirent **b) {
 }
 static inline
 int scandir(const char *dirp, struct dirent ***namelist,
-              int (*filter)(const struct dirent *),
-              int (*compar)(const struct dirent **, const struct dirent **)) {
+	int (*filter)(const struct dirent *),
+	int (*compar)(const struct dirent **, const struct dirent **)) {
 	(void)dirp;
 	(void)namelist;
 	(void)filter;
@@ -97,7 +96,6 @@ int scandir(const char *dirp, struct dirent ***namelist,
 	errno = ENOMEM;
 	return -1;
 }
-
 
 #define F_TLOCK 0x01
 #define F_ULOCK 0x02
@@ -122,7 +120,6 @@ pid_t getppid(void) {
 	return 0;
 }
 
-
 static inline pid_t fork() {
 	printf(">>> fork()\n");
 	errno = ENOSYS;
@@ -130,7 +127,6 @@ static inline pid_t fork() {
 }
 
 #include <sys/mman.h>
-
 
 #include <sys/socket.h>
 static inline
@@ -150,13 +146,13 @@ __END_DECLS
 #define IPV6_V6ONLY 0
 #define TCP_NODELAY 0
 
-#define NI_MAXHOST	1025
-#define NI_MAXSERV	32
+#define NI_MAXHOST  1025
+#define NI_MAXSERV  32
 
 #include <arpa/inet.h>
 
 static inline
-char *strerror_r(int errnum, char *buf, size_t buflen) {
+char * strerror_r(int errnum, char *buf, size_t buflen) {
 	(void)errnum;
 	(void)buf;
 	(void)buflen;
@@ -164,10 +160,8 @@ char *strerror_r(int errnum, char *buf, size_t buflen) {
 	return strerror(errnum);
 }
 
-
 /* not standard */
 typedef unsigned int uint;
-
 
 #include <signal.h>
 static inline
@@ -179,13 +173,12 @@ int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
 	return 0;
 }
 
-
-// instead of gcc Thread-Local Storage
+/* instead of gcc Thread-Local Storage */
 #define __thread
 
-// some compilers defines __unix__ (i386 gcc), some __unix (arm-eabi gcc),
-// qpid expects it to be __unix__ (in regex determinition),
-// so definig one to another
+/* some compilers defines __unix__ (i386 gcc), some __unix (arm-eabi gcc), */
+/* qpid expects it to be __unix__ (in regex determinition), */
+/* so definig one to another */
 #define __unix__ __unix
 
 #endif /* QPID_EMBOX_COMPAT_H_ */

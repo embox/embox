@@ -18,7 +18,7 @@
 #include "idesc_serial.h"
 #include <fs/dvfs.h>
 
-static struct idesc *uart_fsop_open(struct inode *node, struct idesc *desc) {
+static struct idesc * uart_fsop_open(struct inode *node, struct idesc *desc) {
 	struct device_module *cdev;
 	struct idesc *idesc;
 	int res;
@@ -51,7 +51,7 @@ int ttys_register(const char *name, void *dev_info) {
 	}
 	memset(cdev, 0, sizeof(*cdev));
 	cdev->name = name;
-	cdev->fops = (struct file_operations*)&ttys_fops;
+	cdev->fops = (struct file_operations *)&ttys_fops;
 	cdev->dev_data = dev_info;
 
 	return char_dev_register(cdev);

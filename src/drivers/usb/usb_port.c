@@ -8,7 +8,8 @@
 
 #include <drivers/usb/usb.h>
 
-static void usb_port_set_state(struct usb_hub_port *port, usb_hub_port_state_t state);
+static void usb_port_set_state(struct usb_hub_port *port,
+	usb_hub_port_state_t state);
 
 static void usb_port_st_reset_awaiting(struct usb_hub_port *port);
 static void usb_port_st_reset_settle(struct usb_hub_port *port);
@@ -16,7 +17,7 @@ static void usb_port_st_connected(struct usb_hub_port *port);
 static void usb_port_st_idle(struct usb_hub_port *port);
 
 void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
-	       	usb_hub_port_t i) {
+	usb_hub_port_t i) {
 
 	port->hub = hub;
 	port->idx = i;
@@ -28,7 +29,8 @@ void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
 	usb_port_set_state(port, usb_port_st_idle);
 }
 
-static void usb_port_set_state(struct usb_hub_port *port, usb_hub_port_state_t state) {
+static void usb_port_set_state(struct usb_hub_port *port,
+	usb_hub_port_state_t state) {
 	port->state = state;
 }
 
@@ -48,11 +50,13 @@ static void usb_dev_posted_handle(struct sys_timer *timer, void *param) {
 
 static int usb_port_post(struct usb_hub_port *port, unsigned int ms) {
 
-	return timer_init_start_msec(&port->post_timer, TIMER_ONESHOT, ms, usb_dev_posted_handle,
+	return timer_init_start_msec(&port->post_timer, TIMER_ONESHOT, ms,
+			usb_dev_posted_handle,
 			port);
 }
 
-static void __attribute__((used)) usb_port_post_cancel(struct usb_hub_port *port) {
+static void __attribute__((used)) usb_port_post_cancel(struct usb_hub_port *port)
+{
 
 	timer_close(&port->post_timer);
 }
@@ -112,11 +116,11 @@ static void usb_port_st_idle(struct usb_hub_port *port) {
 	if ((port->changed & USB_HUB_PORT_CONNECT) &&
 		(port->status & USB_HUB_PORT_CONNECT)) {
 
-			usb_hub_ctrl(port, USB_HUB_REQ_PORT_SET,
-				USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
+		usb_hub_ctrl(port, USB_HUB_REQ_PORT_SET,
+			USB_HUB_PORT_POWER | USB_HUB_PORT_ENABLE);
 
-			usb_port_set_state(port, usb_port_st_connected);
-			usb_port_post(port, 100);
+		usb_port_set_state(port, usb_port_st_connected);
+		usb_port_post(port, 100);
 	}
 }
 
@@ -183,4 +187,3 @@ int usb_port_address_setle_wait(struct usb_hub_port *port, int ms) {
 	usb_port_post(port, ms);
 	return 0;
 }
-

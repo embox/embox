@@ -26,7 +26,7 @@ static struct node *a, *b, *c, *d, *e;
  * |->B
  *    |->C
  *    |->D
- *    	 |->E
+ *       |->E
  */
 static int setup_suite(void) {
 
@@ -66,7 +66,7 @@ static int teardown_suite(void) {
 	return 0;
 }
 
-static struct node *vfs_lookup_nr(struct node *node, const char *str_path) {
+static struct node * vfs_lookup_nr(struct node *node, const char *str_path) {
 	static struct path nr_return;
 	int lookup_ecode;
 
@@ -114,35 +114,35 @@ static char test_path[PATH_MAX];
 TEST_CASE("vfs_get_path_till_root should generate all paths correctly") {
 
 	test_assert_zero(vfs_get_path_till_root(test_root, test_root,
-			       	test_path, PATH_MAX));
+		test_path, PATH_MAX));
 	test_assert_zero(strcmp("/", test_path));
 
 	test_assert_zero(vfs_get_path_till_root(a, test_root,
-			       	test_path, PATH_MAX));
+		test_path, PATH_MAX));
 	test_assert_zero(strcmp("/A", test_path));
 
 	test_assert_zero(vfs_get_path_till_root(b, test_root,
-			       	test_path, PATH_MAX));
+		test_path, PATH_MAX));
 	test_assert_zero(strcmp("/B", test_path));
 
 	test_assert_zero(vfs_get_path_till_root(c, test_root,
-			       	test_path, PATH_MAX));
+		test_path, PATH_MAX));
 	test_assert_zero(strcmp("/B/C", test_path));
 
 	test_assert_zero(vfs_get_path_till_root(d, test_root,
-			       	test_path, PATH_MAX));
+		test_path, PATH_MAX));
 	test_assert_zero(strcmp("/B/D", test_path));
 
 	test_assert_zero(vfs_get_path_till_root(e, test_root,
-			       	test_path, PATH_MAX));
+		test_path, PATH_MAX));
 	test_assert_zero(strcmp("/B/D/E", test_path));
 
 	test_assert_zero(vfs_get_path_till_root(e, b,
-			       	test_path, PATH_MAX));
+		test_path, PATH_MAX));
 	test_assert_zero(strcmp("/D/E", test_path));
 
 	test_assert_equal(1, vfs_get_path_till_root(e, a,
-			       	test_path, PATH_MAX));
+		test_path, PATH_MAX));
 	test_assert_zero(strcmp("/R/B/D/E", test_path));
 }
 #endif

@@ -2,7 +2,7 @@
 #include <xen/xen.h>
 #include <xen/event.h>
 
-// headers below have xen_ prefix added to name 
+/* headers below have xen_ prefix added to name */
 #include <xen_barrier.h>
 
 #if defined(__i386__)
@@ -15,20 +15,24 @@
 
 #define NUM_CHANNELS (1024)
 
-//x86 only
-//Set bit 'bit' in bitfield 'field'
-#define SET_BIT(bit,field) __asm__ __volatile__ ("lock btsl %1,%0":"=m"(field):"Ir"(bit):"memory" );
-#define CLEAR_BIT(field, bit) __asm__ __volatile__ ("lock btrl %1,%0":"=m" ((field)):"Ir"((bit)):"memory")
+/*x86 only */
+/*Set bit 'bit' in bitfield 'field' */
+#define SET_BIT(bit, \
+		field) __asm__ __volatile__ ("lock btsl %1,%0" : "=m" (field) : "Ir" ( \
+		bit) : "memory");
+#define CLEAR_BIT(field, \
+		bit) __asm__ __volatile__ ("lock btrl %1,%0" : "=m" ((field)) : "Ir" (( \
+		bit)) : "memory")
 
 /* Locations in the bootstrapping code */
 extern shared_info_t xen_shared_info;
 void hypervisor_callback(void);
 void failsafe_callback(void);
 
-
 static evtchn_handler_t handlers[NUM_CHANNELS];
 
-void EVT_IGN(evtchn_port_t port, struct pt_regs * regs) {};
+void EVT_IGN(evtchn_port_t port, struct pt_regs *regs) {
+};
 
 /* Initialise the event handlers */
 void init_events(void)
@@ -46,7 +50,7 @@ void init_events(void)
 #error "Unsupported architecture"
 #endif
 	/* Set all handlers to ignore, and mask them */
-	for(unsigned int i=0 ; i<NUM_CHANNELS ; i++)
+	for (unsigned int i = 0; i < NUM_CHANNELS; i++)
 	{
 		handlers[i] = EVT_IGN;
 		SET_BIT(i,xen_shared_info.evtchn_mask[0]);
@@ -65,32 +69,32 @@ void register_event(evtchn_port_t port, evtchn_handler_t handler)
 static inline unsigned long int first_bit(unsigned long int word)
 {
 #if defined (__i386__)
-	__asm__("bsfl %1,%0"
-		:"=r" (word)
-		:"rm" (word));
+	__asm__ ("bsfl %1,%0"
+	: "=r" (word)
+	: "rm" (word));
 #elif defined (__x86_64__)
-	__asm__("bsfq %1,%0"
-		:"=r" (word)
-		:"rm" (word));
+	__asm__ ("bsfq %1,%0"
+	: "=r" (word)
+	: "rm" (word));
 #else
 #error "Unsupported architecture"
 #endif
 	return word;
 }
 
-
-static inline unsigned long int xchg(unsigned long int * old, unsigned long int value)
+static inline unsigned long int xchg(unsigned long int *old,
+	unsigned long int value)
 {
 #if defined (__i386__)
-	__asm__("xchgl %0,%1"
-		:"=r" (value)
-		:"m" (*old), "0"(value)
-		:"memory");
+	__asm__ ("xchgl %0,%1"
+	: "=r" (value)
+	: "m" (*old), "0" (value)
+	: "memory");
 #elif defined (__x86_64__)
-	__asm__("xchgq %0,%1"
-		:"=r" (value)
-		:"m" (*old), "0"(value)
-		:"memory");
+	__asm__ ("xchgq %0,%1"
+	: "=r" (value)
+	: "m" (*old), "0" (value)
+	: "memory");
 #else
 #error "Unsupported architecture"
 #endif
@@ -107,7 +111,7 @@ void do_hypervisor_callback(struct pt_regs *regs)
 	vcpu->evtchn_upcall_pending = 0;
 	/* Set the pending selector to 0 and get the old value atomically */
 	pending_selector = xchg(&vcpu->evtchn_pending_sel, 0);
-	while(pending_selector != 0)
+	while (pending_selector != 0)
 	{
 		/* Get the first bit of the selector and clear it */
 		next_event_offset = first_bit(pending_selector);
@@ -115,11 +119,11 @@ void do_hypervisor_callback(struct pt_regs *regs)
 		unsigned int event;
 
 		/* While there are events pending on unmasked channels */
-		while(( event =
-		(xen_shared_info.evtchn_pending[pending_selector] 
-		 & 
-		~xen_shared_info.evtchn_mask[pending_selector]))
-		 != 0)
+		while ((event =
+			(xen_shared_info.evtchn_pending[pending_selector]
+			&
+			~xen_shared_info.evtchn_mask[pending_selector]))
+			!= 0)
 		{
 			/* Find the first waiting event */
 			unsigned int event_offset = first_bit(event);

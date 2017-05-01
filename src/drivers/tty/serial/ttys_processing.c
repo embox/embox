@@ -18,10 +18,8 @@
 
 EMBOX_UNIT_INIT(idesc_serial_init);
 
-
 #define UART_DATA_BUFF_SZ 8
 #define UART_RX_HND_PRIORITY 128
-
 
 static struct lthread uart_rx_irq_handler;
 
@@ -35,7 +33,7 @@ POOL_DEF(uart_rx_buff, struct uart_rx, UART_DATA_BUFF_SZ);
 
 static DLIST_DEFINE(uart_rx_list);
 
-static inline struct uart *tty2uart(struct tty *tty) {
+static inline struct uart * tty2uart(struct tty *tty) {
 	struct tty_uart *tu;
 	tu = member_cast_out(tty, struct tty_uart, tty);
 	return tu->uart;

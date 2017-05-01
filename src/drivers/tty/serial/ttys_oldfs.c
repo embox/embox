@@ -18,10 +18,11 @@
 #include "idesc_serial.h"
 #include <fs/file_operation.h>
 #include <fs/node.h>
-//#include <fs/file_desc.h>
+/*#include <fs/file_desc.h> */
 #include <util/err.h>
 
-static struct idesc *uart_fsop_open(struct node *node, struct file_desc *file_desc, int flags)  {
+static struct idesc * uart_fsop_open(struct node *node,
+	struct file_desc *file_desc, int flags)  {
 	struct uart *uart;
 	struct idesc *idesc;
 	int res;
@@ -46,6 +47,6 @@ const struct kfile_operations ttys_fops = {
 	.open = uart_fsop_open,
 };
 
-int ttys_register(const char*name, void *dev_info) {
+int ttys_register(const char *name, void *dev_info) {
 	return char_dev_register(name, &ttys_fops);
 }

@@ -20,15 +20,19 @@
 #define DIGID0 30
 #define DIGID1 2
 
-static int digiS0[] = { DIGIA0, DIGIB0, DIGIC0, DIGID0};
-static int digiS1[] = { DIGIA1, DIGIB1, DIGIC1, DIGID1};
+static int digiS0[] = {
+	DIGIA0, DIGIB0, DIGIC0, DIGID0
+};
+static int digiS1[] = {
+	DIGIA1, DIGIB1, DIGIC1, DIGID1
+};
 
 extern from_avr_t data_from_avr;
 
 static nxt_sensor_t sensors[NXT_AVR_N_INPUTS];
 
 static sensor_handler_t handlers[NXT_AVR_N_INPUTS];
-struct nxt_sensor *nxt_get_sensor(int num) {
+struct nxt_sensor * nxt_get_sensor(int num) {
 	if (0 > num || NXT_AVR_N_INPUTS > num) {
 		return NULL;
 	}
@@ -58,7 +62,6 @@ sensor_val_t nxt_sensor_active_get_val(nxt_sensor_t *sensor, uint8_t command) {
 	}
 	return active_val;
 }
-
 
 sensor_val_t nxt_sensor_get_val(nxt_sensor_t *sensor) {
 	if (sensor->type == NXT_SENSOR_PASSIVE) {

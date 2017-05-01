@@ -20,23 +20,27 @@
 
 typedef int TERMINAL_TOKEN;
 
-#define ENCODE(action, char1, char2, code) 	\
+#define ENCODE(action, char1, char2, code)  \
 	(((action & 0xFF) ^ VT_ACTION_PRINT) << 24 \
 		| ((char1 & 0xFF) << 16) \
 		| ((char2 & 0xFF) << 8) \
 		| (code & 0xFF))
 
-#define DECODE_ACTION(token)                 (((token >> 24) & 0xFF) ^ VT_ACTION_PRINT)
+#define DECODE_ACTION(token)                 (((token >> 24) & \
+	0xFF) ^ VT_ACTION_PRINT)
 #define DECODE_CHAR1(token)                  ((token >> 16) & 0xFF)
 #define DECODE_CHAR2(token)                  ((token >> 8) & 0xFF)
 #define DECODE_CODE(token)                   ((token) & 0xFF)
 
-#define ENCODE_CS_(char1, char2, code)	     ENCODE(VT_ACTION_CSI_DISPATCH, char1, char2, code)
-#define ENCODE_ESC_(char1, char2, code)	     ENCODE(VT_ACTION_ESC_DISPATCH, char1, char2, code)
+#define ENCODE_CS_(char1, char2, code)       ENCODE(VT_ACTION_CSI_DISPATCH, \
+		char1, char2, code)
+#define ENCODE_ESC_(char1, char2, code)      ENCODE(VT_ACTION_ESC_DISPATCH, \
+		char1, char2, code)
 
 #define ENCODE_CS(code)                      ENCODE_CS_(0, 0, code)
 #define ENCODE_ESC(code)                     ENCODE_ESC_(0, 0, code)
-#define ENCODE_EXEC(code)                    ENCODE(VT_ACTION_EXECUTE, 0, 0, code)
+#define ENCODE_EXEC(code)                    ENCODE(VT_ACTION_EXECUTE, 0, 0, \
+		code)
 
 #define TERMINAL_TOKEN_EMPTY                 ENCODE(0,0,0,0)
 
@@ -160,37 +164,37 @@ typedef int TERMINAL_TOKEN;
 #define TERMINAL_TOKEN_PARAM_ERASE_UP_LEFT      0
 #define TERMINAL_TOKEN_PARAM_ERASE_ENTIRE       2
 
-#define TERMINAL_TOKEN_PARAM_PRIVATE_HOME	1
-#define TERMINAL_TOKEN_PARAM_PRIVATE_INSERT	2
-#define TERMINAL_TOKEN_PARAM_PRIVATE_DELETE	3
+#define TERMINAL_TOKEN_PARAM_PRIVATE_HOME   1
+#define TERMINAL_TOKEN_PARAM_PRIVATE_INSERT 2
+#define TERMINAL_TOKEN_PARAM_PRIVATE_DELETE 3
 #define TERMINAL_TOKEN_PARAM_PRIVATE_END        4
 #define TERMINAL_TOKEN_PARAM_PRIVATE_PAGE_UP    5
 #define TERMINAL_TOKEN_PARAM_PRIVATE_PAGE_DOWN  6
 
-#define TERMINAL_TOKEN_PARAM_SGR_RESET		0
-#define TERMINAL_TOKEN_PARAM_SGR_INTENSITY_BOLD		1
-#define TERMINAL_TOKEN_PARAM_SGR_INTENSITY_NORMAL	22
-#define TERMINAL_TOKEN_PARAM_SGR_BLINK_SLOW		5
-#define TERMINAL_TOKEN_PARAM_SGR_BLINK_OFF	25
+#define TERMINAL_TOKEN_PARAM_SGR_RESET      0
+#define TERMINAL_TOKEN_PARAM_SGR_INTENSITY_BOLD     1
+#define TERMINAL_TOKEN_PARAM_SGR_INTENSITY_NORMAL   22
+#define TERMINAL_TOKEN_PARAM_SGR_BLINK_SLOW     5
+#define TERMINAL_TOKEN_PARAM_SGR_BLINK_OFF  25
 
-#define TERMINAL_TOKEN_PARAM_SGR_FG_BLACK	30
-#define TERMINAL_TOKEN_PARAM_SGR_FG_RED		31
-#define TERMINAL_TOKEN_PARAM_SGR_FG_GREEN	32
-#define TERMINAL_TOKEN_PARAM_SGR_FG_YELLOW	33
-#define TERMINAL_TOKEN_PARAM_SGR_FG_BLUE	34
-#define TERMINAL_TOKEN_PARAM_SGR_FG_MAGENTA	35
-#define TERMINAL_TOKEN_PARAM_SGR_FG_CYAN	36
-#define TERMINAL_TOKEN_PARAM_SGR_FG_WHITE	37
-#define TERMINAL_TOKEN_PARAM_SGR_FG_RESET	39
+#define TERMINAL_TOKEN_PARAM_SGR_FG_BLACK   30
+#define TERMINAL_TOKEN_PARAM_SGR_FG_RED     31
+#define TERMINAL_TOKEN_PARAM_SGR_FG_GREEN   32
+#define TERMINAL_TOKEN_PARAM_SGR_FG_YELLOW  33
+#define TERMINAL_TOKEN_PARAM_SGR_FG_BLUE    34
+#define TERMINAL_TOKEN_PARAM_SGR_FG_MAGENTA 35
+#define TERMINAL_TOKEN_PARAM_SGR_FG_CYAN    36
+#define TERMINAL_TOKEN_PARAM_SGR_FG_WHITE   37
+#define TERMINAL_TOKEN_PARAM_SGR_FG_RESET   39
 
-#define TERMINAL_TOKEN_PARAM_SGR_BG_BLACK	40
-#define TERMINAL_TOKEN_PARAM_SGR_BG_RED		41
-#define TERMINAL_TOKEN_PARAM_SGR_BG_GREEN	42
-#define TERMINAL_TOKEN_PARAM_SGR_BG_YELLOW	43
-#define TERMINAL_TOKEN_PARAM_SGR_BG_BLUE	44
-#define TERMINAL_TOKEN_PARAM_SGR_BG_MAGENTA	45
-#define TERMINAL_TOKEN_PARAM_SGR_BG_CYAN	46
-#define TERMINAL_TOKEN_PARAM_SGR_BG_WHITE	47
+#define TERMINAL_TOKEN_PARAM_SGR_BG_BLACK   40
+#define TERMINAL_TOKEN_PARAM_SGR_BG_RED     41
+#define TERMINAL_TOKEN_PARAM_SGR_BG_GREEN   42
+#define TERMINAL_TOKEN_PARAM_SGR_BG_YELLOW  43
+#define TERMINAL_TOKEN_PARAM_SGR_BG_BLUE    44
+#define TERMINAL_TOKEN_PARAM_SGR_BG_MAGENTA 45
+#define TERMINAL_TOKEN_PARAM_SGR_BG_CYAN    46
+#define TERMINAL_TOKEN_PARAM_SGR_BG_WHITE   47
 
 /*
  * Terminal input/output functions
@@ -222,14 +226,14 @@ typedef struct {
 
 } TERMINAL;
 
-TERMINAL *terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
+TERMINAL * terminal_init(TERMINAL *terminal, TERMINAL_IO *io);
 
 bool terminal_receive(TERMINAL *terminal, TERMINAL_TOKEN *token,
-		short **params, int *params_len);
+	short **params, int *params_len);
 
 bool terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token,
-						short *params, int params_len);
+	short *params, int params_len);
 bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token,
-						int params_len, ...);
+	int params_len, ...);
 
 #endif /* TERMINAL_H_ */

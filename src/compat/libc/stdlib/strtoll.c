@@ -63,17 +63,19 @@ strtoll(const char *nptr, char **endptr, int base)
 		c = *s++;
 	} else {
 		neg = 0;
-		if (c == '+')
+		if (c == '+') {
 			c = *s++;
+		}
 	}
 	if ((base == 0 || base == 16) &&
-	    c == '0' && (*s == 'x' || *s == 'X')) {
+		c == '0' && (*s == 'x' || *s == 'X')) {
 		c = s[1];
 		s += 2;
 		base = 16;
 	}
-	if (base == 0)
+	if (base == 0) {
 		base = c == '0' ? 8 : 10;
+	}
 
 	/*
 	 * Compute the cutoff value between legal numbers and illegal
@@ -104,16 +106,21 @@ strtoll(const char *nptr, char **endptr, int base)
 		cutlim = -cutlim;
 	}
 	for (acc = 0, any = 0;; c = (unsigned char) *s++) {
-		if (isdigit(c))
+		if (isdigit(c)) {
 			c -= '0';
-		else if (isalpha(c))
+		}
+		else if (isalpha(c)) {
 			c -= isupper(c) ? 'A' - 10 : 'a' - 10;
-		else
+		}
+		else {
 			break;
-		if (c >= base)
+		}
+		if (c >= base) {
 			break;
-		if (any < 0)
+		}
+		if (any < 0) {
 			continue;
+		}
 		if (neg) {
 			if (acc < cutoff || (acc == cutoff && c > cutlim)) {
 				any = -1;
@@ -136,8 +143,9 @@ strtoll(const char *nptr, char **endptr, int base)
 			}
 		}
 	}
-	if (endptr != 0)
+	if (endptr != 0) {
 		*endptr = (char *) (any ? s - 1 : nptr);
+	}
 	return (acc);
 }
 
@@ -148,6 +156,6 @@ int64_t
 strtoq(const char *nptr, char **endptr, int base)
 {
 
-        return ((int64_t)strtoll(nptr, endptr, base));
+	return ((int64_t)strtoll(nptr, endptr, base));
 }
 #endif

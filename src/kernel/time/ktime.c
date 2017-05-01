@@ -23,13 +23,13 @@ time64_t ktime_get_ns(void) {
 	return itimer_read(&sys_timecounter);
 }
 
-struct timeval *ktime_get_timeval(struct timeval *tv) {
+struct timeval * ktime_get_timeval(struct timeval *tv) {
 	time64_t ns = ktime_get_ns();
 	*tv = ns_to_timeval(ns);
 	return tv;
 }
 
-struct timespec *ktime_get_timespec(struct timespec *ts) {
+struct timespec * ktime_get_timespec(struct timespec *ts) {
 	itimer_read_timespec(&sys_timecounter, ts);
 	return ts;
 }
@@ -37,7 +37,7 @@ struct timespec *ktime_get_timespec(struct timespec *ts) {
 time_t ktime_get_timeseconds(void) {
 	struct timespec ts;
 
-	ktime_get_timespec (&ts);
+	ktime_get_timespec(&ts);
 	return ts.tv_sec;
 }
 

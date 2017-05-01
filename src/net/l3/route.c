@@ -34,11 +34,12 @@ struct rt_entry_info {
 	struct rt_entry entry;
 };
 
-POOL_DEF(rt_entry_info_pool, struct rt_entry_info, OPTION_GET(NUMBER,route_table_size));
+POOL_DEF(rt_entry_info_pool, struct rt_entry_info,
+	OPTION_GET(NUMBER,route_table_size));
 static DLIST_DEFINE(rt_entry_info_list);
 
 int rt_add_route(struct net_device *dev, in_addr_t dst,
-		in_addr_t mask, in_addr_t gw, int flags) {
+	in_addr_t mask, in_addr_t gw, int flags) {
 	struct rt_entry_info *rt_info;
 
 	if (dev == NULL) {
@@ -61,14 +62,14 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
 }
 
 int rt_del_route(struct net_device *dev, in_addr_t dst,
-		in_addr_t mask, in_addr_t gw) {
+	in_addr_t mask, in_addr_t gw) {
 	struct rt_entry_info *rt_info;
 
 	dlist_foreach_entry(rt_info, &rt_entry_info_list, lnk) {
 		if ((rt_info->entry.rt_dst == dst) &&
-                ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
-    			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
-    			((rt_info->entry.dev == dev) || (INADDR_ANY == dev))) {
+			((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
+			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
+			((rt_info->entry.dev == dev) || (INADDR_ANY == dev))) {
 			dlist_del_init_entry(rt_info, lnk);
 			pool_free(&rt_entry_info_pool, rt_info);
 			return 0;
@@ -86,7 +87,7 @@ int rt_del_route_if(struct net_device *dev) {
 		if (rt_info->entry.dev == dev) {
 			dlist_del_init_entry(rt_info, lnk);
 			pool_free(&rt_entry_info_pool, rt_info);
-			ret ++;
+			ret++;
 		}
 	}
 
@@ -99,7 +100,7 @@ int rt_del_route_if(struct net_device *dev) {
  *      2) Carrier without ARP can't be supported
  */
 int ip_route(struct sk_buff *skb, struct net_device *wanna_dev,
-		struct rt_entry *suggested_route) {
+	struct rt_entry *suggested_route) {
 	in_addr_t daddr;
 	struct rt_entry *rte;
 
@@ -125,7 +126,8 @@ int ip_route(struct sk_buff *skb, struct net_device *wanna_dev,
 
 	/* route destination address */
 	rte = ((wanna_dev == NULL)
-		? (suggested_route == NULL) ? rt_fib_get_best(daddr, NULL) : suggested_route
+		? (suggested_route == NULL) ? rt_fib_get_best(daddr,
+		NULL) : suggested_route
 		: rt_fib_get_best(daddr, wanna_dev));
 	if (rte == NULL) {
 		return -ENETUNREACH;
@@ -155,13 +157,13 @@ int rt_fib_route_ip(in_addr_t dst_ip, in_addr_t *next_ip) {
 	}
 
 	*next_ip = rte->rt_gateway == INADDR_ANY ? dst_ip
-			: rte->rt_gateway;
+		: rte->rt_gateway;
 
 	return 0;
 }
 
 int rt_fib_source_ip(in_addr_t dst_ip, struct net_device *dev,
-		in_addr_t *src_ip) {
+	in_addr_t *src_ip) {
 	struct rt_entry *rte;
 
 	if (dst_ip != INADDR_BROADCAST) {
@@ -183,7 +185,7 @@ int rt_fib_source_ip(in_addr_t dst_ip, struct net_device *dev,
 }
 
 int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
-		struct net_device **out_dev) {
+	struct net_device **out_dev) {
 	struct rt_entry *rte;
 	struct net_device *wanna_dev;
 
@@ -237,7 +239,7 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
 
 	rt_info = member_cast_out(entry, struct rt_entry_info, entry);
 	if (rt_info == dlist_prev_entry_or_null(&rt_entry_info_list,
-			struct rt_entry_info, lnk)) {
+		struct rt_entry_info, lnk)) {
 		return NULL;
 	}
 
@@ -260,8 +262,8 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
 		mask_len = ~rt_info->entry.rt_mask
 			? bit_clz(ntohl(~rt_info->entry.rt_mask)) + 1 : 32;
 		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)
-				&& (out_dev == NULL || out_dev == rt_info->entry.dev)
-				&& (mask_len > best_mask_len)) {
+			&& (out_dev == NULL || out_dev == rt_info->entry.dev)
+			&& (mask_len > best_mask_len)) {
 			best_rte = &rt_info->entry;
 			best_mask_len = mask_len;
 		}

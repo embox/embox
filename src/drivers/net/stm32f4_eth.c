@@ -89,7 +89,7 @@ static uint32_t ETH_MACDMA_Config(void) {
 
 	/* Enable ETHERNET clock  */
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_ETH_MAC | RCC_AHB1Periph_ETH_MAC_Tx |
-			RCC_AHB1Periph_ETH_MAC_Rx, ENABLE);
+		RCC_AHB1Periph_ETH_MAC_Rx, ENABLE);
 
 	/* Reset ETHERNET on AHB Bus */
 	ETH_DeInit();
@@ -98,7 +98,7 @@ static uint32_t ETH_MACDMA_Config(void) {
 	ETH_SoftwareReset();
 
 	/* Wait for software reset */
-	while (ETH_GetSoftwareResetStatus() == SET);
+	while (ETH_GetSoftwareResetStatus() == SET) ;
 
 	/* ETHERNET Configuration --------------------------------------------------*/
 	/* Call ETH_StructInit if you don't like to configure all ETH_InitStructure parameter */
@@ -107,17 +107,20 @@ static uint32_t ETH_MACDMA_Config(void) {
 	/* Fill ETH_InitStructure parametrs */
 	/*------------------------   MAC   -----------------------------------*/
 	ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Enable;
-	//ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Disable;
-	//  ETH_InitStructure.ETH_Speed = ETH_Speed_10M;
-	//  ETH_InitStructure.ETH_Mode = ETH_Mode_FullDuplex;
+	/*ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Disable; */
+	/*  ETH_InitStructure.ETH_Speed = ETH_Speed_10M; */
+	/*  ETH_InitStructure.ETH_Mode = ETH_Mode_FullDuplex; */
 
 	ETH_InitStructure.ETH_LoopbackMode = ETH_LoopbackMode_Disable;
 	ETH_InitStructure.ETH_RetryTransmission = ETH_RetryTransmission_Disable;
-	ETH_InitStructure.ETH_AutomaticPadCRCStrip = ETH_AutomaticPadCRCStrip_Disable;
+	ETH_InitStructure.ETH_AutomaticPadCRCStrip =
+		ETH_AutomaticPadCRCStrip_Disable;
 	ETH_InitStructure.ETH_ReceiveAll = ETH_ReceiveAll_Disable;
-	ETH_InitStructure.ETH_BroadcastFramesReception = ETH_BroadcastFramesReception_Enable;
+	ETH_InitStructure.ETH_BroadcastFramesReception =
+		ETH_BroadcastFramesReception_Enable;
 	ETH_InitStructure.ETH_PromiscuousMode = ETH_PromiscuousMode_Disable;
-	ETH_InitStructure.ETH_MulticastFramesFilter = ETH_MulticastFramesFilter_Perfect;
+	ETH_InitStructure.ETH_MulticastFramesFilter =
+		ETH_MulticastFramesFilter_Perfect;
 	ETH_InitStructure.ETH_UnicastFramesFilter = ETH_UnicastFramesFilter_Perfect;
 #ifdef CHECKSUM_BY_HARDWARE
 	ETH_InitStructure.ETH_ChecksumOffload = ETH_ChecksumOffload_Enable;
@@ -128,18 +131,22 @@ static uint32_t ETH_MACDMA_Config(void) {
 	/* When we use the Checksum offload feature, we need to enable the Store and Forward mode:
 	   the store and forward guarantee that a whole frame is stored in the FIFO, so the MAC can insert/verify the checksum,
 	   if the checksum is OK the DMA can handle the frame otherwise the frame is dropped */
-	ETH_InitStructure.ETH_DropTCPIPChecksumErrorFrame = ETH_DropTCPIPChecksumErrorFrame_Enable;
+	ETH_InitStructure.ETH_DropTCPIPChecksumErrorFrame =
+		ETH_DropTCPIPChecksumErrorFrame_Enable;
 	ETH_InitStructure.ETH_ReceiveStoreForward = ETH_ReceiveStoreForward_Enable;
-	ETH_InitStructure.ETH_TransmitStoreForward = ETH_TransmitStoreForward_Enable;
+	ETH_InitStructure.ETH_TransmitStoreForward =
+		ETH_TransmitStoreForward_Enable;
 
 	ETH_InitStructure.ETH_ForwardErrorFrames = ETH_ForwardErrorFrames_Disable;
-	ETH_InitStructure.ETH_ForwardUndersizedGoodFrames = ETH_ForwardUndersizedGoodFrames_Disable;
+	ETH_InitStructure.ETH_ForwardUndersizedGoodFrames =
+		ETH_ForwardUndersizedGoodFrames_Disable;
 	ETH_InitStructure.ETH_SecondFrameOperate = ETH_SecondFrameOperate_Enable;
 	ETH_InitStructure.ETH_AddressAlignedBeats = ETH_AddressAlignedBeats_Enable;
 	ETH_InitStructure.ETH_FixedBurst = ETH_FixedBurst_Enable;
 	ETH_InitStructure.ETH_RxDMABurstLength = ETH_RxDMABurstLength_32Beat;
 	ETH_InitStructure.ETH_TxDMABurstLength = ETH_TxDMABurstLength_32Beat;
-	ETH_InitStructure.ETH_DMAArbitration = ETH_DMAArbitration_RoundRobin_RxTx_2_1;
+	ETH_InitStructure.ETH_DMAArbitration =
+		ETH_DMAArbitration_RoundRobin_RxTx_2_1;
 
 	/* Configure Ethernet */
 	return ETH_Init(&ETH_InitStructure, LAN8720_PHY_ADDRESS);
@@ -151,14 +158,13 @@ static void ETH_GPIO_Config(void) {
 
 	/* Enable GPIOs clocks */
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA | RCC_AHB1Periph_GPIOB
-			| RCC_AHB1Periph_GPIOC, ENABLE);
+		| RCC_AHB1Periph_GPIOC, ENABLE);
 
 	/* Enable SYSCFG clock */
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 
 	/* MII/RMII Media interface selection --------------------------------------*/
 	SYSCFG_ETH_MediaInterfaceConfig(SYSCFG_ETH_MediaInterface_RMII);
-
 
 	/* Ethernet pins configuration ************************************************/
 	/*
@@ -183,14 +189,15 @@ static void ETH_GPIO_Config(void) {
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL ;
+	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_ETH);
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_ETH);
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource7, GPIO_AF_ETH);
 
 	/* Configure PB10,PB11,PB12 and PB13 */
-	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 |
+		GPIO_Pin_13;
 	GPIO_Init(GPIOB, &GPIO_InitStructure);
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_ETH);
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_ETH);
@@ -213,9 +220,13 @@ static void ETH_GPIO_Config(void) {
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
 
 	GPIO_ResetBits(GPIOE, GPIO_Pin_2);
-	for (i = 0; i < 20000; i++);
+	for (i = 0; i < 20000; i++) {
+		;
+	}
 	GPIO_SetBits(GPIOE, GPIO_Pin_2);
-	for (i = 0; i < 20000; i++);
+	for (i = 0; i < 20000; i++) {
+		;
+	}
 }
 
 /*********** Portions COPYRIGHT 2012 Embest Tech. Co., Ltd.*****END OF FILE****/
@@ -266,16 +277,17 @@ struct stm32eth_state {
 static struct stm32eth_state stm32eth_g_state;
 
 static inline int stm32eth_desc2i(eth_dma_desc_t *base, eth_dma_desc_t *desc) {
-	return ((intptr_t) desc - (intptr_t) base) / sizeof(*desc); 
+	return ((intptr_t) desc - (intptr_t) base) / sizeof(*desc);
 }
 
-static void stm32eth_tx_skb_set(struct stm32eth_state *state, struct sk_buff *skb) {
+static void stm32eth_tx_skb_set(struct stm32eth_state *state,
+	struct sk_buff *skb) {
 	int i_desc = stm32eth_desc2i(state->tx_tab, state->tx_tail);
 	assert(state->tx_skb[i_desc] == NULL);
 	state->tx_skb[i_desc] = skb;
 }
 
-static struct sk_buff *stm32eth_tx_skb_get(struct stm32eth_state *state) {
+static struct sk_buff * stm32eth_tx_skb_get(struct stm32eth_state *state) {
 	int i_desc = stm32eth_desc2i(state->tx_tab, state->tx_head);
 	struct sk_buff *skb = state->tx_skb[i_desc];
 	assert(skb != NULL);
@@ -283,7 +295,7 @@ static struct sk_buff *stm32eth_tx_skb_get(struct stm32eth_state *state) {
 	return skb;
 }
 
-extern ETH_DMADESCTypeDef  DMARxDscrTab[ETH_RXBUFNB];
+extern ETH_DMADESCTypeDef DMARxDscrTab[ETH_RXBUFNB];
 extern uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE];
 extern ETH_DMADESCTypeDef  *DMARxDescToGet;
 extern ETH_DMA_Rx_Frame_infos *DMA_RX_FRAME_infos;
@@ -317,14 +329,13 @@ static void low_level_init(unsigned char mac[6]) {
 	ETH_Start();
 }
 
-static struct sk_buff *low_level_input(void) {
+static struct sk_buff * low_level_input(void) {
 	struct sk_buff *skb;
 	int len;
 	FrameTypeDef frame;
 	u8 *buffer;
-	uint32_t i=0;
+	uint32_t i = 0;
 	__IO ETH_DMADESCTypeDef *DMARxNextDesc;
-
 
 	skb = NULL;
 
@@ -352,13 +363,14 @@ static struct sk_buff *low_level_input(void) {
 	}
 
 	/* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-	for (i=0; i<DMA_RX_FRAME_infos->Seg_Count; i++) {
+	for (i = 0; i < DMA_RX_FRAME_infos->Seg_Count; i++) {
 		DMARxNextDesc->Status = ETH_DMARxDesc_OWN;
-		DMARxNextDesc = (ETH_DMADESCTypeDef *)(DMARxNextDesc->Buffer2NextDescAddr);
+		DMARxNextDesc =
+			(ETH_DMADESCTypeDef *)(DMARxNextDesc->Buffer2NextDescAddr);
 	}
 
 	/* Clear Segment_Count */
-	DMA_RX_FRAME_infos->Seg_Count =0;
+	DMA_RX_FRAME_infos->Seg_Count = 0;
 
 	/* When Rx Buffer unavailable flag is set: clear it and resume reception */
 	if ((ETH->DMASR & ETH_DMASR_RBUS) != (u32)RESET) {
@@ -393,7 +405,8 @@ static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
 
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct stm32eth_state *state = &stm32eth_g_state;
-	eth_dma_desc_t *next_tail = (eth_dma_desc_t *) state->tx_tail->Buffer2NextDescAddr;
+	eth_dma_desc_t *next_tail =
+		(eth_dma_desc_t *) state->tx_tail->Buffer2NextDescAddr;
 
 	if (next_tail == state->tx_head) {
 		return -EBUSY;
@@ -401,8 +414,9 @@ static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	state->tx_tail->Buffer1Addr = (uint32_t) skb->mac.raw;
 	state->tx_tail->ControlBufferSize = skb->len & ETH_DMATxDesc_TBS1;
-	state->tx_tail->Status = ETH_DMATxDesc_FS | ETH_DMATxDesc_LS | ETH_DMATxDesc_TCH
-		 | ETH_DMATxDesc_IC | ETH_DMATxDesc_OWN;
+	state->tx_tail->Status = ETH_DMATxDesc_FS | ETH_DMATxDesc_LS |
+		ETH_DMATxDesc_TCH
+		| ETH_DMATxDesc_IC | ETH_DMATxDesc_OWN;
 	stm32eth_tx_skb_set(state, skb);
 
 	state->tx_tail = next_tail;
@@ -431,7 +445,7 @@ static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 
 	stm32eth_txed_collect(&stm32eth_g_state);
 
-	while(ETH_CheckFrameReceived()) {
+	while (ETH_CheckFrameReceived()) {
 		struct sk_buff *skb = low_level_input();
 		if (skb) {
 			skb->dev = *nic_p;

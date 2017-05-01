@@ -32,11 +32,13 @@
 
 PCI_DRIVER("generic fb", generic_init, VID, PID);
 
-static int generic_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
+static int generic_set_var(struct fb_info *info,
+	const struct fb_var_screeninfo *var) {
 	return -ENOSYS;
 }
 
-static int generic_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
+static int generic_get_var(struct fb_info *info,
+	struct fb_var_screeninfo *var) {
 
 	if (!MBOOT_VIDEO_SET) {
 		return -ENOSYS;
@@ -63,10 +65,10 @@ static int generic_init(struct pci_slot_dev *pci_dev) {
 	struct fb_info *info;
 
 	if (MAP_FAILED == mmap_device_memory(mmap_base,
-				mmap_len,
-			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) mmap_base)) {
+		mmap_len,
+		PROT_READ|PROT_WRITE|PROT_NOCACHE,
+		MAP_FIXED,
+		(unsigned long) mmap_base)) {
 		return -EIO;
 	}
 

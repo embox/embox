@@ -12,7 +12,7 @@ __BEGIN_DECLS
 #define PTHREAD_CANCELED 0
 
 static inline int pthread_attr_setscope(pthread_attr_t *attr,
-		int contentionscope) {
+	int contentionscope) {
 	(void)attr; (void)contentionscope;
 	return 0;
 }
@@ -20,4 +20,3 @@ static inline int pthread_attr_setscope(pthread_attr_t *attr,
 __END_DECLS
 
 #endif /* PJSIP_PTHREAD_H_ */
-

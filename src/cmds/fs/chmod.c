@@ -18,7 +18,7 @@
 
 static void help_invalid_mode(const char *mode) {
 	printf("chmod: invalid mode: '%s'\n"
-			"Try 'chmod -h' for more information.\n", mode);
+		   "Try 'chmod -h' for more information.\n", mode);
 }
 
 static void help(void) {
@@ -32,14 +32,14 @@ static int build_mode(char *mode_str, mode_t *mode) {
 	mode_t type = 0;
 	mode_t mask = 0;
 
-parse:
+	parse:
 	if (count >= CHMOD_MAX_MODES) {
 		printf("chmod: too many modes: %s\n", mode_str);
 		return -1;
 	}
 
 	while (*modep != '=' && *modep != '+' && *modep != '-') {
-		switch(*(modep++)) {
+		switch (*(modep++)) {
 		case 'u':
 			type |= 0700;
 			break;
@@ -51,7 +51,7 @@ parse:
 			break;
 		case 'a':
 			type |= 0777;
-		break;
+			break;
 		default:
 			help_invalid_mode(mode_str);
 			return -1;
@@ -65,7 +65,7 @@ parse:
 	op = *(modep++);
 
 	while (*modep != '\0') {
-		switch(*(modep++)) {
+		switch (*(modep++)) {
 		case 'r':
 			mask |= 0444;
 			break;
@@ -75,9 +75,9 @@ parse:
 		case 'x':
 			mask |= 0111;
 			break;
-		//case 'X':
-		//	dir_mask |= 0111;
-		//	break;
+		/*case 'X': */
+		/*	dir_mask |= 0111; */
+		/*	break; */
 		case ',':
 			count++;
 			goto parse;
@@ -87,7 +87,7 @@ parse:
 		}
 	}
 
-	switch(op) {
+	switch (op) {
 	case '+':
 		*mode |= (mask & type);
 		break;

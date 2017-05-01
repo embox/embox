@@ -10,7 +10,7 @@ int atexit(void (*func)(void)) {
 }
 
 int setitimer(int which, const struct itimerval *value,
-		struct itimerval *ovalue) {
+	struct itimerval *ovalue) {
 	printk(">>> %s %d %p %p\n", __func__, which, value, ovalue);
 	return SET_ERRNO(ENOSYS);
 }

@@ -21,7 +21,7 @@ static const struct http_header_desc {
 	{ .name = "Content-Type: ", .hreq_offset = offsetof(struct http_req, content_type), },
 };
 
-static char *httpd_parse_uri(char *str, struct http_req_uri *huri) {
+static char * httpd_parse_uri(char *str, struct http_req_uri *huri) {
 	char *pb;
 	pb = str;
 
@@ -46,7 +46,7 @@ static char *httpd_parse_uri(char *str, struct http_req_uri *huri) {
 	return pb;
 }
 
-static char *httpd_parse_request_line(char *str, struct http_req *hreq) {
+static char * httpd_parse_request_line(char *str, struct http_req *hreq) {
 	char *pb;
 	pb = str;
 
@@ -72,7 +72,7 @@ static char *httpd_parse_request_line(char *str, struct http_req *hreq) {
 	return pb + strlen("\r\n");
 }
 
-static char *httpd_parse_headers(char *str, struct http_req *hreq) {
+static char * httpd_parse_headers(char *str, struct http_req *hreq) {
 	char *pb;
 
 	pb = str;
@@ -105,7 +105,7 @@ static char *httpd_parse_headers(char *str, struct http_req *hreq) {
 	return pb + strlen("\r\n");
 }
 
-char *httpd_parse_request(char *str, struct http_req *hreq) {
+char * httpd_parse_request(char *str, struct http_req *hreq) {
 	char *pb;
 	pb = str;
 

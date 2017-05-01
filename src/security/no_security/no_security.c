@@ -33,12 +33,13 @@ int security_umount(struct node *mountpoint) {
 	return 0;
 }
 
-int security_xattr_get(struct node *node, const char *name, char *value, size_t len) {
+int security_xattr_get(struct node *node, const char *name, char *value,
+	size_t len) {
 	return 0;
 }
 
 int security_xattr_set(struct node *node, const char *name,
-			const char *value, size_t len, int flags) {
+	const char *value, size_t len, int flags) {
 	return 0;
 }
 
@@ -46,11 +47,13 @@ int security_xattr_list(struct node *node, char *list, size_t len) {
 	return 0;
 }
 
-int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value, size_t len) {
+int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value,
+	size_t len) {
 	return 0;
 }
 
-int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *value, size_t len, int flags) {
+int security_xattr_idesc_set(struct idesc *idesc, const char *name,
+	const char *value, size_t len, int flags) {
 	return 0;
 }
 

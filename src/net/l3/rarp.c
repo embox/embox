@@ -33,11 +33,11 @@
 #include <framework/mod/options.h>
 #define LOG_LEVEL OPTION_GET(NUMBER, log_level)
 
-// Forward declarations
+/* Forward declarations */
 static void log_rarp_hnd_request(const struct arphdr *rarph,
-		uint8_t *dst_paddr, uint8_t *dst_haddr);
+	uint8_t *dst_paddr, uint8_t *dst_haddr);
 static void log_rarp_hnd_reply(const struct arphdr *rarph,
-		const struct arpbody *rarpb);
+	const struct arpbody *rarpb);
 
 EMBOX_NET_PACK(ETH_P_RARP, rarp_rcv);
 
@@ -46,7 +46,7 @@ static int rarp_xmit(struct sk_buff *skb) {
 	assert(skb->dev != NULL);
 	if (skb->dev->flags & IFF_NOARP) {
 		log_error("rarp_xmit: rarp doesn't supported by device %s\n",
-					&skb->dev->name[0]);
+			&skb->dev->name[0]);
 		skb_free(skb);
 		return 0; /* error: rarp doesn't supported by device */
 	}
@@ -56,9 +56,9 @@ static int rarp_xmit(struct sk_buff *skb) {
 }
 
 static int rarp_send(struct sk_buff *skb, struct net_device *dev,
-		uint16_t pro, uint8_t pln, uint16_t op, const void *sha,
-		const void *spa, const void *tha, const void *tpa,
-		const void *tar) {
+	uint16_t pro, uint8_t pln, uint16_t op, const void *sha,
+	const void *spa, const void *tha, const void *tpa,
+	const void *tar) {
 	int ret;
 	size_t size;
 	struct net_header_info hdr_info;
@@ -75,8 +75,10 @@ static int rarp_send(struct sk_buff *skb, struct net_device *dev,
 	size = dev->hdr_len + ARP_CALC_HEADER_SIZE(dev->addr_len, pln);
 	if (size > min(dev->mtu, skb_max_size())) {
 		log_error("rarp_send: hdr size %zu is too big (max %zu)\n",
-					size, min(dev->mtu, skb_max_size()));
-		if (skb) skb_free(skb); /* TODO */
+			size, min(dev->mtu, skb_max_size()));
+		if (skb) {
+			skb_free(skb);      /* TODO */
+		}
 		return -EMSGSIZE; /* error: hdr size is too big */
 	}
 
@@ -105,15 +107,15 @@ static int rarp_send(struct sk_buff *skb, struct net_device *dev,
 
 	/* build RARP header */
 	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln,
-			op, sha, spa, tha, tpa);
+		op, sha, spa, tha, tpa);
 
 	/* and send */
 	return rarp_xmit(skb);
 }
 
 static int rarp_hnd_request(const struct arphdr *rarph,
-		const struct arpbody *rarpb, struct sk_buff *skb,
-		struct net_device *dev) {
+	const struct arpbody *rarpb, struct sk_buff *skb,
+	struct net_device *dev) {
 	int ret;
 	uint8_t src_paddr[MAX_ADDR_LEN];
 	uint8_t dst_haddr[MAX_ADDR_LEN], dst_paddr[MAX_ADDR_LEN];
@@ -125,7 +127,7 @@ static int rarp_hnd_request(const struct arphdr *rarph,
 
 	/* check protocol capabilities */
 	if ((rarph->ar_pro != htons(ETH_P_IP))
-			|| (rarph->ar_pln != sizeof in_dev->ifa_address)) {
+		|| (rarph->ar_pln != sizeof in_dev->ifa_address)) {
 		log_error("rarp_hnd_request: only IPv4 is supported\n");
 		skb_free(skb);
 		return 0; /* FIXME error: only IPv4 is supported */
@@ -167,8 +169,8 @@ static int rarp_hnd_request(const struct arphdr *rarph,
 }
 
 static int rarp_hnd_reply(const struct arphdr *rarph,
-		const struct arpbody *rarpb, struct sk_buff *skb,
-		struct net_device *dev) {
+	const struct arpbody *rarpb, struct sk_buff *skb,
+	struct net_device *dev) {
 	int ret;
 
 	assert(rarph != NULL);
@@ -195,7 +197,7 @@ static int rarp_hnd_reply(const struct arphdr *rarph,
 }
 
 static void log_rarp_hnd_request(const struct arphdr *rarph,
-		uint8_t *dst_paddr, uint8_t *dst_haddr) {
+	uint8_t *dst_paddr, uint8_t *dst_haddr) {
 	log_debug("rarp_hnd_request: send reply with ");
 	if (rarph->ar_pro == ntohs(ETH_P_IP)) {
 		struct in_addr in;
@@ -218,7 +220,7 @@ static void log_rarp_hnd_request(const struct arphdr *rarph,
 }
 
 static void log_rarp_hnd_reply(const struct arphdr *rarph,
-		const struct arpbody *rarpb) {
+	const struct arpbody *rarpb) {
 	log_debug("rarp_hnd_reply: receive reply with ");
 	if (rarph->ar_pro == ntohs(ETH_P_IP)) {
 		struct in_addr in;
@@ -262,7 +264,7 @@ static int rarp_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	/* check device capabilities */
 	if ((rarph->ar_hrd != htons(dev->type))
-			|| (rarph->ar_hln != dev->addr_len)) {
+		|| (rarph->ar_hln != dev->addr_len)) {
 		skb_free(skb);
 		return 0; /* error: invalid hardware address info */
 	}

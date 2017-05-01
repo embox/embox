@@ -14,7 +14,6 @@
 #include <sys/time.h>
 #include <netinet/tcp.h>
 
-
 #include <linux/types.h>
 #include <linux/list.h>
 #include <net/socket/inet_sock.h>
@@ -26,27 +25,27 @@ typedef struct tcphdr {
 	__be32 seq;
 	__be32 ack_seq;
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
-	__u16 res1:4,
-		doff:4,
-		fin:1,
-		syn:1,
-		rst:1,
-		psh:1,
-		ack:1,
-		urg:1,
-		ece:1,
-		cwr:1;
+	__u16 res1 : 4,
+		doff : 4,
+		fin : 1,
+		syn : 1,
+		rst : 1,
+		psh : 1,
+		ack : 1,
+		urg : 1,
+		ece : 1,
+		cwr : 1;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
-	__u16 doff:4,
-		res1:4,
-		cwr:1,
-		ece:1,
-		urg:1,
-		ack:1,
-		psh:1,
-		rst:1,
-		syn:1,
-		fin:1;
+	__u16 doff : 4,
+		res1 : 4,
+		cwr : 1,
+		ece : 1,
+		urg : 1,
+		ack : 1,
+		psh : 1,
+		rst : 1,
+		syn : 1,
+		fin : 1;
 #endif
 	__be16 window;
 	__be16 check;
@@ -109,7 +108,7 @@ typedef struct tcp_sock {
 } tcp_sock_t;
 
 static inline struct tcp_sock * to_tcp_sock(
-		const struct sock *sk) {
+	const struct sock *sk) {
 	return (struct tcp_sock *)sk->p_sk;
 }
 
@@ -154,15 +153,15 @@ extern const struct sock_proto_ops *const tcp_sock_ops __attribute__((weak));
 /* Others functionality */
 extern void tcp_sock_release(struct tcp_sock *tcp_sk);
 extern void tcp_sock_set_state(struct tcp_sock *tcp_sk,
-		enum tcp_sock_state new_state);
+	enum tcp_sock_state new_state);
 extern void tcp_seq_state_set_wind_value(struct tcp_seq_state *tcp_seq_st,
-		uint16_t value);
+	uint16_t value);
 extern void tcp_seq_state_set_wind_factor(struct tcp_seq_state *tcp_seq_st,
-		uint8_t factor);
+	uint8_t factor);
 extern void tcp_sock_lock(struct tcp_sock *sk, unsigned int obj);
 extern void tcp_sock_unlock(struct tcp_sock *sk, unsigned int obj);
 extern int alloc_prep_skb(struct tcp_sock *tcp_sk, size_t opt_len,
-		size_t *data_len, struct sk_buff **out_skb);
+	size_t *data_len, struct sk_buff **out_skb);
 extern void send_seq_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
 extern int tcp_sock_get_status(struct tcp_sock *tcp_sk);
 extern void debug_print(__u8 code, const char *msg, ...);

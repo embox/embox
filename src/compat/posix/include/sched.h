@@ -27,7 +27,6 @@ __BEGIN_DECLS
 #define SCHED_FIFO      1 /* First in-first out (FIFO) scheduling policy*/
 #define SCHED_RR        2 /* Round robin scheduling policy. */
 
-
 struct sched_param {
 	int sched_priority; /**< Process or thread execution scheduling priority. */
 	/*

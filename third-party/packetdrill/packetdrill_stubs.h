@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 #define PD_STUB(msg, ...) \
-	fprintf(stderr, ">>> packetdrill: " msg "\n", ##__VA_ARGS__)
+	fprintf(stderr, ">>> packetdrill: " msg "\n", ## __VA_ARGS__)
 
 #define PD_STUB_USE(msg) \
 	PD_STUB("%s" msg, __func__)
@@ -30,7 +30,7 @@
 #define MCL_FUTURE  (PD_STUB("MCL_FUTURE"), 0x02)
 
 struct ifreq {
-	char    ifr_name[IFNAMSIZ];/* Interface name */
+	char ifr_name[IFNAMSIZ];   /* Interface name */
 	union {
 #if 0
 		struct sockaddrifr_addr ifr_addr;
@@ -39,16 +39,16 @@ struct ifreq {
 		struct sockaddrifr_netmask ifr_netmask;
 		struct sockaddrifr_hwaddr ifr_hwaddr;
 #endif
-		short   ifr_flags;
-		int     ifr_ifindex;
-		int     ifr_metric;
-		int     ifr_mtu;
+		short ifr_flags;
+		int ifr_ifindex;
+		int ifr_metric;
+		int ifr_mtu;
 #if 0
 		struct ifmapifr_map ifr_map;
 #endif
-		char    ifr_slave[IFNAMSIZ];
-		char    ifr_newname[IFNAMSIZ];
-		char *  ifr_data;
+		char ifr_slave[IFNAMSIZ];
+		char ifr_newname[IFNAMSIZ];
+		char *ifr_data;
 	};
 };
 
@@ -62,7 +62,7 @@ struct iovec;
 
 extern int asprintf(char **strp, const char *fmt, ...);
 
-static inline char *strsignal(int sig) {
+static inline char * strsignal(int sig) {
 	PD_STUB_USE();
 	return "i-know-but-won't-tell-you-signal";
 }
@@ -83,11 +83,10 @@ static inline int munlockall(void) {
 }
 
 #include <stdio.h>
-static inline FILE *fropen(void *cookie, int (*readfn)(void *, char *, int)) {
+static inline FILE * fropen(void *cookie, int (*readfn)(void *, char *, int)) {
 	return funopen(cookie, readfn, NULL, NULL, NULL);
 }
 
 #include <sys/types.h>
 
 #endif /* PACKETDRILL_STUBS_H_ */
-

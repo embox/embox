@@ -31,7 +31,7 @@ static int open_db(const char *db_path, FILE **result) {
 }
 
 static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
-		int delim) {
+	int delim) {
 	int ch = fgetc(stream);
 
 	*field = *buf;
@@ -65,7 +65,8 @@ static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
 	return 0;
 }
 
-static int read_int_field(FILE *stream, const char *format, void *field, int delim) {
+static int read_int_field(FILE *stream, const char *format, void *field,
+	int delim) {
 	int val;
 	int ret;
 
@@ -78,7 +79,7 @@ static int read_int_field(FILE *stream, const char *format, void *field, int del
 
 	if (delim != (val = fgetc(stream))) {
 		/* fscanf can eat blank charactes, so if it used as delim, here we beleive it
- 		 * was on place, but stolen. Otherwise, report inproper stream format
+		 * was on place, but stolen. Otherwise, report inproper stream format
 		 */
 		if (isspace(delim)) {
 			ungetc(val, stream);
@@ -90,7 +91,8 @@ static int read_int_field(FILE *stream, const char *format, void *field, int del
 	return 0;
 }
 
-static int read_pwd(FILE *stream, char *buf, size_t buflen, struct passwd *pwd) {
+static int read_pwd(FILE *stream, char *buf, size_t buflen,
+	struct passwd *pwd) {
 	int res;
 	char *p = buf;
 	size_t llen = buflen;
@@ -127,7 +129,7 @@ static int read_pwd(FILE *stream, char *buf, size_t buflen, struct passwd *pwd) 
 }
 
 int fgetpwent_r(FILE *file, struct passwd *pwd, char *buf, size_t buflen,
-		struct passwd **result) {
+	struct passwd **result) {
 
 	int res = read_pwd(file, buf, buflen, pwd);
 
@@ -142,7 +144,7 @@ int fgetpwent_r(FILE *file, struct passwd *pwd, char *buf, size_t buflen,
 }
 
 int getpwnam_r(const char *name, struct passwd *pwd,
-		char *buf, size_t buflen, struct passwd **result) {
+	char *buf, size_t buflen, struct passwd **result) {
 	int res;
 	FILE *file;
 
@@ -167,7 +169,7 @@ int getpwnam_r(const char *name, struct passwd *pwd,
 	return 0;
 }
 
-struct passwd *getpwnam(const char *name) {
+struct passwd * getpwnam(const char *name) {
 	static struct passwd getpwnam_buffer;
 	static char buff[0x80];
 	struct passwd *res;
@@ -180,7 +182,7 @@ struct passwd *getpwnam(const char *name) {
 }
 
 int getpwuid_r(uid_t uid, struct passwd *pwd,
-		char *buf, size_t buflen, struct passwd **result) {
+	char *buf, size_t buflen, struct passwd **result) {
 	int res;
 	FILE *file;
 
@@ -205,13 +207,13 @@ int getpwuid_r(uid_t uid, struct passwd *pwd,
 	return 0;
 }
 
-struct passwd *getpwuid(uid_t uid) {
+struct passwd * getpwuid(uid_t uid) {
 	static struct passwd getpwuid_buffer;
 	static char buff[0x80];
 	struct passwd *res;
 
 	if (0 != getpwuid_r(uid, &getpwuid_buffer, buff, 80, &res)) {
-		//TODO errno must be set
+		/*TODO errno must be set */
 		return NULL;
 	}
 
@@ -219,7 +221,7 @@ struct passwd *getpwuid(uid_t uid) {
 }
 
 int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
-		size_t buflen, struct group **gbufp) {
+	size_t buflen, struct group **gbufp) {
 	int res;
 	char *buf = tbuf;
 	size_t buf_len = buflen;
@@ -243,7 +245,8 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 		return res;
 	}
 
-	gbuf->gr_mem = pmem = (char **)binalign_bound((uintptr_t)buf, sizeof(void *));
+	gbuf->gr_mem = pmem =
+			(char **)binalign_bound((uintptr_t)buf, sizeof(void *));
 	buf_len -= (uintptr_t)pmem - (uintptr_t)buf;
 
 	*pmem = ch;
@@ -364,7 +367,7 @@ int getmaxuid() {
 static struct spwd spwd;
 static char spwd_buf[SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN];
 
-struct spwd *fgetspent(FILE *file) {
+struct spwd * fgetspent(FILE *file) {
 	int res;
 	char *buf = spwd_buf;
 	size_t buf_len = SHADOW_NAME_BUF_LEN + SHADOW_PSWD_BUF_LEN;
@@ -408,7 +411,7 @@ struct spwd *fgetspent(FILE *file) {
 	return &spwd;
 }
 
-struct spwd *spwd_find(const char *spwd_path, const char *name) {
+struct spwd * spwd_find(const char *spwd_path, const char *name) {
 	struct spwd *spwd;
 	FILE *shdwf;
 
@@ -427,11 +430,11 @@ struct spwd *spwd_find(const char *spwd_path, const char *name) {
 	return spwd;
 }
 
-struct spwd *getspnam_f(const char *name) {
+struct spwd * getspnam_f(const char *name) {
 	return spwd_find(SHADOW_FILE, name);
 }
 
-struct spwd *getspnam(char *name) {
+struct spwd * getspnam(char *name) {
 	/* FIXME */
 	return getspnam_f(name);
 }
@@ -446,7 +449,7 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 	}
 
 	while (read_field(passwdf, &buf, &buf_len, &temp, '=') != EOF) {
-		if(0 == strcmp(temp, "GROUP")) {
+		if (0 == strcmp(temp, "GROUP")) {
 			if (0 != read_int_field(passwdf, "%hd", &passwd->pw_gid, '\n')) {
 				res = -1;
 				goto out;
@@ -454,18 +457,18 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 			continue;
 		}
 
-		if(0 == strcmp(temp, "HOME")) {
+		if (0 == strcmp(temp, "HOME")) {
 			if (0 != read_field(passwdf, &buf, &buf_len,
-					&passwd->pw_dir, '\n')) {
+				&passwd->pw_dir, '\n')) {
 				res = -1;
 				goto out;
 			}
 			continue;
 		}
 
-		if(0 == strcmp(temp, "SHELL")) {
+		if (0 == strcmp(temp, "SHELL")) {
 			if (0 != read_field(passwdf, &buf, &buf_len,
-					&passwd->pw_shell, '\n')) {
+				&passwd->pw_shell, '\n')) {
 				res = -1;
 				goto out;
 			}
@@ -473,7 +476,7 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 		}
 	}
 
-out:
+	out:
 	fclose(passwdf);
 	return res;
 }

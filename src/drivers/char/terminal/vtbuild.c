@@ -16,8 +16,7 @@
 /* Enough to hold decimal numbers up to 99999. */
 #define PARAM_PRINT_BUFF_SIZE 5
 
-
-struct vtbuild *vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb) {
+struct vtbuild * vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb) {
 	if (builder == NULL) {
 		return NULL;
 	}
@@ -44,7 +43,7 @@ static void build_single_param(struct vtbuild *builder, short n) {
 }
 
 static void build_params(struct vtbuild *builder, const short *params,
-		int params_len) {
+	int params_len) {
 	size_t i;
 	if (params != NULL) {
 		if (params_len > 0) {
@@ -58,7 +57,7 @@ static void build_params(struct vtbuild *builder, const short *params,
 }
 
 static void build_attrs(struct vtbuild *builder, const char *attrs,
-		int attrs_len) {
+	int attrs_len) {
 	size_t i;
 	if (attrs != NULL) {
 		for (i = 0; i < attrs_len; i++) {
@@ -95,9 +94,9 @@ void vtbuild(struct vtbuild *builder, const struct vt_token *token) {
 	case VT_ACTION_OSC_START:
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:
-		/* Operating System Command */
-		/* ignore them as unused in our system
-		  -- Eldar*/
+	/* Operating System Command */
+	/* ignore them as unused in our system
+	  -- Eldar*/
 	case VT_ACTION_HOOK:
 	case VT_ACTION_PUT:
 	case VT_ACTION_UNHOOK:

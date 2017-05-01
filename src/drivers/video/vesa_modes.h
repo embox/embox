@@ -63,6 +63,7 @@ struct video_resbpp {
 	int bpp;  /* number of color bits per pixel */
 };
 
-extern const struct video_resbpp *video_resbpp_by_vesamode(enum video_vesa_mode mode);
+extern const struct video_resbpp * video_resbpp_by_vesamode(
+	enum video_vesa_mode mode);
 
 #endif /* DRIVERS_VIDEO_VESA_H_ */

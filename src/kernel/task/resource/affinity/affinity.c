@@ -17,7 +17,7 @@ TASK_RESOURCE_DEF(task_affinity_desc, unsigned int);
 static size_t task_affinity_offset;
 
 static void task_affinity_init(const struct task *task,
-		void *affinity_space) {
+	void *affinity_space) {
 	unsigned int *affinity;
 
 	assert(affinity_space == task_resource_affinity(task));

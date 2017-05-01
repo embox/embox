@@ -14,9 +14,8 @@
 #include <utime.h>
 
 ssize_t readlinkat(int fd, const char *path, char *buf,
-		size_t bufsize) {
+	size_t bufsize) {
 	printk(">>> %s %d %s %s %zu\n", __func__, fd, path, buf,
-			bufsize);
+		bufsize);
 	return SET_ERRNO(ENOSYS);
 }
-

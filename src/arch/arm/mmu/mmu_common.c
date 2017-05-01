@@ -88,7 +88,7 @@ void mmu_flush_tlb(void) {
 	uint32_t zero = 0;
 
 	__asm__ __volatile__ (
-			"mcr p15, 0, %[zero], c8, c7, 0" : : [zero] "r" (zero) :
+		"mcr p15, 0, %[zero], c8, c7, 0" : : [zero] "r" (zero) :
 	);
 }
 
@@ -121,8 +121,8 @@ void mmu_set_context(mmu_ctx_t ctx) {
  *
  * @return Pointer to translation table
  */
-mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return (void*) ctx;
+mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
+	return (void *) ctx;
 }
 
 /* Software accessible MMU registers */
@@ -342,7 +342,6 @@ uint32_t _get_plepcr(void) {
 	return val;
 }
 
-
 /*******************************
  Identification registers
  *******************************/
@@ -544,34 +543,45 @@ void _print_mmu_regs(void) {
 	log_debug("SCTRL:                     %#10x", _get_sctrl_control());
 	log_debug("ACTRL:                     %#10x", _get_actrl_control());
 	log_debug("CPACR:                     %#10x", _get_cpacr_control());
-	log_debug("Non-Secure Access Control: %#10x", _get_mmu_nonsecure_access_control());
-	log_debug("Translation Table Base 0:  %#10x", _get_mmu_translation_table_base_0());
-	log_debug("Translation Table Base 1:  %#10x", _get_mmu_translation_table_base_1());
-	log_debug("Domain Access Conrol:      %#10x", _get_mmu_domain_access_control());
+	log_debug("Non-Secure Access Control: %#10x",
+		_get_mmu_nonsecure_access_control());
+	log_debug("Translation Table Base 0:  %#10x",
+		_get_mmu_translation_table_base_0());
+	log_debug("Translation Table Base 1:  %#10x",
+		_get_mmu_translation_table_base_1());
+	log_debug("Domain Access Conrol:      %#10x",
+		_get_mmu_domain_access_control());
 	log_debug("Data Fault Status:         %#10x", _get_mmu_data_fault_status());
-	log_debug("Instruction Fault Status:  %#10x", _get_mmu_instruction_fault_status());
-	log_debug("Data Fault Address:        %#10x", _get_mmu_data_fault_address());
-	log_debug("Instruction Fault Address: %#10x", _get_mmu_instruction_fault_address());
+	log_debug("Instruction Fault Status:  %#10x",
+		_get_mmu_instruction_fault_status());
+	log_debug("Data Fault Address:        %#10x",
+		_get_mmu_data_fault_address());
+	log_debug("Instruction Fault Address: %#10x",
+		_get_mmu_instruction_fault_address());
 	log_debug("TLB lockdown:              %#10x", _get_mmu_tlb_lockdown());
-	log_debug("Primary Region Remap:      %#10x", _get_mmu_primary_region_remap());
-	log_debug("Normal Memory Remap:       %#10x", _get_mmu_normal_memory_remap());
+	log_debug("Primary Region Remap:      %#10x",
+		_get_mmu_primary_region_remap());
+	log_debug("Normal Memory Remap:       %#10x",
+		_get_mmu_normal_memory_remap());
 	log_debug("FSCE PID:                  %#10x", _get_mmu_fsce_pid());
 	log_debug("Context ID:                %#10x", _get_mmu_context_id());
-	log_debug("Peripheral port remap:     %#10x", _get_mmu_peripheral_port_memory_remap());
-	log_debug("TLB Lockdown Index:        %#10x", _get_mmu_tlb_lockdown_index());
+	log_debug("Peripheral port remap:     %#10x",
+		_get_mmu_peripheral_port_memory_remap());
+	log_debug("TLB Lockdown Index:        %#10x",
+		_get_mmu_tlb_lockdown_index());
 	log_debug("TLB Lockdown VA:           %#10x", _get_mmu_tlb_lockdown_va());
 	log_debug("TLB Lockdown PA:           %#10x", _get_mmu_tlb_lockdown_pa());
-	log_debug("TLB Lockdown Attribues:    %#10x", _get_mmu_tlb_lockdown_attributes());
+	log_debug("TLB Lockdown Attribues:    %#10x",
+		_get_mmu_tlb_lockdown_attributes());
 
 	log_debug("PLEIDR:                    %#10x", _get_pleidr());
-	
+
 	if (_get_pleidr()) {
 		log_debug("PLEASR:                    %#10x", _get_pleasr());
 		log_debug("PLESFR:                    %#10x", _get_plesfr());
 		log_debug("PLEAUR:                    %#10x", _get_pleuar());
 		log_debug("PLEPCR:                    %#10x", _get_plepcr());
 	}
-
 
 	log_debug("MIDR:                      %#10x", _get_midr());
 	log_debug("CTR:                       %#10x", _get_ctr());

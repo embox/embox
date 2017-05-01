@@ -16,19 +16,19 @@
 #include "thread_key_table.h"
 
 TASK_RESOURCE_DEF(task_thread_key_table_desc,
-		struct thread_key_table);
+	struct thread_key_table);
 
 static void task_thread_key_table_init(const struct task *task,
-		void *thread_key_table_space) {
+	void *thread_key_table_space) {
 	struct thread_key_table *kt;
 
 	assert(thread_key_table_space
-			== task_resource_thread_key_table(task));
+		== task_resource_thread_key_table(task));
 
 	kt = thread_key_table_space;
 
 	index_init(&kt->indexator, 0, MODOPS_THREAD_KEY_QUANTITY,
-			kt->index_buffer);
+		kt->index_buffer);
 	mutex_init(&kt->mutex);
 }
 
@@ -40,7 +40,8 @@ static const struct task_resource_desc task_thread_key_table_desc = {
 	.resource_offset = &task_thread_key_table_offset
 };
 
-struct thread_key_table * task_resource_thread_key_table(const struct task *task) {
+struct thread_key_table * task_resource_thread_key_table(const struct task *task)
+{
 	assert(task != NULL);
 	return (void *)task->resources + task_thread_key_table_offset;
 }

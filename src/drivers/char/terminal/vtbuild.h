@@ -24,7 +24,7 @@ struct vtbuild {
 	void *user_data;
 };
 
-struct vtbuild *vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb);
+struct vtbuild * vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb);
 
 void vtbuild(struct vtbuild *builder, const struct vt_token *token);
 

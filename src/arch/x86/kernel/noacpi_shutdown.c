@@ -8,7 +8,7 @@
 
 void acpi_shutdown(void) {
 	printk("No shutdown implemented please enable "
-			"'embox.arch.x86.kernel.acpi_shutdown'\n");
+		   "'embox.arch.x86.kernel.acpi_shutdown'\n");
 }
 
 void acpi_reset(void) {

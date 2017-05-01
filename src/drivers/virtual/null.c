@@ -11,7 +11,6 @@
 #include <drivers/char_dev.h>
 #include <fs/file_operation.h>
 
-
 #define NULL_DEV_NAME "null"
 
 /* forward declaration */
@@ -20,7 +19,8 @@ static const struct kfile_operations null_ops;
 
 CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, NULL, null_init);
 
-static struct idesc *null_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc * null_open(struct node *node, struct file_desc *file_desc,
+	int flags) {
 	return &file_desc->idesc;
 }
 
@@ -33,9 +33,9 @@ static size_t null_write(struct file_desc *desc, void *buf, size_t size) {
 }
 
 static const struct kfile_operations null_ops = {
-		.open = null_open,
-		.close = null_close,
-		.write = null_write
+	.open = null_open,
+	.close = null_close,
+	.write = null_write
 };
 
 static int null_init(void) {

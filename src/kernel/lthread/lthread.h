@@ -64,7 +64,6 @@
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 
-
 struct lthread {
 	struct schedee schedee;
 	int (*run)(struct lthread *); /**< Start routine */
@@ -127,7 +126,7 @@ static inline ptrdiff_t lthread_yield(void *initial_lbl, void *target_lbl) {
  * @param initial_lbl
  *   The beginning label.
  */
-static inline void *lthread_resume(struct lthread *lt, void *initial_lbl) {
+static inline void * lthread_resume(struct lthread *lt, void *initial_lbl) {
 	return initial_lbl + lt->label_offset;
 }
 

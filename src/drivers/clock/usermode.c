@@ -19,7 +19,7 @@ EMBOX_UNIT_INIT(umclock_init);
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 
-        clock_tick_handler(irq_nr, data);
+	clock_tick_handler(irq_nr, data);
 
 	return IRQ_HANDLED;
 }
@@ -50,5 +50,6 @@ static int umclock_init(void) {
 
 	clock_source_register(&umclock_cs);
 
-	return irq_attach(CLOCK_IRQ, clock_handler, 0, &umclock_cs, "usermode clock");
+	return irq_attach(CLOCK_IRQ, clock_handler, 0, &umclock_cs,
+			"usermode clock");
 }

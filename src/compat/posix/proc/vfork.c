@@ -16,8 +16,8 @@
 #include <hal/ptrace.h>
 #include <compiler.h>
 
-static void *vfork_body_exit_stub(void *arg) {
-	_exit(*((int*) arg));
+static void * vfork_body_exit_stub(void *arg) {
+	_exit(*((int *) arg));
 }
 
 /*

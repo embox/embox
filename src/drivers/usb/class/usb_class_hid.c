@@ -33,11 +33,12 @@ static void usb_class_hid_get_conf_hnd(struct usb_request *req, void *arg) {
 	usb_driver_handle(req->endp->dev);
 }
 
-static void *usb_class_hid_alloc(struct usb_class *cls, struct usb_dev *dev) {
+static void * usb_class_hid_alloc(struct usb_class *cls, struct usb_dev *dev) {
 	return pool_alloc(&hid_classes);
 }
 
-static void usb_class_hid_free(struct usb_class *cls, struct usb_dev *dev, void *spec) {
+static void usb_class_hid_free(struct usb_class *cls, struct usb_dev *dev,
+	void *spec) {
 	pool_free(&hid_classes, spec);
 }
 
@@ -48,16 +49,16 @@ static int usb_class_hid_get_conf(struct usb_class *cls, struct usb_dev *dev) {
 
 	usb_endp_control(dev->endpoints[0], cls->get_conf_hnd, NULL,
 		USB_DEV_REQ_TYPE_RD
-			| USB_DEV_REQ_TYPE_STD
-			| USB_DEV_REQ_TYPE_DEV,
+		| USB_DEV_REQ_TYPE_STD
+		| USB_DEV_REQ_TYPE_DEV,
 		USB_DEV_REQ_GET_DESC,
 		USB_DESC_TYPE_CONFIG << 8,
-		dev->c_config,
-		sizeof(struct usb_desc_configuration)
-			+ sizeof(struct usb_desc_interface)
-			+ sizeof(struct usb_desc_hid)
-			+ (dev->endp_n - 1) * sizeof(struct usb_desc_endpoint),
-		hid->getconf);
+				dev->c_config,
+				sizeof(struct usb_desc_configuration)
+				+ sizeof(struct usb_desc_interface)
+				+ sizeof(struct usb_desc_hid)
+				+ (dev->endp_n - 1) * sizeof(struct usb_desc_endpoint),
+				hid->getconf);
 
 	return 0;
 }
@@ -78,7 +79,7 @@ static struct usb_class usb_class_hid = {
 	.get_conf = usb_class_hid_get_conf,
 	.get_conf_hnd = usb_class_hid_get_conf_hnd,
 	.class_handle = usb_class_hid_handle,
-	.class_release = usb_class_hid_release ,
+	.class_release = usb_class_hid_release,
 };
 
 static int usb_hid_init(void) {

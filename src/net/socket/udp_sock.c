@@ -32,7 +32,7 @@ static const struct sock_proto_ops udp_sock_ops_struct;
 const struct sock_proto_ops *const udp_sock_ops = &udp_sock_ops_struct;
 
 EMBOX_NET_SOCK(AF_INET, SOCK_DGRAM, IPPROTO_UDP, 1,
-		udp_sock_ops_struct);
+	udp_sock_ops_struct);
 
 static int iov_msg_len(struct iovec *iov, int iovlen) {
 	int len = 0;
@@ -44,8 +44,9 @@ static int iov_msg_len(struct iovec *iov, int iovlen) {
 	return len;
 }
 
-int iov_stream_make_queue(size_t len, size_t hdr_size, struct sk_buff_head *queue,
-		struct sock *sk, const struct sockaddr *sockaddr) {
+int iov_stream_make_queue(size_t len, size_t hdr_size,
+	struct sk_buff_head *queue,
+	struct sock *sk, const struct sockaddr *sockaddr) {
 	int to_alloc = len;
 
 	skb_queue_init(queue);
@@ -66,8 +67,9 @@ int iov_stream_make_queue(size_t len, size_t hdr_size, struct sk_buff_head *queu
 	return len;
 }
 
-int iov_dgram_make_queue(size_t len, size_t hdr_size, struct sk_buff_head *queue,
-		struct sock *sk, const struct sockaddr *sockaddr) {
+int iov_dgram_make_queue(size_t len, size_t hdr_size,
+	struct sk_buff_head *queue,
+	struct sock *sk, const struct sockaddr *sockaddr) {
 
 	skb_queue_init(queue);
 
@@ -83,15 +85,18 @@ int iov_dgram_make_queue(size_t len, size_t hdr_size, struct sk_buff_head *queue
 	return actual_len - hdr_size;
 }
 
-static int skb_queue_iov(struct sk_buff_head *queue, const struct iovec *iov, int iovlen, size_t header_len) {
+static int skb_queue_iov(struct sk_buff_head *queue, const struct iovec *iov,
+	int iovlen, size_t header_len) {
 	struct sk_buff *skb = skb_queue_front(queue);
 	int i_iov = 0;
 	int skb_pos = 0, iov_pos = 0;
 	int ret = 0;
 
 	while (!skb_queue_end(skb, queue) && (i_iov < iovlen)) {
-		const int to_copy = min(skb->len - skb_pos, iov[i_iov].iov_len - iov_pos);
-		memcpy(skb->mac.raw + header_len + skb_pos, iov[i_iov].iov_base + iov_pos, to_copy);
+		const int to_copy =
+			min(skb->len - skb_pos, iov[i_iov].iov_len - iov_pos);
+		memcpy(skb->mac.raw + header_len + skb_pos,
+			iov[i_iov].iov_base + iov_pos, to_copy);
 
 		iov_pos += to_copy;
 		skb_pos += to_copy;
@@ -118,29 +123,34 @@ static int udp_get_udp_offset(struct sk_buff *skb) {
 static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	const in_port_t sk_src = sock_inet_get_src_port(sk);
 	const struct sockaddr_in *const addr_to = (const struct sockaddr_in *)
-			(msg->msg_name ? msg->msg_name : &to_inet_sock(sk)->dst_in);
+		(msg->msg_name ? msg->msg_name : &to_inet_sock(sk)->dst_in);
 	struct sk_buff_head queue;
 	int err;
 
 	const size_t iov_data_len = iov_msg_len(msg->msg_iov, msg->msg_iovlen);
 
-	// msg->msg_name could be NULL, sockaddr is OK to be NULL
+	/* msg->msg_name could be NULL, sockaddr is OK to be NULL */
 	const struct sockaddr *sockaddr = (const struct sockaddr *)msg->msg_name;
 
-	const int out_data_len = iov_dgram_make_queue(iov_data_len, UDP_HEADER_SIZE, &queue, sk, sockaddr);
+	const int out_data_len = iov_dgram_make_queue(iov_data_len, UDP_HEADER_SIZE,
+			&queue, sk, sockaddr);
 	if (out_data_len < 0) {
 		return out_data_len;
 	}
 
-	// FIXME there should be a better way to get offset
+	/* FIXME there should be a better way to get offset */
 	const int skb_udp_offset = udp_get_udp_offset(queue.next);
 
-	const int bytes_copied = skb_queue_iov(&queue, msg->msg_iov, msg->msg_iovlen, skb_udp_offset + UDP_HEADER_SIZE);
+	const int bytes_copied = skb_queue_iov(&queue, msg->msg_iov,
+			msg->msg_iovlen,
+			skb_udp_offset + UDP_HEADER_SIZE);
 	assert(bytes_copied == out_data_len);
 
 	err = 0;
-	for (struct sk_buff *skb = skb_queue_pop(&queue); skb; skb = skb_queue_pop(&queue)) {
-		udp_build(skb->h.uh, sk_src, addr_to->sin_port, skb->len - skb_udp_offset);
+	for (struct sk_buff *skb = skb_queue_pop(&queue); skb;
+		skb = skb_queue_pop(&queue)) {
+		udp_build(skb->h.uh, sk_src, addr_to->sin_port,
+			skb->len - skb_udp_offset);
 		udp4_set_check_field(skb->h.uh, skb->nh.iph);
 		err = sk->o_ops->snd_pack(skb);
 		if (err < 0) {
@@ -153,7 +163,7 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return err;
 	}
 
-	assert(skb_queue_front(&queue) == NULL); // should be empty at this point
+	assert(skb_queue_front(&queue) == NULL); /* should be empty at this point */
 
 	return out_data_len;
 }
@@ -161,7 +171,7 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 static DLIST_DEFINE(udp_sock_list);
 
 static int udp_fillmsg(struct sock *sk, struct msghdr *msg,
-		struct sk_buff *skb) {
+	struct sk_buff *skb) {
 	struct sockaddr_in *inaddr;
 
 	inaddr = (struct sockaddr_in *)msg->msg_name;

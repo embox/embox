@@ -30,12 +30,12 @@
 #include <stdint.h>
 
 typedef struct gdt_gate {
-        uint16_t limit_low;
-        uint16_t base_low;
-        uint8_t  base_med;
-        uint8_t  access;
-        uint8_t  granularity;
-        uint8_t  base_high;
+	uint16_t limit_low;
+	uint16_t base_low;
+	uint8_t base_med;
+	uint8_t access;
+	uint8_t granularity;
+	uint8_t base_high;
 } __attribute__((packed)) gdt_gate_t;
 
 typedef struct gdt_pointer {
@@ -47,7 +47,7 @@ extern gdt_gate_t gdt[GDT_ENTRIES];
 
 extern void gdt_set_gdtr(gdt_pointer_t *gdtr, gdt_gate_t *gdt);
 extern void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit,
-		uint8_t ac, uint8_t gran);
+	uint8_t ac, uint8_t gran);
 extern void gdt_flush(gdt_pointer_t *gdt);
 
 #endif /* __ASSEMBLER__ */

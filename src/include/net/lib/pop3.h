@@ -22,7 +22,7 @@ struct pop3_session {
 };
 
 extern int pop3_open(struct pop3_session *p3s, const char *host,
-		unsigned short port);
+	unsigned short port);
 extern int pop3_close(struct pop3_session *p3s);
 extern int pop3_ok(struct pop3_session *p3s);
 extern const char * pop3_status(struct pop3_session *p3s);
@@ -30,21 +30,21 @@ extern const char * pop3_data(struct pop3_session *p3s);
 
 extern int pop3_stat(struct pop3_session *p3s);
 extern int pop3_list(struct pop3_session *p3s,
-		int msg_or_any);
+	int msg_or_any);
 extern int pop3_retr(struct pop3_session *p3s, int msg);
 extern int pop3_dele(struct pop3_session *p3s, int msg);
 extern int pop3_noop(struct pop3_session *p3s);
 extern int pop3_rset(struct pop3_session *p3s);
 extern int pop3_quit(struct pop3_session *p3s);
 extern int pop3_top(struct pop3_session *p3s, int msg,
-		unsigned int n);
+	unsigned int n);
 extern int pop3_uidl(struct pop3_session *p3s,
-		int msg_or_any);
+	int msg_or_any);
 extern int pop3_user(struct pop3_session *p3s,
-		const char *name);
+	const char *name);
 extern int pop3_pass(struct pop3_session *p3s,
-		const char *secret);
+	const char *secret);
 extern int pop3_apop(struct pop3_session *p3s,
-		const char *name, const char *secret, const char *salt);
+	const char *name, const char *secret, const char *salt);
 
 #endif /* NET_LIB_POP3_H_ */

@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 		}
 
 		printf("%8s %8s %16s %8s %4d\n", user, ut->ut_line,
-				host, "", ut->ut_pid);
+			host, "", ut->ut_pid);
 	}
 
 	return 0;

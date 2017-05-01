@@ -13,15 +13,15 @@
 
 EMBOX_TEST_SUITE("tasks");
 
-static void *tsk_hnd1(void *data) {
-	for (int cnt = 1 << 15; cnt > 0; cnt --) {
+static void * tsk_hnd1(void *data) {
+	for (int cnt = 1 << 15; cnt > 0; cnt--) {
 		printf("a");
 	}
 	return NULL;
 }
 
-static void *tsk_hnd2(void *data) {
-	for (int cnt = 1 << 15; cnt > 0; cnt --) {
+static void * tsk_hnd2(void *data) {
+	for (int cnt = 1 << 15; cnt > 0; cnt--) {
 		printf("b");
 	}
 	return NULL;

@@ -15,7 +15,7 @@
 #include <util/slist.h>
 #include <util/member.h>
 
-struct slist_link *slist_link_init(struct slist_link *link) {
+struct slist_link * slist_link_init(struct slist_link *link) {
 	assert(link != NULL);
 
 	link->poison = __SLIST_LINK_POISON;
@@ -25,7 +25,7 @@ struct slist_link *slist_link_init(struct slist_link *link) {
 	return link;
 }
 
-struct slist *slist_init(struct slist *list) {
+struct slist * slist_init(struct slist *list) {
 	assert(list != NULL);
 
 	list->poison = __SLIST_POISON;
@@ -45,7 +45,7 @@ int slist_empty(struct slist *list) {
 	return __slist_link_alone(&list->l);
 }
 
-struct slist_link *slist_first_link(struct slist *list) {
+struct slist_link * slist_first_link(struct slist *list) {
 	struct __slist_link *l, *first;
 
 	assert(list != NULL);
@@ -66,7 +66,8 @@ void slist_add_first_link(struct slist_link *new_link, struct slist *list) {
 	__slist_insert_link(&new_link->l, l, l->next);
 }
 
-void slist_insert_after_link(struct slist_link *new_link, struct slist_link *link) {
+void slist_insert_after_link(struct slist_link *new_link,
+	struct slist_link *link) {
 	struct __slist_link *l;
 
 	assert(link != NULL);
@@ -77,7 +78,7 @@ void slist_insert_after_link(struct slist_link *new_link, struct slist_link *lin
 	__slist_insert_link(&new_link->l, l, l->next);
 }
 
-struct slist_link *slist_remove_first_link(struct slist *list) {
+struct slist_link * slist_remove_first_link(struct slist *list) {
 	struct slist_link *ret;
 	struct __slist_link *l, *first;
 

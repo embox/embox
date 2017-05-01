@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-char *strncpy(char *dst, const char *src, size_t n) {
+char * strncpy(char *dst, const char *src, size_t n) {
 	char *ret = dst;
 
 	do {

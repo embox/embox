@@ -23,33 +23,33 @@ struct smtp_session {
 };
 
 extern int smtp_open(struct smtp_session *ss, const char *host,
-		unsigned short port);
+	unsigned short port);
 extern int smtp_close(struct smtp_session *ss);
 extern int smtp_ok(struct smtp_session *ss);
 extern int smtp_code(struct smtp_session *ss);
 extern const char * smtp_status(struct smtp_session *ss);
 
 extern int smtp_mail_from(struct smtp_session *ss,
-		const char *addr); /* FIXME addr with <> brackets */
+	const char *addr);     /* FIXME addr with <> brackets */
 extern int smtp_rcpt_to(struct smtp_session *ss,
-		const char *addr); /* FIXME addr with <> brackets */
+	const char *addr);     /* FIXME addr with <> brackets */
 extern int smtp_helo(struct smtp_session *ss,
-		const char *domain);
+	const char *domain);
 extern int smtp_ehlo(struct smtp_session *ss,
-		const char *domain);
+	const char *domain);
 extern int smtp_data(struct smtp_session *ss);
 extern int smtp_data_add(struct smtp_session *ss,
-		const char *data);
+	const char *data);
 extern int smtp_data_end(struct smtp_session *ss);
 extern int smtp_rset(struct smtp_session *ss);
 extern int smtp_vrfy(struct smtp_session *ss,
-		const char *str);
+	const char *str);
 extern int smtp_expn(struct smtp_session *ss,
-		const char *str);
+	const char *str);
 extern int smtp_help(struct smtp_session *ss);
 extern int smtp_noop(struct smtp_session *ss);
 extern int smtp_quit(struct smtp_session *ss);
 extern int smtp_auth_plain(struct smtp_session *ss,
-		const char *name, const char *secret);
+	const char *name, const char *secret);
 
 #endif /* NET_LIB_SMTP_H_ */

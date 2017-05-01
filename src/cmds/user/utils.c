@@ -67,7 +67,7 @@ void user_write_user_spwd(struct spwd *spwd, FILE *fd) {
 }
 
 int user_set_options_passwd(struct passwd *result, char *home, char *shell,
-		char *gecos, int group) {
+	char *gecos, int group) {
 	if (0 != strcmp(home, "")) {
 		result->pw_dir = home;
 	}
@@ -99,7 +99,7 @@ int user_set_options_spwd(struct spwd *result, char *name, char *pswd) {
 	return 0;
 }
 
-int user_copy(const char* from, const char* to) {
+int user_copy(const char *from, const char *to) {
 	FILE *fromf, *tof;
 	int a;
 

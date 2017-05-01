@@ -13,20 +13,27 @@
 #include <drivers/gpio/stm32.h>
 
 static void stm32_gpio_clk_enable(void *gpio_base) {
-	if (gpio_base == GPIOA)
+	if (gpio_base == GPIOA) {
 		__HAL_RCC_GPIOA_CLK_ENABLE();
-	else if (gpio_base == GPIOB)
+	}
+	else if (gpio_base == GPIOB) {
 		__HAL_RCC_GPIOB_CLK_ENABLE();
-	else if (gpio_base == GPIOC)
+	}
+	else if (gpio_base == GPIOC) {
 		__HAL_RCC_GPIOC_CLK_ENABLE();
-	else if (gpio_base == GPIOD)
+	}
+	else if (gpio_base == GPIOD) {
 		__HAL_RCC_GPIOD_CLK_ENABLE();
-	else if (gpio_base == GPIOE)
+	}
+	else if (gpio_base == GPIOE) {
 		__HAL_RCC_GPIOE_CLK_ENABLE();
-	else if (gpio_base == GPIOF)
+	}
+	else if (gpio_base == GPIOF) {
 		__HAL_RCC_GPIOF_CLK_ENABLE();
-	else
+	}
+	else {
 		assert(0);
+	}
 }
 
 static void stm32_gpio_init(void *gpio_base) {
@@ -46,10 +53,11 @@ static void stm32_gpio_init(void *gpio_base) {
 
 void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
 	stm32_gpio_init(gpio);
-	HAL_GPIO_WritePin((void*) gpio, mask, level ? GPIO_PIN_SET : GPIO_PIN_RESET);
+	HAL_GPIO_WritePin((void *) gpio, mask,
+		level ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }
 
 extern gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask) {
 	stm32_gpio_init(gpio);
-	return (gpio_mask_t) HAL_GPIO_ReadPin((void*) gpio, mask);
+	return (gpio_mask_t) HAL_GPIO_ReadPin((void *) gpio, mask);
 }

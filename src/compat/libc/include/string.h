@@ -45,7 +45,7 @@ extern size_t strlen(const char *str);
  *
  * @see memcpy()
  */
-extern char *strcpy(char *dst, const char *src);
+extern char * strcpy(char *dst, const char *src);
 
 /**
  * Copies up to @a n bytes of a string from one location to another adding
@@ -64,7 +64,7 @@ extern char *strcpy(char *dst, const char *src);
  *   Despite the name this function is not a bounded version of #strcpy(),
  *   it does not guarantee that the result is a null-terminated string.
  */
-extern char *strncpy(char *dst, const char *src, size_t n);
+extern char * strncpy(char *dst, const char *src, size_t n);
 
 /**
  * Appends a null-terminated string to the end of another.
@@ -76,7 +76,7 @@ extern char *strncpy(char *dst, const char *src, size_t n);
  * @return
  *   Pointer to the destination string.
  */
-extern char *strcat(char *dst, const char *src);
+extern char * strcat(char *dst, const char *src);
 
 /**
  * Appends no more than @a n  bytes of a null-terminated string to the end of
@@ -92,7 +92,7 @@ extern char *strcat(char *dst, const char *src);
  * @return
  *   Pointer to the destination string.
  */
-extern char *strncat(char *dst, const char *src, size_t n);
+extern char * strncat(char *dst, const char *src, size_t n);
 
 /**
  * Compares two strings lexicographically.
@@ -150,7 +150,7 @@ extern int strncmp(const char *str1, const char *str2, size_t n);
  * @retval NULL
  *   If no match was found.
  */
-extern char *strchr(const char *str, int ch);
+extern char * strchr(const char *str, int ch);
 
 /**
  * Finds the first occurrence of the character @a ch (converted to a @c char)
@@ -165,7 +165,7 @@ extern char *strchr(const char *str, int ch);
  * @retval pointer to null-terminator '\0'
  *   If no match was found.
  */
-extern char *strchrnul(const char *str, int ch);
+extern char * strchrnul(const char *str, int ch);
 
 /**
  * Finds the last occurrence of the character @a ch in the given string.
@@ -182,7 +182,7 @@ extern char *strchrnul(const char *str, int ch);
  *
  * @see strchr()
  */
-extern char *strrchr(const char *str, int ch);
+extern char * strrchr(const char *str, int ch);
 
 /**
  * Finds the first occurrence of the substring @a needle in
@@ -198,7 +198,7 @@ extern char *strrchr(const char *str, int ch);
  * @retval NULL
  *   If no match was found.
  */
-extern char *strstr(const char *haystack, const char *needle);
+extern char * strstr(const char *haystack, const char *needle);
 
 /**
  * Finds the first occurrence of the substring @a needle in
@@ -215,7 +215,7 @@ extern char *strstr(const char *haystack, const char *needle);
  * @retval NULL
  *   If no match was found.
  */
-extern char *strcasestr(const char *haystack, const char *needle);
+extern char * strcasestr(const char *haystack, const char *needle);
 
 /**
  * Maps given error code to its string representation.
@@ -225,7 +225,7 @@ extern char *strcasestr(const char *haystack, const char *needle);
  * @return
  *   C-style string, containing a descriptive error message
  */
-extern char *strerror(int err);
+extern char * strerror(int err);
 
 /**
  * Copies @a n bytes from @a src to @a dst which must be two non-overlapping
@@ -245,7 +245,7 @@ extern char *strerror(int err);
  * @see memmove()
  *   Use it instead if overlapping of @a src and @a dst is possible.
  */
-extern void *memcpy(void *dst, const void *src, size_t n);
+extern void * memcpy(void *dst, const void *src, size_t n);
 
 /**
  * Copies @a n bytes from @a src to @a dst handling possible memory
@@ -260,7 +260,7 @@ extern void *memcpy(void *dst, const void *src, size_t n);
  * @return
  *   Pointer to the destination buffer.
  */
-extern void *memmove(void *dst, const void *src, size_t n);
+extern void * memmove(void *dst, const void *src, size_t n);
 
 /**
  * Fills @a n bytes of memory starting at given @a ptr with the value of @a c
@@ -275,7 +275,7 @@ extern void *memmove(void *dst, const void *src, size_t n);
  * @return
  *   Pointer to the buffer.
  */
-extern void *memset(void *ptr, int c, size_t n);
+extern void * memset(void *ptr, int c, size_t n);
 
 /**
  * Compares the @c n bytes of memory beginning at @a ptr1 against the @c n
@@ -312,7 +312,7 @@ extern int memcmp(const void *ptr1, const void *ptr2, size_t n);
  *   Pointer to the matching byte
  * @retval NULL the character doesn't occur in the given memory area
  */
-extern void *memchr(const void *s, int c, size_t n);
+extern void * memchr(const void *s, int c, size_t n);
 
 /**
  * Scans the memory area pointed to by s in backward for the character c.
@@ -327,7 +327,7 @@ extern void *memchr(const void *s, int c, size_t n);
  *   Pointer to the matching byte
  * @retval NULL the character doesn't occur in the given memory area
  */
-extern void *memrchr(const void *s, int c, size_t n);
+extern void * memrchr(const void *s, int c, size_t n);
 
 /**
  * map upper-case characters in a string to lower-case.
@@ -337,7 +337,7 @@ extern void *memrchr(const void *s, int c, size_t n);
  * @return
  *   C-style null-terminated string.
  */
-extern char *strlwr(char *str);
+extern char * strlwr(char *str);
 
 /**
  * map lower-case characters in a string to upper-case.
@@ -347,7 +347,7 @@ extern char *strlwr(char *str);
  * @return
  *   C-style null-terminated string.
  */
-extern char *strupr(char *str);
+extern char * strupr(char *str);
 
 /**
  * Calculate the length of the initial segment of s which
@@ -387,7 +387,7 @@ extern size_t strcspn(const char *s, const char *reject);
  *   characters in accept
  * @retval NULL no such character is found
  */
-extern char *strpbrk(const char *s, const char *accept);
+extern char * strpbrk(const char *s, const char *accept);
 /**
  * Returns a pointer to a new string which is a duplicate of the string s.
  * Memory for the new string is obtained with malloc, and can be freed with free.
@@ -397,7 +397,7 @@ extern char *strpbrk(const char *s, const char *accept);
  * @return
  *   Pointer to a new string which is a duplicate of the string s
  */
-extern char *strdup(const char *s);
+extern char * strdup(const char *s);
 
 /**
  * The function strtok_r() considers the null-terminated string s as a sequence
@@ -418,7 +418,7 @@ extern char *strdup(const char *s);
  * @return The function strtok_r() returns a pointer to the token found, or a
  * NULL pointer when no token is found.
  */
-extern char *strtok_r(char *str, const char *delim, char **saveptr);
+extern char * strtok_r(char *str, const char *delim, char **saveptr);
 /**
  * A sequence of calls to strtok() breaks the string pointed to by s1 into a
  * sequence of tokens, each of which is delimited by a byte from the string
@@ -447,7 +447,7 @@ extern char *strtok_r(char *str, const char *delim, char **saveptr);
  * byte of a token. Otherwise, if there is no token, strtok() returns a null
  * pointer.
  */
-extern char *strtok(char *str, const char *delim);
+extern char * strtok(char *str, const char *delim);
 
 /**
  * The strnlen() function shall compute the smaller of the number of bytes in
@@ -478,7 +478,7 @@ extern size_t strnlen(const char *s, size_t maxlen);
  * pointer to the newly allocated memory containing the duplicated string.
  * Otherwise, it shall return a null pointer and set errno to indicate the error.
  */
-extern char *strndup(const char *s, size_t size);
+extern char * strndup(const char *s, size_t size);
 
 #include <string_bsd.h>
 

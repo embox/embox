@@ -68,7 +68,7 @@ TEST_CASE("reading big chunk from smalls should be successfull") {
 	test_assert_zero(strncmp(buf, "abcd", 4));
 }
 
-static void *thd_handler(void *arg) {
+static void * thd_handler(void *arg) {
 
 	test_assert_zero(usleep(100 * 1000));
 

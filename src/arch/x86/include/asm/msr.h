@@ -15,12 +15,12 @@
 
 static inline void ia32_msr_read(uint32_t msr, uint32_t *lo, uint32_t *hi)
 {
-   __asm__ __volatile__("rdmsr":"=a"(*lo),"=d"(*hi):"c"(msr));
+	__asm__ __volatile__ ("rdmsr" : "=a" (*lo),"=d" (*hi) : "c" (msr));
 }
 
 static inline void ia32_msr_write(uint32_t msr, uint32_t lo, uint32_t hi)
 {
-   __asm__ __volatile__("wrmsr"::"a"(lo),"d"(hi),"c"(msr));
+	__asm__ __volatile__ ("wrmsr" : : "a" (lo),"d" (hi),"c" (msr));
 }
 
 #endif /* X86_MSR_H_ */

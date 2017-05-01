@@ -29,9 +29,9 @@ extern void display_clear_screen(void);
 extern int lcd_init(void);
 
 extern int display_draw(uint8_t x, uint8_t y,
-	   	uint8_t width, uint8_t height, uint8_t *buff);
+	uint8_t width, uint8_t height, uint8_t *buff);
 extern int display_fill(uint8_t x, uint8_t y,
-		uint8_t width, uint8_t height, uint8_t q);
+	uint8_t width, uint8_t height, uint8_t q);
 extern void tab_display(const char *str);
 
 #endif /* NXT_LCD_H_ */

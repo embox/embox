@@ -37,14 +37,13 @@
  */
 #define NXT_MOTOR_POWER_OFF     0
 
-
 /**
  * Gets a motor's port. You should use NXT_MOTOR_X macros to receive specific
  * port.
  * @param num - number of motor's port (0, 1, 2)
  * @return pointer to motor struct if success or NULL if error has occurred
  */
-extern struct nxt_motor *nxt_get_motor(int num);
+extern struct nxt_motor * nxt_get_motor(int num);
 
 #define NXT_MOTOR_A  (nxt_get_motor(0)) /**< get structure motor on A port */
 #define NXT_MOTOR_B  (nxt_get_motor(1)) /**< get structure motor on B port */
@@ -66,14 +65,14 @@ typedef void (*tacho_handler_t)(void);
  * functions.
  */
 struct nxt_motor {
-	uint8_t          id;
+	uint8_t id;
 
-	uint32_t         tacho_limit;
-	uint32_t         tacho_count;
-	tacho_handler_t  limit_hnd;
+	uint32_t tacho_limit;
+	uint32_t tacho_count;
+	tacho_handler_t limit_hnd;
 
-	uint32_t         m_0, m_1;
-	pin_handler_t    pin_handler;
+	uint32_t m_0, m_1;
+	pin_handler_t pin_handler;
 };
 
 /** typedef for #nxt_motor structure */
@@ -96,7 +95,7 @@ extern void nxt_motor_set_power(nxt_motor_t *motor, int8_t power);
  * @param lim_handler Handler called when limit ticks passed
  */
 extern void nxt_motor_tacho_set_counter(nxt_motor_t *motor, uint32_t limit,
-			tacho_handler_t lim_handler);
+	tacho_handler_t lim_handler);
 
 /**
  * Gets motor tachometer counter i.e. number of motor's tachometer ticks since

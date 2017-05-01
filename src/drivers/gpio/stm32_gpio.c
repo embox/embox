@@ -38,7 +38,8 @@ static void set_state(struct gpio *gpio, gpio_mask_t mask, int new_state) {
 		unsigned int gpio_state = REG_LOAD(reg);
 		for (int i = 0; i < 8; i++) {
 			if (tmask & 0x01) {
-				gpio_state = (gpio_state & ~(0xf<< (i * 4))) | (new_state << (4 * i));
+				gpio_state = (gpio_state & ~(0xf<< (i * 4))) |
+					(new_state << (4 * i));
 			}
 			tmask >>= 1;
 		}
@@ -94,7 +95,7 @@ void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level){
 	assert(gpio);
 	assert((mask & ~((1 << 16) - 1)) == 0);
 
-	if(level) {
+	if (level) {
 		REG_STORE(&(gpio->bsrr), mask);
 	} else {
 		REG_STORE(&(gpio->brr), mask);

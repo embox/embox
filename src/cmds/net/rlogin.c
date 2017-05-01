@@ -50,14 +50,14 @@ static void print_usage(void) {
 	printf("Usage: rlogin [-l username] <server> \n");
 }
 
-	/* Allow to turn off/on extra debugging information */
+/* Allow to turn off/on extra debugging information */
 #if 0
-#	define RLOGIN_DEBUG(x) do {\
-		x;\
-	} while (0);
+#   define RLOGIN_DEBUG(x) do { \
+		x; \
+} while (0);
 #else
-#	define RLOGIN_DEBUG(x) do{\
-	} while (0);
+#   define RLOGIN_DEBUG(x) do { \
+} while (0);
 #endif
 
 struct rlogin_state {
@@ -108,8 +108,9 @@ static int handle_cntl_byte(unsigned char code, struct rlogin_state *rs) {
 	return 0;
 }
 
-static int rlogin_handle_cntl(unsigned char *bufout, unsigned char *bufin, int blen,
-		struct rlogin_state *rs) {
+static int rlogin_handle_cntl(unsigned char *bufout, unsigned char *bufin,
+	int blen,
+	struct rlogin_state *rs) {
 	unsigned char *bop = bufout;
 	unsigned char *bip = bufin;
 
@@ -224,8 +225,10 @@ static int rlogin_send_user(int sock, const char *user) {
 
 	strncpy(buf, user, RLOGIN_USERBUF_LEN);
 	strncpy(buf + userlen + 1, user, RLOGIN_USERBUF_LEN - (userlen + 1));
-	strncpy(buf + 2 * (userlen + 1), RLOGIN_TERM_SPEC, RLOGIN_USERBUF_LEN - 2 * (userlen + 1));
-	if (write(sock, buf, 2 * (userlen + 1) + strlen(RLOGIN_TERM_SPEC) + 1) < 0) {
+	strncpy(buf + 2 * (userlen + 1), RLOGIN_TERM_SPEC,
+		RLOGIN_USERBUF_LEN - 2 * (userlen + 1));
+	if (write(sock, buf,
+		2 * (userlen + 1) + strlen(RLOGIN_TERM_SPEC) + 1) < 0) {
 		res = -errno;
 	} else {
 		res = 0;
@@ -267,7 +270,7 @@ int main(int argc, char **argv) {
 	dst.sin_port = htons(RLOGIN_PORT);
 
 	our.sin_family = AF_INET;
-	our.sin_port= htons(RLOGIN_PORT + tries++);
+	our.sin_port = htons(RLOGIN_PORT + tries++);
 	our.sin_addr.s_addr = htonl(RLOGIN_ADDR);
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -282,7 +285,7 @@ int main(int argc, char **argv) {
 
 	if (connect(sock, (struct sockaddr *)&dst, sizeof dst) < 0) {
 		printf("Error... Cant connect to remote address %s:%d\n",
-				inet_ntoa(dst.sin_addr), RLOGIN_PORT);
+			inet_ntoa(dst.sin_addr), RLOGIN_PORT);
 		res = -errno;
 		goto exit;
 	}
@@ -299,7 +302,7 @@ int main(int argc, char **argv) {
 	}
 
 	res = rlogin_handle(sock);
-exit:
+	exit:
 	close(sock);
 	return res;
 }

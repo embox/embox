@@ -67,11 +67,13 @@ extern imaxdiv_t imaxdiv(intmax_t numer, intmax_t denom);
  *   to the return type and sign of the value, if any), and errno shall be set
  *   to [ERANGE].
  */
-extern intmax_t strtoimax(const char */*restrict*/ nptr, char **/*restrict*/ endptr,
-		int base);
+extern intmax_t strtoimax(const char */*restrict*/ nptr,
+	char **/*restrict*/ endptr,
+	int base);
 
-extern uintmax_t strtoumax(const char */*restrict*/ nptr, char **/*restrict*/ endptr,
-		int base);
+extern uintmax_t strtoumax(const char */*restrict*/ nptr,
+	char **/*restrict*/ endptr,
+	int base);
 
 /**
  * The function shall be equivalent to the wcstol(), wcstoll(), wcstoul(),
@@ -89,7 +91,7 @@ extern uintmax_t strtoumax(const char */*restrict*/ nptr, char **/*restrict*/ en
  *   type and sign of the value, if any), and errno shall be set to [ERANGE].
  */
 extern intmax_t wcstoimax(const wchar_t */*restrict*/ nptr,
-		wchar_t **/*restrict*/ endptr, int base);
+	wchar_t **/*restrict*/ endptr, int base);
 
 /**
  * The function shall be equivalent to the wcstol(), wcstoll(), wcstoul(),
@@ -107,7 +109,7 @@ extern intmax_t wcstoimax(const wchar_t */*restrict*/ nptr,
  *   type and sign of the value, if any), and errno shall be set to [ERANGE].
  */
 extern uintmax_t wcstoumax(const wchar_t */*restrict*/ nptr,
-		wchar_t **/*restrict*/ endptr, int base);
+	wchar_t **/*restrict*/ endptr, int base);
 
 __END_DECLS
 
@@ -206,7 +208,6 @@ __END_DECLS
 #define    SCNiLEAST16   "i"
 #define    SCNiFAST16    "i"
 
-
 #define    SCNd32        "d"
 #define    SCNdLEAST32   "d"
 #define    SCNdFAST32    "d"
@@ -251,8 +252,8 @@ __END_DECLS
 #define    SCNuMAX       SCNu32
 #define    SCNxMAX       SCNx32
 
-//TODO this is C99 standard. It's required for mruby
-#define 	NAN   __builtin_nan("")
-#define 	INFINITY   __builtin_inf()
+/*TODO this is C99 standard. It's required for mruby */
+#define     NAN   __builtin_nan("")
+#define     INFINITY   __builtin_inf()
 
 #endif /* INTTYPES_H_ */

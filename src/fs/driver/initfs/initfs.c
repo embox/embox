@@ -28,16 +28,16 @@
 #include <util/array.h>
 #include <embox/unit.h>
 
-
 struct initfs_file_info {
 	struct node_info ni; /* must be the first member */
-    char *addr;
+	char *addr;
 };
 
-POOL_DEF (fdesc_pool, struct initfs_file_info,
-		OPTION_GET(NUMBER,fdesc_quantity));
+POOL_DEF(fdesc_pool, struct initfs_file_info,
+	OPTION_GET(NUMBER,fdesc_quantity));
 
-static struct idesc *initfs_open(struct node *nod, struct file_desc *desc, int flags) {
+static struct idesc * initfs_open(struct node *nod, struct file_desc *desc,
+	int flags) {
 	return &desc->idesc;
 }
 
@@ -50,7 +50,7 @@ static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct nas *nas;
 
 	nas = desc->node->nas;
-	fi = (struct initfs_file_info*) nas->fi;
+	fi = (struct initfs_file_info *) nas->fi;
 
 	if (!fi) {
 		return -ENOENT;
@@ -73,7 +73,7 @@ static int initfs_ioctl(struct file_desc *desc, int request, void *data) {
 
 	assert(data != NULL);
 
-	//TODO: switch through "request" ID.
+	/*TODO: switch through "request" ID. */
 	p_addr = data;
 
 	nas = desc->node->nas;
@@ -102,7 +102,7 @@ static int initfs_mount(void *dev, void *dir) {
 		return -1;
 	}
 	printk("%s: unpack initinitfs at %p into %s\n", __func__,
-			cpio, dir_node->name);
+		cpio, dir_node->name);
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
 		if (entry.name_len > PATH_MAX) {
@@ -112,7 +112,7 @@ static int initfs_mount(void *dev, void *dir) {
 		name[entry.name_len] = '\0';
 
 		if (NULL == (node =
-				vfs_subtree_create_intermediate(dir_node, name, entry.mode))) {
+			vfs_subtree_create_intermediate(dir_node, name, entry.mode))) {
 			return -ENOMEM;
 		}
 

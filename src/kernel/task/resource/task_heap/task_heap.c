@@ -37,7 +37,7 @@ static const struct task_resource_desc task_heap_desc = {
 	.resource_offset = &task_heap_offset
 };
 
-struct task_heap *task_heap_get(const struct task *task) {
+struct task_heap * task_heap_get(const struct task *task) {
 	assert(task != NULL);
 	return (void *)task->resources + task_heap_offset;
 }

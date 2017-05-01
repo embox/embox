@@ -18,7 +18,7 @@ void skb_queue_init(struct sk_buff_head *queue) {
 
 	queue->next = (struct sk_buff *)queue;
 	queue->prev = (struct sk_buff *)queue;
-	//INIT_LIST_HEAD(((struct sk_buff *)queue->lnk));
+	/*INIT_LIST_HEAD(((struct sk_buff *)queue->lnk)); */
 }
 
 void skb_queue_purge(struct sk_buff_head *queue) {

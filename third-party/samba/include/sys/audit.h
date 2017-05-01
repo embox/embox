@@ -8,6 +8,4 @@
 #ifndef AUDIT1_H_
 #define AUDIT1_H_
 
-
-
 #endif /* AUDIT1_H_ */

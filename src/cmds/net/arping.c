@@ -31,7 +31,7 @@ static void print_usage(void) {
 }
 
 static int send_request(struct net_device *dev, uint16_t pro,
-		uint8_t pln, const void *spa, const void *tpa) {
+	uint8_t pln, const void *spa, const void *tpa) {
 	int ret;
 	struct sk_buff *skb;
 	struct net_header_info hdr_info;
@@ -57,8 +57,8 @@ static int send_request(struct net_device *dev, uint16_t pro,
 	}
 
 	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln,
-			ARP_OP_REQUEST, &dev->dev_addr[0], spa,
-			&dev->broadcast[0], tpa);
+		ARP_OP_REQUEST, &dev->dev_addr[0], spa,
+		&dev->broadcast[0], tpa);
 
 	return net_tx(skb, NULL);
 }
@@ -90,10 +90,10 @@ int main(int argc, char **argv) {
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		case 'h':
 			print_usage();
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		default:
 			return 0;
 		}
@@ -117,10 +117,10 @@ int main(int argc, char **argv) {
 	for (i = 1; i <= cnt; i++) {
 		neighbour_del(ETH_P_IP, &dst, in_dev->dev);
 		send_request(in_dev->dev, ETH_P_IP, sizeof in_dev->ifa_address,
-				&in_dev->ifa_address, &dst.s_addr);
+			&in_dev->ifa_address, &dst.s_addr);
 		usleep(DEFAULT_INTERVAL);
 		if (0 == neighbour_get_haddr(ETH_P_IP, &dst, in_dev->dev,
-					ARP_HRD_ETHERNET, sizeof hw_addr, &hw_addr[0])) {
+			ARP_HRD_ETHERNET, sizeof hw_addr, &hw_addr[0])) {
 			macaddr_print(mac, hw_addr);
 			printf("Unicast reply from %s [%s]  %dms\n", dst_b, mac, 0);
 			cnt_resp++;

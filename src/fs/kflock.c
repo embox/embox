@@ -6,8 +6,6 @@
  * @author Anton Bondarev
  */
 
-
-
 /*
  * Below fcntl locking implementation and help functions
  */
@@ -28,7 +26,7 @@ POOL_DEF(kflock_shared_pool, kflock_shared_t, 128);
 #define MAX_KFLOCK_EXCLUSIVE_QUANTITY OPTION_GET(NUMBER, flock_quantity)
 POOL_DEF(kflock_exclusive_pool, kflock_exclusive_t, 128);
 */
-//#define MAX_KFLOCK_QUANTITY OPTION_GET(NUMBER, flock_quantity)
+/*#define MAX_KFLOCK_QUANTITY OPTION_GET(NUMBER, flock_quantity) */
 POOL_DEF(kflock_lock_pool, kflock_lock_t, 128);
 
 enum {
@@ -90,14 +88,15 @@ static int kflock_lock_put(kflock_t *kflock, struct flock *flock) {
 	dlist_foreach_entry(lock, &kflock->locks, kflock_link) {
 		if (current->task->tid == lock->flock.l_pid) {
 			if (NULL == flock || (lock->flock.l_start == flock->l_start &&
-					lock->flock.l_len == flock->l_len)) {
+				lock->flock.l_len == flock->l_len)) {
 				dlist_del(&lock->kflock_link);
 				wait_queue_notify_all(&lock->wq);
 				pool_free(&kflock_lock_pool, lock);
 				/* Returning success if we are searching for one lock
 				 * and it was found */
-				if (NULL != flock)
+				if (NULL != flock) {
 					return -ENOERR;
+				}
 			}
 		}
 	}
@@ -112,7 +111,7 @@ static int kflock_lock_put(kflock_t *kflock, struct flock *flock) {
 
 /* Return disposition of flock compare to locks in kflock */
 static int kflock_get_disposition(int *intersection, kflock_t *kflock,
-		struct flock *flock, kflock_lock_t *existing_kflock, unsigned int skip)
+	struct flock *flock, kflock_lock_t *existing_kflock, unsigned int skip)
 {
 	kflock_lock_t *lock;
 	off_t lock_end, flock_end = flock->l_start + flock->l_len;
@@ -125,8 +124,9 @@ static int kflock_get_disposition(int *intersection, kflock_t *kflock,
 		delta_start = lock->flock.l_start - flock->l_start;
 		delta_end = lock_end - flock_end;
 
-		if (skip--)
+		if (skip--) {
 			continue;
+		}
 
 		if (F_WRLCK == lock->flock.l_type) {
 			if (0 == delta_start && 0 == delta_end) {
@@ -206,8 +206,9 @@ static inline int kflock_validate_and_fix(struct flock *flock, int fd) {
 	struct stat finfo;
 	short fltype = flock->l_type;
 
-	if (-1 == fstat(fd, &finfo))
+	if (-1 == fstat(fd, &finfo)) {
 		return errno;
+	}
 	file_size = finfo.st_blksize * finfo.st_blocks;
 
 	/* Make l_start to point to flock from the start of the file */
@@ -225,13 +226,15 @@ static inline int kflock_validate_and_fix(struct flock *flock, int fd) {
 	}
 
 	/* Validate l_start */
-	if (flock->l_start < 0 || flock->l_start > file_size)
+	if (flock->l_start < 0 || flock->l_start > file_size) {
 		return -EINVAL;
+	}
 
 	/* Convert length to positive if negative or zero value was provided
 	 * or cut it until the end of the file if it is too big */
-	if (0 == flock->l_len || ((flock->l_len + flock->l_start) > file_size))
+	if (0 == flock->l_len || ((flock->l_len + flock->l_start) > file_size)) {
 		flock->l_len = file_size - flock->l_start;
+	}
 	if (flock->l_len < 0) {
 		flock->l_start -= flock->l_len;
 		flock->l_len = -flock->l_len;
@@ -251,27 +254,28 @@ static inline int kflock_validate_and_fix(struct flock *flock, int fd) {
 }
 
 static inline int kflock_validate_cmd(int cmd) {
-		switch (cmd) {
-		case F_SETLK:
-		case F_SETLKW:
-		case F_GETLK:
-			return -ENOERR;
-		}
+	switch (cmd) {
+	case F_SETLK:
+	case F_SETLKW:
+	case F_GETLK:
+		return -ENOERR;
+	}
 	return -EINVAL;
 }
 
 /* Split existing flock by flock
  * Should be called within critical section */
 static int kflock_lock_cut(kflock_t *kflock, struct flock *existing_flock,
-		struct flock *flock) {
+	struct flock *flock) {
 	int rc;
 	struct flock part1;
 	struct flock part2;
 	struct thread *current = thread_self();
 
 	/* Check if existing lock owned by current process */
-	if (current->task->tid != existing_flock->l_pid)
+	if (current->task->tid != existing_flock->l_pid) {
 		return -EACCES;
+	}
 
 	part1.l_len = flock->l_start - existing_flock->l_start;
 	part1.l_pid = existing_flock->l_pid;
@@ -280,26 +284,29 @@ static int kflock_lock_cut(kflock_t *kflock, struct flock *existing_flock,
 	part1.l_whence = existing_flock->l_whence;
 
 	part2.l_len = (existing_flock->l_start + existing_flock->l_len) - \
-			(flock->l_start + flock->l_len);
+		(flock->l_start + flock->l_len);
 	part2.l_pid = existing_flock->l_pid;
 	part2.l_start = (existing_flock->l_start + existing_flock->l_len) - \
-			part2.l_len;
+		part2.l_len;
 	part2.l_type = existing_flock->l_type;
 	part2.l_whence = existing_flock->l_whence;
 
 	rc = kflock_lock_put(kflock, existing_flock);
-	if (-ENOERR != rc)
+	if (-ENOERR != rc) {
 		return rc;
+	}
 
 	if (part1.l_len > 0) {
 		rc = kflock_lock_get(kflock, &part1);
-		if (-ENOERR != rc)
+		if (-ENOERR != rc) {
 			return rc;
+		}
 	}
 	if (part2.l_len > 0) {
 		rc = kflock_lock_get(kflock, &part2);
-		if (-ENOERR != rc)
+		if (-ENOERR != rc) {
 			return rc;
+		}
 	}
 
 	return -ENOERR;
@@ -308,7 +315,7 @@ static int kflock_lock_cut(kflock_t *kflock, struct flock *existing_flock,
 /* Combine existing lock with flock
  * Should be called within critical section */
 static int kflock_lock_combine(kflock_t *kflock, struct flock *existing_flock,
-		struct flock *flock) {
+	struct flock *flock) {
 	int rc;
 	off_t combined_start, combined_len;
 	struct flock combined_flock;
@@ -318,15 +325,16 @@ static int kflock_lock_combine(kflock_t *kflock, struct flock *existing_flock,
 	assert(existing_flock->l_type == flock->l_type);
 
 	/* Check if existing lock owned by current process */
-	if (current->task->tid != existing_flock->l_pid)
+	if (current->task->tid != existing_flock->l_pid) {
 		return -EACCES;
+	}
 
 	combined_start = existing_flock->l_start <= flock->l_start ?
-			existing_flock->l_start : flock->l_start;
+		existing_flock->l_start : flock->l_start;
 	combined_len = (existing_flock->l_start + existing_flock->l_len) >=
-			(flock->l_start + flock->l_len) ?
-					(existing_flock->l_start + existing_flock->l_len) :
-					(flock->l_start + flock->l_len);
+		(flock->l_start + flock->l_len) ?
+		(existing_flock->l_start + existing_flock->l_len) :
+		(flock->l_start + flock->l_len);
 
 	combined_flock.l_start = combined_start;
 	combined_flock.l_len = combined_len;
@@ -338,8 +346,9 @@ static int kflock_lock_combine(kflock_t *kflock, struct flock *existing_flock,
 	memcpy(flock, &combined_flock, sizeof(*flock));
 
 	rc = kflock_lock_put(kflock, existing_flock);
-	if (-ENOERR != rc)
+	if (-ENOERR != rc) {
 		return rc;
+	}
 
 	return -ENOERR;
 }
@@ -361,8 +370,8 @@ static int kflock_handle_getlk(kflock_t *kflock, struct flock *flock) {
 				&existing_kflock, skip_locks);
 		skip_locks++;
 	} while (FLOCK_RANGE_NOT_INTERSECT != intersection ||
-			(flock->l_type == F_RDLCK &&
-					existing_kflock.flock.l_type == F_RDLCK));
+		(flock->l_type == F_RDLCK &&
+		existing_kflock.flock.l_type == F_RDLCK));
 
 	if (-ENOERR != rc) {
 		spin_unlock(&kflock->kflock_guard);
@@ -393,8 +402,9 @@ static int kflock_handle_lock(kflock_t *kflock, struct flock *flock, int cmd) {
 	kflock_lock_t existing_kflock;
 	struct thread *current = thread_self();
 
-	if (cmd == F_GETLK)
+	if (cmd == F_GETLK) {
 		return kflock_handle_getlk(kflock, flock);
+	}
 
 	/* Enter critical section */
 	spin_lock(&kflock->kflock_guard);
@@ -407,7 +417,7 @@ static int kflock_handle_lock(kflock_t *kflock, struct flock *flock, int cmd) {
 			return rc;
 		}
 
-		switch(intersection) {
+		switch (intersection) {
 		case FLOCK_EXCLUSIVE_INCLUDE:
 		case FLOCK_EXCLUSIVE_FIT:
 			if (current->task->tid == existing_kflock.flock.l_pid) {
@@ -440,7 +450,7 @@ static int kflock_handle_lock(kflock_t *kflock, struct flock *flock, int cmd) {
 					/* FIXME what if context switch occur here and below
 					 * at the similar code points */
 					wait_queue_wait(&existing_kflock.wq,
-							SCHED_TIMEOUT_INFINITE);
+						SCHED_TIMEOUT_INFINITE);
 					spin_lock(&kflock->kflock_guard);
 				}
 			}
@@ -475,7 +485,7 @@ static int kflock_handle_lock(kflock_t *kflock, struct flock *flock, int cmd) {
 				} else if (cmd & F_SETLKW) {
 					spin_unlock(&kflock->kflock_guard);
 					wait_queue_wait(&existing_kflock.wq,
-							SCHED_TIMEOUT_INFINITE);
+						SCHED_TIMEOUT_INFINITE);
 					spin_lock(&kflock->kflock_guard);
 				}
 			}
@@ -511,7 +521,7 @@ static int kflock_handle_lock(kflock_t *kflock, struct flock *flock, int cmd) {
 					} else if (cmd & F_SETLKW) {
 						spin_unlock(&kflock->kflock_guard);
 						wait_queue_wait(&existing_kflock.wq,
-								SCHED_TIMEOUT_INFINITE);
+							SCHED_TIMEOUT_INFINITE);
 						spin_lock(&kflock->kflock_guard);
 					}
 				} else {
@@ -554,7 +564,7 @@ static int kflock_handle_lock(kflock_t *kflock, struct flock *flock, int cmd) {
 					} else if (cmd & F_SETLKW) {
 						spin_unlock(&kflock->kflock_guard);
 						wait_queue_wait(&existing_kflock.wq,
-								SCHED_TIMEOUT_INFINITE);
+							SCHED_TIMEOUT_INFINITE);
 						spin_lock(&kflock->kflock_guard);
 					}
 				} else {
@@ -586,9 +596,10 @@ static int kflock_handle_lock(kflock_t *kflock, struct flock *flock, int cmd) {
 }
 
 static int kflock_handle_unlock(kflock_t *kflock, struct flock *flock,
-		int cmd) {
-	if (cmd == F_GETLK)
+	int cmd) {
+	if (cmd == F_GETLK) {
 		return kflock_handle_getlk(kflock, flock);
+	}
 
 	return kflock_lock_put(kflock, flock);
 
@@ -610,8 +621,9 @@ int vfs_fcntl_lock(int fd, int cmd, struct flock *flock) {
 	int perm_flags;
 
 	/* Validate lock */
-	if ((rc = kflock_validate_and_fix(flock, fd)) != -ENOERR)
+	if ((rc = kflock_validate_and_fix(flock, fd)) != -ENOERR) {
 		return rc;
+	}
 
 	/* - Find locks and other properties for provided file descriptor number
 	 * - fd is validated inside task_self_idx_get */
@@ -621,12 +633,13 @@ int vfs_fcntl_lock(int fd, int cmd, struct flock *flock) {
 
 	/* Check permissions to requested operation */
 	if ((!(flock->l_type == F_RDLCK && (perm_flags & S_IROTH))) &&
-			(!(flock->l_type == F_WRLCK && (perm_flags & S_IWOTH))) &&
-			(!(flock->l_type == F_UNLCK)))
+		(!(flock->l_type == F_WRLCK && (perm_flags & S_IWOTH))) &&
+		(!(flock->l_type == F_UNLCK))) {
 		return -EPERM;
+	}
 
 	/* Jump to requested operation */
-	switch(flock->l_type) {
+	switch (flock->l_type) {
 	case F_WRLCK:
 	case F_RDLCK:
 		return kflock_handle_lock(kflock, flock, cmd);

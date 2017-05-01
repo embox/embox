@@ -46,10 +46,12 @@ static void print_stat(void) {
 					t->schedee.waiting      ? 'W' : ' ',
 					thread_get_running_time(t)/CLOCKS_PER_SEC);
 
-				if (t->schedee.ready || sched_active(&t->schedee))
+				if (t->schedee.ready || sched_active(&t->schedee)) {
 					running++;
-				else
+				}
+				else {
 					sleeping++;
+				}
 			}
 		}
 	}
@@ -58,13 +60,13 @@ static void print_stat(void) {
 	total = running + sleeping;
 
 	printf("Total %d threads: \n"
-		"\t%d running\n"
-		"\t%d sleeping\n", total, running, sleeping);
+		   "\t%d running\n"
+		   "\t%d sleeping\n", total, running, sleeping);
 }
 
-static struct thread *thread_lookup(thread_id_t id) {
+static struct thread * thread_lookup(thread_id_t id) {
 	struct thread *t;
-	struct task * task;
+	struct task *task;
 
 	sched_lock();
 	{
@@ -77,7 +79,7 @@ static struct thread *thread_lookup(thread_id_t id) {
 		}
 		t = NULL;
 	}
-out:
+	out:
 	sched_unlock();
 
 	return t;
@@ -109,7 +111,7 @@ int main(int argc, char **argv) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			break;

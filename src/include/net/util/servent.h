@@ -18,6 +18,6 @@ extern int servent_set_port(struct servent *se, int port);
 extern int servent_set_proto(struct servent *se, const char *proto);
 
 extern struct servent * servent_make(const char *name, int port,
-		const char *proto);
+	const char *proto);
 
 #endif /* NET_UTIL_SERVENT_API_H_ */

@@ -33,11 +33,16 @@ extern void vmem_free_context(mmu_ctx_t ctx);
 
 extern mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr);
 
-extern int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
-extern void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size);
-extern int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
+extern int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr,
+	mmu_vaddr_t virt_addr, size_t reg_size,
+	vmem_page_flags_t flags);
+extern void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr,
+	size_t reg_size);
+extern int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr,
+	size_t reg_size, vmem_page_flags_t flags);
 
-extern int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t flags);
+extern int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr,
+	vmem_page_flags_t flags);
 
 extern void vmem_handle_page_fault(mmu_vaddr_t virt_addr);
 
@@ -46,6 +51,7 @@ extern void vmem_off(void);
 extern int vmem_mmu_enabled(void);
 extern void mmu_flush_tlb(void);
 
-extern void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx);
+extern void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx,
+	size_t *pmd_idx, size_t *pte_idx);
 
 #endif /* MEM_VMEM_H_ */

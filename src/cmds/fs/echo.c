@@ -14,7 +14,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-
 static void print_usage(void) {
 	printf("Usage: echo \"STRING\" >> FILE\n");
 }
@@ -25,7 +24,7 @@ int main(int argc, char **argv) {
 	const char *mode;
 
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -51,7 +50,9 @@ int main(int argc, char **argv) {
 			return -errno;
 		}
 
-		write_items_count = fwrite((const void *) argv[1], strlen((const char *) argv[1]), 1, fd);
+		write_items_count =
+			fwrite((const void *) argv[1], strlen((const char *) argv[1]), 1,
+				fd);
 		write_items_count += fwrite((const void *) "\n", 1, 1, fd);
 		fclose(fd);
 		return write_items_count > 0 ? 0 : -EIO;

@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-char *strcpy(char * dest, const char * src) {
+char * strcpy(char *dest, const char *src) {
 	char *cp = dest;
 	while ((*cp++ = *src++))
 		;

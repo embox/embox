@@ -11,7 +11,6 @@
 
 #include <lib/crypt/b64.h>
 
-
 struct b64_char {
 	unsigned char c1,
 		c2,
@@ -19,10 +18,10 @@ struct b64_char {
 };
 
 struct b64_b {
-	unsigned char b1:6,
-		b2:6,
-		b3:6,
-		b4:6;
+	unsigned char b1 : 6,
+		b2 : 6,
+		b3 : 6,
+		b4 : 6;
 };
 
 static const char b2char[64] = {
@@ -92,13 +91,13 @@ size_t b64_plain_len(const char *coded, size_t coded_sz) {
 }
 
 int b64_encode(const char *plain, size_t plain_sz,
-		char *buff, size_t buff_sz, size_t *out_coded_sz) {
+	char *buff, size_t buff_sz, size_t *out_coded_sz) {
 	size_t i;
 	char *out;
 	struct b64_char b64c;
 
 	if ((plain == NULL) || (buff == NULL)
-			|| (out_coded_sz == NULL)) {
+		|| (out_coded_sz == NULL)) {
 		return -EINVAL;
 	}
 
@@ -145,13 +144,13 @@ int b64_encode(const char *plain, size_t plain_sz,
 }
 
 int b64_decode(const char *coded, size_t coded_sz,
-		char *buff, size_t buff_sz, size_t *out_plain_sz) {
+	char *buff, size_t buff_sz, size_t *out_plain_sz) {
 	size_t i;
 	char *out;
 	struct b64_b b64b;
 
 	if ((coded == NULL) || (buff == NULL) || (coded_sz % 4 != 0)
-			|| (out_plain_sz == NULL)) {
+		|| (out_plain_sz == NULL)) {
 		return -EINVAL;
 	}
 

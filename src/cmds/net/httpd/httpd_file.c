@@ -13,8 +13,9 @@
 
 #define PAGE_INDEX  "index.html"
 
-int httpd_try_respond_file(const struct client_info *cinfo, const struct http_req *hreq,
-		char *buf, size_t buf_sz) {
+int httpd_try_respond_file(const struct client_info *cinfo,
+	const struct http_req *hreq,
+	char *buf, size_t buf_sz) {
 	char path[HTTPD_MAX_PATH];
 	char *uri_path;
 	size_t read_bytes;
@@ -27,7 +28,8 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 		uri_path = hreq->uri.target;
 	}
 
-	path_len = snprintf(path, sizeof(path), "%s/%s", cinfo->ci_basedir, uri_path);
+	path_len =
+		snprintf(path, sizeof(path), "%s/%s", cinfo->ci_basedir, uri_path);
 	if (path_len >= sizeof(path)) {
 		return -ENOMEM;
 	}
@@ -71,8 +73,7 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 			remain_send_bytes -= sent_bytes;
 		}
 	}
-out:
+	out:
 	fclose(file);
 	return retcode;
 }
-

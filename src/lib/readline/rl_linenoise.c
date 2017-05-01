@@ -6,7 +6,6 @@
  * @date 04.04.13
  */
 
-
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
@@ -22,7 +21,6 @@
 
 #include <cmd/shell.h>
 
-
 #define DEFAULT_HISTORY_FILE "~/.history"
 
 rl_compentry_func_t *rl_completion_entry_function;
@@ -37,7 +35,7 @@ char * readline(const char *prompt) {
 }
 
 static void completion_callback(const char *text,
-		linenoiseCompletions_t *lc) {
+	linenoiseCompletions_t *lc) {
 	complcb_text = text;
 	complcb_lc = lc;
 	complcb_function(0, '\t');
@@ -80,8 +78,8 @@ int rl_complete(int ignore, int invoking_key) {
 	if (matches == NULL) {
 		matches = rl_completion_matches(last_word,
 				rl_completion_entry_function != NULL
-					? rl_completion_entry_function
-					: rl_filename_completion_function);
+				? rl_completion_entry_function
+				: rl_filename_completion_function);
 		if (matches == NULL) {
 			return 0;
 		}
@@ -99,7 +97,7 @@ int rl_complete(int ignore, int invoking_key) {
 }
 
 char ** rl_completion_matches(const char *text,
-		rl_compentry_func_t *entry_func) {
+	rl_compentry_func_t *entry_func) {
 	int ind;
 	char **matches, **tmp, *match;
 	size_t matches_sz;
@@ -140,7 +138,7 @@ char ** rl_completion_matches(const char *text,
 }
 
 char * rl_filename_completion_function(const char *text,
-		int state) {
+	int state) {
 	static DIR *dir = NULL;
 	static char path[PATH_MAX], name[NAME_MAX];
 	static size_t path_len, name_len;
@@ -203,14 +201,14 @@ void stifle_history(int max) {
 
 int read_history(const char *filename) {
 	return -1 != linenoiseHistoryLoad(filename != NULL
-				? (char *)filename : DEFAULT_HISTORY_FILE)
-			? 0 : errno;
+			? (char *)filename : DEFAULT_HISTORY_FILE)
+		   ? 0 : errno;
 }
 
 int write_history(const char *filename) {
 	return -1 != linenoiseHistorySave(filename != NULL
-				? (char *)filename : DEFAULT_HISTORY_FILE)
-			? 0 : errno;
+			? (char *)filename : DEFAULT_HISTORY_FILE)
+		   ? 0 : errno;
 }
 
 void readline_init(void) {

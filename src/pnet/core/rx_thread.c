@@ -18,7 +18,7 @@
 #include <pnet/core/core.h>
 #include <pnet/pack/pnet_pack.h>
 
-//#define PNET_THREAD_DEBUG
+/*#define PNET_THREAD_DEBUG */
 
 EMBOX_UNIT_INIT(rx_thread_init);
 
@@ -41,7 +41,7 @@ struct pnet_wait_unit {
 static net_packet_t pack_bufs[PNET_PRIORITY_COUNT][RX_THRD_BUF_SIZE];
 static struct pnet_wait_unit pack_storage[PNET_PRIORITY_COUNT];
 
-static void *pnet_rx_thread_hnd(void *args) {
+static void * pnet_rx_thread_hnd(void *args) {
 	struct pnet_wait_unit *unit = (struct pnet_wait_unit *) args;
 	struct pnet_pack *pack;
 
@@ -61,14 +61,17 @@ static int rx_thread_init(void) {
 
 		event_init(&pack_storage[i].event, "pack_arrived");
 
-		ring_buff_init(&pack_storage[i].buff, sizeof(net_packet_t), RX_THRD_BUF_SIZE,
-				(void *) pack_bufs[i]);
-		pnet_rx_threads[i] = thread_create(0, pnet_rx_thread_hnd, &pack_storage[i]);
-		if(err(pnet_rx_threads[i])) {
+		ring_buff_init(&pack_storage[i].buff, sizeof(net_packet_t),
+			RX_THRD_BUF_SIZE,
+			(void *) pack_bufs[i]);
+		pnet_rx_threads[i] =
+			thread_create(0, pnet_rx_thread_hnd, &pack_storage[i]);
+		if (err(pnet_rx_threads[i])) {
 			return -1;
 		}
 
-		schedee_priority_set(&pnet_rx_threads[i]->schedee, SCHED_PRIORITY_NORMAL + 1 + i);
+		schedee_priority_set(&pnet_rx_threads[i]->schedee,
+			SCHED_PRIORITY_NORMAL + 1 + i);
 	}
 
 	return 0;
@@ -84,8 +87,10 @@ int pnet_rx_thread_add(struct pnet_pack *pack) {
 		if ((thread_self() != pnet_rx_threads[prio])) {
 			/* If we will switched to thread with higher priority, than calculate running time in current thread
 			 * and initialize start timestamp in new thread */
-			pack->stat.running_time += thread_get_running_time(thread_self()) - pack->stat.last_sync;
-			pack->stat.last_sync = thread_get_running_time(pnet_rx_threads[prio]);
+			pack->stat.running_time += thread_get_running_time(thread_self()) -
+				pack->stat.last_sync;
+			pack->stat.last_sync =
+				thread_get_running_time(pnet_rx_threads[prio]);
 		}
 	} else {
 		/* We are in differed irq handler */

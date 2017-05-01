@@ -14,12 +14,12 @@
 ARRAY_SPREAD_DEF(const struct net_proto, __net_proto_registry);
 
 const struct net_proto * net_proto_lookup(unsigned short pack,
-		unsigned char type) {
+	unsigned char type) {
 	const struct net_proto *nproto;
 
 	net_proto_foreach(nproto) {
 		if ((nproto->pack == pack)
-				&& (nproto->type == type)) {
+			&& (nproto->type == type)) {
 			return nproto;
 		}
 	}

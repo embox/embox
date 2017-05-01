@@ -18,13 +18,16 @@
 #include <linux/mtd/mtd.h>
 #include "nodelist.h"
 
-static void jffs2_build_remove_unlinked_inode(struct jffs2_sb_info *, struct jffs2_inode_cache *, struct jffs2_full_dirent **);
+static void jffs2_build_remove_unlinked_inode(struct jffs2_sb_info *,
+	struct jffs2_inode_cache *,
+	struct jffs2_full_dirent **);
 
 static inline struct jffs2_inode_cache *
 first_inode_chain(int *i, struct jffs2_sb_info *c) {
 	for (; *i < INOCACHE_HASHSIZE; (*i)++) {
-		if (c->inocache_list[*i])
+		if (c->inocache_list[*i]) {
 			return c->inocache_list[*i];
+		}
 	}
 	return NULL;
 }
@@ -32,26 +35,26 @@ first_inode_chain(int *i, struct jffs2_sb_info *c) {
 static inline struct jffs2_inode_cache *
 next_inode(int *i, struct jffs2_inode_cache *ic, struct jffs2_sb_info *c) {
 	/* More in this chain? */
-	if (ic->next)
+	if (ic->next) {
 		return ic->next;
+	}
 	(*i)++;
 	return first_inode_chain(i, c);
 }
 
-#define for_each_inode(i, c, ic)			\
-	for (i = 0, ic = first_inode_chain(&i, (c));	\
-	     ic;					\
-	     ic = next_inode(&i, ic, (c)))
-
+#define for_each_inode(i, c, ic)            \
+	for (i = 0, ic = first_inode_chain(&i, (c));    \
+		ic;                    \
+		ic = next_inode(&i, ic, (c)))
 
 static inline void jffs2_build_inode_pass1(struct jffs2_sb_info *c,
-										struct jffs2_inode_cache *ic) {
+	struct jffs2_inode_cache *ic) {
 	struct jffs2_full_dirent *fd;
 
 	D1(printk( "jffs2_build_inode building directory inode #%u\n", ic->ino));
 
 	/* For each child, increase nlink */
-	for(fd = ic->scan_dents; fd; fd = fd->next) {
+	for (fd = ic->scan_dents; fd; fd = fd->next) {
 		struct jffs2_inode_cache *child_ic;
 		if (!fd->ino) {
 			continue;
@@ -60,21 +63,27 @@ static inline void jffs2_build_inode_pass1(struct jffs2_sb_info *c,
 
 		child_ic = jffs2_get_ino_cache(c, fd->ino);
 		if (!child_ic) {
-			printk(KERN_NOTICE "Eep. Child \"%s\" (ino #%u) of dir ino #%u doesn't exist!\n",
-				  fd->name, fd->ino, ic->ino);
+			printk(
+				KERN_NOTICE "Eep. Child \"%s\" (ino #%u) of dir ino #%u doesn't exist!\n",
+				fd->name, fd->ino, ic->ino);
 			jffs2_mark_node_obsolete(c, fd->raw);
 			continue;
 		}
 
 		if (child_ic->nlink++ && fd->type == DT_DIR) {
-			printk(KERN_NOTICE "Child dir \"%s\" (ino #%u) of dir ino #%u appears to be a hard link\n", fd->name, fd->ino, ic->ino);
+			printk(
+				KERN_NOTICE "Child dir \"%s\" (ino #%u) of dir ino #%u appears to be a hard link\n", fd->name, fd->ino,
+				ic->ino);
 			if (fd->ino == 1 && ic->ino == 1) {
-				printk(KERN_NOTICE "This is mostly harmless, and probably caused by creating a JFFS2 image\n");
-				printk(KERN_NOTICE "using a buggy version of mkfs.jffs2. Use at least v1.17.\n");
+				printk(
+					KERN_NOTICE "This is mostly harmless, and probably caused by creating a JFFS2 image\n");
+				printk(
+					KERN_NOTICE "using a buggy version of mkfs.jffs2. Use at least v1.17.\n");
 			}
 			/* What do we do about it? */
 		}
-		D1(printk( "Increased nlink for child \"%s\" (ino #%u)\n", fd->name, fd->ino));
+		D1(printk( "Increased nlink for child \"%s\" (ino #%u)\n", fd->name,
+			fd->ino));
 		/* Can't free them. We might need them in pass 2 */
 	}
 }
@@ -129,7 +138,8 @@ static int jffs2_build_filesystem(struct jffs2_sb_info *c) {
 	D1(printk( "Pass 2 starting\n"));
 
 	for_each_inode(i, c, ic) {
-		D1(printk( "Pass 2: ino #%u, nlink %d, ic %p, nodes %p\n", ic->ino, ic->nlink, ic, ic->nodes));
+		D1(printk( "Pass 2: ino #%u, nlink %d, ic %p, nodes %p\n", ic->ino,
+			ic->nlink, ic, ic->nodes));
 		if (ic->nlink) {
 			continue;
 		}
@@ -145,7 +155,8 @@ static int jffs2_build_filesystem(struct jffs2_sb_info *c) {
 		dead_fds = fd->next;
 
 		ic = jffs2_get_ino_cache(c, fd->ino);
-		D1(printk( "Removing dead_fd ino #%u (\"%s\"), ic at %p\n", fd->ino, fd->name, ic));
+		D1(printk( "Removing dead_fd ino #%u (\"%s\"), ic at %p\n", fd->ino,
+			fd->name, ic));
 
 		if (ic) {
 			jffs2_build_remove_unlinked_inode(c, ic, &dead_fds);
@@ -157,9 +168,10 @@ static int jffs2_build_filesystem(struct jffs2_sb_info *c) {
 
 	/* Finally, we can scan again and free the dirent structs */
 	for_each_inode(i, c, ic) {
-		D1(printk( "Pass 3: ino #%u, ic %p, nodes %p\n", ic->ino, ic, ic->nodes));
+		D1(printk( "Pass 3: ino #%u, ic %p, nodes %p\n", ic->ino, ic,
+			ic->nodes));
 
-		while(ic->scan_dents) {
+		while (ic->scan_dents) {
 			fd = ic->scan_dents;
 			ic->scan_dents = fd->next;
 			jffs2_free_full_dirent(fd);
@@ -177,10 +189,10 @@ static int jffs2_build_filesystem(struct jffs2_sb_info *c) {
 
 	ret = 0;
 
-exit:
+	exit:
 	if (ret) {
 		for_each_inode(i, c, ic) {
-			while(ic->scan_dents) {
+			while (ic->scan_dents) {
 				fd = ic->scan_dents;
 				ic->scan_dents = fd->next;
 				jffs2_free_full_dirent(fd);
@@ -192,7 +204,7 @@ exit:
 }
 
 static void jffs2_build_remove_unlinked_inode(struct jffs2_sb_info *c,
-		struct jffs2_inode_cache *ic, struct jffs2_full_dirent **dead_fds) {
+	struct jffs2_inode_cache *ic, struct jffs2_full_dirent **dead_fds) {
 	struct jffs2_raw_node_ref *raw;
 	struct jffs2_full_dirent *fd;
 
@@ -208,9 +220,10 @@ static void jffs2_build_remove_unlinked_inode(struct jffs2_sb_info *c,
 
 	if (ic->scan_dents) {
 		int whinged = 0;
-		D1(printk( "Inode #%u was a directory which may have children...\n", ic->ino));
+		D1(printk( "Inode #%u was a directory which may have children...\n",
+			ic->ino));
 
-		while(ic->scan_dents) {
+		while (ic->scan_dents) {
 			struct jffs2_inode_cache *child_ic;
 
 			fd = ic->scan_dents;
@@ -218,21 +231,26 @@ static void jffs2_build_remove_unlinked_inode(struct jffs2_sb_info *c,
 
 			if (!fd->ino) {
 				/* It's a deletion dirent. Ignore it */
-				D1(printk( "Child \"%s\" is a deletion dirent, skipping...\n", fd->name));
+				D1(printk( "Child \"%s\" is a deletion dirent, skipping...\n",
+					fd->name));
 				jffs2_free_full_dirent(fd);
 				continue;
 			}
 			if (!whinged) {
 				whinged = 1;
-				printk(KERN_NOTICE "Inode #%u was a directory with children - removing those too...\n", ic->ino);
+				printk(
+					KERN_NOTICE "Inode #%u was a directory with children - removing those too...\n",
+					ic->ino);
 			}
 
 			D1(printk( "Removing child \"%s\", ino #%u\n",
-				  fd->name, fd->ino));
+				fd->name, fd->ino));
 
 			child_ic = jffs2_get_ino_cache(c, fd->ino);
 			if (!child_ic) {
-				printk(KERN_NOTICE "Cannot remove child \"%s\", ino #%u, because it doesn't exist\n", fd->name, fd->ino);
+				printk(
+					KERN_NOTICE "Cannot remove child \"%s\", ino #%u, because it doesn't exist\n", fd->name,
+					fd->ino);
 				jffs2_free_full_dirent(fd);
 				continue;
 			}
@@ -244,13 +262,15 @@ static void jffs2_build_remove_unlinked_inode(struct jffs2_sb_info *c,
 			child_ic->nlink--;
 
 			if (!child_ic->nlink) {
-				D1(printk( "Inode #%u (\"%s\") has now got zero nlink. Adding to dead_fds list.\n",
-					  fd->ino, fd->name));
+				D1(printk(
+					"Inode #%u (\"%s\") has now got zero nlink. Adding to dead_fds list.\n",
+					fd->ino, fd->name));
 				fd->next = *dead_fds;
 				*dead_fds = fd;
 			} else {
-				D1(printk( "Inode #%u (\"%s\") has now got nlink %d. Ignoring.\n",
-					  fd->ino, fd->name, child_ic->nlink));
+				D1(printk(
+					"Inode #%u (\"%s\") has now got nlink %d. Ignoring.\n",
+					fd->ino, fd->name, child_ic->nlink));
 				jffs2_free_full_dirent(fd);
 			}
 		}
@@ -298,20 +318,22 @@ static void jffs2_calc_trigger_levels(struct jffs2_sb_info *c) {
 	   trying to GC to make more space. It'll be a fruitless task */
 	c->nospc_dirty_size = c->sector_size + (c->flash_size / 100);
 
-	D1(printk( "JFFS2 trigger levels (size %d KiB, block size %d KiB, %d blocks)\n",
-		  c->flash_size / 1024, c->sector_size / 1024, c->nr_blocks));
+	D1(printk(
+		"JFFS2 trigger levels (size %d KiB, block size %d KiB, %d blocks)\n",
+		c->flash_size / 1024, c->sector_size / 1024, c->nr_blocks));
 	D1(printk( "Blocks required to allow deletion:    %d (%d KiB)\n",
-		  c->resv_blocks_deletion, c->resv_blocks_deletion*c->sector_size/1024));
+		c->resv_blocks_deletion, c->resv_blocks_deletion*c->sector_size/1024));
 	D1(printk( "Blocks required to allow writes:      %d (%d KiB)\n",
-		  c->resv_blocks_write, c->resv_blocks_write*c->sector_size/1024));
+		c->resv_blocks_write, c->resv_blocks_write*c->sector_size/1024));
 	D1(printk( "Blocks required to quiesce GC thread: %d (%d KiB)\n",
-		  c->resv_blocks_gctrigger, c->resv_blocks_gctrigger*c->sector_size/1024));
+		c->resv_blocks_gctrigger,
+		c->resv_blocks_gctrigger*c->sector_size/1024));
 	D1(printk( "Blocks required to allow GC merges:   %d (%d KiB)\n",
-		  c->resv_blocks_gcmerge, c->resv_blocks_gcmerge*c->sector_size/1024));
+		c->resv_blocks_gcmerge, c->resv_blocks_gcmerge*c->sector_size/1024));
 	D1(printk( "Blocks required to GC bad blocks:     %d (%d KiB)\n",
-		  c->resv_blocks_gcbad, c->resv_blocks_gcbad*c->sector_size/1024));
+		c->resv_blocks_gcbad, c->resv_blocks_gcbad*c->sector_size/1024));
 	D1(printk( "Amount of dirty space required to GC: %d bytes\n",
-		  c->nospc_dirty_size));
+		c->nospc_dirty_size));
 }
 
 int jffs2_do_mount_fs(struct jffs2_sb_info *c) {
@@ -320,11 +342,12 @@ int jffs2_do_mount_fs(struct jffs2_sb_info *c) {
 	c->free_size = c->flash_size;
 	c->nr_blocks = c->flash_size / c->sector_size;
 
-	c->blocks = kmalloc(sizeof(struct jffs2_eraseblock) * c->nr_blocks, GFP_KERNEL);
+	c->blocks = kmalloc(sizeof(struct jffs2_eraseblock) * c->nr_blocks,
+			GFP_KERNEL);
 	if (!c->blocks) {
 		return -ENOMEM;
 	}
-	for (i=0; i<c->nr_blocks; i++) {
+	for (i = 0; i < c->nr_blocks; i++) {
 		INIT_LIST_HEAD(&c->blocks[i].list);
 		c->blocks[i].offset = i * c->sector_size;
 		c->blocks[i].free_size = c->sector_size;

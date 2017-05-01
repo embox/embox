@@ -45,7 +45,8 @@ struct vtesc_executor {
 	struct vtparse parser;
 };
 
-extern struct vtesc_token *vtesc_consume(struct vtesc_executor *executor, char ch);
+extern struct vtesc_token * vtesc_consume(struct vtesc_executor *executor,
+	char ch);
 extern void vtesc_init(struct vtesc_executor *executor);
 
 #endif /* VTESC_H_ */

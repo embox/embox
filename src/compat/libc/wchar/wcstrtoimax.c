@@ -41,7 +41,7 @@
 #include <errno.h>
 
 intmax_t wcstoimax(const wchar_t *restrict nptr, wchar_t **restrict endptr,
-		int base) {
+	int base) {
 	const wchar_t *s;
 	uintmax_t acc;
 	wchar_t c;
@@ -61,8 +61,9 @@ intmax_t wcstoimax(const wchar_t *restrict nptr, wchar_t **restrict endptr,
 		c = *s++;
 	} else {
 		neg = 0;
-		if (c == L'+')
+		if (c == L'+') {
 			c = *s++;
+		}
 	}
 
 	if ((base == 0 || base == 16) && c == L'0' && (*s == L'x' || *s == L'X')) {
@@ -79,7 +80,8 @@ intmax_t wcstoimax(const wchar_t *restrict nptr, wchar_t **restrict endptr,
 		goto noconv;
 	}
 
-	cutoff = neg ? (uintmax_t) -(INTMAX_MIN + INTMAX_MAX) + INTMAX_MAX : INTMAX_MAX;
+	cutoff = neg ? (uintmax_t) -(INTMAX_MIN + INTMAX_MAX) +
+		INTMAX_MAX : INTMAX_MAX;
 	cutlim = cutoff % base;
 	cutoff /= base;
 
@@ -109,7 +111,7 @@ intmax_t wcstoimax(const wchar_t *restrict nptr, wchar_t **restrict endptr,
 		acc = neg ? INTMAX_MIN : INTMAX_MAX;
 		errno = ERANGE;
 	} else if (!any) {
-noconv:
+		noconv:
 		errno = EINVAL;
 	} else if (neg) {
 		acc = -acc;

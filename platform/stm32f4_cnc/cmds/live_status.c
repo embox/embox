@@ -25,7 +25,8 @@ static int cnc_ipc_get_input_fd(void) {
 	return atoi(cnc_in);
 }
 
-static int memcpy_iov(void *dst, size_t dst_len, struct iovec *iov, int iovlen) {
+static int memcpy_iov(void *dst, size_t dst_len, struct iovec *iov,
+	int iovlen) {
 	int i_iov;
 	void *bp;
 	int bp_len;
@@ -57,11 +58,11 @@ int main(int argc, char *argv[]) {
 	fds[1].events = POLLERR;
 
 	buf_len = snprintf(buf, sizeof(buf),
-		"HTTP/1.1 200 OK\r\n"
-		"Content-Type: text/event-stream\r\n"
-		"Cache-Control: no-cache\r\n"
-		"Connection: keep-alive\r\n"
-		"\r\n");
+			"HTTP/1.1 200 OK\r\n"
+			"Content-Type: text/event-stream\r\n"
+			"Cache-Control: no-cache\r\n"
+			"Connection: keep-alive\r\n"
+			"\r\n");
 
 	iov[0].iov_base = SSE_HEADER;
 	iov[0].iov_len = strlen(SSE_HEADER);
@@ -84,7 +85,8 @@ int main(int argc, char *argv[]) {
 			buf_o = 0;
 			while (buf_o < buf_len) {
 				char *eom = memchr(buf + buf_o, '\n', buf_len - buf_o);
-				const int body_len = eom ? eom - (buf + buf_o) : buf_len - buf_o;
+				const int body_len = eom ? eom - (buf + buf_o) : buf_len -
+					buf_o;
 				int write_len;
 
 				iov[1].iov_base = buf + buf_o;

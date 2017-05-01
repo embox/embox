@@ -16,7 +16,7 @@
 
 #define LAST_IN_PATH         0x01
 
-//XXX
+/*XXX */
 #include <fs/mount.h>
 
 extern void if_mounted_follow_down(struct path *path);
@@ -39,33 +39,36 @@ extern void vfs_get_leaf_path(struct path *path);
  * \a path contains path till natural root (which parent is NULL, including)
  * @return negative on error
  */
-extern int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
+extern int vfs_get_pathbynode_tilln(struct path *node, struct path *parent,
+	char *path,
 	size_t plen);
 
 extern int vfs_add_leaf(node_t *child, node_t *parent);
 
 extern int vfs_del_leaf(node_t *nod);
 
-extern node_t *vfs_create_root(void);
-extern node_t *vfs_get_root(void);
-extern node_t *vfs_get_leaf(void);
+extern node_t * vfs_create_root(void);
+extern node_t * vfs_get_root(void);
+extern node_t * vfs_get_leaf(void);
 
 extern int vfs_create(struct path *parent, const char *path, mode_t mode,
-		struct path *child);
+	struct path *child);
 extern void vfs_create_child(struct path *parent, const char *name, mode_t mode,
-		struct path *child);
-extern int vfs_create_intermediate(struct path *parent, const char *path, mode_t mode,
-		struct path *child);
+	struct path *child);
+extern int vfs_create_intermediate(struct path *parent, const char *path,
+	mode_t mode,
+	struct path *child);
 
 extern int vfs_lookup(const char *str_path, struct path *path);
-extern void vfs_lookup_child(struct path *parent, const char *name, struct path *child);
+extern void vfs_lookup_child(struct path *parent, const char *name,
+	struct path *child);
 extern void vfs_lookup_childn(struct path *parent, const char *name, size_t len,
-		struct path *child);
+	struct path *child);
 
 extern void vfs_get_parent(struct path *child_path, struct path *parent_path);
 
 extern int vfs_get_child_next(struct path *parent_path,
-		struct node *child_prev, struct path *child_next);
+	struct node *child_prev, struct path *child_next);
 
 /**
  * Checks the path on the node_tree and forms correct string with the path
@@ -75,8 +78,9 @@ extern int vfs_get_child_next(struct path *parent_path,
  * @param exist_path - buffer for path which will be formed
  * @param buff_len - length of buffer for exist _path parameter
  */
-extern void vfs_get_exist_path(const char *path, char *exist_path, size_t buff_len,
-		struct path *path_node);
+extern void vfs_get_exist_path(const char *path, char *exist_path,
+	size_t buff_len,
+	struct path *path_node);
 
 /**
  * @brief Wrapper for \a vfs_get_pathbynode that places leading '/' for every
@@ -90,8 +94,9 @@ extern void vfs_get_exist_path(const char *path, char *exist_path, size_t buff_l
  *
  * @return See \a vfs_get_pathbynode_tilln
  */
-static inline int vfs_get_path_till_root(struct path *node, struct path *root, char *path,
-		size_t pathlen) {
+static inline int vfs_get_path_till_root(struct path *node, struct path *root,
+	char *path,
+	size_t pathlen) {
 
 	if_root_follow_up(node);
 	if (node->node == root->node) {
@@ -104,7 +109,6 @@ static inline int vfs_get_path_till_root(struct path *node, struct path *root, c
 
 	return vfs_get_pathbynode_tilln(node, root, path, pathlen);
 }
-
 
 /**
  * @brief Get path of node in system vfs tree.
@@ -121,24 +125,32 @@ static inline int vfs_get_path_by_node(struct path *node, char *path) {
 	return vfs_get_path_till_root(node, &root, path, PATH_MAX);
 }
 
-extern int vfs_get_relative_path(struct node *node, char *path, size_t path_len);
+extern int vfs_get_relative_path(struct node *node, char *path,
+	size_t path_len);
 
-extern struct node *vfs_subtree_create_child(struct node *parent, const char *name,
-		mode_t mode);
+extern struct node * vfs_subtree_create_child(struct node *parent,
+	const char *name,
+	mode_t mode);
 
-extern struct node *vfs_subtree_lookup_childn(struct node *parent, const char *name, size_t len);
+extern struct node * vfs_subtree_lookup_childn(struct node *parent,
+	const char *name, size_t len);
 
-extern struct node *vfs_subtree_lookup(struct node *parent, const char *str_path);
+extern struct node * vfs_subtree_lookup(struct node *parent,
+	const char *str_path);
 
-extern struct node *vfs_subtree_lookup_child(struct node *parent, const char *name);
+extern struct node * vfs_subtree_lookup_child(struct node *parent,
+	const char *name);
 
-extern struct node *vfs_subtree_get_child_next(struct node *parent, struct node *prev_child);
+extern struct node * vfs_subtree_get_child_next(struct node *parent,
+	struct node *prev_child);
 
-extern struct node *vfs_subtree_create(struct node *parent, const char *path, mode_t mode);
+extern struct node * vfs_subtree_create(struct node *parent, const char *path,
+	mode_t mode);
 
-extern struct node *vfs_subtree_create_intermediate(struct node *parent, const char *path, mode_t mode);
+extern struct node * vfs_subtree_create_intermediate(struct node *parent,
+	const char *path,
+	mode_t mode);
 
-extern node_t *vfs_subtree_get_parent(node_t *node);
-
+extern node_t * vfs_subtree_get_parent(node_t *node);
 
 #endif /* FS_VFS_H_ */

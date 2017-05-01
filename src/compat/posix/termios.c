@@ -46,18 +46,18 @@ int tcsetpgrp(int fd, pid_t pgrp) {
 int tcflush(int fd, int queue_selector) {
 	int arg = 0;
 	switch (queue_selector) {
-		case TCIFLUSH:
-			arg = FLUSHR;
-			break;
-		case TCOFLUSH:
-			arg = FLUSHW;
-			break;
-		case TCIOFLUSH:
-			arg = FLUSHRW;
-			break;
-		default:
-			SET_ERRNO(EINVAL);
-			return -1;
+	case TCIFLUSH:
+		arg = FLUSHR;
+		break;
+	case TCOFLUSH:
+		arg = FLUSHW;
+		break;
+	case TCIOFLUSH:
+		arg = FLUSHRW;
+		break;
+	default:
+		SET_ERRNO(EINVAL);
+		return -1;
 	}
 	return ioctl(fd, I_FLUSH, (void *) &arg);
 }

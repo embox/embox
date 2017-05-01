@@ -12,11 +12,11 @@
 #include <hal/mmu.h>
 #include <mem/vmem.h>
 
-mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
+mmu_pmd_t * mmu_pgd_value(mmu_pgd_t *pgd) {
 	return pgd;
 }
 
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
+mmu_pte_t * mmu_pmd_value(mmu_pmd_t *pmd) {
 	return pmd;
 }
 
@@ -33,11 +33,11 @@ void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
 void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 #if 0
 	*pte = (mmu_pte_t) ((addr & ~MMU_PAGE_MASK)
-			| ARM_MMU_TYPE_SECTION
-			| ARM_MMU_SECTION_READ_ACC);
+		| ARM_MMU_TYPE_SECTION
+		| ARM_MMU_SECTION_READ_ACC);
 #endif
 	*pte = (mmu_pte_t) ((addr & ~MMU_PAGE_MASK)
-			| 0x00C06); /* B=0, XN = 0, Dom=0; AP=11, TEX = 0, APX=0 */
+		| 0x00C06);     /* B=0, XN = 0, Dom=0; AP=11, TEX = 0, APX=0 */
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
@@ -61,21 +61,24 @@ int mmu_pte_present(mmu_pte_t *pte) {
 }
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
-#if 0	
-	if (value & VMEM_PAGE_WRITABLE)
+#if 0
+	if (value & VMEM_PAGE_WRITABLE) {
 		*pte |= ARM_MMU_SECTION_WRITE_ACC;
+	}
 #endif
 }
 
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
-	if (value & VMEM_PAGE_CACHEABLE)
+	if (value & VMEM_PAGE_CACHEABLE) {
 		*pte |= 0x08; /* ARM_MMU_SECTION_C */
+	}
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
 }
 
 void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
-	if (!(value & VMEM_PAGE_EXECUTABLE))
+	if (!(value & VMEM_PAGE_EXECUTABLE)) {
 		*pte |= 0x10; /* ARM_MMU_SECTION_XN */
+	}
 }

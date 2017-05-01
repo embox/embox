@@ -31,7 +31,7 @@ struct usb_driver {
 	struct usb_device_id *id_table;
 };
 
-extern void *usb_driver_data(struct usb_dev *dev);
+extern void * usb_driver_data(struct usb_dev *dev);
 extern int usb_driver_open_by_node(struct node *n, struct usb_dev_desc **ddesc);
 
 extern int usb_driver_register(struct usb_driver *drv);

@@ -12,8 +12,8 @@
 
 #include <drivers/usb/usb_queue.h>
 
-static struct usb_queue_link *usb_queue_link(struct usb_queue *q,
-		struct dlist_head *l) {
+static struct usb_queue_link * usb_queue_link(struct usb_queue *q,
+	struct dlist_head *l) {
 
 	if (dlist_empty(&q->q)) {
 		return NULL;
@@ -22,11 +22,11 @@ static struct usb_queue_link *usb_queue_link(struct usb_queue *q,
 	return member_cast_out(l, struct usb_queue_link, l);
 }
 
-struct usb_queue_link *usb_queue_peek(struct usb_queue *q) {
+struct usb_queue_link * usb_queue_peek(struct usb_queue *q) {
 	return usb_queue_link(q, q->q.next);
 }
 
-struct usb_queue_link *usb_queue_last(struct usb_queue *q) {
+struct usb_queue_link * usb_queue_last(struct usb_queue *q) {
 	return usb_queue_link(q, q->q.prev);
 }
 

@@ -39,7 +39,7 @@ int task_table_add(struct task *tsk) {
 	return IDX2TID(idx);
 }
 
-struct task *task_table_get(int tid) {
+struct task * task_table_get(int tid) {
 	int idx = TID2IDX(tid);
 	assert(IDXCHK(idx));
 	return bitmap_test_bit(task_table_bm, idx) ? task_table[idx] : NULL;

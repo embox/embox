@@ -40,7 +40,7 @@ enum xattr_cmd_op {
 
 static void print_usage(void) {
 	printf("Usage: xattr [-cdpwh] [-lx] [attr_name] [attr_value] file "
-			"[file ...]\n");
+		   "[file ...]\n");
 }
 
 static int xattr_print_value(const char *path, const char *name) {
@@ -57,7 +57,7 @@ static int xattr_print_value(const char *path, const char *name) {
 
 	if (XATTR_CMD_OP_HEX & xattr_cmd_op_flags) {
 		char *ptr = rvalue;
-		while(size--) {
+		while (size--) {
 			printf("%02hhX", (unsigned char) *ptr++);
 			printf("|");
 		}
@@ -81,7 +81,7 @@ static int scan_hex_value(char *rvalue, const char *hex_str) {
 	dst = (unsigned char *) rvalue;
 	end = src + size;
 
-	while(src < end) {
+	while (src < end) {
 		sscanf(src, "%hhX", dst);
 		dst++;
 		src += 2;
@@ -98,7 +98,8 @@ static int xattr_do_delete(const char *path, const char *name) {
 	return 0;
 }
 
-static int xattr_do_write(const char *path, const char *name, const char *strvalue) {
+static int xattr_do_write(const char *path, const char *name,
+	const char *strvalue) {
 	char rvalue[XATTR_MAX_VSIZE];
 	size_t size;
 	char *value;
@@ -128,7 +129,8 @@ static int xattr_do_print(const char *path, const char *name) {
 	return rc;
 }
 
-static int xattr_do_iter(const char *path, int (*xattr_iter_fn)(const char *path, const char *name)) {
+static int xattr_do_iter(const char *path, int (*xattr_iter_fn)(
+	const char *path, const char *name)) {
 	const unsigned int page_n = XATTR_MAX_BSIZE / PAGE_SIZE() + 1;
 	size_t len;
 	char *list, *point;
@@ -153,7 +155,7 @@ static int xattr_do_iter(const char *path, int (*xattr_iter_fn)(const char *path
 	}
 
 	rc = 0;
-free_list:
+	free_list:
 	phymem_free(list, page_n);
 	return rc;
 }
@@ -187,7 +189,6 @@ static int clear_xattr_fn(const char *path, const char *name) {
 	return rc;
 }
 
-
 /*
  * xattr [-lx] file ... # list
  * xattr -c file ... # clear all xattr
@@ -197,7 +198,8 @@ static int clear_xattr_fn(const char *path, const char *name) {
  * xattr -h | -help
  */
 
-static inline enum xattr_cmd_op xattr_check_op(enum xattr_cmd_op orig_op, enum xattr_cmd_op new_op) {
+static inline enum xattr_cmd_op xattr_check_op(enum xattr_cmd_op orig_op,
+	enum xattr_cmd_op new_op) {
 	if (orig_op == XATTR_CMD_UNSPECIFIED || orig_op == new_op) {
 		return new_op;
 	}
@@ -243,7 +245,7 @@ int main(int argc, char **argv) {
 
 	unpos_args = argv + optind;
 
-	switch(cmd_op) {
+	switch (cmd_op) {
 	case XATTR_CMD_UNSPECIFIED:
 	case XATTR_CMD_LIST:
 		return xattr_do_iter(unpos_args[0], print_xattr_fn);

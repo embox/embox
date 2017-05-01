@@ -24,8 +24,7 @@
 #include <net/skbuff.h>
 #include <netinet/in.h>
 
-
-struct proto_sock; //TODO What does it mean
+struct proto_sock; /*TODO What does it mean */
 struct sock_family_ops;
 struct sock_proto_ops;
 struct net_pack_out_ops;
@@ -79,7 +78,7 @@ struct sock {
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
 	unsigned int rx_data_len;
-	//unsigned int tx_data_len;
+	/*unsigned int tx_data_len; */
 	unsigned char shutdown_flag; /* FIXME */
 	struct proto_sock *p_sk;
 	const struct sock_family_ops *f_ops;
@@ -104,25 +103,25 @@ struct sock_family_ops {
 	int (*init)(struct sock *sk);
 	int (*close)(struct sock *sk);
 	int (*bind)(struct sock *sk, const struct sockaddr *addr,
-			socklen_t addrlen);
+		socklen_t addrlen);
 	int (*bind_local)(struct sock *sk);
 	int (*connect)(struct sock *sk, const struct sockaddr *addr,
-			socklen_t addrlen, int flags);
+		socklen_t addrlen, int flags);
 	int (*listen)(struct sock *sk, int len);
 	int (*accept)(struct sock *sk, struct sockaddr *addr,
-			socklen_t *addrlen, int flags, struct sock **out_sk);
+		socklen_t *addrlen, int flags, struct sock **out_sk);
 	int (*sendmsg)(struct sock *sk, struct msghdr *msg,
-			int flags);
+		int flags);
 	int (*recvmsg)(struct sock *sk, struct msghdr *msg,
-			int flags);
+		int flags);
 	int (*getsockname)(struct sock *sk, struct sockaddr *addr,
-			socklen_t *addrlen);
+		socklen_t *addrlen);
 	int (*getpeername)(struct sock *sk, struct sockaddr *addr,
-			socklen_t *addrlen);
+		socklen_t *addrlen);
 	int (*getsockopt)(struct sock *sk, int level, int optname,
-			void *optval, socklen_t *optlen);
+		void *optval, socklen_t *optlen);
 	int (*setsockopt)(struct sock *sk, int level, int optname,
-			const void *optval, socklen_t optlen);
+		const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
 	struct pool *sock_pool;
 };
@@ -131,18 +130,18 @@ struct sock_proto_ops {
 	int (*init)(struct sock *sk);
 	int (*close)(struct sock *sk);
 	int (*connect)(struct sock *sk, const struct sockaddr *addr,
-			socklen_t addrlen, int flags);
+		socklen_t addrlen, int flags);
 	int (*listen)(struct sock *sk, int backlog);
 	int (*accept)(struct sock *sk, struct sockaddr *addr,
-			socklen_t *addrlen, int flags, struct sock **out_sk);
+		socklen_t *addrlen, int flags, struct sock **out_sk);
 	int (*sendmsg)(struct sock *sk, struct msghdr *msg, int flags);
 	int (*recvmsg)(struct sock *sk, struct msghdr *msg, int flags);
 	int (*fillmsg)(struct sock *sk, struct msghdr *msg,
-			struct sk_buff *skb); //FIXME remove me
+		struct sk_buff *skb);     /*FIXME remove me */
 	int (*getsockopt)(struct sock *sk, int level, int optname,
-			void *optval, socklen_t *optlen);
+		void *optval, socklen_t *optlen);
 	int (*setsockopt)(struct sock *sk, int level, int optname,
-			const void *optval, socklen_t optlen);
+		const void *optval, socklen_t optlen);
 	int (*shutdown)(struct sock *sk, int how);
 	struct pool *sock_pool;
 	struct dlist_head *sock_list;
@@ -162,7 +161,6 @@ static inline struct sock * to_sock(const void *p_sk) {
 	return ((const struct proto_sock *)p_sk)->sk;
 }
 
-
 extern struct sock * sock_create(int family, int type, int protocol);
 
 extern void sock_release(struct sock *sk);
@@ -170,9 +168,8 @@ extern void sock_release(struct sock *sk);
 extern void sock_hash(struct sock *sk);
 extern void sock_unhash(struct sock *sk);
 
-
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
-		unsigned char *p_data, size_t size);
+	unsigned char *p_data, size_t size);
 
 extern int sock_close(struct sock *sk);
 
@@ -181,7 +178,8 @@ extern int sock_stream_recvmsg(struct sock *sk, struct msghdr *msg, int flags);
 
 #include <string.h>
 static inline void sock_update_tstamp(struct sock *sk, struct sk_buff *skb) {
-	memcpy(&sk->last_packet_tstamp, &skb->tstamp, sizeof(sk->last_packet_tstamp));
+	memcpy(&sk->last_packet_tstamp, &skb->tstamp,
+		sizeof(sk->last_packet_tstamp));
 }
 
 #include <net/sock_state.h>
@@ -192,24 +190,24 @@ static inline void sock_set_so_error(struct sock *sk, int error) {
 }
 
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
-		const struct sk_buff *skb);
+	const struct sk_buff *skb);
 
 extern struct sock * sock_iter(const struct sock_proto_ops *p_ops);
 extern struct sock * sock_next(const struct sock *sk);
 extern struct sock * sock_lookup(const struct sock *sk,
-		const struct sock_proto_ops *p_ops,
-		sock_lookup_tester_ft tester,
-		const struct sk_buff *skb);
+	const struct sock_proto_ops *p_ops,
+	sock_lookup_tester_ft tester,
+	const struct sk_buff *skb);
 
 typedef int (*sock_addr_tester_ft)(const struct sockaddr *addr1,
-		const struct sockaddr *addr2);
+	const struct sockaddr *addr2);
 
 extern int sock_addr_is_busy(const struct sock_proto_ops *p_ops,
-		sock_addr_tester_ft tester, const struct sockaddr *addr,
-		socklen_t addrlen);
+	sock_addr_tester_ft tester, const struct sockaddr *addr,
+	socklen_t addrlen);
 extern int sock_addr_alloc_port(const struct sock_proto_ops *p_ops,
-		in_port_t *addrport, sock_addr_tester_ft tester,
-		const struct sockaddr *addr, socklen_t addrlen);
+	in_port_t *addrport, sock_addr_tester_ft tester,
+	const struct sockaddr *addr, socklen_t addrlen);
 
 #define sock_foreach(sk, p_ops) \
 	dlist_foreach_entry(sk, p_ops->sock_list, lnk)

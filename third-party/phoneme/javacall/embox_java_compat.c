@@ -25,10 +25,10 @@ javacall_result emboxErrno2javaErrno(int embox_errno) {
 	return JAVACALL_FAIL;
 }
 
-javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,
-                                               javacall_int32 utf16Len,
-                                               unsigned char** pUtf8,
-                                               javacall_int32 *utf8Len) {
+javacall_result utf16_to_utf8(const javacall_utf16 *pUtf16,
+	javacall_int32 utf16Len,
+	unsigned char **pUtf8,
+	javacall_int32 *utf8Len) {
 	int res;
 
 	if (0 > (res = javautil_unicode_utf16_utf8length(pUtf16, utf8Len))) {
@@ -40,7 +40,7 @@ javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,
 	}
 
 	if (0 > (res = javautil_unicode_utf16_to_utf8(pUtf16, utf16Len,
-			*pUtf8, *utf8Len, utf8Len))) {
+				*pUtf8, *utf8Len, utf8Len))) {
 		free(*pUtf8);
 		return res;
 	}
@@ -48,10 +48,10 @@ javacall_result utf16_to_utf8(const javacall_utf16* pUtf16,
 	return res;
 }
 
-javacall_result utf8_to_utf16(javacall_utf16** pUtf16,
-                                               javacall_int32 *utf16Len,
-                                               const unsigned char *pUtf8,
-                                               javacall_int32 utf8Len) {
+javacall_result utf8_to_utf16(javacall_utf16 **pUtf16,
+	javacall_int32 *utf16Len,
+	const unsigned char *pUtf8,
+	javacall_int32 utf8Len) {
 	int i;
 
 	if ((*pUtf16 = malloc(utf8Len * 2 + 2)) == NULL) {
@@ -64,4 +64,3 @@ javacall_result utf8_to_utf16(javacall_utf16** pUtf16,
 
 	return JAVACALL_OK;
 }
-

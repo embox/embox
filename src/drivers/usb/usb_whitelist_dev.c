@@ -47,7 +47,7 @@ static int usb_whitelist_conf_init(struct usb_whitelist_conf *wl_conf) {
 }
 
 static int usb_whitelist_conf_add(struct usb_whitelist_conf *wl_conf,
-		struct usb_whitelist_rule *wl_rule) {
+	struct usb_whitelist_rule *wl_rule) {
 	struct usb_whitelist_rule *wl_rule_place;
 
 	if (wl_conf->rules_n == USB_WHITELIST_MAX_RULES) {
@@ -63,7 +63,7 @@ static int usb_whitelist_conf_add(struct usb_whitelist_conf *wl_conf,
 }
 
 static int usb_whitelist_conf_del(struct usb_whitelist_conf *wl_conf,
-		int id) {
+	int id) {
 	int i;
 
 	for (i = 0; i < wl_conf->rules_n; i++) {
@@ -73,7 +73,7 @@ static int usb_whitelist_conf_del(struct usb_whitelist_conf *wl_conf,
 
 			--wl_conf->rules_n;
 			memmove(&wl_conf->rules[i], &wl_conf->rules[i + 1],
-			       (wl_conf->rules_n - i) * sizeof(struct usb_whitelist_rule));
+				(wl_conf->rules_n - i) * sizeof(struct usb_whitelist_rule));
 			return 0;
 		}
 	}
@@ -82,17 +82,17 @@ static int usb_whitelist_conf_del(struct usb_whitelist_conf *wl_conf,
 }
 
 static int usb_whitelist_conf_isin(struct usb_whitelist_conf *wl_conf,
-		struct usb_desc_device *desc, const char *desc_sn) {
+	struct usb_desc_device *desc, const char *desc_sn) {
 	int i;
 
 	for (i = 0; i < wl_conf->rules_n; i++) {
 		struct usb_whitelist_rule *wl_rule = &wl_conf->rules[i];
 
 		if (desc->id_vendor == wl_rule->vid
-				&& (wl_rule->pid == USB_WHITELIST_PID_ANY
-					|| wl_rule->pid == desc->id_product)
-				&& (!strcmp(wl_rule->sn, USB_WHITELIST_SN_ANY)
-					|| !strcmp(wl_rule->sn, desc_sn))) {
+			&& (wl_rule->pid == USB_WHITELIST_PID_ANY
+			|| wl_rule->pid == desc->id_product)
+			&& (!strcmp(wl_rule->sn, USB_WHITELIST_SN_ANY)
+			|| !strcmp(wl_rule->sn, desc_sn))) {
 			return 1;
 		}
 	}
@@ -104,7 +104,7 @@ static void usb_wl_dev_check(struct usb_dev *dev, const char *sn) {
 	char ok;
 
 	ok = whitelist_conf.rules_n == 0 ? 1 :
-	       	usb_whitelist_conf_isin(&whitelist_conf, &dev->dev_desc, sn);
+		usb_whitelist_conf_isin(&whitelist_conf, &dev->dev_desc, sn);
 
 	if (ok) {
 		usb_whitelist_accepts(dev);
@@ -119,7 +119,7 @@ static void usb_wl_sn_got(struct usb_request *req, void *arg) {
 	int i, j, len;
 
 	len = tstrs->str_sn[0];
-	for (i = 0, j = 2; j < len; i++, j+= 2) {
+	for (i = 0, j = 2; j < len; i++, j += 2) {
 		tstrs->str_sn[i] = tstrs->str_sn[j];
 	}
 	tstrs->str_sn[i] = '\0';
@@ -136,11 +136,12 @@ static void usb_wl_sn_len_got(struct usb_request *req, void *arg) {
 
 	usb_endp_control(req->endp->dev->endpoints[0], usb_wl_sn_got, tstrs,
 		USB_DEV_REQ_TYPE_RD
-			| USB_DEV_REQ_TYPE_STD
-			| USB_DEV_REQ_TYPE_DEV,
-		USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_STRING << 8 | dev->dev_desc.i_serial_number,
-		lang_id, tstrs->str_sn[0],
-		&tstrs->str_sn);
+		| USB_DEV_REQ_TYPE_STD
+		| USB_DEV_REQ_TYPE_DEV,
+		USB_DEV_REQ_GET_DESC,
+		USB_DESC_TYPE_STRING << 8 | dev->dev_desc.i_serial_number,
+				lang_id, tstrs->str_sn[0],
+				&tstrs->str_sn);
 }
 
 static void usb_wl_lang_array_got(struct usb_request *req, void *arg) {
@@ -150,11 +151,12 @@ static void usb_wl_lang_array_got(struct usb_request *req, void *arg) {
 
 	usb_endp_control(req->endp->dev->endpoints[0], usb_wl_sn_len_got, tstrs,
 		USB_DEV_REQ_TYPE_RD
-			| USB_DEV_REQ_TYPE_STD
-			| USB_DEV_REQ_TYPE_DEV,
-		USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_STRING << 8 | dev->dev_desc.i_serial_number,
-		lang_id, 2,
-		&tstrs->str_sn);
+		| USB_DEV_REQ_TYPE_STD
+		| USB_DEV_REQ_TYPE_DEV,
+		USB_DEV_REQ_GET_DESC,
+		USB_DESC_TYPE_STRING << 8 | dev->dev_desc.i_serial_number,
+				lang_id, 2,
+				&tstrs->str_sn);
 }
 
 int usb_whitelist_check(struct usb_dev *dev) {
@@ -174,16 +176,18 @@ int usb_whitelist_check(struct usb_dev *dev) {
 
 	usb_endp_control(dev->endpoints[0], usb_wl_lang_array_got, tstrs,
 		USB_DEV_REQ_TYPE_RD
-			| USB_DEV_REQ_TYPE_STD
-			| USB_DEV_REQ_TYPE_DEV,
+		| USB_DEV_REQ_TYPE_STD
+		| USB_DEV_REQ_TYPE_DEV,
 		USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_STRING << 8,
-		0, sizeof(tstrs->lang_array),
-		&tstrs->lang_array);
+				0, sizeof(tstrs->lang_array),
+				&tstrs->lang_array);
 
 	return -EBUSY;
 }
 
-static struct idesc *usb_whitelist_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc * usb_whitelist_open(struct node *node,
+	struct file_desc *file_desc,
+	int flags) {
 	return &file_desc->idesc;
 }
 
@@ -191,9 +195,11 @@ static int usb_whitelist_close(struct file_desc *desc) {
 	return 0;
 }
 
-static size_t usb_whitelist_read(struct file_desc *desc, void *buf, size_t size) {
+static size_t usb_whitelist_read(struct file_desc *desc, void *buf,
+	size_t size) {
 	struct usb_whitelist_conf *wl_conf = &whitelist_conf;
-	int req_rules = min(size / sizeof(struct usb_whitelist_rule), wl_conf->rules_n);
+	int req_rules = min(size / sizeof(struct usb_whitelist_rule),
+			wl_conf->rules_n);
 	size_t req_size =  req_rules * sizeof(struct usb_whitelist_rule);
 
 	memcpy(buf, whitelist_conf.rules, req_size);
@@ -201,7 +207,8 @@ static size_t usb_whitelist_read(struct file_desc *desc, void *buf, size_t size)
 	return req_size;
 }
 
-static int usb_whitelist_ioctl(struct file_desc *desc, int request, void *data) {
+static int usb_whitelist_ioctl(struct file_desc *desc, int request,
+	void *data) {
 	struct usb_whitelist_conf *wl_conf = &whitelist_conf;
 	struct usb_whitelist_rule *wl_rule = NULL;
 	int rule_id;
@@ -239,7 +246,7 @@ static const struct kfile_operations usb_whitelist_ops = {
 };
 
 static void usb_whitelist_parse_builtin(struct usb_whitelist_conf *wl_conf,
-		const char *builtin_whitelist) {
+	const char *builtin_whitelist) {
 	char scratch[64];
 	const char *p;
 
@@ -264,7 +271,7 @@ static void usb_whitelist_parse_builtin(struct usb_whitelist_conf *wl_conf,
 		}
 
 		for (str = scratch, tok_i = 0; tok_i < 3;
-				str = NULL, tok_i++) {
+			str = NULL, tok_i++) {
 			tok[tok_i] = strtok_r(str, ":", &saveptr);
 		}
 

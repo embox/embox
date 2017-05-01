@@ -8,7 +8,7 @@
 
 #include <wchar.h>
 
-wchar_t *wcsncpy(wchar_t *dst, const wchar_t *src, size_t n) {
+wchar_t * wcsncpy(wchar_t *dst, const wchar_t *src, size_t n) {
 	wchar_t *ret = dst;
 
 	do {

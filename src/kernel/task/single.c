@@ -12,8 +12,8 @@
 #include <compiler.h>
 
 void task_init(struct task *tsk, int id, struct task *parent,
-		const char *name, struct thread *main_thread,
-		task_priority_t priority) {
+	const char *name, struct thread *main_thread,
+	task_priority_t priority) {
 	assert(tsk == task_kernel_task());
 	assert(id == task_get_id(tsk));
 	assert(0 == strcmp(name, task_get_name(tsk)));

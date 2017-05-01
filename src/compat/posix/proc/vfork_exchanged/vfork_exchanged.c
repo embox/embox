@@ -1,5 +1,5 @@
-	/**
-	 * @file
+/**
+     * @file
  *
  * @date May 23, 2014
  * @author: Anton Bondarev
@@ -50,7 +50,7 @@ int vfork_child_start(struct task *child) {
 	return -1;
 }
 
-void *task_exit_callback(void *arg) {
+void * task_exit_callback(void *arg) {
 	_exit((int)arg);
 
 	return arg;

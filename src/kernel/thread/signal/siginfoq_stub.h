@@ -14,17 +14,18 @@
 
 struct siginfoq { };  /* stub */
 
-static inline struct siginfoq *siginfoq_init(struct siginfoq *infoq) {
+static inline struct siginfoq * siginfoq_init(struct siginfoq *infoq) {
 	return infoq;
 }
 
 static inline int siginfoq_enqueue(struct siginfoq *infoq, int sig,
-		const siginfo_t *info) {
+	const siginfo_t *info) {
 	(void)infoq; (void)sig; (void)info;
 	return -ENOSYS;
 }
 
-static inline int siginfoq_dequeue(struct siginfoq *infoq, int sig, siginfo_t *info) {
+static inline int siginfoq_dequeue(struct siginfoq *infoq, int sig,
+	siginfo_t *info) {
 	(void)infoq; (void)sig; (void)info;
 	return -ENOSYS;
 }

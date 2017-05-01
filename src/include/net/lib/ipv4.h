@@ -24,8 +24,8 @@ struct sock;
  * Build IPv4 header
  */
 extern void ip_build(struct iphdr *iph, uint16_t total_len,
-		uint8_t ttl, uint8_t proto, in_addr_t src_ip,
-		in_addr_t dst_ip);
+	uint8_t ttl, uint8_t proto, in_addr_t src_ip,
+	in_addr_t dst_ip);
 
 /**
  * Set IPv4 id field
@@ -62,18 +62,18 @@ struct ip_pseudohdr {
  * Build IPv4 pseudo header
  */
 extern void ip_pseudo_build(const struct iphdr *iph,
-		struct ip_pseudohdr *out_ipph);
+	struct ip_pseudohdr *out_ipph);
 
 /**
  * IPv4/AF_INET testers
  */
 extern int ip_tester_src(const struct sock *sk,
-		const struct sk_buff *skb);
+	const struct sk_buff *skb);
 extern int ip_tester_src_or_any(const struct sock *sk,
-		const struct sk_buff *skb);
+	const struct sk_buff *skb);
 extern int ip_tester_dst(const struct sock *sk,
-		const struct sk_buff *skb);
+	const struct sk_buff *skb);
 extern int ip_tester_dst_or_any(const struct sock *sk,
-		const struct sk_buff *skb);
+	const struct sk_buff *skb);
 
 #endif /* NET_LIB_IPV4_H_ */

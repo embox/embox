@@ -59,13 +59,13 @@ struct uart {
  *
  * @param uart Uart descriptor
  * @param uart_params Pointer to uart params. If not null, used to assign
- * 	default params
+ *  default params
  *
  * @return uart instance pointer on success
  * @return NULL on error
  */
 extern int uart_register(struct uart *uartd,
-		const struct uart_params *uart_defparams);
+	const struct uart_params *uart_defparams);
 
 /**
  * @brief Deregister in kernel
@@ -82,7 +82,7 @@ extern void uart_deregister(struct uart *uart);
  * @return uart instance pointer if found
  * @return NULL if not found
  */
-extern struct uart *uart_dev_lookup(const char *name);
+extern struct uart * uart_dev_lookup(const char *name);
 
 /**
  * @brief Initialize UART: init tty and assing irq

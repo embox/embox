@@ -113,7 +113,7 @@ TEST_CASE("allocating random index") {
 
 	for (i = 0; i < index_capacity(&idx); ++i) {
 		test_assert_not_equal(INDEX_NONE, index_alloc(&idx,
-					INDEX_RANDOM));
+			INDEX_RANDOM));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_RANDOM));
 
@@ -129,7 +129,7 @@ TEST_CASE("allocating minimal index from interval") {
 	index_clamp(&idx, IDX_CLAMP_MIN, IDX_CLAMP_MAX);
 
 	for (i = index_clamp_min(&idx);
-			i <= index_clamp_max(&idx); ++i) {
+		i <= index_clamp_max(&idx); ++i) {
 		test_assert_equal(i, index_alloc(&idx, INDEX_MIN));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_MIN));
@@ -153,7 +153,7 @@ TEST_CASE("allocating maximum index from interval") {
 	index_clamp(&idx, IDX_CLAMP_MIN, IDX_CLAMP_MAX);
 
 	for (i = index_clamp_max(&idx);
-			i >= index_clamp_min(&idx); --i) {
+		i >= index_clamp_min(&idx); --i) {
 		test_assert_equal(i, index_alloc(&idx, INDEX_MAX));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_MAX));
@@ -176,7 +176,7 @@ TEST_CASE("allocating previous index from interval") {
 	index_clamp(&idx, IDX_CLAMP_MIN, IDX_CLAMP_MAX);
 
 	for (i = index_clamp_max(&idx);
-			i >= index_clamp_min(&idx); --i) {
+		i >= index_clamp_min(&idx); --i) {
 		test_assert_equal(i, index_alloc(&idx, INDEX_PREV));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_PREV));
@@ -201,7 +201,7 @@ TEST_CASE("allocating next index from interval") {
 	index_clamp(&idx, IDX_CLAMP_MIN, IDX_CLAMP_MAX);
 
 	for (i = index_clamp_min(&idx);
-			i <= index_clamp_max(&idx); ++i) {
+		i <= index_clamp_max(&idx); ++i) {
 		test_assert_equal(i, index_alloc(&idx, INDEX_NEXT));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_NEXT));
@@ -227,7 +227,7 @@ TEST_CASE("allocating random index from interval") {
 
 	for (i = 0; i < IDX_CLAMP_MAX - IDX_CLAMP_MIN + 1; ++i) {
 		test_assert_not_equal(INDEX_NONE, index_alloc(&idx,
-					INDEX_RANDOM));
+			INDEX_RANDOM));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_RANDOM));
 
@@ -243,8 +243,8 @@ TEST_CASE("allocating index from interval after locking") {
 	index_clamp(&idx, IDX_CLAMP_MIN, IDX_CLAMP_MAX);
 
 	for (i = index_start(&idx);
-			i != index_start(&idx) + index_capacity(&idx);
-			++i) {
+		i != index_start(&idx) + index_capacity(&idx);
+		++i) {
 		test_assert_true(index_try_lock(&idx, i));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_MIN));

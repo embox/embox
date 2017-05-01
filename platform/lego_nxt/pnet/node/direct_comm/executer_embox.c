@@ -35,7 +35,8 @@ EMBOX_UNIT_INIT(node_dc_init);
 
 static struct lego_dc_msg_full dc_out_msg;
 
-static void handle_command(struct lego_dc_msg *msg, int *addit_len, uint8_t addit_msg[]) {
+static void handle_command(struct lego_dc_msg *msg, int *addit_len,
+	uint8_t addit_msg[]) {
 	switch (msg->command) {
 	case DC_EX_SET_M_OUTPUT_STATE:
 		nxt_motor_set_power(NXT_MOTOR_A, msg->tail[0]);
@@ -71,15 +72,15 @@ static int dc_rx_hnd(struct pnet_pack *pack) {
 	msg = pnet_pack_get_data(pack);
 
 	switch (msg[0]) {
-		case DEVICE_CONFIG_DATA:
-			send_config(msg);
-			break;
-		case EXECUTE_COMMAND:
-			lego_msg = (struct lego_dc_msg *) (msg);
-			handle_command(lego_msg, &addit_len, dc_out_msg.body.tail + 1);
-			break;
-		case REQUEST_SENSOR_DATA:
-			break;
+	case DEVICE_CONFIG_DATA:
+		send_config(msg);
+		break;
+	case EXECUTE_COMMAND:
+		lego_msg = (struct lego_dc_msg *) (msg);
+		handle_command(lego_msg, &addit_len, dc_out_msg.body.tail + 1);
+		break;
+	case REQUEST_SENSOR_DATA:
+		break;
 	}
 
 	return NET_HND_STOP_FREE;

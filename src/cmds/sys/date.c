@@ -79,9 +79,9 @@ static void set_date(char *new_date) {
 	settimeofday(&tv, NULL);
 }
 
-static char *get_next_key(char *string) {
-	while(*string++) {
-		if('%' == *string) {
+static char * get_next_key(char *string) {
+	while (*string++) {
+		if ('%' == *string) {
 			return ++string;
 		}
 	}
@@ -90,12 +90,12 @@ static char *get_next_key(char *string) {
 #define MAX_NANOSECONDS 999999999
 static int check_format(char *string) {
 	char *str;
-	if(string[0] != '+') {
+	if (string[0] != '+') {
 		printf("invalid format string use '+%%N'\n");
 		return -1;
 	}
-	if(NULL != (str = get_next_key(string))) {
-		switch(str[0]) {
+	if (NULL != (str = get_next_key(string))) {
+		switch (str[0]) {
 		case 'N': {
 			struct timeval tv;
 			time64_t ns;
@@ -114,7 +114,7 @@ static int check_format(char *string) {
 
 int main(int argc, char **argv) {
 	int opt;
-	//struct timeval tv;
+	/*struct timeval tv; */
 
 	getopt_init();
 
@@ -135,8 +135,8 @@ int main(int argc, char **argv) {
 	/* show date and kernel time */
 	if (argc == 1) {
 		show_date();
-		//ktime_get_timeval(&tv);
-		//printf("ktime_get_timeval %d:%d (s:ms)\n", (int)tv.tv_sec, (int)tv.tv_usec/1000);
+		/*ktime_get_timeval(&tv); */
+		/*printf("ktime_get_timeval %d:%d (s:ms)\n", (int)tv.tv_sec, (int)tv.tv_usec/1000); */
 		return 0;
 	}
 	check_format(argv[argc-1]);

@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <kernel/task.h>
 
-static void *dropbeard(void *arg) {
+static void * dropbeard(void *arg) {
 
 	while (1) {
 		system("dropbear -F");
@@ -24,4 +24,3 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
-

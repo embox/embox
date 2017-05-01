@@ -14,7 +14,7 @@
 
 #include <fs/idesc.h>
 
-static struct xattr_list *sock_xattr_list(struct idesc *idesc) {
+static struct xattr_list * sock_xattr_list(struct idesc *idesc) {
 	struct sock *sock;
 
 	assert(idesc);
@@ -25,12 +25,12 @@ static struct xattr_list *sock_xattr_list(struct idesc *idesc) {
 }
 
 static int sock_getxattr(struct idesc *idesc, const char *name, void *value,
-		size_t size) {
+	size_t size) {
 	return getxattr_generic(sock_xattr_list(idesc), name, value, size);
 }
 
 static int sock_setxattr(struct idesc *idesc, const char *name,
-		const void *value, size_t size, int flags) {
+	const void *value, size_t size, int flags) {
 	return setxattr_generic(sock_xattr_list(idesc), name, value, size, flags);
 }
 

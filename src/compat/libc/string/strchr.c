@@ -13,7 +13,7 @@
 
 #include <string.h>
 
-char *strchr(const char *str, int ch) {
+char * strchr(const char *str, int ch) {
 	char *chp = strchrnul(str, ch);
 
 	if (*chp == '\0') {

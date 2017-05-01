@@ -43,7 +43,6 @@ static inline void task_vfork_end(struct task *task) {
 	(void)task;
 }
 
-
 static inline int task_get_status(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return 0;
@@ -75,7 +74,7 @@ static inline task_priority_t task_get_priority(const struct task *tsk) {
 }
 
 static inline int task_set_priority(struct task *tsk,
-		task_priority_t new_priority) {
+	task_priority_t new_priority) {
 	assert(tsk == task_kernel_task());
 	return -ENOSYS;
 }
@@ -123,13 +122,13 @@ static inline void task_thread_unregister(struct task *tsk, struct thread *t) {
 	assert(t != NULL);
 
 	/* XXX t->task isn't set to null, thread allowed to know old parent while
- 	 * shutting down
+	 * shutting down
 	 */
 }
 
 #include <kernel/thread/types.h>
 static inline void task_set_main(struct task *tsk,
-		struct thread *main_thread) {
+	struct thread *main_thread) {
 	assert(tsk == task_kernel_task());
 	assert(main_thread != NULL);
 	tsk->tsk_main = main_thread;

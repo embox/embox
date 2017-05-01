@@ -61,7 +61,7 @@ static int idesc_xattr_check(struct idesc *idesc) {
 }
 
 int idesc_getxattr(struct idesc *idesc, const char *name, void *value,
-		size_t size) {
+	size_t size) {
 	int res;
 
 	res = idesc_xattr_check(idesc);
@@ -73,7 +73,7 @@ int idesc_getxattr(struct idesc *idesc, const char *name, void *value,
 }
 
 int idesc_setxattr(struct idesc *idesc, const char *name, const void *value,
-		size_t size, int flags) {
+	size_t size, int flags) {
 	int res;
 
 	res = idesc_xattr_check(idesc);
@@ -105,4 +105,3 @@ int idesc_removexattr(struct idesc *idesc, const char *name) {
 
 	return idesc->idesc_xattrops->removexattr(idesc, name);
 }
-

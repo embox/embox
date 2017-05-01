@@ -14,7 +14,7 @@
 #include <hal/mem_barriers.h>
 
 static struct bcm2835_mailbox_regs volatile *const mailbox_regs =
-		(struct bcm2835_mailbox_regs volatile *) BCM2835_MAILBOX_BASE;
+	(struct bcm2835_mailbox_regs volatile *) BCM2835_MAILBOX_BASE;
 
 /**
  * Read from memory mapped IO registers with a memory barrier around.
@@ -47,7 +47,8 @@ int bcm2835_mailbox_write(uint32_t data, uint32_t channel) {
 	/* lowest 4 bits of data must be 0 and combine data and the channel */
 	uint32_t to_write = (data & BCM2835_MAILBOX_DATA_MASK) | channel;
 	/* read the status field and wait until ready */
-	while (read_mmio((uint32_t volatile *)&mailbox_regs->Status) & BCM2835_MAILBOX_FULL);
+	while (read_mmio((uint32_t volatile *)&mailbox_regs->Status) &
+		BCM2835_MAILBOX_FULL) ;
 	write_mmio((uint32_t volatile *)&mailbox_regs->Write, to_write);
 	return 0;
 }
@@ -61,7 +62,8 @@ uint32_t bcm2835_mailbox_read(uint32_t channel) {
 
 	/* repeat reading if the channel was wrong */
 	do {
-		while (read_mmio((uint32_t volatile *)&mailbox_regs->Status) & BCM2835_MAILBOX_EMPTY);
+		while (read_mmio((uint32_t volatile *)&mailbox_regs->Status) &
+			BCM2835_MAILBOX_EMPTY) ;
 		data = read_mmio((uint32_t volatile *)&mailbox_regs->Read);
 	} while ((data & BCM2835_MAILBOX_CHANNEL_MASK) != channel);
 	/* return the message only (top 28 bits of the read data) */

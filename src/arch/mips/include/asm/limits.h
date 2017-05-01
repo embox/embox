@@ -12,5 +12,3 @@
 #include <asm-generic/limits32.h>
 
 #endif /* MIPS_LIMITS_H_ */
-
-

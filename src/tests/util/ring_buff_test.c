@@ -11,7 +11,6 @@
 #include <util/ring_buff.h>
 #include <string.h>
 
-
 EMBOX_TEST_SUITE("util/ring_buff test");
 
 #define BUFF_LENGTH (0x10)
@@ -33,20 +32,22 @@ TEST_CASE("Test capacity of buffer") {
 	int wr = 0;
 	int cnt = BUFF_LENGTH;
 
-	while(0 != ring_buff_enqueue(&test_rbuff, &rd, 1)) {
-		cnt --;
+	while (0 != ring_buff_enqueue(&test_rbuff, &rd, 1)) {
+		cnt--;
 	}
 	test_assert_zero(cnt);
-	while(0 != ring_buff_dequeue(&test_rbuff, &wr, 1)) {
+	while (0 != ring_buff_dequeue(&test_rbuff, &wr, 1)) {
 		test_assert_equal(wr, rd);
-		cnt ++;
+		cnt++;
 	}
 
 	test_assert_equal(cnt, BUFF_LENGTH);
 }
 
 TEST_CASE("Ringbuffer should be able read and write all one piece") {
-	int rd[BUFF_LENGTH] = { 5,5,5,5, 5,5,5,5, 5,5,5,5, 5,5,5,5,};
+	int rd[BUFF_LENGTH] = {
+		5,5,5,5, 5,5,5,5, 5,5,5,5, 5,5,5,5,
+	};
 	int wr[BUFF_LENGTH];
 
 	/* in order to test wrapping */
@@ -58,7 +59,7 @@ TEST_CASE("Ringbuffer should be able read and write all one piece") {
 	test_assert_equal(BUFF_LENGTH,
 		ring_buff_dequeue(&test_rbuff, &wr, BUFF_LENGTH));
 
-	for(int i = 0; i < BUFF_LENGTH; i++) {
+	for (int i = 0; i < BUFF_LENGTH; i++) {
 		test_assert_equal(wr[i], rd[i]);
 	}
 
@@ -103,7 +104,8 @@ TEST_CASE("Ringbuffer enqueue should respect bounds") {
 #define SMALL_BUFLEN 4
 RING_BUFFER_DEF(test_null_buf, char, SMALL_BUFLEN + 1);
 
-TEST_CASE("Ringbuffer allocates space filled with nulls and returns a pointer") {
+TEST_CASE("Ringbuffer allocates space filled with nulls and returns a pointer")
+{
 	char wr[SMALL_BUFLEN];
 	char *buf;
 

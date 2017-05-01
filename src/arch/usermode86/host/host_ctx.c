@@ -13,13 +13,13 @@
 #include <host.h>
 
 HOST_FNX(void, makecontext, CONCAT(void *ucp, void (*func)(), int argc),
-		ucp, func, argc)
+	ucp, func, argc)
 
 HOST_FNX(int, swapcontext, CONCAT(void *oucp, void *ucp),
-		oucp, ucp)
+	oucp, ucp)
 
 HOST_FNX(int, getcontext, void *ucp,
-		ucp)
+	ucp)
 
 void host_stackcontext(void *_ucp, void *sp, int size) {
 	ucontext_t *ucp = _ucp;

@@ -81,7 +81,7 @@ static int setup_suite(void) {
 }
 
 static int teardown_suite(void) {
-//	int res;
+/*	int res; */
 
 	vfs_get_root()->mode = root_backup_mode;
 
@@ -89,7 +89,8 @@ static int teardown_suite(void) {
 }
 
 static int clear_id(void) {
-	struct smac_task *smac_task = (struct smac_task *) task_self_resource_security();
+	struct smac_task *smac_task =
+		(struct smac_task *) task_self_resource_security();
 
 	strcpy(smac_task->label, "smac_admin");
 
@@ -145,7 +146,7 @@ TEST_CASE("High subject shouldn't be able change high object label") {
 	smac_labelset(high_static);
 
 	test_assert_equal(-1, setxattr(FILE_H, smac_xattrkey, smac_star,
-				strlen(smac_star), 0));
+		strlen(smac_star), 0));
 
 	test_assert_equal(EACCES, errno);
 
@@ -156,7 +157,7 @@ TEST_CASE("Low subject shouldn't be able change high object label") {
 	smac_labelset(low_static);
 
 	test_assert_equal(-1, setxattr(FILE_H, smac_xattrkey, smac_star,
-				strlen(smac_star), 0));
+		strlen(smac_star), 0));
 
 	test_assert_equal(EACCES, errno);
 
@@ -167,8 +168,8 @@ TEST_CASE("smac admin should be able change high object label") {
 	smac_labelset(smac_admin);
 
 	test_assert_zero(setxattr(FILE_H, smac_xattrkey, smac_star,
-				strlen(smac_star), 0));
+		strlen(smac_star), 0));
 
 	test_assert_zero(setxattr(FILE_H, smac_xattrkey, high_static,
-				strlen(high_static), 0));
+		strlen(high_static), 0));
 }

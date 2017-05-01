@@ -19,7 +19,7 @@ struct pnet_pack_data {
 #include <pnet/pack/pnet_pack.h>
 #include <assert.h>
 
-static inline char *pnet_pack_get_data(struct pnet_pack *pack) {
+static inline char * pnet_pack_get_data(struct pnet_pack *pack) {
 	assert(pack->type == PNET_PACK_TYPE_SINGLE);
 	return (((struct pnet_pack_data *) pack->data)->buff);
 }

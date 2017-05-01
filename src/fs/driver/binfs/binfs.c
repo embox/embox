@@ -20,7 +20,7 @@ static int binfs_mount(void *dev, void *dir) {
 
 	cmd_foreach(cmd) {
 		vfs_subtree_create_child(dir_node, cmd_name(cmd),
-				S_IFREG | S_IXUSR | S_IXGRP | S_IXOTH);
+			S_IFREG | S_IXUSR | S_IXGRP | S_IXOTH);
 	}
 
 	return 0;
@@ -49,4 +49,3 @@ static struct fs_driver binfs_driver = {
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(binfs_driver);
-

@@ -47,10 +47,9 @@ extern int fs_perm_check(struct node *node, int fd_flags);
  *	0 on success
  */
 int fs_perm_lookup(const char *path, const char **pathlast,
-		struct path *nodelast);
+	struct path *nodelast);
 
 int fs_perm_lookup_relative(const char *path, const char **pathlast,
-		struct path *nodelast);
+	struct path *nodelast);
 
 #endif /* SRC_FS_PERM_H_ */
-

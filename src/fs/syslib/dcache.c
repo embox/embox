@@ -38,7 +38,7 @@ POOL_DEF(ht_item_pool, struct hashtable_item, DCACHE_SIZE);
 static size_t dcache_hash(void *key);
 static int dcache_cmp(void *key1, void *key2);
 
-HASHTABLE_DEF(dcache_ht, DCACHE_TABLE_SIZE,	&dcache_hash, &dcache_cmp);
+HASHTABLE_DEF(dcache_ht, DCACHE_TABLE_SIZE, &dcache_hash, &dcache_cmp);
 
 static struct hashtable *dcache_table = &dcache_ht;
 static struct dlist_head values;
@@ -77,7 +77,8 @@ static void dvalue_delete(struct dvalue *dvalue) {
 	pool_free(&dcache_dentry_pool, dvalue);
 }
 
-static void compound_dentry(char *source, const char *prefix, const char *rest) {
+static void compound_dentry(char *source, const char *prefix,
+	const char *rest) {
 	strcpy(source, prefix);
 
 	if (rest[0] != '/' && (0 != strcmp("/", prefix))) {
@@ -88,7 +89,7 @@ static void compound_dentry(char *source, const char *prefix, const char *rest) 
 }
 
 static void dvalue_init(struct dvalue *dvalue, struct dentry *dentry,
-		const char *prefix, const char *rest) {
+	const char *prefix, const char *rest) {
 	compound_dentry(dvalue->key.fullpath, prefix, rest);
 	dvalue->dentry = *dentry;
 	dlist_head_init(&dvalue->link);
@@ -129,7 +130,6 @@ int dcache_add(const char *prefix, const char *rest, struct dentry *dentry) {
 	struct dvalue *dvalue;
 	int res;
 
-
 	if (!dentry) {
 		return -EINVAL;
 	}
@@ -143,10 +143,10 @@ int dcache_add(const char *prefix, const char *rest, struct dentry *dentry) {
 	}
 
 	if (NULL == dcache_table) {
-		 res = dcache_lazy_init();
-		 if (res != 0) {
-			 return res;
-		 }
+		res = dcache_lazy_init();
+		if (res != 0) {
+			return res;
+		}
 	}
 
 	if (NULL == (dvalue = pool_alloc(&dcache_dentry_pool))) {
@@ -165,7 +165,7 @@ int dcache_add(const char *prefix, const char *rest, struct dentry *dentry) {
 	return 0;
 }
 
-struct dentry *dcache_get(const char *prefix, const char *rest) {
+struct dentry * dcache_get(const char *prefix, const char *rest) {
 	struct dkey dkey;
 	struct dvalue *dvalue;
 	int prefix_len, rest_len;
@@ -189,10 +189,10 @@ struct dentry *dcache_get(const char *prefix, const char *rest) {
 		return NULL;
 	}
 	if (NULL == dcache_table) {
-		 res = dcache_lazy_init();
-		 if (res != 0) {
-			 return NULL;
-		 }
+		res = dcache_lazy_init();
+		if (res != 0) {
+			return NULL;
+		}
 	}
 
 	compound_dentry(dkey.fullpath, pref_tmp, rest);
@@ -208,4 +208,3 @@ static int dcache_init(void) {
 
 	return 0;
 }
-

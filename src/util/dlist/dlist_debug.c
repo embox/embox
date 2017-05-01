@@ -19,13 +19,12 @@ void __dlist_debug_check(const struct dlist_head *head) {
 	assert((!poison || (void *) ~poison == head) &&
 		n->prev == head &&
 		p->next == head,
-			"\n"
-			"head: %p, poison: %p\n"
-			"prev: %p, n: %p, p: %p\n"
-			"next: %p, n: %p, p: %p\n",
-			head, (void *) poison,
-			p, p->next, p->prev,
-			n, n->next, n->prev);
+		"\n"
+		"head: %p, poison: %p\n"
+		"prev: %p, n: %p, p: %p\n"
+		"next: %p, n: %p, p: %p\n",
+		head, (void *) poison,
+		p, p->next, p->prev,
+		n, n->next, n->prev);
 #endif
 }
-

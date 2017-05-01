@@ -14,7 +14,7 @@
 #include <asm/msr.h>
 
 void context_init(struct context *ctx, unsigned int flags,
-		void (*routine_fn)(void), void *sp) {
+	void (*routine_fn)(void), void *sp) {
 	ctx->msr = msr_get_value();
 	ctx->r1 = (uint32_t) sp;
 	ctx->r15 = (uint32_t) routine_fn - 8;

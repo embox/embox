@@ -62,7 +62,8 @@ int thread_cancel_cleanup_push(void (*routine)(void *), void *arg) {
 	sched_lock();
 	{
 		t = thread_self();
-		assert((CLEANUPS_QUANTITY > t->cleanups.counter) && (t->cleanups.counter >= 0));
+		assert((CLEANUPS_QUANTITY > t->cleanups.counter) &&
+			(t->cleanups.counter >= 0));
 
 		cleanup = &t->cleanups.cleanups[t->cleanups.counter++];
 

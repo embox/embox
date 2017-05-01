@@ -5,7 +5,7 @@
  * @date    22.10.2012
  * @author  Anton Kozlov
  * @author  Alexander Kalmuk
- * 			- split signals into standard signals and real-time signals
+ *          - split signals into standard signals and real-time signals
  * @author  Eldar Abusalimov
  */
 
@@ -38,50 +38,49 @@ static void task_sig_handler_ignore(int sig) {
 #pragma clang diagnostic ignored "-Winitializer-overrides"
 #endif
 
-// When we initialize array below some keys override previous ones
-// because they are defined as the some integers. So, warning is disabled
+/* When we initialize array below some keys override previous ones */
+/* because they are defined as the some integers. So, warning is disabled */
 
 typedef void (*_task_sig_handler_t)(int);
 static const _task_sig_handler_t default_sig_action[] = {
-	[SIGHUP]	= Term,
-	[SIGINT]	= Term,
-	[SIGQUIT]	= Core,
-	[SIGILL]	= Core,
-	[SIGTRAP]	= Core,
-	[SIGABRT]	= Core,
-	[SIGIOT]	= Core,
-	[SIGBUS]	= Core,
-	[SIGFPE]	= Core,
-	[SIGKILL]	= Term,
-	[SIGUSR1]	= Term,
-	[SIGSEGV]	= Core,
-	[SIGUSR2]	= Term,
-	[SIGPIPE]	= Term,
-	[SIGALRM]	= Term,
-	[SIGTERM]	= Term,
-	[SIGSTKFLT]	= Term,
-	[SIGCHLD]	= Ign,
-	[SIGCONT]	= Cont,
-	[SIGSTOP]	= Stop,
-	[SIGTSTP]	= Stop,
-	[SIGTTIN]	= Stop,
-	[SIGTTOU]	= Stop,
-	[SIGURG]	= Ign,
-	[SIGXCPU]	= Core,
-	[SIGXFSZ]	= Core,
-	[SIGVTALRM]	= Term,
-	[SIGPROF]	= Term,
-	[SIGWINCH]	= Ign,
-	[SIGPOLL]	= Term,
-	[SIGIO]		= Term,
-	[SIGPWR]	= Term,
-	[SIGSYS]	= Core,
+	[SIGHUP]    = Term,
+	[SIGINT]    = Term,
+	[SIGQUIT]   = Core,
+	[SIGILL]    = Core,
+	[SIGTRAP]   = Core,
+	[SIGABRT]   = Core,
+	[SIGIOT]    = Core,
+	[SIGBUS]    = Core,
+	[SIGFPE]    = Core,
+	[SIGKILL]   = Term,
+	[SIGUSR1]   = Term,
+	[SIGSEGV]   = Core,
+	[SIGUSR2]   = Term,
+	[SIGPIPE]   = Term,
+	[SIGALRM]   = Term,
+	[SIGTERM]   = Term,
+	[SIGSTKFLT] = Term,
+	[SIGCHLD]   = Ign,
+	[SIGCONT]   = Cont,
+	[SIGSTOP]   = Stop,
+	[SIGTSTP]   = Stop,
+	[SIGTTIN]   = Stop,
+	[SIGTTOU]   = Stop,
+	[SIGURG]    = Ign,
+	[SIGXCPU]   = Core,
+	[SIGXFSZ]   = Core,
+	[SIGVTALRM] = Term,
+	[SIGPROF]   = Term,
+	[SIGWINCH]  = Ign,
+	[SIGPOLL]   = Term,
+	[SIGIO]     = Term,
+	[SIGPWR]    = Term,
+	[SIGSYS]    = Core,
 };
 
 #ifdef __clang__
 #pragma clang diagnostic pop
 #endif
-
 
 #undef Term
 #undef Ign
@@ -90,7 +89,7 @@ static const _task_sig_handler_t default_sig_action[] = {
 #undef Cont
 
 static void task_sig_table_init(const struct task *task,
-		void *sig_table_space) {
+	void *sig_table_space) {
 	struct sigaction *sig_table;
 	int sig;
 
@@ -102,7 +101,7 @@ static void task_sig_table_init(const struct task *task,
 	for (sig = 0; sig < _SIG_TOTAL; ++sig) {
 		sig_table[sig].sa_flags = 0;
 		memset(&sig_table[sig].sa_mask, 0,
-				sizeof sig_table[sig].sa_mask);;
+			sizeof sig_table[sig].sa_mask);;
 		sig_table[sig].sa_handler = sig < ARRAY_SIZE(default_sig_action) ?
 			default_sig_action[sig] : task_sig_handler_terminate;
 	}

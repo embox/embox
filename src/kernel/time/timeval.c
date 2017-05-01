@@ -10,7 +10,7 @@
 #include <time.h>
 
 static void set_normalized_timespec(struct timespec *ts,
-		time_t sec, long nsec) {
+	time_t sec, long nsec) {
 	while (nsec >= NSEC_PER_SEC) {
 		nsec -= NSEC_PER_SEC;
 		sec++;
@@ -26,21 +26,21 @@ static void set_normalized_timespec(struct timespec *ts,
 }
 
 struct timespec timespec_add(struct timespec t1,
-		struct timespec t2) {
+	struct timespec t2) {
 	struct timespec ts;
 
 	set_normalized_timespec(&ts, t1.tv_sec + t2.tv_sec,
-			t1.tv_nsec + t2.tv_nsec);
+		t1.tv_nsec + t2.tv_nsec);
 
 	return ts;
 }
 
 struct timespec timespec_sub(struct timespec t1,
-		struct timespec t2) {
+	struct timespec t2) {
 	struct timespec ts;
 
 	set_normalized_timespec(&ts, t1.tv_sec - t2.tv_sec,
-			t1.tv_nsec - t2.tv_nsec);
+		t1.tv_nsec - t2.tv_nsec);
 
 	return ts;
 }
@@ -48,7 +48,8 @@ struct timespec timespec_sub(struct timespec t1,
 struct timespec timespec_add_ns(struct timespec t, time64_t ns) {
 	struct timespec res;
 
-	set_normalized_timespec(&res, t.tv_sec + ns / NSEC_PER_SEC, t.tv_nsec + ns % NSEC_PER_SEC);
+	set_normalized_timespec(&res, t.tv_sec + ns / NSEC_PER_SEC,
+		t.tv_nsec + ns % NSEC_PER_SEC);
 
 	return res;
 }

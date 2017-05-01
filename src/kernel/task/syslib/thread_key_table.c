@@ -28,13 +28,13 @@ int task_thread_key_create(struct task *task, size_t *idx) {
 
 	mutex_lock(&kt->mutex);
 	{
-		if(index_locked(&kt->indexator, *idx)) {
+		if (index_locked(&kt->indexator, *idx)) {
 			res = -EBUSY;
 			goto out;
 		}
 		index_lock(&kt->indexator, *idx);
 	}
-out:
+	out:
 	mutex_unlock(&kt->mutex);
 
 	return res;
@@ -48,13 +48,13 @@ int task_thread_key_destroy(struct task *task, size_t idx) {
 
 	mutex_lock(&kt->mutex);
 	{
-		if(!index_locked(&kt->indexator, idx)) {
+		if (!index_locked(&kt->indexator, idx)) {
 			res = -EALREADY;
 			goto out;
 		}
 		index_unlock(&kt->indexator, idx);
 	}
-out:
+	out:
 	mutex_lock(&kt->mutex);
 	return res;
 }

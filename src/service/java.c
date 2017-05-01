@@ -42,14 +42,14 @@ int main(int argc, char *argv[]) {
 	int new_argc;
 
 	printf("HTTP/1.1 %d %s\r\n"
-		"Content-Type: %s\r\n"
-		"Connection: close\r\n"
-		"\r\n", 200, "OK", "text/plain");
+		   "Content-Type: %s\r\n"
+		   "Connection: close\r\n"
+		   "\r\n", 200, "OK", "text/plain");
 
 	new_argc = java_query_to_argv(query, new_argv, ARRAY_SIZE(new_argv));
 	if (new_argc >= 2) {
 
-		char* args[argc+2];
+		char *args[argc+2];
 		args[0] = "cldc_vm";
 		args[1] = "-cp";
 		args[2] = new_argv[0];

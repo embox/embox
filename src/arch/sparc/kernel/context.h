@@ -14,11 +14,12 @@
 #include <stdint.h>
 
 struct context_kregs {
-	/* 0x00 */uint32_t ksp; /**< Kernel stack pointer. */
-	/* 0x04 */uint32_t ret; /**< Return address for #context_switch(). */
-	/* 0x08 */uint32_t arg; /**< TODO For initial context switch. -- Eldar */
-	/* 0x0c */uint32_t psr; /**< At least for CWP value. */
-	/* 0x10 */uint32_t wim; /**< Context switch time invalid window. */
+	/* 0x00 */
+	uint32_t ksp;           /**< Kernel stack pointer. */
+	/* 0x04 */ uint32_t ret; /**< Return address for #context_switch(). */
+	/* 0x08 */ uint32_t arg; /**< TODO For initial context switch. -- Eldar */
+	/* 0x0c */ uint32_t psr; /**< At least for CWP value. */
+	/* 0x10 */ uint32_t wim; /**< Context switch time invalid window. */
 };
 
 struct context {

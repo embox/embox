@@ -13,13 +13,12 @@
 
 #define MSL          2*60*1000 /* Maximum Segment Lifetime is 2 minutes */
 
-
 struct sk_buff;
 
 /**
  *	return sk_buff containing complete data
  */
-extern struct sk_buff *ip_defrag(struct sk_buff *skb);
+extern struct sk_buff * ip_defrag(struct sk_buff *skb);
 
 /* When skb is large then interface MTU we split it into
  * number of smaller pieces. They are linked into sk_buff_head.
@@ -27,6 +26,6 @@ extern struct sk_buff *ip_defrag(struct sk_buff *skb);
  * During this operation we don't touch the original skb
  */
 extern int ip_frag(const struct sk_buff *skb, uint32_t mtu,
-		struct sk_buff_head *tx_buf);
+	struct sk_buff_head *tx_buf);
 
 #endif /* NET_L3_IPV4_IP_FRAGMENT_H */

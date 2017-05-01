@@ -1,7 +1,7 @@
 /*
  * ioreq.h: I/O request definitions for device models
  * Copyright (c) 2004, Intel Corporation.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -45,52 +45,52 @@
  *
  * For I/O type IOREQ_TYPE_PCI_CONFIG, the physical address is formatted
  * as follows:
- * 
+ *
  * 63....48|47..40|39..35|34..32|31........0
  * SEGMENT |BUS   |DEV   |FN    |OFFSET
  */
 struct ioreq {
-    uint64_t addr;          /* physical address */
-    uint64_t data;          /* data (or paddr of data) */
-    uint32_t count;         /* for rep prefixes */
-    uint32_t size;          /* size in bytes */
-    uint32_t vp_eport;      /* evtchn for notifications to/from device model */
-    uint16_t _pad0;
-    uint8_t state:4;
-    uint8_t data_is_ptr:1;  /* if 1, data above is the guest paddr 
-                             * of the real data to use. */
-    uint8_t dir:1;          /* 1=read, 0=write */
-    uint8_t df:1;
-    uint8_t _pad1:1;
-    uint8_t type;           /* I/O type */
+	uint64_t addr;          /* physical address */
+	uint64_t data;          /* data (or paddr of data) */
+	uint32_t count;         /* for rep prefixes */
+	uint32_t size;          /* size in bytes */
+	uint32_t vp_eport;      /* evtchn for notifications to/from device model */
+	uint16_t _pad0;
+	uint8_t state : 4;
+	uint8_t data_is_ptr : 1;  /* if 1, data above is the guest paddr
+	                         * of the real data to use. */
+	uint8_t dir : 1;          /* 1=read, 0=write */
+	uint8_t df : 1;
+	uint8_t _pad1 : 1;
+	uint8_t type;           /* I/O type */
 };
 typedef struct ioreq ioreq_t;
 
 struct shared_iopage {
-    struct ioreq vcpu_ioreq[1];
+	struct ioreq vcpu_ioreq[1];
 };
 typedef struct shared_iopage shared_iopage_t;
 
 struct buf_ioreq {
-    uint8_t  type;   /* I/O type                    */
-    uint8_t  pad:1;
-    uint8_t  dir:1;  /* 1=read, 0=write             */
-    uint8_t  size:2; /* 0=>1, 1=>2, 2=>4, 3=>8. If 8, use two buf_ioreqs */
-    uint32_t addr:20;/* physical address            */
-    uint32_t data;   /* data                        */
+	uint8_t type;    /* I/O type                    */
+	uint8_t pad : 1;
+	uint8_t dir : 1;  /* 1=read, 0=write             */
+	uint8_t size : 2; /* 0=>1, 1=>2, 2=>4, 3=>8. If 8, use two buf_ioreqs */
+	uint32_t addr : 20;/* physical address            */
+	uint32_t data;   /* data                        */
 };
 typedef struct buf_ioreq buf_ioreq_t;
 
 #define IOREQ_BUFFER_SLOT_NUM     511 /* 8 bytes each, plus 2 4-byte indexes */
 struct buffered_iopage {
-    unsigned int read_pointer;
-    unsigned int write_pointer;
-    buf_ioreq_t buf_ioreq[IOREQ_BUFFER_SLOT_NUM];
+	unsigned int read_pointer;
+	unsigned int write_pointer;
+	buf_ioreq_t buf_ioreq[IOREQ_BUFFER_SLOT_NUM];
 }; /* NB. Size of this structure must be no greater than one page. */
 typedef struct buffered_iopage buffered_iopage_t;
 
 /*
- * ACPI Control/Event register locations. Location is controlled by a 
+ * ACPI Control/Event register locations. Location is controlled by a
  * version number in HVM_PARAM_ACPI_IOPORTS_LOCATION.
  */
 
@@ -114,7 +114,6 @@ typedef struct buffered_iopage buffered_iopage_t;
 #define ACPI_PM_TMR_BLK_ADDRESS      ACPI_PM_TMR_BLK_ADDRESS_V0
 #define ACPI_GPE0_BLK_ADDRESS        ACPI_GPE0_BLK_ADDRESS_V0
 #define ACPI_GPE0_BLK_LEN            ACPI_GPE0_BLK_LEN_V0
-
 
 #endif /* _IOREQ_H_ */
 

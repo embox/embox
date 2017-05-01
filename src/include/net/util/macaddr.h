@@ -8,7 +8,8 @@
 #ifndef NET_UTIL_MACADDR_H_
 #define NET_UTIL_MACADDR_H_
 
-extern unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res);
+extern unsigned char * macaddr_scan(const unsigned char *addr,
+	unsigned char *res);
 extern void macaddr_print(unsigned char *buf, const unsigned char *addr);
 
 #define MACADDR_FMT "%02x:%02x:%02x:%02x:%02x:%02x"

@@ -27,7 +27,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static int mips_clock_setup(struct time_dev_conf * conf) {
+static int mips_clock_setup(struct time_dev_conf *conf) {
 	mips_write_c0_compare(COUNT_OFFSET);
 	mips_write_c0_count(0);
 	return ENOERR;
@@ -54,7 +54,8 @@ static int mips_clock_init(void) {
 		return err;
 	}
 
-	err = irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, &mips_clock_source, "mips_clk");
+	err = irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, &mips_clock_source,
+			"mips_clk");
 	if (err) {
 		return err;
 	}

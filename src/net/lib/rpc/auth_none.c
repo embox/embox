@@ -31,5 +31,5 @@ static void authnone_destroy(struct auth *ath) {
 }
 
 static struct auth_ops authnone_ops = {
-		.destroy = authnone_destroy
+	.destroy = authnone_destroy
 };

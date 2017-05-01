@@ -27,9 +27,9 @@
 
 extern size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz);
 
-//TODO this function call from stack (may be place it to other file)
+/*TODO this function call from stack (may be place it to other file) */
 void sock_rcv(struct sock *sk, struct sk_buff *skb,
-		unsigned char *p_data, size_t size) {
+	unsigned char *p_data, size_t size) {
 	if ((sk == NULL) || (skb == NULL) || (p_data == NULL)) {
 		return; /* error: invalid argument */
 	}
@@ -70,7 +70,8 @@ static unsigned long sock_calc_timeout(struct sock *sk) {
 	return timeout;
 }
 
-static struct sk_buff *sock_get_skb(struct sock *sk, unsigned long timeout, int *err_p) {
+static struct sk_buff * sock_get_skb(struct sock *sk, unsigned long timeout,
+	int *err_p) {
 	struct sk_buff *skb;
 	int err;
 
@@ -186,7 +187,7 @@ in_port_t sock_inet_get_src_port(const struct sock *sk) {
 in_port_t sock_inet_get_dst_port(const struct sock *sk) {
 	assert(sk != NULL);
 	assert((sk->opt.so_domain == AF_INET)
-			|| (sk->opt.so_domain == AF_INET6));
+		|| (sk->opt.so_domain == AF_INET6));
 
 	if (sk->opt.so_domain == AF_INET) {
 		return to_const_inet_sock(sk)->dst_in.sin_port;

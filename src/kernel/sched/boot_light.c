@@ -13,7 +13,8 @@
 
 struct schedee boot_schedee;
 
-static struct schedee *boot_process(struct schedee *prev, struct schedee *next) {
+static struct schedee * boot_process(struct schedee *prev,
+	struct schedee *next) {
 	assert(prev == next);
 	assert(next == &boot_schedee);
 
@@ -23,7 +24,7 @@ static struct schedee *boot_process(struct schedee *prev, struct schedee *next) 
 	return &boot_schedee;
 }
 
-struct schedee *boot_thread_create(void)
+struct schedee * boot_thread_create(void)
 {
 	schedee_init(&boot_schedee, SCHED_PRIORITY_HIGH, boot_process);
 	return &boot_schedee;

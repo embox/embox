@@ -20,7 +20,7 @@ EMBOX_UNIT_INIT(gpio_init);
 
 static struct gpio omap_gpio[GPIO_MODULE_CNT];
 
-struct gpio *gpio_by_num(int num_port) {
+struct gpio * gpio_by_num(int num_port) {
 
 	return &omap_gpio[num_port - 1];
 }
@@ -120,11 +120,10 @@ gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask){
 	return mask & (gpio_reg_read(gpio->base, GPIO_DATAIN));
 }
 
-
-static int gpio_pin_number (gpio_mask_t mask) {
+static int gpio_pin_number(gpio_mask_t mask) {
 	int pin_nr;
 
-	for(pin_nr = 0; pin_nr < N_PINS; pin_nr++) {
+	for (pin_nr = 0; pin_nr < N_PINS; pin_nr++) {
 		if (mask & (1 << pin_nr)) {
 			break;
 		}
@@ -155,9 +154,9 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 		if (changed & gpio->pin[i].mask) {
 			gpio->pin[i].handler(irq_nr, gpio->pin[i].data);
 			gpio_reg_write(gpio->base, GPIO_IRQSTATUS1,
-					changed & gpio->pin[i].mask);
+				changed & gpio->pin[i].mask);
 			gpio_reg_write(gpio->base, GPIO_IRQSTATUS2,
-					changed & gpio->pin[i].mask);
+				changed & gpio->pin[i].mask);
 		}
 	}
 
@@ -165,7 +164,7 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 }
 
 int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
-		irq_handler_t pin_handler, int mode, void *data) {
+	irq_handler_t pin_handler, int mode, void *data) {
 	int pin_nr;
 	assert(gpio);
 
@@ -176,13 +175,13 @@ int gpio_pin_irq_attach(struct gpio *gpio, gpio_mask_t mask,
 	gpio->pin[pin_nr].mask = (1 << pin_nr);
 	gpio->pin[pin_nr].data = data;
 	gpio_settings(gpio, (1 << pin_nr),
-			mode | GPIO_MODE_INPUT | GPIO_MODE_IN_INT_EN);
+		mode | GPIO_MODE_INPUT | GPIO_MODE_IN_INT_EN);
 
 	return 0;
 }
 
 int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
-		irq_handler_t pin_handler, int mode) {
+	irq_handler_t pin_handler, int mode) {
 	int pin_nr;
 	assert(gpio);
 
@@ -197,12 +196,12 @@ int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
 }
 
 static int gpio_init(void) {
-	//uint32_t rev;
+	/*uint32_t rev; */
 	int i, ret;
 	struct gpio *gpio;
 	char str [255];
 
-	for(i = 0; i < GPIO_MODULE_CNT; i++) {
+	for (i = 0; i < GPIO_MODULE_CNT; i++) {
 
 		gpio = &omap_gpio[i];
 
@@ -213,13 +212,13 @@ static int gpio_init(void) {
 		/*
 		rev = gpio_reg_read(gpio->base, GPIO_REVISION);
 		 printk("maj = %d, min = %d\n",
-				GPIO_REVISION_MAJOR(rev), GPIO_REVISION_MINOR(rev)); */
+		        GPIO_REVISION_MAJOR(rev), GPIO_REVISION_MINOR(rev)); */
 
 		*str = 0;
 		sprintf(str,"OMAP_GPIO%d", i);
 
 		if (0 != (ret = irq_attach(GPIO_IRQ(i + 1),
-				irq_gpio_handler, 0, gpio, str))) {
+					irq_gpio_handler, 0, gpio, str))) {
 			return ret;
 		}
 	}

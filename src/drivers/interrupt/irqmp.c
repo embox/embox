@@ -22,14 +22,15 @@
 EMBOX_UNIT_INIT(unit_init);
 
 struct irqmp_regs {
-	/* 0x00 */uint32_t level;
-	/* 0x04 */uint32_t pending;
-	/* 0x08 */uint32_t force;
-	/* 0x0C */uint32_t clear;
-	/* 0x10 */uint32_t mpstatus;
-	/* 0x14 */uint32_t broadcast;
-	/* 0x18 */uint32_t dummy[10];
-	/* 0x40 */uint32_t mask;
+	/* 0x00 */
+	uint32_t level;
+	/* 0x04 */ uint32_t pending;
+	/* 0x08 */ uint32_t force;
+	/* 0x0C */ uint32_t clear;
+	/* 0x10 */ uint32_t mpstatus;
+	/* 0x14 */ uint32_t broadcast;
+	/* 0x18 */ uint32_t dummy[10];
+	/* 0x40 */ uint32_t mask;
 };
 
 static volatile struct irqmp_regs *dev_regs;
@@ -81,7 +82,8 @@ static int irqctrl_memory_map(uint32_t base, size_t len) {
 	base = ((uint32_t) base) & ~(PAGE_SIZE() - 1);
 
 	/* 0x100 - random value */
-	ptr = mmap_device_memory((void *) base, len, PROT_READ | PROT_WRITE | PROT_NOCACHE,
+	ptr = mmap_device_memory((void *) base, len,
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
 			MAP_FIXED, base);
 	if (ptr == MAP_FAILED) {
 		return -1;
@@ -94,7 +96,7 @@ static int irqctrl_memory_map(uint32_t base, size_t len) {
 static int dev_regs_init(void) {
 	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
-			AMBAPP_DEVICE_GAISLER_IRQMP, false, false)) {
+		AMBAPP_DEVICE_GAISLER_IRQMP, false, false)) {
 		return -ENODEV;
 	}
 	dev_regs = (volatile struct irqmp_regs *) amba_dev.bar[0].start;

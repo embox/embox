@@ -29,16 +29,16 @@ static inline void traps_status_save(uint32_t *status) {
 
 static inline void traps_status_restore(uint32_t *status) {
 	(*status & MSR_EE_MASK) ? msr_set_ee() :
-				    msr_clr_ee();
+	msr_clr_ee();
 }
 
 void traps_save_env(traps_env_t *env) {
 	if (NULL != old_env) {
 		env->base_addr = 0; /*always 0*/
 		memcpy(&(&cur_env)->hw_traps, hwtrap_handler,
-				ARRAY_SIZE(&(&cur_env)->hw_traps));
+			ARRAY_SIZE(&(&cur_env)->hw_traps));
 		memcpy(&(&cur_env)->soft_traps, sotftrap_handler,
-				ARRAY_SIZE(&(&cur_env)->soft_traps));
+			ARRAY_SIZE(&(&cur_env)->soft_traps));
 		old_env = &cur_env;
 	}
 	(&cur_env)->status = msr_get_value();

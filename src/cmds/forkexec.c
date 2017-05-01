@@ -15,7 +15,7 @@
 
 #include <kernel/task.h>
 
-static void *new_task_entry(void *file);
+static void * new_task_entry(void *file);
 
 int main(int argc, char **argv) {
 	char *filename;
@@ -34,11 +34,16 @@ int main(int argc, char **argv) {
 	return pid > 0 ? 0 : pid;
 }
 
-extern int execve_syscall(const char *filename, char *const argv[], char *const envp[]);
+extern int execve_syscall(const char *filename, char *const argv[],
+	char *const envp[]);
 
-static void *new_task_entry(void *filename) {
-	char *argv[2] = {filename, NULL};
-	char *envp[1] = {NULL};
+static void * new_task_entry(void *filename) {
+	char *argv[2] = {
+		filename, NULL
+	};
+	char *envp[1] = {
+		NULL
+	};
 
 	execve_syscall(filename, argv, envp);
 

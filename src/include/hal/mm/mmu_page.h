@@ -59,7 +59,8 @@ extern mmu_page_flags_t mmu_page_get_flags(mmu_ctx_t ctx, vaddr_t vaddr);
  *
  * @return All MMU flags for pointer page
  */
-extern void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr, mmu_page_flags_t flags);
+extern void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
+	mmu_page_flags_t flags);
 
 /**
  * Marks pointed page as valid. It means that we set valid flag for this page

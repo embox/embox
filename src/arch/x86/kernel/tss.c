@@ -45,11 +45,12 @@ static inline void tss_fill(void) {
 	 * can be used to switch to kernel mode from ring 3.
 	 */
 	tss_entry.cs = __KERNEL_CS | 0x3;
-	tss_entry.ss = tss_entry.ds = tss_entry.es = tss_entry.fs = tss_entry.gs = __KERNEL_DS | 0x3;
+	tss_entry.ss = tss_entry.ds = tss_entry.es = tss_entry.fs = tss_entry.gs =
+						__KERNEL_DS | 0x3;
 }
 
 static void tss_flush(void) {
-	__asm__ __volatile__ ("ltr %%ax": : "a" __TSS);
+	__asm__ __volatile__ ("ltr %%ax" : : "a" __TSS);
 }
 
 static int tss_init(void) {

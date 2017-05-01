@@ -19,7 +19,7 @@
 
 ARRAY_SPREAD_DEF(const struct fuse_module *const, fuse_module_repo);
 
-struct fuse_module *fuse_module_lookup(char *fuse_type) {
+struct fuse_module * fuse_module_lookup(char *fuse_type) {
 	struct fuse_module *fm;
 	array_spread_foreach(fm, fuse_module_repo) {
 		if (0 == strcmp(fuse_type, fm->fuse_module_name)) {
@@ -36,15 +36,16 @@ struct fuse_mount_params {
 };
 
 extern int dentry_fill(struct super_block *, struct inode *,
-                       struct dentry *, struct dentry *);
+	struct dentry *, struct dentry *);
 static int fuse_fill_dentry(struct super_block *sb, char *dest) {
 	struct dentry *d;
 	struct lookup lookup;
 
 	dvfs_lookup(dest, &lookup);
 
-	if (lookup.item == NULL)
+	if (lookup.item == NULL) {
 		return -ENOENT;
+	}
 
 	assert(lookup.item->flags & S_IFDIR);
 
@@ -76,7 +77,7 @@ static int fuse_fill_dentry(struct super_block *sb, char *dest) {
 	return 0;
 }
 
-static void *fuse_module_mount_process(void *arg) {
+static void * fuse_module_mount_process(void *arg) {
 	struct fuse_mount_params *params;
 	const struct cmd *cmd;
 	struct super_block *sb;
@@ -114,11 +115,14 @@ static void *fuse_module_mount_process(void *arg) {
 
 int fuse_module_mount(struct fuse_module *fm, char *dev, char *dest) {
 	int res;
-	struct fuse_mount_params params = {fm, dev, dest};
+	struct fuse_mount_params params = {
+		fm, dev, dest
+	};
 
 	assert(fm);
 
-	res = new_task(fm->fuse_module_cmd_mount, fuse_module_mount_process, &params);
+	res =
+		new_task(fm->fuse_module_cmd_mount, fuse_module_mount_process, &params);
 	if (res) {
 
 		return res;
@@ -133,4 +137,3 @@ int fuse_module_mount(struct fuse_module *fm, char *dev, char *dest) {
 int fuse_module_umount(struct fuse_module *fm) {
 	return -ENOSUPP;
 }
-

@@ -25,8 +25,8 @@ ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
 	}
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & S_IROTH))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))
+		|| (!(idesc->idesc_amode & S_IROTH))) {
 		return SET_ERRNO(EBADF);
 	}
 

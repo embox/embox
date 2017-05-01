@@ -14,10 +14,11 @@
 
 static void print_usage(void) {
 	printf("Usage:" "\n"
-			"shutdown -p" "\n"
-			"\t" "turn off the system" "\n"
-			"shutdown -r" "\n"
-			"\t" "reboot the system" "\n");
+					"shutdown -p" "\n"
+								  "\t" "turn off the system" "\n"
+															 "shutdown -r" "\n"
+																		   "\t" "reboot the system"
+																				"\n");
 }
 
 int main(int argc, char **argv) {

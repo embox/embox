@@ -16,7 +16,7 @@ static void parse_com(char *com) {
 		cmd = *com;
 		if (!('A' <= cmd && cmd <= 'Z')) {
 			printf("Expected G-CODE command, but get '%c' (0x%hhu)\n",
-					isprint(cmd) ? cmd : ' ', cmd);
+				isprint(cmd) ? cmd : ' ', cmd);
 			break;
 		}
 		if (2 > sscanf(com + 1, "%d.%d", &arg, &frac)) {

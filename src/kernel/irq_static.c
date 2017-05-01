@@ -9,7 +9,7 @@
 #include <kernel/irq.h>
 
 int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
-		void *dev_id, const char *dev_name) {
+	void *dev_id, const char *dev_name) {
 	irqctrl_enable(irq_nr);
 	return 0;
 }

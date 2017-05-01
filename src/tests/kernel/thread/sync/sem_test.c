@@ -16,7 +16,7 @@ static struct sem s;
 
 EMBOX_TEST_SUITE("Semaphore test");
 
-static void *low_run(void *arg) {
+static void * low_run(void *arg) {
 	test_emit('a');
 	semaphore_enter(&s);
 	test_emit('b');
@@ -27,7 +27,7 @@ static void *low_run(void *arg) {
 	return NULL;
 }
 
-static void *mid_run(void *arg) {
+static void * mid_run(void *arg) {
 	test_emit('c');
 	semaphore_enter(&s);
 	test_emit('d');
@@ -38,7 +38,7 @@ static void *mid_run(void *arg) {
 	return NULL;
 }
 
-static void *high_run(void *arg) {
+static void * high_run(void *arg) {
 	test_emit('e');
 	semaphore_enter(&s);
 	test_emit('g');
@@ -72,7 +72,7 @@ TEST_CASE("General") {
 	test_assert_emitted("abcdefghijk");
 }
 
-static void *h_high_run(void *arg) {
+static void * h_high_run(void *arg) {
 	struct timespec time;
 	clock_gettime(CLOCK_REALTIME, &time);
 	test_assert_not_zero(semaphore_timedwait(&s, &time));
@@ -82,7 +82,7 @@ static void *h_high_run(void *arg) {
 	return NULL;
 }
 
-static void *l_low_run(void *arg) {
+static void * l_low_run(void *arg) {
 	semaphore_enter(&s);
 	test_assert_zero(thread_launch(h_high));
 	semaphore_leave(&s);

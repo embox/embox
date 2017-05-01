@@ -23,7 +23,7 @@ static inline struct inet6_sock * to_inet6_sock(struct sock *sk) {
 }
 
 static inline const struct inet6_sock * to_const_inet6_sock(
-		const struct sock *sk) {
+	const struct sock *sk) {
 	return (const struct inet6_sock *)sk;
 }
 

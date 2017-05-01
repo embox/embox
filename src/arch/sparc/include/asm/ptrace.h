@@ -27,7 +27,7 @@ struct pt_regs {
 	uint32_t y;          /**< MUL/DIV flags. */
 	uint32_t globals[8]; /**< Global registers. */
 	uint32_t ins[8];     /**< Input registers. */
-}__attribute__ ((aligned (8)));
+} __attribute__ ((aligned(8)));
 
 #else /* __ASSEMBLER__ */
 

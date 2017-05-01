@@ -5,7 +5,6 @@
  * @author Ilia Vaprol
  */
 
-
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -23,7 +22,6 @@
 #include <net/lib/rpc/rpc_msg.h>
 #include <net/lib/rpc/pmap.h>
 
-
 #include <util/log.h>
 
 #include <kernel/time/ktime.h>
@@ -33,7 +31,7 @@
 static const struct clnt_ops clntudp_ops;
 
 struct client * clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
-		uint32_t versnum, struct timeval resend, int *psock) {
+	uint32_t versnum, struct timeval resend, int *psock) {
 	struct client *clnt;
 	struct auth *ath;
 	int sock;
@@ -77,15 +75,15 @@ struct client * clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	*psock = sock;
 
 	return clnt;
-exit_with_error:
+	exit_with_error:
 	auth_destroy(ath);
 	clnt_free(clnt);
 	return NULL;
 }
 
 static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
-		xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
-		struct timeval timeout) {
+	xdrproc_t inproc, char *in, xdrproc_t outproc, char *out,
+	struct timeval timeout) {
 	int res;
 	char buff[UDP_MSG_MAX_SZ];
 	struct xdr xstream;
@@ -106,7 +104,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 
 	xdrmem_create(&xstream, buff, sizeof buff, XDR_ENCODE);
 	if (!xdr_rpc_msg(&xstream, &msg_call)
-			|| !(*inproc)(&xstream, in)) {
+		|| !(*inproc)(&xstream, in)) {
 		clnt->err.status = RPC_CANTENCODEARGS;
 		xdr_destroy(&xstream);
 		goto exit_with_status;
@@ -124,9 +122,10 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 	ktime_get_timeval(&tmp);
 	timeradd(&tmp, &timeout, &until);
 
-send_again:
+	send_again:
 	res = sendto(clnt->sock, buff, buff_len, 0,
-			(struct sockaddr *)&clnt->extra.udp.sin, sizeof clnt->extra.udp.sin);
+			(struct sockaddr *)&clnt->extra.udp.sin,
+			sizeof clnt->extra.udp.sin);
 	ktime_get_timeval(&sent);
 	if (res == -1) {
 		if (errno != EAGAIN) {
@@ -143,7 +142,7 @@ send_again:
 		goto send_again;
 	}
 
-recv_again:
+	recv_again:
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, NULL, NULL);
 	ktime_get_timeval(&tmp);
 	if (res == -1) {
@@ -176,7 +175,7 @@ recv_again:
 	xdr_destroy(&xstream);
 
 	clnt->err.status = RPC_SUCCESS;
-exit_with_status:
+	exit_with_status:
 	return clnt->err.status;
 }
 
@@ -195,7 +194,7 @@ static void clntudp_destroy(struct client *clnt) {
 }
 
 static const struct clnt_ops clntudp_ops = {
-		.call = clntudp_call,
-		.geterr = clntudp_geterr,
-		.destroy = clntudp_destroy
+	.call = clntudp_call,
+	.geterr = clntudp_geterr,
+	.destroy = clntudp_destroy
 };

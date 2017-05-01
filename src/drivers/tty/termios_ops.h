@@ -25,7 +25,7 @@ struct termios;
  * @return Number of writed symbols
  */
 extern int termios_putc(const struct termios *tio, char ch,
-		struct ring *ring, char *buf, size_t buflen);
+	struct ring *ring, char *buf, size_t buflen);
 
 /**
  * @brief Does associated with termios mapping of symbol to it's visual
@@ -40,7 +40,6 @@ extern int termios_putc(const struct termios *tio, char ch,
  * @return
  */
 extern int termios_gotc(const struct termios *tio, char ch,
-		struct ring *ring, char *buf, size_t buflen);
+	struct ring *ring, char *buf, size_t buflen);
 
 #endif /* DRIVERS_TERMIOS_OPS_H_ */
-

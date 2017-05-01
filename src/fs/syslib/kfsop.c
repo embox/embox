@@ -24,10 +24,9 @@
 #include <fs/perm.h>
 #include <fs/file_desc.h>
 #include <fs/dcache.h>
-//#include <fs/file_operation.h>
+/*#include <fs/file_operation.h> */
 
 #include <security/security.h>
-
 
 #include <kernel/spinlock.h>
 #include <kernel/thread.h>
@@ -42,7 +41,7 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	struct fs_driver *drv;
 	int retval = 0;
 
-	if(NULL == parent->node->nas->fs) {
+	if (NULL == parent->node->nas->fs) {
 		return -EINVAL;
 	}
 
@@ -63,12 +62,12 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	}
 
 	/* XXX it's here and not in vfs since vfs node associated with drive after
- 	 * creating. security may call driver dependent features, like setting
+	 * creating. security may call driver dependent features, like setting
 	 * xattr
 	 */
 	security_node_cred_fill(node.node);
 	return 0;
-out:
+	out:
 	vfs_del_leaf(node.node);
 	return retval;
 }
@@ -84,7 +83,7 @@ int kmkdir(const char *pathname, mode_t mode) {
 	}
 
 	if (NULL != (ch = strchr(lastpath, '/'))
-			&& NULL != path_next(ch, NULL)) {
+		&& NULL != path_next(ch, NULL)) {
 		errno = ENOENT;
 		return -1;
 	}
@@ -109,7 +108,8 @@ int kmkdir(const char *pathname, mode_t mode) {
 	return 0;
 }
 
-int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *child) {
+int kcreat(struct path *dir_path, const char *path, mode_t mode,
+	struct path *child) {
 	struct fs_driver *drv;
 	int ret;
 
@@ -144,7 +144,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 
 	child->mnt_desc = dir_path->mnt_desc;
 
-	if(!dir_path->node->nas || !dir_path->node->nas->fs) {
+	if (!dir_path->node->nas || !dir_path->node->nas->fs) {
 		SET_ERRNO(EBADF);
 		vfs_del_leaf(child->node);
 		return -1;
@@ -165,7 +165,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 	}
 
 	/* XXX it's here and not in vfs since vfs node associated with drive after
- 	 * creating. security may call driver dependent features, like setting
+	 * creating. security may call driver dependent features, like setting
 	 * xattr
 	 */
 	security_node_cred_fill(child->node);
@@ -304,7 +304,7 @@ int kformat(const char *pathname, const char *fs_type) {
 			return -EINVAL;
 		}
 		if (NULL == drv->fsop->format) {
-			return  -ENOSYS;
+			return -ENOSYS;
 		}
 	}
 	else {
@@ -381,7 +381,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 	}
 
 	if (ENOERR != (res = drv->fsop->mount(dev_node.node, root_path.node))) {
-		//todo free root
+		/*todo free root */
 		errno = -res;
 		return -1;
 
@@ -389,7 +389,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 
 	if (NULL == mount_table_add(&dir_node, root_path.node, dev)) {
 		drv->fsop->umount(&dir_node);
-		//todo free root
+		/*todo free root */
 		errno = -res;
 		return -1;
 	}
@@ -461,7 +461,7 @@ int krename(const char *oldpath, const char *newpath) {
 	struct tree_link *link, *end_link;
 
 	if (PATH_MAX < strlen(oldpath) ||
-			PATH_MAX < strlen(newpath)) {
+		PATH_MAX < strlen(newpath)) {
 		SET_ERRNO(ENAMETOOLONG);
 		return -1;
 	}
@@ -537,12 +537,12 @@ int krename(const char *oldpath, const char *newpath) {
 			link = tree_children_next(link);
 
 			if (0 != strcmp(".", diritem->name) &&
-					0 != strcmp("..", diritem->name)) {
+				0 != strcmp("..", diritem->name)) {
 				diritemlen = strlen(diritem->name);
 				oldpatharg =
-						calloc(strlen(oldpath) + diritemlen + 2, sizeof(char));
+					calloc(strlen(oldpath) + diritemlen + 2, sizeof(char));
 				newpatharg =
-						calloc(strlen(newpath) + diritemlen + 2, sizeof(char));
+					calloc(strlen(newpath) + diritemlen + 2, sizeof(char));
 				if (NULL == oldpatharg || NULL == newpatharg) {
 					SET_ERRNO(ENOMEM);
 					return -1;
@@ -568,7 +568,7 @@ int krename(const char *oldpath, const char *newpath) {
 				free(oldpatharg);
 			}
 		}
-	/* Or copy file */
+		/* Or copy file */
 	} else {
 		rc = copy_file(oldpath, newpath);
 		if (-1 == rc) {
@@ -602,10 +602,10 @@ int kumount(const char *dir) {
 	}
 
 	/* check if dir not a root dir */
-//	if(-EBUSY != (res = mount_table_check(dir_node))) {
-//		errno = -EINVAL;
-//		return -1;
-//	}
+/*	if(-EBUSY != (res = mount_table_check(dir_node))) { */
+/*		errno = -EINVAL; */
+/*		return -1; */
+/*	} */
 
 	/*TODO check if it has a opened files */
 
@@ -620,24 +620,24 @@ int kumount(const char *dir) {
 		return -EINVAL;
 	}
 	if (!drv->fsop->umount) {
-		return  -ENOSYS;
+		return -ENOSYS;
 	}
 
 	if (0 != (res = security_umount(dir_node.node))) {
 		return res;
 	}
 
-	if(0 != (res = drv->fsop->umount(dir_node.node))) {
+	if (0 != (res = drv->fsop->umount(dir_node.node))) {
 		return res;
 	}
 
 	mount_table_del(node.mnt_desc);
 
-//	/*restore previous fs type from parent dir */
-//	if(NULL != (parent = vfs_get_parent(dir_node))) {
-//		dir_node->nas->fs = parent->nas->fs;
-//		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
-//	}
+/*	/ *restore previous fs type from parent dir * / */
+/*	if(NULL != (parent = vfs_get_parent(dir_node))) { */
+/*		dir_node->nas->fs = parent->nas->fs; */
+/*		//dir_node->nas->fi->privdata = parent->nas->fi->privdata; */
+/*	} */
 
 	return 0;
 }
@@ -650,7 +650,8 @@ static int flock_shared_get(flock_t *flock) {
 	if (NULL == shlock) {
 		return -ENOMEM;
 	}
-	dlist_add_next(dlist_head_init(&shlock->flock_link), &flock->shlock_holders);
+	dlist_add_next(dlist_head_init(&shlock->flock_link),
+		&flock->shlock_holders);
 	shlock->holder = current;
 	flock->shlock_count++;
 
@@ -727,9 +728,10 @@ int kflock(int fd, int operation) {
 
 	/* Validate operation */
 	if (((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_EX && \
-			((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_SH && \
-			((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_UN)
+		((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_SH && \
+		((LOCK_EX | LOCK_SH | LOCK_UN) & operation) != LOCK_UN) {
 		return -EINVAL;
+	}
 
 	/* - Find locks and other properties for provided file descriptor number
 	 * - fd is validated inside task_self_idx_get */

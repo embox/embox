@@ -30,7 +30,7 @@ INDEX_DEF(idecd_idx, 0, MAX_DEV_QUANTITY);
 static block_dev_driver_t idecd_pio_driver;
 
 static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
-		int pktlen, char *buffer, size_t bufsize) {
+	int pktlen, char *buffer, size_t bufsize) {
 	hdc_t *hdc;
 	int result;
 	char *bufp;
@@ -88,7 +88,8 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 		}
 
 		/* Get the byte count */
-		bytes = (inb(hdc->iobase + HDC_TRACKMSB) << 8) | inb(hdc->iobase + HDC_TRACKLSB);
+		bytes = (inb(hdc->iobase + HDC_TRACKMSB) << 8) | inb(
+				hdc->iobase + HDC_TRACKLSB);
 		if (bytes == 0) {
 			break;
 		}
@@ -150,7 +151,7 @@ static int atapi_request_sense(hd_t *hd) {
 }
 
 static int cd_read(struct block_dev *bdev, char *buffer,
-					size_t count, blkno_t blkno) {
+	size_t count, blkno_t blkno) {
 	unsigned char pkt[12];
 	unsigned int blks;
 	hd_t *hd = (hd_t *) bdev->privdata;
@@ -173,7 +174,7 @@ static int cd_read(struct block_dev *bdev, char *buffer,
 }
 
 static int cd_write(struct block_dev *bdev, char *buffer,
-					size_t count, blkno_t blkno) {
+	size_t count, blkno_t blkno) {
 	return -ENODEV;
 }
 
@@ -205,10 +206,10 @@ static int cd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static int idecd_init (void *args) {
+static int idecd_init(void *args) {
 	hd_t *drive;
 	size_t size;
-	char   path[PATH_MAX];
+	char path[PATH_MAX];
 	drive = (hd_t *)args;
 	/* Make new device */
 	if (drive && drive->media == IDE_CDROM) {

@@ -28,9 +28,9 @@ struct virtqueue {
 };
 
 extern int virtqueue_create(struct virtqueue *vq, uint16_t q_id,
-		unsigned long base_addr);
+	unsigned long base_addr);
 extern void virtqueue_destroy(struct virtqueue *vq,
-		unsigned long base_addr);
+	unsigned long base_addr);
 extern struct vring_desc * virtqueue_alloc_desc(struct virtqueue *vq);
 
 #endif /* DRIVERS_VIRTIO_VIRTIO_QUEUE_H_ */

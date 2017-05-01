@@ -41,10 +41,10 @@ EMBOX_UNIT_INIT(uart_init);
 #define USR1_RTSD       (1<<12) /* RTS delta */
 
 static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
-	//UART(UCR1) = UCR1_UARTEN;
-	//UART(UCR2) = 0x2127;//|= UCR2_RXEN | UCR2_TXEN;
-	//UART(UCR3) = 0x0704;
-	//UART(UCR4) = 0x7C00;
+	/*UART(UCR1) = UCR1_UARTEN; */
+	/*UART(UCR2) = 0x2127;//|= UCR2_RXEN | UCR2_TXEN; */
+	/*UART(UCR3) = 0x0704; */
+	/*UART(UCR4) = 0x7C00; */
 	if (params->irq) {
 		uint32_t reg;
 
@@ -78,40 +78,40 @@ static int imxuart_putc(struct uart *dev, int ch) {
 }
 
 static const struct uart_ops imxuart_uart_ops = {
-		.uart_getc = imxuart_getc,
-		.uart_putc = imxuart_putc,
-		.uart_hasrx = imxuart_has_symbol,
-		.uart_setup = imxuart_setup,
+	.uart_getc = imxuart_getc,
+	.uart_putc = imxuart_putc,
+	.uart_hasrx = imxuart_has_symbol,
+	.uart_setup = imxuart_setup,
 };
 
 static struct uart uart0 = {
-		.uart_ops = &imxuart_uart_ops,
-		.irq_num = IRQ_NUM,
-		.base_addr = UART_BASE,
+	.uart_ops = &imxuart_uart_ops,
+	.irq_num = IRQ_NUM,
+	.base_addr = UART_BASE,
 };
 
 static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = true,
 };
 
 static const struct uart_params uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = false,
 };
 
 const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &uart0,
-		.params = &uart_diag_params,
+	.diag = {
+		.ops = &uart_diag_ops,
+	},
+	.uart = &uart0,
+	.params = &uart_diag_params,
 };
 
 static int uart_init(void) {

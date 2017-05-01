@@ -14,7 +14,7 @@
 #include <hal/context.h>
 
 void context_init(struct context *ctx, unsigned int flags,
-		void (*routine_fn)(void), void *sp) {
+	void (*routine_fn)(void), void *sp) {
 	memset(ctx, 0, sizeof(*ctx));
 	host_getcontext(ctx->ucp);
 	host_stackcontext(ctx->ucp, sp, 0);

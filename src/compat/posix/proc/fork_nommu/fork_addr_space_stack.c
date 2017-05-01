@@ -62,10 +62,12 @@ void fork_stack_restore(struct addr_space *adrspc, void *stack_safe_point) {
 		}
 	}
 
-	if (!stspc)
+	if (!stspc) {
 		return;
+	}
 
-	if (stack <= stack_safe_point && stack_safe_point < stack + stspc->stack_sz) {
+	if (stack <= stack_safe_point &&
+		stack_safe_point < stack + stspc->stack_sz) {
 		off_t off = stack_safe_point - stack;
 		size_t sz = stspc->stack_sz - off;
 
@@ -87,4 +89,3 @@ void fork_stack_cleanup(struct addr_space *adrspc) {
 		tmp->stack_sz = 0;
 	}
 }
-

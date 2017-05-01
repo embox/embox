@@ -19,11 +19,11 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#define NETSTAT_CONT			0x0100
+#define NETSTAT_CONT            0x0100
 
-#define NETSTAT_LISTENING		0x0001
-#define NETSTAT_NONLISTENING	0x0002
-#define NETSTAT_OUTPUT_FLAGS	0x000F
+#define NETSTAT_LISTENING       0x0001
+#define NETSTAT_NONLISTENING    0x0002
+#define NETSTAT_OUTPUT_FLAGS    0x000F
 
 static int netstat_flags;
 
@@ -73,20 +73,22 @@ void print_inet_sock_info(const struct sock *sk) {
 	assert(in_sk->sk.opt.so_domain == AF_INET);
 
 	if (netstat_flags & NETSTAT_OUTPUT_FLAGS) {
-		if ((sk->state == SS_LISTENING && ~(netstat_flags & NETSTAT_LISTENING)) ||
-			(sk->state != SS_LISTENING && ~(netstat_flags & NETSTAT_NONLISTENING))) {
+		if ((sk->state == SS_LISTENING &&
+			~(netstat_flags & NETSTAT_LISTENING)) ||
+			(sk->state != SS_LISTENING &&
+			~(netstat_flags & NETSTAT_NONLISTENING))) {
 			return;
 		}
 	}
 
 	printf("%-5s ", in_sk->sk.opt.so_protocol == IPPROTO_TCP ? "tcp"
-			: in_sk->sk.opt.so_protocol == IPPROTO_UDP ? "udp"
-			: "unknown");
+		: in_sk->sk.opt.so_protocol == IPPROTO_UDP ? "udp"
+		: "unknown");
 
 	if (in_sk->src_in.sin_family == AF_INET) {
 		printf("%*s:%-5d ", INET_ADDRSTRLEN,
-				inet_ntoa(in_sk->src_in.sin_addr),
-				ntohs(in_sk->src_in.sin_port));
+			inet_ntoa(in_sk->src_in.sin_addr),
+			ntohs(in_sk->src_in.sin_port));
 	}
 	else {
 		/* FIXME */
@@ -94,10 +96,9 @@ void print_inet_sock_info(const struct sock *sk) {
 		printf("%*s:%-5c ", INET_ADDRSTRLEN, "0.0.0.0", '*');
 	}
 
-
 	if (in_sk->dst_in.sin_family == AF_INET) {
 		printf("%s:%d ", inet_ntoa(in_sk->dst_in.sin_addr),
-				ntohs(in_sk->dst_in.sin_port));
+			ntohs(in_sk->dst_in.sin_port));
 	}
 	else {
 		/* FIXME */
@@ -106,15 +107,15 @@ void print_inet_sock_info(const struct sock *sk) {
 	}
 
 	printf("%s", in_sk->sk.opt.so_protocol == IPPROTO_TCP
-			? tcp_sock_state_str(to_tcp_sock(&(in_sk->sk))->state)
-			: sock_state_str(sock_get_state(&in_sk->sk)));
+		? tcp_sock_state_str(to_tcp_sock(&(in_sk->sk))->state)
+		: sock_state_str(sock_get_state(&in_sk->sk)));
 
 	printf("\n");
 }
 
 void print_info(const char *title,
-		const struct sock_proto_ops *p_ops,
-		void (*print_sock_info)(const struct sock *)) {
+	const struct sock_proto_ops *p_ops,
+	void (*print_sock_info)(const struct sock *)) {
 	const struct sock *sk;
 
 	if (title != NULL) {
@@ -135,28 +136,29 @@ int main(int argc, char **argv) {
 
 	while ((c = getopt(argc, argv, "cl")) != -1) {
 		switch (c) {
-			case 'c':
-				netstat_flags |= NETSTAT_CONT;
-				break;
-			case 'l':
-				netstat_flags |= NETSTAT_LISTENING;
-				break;
-			case 'a':
-				netstat_flags |= NETSTAT_LISTENING | NETSTAT_NONLISTENING;
-				break;
-			default:
-				break;
+		case 'c':
+			netstat_flags |= NETSTAT_CONT;
+			break;
+		case 'l':
+			netstat_flags |= NETSTAT_LISTENING;
+			break;
+		case 'a':
+			netstat_flags |= NETSTAT_LISTENING | NETSTAT_NONLISTENING;
+			break;
+		default:
+			break;
 		}
 	}
 
 	do {
 		print_info(
-				"Active Internet connections\n"
-				"Proto   Local Address   Foreign Address   State\n",
-				tcp_sock_ops, &print_inet_sock_info);
+			"Active Internet connections\n"
+			"Proto   Local Address   Foreign Address   State\n",
+			tcp_sock_ops, &print_inet_sock_info);
 		print_info(NULL, udp_sock_ops, &print_inet_sock_info);
-		if (netstat_flags & NETSTAT_CONT)
+		if (netstat_flags & NETSTAT_CONT) {
 			sleep(1);
+		}
 	} while (netstat_flags & NETSTAT_CONT);
 
 	return 0;

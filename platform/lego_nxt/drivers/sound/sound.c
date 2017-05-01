@@ -43,12 +43,12 @@ static int sound_init(void) {
 	int res = 0;
 	res = irq_attach(AT91C_ID_SSC, sound_interrupt, 0, NULL,
 			"Sound Buffer Transfer End");
-	// TODO error handling?
+	/* TODO error handling? */
 
 	/* Enable MCK clock   */
 	REG_STORE(AT91C_PMC_PCER, (1L << AT91C_ID_SSC));
-	/* Disable TD on PA17  */ //???
-	//REG_STORE(AT91C_PIOA_PER, AT91C_PA17_TD);
+	/* Disable TD on PA17  */ /*??? */
+	/*REG_STORE(AT91C_PIOA_PER, AT91C_PA17_TD); */
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA17_TD);
 
 	REG_STORE(AT91C_SSC_CR, AT91C_SSC_SWRST);

@@ -17,18 +17,18 @@
 
 #include "mspace_malloc.h"
 
-static struct dlist_head *kernel_task_mspace(void) {
+static struct dlist_head * kernel_task_mspace(void) {
 	struct task_heap *task_heap;
 
 	task_heap = task_heap_get(task_kernel_task());
 	return &task_heap->mm;
 }
 
-void *sysmemalign(size_t boundary, size_t size) {
+void * sysmemalign(size_t boundary, size_t size) {
 	return mspace_memalign(boundary, size, kernel_task_mspace());
 }
 
-void *sysmalloc(size_t size) {
+void * sysmalloc(size_t size) {
 	return mspace_malloc(size, kernel_task_mspace());
 }
 
@@ -40,10 +40,10 @@ void sysfree(void *ptr) {
 	mspace_free(ptr, kernel_task_mspace());
 }
 
-void *sysrealloc(void *ptr, size_t size) {
+void * sysrealloc(void *ptr, size_t size) {
 	return mspace_realloc(ptr, size, kernel_task_mspace());
 }
 
-void *syscalloc(size_t nmemb, size_t size) {
+void * syscalloc(size_t nmemb, size_t size) {
 	return mspace_calloc(nmemb, size, kernel_task_mspace());
 }

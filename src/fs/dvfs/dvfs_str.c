@@ -19,7 +19,7 @@
  *
  * @return Pointer to last link in pathname (within given path arg)
  */
-const char *dvfs_last_link(const char *path) {
+const char * dvfs_last_link(const char *path) {
 	const char *r, *l;
 	int len;
 	assert(path);
@@ -38,7 +38,6 @@ const char *dvfs_last_link(const char *path) {
 	return l;
 }
 
-
 /**
  * @brief Remove traling slashes from string
  *
@@ -49,8 +48,9 @@ void dvfs_traling_slash_trim(char *str) {
 
 	while (*last == '/') {
 		*last = '\0';
-		if (--last < str)
+		if (--last < str) {
 			return;
+		}
 	}
 
 	return;

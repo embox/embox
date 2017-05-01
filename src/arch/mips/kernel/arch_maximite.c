@@ -22,7 +22,7 @@ extern void __delay(int cnt);
 
 void mips_delay(int c) {
 	volatile int cnt = c;
-	while (--cnt);
+	while (--cnt) ;
 }
 
 void arch_init(void) {
@@ -32,7 +32,6 @@ void arch_init(void) {
 
 	REG_ANDIN(OSCCON, ~(0x3 << 19));
 	/*REG_ORIN(OSCCON, 0x2 << 19);*/
-
 
 	REG_STORE(SYSKEY, 0);
 	mips_delay(1000000);

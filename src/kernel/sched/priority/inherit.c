@@ -19,7 +19,8 @@ int schedee_priority_init(struct schedee *s, int new_priority) {
 	return 0;
 }
 
-static int __schedee_priority_set(struct schedee_priority *p, int new_priority) {
+static int __schedee_priority_set(struct schedee_priority *p,
+	int new_priority) {
 	sched_lock();
 	{
 		if (p->base_priority == new_priority) {
@@ -40,7 +41,7 @@ static int __schedee_priority_set(struct schedee_priority *p, int new_priority) 
 		}
 	}
 
-out:
+	out:
 	sched_unlock();
 
 	return 0;
@@ -48,7 +49,7 @@ out:
 
 int schedee_priority_set(struct schedee *s, int new_priority) {
 	if ((new_priority < SCHED_PRIORITY_MIN)
-			|| (new_priority > SCHED_PRIORITY_MAX)) {
+		|| (new_priority > SCHED_PRIORITY_MAX)) {
 		return -EINVAL;
 	}
 

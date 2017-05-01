@@ -16,7 +16,7 @@
 struct pnet_pack_desc {
 	uint32_t type;
 	struct pnet_pack * (*create)(void *, size_t size);
-	void(*destroy)(struct pnet_pack *pack);
+	void (*destroy)(struct pnet_pack *pack);
 };
 
 enum PNET_PACK_TYPE {
@@ -28,13 +28,13 @@ enum PNET_PACK_TYPE {
 	ARRAY_SPREAD_DECLARE(const struct pnet_pack_desc, __pnet_pack_registry); \
 	ARRAY_SPREAD_ADD(__pnet_pack_registry, {ptype,fcreate,fdestroy})
 
-extern struct pnet_pack *pnet_pack_create(void *buff, size_t size, uint32_t type);
+extern struct pnet_pack * pnet_pack_create(void *buff, size_t size,
+	uint32_t type);
 
 extern void pnet_pack_destroy(struct pnet_pack *pack);
 
-
-//static inline void pnet_pack_data_clean(struct pnet_pack *pack) {
-//	pack->data = NULL;
-//}
+/*static inline void pnet_pack_data_clean(struct pnet_pack *pack) { */
+/*	pack->data = NULL; */
+/*} */
 
 #endif /* PNET_PACK_H_ */

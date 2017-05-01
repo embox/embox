@@ -23,7 +23,7 @@ struct test_emit_buffer {
 
 #define TEST_EMIT_BUFFER_DEF(buffer_nm, size) \
 	__TEST_EMIT_BUFFER_DEF__(buffer_nm, size, \
-			MACRO_GUARD(__test_emit_##buffer_nm))
+		MACRO_GUARD(__test_emit_ ## buffer_nm))
 
 #define __TEST_EMIT_BUFFER_DEF__(buffer_nm, size, storage_nm) \
 	static char storage_nm[(size) + 1];          \
@@ -35,8 +35,8 @@ struct test_emit_buffer {
 
 extern void test_emit_into(struct test_emit_buffer *buffer, char ch);
 
-static inline struct test_emit_buffer *test_emit_buffer_reset(
-		struct test_emit_buffer *b) {
+static inline struct test_emit_buffer * test_emit_buffer_reset(
+	struct test_emit_buffer *b) {
 	assert(b);
 
 	b->ptr = b->buff;
@@ -45,8 +45,8 @@ static inline struct test_emit_buffer *test_emit_buffer_reset(
 	return b;
 }
 
-static inline struct test_emit_buffer *test_emit_buffer_init(
-		struct test_emit_buffer *b, char *buff, size_t buff_sz) {
+static inline struct test_emit_buffer * test_emit_buffer_init(
+	struct test_emit_buffer *b, char *buff, size_t buff_sz) {
 	assert(b);
 	assert(buff);
 
@@ -56,7 +56,7 @@ static inline struct test_emit_buffer *test_emit_buffer_init(
 	return test_emit_buffer_reset(b);
 }
 
-static inline char *test_get_emitted_into(struct test_emit_buffer *b) {
+static inline char * test_get_emitted_into(struct test_emit_buffer *b) {
 	assert(b);
 	return b->buff;
 }
@@ -74,12 +74,12 @@ static inline bool test_emit_buffer_full(struct test_emit_buffer *b) {
 }
 
 static inline void test_emit(char ch) {
-	extern struct test_emit_buffer *__test_emit_buffer_current(void);
+	extern struct test_emit_buffer * __test_emit_buffer_current(void);
 	test_emit_into(__test_emit_buffer_current(), ch);
 }
 
-static inline char *test_get_emitted(void) {
-	extern struct test_emit_buffer *__test_emit_buffer_current(void);
+static inline char * test_get_emitted(void) {
+	extern struct test_emit_buffer * __test_emit_buffer_current(void);
 	return test_get_emitted_into(__test_emit_buffer_current());
 }
 

@@ -81,7 +81,7 @@ static int httpd_fill_env(const struct http_req *hreq, char *envp[], int envp_le
 }
 
 static pid_t httpd_response_cgi(const struct client_info *cinfo, const struct http_req *hreq,
-		char *path) {
+	char *path) {
 	pid_t pid;
 
 	pid = vfork();
@@ -92,7 +92,9 @@ static pid_t httpd_response_cgi(const struct client_info *cinfo, const struct ht
 	}
 
 	if (pid == 0) {
-		char *argv[] = { path, NULL };
+		char *argv[] = {
+			path, NULL
+		};
 		char *envp[ARRAY_SIZE(cgi_env) + 1];
 
 		httpd_fill_env(hreq, envp, ARRAY_SIZE(envp));

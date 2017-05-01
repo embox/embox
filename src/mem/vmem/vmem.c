@@ -25,7 +25,8 @@ static int mmu_enabled;
 extern char _text_vma, _rodata_vma, _data_vma, _bss_vma;
 extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
 
-void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx) {
+void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx,
+	size_t *pmd_idx, size_t *pte_idx) {
 	*pgd_idx = ((uint32_t) virt_addr & MMU_PGD_MASK) >> MMU_PGD_SHIFT;
 	*pmd_idx = ((uint32_t) virt_addr & MMU_PMD_MASK) >> MMU_PMD_SHIFT;
 	*pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
@@ -34,7 +35,8 @@ void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd
 static int vmem_kernel_map_marea(void *start, uint32_t len, uint32_t flags) {
 	struct marea *ma;
 
-	ma = marea_create((mmu_paddr_t) start, (mmu_paddr_t) start + len, flags, false);
+	ma = marea_create((mmu_paddr_t) start, (mmu_paddr_t) start + len, flags,
+			false);
 	if (!ma) {
 		return -1;
 	}
@@ -68,15 +70,15 @@ int vmem_map_kernel(void) {
 		) & ~MMU_PAGE_MASK;
 
 	uintptr_t kernel_map_end = (uintptr_t) max(
-			max(	&_text_vma + (size_t) &_text_len,
-				&_data_vma + (size_t) &_data_len),
-			max(	&_rodata_vma + (size_t) &_rodata_len,
-				&_bss_vma + (size_t) &_bss_len_with_reserve));
+			max(    &_text_vma + (size_t) &_text_len,
+			&_data_vma + (size_t) &_data_len),
+			max(    &_rodata_vma + (size_t) &_rodata_len,
+			&_bss_vma + (size_t) &_bss_len_with_reserve));
 
 	err = vmem_kernel_map_marea(
-		(void*) kernel_map_start,
-		binalign_bound(kernel_map_end - kernel_map_start, MMU_PAGE_SIZE),
-		PROT_WRITE | PROT_READ | PROT_EXEC);
+			(void *) kernel_map_start,
+			binalign_bound(kernel_map_end - kernel_map_start, MMU_PAGE_SIZE),
+			PROT_WRITE | PROT_READ | PROT_EXEC);
 
 	return err;
 }
@@ -84,4 +86,3 @@ int vmem_map_kernel(void) {
 void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
 	panic("MMU page fault: virt_addr - 0x%x\n", (unsigned int) virt_addr);
 }
-

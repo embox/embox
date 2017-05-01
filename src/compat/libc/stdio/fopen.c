@@ -18,7 +18,7 @@
 
 #define DEFAULT_MODE 0666
 
-extern FILE *stdio_file_alloc(int fd);
+extern FILE * stdio_file_alloc(int fd);
 
 static int mode2flag(const char *mode) {
 	int flags = 0;
@@ -36,7 +36,7 @@ static int mode2flag(const char *mode) {
 	return flags;
 }
 
-FILE *fopen(const char *path, const char *mode) {
+FILE * fopen(const char *path, const char *mode) {
 	int fd;
 	FILE *file = NULL;
 	int flags = 0;
@@ -60,7 +60,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 }
 
-FILE *fdopen(int fd, const char *mode) {
+FILE * fdopen(int fd, const char *mode) {
 	/**
 	 * FIXME mode ignored now
 	 */
@@ -75,7 +75,7 @@ FILE *fdopen(int fd, const char *mode) {
 	return file;
 }
 
-FILE *freopen(const char *path, const char *mode, FILE *file) {
+FILE * freopen(const char *path, const char *mode, FILE *file) {
 	int fd;
 	int flags = 0;
 	int old_fd;

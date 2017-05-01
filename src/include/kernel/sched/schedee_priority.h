@@ -26,7 +26,6 @@
 #define SCHED_PRIORITY_HIGH \
 	(SCHED_PRIORITY_MAX + SCHED_PRIORITY_NORMAL) / 2
 
-
 struct schedee;
 struct schedee_priority;
 

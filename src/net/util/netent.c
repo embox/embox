@@ -69,7 +69,8 @@ int netent_add_alias(struct netent *ne, const char *alias) {
 
 	memcpy(&nentry_aliases_storage[nentry_aliases_sz][0], alias, alias_sz);
 
-	nentry_aliases[nentry_aliases_sz] = &nentry_aliases_storage[nentry_aliases_sz][0];
+	nentry_aliases[nentry_aliases_sz] =
+		&nentry_aliases_storage[nentry_aliases_sz][0];
 	nentry_aliases[++nentry_aliases_sz] = NULL;
 
 	return 0;

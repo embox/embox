@@ -19,9 +19,9 @@
 
 EMBOX_TEST_SUITE("Priority inheritance for mutex");
 
-static void *low_run(void *);
-static void *mid_run(void *);
-static void *high_run(void *);
+static void * low_run(void *);
+static void * mid_run(void *);
+static void * high_run(void *);
 
 static struct thread *low;
 static struct thread *mid;
@@ -60,7 +60,7 @@ TEST_CASE("with inheritance") {
 	test_assert_emitted("abcdefghijk");
 }
 
-static void *low_run(void *arg) {
+static void * low_run(void *arg) {
 	struct mutex *m = (struct mutex *) arg;
 
 	test_emit('a');
@@ -82,14 +82,14 @@ static void *low_run(void *arg) {
 	return NULL;
 }
 
-static void *mid_run(void *arg) {
+static void * mid_run(void *arg) {
 	test_emit('i');
 	test_emit('j');
 
 	return NULL;
 }
 
-static void *high_run(void *arg) {
+static void * high_run(void *arg) {
 	struct mutex *m = (struct mutex *) arg;
 
 	test_emit('c');

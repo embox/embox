@@ -18,8 +18,8 @@ int main(int argc, char **argv) {
 
 	task_foreach(task) {
 		printf("%-3d %-4d % 3d %s\n", tid,
-				task_resource_u_area(task)->reuid,
-				task_get_priority(task), task_get_name(task));
+			task_resource_u_area(task)->reuid,
+			task_get_priority(task), task_get_name(task));
 	}
 
 	return 0;

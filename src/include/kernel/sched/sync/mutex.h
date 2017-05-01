@@ -69,5 +69,4 @@ extern void mutex_priority_inherit(struct schedee *self, struct mutex *mutex);
  */
 extern void mutex_priority_uninherit(struct schedee *self);
 
-
 #endif /* KERNEL_SCHEDEE_SYNC_MUTEX_H_ */

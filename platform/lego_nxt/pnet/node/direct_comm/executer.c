@@ -22,7 +22,6 @@
 
 #include <pnet/node/direct_comm.h>
 
-
 EMBOX_UNIT_INIT(node_dc_init);
 
 static struct lego_dc_msg_full dc_out_msg;
@@ -31,13 +30,15 @@ static int reply_need(struct lego_dc_msg *dc) {
 	return !(dc->type & 0x80);
 }
 
-static void reply_handle(uint8_t status, uint8_t cmd, int addit_len, struct lego_dc_msg_full *msg_full) {
+static void reply_handle(uint8_t status, uint8_t cmd, int addit_len,
+	struct lego_dc_msg_full *msg_full) {
 	struct lego_dc_msg *body = &(msg_full->body);
 	msg_full->len = addit_len + 3;
 	body->type = 0x02;
 	body->command = cmd;
 	body->tail[0] = status;
-	bluetooth_write((uint8_t *) msg_full, sizeof(msg_full->len) + 3 + addit_len);
+	bluetooth_write((uint8_t *) msg_full,
+		sizeof(msg_full->len) + 3 + addit_len);
 }
 
 #define SENSOR_VALUE_THRESHOLD 200
@@ -60,11 +61,12 @@ static int sensor_send(uint8_t sensor_id, int *addit_len, uint8_t addit_msg[]) {
 
 static int keep_alive_send(int *addit_len, uint8_t addit_msg[]) {
 	*addit_len = 0;
-	//printf("Hi! I'm Lego =(\n");
+	/*printf("Hi! I'm Lego =(\n"); */
 	return 0;
 }
 
-static int handle_body(struct lego_dc_msg *msg, int *addit_len, uint8_t addit_msg[]) {
+static int handle_body(struct lego_dc_msg *msg, int *addit_len,
+	uint8_t addit_msg[]) {
 	uint8_t power;
 
 	switch (msg->command) {

@@ -19,10 +19,13 @@ struct __trace_block {
 #define __trace_point_set(tp_pointer)
 #define __trace_point(__name)
 
-static inline void __tracepoint_handle(struct __trace_point *tp){}
+static inline void __tracepoint_handle(struct __trace_point *tp){
+}
 
-static inline void trace_block_enter(struct __trace_block *tb) {};
+static inline void trace_block_enter(struct __trace_block *tb) {
+};
 
-static inline void trace_block_leave(struct __trace_block *tb) {};
+static inline void trace_block_leave(struct __trace_block *tb) {
+};
 
 #endif /* NO_TRACE_IMPL_H_ */

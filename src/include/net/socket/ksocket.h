@@ -63,7 +63,7 @@ extern void ksocket_close(struct sock *sk);
  * @return 0 on success, minus posix errno indicating the reason
  */
 extern int kbind(struct sock *sk, const struct sockaddr *addr,
-		socklen_t addrlen);
+	socklen_t addrlen);
 
 /**
  * Initiate a connection from a connection-mode socket.
@@ -77,7 +77,7 @@ extern int kbind(struct sock *sk, const struct sockaddr *addr,
  * @return 0 on success, minus posix errno on failure
  */
 extern int kconnect(struct sock *sk, const struct sockaddr *addr,
-		socklen_t addrlen, int flags);
+	socklen_t addrlen, int flags);
 
 /**
  * Listen for connections on a connection-mode socket.
@@ -110,7 +110,7 @@ extern int klisten(struct sock *sk, int backlog);
  * @return 0 on success, minus posix errno on failure
  */
 extern int kaccept(struct sock *sk, struct sockaddr *addr,
-		socklen_t *addrlen, int flags, struct sock **out_sk);
+	socklen_t *addrlen, int flags, struct sock **out_sk);
 
 /**
  * Send a message on a socket.
@@ -122,7 +122,7 @@ extern int kaccept(struct sock *sk, struct sockaddr *addr,
  * NOTE: msg not const
  */
 extern int ksendmsg(struct sock *sk, struct msghdr *msg,
-		int flags);
+	int flags);
 
 /**
  * Receive a message from a socket.
@@ -134,7 +134,7 @@ extern int ksendmsg(struct sock *sk, struct msghdr *msg,
  * @return error code
  */
 extern int krecvmsg(struct sock *sk, struct msghdr *msg,
-		int flags);
+	int flags);
 
 extern int kshutdown(struct sock *sk, int how);
 
@@ -142,24 +142,24 @@ extern int kshutdown(struct sock *sk, int how);
  * Get socket name.
  */
 extern int kgetsockname(struct sock *sk, struct sockaddr *addr,
-		socklen_t *addrlen);
+	socklen_t *addrlen);
 
 /**
  * Get name of connected peer socket.
  */
 extern int kgetpeername(struct sock *sk, struct sockaddr *addr,
-		socklen_t *addrlen);
+	socklen_t *addrlen);
 
 /**
  * Get socket options.
  */
 extern int kgetsockopt(struct sock *sk, int level, int optname,
-		void *optval, socklen_t *optlen);
+	void *optval, socklen_t *optlen);
 
 /**
  * Set socket options.
  */
 extern int ksetsockopt(struct sock *sk, int level, int optname,
-		const void *optval, socklen_t optlen);
+	const void *optval, socklen_t optlen);
 
 #endif /* NET_SOCKET_KSOCKET_H_ */

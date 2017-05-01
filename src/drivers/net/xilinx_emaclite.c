@@ -11,7 +11,6 @@
 #include <string.h>
 #include <errno.h>
 
-
 #include <kernel/irq.h>
 #include <net/skbuff.h>
 #include <net/netdevice.h>
@@ -32,31 +31,31 @@ EMBOX_UNIT_INIT(emaclite_init);
 #define PKTSIZE 0x800
 
 /* Xmit complete */
-#define XEL_TSR_XMIT_BUSY_MASK		0x00000001UL
+#define XEL_TSR_XMIT_BUSY_MASK      0x00000001UL
 /* Xmit interrupt enable bit */
-#define XEL_TSR_XMIT_IE_MASK		0x00000008UL
+#define XEL_TSR_XMIT_IE_MASK        0x00000008UL
 /* Buffer is active, SW bit only */
-#define XEL_TSR_XMIT_ACTIVE_MASK	0x80000000UL
+#define XEL_TSR_XMIT_ACTIVE_MASK    0x80000000UL
 /* Program the MAC address */
-#define XEL_TSR_PROGRAM_MASK		0x00000002UL
+#define XEL_TSR_PROGRAM_MASK        0x00000002UL
 /* define for programming the MAC address into the EMAC Lite */
-#define XEL_TSR_PROG_MAC_ADDR	(XEL_TSR_XMIT_BUSY_MASK | XEL_TSR_PROGRAM_MASK)
+#define XEL_TSR_PROG_MAC_ADDR   (XEL_TSR_XMIT_BUSY_MASK | XEL_TSR_PROGRAM_MASK)
 
 /* Transmit packet length upper byte */
-#define XEL_TPLR_LENGTH_MASK_HI		0x0000FF00UL
+#define XEL_TPLR_LENGTH_MASK_HI     0x0000FF00UL
 /* Transmit packet length lower byte */
-#define XEL_TPLR_LENGTH_MASK_LO		0x000000FFUL
+#define XEL_TPLR_LENGTH_MASK_LO     0x000000FFUL
 
 /* Recv complete */
-#define XEL_RSR_RECV_DONE_MASK		0x00000001UL
+#define XEL_RSR_RECV_DONE_MASK      0x00000001UL
 /* Recv interrupt enable bit */
-#define XEL_RSR_RECV_IE_MASK		0x00000008UL
+#define XEL_RSR_RECV_IE_MASK        0x00000008UL
 
 /* Global Interrupt Enable Register (GIER) Bit Masks */
-#define XEL_GIER_GIE_MASK	0x80000000 	/* Global Enable */
+#define XEL_GIER_GIE_MASK   0x80000000  /* Global Enable */
 
 /* Transmit Packet Length Register (TPLR) */
-#define XEL_TPLR_LENGTH_MASK	0x0000FFFF 	/* Tx packet length */
+#define XEL_TPLR_LENGTH_MASK    0x0000FFFF  /* Tx packet length */
 
 typedef struct mdio_regs {
 	uint32_t regs;
@@ -78,7 +77,7 @@ typedef struct xilinx_emaclite_regs {
 } xilinx_emaclite_regs_t;
 
 static struct xilinx_emaclite_regs *emaclite =
-		(struct xilinx_emaclite_regs *) CONFIG_XILINX_EMACLITE_BASEADDR;
+	(struct xilinx_emaclite_regs *) CONFIG_XILINX_EMACLITE_BASEADDR;
 static pingpong_regs_t *current_rx_regs = NULL;
 static pingpong_regs_t *current_tx_regs = NULL;
 
@@ -120,7 +119,7 @@ static void restart_buff(void) {
 	TX_LEN_REG = 0;
 }
 
-static pingpong_regs_t *get_rx_buff(void) {
+static pingpong_regs_t * get_rx_buff(void) {
 	if (current_rx_regs->ctrl & XEL_RSR_RECV_DONE_MASK) {
 		return current_rx_regs;
 	}
@@ -136,7 +135,7 @@ static uint8_t etherrxbuff[PKTSIZE]; /* Receive buffer */
 /*FIXME bad function (may be use if dest and src align 4)*/
 static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 	size_t lenw = (size_t) ((len & (~3)) >> 2);
-	volatile uint32_t *srcw = (uint32_t*) ((uint32_t) (src) & (~3));
+	volatile uint32_t *srcw = (uint32_t *) ((uint32_t) (src) & (~3));
 
 	while (lenw--) {
 		*dest++ = *srcw++;
@@ -146,7 +145,7 @@ static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 	}
 }
 
-static uint32_t *word_aligned_addr(void *addr) {
+static uint32_t * word_aligned_addr(void *addr) {
 	return ((uint32_t *) ((int) addr & ~0x3)) + ((int) addr & 0x3 ? 1 : 0);
 }
 
@@ -177,13 +176,13 @@ static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 		memmove(aligned_data, skb->mac.raw, skb->len);
 	}
 
-	memcpy32((uint32_t*) TX_PACK, aligned_data, skb->len);
+	memcpy32((uint32_t *) TX_PACK, aligned_data, skb->len);
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
 
 	skb_free(skb);
 
-	//return skb->len;
+	/*return skb->len; */
 	return 0;
 }
 
@@ -222,7 +221,7 @@ static void pack_receiving(void *dev_id) {
 
 	skb = skb_alloc(len + 4);
 	if (NULL == skb) {
-		//LOG_ERROR("Can't allocate packet, pack_pool is full\n");
+		/*LOG_ERROR("Can't allocate packet, pack_pool is full\n"); */
 		current_rx_regs->ctrl &= ~XEL_RSR_RECV_DONE_MASK;
 		switch_rx_buff();
 		return;
@@ -259,8 +258,10 @@ static irq_return_t emaclite_irq_handler(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 /*default 00-00-5E-00-FA-CE*/
-const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
-		0xCE };
+const unsigned char default_mac[ETH_ALEN] = {
+	0x00, 0x00, 0x5E, 0x00, 0xFA,
+	0xCE
+};
 
 static int emaclite_open(struct net_device *dev) {
 	if (NULL == dev) {
@@ -285,7 +286,7 @@ static int emaclite_open(struct net_device *dev) {
 	/*
 	 * RX - RX_PING & RX_PONG initialization
 	 */
-	//TRACE("emaclite->rx_ctrl addr = 0x%X\n", (unsigned int)&RX_CTRL_REG);
+	/*TRACE("emaclite->rx_ctrl addr = 0x%X\n", (unsigned int)&RX_CTRL_REG); */
 	RX_CTRL_REG = XEL_RSR_RECV_IE_MASK;
 #ifdef PINPONG_BUFFER
 	switch_rx_buff();
@@ -311,14 +312,14 @@ static int emaclite_set_mac_address(struct net_device *dev, const void *addr) {
 		return -EINVAL;
 	}
 #if 0
-	out_be32 (emaclite.baseaddress + XEL_TSR_OFFSET, 0);
+	out_be32(emaclite.baseaddress + XEL_TSR_OFFSET, 0);
 	/* Set the length */
-	out_be32 (emaclite.baseaddress + XEL_TPLR_OFFSET, ENET_ADDR_LENGTH);
+	out_be32(emaclite.baseaddress + XEL_TPLR_OFFSET, ENET_ADDR_LENGTH);
 	/* Update the MAC address in the EMAC Lite */
-	out_be32 (emaclite.baseaddress + XEL_TSR_OFFSET, XEL_TSR_PROG_MAC_ADDR);
+	out_be32(emaclite.baseaddress + XEL_TSR_OFFSET, XEL_TSR_PROG_MAC_ADDR);
 	/* Wait for EMAC Lite to finish with the MAC address update */
-	while ((in_be32 (emaclite.baseaddress + XEL_TSR_OFFSET) &
-					XEL_TSR_PROG_MAC_ADDR) != 0);
+	while ((in_be32(emaclite.baseaddress + XEL_TSR_OFFSET) &
+		XEL_TSR_PROG_MAC_ADDR) != 0) ;
 #endif
 	return ENOERR;
 }

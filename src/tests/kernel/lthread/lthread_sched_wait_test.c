@@ -57,8 +57,10 @@ TEST_CASE("sched_wait_timeout: timeout is exceeded") {
 	lthread_launch(&(lt_test.lt));
 
 	/* Spin, wait till lthread finished */
-	while(1) {
-		if(done == 1) break;
+	while (1) {
+		if (done == 1) {
+			break;
+		}
 		ksleep(lt_test.timeout);
 	}
 
@@ -129,7 +131,7 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: wakeup before timeout is exceeded") {
 
 	/* Check for proceeding waiting in case the lthread is waken up before
 	the condition becomes true. */
-	while(!done && wakeup_times--) {
+	while (!done && wakeup_times--) {
 		lthread_launch(&lt_test.lt);
 		ksleep(20);
 		test_assert_equal(lt_test.res, -EAGAIN);
@@ -162,7 +164,7 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: timeout exceeded") {
 
 	/* Check for proceeding waiting in case the lthread is waken up before
 	the condition becomes true. */
-	while(!done && wakeup_times--) {
+	while (!done && wakeup_times--) {
 		lthread_launch(&lt_test.lt);
 		ksleep(sleep_period);
 	}
@@ -188,7 +190,7 @@ TEST_CASE("SCHED_WAIT_TIMEOUT_LTHREAD: SCHED_TIMEOUT_INFINITE") {
 
 	/* Check for proceeding waiting in case the lthread is waken up before
 	the condition becomes true. */
-	while(wakeup_times--) {
+	while (wakeup_times--) {
 		lthread_launch(&lt_test.lt);
 		ksleep(0);
 		test_assert_equal(lt_test.res, -EAGAIN);

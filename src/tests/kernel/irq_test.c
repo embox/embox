@@ -32,7 +32,7 @@ TEST_CASE("An IRQ handler must run immediately after forcing the interrupt") {
 	test_emit('{');
 
 	test_assert_zero(
-			irq_attach(TEST_IRQ_NR, test_isr, 0, (void *) '0', "test_irq"));
+		irq_attach(TEST_IRQ_NR, test_isr, 0, (void *) '0', "test_irq"));
 
 	test_emit('[');
 	irqctrl_force(TEST_IRQ_NR);
@@ -62,11 +62,11 @@ static irq_return_t test_fib_isr(unsigned int irq_nr, void *dev_id) {
 }
 
 TEST_CASE("Deep IRQ handler regression "
-		"(recursively calculating Fibonacci number inside IRQ handler)") {
+		  "(recursively calculating Fibonacci number inside IRQ handler)") {
 	int result = FIBONACCI_NR;
 
 	test_assert_zero(
-			irq_attach(TEST_IRQ_NR, test_fib_isr, 0, &result, "test_irq"));
+		irq_attach(TEST_IRQ_NR, test_fib_isr, 0, &result, "test_irq"));
 	irqctrl_force(TEST_IRQ_NR);
 	test_assert_zero(irq_detach(TEST_IRQ_NR, &result));
 
@@ -86,15 +86,15 @@ static irq_return_t test_nesting_isr(unsigned int irq_nr, void *dev_id) {
 }
 
 TEST_CASE("An IRQ with higher priority should preempt a handler "
-		"of a lower one") {
+		  "of a lower one") {
 	test_emit('{');
 
 	test_assert_zero(
-			irq_attach(TEST_OUTER_IRQ_NR, test_nesting_isr, 0,
-					(void *) '0', "test_irq_outer"));
+		irq_attach(TEST_OUTER_IRQ_NR, test_nesting_isr, 0,
+		(void *) '0', "test_irq_outer"));
 	test_assert_zero(
-			irq_attach(TEST_INNER_IRQ_NR, test_nesting_isr, 0,
-					(void *) '1', "test_irq_inner"));
+		irq_attach(TEST_INNER_IRQ_NR, test_nesting_isr, 0,
+		(void *) '1', "test_irq_inner"));
 
 	test_emit('[');
 	irqctrl_force(TEST_OUTER_IRQ_NR);

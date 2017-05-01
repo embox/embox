@@ -14,10 +14,10 @@
 
 extern int exec_call();
 
-void *task_exec_callback(void *arg) {
+void * task_exec_callback(void *arg) {
 	int res;
 
 	res = exec_call();
 
-	return (void*)res;
+	return (void *)res;
 }

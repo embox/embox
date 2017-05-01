@@ -29,7 +29,7 @@ struct pmap {
 };
 
 extern uint16_t pmap_getport(struct sockaddr_in *raddr,
-		uint32_t prognum, uint32_t versnum, uint32_t protocol);
+	uint32_t prognum, uint32_t versnum, uint32_t protocol);
 
 extern int xdr_pmap(struct xdr *xs, struct pmap *pmp);
 

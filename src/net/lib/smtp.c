@@ -27,7 +27,7 @@
 static char buff[SMTP_COMMAND_LEN + 1];
 
 static int send_data(struct smtp_session *ss,
-		const char *data, size_t data_len) {
+	const char *data, size_t data_len) {
 	int res;
 
 	assert(ss != NULL);
@@ -47,7 +47,7 @@ static int send_data(struct smtp_session *ss,
 }
 
 static int send_req(struct smtp_session *ss,
-		const char *command_fmt, va_list command_args) {
+	const char *command_fmt, va_list command_args) {
 	int res;
 	char *req;
 	size_t req_len;
@@ -98,7 +98,7 @@ static int recv_rep(struct smtp_session *ss, int multiline) {
 	if ((rep_len == 0) && (end == NULL)) {
 		ss->code = 0;
 		snprintf(&ss->status[0], ARRAY_SIZE(ss->status), "%s",
-				"recv_rep: status buffer is full");
+			"recv_rep: status buffer is full");
 		return 0;
 	}
 
@@ -108,7 +108,7 @@ static int recv_rep(struct smtp_session *ss, int multiline) {
 	if (1 != sscanf(&ss->status[0], "%d", &ss->code)) {
 		ss->code = 0;
 		snprintf(&ss->status[0], ARRAY_SIZE(ss->status), "%s",
-				"recv_rep: illegal status code");
+			"recv_rep: illegal status code");
 		return 0;
 	}
 	else if (!smtp_ok(ss)) {
@@ -151,7 +151,7 @@ static int recv_rep(struct smtp_session *ss, int multiline) {
 }
 
 static int execute_cmd(struct smtp_session *ss, int multiline,
-		const char *command_fmt, ...) {
+	const char *command_fmt, ...) {
 	int ret;
 	va_list command_args;
 
@@ -174,7 +174,7 @@ static int execute_cmd(struct smtp_session *ss, int multiline,
 }
 
 int smtp_open(struct smtp_session *ss, const char *host,
-		unsigned short port) {
+	unsigned short port) {
 	int ret, sock;
 	struct hostent *host_info;
 	struct sockaddr_in addr;
@@ -197,7 +197,7 @@ int smtp_open(struct smtp_session *ss, const char *host,
 	addr.sin_family = host_info->h_addrtype;
 	addr.sin_port = htons(port);
 	memcpy(&addr.sin_addr, host_info->h_addr_list[0],
-			host_info->h_length);
+		host_info->h_length);
 
 	if (-1 == connect(sock, (struct sockaddr *)&addr, sizeof addr)) {
 		close(sock);
@@ -348,7 +348,7 @@ int smtp_quit(struct smtp_session *ss) {
 }
 
 int smtp_auth_plain(struct smtp_session *ss, const char *name,
-		const char *secret) {
+	const char *secret) {
 	int ret;
 	char *plain, *coded;
 	size_t name_len, secret_len, plain_len, coded_len;

@@ -15,14 +15,14 @@
 #include <netinet/in.h>
 
 void ip_build(struct iphdr *iph, uint16_t total_len, uint8_t ttl,
-		uint8_t proto, in_addr_t src_ip, in_addr_t dst_ip) {
+	uint8_t proto, in_addr_t src_ip, in_addr_t dst_ip) {
 	assert(iph != NULL);
 	iph->version = 4;
 	iph->ihl = IP_MIN_HEADER_SIZE / 4;
 	iph->tos = 0;
 	iph->tot_len = htons(total_len);
 	iph->id = 0; /* use ip_set_id_field */
-	iph->frag_off = 0; //htons(IP_DF)
+	iph->frag_off = 0; /*htons(IP_DF) */
 	iph->ttl = ttl;
 	iph->proto = proto;
 	iph->check = 0; /* use ip_set_check_field */
@@ -55,7 +55,7 @@ size_t ip_data_length(const struct iphdr *iph) {
 }
 
 void ip_pseudo_build(const struct iphdr *iph,
-		struct ip_pseudohdr *out_ipph) {
+	struct ip_pseudohdr *out_ipph) {
 	assert(iph != NULL);
 	assert(out_ipph != NULL);
 	out_ipph->src_ip = iph->saddr;
@@ -67,16 +67,16 @@ void ip_pseudo_build(const struct iphdr *iph,
 }
 
 int ip_tester_src(const struct sock *sk,
-		const struct sk_buff *skb) {
+	const struct sk_buff *skb) {
 	assert(to_const_inet_sock(sk) != NULL);
 	assert(ip_hdr(skb) != NULL);
 	assert(ip_check_version(ip_hdr(skb)));
 	return to_const_inet_sock(sk)->src_in.sin_addr.s_addr
-			== ip_hdr(skb)->daddr;
+		   == ip_hdr(skb)->daddr;
 }
 
 int ip_tester_src_or_any(const struct sock *sk,
-		const struct sk_buff *skb) {
+	const struct sk_buff *skb) {
 	const struct in_addr *in;
 
 	assert(to_const_inet_sock(sk) != NULL);
@@ -85,20 +85,20 @@ int ip_tester_src_or_any(const struct sock *sk,
 	assert(ip_hdr(skb) != NULL);
 	assert(ip_check_version(ip_hdr(skb)));
 	return (in->s_addr == ip_hdr(skb)->daddr)
-			|| (in->s_addr == INADDR_ANY);
+		   || (in->s_addr == INADDR_ANY);
 }
 
 int ip_tester_dst(const struct sock *sk,
-		const struct sk_buff *skb) {
+	const struct sk_buff *skb) {
 	assert(to_const_inet_sock(sk) != NULL);
 	assert(ip_hdr(skb) != NULL);
 	assert(ip_check_version(ip_hdr(skb)));
 	return to_const_inet_sock(sk)->dst_in.sin_addr.s_addr
-			== ip_hdr(skb)->saddr;
+		   == ip_hdr(skb)->saddr;
 }
 
 int ip_tester_dst_or_any(const struct sock *sk,
-		const struct sk_buff *skb) {
+	const struct sk_buff *skb) {
 	const struct in_addr *in;
 
 	assert(to_const_inet_sock(sk) != NULL);
@@ -107,5 +107,5 @@ int ip_tester_dst_or_any(const struct sock *sk,
 	assert(ip_hdr(skb) != NULL);
 	assert(ip_check_version(ip_hdr(skb)));
 	return (in->s_addr == ip_hdr(skb)->saddr)
-			|| (in->s_addr == INADDR_ANY);
+		   || (in->s_addr == INADDR_ANY);
 }

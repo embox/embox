@@ -18,7 +18,7 @@
 TASK_RESOURCE_DEF(task_security_desc, char [MODOPS_SECURITY_SIZE]);
 
 static void task_security_init(const struct task *task,
-		void *security_space) {
+	void *security_space) {
 	void *security;
 
 	assert(security_space == task_resource_security(task));
@@ -30,7 +30,7 @@ static void task_security_init(const struct task *task,
 }
 
 static int task_security_inherit(const struct task *task,
-		const struct task *parent) {
+	const struct task *parent) {
 	struct task_env *task_security, *parent_security;
 
 	task_security = task_resource_security(task);

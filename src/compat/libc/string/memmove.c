@@ -14,7 +14,7 @@
 #include "inhibit_libcall.h"
 
 inhibit_loop_to_libcall
-void *memmove(void *_dst, const void *_src, size_t n) {
+void * memmove(void *_dst, const void *_src, size_t n) {
 	char *dst = _dst;
 	const char *src = _src;
 

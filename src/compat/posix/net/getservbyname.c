@@ -11,7 +11,7 @@
 #include <netdb.h>
 
 struct servent * getservbyname(const char *name,
-		const char *proto) {
+	const char *proto) {
 	struct servent *se;
 	char **aliases;
 

@@ -26,9 +26,9 @@
 #include <fs/perm.h>
 #include <security/security.h>
 
-extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
+extern struct node * kcreat(struct path *dir, const char *path, mode_t mode);
 
-struct file_desc *kopen(struct node *node, int flag) {
+struct file_desc * kopen(struct node *node, int flag) {
 	struct nas *nas;
 	struct file_desc *desc;
 	const struct kfile_operations *ops;
@@ -38,7 +38,6 @@ struct file_desc *kopen(struct node *node, int flag) {
 	assert(node);
 	assertf(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
 	assertf(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
-
 
 	nas = node->nas;
 	/* if we try open a file (not special) we must have the file system */
@@ -57,7 +56,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 		ops = nas->fs->file_op;
 	}
 
-	if(ops == NULL) {
+	if (ops == NULL) {
 		SET_ERRNO(ENOSUPP);
 		return NULL;
 	}
@@ -70,7 +69,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 	desc->ops = ops;
 
 	idesc = desc->ops->open(node, desc, flag);
-	if (err(idesc)){
+	if (err(idesc)) {
 		ret = (int)idesc;
 		goto free_out;
 	}
@@ -81,17 +80,16 @@ struct file_desc *kopen(struct node *node, int flag) {
 		return (struct file_desc *)idesc;
 	}
 
-free_out:
+	free_out:
 	if (ret < 0) {
 		file_desc_destroy(desc);
 		SET_ERRNO(-ret);
 		return NULL;
 	}
 
-out:
+	out:
 	return desc;
 }
-
 
 ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	ssize_t ret;
@@ -117,7 +115,7 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 
 	ret = file->ops->write(file, (void *)buf, size);
 
-end:
+	end:
 	return ret;
 }
 
@@ -141,10 +139,9 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 
 	ret = desc->ops->read(desc, buf, size);
 
-end:
+	end:
 	return ret;
 }
-
 
 void kclose(struct file_desc *desc) {
 	assert(desc);
@@ -167,20 +164,20 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	ni = &nas->fi->ni;
 
 	switch (origin) {
-		case SEEK_SET:
-			desc->cursor = offset;
-			break;
+	case SEEK_SET:
+		desc->cursor = offset;
+		break;
 
-		case SEEK_CUR:
-			desc->cursor += offset;
-			break;
+	case SEEK_CUR:
+		desc->cursor += offset;
+		break;
 
-		case SEEK_END:
-			desc->cursor = ni->size + offset;
-			break;
+	case SEEK_END:
+		desc->cursor = ni->size + offset;
+		break;
 
-		default:
-			return -EINVAL;
+	default:
+		return -EINVAL;
 	}
 
 	return desc->cursor;

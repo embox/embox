@@ -49,13 +49,14 @@ void mmu_off(void) {
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 }
 
-mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return (mmu_pgd_t *) ((((unsigned long) context_table[ctx]) & MMU_PTD_PMASK) << 4);
+mmu_pgd_t * mmu_get_root(mmu_ctx_t ctx) {
+	return (mmu_pgd_t *) ((((unsigned long) context_table[ctx]) &
+		   MMU_PTD_PMASK) << 4);
 }
 
 int mmu_valid_entry(mmu_pte_t pte) {
-        return (((unsigned int) pte) & MMU_PTE_ET) |
-                            (((unsigned int) pte) & MMU_ET_PTD);
+	return (((unsigned int) pte) & MMU_PTE_ET) |
+		   (((unsigned int) pte) & MMU_ET_PTD);
 }
 
 mmu_ctx_t mmu_create_context(void) {

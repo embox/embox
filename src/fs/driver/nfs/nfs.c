@@ -32,23 +32,25 @@
 #include <util/math.h>
 #include <util/err.h>
 
-
 static int nfs_create_dir_entry(node_t *parent);
 
 static int nfs_mount(struct nas *nas);
 static int nfs_lookup(struct nas *nas);
 static int nfs_call_proc_nfs(struct nas *nas,
-		__u32 procnum, char *req, char *reply);
+	__u32 procnum, char *req, char *reply);
 
 /* nfs filesystem description pool */
-POOL_DEF (nfs_fs_pool, struct nfs_fs_info, OPTION_GET(NUMBER,nfs_descriptor_quantity));
+POOL_DEF(nfs_fs_pool, struct nfs_fs_info,
+	OPTION_GET(NUMBER,nfs_descriptor_quantity));
 
 /* nfs file description pool */
-POOL_DEF (nfs_file_pool, struct nfs_file_info, OPTION_GET(NUMBER,inode_quantity));
+POOL_DEF(nfs_file_pool, struct nfs_file_info,
+	OPTION_GET(NUMBER,inode_quantity));
 
 /* File operations */
 
-static struct idesc *nfsfs_open(struct node *node, struct file_desc *desc, int flags);
+static struct idesc * nfsfs_open(struct node *node, struct file_desc *desc,
+	int flags);
 static int    nfsfs_close(struct file_desc *desc);
 static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -67,7 +69,8 @@ static void unaligned_set_hyper(uint64_t *dst, void *src) {
 /*
  * file_operation
  */
-static struct idesc *nfsfs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc * nfsfs_open(struct node *node, struct file_desc *desc,
+	int flags) {
 	nfs_file_info_t *fi;
 	struct nas *nas;
 
@@ -77,7 +80,7 @@ static struct idesc *nfsfs_open(struct node *node, struct file_desc *desc, int f
 	fi->mode = flags;
 	fi->offset = desc->cursor;
 
-	if(0 == nfs_lookup(nas)) {
+	if (0 == nfs_lookup(nas)) {
 		nas->fi->ni.size = fi->attr.size;
 		return &desc->idesc;
 	}
@@ -108,7 +111,7 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	datalen = 0;
 	fi->offset = desc->cursor;
 
-	while(1) {
+	while (1) {
 		size_to_read = min(size, DIRCOUNT);
 
 		/* set read structure */
@@ -120,7 +123,7 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 		/* send read command */
 		if (0 > nfs_call_proc_nfs(nas, NFSPROC3_READ,
-				(char *) &req, (char *) &reply)) {
+			(char *) &req, (char *) &reply)) {
 			return 0;
 		}
 
@@ -132,7 +135,7 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 		fi->offset += reply.datalen;
 		datalen += reply.datalen;
 
-		if (reply.eof || (0 >= size )) {
+		if (reply.eof || (0 >= size)) {
 			break;
 		}
 	}
@@ -164,7 +167,7 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	/* send read command */
 	if (0 > nfs_call_proc_nfs(nas, NFSPROC3_WRITE,
-			(char *) &req, (char *) &reply)) {
+		(char *) &req, (char *) &reply)) {
 		return 0;
 	}
 
@@ -177,43 +180,42 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return reply.count;
 }
 
-
 /*
 static int nfsfs_fseek(void *file, long offset, int whence);
 
 static int nfsfs_fseek(void *file, long offset, int whence) {
 
-	struct file_desc *desc;
-	nfs_file_info_t *fi;
+    struct file_desc *desc;
+    nfs_file_info_t *fi;
 
-	desc = (struct file_desc *) file;
-	fi = (nfs_file_info_t *) desc->node->fi;
+    desc = (struct file_desc *) file;
+    fi = (nfs_file_info_t *) desc->node->fi;
 
-	switch (whence) {
-	case SEEK_SET:
-		fi->offset = offset;
-		break;
-	case SEEK_CUR:
-		fi->offset += offset;
-		break;
-	case SEEK_END:
-		fi->offset = fi->attr.size + offset;
-		break;
-	default:
-		return -1;
-	}
-	return 0;
+    switch (whence) {
+    case SEEK_SET:
+        fi->offset = offset;
+        break;
+    case SEEK_CUR:
+        fi->offset += offset;
+        break;
+    case SEEK_END:
+        fi->offset = fi->attr.size + offset;
+        break;
+    default:
+        return -1;
+    }
+    return 0;
 }
 */
 
 /* File system operations */
 
-static int nfsfs_init(void * par);
-static int nfsfs_format(void * par);
-static int nfsfs_mount(void * dev, void *dir);
+static int nfsfs_init(void *par);
+static int nfsfs_format(void *par);
+static int nfsfs_mount(void *dev, void *dir);
 static int nfsfs_create(struct node *parent_node, struct node *node);
 static int nfsfs_delete(struct node *node);
-static int nfsfs_truncate (struct node *node, off_t length);
+static int nfsfs_truncate(struct node *node, off_t length);
 static int nfsfs_umount(void *dir);
 
 static struct fsop_desc nfsfs_fsop = {
@@ -234,7 +236,7 @@ static struct fs_driver nfsfs_driver = {
 	.mount_dev_by_string = true,
 };
 
-static int nfsfs_init(void * par) {
+static int nfsfs_init(void *par) {
 
 	return 0;
 }
@@ -252,7 +254,7 @@ static int nfsfs_format(void *path) {
 	return 0;
 }
 
-static int nfsfs_truncate (struct node *node, off_t length) {
+static int nfsfs_truncate(struct node *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
@@ -275,7 +277,7 @@ static int nfs_unix_auth_set(struct client *clnt) {
 	return 0;
 }
 
-static int nfs_clnt_destroy (struct nfs_fs_info *fsi) {
+static int nfs_clnt_destroy(struct nfs_fs_info *fsi) {
 
 	if (NULL != fsi->mnt) {
 		clnt_destroy(fsi->mnt);
@@ -321,7 +323,7 @@ static int nfs_client_init(struct nfs_fs_info *fsi) {
 		clnt_pcreateerror(fsi->srv_name);
 		return -1;
 	}
-	if(0 != nfs_unix_auth_set(fsi->mnt)) {
+	if (0 != nfs_unix_auth_set(fsi->mnt)) {
 		return -1;
 	}
 
@@ -338,17 +340,17 @@ static void nfs_free_fs(struct nas *nas) {
 	struct nfs_file_info *fi;
 	struct nfs_fs_info *fsi;
 
-	if(NULL != nas->fs) {
+	if (NULL != nas->fs) {
 		fsi = nas->fs->fsi;
 
-		if(NULL != fsi) {
+		if (NULL != fsi) {
 			nfs_clnt_destroy(fsi);
 			pool_free(&nfs_fs_pool, fsi);
 		}
 		filesystem_free(nas->fs);
 	}
 
-	if(NULL != (fi = nas->fi->privdata)) {
+	if (NULL != (fi = nas->fi->privdata)) {
 		pool_free(&nfs_file_pool, fi);
 	}
 }
@@ -369,7 +371,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 	}
 
 	if ((NULL == (fsi = pool_alloc(&nfs_fs_pool))) ||
-			(NULL == (fi = pool_alloc(&nfs_file_pool)))) {
+		(NULL == (fi = pool_alloc(&nfs_file_pool)))) {
 		rc = -ENOMEM;
 		goto error;
 	}
@@ -390,7 +392,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
 
-	if (0 >	nfs_create_dir_entry(dir_node)) { // XXX check the argument
+	if (0 > nfs_create_dir_entry(dir_node)) { /* XXX check the argument */
 		rc = -1;
 	} else {
 		return 0;
@@ -405,8 +407,8 @@ static int nfsfs_mount(void *dev, void *dir) {
 static int nfs_umount_entry(struct nas *nas) {
 	struct node *child;
 
-	if(node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
+	if (node_is_directory(nas->node)) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
 			if (node_is_directory(child)) {
 				nfs_umount_entry(child->nas);
 			}
@@ -433,7 +435,8 @@ static int nfsfs_umount(void *dir) {
 	return 0;
 }
 
-static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) {
+static node_t * nfs_create_file(struct nas *parent_nas,
+	readdir_desc_t *predesc) {
 	struct nas *nas;
 	node_t  *node;
 	nfs_file_info_t *fi;
@@ -460,22 +463,22 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 
 	/* copy read the description in the created file*/
 	memcpy(&fi->name_dsc, &predesc->file_name,
-			sizeof(predesc->file_name));
+		sizeof(predesc->file_name));
 
 	if (VALUE_FOLLOWS_YES == predesc->vf_attr) {
 		memcpy(&fi->attr, &predesc->file_attr,
-				sizeof(predesc->file_attr));
+			sizeof(predesc->file_attr));
 	}
 	if (VALUE_FOLLOWS_YES == predesc->vf_fh) {
 		memcpy(&fi->fh, &predesc->file_handle,
-				sizeof(predesc->file_handle));
+			sizeof(predesc->file_handle));
 		fi->fh.count = fi->fh.maxcount = DIRCOUNT;
 		fi->fh.cookie = 0;
 	}
 
 	if (!node) {
 		mode = fi->attr.mode;
-		// TODO what is mode is not known (!VALUE_FOLLOWS_YES)?
+		/* TODO what is mode is not known (!VALUE_FOLLOWS_YES)? */
 
 		node = vfs_subtree_create_child(parent_nas->node, name, mode);
 		if (!node) {
@@ -551,8 +554,8 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			point += sizeof(vf);
 			predesc = (readdir_desc_t *) point;
 
-			if(0 == path_is_dotname(predesc->file_name.name.data,
-									predesc->file_name.name.len)) {
+			if (0 == path_is_dotname(predesc->file_name.name.data,
+				predesc->file_name.name.len)) {
 				if (NULL == (node = nfs_create_file(parent_nas, predesc))) {
 					sysfree(rcv_buf);
 					return -1;
@@ -580,7 +583,7 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 
 	nfs_file_info_t *parent_fi, *fi;
 	struct nas *nas, *parent_nas;
-	create_req_t  req;
+	create_req_t req;
 	rpc_string_t name;
 	create_reply_t reply;
 	__u32 procnum;
@@ -614,7 +617,7 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 	req.new.fname = &name;
 	/* set attribute of new file */
 	req.mode_vf = req.uid_vf = req.gid_vf = req.size_vf =
-			req.set_atime =	req.set_mtime =  VALUE_FOLLOWS_YES;
+					req.set_atime = req.set_mtime =  VALUE_FOLLOWS_YES;
 	req.uid = req.gid = 0;
 
 	/* send nfs CREATE command   */
@@ -622,12 +625,12 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 		return -1;
 	}
 
-	if(NULL == (fi = pool_alloc(&nfs_file_pool))) {
+	if (NULL == (fi = pool_alloc(&nfs_file_pool))) {
 		return -1;
 	}
 	nas->fi->privdata = (void *) fi;
 
-	return nfs_create_dir_entry(parent_node); // XXX parent_node? or node?
+	return nfs_create_dir_entry(parent_node); /* XXX parent_node? or node? */
 }
 
 static int nfsfs_delete(struct node *node) {
@@ -642,7 +645,7 @@ static int nfsfs_delete(struct node *node) {
 	nas = node->nas;
 	fi = (nfs_file_info_t *) nas->fi->privdata;
 
-	if(NULL == (dir_node = vfs_subtree_get_parent(node))) {
+	if (NULL == (dir_node = vfs_subtree_get_parent(node))) {
 		return -1;
 	}
 
@@ -674,14 +677,16 @@ static int nfsfs_delete(struct node *node) {
 DECLARE_FILE_SYSTEM_DRIVER(nfsfs_driver);
 
 static int nfs_call_proc_mnt(struct nas *nas,
-		__u32 procnum, char *req, char *reply) {
-	struct timeval timeout = { 25, 0 };
+	__u32 procnum, char *req, char *reply) {
+	struct timeval timeout = {
+		25, 0
+	};
 	struct nfs_fs_info *fsi;
 
 	fsi = nas->fs->fsi;
 
-	if(NULL == fsi->mnt){
-		if(0 >  nfs_client_init(fsi)) {
+	if (NULL == fsi->mnt) {
+		if (0 >  nfs_client_init(fsi)) {
 			return -1;
 		}
 	}
@@ -730,13 +735,15 @@ static int nfs_call_proc_mnt(struct nas *nas,
 }
 
 static int nfs_call_proc_nfs(struct nas *nas,
-		__u32 procnum, char *req, char *reply) {
-	struct timeval timeout = { 25, 0 };
+	__u32 procnum, char *req, char *reply) {
+	struct timeval timeout = {
+		25, 0
+	};
 	struct nfs_fs_info *fsi;
 
 	fsi = nas->fs->fsi;
-	if(NULL == fsi->nfs){
-		if(0 >  nfs_client_init(fsi)) {
+	if (NULL == fsi->nfs) {
+		if (0 >  nfs_client_init(fsi)) {
 			return -1;
 		}
 	}
@@ -848,7 +855,7 @@ static int nfs_lookup(struct nas *nas) {
 	lookup_reply_t reply;
 
 	fi = nas->fi->privdata;
-	if(NULL == (dir_node = vfs_subtree_get_parent(nas->node))) {
+	if (NULL == (dir_node = vfs_subtree_get_parent(nas->node))) {
 		return -1;
 	}
 	dir_nas = dir_node->nas;
@@ -877,10 +884,10 @@ static int nfs_mount(struct nas *nas) {
 	/* get server mount directory name*/
 	memset((void *)&export, 0, sizeof(export));
 	if (0 > nfs_call_proc_mnt(nas, MOUNTPROC3_EXPORT,
-		0, (char *)&export)){
+		0, (char *)&export)) {
 		return -1;
 	}
-	if(0 != strcmp(fsi->srv_dir, export.dir_name)) {
+	if (0 != strcmp(fsi->srv_dir, export.dir_name)) {
 		return -1;
 	}
 	/* send NULL procedure*/
@@ -894,7 +901,7 @@ static int nfs_mount(struct nas *nas) {
 	memset(&mnt_svc, 0, sizeof(mnt_svc));
 
 	if (0 > nfs_call_proc_mnt(nas, MOUNTPROC3_MNT,
-			(char *)&point, (char *)&mnt_svc)) {
+		(char *)&point, (char *)&mnt_svc)) {
 		return -1;
 	}
 	mnt_svc.fh.count = DIRCOUNT;
@@ -904,8 +911,8 @@ static int nfs_mount(struct nas *nas) {
 
 	/* read info about filesystem */
 	if ((0 >  nfs_call_proc_nfs(nas, NFSPROC3_NULL, 0, 0)) ||
-	(0 >  nfs_call_proc_nfs(nas, NFSPROC3_FSSTAT, (char *)&fsi->fh, 0)) ||
-	(0 >  nfs_call_proc_nfs(nas, NFSPROC3_FSINFO, (char *)&fsi->fh, 0))) {
+		(0 >  nfs_call_proc_nfs(nas, NFSPROC3_FSSTAT, (char *)&fsi->fh, 0)) ||
+		(0 >  nfs_call_proc_nfs(nas, NFSPROC3_FSINFO, (char *)&fsi->fh, 0))) {
 		return -1;
 	}
 	return 0;

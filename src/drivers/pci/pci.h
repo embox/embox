@@ -182,13 +182,13 @@ struct pci_slot_dev {
 #define PCI_BAR_BASE(bar)   (bar & 0xFFFFFFF0)
 
 #define pci_foreach_dev(pci_dev) \
-	dlist_foreach_entry(pci_dev, __extension__ ({   \
-		extern struct dlist_head __pci_devs_list; &__pci_devs_list; \
-	}), lst)
+	dlist_foreach_entry(pci_dev, __extension__({   \
+			extern struct dlist_head __pci_devs_list; &__pci_devs_list; \
+		}), lst)
 
-struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
-		uint32_t devfn, uint32_t vendor_reg);
+struct pci_slot_dev * pci_insert_dev(char configured, uint32_t bus,
+	uint32_t devfn, uint32_t vendor_reg);
 
-extern void pci_set_master(struct pci_slot_dev * slot_dev);
+extern void pci_set_master(struct pci_slot_dev *slot_dev);
 
 #endif /* PCI_H_ */

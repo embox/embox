@@ -28,7 +28,7 @@
 #include <util/array.h>
 
 static int select_fds2pt(struct idesc_poll_table *pt,
-		int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
+	int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
 	struct idesc *idesc;
 	int cnt;
 	int poll_mask;
@@ -42,20 +42,20 @@ static int select_fds2pt(struct idesc_poll_table *pt,
 		poll_mask = 0;
 
 		if (readfds && FD_ISSET(i, readfds)) {
-			poll_mask |= POLLIN;//IDESC_STAT_READ;
+			poll_mask |= POLLIN;/*IDESC_STAT_READ; */
 		}
 		if (writefds && FD_ISSET(i, writefds)) {
-			poll_mask |= POLLOUT;//IDESC_STAT_WRITE;
+			poll_mask |= POLLOUT;/*IDESC_STAT_WRITE; */
 		}
 		if (exceptfds && FD_ISSET(i, exceptfds)) {
-			poll_mask |= POLLERR;//IDESC_STAT_EXEPT;
+			poll_mask |= POLLERR;/*IDESC_STAT_EXEPT; */
 		}
 
 		if (poll_mask) {
 			struct idesc_poll *pl;
 
 			if (!idesc_index_valid(i)
-					|| (NULL == (idesc = index_descriptor_get(i)))) {
+				|| (NULL == (idesc = index_descriptor_get(i)))) {
 				return SET_ERRNO(EBADF);
 			}
 
@@ -63,7 +63,7 @@ static int select_fds2pt(struct idesc_poll_table *pt,
 			pl = &pt->idesc_poll[cnt++];
 
 			pl->fd = i;
-			// pl->idesc = idesc;
+			/* pl->idesc = idesc; */
 			pl->i_poll_mask = poll_mask;
 			pl->o_poll_mask = 0;
 		}
@@ -76,7 +76,7 @@ static int select_fds2pt(struct idesc_poll_table *pt,
 }
 
 static void select_pt2fds(struct idesc_poll_table *pt,
-		fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
+	fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {
 
 	if (readfds) {
 		FD_ZERO(readfds);
@@ -88,7 +88,7 @@ static void select_pt2fds(struct idesc_poll_table *pt,
 		FD_ZERO(exceptfds);
 	}
 
-	for (int i = 0; i < pt->size; i ++) {
+	for (int i = 0; i < pt->size; i++) {
 		struct idesc_poll *pl;
 
 		pl = &pt->idesc_poll[i];
@@ -108,7 +108,8 @@ static void select_pt2fds(struct idesc_poll_table *pt,
 	}
 }
 
-int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struct timeval *timeout) {
+int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds,
+	struct timeval *timeout) {
 	clock_t ticks;
 	struct idesc_poll_table pt;
 	int ret;
@@ -135,4 +136,3 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	select_pt2fds(&pt, readfds, writefds, exceptfds);
 	return ret;
 }
-

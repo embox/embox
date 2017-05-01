@@ -12,7 +12,7 @@
 #include <netdb.h>
 
 struct servent * getservbyport(int port,
-		const char *proto) {
+	const char *proto) {
 	struct servent *se;
 
 	if (proto == NULL) {

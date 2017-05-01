@@ -72,7 +72,7 @@
 #define PCI_DEV_ID_BOCHS_VGA              0x1111
 
 /* Apple device id's */
-#define PCI_DEV_ID_APPLE_OHCI_HOST	  0x003f
+#define PCI_DEV_ID_APPLE_OHCI_HOST    0x003f
 
 #define PCI_DEV_ID_PLX_PEX8619            0x8619
 

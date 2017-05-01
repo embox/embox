@@ -36,7 +36,7 @@ int usb_driver_register(struct usb_driver *drv) {
 	return 0;
 }
 
-void *usb_driver_data(struct usb_dev *dev) {
+void * usb_driver_data(struct usb_dev *dev) {
 	return dev->drv_data;
 }
 
@@ -68,24 +68,24 @@ int usb_driver_open_by_node(struct node *n, struct usb_dev_desc **ddesc) {
 }
 
 static int usb_driver_match_table(struct usb_dev *dev,
-		struct usb_device_id id_table[]) {
+	struct usb_device_id id_table[]) {
 	struct usb_device_id *id;
 
 	id = id_table;
 
 	while (id->vid != 0 || id->pid != 0) {
 		if (id->vid == dev->dev_desc.id_vendor &&
-				id->pid == dev->dev_desc.id_product) {
+			id->pid == dev->dev_desc.id_product) {
 			return 1;
 		}
 
-		id ++;
+		id++;
 	}
 
 	return 0;
 }
 
-static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
+static struct usb_driver * usb_driver_find(struct usb_dev *dev) {
 	struct usb_driver *drv;
 
 	dev->drv_data = NULL;
@@ -124,8 +124,8 @@ void usb_driver_handle(struct usb_dev *dev) {
 		char name_buf[USB_DEV_NAME_LEN];
 
 		snprintf(name_buf, USB_DEV_NAME_LEN, usb_device_name_format,
-				dev->dev_desc.id_vendor,
-				dev->dev_desc.id_product);
+			dev->dev_desc.id_vendor,
+			dev->dev_desc.id_product);
 
 		char_dev_register(NULL, NULL);
 	}

@@ -1,8 +1,8 @@
 /******************************************************************************
  * nmi.h
- * 
+ *
  * NMI callback registration and reason codes.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -33,18 +33,18 @@
  * NMI reason codes:
  * Currently these are x86-specific, stored in arch_shared_info.nmi_reason.
  */
- /* I/O-check error reported via ISA port 0x61, bit 6. */
+/* I/O-check error reported via ISA port 0x61, bit 6. */
 #define _XEN_NMIREASON_io_error     0
 #define XEN_NMIREASON_io_error      (1UL << _XEN_NMIREASON_io_error)
- /* PCI SERR reported via ISA port 0x61, bit 7. */
+/* PCI SERR reported via ISA port 0x61, bit 7. */
 #define _XEN_NMIREASON_pci_serr     1
 #define XEN_NMIREASON_pci_serr      (1UL << _XEN_NMIREASON_pci_serr)
 #if __XEN_INTERFACE_VERSION__ < 0x00040300 /* legacy alias of the above */
- /* Parity error reported via ISA port 0x61, bit 7. */
+/* Parity error reported via ISA port 0x61, bit 7. */
 #define _XEN_NMIREASON_parity_error 1
 #define XEN_NMIREASON_parity_error  (1UL << _XEN_NMIREASON_parity_error)
 #endif
- /* Unknown hardware-generated NMI. */
+/* Unknown hardware-generated NMI. */
 #define _XEN_NMIREASON_unknown      2
 #define XEN_NMIREASON_unknown       (1UL << _XEN_NMIREASON_unknown)
 
@@ -60,8 +60,8 @@
  */
 #define XENNMI_register_callback   0
 struct xennmi_callback {
-    unsigned long handler_address;
-    unsigned long pad;
+	unsigned long handler_address;
+	unsigned long pad;
 };
 typedef struct xennmi_callback xennmi_callback_t;
 DEFINE_XEN_GUEST_HANDLE(xennmi_callback_t);

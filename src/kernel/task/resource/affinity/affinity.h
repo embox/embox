@@ -18,15 +18,15 @@ struct task;
 __BEGIN_DECLS
 
 extern unsigned int * task_resource_affinity(
-		const struct task *task);
+	const struct task *task);
 
 static inline void task_set_affinity(const struct task *task,
-		unsigned int affinity) {
+	unsigned int affinity) {
 	*task_resource_affinity(task) = affinity;
 }
 
 static inline unsigned int task_get_affinity(
-		const struct task *task) {
+	const struct task *task) {
 	return *task_resource_affinity(task);
 }
 

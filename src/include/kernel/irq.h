@@ -32,7 +32,7 @@
  * IRQ flags
  */
 /* Sharing supported flag */
-#define IF_SHARESUP	(0x1 << 0)
+#define IF_SHARESUP (0x1 << 0)
 
 /**
  * IRQ handler return type.
@@ -88,7 +88,7 @@ typedef irq_return_t (*irq_handler_t)(unsigned int irq_nr, void *data);
  *   If kernel is compiled without IRQ support.
  */
 extern int irq_attach(unsigned int irq_nr, irq_handler_t handler,
-		unsigned int flags, void *data, const char *dev_name);
+	unsigned int flags, void *data, const char *dev_name);
 
 /**
  * Detaches ISR from the specified IRQ.

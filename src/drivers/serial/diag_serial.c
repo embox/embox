@@ -49,4 +49,3 @@ const struct diag_ops uart_diag_ops = {
 	.getc = uart_diag_getc,
 	.kbhit = uart_diag_kbhit,
 };
-

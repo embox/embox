@@ -23,15 +23,14 @@ struct xattr_list {
 };
 
 extern void xattr_list_init(struct xattr_list *xlst);
-extern struct xattr_list *xattr_list_create(void);
+extern struct xattr_list * xattr_list_create(void);
 extern void xattr_list_delete(struct xattr_list *xlst);
 
 extern int getxattr_generic(struct xattr_list *xlst, const char *name,
-		char *value, size_t len);
+	char *value, size_t len);
 extern int setxattr_generic(struct xattr_list *xlst, const char *name,
-			const char *value, size_t len, int flags);
+	const char *value, size_t len, int flags);
 extern int listxattr_generic(struct xattr_list *xlst, char *list, size_t len);
 extern int removexattr_generic(struct xattr_list *xlst, const char *name);
 
 #endif /* FS_XATTR_LIST_H_ */
-

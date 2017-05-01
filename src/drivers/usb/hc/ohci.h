@@ -9,7 +9,7 @@
 #ifndef USB_OHCI_H_
 #define USB_OHCI_H_
 
-#define OHCI_USB_REV10 0x10 // for USB 1.0
+#define OHCI_USB_REV10 0x10 /* for USB 1.0 */
 
 #define OHCI_CTRL_CB_RATIO11          0x00000000
 #define OHCI_CTRL_CB_RATIO21          0x00000001
@@ -73,8 +73,8 @@
 #define OHCI_ED_K                     0x00004000
 #define OHCI_ED_F                     0x00008000
 #define OHCI_ED_MAX_PKT_SIZE_MASK     0x07ff0000
-#define OHCI_ED_SCHEDULED             0x80000000 // spec says some bits could be
-                                                 // used by driver
+#define OHCI_ED_SCHEDULED             0x80000000 /* spec says some bits could be */
+/* used by driver */
 
 #define OHCI_HCCA_INTERRUPT_LIST_N    32
 #define OHCI_READ(ohcd, _reg) \
@@ -83,7 +83,7 @@
 #define OHCI_WRITE(ohcd, _reg, _val) \
 	do { \
 		REG_STORE(_reg, (unsigned long) _val); \
-	} while(0)
+	} while (0)
 
 /* HCCAs */
 struct ohci_hcca {
@@ -130,11 +130,11 @@ struct ohci_hcd {
 
 };
 
-static inline struct usb_hcd *ohci2hcd(struct ohci_hcd *ohcd) {
+static inline struct usb_hcd * ohci2hcd(struct ohci_hcd *ohcd) {
 	return ohcd->hcd;
 }
 
-static inline struct ohci_hcd *hcd2ohci(struct usb_hcd *hcd) {
+static inline struct ohci_hcd * hcd2ohci(struct usb_hcd *hcd) {
 	return (struct ohci_hcd *) hcd->hci_specific;
 }
 
@@ -145,12 +145,11 @@ struct ohci_ed {
 	uint32_t next_ed;
 } __attribute__((packed,aligned(16)));
 
-
-static inline struct ohci_ed *endp2ohci(struct usb_endp *endp) {
+static inline struct ohci_ed * endp2ohci(struct usb_endp *endp) {
 	return endp->hci_specific;
 }
 
-static inline struct usb_endp *ohci2endp(struct ohci_ed *ed) {
+static inline struct usb_endp * ohci2endp(struct ohci_ed *ed) {
 	assertf(0, "%s: NYI", __func__);
 	return NULL;
 }
@@ -163,7 +162,7 @@ struct ohci_td {
 	struct usb_request *req;
 } __attribute__((packed,aligned(16)));
 
-static inline struct usb_request *ohci2req(struct ohci_td *td) {
+static inline struct usb_request * ohci2req(struct ohci_td *td) {
 	return td->req;
 }
 

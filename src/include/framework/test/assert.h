@@ -9,7 +9,6 @@
 #ifndef FRAMEWORK_TEST_ASSERT_H_
 #define FRAMEWORK_TEST_ASSERT_H_
 
-
 #include <string.h>
 #include <sys/cdefs.h>
 
@@ -19,12 +18,12 @@
 #include <framework/test/emit.h>
 
 EXTERN_C void __test_assertion_handle(int pass,
-		const struct __test_assertion_point *point);
+	const struct __test_assertion_point *point);
 
 #define __test_assertion_point_ref(_reason) \
 	({                                                                        \
-		/* Statically allocate and define. Location and reason message are    \
-		 * known at compile time and nobody cares about .rodata section. */   \
+	    /* Statically allocate and define. Location and reason message are    \
+	     * known at compile time and nobody cares about .rodata section. */   \
 		static const struct __test_assertion_point __test_assertion_point = { \
 			.location = LOCATION_FUNC_INIT, \
 			.reason = _reason,              \
@@ -38,7 +37,7 @@ EXTERN_C void __test_assertion_handle(int pass,
  * This causes the following message to be logged:
 @verbatim
 failed: test_fail(<reason>)
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  *
  * @param reason (optional)
@@ -48,137 +47,136 @@ failed: test_fail(<reason>)
  */
 #define test_fail(reason) \
 	__test_assertion_handle(0, \
-			__test_assertion_point_ref("test_fail(\"" reason "\")"))
+		__test_assertion_point_ref("test_fail(\"" reason "\")"))
 /**
 @verbatim
 failed: test_assert(<#condition>)
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert(condition) \
 	__test_assertion_handle((int) (condition), \
-			__test_assertion_point_ref("test_assert(" #condition ")"))
+		__test_assertion_point_ref("test_assert(" #condition ")"))
 
 /**
 @verbatim
 failed: test_assert_true(<#value>)
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert_true(value) \
 	__test_assertion_handle((value), \
-			__test_assertion_point_ref("test_assert_true(" #value ")"))
+		__test_assertion_point_ref("test_assert_true(" #value ")"))
 
 /**
 @verbatim
 failed: test_assert_false(<#value>)
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert_false(value) \
 	__test_assertion_handle(!(value), \
-			__test_assertion_point_ref("test_assert_false(" #value ")"))
+		__test_assertion_point_ref("test_assert_false(" #value ")"))
 
 /**
 @verbatim
 failed: test_assert_zero(<#value>): <value>
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert_zero(value) \
 	__test_assertion_handle(!(value), \
-			__test_assertion_point_ref("test_assert_zero(" #value ")"))
+		__test_assertion_point_ref("test_assert_zero(" #value ")"))
 
 /**
 @verbatim
 failed: test_assert_not_zero(<#value>)
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert_not_zero(value) \
 	__test_assertion_handle((value), \
-			__test_assertion_point_ref("test_assert_not_zero(" #value ")"))
+		__test_assertion_point_ref("test_assert_not_zero(" #value ")"))
 
 /**
 @verbatim
 failed: test_assert_null(<#value>): <value>
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert_null(value) \
 	__test_assertion_handle(!(value), \
-			__test_assertion_point_ref("test_assert_null(" #value ")"))
+		__test_assertion_point_ref("test_assert_null(" #value ")"))
 
 /**
 @verbatim
 failed: test_assert_not_null(<#value>)
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert_not_null(value) \
 	__test_assertion_handle((int) (value), \
-			__test_assertion_point_ref("test_assert_not_null(" #value ")"))
+		__test_assertion_point_ref("test_assert_not_null(" #value ")"))
 
 /**
 @verbatim
 failed: test_assert_equal(<#actual>, <#expected>): <actual>, expected <expected>
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert_equal(actual, expected) \
 	__test_assertion_handle((actual) == (expected), \
-			__test_assertion_point_ref( "test_assert_equal(" #actual ", " \
-					#expected ")"))
+		__test_assertion_point_ref( "test_assert_equal(" #actual ", " \
+		#expected ")"))
 
 /**
 @verbatim
 failed: test_assert_not_equal(<#actual>, <#expected>): <actual>
-	at <file>:<line>
+    at <file>:<line>
 @endverbatim
  */
 #define test_assert_not_equal(actual, expected) \
 	__test_assertion_handle((actual) != (expected), \
-			__test_assertion_point_ref( "test_assert_not_equal(" #actual ", " \
-					#expected ")"))
+		__test_assertion_point_ref( "test_assert_not_equal(" #actual ", " \
+		#expected ")"))
 
 #define test_assert_str_equal(actual, expected) \
 	__test_assertion_handle(((actual) == (expected)) \
-			|| (0 == strcmp((actual), (expected))), \
-			__test_assertion_point_ref( "test_assert_str_equal(" \
-					 #actual ", " #expected ")"))
+		|| (0 == strcmp((actual), (expected))), \
+		__test_assertion_point_ref( "test_assert_str_equal(" \
+		#actual ", " #expected ")"))
 
 #define test_assert_str_not_equal(actual, expected) \
 	__test_assertion_handle(((actual) != (expected)) \
-			&& (0 != strcmp((actual), (expected))), \
-			__test_assertion_point_ref( "test_assert_str_not_equal(" \
-					#actual ", " #expected ")"))
+		&& (0 != strcmp((actual), (expected))), \
+		__test_assertion_point_ref( "test_assert_str_not_equal(" \
+		#actual ", " #expected ")"))
 
 #define test_assert_strn_equal(actual, expected, n) \
 	__test_assertion_handle(((actual) == (expected)) \
-			|| (0 == strncmp((actual), (expected), (n))), \
-			__test_assertion_point_ref( "test_assert_strn_equal(" \
-					#actual ", " #expected ", " #n ")"))
+		|| (0 == strncmp((actual), (expected), (n))), \
+		__test_assertion_point_ref( "test_assert_strn_equal(" \
+		#actual ", " #expected ", " #n ")"))
 
 #define test_assert_strn_not_equal(actual, expected, n) \
 	__test_assertion_handle(((actual) != (expected)) \
-			&& (0 != strncmp((actual), (expected), (n))), \
-			__test_assertion_point_ref( "test_assert_strn_not_equal(" \
-					#actual ", " #expected ", " #n ")"))
+		&& (0 != strncmp((actual), (expected), (n))), \
+		__test_assertion_point_ref( "test_assert_strn_not_equal(" \
+		#actual ", " #expected ", " #n ")"))
 
 #define test_assert_mem_equal(actual, expected, n) \
 	__test_assertion_handle(0 == memcmp((actual), (expected), (n)), \
-			__test_assertion_point_ref( "test_assert_mem_equal(" \
-					#actual ", " #expected ", " #n ")"))
+		__test_assertion_point_ref( "test_assert_mem_equal(" \
+		#actual ", " #expected ", " #n ")"))
 
 #define test_assert_mem_not_equal(actual, expected, n) \
 	__test_assertion_handle(0 != memcmp((actual), (expected), (n)), \
-			__test_assertion_point_ref( "test_assert_mem_not_equal(" \
-					#actual ", " #expected ", " #n ")"))
+		__test_assertion_point_ref( "test_assert_mem_not_equal(" \
+		#actual ", " #expected ", " #n ")"))
 
 #define test_assert_emitted(expected) \
 	__test_assertion_handle(0 == strcmp(test_get_emitted(), (expected)), \
-			__test_assertion_point_ref( "test_assert_emitted(" #expected ")"))
-
+		__test_assertion_point_ref( "test_assert_emitted(" #expected ")"))
 
 /* Hide internals from CDT macro expansion. */
 #ifdef __CDT_PARSER__

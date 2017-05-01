@@ -27,11 +27,11 @@ static void sig_hnd(int sig) {
 	task_exit(NULL);
 }
 
-static void *task_hnd(void *arg) {
+static void * task_hnd(void *arg) {
 
 	signal(9, sig_hnd);
 
-	while(1)
+	while (1)
 		sleep(0);
 
 	return NULL;
@@ -50,16 +50,16 @@ static void sig_hnd2(int sig) {
 	if (sig == 9) {
 		task_exit(NULL);
 	} else {
-		flag2 ++;
+		flag2++;
 	}
 }
 
-static void *task_hnd2(void *arg) {
+static void * task_hnd2(void *arg) {
 
 	signal(9, sig_hnd2);
 	signal(1, sig_hnd2);
 
-	while(1)
+	while (1)
 		sleep(0);
 
 	return NULL;
@@ -82,7 +82,7 @@ TEST_CASE("create task and send him signal 3 times") {
 
 }
 
-static void *thread_hnd(void *arg) {
+static void * thread_hnd(void *arg) {
 
 	ksleep(1000);
 
@@ -91,7 +91,7 @@ static void *thread_hnd(void *arg) {
 	return NULL;
 }
 
-static void *task_hnd_thread(void *arg) {
+static void * task_hnd_thread(void *arg) {
 	struct thread *thd;
 
 	pthread_create(&thd, 0, thread_hnd, NULL);
@@ -100,5 +100,5 @@ static void *task_hnd_thread(void *arg) {
 }
 
 TEST_CASE("create a task with 2 threads, kill it") {
-	 new_task("", task_hnd_thread, NULL);
+	new_task("", task_hnd_thread, NULL);
 }

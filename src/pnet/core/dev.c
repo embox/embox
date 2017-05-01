@@ -25,8 +25,8 @@ EMBOX_UNIT_INIT(net_dev_init);
 /* single entry for all devices
        devices
    o  o  o
-	\ | /
-	  o
+    \ | /
+      o
       dev_entry
 
 */
@@ -41,7 +41,7 @@ static net_node_t pnet_dev_register(struct net_device *dev) {
 	return node;
 }
 
-struct net_device *pnet_get_net_device(net_node_t node) {
+struct net_device * pnet_get_net_device(net_node_t node) {
 	return ((struct pnet_dev *) node)->dev;
 }
 

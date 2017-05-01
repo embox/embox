@@ -16,7 +16,7 @@
 TASK_RESOURCE_DEF(task_idesc_table_desc, struct idesc_table);
 
 static void task_idesc_table_init(const struct task *task,
-		void *idesc_table_space) {
+	void *idesc_table_space) {
 	struct idesc_table *it;
 
 	assert(idesc_table_space == task_resource_idesc_table(task));
@@ -28,7 +28,7 @@ static void task_idesc_table_init(const struct task *task,
 }
 
 static int task_idesc_table_inherit(const struct task *task,
-		const struct task *parent) {
+	const struct task *parent) {
 	struct idesc_table *it, *parent_it;
 
 	it = task_resource_idesc_table(task);

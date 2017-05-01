@@ -16,7 +16,7 @@
 
 EMBOX_TEST_SUITE("vfork() testsuite");
 
-static void *test_vfork_first(void *arg) {
+static void * test_vfork_first(void *arg) {
 	pid_t pid;
 	pid_t parent_pid;
 	int res;
@@ -50,7 +50,7 @@ TEST_CASE("after called vfork() child call exit()") {
 	test_assert_zero(res);
 }
 
-static void *test_vfork_second(void *arg) {
+static void * test_vfork_second(void *arg) {
 	pid_t pid;
 	int res;
 	volatile int data;
@@ -84,7 +84,7 @@ TEST_CASE("parent should see stack modifications made from child") {
 	test_assert_zero(res);
 }
 
-static void *test_vfork_third(void *arg) {
+static void * test_vfork_third(void *arg) {
 	pid_t pid;
 	int res;
 
@@ -113,7 +113,7 @@ TEST_CASE("after called vfork() child trashes own stack and calls exit") {
 	test_assert_zero(res);
 }
 
-static void *test_vfork_fourth(void *arg) {
+static void * test_vfork_fourth(void *arg) {
 	pid_t pid;
 	pid_t parent_pid;
 	int res;
@@ -152,4 +152,3 @@ TEST_CASE("after called vfork() child call execv()") {
 
 	test_assert_zero(res);
 }
-

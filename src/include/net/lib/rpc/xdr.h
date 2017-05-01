@@ -33,11 +33,11 @@ enum xdr_op {
 union xdrrec_hdr {
 	struct {
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
-		uint32_t len:31,
-			is_last:1;
+		uint32_t len : 31,
+			is_last : 1;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
-		uint32_t is_last:1,
-			len:31;
+		uint32_t is_last : 1,
+			len : 31;
 #endif
 	} h;
 	xdr_unit_t unit;
@@ -92,9 +92,9 @@ struct xdr_discrim {
 };
 
 extern void xdrmem_create(struct xdr *xs, char *addr, size_t size,
-		enum xdr_op oper);
+	enum xdr_op oper);
 extern void xdrrec_create(struct xdr *xs, size_t sendsz, size_t recvsz,
-		char *handle, xdrrec_hnd_t readit, xdrrec_hnd_t writeit);
+	char *handle, xdrrec_hnd_t readit, xdrrec_hnd_t writeit);
 
 extern int xdrrec_endofrecord(struct xdr *xs, int sendnow);
 extern size_t xdr_getpos(struct xdr *xs);
@@ -114,15 +114,15 @@ extern int xdr_enum(struct xdr *xs, int32_t *pe);
 extern int xdr_bool(struct xdr *xs, int32_t *pb);
 
 extern int xdr_array(struct xdr *xs, char **parray, uint32_t *psize,
-		uint32_t maxsize, uint32_t elem_size, xdrproc_t elem_proc);
+	uint32_t maxsize, uint32_t elem_size, xdrproc_t elem_proc);
 
 extern int xdr_bytes(struct xdr *xs, char **ppc, uint32_t *psize,
-		uint32_t maxsize);
+	uint32_t maxsize);
 
 extern int xdr_opaque(struct xdr *xs, char *pc, size_t size);
 extern int xdr_string(struct xdr *xs, char **pstr, uint32_t maxsize);
 extern int xdr_wrapstring(struct xdr *xs, char **pstr);
 extern int xdr_union(struct xdr *xs, int32_t *pdscm, void *pun,
-		const struct xdr_discrim *choices, xdrproc_t dfault);
+	const struct xdr_discrim *choices, xdrproc_t dfault);
 
 #endif /* NET_LIB_RPC_XDR_H_ */

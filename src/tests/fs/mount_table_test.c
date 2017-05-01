@@ -148,7 +148,8 @@ TEST_CASE("mount_table_del() and mount_table_get_child() correctness") {
 	struct path path, test_path, c1_path, c2_path;
 
 	test_assert_zero(vfs_lookup("/test", &test_path));
-	test_assert_not_null(mount_table_get_child(test_path.mnt_desc, test_path.node));
+	test_assert_not_null(mount_table_get_child(test_path.mnt_desc,
+		test_path.node));
 
 	test_assert_zero(vfs_lookup("/test/ch1", &c1_path));
 

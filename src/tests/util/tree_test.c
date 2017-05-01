@@ -18,19 +18,20 @@ struct int_tree {
 	struct tree_link link;
 };
 
-static void dispose(struct tree_link *link) { /* Nothing to do. */ }
+static void dispose(struct tree_link *link) { /* Nothing to do. */
+}
 
 /** Pool of nodes. */
 static struct int_tree nodes[100];
 static int node_cnt = 0;
 
 /** Return pointer to link field of int_tree structure. */
-static struct tree_link *get_link(struct int_tree *node) {
+static struct tree_link * get_link(struct int_tree *node) {
 	return &node->link;
 }
 
 /** Allocate new node and initialize it. */
-static struct int_tree *new_node(void) {
+static struct int_tree * new_node(void) {
 	tree_link_init(get_link(nodes + node_cnt));
 	return nodes + node_cnt++;
 }
@@ -61,14 +62,16 @@ static void compare(struct tree_link *root) {
 	int i;
 	i = 0;
 #if 0
-	printf ("tree: ");
+	printf("tree: ");
 	tree_postorder_traversal(link, elem, root, link) {
 		printf("%d ", elem->data);
 	}
-	printf ("\n");
+	printf("\n");
 #endif
-	tree_postorder_traversal_link(link, root) {}
-	tree_postorder_traversal_link_safe(link, root) {}
+	tree_postorder_traversal_link(link, root) {
+	}
+	tree_postorder_traversal_link_safe(link, root) {
+	}
 	tree_postorder_traversal(elem, root, link) {
 		/* printf("%d %d %d\n", i, elem->data, ans[i]); */
 		test_assert(elem->data == ans[i]);
@@ -79,8 +82,9 @@ static void compare(struct tree_link *root) {
 }
 
 /** Returns the leftmost child of specified node. */
-static struct tree_link *get_left_child(struct tree_link *link) {
-	return dlist_entry(dlist_first(&link->children), struct tree_link, list_link);
+static struct tree_link * get_left_child(struct tree_link *link) {
+	return dlist_entry(dlist_first(&link->children), struct tree_link,
+			list_link);
 }
 
 /**
@@ -94,7 +98,7 @@ static struct tree_link *get_left_child(struct tree_link *link) {
  *  30  31
  *
  */
-static struct tree_link *tree_build_base(void) {
+static struct tree_link * tree_build_base(void) {
 	struct int_tree *n[5];
 	struct tree_link *root;
 	int i;
@@ -248,7 +252,9 @@ TEST_CASE("Delete subtree") {
 
 TEST_CASE("After adding tree element must be in children") {
 	struct tree_link root, child, *item;
-	struct tree_link *pattern[] = {&child};
+	struct tree_link *pattern[] = {
+		&child
+	};
 	int pattern_pos = 0;
 
 	tree_link_init(&root);

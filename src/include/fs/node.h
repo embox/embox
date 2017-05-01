@@ -17,7 +17,6 @@
 #include <fcntl.h>
 #include <fs/kflock.h>
 
-
 struct nas;
 
 typedef struct file_lock_shared {
@@ -26,37 +25,37 @@ typedef struct file_lock_shared {
 } flock_shared_t;
 
 typedef struct file_lock {
-	struct mutex      exlock;
-	long              shlock_count;
+	struct mutex exlock;
+	long shlock_count;
 	struct dlist_head shlock_holders;
-	spinlock_t        flock_guard;
+	spinlock_t flock_guard;
 } flock_t;
 
 typedef struct node {
 	/* node name (use vfs_get_path_by_node() for get full path*/
-	char                  name[NAME_MAX + 1];
+	char name[NAME_MAX + 1];
 
-	mode_t                mode;/* discrete access mode Read-Write-Execution */
-	uid_t                 uid;/* owner user ID */
-	gid_t                 gid;/* owner group ID */
+	mode_t mode;               /* discrete access mode Read-Write-Execution */
+	uid_t uid;                /* owner user ID */
+	gid_t gid;                /* owner group ID */
 
 	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
 
-	int                   mounted; /* is mount point*/
+	int mounted;                   /* is mount point*/
 
 	/* Two locks is temporary solution for compatibility,
 	 * only kflock should stay in future */
-	kflock_t              kflock;
-	flock_t	              flock;
+	kflock_t kflock;
+	flock_t flock;
 
 	/* service data structure for enabling tree operation */
-	struct tree_link      tree_link;
+	struct tree_link tree_link;
 } node_t;
 
 struct node_info {
-	size_t        size;
-	unsigned int  mtime;
+	size_t size;
+	unsigned int mtime;
 };
 
 struct node_fi {
@@ -75,11 +74,11 @@ typedef struct nas {
  * @param name_len (optional) how many bytes to take from name.
  *    If zero, the name must be a null-terminated string.
  */
-extern node_t *node_alloc(const char *name, size_t name_len);
+extern node_t * node_alloc(const char *name, size_t name_len);
 
 extern void node_free(node_t *node);
 
-static inline struct node *node_parent(struct node *node) {
+static inline struct node * node_parent(struct node *node) {
 	return tree_element(node->tree_link.par, struct node, tree_link);
 }
 
@@ -94,6 +93,5 @@ static inline int node_is_directory(struct node *node) {
 static inline int node_is_file(struct node *node) {
 	return S_ISREG(node->mode);
 }
-
 
 #endif /* FS_NODE_H_ */

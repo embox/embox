@@ -36,8 +36,6 @@ struct task {
 	char resources[];
 };
 
-
-
 __BEGIN_DECLS
 
 #include <kernel/task/defs.h>
@@ -86,7 +84,7 @@ static inline struct task * task_get_parent(const struct task *tsk) {
 }
 
 static inline void task_set_main(struct task *tsk,
-		struct thread *main_thread) {
+	struct thread *main_thread) {
 	assert(tsk != NULL);
 	assert(main_thread != NULL);
 	assert(tsk->tsk_main == NULL);
@@ -117,7 +115,7 @@ static inline void task_thread_unregister(struct task *tsk, struct thread *t) {
 	}
 
 	/* XXX t->task isn't set to null, thread allowed to know old parent while
- 	 * shutting down
+	 * shutting down
 	 */
 }
 

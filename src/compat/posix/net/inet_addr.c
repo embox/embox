@@ -25,7 +25,7 @@ const struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
 const struct in6_addr in6addr_loopback = IN6ADDR_LOOPBACK_INIT;
 
 static int inet_to_str(const struct in_addr *in, char *buff,
-		socklen_t buff_sz) {
+	socklen_t buff_sz) {
 	int ret;
 
 	assert(in != NULL);
@@ -45,7 +45,7 @@ static int inet_to_str(const struct in_addr *in, char *buff,
 }
 
 static int inet6_to_str(const struct in6_addr *in6, char *buff,
-		socklen_t buff_sz) {
+	socklen_t buff_sz) {
 	int ret;
 	size_t i, zs_ind, zs_len, zs_max_ind, zs_max_len;
 
@@ -89,12 +89,13 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 		buff_sz -= ret;
 	}
 
-	ret = zs_max_len <= 1 ? snprintf(buff, buff_sz, "%" PRIu16, ntohs(in6->s6_addr16[i]))
-			: i + zs_max_len == ARRAY_SIZE(in6->s6_addr16) ? i == 0
-				? snprintf(buff, buff_sz, "::")
-				: snprintf(buff, buff_sz, ":")
-			: zs_max_ind == 0 ? snprintf(buff, buff_sz, ":")
-			: 0;
+	ret = zs_max_len <=
+		1 ? snprintf(buff, buff_sz, "%" PRIu16, ntohs(in6->s6_addr16[i]))
+		: i + zs_max_len == ARRAY_SIZE(in6->s6_addr16) ? i == 0
+		? snprintf(buff, buff_sz, "::")
+		: snprintf(buff, buff_sz, ":")
+		: zs_max_ind == 0 ? snprintf(buff, buff_sz, ":")
+		: 0;
 	if (ret < 0) {
 		return -EIO;
 	}
@@ -131,7 +132,7 @@ static int str_to_inet(const char *buff, struct in_addr *in) {
 	max_val = ULONG_MAX;
 
 	for (i = 0; i < ARRAY_SIZE(in->s_addr8); ++i, ++buff,
-			max_val >>= CHAR_BIT) {
+		max_val >>= CHAR_BIT) {
 		SET_ERRNO(0);
 		val = strtoul(buff, (char **)&buff, 0);
 		if (errno != 0) {
@@ -141,8 +142,8 @@ static int str_to_inet(const char *buff, struct in_addr *in) {
 			return 1; /* error: invalid address format */
 		}
 		addr |= *buff == '.'
-				? val << (CHAR_BIT * (ARRAY_SIZE(in->s_addr8) - i - 1))
-				: val;
+			? val << (CHAR_BIT * (ARRAY_SIZE(in->s_addr8) - i - 1))
+			: val;
 		if (*buff != '.') {
 			break;
 		}
@@ -199,15 +200,15 @@ static int str_to_inet6(const char *buff, struct in6_addr *in6) {
 	}
 
 	if ((zs_ind == ARRAY_SIZE(in6->s6_addr16))
-			&& (i != ARRAY_SIZE(in6->s6_addr16))) {
+		&& (i != ARRAY_SIZE(in6->s6_addr16))) {
 		return 1; /* error: invalid address format */
 	}
 
 	memmove(&in6->s6_addr16[ARRAY_SIZE(in6->s6_addr16) - (i - zs_ind + 1)],
-			&in6->s6_addr16[zs_ind],
-			(i - zs_ind + 1) * sizeof in6->s6_addr16[0]);
+		&in6->s6_addr16[zs_ind],
+		(i - zs_ind + 1) * sizeof in6->s6_addr16[0]);
 	memset(&in6->s6_addr16[zs_ind], 0,
-			(ARRAY_SIZE(in6->s6_addr16) - i - 1) * sizeof in6->s6_addr16[0]);
+		(ARRAY_SIZE(in6->s6_addr16) - i - 1) * sizeof in6->s6_addr16[0]);
 
 	return 0;
 }
@@ -215,11 +216,11 @@ static int str_to_inet6(const char *buff, struct in6_addr *in6) {
 char * inet_ntoa(struct in_addr in) {
 	static char buff[INET_ADDRSTRLEN];
 	return 0 == inet_to_str(&in, &buff[0], ARRAY_SIZE(buff))
-			? &buff[0] : NULL;
+		   ? &buff[0] : NULL;
 }
 
 const char * inet_ntop(int af, const void *addr, char *buff,
-		socklen_t buff_sz) {
+	socklen_t buff_sz) {
 	int ret;
 
 	switch (af) {
@@ -276,32 +277,36 @@ int inet_pton(int af, const char *buff, void *addr) {
 	return ret == 0 ? 1 : 0;
 }
 
-#define	IN_CLASSA(a)		((((in_addr_t)(a)) & 0x80000000) == 0)
-#define	IN_CLASSA_NET		0xff000000
-#define	IN_CLASSA_NSHIFT	24
-#define	IN_CLASSA_HOST		(0xffffffff & ~IN_CLASSA_NET)
-#define	IN_CLASSA_MAX		128
-#define	IN_CLASSB(a)		((((in_addr_t)(a)) & 0xc0000000) == 0x80000000)
-#define	IN_CLASSB_NET		0xffff0000
-#define	IN_CLASSB_NSHIFT	16
-#define	IN_CLASSB_HOST		(0xffffffff & ~IN_CLASSB_NET)
-#define	IN_CLASSB_MAX		65536
-#define	IN_CLASSC(a)		((((in_addr_t)(a)) & 0xe0000000) == 0xc0000000)
-#define	IN_CLASSC_NET		0xffffff00
-#define	IN_CLASSC_NSHIFT	8
-#define	IN_CLASSC_HOST		(0xffffffff & ~IN_CLASSC_NET)
+#define IN_CLASSA(a)        ((((in_addr_t)(a)) & 0x80000000) == 0)
+#define IN_CLASSA_NET       0xff000000
+#define IN_CLASSA_NSHIFT    24
+#define IN_CLASSA_HOST      (0xffffffff & ~IN_CLASSA_NET)
+#define IN_CLASSA_MAX       128
+#define IN_CLASSB(a)        ((((in_addr_t)(a)) & 0xc0000000) == 0x80000000)
+#define IN_CLASSB_NET       0xffff0000
+#define IN_CLASSB_NSHIFT    16
+#define IN_CLASSB_HOST      (0xffffffff & ~IN_CLASSB_NET)
+#define IN_CLASSB_MAX       65536
+#define IN_CLASSC(a)        ((((in_addr_t)(a)) & 0xe0000000) == 0xc0000000)
+#define IN_CLASSC_NET       0xffffff00
+#define IN_CLASSC_NSHIFT    8
+#define IN_CLASSC_HOST      (0xffffffff & ~IN_CLASSC_NET)
 
 struct in_addr inet_makeaddr(in_addr_t net, in_addr_t host) {
 	struct in_addr in;
 
-	if (net < 128)
+	if (net < 128) {
 		in.s_addr = (net << IN_CLASSA_NSHIFT) | (host & IN_CLASSA_HOST);
-	else if (net < 65536)
+	}
+	else if (net < 65536) {
 		in.s_addr = (net << IN_CLASSB_NSHIFT) | (host & IN_CLASSB_HOST);
-	else if (net < 16777216L)
+	}
+	else if (net < 16777216L) {
 		in.s_addr = (net << IN_CLASSC_NSHIFT) | (host & IN_CLASSC_HOST);
-	else
+	}
+	else {
 		in.s_addr = net | host;
+	}
 	in.s_addr = htonl(in.s_addr);
 	return in;
 }

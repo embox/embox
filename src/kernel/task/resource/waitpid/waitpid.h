@@ -18,7 +18,7 @@ struct waitq;
 __BEGIN_DECLS
 
 extern struct waitq * task_resource_waitpid(
-		const struct task *task);
+	const struct task *task);
 
 #define task_self_resource_waitpid() \
 	task_resource_waitpid(task_self())

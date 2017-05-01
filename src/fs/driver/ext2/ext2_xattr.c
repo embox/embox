@@ -31,14 +31,14 @@ static inline unsigned int iceil(unsigned int val, unsigned int div) {
 
 static inline size_t ent_len(struct ext2_xattr_ent *ent) {
 	return sizeof(struct ext2_xattr_ent) +
-		iceil(d2h8(ent->e_name_len), EXT2_XATTR_PAD);
+		   iceil(d2h8(ent->e_name_len), EXT2_XATTR_PAD);
 }
 
 #define foreach_xattr(_var, _first_entry) \
-	for(_var = _first_entry; \
-			*(uint32_t *) _var != 0; \
-			_var = (struct ext2_xattr_ent *) \
-				(((unsigned int) _var) + ent_len(_var)))
+	for (_var = _first_entry; \
+		*(uint32_t *) _var != 0; \
+		_var = (struct ext2_xattr_ent *) \
+		(((unsigned int) _var) + ent_len(_var)))
 
 #define XATTR_ENT_HASH_NAM_SHIFT 5
 #define XATTR_ENT_HASH_NAM_RSHIFT (8 * sizeof(hash) - XATTR_ENT_HASH_NAM_SHIFT)
@@ -46,7 +46,8 @@ static inline size_t ent_len(struct ext2_xattr_ent *ent) {
 #define XATTR_ENT_HASH_VAL_RSHIFT (8 * sizeof(hash) - XATTR_ENT_HASH_VAL_SHIFT)
 
 #if __BYTE_ORDER == __BIG_ENDIAN
-static void xattrent_bswap(struct ext2_xattr_ent *old, struct ext2_xattr_ent *new) {
+static void xattrent_bswap(struct ext2_xattr_ent *old,
+	struct ext2_xattr_ent *new) {
 	new->e_name_len = old->e_name_len;
 	new->e_name_index = old->e_name_index;
 	new->e_value_offs = bswap16(old->e_value_offs);
@@ -56,7 +57,8 @@ static void xattrent_bswap(struct ext2_xattr_ent *old, struct ext2_xattr_ent *ne
 	memcpy(new->e_name, old->e_name, old->e_name_len);
 }
 
-void xattr_bswap(struct ext2_xattr_hdr *old, struct ext2_xattr_hdr *new, size_t size) {
+void xattr_bswap(struct ext2_xattr_hdr *old, struct ext2_xattr_hdr *new,
+	size_t size) {
 	struct ext2_xattr_ent *i_ent;
 	int i = 0;
 
@@ -65,7 +67,7 @@ void xattr_bswap(struct ext2_xattr_hdr *old, struct ext2_xattr_hdr *new, size_t 
 	new->h_blocks = bswap32(old->h_blocks);
 	new->h_hash = bswap32(old->h_hash);
 	memcpy(&new->reserved, &old->reserved,
-			16 * sizeof(uint8_t));
+		16 * sizeof(uint8_t));
 	size -= sizeof(uint32_t) * 4 + sizeof(uint8_t) * 16;
 
 	foreach_xattr(i_ent, old->h_entries) {
@@ -74,13 +76,14 @@ void xattr_bswap(struct ext2_xattr_hdr *old, struct ext2_xattr_hdr *new, size_t 
 	}
 }
 #else
-void xattr_bswap(struct ext2_xattr_hdr *old, struct ext2_xattr_hdr *new, size_t size) {
+void xattr_bswap(struct ext2_xattr_hdr *old, struct ext2_xattr_hdr *new,
+	size_t size) {
 
 }
 #endif
 
 static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
-		struct ext2_xattr_ent *xattr_ent) {
+	struct ext2_xattr_ent *xattr_ent) {
 	size_t len;
 
 	char *p = xattr_ent->e_name;
@@ -119,7 +122,7 @@ static int ensure_dinode(struct nas *nas) {
 }
 
 static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk,
-		char check_magic) {
+	char check_magic) {
 	struct ext2fs_dinode *dinode;
 	struct ext2_xattr_hdr *xattr_blk;
 	int res;
@@ -141,7 +144,7 @@ static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk,
 	}
 
 	if (0 > (res = ext2_read_sector(node->nas, (char *) xattr_blk, 1,
-			d2h32(dinode->i_facl)))) {
+				d2h32(dinode->i_facl)))) {
 		ext2_buff_free(node->nas, (char *) xattr_blk);
 		return res;
 	}
@@ -208,15 +211,15 @@ int ext2fs_listxattr(struct node *node, char *list, size_t len) {
 }
 
 static void del_val(struct ext2_xattr_hdr *xattr_blk,
-		struct ext2_xattr_ent *xattr_ent, int *min_value_offs) {
+	struct ext2_xattr_ent *xattr_ent, int *min_value_offs) {
 	struct ext2_xattr_ent *i_ent;
 	unsigned int dellen = iceil(d2h32(xattr_ent->e_value_size),
 			EXT2_XATTR_PAD);
 	unsigned short deloff = d2h16(xattr_ent->e_value_offs);
 
-	memmove(((char*) xattr_blk) + *min_value_offs + dellen,
-			((char *) xattr_blk) + *min_value_offs,
-			 deloff - *min_value_offs);
+	memmove(((char *) xattr_blk) + *min_value_offs + dellen,
+		((char *) xattr_blk) + *min_value_offs,
+		deloff - *min_value_offs);
 
 	foreach_xattr(i_ent, xattr_blk->h_entries) {
 		unsigned short ent_off = d2h16(i_ent->e_value_offs);
@@ -229,16 +232,16 @@ static void del_val(struct ext2_xattr_hdr *xattr_blk,
 }
 
 static void del_ent(struct ext2_xattr_hdr *xattr_blk,
-		struct ext2_xattr_ent *xattr_ent,
-	       	struct ext2_xattr_ent *end_ent) {
+	struct ext2_xattr_ent *xattr_ent,
+	struct ext2_xattr_ent *end_ent) {
 	void *src = ((char *) xattr_ent) + ent_len(xattr_ent);
 
 	memmove(xattr_ent, src, EXT2_XATTR_PAD + (unsigned int) end_ent
-			- (unsigned int) src);
+		- (unsigned int) src);
 }
 
 static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk,
-		struct ext2_xattr_ent *end_ent, const char *name) {
+	struct ext2_xattr_ent *end_ent, const char *name) {
 	struct ext2_xattr_ent *i_ent;
 	size_t name_len = strlen(name);
 
@@ -249,10 +252,10 @@ static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk,
 	}
 
 	memmove(((void *) i_ent) + sizeof(struct ext2_xattr_ent)
-				+ iceil(strlen(name), EXT2_XATTR_PAD),
-			i_ent,
-			((unsigned int) end_ent) - ((unsigned int) i_ent)
-				+ EXT2_XATTR_PAD);
+		+ iceil(strlen(name), EXT2_XATTR_PAD),
+		i_ent,
+		((unsigned int) end_ent) - ((unsigned int) i_ent)
+		+ EXT2_XATTR_PAD);
 
 	i_ent->e_name_len = (uint8_t) name_len;
 	i_ent->e_name_index = 1;
@@ -263,10 +266,9 @@ static struct ext2_xattr_ent * str_ent(struct ext2_xattr_hdr *xattr_blk,
 	return i_ent;
 }
 
-
 static void str_val(struct ext2_xattr_hdr *xattr_blk,
-		struct ext2_xattr_ent *xattr_ent, int *min_value_offs,
-		const char *value, size_t len) {
+	struct ext2_xattr_ent *xattr_ent, int *min_value_offs,
+	const char *value, size_t len) {
 
 	size_t alen = iceil(len, EXT2_XATTR_PAD);
 
@@ -277,7 +279,7 @@ static void str_val(struct ext2_xattr_hdr *xattr_blk,
 }
 
 int ext2fs_setxattr(struct node *node, const char *name, const char *value,
-		size_t len, int flags) {
+	size_t len, int flags) {
 	struct ext2_xattr_hdr *xattr_blk = NULL;
 	struct ext2_xattr_ent *xattr_ent, *i_ent;
 	struct ext2fs_dinode *dinode = node->nas->fi->privdata;
@@ -346,7 +348,7 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		xattr_bswap(xattr_blk, xattr_blk, SECTOR_SIZE);
 
 		if ((res = ext2_write_sector(node->nas, (char *) xattr_blk,
-						1, d2h32(dinode->i_facl)))) {
+					1, d2h32(dinode->i_facl)))) {
 			res = -EIO;
 			goto cleanup_out;
 		}
@@ -367,7 +369,7 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		}
 
 		if (xattr_ent == NULL && name_len == d2h8(i_ent->e_name_len) &&
-				0 == strncmp(name, i_ent->e_name, name_len)) {
+			0 == strncmp(name, i_ent->e_name, name_len)) {
 			xattr_ent = i_ent;
 		}
 	}
@@ -383,9 +385,9 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		}
 
 		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk)
-				+ sizeof(struct ext2_xattr_ent) +
-				iceil(strlen(name), EXT2_XATTR_PAD) + 4
-				> min_value_offs - iceil(len, EXT2_XATTR_PAD)) {
+			+ sizeof(struct ext2_xattr_ent) +
+			iceil(strlen(name), EXT2_XATTR_PAD) + 4
+			> min_value_offs - iceil(len, EXT2_XATTR_PAD)) {
 			res = -ENOMEM;
 			goto cleanup_out;
 		}
@@ -416,9 +418,9 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		}
 
 		if (((unsigned int) i_ent) - ((unsigned int) xattr_blk) + 4
-				> min_value_offs
-					+ iceil(d2h32(xattr_ent->e_value_size),
-					    EXT2_XATTR_PAD) - len) {
+			> min_value_offs
+			+ iceil(d2h32(xattr_ent->e_value_size),
+			EXT2_XATTR_PAD) - len) {
 			res = -ENOMEM;
 			goto cleanup_out;
 		}
@@ -432,9 +434,9 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 	block_rehash(xattr_blk);
 
 	ext2_write_sector(node->nas, (char *) xattr_blk, 1,
-			d2h32(dinode->i_facl));
+		d2h32(dinode->i_facl));
 
-cleanup_out:
+	cleanup_out:
 	if (xattr_blk) {
 		ext2_buff_free(node->nas, (char *) xattr_blk);
 	}
@@ -443,7 +445,7 @@ cleanup_out:
 }
 
 int ext2fs_getxattr(struct node *node, const char *name, char *value,
-		size_t len) {
+	size_t len) {
 	struct ext2_xattr_hdr *xattr_blk;
 	struct ext2_xattr_ent *xattr_ent;
 	size_t name_len = strlen(name);
@@ -456,8 +458,8 @@ int ext2fs_getxattr(struct node *node, const char *name, char *value,
 	res = -ENOENT;
 	foreach_xattr(xattr_ent, xattr_blk->h_entries) {
 		if (name_len == xattr_ent->e_name_len &&
-				0 == strncmp(name, xattr_ent->e_name,
-						strlen(name))) {
+			0 == strncmp(name, xattr_ent->e_name,
+			strlen(name))) {
 			if (xattr_ent->e_value_size < len) {
 				const char *vsrc = ((char *) xattr_blk)
 					+ xattr_ent->e_value_offs;
@@ -478,4 +480,3 @@ int ext2fs_getxattr(struct node *node, const char *name, char *value,
 
 	return res;
 }
-

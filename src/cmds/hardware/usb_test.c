@@ -20,17 +20,20 @@ static struct usb_desc_device usb_test_dev_desc;
 static struct usb_desc_interface usb_test_iface_desc;
 
 static void usage(char *argv0) {
-	printf("Usage: %s -v VID -p PID -e ENDP [-a] { -r LENGTH | -w [ DATA ] }\n", argv0);
+	printf("Usage: %s -v VID -p PID -e ENDP [-a] { -r LENGTH | -w [ DATA ] }\n",
+		argv0);
 }
 
-static int usb_test_read(struct usb_dev_desc *ddesc, int endp, int len, usb_token_t tok) {
+static int usb_test_read(struct usb_dev_desc *ddesc, int endp, int len,
+	usb_token_t tok) {
 	int res;
 
 	if (len > TEST_BUF_LEN) {
 		return -ERANGE;
 	}
 
-	if ((res = usb_request(ddesc, endp, USB_TOKEN_IN | tok, test_buf, len)) != 0) {
+	if ((res =
+		usb_request(ddesc, endp, USB_TOKEN_IN | tok, test_buf, len)) != 0) {
 		return res;
 	}
 
@@ -44,7 +47,7 @@ static int usb_test_read(struct usb_dev_desc *ddesc, int endp, int len, usb_toke
 }
 
 static int usb_test_write(struct usb_dev_desc *ddesc, int endp, char **data,
-		int len, usb_token_t tok) {
+	int len, usb_token_t tok) {
 
 	if (len > TEST_BUF_LEN) {
 		return -ERANGE;
@@ -65,7 +68,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "v:p:e:r:asw"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'v':
 			vid = strtoul(optarg, NULL, 0);
 			break;
@@ -102,7 +105,7 @@ int main(int argc, char **argv) {
 
 	if ((write == 1 && len != -1) || (write == 0 && len == -1)) {
 		fprintf(stderr, "Should be specified exactly one operation "
-				"(-r LENGTH or -w [ DATA ])\n");
+						"(-r LENGTH or -w [ DATA ])\n");
 		usage(argv[0]);
 		return 1;
 
@@ -119,7 +122,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (0 != usb_dev_desc_get_desc(ddesc, &usb_test_dev_desc,
-				&usb_test_iface_desc)) {
+		&usb_test_iface_desc)) {
 		fprintf(stderr, "can't get device descriptor\n");
 		return 1;
 	}
@@ -138,7 +141,7 @@ int main(int argc, char **argv) {
 	res = usb_test_write(ddesc, endp, argv + optind, argc - optind,
 			(setup_tok ? USB_TOKEN_SETUP : 0)
 			| (ack_tok ? USB_TOKEN_STATUS : 0));
-exit:
+	exit:
 	usb_dev_desc_close(ddesc);
 
 	return res;

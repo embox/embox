@@ -9,7 +9,7 @@
 #include <string.h>
 #include <errno.h>
 
-char *strerror(int errnum) {
+char * strerror(int errnum) {
 	switch (errnum) {
 	case ENOERR:       return "No error";
 	case EPERM:        return "Not permitted";

@@ -11,7 +11,6 @@
 
 EMBOX_TEST_SUITE("posix/pthread_mutex api");
 
-
 TEST_CASE("Initialize mutex with PTHREAD_MUTEX_INITIALIZER macro") {
 	pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
 	test_assert_zero(pthread_mutex_lock(&m));
@@ -60,8 +59,8 @@ TEST_CASE("Mutex with type PTHREAD_MUTEX_DEFAULT correctness") {
 	pthread_mutex_t mutex;
 	pthread_mutex_init(&mutex, NULL);
 
-	// fail with assert, it is correct
-	//pthread_mutex_unlock(&mutex);
+	/* fail with assert, it is correct */
+	/*pthread_mutex_unlock(&mutex); */
 	test_assert_zero(pthread_mutex_lock(&mutex));
 	test_assert_equal(-EBUSY, pthread_mutex_trylock(&mutex));
 	test_assert_zero(pthread_mutex_unlock(&mutex));

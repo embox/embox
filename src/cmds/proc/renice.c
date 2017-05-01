@@ -26,7 +26,9 @@ int main(int argc, char **argv) {
 	with_incr = incr = with_n = 0;
 	for (ind = 1; ind < argc; ++ind) {
 		if (strcmp(argv[ind], "-h") == 0) {
-			printf("Usage: %s [-n] priority [[-p] pid ...] [[-g] pgrp ...] [[-u] user ...]\n", argv[0]);
+			printf(
+				"Usage: %s [-n] priority [[-p] pid ...] [[-g] pgrp ...] [[-u] user ...]\n",
+				argv[0]);
 			return 0;
 		}
 		else if (strcmp(argv[ind], "-n") == 0) {
@@ -84,11 +86,11 @@ int main(int argc, char **argv) {
 
 			if (-1 == setpriority(which, who, prior)) {
 				printf("%s: failed to set priority for %d (%s): %s\n",
-						argv[0], who,
-						which == PRIO_PROCESS ? "process ID"
-							: which == PRIO_PGRP ? "process group ID"
-							: "user ID",
-						strerror(errno));
+					argv[0], who,
+					which == PRIO_PROCESS ? "process ID"
+					: which == PRIO_PGRP ? "process group ID"
+					: "user ID",
+					strerror(errno));
 				ret = -errno;
 			}
 		}

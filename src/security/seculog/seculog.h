@@ -39,7 +39,7 @@ struct seculog_record {
 struct seculog_subscb;
 
 typedef int (*seculog_record_cb_t)(struct seculog_subscb *subcb,
-		struct seculog_record *record);
+	struct seculog_record *record);
 
 struct seculog_subscb {
 	/* seculog private */

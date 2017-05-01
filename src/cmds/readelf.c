@@ -24,39 +24,53 @@
 typedef struct {
 	FILE         *fd;
 	/* Should we reverse bytes when reading */
-	int          need_reverse;
+	int need_reverse;
 	/* Header of the file */
-	Elf32_Ehdr   header;
+	Elf32_Ehdr header;
 	char         **sections;
 	/* Section table */
-	Elf32_Shdr   sh_table[128];
+	Elf32_Shdr sh_table[128];
 	/* Program table */
-	Elf32_Phdr   ph_table[128];
+	Elf32_Phdr ph_table[128];
 	/* String table. Contains section names */
 	char         *string_table;
 	/* Symbol table */
-	Elf32_Sym    sym_table[128];
+	Elf32_Sym sym_table[128];
 	/* Section header index of the associated string table for symbol table */
-	int          sym_names_shidx;
+	int sym_names_shidx;
 	/* Symbol names */
 	char         *sym_names;
 	unsigned int sym_count;
 	/* Elf .dynamic section */
-	Elf32_Dyn    dyn_section[128];
+	Elf32_Dyn dyn_section[128];
 	unsigned int dyn_count;
 	/* Elf relocation array */
-	Elf32_Rel    rel_array[128];
+	Elf32_Rel rel_array[128];
 	unsigned int rel_count;
-	Elf32_Addr   base_addr; /* For shared libraries */
+	Elf32_Addr base_addr;   /* For shared libraries */
 } Elf32_Obj;
 
-static int elf_read_section_header_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_string_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_program_header_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_dynamic_section(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_rel_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_symbol_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_symbol_names(int elf_file, Elf32_Obj *elf) { return 0; }
+static int elf_read_section_header_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_string_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_program_header_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_dynamic_section(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_rel_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_symbol_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_symbol_names(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
 
 typedef struct elf_objlist_item {
 	Elf32_Obj                *obj;
@@ -231,7 +245,7 @@ static const header_item_t header_mach_desc[] = {
 	{ EM_CR16,           "National Semiconductor's CR16"             },
 	{ EM_CR16_OLD,       "National Semiconductor's CR16"             },
 	{ EM_MICROBLAZE,     "Xilinx MicroBlaze"                         },
-	//TODO: we use EM_MICROBLAZE_OLD elf, need for fix.
+	/*TODO: we use EM_MICROBLAZE_OLD elf, need for fix. */
 	{ EM_MICROBLAZE_OLD, "Xilinx MicroBlaze"                         },
 };
 
@@ -252,14 +266,14 @@ static void print_header(Elf32_Obj *obj) {
 	printf("  Version:                           %d %s\n",
 		header->e_ident[EI_VERSION],
 		(header->e_ident[EI_VERSION] == EV_CURRENT ? "(current)"
-		: (header->e_ident[EI_VERSION] != EV_NONE	? "unknown" : "")));
+		: (header->e_ident[EI_VERSION] != EV_NONE   ? "unknown" : "")));
 	printf("  OS/ABI:                            %s\n",
 		header_osabi_desc[header->e_ident[EI_OSABI]].desc);
 	printf("  ABI Version:                       %d\n",
-			header->e_ident[EI_ABIVERSION]);
+		header->e_ident[EI_ABIVERSION]);
 	printf("  Type:                              %s\n",
 		header_type_desc[header->e_type].desc);
-	//TODO: need for fix.
+	/*TODO: need for fix. */
 	printf("  Machine:                           %s\n",
 		header_mach_desc[header->e_machine].desc);
 	printf("  Version:                           0x%x\n",
@@ -306,7 +320,7 @@ static const header_item_t section_types[] = {
 #define SECTION_NAME(sec, string_table) \
 	((sec) == NULL ? "<none>"                        \
 	: (string_table) == NULL ? "<no-name>"           \
-	: (const char*)((string_table) + (sec)->sh_name))
+	: (const char *)((string_table) + (sec)->sh_name))
 
 static void print_section_headers(Elf32_Obj *obj) {
 	size_t x;
@@ -345,9 +359,9 @@ static const header_item_t segment_types[] = {
 	{ PT_TLS,     "TLS"     },
 };
 
-#define SEGMENT_NAME(type)\
+#define SEGMENT_NAME(type) \
 	((x > PT_TLS) ? "<unknown>" : \
-	((const char*)segment_types[x].desc))
+	((const char *)segment_types[x].desc))
 
 static void print_program_headers(Elf32_Obj *obj) {
 	size_t x;
@@ -387,8 +401,8 @@ static void print_section_to_segment_mapping(Elf32_Obj *obj) {
 		for (int j = 0; j < obj->header.e_shnum; j++) {
 			sh = obj->sh_table + j;
 			if ((sh->sh_size)
-			&& (between(sh->sh_offset, ph->p_offset, ph->p_offset + ph->p_filesz)
-			|| between(sh->sh_offset + sh->sh_size - 1, ph->p_offset, ph->p_offset + ph->p_filesz))) {
+				&& (between(sh->sh_offset, ph->p_offset, ph->p_offset + ph->p_filesz)
+				|| between(sh->sh_offset + sh->sh_size - 1, ph->p_offset, ph->p_offset + ph->p_filesz))) {
 				printf(" %s", (const char *) obj->string_table + sh->sh_name);
 			}
 		}
@@ -408,11 +422,10 @@ static void print_dynamic_section(Elf32_Obj *obj) {
 	for (int i = 0; i < obj->dyn_count; i++) {
 		dyn = &obj->dyn_section[i];
 		printf(" 0x%08x %x\n",
-				(unsigned int) dyn->d_tag,
-				dyn->d_un.d_ptr);
+			(unsigned int) dyn->d_tag,
+			dyn->d_un.d_ptr);
 	}
 }
-
 
 /* ============== Print relocations =========== */
 
@@ -422,7 +435,7 @@ static void print_relocations(Elf32_Obj *obj) {
 	if (!rel_array || !obj->rel_count) {
 		printf("There are no relocations in this file.\n");
 	} else {
-		//printf("Relocation section '%s' at offset 0x%x contains %d entries:\n");
+		/*printf("Relocation section '%s' at offset 0x%x contains %d entries:\n"); */
 
 		printf("\nRelocations:\n");
 
@@ -431,9 +444,9 @@ static void print_relocations(Elf32_Obj *obj) {
 			int sym_table_i = ELF32_R_SYM(rel_array[i].r_info);
 
 			printf("%08x  %08x   %s\n",
-					rel_array[i].r_offset,
-					rel_array[i].r_info,\
-					obj->sym_names + obj->sym_table[sym_table_i].st_name);
+				rel_array[i].r_offset,
+				rel_array[i].r_info, \
+				obj->sym_names + obj->sym_table[sym_table_i].st_name);
 		}
 	}
 }
@@ -467,13 +480,13 @@ static const header_item_t symb_vis[] = {
 
 static void print_symbols(Elf32_Obj *obj, int counter) {
 	size_t t, b, v;
-    Elf32_Sym *sym;
+	Elf32_Sym *sym;
 
-    printf("Symbol table '%s' contains %d entries:\n",
-    		obj->sym_names + obj->sym_table->st_name, counter);
+	printf("Symbol table '%s' contains %d entries:\n",
+		obj->sym_names + obj->sym_table->st_name, counter);
 
-    printf("   Num:    Value  Size Type    Bind   Vis       Ndx Name\n");
-    for (int i = 0; i < counter; i++) {
+	printf("   Num:    Value  Size Type    Bind   Vis       Ndx Name\n");
+	for (int i = 0; i < counter; i++) {
 		sym = obj->sym_table + i;
 
 		t = ELF32_ST_TYPE(sym->st_info);
@@ -499,7 +512,7 @@ int main(int argc, char **argv) {
 	int show_reloc    = 0;
 	int show_symb     = 0;
 	int show_dyn      = 0;
-	static Elf32_Obj  elf;
+	static Elf32_Obj elf;
 	int opt, err, cnt = 0;
 	int elf_file;
 	int symb_count;

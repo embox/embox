@@ -73,7 +73,7 @@ extern uint16_t USART_RX_PIN(void *usart_base);
 extern uint16_t USART_TX_PIN(void *usart_base);
 extern uint8_t USART_RX_AF(void *usart_base);
 extern uint8_t USART_TX_AF(void *usart_base);
-extern GPIO_TypeDef *USART_RX_GPIO_PORT(void *usart_base);
-extern GPIO_TypeDef *USART_TX_GPIO_PORT(void *usart_base);
+extern GPIO_TypeDef * USART_RX_GPIO_PORT(void *usart_base);
+extern GPIO_TypeDef * USART_TX_GPIO_PORT(void *usart_base);
 
 #endif /* SRC_DRIVERS_SERIAL_STM32_USART_STM32_USART_CONF_F4_H_ */

@@ -55,7 +55,8 @@ typedef struct uart_regs {
 #define CTRL_RST_TX_FIFO             REVERSE_MASK(CTRL_RST_TX_FIFO_BIT)
 
 /*set registers base*/
-static volatile uart_regs_t *uart = (uart_regs_t *) CONFIG_XILINX_UARTLITE_BASEADDR;
+static volatile uart_regs_t *uart =
+	(uart_regs_t *) CONFIG_XILINX_UARTLITE_BASEADDR;
 
 static inline int is_rx_empty(void) {
 	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
@@ -70,7 +71,7 @@ static char xuartlite_diag_getc(const struct diag *diag) {
 }
 
 static void xuartlite_diag_putc(const struct diag *diag, char ch) {
-	while (!can_tx_trans());
+	while (!can_tx_trans()) ;
 	uart->tx_data = (unsigned int)ch;
 }
 
@@ -79,7 +80,7 @@ static int xuartlite_diag_has_symbol(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-		.putc = xuartlite_diag_putc,
-		.getc = xuartlite_diag_getc,
-		.kbhit = xuartlite_diag_has_symbol,
+	.putc = xuartlite_diag_putc,
+	.getc = xuartlite_diag_getc,
+	.kbhit = xuartlite_diag_has_symbol,
 );

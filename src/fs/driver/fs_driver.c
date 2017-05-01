@@ -25,14 +25,14 @@ typedef struct fs_driver_head {
 	struct fs_driver *drv;
 } fs_driver_head_t;
 
-POOL_DEF(fs_driver_pool, struct fs_driver_head, OPTION_GET(NUMBER,drivers_quantity));
+POOL_DEF(fs_driver_pool, struct fs_driver_head,
+	OPTION_GET(NUMBER,drivers_quantity));
 
 ARRAY_SPREAD_DEF(const struct fs_driver *const, __fs_drivers_registry);
 
 static DLIST_DEFINE(file_systems);
 
-
-static fs_driver_head_t *fs_driver_alloc(struct fs_driver *drv) {
+static fs_driver_head_t * fs_driver_alloc(struct fs_driver *drv) {
 	fs_driver_head_t *head;
 
 	head = pool_alloc(&fs_driver_pool);
@@ -68,7 +68,7 @@ static int fs_driver_init(void) {
 	return ENOERR;
 }
 
-struct fs_driver *fs_driver_find_drv(const char *name) {
+struct fs_driver * fs_driver_find_drv(const char *name) {
 	struct fs_driver_head *fs_driver;
 
 	dlist_foreach_entry(fs_driver, &file_systems, link) {

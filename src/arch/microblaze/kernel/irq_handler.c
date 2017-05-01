@@ -26,7 +26,7 @@ void irq_handler(void) {
 		for (irq_num = 0; irq_num < IRQCTRL_IRQS_TOTAL; irq_num++) {
 			if (irqctrl_pending(irq_num)) {
 				/* disable interrupt and clear it later, since ack
-					 * have no effect on level interrupt */
+				     * have no effect on level interrupt */
 				irqctrl_disable(irq_num);
 
 				/*now we allow nested irq*/

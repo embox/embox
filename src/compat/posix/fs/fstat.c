@@ -20,7 +20,7 @@ int fstat(int fd, struct stat *buff) {
 	assert(buff != NULL);
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == index_descriptor_get(fd))) {
+		|| (NULL == index_descriptor_get(fd))) {
 		return SET_ERRNO(EBADF);
 	}
 

@@ -24,7 +24,7 @@
 #if DEBUG
 #define printd(...) printk(__VA_ARGS__)
 #else
-#define printd(...) do {} while(0);
+#define printd(...) do {} while (0);
 #endif
 
 struct free_block_link {
@@ -42,7 +42,7 @@ struct free_block {
 #define get_clear_size(size) ((size) & ~3)
 #define get_flags(size) ((size) & 3)
 
-static struct free_block_link *heap_get_free_blocks(void *heap) {
+static struct free_block_link * heap_get_free_blocks(void *heap) {
 	return (struct free_block_link *) heap;
 }
 
@@ -55,7 +55,7 @@ static int prev_is_busy(struct free_block *block) {
 }
 
 static void block_link(struct free_block_link *free_blocks_list,
-		struct free_block *block) {
+	struct free_block *block) {
 	block->link.next = free_blocks_list->next;
 	block->link.prev = free_blocks_list;
 	free_blocks_list->next->prev = &block->link;
@@ -151,7 +151,7 @@ static void block_set_size(struct free_block *block, size_t size) {
 }
 
 static struct free_block * cut(struct free_block_link *free_blocks_list,
-		struct free_block *block, size_t size) {
+	struct free_block *block, size_t size) {
 	struct free_block *nblock; /* new block */
 	size_t offset;
 
@@ -178,15 +178,16 @@ static struct free_block * cut(struct free_block_link *free_blocks_list,
 
 /* Splits one block in two: free block aligned on @c boundary (of size >= @c size) and remainder.
  * If we cant' split so, do nothing and return NULL. */
-static struct free_block *block_align(struct free_block_link *free_blocks_list,
-		struct free_block *block, size_t boundary, size_t size) {
+static struct free_block * block_align(struct free_block_link *free_blocks_list,
+	struct free_block *block, size_t boundary, size_t size) {
 	struct free_block *aligned_block;
 	size_t aligned_addr;
 	size_t aligned_block_size = 1;
 
 	/* If we are already aligning */
 	if (binalign_check_bound((size_t)block + sizeof(block->size), boundary)) {
-		return ((get_clear_size(block->size) - sizeof(block->size)) >= size) ? block : NULL;
+		return ((get_clear_size(block->size) - sizeof(block->size)) >=
+			   size) ? block : NULL;
 	}
 
 	/* @c block == |remainder|new aligned block|
@@ -202,7 +203,8 @@ static struct free_block *block_align(struct free_block_link *free_blocks_list,
 
 	aligned_block = (struct free_block *) (aligned_addr - sizeof(aligned_addr));
 
-	aligned_block_size = get_clear_size(block->size) - ((size_t) aligned_block - (size_t) block);
+	aligned_block_size = get_clear_size(block->size) -
+		((size_t) aligned_block - (size_t) block);
 
 	/* If there are no memory to allocate @c size bytes in aligned block than return NULL */
 	if (aligned_block_size < size + sizeof(aligned_addr)) {
@@ -224,7 +226,7 @@ static struct free_block *block_align(struct free_block_link *free_blocks_list,
 	return aligned_block;
 }
 
-void *bm_memalign(void *heap, size_t boundary, size_t size) {
+void * bm_memalign(void *heap, size_t boundary, size_t size) {
 	struct free_block *block;
 	struct free_block_link *link;
 	void *ret_addr;
@@ -244,7 +246,8 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 
 	size = (size + (3)) & ~(3); /* align by word*/
 
-	for (link = free_blocks_list->next; link != free_blocks_list; link = link->next) {
+	for (link = free_blocks_list->next; link != free_blocks_list;
+		link = link->next) {
 		block = (struct free_block *) ((uint32_t *) link - 1);
 		if ((size + sizeof(block->size)) > get_clear_size(block->size)) {
 			continue;
@@ -266,7 +269,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 		 * 1. Two for new free block (in begin and end of block): sizeof(block->size) + sizeof(struct free_block).
 		 * 2. One for new busy block (in begin of block): sizeof(block->size). */
 		if ((size + 2 * sizeof(block->size))
-				< (get_clear_size(block->size) - sizeof(struct free_block))) {
+			< (get_clear_size(block->size) - sizeof(struct free_block))) {
 			block = cut(heap, block, size);
 		} else {
 			block_unlink(block);

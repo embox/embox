@@ -22,8 +22,8 @@
 #include <dirent_impl.h>
 #include "getumask.h"
 
-struct node *find_node(DIR *dir, char * node_name) {
-	struct dirent * dent;
+struct node * find_node(DIR *dir, char *node_name) {
+	struct dirent *dent;
 
 	while (NULL != (dent = readdir(dir))) {
 		if (0 == strcmp(dent->d_name, node_name)) {
@@ -33,7 +33,8 @@ struct node *find_node(DIR *dir, char * node_name) {
 
 	return NULL;
 }
-extern int kcreat(struct path *dir, const char *path, mode_t mode, struct path *child);
+extern int kcreat(struct path *dir, const char *path, mode_t mode,
+	struct path *child);
 
 int open(const char *path, int __oflag, ...) {
 	char path_buf[PATH_MAX];
@@ -47,7 +48,7 @@ int open(const char *path, int __oflag, ...) {
 	DIR *dir;
 	struct node *node;
 	struct path node_path;
-	struct idesc_table*it;
+	struct idesc_table *it;
 
 	assert(~__oflag & O_DIRECTORY);
 
@@ -64,8 +65,9 @@ int open(const char *path, int __oflag, ...) {
 	path_buf[PATH_MAX - 1] = '\0';
 	bname = basename(path_buf);
 
-	if (strlen(bname) >= NAME_MAX)
+	if (strlen(bname) >= NAME_MAX) {
 		return SET_ERRNO(ENAMETOOLONG);
+	}
 
 	strncpy(name, bname, NAME_MAX - 1);
 	name[NAME_MAX - 1] = '\0';
@@ -87,7 +89,7 @@ int open(const char *path, int __oflag, ...) {
 
 	if (node == NULL) {
 		if (__oflag & O_CREAT) {
-			if(0 > kcreat(&dir->path, name, mode, &node_path)) {
+			if (0 > kcreat(&dir->path, name, mode, &node_path)) {
 				rc = -errno;
 				goto out;
 			}
@@ -113,8 +115,8 @@ int open(const char *path, int __oflag, ...) {
 		}
 
 		if (__oflag & O_TRUNC) {
-			if (-1 == ktruncate(node, 0)){
-				//errno already setup
+			if (-1 == ktruncate(node, 0)) {
+				/*errno already setup */
 				return -1;
 			}
 		}
@@ -131,7 +133,7 @@ int open(const char *path, int __oflag, ...) {
 	it = task_resource_idesc_table(task_self());
 	rc = idesc_table_add(it, (struct idesc *)kfile, 0);
 
-out:
+	out:
 	closedir(dir);
 
 	return rc >= 0 ? rc : SET_ERRNO(-rc);

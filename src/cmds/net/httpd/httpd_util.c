@@ -12,8 +12,12 @@
 
 #include "httpd.h"
 
-static const char *ext2type_html[] = { ".html", ".htm", NULL };
-static const char *ext2type_jpeg[] = { ".jpeg", ".jpg", NULL };
+static const char *ext2type_html[] = {
+	".html", ".htm", NULL
+};
+static const char *ext2type_jpeg[] = {
+	".jpeg", ".jpg", NULL
+};
 static const struct ext2type_table_item {
 	const char *type;
 	const char *ext;
@@ -30,14 +34,16 @@ static const struct ext2type_table_item {
 };
 static const char *ext2type_unkwown = "plain/text";
 
-const char *httpd_filename2content_type(const char *filename) {
+const char * httpd_filename2content_type(const char *filename) {
 	int i_table;
 	const char *file_ext;
 
 	file_ext = strrchr(filename, '.');
 	if (file_ext) {
-		for (i_table = 0; i_table < ARRAY_SIZE(httpd_ext2type_table); i_table ++) {
-			const struct ext2type_table_item *ti = &httpd_ext2type_table[i_table];
+		for (i_table = 0; i_table < ARRAY_SIZE(httpd_ext2type_table);
+			i_table++) {
+			const struct ext2type_table_item *ti =
+				&httpd_ext2type_table[i_table];
 
 			if (ti->ext) {
 				if (0 == strcmp(file_ext, ti->ext)) {
@@ -77,4 +83,3 @@ int httpd_header(const struct client_info *cinfo, int st, const char *msg) {
 	fclose(skf);
 	return 0;
 }
-

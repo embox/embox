@@ -23,11 +23,11 @@
 
 static char nameserver_ip[16]; /* only for IPv4 */
 
-const char *dns_get_nameserver(void) {
+const char * dns_get_nameserver(void) {
 	return nameserver_ip;
 }
 
-char *dns_set_nameserver(char *nameserver) {
+char * dns_set_nameserver(char *nameserver) {
 	FILE *file;
 	char buf[0x40];
 	char *res;
@@ -36,14 +36,14 @@ char *dns_set_nameserver(char *nameserver) {
 	if (file == NULL) {
 		return err_ptr(errno);
 	}
-	while(NULL != (res = fgets(buf, sizeof(buf), file))) {
+	while (NULL != (res = fgets(buf, sizeof(buf), file))) {
 		if (0 == strncmp(buf, "nameserver ", 11)) {
 			int i;
 			int len;
 
 			/* remove line */
 			len = strlen(buf);
-			for(i = 0; i < len; i ++) {
+			for (i = 0; i < len; i++) {
 				fwrite("\b", 1, 1, file);
 			}
 
@@ -68,7 +68,7 @@ char *dns_set_nameserver(char *nameserver) {
 	return nameserver_ip;
 }
 
-char *dns_init_nameserver(char *nameserver) {
+char * dns_init_nameserver(char *nameserver) {
 	char *res;
 
 	res = dns_set_nameserver(nameserver);

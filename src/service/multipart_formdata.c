@@ -27,7 +27,7 @@ struct parseenv {
 	int blen;
 };
 
-static char *strstrp(const char *s, const char *h) {
+static char * strstrp(const char *s, const char *h) {
 	char *f = strstr(s, h);
 	if (f) {
 		return f + strlen(h);
@@ -45,7 +45,8 @@ static int mpfd_expect(struct parseenv *pe, const char *s) {
 	return 1;
 }
 
-static char *mpfd_store_till(struct parseenv *pe, const char *s, size_t *ssize) {
+static char * mpfd_store_till(struct parseenv *pe, const char *s,
+	size_t *ssize) {
 	char *found = strstr(pe->pb, s);
 	char *pb = pe->pb;
 	int slen = strlen(s);
@@ -68,7 +69,8 @@ static int mpfd_skip_till(struct parseenv *pe, const char *s) {
 	return !!mpfd_store_till(pe, s, NULL);
 }
 
-static int mpfd_parse(struct parseenv *pe, const char *bound, char *fname, size_t fname_len) {
+static int mpfd_parse(struct parseenv *pe, const char *bound, char *fname,
+	size_t fname_len) {
 	char *filename;
 	size_t filenamelen;
 	int pres = mpfd_expect(pe, "--") &&
@@ -106,7 +108,8 @@ int main(int argc, char *argv[]) {
 		clen -= _pe.blen;
 		strncpy(path, MPFD_BASE, sizeof(path));
 
-		if (!mpfd_parse(&_pe, bound, path + MPFD_BASE_LEN, sizeof(path) - MPFD_BASE_LEN)) {
+		if (!mpfd_parse(&_pe, bound, path + MPFD_BASE_LEN,
+			sizeof(path) - MPFD_BASE_LEN)) {
 			fprintf(stderr, "parse_error\n");
 			httpcode = 500;
 			goto out_header;
@@ -114,7 +117,8 @@ int main(int argc, char *argv[]) {
 
 		fd = open(path, O_WRONLY | O_CREAT, 0755);
 		if (fd < 0) {
-			fprintf(stderr, "can't open output file %s: %s\n", path, strerror(errno));
+			fprintf(stderr, "can't open output file %s: %s\n", path,
+				strerror(errno));
 			httpcode = 500;
 			goto out_header;
 		}
@@ -128,11 +132,11 @@ int main(int argc, char *argv[]) {
 		close(fd);
 
 		httpcode = 200;
-out_header:
+		out_header:
 		printf("HTTP/1.1 %d %s\r\n"
-			"Content-Type: %s\r\n"
-			"Connection: close\r\n"
-			"\r\n", httpcode, "OK", "text/plain");
+			   "Content-Type: %s\r\n"
+			   "Connection: close\r\n"
+			   "\r\n", httpcode, "OK", "text/plain");
 		fflush(stdout);
 	}
 

@@ -16,5 +16,4 @@ struct path {
 	struct mount_descriptor *mnt_desc;
 };
 
-
 #endif /* FS_PATH_H_ */

@@ -20,7 +20,7 @@ struct fuse_req_embox {
 	size_t buf_size;
 };
 
-extern struct fuse_req_embox *fuse_req_alloc(void);
+extern struct fuse_req_embox * fuse_req_alloc(void);
 extern void fuse_req_free(struct fuse_req_embox *req);
 
 #endif /* FUSE_REQ_ALLOC_H_ */

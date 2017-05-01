@@ -16,7 +16,7 @@
 
 /** @return Whether the given @a expr has void type. */
 #define __lang_typeof_void(expr) \
- 	__builtin_types_compatible_p(typeof(expr), void)
+	__builtin_types_compatible_p(typeof(expr), void)
 
 /** @return An @a expr unchanged if it is not void, @a subst_with otherwise. */
 #define __lang_subst_void(expr, subst_with) \
@@ -30,8 +30,8 @@
  */
 #define __lang_void_switch(expr, on_void, on_rest, ...) \
 	__builtin_choose_expr(__lang_typeof_void(expr), \
-			on_void(expr, ## __VA_ARGS__), \
-			on_rest(__lang_subst_void(expr, 0), ## __VA_ARGS__))
+		on_void(expr, ## __VA_ARGS__), \
+		on_rest(__lang_subst_void(expr, 0), ## __VA_ARGS__))
 
 /**
  * Surrounds an @a expr with @a pre_stmt and @a post_stmt statements.
@@ -52,7 +52,6 @@
 #define __lang_eval_after(expr, pre_stmt) \
 	({ pre_stmt; (expr); })
 
-
 /** The same as #__lang_surround, but does not return the result of @a expr. */
 #define __lang_surround_void(expr, pre_stmt, post_stmt) \
 	({ pre_stmt; __lang_eval_void_before(expr, post_stmt); })
@@ -65,22 +64,20 @@
 #define __lang_eval_void_after(expr, pre_stmt) \
 	({ pre_stmt; (void) (expr); })
 
-
 /** The same as #__lang_surround for @a expr known to be non-void. */
 #define __lang_surround_nonvoid(expr, pre_stmt, post_stmt) \
 	({ pre_stmt; __lang_eval_nonvoid_before(expr, post_stmt); })
 
 /** The same as #__lang_eval_before for @a expr known to be non-void. */
 #define __lang_eval_nonvoid_before(expr, post_stmt) \
-	({ typeof(expr) __lang_ret = (expr); post_stmt; __lang_ret; })
+	({ typeof(expr)__lang_ret = (expr); post_stmt; __lang_ret; })
 
 /** The same as #__lang_eval_after for @a expr known to be non-void. */
 #define __lang_eval_nonvoid_after(expr, pre_stmt) \
-	({ typeof(expr) __lang_ret; pre_stmt; __lang_ret = (expr); __lang_ret; })
-
+	({ typeof(expr)__lang_ret; pre_stmt; __lang_ret = (expr); __lang_ret; })
 
 /** Can be used to refer an extern variable without explicit declaration. */
 #define __lang_extern_ref(type, name) \
-	({ extern typeof(type) name; &name; })
+	({ extern typeof(type)name; &name; })
 
 #endif /* UTIL_LANG_H_ */

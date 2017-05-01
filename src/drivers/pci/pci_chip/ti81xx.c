@@ -47,9 +47,9 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_CM_DEF_PCI_CLKCTRL_STANBY        0x00040000
 
 #define TI81_PCI_REGION0 0x51000000
-#define TI81_PCI_CMD_STATUS		      (TI81_PCI_REGION0 + 0x4)
-#define TI81_PCI_CMD_STATUS_LTSSM_EN 	      0x00000001
-#define TI81_PCI_CMD_OB_XLT_EN   	      0x00000002
+#define TI81_PCI_CMD_STATUS           (TI81_PCI_REGION0 + 0x4)
+#define TI81_PCI_CMD_STATUS_LTSSM_EN          0x00000001
+#define TI81_PCI_CMD_OB_XLT_EN            0x00000002
 #define TI81_PCI_CFG_SETUP                    (TI81_PCI_REGION0 + 0x8)
 #define TI81_PCI_CFG_SETUP_TYPE               0x01000000
 #define TI81_PCI_CFG_SETUP_BUS                0x00ff0000
@@ -60,23 +60,26 @@ EMBOX_UNIT_INIT(ti81xx_pci_init);
 #define TI81_PCI_CFG_SETUP_FNC_SHIFT          0
 #define TI81_PCI_OB_SIZE                      (TI81_PCI_REGION0 + 0x30)
 
-#define TI81_PCI_OB_OFF_LO_INDEX(n)           (TI81_PCI_REGION0 + 0x200 + 8 * (n))
-#define TI81_PCI_OB_OFF_HI(n)                 (TI81_PCI_REGION0 + 0x204 + 8 * (n))
+#define TI81_PCI_OB_OFF_LO_INDEX(n)           (TI81_PCI_REGION0 + 0x200 + 8 * \
+	(n))
+#define TI81_PCI_OB_OFF_HI(n)                 (TI81_PCI_REGION0 + 0x204 + 8 * \
+	(n))
 #define TI81_PCI_OB_EN                        0x00000001
 
 #define TI81_PCI_REGION0_LOCAL_CFG  (TI81_PCI_REGION0 + 0x1000)
-#define TI81_PCI_VEN_DEV_ID		      (TI81_PCI_REGION0_LOCAL_CFG + 0)
+#define TI81_PCI_VEN_DEV_ID           (TI81_PCI_REGION0_LOCAL_CFG + 0)
 #define TI81_PCI_VEN_DEV_ID_VEN_SHIFT         0
 #define TI81_PCI_VEN_DEV_ID_DEV_SHIFT         16
-#define TI81_PCI_STATUS_COMMAND		      (TI81_PCI_REGION0_LOCAL_CFG + 4)
+#define TI81_PCI_STATUS_COMMAND           (TI81_PCI_REGION0_LOCAL_CFG + 4)
 #define TI81_PCI_STATUS_COMMAND_BUSMASTER     0x00000004
-#define TI81_PCI_CLASSCODE		      (TI81_PCI_REGION0_LOCAL_CFG + 8)
+#define TI81_PCI_CLASSCODE            (TI81_PCI_REGION0_LOCAL_CFG + 8)
 #define TI81_PCI_CLASSCODE_SHIFT              8
-#define TI81_PCI_BAR0			      (TI81_PCI_REGION0_LOCAL_CFG + 0x10)
-#define TI81_PCI_BAR1			      (TI81_PCI_REGION0_LOCAL_CFG + 0x10)
+#define TI81_PCI_BAR0                 (TI81_PCI_REGION0_LOCAL_CFG + 0x10)
+#define TI81_PCI_BAR1                 (TI81_PCI_REGION0_LOCAL_CFG + 0x10)
 
-#define TI81_PCI_DEBUG0	                      (TI81_PCI_REGION0_LOCAL_CFG + 0x728)
-#define TI81_PCI_DEBUG0_LTSSM_MASK	      0x0000001f
+#define TI81_PCI_DEBUG0                       (TI81_PCI_REGION0_LOCAL_CFG + \
+	0x728)
+#define TI81_PCI_DEBUG0_LTSSM_MASK        0x0000001f
 #define TI81_PCI_DEBUG0_LTSSM_L0              0x00000011
 
 #define TI81_PCI_REGION0_REMOTE_CFG (TI81_PCI_REGION0 + 0x2000)
@@ -119,7 +122,7 @@ static inline uint32_t ti81_pci_dev_check(uint32_t bus, uint32_t dev) {
 	}
 
 	if ((REG_LOAD(TI81_PCI_DEBUG0) & TI81_PCI_DEBUG0_LTSSM_MASK) !=
-			TI81_PCI_DEBUG0_LTSSM_L0) {
+		TI81_PCI_DEBUG0_LTSSM_L0) {
 		return PCIUTILS_INVALID;
 
 	}
@@ -127,7 +130,7 @@ static inline uint32_t ti81_pci_dev_check(uint32_t bus, uint32_t dev) {
 	return PCIUTILS_SUCCESS;
 }
 
-static void *ti81xx_config_base(uint32_t bus, uint32_t dev, uint32_t fn) {
+static void * ti81xx_config_base(uint32_t bus, uint32_t dev, uint32_t fn) {
 	uint32_t reg;
 
 	if (bus == 0) {
@@ -149,7 +152,7 @@ static void *ti81xx_config_base(uint32_t bus, uint32_t dev, uint32_t fn) {
 }
 
 static inline uint32_t ti81_pci_config_read(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, int size, void *ptr) {
+	uint32_t where, int size, void *ptr) {
 	uint32_t ret, tmp;
 	void *config;
 
@@ -161,18 +164,18 @@ static inline uint32_t ti81_pci_config_read(uint32_t bus, uint32_t dev_fn,
 	}
 
 	if (size == 1) {
-		* (uint8_t *) ptr = tmp;
+		*(uint8_t *) ptr = tmp;
 	} else if (size == 2) {
-		* (uint16_t *) ptr = tmp;
+		*(uint16_t *) ptr = tmp;
 	} else {
-		* (uint32_t *) ptr = tmp;
+		*(uint32_t *) ptr = tmp;
 	}
 
 	return ret;;
 }
 
 static inline uint32_t ti81_pci_config_write(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, int size, uint32_t value) {
+	uint32_t where, int size, uint32_t value) {
 	uint32_t ret;
 	void *config, *ptr;
 
@@ -184,43 +187,43 @@ static inline uint32_t ti81_pci_config_write(uint32_t bus, uint32_t dev_fn,
 
 	ptr = (void *) (config + where);
 	if (size == 1) {
-		* (volatile uint8_t *) ptr = value;
+		*(volatile uint8_t *) ptr = value;
 	} else if (size == 2) {
-		* (volatile uint16_t *) ptr = value;
+		*(volatile uint16_t *) ptr = value;
 	} else {
-		* (volatile uint32_t *) ptr = value;
+		*(volatile uint32_t *) ptr = value;
 	}
 
 	return PCIUTILS_SUCCESS;
 }
 
 uint32_t pci_read_config8(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint8_t *value) {
+	uint32_t where, uint8_t *value) {
 	return ti81_pci_config_read(bus, dev_fn, where, 1, value);
 }
 
 uint32_t pci_read_config16(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint16_t *value) {
+	uint32_t where, uint16_t *value) {
 	return ti81_pci_config_read(bus, dev_fn, where, 2, value);
 }
 
 uint32_t pci_read_config32(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint32_t *value) {
+	uint32_t where, uint32_t *value) {
 	return ti81_pci_config_read(bus, dev_fn, where, 4, value);
 }
 
 uint32_t pci_write_config8(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint8_t value) {
+	uint32_t where, uint8_t value) {
 	return ti81_pci_config_write(bus, dev_fn, where, 1, value);
 }
 
 uint32_t pci_write_config16(uint32_t bus, uint32_t dev_fn,
-				uint32_t where, uint16_t value) {
+	uint32_t where, uint16_t value) {
 	return ti81_pci_config_write(bus, dev_fn, where, 2, value);
 }
 
 uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
-		uint32_t where,	uint32_t value) {
+	uint32_t where, uint32_t value) {
 	return ti81_pci_config_write(bus, dev_fn, where, 4, value);
 }
 
@@ -243,8 +246,9 @@ static void ti81xx_pci_clk_enable(void) {
 	REG_STORE(TI81_RM_DEF_RSTST, TI81_RM_DEF_RSTST_PCI);
 
 	/* wait for 'idle' state of peripherial */
-	while (((reg = REG_LOAD(TI81_CM_DEF_PCI_CLKCTRL)) & TI81_CM_DEF_PCI_CLKCTRL_IDLE)
-		       == TI81_CM_DEF_PCI_CLKCTRL_IDLE) {
+	while (((reg = REG_LOAD(TI81_CM_DEF_PCI_CLKCTRL)) &
+		TI81_CM_DEF_PCI_CLKCTRL_IDLE)
+		== TI81_CM_DEF_PCI_CLKCTRL_IDLE) {
 	}
 }
 
@@ -257,7 +261,7 @@ static void ti81_pci_enable_outbound(void) {
 	REG_STORE(TI81_PCI_OB_SIZE, TI81_PCI_OB_WINDOW_MAXSZ);
 
 	/* mapping 32 windows by 8MB; mapping whole 256MB REGION1 */
-	for (i = 0; i < TI81_PCI_OB_WINDOW_N; i ++) {
+	for (i = 0; i < TI81_PCI_OB_WINDOW_N; i++) {
 		REG_STORE(TI81_PCI_OB_OFF_LO_INDEX(i), map_ptr | TI81_PCI_OB_EN);
 		REG_STORE(TI81_PCI_OB_OFF_HI(i), 0);
 

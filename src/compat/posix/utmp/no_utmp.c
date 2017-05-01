@@ -9,19 +9,19 @@
 #include <utmp.h>
 #include <stddef.h>
 
-struct utmp *getutent(void) {
+struct utmp * getutent(void) {
 	return NULL;
 }
 
-struct utmp *getutid(struct utmp *ut) {
+struct utmp * getutid(struct utmp *ut) {
 	return NULL;
 }
 
-struct utmp *getutline(struct utmp *ut) {
+struct utmp * getutline(struct utmp *ut) {
 	return NULL;
 }
 
-struct utmp *pututline(struct utmp *ut) {
+struct utmp * pututline(struct utmp *ut) {
 	return NULL;
 }
 
@@ -36,4 +36,3 @@ void endutent(void) {
 int utmpname(const char *file) {
 	return -1;
 }
-

@@ -11,11 +11,10 @@
 #ifndef SYS_FILE_H
 #define SYS_FILE_H
 
-//TODO LINUX and BSD compatible not POSIX
+/*TODO LINUX and BSD compatible not POSIX */
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
-
 
 /* Operations for the `flock' call.  */
 #define LOCK_SH 1       /* Shared lock.  */
@@ -25,11 +24,9 @@ __BEGIN_DECLS
 /* Can be OR'd in to one of the above.  */
 #define LOCK_NB 4       /* Don't block when locking.  */
 
-
 /* Apply or remove an advisory lock, according to OPERATION,
    on the file FD refers to.  */
 extern int flock(int fd, int operation);
-
 
 __END_DECLS
 

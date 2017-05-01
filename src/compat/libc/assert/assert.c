@@ -45,7 +45,7 @@ static void print_oops(void) {
 void __assertion_handle_failure(const struct __assertion_point *point) {
 	if (cpudata_var(assert_recursive_lock)) {
 		printk("\nrecursion detected on CPU %d\n",
-				cpu_get_id());
+			cpu_get_id());
 		goto out;
 	}
 	cpudata_var(assert_recursive_lock) = 1;
@@ -58,23 +58,23 @@ void __assertion_handle_failure(const struct __assertion_point *point) {
 	printk(
 		" ASSERTION FAILED on CPU %d\n"
 		LOCATION_FUNC_FMT("\t", "\n") "\n"
-		"%s\n",
+									  "%s\n",
 
 		cpu_get_id(),
 		LOCATION_FUNC_ARGS(&point->location),
 		point->expression);
 
-	if (*__assertion_message_buff)
+	if (*__assertion_message_buff) {
 		printk("\n\t(%s)\n", __assertion_message_buff);
+	}
 
 	whereami();
 
 	spin_unlock(&assert_lock);  /* leave IRQs off */
 
-out:
+	out:
 	arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT);
 	/* NOTREACHED */
 }
-
 
 #endif

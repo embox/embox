@@ -30,8 +30,8 @@ static int pa_info_init(void) {
 
 	if (_dev_cnt > MAX_DEV_CNT) {
 		log_error("Increase max_dev_count option!"
-		          " Need %d, have %d\n",
-		          _dev_cnt, MAX_DEV_CNT);
+				  " Need %d, have %d\n",
+			_dev_cnt, MAX_DEV_CNT);
 
 		_dev_cnt = MAX_DEV_CNT;
 	}
@@ -67,15 +67,17 @@ PaDeviceIndex Pa_GetDefaultOutputDevice(void) {
 	return 0;
 }
 
-const char *Pa_GetErrorText(PaError errorCode) {
+const char * Pa_GetErrorText(PaError errorCode) {
 	return "Pa_GetErrorText not implemented";
 }
 
 const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
-	if (device >= _dev_cnt)
+	if (device >= _dev_cnt) {
 		return NULL;
-	else
+	}
+	else {
 		return (const PaDeviceInfo *) &_info[device];
+	}
 }
 
 const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {

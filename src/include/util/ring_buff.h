@@ -72,7 +72,7 @@ extern int ring_buff_get_space(struct ring_buff *buf);
 __END_DECLS
 
 #define RING_BUFFER_DEF(name, elem_type, req_len) \
-	static elem_type name##_storage[req_len];     \
+	static elem_type name ## _storage[req_len];     \
 	static struct ring_buff name = {              \
 		.ring = {                                 \
 			.head = 0,                            \
@@ -80,7 +80,7 @@ __END_DECLS
 		},                                        \
 		.elem_size = sizeof(elem_type),           \
 		.capacity = req_len,                      \
-		.storage = (void *) name##_storage        \
+		.storage = (void *) name ## _storage        \
 	}
 
 #endif /* UTIL_RING_BUFF_H_ */

@@ -20,7 +20,7 @@
 
 #include <kernel/thread/thread_stack.h>
 
-static void *fork_child_trampoline(void *arg) {
+static void * fork_child_trampoline(void *arg) {
 	struct addr_space *adrspc;
 	struct thread *par_t, *cur_t;
 
@@ -80,4 +80,3 @@ void _NORETURN fork_body(struct pt_regs *ptregs) {
 	ptregs_retcode_jmp(ptregs, child_pid);
 	panic("%s returning", __func__);
 }
-

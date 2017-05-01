@@ -1,4 +1,4 @@
-//DACx constant file
+/*DACx constant file */
 #ifndef DAC_h
 #define DAC_h
 
@@ -6,23 +6,20 @@
 
 typedef struct
 {
-  __IO uint32_t CR;
-  __IO uint32_t DATA;
+	__IO uint32_t CR;
+	__IO uint32_t DATA;
 
 } DAC_TypeDef;
 
 #define APB1PERIPH_BASE       (0xC0100000)
 
-//GPIOA
+/*GPIOA */
 #define DAC0_BASE            (APB1PERIPH_BASE + 0x000D1000)
 #define DAC0                 ((DAC_TypeDef *) DAC0_BASE)
-//GPIOB
+/*GPIOB */
 #define DAC1_BASE            (APB1PERIPH_BASE + 0x000D1100)
 #define DAC1                 ((DAC_TypeDef *) DAC1_BASE)
 
-//adc constant and macro
-
-
-
+/*adc constant and macro */
 
 #endif

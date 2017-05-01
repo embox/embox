@@ -14,7 +14,6 @@
 #include <sys/time.h>
 #include <kernel/time/ktime.h>
 
-
 typedef int net_addr_t;
 typedef int net_id_t;
 typedef char net_prior_t;
@@ -26,7 +25,7 @@ struct pnet_proto;
 typedef struct net_packet *net_packet_t;
 
 struct net_node {
-	const char *name;		/*< unique name inside graph */
+	const char *name;       /*< unique name inside graph */
 	struct pnet_graph *graph;
 	struct list_head gr_link;
 	struct pnet_proto *proto;
@@ -48,7 +47,7 @@ typedef int (*net_dev_op)(net_packet_t pack, struct net_dev *dev);
 
 typedef struct net_dev_ops {
 	net_dev_op tx;
-}*net_dev_ops_t;
+} *net_dev_ops_t;
 
 struct pnet_dev {
 	struct net_node node;

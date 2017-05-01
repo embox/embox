@@ -27,7 +27,8 @@ void semaphore_enter(struct sem *s) {
 	WAITQ_WAIT(&s->wq, (tryenter_sched_lock(s) == 0));
 }
 
-int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict abs_timeout) {
+int semaphore_timedwait(struct sem *restrict s,
+	const struct timespec *restrict abs_timeout) {
 	struct timespec current_time, time_to_wait;
 	int ret = 0;
 
@@ -48,8 +49,9 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 			ret = -ETIMEDOUT;
 		}
 
-		if (!tryenter_sched_lock(s))
+		if (!tryenter_sched_lock(s)) {
 			ret = 0;
+		}
 	}
 
 	return ret;

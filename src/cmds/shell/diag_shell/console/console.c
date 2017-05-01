@@ -18,7 +18,7 @@
 
 #include "console.h"
 
-#define MAX_PROPOSALS	64
+#define MAX_PROPOSALS   64
 
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = cb->outer;
@@ -51,14 +51,14 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 		buf[this->model->cursor] = '\0';
 
 		this->callback->guess(this->callback, this, buf, MAX_PROPOSALS,
-				&proposals_len, proposals, &offset, &common);
+			&proposals_len, proposals, &offset, &common);
 
 		if (!proposals_len) {
 			return 0;
 		}
 		if (proposals_len == 1) {
 			cmdline_chars_insert(this->model, proposals[0] + offset,
-					strlen(proposals[0] + offset));
+				strlen(proposals[0] + offset));
 			cmdline_chars_insert(cb->outer->model, " ", 1);
 			return 1;
 		}
@@ -80,7 +80,9 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 }
 
 CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
-	static SCREEN_IO view_io = { diag_getc, diag_putc };
+	static SCREEN_IO view_io = {
+		diag_getc, diag_putc
+	};
 	if (this == NULL || callback == NULL) {
 		return NULL;
 	}
@@ -97,17 +99,16 @@ CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 	return this;
 }
 
-
 void console_start(CONSOLE *this, const char *prompt) {
 	static SCREEN_CALLBACK screen_callback[1];
-	static const char * default_prompt = "";
+	static const char *default_prompt = "";
 	if (this == NULL) {
 		return;
 	}
 	screen_callback->outer = this;
 
 	strncpy(this->prompt, (prompt != NULL) ? prompt : default_prompt,
-			OPTION_GET(NUMBER, prompt_len));
+		OPTION_GET(NUMBER, prompt_len));
 
 	screen_out_show_prompt(this->view, this->prompt);
 	screen_in_start(this->view, screen_callback);
@@ -124,7 +125,9 @@ void console_stop(CONSOLE *this) {
  */
 
 static int handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
-	char tmp_ch[] = { (char) ch };
+	char tmp_ch[] = {
+		(char) ch
+	};
 	SCREEN_CALLBACK *cb = this->callback;
 
 	assert(cb);
@@ -133,7 +136,7 @@ static int handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
 }
 
 static int handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
-		short *params, int params_len) {
+	short *params, int params_len) {
 	SCREEN_CALLBACK *cb = this->callback;
 	CMDLINE *cmdline;
 
@@ -158,13 +161,13 @@ static int handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		return cmdline_cursor_end(cmdline);
 	case TERMINAL_TOKEN_ETX:
 		return on_new_line(cb, this, 0);
-	case TERMINAL_TOKEN_EOT: // on_eot(cb, this, 0);
+	case TERMINAL_TOKEN_EOT: /* on_eot(cb, this, 0); */
 		return 0;
 	case TERMINAL_TOKEN_DC2:
 		return cmdline_dc2_reverse(cmdline);
 	case TERMINAL_TOKEN_DC4:
 		return cmdline_dc4_reverse(cmdline);
-	case TERMINAL_TOKEN_ACK: // on_ack(cb, this, 0);
+	case TERMINAL_TOKEN_ACK: /* on_ack(cb, this, 0); */
 		return 0;
 	case TERMINAL_TOKEN_LF:
 	case TERMINAL_TOKEN_CR:
@@ -191,7 +194,6 @@ static int handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 	}
 }
 
-
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	static TERMINAL_TOKEN token;
 	short *params;
@@ -207,7 +209,7 @@ void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	this->callback = cb;
 
 	while (this->callback != NULL && terminal_receive(this->terminal, &token,
-			&params, &params_len)) {
+		&params, &params_len)) {
 		ch = token & 0xFF;
 
 		if (ch == token) {

@@ -22,11 +22,11 @@ struct waitq_link_protect {
 	struct waitq_link pwql;
 };
 
-static inline struct dlist_head *thread_wql_protected_list(void) {
+static inline struct dlist_head * thread_wql_protected_list(void) {
 	return &thread_self()->thread_wait.wql_protected_list;
 }
 
-struct waitq_link *waitq_link_create_protected(struct waitq_link *uwql) {
+struct waitq_link * waitq_link_create_protected(struct waitq_link *uwql) {
 	struct dlist_head *wqlp_list;
 	struct waitq_link_protect *wqlp;
 
@@ -45,7 +45,7 @@ struct waitq_link *waitq_link_create_protected(struct waitq_link *uwql) {
 	return &wqlp->pwql;
 }
 
-struct waitq_link *waitq_link_find_protected(struct waitq_link *uwql) {
+struct waitq_link * waitq_link_find_protected(struct waitq_link *uwql) {
 	struct dlist_head *wqlp_list;
 	struct waitq_link_protect *wqlp;
 
@@ -63,7 +63,9 @@ struct waitq_link *waitq_link_find_protected(struct waitq_link *uwql) {
 }
 
 void waitq_link_delete_protected(struct waitq_link *pwql) {
-	struct waitq_link_protect *wqlp = member_cast_out(pwql, struct waitq_link_protect, pwql);
+	struct waitq_link_protect *wqlp = member_cast_out(pwql,
+			struct waitq_link_protect,
+			pwql);
 
 	dlist_del(&wqlp->thread_link);
 

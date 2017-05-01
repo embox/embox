@@ -21,7 +21,7 @@ off_t lseek(int fd, off_t offset, int origin) {
 	off_t ret;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == index_descriptor_get(fd))) {
+		|| (NULL == index_descriptor_get(fd))) {
 		return SET_ERRNO(EBADF);
 	}
 

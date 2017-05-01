@@ -56,7 +56,7 @@ int ch_to_digit(char ch, int base) {
 
 static void unscanchar(const char **str, int ch) {
 	if ((unsigned int) str >= 2) {
-		(*str) --;
+		(*str)--;
 	} else if ((int) str == 1) {
 		ungetc(ch, file);
 	} else {
@@ -83,8 +83,9 @@ static int scanchar(const char **str) {
 }
 
 static bool is_space(int ch) {
-	if ((ch == ' ') || (ch == '\t') || (ch == '\n'))
+	if ((ch == ' ') || (ch == '\t') || (ch == '\n')) {
 		return true;
+	}
 	return false;
 }
 
@@ -94,8 +95,9 @@ static int trim_leading(const char **str) {
 	do {
 		ch = scanchar(str);
 		/*when break*/
-		if (ch == EOF)
+		if (ch == EOF) {
 			break;
+		}
 	} while (is_space(ch));
 
 	unscanchar(str, ch);
@@ -134,8 +136,9 @@ static int scan_int(const char **in, int base, int width, int *res) {
 		return -1;
 	}
 
-	if (neg)
+	if (neg) {
 		dst = -dst;
+	}
 	*res = dst;
 	return 0;
 }
@@ -159,11 +162,13 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			fmt++;
 			width = 80;
 
-			if (*fmt == '\0')
+			if (*fmt == '\0') {
 				break;
+			}
 
-			if (isdigit((int) *fmt))
+			if (isdigit((int) *fmt)) {
 				width = 0;
+			}
 
 			while (isdigit((int) *fmt)) {
 
@@ -172,123 +177,134 @@ static int scan(const char **in, const char *fmt, va_list args) {
 
 			ops_len = 0;
 			switch (*fmt) {
-			case 'h': ops_len = *++fmt != 'h' ? OPS_LEN_SHORT : (++fmt, OPS_LEN_MIN); break;
-			case 'l': ops_len = *++fmt != 'l' ? OPS_LEN_LONG : (++fmt, OPS_LEN_LONGLONG); break;
+			case 'h': ops_len = *++fmt !=
+					'h' ? OPS_LEN_SHORT : (++fmt, OPS_LEN_MIN); break;
+			case 'l': ops_len = *++fmt !=
+					'l' ? OPS_LEN_LONG : (++fmt, OPS_LEN_LONGLONG); break;
 			case 'j': ops_len = OPS_LEN_MAX; ++fmt; break;
 			case 'z': ops_len = OPS_LEN_SIZE; ++fmt; break;
 			case 't': ops_len = OPS_LEN_PTRDIFF; ++fmt; break;
 			case 'L': ops_len = OPS_LEN_LONGFP; ++fmt; break;
 			}
-			if (*fmt == '\0')
+			if (*fmt == '\0') {
 				break;
+			}
 
 			switch (*fmt) {
 			case 's': {
-				char *dst = va_arg(args, char*);
+				char *dst = va_arg(args, char *);
 				char ch;
-				while (isspace(ch = scanchar(in)));
+				while (isspace(ch = scanchar(in))) ;
 
 				while (ch != (char) EOF && width--) {
-					if (isspace(ch))
+					if (isspace(ch)) {
 						break;
+					}
 
 					width--;
 					*dst++ = (char) ch;
 					ch = scanchar(in);
 				}
 
-				if (width == 80) // XXX
+				if (width == 80) { /* XXX */
 					converted = EOF;
+				}
 				else {
 					*dst = '\0';
 					++converted;
 				}
 			}
-				break;
+					  break;
 			case 'c': {
 				int dst;
 
 				dst = scanchar(in);
-				*va_arg(args, char*) = dst;
+				*va_arg(args, char *) = dst;
 
-				if (dst == (char) EOF)
+				if (dst == (char) EOF) {
 					converted = EOF;
-				else
+				}
+				else {
 					++converted;
+				}
 			}
-				break;
+					  break;
 			case 'u': {
 				int dst;
 				if (0 != (err = scan_int(in, 10, width, &dst))) {
-					if (err == EOF)
+					if (err == EOF) {
 						converted = EOF;
+					}
 					goto out;
 				}
 
 				switch (ops_len) {
 				default: /* FIXME */
-					*va_arg(args, unsigned int*) = dst;
+					*va_arg(args, unsigned int *) = dst;
 					break;
 				case OPS_LEN_MIN:
-					*va_arg(args, unsigned char*) = dst;
+					*va_arg(args, unsigned char *) = dst;
 					break;
 				case OPS_LEN_SHORT:
-					*va_arg(args, unsigned short*) = dst;
+					*va_arg(args, unsigned short *) = dst;
 					break;
 				}
 
 				++converted;
 			}
-				break;
+					  break;
 			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
 				int dst;
 				if (0 != (err = scan_int(in, 10, width, &dst))) {
-					if (err == EOF)
+					if (err == EOF) {
 						converted = EOF;
+					}
 					goto out;
 				}
 
 				switch (ops_len) {
 				default: /* FIXME */
-					memcpy(va_arg(args, int*), &dst, sizeof(dst));
+					memcpy(va_arg(args, int *), &dst, sizeof(dst));
 					break;
 				case OPS_LEN_MIN:
-					*va_arg(args, char*) = dst;
+					*va_arg(args, char *) = dst;
 					break;
 				case OPS_LEN_SHORT:
-					*va_arg(args, short*) = dst;
+					*va_arg(args, short *) = dst;
 					break;
 				}
 
 				++converted;
 			}
-				break;
+					  break;
 			case 'o': {
 				int dst;
 				if (0 != (err = scan_int(in, 8, width, &dst))) {
-					if (err == EOF)
+					if (err == EOF) {
 						converted = EOF;
+					}
 					goto out;
 				}
 
-				*va_arg(args, int*) = dst;
+				*va_arg(args, int *) = dst;
 
 				++converted;
 			}
-				break;
+					  break;
 			case 'x': {
 				int dst;
 				if (0 != (err = scan_int(in, 16, width, &dst))) {
-					if (err == EOF)
+					if (err == EOF) {
 						converted = EOF;
+					}
 					goto out;
 				}
-				*va_arg(args, int*) = dst;
+				*va_arg(args, int *) = dst;
 
 				++converted;
 			}
-				break;
+					  break;
 			}
 			fmt++;
 		} else {
@@ -298,7 +314,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 		}
 	}
 
-out:
+	out:
 	return converted;
 }
 
@@ -331,7 +347,7 @@ int sscanf(const char *out, const char *format, ...) {
 
 	va_start(args, format);
 	rv = scan(&out, format, args);
-	va_end (args);
+	va_end(args);
 
 	return rv;
 }

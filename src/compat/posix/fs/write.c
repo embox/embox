@@ -21,8 +21,8 @@ ssize_t write(int fd, const void *buf, size_t nbyte) {
 	struct iovec iov;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & S_IWOTH))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))
+		|| (!(idesc->idesc_amode & S_IWOTH))) {
 		return SET_ERRNO(EBADF);
 	}
 

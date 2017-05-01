@@ -1,8 +1,8 @@
 /**
- * @file 
- * @brief 
+ * @file
+ * @brief
  *
- * @author  Anton Kozlov 
+ * @author  Anton Kozlov
  * @date    30.06.2015
  */
 
@@ -15,8 +15,8 @@ struct video_resbpp;
 struct fb_var_screeninfo;
 
 struct fb_videomode {
-	const char *name;	/* optional */
-	uint32_t refresh;	/* optional */
+	const char *name;   /* optional */
+	uint32_t refresh;   /* optional */
 	uint32_t xres;
 	uint32_t yres;
 	uint32_t pixclock;
@@ -32,11 +32,12 @@ struct fb_videomode {
 };
 
 extern void fb_videomode_to_var(struct fb_var_screeninfo *var,
-		const struct fb_videomode *mode);
+	const struct fb_videomode *mode);
 
 extern void fb_var_to_videomode(struct fb_videomode *mode,
-		const struct fb_var_screeninfo *var);
+	const struct fb_var_screeninfo *var);
 
-extern const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp);
+extern const struct fb_videomode * video_fbmode_by_resbpp(
+	const struct video_resbpp *resbpp);
 
 #endif /* VIDEO_FB_VIDEOMODES_H_ */

@@ -40,7 +40,7 @@ TEST_CASE("poll() returns 0 if no events occurred") {
 }
 
 TEST_CASE("poll() wait at least timeout and returns 0"
-		" if no events occurred") {
+		  " if no events occurred") {
 	test_assert_equal(0, poll(&fds_r, nfds, TIMEOUT));
 }
 
@@ -83,8 +83,8 @@ TEST_CASE("poll() accept 2 descriptors and monitors one of them") {
 
 	fds[0].fd = fds_w.fd;
 	fds[1].fd = fds_r.fd;
-	fds[0].events = 0; // don't monitor
-	fds[1].events = POLLIN; // monitor
+	fds[0].events = 0; /* don't monitor */
+	fds[1].events = POLLIN; /* monitor */
 	fds[0].revents = fds[1].revents = 0;
 
 	test_assert_equal(1, write(fds_w.fd, "a", 1));

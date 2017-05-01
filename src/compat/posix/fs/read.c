@@ -21,8 +21,8 @@ ssize_t read(int fd, void *buf, size_t nbyte) {
 	struct idesc *idesc;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & S_IROTH))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))
+		|| (!(idesc->idesc_amode & S_IROTH))) {
 		return SET_ERRNO(EBADF);
 	}
 

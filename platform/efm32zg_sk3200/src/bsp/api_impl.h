@@ -12,4 +12,3 @@
 #include <efm32zg222f32.h>
 
 #endif /* EFM32ZG_SK3200_SRC_BSP_API_IMPL_H_ */
-

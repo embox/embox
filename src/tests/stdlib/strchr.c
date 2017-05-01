@@ -17,7 +17,8 @@ TEST_CASE("strchr should be able to find every character") {
 	int i;
 
 	for (i = 0; i < strlen(test_strchr_alpha); i++) {
-		test_assert_equal(&test_strchr_alpha[i], strchr(test_strchr_alpha, test_strchr_alpha[i]));
+		test_assert_equal(&test_strchr_alpha[i],
+			strchr(test_strchr_alpha, test_strchr_alpha[i]));
 	}
 }
 

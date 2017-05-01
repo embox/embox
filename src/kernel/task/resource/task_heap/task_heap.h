@@ -12,9 +12,9 @@
 #include <util/dlist.h>
 
 struct task_heap {
-	 struct dlist_head mm;
+	struct dlist_head mm;
 };
 
-extern struct task_heap *task_heap_get(const struct task *task);
+extern struct task_heap * task_heap_get(const struct task *task);
 
 #endif /* TASK_HEAP_H_ */

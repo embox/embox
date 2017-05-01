@@ -16,7 +16,7 @@ struct cpu_info current_cpu;
 
 static void set_cpu_freq(struct cpu_info *info) {
 
-//info->freq =
+/*info->freq = */
 	return;
 }
 
@@ -26,36 +26,36 @@ static void set_vendor_id(struct cpu_info *info) {
 
 	/* Check if CPU supports CPUID instruction */
 	/*asm volatile (	"pushfq\n\t"
-					"popq %%rbp\n\t"
-					"mov %%eax, %%ebx\n\t"
-					"xorl $0x200000, %%eax\n\t"
-					"push %%eax\n\t"
-					"popf\n\t"
-					"pushfq\n\t"
-					"popq %%eax\n\t"
-					"xorl %%ebx, %%eax\n\t"
-					"movl %%eax, %0"
-					: "=r"(a)
-					: );*/
+	                "popq %%rbp\n\t"
+	                "mov %%eax, %%ebx\n\t"
+	                "xorl $0x200000, %%eax\n\t"
+	                "push %%eax\n\t"
+	                "popf\n\t"
+	                "pushfq\n\t"
+	                "popq %%eax\n\t"
+	                "xorl %%ebx, %%eax\n\t"
+	                "movl %%eax, %0"
+	                : "=r"(a)
+	                : );*/
 
 	/* Getting vendor id */
 	/* For some mysterious reason I can't include all three registers
 	 * EBX, ECX, EDX to clobber list, so I have to call CPUID twice.
 	 */
-	asm volatile (	"xorl %%eax, %%eax	\n\t"
-					"cpuid				\n\t"
-					"movl %%ebx, %0		\n\t"
-					"movl %%ecx, %1		\n\t"
-					: "=g"(r[0]), "=g"(r[2])
-					:
-					: "%ebx", "%ecx");
+	asm volatile ("xorl %%eax, %%eax	\n\t"
+				  "cpuid				\n\t"
+				  "movl %%ebx, %0		\n\t"
+				  "movl %%ecx, %1		\n\t"
+	: "=g" (r[0]), "=g" (r[2])
+	:
+	: "%ebx", "%ecx");
 
-	asm volatile (	"xorl %%eax, %%eax	\n\t"
-					"cpuid				\n\t"
-					"movl %%edx, %0		\n\t"
-					: "=g"(r[1])
-					:
-					: "%edx");
+	asm volatile ("xorl %%eax, %%eax	\n\t"
+				  "cpuid				\n\t"
+				  "movl %%edx, %0		\n\t"
+	: "=g" (r[1])
+	:
+	: "%edx");
 
 	/* Parsing registers */
 	for (i = 0; i < 3; i++) {
@@ -67,8 +67,7 @@ static void set_vendor_id(struct cpu_info *info) {
 	return;
 }
 
-
-struct cpu_info* get_cpu_info(void) {
+struct cpu_info * get_cpu_info(void) {
 	set_vendor_id(&current_cpu);
 	set_cpu_freq(&current_cpu);
 	return &current_cpu;

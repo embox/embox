@@ -94,20 +94,22 @@ static cycle_t mb_cycle_read(void) {
 
 static int mb_clock_init(void) {
 	clock_source_register(&mb_cs);
-	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, &mb_cs, "mbtimer")) {
+	if (0 !=
+		irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, &mb_cs,
+		"mbtimer")) {
 		panic("mbtimer irq_attach failed");
 	}
 	return 0;
 }
 
-static int mb_clock_setup(struct time_dev_conf * conf) {
+static int mb_clock_setup(struct time_dev_conf *conf) {
 	/*set clocks period*/
 	timer0->tlr = TIMER_PRELOAD;
 	/*clear interrupts bit and load value from tlr register*/
 	timer0->tcsr = TIMER_INT | TIMER_RESET;
 	/*start timer*/
 	timer0->tcsr = TIMER_ENABLE | TIMER_INT_ENABLE | TIMER_RELOAD
-			| TIMER_DOWN_COUNT;
+		| TIMER_DOWN_COUNT;
 
 	return 0;
 }

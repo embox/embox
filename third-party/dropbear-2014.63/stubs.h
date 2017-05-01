@@ -17,15 +17,14 @@
 
 #define LOG_PID 1
 
-#define LOG_EMERG	1
-#define LOG_ALERT	2
-#define LOG_CRIT	3
-#define LOG_ERR		4
-#define LOG_WARNING	5
-#define LOG_NOTICE	6
-#define LOG_INFO	7
-#define LOG_DEBUG	8
-
+#define LOG_EMERG   1
+#define LOG_ALERT   2
+#define LOG_CRIT    3
+#define LOG_ERR     4
+#define LOG_WARNING 5
+#define LOG_NOTICE  6
+#define LOG_INFO    7
+#define LOG_DEBUG   8
 
 static inline void openlog(const char *ident, int option, int facility) {
 	(void) ident;
@@ -38,8 +37,8 @@ void closelog(void);
 #define TCP_NODELAY 0
 #define UNIX_PATH_MAX 255
 struct sockaddr_un {
-               sa_family_t sun_family;               /* AF_UNIX */
-               char        sun_path[UNIX_PATH_MAX];  /* pathname */
+	sa_family_t sun_family;                          /* AF_UNIX */
+	char sun_path[UNIX_PATH_MAX];                    /* pathname */
 };
 
 typedef unsigned int u_int;
@@ -61,7 +60,7 @@ static inline int initgroups(const char *user, gid_t group) {
 	return 0;
 }
 
-static inline FILE *popen(const char *command, const char *type) {
+static inline FILE * popen(const char *command, const char *type) {
 	(void) command;
 	(void) type;
 	return NULL;
@@ -72,7 +71,7 @@ static inline int pclose(FILE *stream) {
 	return 0;
 }
 
-static inline char *ttyname(int fd) {
+static inline char * ttyname(int fd) {
 	static char buf[16];
 	(void) fd;
 

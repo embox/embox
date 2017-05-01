@@ -16,7 +16,7 @@
 
 struct input_dev;
 
-typedef int indev_event_cb_t(struct input_dev *indev);
+typedef int indev_event_cb_t (struct input_dev *indev);
 
 enum input_dev_type {
 	INPUT_DEV_KBD,
@@ -48,15 +48,15 @@ struct input_dev {
 	void *data;
 
 	indev_event_cb_t *event_cb; /* callback on event. NULL is valid and
-				       means input dev isn't opened */
+	                   means input dev isn't opened */
 	struct dlist_head global_indev_list; /* global device list */
 	struct dlist_head post_link; /* link in to process queue */
 
 	struct ring_buff rbuf;
 	struct input_event event_buf[INPUT_DEV_EVENT_QUEUE_LEN];
 	struct input_event *curprocessd; /* pointer to allocated but not valid
-					    input event (@a event_get
-					    may fail) */
+	                    input event (@a event_get
+	                    may fail) */
 
 };
 
@@ -95,7 +95,7 @@ extern int input_dev_event(struct input_dev *dev, struct input_event *ev);
  *
  * @return Pointer to input device or NULL
  */
-extern struct input_dev *input_dev_lookup(const char *name);
+extern struct input_dev * input_dev_lookup(const char *name);
 
 /**
  * @brief Open input device, optionally trigger event callback on new events

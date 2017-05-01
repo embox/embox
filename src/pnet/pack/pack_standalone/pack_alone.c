@@ -33,7 +33,8 @@
 #define CONFIG_PNET_PACKETS_QUANTITY OPTION_GET(NUMBER,pnet_pack_quantity)
 
 OBJALLOC_DEF(net_packs, struct pnet_pack, CONFIG_PNET_PACKETS_QUANTITY);
-OBJALLOC_DEF(net_packs_data,struct pnet_pack_data, CONFIG_PNET_PACKETS_QUANTITY);
+OBJALLOC_DEF(net_packs_data,struct pnet_pack_data,
+	CONFIG_PNET_PACKETS_QUANTITY);
 
 /**
  * @brief Alloc pnet simple packet with content
@@ -43,7 +44,7 @@ OBJALLOC_DEF(net_packs_data,struct pnet_pack_data, CONFIG_PNET_PACKETS_QUANTITY)
  *
  * @return Pointer to allocated packet
  */
-static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
+static struct pnet_pack * pnet_pack_alloc(void *data, size_t len) {
 	struct pnet_pack *pack;
 	struct pnet_pack_data *pack_data;
 
@@ -62,7 +63,7 @@ static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 
 	pack->data = pack_data;
 
-	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
+	pack->dir = PNET_PACK_DIRECTION_RX; /*TODO varios packet types */
 
 	if (data) {
 		memcpy(pack_data->buff,data,len);

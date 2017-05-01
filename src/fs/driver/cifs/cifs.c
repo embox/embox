@@ -28,7 +28,6 @@
 
 #include <util/math.h>
 
-
 struct cifs_fs_info
 {
 	SMBCCTX *ctx;
@@ -37,10 +36,8 @@ struct cifs_fs_info
 };
 
 /* ntfs filesystem description pool */
-POOL_DEF (cifs_fs_pool, struct cifs_fs_info,
-		  OPTION_GET (NUMBER, cifs_descriptor_quantity));
-
-
+POOL_DEF(cifs_fs_pool, struct cifs_fs_info,
+	OPTION_GET(NUMBER, cifs_descriptor_quantity));
 
 typedef struct smbitem smbitem;
 
@@ -52,7 +49,7 @@ struct smbitem
 };
 
 static mode_t
-samba_type_to_mode_fmt (const unsigned dt_type)
+samba_type_to_mode_fmt(const unsigned dt_type)
 {
 	switch (dt_type) {
 	case SMBC_FILE_SHARE:
@@ -66,10 +63,11 @@ samba_type_to_mode_fmt (const unsigned dt_type)
 }
 
 struct node *
-embox_set_node (struct nas *nas, char *filename, int mode)
+embox_set_node(struct nas *nas, char *filename, int mode)
 {
 	struct node *node;
-	node = vfs_subtree_create (nas->node, filename, samba_type_to_mode_fmt (mode));
+	node =
+		vfs_subtree_create(nas->node, filename, samba_type_to_mode_fmt(mode));
 	if (!node) {
 		return NULL;
 	}
@@ -78,18 +76,19 @@ embox_set_node (struct nas *nas, char *filename, int mode)
 }
 
 SMBCCTX *
-embox_create_smbctx (void)
+embox_create_smbctx(void)
 {
 	SMBCCTX *ctx;
 
-	if ((ctx = smbc_new_context ()) == NULL)
+	if ((ctx = smbc_new_context()) == NULL) {
 		return NULL;
+	}
 
-	//smbc_setDebug(ctx, debuglevel);
-	//smbc_setFunctionAuthData(ctx, smbc_auth_fn);
+	/*smbc_setDebug(ctx, debuglevel); */
+	/*smbc_setFunctionAuthData(ctx, smbc_auth_fn); */
 
-	if (smbc_init_context (ctx) == NULL) {
-		smbc_free_context (ctx, 1);
+	if (smbc_init_context(ctx) == NULL) {
+		smbc_free_context(ctx, 1);
 		return NULL;
 	}
 
@@ -97,61 +96,67 @@ embox_create_smbctx (void)
 }
 
 void
-embox_delete_smbctx (SMBCCTX * ctx)
+embox_delete_smbctx(SMBCCTX *ctx)
 {
-	smbc_getFunctionPurgeCachedServers (ctx) (ctx);
-	smbc_free_context (ctx, 1);
+	smbc_getFunctionPurgeCachedServers(ctx) (ctx);
+	smbc_free_context(ctx, 1);
 }
 
 static int
-embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
-							 int maxlen)
+embox_cifs_mounting_recurse(struct nas *nas, SMBCCTX *ctx, char *smb_path,
+	int maxlen)
 {
 	int len, rc;
 	struct smbc_dirent *dirent;
-	SMBCFILE * fd;
+	SMBCFILE *fd;
 	struct node *node;
 
-	len = strlen (smb_path);
+	len = strlen(smb_path);
 
-	if ((fd = smbc_getFunctionOpendir (ctx) (ctx, smb_path)) == NULL)
+	if ((fd = smbc_getFunctionOpendir(ctx) (ctx, smb_path)) == NULL) {
 		return -errno;
-	while ((dirent = smbc_getFunctionReaddir (ctx) (ctx, fd)) != NULL) {
-		if (strcmp (dirent->name, "") == 0)
+	}
+	while ((dirent = smbc_getFunctionReaddir(ctx) (ctx, fd)) != NULL) {
+		if (strcmp(dirent->name, "") == 0) {
 			continue;
-		if (strcmp (dirent->name, ".") == 0)
+		}
+		if (strcmp(dirent->name, ".") == 0) {
 			continue;
-		if (strcmp (dirent->name, "..") == 0)
+		}
+		if (strcmp(dirent->name, "..") == 0) {
 			continue;
+		}
 		switch (dirent->smbc_type) {
 		case SMBC_FILE_SHARE:
 		case SMBC_DIR:
 		case SMBC_FILE:
-			//ToDo: use namelen
-			if (maxlen < len + strlen (dirent->name) + 2)
+			/*ToDo: use namelen */
+			if (maxlen < len + strlen(dirent->name) + 2) {
 				break;
+			}
 
 			smb_path[len] = '/';
-			strcpy (smb_path + len + 1, dirent->name);
-			node = embox_set_node (nas, dirent->name, dirent->smbc_type);
+			strcpy(smb_path + len + 1, dirent->name);
+			node = embox_set_node(nas, dirent->name, dirent->smbc_type);
 			if (!node) {
 				errno = ENOMEM;
 				return -errno;
 			}
 			if (dirent->smbc_type != SMBC_FILE) {
-				rc = embox_cifs_mounting_recurse (node->nas, ctx, smb_path,
-												  maxlen);
+				rc = embox_cifs_mounting_recurse(node->nas, ctx, smb_path,
+						maxlen);
 				if (0 > rc) {
 					return rc;
 				}
-				if (dirent->smbc_type == SMBC_FILE_SHARE)
-					smbc_getFunctionPurgeCachedServers (ctx) (ctx);
+				if (dirent->smbc_type == SMBC_FILE_SHARE) {
+					smbc_getFunctionPurgeCachedServers(ctx) (ctx);
+				}
 			}
 			break;
 		}
 	}
 
-	smbc_getFunctionClose (ctx) (ctx, fd);
+	smbc_getFunctionClose(ctx) (ctx, fd);
 
 	smb_path[len] = '\0';
 	return 0;
@@ -161,12 +166,12 @@ static int cifs_umount_entry(struct nas *nas) {
 	struct node *child;
 
 	if (node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
-			if(node_is_directory(child)) {
+		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
+			if (node_is_directory(child)) {
 				cifs_umount_entry(child->nas);
 			}
 
-			(void)0; // no CIFS-specific resources to free
+			(void)0; /* no CIFS-specific resources to free */
 			vfs_del_leaf(child);
 		}
 	}
@@ -185,12 +190,12 @@ static int embox_cifs_umount(void *dir) {
 	/* delete all entry node */
 	cifs_umount_entry(dir_nas);
 
-	if(NULL != dir_nas->fs) {
+	if (NULL != dir_nas->fs) {
 		fsi = dir_nas->fs->fsi;
 
-		if(NULL != fsi) {
+		if (NULL != fsi) {
 			if (fsi->ctx) {
-				// ToDo: check if everything passed Ok
+				/* ToDo: check if everything passed Ok */
 				embox_delete_smbctx(fsi->ctx);
 			}
 			pool_free(&cifs_fs_pool, fsi);
@@ -203,7 +208,7 @@ static int embox_cifs_umount(void *dir) {
 }
 
 static int
-embox_cifs_mount (void *dev, void *dir)
+embox_cifs_mount(void *dev, void *dir)
 {
 	SMBCCTX *ctx;
 	char smb_path[PATH_MAX] = "smb://";
@@ -212,10 +217,10 @@ embox_cifs_mount (void *dev, void *dir)
 	struct cifs_fs_info *fsi;
 	int rc;
 
-	strncpy (smb_path + 6, dev, sizeof (smb_path) - 7);
+	strncpy(smb_path + 6, dev, sizeof (smb_path) - 7);
 	smb_path[sizeof (smb_path) - 1] = '\0';
 	rc = strlen(smb_path);
-	if(smb_path[rc-1] == '/') {
+	if (smb_path[rc-1] == '/') {
 		smb_path[rc-1] = '\0';
 	}
 
@@ -229,7 +234,7 @@ embox_cifs_mount (void *dev, void *dir)
 
 	if ((ctx = embox_create_smbctx()) == NULL) {
 		/* ToDo: error: exit without deallocation of filesystem */
-		//Cant create samba context
+		/*Cant create samba context */
 		rc = 1;
 		return -rc;
 	}
@@ -240,28 +245,28 @@ embox_cifs_mount (void *dev, void *dir)
 		rc = ENOMEM;
 		goto error;
 	}
-	memset (fsi, 0, sizeof(*fsi));
-	strcpy (fsi->url, smb_path);
+	memset(fsi, 0, sizeof(*fsi));
+	strcpy(fsi->url, smb_path);
 	fsi->mntto = dir_node;
 	fsi->ctx = ctx;
 	dir_nas->fs->fsi = fsi;
 
-	//get smb_path
+	/*get smb_path */
 	rc = embox_cifs_mounting_recurse(dir_node->nas, ctx, smb_path,
-									sizeof (smb_path));
+			sizeof (smb_path));
 	if (0 > rc) {
 		goto error;
 	}
 
 	return 0;
 
-error:
+	error:
 	embox_cifs_umount(dir);
 	return -rc;
 }
 
-static struct idesc *cifs_open(struct node *node, struct file_desc *file_desc,
-		int flags)
+static struct idesc * cifs_open(struct node *node, struct file_desc *file_desc,
+	int flags)
 {
 	struct cifs_fs_info *fsi;
 	char fileurl[2 * PATH_MAX];
@@ -272,9 +277,11 @@ static struct idesc *cifs_open(struct node *node, struct file_desc *file_desc,
 	fsi = node->nas->fs->fsi;
 
 	strcpy(fileurl,fsi->url);
-	fileurl[rc=strlen(fileurl)] = '/';
+	fileurl[rc = strlen(fileurl)] = '/';
 #if 0
-	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
+	if ((rc =
+		vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1],
+				sizeof(fileurl)-rc-1))) {
 		return rc;
 	}
 #endif
@@ -286,13 +293,13 @@ static struct idesc *cifs_open(struct node *node, struct file_desc *file_desc,
 	}
 
 	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,flags,0);
-	if(!file) {
+	if (!file) {
 		return err_ptr(errno);
 	}
 
 	file_desc->file_info = file;
 
-	// Yet another bullshit: size is not valid until open
+	/* Yet another bullshit: size is not valid until open */
 	node->nas->fi->ni.size = st.st_size;
 
 	return &file_desc->idesc;
@@ -322,7 +329,9 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 	fsi = file_desc->node->nas->fs->fsi;
 	file = file_desc->file_info;
 
-	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, file_desc->cursor, SEEK_SET);
+	res =
+		smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, file_desc->cursor,
+			SEEK_SET);
 	if (res != file_desc->cursor) {
 		if (-1 == res) {
 			return -errno;
@@ -348,7 +357,9 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	fsi = file_desc->node->nas->fs->fsi;
 	file = file_desc->file_info;
 
-	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, file_desc->cursor, SEEK_SET);
+	res =
+		smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, file_desc->cursor,
+			SEEK_SET);
 	if (res != file_desc->cursor) {
 		if (-1 == res) {
 			return -errno;
@@ -361,13 +372,15 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 
 	if (res > 0) {
 		file_desc->cursor += res;
-		file_desc->node->nas->fi->ni.size = max(file_desc->node->nas->fi->ni.size, file_desc->cursor);
+		file_desc->node->nas->fi->ni.size = max(
+				file_desc->node->nas->fi->ni.size, file_desc->cursor);
 	}
 
 	return res;
 }
 
-static int embox_cifs_node_create(struct node *parent_node, struct node *new_node) {
+static int embox_cifs_node_create(struct node *parent_node,
+	struct node *new_node) {
 	struct cifs_fs_info *pfsi;
 	char fileurl[PATH_MAX];
 	SMBCFILE *file;
@@ -377,9 +390,11 @@ static int embox_cifs_node_create(struct node *parent_node, struct node *new_nod
 	pfsi = parent_node->nas->fs->fsi;
 
 	strcpy(fileurl,pfsi->url);
-	fileurl[rc=strlen(fileurl)] = '/';
+	fileurl[rc = strlen(fileurl)] = '/';
 #if 0
-	if ((rc = vfs_get_pathbynode_tilln(new_node, pfsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
+	if ((rc =
+		vfs_get_pathbynode_tilln(new_node, pfsi->mntto, &fileurl[rc+1],
+				sizeof(fileurl)-rc-1))) {
 		return rc;
 	}
 #endif
@@ -415,9 +430,11 @@ static int embox_cifs_node_delete(struct node *node) {
 	fsi = node->nas->fs->fsi;
 
 	strcpy(fileurl,fsi->url);
-	fileurl[rc=strlen(fileurl)] = '/';
+	fileurl[rc = strlen(fileurl)] = '/';
 #if 0
-	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
+	if ((rc =
+		vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1],
+				sizeof(fileurl)-rc-1))) {
 		return rc;
 	}
 #endif
@@ -459,4 +476,4 @@ static const struct fs_driver cifs_driver = {
 	.mount_dev_by_string = true,
 };
 
-DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);
+DECLARE_FILE_SYSTEM_DRIVER(cifs_driver);

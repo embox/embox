@@ -8,8 +8,8 @@
  */
 
 static struct thread *fftt, *sftt;
-static void *first_flock_test_thread(void *arg);
-static void *second_flock_test_thread(void *arg);
+static void * first_flock_test_thread(void *arg);
+static void * second_flock_test_thread(void *arg);
 
 static void fs_test_flock(void) {
 	int fd;
@@ -21,7 +21,6 @@ static void fs_test_flock(void) {
 	fftt = thread_create(THREAD_FLAG_SUSPENDED, first_flock_test_thread,
 			(void *) &fd);
 	test_assert_zero(err(fftt));
-
 
 	sftt = thread_create(THREAD_FLAG_SUSPENDED, second_flock_test_thread,
 			(void *) &fd);
@@ -40,7 +39,7 @@ static void fs_test_flock(void) {
 	test_assert_zero(remove(FS_FLOCK));
 }
 
-static void *first_flock_test_thread(void *arg) {
+static void * first_flock_test_thread(void *arg) {
 	int fd = *((int *) arg);
 
 	test_emit('a');
@@ -54,7 +53,7 @@ static void *first_flock_test_thread(void *arg) {
 	return NULL;
 }
 
-static void *second_flock_test_thread(void *arg) {
+static void * second_flock_test_thread(void *arg) {
 	int fd = *((int *) arg);
 
 	test_emit('c');

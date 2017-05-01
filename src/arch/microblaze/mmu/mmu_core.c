@@ -23,7 +23,7 @@
 #include <kernel/printk.h>
 
 static inline int mmu_map_region(mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
-		size_t reg_size, uint32_t flags);
+	size_t reg_size, uint32_t flags);
 
 void mmu_off(void);
 
@@ -50,7 +50,8 @@ static int tlb_miss(int number) {
 		vaddr -= vaddr & MMU_PAGE_MASK;
 		paddr -= paddr & MMU_PAGE_MASK;
 
-		mmu_map_region(paddr, vaddr, MMU_PAGE_SIZE, PAGE_WRITEABLE | PAGE_EXECUTEABLE);
+		mmu_map_region(paddr, vaddr, MMU_PAGE_SIZE,
+			PAGE_WRITEABLE | PAGE_EXECUTEABLE);
 	} else {
 		printk("Page fault: 0x%08x\n", (unsigned int) vaddr);
 	}
@@ -67,9 +68,9 @@ void mmu_on(void) {
 	cache_disable();
 
 	__asm__ __volatile__ (
-			"msrset  r0, %0;\n\t"
-			:
-			: "i"(MSR_VM_MASK)
+		"msrset  r0, %0;\n\t"
+		:
+		: "i" (MSR_VM_MASK)
 	);
 }
 
@@ -77,7 +78,7 @@ void mmu_off(void) {
 	__asm__ __volatile__ (
 		"msrclr  r0, %0;\n\t"
 		:
-		: "i"(MSR_VM_MASK)
+		: "i" (MSR_VM_MASK)
 
 	);
 }
@@ -88,7 +89,7 @@ void set_utlb_record(int tlbx, uint32_t tlblo, uint32_t tlbhi) {
 		"mts rtlblo, %1;\n\t"
 		"mts rtlbhi, %2;\n\t"
 		:
-		: "r"(tlbx),"r"(tlblo), "r" (tlbhi)
+		: "r" (tlbx),"r" (tlblo), "r" (tlbhi)
 		: "memory"
 	);
 }
@@ -99,8 +100,8 @@ void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi) {
 		"mts rtlbx, %2;\n\t"
 		"mfs %0, rtlblo;\n\t"
 		"mfs %1, rtlbhi;\n\t"
-		: "=r"(tmp1),"=r" (tmp2)
-		: "r"(tlbx)
+		: "=r" (tmp1),"=r" (tmp2)
+		: "r" (tlbx)
 		: "memory"
 	);
 	*tlblo = tmp1;
@@ -131,7 +132,7 @@ static inline uint32_t reg_size_convert(size_t reg_size) {
 }
 
 static inline int mmu_map_region(mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
-		size_t reg_size, uint32_t flags) {
+	size_t reg_size, uint32_t flags) {
 	uint32_t tlblo, tlbhi; /* mmu registers */
 	uint32_t size_field;
 	/* setup tlbhi register fields */
@@ -142,9 +143,9 @@ static inline int mmu_map_region(mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
 
 	RTLBHI_SET(tlbhi, virt_addr, size_field);
 	RTLBLO_SET(tlblo, phy_addr,
-			((flags & PAGE_CACHEABLE) ? 1 : 0) ,
-			((flags & PAGE_EXECUTEABLE) ? 1 : 0),
-			((flags & PAGE_WRITEABLE) ? 1 : 0));
+		((flags & PAGE_CACHEABLE) ? 1 : 0),
+		((flags & PAGE_EXECUTEABLE) ? 1 : 0),
+		((flags & PAGE_WRITEABLE) ? 1 : 0));
 
 	set_utlb_record((cur_utlb_idx++) % UTLB_QUANTITY_RECORDS, tlblo, tlbhi);
 

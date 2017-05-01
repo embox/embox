@@ -57,7 +57,7 @@ struct sk_buff_data {
 
 POOL_DEF(skb_data_pool, struct sk_buff_data_fixed, MODOPS_AMOUNT_SKB_DATA);
 
-void *skb_get_data_pointner(struct sk_buff_data *skb_data) {
+void * skb_get_data_pointner(struct sk_buff_data *skb_data) {
 	return skb_data->__data + IP_ALIGN_SIZE;
 }
 

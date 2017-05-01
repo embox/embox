@@ -23,8 +23,8 @@ ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
 		return SET_ERRNO(EINVAL);
 	}
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & S_IWOTH))) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))
+		|| (!(idesc->idesc_amode & S_IWOTH))) {
 		return SET_ERRNO(EBADF);
 	}
 

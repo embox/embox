@@ -12,7 +12,6 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-
 #include <fs/perm.h>
 #include <mem/objalloc.h>
 
@@ -26,7 +25,7 @@ extern const struct idesc_xattrops file_idesc_xattrops;
 
 OBJALLOC_DEF(desc_pool, struct file_desc, OPTION_GET(NUMBER,fdesc_quantity));
 
-static struct file_desc *file_desc_alloc(void) {
+static struct file_desc * file_desc_alloc(void) {
 	return objalloc(&desc_pool);
 }
 
@@ -36,7 +35,7 @@ static void file_desc_free(struct file_desc *desc) {
 
 extern const struct idesc_ops idesc_file_ops;
 
-struct file_desc *file_desc_create(struct node *node, int flag) {
+struct file_desc * file_desc_create(struct node *node, int flag) {
 	struct file_desc *desc;
 	int perm_flags;
 	int ret;
@@ -77,7 +76,7 @@ int file_desc_destroy(struct file_desc *fdesc) {
 	return 0;
 }
 
-struct file_desc *file_desc_get(int idx) {
+struct file_desc * file_desc_get(int idx) {
 	struct idesc *idesc;
 	struct idesc_table *it;
 

@@ -23,7 +23,8 @@ struct pty {
 #define pty_to_tty(p)   member_cast_in(p, tty)
 
 struct idesc;
-extern struct pty *pty_init(struct pty *p, struct idesc *master, struct idesc *slave);
+extern struct pty * pty_init(struct pty *p, struct idesc *master,
+	struct idesc *slave);
 extern size_t pty_read(struct pty *, struct idesc *idesc, char *, size_t);
 extern size_t pty_write(struct pty *, const char *, size_t);
 

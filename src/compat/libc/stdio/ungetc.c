@@ -24,4 +24,3 @@ int ungetc(int ch, FILE *file) {
 int ungetchar(int ch) {
 	return ungetc(ch, stdin);
 }
-

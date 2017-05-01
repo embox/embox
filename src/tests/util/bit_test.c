@@ -45,15 +45,17 @@ TEST_CASE("generic test for bit_ctz and bit_clz") {
 	for (int i = 0; i < sizeof(unsigned long); ++i) {
 		test_assert_equal(bit_ctz(0x1ul << i), i);
 		test_assert_equal(bit_clz(0x1ul << i),
-				sizeof(unsigned long) * 8 - i - 1);
+			sizeof(unsigned long) * 8 - i - 1);
 	}
 }
 
 TEST_CASE("test for bit_foreach") {
-	const unsigned long patterns[] = { 0, 1, 2, 3, 5, 7, 11, 42, 0xf00,
-			0xc0ffee, 0x0ff1ce, 0xdeadbeef, 0x12345678,
-			0xadadadad, 0xa5a5a5a5, 0xaaaaaaaa, 0x55555555,
-			0xffffffff };
+	const unsigned long patterns[] = {
+		0, 1, 2, 3, 5, 7, 11, 42, 0xf00,
+		0xc0ffee, 0x0ff1ce, 0xdeadbeef, 0x12345678,
+		0xadadadad, 0xa5a5a5a5, 0xaaaaaaaa, 0x55555555,
+		0xffffffff
+	};
 	unsigned long pat;
 
 	array_foreach(pat, patterns, ARRAY_SIZE(patterns)) {

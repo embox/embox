@@ -120,8 +120,6 @@ _SC_XBS5_LP64_OFF64
 _SC_XBS5_LPBIG_OFFBIG
 */
 
-
-
 /* Standard file descriptors. */
 #define STDIN_FILENO    0   /* Standard input. */
 #define STDOUT_FILENO   1   /* Standard output. */
@@ -131,7 +129,6 @@ _SC_XBS5_LPBIG_OFFBIG
 #define SEEK_SET        0   /* Seek from beginning of file. */
 #define SEEK_CUR        1   /* Seek from current position. */
 #define SEEK_END        2   /* Seek from end of file. */
-
 
 __BEGIN_DECLS
 /**
@@ -172,9 +169,9 @@ extern int execve(const char *filename, char *const argv[], char *const envp[]);
 
 extern int link(const char *oldpath, const char *newpath);
 extern ssize_t readlink(const char *path, char *buf,
-		       size_t bufsize);
+	size_t bufsize);
 extern ssize_t readlinkat(int fd, const char *path,
-		       char *buf, size_t bufsize);
+	char *buf, size_t bufsize);
 
 extern int unlink(const char *pathname);
 
@@ -190,7 +187,7 @@ extern int dup2(int flides, int flides2);
 extern int pipe(int pipefd[2]);
 extern int pipe2(int pipefd[2], int flags);
 
-extern void _NORETURN _exit (int status);
+extern void _NORETURN _exit(int status);
 
 extern uid_t getuid(void);
 extern uid_t geteuid(void);
@@ -237,7 +234,7 @@ extern char **environ;
 #endif
 
 #define PASS_MAX 32
-extern char *getpass(const char *prompt);
+extern char * getpass(const char *prompt);
 
 extern int gethostname(char *name, size_t len);
 

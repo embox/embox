@@ -79,25 +79,25 @@ typedef struct {
 } sigset_t;
 
 union sigval {
-	int   sival_int;
+	int sival_int;
 	void *sival_ptr;
 };
 
 typedef struct {
-	int           si_signo;
-	int           si_code;
-	union sigval  si_value;
-	int           si_errno;
-	pid_t         si_pid;
-	uid_t         si_uid;
+	int si_signo;
+	int si_code;
+	union sigval si_value;
+	int si_errno;
+	pid_t si_pid;
+	uid_t si_uid;
 	void         *si_addr;
-	int           si_status;
-	int           si_band;
+	int si_status;
+	int si_band;
 } siginfo_t;
 
 struct sigaction {
-	int        sa_flags;
-	sigset_t   sa_mask;
+	int sa_flags;
+	sigset_t sa_mask;
 	/* The storage occupied by sa_handler and sa_sigaction may overlap,
 	 * and a conforming application shall not use both simultaneously.  */
 	union {
@@ -106,21 +106,21 @@ struct sigaction {
 	} /* unnamed */;
 };
 
-// TODO Consider moving the following two types into ucontext.h -- Eldar
+/* TODO Consider moving the following two types into ucontext.h -- Eldar */
 
-typedef int mcontext_t; // XXX stub
+typedef int mcontext_t; /* XXX stub */
 
 typedef struct {
 	void     *ss_sp;       /* stack base or pointer */
-	size_t    ss_size;     /* stack size */
-	int       ss_flags;    /* flags */
+	size_t ss_size;        /* stack size */
+	int ss_flags;          /* flags */
 } stack_t;
 
 struct _ucontext {
 	struct _ucontext *uc_link;     /* resumed when this context returns */
-	sigset_t    uc_sigmask;  /* blocked when this context is active */
-	stack_t     uc_stack;    /* the stack used by this context */
-	mcontext_t  uc_mcontext; /* machine-specific representation */
+	sigset_t uc_sigmask;     /* blocked when this context is active */
+	stack_t uc_stack;        /* the stack used by this context */
+	mcontext_t uc_mcontext;  /* machine-specific representation */
 };
 typedef struct _ucontext ucontext_t;
 
@@ -143,19 +143,19 @@ static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
 
 extern sighandler_t signal(int signo, sighandler_t fn);
 extern int sigaction(int signo, const struct sigaction * /*restrict*/ act,
-		struct sigaction * /*restrict*/ oact);
+	struct sigaction * /*restrict*/ oact);
 
 extern int kill(int tid, int signo);
 extern int sigqueue(int tid, int signo, const union sigval value);
 extern int raise(int signo);
 
-//static inline int sigaction(int sig, const struct sigaction *act,
-		//struct sigaction *oact) { return -1; }
-//static inline int sigfillset(sigset_t *set)
+/*static inline int sigaction(int sig, const struct sigaction *act, */
+/*struct sigaction *oact) { return -1; } */
+/*static inline int sigfillset(sigset_t *set) */
 
 extern const char *const sys_siglist[];
 
-#define MINSIGSTKSZ	2048
+#define MINSIGSTKSZ 2048
 extern int sigaltstack(const stack_t *ss, stack_t *oss);
 
 __END_DECLS

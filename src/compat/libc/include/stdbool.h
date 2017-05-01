@@ -12,8 +12,9 @@
 
 #ifndef __cplusplus
 
-#if defined(__STDC__) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-//typedef _Bool bool;
+#if defined(__STDC__) && defined(__STDC_VERSION__) && \
+	__STDC_VERSION__ >= 199901L
+/*typedef _Bool bool; */
 #define bool _Bool
 
 #else

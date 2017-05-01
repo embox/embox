@@ -30,7 +30,7 @@ TEST_CASE("General") {
 	test_assert_emitted("abcdefg");
 }
 
-static void *low_run(void *arg) {
+static void * low_run(void *arg) {
 	test_emit('a');
 	mutex_lock(&m);
 	test_emit('b');
@@ -41,7 +41,7 @@ static void *low_run(void *arg) {
 	return NULL;
 }
 
-static void *high_run(void *arg) {
+static void * high_run(void *arg) {
 	test_emit('c');
 	mutex_lock(&m);
 	test_emit('e');

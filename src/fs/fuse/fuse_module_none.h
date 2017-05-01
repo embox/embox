@@ -10,7 +10,7 @@
 
 struct fuse_module;
 
-extern struct fuse_module *fuse_module_lookup(char *fuse_type);
+extern struct fuse_module * fuse_module_lookup(char *fuse_type);
 
 extern int fuse_module_mount(struct fuse_module *fm, char *dev, char *dest);
 

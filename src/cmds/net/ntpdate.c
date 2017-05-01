@@ -22,7 +22,7 @@
 #define MODOPS_TIMEOUT OPTION_GET(NUMBER, timeout)
 
 static int make_socket(const struct timeval *timeout, int *out_sock,
-		const struct sockaddr_in *addr_in) {
+	const struct sockaddr_in *addr_in) {
 	int ret, sock;
 
 	assert(timeout != NULL);
@@ -36,7 +36,7 @@ static int make_socket(const struct timeval *timeout, int *out_sock,
 	}
 
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-				timeout, sizeof *timeout)) {
+		timeout, sizeof *timeout)) {
 		ret = -errno;
 		close(sock);
 		assert(ret != 0);
@@ -44,7 +44,7 @@ static int make_socket(const struct timeval *timeout, int *out_sock,
 	}
 
 	if (-1 == connect(sock, (const struct sockaddr *)addr_in,
-				sizeof *addr_in)) {
+		sizeof *addr_in)) {
 		ret = -errno;
 		close(sock);
 		assert(ret != 0);
@@ -57,7 +57,7 @@ static int make_socket(const struct timeval *timeout, int *out_sock,
 }
 
 static int ntpdate_exec(struct ntphdr *req, in_addr_t server_addr,
-		const struct timeval *timeout, struct ntphdr *out_rep) {
+	const struct timeval *timeout, struct ntphdr *out_rep) {
 	int ret, sock;
 	struct sockaddr_in addr;
 
@@ -86,16 +86,17 @@ static int ntpdate_exec(struct ntphdr *req, in_addr_t server_addr,
 			goto error;
 		}
 	} while ((ret < sizeof *out_rep)
-			|| ntp_mode_client(out_rep));
+		|| ntp_mode_client(out_rep));
 
 	ret = 0;
 
-error:
+	error:
 	close(sock);
 	return ret;
 }
 
-static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_query) {
+static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr,
+	int only_query) {
 	int ret;
 	struct timespec ts;
 
@@ -103,7 +104,7 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 
 	if (!ntp_valid_stratum(rep)) {
 		printf("ntpdate_process: error: invalid stratum (%s)\n",
-				ntp_stratum_error(rep));
+			ntp_stratum_error(rep));
 		return 0; /* error: incorrect packet */
 	}
 
@@ -124,15 +125,15 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 		}
 
 		printf("server %s, stratum %hhd, offset %ld.%.6ld, delay %ld.%.6ld\n",
-				inet_ntoa(*(struct in_addr *)&addr),
-				rep->stratum,
-				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC,
-				delay.tv_sec, delay.tv_nsec / NSEC_PER_USEC);
+			inet_ntoa(*(struct in_addr *)&addr),
+			rep->stratum,
+			offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC,
+			delay.tv_sec, delay.tv_nsec / NSEC_PER_USEC);
 
 		printf("[%s] adjust time server %s offset %ld.%.6ld sec\n",
-				ctime(&ts.tv_sec),
-				inet_ntoa(*(struct in_addr *)&addr),
-				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC);
+			ctime(&ts.tv_sec),
+			inet_ntoa(*(struct in_addr *)&addr),
+			offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC);
 	}
 	else {
 		/* setup new time */
@@ -147,7 +148,7 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 }
 
 static int ntpdate(in_addr_t addr, const struct timeval *timeout,
-		int only_query) {
+	int only_query) {
 	int ret;
 	struct timespec ts;
 	struct ntphdr req, rep;
@@ -194,7 +195,7 @@ int main(int argc, char **argv) {
 		case 't': /* Maximum time waiting for a server response */
 			if (1 != sscanf(optarg, "%d", &timeout)) {
 				printf("%s: error: wrong -t argument %s\n",
-						argv[0], optarg);
+					argv[0], optarg);
 				return -EINVAL;
 			}
 			break;
@@ -207,7 +208,7 @@ int main(int argc, char **argv) {
 	}
 	else if (!inet_aton(argv[optind], (struct in_addr *)&addr)) {
 		printf("%s: error: invalid address %s\n", argv[0],
-				argv[optind]);
+			argv[optind]);
 		return -EINVAL;
 	}
 

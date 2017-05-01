@@ -21,8 +21,8 @@ int ftruncate(int fd, off_t length) {
 	int ret;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (idesc->idesc_ops != &idesc_file_ops)) {
+		|| (NULL == (idesc = index_descriptor_get(fd)))
+		|| (idesc->idesc_ops != &idesc_file_ops)) {
 		return SET_ERRNO(EBADF);
 	}
 

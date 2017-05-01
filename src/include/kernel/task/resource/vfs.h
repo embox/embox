@@ -8,7 +8,6 @@
 #ifndef FILE_TABLE_H_
 #define FILE_TABLE_H_
 
-
 #include <kernel/task.h>
 
 struct dentry;
@@ -18,10 +17,10 @@ struct task_vfs {
 	struct dentry *pwd;
 };
 
-extern struct task_vfs *task_resource_vfs(const struct task *task);
+extern struct task_vfs * task_resource_vfs(const struct task *task);
 
-extern struct task* task_self(void);
-static inline struct task_vfs *task_fs(void) {
+extern struct task * task_self(void);
+static inline struct task_vfs * task_fs(void) {
 	return task_resource_vfs(task_self());
 }
 

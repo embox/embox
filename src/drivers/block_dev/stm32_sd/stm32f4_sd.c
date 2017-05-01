@@ -15,9 +15,12 @@
 #include "stm32f4_discovery_sdio_sd.h"
 
 static int stm32f4_sd_init(void *arg);
-static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size);
-static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
-static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
+static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf,
+	size_t size);
+static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count,
+	blkno_t blkno);
+static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count,
+	blkno_t blkno);
 
 #define STM32F4_SD_DEVNAME "stm32f4_sd_card"
 #define SD_BUF_SIZE OPTION_GET(NUMBER, sd_buf_size)
@@ -35,7 +38,8 @@ BLOCK_DEV_DEF(STM32F4_SD_DEVNAME, &stm32f4_sd_driver);
 static int stm32f4_sd_init(void *arg) {
 	struct block_dev *bdev;
 	if (block_dev_lookup(STM32F4_SD_DEVNAME) && (SD_Init() == SD_OK)) {
-		bdev = block_dev_create_common(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
+		bdev = block_dev_create_common(STM32F4_SD_DEVNAME, &stm32f4_sd_driver,
+				NULL);
 		bdev->size = stm32f4_sd_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
 		return 0;
 	} else {
@@ -43,7 +47,8 @@ static int stm32f4_sd_init(void *arg) {
 	}
 }
 
-static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size) {
+static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf,
+	size_t size) {
 	SD_CardInfo info;
 	int res = SD_GetCardInfo(&info);
 
@@ -63,24 +68,25 @@ static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t s
 
 static uint8_t sd_buf[SD_BUF_SIZE];
 
-static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
+static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count,
+	blkno_t blkno) {
 	assert(count <= SD_BUF_SIZE);
 	int res;
 	size_t bsize = bdev->block_size;
-	res = SD_ReadBlock((uint8_t*) sd_buf, blkno * bsize, bsize) ? -1 : bsize;
-	while (SD_GetStatus() != SD_TRANSFER_OK);
+	res = SD_ReadBlock((uint8_t *) sd_buf, blkno * bsize, bsize) ? -1 : bsize;
+	while (SD_GetStatus() != SD_TRANSFER_OK) ;
 
 	memcpy(buf, sd_buf, bsize);
 	return res;
 }
 
-static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
+static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count,
+	blkno_t blkno) {
 	assert(count <= SD_BUF_SIZE);
 	int res;
 	size_t bsize = bdev->block_size;
 	memcpy(sd_buf, buf, bsize);
-	res = SD_WriteBlock((uint8_t*) sd_buf, blkno * bsize, bsize) ? -1 : bsize;
-	while (SD_GetStatus() != SD_TRANSFER_OK);
+	res = SD_WriteBlock((uint8_t *) sd_buf, blkno * bsize, bsize) ? -1 : bsize;
+	while (SD_GetStatus() != SD_TRANSFER_OK) ;
 	return res;
 }
-

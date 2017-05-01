@@ -14,7 +14,7 @@
 EMBOX_TEST_SUITE("stdlib/getopt test");
 
 TEST_CASE("We pass to getopt function both string arguments as \"-h\" "
-		"we expected that getopt find the 'h' option and return it") {
+		  "we expected that getopt find the 'h' option and return it") {
 	int opt;
 	char *argv[3];
 
@@ -29,8 +29,8 @@ TEST_CASE("We pass to getopt function both string arguments as \"-h\" "
 }
 
 TEST_CASE("We pass to getopt string  \"h\" as argv and \"a\" as ops "
-		"we expected that getopt return '?' because 'h' is a missing option"
-		" argument ") {
+		  "we expected that getopt return '?' because 'h' is a missing option"
+		  " argument ") {
 	int opt;
 	char *argv[3];
 
@@ -45,9 +45,9 @@ TEST_CASE("We pass to getopt string  \"h\" as argv and \"a\" as ops "
 }
 
 TEST_CASE("We pass to getopt string  \"-i 1\" as argv and \"i:\" as ops "
-		"it means that we pass option with the next parameter '1' "
-		"we expect that getopt returns 'i' option and puts \"1\" string to"
-		" optarg") {
+		  "it means that we pass option with the next parameter '1' "
+		  "we expect that getopt returns 'i' option and puts \"1\" string to"
+		  " optarg") {
 	int opt;
 	char *argv[4];
 
@@ -73,18 +73,20 @@ struct opt_snapshot {
 };
 
 static struct opt_snapshot * opt_snap_lookup(int code,
-		struct opt_snapshot snaps[], size_t snaps_sz) {
+	struct opt_snapshot snaps[], size_t snaps_sz) {
 	size_t i;
 
-	for (i = 0; i < snaps_sz; ++i)
-		if (snaps[i].code == code)
+	for (i = 0; i < snaps_sz; ++i) {
+		if (snaps[i].code == code) {
 			return &snaps[i];
+		}
+	}
 
 	return NULL;
 }
 
 static void getopt_test(int argc, char *argv[], const char *opts,
-		struct opt_snapshot snaps[], size_t snaps_sz) {
+	struct opt_snapshot snaps[], size_t snaps_sz) {
 	int ret;
 	struct opt_snapshot *snap;
 
@@ -103,54 +105,64 @@ static void getopt_test(int argc, char *argv[], const char *opts,
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command"
-		" without options and arguments") {
-	char *argv[] = { "prog" };
+		  " without options and arguments") {
+	char *argv[] = {
+		"prog"
+	};
 	struct opt_snapshot snaps[] = {
 		{ -1, 1, 0, 1, NULL }
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		" without options with many argument") {
-	char *argv[] = { "prog", "x", "y", "z" };
+		  " without options with many argument") {
+	char *argv[] = {
+		"prog", "x", "y", "z"
+	};
 	struct opt_snapshot snaps[] = {
 		{ -1, 1, 0, 1, NULL }
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		" with one option and without arguments") {
-	char *argv[] = { "prog", "-a" };
+		  " with one option and without arguments") {
+	char *argv[] = {
+		"prog", "-a"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 2, 0, 1, NULL },
 		{ -1, 2, 0, 1, NULL }
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		" with one option and many arguments") {
-	char *argv[] = { "prog", "-a", "x", "y", "z" };
+		  " with one option and many arguments") {
+	char *argv[] = {
+		"prog", "-a", "x", "y", "z"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 2, 0, 1, NULL },
 		{ -1, 2, 0, 1, NULL }
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		" with many single options and many arguments") {
-	char *argv[] = { "prog", "-ade", "-j", "x", "y", "z" };
+		  " with many single options and many arguments") {
+	char *argv[] = {
+		"prog", "-ade", "-j", "x", "y", "z"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 1, 0, 1, NULL },
 		{ 'd', 1, 0, 1, NULL },
@@ -160,13 +172,15 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		" with many options with argument and without arguments") {
-	char *argv[] = { "prog", "-abb_opt", "-c", "c_opt", "-def",
-			"f_opt", "-j" };
+		  " with many options with argument and without arguments") {
+	char *argv[] = {
+		"prog", "-abb_opt", "-c", "c_opt", "-def",
+		"f_opt", "-j"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 1, 0, 1, NULL },
 		{ 'b', 2, 0, 1, "b_opt" },
@@ -179,13 +193,15 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		" with many options with argument and with arguments") {
-	char *argv[] = { "prog", "-abb_opt", "-c", "c_opt", "-def",
-			"f_opt", "-j", "x", "y" };
+		  " with many options with argument and with arguments") {
+	char *argv[] = {
+		"prog", "-abb_opt", "-c", "c_opt", "-def",
+		"f_opt", "-j", "x", "y"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 1, 0, 1, NULL },
 		{ 'b', 2, 0, 1, "b_opt" },
@@ -198,13 +214,15 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		" with many options with argument and with arguments (shuffle)") {
-	char *argv[] = { "prog", "-abb_opt", "x", "-c", "c_opt", "-def",
-			"f_opt", "y", "-j", "z" };
+		  " with many options with argument and with arguments (shuffle)") {
+	char *argv[] = {
+		"prog", "-abb_opt", "x", "-c", "c_opt", "-def",
+		"f_opt", "y", "-j", "z"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 1, 0, 1, NULL },
 		{ 'b', 2, 0, 1, "b_opt" },
@@ -217,12 +235,14 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		" with single option and argument without spaces between them") {
-	char *argv[] = { "prog", "-ax", "-bb_opt", "y" };
+		  " with single option and argument without spaces between them") {
+	char *argv[] = {
+		"prog", "-ax", "-bb_opt", "y"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 1, 0, 1, NULL },
 		{ '?', 2, 120, 1, NULL },
@@ -231,11 +251,13 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command with separator") {
-	char *argv[] = { "prog", "-a", "-bb_opt", "--", "-f", "x" };
+	char *argv[] = {
+		"prog", "-a", "-bb_opt", "--", "-f", "x"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 2, 0, 1, NULL },
 		{ 'b', 3, 0, 1, "b_opt" },
@@ -243,11 +265,14 @@ TEST_CASE("Test opt_xxx_ valiables after command with separator") {
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }
 
-TEST_CASE("Test opt_xxx_ valiables after command with separator instead option") {
-	char *argv[] = { "prog", "-a", "-bb_opt", "-f", "--", "x" };
+TEST_CASE("Test opt_xxx_ valiables after command with separator instead option")
+{
+	char *argv[] = {
+		"prog", "-a", "-bb_opt", "-f", "--", "x"
+	};
 	struct opt_snapshot snaps[] = {
 		{ 'a', 2, 0, 1, NULL },
 		{ 'b', 3, 0, 1, "b_opt" },
@@ -256,5 +281,5 @@ TEST_CASE("Test opt_xxx_ valiables after command with separator instead option")
 	};
 
 	getopt_test(ARRAY_SIZE(argv), argv, "ab:c:def:j",
-			&snaps[0], ARRAY_SIZE(snaps));
+		&snaps[0], ARRAY_SIZE(snaps));
 }

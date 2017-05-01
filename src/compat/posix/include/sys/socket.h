@@ -36,24 +36,22 @@ struct msghdr {
 	void *msg_name;              /* optional address*/
 	socklen_t msg_namelen;       /* size of address */
 	struct iovec *msg_iov;       /* scatter/gather array */
-	int           msg_iovlen;    /* members in msg_iov */
+	int msg_iovlen;              /* members in msg_iov */
 	void         *msg_control;   /* ancillary data, see below */
-	socklen_t     msg_controllen;/* ancillary data buffer len */
-	int           msg_flags;     /* flags on received message */
+	socklen_t msg_controllen;    /* ancillary data buffer len */
+	int msg_flags;               /* flags on received message */
 };
 
-
 struct cmsghdr {
-	socklen_t     cmsg_len;       /* data byte count, including the cmsghdr */
-	int           cmsg_level;     /* originating protocol */
-	int           cmsg_type;      /* protocol-specific type */
+	socklen_t cmsg_len;           /* data byte count, including the cmsghdr */
+	int cmsg_level;               /* originating protocol */
+	int cmsg_type;                /* protocol-specific type */
 };
 
 struct linger {
-	int         l_onoff;          /* indicates whether linger option is enabled */
-	int         l_linger;         /* linger time, in seconds */
+	int l_onoff;                  /* indicates whether linger option is enabled */
+	int l_linger;                 /* linger time, in seconds */
 };
-
 
 /**
  * Supported protocol/address families
@@ -103,7 +101,6 @@ enum {
 	SOCK_PACKET    = 10, /* packet socket */
 	SOCK_TYPE_MAX        /* i.e. SOCK_PACKET + 1 */
 };
-
 
 /* POSIX descriptions
 SO_ACCEPTCONN    Socket is accepting connections.
@@ -164,7 +161,6 @@ SO_TYPE    Socket type.
 #define SO_POSIX_MAX    19
 /* }; */
 
-
 /* POSIX descriptions
 MSG_CTRUNC    Control data truncated.
 MSG_DONTROUTE    Send without using routing tables.
@@ -197,38 +193,33 @@ MSG_WAITALL    Wait for complete message.
 
 #define MSG_EOF       MSG_FIN
 
-
-
-
 /* Setsockoptions(2) level. Thanks to BSD these must match IPPROTO_xxx */
 #define SOL_SOCKET 1
 #define SOL_IP      0
-//#define SOL_ICMP    1   /* No-no-no! Due to Linux :-) we cannot use SOL_ICMP=1 */
+/*#define SOL_ICMP    1   / * No-no-no! Due to Linux :-) we cannot use SOL_ICMP=1 * / */
 #define SOL_TCP     6
 #define SOL_UDP     17
-//#define SOL_IPV6    41
-//#define SOL_ICMPV6  58
-//#define SOL_SCTP    132
-//#define SOL_UDPLITE 136 /* UDP-Lite (RFC 3828) */
+/*#define SOL_IPV6    41 */
+/*#define SOL_ICMPV6  58 */
+/*#define SOL_SCTP    132 */
+/*#define SOL_UDPLITE 136 / * UDP-Lite (RFC 3828) * / */
 #define SOL_RAW     255
-//#define SOL_IPX     256
-//#define SOL_AX25    257
-//#define SOL_ATALK   258
-//#define SOL_NETROM  259
-//#define SOL_ROSE    260
-//#define SOL_DECNET  261
-//#define SOL_X25     262
-//#define SOL_PACKET  263
-//#define SOL_ATM     264 /* ATM layer (cell level) */
-//#define SOL_AAL     265 /* ATM Adaption Layer (packet level) */
-//#define SOL_IRDA    266
-//#define SOL_NETBEUI 267
-//#define SOL_LLC     268
-//#define SOL_DCCP    269
-//#define SOL_NETLINK 270
-//#define SOL_TIPC    271
-
-
+/*#define SOL_IPX     256 */
+/*#define SOL_AX25    257 */
+/*#define SOL_ATALK   258 */
+/*#define SOL_NETROM  259 */
+/*#define SOL_ROSE    260 */
+/*#define SOL_DECNET  261 */
+/*#define SOL_X25     262 */
+/*#define SOL_PACKET  263 */
+/*#define SOL_ATM     264 / * ATM layer (cell level) * / */
+/*#define SOL_AAL     265 / * ATM Adaption Layer (packet level) * / */
+/*#define SOL_IRDA    266 */
+/*#define SOL_NETBEUI 267 */
+/*#define SOL_LLC     268 */
+/*#define SOL_DCCP    269 */
+/*#define SOL_NETLINK 270 */
+/*#define SOL_TIPC    271 */
 
 /* specified by libc */
 #define SHUT_RD   0 /* all receptions will be disallowed */
@@ -271,10 +262,10 @@ __BEGIN_DECLS
 /**
  * create an endpoint for communication.
  * @param protocol The protocol specifies a particular protocol to be used with the socket.
- * 	Normally only a single protocol exists to support a particular socket type within a
- * 	given protocol family, in which case protocol can be specified as 0.
+ *  Normally only a single protocol exists to support a particular socket type within a
+ *  given protocol family, in which case protocol can be specified as 0.
  * @return On success, a file descriptor for the new socket is returned.
- * 	On error, result < 0.
+ *  On error, result < 0.
  */
 extern int socket(int domain, int type, int protocol);
 
@@ -294,7 +285,8 @@ extern int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
  * @param daddrlen size of daddr
  * @return 0 on success. -1 on failure with errno indicating error.
  */
-extern int connect(int sockfd, const struct sockaddr *daddr, socklen_t daddrlen);
+extern int connect(int sockfd, const struct sockaddr *daddr,
+	socklen_t daddrlen);
 
 /**
  * mark socket as accepting connections
@@ -336,7 +328,7 @@ extern ssize_t send(int sockfd, const void *buf, size_t len, int flags);
  * @return the number of characters sent. -1 on failure with errno indicating error.
  */
 extern ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
-		const struct sockaddr *daddr, socklen_t daddrlen);
+	const struct sockaddr *daddr, socklen_t daddrlen);
 
 /**
  * send a message on a socket.
@@ -346,7 +338,7 @@ extern ssize_t sendto(int sockfd, const void *buf, size_t len, int flags,
  * @return the number of characters sent. -1 on failure with errno indicating error.
  */
 extern ssize_t sendmsg(int socket, const struct msghdr *message,
-		int flags);
+	int flags);
 
 /**
  * receive a message from a socket.
@@ -369,7 +361,7 @@ extern ssize_t recv(int sockfd, void *buf, size_t len, int flags);
  * @return the number of bytes received. -1 on failure with errno indicating error.
  */
 extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
-		struct sockaddr *daddr, socklen_t *daddrlen);
+	struct sockaddr *daddr, socklen_t *daddrlen);
 /**
  * receive a message from a socket.
  * @param sockfd socket descriptor
@@ -379,7 +371,7 @@ extern ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags,
  * @return the number of bytes received. -1 on failure with errno indicating error.
  */
 extern ssize_t recvmsg(int socket, struct msghdr *message,
-		int flags);
+	int flags);
 
 /**
  * shut down part of a full-duplex connection
@@ -390,10 +382,10 @@ extern ssize_t recvmsg(int socket, struct msghdr *message,
 extern int shutdown(int sockfd, int how);
 
 extern int getsockname(int sockfd, struct sockaddr *addr,
-		socklen_t *addrlen);
+	socklen_t *addrlen);
 
 extern int getpeername(int sockfd, struct sockaddr *addr,
-		socklen_t *addrlen);
+	socklen_t *addrlen);
 
 /**
  * get socket options
@@ -405,7 +397,7 @@ extern int getpeername(int sockfd, struct sockaddr *addr,
  * @return 0 on success. -1 on failure with errno indicating error.
  */
 extern int getsockopt(int sockfd, int level, int optname,
-		void *optval, socklen_t *optlen);
+	void *optval, socklen_t *optlen);
 
 /**
  * set socket options
@@ -417,7 +409,7 @@ extern int getsockopt(int sockfd, int level, int optname,
  * @return 0 on success. -1 on failure with errno indicating error.
  */
 extern int setsockopt(int sockfd, int level, int optname,
-		const void *optval, socklen_t optlen);
+	const void *optval, socklen_t optlen);
 
 __END_DECLS
 

@@ -5,7 +5,7 @@
  * @date 30.01.13
  * @author Andrey Gazukin
  * @author Anton Kozlov
- * 	-- output to file
+ *  -- output to file
  */
 
 #include <errno.h>
@@ -39,7 +39,7 @@ struct dd_param {
 
 struct dd_param_ent;
 typedef void (*dd_param_t)(const struct dd_param_ent *dpent,
-		struct dd_param *dp, const char *raw_val);
+	struct dd_param *dp, const char *raw_val);
 
 struct dd_param_ent {
 	const char *name;
@@ -84,12 +84,12 @@ static int write_stdout(char *buff, size_t size, unsigned int addr) {
 	((type) ((void *) dp + off))
 
 static void dd_param_type_int(const struct dd_param_ent *dpent,
-		struct dd_param *dp, const char *raw_val) {
+	struct dd_param *dp, const char *raw_val) {
 	*DP_FIELD(dp, dpent->offset, size_t *) = strtol(raw_val, NULL, 0);
 }
 
 static void dd_param_type_str(const struct dd_param_ent *dpent,
-		struct dd_param *dp, const char *raw_val) {
+	struct dd_param *dp, const char *raw_val) {
 	*DP_FIELD(dp, dpent->offset, const char **) = raw_val;
 }
 
@@ -109,11 +109,11 @@ static const struct dd_param_ent dd_param_list[] = {
 	DD_PARAM(format, dd_param_type_str)
 };
 
-static const struct dd_param_ent *dd_param_ent_find(const char *name) {
+static const struct dd_param_ent * dd_param_ent_find(const char *name) {
 	const struct dd_param_ent *dpent;
 	for (dpent = dd_param_list;
-			dpent < dd_param_list + ARRAY_SIZE(dd_param_list);
-			dpent++) {
+		dpent < dd_param_list + ARRAY_SIZE(dd_param_list);
+		dpent++) {
 		if (!strcmp(dpent->name, name)) {
 			return dpent;
 		}
@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
 		struct stat buff;
 
 		err = fstat(ifd, &buff);
-		if(err < 0) {
+		if (err < 0) {
 			goto out;
 		}
 		dp.count = buff.st_size;
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 		goto out_ofd_close;
 	}
 
-	if(0 == strcmp(dp.format, DD_FORMAT_HEX_C)) {
+	if (0 == strcmp(dp.format, DD_FORMAT_HEX_C)) {
 		format = 1;
 	}
 
@@ -220,8 +220,8 @@ int main(int argc, char **argv) {
 			goto out_cmd;
 		}
 
-		dp.skip --;
-	} while (dp.skip != 0);
+		dp.skip--;
+	} while (dp.skip != 0) ;
 
 	do {
 		unsigned int addr = 0;
@@ -237,21 +237,21 @@ int main(int argc, char **argv) {
 		}
 
 		n_write = format ? write_stdout(tbuf, n_read, addr) :
-				write(ofd, tbuf, n_read);
+			write(ofd, tbuf, n_read);
 		if (0 > n_write) {
 			err = -errno;
 			break;
 		}
 		addr += n_read;
-		dp.count --;
+		dp.count--;
 	} while (dp.count != 0);
 
-out_cmd:
+	out_cmd:
 	free(tbuf);
-out_ofd_close:
+	out_ofd_close:
 	close(ofd);
-out_ifd_close:
+	out_ifd_close:
 	close(ifd);
-out:
+	out:
 	return err;
 }

@@ -45,10 +45,10 @@ static void infinite(void) {
 
 TEST_CASE("context switch test") {
 	context_init(&entry_context, CONTEXT_PRIVELEGED,
-			entry, entry_stack + STACK_SZ);
+		entry, entry_stack + STACK_SZ);
 
 	context_init(&infinite_context, CONTEXT_PRIVELEGED,
-			infinite, infinite_stack + STACK_SZ);
+		infinite, infinite_stack + STACK_SZ);
 
 	TRACE("test begin\n");
 	context_switch(&redundant_context, &entry_context);

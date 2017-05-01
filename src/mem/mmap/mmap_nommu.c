@@ -47,13 +47,15 @@ void mmap_clear(struct emmap *mmap) {
 	}
 }
 
-struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
+struct marea * mmap_place_marea(struct emmap *mmap, uint32_t start,
+	uint32_t end, uint32_t flags) {
 	struct marea *marea;
 
 	start = MAREA_ALIGN_DOWN(start);
 	end   = MAREA_ALIGN_UP(end);
 
-	if (!(INSIDE(start, mem_start, mem_end) && INSIDE(end, mem_start, mem_end))) {
+	if (!(INSIDE(start, mem_start,
+		mem_end) && INSIDE(end, mem_start, mem_end))) {
 		return NULL;
 	}
 
@@ -80,7 +82,8 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 	return marea;
 }
 
-struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) {
+struct marea * mmap_alloc_marea(struct emmap *mmap, size_t size,
+	uint32_t flags) {
 	struct dlist_head *item = &glob_list;
 	uint32_t s_ptr = mem_start;
 	struct marea *marea;
@@ -99,7 +102,7 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 
 		marea = dlist_entry(item, struct marea, glob_link);
 		s_ptr = marea->end;
-	} while(1);
+	} while (1);
 
 	return NULL;
 }
@@ -110,7 +113,7 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 
 static int init() {
 	/*
- 	 * Initializing this module early was lead to all except 32 pages
+	 * Initializing this module early was lead to all except 32 pages
 	 * belong to mmap_nommu, and I see no reason to do it. Anton Kozlov
 	 */
 
@@ -140,11 +143,12 @@ int mmap_kernel_inited(void) {
 	return 0;
 }
 
-struct emmap *mmap_early_emmap(void) {
+struct emmap * mmap_early_emmap(void) {
 	return NULL;
 }
 
-struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags, bool is_allocated) {
+struct marea * marea_create(uint32_t start, uint32_t end, uint32_t flags,
+	bool is_allocated) {
 	return NULL;
 }
 

@@ -10,17 +10,20 @@
 
 #include <fs/dvfs.h>
 
-int dvfs_xattr_get(const char *path, const char *name, char *value, size_t size) {
+int dvfs_xattr_get(const char *path, const char *name, char *value,
+	size_t size) {
 	struct lookup lu;
 	struct inode *inode;
 	int err;
 
-	if ((err = dvfs_lookup(path, &lu)))
+	if ((err = dvfs_lookup(path, &lu))) {
 		return SET_ERRNO(ENOSUPP);
+	}
 
 	inode = lookup->item->d_inode;
-	if (!inode->i_ops->getxattr)
+	if (!inode->i_ops->getxattr) {
 		return SET_ERRNO(ENOSUPP);
+	}
 
 	return 0;
 }

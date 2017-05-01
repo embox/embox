@@ -22,7 +22,7 @@
 static struct file_operations zero_ops;
 static struct idesc_ops idesc_cdev_zero_ops;
 
-static struct idesc *zero_open(struct inode *node, struct idesc *idesc) {
+static struct idesc * zero_open(struct inode *node, struct idesc *idesc) {
 	struct file *file;
 	file = dvfs_alloc_file();
 	if (!file) {
@@ -30,7 +30,7 @@ static struct idesc *zero_open(struct inode *node, struct idesc *idesc) {
 	}
 	*file = (struct file) {
 		.f_idesc  = {
-				.idesc_ops   = &idesc_cdev_zero_ops,
+			.idesc_ops   = &idesc_cdev_zero_ops,
 		},
 	};
 	return &file->f_idesc;
@@ -56,7 +56,8 @@ static ssize_t zero_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return ret_size;
 }
 
-static ssize_t zero_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t zero_write(struct idesc *desc, const struct iovec *iov,
+	int cnt) {
 	int i;
 	ssize_t ret_size;
 
@@ -69,7 +70,7 @@ static ssize_t zero_write(struct idesc *desc, const struct iovec *iov, int cnt) 
 }
 
 static struct file_operations zero_ops = {
-		.open = zero_open,
+	.open = zero_open,
 };
 
 static struct idesc_ops idesc_cdev_zero_ops = {

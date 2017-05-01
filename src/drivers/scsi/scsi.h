@@ -45,22 +45,22 @@ struct scsi_dev {
 
 struct scsi_cmd {
 	uint8_t scmd_opcode;
-	size_t  scmd_len;
-	void    (*scmd_fixup)(void *buf, struct scsi_dev *dev,
-			struct scsi_cmd *cmd);
+	size_t scmd_len;
+	void (*scmd_fixup)(void *buf, struct scsi_dev *dev,
+		struct scsi_cmd *cmd);
 	void    *scmd_obuf;
-	size_t  scmd_olen;
+	size_t scmd_olen;
 
-	size_t  scmd_lba;
+	size_t scmd_lba;
 };
 
 #define SCSI_CMD_OPCODE_INQUIRY 0x12
 struct scsi_cmd_inquiry {
-	uint8_t  sinq_opcode;
-	uint8_t  sinq_flags;
-	uint8_t  sinq_page_code;
+	uint8_t sinq_opcode;
+	uint8_t sinq_flags;
+	uint8_t sinq_page_code;
 	uint16_t sinq_alloc_length;
-	uint8_t  sinq_control;
+	uint8_t sinq_control;
 } __attribute__((packed));
 
 #define SCSI_INQIRY_DEVTYPE_MASK  0x1f
@@ -85,13 +85,13 @@ struct scsi_data_inquiry {
 
 #define SCSI_CMD_OPCODE_CAP10 0x25
 struct scsi_cmd_cap10 {
-	uint8_t  sc10_opcode;
-	uint8_t  sc10_obsolete;
+	uint8_t sc10_opcode;
+	uint8_t sc10_obsolete;
 	uint32_t sc10_block_addr;
-	uint8_t  sc10_reserve1;
-	uint8_t  sc10_reserve2;
-	uint8_t  sc10_pmi;
-	uint8_t  sc10_control;
+	uint8_t sc10_reserve1;
+	uint8_t sc10_reserve2;
+	uint8_t sc10_pmi;
+	uint8_t sc10_control;
 } __attribute__((packed));
 
 struct scsi_data_cap10 {
@@ -101,49 +101,48 @@ struct scsi_data_cap10 {
 
 #define SCSI_CMD_OPCODE_SENSE 0x03
 struct scsi_cmd_sense {
-	uint8_t  ssns_opcode;
-	uint8_t  ssns_desc;
-	uint8_t  ssns_reserve1;
-	uint8_t  ssns_reserve2;
-	uint8_t  ssns_alloc_length;
-	uint8_t  ssns_control;
+	uint8_t ssns_opcode;
+	uint8_t ssns_desc;
+	uint8_t ssns_reserve1;
+	uint8_t ssns_reserve2;
+	uint8_t ssns_alloc_length;
+	uint8_t ssns_control;
 } __attribute__((packed));
 
 #define SCSI_DATA_SENSE_KEY_MASK 0xf
 struct scsi_data_sense {
-	uint8_t  dsns_response;
-	uint8_t  dsns_obsolete;
-	uint8_t  dsns_key;
+	uint8_t dsns_response;
+	uint8_t dsns_obsolete;
+	uint8_t dsns_key;
 	uint32_t dnsn_information;
-	uint8_t  dsns_additional_len;
+	uint8_t dsns_additional_len;
 	uint32_t dnsn_spec_information;
-	uint8_t  dsns_additional_code;
-	uint8_t  dsns_additional_qualifier;
-	uint8_t  dsns_unit_code;
-	uint8_t  dsns_key_specific1;
-	uint8_t  dsns_key_specific2;
-	uint8_t  dsns_key_specific3;
+	uint8_t dsns_additional_code;
+	uint8_t dsns_additional_qualifier;
+	uint8_t dsns_unit_code;
+	uint8_t dsns_key_specific1;
+	uint8_t dsns_key_specific2;
+	uint8_t dsns_key_specific3;
 } __attribute__((packed));
 
 #define SCSI_CMD_OPCODE_READ10 0x28
 struct scsi_cmd_read10 {
-	uint8_t  sr10_opcode;
-	uint8_t  sr10_flags;
+	uint8_t sr10_opcode;
+	uint8_t sr10_flags;
 	uint32_t sr10_lba;
-	uint8_t  sr10_grpnum;
+	uint8_t sr10_grpnum;
 	uint16_t sr10_transfer_len;
-	uint8_t  sr10_control;
+	uint8_t sr10_control;
 } __attribute__((packed));
-
 
 #define SCSI_CMD_OPCODE_WRITE10 0x2A
 struct scsi_cmd_write10 {
-	uint8_t  sw10_opcode;
-	uint8_t  sw10_flags;
+	uint8_t sw10_opcode;
+	uint8_t sw10_flags;
 	uint32_t sw10_lba;
-	uint8_t  sw10_grpnum;
+	uint8_t sw10_grpnum;
 	uint16_t sw10_transfer_len;
-	uint8_t  sw10_control;
+	uint8_t sw10_control;
 } __attribute__((packed));
 
 extern const struct scsi_cmd scsi_cmd_template_inquiry;
@@ -170,4 +169,3 @@ extern void scsi_disk_found(struct scsi_dev *dev);
 extern void scsi_disk_lost(struct scsi_dev *dev);
 
 #endif /* SCSI_H_ */
-

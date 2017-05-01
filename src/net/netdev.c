@@ -13,7 +13,6 @@
 #include <string.h>
 #include <errno.h>
 
-
 #include <util/hashtable.h>
 #include <util/dlist.h>
 #include <util/indexator.h>
@@ -53,7 +52,7 @@ struct hashtable *netdevs_table = &nd_ht;
 POOL_DEF(netdev_htitem_pool, struct hashtable_item, MODOPS_NETDEV_QUANTITY);
 
 static int netdev_init(struct net_device *dev, const char *name,
-		int (*setup)(struct net_device *), size_t priv_size) {
+	int (*setup)(struct net_device *), size_t priv_size) {
 	assert(dev != NULL);
 	assert(name != NULL);
 	assert(setup != NULL);
@@ -77,7 +76,7 @@ static int netdev_init(struct net_device *dev, const char *name,
 }
 
 struct net_device * netdev_alloc(const char *name,
-		int (*setup)(struct net_device *), size_t priv_size) {
+	int (*setup)(struct net_device *), size_t priv_size) {
 	int ret;
 	struct net_device *dev;
 
@@ -205,7 +204,7 @@ int netdev_set_macaddr(struct net_device *dev, const void *addr) {
 
 	assert(dev->ops != NULL);
 	if ((dev->ops->check_addr != NULL)
-			&& !dev->ops->check_addr(addr)) {
+		&& !dev->ops->check_addr(addr)) {
 		return -EINVAL; /* error: bad address */
 	}
 
@@ -289,7 +288,7 @@ int netdev_set_mtu(struct net_device *dev, int mtu) {
 
 	assert(dev->ops != NULL);
 	if ((dev->ops->check_mtu != NULL)
-			&& !dev->ops->check_mtu(mtu)) {
+		&& !dev->ops->check_mtu(mtu)) {
 		return -EINVAL; /* error: bad mtu value */
 	}
 

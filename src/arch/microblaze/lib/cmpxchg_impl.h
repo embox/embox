@@ -17,7 +17,7 @@
 
 /* FIXME pseudo cmpxchg */
 static inline unsigned long cmpxchg(unsigned long *ptr,
-		unsigned long old_val, unsigned long new_val) {
+	unsigned long old_val, unsigned long new_val) {
 	unsigned long ret;
 
 	ret = *ptr;

@@ -16,7 +16,8 @@ int mutexattr_init(struct mutexattr *attr) {
 	return ENOERR;
 }
 
-int mutexattr_copy(const struct mutexattr *source_attr, struct mutexattr *dest_attr) {
+int mutexattr_copy(const struct mutexattr *source_attr,
+	struct mutexattr *dest_attr) {
 	dest_attr->type = source_attr->type;
 
 	return ENOERR;

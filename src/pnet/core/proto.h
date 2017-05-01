@@ -34,8 +34,8 @@ typedef struct pnet_proto {
 } *pnet_proto_t;
 
 #define __ACCESSOR(pref, res_type, fun) \
-	static inline res_type pref##fun(struct net_node *node) { \
-		return (node->proto ? node->proto->actions.fun : NULL);\
+	static inline res_type pref ## fun(struct net_node *node) { \
+		return (node->proto ? node->proto->actions.fun : NULL); \
 	}
 
 __ACCESSOR(pnet_proto_, net_hnd, rx_hnd)

@@ -16,7 +16,7 @@
 #include <netinet/in.h>
 
 void udp_build(struct udphdr *udph, in_port_t src_prt,
-		in_port_t dst_prt, uint16_t len) {
+	in_port_t dst_prt, uint16_t len) {
 	assert(udph != NULL);
 	udph->source = src_prt;
 	udph->dest = dst_prt;
@@ -25,7 +25,7 @@ void udp_build(struct udphdr *udph, in_port_t src_prt,
 }
 
 void udp4_set_check_field(struct udphdr *udph,
-		const struct iphdr *iph) {
+	const struct iphdr *iph) {
 	struct ip_pseudohdr ipph;
 
 	assert(udph != NULL);
@@ -38,7 +38,7 @@ void udp4_set_check_field(struct udphdr *udph,
 }
 
 void udp6_set_check_field(struct udphdr *udph,
-		const struct ip6hdr *ip6h) {
+	const struct ip6hdr *ip6h) {
 	struct ip6_pseudohdr ip6ph;
 
 	assert(udph != NULL);

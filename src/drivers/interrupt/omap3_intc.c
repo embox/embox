@@ -37,14 +37,22 @@ EMBOX_UNIT_INIT(omap3_intc_init);
 #define OMAP35X_INTC_IRQ_PRIORITY   (OMAP35X_INTC_BASE + 0x00000060) /* SPURIOUSIRQFLAG 31:6b, IRQPRIORITY 5:0b */
 #define OMAP35X_INTC_FIQ_PRIORITY   (OMAP35X_INTC_BASE + 0x00000064) /* SPURIOUSFIQFLAG 31:6b, FIQPRIORITY 5:0b */
 #define OMAP35X_INTC_THRESHOLD      (OMAP35X_INTC_BASE + 0x00000068) /* PRIORITYTHRESHOLD 7:0b */
-#define OMAP35X_INTC_ITR(n)         (OMAP35X_INTC_BASE + 0x00000080 + (n) * 0x20) /* ITR 31:0b */
-#define OMAP35X_INTC_MIR(n)         (OMAP35X_INTC_BASE + 0x00000084 + (n) * 0x20) /* MIR 31:0b */
-#define OMAP35X_INTC_MIR_CLEAR(n)   (OMAP35X_INTC_BASE + 0x00000088 + (n) * 0x20) /* MIRCLEAR 31:0b */
-#define OMAP35X_INTC_MIR_SET(n)     (OMAP35X_INTC_BASE + 0x0000008C + (n) * 0x20) /* MIRSET 31:0b */
-#define OMAP35X_INTC_ISR_SET(n)     (OMAP35X_INTC_BASE + 0x00000090 + (n) * 0x20) /* ISRSET 31:0b */
-#define OMAP35X_INTC_ISR_CLEAR(n)   (OMAP35X_INTC_BASE + 0x00000094 + (n) * 0x20) /* ISRCLEAR 31:0b */
-#define OMAP35X_INTC_PENDING_IRQ(n) (OMAP35X_INTC_BASE + 0x00000098 + (n) * 0x20) /* PENDINGIRQ 31:0b */
-#define OMAP35X_INTC_PENDING_FIQ(n) (OMAP35X_INTC_BASE + 0x0000009C + (n) * 0x20) /* PENDINGFIQ 31:0b */
+#define OMAP35X_INTC_ITR(n)         (OMAP35X_INTC_BASE + 0x00000080 + (n) * \
+	0x20)                                                                         /* ITR 31:0b */
+#define OMAP35X_INTC_MIR(n)         (OMAP35X_INTC_BASE + 0x00000084 + (n) * \
+	0x20)                                                                         /* MIR 31:0b */
+#define OMAP35X_INTC_MIR_CLEAR(n)   (OMAP35X_INTC_BASE + 0x00000088 + (n) * \
+	0x20)                                                                         /* MIRCLEAR 31:0b */
+#define OMAP35X_INTC_MIR_SET(n)     (OMAP35X_INTC_BASE + 0x0000008C + (n) * \
+	0x20)                                                                         /* MIRSET 31:0b */
+#define OMAP35X_INTC_ISR_SET(n)     (OMAP35X_INTC_BASE + 0x00000090 + (n) * \
+	0x20)                                                                         /* ISRSET 31:0b */
+#define OMAP35X_INTC_ISR_CLEAR(n)   (OMAP35X_INTC_BASE + 0x00000094 + (n) * \
+	0x20)                                                                         /* ISRCLEAR 31:0b */
+#define OMAP35X_INTC_PENDING_IRQ(n) (OMAP35X_INTC_BASE + 0x00000098 + (n) * \
+	0x20)                                                                         /* PENDINGIRQ 31:0b */
+#define OMAP35X_INTC_PENDING_FIQ(n) (OMAP35X_INTC_BASE + 0x0000009C + (n) * \
+	0x20)                                                                         /* PENDINGFIQ 31:0b */
 #define OMAP35X_INTC_ILR(m)         (OMAP35X_INTC_BASE + 0x00000100 + (m) * 0x4) /* PRIORITY 7:2b, FIQNIRQ 0b */
 
 #define INTC_SYSCONFIG_RESET (1 << 1)
@@ -70,18 +78,17 @@ void software_init_hook(void) {
 	REG_STORE(OMAP35X_INTC_ISR_SET(2), 0);
 }
 
-
 static int omap3_intc_init(void) {
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
-			(void*) (OMAP35X_INTC_BASE & ~MMU_PAGE_MASK),
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			binalign_bound(
-				OMAP35X_INTC_ILR(__IRQCTRL_IRQS_TOTAL) - OMAP35X_INTC_BASE,
-				MMU_PAGE_MASK),
-			MAP_FIXED,
-			OMAP35X_INTC_BASE & ~MMU_PAGE_MASK
-			);
+		(void *) (OMAP35X_INTC_BASE & ~MMU_PAGE_MASK),
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		binalign_bound(
+		OMAP35X_INTC_ILR(__IRQCTRL_IRQS_TOTAL) - OMAP35X_INTC_BASE,
+		MMU_PAGE_MASK),
+		MAP_FIXED,
+		OMAP35X_INTC_BASE & ~MMU_PAGE_MASK
+	);
 
 	return 0;
 }
@@ -91,27 +98,33 @@ static int omap3_intc_init(void) {
  * else -- register n
  */
 void irqctrl_enable(unsigned int interrupt_nr) {
-	REG_STORE(OMAP35X_INTC_MIR_CLEAR(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
+	REG_STORE(OMAP35X_INTC_MIR_CLEAR(interrupt_nr >> 5),
+		1 << (interrupt_nr & 0x1f));
 }
 
 void irqctrl_disable(unsigned int interrupt_nr) {
-	REG_STORE(OMAP35X_INTC_MIR_SET(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
+	REG_STORE(OMAP35X_INTC_MIR_SET(
+		interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
 void irqctrl_clear(unsigned int interrupt_nr) {
-	REG_STORE(OMAP35X_INTC_ISR_CLEAR(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
+	REG_STORE(OMAP35X_INTC_ISR_CLEAR(interrupt_nr >> 5),
+		1 << (interrupt_nr & 0x1f));
 }
 
 void irqctrl_force(unsigned int interrupt_nr) {
-	REG_STORE(OMAP35X_INTC_ISR_SET(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
+	REG_STORE(OMAP35X_INTC_ISR_SET(
+		interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 }
 
 int irqctrl_pending(unsigned int interrupt_nr) {
-	return REG_LOAD(OMAP35X_INTC_PENDING_IRQ(interrupt_nr >> 5)) & 1 << (interrupt_nr & 0x1f);
+	return REG_LOAD(OMAP35X_INTC_PENDING_IRQ(interrupt_nr >> 5)) & 1 <<
+		   (interrupt_nr & 0x1f);
 }
 
 void interrupt_handle(void) {
-	unsigned int irq = REG_LOAD(OMAP35X_INTC_SIR_IRQ) & INTC_SIR_IRQ_ACTIVE_MASK;
+	unsigned int irq = REG_LOAD(OMAP35X_INTC_SIR_IRQ) &
+		INTC_SIR_IRQ_ACTIVE_MASK;
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
@@ -136,4 +149,3 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	printk("swi!\n");
 }
-

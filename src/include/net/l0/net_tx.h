@@ -13,6 +13,6 @@
 #include <net/skbuff.h>
 
 extern int net_tx(struct sk_buff *skb,
-		struct net_header_info *hdr_info);
+	struct net_header_info *hdr_info);
 
 #endif /* NET_L0_NET_TX_ */

@@ -40,7 +40,6 @@ static int unit_init(void) {
 	return 0;
 }
 
-
 void irqctrl_enable(unsigned int interrupt_nr) {
 	uint32_t c0;
 

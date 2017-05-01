@@ -24,7 +24,7 @@
 static char buff[BUFF_SZ];
 
 static int send_req(struct pop3_session *p3s,
-		const char *command_fmt, va_list command_args) {
+	const char *command_fmt, va_list command_args) {
 	int res;
 	char *req;
 	size_t req_len;
@@ -85,7 +85,7 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 	if ((rep_len == 0) && (end == NULL)) {
 		p3s->ok = 0;
 		snprintf(&p3s->status[0], ARRAY_SIZE(p3s->status), "%s",
-				"recv_rep: status buffer is full");
+			"recv_rep: status buffer is full");
 		return 0;
 	}
 
@@ -102,7 +102,7 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 	else {
 		p3s->ok = 0;
 		snprintf(&p3s->status[0], ARRAY_SIZE(p3s->status), "%s",
-				"recv_rep: illegal status code");
+			"recv_rep: illegal status code");
 		return 0;
 	}
 
@@ -142,7 +142,7 @@ static int recv_rep(struct pop3_session *p3s, int multiline) {
 }
 
 static int execute_cmd(struct pop3_session *p3s, int multiline,
-		const char *command_fmt, ...) {
+	const char *command_fmt, ...) {
 	int ret;
 	va_list command_args;
 
@@ -165,7 +165,7 @@ static int execute_cmd(struct pop3_session *p3s, int multiline,
 }
 
 int pop3_open(struct pop3_session *p3s, const char *host,
-		unsigned short port) {
+	unsigned short port) {
 	int ret, sock;
 	struct hostent *host_info;
 	struct sockaddr_in addr;
@@ -188,7 +188,7 @@ int pop3_open(struct pop3_session *p3s, const char *host,
 	addr.sin_family = host_info->h_addrtype;
 	addr.sin_port = htons(port);
 	memcpy(&addr.sin_addr, host_info->h_addr_list[0],
-			host_info->h_length);
+		host_info->h_length);
 
 	if (-1 == connect(sock, (struct sockaddr *)&addr, sizeof addr)) {
 		close(sock);
@@ -257,8 +257,8 @@ int pop3_list(struct pop3_session *p3s, int msg_or_any) {
 	}
 
 	return msg_or_any == POP3_MSG_ANY
-			? execute_cmd(p3s, 1, "LIST\r\n")
-			: execute_cmd(p3s, 0, "LIST %d\r\n", msg_or_any);
+		   ? execute_cmd(p3s, 1, "LIST\r\n")
+		   : execute_cmd(p3s, 0, "LIST %d\r\n", msg_or_any);
 }
 
 int pop3_retr(struct pop3_session *p3s, int msg) {
@@ -315,8 +315,8 @@ int pop3_uidl(struct pop3_session *p3s, int msg_or_any) {
 	}
 
 	return msg_or_any == POP3_MSG_ANY
-			? execute_cmd(p3s, 1, "UIDL\r\n")
-			: execute_cmd(p3s, 0, "UIDL %d\r\n", msg_or_any);
+		   ? execute_cmd(p3s, 1, "UIDL\r\n")
+		   : execute_cmd(p3s, 0, "UIDL %d\r\n", msg_or_any);
 }
 
 int pop3_user(struct pop3_session *p3s, const char *name) {
@@ -336,9 +336,9 @@ int pop3_pass(struct pop3_session *p3s, const char *secret) {
 }
 
 int pop3_apop(struct pop3_session *p3s, const char *name,
-		const char *secret, const char *salt) {
+	const char *secret, const char *salt) {
 	if ((p3s == NULL) || (name == NULL) || (secret == NULL)
-			|| (salt == NULL)) {
+		|| (salt == NULL)) {
 		return -EINVAL;
 	}
 

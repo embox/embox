@@ -20,7 +20,7 @@
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/sched_lock.h>
-#include <drivers/char_dev.h> //XXX
+#include <drivers/char_dev.h> /*XXX */
 #include <fs/node.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
@@ -55,7 +55,6 @@ static inline void tun_user_lock(struct tun *tun) {
 static inline void tun_user_unlock(struct tun *tun) {
 	mutex_unlock(&tun->mtx_use);
 }
-
 
 static int tun_xmit(struct net_device *dev, struct sk_buff *skb);
 static int tun_open(struct net_device *dev);
@@ -93,7 +92,8 @@ static int tun_setup(struct net_device *dev) {
 	return 0;
 }
 
-static int    tun_dev_open(struct node *node, struct file_desc *file_desc, int flags);
+static int    tun_dev_open(struct node *node, struct file_desc *file_desc,
+	int flags);
 static int    tun_dev_close(struct file_desc *desc);
 static size_t tun_dev_read(struct file_desc *desc, void *buf, size_t size);
 static size_t tun_dev_write(struct file_desc *desc, void *buf, size_t size);
@@ -104,7 +104,7 @@ static const struct kfile_operations tun_dev_file_ops = {
 	.close = tun_dev_close,
 };
 
-static inline struct net_device *tun_netdev_by_name(const char *name) {
+static inline struct net_device * tun_netdev_by_name(const char *name) {
 	int i;
 	for (i = 0; i < TUN_N; i++) {
 		if (0 == strcmp(tun_g_array[i]->name, name)) {
@@ -114,12 +114,12 @@ static inline struct net_device *tun_netdev_by_name(const char *name) {
 	return NULL;
 }
 
-static inline struct net_device *tun_netdev_by_node(const struct node *node) {
+static inline struct net_device * tun_netdev_by_node(const struct node *node) {
 	return tun_netdev_by_name(node->name);
 }
 
 static inline int tun_netdev_by_desc(const struct file_desc *fdesc,
-		struct net_device **netdev, struct tun **tun) {
+	struct net_device **netdev, struct tun **tun) {
 	*netdev = fdesc->file_info;
 	if (!*netdev) {
 		return -ENOENT;
@@ -128,7 +128,8 @@ static inline int tun_netdev_by_desc(const struct file_desc *fdesc,
 	return 0;
 }
 
-static struct idesc *tun_dev_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc * tun_dev_open(struct node *node,
+	struct file_desc *file_desc, int flags) {
 	struct net_device *netdev;
 	struct tun *tun;
 
@@ -279,11 +280,11 @@ static int tun_init(void) {
 
 	return 0;
 
-err_inetdev_deregister:
+	err_inetdev_deregister:
 	/* inetdev_deregister */
-err_netdev_free:
+	err_netdev_free:
 	netdev_free(tdev);
-err_deinit:
+	err_deinit:
 	tun_deinit();
 	return err;
 

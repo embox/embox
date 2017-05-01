@@ -38,5 +38,3 @@ TEST_CASE("sscanf should work with hex") {
 	test_assert_equal(a, 0x123a);
 	test_assert_equal(b, 0xb678);
 }
-
-

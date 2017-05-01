@@ -58,7 +58,9 @@ TEST_CASE("slist_init should have the same effect as static initializer") {
 }
 
 TEST_CASE("slist_link_init should have the same effect as static initializer") {
-	struct element e = { .lnk = SLIST_LINK_INIT(&e.lnk), .some_stuff = 42, };
+	struct element e = {
+		.lnk = SLIST_LINK_INIT(&e.lnk), .some_stuff = 42,
+	};
 	char buff[sizeof(e.lnk)];
 	memcpy(buff, &e.lnk, sizeof(e.lnk));
 	memset(&e.lnk, 0xA5, sizeof(e.lnk)); /* poison. */
@@ -74,7 +76,8 @@ TEST_CASE("slist_alone_link should return true for just initialized link") {
 	test_assert_true(slist_alone_link(&x.lnk));
 }
 
-TEST_CASE("slist_alone_element should return true for just initialized element") {
+TEST_CASE("slist_alone_element should return true for just initialized element")
+{
 	test_assert_true(slist_alone_element(&x, lnk));
 }
 
@@ -87,7 +90,7 @@ TEST_CASE("slist_first_link should return null for empty list") {
 }
 
 TEST_CASE("slist_add_first_element should make the list non empty "
-		"and the element not alone") {
+		  "and the element not alone") {
 	slist_add_first_element(&x, &m, lnk);
 
 	test_assert_false(slist_empty(&m));
@@ -95,7 +98,7 @@ TEST_CASE("slist_add_first_element should make the list non empty "
 }
 
 TEST_CASE("slist_add_first_link should make the list non empty "
-		"and the element's link not alone") {
+		  "and the element's link not alone") {
 	slist_add_first_link(&x.lnk, &m);
 
 	test_assert_false(slist_empty(&m));
@@ -103,14 +106,16 @@ TEST_CASE("slist_add_first_link should make the list non empty "
 }
 
 TEST_CASE("slist_first_link on a single element list "
-		"constructed using slist_add_first_element should return the element's link") {
+		  "constructed using slist_add_first_element should return the element's link")
+{
 	slist_add_first_element(&x, &m, lnk);
 
 	test_assert_equal(slist_first_link(&m), &x.lnk);
 }
 
 TEST_CASE("slist_first_link should return an "
-		"element which has been added with the last slist_add_first_element call") {
+		  "element which has been added with the last slist_add_first_element call")
+{
 	test_assert_not_equal(&x, &y);
 
 	slist_add_first_element(&x, &m, lnk);
@@ -124,7 +129,7 @@ TEST_CASE("slist_remove_first_element should return null for empty list") {
 }
 
 TEST_CASE("slist_remove_first_element on a single element list should return the "
-		"element and make the list empty and element alone again") {
+		  "element and make the list empty and element alone again") {
 	slist_add_first_element(&x, &m, lnk);
 
 	test_assert_equal(slist_remove_first_element(&m, struct element, lnk), &x);
@@ -134,7 +139,7 @@ TEST_CASE("slist_remove_first_element on a single element list should return the
 }
 
 TEST_CASE("slist_insert_after_element on a single element list should make "
-		"a new element the last one in the list") {
+		  "a new element the last one in the list") {
 	slist_add_first_element(&x, &m, lnk);
 
 	slist_insert_after_element(&y, &x, lnk);
@@ -143,7 +148,7 @@ TEST_CASE("slist_insert_after_element on a single element list should make "
 }
 
 TEST_CASE("slist_insert_after_element: inserting a new element after the first one "
-		"in a list of two elements should insert a new one between them") {
+		  "in a list of two elements should insert a new one between them") {
 	slist_add_first_element(&z, &m, lnk);
 	slist_add_first_element(&x, &m, lnk);
 

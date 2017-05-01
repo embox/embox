@@ -10,11 +10,11 @@
 
 #include <asm/flags.h>
 
-static inline void *cpu_get_stack(void) {
-	void * ret;
+static inline void * cpu_get_stack(void) {
+	void *ret;
 	__asm__ __volatile__ (
 		"mov %%esp, %0\n\t"
-		: "=r"(ret)
+		: "=r" (ret)
 	);
 	return ret;
 }

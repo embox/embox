@@ -14,7 +14,6 @@
 
 #include <security/smac/smac.h>
 
-
 extern int cmd_smac_adm_user_set(const char *name, const char *label);
 extern int cmd_smac_adm_user_get(const char *name, char *buf, size_t buflen);
 
@@ -45,7 +44,7 @@ static int print_rules(void) {
 }
 
 static int new_rule(const char *subject, const char *object,
-		const char *access) {
+	const char *access) {
 	int flags = 0;
 
 	flags |= strchr(access, 'r') ? S_IROTH  : 0;
@@ -93,7 +92,7 @@ int main(int argc, char *argv[]) {
 	while (-1 != (opt = getopt(argc, argv, "S:GFPR:U:o:a:h"))) {
 		enum action act = ACT_NONE;
 
-		switch(opt) {
+		switch (opt) {
 		case 'S':
 			act = ACT_SET;
 			label = optarg;
@@ -140,7 +139,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	switch(action) {
+	switch (action) {
 	case ACT_SET:
 		return smac_labelset(label);
 	case ACT_GET:

@@ -25,8 +25,8 @@ static DLIST_DEFINE(seculog_subscb_list);
 POOL_DEF(seculog_record_pool, struct seculog_record, RECORDS_N);
 POOL_DEF(seculog_rec_handle_pool, struct seculog_rec_handle, REC_HND_N);
 
-static struct seculog_record *seculog_record_alloc(seculog_label_t label,
-		const char *msg) {
+static struct seculog_record * seculog_record_alloc(seculog_label_t label,
+	const char *msg) {
 	struct seculog_record *rec;
 
 	if (NULL == (rec = pool_alloc(&seculog_record_pool))) {
@@ -90,16 +90,16 @@ int seculog_unsubscribe(struct seculog_subscb *subscb) {
 	return 0;
 }
 
-static struct seculog_rec_handle *seculog_rec_handle_alloc(struct seculog_record *rec) {
+static struct seculog_rec_handle * seculog_rec_handle_alloc(
+	struct seculog_record *rec) {
 	struct seculog_rec_handle *rech;
 
 	if (NULL != (rech = pool_alloc(&seculog_rec_handle_pool))) {
-//		return rech;
+/*		return rech; */
 
-
-	dlist_head_init(&rech->rh_lnk);
-	rech->record = rec;
-	seculog_record_inc_ref(rec);
+		dlist_head_init(&rech->rh_lnk);
+		rech->record = rec;
+		seculog_record_inc_ref(rec);
 	}
 
 	return rech;
@@ -112,7 +112,8 @@ static void seculog_rec_handle_free(struct seculog_rec_handle *rech) {
 	pool_free(&seculog_rec_handle_pool, rech);
 }
 
-static int seculog_cb_opend(struct seculog_subscb *subscb, struct seculog_record *rec) {
+static int seculog_cb_opend(struct seculog_subscb *subscb,
+	struct seculog_record *rec) {
 	struct seculog_desc *desc = (struct seculog_desc *) subscb;
 	struct seculog_rec_handle *rech;
 
@@ -163,4 +164,3 @@ int seculog_close(struct seculog_desc *desc) {
 
 	return seculog_unsubscribe(&desc->subscb);
 }
-

@@ -35,7 +35,7 @@ enum usb_spec_version {
 	USB_VER_UNKNOWN = 0,
 	USB_VER_USB11,
 	USB_VER_USB20,
-	USB_VER_USB30,	/* not supported yet */
+	USB_VER_USB30,  /* not supported yet */
 };
 
 /*
@@ -45,14 +45,14 @@ enum usb_spec_version {
  *  bits 7-31 are standard urb pipe.
  *
  *  - port number(NEW):	bits 0-4
- *  				(USB_MAXCHILDREN is 31)
+ *                  (USB_MAXCHILDREN is 31)
  *
  *  - operation flag(NEW):	bit 5
- *  				(0 = submit urb,
- *  				 1 = unlink urb)
+ *                  (0 = submit urb,
+ *                   1 = unlink urb)
  *
  *  - direction:		bit 7
- *  				(0 = Host-to-Device [Out]
+ *                  (0 = Host-to-Device [Out]
  *                           1 = Device-to-Host [In])
  *
  *  - device address:	bits 8-14
@@ -60,7 +60,7 @@ enum usb_spec_version {
  *  - endpoint:		bits 15-18
  *
  *  - pipe type:		bits 30-31
- *  				(00 = isochronous, 01 = interrupt,
+ *                  (00 = isochronous, 01 = interrupt,
  *                           10 = control, 11 = bulk)
  */
 #define usbif_pipeportnum(pipe) ((pipe) & 0x1f)
@@ -126,7 +126,8 @@ struct usbif_urb_response {
 };
 typedef struct usbif_urb_response usbif_urb_response_t;
 
-DEFINE_RING_TYPES(usbif_urb, struct usbif_urb_request, struct usbif_urb_response);
+DEFINE_RING_TYPES(usbif_urb, struct usbif_urb_request,
+	struct usbif_urb_response);
 #define USB_URB_RING_SIZE __CONST_RING_SIZE(usbif_urb, PAGE_SIZE)
 
 /*
@@ -144,7 +145,8 @@ struct usbif_conn_response {
 };
 typedef struct usbif_conn_response usbif_conn_response_t;
 
-DEFINE_RING_TYPES(usbif_conn, struct usbif_conn_request, struct usbif_conn_response);
+DEFINE_RING_TYPES(usbif_conn, struct usbif_conn_request,
+	struct usbif_conn_response);
 #define USB_CONN_RING_SIZE __CONST_RING_SIZE(usbif_conn, PAGE_SIZE)
 
 #endif /* __XEN_PUBLIC_IO_USBIF_H__ */

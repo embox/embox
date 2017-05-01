@@ -1,9 +1,9 @@
 #include <mem/phymem.h>
 #include <sys/mman.h>
 
-extern void *mmap_userspace_add(void *addr, size_t len, int prot);
+extern void * mmap_userspace_add(void *addr, size_t len, int prot);
 
-void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
+void * mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	if (len == 0) {
 		SET_ERRNO(EINVAL);
 		return NULL;

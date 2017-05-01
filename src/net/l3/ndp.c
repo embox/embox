@@ -22,7 +22,7 @@
 #include <string.h>
 
 static int ndp_xmit(struct sk_buff *skb,
-		struct net_device *dev) {
+	struct net_device *dev) {
 	struct net_header_info hdr_info;
 
 	assert(skb != NULL);
@@ -36,7 +36,7 @@ static int ndp_xmit(struct sk_buff *skb,
 }
 
 int ndp_send(uint8_t type, uint8_t code, const void *body,
-		size_t body_sz, struct net_device *dev) {
+	size_t body_sz, struct net_device *dev) {
 	struct sk_buff *skb;
 	struct in_device *in_dev;
 	struct in6_addr dst_ip6;
@@ -58,7 +58,7 @@ int ndp_send(uint8_t type, uint8_t code, const void *body,
 
 	inet_pton(AF_INET6, "ff02::1:ff02:10", &dst_ip6);
 	ip6_build(skb->nh.ip6h, ICMP6_MIN_HEADER_SIZE + body_sz,
-			IPPROTO_ICMPV6, 255, &in_dev->ifa6_address, &dst_ip6);
+		IPPROTO_ICMPV6, 255, &in_dev->ifa6_address, &dst_ip6);
 
 	icmp6_build(skb->h.icmp6h, type, code, body, body_sz);
 	icmp6_set_check_field(skb->h.icmp6h, skb->nh.ip6h);

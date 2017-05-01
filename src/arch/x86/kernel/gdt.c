@@ -14,7 +14,8 @@
 gdt_gate_t gdt[GDT_ENTRIES];
 static gdt_pointer_t gdt_ptr;
 
-void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit, uint8_t ac, uint8_t gran) {
+void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit, uint8_t ac,
+	uint8_t gran) {
 	gdt[nr].base_low    = base & 0xffff;
 	gdt[nr].base_med    = (base >> 16) & 0xff;
 	gdt[nr].base_high   = (base >> 24) & 0xff;
@@ -22,7 +23,7 @@ void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit, uint8_t ac, uint8_t
 	gdt[nr].limit_low   = limit & 0xffff;
 	gdt[nr].granularity = (limit >> 16) & 0x0F;
 
-	gdt[nr].granularity|= (gran & 0xF0);
+	gdt[nr].granularity |= (gran & 0xF0);
 	gdt[nr].access      = ac;
 }
 

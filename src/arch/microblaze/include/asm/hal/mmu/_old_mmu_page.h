@@ -49,8 +49,9 @@ int32_t __mmu_find_index(mmu_ctx_t ctx, vaddr_t vaddr) {
 	return index;
 }
 
-static inline void __set_mark(mmu_ctx_t ctx, vaddr_t vaddr, uint32_t clear_lomark,
-		uint32_t set_lomark, uint32_t clear_himark, uint32_t set_himark) {
+static inline void __set_mark(mmu_ctx_t ctx, vaddr_t vaddr,
+	uint32_t clear_lomark,
+	uint32_t set_lomark, uint32_t clear_himark, uint32_t set_himark) {
 	extern void get_utlb_record(int tlbx, uint32_t *tlblo, uint32_t *tlbhi);
 	extern void set_utlb_record(int tlbx, uint32_t tlblo, uint32_t tlbhi);
 
@@ -71,7 +72,7 @@ static inline void __set_mark(mmu_ctx_t ctx, vaddr_t vaddr, uint32_t clear_lomar
 	tlbhi |= set_himark;
 	tlblo |= set_lomark;
 
-	if (1) { //ctx == cur_ctx
+	if (1) { /*ctx == cur_ctx */
 		set_utlb_record(index, tlblo, tlbhi);
 	}
 
@@ -89,16 +90,20 @@ static inline void mmu_page_mark_cacheable(mmu_ctx_t ctx, vaddr_t vaddr) {
 	__set_mark(ctx, vaddr, 0, RTLBLO_WR_BIT, 0, 0);
 }
 
-static inline mmu_page_flags_t mmu_page_get_flags(mmu_ctx_t ctx, vaddr_t vaddr) {
+static inline mmu_page_flags_t mmu_page_get_flags(mmu_ctx_t ctx,
+	vaddr_t vaddr) {
 	extern mmu_env_t *cur_env;
 
-	__mmu_table_record_t *rec = &cur_env->utlb_table[__mmu_find_index(ctx, vaddr)];
+	__mmu_table_record_t *rec =
+		&cur_env->utlb_table[__mmu_find_index(ctx, vaddr)];
 	return (mmu_page_flags_t) rec->tlblo;
 }
 
 static inline void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
-						mmu_page_flags_t flags) {
-	__set_mark(ctx, vaddr, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE, flags, 0, 0);
+	mmu_page_flags_t flags) {
+	__set_mark(ctx, vaddr,
+		MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE,
+		flags, 0, 0);
 }
 
 static inline void mmu_page_mark_valid(mmu_ctx_t ctx, vaddr_t vaddr) {

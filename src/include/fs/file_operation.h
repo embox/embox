@@ -15,11 +15,12 @@ struct node;
 struct file_desc;
 
 struct kfile_operations {
-	struct idesc *(*open)(struct node *node, struct file_desc *file_desc, int flags);
-	int    (*close)(struct file_desc *desc);
+	struct idesc * (*open)(struct node *node, struct file_desc *file_desc,
+		int flags);
+	int (*close)(struct file_desc *desc);
 	size_t (*read)(struct file_desc *desc, void *buf, size_t size);
 	size_t (*write)(struct file_desc *desc, void *buf, size_t size);
-	int    (*ioctl)(struct file_desc *desc, int request, void *data);
+	int (*ioctl)(struct file_desc *desc, int request, void *data);
 };
 
 #endif /* FS_FILE_OPERATION_H_ */

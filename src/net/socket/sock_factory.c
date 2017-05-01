@@ -19,8 +19,8 @@
 #include <security/security.h>
 
 static struct sock * sock_alloc(
-		const struct sock_family_ops *f_ops,
-		const struct sock_proto_ops *p_ops) {
+	const struct sock_family_ops *f_ops,
+	const struct sock_proto_ops *p_ops) {
 	ipl_t sp;
 	struct sock *sk;
 	struct proto_sock *p_sk;
@@ -51,7 +51,7 @@ static struct sock * sock_alloc(
 	ipl_restore(sp);
 
 	assert(((p_sk == NULL) && (p_ops->sock_pool == NULL))
-			|| ((p_sk != NULL) && (p_ops->sock_pool != NULL)));
+		|| ((p_sk != NULL) && (p_ops->sock_pool != NULL)));
 
 	sk->p_sk = p_sk;
 	if (p_sk != NULL) {
@@ -68,8 +68,8 @@ static void sock_free(struct sock *sk) {
 	assert(sk->f_ops != NULL);
 	assert(sk->p_ops != NULL);
 	assert(((sk->p_sk == NULL) && (sk->p_ops->sock_pool == NULL))
-			|| ((sk->p_sk != NULL)
-				&& (sk->p_ops->sock_pool != NULL)));
+		|| ((sk->p_sk != NULL)
+		&& (sk->p_ops->sock_pool != NULL)));
 
 	sp = ipl_save();
 	{
@@ -82,7 +82,7 @@ static void sock_free(struct sock *sk) {
 }
 
 static void sock_opt_init(struct sock_opt *opt, int family,
-		int type, int protocol) {
+	int type, int protocol) {
 	static const struct timeval
 		default_rcvtimeo = SOCK_OPT_DEFAULT_RCVTIMEO,
 		default_sndtimeo = SOCK_OPT_DEFAULT_SNDTIMEO;
@@ -95,20 +95,20 @@ static void sock_opt_init(struct sock_opt *opt, int family,
 	opt->so_rcvbuf = SOCK_OPT_DEFAULT_RCVBUF;
 	opt->so_rcvlowat = SOCK_OPT_DEFAULT_RCVLOWAT;
 	memcpy(&opt->so_rcvtimeo, &default_rcvtimeo,
-			sizeof opt->so_rcvtimeo);
+		sizeof opt->so_rcvtimeo);
 	opt->so_sndbuf = SOCK_OPT_DEFAULT_SNDBUF;
 	opt->so_sndlowat = SOCK_OPT_DEFAULT_SNDLOWAT;
 	memcpy(&opt->so_sndtimeo, &default_sndtimeo,
-			sizeof opt->so_sndtimeo);
+		sizeof opt->so_sndtimeo);
 	opt->so_type = type;
 }
 
 extern const struct idesc_ops task_idx_ops_socket;
 
 static void sock_init(struct sock *sk, int family, int type,
-		int protocol, const struct sock_family_ops *f_ops,
-		const struct sock_proto_ops *p_ops,
-		const struct net_pack_out_ops *o_ops) {
+	int protocol, const struct sock_family_ops *f_ops,
+	const struct sock_proto_ops *p_ops,
+	const struct net_pack_out_ops *o_ops) {
 	assert(sk != NULL);
 	assert(f_ops != NULL);
 	assert(p_ops != NULL);
@@ -133,8 +133,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	security_sock_create(sk);
 }
 
-
-struct sock *sock_create(int family, int type, int protocol) {
+struct sock * sock_create(int family, int type, int protocol) {
 	int ret;
 	struct sock *new_sk;
 	const struct net_family *nfamily;
@@ -162,8 +161,8 @@ struct sock *sock_create(int family, int type, int protocol) {
 	}
 
 	sock_init(new_sk, family, type, nsock->protocol,
-			nftype->ops, nsock->ops,
-			nfamily->out_ops != NULL ? *nfamily->out_ops : NULL);
+		nftype->ops, nsock->ops,
+		nfamily->out_ops != NULL ? *nfamily->out_ops : NULL);
 
 	assert(new_sk->f_ops != NULL);
 	ret = new_sk->f_ops->init(new_sk);
@@ -183,7 +182,6 @@ struct sock *sock_create(int family, int type, int protocol) {
 
 	sock_hash(new_sk);
 
-
 	return new_sk;
 }
 
@@ -197,5 +195,3 @@ void sock_release(struct sock *sk) {
 	skb_queue_purge(&sk->tx_queue);
 	sock_free(sk);
 }
-
-

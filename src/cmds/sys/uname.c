@@ -28,8 +28,8 @@ struct uname_args {
 
 static int uname_args_not_empty(struct uname_args *args) {
 	return args->with_a || args->with_s || args->with_n || args->with_r
-			|| args->with_v || args->with_m || args->with_p || args->with_i
-			|| args->with_o;
+		   || args->with_v || args->with_m || args->with_p || args->with_i
+		   || args->with_o;
 }
 
 int main(int argc, char *argv[]) {
@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hasnrvmpio"))) {
-		switch(opt) {
+		switch (opt) {
 		default:
 			printf("Try '%s -h` for more information.", argv[0]);
 			return -EINVAL;
@@ -61,25 +61,40 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (!uname_args_not_empty(&args))
+	if (!uname_args_not_empty(&args)) {
 		args.with_s = 1;
+	}
 
 	uname(&info);
 	processor = NULL;
 	platform = OPTION_STRING_GET(platform);
 	system = OPTION_STRING_GET(system);
 
-	if (args.with_a || args.with_s) printf("%s ", info.sysname);
-	if (args.with_a || args.with_n) printf("%s ", info.nodename);
-	if (args.with_a || args.with_r) printf("%s ", info.release);
-	if (args.with_a || args.with_v) printf("%s ", info.version);
-	if (args.with_a || args.with_m) printf("%s ", info.machine);
+	if (args.with_a || args.with_s) {
+		printf("%s ", info.sysname);
+	}
+	if (args.with_a || args.with_n) {
+		printf("%s ", info.nodename);
+	}
+	if (args.with_a || args.with_r) {
+		printf("%s ", info.release);
+	}
+	if (args.with_a || args.with_v) {
+		printf("%s ", info.version);
+	}
+	if (args.with_a || args.with_m) {
+		printf("%s ", info.machine);
+	}
 
-	if ((args.with_a && processor) || args.with_p)
+	if ((args.with_a && processor) || args.with_p) {
 		printf("%s ", processor ? processor : "unknown");
-	if ((args.with_a && platform) || args.with_i)
+	}
+	if ((args.with_a && platform) || args.with_i) {
 		printf("%s ", platform ? platform : "unknown");
-	if (args.with_a || args.with_o) printf("%s ", system);
+	}
+	if (args.with_a || args.with_o) {
+		printf("%s ", system);
+	}
 	printf("\n");
 
 	return 0;

@@ -5,11 +5,11 @@
 
 struct ahci_hba {
 	uintptr_t base_addr;
-	uint32_t  nports;
+	uint32_t nports;
 };
 
-int register_ahci_hba(struct ahci_hba*);
-int unregister_ahci_hba(struct ahci_hba*);
-int enumerate_ahci_hba(int (*)(struct ahci_hba*, void*), void*);
+int register_ahci_hba(struct ahci_hba *);
+int unregister_ahci_hba(struct ahci_hba *);
+int enumerate_ahci_hba(int (*)(struct ahci_hba *, void *), void *);
 
 #endif

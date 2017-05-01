@@ -31,7 +31,7 @@ struct task_trampoline_arg {
 	void *run_arg;
 };
 
-struct task *task_self(void) {
+struct task * task_self(void) {
 	struct thread *th = thread_self();
 
 	assert(th);
@@ -101,7 +101,8 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 			goto out_threadfree;
 		}
 
-		task_init(self_task, tid, task_self(), name, thd, task_self()->tsk_priority);
+		task_init(self_task, tid, task_self(), name, thd,
+			task_self()->tsk_priority);
 
 		res = task_resource_inherit(self_task, task_self());
 		if (res != 0) {
@@ -118,13 +119,13 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 
 		goto out_unlock;
 
-out_tablefree:
+		out_tablefree:
 		task_table_del(tid);
 
-out_threadfree:
+		out_threadfree:
 		thread_terminate(thd);
 	}
-out_unlock:
+	out_unlock:
 	sched_unlock();
 
 	return res;
@@ -154,10 +155,10 @@ int task_start(struct task *task, void * (*run)(void *), void *arg) {
 		res = 0;
 
 		goto out_unlock;
-out_threadfree:
+		out_threadfree:
 		thread_terminate(thd);
 	}
-out_unlock:
+	out_unlock:
 	sched_unlock();
 
 	return res;
@@ -201,7 +202,8 @@ int task_prepare(const char *name) {
 			goto out_threadfree;
 		}
 
-		task_init(self_task, tid, task_self(), name, thd, task_self()->tsk_priority);
+		task_init(self_task, tid, task_self(), name, thd,
+			task_self()->tsk_priority);
 
 		res = task_resource_inherit(self_task, task_self());
 		if (res != 0) {
@@ -212,20 +214,20 @@ int task_prepare(const char *name) {
 
 		goto out_unlock;
 
-out_tablefree:
+		out_tablefree:
 		task_table_del(tid);
 
-out_threadfree:
+		out_threadfree:
 		thread_terminate(thd);
 	}
-out_unlock:
+	out_unlock:
 	sched_unlock();
 
 	return res;
 }
 
 void task_init(struct task *tsk, int id, struct task *parent, const char *name,
-		struct thread *main_thread, task_priority_t priority) {
+	struct thread *main_thread, task_priority_t priority) {
 	assert(tsk != NULL);
 	assert(binalign_check_bound((uintptr_t)tsk, sizeof(void *)));
 
@@ -319,12 +321,12 @@ void _NORETURN task_finish_exit(void) {
 	panic("Returning from task_exit()");
 }
 
-
 void _NORETURN task_exit(void *res) {
 
 	task_start_exit();
 
-	task_do_exit(task_self(), TASKST_EXITED_MASK | ((int) res & TASKST_EXITST_MASK));
+	task_do_exit(task_self(),
+		TASKST_EXITED_MASK | ((int) res & TASKST_EXITST_MASK));
 
 	task_finish_exit();
 }

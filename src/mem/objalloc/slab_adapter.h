@@ -19,7 +19,7 @@
 typedef struct cache __objalloc_t;
 
 static inline int objalloc_init(__objalloc_t *allocator, size_t objects_sz,
-		size_t objects_nr) {
+	size_t objects_nr) {
 	return cache_init(allocator, objects_sz, objects_nr);
 }
 

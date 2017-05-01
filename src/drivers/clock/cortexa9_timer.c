@@ -25,7 +25,7 @@
 #define PTIMER_LOAD      (PTIMER_BASE_ADDR + 0x00)
 #define PTIMER_COUNTER   (PTIMER_BASE_ADDR + 0x04)
 #define PTIMER_CONTROL   (PTIMER_BASE_ADDR + 0x08)
-#define PTIMER_IS	 (PTIMER_BASE_ADDR + 0x0C) /* Interrupt State Register */
+#define PTIMER_IS    (PTIMER_BASE_ADDR + 0x0C) /* Interrupt State Register */
 
 #define PTIMER_ENABLE             0x1
 #define PTIMER_AUTO_RELOAD        0x2
@@ -47,15 +47,15 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 static int this_init(void) {
 	clock_source_register(&this_clock_source);
 	return irq_attach(PTIMER_IRQ,
-	                  clock_handler,
-	                  0,
-	                  &this_clock_source,
-	                  "Cortex A9 systick timer");
+			clock_handler,
+			0,
+			&this_clock_source,
+			"Cortex A9 systick timer");
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_config(struct time_dev_conf *conf) {
 	uint32_t tmp;
-	uint8_t  prescaler = 1;
+	uint8_t prescaler = 1;
 
 	REG_STORE(PTIMER_LOAD, LOAD_VALUE);
 

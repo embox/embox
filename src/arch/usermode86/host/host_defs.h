@@ -16,7 +16,7 @@
 #define CONCAT(...) __VA_ARGS__
 
 #define HOST_FNX(_ret, _name, _decl, ...) \
-	_ret host_##_name (_decl) { \
+	_ret host_ ## _name(_decl) { \
 		static _ret (*fn_storage)(_decl); \
 		if (!fn_storage) { \
 			fn_storage = dlsym(RTLD_NEXT, # _name); \
@@ -25,4 +25,3 @@
 	}
 
 #endif /* __HOST_DEFS_H_ */
-

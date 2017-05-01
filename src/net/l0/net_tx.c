@@ -24,8 +24,8 @@
 #define LOG_LEVEL OPTION_GET(NUMBER, log_level)
 
 static int nt_build_hdr(struct sk_buff *skb,
-		struct net_header_info *hdr_info,
-		struct net_device *dev) {
+	struct net_header_info *hdr_info,
+	struct net_device *dev) {
 	int ret;
 	unsigned char dst_haddr[MAX_ADDR_LEN];
 
@@ -64,7 +64,7 @@ static int nt_build_hdr(struct sk_buff *skb,
 }
 
 int net_tx(struct sk_buff *skb,
-		struct net_header_info *hdr_info) {
+	struct net_header_info *hdr_info) {
 	int ret;
 	size_t skb_len;
 	struct net_device *dev;
@@ -85,15 +85,17 @@ int net_tx(struct sk_buff *skb,
 		ret = neighbour_send_after_resolve(hdr_info->type,
 				hdr_info->dst_p, hdr_info->p_len,
 				dev, skb);
-		if (ret != 0)
+		if (ret != 0) {
 			log_debug("net_tx: neighbour_send_after_resolve = %d\n", ret);
+		}
 
 		return ret;
 	}
 
 	skb_len = skb->len;
 
-	log_debug("net_tx: skb %p[%zu] type %#.6hx\n", skb, skb->len, ntohs(skb->mac.ethh->h_proto));
+	log_debug("net_tx: skb %p[%zu] type %#.6hx\n", skb, skb->len,
+		ntohs(skb->mac.ethh->h_proto));
 
 	/*
 	 * http://www.linuxfoundation.org/collaborate/workgroups/networking/kernel_flow#Transmission_path

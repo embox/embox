@@ -13,7 +13,6 @@
 #include <kernel/thread/waitq.h>
 #include <kernel/sched/schedee_priority.h>
 
-
 void mutex_init_schedee(struct mutex *m) {
 	waitq_init(&m->wq);
 	m->lock_count = 0;
@@ -50,12 +49,13 @@ void mutex_unlock_schedee(struct schedee *self, struct mutex *m) {
 void mutex_priority_inherit(struct schedee *self, struct mutex *m) {
 	int prior = schedee_priority_get(self);
 
-	if (prior != schedee_priority_inherit(m->holder, prior))
+	if (prior != schedee_priority_inherit(m->holder, prior)) {
 		schedee_priority_set(m->holder, prior);
+	}
 }
 
 void mutex_priority_uninherit(struct schedee *self) {
-	if (schedee_priority_get(self) != schedee_priority_reverse(self))
+	if (schedee_priority_get(self) != schedee_priority_reverse(self)) {
 		schedee_priority_set(self, schedee_priority_get(self));
+	}
 }
-

@@ -20,7 +20,7 @@ static struct mutex m;
 
 EMBOX_TEST_SUITE("Condition variable test");
 
-static void *low_run(void *arg) {
+static void * low_run(void *arg) {
 	test_emit('a');
 	test_assert_zero(thread_launch(high));
 	test_emit('d');
@@ -33,7 +33,7 @@ static void *low_run(void *arg) {
 	return NULL;
 }
 
-static void *high_run(void *arg) {
+static void * high_run(void *arg) {
 	test_emit('b');
 	mutex_lock(&m);
 	test_emit('c');

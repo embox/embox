@@ -67,7 +67,7 @@ int ring_buff_enqueue(struct ring_buff *buf, void *from_buf, int cnt) {
 	rest = cnt - written;
 	if (rest) {
 		written += __ring_buff_enqueue(buf, buf->storage,
-			(char *)from_buf + buf->elem_size * written, rest);
+				(char *)from_buf + buf->elem_size * written, rest);
 	}
 
 	return written;
@@ -102,14 +102,16 @@ int ring_buff_dequeue(struct ring_buff *buf, void *into_buf, int cnt) {
 
 	rest = cnt - read;
 	if (rest) {
-		read += __ring_buff_dequeue(buf, (char *)into_buf + buf->elem_size * read,
-			buf->storage, rest);
+		read += __ring_buff_dequeue(buf,
+				(char *)into_buf + buf->elem_size * read,
+				buf->storage, rest);
 	}
 
 	return read;
 }
 
-int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage) {
+int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count,
+	void *storage) {
 	ring_init(&buf->ring);
 	buf->capacity = count;
 	buf->storage = storage;

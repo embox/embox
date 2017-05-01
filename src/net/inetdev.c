@@ -165,7 +165,7 @@ struct in_device * inetdev_get_next(struct in_device *in_dev) {
 	}
 
 	if (in_dev == dlist_last_entry(&inetdev_list,
-				struct in_device, lnk)) {
+		struct in_device, lnk)) {
 		return NULL; /* error: there are no more devices */
 	}
 

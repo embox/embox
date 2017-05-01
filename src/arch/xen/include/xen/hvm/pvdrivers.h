@@ -1,7 +1,7 @@
 /*
  * pvdrivers.h: Register of PV drivers product numbers.
  * Copyright (c) 2012, Citrix Systems Inc.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -26,7 +26,7 @@
 
 /*
  * This is the master registry of product numbers for
- * PV drivers. 
+ * PV drivers.
  * If you need a new product number allocating, please
  * post to xen-devel@lists.xensource.com.  You should NOT use
  * a product number without allocating one.
@@ -39,11 +39,11 @@
  */
 
 #define PVDRIVERS_PRODUCT_LIST(EACH)                               \
-        EACH("xensource-windows",       0x0001) /* Citrix */       \
-        EACH("gplpv-windows",           0x0002) /* James Harper */ \
-        EACH("linux",                   0x0003)                    \
-        EACH("xenserver-windows-v7.0+", 0x0004) /* Citrix */       \
-        EACH("xenserver-windows-v7.2+", 0x0005) /* Citrix */       \
-        EACH("experimental",            0xffff)
+	EACH("xensource-windows",       0x0001)     /* Citrix */       \
+	EACH("gplpv-windows",           0x0002)     /* James Harper */ \
+	EACH("linux",                   0x0003)                    \
+	EACH("xenserver-windows-v7.0+", 0x0004)     /* Citrix */       \
+	EACH("xenserver-windows-v7.2+", 0x0005)     /* Citrix */       \
+	EACH("experimental",            0xffff)
 
 #endif /* _XEN_PUBLIC_PVDRIVERS_H_ */

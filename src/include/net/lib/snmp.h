@@ -31,8 +31,10 @@ struct varbind {
 };
 
 /* Functions for manipulating with SNMP */
-extern uint32_t snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet);
+extern uint32_t snmp_build(struct snmp_desc *snmp_desc,
+	const char *snmp_packet);
 /* Reverse operation for snmp_op_build */
-extern int snmp_parse(struct snmp_desc *snmp_desc, const char *snmp_recv, char *userbuf, size_t bufsize);
+extern int snmp_parse(struct snmp_desc *snmp_desc, const char *snmp_recv,
+	char *userbuf, size_t bufsize);
 
 #endif /* NET_LIB_SNMP_H_ */

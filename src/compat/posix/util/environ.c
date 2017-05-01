@@ -30,7 +30,7 @@ static size_t env_lookup(const char *name, char **vals, size_t next) {
 	for (i = 0; i < next; ++i) {
 		assert(vals[i] != NULL);
 		if ((strncmp(name, vals[i], name_len) == 0)
-				&& (vals[i][name_len] == '=')) {
+			&& (vals[i][name_len] == '=')) {
 			break;
 		}
 	}
@@ -43,7 +43,7 @@ char * getenv(const char *name) {
 	struct task_env *env;
 
 	if ((name == NULL) || (*name == '\0')
-			|| (strchr(name, '=') != NULL)) {
+		|| (strchr(name, '=') != NULL)) {
 		return NULL;
 	}
 
@@ -80,7 +80,7 @@ int putenv(char *string) {
 	str_len = strlen(string);
 
 	if ((str_len >= ARRAY_SIZE(env->storage[0]))
-			|| (index == ARRAY_SIZE(env->vals) - 1)) {
+		|| (index == ARRAY_SIZE(env->vals) - 1)) {
 		SET_ERRNO(ENOMEM);
 		return -1;
 	}
@@ -105,8 +105,8 @@ int setenv(const char *name, const char *value, int overwrite) {
 	struct task_env *env;
 
 	if ((name == NULL) || (*name == '\0')
-			|| (strchr(name, '=') != NULL)
-			|| (value == NULL)) {
+		|| (strchr(name, '=') != NULL)
+		|| (value == NULL)) {
 		SET_ERRNO(EINVAL);
 		return -1;
 	}
@@ -123,7 +123,7 @@ int setenv(const char *name, const char *value, int overwrite) {
 	val_len = strlen(value);
 
 	if ((name_len + val_len >= ARRAY_SIZE(env->storage[0]))
-			|| (index == ARRAY_SIZE(env->vals) - 1)) {
+		|| (index == ARRAY_SIZE(env->vals) - 1)) {
 		SET_ERRNO(ENOMEM);
 		return -1;
 	}
@@ -151,7 +151,7 @@ int unsetenv(const char *name) {
 	struct task_env *env;
 
 	if ((name == NULL) || (*name == '\0')
-			|| (strchr(name, '=') != NULL)) {
+		|| (strchr(name, '=') != NULL)) {
 		SET_ERRNO(EINVAL);
 		return -1;
 	}
@@ -166,9 +166,9 @@ int unsetenv(const char *name) {
 
 	--env->next;
 	memmove(&env->vals[index], &env->vals[index + 1],
-			(env->next - index) * sizeof env->vals[0]);
+		(env->next - index) * sizeof env->vals[0]);
 	memmove(&env->storage[index][0], &env->storage[index + 1][0],
-			(env->next - index) * ARRAY_SIZE(env->storage[0]));
+		(env->next - index) * ARRAY_SIZE(env->storage[0]));
 
 	if (env->next != 0) {
 		env->vals[env->next] = NULL;

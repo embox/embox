@@ -22,7 +22,7 @@ TEST_CASE("aligned size with red zone after an array") {
 	bitmap_clear_all(bitmap, TEST_ALINGED_SZ);
 
 	test_assert_equal(bitmap_find_first_bit(bitmap, TEST_ALINGED_SZ),
-			TEST_ALINGED_SZ /* not found */ );
+		TEST_ALINGED_SZ /* not found */ );
 }
 
 TEST_CASE("unaligned size") {
@@ -30,7 +30,7 @@ TEST_CASE("unaligned size") {
 
 	bitmap_clear_all(bitmap, TEST_UNALINGED_SZ);
 	test_assert_equal(bitmap_find_first_bit(bitmap, TEST_UNALINGED_SZ),
-			TEST_UNALINGED_SZ /* not found */ );
+		TEST_UNALINGED_SZ /* not found */ );
 
 	for (int i = TEST_UNALINGED_SZ-1; i >= 0; --i) {
 		bitmap_set_bit(bitmap, i);
@@ -54,7 +54,8 @@ TEST_CASE("find zero on 3 words") {
 
 				bitmap_clear_bit(bitmap, zero);
 				ans = start <= zero && zero < len ? zero : len;
-				test_assert_equal(ans, bitmap_find_zero_bit(bitmap, len, start));
+				test_assert_equal(ans,
+					bitmap_find_zero_bit(bitmap, len, start));
 				bitmap_set_bit(bitmap, zero);
 			}
 		}

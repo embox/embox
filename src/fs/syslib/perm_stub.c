@@ -20,11 +20,11 @@ int fs_perm_check(struct node *node, int fd_flags) {
 }
 
 int fs_perm_lookup(const char *path, const char **pathlast,
-		struct path *nodelast) {
+	struct path *nodelast) {
 	return 0;
 }
 
 int fs_perm_lookup_relative(const char *path, const char **pathlast,
-		struct path *nodelast) {
+	struct path *nodelast) {
 	return 0;
 }

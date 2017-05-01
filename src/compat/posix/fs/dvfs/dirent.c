@@ -26,7 +26,7 @@ static inline void fill_dirent(struct dirent *dirent, struct dentry *dentry) {
 	memcpy(dirent->d_name, dentry->name, DIRENT_DNAME_LEN);
 }
 
-DIR *opendir(const char *path) {
+DIR * opendir(const char *path) {
 	DIR *d;
 	struct lookup l;
 
@@ -64,7 +64,7 @@ int closedir(DIR *dir) {
 	return 0;
 }
 
-struct dirent *readdir(DIR *dir) {
+struct dirent * readdir(DIR *dir) {
 	struct lookup l;
 	struct dentry *prev;
 

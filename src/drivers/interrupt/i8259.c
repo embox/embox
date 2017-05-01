@@ -78,7 +78,7 @@ void irqctrl_disable(unsigned int irq) {
 }
 
 void irqctrl_force(unsigned int irq) {
-	// TODO Emm?.. -- Eldar
+	/* TODO Emm?.. -- Eldar */
 }
 
 int irqctrl_pending(unsigned int irq) {

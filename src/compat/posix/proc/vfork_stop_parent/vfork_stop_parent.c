@@ -16,11 +16,12 @@
 #include <kernel/task/resource/task_vfork.h>
 #include <kernel/thread/thread_sched_wait.h>
 
-static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo, void *context) {
+static void vfork_parent_signal_handler(int sig, siginfo_t *siginfo,
+	void *context) {
 	task_vfork_end(task_self());
 }
 
-static void *vfork_child_task(void *arg) {
+static void * vfork_child_task(void *arg) {
 	struct pt_regs *ptregs = arg;
 
 	ptregs_retcode_jmp(ptregs, 0);
@@ -59,7 +60,7 @@ static void vfork_waiting(void) {
 
 		task_start(child, vfork_child_task, &task_vfork->ptregs);
 
-		while (SCHED_WAIT(!task_is_vforking(parent)));
+		while (SCHED_WAIT(!task_is_vforking(parent))) ;
 	}
 	vfork_wait_signal_restore(&ochildsa);
 
@@ -85,7 +86,7 @@ int vfork_child_start(struct task *child) {
 	/* Set new stack and go to vfork_waiting */
 	if (!setjmp(task_vfork->env)) {
 		CONTEXT_JMP_NEW_STACK(vfork_waiting,
-				task_vfork->stack + VFORK_CTX_STACK_LEN);
+			task_vfork->stack + VFORK_CTX_STACK_LEN);
 	}
 
 	/* current stack was broken, can't reach any old data */
@@ -108,4 +109,3 @@ void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 		run(arg);
 	}
 }
-

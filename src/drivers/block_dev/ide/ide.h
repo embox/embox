@@ -188,7 +188,7 @@
 /*
  * Parameters returned by read drive parameters command
  */
-struct hdparam  {
+struct hdparam {
 	unsigned short config;               /* General configuration bits */
 	unsigned short cylinders;            /* Cylinders */
 	unsigned short reserved;
@@ -248,24 +248,24 @@ struct hdparam  {
 	unsigned short last_lun;             /* Reserved (word 126) */
 	unsigned short word127;              /* Reserved (word 127) */
 	unsigned short dlf;                  /* Device lock function
-										* 15:9  reserved
-										* 8     security level 1:max 0:high
-										* 7:6   reserved
-										* 5     enhanced erase
-										* 4     expire
-										* 3     frozen
-										* 2     locked
-										* 1     en/disabled
-										* 0     capability
-										*/
+	                                    * 15:9  reserved
+	                                    * 8     security level 1:max 0:high
+	                                    * 7:6   reserved
+	                                    * 5     enhanced erase
+	                                    * 4     expire
+	                                    * 3     frozen
+	                                    * 2     locked
+	                                    * 1     en/disabled
+	                                    * 0     capability
+	                                    */
 
 	unsigned short csfo;                 /* Current set features options
-										* 15:4 reserved
-										* 3      auto reassign
-										* 2      reverting
-										* 1      read-look-ahead
-										* 0      write cache
-										*/
+	                                    * 15:4 reserved
+	                                    * 3      auto reassign
+	                                    * 2      reverting
+	                                    * 1      read-look-ahead
+	                                    * 0      write cache
+	                                    */
 
 	unsigned short words130_155[26];     /* Reserved vendor words 130-155 */
 	unsigned short word156;
@@ -280,7 +280,7 @@ struct prd {
 	int len;
 };
 
-typedef struct hdc  {
+typedef struct hdc {
 	int status;                          /* Controller status */
 
 	int iobase;                          /* I/O port registers base address */
@@ -308,7 +308,7 @@ typedef struct dev_geometry {
 } dev_geometry_t;
 
 typedef struct hd {
-	int   idx;
+	int idx;
 	void *bdev;                /* Device */
 	hdc_t *hdc;                  /* Controller */
 	struct hdparam param;        /* Drive parameter block */
@@ -336,7 +336,7 @@ typedef struct ide_tab {
 
 extern struct indexator *idedisk_idx;
 
-extern struct ide_tab *ide_get_drive(void);
+extern struct ide_tab * ide_get_drive(void);
 extern int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout);
 extern void ide_select_drive(hd_t *hd);
 

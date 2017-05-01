@@ -13,10 +13,9 @@
 
 extern const struct idesc_ops task_idx_ops_socket;
 
-struct sock *idesc_sock_get(int idx) {
+struct sock * idesc_sock_get(int idx) {
 	struct idesc *idesc;
 	struct idesc_table *it;
-
 
 	assert(idesc_index_valid(idx));
 

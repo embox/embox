@@ -13,7 +13,8 @@
 
 typedef volatile uint32_t reg32_t;
 
-static inline void regcpy32(reg32_t *dst, const uint32_t *src, unsigned int _count) {
+static inline void regcpy32(reg32_t *dst, const uint32_t *src,
+	unsigned int _count) {
 	unsigned int count = _count;
 
 	while (count--) {

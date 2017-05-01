@@ -39,13 +39,13 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 
 void sched_ticker_init(void) {
 	if (timer_set(&sched_tick_timer, TIMER_PERIODIC, SCHED_TICK_INTERVAL,
-			sched_tick, NULL)) {
+		sched_tick, NULL)) {
 		panic("Scheduler initialization failed!\n");
 	}
 }
 
 void sched_ticker_fini(void) {
-	timer_close(sched_tick_timer);  // TODO err check?
+	timer_close(sched_tick_timer);  /* TODO err check? */
 }
 
 void sched_ticker_switch(int prev_policy, int next_policy) {
@@ -64,4 +64,3 @@ static int sched_ticker_module_init(void) {
 	sched_ticker_init();
 	return 0;
 }
-

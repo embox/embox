@@ -43,7 +43,8 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 	}
 
 	timetosleep = get_timetosleep(rqtp);
-	hw_cycles = timespec_to_hw(&timetosleep, nanosleep_cs->counter_device->cycle_hz);
+	hw_cycles = timespec_to_hw(&timetosleep,
+			nanosleep_cs->counter_device->cycle_hz);
 
 	start = clock_source_get_hwcycles(nanosleep_cs);
 	ms_tosleep = timetosleep.tv_sec * 1000 + timetosleep.tv_nsec / 1000000;
@@ -51,7 +52,8 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 		ksleep(ms_tosleep - 1);
 	}
 
-	remaining_cycles = (int64_t)hw_cycles - (clock_source_get_hwcycles(nanosleep_cs) - start);
+	remaining_cycles = (int64_t)hw_cycles -
+		(clock_source_get_hwcycles(nanosleep_cs) - start);
 
 	if (remaining_cycles > 0) {
 		int tmp;
@@ -67,13 +69,14 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 }
 
 void delay(int d) {
-	//FIXME delay must plase in linux/delay.h
+	/*FIXME delay must plase in linux/delay.h */
 
 }
 
 static void cs_nanospin(struct clock_source *cs, struct hw_time *hw) {
-	while(cs->jiffies < hw->jiffies);
-	while((cs->jiffies == hw->jiffies) && (cs->counter_device->read() <= hw->cycles));
+	while (cs->jiffies < hw->jiffies) ;
+	while ((cs->jiffies == hw->jiffies) &&
+		(cs->counter_device->read() <= hw->cycles)) ;
 }
 
 static inline struct timespec get_timetosleep(const struct timespec *rqtp) {
@@ -96,7 +99,9 @@ static inline struct timespec get_timetosleep(const struct timespec *rqtp) {
  */
 static int nanosleep_calibrate(void) {
 	uint64_t t, m;
-	const struct timespec rqtp = { .tv_sec = 0, .tv_nsec = 1 };
+	const struct timespec rqtp = {
+		.tv_sec = 0, .tv_nsec = 1
+	};
 
 	m = ktime_get_ns();
 	m = ktime_get_ns() - m;
@@ -104,7 +109,7 @@ static int nanosleep_calibrate(void) {
 	log_info("ktime_get_ns execution ns: %d", (int) m);
 
 	t = ktime_get_ns();
-	nanosleep(&rqtp, NULL); // calculate nanosleep overhead
+	nanosleep(&rqtp, NULL); /* calculate nanosleep overhead */
 	t = ktime_get_ns() - t;
 	nanosleep_waste_time.tv_nsec = t - m;
 
@@ -119,7 +124,8 @@ static int nanosleep_init(void) {
 		return -1;
 	}
 	nanosleep_cs_load =
-			nanosleep_cs->counter_device->cycle_hz / nanosleep_cs->event_device->event_hz;
+		nanosleep_cs->counter_device->cycle_hz /
+		nanosleep_cs->event_device->event_hz;
 
 	nanosleep_calibrate();
 

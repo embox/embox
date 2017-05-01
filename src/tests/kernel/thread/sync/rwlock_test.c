@@ -26,7 +26,7 @@ TEST_CASE("General") {
 	test_assert_emitted("abcdefghijk");
 }
 
-static void *low_run(void *arg) {
+static void * low_run(void *arg) {
 	test_emit('a');
 	rwlock_write_up(&r);
 	test_emit('b');
@@ -37,7 +37,7 @@ static void *low_run(void *arg) {
 	return NULL;
 }
 
-static void *mid_run(void *arg) {
+static void * mid_run(void *arg) {
 	test_emit('c');
 	rwlock_read_up(&r);
 	test_emit('e');
@@ -48,7 +48,7 @@ static void *mid_run(void *arg) {
 	return NULL;
 }
 
-static void *high_run(void *arg) {
+static void * high_run(void *arg) {
 	test_emit('f');
 	rwlock_read_up(&r);
 	test_emit('g');

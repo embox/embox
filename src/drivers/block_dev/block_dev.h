@@ -6,7 +6,6 @@
  * @author Andrey Gazukin
  */
 
-
 #ifndef BLOCK_DEV_H_
 #define BLOCK_DEV_H_
 
@@ -48,14 +47,16 @@ typedef struct block_dev_driver {
 	char *name;
 
 	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
-	int (*read)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
-	int (*write)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+	int (*read)(struct block_dev *bdev, char *buffer, size_t count,
+		blkno_t blkno);
+	int (*write)(struct block_dev *bdev, char *buffer, size_t count,
+		blkno_t blkno);
 
 	int (*probe)(void *args);
 } block_dev_driver_t;
 
 typedef struct block_dev_module {
-	const char * name;
+	const char *name;
 	block_dev_driver_t *dev_drv;
 } block_dev_module_t;
 
@@ -70,28 +71,33 @@ typedef struct block_dev_cache {
 	int buff_cntr;
 } block_dev_cache_t;
 
-
 struct indexator;
 struct block_dev;
 struct dev_module;
 
-extern struct block_dev *block_dev_create(char *name, void *driver, void *privdata);
-extern struct block_dev *block_dev(void *bdev);
+extern struct block_dev * block_dev_create(char *name, void *driver,
+	void *privdata);
+extern struct block_dev * block_dev(void *bdev);
 
-extern block_dev_cache_t *block_dev_cache_init(void *bdev, int blocks);
-extern block_dev_cache_t *block_dev_cached_read(void *bdev, blkno_t blkno);
-extern int block_dev_read(void *bdev, char *buffer, size_t count, blkno_t blkno);
-extern int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, size_t offset);
-extern int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t count, size_t offset);
-extern int block_dev_write(void *bdev, const char *buffer, size_t count, blkno_t blkno);
+extern block_dev_cache_t * block_dev_cache_init(void *bdev, int blocks);
+extern block_dev_cache_t * block_dev_cached_read(void *bdev, blkno_t blkno);
+extern int block_dev_read(void *bdev, char *buffer, size_t count,
+	blkno_t blkno);
+extern int block_dev_read_buffered(struct block_dev *bdev, char *buffer,
+	size_t count, size_t offset);
+extern int block_dev_write_buffered(struct block_dev *bdev, const char *buffer,
+	size_t count, size_t offset);
+extern int block_dev_write(void *bdev, const char *buffer, size_t count,
+	blkno_t blkno);
 extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(char *name, struct indexator *indexator);
-extern struct block_dev_module *block_dev_lookup(const char *name);
+extern struct block_dev_module * block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
-extern struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata);
-extern struct block_dev *block_dev_find(const char *bd_name);
+extern struct block_dev * block_dev_create_common(char *path, void *driver,
+	void *privdata);
+extern struct block_dev * block_dev_find(const char *bd_name);
 
 #include <util/array.h>
 
@@ -99,14 +105,15 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
 	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver})
 
-
 extern int block_devs_init(void);
 
 /* This part is actually just for dvfs */
 struct dev_module;
 extern int bdev_read_block(struct dev_module *devmod, void *buf, int blk);
 extern int bdev_write_block(struct dev_module *devmod, void *buf, int blk);
-extern int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk, int count);
-extern int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count);
+extern int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk,
+	int count);
+extern int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk,
+	int count);
 
 #endif /* BLOCK_DEV_H_ */

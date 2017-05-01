@@ -13,8 +13,8 @@
 
 /* Usermode entry data */
 struct ue_data {
-	void *ip; // instruction pointer
-	void *sp; // stack pointer
+	void *ip; /* instruction pointer */
+	void *sp; /* stack pointer */
 };
 
 /* Architecture-dependent functions */
@@ -48,7 +48,7 @@ extern void usermode_set_stack(void *sp);
  * Other information see in: include/kernel/thread.h
  */
 extern int user_thread_create(struct thread **p_thread, unsigned int flags,
-		void *ip, void *sp);
+	void *ip, void *sp);
 
 /*
  * Creates new usermode task.

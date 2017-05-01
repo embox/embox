@@ -18,7 +18,8 @@ static int ethernet_pattern_open(struct net_device *dev) {
 	return 0;
 }
 
-static int ethernet_pattern_set_macaddr(struct net_device *dev, const void *addr) {
+static int ethernet_pattern_set_macaddr(struct net_device *dev,
+	const void *addr) {
 	return 0;
 }
 

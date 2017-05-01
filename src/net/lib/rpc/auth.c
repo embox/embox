@@ -11,9 +11,9 @@
 #include <stddef.h>
 
 const struct opaque_auth __opaque_auth_null = {
-		.flavor = AUTH_NULL,
-		.data = NULL,
-		.data_len = 0
+	.flavor = AUTH_NULL,
+	.data = NULL,
+	.data_len = 0
 };
 
 void auth_destroy(struct auth *ath) {
@@ -32,7 +32,7 @@ int xdr_opaque_auth(struct xdr *xs, struct opaque_auth *oa) {
 
 	oa_flavor = oa->flavor;
 	if (!xdr_enum(xs, &oa_flavor)
-			|| !xdr_bytes(xs, &oa->data, &oa->data_len, AUTH_DATA_MAX_SZ)) {
+		|| !xdr_bytes(xs, &oa->data, &oa->data_len, AUTH_DATA_MAX_SZ)) {
 		return XDR_FAILURE;
 	}
 
@@ -45,9 +45,9 @@ int xdr_authunix_parms(struct xdr *xs, struct authunix_parms *aup) {
 	assert(aup != NULL);
 
 	return xdr_u_int(xs, &aup->stamp)
-			&& xdr_string(xs, &aup->host, HOST_NAME_MAX_SZ)
-			&& xdr_u_int(xs, &aup->uid)
-			&& xdr_u_int(xs, &aup->gid)
-			&& xdr_array(xs, (char **)&aup->gids, &aup->gids_len,
-					GIDS_MAX_SZ, sizeof *aup->gids, (xdrproc_t)xdr_u_int);
+		   && xdr_string(xs, &aup->host, HOST_NAME_MAX_SZ)
+		   && xdr_u_int(xs, &aup->uid)
+		   && xdr_u_int(xs, &aup->gid)
+		   && xdr_array(xs, (char **)&aup->gids, &aup->gids_len,
+			GIDS_MAX_SZ, sizeof *aup->gids, (xdrproc_t)xdr_u_int);
 }

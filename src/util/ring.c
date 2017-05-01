@@ -18,7 +18,7 @@ size_t ring_write(struct ring *r, size_t r_size, size_t write_size) {
 }
 
 size_t ring_read_all_into(struct ring *r, const char *r_buff, size_t r_size,
-		char *into_buff, size_t read_size) {
+	char *into_buff, size_t read_size) {
 	size_t count = 0;
 	size_t block_size;
 
@@ -33,7 +33,7 @@ size_t ring_read_all_into(struct ring *r, const char *r_buff, size_t r_size,
 }
 
 size_t ring_write_all_from(struct ring *r, char *r_buff, size_t r_size,
-		const char *from_buff, size_t write_size) {
+	const char *from_buff, size_t write_size) {
 	size_t count = 0;
 	size_t block_size;
 

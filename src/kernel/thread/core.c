@@ -48,7 +48,7 @@
 extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
 
-static int id_counter = 0; // TODO make it an indexator
+static int id_counter = 0; /* TODO make it an indexator */
 
 static struct thread *__current_thread __cpudata__;
 
@@ -65,7 +65,8 @@ static void _NORETURN thread_trampoline(void) {
 	struct thread *current = thread_self();
 	void *res;
 
-	assertf(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
+	assertf(!critical_allows(
+		CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
 
 	thread_ack_switched();
 
@@ -87,27 +88,28 @@ static int thread_priority_by_flags(unsigned int flags) {
 	}
 
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
-			&& (priority > SCHED_PRIORITY_MIN)) {
+		&& (priority > SCHED_PRIORITY_MIN)) {
 		priority--;
 	} else if ((flags & THREAD_FLAG_PRIORITY_HIGHER)
-			&& (priority < SCHED_PRIORITY_HIGH)) {
+		&& (priority < SCHED_PRIORITY_HIGH)) {
 		priority++;
 	}
 
 	return priority;
 }
 
-struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
+struct thread * thread_create(unsigned int flags, void *(*run)(
+	void *), void *arg) {
 	struct thread *t;
 	int priority;
 
 	/* check mutually exclusive flags */
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
-			&& (flags & THREAD_FLAG_PRIORITY_HIGHER)) {
+		&& (flags & THREAD_FLAG_PRIORITY_HIGHER)) {
 		return err_ptr(EINVAL);
 	}
 
-	if((flags & THREAD_FLAG_NOTASK) && !(flags & THREAD_FLAG_SUSPENDED)) {
+	if ((flags & THREAD_FLAG_NOTASK) && !(flags & THREAD_FLAG_SUSPENDED)) {
 		return err_ptr(EINVAL);
 	}
 
@@ -152,13 +154,14 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		}
 
 	}
-out_unlock:
+	out_unlock:
 	sched_unlock();
 
 	return t;
 }
 
-static struct schedee *thread_process(struct schedee *prev, struct schedee *next) {
+static struct schedee * thread_process(struct schedee *prev,
+	struct schedee *next) {
 	struct thread *next_t, *prev_t;
 
 	next_t = mcast_out(next, struct thread, schedee);
@@ -180,12 +183,12 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 	return &thread_self()->schedee;
 }
 
-struct thread *thread_self(void) {
+struct thread * thread_self(void) {
 	return cpudata_var(__current_thread);
 }
 
 void thread_init(struct thread *t, int priority,
-		void *(*run)(void *), void *arg) {
+	void *(*run)(void *), void *arg) {
 
 	assert(t);
 	assert(run);
@@ -224,7 +227,7 @@ void thread_init(struct thread *t, int priority,
 	 * +++++++++++++++ bottom (t->stack - allocated memory for the stack)
 	 */
 	context_init(&t->context, CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
-			thread_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
+		thread_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
 
 	sigstate_init(&t->sigstate);
 
@@ -234,8 +237,8 @@ void thread_init(struct thread *t, int priority,
 	thread_wait_init(&t->thread_wait);
 }
 
-struct thread *thread_init_stack(void *stack, size_t stack_sz,
-	       	int priority, void *(*run)(void *), void *arg) {
+struct thread * thread_init_stack(void *stack, size_t stack_sz,
+	int priority, void *(*run)(void *), void *arg) {
 	struct thread *thread = stack; /* Allocating at the bottom */
 
 	/* Stack setting up */
@@ -284,7 +287,7 @@ void _NORETURN thread_exit(void *ret) {
 
 	sched_lock();
 
-	// sched_finish(current);
+	/* sched_finish(current); */
 	current->schedee.waiting = true;
 	current->state |= TS_EXITED;
 
@@ -296,9 +299,10 @@ void _NORETURN thread_exit(void *ret) {
 		sched_wakeup(&joining->schedee);
 	}
 
-	if (current->state & TS_DETACHED)
+	if (current->state & TS_DETACHED) {
 		/* No one references this thread anymore. Time to delete it. */
 		thread_delete(current);
+	}
 
 	schedule();
 
@@ -313,8 +317,9 @@ int thread_join(struct thread *t, void **p_ret) {
 
 	assert(t);
 
-	if (t == current)
+	if (t == current) {
 		return -EDEADLK;
+	}
 
 	sched_lock();
 	{
@@ -330,12 +335,13 @@ int thread_join(struct thread *t, void **p_ret) {
 			}
 		}
 
-		if (p_ret)
+		if (p_ret) {
 			*p_ret = t->run_ret;
+		}
 
 		thread_delete(t);
 	}
-out:
+	out:
 	sched_unlock();
 
 	return ret < 0 ? ret : 0;
@@ -353,9 +359,10 @@ int thread_detach(struct thread *t) {
 			assert(!t->joining);
 			t->state |= TS_DETACHED;
 		}
-		else
+		else {
 			/* The target thread has finished, free it here. */
 			thread_delete(t);
+		}
 	}
 	sched_unlock();
 
@@ -384,14 +391,14 @@ int thread_terminate(struct thread *t) {
 
 	sched_lock();
 	{
-		// sched_finish(t);
-		// assert(0, "NIY");
-		// thread_delete(t);
+		/* sched_finish(t); */
+		/* assert(0, "NIY"); */
+		/* thread_delete(t); */
 		sched_freeze(&t->schedee);
 
 		t->state |= TS_EXITED;
 
-		// XXX prevent scheduler to add thread in runq
+		/* XXX prevent scheduler to add thread in runq */
 		if (t == thread_self()) {
 			t->schedee.waiting = true;
 		}

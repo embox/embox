@@ -36,7 +36,7 @@ struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 }
 
 struct sk_buff * skb_wrap_local(size_t size, struct sk_buff_data *skb_data,
-		struct pool *pl) {
+	struct pool *pl) {
 	ipl_t sp;
 	struct sk_buff *skb;
 
@@ -44,11 +44,11 @@ struct sk_buff * skb_wrap_local(size_t size, struct sk_buff_data *skb_data,
 	assert(size != 0);
 	assert(skb_data != NULL);
 
-	// TODO move it
-//	if (size > skb_max_size()) {
-//		log_error("skb_wrap: error: size is too big\n");
-//		return NULL; /* error: invalid argument */
-//	}
+	/* TODO move it */
+/*	if (size > skb_max_size()) { */
+/*		log_error("skb_wrap: error: size is too big\n"); */
+/*		return NULL; / * error: invalid argument * / */
+/*	} */
 
 	sp = ipl_save();
 	{
@@ -133,11 +133,11 @@ static void skb_copy_ref(struct sk_buff *to, const struct sk_buff *from) {
 	ptrdiff_t offset;
 
 	assert((to != NULL) && (to->data != NULL) && (from != NULL)
-			&& (from->data != NULL));
+		&& (from->data != NULL));
 
 	to->dev = from->dev;
 	offset = skb_get_data_pointner(to->data)
-			- skb_get_data_pointner(from->data);
+		- skb_get_data_pointner(from->data);
 	if (from->mac.raw != NULL) {
 		to->mac.raw = from->mac.raw + offset;
 	}
@@ -166,10 +166,10 @@ static void skb_shift_ref(struct sk_buff *skb, ptrdiff_t offset) {
 }
 
 static void skb_copy_data(struct sk_buff_data *to_data,
-		const struct sk_buff *from) {
+	const struct sk_buff *from) {
 	assert((to_data != NULL) && (from != NULL) && (from->data != NULL));
 	memcpy(skb_get_data_pointner(to_data), skb_get_data_pointner(from->data),
-			from->len);
+		from->len);
 }
 
 struct sk_buff * skb_copy(const struct sk_buff *skb) {
@@ -225,8 +225,8 @@ struct sk_buff * skb_declone(struct sk_buff *skb) {
 	}
 
 	skb_shift_ref(skb,
-			skb_get_data_pointner(decloned_data)
-					- skb_get_data_pointner(skb->data));
+		skb_get_data_pointner(decloned_data)
+		- skb_get_data_pointner(skb->data));
 	skb_copy_data(decloned_data, skb);
 
 	skb_data_free(skb->data);
@@ -240,8 +240,8 @@ void skb_rshift(struct sk_buff *skb, size_t count) {
 	assert(skb->data != NULL);
 	assert(count < skb_max_size());
 	memmove(skb_get_data_pointner(skb->data) + count,
-			skb_get_data_pointner(skb->data),
-			min(skb->len, skb_max_size() - count));
+		skb_get_data_pointner(skb->data),
+		min(skb->len, skb_max_size() - count));
 	skb->len += min(count, skb_max_size() - count);
 }
 
@@ -260,7 +260,8 @@ size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz) {
 	return len;
 }
 
-int skb_iovec_buf(const struct iovec *iov, int iovlen, const void *buf, int buflen) {
+int skb_iovec_buf(const struct iovec *iov, int iovlen, const void *buf,
+	int buflen) {
 	const void *const buf_e = buf + buflen;
 	const void *buf_p = buf;
 	int i_io = 0;

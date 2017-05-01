@@ -32,7 +32,7 @@ static inline void bitmap_toggle_bit(unsigned long *bitmap, unsigned int bit) {
 }
 
 static inline unsigned int bitmap_test_bit(const unsigned long *bitmap,
-		unsigned int bit) {
+	unsigned int bit) {
 	return 0x1ul & (bitmap[BITMAP_OFFSET(bit)] >> BITMAP_SHIFT(bit));
 }
 
@@ -45,14 +45,13 @@ static inline void bitmap_clear_all(unsigned long *bitmap, unsigned int nbits) {
 }
 
 extern unsigned int bitmap_find_bit(const unsigned long *,
-		unsigned int nbits, unsigned int start);
+	unsigned int nbits, unsigned int start);
 extern unsigned int bitmap_find_zero_bit(const unsigned long *,
-		unsigned int nbits, unsigned int start);
+	unsigned int nbits, unsigned int start);
 
 static inline unsigned int bitmap_find_first_bit(const unsigned long *bitmap,
-		unsigned int nbits) {
+	unsigned int nbits) {
 	return bitmap_find_bit(bitmap, nbits, 0);
 }
 
 #endif /* UTIL_BITMAP_H_ */
-

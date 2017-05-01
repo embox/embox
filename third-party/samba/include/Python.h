@@ -8,5 +8,4 @@
 #ifndef PYTHON_H_
 #define PYTHON_H_
 
-
 #endif /* PYTHON_H_ */

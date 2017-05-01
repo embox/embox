@@ -15,7 +15,7 @@
 
 #include <drivers/scsi.h>
 
-static inline struct usb_mass *scsi2mass(struct scsi_dev *dev) {
+static inline struct usb_mass * scsi2mass(struct scsi_dev *dev) {
 	return member_cast_out(dev, struct usb_mass, scsi_dev);
 }
 
@@ -32,7 +32,8 @@ static void usb_scsi_notify(struct usb_request *req, void *arg) {
 	scsi_request_done(sdev, 0);
 }
 
-int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_t data_len) {
+int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data,
+	size_t data_len) {
 	struct usb_mass *mass = scsi2mass(sdev);
 	struct scsi_cmd *scmd = cmd;
 	enum usb_direction usb_dir = USB_DIRECTION_IN;
@@ -40,7 +41,7 @@ int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_
 	if (!sdev->attached) {
 		return -ENODEV;
 	}
-	if(scmd->scmd_opcode == 0x2a) {
+	if (scmd->scmd_opcode == 0x2a) {
 		usb_dir = USB_DIRECTION_OUT;
 	} else {
 		usb_dir = USB_DIRECTION_IN;
@@ -67,7 +68,7 @@ int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd) {
 }
 
 static void scsi_fixup_inquiry(void *buf, struct scsi_dev *dev,
-		struct scsi_cmd *cmd) {
+	struct scsi_cmd *cmd) {
 	struct scsi_cmd_inquiry *cmd_inquiry = buf;
 	cmd_inquiry->sinq_alloc_length = htobe16(cmd->scmd_olen);
 }
@@ -84,7 +85,7 @@ const struct scsi_cmd scsi_cmd_template_cap10 = {
 };
 
 static void scsi_fixup_read_sense(void *buf, struct scsi_dev *dev,
-		struct scsi_cmd *cmd) {
+	struct scsi_cmd *cmd) {
 	struct scsi_cmd_sense *cmd_sense = buf;
 	cmd_sense->ssns_alloc_length = cmd->scmd_olen;
 }
@@ -96,7 +97,7 @@ const struct scsi_cmd scsi_cmd_template_sense = {
 };
 
 static void scsi_fixup_read10(void *buf, struct scsi_dev *dev,
-		struct scsi_cmd *cmd) {
+	struct scsi_cmd *cmd) {
 	struct scsi_cmd_read10 *rcmd = buf;
 	const unsigned int blk_size = dev->blk_size;
 
@@ -113,7 +114,7 @@ const struct scsi_cmd scsi_cmd_template_read10 = {
 };
 
 static void scsi_fixup_write10(void *buf, struct scsi_dev *dev,
-		struct scsi_cmd *cmd) {
+	struct scsi_cmd *cmd) {
 	struct scsi_cmd_write10 *wcmd = buf;
 	const unsigned int blk_size = dev->blk_size;
 
@@ -134,14 +135,16 @@ int scsi_dev_init(struct scsi_dev *dev) {
 }
 
 void scsi_state_transit(struct scsi_dev *dev,
-		const struct scsi_dev_state *to) {
+	const struct scsi_dev_state *to) {
 	const struct scsi_dev_state *from = dev->state;
 
-	if (from && from->sds_leave)
+	if (from && from->sds_leave) {
 		from->sds_leave(dev);
+	}
 
-	if (to->sds_enter)
+	if (to->sds_enter) {
 		to->sds_enter(dev);
+	}
 
 	dev->state = to;
 }
@@ -165,7 +168,7 @@ static void scsi_inquiry_input(struct scsi_dev *dev, int res) {
 
 	data = (struct scsi_data_inquiry *) dev->scsi_data_scratchpad;
 	if ((data->dinq_devtype & SCSI_INQIRY_DEVTYPE_MASK)
-			!= SCSI_INQIRY_DEVTYPE_BLK) {
+		!= SCSI_INQIRY_DEVTYPE_BLK) {
 		return;
 	}
 
@@ -222,7 +225,7 @@ static void scsi_sense_input(struct scsi_dev *dev, int res) {
 	data = (struct scsi_data_sense *) dev->scsi_data_scratchpad;
 	acode = data->dsns_additional_code;
 	assertf(acode == 0x28 || acode == 0x29, "Don't know how to recover "
-			"unknown error %x", acode);
+											"unknown error %x", acode);
 
 	/* 0x28 and 0x29 are just required attention, seems that can go on */
 

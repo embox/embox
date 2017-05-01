@@ -160,7 +160,7 @@ static void _set_cmd(int opcode) {
 
 static void _push_data(uint8_t *data, int len) {
 	for (int i = 0; i < len >> 2; i++) {
-		REG32_STORE(BANK_DATA, *((uint32_t*)data));
+		REG32_STORE(BANK_DATA, *((uint32_t *)data));
 		data += 4;
 	}
 
@@ -186,7 +186,7 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	REG16_STORE(BANK_POINTER, AUTO_INCR | 2);
 	REG16_STORE(BANK_DATA, (uint16_t) (skb->len & 0xfffe) + 6);
 
-	data = (uint8_t*) skb_data_cast_in(skb->data);
+	data = (uint8_t *) skb_data_cast_in(skb->data);
 	_push_data(data, skb->len);
 
 	if (skb->len % 2) {
@@ -202,7 +202,7 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static int lan91c111_open(struct net_device *dev) {
-        _set_bank(0);
+	_set_bank(0);
 	REG16_STORE(BANK_RCR, RX_EN);
 	REG16_STORE(BANK_TCR, TX_EN);
 
@@ -213,20 +213,20 @@ static int lan91c111_open(struct net_device *dev) {
 }
 
 static int lan91c111_set_macaddr(struct net_device *dev, const void *addr) {
-        uint8_t *mac = (uint8_t*) addr;
+	uint8_t *mac = (uint8_t *) addr;
 	uint16_t mac_hi, mac_mid, mac_lo;
 
-        assert(mac);
+	assert(mac);
 
 	mac_hi  = (mac[5] << 8) | (mac[4] << 0);
 	mac_mid = (mac[3] << 8) | (mac[2] << 0);
 	mac_lo  = (mac[1] << 8) | (mac[0] << 0);
 
-        _set_bank(1);
+	_set_bank(1);
 
-        REG16_STORE(BANK_IA01, mac_lo);
-        REG16_STORE(BANK_IA23, mac_mid);
-        REG16_STORE(BANK_IA45, mac_hi);
+	REG16_STORE(BANK_IA01, mac_lo);
+	REG16_STORE(BANK_IA23, mac_mid);
+	REG16_STORE(BANK_IA45, mac_hi);
 
 	return 0;
 }
@@ -238,7 +238,7 @@ static const struct net_driver lan91c111_drv_ops = {
 };
 
 static irq_return_t lan91c111_int_handler(unsigned int irq_num,
-		void *dev_id) {
+	void *dev_id) {
 	struct sk_buff *skb;
 	uint32_t buf;
 	uint16_t len;
@@ -253,8 +253,9 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 		return 0;
 	}
 
-	if (!(REG16_LOAD(BANK_INTERRUPT) & RX_MASK))
+	if (!(REG16_LOAD(BANK_INTERRUPT) & RX_MASK)) {
 		return 0;
+	}
 
 	REG16_STORE(BANK_POINTER, (0x8000 | AUTO_INCR | 2));
 	len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
@@ -297,10 +298,10 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num,
 
 EMBOX_UNIT_INIT(lan91c111_init);
 static int lan91c111_init(void) {
-        struct net_device *nic;
+	struct net_device *nic;
 
 	if (NULL == mmap_device_memory(
-		(void*) BANK_BASE_ADDR,
+		(void *) BANK_BASE_ADDR,
 		0x10,
 		PROT_READ | PROT_WRITE | PROT_NOCACHE,
 		MAP_FIXED,
@@ -308,13 +309,13 @@ static int lan91c111_init(void) {
 		return -1;
 	}
 
-        if (NULL == (nic = etherdev_alloc(0))) {
-                return -ENOMEM;
-        }
+	if (NULL == (nic = etherdev_alloc(0))) {
+		return -ENOMEM;
+	}
 
 	irq_attach(LAN91C111_IRQ, lan91c111_int_handler, 0, nic, "lan91c111");
 
-        nic->drv_ops = &lan91c111_drv_ops;
+	nic->drv_ops = &lan91c111_drv_ops;
 
 	_set_bank(1);
 	REG16_STORE(BANK_CONTROL, 0x0800);

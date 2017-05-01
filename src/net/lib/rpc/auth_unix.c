@@ -15,7 +15,7 @@
 static struct auth_ops authunix_ops;
 
 struct auth * authunix_create(char *host, int uid, int gid,
-		int user_gids_len, int *user_gids) {
+	int user_gids_len, int *user_gids) {
 	struct auth *ath;
 	char *data;
 	struct xdr xstream;
@@ -23,7 +23,7 @@ struct auth * authunix_create(char *host, int uid, int gid,
 	__u32 data_len;
 
 	assert((host != NULL) && (user_gids_len >= 0)
-			&& ((user_gids_len == 0) || (user_gids != NULL)));
+		&& ((user_gids_len == 0) || (user_gids != NULL)));
 
 	ath = auth_alloc(), data = malloc(AUTH_DATA_MAX_SZ);
 	if ((ath == NULL) || (data == NULL)) {
@@ -52,7 +52,7 @@ struct auth * authunix_create(char *host, int uid, int gid,
 	memcpy(&ath->verf, &__opaque_auth_null, sizeof __opaque_auth_null);
 
 	return ath;
-exit_with_error:
+	exit_with_error:
 	auth_free(ath);
 	free(data);
 	return NULL;
@@ -63,5 +63,5 @@ static void authunix_destroy(struct auth *ath) {
 }
 
 static struct auth_ops authunix_ops = {
-		.destroy = authunix_destroy
+	.destroy = authunix_destroy
 };

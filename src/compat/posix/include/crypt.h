@@ -13,9 +13,8 @@
 
 __BEGIN_DECLS
 
-extern char *crypt(const char *key, const char *salt);
+extern char * crypt(const char *key, const char *salt);
 
 __END_DECLS
 
 #endif /* CRYPT_H_ */
-
