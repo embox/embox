@@ -31,8 +31,6 @@ $(CONFIGURE) :
 			--disable-vc4 \
 			--enable-cairo-tests=no \
 			CC=$(EMBOX_GCC) \
-			CPPFLAGS="${EMBOX_IMPORTED_CPPFLAGS}" \
-			LDFLAGS="$(EMBOX_IMPORTED_LDFLAGS)" \
 	)
 	touch $@
 
