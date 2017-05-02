@@ -29,3 +29,16 @@ module fbcon {
 	depends embox.cmd.sh.tish
 }
 
+module mpx_only{
+	source "mpx_simple.c"
+	@IncludeExport(path="drivers/console")
+	source "mpx.h"
+
+	depends embox.driver.video.fb
+	depends embox.driver.input.core
+	depends embox.cmd.sh.tish
+	depends embox.driver.video.fonts
+	depends embox.driver.tty.vterm
+	depends embox.driver.input.keyboard.kbd_defs
+	depends embox.driver.input.keyboard.keyboard
+}
