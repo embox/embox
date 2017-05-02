@@ -13,6 +13,11 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
+
+MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include 
+MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
+MESA_CPPFLAGS += $(SRC_DIR))/arch/$(ARCH)/include
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	export PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79:$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79/etnaviv;\
@@ -23,14 +28,13 @@ $(CONFIGURE) :
 			--disable-egl \
 			--disable-largefile --enable-gallium-llvm=no --enable-valgrind=no \
 			CC=$(EMBOX_GCC) \
-			CPPFLAGS="${EMBOX_IMPORTED_CPPFLAGS}" \
-			LDFLAGS="$(EMBOX_IMPORTED_LDFLAGS)" \
+			CXX=$(EMBOX_GXX) \
 	)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		$(MAKE); CC=$(EMBOX_GCC) \
+		$(MAKE); \
 	)
 	touch $@
 

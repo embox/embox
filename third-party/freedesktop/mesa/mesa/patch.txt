@@ -1,6 +1,6 @@
 diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c11/threads_posix.h mesa-17.0.3/include/c11/threads_posix.h
 --- mesa-17.0.3-orig/include/c11/threads_posix.h	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/include/c11/threads_posix.h	2017-04-28 12:58:59.046651848 +0300
++++ mesa-17.0.3/include/c11/threads_posix.h	2017-05-02 16:46:01.638412034 +0300
 @@ -35,6 +35,7 @@
  #include <unistd.h>
  #include <sched.h>
@@ -18,9 +18,43 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c11
  #define EMULATED_THREADS_USE_NATIVE_TIMEDLOCK
  #endif
  
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c99_alloca.h mesa-17.0.3/include/c99_alloca.h
+--- mesa-17.0.3-orig/include/c99_alloca.h	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/include/c99_alloca.h	2017-05-02 17:02:50.890389943 +0300
+@@ -35,7 +35,7 @@
+ 
+ #  define alloca _alloca
+ 
+-#elif defined(__sun) || defined(__CYGWIN__)
++#elif defined(__sun) || defined(__CYGWIN__) || defined(__EMBOX__)
+ 
+ #  include <alloca.h>
+ 
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c mesa-17.0.3/src/compiler/nir/nir_instr_set.c
+--- mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/compiler/nir/nir_instr_set.c	2017-05-02 17:03:20.234389300 +0300
+@@ -20,7 +20,6 @@
+  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  * IN THE SOFTWARE.
+  */
+-
+ #include "nir_instr_set.h"
+ #include "nir_vla.h"
+ 
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c mesa-17.0.3/src/compiler/nir/nir_liveness.c
+--- mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/compiler/nir/nir_liveness.c	2017-05-02 17:03:14.746389421 +0300
+@@ -23,7 +23,6 @@
+  * Authors:
+  *    Jason Ekstrand (jason@jlekstrand.net)
+  */
+-
+ #include "nir.h"
+ #include "nir_worklist.h"
+ #include "nir_vla.h"
 diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/debug.c mesa-17.0.3/src/util/debug.c
 --- mesa-17.0.3-orig/src/util/debug.c	2017-04-01 18:33:37.000000000 +0300
-+++ mesa-17.0.3/src/util/debug.c	2017-04-28 12:39:37.626635156 +0300
++++ mesa-17.0.3/src/util/debug.c	2017-05-02 16:46:01.638412034 +0300
 @@ -21,6 +21,7 @@
   * IN THE SOFTWARE.
   */
@@ -31,7 +65,7 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/de
  #include "debug.h"
 diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/ralloc.c mesa-17.0.3/src/util/ralloc.c
 --- mesa-17.0.3-orig/src/util/ralloc.c	2017-04-01 18:33:37.000000000 +0300
-+++ mesa-17.0.3/src/util/ralloc.c	2017-04-28 12:39:37.626635156 +0300
++++ mesa-17.0.3/src/util/ralloc.c	2017-05-02 16:46:01.638412034 +0300
 @@ -66,7 +66,7 @@
  #endif
     ralloc_header
