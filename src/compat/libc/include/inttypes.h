@@ -185,15 +185,21 @@ __END_DECLS
 #define    PRIXLEAST32 "X"
 #define    PRIXFAST32  "X"
 
+#define    PRIu64      "llu"
+#define    PRIi64      "lli"
+#define    PRIx64      "llx"
+#define    PRIX64      "llX"
+
 #define    PRIoPTR     PRIo32
 #define    PRIuPTR     PRIu32
 #define    PRIxPTR     PRIx32
 #define    PRIXPTR     "lX"
 
+
 #define    PRIoMAX     PRIo32
-#define    PRIuMAX     PRIu32
-#define    PRIxMAX     PRIx32
-#define    PRIXMAX     PRIX32
+#define    PRIuMAX     PRIu64
+#define    PRIxMAX     PRIx64
+#define    PRIXMAX     PRIX64
 
 /* The fscanf() macros for signed integers are:
  * SCNdN SCNdLEASTN SCNdFASTN SCNdMAX SCNdPTR SCNiN SCNiLEASTN SCNiFASTN
