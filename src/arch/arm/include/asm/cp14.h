@@ -35,9 +35,9 @@ static inline uint32_t cp14_get_dbgdsar(void) {
 	({ \
 		uint32_t val; \
 		__asm__ __volatile__ ( \
-				"mrc p14, 0, %0, c2, " \
+				"mrc p14, 0, %0, c0, " \
 				i \
-				", 5    @ get DBGBVR" : "=r" (val) : : "cc"); \
+				", 4    @ get DBGBVR" : "=r" (val) : : "cc"); \
 		val;\
 	})
 
@@ -60,7 +60,7 @@ static inline uint32_t cp14_get_dbgbvr(int i) {
 		uint32_t v = value; \
 		asm volatile("mcr p14, 0, %0, c0," \
 				i \
-				", 5    @ set DBGBVR" \
+				", 4    @ set DBGBVR" \
 		  : : "r" (v) : "cc"); \
 		isb(); \
 	}
@@ -87,9 +87,9 @@ static inline void cp14_set_dbgbvr(uint32_t val, int i) {
 	({ \
 		uint32_t val; \
 		__asm__ __volatile__ ( \
-				"mrc p14, 0, %0, c2, " \
+				"mrc p14, 0, %0, c0, " \
 				i \
-				", 4    @ get DBGBCR" : "=r" (val) : : "cc"); \
+				", 5    @ get DBGBCR" : "=r" (val) : : "cc"); \
 		val;\
 	})
 
@@ -113,7 +113,7 @@ static inline uint32_t cp14_get_dbgbcr(int i) {
 		uint32_t v = value; \
 		asm volatile("mcr p14, 0, %0, c0," \
 				i \
-				", 4    @ set DBGBCR" \
+				", 5    @ set DBGBCR" \
 		  : : "r" (v) : "cc"); \
 		isb(); \
 	}
