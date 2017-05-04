@@ -288,23 +288,47 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
     } 
 
 }
-void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, int h, int color){
-    struct fb_image image;
-    image.dx = x;
-    image.dy = y;
-    image.width = 8; //t->w
-    image.height = 8; //t->h
-    image.fg_color = color;//fg_color;
-    image.bg_color = 0;//bg_color;
-    image.depth = 1 ;
 
-    
+
+void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, int h, int color){
+    //printf("\n x = %i, y = %i, w = %i, h = %i\n", x, y, w, h);
+    struct fb_fillrect rect;
+    rect.dx = x;
+    rect.dy = y;
+    rect.width = 1;
+    rect.height = 1;
+    //rect.color = col;
+    rect.rop = ROP_COPY;
+    printf("\n ren w = %i h = %i\n", w, h);
+    // printf("\nimg.handle.ptr = %p", img.handle.ptr);
+    for (int nY = 0; nY < w; nY++)
+    {
+	    for (int nX = 0; nX < h; nX++)
+	    {
+            // Get the data offset into the packed image data and read out the cell color there
+             uint32_t nOffset = (nX + nY * w) * 4;
+
+             int nRed = (int)((unsigned char*)(img.handle.ptr))[nOffset+0];
+             int nGreen = (int)((unsigned char*)(img.handle.ptr))[nOffset+1];
+             int nBlue = (int)((unsigned char*)(img.handle.ptr))[nOffset+2];
+             int nAlpha = (int)((unsigned char*)(img.handle.ptr))[nOffset+3];
+            
+            // rect.color = (int)((unsigned char*)(img.handle.ptr))[(nX + nY * h)*4];
+            // printf("\nrect. color = %i",rect.color);
+            rect.color = nk_color_converter(nk_rgba(nRed, nGreen, nBlue, nAlpha));
+            //printf("\nrect. color = %i",rect.color);
+            rect.dx = x + nX;
+            rect.dy = y + nY;
+            fb_fillrect(vc->fb, &rect);
+
+        }
+    }    
     //char *cbuf = (char *) text;
    // size_t nbyte = len;
-    
+    //printf("%p\n", (int*)img.handle.ptr);
    // while (nbyte--) {
-        image.data = (char *)img.handle.ptr;// + (unsigned char)(*cbuf++)*16; 
-        fb_imageblit(vc->fb, &image);
+        // image.data = (char *)img.handle.ptr;// + (unsigned char)(*cbuf++)*16; 
+        // fb_imageblit(vc->fb, &image);
         //symbol.dx += 8;
     //} 
 }

@@ -138,7 +138,7 @@ int main(int argc, char *argv[]) {
 
     /* work with images */
     int x,y,n;
-    unsigned char * data = stbi_load("200.png", &x, &y, &n, 0);
+    unsigned char * data = stbi_load("201.png", &x, &y, &n, 0);
     if (data == NULL)
         printf("\nstbi_load doesn't work. :(\n");
     else
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
     
     struct nk_image im;
     im.handle.ptr = data;
-    im.handle.id = 1234;
+    im.handle.id = (uint32_t)data;
     im.w = x;
     im.h = y;
     im.region[0] = 0;
@@ -154,13 +154,14 @@ int main(int argc, char *argv[]) {
     im.region[2] = x;
     im.region[3] = y;
 
-    // for (int i = 0; i < 200; i++){
-    //     for (int j = 0; j < 200; j++)
-    //     {
-    //         printf("%i ", ((int *)im.handle.ptr)[i*100 + j]);
-    //     }
-    //     printf("\n");
-    // }
+    for (int i = 0; i < 50; i++) {
+         printf("\npix %i = %x\t|\t", i, (int)data[i]);
+         unsigned char *tmp = (unsigned char*)(im.handle.ptr);
+        printf("im.ptr[%i] = %x", i, tmp[i]);
+    }
+    
+    printf("\n");
+
 
     //struct nk_image {nk_handle handle;unsigned short w,h;unsigned short region[4];};
     /* Draw */
@@ -195,7 +196,7 @@ int main(int argc, char *argv[]) {
             nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
 
-            nk_draw_image(canvas.painter, nk_rect(150, 370, 100, 100), & im, nk_rgb(0, 0, 0));
+            nk_draw_image(canvas.painter, nk_rect(0, 0, 999, 799), & im, nk_rgb(0, 0, 0));
             
         }
         canvas_end(&ctx, &canvas);
