@@ -4,6 +4,8 @@
 #include <drivers/console/mpx.h>
 #include <drivers/video/font.h>
 
+extern const struct font_desc font_vga_8x8, font_vga_8x16;
+
 #define ABS(a) (((a) < 0) ? -(a) : (a)) 
 #define MIN(a, b) ((a < b) ? a : b) 
 #define MAX(a, b) ((a > b) ? a : b) 
@@ -16,8 +18,6 @@ int nk_color_converter(struct nk_color color){
     int r = ((color.r / 8)<<11) & 0xf800;
     return r + g + b;
 }
-
-extern const struct font_desc font_vga_8x8, font_vga_8x16;
 
 void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int col, float thickness){
 
@@ -87,8 +87,6 @@ void embox_stroke_arc(struct vc *vc, float cx, float cy, float r, float a_min, f
     if (r == 0) return;
 
     struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
     rect.width = 1;
     rect.height = 1;
     rect.color = col;
@@ -203,7 +201,6 @@ void embox_stroke_rect(struct vc *vc, float x, float y, float w, float h, int co
     }
 
 }
-/* in progress.. */
 void embox_stroke_curve(struct vc *vc, int *x, int *y, int col, float thickness){
 
     float L0, L1, L2, L3;
@@ -262,8 +259,6 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
     } 
 
 }
-
-
 void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, int h, int color){
     struct fb_fillrect rect;
     rect.width = 1;
@@ -275,7 +270,7 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
 	    for (int nX = 0; nX < h; nX++)
 	    {
             /* offset in pixet array according to the image format*/
-            uint32_t nOffset = (nX + nY * w) * 4;
+            uint32_t nOffset = (nX + nY * img.w) * 4;
 
             int nRed = (int)((unsigned char*)(img.handle.ptr))[nOffset+0];
             int nGreen = (int)((unsigned char*)(img.handle.ptr))[nOffset+1];
@@ -292,8 +287,8 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
     } 
 }
 
-static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
-{ 
+
+static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){ 
     /* shouldn't draw when window is off */
     if (!vc->fb) {
         nk_clear(ctx);
@@ -333,7 +328,7 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
             embox_stroke_rect(vc, r->x, r->y, r->w, r->h, nk_color_converter(r->color), (float)r->rounding, r->line_thickness);
         } break; 
         case NK_COMMAND_RECT_FILLED: {
-            const struct nk_command_rect_filled *r;
+            const struct nk_command_rect_filled *r =
             r = (const struct nk_command_rect_filled*)cmd;
             if ((r->x + r->w >= width) && (r->y + r->h >= height))
                 continue;
@@ -378,7 +373,6 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
         case NK_COMMAND_IMAGE: {
             const struct nk_command_image *i = (const struct nk_command_image*)cmd;
             embox_add_image(vc, i->img, i->x, i->y, i->w, i->h, nk_color_converter(i->col));
-            // nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
         } break;
 
         /* unrealized primitives */
