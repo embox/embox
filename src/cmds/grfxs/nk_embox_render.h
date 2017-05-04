@@ -1,26 +1,14 @@
-#include <drivers/video/font.h>
+/* This file provides rendering primitives for embox discribed by nuklear.h */
 
-/* includes for nuklear*/
-#include <stdio.h>
-#define NK_PRIVATE
-#define NK_API
-#define NK_INTERN static
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
-#define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
-#define NK_INCLUDE_FONT_BAKING
-#define NK_INCLUDE_DEFAULT_FONT
-
-/* includes from fbcon */
+/* includes from embox */
 #include <drivers/console/mpx.h>
-#include <drivers/vterm_video.h>
-#include <drivers/video/fb.h>
-
+#include <drivers/video/font.h>
 
 #define ABS(a) (((a) < 0) ? -(a) : (a)) 
 #define MIN(a, b) ((a < b) ? a : b) 
 #define MAX(a, b) ((a > b) ? a : b) 
+
+
 
 int nk_color_converter(struct nk_color color){
     int b = (color.b / 8)  & (0x1f);
@@ -54,15 +42,14 @@ void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int
 	    for (int j = ay - th; j <= by + th; ++j) {
             rect.dx = i;
             rect.dy = j;
-		    //*(((uint16_t*)fb->screen_base) + i * var.xres + j) = ((i * 32 / 200) << 11) + (0x1f & (j * 32 / 200));
-            fb_fillrect(vc->fb, &rect);
+		    fb_fillrect(vc->fb, &rect);
 	    }
     }
 }
 void embox_fill_circle(struct vc *vc, int cx, int cy, int r, int col){
+    if (r == 0) return;
+
     struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
     rect.width = 1;
     rect.height = 1;
     rect.color = col;
@@ -71,7 +58,6 @@ void embox_fill_circle(struct vc *vc, int cx, int cy, int r, int col){
     for (int i = cx - r; i <= cx + r; ++i){
         for (int j = cy - r; j <= cy + r; ++j){
             if ((i - cx)*(i - cx) + (j - cy) * (j - cy) <= r*r){
-                
                 rect.dx = i;
                 rect.dy = j;
                 fb_fillrect(vc->fb, &rect);
@@ -80,12 +66,9 @@ void embox_fill_circle(struct vc *vc, int cx, int cy, int r, int col){
     }
 }
 void embox_fill_arc(struct vc *vc, float cx, float cy, float r, float a_min, float a_max, int col){
-    
     if (r == 0) return;
 
     struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
     rect.width = 1;
     rect.height = 1;
     rect.color = col;
@@ -101,7 +84,6 @@ void embox_fill_arc(struct vc *vc, float cx, float cy, float r, float a_min, flo
     }
 }
 void embox_stroke_arc(struct vc *vc, float cx, float cy, float r, float a_min, float a_max, int col, float thickness){
-    
     if (r == 0) return;
 
     struct fb_fillrect rect;
@@ -123,8 +105,6 @@ void embox_stroke_arc(struct vc *vc, float cx, float cy, float r, float a_min, f
 }
 void embox_fill_triangle(struct vc *vc, int ax, int ay, int bx, int by, int cx, int cy, int col){
     struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
     rect.width = 1;
     rect.height = 1;
     rect.color = col;
@@ -150,8 +130,6 @@ void embox_fill_triangle(struct vc *vc, int ax, int ay, int bx, int by, int cx, 
 }   
 void embox_stroke_triangle(struct vc *vc, float ax, float ay, float bx, float by, float cx, float cy, int col, float thickness){
     struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
     rect.width = 1;
     rect.height = 1;
     rect.color = col;
@@ -194,8 +172,6 @@ void embox_stroke_triangle(struct vc *vc, float ax, float ay, float bx, float by
 }   
 void embox_stroke_rect(struct vc *vc, float x, float y, float w, float h, int col, float rounding, float thickness){
     struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
     rect.width = 1;
     rect.height = 1;
     rect.color = col;
@@ -251,8 +227,6 @@ void embox_stroke_curve(struct vc *vc, int *x, int *y, int col, float thickness)
 } 
 void embox_stroke_circle(struct vc *vc, int cx, int cy, int r, int col, float thickness){
     struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
     rect.width = 1;
     rect.height = 1;
     rect.color = col;
@@ -291,51 +265,35 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
 
 
 void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, int h, int color){
-    //printf("\n x = %i, y = %i, w = %i, h = %i\n", x, y, w, h);
     struct fb_fillrect rect;
-    rect.dx = x;
-    rect.dy = y;
     rect.width = 1;
     rect.height = 1;
-    //rect.color = col;
     rect.rop = ROP_COPY;
-    printf("\n ren w = %i h = %i\n", w, h);
-    // printf("\nimg.handle.ptr = %p", img.handle.ptr);
+    
     for (int nY = 0; nY < w; nY++)
     {
 	    for (int nX = 0; nX < h; nX++)
 	    {
-            // Get the data offset into the packed image data and read out the cell color there
-             uint32_t nOffset = (nX + nY * w) * 4;
+            /* offset in pixet array according to the image format*/
+            uint32_t nOffset = (nX + nY * w) * 4;
 
-             int nRed = (int)((unsigned char*)(img.handle.ptr))[nOffset+0];
-             int nGreen = (int)((unsigned char*)(img.handle.ptr))[nOffset+1];
-             int nBlue = (int)((unsigned char*)(img.handle.ptr))[nOffset+2];
-             int nAlpha = (int)((unsigned char*)(img.handle.ptr))[nOffset+3];
-            
-            // rect.color = (int)((unsigned char*)(img.handle.ptr))[(nX + nY * h)*4];
-            // printf("\nrect. color = %i",rect.color);
+            int nRed = (int)((unsigned char*)(img.handle.ptr))[nOffset+0];
+            int nGreen = (int)((unsigned char*)(img.handle.ptr))[nOffset+1];
+            int nBlue = (int)((unsigned char*)(img.handle.ptr))[nOffset+2];
+            int nAlpha = (int)((unsigned char*)(img.handle.ptr))[nOffset+3];
+
             rect.color = nk_color_converter(nk_rgba(nRed, nGreen, nBlue, nAlpha));
-            //printf("\nrect. color = %i",rect.color);
             rect.dx = x + nX;
             rect.dy = y + nY;
+            
             fb_fillrect(vc->fb, &rect);
 
         }
-    }    
-    //char *cbuf = (char *) text;
-   // size_t nbyte = len;
-    //printf("%p\n", (int*)img.handle.ptr);
-   // while (nbyte--) {
-        // image.data = (char *)img.handle.ptr;// + (unsigned char)(*cbuf++)*16; 
-        // fb_imageblit(vc->fb, &image);
-        //symbol.dx += 8;
-    //} 
+    } 
 }
 
 static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
-{
-    
+{ 
     /* shouldn't draw when window is off */
     if (!vc->fb) {
         nk_clear(ctx);
@@ -343,19 +301,11 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
     }
 
     const struct nk_command *cmd;
-    
 
     /* iterate over and execute each draw command */
-    nk_foreach(cmd, ctx)
-    {
+    nk_foreach(cmd, ctx){
         switch (cmd->type) {
         case NK_COMMAND_NOP: break;
-    
-        // case NK_COMMAND_SCISSOR: {
-        //     const struct nk_command_scissor *s = (const struct nk_command_scissor*)cmd;
-        //     nk_draw_list_add_clip(&ctx->draw_list, nk_rect(s->x, s->y, s->w, s->h));
-        // } break;
-
         case NK_COMMAND_LINE: {
             const struct nk_command_line *l = (const struct nk_command_line*)cmd;
             embox_stroke_line(vc, l->begin.x, l->begin.y,l->end.x, l->end.y, nk_color_converter(l->color), l->line_thickness);
@@ -397,11 +347,6 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
             fb_fillrect(vc->fb, &rect);
             break;
         }break;
-        // case NK_COMMAND_RECT_MULTI_COLOR: {
-        //     const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color*)cmd;
-        //     nk_draw_list_fill_rect_multi_color(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
-        //         r->left, r->top, r->right, r->bottom);
-        // } break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle*)cmd;
             embox_stroke_circle(vc,(float)c->x + (float)c->w/2, (float)c->y + (float)c->h/2, (float)c->w/2, nk_color_converter(c->color), c->line_thickness);
@@ -426,33 +371,6 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
             const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled*)cmd;
             embox_fill_triangle(vc,t->a.x, t->a.y, t->b.x, t->b.y, t->c.x, t->c.y, nk_color_converter(t->color));
         } break;
-        // case NK_COMMAND_POLYGON: {
-        //     int i;
-        //     const struct nk_command_polygon*p = (const struct nk_command_polygon*)cmd;
-        //     for (i = 0; i < p->point_count; ++i) {
-        //         struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
-        //         nk_draw_list_path_line_to(&ctx->draw_list, pnt);
-        //     }
-        //     nk_draw_list_path_stroke(&ctx->draw_list, p->color, NK_STROKE_CLOSED, p->line_thickness);
-        // } break;
-        // case NK_COMMAND_POLYGON_FILLED: {
-        //     int i;
-        //     const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled*)cmd;
-        //     for (i = 0; i < p->point_count; ++i) {
-        //         struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
-        //         nk_draw_list_path_line_to(&ctx->draw_list, pnt);
-        //     }
-        //     nk_draw_list_path_fill(&ctx->draw_list, p->color);
-        // } break;
-        // case NK_COMMAND_POLYLINE: {
-        //     int i;
-        //     const struct nk_command_polyline *p = (const struct nk_command_polyline*)cmd;
-        //     for (i = 0; i < p->point_count; ++i) {
-        //         struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
-        //         nk_draw_list_path_line_to(&ctx->draw_list, pnt);
-        //     }
-        //     nk_draw_list_path_stroke(&ctx->draw_list, p->color, NK_STROKE_OPEN, p->line_thickness);
-        // } break;
         case NK_COMMAND_TEXT: {
             const struct nk_command_text *t = (const struct nk_command_text*)cmd;
             embox_add_text(vc, t->x, t->y, nk_color_converter(t->foreground), nk_color_converter(t->background), t->string, t->length );
@@ -462,6 +380,46 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height)
             embox_add_image(vc, i->img, i->x, i->y, i->w, i->h, nk_color_converter(i->col));
             // nk_draw_list_add_image(&ctx->draw_list, i->img, nk_rect(i->x, i->y, i->w, i->h), i->col);
         } break;
+
+        /* unrealized primitives */
+        /*
+        case NK_COMMAND_SCISSOR: {
+            const struct nk_command_scissor *s = (const struct nk_command_scissor*)cmd;
+            nk_draw_list_add_clip(&ctx->draw_list, nk_rect(s->x, s->y, s->w, s->h));
+        } break;
+        case NK_COMMAND_POLYGON: {
+            int i;
+            const struct nk_command_polygon*p = (const struct nk_command_polygon*)cmd;
+            for (i = 0; i < p->point_count; ++i) {
+                struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
+                nk_draw_list_path_line_to(&ctx->draw_list, pnt);
+            }
+            nk_draw_list_path_stroke(&ctx->draw_list, p->color, NK_STROKE_CLOSED, p->line_thickness);
+        } break;
+        case NK_COMMAND_POLYGON_FILLED: {
+            int i;
+            const struct nk_command_polygon_filled *p = (const struct nk_command_polygon_filled*)cmd;
+            for (i = 0; i < p->point_count; ++i) {
+                struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
+                nk_draw_list_path_line_to(&ctx->draw_list, pnt);
+            }
+            nk_draw_list_path_fill(&ctx->draw_list, p->color);
+        } break;
+        case NK_COMMAND_POLYLINE: {
+            int i;
+            const struct nk_command_polyline *p = (const struct nk_command_polyline*)cmd;
+            for (i = 0; i < p->point_count; ++i) {
+                struct nk_vec2 pnt = nk_vec2((float)p->points[i].x, (float)p->points[i].y);
+                nk_draw_list_path_line_to(&ctx->draw_list, pnt);
+            }
+            nk_draw_list_path_stroke(&ctx->draw_list, p->color, NK_STROKE_OPEN, p->line_thickness);
+        } break;
+        case NK_COMMAND_RECT_MULTI_COLOR: {
+            const struct nk_command_rect_multi_color *r = (const struct nk_command_rect_multi_color*)cmd;
+            nk_draw_list_fill_rect_multi_color(&ctx->draw_list, nk_rect(r->x, r->y, r->w, r->h),
+                    r->left, r->top, r->right, r->bottom);
+        } break; */
+
         default: break;
         }
     }

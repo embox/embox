@@ -1,13 +1,11 @@
+/* This file provides an example of work nuklear on OS Embox */
 
 /* includes for nuklear*/
 #include <stdio.h>
 #define NK_PRIVATE
 #define NK_API
 #define NK_INTERN static
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 
@@ -19,18 +17,10 @@
 
 #include "nk_embox_render.h"
 
-/* includes from fbcon */
-#include <drivers/console/mpx.h>
-#include <drivers/vterm_video.h>
-#include <drivers/video/fb.h>
-
-
 
 struct device {
     struct nk_buffer cmds;
     struct nk_draw_null_texture null;
-    NK_UINT32 vbo, vao, ebo;
-    NK_UINT32 font_tex;
 };
 
 struct nk_canvas {
@@ -132,38 +122,10 @@ int main(int argc, char *argv[]) {
     nk_font_atlas_begin(&atlas);
     font = nk_font_atlas_add_default(&atlas, 13, 0);
     nk_font_atlas_bake(&atlas, &width, &height, NK_FONT_ATLAS_RGBA32);
-    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex)/*nk_handle_id(0)*/, &device.null);
+    nk_font_atlas_end(&atlas, nk_handle_id(0), &device.null);
 
     nk_init_default(&ctx, &font->handle);
 
-    /* work with images */
-    int x,y,n;
-    unsigned char * data = stbi_load("201.png", &x, &y, &n, 0);
-    if (data == NULL)
-        printf("\nstbi_load doesn't work. :(\n");
-    else
-        printf("\nx = %i   y = %i   n = %i\n", x, y, n);
-    
-    struct nk_image im;
-    im.handle.ptr = data;
-    im.handle.id = (uint32_t)data;
-    im.w = x;
-    im.h = y;
-    im.region[0] = 0;
-    im.region[1] = 0;
-    im.region[2] = x;
-    im.region[3] = y;
-
-    for (int i = 0; i < 50; i++) {
-         printf("\npix %i = %x\t|\t", i, (int)data[i]);
-         unsigned char *tmp = (unsigned char*)(im.handle.ptr);
-        printf("im.ptr[%i] = %x", i, tmp[i]);
-    }
-    
-    printf("\n");
-
-
-    //struct nk_image {nk_handle handle;unsigned short w,h;unsigned short region[4];};
     /* Draw */
     while (1) 
     {
@@ -196,21 +158,36 @@ int main(int argc, char *argv[]) {
             nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
 
-            nk_draw_image(canvas.painter, nk_rect(0, 0, 999, 799), & im, nk_rgb(0, 0, 0));
+            /* load some image */
+            int x,y,n;
+            unsigned char * data = stbi_load("201.png", &x, &y, &n, 0);
+            if (data == NULL)
+                printf("\nstbi_load doesn't work. :(\n");
+
+            struct nk_image im;
+            im.handle.ptr = data;
+            im.handle.id = (uint32_t)data;
+            im.w = x;
+            im.h = y;
+            im.region[0] = 0;
+            im.region[1] = 0;
+            im.region[2] = x;
+            im.region[3] = y;
             
+            nk_draw_image(canvas.painter, nk_rect(0, 0, 999, 799), &im, nk_rgb(100, 0, 0));
+
+            stbi_image_free(data);            
         }
         canvas_end(&ctx, &canvas);
 
          /* Draw each element */
          draw(&this_vc, &ctx, width, height);
-     }
+    }
 
-    stbi_image_free(data);
     nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
     nk_buffer_free(&device.cmds);
 
     printf("\nEnd of program.\nIf you see it then something goes wrong.\n");
     return 0;
-
 }

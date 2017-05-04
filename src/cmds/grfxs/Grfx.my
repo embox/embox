@@ -3,21 +3,23 @@ package embox.cmd.grfxs
 
 @AutoCmd
 @Cmd(name="grfx",
-	help="print that is Sasha's code",
+	help="This command just run example with nuklear graphics.",
 	man='''
 		NAME
-			grfx just print that it is Sasha's.
+			grfx
 		SYNOPSIS
-			printing 
+			It provides graphics by nuklear GUI. 
 		AUTHORS
 Aleksandra Butrova ;)
 	''')
+
 @BuildDepends(third_party.lib.nuklear)
-//@BuildDepends(driver.console.mpx_only_stm)
+
 module grfx {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/nuklear/install")
 	source "grfx_canvas.c"
 	depends third_party.lib.nuklear
+
 	@InitFS
 	source "201.png"
 }
