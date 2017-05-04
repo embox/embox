@@ -1,0 +1,9 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name="armv7a_debug",
+	help="ARMV7A Debug",
+	man="")
+module armv7a_debug {
+	source "armv7a_debug.c"
+}

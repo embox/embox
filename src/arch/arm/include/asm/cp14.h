@@ -8,6 +8,8 @@
 #ifndef CP14_H_
 #define CP14_H_
 
+#include <hal/mem_barriers.h>
+
 static inline uint32_t cp14_get_dbgdidr(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
