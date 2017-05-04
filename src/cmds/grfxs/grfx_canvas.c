@@ -66,10 +66,12 @@ canvas_end(struct nk_context *ctx, struct nk_canvas *canvas){
 }
 
 /* callbacks */
-static void inpevent(struct vc *vc, struct input_event *ev){
+static void 
+inpevent(struct vc *vc, struct input_event *ev){
 }
 
-static void visd(struct vc *vc, struct fb_info *fbinfo){
+static void 
+visd(struct vc *vc, struct fb_info *fbinfo){
 
     /* fill all window with white */
     struct fb_fillrect rect;
@@ -83,7 +85,8 @@ static void visd(struct vc *vc, struct fb_info *fbinfo){
     fb_fillrect(vc->fb, &rect);
 }
 
-static void devisn(struct vc *vc) {
+static void 
+devisn(struct vc *vc) {
 	mpx_devisualized(vc);
 }
 
@@ -159,22 +162,24 @@ int main(int argc, char *argv[]) {
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
 
             /* load some image */
-            int x,y,n;
-            unsigned char * data = stbi_load("201.png", &x, &y, &n, 0);
+            int im_w, im_h, im_format;
+            unsigned char * data = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
             if (data == NULL)
                 printf("\nstbi_load doesn't work. :(\n");
+            else 
+                printf("\nload image: width = %i\theight = %i\tformat = %i", im_w, im_h, im_format);
 
             struct nk_image im;
             im.handle.ptr = data;
             im.handle.id = (uint32_t)data;
-            im.w = x;
-            im.h = y;
+            im.w = im_w;
+            im.h = im_h;
             im.region[0] = 0;
             im.region[1] = 0;
-            im.region[2] = x;
-            im.region[3] = y;
+            im.region[2] = im_w;
+            im.region[3] = im_h;
             
-            nk_draw_image(canvas.painter, nk_rect(0, 0, 999, 799), &im, nk_rgb(100, 0, 0));
+            nk_draw_image(canvas.painter, nk_rect(0, 0, 150, 150), &im, nk_rgb(100, 0, 0));
 
             stbi_image_free(data);            
         }

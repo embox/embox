@@ -28,30 +28,20 @@ module fbcon {
 
 	depends embox.cmd.sh.tish
 }
-
 module mpx_only{
 	source "mpx_simple.c"
-	@IncludeExport(path="drivers/console")
-	source "mpx.h"
 
 	depends embox.driver.video.fb
 	depends embox.driver.input.core
-	depends embox.cmd.sh.tish
+
+	@IncludeExport(path="drivers/console")
+	source "mpx.h"
+
 	depends embox.driver.video.fonts
 	depends embox.driver.tty.vterm
 	depends embox.driver.input.keyboard.kbd_defs
-	depends embox.driver.input.keyboard.keyboard
-	depends embox.cmd.user.login
-}
+	depends mpx_simple
+	depends embox.cmd.user.login //fbcon start `login` at every console
 
-module mpx_only_stm{"
-	@IncludeExport(path="drivers/console")
-	source "mpx.h"
-
-	depends embox.driver.video.fb
-	depends embox.driver.input.core
 	depends embox.cmd.sh.tish
-	depends embox.driver.video.fonts
-	depends embox.cmd.user.login
 }
-
