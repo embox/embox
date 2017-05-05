@@ -31,6 +31,16 @@ static inline uint32_t cp14_get_dbgdsar(void) {
 	return val;
 }
 
+static inline uint32_t cp14_get_dbgdscr(void) {
+	uint32_t val;
+	__asm__ __volatile__ ("mrc p14,0,%0,c0,c2,2" : "=r" (val) : :"cc");
+	return val;
+}
+
+static inline void cp14_set_dbgdscr(uint32_t val) {
+	__asm__ __volatile__ ("mcr p14,0,%0,c0,c2,2" : :"r" (val));
+}
+
 #define CP14_GET_DBGBVR(i) \
 	({ \
 		uint32_t val; \
