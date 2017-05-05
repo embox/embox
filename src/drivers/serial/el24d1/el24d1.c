@@ -2,7 +2,7 @@
  * @file el24d1.c
  * @brief UART driver for SAULT-EL24D1 board
  * @author Denis Deryugin <deryugin.denis@gmail.com>
- * @version 
+ * @version
  * @date 14.11.2016
  */
 
@@ -71,40 +71,40 @@ static int el24d1_uart_putc(struct uart *dev, int ch) {
 }
 
 static const struct uart_ops el24d1_uart_uart_ops = {
-		.uart_getc = el24d1_uart_getc,
-		.uart_putc = el24d1_uart_putc,
-		.uart_hasrx = el24d1_uart_has_symbol,
-		.uart_setup = el24d1_uart_setup,
+	.uart_getc = el24d1_uart_getc,
+	.uart_putc = el24d1_uart_putc,
+	.uart_hasrx = el24d1_uart_has_symbol,
+	.uart_setup = el24d1_uart_setup,
 };
 
 static struct uart uart0 = {
-		.uart_ops = &el24d1_uart_uart_ops,
-		.irq_num = IRQ_NUM,
-		.base_addr = UART_BASE,
+	.uart_ops = &el24d1_uart_uart_ops,
+	.irq_num = IRQ_NUM,
+	.base_addr = UART_BASE,
 };
 
 static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = true,
 };
 
 static const struct uart_params uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = false,
 };
 
 const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &uart0,
-		.params = &uart_diag_params,
+	.diag = {
+		.ops = &uart_diag_ops,
+	},
+	.uart = &uart0,
+	.params = &uart_diag_params,
 };
 
 static int el24d1_uart_init(void) {

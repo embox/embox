@@ -6,7 +6,6 @@
  * @author Alexander Kalmuk
  */
 
-
 #include <mem/objalloc.h>
 
 #include <pnet/core/node.h>

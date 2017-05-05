@@ -1,8 +1,8 @@
 /******************************************************************************
  * memory.h
- * 
+ *
  * Memory reservation and information.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -40,9 +40,9 @@
 
 #if __XEN_INTERFACE_VERSION__ >= 0x00030209
 /*
- * Maximum # bits addressable by the user of the allocated region (e.g., I/O 
- * devices often have a 32-bit limitation even in 64-bit systems). If zero 
- * then the user has no addressing restriction. This field is not used by 
+ * Maximum # bits addressable by the user of the allocated region (e.g., I/O
+ * devices often have a 32-bit limitation even in 64-bit systems). If zero
+ * then the user has no addressing restriction. This field is not used by
  * XENMEM_decrease_reservation.
  */
 #define XENMEMF_address_bits(x)     (x)
@@ -59,36 +59,36 @@
 
 struct xen_memory_reservation {
 
-    /*
-     * XENMEM_increase_reservation:
-     *   OUT: MFN (*not* GMFN) bases of extents that were allocated
-     * XENMEM_decrease_reservation:
-     *   IN:  GMFN bases of extents to free
-     * XENMEM_populate_physmap:
-     *   IN:  GPFN bases of extents to populate with memory
-     *   OUT: GMFN bases of extents that were allocated
-     *   (NB. This command also updates the mach_to_phys translation table)
-     * XENMEM_claim_pages:
-     *   IN: must be zero
-     */
-    XEN_GUEST_HANDLE(xen_pfn_t) extent_start;
+	/*
+	 * XENMEM_increase_reservation:
+	 *   OUT: MFN (*not* GMFN) bases of extents that were allocated
+	 * XENMEM_decrease_reservation:
+	 *   IN:  GMFN bases of extents to free
+	 * XENMEM_populate_physmap:
+	 *   IN:  GPFN bases of extents to populate with memory
+	 *   OUT: GMFN bases of extents that were allocated
+	 *   (NB. This command also updates the mach_to_phys translation table)
+	 * XENMEM_claim_pages:
+	 *   IN: must be zero
+	 */
+	XEN_GUEST_HANDLE(xen_pfn_t) extent_start;
 
-    /* Number of extents, and size/alignment of each (2^extent_order pages). */
-    xen_ulong_t    nr_extents;
-    unsigned int   extent_order;
+	/* Number of extents, and size/alignment of each (2^extent_order pages). */
+	xen_ulong_t nr_extents;
+	unsigned int extent_order;
 
 #if __XEN_INTERFACE_VERSION__ >= 0x00030209
-    /* XENMEMF flags. */
-    unsigned int   mem_flags;
+	/* XENMEMF flags. */
+	unsigned int mem_flags;
 #else
-    unsigned int   address_bits;
+	unsigned int address_bits;
 #endif
 
-    /*
-     * Domain whose reservation is being changed.
-     * Unprivileged domains can specify only DOMID_SELF.
-     */
-    domid_t        domid;
+	/*
+	 * Domain whose reservation is being changed.
+	 * Unprivileged domains can specify only DOMID_SELF.
+	 */
+	domid_t domid;
 };
 typedef struct xen_memory_reservation xen_memory_reservation_t;
 DEFINE_XEN_GUEST_HANDLE(xen_memory_reservation_t);
@@ -102,36 +102,36 @@ DEFINE_XEN_GUEST_HANDLE(xen_memory_reservation_t);
  */
 #define XENMEM_exchange             11
 struct xen_memory_exchange {
-    /*
-     * [IN] Details of memory extents to be exchanged (GMFN bases).
-     * Note that @in.address_bits is ignored and unused.
-     */
-    struct xen_memory_reservation in;
+	/*
+	 * [IN] Details of memory extents to be exchanged (GMFN bases).
+	 * Note that @in.address_bits is ignored and unused.
+	 */
+	struct xen_memory_reservation in;
 
-    /*
-     * [IN/OUT] Details of new memory extents.
-     * We require that:
-     *  1. @in.domid == @out.domid
-     *  2. @in.nr_extents  << @in.extent_order == 
-     *     @out.nr_extents << @out.extent_order
-     *  3. @in.extent_start and @out.extent_start lists must not overlap
-     *  4. @out.extent_start lists GPFN bases to be populated
-     *  5. @out.extent_start is overwritten with allocated GMFN bases
-     */
-    struct xen_memory_reservation out;
+	/*
+	 * [IN/OUT] Details of new memory extents.
+	 * We require that:
+	 *  1. @in.domid == @out.domid
+	 *  2. @in.nr_extents  << @in.extent_order ==
+	 *     @out.nr_extents << @out.extent_order
+	 *  3. @in.extent_start and @out.extent_start lists must not overlap
+	 *  4. @out.extent_start lists GPFN bases to be populated
+	 *  5. @out.extent_start is overwritten with allocated GMFN bases
+	 */
+	struct xen_memory_reservation out;
 
-    /*
-     * [OUT] Number of input extents that were successfully exchanged:
-     *  1. The first @nr_exchanged input extents were successfully
-     *     deallocated.
-     *  2. The corresponding first entries in the output extent list correctly
-     *     indicate the GMFNs that were successfully exchanged.
-     *  3. All other input and output extents are untouched.
-     *  4. If not all input exents are exchanged then the return code of this
-     *     command will be non-zero.
-     *  5. THIS FIELD MUST BE INITIALISED TO ZERO BY THE CALLER!
-     */
-    xen_ulong_t nr_exchanged;
+	/*
+	 * [OUT] Number of input extents that were successfully exchanged:
+	 *  1. The first @nr_exchanged input extents were successfully
+	 *     deallocated.
+	 *  2. The corresponding first entries in the output extent list correctly
+	 *     indicate the GMFNs that were successfully exchanged.
+	 *  3. All other input and output extents are untouched.
+	 *  4. If not all input exents are exchanged then the return code of this
+	 *     command will be non-zero.
+	 *  5. THIS FIELD MUST BE INITIALISED TO ZERO BY THE CALLER!
+	 */
+	xen_ulong_t nr_exchanged;
 };
 typedef struct xen_memory_exchange xen_memory_exchange_t;
 DEFINE_XEN_GUEST_HANDLE(xen_memory_exchange_t);
@@ -164,24 +164,24 @@ DEFINE_XEN_GUEST_HANDLE(xen_memory_exchange_t);
  */
 #define XENMEM_machphys_mfn_list    5
 struct xen_machphys_mfn_list {
-    /*
-     * Size of the 'extent_start' array. Fewer entries will be filled if the
-     * machphys table is smaller than max_extents * 2MB.
-     */
-    unsigned int max_extents;
+	/*
+	 * Size of the 'extent_start' array. Fewer entries will be filled if the
+	 * machphys table is smaller than max_extents * 2MB.
+	 */
+	unsigned int max_extents;
 
-    /*
-     * Pointer to buffer to fill with list of extent starts. If there are
-     * any large discontiguities in the machine address space, 2MB gaps in
-     * the machphys table will be represented by an MFN base of zero.
-     */
-    XEN_GUEST_HANDLE(xen_pfn_t) extent_start;
+	/*
+	 * Pointer to buffer to fill with list of extent starts. If there are
+	 * any large discontiguities in the machine address space, 2MB gaps in
+	 * the machphys table will be represented by an MFN base of zero.
+	 */
+	XEN_GUEST_HANDLE(xen_pfn_t) extent_start;
 
-    /*
-     * Number of extents written to the above array. This will be smaller
-     * than 'max_extents' if the machphys table is smaller than max_e * 2MB.
-     */
-    unsigned int nr_extents;
+	/*
+	 * Number of extents written to the above array. This will be smaller
+	 * than 'max_extents' if the machphys table is smaller than max_e * 2MB.
+	 */
+	unsigned int nr_extents;
 };
 typedef struct xen_machphys_mfn_list xen_machphys_mfn_list_t;
 DEFINE_XEN_GUEST_HANDLE(xen_machphys_mfn_list_t);
@@ -203,8 +203,8 @@ DEFINE_XEN_GUEST_HANDLE(xen_machphys_mfn_list_t);
  */
 #define XENMEM_machphys_mapping     12
 struct xen_machphys_mapping {
-    xen_ulong_t v_start, v_end; /* Start and end virtual addresses.   */
-    xen_ulong_t max_mfn;        /* Maximum MFN that can be looked up. */
+	xen_ulong_t v_start, v_end; /* Start and end virtual addresses.   */
+	xen_ulong_t max_mfn;        /* Maximum MFN that can be looked up. */
 };
 typedef struct xen_machphys_mapping xen_machphys_mapping_t;
 DEFINE_XEN_GUEST_HANDLE(xen_machphys_mapping_t);
@@ -216,7 +216,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_machphys_mapping_t);
 #define XENMAPSPACE_gmfn         2 /* GMFN */
 #define XENMAPSPACE_gmfn_range   3 /* GMFN range, XENMEM_add_to_physmap only. */
 #define XENMAPSPACE_gmfn_foreign 4 /* GMFN from another dom,
-                                    * XENMEM_add_to_physmap_batch only. */
+	                                * XENMEM_add_to_physmap_batch only. */
 /* ` } */
 
 /*
@@ -226,21 +226,21 @@ DEFINE_XEN_GUEST_HANDLE(xen_machphys_mapping_t);
  */
 #define XENMEM_add_to_physmap      7
 struct xen_add_to_physmap {
-    /* Which domain to change the mapping for. */
-    domid_t domid;
+	/* Which domain to change the mapping for. */
+	domid_t domid;
 
-    /* Number of pages to go through for gmfn_range */
-    uint16_t    size;
+	/* Number of pages to go through for gmfn_range */
+	uint16_t size;
 
-    unsigned int space; /* => enum phys_map_space */
+	unsigned int space; /* => enum phys_map_space */
 
 #define XENMAPIDX_grant_table_status 0x80000000
 
-    /* Index into space being mapped. */
-    xen_ulong_t idx;
+	/* Index into space being mapped. */
+	xen_ulong_t idx;
 
-    /* GPFN in domid where the source mapping page should appear. */
-    xen_pfn_t     gpfn;
+	/* GPFN in domid where the source mapping page should appear. */
+	xen_pfn_t gpfn;
 };
 typedef struct xen_add_to_physmap xen_add_to_physmap_t;
 DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_t);
@@ -248,25 +248,25 @@ DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_t);
 /* A batched version of add_to_physmap. */
 #define XENMEM_add_to_physmap_batch 23
 struct xen_add_to_physmap_batch {
-    /* IN */
-    /* Which domain to change the mapping for. */
-    domid_t domid;
-    uint16_t space; /* => enum phys_map_space */
+	/* IN */
+	/* Which domain to change the mapping for. */
+	domid_t domid;
+	uint16_t space; /* => enum phys_map_space */
 
-    /* Number of pages to go through */
-    uint16_t size;
-    domid_t foreign_domid; /* IFF gmfn_foreign */
+	/* Number of pages to go through */
+	uint16_t size;
+	domid_t foreign_domid; /* IFF gmfn_foreign */
 
-    /* Indexes into space being mapped. */
-    XEN_GUEST_HANDLE(xen_ulong_t) idxs;
+	/* Indexes into space being mapped. */
+	XEN_GUEST_HANDLE(xen_ulong_t) idxs;
 
-    /* GPFN in domid where the source mapping page should appear. */
-    XEN_GUEST_HANDLE(xen_pfn_t) gpfns;
+	/* GPFN in domid where the source mapping page should appear. */
+	XEN_GUEST_HANDLE(xen_pfn_t) gpfns;
 
-    /* OUT */
+	/* OUT */
 
-    /* Per index error code. */
-    XEN_GUEST_HANDLE(int) errs;
+	/* Per index error code. */
+	XEN_GUEST_HANDLE(int) errs;
 };
 typedef struct xen_add_to_physmap_batch xen_add_to_physmap_batch_t;
 DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_batch_t);
@@ -285,11 +285,11 @@ DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_range_t);
  */
 #define XENMEM_remove_from_physmap      15
 struct xen_remove_from_physmap {
-    /* Which domain to change the mapping for. */
-    domid_t domid;
+	/* Which domain to change the mapping for. */
+	domid_t domid;
 
-    /* GPFN of the current mapping of the page. */
-    xen_pfn_t     gpfn;
+	/* GPFN of the current mapping of the page. */
+	xen_pfn_t gpfn;
 };
 typedef struct xen_remove_from_physmap xen_remove_from_physmap_t;
 DEFINE_XEN_GUEST_HANDLE(xen_remove_from_physmap_t);
@@ -304,18 +304,18 @@ DEFINE_XEN_GUEST_HANDLE(xen_remove_from_physmap_t);
  */
 #define XENMEM_memory_map           9
 struct xen_memory_map {
-    /*
-     * On call the number of entries which can be stored in buffer. On
-     * return the number of entries which have been stored in
-     * buffer.
-     */
-    unsigned int nr_entries;
+	/*
+	 * On call the number of entries which can be stored in buffer. On
+	 * return the number of entries which have been stored in
+	 * buffer.
+	 */
+	unsigned int nr_entries;
 
-    /*
-     * Entries in the buffer are in the same format as returned by the
-     * BIOS INT 0x15 EAX=0xE820 call.
-     */
-    XEN_GUEST_HANDLE(void) buffer;
+	/*
+	 * Entries in the buffer are in the same format as returned by the
+	 * BIOS INT 0x15 EAX=0xE820 call.
+	 */
+	XEN_GUEST_HANDLE(void) buffer;
 };
 typedef struct xen_memory_map xen_memory_map_t;
 DEFINE_XEN_GUEST_HANDLE(xen_memory_map_t);
@@ -334,8 +334,8 @@ DEFINE_XEN_GUEST_HANDLE(xen_memory_map_t);
  */
 #define XENMEM_set_memory_map       13
 struct xen_foreign_memory_map {
-    domid_t domid;
-    struct xen_memory_map map;
+	domid_t domid;
+	struct xen_memory_map map;
 };
 typedef struct xen_foreign_memory_map xen_foreign_memory_map_t;
 DEFINE_XEN_GUEST_HANDLE(xen_foreign_memory_map_t);
@@ -343,14 +343,14 @@ DEFINE_XEN_GUEST_HANDLE(xen_foreign_memory_map_t);
 #define XENMEM_set_pod_target       16
 #define XENMEM_get_pod_target       17
 struct xen_pod_target {
-    /* IN */
-    uint64_t target_pages;
-    /* OUT */
-    uint64_t tot_pages;
-    uint64_t pod_cache_pages;
-    uint64_t pod_entries;
-    /* IN */
-    domid_t domid;
+	/* IN */
+	uint64_t target_pages;
+	/* OUT */
+	uint64_t tot_pages;
+	uint64_t pod_cache_pages;
+	uint64_t pod_entries;
+	/* IN */
+	domid_t domid;
 };
 typedef struct xen_pod_target xen_pod_target_t;
 
@@ -362,7 +362,7 @@ typedef struct xen_pod_target xen_pod_target_t;
 
 /*
  * Get the number of MFNs saved through memory sharing.
- * The call never fails. 
+ * The call never fails.
  */
 #define XENMEM_get_sharing_freed_pages    18
 #define XENMEM_get_sharing_shared_pages   19
@@ -373,14 +373,13 @@ typedef struct xen_pod_target xen_pod_target_t;
 #define XENMEM_paging_op_prep               2
 
 struct xen_mem_event_op {
-    uint8_t     op;         /* XENMEM_*_op_* */
-    domid_t     domain;
-    
+	uint8_t op;             /* XENMEM_*_op_* */
+	domid_t domain;
 
-    /* PAGING_PREP IN: buffer to immediately fill page in */
-    uint64_aligned_t    buffer;
-    /* Other OPs */
-    uint64_aligned_t    gfn;           /* IN:  gfn of page being operated on */
+	/* PAGING_PREP IN: buffer to immediately fill page in */
+	uint64_aligned_t buffer;
+	/* Other OPs */
+	uint64_aligned_t gfn;              /* IN:  gfn of page being operated on */
 };
 typedef struct xen_mem_event_op xen_mem_event_op_t;
 DEFINE_XEN_GUEST_HANDLE(xen_mem_event_op_t);
@@ -391,46 +390,46 @@ DEFINE_XEN_GUEST_HANDLE(xen_mem_event_op_t);
 #define XENMEM_access_op_get_access         2
 
 typedef enum {
-    XENMEM_access_n,
-    XENMEM_access_r,
-    XENMEM_access_w,
-    XENMEM_access_rw,
-    XENMEM_access_x,
-    XENMEM_access_rx,
-    XENMEM_access_wx,
-    XENMEM_access_rwx,
-    /*
-     * Page starts off as r-x, but automatically
-     * change to r-w on a write
-     */
-    XENMEM_access_rx2rw,
-    /*
-     * Log access: starts off as n, automatically
-     * goes to rwx, generating an event without
-     * pausing the vcpu
-     */
-    XENMEM_access_n2rwx,
-    /* Take the domain default */
-    XENMEM_access_default
+	XENMEM_access_n,
+	XENMEM_access_r,
+	XENMEM_access_w,
+	XENMEM_access_rw,
+	XENMEM_access_x,
+	XENMEM_access_rx,
+	XENMEM_access_wx,
+	XENMEM_access_rwx,
+	/*
+	 * Page starts off as r-x, but automatically
+	 * change to r-w on a write
+	 */
+	XENMEM_access_rx2rw,
+	/*
+	 * Log access: starts off as n, automatically
+	 * goes to rwx, generating an event without
+	 * pausing the vcpu
+	 */
+	XENMEM_access_n2rwx,
+	/* Take the domain default */
+	XENMEM_access_default
 } xenmem_access_t;
 
 struct xen_mem_access_op {
-    /* XENMEM_access_op_* */
-    uint8_t op;
-    /* xenmem_access_t */
-    uint8_t access;
-    domid_t domid;
-    /*
-     * Number of pages for set op
-     * Ignored on setting default access and other ops
-     */
-    uint32_t nr;
-    /*
-     * First pfn for set op
-     * pfn for get op
-     * ~0ull is used to set and get the default access for pages
-     */
-    uint64_aligned_t pfn;
+	/* XENMEM_access_op_* */
+	uint8_t op;
+	/* xenmem_access_t */
+	uint8_t access;
+	domid_t domid;
+	/*
+	 * Number of pages for set op
+	 * Ignored on setting default access and other ops
+	 */
+	uint32_t nr;
+	/*
+	 * First pfn for set op
+	 * pfn for get op
+	 * ~0ull is used to set and get the default access for pages
+	 */
+	uint64_aligned_t pfn;
 };
 typedef struct xen_mem_access_op xen_mem_access_op_t;
 DEFINE_XEN_GUEST_HANDLE(xen_mem_access_op_t);
@@ -451,44 +450,44 @@ DEFINE_XEN_GUEST_HANDLE(xen_mem_access_op_t);
 
 /* The following allows sharing of grant refs. This is useful
  * for sharing utilities sitting as "filters" in IO backends
- * (e.g. memshr + blktap(2)). The IO backend is only exposed 
+ * (e.g. memshr + blktap(2)). The IO backend is only exposed
  * to grant references, and this allows sharing of the grefs */
 #define XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG   (1ULL << 62)
 
 #define XENMEM_SHARING_OP_FIELD_MAKE_GREF(field, val)  \
-    (field) = (XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG | val)
+	(field) = (XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG | val)
 #define XENMEM_SHARING_OP_FIELD_IS_GREF(field)         \
-    ((field) & XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG)
+	((field) & XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG)
 #define XENMEM_SHARING_OP_FIELD_GET_GREF(field)        \
-    ((field) & (~XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG))
+	((field) & (~XENMEM_SHARING_OP_FIELD_IS_GREF_FLAG))
 
 struct xen_mem_sharing_op {
-    uint8_t     op;     /* XENMEM_sharing_op_* */
-    domid_t     domain;
+	uint8_t op;         /* XENMEM_sharing_op_* */
+	domid_t domain;
 
-    union {
-        struct mem_sharing_op_nominate {  /* OP_NOMINATE_xxx           */
-            union {
-                uint64_aligned_t gfn;     /* IN: gfn to nominate       */
-                uint32_t      grant_ref;  /* IN: grant ref to nominate */
-            } u;
-            uint64_aligned_t  handle;     /* OUT: the handle           */
-        } nominate;
-        struct mem_sharing_op_share {     /* OP_SHARE/ADD_PHYSMAP */
-            uint64_aligned_t source_gfn;    /* IN: the gfn of the source page */
-            uint64_aligned_t source_handle; /* IN: handle to the source page */
-            uint64_aligned_t client_gfn;    /* IN: the client gfn */
-            uint64_aligned_t client_handle; /* IN: handle to the client page */
-            domid_t  client_domain; /* IN: the client domain id */
-        } share; 
-        struct mem_sharing_op_debug {     /* OP_DEBUG_xxx */
-            union {
-                uint64_aligned_t gfn;      /* IN: gfn to debug          */
-                uint64_aligned_t mfn;      /* IN: mfn to debug          */
-                uint32_t gref;     /* IN: gref to debug         */
-            } u;
-        } debug;
-    } u;
+	union {
+		struct mem_sharing_op_nominate {  /* OP_NOMINATE_xxx           */
+			union {
+				uint64_aligned_t gfn;     /* IN: gfn to nominate       */
+				uint32_t grant_ref;       /* IN: grant ref to nominate */
+			} u;
+			uint64_aligned_t handle;      /* OUT: the handle           */
+		} nominate;
+		struct mem_sharing_op_share {     /* OP_SHARE/ADD_PHYSMAP */
+			uint64_aligned_t source_gfn;    /* IN: the gfn of the source page */
+			uint64_aligned_t source_handle; /* IN: handle to the source page */
+			uint64_aligned_t client_gfn;    /* IN: the client gfn */
+			uint64_aligned_t client_handle; /* IN: handle to the client page */
+			domid_t client_domain;  /* IN: the client domain id */
+		} share;
+		struct mem_sharing_op_debug {     /* OP_DEBUG_xxx */
+			union {
+				uint64_aligned_t gfn;      /* IN: gfn to debug          */
+				uint64_aligned_t mfn;      /* IN: mfn to debug          */
+				uint32_t gref;     /* IN: gref to debug         */
+			} u;
+		} debug;
+	} u;
 };
 typedef struct xen_mem_sharing_op xen_mem_sharing_op_t;
 DEFINE_XEN_GUEST_HANDLE(xen_mem_sharing_op_t);
@@ -531,9 +530,9 @@ DEFINE_XEN_GUEST_HANDLE(xen_mem_sharing_op_t);
 
 /* vNUMA node memory ranges */
 struct xen_vmemrange {
-    uint64_t start, end;
-    unsigned int flags;
-    unsigned int nid;
+	uint64_t start, end;
+	unsigned int flags;
+	unsigned int nid;
 };
 typedef struct xen_vmemrange xen_vmemrange_t;
 DEFINE_XEN_GUEST_HANDLE(xen_vmemrange_t);
@@ -548,26 +547,26 @@ DEFINE_XEN_GUEST_HANDLE(xen_vmemrange_t);
  * nr_vmemranges and nr_vcpus to guest if the values where incorrect.
  */
 struct xen_vnuma_topology_info {
-    /* IN */
-    domid_t domid;
-    uint16_t pad;
-    /* IN/OUT */
-    unsigned int nr_vnodes;
-    unsigned int nr_vcpus;
-    unsigned int nr_vmemranges;
-    /* OUT */
-    union {
-        XEN_GUEST_HANDLE(uint) h;
-        uint64_t pad;
-    } vdistance;
-    union {
-        XEN_GUEST_HANDLE(uint) h;
-        uint64_t pad;
-    } vcpu_to_vnode;
-    union {
-        XEN_GUEST_HANDLE(xen_vmemrange_t) h;
-        uint64_t pad;
-    } vmemrange;
+	/* IN */
+	domid_t domid;
+	uint16_t pad;
+	/* IN/OUT */
+	unsigned int nr_vnodes;
+	unsigned int nr_vcpus;
+	unsigned int nr_vmemranges;
+	/* OUT */
+	union {
+		XEN_GUEST_HANDLE(uint) h;
+		uint64_t pad;
+	} vdistance;
+	union {
+		XEN_GUEST_HANDLE(uint) h;
+		uint64_t pad;
+	} vcpu_to_vnode;
+	union {
+		XEN_GUEST_HANDLE(xen_vmemrange_t) h;
+		uint64_t pad;
+	} vmemrange;
 };
 typedef struct xen_vnuma_topology_info xen_vnuma_topology_info_t;
 DEFINE_XEN_GUEST_HANDLE(xen_vnuma_topology_info_t);

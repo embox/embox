@@ -34,7 +34,7 @@ static const struct task_resource_desc task_affinity_desc = {
 	.resource_offset = &task_affinity_offset
 };
 
-unsigned int * task_resource_affinity(const struct task *task) {
+unsigned int *task_resource_affinity(const struct task *task) {
 	assert(task != NULL);
 	return (void *)task->resources + task_affinity_offset;
 }

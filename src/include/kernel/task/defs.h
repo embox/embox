@@ -17,9 +17,6 @@
 #define TASKST_STOPSIG_MASK     TASKST_EXITST_MASK
 #define TASKST_CONT_MASK        0x0800
 
-
 #define TASK_STATUS_IN_VFORK    0x1000
 
-
 #endif /* KERNEL_TASK_DEFS_H_ */
-

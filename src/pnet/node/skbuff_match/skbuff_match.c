@@ -6,7 +6,6 @@
  * @author Alexander Kalmuk
  */
 
-
 #include <util/member.h>
 #include <string.h>
 #include <mem/objalloc.h>
@@ -26,14 +25,13 @@
 #include <pnet/core/core.h>
 #include <pnet/core/types.h>
 
-
 #define NET_NODES_CNT 0x10
 #define PRINT_WAYS
 
 OBJALLOC_DEF(matcher_nodes, struct net_node_matcher, NET_NODES_CNT);
 
 #ifdef PRINT_WAYS
-static void print_pack_way(struct pnet_pack *pack, match_rule_t rule , int n) {
+static void print_pack_way(struct pnet_pack *pack, match_rule_t rule, int n) {
 	net_node_t node;
 
 	printf("%s->", "matcher");
@@ -64,7 +62,7 @@ int match_lin(struct pnet_pack *pack) {
 
 	node = (net_node_matcher_t) pack->node;
 
-	list_for_each (h, &node->match_rx_rules) {
+	list_for_each(h, &node->match_rx_rules) {
 		struct sk_buff *skb = pack->data;
 		curr = member_cast_out(h, struct match_rule, lnk);
 		rule_curr = curr->skbuf->mac.raw;
@@ -73,26 +71,27 @@ int match_lin(struct pnet_pack *pack) {
 
 		for (n = MAX_PACK_HEADER_SIZE;
 				(((*rule_curr == 255) || *pack_curr == *rule_curr)) && n;
-				--n, ++pack_curr, ++rule_curr)
+				--n, ++pack_curr, ++rule_curr) {
 			;
+		}
 
 		if (n == 0) {
 			pack->node = curr->next_node;
 			pack->priority = curr->priority;
 #ifdef PRINT_WAYS
-		print_pack_way(pack,curr,n);
+			print_pack_way(pack,curr,n);
 #endif
 			return NET_HND_FORWARD;
 		}
 	}
 #ifdef PRINT_WAYS
-		print_pack_way(pack,curr,n);
+	print_pack_way(pack,curr,n);
 #endif
 	return NET_HND_FORWARD_DEFAULT;
 }
 
 PNET_PROTO_DEF("matcher", {
-	.rx_hnd = match_lin,
-	.alloc  = matcher_alloc,
-	.free   = matcher_free
-});
+			.rx_hnd = match_lin,
+			.alloc  = matcher_alloc,
+			.free   = matcher_free
+		});

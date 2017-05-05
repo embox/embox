@@ -71,15 +71,15 @@ static int dc_rx_hnd(struct pnet_pack *pack) {
 	msg = pnet_pack_get_data(pack);
 
 	switch (msg[0]) {
-		case DEVICE_CONFIG_DATA:
-			send_config(msg);
-			break;
-		case EXECUTE_COMMAND:
-			lego_msg = (struct lego_dc_msg *) (msg);
-			handle_command(lego_msg, &addit_len, dc_out_msg.body.tail + 1);
-			break;
-		case REQUEST_SENSOR_DATA:
-			break;
+	case DEVICE_CONFIG_DATA:
+		send_config(msg);
+		break;
+	case EXECUTE_COMMAND:
+		lego_msg = (struct lego_dc_msg *) (msg);
+		handle_command(lego_msg, &addit_len, dc_out_msg.body.tail + 1);
+		break;
+	case REQUEST_SENSOR_DATA:
+		break;
 	}
 
 	return NET_HND_STOP_FREE;
@@ -90,6 +90,6 @@ static int node_dc_init(void) {
 }
 
 PNET_NODE_DEF(PNET_NODE_DIRECT_COMM_EXECUTER,  {
-		.rx_hnd = dc_rx_hnd,
-		.tx_hnd = NULL
-	});
+			.rx_hnd = dc_rx_hnd,
+			.tx_hnd = NULL
+		});

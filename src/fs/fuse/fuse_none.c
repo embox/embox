@@ -20,4 +20,3 @@ int fuse_module_mount(struct fuse_module *fm, char *dev, char *dest) {
 int fuse_module_umount(struct fuse_module *fm) {
 	return -ENOSUPP;
 }
-

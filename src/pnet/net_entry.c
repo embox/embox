@@ -38,13 +38,13 @@ int netif_rx(void *data) {
 		return NET_RX_DROP;
 	}
 
-	type = *(uint32_t*) data;
+	type = *(uint32_t *) data;
 
 	if ((type & 3)  == PNET_PACK_TYPE_SKB) {
 		INIT_LIST_HEAD((struct list_head *) data);
 		list_add_tail((struct list_head *) data, &skb_queue);
 	} else {
-		pack = (struct pnet_pack*) data;
+		pack = (struct pnet_pack *) data;
 		INIT_LIST_HEAD(&pack->link);
 		list_add_tail(&pack->link, &pnet_queue);
 	}
@@ -68,7 +68,7 @@ static int pnet_rx_action(struct lthread *data) {
 
 	list_for_each_safe(curr, n, &skb_queue) {
 		list_del(curr);
-		skb_pack = pnet_pack_create((void*) curr, 0, PNET_PACK_TYPE_SKB);
+		skb_pack = pnet_pack_create((void *) curr, 0, PNET_PACK_TYPE_SKB);
 		skb_pack->node = entry;
 		pnet_entry(skb_pack);
 	}

@@ -8,7 +8,6 @@
 #include <termios.h>
 #include <signal.h>
 
-
 #define TC_I(t, flag) ((t)->termios.c_iflag & (flag))
 #define TC_O(t, flag) ((t)->termios.c_oflag & (flag))
 #define TC_C(t, flag) ((t)->termios.c_cflag & (flag))

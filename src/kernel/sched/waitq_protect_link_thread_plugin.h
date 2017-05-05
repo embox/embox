@@ -16,5 +16,3 @@ struct thread_wait {
 };
 
 #endif /* SCHED_WAITQ_PROTECT_THREAD_H_ */
-
-

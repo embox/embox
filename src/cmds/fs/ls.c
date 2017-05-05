@@ -20,7 +20,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-typedef void item_print(const char *path, stat_t *sb);
+typedef void item_print (const char *path, stat_t *sb);
 
 static void print_usage(void) {
 	printf("Usage: ls [-hlR] path\n");
@@ -139,7 +139,7 @@ int main(int argc, char **argv) {
 	recursive = 0;
 
 	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;

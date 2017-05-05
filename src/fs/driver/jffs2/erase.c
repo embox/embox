@@ -31,7 +31,7 @@ static void jffs2_free_all_node_refs(struct jffs2_sb_info *c, struct jffs2_erase
 static void jffs2_mark_erased_block(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb);
 
 static void jffs2_erase_block(struct jffs2_sb_info *c,
-			      struct jffs2_eraseblock *jeb) {
+		struct jffs2_eraseblock *jeb) {
 	int ret;
 	uint32_t bad_offset;
 
@@ -72,7 +72,7 @@ void jffs2_erase_pending_blocks(struct jffs2_sb_info *c, int count) {
 	spin_lock(&c->erase_completion_lock);
 
 	while (!list_empty(&c->erase_complete_list) ||
-	       !list_empty(&c->erase_pending_list)) {
+			!list_empty(&c->erase_pending_list)) {
 
 		if (!list_empty(&c->erase_complete_list)) {
 			jeb = list_entry(c->erase_complete_list.next, struct jffs2_eraseblock, list);
@@ -111,14 +111,14 @@ void jffs2_erase_pending_blocks(struct jffs2_sb_info *c, int count) {
 	}
 
 	spin_unlock(&c->erase_completion_lock);
- done:
+	done:
 	D1(printk( "jffs2_erase_pending_blocks completed\n"));
 
 	up(&c->erase_free_sem);
 }
 
 static void jffs2_erase_succeeded(struct jffs2_sb_info *c,
-								struct jffs2_eraseblock *jeb) {
+		struct jffs2_eraseblock *jeb) {
 	D1(printk( "Erase completed successfully at 0x%08x\n", jeb->offset));
 	spin_lock(&c->erase_completion_lock);
 	list_del(&jeb->list);
@@ -203,25 +203,25 @@ static inline void jffs2_remove_node_refs_from_ino_list(
 	}
 
 	D1(printk( "Removed nodes in range 0x%08x-0x%08x from ino #%u\n",
-		  jeb->offset, jeb->offset + c->sector_size, ic->ino));
+			jeb->offset, jeb->offset + c->sector_size, ic->ino));
 
 	D2({
-		int i=0;
-		struct jffs2_raw_node_ref *this;
-		printk( "After remove_node_refs_from_ino_list: \n" KERN_DEBUG);
+				int i = 0;
+				struct jffs2_raw_node_ref *this;
+				printk( "After remove_node_refs_from_ino_list: \n" KERN_DEBUG);
 
-		this = ic->nodes;
+				this = ic->nodes;
 
-		while(this) {
-			printk( "0x%08x(%d)->", ref_offset(this), ref_flags(this));
-			if (++i == 5) {
-				printk("\n" );
-				i=0;
-			}
-			this = this->next_in_ino;
-		}
-		printk("\n");
-	});
+				while (this) {
+					printk( "0x%08x(%d)->", ref_offset(this), ref_flags(this));
+					if (++i == 5) {
+						printk("\n" );
+						i = 0;
+					}
+					this = this->next_in_ino;
+				}
+				printk("\n");
+			});
 
 	if (ic->nodes == (void *)ic && ic->nlink == 0) {
 		jffs2_del_ino_cache(c, ic);
@@ -229,10 +229,10 @@ static inline void jffs2_remove_node_refs_from_ino_list(
 }
 
 static void jffs2_free_all_node_refs(struct jffs2_sb_info *c,
-								struct jffs2_eraseblock *jeb) {
+		struct jffs2_eraseblock *jeb) {
 	struct jffs2_raw_node_ref *ref;
 	D1(printk( "Freeing all node refs for eraseblock offset 0x%08x\n", jeb->offset));
-	while(jeb->first_node) {
+	while (jeb->first_node) {
 		ref = jeb->first_node;
 		jeb->first_node = ref->next_phys;
 
@@ -280,7 +280,7 @@ static int jffs2_block_check_erase(struct jffs2_sb_info *c,
 			printk(KERN_WARNING "Short read from newly-erased block at 0x%08x. Wanted %d, got %zd\n", ofs, readlen, retlen);
 			goto fail;
 		}
-		for (i=0; i<readlen; i += sizeof(unsigned long)) {
+		for (i = 0; i < readlen; i += sizeof(unsigned long)) {
 			/* It's OK. We know it's properly aligned */
 			datum = ebuf + i;
 			if (*datum + 1) {
@@ -293,13 +293,13 @@ static int jffs2_block_check_erase(struct jffs2_sb_info *c,
 		cond_resched();
 	}
 	ret = 0;
-fail:
+	fail:
 	kfree(ebuf);
 	return ret;
 }
 
 static void jffs2_mark_erased_block(struct jffs2_sb_info *c,
-								struct jffs2_eraseblock *jeb) {
+		struct jffs2_eraseblock *jeb) {
 	struct jffs2_raw_node_ref *marker_ref = NULL;
 	size_t retlen;
 	int ret;
@@ -333,9 +333,9 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c,
 
 	} else {
 		struct jffs2_unknown_node marker = {
-			.magic =	cpu_to_je16(JFFS2_MAGIC_BITMASK),
-			.nodetype =	cpu_to_je16(JFFS2_NODETYPE_CLEANMARKER),
-			.totlen =	cpu_to_je32(c->cleanmarker_size)
+			.magic =    cpu_to_je16(JFFS2_MAGIC_BITMASK),
+			.nodetype = cpu_to_je16(JFFS2_NODETYPE_CLEANMARKER),
+			.totlen =   cpu_to_je32(c->cleanmarker_size)
 		};
 
 		marker_ref = jffs2_alloc_raw_node_ref();
@@ -353,10 +353,10 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c,
 		if (ret || retlen != sizeof(marker)) {
 			if (ret) {
 				printk(KERN_WARNING "Write clean marker to block at 0x%08x failed: %d\n",
-				       jeb->offset, ret);
+						jeb->offset, ret);
 			} else {
 				printk(KERN_WARNING "Short write to newly-erased block at 0x%08x: Wanted %zd, got %zd\n",
-				       jeb->offset, sizeof(marker), retlen);
+						jeb->offset, sizeof(marker), retlen);
 			}
 			jffs2_free_raw_node_ref(marker_ref);
 			goto filebad;
@@ -390,7 +390,7 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c,
 	wake_up(&c->erase_wait);
 	return;
 
-filebad:
+	filebad:
 	spin_lock(&c->erase_completion_lock);
 	/* Stick it on a list (any list) so erase_failed can take it
 	 * right off again.  Silly, but shouldn't happen often.
@@ -400,7 +400,7 @@ filebad:
 	jffs2_erase_failed(c, jeb, bad_offset);
 	return;
 
-refile:
+	refile:
 	/* Stick it back on the list from whence it came and come back later */
 	jffs2_erase_pending_trigger(c);
 	spin_lock(&c->erase_completion_lock);

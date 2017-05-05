@@ -37,7 +37,7 @@ void endhostent(void) {
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
 #define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
 
-struct hostent * gethostent(void) {
+struct hostent *gethostent(void) {
 	char hostent_buff[HOSTENT_BUFF_SZ];
 	struct hostent *he, *result;
 	char *tmp, *ip_str, *name;

@@ -4,11 +4,11 @@
  * @date 08.07.2015
  * @author Ilia Vaprol
  * @author Anton Kozlov
- * 	- CGI related changes
+ *  - CGI related changes
  * @author Andrey Golikov
- * 	- Linux adaptation
+ *  - Linux adaptation
  * @author Anastasia Vinogradova
- * 	- multithread support
+ *  - multithread support
  */
 
 #include <assert.h>
@@ -24,11 +24,11 @@
 #include "httpd.h"
 
 #ifdef __EMBUILD_MOD__
-#	include <framework/mod/options.h>
-#	define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
-#	define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
-#	define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
-#	define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
+#   include <framework/mod/options.h>
+#   define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
+#   define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
+#   define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
+#   define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
 #endif /* __EMBUILD_MOD__ */
 
 #define BUFF_SZ     1024
@@ -46,7 +46,7 @@ static int clients_get_free_index(void) {
 			return i;
 		}
 	}
-	return -1; // there are no free indexes
+	return -1; /* there are no free indexes */
 }
 
 static void httpd_client_process(struct client_info *cinfo) {
@@ -63,7 +63,7 @@ static void httpd_client_process(struct client_info *cinfo) {
 			hreq.method, hreq.uri.target, hreq.uri.query);
 
 	if (httpd_try_respond_file(cinfo, &hreq,
-				httpd_outbuf, sizeof(httpd_outbuf))) {
+			httpd_outbuf, sizeof(httpd_outbuf))) {
 		/* file sent, nothing to do */
 	} else {
 		httpd_header(cinfo, 404, "");
@@ -72,14 +72,13 @@ static void httpd_client_process(struct client_info *cinfo) {
 
 static void *do_httpd_client_thread(void *cinfo) {
 
-        struct client_info *ci = (struct client_info *) cinfo;
+	struct client_info *ci = (struct client_info *) cinfo;
 
-        httpd_client_process(ci);
+	httpd_client_process(ci);
 	close(ci->ci_sock);
-        client_is_free[ci->ci_index]=1;
+	client_is_free[ci->ci_index] = 1;
 	return NULL;
 }
-
 
 int main(int argc, char **argv) {
 	int host;
@@ -91,7 +90,7 @@ int main(int argc, char **argv) {
 	const int family = AF_INET;
 
 	inaddr.sin_family = AF_INET;
-	inaddr.sin_port= htons(80);
+	inaddr.sin_port = htons(80);
 	inaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 #elif USE_IP_VER == 6
 	struct sockaddr_in6 inaddr;
@@ -99,7 +98,7 @@ int main(int argc, char **argv) {
 	const int family = AF_INET6;
 
 	inaddr.sin6_family = AF_INET6;
-	inaddr.sin6_port= htons(80);
+	inaddr.sin6_port = htons(80);
 	memcpy(&inaddr.sin6_addr, &in6addr_any, sizeof(inaddr.sin6_addr));
 #else
 #error Unknown USE_IP_VER
@@ -125,7 +124,6 @@ int main(int argc, char **argv) {
 		return -errno;
 	}
 
-
 	for (i = 0; i < MAX_CLIENTS_COUNT; ++i) {
 		client_is_free[i] = 1;
 	}
@@ -141,7 +139,7 @@ int main(int argc, char **argv) {
 		}
 
 		ci = &clients[index];
-		ci->ci_index=index;
+		ci->ci_index = index;
 		ci->ci_addrlen = inaddrlen;
 		ci->ci_sock = accept(host, &ci->ci_addr, &ci->ci_addrlen);
 		if (ci->ci_sock == -1) {
@@ -160,4 +158,3 @@ int main(int argc, char **argv) {
 
 	return 0;
 }
-

@@ -24,7 +24,6 @@ typedef int ssize_t;
 /** Used for system times in clock ticks or CLOCKS_PER_SEC*/
 #include <defines/clock_t.h>
 
-
 /** Used for time in microseconds.*/
 typedef unsigned long useconds_t;
 
@@ -37,7 +36,6 @@ typedef struct {
 	volatile int counter;
 } atomic_t;
 
-
 #include <defines/time_t.h>
 #include <defines/timer_t.h>
 
@@ -47,9 +45,7 @@ typedef int pid_t;
 
 typedef int dev_t;
 
-
 #include <defines/clockid_t.h>
-
 
 typedef unsigned int ino_t;
 

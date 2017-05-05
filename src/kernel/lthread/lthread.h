@@ -64,7 +64,6 @@
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 
-
 struct lthread {
 	struct schedee schedee;
 	int (*run)(struct lthread *); /**< Start routine */

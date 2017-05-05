@@ -25,7 +25,6 @@ struct hashtable;
 
 struct hashtable_item;
 
-
 /** Hash function type definition */
 typedef size_t (*ht_hash_ft)(void *key);
 
@@ -77,7 +76,7 @@ extern struct hashtable_item *hashtable_item_init(
  * @param key - identifier of the element
  * @param hash - hash function
  */
-extern void *hashtable_get(struct hashtable *ht, void* key);
+extern void *hashtable_get(struct hashtable *ht, void *key);
 
 /**
  * Delete element from the hash-table
@@ -107,7 +106,6 @@ extern void *hashtable_get_key_first(struct hashtable *ht);
  * @return pointer to next key or NULL if no more entries in hash-table
  */
 extern void *hashtable_get_key_next(struct hashtable *ht, void *prev_key);
-
 
 #include <util/dlist.h>
 
@@ -144,21 +142,20 @@ struct hashtable {
 	void *buff_name[(HASHTABLE_BUFFER_SIZE(buff_size) / sizeof(void *)) + 1] = {0}
 
 #define HASHTABLE_DEF(name,size,hash_fn,cmp_fn)       \
-		static HASHTABLE_BUFFER_DEF(name##_buff, size); \
-		static struct hashtable name = {                \
-				(struct hashtable_entry *)name##_buff,  \
-				hash_fn,                                \
-				cmp_fn,                                 \
-				size, \
-				DLIST_INIT(name.all),                    \
-		}
-
+	static HASHTABLE_BUFFER_DEF(name ## _buff, size); \
+	static struct hashtable name = {                \
+		(struct hashtable_entry *)name ## _buff,  \
+		hash_fn,                                \
+		cmp_fn,                                 \
+		size, \
+		DLIST_INIT(name.all),                    \
+	}
 
 #define HASHTABLE_SIZE(size) \
 	(HASHTABLE_BUFFER_SIZE(size) + sizeof(struct hashtable))
 
 #define HASHTABLE_DECL(name, size) \
-	HASHTABLE_BUFFER_DEF(name##_buff,HASHTABLE_SIZE(size)); \
-	struct hashtable *name = (struct hashtable *)name##_buff;
+	HASHTABLE_BUFFER_DEF(name ## _buff,HASHTABLE_SIZE(size)); \
+	struct hashtable *name = (struct hashtable *)name ## _buff;
 
 #endif /* UTIL_HASHTABLE_H_ */

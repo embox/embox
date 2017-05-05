@@ -30,7 +30,7 @@ static struct idesc *null_open(struct inode *node, struct idesc *idesc) {
 	}
 	*file = (struct file) {
 		.f_idesc  = {
-				.idesc_ops   = &idesc_cdev_null_ops,
+			.idesc_ops   = &idesc_cdev_null_ops,
 		},
 	};
 	return &file->f_idesc;
@@ -57,7 +57,7 @@ static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 }
 
 static struct file_operations null_ops = {
-		.open = null_open,
+	.open = null_open,
 };
 
 static struct idesc_ops idesc_cdev_null_ops = {

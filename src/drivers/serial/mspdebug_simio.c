@@ -1,8 +1,8 @@
 /**
- * @file 
+ * @file
  * @brief mspdebug simio console driver
  *
- * @author  Anton Kozlov 
+ * @author  Anton Kozlov
  * @date    06.05.2015
  */
 

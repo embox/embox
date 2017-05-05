@@ -8,4 +8,3 @@
 #define LOG_DAEMON  (3 << 3)
 
 #endif /* IPERF_SYSLOG_H_ */
-

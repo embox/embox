@@ -17,7 +17,7 @@
 static int hash_array[SAMPLE_HASH_SIZE];
 static int pow[SAMPLE_HASH_SIZE], base = 101;
 static char sample_strings[SAMPLE_HASH_SIZE][100];
-//static int shift = 8;
+/*static int shift = 8; */
 static int shift = 0;
 static bool is_running = false;
 static sys_timer_t *sampling_timer;
@@ -32,7 +32,7 @@ static int get_hash(char *str) {
 	return res;
 }
 
-static void sampling_timer_handler(sys_timer_t* timer, void *param) {
+static void sampling_timer_handler(sys_timer_t *timer, void *param) {
 	int i, nptrs, hash;
 	void *buffer[100];
 	char bt_str[64];
@@ -74,7 +74,7 @@ static int sampling_profiler_set(int interval) {
 	interval = (interval == 0) ? (SAMPLE_TIMER_INTERVAL) : interval;
 
 	res = timer_set(&sampling_timer, TIMER_PERIODIC, interval,
-		sampling_timer_handler, NULL);
+			sampling_timer_handler, NULL);
 	if (res) {
 		printk("Failed to install timer\n");
 		return res;
@@ -82,7 +82,6 @@ static int sampling_profiler_set(int interval) {
 
 	return ENOERR;
 }
-
 
 int *get_counters(void) {
 	return hash_array;
@@ -106,7 +105,7 @@ int start_profiler(int interval) {
 	is_running = true;
 	pow[0] = 1, hash_array[0] = 0;
 	for (i = 1; i < SAMPLE_HASH_SIZE; i++) {
-		pow[i] = (pow[i - 1] * base) % SAMPLE_HASH_SIZE; 	/* initialize hash */
+		pow[i] = (pow[i - 1] * base) % SAMPLE_HASH_SIZE;    /* initialize hash */
 		hash_array[i] = 0;
 	}
 	sampling_profiler_set(interval);

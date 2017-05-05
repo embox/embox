@@ -12,5 +12,3 @@
 #include <asm-generic/limits32.h>
 
 #endif /* UM86_LIMITS_H */
-
-

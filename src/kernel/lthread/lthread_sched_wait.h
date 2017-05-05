@@ -94,23 +94,23 @@ extern int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain);
                                                                          \
 		if (!cond_expr) {                                                \
 			clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
-				SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
-		                                                                 \
+			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
+                                                                         \
 			do {                                                         \
 				sched_wait_prepare_lthread(self, __wait_timeout);        \
-			                                                             \
-				if (cond_expr)                                           \
-					break;                                               \
-			                                                             \
+                                                                         \
+				if (cond_expr) {                                           \
+					break;}                                               \
+                                                                         \
 				__wait_ret = sched_wait_timeout_lthread(self,            \
-											    &__wait_timeout);        \
+						&__wait_timeout);        \
 			} while (!__wait_ret);                                       \
 		}                                                                \
                                                                          \
 		if (__wait_ret != -EAGAIN) {                                     \
 			sched_wait_cleanup_lthread(self);                            \
 		}                                                                \
-	                                                                     \
+                                                                         \
 		__wait_ret;                                                      \
 	})
 

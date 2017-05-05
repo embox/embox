@@ -54,12 +54,11 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 #define TEST_UID_INVAL 0xdead
 #define TEST_GID_INVAL 0xdead
 
-
 #include <fs/vfs.h>
 static mode_t root_backup_mode;
 
 static int setup_suite(void) {
-        int res;
+	int res;
 
 	/*XXX*/
 	root_backup_mode = vfs_get_root()->mode;
@@ -75,9 +74,8 @@ static int setup_suite(void) {
 
 static int teardown_suite(void) {
 	vfs_get_root()->mode = root_backup_mode;
-        return 0;
+	return 0;
 }
-
 
 #include <kernel/task/resource/u_area.h>
 static int clear_id(void) {

@@ -9,7 +9,7 @@
 #ifndef MMU_H_
 #define MMU_H_
 
-// FROM arch/generic/mmu/mmu.h
+/* FROM arch/generic/mmu/mmu.h */
 
 #include <stdint.h>
 
@@ -33,7 +33,7 @@ typedef uint32_t __mmu_pte_t;
  * another RISC architectures.
  */
 
-//extern void mmu_set_val(void *addr, unsigned long value);
+/*extern void mmu_set_val(void *addr, unsigned long value); */
 
 extern __mmu_pgd_t *context_table[];
 

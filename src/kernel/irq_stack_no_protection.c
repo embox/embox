@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 
-
 int irq_stack_protection(void) {
 	return 0;
 }

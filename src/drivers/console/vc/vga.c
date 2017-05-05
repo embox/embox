@@ -60,15 +60,18 @@ static void diag_vterm_cursor(struct vterm_video *t, unsigned short x, unsigned 
 static void diag_vterm_putc(struct vterm_video *t, char ch, unsigned short x, unsigned short y) {
 	struct diag_vterm_data *data = &member_cast_out(t, struct vga_vterm_video, video)->data;
 
-	data->video[x + y * t->width] = (vchar_t) {.c = ch, .a = data->attr};
+	data->video[x + y * t->width] = (vchar_t) {
+		.c = ch, .a = data->attr
+	};
 }
-
 
 static void diag_vterm_clear_rows(struct vterm_video *t, short row, unsigned short count){
 	struct diag_vterm_data *data = &member_cast_out(t, struct vga_vterm_video, video)->data;
 
-	for (int i = row * t->width; i < (row + count) * t->width; ++i){
-		data->video[i] = (vchar_t) {.c = ' ', .a = data->attr};
+	for (int i = row * t->width; i < (row + count) * t->width; ++i) {
+		data->video[i] = (vchar_t) {
+			.c = ' ', .a = data->attr
+		};
 	}
 }
 
@@ -82,15 +85,15 @@ static void diag_vterm_copy_rows(struct vterm_video *t,
 }
 
 static const struct vterm_video_ops vc_vga_ops = {
-		.init = &diag_vterm_init,
-		.cursor = &diag_vterm_cursor,
-		.putc = &diag_vterm_putc,
-		.clear_rows = &diag_vterm_clear_rows,
-		.copy_rows = &diag_vterm_copy_rows
+	.init = &diag_vterm_init,
+	.cursor = &diag_vterm_cursor,
+	.putc = &diag_vterm_putc,
+	.clear_rows = &diag_vterm_clear_rows,
+	.copy_rows = &diag_vterm_copy_rows
 };
 
 static struct vga_vterm_video vc_vga_video = {
-		.data = { .attr = 0x7, .video = (vchar_t *) VIDEO }
+	.data = { .attr = 0x7, .video = (vchar_t *) VIDEO }
 };
 
 struct vterm_video *vc_vga_init(void) {
@@ -106,11 +109,11 @@ struct vc_video_diag {
 
 static int vc_diag_init(const struct diag *diag) {
 	void *ptr;
-	//size_t len = 80*25*2;
+	/*size_t len = 80*25*2; */
 	size_t len = 0x1000;
 
 	/* Map in the physical memory; 0xb8000 is text mode VGA video memory */
-	ptr = mmap_device_memory((void* ) 0xb8000, len, PROT_READ|PROT_WRITE|PROT_NOCACHE, MAP_FIXED, 0xb8000 );
+	ptr = mmap_device_memory((void * ) 0xb8000, len, PROT_READ|PROT_WRITE|PROT_NOCACHE, MAP_FIXED, 0xb8000 );
 	if ( ptr == MAP_FAILED ) {
 		return -1;
 	}
@@ -132,4 +135,3 @@ const struct vc_video_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
 	},
 	.video = &vc_vga_video.video,
 };
-

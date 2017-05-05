@@ -27,7 +27,7 @@ extern int smtp_open(struct smtp_session *ss, const char *host,
 extern int smtp_close(struct smtp_session *ss);
 extern int smtp_ok(struct smtp_session *ss);
 extern int smtp_code(struct smtp_session *ss);
-extern const char * smtp_status(struct smtp_session *ss);
+extern const char *smtp_status(struct smtp_session *ss);
 
 extern int smtp_mail_from(struct smtp_session *ss,
 		const char *addr); /* FIXME addr with <> brackets */

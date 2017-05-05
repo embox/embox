@@ -21,4 +21,4 @@ struct rw_semaphore;
 #define up_write(sem) mutex_unlock((mutex_t *)sem)
 #define downgrade_write(sem)
 
-#endif // __LINUX_RWSEM_H__
+#endif /* __LINUX_RWSEM_H__ */

@@ -31,7 +31,7 @@ static int mcheck(const char *dst, size_t len, const char *src) {
 	slen = strlen(src);
 	for (i = 0; i < len; i++) {
 		if (dst[i] == src[i % slen]) {
-			n ++;
+			n++;
 		}
 	}
 
@@ -50,4 +50,3 @@ TEST_CASE("free'd memory shouldn't contain old data") {
 	free(mem);
 	test_assert(MLEN / strlen(test_str) >= mcheck(mem, MLEN, test_str));
 }
-

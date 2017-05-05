@@ -142,7 +142,9 @@ static int indev_event_cb(struct input_dev *indev) {
 
 static int vc_mpx_init(void) {
 	struct input_dev *indev;
-	const char *devlist[] = {"keyboard", "mouse", NULL};
+	const char *devlist[] = {
+		"keyboard", "mouse", NULL
+	};
 	const char **p;
 
 	for (p = devlist; *p != NULL; p++) {
@@ -160,4 +162,3 @@ static int vc_mpx_init(void) {
 	}
 	return 0;
 }
-

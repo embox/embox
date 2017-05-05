@@ -23,8 +23,8 @@ PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
 static int bochs_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
 
-	if (var->xres > VBE_DISPI_MAX_XRES 
-			|| var->yres > VBE_DISPI_MAX_YRES 
+	if (var->xres > VBE_DISPI_MAX_XRES
+			|| var->yres > VBE_DISPI_MAX_YRES
 			|| var->bits_per_pixel > VBE_DISPI_MAX_BPP) {
 		return -EINVAL;
 	}
@@ -64,16 +64,16 @@ static const struct fb_ops bochs_ops = {
 
 static int bochs_init(struct pci_slot_dev *pci_dev) {
 	char *mmap_base = (char *)(pci_dev->bar[0] & ~0xf); /* FIXME */
-	size_t mmap_len = binalign_bound(VBE_DISPI_MAX_XRES 
-			* VBE_DISPI_MAX_YRES 
+	size_t mmap_len = binalign_bound(VBE_DISPI_MAX_XRES
+			* VBE_DISPI_MAX_YRES
 			* VBE_DISPI_MAX_BPP / 8, PAGE_SIZE());
 	struct fb_info *info;
 
 	if (MAP_FAILED == mmap_device_memory(mmap_base,
-				mmap_len,
-			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) mmap_base)) {
+			mmap_len,
+			PROT_READ|PROT_WRITE|PROT_NOCACHE,
+			MAP_FIXED,
+			(unsigned long) mmap_base)) {
 		return -EIO;
 	}
 

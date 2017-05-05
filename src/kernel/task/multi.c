@@ -27,7 +27,7 @@
 #include <compiler.h>
 
 struct task_trampoline_arg {
-	void * (*run)(void *);
+	void *(*run)(void *);
 	void *run_arg;
 };
 
@@ -40,7 +40,7 @@ struct task *task_self(void) {
 	return th->task;
 }
 
-static void * task_trampoline(void *arg_) {
+static void *task_trampoline(void *arg_) {
 	struct task_trampoline_arg *arg = arg_;
 	void *res;
 
@@ -109,7 +109,7 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 		}
 
 		schedee_priority_set(&thd->schedee,
-			schedee_priority_get(&thread_self()->schedee));
+				schedee_priority_get(&thread_self()->schedee));
 
 		thread_detach(thd);
 		thread_launch(thd);
@@ -118,13 +118,13 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 
 		goto out_unlock;
 
-out_tablefree:
+		out_tablefree:
 		task_table_del(tid);
 
-out_threadfree:
+		out_threadfree:
 		thread_terminate(thd);
 	}
-out_unlock:
+	out_unlock:
 	sched_unlock();
 
 	return res;
@@ -154,10 +154,10 @@ int task_start(struct task *task, void * (*run)(void *), void *arg) {
 		res = 0;
 
 		goto out_unlock;
-out_threadfree:
+		out_threadfree:
 		thread_terminate(thd);
 	}
-out_unlock:
+	out_unlock:
 	sched_unlock();
 
 	return res;
@@ -186,7 +186,7 @@ int task_prepare(const char *name) {
 		}
 
 		schedee_priority_set(&thd->schedee,
-			schedee_priority_get(&thread_self()->schedee));
+				schedee_priority_get(&thread_self()->schedee));
 
 		self_task = thread_stack_alloc(thd,
 				sizeof *self_task + TASK_RESOURCE_SIZE);
@@ -212,13 +212,13 @@ int task_prepare(const char *name) {
 
 		goto out_unlock;
 
-out_tablefree:
+		out_tablefree:
 		task_table_del(tid);
 
-out_threadfree:
+		out_threadfree:
 		thread_terminate(thd);
 	}
-out_unlock:
+	out_unlock:
 	sched_unlock();
 
 	return res;
@@ -319,7 +319,6 @@ void _NORETURN task_finish_exit(void) {
 	panic("Returning from task_exit()");
 }
 
-
 void _NORETURN task_exit(void *res) {
 
 	task_start_exit();
@@ -356,7 +355,7 @@ int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 		task_foreach_thread(t, tsk) {
 			/* reschedule thread */
 			schedee_priority_set(&t->schedee,
-				SCHED_PRIORITY_NORMAL + new_prior);
+					SCHED_PRIORITY_NORMAL + new_prior);
 		}
 
 	}

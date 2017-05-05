@@ -28,9 +28,9 @@ TEST_CASE("General") {
 static void *run(void *arg) {
 	if ((int)arg == 1)
 	{
-	test_assert_zero(thread_launch(t2));
+		test_assert_zero(thread_launch(t2));
 	}
-	for(int i = 0; i < 10; i++)
+	for (int i = 0; i < 10; i++)
 	{
 		mutex_lock(&m);
 		sleep(0);
@@ -43,10 +43,10 @@ static void *run(void *arg) {
 static int setup(void) {
 	mutex_init(&m);
 
-	t1 = thread_create(THREAD_FLAG_SUSPENDED, run, (void*)1);
+	t1 = thread_create(THREAD_FLAG_SUSPENDED, run, (void *)1);
 	test_assert_zero(err(t1));
 
-	t2 = thread_create(THREAD_FLAG_SUSPENDED, run, (void*)2);
+	t2 = thread_create(THREAD_FLAG_SUSPENDED, run, (void *)2);
 	test_assert_zero(err(t2));
 	return 0;
 }

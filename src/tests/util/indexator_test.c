@@ -113,7 +113,7 @@ TEST_CASE("allocating random index") {
 
 	for (i = 0; i < index_capacity(&idx); ++i) {
 		test_assert_not_equal(INDEX_NONE, index_alloc(&idx,
-					INDEX_RANDOM));
+				INDEX_RANDOM));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_RANDOM));
 
@@ -227,7 +227,7 @@ TEST_CASE("allocating random index from interval") {
 
 	for (i = 0; i < IDX_CLAMP_MAX - IDX_CLAMP_MIN + 1; ++i) {
 		test_assert_not_equal(INDEX_NONE, index_alloc(&idx,
-					INDEX_RANDOM));
+				INDEX_RANDOM));
 	}
 	test_assert_equal(INDEX_NONE, index_alloc(&idx, INDEX_RANDOM));
 

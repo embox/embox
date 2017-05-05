@@ -17,7 +17,6 @@
 #include <kernel/task.h>
 #include <mem/misc/pool.h>
 
-
 /* Simultaneous number of task creation */
 #define PT_REGS_POOL_SIZE 5
 

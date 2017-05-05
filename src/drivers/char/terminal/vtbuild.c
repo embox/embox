@@ -16,7 +16,6 @@
 /* Enough to hold decimal numbers up to 99999. */
 #define PARAM_PRINT_BUFF_SIZE 5
 
-
 struct vtbuild *vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb) {
 	if (builder == NULL) {
 		return NULL;
@@ -95,9 +94,9 @@ void vtbuild(struct vtbuild *builder, const struct vt_token *token) {
 	case VT_ACTION_OSC_START:
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:
-		/* Operating System Command */
-		/* ignore them as unused in our system
-		  -- Eldar*/
+	/* Operating System Command */
+	/* ignore them as unused in our system
+	  -- Eldar*/
 	case VT_ACTION_HOOK:
 	case VT_ACTION_PUT:
 	case VT_ACTION_UNHOOK:

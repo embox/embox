@@ -72,15 +72,15 @@ typedef void (*usb_request_notify_hnd_t)(struct usb_request *req, void *arg);
 #define USB_HUB_PORT_TIMEOUT            0x0040
 
 enum __usb_hub_request {
-    USB_HUB_REQ_GET_STATUS       = 0,
-    USB_HUB_REQ_CLEAR_FEATURE    = 1,
-    USB_HUB_REQ_SET_FEATURE      = 3,
-    USB_HUB_REQ_GET_DESCRIPTOR   = 6,
-    USB_HUB_REQ_SET_DESCRIPTOR   = 7,
-    USB_HUB_REQ_CLEAR_TT_BUFFER  = 8,
-    USB_HUB_REQ_RESET_TT         = 9,
-    USB_HUB_REQ_GET_TT_STATE     = 10,
-    USB_HUB_REQ_STOP_TT          = 11,
+	USB_HUB_REQ_GET_STATUS       = 0,
+	USB_HUB_REQ_CLEAR_FEATURE    = 1,
+	USB_HUB_REQ_SET_FEATURE      = 3,
+	USB_HUB_REQ_GET_DESCRIPTOR   = 6,
+	USB_HUB_REQ_SET_DESCRIPTOR   = 7,
+	USB_HUB_REQ_CLEAR_TT_BUFFER  = 8,
+	USB_HUB_REQ_RESET_TT         = 9,
+	USB_HUB_REQ_GET_TT_STATE     = 10,
+	USB_HUB_REQ_STOP_TT          = 11,
 };
 
 enum usb_hub_request {
@@ -126,9 +126,9 @@ enum usb_dev_event_type {
 };
 
 enum usb_speed {
-    USB_SPEED_HIGH = 0,
-    USB_SPEED_FULL = 1,
-    USB_SPEED_LOW  = 2,
+	USB_SPEED_HIGH = 0,
+	USB_SPEED_FULL = 1,
+	USB_SPEED_LOW  = 2,
 };
 
 struct usb_hcd_ops {
@@ -165,7 +165,7 @@ struct usb_endp {
 };
 
 static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
-	       	const struct usb_desc_endpoint *desc) {
+		const struct usb_desc_endpoint *desc) {
 
 	endp->address = desc->b_endpoint_address & USB_DESC_ENDP_ADDR_MASK;
 
@@ -211,7 +211,7 @@ struct usb_dev {
 
 	unsigned short idx; /**< index allocated for device */
 	unsigned short bus_idx; /**<  index of device on bus. On `reseted' is 0,
-				   after `addressed' is idx */
+	               after `addressed' is idx */
 	struct dlist_head dev_link;
 
 	struct usb_hcd *hcd;
@@ -243,53 +243,53 @@ static inline struct usb_desc_device *usb_dev_get_desc(struct usb_dev *dev) {
 typedef void (*usb_hub_port_state_t)(struct usb_hub_port *port);
 
 struct usb_hub_status {
-    union {
-        uint16_t w_hub_status;
-        struct {
-            uint16_t local_power : 1;
-            uint16_t overcurrent : 1;
-            uint16_t wHubStatus_reserved : 14;
-        };
-    };
-    union {
-        uint16_t w_hub_change;
-        struct {
-            uint16_t local_power_changed : 1;
-            uint16_t overcurrent_changed : 1;
-            uint16_t wHubChange_reserved : 14;
-        };
-    };
+	union {
+		uint16_t w_hub_status;
+		struct {
+			uint16_t local_power : 1;
+			uint16_t overcurrent : 1;
+			uint16_t wHubStatus_reserved : 14;
+		};
+	};
+	union {
+		uint16_t w_hub_change;
+		struct {
+			uint16_t local_power_changed : 1;
+			uint16_t overcurrent_changed : 1;
+			uint16_t wHubChange_reserved : 14;
+		};
+	};
 } __attribute__((packed));
 
 struct usb_port_status {
-    union {
-        uint16_t port_status;
-        struct {
-            uint16_t connected : 1;
-            uint16_t enabled : 1;
-            uint16_t suspended : 1;
-            uint16_t overcurrent : 1;
-            uint16_t reset : 1;
-            uint16_t wPortStatus_reserved1 : 3;
-            uint16_t powered : 1;
-            uint16_t low_speed_attached : 1;
-            uint16_t high_speed_attached : 1;
-            uint16_t test_mode : 1;
-            uint16_t indicator_control : 1;
-            uint16_t wPortStatus_reserved2 : 3;
-        };
-    };
-    union {
-        uint16_t port_change;
-        struct {
-            uint16_t connected_changed : 1;
-            uint16_t enabled_changed : 1;
-            uint16_t suspended_changed : 1;
-            uint16_t overcurrent_changed : 1;
-            uint16_t reset_changed : 1;
-            uint16_t wPortChange_reserved : 11;
-        };
-    };
+	union {
+		uint16_t port_status;
+		struct {
+			uint16_t connected : 1;
+			uint16_t enabled : 1;
+			uint16_t suspended : 1;
+			uint16_t overcurrent : 1;
+			uint16_t reset : 1;
+			uint16_t wPortStatus_reserved1 : 3;
+			uint16_t powered : 1;
+			uint16_t low_speed_attached : 1;
+			uint16_t high_speed_attached : 1;
+			uint16_t test_mode : 1;
+			uint16_t indicator_control : 1;
+			uint16_t wPortStatus_reserved2 : 3;
+		};
+	};
+	union {
+		uint16_t port_change;
+		struct {
+			uint16_t connected_changed : 1;
+			uint16_t enabled_changed : 1;
+			uint16_t suspended_changed : 1;
+			uint16_t overcurrent_changed : 1;
+			uint16_t reset_changed : 1;
+			uint16_t wPortChange_reserved : 11;
+		};
+	};
 } __attribute__((packed));
 
 struct usb_hub_port {
@@ -313,13 +313,13 @@ struct usb_hub {
 };
 
 static inline void usb_port_device_bind(struct usb_hub_port *port,
-	       	struct usb_dev *dev) {
+		struct usb_dev *dev) {
 	port->dev = dev;
 	dev->port = port;
 }
 
 static inline void usb_port_device_unbind(struct usb_hub_port *port,
-	       	struct usb_dev *dev) {
+		struct usb_dev *dev) {
 	port->dev = NULL;
 	dev->port = NULL;
 }
@@ -399,7 +399,7 @@ extern void usb_dev_disconnect(struct usb_hub_port *port);
 
 /* port */
 extern void usb_hub_port_init(struct usb_hub_port *port, struct usb_hub *hub,
-	       	usb_hub_port_t i);
+		usb_hub_port_t i);
 extern int usb_port_address_setle_wait(struct usb_hub_port *port, int ms);
 /* obj */
 extern struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args);
@@ -461,4 +461,3 @@ extern void usb_class_start_handle(struct usb_dev *dev);
 
 extern int usb_class_register(struct usb_class *cls);
 #endif /* DRIVERS_USB_H_ */
-

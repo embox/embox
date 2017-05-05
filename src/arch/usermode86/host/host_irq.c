@@ -94,4 +94,3 @@ void host_signal_send_self(int sig_nr) {
 
 	host_raise(sig_nr);
 }
-

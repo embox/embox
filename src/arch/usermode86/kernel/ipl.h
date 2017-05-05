@@ -12,4 +12,3 @@
 typedef int __ipl_t;
 
 #endif /* ARCH_USERMODE86_IPL_H_ */
-

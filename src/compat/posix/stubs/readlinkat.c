@@ -19,4 +19,3 @@ ssize_t readlinkat(int fd, const char *path, char *buf,
 			bufsize);
 	return SET_ERRNO(ENOSYS);
 }
-

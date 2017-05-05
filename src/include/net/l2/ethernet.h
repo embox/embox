@@ -46,14 +46,14 @@ struct sk_buff;
  * Ethernet Header Structure
  */
 struct ethhdr {
-	uint8_t  h_dest[ETH_ALEN];   /* Destination ethernet address */
-	uint8_t  h_source[ETH_ALEN]; /* Source ethernet address */
+	uint8_t h_dest[ETH_ALEN];    /* Destination ethernet address */
+	uint8_t h_source[ETH_ALEN];  /* Source ethernet address */
 	uint16_t h_proto;            /* Packet type ID */
 } __attribute__((packed));
 
 #define ETH_HEADER_SIZE (sizeof(struct ethhdr))
 
-static inline struct ethhdr * eth_hdr(const struct sk_buff *skb) {
+static inline struct ethhdr *eth_hdr(const struct sk_buff *skb) {
 	assert(skb != NULL);
 	assert(skb->mac.ethh != NULL);
 	return skb->mac.ethh;
@@ -69,7 +69,7 @@ extern const struct net_device_ops ethernet_ops;
 /**
  * Allocate Ethernet device
  */
-extern struct net_device * etherdev_alloc(size_t priv_size);
+extern struct net_device *etherdev_alloc(size_t priv_size);
 
 extern void etherdev_free(struct net_device *dev);
 

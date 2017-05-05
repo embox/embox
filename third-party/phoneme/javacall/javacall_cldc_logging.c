@@ -12,7 +12,7 @@
 #include <string.h>
 
 /* FIXME Suppose for now that s don't contain '\0' */
-void javacall_print_chars(const char* s, int length) {
+void javacall_print_chars(const char *s, int length) {
 	char *new_str = malloc(length + 1);
 
 	memcpy(new_str, s, length);
@@ -25,11 +25,10 @@ void javacall_print(const char *s) {
 	printf("%s", s);
 }
 
-const char * javacall_jlong_format_specifier() {
+const char *javacall_jlong_format_specifier() {
 	return "%lld";
 }
 
-const char * javacall_julong_format_specifier() {
+const char *javacall_julong_format_specifier() {
 	return "%llu";
 }
-

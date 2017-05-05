@@ -1,8 +1,8 @@
 /******************************************************************************
  * tmem.h
- * 
+ *
  * Guest OS interface to Xen Transcendent Memory.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -48,7 +48,7 @@
 #endif
 
 /* Privileged commands to HYPERVISOR_tmem_op() */
-#define TMEM_AUTH                 101 
+#define TMEM_AUTH                 101
 #define TMEM_RESTORE_NEW          102
 
 /* Subops for HYPERVISOR_tmem_op(TMEM_CONTROL) */
@@ -95,47 +95,46 @@
 #define EFROZEN                 1000
 #define EEMPTY                  1001
 
-
 #ifndef __ASSEMBLY__
 #if __XEN_INTERFACE_VERSION__ < 0x00040400
 typedef xen_pfn_t tmem_cli_mfn_t;
 #endif
-typedef XEN_GUEST_HANDLE(char) tmem_cli_va_t;
+typedef XEN_GUEST_HANDLE (char) tmem_cli_va_t;
 struct tmem_op {
-    uint32_t cmd;
-    int32_t pool_id;
-    union {
-        struct {
-            uint64_t uuid[2];
-            uint32_t flags;
-            uint32_t arg1;
-        } creat; /* for cmd == TMEM_NEW_POOL, TMEM_AUTH, TMEM_RESTORE_NEW */
-        struct { 
-            uint32_t subop;
-            uint32_t cli_id;
-            uint32_t arg1;
-            uint32_t arg2;
-            uint64_t oid[3];
-            tmem_cli_va_t buf;
-        } ctrl; /* for cmd == TMEM_CONTROL */
-        struct {
-            
-            uint64_t oid[3];
-            uint32_t index;
-            uint32_t tmem_offset;
-            uint32_t pfn_offset;
-            uint32_t len;
-            xen_pfn_t cmfn; /* client machine page frame */
-        } gen; /* for all other cmd ("generic") */
-    } u;
+	uint32_t cmd;
+	int32_t pool_id;
+	union {
+		struct {
+			uint64_t uuid[2];
+			uint32_t flags;
+			uint32_t arg1;
+		} creat; /* for cmd == TMEM_NEW_POOL, TMEM_AUTH, TMEM_RESTORE_NEW */
+		struct {
+			uint32_t subop;
+			uint32_t cli_id;
+			uint32_t arg1;
+			uint32_t arg2;
+			uint64_t oid[3];
+			tmem_cli_va_t buf;
+		} ctrl; /* for cmd == TMEM_CONTROL */
+		struct {
+
+			uint64_t oid[3];
+			uint32_t index;
+			uint32_t tmem_offset;
+			uint32_t pfn_offset;
+			uint32_t len;
+			xen_pfn_t cmfn; /* client machine page frame */
+		} gen; /* for all other cmd ("generic") */
+	} u;
 };
 typedef struct tmem_op tmem_op_t;
 DEFINE_XEN_GUEST_HANDLE(tmem_op_t);
 
 struct tmem_handle {
-    uint32_t pool_id;
-    uint32_t index;
-    uint64_t oid[3];
+	uint32_t pool_id;
+	uint32_t index;
+	uint64_t oid[3];
 };
 #endif
 

@@ -19,7 +19,7 @@
 struct siginfoq;
 
 struct sigstate {
-	sigset_t        pending;
+	sigset_t pending;
 	struct siginfoq infoq;
 };
 

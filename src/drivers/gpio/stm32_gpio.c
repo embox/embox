@@ -53,7 +53,7 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	assert(gpio);
 
 	if ((mode & GPIO_MODE_OUT_SECTION) &&
-		(mode & GPIO_MODE_IN_SECTION)) { /* mode is incorrect */
+			(mode & GPIO_MODE_IN_SECTION)) { /* mode is incorrect */
 		return -1;
 	}
 
@@ -94,7 +94,7 @@ void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level){
 	assert(gpio);
 	assert((mask & ~((1 << 16) - 1)) == 0);
 
-	if(level) {
+	if (level) {
 		REG_STORE(&(gpio->bsrr), mask);
 	} else {
 		REG_STORE(&(gpio->brr), mask);

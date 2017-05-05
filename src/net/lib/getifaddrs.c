@@ -12,7 +12,6 @@
 #include <string.h>
 #include <netinet/in.h>
 
-
 #include <ifaddrs.h>
 
 #include <framework/mod/options.h>
@@ -39,7 +38,7 @@ struct ifaddrs_tuple {
 
 POOL_DEF(ifaddrs_tuple_pool, struct ifaddrs_tuple, MODOPS_AMOUNT_IFADDRS);
 
-static struct ifaddrs * ifa_alloc(void) {
+static struct ifaddrs *ifa_alloc(void) {
 	struct ifaddrs_tuple *ifa_t;
 
 	ifa_t = pool_alloc(&ifaddrs_tuple_pool);
@@ -111,7 +110,7 @@ int getifaddrs(struct ifaddrs **out_ifa) {
 		strncpy((*ifa_ptr)->ifa_name, &in_dev->dev->name[0],
 				member_sizeof(struct ifaddrs_tuple, name));
 		(*ifa_ptr)->ifa_name[member_sizeof(struct ifaddrs_tuple,
-				name) - 1] = '\0';
+		name) - 1] = '\0';
 		(*ifa_ptr)->ifa_flags = in_dev->dev->flags;
 		sa_init((*ifa_ptr)->ifa_addr, AF_INET,
 				&in_dev->ifa_address);

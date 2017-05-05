@@ -121,7 +121,7 @@ static int mipsnet_xmit(struct net_device *dev, struct sk_buff *skb) {
 	pdata = skb->mac.raw;
 
 	out32(skb->len, &regs->txDataCount);
-	for(i = 0; i < skb->len; i++) {
+	for (i = 0; i < skb->len; i++) {
 		out32((uint32_t)*pdata, &regs->txDataBuffer);
 		pdata++;
 	}
@@ -149,17 +149,18 @@ static int mipsnet_rx(struct net_device *dev, size_t len) {
 	uint8_t *pdata;
 	struct mipsnet_regs *regs;
 
-	if (!len)
-			return len;
+	if (!len) {
+		return len;
+	}
 
 	regs = (struct mipsnet_regs *)dev->base_addr;
 
 	skb = skb_alloc(len);
 	if (!skb) {
-			dev->stats.rx_dropped++;
-			return -ENOMEM;
+		dev->stats.rx_dropped++;
+		return -ENOMEM;
 	}
-	pdata = (uint8_t*) skb->mac.raw;
+	pdata = (uint8_t *) skb->mac.raw;
 	for (; len > 0; len--, pdata++) {
 		*pdata = in32(&regs->rxDataBuffer);
 	}
@@ -181,36 +182,36 @@ static irq_return_t mipsnet_interrupt_handler(unsigned int irq, void *dev_id) {
 	irq_return_t ret = IRQ_NONE;
 	struct mipsnet_regs *regs;
 
-	if (irq != dev->irq)
+	if (irq != dev->irq) {
 		goto out_badirq;
+	}
 
 	regs = (struct mipsnet_regs *)dev->base_addr;
 
 	/* TESTBIT is cleared on read. */
 	int_flags = in32(&regs->interruptControl);
 	if (int_flags & MIPSNET_INTCTL_TESTBIT) {
-			/* TESTBIT takes effect after a write with 0. */
-			out32(0, &regs->interruptControl);
-			ret = IRQ_HANDLED;
+		/* TESTBIT takes effect after a write with 0. */
+		out32(0, &regs->interruptControl);
+		ret = IRQ_HANDLED;
 	} else if (int_flags & MIPSNET_INTCTL_TXDONE) {
-			/* Only one packet at a time, we are done. */
-			dev->stats.tx_packets++;
-			out32(MIPSNET_INTCTL_TXDONE, &regs->interruptControl);
-			ret = IRQ_HANDLED;
+		/* Only one packet at a time, we are done. */
+		dev->stats.tx_packets++;
+		out32(MIPSNET_INTCTL_TXDONE, &regs->interruptControl);
+		ret = IRQ_HANDLED;
 	} else if (int_flags & MIPSNET_INTCTL_RXDONE) {
-			mipsnet_rx(dev, in32(&regs->rxDataCount));
-			out32(MIPSNET_INTCTL_RXDONE, &regs->interruptControl);
-			ret = IRQ_HANDLED;
+		mipsnet_rx(dev, in32(&regs->rxDataCount));
+		out32(MIPSNET_INTCTL_RXDONE, &regs->interruptControl);
+		ret = IRQ_HANDLED;
 	}
 
 	return ret;
 
-out_badirq:
-	 log_info("%s: irq %d for unknown device\n", dev->name, irq);
+	out_badirq:
+	log_info("%s: irq %d for unknown device\n", dev->name, irq);
 
-	 return ret;
+	return ret;
 }
-
 
 static int mipsnet_init(void) {
 	struct net_device *netdev;

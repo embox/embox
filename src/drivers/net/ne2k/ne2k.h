@@ -20,7 +20,7 @@ extern int ne2k_dev_init(struct net_device *nic);
 #define EN0_STARTPG     0x01 /* Starting page of ring buffer */
 #define EN0_STOPPG      0x02 /* Ending page +1 of ring buffer */
 #define EN0_BOUNDARY    0x03 /* Boundary page of ring buffer */
-#define EN0_TSR		    0x04 /* Transmit status reg RD */
+#define EN0_TSR         0x04 /* Transmit status reg RD */
 #define EN0_TPSR        0x04
 #define EN0_TBCR_LO     0x05 /* Low  byte of tx byte count */
 #define EN0_TBCR_HI     0x06 /* High byte of tx byte count */
@@ -37,7 +37,7 @@ extern int ne2k_dev_init(struct net_device *nic);
 #define EN0_COUNTER0    0x0d /* Rcv alignment error counter RD */
 #define EN0_DCFG        0x0e /* Data configuration reg WR */
 #define EN0_COUNTER1    0x0e /* Rcv CRC error counter RD */
-#define EN0_IMR	        0x0f /* Interrupt mask reg WR */
+#define EN0_IMR         0x0f /* Interrupt mask reg WR */
 #define EN0_COUNTER2    0x0f /* Rcv missed frame error counter RD */
 
 /* Bits in receive configuration byte and EN0_RXCR */
@@ -106,12 +106,12 @@ extern int ne2k_dev_init(struct net_device *nic);
 #define NE_PAR4           0x05
 #define NE_PAR5           0x06
 
-//#define MEMBASE            (16 * 1024)
-//#define NE_PAGE_SIZE       256
-//#define TX_BUFFER_START    (MEMBASE / NE_PAGE_SIZE)
-//#define NE_TXBUF_SIZE      6
-//#define RX_BUFFER_START    (TX_BUFFER_START + NE_TXBUF_SIZE)
-//#define RX_BUFFER_END      ((32 * 1024) / NE_PAGE_SIZE)
+/*#define MEMBASE            (16 * 1024) */
+/*#define NE_PAGE_SIZE       256 */
+/*#define TX_BUFFER_START    (MEMBASE / NE_PAGE_SIZE) */
+/*#define NE_TXBUF_SIZE      6 */
+/*#define RX_BUFFER_START    (TX_BUFFER_START + NE_TXBUF_SIZE) */
+/*#define RX_BUFFER_END      ((32 * 1024) / NE_PAGE_SIZE) */
 
 /* Applies to ne2000 version of the card. */
 #define NESM_START_PG_TX  0x40 /* First page of TX buffer */

@@ -80,4 +80,3 @@ void _NORETURN fork_body(struct pt_regs *ptregs) {
 	ptregs_retcode_jmp(ptregs, child_pid);
 	panic("%s returning", __func__);
 }
-

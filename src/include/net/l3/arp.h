@@ -66,7 +66,7 @@ struct arphdr {
 #define ARP_CALC_HEADER_SIZE(hln, pln) \
 	(ARP_MIN_HEADER_SIZE + (hln + pln) * 2)
 
-static inline struct arphdr * arp_hdr(const struct sk_buff *skb) {
+static inline struct arphdr *arp_hdr(const struct sk_buff *skb) {
 	assert(skb != NULL);
 	assert(skb->nh.arph != NULL);
 	return skb->nh.arph;

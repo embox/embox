@@ -17,7 +17,7 @@
 
 /* Nonzero if either X or Y is not aligned on a "long" boundary.  */
 #define unaligned(x, y) \
-  (((long) x | (long) y) & (sizeof(long) - 1))
+	(((long) x | (long) y) & (sizeof(long) - 1))
 
 void *memcpy(void *dst_, const void *src_, size_t n) {
 	char *dst = dst_;

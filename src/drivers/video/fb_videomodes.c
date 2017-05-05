@@ -53,7 +53,7 @@ static const struct fb_videomode vesa_modes[] = {
 	{ NULL, 85, 800, 600, 17761, 152, 32, 27, 01, 64, 3,
 	  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
 	  FB_VMODE_NONINTERLACED, FB_MODE_IS_VESA },
-        /* 12 1024x768i-43 VESA */
+	/* 12 1024x768i-43 VESA */
 	{ NULL, 43, 1024, 768, 22271, 56, 8, 41, 0, 176, 8,
 	  FB_SYNC_HOR_HIGH_ACT | FB_SYNC_VERT_HIGH_ACT,
 	  FB_VMODE_INTERLACED, FB_MODE_IS_VESA },
@@ -140,7 +140,7 @@ static const struct fb_videomode vesa_modes[] = {
 
 const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp) {
 	int i;
-	for (i = 0; i < ARRAY_SIZE(vesa_modes); i ++) {
+	for (i = 0; i < ARRAY_SIZE(vesa_modes); i++) {
 		if (resbpp->x == vesa_modes[i].xres
 				&& resbpp->y == vesa_modes[i].yres) {
 			return &vesa_modes[i];
@@ -169,4 +169,5 @@ void fb_videomode_to_var(struct fb_var_screeninfo *var,
 }
 
 void fb_var_to_videomode(struct fb_videomode *mode,
-		const struct fb_var_screeninfo *var) { }
+		const struct fb_var_screeninfo *var) {
+}

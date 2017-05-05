@@ -23,7 +23,7 @@ TEST_TEARDOWN(case_teardown);
 #define ENV_STR2  (ENV_NAME "=" ENV_VAL2)
 
 TEST_CASE("getenv() should return null for empty"
-		" enviroment") {
+		  " enviroment") {
 	test_assert_null(getenv(BAD_NAME));
 }
 
@@ -42,13 +42,13 @@ TEST_CASE("getenv() return variable according name") {
 }
 
 TEST_CASE("setenv() not overwrite exist value if flag"
-		" is not set") {
+		  " is not set") {
 	test_assert_zero(setenv(ENV_NAME, ENV_VAL2, 0));
 	test_assert_str_equal(getenv(ENV_NAME), ENV_VAL1);
 }
 
 TEST_CASE("setenv() overwrite exist value if flag"
-		" is set") {
+		  " is set") {
 	test_assert_zero(setenv(ENV_NAME, ENV_VAL2, 1));
 	test_assert_str_equal(getenv(ENV_NAME), ENV_VAL2);
 }
@@ -65,7 +65,7 @@ TEST_CASE("unsetenv() may remove exist value") {
 }
 
 TEST_CASE("clearenv() removes all variables and environ must"
-		" be null when environment hasn't variables") {
+		  " be null when environment hasn't variables") {
 	test_assert_zero(clearenv());
 	test_assert_null(environ);
 }

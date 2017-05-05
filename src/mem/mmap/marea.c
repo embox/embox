@@ -9,7 +9,7 @@
 #include <mem/mapping/marea.h>
 #include <module/embox/mem/mmap_api.h>
 
-//TODO const number of struct marea
+/*TODO const number of struct marea */
 POOL_DEF(marea_pool, struct marea, 0x400)
 
 struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags, bool is_allocated) {
@@ -28,7 +28,6 @@ struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags, bool is
 
 	return marea;
 }
-
 
 void marea_destroy(struct marea *marea) {
 	pool_free(&marea_pool, marea);

@@ -15,9 +15,9 @@
 
 EMBOX_UNIT_INIT(uart_init);
 
-#define IOMUXC_BASE	OPTION_GET(NUMBER,iomuxc_base)
-#define UART_NUM	OPTION_GET(NUMBER,num)
-#define IRQ_NUM		(58 + UART_NUM)
+#define IOMUXC_BASE OPTION_GET(NUMBER,iomuxc_base)
+#define UART_NUM    OPTION_GET(NUMBER,num)
+#define IRQ_NUM     (58 + UART_NUM)
 
 #if UART_NUM == 0
 #define UART_BASE 0x02020000
@@ -33,48 +33,48 @@ EMBOX_UNIT_INIT(uart_init);
 #error Wrong UART number!
 #endif
 
-#define UART(x)		(*(volatile uint32_t *)(UART_BASE + (x)))
+#define UART(x)     (*(volatile uint32_t *)(UART_BASE + (x)))
 
-#define RXR		0x00
-#define TXR		0x40
-#define UCR1		0x80
-# define UCR1_UARTEN	(1 << 0)
-# define UCR1_RRDYEN	(1 << 9)
-#define UCR2		0x84
-# define UCR2_NORESET	(1 << 0)
-# define UCR2_RXEN	(1 << 1)
-# define UCR2_TXEN	(1 << 2)
-# define UCR2_WORDSIZE	(1 << 5)
-# define UCR2_IRTS	(1 << 14)
-#define UCR3		0x88
+#define RXR     0x00
+#define TXR     0x40
+#define UCR1        0x80
+# define UCR1_UARTEN    (1 << 0)
+# define UCR1_RRDYEN    (1 << 9)
+#define UCR2        0x84
+# define UCR2_NORESET   (1 << 0)
+# define UCR2_RXEN  (1 << 1)
+# define UCR2_TXEN  (1 << 2)
+# define UCR2_WORDSIZE  (1 << 5)
+# define UCR2_IRTS  (1 << 14)
+#define UCR3        0x88
 # define UCR3_RXDMUXSEL (1 << 2)
-# define UCR3_RI	(1 << 8)
-# define UCR3_DSR	(1 << 9)
-# define UCR3_DCD	(1 << 10)
-#define UCR4		0x8C
-#define UFCR		0x90
-# define UFCR_RFDIF	7
-#define USR1		0x94
-# define USR1_RRDY	(1 << 9)
-# define USR1_RTSD	(1 << 12)
-#define USR2		0x98
-# define USR2_RDR	1
-# define USR2_TXFE	(1 << 14)
-#define UESC		0x9C
-#define UTIM		0xA0
-#define UBIR		0xA4
-#define UBMR		0xA8
-#define ONEMS		0xB0
-#define UTS		0xB4
-# define UTS_RST	(1 << 0)
-# define UTS_TXEMPTY	(1 << 6)
-#define UMCR		0xB8
+# define UCR3_RI    (1 << 8)
+# define UCR3_DSR   (1 << 9)
+# define UCR3_DCD   (1 << 10)
+#define UCR4        0x8C
+#define UFCR        0x90
+# define UFCR_RFDIF 7
+#define USR1        0x94
+# define USR1_RRDY  (1 << 9)
+# define USR1_RTSD  (1 << 12)
+#define USR2        0x98
+# define USR2_RDR   1
+# define USR2_TXFE  (1 << 14)
+#define UESC        0x9C
+#define UTIM        0xA0
+#define UBIR        0xA4
+#define UBMR        0xA8
+#define ONEMS       0xB0
+#define UTS     0xB4
+# define UTS_RST    (1 << 0)
+# define UTS_TXEMPTY    (1 << 6)
+#define UMCR        0xB8
 
 #include <kernel/printk.h>
 
-#define UART_SELECT_PIN(n)	(IOMUXC_BASE + 0x920 + n * 8)
-#define MUX_PIN_CTL_TX(n)	(IOMUXC_BASE + 0x2a8 + n * 8)
-#define MUX_PIN_CTL_RX(n)	(IOMUXC_BASE + 0x2ac + n * 8)a
+#define UART_SELECT_PIN(n)  (IOMUXC_BASE + 0x920 + n * 8)
+#define MUX_PIN_CTL_TX(n)   (IOMUXC_BASE + 0x2a8 + n * 8)
+#define MUX_PIN_CTL_RX(n)   (IOMUXC_BASE + 0x2ac + n * 8)a
 
 static void imxuart_configure_pins(void) {
 	/* We need to configure UART pins to use them as
@@ -82,7 +82,7 @@ static void imxuart_configure_pins(void) {
 	 * and then set source for the UART like follows; look manual for
 	 * more details */
 
-	switch(UART_NUM) {
+	switch (UART_NUM) {
 	case 0:
 		/* TX */
 		REG32_STORE(IOMUXC_BASE + 0x2A8, 1);
@@ -120,7 +120,7 @@ static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
 
 	/* Reset */
 	UART(UCR2) = 0;
-	while(UART(UTS) & UTS_RST);
+	while (UART(UTS) & UTS_RST) ;
 
 	UART(UCR1) = UCR1_UARTEN;
 	UART(UCR2) = UCR2_NORESET | UCR2_RXEN | UCR2_TXEN | UCR2_WORDSIZE | UCR2_IRTS;

@@ -35,7 +35,6 @@ struct gpio {
 #define GPIO_NUM_BY_IRQ(i)        ((i) - 28)
 #define GPIO_MODULE_CNT           6
 
-
 /* Register offsets from base address */
 #define GPIO_REVISION             0x00
 #define GPIO_SYSCONFIG            0x10

@@ -38,40 +38,40 @@ static int udp4_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET)
-			&& ip_tester_dst_or_any(sk, skb)
-			&& (sock_inet_get_src_port(sk) == udp_hdr(skb)->dest);
+		   && ip_tester_dst_or_any(sk, skb)
+		   && (sock_inet_get_src_port(sk) == udp_hdr(skb)->dest);
 }
 
 static int udp6_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET6)
-			&& ip6_tester_dst_or_any(sk, skb)
-			&& (sock_inet_get_src_port(sk) == udp_hdr(skb)->dest);
+		   && ip6_tester_dst_or_any(sk, skb)
+		   && (sock_inet_get_src_port(sk) == udp_hdr(skb)->dest);
 }
 
 static int udp4_accept_dst(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET)
-			&& ip_tester_src_or_any(sk, skb)
-			&&  ((sock_inet_get_dst_port(sk)
-					== udp_hdr(skb)->source)
-				|| (sock_inet_get_dst_port(sk) == 0))
-			&& ((sk->opt.so_bindtodevice == skb->dev)
-				|| (sk->opt.so_bindtodevice == NULL));
+		   && ip_tester_src_or_any(sk, skb)
+		   &&  ((sock_inet_get_dst_port(sk)
+		   == udp_hdr(skb)->source)
+		   || (sock_inet_get_dst_port(sk) == 0))
+		   && ((sk->opt.so_bindtodevice == skb->dev)
+		   || (sk->opt.so_bindtodevice == NULL));
 }
 
 static int udp6_accept_dst(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET6)
-			&& ip6_tester_src_or_any(sk, skb)
-			&&  ((sock_inet_get_dst_port(sk)
-					== udp_hdr(skb)->source)
-				|| (sock_inet_get_dst_port(sk) == 0))
-			&& ((sk->opt.so_bindtodevice == skb->dev)
-				|| (sk->opt.so_bindtodevice == NULL));
+		   && ip6_tester_src_or_any(sk, skb)
+		   &&  ((sock_inet_get_dst_port(sk)
+		   == udp_hdr(skb)->source)
+		   || (sock_inet_get_dst_port(sk) == 0))
+		   && ((sk->opt.so_bindtodevice == skb->dev)
+		   || (sk->opt.so_bindtodevice == NULL));
 }
 
 static int udp_rcv(struct sk_buff *skb) {
@@ -93,7 +93,7 @@ static int udp_rcv(struct sk_buff *skb) {
 
 	sk = sock_lookup(NULL, udp_sock_ops,
 			ip_check_version(ip_hdr(skb))
-				? udp4_rcv_tester : udp6_rcv_tester,
+			? udp4_rcv_tester : udp6_rcv_tester,
 			skb);
 	if (sk != NULL) {
 		if (ip_check_version(ip_hdr(skb))
@@ -135,17 +135,17 @@ static int udp_err_tester(const struct sock *sk,
 			+ IP_HEADER_SIZE(emb_pack_iphdr));
 
 	return (((in_sk->src_in.sin_addr.s_addr == skb->nh.iph->daddr)
-					&& (in_sk->src_in.sin_addr.s_addr == emb_pack_iphdr->saddr))
-				|| (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
-			&& (in_sk->src_in.sin_port == emb_pack_udphdr->source)
-			&& (((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
-					&& (in_sk->dst_in.sin_addr.s_addr == emb_pack_iphdr->daddr))
-				|| (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
-			&& ((in_sk->dst_in.sin_port == emb_pack_udphdr->dest)
-				|| (in_sk->dst_in.sin_port == 0))
-			&& (in_sk->sk.opt.so_protocol == emb_pack_iphdr->proto)
-			&& ((in_sk->sk.opt.so_bindtodevice == skb->dev)
-				|| (in_sk->sk.opt.so_bindtodevice == NULL));
+		   && (in_sk->src_in.sin_addr.s_addr == emb_pack_iphdr->saddr))
+		   || (in_sk->src_in.sin_addr.s_addr == INADDR_ANY))
+		   && (in_sk->src_in.sin_port == emb_pack_udphdr->source)
+		   && (((in_sk->dst_in.sin_addr.s_addr == skb->nh.iph->saddr)
+		   && (in_sk->dst_in.sin_addr.s_addr == emb_pack_iphdr->daddr))
+		   || (in_sk->dst_in.sin_addr.s_addr == INADDR_ANY))
+		   && ((in_sk->dst_in.sin_port == emb_pack_udphdr->dest)
+		   || (in_sk->dst_in.sin_port == 0))
+		   && (in_sk->sk.opt.so_protocol == emb_pack_iphdr->proto)
+		   && ((in_sk->sk.opt.so_bindtodevice == skb->dev)
+		   || (in_sk->sk.opt.so_bindtodevice == NULL));
 }
 
 static void udp_err(const struct sk_buff *skb, int error_info) {

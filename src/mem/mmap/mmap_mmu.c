@@ -146,9 +146,9 @@ struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end,
 
 	return marea;
 
-error_free:
+	error_free:
 	marea_destroy(marea);
-error:
+	error:
 	return NULL;
 }
 
@@ -171,7 +171,7 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 
 		marea = dlist_entry(item, struct marea, mmap_link);
 		s_ptr = MAREA_ALIGN_UP(marea->end);
-	} while(1);
+	} while (1);
 
 	return NULL;
 }
@@ -199,7 +199,7 @@ int mmap_mapping(struct emmap *emmap) {
 
 	return 0;
 
-out_err:
+	out_err:
 	mmap_unmap_on_error(emmap, marea);
 	return err;
 }

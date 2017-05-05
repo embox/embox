@@ -42,25 +42,25 @@
 #ifndef __QEMBOX__
 #define __QEMBOX__
 
-// May be bad idea: causes to include byteswap.h everywhere
-//#define __GLIBC__
+/* May be bad idea: causes to include byteswap.h everywhere */
+/*#define __GLIBC__ */
 
-//#define _POSIX_THREAD_SAFE_FUNCTIONS
+/*#define _POSIX_THREAD_SAFE_FUNCTIONS */
 
-///#define QT_NO_FSFILEENGINE
+/*/#define QT_NO_FSFILEENGINE */
 
-// TEMPORARYFILE requires FSFILEENGINE
-// Moved to command line
-//#define QT_NO_TEMPORARYFILE
+/* TEMPORARYFILE requires FSFILEENGINE */
+/* Moved to command line */
+/*#define QT_NO_TEMPORARYFILE */
 
-// Moved to command line
-//#define QT_NO_FILESYSTEMWATCHER
+/* Moved to command line */
+/*#define QT_NO_FILESYSTEMWATCHER */
 
-// Moved to command line
-//#define QT_NO_PROCESSlong pathconf(char *path, int name);
+/* Moved to command line */
+/*#define QT_NO_PROCESSlong pathconf(char *path, int name); */
 
-// Moved to command line
-//#define QT_NO_NETWORKINTERFACE
+/* Moved to command line */
+/*#define QT_NO_NETWORKINTERFACE */
 
 #define QT_NO_INOTIFY
 
@@ -70,10 +70,8 @@
 
 #define QT_NO_LOCALSERVER
 
-
-
-//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
-//#define F_DUPFD		(printf(">>> FD_DUPFD\n"),0)
+/*#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0) */
+/*#define F_DUPFD		(printf(">>> FD_DUPFD\n"),0) */
 
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
@@ -98,26 +96,19 @@
 
 #include <pthread.h>
 
-
 #if 1
 #define DPRINT() printf(">>> QT CALL %s\n", __FUNCTION__)
 #else
 #define DPRINT()
 #endif
 
-
-
-
-
 static const char *tzname[2];
 inline void tzset(void) {
 	DPRINT();
-	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
+	/* http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html */
 	tzname[0] = "EST";
 	tzname[1] = "EDT";
 }
-
-
 
 inline off_t ftello(FILE *stream) {
 	return ftell(stream);
@@ -146,9 +137,6 @@ inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
 	return 0;
 }
 
-
-
-
 inline int symlink(const char *oldpath, const char *newpath) {
 	(void)oldpath; (void)newpath;
 	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
@@ -156,16 +144,13 @@ inline int symlink(const char *oldpath, const char *newpath) {
 	return -1;
 }
 
-
-
-
-// Either this or define __GLIBC__
+/* Either this or define __GLIBC__ */
 #include <limits.h>
-//#define PATH_MAX 256
+/*#define PATH_MAX 256 */
 
 #include <locale.h>
-//#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
-//#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
+/*#define LC_ALL   (printf(">>> LC_ALL\n"),  1) */
+/*#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2) */
 
 #include <arpa/inet.h>
 
@@ -175,81 +160,83 @@ typedef __u16 u_int16_t;
 #ifndef __res_state_defined
 # define __res_state_defined
 
-typedef enum { res_goahead, res_nextns, res_modified, res_done, res_error }
-	res_sendhookact;
+typedef enum {
+	res_goahead, res_nextns, res_modified, res_done, res_error
+}
+res_sendhookact;
 
-typedef res_sendhookact (*res_send_qhook) (struct sockaddr_in * const *__ns,
-					   const u_char **__query,
-					   int *__querylen,
-					   u_char *__ans,
-					   int __anssiz,
-					   int *__resplen);
+typedef res_sendhookact (*res_send_qhook) (struct sockaddr_in *const *__ns,
+		const u_char **__query,
+		int *__querylen,
+		u_char *__ans,
+		int __anssiz,
+		int *__resplen);
 
 typedef res_sendhookact (*res_send_rhook) (const struct sockaddr_in *__ns,
-					   const u_char *__query,
-					   int __querylen,
-					   u_char *__ans,
-					   int __anssiz,
-					   int *__resplen);
+		const u_char *__query,
+		int __querylen,
+		u_char *__ans,
+		int __anssiz,
+		int *__resplen);
 
 /*
  * Global defines and variables for resolver stub.
  */
-# define MAXNS			3	/* max # name servers we'll track */
-# define MAXDFLSRCH		3	/* # default domain levels to try */
-# define MAXDNSRCH		6	/* max # domains in search path */
-# define LOCALDOMAINPARTS	2	/* min levels in name that is "local" */
+# define MAXNS          3   /* max # name servers we'll track */
+# define MAXDFLSRCH     3   /* # default domain levels to try */
+# define MAXDNSRCH      6   /* max # domains in search path */
+# define LOCALDOMAINPARTS   2   /* min levels in name that is "local" */
 
-# define RES_TIMEOUT		5	/* min. seconds between retries */
-# define MAXRESOLVSORT		10	/* number of net to sort on */
-# define RES_MAXNDOTS		15	/* should reflect bit field size */
-# define RES_MAXRETRANS		30	/* only for resolv.conf/RES_OPTIONS */
-# define RES_MAXRETRY		5	/* only for resolv.conf/RES_OPTIONS */
-# define RES_DFLRETRY		2	/* Default #/tries. */
-# define RES_MAXTIME		65535	/* Infinity, in milliseconds. */
+# define RES_TIMEOUT        5   /* min. seconds between retries */
+# define MAXRESOLVSORT      10  /* number of net to sort on */
+# define RES_MAXNDOTS       15  /* should reflect bit field size */
+# define RES_MAXRETRANS     30  /* only for resolv.conf/RES_OPTIONS */
+# define RES_MAXRETRY       5   /* only for resolv.conf/RES_OPTIONS */
+# define RES_DFLRETRY       2   /* Default #/tries. */
+# define RES_MAXTIME        65535   /* Infinity, in milliseconds. */
 
 struct __res_state {
-	int	retrans;		/* retransmition time interval */
-	int	retry;			/* number of times to retransmit */
-	u_long	options;		/* option flags - see below. */
-	int	nscount;		/* number of name servers */
+	int retrans;        /* retransmition time interval */
+	int retry;          /* number of times to retransmit */
+	u_long options;         /* option flags - see below. */
+	int nscount;        /* number of name servers */
 	struct sockaddr_in
-		nsaddr_list[MAXNS];	/* address of name server */
-# define nsaddr	nsaddr_list[0]		/* for backward compatibility */
-	u_short	id;			/* current message id */
+			nsaddr_list[MAXNS]; /* address of name server */
+# define nsaddr nsaddr_list[0]      /* for backward compatibility */
+	u_short id;         /* current message id */
 	/* 2 byte hole here.  */
-	char	*dnsrch[MAXDNSRCH+1];	/* components of domain to search */
-	char	defdname[256];		/* default domain (deprecated) */
-	u_long	pfcode;			/* RES_PRF_ flags - see below. */
-	unsigned ndots:4;		/* threshold for initial abs. query */
-	unsigned nsort:4;		/* number of elements in sort_list[] */
-	unsigned ipv6_unavail:1;	/* connecting to IPv6 server failed */
-	unsigned unused:23;
+	char    *dnsrch[MAXDNSRCH+1];   /* components of domain to search */
+	char defdname[256];         /* default domain (deprecated) */
+	u_long pfcode;          /* RES_PRF_ flags - see below. */
+	unsigned ndots : 4;       /* threshold for initial abs. query */
+	unsigned nsort : 4;       /* number of elements in sort_list[] */
+	unsigned ipv6_unavail : 1;    /* connecting to IPv6 server failed */
+	unsigned unused : 23;
 	struct {
-		struct in_addr	addr;
-		u_int32_t	mask;
+		struct in_addr addr;
+		u_int32_t mask;
 	} sort_list[MAXRESOLVSORT];
 	/* 4 byte hole here on 64-bit architectures.  */
-	res_send_qhook qhook;		/* query hook */
-	res_send_rhook rhook;		/* response hook */
-	int	res_h_errno;		/* last one set for this context */
-	int	_vcsock;		/* PRIVATE: for res_send VC i/o */
-	u_int	_flags;			/* PRIVATE: see below */
+	res_send_qhook qhook;       /* query hook */
+	res_send_rhook rhook;       /* response hook */
+	int res_h_errno;        /* last one set for this context */
+	int _vcsock;        /* PRIVATE: for res_send VC i/o */
+	u_int _flags;           /* PRIVATE: see below */
 	/* 4 byte hole here on 64-bit architectures.  */
 	union {
-		char	pad[52];	/* On an i386 this means 512b total. */
+		char pad[52];       /* On an i386 this means 512b total. */
 		struct {
-			u_int16_t		nscount;
-			u_int16_t		nsmap[MAXNS];
-			int			nssocks[MAXNS];
-			u_int16_t		nscount6;
-			u_int16_t		nsinit;
-			struct sockaddr_in6	*nsaddrs[MAXNS];
+			u_int16_t nscount;
+			u_int16_t nsmap[MAXNS];
+			int nssocks[MAXNS];
+			u_int16_t nscount6;
+			u_int16_t nsinit;
+			struct sockaddr_in6 *nsaddrs[MAXNS];
 #ifdef _LIBC
-			unsigned long long int	initstamp
-			  __attribute__((packed));
+			unsigned long long int initstamp
+			__attribute__((packed));
 #else
-			unsigned int		_initstamp[2];
+			unsigned int _initstamp[2];
 #endif
 		} _ext;
 	} _u;
@@ -257,22 +244,21 @@ struct __res_state {
 
 #endif
 
-
 #define IP_MULTICAST_TTL 0
 #define IPV6_MULTICAST_LOOP 0
 #define IP_MULTICAST_LOOP 0
 #define TCP_NODELAY 0
 
-//------BEGIN QProcess
+/*------BEGIN QProcess */
 
 static inline pid_t setsid(void) {
 	printf(">>> %s\n", __func__);
 	return 0;
 }
 
-//------ END QProcess
+/*------ END QProcess */
 
-// this is for FILESYSTEMWATCHER
+/* this is for FILESYSTEMWATCHER */
 #define _PC_LINK_MAX         0
 #define _PC_MAX_CANON        1
 #define _PC_MAX_INPUT        2
@@ -295,9 +281,9 @@ static inline long pathconf(char *path, int name) {
 	}
 }
 
-#endif // __QEMBOX__
+#endif /* __QEMBOX__ */
 
 #include "qglobal.h"
 
 #include "../../common/posix/qplatformdefs.h"
-//#include "../../linux-g++/qplatformdefs.h"
+/*#include "../../linux-g++/qplatformdefs.h" */

@@ -58,7 +58,7 @@ extern int mib_init_all(void);
 
 #define MIB_OBJECT_REGISTER(init) \
 	ARRAY_SPREAD_DECLARE(const mib_register_func, \
-			__mib_register); \
-    ARRAY_SPREAD_ADD(__mib_register, init)
+		__mib_register); \
+	ARRAY_SPREAD_ADD(__mib_register, init)
 
 #endif /* NET_LIB_SNMP_MIB_H_ */

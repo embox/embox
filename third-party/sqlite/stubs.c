@@ -15,7 +15,7 @@ int getrusage(int who, struct rusage *r_usage) {
 	return SET_ERRNO(ENOSYS);
 }
 
-FILE * popen(const char *command, const char *mode) {
+FILE *popen(const char *command, const char *mode) {
 	printk(">>> %s %s %s\n", __func__, command, mode);
 	return SET_ERRNO(ENOSYS), NULL;
 }
@@ -40,10 +40,9 @@ int utimes(const char *path, const struct timeval times[2]) {
 	return SET_ERRNO(ENOSYS);
 }
 
-void * mremap(void *old_addr, size_t old_len, size_t new_len,
+void *mremap(void *old_addr, size_t old_len, size_t new_len,
 		int flags, ... /* void *new_addr */) {
 	printk(">>> %s %p %zu %zu %d\n", __func__, old_addr, old_len,
 			new_len, flags);
 	return SET_ERRNO(ENOSYS), MAP_FAILED;
 }
-

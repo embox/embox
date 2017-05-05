@@ -10,14 +10,13 @@
 
 #include <stddef.h>
 
-
 struct thread;
 
 #include <module/embox/kernel/thread/thread_local.h>
 
 #define MODOPS_THREAD_KEY_QUANTITY OPTION_MODULE_GET( \
-			embox__kernel__thread__thread_local, \
-			NUMBER, thread_key_quantity)
+		embox__kernel__thread__thread_local, \
+		NUMBER, thread_key_quantity)
 
 typedef __thread_local_t thread_local_t;
 

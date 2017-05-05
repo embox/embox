@@ -207,7 +207,7 @@
 /*
  * System information exported through crash notes.
  *
- * The kexec / kdump code will create one XEN_ELFNOTE_CRASH_INFO 
+ * The kexec / kdump code will create one XEN_ELFNOTE_CRASH_INFO
  * note in case of a system crash. This note will contain various
  * information about the system, see xen/include/xen/elfcore.h.
  */
@@ -216,13 +216,12 @@
 /*
  * System registers exported through crash notes.
  *
- * The kexec / kdump code will create one XEN_ELFNOTE_CRASH_REGS 
+ * The kexec / kdump code will create one XEN_ELFNOTE_CRASH_REGS
  * note per cpu in case of a system crash. This note is architecture
  * specific and will contain registers not saved in the "CORE" note.
  * See xen/include/xen/elfcore.h for more information.
  */
 #define XEN_ELFNOTE_CRASH_REGS 0x1000002
-
 
 /*
  * xen dump-core none note.

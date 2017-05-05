@@ -6,7 +6,6 @@
  * @date    13.09.2012
  */
 
-
 #include <hal/reg.h>
 #include <embox/unit.h>
 
@@ -191,9 +190,9 @@
 #define _UxREG(uart_nmb, reg_nm) __UxREG(uart_nmb, reg_nm)
 #define UxREG(reg_nm) _UxREG(UART_NM, reg_nm)
 
-#define UxBRG	UxREG(BRG)   /* Baud rate generator */
-#define UxMODE	UxREG(MODE)  /* Mode */
-#define UxSTA	UxREG(STA)   /* Status */
+#define UxBRG   UxREG(BRG)   /* Baud rate generator */
+#define UxMODE  UxREG(MODE)  /* Mode */
+#define UxSTA   UxREG(STA)   /* Status */
 #define UxRXREG UxREG(RXREG) /* Receive buffer */
 #define UxTXREG UxREG(TXREG) /* Transmit buffer */
 
@@ -201,13 +200,12 @@
 #define MODE_RTSSMD (1 << 11)
 
 #define STA_URXEN 0x1000     /* Receive enable */
-#define STA_UTXEN 0x400	     /* Transmit enable */
+#define STA_UTXEN 0x400      /* Transmit enable */
 #define STA_URXDA 0x1        /* Receive data avaible */
 #define STA_UTXBF (1 << 9)      /* Transmit data full */
 #define STA_UTRMT (1 << 8)
 
 #define BRG_VAL (PERPH_CLK / (16 * BAUD_RATE) - 1)
-
 
 extern void mips_delay(int cnt);
 

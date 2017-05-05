@@ -30,9 +30,11 @@ static int car_bt_connect(void);
 static int car_bt_read(int len, void *data);
 
 static uint8_t determ_ack[ROBOBOT_DETERM_ACK_SIZE] =
-	{0x03, 0x00, 0x02, 0x0d, 0x02};
+{
+	0x03, 0x00, 0x02, 0x0d, 0x02
+};
 
-//#define MOTOR_DRY_RUN
+/*#define MOTOR_DRY_RUN */
 
 static void turn_right(void) {
 #ifndef MOTOR_DRY_RUN
@@ -96,29 +98,31 @@ static void robobot_handle_car(uint8_t *buff) {
 	direction = (int8_t) buff[1];
 
 	if (speed > FORW_THRESHOLD) {
-	    go_forw();
+		go_forw();
 	} else if (speed < -FORW_THRESHOLD) {
-	    go_back();
+		go_back();
 	} else {
-	    go_none();
+		go_none();
 	}
 
 	if (direction > TURN_THRESHOLD) {
-	    turn_right();
+		turn_right();
 	} else if (direction < -TURN_THRESHOLD) {
-	    turn_left();
+		turn_left();
 	} else {
-	    turn_none();
+		turn_none();
 	}
 }
 
 static int robobot_stamp(uint8_t *buff) {
-	uint8_t id[4] = {0x02, 0, 0, 0x0d};
+	uint8_t id[4] = {
+		0x02, 0, 0, 0x0d
+	};
 	int i;
 	for (i = 0; i < 4; i++) {
-	    if (id[i] != buff[i]) {
-		return 0;
-	    }
+		if (id[i] != buff[i]) {
+			return 0;
+		}
 	}
 	return 1;
 }

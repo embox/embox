@@ -20,17 +20,15 @@
 #define AD_INPUT_SELECT          0x18
 #define MIC_AMP_GAIN             0x19
 
-
 static uint32_t ak4531_base_addr;
 static uint32_t ak4531_status_reg;
 static uint32_t ak4531_poll_reg;
-
 
 static uint8_t mixer_values[0x20] = {
 	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x08, /* 0x00 - 0x07 */
 	0x08, 0x08, 0x08, 0x08, 0x08, 0x08, 0x00, 0x08, /* 0x08 - 0x0f */
 	0x7e, 0x3d, 0x01, 0x01, 0x00, 0x00, 0x03, 0x00, /* 0x10 - 0x17 */
-	0x00, 0x01										/* 0x18 - 0x19 */
+	0x00, 0x01                                      /* 0x18 - 0x19 */
 };
 
 static int ak4531_finished(void) {
@@ -62,7 +60,7 @@ int ak4531_init(uint32_t base_addr, uint32_t status_addr, uint32_t poll_addr) {
 	ak4531_poll_reg = poll_addr;
 	ak4531_status_reg = status_addr;
 
-	for (i=0; i<100; i++) {
+	for (i = 0; i < 100; i++) {
 		in8(poll_addr);
 	}
 
@@ -70,7 +68,7 @@ int ak4531_init(uint32_t base_addr, uint32_t status_addr, uint32_t poll_addr) {
 		return -1;
 	}
 
-	for (i=0; i<100; i++) {
+	for (i = 0; i < 100; i++) {
 		in8(poll_addr);
 	}
 #if 0
@@ -79,7 +77,7 @@ int ak4531_init(uint32_t base_addr, uint32_t status_addr, uint32_t poll_addr) {
 #endif
 	ak4531_write(AD_INPUT_SELECT, 0x00); /* recording source is mixer */
 
-	for (i = 0 ; i < sizeof(mixer_values); i++) {
+	for (i = 0; i < sizeof(mixer_values); i++) {
 		if (ak4531_write(i, mixer_values[i]) < 0) {
 			return -1;
 		}

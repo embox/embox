@@ -13,7 +13,7 @@
 
 ARRAY_SPREAD_DEF(const struct net_sock, __net_sock_registry);
 
-const struct net_sock * net_sock_lookup(int family, int type,
+const struct net_sock *net_sock_lookup(int family, int type,
 		int protocol) {
 	const struct net_sock *nsock;
 
@@ -21,8 +21,8 @@ const struct net_sock * net_sock_lookup(int family, int type,
 		if ((nsock->family == family)
 				&& (nsock->type == type)
 				&& ((nsock->protocol == protocol)
-					|| ((protocol == 0)
-						&& (nsock->is_default)))) {
+				|| ((protocol == 0)
+				&& (nsock->is_default)))) {
 			return nsock;
 		}
 	}

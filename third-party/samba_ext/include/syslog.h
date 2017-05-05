@@ -8,7 +8,6 @@
 #ifndef SYSLOG_H_
 #define SYSLOG_H_
 
-
 /* The <syslog.h> header shall define the following symbolic constants, zero
  * or more of which may be OR'ed together to form the logopt option of openlog()
  */
@@ -17,7 +16,6 @@
 #define LOG_NDELAY  3 /* Connect to syslog daemon immediately. */
 #define LOG_ODELAY  4 /* Delay open until syslog() is called. */
 #define LOG_NOWAIT  5 /* Do not wait for child processes. */
-
 
 /* The following symbolic constants shall be defined as possible values of the
  * facility argument to openlog():
@@ -39,7 +37,6 @@
 #define LOG_LOCAL5 16 /* Reserved for local use. */
 #define LOG_LOCAL6 17 /* Reserved for local use. */
 #define LOG_LOCAL7 18 /* Reserved for local use. */
-
 
 extern void  syslog(int prio, const char *format, ...);
 extern void  openlog(const char *, int, int);

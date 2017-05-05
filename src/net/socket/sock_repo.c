@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 #include <hal/ipl.h>
 
-struct sock * sock_iter(const struct sock_proto_ops *p_ops) {
+struct sock *sock_iter(const struct sock_proto_ops *p_ops) {
 	if (p_ops == NULL) {
 		return NULL; /* error: invalid argument */
 	}
@@ -18,7 +18,7 @@ struct sock * sock_iter(const struct sock_proto_ops *p_ops) {
 	return !dlist_empty(p_ops->sock_list) ? dlist_first_entry(p_ops->sock_list, struct sock, lnk) : NULL;
 }
 
-struct sock * sock_next(const struct sock *sk) {
+struct sock *sock_next(const struct sock *sk) {
 	if (sk == NULL) {
 		return NULL; /* error: invalid argument */
 	}
@@ -32,7 +32,7 @@ struct sock * sock_next(const struct sock *sk) {
 			struct sock, lnk);
 }
 
-struct sock * sock_lookup(const struct sock *sk,
+struct sock *sock_lookup(const struct sock *sk,
 		const struct sock_proto_ops *p_ops,
 		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb) {

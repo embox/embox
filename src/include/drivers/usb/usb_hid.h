@@ -12,10 +12,10 @@
 #define USB_HID_MAX_DEVS         2
 #define USB_HID_MAX_GETCONFS     2
 
-#define USB_CLASS_HID 		 3
+#define USB_CLASS_HID        3
 
-#define USB_CLASS_HID_SUB	 0
-#define USB_CLASS_HID_SUB_BOOT	 1
+#define USB_CLASS_HID_SUB    0
+#define USB_CLASS_HID_SUB_BOOT   1
 
 #define USB_CLASS_HID_PROT_NONE  0
 #define USB_CLASS_HID_PROT_KBD   1
@@ -54,4 +54,3 @@ static inline struct usb_class_hid *usb2hiddata(struct usb_dev *dev) {
 extern int usb_hid_found(struct usb_dev *dev);
 
 #endif /* DRIVERS_USB_HID_H_ */
-

@@ -41,7 +41,7 @@ mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
 	return (mmu_pmd_t *) mmu_get_ptd_ptr(*pgd);
 }
 
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t * pmd) {
+mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
 	return (mmu_pte_t *) mmu_get_ptd_ptr(*pmd);
 }
 

@@ -44,17 +44,17 @@ size_t skb_extra_max_size(void) {
 	return member_sizeof(struct sk_buff_extra, extra);
 }
 
-void * skb_extra_cast_in(struct sk_buff_extra *skb_extra) {
+void *skb_extra_cast_in(struct sk_buff_extra *skb_extra) {
 	assert(skb_extra != NULL);
 	return &skb_extra->extra[0];
 }
 
-struct sk_buff_extra * skb_extra_cast_out(void *extra) {
+struct sk_buff_extra *skb_extra_cast_out(void *extra) {
 	assert(extra != NULL);
 	return member_cast_out(extra, struct sk_buff_extra, extra);
 }
 
-struct sk_buff_extra * skb_extra_alloc(void) {
+struct sk_buff_extra *skb_extra_alloc(void) {
 	ipl_t sp;
 	struct sk_buff_extra *skb_extra;
 

@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 	int opt;
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "frh"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'f':
 			break;
 		case 'r':

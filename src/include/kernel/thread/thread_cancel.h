@@ -12,9 +12,9 @@
 
 extern int thread_cancel(struct thread *t);
 
-extern int thread_cancel_set_state(int, int*);
+extern int thread_cancel_set_state(int, int *);
 
-extern int thread_cancel_set_type(int, int*);
+extern int thread_cancel_set_type(int, int *);
 
 extern int thread_cancel_cleanup_push(void (*)(void *), void *arg);
 

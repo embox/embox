@@ -34,7 +34,7 @@ static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
 		idesc = index_descriptor_get(fds[i].fd);
 		if (idesc == NULL) {
 			fds[i].revents |= POLLNVAL;
-			// pt->idesc_poll[cnt].idesc = NULL;
+			/* pt->idesc_poll[cnt].idesc = NULL; */
 			pt->idesc_poll[cnt].fd = -1;
 			cnt++;
 			continue;
@@ -55,7 +55,7 @@ static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
 		}
 
 		if (poll_mask) {
-			// pt->idesc_poll[cnt].idesc = idesc;
+			/* pt->idesc_poll[cnt].idesc = idesc; */
 			pt->idesc_poll[cnt].i_poll_mask = poll_mask;
 			pt->idesc_poll[cnt].o_poll_mask = 0;
 
@@ -81,8 +81,8 @@ static int fds_setup(struct idesc_poll_table *pt, struct pollfd fds[],
 		}
 
 		if (pt->idesc_poll[i].fd != fds[j].fd) {
-			// continue search corresponding descriptor in fds.
-			cnt++; // TODO
+			/* continue search corresponding descriptor in fds. */
+			cnt++; /* TODO */
 			continue;
 		}
 

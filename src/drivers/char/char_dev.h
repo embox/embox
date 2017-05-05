@@ -11,9 +11,9 @@
 
 struct kfile_operations;
 
-typedef int (* device_module_init_ft)(void);
+typedef int (*device_module_init_ft)(void);
 struct device_module {
-	const char * name;
+	const char *name;
 	const struct kfile_operations *fops;
 	const device_module_init_ft init;
 };

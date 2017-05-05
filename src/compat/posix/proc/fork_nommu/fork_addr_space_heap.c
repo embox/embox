@@ -53,4 +53,3 @@ void fork_heap_cleanup(struct heap_space *hpspc) {
 	phymem_free(hpspc->heap, hpspc->heap_sz / PAGE_SIZE());
 	hpspc->heap = NULL;
 }
-

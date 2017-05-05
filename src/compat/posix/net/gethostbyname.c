@@ -21,7 +21,7 @@ static int check_ip_format(const char *ip_str) {
 	return *ip_str;
 }
 
-static struct hostent * get_hostent_from_ip(const char *ip_str) {
+static struct hostent *get_hostent_from_ip(const char *ip_str) {
 	struct hostent *he;
 	struct in_addr ip_addr;
 
@@ -39,7 +39,7 @@ static struct hostent * get_hostent_from_ip(const char *ip_str) {
 	return he;
 }
 
-static struct hostent * get_hostent_from_file(const char *hostname) {
+static struct hostent *get_hostent_from_file(const char *hostname) {
 	struct hostent *he;
 	char **aliases;
 
@@ -67,7 +67,7 @@ static struct hostent * get_hostent_from_file(const char *hostname) {
 	return he;
 }
 
-static struct hostent * get_hostent_from_net(const char *hostname) {
+static struct hostent *get_hostent_from_net(const char *hostname) {
 	int ret, addr_len;
 	struct hostent *he;
 	struct dns_result result;
@@ -107,7 +107,7 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 			break;
 		}
 
-		switch(ret) {
+		switch (ret) {
 		case 0:
 			/* continue processing */
 			break;
@@ -121,14 +121,14 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 			goto out_rr_loop;
 		}
 	}
-out_rr_loop:
+	out_rr_loop:
 
 	dns_result_free(&result);
 
 	return he;
 }
 
-struct hostent * gethostbyname(const char *name) {
+struct hostent *gethostbyname(const char *name) {
 	struct hostent *he;
 
 	if (name == NULL) {

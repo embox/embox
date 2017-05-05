@@ -34,7 +34,6 @@ typedef struct {
 #define SETJMP_GP 0x28
 #define SETJMP_SP 0x2C
 
-
 #endif
 
 #endif /* MIPS_SETJMP_H_ */

@@ -30,7 +30,7 @@ TEST_CASE("Test read operation on fs") {
 
 	test_assert_equal(nread, sizeof(fs_test_rd_file_content) - 1);
 	test_assert_zero(memcmp(fs_test_temp_buf, fs_test_rd_file_content,
-				sizeof(fs_test_rd_file_content) - 1));
+			sizeof(fs_test_rd_file_content) - 1));
 
 	close(fd);
 }

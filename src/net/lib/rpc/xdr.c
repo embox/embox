@@ -71,7 +71,6 @@ static int xdr_align(struct xdr *xs, size_t size) {
 	return xdr_putbytes(xs, (char *)&trash, round_up);
 }
 
-
 /*
  * Standard specification functions
  */
@@ -241,7 +240,9 @@ int xdr_array(struct xdr *xs, char **parr, uint32_t *psize, uint32_t maxsize,
 		if ((*psize <= maxsize) && xdr_u_int(xs, psize)) {
 			for (i = 0, pelem = *parr;
 					(i < *psize) && (*elem_proc)(xs, pelem, XDR_LAST_UINT32);
-					++i, pelem += elem_size);
+					++i, pelem += elem_size) {
+				;
+			}
 			if (i == *psize) {
 				return XDR_SUCCESS;
 			}

@@ -14,7 +14,6 @@
 #include <string.h>
 #include <fcntl.h>
 
-
 static void print_usage(void) {
 	printf("Usage: echo \"STRING\" >> FILE\n");
 }
@@ -25,7 +24,7 @@ int main(int argc, char **argv) {
 	const char *mode;
 
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;

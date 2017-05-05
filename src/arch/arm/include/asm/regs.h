@@ -40,10 +40,10 @@
 
 #ifndef __ASSEMBLER__
 static inline void *cpu_get_stack(void) {
-	void * ret;
+	void *ret;
 	__asm__ __volatile__ (
 		"mov %[res],SP"
-		: [res]"=r"(ret)
+		: [res] "=r" (ret)
 	);
 	return ret;
 }

@@ -19,5 +19,4 @@
 #define zlib_inflate(x,y) inflate(x,y)
 #define zlib_inflateEnd(x) inflateEnd(x)
 
-
 #endif /* __LINUX_ZLIB_H_ */

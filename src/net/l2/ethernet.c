@@ -94,10 +94,12 @@ static int ethernet_setup(struct net_device *dev) {
 
 	strcpy(name_fmt, dev->name);
 	ret = snprintf(dev->name, ARRAY_SIZE(dev->name), name_fmt, eth_id);
-	if (ret < 0)
+	if (ret < 0) {
 		return -EIO;
-	if (ret >= ARRAY_SIZE(dev->name))
+	}
+	if (ret >= ARRAY_SIZE(dev->name)) {
 		return -ENOMEM;
+	}
 
 	++eth_id;
 
@@ -112,7 +114,7 @@ static int ethernet_setup(struct net_device *dev) {
 	return 0;
 }
 
-struct net_device * etherdev_alloc(size_t priv_size) {
+struct net_device *etherdev_alloc(size_t priv_size) {
 	return netdev_alloc("eth%u", &ethernet_setup, priv_size);
 }
 

@@ -9,5 +9,3 @@
 #include <stdint.h>
 
 #include <module/embox/driver/clock/tsc.h>
-
-

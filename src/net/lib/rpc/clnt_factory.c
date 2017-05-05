@@ -13,7 +13,7 @@
 
 POOL_DEF(clnt_pool, struct client, MODOPS_AMOUNT_CLNT);
 
-struct client * clnt_alloc(void) {
+struct client *clnt_alloc(void) {
 	return pool_alloc(&clnt_pool);
 }
 

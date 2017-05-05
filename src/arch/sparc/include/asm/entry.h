@@ -20,7 +20,7 @@
 #define SAVE_ALL \
 	sethi %hi(trap_setup_begin), %t_retpc;            \
 	jmpl  %t_retpc + %lo(trap_setup_begin), %t_retpc; \
-	 rd %wim, %t_wim;
+	rd %wim, %t_wim;
 
 /**
  * All traps low-level code here must end with this macro.

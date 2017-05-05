@@ -47,7 +47,7 @@ struct dlist_head;
  * @param name -variable of a new list head name
  */
 #define DLIST_DEFINE(name) \
-		struct dlist_head name = DLIST_INIT(name)
+	struct dlist_head name = DLIST_INIT(name)
 
 /**
  * This function is a runtime analog of #DLIST_INIT macro.
@@ -94,7 +94,7 @@ extern void dlist_add_next(struct dlist_head *_new, struct dlist_head *list);
  * @param new - head of the item which wants to be inserted into the list
  * @param -list - head of the list which we want to join the new item
  */
-extern void dlist_add_prev(struct dlist_head *_new,	struct dlist_head *list);
+extern void dlist_add_prev(struct dlist_head *_new, struct dlist_head *list);
 
 /**
  * Remove item from its list and initialize item head for future using. It
@@ -163,7 +163,7 @@ static inline struct dlist_head *dlist_prev(const struct dlist_head *list) {
  *
  */
 #define dlist_del_init_entry(element, link_member) \
-		dlist_del_init(member_cast_in(element, link_member))
+	dlist_del_init(member_cast_in(element, link_member))
 
 /**
  * @def dlist_empty_entry()
@@ -183,13 +183,13 @@ static inline struct dlist_head *dlist_prev(const struct dlist_head *list) {
  */
 #define dlist_prev_entry_or_null(list, element_type, link_member) \
 	member_cast_out_or_null(!dlist_empty(list) ? dlist_prev(list) : NULL, \
-			element_type, \
-			link_member)
+		element_type, \
+		link_member)
 
 #define dlist_next_entry_or_null(list, element_type, link_member) \
 	member_cast_out_or_null(!dlist_empty(list) ? dlist_next(list) : NULL, \
-			element_type, \
-			link_member)
+		element_type, \
+		link_member)
 
 /**
  * @def dlist_next_if_not_last()
@@ -203,7 +203,7 @@ static inline struct dlist_head *dlist_prev(const struct dlist_head *list) {
 
 #define dlist_next_entry_if_not_last(element, list, element_type, link_member) \
 	member_cast_out_or_null(dlist_next_if_not_last(member_cast_in(element, \
-	link_member), list), element_type, link_member)
+		link_member), list), element_type, link_member)
 
 /**
  * @def dlist_add_prev_entry()
@@ -271,7 +271,7 @@ static inline struct dlist_head *dlist_last_or_null(const struct dlist_head *lis
  * @return a pointer to the item structure which contains the head
  */
 #define dlist_entry(head, type, member) \
-    mcast_out(head, type, member)
+	mcast_out(head, type, member)
 
 /*
  * 'for'-like loops safe to modification from inside a loop body.
@@ -295,11 +295,10 @@ static inline struct dlist_head *dlist_last_or_null(const struct dlist_head *lis
 	for (struct dlist_head *__link,       \
 			*__head = (head),              \
 			*__next = __head->next;        \
-			                              \
-		__next = (__link = __next)->next, \
+                                          \
+			__next = (__link = __next)->next, \
 			(__link != __head) &&         \
-			((link = __link), 1);)
-
+			((link = __link), 1); )
 
 #define dlist_foreach_entry_safe(link, head, member) \
 	__dlist_foreach_entry_safe(link, head, member, \
@@ -311,10 +310,9 @@ static inline struct dlist_head *dlist_last_or_null(const struct dlist_head *lis
 	for (struct dlist_head *__link,                                 \
 			*__head = (head),                                       \
 			*__next = (assert(__head), __head->next);               \
-		__next = (assert(__next), __link = __next)->next,           \
+			__next = (assert(__next), __link = __next)->next,           \
 			(__link != __head) &&                                   \
 			(link = dlist_entry(__link, typeof(*link), member), 1); \
-		)
-
+	)
 
 #endif /* DLIST_H_ */

@@ -37,7 +37,7 @@ static struct sockaddr_in addr;
 static socklen_t addrlen;
 static char buf[3];
 
-static inline struct sockaddr * to_sa(struct sockaddr_in *sa_in) {
+static inline struct sockaddr *to_sa(struct sockaddr_in *sa_in) {
 	return (struct sockaddr *)sa_in;
 }
 
@@ -87,23 +87,23 @@ TEST_CASE("send() fails on listening socket") {
 }
 
 TEST_CASE("sendto() and sendmsg() fails on not-null address"
-		" pointer") {
+		  " pointer") {
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 
 	test_assert_equal(-1, sendto(c, "", 1, 0, to_sa(&addr),
-				addrlen));
+			addrlen));
 	test_assert_equal(EISCONN, errno);
 
 	/* TODO add test for sendmsg */
 }
 
 TEST_CASE("recv(), recvfrom() and recvmsg() fails on listening"
-		" socket") {
+		  " socket") {
 	test_assert_equal(-1, recv(l, buf, 1, 0));
 	test_assert_equal(ENOTCONN, errno);
 
 	test_assert_equal(-1, recvfrom(l, buf, 1, 0, to_sa(&addr),
-				&addrlen));
+			&addrlen));
 	test_assert_equal(ENOTCONN, errno);
 
 	/* TODO add test for recvmsg */
@@ -127,7 +127,7 @@ TEST_CASE("send...() and recv...() works") {
 	test_assert_equal(1, sendto(c, "b", 1, 0, NULL, 0));
 
 	test_assert_equal(0, recvfrom(a, NULL, 0, 0, to_sa(&tmp),
-				&addrlen));
+			&addrlen));
 	test_assert_equal(sizeof tmp, addrlen);
 	test_assert_mem_equal(&addr, &tmp, addrlen);
 	test_assert_equal(1, recvfrom(a, buf, 2, 0, NULL, NULL));
@@ -155,7 +155,7 @@ TEST_CASE("accept() returns first connected client") {
 }
 
 TEST_CASE("getsockname() returns not unspecified address when"
-		" a socket was connected") {
+		  " a socket was connected") {
 	struct sockaddr_in tmp;
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 

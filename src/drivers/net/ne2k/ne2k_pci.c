@@ -19,27 +19,24 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
-//#include <arpa/inet.h>
-//#include <net/l0/net_entry.h>
+/*#include <arpa/inet.h> */
+/*#include <net/l0/net_entry.h> */
 
-//#include <asm/io.h>
-
+/*#include <asm/io.h> */
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
-//#include <kernel/irq.h>
+/*#include <kernel/irq.h> */
 #include <net/l2/ethernet.h>
 #include "ne2k.h"
 
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
-//#include <net/skbuff.h>
+/*#include <net/skbuff.h> */
 
-//#include <embox/unit.h>
-
+/*#include <embox/unit.h> */
 
 PCI_DRIVER("ne2k_pci", ne2k_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8029);
-
 
 static int ne2k_init(struct pci_slot_dev *pci_dev) {
 

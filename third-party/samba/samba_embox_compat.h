@@ -36,19 +36,18 @@ int statfs(const char *path, struct statfs *buf);
 #define SIG_UNBLOCK 1
 #define SIG_SETMASK 2
 
-//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+/*#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0) */
 
 #include <sys/select.h>
 
 #include <assert.h>
 #undef assert
-#define assert(x, msg...)
+#define assert(x, msg ...)
 
 struct sockaddr_un {
-    unsigned short sun_family;  /* AF_UNIX */
-    char sun_path[108];
+	unsigned short sun_family;  /* AF_UNIX */
+	char sun_path[108];
 };
-
 
 #include <sys/mman.h>
 
@@ -73,14 +72,14 @@ static inline void *dlsym(void *handle, const char *symbol) {
 
 static inline
 int dn_expand(unsigned char *msg, unsigned char *eomorig,
-              unsigned char *comp_dn, char *exp_dn,
-              int length) {
+		unsigned char *comp_dn, char *exp_dn,
+		int length) {
 	printf(">>> dn_expand(%s)\n",comp_dn);
 	return -1;
 }
 static inline
 int res_query(const char *dname, int class, int type,
-              unsigned char *answer, int anslen) {
+		unsigned char *answer, int anslen) {
 	printf(">>> res_query(%s)\n",dname);
 	return -1;
 }
@@ -99,7 +98,6 @@ char *mktemp(char *template) {
 	}
 	return template;
 }
-
 
 #include <grp.h>
 
@@ -188,7 +186,7 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 	return -1;
 }
 
-//XXX redefine malloc through sysmalloc. Revert it!
+/*XXX redefine malloc through sysmalloc. Revert it! */
 #include <stdlib.h>
 #define malloc(x)     sysmalloc(x)
 #define free(x)       sysfree(x)

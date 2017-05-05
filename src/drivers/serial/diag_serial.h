@@ -25,4 +25,3 @@ struct uart_diag {
 extern const struct diag_ops uart_diag_ops;
 
 #endif /* DRIVERS_SERIAL_DIAG_H_ */
-

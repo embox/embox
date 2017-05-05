@@ -50,7 +50,7 @@ static void *test_fork_basic(void *arg) {
 		exit(0);
 	}
 
-	while(cnt-- > 0) {
+	while (cnt-- > 0) {
 		sleep(0);
 	}
 
@@ -271,4 +271,3 @@ TEST_CASE("multithread task forking") {
 
 	test_assert_zero(res);
 }
-

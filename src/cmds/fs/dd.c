@@ -5,7 +5,7 @@
  * @date 30.01.13
  * @author Andrey Gazukin
  * @author Anton Kozlov
- * 	-- output to file
+ *  -- output to file
  */
 
 #include <errno.h>
@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
 		struct stat buff;
 
 		err = fstat(ifd, &buff);
-		if(err < 0) {
+		if (err < 0) {
 			goto out;
 		}
 		dp.count = buff.st_size;
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 		goto out_ofd_close;
 	}
 
-	if(0 == strcmp(dp.format, DD_FORMAT_HEX_C)) {
+	if (0 == strcmp(dp.format, DD_FORMAT_HEX_C)) {
 		format = 1;
 	}
 
@@ -220,8 +220,8 @@ int main(int argc, char **argv) {
 			goto out_cmd;
 		}
 
-		dp.skip --;
-	} while (dp.skip != 0);
+		dp.skip--;
+	} while (dp.skip != 0) ;
 
 	do {
 		unsigned int addr = 0;
@@ -243,15 +243,15 @@ int main(int argc, char **argv) {
 			break;
 		}
 		addr += n_read;
-		dp.count --;
+		dp.count--;
 	} while (dp.count != 0);
 
-out_cmd:
+	out_cmd:
 	free(tbuf);
-out_ofd_close:
+	out_ofd_close:
 	close(ofd);
-out_ifd_close:
+	out_ifd_close:
 	close(ifd);
-out:
+	out:
 	return err;
 }

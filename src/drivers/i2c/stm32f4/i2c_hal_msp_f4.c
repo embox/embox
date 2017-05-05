@@ -41,7 +41,7 @@
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */ 
+  */
 
 #include "stm32_i2c_conf_f4.h"
 #include <util/log.h>
@@ -60,7 +60,7 @@ static irq_return_t i2c_er_irq_handler(unsigned int irq_nr, void *data) {
 }
 
 /**
-  * @brief I2C MSP Initialization 
+  * @brief I2C MSP Initialization
   *        This function configures the hardware resources used in this example:
   *           - Peripheral's clock enable
   *           - Peripheral's GPIO Configuration
@@ -72,7 +72,7 @@ static irq_return_t i2c_er_irq_handler(unsigned int irq_nr, void *data) {
 void HAL_I2C_MspInit(I2C_HandleTypeDef *hi2c) {
 	int res;
 
-	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitTypeDef GPIO_InitStruct;
 
 	log_info(">>> HAL_I2C_MspInit\n");
 

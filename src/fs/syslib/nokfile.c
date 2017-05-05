@@ -22,7 +22,6 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 	return -ENOSYS;
 }
 
-
 void kclose(struct file_desc *desc) {
 }
 

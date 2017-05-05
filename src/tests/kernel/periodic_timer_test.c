@@ -12,13 +12,13 @@ EMBOX_TEST_SUITE("periodic timer tests");
 
 #define TEST_TIMER_PERIOD      1 /* milliseconds */
 
-static void test_timer_handler(sys_timer_t* timer, void *param) {
+static void test_timer_handler(sys_timer_t *timer, void *param) {
 	*((int *) param) += 1;
 }
 
 TEST_CASE("testing periodic timer") {
 	unsigned long i;
-	sys_timer_t * timer;
+	sys_timer_t *timer;
 	volatile int tick_counter;
 
 	/* Timer value changing means ok */

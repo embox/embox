@@ -17,4 +17,4 @@ struct kalman_filter {
 
 extern void kalman_filter_init(struct kalman_filter *filter, float value);
 extern float kalman_filter_iterate(struct kalman_filter *filter, float value,
-	float rate, float dt);
+		float rate, float dt);

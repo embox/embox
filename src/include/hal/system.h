@@ -15,7 +15,6 @@
 
 typedef uint64_t freq64_t;
 
-
 #define SYS_CLOCK \
 	OPTION_MODULE_GET(embox__arch__system,NUMBER,core_freq)
 

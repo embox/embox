@@ -6,7 +6,6 @@
  * @author Nikolay Korotky
  */
 
-
 #include <string.h>
 #include <stdlib.h>
 #include <embox/unit.h>
@@ -32,11 +31,11 @@ static int malloc_init(void) {
 	struct mem_control_block *init_mcb;
 
 	mem_pool = page_alloc(__heap_pgallocator, MEM_POOL_SIZE);
-	if(NULL == mem_pool) {
+	if (NULL == mem_pool) {
 		return -1;
 	}
 
-	managed_memory_start = (void*) mem_pool;
+	managed_memory_start = (void *) mem_pool;
 	last_valid_address   = managed_memory_start;
 	has_initialized      = 1;
 
@@ -69,7 +68,7 @@ void free(void *ptr) {
 	struct mem_control_block *mcb;
 	mcb = (void *)((char *) ptr - sizeof(struct mem_control_block));
 	mcb->is_available = 1;
-	 _mem_defrag();
+	_mem_defrag();
 	return;
 }
 
@@ -78,12 +77,14 @@ void *malloc(size_t size) {
 	struct mem_control_block *current_location_mcb;
 	char *memory_location = NULL;
 
-	if (size == 0)
+	if (size == 0) {
 		return NULL;
+	}
 
 	if (!has_initialized) {
-		if(-1 == malloc_init())
+		if (-1 == malloc_init()) {
 			return NULL;
+		}
 	}
 	current_location = managed_memory_start;
 	size += sizeof(struct mem_control_block);
@@ -107,7 +108,7 @@ void *malloc(size_t size) {
 		}
 		current_location_mcb = (struct mem_control_block *) memory_location;
 		current_location_mcb->is_available = 0;
-		current_location_mcb->size	 = size;
+		current_location_mcb->size   = size;
 	}
 	memory_location += sizeof(struct mem_control_block);
 	return memory_location;

@@ -75,7 +75,7 @@ int inetdev_unregister_dev(struct net_device *dev) {
 	return 0;
 }
 
-struct in_device * inetdev_get_by_name(const char *name) {
+struct in_device *inetdev_get_by_name(const char *name) {
 	struct in_device *in_dev;
 
 	if (name == NULL) {
@@ -92,7 +92,7 @@ struct in_device * inetdev_get_by_name(const char *name) {
 	return NULL; /* error: no such device */
 }
 
-struct in_device * inetdev_get_by_dev(struct net_device *dev) {
+struct in_device *inetdev_get_by_dev(struct net_device *dev) {
 	if (dev == NULL) {
 		return NULL; /* error: invalid argument */
 	}
@@ -100,7 +100,7 @@ struct in_device * inetdev_get_by_dev(struct net_device *dev) {
 	return inetdev_get_by_name(&dev->name[0]);
 }
 
-struct in_device * inetdev_get_by_addr(in_addr_t addr) {
+struct in_device *inetdev_get_by_addr(in_addr_t addr) {
 	struct in_device *in_dev;
 
 	dlist_foreach_entry(in_dev, &inetdev_list, lnk) {
@@ -112,7 +112,7 @@ struct in_device * inetdev_get_by_addr(in_addr_t addr) {
 	return NULL; /* error: no such device */
 }
 
-struct in_device * inetdev_get_loopback_dev(void) {
+struct in_device *inetdev_get_loopback_dev(void) {
 	return inetdev_get_by_name("lo");
 }
 
@@ -155,17 +155,17 @@ in_addr_t inetdev_get_addr(struct in_device *in_dev) {
 	return in_dev->ifa_address;
 }
 
-struct in_device * inetdev_get_first(void) {
+struct in_device *inetdev_get_first(void) {
 	return dlist_next_entry_or_null(&inetdev_list, struct in_device, lnk);
 }
 
-struct in_device * inetdev_get_next(struct in_device *in_dev) {
+struct in_device *inetdev_get_next(struct in_device *in_dev) {
 	if (in_dev == NULL) {
 		return NULL; /* error: invalid argument */
 	}
 
 	if (in_dev == dlist_last_entry(&inetdev_list,
-				struct in_device, lnk)) {
+			struct in_device, lnk)) {
 		return NULL; /* error: there are no more devices */
 	}
 

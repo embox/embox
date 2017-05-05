@@ -20,7 +20,7 @@
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/sched_lock.h>
-#include <drivers/char_dev.h> //XXX
+#include <drivers/char_dev.h> /*XXX */
 #include <fs/node.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
@@ -55,7 +55,6 @@ static inline void tun_user_lock(struct tun *tun) {
 static inline void tun_user_unlock(struct tun *tun) {
 	mutex_unlock(&tun->mtx_use);
 }
-
 
 static int tun_xmit(struct net_device *dev, struct sk_buff *skb);
 static int tun_open(struct net_device *dev);
@@ -279,11 +278,11 @@ static int tun_init(void) {
 
 	return 0;
 
-err_inetdev_deregister:
+	err_inetdev_deregister:
 	/* inetdev_deregister */
-err_netdev_free:
+	err_netdev_free:
 	netdev_free(tdev);
-err_deinit:
+	err_deinit:
 	tun_deinit();
 	return err;
 

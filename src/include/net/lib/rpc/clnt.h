@@ -60,7 +60,6 @@ struct rpc_err {
 	} extra;
 };
 
-
 struct clnt_ops {
 	enum clnt_stat (*call)(struct client *clnt, uint32_t procnum, xdrproc_t inproc,
 			char *in, xdrproc_t outproc, char *out, struct timeval wait);
@@ -96,34 +95,34 @@ struct rpc_createerr {
 extern struct rpc_createerr rpc_create_error;
 
 /* Client factory */
-extern struct client * clnt_alloc(void);
+extern struct client *clnt_alloc(void);
 extern void clnt_free(struct client *clnt);
 
-extern struct client * clnt_create(const char *host, uint32_t prognum, uint32_t versnum,
+extern struct client *clnt_create(const char *host, uint32_t prognum, uint32_t versnum,
 		const char *prot);
-extern struct client * clntudp_create(struct sockaddr_in *addr, uint32_t prognum,
+extern struct client *clntudp_create(struct sockaddr_in *addr, uint32_t prognum,
 		uint32_t versnum, struct timeval wait, int *psock);
 
-extern struct client * clnttcp_create(struct sockaddr_in *addr, uint32_t prognum,
+extern struct client *clnttcp_create(struct sockaddr_in *addr, uint32_t prognum,
 		uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz);
 
 extern enum clnt_stat clnt_call(struct client *clnt, uint32_t procnum, xdrproc_t inproc,
 		char *in, xdrproc_t outproc, char *out, struct timeval wait);
 
-extern void clnt_geterr(struct client * clnt, struct rpc_err *perr);
+extern void clnt_geterr(struct client *clnt, struct rpc_err *perr);
 
 extern void clnt_destroy(struct client *clnt);
 
-extern struct client * clnttcp_create(struct sockaddr_in *addr, uint32_t prognum, 	uint32_t versnum,
+extern struct client *clnttcp_create(struct sockaddr_in *addr, uint32_t prognum,   uint32_t versnum,
 		int *psock, unsigned int sendsz, unsigned int __recvsz);
 
-extern char * clnt_sperrno(enum clnt_stat stat);
+extern char *clnt_sperrno(enum clnt_stat stat);
 extern void clnt_perrno(enum clnt_stat stat);
 
-extern char * clnt_sperror(struct client *clnt, const char *s);
+extern char *clnt_sperror(struct client *clnt, const char *s);
 extern void clnt_perror(struct client *clnt, const char *s);
 
-extern char * clnt_spcreateerror(const char *s);
+extern char *clnt_spcreateerror(const char *s);
 extern void clnt_pcreateerror(const char *s);
 
 #endif /* NET_LIB_RPC_CLNT_H_ */

@@ -37,7 +37,7 @@ extern struct logger mod_logger __attribute__ ((weak));
 #define log_logp(level, fmt, ...) \
 	if (&mod_logger) \
 		logging_raw(&mod_logger.logging, level, "%s: %s: " fmt "\n", \
-					log_levels[level-1], __func__, ## __VA_ARGS__)
+				log_levels[level-1], __func__, ## __VA_ARGS__)
 
 /**
  * Logs a raw message in a way specified by the module logger.

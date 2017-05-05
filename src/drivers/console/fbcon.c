@@ -85,7 +85,7 @@ static void visd(struct vc *vc, struct fb_info *fbinfo) {
 	fbcon->resbpp.bpp = var.bits_per_pixel;
 
 	vterm_reinit(&fbcon->vterm_video, fbcon->resbpp.x / fbcon_displ_data.font->width,
-		       	fbcon->resbpp.y / fbcon_displ_data.font->height);
+			fbcon->resbpp.y / fbcon_displ_data.font->height);
 
 	fbcon_vterm_clear_rows(&fbcon->vterm_video, 0, fbcon->vterm_video.height);
 
@@ -141,11 +141,11 @@ static int fbcon_idesc_ioctl(struct idesc *idesc, int request, void *data) {
 }
 
 static int fbcon_idesc_fstat(struct idesc *idesc, void *buff) {
-       struct stat *st = buff;
+	struct stat *st = buff;
 
-       st->st_mode = S_IFCHR;
+	st->st_mode = S_IFCHR;
 
-       return 0;
+	return 0;
 }
 
 static int fbcon_idesc_status(struct idesc *idesc, int mask) {
@@ -267,7 +267,6 @@ static void fbcon_vterm_putc(struct vterm_video *t, char ch, unsigned short x, u
 	fb_imageblit(fb, &symbol);
 }
 
-
 static void fbcon_vterm_clear_rows(struct vterm_video *t, short row, unsigned short count){
 	struct fbcon *fbcon = member_cast_out(t, struct fbcon, vterm_video);
 	struct fb_fillrect rect;
@@ -327,11 +326,11 @@ static void fbcon_vterm_copy_rows(struct vterm_video *t,
 }
 
 static const struct vterm_video_ops fbcon_vterm_video_ops = {
-		.init = &fbcon_vterm_init,
-		.cursor = &fbcon_vterm_cursor,
-		.putc = &fbcon_vterm_putc,
-		.clear_rows = &fbcon_vterm_clear_rows,
-		.copy_rows = &fbcon_vterm_copy_rows
+	.init = &fbcon_vterm_init,
+	.cursor = &fbcon_vterm_cursor,
+	.putc = &fbcon_vterm_putc,
+	.clear_rows = &fbcon_vterm_clear_rows,
+	.copy_rows = &fbcon_vterm_copy_rows
 };
 
 extern int COLS __attribute__((weak)), LINES __attribute__((weak));
@@ -384,12 +383,11 @@ static void fbcon_diag_putc(const struct diag *diag, char ch) {
 		return;
 	}
 
-
 	vterm_putc(&fbcon_current->vterm, ch);
 }
 
 DIAG_OPS_DECLARE(
-	.putc = fbcon_diag_putc,
+		.putc = fbcon_diag_putc,
 );
 
 static int fbcon_init(void) {

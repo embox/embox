@@ -12,11 +12,11 @@
 #include <stddef.h>
 
 void *upper_bound(const void *key, const void *base,
-              size_t nmemb, size_t size,
-              int (*compar)(const void *, const void *)) {
+		size_t nmemb, size_t size,
+		int (*compar)(const void *, const void *)) {
 	char *left = (char *)base,
-		*right = (char *)base + size * nmemb,
-		*mid;
+			*right = (char *)base + size * nmemb,
+			*mid;
 	while (left + size < right) {
 		mid = left + ((right - left) / (size << 1) * size);
 		if (compar(key, mid) < 0) {
@@ -29,11 +29,11 @@ void *upper_bound(const void *key, const void *base,
 }
 
 void *lower_bound(const void *key, const void *base,
-              size_t nmemb, size_t size,
-              int (*compar)(const void *, const void *)) {
+		size_t nmemb, size_t size,
+		int (*compar)(const void *, const void *)) {
 	char *left = (char *)base - size,
-		*right = (char *)base + size * (nmemb - 1),
-		*mid;
+			*right = (char *)base + size * (nmemb - 1),
+			*mid;
 	while (left + size < right) {
 		mid = left + ((right - left) / (size << 1) * size);
 		if (compar(key, mid) <= 0) {
@@ -46,11 +46,11 @@ void *lower_bound(const void *key, const void *base,
 }
 
 void *bsearch(const void *key, const void *base,
-              size_t nmemb, size_t size,
-              int (*compar)(const void *, const void *)) {
+		size_t nmemb, size_t size,
+		int (*compar)(const void *, const void *)) {
 	char *left = (char *)base,
-		*right = (char *)base + size * nmemb,
-		*mid;
+			*right = (char *)base + size * nmemb,
+			*mid;
 	while (left + size < right) {
 		mid = left + ((right - left) / (size << 1) * size);
 		if (compar(key, mid) < 0) {

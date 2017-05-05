@@ -69,7 +69,7 @@ struct utmp *getutline(struct utmp *ut) {
 		short utt = utmp_f[utmp_f_pos].ut_type;
 
 		if ((utt == USER_PROCESS || utt == LOGIN_PROCESS) &&
-			0 == strcmp(utmp_f[utmp_f_pos].ut_line, ut->ut_line)) {
+				0 == strcmp(utmp_f[utmp_f_pos].ut_line, ut->ut_line)) {
 			return ret_result(&utmp_f[utmp_f_pos++]);
 		}
 
@@ -114,4 +114,3 @@ int utmpname(const char *file) {
 	errno = ENOMEM;
 	return -1;
 }
-

@@ -43,7 +43,7 @@ TEST_CASE("olimex blinking_led_timer test") {
 
 	timer_init_start_msec(&tmr, TIMER_PERIODIC, 1000, timer_hdn, NULL);
 
-	while (count) { } ;
+	while (count) { };
 
 	timer_close(&tmr);
 

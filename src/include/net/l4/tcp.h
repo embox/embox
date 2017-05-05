@@ -14,7 +14,6 @@
 #include <sys/time.h>
 #include <netinet/tcp.h>
 
-
 #include <linux/types.h>
 #include <linux/list.h>
 #include <net/socket/inet_sock.h>
@@ -26,27 +25,27 @@ typedef struct tcphdr {
 	__be32 seq;
 	__be32 ack_seq;
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
-	__u16 res1:4,
-		doff:4,
-		fin:1,
-		syn:1,
-		rst:1,
-		psh:1,
-		ack:1,
-		urg:1,
-		ece:1,
-		cwr:1;
+	__u16 res1 : 4,
+			doff : 4,
+			fin : 1,
+			syn : 1,
+			rst : 1,
+			psh : 1,
+			ack : 1,
+			urg : 1,
+			ece : 1,
+			cwr : 1;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
-	__u16 doff:4,
-		res1:4,
-		cwr:1,
-		ece:1,
-		urg:1,
-		ack:1,
-		psh:1,
-		rst:1,
-		syn:1,
-		fin:1;
+	__u16 doff : 4,
+			res1 : 4,
+			cwr : 1,
+			ece : 1,
+			urg : 1,
+			ack : 1,
+			psh : 1,
+			rst : 1,
+			syn : 1,
+			fin : 1;
 #endif
 	__be16 window;
 	__be16 check;
@@ -108,7 +107,7 @@ typedef struct tcp_sock {
 	unsigned int rexmit_mode;   /* Socket in rexmit mode */
 } tcp_sock_t;
 
-static inline struct tcp_sock * to_tcp_sock(
+static inline struct tcp_sock *to_tcp_sock(
 		const struct sock *sk) {
 	return (struct tcp_sock *)sk->p_sk;
 }
@@ -145,7 +144,7 @@ enum {
 	TCP_ST_SYNC      /* Connection is in a synchronized state */
 };
 
-static inline struct tcphdr * tcp_hdr(const struct sk_buff *skb) {
+static inline struct tcphdr *tcp_hdr(const struct sk_buff *skb) {
 	return skb->h.th;
 }
 

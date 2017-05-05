@@ -131,6 +131,6 @@ void usb_dev_disconnect(struct usb_hub_port *port) {
 
 static int usb_dev_init(void) {
 	lthread_init(&usb_newdev_handler, &usb_add_newdev_action);
-	//schedee_priority_set(&usb_newdev_handler.schedee, 200);
+	/*schedee_priority_set(&usb_newdev_handler.schedee, 200); */
 	return 0;
 }

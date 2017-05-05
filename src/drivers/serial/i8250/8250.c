@@ -27,13 +27,13 @@ static uint8_t calc_line_stat(const struct uart_params *params) {
 	uint8_t line_stat;
 
 	line_stat = 0;
-	if(0 == params->parity) {
+	if (0 == params->parity) {
 		line_stat |= UART_NO_PARITY;
 	}
-	if(8 == params->n_bits) {
+	if (8 == params->n_bits) {
 		line_stat |= UART_8BITS_WORD;
 	}
-	if(1 == params->n_stop) {
+	if (1 == params->n_stop) {
 		line_stat |= UART_1_STOP_BIT;
 	}
 	return line_stat;
@@ -70,7 +70,7 @@ static int i8250_setup(struct uart *dev, const struct uart_params *params) {
 }
 
 static int i8250_putc(struct uart *dev, int ch) {
-	while (!(in8(dev->base_addr + UART_LSR) & UART_EMPTY_TX));
+	while (!(in8(dev->base_addr + UART_LSR) & UART_EMPTY_TX)) ;
 	out8((uint8_t) ch, dev->base_addr + UART_TX);
 	return 0;
 }
@@ -84,44 +84,44 @@ static int i8250_getc(struct uart *dev) {
 }
 
 static const struct uart_ops i8250_uart_ops = {
-		.uart_getc = i8250_getc,
-		.uart_putc = i8250_putc,
-		.uart_hasrx = i8250_has_symbol,
-		.uart_setup = i8250_setup,
+	.uart_getc = i8250_getc,
+	.uart_putc = i8250_putc,
+	.uart_hasrx = i8250_has_symbol,
+	.uart_setup = i8250_setup,
 };
 
 static struct uart uart0 = {
-		.uart_ops = &i8250_uart_ops,
-		.irq_num = COM0_IRQ_NUM,
-		.base_addr = COM0_PORT_BASE,
+	.uart_ops = &i8250_uart_ops,
+	.irq_num = COM0_IRQ_NUM,
+	.base_addr = COM0_PORT_BASE,
 };
 
 static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = true,
 };
 
 static const struct uart_params uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = false,
 };
 
 const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &uart0,
-		.params = &uart_diag_params,
+	.diag = {
+		.ops = &uart_diag_ops,
+	},
+	.uart = &uart0,
+	.params = &uart_diag_params,
 };
 
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
 
-//TTYS_DEF("ttyS0", &uart0);
+/*TTYS_DEF("ttyS0", &uart0); */

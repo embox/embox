@@ -20,10 +20,16 @@ static void spi_delay(int n) {
 extern uint8_t spi_transfer(uint8_t tx);
 
 static void nrf24_test(void) {
-	uint8_t rx_address[5] = {0xA7,0x95,0xF1,0x36,0x07};
-	uint8_t tx_address[5] = {0xA7,0x95,0xF1,0x36,0x06};
-	//uint8_t tx_address[5] = {0x17,0x97,0xA7,0xA7,0xD7};
-	uint8_t addr[10] = {0x1};
+	uint8_t rx_address[5] = {
+		0xA7,0x95,0xF1,0x36,0x07
+	};
+	uint8_t tx_address[5] = {
+		0xA7,0x95,0xF1,0x36,0x06
+	};
+	/*uint8_t tx_address[5] = {0x17,0x97,0xA7,0xA7,0xD7}; */
+	uint8_t addr[10] = {
+		0x1
+	};
 	uint8_t val = 0x17;
 	uint8_t reg;
 	uint8_t data_array[6];
@@ -70,7 +76,7 @@ static void nrf24_test(void) {
 	spi_delay(1000000);
 	nrf24_readRegister(RX_ADDR_P0, addr, 5);
 	printf("RX_ADDR_P0: %x %x %x %x %x\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
-	
+
 	spi_delay(1000000);
 	nrf24_readRegister(RF_CH, &reg, 1);
 
@@ -92,7 +98,7 @@ static void nrf24_test(void) {
 	/* Channel #2 , payload length: 4 */
 	nrf24_config(16,6);
 
-    nrf24_readRegister(FIFO_STATUS,&reg,1);
+	nrf24_readRegister(FIFO_STATUS,&reg,1);
 	printf("!> 1 FIFO_STATUS = %2X\n", reg);
 
 	spi_delay(1000000);
@@ -107,34 +113,34 @@ static void nrf24_test(void) {
 
 	nrf24_readRegister(TX_ADDR, addr, 5);
 	printf("TX addr is: %x %x %x %x %x\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
-	//spi_delay(1000000);
+	/*spi_delay(1000000); */
 	nrf24_readRegister(RX_ADDR_P0, addr, 5);
 	printf("RX addr is: %x %x %x %x %x\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
-	//spi_delay(1000000);
+	/*spi_delay(1000000); */
 	nrf24_readRegister(RX_ADDR_P1, addr, 5);
 	printf("RX_ADDR_P1 addr is: %x %x %x %x %x\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
-    
+
 	nrf24_readRegister(FIFO_STATUS,&reg,1);
 	printf("!!!!!!> 2 FIFO_STATUS = %2X\n", reg);
 
 	/* Set the device addresses */
-	//nrf24_tx_address(rx_address);
-	//nrf24_rx_address(rx_address);
+	/*nrf24_tx_address(rx_address); */
+	/*nrf24_rx_address(rx_address); */
 
-	//nrf24_ce_digitalWrite(HIGH);
+	/*nrf24_ce_digitalWrite(HIGH); */
 
-	//reg = nrf24_getStatus();
-	//printf("STATUS = %2X\n", reg);
+	/*reg = nrf24_getStatus(); */
+	/*printf("STATUS = %2X\n", reg); */
 
 	nrf24_readRegister(FIFO_STATUS,&reg,1);
 	printf("!!!!!!> 3 FIFO_STATUS = %2X\n", reg);
 
-	while(1) {
-		if(nrf24_dataReady())
+	while (1) {
+		if (nrf24_dataReady())
 		{
 			counter = 0;
-			//reg = nrf24_getStatus();
-			//printf("STATUS = %x\n", reg);
+			/*reg = nrf24_getStatus(); */
+			/*printf("STATUS = %x\n", reg); */
 			nrf24_getData(data_array);
 			printf("> ");
 			printf("%2X ",data_array[0]);
@@ -143,7 +149,7 @@ static void nrf24_test(void) {
 			printf("%2X ",data_array[3]);
 			printf("%2X ",data_array[4]);
 			printf("%2X\r\n",data_array[5]);
-			//spi_delay(1000);
+			/*spi_delay(1000); */
 		} else if (counter > 100000) {
 			reg = nrf24_getStatus();
 			printf("(counter > 100000) STATUS = %2X\n", reg);

@@ -22,14 +22,15 @@
 EMBOX_UNIT_INIT(unit_init);
 
 struct irqmp_regs {
-	/* 0x00 */uint32_t level;
-	/* 0x04 */uint32_t pending;
-	/* 0x08 */uint32_t force;
-	/* 0x0C */uint32_t clear;
-	/* 0x10 */uint32_t mpstatus;
-	/* 0x14 */uint32_t broadcast;
-	/* 0x18 */uint32_t dummy[10];
-	/* 0x40 */uint32_t mask;
+	/* 0x00 */
+	uint32_t level;
+	/* 0x04 */ uint32_t pending;
+	/* 0x08 */ uint32_t force;
+	/* 0x0C */ uint32_t clear;
+	/* 0x10 */ uint32_t mpstatus;
+	/* 0x14 */ uint32_t broadcast;
+	/* 0x18 */ uint32_t dummy[10];
+	/* 0x40 */ uint32_t mask;
 };
 
 static volatile struct irqmp_regs *dev_regs;

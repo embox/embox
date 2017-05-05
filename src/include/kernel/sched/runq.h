@@ -8,7 +8,6 @@
 #ifndef SCHED_RUNQ_H_
 #define SCHED_RUNQ_H_
 
-
 #include <module/embox/kernel/sched/strategy/runq/api.h>
 
 struct schedee;

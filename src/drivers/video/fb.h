@@ -24,7 +24,6 @@ __BEGIN_DECLS
 #define FB_SYNC_EXT             4       /* external sync                */
 #define FB_SYNC_COMP_HIGH_ACT   8       /* composite sync high active   */
 
-
 #define FB_VMODE_NONINTERLACED  0       /* non interlaced */
 #define FB_VMODE_INTERLACED     1       /* interlaced   */
 #define FB_VMODE_DOUBLE         2       /* double scan */

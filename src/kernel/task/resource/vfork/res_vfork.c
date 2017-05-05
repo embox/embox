@@ -14,7 +14,6 @@
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_vfork.h>
 
-
 TASK_RESOURCE_DEF(task_vfork_desc, struct task_vfork);
 
 static void task_vfork_init(const struct task *task, void *vfork_buff) {

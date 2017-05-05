@@ -16,7 +16,7 @@ struct task;
 
 __BEGIN_DECLS
 
-extern void * task_resource_security(const struct task *task);
+extern void *task_resource_security(const struct task *task);
 
 #define task_self_resource_security() \
 	task_resource_security(task_self())

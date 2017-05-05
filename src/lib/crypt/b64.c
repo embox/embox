@@ -11,18 +11,17 @@
 
 #include <lib/crypt/b64.h>
 
-
 struct b64_char {
 	unsigned char c1,
-		c2,
-		c3;
+			c2,
+			c3;
 };
 
 struct b64_b {
-	unsigned char b1:6,
-		b2:6,
-		b3:6,
-		b4:6;
+	unsigned char b1 : 6,
+			b2 : 6,
+			b3 : 6,
+			b4 : 6;
 };
 
 static const char b2char[64] = {

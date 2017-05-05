@@ -6,8 +6,8 @@
 #define RUSAGE_SELF 0
 
 struct rusage {
-    struct timeval ru_utime; /* user CPU time used */
-    struct timeval ru_stime; /* system CPU time used */
+	struct timeval ru_utime; /* user CPU time used */
+	struct timeval ru_stime; /* system CPU time used */
 };
 
 extern int getrusage(int who, struct rusage *r_usage);

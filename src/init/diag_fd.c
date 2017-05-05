@@ -66,7 +66,7 @@ static int diag_fstat(struct idesc *data, void *buff) {
 
 static int diag_ioctl(struct idesc *desc, int request, void *data) {
 
-	switch(request) {
+	switch (request) {
 	case TIOCGETA:
 	case TIOCSETA:
 	case TIOCSETAW:

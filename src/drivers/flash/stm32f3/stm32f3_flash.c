@@ -51,13 +51,12 @@ static inline int stm32f3_flash_check_block(struct flash_dev *dev, uint32_t bloc
 	unsigned int n_block, i;
 
 	n_block = 0;
-	for (i = 0; i < dev->num_block_infos; i ++) {
+	for (i = 0; i < dev->num_block_infos; i++) {
 		n_block += dev->block_info.blocks;
 	}
 
 	return block < n_block;
 }
-
 
 /**
  * @brief Erase flash block
@@ -94,8 +93,7 @@ static int stm32f3_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	return err;
 }
 
-
-static int stm32f3_flash_read(struct flash_dev *dev, uint32_t base, void* data, size_t len) {
+static int stm32f3_flash_read(struct flash_dev *dev, uint32_t base, void *data, size_t len) {
 	size_t rlen = min(len, dev->end - dev->start + base);
 
 	/* read can be unaligned */
@@ -115,7 +113,7 @@ static int stm32f3_flash_read(struct flash_dev *dev, uint32_t base, void* data, 
  *
  * @return Negative error code
  */
-static int stm32f3_flash_program(struct flash_dev *dev, uint32_t base, const void* data, size_t len) {
+static int stm32f3_flash_program(struct flash_dev *dev, uint32_t base, const void *data, size_t len) {
 	int err = 0;
 	int offset;
 
@@ -133,9 +131,10 @@ static int stm32f3_flash_program(struct flash_dev *dev, uint32_t base, const voi
 	/* Write data halfword by halfword */
 	for (offset = 0; offset < len; offset += 2) {
 		if (HAL_OK != HAL_FLASH_Program(TYPEPROGRAM_HALFWORD,
-					dev->start + base + offset,
-					*((uint32_t*) data + offset)))
+				dev->start + base + offset,
+				*((uint32_t *) data + offset))) {
 			return -1; /* TODO: set appropriate code */
+		}
 	}
 
 	/* Lock to prevent unwanted operations with flash memory */
@@ -145,7 +144,7 @@ static int stm32f3_flash_program(struct flash_dev *dev, uint32_t base, const voi
 }
 
 static int stm32f3_flash_copy(struct flash_dev *dev, uint32_t base_dst,
-				uint32_t base_src, size_t len) {
+		uint32_t base_src, size_t len) {
 	return stm32f3_flash_program(dev, base_dst, (void *) dev->start + base_src, len);
 }
 

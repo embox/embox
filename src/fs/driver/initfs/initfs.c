@@ -28,13 +28,12 @@
 #include <util/array.h>
 #include <embox/unit.h>
 
-
 struct initfs_file_info {
 	struct node_info ni; /* must be the first member */
-    char *addr;
+	char *addr;
 };
 
-POOL_DEF (fdesc_pool, struct initfs_file_info,
+POOL_DEF(fdesc_pool, struct initfs_file_info,
 		OPTION_GET(NUMBER,fdesc_quantity));
 
 static struct idesc *initfs_open(struct node *nod, struct file_desc *desc, int flags) {
@@ -50,7 +49,7 @@ static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct nas *nas;
 
 	nas = desc->node->nas;
-	fi = (struct initfs_file_info*) nas->fi;
+	fi = (struct initfs_file_info *) nas->fi;
 
 	if (!fi) {
 		return -ENOENT;
@@ -73,7 +72,7 @@ static int initfs_ioctl(struct file_desc *desc, int request, void *data) {
 
 	assert(data != NULL);
 
-	//TODO: switch through "request" ID.
+	/*TODO: switch through "request" ID. */
 	p_addr = data;
 
 	nas = desc->node->nas;

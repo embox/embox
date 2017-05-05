@@ -17,4 +17,3 @@ clock_t cpu_get_total_time(unsigned int cpu_id) {
 clock_t cpu_get_idle_time(unsigned int cpu_id) {
 	return thread_get_running_time(cpu_get_idle(cpu_id));
 }
-

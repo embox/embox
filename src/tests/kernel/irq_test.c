@@ -62,7 +62,7 @@ static irq_return_t test_fib_isr(unsigned int irq_nr, void *dev_id) {
 }
 
 TEST_CASE("Deep IRQ handler regression "
-		"(recursively calculating Fibonacci number inside IRQ handler)") {
+		  "(recursively calculating Fibonacci number inside IRQ handler)") {
 	int result = FIBONACCI_NR;
 
 	test_assert_zero(
@@ -86,15 +86,15 @@ static irq_return_t test_nesting_isr(unsigned int irq_nr, void *dev_id) {
 }
 
 TEST_CASE("An IRQ with higher priority should preempt a handler "
-		"of a lower one") {
+		  "of a lower one") {
 	test_emit('{');
 
 	test_assert_zero(
 			irq_attach(TEST_OUTER_IRQ_NR, test_nesting_isr, 0,
-					(void *) '0', "test_irq_outer"));
+			(void *) '0', "test_irq_outer"));
 	test_assert_zero(
 			irq_attach(TEST_INNER_IRQ_NR, test_nesting_isr, 0,
-					(void *) '1', "test_irq_inner"));
+			(void *) '1', "test_irq_inner"));
 
 	test_emit('[');
 	irqctrl_force(TEST_OUTER_IRQ_NR);

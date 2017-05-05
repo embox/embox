@@ -19,4 +19,3 @@ struct waitq_link *waitq_link_find_protected(struct waitq_link *uwql) {
 void waitq_link_delete_protected(struct waitq_link *pwql) {
 
 }
-

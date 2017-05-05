@@ -92,10 +92,10 @@ int main(int argc, char **argv) {
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		case 'h':
 			print_usage();
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		default:
 			return 0;
 		}
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 	strcpy(&spa_str[0], inet_ntoa(*(struct in_addr *)&spa[0]));
 
 	printf("RARPING %s from %s(%s) %s\n", &tha_str[0], &sha_str[0],
-		&spa_str[0], in_dev->dev->name);
+			&spa_str[0], in_dev->dev->name);
 	for (size_t i = 1; i <= cnt; i++) {
 		neighbour_clean(in_dev->dev);
 		send_request(in_dev->dev, ETH_P_IP, sizeof in_dev->ifa_address,

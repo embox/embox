@@ -35,4 +35,3 @@ int mod_integrity_check(const struct mod *mod) {
 
 	return 0;
 }
-

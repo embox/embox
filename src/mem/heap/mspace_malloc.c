@@ -28,13 +28,13 @@
 #include <kernel/panic.h>
 
 /* TODO make it per task field */
-//static DLIST_DEFINE(task_mem_segments);
+/*static DLIST_DEFINE(task_mem_segments); */
 
-//#define DEBUG
+/*#define DEBUG */
 
 extern struct page_allocator *__heap_pgallocator;
 extern struct page_allocator *__heap_pgallocator2 __attribute__((weak));
-static struct page_allocator ** const mm_page_allocs[] = {
+static struct page_allocator **const mm_page_allocs[] = {
 	&__heap_pgallocator,
 	&__heap_pgallocator2,
 };
@@ -112,8 +112,9 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	size_t segment_pages_cnt;
 	void *block;
 
-	if (size == 0)
+	if (size == 0) {
 		return NULL;
+	}
 
 	assert(mspace);
 
@@ -128,8 +129,9 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	segment_pages_cnt += (size % PAGE_SIZE() + boundary % PAGE_SIZE() + 2 * PAGE_SIZE()) / PAGE_SIZE();
 
 	mm = mm_segment_alloc(segment_pages_cnt);
-	if (mm == NULL)
+	if (mm == NULL) {
 		return NULL;
+	}
 
 	mm->size = segment_pages_cnt * PAGE_SIZE();
 	dlist_head_init(&mm->link);
@@ -241,7 +243,6 @@ size_t mspace_deep_copy_size(struct dlist_head *mspace) {
 	}
 	return ret;
 }
-
 
 void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
 	struct mm_segment *mm;

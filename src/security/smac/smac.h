@@ -19,9 +19,9 @@ extern const char *smac_admin;
 extern const char *smac_def_file_label;
 
 struct smac_entry {
-	char	subject[SMAC_LABELLEN];
-	char 	object [SMAC_LABELLEN];
-	int 	flags;
+	char subject[SMAC_LABELLEN];
+	char object [SMAC_LABELLEN];
+	int flags;
 };
 
 struct smac_env {
@@ -30,7 +30,7 @@ struct smac_env {
 };
 
 struct smac_task {
-	char 	label[SMAC_LABELLEN];
+	char label[SMAC_LABELLEN];
 };
 
 struct smac_audit {

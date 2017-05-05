@@ -34,7 +34,7 @@
 #include <framework/mod/options.h>
 #define LOG_LEVEL OPTION_GET(NUMBER, log_level)
 
-// Forward declarations
+/* Forward declarations */
 static void log_arp_hnd_request(const struct arphdr *rarph,
 		uint8_t *dst_paddr, uint8_t *dst_haddr);
 static void log_arp_hnd_reply(const struct arphdr *rarph,
@@ -47,7 +47,7 @@ static int arp_xmit(struct sk_buff *skb) {
 	assert(skb->dev != NULL);
 	if (skb->dev->flags & IFF_NOARP) {
 		log_error("arp_xmit: arp doesn't supported by device %s\n",
-					&skb->dev->name[0]);
+				&skb->dev->name[0]);
 		skb_free(skb);
 		return 0; /* error: arp doesn't supported by device */
 	}
@@ -73,8 +73,10 @@ static int arp_send(struct sk_buff *skb, struct net_device *dev,
 	size = dev->hdr_len + ARP_CALC_HEADER_SIZE(dev->addr_len, pln);
 	if (size > min(dev->mtu, skb_max_size())) {
 		log_error("arp_send: hdr size %zu is too big (max %zu)\n",
-					size, min(dev->mtu, skb_max_size()));
-		if (skb) skb_free(skb); /* TODO */
+				size, min(dev->mtu, skb_max_size()));
+		if (skb) {
+			skb_free(skb);      /* TODO */
+		}
 		return -EMSGSIZE; /* error: hdr size is too big */
 	}
 
@@ -144,7 +146,7 @@ static int arp_hnd_request(const struct arphdr *arph,
 
 	/* check recipient */
 	if (0 != memcmp(arpb->ar_tpa, &in_dev->ifa_address,
-				arph->ar_pln)) {
+			arph->ar_pln)) {
 		log_error("arp_hnd_request: not for us\n");
 		skb_free(skb);
 		return 0; /* error: not for us */
@@ -199,25 +201,25 @@ static int arp_hnd_reply(const struct arphdr *arph,
 
 static void log_arp_hnd_request(const struct arphdr *arph,
 		uint8_t *dst_paddr, uint8_t *dst_haddr) {
-		log_debug("arp_hnd_request: send reply with ");
-		if (arph->ar_pro == ntohs(ETH_P_IP)) {
-			struct in_addr in;
-			assert(arph->ar_pln == sizeof in);
-			memcpy(&in, dst_paddr, sizeof in);
-			log_debug("%s", inet_ntoa(in));
-		}
-		else {
-			log_debug("unknown(%x)", htons(arph->ar_pro));
-		}
-		if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
-			assert(arph->ar_hln == ETH_ALEN);
-			log_debug("[" MACADDR_FMT "]",
+	log_debug("arp_hnd_request: send reply with ");
+	if (arph->ar_pro == ntohs(ETH_P_IP)) {
+		struct in_addr in;
+		assert(arph->ar_pln == sizeof in);
+		memcpy(&in, dst_paddr, sizeof in);
+		log_debug("%s", inet_ntoa(in));
+	}
+	else {
+		log_debug("unknown(%x)", htons(arph->ar_pro));
+	}
+	if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
+		assert(arph->ar_hln == ETH_ALEN);
+		log_debug("[" MACADDR_FMT "]",
 				MACADDR_FMT_ARG(dst_haddr));
-		}
-		else {
-			log_debug("[unknown(%x)]", htons(arph->ar_hrd));
-		}
-		log_debug("\n");
+	}
+	else {
+		log_debug("[unknown(%x)]", htons(arph->ar_hrd));
+	}
+	log_debug("\n");
 }
 
 static void log_arp_hnd_reply(const struct arphdr *arph,
@@ -235,7 +237,7 @@ static void log_arp_hnd_reply(const struct arphdr *arph,
 	if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
 		assert(arph->ar_hln == ETH_ALEN);
 		log_debug("[" MACADDR_FMT "]",
-			MACADDR_FMT_ARG(arpb->ar_sha));
+				MACADDR_FMT_ARG(arpb->ar_sha));
 	}
 	else {
 		log_debug("[unknown(%x)]", htons(arph->ar_hrd));
@@ -253,7 +255,7 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	/* check device flags */
 	if (dev->flags & IFF_NOARP) {
 		log_error("arp_rcv: aro doesn't supported by device %s\n",
-					&dev->name[0]);
+				&dev->name[0]);
 		return 0; /* error: arp doesn't supported by device */
 	}
 
@@ -265,7 +267,6 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 		skb_free(skb);
 		return 0; /* error: bad packet */
 	}
-
 
 	/* check device capabilities */
 	if ((arph->ar_hrd != htons(dev->type))

@@ -15,7 +15,6 @@
 #include <linux/types.h>
 #include <endian.h>
 
-
 /**
  * Prototypes
  */
@@ -23,11 +22,11 @@ struct sk_buff;
 
 typedef struct ip6hdr {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-	__u8 priority:4, /* priority */
-	version: 4; /* version = 6 */
+	__u8 priority : 4, /* priority */
+			version : 4; /* version = 6 */
 #elif __BYTE_ORDER == __BIG_ENDIAN
-	__u8 version:4,
-		priority:4;
+	__u8 version : 4,
+			priority : 4;
 #endif
 	__u8 flow_lbl[3];
 	__be16 payload_len;
@@ -48,6 +47,6 @@ struct net_pack_out_ops;
  * IPV6 packet outgoing options
  */
 extern const struct net_pack_out_ops *const ip6_out_ops
-		__attribute__ ((weak));
+__attribute__ ((weak));
 
 #endif /* NET_L3_IP6_H_ */

@@ -31,7 +31,7 @@ static void touch_handler(nxt_sensor_t *sensor, sensor_val_t val) {
 	}
 }
 
-void touch_sensor_init (nxt_sensor_t *sensor, touch_hnd_t handler) {
+void touch_sensor_init(nxt_sensor_t *sensor, touch_hnd_t handler) {
 	touch_sens_hnds[sensor->id] = handler;
 	nxt_sensor_conf_pass(sensor, (sensor_handler_t) touch_handler);
 }

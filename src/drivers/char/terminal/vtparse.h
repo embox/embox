@@ -29,7 +29,7 @@ struct vtparse {
 	vtparse_callback_t cb;
 	struct vt_token token;
 	short token_params[VTPARSE_TOKEN_PARAMS_MAX];
-	void* user_data;
+	void *user_data;
 };
 
 typedef struct vtparse *vtparse_t;

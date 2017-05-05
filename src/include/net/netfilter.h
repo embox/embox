@@ -65,7 +65,7 @@ typedef int (*nf_test_hnd)(const struct nf_rule *r,
  * Netfilter rule structure
  */
 #define NF_DECL_NOT_FIELD(name, type) \
-	typeof(type) name; char set_##name; char not_##name;
+	typeof(type)name; char set_ ## name; char not_ ## name;
 
 struct nf_rule {
 	struct dlist_head lnk;
@@ -127,16 +127,16 @@ extern int nf_rule_copy(struct nf_rule *r_dst,
 #define NF_SET_NOT_FIELD(r, field, not, value) \
 	do {                                       \
 		(r)->field = value;                    \
-		(r)->set_##field = 1;                  \
-		(r)->not_##field = not;                \
+		(r)->set_ ## field = 1;                  \
+		(r)->not_ ## field = not;                \
 	} while (0)
 #define NF_SET_NOT_FIELD_PTR(r, field, not,    \
-		val_ptr, val_len)                      \
+			val_ptr, val_len)                      \
 	do {                                       \
 		assert(val_len <= sizeof (r)->field);  \
 		memcpy(&(r)->field, val_ptr, val_len); \
-		(r)->set_##field = 1;                  \
-		(r)->not_##field = not;                \
+		(r)->set_ ## field = 1;                  \
+		(r)->not_ ## field = not;                \
 	} while (0)
 
 extern int nf_add_rule(int chain, const struct nf_rule *r);

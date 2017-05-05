@@ -77,8 +77,8 @@ static char *cpio_parse_newc(const struct newc_hdr *hdr,
 	field_buff[NEWC_FIELD_SZ] = '\0';
 
 	for (unsigned long *p_field = (unsigned long *) &parsed;
-	     p_field < (unsigned long *) (&parsed + 1);
-	     ++p_field, raw += NEWC_FIELD_SZ) {
+			p_field < (unsigned long *) (&parsed + 1);
+			++p_field, raw += NEWC_FIELD_SZ) {
 		unsigned long tmp;
 
 		memcpy(field_buff, raw, NEWC_FIELD_SZ);
@@ -128,4 +128,3 @@ char *cpio_parse_entry(const char *cpio, struct cpio_entry *entry) {
 
 	return cpio_parse_newc((struct newc_hdr *) cpio, entry);
 }
-

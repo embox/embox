@@ -5,13 +5,13 @@
  * @author: Anton Bondarev
  */
 
-//http://linuxconsole.sourceforge.net/fbdev/HOWTO/3.html
+/*http://linuxconsole.sourceforge.net/fbdev/HOWTO/3.html */
 
-//http://www.faqs.org/faqs/pc-hardware-faq/supervga-programming/
-//http://wiki.osdev.org/VGA_Hardware#The_CRT_Controller
-//http://www.osdever.net/FreeVGA/vga/crtcreg.htm
+/*http://www.faqs.org/faqs/pc-hardware-faq/supervga-programming/ */
+/*http://wiki.osdev.org/VGA_Hardware#The_CRT_Controller */
+/*http://www.osdever.net/FreeVGA/vga/crtcreg.htm */
 
-//CIRRUS_LOGIC_GD_5446
+/*CIRRUS_LOGIC_GD_5446 */
 
 #include <stdint.h>
 #include <errno.h>
@@ -51,7 +51,7 @@ void cirrus_chip_reset(struct cirrus_chip_info *cinfo) {
 void udelay(int cnt) {
 	volatile int tcnt = cnt * 1000;
 
-	while(tcnt--) {}
+	while (tcnt--) {}
 
 }
 
@@ -105,8 +105,8 @@ static void chipset_init(struct cirrus_chip_info *cinfo) {
 
 	/* controller-internal base address of video memory */
 /* enable extention mode ? */
-//	if (bi->init_sr07)
-//		vga_wseq(cinfo->regbase, CL_SEQR7, bi->sr07);
+/*	if (bi->init_sr07) */
+/*		vga_wseq(cinfo->regbase, CL_SEQR7, bi->sr07); */
 
 	/*  vga_wseq(cinfo->regbase, CL_SEQR8, 0x00); */
 	/* EEPROM control: shouldn't be necessary to write to this at all.. */
@@ -134,7 +134,6 @@ static void chipset_init(struct cirrus_chip_info *cinfo) {
 	/* Underline Row scanline: - */
 	vga_wcrt(cinfo->regbase, VGA_CRTC_UNDERLINE, 0x00);
 
-
 	/* Set/Reset registes: - */
 	vga_wgfx(cinfo->regbase, VGA_GFX_SR_VALUE, 0x00);
 	/* Set/Reset enable: - */
@@ -154,15 +153,14 @@ static void chipset_init(struct cirrus_chip_info *cinfo) {
 	/* Bit Mask: no mask at all */
 	vga_wgfx(cinfo->regbase, VGA_GFX_BIT_MASK, 0xff);
 
-
 	/* Graphics controller mode extensions: finer granularity,
 	 * 8byte data latches
 	 */
 	vga_wgfx(cinfo->regbase, CL_GRB, 0x28);
 
-	vga_wgfx(cinfo->regbase, CL_GRC, 0xff);	/* Color Key compare: - */
-	vga_wgfx(cinfo->regbase, CL_GRD, 0x00);	/* Color Key compare mask: - */
-	vga_wgfx(cinfo->regbase, CL_GRE, 0x00);	/* Miscellaneous control: - */
+	vga_wgfx(cinfo->regbase, CL_GRC, 0xff); /* Color Key compare: - */
+	vga_wgfx(cinfo->regbase, CL_GRD, 0x00); /* Color Key compare mask: - */
+	vga_wgfx(cinfo->regbase, CL_GRE, 0x00); /* Miscellaneous control: - */
 	/* Background color byte 1: - */
 	/*  vga_wgfx (cinfo->regbase, CL_GR10, 0x00); */
 	/*  vga_wgfx (cinfo->regbase, CL_GR11, 0x00); */
@@ -194,7 +192,7 @@ static void chipset_init(struct cirrus_chip_info *cinfo) {
 	/* Color Select: - */
 	vga_wattr(cinfo->regbase, VGA_ATC_COLOR_PAGE, 0x00);
 
-//	WGen(cinfo, VGA_PEL_MSK, 0xff);	/* Pixel mask: no mask */
+/*	WGen(cinfo, VGA_PEL_MSK, 0xff);	/ * Pixel mask: no mask * / */
 
 	/* BLT Start/status: Blitter reset */
 	vga_wgfx(cinfo->regbase, CL_GR31, 0x04);
@@ -202,7 +200,7 @@ static void chipset_init(struct cirrus_chip_info *cinfo) {
 	vga_wgfx(cinfo->regbase, CL_GR31, 0x00);
 
 	/* misc... */
-	WHDR(cinfo, 0);	/* Hidden DAC register: - */
+	WHDR(cinfo, 0); /* Hidden DAC register: - */
 
 }
 
@@ -225,7 +223,6 @@ static void setup_resolution(struct cirrus_chip_info *cinfo) {
 	vsyncend = vsyncstart + var->vsync_len;
 	vtotal = vsyncend + var->upper_margin;
 
-
 	vdispend -= 1;
 	vsyncstart -= 1;
 	vsyncend -= 1;
@@ -243,9 +240,8 @@ static void setup_resolution(struct cirrus_chip_info *cinfo) {
 	hsyncstart += 1;
 	hsyncend += 1;
 
-
 	/* unlock register VGA_CRTC_H_TOTAL..CRT7 */
-	vga_wcrt(regbase, VGA_CRTC_V_SYNC_END, 0x20);	/* previously: 0x00) */
+	vga_wcrt(regbase, VGA_CRTC_V_SYNC_END, 0x20);   /* previously: 0x00) */
 	/* mode control: VGA_CRTC_START_HI enable, ROTATE(?), 16bit
 	* address wrap, no compat. */
 	vga_wcrt(regbase, VGA_CRTC_H_TOTAL, htotal);
@@ -267,29 +263,37 @@ static void setup_resolution(struct cirrus_chip_info *cinfo) {
 
 	vga_wcrt(regbase, VGA_CRTC_V_TOTAL, vtotal & 0xff);
 
-	tmp = 16;		/* LineCompare bit #9 */
-	if (vtotal & 256)
+	tmp = 16;       /* LineCompare bit #9 */
+	if (vtotal & 256) {
 		tmp |= 1;
-	if (vdispend & 256)
+	}
+	if (vdispend & 256) {
 		tmp |= 2;
-	if (vsyncstart & 256)
+	}
+	if (vsyncstart & 256) {
 		tmp |= 4;
-	if ((vdispend + 1) & 256)
+	}
+	if ((vdispend + 1) & 256) {
 		tmp |= 8;
-	if (vtotal & 512)
+	}
+	if (vtotal & 512) {
 		tmp |= 32;
-	if (vdispend & 512)
+	}
+	if (vdispend & 512) {
 		tmp |= 64;
-	if (vsyncstart & 512)
+	}
+	if (vsyncstart & 512) {
 		tmp |= 128;
+	}
 	vga_wcrt(regbase, VGA_CRTC_OVERFLOW, tmp);
 
-
-	tmp = 0x40;		/* LineCompare bit #8 */
-	if ((vdispend + 1) & 512)
+	tmp = 0x40;     /* LineCompare bit #8 */
+	if ((vdispend + 1) & 512) {
 		tmp |= 0x20;
-	if (var->vmode & FB_VMODE_DOUBLE)
+	}
+	if (var->vmode & FB_VMODE_DOUBLE) {
 		tmp |= 0x80;
+	}
 
 	vga_wcrt(regbase, VGA_CRTC_MAX_SCAN, tmp);
 
@@ -351,7 +355,7 @@ static int cirrus_setup_bpp24(struct cirrus_chip_info *cinfo) {
 }
 
 static int cirrus_setup_bits_per_pixel(struct cirrus_chip_info *cinfo) {
-	switch(cinfo->screen_info->bits_per_pixel) {
+	switch (cinfo->screen_info->bits_per_pixel) {
 	case 24:
 		return cirrus_setup_bpp24(cinfo);
 	case 16:
@@ -382,7 +386,7 @@ static int cl_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	var->xres = 1280;
 	var->yres = 1024;
 	var->bits_per_pixel = 16;
-	
+
 	return 0;
 }
 
@@ -397,10 +401,10 @@ static int cirrus_init(struct pci_slot_dev *pci_dev) {
 	struct fb_info *info;
 
 	if (MAP_FAILED == mmap_device_memory(mmap_base,
-				mmap_len,
-			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) mmap_base)) {
+			mmap_len,
+			PROT_READ|PROT_WRITE|PROT_NOCACHE,
+			MAP_FIXED,
+			(unsigned long) mmap_base)) {
 		return -EIO;
 	}
 

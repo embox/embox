@@ -31,34 +31,34 @@ EMBOX_UNIT_INIT(omap_clk_init);
 #define GPTIMER1_IRQ 37
 
 struct gptimerxx_x {
-	uint32_t tidr; 		/* 0x00 */
-	char unused0[12];	/* 0x04 */
-	uint32_t cfg;		/* 0x10 */
-	uint32_t tistat;	/* 0x14 */
-	uint32_t tisr;		/* 0x18 */
-	uint32_t tier;		/* 0x1c */
-	uint32_t twer;		/* 0x20 */
-	uint32_t tclr;		/* 0x24 */
-	uint32_t tcrr;		/* 0x28 */
-	uint32_t tldr;		/* 0x2c */
-	uint32_t ttgr;		/* 0x30 */
-	uint32_t twps;		/* 0x34 */
-	uint32_t tmar;		/* 0x38 */
-	uint32_t tcar1;		/* 0x3c */
-	uint32_t tsicr;		/* 0x40 */
-	uint32_t tcar2;		/* 0x44 */
-	uint32_t tpir;		/* 0x48 */
-	uint32_t tnir;		/* 0x4c */
-	uint32_t tcvr;		/* 0x50 */
-	uint32_t tocr;		/* 0x54 */
-	uint32_t towr;		/* 0x54 */
+	uint32_t tidr;      /* 0x00 */
+	char unused0[12];   /* 0x04 */
+	uint32_t cfg;       /* 0x10 */
+	uint32_t tistat;    /* 0x14 */
+	uint32_t tisr;      /* 0x18 */
+	uint32_t tier;      /* 0x1c */
+	uint32_t twer;      /* 0x20 */
+	uint32_t tclr;      /* 0x24 */
+	uint32_t tcrr;      /* 0x28 */
+	uint32_t tldr;      /* 0x2c */
+	uint32_t ttgr;      /* 0x30 */
+	uint32_t twps;      /* 0x34 */
+	uint32_t tmar;      /* 0x38 */
+	uint32_t tcar1;     /* 0x3c */
+	uint32_t tsicr;     /* 0x40 */
+	uint32_t tcar2;     /* 0x44 */
+	uint32_t tpir;      /* 0x48 */
+	uint32_t tnir;      /* 0x4c */
+	uint32_t tcvr;      /* 0x50 */
+	uint32_t tocr;      /* 0x54 */
+	uint32_t towr;      /* 0x54 */
 } __attribute__((packed));
 
 #define OMAP_LOAD_VALUE 0xffffffe0
 
 /* common register values */
 
-#define GPTIMER_TCLR_START	(1 << 0)
+#define GPTIMER_TCLR_START  (1 << 0)
 #define GPTIMER_TCLR_AUTORELOAD (1 << 1)
 
 #define GPTIMER_TIER_OVERFLOW   (1 << 1)
@@ -109,12 +109,12 @@ static struct clock_source omap3_clk_clock_source = {
 static int omap_clk_init(void) {
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
-			(void*) ((uintptr_t) GPTIMER1_BASE & ~MMU_PAGE_MASK),
+			(void *) ((uintptr_t) GPTIMER1_BASE & ~MMU_PAGE_MASK),
 			PROT_READ | PROT_WRITE | PROT_NOCACHE,
 			binalign_bound(sizeof(struct gptimerxx_x), MMU_PAGE_SIZE),
 			MAP_FIXED,
 			((uintptr_t) GPTIMER1_BASE & ~MMU_PAGE_MASK)
-			);
+	);
 	clock_source_register(&omap3_clk_clock_source);
 	return irq_attach(GPTIMER1_IRQ, clock_handler, 0, &omap3_clk_clock_source, "omap3_clk");
 }

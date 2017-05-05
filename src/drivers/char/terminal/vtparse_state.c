@@ -17,23 +17,23 @@
 /* Perform both action and the state change. */
 #define ACTION_TRANSIT(action, state) \
 	__VTPARSE_STATE_TRANSITION_ENTRY_ENCODE( \
-			VT_ACTION_ ## action, VTPARSE_STATE_ ## state)
+		VT_ACTION_ ## action, VTPARSE_STATE_ ## state)
 
 /* Perform action without doing the state change. */
 #define ACTION_STAY(action) \
 	/* Parser does not perform a transition if state change field is 0.*/ \
 	__VTPARSE_STATE_TRANSITION_ENTRY_ENCODE( \
-			VT_ACTION_ ## action, 0)
+		VT_ACTION_ ## action, 0)
 
 #define ACTION(enter, leave) \
 	__VTPARSE_STATE_ACTIONS_ENTRY_ENCODE( \
-			VT_ACTION_ ## enter, VT_ACTION_ ## leave)
+		VT_ACTION_ ## enter, VT_ACTION_ ## leave)
 
 #define STATE_INDEX(state) \
 	__VTPARSE_STATE_TABLE_INDEX(VTPARSE_STATE_ ## state)
 
-const __vtparse_state_actions_entry_t  __vtparse_state_actions_table
-				[VTPARSE_STATES_TOTAL] = {
+const __vtparse_state_actions_entry_t __vtparse_state_actions_table
+[VTPARSE_STATES_TOTAL] = {
 	[STATE_INDEX(ESCAPE)]          = ACTION(CLEAR, NONE),
 	[STATE_INDEX(CSI_ENTRY)]       = ACTION(CLEAR, NONE),
 	[STATE_INDEX(DCS_ENTRY)]       = ACTION(CLEAR, NONE),
@@ -43,23 +43,23 @@ const __vtparse_state_actions_entry_t  __vtparse_state_actions_table
 
 /* Every state includes some common transitions. */
 #define ANYWHERE_TRANSITIONS \
-		[0x18         ] = ACTION_TRANSIT(EXECUTE, GROUND),         \
-		[0x1a         ] = ACTION_TRANSIT(EXECUTE, GROUND),         \
-		[0x80 ... 0x8f] = ACTION_TRANSIT(EXECUTE, GROUND),         \
-		[0x91 ... 0x97] = ACTION_TRANSIT(EXECUTE, GROUND),         \
-		[0x99         ] = ACTION_TRANSIT(EXECUTE, GROUND),         \
-		[0x9a         ] = ACTION_TRANSIT(EXECUTE, GROUND),         \
-		[0x9c         ] = ACTION_TRANSIT(NONE, GROUND), /* TODO check it. */ \
-		[0x1b         ] = ACTION_TRANSIT(NONE, ESCAPE),            \
-		[0x98         ] = ACTION_TRANSIT(NONE, SOS_PM_APC_STRING), \
-		[0x9e         ] = ACTION_TRANSIT(NONE, SOS_PM_APC_STRING), \
-		[0x9f         ] = ACTION_TRANSIT(NONE, SOS_PM_APC_STRING), \
-		[0x90         ] = ACTION_TRANSIT(NONE, DCS_ENTRY),         \
-		[0x9d         ] = ACTION_TRANSIT(NONE, OSC_STRING),        \
-		[0x9b         ] = ACTION_TRANSIT(NONE, CSI_ENTRY),
+	[0x18         ] = ACTION_TRANSIT(EXECUTE, GROUND),         \
+	[0x1a         ] = ACTION_TRANSIT(EXECUTE, GROUND),         \
+	[0x80 ... 0x8f] = ACTION_TRANSIT(EXECUTE, GROUND),         \
+	[0x91 ... 0x97] = ACTION_TRANSIT(EXECUTE, GROUND),         \
+	[0x99         ] = ACTION_TRANSIT(EXECUTE, GROUND),         \
+	[0x9a         ] = ACTION_TRANSIT(EXECUTE, GROUND),         \
+	[0x9c         ] = ACTION_TRANSIT(NONE, GROUND),     /* TODO check it. */ \
+	[0x1b         ] = ACTION_TRANSIT(NONE, ESCAPE),            \
+	[0x98         ] = ACTION_TRANSIT(NONE, SOS_PM_APC_STRING), \
+	[0x9e         ] = ACTION_TRANSIT(NONE, SOS_PM_APC_STRING), \
+	[0x9f         ] = ACTION_TRANSIT(NONE, SOS_PM_APC_STRING), \
+	[0x90         ] = ACTION_TRANSIT(NONE, DCS_ENTRY),         \
+	[0x9d         ] = ACTION_TRANSIT(NONE, OSC_STRING),        \
+	[0x9b         ] = ACTION_TRANSIT(NONE, CSI_ENTRY),
 
-const __vtparse_state_transition_entry_t  __vtparse_state_transition_table
-				[VTPARSE_STATES_TOTAL][0x100] = {
+const __vtparse_state_transition_entry_t __vtparse_state_transition_table
+[VTPARSE_STATES_TOTAL][0x100] = {
 	[STATE_INDEX(CSI_ENTRY)] = {
 		[0x00 ... 0x17] = ACTION_STAY(EXECUTE),
 		[0x19         ] = ACTION_STAY(EXECUTE),

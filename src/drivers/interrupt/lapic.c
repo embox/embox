@@ -25,18 +25,18 @@
 #define lapic_write_icr1(val)   lapic_write(LAPIC_ICR1, val)
 #define lapic_write_icr2(val)   lapic_write(LAPIC_ICR2, val)
 
-#define LAPIC_ICR_DELIVERY_PENDING	 (1 << 12)
+#define LAPIC_ICR_DELIVERY_PENDING   (1 << 12)
 #define LAPIC_ICR_DEST_FIELD         (0 << 18)
 #define LAPIC_ICR_DEST_SELF          (1 << 18)
 #define LAPIC_ICR_DEST_ALL           (2 << 18)
 #define LAPIC_ICR_DEST_ALL_BUT_SELF  (3 << 18)
 
-#define	LAPIC_DISABLE    0x10000
-#define	LAPIC_SW_ENABLE  0x100
-#define	LAPIC_CPUFOCUS   0x200
-#define	LAPIC_NMI        (4<<8)
-#define	TMR_PERIODIC     0x20000
-#define	TMR_BASEDIV      (1<<20)
+#define LAPIC_DISABLE    0x10000
+#define LAPIC_SW_ENABLE  0x100
+#define LAPIC_CPUFOCUS   0x200
+#define LAPIC_NMI        (4<<8)
+#define TMR_PERIODIC     0x20000
+#define TMR_BASEDIV      (1<<20)
 
 void lapic_send_init_ipi(uint32_t apic_id) {
 	uint32_t val;
@@ -50,7 +50,7 @@ void lapic_send_init_ipi(uint32_t apic_id) {
 	lapic_write_icr1(val);
 
 	/* sleep until Delivery Status is Pending */
-	while (lapic_read_icr1() & (0x1 << 12));
+	while (lapic_read_icr1() & (0x1 << 12)) ;
 }
 
 void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline) {
@@ -66,7 +66,7 @@ void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline) {
 	lapic_write_icr1(val);
 
 	/* sleep until Delivery Status is Pending */
-	while (lapic_read_icr1() & (0x1 << 12));
+	while (lapic_read_icr1() & (0x1 << 12)) ;
 }
 
 void lapic_send_ipi(unsigned int vector, unsigned int cpu, int type) {
@@ -81,25 +81,25 @@ void lapic_send_ipi(unsigned int vector, unsigned int cpu, int type) {
 	icr2 = lapic_read_icr2() & 0xFFFFFF;
 
 	switch (type) {
-		case LAPIC_IPI_DEST:
-			lapic_write_icr2(icr2 |	(cpu << 24));
-			lapic_write_icr1(icr1 |	LAPIC_ICR_DEST_FIELD | vector);
-			break;
-		case LAPIC_IPI_SELF:
-			lapic_write_icr2(icr2);
-			lapic_write_icr1(icr1 |	LAPIC_ICR_DEST_SELF | vector);
-			break;
-		case LAPIC_IPI_TO_ALL_BUT_SELF:
-			lapic_write_icr2(icr2);
-			lapic_write_icr1(icr1 |	LAPIC_ICR_DEST_ALL_BUT_SELF | vector);
-			break;
-		case LAPIC_IPI_TO_ALL:
-			lapic_write_icr2(icr2);
-			lapic_write_icr1(icr1 |	LAPIC_ICR_DEST_ALL | vector);
-			break;
-		default:
-			panic("Unknown send ipi type request\n");
-			break;
+	case LAPIC_IPI_DEST:
+		lapic_write_icr2(icr2 | (cpu << 24));
+		lapic_write_icr1(icr1 | LAPIC_ICR_DEST_FIELD | vector);
+		break;
+	case LAPIC_IPI_SELF:
+		lapic_write_icr2(icr2);
+		lapic_write_icr1(icr1 | LAPIC_ICR_DEST_SELF | vector);
+		break;
+	case LAPIC_IPI_TO_ALL_BUT_SELF:
+		lapic_write_icr2(icr2);
+		lapic_write_icr1(icr1 | LAPIC_ICR_DEST_ALL_BUT_SELF | vector);
+		break;
+	case LAPIC_IPI_TO_ALL:
+		lapic_write_icr2(icr2);
+		lapic_write_icr1(icr1 | LAPIC_ICR_DEST_ALL | vector);
+		break;
+	default:
+		panic("Unknown send ipi type request\n");
+		break;
 	}
 
 }
@@ -134,7 +134,7 @@ int lapic_enable(void) {
 	lapic_write(LAPIC_TASKPRIOR, 0);
 #endif
 
-    /* Set the spurious interrupt vector register */
+	/* Set the spurious interrupt vector register */
 	val = lapic_read(LAPIC_SIVR);
 	val |= 0x100;
 	lapic_write(LAPIC_SIVR, val);

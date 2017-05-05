@@ -33,7 +33,7 @@
 
 #ifdef SPIN_CONTENTION_LIMIT
 # define __SPIN_CONTENTION_FIELD      unsigned long contention_count;
-# define __SPIN_CONTENTION_FIELD_INIT contention_count : SPIN_CONTENTION_LIMIT,
+# define __SPIN_CONTENTION_FIELD_INIT contention_count: SPIN_CONTENTION_LIMIT,
 #else /* SPIN_CONTENTION_LIMIT */
 # define __SPIN_CONTENTION_FIELD
 # define __SPIN_CONTENTION_FIELD_INIT
@@ -48,7 +48,7 @@ typedef struct {
 /* XXX use 'field : value' instead of '.field = value' syntax because g++ does not support
  * the second one, but supports the first one in the trivial order --Alexander */
 #define SPIN_INIT(state) \
-  { l : state, owner : -1u, __SPIN_CONTENTION_FIELD_INIT }
+	{ l: state, owner: -1u, __SPIN_CONTENTION_FIELD_INIT }
 
 static inline void spin_init(spinlock_t *lock, unsigned int state) {
 	lock->l = state;
@@ -97,10 +97,11 @@ static inline int __spin_trylock(spinlock_t *lock) {
 		lock->owner = cpu_id;
 	}
 #ifdef SPIN_CONTENTION_LIMIT
-	if (ret)
+	if (ret) {
 		lock->contention_count = SPIN_CONTENTION_LIMIT;
+	}
 	else {
-		// TODO this must be atomic dec
+		/* TODO this must be atomic dec */
 		lock->contention_count--;
 		assertf(lock->contention_count, "Possible spin deadlock");
 	}
@@ -118,7 +119,7 @@ static inline void __spin_unlock(spinlock_t *lock) {
 	assertf(lock->l == __SPIN_LOCKED, "Unlocking a not locked spin");
 	assertf(lock->owner == cpu_get_id(), "Unlocking a spin owned by another CPU");
 	lock->owner = -1u;
-	__barrier();  // XXX this must be SMP barrier
+	__barrier();  /* XXX this must be SMP barrier */
 	lock->l = __SPIN_UNLOCKED;
 	__barrier();
 #else /* !(SMP || SPIN_DEBUG) */
@@ -145,8 +146,9 @@ static inline int spin_trylock(spinlock_t *lock) {
 	int ret;
 	__spin_preempt_disable();
 	ret = __spin_trylock(lock);
-	if (!ret)
+	if (!ret) {
 		__spin_preempt_enable();
+	}
 	return ret;
 }
 
@@ -173,8 +175,9 @@ static inline ipl_t spin_lock_ipl(spinlock_t *lock) {
 
 	while (1) {
 		ipl = ipl_save();
-		if (spin_trylock(lock))
+		if (spin_trylock(lock)) {
 			break;
+		}
 		ipl_restore(ipl);
 	}
 
@@ -192,8 +195,9 @@ static inline void spin_lock_ipl_disable(spinlock_t *lock) {
 
 	while (1) {
 		ipl = ipl_save();
-		if (spin_trylock(lock))
+		if (spin_trylock(lock)) {
 			break;
+		}
 		ipl_restore(ipl);
 	}
 }
@@ -212,21 +216,21 @@ static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
 #define SPIN_LOCK_COND(lock, cond) \
 	({                                       \
 		spinlock_t *__lock = (lock);         \
-		typeof(cond) __cond;                 \
-		                                     \
+		typeof(cond)__cond;                 \
+                                             \
 		do {                                 \
 			__cond = (cond);                 \
-			if (!__cond)                     \
-				break;                       \
+			if (!__cond) {                     \
+				break;}                       \
 		} while (!spin_trylock(__lock));     \
-		                                     \
+                                             \
 		if (__cond) {                        \
-			/* just been locked */           \
+	        /* just been locked */           \
 			__cond = (cond);                 \
-			if (!__cond)                     \
-				spin_unlock(__lock);         \
+			if (!__cond) {                     \
+				spin_unlock(__lock);}         \
 		}                                    \
-		                                     \
+                                             \
 		__cond;                              \
 	})
 
@@ -244,12 +248,12 @@ static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
 		MACRO_GUARD(__cond))
 
 #define __spin_protected_if(lock, cond, __done, __lock, __cond) \
-	for (int __done = 0;                              !__done; ) \
-	for (spinlock_t *__lock = (lock);                 !__done; ) \
-	for (int __cond = !!SPIN_LOCK_COND(__lock, cond); !__done;   \
-			({ if (__cond) spin_unlock(__lock); }))              \
-	while (!__done && (__done = 1)) /* break/continue control this loop */  \
-		if (__cond)
+	for (int __done = 0; !__done; ) \
+		for (spinlock_t *__lock = (lock); !__done; ) \
+			for (int __cond = !!SPIN_LOCK_COND(__lock, cond); !__done;   \
+					({ if (__cond) { spin_unlock(__lock);} }))              \
+				while (!__done && (__done = 1)) /* break/continue control this loop */  \
+					if (__cond)
 
 #define SPIN_PROTECTED_DO(lock, expr) \
 	__lang_surround(expr,             \

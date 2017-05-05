@@ -73,7 +73,7 @@ void cyg_tracing_profiler_exit(void *func, void *caller) {
 	 * exit from instrumented funcion.
 	 * You can try to get more info by searching for "-finstrument-functions" GCC flag
 	 */
-	 if (get_profiling_mode() == CYG_PROFILING) {
+	if (get_profiling_mode() == CYG_PROFILING) {
 		set_profiling_mode(DISABLED);
 		trace_block_func_exit(func);
 		set_profiling_mode(CYG_PROFILING);
@@ -128,11 +128,13 @@ void trace_block_enter(struct __trace_block *tb) {
 		tb->depth++;
 		cur_time = tb_cs->counter_device->read();
 
-		t = (struct tb_time*) pool_alloc (&st_pool);
-		if (t) {assert(t != NULL);
-		t->next = tb->time_list_head;
-		t->time = cur_time;
-		tb->time_list_head = t; }
+		t = (struct tb_time *) pool_alloc(&st_pool);
+		if (t) {
+			assert(t != NULL);
+			t->next = tb->time_list_head;
+			t->time = cur_time;
+			tb->time_list_head = t;
+		}
 	}
 }
 
@@ -144,8 +146,9 @@ void trace_block_leave(struct __trace_block *tb) {
 
 		/* When cyg_profiling was enabled during trace_block,
 		 * tb_leave may occur without tb_enter */
-		if (tb->depth == 0)
+		if (tb->depth == 0) {
 			return;
+		}
 
 		tb->depth--;
 
@@ -153,23 +156,25 @@ void trace_block_leave(struct __trace_block *tb) {
 
 		p = tb->time_list_head;
 		if (p) {
-		assert(p != NULL);
+			assert(p != NULL);
 
-		cur_time -= tb->time_list_head->time;
-		cur_time = cur_time > 0 ? cur_time : 0;
-		tb->time += cur_time;
+			cur_time -= tb->time_list_head->time;
+			cur_time = cur_time > 0 ? cur_time : 0;
+			tb->time += cur_time;
 
-		if (tb->max_time < cur_time)
-			tb->max_time = cur_time;
+			if (tb->max_time < cur_time) {
+				tb->max_time = cur_time;
+			}
 
-		tb->time_list_head = p->next;
-		pool_free(&st_pool, p); }
+			tb->time_list_head = p->next;
+			pool_free(&st_pool, p);
+		}
 	}
 }
 
 time64_t trace_block_get_time(struct __trace_block *tb) {
 	return 0;
-	//return tb->time;
+	/*return tb->time; */
 }
 
 int trace_point_get_value(struct __trace_point *tp) {
@@ -196,7 +201,7 @@ void print_trace_block_info(struct __trace_block *tb) {
 	printf("Trace block info: %p %s\n", tb, tb->name);
 	printf("Time counter pointer:\n");
 	printf("Active: %s\nIs entered: %s\n", tb->active ? "YES" : "NO",
-											tb->is_entered ? "YES" : "NO");
+			tb->is_entered ? "YES" : "NO");
 }
 
 /* It is assumed that there are traceblocks for every function
@@ -218,14 +223,13 @@ void trace_block_func_enter(void *func) {
 		 * Func name and func location will be retrieved somewhere else,
 		 * for example, in "trace_blocks -n" shell command. */
 
-		tb = (struct __trace_block*) pool_alloc (&tb_pool);
+		tb = (struct __trace_block *) pool_alloc(&tb_pool);
 
 		tb->func = func;
 		tb->time = tb->max_time = tb->count = tb->depth = 0;
 		tb->time_list_head = NULL;
 		tb->active = true;
 		tb->is_entered = false;
-
 
 		ht_item = pool_alloc(&tb_ht_pool);
 		ht_item = hashtable_item_init(ht_item, func, tb);
@@ -252,12 +256,12 @@ void trace_block_func_exit(void *func) {
 
 struct __trace_block *auto_profile_tb_first(void){
 	/* Get the pointer to the first trace_block in trace_block hash table */
-	if (!tbhash)
+	if (!tbhash) {
 		return NULL;
+	}
 	prev_key = hashtable_get_key_first(tbhash);
 	return (struct __trace_block *) hashtable_get(tbhash, *prev_key);
 }
-
 
 struct __trace_block *auto_profile_tb_next(struct __trace_block *prev){
 	/* Getting the pointer to the next trace_block
@@ -281,10 +285,12 @@ static int instrument_profiling_init(void) {
 }
 
 long long get_current_tb_resolution(void) {
-	if (tb_cs && tb_cs->counter_device)
+	if (tb_cs && tb_cs->counter_device) {
 		return tb_cs->counter_device->cycle_hz;
-	else
+	}
+	else {
 		return 1;
+	}
 }
 
 void trace_block_hashtable_init(void) {
@@ -308,5 +314,3 @@ void trace_block_hashtable_init(void) {
 
 	set_profiling_mode(c);
 }
-
-

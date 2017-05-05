@@ -105,4 +105,3 @@ int idesc_removexattr(struct idesc *idesc, const char *name) {
 
 	return idesc->idesc_xattrops->removexattr(idesc, name);
 }
-

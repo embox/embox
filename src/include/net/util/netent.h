@@ -12,7 +12,7 @@
 #include <netdb.h>
 #include <stdint.h>
 
-extern struct netent * netent_create(void);
+extern struct netent *netent_create(void);
 extern int netent_set_name(struct netent *ne, const char *name);
 extern int netent_add_alias(struct netent *ne, const char *alias);
 extern int netent_set_addr_info(struct netent *ne, int addrtype);

@@ -38,4 +38,3 @@ struct fbcon {
 };
 
 #endif /* CONSOLE_FBCON_H_ */
-

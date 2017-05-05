@@ -24,58 +24,57 @@ static int ctx_counter = 0;
  */
 
 static inline void set_cr3(unsigned int pagedir) {
-	asm ("mov %0, %%cr3": :"r" (pagedir));
+	asm ("mov %0, %%cr3" : : "r" (pagedir));
 }
 
 static inline unsigned int get_cr3(void) {
 	unsigned int _cr3;
-	asm ("mov %%cr3, %0":"=r" (_cr3));
+	asm ("mov %%cr3, %0" : "=r" (_cr3));
 	return _cr3;
 }
 
 static inline void set_cr0(unsigned int val) {
-	asm ("mov %0, %%cr0" : :"r" (val));
+	asm ("mov %0, %%cr0" : : "r" (val));
 }
 
 static inline unsigned int get_cr0(void) {
 	unsigned int _cr0;
-	asm ("mov %%cr0, %0":"=r" (_cr0));
+	asm ("mov %%cr0, %0" : "=r" (_cr0));
 	return _cr0;
 }
 
 static inline void set_cr4(unsigned int val) {
-	asm ("mov %0, %%cr4" : :"r" (val));
+	asm ("mov %0, %%cr4" : : "r" (val));
 }
 
 static inline unsigned int get_cr4(void) {
 	unsigned int _cr4;
-	asm ("mov %%cr2, %0":"=r" (_cr4):);
+	asm ("mov %%cr2, %0" : "=r" (_cr4) :);
 	return _cr4;
 }
-
 
 static inline unsigned int get_cr2(void) {
 	unsigned int _cr2;
 
-	asm ("mov %%cr2, %0":"=r" (_cr2):);
+	asm ("mov %%cr2, %0" : "=r" (_cr2) :);
 	return _cr2;
 }
 
 /*
 #define PAGE_4MB         0x400000UL
 #define DEFAULT_FLAGS    (MMU_PAGE_PRESENT | MMU_PAGE_WRITABLE \
-						 | MMU_PAGE_DISABLE_CACHE | MMU_PAGE_4MB)
+                         | MMU_PAGE_DISABLE_CACHE | MMU_PAGE_4MB)
 
 static uint32_t boot_page_dir[0x400] __attribute__ ((section(".data"), aligned(0x1000)));
 
 void mmu_enable(void) {
-	for (unsigned int i = 0; i < 0x400; i++) {
-		boot_page_dir[i] = DEFAULT_FLAGS | (PAGE_4MB * i);
-	}
+    for (unsigned int i = 0; i < 0x400; i++) {
+        boot_page_dir[i] = DEFAULT_FLAGS | (PAGE_4MB * i);
+    }
 
-	set_cr3((uint32_t) boot_page_dir); // Set boot page dir
-	set_cr4(get_cr4() | X86_CR4_PSE);  // Set 4MB paging
-	set_cr0(get_cr0() | X86_CR0_PG);   // Enable MMU
+    set_cr3((uint32_t) boot_page_dir); // Set boot page dir
+    set_cr4(get_cr4() | X86_CR4_PSE);  // Set 4MB paging
+    set_cr0(get_cr0() | X86_CR0_PG);   // Enable MMU
 }*/
 
 void mmu_on(void) {
@@ -87,7 +86,7 @@ void mmu_off(void) {
 }
 
 void mmu_flush_tlb_single(unsigned long addr) {
-	asm volatile("invlpg (%0)" ::"r" (addr) : "memory");
+	asm volatile ("invlpg (%0)" : : "r" (addr) : "memory");
 }
 
 void mmu_flush_tlb(void) {

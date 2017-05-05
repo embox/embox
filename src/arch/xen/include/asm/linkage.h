@@ -17,4 +17,3 @@
 #endif /* __ASSEMBLER__ */
 
 #endif /* XEN_LINKAGE_H_ */
-

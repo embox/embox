@@ -16,16 +16,16 @@
 
 class QMdiAreaWBackground : public QMdiArea
 {
-	Q_OBJECT
+Q_OBJECT
 public:
-        QMdiAreaWBackground(QString& str);
-        void setBackgroundPath(QString& str);
+QMdiAreaWBackground(QString& str);
+void setBackgroundPath(QString& str);
 protected:
-        void resizeEvent(QResizeEvent *resizeEvent);
+void resizeEvent(QResizeEvent *resizeEvent);
 private:
-        void resize(QSize& size);
-        QImage i;
-        QSize size;
+void resize(QSize& size);
+QImage i;
+QSize size;
 };
 
 #endif /* TEXTEDITOR_MDI_BACKGROUND_H */

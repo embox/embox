@@ -6,7 +6,6 @@
  * @author Andrey Gazukin
  */
 
-
 #ifndef BLOCK_DEV_H_
 #define BLOCK_DEV_H_
 
@@ -55,7 +54,7 @@ typedef struct block_dev_driver {
 } block_dev_driver_t;
 
 typedef struct block_dev_module {
-	const char * name;
+	const char *name;
 	block_dev_driver_t *dev_drv;
 } block_dev_module_t;
 
@@ -69,7 +68,6 @@ typedef struct block_dev_cache {
 	char *pool;
 	int buff_cntr;
 } block_dev_cache_t;
-
 
 struct indexator;
 struct block_dev;
@@ -98,7 +96,6 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 #define BLOCK_DEV_DEF(name, block_dev_driver) \
 	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
 	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver})
-
 
 extern int block_devs_init(void);
 

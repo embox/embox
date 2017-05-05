@@ -58,7 +58,6 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		return 0; /* error: invalid header length */
 	}
 
-
 	if (iph->version != 4) {
 		log_debug("ip_rcv: invalid IPv4 version");
 		stats->rx_err++;
@@ -128,7 +127,7 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		 * but smart people who wrote linux kernel
 		 * say that this is extremely rarely needed
 		 */
-		ip_options_t *opts = (ip_options_t*)(skb->cb);
+		ip_options_t *opts = (ip_options_t *)(skb->cb);
 
 		memset(skb->cb, 0, sizeof(skb->cb));
 		opts->optlen = optlen;

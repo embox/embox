@@ -32,7 +32,7 @@ static const struct kfile_operations tty_device_ops;
 
 CHAR_DEV_DEF(TTY_DEV_NAME, &tty_device_ops, NULL, tty_device_init);
 
-static struct idesc * tty_device_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc *tty_device_open(struct node *node, struct file_desc *file_desc, int flags) {
 	struct fb_info *info;
 
 	info = fb_lookup(DEFAULT_FRAMEBUFFER);
@@ -48,7 +48,9 @@ static int tty_device_close(struct file_desc *desc) {
 }
 
 static size_t tty_device_read(struct file_desc *desc, void *buf, size_t size) {
-	if (size == 0) return 0;
+	if (size == 0) {
+		return 0;
+	}
 
 	*(char *)buf = iodev_getc();
 	return sizeof(char);
@@ -59,14 +61,15 @@ static size_t tty_device_write(struct file_desc *desc, void *buf, size_t size) {
 	const char *data;
 
 	data = (const char *)buf;
-	for (i = 0; i < size; ++i)
+	for (i = 0; i < size; ++i) {
 		iodev_putc(data[i]);
+	}
 
 	return size;
 }
 
 static int tty_device_ioctl(struct file_desc *desc, int request, va_list args) {
-	switch(request) {
+	switch (request) {
 	case TTY_IOCTL_GETATTR:
 		break;
 	case TTY_IOCTL_SETATTR:

@@ -31,7 +31,7 @@
 #include <sys/mman.h>
 
 #define O_ACCMODE       00000003
-//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
+/*#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0) */
 #define OPEN_MAX      64
 
 #include <stdint.h>
@@ -39,8 +39,6 @@ typedef uint16_t u_int16_t;
 typedef uint32_t u_int32_t;
 typedef uint64_t u_int64_t;
 typedef unsigned int uint;
-
-
 
 static inline dev_t makedev(int maj, int min) {
 	printf(">>> makedev, maj - %d, min - %d\n", maj, min);
@@ -91,7 +89,7 @@ static inline void *sbrk(intptr_t increment) {
 	return NULL;
 }
 
-static inline void tzset (void) {
+static inline void tzset(void) {
 	printf(">>> tzset\n");
 }
 

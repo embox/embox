@@ -8,7 +8,6 @@
 #ifndef FS_DRV_H_
 #define FS_DRV_H_
 
-
 #include <util/array.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -43,16 +42,16 @@ struct kfile_operations;
  */
 struct fs_driver {
 	const char                    *name;
-	bool		mount_dev_by_string;
+	bool mount_dev_by_string;
 	const struct kfile_operations *file_op;
 	const struct fsop_desc        *fsop;
 };
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver_)      \
 	ARRAY_SPREAD_DECLARE(const struct fs_driver *const, \
-			__fs_drivers_registry);                \
+		__fs_drivers_registry);                \
 	ARRAY_SPREAD_ADD(__fs_drivers_registry, \
-			&fs_driver_)
+		&fs_driver_)
 
 /**
  * allocate structure for fs_driver structure

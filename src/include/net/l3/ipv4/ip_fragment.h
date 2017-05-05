@@ -15,7 +15,6 @@
  * not from any document */
 #define   MSL          1
 
-
 struct sk_buff;
 
 /**

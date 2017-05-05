@@ -8,6 +8,4 @@
 #ifndef TIMER_T_DEF_H_
 #define TIMER_T_DEF_H_
 
-
-
 #endif /* TIMER_T_DEF_H_ */

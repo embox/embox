@@ -8,10 +8,9 @@
 __BEGIN_DECLS
 
 extern void clearerr(FILE *stream);
-extern FILE * tmpfile(void);
-extern char * tmpnam(char *s);
+extern FILE *tmpfile(void);
+extern char *tmpnam(char *s);
 
 __END_DECLS
 
 #endif /* GCC_STDIO_H_ */
-

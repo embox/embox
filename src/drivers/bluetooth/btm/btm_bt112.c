@@ -79,8 +79,8 @@ static int irq_hnd_wait_conn(int len, void *data) {
 static int irq_hnd_wait_lrlf(int len, void *data) {
 	if (general_handler(len, data)) {
 		set_state(DISCONNECT_WAIT);
-		//Acknowlege about connect
-		//FIXME
+		/*Acknowlege about connect */
+		/*FIXME */
 		CALLBACK(bt_state)();
 		return 0;
 	}

@@ -22,7 +22,6 @@
 
 #include <pnet/node/direct_comm.h>
 
-
 EMBOX_UNIT_INIT(node_dc_init);
 
 static struct lego_dc_msg_full dc_out_msg;
@@ -60,7 +59,7 @@ static int sensor_send(uint8_t sensor_id, int *addit_len, uint8_t addit_msg[]) {
 
 static int keep_alive_send(int *addit_len, uint8_t addit_msg[]) {
 	*addit_len = 0;
-	//printf("Hi! I'm Lego =(\n");
+	/*printf("Hi! I'm Lego =(\n"); */
 	return 0;
 }
 
@@ -115,6 +114,6 @@ static int node_dc_init(void) {
 }
 
 PNET_NODE_DEF(PNET_NODE_DIRECT_COMM_EXECUTER,  {
-		.rx_hnd = dc_rx_hnd,
-		.tx_hnd = NULL
-	});
+			.rx_hnd = dc_rx_hnd,
+			.tx_hnd = NULL
+		});

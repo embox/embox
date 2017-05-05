@@ -18,7 +18,6 @@
 #include <defines/size_t.h>
 #include <defines/null.h>
 
-
 #define EOF (-1)
 
 #define _IONBF        0
@@ -29,7 +28,6 @@
 #define FILENAME_MAX  0x20
 
 #define P_tmpdir   "/tmp"
-
 
 /* Values for the WHENCE argument to lseek. */
 #define SEEK_SET        0   /* Seek from beginning of file. */
@@ -54,7 +52,6 @@ extern int fgetc(FILE *f);
 static inline int getc(FILE *f) {
 	return fgetc(f);
 }
-
 
 /**
  * Writes the string s and a trailing newline to stdout.

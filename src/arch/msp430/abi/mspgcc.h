@@ -17,4 +17,3 @@
 #define MSP430_SRET  r15
 
 #endif /* MSP430_EABI_H_ */
-

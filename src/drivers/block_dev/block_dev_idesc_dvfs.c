@@ -110,8 +110,9 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 			bdev = bdev->parrent_bdev;
 		}
 		assert(bdev->driver);
-		if (NULL == bdev->driver->ioctl)
+		if (NULL == bdev->driver->ioctl) {
 			return -ENOSYS;
+		}
 
 		return bdev->driver->ioctl(bdev, cmd, args, 0);
 	}
@@ -212,8 +213,9 @@ int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count) 
 		buf += bdev->block_size;
 		blk++;
 
-		if (err < 0)
+		if (err < 0) {
 			return err;
+		}
 	}
 
 	return count * bdev->block_size;;
@@ -233,8 +235,9 @@ int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk, int count) {
 		buf += bdev->block_size;
 		blk++;
 
-		if (err < 0)
+		if (err < 0) {
 			return err;
+		}
 	}
 
 	return count * bdev->block_size;;

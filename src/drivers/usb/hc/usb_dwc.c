@@ -114,7 +114,6 @@
 
 EMBOX_UNIT_INIT(usb_dwc_init);
 
-
 #define IRQ_USB            9
 #define USB_FRAMES_PER_MS  1
 #define USB_UFRAMES_PER_MS 8
@@ -131,7 +130,7 @@ EMBOX_UNIT_INIT(usb_dwc_init);
 #define DWC_REGS_BASE          (PERIPHERALS_BASE + 0x980000)
 /** Pointer to the memory-mapped registers of the Synopsys DesignWare Hi-Speed
  * USB 2.0 OTG Controller.  */
-static volatile struct dwc_regs * const regs = (void*)DWC_REGS_BASE;
+static volatile struct dwc_regs *const regs = (void *)DWC_REGS_BASE;
 
 /**
  * Maximum packet size of any USB endpoint.  1024 is the maximum allowed by USB
@@ -139,7 +138,6 @@ static volatile struct dwc_regs * const regs = (void*)DWC_REGS_BASE;
  * this.
  */
 #define USB_MAX_PACKET_SIZE 1024
-
 
 /**
  * Stack size of USB transfer request scheduler thread (can be fairly small).
@@ -261,14 +259,14 @@ static void dwc_release_channel(uint chan) {
  */
 static int dwc_power_on(void) {
 	log_info("Powering on Synopsys DesignWare Hi-Speed  USB 2.0 On-The-Go "
-			"Controller");
+			 "Controller");
 
 	return bcm2835_setpower(POWER_USB, true);
 }
 
 static void dwc_power_off(void) {
 	log_info("Powering off Synopsys DesignWare Hi-Speed USB 2.0 On-The-Go "
-			"Controller");
+			 "Controller");
 
 	bcm2835_setpower(POWER_USB, false);
 }
@@ -310,10 +308,10 @@ static void dwc_setup_dma_mode(void) {
 	 * not otherwise interacting with the Host Controller's FIFOs in this
 	 * driver. */
 	log_debug("%u words of RAM available for dynamic FIFOs",
-		regs->hwcfg3 >> 16);
+			regs->hwcfg3 >> 16);
 	log_debug("original FIFO sizes: rx 0x%08x,  tx 0x%08x, ptx 0x%08x",
-			  regs->rx_fifo_size, regs->nonperiodic_tx_fifo_size,
-			  regs->host_periodic_tx_fifo_size);
+			regs->rx_fifo_size, regs->nonperiodic_tx_fifo_size,
+			regs->host_periodic_tx_fifo_size);
 
 	regs->rx_fifo_size = rx_words;
 	regs->nonperiodic_tx_fifo_size = (tx_words << 16) | rx_words;
@@ -427,7 +425,7 @@ enum usb_bmRequestType_fields {
 	USB_BMREQUESTTYPE_TYPE_STANDARD       = (USB_DEV_REQ_TYPE_STD << 5),
 	USB_BMREQUESTTYPE_TYPE_CLASS          = (USB_DEV_REQ_TYPE_CLS << 5),
 	USB_BMREQUESTTYPE_TYPE_VENDOR         = (USB_DEV_REQ_TYPE_VND << 5),
-	// USB_BMREQUESTTYPE_TYPE_RESERVED       = (USB_REQUEST_TYPE_RESERVED << 5),
+	/* USB_BMREQUESTTYPE_TYPE_RESERVED       = (USB_REQUEST_TYPE_RESERVED << 5), */
 	USB_BMREQUESTTYPE_TYPE_MASK           = (0x3 << 5),
 	USB_BMREQUESTTYPE_RECIPIENT_DEVICE    = (USB_DEV_REQ_TYPE_DEV << 0),
 	USB_BMREQUESTTYPE_RECIPIENT_INTERFACE = (USB_DEV_REQ_TYPE_IFC << 0),
@@ -442,7 +440,7 @@ static const struct {
 	struct usb_desc_configuration configuration;
 	struct usb_desc_interface interface;
 	struct usb_desc_endpoint endpoint;
-}__attribute__((packed)) root_hub_configuration = {
+} __attribute__((packed)) root_hub_configuration = {
 	.configuration = {
 		.b_length = sizeof(struct usb_desc_configuration),
 		.b_desc_type = USB_DESCRIPTOR_TYPE_CONFIGURATION,
@@ -451,7 +449,7 @@ static const struct {
 		.b_configuration_value = 1,
 		.i_configuration = 0,
 		.bm_attributes = USB_CONFIGURATION_ATTRIBUTE_RESERVED_HIGH |
-						USB_CONFIGURATION_ATTRIBUTE_SELF_POWERED,
+				USB_CONFIGURATION_ATTRIBUTE_SELF_POWERED,
 		.b_max_power = 0,
 	},
 	.interface = {
@@ -475,48 +473,48 @@ static const struct {
 	},
 };
 
-// /** Hard-coded list of language IDs for the faked root hub.  */
-// static const struct usb_string_descriptor root_hub_string_0 = {
-//     /* b_length is the base size plus the length of the b_string */
-//     .b_length = sizeof(struct usb_string_descriptor) +
-//                1 * sizeof(root_hub_string_0.b_string[0]),
-//     .b_desc_type = USB_DESCRIPTOR_TYPE_STRING,
-//     .b_string = {USB_LANGID_US_ENGLISH},
-// };
+/* / ** Hard-coded list of language IDs for the faked root hub.  * / */
+/* static const struct usb_string_descriptor root_hub_string_0 = { */
+/*     / * b_length is the base size plus the length of the b_string * / */
+/*     .b_length = sizeof(struct usb_string_descriptor) + */
+/*                1 * sizeof(root_hub_string_0.b_string[0]), */
+/*     .b_desc_type = USB_DESCRIPTOR_TYPE_STRING, */
+/*     .b_string = {USB_LANGID_US_ENGLISH}, */
+/* }; */
 
-// /** Hard-coded product string for the faked root hub.  */
-// static const struct usb_string_descriptor root_hub_string_1 = {
-//     /* b_length is the base size plus the length of the b_string */
-//     .b_length = sizeof(struct usb_string_descriptor) +
-//                16 * sizeof(root_hub_string_1.b_string[0]),
-//     .b_desc_type = USB_DESCRIPTOR_TYPE_STRING,
+/* / ** Hard-coded product string for the faked root hub.  * / */
+/* static const struct usb_string_descriptor root_hub_string_1 = { */
+/*     / * b_length is the base size plus the length of the b_string * / */
+/*     .b_length = sizeof(struct usb_string_descriptor) + */
+/*                16 * sizeof(root_hub_string_1.b_string[0]), */
+/*     .b_desc_type = USB_DESCRIPTOR_TYPE_STRING, */
 
-//     /* This is a UTF-16LE string, hence the array of individual characters
-//      * rather than a string literal.  */
-//     .b_string = {'U', 'S', 'B', ' ',
-//                 '2', '.', '0', ' ',
-//                 'R', 'o', 'o', 't', ' ',
-//                 'H', 'u', 'b'},
-// };
+/*     / * This is a UTF-16LE string, hence the array of individual characters */
+/*      * rather than a string literal.  * / */
+/*     .b_string = {'U', 'S', 'B', ' ', */
+/*                 '2', '.', '0', ' ', */
+/*                 'R', 'o', 'o', 't', ' ', */
+/*                 'H', 'u', 'b'}, */
+/* }; */
 
-// /** Hard-coded table of strings for the faked root hub.  */
-// static const struct usb_string_descriptor * const root_hub_strings[] = {
-//     &root_hub_string_0,
-//     &root_hub_string_1,
-// };
+/* / ** Hard-coded table of strings for the faked root hub.  * / */
+/* static const struct usb_string_descriptor * const root_hub_strings[] = { */
+/*     &root_hub_string_0, */
+/*     &root_hub_string_1, */
+/* }; */
 
 /** Hard-coded hub descriptor for the faked root hub.  */
 static const struct usb_desc_hub root_hub_hub_descriptor = {
 	/* b_desc_length is the base size plus the length of the var_data */
 	.b_desc_length = sizeof(struct usb_desc_hub) +
-				   2 * sizeof(root_hub_hub_descriptor.var_data[0]),
+			2 * sizeof(root_hub_hub_descriptor.var_data[0]),
 	.b_desc_type = USB_DESCRIPTOR_TYPE_HUB,
 	.b_nbr_ports = 1,
 	.w_hub_characteristics = 0,
 	.b_pwr_on_2_pwr_good = 0,
 	.b_hub_contr_current = 0,
 	.var_data = { 0x00 /* DeviceRemovable */,
-				 0xff, /* PortPwrCtrlMask */ },
+				  0xff, /* PortPwrCtrlMask */ },
 };
 
 #define USB_DEVICE_STATUS_SELF_POWERED  (1 << 0)
@@ -527,7 +525,7 @@ static const struct usb_desc_hub root_hub_hub_descriptor = {
  * Documented in Section 9.4.6 of the USB 2.0 specification.  */
 struct usb_dev_status {
 	uint16_t w_status;
-}__attribute__((packed));
+} __attribute__((packed));
 
 /** Hard-coded hub status for the faked root hub.  */
 static const struct usb_dev_status root_hub_device_status = {
@@ -560,14 +558,13 @@ static void dwc_host_port_status_changed(void) {
 		root_hub_status_change_request = NULL;
 		log_debug("Host port status changed; "
 				  "responding to status changed transfer on root hub");
-		*(uint8_t*)req->buf = 0x2; /* 0x2 means Port 1 status changed (bit 0 is
-									 used for the hub itself) */
+		*(uint8_t *)req->buf = 0x2; /* 0x2 means Port 1 status changed (bit 0 is
+		                             used for the hub itself) */
 		_req->actual_size = 1;
 		req->req_stat = USB_REQ_NOERR;
 		usb_request_complete(req);
 	}
 }
-
 
 /**
  * Fake a standard (i.e. not hub-specific) control message request to the root
@@ -588,54 +585,54 @@ static enum usb_request_status dwc_root_hub_standard_request(struct usb_request 
 
 	switch (setup->b_request)
 	{
-		case USB_DEV_REQ_GET_STAT:
-			len = min(setup->w_length, sizeof(root_hub_device_status));
-			memcpy(req->buf, &root_hub_device_status, len);
+	case USB_DEV_REQ_GET_STAT:
+		len = min(setup->w_length, sizeof(root_hub_device_status));
+		memcpy(req->buf, &root_hub_device_status, len);
+		_req->actual_size = len;
+		return USB_REQ_NOERR;
+
+	case USB_DEV_REQ_SET_ADDR:
+		return USB_REQ_NOERR;
+
+	case USB_DEV_REQ_GET_DESC:
+		switch ((setup->w_value >> 8))     /* Switch on descriptor type */
+		{
+		case USB_DESC_TYPE_DEV:
+			len = min(setup->w_length, root_hub_device_descriptor.b_length);
+			memcpy(req->buf, &root_hub_device_descriptor, len);
 			_req->actual_size = len;
 			return USB_REQ_NOERR;
-
-		case USB_DEV_REQ_SET_ADDR:
+		case USB_DESC_TYPE_CONFIG:
+			len = min(setup->w_length,
+					root_hub_configuration.configuration.w_total_length);
+			memcpy(req->buf, &root_hub_configuration, len);
+			_req->actual_size = len;
 			return USB_REQ_NOERR;
-
-		case USB_DEV_REQ_GET_DESC:
-			switch ((setup->w_value >> 8)) /* Switch on descriptor type */
-			{
-				case USB_DESC_TYPE_DEV:
-					len = min(setup->w_length, root_hub_device_descriptor.b_length);
-					memcpy(req->buf, &root_hub_device_descriptor, len);
-					_req->actual_size = len;
-					return USB_REQ_NOERR;
-				case USB_DESC_TYPE_CONFIG:
-					len = min(setup->w_length,
-							  root_hub_configuration.configuration.w_total_length);
-					memcpy(req->buf, &root_hub_configuration, len);
-					_req->actual_size = len;
-					return USB_REQ_NOERR;
-				case USB_DESC_TYPE_STRING:
-					/* Index of string descriptor is in low byte of w_value */
-					// if ((setup->w_value & 0xff) < ARRAY_LEN(root_hub_strings)) {
-					//     const struct usb_string_descriptor *desc =
-					//             root_hub_strings[setup->w_value & 0xff];
-					//     len = min(setup->w_length, desc->b_length);
-					//     memcpy(req->buf, desc, len);
-					//     _req->actual_size = len;
-					//     return USB_REQ_NOERR;
-					// }
-					return USB_REQ_UNDERRUN;
-			}
+		case USB_DESC_TYPE_STRING:
+			/* Index of string descriptor is in low byte of w_value */
+			/* if ((setup->w_value & 0xff) < ARRAY_LEN(root_hub_strings)) { */
+			/*     const struct usb_string_descriptor *desc = */
+			/*             root_hub_strings[setup->w_value & 0xff]; */
+			/*     len = min(setup->w_length, desc->b_length); */
+			/*     memcpy(req->buf, desc, len); */
+			/*     _req->actual_size = len; */
+			/*     return USB_REQ_NOERR; */
+			/* } */
 			return USB_REQ_UNDERRUN;
+		}
+		return USB_REQ_UNDERRUN;
 
-		// case USB_DEV_REQ_gET_CONF:
-		//     if (setup->w_length >= 1) {
-		//         *(uint8_t*)req->buf = req->endp->dev->configuration;
-		//         req->actual_size = 1;
-		//     }
-		//     return USB_REQ_NOERR;
+	/* case USB_DEV_REQ_gET_CONF: */
+	/*     if (setup->w_length >= 1) { */
+	/*         *(uint8_t*)req->buf = req->endp->dev->configuration; */
+	/*         req->actual_size = 1; */
+	/*     } */
+	/*     return USB_REQ_NOERR; */
 
-		case USB_DEV_REQ_SET_CONF:
-			if (setup->w_value <= 1) {
-				return USB_REQ_NOERR;
-			}
+	case USB_DEV_REQ_SET_CONF:
+		if (setup->w_value <= 1) {
+			return USB_REQ_NOERR;
+		}
 	}
 	return USB_REQ_UNDERRUN;
 }
@@ -658,14 +655,14 @@ static void dwc_get_root_hub_status(struct usb_hub_status *status) {
  */
 static enum usb_request_status dwc_set_host_port_feature(int feature) {
 	switch (feature) {
-		case USB_HUB_PORT_POWER:
-			dwc_power_on_host_port();
-			return USB_REQ_NOERR;
-		case USB_HUB_PORT_RESET:
-			dwc_reset_host_port();
-			return USB_REQ_NOERR;
-		default:
-			return USB_REQ_UNDERRUN;
+	case USB_HUB_PORT_POWER:
+		dwc_power_on_host_port();
+		return USB_REQ_NOERR;
+	case USB_HUB_PORT_RESET:
+		dwc_reset_host_port();
+		return USB_REQ_NOERR;
+	default:
+		return USB_REQ_UNDERRUN;
 	}
 	return USB_REQ_UNDERRUN;
 }
@@ -675,23 +672,23 @@ static enum usb_request_status dwc_set_host_port_feature(int feature) {
  */
 static enum usb_request_status dwc_clear_host_port_feature(int feature) {
 	switch (feature) {
-		case USB_HUB_PORT_CONNECT:
-			host_port_status.connected_changed = 0;
-			break;
-		case USB_HUB_PORT_ENABLE:
-			host_port_status.enabled_changed = 0;
-			break;
-		case USB_HUB_PORT_SUSPEND:
-			host_port_status.suspended_changed = 0;
-			break;
-		case USB_HUB_PORT_OVERRUN:
-			host_port_status.overcurrent_changed = 0;
-			break;
-		case USB_HUB_PORT_RESET:
-			host_port_status.reset_changed = 0;
-			break;
-		default:
-			return USB_REQ_UNDERRUN;
+	case USB_HUB_PORT_CONNECT:
+		host_port_status.connected_changed = 0;
+		break;
+	case USB_HUB_PORT_ENABLE:
+		host_port_status.enabled_changed = 0;
+		break;
+	case USB_HUB_PORT_SUSPEND:
+		host_port_status.suspended_changed = 0;
+		break;
+	case USB_HUB_PORT_OVERRUN:
+		host_port_status.overcurrent_changed = 0;
+		break;
+	case USB_HUB_PORT_RESET:
+		host_port_status.reset_changed = 0;
+		break;
+	default:
+		return USB_REQ_UNDERRUN;
 	}
 	return USB_REQ_NOERR;
 }
@@ -714,70 +711,70 @@ static enum usb_request_status dwc_root_hub_class_request(struct usb_request *re
 
 	switch (setup->b_request)
 	{
-		case USB_HUB_REQ_GET_DESCRIPTOR:
-			/* Switch on descriptor type */
-			switch ((setup->w_value >> 8)) {
-				case USB_DESCRIPTOR_TYPE_HUB:
-					/* GetHubDescriptor (11.24.2) */
-					len = min(setup->w_length, root_hub_hub_descriptor.b_desc_length);
-					memcpy(req->buf, &root_hub_hub_descriptor, len);
-					_req->actual_size = len;
-					return USB_REQ_NOERR;
-			}
-			return USB_REQ_UNDERRUN;
-		case USB_HUB_REQ_GET_STATUS:
-			switch (setup->bm_request_type & USB_BMREQUESTTYPE_RECIPIENT_MASK)
+	case USB_HUB_REQ_GET_DESCRIPTOR:
+		/* Switch on descriptor type */
+		switch ((setup->w_value >> 8)) {
+		case USB_DESCRIPTOR_TYPE_HUB:
+			/* GetHubDescriptor (11.24.2) */
+			len = min(setup->w_length, root_hub_hub_descriptor.b_desc_length);
+			memcpy(req->buf, &root_hub_hub_descriptor, len);
+			_req->actual_size = len;
+			return USB_REQ_NOERR;
+		}
+		return USB_REQ_UNDERRUN;
+	case USB_HUB_REQ_GET_STATUS:
+		switch (setup->bm_request_type & USB_BMREQUESTTYPE_RECIPIENT_MASK)
+		{
+		case USB_DEV_REQ_TYPE_DEV:
+			/* GetHubStatus (11.24.2) */
+			if (setup->w_length >= sizeof(struct usb_hub_status))
 			{
-				case USB_DEV_REQ_TYPE_DEV:
-					/* GetHubStatus (11.24.2) */
-					if (setup->w_length >= sizeof(struct usb_hub_status))
-					{
-						dwc_get_root_hub_status((struct usb_hub_status *)req->buf);
-						_req->actual_size = sizeof(struct usb_hub_status);
-						return USB_REQ_NOERR;
-					}
-					return USB_REQ_UNDERRUN;
-
-				case USB_DEV_REQ_TYPE_OTH:
-					/* GetPortStatus (11.24.2) */
-					if (setup->w_length >= sizeof(struct usb_port_status))
-					{
-						memcpy(req->buf, &host_port_status,
-							   sizeof(struct usb_port_status));
-						_req->actual_size = sizeof(struct usb_port_status);
-						return USB_REQ_NOERR;
-					}
-					return USB_REQ_UNDERRUN;
+				dwc_get_root_hub_status((struct usb_hub_status *)req->buf);
+				_req->actual_size = sizeof(struct usb_hub_status);
+				return USB_REQ_NOERR;
 			}
 			return USB_REQ_UNDERRUN;
 
-		case USB_HUB_REQ_SET_FEATURE:
-			switch (setup->bm_request_type & USB_BMREQUESTTYPE_RECIPIENT_MASK)
+		case USB_DEV_REQ_TYPE_OTH:
+			/* GetPortStatus (11.24.2) */
+			if (setup->w_length >= sizeof(struct usb_port_status))
 			{
-				case USB_BMREQUESTTYPE_RECIPIENT_DEVICE:
-					/* SetHubFeature (11.24.2) */
-					/* TODO */
-					return USB_REQ_UNDERRUN;
-
-				case USB_BMREQUESTTYPE_RECIPIENT_OTHER:
-					/* SetPortFeature (11.24.2) */
-					return dwc_set_host_port_feature(setup->w_value);
+				memcpy(req->buf, &host_port_status,
+						sizeof(struct usb_port_status));
+				_req->actual_size = sizeof(struct usb_port_status);
+				return USB_REQ_NOERR;
 			}
 			return USB_REQ_UNDERRUN;
+		}
+		return USB_REQ_UNDERRUN;
 
-		case USB_HUB_REQ_CLEAR_FEATURE:
-			switch (setup->bm_request_type & USB_BMREQUESTTYPE_RECIPIENT_MASK)
-			{
-				case USB_BMREQUESTTYPE_RECIPIENT_DEVICE:
-					/* ClearHubFeature (11.24.2) */
-					/* TODO */
-					return USB_REQ_UNDERRUN;
-
-				case USB_BMREQUESTTYPE_RECIPIENT_OTHER:
-					/* ClearPortFeature (11.24.2) */
-					return dwc_clear_host_port_feature(setup->w_value);
-			}
+	case USB_HUB_REQ_SET_FEATURE:
+		switch (setup->bm_request_type & USB_BMREQUESTTYPE_RECIPIENT_MASK)
+		{
+		case USB_BMREQUESTTYPE_RECIPIENT_DEVICE:
+			/* SetHubFeature (11.24.2) */
+			/* TODO */
 			return USB_REQ_UNDERRUN;
+
+		case USB_BMREQUESTTYPE_RECIPIENT_OTHER:
+			/* SetPortFeature (11.24.2) */
+			return dwc_set_host_port_feature(setup->w_value);
+		}
+		return USB_REQ_UNDERRUN;
+
+	case USB_HUB_REQ_CLEAR_FEATURE:
+		switch (setup->bm_request_type & USB_BMREQUESTTYPE_RECIPIENT_MASK)
+		{
+		case USB_BMREQUESTTYPE_RECIPIENT_DEVICE:
+			/* ClearHubFeature (11.24.2) */
+			/* TODO */
+			return USB_REQ_UNDERRUN;
+
+		case USB_BMREQUESTTYPE_RECIPIENT_OTHER:
+			/* ClearPortFeature (11.24.2) */
+			return dwc_clear_host_port_feature(setup->w_value);
+		}
+		return USB_REQ_UNDERRUN;
 	}
 	return USB_REQ_UNDERRUN;
 }
@@ -785,12 +782,12 @@ static enum usb_request_status dwc_root_hub_class_request(struct usb_request *re
 /**
  * Fake a control transfer to or from the root hub.
  */
- static enum usb_request_status dwc_root_hub_control_msg(struct usb_request *req) {
+static enum usb_request_status dwc_root_hub_control_msg(struct usb_request *req) {
 	switch (req->ctrl_header.bm_request_type & USB_BMREQUESTTYPE_TYPE_MASK) {
-		case USB_BMREQUESTTYPE_TYPE_STANDARD:
-			return dwc_root_hub_standard_request(req);
-		case USB_BMREQUESTTYPE_TYPE_CLASS:
-			return dwc_root_hub_class_request(req);
+	case USB_BMREQUESTTYPE_TYPE_STANDARD:
+		return dwc_root_hub_standard_request(req);
+	case USB_BMREQUESTTYPE_TYPE_CLASS:
+		return dwc_root_hub_class_request(req);
 	}
 	return USB_REQ_UNDERRUN;
 }
@@ -905,17 +902,17 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 	if (req->endp != NULL) {
 		/* Endpoint explicitly specified.  Get the needed information from the
 		 * endpoint descriptor.  */
-		// XXX Are & needed?
+		/* XXX Are & needed? */
 		characteristics.endpoint_number =
-								req->endp->address & 0xf;
+				req->endp->address & 0xf;
 		characteristics.endpoint_type =
-								req->endp->type & 0x3;
+				req->endp->type & 0x3;
 		characteristics.max_packet_size =
-								req->endp->max_packet_size & 0x7ff;
+				req->endp->max_packet_size & 0x7ff;
 		characteristics.packets_per_frame = 1;
 		if (req->endp->dev->speed == USB_SPEED_HIGH) {
 			characteristics.packets_per_frame +=
-						((req->endp->max_packet_size >> 11) & 0x3);
+					((req->endp->max_packet_size >> 11) & 0x3);
 		}
 	} else {
 		/* Default control endpoint.  The endpoint number, endpoint type, and
@@ -923,7 +920,7 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 		 * can be found in the device descriptor. */
 		characteristics.endpoint_number = 0;
 		characteristics.endpoint_type = USB_COMM_CONTROL;
-		//characteristics.max_packet_size = req->endp->max_packet_size;
+		/*characteristics.max_packet_size = req->endp->max_packet_size; */
 		characteristics.max_packet_size = req->endp->dev->dev_desc.b_max_packet_size;
 		characteristics.packets_per_frame = 1;
 	}
@@ -933,55 +930,55 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 	 * transfer must be taken into account. */
 	if (characteristics.endpoint_type == USB_COMM_CONTROL) {
 		switch (_req->control_phase) {
-			case 0: /* SETUP phase of control transfer */
-				log_debug("Starting SETUP transaction");
-				characteristics.endpoint_direction = USB_DIRECTION_OUT;
-				data = &req->ctrl_header;
-				transfer.size = sizeof(struct usb_control_header);
-				transfer.packet_id = DWC_USB_PID_SETUP;
-				break;
+		case 0:     /* SETUP phase of control transfer */
+			log_debug("Starting SETUP transaction");
+			characteristics.endpoint_direction = USB_DIRECTION_OUT;
+			data = &req->ctrl_header;
+			transfer.size = sizeof(struct usb_control_header);
+			transfer.packet_id = DWC_USB_PID_SETUP;
+			break;
 
-			case 1: /* DATA phase of control transfer */
-				log_debug("Starting DATA transactions");
-				characteristics.endpoint_direction =
-										req->ctrl_header.bm_request_type >> 7;
-				/* We need to carefully take into account that we might be
-				 * re-starting a partially complete transfer.  */
-				data = req->buf + _req->actual_size;
-				transfer.size = req->len - _req->actual_size;
-				if (_req->actual_size == 0) {
-					/* First transaction in the DATA phase: use a DATA1 packet
-					 * ID.  */
-					transfer.packet_id = DWC_USB_PID_DATA1;
-				} else {
-					/* Later transaction in the DATA phase: restore the saved
-					 * packet ID (will be DATA0 or DATA1).  */
-					transfer.packet_id = _req->next_data_pid;
-				}
-				break;
-
-			default: /* STATUS phase of control transfer */
-				log_debug("Starting STATUS transaction");
-				/* The direction of the STATUS transaction is opposite the
-				 * direction of the DATA transactions, or from device to host if
-				 * there were no DATA transactions.  */
-				if ((req->ctrl_header.bm_request_type >> 7) == USB_DIRECTION_OUT ||
-					req->ctrl_header.w_length == 0) {
-					characteristics.endpoint_direction = USB_DIRECTION_IN;
-				} else {
-					characteristics.endpoint_direction = USB_DIRECTION_OUT;
-				}
-				/* The STATUS transaction has no data buffer, yet must use a
-				 * DATA1 packet ID.  */
-				data = NULL;
-				transfer.size = 0;
+		case 1:     /* DATA phase of control transfer */
+			log_debug("Starting DATA transactions");
+			characteristics.endpoint_direction =
+					req->ctrl_header.bm_request_type >> 7;
+			/* We need to carefully take into account that we might be
+			 * re-starting a partially complete transfer.  */
+			data = req->buf + _req->actual_size;
+			transfer.size = req->len - _req->actual_size;
+			if (_req->actual_size == 0) {
+				/* First transaction in the DATA phase: use a DATA1 packet
+				 * ID.  */
 				transfer.packet_id = DWC_USB_PID_DATA1;
-				break;
+			} else {
+				/* Later transaction in the DATA phase: restore the saved
+				 * packet ID (will be DATA0 or DATA1).  */
+				transfer.packet_id = _req->next_data_pid;
+			}
+			break;
+
+		default:     /* STATUS phase of control transfer */
+			log_debug("Starting STATUS transaction");
+			/* The direction of the STATUS transaction is opposite the
+			 * direction of the DATA transactions, or from device to host if
+			 * there were no DATA transactions.  */
+			if ((req->ctrl_header.bm_request_type >> 7) == USB_DIRECTION_OUT ||
+					req->ctrl_header.w_length == 0) {
+				characteristics.endpoint_direction = USB_DIRECTION_IN;
+			} else {
+				characteristics.endpoint_direction = USB_DIRECTION_OUT;
+			}
+			/* The STATUS transaction has no data buffer, yet must use a
+			 * DATA1 packet ID.  */
+			data = NULL;
+			transfer.size = 0;
+			transfer.packet_id = DWC_USB_PID_DATA1;
+			break;
 		}
 	} else {
 		/* Starting or re-starting a non-control transfer.  */
 		characteristics.endpoint_direction =
-					req->endp->address >> 7;
+				req->endp->address >> 7;
 
 		/* As is the case for the DATA phase of control transfers, we need to
 		 * carefully take into account that we might be restarting a partially
@@ -993,10 +990,10 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 		 * per frame allowed by the endpoint times the maximum packet size
 		 * allowed by the endpoint.  */
 		if (characteristics.endpoint_type == USB_COMM_INTERRUPT &&
-			transfer.size > characteristics.packets_per_frame *
-							characteristics.max_packet_size) {
+				transfer.size > characteristics.packets_per_frame *
+				characteristics.max_packet_size) {
 			transfer.size = characteristics.packets_per_frame *
-							characteristics.max_packet_size;
+					characteristics.max_packet_size;
 			_req->short_attempt = 1;
 		}
 		transfer.packet_id = _req->next_data_pid;
@@ -1020,7 +1017,7 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 		tt_hub = req->endp->dev;
 		do {
 			tt_hub_port = tt_hub->port->idx;
-			//XXX tt_hub = tt_hub->parent;
+			/*XXX tt_hub = tt_hub->parent; */
 		} while (tt_hub->speed != USB_SPEED_HIGH);
 
 		split_control.port_address = tt_hub_port - 1;
@@ -1049,8 +1046,8 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 		chanptr->dma_address = (uint32_t)aligned_bufs[chan];
 		if (transfer.size > sizeof(aligned_bufs[chan])) {
 			transfer.size = sizeof(aligned_bufs[chan]) -
-							(sizeof(aligned_bufs[chan]) %
-							  characteristics.max_packet_size);
+					(sizeof(aligned_bufs[chan]) %
+					characteristics.max_packet_size);
 			_req->short_attempt = 1;
 		}
 		/* For OUT endpoints, copy the data to send into the DMA buffer. */
@@ -1066,7 +1063,7 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 
 	/* Calculate the number of packets being set up for this transfer. */
 	transfer.packet_count = DIV_ROUND_UP(transfer.size,
-										 characteristics.max_packet_size);
+			characteristics.max_packet_size);
 	if (transfer.packet_count == 0) {
 		/* The hardware requires that at least one packet is specified, even
 		 * for zero-length transfers. */
@@ -1089,18 +1086,18 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 			  "\t\tlow_speed=%u, endpoint_type=%s, device_address=%u,\n\t\t"
 			  "size=%u, packet_count=%u, packet_id=%u, split_enable=%u, "
 			  "complete_split=%u",
-			  chan,
-			  characteristics.max_packet_size,
-			  characteristics.endpoint_number,
-			  "x",//usb_direction_to_string(characteristics.endpoint_direction),
-			  characteristics.low_speed,
-			  "x", //usb_transfer_type_to_string(characteristics.endpoint_type),
-			  characteristics.device_address,
-			  transfer.size,
-			  transfer.packet_count,
-			  transfer.packet_id,
-			  split_control.split_enable,
-			  _req->complete_split);
+			chan,
+			characteristics.max_packet_size,
+			characteristics.endpoint_number,
+			"x",  /*usb_direction_to_string(characteristics.endpoint_direction), */
+			characteristics.low_speed,
+			"x",   /*usb_transfer_type_to_string(characteristics.endpoint_type), */
+			characteristics.device_address,
+			transfer.size,
+			transfer.packet_count,
+			transfer.packet_id,
+			split_control.split_enable,
+			_req->complete_split);
 
 	/* Actually program the registers of the appropriate channel.  */
 	chanptr->characteristics = characteristics;
@@ -1133,7 +1130,7 @@ static void *defer_xfer_thread(void *data) {
 
 	if (req->endp->dev->speed == USB_SPEED_HIGH) {
 		interval_ms = (1 << (req->endp->interval - 1)) /
-							  USB_UFRAMES_PER_MS;
+				USB_UFRAMES_PER_MS;
 	} else {
 		interval_ms = req->endp->interval / USB_FRAMES_PER_MS;
 	} if (interval_ms <= 0) {
@@ -1158,7 +1155,7 @@ static void *defer_xfer_thread(void *data) {
 			intr_mask.sof_intr = 1;
 			regs->core_interrupt_mask = intr_mask;
 
-			// XXX receive();
+			/* XXX receive(); */
 
 			dwc_channel_start_xfer(chan, req);
 			_req->need_sof = 0;
@@ -1209,8 +1206,8 @@ static void *defer_xfer_thread(void *data) {
 static enum usb_request_status defer_xfer(struct usb_request *req) {
 	struct usb_dwc_request *_req = (struct usb_dwc_request *)req->hci_specific;
 
-	// XXX: mov it to hci initialization
-	// semaphore_init(&_req->deferer_thread_sema, 0);
+	/* XXX: mov it to hci initialization */
+	/* semaphore_init(&_req->deferer_thread_sema, 0); */
 	log_debug("Deferring transfer");
 	if (!_req->deferer_thread) {
 		_req->deferer_thread = thread_create(0, defer_xfer_thread, req);
@@ -1243,15 +1240,15 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 	 * always updated as expected).  */
 	uint packets_remaining   = chanptr->transfer.packet_count;
 	uint packets_transferred = _req->attempted_packets_remaining -
-							   packets_remaining;
+			packets_remaining;
 
 	log_debug("%u packets transferred on channel %u", packets_transferred,
-		chan);
+			chan);
 
 	if (packets_transferred != 0) {
 		uint bytes_transferred = 0;
 		union dwc_host_channel_characteristics characteristics =
-											chanptr->characteristics;
+				chanptr->characteristics;
 		uint max_packet_size = characteristics.max_packet_size;
 		enum usb_direction dir = characteristics.endpoint_direction;
 		enum usb_comm_type type = characteristics.endpoint_type;
@@ -1264,13 +1261,13 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 			 * transfers.  (Good thing too, since otherwise it would be
 			 * impossible to determine the length of short packets...)  */
 			bytes_transferred = _req->attempted_bytes_remaining -
-								chanptr->transfer.size;
+					chanptr->transfer.size;
 			/* Copy data from DMA buffer if needed */
 			if (!IS_WORD_ALIGNED(_req->cur_data_ptr)) {
 				memcpy(_req->cur_data_ptr,
-					   &aligned_bufs[chan][_req->attempted_size -
-										   _req->attempted_bytes_remaining],
-					   bytes_transferred);
+						&aligned_bufs[chan][_req->attempted_size -
+						_req->attempted_bytes_remaining],
+						bytes_transferred);
 			}
 		} else {
 			/* Ignore transfer.size field for OUT transfers because it's not
@@ -1284,8 +1281,8 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 			 * size is the remainder of the attempted transfer size.  Otherwise,
 			 * it's another max_packet_size.  */
 			if (packets_remaining == 0 &&
-				(_req->attempted_size % max_packet_size != 0 ||
-				 _req->attempted_size == 0)) {
+					(_req->attempted_size % max_packet_size != 0 ||
+					_req->attempted_size == 0)) {
 				bytes_transferred += _req->attempted_size % max_packet_size;
 			} else {
 				bytes_transferred += max_packet_size;
@@ -1302,8 +1299,8 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 		/* Check if transfer complete (at least to the extent that data was
 		 * programmed into the channel).  */
 		if (_req->attempted_packets_remaining == 0 ||
-			(dir == USB_DIRECTION_IN &&
-			 bytes_transferred < packets_transferred * max_packet_size)) {
+				(dir == USB_DIRECTION_IN &&
+				bytes_transferred < packets_transferred * max_packet_size)) {
 			/* The transfer_completed flag should have been set by the hardware,
 			 * although it's essentially meaningless because it gets set at
 			 * other times as well.  (For example, it appears to be set when a
@@ -1311,9 +1308,9 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 			 * remaining to be transferred).  */
 			if (!interrupts.transfer_completed) {
 				log_error("transfer_completed flag not "
-							  "set on channel %u as expected "
-							  "(interrupts=0x%08x, transfer=0x%08x).", chan,
-							  interrupts.val, chanptr->transfer.val);
+						  "set on channel %u as expected "
+						  "(interrupts=0x%08x, transfer=0x%08x).", chan,
+						interrupts.val, chanptr->transfer.val);
 				return XFER_FAILED;
 			}
 
@@ -1325,10 +1322,10 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 			 * attempted (for an IN transfer), indicating the transfer is
 			 * already done.  */
 			if (_req->short_attempt && _req->attempted_bytes_remaining == 0 &&
-				type != USB_COMM_INTERRUPT) {
+					type != USB_COMM_INTERRUPT) {
 				log_debug("Starting next part of %u-byte transfer "
 						  "after short attempt of %u bytes",
-						  req->len, _req->attempted_size);
+						req->len, _req->attempted_size);
 				_req->complete_split = 0;
 				_req->next_data_pid = chanptr->transfer.packet_id;
 				if (!usb_is_control_request(req) || _req->control_phase == 1) {
@@ -1375,7 +1372,7 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 			}
 
 			log_debug("Continuing transfer (complete_split=%u)",
-						  _req->complete_split);
+					_req->complete_split);
 			return XFER_NEEDS_TRANS_RESTART;
 		}
 	} else {
@@ -1385,11 +1382,11 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 		 * for the ack_response_received flag, which should be set to indicate
 		 * that the device acknowledged the Start Split transaction.  */
 		if (interrupts.ack_response_received &&
-			chanptr->split_control.split_enable && !_req->complete_split) {
+				chanptr->split_control.split_enable && !_req->complete_split) {
 			/* Start CSPLIT */
 			_req->complete_split = 1;
 			log_debug("Continuing transfer (complete_split=%u)",
-						  _req->complete_split);
+					_req->complete_split);
 			return XFER_NEEDS_TRANS_RESTART;
 		} else {
 			log_error("No packets transferred.");
@@ -1417,23 +1414,23 @@ static void dwc_handle_channel_halted_interrupt(uint chan) {
 	log_debug("Handling channel %u halted interrupt"
 			  "\t\t(interrupts pending: 0x%08x, characteristics=0x%08x, "
 			  "transfer=0x%08x)",
-			  chan, interrupts.val, chanptr->characteristics.val,
-			  chanptr->transfer.val);
+			chan, interrupts.val, chanptr->characteristics.val,
+			chanptr->transfer.val);
 
 	/* Determine the cause of the interrupt. */
 
 	if (interrupts.stall_response_received || interrupts.ahb_error ||
-		interrupts.transaction_error || interrupts.babble_error ||
-		interrupts.excess_transaction_error ||
-		interrupts.frame_list_rollover ||
-		(interrupts.nyet_response_received && !_req->complete_split) ||
-		(interrupts.data_toggle_error &&
-		chanptr->characteristics.endpoint_direction == USB_DESC_ENDP_ADDR_OUT)) {
+			interrupts.transaction_error || interrupts.babble_error ||
+			interrupts.excess_transaction_error ||
+			interrupts.frame_list_rollover ||
+			(interrupts.nyet_response_received && !_req->complete_split) ||
+			(interrupts.data_toggle_error &&
+			chanptr->characteristics.endpoint_direction == USB_DESC_ENDP_ADDR_OUT)) {
 		/* An error occurred. Complete the transfer immediately with an error
 		 * status. */
 		log_error("Transfer error on channel %u (interrupts pending: 0x%08x, "
 				  " packet_count=%u)", chan, interrupts.val,
-				  chanptr->transfer.packet_count);
+				chanptr->transfer.packet_count);
 		intr_status = XFER_FAILED;
 	} else if (interrupts.frame_overrun) {
 		/* Restart transactions that fail sporatically due to frame overruns.
@@ -1449,7 +1446,7 @@ static void dwc_handle_channel_halted_interrupt(uint chan) {
 		log_debug("NYET response received on channel %u", chan);
 		if (++_req->csplit_retries >= 10) {
 			log_debug("Restarting split transaction (CSPLIT tried %u times)",
-						_req->csplit_retries);
+					_req->csplit_retries);
 			_req->complete_split = false;
 		}
 		intr_status = XFER_NEEDS_TRANS_RESTART;
@@ -1468,30 +1465,30 @@ static void dwc_handle_channel_halted_interrupt(uint chan) {
 
 #if START_SPLIT_INTR_TRANSFERS_ON_SOF
 	if ((intr_status == XFER_NEEDS_RESTART ||
-		 intr_status == XFER_NEEDS_TRANS_RESTART) &&
-		 req->endp->type == USB_COMM_INTERRUPT &&
-		 req->endp->dev->speed != USB_SPEED_HIGH &&
-		!_req->complete_split) {
+			intr_status == XFER_NEEDS_TRANS_RESTART) &&
+			req->endp->type == USB_COMM_INTERRUPT &&
+			req->endp->dev->speed != USB_SPEED_HIGH &&
+			!_req->complete_split) {
 		intr_status = XFER_NEEDS_DEFERRAL;
 		_req->need_sof = 1;
 	}
 #endif
 
 	switch (intr_status) {
-		case XFER_COMPLETE:
-			req->req_stat = USB_REQ_NOERR;
-			break;
-		case XFER_FAILED:
-			req->req_stat = USB_REQ_UNDERRUN;
-			break;
-		case XFER_NEEDS_DEFERRAL:
-			break;
-		case XFER_NEEDS_RESTART:
-			dwc_channel_start_xfer(chan, req);
-			return;
-		case XFER_NEEDS_TRANS_RESTART:
-			dwc_channel_start_transaction(chan, req);
-			return;
+	case XFER_COMPLETE:
+		req->req_stat = USB_REQ_NOERR;
+		break;
+	case XFER_FAILED:
+		req->req_stat = USB_REQ_UNDERRUN;
+		break;
+	case XFER_NEEDS_DEFERRAL:
+		break;
+	case XFER_NEEDS_RESTART:
+		dwc_channel_start_xfer(chan, req);
+		return;
+	case XFER_NEEDS_TRANS_RESTART:
+		dwc_channel_start_transaction(chan, req);
+		return;
 	}
 
 	/* Transfer complete, transfer encountered an error, or transfer needs to
@@ -1544,7 +1541,7 @@ static irq_return_t dwc_interrupt_handler(unsigned int irq_nr, void *data) {
 		/* Start of frame (SOF) interrupt occurred. */
 
 		log_debug("Received SOF intr (host_frame_number=0x%08x)",
-			regs->host_frame_number);
+				regs->host_frame_number);
 		if ((regs->host_frame_number & 0x7) != 6) {
 			union dwc_core_interrupts tmp;
 
@@ -1552,7 +1549,7 @@ static irq_return_t dwc_interrupt_handler(unsigned int irq_nr, void *data) {
 				/* Wake up one channel waiting for SOF */
 				uint chan = first_set_bit(sofwait);
 				struct usb_dwc_request *_req = (struct usb_dwc_request *)
-					channel_pending_xfers[chan]->hci_specific;
+						channel_pending_xfers[chan]->hci_specific;
 				sched_wakeup(&_req->deferer_thread->schedee);
 				sofwait &= ~(1 << chan);
 			}
@@ -1592,7 +1589,7 @@ static irq_return_t dwc_interrupt_handler(unsigned int irq_nr, void *data) {
 		union dwc_host_port_ctrlstatus hw_status = regs->host_port_ctrlstatus;
 
 		log_debug("Port interrupt detected: host_port_ctrlstatus=0x%08x",
-				  hw_status.val);
+				hw_status.val);
 
 		host_port_status.connected   = hw_status.connected;
 		host_port_status.enabled     = hw_status.enabled;
@@ -1760,7 +1757,7 @@ static int hcd_request(struct usb_request *req) {
 }
 
 static int hcd_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
-			unsigned short value) {
+		unsigned short value) {
 	/* Special case: request is to the root hub. Fake it. */
 	dwc_process_root_hub_request(NULL);
 
@@ -1770,8 +1767,8 @@ static int hcd_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 static struct usb_hcd_ops usb_dwc_hcd_ops = {
 	.hcd_start = hcd_start,
 	.hcd_stop = hcd_stop,
-	// .hcd_hci_alloc = usb_dvc_hcd_hcd_alloc,
-	// .hcd_hci_free = usb_dvc_hcd_hcd_free,
+	/* .hcd_hci_alloc = usb_dvc_hcd_hcd_alloc, */
+	/* .hcd_hci_free = usb_dvc_hcd_hcd_free, */
 	.rhub_ctrl = hcd_rh_ctrl,
 	.request = hcd_request,
 };

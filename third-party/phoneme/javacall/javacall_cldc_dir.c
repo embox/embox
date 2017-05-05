@@ -11,7 +11,7 @@
 #include <dirent.h>
 #include "embox_java_compat.h"
 
-javacall_handle javacall_dir_open(const javacall_utf16* path, int pathLen) {
+javacall_handle javacall_dir_open(const javacall_utf16 *path, int pathLen) {
 	DIR *dir;
 	javacall_int32 utf8NameLen;
 	unsigned char *utf8Name;
@@ -22,14 +22,14 @@ javacall_handle javacall_dir_open(const javacall_utf16* path, int pathLen) {
 
 	dir = opendir((const char *) utf8Name);
 
-    free(utf8Name);
+	free(utf8Name);
 
 	return dir;
 }
 
 /* FIXME O(n^2). It may be implement in O(n) */
-javacall_utf16* javacall_dir_get_next(javacall_handle handle, int* /*OUT*/ outFilenameLength) {
-	javacall_utf16* name;
+javacall_utf16 *javacall_dir_get_next(javacall_handle handle, int * /*OUT*/ outFilenameLength) {
+	javacall_utf16 *name;
 	javacall_int32 namelen;
 	struct dirent *dent;
 
@@ -51,6 +51,5 @@ void javacall_dir_close(javacall_handle handle) {
 
 javacall_int64 javacall_dir_get_free_space_for_java(void){
 	/* TODO */
-    return 1000000;
+	return 1000000;
 }
-

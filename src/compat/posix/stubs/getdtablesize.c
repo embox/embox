@@ -17,4 +17,3 @@ int getdtablesize(void) {
 	printk(">>> %s\n", __func__);
 	return 10;
 }
-

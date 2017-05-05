@@ -42,7 +42,7 @@ static int usb_hid_event_get(struct input_dev *dev, struct input_event *ev) {
 #endif
 
 	ev->value = ((int16_t) hindev->input_data[1]) << 16
-		| (0xffff & ((int16_t) hindev->input_data[2]));
+			| (0xffff & ((int16_t) hindev->input_data[2]));
 
 	return 0;
 }

@@ -108,4 +108,3 @@ int block_dev_destroy(void *dev) {
 
 	return 0;
 }
-

@@ -14,14 +14,13 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
-
 /* Allocates embox-specific requests for the FUSE */
 #include <fs/fuse_req_alloc.h>
 
-// Needed by fuse_common.h
+/* Needed by fuse_common.h */
 #define _FILE_OFFSET_BITS 64
 
-// it is from fuse-ext2fs.c
+/* it is from fuse-ext2fs.c */
 #define FUSE_USE_VERSION 25
 #include <fuse_lowlevel.h>
 #include <fuse_opt.h>
@@ -274,12 +273,12 @@ static int fuse_iterate(struct inode *next, struct inode *parent, struct dir_ctx
 	task = fuse_in(sb_fuse_data);
 	sb_fuse_data->fuse_lowlevel_ops->lookup((fuse_req_t) req, parent->i_no, dirent->name);
 	fuse_out(sb_fuse_data, task);
-	// If not found
+	/* If not found */
 	if (next->i_no < 0) {
 		res = -1;
 	}
 
-out:
+	out:
 	fuse_req_free(req);
 	return res;
 }
@@ -373,7 +372,7 @@ static int fuse_destroy_inode(struct inode *inode) {
 }
 
 static int fuse_umount_begin(struct super_block *sb) {
-	// TODO kill task and thread
+	/* TODO kill task and thread */
 	struct task *task;
 	struct fuse_sb_priv_data *fuse_data;
 

@@ -10,7 +10,7 @@
 #include <string.h>
 #include <netdb.h>
 
-struct servent * getservbyname(const char *name,
+struct servent *getservbyname(const char *name,
 		const char *proto) {
 	struct servent *se;
 	char **aliases;

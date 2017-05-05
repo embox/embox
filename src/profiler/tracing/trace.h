@@ -18,13 +18,13 @@ struct __trace_block;
 #include <module/embox/profiler/trace.h>
 
 #define TRACE_POINT_DEF(name, tp_name) \
-	  __TRACE_POINT_DEF(name, tp_name)
+	__TRACE_POINT_DEF(name, tp_name)
 
 #define TRACE_BLOCK_DEF(tb) \
-	  __TRACE_BLOCK_DEF(tb)
+	__TRACE_BLOCK_DEF(tb)
 
 #define trace_point(name) \
-	  __trace_point(name)
+	__trace_point(name)
 
 #include <stdbool.h>
 
@@ -33,11 +33,11 @@ struct __trace_block;
 typedef enum {
 	DISABLED,
 	MANUAL_PROFILING,
-	CYG_PROFILING,		/* Automatic instrumenting */
+	CYG_PROFILING,      /* Automatic instrumenting */
 } profiling_mode;
 
-extern profiling_mode 	get_profiling_mode(void);
-extern void				set_profiling_mode(profiling_mode new_mode);
+extern profiling_mode   get_profiling_mode(void);
+extern void             set_profiling_mode(profiling_mode new_mode);
 
 extern void __tracepoint_handle(struct __trace_point *tp);
 
@@ -46,7 +46,7 @@ extern void trace_block_enter(struct __trace_block *tb);
 extern void trace_block_leave(struct __trace_block *tb);
 
 #define trace_point_set(tp_pointer) \
-		__trace_point_set(tp_pointer)
+	__trace_point_set(tp_pointer)
 
 extern time64_t trace_block_diff(struct __trace_block *tb);
 

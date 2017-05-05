@@ -30,15 +30,13 @@ EMBOX_UNIT_INIT(integratorcp_pit_init);
  */
 static int integratorcp_pit_init(void) {
 	if (NULL == mmap_device_memory(
-		(void*) ICU_BASE,
-		0x10,
-		PROT_READ | PROT_WRITE | PROT_NOCACHE,
-		MAP_FIXED,
-		(unsigned long) ICU_BASE)) {
+			(void *) ICU_BASE,
+			0x10,
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			MAP_FIXED,
+			(unsigned long) ICU_BASE)) {
 		return -1;
 	}
-
-
 
 	REG_STORE(ICU_IRQENCLR, ((1 << IRQCTRL_IRQS_TOTAL) - 1));
 	return 0;
@@ -71,8 +69,9 @@ void interrupt_handle(void) {
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 	for (irq = 0; irq < IRQCTRL_IRQS_TOTAL; irq++) {
-		if (stat & (uint32_t)(1 << irq))
+		if (stat & (uint32_t)(1 << irq)) {
 			break;
+		}
 	}
 
 	irqctrl_disable(irq);

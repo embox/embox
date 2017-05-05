@@ -23,10 +23,10 @@ struct net_device;
  */
 typedef struct rt_entry {
 	struct net_device *dev;
-	in_addr_t    rt_dst;
-	uint32_t     rt_flags;
-	in_addr_t    rt_mask;
-	in_addr_t    rt_gateway;
+	in_addr_t rt_dst;
+	uint32_t rt_flags;
+	in_addr_t rt_mask;
+	in_addr_t rt_gateway;
 } rt_entry_t;
 
 /**< Flags */
@@ -52,7 +52,7 @@ typedef struct rt_entry {
  * @param gw Gateway
  */
 extern int rt_add_route(struct net_device *dev, in_addr_t dst,
-				in_addr_t mask, in_addr_t gw, int flags);
+		in_addr_t mask, in_addr_t gw, int flags);
 
 /**
  * Remove route from table.
@@ -62,7 +62,7 @@ extern int rt_add_route(struct net_device *dev, in_addr_t dst,
  * @param gw Gateway
  */
 extern int rt_del_route(struct net_device *dev, in_addr_t dst,
-				in_addr_t mask, in_addr_t gw);
+		in_addr_t mask, in_addr_t gw);
 
 /**
  * Remove all records from route table for a network device.
@@ -105,14 +105,14 @@ extern int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
  * @return pointer to best match entity for dst
  * @retval NULL if entity not found
  */
-extern struct rt_entry* rt_fib_get_best(in_addr_t dst, struct net_device *out_dev);
+extern struct rt_entry *rt_fib_get_best(in_addr_t dst, struct net_device *out_dev);
 
 /**
  * Get first element from route from table.
  * @return pointer to first entity
  * @retval NULL if entity not found
  */
-extern struct rt_entry * rt_fib_get_first(void);
+extern struct rt_entry *rt_fib_get_first(void);
 
 /**
  * Get next element from route from table uses
@@ -122,6 +122,6 @@ extern struct rt_entry * rt_fib_get_first(void);
  * @return pointer to next entity
  * @retval NULL if entity more not found
  */
-extern struct rt_entry * rt_fib_get_next(struct rt_entry *entry);
+extern struct rt_entry *rt_fib_get_next(struct rt_entry *entry);
 
 #endif /* NET_L3_ROUTE_H_ */

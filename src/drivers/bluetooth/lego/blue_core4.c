@@ -31,13 +31,13 @@ static int data_rx(struct pnet_pack *pack);
 static int ctrl_rx(struct pnet_pack *pack);
 
 PNET_NODE_DEF_NAME(BLUETOOTH_DRV_BLUE_CORE4_DATA, this_data, {
-	.rx_hnd = data_rx,
-	.start = nxt_bluecore_start
-});
+			.rx_hnd = data_rx,
+			.start = nxt_bluecore_start
+		});
 
 PNET_NODE_DEF_NAME(BLUETOOTH_DRV_BLUE_CORE4_CTRL, this_ctrl, {
-	.rx_hnd = ctrl_rx,
-});
+			.rx_hnd = ctrl_rx,
+		});
 
 static int get_length(void *msg);
 static int get_body(void *msg);
@@ -50,7 +50,7 @@ static int (*ctrl_hnd)(void *pack_data) = wait_connect;
 
 static struct bc_msg out_msg;
 
-static uint16_t calc_chksumm(struct bc_msg * msg) {
+static uint16_t calc_chksumm(struct bc_msg *msg) {
 	uint16_t sum;
 	int i;
 	uint8_t *buffer = (uint8_t *)&(msg->type);
@@ -65,7 +65,7 @@ static uint16_t calc_chksumm(struct bc_msg * msg) {
 	return sum;
 }
 
-static void send_msg(struct bc_msg * msg) {
+static void send_msg(struct bc_msg *msg) {
 	calc_chksumm(msg);
 
 	msg->length += 2;

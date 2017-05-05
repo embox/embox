@@ -10,7 +10,9 @@
 
 #include <libfilters/dynamic_window.h>
 
-static float data[WIN_SIZE] = {0};
+static float data[WIN_SIZE] = {
+	0
+};
 static int index = 0;
 static int middle = (WIN_SIZE + 1) / 2;
 
@@ -30,7 +32,7 @@ static float avg(int k) {
 
 static void dk_calc(float K, int k, int *interval) {
 	float s, r;
-	
+
 	s = avg(k);
 	r = (2 * K) / sqrt(2 * k + 1);
 	interval[0] = s - r;

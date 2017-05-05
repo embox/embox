@@ -35,20 +35,31 @@ typedef struct {
 static point head, tail, diff;
 static char diff_char = 'l';
 
-static point dxp = {1,0};
-static point dxm = {-1,0};
-static point dyp = {0,1};
-static point dym = {0,-1};
+static point dxp = {
+	1,0
+};
+static point dxm = {
+	-1,0
+};
+static point dyp = {
+	0,1
+};
+static point dym = {
+	0,-1
+};
 
-static point nil = {0,0};
+static point nil = {
+	0,0
+};
 
 static int score = 0;
 
 static void draw_nxt_white(point p) {
 	int i, x = p.x * 4, y = p.y / 2;
 	char fill = 0xf0;
-	if (p.y & 1)
+	if (p.y & 1) {
 		fill = 0x0f;
+	}
 	for (i = 0; i < 4; i++) {
 		display_buffer[y][x++] &= fill;
 	}
@@ -61,10 +72,18 @@ static void draw_nxt_bitmap(point p, uint8_t *bitmap) {
 	}
 }
 
-static uint8_t i_head[] = {0x0f, 0x09, 0x09, 0xf};
-static uint8_t i_middle[4] = {0x0, 0x06, 0x06, 0x0};
-static uint8_t i_die[] = {0x09, 0x06, 0x06, 0x09};
-static uint8_t i_fruit[] = {0x0f, 0x0b, 0x09, 0x0f};
+static uint8_t i_head[] = {
+	0x0f, 0x09, 0x09, 0xf
+};
+static uint8_t i_middle[4] = {
+	0x0, 0x06, 0x06, 0x0
+};
+static uint8_t i_die[] = {
+	0x09, 0x06, 0x06, 0x09
+};
+static uint8_t i_fruit[] = {
+	0x0f, 0x0b, 0x09, 0x0f
+};
 #if 1
 
 static void draw_nxt_middle(point p) {
@@ -91,7 +110,9 @@ static int f2d(int x, int y) {
 }
 
 static point d2f(unsigned int offset) {
-	point p = {offset % SIZE_Y, offset / SIZE_Y};
+	point p = {
+		offset % SIZE_Y, offset / SIZE_Y
+	};
 	return p;
 }
 
@@ -100,7 +121,7 @@ static void snake_init(void) {
 	int si = (SIZE_X - SNAKE_LEN) /2;
 	head.y = tail.y = j;
 	tail.x = si;
-	for (i=0;i<SNAKE_LEN;i++) {
+	for (i = 0; i < SNAKE_LEN; i++) {
 		field[f2d(si + i,j)] = SNK;
 		dir  [f2d(si + i,j)] = 'l';
 	}
@@ -138,7 +159,9 @@ static void refresh(void) {
 	for (i = 0; i < SIZE_Y; i++) {
 		for (j = 0; j < SIZE_X; j++) {
 			if (!space(field[f2d(j,i)])) {
-				point p = {j, i};
+				point p = {
+					j, i
+				};
 				draw_nxt_middle(p);
 			}
 		}
@@ -147,9 +170,11 @@ static void refresh(void) {
 
 static void field_init(void) {
 	int i, j;
-	for (i = 0; i < SIZE_X; i++)
-		for (j = 0; j < SIZE_Y; j++)
+	for (i = 0; i < SIZE_X; i++) {
+		for (j = 0; j < SIZE_Y; j++) {
 			field[f2d(i,j)] = '.';
+		}
+	}
 	for (i = 0; i < SIZE_X; i++) {
 		field[f2d(i,0)] = field[f2d(i,SIZE_Y - 1)] = '-';
 	}
@@ -163,7 +188,9 @@ static void field_init(void) {
 }
 
 static point point_plus(point p1, point p2) {
-	point p = {p1.x + p2.x, p1.y + p2.y};
+	point p = {
+		p1.x + p2.x, p1.y + p2.y
+	};
 	return p;
 }
 
@@ -218,8 +245,9 @@ static int snake_update(void) {
 	switch (new_pos) {
 	case FRU:
 		if (!speed_count--) {
-			if (sleep_time >= 50)
+			if (sleep_time >= 50) {
 				sleep_time -= 20;
+			}
 			speed_count = SPEED_INC;
 		}
 		draw_nxt_white(head);

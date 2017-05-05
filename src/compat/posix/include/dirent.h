@@ -15,18 +15,17 @@ __BEGIN_DECLS
 #define DIRENT_DNAME_LEN 40
 
 struct dirent {
-	ino_t  d_ino;                    /* File serial number. */
-	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
+	ino_t d_ino;                     /* File serial number. */
+	char d_name[DIRENT_DNAME_LEN];   /* Name of entry. */
 
 	/*only for linux compatible */
-    off_t          d_off;       /* not an offset; see NOTES */
-    unsigned short d_reclen;    /* length of this record */
-	unsigned char  d_type;      /* type of file; not supported
+	off_t d_off;                /* not an offset; see NOTES */
+	unsigned short d_reclen;    /* length of this record */
+	unsigned char d_type;       /* type of file; not supported
 	                            by all filesystem types */
 };
 
 typedef struct DIR_struct DIR;
-
 
 extern int            closedir(DIR *);
 

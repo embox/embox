@@ -5,11 +5,12 @@
  * @author: Anton Bondarev
  */
 
-
 #define INC_WINDOW_SIZE 50
 #define EMA_ALPHA ((float) 2.0 / (float) (INC_WINDOW_SIZE + 1))
 
-static float incs[INC_WINDOW_SIZE] = {0};
+static float incs[INC_WINDOW_SIZE] = {
+	0
+};
 static int inc_index = 0;
 static float average_inc = 0;
 

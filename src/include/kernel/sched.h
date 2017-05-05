@@ -47,9 +47,9 @@
  *                others access it with s->lock held and interrupts off
  */
 struct schedee {
-	runq_item_t       runq_link;
+	runq_item_t runq_link;
 
-	spinlock_t        lock; /**< Protects wait state and others. */
+	spinlock_t lock;        /**< Protects wait state and others. */
 
 	/**
 	 * Process function is called in the function schedule() after extracting
@@ -67,8 +67,8 @@ struct schedee {
 	unsigned int ready;   /**< Managed by the scheduler. */
 	unsigned int waiting; /**< Waiting for an event. */
 
-	struct affinity         affinity;
-	struct sched_timing     sched_timing;
+	struct affinity affinity;
+	struct sched_timing sched_timing;
 	struct schedee_priority priority;
 
 	struct waitq_link waitq_link; /**< Used as a link in different waitqs. */
@@ -96,7 +96,7 @@ extern int sched_init(struct schedee *current);
  *   The operation result. At the moment always success.
  */
 extern int schedee_init(struct schedee *schedee, int priority,
-	struct schedee *(*process)(struct schedee *prev, struct schedee *next));
+		struct schedee *(*process)(struct schedee *prev, struct schedee *next));
 
 extern void sched_set_current(struct schedee *schedee);
 
@@ -165,6 +165,5 @@ extern void sched_start_switch(struct schedee *next);
 void sched_signal(struct schedee *schedee);
 
 __END_DECLS
-
 
 #endif /* KERNEL_SCHED_H_ */

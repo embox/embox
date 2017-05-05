@@ -12,4 +12,3 @@
 #include <asm-generic/limits32.h>
 
 #endif /* X86_LIMITS_H_ */
-

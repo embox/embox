@@ -27,26 +27,26 @@ off_t lseek(int fd, off_t offset, int origin) {
 
 	fstat(fd, &sb);
 	switch (sb.st_mode & S_IFMT) {
-		case S_IFIFO:
-		case S_IFSOCK:
+	case S_IFIFO:
+	case S_IFSOCK:
 		return SET_ERRNO(EPIPE);
 	}
 
 	switch (origin) {
-		case SEEK_SET:
-			file->pos = offset;
-			break;
+	case SEEK_SET:
+		file->pos = offset;
+		break;
 
-		case SEEK_CUR:
-			file->pos += offset;
-			break;
+	case SEEK_CUR:
+		file->pos += offset;
+		break;
 
-		case SEEK_END:
-			file->pos = sb.st_size + offset;
-			break;
+	case SEEK_END:
+		file->pos = sb.st_size + offset;
+		break;
 
-		default:
-			return -EINVAL;
+	default:
+		return -EINVAL;
 	}
 	return file->pos;
 }

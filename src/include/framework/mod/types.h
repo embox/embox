@@ -47,7 +47,7 @@ struct __mod_private {
 
 struct __mod_section {
 	char   *vma;
-	size_t  len;
+	size_t len;
 	const char *md5sum;
 };
 
@@ -71,8 +71,8 @@ struct mod_build_info {
 	struct logger *const logger;
 	/* Null-terminated array with dependency information. */
 	const struct mod *volatile const *requires,
-	      *volatile const *provides; /**< Modules, that this module depends on;
-                                                  which are dependent on this. */
+	*volatile const *provides;       /**< Modules, that this module depends on;
+	                                              which are dependent on this. */
 	const struct mod *volatile const *after_deps; /**< Should be loaded right after this. */
 	const struct mod *volatile const *contents;  /**< Contained in this module. */
 };

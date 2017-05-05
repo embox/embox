@@ -62,7 +62,7 @@ static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 
 	pack->data = pack_data;
 
-	pack->dir = PNET_PACK_DIRECTION_RX; //TODO varios packet types
+	pack->dir = PNET_PACK_DIRECTION_RX; /*TODO varios packet types */
 
 	if (data) {
 		memcpy(pack_data->buff,data,len);

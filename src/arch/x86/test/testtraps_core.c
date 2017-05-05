@@ -16,17 +16,17 @@ extern __trap_handler __exception_table[0x20];
 void set_fault_handler(enum fault_type type, fault_handler_t handler) {
 	int exception_nr = -1;
 	switch (type) {
-		case MMU_DATA_SECUR:
-			exception_nr = MMU_DATA_SECUR_FAULT;
-			break;
-		case MMU_DATA_MISS:
-			exception_nr = MMU_DATA_MISS_FAULT;
-			break;
-		case DIV_ZERO:
-			exception_nr = DIV_ZERO;
-			break;
-		default:
-			return;
+	case MMU_DATA_SECUR:
+		exception_nr = MMU_DATA_SECUR_FAULT;
+		break;
+	case MMU_DATA_MISS:
+		exception_nr = MMU_DATA_MISS_FAULT;
+		break;
+	case DIV_ZERO:
+		exception_nr = DIV_ZERO;
+		break;
+	default:
+		return;
 	}
 
 	test_env[0].hw_traps[exception_nr] = handler;
@@ -34,7 +34,7 @@ void set_fault_handler(enum fault_type type, fault_handler_t handler) {
 }
 
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
-	if(TRAP_TYPE_HARDTRAP == type) {
+	if (TRAP_TYPE_HARDTRAP == type) {
 		test_env[0].hw_traps[number] = handler;
 		__exception_table[number] = handler;
 	}

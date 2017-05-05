@@ -12,7 +12,6 @@
 #include <drivers/terminal.h>
 #include <stdbool.h>
 
-
 struct _CONSOLE;
 
 typedef struct _SCREEN_CALLBACK {
@@ -20,7 +19,6 @@ typedef struct _SCREEN_CALLBACK {
 } SCREEN_CALLBACK;
 
 typedef TERMINAL_IO SCREEN_IO;
-
 
 typedef struct _SCREEN {
 	SCREEN_CALLBACK *callback;
@@ -31,7 +29,7 @@ typedef struct _SCREEN {
 	bool running;
 } SCREEN;
 
-SCREEN * screen_init(SCREEN *, SCREEN_IO *io);
+SCREEN *screen_init(SCREEN *, SCREEN_IO *io);
 
 void screen_out_show_prompt(SCREEN *, const char *prompt);
 void screen_out_puts(SCREEN *, const char *str);

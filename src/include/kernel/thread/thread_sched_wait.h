@@ -24,21 +24,21 @@
 	((cond_expr) ? 0 : ({                                            \
 		int __wait_ret = 0;                                          \
 		clock_t __wait_timeout = timeout == SCHED_TIMEOUT_INFINITE ? \
-			SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
-		                                                             \
+		SCHED_TIMEOUT_INFINITE : ms2jiffies(timeout);            \
+                                                                     \
 		threadsig_lock();                                            \
 		do {                                                         \
 			sched_wait_prepare();                                    \
-			                                                         \
-			if (cond_expr)                                           \
-				break;                                               \
-			                                                         \
+                                                                     \
+			if (cond_expr) {                                           \
+				break;}                                               \
+                                                                     \
 			__wait_ret = sched_wait_timeout(__wait_timeout,          \
-											&__wait_timeout);        \
+					&__wait_timeout);        \
 		} while (!__wait_ret);                                       \
-		                                                             \
+                                                                     \
 		sched_wait_cleanup();                                        \
-		                                                             \
+                                                                     \
 		threadsig_unlock();                                          \
 		__wait_ret;                                                  \
 	}))

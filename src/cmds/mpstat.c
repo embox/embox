@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			return ENOERR;

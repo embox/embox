@@ -23,10 +23,12 @@ int backtrace_context(void **buff, int size, struct context *ctx) {
 	int i;
 	stack_iter_t f;
 
-	if (ctx)
+	if (ctx) {
 		stack_iter_context(&f, ctx);
-	else
+	}
+	else {
 		stack_iter_current(&f);
+	}
 
 	for (i = 0; i < size; ++i) {
 		buff[i] = stack_iter_get_retpc(&f);

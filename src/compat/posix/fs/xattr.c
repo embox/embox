@@ -37,7 +37,7 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 }
 
 int setxattr(const char *path, const char *name, const char *value, size_t size,
-	       	int flags) {
+		int flags) {
 	int res;
 	struct path node;
 

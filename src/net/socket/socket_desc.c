@@ -17,7 +17,6 @@ struct sock *idesc_sock_get(int idx) {
 	struct idesc *idesc;
 	struct idesc_table *it;
 
-
 	assert(idesc_index_valid(idx));
 
 	it = task_resource_idesc_table(task_self());

@@ -28,13 +28,13 @@
 
 typedef struct {
 	uint32_t offset;
-    size_t len;
-    int flasherr;
-    uint32_t err_address;
+	size_t len;
+	int flasherr;
+	uint32_t err_address;
 } flash_getconfig_erase_t;
 
 typedef struct {
-    size_t dev_size;
+	size_t dev_size;
 } flash_getconfig_devsize_t;
 
 typedef struct {
@@ -42,19 +42,18 @@ typedef struct {
 } flash_getconfig_devaddr_t;
 
 typedef struct {
-    size_t block_size;
+	size_t block_size;
 } flash_getconfig_blocksize_t;
-
 
 typedef struct flash_block_info
 {
-	size_t           block_size;
-	uint32_t         blocks;
+	size_t block_size;
+	uint32_t blocks;
 } flash_block_info_t;
 
 struct node;
 extern int flash_emu_dev_init(void *arg);
-extern int flash_emu_dev_create (struct node *bdev_node, /*const*/ char *flash_node_path);
+extern int flash_emu_dev_create(struct node *bdev_node, /*const*/ char *flash_node_path);
 extern struct flash_dev *flash_create(char *path, size_t size);
 
 #endif /* FLASH_H_ */

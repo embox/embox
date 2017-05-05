@@ -9,18 +9,16 @@
 #ifndef POSIX_FLOAT_H_
 #define POSIX_FLOAT_H_
 
-
-//#define DBL_MANT_BITS    64      /* Number of bits used for the mantissa. */
-//#define DBL_MAX_2_EXP    3321    /* The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). */
-//#define FLT_MAX_2_EXP    3321 /*  The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). */
-//#define DBL_MIN_2_EXP    (-3318) /* The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). */
-//#define FLT_MANT_BITS    64 /* Number of bits used for the mantissa. */
-//#define FLT_MIN_2_EXP    (-3318) /*  The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). */
-//#define FLT_NORMALIZE    1 /*  Indicates that floating point numbers should always be normalized. */
-//#define LDBL_MANT_BITS   64 /*   Number of bits used for the mantissa. */
-//#define LDBL_MAX_2_EXP   3321 /*  The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). */
-//#define LDBL_MIN_2_EXP  (-3318) /* The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). */
-
+/*#define DBL_MANT_BITS    64      / * Number of bits used for the mantissa. * / */
+/*#define DBL_MAX_2_EXP    3321    / * The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). * / */
+/*#define FLT_MAX_2_EXP    3321 / *  The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). * / */
+/*#define DBL_MIN_2_EXP    (-3318) / * The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). * / */
+/*#define FLT_MANT_BITS    64 / * Number of bits used for the mantissa. * / */
+/*#define FLT_MIN_2_EXP    (-3318) / *  The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). * / */
+/*#define FLT_NORMALIZE    1 / *  Indicates that floating point numbers should always be normalized. * / */
+/*#define LDBL_MANT_BITS   64 / *   Number of bits used for the mantissa. * / */
+/*#define LDBL_MAX_2_EXP   3321 / *  The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). * / */
+/*#define LDBL_MIN_2_EXP  (-3318) / * The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). * / */
 
 /* Number of significant digits in a floating point number.*/
 #ifdef __DBL_DIG__
@@ -82,9 +80,9 @@
 #define DBL_MIN_10_EXP   (-999)
 #endif
 
- /* The maximal exponent of a floating point value expressed in base FLT_RADIX;
-  * smaller exponents are principally possible (up to -16383),
-  * but not supported in all math functions. */
+/* The maximal exponent of a floating point value expressed in base FLT_RADIX;
+ * smaller exponents are principally possible (up to -16383),
+ * but not supported in all math functions. */
 #ifdef __DBL_MIN_EXP__
 #undef DBL_MIN_EXP
 #define DBL_MIN_EXP __DBL_MIN_EXP__
@@ -159,9 +157,9 @@
 #define FLT_MIN_10_EXP   (-999)
 #endif
 
- /* The minimal exponent of a floating point value expressed in base FLT_RADIX;
-  * smaller exponents are principally possible (up to -16383),
-  * but not supported in all math functions. */
+/* The minimal exponent of a floating point value expressed in base FLT_RADIX;
+ * smaller exponents are principally possible (up to -16383),
+ * but not supported in all math functions. */
 #ifdef __FLT_MIN_EXP__
 #undef FLT_MIN_EXP
 #define FLT_MIN_EXP __FLT_MIN_EXP__
@@ -176,7 +174,6 @@
 #else
 #define FLT_MIN          (1e-999)
 #endif
-
 
 /*  The base used for representing the exponent. */
 #ifdef __FLT_RADIX__
@@ -223,9 +220,9 @@
 #define LDBL_MAX_10_EXP  999
 #endif
 
- /* The maximal exponent of a floating point value expressed in base FLT_RADIX;
-  *  greater exponents are principally possible (up to 16383),
-  *  but not supported in all math functions.*/
+/* The maximal exponent of a floating point value expressed in base FLT_RADIX;
+ *  greater exponents are principally possible (up to 16383),
+ *  but not supported in all math functions.*/
 #ifdef __LDBL_MAX_EXP__
 #undef LDBL_MAX_EXP
 #define LDBL_MAX_EXP __LDBL_MAX_EXP__
@@ -241,8 +238,8 @@
 #define LDBL_MAX        (9.999999999999999e999)
 #endif
 
- /* The minimal exponent of a floating point value expressed in base 10
-  * (see notes about FLT_MIN_EXP). */
+/* The minimal exponent of a floating point value expressed in base 10
+ * (see notes about FLT_MIN_EXP). */
 #ifdef __LDBL_MIN_10_EXP__
 #undef LDBL_MIN_10_EXP
 #define LDBL_MIN_10_EXP __LDBL_MIN_10_EXP__

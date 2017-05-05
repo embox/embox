@@ -63,22 +63,23 @@ struct apbuart_regs {
 	 | resv | data |
 	 | 31-8 | 7-0  |
 	 +------+------*/
-	/* 0x0 */uint32_t data;
+	/* 0x0 */
+	uint32_t data;
 	/*-------+-------+-------+--+--+--+--+--+--+--+--+--+--+--+
 	 | RCNT  | TCNT  | resrv |RF|TF|RH|TH|FE|PE|OV|BR|TE|TS|DR|
 	 | 31-26 | 25-20 | 19-11 |10|9 |8 |7 |6 |5 |4 |3 |2 |1 |0 |
 	 +-------+-------+-------+--+--+--+--+--+--+--+--+--+--+--*/
-	/* 0x4 */uint32_t status;
+	/* 0x4 */ uint32_t status;
 	/*--+-------+--+--+--+--+--+--+--+--+--+--+--+--+--+
 	 |FA| resrv |OE|DB|RF|TF|EC|LB|FL|PE|PS|TI|RI|TE|RE|
 	 |31| 30-13 |12|11|10|9 |8 |7 |6 |5 |4 |3 |2 |1 |0 |
 	 +--+-------+--+--+--+--+--+--+--+--+--+--+--+--+--*/
-	/* 0x8 */uint32_t ctrl;
+	/* 0x8 */ uint32_t ctrl;
 	/*-------+--------+
 	 | resrv | scaler |
 	 | 31-12 | 11-0   |
 	 +-------+--------*/
-	/* 0xC */uint32_t scaler;
+	/* 0xC */ uint32_t scaler;
 };
 
 static volatile struct apbuart_regs *dev_regs;
@@ -119,12 +120,11 @@ static int apbuart_getc(struct uart *dev) {
 	return REG_LOAD(&dev_regs->data);
 }
 
-
 #ifdef DRIVER_AMBAPP
 static int dev_regs_init() {
 	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
-					AMBAPP_DEVICE_GAISLER_APBUART, false, false)) {
+			AMBAPP_DEVICE_GAISLER_APBUART, false, false)) {
 		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",
 				AMBAPP_VENDOR_GAISLER, AMBAPP_DEVICE_GAISLER_APBUART);
 		return -ENODEV;
@@ -142,43 +142,42 @@ static int dev_regs_init() {
 #endif /* DRIVER_AMBAPP */
 
 static const struct uart_ops uart_ops = {
-		.uart_getc = apbuart_getc,
-		.uart_putc = apbuart_putc,
-		.uart_hasrx = apbuart_has_symbol,
-		.uart_setup = apbuart_setup,
+	.uart_getc = apbuart_getc,
+	.uart_putc = apbuart_putc,
+	.uart_hasrx = apbuart_has_symbol,
+	.uart_setup = apbuart_setup,
 };
 
 static struct uart uart0 = {
-		.irq_num = OPTION_GET(NUMBER,irq_num),
-		.base_addr = OPTION_GET(NUMBER,apbuart_base),
-		.uart_ops = &uart_ops,
+	.irq_num = OPTION_GET(NUMBER,irq_num),
+	.base_addr = OPTION_GET(NUMBER,apbuart_base),
+	.uart_ops = &uart_ops,
 };
 
 static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = true,
 };
 
 static const struct uart_params uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = false,
 };
 
 const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &uart0,
-		.params = &uart_diag_params,
+	.diag = {
+		.ops = &uart_diag_ops,
+	},
+	.uart = &uart0,
+	.params = &uart_diag_params,
 };
 
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
-

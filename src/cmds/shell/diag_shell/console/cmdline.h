@@ -36,7 +36,7 @@ typedef struct _CMDLINE {
 	char is_insert_mode;                 /**< INSERT mode */
 } CMDLINE;
 
-CMDLINE * cmdline_init(CMDLINE *);
+CMDLINE *cmdline_init(CMDLINE *);
 
 bool cmdline_history_backward(CMDLINE *cmdline);
 bool cmdline_history_forward(CMDLINE *cmdline);

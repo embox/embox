@@ -32,7 +32,7 @@ ARRAY_SPREAD_DEF(const struct time_event_device *const, __event_devices);
 ARRAY_SPREAD_DEF(const struct time_counter_device *const, __counter_devices);
 
 POOL_DEF(clock_source_pool, struct clock_source_head,
-						OPTION_GET(NUMBER, clocks_quantity));
+		OPTION_GET(NUMBER, clocks_quantity));
 
 DLIST_DEFINE(clock_source_list);
 
@@ -111,7 +111,9 @@ struct timespec clock_source_read(struct clock_source *cs) {
 	/* Divide ret by (1 << SLOWDOWN_SHIFT) */
 	if (SLOWDOWN_SHIFT != 0) {
 		uint32_t t;
-		struct timespec tmp = {0, 0};
+		struct timespec tmp = {
+			0, 0
+		};
 
 		t = ret.tv_sec % (1 << SLOWDOWN_SHIFT);
 		tmp.tv_nsec = ((uint64_t)t * NSEC_PER_SEC) >> SLOWDOWN_SHIFT;
@@ -189,29 +191,29 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 		cs = csh->clock_source;
 
 		switch (pr) {
-			case CS_ANY:
-			case CS_WITH_IRQ:
-				if (cs->event_device) {
-					resolution = cs->event_device->event_hz;
-				}
+		case CS_ANY:
+		case CS_WITH_IRQ:
+			if (cs->event_device) {
+				resolution = cs->event_device->event_hz;
+			}
 
-				if (pr == CS_ANY && cs->counter_device) {
-					resolution = max(resolution, cs->counter_device->cycle_hz);
-				}
-				if (resolution > best_resolution) {
-					best_resolution = resolution;
-					best = cs;
-				}
+			if (pr == CS_ANY && cs->counter_device) {
+				resolution = max(resolution, cs->counter_device->cycle_hz);
+			}
+			if (resolution > best_resolution) {
+				best_resolution = resolution;
+				best = cs;
+			}
 			break;
 
-			case CS_WITHOUT_IRQ:
-				if (cs->counter_device) {
-					resolution = cs->counter_device->cycle_hz;
-				}
-				if (resolution > best_resolution) {
-					best_resolution = resolution;
-					best = cs;
-				}
+		case CS_WITHOUT_IRQ:
+			if (cs->counter_device) {
+				resolution = cs->counter_device->cycle_hz;
+			}
+			if (resolution > best_resolution) {
+				best_resolution = resolution;
+				best = cs;
+			}
 			break;
 		}
 	}

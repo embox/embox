@@ -33,7 +33,7 @@ static int raspi_set_var(struct fb_info *info,
 	if (info == NULL) {
 		return -EFAULT;
 	}
-	
+
 	/* Unmap old frame buffer if any */
 	if (info->screen_base != NULL) {
 		munmap(info->screen_base, info->screen_size);
@@ -47,8 +47,8 @@ static int raspi_set_var(struct fb_info *info,
 	raspi_fb.height_v       = var->yres_virtual;
 	raspi_fb.x              = var->xoffset;
 	raspi_fb.y              = var->yoffset;
-	raspi_fb.gpu_pitch      = 0;    // Filled in by the VC
-	raspi_fb.gpu_pointer    = 0;    // Filled in by the VC
+	raspi_fb.gpu_pitch      = 0;    /* Filled in by the VC */
+	raspi_fb.gpu_pointer    = 0;    /* Filled in by the VC */
 
 	/**
 	 * Send the address of the frame buffer + 0x40000000 to the mailbox
@@ -66,10 +66,10 @@ static int raspi_set_var(struct fb_info *info,
 	info->screen_base = (char *) raspi_fb.gpu_pointer;
 	info->screen_size = binalign_bound(raspi_fb.gpu_size, PAGE_SIZE());
 	if (MAP_FAILED == mmap_device_memory(info->screen_base,
-				info->screen_size,
-					PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) info->screen_base)) {
+			info->screen_size,
+			PROT_READ|PROT_WRITE|PROT_NOCACHE,
+			MAP_FIXED,
+			(unsigned long) info->screen_base)) {
 		return -EIO;
 	}
 

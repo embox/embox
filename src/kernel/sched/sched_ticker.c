@@ -45,17 +45,17 @@ void sched_ticker_init(void) {
 }
 
 void sched_ticker_fini(void) {
-	timer_close(sched_tick_timer);  // TODO err check?
+	timer_close(sched_tick_timer);  /* TODO err check? */
 }
 
 void sched_ticker_switch(int prev_policy, int next_policy) {
 	if (prev_policy == SCHED_FIFO &&
-		next_policy != SCHED_FIFO) {
+			next_policy != SCHED_FIFO) {
 		sched_ticker_init();
 	}
 
 	if (prev_policy != SCHED_FIFO &&
-		next_policy == SCHED_FIFO) {
+			next_policy == SCHED_FIFO) {
 		sched_ticker_fini();
 	}
 }
@@ -64,4 +64,3 @@ static int sched_ticker_module_init(void) {
 	sched_ticker_init();
 	return 0;
 }
-

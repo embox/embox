@@ -14,5 +14,3 @@ int setpgid(pid_t pid, pid_t pgid) {
 	fprintf(stderr, ">>>%s\n", __func__);
 	return -ENOSYS;
 }
-
-

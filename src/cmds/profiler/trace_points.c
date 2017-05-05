@@ -17,7 +17,7 @@
 ARRAY_SPREAD_DECLARE(struct __trace_point *, __trace_points_array);
 
 static void print_usage(void) {
-	printf(	"Usage: trace_point [ARGS]\n%-60s\n%-60s\n%-60s\n%-60s\n%-60s\n",
+	printf( "Usage: trace_point [ARGS]\n%-60s\n%-60s\n%-60s\n%-60s\n%-60s\n",
 			"\t[-h] print usage\n",
 			"\t[-s] all points: (#, NAME, LOCATION, COUNT, ACT)\n",
 			"\t[-i <number>] one point: (#, NAME, LOCATION, COUNT, ACT)\n",
@@ -51,14 +51,13 @@ static void print_trace_point_stat(void) {
 	printf("%2s %15s %25s %7s %5s\n",
 			"#", "Name", "Location function", "Count", "Act");
 
-
 	array_spread_nullterm_foreach(tp, __trace_points_array)
 	{
 		printf("%2d %15s %25s %7d %5s\n", number, tp->name,
-					tp->location.func, tp->count, tp->active ? "yes" : "no");
+				tp->location.func, tp->count, tp->active ? "yes" : "no");
 
 		/*if (tp->active) {
-			printf("%2d %7d\n", number, tp->count);
+		    printf("%2d %7d\n", number, tp->count);
 		}*/
 		number++;
 	}
@@ -75,7 +74,7 @@ bool change_point_activity(int index, bool activity) {
 		if (number++ == index) {
 			tp->active = activity;
 			printf("Success! Trace point #%d now is %sactive.\n",
-					index, (activity)?"":"not ");
+					index, (activity) ? "" : "not ");
 			return true;
 		}
 	}
@@ -100,7 +99,7 @@ int main(int argc, char **argv) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			break;

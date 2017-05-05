@@ -47,7 +47,7 @@ struct super_block {
 	struct dlist_head *inode_list;
 
 	struct super_block_operations *sb_ops;
-	struct inode_operations	      *sb_iops;
+	struct inode_operations       *sb_iops;
 	struct dentry_operations      *sb_dops;
 	struct file_operations        *sb_fops;
 
@@ -56,40 +56,40 @@ struct super_block {
 
 struct super_block_operations {
 	struct inode *(*alloc_inode)(struct super_block *sb);
-	int           (*destroy_inode)(struct inode *inode);
-	int           (*write_inode)(struct inode *inode);
-	int           (*umount_begin)(struct super_block *sb);
+	int (*destroy_inode)(struct inode *inode);
+	int (*write_inode)(struct inode *inode);
+	int (*umount_begin)(struct super_block *sb);
 	struct idesc *(*open_idesc)(struct lookup *l);
 };
 
 struct inode {
-	int    i_no;
-	int    start_pos; /* location on disk */
+	int i_no;
+	int start_pos;    /* location on disk */
 	size_t length;
-	int    flags;
-	uid_t  i_owner_id;
-	gid_t  i_group_id;
+	int flags;
+	uid_t i_owner_id;
+	gid_t i_group_id;
 	mode_t i_mode;
 
 	struct dentry *i_dentry;
 	struct super_block *i_sb;
-	struct inode_operations	*i_ops;
+	struct inode_operations *i_ops;
 
 	void *i_data;
 };
 
 struct inode_operations {
-	int           (*create)(struct inode *i_new, struct inode *i_dir, int mode);
+	int (*create)(struct inode *i_new, struct inode *i_dir, int mode);
 	struct inode *(*lookup)(char const *name, struct dentry const *dir);
-	int           (*remove)(struct inode *inode);
-	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
-	int           (*rmdir)(struct dentry *dir);
-	int           (*truncate)(struct inode *inode, size_t len);
-	int           (*pathname)(struct inode *inode, char *buf, int flags);
-	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
-	int           (*rename)(struct inode *node, struct inode *new_parent, const char *new_name);
-	int           (*getxattr)(struct inode *node, const char *name, char *value, size_t size);
-	int           (*setxattr)(struct inode *node, const char *name, const char *value, size_t size, int flags);
+	int (*remove)(struct inode *inode);
+	int (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
+	int (*rmdir)(struct dentry *dir);
+	int (*truncate)(struct inode *inode, size_t len);
+	int (*pathname)(struct inode *inode, char *buf, int flags);
+	int (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
+	int (*rename)(struct inode *node, struct inode *new_parent, const char *new_name);
+	int (*getxattr)(struct inode *node, const char *name, char *value, size_t size);
+	int (*setxattr)(struct inode *node, const char *name, const char *value, size_t size, int flags);
 };
 
 struct dentry {
@@ -135,10 +135,10 @@ struct file {
 
 struct file_operations {
 	struct idesc *(*open)(struct inode *node, struct idesc *desc);
-	int    (*close)(struct file *desc);
+	int (*close)(struct file *desc);
 	size_t (*read)(struct file *desc, void *buf, size_t size);
 	size_t (*write)(struct file *desc, void *buf, size_t size);
-	int    (*ioctl)(struct file *desc, int request, void *data);
+	int (*ioctl)(struct file *desc, int request, void *data);
 };
 
 struct dumb_fs_driver {
@@ -166,7 +166,7 @@ struct dvfsmnt {
 };
 
 struct dir_ctx {
-	int   flags;
+	int flags;
 	void *fs_ctx;
 };
 

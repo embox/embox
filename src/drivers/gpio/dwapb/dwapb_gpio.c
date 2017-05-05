@@ -28,7 +28,9 @@ struct gpio_dwapb_port {
 static const struct gpio dwapb_port[4] = {{0}, {1}, {2}, {3}};
 
 static int valid_port_num(int port_num) {
-	if (port_num > 0 && port_num < 5) return 1;
+	if (port_num > 0 && port_num < 5) {
+		return 1;
+	}
 
 	return 0;
 }
@@ -90,4 +92,3 @@ static struct periph_memory_desc arasan_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(arasan_mem);
-

@@ -40,7 +40,7 @@ enum xattr_cmd_op {
 
 static void print_usage(void) {
 	printf("Usage: xattr [-cdpwh] [-lx] [attr_name] [attr_value] file "
-			"[file ...]\n");
+		   "[file ...]\n");
 }
 
 static int xattr_print_value(const char *path, const char *name) {
@@ -57,7 +57,7 @@ static int xattr_print_value(const char *path, const char *name) {
 
 	if (XATTR_CMD_OP_HEX & xattr_cmd_op_flags) {
 		char *ptr = rvalue;
-		while(size--) {
+		while (size--) {
 			printf("%02hhX", (unsigned char) *ptr++);
 			printf("|");
 		}
@@ -81,7 +81,7 @@ static int scan_hex_value(char *rvalue, const char *hex_str) {
 	dst = (unsigned char *) rvalue;
 	end = src + size;
 
-	while(src < end) {
+	while (src < end) {
 		sscanf(src, "%hhX", dst);
 		dst++;
 		src += 2;
@@ -153,7 +153,7 @@ static int xattr_do_iter(const char *path, int (*xattr_iter_fn)(const char *path
 	}
 
 	rc = 0;
-free_list:
+	free_list:
 	phymem_free(list, page_n);
 	return rc;
 }
@@ -186,7 +186,6 @@ static int clear_xattr_fn(const char *path, const char *name) {
 
 	return rc;
 }
-
 
 /*
  * xattr [-lx] file ... # list
@@ -243,7 +242,7 @@ int main(int argc, char **argv) {
 
 	unpos_args = argv + optind;
 
-	switch(cmd_op) {
+	switch (cmd_op) {
 	case XATTR_CMD_UNSPECIFIED:
 	case XATTR_CMD_LIST:
 		return xattr_do_iter(unpos_args[0], print_xattr_fn);

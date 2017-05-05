@@ -9,7 +9,6 @@
 #ifndef KERNEL_TIME_KTIME_H_
 #define KERNEL_TIME_KTIME_H_
 
-
 #include <sys/types.h>
 #include <kernel/time/time.h>
 

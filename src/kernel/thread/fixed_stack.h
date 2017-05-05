@@ -12,7 +12,7 @@
 
 struct thread_stack {
 	void              *stack;         /**< Allocated thread stack buffer. */
-	size_t             stack_sz;      /**< Stack size. */
+	size_t stack_sz;                  /**< Stack size. */
 };
 
 typedef struct thread_stack __thread_stack_t;

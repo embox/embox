@@ -31,7 +31,7 @@ static void *task_hnd(void *arg) {
 
 	signal(9, sig_hnd);
 
-	while(1)
+	while (1)
 		sleep(0);
 
 	return NULL;
@@ -50,7 +50,7 @@ static void sig_hnd2(int sig) {
 	if (sig == 9) {
 		task_exit(NULL);
 	} else {
-		flag2 ++;
+		flag2++;
 	}
 }
 
@@ -59,7 +59,7 @@ static void *task_hnd2(void *arg) {
 	signal(9, sig_hnd2);
 	signal(1, sig_hnd2);
 
-	while(1)
+	while (1)
 		sleep(0);
 
 	return NULL;
@@ -100,5 +100,5 @@ static void *task_hnd_thread(void *arg) {
 }
 
 TEST_CASE("create a task with 2 threads, kill it") {
-	 new_task("", task_hnd_thread, NULL);
+	new_task("", task_hnd_thread, NULL);
 }

@@ -55,9 +55,9 @@ struct uart_stm32 {
 #define USART_FLAG_RXNE (1 << 5)
 #define USART_FLAG_TXE (1 << 7)
 
-#define USART_FLAG_UE (1 << 13)	/* USART enable		*/
-#define USART_FLAG_RE (1 << 2)	/* Receive enable	*/
-#define USART_FLAG_TE (1 << 3)	/* Transmit enable	*/
+#define USART_FLAG_UE (1 << 13) /* USART enable		*/
+#define USART_FLAG_RE (1 << 2)  /* Receive enable	*/
+#define USART_FLAG_TE (1 << 3)  /* Transmit enable	*/
 
 #define RCC_APB2ENR_USART1EN (1 << 14)
 
@@ -91,7 +91,7 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 
 	REG_ORIN(RCC_APB2ENR,RCC_APB2ENR_USART1EN);
 
-	gpio_settings(UART_GPIO, TX_PIN ,
+	gpio_settings(UART_GPIO, TX_PIN,
 			GPIO_MODE_OUTPUT | GPIO_MODE_OUT_ALTERNATE);
 	gpio_settings(UART_GPIO, RX_PIN, GPIO_MODE_INPUT);
 
@@ -104,37 +104,37 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 }
 
 static const struct uart_ops stm32_uart_ops = {
-		.uart_getc = stm32_uart_getc,
-		.uart_putc = stm32_uart_putc,
-		.uart_hasrx = stm32_uart_hasrx,
-		.uart_setup = stm32_uart_setup,
+	.uart_getc = stm32_uart_getc,
+	.uart_putc = stm32_uart_putc,
+	.uart_hasrx = stm32_uart_hasrx,
+	.uart_setup = stm32_uart_setup,
 };
 
 static struct uart stm32_uart0 = {
-		.uart_ops = &stm32_uart_ops,
-		.irq_num = 0,
-		.base_addr = UART0,
+	.uart_ops = &stm32_uart_ops,
+	.irq_num = 0,
+	.base_addr = UART0,
 };
 
 static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = false,
 };
 
 const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &stm32_uart0,
-		.params = &uart_defparams,
+	.diag = {
+		.ops = &uart_diag_ops,
+	},
+	.uart = &stm32_uart0,
+	.params = &uart_defparams,
 };
 
 static int stm32uart_mod_init(void) {
 	/*if (!uart_register(&stm32_uart0, &uart_defparams)) {*/
-		/*return -1;*/
+	/*return -1;*/
 	/*}*/
 
 	return 0;

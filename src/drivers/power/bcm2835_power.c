@@ -39,7 +39,6 @@
 #include <drivers/bcm2835_power.h>
 #include <drivers/mailbox/bcm2835_mailbox.h>
 
-
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(bcm2835_power_init);

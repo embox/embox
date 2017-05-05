@@ -6,12 +6,11 @@
  * @date 14.03.09
  * @author Alexander Batyukov
  * @author Nikolay Korotky
- * 		- remove callback interface
- * 		- major refactoring
+ *      - remove callback interface
+ *      - major refactoring
  * @author Vladimir Sokolov
  * @author Ilia Vaprol
  */
-
 
 #include <errno.h>
 #include <assert.h>
@@ -146,7 +145,7 @@ static int icmp_hnd_dest_unreach(const struct icmphdr *icmph,
 
 	return icmp_notify_an_error(icmph, &dest_unreach->msg[0], len,
 			icmph->code == ICMP_FRAG_NEEDED
-				? ntohs(dest_unreach->mtu) : 0,
+			? ntohs(dest_unreach->mtu) : 0,
 			icmph->code == ICMP_FRAG_NEEDED, skb);
 }
 
@@ -224,8 +223,8 @@ static int icmp_hnd_param_prob(const struct icmphdr *icmph,
 	return icmp_notify_an_error(icmph, &param_prob->msg[0], len,
 			icmph->code == ICMP_PTR_ERROR ? param_prob->ptr : 0,
 			(icmph->code == ICMP_PTR_ERROR)
-				&& (param_prob->ptr < IP_HEADER_SIZE(
-						(const struct iphdr *)&param_prob->msg[0])),
+			&& (param_prob->ptr < IP_HEADER_SIZE(
+			(const struct iphdr *)&param_prob->msg[0])),
 			skb);
 }
 
@@ -247,7 +246,7 @@ static int icmp_hnd_timestamp_request(const struct icmphdr *icmph,
 	}
 
 	msec_since_12am = (ktime_get_ns() / NSEC_PER_MSEC) % (
-				SEC_PER_DAY * MSEC_PER_SEC);
+		SEC_PER_DAY * MSEC_PER_SEC);
 
 	tstamp_rep = &icmp_hdr(skb)->body[0].timestamp;
 	tstamp_rep->orig = tstamp_req->trans;

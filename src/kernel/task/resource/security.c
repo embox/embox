@@ -53,7 +53,7 @@ static const struct task_resource_desc task_security_desc = {
 	.resource_offset = &task_security_offset
 };
 
-void * task_resource_security(const struct task *task) {
+void *task_resource_security(const struct task *task) {
 	assert(task != NULL);
 	return (void *)task->resources + task_security_offset;
 }

@@ -49,4 +49,3 @@ static struct fs_driver binfs_driver = {
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(binfs_driver);
-

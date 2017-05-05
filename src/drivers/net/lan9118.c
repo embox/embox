@@ -40,7 +40,7 @@
 #define LAN9118_MEMORY_REG_SIZE   OPTION_GET(NUMBER, memory_region_size)
 
 #elif LAN9118_IRQ_TYPE == LAN9118_IRQ_NO_GPIO /* If interrupt controller ("usual" irq) */
-#include <drivers/common/memory.h> // TODO: move out of here when mmu will be enable on arm/overo
+#include <drivers/common/memory.h> /* TODO: move out of here when mmu will be enable on arm/overo */
 
 #define LAN9118_BASE_ADDRESS      OPTION_GET(NUMBER, base_address)
 #define LAN9118_MEMORY_REG_SIZE   OPTION_GET(NUMBER, memory_region_size)
@@ -119,7 +119,6 @@
 #define _LAN9118_MAC_CSR_CMD_CSR_BUSY      0x80000000
 #define _LAN9118_MAC_CSR_CMD_R_NOT_W       0x40000000
 #define _LAN9118_MAC_CSR_CMD_CSR_ADDR      0x000000FF
-
 
 #define LAN9118_MAC_CSR_DATA   0xA8
 #define LAN9118_AFC_CFG        0xAC
@@ -205,8 +204,8 @@ static int lan9118_xmit(struct net_device *dev, struct sk_buff *skb) {
 		l |= skb->len;
 		lan9118_reg_write(dev, LAN9118_TX_DATA_FIFO, l);
 
-		src = (uint32_t*) ((uint32_t)skb->mac.raw & (~0x3));
-		dst = (uint32_t*) (dev->base_addr + LAN9118_TX_DATA_FIFO);
+		src = (uint32_t *) ((uint32_t)skb->mac.raw & (~0x3));
+		dst = (uint32_t *) (dev->base_addr + LAN9118_TX_DATA_FIFO);
 
 		assert(freespace >= skb->len);
 
@@ -231,8 +230,9 @@ static uint32_t lan9118_rx_status(struct net_device *dev) {
 
 	rx_status = lan9118_reg_read(dev, LAN9118_RX_FIFO_INF) & _LAN9118_RX_FIFO_INF_RXSUSED;
 
-	if (rx_status != 0)
+	if (rx_status != 0) {
 		rx_status = lan9118_reg_read(dev, LAN9118_RX_STATUS_FIFO);
+	}
 
 	return rx_status;
 }
@@ -249,7 +249,7 @@ static void lan9118_rx(struct net_device *dev) {
 		assert(rx_status != 0);
 
 		packet_len = ((rx_status & 0x3FFF0000) >> 16);
-repeat:
+		repeat:
 		packet_len -= 4; /* checksum */
 
 		if (rx_status & _LAN9118_RX_STS_ES) {
@@ -261,7 +261,7 @@ repeat:
 		if ((skb = skb_alloc(packet_len))) {
 			log_debug("packet_len - %d", packet_len);
 
-			dst = (uint32_t*) skb->mac.raw;
+			dst = (uint32_t *) skb->mac.raw;
 
 			while (packet_len > 0) {
 				*dst++ = lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
@@ -271,19 +271,20 @@ repeat:
 			lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
 
 			skb->dev = dev;
-			//dev->stats.rx_packets++;
-			//dev->stats.rx_bytes += skb->len;
+			/*dev->stats.rx_packets++; */
+			/*dev->stats.rx_bytes += skb->len; */
 			netif_rx(skb);
 		} else {
-			//dev->stats.rx_dropped++;
+			/*dev->stats.rx_dropped++; */
 			log_debug("dropped %d", packet_len);
 		}
 
 		rx_status = lan9118_rx_status(dev);
 		packet_len = ((rx_status & 0x3FFF0000) >> 16);
 
-		if (packet_len > 0)
+		if (packet_len > 0) {
 			goto repeat;
+		}
 
 		assertf(packet_len == 0, "packet_len - %d\n", packet_len);
 	}
@@ -304,7 +305,7 @@ irq_return_t lan9118_irq_handler(unsigned int irq_nr, void *nic) {
 
 static void mdelay(int value) {
 	volatile int delay = value;
-	while (delay --);
+	while (delay--) ;
 }
 
 static int lan9118_reset(struct net_device *dev) {
@@ -387,14 +388,14 @@ int lan9118_set_macaddr(struct net_device *dev, const void *addr) {
 
 	lan9119_get_macaddr(dev, data);
 	log_debug("Before set_macaddr: %x:%x:%x:%x:%x:%x\n", data[0], data[1], data[2],
-		data[3], data[4], data[5]);
+			data[3], data[4], data[5]);
 
 	lan9118_mac_write(dev, LAN9118_MAC_ADDRL, *(uint32_t *) addr);
 	lan9118_mac_write(dev, LAN9118_MAC_ADDRH, *(uint32_t *) (addr + 4));
 
 	lan9119_get_macaddr(dev, data);
 	log_debug("After set_macaddr: %x:%x:%x:%x:%x:%x\n", data[0], data[1], data[2],
-		data[3], data[4], data[5]);
+			data[3], data[4], data[5]);
 
 	return 0;
 }
@@ -402,7 +403,7 @@ int lan9118_set_macaddr(struct net_device *dev, const void *addr) {
 static const struct net_driver lan9118_drv_ops = {
 	.xmit = lan9118_xmit,
 	.start = lan9118_open,
-	//.stop = stop,
+	/*.stop = stop, */
 	.set_macaddr = lan9118_set_macaddr
 };
 
@@ -423,8 +424,9 @@ static int lan9118_init(void) {
 	nic->base_addr = LAN9118_BASE_ADDRESS;
 #endif
 
-	if (res < 0)
+	if (res < 0) {
 		return -1;
+	}
 
 	if (lan9118_reg_read(nic, LAN9118_BYTE_TEST) != 0x87654321) {
 		log_info("lan9118 bad BYTE_TEST register value - %d",

@@ -97,7 +97,7 @@ static int make_socket(int *out_sock, in_addr_t server) {
 	addr.sin_addr.s_addr = server;
 
 	if (-1 == connect(ret, (struct sockaddr *)&addr,
-				sizeof addr)) {
+			sizeof addr)) {
 		close(ret);
 		perror("ntpd: connect() failure");
 		return -errno;
@@ -187,7 +187,7 @@ int main(int argc, char **argv) {
 	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hS"))) {
-		switch(opt) {
+		switch (opt) {
 		default:
 			return -EINVAL;
 		case 'h':
@@ -203,7 +203,7 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 	else if (!inet_aton(argv[optind],
-				(struct in_addr *)&param.addr)) {
+			(struct in_addr *)&param.addr)) {
 		printf("%s: error: invalid address '%s`\n",
 				argv[0], argv[optind]);
 		return -EINVAL;

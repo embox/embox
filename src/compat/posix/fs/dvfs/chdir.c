@@ -25,6 +25,7 @@ int chdir(const char *path) {
 	if (l.item != NULL) {
 		task_fs()->pwd = l.item;
 		return 0;
-	} else
+	} else {
 		return SET_ERRNO(ENOENT);
+	}
 }

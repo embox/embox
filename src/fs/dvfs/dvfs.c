@@ -22,7 +22,7 @@
 /* Utility functions */
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
 extern int dentry_fill(struct super_block *, struct inode *,
-                       struct dentry *, struct dentry *);
+		struct dentry *, struct dentry *);
 extern int            dvfs_update_root(void);
 extern struct dentry *dvfs_root(void);
 extern int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup);
@@ -48,13 +48,16 @@ int dvfs_pathname(struct inode *inode, char *buf, int flags) {
 	assert(inode);
 	assert(buf);
 
-	if (flags == 0)
+	if (flags == 0) {
 		flags = DVFS_NAME;
+	}
 
-	if (inode->i_ops && inode->i_ops->pathname)
+	if (inode->i_ops && inode->i_ops->pathname) {
 		return inode->i_ops->pathname(inode, buf, flags);
-	else
+	}
+	else {
 		return dvfs_default_pathname(inode, buf, flags);
+	}
 }
 
 /**
@@ -99,10 +102,12 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		dentry_ref_inc(lookup->item);
 		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
 	} else {
-		if (!sb->sb_iops->create)
+		if (!sb->sb_iops->create) {
 			res = -ENOSUPP;
-		else
+		}
+		else {
 			res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
+		}
 	}
 
 	if (res) {
@@ -132,8 +137,9 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 	assert(lookup);
 
 	desc = dvfs_alloc_file();
-	if (desc == NULL)
+	if (desc == NULL) {
 		return err_ptr(ENOMEM);
+	}
 
 	i_no = lookup->item->d_inode;
 
@@ -179,13 +185,15 @@ int dvfs_remove(const char *path) {
 
 	assert(i_no->i_ops);
 
-	if (!i_no->i_ops->remove)
+	if (!i_no->i_ops->remove) {
 		return -EPERM;
+	}
 
 	res = i_no->i_ops->remove(i_no);
 
-	if (res == 0)
+	if (res == 0) {
 		dvfs_destroy_dentry(lookup.item);
+	}
 
 	return res;
 }
@@ -199,16 +207,18 @@ int dvfs_remove(const char *path) {
  * @retval -1 Descriptor fields are inconsistent
  */
 int dvfs_close(struct file *desc) {
-	if (!desc || !desc->f_inode || !desc->f_dentry)
+	if (!desc || !desc->f_inode || !desc->f_dentry) {
 		return -1;
+	}
 
 	assert(desc->f_ops);
 	if (desc->f_ops->close) {
 		desc->f_ops->close(desc);
 	}
 
-	if (!dentry_ref_dec(desc->f_dentry))
+	if (!dentry_ref_dec(desc->f_dentry)) {
 		dvfs_destroy_dentry(desc->f_dentry);
+	}
 
 	dvfs_destroy_file(desc);
 	return 0;
@@ -228,8 +238,9 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 	int res;
 	int retcode = count;
 	struct inode *inode;
-	if (!desc)
+	if (!desc) {
 		return -1;
+	}
 
 	inode = desc->f_inode;
 	assert(inode);
@@ -237,19 +248,24 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 	if (inode->length - desc->pos < count) {
 		if (inode->i_ops && inode->i_ops->truncate) {
 			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
-			if (res)
+			if (res) {
 				retcode = -EFBIG;
-		} else
+			}
+		} else {
 			retcode = -EFBIG;
+		}
 	}
 
-	if (desc->f_ops && desc->f_ops->write)
+	if (desc->f_ops && desc->f_ops->write) {
 		res = desc->f_ops->write(desc, buf, count);
-	else
+	}
+	else {
 		retcode = -ENOSYS;
+	}
 
-	if (res > 0)
+	if (res > 0) {
 		desc->pos += res;
+	}
 
 	return retcode;
 }
@@ -267,21 +283,26 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 int dvfs_read(struct file *desc, char *buf, int count) {
 	int res;
 	int sz;
-	if (!desc)
+	if (!desc) {
 		return -1;
+	}
 
 	sz = min(count, desc->f_inode->length - desc->pos);
 
-	if (sz <= 0)
+	if (sz <= 0) {
 		return 0;
+	}
 
-	if (desc->f_ops && desc->f_ops->read)
+	if (desc->f_ops && desc->f_ops->read) {
 		res = desc->f_ops->read(desc, buf, count);
-	else
+	}
+	else {
 		return -ENOSYS;
+	}
 
-	if (res > 0)
+	if (res > 0) {
 		desc->pos += res;
+	}
 
 	return res;
 }
@@ -346,7 +367,7 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 	if (!lookup.item) {
 		return err_ptr(ENOENT);
 	}
-	bdev_file = (struct file*) dvfs_file_open_idesc(&lookup);
+	bdev_file = (struct file *) dvfs_file_open_idesc(&lookup);
 	if (err(bdev_file)) {
 		return bdev_file;
 	}
@@ -390,8 +411,9 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	} else {
 		dvfs_lookup(dest, &lookup);
 
-		if (lookup.item == NULL)
+		if (lookup.item == NULL) {
 			return -ENOENT;
+		}
 
 		assert(lookup.item->flags & S_IFDIR);
 
@@ -424,20 +446,21 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	}
 
 	if (drv->mount_end) {
-		if ((err = drv->mount_end(sb)))
+		if ((err = drv->mount_end(sb))) {
 			goto err_free_all;
+		}
 	}
 
 	goto err_ok;
-err_free_all:
+	err_free_all:
 	dvfs_destroy_inode(d->d_inode);
-	if (bdev_file)
+	if (bdev_file) {
 		dvfs_close(bdev_file);
+	}
 	return err;
-err_ok:
+	err_ok:
 	return 0;
 }
-
 
 /**
  * @brief Recoursive dentry freeing
@@ -450,9 +473,10 @@ static int _dentry_destroy(struct dentry *parent, int self_destroy) {
 	struct dentry *child;
 	int err;
 	dlist_foreach_entry(child, &parent->children, children_lnk) {
-		if ((err = _dentry_destroy(child, 1)))
+		if ((err = _dentry_destroy(child, 1))) {
 			/* Something went wrong */
 			return err;
+		}
 	}
 
 	return self_destroy ? dvfs_destroy_dentry(parent) : 0;
@@ -474,15 +498,17 @@ int dvfs_umount(struct dentry *mpoint) {
 	sb = mpoint->d_sb;
 
 	if (sb->sb_ops && sb->sb_ops->umount_begin) {
-		if ((err = sb->sb_ops->umount_begin(sb)))
+		if ((err = sb->sb_ops->umount_begin(sb))) {
 			return err;
+		}
 	}
 
 	dentry_ref_dec(mpoint);
 
 	if ((err = _dentry_destroy(mpoint,
-	                           !(mpoint->flags & DVFS_DIR_VIRTUAL))))
+					!(mpoint->flags & DVFS_DIR_VIRTUAL)))) {
 		return err;
+	}
 
 	return dvfs_destroy_sb(sb);
 }

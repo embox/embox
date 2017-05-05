@@ -43,7 +43,6 @@ static inline void task_vfork_end(struct task *task) {
 	(void)task;
 }
 
-
 static inline int task_get_status(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return 0;
@@ -54,17 +53,17 @@ static inline int task_get_id(const struct task *tsk) {
 	return 0;
 }
 
-static inline const char * task_get_name(const struct task *tsk) {
+static inline const char *task_get_name(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return "kernel";
 }
 
-static inline struct thread * task_get_main(const struct task *tsk) {
+static inline struct thread *task_get_main(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return tsk->tsk_main;
 }
 
-static inline struct task * task_get_parent(const struct task *tsk) {
+static inline struct task *task_get_parent(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return NULL;
 }
@@ -89,7 +88,7 @@ static inline void task_set_clock(struct task *tsk, clock_t new_clock) {
 	assert(tsk == task_kernel_task());
 }
 
-static inline struct task * task_self(void) {
+static inline struct task *task_self(void) {
 	/* Since there is only one task, actually it means --
 	 * that task is kernel's.
 	 */
@@ -123,7 +122,7 @@ static inline void task_thread_unregister(struct task *tsk, struct thread *t) {
 	assert(t != NULL);
 
 	/* XXX t->task isn't set to null, thread allowed to know old parent while
- 	 * shutting down
+	 * shutting down
 	 */
 }
 

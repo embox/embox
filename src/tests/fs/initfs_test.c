@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 
-
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
@@ -23,9 +22,10 @@ TEST_TEARDOWN(teardown_suite);
 #define TEST_FILE_NAME "/initfs_test_file.txt"
 
 static int test_fd;
-static const char test_file_contains[] = { "\""
-      #include "initfs_test_file.txt"
-		"\""
+static const char test_file_contains[] = {
+	"\""
+	  #include "initfs_test_file.txt"
+			   "\""
 };
 /* array has a null terminated symbol the size equal size of array except one */
 #define SIZE_OF_FILE (sizeof(test_file_contains) - 1)
@@ -47,7 +47,6 @@ TEST_CASE("Try to read data quantity more then contains in the file") {
 	test_assert_equal(SIZE_OF_FILE, read(test_fd, test_buff, SIZE_OF_FILE + 1));
 	test_assert_zero(strncmp(test_buff, test_file_contains, sizeof(test_file_contains)));
 }
-
 
 TEST_CASE("Call stat from a file") {
 	struct stat stat_buff;

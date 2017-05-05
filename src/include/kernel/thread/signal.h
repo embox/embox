@@ -16,14 +16,12 @@
 struct sigstate;
 struct siginfoq;
 
-
 __BEGIN_DECLS
 
 extern struct sigstate *sigstate_init(struct sigstate *);
 
 extern int sigstate_send(struct sigstate *, int, const siginfo_t *);
 extern int sigstate_receive(struct sigstate *, siginfo_t *);
-
 
 extern void thread_signal_handle(void);
 

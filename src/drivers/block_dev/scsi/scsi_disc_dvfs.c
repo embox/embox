@@ -146,4 +146,3 @@ const struct block_dev_driver bdev_driver_scsi = {
 	.read = scsi_read,
 	.write = scsi_write
 };
-

@@ -23,7 +23,7 @@ struct test_emit_buffer {
 
 #define TEST_EMIT_BUFFER_DEF(buffer_nm, size) \
 	__TEST_EMIT_BUFFER_DEF__(buffer_nm, size, \
-			MACRO_GUARD(__test_emit_##buffer_nm))
+		MACRO_GUARD(__test_emit_ ## buffer_nm))
 
 #define __TEST_EMIT_BUFFER_DEF__(buffer_nm, size, storage_nm) \
 	static char storage_nm[(size) + 1];          \

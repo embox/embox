@@ -49,5 +49,3 @@ TEST_CASE("parse string with several separators") {
 
 	test_assert_null(strtok(NULL, ", "));
 }
-
-

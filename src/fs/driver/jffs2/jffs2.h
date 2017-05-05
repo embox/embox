@@ -69,13 +69,13 @@
 /* How small can we sensibly write nodes? */
 #define JFFS2_MIN_DATA_LEN 128
 
-#define JFFS2_COMPR_NONE	0x00
-#define JFFS2_COMPR_ZERO	0x01
-#define JFFS2_COMPR_RTIME	0x02
-#define JFFS2_COMPR_RUBINMIPS	0x03
-#define JFFS2_COMPR_COPY	0x04
-#define JFFS2_COMPR_DYNRUBIN	0x05
-#define JFFS2_COMPR_ZLIB	0x06
+#define JFFS2_COMPR_NONE    0x00
+#define JFFS2_COMPR_ZERO    0x01
+#define JFFS2_COMPR_RTIME   0x02
+#define JFFS2_COMPR_RUBINMIPS   0x03
+#define JFFS2_COMPR_COPY    0x04
+#define JFFS2_COMPR_DYNRUBIN    0x05
+#define JFFS2_COMPR_ZLIB    0x06
 /* Compatibility flags. */
 #define JFFS2_COMPAT_MASK 0xc000      /* What do to if an unknown nodetype is found */
 #define JFFS2_NODE_ACCURATE 0x2000
@@ -93,11 +93,11 @@
 #define JFFS2_NODETYPE_CLEANMARKER (JFFS2_FEATURE_RWCOMPAT_DELETE | JFFS2_NODE_ACCURATE | 3)
 #define JFFS2_NODETYPE_PADDING (JFFS2_FEATURE_RWCOMPAT_DELETE | JFFS2_NODE_ACCURATE | 4)
 
-#define JFFS2_INO_FLAG_PREREAD	  1	/* Do read_inode() for this one at
-					   mount time, don't wait for it to
-					   happen later */
-#define JFFS2_INO_FLAG_USERCOMPR  2	/* User has requested a specific
-					   compression type */
+#define JFFS2_INO_FLAG_PREREAD    1 /* Do read_inode() for this one at
+	                   mount time, don't wait for it to
+	                   happen later */
+#define JFFS2_INO_FLAG_USERCOMPR  2 /* User has requested a specific
+	                   compression type */
 
 /* These can go once we've made sure we've caught all uses without
    byteswapping */
@@ -123,7 +123,7 @@ struct jffs2_unknown_node {
 
 struct jffs2_raw_dirent {
 	jint16_t magic;
-	jint16_t nodetype;	/* == JFFS2_NODETYPE_DIRENT */
+	jint16_t nodetype;  /* == JFFS2_NODETYPE_DIRENT */
 	jint32_t totlen;
 	jint32_t hdr_crc;
 	jint32_t pino;
@@ -160,10 +160,10 @@ struct jffs2_raw_inode {
 	jint32_t ctime;      /* Change time.  */
 	jint32_t offset;     /* Where to begin to write.  */
 	jint32_t csize;      /* (Compressed) data size */
-	jint32_t dsize;	     /* Size of the node's data. (after decompression) */
+	jint32_t dsize;      /* Size of the node's data. (after decompression) */
 	uint8_t compr;       /* Compression algorithm used */
 	uint8_t usercompr;   /* Compression algorithm requested by the user */
-	jint16_t flags;	     /* See JFFS2_INO_FLAG_* */
+	jint16_t flags;      /* See JFFS2_INO_FLAG_* */
 	jint32_t data_crc;   /* CRC for the (compressed) data.  */
 	jint32_t node_crc;   /* CRC for the raw inode (excluding data)  */
 	uint8_t data[0];
@@ -191,14 +191,14 @@ struct jffs2_sb_info {
 
 	unsigned int flags;
 
-	struct task_struct *gc_task;	/* GC task struct */
+	struct task_struct *gc_task;    /* GC task struct */
 	struct completion gc_thread_start; /* GC thread start completion */
 	struct completion gc_thread_exit; /* GC thread exit completion port */
 
-	struct semaphore alloc_sem;	/* Used to protect all the following
-					   fields, and also to protect against
-					   out-of-order writing of nodes. And GC. */
-	uint32_t cleanmarker_size;	/* Size of an _inline_ CLEANMARKER
+	struct semaphore alloc_sem; /* Used to protect all the following
+	                   fields, and also to protect against
+	                   out-of-order writing of nodes. And GC. */
+	uint32_t cleanmarker_size;  /* Size of an _inline_ CLEANMARKER
 	                             * (i.e. zero for OOB CLEANMARKER
 	                             */
 	uint32_t flash_size;
@@ -215,36 +215,36 @@ struct jffs2_sb_info {
 	uint32_t nr_erasing_blocks;
 
 	/* Number of free blocks there must be before we... */
-	uint8_t resv_blocks_write;	/* ... allow a normal filesystem write */
-	uint8_t resv_blocks_deletion;	/* ... allow a normal filesystem deletion */
-	uint8_t resv_blocks_gctrigger;	/* ... wake up the GC thread */
-	uint8_t resv_blocks_gcbad;	/* ... pick a block from the bad_list to GC */
-	uint8_t resv_blocks_gcmerge;	/* ... merge pages when garbage collecting */
+	uint8_t resv_blocks_write;  /* ... allow a normal filesystem write */
+	uint8_t resv_blocks_deletion;   /* ... allow a normal filesystem deletion */
+	uint8_t resv_blocks_gctrigger;  /* ... wake up the GC thread */
+	uint8_t resv_blocks_gcbad;  /* ... pick a block from the bad_list to GC */
+	uint8_t resv_blocks_gcmerge;    /* ... merge pages when garbage collecting */
 
 	uint32_t nospc_dirty_size;
 
 	uint32_t nr_blocks;
-	struct jffs2_eraseblock *blocks;	/* The whole array of blocks. Used for getting blocks
-						 * from the offset (blocks[ofs / sector_size]) */
-	struct jffs2_eraseblock *nextblock;	/* The block we're currently filling */
+	struct jffs2_eraseblock *blocks;    /* The whole array of blocks. Used for getting blocks
+	                     * from the offset (blocks[ofs / sector_size]) */
+	struct jffs2_eraseblock *nextblock; /* The block we're currently filling */
 
-	struct jffs2_eraseblock *gcblock;	/* The block we're currently garbage-collecting */
+	struct jffs2_eraseblock *gcblock;   /* The block we're currently garbage-collecting */
 
-	struct list_head clean_list;		/* Blocks 100% full of clean data */
-	struct list_head very_dirty_list;	/* Blocks with lots of dirty space */
-	struct list_head dirty_list;		/* Blocks with some dirty space */
-	struct list_head erasable_list;		/* Blocks which are completely dirty, and need erasing */
-	struct list_head erasable_pending_wbuf_list;	/* Blocks which need erasing but only after the current wbuf is flushed */
-	struct list_head erasing_list;		/* Blocks which are currently erasing */
-	struct list_head erase_pending_list;	/* Blocks which need erasing now */
-	struct list_head erase_complete_list;	/* Blocks which are erased and need the clean marker written to them */
-	struct list_head free_list;		/* Blocks which are free and ready to be used */
-	struct list_head bad_list;		/* Bad blocks. */
-	struct list_head bad_used_list;		/* Bad blocks with valid data in. */
+	struct list_head clean_list;        /* Blocks 100% full of clean data */
+	struct list_head very_dirty_list;   /* Blocks with lots of dirty space */
+	struct list_head dirty_list;        /* Blocks with some dirty space */
+	struct list_head erasable_list;     /* Blocks which are completely dirty, and need erasing */
+	struct list_head erasable_pending_wbuf_list;    /* Blocks which need erasing but only after the current wbuf is flushed */
+	struct list_head erasing_list;      /* Blocks which are currently erasing */
+	struct list_head erase_pending_list;    /* Blocks which need erasing now */
+	struct list_head erase_complete_list;   /* Blocks which are erased and need the clean marker written to them */
+	struct list_head free_list;     /* Blocks which are free and ready to be used */
+	struct list_head bad_list;      /* Bad blocks. */
+	struct list_head bad_used_list;     /* Bad blocks with valid data in. */
 
-	spinlock_t erase_completion_lock;	/* Protect free_list and erasing_list
-						   against erase completion handler */
-	wait_queue_head_t erase_wait;		/* For waiting for erases to complete */
+	spinlock_t erase_completion_lock;   /* Protect free_list and erasing_list
+	                       against erase completion handler */
+	wait_queue_head_t erase_wait;       /* For waiting for erases to complete */
 
 	wait_queue_head_t inocache_wq;
 	struct jffs2_inode_cache **inocache_list;
@@ -263,7 +263,7 @@ struct jffs2_sb_info {
 	uint32_t wbuf_pagesize;
 	struct jffs2_inodirty *wbuf_inodes;
 
-	struct rw_semaphore wbuf_sem;	/* Protects the write buffer */
+	struct rw_semaphore wbuf_sem;   /* Protects the write buffer */
 
 	/* Information about out-of-band area usage... */
 	struct nand_oobinfo *oobinfo;
@@ -316,7 +316,7 @@ struct jffs2_inode_info {
 #define get_seconds clock_sys_ticks
 
 #define CONFIG_JFFS2_ZLIB 1
-//#define CYGOPT_FS_JFFS2_GCTHREAD 0
+/*#define CYGOPT_FS_JFFS2_GCTHREAD 0 */
 #define CYGNUM_JFFS2_GC_THREAD_PRIORITY 30
 #define CYGNUM_JFFS2_GC_THREAD_PRIORITY_30
 #define CYGNUM_JFFS2_GC_THREAD_STACK_SIZE 8192
@@ -334,15 +334,15 @@ struct _inode;
 struct super_block;
 
 struct iovec {
-        void *iov_base;
-        ssize_t iov_len;
+	void *iov_base;
+	ssize_t iov_len;
 };
 
-static inline unsigned int full_name_hash(const unsigned char * name,
+static inline unsigned int full_name_hash(const unsigned char *name,
 		unsigned int len) {
 
 	unsigned hash = 0;
- 	while (len--) {
+	while (len--) {
 		hash = (hash << 4) | (hash >> 28);
 		hash ^= *(name++);
 	}
@@ -353,7 +353,7 @@ static inline unsigned int full_name_hash(const unsigned char * name,
 #define jffs2_can_mark_obsolete(c) (1)
 
 #define JFFS2_INODE_INFO(i) (&(i)->jffs2_i)
-#define OFNI_EDONI_2SFFJ(f)  ((struct _inode *) ( ((char *)f) - ((char *)(&((struct _inode *)NULL)->jffs2_i)) ) )
+#define OFNI_EDONI_2SFFJ(f)  ((struct _inode *) (((char *)f) - ((char *)(&((struct _inode *)NULL)->jffs2_i))))
 
 #define JFFS2_F_I_SIZE(f) (OFNI_EDONI_2SFFJ(f)->i_size)
 #define JFFS2_F_I_MODE(f) (OFNI_EDONI_2SFFJ(f)->i_mode)
@@ -368,40 +368,40 @@ static inline unsigned int full_name_hash(const unsigned char * name,
 #define JFFS2_F_I_RDEV_MAJ(f) ((OFNI_EDONI_2SFFJ(f)->i_rdev)>>8)
 
 struct _inode {
-	uint32_t		i_ino;
+	uint32_t i_ino;
 
-	int			i_count;
-	mode_t			i_mode;
-	nlink_t			i_nlink; /* Could we dispense with this? */
-	uid_t			i_uid;
-	gid_t			i_gid;
-	time_t			i_atime;
-	time_t			i_mtime;
-	time_t			i_ctime;
+	int i_count;
+	mode_t i_mode;
+	nlink_t i_nlink;         /* Could we dispense with this? */
+	uid_t i_uid;
+	gid_t i_gid;
+	time_t i_atime;
+	time_t i_mtime;
+	time_t i_ctime;
 
-	unsigned short	i_rdev; /* For devices only */
-	struct _inode *	i_parent; /* For directories only */
-	off_t		i_size; /* For files only */
+	unsigned short i_rdev;  /* For devices only */
+	struct _inode *i_parent;  /* For directories only */
+	off_t i_size;       /* For files only */
 
-	struct super_block *	i_sb;
+	struct super_block *i_sb;
 
-	struct jffs2_inode_info	jffs2_i;
+	struct jffs2_inode_info jffs2_i;
 
-	struct _inode *		i_cache_prev; /* We need doubly-linked? */
-	struct _inode *		i_cache_next;
+	struct _inode *i_cache_prev;      /* We need doubly-linked? */
+	struct _inode *i_cache_next;
 };
 
 struct super_block {
 	struct jffs2_sb_info jffs2_sb;
 	struct _inode *s_root;
-    unsigned long  s_mount_count;
+	unsigned long s_mount_count;
 	struct block_dev *bdev;
 
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD
 	struct mutex s_lock;        /* Lock the inode cache */
 	struct thread s_gc_thread;
-    char s_gc_thread_stack[CYGNUM_JFFS2_GC_THREAD_STACK_SIZE];
-//       mtab_entry *mte;
+	char s_gc_thread_stack[CYGNUM_JFFS2_GC_THREAD_STACK_SIZE];
+/*       mtab_entry *mte; */
 #endif
 };
 
@@ -419,32 +419,31 @@ static inline void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c) {
 }
 #endif
 
-struct _inode *jffs2_new_inode (struct _inode *dir_i,
-					int mode, struct jffs2_raw_inode *ri);
+struct _inode *jffs2_new_inode(struct _inode *dir_i,
+		int mode, struct jffs2_raw_inode *ri);
 struct _inode *jffs2_iget(struct super_block *sb, uint32_t ino);
-void jffs2_iput(struct _inode * i);
+void jffs2_iput(struct _inode *i);
 void jffs2_gc_release_inode(struct jffs2_sb_info *c,
-							struct jffs2_inode_info *f);
+		struct jffs2_inode_info *f);
 struct jffs2_inode_info *jffs2_gc_fetch_inode(struct jffs2_sb_info *c,
-													int inum, int nlink);
+		int inum, int nlink);
 unsigned char *jffs2_gc_fetch_page(struct jffs2_sb_info *c,
 		struct jffs2_inode_info *f, unsigned long offset, unsigned long *priv);
 void jffs2_gc_release_page(struct jffs2_sb_info *c,
-				unsigned char *pg, unsigned long *priv);
+		unsigned char *pg, unsigned long *priv);
 
 /* Avoid polluting eCos namespace with names not starting in jffs2_ */
 #define os_to_jffs2_mode(x) jffs2_from_os_mode(x)
 uint32_t jffs2_from_os_mode(uint32_t osmode);
-uint32_t jffs2_to_os_mode (uint32_t jmode);
-
+uint32_t jffs2_to_os_mode(uint32_t jmode);
 
 /* flashio.c */
 bool jffs2_flash_read(struct jffs2_sb_info *c,
 		uint32_t read_buffer_offset, const size_t size,
-		size_t * return_size, unsigned char * write_buffer);
+		size_t *return_size, unsigned char *write_buffer);
 bool jffs2_flash_write(struct jffs2_sb_info *c, uint32_t write_buffer_offset,
-			   const size_t size, size_t * return_size,
-			   unsigned char * read_buffer);
+		const size_t size, size_t *return_size,
+		unsigned char *read_buffer);
 int jffs2_flash_direct_writev(struct jffs2_sb_info *c,
 		const struct iovec *vecs, unsigned long count,
 		loff_t to, size_t *retlen);
@@ -455,32 +454,33 @@ struct _inode *jffs2_lookup(struct _inode *dir_i,
 		const unsigned char *name, int namelen);
 int jffs2_create(struct _inode *dir_i, const unsigned char *d_name,
 		int mode, struct _inode **new_i);
-int jffs2_mkdir (struct _inode *dir_i, const unsigned char *d_name, int mode);
-int jffs2_link (struct _inode *old_d_inode, struct _inode *dir_i,
+int jffs2_mkdir(struct _inode *dir_i, const unsigned char *d_name, int mode);
+int jffs2_link(struct _inode *old_d_inode, struct _inode *dir_i,
 		const unsigned char *d_name);
 int jffs2_unlink(struct _inode *dir_i, struct _inode *d_inode,
 		const unsigned char *d_name);
-int jffs2_rmdir (struct _inode *dir_i, struct _inode *d_inode,
+int jffs2_rmdir(struct _inode *dir_i, struct _inode *d_inode,
 		const unsigned char *d_name);
-int jffs2_rename (struct _inode *old_dir_i, struct _inode *d_inode,
+int jffs2_rename(struct _inode *old_dir_i, struct _inode *d_inode,
 		const unsigned char *old_d_name,
-		  struct _inode *new_dir_i, const unsigned char *new_d_name);
+		struct _inode *new_dir_i, const unsigned char *new_d_name);
 
 /* erase.c */
-static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c) { }
+static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c) {
+}
 
 #ifndef CONFIG_JFFS2_FS_WRITEBUFFER
-#define SECTOR_ADDR(x) ( ((unsigned long)(x) & ~(c->sector_size-1)) )
+#define SECTOR_ADDR(x) (((unsigned long)(x) & ~(c->sector_size-1)))
 #define jffs2_can_mark_obsolete(c) (1)
 #define jffs2_cleanmarker_oob(c) (0)
 #define jffs2_write_nand_cleanmarker(c,jeb) (-EIO)
 
-#define jffs2_flush_wbuf_pad(c) (c=c)
+#define jffs2_flush_wbuf_pad(c) (c = c)
 #define jffs2_flush_wbuf_gc(c, i) ({ (void)(c), (void) i, 0; })
-#define jffs2_nand_read_failcnt(c,jeb) do { ; } while(0)
+#define jffs2_nand_read_failcnt(c,jeb) do {; } while (0)
 #define jffs2_write_nand_badblock(c,jeb,p) (0)
 #define jffs2_flash_setup(c) (0)
-#define jffs2_nand_flash_cleanup(c) do {} while(0)
+#define jffs2_nand_flash_cleanup(c) do {} while (0)
 #define jffs2_wbuf_dirty(c) (0)
 #define jffs2_flash_writev(a,b,c,d,e,f) jffs2_flash_direct_writev(a,b,c,d,e)
 #define jffs2_wbuf_timeout NULL
@@ -491,7 +491,7 @@ static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c) { }
 #endif
 
 #ifndef BUG_ON
-#define BUG_ON(x) do { if (unlikely(x)) BUG(); } while(0)
+#define BUG_ON(x) do { if (unlikely(x)) {BUG();}} while (0)
 #endif
 
 #define __init

@@ -19,7 +19,7 @@
 #include <mem/page.h>
 #include <embox/unit.h>
 
-//TODO page : have no synchronization
+/*TODO page : have no synchronization */
 
 static inline int page_ptr2i(struct page_allocator *allocator, void *page) {
 	return (page - allocator->pages_start) / allocator->page_size;
@@ -124,7 +124,7 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 
 	while (sizeof(struct page_allocator) + bitmap_len > pages_start - start) {
 		pages_start += page_size;
-		pages --;
+		pages--;
 		assert(pages > 0);
 	}
 

@@ -6,24 +6,23 @@
  * @date    24.07.2015
  */
 
-
- /**
-   ******************************************************************************
-   *  _ _ _    _ _ _   _ _
-   * |     \  /     |/     \
-   * |      \/           _ _\
-   * |                  /
-   * |         MultiClet
-   * |                  \ _ _
-   * |                      /
-   * |_ _ _|\/|_ _ _|\ _ _ /
-   *
-   * @file    uart.c
-   * @author  multiclet dev team
-   * @date    13-07-2015
-   * @brief   UART example.
-   *
-   ******************************************************************************
+/**
+  ******************************************************************************
+  *  _ _ _    _ _ _   _ _
+  * |     \  /     |/     \
+  * |      \/           _ _\
+  * |                  /
+  * |         MultiClet
+  * |                  \ _ _
+  * |                      /
+  * |_ _ _|\/|_ _ _|\ _ _ /
+  *
+  * @file    uart.c
+  * @author  multiclet dev team
+  * @date    13-07-2015
+  * @brief   UART example.
+  *
+  ******************************************************************************
 */
 
 #include <compiler.h>
@@ -35,7 +34,7 @@
 #include <uart.h>
 
 static void mcp_putc(const struct diag *dev, char ch) {
-	//UART_SEND_BYTE(ch, UART0);
+	/*UART_SEND_BYTE(ch, UART0); */
 	DM2UART(UART0, (int)&ch, 1);
 }
 
@@ -55,6 +54,6 @@ static int mcp_init(const struct diag *dev) {
 }
 
 DIAG_OPS_DECLARE(
-	.init = mcp_init,
-	.putc = mcp_putc,
+		.init = mcp_init,
+		.putc = mcp_putc,
 );

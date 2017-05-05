@@ -21,12 +21,12 @@
 
 /* c_iflag bits */
 #define IUCLC 0001000
-//#define IXANY 0004000
+/*#define IXANY 0004000 */
 #define IMAXBEL 0020000
 
 /* c_oflag bits */
 #define OLCUC 0000002
-//#define ONLCR 0000004
+/*#define ONLCR 0000004 */
 #define OCRNL 0000010
 #define ONOCR 0000020
 #define ONLRET 0000040

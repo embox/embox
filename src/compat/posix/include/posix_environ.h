@@ -13,9 +13,9 @@
 
 __BEGIN_DECLS
 
-extern char *** task_self_environ_ptr(void);
+extern char ***task_self_environ_ptr(void);
 
-#define environ (* task_self_environ_ptr())
+#define environ (*task_self_environ_ptr())
 
 __END_DECLS
 

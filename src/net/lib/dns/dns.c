@@ -23,7 +23,6 @@
 #include <util/log.h>
 #include <framework/mod/options.h>
 
-
 /**
  * DNS query timeout
  */
@@ -140,9 +139,9 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 	if (out_field_sz != NULL) {
 		*out_field_sz = field_sz
 				+ (one_line /* if it's haven't labels */
-						? sizeof(char) /* plus one byte at the end
-										  of the loop */
-						: 0);
+				? sizeof(char)         /* plus one byte at the end
+		                                  of the loop */
+				: 0);
 	}
 
 	return 0;
@@ -235,13 +234,13 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	}
 
 	if (-1 == connect(sock, (struct sockaddr *)&nameserver_addr,
-				sizeof nameserver_addr)) {
+			sizeof nameserver_addr)) {
 		close(sock);
 		return -errno;
 	}
 
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-				&timeout, sizeof timeout)) {
+			&timeout, sizeof timeout)) {
 		close(sock);
 		return -errno;
 	}
@@ -574,7 +573,7 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 	/* All ok, done */
 	return 0;
 
-error:
+	error:
 	dns_result_free(out_result);
 	return ret;
 }

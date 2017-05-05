@@ -31,7 +31,7 @@
 /**
  * Magic code
  */
-//extern const unsigned char dhcp_magic_cookie[4];
+/*extern const unsigned char dhcp_magic_cookie[4]; */
 
 typedef struct bootphdr {
 	__u8 op;          /* message type */

@@ -18,11 +18,11 @@ struct inet6_sock {
 	struct sockaddr_in6 dst_in6;
 };
 
-static inline struct inet6_sock * to_inet6_sock(struct sock *sk) {
+static inline struct inet6_sock *to_inet6_sock(struct sock *sk) {
 	return (struct inet6_sock *)sk;
 }
 
-static inline const struct inet6_sock * to_const_inet6_sock(
+static inline const struct inet6_sock *to_const_inet6_sock(
 		const struct sock *sk) {
 	return (const struct inet6_sock *)sk;
 }

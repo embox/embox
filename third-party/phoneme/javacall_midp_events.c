@@ -22,8 +22,8 @@ static int java_pipe[2];
 
 static struct mutex java_global_mutex;
 
-javacall_result javacall_event_send(unsigned char* binaryBuffer,
-                                    int binaryBufferLen) {
+javacall_result javacall_event_send(unsigned char *binaryBuffer,
+		int binaryBufferLen) {
 	mutex_lock(&java_global_mutex);
 	{
 		/* blocking writing */
@@ -35,10 +35,10 @@ javacall_result javacall_event_send(unsigned char* binaryBuffer,
 }
 
 javacall_result javacall_event_receive(
-                            long                    timeToWaitInMillisec, /* XXX unused*/
-                            /*OUT*/ unsigned char*  binaryBuffer,
-                            int                     binaryBufferMaxLen,
-                            /*OUT*/ int*            outEventLen) {
+		long timeToWaitInMillisec,                                        /* XXX unused*/
+		/*OUT*/ unsigned char *binaryBuffer,
+		int binaryBufferMaxLen,
+		/*OUT*/ int *outEventLen) {
 	size_t actual_size;
 	struct timeval timeout;
 	fd_set readfds;
@@ -65,7 +65,7 @@ javacall_result javacall_event_receive(
 	}
 	*outEventLen = read(java_pipe[0], binaryBuffer, actual_size);
 
-out:
+	out:
 	return res;
 }
 

@@ -51,7 +51,7 @@ static void i2c_slave_run(void) {
 		while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
 			;
 
-		if (HAL_I2C_Slave_Transmit_IT(&I2cHandle, (uint8_t*)tx_buff, TXBUFFERSIZE)!= HAL_OK) {
+		if (HAL_I2C_Slave_Transmit_IT(&I2cHandle, (uint8_t *)tx_buff, TXBUFFERSIZE) != HAL_OK) {
 			printf("%s\n", ">> HAL_I2C_Slave_Transmit_IT error\n");
 		}
 

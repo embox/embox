@@ -35,7 +35,7 @@ void arch_init(void) {
 }
 
 void arch_idle(void) {
-	__asm__ __volatile__("hlt");
+	__asm__ __volatile__ ("hlt");
 }
 
 void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {

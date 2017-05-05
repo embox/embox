@@ -18,7 +18,7 @@
 struct sock;
 
 struct inet_sock_opt {
-	int hdrincl:1;
+	int hdrincl : 1;
 };
 
 /**
@@ -41,18 +41,18 @@ struct inet_sock_opt {
 typedef struct inet_sock {
 	struct sock sk;            /* Base socket class (MUST BE FIRST) */
 	struct sockaddr_in src_in; /* address from which the socket
-								  receives packets */
+	                              receives packets */
 	struct sockaddr_in dst_in; /* really address of destonation host */
 	int16_t uc_ttl;
 	uint16_t id;
 	struct inet_sock_opt opt;
 } inet_sock_t;
 
-static inline struct inet_sock * to_inet_sock(struct sock *sk) {
+static inline struct inet_sock *to_inet_sock(struct sock *sk) {
 	return (struct inet_sock *)sk;
 }
 
-static inline const struct inet_sock * to_const_inet_sock(
+static inline const struct inet_sock *to_const_inet_sock(
 		const struct sock *sk) {
 	return (const struct inet_sock *)sk;
 }

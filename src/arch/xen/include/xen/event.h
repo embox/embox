@@ -2,7 +2,6 @@
 #include <xen/xen.h>
 #include <xen/event_channel.h>
 
-
 struct pt_regs {
 	long ebx;
 	long ecx;
@@ -11,14 +10,14 @@ struct pt_regs {
 	long edi;
 	long ebp;
 	long eax;
-	int  xds;
-	int  xes;
+	int xds;
+	int xes;
 	long orig_eax;
 	long eip;
-	int  xcs;
+	int xcs;
 	long eflags;
 	long esp;
-	int  xss;
+	int xss;
 };
 
 typedef void (*evtchn_handler_t)(evtchn_port_t, struct pt_regs *);

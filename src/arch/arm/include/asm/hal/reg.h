@@ -13,17 +13,16 @@
 static inline uint32_t get_cpsr(void) {
 	volatile uint32_t reg;
 	__asm__ __volatile__ ("mrs %0, CPSR;\n\t"
-		: "=r"(reg)
+	: "=r" (reg)
 	);
 	return reg;
 }
 
 static inline void set_cpsr(uint32_t reg) {
 	__asm__ __volatile__ ("msr CPSR, %0; \n\t"
-		:
-		: "r"(reg)
+	:
+	: "r" (reg)
 	);
 }
-
 
 #endif /* ARM_REG_H_ */

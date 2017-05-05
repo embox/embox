@@ -85,7 +85,7 @@ static int spi_init(void) {
 	SpiHandle.Init.NSS               = SPI_NSS_SOFT;
 	SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLE;
 	SpiHandle.Init.Mode              = SPI_MODE_MASTER;
-	
+
 	if (HAL_SPI_Init(&SpiHandle) != HAL_OK) {
 		printf("%s\n", "HAL_SPI_Init error\n");
 		return -1;
@@ -95,7 +95,7 @@ static int spi_init(void) {
 }
 
 static void nrf24_init(void) {
-	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitTypeDef GPIO_InitStruct;
 
 	printf("NRF24 init\n");
 
@@ -128,7 +128,7 @@ static uint8_t nrf24_rw_reg(uint8_t reg) {
 	if (HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t *)&txbytes, (uint8_t *)&rxbytes, 1, 10000000) != HAL_OK) {
 		printf("%s\n", ">>> spi_sync error");
 	}
-	//printf("nrf24_rw_reg: out (output = %x)\n", rxbytes);
+	/*printf("nrf24_rw_reg: out (output = %x)\n", rxbytes); */
 	return rxbytes;
 }
 
@@ -143,16 +143,16 @@ static uint8_t nrf24_read_reg(uint8_t reg) {
 	return value;
 }
 
-//static uint8_t nrf24_write_reg(uint8_t reg, value) {
-//	uint8_t status;
-//
-//	CS_L();
-//	status = nrf24_rw_reg(nRF24_CMD_WREG | reg);
-//	value = nrf24_rw_reg(value);
-//	CS_H();
-//
-//	return status;
-//}
+/*static uint8_t nrf24_write_reg(uint8_t reg, value) { */
+/*	uint8_t status; */
+/* */
+/*	CS_L(); */
+/*	status = nrf24_rw_reg(nRF24_CMD_WREG | reg); */
+/*	value = nrf24_rw_reg(value); */
+/*	CS_H(); */
+/* */
+/*	return status; */
+/*} */
 
 static void spi_delay(int n) {
 	int i = n;
@@ -194,7 +194,7 @@ int main(int argc, char *argv[]) {
 	if (res < 0) {
 		return -1;
 	}
-    BSP_LED_Toggle(LED5);
+	BSP_LED_Toggle(LED5);
 	nrf24_test();
 
 	return 0;

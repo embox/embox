@@ -45,7 +45,7 @@ static int kmc_write_aux(unsigned char val) {
 	return 0;
 }
 
-//http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
+/*http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html */
 static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *ev) {
 	struct ps2_mouse_indev *ps2mouse = (struct ps2_mouse_indev *) dev;
 	unsigned char data;
@@ -65,7 +65,7 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 		goto out;
 	}
 
-	switch(ps2mouse->byteseq_state) {
+	switch (ps2mouse->byteseq_state) {
 	case 0:
 		ev->type = data;
 		ret = -EAGAIN;
@@ -76,7 +76,7 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 		break;
 	case 2:
 		ev->value <<= 16;
-	       	ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
+		ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
 		ev->type  &= MSTAT_BUTMASK;
 		ret = 0;
 		break;
@@ -84,7 +84,7 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 
 	ps2mouse->byteseq_state = (ps2mouse->byteseq_state + 1) % 3;
 
-out:
+	out:
 	return ret;
 }
 

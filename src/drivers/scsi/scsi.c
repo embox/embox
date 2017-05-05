@@ -40,7 +40,7 @@ int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_
 	if (!sdev->attached) {
 		return -ENODEV;
 	}
-	if(scmd->scmd_opcode == 0x2a) {
+	if (scmd->scmd_opcode == 0x2a) {
 		usb_dir = USB_DIRECTION_OUT;
 	} else {
 		usb_dir = USB_DIRECTION_IN;
@@ -137,11 +137,13 @@ void scsi_state_transit(struct scsi_dev *dev,
 		const struct scsi_dev_state *to) {
 	const struct scsi_dev_state *from = dev->state;
 
-	if (from && from->sds_leave)
+	if (from && from->sds_leave) {
 		from->sds_leave(dev);
+	}
 
-	if (to->sds_enter)
+	if (to->sds_enter) {
 		to->sds_enter(dev);
+	}
 
 	dev->state = to;
 }
@@ -222,7 +224,7 @@ static void scsi_sense_input(struct scsi_dev *dev, int res) {
 	data = (struct scsi_data_sense *) dev->scsi_data_scratchpad;
 	acode = data->dsns_additional_code;
 	assertf(acode == 0x28 || acode == 0x29, "Don't know how to recover "
-			"unknown error %x", acode);
+											"unknown error %x", acode);
 
 	/* 0x28 and 0x29 are just required attention, seems that can go on */
 

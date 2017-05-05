@@ -14,7 +14,7 @@
 #include <mem/vmem/vmem_alloc.h>
 
 static inline int try_free_pte(mmu_pte_t *pte, mmu_pmd_t *pmd) {
-	for (int pte_idx = 0 ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
+	for (int pte_idx = 0; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
 		if (mmu_pte_present(pte + pte_idx)) {
 			return 0;
 		}
@@ -29,7 +29,7 @@ static inline int try_free_pte(mmu_pte_t *pte, mmu_pmd_t *pmd) {
 }
 
 static inline int try_free_pmd(mmu_pmd_t *pmd, mmu_pgd_t *pgd) {
-	for (int pmd_idx = 0 ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
+	for (int pmd_idx = 0; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 		if (mmu_pmd_present(pmd + pmd_idx)) {
 			return 0;
 		}
@@ -44,13 +44,13 @@ static inline int try_free_pmd(mmu_pmd_t *pmd, mmu_pgd_t *pgd) {
 }
 
 static inline int try_free_pgd(mmu_pgd_t *pgd, mmu_ctx_t ctx) {
-	for (int pgd_idx = 0 ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
+	for (int pgd_idx = 0; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		if (mmu_pgd_present(pgd + pgd_idx)) {
 			return 0;
 		}
 	}
 
-	// Something missing
+	/* Something missing */
 	vmem_free_pgd_table(pgd);
 
 	return 1;
@@ -72,7 +72,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 
 	vmem_get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
-	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
+	for (; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		if (!mmu_pgd_present(pgd + pgd_idx)) {
 			virt_addr = binalign(virt_addr, MMU_PGD_SHIFT);
 			pte_idx = pmd_idx = 0;
@@ -81,7 +81,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 
 		pmd = mmu_pgd_value(pgd + pgd_idx);
 
-		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
+		for (; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 			if (!mmu_pmd_present(pmd + pmd_idx)) {
 				virt_addr = binalign(virt_addr, MMU_PMD_SHIFT);
 				pte_idx = 0;
@@ -90,7 +90,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 
 			pte = mmu_pmd_value(pmd + pmd_idx);
 
-			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
+			for (; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
 				if (virt_addr >= v_end) {
 					try_free_pmd(pmd, pgd + pgd_idx);
 					goto out_free;
@@ -121,7 +121,7 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 		pmd_idx = 0;
 	}
 
-out_free:
+	out_free:
 	try_free_pgd(pgd, ctx);
 
 	mmu_flush_tlb();

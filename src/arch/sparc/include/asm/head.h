@@ -21,7 +21,7 @@
 /** Entry for traps which jump to a programmer-specified trap handler. */
 #define TRAP_ENTRY(trap_handler) \
 	ba trap_handler; \
-	 rd %psr, %t_psr;\
+	rd %psr, %t_psr; \
 	nop; nop;
 
 /** Entry for trap handlers that skip the instruction caused the trap. */
@@ -29,7 +29,7 @@
 	mov %t_npc, %t_pc;     \
 	add %t_npc, 4, %t_npc; \
 	ba trap_handler;       \
-	 rd %psr, %t_psr;
+	rd %psr, %t_psr;
 
 #ifndef INTERRUPT_STUB
 
@@ -37,7 +37,7 @@
 #define TRAP_ENTRY_INTERRUPT(nr) \
 	rd %psr, %t_psr;    \
 	ba interrupt_entry; \
-	 mov nr, %local;    \
+	mov nr, %local;    \
 	nop;
 
 #else
@@ -48,22 +48,22 @@
 #define WOF_TRAP \
 	rd %psr, %t_psr;      \
 	ba window_overflow;   \
-	 rd %wim, %t_wim;     \
+	rd %wim, %t_wim;     \
 	nop
 
 /** Entry point for window underflow trap handler. */
 #define WUF_TRAP \
 	rd %psr, %t_psr;      \
 	ba window_underflow;  \
-	 rd %wim, %t_wim;     \
+	rd %wim, %t_wim;     \
 	nop
 
 #define WEAK(name) \
-	.weak hw_trap_##name;                  \
-	sethi %hi(hw_trap_##name), %local;     \
-	or %local,%lo(hw_trap_##name), %local; \
+	.weak hw_trap_ ## name;                  \
+	sethi %hi(hw_trap_ ## name), %local;     \
+	or %local,%lo(hw_trap_ ## name), %local; \
 	ba weak_trap_entry;                    \
-	 rd %psr, %t_psr;
+	rd %psr, %t_psr;
 
 /** Unexpected trap will halt the processor by forcing it to error state */
 #define BAD_TRAP TRAP_ENTRY(bad_trap_entry)
@@ -76,7 +76,6 @@
 #else
 #define EMBOX_SYSTEM_CALL BAD_TRAP
 #endif
-
 
 #define TEST_SOFT_TRAP TRAP_ENTRY(test_trap_entry)
 #define TEST_HARD_TRAP TEST_SOFT_TRAP

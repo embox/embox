@@ -35,7 +35,7 @@ static void *read_task_hnd(void *arg) {
 static void *write_task_hnd(void *arg) {
 	pipe(pipefd);
 
-	write(pipefd[1], (void*)str, strlen(str));
+	write(pipefd[1], (void *)str, strlen(str));
 
 	tid_write = new_task("", read_task_hnd, NULL);
 

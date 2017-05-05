@@ -84,7 +84,7 @@ EMBOX_UNIT_INIT(uart_init);
 
 static int stm32_uart_putc(struct uart *dev, int ch) {
 	USART_TypeDef *USART = (void *) dev->base_addr;
-	while (USART_GetFlagStatus(USART, USART_FLAG_TXE) == RESET);
+	while (USART_GetFlagStatus(USART, USART_FLAG_TXE) == RESET) ;
 	USART_SendData(USART, (uint8_t) ch);
 
 	return 0;
@@ -172,40 +172,40 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 }
 
 static const struct uart_ops stm32_uart_ops = {
-		.uart_getc = stm32_uart_getc,
-		.uart_putc = stm32_uart_putc,
-		.uart_hasrx = stm32_uart_hasrx,
-		.uart_setup = stm32_uart_setup,
+	.uart_getc = stm32_uart_getc,
+	.uart_putc = stm32_uart_putc,
+	.uart_hasrx = stm32_uart_hasrx,
+	.uart_setup = stm32_uart_setup,
 };
 
 static struct uart stm32_uart0 = {
-		.uart_ops = &stm32_uart_ops,
-		.irq_num = EVAL_COM_IRQn,
-		.base_addr = (unsigned long) EVAL_COM,
+	.uart_ops = &stm32_uart_ops,
+	.irq_num = EVAL_COM_IRQn,
+	.base_addr = (unsigned long) EVAL_COM,
 };
 
 static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = true,
 };
 
 static const struct uart_params diag_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+	.baud_rate = OPTION_GET(NUMBER,baud_rate),
+	.parity = 0,
+	.n_stop = 1,
+	.n_bits = 8,
+	.irq = false,
 };
 
 const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &stm32_uart0,
-		.params = &diag_defparams,
+	.diag = {
+		.ops = &uart_diag_ops,
+	},
+	.uart = &stm32_uart0,
+	.params = &diag_defparams,
 };
 
 static int uart_init(void) {

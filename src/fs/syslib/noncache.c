@@ -8,7 +8,6 @@
 #include <defines/null.h>
 #include <fs/dcache.h>
 
-
 int dcache_add(const char *prefix, const char *rest, struct path *path) {
 	return 0;
 }

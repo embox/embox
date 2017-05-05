@@ -43,21 +43,20 @@ static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long b
 }
 
 static inline int stm32_flash_check_align(unsigned long base, size_t len) {
-	return ((uintptr_t) base & STM32_FLASH_WORD_ALIGN ) == 0 &&
-			((uintptr_t) len  & STM32_FLASH_WORD_ALIGN) == 0;
+	return ((uintptr_t) base & STM32_FLASH_WORD_ALIGN) == 0 &&
+		   ((uintptr_t) len  & STM32_FLASH_WORD_ALIGN) == 0;
 }
 
 static inline int stm32f3_flash_check_block(struct flash_dev *dev, uint32_t block) {
 	unsigned int n_block, i;
 
 	n_block = 0;
-	for (i = 0; i < dev->num_block_infos; i ++) {
+	for (i = 0; i < dev->num_block_infos; i++) {
 		n_block += dev->block_info.blocks;
 	}
 
 	return block < n_block;
 }
-
 
 static inline void stm32_flash_set_program_size(void) {
 	/* setting word 32-bit access */
@@ -96,8 +95,7 @@ static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	return err;
 }
 
-
-static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void* data, size_t len) {
+static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data, size_t len) {
 	size_t rlen = min(len, dev->end - dev->start + base);
 
 	/* read can be unaligned */
@@ -107,7 +105,7 @@ static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void* data, si
 	return rlen;
 }
 
-static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void* data, size_t len) {
+static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data, size_t len) {
 	unsigned long sr;
 	int err;
 
@@ -147,7 +145,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 }
 
 static int stm32_flash_copy(struct flash_dev *dev, uint32_t base_dst,
-				uint32_t base_src, size_t len) {
+		uint32_t base_src, size_t len) {
 	return stm32_flash_program(dev, base_dst, (void *) dev->start + base_src, len);
 }
 

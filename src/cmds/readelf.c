@@ -24,39 +24,53 @@
 typedef struct {
 	FILE         *fd;
 	/* Should we reverse bytes when reading */
-	int          need_reverse;
+	int need_reverse;
 	/* Header of the file */
-	Elf32_Ehdr   header;
+	Elf32_Ehdr header;
 	char         **sections;
 	/* Section table */
-	Elf32_Shdr   sh_table[128];
+	Elf32_Shdr sh_table[128];
 	/* Program table */
-	Elf32_Phdr   ph_table[128];
+	Elf32_Phdr ph_table[128];
 	/* String table. Contains section names */
 	char         *string_table;
 	/* Symbol table */
-	Elf32_Sym    sym_table[128];
+	Elf32_Sym sym_table[128];
 	/* Section header index of the associated string table for symbol table */
-	int          sym_names_shidx;
+	int sym_names_shidx;
 	/* Symbol names */
 	char         *sym_names;
 	unsigned int sym_count;
 	/* Elf .dynamic section */
-	Elf32_Dyn    dyn_section[128];
+	Elf32_Dyn dyn_section[128];
 	unsigned int dyn_count;
 	/* Elf relocation array */
-	Elf32_Rel    rel_array[128];
+	Elf32_Rel rel_array[128];
 	unsigned int rel_count;
-	Elf32_Addr   base_addr; /* For shared libraries */
+	Elf32_Addr base_addr;   /* For shared libraries */
 } Elf32_Obj;
 
-static int elf_read_section_header_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_string_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_program_header_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_dynamic_section(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_rel_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_symbol_table(int elf_file, Elf32_Obj *elf) { return 0; }
-static int elf_read_symbol_names(int elf_file, Elf32_Obj *elf) { return 0; }
+static int elf_read_section_header_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_string_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_program_header_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_dynamic_section(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_rel_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_symbol_table(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
+static int elf_read_symbol_names(int elf_file, Elf32_Obj *elf) {
+	return 0;
+}
 
 typedef struct elf_objlist_item {
 	Elf32_Obj                *obj;
@@ -231,7 +245,7 @@ static const header_item_t header_mach_desc[] = {
 	{ EM_CR16,           "National Semiconductor's CR16"             },
 	{ EM_CR16_OLD,       "National Semiconductor's CR16"             },
 	{ EM_MICROBLAZE,     "Xilinx MicroBlaze"                         },
-	//TODO: we use EM_MICROBLAZE_OLD elf, need for fix.
+	/*TODO: we use EM_MICROBLAZE_OLD elf, need for fix. */
 	{ EM_MICROBLAZE_OLD, "Xilinx MicroBlaze"                         },
 };
 
@@ -246,44 +260,44 @@ static void print_header(Elf32_Obj *obj) {
 	}
 
 	printf("\n  Class:                             %s\n",
-		header_class_desc[header->e_ident[EI_CLASS]].desc);
+			header_class_desc[header->e_ident[EI_CLASS]].desc);
 	printf("  Data:                              %s\n",
-		header_data_desc[header->e_ident[EI_DATA]].desc);
+			header_data_desc[header->e_ident[EI_DATA]].desc);
 	printf("  Version:                           %d %s\n",
-		header->e_ident[EI_VERSION],
-		(header->e_ident[EI_VERSION] == EV_CURRENT ? "(current)"
-		: (header->e_ident[EI_VERSION] != EV_NONE	? "unknown" : "")));
+			header->e_ident[EI_VERSION],
+			(header->e_ident[EI_VERSION] == EV_CURRENT ? "(current)"
+			: (header->e_ident[EI_VERSION] != EV_NONE   ? "unknown" : "")));
 	printf("  OS/ABI:                            %s\n",
-		header_osabi_desc[header->e_ident[EI_OSABI]].desc);
+			header_osabi_desc[header->e_ident[EI_OSABI]].desc);
 	printf("  ABI Version:                       %d\n",
 			header->e_ident[EI_ABIVERSION]);
 	printf("  Type:                              %s\n",
-		header_type_desc[header->e_type].desc);
-	//TODO: need for fix.
+			header_type_desc[header->e_type].desc);
+	/*TODO: need for fix. */
 	printf("  Machine:                           %s\n",
-		header_mach_desc[header->e_machine].desc);
+			header_mach_desc[header->e_machine].desc);
 	printf("  Version:                           0x%x\n",
-		header->e_version);
+			header->e_version);
 	printf("  Entry point address:               0x%08x\n",
-		header->e_entry);
+			header->e_entry);
 	printf("  Start of program headers:          %u (bytes into file)\n",
-		header->e_phoff);
+			header->e_phoff);
 	printf("  Start of section headers:          %u (bytes into file)\n",
-		header->e_shoff);
+			header->e_shoff);
 	printf("  Flags:                             0x%u\n",
-		header->e_flags);
+			header->e_flags);
 	printf("  Size of this header:               %d (bytes)\n",
-		header->e_ehsize);
+			header->e_ehsize);
 	printf("  Size of program headers:           %d (bytes)\n",
-		header->e_phentsize);
+			header->e_phentsize);
 	printf("  Number of program headers:         %d\n",
-		header->e_phnum);
+			header->e_phnum);
 	printf("  Size of section headers:           %d (bytes)\n",
-		header->e_shentsize);
+			header->e_shentsize);
 	printf("  Number of section headers:         %d\n",
-		header->e_shnum);
+			header->e_shnum);
 	printf("  Section header string table index: %d\n",
-		header->e_shstrndx);
+			header->e_shstrndx);
 }
 
 /* ============= Print Sections =============== */
@@ -306,7 +320,7 @@ static const header_item_t section_types[] = {
 #define SECTION_NAME(sec, string_table) \
 	((sec) == NULL ? "<none>"                        \
 	: (string_table) == NULL ? "<no-name>"           \
-	: (const char*)((string_table) + (sec)->sh_name))
+	: (const char *)((string_table) + (sec)->sh_name))
 
 static void print_section_headers(Elf32_Obj *obj) {
 	size_t x;
@@ -319,16 +333,16 @@ static void print_section_headers(Elf32_Obj *obj) {
 		sh = &obj->sh_table[i];
 		x = sh->sh_type;
 		printf("  [%2d] %-17.17s %-10s %08x %06x %06x %02x  %02x %2d  %2d %2d\n", i,
-			SECTION_NAME(sh, obj->string_table),
-			section_types[x].desc,
-			sh->sh_addr,
-			sh->sh_offset,
-			sh->sh_size,
-			sh->sh_entsize,
-			sh->sh_flags,
-			sh->sh_link,
-			sh->sh_info,
-			sh->sh_addralign);
+				SECTION_NAME(sh, obj->string_table),
+				section_types[x].desc,
+				sh->sh_addr,
+				sh->sh_offset,
+				sh->sh_size,
+				sh->sh_entsize,
+				sh->sh_flags,
+				sh->sh_link,
+				sh->sh_info,
+				sh->sh_addralign);
 	}
 }
 
@@ -345,9 +359,9 @@ static const header_item_t segment_types[] = {
 	{ PT_TLS,     "TLS"     },
 };
 
-#define SEGMENT_NAME(type)\
+#define SEGMENT_NAME(type) \
 	((x > PT_TLS) ? "<unknown>" : \
-	((const char*)segment_types[x].desc))
+	((const char *)segment_types[x].desc))
 
 static void print_program_headers(Elf32_Obj *obj) {
 	size_t x;
@@ -360,14 +374,14 @@ static void print_program_headers(Elf32_Obj *obj) {
 		ph = &obj->ph_table[i];
 		x = ph->p_type;
 		printf("  %-14.14s 0x%06x 0x%08x 0x%08x 0x%05x 0x%05x  %02x 0x%x\n",
-			SEGMENT_NAME(segment_types[x].desc),
-			ph->p_offset,
-			ph->p_vaddr,
-			ph->p_paddr,
-			ph->p_filesz,
-			ph->p_memsz,
-			ph->p_flags,
-			ph->p_align);
+				SEGMENT_NAME(segment_types[x].desc),
+				ph->p_offset,
+				ph->p_vaddr,
+				ph->p_paddr,
+				ph->p_filesz,
+				ph->p_memsz,
+				ph->p_flags,
+				ph->p_align);
 	}
 }
 
@@ -387,8 +401,8 @@ static void print_section_to_segment_mapping(Elf32_Obj *obj) {
 		for (int j = 0; j < obj->header.e_shnum; j++) {
 			sh = obj->sh_table + j;
 			if ((sh->sh_size)
-			&& (between(sh->sh_offset, ph->p_offset, ph->p_offset + ph->p_filesz)
-			|| between(sh->sh_offset + sh->sh_size - 1, ph->p_offset, ph->p_offset + ph->p_filesz))) {
+					&& (between(sh->sh_offset, ph->p_offset, ph->p_offset + ph->p_filesz)
+					|| between(sh->sh_offset + sh->sh_size - 1, ph->p_offset, ph->p_offset + ph->p_filesz))) {
 				printf(" %s", (const char *) obj->string_table + sh->sh_name);
 			}
 		}
@@ -413,7 +427,6 @@ static void print_dynamic_section(Elf32_Obj *obj) {
 	}
 }
 
-
 /* ============== Print relocations =========== */
 
 static void print_relocations(Elf32_Obj *obj) {
@@ -422,7 +435,7 @@ static void print_relocations(Elf32_Obj *obj) {
 	if (!rel_array || !obj->rel_count) {
 		printf("There are no relocations in this file.\n");
 	} else {
-		//printf("Relocation section '%s' at offset 0x%x contains %d entries:\n");
+		/*printf("Relocation section '%s' at offset 0x%x contains %d entries:\n"); */
 
 		printf("\nRelocations:\n");
 
@@ -432,7 +445,7 @@ static void print_relocations(Elf32_Obj *obj) {
 
 			printf("%08x  %08x   %s\n",
 					rel_array[i].r_offset,
-					rel_array[i].r_info,\
+					rel_array[i].r_info, \
 					obj->sym_names + obj->sym_table[sym_table_i].st_name);
 		}
 	}
@@ -467,13 +480,13 @@ static const header_item_t symb_vis[] = {
 
 static void print_symbols(Elf32_Obj *obj, int counter) {
 	size_t t, b, v;
-    Elf32_Sym *sym;
+	Elf32_Sym *sym;
 
-    printf("Symbol table '%s' contains %d entries:\n",
-    		obj->sym_names + obj->sym_table->st_name, counter);
+	printf("Symbol table '%s' contains %d entries:\n",
+			obj->sym_names + obj->sym_table->st_name, counter);
 
-    printf("   Num:    Value  Size Type    Bind   Vis       Ndx Name\n");
-    for (int i = 0; i < counter; i++) {
+	printf("   Num:    Value  Size Type    Bind   Vis       Ndx Name\n");
+	for (int i = 0; i < counter; i++) {
 		sym = obj->sym_table + i;
 
 		t = ELF32_ST_TYPE(sym->st_info);
@@ -481,13 +494,13 @@ static void print_symbols(Elf32_Obj *obj, int counter) {
 		v = ELF32_ST_VISIBILITY(sym->st_other);
 
 		printf("    %2d: %-8x  %4d %-7s %-6s %-7s %5d %s\n", i,
-			sym->st_value,
-			sym->st_size,
-			symb_types[t].desc,
-			symb_binds[b].desc,
-			symb_vis[v].desc,
-			obj->sym_table[i].st_shndx,
-			obj->sym_names + sym->st_name);
+				sym->st_value,
+				sym->st_size,
+				symb_types[t].desc,
+				symb_binds[b].desc,
+				symb_vis[v].desc,
+				obj->sym_table[i].st_shndx,
+				obj->sym_names + sym->st_name);
 	}
 }
 
@@ -499,7 +512,7 @@ int main(int argc, char **argv) {
 	int show_reloc    = 0;
 	int show_symb     = 0;
 	int show_dyn      = 0;
-	static Elf32_Obj  elf;
+	static Elf32_Obj elf;
 	int opt, err, cnt = 0;
 	int elf_file;
 	int symb_count;

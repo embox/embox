@@ -25,15 +25,15 @@
  * EFLAGS
  */
 struct context {
-	/* 0x00 */uint32_t eip; /**< instruction pointer */
-	/* 0x04 */uint32_t ebx; /**< base register */
-	/* 0x08 */uint32_t edi; /**< Destination index register */
-	/* 0x0c */uint32_t esi; /**< Source index register */
-	/* 0x10 */uint32_t ebp; /**< Stack pointer register */
-	/* 0x14 */uint32_t esp; /**< Stack Base pointer register */
-	/* 0x18 */uint32_t eflags; /**< EFLAGS register hold the state of the processor */
+	/* 0x00 */
+	uint32_t eip;           /**< instruction pointer */
+	/* 0x04 */ uint32_t ebx; /**< base register */
+	/* 0x08 */ uint32_t edi; /**< Destination index register */
+	/* 0x0c */ uint32_t esi; /**< Source index register */
+	/* 0x10 */ uint32_t ebp; /**< Stack pointer register */
+	/* 0x14 */ uint32_t esp; /**< Stack Base pointer register */
+	/* 0x18 */ uint32_t eflags; /**< EFLAGS register hold the state of the processor */
 };
-
 
 #endif /* __ASSEMBLER__ */
 

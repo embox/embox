@@ -29,4 +29,3 @@ DIAG_OPS_DECLARE(
 		.putc = um_diag_putc,
 		.getc = um_diag_getc,
 );
-

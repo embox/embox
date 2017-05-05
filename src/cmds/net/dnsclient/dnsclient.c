@@ -13,7 +13,6 @@ static void print_usage(void) {
 	printf("Usage: dnsclient [-h] [-is IP address]\n");
 }
 
-
 int main(int argc, char **argv) {
 	int opt;
 	char *addr;

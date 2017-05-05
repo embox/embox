@@ -14,4 +14,3 @@ pid_t getppid(void) {
 	fprintf(stderr, ">>>%s\n", __func__);
 	return -ENOSYS;
 }
-

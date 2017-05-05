@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 
-
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_argv.h>
@@ -90,10 +89,11 @@ char *task_resource_argv_path(const struct task *task) {
 int argv_to_argc(char *const argv[]) {
 	int argc;
 
-	if (argv == NULL)
+	if (argv == NULL) {
 		return 0;
+	}
 
-	for (argc = 0; argv[argc]; argc ++) {
+	for (argc = 0; argv[argc]; argc++) {
 	}
 
 	return argc;

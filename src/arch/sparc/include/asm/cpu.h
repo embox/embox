@@ -16,5 +16,4 @@
 #define CONFIG_NWINDOWS     \
 	OPTION_MODULE_GET(embox__arch__sparc__kernel__leon3, NUMBER,nwindows)
 
-
 #endif /* ASM_CPU_H_ */

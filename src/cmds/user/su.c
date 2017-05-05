@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
 	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "c:"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'c':
 			cmd = optarg;
 			break;
@@ -51,11 +51,15 @@ int main(int argc, char *argv[]) {
 	strcpy(task_self_resource_security(), smac_admin);
 
 	if (cmd) {
-		char *nargv[] = {"", "-c", cmd};
+		char *nargv[] = {
+			"", "-c", cmd
+		};
 		newargc = 3;
 		memcpy(newargv, nargv, sizeof(nargv));
 	} else {
-		char *nargv[] = {""};
+		char *nargv[] = {
+			""
+		};
 		newargc = 1;
 		memcpy(newargv, nargv, sizeof(nargv));
 	}
@@ -81,4 +85,3 @@ int main(int argc, char *argv[]) {
 	return 0;
 
 }
-

@@ -29,9 +29,7 @@
 #include <drivers/block_dev/flash/flash.h>
 #include <drivers/block_dev/flash/flash_dev.h>
 
-
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
-
 
 POOL_DEF(flash_pool,struct flash_dev,MAX_DEV_QUANTITY);
 INDEX_DEF(flash_idx,0,MAX_DEV_QUANTITY);
@@ -39,7 +37,6 @@ INDEX_DEF(flash_idx,0,MAX_DEV_QUANTITY);
 static int flashbdev_ioctl(struct block_dev *bdev, int kmd, void *buf, size_t size);
 static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
-
 
 block_dev_driver_t flashbdev_pio_driver = {
 	"flash_drv",
@@ -52,12 +49,12 @@ static int flash_get_index(char *path) {
 	char *dev_name;
 	int idx;
 
-	if(NULL == (dev_name = strstr(path, "mtd"))) {
+	if (NULL == (dev_name = strstr(path, "mtd"))) {
 		return -1;
 	}
 	dev_name += sizeof("mtd");
 
-	if(!isdigit((int)dev_name[0])) {
+	if (!isdigit((int)dev_name[0])) {
 		return -1;
 	}
 
@@ -122,12 +119,12 @@ int flash_delete(const char *name) {
 	nas = flash_node.node->nas;
 	node_fi = nas->fi;
 	if (NULL != (flash = (struct flash_dev *)
-							block_dev(node_fi->privdata)->privdata)) {
+			block_dev(node_fi->privdata)->privdata)) {
 		if (-1 != (idx = flash_get_index((char *)name))) {
 			index_free(&flash_idx, idx);
 		}
 		pool_free(&flash_pool, flash);
-		block_dev_destroy (node_fi->privdata);
+		block_dev_destroy(node_fi->privdata);
 		vfs_del_leaf(flash_node.node);
 	}
 	return 0;
@@ -149,12 +146,11 @@ static int flashbdev_read(struct block_dev *bdev,
 		return -EINVAL;
 	}
 
-	if((!flash->drv) || (!flash->drv->flash_read)) {
+	if ((!flash->drv) || (!flash->drv->flash_read)) {
 		return -EINVAL;
 	}
 	return flash->drv->flash_read(flash, startpos, buffer, count);
 }
-
 
 static int flashbdev_write(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {
@@ -172,21 +168,21 @@ static int flashbdev_write(struct block_dev *bdev,
 		return -EINVAL;
 	}
 
-	if((!flash->drv) || (!flash->drv->flash_program)) {
+	if ((!flash->drv) || (!flash->drv->flash_program)) {
 		return -EINVAL;
 	}
 
 	return flash->drv->flash_program(flash, startpos, buffer, count);
 }
 
-static int flashbdev_erase(struct flash_dev * dev, uint32_t flash_base,
-                size_t len, uint32_t *err_address) {
+static int flashbdev_erase(struct flash_dev *dev, uint32_t flash_base,
+		size_t len, uint32_t *err_address) {
 	uint32_t block, end_addr;
 	size_t erase_count;
 	int stat = 0;
 	size_t block_size;
 
-	if((!dev->drv) || (!dev->drv->flash_erase_block)) {
+	if ((!dev->drv) || (!dev->drv->flash_erase_block)) {
 		return -EINVAL;
 	}
 
@@ -225,7 +221,7 @@ static int flashbdev_erase(struct flash_dev * dev, uint32_t flash_base,
 }
 
 static int decode_flash_cmd(int cmd) {
-	switch(cmd) {
+	switch (cmd) {
 
 	case IOCTL_GETBLKSIZE:
 		return GET_CONFIG_FLASH_BLOCKSIZE;
@@ -239,7 +235,7 @@ static int decode_flash_cmd(int cmd) {
 }
 
 static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
-									void *buf, size_t size) {
+		void *buf, size_t size) {
 	struct flash_dev *dev;
 	flash_getconfig_erase_t *e;
 	uint32_t startpos, endpos;
@@ -275,7 +271,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 	case GET_CONFIG_FLASH_DEVSIZE:
 		ds = (flash_getconfig_devsize_t *) buf;
 
-		if(NULL == ds) {
+		if (NULL == ds) {
 			return (dev->end - dev->start + 1);
 		}
 
@@ -286,7 +282,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 	case GET_CONFIG_FLASH_DEVADDR:
 		da = (flash_getconfig_devaddr_t *)buf;
 
-		if(NULL == da) {
+		if (NULL == da) {
 			return (dev->start);
 		}
 
@@ -297,7 +293,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 	case GET_CONFIG_FLASH_BLOCKSIZE:
 		bs = (flash_getconfig_blocksize_t *)buf;
 
-		if(NULL == bs) {
+		if (NULL == bs) {
 			return (dev->block_info.block_size);
 		}
 

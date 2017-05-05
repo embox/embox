@@ -32,7 +32,6 @@ extern void bt_handle(uint8_t *buff);
 #define BTM_BT_RST_PIN   ((uint32_t) (1 << OPTION_GET(NUMBER,rst_pin)))
 #define BTM_BT_LINK_PIN  ((uint32_t) (1 << OPTION_GET(NUMBER,link_pin)))
 
-
 static volatile AT91PS_USART us_dev_regs = ((AT91PS_USART) OPTION_GET(NUMBER,serial_port_offset));
 
 #define BTM_BT_BAUD_RATE 19200
@@ -110,7 +109,7 @@ void bluetooth_hw_hard_reset(void) {
 
 static int btm_bluetooth_init(void) {
 	irq_attach(OPTION_GET(NUMBER,irq_num), btm_bt_us_handler, 0, NULL, "bt reader");
-	// TODO error handling?
+	/* TODO error handling? */
 
 	init_usart();
 	return 0;

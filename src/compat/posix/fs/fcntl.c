@@ -33,8 +33,8 @@ int fcntl(int fd, int cmd, ...) {
 		uargs.i = va_arg(args, int);
 		va_end(args);
 		ret = idesc_index_valid(uargs.i)
-			? index_descriptor_dupfd(fd, uargs.i)
-			: -EBADF;
+				? index_descriptor_dupfd(fd, uargs.i)
+				: -EBADF;
 		break;
 	case F_GETFL:
 		return index_descriptor_flags_get(fd);
@@ -63,4 +63,3 @@ int fcntl(int fd, int cmd, ...) {
 
 	return 0;
 }
-

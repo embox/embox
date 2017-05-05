@@ -20,7 +20,6 @@
 #define MAX_DEV_MODULE_COUNT \
 	OPTION_MODULE_GET(embox__driver__common, NUMBER, max_dev_module_count)
 
-
 struct device;
 struct dev_module;
 struct dev_operations;
@@ -34,20 +33,20 @@ struct device {
 };
 
 struct dev_operations {
-	int  (*probe)  (struct dev_module *mod, void *dev_priv);
+	int (*probe)  (struct dev_module *mod, void *dev_priv);
 	void (*remove) (struct dev_module *mod);
 };
 
 struct dev_module {
 	struct file dev_file;
-	int    dev_id;
-	char   name[DEV_NAME_LEN];
+	int dev_id;
+	char name[DEV_NAME_LEN];
 	struct device *device;
 	void  *dev_priv;
 };
 
 extern struct dev_module *dev_module_create(struct device *dev,
-	const char *name, void *privdata);
+		const char *name, void *privdata);
 
 extern int dev_module_destroy(struct dev_module *dev);
 

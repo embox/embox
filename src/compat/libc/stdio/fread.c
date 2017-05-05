@@ -26,7 +26,7 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		file->has_ungetc = 0;
 		cbuff = buf;
 		cbuff[0] = (char)file->ungetc;
-		count --;
+		count--;
 		buf = &cbuff[1];
 		cnt++;
 	}

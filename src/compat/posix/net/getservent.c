@@ -38,7 +38,7 @@ void endservent(void) {
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
 #define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
 
-struct servent * getservent(void) {
+struct servent *getservent(void) {
 	char servent_buff[SERVENT_BUFF_SZ];
 	struct servent *se, *result;
 	char *tmp, *name, *port_str, *proto;

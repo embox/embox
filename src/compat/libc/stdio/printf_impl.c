@@ -53,7 +53,7 @@
  * Options for print_f
  */
 #define PRINT_F_BUFF_SZ        65 /* size of buffer for long double -- FIXME this may not be enough */
-//#define PRINT_F_PREC_SHORTENED 4 /* shortened precision for real numbers */
+/*#define PRINT_F_PREC_SHORTENED 4 / * shortened precision for real numbers * / */
 #define PRINT_F_PREC_DEFAULT   6 /* default precision for real numbers */
 
 static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, int c),
@@ -75,7 +75,9 @@ static int print_s(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	if (!(ops & OPS_FLAG_LEFT_ALIGN)) {
 		pc += space_count;
-		for (; space_count; --space_count) printchar_handler(printchar_data, ' ');
+		for (; space_count; --space_count) {
+			printchar_handler(printchar_data, ' ');
+		}
 	}
 
 	pc += len;
@@ -104,7 +106,7 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 			: is_signed && (ops & OPS_FLAG_EXTRA_SPACE) ? " "
 			: (base == 8) && (ops & OPS_FLAG_WITH_SPEC) ? "0"
 			: (base == 16) && (ops & OPS_FLAG_WITH_SPEC)
-				? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
+			? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
 			: "";
 	pc = 0;
 	prefix_len = strlen(prefix);
@@ -112,7 +114,9 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	do {
 		ch = u % base;
-		if (ch >= 10) ch += letter_base - 10 - '0';
+		if (ch >= 10) {
+			ch += letter_base - 10 - '0';
+		}
 		*--str = ch + '0';
 		u /= base;
 	} while (u);
@@ -126,7 +130,9 @@ static int print_i(void (*printchar_handler)(struct printchar_handler_data *d, i
 
 	if (!(ops & OPS_FLAG_LEFT_ALIGN)) {
 		pc += space_count;
-		for (; space_count; --space_count) printchar_handler(printchar_data, ' ');
+		for (; space_count; --space_count) {
+			printchar_handler(printchar_data, ' ');
+		}
 	}
 
 	pc += prefix_len;
@@ -175,52 +181,64 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	postfix = end = str = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
 	prefix = signbit(r) ? (r = -r, base == 16)
-				? ops & OPS_SPEC_UPPER_CASE ? "-0X" : "-0x"
-				: "-"
+			? ops & OPS_SPEC_UPPER_CASE ? "-0X" : "-0x"
+			: "-"
 			: ops & OPS_FLAG_WITH_SIGN ? base == 16
-				? ops & OPS_SPEC_UPPER_CASE ? "+0X" : "+0x"
-				: "+"
+			? ops & OPS_SPEC_UPPER_CASE ? "+0X" : "+0x"
+			: "+"
 			: ops & OPS_FLAG_EXTRA_SPACE ? base == 16
-				? ops & OPS_SPEC_UPPER_CASE ? " 0X" : " 0x"
-				: " "
+			? ops & OPS_SPEC_UPPER_CASE ? " 0X" : " 0x"
+			: " "
 			: base == 16 ? ops & OPS_SPEC_UPPER_CASE ? "0X" : "0x"
 			: "";
 	sign_count = i = pc = 0;
 	prefix_len = strlen(prefix);
 	letter_base = ops & OPS_SPEC_UPPER_CASE ? 'A' : 'a';
 	precision = ops & OPS_PREC_IS_GIVEN ? is_shortened ?
-				max(precision, 1) : precision
+			max(precision, 1) : precision
 			: base == 16 ? 12 : PRINT_F_PREC_DEFAULT;
 
 	fp = MODF(r, &ip);
 	if (with_exp || is_shortened) {
 		ep = 0.0L;
 		while (ip >= base) fp = MODF((ip + fp) / base, &ip), ep += 1.0L;
-		if (fp != 0.0L) while (ip == 0.0L) fp = MODF((ip + fp) * base, &ip), ep -= 1.0L;
-		if ((ep < -4) || (ep >= precision)) with_exp = 1;
+		if (fp != 0.0L) {
+			while (ip == 0.0L) fp = MODF((ip + fp) * base, &ip), ep -= 1.0L;
+		}
+		if ((ep < -4) || (ep >= precision)) {
+			with_exp = 1;
+		}
 	}
 	fp = with_exp ? fp : MODF(r, &ip);
 	precision -= is_shortened ? ceill(LOG10(ip)) + (ip != 0.0L) : 0;
 	assert(precision >= 0);
-	for (; (sign_count < precision) && (FMOD(fp, 1.0L) != 0.0L); ++sign_count) fp *= base;
+	for (; (sign_count < precision) && (FMOD(fp, 1.0L) != 0.0L); ++sign_count) {
+		fp *= base;
+	}
 	fp = roundl(fp);
 	ip = precision ? fp != POW(base, sign_count)
 			? ip : ip + 1.0L : roundl(ip + fp);
 	fp = fp != POW(base, sign_count) ? fp : 0.0L;
-	if (with_exp && (ip >= base)) fp = MODF((ip + fp) / base, &ip), ep += 1.0L;
+	if (with_exp && (ip >= base)) {
+		fp = MODF((ip + fp) / base, &ip), ep += 1.0L;
+	}
 
 	if (with_exp) {
 		do {
 			ch = FMOD(FABS(ep), base);
 			assert((ch >= 0) && (ch < base));
-			if (ch >= 10) ch += letter_base - 10 - '0';
+			if (ch >= 10) {
+				ch += letter_base - 10 - '0';
+			}
 			*--postfix = ch + '0';
 			MODF(ep / base, &ep);
 		} while (ep != 0.0L);
-		if ((strlen(postfix) == 1) && (base != 16)) *--postfix = '0';
+		if ((strlen(postfix) == 1) && (base != 16)) {
+			*--postfix = '0';
+		}
 		*--postfix = signbit(ep) ? '-' : '+';
 		*--postfix = base == 16 ? ops & OPS_SPEC_UPPER_CASE ?
-					'P' : 'p'
+				'P' : 'p'
 				: ops & OPS_SPEC_UPPER_CASE ? 'E' : 'e';
 		str = end = postfix - 1;
 		*end = '\0';
@@ -229,7 +247,9 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	for (; i < sign_count; ++i) {
 		ch = FMOD(fp, base);
 		assert((ch >= 0) && (ch < base));
-		if (ch >= 10) ch += letter_base - 10 - '0';
+		if (ch >= 10) {
+			ch += letter_base - 10 - '0';
+		}
 		*--str = ch + '0';
 		MODF(fp / base, &fp);
 	}
@@ -242,7 +262,9 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	do {
 		ch = (int)FMOD(ip, (long double)base);
 		assert((ch >= 0) && (ch < base));
-		if (ch >= 10) ch += letter_base - 10 - '0';
+		if (ch >= 10) {
+			ch += letter_base - 10 - '0';
+		}
 		*--str = ch + '0';
 		MODF(ip / base, &ip);
 	} while (ip != 0.0L);
@@ -315,7 +337,7 @@ int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 
 		/* check first symbol */
 		if (*format != '%') {
-single_print:
+			single_print:
 			++pc;
 			printchar_handler(printchar_data, *format);
 			continue;
@@ -334,17 +356,25 @@ single_print:
 			case '0': ops |= OPS_FLAG_ZERO_PAD; break;
 			}
 		}
-after_flags:
+		after_flags:
 
 		/* get width */
-		if (*format == '*') { width = va_arg(args, int); ++format; }
-		else { width = atoi(format); while (isdigit(*format)) ++format; }
+		if (*format == '*') {
+			width = va_arg(args, int); ++format;
+		}
+		else {
+			width = atoi(format); while (isdigit(*format)) ++format;
+		}
 		width = max(width, 0);
 
 		/* get precision */
 		ops |= *format == '.' ? OPS_PREC_IS_GIVEN : 0;
-		if ((*format == '.') && (*++format == '*')) { precision = va_arg(args, int); ++format; }
-		else { precision = atoi(format); while (isdigit(*format)) ++format; }
+		if ((*format == '.') && (*++format == '*')) {
+			precision = va_arg(args, int); ++format;
+		}
+		else {
+			precision = atoi(format); while (isdigit(*format)) ++format;
+		}
 		precision = precision >= 0 ? precision : (ops &= ~OPS_PREC_IS_GIVEN, 0);
 
 		/* get length */
@@ -362,8 +392,9 @@ after_flags:
 		switch (*format) {
 		default:
 			pc += format - begin + 1;
-			do
+			do {
 				printchar_handler(printchar_data, *begin);
+			}
 			while (++begin <= format);
 			break;
 		case '%': goto single_print;
@@ -430,14 +461,30 @@ after_flags:
 					ops | (OPS_FLAG_WITH_SPEC | OPS_FLAG_ZERO_PAD), 16);
 			break;
 		case 'n':
-			if (ops & OPS_LEN_MIN) *va_arg(args, signed char *) = (signed char)pc;
-			else if (ops & OPS_LEN_SHORT) *va_arg(args, short int *) = (short int)pc;
-			else if (ops & OPS_LEN_LONG) *va_arg(args, long int *) = (long int)pc;
-			else if (ops & OPS_LEN_LONGLONG) *va_arg(args, long long int *) = (long long int)pc;
-			else if (ops & OPS_LEN_MAX) *va_arg(args, intmax_t *) = (intmax_t)pc;
-			else if (ops & OPS_LEN_SIZE) *va_arg(args, size_t *) = (size_t)pc;
-			else if (ops & OPS_LEN_PTRDIFF) *va_arg(args, ptrdiff_t *) = (ptrdiff_t)pc;
-			else *va_arg(args, int *) = pc;
+			if (ops & OPS_LEN_MIN) {
+				*va_arg(args, signed char *) = (signed char)pc;
+			}
+			else if (ops & OPS_LEN_SHORT) {
+				*va_arg(args, short int *) = (short int)pc;
+			}
+			else if (ops & OPS_LEN_LONG) {
+				*va_arg(args, long int *) = (long int)pc;
+			}
+			else if (ops & OPS_LEN_LONGLONG) {
+				*va_arg(args, long long int *) = (long long int)pc;
+			}
+			else if (ops & OPS_LEN_MAX) {
+				*va_arg(args, intmax_t *) = (intmax_t)pc;
+			}
+			else if (ops & OPS_LEN_SIZE) {
+				*va_arg(args, size_t *) = (size_t)pc;
+			}
+			else if (ops & OPS_LEN_PTRDIFF) {
+				*va_arg(args, ptrdiff_t *) = (ptrdiff_t)pc;
+			}
+			else {
+				*va_arg(args, int *) = pc;
+			}
 			break;
 		}
 	}

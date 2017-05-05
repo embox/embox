@@ -73,8 +73,9 @@ mmu_pgd_t *vmem_alloc_pgd_table(void) {
 
 	addr = page_alloc(pgd_allocator, 1);
 
-	if (addr)
+	if (addr) {
 		memset(addr, 0, MMU_PGD_SIZE);
+	}
 
 	return addr;
 }
@@ -86,8 +87,9 @@ mmu_pmd_t *vmem_alloc_pmd_table(void) {
 
 	addr = page_alloc(pmd_allocator, 1);
 
-	if (addr)
+	if (addr) {
 		memset(addr, 0, MMU_PMD_SIZE);
+	}
 
 	return addr;
 }
@@ -99,8 +101,9 @@ mmu_pte_t *vmem_alloc_pte_table(void) {
 
 	addr = page_alloc(pte_allocator, 1);
 
-	if (addr)
+	if (addr) {
 		memset(addr, 0, MMU_PTE_SIZE);
+	}
 
 	return addr;
 }
@@ -128,6 +131,7 @@ void vmem_free_pte_table(mmu_pte_t *pte) {
 }
 
 void vmem_free_page(void *addr) {
-	if (page_belong(virt_page_allocator, addr))
+	if (page_belong(virt_page_allocator, addr)) {
 		page_free(virt_page_allocator, addr, 1);
+	}
 }

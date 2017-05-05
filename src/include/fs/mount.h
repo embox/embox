@@ -8,7 +8,6 @@
 #ifndef FS_MOUNT_H_
 #define FS_MOUNT_H_
 
-
 #include <util/dlist.h>
 
 struct node;

@@ -6,4 +6,3 @@
 typedef int sig_atomic_t;
 
 #endif /* GCC_SIGNAL_H_ */
-

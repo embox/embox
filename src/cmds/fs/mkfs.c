@@ -35,7 +35,7 @@
 #ifdef __MODULE__embox__fs__core__H_
 static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		unsigned int fs_type, unsigned int operation_flag, char *fs_specific) {
-	//int rezult;
+	/*int rezult; */
 
 	if (operation_flag & MKFS_CREATE_RAMDISK) {
 		if (0 == (err(ramdisk_create(path, blocks * PAGE_SIZE())))) {
@@ -45,31 +45,31 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 
 	if (operation_flag & MKFS_FORMAT_DEV) {
 		/* if (0 != (rezult = kformat(path, fs_name))) {
-			return rezult;
+		    return rezult;
 		} */
 	}
 	return 0;
 }
 #elif defined __MODULE__embox__fs__dvfs__core__H_
-	static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
+static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		int fs_type, int operation_flag, char *fs_specific) {
-		const struct dumb_fs_driver *drv = dumb_fs_driver_find(fs_name);
-		struct lookup lu = {};
+	const struct dumb_fs_driver *drv = dumb_fs_driver_find(fs_name);
+	struct lookup lu = {};
 
-		if (!drv) {
-			printf("Unknown FS type: %s. Check your configuration.\n", fs_name);
-			return 0;
-		}
-
-		dvfs_lookup(path, &lu);
-
-		if (!lu.item) {
-			printf("File %s not found.\n", path);
-			return 0;
-		}
-		/* TODO pointers check? */
-		return drv->format(lu.item->d_inode->i_data, fs_specific);
+	if (!drv) {
+		printf("Unknown FS type: %s. Check your configuration.\n", fs_name);
+		return 0;
 	}
+
+	dvfs_lookup(path, &lu);
+
+	if (!lu.item) {
+		printf("File %s not found.\n", path);
+		return 0;
+	}
+	/* TODO pointers check? */
+	return drv->format(lu.item->d_inode->i_data, fs_specific);
+}
 #endif
 
 static void print_usage(void) {
@@ -77,7 +77,7 @@ static void print_usage(void) {
 }
 
 static int check_invalid(int min_argc, int argc, char **argv) {
-	if (min_argc > argc){
+	if (min_argc > argc) {
 		printf("Invalid option `-%c' `%s'\n", optind, argv[optind]);
 		print_usage();
 		return EINVAL;
@@ -94,7 +94,7 @@ int main(int argc, char **argv) {
 	int opt;
 	int min_argc;
 	unsigned int operation_flag;
-	int       blocks;
+	int blocks;
 	char         *path;
 	const char   *fs_name;
 	unsigned int fs_type;
@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
 
 			path = argv[argc - 2];
 
-			if (0 >= sscanf(argv[argc - 1], "%d", &blocks)){
+			if (0 >= sscanf(argv[argc - 1], "%d", &blocks)) {
 				print_usage();
 				return -EINVAL;
 			}
@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 
 	if (argc > 1) {
 		if (argc > min_argc) {/** last arg should be block quantity*/
-			if (0 >= sscanf(argv[argc - 1], "%d", &blocks)){
+			if (0 >= sscanf(argv[argc - 1], "%d", &blocks)) {
 				print_usage();
 				return -EINVAL;
 			}

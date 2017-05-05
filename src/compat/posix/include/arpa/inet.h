@@ -16,7 +16,6 @@
 #include <netinet/in.h>
 #include <endian.h>
 
-
 __BEGIN_DECLS
 
 /**
@@ -31,7 +30,7 @@ __BEGIN_DECLS
  * IPv4 address manipulation
  */
 extern in_addr_t inet_addr(const char *cp);
-extern char * inet_ntoa(struct in_addr in);
+extern char *inet_ntoa(struct in_addr in);
 extern int inet_aton(const char *cp, struct in_addr *addr);
 
 /* function takes the Internet network number specified by net and the local
@@ -43,7 +42,7 @@ extern struct in_addr inet_makeaddr(in_addr_t net, in_addr_t lna);
 /**
  * Convert IPv4 and IPv6 addresses between binary and text form
  */
-extern const char * inet_ntop(int af, const void *src, char *dst, socklen_t size);
+extern const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
 extern int inet_pton(int af, const char *src, void *dst);
 
 __END_DECLS

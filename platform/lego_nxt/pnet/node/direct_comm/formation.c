@@ -29,13 +29,12 @@ static int ctrl_rx(struct pnet_pack *pack);
 static int data_rx(struct pnet_pack *pack);
 
 PNET_NODE_DEF_NAME(PNET_NODE_DIRECT_COMM_FORMATION_DATA, this_data, {
-	.rx_hnd = data_rx
-});
+			.rx_hnd = data_rx
+		});
 
 PNET_NODE_DEF_NAME(PNET_NODE_DIRECT_COMM_FORMATION_CTRL, this_ctrl, {
-	.rx_hnd = ctrl_rx
-});
-
+			.rx_hnd = ctrl_rx
+		});
 
 static int handle_size(uint8_t *buff) {
 	return buff[0] + (buff[1] << 8);
@@ -49,7 +48,7 @@ static int get_header(void *msg) {
 	int size = handle_size((uint8_t *) msg);
 
 	if (size > DC_BUFF_SIZE - MSG_SIZE_BYTE_CNT) {
-		//TODO error length
+		/*TODO error length */
 	}
 	data_hnd = get_body;
 	bluetooth_read(size);

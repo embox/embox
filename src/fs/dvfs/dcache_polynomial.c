@@ -23,8 +23,9 @@ static void hash_init(void) {
 	/* TODO precount in runtime or even in compiletime */
 	int i;
 	pows[0] = 1;
-	for (i = 1; i < DVFS_MAX_PATH_LEN; i++)
+	for (i = 1; i < DVFS_MAX_PATH_LEN; i++) {
 		pows[i] = (pows[i - 1] * prime) % module;
+	}
 }
 
 static unsigned long long poly_hash(const char *str) {
@@ -88,8 +89,9 @@ int dvfs_cache_del(struct dentry *dentry) {
 	char pathname[DVFS_MAX_PATH_LEN];
 	unsigned long long hash;
 	struct hashtable_item *ht_item;
-	if (dentry->name[0] == '\0')
+	if (dentry->name[0] == '\0') {
 		return -1;
+	}
 	dentry_full_path(dentry, pathname);
 	hash = poly_hash(pathname);
 	if (!(ht_item = hashtable_del(&dentry_ht, (void *) *((size_t *) &hash)))) {
@@ -115,7 +117,7 @@ struct dentry *dvfs_cache_get(char *path, struct lookup *lookup) {
 }
 
 struct dentry *dvfs_cache_lookup(const char *path,
-	struct dentry *base) {
+		struct dentry *base) {
 	char full_path[DVFS_MAX_PATH_LEN];
 	dentry_full_path(base, full_path);
 	strncat(full_path, path, DVFS_MAX_PATH_LEN - strlen(path));

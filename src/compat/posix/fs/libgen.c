@@ -31,7 +31,7 @@ static char *path_final_slash(char *path) {
 	return NULL;
 }
 
-char * basename(char *path) {
+char *basename(char *path) {
 	char *sl;
 
 	if (!path || *path == '\0') {
@@ -41,17 +41,18 @@ char * basename(char *path) {
 	sl = path_final_slash(path);
 
 	if (!sl) {
-		if (!*path)
+		if (!*path) {
 			/* path wasn't empty, but now it does =>
- 			 * only trailing /// was presented */
+			 * only trailing /// was presented */
 			return strcpy(path, "/");
+		}
 		return path;
 	}
 
 	return sl + 1;
 }
 
-char * dirname(char *path) {
+char *dirname(char *path) {
 	char *sl;
 
 	if (!path || *path == '\0') {
@@ -60,10 +61,11 @@ char * dirname(char *path) {
 
 	sl = path_final_slash(path);
 	if (!sl) {
-		if (!*path)
+		if (!*path) {
 			/* path wasn't empty, but now it does =>
- 			 * only trailing /// was presented */
+			 * only trailing /// was presented */
 			return strcpy(path, "/");
+		}
 		return strcpy(path, ".");
 	}
 
@@ -75,4 +77,3 @@ char * dirname(char *path) {
 
 	return path;
 }
-

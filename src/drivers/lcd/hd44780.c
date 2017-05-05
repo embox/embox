@@ -39,7 +39,7 @@ static int line_first = 0;
 
 static inline void nsdelay(int ns) {
 	volatile int lns = ns / 10 + 1;
-	while (lns-- > 0);
+	while (lns-- > 0) ;
 }
 
 static int lcd_read(int reg) {
@@ -71,7 +71,7 @@ static void lcd_write(int reg, int val) {
 }
 
 static void lcd_wait_busy(void) {
-	while (lcd_read(0) & BUSY_FLAG);
+	while (lcd_read(0) & BUSY_FLAG) ;
 }
 
 static void lcd_write_wait(int reg, char ch) {
@@ -129,11 +129,10 @@ void lcd_putc(char ch) {
 	}
 
 	buf[line_first * WIDTH_N + pos] = ch;
-	pos ++;
+	pos++;
 
 	lcd_write_wait(1, ch);
 }
-
 
 static int lcd_test(void) {
 	char demo[] = "      Embox     \n   Rev unknown  ";

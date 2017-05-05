@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "v:p:e:r:asw"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'v':
 			vid = strtoul(optarg, NULL, 0);
 			break;
@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 
 	if ((write == 1 && len != -1) || (write == 0 && len == -1)) {
 		fprintf(stderr, "Should be specified exactly one operation "
-				"(-r LENGTH or -w [ DATA ])\n");
+						"(-r LENGTH or -w [ DATA ])\n");
 		usage(argv[0]);
 		return 1;
 
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (0 != usb_dev_desc_get_desc(ddesc, &usb_test_dev_desc,
-				&usb_test_iface_desc)) {
+			&usb_test_iface_desc)) {
 		fprintf(stderr, "can't get device descriptor\n");
 		return 1;
 	}
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
 	res = usb_test_write(ddesc, endp, argv + optind, argc - optind,
 			(setup_tok ? USB_TOKEN_SETUP : 0)
 			| (ack_tok ? USB_TOKEN_STATUS : 0));
-exit:
+	exit:
 	usb_dev_desc_close(ddesc);
 
 	return res;

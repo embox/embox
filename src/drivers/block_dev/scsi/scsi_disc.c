@@ -16,7 +16,6 @@
 
 #include <drivers/block_dev.h>
 
-
 static int scsi_wake_res(struct scsi_dev *dev) {
 	return min(dev->cmd_complete, 0);
 }

@@ -54,7 +54,7 @@ static const struct sock_proto_ops packet_sock_ops_struct = {
 /* htons(ETH_P_ALL) */
 #define HOST_ETH_P_ALL     0x003
 #else
-#error("set endians")
+#error ("set endians")
 #endif
 EMBOX_NET_SOCK(AF_PACKET, SOCK_RAW, HOST_ETH_P_ALL, 0, packet_sock_ops_struct);
 

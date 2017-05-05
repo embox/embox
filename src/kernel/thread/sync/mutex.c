@@ -55,16 +55,17 @@ int mutex_lock(struct mutex *m) {
 	errcheck = (m->attr.type == MUTEX_ERRORCHECK);
 
 	wait_ret = WAITQ_WAIT(&m->wq, ({
-		int done;
+				int done;
 
-		sched_lock();
-		ret = mutex_trylock(m);
-		done = (ret == 0) || (errcheck && ret == -EDEADLK);
-		if (!done)
-			mutex_priority_inherit(current, m);
-		sched_unlock();
-		done;
-	}));
+				sched_lock();
+				ret = mutex_trylock(m);
+				done = (ret == 0) || (errcheck && ret == -EDEADLK);
+				if (!done) {
+					mutex_priority_inherit(current, m);
+				}
+				sched_unlock();
+				done;
+			}));
 
 	if (wait_ret != 0) {
 		ret = wait_ret;
@@ -84,8 +85,9 @@ int mutex_trylock(struct mutex *m) {
 	assert(m);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
 
-	if (mutex_is_static_inited(m))
+	if (mutex_is_static_inited(m)) {
 		mutex_complete_static_init(m);
+	}
 
 	sched_lock();
 	{

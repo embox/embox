@@ -27,15 +27,15 @@
  *   to be waken up by mutex->wq when other schedee frees mutex.
  */
 static inline int mutex_trylock_lthread(struct lthread *self,
-					struct mutex *mutex) {
+		struct mutex *mutex) {
 	return WAITQ_WAIT_LTHREAD(self, &mutex->wq, ({
-			int done;
-			done = (mutex_trylock_schedee(&self->schedee, mutex) == 0);
-			if (!done) {
-				mutex_priority_inherit(&self->schedee, mutex);
-			}
-			done;
-		}));
+				int done;
+				done = (mutex_trylock_schedee(&self->schedee, mutex) == 0);
+				if (!done) {
+					mutex_priority_inherit(&self->schedee, mutex);
+				}
+				done;
+			}));
 }
 
 /**
@@ -45,7 +45,7 @@ static inline int mutex_trylock_lthread(struct lthread *self,
  * @param mutex Previously locked mutex.
  */
 static inline void mutex_unlock_lthread(struct lthread *self,
-					struct mutex *mutex) {
+		struct mutex *mutex) {
 	mutex_unlock_schedee(&self->schedee, mutex);
 }
 

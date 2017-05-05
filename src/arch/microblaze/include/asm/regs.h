@@ -46,5 +46,4 @@
 	addi r30, reg_zero, 0; \
 	addi r31, reg_zero, 0;
 
-
 #endif /* MICROBLAZE_REGS_H_ */

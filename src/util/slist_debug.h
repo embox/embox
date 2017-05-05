@@ -47,7 +47,7 @@ struct slist_link {
 
 #define __slist_check(expr) \
 	({ \
-		typeof(expr) __slist_expr = (expr); \
+		typeof(expr)__slist_expr = (expr); \
 		assert(__slist_expr != NULL);       \
 		__slist_expr;                       \
 	})

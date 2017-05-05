@@ -10,9 +10,9 @@
 
 static traps_env_t test_env[1];
 
-//FIXME testtraps_set_handler haven't been implemented yet
+/*FIXME testtraps_set_handler haven't been implemented yet */
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
-	switch(type) {
+	switch (type) {
 	case TRAP_TYPE_HARDTRAP:
 		hwtrap_handler[number] = handler;
 		break;
@@ -51,9 +51,9 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 
 #endif
 	__asm__ __volatile__ (""
-			"addi %0, r3, 0\n\t"
-			: "=r" (res) : : "memory"
-			);
+						  "addi %0, r3, 0\n\t"
+	: "=r" (res) : : "memory"
+	);
 
 	return res;
 }

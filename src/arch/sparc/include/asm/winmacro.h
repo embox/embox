@@ -25,7 +25,7 @@ struct reg_window {
 	uint32_t ins[6];
 	struct stack_frame *fp;
 	void *ret_pc;
-}__attribute__ ((aligned (8)));
+} __attribute__ ((aligned(8)));
 
 extern void winflush(void);
 
@@ -88,29 +88,29 @@ extern void winflush(void);
 	/* Check stack alignment. */               \
 	andcc %sp, 0x7, %g0;                       \
 	bne corrupt_stack_branch;                  \
-	 /* Check if %sp and %sp + 0x38            \
-	  * point to the different pages. */       \
-	 add %sp, REG_WINDOW_SZ - 8, %scratch;     \
+	/* Check if %sp and %sp + 0x38            \
+	 * point to the different pages. */        \
+	add %sp, REG_WINDOW_SZ - 8, %scratch;     \
 	xor %scratch, %sp, %scratch;               \
 	andcc %scratch, 0x1000, %g0;               \
 	andn %sp, 0xfff, %scratch;                 \
 	be 10293847f; /* single page */            \
-	 or %scratch, 0x400, %scratch;             \
+	or %scratch, 0x400, %scratch;             \
 	/* Probability of reaching the following   \
 	 * 6 instructions is 1/64. */              \
 	add %scratch, 0x1000, %scratch;            \
 	/* Probe the MMU for %sp + 0x38 value. */  \
-	lda [%scratch] ASI_LEON_MMUFLUSH, %scratch;\
+	lda [%scratch] ASI_LEON_MMUFLUSH, %scratch; \
 	andcc %scratch, MMU_PTE_WRITE, %g0;          \
 	be corrupt_stack_branch;                   \
-	 andn %sp, 0xfff, %scratch;                \
+	andn %sp, 0xfff, %scratch;                \
 	or %scratch, 0x400, %scratch;              \
-10293847: /* single page */                    \
-	 /* Probe the MMU for %sp value. */        \
-	lda [%scratch] ASI_LEON_MMUFLUSH, %scratch;\
+	10293847 : /* single page */                    \
+	/* Probe the MMU for %sp value. */        \
+	lda [%scratch] ASI_LEON_MMUFLUSH, %scratch; \
 	andcc %scratch, MMU_PTE_WRITE, %g0;          \
 	be corrupt_stack_branch;                   \
-	 nop;
+	nop;
 
 #else
 #define USER_STACK_PROBE(corrupt_stack_branch, scratch)

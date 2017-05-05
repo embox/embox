@@ -40,7 +40,7 @@ static const struct task_resource_desc task_thread_key_table_desc = {
 	.resource_offset = &task_thread_key_table_offset
 };
 
-struct thread_key_table * task_resource_thread_key_table(const struct task *task) {
+struct thread_key_table *task_resource_thread_key_table(const struct task *task) {
 	assert(task != NULL);
 	return (void *)task->resources + task_thread_key_table_offset;
 }

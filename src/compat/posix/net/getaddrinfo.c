@@ -95,7 +95,7 @@ static int explore_hints(const struct addrinfo *hints,
 	return 0;
 }
 
-static struct servent * explore_serv(const char *servname,
+static struct servent *explore_serv(const char *servname,
 		const struct addrinfo *hints) {
 	const char *proto;
 	unsigned short port;
@@ -167,12 +167,24 @@ static int ai_make(int family, int socktype, int protocol,
 static int explore_node(const char *nodename,
 		const struct addrinfo *hints, const struct servent *se,
 		struct addrinfo **out_ai) {
-	static const int all_family[] = { AF_INET, AF_INET6, -1 },
-		all_socktype[] = { SOCK_STREAM, SOCK_DGRAM, SOCK_RAW, -1 },
-		all_protocol[] = { IPPROTO_TCP, IPPROTO_UDP, 0 };
-	int one_family[2] = { -1, -1 },
-		one_socktype[2] = { -1, -1 },
-		one_protocol[1] = { -1 };
+	static const int all_family[] = {
+		AF_INET, AF_INET6, -1
+	},
+			all_socktype[] = {
+		SOCK_STREAM, SOCK_DGRAM, SOCK_RAW, -1
+	},
+			all_protocol[] = {
+		IPPROTO_TCP, IPPROTO_UDP, 0
+	};
+	int one_family[2] = {
+		-1, -1
+	},
+			one_socktype[2] = {
+		-1, -1
+	},
+			one_protocol[1] = {
+		-1
+	};
 	const int *family_set, *socktype_set, *protocol_set;
 	const int *family, *socktype, *protocol;
 	struct addrinfo *ai_head, **ai_last_ptr;
@@ -247,7 +259,7 @@ static int explore_node(const char *nodename,
 			salen = sizeof addr.in;
 		}
 		else if (1 == inet_pton(AF_INET6, nodename,
-					&addr.in6.sin6_addr)) {
+				&addr.in6.sin6_addr)) {
 			sa = (struct sockaddr *)&addr.in6;
 			salen = sizeof addr.in6;
 		}

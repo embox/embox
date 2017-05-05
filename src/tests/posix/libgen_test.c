@@ -49,7 +49,6 @@ TEST_CASE("basename with 'path' equals '/usr/'") {
 	test_assert_zero(strcmp(bname, "usr"));
 }
 
-
 TEST_CASE("basename with 'path' equals '/'") {
 	char *bname;
 
@@ -58,7 +57,6 @@ TEST_CASE("basename with 'path' equals '/'") {
 	test_assert_zero(strcmp(bname, "/"));
 }
 
-
 TEST_CASE("basename with 'path' equals '///'") {
 	char *bname;
 
@@ -66,7 +64,6 @@ TEST_CASE("basename with 'path' equals '///'") {
 
 	test_assert_zero(strcmp(bname, "/"));
 }
-
 
 TEST_CASE("basename with 'path' equals '//usr//lib//'") {
 	char *bname;
@@ -117,7 +114,6 @@ TEST_CASE("dirname with 'path' equals '/usr/'") {
 	test_assert_zero(strcmp(dname, "/"));
 }
 
-
 TEST_CASE("dirname with 'path' equals 'usr'") {
 	char *dname;
 
@@ -134,7 +130,6 @@ TEST_CASE("dirname with 'path' equals '/'") {
 	test_assert_zero(strcmp(dname, "/"));
 }
 
-
 TEST_CASE("dirname with 'path' equals '.'") {
 	char *dname;
 
@@ -142,7 +137,6 @@ TEST_CASE("dirname with 'path' equals '.'") {
 
 	test_assert_zero(strcmp(dname, "."));
 }
-
 
 TEST_CASE("dirname with 'path' equals '..'") {
 	char *dname;

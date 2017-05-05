@@ -9,15 +9,14 @@
 #include <stm32f3_discovery.h>
 
 static void stm32f3_delay(uint32_t delay) {
-	while(delay--)
+	while (delay--)
 		;
 }
 
-
 static void init_pins(GPIO_TypeDef  *GPIOx, uint16_t pins) {
-	GPIO_InitTypeDef  GPIO_InitStruct;
+	GPIO_InitTypeDef GPIO_InitStruct;
 
-	//TODO Is this required?
+	/*TODO Is this required? */
 	__GPIOD_CLK_ENABLE();
 
 	GPIO_InitStruct.Pin = pins;
@@ -42,11 +41,9 @@ void motor_enable(struct motor *m) {
 	HAL_GPIO_WritePin(GPIOD, m->enable, GPIO_PIN_SET);
 }
 
-
 void motor_disable(struct motor *m) {
 	HAL_GPIO_WritePin(GPIOD, m->enable, GPIO_PIN_RESET);
 }
-
 
 void motor_run(struct motor *m, enum motor_run_direction dir) {
 	uint8_t input;

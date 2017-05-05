@@ -18,10 +18,16 @@ static void spi_delay(int n) {
 }
 
 static void nrf24_test(void) {
-	uint8_t rx_address[5] = {0xA7,0x95,0xF1,0x36,0x06};
-	uint8_t tx_address[5] = {0xA7,0x95,0xF1,0x36,0x07};
-	//uint8_t tx_address[5] = {0x17,0x97,0xA7,0xA7,0xD7};
-	uint8_t addr[10] = {0x1};
+	uint8_t rx_address[5] = {
+		0xA7,0x95,0xF1,0x36,0x06
+	};
+	uint8_t tx_address[5] = {
+		0xA7,0x95,0xF1,0x36,0x07
+	};
+	/*uint8_t tx_address[5] = {0x17,0x97,0xA7,0xA7,0xD7}; */
+	uint8_t addr[10] = {
+		0x1
+	};
 	uint8_t val = 0x17;
 	uint8_t reg;
 	uint8_t temp;
@@ -29,7 +35,7 @@ static void nrf24_test(void) {
 	uint8_t data_array[6];
 
 	spi_delay(1000000);
-    /* init hardware pins */
+	/* init hardware pins */
 	nrf24_init();
 
 	if (spi_init() < 0) {
@@ -65,7 +71,7 @@ static void nrf24_test(void) {
 	spi_delay(1000000);
 	nrf24_readRegister(RX_ADDR_P0, addr, 5);
 	printf("RX_ADDR_P0: %x %x %x %x %x\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
-	
+
 	spi_delay(1000000);
 	nrf24_readRegister(RF_CH, &reg, 1);
 
@@ -99,53 +105,53 @@ static void nrf24_test(void) {
 
 	nrf24_readRegister(TX_ADDR, addr, 5);
 	printf("TX addr is: %x %x %x %x %x\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
-	//spi_delay(1000000);
+	/*spi_delay(1000000); */
 	nrf24_readRegister(RX_ADDR_P0, addr, 5);
 	printf("RX addr is: %x %x %x %x %x\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
-	//spi_delay(1000000);
+	/*spi_delay(1000000); */
 	nrf24_readRegister(RX_ADDR_P1, addr, 5);
 	printf("RX_ADDR_P1 addr is: %x %x %x %x %x\n", addr[0], addr[1], addr[2], addr[3], addr[4]);
 
 	/* Set the device addresses */
-	//nrf24_tx_address(rx_address);
-	//nrf24_rx_address(rx_address);
+	/*nrf24_tx_address(rx_address); */
+	/*nrf24_rx_address(rx_address); */
 
-    nrf24_ce_digitalWrite(HIGH);
+	nrf24_ce_digitalWrite(HIGH);
 
 	reg = nrf24_getStatus();
 	printf("STATUS = %x\n", reg);
 
-    while(1)
-    {                
+	while (1)
+	{
 		reg = nrf24_getStatus();
 		printf("STATUS = %x\n", reg);
 
-        /* Fill the data buffer */
-        data_array[0] = 0x00;
-        data_array[1] = 0x00;
-        data_array[2] = q++;
-        data_array[3] = 0x25;
-        data_array[4] = 0x75 + q;
-        data_array[5] = data_array[4];                                    
+		/* Fill the data buffer */
+		data_array[0] = 0x00;
+		data_array[1] = 0x00;
+		data_array[2] = q++;
+		data_array[3] = 0x25;
+		data_array[4] = 0x75 + q;
+		data_array[5] = data_array[4];
 
-        /* Automatically goes to TX mode */
-        nrf24_send(data_array);        
-        
-        /* Wait for transmission to end */
-        while(nrf24_isSending());
+		/* Automatically goes to TX mode */
+		nrf24_send(data_array);
 
-        /* Make analysis on last tranmission attempt */
-        temp = nrf24_lastMessageStatus();
+		/* Wait for transmission to end */
+		while (nrf24_isSending()) ;
 
-        if(temp == NRF24_TRANSMISSON_OK)
-        {                    
-            printf("> Tranmission went OK\r\n");
-        }
-        else if(temp == NRF24_MESSAGE_LOST)
-        {                    
-            printf("> Message is lost ...\r\n");    
-        }
-        
+		/* Make analysis on last tranmission attempt */
+		temp = nrf24_lastMessageStatus();
+
+		if (temp == NRF24_TRANSMISSON_OK)
+		{
+			printf("> Tranmission went OK\r\n");
+		}
+		else if (temp == NRF24_MESSAGE_LOST)
+		{
+			printf("> Message is lost ...\r\n");
+		}
+
 		/* Retranmission count indicates the tranmission quality */
 		temp = nrf24_retransmissionCount();
 		printf("> Retranmission count: %d\r\n",temp);
@@ -154,11 +160,11 @@ static void nrf24_test(void) {
 		nrf24_powerUpRx();
 
 		/* Or you might want to power down after TX */
-		// nrf24_powerDown();            
+		/* nrf24_powerDown(); */
 
 		/* Wait a little ... */
 		spi_delay(2000000);
-    }
+	}
 }
 
 static void init_leds() {
@@ -172,7 +178,7 @@ int main(int argc, char *argv[]) {
 	printf("NRF24 transmit test start\n");
 
 	init_leds();
-    BSP_LED_Toggle(LED5);
+	BSP_LED_Toggle(LED5);
 	nrf24_test();
 
 	return 0;

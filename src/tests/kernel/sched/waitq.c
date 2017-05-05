@@ -14,7 +14,7 @@
 EMBOX_TEST_SUITE("Test suite for basic waitq operations");
 
 TEST_CASE("Sched_wake should leave thread's state consistent (as tested by "
-		"__waitq_prepare)") {
+		  "__waitq_prepare)") {
 	struct waitq_link waitq_link;
 	struct waitq waitq;
 
@@ -48,4 +48,3 @@ TEST_CASE("Three-step event waiting should support event occured before wait") {
 	waitq_wait_prepare(&waitq, &waitq_link);
 	waitq_wait_cleanup(&waitq, &waitq_link);
 }
-

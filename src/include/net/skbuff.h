@@ -39,19 +39,19 @@ typedef struct sk_buff {        /* Socket buffer */
 	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
-	struct pool *pl;	/* Local net driver pool pointer. Zero if default.
-				   Probably, should be joined with *dev field */
+	struct pool *pl;    /* Local net driver pool pointer. Zero if default.
+	               Probably, should be joined with *dev field */
 
-		/* Control buffer (used to store layer-specific info e.g. ip options)
-		 * Nowdays it's used only in ip options, so it's a good idea to
-		 * remove this field
-		 */
+	/* Control buffer (used to store layer-specific info e.g. ip options)
+	 * Nowdays it's used only in ip options, so it's a good idea to
+	 * remove this field
+	 */
 	char cb[52];
 
-		/* Length of actual data, from LL header till the end */
+	/* Length of actual data, from LL header till the end */
 	size_t len;
 
-		/* Transport layer header */
+	/* Transport layer header */
 	union {
 		struct tcphdr *th;
 		struct udphdr *uh;
@@ -60,7 +60,7 @@ typedef struct sk_buff {        /* Socket buffer */
 		unsigned char *raw;
 	} h;
 
-		/* Network layer header */
+	/* Network layer header */
 	union {
 		struct iphdr *iph;
 		struct ip6hdr *ip6h;
@@ -68,26 +68,26 @@ typedef struct sk_buff {        /* Socket buffer */
 		unsigned char *raw;
 	} nh;
 
-		/* Link layer header */
+	/* Link layer header */
 	union {
 		struct ethhdr *ethh;
 		unsigned char *raw;
 	} mac;
 
-		/* Pointer for buffer used to store all skb content.
-		 * Used by operations with pool, so it MUST NOT be changed
-		 */
+	/* Pointer for buffer used to store all skb content.
+	 * Used by operations with pool, so it MUST NOT be changed
+	 */
 	struct sk_buff_data *data;
 
-		/* After processing by (incoming) stack packet is used by
-		 * socket structures. Socket (== User) may consume only a part
-		 * of data. Taken data ends with p_data
-		 * Note:
-		 *	Quoting from man recvfrom "If a message is too long to fit in
-		 *	the supplied buffer, excess bytes may be discarded depending
-		 *	on the type of socket the message is received from"
-		 * So the presence of this field isn't mandatory.
-		 */
+	/* After processing by (incoming) stack packet is used by
+	 * socket structures. Socket (== User) may consume only a part
+	 * of data. Taken data ends with p_data
+	 * Note:
+	 *	Quoting from man recvfrom "If a message is too long to fit in
+	 *	the supplied buffer, excess bytes may be discarded depending
+	 *	on the type of socket the message is received from"
+	 * So the presence of this field isn't mandatory.
+	 */
 	unsigned char *p_data;
 	unsigned char *p_data_end;
 
@@ -97,26 +97,26 @@ typedef struct sk_buff {        /* Socket buffer */
 extern size_t skb_max_size(void);
 extern size_t skb_extra_max_size(void);
 
-extern void * skb_data_cast_in(struct sk_buff_data *skb_data);
-extern struct sk_buff_data * skb_data_cast_out(void *data);
-extern void * skb_extra_cast_in(struct sk_buff_extra *skb_extra);
-extern struct sk_buff_extra * skb_extra_cast_out(void *extra);
+extern void *skb_data_cast_in(struct sk_buff_data *skb_data);
+extern struct sk_buff_data *skb_data_cast_out(void *data);
+extern void *skb_extra_cast_in(struct sk_buff_extra *skb_extra);
+extern struct sk_buff_extra *skb_extra_cast_out(void *extra);
 
-extern struct sk_buff_data * skb_data_alloc(size_t size);
-extern struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data);
+extern struct sk_buff_data *skb_data_alloc(size_t size);
+extern struct sk_buff_data *skb_data_clone(struct sk_buff_data *skb_data);
 extern int skb_data_cloned(const struct sk_buff_data *skb_data);
 extern void skb_data_free(struct sk_buff_data *skb_data);
 extern void *skb_get_data_pointner(struct sk_buff_data *skb_data);
 
-extern struct sk_buff_extra * skb_extra_alloc(void);
+extern struct sk_buff_extra *skb_extra_alloc(void);
 extern void skb_extra_free(struct sk_buff_extra *skb_extra);
 
 /**
  * Wrap sk_buff_data into sk_buff structure
  */
-extern struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data);
+extern struct sk_buff *skb_wrap(size_t size, struct sk_buff_data *skb_data);
 
-extern struct sk_buff * skb_wrap_local(size_t size,
+extern struct sk_buff *skb_wrap_local(size_t size,
 		struct sk_buff_data *skb_data, struct pool *pl);
 
 /**
@@ -127,10 +127,10 @@ extern struct sk_buff * skb_wrap_local(size_t size,
  * Function return NULL if function can't allocate demanded buffer
  * TODO make skb_queue if `size` more than mtu
  */
-extern struct sk_buff * skb_alloc(size_t size);
-extern struct sk_buff * skb_alloc_local(size_t size, struct pool *pl);
-extern struct sk_buff * skb_alloc_dynamic(size_t size);
-extern struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb);
+extern struct sk_buff *skb_alloc(size_t size);
+extern struct sk_buff *skb_alloc_local(size_t size, struct pool *pl);
+extern struct sk_buff *skb_alloc_dynamic(size_t size);
+extern struct sk_buff *skb_realloc(size_t size, struct sk_buff *skb);
 
 /**
  * Free skb allocated by skb_alloc
@@ -147,17 +147,17 @@ extern void skb_rshift(struct sk_buff *skb, size_t count);
 /**
  * Make a full sk_buff copy
  */
-extern struct sk_buff * skb_copy(const struct sk_buff *skb);
+extern struct sk_buff *skb_copy(const struct sk_buff *skb);
 
 /**
  * Make a copy of sk_buff with shared packet data
  */
-extern struct sk_buff * skb_clone(const struct sk_buff *skb);
+extern struct sk_buff *skb_clone(const struct sk_buff *skb);
 
 /**
  * Make sk_buff without shared packet data
  */
-extern struct sk_buff * skb_declone(struct sk_buff *skb);
+extern struct sk_buff *skb_declone(struct sk_buff *skb);
 
 /**
  * Write buffer from iovec
@@ -208,16 +208,16 @@ extern void skb_queue_push(struct sk_buff_head *queue, struct sk_buff *skb);
 /**
  * Get first sk_buff from queue without removing
  */
-extern struct sk_buff * skb_queue_front(struct sk_buff_head *queue);
+extern struct sk_buff *skb_queue_front(struct sk_buff_head *queue);
 
 /**
  * Get first sk_buff from queue
  */
-extern struct sk_buff * skb_queue_pop(struct sk_buff_head *queue);
+extern struct sk_buff *skb_queue_pop(struct sk_buff_head *queue);
 
 extern int skb_queue_count(struct sk_buff_head *queue);
 
-static inline struct sk_buff * skb_queue_next(struct sk_buff *skb) {
+static inline struct sk_buff *skb_queue_next(struct sk_buff *skb) {
 	return skb->lnk.next;
 }
 

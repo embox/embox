@@ -98,7 +98,7 @@ static uint32_t ETH_MACDMA_Config(void) {
 	ETH_SoftwareReset();
 
 	/* Wait for software reset */
-	while (ETH_GetSoftwareResetStatus() == SET);
+	while (ETH_GetSoftwareResetStatus() == SET) ;
 
 	/* ETHERNET Configuration --------------------------------------------------*/
 	/* Call ETH_StructInit if you don't like to configure all ETH_InitStructure parameter */
@@ -107,9 +107,9 @@ static uint32_t ETH_MACDMA_Config(void) {
 	/* Fill ETH_InitStructure parametrs */
 	/*------------------------   MAC   -----------------------------------*/
 	ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Enable;
-	//ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Disable;
-	//  ETH_InitStructure.ETH_Speed = ETH_Speed_10M;
-	//  ETH_InitStructure.ETH_Mode = ETH_Mode_FullDuplex;
+	/*ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Disable; */
+	/*  ETH_InitStructure.ETH_Speed = ETH_Speed_10M; */
+	/*  ETH_InitStructure.ETH_Mode = ETH_Mode_FullDuplex; */
 
 	ETH_InitStructure.ETH_LoopbackMode = ETH_LoopbackMode_Disable;
 	ETH_InitStructure.ETH_RetryTransmission = ETH_RetryTransmission_Disable;
@@ -159,7 +159,6 @@ static void ETH_GPIO_Config(void) {
 	/* MII/RMII Media interface selection --------------------------------------*/
 	SYSCFG_ETH_MediaInterfaceConfig(SYSCFG_ETH_MediaInterface_RMII);
 
-
 	/* Ethernet pins configuration ************************************************/
 	/*
 	   ETH_MDIO --------------> PA2
@@ -183,7 +182,7 @@ static void ETH_GPIO_Config(void) {
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_PP;
-	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL ;
+	GPIO_InitStructure.GPIO_PuPd  = GPIO_PuPd_NOPULL;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource1, GPIO_AF_ETH);
 	GPIO_PinAFConfig(GPIOA, GPIO_PinSource2, GPIO_AF_ETH);
@@ -213,9 +212,13 @@ static void ETH_GPIO_Config(void) {
 	GPIO_Init(GPIOE, &GPIO_InitStructure);
 
 	GPIO_ResetBits(GPIOE, GPIO_Pin_2);
-	for (i = 0; i < 20000; i++);
+	for (i = 0; i < 20000; i++) {
+		;
+	}
 	GPIO_SetBits(GPIOE, GPIO_Pin_2);
-	for (i = 0; i < 20000; i++);
+	for (i = 0; i < 20000; i++) {
+		;
+	}
 }
 
 /*********** Portions COPYRIGHT 2012 Embest Tech. Co., Ltd.*****END OF FILE****/
@@ -266,7 +269,7 @@ struct stm32eth_state {
 static struct stm32eth_state stm32eth_g_state;
 
 static inline int stm32eth_desc2i(eth_dma_desc_t *base, eth_dma_desc_t *desc) {
-	return ((intptr_t) desc - (intptr_t) base) / sizeof(*desc); 
+	return ((intptr_t) desc - (intptr_t) base) / sizeof(*desc);
 }
 
 static void stm32eth_tx_skb_set(struct stm32eth_state *state, struct sk_buff *skb) {
@@ -283,7 +286,7 @@ static struct sk_buff *stm32eth_tx_skb_get(struct stm32eth_state *state) {
 	return skb;
 }
 
-extern ETH_DMADESCTypeDef  DMARxDscrTab[ETH_RXBUFNB];
+extern ETH_DMADESCTypeDef DMARxDscrTab[ETH_RXBUFNB];
 extern uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE];
 extern ETH_DMADESCTypeDef  *DMARxDescToGet;
 extern ETH_DMA_Rx_Frame_infos *DMA_RX_FRAME_infos;
@@ -322,9 +325,8 @@ static struct sk_buff *low_level_input(void) {
 	int len;
 	FrameTypeDef frame;
 	u8 *buffer;
-	uint32_t i=0;
+	uint32_t i = 0;
 	__IO ETH_DMADESCTypeDef *DMARxNextDesc;
-
 
 	skb = NULL;
 
@@ -352,13 +354,13 @@ static struct sk_buff *low_level_input(void) {
 	}
 
 	/* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-	for (i=0; i<DMA_RX_FRAME_infos->Seg_Count; i++) {
+	for (i = 0; i < DMA_RX_FRAME_infos->Seg_Count; i++) {
 		DMARxNextDesc->Status = ETH_DMARxDesc_OWN;
 		DMARxNextDesc = (ETH_DMADESCTypeDef *)(DMARxNextDesc->Buffer2NextDescAddr);
 	}
 
 	/* Clear Segment_Count */
-	DMA_RX_FRAME_infos->Seg_Count =0;
+	DMA_RX_FRAME_infos->Seg_Count = 0;
 
 	/* When Rx Buffer unavailable flag is set: clear it and resume reception */
 	if ((ETH->DMASR & ETH_DMASR_RBUS) != (u32)RESET) {
@@ -402,7 +404,7 @@ static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	state->tx_tail->Buffer1Addr = (uint32_t) skb->mac.raw;
 	state->tx_tail->ControlBufferSize = skb->len & ETH_DMATxDesc_TBS1;
 	state->tx_tail->Status = ETH_DMATxDesc_FS | ETH_DMATxDesc_LS | ETH_DMATxDesc_TCH
-		 | ETH_DMATxDesc_IC | ETH_DMATxDesc_OWN;
+			| ETH_DMATxDesc_IC | ETH_DMATxDesc_OWN;
 	stm32eth_tx_skb_set(state, skb);
 
 	state->tx_tail = next_tail;
@@ -431,7 +433,7 @@ static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 
 	stm32eth_txed_collect(&stm32eth_g_state);
 
-	while(ETH_CheckFrameReceived()) {
+	while (ETH_CheckFrameReceived()) {
 		struct sk_buff *skb = low_level_input();
 		if (skb) {
 			skb->dev = *nic_p;

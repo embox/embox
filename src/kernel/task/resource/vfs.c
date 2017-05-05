@@ -13,9 +13,9 @@
 static void task_vfs_init(const struct task *task, void *task_vfs);
 
 TASK_RESOURCE_DECLARE(static,
-                      task_vfs,
-                      struct task_vfs,
-                      .init   = task_vfs_init,);
+		task_vfs,
+		struct task_vfs,
+		.init   = task_vfs_init,);
 
 static void task_vfs_init(const struct task *task, void *task_vfs) {
 	struct task_vfs *fs = task_vfs;

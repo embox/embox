@@ -16,24 +16,24 @@ struct flash_dev;
 
 /* Structure of device driver */
 struct flash_dev_drv {
-	int	(*flash_init) (void *arg);
-	size_t	(*flash_query) (struct flash_dev *dev, void * data, size_t len);
-	int	(*flash_erase_block) (struct flash_dev *dev, uint32_t block_base);
-	int	(*flash_program) (struct flash_dev *dev, uint32_t base, const void* data, size_t len);
-	int	(*flash_read) (struct flash_dev *dev, uint32_t base, void* data, size_t len);
-	int	(*flash_copy) (struct flash_dev *dev, uint32_t base_to, uint32_t base_from, size_t len);
+	int (*flash_init) (void *arg);
+	size_t (*flash_query) (struct flash_dev *dev, void *data, size_t len);
+	int (*flash_erase_block) (struct flash_dev *dev, uint32_t block_base);
+	int (*flash_program) (struct flash_dev *dev, uint32_t base, const void *data, size_t len);
+	int (*flash_read) (struct flash_dev *dev, uint32_t base, void *data, size_t len);
+	int (*flash_copy) (struct flash_dev *dev, uint32_t base_to, uint32_t base_from, size_t len);
 };
 
 /* Structure of flash device private info*/
 struct flash_dev {
 	struct block_dev *bdev;
 	const struct flash_dev_drv *drv;
-	uint32_t	flags;            /* Device characteristics */
-	uint32_t	start;            /* First address */
-	uint32_t	end;              /* Last address */
-	uint32_t	num_block_infos;  /* Number of entries */
-	flash_block_info_t	block_info;      /* Info about one block size */
-	void	*privdata;
+	uint32_t flags;               /* Device characteristics */
+	uint32_t start;               /* First address */
+	uint32_t end;                 /* Last address */
+	uint32_t num_block_infos;     /* Number of entries */
+	flash_block_info_t block_info;       /* Info about one block size */
+	void    *privdata;
 };
 
 static inline int flash_read(struct flash_dev *flashdev, unsigned long offset, void *buf, size_t len) {
@@ -52,9 +52,9 @@ static inline int flash_copy(struct flash_dev *dev, uint32_t to, uint32_t from, 
 	return dev->drv->flash_copy(dev, to, from, len);
 }
 
-typedef int (* flash_dev_module_init_ft)(void *args);
+typedef int (*flash_dev_module_init_ft)(void *args);
 typedef struct flash_dev_module {
-	const char * name;
+	const char *name;
 	struct flash_dev_drv *dev_drv;
 	const flash_dev_module_init_ft init;
 	void *arg;

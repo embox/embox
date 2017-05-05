@@ -14,17 +14,17 @@
  * says that there are 8 default classes for POSIX locale and <space>. In total 9. So
  * we must have 9 bit mask to distinguish those 9 classes, but we have only 8 (sizeof char).
  * Therefore I extracted "blank" class in separate case. */
-#define _B    0xFF            // <space> and <tab>
+#define _B    0xFF            /* <space> and <tab> */
 
-#define _A     (_U | _L)      // "alpha"
-#define _AN    (_U | _L | _D) // "alnum"
-#define _G     (_P | _AN)     // "graph"
-#define _R     (_G | _SP)     // "print"
+#define _A     (_U | _L)      /* "alpha" */
+#define _AN    (_U | _L | _D) /* "alnum" */
+#define _G     (_P | _AN)     /* "graph" */
+#define _R     (_G | _SP)     /* "print" */
 
 wctype_t wctype(const char *property) {
 	static const struct {
-		const char	*name;
-		wctype_t	 mask;
+		const char  *name;
+		wctype_t mask;
 	} props[] = {
 		{ "alnum",  _AN },
 		{ "alpha",  _A },
@@ -51,8 +51,8 @@ wctype_t wctype(const char *property) {
 
 wctrans_t wctrans(const char *charclass) {
 	static const struct {
-		const char	*name;
-		wctrans_t	 type;
+		const char  *name;
+		wctrans_t type;
 	} classes[] = {
 		{ "tolower", _L },
 		{ "toupper", _U },
@@ -68,8 +68,9 @@ wctrans_t wctrans(const char *charclass) {
 }
 
 int iswctype(wint_t wc, wctype_t t) {
-	if (wc == WEOF)
+	if (wc == WEOF) {
 		return 0;
+	}
 	if (t == _B) {
 		return iswblank(wc);
 	}
@@ -77,8 +78,9 @@ int iswctype(wint_t wc, wctype_t t) {
 }
 
 wint_t towctrans(wint_t w, wctrans_t t) {
-	if (w == WEOF)
+	if (w == WEOF) {
 		return WEOF;
+	}
 	switch (t) {
 	case _L:
 		return towlower(w);

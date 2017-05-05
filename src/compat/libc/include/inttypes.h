@@ -206,7 +206,6 @@ __END_DECLS
 #define    SCNiLEAST16   "i"
 #define    SCNiFAST16    "i"
 
-
 #define    SCNd32        "d"
 #define    SCNdLEAST32   "d"
 #define    SCNdFAST32    "d"
@@ -251,8 +250,8 @@ __END_DECLS
 #define    SCNuMAX       SCNu32
 #define    SCNxMAX       SCNx32
 
-//TODO this is C99 standard. It's required for mruby
-#define 	NAN   __builtin_nan("")
-#define 	INFINITY   __builtin_inf()
+/*TODO this is C99 standard. It's required for mruby */
+#define     NAN   __builtin_nan("")
+#define     INFINITY   __builtin_inf()
 
 #endif /* INTTYPES_H_ */

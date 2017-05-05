@@ -43,7 +43,7 @@ int thread_stack_reserve(struct thread *t, size_t size) {
 }
 #endif
 
-void * thread_stack_alloc(struct thread *t, size_t size) {
+void *thread_stack_alloc(struct thread *t, size_t size) {
 	void *space;
 
 	if (size > t->stack.stack_sz) {

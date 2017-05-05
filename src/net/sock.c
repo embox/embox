@@ -27,7 +27,7 @@
 
 extern size_t skb_read(struct sk_buff *skb, char *buff, size_t buff_sz);
 
-//TODO this function call from stack (may be place it to other file)
+/*TODO this function call from stack (may be place it to other file) */
 void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size) {
 	if ((sk == NULL) || (skb == NULL) || (p_data == NULL)) {

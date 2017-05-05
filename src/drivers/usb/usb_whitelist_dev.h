@@ -31,5 +31,3 @@ struct usb_whitelist_rule {
 #define USB_WHITELIST_DEV_NAME "usb_whitelist"
 
 #endif /* USB_WHITELIST_DEV_H_ */
-
-

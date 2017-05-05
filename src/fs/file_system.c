@@ -30,9 +30,10 @@ struct filesystem *filesystem_create(const char *drv_name) {
 	if (0 != *drv_name) {
 		fs->drv = fs_driver_find_drv(drv_name);
 	}
-	
-	if (fs && fs->drv)
+
+	if (fs && fs->drv) {
 		fs->file_op = fs->drv->file_op;
+	}
 
 	return fs;
 }
@@ -44,4 +45,3 @@ void filesystem_free(struct filesystem *fs) {
 
 	pool_free(&filesystem_pool, fs);
 }
-

@@ -23,17 +23,17 @@
 /* Non-VFS declarations */
 struct dfs_sb_info {
 	char magic[2];
-	int  inode_count;
-	int  max_inode_count;
-	int  buff_bk;         /* For buffer-based writing */
-	int  free_space;
+	int inode_count;
+	int max_inode_count;
+	int buff_bk;          /* For buffer-based writing */
+	int free_space;
 };
 
 struct dfs_dir_entry {
 	char name[DFS_NAME_LEN];
-	int  pos_start;
-	int  len;
-	int  flags;
+	int pos_start;
+	int len;
+	int flags;
 };
 
 extern int dfs_mount(void);
@@ -48,4 +48,3 @@ extern struct inode_operations dfs_iops;
 extern struct file_operations dfs_fops;
 
 #endif
-

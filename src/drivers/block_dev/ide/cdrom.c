@@ -150,7 +150,7 @@ static int atapi_request_sense(hd_t *hd) {
 }
 
 static int cd_read(struct block_dev *bdev, char *buffer,
-					size_t count, blkno_t blkno) {
+		size_t count, blkno_t blkno) {
 	unsigned char pkt[12];
 	unsigned int blks;
 	hd_t *hd = (hd_t *) bdev->privdata;
@@ -173,7 +173,7 @@ static int cd_read(struct block_dev *bdev, char *buffer,
 }
 
 static int cd_write(struct block_dev *bdev, char *buffer,
-					size_t count, blkno_t blkno) {
+		size_t count, blkno_t blkno) {
 	return -ENODEV;
 }
 
@@ -205,10 +205,10 @@ static int cd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static int idecd_init (void *args) {
+static int idecd_init(void *args) {
 	hd_t *drive;
 	size_t size;
-	char   path[PATH_MAX];
+	char path[PATH_MAX];
 	drive = (hd_t *)args;
 	/* Make new device */
 	if (drive && drive->media == IDE_CDROM) {

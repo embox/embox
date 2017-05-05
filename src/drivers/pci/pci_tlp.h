@@ -6,7 +6,6 @@
  * @author Eldar Abusalimov
  */
 
-
 #ifndef PCI_TLP_H_
 #define PCI_TLP_H_
 
@@ -20,7 +19,6 @@
 #define TLP_TYPE_CPL     0xA   /* Completion */
 #define TLP_TYPE_CPLLK   0xB   /* Completion-Locked */
 
-
 #define TLP_FMT_HEADSIZE 0x1
 #define TLP_FMT_DATA     0x2
 
@@ -33,7 +31,6 @@
 
 #define TLP_3DW_HEADER_SIZE  0x0C
 #define TLP_4DW_HEADER_SIZE  0x10
-
 
 extern int tlp_build_mem_wr(uint32_t *tlp, struct pci_slot_dev *dev, char bar,
 		uint32_t offset, char fmt, uint32_t *buff, uint16_t len);

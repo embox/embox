@@ -35,8 +35,9 @@ int open(const char *path, int __oflag, ...) {
 	}
 
 	i_no = lookup.item->d_inode;
-	if (i_no == NULL)
+	if (i_no == NULL) {
 		return SET_ERRNO(ENOENT);
+	}
 
 	if ((i_no->flags & S_IFMT) == S_IFDIR) {
 		dvfs_destroy_dentry(lookup.item);
@@ -46,7 +47,7 @@ int open(const char *path, int __oflag, ...) {
 	if (err(idesc)) {
 		return SET_ERRNO(err(idesc));
 	}
-	switch(O_ACCESS_MASK & __oflag) {
+	switch (O_ACCESS_MASK & __oflag) {
 	case O_RDONLY:
 		idesc->idesc_amode = S_IROTH;
 		break;
@@ -66,7 +67,7 @@ int open(const char *path, int __oflag, ...) {
 	if (res < 0) {
 		idesc->idesc_ops->close(idesc);
 		assert(0);
-		//TODO free resources
+		/*TODO free resources */
 		return SET_ERRNO(-res);
 	}
 
@@ -74,4 +75,3 @@ int open(const char *path, int __oflag, ...) {
 
 	return res;
 }
-

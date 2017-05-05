@@ -16,7 +16,7 @@
 
 #define SIRQ_TABLE_ENTRY(n) \
 	. = n * 4; \
-	*(.trap_table.routine_##n);
+	*(.trap_table.routine_ ## n);
 
 #define STATIC_IRQ_TABLE \
 	SIRQ_TABLE_ENTRY(4) \
@@ -35,21 +35,19 @@
 	SIRQ_TABLE_ENTRY(77)
 
 #define ARM_M_IRQ_HANDLER_VAR_NAME(irq_num) \
-	arm_m_irq_handler##irq_num
+	arm_m_irq_handler ## irq_num
 
 #define ARM_M_IRQ_HANDLER_SECTION_STR(irq_num) \
 	".trap_table.routine_"#irq_num
 
 #define ARM_M_IRQ_HANDLER_DEF(irq_num, irq_handler) \
-	void * ARM_M_IRQ_HANDLER_VAR_NAME(irq_num) \
-		__attribute__((section(ARM_M_IRQ_HANDLER_SECTION_STR(irq_num)))) = (void *)irq_handler;
-
+	void *ARM_M_IRQ_HANDLER_VAR_NAME(irq_num) \
+	__attribute__((section(ARM_M_IRQ_HANDLER_SECTION_STR(irq_num)))) = (void *)irq_handler;
 
 #else
 
 #define STATIC_IRQ_TABLE
 
 #endif /* STATIC_IRQ_EXTENTION */
-
 
 #endif /* STATIC_IRQ_H_ */

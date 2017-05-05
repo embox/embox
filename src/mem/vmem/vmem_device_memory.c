@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 
-
 #include <stddef.h>
 #include <sys/mman.h>
 
@@ -35,10 +34,10 @@ static struct emmap *self_mmap(void) {
  * @return Pointer to allocated vmem or NULL if failed
  */
 void *mmap_device_memory(void *addr,
-                           size_t len,
-                           int prot,
-                           int flags,
-                           uint64_t physical){
+		size_t len,
+		int prot,
+		int flags,
+		uint64_t physical){
 	/* TODO handle addr=NULL, region should be mapped to any addr
 	 * TODO handle flags anyhow */
 	struct emmap *emmap = self_mmap();

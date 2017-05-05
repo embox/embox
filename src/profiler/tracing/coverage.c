@@ -27,12 +27,14 @@ void __coverage_func_enter(void *func, void *caller) {
 	int sym_pos;
 
 	sym = symbol_lookup(func);
-	if (!sym)
+	if (!sym) {
 		return;
+	}
 
 	sym_pos = sym - __symbol_table;
-	if (!(0 <= sym_pos && sym_pos < __symbol_table_size))
+	if (!(0 <= sym_pos && sym_pos < __symbol_table_size)) {
 		return;
+	}
 
 	bitmap_set_bit(coverage_table_bitmap, sym_pos);
 }
@@ -53,11 +55,10 @@ static int coverage_init(void) {
 
 	if (COVERAGE_TABLE_SIZE < __symbol_table_size) {
 		printk("\n[%s]: coverage_table_size too small, "
-				"try to increase it [%zu; required at least %zu]\n",
+			   "try to increase it [%zu; required at least %zu]\n",
 				__func__, (size_t)COVERAGE_TABLE_SIZE, __symbol_table_size);
 		return -ENOMEM;
 	}
-
 
 	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_enter_array);
 	ARRAY_SPREAD_DECLARE(cyg_func, __cyg_handler_exit_array);

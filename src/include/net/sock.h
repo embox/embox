@@ -24,8 +24,7 @@
 #include <net/skbuff.h>
 #include <netinet/in.h>
 
-
-struct proto_sock; //TODO What does it mean
+struct proto_sock; /*TODO What does it mean */
 struct sock_family_ops;
 struct sock_proto_ops;
 struct net_pack_out_ops;
@@ -79,7 +78,7 @@ struct sock {
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
 	unsigned int rx_data_len;
-	//unsigned int tx_data_len;
+	/*unsigned int tx_data_len; */
 	unsigned char shutdown_flag; /* FIXME */
 	struct proto_sock *p_sk;
 	const struct sock_family_ops *f_ops;
@@ -138,7 +137,7 @@ struct sock_proto_ops {
 	int (*sendmsg)(struct sock *sk, struct msghdr *msg, int flags);
 	int (*recvmsg)(struct sock *sk, struct msghdr *msg, int flags);
 	int (*fillmsg)(struct sock *sk, struct msghdr *msg,
-			struct sk_buff *skb); //FIXME remove me
+			struct sk_buff *skb); /*FIXME remove me */
 	int (*getsockopt)(struct sock *sk, int level, int optname,
 			void *optval, socklen_t *optlen);
 	int (*setsockopt)(struct sock *sk, int level, int optname,
@@ -157,19 +156,17 @@ struct proto_sock {
  * @arg p_sk - derived of proto_sock
  *             (proto_sock MUST BE FIRST field in derived socket type)
  */
-static inline struct sock * to_sock(const void *p_sk) {
+static inline struct sock *to_sock(const void *p_sk) {
 	assert(p_sk != NULL);
 	return ((const struct proto_sock *)p_sk)->sk;
 }
 
-
-extern struct sock * sock_create(int family, int type, int protocol);
+extern struct sock *sock_create(int family, int type, int protocol);
 
 extern void sock_release(struct sock *sk);
 
 extern void sock_hash(struct sock *sk);
 extern void sock_unhash(struct sock *sk);
-
 
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size);
@@ -194,9 +191,9 @@ static inline void sock_set_so_error(struct sock *sk, int error) {
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
 		const struct sk_buff *skb);
 
-extern struct sock * sock_iter(const struct sock_proto_ops *p_ops);
-extern struct sock * sock_next(const struct sock *sk);
-extern struct sock * sock_lookup(const struct sock *sk,
+extern struct sock *sock_iter(const struct sock_proto_ops *p_ops);
+extern struct sock *sock_next(const struct sock *sk);
+extern struct sock *sock_lookup(const struct sock *sk,
 		const struct sock_proto_ops *p_ops,
 		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb);

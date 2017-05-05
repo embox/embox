@@ -19,11 +19,11 @@ void mips_c_syscall_handler(pt_regs_t *regs) {
 
 	/* v0 contains syscall number */
 	uint32_t (*sys_func)(uint32_t, uint32_t, uint32_t, uint32_t, uint32_t) =
-			 SYSCALL_TABLE[regs->reg[1]];
+			SYSCALL_TABLE[regs->reg[1]];
 
 	/* a0, a1, a2, a3, s0 contain arguments */
 	result = sys_func(regs->reg[3], regs->reg[4], regs->reg[5],
-			    regs->reg[6], regs->reg[15]);
+			regs->reg[6], regs->reg[15]);
 
 	/* v0 set equal to result */
 	regs->reg[1] = result;

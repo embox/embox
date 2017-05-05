@@ -63,10 +63,10 @@ static int generic_init(struct pci_slot_dev *pci_dev) {
 	struct fb_info *info;
 
 	if (MAP_FAILED == mmap_device_memory(mmap_base,
-				mmap_len,
-			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) mmap_base)) {
+			mmap_len,
+			PROT_READ|PROT_WRITE|PROT_NOCACHE,
+			MAP_FIXED,
+			(unsigned long) mmap_base)) {
 		return -EIO;
 	}
 

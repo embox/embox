@@ -10,7 +10,7 @@
 EMBOX_CMD(bt_main);
 
 static int bt_main(int argc, char **argv) {
-	struct pnet_graph *graph ;
+	struct pnet_graph *graph;
 	struct net_node *node_prev, *node_next;
 
 	graph = pnet_graph_create();

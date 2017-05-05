@@ -56,31 +56,30 @@ ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer(void) {
 ACPI_STATUS AcpiOsPredefinedOverride(
 		const ACPI_PREDEFINED_NAMES *InitVal,
 		ACPI_STRING *NewVal) {
-    if (!InitVal || !NewVal) {
-        return AE_BAD_PARAMETER;
-    }
+	if (!InitVal || !NewVal) {
+		return AE_BAD_PARAMETER;
+	}
 
 	PRINTD("AcpiOsPredefinedOverride() called");
 
-    *NewVal = NULL;
+	*NewVal = NULL;
 
-    return AE_OK;
+	return AE_OK;
 }
 
 ACPI_STATUS AcpiOsTableOverride(
 		ACPI_TABLE_HEADER *ExistingTable,
 		ACPI_TABLE_HEADER **NewTable) {
-    if (!ExistingTable || !NewTable) {
-        return AE_BAD_PARAMETER;
-    }
+	if (!ExistingTable || !NewTable) {
+		return AE_BAD_PARAMETER;
+	}
 
 	PRINTD("AcpiOsTableOverride() called");
 
-    *NewTable = NULL;
+	*NewTable = NULL;
 
-    return AE_OK;
+	return AE_OK;
 }
-
 
 ACPI_STATUS AcpiOsPhysicalTableOverride(
 		ACPI_TABLE_HEADER       *ExistingTable,
@@ -279,21 +278,21 @@ ACPI_STATUS AcpiOsReadPort(
 	}
 
 	switch (Width) {
-		case 8: {
-			*Value = in8(Address);
-			break;
-		}
-		case 16: {
-			*Value = in16(Address);
-			break;
-		}
-		case 32: {
-			*Value = in32(Address);
-			break;
-		}
-		default: {
-			return AE_BAD_PARAMETER;
-		}
+	case 8: {
+		*Value = in8(Address);
+		break;
+	}
+	case 16: {
+		*Value = in16(Address);
+		break;
+	}
+	case 32: {
+		*Value = in32(Address);
+		break;
+	}
+	default: {
+		return AE_BAD_PARAMETER;
+	}
 	}
 
 	return AE_OK;
@@ -306,21 +305,21 @@ ACPI_STATUS AcpiOsWritePort(
 	PRINTD("AcpiOsWritePort() called");
 
 	switch (Width) {
-		case 8: {
-			out8((uint8_t) Value, Address);
-			break;
-		}
-		case 16: {
-			out16((uint16_t) Value, Address);
-			break;
-		}
-		case 32: {
-			out32(Value, Address);
-			break;
-		}
-		default: {
-			return AE_BAD_PARAMETER;
-		}
+	case 8: {
+		out8((uint8_t) Value, Address);
+		break;
+	}
+	case 16: {
+		out16((uint16_t) Value, Address);
+		break;
+	}
+	case 32: {
+		out32(Value, Address);
+		break;
+	}
+	default: {
+		return AE_BAD_PARAMETER;
+	}
 	}
 
 	return AE_OK;

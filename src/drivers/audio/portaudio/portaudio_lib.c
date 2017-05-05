@@ -83,7 +83,7 @@ static void *pa_thread_hnd(void *arg) {
 
 	if (!pa_stream.callback) {
 		log_debug("No callback provided for PA thread. "
-				"That's probably not what you want.");
+				  "That's probably not what you want.");
 		return NULL;
 	}
 
@@ -126,21 +126,22 @@ static void *pa_thread_hnd(void *arg) {
 
 		log_debug("out_buf = 0x%X, buf_len %d", out_buf, audio_dev->buf_len);
 
-		if (out_buf)
+		if (out_buf) {
 			memset(out_buf, 0, audio_dev->buf_len);
+		}
 
 		err = pa_stream.callback(in_buf,
-			out_buf,
-			inp_frames,
-			NULL,
-			0,
-			pa_stream.user_data);
+				out_buf,
+				inp_frames,
+				NULL,
+				0,
+				pa_stream.user_data);
 
 		_buf_scale(out_buf, inp_frames, out_frames);
 
 		if (err) {
 			log_error("User callback error: %d", err);
-			if(err == paComplete) {
+			if (err == paComplete) {
 				Pa_CloseStream(&pa_stream);
 			}
 		}
@@ -152,7 +153,7 @@ static void *pa_thread_hnd(void *arg) {
 				_stereo_to_mono(out_buf, inp_frames);
 			} else {
 				log_error("Audio configuration is broken!"
-					  "Check the number of channels.\n");
+						  "Check the number of channels.\n");
 				return NULL;
 			}
 		}
@@ -174,7 +175,7 @@ PaError Pa_Terminate(void) {
 }
 
 /* XXX Now we support either only input of ouput streams, bot not both at the same time */
-PaError Pa_OpenStream(PaStream** stream,
+PaError Pa_OpenStream(PaStream **stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
 		double sampleRate, unsigned long framesPerBuffer,
@@ -187,7 +188,7 @@ PaError Pa_OpenStream(PaStream** stream,
 	assert(streamCallback != NULL);
 
 	log_debug("stream %p input %p output %p rate %f"
-			" framesPerBuffer %lu flags %lu callback %p user_data %p",
+			  " framesPerBuffer %lu flags %lu callback %p user_data %p",
 			stream, inputParameters, outputParameters, sampleRate,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 
@@ -209,8 +210,9 @@ PaError Pa_OpenStream(PaStream** stream,
 	*stream = &pa_stream;
 
 	audio_dev = audio_dev_get_by_idx(pa_stream.devid);
-	if (audio_dev == NULL)
+	if (audio_dev == NULL) {
 		return paInvalidDevice;
+	}
 
 	assert(audio_dev->ad_ops);
 	assert(audio_dev->ad_ops->ad_ops_ioctl);
@@ -251,15 +253,19 @@ PaError Pa_StopStream(PaStream *stream) {
 	assert(audio_dev);
 	assert(audio_dev->ad_ops);
 
-	if (audio_dev->ad_ops->ad_ops_pause)
+	if (audio_dev->ad_ops->ad_ops_pause) {
 		audio_dev->ad_ops->ad_ops_pause(audio_dev);
-	else
+	}
+	else {
 		log_error("Stream pause not supported!\n");
+	}
 
-	if (audio_dev->ad_ops->ad_ops_stop)
+	if (audio_dev->ad_ops->ad_ops_stop) {
 		audio_dev->ad_ops->ad_ops_stop(audio_dev);
-	else
+	}
+	else {
 		log_error("Stream stop not supported!\n");
+	}
 
 	return paNoError;
 }

@@ -19,4 +19,3 @@ int external_build_lib2_call(void) {
 
 	return 314;
 }
-

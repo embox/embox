@@ -32,7 +32,7 @@ struct usb_dev_desc *usb_dev_open(uint16_t vid, uint16_t pid) {
 	do {
 		dev = usb_dev_iterate(dev);
 	} while (dev && (vid != dev->dev_desc.id_vendor
-				&& pid != dev->dev_desc.id_product));
+			&& pid != dev->dev_desc.id_product));
 
 	if (!dev) {
 		return NULL;
@@ -88,7 +88,7 @@ int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 	struct usb_endp *endp;
 
 	if ((token & USB_TOKEN_OUT && token & USB_TOKEN_IN) ||
-		       (!(token & USB_TOKEN_OUT) && !(token & USB_TOKEN_IN))) {
+			(!(token & USB_TOKEN_OUT) && !(token & USB_TOKEN_IN))) {
 		return -EINVAL;
 	}
 
@@ -140,14 +140,13 @@ int usb_request(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 	wait_data.thr = thread_self();
 
 	irq_lock();
-		res = usb_request_cb(ddesc, endp_n, token, buf, len,
-				usb_req_notify, &wait_data);
-		if (res != 0) {
-			return res;
-		}
+	res = usb_request_cb(ddesc, endp_n, token, buf, len,
+			usb_req_notify, &wait_data);
+	if (res != 0) {
+		return res;
+	}
 	irq_unlock();
 	res = SCHED_WAIT(wait_data.res);
 
 	return res;
 }
-

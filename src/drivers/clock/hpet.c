@@ -18,7 +18,7 @@
 
 #include <acpi.h>
 
-//#define HPET_DEBUG
+/*#define HPET_DEBUG */
 
 #ifdef HPET_DEBUG
 #include <util/log.h>
@@ -35,8 +35,8 @@ EMBOX_UNIT_INIT(hpet_init);
 
 #define FEMPTOSEC_IN_SEC    1000000000000000ULL /* 10^15 */
 
-//ACPI_GENERIC_ADDRESS __attribute__((packed));
-//ACPI_TABLE_HPET __attribute__((packed));
+/*ACPI_GENERIC_ADDRESS __attribute__((packed)); */
+/*ACPI_TABLE_HPET __attribute__((packed)); */
 
 static cycle_t hpet_read(void);
 

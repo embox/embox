@@ -33,7 +33,7 @@
 #include <framework/mod/options.h>
 #define LOG_LEVEL OPTION_GET(NUMBER, log_level)
 
-// Forward declarations
+/* Forward declarations */
 static void log_rarp_hnd_request(const struct arphdr *rarph,
 		uint8_t *dst_paddr, uint8_t *dst_haddr);
 static void log_rarp_hnd_reply(const struct arphdr *rarph,
@@ -46,7 +46,7 @@ static int rarp_xmit(struct sk_buff *skb) {
 	assert(skb->dev != NULL);
 	if (skb->dev->flags & IFF_NOARP) {
 		log_error("rarp_xmit: rarp doesn't supported by device %s\n",
-					&skb->dev->name[0]);
+				&skb->dev->name[0]);
 		skb_free(skb);
 		return 0; /* error: rarp doesn't supported by device */
 	}
@@ -75,8 +75,10 @@ static int rarp_send(struct sk_buff *skb, struct net_device *dev,
 	size = dev->hdr_len + ARP_CALC_HEADER_SIZE(dev->addr_len, pln);
 	if (size > min(dev->mtu, skb_max_size())) {
 		log_error("rarp_send: hdr size %zu is too big (max %zu)\n",
-					size, min(dev->mtu, skb_max_size()));
-		if (skb) skb_free(skb); /* TODO */
+				size, min(dev->mtu, skb_max_size()));
+		if (skb) {
+			skb_free(skb);      /* TODO */
+		}
 		return -EMSGSIZE; /* error: hdr size is too big */
 	}
 
@@ -209,7 +211,7 @@ static void log_rarp_hnd_request(const struct arphdr *rarph,
 	if (rarph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
 		assert(rarph->ar_hln == ETH_ALEN);
 		log_debug("[" MACADDR_FMT "]",
-			MACADDR_FMT_ARG(dst_haddr));
+				MACADDR_FMT_ARG(dst_haddr));
 	}
 	else {
 		log_debug("[unknown(%x)]", htons(rarph->ar_hrd));
@@ -232,7 +234,7 @@ static void log_rarp_hnd_reply(const struct arphdr *rarph,
 	if (rarph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
 		assert(rarph->ar_hln == ETH_ALEN);
 		log_debug("[" MACADDR_FMT "]",
-			MACADDR_FMT_ARG(rarpb->ar_tha));
+				MACADDR_FMT_ARG(rarpb->ar_tha));
 	}
 	else {
 		log_debug("[unknown(%x)]", htons(rarph->ar_hrd));

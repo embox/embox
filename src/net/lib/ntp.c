@@ -97,7 +97,7 @@ int ntp_mode_client(const struct ntphdr *ntph) {
 	}
 
 	return (ntph->mode == NTP_MOD_CLIENT)
-			|| (ntph->mode == NTP_MOD_BROADCAST_CLIENT);
+		   || (ntph->mode == NTP_MOD_BROADCAST_CLIENT);
 }
 
 int ntp_mode_server(const struct ntphdr *ntph) {
@@ -106,10 +106,10 @@ int ntp_mode_server(const struct ntphdr *ntph) {
 	}
 
 	return (ntph->mode == NTP_MOD_SERVER)
-			|| (ntph->mode == NTP_MOD_BROADCAST);
+		   || (ntph->mode == NTP_MOD_BROADCAST);
 }
 
-const char * ntp_stratum_error(const struct ntphdr *ntph) {
+const char *ntp_stratum_error(const struct ntphdr *ntph) {
 	static const struct {
 		const char *code;
 		const char *info;
@@ -119,23 +119,23 @@ const char * ntp_stratum_error(const struct ntphdr *ntph) {
 		{ "AUTO", "Autokey sequence failed" },
 		{ "BCST", "The association belongs to a broadcast server" },
 		{ "CRYP", "Cryptographic authentication or identification"
-				" failed" },
+				  " failed" },
 		{ "DENY", "Access denied by remote server" },
 		{ "DROP", "Lost peer in symmetric mode" },
 		{ "RSTR", "Access denied due to local policy" },
 		{ "INIT", "The association has not yet synchronized for"
-				" the first time" },
+				  " the first time" },
 		{ "MCST", "The association belongs to a manycast server" },
 		{ "NKEY", "No key found. Either the key was never"
-				" installed or is not trusted" },
+				  " installed or is not trusted" },
 		{ "RATE", "Rate exceeded. The server has temporarily"
-				" denied access because the client exceeded the"
-				" rate threshold" },
+				  " denied access because the client exceeded the"
+				  " rate threshold" },
 		{ "RMOT", "Somebody is tinkering with the association"
-				" from a remote host running ntpdc. Not to worry"
-				" unless some rascal has stolen your keys" },
+				  " from a remote host running ntpdc. Not to worry"
+				  " unless some rascal has stolen your keys" },
 		{ "STEP", "A step change in system time has occurred,"
-				" but the association has not yet resynchronized" }
+				  " but the association has not yet resynchronized" }
 	};
 	size_t i;
 
@@ -145,7 +145,7 @@ const char * ntp_stratum_error(const struct ntphdr *ntph) {
 
 	for (i = 0; i < ARRAY_SIZE(errors); ++i) {
 		if (0 == strncmp(&ntph->refid[0], errors[i].code,
-					ARRAY_SIZE(ntph->refid))) {
+				ARRAY_SIZE(ntph->refid))) {
 			return errors[i].info;
 		}
 	}
@@ -162,7 +162,7 @@ int ntp_valid_stratum(const struct ntphdr *ntph) {
 	}
 
 	return (ntph->stratum > NTP_STRATUM_UNSPEC)
-			&& (ntph->stratum < NTP_STRATUM_UNSYNC);
+		   && (ntph->stratum < NTP_STRATUM_UNSYNC);
 }
 
 int ntp_delay(const struct ntphdr *ntph,

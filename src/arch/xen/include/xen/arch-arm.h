@@ -174,10 +174,10 @@
 
 #ifndef __ASSEMBLY__
 #define ___DEFINE_XEN_GUEST_HANDLE(name, type)                  \
-    typedef union { type *p; unsigned long q; }                 \
-        __guest_handle_ ## name;                                \
-    typedef union { type *p; uint64_aligned_t q; }              \
-        __guest_handle_64_ ## name;
+	typedef union { type *p; unsigned long q; }                 \
+	__guest_handle_ ## name;                                \
+	typedef union { type *p; uint64_aligned_t q; }              \
+	__guest_handle_64_ ## name;
 
 /*
  * XEN_GUEST_HANDLE represents a guest pointer, when passed as a field
@@ -187,19 +187,19 @@
  * hypercall argument. It is 4 bytes on aarch and 8 bytes on aarch64.
  */
 #define __DEFINE_XEN_GUEST_HANDLE(name, type) \
-    ___DEFINE_XEN_GUEST_HANDLE(name, type);   \
-    ___DEFINE_XEN_GUEST_HANDLE(const_##name, const type)
+	___DEFINE_XEN_GUEST_HANDLE(name, type);   \
+	___DEFINE_XEN_GUEST_HANDLE(const_ ## name, const type)
 #define DEFINE_XEN_GUEST_HANDLE(name)   __DEFINE_XEN_GUEST_HANDLE(name, name)
 #define __XEN_GUEST_HANDLE(name)        __guest_handle_64_ ## name
 #define XEN_GUEST_HANDLE(name)          __XEN_GUEST_HANDLE(name)
 /* this is going to be changed on 64 bit */
 #define XEN_GUEST_HANDLE_PARAM(name)    __guest_handle_ ## name
 #define set_xen_guest_handle_raw(hnd, val)                  \
-    do {                                                    \
-        typeof(&(hnd)) _sxghr_tmp = &(hnd);                 \
-        _sxghr_tmp->q = 0;                                  \
-        _sxghr_tmp->p = val;                                \
-    } while ( 0 )
+	do {                                                    \
+		typeof(&(hnd))_sxghr_tmp = &(hnd);                 \
+		_sxghr_tmp->q = 0;                                  \
+		_sxghr_tmp->p = val;                                \
+	} while ( 0 )
 #ifdef __XEN_TOOLS__
 #define get_xen_guest_handle(val, hnd)  do { val = (hnd).p; } while (0)
 #endif
@@ -208,9 +208,9 @@
 #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
 /* Anonymous union includes both 32- and 64-bit names (e.g., r0/x0). */
 # define __DECL_REG(n64, n32) union {          \
-        uint64_t n64;                          \
-        uint32_t n32;                          \
-    }
+		uint64_t n64;                          \
+		uint32_t n32;                          \
+}
 #else
 /* Non-gcc sources must always use the proper 64-bit name (e.g., x0). */
 #define __DECL_REG(n64, n32) uint64_t n64
@@ -218,62 +218,62 @@
 
 struct vcpu_guest_core_regs
 {
-    /*         Aarch64       Aarch32 */
-    __DECL_REG(x0,           r0_usr);
-    __DECL_REG(x1,           r1_usr);
-    __DECL_REG(x2,           r2_usr);
-    __DECL_REG(x3,           r3_usr);
-    __DECL_REG(x4,           r4_usr);
-    __DECL_REG(x5,           r5_usr);
-    __DECL_REG(x6,           r6_usr);
-    __DECL_REG(x7,           r7_usr);
-    __DECL_REG(x8,           r8_usr);
-    __DECL_REG(x9,           r9_usr);
-    __DECL_REG(x10,          r10_usr);
-    __DECL_REG(x11,          r11_usr);
-    __DECL_REG(x12,          r12_usr);
+	/*         Aarch64       Aarch32 */
+	__DECL_REG(x0,           r0_usr);
+	__DECL_REG(x1,           r1_usr);
+	__DECL_REG(x2,           r2_usr);
+	__DECL_REG(x3,           r3_usr);
+	__DECL_REG(x4,           r4_usr);
+	__DECL_REG(x5,           r5_usr);
+	__DECL_REG(x6,           r6_usr);
+	__DECL_REG(x7,           r7_usr);
+	__DECL_REG(x8,           r8_usr);
+	__DECL_REG(x9,           r9_usr);
+	__DECL_REG(x10,          r10_usr);
+	__DECL_REG(x11,          r11_usr);
+	__DECL_REG(x12,          r12_usr);
 
-    __DECL_REG(x13,          sp_usr);
-    __DECL_REG(x14,          lr_usr);
+	__DECL_REG(x13,          sp_usr);
+	__DECL_REG(x14,          lr_usr);
 
-    __DECL_REG(x15,          __unused_sp_hyp);
+	__DECL_REG(x15,          __unused_sp_hyp);
 
-    __DECL_REG(x16,          lr_irq);
-    __DECL_REG(x17,          sp_irq);
+	__DECL_REG(x16,          lr_irq);
+	__DECL_REG(x17,          sp_irq);
 
-    __DECL_REG(x18,          lr_svc);
-    __DECL_REG(x19,          sp_svc);
+	__DECL_REG(x18,          lr_svc);
+	__DECL_REG(x19,          sp_svc);
 
-    __DECL_REG(x20,          lr_abt);
-    __DECL_REG(x21,          sp_abt);
+	__DECL_REG(x20,          lr_abt);
+	__DECL_REG(x21,          sp_abt);
 
-    __DECL_REG(x22,          lr_und);
-    __DECL_REG(x23,          sp_und);
+	__DECL_REG(x22,          lr_und);
+	__DECL_REG(x23,          sp_und);
 
-    __DECL_REG(x24,          r8_fiq);
-    __DECL_REG(x25,          r9_fiq);
-    __DECL_REG(x26,          r10_fiq);
-    __DECL_REG(x27,          r11_fiq);
-    __DECL_REG(x28,          r12_fiq);
+	__DECL_REG(x24,          r8_fiq);
+	__DECL_REG(x25,          r9_fiq);
+	__DECL_REG(x26,          r10_fiq);
+	__DECL_REG(x27,          r11_fiq);
+	__DECL_REG(x28,          r12_fiq);
 
-    __DECL_REG(x29,          sp_fiq);
-    __DECL_REG(x30,          lr_fiq);
+	__DECL_REG(x29,          sp_fiq);
+	__DECL_REG(x30,          lr_fiq);
 
-    /* Return address and mode */
-    __DECL_REG(pc64,         pc32);             /* ELR_EL2 */
-    uint32_t cpsr;                              /* SPSR_EL2 */
+	/* Return address and mode */
+	__DECL_REG(pc64,         pc32);             /* ELR_EL2 */
+	uint32_t cpsr;                              /* SPSR_EL2 */
 
-    union {
-        uint32_t spsr_el1;       /* AArch64 */
-        uint32_t spsr_svc;       /* AArch32 */
-    };
+	union {
+		uint32_t spsr_el1;       /* AArch64 */
+		uint32_t spsr_svc;       /* AArch32 */
+	};
 
-    /* AArch32 guests only */
-    uint32_t spsr_fiq, spsr_irq, spsr_und, spsr_abt;
+	/* AArch32 guests only */
+	uint32_t spsr_fiq, spsr_irq, spsr_und, spsr_abt;
 
-    /* AArch64 guests only */
-    uint64_t sp_el0;
-    uint64_t sp_el1, elr_el1;
+	/* AArch64 guests only */
+	uint64_t sp_el0;
+	uint64_t sp_el1, elr_el1;
 };
 typedef struct vcpu_guest_core_regs vcpu_guest_core_regs_t;
 DEFINE_XEN_GUEST_HANDLE(vcpu_guest_core_regs_t);
@@ -294,12 +294,12 @@ typedef uint64_t xen_ulong_t;
 struct vcpu_guest_context {
 #define _VGCF_online                   0
 #define VGCF_online                    (1<<_VGCF_online)
-    uint32_t flags;                         /* VGCF_* */
+	uint32_t flags;                         /* VGCF_* */
 
-    struct vcpu_guest_core_regs user_regs;  /* Core CPU registers */
+	struct vcpu_guest_core_regs user_regs;  /* Core CPU registers */
 
-    uint32_t sctlr;
-    uint64_t ttbcr, ttbr0, ttbr1;
+	uint32_t sctlr;
+	uint64_t ttbcr, ttbr0, ttbr1;
 };
 typedef struct vcpu_guest_context vcpu_guest_context_t;
 DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);

@@ -57,7 +57,7 @@ int dentry_full_path(struct dentry *dentry, char *buf) {
 }
 
 extern int dentry_fill(struct super_block *, struct inode *,
-                       struct dentry *, struct dentry *);
+		struct dentry *, struct dentry *);
 extern struct dentry *local_lookup(struct dentry *parent, char *name);
 
 /**
@@ -109,17 +109,21 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return 0;
 	}
 
-	if (!FILE_TYPE(parent->flags, S_IFDIR))
+	if (!FILE_TYPE(parent->flags, S_IFDIR)) {
 		return -ENOTDIR;
+	}
 
-	if ((d = local_lookup(parent, buff)))
+	if ((d = local_lookup(parent, buff))) {
 		return dvfs_path_walk(path + strlen(buff), d, lookup);
+	}
 
-	if (strlen(buff) > 1 && path_is_double_dot(buff))
+	if (strlen(buff) > 1 && path_is_double_dot(buff)) {
 		return dvfs_path_walk(path + 2, parent->parent, lookup);
+	}
 
-	if (strlen(buff) > 1 && path_is_single_dot(buff))
+	if (strlen(buff) > 1 && path_is_single_dot(buff)) {
 		return dvfs_path_walk(path + 2, parent, lookup);
+	}
 
 	/* TODO use cache instead */
 	assert(parent->d_sb);
@@ -163,8 +167,9 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	if (*path == '/') {
 		dentry = task_fs()->root;
 		path++;
-	} else
+	} else {
 		dentry = task_fs()->pwd;
+	}
 
 	if (*path == '\0') {
 		*lookup = (struct lookup) {
@@ -190,8 +195,9 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	}
 
 	errcode = dvfs_path_walk(path, dentry, lookup);
-	if (!errcode)
+	if (!errcode) {
 		dvfs_cache_add(lookup->item);
+	}
 
 	return errcode;
 }

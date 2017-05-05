@@ -42,7 +42,6 @@ typedef __mmu_pte_t mmu_pte_t;
 extern void mmu_on(void);
 extern void mmu_off(void);
 
-
 extern mmu_vaddr_t mmu_get_fault_address(void);
 
 extern mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd);

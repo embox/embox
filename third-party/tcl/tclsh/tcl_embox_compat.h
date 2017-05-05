@@ -20,12 +20,12 @@
 /* (termios.h) Extensions to the termios c_iflag bit map.  */
 #define IXANY           0x0800  /* allow any key to continue ouptut */
 
-#define NI_MAXHOST 1025 // is not POSIX
-#define NI_MAXSERV 32   // is not POSIX
+#define NI_MAXHOST 1025 /* is not POSIX */
+#define NI_MAXSERV 32   /* is not POSIX */
 
 struct utimbuf;
 
-static inline void tzset (void) {
+static inline void tzset(void) {
 	printf("tcl>>> %s\n", __func__);
 	return;
 }

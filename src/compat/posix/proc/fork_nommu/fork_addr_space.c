@@ -102,8 +102,8 @@ static void fork_addr_space_deinit(const struct task *task) {
 TASK_RESOURCE_DECLARE(static,
 		fork_addr_space,
 		struct addr_space *,
-	.init = fork_addr_space_init,
-	.deinit = fork_addr_space_deinit,
+		.init = fork_addr_space_init,
+		.deinit = fork_addr_space_deinit,
 );
 
 struct addr_space *fork_addr_space_get(const struct task *task) {
@@ -120,8 +120,9 @@ void fork_addr_space_delete(struct task *task) {
 	struct addr_space *adrspc;
 	adrspc = fork_addr_space_get(task);
 
-	if (!adrspc)
+	if (!adrspc) {
 		return;
+	}
 
 	fork_stack_cleanup(adrspc);
 	fork_heap_cleanup(&adrspc->heap_space);

@@ -29,7 +29,7 @@ static void irq_def_handler(void) {
 static int unit_init(void) {
 
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0 |
-			1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
+				1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
 	REG_STORE(AT91C_PIOA_PDR, AT91C_PA20_IRQ0 |
 			AT91C_PA30_IRQ1 | AT91C_PA19_FIQ);
 	REG_STORE(AT91C_PIOA_BSR, AT91C_PA20_IRQ0 |

@@ -28,7 +28,7 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 	}
 
 	if (node->proto != NULL) {
-		if(NULL != hnd) {
+		if (NULL != hnd) {
 			res = hnd(pack);
 		}
 	}
@@ -37,7 +37,7 @@ static int step_process(struct pnet_pack *pack, net_hnd hnd, net_node_t next_nod
 	case NET_HND_FORWARD_DEFAULT:
 		assert(next_node);
 		pack->node = next_node;
-		/* FALLTHROUGH */
+	/* FALLTHROUGH */
 	case NET_HND_FORWARD:
 		pnet_rx_thread_add(pack);
 		break;

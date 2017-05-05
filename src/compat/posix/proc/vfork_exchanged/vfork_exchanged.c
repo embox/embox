@@ -1,5 +1,5 @@
-	/**
-	 * @file
+/**
+     * @file
  *
  * @date May 23, 2014
  * @author: Anton Bondarev

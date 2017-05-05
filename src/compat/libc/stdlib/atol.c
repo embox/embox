@@ -18,8 +18,9 @@ long atol(const char *nptr) {
 
 	c = *p++;
 	sign = c;
-	if (c == '-' || c == '+')
+	if (c == '-' || c == '+') {
 		c = *p++;
+	}
 
 	total = 0;
 	while (isdigit(c)) {

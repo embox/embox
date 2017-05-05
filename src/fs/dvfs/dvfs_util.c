@@ -35,15 +35,17 @@ POOL_DEF(mnt_pool, struct dvfsmnt, MNT_POOL_SIZE);
  */
 struct inode *dvfs_alloc_inode(struct super_block *sb) {
 	struct inode *inode;
-	if (!sb)
+	if (!sb) {
 		return NULL;
+	}
 
-	if ((inode = pool_alloc(&inode_pool)))
+	if ((inode = pool_alloc(&inode_pool))) {
 		*inode = (struct inode) {
 			.i_no = -1,
 			.i_sb = sb,
 			.i_ops = sb->sb_iops,
 		};
+	}
 
 	return inode;
 }
@@ -67,10 +69,12 @@ int dvfs_default_destroy_inode(struct inode *inode) {
  */
 int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
 	assert(inode);
-	if (inode->i_dentry)
+	if (inode->i_dentry) {
 		strcpy(buf, inode->i_dentry->name);
-	else
+	}
+	else {
 		strcpy(buf, "empty");
+	}
 
 	return 0;
 }
@@ -93,8 +97,9 @@ struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file 
 		.bdev      = bdev_file ? bdev_file->f_inode->i_data : NULL,
 	};
 
-	if (drv->fill_sb)
+	if (drv->fill_sb) {
 		drv->fill_sb(sb, bdev_file);
+	}
 
 	return sb;
 }
@@ -109,12 +114,14 @@ extern int dvfs_default_destroy_inode(struct inode *);
 int dvfs_destroy_inode(struct inode *inode) {
 	assert(inode);
 
-	if (inode->i_dentry)
+	if (inode->i_dentry) {
 		inode->i_dentry->d_inode = NULL;
+	}
 
 	if (inode->i_sb && inode->i_sb->sb_ops &&
-	    inode->i_sb->sb_ops->destroy_inode)
+			inode->i_sb->sb_ops->destroy_inode) {
 		inode->i_sb->sb_ops->destroy_inode(inode);
+	}
 	return dvfs_default_destroy_inode(inode);
 }
 
@@ -142,8 +149,9 @@ struct dentry *dvfs_alloc_dentry(void) {
 		if (temp) {
 			dvfs_destroy_dentry(temp);
 			dentry = pool_alloc(&dentry_pool);
-		} else
+		} else {
 			return NULL;
+		}
 	}
 
 	memset(dentry, 0, sizeof(struct dentry));
@@ -159,16 +167,18 @@ extern int dvfs_cache_del(struct dentry *dentry);
 int dvfs_destroy_dentry(struct dentry *dentry) {
 	assert(dentry->usage_count >= 0);
 	if (dentry->usage_count == 0) {
-		if (dentry->d_inode)
+		if (dentry->d_inode) {
 			dvfs_destroy_inode(dentry->d_inode);
+		}
 		dentry_ref_dec(dentry->parent);
 		dlist_del(&dentry->children_lnk);
 		dlist_del(&dentry->d_lnk);
 		dvfs_cache_del(dentry);
 		pool_free(&dentry_pool, dentry);
 		return 0;
-	} else
+	} else {
 		return -EBUSY;
+	}
 }
 
 /**
@@ -205,7 +215,7 @@ int dvfs_destroy_file(struct file *desc) {
  * @param dentry     The dentry related to inode
  */
 int inode_fill(struct super_block *sb, struct inode *inode,
-                      struct dentry *dentry) {
+		struct dentry *dentry) {
 	inode->i_dentry = dentry;
 	inode->i_sb     = sb;
 	inode->i_ops    = sb ? sb->sb_iops : NULL;
@@ -221,7 +231,7 @@ int inode_fill(struct super_block *sb, struct inode *inode,
  * @param parent     The parent of the denrty
  */
 int dentry_fill(struct super_block *sb, struct inode *inode,
-                      struct dentry *dentry, struct dentry *parent) {
+		struct dentry *dentry, struct dentry *parent) {
 	*dentry = (struct dentry) {
 		.d_inode = inode,
 		.d_sb    = sb,
@@ -259,15 +269,17 @@ extern struct super_block *rootfs_sb(void);
 int dvfs_update_root(void) {
 	struct super_block *sb;
 	struct inode *inode;
-	if (global_root == NULL)
+	if (global_root == NULL) {
 		global_root = dvfs_alloc_dentry();
+	}
 
 	assert(global_root);
 
 	sb = rootfs_sb();
 	inode = global_root->d_inode;
-	if (inode == NULL)
+	if (inode == NULL) {
 		inode = dvfs_alloc_inode(sb);
+	}
 
 	*global_root = (struct dentry) {
 		.d_sb        = sb,
@@ -279,16 +291,18 @@ int dvfs_update_root(void) {
 		.d_lnk       = global_root->d_lnk
 	};
 
-	if (global_root->d_inode)
+	if (global_root->d_inode) {
 		*(global_root->d_inode) = (struct inode) {
 			.flags    = S_IFDIR,
 			.i_ops    = sb->sb_iops,
 			.i_sb     = sb,
 			.i_dentry = global_root,
 		};
+	}
 
-	if (global_root->d_sb)
+	if (global_root->d_sb) {
 		global_root->d_sb->root = global_root;
+	}
 
 	dlist_init(&global_root->children);
 	dlist_init(&global_root->children_lnk);
@@ -320,12 +334,14 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
 	struct dlist_head *l;
 
 	dlist_foreach(l, &parent->children) {
-		if (l == &parent->children)
+		if (l == &parent->children) {
 			continue;
+		}
 		d = mcast_out(l, struct dentry, children_lnk);
 
-		if (!strcmp(d->name, name))
+		if (!strcmp(d->name, name)) {
 			return d;
+		}
 	}
 
 	return NULL;
@@ -340,8 +356,9 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
  */
 int dvfs_destroy_sb(struct super_block *sb) {
 	/* TODO fs-specific resource free? */
-	if (sb->root)
+	if (sb->root) {
 		sb->root->d_sb = NULL;
+	}
 
 	pool_free(&superblock_pool, sb);
 	return 0;

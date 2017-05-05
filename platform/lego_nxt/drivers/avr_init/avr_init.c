@@ -24,7 +24,7 @@ extern void sensors_init(void);
 EMBOX_UNIT_INIT(init);
 
 const char avr_brainwash_string[] =
-  "\xCC" "Let's samba nxt arm in arm, (c)LEGO System A/S";
+		"\xCC" "Let's samba nxt arm in arm, (c)LEGO System A/S";
 
 to_avr_t data_to_avr;
 from_avr_t data_from_avr;
@@ -46,7 +46,7 @@ static int avr_get_data(from_avr_t *data_from_avr) {
 
 	avr_line_locked = true;
 	res = twi_receive(NXT_AVR_ADDRESS, (uint8_t *) data_from_avr,
-		sizeof(from_avr_t));
+			sizeof(from_avr_t));
 	avr_line_locked = false;
 
 	return res;
@@ -72,7 +72,7 @@ static int init(void) {
 	struct sys_timer *avr_timer;
 
 	twi_write(NXT_AVR_ADDRESS, (const uint8_t *) avr_brainwash_string,
-					strlen(avr_brainwash_string));
+			strlen(avr_brainwash_string));
 
 	data_to_avr.power = 0;
 	data_to_avr.pwm_frequency = 0;

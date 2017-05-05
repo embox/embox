@@ -1,4 +1,4 @@
-/** 
+/**
  * @file	mem_barriers.c
  * @brief	Memory barriers or data cache invalidation/flushing for ARM processors
  *
@@ -27,6 +27,6 @@
  * next instruction.
  */
 static inline void data_mem_barrier(void) {
-	__asm__ __volatile__("mcr p15, 0, %0, c7, c10, 5"
-			: : "r" (0) : "memory");
+	__asm__ __volatile__ ("mcr p15, 0, %0, c7, c10, 5"
+	: : "r" (0) : "memory");
 }

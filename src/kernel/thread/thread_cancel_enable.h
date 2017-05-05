@@ -10,7 +10,7 @@
 
 #define CLEANUPS_QUANTITY \
 	OPTION_MODULE_GET(embox__kernel__thread__thread_cancel_enable, \
-			NUMBER, cleanups_quantity)
+		NUMBER, cleanups_quantity)
 
 struct thread_cleanup {
 	void (*routine)(void *);
@@ -24,6 +24,5 @@ struct thread_cancel {
 	struct thread_cleanup cleanups[CLEANUPS_QUANTITY];
 };
 typedef struct thread_cancel thread_cancel_t;
-
 
 #endif /* THREAD_CANCEL_ENABLE_H_ */

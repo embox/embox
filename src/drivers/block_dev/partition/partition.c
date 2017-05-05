@@ -36,9 +36,9 @@ int create_partitions(struct block_dev *bdev) {
 	if ((mbr.sig_55 != 0x55) || (mbr.sig_aa != 0xAA)) {
 		return 0;
 	}
-	for (part_n = 0; part_n < 4; part_n ++) {
+	for (part_n = 0; part_n < 4; part_n++) {
 
-		if(mbr.ptable[part_n].type == 0) {
+		if (mbr.ptable[part_n].type == 0) {
 			return part_n;
 		}
 

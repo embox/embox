@@ -11,7 +11,7 @@
 
 int h_errno;
 
-const char * hstrerror(int error_code) {
+const char *hstrerror(int error_code) {
 	switch (error_code) {
 	default:             return "unknown error";
 	case 0:              return "no error";

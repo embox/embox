@@ -18,7 +18,7 @@
 
 #include "console.h"
 
-#define MAX_PROPOSALS	64
+#define MAX_PROPOSALS   64
 
 static int on_new_line(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	CONSOLE *this = cb->outer;
@@ -79,8 +79,10 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 	return 0;
 }
 
-CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
-	static SCREEN_IO view_io = { diag_getc, diag_putc };
+CONSOLE *console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
+	static SCREEN_IO view_io = {
+		diag_getc, diag_putc
+	};
 	if (this == NULL || callback == NULL) {
 		return NULL;
 	}
@@ -97,10 +99,9 @@ CONSOLE * console_init(CONSOLE *this, CONSOLE_CALLBACK *callback) {
 	return this;
 }
 
-
 void console_start(CONSOLE *this, const char *prompt) {
 	static SCREEN_CALLBACK screen_callback[1];
-	static const char * default_prompt = "";
+	static const char *default_prompt = "";
 	if (this == NULL) {
 		return;
 	}
@@ -124,7 +125,9 @@ void console_stop(CONSOLE *this) {
  */
 
 static int handle_char_token(SCREEN *this, TERMINAL_TOKEN ch) {
-	char tmp_ch[] = { (char) ch };
+	char tmp_ch[] = {
+		(char) ch
+	};
 	SCREEN_CALLBACK *cb = this->callback;
 
 	assert(cb);
@@ -158,13 +161,13 @@ static int handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		return cmdline_cursor_end(cmdline);
 	case TERMINAL_TOKEN_ETX:
 		return on_new_line(cb, this, 0);
-	case TERMINAL_TOKEN_EOT: // on_eot(cb, this, 0);
+	case TERMINAL_TOKEN_EOT: /* on_eot(cb, this, 0); */
 		return 0;
 	case TERMINAL_TOKEN_DC2:
 		return cmdline_dc2_reverse(cmdline);
 	case TERMINAL_TOKEN_DC4:
 		return cmdline_dc4_reverse(cmdline);
-	case TERMINAL_TOKEN_ACK: // on_ack(cb, this, 0);
+	case TERMINAL_TOKEN_ACK: /* on_ack(cb, this, 0); */
 		return 0;
 	case TERMINAL_TOKEN_LF:
 	case TERMINAL_TOKEN_CR:
@@ -190,7 +193,6 @@ static int handle_ctrl_token(SCREEN *this, TERMINAL_TOKEN token,
 		return 0;
 	}
 }
-
 
 void screen_in_start(SCREEN *this, SCREEN_CALLBACK *cb) {
 	static TERMINAL_TOKEN token;

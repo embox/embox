@@ -19,15 +19,15 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#define NETSTAT_CONT			0x0100
+#define NETSTAT_CONT            0x0100
 
-#define NETSTAT_LISTENING		0x0001
-#define NETSTAT_NONLISTENING	0x0002
-#define NETSTAT_OUTPUT_FLAGS	0x000F
+#define NETSTAT_LISTENING       0x0001
+#define NETSTAT_NONLISTENING    0x0002
+#define NETSTAT_OUTPUT_FLAGS    0x000F
 
 static int netstat_flags;
 
-static const char * sock_state_str(enum sock_state st) {
+static const char *sock_state_str(enum sock_state st) {
 	switch (st) {
 	case SS_UNKNOWN:       return "UNKNOWN";
 	case SS_UNCONNECTED:   return "UNCONNECTED";
@@ -44,7 +44,7 @@ static const char * sock_state_str(enum sock_state st) {
 	return NULL;
 }
 
-static const char * tcp_sock_state_str(enum tcp_sock_state st) {
+static const char *tcp_sock_state_str(enum tcp_sock_state st) {
 	switch (st) {
 	case TCP_MAX_STATE:    break;
 	case TCP_SYN_RECV_PRE: return "SYN_RECV_PRE";
@@ -74,7 +74,7 @@ void print_inet_sock_info(const struct sock *sk) {
 
 	if (netstat_flags & NETSTAT_OUTPUT_FLAGS) {
 		if ((sk->state == SS_LISTENING && ~(netstat_flags & NETSTAT_LISTENING)) ||
-			(sk->state != SS_LISTENING && ~(netstat_flags & NETSTAT_NONLISTENING))) {
+				(sk->state != SS_LISTENING && ~(netstat_flags & NETSTAT_NONLISTENING))) {
 			return;
 		}
 	}
@@ -93,7 +93,6 @@ void print_inet_sock_info(const struct sock *sk) {
 		assert(in_sk->src_in.sin_family == AF_UNSPEC);
 		printf("%*s:%-5c ", INET_ADDRSTRLEN, "0.0.0.0", '*');
 	}
-
 
 	if (in_sk->dst_in.sin_family == AF_INET) {
 		printf("%s:%d ", inet_ntoa(in_sk->dst_in.sin_addr),
@@ -135,17 +134,17 @@ int main(int argc, char **argv) {
 
 	while ((c = getopt(argc, argv, "cl")) != -1) {
 		switch (c) {
-			case 'c':
-				netstat_flags |= NETSTAT_CONT;
-				break;
-			case 'l':
-				netstat_flags |= NETSTAT_LISTENING;
-				break;
-			case 'a':
-				netstat_flags |= NETSTAT_LISTENING | NETSTAT_NONLISTENING;
-				break;
-			default:
-				break;
+		case 'c':
+			netstat_flags |= NETSTAT_CONT;
+			break;
+		case 'l':
+			netstat_flags |= NETSTAT_LISTENING;
+			break;
+		case 'a':
+			netstat_flags |= NETSTAT_LISTENING | NETSTAT_NONLISTENING;
+			break;
+		default:
+			break;
 		}
 	}
 
@@ -155,8 +154,9 @@ int main(int argc, char **argv) {
 				"Proto   Local Address   Foreign Address   State\n",
 				tcp_sock_ops, &print_inet_sock_info);
 		print_info(NULL, udp_sock_ops, &print_inet_sock_info);
-		if (netstat_flags & NETSTAT_CONT)
+		if (netstat_flags & NETSTAT_CONT) {
 			sleep(1);
+		}
 	} while (netstat_flags & NETSTAT_CONT);
 
 	return 0;

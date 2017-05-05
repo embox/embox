@@ -20,15 +20,14 @@ static void print_usage(void) {
 int main(int argc, char **argv) {
 	int opt;
 
-
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
 		switch (opt) {
-			case 'h': /* help message */
-				print_usage();
-				return 0;
-			default:
-				break;
+		case 'h':     /* help message */
+			print_usage();
+			return 0;
+		default:
+			break;
 		}
 	}
 

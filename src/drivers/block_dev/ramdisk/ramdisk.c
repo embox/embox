@@ -46,12 +46,12 @@ static int ramdisk_get_index(char *path) {
 	char *dev_name;
 	int idx;
 
-	if(NULL == (dev_name = strstr(path, "ram"))) {
+	if (NULL == (dev_name = strstr(path, "ram"))) {
 		return -1;
 	}
 	dev_name += sizeof("ram");
 
-	if(!isdigit((int)dev_name[0])) {
+	if (!isdigit((int)dev_name[0])) {
 		return -1;
 	}
 
@@ -97,13 +97,13 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	ramdisk->bdev->block_size = PAGE_SIZE();
 	return ramdisk;
 
-err_free_bdev_idx:
+	err_free_bdev_idx:
 	index_free(&ramdisk_idx, idx);
-err_free_mem:
+	err_free_mem:
 	phymem_free(ramdisk->p_start_addr, page_n);
-err_free_ramdisk:
+	err_free_ramdisk:
 	pool_free(&ramdisk_pool, ramdisk);
-err_out:
+	err_out:
 	return err_ptr(err);
 
 }
@@ -147,7 +147,7 @@ int ramdisk_delete(const char *name) {
 			index_free(&ramdisk_idx, idx);
 		}
 		pool_free(&ramdisk_pool, ramdisk);
-		block_dev_destroy (node_fi->privdata);
+		block_dev_destroy(node_fi->privdata);
 		vfs_del_leaf(ramdisk_node.node);
 	}
 	return 0;
@@ -164,7 +164,6 @@ static int read_sectors(struct block_dev *bdev,
 	memcpy(buffer, read_addr, count);
 	return count;
 }
-
 
 static int write_sectors(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {

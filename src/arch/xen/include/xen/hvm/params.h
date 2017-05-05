@@ -94,8 +94,8 @@
 
 #define HVMPV_feature_mask \
 	(HVMPV_base_freq | \
-	 HVMPV_no_freq | \
-	 HVMPV_time_ref_count)
+	HVMPV_no_freq | \
+	HVMPV_time_ref_count)
 
 #endif
 
@@ -157,7 +157,7 @@
  */
 #define HVM_PARAM_ACPI_IOPORTS_LOCATION 19
 
-/* Enable blocking memory events, async or sync (pause vcpu until response) 
+/* Enable blocking memory events, async or sync (pause vcpu until response)
  * onchangeonly indicates messages only on a change of value */
 #define HVM_PARAM_MEMORY_EVENT_CR0          20
 #define HVM_PARAM_MEMORY_EVENT_CR3          21

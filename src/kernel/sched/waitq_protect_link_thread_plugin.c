@@ -11,4 +11,3 @@
 void thread_wait_init(struct thread_wait *tw) {
 	dlist_init(&tw->wql_protected_list);
 }
-

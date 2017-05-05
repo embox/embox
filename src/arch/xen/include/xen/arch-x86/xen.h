@@ -1,8 +1,8 @@
 /******************************************************************************
  * arch-x86/xen.h
- * 
+ *
  * Guest OS interface to x86 Xen.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -32,10 +32,10 @@
 /* Structural guest handles introduced in 0x00030201. */
 #if __XEN_INTERFACE_VERSION__ >= 0x00030201
 #define ___DEFINE_XEN_GUEST_HANDLE(name, type) \
-    typedef struct { type *p; } __guest_handle_ ## name
+	typedef struct { type *p; } __guest_handle_ ## name
 #else
 #define ___DEFINE_XEN_GUEST_HANDLE(name, type) \
-    typedef type * __guest_handle_ ## name
+	typedef type *__guest_handle_ ## name
 #endif
 
 /*
@@ -47,8 +47,8 @@
  * they might not be on other architectures.
  */
 #define __DEFINE_XEN_GUEST_HANDLE(name, type) \
-    ___DEFINE_XEN_GUEST_HANDLE(name, type);   \
-    ___DEFINE_XEN_GUEST_HANDLE(const_##name, const type)
+	___DEFINE_XEN_GUEST_HANDLE(name, type);   \
+	___DEFINE_XEN_GUEST_HANDLE(const_ ## name, const type)
 #define DEFINE_XEN_GUEST_HANDLE(name)   __DEFINE_XEN_GUEST_HANDLE(name, name)
 #define __XEN_GUEST_HANDLE(name)        __guest_handle_ ## name
 #define XEN_GUEST_HANDLE(name)          __XEN_GUEST_HANDLE(name)
@@ -93,7 +93,6 @@ typedef unsigned long xen_pfn_t;
 #define FIRST_RESERVED_GDT_PAGE  14
 #define FIRST_RESERVED_GDT_BYTE  (FIRST_RESERVED_GDT_PAGE * 4096)
 #define FIRST_RESERVED_GDT_ENTRY (FIRST_RESERVED_GDT_BYTE / 8)
-
 
 /*
  * ` enum neg_errnoval
@@ -141,10 +140,10 @@ typedef unsigned long xen_ulong_t;
 #define TI_SET_DPL(_ti,_dpl) ((_ti)->flags |= (_dpl))
 #define TI_SET_IF(_ti,_if)   ((_ti)->flags |= ((!!(_if))<<2))
 struct trap_info {
-    uint8_t       vector;  /* exception vector                              */
-    uint8_t       flags;   /* 0-3: privilege level; 4: clear event enable?  */
-    uint16_t      cs;      /* code selector                                 */
-    unsigned long address; /* code offset                                   */
+	uint8_t vector;        /* exception vector                              */
+	uint8_t flags;         /* 0-3: privilege level; 4: clear event enable?  */
+	uint16_t cs;           /* code selector                                 */
+	unsigned long address; /* code offset                                   */
 };
 typedef struct trap_info trap_info_t;
 DEFINE_XEN_GUEST_HANDLE(trap_info_t);
@@ -152,7 +151,7 @@ DEFINE_XEN_GUEST_HANDLE(trap_info_t);
 typedef uint64_t tsc_timestamp_t; /* RDTSC timestamp */
 
 /*
- * The following is all CPU context. Note that the fpu_ctxt block is filled 
+ * The following is all CPU context. Note that the fpu_ctxt block is filled
  * in by FXSAVE if the CPU has feature FXSR; otherwise FSAVE is used.
  *
  * Also note that when calling DOMCTL_setvcpucontext and VCPU_initialise
@@ -165,8 +164,10 @@ typedef uint64_t tsc_timestamp_t; /* RDTSC timestamp */
  * set cr3. All other fields not used should be set to 0.
  */
 struct vcpu_guest_context {
-    /* FPU registers come first so they can be aligned for FXSAVE/FXRSTOR. */
-    struct { char x[512]; } fpu_ctxt;       /* User-level FPU registers     */
+	/* FPU registers come first so they can be aligned for FXSAVE/FXRSTOR. */
+	struct {
+		char x[512];
+	} fpu_ctxt;                             /* User-level FPU registers     */
 #define VGCF_I387_VALID                (1<<0)
 #define VGCF_IN_KERNEL                 (1<<2)
 #define _VGCF_i387_valid               0
@@ -179,52 +180,52 @@ struct vcpu_guest_context {
 #define VGCF_syscall_disables_events   (1<<_VGCF_syscall_disables_events)
 #define _VGCF_online                   5
 #define VGCF_online                    (1<<_VGCF_online)
-    unsigned long flags;                    /* VGCF_* flags                 */
-    struct cpu_user_regs user_regs;         /* User-level CPU registers     */
-    struct trap_info trap_ctxt[256];        /* Virtual IDT                  */
-    unsigned long ldt_base, ldt_ents;       /* LDT (linear address, # ents) */
-    unsigned long gdt_frames[16], gdt_ents; /* GDT (machine frames, # ents) */
-    unsigned long kernel_ss, kernel_sp;     /* Virtual TSS (only SS1/SP1)   */
-    /* NB. User pagetable on x86/64 is placed in ctrlreg[1]. */
-    unsigned long ctrlreg[8];               /* CR0-CR7 (control registers)  */
-    unsigned long debugreg[8];              /* DB0-DB7 (debug registers)    */
+	unsigned long flags;                    /* VGCF_* flags                 */
+	struct cpu_user_regs user_regs;         /* User-level CPU registers     */
+	struct trap_info trap_ctxt[256];        /* Virtual IDT                  */
+	unsigned long ldt_base, ldt_ents;       /* LDT (linear address, # ents) */
+	unsigned long gdt_frames[16], gdt_ents; /* GDT (machine frames, # ents) */
+	unsigned long kernel_ss, kernel_sp;     /* Virtual TSS (only SS1/SP1)   */
+	/* NB. User pagetable on x86/64 is placed in ctrlreg[1]. */
+	unsigned long ctrlreg[8];               /* CR0-CR7 (control registers)  */
+	unsigned long debugreg[8];              /* DB0-DB7 (debug registers)    */
 #ifdef __i386__
-    unsigned long event_callback_cs;        /* CS:EIP of event callback     */
-    unsigned long event_callback_eip;
-    unsigned long failsafe_callback_cs;     /* CS:EIP of failsafe callback  */
-    unsigned long failsafe_callback_eip;
+	unsigned long event_callback_cs;        /* CS:EIP of event callback     */
+	unsigned long event_callback_eip;
+	unsigned long failsafe_callback_cs;     /* CS:EIP of failsafe callback  */
+	unsigned long failsafe_callback_eip;
 #else
-    unsigned long event_callback_eip;
-    unsigned long failsafe_callback_eip;
+	unsigned long event_callback_eip;
+	unsigned long failsafe_callback_eip;
 #ifdef __XEN__
-    union {
-        unsigned long syscall_callback_eip;
-        struct {
-            unsigned int event_callback_cs;    /* compat CS of event cb     */
-            unsigned int failsafe_callback_cs; /* compat CS of failsafe cb  */
-        };
-    };
+	union {
+		unsigned long syscall_callback_eip;
+		struct {
+			unsigned int event_callback_cs;    /* compat CS of event cb     */
+			unsigned int failsafe_callback_cs; /* compat CS of failsafe cb  */
+		};
+	};
 #else
-    unsigned long syscall_callback_eip;
+	unsigned long syscall_callback_eip;
 #endif
 #endif
-    unsigned long vm_assist;                /* VMASST_TYPE_* bitmap */
+	unsigned long vm_assist;                /* VMASST_TYPE_* bitmap */
 #ifdef __x86_64__
-    /* Segment base addresses. */
-    uint64_t      fs_base;
-    uint64_t      gs_base_kernel;
-    uint64_t      gs_base_user;
+	/* Segment base addresses. */
+	uint64_t fs_base;
+	uint64_t gs_base_kernel;
+	uint64_t gs_base_user;
 #endif
 };
 typedef struct vcpu_guest_context vcpu_guest_context_t;
 DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
 
 struct arch_shared_info {
-    unsigned long max_pfn;                  /* max pfn that appears in table */
-    /* Frame containing list of mfns containing list of mfns containing p2m. */
-    xen_pfn_t     pfn_to_mfn_frame_list_list;
-    unsigned long nmi_reason;
-    uint64_t pad[32];
+	unsigned long max_pfn;                  /* max pfn that appears in table */
+	/* Frame containing list of mfns containing list of mfns containing p2m. */
+	xen_pfn_t pfn_to_mfn_frame_list_list;
+	unsigned long nmi_reason;
+	uint64_t pad[32];
 };
 typedef struct arch_shared_info arch_shared_info_t;
 
@@ -253,7 +254,7 @@ typedef struct arch_shared_info arch_shared_info_t;
  * Currently only CPUID.
  */
 #ifdef __ASSEMBLY__
-#define XEN_EMULATE_PREFIX .byte 0x0f,0x0b,0x78,0x65,0x6e ;
+#define XEN_EMULATE_PREFIX .byte 0x0f,0x0b,0x78,0x65,0x6e;
 #define XEN_CPUID          XEN_EMULATE_PREFIX cpuid
 #else
 #define XEN_EMULATE_PREFIX ".byte 0x0f,0x0b,0x78,0x65,0x6e ; "

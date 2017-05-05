@@ -13,7 +13,6 @@
 #include <string.h>
 #include <errno.h>
 
-
 #include <util/hashtable.h>
 #include <util/dlist.h>
 #include <util/indexator.h>
@@ -76,7 +75,7 @@ static int netdev_init(struct net_device *dev, const char *name,
 	return (*setup)(dev);
 }
 
-struct net_device * netdev_alloc(const char *name,
+struct net_device *netdev_alloc(const char *name,
 		int (*setup)(struct net_device *), size_t priv_size) {
 	int ret;
 	struct net_device *dev;
@@ -142,7 +141,7 @@ int netdev_unregister(struct net_device *dev) {
 
 }
 
-struct net_device * netdev_get_by_name(const char *name) {
+struct net_device *netdev_get_by_name(const char *name) {
 	if (name == NULL) {
 		return NULL; /* error: invalid name */
 	}

@@ -19,7 +19,7 @@
 #include <stdint.h>
 #include <util/member.h>
 
-void * pool_alloc(struct pool *pl) {
+void *pool_alloc(struct pool *pl) {
 	void *obj;
 
 	assert(pl != NULL);
@@ -49,6 +49,6 @@ void pool_free(struct pool *pl, void *obj) {
 
 int pool_belong(const struct pool *pl, const void *obj) {
 	return (pl->memory <= obj)
-			&& (obj + pl->obj_size <= pl->memory + pl->pool_size)
-			&& ((obj - pl->memory) % pl->obj_size == 0);
+		   && (obj + pl->obj_size <= pl->memory + pl->pool_size)
+		   && ((obj - pl->memory) % pl->obj_size == 0);
 }

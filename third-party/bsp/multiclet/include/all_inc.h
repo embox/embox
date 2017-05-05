@@ -1,7 +1,7 @@
 #ifndef ALL_INC_H
 #define ALL_INC_H
 
-//all constant files will be include
+/*all constant files will be include */
 #include "eth.h"
 #include "gpio.h"
 #include "i2c.h"

@@ -17,7 +17,7 @@ struct sigaction;
 
 __BEGIN_DECLS
 
-extern struct sigaction * task_resource_sig_table(
+extern struct sigaction *task_resource_sig_table(
 		const struct task *task);
 
 #define task_self_resource_sig_table() \

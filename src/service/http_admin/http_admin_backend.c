@@ -21,26 +21,26 @@
 EMBOX_CMD(http_admin_main);
 
 static char *http_admin_build_iface_list(void) {
-        struct ifaddrs *i_ifa, *ifa = NULL;
+	struct ifaddrs *i_ifa, *ifa = NULL;
 	cJSON *iface_array;
-       	char *json_list;
+	char *json_list;
 
 	iface_array = cJSON_CreateArray();
 	if (!iface_array) {
 		goto outerr;
 	}
 
-        if (-1 == getifaddrs(&ifa)) {
+	if (-1 == getifaddrs(&ifa)) {
 		goto outerr;
-        }
+	}
 
-        for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
+	for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
 		struct in_device *iface_dev;
 		struct sockaddr *iaddr = i_ifa->ifa_addr;
 		cJSON *iface_obj;
 		char buf[64];
 
-                if (iaddr == NULL || iaddr->sa_family != AF_INET) {
+		if (iaddr == NULL || iaddr->sa_family != AF_INET) {
 			continue;
 		}
 
@@ -56,15 +56,15 @@ static char *http_admin_build_iface_list(void) {
 
 		cJSON_AddStringToObject(iface_obj, "ip",
 				inet_ntop(iaddr->sa_family,
-					&((struct sockaddr_in *) iaddr)->sin_addr,
-					buf,
-					sizeof(buf)));
+				&((struct sockaddr_in *) iaddr)->sin_addr,
+				buf,
+				sizeof(buf)));
 
 		cJSON_AddStringToObject(iface_obj, "netmask",
 				inet_ntop(i_ifa->ifa_netmask->sa_family,
-					&((struct sockaddr_in *) i_ifa->ifa_netmask)->sin_addr,
-					buf,
-					sizeof(buf)));
+				&((struct sockaddr_in *) i_ifa->ifa_netmask)->sin_addr,
+				buf,
+				sizeof(buf)));
 
 		iface_dev = inetdev_get_by_name(i_ifa->ifa_name);
 		if (!iface_dev) {
@@ -72,14 +72,14 @@ static char *http_admin_build_iface_list(void) {
 		}
 		macaddr_print((unsigned char *) buf, (unsigned char *) iface_dev->dev->dev_addr);
 		cJSON_AddStringToObject(iface_obj, "mac", buf);
-        }
+	}
 
 	json_list = cJSON_PrintUnformatted(iface_array);
 
 	cJSON_Delete(iface_array);
 	freeifaddrs(ifa);
 	return json_list;
-outerr:
+	outerr:
 	cJSON_Delete(iface_array);
 	freeifaddrs(ifa);
 	return strdup("{}");
@@ -141,7 +141,7 @@ static void http_admin_post(char *post_data) {
 		system("flash_settings store");
 	}
 
-outerr:
+	outerr:
 	cJSON_Delete(post_json);
 }
 
@@ -149,10 +149,10 @@ static int http_admin_main(int argc, char *argv[]) {
 	char *method;
 
 	printf(
-		"HTTP/1.1 %d %s\r\n"
-		"Content-Type: %s\r\n"
-		"Connection: close\r\n"
-		"\r\n", 200, "OK", "application/json");
+			"HTTP/1.1 %d %s\r\n"
+			"Content-Type: %s\r\n"
+			"Connection: close\r\n"
+			"\r\n", 200, "OK", "application/json");
 
 	method = getenv("REQUEST_METHOD");
 	if (0 == strcmp("GET", method)) {

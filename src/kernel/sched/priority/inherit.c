@@ -40,7 +40,7 @@ static int __schedee_priority_set(struct schedee_priority *p, int new_priority) 
 		}
 	}
 
-out:
+	out:
 	sched_unlock();
 
 	return 0;

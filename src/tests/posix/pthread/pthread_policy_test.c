@@ -56,7 +56,9 @@ static void *low_run(void *arg) {
 	test_emit('a');
 	test_assert_zero(pthread_create(&medium, medium_attr_p, medium_run, NULL));
 	test_assert_zero(pthread_create(&low_other, low_attr_p, low_other_run, NULL));
-	for (int i = 0; i < 20000000; i++);
+	for (int i = 0; i < 20000000; i++) {
+		;
+	}
 	test_emit('g');
 	return NULL;
 }
@@ -69,14 +71,18 @@ static void *low_other_run(void *arg) {
 static void *medium_run(void *arg) {
 	test_emit('b');
 	test_assert_zero(pthread_create(&high, high_attr_p, high_run, NULL));
-	for (int i = 0; i < 20000000; i++);
+	for (int i = 0; i < 20000000; i++) {
+		;
+	}
 	test_emit('e');
 	return NULL;
 }
 
 static void *high_run(void *arg) {
 	test_emit('c');
-	for (int i = 0; i < 20000000; i++);
+	for (int i = 0; i < 20000000; i++) {
+		;
+	}
 	test_emit('d');
 	return NULL;
 }

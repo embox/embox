@@ -18,7 +18,7 @@ struct task_env;
 
 __BEGIN_DECLS
 
-extern struct task_env * task_resource_env(const struct task *task);
+extern struct task_env *task_resource_env(const struct task *task);
 
 #define task_self_resource_env() task_resource_env(task_self())
 

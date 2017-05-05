@@ -4,7 +4,7 @@
  * @date 20.01.13
  * @author Alexander Kalmuk
  * @author Anton Kozlov:
- * 	splitted with fs, simplifying
+ *  splitted with fs, simplifying
  */
 
 #include <errno.h>
@@ -42,7 +42,7 @@ int input_dev_input(struct input_dev *dev) {
 	irq_lock();
 	{
 		if (!dev->curprocessd && !ring_buff_alloc(&dev->rbuf, 1,
-			(void **) &dev->curprocessd)) {
+				(void **) &dev->curprocessd)) {
 			ret = 0;
 			goto out_unlock;
 		}
@@ -61,7 +61,7 @@ int input_dev_input(struct input_dev *dev) {
 		}
 		lthread_launch(&indev_handler_lt);
 	}
-out_unlock:
+	out_unlock:
 	irq_unlock();
 
 	return 0;
@@ -105,7 +105,6 @@ int input_dev_register(struct input_dev *dev) {
 	if (dev == NULL) {
 		return -EINVAL;
 	}
-
 
 	if (!dev->ops || !dev->ops->event_get) {
 		return -EINVAL;

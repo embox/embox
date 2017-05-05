@@ -35,7 +35,7 @@ void task_resource_init(const struct task *task) {
 	}
 }
 
-void task_resource_exec(const struct task *task, const char* path, char *const argv[]) {
+void task_resource_exec(const struct task *task, const char *path, char *const argv[]) {
 	const struct task_resource_desc *res;
 
 	task_resource_foreach(res) {
@@ -86,7 +86,6 @@ void task_resource_deinit(const struct task *task) {
 
 	task_resource_deinit_before(task, NULL); /* deinit all */
 }
-
 
 static int task_resource_module_init(void) {
 	size_t offset;

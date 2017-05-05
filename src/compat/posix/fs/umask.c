@@ -18,8 +18,8 @@ static int task_umask_inherit(const struct task *task, const struct task *parent
 TASK_RESOURCE_DECLARE(static,
 		task_resource_umask,
 		mode_t,
-	.init = task_umask_init,
-	.inherit = task_umask_inherit,
+		.init = task_umask_init,
+		.inherit = task_umask_inherit,
 );
 
 static void task_umask_init(const struct task *task, void *space) {

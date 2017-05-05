@@ -6,7 +6,6 @@
  * @author Anton Kozlov
  */
 
-
 #include <errno.h>
 #include <hal/clock.h>
 #include <hal/system.h>
@@ -32,14 +31,14 @@ static int this_init(void) {
 	return irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source, "stm32 systick timer");
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_config(struct time_dev_conf *conf) {
 	int reload = SYS_CLOCK / (CLOCK_DIVIDER * 1000);
 
 	return 0 == SysTick_Config(reload) ? 0 : -EINVAL;
 }
 
 static struct time_event_device this_event = {
-	.config = this_config ,
+	.config = this_config,
 	.event_hz = 1000,
 	.irq_nr = SYSTICK_IRQ,
 };

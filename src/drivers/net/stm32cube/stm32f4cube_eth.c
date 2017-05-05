@@ -63,7 +63,7 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth) {
 
 	/* Configure PB10,PB11,PB12 and PB13 */
 	GPIO_InitStructure.Pin =
-			GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12	| GPIO_PIN_13;
+			GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;
 	/* GPIO_InitStructure.Alternate = GPIO_AF11_ETH; */
 	HAL_GPIO_Init(GPIOB, &GPIO_InitStructure);
 

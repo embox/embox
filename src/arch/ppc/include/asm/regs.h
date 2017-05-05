@@ -14,63 +14,63 @@
  */
 #define MSR_WE  0x00040000 /* wait state enable */
 #define MSR_CE  0x00020000 /* critical interrupt enable */
-#define	MSR_ILE 0x00010000 /* exception little-endian mode (1:LE) */
+#define MSR_ILE 0x00010000 /* exception little-endian mode (1:LE) */
 #define MSR_EE  0x00008000 /* external interrupt enable */
-#define	MSR_PR  0x00004000 /* privilege level (1:USR) */
+#define MSR_PR  0x00004000 /* privilege level (1:USR) */
 #define MSR_FP  0x00002000 /* floating-point available */
 #define MSR_ME  0x00001000 /* machine check enable */
 #define MSR_FE0 0x00000800 /* floating-point exception mode 0 */
 #define MSR_DWE 0x00000400 /* debug wait enable */
 #define MSR_DE  0x00000200 /* debug interrupt enable */
 #define MSR_FE1 0x00000100 /* floating-point exception mode 1 */
-#define	MSR_IP  0x00000040 /* exception prefix */
+#define MSR_IP  0x00000040 /* exception prefix */
 #define MSR_IS  0x00000020 /* instruction address space */
 #define MSR_DS  0x00000010 /* data address space */
-#define	MSR_RI  0x00000002 /* recoverable exception */
-#define	MSR_LE  0x00000001 /* little-endian mode enable */
+#define MSR_RI  0x00000002 /* recoverable exception */
+#define MSR_LE  0x00000001 /* little-endian mode enable */
 
 /**
  * Timer Control Register (TCR) definations
  */
-    /* Watchdog Timer Period */
+/* Watchdog Timer Period */
 #define TCR_WP_21    0x00000000 /* WTP: 2^21 time base clocks */
 #define TCR_WP_25    0x40000000 /* WTP: 2^25 time base clocks */
 #define TCR_WP_29    0x80000000 /* WTP: 2^29 time base clocks */
 #define TCR_WP_33    0xC0000000 /* WTP: 2^33 time base clocks */
-    /* Watchdog Timer Reset Control */
+/* Watchdog Timer Reset Control */
 #define TCR_WRC_NO   0x00000000 /* WTRC: no watchdog timer reset will occur */
 #define TCR_WRC_CORE 0x10000000 /* WTRC: core reset */
 #define TCR_WRC_CHIP 0x20000000 /* WTRC: chip reset */
 #define TCR_WRC_SYS  0x30000000 /* WTRC: system reset */
-    /* Watchdog Timer Interrupt */
+/* Watchdog Timer Interrupt */
 #define TCR_WIE      0x08000000 /* WTI enable */
-    /* Decrementer Interrupt */
+/* Decrementer Interrupt */
 #define TCR_DIE      0x04000000 /* DI enable */
-    /* Fixed Interval Timer Period */
+/* Fixed Interval Timer Period */
 #define TCR_FP_13    0x00000000 /* FITP: 2^13 time base clocks */
 #define TCR_FP_17    0x01000000 /* FITP: 2^17 time base clocks */
 #define TCR_FP_21    0x02000000 /* FITP: 2^21 time base clocks */
 #define TCR_FP_25    0x03000000 /* FITP: 2^25 time base clocks */
-    /* Fixed Interval Timer Interrupt */
+/* Fixed Interval Timer Interrupt */
 #define TCR_FIE      0x00800000 /* FITI enable */
-    /* Auto-Reload */
+/* Auto-Reload */
 #define TCR_ARE      0x00400000 /* AR enable */
 
 /**
  * Timer Status Register (TSR) definations
  */
-    /* Next Watchdog Timer Exception */
+/* Next Watchdog Timer Exception */
 #define TSR_ENW      0x00000001 /* action on next NWTE is governed by TSR[WIS] */
-    /* Watchdog Timer Interrupt Status */
+/* Watchdog Timer Interrupt Status */
 #define TSR_WIS      0x00000002 /* WTI has occured */
-    /* Watchdog Timer Reset Status */
+/* Watchdog Timer Reset Status */
 #define TSR_WRS_NO   0x00000000 /* WTRS: no watchdog reset has occured */
 #define TSR_WRS_CORE 0x00000004 /* WTRS: core reset was forced by watchdog timer */
 #define TSR_WRS_CHIP 0x00000008 /* WTRS: chip reset was forced by watchdog timer */
 #define TSR_WRS_SYS  0x0000000C /* WTRS: system reset was forced by watchdog timer */
-    /* Decrementer Interrupt Status */
+/* Decrementer Interrupt Status */
 #define TSR_DIS      0x00000010 /* DI has occured */
-    /* Fixed Interval Timer Interrupt Status */
+/* Fixed Interval Timer Interrupt Status */
 #define TSR_FIS      0x00000020 /* FITI has occured */
 
 #if 0

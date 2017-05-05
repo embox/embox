@@ -34,7 +34,7 @@
 #ifndef _USB_DWC_REGS_H_
 #define _USB_DWC_REGS_H_
 
-// #include <usb_util.h>
+/* #include <usb_util.h> */
 #include <assert.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread/sync/semaphore.h>
@@ -104,7 +104,6 @@ struct dwc_regs {
 
 	/* 0x01c : Core USB configuration */
 	uint32_t core_usb_configuration;
-
 
 	/**
 	 * 0x010 : Core Reset Register.
@@ -882,8 +881,8 @@ struct dwc_regs {
 	} host_channels[DWC_NUM_CHANNELS];
 
 	uint32_t host_reserved_after_channels[(0x800 - 0x500 -
-						(DWC_NUM_CHANNELS * sizeof(struct dwc_host_channel))) /
-						 sizeof(uint32_t)];
+	(DWC_NUM_CHANNELS * sizeof(struct dwc_host_channel))) /
+	sizeof(uint32_t)];
 
 	/**@}*/
 
@@ -938,11 +937,11 @@ struct usb_dwc_request {
 	/** Setup data for the USB control request.  Must be filled in for control
 	 * transfers; ignored otherwise.  Note: consider using usb_control_msg() for
 	 * control transfers instead.  */
-	// struct usb_control_setup_data setup_data;
+	/* struct usb_control_setup_data setup_data; */
 
 	/** Callback function that will be called when this USB transfer has been
 	 * successfully completed or has failed.  */
-	//usb_xfer_completed_t completion_cb_func;
+	/*usb_xfer_completed_t completion_cb_func; */
 
 	/*********************
 	 * Output variables   *

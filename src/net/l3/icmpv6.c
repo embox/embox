@@ -76,7 +76,7 @@ static int icmp6_hnd_echo_request(const struct icmp6hdr *icmp6h,
 	}
 
 	if (sizeof *icmp6h + sizeof *echo_req > ip6_data_length(
-				ip6_hdr(skb))) {
+			ip6_hdr(skb))) {
 		skb_free(skb);
 		return 0; /* error: invalid length */
 	}
@@ -121,7 +121,7 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 	assert(in_dev != NULL);
 
 	if (0 != memcmp(&in_dev->ifa6_address, &nbr_solicit->target,
-				sizeof in_dev->ifa6_address)) {
+			sizeof in_dev->ifa6_address)) {
 		skb_free(skb);
 		return 0; /* error: not for us */
 	}
@@ -165,7 +165,7 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 
 	return icmp6_send(skb, NDP_NEIGHBOR_ADVERT, 0,
 			&nbr_advert, sizeof nbr_advert.body
-				+ sizeof nbr_advert.ops + in_dev->dev->addr_len);
+			+ sizeof nbr_advert.ops + in_dev->dev->addr_len);
 }
 
 static int ndp_hnd_neighbor_advert(const struct icmp6hdr *icmp6h,

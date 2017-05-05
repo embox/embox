@@ -17,7 +17,7 @@ struct task;
 
 __BEGIN_DECLS
 
-extern struct emmap * task_resource_mmap(const struct task *task);
+extern struct emmap *task_resource_mmap(const struct task *task);
 
 #define task_self_resource_mmap() \
 	task_resource_mmap(task_self())

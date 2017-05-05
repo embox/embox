@@ -13,7 +13,7 @@
 
 POOL_DEF(auth_pool, struct auth, MODOPS_AMOUNT_AUTH);
 
-struct auth * auth_alloc(void) {
+struct auth *auth_alloc(void) {
 	return pool_alloc(&auth_pool);
 }
 

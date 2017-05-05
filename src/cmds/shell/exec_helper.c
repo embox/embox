@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	int res;
 	struct exec_data edata;
 
-       	edata.argc = argc - 1;
+	edata.argc = argc - 1;
 	edata.argv = argv + 1;
 
 	new_task("", exec_helper_trampoline, &edata);

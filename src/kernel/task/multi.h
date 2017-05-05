@@ -36,8 +36,6 @@ struct task {
 	char resources[];
 };
 
-
-
 __BEGIN_DECLS
 
 #include <kernel/task/defs.h>
@@ -64,7 +62,7 @@ static inline int task_get_id(const struct task *tsk) {
 	return tsk->tsk_id;
 }
 
-static inline const char * task_get_name(const struct task *tsk) {
+static inline const char *task_get_name(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_name;
 }
@@ -75,12 +73,12 @@ static inline int task_set_name(struct task *tsk, const char *name) {
 	return 0;
 }
 
-static inline struct thread * task_get_main(const struct task *tsk) {
+static inline struct thread *task_get_main(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_main;
 }
 
-static inline struct task * task_get_parent(const struct task *tsk) {
+static inline struct task *task_get_parent(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->parent;
 }
@@ -117,7 +115,7 @@ static inline void task_thread_unregister(struct task *tsk, struct thread *t) {
 	}
 
 	/* XXX t->task isn't set to null, thread allowed to know old parent while
- 	 * shutting down
+	 * shutting down
 	 */
 }
 

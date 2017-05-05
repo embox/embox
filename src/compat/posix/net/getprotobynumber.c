@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <netdb.h>
 
-struct protoent * getprotobynumber(int proto) {
+struct protoent *getprotobynumber(int proto) {
 	struct protoent *pe;
 
 	setprotoent(1);

@@ -40,7 +40,7 @@ void run_cmd(const struct cmd *cmd, int argc, char *argv[], FILE *out) {
 	printf("Executing command\n");
 	begin = clock();
 	for (run = 0; run < run_count; run++) {
-		printf ("TBPROF RUN #%d\n", run);
+		printf("TBPROF RUN #%d\n", run);
 		set_profiling_mode(CYG_PROFILING);
 		res = cmd_exec(cmd, argc, argv);
 		set_profiling_mode(DISABLED);
@@ -65,31 +65,31 @@ int main(int argc, char *argv[]) {
 	while (-1 != (opt = getopt(argc, argv, "chn:ed"))) {
 		argnum++;
 		switch (opt) {
-			case 'c':
-				/* execute command */
-				c_cmd = cmd_lookup(argv[argnum]);
-				run_cmd(c_cmd, c_argc - argnum, argv + argnum, out);
-				return 0;
-				break;
-			case 'n':
-				sscanf(optarg, "%d", &run_count);
-				argnum++;
-				break;
-			case 'e':
-				initialize_hashtable();
-				set_profiling_mode(CYG_PROFILING);
-				printf("cyg_profiling enabled.\n");
-				return 0;
-				break;
-			case 'd':
-				set_profiling_mode(DISABLED);
-				printf("cyg_profiling disabled.\n");
-				return 0;
-				break;
-			case 'h':
-				printf("Example: tbprof [-n count] -c [cmd]\nUse man tbprof for more info.\n");
-				return 0;
-				break;
+		case 'c':
+			/* execute command */
+			c_cmd = cmd_lookup(argv[argnum]);
+			run_cmd(c_cmd, c_argc - argnum, argv + argnum, out);
+			return 0;
+			break;
+		case 'n':
+			sscanf(optarg, "%d", &run_count);
+			argnum++;
+			break;
+		case 'e':
+			initialize_hashtable();
+			set_profiling_mode(CYG_PROFILING);
+			printf("cyg_profiling enabled.\n");
+			return 0;
+			break;
+		case 'd':
+			set_profiling_mode(DISABLED);
+			printf("cyg_profiling disabled.\n");
+			return 0;
+			break;
+		case 'h':
+			printf("Example: tbprof [-n count] -c [cmd]\nUse man tbprof for more info.\n");
+			return 0;
+			break;
 		}
 	}
 	printf("Wrong arguments. tbprof -h for usage.\n");

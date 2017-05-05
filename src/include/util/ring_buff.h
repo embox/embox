@@ -63,7 +63,7 @@ extern int ring_buff_dequeue(struct ring_buff *buf, void *into_buf, int cnt);
 extern int ring_buff_alloc(struct ring_buff *buf, int cnt, void **ret);
 
 extern int ring_buff_init(struct ring_buff *buf, size_t elem_size,
-	int count, void *storage);
+		int count, void *storage);
 
 extern int ring_buff_get_cnt(struct ring_buff *buf);
 
@@ -72,7 +72,7 @@ extern int ring_buff_get_space(struct ring_buff *buf);
 __END_DECLS
 
 #define RING_BUFFER_DEF(name, elem_type, req_len) \
-	static elem_type name##_storage[req_len];     \
+	static elem_type name ## _storage[req_len];     \
 	static struct ring_buff name = {              \
 		.ring = {                                 \
 			.head = 0,                            \
@@ -80,7 +80,7 @@ __END_DECLS
 		},                                        \
 		.elem_size = sizeof(elem_type),           \
 		.capacity = req_len,                      \
-		.storage = (void *) name##_storage        \
+		.storage = (void *) name ## _storage        \
 	}
 
 #endif /* UTIL_RING_BUFF_H_ */

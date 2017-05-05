@@ -34,7 +34,7 @@ static int uimage_info(unsigned int addr) {
 	printf("Entry Point Address: 0x%08X\n", hdr->ih_ep);
 	printf("Image Data CRC Checksum: 0x%08X\n", hdr->ih_dcrc);
 	printf("Operating System: ");
-	switch(hdr->ih_os) {
+	switch (hdr->ih_os) {
 	case IH_OS_LINUX:
 		printf("linux\n");
 		break;
@@ -43,7 +43,7 @@ static int uimage_info(unsigned int addr) {
 		break;
 	}
 	printf("CPU architecture: ");
-	switch(hdr->ih_arch) {
+	switch (hdr->ih_arch) {
 	case IH_ARCH_SPARC:
 		printf("sparc\n");
 		break;
@@ -55,7 +55,7 @@ static int uimage_info(unsigned int addr) {
 		break;
 	}
 	printf("Image Type: ");
-	switch(hdr->ih_type) {
+	switch (hdr->ih_type) {
 	case IH_TYPE_KERNEL:
 		printf("OS Kernel Image\n");
 		break;
@@ -64,7 +64,7 @@ static int uimage_info(unsigned int addr) {
 		break;
 	}
 	printf("Compression Type: ");
-	switch(hdr->ih_comp) {
+	switch (hdr->ih_comp) {
 	case IH_COMP_NONE:
 		printf("none\n");
 		break;
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
 	image_header_t *hdr;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "f:a:h"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'f':
 			if (1 != sscanf(optarg, "%c", &format)) {
 				printf("wrong format %s\n", optarg);
@@ -118,10 +118,10 @@ int main(int argc, char **argv) {
 	case 'u':
 		hdr = (image_header_t *) load_addr;
 		uimage_info(load_addr);
-		entry_point = (void (*)(void)) hdr->ih_ep;
+		entry_point = (void (*)(void))hdr->ih_ep;
 		break;
 	case 'r':
-		entry_point = (void (*)(void)) LOAD_ADDR;
+		entry_point = (void (*)(void))LOAD_ADDR;
 		break;
 	default:
 		return -EINVAL;

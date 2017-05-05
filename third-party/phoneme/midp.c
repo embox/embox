@@ -19,9 +19,8 @@
 
 #include <javacall_lifecycle.h>
 
-
 static void *phoneme_run(void *data) {
-	//ToDo:
+	/*ToDo: */
 	printf("NOT IMPLEMENTED\n");
 	JavaTask();
 	return NULL;
@@ -42,7 +41,7 @@ static void notify_loop(void) {
 		return;
 	}
 
-	while(!list_empty(&task_self()->children)) { /* XXX make it throw signals */
+	while (!list_empty(&task_self()->children)) { /* XXX make it throw signals */
 		size_t len, i, event_size = sizeof(struct input_event);
 		if ((len = read(fd, buf, event_size * 16)) > 0) {
 			/* Send all events we read to java task. */
@@ -55,9 +54,9 @@ static void notify_loop(void) {
 
 int phoneme_midp(int argc, char **argv) {
 	struct __jvm_params params = {
-			.argc = argc,
-			.argv = argv,
-			.code = -1
+		.argc = argc,
+		.argv = argv,
+		.code = -1
 	};
 
 	if (JAVACALL_OK != javacall_events_init()) {
@@ -72,13 +71,13 @@ int phoneme_midp(int argc, char **argv) {
 
 int phoneme_cldc(int argc, char **argv) {
 	struct __jvm_params params = {
-			.argc = argc,
-			.argv = argv,
-			.code = -1
+		.argc = argc,
+		.argv = argv,
+		.code = -1
 	};
 
 	new_task("", phoneme_run, &params);
-	while(!list_empty(&task_self()->children)) { } /* XXX make it throw waitpid() */
+	while (!list_empty(&task_self()->children)) { } /* XXX make it throw waitpid() */
 
 	return params.code;
 }

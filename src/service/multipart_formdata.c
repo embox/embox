@@ -72,11 +72,11 @@ static int mpfd_parse(struct parseenv *pe, const char *bound, char *fname, size_
 	char *filename;
 	size_t filenamelen;
 	int pres = mpfd_expect(pe, "--") &&
-		mpfd_expect(pe, bound) &&
-		mpfd_expect(pe, "\r\nContent-Disposition: form-data; name=\"") &&
-		mpfd_store_till(pe, "\"; filename=\"", NULL) &&
-		(filename = mpfd_store_till(pe, "\"\r\n", &filenamelen)) &&
-		mpfd_skip_till(pe, "\r\n\r\n");
+			mpfd_expect(pe, bound) &&
+			mpfd_expect(pe, "\r\nContent-Disposition: form-data; name=\"") &&
+			mpfd_store_till(pe, "\"; filename=\"", NULL) &&
+			(filename = mpfd_store_till(pe, "\"\r\n", &filenamelen)) &&
+			mpfd_skip_till(pe, "\r\n\r\n");
 
 	if (pres) {
 		*(filename + filenamelen) = '\0';
@@ -128,11 +128,11 @@ int main(int argc, char *argv[]) {
 		close(fd);
 
 		httpcode = 200;
-out_header:
+		out_header:
 		printf("HTTP/1.1 %d %s\r\n"
-			"Content-Type: %s\r\n"
-			"Connection: close\r\n"
-			"\r\n", httpcode, "OK", "text/plain");
+			   "Content-Type: %s\r\n"
+			   "Connection: close\r\n"
+			   "\r\n", httpcode, "OK", "text/plain");
 		fflush(stdout);
 	}
 

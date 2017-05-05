@@ -10,7 +10,6 @@
 #ifndef MEM_MISC_UTIL_POOL_H_
 #define MEM_MISC_UTIL_POOL_H_
 
-
 #include <stddef.h>
 #include <util/macro.h>
 #include <util/slist.h>
@@ -57,16 +56,15 @@ struct pool {
 		object_type object; \
 		struct slist_link free_link; \
 	} __pool_storage ## name[size] \
-		attr __attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \
+	attr __attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \
 	static struct pool name = { \
-			.memory = __pool_storage ## name, \
-			.bound_free = __pool_storage ## name, \
-			.free_blocks = SLIST_INIT(&name.free_blocks),\
-			.obj_size = sizeof(__pool_storage ## name[0]), \
-			.pool_size = sizeof(__pool_storage ## name), \
-			POOL_BLOCKS_INIT \
+		.memory = __pool_storage ## name, \
+		.bound_free = __pool_storage ## name, \
+		.free_blocks = SLIST_INIT(&name.free_blocks), \
+		.obj_size = sizeof(__pool_storage ## name[0]), \
+		.pool_size = sizeof(__pool_storage ## name), \
+		POOL_BLOCKS_INIT \
 	};
-
 
 /**
  * Create pool descriptor. The memory for pool is allocated in special section
@@ -77,7 +75,6 @@ struct pool {
  * @param count of objects in cache
  */
  #define POOL_DEF(name, object_type, size) POOL_DEF_ATTR(name, object_type, size, )
-
 
 /**
  * allocate single object from the cache and return it to the caller

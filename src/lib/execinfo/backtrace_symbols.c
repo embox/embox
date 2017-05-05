@@ -19,8 +19,6 @@
 
 #include <framework/mod/options.h>
 
-
-
 #define MODOPS_ROW_COUNT OPTION_GET(NUMBER, row_count)
 #define MODOPS_ROW_SIZE OPTION_GET(NUMBER, row_size)
 

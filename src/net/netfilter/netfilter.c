@@ -241,7 +241,6 @@ static int nf_chain_rule_prepare(int chain, const struct nf_rule *r,
 	return 0;
 }
 
-
 int nf_add_rule(int chain, const struct nf_rule *r) {
 	struct dlist_head *rules;
 	struct nf_rule *new_r;
@@ -324,11 +323,11 @@ int nf_clear(int chain) {
 }
 
 #define NF_TEST_NOT_FIELD(test_r, r, field)         \
-	(!r->set_##field ? 1 : !test_r->set_##field ? 0 \
-		: (assert(!test_r->not_##field),            \
-			(0 == memcmp(&test_r->field, &r->field, \
-					sizeof test_r->field))          \
-				!= !!r->not_##field))
+	(!r->set_ ## field ? 1 : !test_r->set_ ## field ? 0 \
+	: (assert(!test_r->not_ ## field),            \
+	(0 == memcmp(&test_r->field, &r->field, \
+	sizeof test_r->field))          \
+	!= !!r->not_ ## field))
 
 int nf_test_rule(int chain, const struct nf_rule *test_r) {
 	struct dlist_head *rules;
@@ -350,12 +349,12 @@ int nf_test_rule(int chain, const struct nf_rule *test_r) {
 				&& NF_TEST_NOT_FIELD(test_r, r, saddr)
 				&& NF_TEST_NOT_FIELD(test_r, r, daddr)
 				&& (((test_r->proto != NF_PROTO_ALL)
-						&& (r->proto != NF_PROTO_ALL)
-						&& NF_TEST_NOT_FIELD(test_r, r, proto))
-					|| ((test_r->proto == NF_PROTO_ALL) && !test_r->not_proto
-						&& (r->proto == NF_PROTO_ALL) && !r->not_proto)
-					|| ((test_r->proto != NF_PROTO_ALL)
-						&& ((r->proto == NF_PROTO_ALL) && !r->not_proto)))
+				&& (r->proto != NF_PROTO_ALL)
+				&& NF_TEST_NOT_FIELD(test_r, r, proto))
+				|| ((test_r->proto == NF_PROTO_ALL) && !test_r->not_proto
+				&& (r->proto == NF_PROTO_ALL) && !r->not_proto)
+				|| ((test_r->proto != NF_PROTO_ALL)
+				&& ((r->proto == NF_PROTO_ALL) && !r->not_proto)))
 				&& NF_TEST_NOT_FIELD(test_r, r, sport)
 				&& NF_TEST_NOT_FIELD(test_r, r, dport)
 				&& (!r->test_hnd ? 1 : r->test_hnd(test_r, r->test_hnd_data))) {

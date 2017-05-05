@@ -7,9 +7,10 @@
 #ifndef __ASSEMBLER__
 
 struct context_kregs {
-	/* 0x00 */uint32_t lr; /**< Return address for #context_switch(). */
-	/* 0x04 */uint32_t cpsr; /**< State register */
-	/* 0x08 */uint32_t sp; /**< Stack pointer */
+	/* 0x00 */
+	uint32_t lr;           /**< Return address for #context_switch(). */
+	/* 0x04 */ uint32_t cpsr; /**< State register */
+	/* 0x08 */ uint32_t sp; /**< Stack pointer */
 };
 
 struct context {

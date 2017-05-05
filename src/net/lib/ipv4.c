@@ -22,7 +22,7 @@ void ip_build(struct iphdr *iph, uint16_t total_len, uint8_t ttl,
 	iph->tos = 0;
 	iph->tot_len = htons(total_len);
 	iph->id = 0; /* use ip_set_id_field */
-	iph->frag_off = 0; //htons(IP_DF)
+	iph->frag_off = 0; /*htons(IP_DF) */
 	iph->ttl = ttl;
 	iph->proto = proto;
 	iph->check = 0; /* use ip_set_check_field */
@@ -72,7 +72,7 @@ int ip_tester_src(const struct sock *sk,
 	assert(ip_hdr(skb) != NULL);
 	assert(ip_check_version(ip_hdr(skb)));
 	return to_const_inet_sock(sk)->src_in.sin_addr.s_addr
-			== ip_hdr(skb)->daddr;
+		   == ip_hdr(skb)->daddr;
 }
 
 int ip_tester_src_or_any(const struct sock *sk,
@@ -85,7 +85,7 @@ int ip_tester_src_or_any(const struct sock *sk,
 	assert(ip_hdr(skb) != NULL);
 	assert(ip_check_version(ip_hdr(skb)));
 	return (in->s_addr == ip_hdr(skb)->daddr)
-			|| (in->s_addr == INADDR_ANY);
+		   || (in->s_addr == INADDR_ANY);
 }
 
 int ip_tester_dst(const struct sock *sk,
@@ -94,7 +94,7 @@ int ip_tester_dst(const struct sock *sk,
 	assert(ip_hdr(skb) != NULL);
 	assert(ip_check_version(ip_hdr(skb)));
 	return to_const_inet_sock(sk)->dst_in.sin_addr.s_addr
-			== ip_hdr(skb)->saddr;
+		   == ip_hdr(skb)->saddr;
 }
 
 int ip_tester_dst_or_any(const struct sock *sk,
@@ -107,5 +107,5 @@ int ip_tester_dst_or_any(const struct sock *sk,
 	assert(ip_hdr(skb) != NULL);
 	assert(ip_check_version(ip_hdr(skb)));
 	return (in->s_addr == ip_hdr(skb)->saddr)
-			|| (in->s_addr == INADDR_ANY);
+		   || (in->s_addr == INADDR_ANY);
 }

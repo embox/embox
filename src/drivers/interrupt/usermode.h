@@ -12,5 +12,3 @@
 #define __IRQCTRL_IRQS_TOTAL 96
 
 #endif /* INTERRUPTS_IRCTRL_USERMODE_H_ */
-
-

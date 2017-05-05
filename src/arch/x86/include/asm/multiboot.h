@@ -29,10 +29,7 @@
  */
 #define MULTIBOOT_AOUT_KLUDGE       0x00010000
 
-
 #define MULTIBOOT_HEADER_FLAGS     MULTIBOOT_MEMORY_INFO | MULTIBOOT_PAGE_ALIGN
-
-
 
 /* is there basic lower/upper memory information? */
 #define MULTIBOOT_INFO_MEMORY                   0x00000001
@@ -68,7 +65,6 @@
 /* Is there video information? */
 #define MULTIBOOT_INFO_VIDEO_INFO               0x00000800
 
-
 #ifndef __ASSEMBLER__
 
 #include <stdint.h>
@@ -92,8 +88,6 @@ typedef struct multiboot_header {
 	uint32_t height; /* 40 */
 	uint32_t depth;  /* 44 */
 } multiboot_header_t;
-
-
 
 /* The symbol table for a.out. */
 typedef struct aout_symbol_table {
@@ -156,7 +150,6 @@ typedef struct multiboot_info {
 	uint16_t vbe_interface_off;
 	uint16_t vbe_interface_len;
 } multiboot_info_t;
-
 
 /* The module structure. */
 typedef struct multiboot_module {

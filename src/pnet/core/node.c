@@ -64,12 +64,12 @@ int pnet_node_attach(net_node_t node, net_id_t id, net_node_t other) {
 	}
 
 	switch (id) {
-		case NET_RX_DFAULT:
-			node->rx_dfault = other;
-			break;
-		case NET_TX_DFAULT:
-			node->tx_dfault = other;
-			break;
+	case NET_RX_DFAULT:
+		node->rx_dfault = other;
+		break;
+	case NET_TX_DFAULT:
+		node->tx_dfault = other;
+		break;
 	}
 
 	return 0;
@@ -77,10 +77,10 @@ int pnet_node_attach(net_node_t node, net_id_t id, net_node_t other) {
 
 net_node_t pnet_node_get(net_node_t node, net_id_t id) {
 	switch (id) {
-		case NET_RX_DFAULT:
-			return node->rx_dfault;
-		case NET_TX_DFAULT:
-			return node->tx_dfault;
+	case NET_RX_DFAULT:
+		return node->rx_dfault;
+	case NET_TX_DFAULT:
+		return node->tx_dfault;
 	}
 
 	return NULL;

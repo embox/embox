@@ -77,7 +77,7 @@ int test_suite_run(const struct test_suite *test) {
 			++failures;
 		}
 		++total;
-		// TODO this looks ugly.
+		/* TODO this looks ugly. */
 		if (ret == -EINTR) {
 			break;
 		}
@@ -162,7 +162,7 @@ static void handle_suite_result(const struct test_suite *test_suite,
 		int failures, int total) {
 	if (failures > 0) {
 		printk("\n\ttesting %s (%s) failed\n"
-				"\t\t%d/%d failures\n",
+			   "\t\t%d/%d failures\n",
 				test_name(test_suite), test_suite->description,
 				failures, total);
 	} else if (!failures) {
@@ -189,14 +189,14 @@ static void handle_case_result(const struct test_case *test_case,
 
 	fail_loc = &failure->location;
 	printk("\n\tfailure at %s : %d, in function %s\n"
-			"\t\t%s\n",
+		   "\t\t%s\n",
 			fail_loc->at.file, fail_loc->at.line, fail_loc->func,
 			failure->reason);
 
 	if (test_case) {
 		test_loc = &test_case->location;
 		printk("\t   case at %s : %d\n"
-				"\t\t\"%s\"\n\t",
+			   "\t\t\"%s\"\n\t",
 				test_loc->file, test_loc->line, test_case->description);
 	}
 }

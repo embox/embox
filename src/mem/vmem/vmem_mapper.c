@@ -46,7 +46,7 @@ int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t 
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
 
-	// Actually, this is unnecessary
+	/* Actually, this is unnecessary */
 	virt_addr = virt_addr & (~MMU_PAGE_MASK);
 
 	pgd = mmu_get_root(ctx);
@@ -125,13 +125,12 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
 	if (MMU_PMD_SHIFT != MMU_PTE_SHIFT && !mmu_pmd_present(pmd)) { \
 		pte = vmem_alloc_pte_table(); \
 		if (pte == NULL) { \
-			return -ENOMEM;	\
+			return -ENOMEM; \
 		} \
 		mmu_pmd_set(pmd, pte); \
 	} else { \
 		pte = mmu_pmd_value(pmd); \
 	}
-
 
 static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
 	mmu_pgd_t *pgd;
@@ -149,13 +148,13 @@ static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_a
 
 	vmem_get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
-	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
+	for (; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		GET_PMD(pmd, pgd + pgd_idx);
 
-		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
+		for (; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 			GET_PTE(pte, pmd + pmd_idx);
 
-			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
+			for (; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
 				/* Considering that address has not mapped yet */
 				assert(!mmu_pte_present(pte + pte_idx));
 
@@ -194,13 +193,13 @@ static int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size
 
 	vmem_get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
 
-	for ( ; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
+	for (; pgd_idx < MMU_PGD_ENTRIES; pgd_idx++) {
 		GET_PMD(pmd, pgd + pgd_idx);
 
-		for ( ; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
+		for (; pmd_idx < MMU_PMD_ENTRIES; pmd_idx++) {
 			GET_PTE(pte, pmd + pmd_idx);
 
-			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
+			for (; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
 				/* Considering that space has not allocated yet */
 				assert(!mmu_pte_present(pte + pte_idx));
 

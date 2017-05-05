@@ -74,4 +74,3 @@ extern void fork_static_restore(struct static_space *sspc);
 extern void fork_static_cleanup(struct static_space *sspc);
 
 #endif /* FORK_COPY_ADDR_SPACE_H_ */
-

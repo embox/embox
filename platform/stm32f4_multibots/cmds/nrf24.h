@@ -5,9 +5,9 @@
 * can do whatever you want with this stuff. If we meet some day, and you think
 * this stuff is worth it, you can buy me a coffee in return.
 * -----------------------------------------------------------------------------
-* This library is based on this library: 
+* This library is based on this library:
 *   https://github.com/aaronds/arduino-nrf24l01
-* Which is based on this library: 
+* Which is based on this library:
 *   http://www.tinkerer.eu/AVRLib/nRF24L01
 * -----------------------------------------------------------------------------
 */
@@ -28,8 +28,8 @@
 
 /* adjustment functions */
 void    nrf24_init();
-void    nrf24_rx_address(uint8_t* adr);
-void    nrf24_tx_address(uint8_t* adr);
+void    nrf24_rx_address(uint8_t *adr);
+void    nrf24_tx_address(uint8_t *adr);
 void    nrf24_config(uint8_t channel, uint8_t pay_length);
 
 /* state check functions */
@@ -39,8 +39,8 @@ uint8_t nrf24_getStatus();
 uint8_t nrf24_rxFifoEmpty();
 
 /* core TX / RX functions */
-void    nrf24_send(uint8_t* value);
-void    nrf24_getData(uint8_t* data);
+void    nrf24_send(uint8_t *value);
+void    nrf24_getData(uint8_t *data);
 
 /* use in dynamic length mode */
 uint8_t nrf24_payloadLength();
@@ -59,11 +59,11 @@ void    nrf24_powerDown();
 
 /* low level interface ... */
 uint8_t spi_transfer(uint8_t tx);
-void    nrf24_transmitSync(uint8_t* dataout,uint8_t len);
-void    nrf24_transferSync(uint8_t* dataout,uint8_t* datain,uint8_t len);
+void    nrf24_transmitSync(uint8_t *dataout,uint8_t len);
+void    nrf24_transferSync(uint8_t *dataout,uint8_t *datain,uint8_t len);
 void    nrf24_configRegister(uint8_t reg, uint8_t value);
-void    nrf24_readRegister(uint8_t reg, uint8_t* value, uint8_t len);
-void    nrf24_writeRegister(uint8_t reg, uint8_t* value, uint8_t len);
+void    nrf24_readRegister(uint8_t reg, uint8_t *value, uint8_t len);
+void    nrf24_writeRegister(uint8_t reg, uint8_t *value, uint8_t len);
 
 /* -------------------------------------------------------------------------- */
 /* You should implement the platform spesific functions in your code */

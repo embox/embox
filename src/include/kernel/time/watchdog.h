@@ -28,5 +28,4 @@ extern int watchdog_kick(watchdog_t *p_wdog);
 extern int watchdog_close(watchdog_t *p_wdog);
 __END_DECLS
 
-
 #endif /* WATCHDOG_H_ */

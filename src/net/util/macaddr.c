@@ -16,7 +16,7 @@ unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
 	size_t i, j, cur = 0;
 	unsigned int tmp;
 	for (i = 0; i < 5; i++) {
-		symbol_str[0]='\0';
+		symbol_str[0] = '\0';
 		for (j = 0; j < ARRAY_SIZE(symbol_str); j++) {
 			if (':' == addr[cur + j]) {
 				memcpy(symbol_str, &addr[cur], j);
@@ -27,7 +27,7 @@ unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
 		if ('\0' == symbol_str[0]) {
 			return NULL;
 		}
-		if (1 != sscanf (symbol_str, "%x", &tmp)) {
+		if (1 != sscanf(symbol_str, "%x", &tmp)) {
 			return NULL;
 		}
 		if (tmp > 0xFF) {
@@ -37,11 +37,12 @@ unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
 		cur += j + 1;
 	}
 	strncpy(symbol_str, (char *)&addr[cur], ARRAY_SIZE(symbol_str));
-	if (1 != sscanf (symbol_str, "%x", &tmp)) {
+	if (1 != sscanf(symbol_str, "%x", &tmp)) {
 		return NULL;
 	}
-	if (tmp > 0xFF)
+	if (tmp > 0xFF) {
 		return NULL;
+	}
 	res[i] = tmp;
 	return res;
 }

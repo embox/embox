@@ -17,13 +17,13 @@ __BEGIN_DECLS
 struct spwd {
 	char               *sp_namp;
 	char               *sp_pwdp;
-	long int           sp_lstchg;
-	long int           sp_min;
-	long int           sp_max;
-	long int           sp_warn;
-	long int           sp_inact;
-	long int           sp_expire;
-	unsigned long int  sp_flag;
+	long int sp_lstchg;
+	long int sp_min;
+	long int sp_max;
+	long int sp_warn;
+	long int sp_inact;
+	long int sp_expire;
+	unsigned long int sp_flag;
 };
 
 extern struct spwd *fgetspent(FILE *file);

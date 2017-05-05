@@ -34,18 +34,18 @@
  */
 struct dgram_buf {
 	struct sk_buff_head fragments;
-	struct dlist_head   next_buf; /* linked list pointers */
+	struct dlist_head next_buf;   /* linked list pointers */
 	struct buf_id {
-		in_addr_t         saddr;
-		in_addr_t         daddr;
-		uint16_t          id;
-		uint8_t           protocol;
+		in_addr_t saddr;
+		in_addr_t daddr;
+		uint16_t id;
+		uint8_t protocol;
 	} buf_id;
-	int               is_last_frag_received;
-	int               meat;
-	int               len; /* total length of original datagram */
-	int               buf_ttl;
-	int               is_deleted;
+	int is_last_frag_received;
+	int meat;
+	int len;               /* total length of original datagram */
+	int buf_ttl;
+	int is_deleted;
 };
 
 static DLIST_DEFINE(__dgram_buf_list);
@@ -84,7 +84,7 @@ static void ttl_handler(struct sys_timer *timer, void *param) {
 	i = 0;
 
 	dlist_foreach_entry(buf, &__dgram_buf_list, next_buf) {
-		i ++;
+		i++;
 		if (buf->is_deleted) {
 			continue;
 		}
@@ -113,9 +113,9 @@ static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 			continue;
 		}
 		if (buf->buf_id.daddr == iph->daddr
-			&& buf->buf_id.saddr == iph->saddr
-			&& buf->buf_id.protocol == iph->proto
-			&& buf->buf_id.id == iph->id) {
+				&& buf->buf_id.saddr == iph->saddr
+				&& buf->buf_id.protocol == iph->proto
+				&& buf->buf_id.id == iph->id) {
 			return buf;
 		}
 	}
@@ -165,7 +165,7 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 	assert(skb);
 
 	/* copy and concatenate dat. Queue is NOT sorted by offset! */
-	while((skb_iter = skb_queue_pop(&buf->fragments))) {
+	while ((skb_iter = skb_queue_pop(&buf->fragments))) {
 		offset = ip_offset(skb_iter);
 		if (offset == 0) {
 			memcpy(skb->mac.raw, skb_iter->mac.raw, skb_iter->len);
@@ -192,7 +192,7 @@ static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 
 	assert(iph);
 
-	buf = (struct dgram_buf*) objalloc(&__dgram_bufs);
+	buf = (struct dgram_buf *) objalloc(&__dgram_bufs);
 	if (!buf) {
 		return NULL;
 	}
@@ -222,12 +222,12 @@ static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 
 static void buf_delete(struct dgram_buf *buf) {
 	dlist_del(&buf->next_buf);
-	objfree(&__dgram_bufs, (void*)buf);
+	objfree(&__dgram_bufs, (void *)buf);
 }
 
 static struct sk_buff *ip_frag_build(const struct sk_buff *big_skb, int frag_offset,
 		int frag_size, int mf_flag) {
-	struct sk_buff * frag;
+	struct sk_buff *frag;
 	int len = big_skb->dev->hdr_len + IP_HEADER_SIZE(big_skb->nh.iph);
 
 	if (unlikely(!(frag = skb_alloc(frag_size)))) {
@@ -240,7 +240,7 @@ static struct sk_buff *ip_frag_build(const struct sk_buff *big_skb, int frag_off
 	memcpy(frag->mac.raw + len, big_skb->mac.raw + frag_offset, frag_size - len);
 	frag->nh.raw = frag->mac.raw + big_skb->dev->hdr_len;
 	frag->nh.iph->frag_off = htons(
-				(((frag_offset - len) >> 3) /* data offset / 8 */) | mf_flag);
+			(((frag_offset - len) >> 3) /* data offset / 8 */) | mf_flag);
 	frag->nh.iph->tot_len = htons(frag_size - big_skb->dev->hdr_len);
 
 	return frag;

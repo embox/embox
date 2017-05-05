@@ -46,7 +46,6 @@ INDEX_DEF(ramfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
 #define MAX_FILE_SIZE OPTION_GET(NUMBER,ramfs_file_size)
 #define FILESYSTEM_SIZE (MAX_FILE_SIZE * OPTION_GET(NUMBER,inode_quantity))
 
-
 #define RAMFS_DEV  "/dev/ram#"
 #define RAMFS_DIR  "/"
 
@@ -56,7 +55,7 @@ static char ramfs_dev[] = RAMFS_DEV;
 static int ramfs_format(void *path);
 static int ramfs_mount(void *dev, void *dir);
 
-static int ramfs_init(void * par) {
+static int ramfs_init(void *par) {
 	struct path dir_node;
 	struct node *dev_node;
 	int res;
@@ -97,7 +96,6 @@ static int ramfs_ramdisk_fs_init(void) {
 
 EMBOX_UNIT_INIT(ramfs_ramdisk_fs_init); /*TODO*/
 
-
 static struct idesc *ramfs_open(struct node *node, struct file_desc *file_desc, int flags);
 static int    ramfs_close(struct file_desc *desc);
 static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
@@ -136,7 +134,7 @@ static int ramfs_read_sector(struct nas *nas, char *buffer,
 
 	fsi = nas->fs->fsi;
 
-	if(0 > block_dev_read(nas->fs->bdev, (char *) buffer,
+	if (0 > block_dev_read(nas->fs->bdev, (char *) buffer,
 			count * fsi->block_size, sector)) {
 		return -1;
 	}
@@ -151,7 +149,7 @@ static int ramfs_write_sector(struct nas *nas, char *buffer,
 
 	fsi = nas->fs->fsi;
 
-	if(0 > block_dev_write(nas->fs->bdev, (char *) buffer,
+	if (0 > block_dev_write(nas->fs->bdev, (char *) buffer,
 			count * fsi->block_size, sector)) {
 		return -1;
 	}
@@ -172,16 +170,16 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 		int offset = desc->cursor % fsi->block_size;
 		int read_n;
 
-		assert (blk < fsi->block_per_file);
-		assert (blk < fsi->numblocks);
+		assert(blk < fsi->block_per_file);
+		assert(blk < fsi->numblocks);
 
 		assert(sizeof(sector_buff) == fsi->block_size);
-		if(1 != ramfs_read_sector(nas, sector_buff, 1, blk)) {
+		if (1 != ramfs_read_sector(nas, sector_buff, 1, blk)) {
 			break;
 		}
 
 		read_n = min(fsi->block_size - offset, ebuf - pbuf);
-		memcpy (pbuf, sector_buff + offset, read_n);
+		memcpy(pbuf, sector_buff + offset, read_n);
 
 		desc->cursor += read_n;
 		pbuf += read_n;
@@ -212,13 +210,13 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	end_pointer = fi->pointer + len;
 	start_block = fi->index * fsi->block_per_file;
 
-	while(1) {
-		if(0 == fsi->block_size) {
+	while (1) {
+		if (0 == fsi->block_size) {
 			break;
 		}
 		blk = fi->pointer / fsi->block_size;
 		/* check if block over the file */
-		if(blk >= fsi->block_per_file) {
+		if (blk >= fsi->block_per_file) {
 			bytecount = 0;
 			break;
 		}
@@ -229,8 +227,8 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		current = fi->pointer % fsi->block_size;
 
 		/* set the counter how many bytes written in block */
-		if(end_pointer - fi->pointer > fsi->block_size) {
-			if(current) {
+		if (end_pointer - fi->pointer > fsi->block_size) {
+			if (current) {
 				cnt = fsi->block_size - current;
 			}
 			else {
@@ -240,29 +238,29 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		else {
 			cnt = end_pointer - fi->pointer;
 			/* over the block ? */
-			if((current + cnt) > fsi->block_size) {
+			if ((current + cnt) > fsi->block_size) {
 				cnt -= (current + cnt) % fsi->block_size;
 			}
 		}
 
 		/* one 4096-bytes block read operation */
-		if(1 != ramfs_read_sector(nas, sector_buff, 1, blk)) {
+		if (1 != ramfs_read_sector(nas, sector_buff, 1, blk)) {
 			bytecount = 0;
 			break;
 		}
 		/* set new data in block */
-		memcpy (sector_buff + current, buf, cnt);
+		memcpy(sector_buff + current, buf, cnt);
 
 		/* write one block to device */
-		if(1 != ramfs_write_sector(nas, sector_buff, 1, blk)) {
+		if (1 != ramfs_write_sector(nas, sector_buff, 1, blk)) {
 			bytecount = 0;
 			break;
 		}
 		bytecount += cnt;
-		buf = (void*) (((uint8_t*) buf) + cnt);
+		buf = (void *) (((uint8_t *) buf) + cnt);
 		/* shift the pointer */
 		fi->pointer += cnt;
-		if(end_pointer <= fi->pointer) {
+		if (end_pointer <= fi->pointer) {
 			break;
 		}
 	}
@@ -275,68 +273,64 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return bytecount;
 }
 
-
 /*
 static int ramfs_seek(void *file, long offset, int whence);
 static int ramfs_stat(void *file, void *buff);
 
 static int ramfs_fseek(void *file, long offset, int whence) {
-	struct file_desc *desc;
-	ramfs_file_info_t *fi;
-	uint32_t curr_offset;
+    struct file_desc *desc;
+    ramfs_file_info_t *fi;
+    uint32_t curr_offset;
 
-	curr_offset = offset;
+    curr_offset = offset;
 
-	desc = (struct file_desc *) file;
-	fi = (ramfs_file_info_t *)desc->node->fi;
+    desc = (struct file_desc *) file;
+    fi = (ramfs_file_info_t *)desc->node->fi;
 
-	switch (whence) {
-	case SEEK_SET:
-		break;
-	case SEEK_CUR:
-		curr_offset += fi->pointer;
-		break;
-	case SEEK_END:
-		curr_offset = fi->filelen + offset;
-		break;
-	default:
-		return -1;
-	}
+    switch (whence) {
+    case SEEK_SET:
+        break;
+    case SEEK_CUR:
+        curr_offset += fi->pointer;
+        break;
+    case SEEK_END:
+        curr_offset = fi->filelen + offset;
+        break;
+    default:
+        return -1;
+    }
 
-	if (curr_offset > fi->filelen) {
-		curr_offset = fi->filelen;
-	}
-	fi->pointer = curr_offset;
-	return 0;
+    if (curr_offset > fi->filelen) {
+        curr_offset = fi->filelen;
+    }
+    fi->pointer = curr_offset;
+    return 0;
 }
 static int ramfs_stat(void *file, void *buff) {
-	struct file_desc *desc;
-	ramfs_file_info_t *fi;
-	stat_t *buffer;
+    struct file_desc *desc;
+    ramfs_file_info_t *fi;
+    stat_t *buffer;
 
-	desc = (struct file_desc *) file;
-	fi = (ramfs_file_info_t *)desc->node->fi;
-	buffer = (stat_t *) buff;
+    desc = (struct file_desc *) file;
+    fi = (ramfs_file_info_t *)desc->node->fi;
+    buffer = (stat_t *) buff;
 
-	if (buffer) {
-			memset(buffer, 0, sizeof(stat_t));
+    if (buffer) {
+            memset(buffer, 0, sizeof(stat_t));
 
-			buffer->st_mode = fi->mode;
-			buffer->st_ino = fi->index;
-			buffer->st_nlink = 1;
-			buffer->st_dev = *(int *) fsi->bdev;
-			buffer->st_atime = buffer->st_mtime = buffer->st_ctime = 0;
-			buffer->st_size = fi->filelen;
-			buffer->st_blksize = fsi->block_size;
-			buffer->st_blocks = fsi->numblocks;
-		}
+            buffer->st_mode = fi->mode;
+            buffer->st_ino = fi->index;
+            buffer->st_nlink = 1;
+            buffer->st_dev = *(int *) fsi->bdev;
+            buffer->st_atime = buffer->st_mtime = buffer->st_ctime = 0;
+            buffer->st_size = fi->filelen;
+            buffer->st_blksize = fsi->block_size;
+            buffer->st_blocks = fsi->numblocks;
+        }
 
-	return fi->filelen;
+    return fi->filelen;
 }
 */
-
-
-
 
 static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
 	ramfs_file_info_t *fi;
@@ -413,13 +407,13 @@ static int ramfs_format(void *dev) {
 		return -ENODEV;/*device not found*/
 	}
 
-	if(!node_is_block_dev(dev_node)) {
+	if (!node_is_block_dev(dev_node)) {
 		return -ENODEV;
 	}
 	dev_nas = dev_node->nas;
 	dev_fi = dev_nas->fi;
 
-	if(MAX_FILE_SIZE > block_dev(dev_fi->privdata)->size) {
+	if (MAX_FILE_SIZE > block_dev(dev_fi->privdata)->size) {
 		return -ENOSPC;
 	}
 	return 0;
@@ -447,7 +441,7 @@ static int ramfs_mount(void *dev, void *dir) {
 	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
-	if(NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
+	if (NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
 		filesystem_free(dir_nas->fs);
 		return -ENOMEM;
 	}
@@ -459,7 +453,7 @@ static int ramfs_mount(void *dev, void *dir) {
 	fsi->numblocks = block_dev(dev_fi->privdata)->size / PAGE_SIZE();
 
 	/* allocate this directory info */
-	if(NULL == (fi = pool_alloc(&ramfs_file_pool))) {
+	if (NULL == (fi = pool_alloc(&ramfs_file_pool))) {
 		return -ENOMEM;
 	}
 	memset(fi, 0, sizeof(struct ramfs_file_info));
@@ -469,7 +463,6 @@ static int ramfs_mount(void *dev, void *dir) {
 
 	return 0;
 }
-
 
 static struct fsop_desc ramfs_fsop = {
 	.init = ramfs_init,
@@ -488,4 +481,3 @@ static struct fs_driver ramfs_driver = {
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_driver);
-

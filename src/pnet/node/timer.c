@@ -40,7 +40,7 @@ static int pnet_timer_hnd(struct pnet_pack *pack) {
 
 	ktime_get_timespec(&ts);
 
-	//elapsed_time = ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
+	/*elapsed_time = ts.tv_sec * 1000000 + ts.tv_nsec / 1000; */
 	elapsed_time = clock() - pack->stat.start_time;
 
 	/* total time */
@@ -56,9 +56,9 @@ static int pnet_timer_hnd(struct pnet_pack *pack) {
 }
 
 PNET_NODE_DEF("timer", {
-	.rx_hnd = pnet_timer_hnd,
-	.tx_hnd = pnet_timer_hnd
-});
+			.rx_hnd = pnet_timer_hnd,
+			.tx_hnd = pnet_timer_hnd
+		});
 
 static int init(void) {
 	results = fopen("/tmp/pnet_total", "rw");

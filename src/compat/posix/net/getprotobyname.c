@@ -10,7 +10,7 @@
 #include <string.h>
 #include <netdb.h>
 
-struct protoent * getprotobyname(const char *name) {
+struct protoent *getprotobyname(const char *name) {
 	struct protoent *pe;
 	char **aliases;
 

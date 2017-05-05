@@ -17,7 +17,7 @@ EMBOX_UNIT_INIT(at91_pin_init);
 
 static int at91_pin_init(void) {
 	REG_STORE(AT91C_PMC_PCER, 1L << AT91C_ID_PIOA);
-	// TODO check return value.
+	/* TODO check return value. */
 	irq_attach(AT91C_ID_PIOA, irq_pin_handler, 0, NULL, "AT91 PIO pins");
 	pin_get_input_changed();
 	return 0;
@@ -34,7 +34,7 @@ void pin_config_input(pin_mask_t mask) {
 
 void pin_config_output(pin_mask_t mask) {
 	pin_disable_perf(mask);
-	//REG_STORE(AT91C_PIOA_OWER, (uint32_t) mask);
+	/*REG_STORE(AT91C_PIOA_OWER, (uint32_t) mask); */
 	REG_STORE(AT91C_PIOA_OER, (uint32_t) mask);
 }
 

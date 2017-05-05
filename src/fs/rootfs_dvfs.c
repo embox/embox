@@ -52,22 +52,25 @@ static int rootfs_mount(void) {
 	assert(fs_type);
 
 	fsdrv = dumb_fs_driver_find(fs_type);
-	if (fsdrv == NULL)
+	if (fsdrv == NULL) {
 		return -ENOENT;
+	}
 
 	dvfs_update_root();
 
-	if (-1 == dvfs_mount(dev, "/", (char *) fs_type, 0))
+	if (-1 == dvfs_mount(dev, "/", (char *) fs_type, 0)) {
 		return -errno;
+	}
 
 	array_spread_foreach(auto_mnt, auto_mount_tab) {
-		if (fsdrv == auto_mnt->fs_driver)
+		if (fsdrv == auto_mnt->fs_driver) {
 			continue;
+		}
 
 		dvfs_lookup(auto_mnt->mount_path, &lu);
 		if (lu.item == NULL) {
 			tmp = strrchr(auto_mnt->mount_path, '/');
-			dvfs_create_new(tmp ? tmp + 1: auto_mnt->mount_path,
+			dvfs_create_new(tmp ? tmp + 1 : auto_mnt->mount_path,
 					&lu, DVFS_DIR_VIRTUAL | S_IFDIR);
 		}
 		dvfs_mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name, 0);

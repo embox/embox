@@ -39,7 +39,9 @@ enum {
 /* Useful commands */
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
 #define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
-static void split_word(char *ptr) { skip_word(ptr); *ptr = '\0'; }
+static void split_word(char *ptr) {
+	skip_word(ptr); *ptr = '\0';
+}
 
 /* Status code for first digit (X pos) of result (*YZ) */
 enum {
@@ -81,15 +83,15 @@ struct fm_info {
 static int fs_cmd_open(struct fs_info *session);
 static int fs_cmd_close(struct fs_info *session);
 static int fs_cmd_user(struct fs_info *session);
-static int fs_cmd_cd(struct fs_info *session/*, const char *remote_dir*/);
+static int fs_cmd_cd(struct fs_info *session /*, const char *remote_dir*/);
 static int fs_cmd_pwd(struct fs_info *session);
-static int fs_cmd_mkdir(struct fs_info *session/*, const char *remote_dir*/);
-static int fs_cmd_rmdir(struct fs_info *session/*, const char *remote_dir*/);
-static int fs_cmd_mv(struct fs_info *session/*, const char *remote_old, const char *remote_new*/);
-static int fs_cmd_ls(struct fs_info *session/*, const char *remote_dir*/);
-static int fs_cmd_get(struct fs_info *session/*, const char *remote_file, const char *local_file*/);
-static int fs_cmd_put(struct fs_info *session/*, const char *local_file, const char *remote_file*/);
-static int fs_cmd_rm(struct fs_info *session/*, const char *remote_file*/);
+static int fs_cmd_mkdir(struct fs_info *session /*, const char *remote_dir*/);
+static int fs_cmd_rmdir(struct fs_info *session /*, const char *remote_dir*/);
+static int fs_cmd_mv(struct fs_info *session /*, const char *remote_old, const char *remote_new*/);
+static int fs_cmd_ls(struct fs_info *session /*, const char *remote_dir*/);
+static int fs_cmd_get(struct fs_info *session /*, const char *remote_file, const char *local_file*/);
+static int fs_cmd_put(struct fs_info *session /*, const char *local_file, const char *remote_file*/);
+static int fs_cmd_rm(struct fs_info *session /*, const char *remote_file*/);
 static int fs_cmd_help(struct fs_info *session);
 static int fs_cmd_bye(struct fs_info *session);
 
@@ -346,7 +348,6 @@ static int flush_file_to_socket(FILE *file, int sock, char *buff, size_t buff_sz
 
 	return FTP_RET_OK;
 }
-
 
 /**
  * Realization of ftp client's commands
@@ -658,8 +659,8 @@ static int fs_cmd_ls(struct fs_info *session) {
 	}
 
 	ret = (arg_remotedir == NULL)
-		? fs_execute(session, "LIST\r\n")
-		: fs_execute(session, "LIST %s\r\n", arg_remotedir);
+			? fs_execute(session, "LIST\r\n")
+			: fs_execute(session, "LIST %s\r\n", arg_remotedir);
 	if (ret != FTP_RET_OK) {
 		close(data_sock);
 		return ret;
@@ -910,7 +911,7 @@ int main(int argc, char **argv) {
 			break;
 		}
 
-parse_cmd:
+		parse_cmd:
 		/* Skip spaces */
 		skip_spaces(cmd_name);
 

@@ -51,13 +51,13 @@ static void i2c_master_run(void) {
 				;
 			while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
 				;
-		} while(HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
+		} while (HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
 		printf("%s\n", ">> HAL_I2C_Master_Transmit_IT OK\n");
 
 		do {
 			while (HAL_I2C_Master_Receive_IT(&I2cHandle, (uint16_t)SLAVE_ADDR, rx_buff, RXBUFFERSIZE) != HAL_OK)
 				;
-		} while(HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
+		} while (HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
 		printf("%s\n", ">> HAL_I2C_Master_Receive_IT OK\n");
 
 		printf("rx_buf: ");

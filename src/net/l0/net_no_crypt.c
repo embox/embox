@@ -8,12 +8,12 @@
 
 #include <net/l0/net_crypt.h>
 
-struct sk_buff * net_encrypt(struct sk_buff *skb) {
+struct sk_buff *net_encrypt(struct sk_buff *skb) {
 	/* no encryption, give it back */
 	return skb;
 }
 
-struct sk_buff * net_decrypt(struct sk_buff *skb) {
+struct sk_buff *net_decrypt(struct sk_buff *skb) {
 	/* no encryption, give it back */
 	return skb;
 }

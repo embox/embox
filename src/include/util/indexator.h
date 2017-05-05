@@ -66,31 +66,31 @@ typedef unsigned long index_data_t;
  */
 #define INDEX_INIT(start, capacity, data)      \
 	__INDEX_INIT(start, start + capacity - 1,  \
-			data, start, start + capacity - 1)
+		data, start, start + capacity - 1)
 /**
  * Indexator with clamp initialization
  */
 #define INDEX_CLAMP_INIT(start, capacity, data, \
-		clamp_min, clamp_max)                   \
+			clamp_min, clamp_max)                   \
 	__INDEX_INIT(start, start + capacity - 1,   \
-			data, clamp_min, clamp_max - 1)
+		data, clamp_min, clamp_max - 1)
 
 /**
  * Indexator definition
  */
 #define INDEX_DEF(name, start, capacity)             \
-	INDEX_DATA_DEF(name##_data, capacity);           \
+	INDEX_DATA_DEF(name ## _data, capacity);           \
 	static struct indexator name = INDEX_INIT(start, \
-			capacity, &name##_data[0])
+		capacity, &name ## _data[0])
 
 /**
  * Indexator with clamp definition
  */
 #define INDEX_CLAMP_DEF(name, start, capacity, clamp_min,    \
-		clamp_max)                                           \
-	INDEX_DATA_DEF(name##_data, capacity);                   \
+			clamp_max)                                           \
+	INDEX_DATA_DEF(name ## _data, capacity);                   \
 	static struct indexator name = INDEX_CLAMP_INIT(start,   \
-			capacity, &name##_data[0], clamp_min, clamp_max)
+		capacity, &name ## _data[0], clamp_min, clamp_max)
 
 /**
  * Index not found
@@ -228,9 +228,8 @@ extern size_t index_alloc(struct indexator *ind,
  */
 extern void index_free(struct indexator *ind, size_t idx);
 
-
 #define __INDEX_INIT(start_, end_, data, \
-		clamp_min_, clamp_max_)          \
+			clamp_min_, clamp_max_)          \
 	{                                    \
 		.last = INDEX_NONE,              \
 		.min = clamp_min_,               \

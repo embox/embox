@@ -66,11 +66,11 @@ struct authunix_parms {
 extern const struct opaque_auth __opaque_auth_null;
 
 /* Auth factory */
-extern struct auth * auth_alloc(void);
+extern struct auth *auth_alloc(void);
 extern void auth_free(struct auth *ath);
 
-extern struct auth * authnone_create(void);
-extern struct auth * authunix_create(char *host, int uid, int gid,
+extern struct auth *authnone_create(void);
+extern struct auth *authunix_create(char *host, int uid, int gid,
 		int user_gids_len, int *user_gids);
 
 extern void auth_destroy(struct auth *ath);

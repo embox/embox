@@ -17,7 +17,7 @@ typedef unsigned int __ipl_t;
 static inline void ipl_init(void) {
 	unsigned int tmp;
 
-	__asm__ __volatile__(
+	__asm__ __volatile__ (
 		"rd %%psr, %0\n\t"
 		"andn %0, %1, %0\n\t"
 		"wr %0, 0, %%psr\n\t"
@@ -48,7 +48,7 @@ static inline unsigned int ipl_save(void) {
 static inline void ipl_restore(unsigned int ipl) {
 	unsigned int tmp;
 
-	__asm__ __volatile__(
+	__asm__ __volatile__ (
 		"rd %%psr, %0\n\t"
 		"and  %2, %1, %2\n\t"
 		"andn %0, %1, %0\n\t"

@@ -1,8 +1,8 @@
 /******************************************************************************
  * version.h
- * 
+ *
  * Xen version, type, and compile information.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -43,10 +43,10 @@ typedef char xen_extraversion_t[16];
 /* arg == xen_compile_info_t. */
 #define XENVER_compile_info 2
 struct xen_compile_info {
-    char compiler[64];
-    char compile_by[16];
-    char compile_domain[32];
-    char compile_date[32];
+	char compiler[64];
+	char compile_by[16];
+	char compile_domain[32];
+	char compile_date[32];
 };
 typedef struct xen_compile_info xen_compile_info_t;
 
@@ -60,14 +60,14 @@ typedef char xen_changeset_info_t[64];
 
 #define XENVER_platform_parameters 5
 struct xen_platform_parameters {
-    xen_ulong_t virt_start;
+	xen_ulong_t virt_start;
 };
 typedef struct xen_platform_parameters xen_platform_parameters_t;
 
 #define XENVER_get_features 6
 struct xen_feature_info {
-    unsigned int submap_idx;    /* IN: which 32-bit submap to return */
-    uint32_t     submap;        /* OUT: 32-bit submap */
+	unsigned int submap_idx;    /* IN: which 32-bit submap to return */
+	uint32_t submap;            /* OUT: 32-bit submap */
 };
 typedef struct xen_feature_info xen_feature_info_t;
 

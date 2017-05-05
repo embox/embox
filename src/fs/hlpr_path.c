@@ -14,7 +14,6 @@
 #include <fs/hlpr_path.h>
 #include <assert.h>
 
-
 /*
  * remove the top directory name from path
  */
@@ -47,7 +46,7 @@ int path_nip_tail(char *head, char *tail) {
 		}
 	} while ('/' != *p_tail);
 
-	strcpy (tail, p_tail);
+	strcpy(tail, p_tail);
 	*p_tail = '\0';
 
 	return 0;
@@ -59,20 +58,20 @@ int path_nip_tail(char *head, char *tail) {
 int path_increase_tail(char *head, char *tail) {
 	char *p_tail;
 
-		p_tail = head + strlen(head);
-		strcat(head, tail);
+	p_tail = head + strlen(head);
+	strcat(head, tail);
 
-		do {
-			if ('\0' == *p_tail) {
-				break;
-			}
-			p_tail++;
-		} while ('/' != *p_tail);
+	do {
+		if ('\0' == *p_tail) {
+			break;
+		}
+		p_tail++;
+	} while ('/' != *p_tail);
 
-		strcpy (tail, p_tail);
-		*p_tail = '\0';
+	strcpy(tail, p_tail);
+	*p_tail = '\0';
 
-		return 0;
+	return 0;
 }
 
 /*
@@ -152,5 +151,5 @@ int path_is_dotname(const char *name, size_t name_len) {
 
 int path_is_double_dot(const char *path) {
 	return *path == '.' && *(path + 1) == '.'
-		&& (*(path + 2) == '/' || *(path + 2) == '\0');
+		   && (*(path + 2) == '/' || *(path + 2) == '\0');
 }

@@ -63,12 +63,12 @@ TEST_CASE("General") {
 	test_assert_emitted("abcdefgh");
 }
 
-static void * try_signal_private(void *unused) {
+static void *try_signal_private(void *unused) {
 	test_assert_not_zero(cond_signal(&c_private));
 	return NULL;
 }
 
-static void * try_signal_shared(void *unused) {
+static void *try_signal_shared(void *unused) {
 	test_assert_zero(cond_signal(&c));
 	return NULL;
 }

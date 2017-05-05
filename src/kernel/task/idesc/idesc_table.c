@@ -20,7 +20,7 @@
 #include <util/indexator.h>
 
 int idesc_index_valid(int idx) {
-	return (idx >=0) && (idx < MODOPS_IDESC_TABLE_SIZE);
+	return (idx >= 0) && (idx < MODOPS_IDESC_TABLE_SIZE);
 }
 
 int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
@@ -101,7 +101,6 @@ struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
 	return idesc_cloexec_clear(idesc);
 }
 
-
 void idesc_table_init(struct idesc_table *t) {
 	assert(t);
 	memset(t->idesc_table, 0, sizeof t->idesc_table);
@@ -115,7 +114,7 @@ void idesc_table_finit(struct idesc_table *t) {
 
 	assert(t);
 
-	for(i = 0; i < ARRAY_SIZE(t->idesc_table); i++) {
+	for (i = 0; i < ARRAY_SIZE(t->idesc_table); i++) {
 		if (t->idesc_table[i]) {
 			idesc = idesc_table_get(t, i);
 			assert(idesc);
@@ -148,6 +147,6 @@ int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 }
 
 int idesc_table_exec(struct idesc_table *t) {
-	//TODO this for exec() only
+	/*TODO this for exec() only */
 	return 0;
 }

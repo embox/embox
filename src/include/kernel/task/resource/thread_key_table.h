@@ -18,7 +18,7 @@ struct thread_key_table;
 
 __BEGIN_DECLS
 
-extern struct thread_key_table * task_resource_thread_key_table(
+extern struct thread_key_table *task_resource_thread_key_table(
 		const struct task *task);
 
 #define task_self_resource_idesc_table() \

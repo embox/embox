@@ -18,10 +18,8 @@
 
 EMBOX_UNIT_INIT(idesc_serial_init);
 
-
 #define UART_DATA_BUFF_SZ 8
 #define UART_RX_HND_PRIORITY 128
-
 
 static struct lthread uart_rx_irq_handler;
 

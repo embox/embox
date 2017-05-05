@@ -41,8 +41,9 @@ struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
 	struct lookup lu;
 	struct dev_module *devmod;
 
-	if (NULL == (bdev = block_dev_create_common(path, driver, privdata)))
+	if (NULL == (bdev = block_dev_create_common(path, driver, privdata))) {
 		return NULL;
+	}
 
 	bdev->dev_ops = &bdev_dev_ops;
 

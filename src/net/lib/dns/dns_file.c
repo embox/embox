@@ -36,14 +36,14 @@ char *dns_set_nameserver(char *nameserver) {
 	if (file == NULL) {
 		return err_ptr(errno);
 	}
-	while(NULL != (res = fgets(buf, sizeof(buf), file))) {
+	while (NULL != (res = fgets(buf, sizeof(buf), file))) {
 		if (0 == strncmp(buf, "nameserver ", 11)) {
 			int i;
 			int len;
 
 			/* remove line */
 			len = strlen(buf);
-			for(i = 0; i < len; i ++) {
+			for (i = 0; i < len; i++) {
 				fwrite("\b", 1, 1, file);
 			}
 

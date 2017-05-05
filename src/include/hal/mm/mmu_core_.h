@@ -27,29 +27,28 @@
 #if 0
 #define MMU_GTABLE_MASK         __MMU_GTABLE_MASK
 #define MMU_GTABLE_MASK_OFFSET  __MMU_GTABLE_MASK_OFFSET
-#define MMU_MTABLE_MASK		__MMU_MTABLE_MASK
+#define MMU_MTABLE_MASK     __MMU_MTABLE_MASK
 #define MMU_MTABLE_MASK_OFFSET  __MMU_MTABLE_MASK_OFFSET
 #define MMU_PTABLE_MASK         __MMU_PTABLE_MASK
 #define MMU_PTABLE_MASK_OFFSET  __MMU_PTABLE_MASK_OFFSET
 #define MMU_PAGE_MASK           __MMU_PAGE_MASK
 #endif
 
-#define MMU_VADDR_SPACE		__MMU_VADR_SPACE
-#define MMU_PTABLE_SIZE		__MMU_PTABLE_SIZE
-#define MMU_MTABLE_SIZE		__MMU_MTABLE_SIZE
-#define MMU_GTABLE_SIZE  	__MMU_GTABLE_SIZE
-#define MMU_PAGE_SIZE		__MMU_PAGE_SIZE
+#define MMU_VADDR_SPACE     __MMU_VADR_SPACE
+#define MMU_PTABLE_SIZE     __MMU_PTABLE_SIZE
+#define MMU_MTABLE_SIZE     __MMU_MTABLE_SIZE
+#define MMU_GTABLE_SIZE     __MMU_GTABLE_SIZE
+#define MMU_PAGE_SIZE       __MMU_PAGE_SIZE
 
 #define __mmu_mask_calc(prev_size, tab_size) ((unsigned long) (prev_size * (tab_size - 1)))
 
-#define MMU_PAGE_MASK		(MMU_PAGE_SIZE - 1)
-#define MMU_PTABLE_MASK		__mmu_mask_calc(MMU_PAGE_SIZE, MMU_PTABLE_SIZE)
-#define MMU_MTABLE_MASK		__mmu_mask_calc( \
-			MMU_PTABLE_SIZE * MMU_PAGE_SIZE, MMU_MTABLE_SIZE)
-#define MMU_GTABLE_MASK		__mmu_mask_calc( \
-			MMU_MTABLE_SIZE * MMU_PTABLE_SIZE * MMU_PAGE_SIZE, \
-			MMU_GTABLE_SIZE)
-
+#define MMU_PAGE_MASK       (MMU_PAGE_SIZE - 1)
+#define MMU_PTABLE_MASK     __mmu_mask_calc(MMU_PAGE_SIZE, MMU_PTABLE_SIZE)
+#define MMU_MTABLE_MASK     __mmu_mask_calc( \
+		MMU_PTABLE_SIZE * MMU_PAGE_SIZE, MMU_MTABLE_SIZE)
+#define MMU_GTABLE_MASK     __mmu_mask_calc( \
+		MMU_MTABLE_SIZE * MMU_PTABLE_SIZE * MMU_PAGE_SIZE, \
+		MMU_GTABLE_SIZE)
 
 /** Error code for MMU module operation*/
 #define MMU_RRTURN_ERROR     (mmu_ctx) (-1)
@@ -121,7 +120,7 @@ extern void switch_mm(mmu_ctx_t prev, mmu_ctx_t next);
  * @retval new MMU context on success
  * @retval -1 on failed
  */
-extern  mmu_ctx_t mmu_create_context(void);
+extern mmu_ctx_t mmu_create_context(void);
 
 /**
  * Delete pgd and all nested table from mmu tables
@@ -152,7 +151,7 @@ extern void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp);
  * @param pgdp - address of entry in table
  * @param pmdp - formated address to write in table
  */
-extern void mmu_pgd_set(mmu_pgd_t * pgdp, mmu_pmd_t * pmdp);
+extern void mmu_pgd_set(mmu_pgd_t *pgdp, mmu_pmd_t *pmdp);
 
 /**
  * Set middle table
@@ -160,21 +159,21 @@ extern void mmu_pgd_set(mmu_pgd_t * pgdp, mmu_pmd_t * pmdp);
  * @param pmdp - address of entry in table
  * @param ptep - formated address to write in table
  */
-extern void mmu_pmd_set(mmu_pmd_t * pmdp, mmu_pte_t * ptep);
+extern void mmu_pmd_set(mmu_pmd_t *pmdp, mmu_pte_t *ptep);
 
 /**
  * Get middle table
  *
  * @param pgdp - address of entry in table
  */
-extern mmu_pmd_t *mmu_pgd_get(mmu_pgd_t * pgdp);
+extern mmu_pmd_t *mmu_pgd_get(mmu_pgd_t *pgdp);
 
 /**
  * Get entry table
  *
  * @param pmdp - address of entry in table
  */
-extern mmu_pte_t *mmu_pmd_get(mmu_pmd_t * pmdp);
+extern mmu_pte_t *mmu_pmd_get(mmu_pmd_t *pmdp);
 
 /**
  * Format page entry with specified address and flags

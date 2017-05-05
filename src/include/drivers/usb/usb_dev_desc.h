@@ -94,4 +94,3 @@ extern int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t to
 		void *buf, size_t len, usb_notify_hnd_t notify_hnd, void *arg);
 
 #endif /* DRIVERS_USB_DEV_DESC_H_ */
-

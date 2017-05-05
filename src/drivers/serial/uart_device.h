@@ -59,7 +59,7 @@ struct uart {
  *
  * @param uart Uart descriptor
  * @param uart_params Pointer to uart params. If not null, used to assign
- * 	default params
+ *  default params
  *
  * @return uart instance pointer on success
  * @return NULL on error

@@ -25,5 +25,3 @@ int trace_point_get_value(struct __trace_point *tp) {
 struct __trace_point *trace_point_get_by_name(const char *name) {
 	return NULL;
 }
-
-

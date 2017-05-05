@@ -9,16 +9,16 @@
 #ifndef NET_NETDEVICE_H_
 #define NET_NETDEVICE_H_
 
-//#include <util/array.h>
+/*#include <util/array.h> */
 #include <assert.h>
 #include <stddef.h>
 #include <net/if.h>
-//#include <arpa/inet.h>
+/*#include <arpa/inet.h> */
 
 #include <net/skbuff.h>
 #include <util/dlist.h>
 
-//#include <util/hashtable.h>
+/*#include <util/hashtable.h> */
 
 /**
  * Prototypes
@@ -77,20 +77,19 @@ typedef struct net_driver {
 	int (*set_macaddr)(struct net_device *dev, const void *addr);
 } net_driver_t;
 
-
 /**
  * information for/of device header
  */
 struct net_header_info {
 	unsigned short type; /* packet type */
 	const void *src_hw;  /* source hw address
-							use device addr if null */
+	                        use device addr if null */
 	const void *dst_hw;  /* destination hw address
-							if null use dst_p for resolving
-							if dst_p is null too, use bcast */
+	                        if null use dst_p for resolving
+	                        if dst_p is null too, use bcast */
 	const void *dst_p;   /* destination protocol address
-							used for discovering of the
-							hw address in case dst_hw is null */
+	                        used for discovering of the
+	                        hw address in case dst_hw is null */
 	unsigned char p_len; /* length of dst_p */
 };
 
@@ -145,14 +144,14 @@ typedef struct net_device {
  * @param name name to find
  * @return NULL is returned if no matching device is found.
  */
-extern struct net_device * netdev_get_by_name(const char *name);
+extern struct net_device *netdev_get_by_name(const char *name);
 
 /**
  * Allocate network device
  * @param name device name format string
  * @param callback to initialize device
  */
-extern struct net_device * netdev_alloc(const char *name,
+extern struct net_device *netdev_alloc(const char *name,
 		int (*setup)(struct net_device *), size_t priv_size);
 
 /**

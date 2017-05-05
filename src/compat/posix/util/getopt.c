@@ -11,9 +11,9 @@
 #include <unistd.h>
 #include <string.h>
 
-int   opterr = 1;
-int   optind = 1;
-int   optopt = 0;
+int opterr = 1;
+int optind = 1;
+int optopt = 0;
 char  *optarg = NULL;
 
 static int sp = 1;
@@ -47,7 +47,7 @@ int getopt(int argc, char *const argv[], const char *opts) {
 		}
 	}
 	c = argv[optind][sp];
-	if (c == ':' || (cp=strchr(opts, c)) == NULL) {
+	if (c == ':' || (cp = strchr(opts, c)) == NULL) {
 		/* if arg sentinel as option or other invalid option,
 		handle the error and return '?' */
 		if (argv[optind][++sp] == '\0') {
@@ -59,18 +59,20 @@ int getopt(int argc, char *const argv[], const char *opts) {
 	}
 	if (*++cp == ':') {
 		/* if option is given an argument...  */
-		if (argv[optind][sp+1] != '\0')
+		if (argv[optind][sp+1] != '\0') {
 			/* and the OptArg is in that CmdLineArg, return it... */
 			optarg = &argv[optind++][sp+1];
+		}
 		else if (++optind >= argc) {
 			/* but if the OptArg isn't there and the next CmdLineArg
 			 isn't either, handle the error... */
 			sp = 1;
 			optopt = c;
 			return '?';
-		} else
+		} else {
 			/* but if there is another CmdLineArg there, return that */
 			optarg = argv[optind++];
+		}
 		/* and set up for the next CmdLineArg */
 		sp = 1;
 	} else {

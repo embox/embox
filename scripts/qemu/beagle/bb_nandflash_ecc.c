@@ -63,7 +63,7 @@ static const u_char nand_ecc_precalc_table[] = {
  * @ecc_code:	buffer for ECC
  */
 int nand_calculate_ecc(const u_char *dat,
-		       u_char *ecc_code)
+		u_char *ecc_code)
 {
 	uint8_t idx, reg1, reg2, reg3, tmp1, tmp2;
 	int i;
@@ -72,7 +72,7 @@ int nand_calculate_ecc(const u_char *dat,
 	reg1 = reg2 = reg3 = 0;
 
 	/* Build up column parity */
-	for(i = 0; i < 256; i++) {
+	for (i = 0; i < 256; i++) {
 		/* Get CP0 - CP5 from table */
 		idx = nand_ecc_precalc_table[*dat++];
 		reg1 ^= (idx & 0x3f);
@@ -140,8 +140,7 @@ int main(int argc, char **argv)
 	uint8_t page_data[BB_NAND_PAGE_SIZE+BB_NAND_OOB_SIZE];
 	uint8_t ecc_data[3];
 
-
-	if (argc!=4)
+	if (argc != 4)
 	{
 		useage();
 		exit(1);
@@ -153,44 +152,43 @@ int main(int argc, char **argv)
 	size = strtol(argv[3],NULL,0);
 
 	nand_fd = open(nand_image,O_RDWR);
-	if (nand_fd<0)
+	if (nand_fd < 0)
 	{
 		printf("Can not open nand image %s \n",nand_image);
 		exit(1);
 	}
 
-	if (start_address>=BB_NAND_SIZE)
+	if (start_address >= BB_NAND_SIZE)
 	{
 		printf("start_address can no be more than 0x%x \n",BB_NAND_SIZE);
 		exit(1);
 	}
-	if ((start_address%BB_NAND_PAGE_SIZE)!=0)
+	if ((start_address%BB_NAND_PAGE_SIZE) != 0)
 	{
 		printf("start_address should be aligned to page boundary \n");
 		exit(1);
 	}
 
-	if (size==0)
+	if (size == 0)
 	{
 		printf("size can no be zero \n");
 		exit(1);
 	}
-	if ((size%BB_NAND_PAGE_SIZE)!=0)
+	if ((size%BB_NAND_PAGE_SIZE) != 0)
 	{
 		printf("size should be aligned to page boundary \n");
 		exit(1);
 	}
 
-
 	pagenumber = start_address/BB_NAND_PAGE_SIZE;
 	pages = size/BB_NAND_PAGE_SIZE;
 
-	for (i=0;i<pages;i++)
+	for (i = 0; i < pages; i++)
 	{
 		lseek(nand_fd,pagenumber*(BB_NAND_PAGE_SIZE+BB_NAND_OOB_SIZE),SEEK_SET);
 		read(nand_fd,page_data,BB_NAND_PAGE_SIZE+BB_NAND_OOB_SIZE);
 
-		for (j=0;j<BB_NAND_PAGE_SIZE/256;j++)
+		for (j = 0; j < BB_NAND_PAGE_SIZE/256; j++)
 		{
 			nand_calculate_ecc(page_data+j*256,ecc_data);
 			memcpy(page_data+BB_NAND_PAGE_SIZE+BB_NAND_ECC_OFFSET+j*3,ecc_data,3);
@@ -203,4 +201,3 @@ int main(int argc, char **argv)
 	close(nand_fd);
 	return (1);
 }
-

@@ -13,8 +13,8 @@
 
 /* Usermode entry data */
 struct ue_data {
-	void *ip; // instruction pointer
-	void *sp; // stack pointer
+	void *ip; /* instruction pointer */
+	void *sp; /* stack pointer */
 };
 
 /* Architecture-dependent functions */

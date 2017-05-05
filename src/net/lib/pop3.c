@@ -227,7 +227,7 @@ int pop3_ok(struct pop3_session *p3s) {
 	return p3s != NULL ? p3s->ok : 0;
 }
 
-const char * pop3_status(struct pop3_session *p3s) {
+const char *pop3_status(struct pop3_session *p3s) {
 	if (p3s == NULL) {
 		return NULL;
 	}
@@ -235,7 +235,7 @@ const char * pop3_status(struct pop3_session *p3s) {
 	return p3s->status[0] != '\0' ? &p3s->status[0] : NULL;
 }
 
-const char * pop3_data(struct pop3_session *p3s) {
+const char *pop3_data(struct pop3_session *p3s) {
 	if (p3s == NULL) {
 		return NULL;
 	}
@@ -257,8 +257,8 @@ int pop3_list(struct pop3_session *p3s, int msg_or_any) {
 	}
 
 	return msg_or_any == POP3_MSG_ANY
-			? execute_cmd(p3s, 1, "LIST\r\n")
-			: execute_cmd(p3s, 0, "LIST %d\r\n", msg_or_any);
+		   ? execute_cmd(p3s, 1, "LIST\r\n")
+		   : execute_cmd(p3s, 0, "LIST %d\r\n", msg_or_any);
 }
 
 int pop3_retr(struct pop3_session *p3s, int msg) {
@@ -315,8 +315,8 @@ int pop3_uidl(struct pop3_session *p3s, int msg_or_any) {
 	}
 
 	return msg_or_any == POP3_MSG_ANY
-			? execute_cmd(p3s, 1, "UIDL\r\n")
-			: execute_cmd(p3s, 0, "UIDL %d\r\n", msg_or_any);
+		   ? execute_cmd(p3s, 1, "UIDL\r\n")
+		   : execute_cmd(p3s, 0, "UIDL %d\r\n", msg_or_any);
 }
 
 int pop3_user(struct pop3_session *p3s, const char *name) {

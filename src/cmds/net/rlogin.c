@@ -50,14 +50,14 @@ static void print_usage(void) {
 	printf("Usage: rlogin [-l username] <server> \n");
 }
 
-	/* Allow to turn off/on extra debugging information */
+/* Allow to turn off/on extra debugging information */
 #if 0
-#	define RLOGIN_DEBUG(x) do {\
-		x;\
-	} while (0);
+#   define RLOGIN_DEBUG(x) do { \
+		x; \
+} while (0);
 #else
-#	define RLOGIN_DEBUG(x) do{\
-	} while (0);
+#   define RLOGIN_DEBUG(x) do { \
+} while (0);
 #endif
 
 struct rlogin_state {
@@ -267,7 +267,7 @@ int main(int argc, char **argv) {
 	dst.sin_port = htons(RLOGIN_PORT);
 
 	our.sin_family = AF_INET;
-	our.sin_port= htons(RLOGIN_PORT + tries++);
+	our.sin_port = htons(RLOGIN_PORT + tries++);
 	our.sin_addr.s_addr = htonl(RLOGIN_ADDR);
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
 	}
 
 	res = rlogin_handle(sock);
-exit:
+	exit:
 	close(sock);
 	return res;
 }

@@ -1,4 +1,4 @@
- /**
+/**
  * @file
  * @brief Mini cp implementation for Embox.
  *
@@ -24,8 +24,8 @@
 
 static void print_usage(void) {
 	printf("Usage:\n"
-		"\tcp [-h] [-r|-R] SOURCE DEST\n"
-		"\tcp [-h] [-r|-R] SOURCE DIR\n");
+		   "\tcp [-h] [-r|-R] SOURCE DEST\n"
+		   "\tcp [-h] [-r|-R] SOURCE DIR\n");
 }
 
 static char cp_g_src_path[PATH_MAX], cp_g_dst_path[PATH_MAX];
@@ -83,8 +83,8 @@ static int cp_file(const char *src_path, const char *dst_path) {
 	/* buf optimized for whole block write */
 	bytesread = 0;
 	while ((bytesread = read(src_file, buf, sizeof(buf))) > 0) {
-		if (write (dst_file, buf, bytesread)<=0) {
-			printf ("WR ERR!\n");
+		if (write(dst_file, buf, bytesread) <= 0) {
+			printf("WR ERR!\n");
 			break;
 		}
 	}
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
 	bool recursively = false;
 
 	while (-1 != (opt = getopt(argc, argv, "hrR"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;

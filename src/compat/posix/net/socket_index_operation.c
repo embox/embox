@@ -62,8 +62,9 @@ static ssize_t socket_write(struct idesc *desc, const struct iovec *iov, int cnt
 	assert(desc);
 	assert(desc->idesc_ops == &task_idx_ops_socket);
 
-	if (sk->shutdown_flag & (SHUT_WR + 1))
+	if (sk->shutdown_flag & (SHUT_WR + 1)) {
 		return -EPIPE;
+	}
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
@@ -135,4 +136,3 @@ const struct idesc_ops task_idx_ops_socket = {
 	.status = socket_status,
 	.close  = socket_close,
 };
-

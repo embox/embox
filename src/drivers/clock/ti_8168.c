@@ -33,26 +33,26 @@ EMBOX_UNIT_INIT(ti8168_clk_init);
 
 /* common register values */
 
-#define GPTIMER_TCLR_START	(1 << 0)
+#define GPTIMER_TCLR_START  (1 << 0)
 #define GPTIMER_TCLR_AUTORELOAD (1 << 1)
 
 #define GPTIMER_TIER_OVERFLOW   (1 << 1)
 #define GPTIMER_TISR_OVERFLOW   (1 << 1)
 
 struct gptimer13_1 {
-	uint32_t tidr; 		/* 0x00 */
-	char unused0[12];	/* 0x04 */
-	uint32_t cfg;		/* 0x10 */
-	char unused1[12];	/* 0x14 */
-	uint32_t eoi;		/* 0x20 */
-	uint32_t irqstat_raw;	/* 0x24 */
-	uint32_t irqstat;	/* 0x28 */
-	uint32_t irqenable_set;	/* 0x2c */
-	uint32_t irqenable_clr;	/* 0x30 */
-	uint32_t irqwakeen;	/* 0x34 */
-	uint32_t tclr;		/* 0x38 */
-	uint32_t tcrr;		/* 0x3c */
-	uint32_t tldr;		/* 0x40 */
+	uint32_t tidr;      /* 0x00 */
+	char unused0[12];   /* 0x04 */
+	uint32_t cfg;       /* 0x10 */
+	char unused1[12];   /* 0x14 */
+	uint32_t eoi;       /* 0x20 */
+	uint32_t irqstat_raw;   /* 0x24 */
+	uint32_t irqstat;   /* 0x28 */
+	uint32_t irqenable_set; /* 0x2c */
+	uint32_t irqenable_clr; /* 0x30 */
+	uint32_t irqwakeen; /* 0x34 */
+	uint32_t tclr;      /* 0x38 */
+	uint32_t tcrr;      /* 0x3c */
+	uint32_t tldr;      /* 0x40 */
 } __attribute__((packed));
 
 irq_return_t ti8168_clock_handler(unsigned int irq_nr, void *data) {
@@ -73,7 +73,7 @@ static int ti8168_clk_config(struct time_dev_conf *conf) {
 
 	REG_STORE(&gptimer->cfg, 0x01);
 
-	while (REG_LOAD(&gptimer->cfg) & 0x01);
+	while (REG_LOAD(&gptimer->cfg) & 0x01) ;
 
 	REG_STORE(&gptimer->tcrr, TI8168_LOAD_VALUE);
 	REG_STORE(&gptimer->tldr, TI8168_LOAD_VALUE);

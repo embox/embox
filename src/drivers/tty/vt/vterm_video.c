@@ -15,7 +15,7 @@
 static void vterm_video_scroll_up(struct vterm_video *vi, unsigned short delta) {
 	assert(
 			vi && vi->ops && vi->ops->copy_rows
-					&& vi->ops->clear_rows);
+			&& vi->ops->clear_rows);
 
 	vi->ops->copy_rows(vi, 0, delta, vi->height - delta);
 	vi->ops->clear_rows(vi, vi->height - delta, delta);
@@ -55,8 +55,9 @@ static int setup_cursor(struct vterm_video *vi, int x, int y) {
 
 static inline void inc_line(struct vterm_video *vi) {
 	++vi->cur_y;
-	if (vi->cur_y >= vi->height)
+	if (vi->cur_y >= vi->height) {
 		vterm_video_scroll_up(vi, vi->cur_y - vi->height + 1);
+	}
 }
 
 static void execute_printable(struct vterm_video *vi, char ch) {
@@ -111,7 +112,7 @@ static void execute_token(struct vterm_video *vi, struct vtesc_token *token) {
 		break;
 	case VTESC_MOVE_CURSOR:
 		setup_cursor(vi, vi->cur_x + token->params.move_cursor.x + 1,
-						vi->cur_y + token->params.move_cursor.y + 1);
+				vi->cur_y + token->params.move_cursor.y + 1);
 		break;
 	case VTESC_CURSOR_POSITION:
 		setup_cursor(vi, token->params.cursor_position.column,
@@ -154,7 +155,7 @@ static void execute_token(struct vterm_video *vi, struct vtesc_token *token) {
 	case VTESC_ERASE_CHAR:
 		erase_line_part(vi, vi->cur_x, token->params.erase.n);
 		break;
-	case VTESC_SET_SGR: //TODO
+	case VTESC_SET_SGR: /*TODO */
 		break;
 	default:
 		break;
@@ -165,8 +166,9 @@ static void execute_token(struct vterm_video *vi, struct vtesc_token *token) {
 
 void vterm_video_putc(struct vterm_video *vi, char ch) {
 	struct vtesc_token *token = vtesc_consume(&vi->executor, ch);
-	if (token)
+	if (token) {
 		execute_token(vi, token);
+	}
 }
 
 int vterm_video_init(struct vterm_video *vi, const struct vterm_video_ops *ops,
@@ -184,4 +186,3 @@ int vterm_video_init(struct vterm_video *vi, const struct vterm_video_ops *ops,
 	vterm_video_clear(vi);
 	return 0;
 }
-

@@ -17,7 +17,6 @@
 
 #include <fs/bcache.h>
 
-
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(bcache_init);
 
@@ -25,7 +24,6 @@ EMBOX_UNIT_INIT(bcache_init);
 
 POOL_DEF(buffer_head_pool, struct buffer_head, BCACHE_SIZE);
 static DLIST_DEFINE(bh_list);
-
 
 static size_t bh_hash(void *key);
 static int bh_cmp(void *key1, void *key2);
@@ -38,7 +36,9 @@ static int graw_buffers(struct block_dev *bdev, int block, size_t size);
 static void free_more_memory(size_t size);
 
 struct buffer_head *bcache_getblk_locked(struct block_dev *bdev, int block, size_t size) {
-	struct buffer_head key = { .bdev = bdev, .block = block };
+	struct buffer_head key = {
+		.bdev = bdev, .block = block
+	};
 	struct buffer_head *bh;
 
 	assert(bdev);

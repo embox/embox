@@ -31,7 +31,6 @@ ARRAY_SPREAD_DEF(const struct fs_driver *const, __fs_drivers_registry);
 
 static DLIST_DEFINE(file_systems);
 
-
 static fs_driver_head_t *fs_driver_alloc(struct fs_driver *drv) {
 	fs_driver_head_t *head;
 

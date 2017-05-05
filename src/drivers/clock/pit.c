@@ -21,7 +21,6 @@
 #include <kernel/time/ktime.h>
 #include <util/array.h>
 
-
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ_NR             OPTION_GET(NUMBER,irq_num)
 
@@ -30,14 +29,14 @@
 #define PIT_LOAD ((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ)
 static_assert(PIT_LOAD < 0x10000);
 
-static int pit_clock_setup(struct time_dev_conf * conf);
+static int pit_clock_setup(struct time_dev_conf *conf);
 static int pit_clock_init(void);
 
 static struct clock_source pit_clock_source;
 static struct time_event_device pit_event_device;
 static struct time_counter_device pit_counter_device;
 
-//EMBOX_UNIT_INIT(pit_clock_init);
+/*EMBOX_UNIT_INIT(pit_clock_init); */
 
 /**
  * The PIT chip uses the following I/O ports:
@@ -103,8 +102,8 @@ static cycle_t i8253_read(void) {
 }
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-        clock_tick_handler(irq_nr, dev_id);
-        return IRQ_HANDLED;
+	clock_tick_handler(irq_nr, dev_id);
+	return IRQ_HANDLED;
 }
 
 static struct time_event_device pit_event_device = {
@@ -139,7 +138,7 @@ static int pit_clock_init(void) {
 	return ENOERR;
 }
 
-static int pit_clock_setup(struct time_dev_conf * conf) {
+static int pit_clock_setup(struct time_dev_conf *conf) {
 	uint16_t divisor = PIT_LOAD;
 
 	pit_clock_source.flags = 1;

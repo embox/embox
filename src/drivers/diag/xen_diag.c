@@ -20,14 +20,14 @@
 
 static evtchn_port_t console_evt;
 extern char _text_vma;
-struct xencons_interface * console;
+struct xencons_interface *console;
 
 static int diag_xen_init(const struct diag *diag) {
 	extern start_info_t *xen_start_info_global;
-	console = (struct xencons_interface*)
-		((machine_to_phys_mapping[xen_start_info_global->console.domU.mfn] << 12)
-		 +
-		((unsigned long)&_text_vma));
+	console = (struct xencons_interface *)
+			((machine_to_phys_mapping[xen_start_info_global->console.domU.mfn] << 12)
+			+
+			((unsigned long)&_text_vma));
 	console_evt = xen_start_info_global->console.domU.evtchn;
 	/* TODO: Set up the event channel */
 	return 0;
@@ -59,6 +59,6 @@ static void diag_xen_putc(const struct diag *diag, char ch) {
 }
 
 DIAG_OPS_DECLARE(
-	.init = diag_xen_init,
-	.putc = diag_xen_putc,
+		.init = diag_xen_init,
+		.putc = diag_xen_putc,
 );

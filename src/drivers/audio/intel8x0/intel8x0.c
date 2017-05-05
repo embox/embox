@@ -23,28 +23,27 @@
 /* values for each busmaster block */
 
 /* LVI */
-#define ICH_REG_LVI_MASK		0x1f
+#define ICH_REG_LVI_MASK        0x1f
 
 /* SR */
-#define ICH_FIFOE			0x10	/* FIFO error */
-#define ICH_BCIS			0x08	/* buffer completion interrupt status */
-#define ICH_LVBCI			0x04	/* last valid buffer completion interrupt */
-#define ICH_CELV			0x02	/* current equals last valid */
-#define ICH_DCH				0x01	/* DMA controller halted */
+#define ICH_FIFOE           0x10    /* FIFO error */
+#define ICH_BCIS            0x08    /* buffer completion interrupt status */
+#define ICH_LVBCI           0x04    /* last valid buffer completion interrupt */
+#define ICH_CELV            0x02    /* current equals last valid */
+#define ICH_DCH             0x01    /* DMA controller halted */
 
 /* PIV */
-#define ICH_REG_PIV_MASK		0x1f	/* mask */
+#define ICH_REG_PIV_MASK        0x1f    /* mask */
 
 /* CR */
-#define ICH_IOCE			0x10	/* interrupt on completion enable */
-#define ICH_FEIE			0x08	/* fifo error interrupt enable */
-#define ICH_LVBIE			0x04	/* last valid buffer interrupt enable */
-#define ICH_RESETREGS		0x02	/* reset busmaster registers */
-#define ICH_STARTBM			0x01	/* start busmaster operation */
-
+#define ICH_IOCE            0x10    /* interrupt on completion enable */
+#define ICH_FEIE            0x08    /* fifo error interrupt enable */
+#define ICH_LVBIE           0x04    /* last valid buffer interrupt enable */
+#define ICH_RESETREGS       0x02    /* reset busmaster registers */
+#define ICH_STARTBM         0x01    /* start busmaster operation */
 
 struct intel_ac_hw_dev {
-	//uint32_t base_addr_nam;
+	/*uint32_t base_addr_nam; */
 	uint32_t base_addr_namb;
 };
 
@@ -87,34 +86,34 @@ static struct intel_ac_hw_dev intel_ac_hw_dev;
 
 #define INTEL_AC_GLOB_CNT   0x2c
 #define INTEL_AC_GLOB_STA   0x30
-#define   ICH_TRI			0x20000000	/* ICH4: tertiary (AC_SDIN2) resume interrupt */
-#define   ICH_TCR			0x10000000	/* ICH4: tertiary (AC_SDIN2) codec ready */
-#define   ICH_BCS			0x08000000	/* ICH4: bit clock stopped */
-#define   ICH_SPINT			0x04000000	/* ICH4: S/PDIF interrupt */
-#define   ICH_P2INT			0x02000000	/* ICH4: PCM2-In interrupt */
-#define   ICH_M2INT			0x01000000	/* ICH4: Mic2-In interrupt */
-#define   ICH_SAMPLE_CAP	0x00c00000	/* ICH4: sample capability bits (RO) */
-#define   ICH_SAMPLE_16_20	0x00400000	/* ICH4: 16- and 20-bit samples */
-#define   ICH_MULTICHAN_CAP	0x00300000	/* ICH4: multi-channel capability bits (RO) */
-#define   ICH_SIS_TRI		0x00080000	/* SIS: tertiary resume irq */
-#define   ICH_SIS_TCR		0x00040000	/* SIS: tertiary codec ready */
-#define   ICH_MD3			0x00020000	/* modem power down semaphore */
-#define   ICH_AD3			0x00010000	/* audio power down semaphore */
-#define   ICH_RCS			0x00008000	/* read completion status */
-#define   ICH_BIT3			0x00004000	/* bit 3 slot 12 */
-#define   ICH_BIT2			0x00002000	/* bit 2 slot 12 */
-#define   ICH_BIT1			0x00001000	/* bit 1 slot 12 */
-#define   ICH_SRI			0x00000800	/* secondary (AC_SDIN1) resume interrupt */
-#define   ICH_PRI			0x00000400	/* primary (AC_SDIN0) resume interrupt */
-#define   ICH_SCR			0x00000200	/* secondary (AC_SDIN1) codec ready */
-#define   ICH_PCR			0x00000100	/* primary (AC_SDIN0) codec ready */
-#define   ICH_MCINT			0x00000080	/* MIC capture interrupt */
-#define   ICH_POINT			0x00000040	/* playback interrupt */
-#define   ICH_PIINT			0x00000020	/* capture interrupt */
-#define   ICH_NVSPINT		0x00000010	/* nforce spdif interrupt */
-#define   ICH_MOINT			0x00000004	/* modem playback interrupt */
-#define   ICH_MIINT			0x00000002	/* modem capture interrupt */
-#define   ICH_GSCI			0x00000001	/* GPI status change interrupt */
+#define   ICH_TRI           0x20000000  /* ICH4: tertiary (AC_SDIN2) resume interrupt */
+#define   ICH_TCR           0x10000000  /* ICH4: tertiary (AC_SDIN2) codec ready */
+#define   ICH_BCS           0x08000000  /* ICH4: bit clock stopped */
+#define   ICH_SPINT         0x04000000  /* ICH4: S/PDIF interrupt */
+#define   ICH_P2INT         0x02000000  /* ICH4: PCM2-In interrupt */
+#define   ICH_M2INT         0x01000000  /* ICH4: Mic2-In interrupt */
+#define   ICH_SAMPLE_CAP    0x00c00000  /* ICH4: sample capability bits (RO) */
+#define   ICH_SAMPLE_16_20  0x00400000  /* ICH4: 16- and 20-bit samples */
+#define   ICH_MULTICHAN_CAP 0x00300000  /* ICH4: multi-channel capability bits (RO) */
+#define   ICH_SIS_TRI       0x00080000  /* SIS: tertiary resume irq */
+#define   ICH_SIS_TCR       0x00040000  /* SIS: tertiary codec ready */
+#define   ICH_MD3           0x00020000  /* modem power down semaphore */
+#define   ICH_AD3           0x00010000  /* audio power down semaphore */
+#define   ICH_RCS           0x00008000  /* read completion status */
+#define   ICH_BIT3          0x00004000  /* bit 3 slot 12 */
+#define   ICH_BIT2          0x00002000  /* bit 2 slot 12 */
+#define   ICH_BIT1          0x00001000  /* bit 1 slot 12 */
+#define   ICH_SRI           0x00000800  /* secondary (AC_SDIN1) resume interrupt */
+#define   ICH_PRI           0x00000400  /* primary (AC_SDIN0) resume interrupt */
+#define   ICH_SCR           0x00000200  /* secondary (AC_SDIN1) codec ready */
+#define   ICH_PCR           0x00000100  /* primary (AC_SDIN0) codec ready */
+#define   ICH_MCINT         0x00000080  /* MIC capture interrupt */
+#define   ICH_POINT         0x00000040  /* playback interrupt */
+#define   ICH_PIINT         0x00000020  /* capture interrupt */
+#define   ICH_NVSPINT       0x00000010  /* nforce spdif interrupt */
+#define   ICH_MOINT         0x00000004  /* modem playback interrupt */
+#define   ICH_MIINT         0x00000002  /* modem capture interrupt */
+#define   ICH_GSCI          0x00000001  /* GPI status change interrupt */
 
 #define INTEL_AC_CAS        0x34
 
@@ -164,7 +163,7 @@ static uint8_t *_buf_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
 
-	switch(priv->devid) {
+	switch (priv->devid) {
 	case 0:
 		return &dac1_out_buf[0];
 	case 2:
@@ -178,7 +177,7 @@ static uint8_t *_out_buf_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
 
-	switch(priv->devid) {
+	switch (priv->devid) {
 	case 0:
 		return &dac1_out_buf[0];
 	default:
@@ -190,7 +189,7 @@ static uint8_t *_in_buf_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
 
-	switch(priv->devid) {
+	switch (priv->devid) {
 	case 2:
 		return &adc1_in_buf[0];
 	default:
@@ -202,7 +201,7 @@ static struct intel_ac_buff_desc *_desc_list_by_dev(struct audio_dev *dev) {
 	struct intel_ac_dev_priv *priv;
 	priv = dev->ad_priv;
 
-	switch(priv->devid) {
+	switch (priv->devid) {
 	case 0:
 		return &pcm_out_buff_list[0];
 	case 2:
@@ -237,8 +236,9 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 	mic_status = in8(NAMB_REG(INTEL_AC_MIC_SR));
 	pcm_status = in8(NAMB_REG(INTEL_AC_PCM_IN_SR));
 
-	if (!((po_status | mic_status | pcm_status) & 0xFE))
+	if (!((po_status | mic_status | pcm_status) & 0xFE)) {
 		return IRQ_NONE;
+	}
 
 	log_debug("PO  Status Register = %#x", po_status);
 	log_debug("MIC Status Register = %#x", mic_status);
@@ -251,7 +251,6 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 	out16(0x1F, NAMB_REG(INTEL_AC_PO_SR));
 	out16(0x1F, NAMB_REG(INTEL_AC_PCM_IN_SR));
 	out16(0x1F, NAMB_REG(INTEL_AC_MIC_SR));
-
 
 	out32((1 << 15) | (1 << 11) | (1 << 10) | 1, NAMB_REG(INTEL_AC_GLOB_STA));
 
@@ -267,17 +266,18 @@ static int intel_ac_init(struct pci_slot_dev *pci_dev) {
 
 	intel_ac_hw_dev.base_addr_namb = pci_dev->bar[1] & 0xFF00;
 
-	if ((err = ac97_init()))
+	if ((err = ac97_init())) {
 		return err;
+	}
 
-	if ((err = irq_attach(pci_dev->irq, iac_interrupt, IF_SHARESUP, &intel_ac_hw_dev, "iac")))
+	if ((err = irq_attach(pci_dev->irq, iac_interrupt, IF_SHARESUP, &intel_ac_hw_dev, "iac"))) {
 		return err;
+	}
 
 	return 0;
 }
 
 PCI_DRIVER("Intel Corporation 82801AA AC'97 Audio Controller", intel_ac_init, INTEL_AC_VID, INTEL_AC_PID);
-
 
 static void intel_ac_dev_start(struct audio_dev *dev) {
 	uint8_t tmp;
@@ -285,7 +285,7 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 	uint8_t buf;
 	uint8_t lvi;
 	uint8_t cr;
-	switch (((struct intel_ac_dev_priv*)dev->ad_priv)->devid) {
+	switch (((struct intel_ac_dev_priv *)dev->ad_priv)->devid) {
 	case 0:
 		buf = INTEL_AC_PO_BUF;
 		lvi = INTEL_AC_PO_LVI;
@@ -317,7 +317,7 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 
 static void intel_ac_dev_pause(struct audio_dev *dev) {
 	uint8_t cr;
-	switch (((struct intel_ac_dev_priv*)dev->ad_priv)->devid) {
+	switch (((struct intel_ac_dev_priv *)dev->ad_priv)->devid) {
 	case 0:
 		cr  = INTEL_AC_PO_CR;
 		break;
@@ -338,7 +338,7 @@ static void intel_ac_dev_resume(struct audio_dev *dev) {
 
 static void intel_ac_dev_stop(struct audio_dev *dev) {
 	uint8_t cr;
-	switch (((struct intel_ac_dev_priv*)dev->ad_priv)->devid) {
+	switch (((struct intel_ac_dev_priv *)dev->ad_priv)->devid) {
 	case 0:
 		cr  = INTEL_AC_PO_CR;
 		break;
@@ -354,14 +354,14 @@ static void intel_ac_dev_stop(struct audio_dev *dev) {
 }
 
 static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
-	int devid = ((struct intel_ac_dev_priv*)dev->ad_priv)->devid;
-	switch(cmd) {
+	int devid = ((struct intel_ac_dev_priv *)dev->ad_priv)->devid;
+	switch (cmd) {
 	case ADIOCTL_IN_SUPPORT:
 		return devid == 2 ?
-			AD_MONO_SUPPORT | AD_16BIT_SUPPORT : 0;
+			   AD_MONO_SUPPORT | AD_16BIT_SUPPORT : 0;
 	case ADIOCTL_OUT_SUPPORT:
 		return devid == 0 ?
-			AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
+			   AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
 	case ADIOCTL_BUFLEN:
 		return INTEL_AC_MAX_BUF_LEN;
 	}

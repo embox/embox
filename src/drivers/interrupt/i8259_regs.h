@@ -97,15 +97,15 @@
  * Standard PIC initialization values
  */
 #define PIC1_ICW1       (ICW_TEMPLATE | EDGE_TRIGGER | ADDR_INTRVL8 \
-                         | CASCADE_MODE | ICW4__NEEDED)
+	| CASCADE_MODE | ICW4__NEEDED)
 #define PIC1_ICW3       (SLAVE_ON_IR2)
 #define PIC1_ICW4       (SNF_MODE_DIS | NONBUFD_MODE | NRML_EOI_MOD \
-                         | I8086_EMM_MOD)
+	| I8086_EMM_MOD)
 
 #define PIC2_ICW1       (ICW_TEMPLATE | EDGE_TRIGGER | ADDR_INTRVL8 \
-                         | CASCADE_MODE | ICW4__NEEDED)
+	| CASCADE_MODE | ICW4__NEEDED)
 #define PIC2_ICW3       (I_AM_SLAVE_2)
 #define PIC2_ICW4       (SNF_MODE_DIS | NONBUFD_MODE | NRML_EOI_MOD \
-                         | I8086_EMM_MOD)
+	| I8086_EMM_MOD)
 
 #endif /* I8259_REGS_H_ */

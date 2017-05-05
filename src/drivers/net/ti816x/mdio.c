@@ -18,63 +18,63 @@ void emac_mdio_config(void) {
 static void emac_mdelay(int value) {
 	volatile int delay = value;
 
-	while (delay --);
+	while (delay--) ;
 
 }
 
 static void emac_mdio_writereg(unsigned char reg_num,unsigned short data)
 {
-	unsigned int tmp=0,tmp1=0;
+	unsigned int tmp = 0,tmp1 = 0;
 
-	tmp=(1<<31);
+	tmp = (1<<31);
 	log_debug("EMW 1 tmp=%x",tmp);
-	tmp1=1<<30;
+	tmp1 = 1<<30;
 	log_debug("EMW 2 tmp1=%x",tmp1);
-	tmp|=tmp1;
-	tmp1=((reg_num&0x1f)<<21);
+	tmp |= tmp1;
+	tmp1 = ((reg_num&0x1f)<<21);
 	log_debug("EMW 3 tmp1=%x",tmp1);
-	tmp|=tmp1;
-	tmp1=((0x4&0x1f)<<16);
+	tmp |= tmp1;
+	tmp1 = ((0x4&0x1f)<<16);
 	log_debug("EMW 4 tmp1=%x",tmp1);
-	tmp|=tmp1;
-	tmp1=data&0xffff;
+	tmp |= tmp1;
+	tmp1 = data&0xffff;
 	log_debug("EMW 5 tmp1=%x",tmp1);
-	tmp|=tmp1;
+	tmp |= tmp1;
 	log_debug("EMW tmp=%x",tmp);
 	REG_STORE(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERACCESS0,tmp);
-	tmp1=0;
-	while(REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERINTRAW)==0)
+	tmp1 = 0;
+	while (REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERINTRAW) == 0)
 	{
 		tmp1++;
 	}
 	REG_STORE(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERINTRAW,REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERINTRAW));
-	//res=REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERACCESS0);
+	/*res=REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERACCESS0); */
 }
 
 static int emac_mdio_readreg(unsigned char reg_num)
 {
-	unsigned int res=0;
-	unsigned int tmp=0,tmp1=0;
+	unsigned int res = 0;
+	unsigned int tmp = 0,tmp1 = 0;
 
-	tmp=(1<<31);
+	tmp = (1<<31);
 	log_debug("EMR 1 tmp=%x",tmp);
-	tmp1=((reg_num&0x1f)<<21);
+	tmp1 = ((reg_num&0x1f)<<21);
 	log_debug("EMR 2 tmp1=%x",tmp1);
-	tmp|=tmp1;
-	tmp1=((0x4&0x1f)<<16);
+	tmp |= tmp1;
+	tmp1 = ((0x4&0x1f)<<16);
 	log_debug("EMR 3 tmp1=%x",tmp1);
-	tmp|=tmp1;
+	tmp |= tmp1;
 	log_debug("EMR tmp=%x",tmp);
 	REG_STORE(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERACCESS0,tmp);
-	tmp1=0;
-	while(REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERINTRAW)==0)
+	tmp1 = 0;
+	while (REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERINTRAW) == 0)
 	{
 		tmp1++;
 	}
 	REG_STORE(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERINTRAW,REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERINTRAW));
 
-	res=REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERACCESS0);
-	if(((res>>29)&0x1)==0)
+	res = REG_LOAD(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERACCESS0);
+	if (((res>>29)&0x1) == 0)
 	{
 		log_error("emac_mdio_readreg err - ACC not - res=%x",res);
 		return 0;
@@ -94,17 +94,17 @@ static int emac_mdio_readreg(unsigned char reg_num)
 
 void emac_mdio_config(void)
 {
-	unsigned int res=0;
+	unsigned int res = 0;
 
 	log_debug("emac_mdio_config started");
-	//REG_ORIN(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_CONTROL,0x40000000);
+	/*REG_ORIN(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_CONTROL,0x40000000); */
 	REG_STORE(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_CONTROL,0x40000020);
 	emac_mdelay(10000);
 	REG_STORE(MDIO_BASE_ADDR+MDIO_OFFSET+MDIO_R_USERPHYSEL0,0x4);
 	emac_mdio_writereg(MAX_CR,res);
-	res=emac_mdio_readreg(MAX_GMIICR);
+	res = emac_mdio_readreg(MAX_GMIICR);
 	log_debug("EMC res3=%x",res);
-	res|=0x8480;
+	res |= 0x8480;
 	log_debug("EMC res4=%x",res);
 	emac_mdio_writereg(MAX_GMIICR,res);
 	log_debug("emac_mdio_config ended");

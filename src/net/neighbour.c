@@ -64,7 +64,7 @@ static void nbr_free(struct neighbour *nbr) {
 	pool_free(&neighbour_pool, nbr);
 }
 
-static struct neighbour * nbr_lookup_by_paddr(unsigned short ptype,
+static struct neighbour *nbr_lookup_by_paddr(unsigned short ptype,
 		const void *paddr, struct net_device *dev) {
 	struct neighbour *nbr;
 
@@ -82,7 +82,7 @@ static struct neighbour * nbr_lookup_by_paddr(unsigned short ptype,
 	return NULL; /* error: no such entity */
 }
 
-static struct neighbour * nbr_lookup_by_haddr(unsigned short htype,
+static struct neighbour *nbr_lookup_by_haddr(unsigned short htype,
 		const void *haddr, struct net_device *dev) {
 	struct neighbour *nbr;
 
@@ -128,7 +128,7 @@ static int nbr_send_request(struct neighbour *nbr) {
 				nbr->dev->addr_len);
 		return ndp_send(NDP_NEIGHBOR_SOLICIT, 0, &nbr_solicit,
 				sizeof nbr_solicit.body + sizeof nbr_solicit.ops
-					+ nbr->dev->addr_len, nbr->dev);
+				+ nbr->dev->addr_len, nbr->dev);
 	}
 }
 

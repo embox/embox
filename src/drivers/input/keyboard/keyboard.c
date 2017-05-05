@@ -84,7 +84,7 @@ static int keyboard_get_input_event(struct input_dev *dev, struct input_event *e
 	}
 	scan_code &= 0x7F;
 
-	switch(scan_code) {
+	switch (scan_code) {
 	case KEYBOARD_SCAN_CODE_CTRL:
 		flag = CTRL_PRESSED;
 		break;
@@ -144,16 +144,16 @@ static int keyboard_stop(struct input_dev *dev) {
 }
 
 static const struct input_dev_ops kbd_input_ops = {
-		.event_get = keyboard_get_input_event,
-		/*.start = keyboard_start,*/
-		.stop = keyboard_stop,
+	.event_get = keyboard_get_input_event,
+	/*.start = keyboard_start,*/
+	.stop = keyboard_stop,
 };
 
 static struct input_dev kbd_dev = {
-		.ops = &kbd_input_ops,
-		.name = "keyboard",
-		.type = INPUT_DEV_KBD,
-		.irq = 1,
+	.ops = &kbd_input_ops,
+	.name = "keyboard",
+	.type = INPUT_DEV_KBD,
+	.irq = 1,
 };
 
 static int keyboard_init(void) {

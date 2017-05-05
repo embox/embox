@@ -17,7 +17,7 @@
 #include <kernel/task/resource.h>
 #include <hal/vfork.h>
 
-static const char * exec_cmd_name(const char *path) {
+static const char *exec_cmd_name(const char *path) {
 	size_t path_len;
 
 	if (!strcmp(path, "/bin/sh")) {
@@ -42,8 +42,9 @@ int exec_call(void) {
 	int c;
 	char **v;
 
-	if (strcmp(cmd_name, path))
+	if (strcmp(cmd_name, path)) {
 		task_resource_argv_insert(task, cmd_name, 0);
+	}
 
 	c = task_resource_argv_argc(task);
 	v = task_resource_argv_argv(task);
@@ -79,7 +80,7 @@ int execv(const char *path, char *const argv[]) {
 
 	cmd_name[0] = '\0';
 
-	for (i = 0; argv[i] != NULL; i ++) {
+	for (i = 0; argv[i] != NULL; i++) {
 		len = strlen(cmd_name);
 		if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
 			break;
@@ -90,8 +91,8 @@ int execv(const char *path, char *const argv[]) {
 		}
 
 		/* this code is required the only if argv is not NULL terminated */
-		if (i >= 3){
-			// TODO for protection from a lot of arguments
+		if (i >= 3) {
+			/* TODO for protection from a lot of arguments */
 			break;
 		}
 
@@ -116,4 +117,3 @@ int execv(const char *path, char *const argv[]) {
 int execve(const char *path, char *const argv[], char *const envp[]) {
 	return execv(path, argv);
 }
-
