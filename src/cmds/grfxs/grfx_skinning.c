@@ -1,13 +1,12 @@
+/* This file provides an widget 
+example of work nuklear on OS Embox */
 
 /* includes for nuklear*/
 #include <stdio.h>
 #define NK_PRIVATE
 #define NK_API
 #define NK_INTERN static
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 
@@ -19,21 +18,40 @@
 
 #include "nk_embox_render.h"
 
+
+/* inkludes from original skinning.h */
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdarg.h>
+#include <string.h>
+#include <math.h>
+#include <assert.h>
+#include <math.h>
+#include <time.h>
+#include <limits.h>
+#define NK_INCLUDE_FIXED_TYPES
+#define NK_INCLUDE_STANDARD_IO
+/* macros */
+#define WINDOW_WIDTH 1200
+#define WINDOW_HEIGHT 800
+
+
+#define UNUSED(a) (void)a
+#define LEN(a) (sizeof(a)/sizeof(a)[0])
+
+
 /* includes from fbcon */
 #include <drivers/console/mpx.h>
 #include <drivers/vterm_video.h>
 #include <drivers/video/fb.h>
 
-
-#define ABS(a) (((a) < 0) ? -(a) : (a)) 
-#define MIN(a, b) ((a < b) ? a : b) 
-#define MAX(a, b) ((a > b) ? a : b) 
+int im_w, im_h, im_format;
+unsigned char *gwen;// = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
 
 struct device {
     struct nk_buffer cmds;
     struct nk_draw_null_texture null;
-    NK_UINT32 vbo, vao, ebo;
-    NK_UINT32 font_tex;
 };
 
 struct nk_canvas {
@@ -44,7 +62,7 @@ struct nk_canvas {
 };
 
 struct media {
-    int skin;
+    int *skin;
     struct nk_image menu;
     struct nk_image check;
     struct nk_image check_cursor;
@@ -67,49 +85,47 @@ struct media {
 };
 
 
-
-static void
-canvas_begin(struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
-    int x, int y, int width, int height, struct nk_color background_color){
-    /* save style properties which will be overwritten */
-    canvas->panel_padding = ctx->style.window.padding;
-    canvas->item_spacing = ctx->style.window.spacing;
-    canvas->window_background = ctx->style.window.fixed_background;
+// static void
+// canvas_begin(struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
+//     int x, int y, int width, int height, struct nk_color background_color){
+//     /* save style properties which will be overwritten */
+//     canvas->panel_padding = ctx->style.window.padding;
+//     canvas->item_spacing = ctx->style.window.spacing;
+//     canvas->window_background = ctx->style.window.fixed_background;
     
-    /* use the complete window space and set background */
-    ctx->style.window.spacing = nk_vec2(0,0);
-    ctx->style.window.padding = nk_vec2(0,0);
-    ctx->style.window.fixed_background = nk_style_item_color(background_color);
+//     /* use the complete window space and set background */
+//     ctx->style.window.spacing = nk_vec2(0,0);
+//     ctx->style.window.padding = nk_vec2(0,0);
+//     ctx->style.window.fixed_background = nk_style_item_color(background_color);
     
-    /* create/update window and set position + size */
-    flags = flags & ~NK_WINDOW_DYNAMIC;
-    //nk_begin(ctx, "Window", nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR|flags);
-    nk_begin(ctx, "Demo", nk_rect(50, 50, 300, 400),
-            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE);
-    //nk_window_set_bounds(ctx, nk_rect(x, y, width, height));
+//     /* create/update window and set position + size */
+//     flags = flags & ~NK_WINDOW_DYNAMIC;
+//     //nk_begin(ctx, "Window", nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR|flags);
+//     nk_begin(ctx, "Demo", nk_rect(50, 50, 300, 400),
+//             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE);
+//     //nk_window_set_bounds(ctx, nk_rect(x, y, width, height));
    
-    /* allocate the complete window space for drawing */
-    {struct nk_rect total_space;
-    total_space = nk_window_get_content_region(ctx);
-    nk_layout_row_dynamic(ctx, total_space.h, 1);
-    nk_widget(&total_space, ctx);
-    canvas->painter = nk_window_get_canvas(ctx);}
-    //canvas.painter->use_clipping = NK_CLIPPING_OFF;  
+//     /* allocate the complete window space for drawing */
+//     {struct nk_rect total_space;
+//     total_space = nk_window_get_content_region(ctx);
+//     nk_layout_row_dynamic(ctx, total_space.h, 1);
+//     nk_widget(&total_space, ctx);
+//     canvas->painter = nk_window_get_canvas(ctx);}
+//     //canvas.painter->use_clipping = NK_CLIPPING_OFF;  
      
-}
+// }
 
-static void
-canvas_end(struct nk_context *ctx, struct nk_canvas *canvas){
-    nk_end(ctx);
-    ctx->style.window.spacing = canvas->panel_padding;
-    ctx->style.window.padding = canvas->item_spacing;
-    ctx->style.window.fixed_background = canvas->window_background;
-}
+// static void
+// canvas_end(struct nk_context *ctx, struct nk_canvas *canvas){
+//     nk_end(ctx);
+//     ctx->style.window.spacing = canvas->panel_padding;
+//     ctx->style.window.padding = canvas->item_spacing;
+//     ctx->style.window.fixed_background = canvas->window_background;
+// }
 
 /* callbacks */
 static void inpevent(struct vc *vc, struct input_event *ev){
 }
-
 static void visd(struct vc *vc, struct fb_info *fbinfo){
 
     /* fill all window with white */
@@ -123,11 +139,9 @@ static void visd(struct vc *vc, struct fb_info *fbinfo){
 
     fb_fillrect(vc->fb, &rect);
 }
-
 static void devisn(struct vc *vc) {
 	mpx_devisualized(vc);
 }
-
 const struct vc_callbacks thiscbs = {
 	.handle_input_event = inpevent,
 	.visualized = visd,
@@ -151,6 +165,7 @@ int main(int argc, char *argv[]) {
     struct nk_font_atlas atlas;
     struct nk_font *font;
     struct nk_context ctx;
+    struct media media;
 
     int width = 0, 
         height = 0;
@@ -162,34 +177,41 @@ int main(int argc, char *argv[]) {
     nk_font_atlas_begin(&atlas);
     font = nk_font_atlas_add_default(&atlas, 13, 0);
     nk_font_atlas_bake(&atlas, &width, &height, NK_FONT_ATLAS_RGBA32);
-    nk_font_atlas_end(&atlas, nk_handle_id((int)device.font_tex)/*nk_handle_id(0)*/, &device.null);
+    nk_font_atlas_end(&atlas, nk_handle_id(0), &device.null);
 
     nk_init_default(&ctx, &font->handle);
 
-    struct media media;
-    int x,y,n;
-    media.skin = *stbi_load("gwen.png", &x, &y, &n, 0);
+    /* load image for the widget items */
+    //int im_w, im_h, im_format;
+    //media.skin = *stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
+    // if (media.skin == NULL)
+    //     printf("\nstbi_load doesn't work. :(\n");
+    // else 
+    //     printf("\nLoaded image: width = %i\theight = %i\tformat = %i", im_w, im_h, im_format);
 
-     {   /* skin */
-        //media.skin = 1;//image_load("../skins/gwen.png");
-        media.check = nk_subimage_id(media.skin, 512,512, nk_rect(464,32,15,15));
-        media.check_cursor = nk_subimage_id(media.skin, 512,512, nk_rect(450,34,11,11));
-        media.option = nk_subimage_id(media.skin, 512,512, nk_rect(464,64,15,15));
-        media.option_cursor = nk_subimage_id(media.skin, 512,512, nk_rect(451,67,9,9));
-        media.header = nk_subimage_id(media.skin, 512,512, nk_rect(128,0,127,24));
-        media.window = nk_subimage_id(media.skin, 512,512, nk_rect(128,23,127,104));
-        media.scrollbar_inc_button = nk_subimage_id(media.skin, 512,512, nk_rect(464,256,15,15));
-        media.scrollbar_inc_button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(464,320,15,15));
-        media.scrollbar_dec_button = nk_subimage_id(media.skin, 512,512, nk_rect(464,224,15,15));
-        media.scrollbar_dec_button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(464,288,15,15));
-        media.button = nk_subimage_id(media.skin, 512,512, nk_rect(384,336,127,31));
-        media.button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(384,368,127,31));
-        media.button_active = nk_subimage_id(media.skin, 512,512, nk_rect(384,400,127,31));
-        media.tab_minimize = nk_subimage_id(media.skin, 512,512, nk_rect(451, 99, 9, 9));
-        media.tab_maximize = nk_subimage_id(media.skin, 512,512, nk_rect(467,99,9,9));
-        media.slider = nk_subimage_id(media.skin, 512,512, nk_rect(418,33,11,14));
-        media.slider_hover = nk_subimage_id(media.skin, 512,512, nk_rect(418,49,11,14));
-        media.slider_active = nk_subimage_id(media.skin, 512,512, nk_rect(418,64,11,14));
+
+    {   /* skin */
+    //int im_w, im_h, im_format;
+        gwen = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
+        media.skin = (int*)gwen;//(int*)stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
+        media.check = nk_subimage_id(*media.skin, 512,512, nk_rect(464,32,15,15));
+        media.check_cursor = nk_subimage_id(*media.skin, 512,512, nk_rect(450,34,11,11));
+        media.option = nk_subimage_id(*media.skin, 512,512, nk_rect(464,64,15,15));
+        media.option_cursor = nk_subimage_id(*media.skin, 512,512, nk_rect(451,67,9,9));
+        media.header = nk_subimage_id(*media.skin, 512,512, nk_rect(128,0,127,24));
+        media.window = nk_subimage_id(*media.skin, 512,512, nk_rect(128,23,127,104));
+        media.scrollbar_inc_button = nk_subimage_id(*media.skin, 512,512, nk_rect(464,256,15,15));
+        media.scrollbar_inc_button_hover = nk_subimage_id(*media.skin, 512,512, nk_rect(464,320,15,15));
+        media.scrollbar_dec_button = nk_subimage_id(*media.skin, 512,512, nk_rect(464,224,15,15));
+        media.scrollbar_dec_button_hover = nk_subimage_id(*media.skin, 512,512, nk_rect(464,288,15,15));
+        media.button = nk_subimage_id(*media.skin, 512,512, nk_rect(384,336,127,31));
+        media.button_hover = nk_subimage_id(*media.skin, 512,512, nk_rect(384,368,127,31));
+        media.button_active = nk_subimage_id(*media.skin, 512,512, nk_rect(384,400,127,31));
+        media.tab_minimize = nk_subimage_id(*media.skin, 512,512, nk_rect(451, 99, 9, 9));
+        media.tab_maximize = nk_subimage_id(*media.skin, 512,512, nk_rect(467,99,9,9));
+        media.slider = nk_subimage_id(*media.skin, 512,512, nk_rect(418,33,11,14));
+        media.slider_hover = nk_subimage_id(*media.skin, 512,512, nk_rect(418,49,11,14));
+        media.slider_active = nk_subimage_id(*media.skin, 512,512, nk_rect(418,64,11,14));
 
         /* window */
         ctx.style.window.background = nk_rgb(204,204,204);
@@ -206,7 +228,6 @@ int main(int argc, char *argv[]) {
         ctx.style.window.border = 3;
 
         /* window header */
-        //ctx.style.window.header;
         ctx.style.window.header.normal = nk_style_item_image(media.header);
         ctx.style.window.header.hover = nk_style_item_image(media.header);
         ctx.style.window.header.active = nk_style_item_image(media.header);
@@ -474,17 +495,84 @@ int main(int argc, char *argv[]) {
 
 
     /* Draw */
-    struct nk_canvas canvas;
+    //struct nk_canvas canvas;
     while (1) 
-    {
-        /* what to draw */
-        canvas_begin(&ctx, &canvas, 0, 0, 0, width, height, nk_rgb(100,100,100));
+    {/* GUI */
+        {//struct nk_panel layout, tab;
+        if (nk_begin(&ctx, "Demo", nk_rect(50, 50, 300, 400),
+            NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
         {
+            int i;
+            float id;
+            static int slider = 10;
+            static int field_len;
+            static nk_size prog_value = 60;
+            static int current_weapon = 0;
+            static char field_buffer[64];
+            static float pos;
+            static const char *weapons[] = {"Fist","Pistol","Shotgun","Plasma","BFG"};
+            const float step = (2*3.141592654f) / 32;
 
-             nk_stroke_line(canvas.painter, 15, 10, 200, 10, 2.0f, nk_rgb(189,45,75));
+            nk_layout_row_static(&ctx, 30, 120, 1);
+            if (nk_button_label(&ctx, "button"))
+                fprintf(stdout, "button pressed\n");
 
+            nk_layout_row_dynamic(&ctx, 20, 1);
+            nk_label(&ctx, "Label", NK_TEXT_LEFT);
+            nk_layout_row_dynamic(&ctx, 30, 2);
+            nk_check_label(&ctx, "inactive", 0);
+            nk_check_label(&ctx, "active", 1);
+            nk_option_label(&ctx, "active", 1);
+            nk_option_label(&ctx, "inactive", 0);
+
+            nk_layout_row_dynamic(&ctx, 30, 1);
+            nk_slider_int(&ctx, 0, &slider, 16, 1);
+            nk_layout_row_dynamic(&ctx, 20, 1);
+            nk_progress(&ctx, &prog_value, 100, NK_MODIFIABLE);
+
+            nk_layout_row_dynamic(&ctx, 25, 1);
+            nk_edit_string(&ctx, NK_EDIT_FIELD, field_buffer, &field_len, 64, nk_filter_default);
+            nk_property_float(&ctx, "#X:", -1024.0f, &pos, 1024.0f, 1, 1);
+            current_weapon = nk_combo(&ctx, weapons, LEN(weapons), current_weapon, 25, nk_vec2(nk_widget_width(&ctx),200));
+
+            nk_layout_row_dynamic(&ctx, 100, 1);
+            if (nk_chart_begin_colored(&ctx, NK_CHART_LINES, nk_rgb(255,0,0), nk_rgb(150,0,0), 32, 0.0f, 1.0f)) {
+                nk_chart_add_slot_colored(&ctx, NK_CHART_LINES, nk_rgb(0,0,255), nk_rgb(0,0,150),32, -1.0f, 1.0f);
+                nk_chart_add_slot_colored(&ctx, NK_CHART_LINES, nk_rgb(0,255,0), nk_rgb(0,150,0), 32, -1.0f, 1.0f);
+                for (id = 0, i = 0; i < 32; ++i) {
+                    nk_chart_push_slot(&ctx, (float)fabs(sin(id)), 0);
+                    nk_chart_push_slot(&ctx, (float)cos(id), 1);
+                    nk_chart_push_slot(&ctx, (float)sin(id), 2);
+                    id += step;
+                }
+            }
+            nk_chart_end(&ctx);
+
+            nk_layout_row_dynamic(&ctx, 250, 1);
+            if (nk_group_begin(&ctx, "Standard", NK_WINDOW_BORDER|NK_WINDOW_BORDER))
+            {
+                if (nk_tree_push(&ctx, NK_TREE_NODE, "Window", NK_MAXIMIZED)) {
+                    static int selected[8];
+                    if (nk_tree_push(&ctx, NK_TREE_NODE, "Next", NK_MAXIMIZED)) {
+                        nk_layout_row_dynamic(&ctx, 20, 1);
+                        for (i = 0; i < 4; ++i)
+                            nk_selectable_label(&ctx, (selected[i]) ? "Selected": "Unselected", NK_TEXT_LEFT, &selected[i]);
+                        nk_tree_pop(&ctx);
+                    }
+                    if (nk_tree_push(&ctx, NK_TREE_NODE, "Previous", NK_MAXIMIZED)) {
+                        nk_layout_row_dynamic(&ctx, 20, 1);
+                        for (i = 4; i < 8; ++i)
+                            nk_selectable_label(&ctx, (selected[i]) ? "Selected": "Unselected", NK_TEXT_LEFT, &selected[i]);
+                        nk_tree_pop(&ctx);
+                    }
+                    nk_tree_pop(&ctx);
+                }
+                nk_group_end(&ctx);
+            }
         }
-        canvas_end(&ctx, &canvas);
+        nk_end(&ctx);}
+        
+        //canvas_end(&ctx, &canvas);
 
          /* Draw each element */
          draw(&this_vc, &ctx, width, height);

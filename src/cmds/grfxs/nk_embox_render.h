@@ -10,7 +10,7 @@ extern const struct font_desc font_vga_8x8, font_vga_8x16;
 #define MIN(a, b) ((a < b) ? a : b) 
 #define MAX(a, b) ((a > b) ? a : b) 
 
-
+extern unsigned char *gwen;
 
 int nk_color_converter(struct nk_color color){
     int b = (color.b / 8)  & (0x1f);
@@ -36,7 +36,12 @@ void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int
         ay = by;
         by = t;
     }
-    
+    if (ax > bx){
+        float t = ax;
+        ax = bx;
+        bx = t;
+    }
+
 
     for (int i = ax - th; i <= bx + th; ++i) {
 	    for (int j = ay - th; j <= by + th; ++j) {
@@ -265,17 +270,29 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
     rect.height = 1;
     rect.rop = ROP_COPY;
     
-    for (int nY = 0; nY < w; nY++)
-    {
-	    for (int nX = 0; nX < h; nX++)
-	    {
-            /* offset in pixet array according to the image format*/
-            uint32_t nOffset = (nX + nY * img.w) * 4;
+    // this is coordinates which will be translated from need coordinates to origin picture
+    int origX, origY;
 
-            int nRed = (int)((unsigned char*)(img.handle.ptr))[nOffset+0];
-            int nGreen = (int)((unsigned char*)(img.handle.ptr))[nOffset+1];
-            int nBlue = (int)((unsigned char*)(img.handle.ptr))[nOffset+2];
-            int nAlpha = (int)((unsigned char*)(img.handle.ptr))[nOffset+3];
+    for (int nY = 0; nY < h; nY++)
+    {
+	    for (int nX = 0; nX < w; nX++)
+	    {
+            origX = (nX * img.region[2]) / w;
+            origY = (nY * img.region[3]) / h;
+
+            /* offset in pixet array according to the image format*/
+            uint32_t nOffset = (origX + img.region[0] + (origY + img.region[1]) * img.w) * 4;
+
+            // int nRed = (int)((unsigned char*)(img.handle.ptr))[nOffset+0];
+            // int nGreen = (int)((unsigned char*)(img.handle.ptr))[nOffset+1];
+            // int nBlue = (int)((unsigned char*)(img.handle.ptr))[nOffset+2];
+            // int nAlpha = (int)((unsigned char*)(img.handle.ptr))[nOffset+3];
+
+            /* for skinning example */
+            int nRed = (int)gwen[nOffset+0];
+            int nGreen = (int)gwen[nOffset+1];
+            int nBlue = (int)gwen[nOffset+2];
+            int nAlpha = (int)gwen[nOffset+3];
 
             rect.color = nk_color_converter(nk_rgba(nRed, nGreen, nBlue, nAlpha));
             rect.dx = x + nX;
