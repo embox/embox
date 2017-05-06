@@ -42,14 +42,29 @@ void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int
         bx = t;
     }
 
+    float l = sqrt( (ax - bx)*( ax - bx) + (ay - by)*(ay - by) );
+    float dx, dy;
+    if (ay == by)
+        dx = 0;
+    else 
+        dx = th / l * (by - ay);
+    if (ax == bx)
+        dy = 0;
+    else
+        dy = th / l * (bx - ax);
 
-    for (int i = ax - th; i <= bx + th; ++i) {
-	    for (int j = ay - th; j <= by + th; ++j) {
-            rect.dx = i;
-            rect.dy = j;
-		    fb_fillrect(vc->fb, &rect);
-	    }
+
+    for (int i2 = 0; i2 < 2 * dx; i2+= 1){
+        int j2 = dy / dx * i2;
+        for (int i = ax - dx + i2; i <= bx - dx + i2; i+= 1) {
+	        for (int j = ay - dy + j2; j <= by + dy +j2; j += 1) {
+                rect.dx = i;
+                rect.dy = j;
+		        fb_fillrect(vc->fb, &rect);
+	        }
+        }
     }
+
 }
 void embox_fill_circle(struct vc *vc, int cx, int cy, int r, int col){
     if (r == 0) return;
@@ -81,7 +96,7 @@ void embox_fill_arc(struct vc *vc, float cx, float cy, float r, float a_min, flo
 
 
     for (float a = a_min; a < a_max; a = a + 0.001){
-        for (int i = 0; i <r; i++){
+        for (int i = 0; i < r; i++){
             rect.dx = cx + i * NK_COS(a);
             rect.dy = cy + i * NK_SIN(a);
             fb_fillrect(vc->fb, &rect);
@@ -210,7 +225,7 @@ void embox_stroke_curve(struct vc *vc, int *x, int *y, int col, float thickness)
 
     float L0, L1, L2, L3;
     float j;
-    float th = thickness /2;
+    float th = 1;//thickness /2;
 
     y[1] = (y[0] + y[1]) / 2;
     y[2] = (y[2] + y[3]) / 2;
@@ -273,9 +288,9 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
     // this is coordinates which will be translated from need coordinates to origin picture
     int origX, origY;
 
-    for (int nY = 0; nY < h; nY++)
+    for (int nY = 0; nY <= h; nY++)
     {
-	    for (int nX = 0; nX < w; nX++)
+	    for (int nX = 0; nX <= w; nX++)
 	    {
             origX = (nX * img.region[2]) / w;
             origY = (nY * img.region[3]) / h;
