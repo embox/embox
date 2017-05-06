@@ -9,6 +9,7 @@ example of work nuklear on OS Embox */
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
+#define NK_BUFFER_DEFAULT_INITIAL_SIZE 512 
 
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
@@ -19,6 +20,7 @@ example of work nuklear on OS Embox */
 #include "nk_embox_render.h"
 
 unsigned char **images;
+extern const struct font_desc font_vga_8x8, font_vga_8x16;
 
 struct device {
     struct nk_buffer cmds;
@@ -95,7 +97,9 @@ const struct vc_callbacks thiscbs = {
 	.schedule_devisualization = devisn,
 };
 
-
+float your_text_width_calculation(nk_handle handle, float height, const char *text, int len){
+    return 16;
+}
 
 int main(int argc, char *argv[]) {
 
@@ -110,8 +114,6 @@ int main(int argc, char *argv[]) {
 
     /* GUI */
     struct device device;
-    struct nk_font_atlas atlas;
-    struct nk_font *font;
     struct nk_context ctx;
     struct nk_canvas canvas;
 
@@ -120,27 +122,25 @@ int main(int argc, char *argv[]) {
 
     
     nk_buffer_init_default(&device.cmds);
- 
-    nk_font_atlas_init_default(&atlas);
-    nk_font_atlas_begin(&atlas);
-    font = nk_font_atlas_add_default(&atlas, 13, 0);
-    nk_font_atlas_bake(&atlas, &width, &height, NK_FONT_ATLAS_RGBA32);
-    nk_font_atlas_end(&atlas, nk_handle_id(0), &device.null);
+    struct nk_user_font font;
+    font.userdata.ptr = &width;
+    font.height = font_vga_8x16.height;
+    font.width = your_text_width_calculation;
 
-    nk_init_default(&ctx, &font->handle);
-
+    nk_init_default(&ctx, &font);
+    width = 512;
+    height = 128;
     /* Draw */
     while (1) 
     {
         /* what to draw */
         canvas_begin(&ctx, &canvas, 0, 0, 0, width, height, nk_rgb(100,100,100));
-        {
-
+        {            
             canvas.painter->use_clipping = NK_CLIPPING_OFF;  
 
             nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(247, 230, 154));
             nk_fill_rect(canvas.painter, nk_rect(20,20,200,200), 5, nk_rgb(188, 174, 118));
-            nk_draw_text(canvas.painter, nk_rect(30, 30, 150, 20), "Text to draw", 12, &font->handle, nk_rgb(188,174,118), nk_rgb(0,0,0));
+            nk_draw_text(canvas.painter, nk_rect(30, 30, 150, 20), "Text to draw", 12, &font, nk_rgb(188,174,118), nk_rgb(0,0,0));
             nk_fill_rect(canvas.painter, nk_rect(250,20,100,100), 0, nk_rgb(0,0,255));
             nk_fill_circle(canvas.painter, nk_rect(20,250,100,100), nk_rgb(255,0,0));
             nk_fill_triangle(canvas.painter, 250, 250, 350, 250, 300, 350, nk_rgb(0,255,0));
@@ -180,7 +180,7 @@ int main(int argc, char *argv[]) {
             im.region[2] = im_w;
             im.region[3] = im_h;
             
-            nk_draw_image(canvas.painter, nk_rect(0, 0, 999, 999), &im, nk_rgb(100, 0, 0));
+            nk_draw_image(canvas.painter, nk_rect(110, 220, 150, 150), &im, nk_rgb(100, 0, 0));
 
             stbi_image_free(images[0]);            
         }
@@ -189,8 +189,6 @@ int main(int argc, char *argv[]) {
          /* Draw each element */
          draw(&this_vc, &ctx, width, height);
     }
-
-    nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
     nk_buffer_free(&device.cmds);
 
