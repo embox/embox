@@ -46,8 +46,7 @@ example of work nuklear on OS Embox */
 #include <drivers/vterm_video.h>
 #include <drivers/video/fb.h>
 
-int im_w, im_h, im_format;
-unsigned char *gwen;// = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
+unsigned char **images;
 
 struct device {
     struct nk_buffer cmds;
@@ -62,7 +61,7 @@ struct nk_canvas {
 };
 
 struct media {
-    int *skin;
+    int skin;
     struct nk_image menu;
     struct nk_image check;
     struct nk_image check_cursor;
@@ -84,44 +83,6 @@ struct media {
     struct nk_image slider_active;
 };
 
-
-// static void
-// canvas_begin(struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
-//     int x, int y, int width, int height, struct nk_color background_color){
-//     /* save style properties which will be overwritten */
-//     canvas->panel_padding = ctx->style.window.padding;
-//     canvas->item_spacing = ctx->style.window.spacing;
-//     canvas->window_background = ctx->style.window.fixed_background;
-    
-//     /* use the complete window space and set background */
-//     ctx->style.window.spacing = nk_vec2(0,0);
-//     ctx->style.window.padding = nk_vec2(0,0);
-//     ctx->style.window.fixed_background = nk_style_item_color(background_color);
-    
-//     /* create/update window and set position + size */
-//     flags = flags & ~NK_WINDOW_DYNAMIC;
-//     //nk_begin(ctx, "Window", nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR|flags);
-//     nk_begin(ctx, "Demo", nk_rect(50, 50, 300, 400),
-//             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE);
-//     //nk_window_set_bounds(ctx, nk_rect(x, y, width, height));
-   
-//     /* allocate the complete window space for drawing */
-//     {struct nk_rect total_space;
-//     total_space = nk_window_get_content_region(ctx);
-//     nk_layout_row_dynamic(ctx, total_space.h, 1);
-//     nk_widget(&total_space, ctx);
-//     canvas->painter = nk_window_get_canvas(ctx);}
-//     //canvas.painter->use_clipping = NK_CLIPPING_OFF;  
-     
-// }
-
-// static void
-// canvas_end(struct nk_context *ctx, struct nk_canvas *canvas){
-//     nk_end(ctx);
-//     ctx->style.window.spacing = canvas->panel_padding;
-//     ctx->style.window.padding = canvas->item_spacing;
-//     ctx->style.window.fixed_background = canvas->window_background;
-// }
 
 /* callbacks */
 static void inpevent(struct vc *vc, struct input_event *ev){
@@ -182,36 +143,35 @@ int main(int argc, char *argv[]) {
     nk_init_default(&ctx, &font->handle);
 
     /* load image for the widget items */
-    //int im_w, im_h, im_format;
-    //media.skin = *stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
-    // if (media.skin == NULL)
-    //     printf("\nstbi_load doesn't work. :(\n");
-    // else 
-    //     printf("\nLoaded image: width = %i\theight = %i\tformat = %i", im_w, im_h, im_format);
+    int im_w, im_h, im_format;
+    images[0] = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
+    if (images[0] == NULL)
+        printf("\nstbi_load doesn't work. :(\n");
+    else 
+        printf("\nLoaded image: width = %i\theight = %i\tformat = %i", im_w, im_h, im_format);
 
 
     {   /* skin */
-    //int im_w, im_h, im_format;
-        gwen = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
-        media.skin = (int*)gwen;//(int*)stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
-        media.check = nk_subimage_id(*media.skin, 512,512, nk_rect(464,32,15,15));
-        media.check_cursor = nk_subimage_id(*media.skin, 512,512, nk_rect(450,34,11,11));
-        media.option = nk_subimage_id(*media.skin, 512,512, nk_rect(464,64,15,15));
-        media.option_cursor = nk_subimage_id(*media.skin, 512,512, nk_rect(451,67,9,9));
-        media.header = nk_subimage_id(*media.skin, 512,512, nk_rect(128,0,127,24));
-        media.window = nk_subimage_id(*media.skin, 512,512, nk_rect(128,23,127,104));
-        media.scrollbar_inc_button = nk_subimage_id(*media.skin, 512,512, nk_rect(464,256,15,15));
-        media.scrollbar_inc_button_hover = nk_subimage_id(*media.skin, 512,512, nk_rect(464,320,15,15));
-        media.scrollbar_dec_button = nk_subimage_id(*media.skin, 512,512, nk_rect(464,224,15,15));
-        media.scrollbar_dec_button_hover = nk_subimage_id(*media.skin, 512,512, nk_rect(464,288,15,15));
-        media.button = nk_subimage_id(*media.skin, 512,512, nk_rect(384,336,127,31));
-        media.button_hover = nk_subimage_id(*media.skin, 512,512, nk_rect(384,368,127,31));
-        media.button_active = nk_subimage_id(*media.skin, 512,512, nk_rect(384,400,127,31));
-        media.tab_minimize = nk_subimage_id(*media.skin, 512,512, nk_rect(451, 99, 9, 9));
-        media.tab_maximize = nk_subimage_id(*media.skin, 512,512, nk_rect(467,99,9,9));
-        media.slider = nk_subimage_id(*media.skin, 512,512, nk_rect(418,33,11,14));
-        media.slider_hover = nk_subimage_id(*media.skin, 512,512, nk_rect(418,49,11,14));
-        media.slider_active = nk_subimage_id(*media.skin, 512,512, nk_rect(418,64,11,14));
+        
+        media.skin = (int)*(images[0]);
+        media.check = nk_subimage_id(media.skin, 512,512, nk_rect(464,32,15,15));
+        media.check_cursor = nk_subimage_id(media.skin, 512,512, nk_rect(450,34,11,11));
+        media.option = nk_subimage_id(media.skin, 512,512, nk_rect(464,64,15,15));
+        media.option_cursor = nk_subimage_id(media.skin, 512,512, nk_rect(451,67,9,9));
+        media.header = nk_subimage_id(media.skin, 512,512, nk_rect(128,0,127,24));
+        media.window = nk_subimage_id(media.skin, 512,512, nk_rect(128,23,127,104));
+        media.scrollbar_inc_button = nk_subimage_id(media.skin, 512,512, nk_rect(464,256,15,15));
+        media.scrollbar_inc_button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(464,320,15,15));
+        media.scrollbar_dec_button = nk_subimage_id(media.skin, 512,512, nk_rect(464,224,15,15));
+        media.scrollbar_dec_button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(464,288,15,15));
+        media.button = nk_subimage_id(media.skin, 512,512, nk_rect(384,336,127,31));
+        media.button_hover = nk_subimage_id(media.skin, 512,512, nk_rect(384,368,127,31));
+        media.button_active = nk_subimage_id(media.skin, 512,512, nk_rect(384,400,127,31));
+        media.tab_minimize = nk_subimage_id(media.skin, 512,512, nk_rect(451, 99, 9, 9));
+        media.tab_maximize = nk_subimage_id(media.skin, 512,512, nk_rect(467,99,9,9));
+        media.slider = nk_subimage_id(media.skin, 512,512, nk_rect(418,33,11,14));
+        media.slider_hover = nk_subimage_id(media.skin, 512,512, nk_rect(418,49,11,14));
+        media.slider_active = nk_subimage_id(media.skin, 512,512, nk_rect(418,64,11,14));
 
         /* window */
         ctx.style.window.background = nk_rgb(204,204,204);

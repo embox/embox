@@ -10,7 +10,7 @@ extern const struct font_desc font_vga_8x8, font_vga_8x16;
 #define MIN(a, b) ((a < b) ? a : b) 
 #define MAX(a, b) ((a > b) ? a : b) 
 
-extern unsigned char *gwen;
+extern unsigned char **images;
 
 int nk_color_converter(struct nk_color color){
     int b = (color.b / 8)  & (0x1f);
@@ -250,8 +250,8 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
     symbol.dy = y;
     symbol.width = 8; //t->w
     symbol.height = 16; //t->h
-    symbol.fg_color = fg_color;
-    symbol.bg_color = bg_color;
+    symbol.fg_color = bg_color;
+    symbol.bg_color = fg_color;
     symbol.depth = 1;
 
     char *cbuf = (char *) text;
@@ -283,16 +283,11 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
             /* offset in pixet array according to the image format*/
             uint32_t nOffset = (origX + img.region[0] + (origY + img.region[1]) * img.w) * 4;
 
-            // int nRed = (int)((unsigned char*)(img.handle.ptr))[nOffset+0];
-            // int nGreen = (int)((unsigned char*)(img.handle.ptr))[nOffset+1];
-            // int nBlue = (int)((unsigned char*)(img.handle.ptr))[nOffset+2];
-            // int nAlpha = (int)((unsigned char*)(img.handle.ptr))[nOffset+3];
-
             /* for skinning example */
-            int nRed = (int)gwen[nOffset+0];
-            int nGreen = (int)gwen[nOffset+1];
-            int nBlue = (int)gwen[nOffset+2];
-            int nAlpha = (int)gwen[nOffset+3];
+            int nRed = (int)images[img.handle.id][nOffset+0];
+            int nGreen = (int)images[img.handle.id][nOffset+1];
+            int nBlue = (int)images[img.handle.id][nOffset+2];
+            int nAlpha = (int)images[img.handle.id][nOffset+3];
 
             rect.color = nk_color_converter(nk_rgba(nRed, nGreen, nBlue, nAlpha));
             rect.dx = x + nX;
@@ -437,5 +432,5 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){
     nk_clear(ctx);
 
     /* delay for remove flickering */
-    for (int i = 0; i<100000000; i++){}
+    for (int i = 0; i<1000000000; i++){}
 }
