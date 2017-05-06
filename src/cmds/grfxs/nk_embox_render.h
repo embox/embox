@@ -319,12 +319,11 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
 
 
 static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){ 
-    /* shouldn't draw when window is off */
+     /* shouldn't draw when window is off */
     if (!vc->fb) {
         nk_clear(ctx);
         return;
     }
-
     const struct nk_command *cmd;
 
     /* iterate over and execute each draw command */
@@ -349,8 +348,7 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){
             y[1] = q->ctrl[0].y;
             y[2] = q->ctrl[1].y;
             y[3] = q->end.y;
-            
-
+    
             embox_stroke_curve(vc, x, y, nk_color_converter(q->color), q->line_thickness);
         } break;
         case NK_COMMAND_RECT: {
@@ -359,7 +357,8 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){
         } break; 
         case NK_COMMAND_RECT_FILLED: {
             const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled*)cmd;
-            embox_fill_rect(vc, r->x, r->y, r->w, r->h, nk_color_converter(r->color));
+            if (!((r->x + r->w >= width) && (r->y + r->h >= height)))	
+               embox_fill_rect(vc, r->x, r->y, r->w, r->h, nk_color_converter(r->color));
         }break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle*)cmd;
