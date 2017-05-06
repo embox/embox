@@ -1,4 +1,5 @@
-/* This file provides an example of work nuklear on OS Embox */
+/* This file provides an drawing primitives 
+example of work nuklear on OS Embox */
 
 /* includes for nuklear*/
 #include <stdio.h>
@@ -17,6 +18,7 @@
 
 #include "nk_embox_render.h"
 
+unsigned char **images;
 
 struct device {
     struct nk_buffer cmds;
@@ -69,7 +71,6 @@ canvas_end(struct nk_context *ctx, struct nk_canvas *canvas){
 static void 
 inpevent(struct vc *vc, struct input_event *ev){
 }
-
 static void 
 visd(struct vc *vc, struct fb_info *fbinfo){
 
@@ -84,17 +85,16 @@ visd(struct vc *vc, struct fb_info *fbinfo){
 
     fb_fillrect(vc->fb, &rect);
 }
-
 static void 
 devisn(struct vc *vc) {
 	mpx_devisualized(vc);
 }
-
 const struct vc_callbacks thiscbs = {
 	.handle_input_event = inpevent,
 	.visualized = visd,
 	.schedule_devisualization = devisn,
 };
+
 
 
 int main(int argc, char *argv[]) {
@@ -163,15 +163,16 @@ int main(int argc, char *argv[]) {
 
             /* load some image */
             int im_w, im_h, im_format;
-            unsigned char * data = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
-            if (data == NULL)
+            //unsigned char * data 
+            images[0] = stbi_load("201.png", &im_w, &im_h, &im_format, 0);
+            if (images[0] == NULL)
                 printf("\nstbi_load doesn't work. :(\n");
             else 
-                printf("\nload image: width = %i\theight = %i\tformat = %i", im_w, im_h, im_format);
+                printf("\nLoaded image: id = %i   width = %i\theight = %i\tformat = %i", (int)*images[0], im_w, im_h, im_format);
 
             struct nk_image im;
-            im.handle.ptr = data;
-            im.handle.id = (uint32_t)data;
+            im.handle.ptr = images[0];
+            im.handle.id = (uint32_t)*images[0];
             im.w = im_w;
             im.h = im_h;
             im.region[0] = 0;
@@ -179,9 +180,9 @@ int main(int argc, char *argv[]) {
             im.region[2] = im_w;
             im.region[3] = im_h;
             
-            nk_draw_image(canvas.painter, nk_rect(0, 0, 150, 150), &im, nk_rgb(100, 0, 0));
+            nk_draw_image(canvas.painter, nk_rect(0, 0, 999, 999), &im, nk_rgb(100, 0, 0));
 
-            stbi_image_free(data);            
+            stbi_image_free(images[0]);            
         }
         canvas_end(&ctx, &canvas);
 
