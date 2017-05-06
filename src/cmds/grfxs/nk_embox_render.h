@@ -9,6 +9,7 @@ extern const struct font_desc font_vga_8x8, font_vga_8x16;
 #define ABS(a) (((a) < 0) ? -(a) : (a)) 
 #define MIN(a, b) ((a < b) ? a : b) 
 #define MAX(a, b) ((a > b) ? a : b) 
+#define SIGN(a)   ((a > 0) ? 1 : -1)
 
 extern unsigned char **images;
 
@@ -19,51 +20,59 @@ int nk_color_converter(struct nk_color color){
     return r + g + b;
 }
 
-void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int col, float thickness){
-
-    float th = thickness / 2;
-
+void embox_fill_triangle(struct vc *vc, int ax, int ay, int bx, int by, int cx, int cy, int col){
     struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
     rect.width = 1;
     rect.height = 1;
     rect.color = col;
     rect.rop = ROP_COPY;
 
-    if (ay > by){
-        float t = ay;
+    int if1, if2, if3;
+
+
+    for (int i = MIN(MIN(ax, bx), cx); i <= MAX(MAX(ax, bx), cx); ++i){
+        for (int j = MIN(MIN(ay, by), cy); j <= MAX(MAX(ay, by), cy); ++j){
+            /* condition of belonging of the point to the triangle */
+            if1 = (ax - i) * (by - ay) - (bx - ax) * (ay - j);
+            if2 = (bx - i) * (cy - by) - (cx - bx) * (by - j);
+            if3 = (cx - i) * (ay - cy) - (ax - cx) * (cy - j);
+
+            if ( (if1 >= 0 && if2 >= 0 && if3 >= 0) || (if1 <= 0 && if2 <= 0 && if3 <= 0) ){
+                rect.dx = i;
+                rect.dy = j;
+                fb_fillrect(vc->fb, &rect);
+            }
+        }
+    }
+}   
+void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int col, float thickness){
+  
+    if (ax > bx){
+        int t = ax;
+        ax = bx;
+        bx = t;
+        
+        t = ay; 
         ay = by;
         by = t;
     }
-    if (ax > bx){
-        float t = ax;
-        ax = bx;
-        bx = t;
-    }
 
-    float l = sqrt( (ax - bx)*( ax - bx) + (ay - by)*(ay - by) );
-    float dx, dy;
-    if (ay == by)
-        dx = 0;
-    else 
-        dx = th / l * (by - ay);
-    if (ax == bx)
-        dy = 0;
-    else
-        dy = th / l * (bx - ax);
+    float th = thickness / 2
+         ,tg = (bx - ax) / (by - ay);
+    float dx = sqrt(th*th / (1 + tg*tg))
+         ,dy = ABS(tg) * dx;
+     
+    float Ax = ax - dx
+         ,Ay = ay + SIGN(th)*dy
+         ,Bx = ax + dx
+         ,By = ay - SIGN(th)*dy
+         ,Cx = bx + dx
+         ,Cy = by - SIGN(th)*dy
+         ,Dx = bx - dx
+         ,Dy = by + SIGN(th)*dy;
 
-
-    for (int i2 = 0; i2 < 2 * dx; i2+= 1){
-        int j2 = dy / dx * i2;
-        for (int i = ax - dx + i2; i <= bx - dx + i2; i+= 1) {
-	        for (int j = ay - dy + j2; j <= by + dy +j2; j += 1) {
-                rect.dx = i;
-                rect.dy = j;
-		        fb_fillrect(vc->fb, &rect);
-	        }
-        }
-    }
+    embox_fill_triangle(vc, Ax, Ay, Bx, By, Cx, Cy, col);
+    embox_fill_triangle(vc, Ax, Ay, Dx, Dy, Cx, Cy, col);
 
 }
 void embox_fill_circle(struct vc *vc, int cx, int cy, int r, int col){
@@ -121,31 +130,7 @@ void embox_stroke_arc(struct vc *vc, float cx, float cy, float r, float a_min, f
         }
     }
 }
-void embox_fill_triangle(struct vc *vc, int ax, int ay, int bx, int by, int cx, int cy, int col){
-    struct fb_fillrect rect;
-    rect.width = 1;
-    rect.height = 1;
-    rect.color = col;
-    rect.rop = ROP_COPY;
 
-    int if1, if2, if3;
-
-
-    for (int i = MIN(MIN(ax, bx), cx); i <= MAX(MAX(ax, bx), cx); ++i){
-        for (int j = MIN(MIN(ay, by), cy); j <= MAX(MAX(ay, by), cy); ++j){
-            /* condition of belonging of the point to the triangle */
-            if1 = (ax - i) * (by - ay) - (bx - ax) * (ay - j);
-            if2 = (bx - i) * (cy - by) - (cx - bx) * (by - j);
-            if3 = (cx - i) * (ay - cy) - (ax - cx) * (cy - j);
-
-            if ( (if1 >= 0 && if2 >= 0 && if3 >= 0) || (if1 <= 0 && if2 <= 0 && if3 <= 0) ){
-                rect.dx = i;
-                rect.dy = j;
-                fb_fillrect(vc->fb, &rect);
-            }
-        }
-    }
-}   
 void embox_stroke_triangle(struct vc *vc, float ax, float ay, float bx, float by, float cx, float cy, int col, float thickness){
     struct fb_fillrect rect;
     rect.width = 1;
@@ -265,8 +250,8 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
     symbol.dy = y;
     symbol.width = 8; //t->w
     symbol.height = 16; //t->h
-    symbol.fg_color = bg_color;
-    symbol.bg_color = fg_color;
+    symbol.fg_color = fg_color;
+    symbol.bg_color = bg_color;
     symbol.depth = 1;
 
     char *cbuf = (char *) text;
