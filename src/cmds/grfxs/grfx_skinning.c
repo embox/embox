@@ -459,7 +459,7 @@ int main(int argc, char *argv[]) {
     while (1) 
     {/* GUI */
         {//struct nk_panel layout, tab;
-        if (nk_begin(&ctx, "Demo", nk_rect(50, 50, 300, 400),
+        if (nk_begin(&ctx, "Demo", nk_rect(50, 50, 300, 420),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
         {
             int i;
@@ -531,13 +531,10 @@ int main(int argc, char *argv[]) {
             }
         }
         nk_end(&ctx);}
-        
-        //canvas_end(&ctx, &canvas);
 
          /* Draw each element */
          draw(&this_vc, &ctx, width, height);
      }
-    //stbi_image_free(media.skin);
     nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
     nk_buffer_free(&device.cmds);

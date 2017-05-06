@@ -20,6 +20,17 @@ int nk_color_converter(struct nk_color color){
     return r + g + b;
 }
 
+void embox_fill_rect(struct vc *vc, int x, int y, int w, int h, int col){
+    struct fb_fillrect rect;
+    rect.dx = x;
+    rect.dy = y;
+    rect.width = w;
+    rect.height = h;
+    rect.color = col;
+    rect.rop = ROP_COPY;
+    fb_fillrect(vc->fb, &rect);
+
+}
 void embox_fill_triangle(struct vc *vc, int ax, int ay, int bx, int by, int cx, int cy, int col){
     struct fb_fillrect rect;
     rect.width = 1;
@@ -47,6 +58,11 @@ void embox_fill_triangle(struct vc *vc, int ax, int ay, int bx, int by, int cx, 
 }   
 void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int col, float thickness){
   
+    if (ax == bx || ay == by){
+        embox_fill_rect(vc, ax, ay, ABS(ax-bx) , ABS(ay-by), col);
+        return;
+    }
+    
     if (ax > bx){
         int t = ax;
         ax = bx;
@@ -57,19 +73,20 @@ void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int
         by = t;
     }
 
+    
     float th = thickness / 2
          ,tg = (bx - ax) / (by - ay);
     float dx = sqrt(th*th / (1 + tg*tg))
          ,dy = ABS(tg) * dx;
      
     float Ax = ax - dx
-         ,Ay = ay + SIGN(th)*dy
+         ,Ay = ay + SIGN(tg)*dy
          ,Bx = ax + dx
-         ,By = ay - SIGN(th)*dy
+         ,By = ay - SIGN(tg)*dy
          ,Cx = bx + dx
-         ,Cy = by - SIGN(th)*dy
+         ,Cy = by - SIGN(tg)*dy
          ,Dx = bx - dx
-         ,Dy = by + SIGN(th)*dy;
+         ,Dy = by + SIGN(tg)*dy;
 
     embox_fill_triangle(vc, Ax, Ay, Bx, By, Cx, Cy, col);
     embox_fill_triangle(vc, Ax, Ay, Dx, Dy, Cx, Cy, col);
@@ -97,6 +114,7 @@ void embox_fill_circle(struct vc *vc, int cx, int cy, int r, int col){
 void embox_fill_arc(struct vc *vc, float cx, float cy, float r, float a_min, float a_max, int col){
     if (r == 0) return;
 
+
     struct fb_fillrect rect;
     rect.width = 1;
     rect.height = 1;
@@ -120,8 +138,7 @@ void embox_stroke_arc(struct vc *vc, float cx, float cy, float r, float a_min, f
     rect.height = 1;
     rect.color = col;
     rect.rop = ROP_COPY;
-
-
+    
     for (float a = a_min; a < a_max; a = a + 0.001){
         for (float th = 0; th <= thickness; th = th + 0.1){
             rect.dx = cx + (r - th) * NK_COS(a);
@@ -130,7 +147,6 @@ void embox_stroke_arc(struct vc *vc, float cx, float cy, float r, float a_min, f
         }
     }
 }
-
 void embox_stroke_triangle(struct vc *vc, float ax, float ay, float bx, float by, float cx, float cy, int col, float thickness){
     struct fb_fillrect rect;
     rect.width = 1;
@@ -174,34 +190,31 @@ void embox_stroke_triangle(struct vc *vc, float ax, float ay, float bx, float by
     }
 }   
 void embox_stroke_rect(struct vc *vc, float x, float y, float w, float h, int col, float rounding, float thickness){
+    int th = thickness / 2;
     struct fb_fillrect rect;
-    rect.width = 1;
-    rect.height = 1;
+    rect.width = th;
+    rect.height = th;
     rect.color = col;
     rect.rop = ROP_COPY;
 
-    for (float i = x; i <= x + w; i = i + 0.1){
-        for (float j = y; j <= y + thickness; j = j + 0.1){
+    for (int i = x + th ; i <= x + w - th; i++){
             rect.dx = i;
-            rect.dy = j;
+            rect.dy = y + th;
             fb_fillrect(vc->fb, &rect);
             
             rect.dx = i;
-            rect.dy = j + h - thickness;
+            rect.dy = y + h - th;
             fb_fillrect(vc->fb, &rect);
-        }
+        
     }
-
-     for (float j = y; j <= y + h; j = j + 0.1){
-         for (float i = x; i <= x + thickness; i = i + 0.1){
-            rect.dx = i;
+     for (int j = y + th; j <= y + h - th; j++){
+            rect.dx = x + th;
             rect.dy = j;
             fb_fillrect(vc->fb, &rect);
             
-            rect.dx = i + h;
+            rect.dx = x + w - th;
             rect.dy = j;
             fb_fillrect(vc->fb, &rect);
-         }
 
     }
 
@@ -275,8 +288,11 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
 
     for (int nY = 0; nY <= h; nY++)
     {
-	    for (int nX = 0; nX <= w; nX++)
+	    for (float nX = 0; nX <= w; nX++)
 	    {
+            rect.dx = x + nX;
+            rect.dy = y + nY;
+
             origX = (nX * img.region[2]) / w;
             origY = (nY * img.region[3]) / h;
 
@@ -288,10 +304,12 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
             int nGreen = (int)images[img.handle.id][nOffset+1];
             int nBlue = (int)images[img.handle.id][nOffset+2];
             int nAlpha = (int)images[img.handle.id][nOffset+3];
-
+            
+            
             rect.color = nk_color_converter(nk_rgba(nRed, nGreen, nBlue, nAlpha));
-            rect.dx = x + nX;
-            rect.dy = y + nY;
+            
+            if (nAlpha < 3)
+                continue;            
             
             fb_fillrect(vc->fb, &rect);
 
@@ -340,19 +358,8 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){
             embox_stroke_rect(vc, r->x, r->y, r->w, r->h, nk_color_converter(r->color), (float)r->rounding, r->line_thickness);
         } break; 
         case NK_COMMAND_RECT_FILLED: {
-            const struct nk_command_rect_filled *r =
-            r = (const struct nk_command_rect_filled*)cmd;
-            if ((r->x + r->w >= width) && (r->y + r->h >= height))
-                continue;
-            struct fb_fillrect rect;
-            rect.dx = r->x;
-            rect.dy = r->y;
-            rect.width = r->w;
-            rect.height = r->h;
-            rect.color = nk_color_converter(r->color);
-            rect.rop = 0;
-            fb_fillrect(vc->fb, &rect);
-            break;
+            const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled*)cmd;
+            embox_fill_rect(vc, r->x, r->y, r->w, r->h, nk_color_converter(r->color));
         }break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle*)cmd;
@@ -432,5 +439,5 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){
     nk_clear(ctx);
 
     /* delay for remove flickering */
-    for (int i = 0; i<1000000000; i++){}
+    for (int i = 0; i<100000000000; i++){}
 }
