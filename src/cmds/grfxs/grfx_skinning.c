@@ -122,11 +122,11 @@ int main(int argc, char *argv[]) {
 
 
     /* GUI */
-    struct device device;
-    struct nk_font_atlas atlas;
-    struct nk_font *font;
-    struct nk_context ctx;
-    struct media media;
+    static struct device device;
+    static struct nk_font_atlas atlas;
+    static struct nk_font *font;
+    static struct nk_context ctx;
+    static struct media media;
 
     int width = 0, 
         height = 0;
@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         ctx.style.scrollv.dec_button.border          = 0.0f;
 
         /* checkbox toggle */
-        {struct nk_style_toggle *toggle;
+        {static struct nk_style_toggle *toggle;
         toggle = &ctx.style.checkbox;
         toggle->normal          = nk_style_item_image(media.check);
         toggle->hover           = nk_style_item_image(media.check);
@@ -246,7 +246,7 @@ int main(int argc, char *argv[]) {
         toggle->text_active     = nk_rgb(95,95,95);}
 
         /* option toggle */
-        {struct nk_style_toggle *toggle;
+        {static struct nk_style_toggle *toggle;
         toggle = &ctx.style.option;
         toggle->normal          = nk_style_item_image(media.option);
         toggle->hover           = nk_style_item_image(media.option);
