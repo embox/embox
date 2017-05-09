@@ -13,16 +13,6 @@ extern const struct font_desc font_vga_8x8, font_vga_8x16;
 
 extern unsigned char **images;
 
-    // printf("bpp = %i\n",this_vc.fb->var.bits_per_pixel);
-    // printf("xres = %i\nyres = %i\n",this_vc.fb->var.xres, this_vc.fb->var.yres);
-
-int nk_color_converter(struct nk_color color){
-    uint32_t b = color.b;
-    uint32_t g = (color.g)<<8;
-    uint32_t r = (color.r)<<16;
-    return  r | g | b;
-}
-
 int rgba_to_device_color(struct vc *vc, uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha){
     switch (vc->fb->var.bits_per_pixel){
         case 16: {
@@ -79,11 +69,16 @@ void embox_fill_triangle(struct vc *vc, int ax, int ay, int bx, int by, int cx, 
 }   
 void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int col, float thickness){
   
-    if (ax == bx || ay == by){
-        embox_fill_rect(vc, ax, ay, ABS(ax-bx) , ABS(ay-by), col);
+    float th = thickness / 2;
+
+    if (ax == bx){
+        embox_fill_rect(vc, ax - th, ay, thickness, ABS(ay-by) + thickness, col);
         return;
     }
-    
+    if (ay == by){
+        embox_fill_rect(vc, ax, ay - th, ABS(ax-bx) + thickness, thickness, col);
+        return;
+    }
     if (ax > bx){
         int t = ax;
         ax = bx;
@@ -95,8 +90,8 @@ void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int
     }
 
     
-    float th = thickness / 2
-         ,tg = (bx - ax) / (by - ay);
+    
+    float tg = (bx - ax) / (by - ay);
     float dx = sqrt(th*th / (1 + tg*tg))
          ,dy = ABS(tg) * dx;
      
@@ -283,7 +278,7 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
     symbol.dx = x;
     symbol.dy = y;
     symbol.width = 8; //t->w
-    symbol.height = 16; //t->h
+    symbol.height = 8; //t->h
     symbol.fg_color = fg_color;
     symbol.bg_color = bg_color;
     symbol.depth = 1;
@@ -292,7 +287,7 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
     size_t nbyte = len;
     
     while (nbyte--) {
-        symbol.data = (char *)(font_vga_8x16.data) + (unsigned char)(*cbuf++)*16; 
+        symbol.data = (char *)(font_vga_8x8.data) + (unsigned char)(*cbuf++)*8; 
         fb_imageblit(vc->fb, &symbol);
         symbol.dx += 8;
     } 
@@ -354,7 +349,7 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){
         case NK_COMMAND_LINE: {
             const struct nk_command_line *c = (const struct nk_command_line*)cmd;
             int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);
-            embox_stroke_line(vc, c->begin.x, c->begin.y,c->end.x, c->end.y, color, c->line_thickness);
+            embox_stroke_line(vc, c->begin.x, c->begin.y, c->end.x, c->end.y, color, c->line_thickness);
         } break;
         case NK_COMMAND_CURVE: {
             const struct nk_command_curve *c = (const struct nk_command_curve*)cmd;
