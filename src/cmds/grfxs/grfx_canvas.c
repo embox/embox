@@ -9,7 +9,7 @@ example of work nuklear on OS Embox */
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
-#define NK_BUFFER_DEFAULT_INITIAL_SIZE 512 
+#define NK_BUFFER_DEFAULT_INITIAL_SIZE 1024
 
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
@@ -113,29 +113,33 @@ int main(int argc, char *argv[]) {
 
 
     /* GUI */
-    struct device device;
-    struct nk_context ctx;
-    struct nk_canvas canvas;
+    static struct device device;
+    static struct nk_context ctx;
+    static struct nk_canvas canvas;
 
     int width = 0, 
         height = 0;
 
     
     nk_buffer_init_default(&device.cmds);
-    struct nk_user_font font;
+    static struct nk_user_font font;
     font.userdata.ptr = &width;
     font.height = font_vga_8x16.height;
     font.width = your_text_width_calculation;
 
+    // int *memory;
+    // nk_size size = 256;
+    // nk_init_fixed(&ctx, memory, size, &font);
     nk_init_default(&ctx, &font);
     width = 512;
     height = 128;
+    
     /* Draw */
     while (1) 
     {
         /* what to draw */
         canvas_begin(&ctx, &canvas, 0, 0, 0, width, height, nk_rgb(100,100,100));
-        {            
+        {         
             canvas.painter->use_clipping = NK_CLIPPING_OFF;  
 
             nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(247, 230, 154));
@@ -158,13 +162,13 @@ int main(int argc, char *argv[]) {
             nk_stroke_line(canvas.painter, 15, 10, 200, 10, 2.0f, nk_rgb(189,45,75));
             nk_stroke_rect(canvas.painter, nk_rect(370, 20, 100, 100), 10, 3, nk_rgb(0,0,255));
             nk_stroke_curve(canvas.painter, 380, 200, 405, 270, 455, 120, 480, 200, 2, nk_rgb(0,150,220));
-            nk_stroke_circle(canvas.painter, nk_rect(20, 370, 100, 100), 5, nk_rgb(0,255,120));
+            nk_stroke_circle(canvas.painter, nk_rect(130, 250, 100, 100), 5, nk_rgb(0,255,120));
             nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
 
             /* load some image */
             int im_w, im_h, im_format;
             //unsigned char * data 
-            images[0] = stbi_load("201.png", &im_w, &im_h, &im_format, 0);
+            images[0] = stbi_load("SPBGU_logo.png", &im_w, &im_h, &im_format, 0);
             if (images[0] == NULL)
                 printf("\nstbi_load doesn't work. :(\n");
             else 
@@ -180,7 +184,7 @@ int main(int argc, char *argv[]) {
             im.region[2] = im_w;
             im.region[3] = im_h;
             
-            nk_draw_image(canvas.painter, nk_rect(110, 220, 150, 150), &im, nk_rgb(100, 0, 0));
+            nk_draw_image(canvas.painter, nk_rect(490, 20, 300, 300), &im, nk_rgb(100, 0, 0));
 
             stbi_image_free(images[0]);            
         }
