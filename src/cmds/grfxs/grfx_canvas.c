@@ -72,15 +72,15 @@ static void
 visd(struct vc *vc, struct fb_info *fbinfo){
 
     /* fill all window with white */
-    // struct fb_fillrect rect;
-    // rect.dx = 0;
-    // rect.dy = 0;
-    // rect.width = 1024;
-    // rect.height = 1024;
-    // rect.rop = ROP_COPY;
-    // rect.color = 0xffff;
+    struct fb_fillrect rect;
+    rect.dx = 0;
+    rect.dy = 0;
+    rect.width = vc->fb->var.xres;
+    rect.height = vc->fb->var.yres;
+    rect.rop = ROP_COPY;
+    rect.color = rgba_to_device_color(vc, 255, 255, 255, 255);
 
-    // fb_fillrect(vc->fb, &rect);
+    fb_fillrect(vc->fb, &rect);
 }
 static void 
 devisn(struct vc *vc) {
