@@ -43,8 +43,8 @@ static int stm32f7_lcd_get_var(struct fb_info *info,
 
 static void stm32f7_lcd_fillrect(struct fb_info *info,
 		const struct fb_fillrect *rect) {
-	//BSP_LCD_SetTextColor(rect->color | 0xff000000);
-	BSP_LCD_SetTextColor(0xff000000);
+	BSP_LCD_SetTextColor(rect->color | 0xff000000);
+	//BSP_LCD_SetTextColor(0xff000000);
 	//BSP_LCD_DrawPixel(rect->dx, rect->dy, 0xffff0000);
 	//BSP_LCD_DrawPixel(rect->dx, rect->dy, 0xff000000);
 	BSP_LCD_FillRect(rect->dx, rect->dy, rect->width, rect->height);
