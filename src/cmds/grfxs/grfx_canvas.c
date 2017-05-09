@@ -9,7 +9,6 @@ example of work nuklear on OS Embox */
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
-#define NK_BUFFER_DEFAULT_INITIAL_SIZE 1024
 
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
@@ -22,10 +21,6 @@ example of work nuklear on OS Embox */
 unsigned char **images;
 extern const struct font_desc font_vga_8x8, font_vga_8x16;
 
-struct device {
-    struct nk_buffer cmds;
-    struct nk_draw_null_texture null;
-};
 
 struct nk_canvas {
     struct nk_command_buffer *painter;
@@ -77,15 +72,15 @@ static void
 visd(struct vc *vc, struct fb_info *fbinfo){
 
     /* fill all window with white */
-    struct fb_fillrect rect;
-    rect.dx = 0;
-    rect.dy = 0;
-    rect.width = 1024;
-    rect.height = 1024;
-    rect.rop = ROP_COPY;
-    rect.color = 0xffff;
+    // struct fb_fillrect rect;
+    // rect.dx = 0;
+    // rect.dy = 0;
+    // rect.width = 1024;
+    // rect.height = 1024;
+    // rect.rop = ROP_COPY;
+    // rect.color = 0xffff;
 
-    fb_fillrect(vc->fb, &rect);
+    // fb_fillrect(vc->fb, &rect);
 }
 static void 
 devisn(struct vc *vc) {
@@ -110,18 +105,15 @@ int main(int argc, char *argv[]) {
 	};
 
 	mpx_register_vc(&this_vc);
-
-
+  
     /* GUI */
-    static struct device device;
     static struct nk_context ctx;
     static struct nk_canvas canvas;
+    
 
     int width = 0, 
         height = 0;
 
-    
-    nk_buffer_init_default(&device.cmds);
     static struct nk_user_font font;
     font.userdata.ptr = &width;
     font.height = font_vga_8x16.height;
@@ -163,7 +155,6 @@ int main(int argc, char *argv[]) {
 
             /* load some image */
             int im_w, im_h, im_format;
-            //unsigned char * data 
             images[0] = stbi_load("SPBGU_logo.png", &im_w, &im_h, &im_format, 0);
             if (images[0] == NULL)
                 printf("\nstbi_load doesn't work. :(\n");
@@ -190,7 +181,6 @@ int main(int argc, char *argv[]) {
          draw(&this_vc, &ctx, width, height);
     }
     nk_free(&ctx);
-    nk_buffer_free(&device.cmds);
 
     printf("\nEnd of program.\nIf you see it then something goes wrong.\n");
     return 0;
