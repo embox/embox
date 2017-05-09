@@ -126,10 +126,6 @@ int main(int argc, char *argv[]) {
     font.userdata.ptr = &width;
     font.height = font_vga_8x16.height;
     font.width = your_text_width_calculation;
-
-    // int *memory;
-    // nk_size size = 256;
-    // nk_init_fixed(&ctx, memory, size, &font);
     nk_init_default(&ctx, &font);
     width = 512;
     height = 128;
