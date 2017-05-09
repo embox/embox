@@ -138,7 +138,7 @@ void embox_fill_arc(struct vc *vc, float cx, float cy, float r, float a_min, flo
     rect.rop = ROP_COPY;
 
 
-    for (float a = a_min; a < a_max; a = a + 0.001){
+    for (float a = a_min; a < a_max; a = a + 0.01){
         for (int i = 0; i < r; i++){
             rect.dx = cx + i * NK_COS(a);
             rect.dy = cy + i * NK_SIN(a);
@@ -155,7 +155,7 @@ void embox_stroke_arc(struct vc *vc, float cx, float cy, float r, float a_min, f
     rect.color = col;
     rect.rop = ROP_COPY;
     
-    for (float a = a_min; a < a_max; a = a + 0.001){
+    for (float a = a_min; a < a_max; a = a + 0.01){
         for (float th = 0; th <= thickness; th = th + 0.1){
             rect.dx = cx + (r - th) * NK_COS(a);
             rect.dy = cy + (r - th) * NK_SIN(a);
@@ -245,7 +245,7 @@ void embox_stroke_curve(struct vc *vc, int *x, int *y, int col, float thickness)
     y[2] = (y[2] + y[3]) / 2;
 
     /* interpolation Lagrange */
-    for (float i = x[0]; i <= x[3]; i = i + 0.001){
+    for (float i = x[0]; i <= x[3]; i = i + 0.1){
         L0 = (i - x[1]) * (i - x[2]) * (i - x[3]) / (x[0] - x[1]) / (x[0] - x[2]) / (x[0] - x[3]);
         L1 = (i - x[0]) * (i - x[2]) * (i - x[3]) / (x[1] - x[0]) / (x[1] - x[2]) / (x[1] - x[3]);
         L2 = (i - x[0]) * (i - x[1]) * (i - x[3]) / (x[2] - x[0]) / (x[2] - x[1]) / (x[2] - x[3]);
@@ -263,7 +263,7 @@ void embox_stroke_circle(struct vc *vc, int cx, int cy, int r, int col, float th
     rect.color = col;
     rect.rop = ROP_COPY;
 
-  for (float a = 0; a < 2 * 3.14; a = a + 0.0001){
+  for (float a = 0; a < 2 * 3.14; a = a + 0.01){
         for (float th = 0; th <= thickness ; th = th + 0.1){
             rect.dx = cx + (r - th) * NK_COS(a) ;
             rect.dy = cy + (r - th) * NK_SIN(a);
