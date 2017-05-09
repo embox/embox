@@ -85,22 +85,25 @@ struct media {
 
 
 /* callbacks */
-static void inpevent(struct vc *vc, struct input_event *ev){
+static void 
+inpevent(struct vc *vc, struct input_event *ev){
 }
-static void visd(struct vc *vc, struct fb_info *fbinfo){
+static void 
+visd(struct vc *vc, struct fb_info *fbinfo){
 
     /* fill all window with white */
     struct fb_fillrect rect;
     rect.dx = 0;
     rect.dy = 0;
-    rect.width = 1024;
-    rect.height = 1024;
+    rect.width = vc->fb->var.xres;
+    rect.height = vc->fb->var.yres;
     rect.rop = ROP_COPY;
-    rect.color = 0xffff;
+    rect.color = rgba_to_device_color(vc, 255, 255, 255, 255);
 
     fb_fillrect(vc->fb, &rect);
 }
-static void devisn(struct vc *vc) {
+static void 
+devisn(struct vc *vc) {
 	mpx_devisualized(vc);
 }
 const struct vc_callbacks thiscbs = {
@@ -108,6 +111,10 @@ const struct vc_callbacks thiscbs = {
 	.visualized = visd,
 	.schedule_devisualization = devisn,
 };
+
+float your_text_width_calculation(nk_handle handle, float height, const char *text, int len){
+    return 16;
+}
 
 
 int main(int argc, char *argv[]) {
@@ -123,30 +130,28 @@ int main(int argc, char *argv[]) {
 
     /* GUI */
     static struct device device;
-    static struct nk_font_atlas atlas;
-    static struct nk_font *font;
     static struct nk_context ctx;
     static struct media media;
 
     int width = 0, 
         height = 0;
 
+    static struct nk_user_font font;
+    font.userdata.ptr = &width;
+    font.height = font_vga_8x16.height;
+    font.width = your_text_width_calculation;
+    nk_init_default(&ctx, &font);
     
-    nk_buffer_init_default(&device.cmds);
-     
-    nk_font_atlas_init_default(&atlas);
-    nk_font_atlas_begin(&atlas);
-    font = nk_font_atlas_add_default(&atlas, 13, 0);
-    nk_font_atlas_bake(&atlas, &width, &height, NK_FONT_ATLAS_RGBA32);
-    nk_font_atlas_end(&atlas, nk_handle_id(0), &device.null);
-
-    nk_init_default(&ctx, &font->handle);
+    width = this_vc.fb->var.xres;
+    height = this_vc.fb->var.yres;
 
     /* load image for the widget items */
     int im_w, im_h, im_format;
     images[0] = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
-    if (images[0] == NULL)
+    if (images[0] == NULL){
         printf("\nstbi_load doesn't work. :(\n");
+        return 0;
+    }
     else 
         printf("\nLoaded image: width = %i\theight = %i\tformat = %i", im_w, im_h, im_format);
 
@@ -535,7 +540,6 @@ int main(int argc, char *argv[]) {
          /* Draw each element */
          draw(&this_vc, &ctx, width, height);
      }
-    nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
     nk_buffer_free(&device.cmds);
 
