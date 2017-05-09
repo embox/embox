@@ -130,48 +130,49 @@ int main(int argc, char *argv[]) {
         {         
             canvas.painter->use_clipping = NK_CLIPPING_OFF;  
 
-            nk_fill_rect(canvas.painter, nk_rect(15,15,210,210), 5, nk_rgb(247, 230, 154));
-            nk_fill_rect(canvas.painter, nk_rect(20,20,200,200), 5, nk_rgb(188, 174, 118));
-            nk_draw_text(canvas.painter, nk_rect(30, 30, 150, 20), "Text to draw", 12, &font, nk_rgb(188,174,118), nk_rgb(0,0,0));
-            nk_fill_rect(canvas.painter, nk_rect(250,20,100,100), 0, nk_rgb(0,0,255));
-            nk_fill_circle(canvas.painter, nk_rect(20,250,100,100), nk_rgb(255,0,0));
-            nk_fill_triangle(canvas.painter, 250, 250, 350, 250, 300, 350, nk_rgb(0,255,0));
-            nk_fill_arc(canvas.painter, 300, 180, 50, 0, 3.141592654f * 3.0f / 4.0f, nk_rgb(255,255,0));
+            nk_fill_rect(canvas.painter, nk_rect(15,15,140,140), 5, nk_rgb(247, 230, 154));
+            nk_fill_rect(canvas.painter, nk_rect(20,20,130,130), 5, nk_rgb(188, 174, 118));
+            nk_draw_text(canvas.painter, nk_rect(30, 30, 100, 20), "Text to draw", 12, &font, nk_rgb(188,174,118), nk_rgb(0,0,0));
+            nk_fill_rect(canvas.painter, nk_rect(160,20,70,70), 0, nk_rgb(0,0,255));
+            nk_fill_circle(canvas.painter, nk_rect(20,160,60,60), nk_rgb(255,0,0));
+            nk_fill_triangle(canvas.painter, 160, 160, 230, 160, 195, 220, nk_rgb(0,255,0));
+            nk_fill_arc(canvas.painter, 195, 120, 30, 0, 3.141592654f * 3.0f / 4.0f, nk_rgb(255,255,0));
 
-            {float points[12];
-            points[0] = 200; points[1] = 250;
-            points[2] = 250; points[3] = 350;
-            points[4] = 225; points[5] = 350;
-            points[6] = 200; points[7] = 300;
-            points[8] = 175; points[9] = 350;
-            points[10] = 150; points[11] = 350;
-            nk_fill_polygon(canvas.painter, points, 6, nk_rgb(0,0,0));}
+            // {float points[10];
+            // points[0] = 235; points[1] = 135;
+            // points[2] = 252; points[3] = 170;
+            // points[6] = 288; points[7] = 100;
+            // points[8] = 305; points[9] = 135;
+            // //points[10] = 150; points[11] = 350;
+            // nk_fill_polygon(canvas.painter, points, 3, nk_rgb(0,0,0));}
 
-            nk_stroke_line(canvas.painter, 15, 10, 200, 10, 2.0f, nk_rgb(189,45,75));
-            nk_stroke_rect(canvas.painter, nk_rect(370, 20, 100, 100), 10, 3, nk_rgb(0,0,255));
-            nk_stroke_curve(canvas.painter, 380, 200, 405, 270, 455, 120, 480, 200, 2, nk_rgb(0,150,220));
-            nk_stroke_circle(canvas.painter, nk_rect(130, 250, 100, 100), 5, nk_rgb(0,255,120));
-            nk_stroke_triangle(canvas.painter, 370, 250, 470, 250, 420, 350, 6, nk_rgb(255,0,143));
+            nk_stroke_line(canvas.painter, 15, 10, 100, 10, 2.0f, nk_rgb(189,45,75));
+            nk_stroke_rect(canvas.painter, nk_rect(235, 20, 70, 70), 10, 3, nk_rgb(0,0,255));
+            nk_stroke_curve(canvas.painter, 235, 130, 252, 170, 288, 80, 305, 130, 1, nk_rgb(0,150,220));
+            nk_stroke_triangle(canvas.painter, 235, 160, 305, 160, 270, 220, 10, nk_rgb(255,0,143));
+            nk_stroke_circle(canvas.painter, nk_rect(90, 160, 60, 60), 2, nk_rgb(0,255,120));
+            
 
             /* load some image */
             int im_w, im_h, im_format;
             images[0] = stbi_load("SPBGU_logo.png", &im_w, &im_h, &im_format, 0);
             if (images[0] == NULL)
                 printf("\nstbi_load doesn't work. :(\n");
-            else 
+            else {
                 printf("\nLoaded image: id = %i   width = %i\theight = %i\tformat = %i", (int)*images[0], im_w, im_h, im_format);
 
-            struct nk_image im;
-            im.handle.ptr = images[0];
-            im.handle.id = (uint32_t)*images[0];
-            im.w = im_w;
-            im.h = im_h;
-            im.region[0] = 0;
-            im.region[1] = 0;
-            im.region[2] = im_w;
-            im.region[3] = im_h;
-            
-            nk_draw_image(canvas.painter, nk_rect(490, 20, 300, 300), &im, nk_rgb(100, 0, 0));
+                struct nk_image im;
+                im.handle.ptr = images[0];
+                im.handle.id = (uint32_t)*images[0];
+                im.w = im_w;
+                im.h = im_h;
+                im.region[0] = 0;
+                im.region[1] = 0;
+                im.region[2] = im_w;
+                im.region[3] = im_h;
+                
+                nk_draw_image(canvas.painter, nk_rect(310, 100, 150, 150), &im, nk_rgb(100, 0, 0));
+            }
 
             stbi_image_free(images[0]);            
         }
@@ -179,6 +180,7 @@ int main(int argc, char *argv[]) {
 
          /* Draw each element */
          draw(&this_vc, &ctx, width, height);
+         printf("Cucumber\n");
     }
     nk_free(&ctx);
 
