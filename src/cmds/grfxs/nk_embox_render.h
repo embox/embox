@@ -13,11 +13,32 @@ extern const struct font_desc font_vga_8x8, font_vga_8x16;
 
 extern unsigned char **images;
 
+    // printf("bpp = %i\n",this_vc.fb->var.bits_per_pixel);
+    // printf("xres = %i\nyres = %i\n",this_vc.fb->var.xres, this_vc.fb->var.yres);
+
 int nk_color_converter(struct nk_color color){
-    int b = (color.b / 8)  & (0x1f);
-    int g = ((color.g / 8)<<6) & (0x7e0);
-    int r = ((color.r / 8)<<11) & 0xf800;
-    return r + g + b;
+    uint32_t b = color.b;
+    uint32_t g = (color.g)<<8;
+    uint32_t r = (color.r)<<16;
+    return  r | g | b;
+}
+
+int rgba_to_device_color(struct vc *vc, uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha){
+    switch (vc->fb->var.bits_per_pixel){
+        case 16: {
+            uint32_t b = (blue / 8)  & (0x1f);
+            uint32_t g = ((green / 8)<<6) & (0x7e0);
+            uint32_t r = ((red / 8)<<11) & 0xf800;
+            return r | g | b;
+        }
+        case 24: {
+            uint32_t b = blue;
+            uint32_t g = green<<8;
+            uint32_t r = red<<16;
+            return  r | g | b;
+        }
+        default: return -1;
+    }
 }
 
 void embox_fill_rect(struct vc *vc, int x, int y, int w, int h, int col){
@@ -192,8 +213,8 @@ void embox_stroke_triangle(struct vc *vc, float ax, float ay, float bx, float by
 void embox_stroke_rect(struct vc *vc, float x, float y, float w, float h, int col, float rounding, float thickness){
     int th = thickness / 2;
     struct fb_fillrect rect;
-    rect.width = th;
-    rect.height = th;
+    rect.width = thickness;
+    rect.height = thickness;
     rect.color = col;
     rect.rop = ROP_COPY;
 
@@ -306,7 +327,7 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
             int nAlpha = (int)images[img.handle.id][nOffset+3];
             
             
-            rect.color = nk_color_converter(nk_rgba(nRed, nGreen, nBlue, nAlpha));
+            rect.color = rgba_to_device_color(vc, nRed, nGreen, nBlue, nAlpha);
             
             if (nAlpha < 3)
                 continue;            
@@ -331,66 +352,79 @@ static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){
         switch (cmd->type) {
         case NK_COMMAND_NOP: break;
         case NK_COMMAND_LINE: {
-            const struct nk_command_line *l = (const struct nk_command_line*)cmd;
-            embox_stroke_line(vc, l->begin.x, l->begin.y,l->end.x, l->end.y, nk_color_converter(l->color), l->line_thickness);
+            const struct nk_command_line *c = (const struct nk_command_line*)cmd;
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);
+            embox_stroke_line(vc, c->begin.x, c->begin.y,c->end.x, c->end.y, color, c->line_thickness);
         } break;
         case NK_COMMAND_CURVE: {
-            const struct nk_command_curve *q = (const struct nk_command_curve*)cmd;
+            const struct nk_command_curve *c = (const struct nk_command_curve*)cmd;
             int x[4];
             int y[4];
 
-            x[0] = q->begin.x;
-            x[1] = q->ctrl[0].x;
-            x[2] = q->ctrl[1].x;
-            x[3] = q->end.x;
+            x[0] = c->begin.x;
+            x[1] = c->ctrl[0].x;
+            x[2] = c->ctrl[1].x;
+            x[3] = c->end.x;
 
-            y[0] = q->begin.y;
-            y[1] = q->ctrl[0].y;
-            y[2] = q->ctrl[1].y;
-            y[3] = q->end.y;
-    
-            embox_stroke_curve(vc, x, y, nk_color_converter(q->color), q->line_thickness);
+            y[0] = c->begin.y;
+            y[1] = c->ctrl[0].y;
+            y[2] = c->ctrl[1].y;
+            y[3] = c->end.y;
+
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);     
+            embox_stroke_curve(vc, x, y, color, c->line_thickness);
         } break;
         case NK_COMMAND_RECT: {
-            const struct nk_command_rect *r = (const struct nk_command_rect*)cmd;
-            embox_stroke_rect(vc, r->x, r->y, r->w, r->h, nk_color_converter(r->color), (float)r->rounding, r->line_thickness);
+            const struct nk_command_rect *c = (const struct nk_command_rect*)cmd;
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);
+            embox_stroke_rect(vc, c->x, c->y, c->w, c->h, color, (float)c->rounding, c->line_thickness);
         } break; 
         case NK_COMMAND_RECT_FILLED: {
-            const struct nk_command_rect_filled *r = (const struct nk_command_rect_filled*)cmd;
-            if (!((r->x + r->w >= width) && (r->y + r->h >= height)))	
-               embox_fill_rect(vc, r->x, r->y, r->w, r->h, nk_color_converter(r->color));
+            const struct nk_command_rect_filled *c = (const struct nk_command_rect_filled*)cmd;
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);
+            if (!((c->x + c->w >= width) && (c->y + c->h >= height)))	
+               embox_fill_rect(vc, c->x, c->y, c->w, c->h, color);
         }break;
         case NK_COMMAND_CIRCLE: {
             const struct nk_command_circle *c = (const struct nk_command_circle*)cmd;
-            embox_stroke_circle(vc,(float)c->x + (float)c->w/2, (float)c->y + (float)c->h/2, (float)c->w/2, nk_color_converter(c->color), c->line_thickness);
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);
+            embox_stroke_circle(vc,(float)c->x + (float)c->w/2, (float)c->y + (float)c->h/2, (float)c->w/2, color, c->line_thickness);
         } break;
         case NK_COMMAND_CIRCLE_FILLED: {
             const struct nk_command_circle_filled *c = (const struct nk_command_circle_filled *)cmd;
-            embox_fill_circle(vc, c->x + c->w/2, c->y + c->h/2, c->w/2, nk_color_converter(c->color));
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);
+            embox_fill_circle(vc, c->x + c->w/2, c->y + c->h/2, c->w/2, color);
         } break;
         case NK_COMMAND_ARC: {
             const struct nk_command_arc *c = (const struct nk_command_arc*)cmd;
-            embox_stroke_arc(vc, c->cx, c->cy, c->r, c->a[0], c->a[1], nk_color_converter(c->color), c->line_thickness);
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);            
+            embox_stroke_arc(vc, c->cx, c->cy, c->r, c->a[0], c->a[1], color, c->line_thickness);
         } break;
         case NK_COMMAND_ARC_FILLED: {
             const struct nk_command_arc_filled *c = (const struct nk_command_arc_filled*)cmd;
-            embox_fill_arc(vc, c->cx, c->cy, c->r, c->a[0], c->a[1], nk_color_converter(c->color));
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);           
+            embox_fill_arc(vc, c->cx, c->cy, c->r, c->a[0], c->a[1], color);
         } break;
         case NK_COMMAND_TRIANGLE: {
-            const struct nk_command_triangle *t = (const struct nk_command_triangle*)cmd;
-            embox_stroke_triangle(vc,t->a.x, t->a.y, t->b.x, t->b.y, t->c.x, t->c.y, nk_color_converter(t->color), t->line_thickness);
+            const struct nk_command_triangle *c = (const struct nk_command_triangle*)cmd;
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);           
+            embox_stroke_triangle(vc,c->a.x, c->a.y, c->b.x, c->b.y, c->c.x, c->c.y, color, c->line_thickness);
         } break;
         case NK_COMMAND_TRIANGLE_FILLED: {
-            const struct nk_command_triangle_filled *t = (const struct nk_command_triangle_filled*)cmd;
-            embox_fill_triangle(vc,t->a.x, t->a.y, t->b.x, t->b.y, t->c.x, t->c.y, nk_color_converter(t->color));
+            const struct nk_command_triangle_filled *c = (const struct nk_command_triangle_filled*)cmd;
+            int color = rgba_to_device_color(vc, c->color.r, c->color.g, c->color.b, c->color.a);           
+            embox_fill_triangle(vc, c->a.x, c->a.y, c->b.x, c->b.y, c->c.x, c->c.y, color);
         } break;
         case NK_COMMAND_TEXT: {
-            const struct nk_command_text *t = (const struct nk_command_text*)cmd;
-            embox_add_text(vc, t->x, t->y, nk_color_converter(t->foreground), nk_color_converter(t->background), t->string, t->length );
+            const struct nk_command_text *c = (const struct nk_command_text*)cmd;
+            int fg_color = rgba_to_device_color(vc, c->foreground.r, c->foreground.g, c->foreground.b, c->foreground.a); 
+            int bg_color = rgba_to_device_color(vc, c->background.r, c->background.g, c->background.b, c->background.a); 
+            embox_add_text(vc, c->x, c->y, fg_color, bg_color, c->string, c->length );
         } break;
         case NK_COMMAND_IMAGE: {
-            const struct nk_command_image *i = (const struct nk_command_image*)cmd;
-            embox_add_image(vc, i->img, i->x, i->y, i->w, i->h, nk_color_converter(i->col));
+            const struct nk_command_image *c = (const struct nk_command_image*)cmd;
+            int color = rgba_to_device_color(vc, c->col.r, c->col.g, c->col.b, c->col.a);
+            embox_add_image(vc, c->img, c->x, c->y, c->w, c->h, color);
         } break;
 
         /* unrealized primitives */
