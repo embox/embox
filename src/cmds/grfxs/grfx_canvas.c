@@ -119,8 +119,9 @@ int main(int argc, char *argv[]) {
     font.height = font_vga_8x16.height;
     font.width = your_text_width_calculation;
     nk_init_default(&ctx, &font);
-    width = 512;
-    height = 128;
+    
+    width = this_vc.fb->var.xres;
+    height = this_vc.fb->var.yres;
     
     /* Draw */
     while (1) 
