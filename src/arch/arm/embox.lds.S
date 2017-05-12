@@ -21,6 +21,7 @@ _ram_size = LENGTH(RAM);
 SECTIONS {
 	.text : {
 		*(.trap_table)
+		*(.monitor_trap_table)
 		STATIC_IRQ_TABLE
 
 		*(.flash)

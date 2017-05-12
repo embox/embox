@@ -34,3 +34,6 @@ module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
 }
 
+module armv7_monitor_mode {
+	source "monitor_exception_table.S"
+}
