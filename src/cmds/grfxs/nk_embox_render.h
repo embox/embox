@@ -72,11 +72,11 @@ void embox_stroke_line(struct vc *vc, float ax, float ay, float bx, float by,int
     float th = thickness / 2;
 
     if (ax == bx){
-        embox_fill_rect(vc, ax - th, ay, thickness, ABS(ay-by) + thickness, col);
+        embox_fill_rect(vc, ax - th, ay, thickness, ABS(ay-by), col);
         return;
     }
     if (ay == by){
-        embox_fill_rect(vc, ax, ay - th, ABS(ax-bx) + thickness, thickness, col);
+        embox_fill_rect(vc, ax, ay - th, ABS(ax-bx), thickness, col);
         return;
     }
     if (ax > bx){
@@ -316,10 +316,15 @@ void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, in
             uint32_t nOffset = (origX + img.region[0] + (origY + img.region[1]) * img.w) * 4;
 
             /* for skinning example */
-            int nRed = (int)images[img.handle.id][nOffset+0];
-            int nGreen = (int)images[img.handle.id][nOffset+1];
-            int nBlue = (int)images[img.handle.id][nOffset+2];
-            int nAlpha = (int)images[img.handle.id][nOffset+3];
+            // int nRed = (int)images[img.handle.id][nOffset+0];
+            // int nGreen = (int)images[img.handle.id][nOffset+1];
+            // int nBlue = (int)images[img.handle.id][nOffset+2];
+            // int nAlpha = (int)images[img.handle.id][nOffset+3];
+            
+            int nRed = (int)images[0][nOffset+0];
+            int nGreen = (int)images[0][nOffset+1];
+            int nBlue = (int)images[0][nOffset+2];
+            int nAlpha = (int)images[0][nOffset+3];
             
             
             rect.color = rgba_to_device_color(vc, nRed, nGreen, nBlue, nAlpha);
