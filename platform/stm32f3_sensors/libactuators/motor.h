@@ -21,9 +21,9 @@
 #define MOTOR_INPUT4   GPIO_PIN_6
 
 struct motor {
-	GPIO_TypeDef  *GPIOx;
-	uint16_t enable;
-	uint16_t input[2];
+	GPIO_TypeDef *GPIOx;
+	uint16_t	  enable;
+	uint16_t	  input[2];
 };
 
 enum motor_run_direction {

@@ -118,13 +118,13 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 
 		goto out_unlock;
 
-		out_tablefree:
+out_tablefree:
 		task_table_del(tid);
 
-		out_threadfree:
+out_threadfree:
 		thread_terminate(thd);
 	}
-	out_unlock:
+out_unlock:
 	sched_unlock();
 
 	return res;
@@ -154,10 +154,10 @@ int task_start(struct task *task, void * (*run)(void *), void *arg) {
 		res = 0;
 
 		goto out_unlock;
-		out_threadfree:
+out_threadfree:
 		thread_terminate(thd);
 	}
-	out_unlock:
+out_unlock:
 	sched_unlock();
 
 	return res;
@@ -212,13 +212,13 @@ int task_prepare(const char *name) {
 
 		goto out_unlock;
 
-		out_tablefree:
+out_tablefree:
 		task_table_del(tid);
 
-		out_threadfree:
+out_threadfree:
 		thread_terminate(thd);
 	}
-	out_unlock:
+out_unlock:
 	sched_unlock();
 
 	return res;

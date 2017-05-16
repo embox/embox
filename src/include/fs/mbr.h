@@ -34,10 +34,10 @@ struct pt_info {
  *	Master Boot Record structure
  */
 struct mbr {
-	uint8_t bootcode[0x1be];    /* boot sector */
+	uint8_t		   bootcode[0x1be]; /* boot sector */
 	struct pt_info ptable[4];       /* four partition table structures */
-	uint8_t sig_55;             /* 0x55 signature byte */
-	uint8_t sig_aa;             /* 0xaa signature byte */
+	uint8_t		   sig_55;      /* 0x55 signature byte */
+	uint8_t		   sig_aa;      /* 0xaa signature byte */
 };
 
 #endif /* MBR_H_ */

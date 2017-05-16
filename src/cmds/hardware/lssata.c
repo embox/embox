@@ -19,7 +19,7 @@ struct lssata_cb {
 
 struct hba_port_reg {
 	uint8_t offset;
-	char name[100];
+	char	name[100];
 };
 
 static struct hba_port_reg generic_hba_regs[] = {

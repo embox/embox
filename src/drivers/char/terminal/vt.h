@@ -38,11 +38,11 @@ typedef enum vt_action vt_action_t;
 
 struct vt_token {
 	vt_action_t action;
-	char ch;
-	char attrs[VT_TOKEN_ATTRS_MAX];
-	int attrs_len;
-	short      *params;
-	int params_len;
+	char		ch;
+	char		attrs[VT_TOKEN_ATTRS_MAX];
+	int			attrs_len;
+	short *		params;
+	int			params_len;
 };
 
 #endif /* VT_H_ */

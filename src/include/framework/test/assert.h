@@ -47,7 +47,7 @@ failed: test_fail(<reason>)
  */
 #define test_fail(reason) \
 	__test_assertion_handle(0, \
-		__test_assertion_point_ref("test_fail(\"" reason "\")"))
+			__test_assertion_point_ref("test_fail(\"" reason "\")"))
 /**
 @verbatim
 failed: test_assert(<#condition>)
@@ -56,7 +56,7 @@ failed: test_assert(<#condition>)
  */
 #define test_assert(condition) \
 	__test_assertion_handle((int) (condition), \
-		__test_assertion_point_ref("test_assert(" #condition ")"))
+			__test_assertion_point_ref("test_assert(" #condition ")"))
 
 /**
 @verbatim
@@ -66,7 +66,7 @@ failed: test_assert_true(<#value>)
  */
 #define test_assert_true(value) \
 	__test_assertion_handle((value), \
-		__test_assertion_point_ref("test_assert_true(" #value ")"))
+			__test_assertion_point_ref("test_assert_true(" #value ")"))
 
 /**
 @verbatim
@@ -76,7 +76,7 @@ failed: test_assert_false(<#value>)
  */
 #define test_assert_false(value) \
 	__test_assertion_handle(!(value), \
-		__test_assertion_point_ref("test_assert_false(" #value ")"))
+			__test_assertion_point_ref("test_assert_false(" #value ")"))
 
 /**
 @verbatim
@@ -86,7 +86,7 @@ failed: test_assert_zero(<#value>): <value>
  */
 #define test_assert_zero(value) \
 	__test_assertion_handle(!(value), \
-		__test_assertion_point_ref("test_assert_zero(" #value ")"))
+			__test_assertion_point_ref("test_assert_zero(" #value ")"))
 
 /**
 @verbatim
@@ -96,7 +96,7 @@ failed: test_assert_not_zero(<#value>)
  */
 #define test_assert_not_zero(value) \
 	__test_assertion_handle((value), \
-		__test_assertion_point_ref("test_assert_not_zero(" #value ")"))
+			__test_assertion_point_ref("test_assert_not_zero(" #value ")"))
 
 /**
 @verbatim
@@ -106,7 +106,7 @@ failed: test_assert_null(<#value>): <value>
  */
 #define test_assert_null(value) \
 	__test_assertion_handle(!(value), \
-		__test_assertion_point_ref("test_assert_null(" #value ")"))
+			__test_assertion_point_ref("test_assert_null(" #value ")"))
 
 /**
 @verbatim
@@ -116,7 +116,7 @@ failed: test_assert_not_null(<#value>)
  */
 #define test_assert_not_null(value) \
 	__test_assertion_handle((int) (value), \
-		__test_assertion_point_ref("test_assert_not_null(" #value ")"))
+			__test_assertion_point_ref("test_assert_not_null(" #value ")"))
 
 /**
 @verbatim
@@ -126,8 +126,8 @@ failed: test_assert_equal(<#actual>, <#expected>): <actual>, expected <expected>
  */
 #define test_assert_equal(actual, expected) \
 	__test_assertion_handle((actual) == (expected), \
-		__test_assertion_point_ref( "test_assert_equal(" #actual ", " \
-		#expected ")"))
+			__test_assertion_point_ref( "test_assert_equal(" #actual ", " \
+			#expected ")"))
 
 /**
 @verbatim
@@ -137,46 +137,46 @@ failed: test_assert_not_equal(<#actual>, <#expected>): <actual>
  */
 #define test_assert_not_equal(actual, expected) \
 	__test_assertion_handle((actual) != (expected), \
-		__test_assertion_point_ref( "test_assert_not_equal(" #actual ", " \
-		#expected ")"))
+			__test_assertion_point_ref( "test_assert_not_equal(" #actual ", " \
+			#expected ")"))
 
 #define test_assert_str_equal(actual, expected) \
 	__test_assertion_handle(((actual) == (expected)) \
-		|| (0 == strcmp((actual), (expected))), \
-		__test_assertion_point_ref( "test_assert_str_equal(" \
-		#actual ", " #expected ")"))
+			|| (0 == strcmp((actual), (expected))), \
+			__test_assertion_point_ref( "test_assert_str_equal(" \
+			#actual ", " #expected ")"))
 
 #define test_assert_str_not_equal(actual, expected) \
 	__test_assertion_handle(((actual) != (expected)) \
-		&& (0 != strcmp((actual), (expected))), \
-		__test_assertion_point_ref( "test_assert_str_not_equal(" \
-		#actual ", " #expected ")"))
+			&& (0 != strcmp((actual), (expected))), \
+			__test_assertion_point_ref( "test_assert_str_not_equal(" \
+			#actual ", " #expected ")"))
 
 #define test_assert_strn_equal(actual, expected, n) \
 	__test_assertion_handle(((actual) == (expected)) \
-		|| (0 == strncmp((actual), (expected), (n))), \
-		__test_assertion_point_ref( "test_assert_strn_equal(" \
-		#actual ", " #expected ", " #n ")"))
+			|| (0 == strncmp((actual), (expected), (n))), \
+			__test_assertion_point_ref( "test_assert_strn_equal(" \
+			#actual ", " #expected ", " #n ")"))
 
 #define test_assert_strn_not_equal(actual, expected, n) \
 	__test_assertion_handle(((actual) != (expected)) \
-		&& (0 != strncmp((actual), (expected), (n))), \
-		__test_assertion_point_ref( "test_assert_strn_not_equal(" \
-		#actual ", " #expected ", " #n ")"))
+			&& (0 != strncmp((actual), (expected), (n))), \
+			__test_assertion_point_ref( "test_assert_strn_not_equal(" \
+			#actual ", " #expected ", " #n ")"))
 
 #define test_assert_mem_equal(actual, expected, n) \
 	__test_assertion_handle(0 == memcmp((actual), (expected), (n)), \
-		__test_assertion_point_ref( "test_assert_mem_equal(" \
-		#actual ", " #expected ", " #n ")"))
+			__test_assertion_point_ref( "test_assert_mem_equal(" \
+			#actual ", " #expected ", " #n ")"))
 
 #define test_assert_mem_not_equal(actual, expected, n) \
 	__test_assertion_handle(0 != memcmp((actual), (expected), (n)), \
-		__test_assertion_point_ref( "test_assert_mem_not_equal(" \
-		#actual ", " #expected ", " #n ")"))
+			__test_assertion_point_ref( "test_assert_mem_not_equal(" \
+			#actual ", " #expected ", " #n ")"))
 
 #define test_assert_emitted(expected) \
 	__test_assertion_handle(0 == strcmp(test_get_emitted(), (expected)), \
-		__test_assertion_point_ref( "test_assert_emitted(" #expected ")"))
+			__test_assertion_point_ref( "test_assert_emitted(" #expected ")"))
 
 /* Hide internals from CDT macro expansion. */
 #ifdef __CDT_PARSER__

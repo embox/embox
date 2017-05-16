@@ -14,7 +14,7 @@
 EMBOX_TEST_SUITE("regex");
 
 TEST_CASE(" The structure type regex_t contains at least the following member:"
-		  "size_t    re_nsub") {
+		"size_t    re_nsub") {
 	regex_t regex;
 
 	regex.re_nsub = 0;

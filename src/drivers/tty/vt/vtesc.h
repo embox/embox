@@ -25,7 +25,7 @@ enum vtesc_token_type {
 
 struct vtesc_token {
 	enum vtesc_token_type type;
-	char ch;
+	char				  ch;
 
 	union {
 		struct {
@@ -42,7 +42,7 @@ struct vtesc_token {
 
 struct vtesc_executor {
 	struct vtesc_token token;
-	struct vtparse parser;
+	struct vtparse	   parser;
 };
 
 extern struct vtesc_token *vtesc_consume(struct vtesc_executor *executor, char ch);

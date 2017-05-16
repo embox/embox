@@ -21,10 +21,10 @@ struct stack_frame;
  * SPARC register window.
  */
 struct reg_window {
-	uint32_t locals[8];
-	uint32_t ins[6];
+	uint32_t			locals[8];
+	uint32_t			ins[6];
 	struct stack_frame *fp;
-	void *ret_pc;
+	void *				ret_pc;
 } __attribute__ ((aligned(8)));
 
 extern void winflush(void);

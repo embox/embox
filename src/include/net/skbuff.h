@@ -39,7 +39,7 @@ typedef struct sk_buff {        /* Socket buffer */
 	struct sk_buff_head lnk;    /* Pointers to next and previous packages */
 
 	struct net_device *dev;     /* Device we arrived on/are leaving by */
-	struct pool *pl;    /* Local net driver pool pointer. Zero if default.
+	struct pool *	   pl; /* Local net driver pool pointer. Zero if default.
 	               Probably, should be joined with *dev field */
 
 	/* Control buffer (used to store layer-specific info e.g. ip options)
@@ -53,16 +53,16 @@ typedef struct sk_buff {        /* Socket buffer */
 
 	/* Transport layer header */
 	union {
-		struct tcphdr *th;
-		struct udphdr *uh;
-		struct icmphdr *icmph;
+		struct tcphdr *	 th;
+		struct udphdr *	 uh;
+		struct icmphdr * icmph;
 		struct icmp6hdr *icmp6h;
-		unsigned char *raw;
+		unsigned char *	 raw;
 	} h;
 
 	/* Network layer header */
 	union {
-		struct iphdr *iph;
+		struct iphdr * iph;
 		struct ip6hdr *ip6h;
 		struct arphdr *arph;
 		unsigned char *raw;

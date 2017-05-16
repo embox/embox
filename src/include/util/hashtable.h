@@ -112,13 +112,13 @@ extern void *hashtable_get_key_next(struct hashtable *ht, void *prev_key);
 struct hashtable_item {
 	struct dlist_head lnk;
 	struct dlist_head general_lnk;
-	void *key;
-	void *value;
+	void *			  key;
+	void *			  value;
 };
 
 struct hashtable_entry {
 	struct dlist_head list;
-	unsigned int cnt;
+	unsigned int	  cnt;
 };
 
 /**
@@ -129,10 +129,10 @@ struct hashtable_entry {
  */
 struct hashtable {
 	struct hashtable_entry *table; /**< array of the tables entry */
-	ht_hash_ft get_hash_key; /**< handler of the calculation index function */
-	ht_cmp_ft cmp; /** < handler of the compare elements function */
-	unsigned int table_size; /** size of the array of the table entry */
-	struct dlist_head all;
+	ht_hash_ft				get_hash_key; /**< handler of the calculation index function */
+	ht_cmp_ft				cmp; /** < handler of the compare elements function */
+	unsigned int			table_size; /** size of the array of the table entry */
+	struct dlist_head		all;
 };
 
 #define HASHTABLE_BUFFER_SIZE(size) \

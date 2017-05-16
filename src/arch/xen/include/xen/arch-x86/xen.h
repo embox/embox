@@ -140,9 +140,9 @@ typedef unsigned long xen_ulong_t;
 #define TI_SET_DPL(_ti,_dpl) ((_ti)->flags |= (_dpl))
 #define TI_SET_IF(_ti,_if)   ((_ti)->flags |= ((!!(_if))<<2))
 struct trap_info {
-	uint8_t vector;        /* exception vector                              */
-	uint8_t flags;         /* 0-3: privilege level; 4: clear event enable?  */
-	uint16_t cs;           /* code selector                                 */
+	uint8_t		  vector;  /* exception vector                              */
+	uint8_t		  flags;   /* 0-3: privilege level; 4: clear event enable?  */
+	uint16_t	  cs;      /* code selector                                 */
 	unsigned long address; /* code offset                                   */
 };
 typedef struct trap_info trap_info_t;
@@ -180,12 +180,12 @@ struct vcpu_guest_context {
 #define VGCF_syscall_disables_events   (1<<_VGCF_syscall_disables_events)
 #define _VGCF_online                   5
 #define VGCF_online                    (1<<_VGCF_online)
-	unsigned long flags;                    /* VGCF_* flags                 */
+	unsigned long		 flags;             /* VGCF_* flags                 */
 	struct cpu_user_regs user_regs;         /* User-level CPU registers     */
-	struct trap_info trap_ctxt[256];        /* Virtual IDT                  */
-	unsigned long ldt_base, ldt_ents;       /* LDT (linear address, # ents) */
-	unsigned long gdt_frames[16], gdt_ents; /* GDT (machine frames, # ents) */
-	unsigned long kernel_ss, kernel_sp;     /* Virtual TSS (only SS1/SP1)   */
+	struct trap_info	 trap_ctxt[256];    /* Virtual IDT                  */
+	unsigned long		 ldt_base, ldt_ents; /* LDT (linear address, # ents) */
+	unsigned long		 gdt_frames[16], gdt_ents; /* GDT (machine frames, # ents) */
+	unsigned long		 kernel_ss, kernel_sp; /* Virtual TSS (only SS1/SP1)   */
 	/* NB. User pagetable on x86/64 is placed in ctrlreg[1]. */
 	unsigned long ctrlreg[8];               /* CR0-CR7 (control registers)  */
 	unsigned long debugreg[8];              /* DB0-DB7 (debug registers)    */
@@ -223,9 +223,9 @@ DEFINE_XEN_GUEST_HANDLE(vcpu_guest_context_t);
 struct arch_shared_info {
 	unsigned long max_pfn;                  /* max pfn that appears in table */
 	/* Frame containing list of mfns containing list of mfns containing p2m. */
-	xen_pfn_t pfn_to_mfn_frame_list_list;
+	xen_pfn_t	  pfn_to_mfn_frame_list_list;
 	unsigned long nmi_reason;
-	uint64_t pad[32];
+	uint64_t	  pad[32];
 };
 typedef struct arch_shared_info arch_shared_info_t;
 

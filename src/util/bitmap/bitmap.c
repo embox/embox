@@ -36,7 +36,7 @@ unsigned int bitmap_find_bit(const unsigned long *bitmap,
 		return result + nbits;
 	}
 
-	found:
+found:
 	return result + bit_ctz(tmp);
 }
 
@@ -65,6 +65,6 @@ unsigned int bitmap_find_zero_bit(const unsigned long *bitmap,
 	if (!~tmp) {
 		return nbits;
 	}
-	found:
+found:
 	return LONG_BIT * (p - bitmap) + bit_ctz(~tmp);
 }

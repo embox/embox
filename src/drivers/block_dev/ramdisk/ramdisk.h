@@ -15,9 +15,9 @@ struct node;
 
 typedef struct ramdisk {
 	struct block_dev *bdev;
-	char             *p_start_addr;
-	size_t blocks;
-	int idx;
+	char *			  p_start_addr;
+	size_t			  blocks;
+	int				  idx;
 } ramdisk_t;
 
 extern struct ramdisk *ramdisk_create(char *path, size_t size);

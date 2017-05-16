@@ -13,7 +13,7 @@
 #define TABLE_SIZE OPTION_GET(NUMBER,table_size)
 
 struct atexit_func_entry {
-	void (*destructor_func)(void *);
+	void  (*destructor_func)(void *);
 	void *obj_ptr;
 	void *dso_handle;
 };

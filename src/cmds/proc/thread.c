@@ -60,8 +60,8 @@ static void print_stat(void) {
 	total = running + sleeping;
 
 	printf("Total %d threads: \n"
-		   "\t%d running\n"
-		   "\t%d sleeping\n", total, running, sleeping);
+			"\t%d running\n"
+			"\t%d sleeping\n", total, running, sleeping);
 }
 
 static struct thread *thread_lookup(thread_id_t id) {
@@ -79,7 +79,7 @@ static struct thread *thread_lookup(thread_id_t id) {
 		}
 		t = NULL;
 	}
-	out:
+out:
 	sched_unlock();
 
 	return t;

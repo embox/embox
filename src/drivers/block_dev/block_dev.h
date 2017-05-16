@@ -25,21 +25,21 @@
 struct file_operations;
 typedef struct block_dev {
 	struct file_operations *dev_ops;
-	dev_t id;
-	char name[NAME_MAX];
-	void *dev_vfs_info;
+	dev_t					id;
+	char					name[NAME_MAX];
+	void *					dev_vfs_info;
 
 	struct block_dev_driver *driver;
-	void *privdata;
+	void *					 privdata;
 
-	size_t size;
-	size_t block_size;
+	size_t					size;
+	size_t					block_size;
 	struct block_dev_cache *cache;
 
 	struct dev_module *dev_module;
 
 	/* partitions */
-	size_t start_offset;
+	size_t			  start_offset;
 	struct block_dev *parrent_bdev;
 } block_dev_t;
 
@@ -54,19 +54,19 @@ typedef struct block_dev_driver {
 } block_dev_driver_t;
 
 typedef struct block_dev_module {
-	const char *name;
+	const char *		name;
 	block_dev_driver_t *dev_drv;
 } block_dev_module_t;
 
 typedef struct block_dev_cache {
 	blkno_t blkno;
 	blkno_t lastblkno;
-	char *data;
-	int blksize;
-	int blkfactor;
-	int depth;
-	char *pool;
-	int buff_cntr;
+	char *	data;
+	int		blksize;
+	int		blkfactor;
+	int		depth;
+	char *	pool;
+	int		buff_cntr;
 } block_dev_cache_t;
 
 struct indexator;

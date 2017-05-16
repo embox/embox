@@ -13,7 +13,7 @@
          mod_def is taking space */
 #define __MOD_DEF(mod_nm) \
 	ARRAY_SPREAD_DEF_TERMINATED(const struct mod_member *, \
-		__MOD_MEMBERS(mod_nm), NULL);     /* FIXME Potentially isn't necessary */ \
+			__MOD_MEMBERS(mod_nm), NULL); /* FIXME Potentially isn't necessary */ \
 	extern const struct mod_app __MOD_APP(mod_nm) \
 	__attribute__ ((weak)); \
 	extern const struct mod_build_info __MOD_BUILDINFO(mod_nm) \
@@ -22,7 +22,7 @@
 	extern const struct mod __MOD(mod_nm) __attribute__((weak)); \
     \
 	ARRAY_SPREAD_DECLARE(const struct mod *const,      \
-		__mod_registry);                      \
+			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) /* TODO don't like it. -- Eldar */
 #else
 #define __MOD_DEF(mod_nm)

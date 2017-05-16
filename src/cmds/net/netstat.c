@@ -150,9 +150,9 @@ int main(int argc, char **argv) {
 
 	do {
 		print_info(
-				"Active Internet connections\n"
-				"Proto   Local Address   Foreign Address   State\n",
-				tcp_sock_ops, &print_inet_sock_info);
+			"Active Internet connections\n"
+			"Proto   Local Address   Foreign Address   State\n",
+			tcp_sock_ops, &print_inet_sock_info);
 		print_info(NULL, udp_sock_ops, &print_inet_sock_info);
 		if (netstat_flags & NETSTAT_CONT) {
 			sleep(1);

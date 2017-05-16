@@ -54,17 +54,17 @@
 /* helpers for access to MIPS co-processor 0 registers */
 #define __read_32bit_c0_register(source, sel)               \
 	({ int __res;                               \
-	   if (sel == 0) {                           \
-		   __asm__ __volatile__ (                   \
-			   "mfc0\t%0, " #source "\n\t  ehb"            \
-			   : "=r" (__res));}                \
-	   else {                                \
-		   __asm__ __volatile__ (                   \
-			   ".set\tmips32\n\t"              \
-			   "mfc0\t%0, " #source ", " #sel "\n\t"       \
-											  ".set\tmips0\n\t"               \
-			   : "=r" (__res));}                \
-	   __res;                              \
+		if (sel == 0) {                           \
+			__asm__ __volatile__ (                   \
+				"mfc0\t%0, " #source "\n\t  ehb"            \
+				: "=r" (__res));}                \
+		else {                                \
+			__asm__ __volatile__ (                   \
+				".set\tmips32\n\t"              \
+				"mfc0\t%0, " #source ", " #sel "\n\t"       \
+				".set\tmips0\n\t"               \
+				: "=r" (__res));}                \
+		__res;                              \
 	})
 
 #define __write_32bit_c0_register(register, sel, value)         \
@@ -77,7 +77,7 @@
 			__asm__ __volatile__ (                   \
 				".set\tmips32\n\t"              \
 				"mtc0\t%z0, " #register ", " #sel "\n\t"    \
-												  ".set\tmips0"                   \
+				".set\tmips0"                   \
 				: : "Jr" ((unsigned int)(value)));}      \
 	} while (0)
 

@@ -535,7 +535,7 @@ int ext4_open(struct nas *nas) {
 
 	return 0;
 
-	out: ext4_close(nas);
+out: ext4_close(nas);
 	return rc;
 }
 
@@ -803,7 +803,7 @@ static int ext4fs_mount(void *dev, void *dir) {
 		goto error;
 	}
 	if (NULL == (fsi->e4fs_gd = ext4_buff_alloc(dir_nas,
-					sizeof(struct ext4_group_desc) * fsi->s_ncg))) {
+			sizeof(struct ext4_group_desc) * fsi->s_ncg))) {
 		rc = ENOMEM;
 		goto error;
 	}
@@ -816,7 +816,7 @@ static int ext4fs_mount(void *dev, void *dir) {
 	}
 	return 0;
 
-	error:
+error:
 	ext4_free_fs(dir_nas);
 
 	return -rc;
@@ -1204,7 +1204,7 @@ static int ext4_read_sblock(struct nas *nas) {
 
 	fsi->s_desc_per_block = fsi->s_block_size / sizeof(struct ext4_group_desc);
 
-	out:
+out:
 	ext4_buff_free(nas, sbbuf);
 	return ret;
 }
@@ -1281,7 +1281,7 @@ static int ext4_read_gdblock(struct nas *nas) {
 				(fsi->s_ncg - gdpb * i) * sizeof(struct ext4_group_desc)
 				: fsi->s_block_size);
 	}
-	out:
+out:
 	ext4_buff_free(nas, gdbuf);
 	return ret;
 }
@@ -1380,7 +1380,7 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 		dir_fi->f_pointer += buf_size;
 	}
 
-	out: ext4_close(dir_nas);
+out: ext4_close(dir_nas);
 	ext4_buff_free(dir_nas, name_buff);
 	return rc;
 }
@@ -1750,7 +1750,7 @@ static int ext4_alloc_inode(struct nas *nas,
 
 	return 0;
 
-	out: vfs_del_leaf(nas->node);
+out: vfs_del_leaf(nas->node);
 	if (NULL != fi) {
 		if (NULL != fi->f_buf) {
 			ext4_buff_free(nas, fi->f_buf);
@@ -2047,7 +2047,7 @@ static int ext4_new_node(struct nas *nas,
 
 	/* New inode acquired.  Try to make directory entry. */
 	if (0 != (rc = ext4_dir_operation(parents_nas, (char *) nas->node->name,
-					&fi->f_num, ENTER, nas->node->mode))) {
+			&fi->f_num, ENTER, nas->node->mode))) {
 		return rc;
 	}
 	/* The caller has to return the directory ext4_file_info (*dir_fi).  */
@@ -2062,7 +2062,7 @@ static int ext4_unlink_file(struct nas *dir_nas, struct nas *nas) {
 		return rc;
 	}
 	return ext4_dir_operation(dir_nas,
-			(char *) nas->node->name, NULL, DELETE, 0);
+				   (char *) nas->node->name, NULL, DELETE, 0);
 }
 
 static int ext4_remove_dir(struct nas *dir_nas, struct nas *nas) {

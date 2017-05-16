@@ -29,7 +29,7 @@
 #define HVMOP_set_param           0
 #define HVMOP_get_param           1
 struct xen_hvm_param {
-	domid_t domid;     /* IN */
+	domid_t	 domid;    /* IN */
 	uint32_t index;    /* IN */
 	uint64_t value;    /* IN/OUT */
 };
@@ -136,7 +136,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_set_mem_type_t);
 #define HVMOP_pagetable_dying        9
 struct xen_hvm_pagetable_dying {
 	/* Domain with a pagetable about to be destroyed. */
-	domid_t domid;
+	domid_t	 domid;
 	uint16_t pad[3]; /* align next field on 8-byte boundary */
 	/* guest physical address of the toplevel pagetable dying */
 	uint64_t gpa;
@@ -155,7 +155,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_get_time_t);
 #define HVMOP_xentrace              11
 struct xen_hvm_xentrace {
 	uint16_t event, extra_bytes;
-	uint8_t extra[TRACE_EXTRA_MAX * sizeof(uint32_t)];
+	uint8_t	 extra[TRACE_EXTRA_MAX * sizeof(uint32_t)];
 };
 typedef struct xen_hvm_xentrace xen_hvm_xentrace_t;
 DEFINE_XEN_GUEST_HANDLE(xen_hvm_xentrace_t);
@@ -264,8 +264,8 @@ typedef uint16_t ioservid_t;
  */
 #define HVMOP_create_ioreq_server 17
 struct xen_hvm_create_ioreq_server {
-	domid_t domid;           /* IN - domain to be serviced */
-	uint8_t handle_bufioreq; /* IN - should server handle buffered ioreqs */
+	domid_t	   domid;        /* IN - domain to be serviced */
+	uint8_t	   handle_bufioreq; /* IN - should server handle buffered ioreqs */
 	ioservid_t id;           /* OUT - server id */
 };
 typedef struct xen_hvm_create_ioreq_server xen_hvm_create_ioreq_server_t;
@@ -288,9 +288,9 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_create_ioreq_server_t);
  */
 #define HVMOP_get_ioreq_server_info 18
 struct xen_hvm_get_ioreq_server_info {
-	domid_t domid;                 /* IN - domain to be serviced */
-	ioservid_t id;                 /* IN - server id */
-	evtchn_port_t bufioreq_port;   /* OUT - buffered ioreq port */
+	domid_t			 domid;        /* IN - domain to be serviced */
+	ioservid_t		 id;           /* IN - server id */
+	evtchn_port_t	 bufioreq_port; /* OUT - buffered ioreq port */
 	uint64_aligned_t ioreq_pfn;    /* OUT - sync ioreq pfn */
 	uint64_aligned_t bufioreq_pfn; /* OUT - buffered ioreq pfn */
 };
@@ -317,9 +317,9 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_get_ioreq_server_info_t);
 #define HVMOP_map_io_range_to_ioreq_server 19
 #define HVMOP_unmap_io_range_from_ioreq_server 20
 struct xen_hvm_io_range {
-	domid_t domid;               /* IN - domain to be serviced */
+	domid_t	   domid;            /* IN - domain to be serviced */
 	ioservid_t id;               /* IN - server id */
-	uint32_t type;               /* IN - type of range */
+	uint32_t   type;             /* IN - type of range */
 # define HVMOP_IO_RANGE_PORT   0 /* I/O port range */
 # define HVMOP_IO_RANGE_MEMORY 1 /* MMIO range */
 # define HVMOP_IO_RANGE_PCI    2 /* PCI segment/bus/dev/func range */
@@ -342,7 +342,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_io_range_t);
  */
 #define HVMOP_destroy_ioreq_server 21
 struct xen_hvm_destroy_ioreq_server {
-	domid_t domid; /* IN - domain to be serviced */
+	domid_t	   domid; /* IN - domain to be serviced */
 	ioservid_t id; /* IN - server id */
 };
 typedef struct xen_hvm_destroy_ioreq_server xen_hvm_destroy_ioreq_server_t;
@@ -360,9 +360,9 @@ DEFINE_XEN_GUEST_HANDLE(xen_hvm_destroy_ioreq_server_t);
  */
 #define HVMOP_set_ioreq_server_state 22
 struct xen_hvm_set_ioreq_server_state {
-	domid_t domid;   /* IN - domain to be serviced */
+	domid_t	   domid; /* IN - domain to be serviced */
 	ioservid_t id;   /* IN - server id */
-	uint8_t enabled; /* IN - enabled? */
+	uint8_t	   enabled; /* IN - enabled? */
 };
 typedef struct xen_hvm_set_ioreq_server_state xen_hvm_set_ioreq_server_state_t;
 DEFINE_XEN_GUEST_HANDLE(xen_hvm_set_ioreq_server_state_t);

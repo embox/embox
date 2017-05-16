@@ -35,15 +35,15 @@ enum clock_source_property {
  * @param link - link in time sources list
  */
 struct clock_source {
-	const char *name;
-	struct time_event_device *event_device;
+	const char *				name;
+	struct time_event_device *	event_device;
 	struct time_counter_device *counter_device;
-	volatile clock_t jiffies; /**< count of jiffies since clock source started */
-	clock_t jiffies_cnt; /**< interjiffes count */
-	uint32_t flags; /**< periodical or not */
-	struct timespec (*read)(struct clock_source *cs);
-	uint32_t counter_mult;
-	uint32_t counter_shift;
+	volatile clock_t			jiffies; /**< count of jiffies since clock source started */
+	clock_t						jiffies_cnt; /**< interjiffes count */
+	uint32_t					flags; /**< periodical or not */
+	struct timespec				(*read)(struct clock_source *cs);
+	uint32_t					counter_mult;
+	uint32_t					counter_shift;
 };
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
@@ -76,18 +76,18 @@ static inline uint32_t clock_sourcehz2mult(uint32_t hz, uint32_t shift) {
 }
 
 struct clock_source_head {
-	struct dlist_head lnk;
+	struct dlist_head	 lnk;
 	struct clock_source *clock_source;
 };
 
 #define TIME_EVENT_DEVICE(ted) \
 	ARRAY_SPREAD_DECLARE(const struct time_event_device *const, \
-		__event_devices) \
+			__event_devices) \
 	ARRAY_SPREAD_ADD(__event_devices, ted);
 
 #define TIME_COUNTER_DEVICE(tcd) \
 	ARRAY_SPREAD_DECLARE(const struct time_counter_device *const, \
-		__counter_devices); \
+			__counter_devices); \
 	ARRAY_SPREAD_ADD(__counter_devices, tcd);
 
 #endif /* KERNEL_CLOCK_SOURCE_H_ */

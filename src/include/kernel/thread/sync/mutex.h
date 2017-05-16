@@ -23,8 +23,8 @@
 			{ /* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
 			/* spinlock_t lock*/                       \
 			{ /*l*/ __SPIN_UNLOCKED,                    \
-				    /* owner */ (unsigned int)-1,       \
-				    /*contention_count */ SPIN_CONTENTION_LIMIT \
+				/* owner */ (unsigned int)-1,       \
+				/*contention_count */ SPIN_CONTENTION_LIMIT \
 			}                                          \
 		},                                             \
 		/* holder*/ NULL,                              \
@@ -40,8 +40,8 @@
 			{ /* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
 			/* spinlock_t lock*/                       \
 			{ /*l*/ __SPIN_UNLOCKED,                    \
-				    /* owner */ -1,                        \
-				    /*contention_count */ SPIN_CONTENTION_LIMIT \
+				/* owner */ -1,                        \
+				/*contention_count */ SPIN_CONTENTION_LIMIT \
 			}                                          \
 		},                                             \
 		/* holder*/ NULL, \

@@ -197,14 +197,14 @@ struct hdparam {
 	unsigned short unfbytes;             /* Unformatted bytes/sector */
 	unsigned short sectors;              /* Sectors per track */
 	unsigned short vendorunique[3];
-	char serial[20];                     /* Serial number */
+	char		   serial[20];           /* Serial number */
 	unsigned short buffertype;           /* Buffer type */
 	unsigned short buffersize;           /* Buffer size, in 512-byte units */
 	unsigned short necc;                 /* ECC bytes appended */
-	char rev[8];                         /* Firmware revision */
-	char model[40];                      /* Model name */
-	unsigned char nsecperint;            /* Sectors per interrupt */
-	unsigned char resv0;                 /* Reserved */
+	char		   rev[8];               /* Firmware revision */
+	char		   model[40];            /* Model name */
+	unsigned char  nsecperint;           /* Sectors per interrupt */
+	unsigned char  resv0;                /* Reserved */
 	unsigned short usedmovsd;            /* Can use double word read/write? */
 	unsigned short caps;                 /* Capabilities */
 	unsigned short resv1;                /* Reserved */
@@ -277,7 +277,7 @@ struct hd;
 
 struct prd {
 	unsigned long addr;
-	int len;
+	int			  len;
 };
 
 typedef struct hdc {
@@ -287,13 +287,13 @@ typedef struct hdc {
 	int irq;                             /* IRQ for controller */
 	int bmregbase;                       /* Busmaster register base */
 
-	char *bufp;                          /* Buffer pointer for next transfer */
-	int nsects;                          /* Number of sectors left to transfer */
-	int result;                          /* Result of transfer */
-	int dir;                             /* Transfer direction */
+	char *	   bufp;                     /* Buffer pointer for next transfer */
+	int		   nsects;                   /* Number of sectors left to transfer */
+	int		   result;                   /* Result of transfer */
+	int		   dir;                      /* Transfer direction */
 	struct hd *active;                   /* Active drive for transfer */
 
-	struct prd *prds;                    /* PRD list for DMA transfer */
+	struct prd *  prds;                  /* PRD list for DMA transfer */
 	unsigned long prds_phys;             /* Physical address of PRD list */
 
 	struct waitq waitq;
@@ -308,18 +308,18 @@ typedef struct dev_geometry {
 } dev_geometry_t;
 
 typedef struct hd {
-	int idx;
-	void *bdev;                /* Device */
-	hdc_t *hdc;                  /* Controller */
+	int			   idx;
+	void *		   bdev;       /* Device */
+	hdc_t *		   hdc;          /* Controller */
 	struct hdparam param;        /* Drive parameter block */
-	int drvsel;                  /* Drive select on controller */
-	int use32bits;               /* Use 32 bit transfers */
-	int sectbufs;                /* Number of sector buffers */
-	int lba;                     /* LBA mode */
-	int iftype;                  /* IDE interface type (ATA/ATAPI) */
-	int media;                   /* Device media type (hd, cdrom, ...) */
-	int multsect;                /* Sectors per interrupt */
-	int udmamode;                /* UltraDMA mode */
+	int			   drvsel;       /* Drive select on controller */
+	int			   use32bits;    /* Use 32 bit transfers */
+	int			   sectbufs;     /* Number of sector buffers */
+	int			   lba;          /* LBA mode */
+	int			   iftype;       /* IDE interface type (ATA/ATAPI) */
+	int			   media;        /* Device media type (hd, cdrom, ...) */
+	int			   multsect;     /* Sectors per interrupt */
+	int			   udmamode;     /* UltraDMA mode */
 	/*
 	 * Geometry
 	 */

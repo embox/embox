@@ -21,13 +21,13 @@ static irq_return_t test_isr(unsigned int irq_nr, void *dev_id) {
 }
 
 TEST_CASE("An interrupt forced after a call to ipl_save() must not run until "
-		  "the corresponding ipl_restore() is called") {
+		"the corresponding ipl_restore() is called") {
 	ipl_t ipl;
 
 	test_emit('{');
 
 	test_assert_zero(
-			irq_attach(TEST_IRQ_NR, test_isr, 0, (void *) '0', "test_irq"));
+		irq_attach(TEST_IRQ_NR, test_isr, 0, (void *) '0', "test_irq"));
 
 	ipl = ipl_save();
 

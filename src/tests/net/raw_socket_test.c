@@ -36,7 +36,7 @@ static int create_recv_packet_socket(int proto);
 static int create_send_inet_socket(int proto);
 
 TEST_CASE("Send from raw socket with IPPROTO_RAW protocol"
-		  "and receive with raw socket with htons(ETH_P_ALL) protocol") {
+		"and receive with raw socket with htons(ETH_P_ALL) protocol") {
 	char packet[sizeof(struct iphdr) + 1];
 	/* point the iphdr to the beginning of the packet */
 	struct iphdr *ip = (struct iphdr *) packet;

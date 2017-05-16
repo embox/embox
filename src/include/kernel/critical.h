@@ -130,15 +130,15 @@
 
 struct critical_dispatcher {
 	struct critical_dispatcher *next;
-	unsigned int mask; /**< Inverted in case when dispatching is not pending. */
-	void (*dispatch)(void);
+	unsigned int				mask; /**< Inverted in case when dispatching is not pending. */
+	void						(*dispatch)(void);
 };
 
 #define CRITICAL_DISPATCHER_DEF(name, dispatch_fn, critical_mask) \
 	static struct critical_dispatcher name __cpudata__ = {        \
 		.dispatch = (dispatch_fn),                                \
 		.mask = ~((critical_mask)                                 \
-				| __CRITICAL_HARDER(critical_mask)),              \
+			| __CRITICAL_HARDER(critical_mask)),              \
 	}
 
 extern unsigned int __critical_count __cpudata__;

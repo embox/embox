@@ -152,7 +152,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 		}
 
 	}
-	out_unlock:
+out_unlock:
 	sched_unlock();
 
 	return t;
@@ -338,7 +338,7 @@ int thread_join(struct thread *t, void **p_ret) {
 
 		thread_delete(t);
 	}
-	out:
+out:
 	sched_unlock();
 
 	return ret < 0 ? ret : 0;

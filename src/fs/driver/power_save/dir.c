@@ -188,7 +188,7 @@ int qnx6_readdir(struct qnx_file *filp, void *dirent, filldir_t filldir)
 				}
 			} else {
 				QNX6DEBUG((KERN_INFO "qnx6_readdir:%.*s"
-									 " node:%u\n", size, de->de_fname,
+						" node:%u\n", size, de->de_fname,
 						no_node));
 				if (filldir(dirent, de->de_fname, size,
 						pos, no_node, DT_UNKNOWN)
@@ -297,7 +297,7 @@ static unsigned qnx6_find_entry(int len, struct node *dir, const char *name,
 					}
 				} else {
 					printk(KERN_ERR "qnx6: undefined "
-									"filename size in node.\n");
+							"filename size in node.\n");
 				}
 			}
 			qnx6_embox_put_page(page);
@@ -309,7 +309,7 @@ static unsigned qnx6_find_entry(int len, struct node *dir, const char *name,
 	} while (n != start);
 	return 0;
 
-	found:
+found:
 	*res_page = page;
 	ei->i_dir_start_lookup = n;
 	return ino;

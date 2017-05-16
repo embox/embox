@@ -15,10 +15,10 @@
 #define ARG_LENGTH    OPTION_GET(NUMBER, arg_length)
 
 struct task_argv {
-	int argc;
-	char argv_buff[ARGS_QUANTITY][ARG_LENGTH];
+	int	  argc;
+	char  argv_buff[ARGS_QUANTITY][ARG_LENGTH];
 	char *argv[ARGS_QUANTITY + 1]; /* null terminated */
-	char path[ARG_LENGTH];
+	char  path[ARG_LENGTH];
 };
 
 TASK_RESOURCE_DEF(task_argv_desc, struct task_argv);

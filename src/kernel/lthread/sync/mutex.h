@@ -29,13 +29,13 @@
 static inline int mutex_trylock_lthread(struct lthread *self,
 		struct mutex *mutex) {
 	return WAITQ_WAIT_LTHREAD(self, &mutex->wq, ({
-				int done;
-				done = (mutex_trylock_schedee(&self->schedee, mutex) == 0);
-				if (!done) {
-					mutex_priority_inherit(&self->schedee, mutex);
-				}
-				done;
-			}));
+					   int done;
+					   done = (mutex_trylock_schedee(&self->schedee, mutex) == 0);
+					   if (!done) {
+						   mutex_priority_inherit(&self->schedee, mutex);
+					   }
+					   done;
+				   }));
 }
 
 /**

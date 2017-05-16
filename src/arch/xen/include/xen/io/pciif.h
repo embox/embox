@@ -107,8 +107,8 @@ struct xen_pcie_aer_op
 };
 struct xen_pci_sharedinfo {
 	/* flags - XEN_PCIF_* */
-	uint32_t flags;
-	struct xen_pci_op op;
+	uint32_t			   flags;
+	struct xen_pci_op	   op;
 	struct xen_pcie_aer_op aer_op;
 };
 

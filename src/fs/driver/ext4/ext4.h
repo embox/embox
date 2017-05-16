@@ -65,31 +65,31 @@
 
 struct ext4_super_block {
 /*00*/
-	__le32 s_inodes_count;          /* Inodes count */
-	__le32 s_blocks_count;  /* Blocks count */
-	__le32 s_r_blocks_count;    /* Reserved blocks count */
-	__le32 s_free_blocks_count;     /* Free blocks count */
+	__le32	  s_inodes_count;       /* Inodes count */
+	__le32	  s_blocks_count; /* Blocks count */
+	__le32	  s_r_blocks_count; /* Reserved blocks count */
+	__le32	  s_free_blocks_count;  /* Free blocks count */
 /*10*/ __le32 s_free_inodes_count;      /* Free inodes count */
-	__le32 s_first_data_block;  /* First Data Block */
-	__le32 s_log_block_size;    /* Block size */
-	__le32 s_log_cluster_size;  /* Allocation cluster size */
+	__le32	  s_first_data_block; /* First Data Block */
+	__le32	  s_log_block_size; /* Block size */
+	__le32	  s_log_cluster_size; /* Allocation cluster size */
 /*20*/ __le32 s_blocks_per_group;   /* # Blocks per group */
-	__le32 s_clusters_per_group;    /* # Clusters per group */
-	__le32 s_inodes_per_group;  /* # Inodes per group */
-	__le32 s_mtime;         /* Mount time */
+	__le32	  s_clusters_per_group; /* # Clusters per group */
+	__le32	  s_inodes_per_group; /* # Inodes per group */
+	__le32	  s_mtime;      /* Mount time */
 /*30*/ __le32 s_wtime;          /* Write time */
-	__le16 s_mnt_count;         /* Mount count */
-	__le16 s_max_mnt_count;     /* Maximal mount count */
-	__le16 s_magic;         /* Magic signature */
-	__le16 s_state;         /* File system state */
-	__le16 s_errors;        /* Behaviour when detecting errors */
-	__le16 s_minor_rev_level;   /* minor revision level */
+	__le16	  s_mnt_count;      /* Mount count */
+	__le16	  s_max_mnt_count;  /* Maximal mount count */
+	__le16	  s_magic;      /* Magic signature */
+	__le16	  s_state;      /* File system state */
+	__le16	  s_errors;     /* Behaviour when detecting errors */
+	__le16	  s_minor_rev_level; /* minor revision level */
 /*40*/ __le32 s_lastcheck;          /* time of last check */
-	__le32 s_checkinterval;     /* max. time between checks */
-	__le32 s_creator_os;        /* OS */
-	__le32 s_rev_level;         /* Revision level */
+	__le32	  s_checkinterval;  /* max. time between checks */
+	__le32	  s_creator_os;     /* OS */
+	__le32	  s_rev_level;      /* Revision level */
 /*50*/ __le16 s_def_resuid;         /* Default uid for reserved blocks */
-	__le16 s_def_resgid;        /* Default gid for reserved blocks */
+	__le16	  s_def_resgid;     /* Default gid for reserved blocks */
 	/*
 	 * These fields are for EXT4_DYNAMIC_REV superblocks only.
 	 *
@@ -103,56 +103,56 @@ struct ext4_super_block {
 	 * feature set, it must abort and not try to meddle with
 	 * things it doesn't understand...
 	 */
-	__le32 s_first_ino;         /* First non-reserved inode */
-	__le16 s_inode_size;        /* size of inode structure */
-	__le16 s_block_group_nr;    /* block group # of this superblock */
-	__le32 s_feature_compat;    /* compatible feature set */
+	__le32	  s_first_ino;      /* First non-reserved inode */
+	__le16	  s_inode_size;     /* size of inode structure */
+	__le16	  s_block_group_nr; /* block group # of this superblock */
+	__le32	  s_feature_compat; /* compatible feature set */
 /*60*/ __le32 s_feature_incompat;   /* incompatible feature set */
-	__le32 s_feature_ro_compat;     /* readonly-compatible feature set */
-/*68*/ __u8 s_uuid[16];         /* 128-bit uuid for volume */
-/*78*/ char s_volume_name[16];      /* volume name */
-/*88*/ char s_last_mounted[64];     /* directory where last mounted */
+	__le32	  s_feature_ro_compat;  /* readonly-compatible feature set */
+/*68*/ __u8	  s_uuid[16];       /* 128-bit uuid for volume */
+/*78*/ char	  s_volume_name[16];    /* volume name */
+/*88*/ char	  s_last_mounted[64];   /* directory where last mounted */
 /*C8*/ __le32 s_algorithm_usage_bitmap;   /* For compression */
 	/*
 	 * Performance hints.  Directory preallocation should only
 	 * happen if the EXT4_FEATURE_COMPAT_DIR_PREALLOC flag is on.
 	 */
-	__u8 s_prealloc_blocks;     /* Nr of blocks to try to preallocate*/
-	__u8 s_prealloc_dir_blocks;     /* Nr to preallocate for dirs */
+	__u8   s_prealloc_blocks;   /* Nr of blocks to try to preallocate*/
+	__u8   s_prealloc_dir_blocks;   /* Nr to preallocate for dirs */
 	__le16 s_reserved_gdt_blocks;   /* Per group desc for online growth */
 	/*
 	 * Journaling support valid if EXT4_FEATURE_COMPAT_HAS_JOURNAL set.
 	 */
-/*D0*/ __u8 s_journal_uuid[16];     /* uuid of journal superblock */
-/*E0*/ __le32 s_journal_inum;       /* inode number of journal file */
-	__le32 s_journal_dev;       /* device number of journal file */
-	__le32 s_last_orphan;       /* start of list of inodes to delete */
-	__le32 s_hash_seed[4];      /* HTREE hash seed */
-	__u8 s_def_hash_version;    /* Default hash version to use */
-	__u8 s_jnl_backup_type;
-	__le16 s_desc_size;         /* size of group descriptor */
+/*D0*/ __u8	   s_journal_uuid[16];  /* uuid of journal superblock */
+/*E0*/ __le32  s_journal_inum;      /* inode number of journal file */
+	__le32	   s_journal_dev;   /* device number of journal file */
+	__le32	   s_last_orphan;   /* start of list of inodes to delete */
+	__le32	   s_hash_seed[4];  /* HTREE hash seed */
+	__u8	   s_def_hash_version; /* Default hash version to use */
+	__u8	   s_jnl_backup_type;
+	__le16	   s_desc_size;     /* size of group descriptor */
 /*100*/ __le32 s_default_mount_opts;
-	__le32 s_first_meta_bg;     /* First metablock block group */
-	__le32 s_mkfs_time;         /* When the filesystem was created */
-	__le32 s_jnl_blocks[17];    /* Backup of the journal inode */
+	__le32	   s_first_meta_bg; /* First metablock block group */
+	__le32	   s_mkfs_time;     /* When the filesystem was created */
+	__le32	   s_jnl_blocks[17]; /* Backup of the journal inode */
 	/* 64bit support valid if EXT4_FEATURE_COMPAT_64BIT */
 /*150*/ __le32 s_blocks_count_hi;   /* Blocks count */
-	__le32 s_r_blocks_count_hi;     /* Reserved blocks count */
-	__le32 s_free_blocks_count_hi;  /* Free blocks count */
-	__le16 s_min_extra_isize;   /* All inodes have at least # bytes */
-	__le16 s_want_extra_isize;      /* New inodes should reserve # bytes */
-	__le32 s_flags;         /* Miscellaneous flags */
-	__le16 s_raid_stride;       /* RAID stride */
-	__le16 s_mmp_update_interval;   /* # seconds to wait in MMP checking */
-	__le64 s_mmp_block;             /* Block for multi-mount protection */
-	__le32 s_raid_stripe_width;     /* blocks on all data disks (N*stride)*/
-	__u8 s_log_groups_per_flex;     /* FLEX_BG group size */
-	__u8 s_reserved_char_pad;
-	__le16 s_reserved_pad;
-	__le64 s_kbytes_written;    /* nr of lifetime kilobytes written */
-	__le32 s_snapshot_inum;     /* Inode number of active snapshot */
-	__le32 s_snapshot_id;       /* sequential ID of active snapshot */
-	__le64 s_snapshot_r_blocks_count;  /* reserved blocks for active
+	__le32	   s_r_blocks_count_hi; /* Reserved blocks count */
+	__le32	   s_free_blocks_count_hi; /* Free blocks count */
+	__le16	   s_min_extra_isize; /* All inodes have at least # bytes */
+	__le16	   s_want_extra_isize;  /* New inodes should reserve # bytes */
+	__le32	   s_flags;     /* Miscellaneous flags */
+	__le16	   s_raid_stride;   /* RAID stride */
+	__le16	   s_mmp_update_interval; /* # seconds to wait in MMP checking */
+	__le64	   s_mmp_block;         /* Block for multi-mount protection */
+	__le32	   s_raid_stripe_width; /* blocks on all data disks (N*stride)*/
+	__u8	   s_log_groups_per_flex; /* FLEX_BG group size */
+	__u8	   s_reserved_char_pad;
+	__le16	   s_reserved_pad;
+	__le64	   s_kbytes_written; /* nr of lifetime kilobytes written */
+	__le32	   s_snapshot_inum; /* Inode number of active snapshot */
+	__le32	   s_snapshot_id;   /* sequential ID of active snapshot */
+	__le64	   s_snapshot_r_blocks_count; /* reserved blocks for active
 	                      snapshot's future use */
 	__le32 s_snapshot_list;     /* inode number of the head of the
 	                   on-disk snapshot list */
@@ -161,15 +161,15 @@ struct ext4_super_block {
 	__le32 s_first_error_time;  /* first time an error happened */
 	__le32 s_first_error_ino;   /* inode involved in first error */
 	__le64 s_first_error_block;     /* block involved of first error */
-	__u8 s_first_error_func[32];    /* function where the error happened */
+	__u8   s_first_error_func[32];  /* function where the error happened */
 	__le32 s_first_error_line;  /* line number where error happened */
 	__le32 s_last_error_time;   /* most recent time of an error */
 	__le32 s_last_error_ino;    /* inode involved in last error */
 	__le32 s_last_error_line;   /* line number where error happened */
 	__le64 s_last_error_block;  /* block involved of last error */
-	__u8 s_last_error_func[32];     /* function where the error happened */
+	__u8   s_last_error_func[32];   /* function where the error happened */
 
-	__u8 s_mount_opts[64];
+	__u8   s_mount_opts[64];
 	__le32 s_usr_quota_inum;    /* inode for tracking user quota */
 	__le32 s_grp_quota_inum;    /* inode for tracking group quota */
 	__le32 s_overhead_clusters;     /* overhead blocks/clusters in fs */
@@ -184,7 +184,7 @@ struct ext4_group_desc {
 	__le16 free_inodes_count_lo; /* Free inodes count */
 	__le16 used_dirs_count_lo;  /* Directories count */
 	__le16 flags;       /* EXT4_BG_flags (INODE_UNINIT, etc) */
-	__u32 reserved[2];          /* Likely block/inode bitmap checksum */
+	__u32  reserved[2];         /* Likely block/inode bitmap checksum */
 	__le16 itable_unused_lo;    /* Unused inodes count */
 	__le16 checksum;        /* crc16(sb_uuid+group+desc) */
 	__le32 block_bitmap_hi;     /* Blocks bitmap block MSB */
@@ -194,7 +194,7 @@ struct ext4_group_desc {
 	__le16 free_inodes_count_hi; /* Free inodes count MSB */
 	__le16 used_dirs_count_hi;  /* Directories count MSB */
 	__le16 itable_unused_hi;     /* Unused inodes count MSB */
-	__u32 reserved2[3];
+	__u32  reserved2[3];
 };
 
 /* in-memory data for ext4fs */
@@ -202,34 +202,34 @@ typedef struct ext4_fs_info {
 	struct ext4_super_block e4sb;
 	struct ext4_group_desc *e4fs_gd; /* group descripors */
 	/* The following items are only used when the super_block is in memory. */
-	int32_t s_bshift;   /* ``lblkno'' calc of logical blkno */
-	int32_t s_bmask;    /* ``blkoff'' calc of blk offsets */
-	int64_t s_qbmask;   /* ~fs_bmask - for use with quad size */
-	int32_t s_fsbtodb;  /* fsbtodb and dbtofsb shift constant */
-	int32_t s_ncg;  /* number of cylinder groups */
+	int32_t	 s_bshift;  /* ``lblkno'' calc of logical blkno */
+	int32_t	 s_bmask;   /* ``blkoff'' calc of blk offsets */
+	int64_t	 s_qbmask;  /* ~fs_bmask - for use with quad size */
+	int32_t	 s_fsbtodb; /* fsbtodb and dbtofsb shift constant */
+	int32_t	 s_ncg; /* number of cylinder groups */
 	uint32_t s_block_size;             /* block size in bytes. */
 	uint32_t s_inodes_per_block;       /* Number of inodes per block */
 	uint32_t s_itb_per_group;          /* Number of inode table blocks per group */
 	uint32_t s_gdb_count;              /* Number of group descriptor blocks */
 	uint32_t s_desc_per_block;         /* Number of group descriptors per block */
 	uint32_t s_groups_count;           /* Number of groups in the fs */
-	size_t s_page_count;               /* Number of pages of embox for file r/w buffer*/
-	u16_t s_sectors_in_block;          /* s_block_size / 512 */
+	size_t	 s_page_count;             /* Number of pages of embox for file r/w buffer*/
+	u16_t	 s_sectors_in_block;       /* s_block_size / 512 */
 	uint32_t s_bsearch;                /* all data blocks  below this block are in use*/
-	u8_t s_blocksize_bits;             /* Used to calculate offsets (e.g. inode block),
+	u8_t	 s_blocksize_bits;         /* Used to calculate offsets (e.g. inode block),
 	                                    * always s_log_block_size + 10.
 	                                    */
 	journal_t *journal;
-	char mntto[PATH_MAX];
+	char	   mntto[PATH_MAX];
 } ext4_fs_info_t;
 
 /* ext2 file system directory descriptor */
 struct ext4_dir {
 	uint32_t inode;     /* Inode number */
 	uint16_t rec_len;   /* Directory entry length */
-	uint8_t name_len;       /* Length of string in d_name */
-	uint8_t type;       /* File type */
-	char name[EXT4_NAME_LEN];/* name with length<=EXT4FS_MAXNAMLEN */
+	uint8_t	 name_len;      /* Length of string in d_name */
+	uint8_t	 type;      /* File type */
+	char	 name[EXT4_NAME_LEN];/* name with length<=EXT4FS_MAXNAMLEN */
 };
 
 /*
@@ -269,19 +269,19 @@ struct ext4_inode {
 			__le16 l_i_file_acl_high;
 			__le16 l_i_uid_high;    /* these 2 fields */
 			__le16 l_i_gid_high;    /* were reserved2[0] */
-			__u32 l_i_reserved2;
+			__u32  l_i_reserved2;
 		} linux2;
 		struct {
 			__le16 h_i_reserved1;   /* Obsoleted fragment number/size which are removed in ext4 */
-			__u16 h_i_mode_high;
-			__u16 h_i_uid_high;
-			__u16 h_i_gid_high;
-			__u32 h_i_author;
+			__u16  h_i_mode_high;
+			__u16  h_i_uid_high;
+			__u16  h_i_gid_high;
+			__u32  h_i_author;
 		} hurd2;
 		struct {
 			__le16 h_i_reserved1;   /* Obsoleted fragment number/size which are removed in ext4 */
 			__le16 m_i_file_acl_high;
-			__u32 m_i_reserved2[2];
+			__u32  m_i_reserved2[2];
 		} masix2;
 	} osd2;             /* OS dependent 2 */
 	__le16 i_extra_isize;
@@ -299,16 +299,16 @@ struct ext4_inode {
  */
 typedef struct ext4_file_info {
 	struct ext4_inode f_di;     /* copy of on-disk inode */
-	uint f_nishift;         /* for blocks in indirect block */
-	int32_t f_ind_cache_block;
-	int32_t f_ind_cache[EXT4_IND_CACHE_SZ];
+	uint			  f_nishift; /* for blocks in indirect block */
+	int32_t			  f_ind_cache_block;
+	int32_t			  f_ind_cache[EXT4_IND_CACHE_SZ];
 
-	char        *f_buf;     /* buffer for data block */
-	size_t f_buf_size;      /* size of data block */
+	char *	f_buf;          /* buffer for data block */
+	size_t	f_buf_size;     /* size of data block */
 	int64_t f_buf_blkno;    /* block number of data block */
-	long f_pointer;         /* local seek pointer */
+	long	f_pointer;      /* local seek pointer */
 
-	ino_t f_num;                /* inode number on its (minor) device */
+	ino_t	 f_num;             /* inode number on its (minor) device */
 	uint32_t f_bsearch;         /* where to start search for new blocks,
 	                             * also this is last allocated block.
 	                             */
@@ -339,7 +339,7 @@ struct ext4_extent_idx {
 	__le32 ei_leaf_lo;          /* pointer to the physical block of the next *
 	                             * level. leaf or next index could be there */
 	__le16 ei_leaf_hi;          /* high 16 bits of physical block */
-	__u16 ei_unused;
+	__u16  ei_unused;
 };
 
 /*

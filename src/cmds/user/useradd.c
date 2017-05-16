@@ -70,7 +70,7 @@ static int create_user(char *name, char *home, char *shell, char *pswd,
 	user_set_options_spwd(&spwd, pwd.pw_name, crypt(pswd, NULL));
 	user_write_user_spwd(&spwd, sdwf);
 
-	out:
+out:
 	fclose(pswdf);
 	fclose(sdwf);
 	return res;
@@ -104,9 +104,9 @@ static int change_default_options(char *home, char *shell, int group){
 
 static void print_help(void) {
 	printf("Usage:\tuseradd [option] LOGIN\n"
-		   "\tuseradd -D\n"
-		   "\tuseradd -D [options]\n"
-		   "Options: see 'man usage'\n");
+			"\tuseradd -D\n"
+			"\tuseradd -D [options]\n"
+			"Options: see 'man usage'\n");
 }
 
 static int print_default_options(void) {
@@ -199,7 +199,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	out:
+out:
 	print_help();
 	return 0;
 }

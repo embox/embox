@@ -63,7 +63,7 @@ static int utmp_login(short ut_type, const char *ut_user) {
 
 struct taskdata {
 	const struct passwd *pwd;
-	const char *cmd;
+	const char *		 cmd;
 };
 
 #if OPTION_GET(BOOLEAN, security_support)
@@ -237,7 +237,7 @@ static int login_user(const char *name, const char *cmd, char with_pass) {
 
 	return 0;
 
-	errret:
+errret:
 	seculog_make_rec(name, 0);
 
 	sleep(3);

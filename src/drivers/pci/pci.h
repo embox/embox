@@ -158,24 +158,24 @@
 #define PCI_CLASS_OTHERS                0xff
 
 struct pci_slot_dev {
-	struct dlist_head lst;
+	struct dlist_head		 lst;
 	const struct pci_driver *pci_drv;
 
 	uint32_t busn;
-	uint8_t slot;
-	uint8_t func;
-	uint8_t rev;
-	uint8_t is_bridge;
-	uint8_t is_multi;
+	uint8_t	 slot;
+	uint8_t	 func;
+	uint8_t	 rev;
+	uint8_t	 is_bridge;
+	uint8_t	 is_multi;
 	uint16_t vendor;
 	uint16_t device;
-	uint8_t baseclass;
-	uint8_t subclass;
-	uint8_t irq;
+	uint8_t	 baseclass;
+	uint8_t	 subclass;
+	uint8_t	 irq;
 	uint32_t bar[6];
-	uint8_t primary;
-	uint8_t secondary;
-	uint8_t subordinate;
+	uint8_t	 primary;
+	uint8_t	 secondary;
+	uint8_t	 subordinate;
 	uint32_t membaselimit;
 };
 
@@ -183,8 +183,8 @@ struct pci_slot_dev {
 
 #define pci_foreach_dev(pci_dev) \
 	dlist_foreach_entry(pci_dev, __extension__({   \
-			extern struct dlist_head __pci_devs_list; &__pci_devs_list; \
-		}), lst)
+				extern struct dlist_head __pci_devs_list; &__pci_devs_list; \
+			}), lst)
 
 struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
 		uint32_t devfn, uint32_t vendor_reg);

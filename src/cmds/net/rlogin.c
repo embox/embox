@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
 	}
 
 	res = rlogin_handle(sock);
-	exit:
+exit:
 	close(sock);
 	return res;
 }

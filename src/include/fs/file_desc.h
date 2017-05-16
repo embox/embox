@@ -18,10 +18,10 @@ struct kfile_operations;
 struct file_desc {
 	struct idesc idesc;
 
-	struct node *node;
-	int file_flags; /*TODO now use only for O_APPEND schould move to idesc */
+	struct node *				   node;
+	int							   file_flags; /*TODO now use only for O_APPEND schould move to idesc */
 	const struct kfile_operations *ops;
-	size_t cursor;
+	size_t						   cursor;
 /* TODO this need for system without file_nodes where we want to use uart for
  *  example
  */

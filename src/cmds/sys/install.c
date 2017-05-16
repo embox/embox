@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 				mountpoint_manage = false;
 			} else {
 				fprintf(stderr, MSG_PREFIX "can't create mountpoint while mounting."
-										   "Try -m to disable automatic mounting\n");
+						"Try -m to disable automatic mounting\n");
 				return -res;
 			}
 		}
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
 		res = mount("none", (char *) base_root, INITFS_NAME);
 		if (res != 0) {
 			fprintf(stderr, MSG_PREFIX "can't mount."
-									   "Try -m to disable automatic mounting\n");
+					"Try -m to disable automatic mounting\n");
 			return -res;
 		}
 	}

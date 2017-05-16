@@ -178,7 +178,7 @@ static int jffs2_build_filesystem(struct jffs2_sb_info *c) {
 
 	ret = 0;
 
-	exit:
+exit:
 	if (ret) {
 		for_each_inode(i, c, ic) {
 			while (ic->scan_dents) {

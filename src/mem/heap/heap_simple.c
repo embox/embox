@@ -22,7 +22,7 @@ static char *last_valid_address;
 static void *mem_pool;
 
 struct mem_control_block {
-	int is_available;
+	int	   is_available;
 	size_t size;
 };
 

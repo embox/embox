@@ -24,13 +24,13 @@
 #include <util/member.h>
 
 union sockaddr_tuple {
-	struct sockaddr_in in;
+	struct sockaddr_in	in;
 	struct sockaddr_in6 in6;
 };
 
 struct ifaddrs_tuple {
-	struct ifaddrs ifa;
-	char name[IFNAMSIZ];
+	struct ifaddrs		 ifa;
+	char				 name[IFNAMSIZ];
 	union sockaddr_tuple addr[3]; /* 0-addr, 1-netmask, 2-broadaddr or dstaddr */
 };
 

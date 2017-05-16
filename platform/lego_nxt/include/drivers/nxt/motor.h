@@ -67,11 +67,11 @@ typedef void (*tacho_handler_t)(void);
 struct nxt_motor {
 	uint8_t id;
 
-	uint32_t tacho_limit;
-	uint32_t tacho_count;
+	uint32_t		tacho_limit;
+	uint32_t		tacho_count;
 	tacho_handler_t limit_hnd;
 
-	uint32_t m_0, m_1;
+	uint32_t	  m_0, m_1;
 	pin_handler_t pin_handler;
 };
 

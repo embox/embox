@@ -304,5 +304,5 @@ int journal_write_blocks_list(journal_t *jp, struct dlist_head *blocks, size_t c
 int journal_write_block(journal_t *jp, char *data, int cnt, int blkno) {
 	assert(jp);
 	return jp->j_dev->driver->write(jp->j_dev, data,
-			cnt * jp->j_blocksize, journal_jb2db(jp, blkno));
+				   cnt * jp->j_blocksize, journal_jb2db(jp, blkno));
 }

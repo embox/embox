@@ -50,7 +50,7 @@ static void test_send_sigval(int tid, int val) {
 }
 
 TEST_CASE("send 3 rt signals of the same type between two tasks and check"
-		  " of handling count and order") {
+		" of handling count and order") {
 	int tid;
 
 	tid = new_task("", test_task_entry, NULL);

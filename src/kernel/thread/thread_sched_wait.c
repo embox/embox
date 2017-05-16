@@ -73,7 +73,7 @@ int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 
 	cur_time = clock();
 	if ((res = SCHED_WAIT_TIMER_INIT(tmr, TIMER_ONESHOT, jiffies2ms(timeout),
-					sched_wait_timeout_handler, schedee_get_current()))) {
+			sched_wait_timeout_handler, schedee_get_current()))) {
 		return res;
 	}
 
@@ -90,7 +90,7 @@ int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 	}
 
 	res = sched_intr(res);
-	out:
+out:
 	if (remain) {
 		*remain = remain_v;
 	}

@@ -46,7 +46,7 @@ static int bpi_diag_kbhit(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-		.putc  = bpi_diag_putc,
-		.getc  = bpi_diag_getc,
-		.kbhit = bpi_diag_kbhit,
+	.putc  = bpi_diag_putc,
+	.getc  = bpi_diag_getc,
+	.kbhit = bpi_diag_kbhit,
 );

@@ -38,12 +38,12 @@
 #define AT_CLKTCK   17      /* Frequency of times() */
 
 typedef struct {
-	uint32_t entry;
-	uint32_t interp_entry;
-	uint32_t base_addr;
-	uint32_t phdr;
-	uint32_t phnum;
-	uint32_t phent;
+	uint32_t	entry;
+	uint32_t	interp_entry;
+	uint32_t	base_addr;
+	uint32_t	phdr;
+	uint32_t	phnum;
+	uint32_t	phent;
 	const char *filename;
 } exec_t;
 

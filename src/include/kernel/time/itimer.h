@@ -14,7 +14,7 @@
 #include <kernel/time/ktime.h>
 
 struct itimer {
-	struct timespec start_value;
+	struct timespec		 start_value;
 	struct clock_source *cs;
 };
 

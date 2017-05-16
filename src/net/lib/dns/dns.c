@@ -32,7 +32,7 @@ union dns_msg {
 	char raw[DNS_MAX_MESSAGE_SZ];
 	struct {
 		struct dnshdr hdr;
-		char data[1];
+		char		  data[1];
 	} msg;
 };
 
@@ -333,19 +333,19 @@ static int dns_rr_a_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 static int dns_rr_ns_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ns.nsdname,
-			&rr->rdata.ns.nsdname[0], NULL);
+				   &rr->rdata.ns.nsdname[0], NULL);
 }
 
 static int dns_rr_cname_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.cname.cname,
-			&rr->rdata.cname.cname[0], NULL);
+				   &rr->rdata.cname.cname[0], NULL);
 }
 
 static int dns_rr_ptr_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ptr.ptrdname,
-			&rr->rdata.ptr.ptrdname[0], NULL);
+				   &rr->rdata.ptr.ptrdname[0], NULL);
 }
 
 static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data, size_t field_sz,
@@ -573,7 +573,7 @@ static int dns_result_parse(union dns_msg *dm, size_t dm_sz,
 	/* All ok, done */
 	return 0;
 
-	error:
+error:
 	dns_result_free(out_result);
 	return ret;
 }

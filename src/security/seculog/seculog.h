@@ -31,7 +31,7 @@ extern int seculog_record(seculog_label_t label, const char *msg);
 
 struct seculog_record {
 	seculog_label_t label;
-	char msg[SECULOG_RECORD_MAX_MSG_N];
+	char			msg[SECULOG_RECORD_MAX_MSG_N];
 
 	int refcount;
 };
@@ -46,13 +46,13 @@ struct seculog_subscb {
 	struct dlist_head lnk;
 
 	/* filled by subscriber */
-	seculog_label_t labels;
+	seculog_label_t		labels;
 	seculog_record_cb_t record_cb;
 };
 
 struct seculog_desc {
 	struct seculog_subscb subscb;
-	struct dlist_head queue;
+	struct dlist_head	  queue;
 };
 
 /**

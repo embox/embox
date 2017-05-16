@@ -38,9 +38,9 @@
 
 struct tpmif_tx_request {
 	unsigned long addr;   /* Machine address of packet.   */
-	grant_ref_t ref;      /* grant table access reference */
-	uint16_t unused;
-	uint16_t size;        /* Packet size in bytes.        */
+	grant_ref_t	  ref;    /* grant table access reference */
+	uint16_t	  unused;
+	uint16_t	  size;   /* Packet size in bytes.        */
 };
 typedef struct tpmif_tx_request tpmif_tx_request_t;
 
@@ -124,7 +124,7 @@ struct tpmif_shared_page {
 	uint8_t locality;        /* for the current request */
 	uint8_t pad;             /* should be zero */
 
-	uint8_t nr_extra_pages;  /* extra pages for long packets; may be zero */
+	uint8_t	 nr_extra_pages; /* extra pages for long packets; may be zero */
 	uint32_t extra_pages[0]; /* grant IDs; length is actually nr_extra_pages */
 };
 typedef struct tpmif_shared_page tpmif_shared_page_t;

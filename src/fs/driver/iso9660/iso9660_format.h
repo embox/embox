@@ -88,11 +88,11 @@ typedef struct iso_extended_attributes {
 } __attribute__ ((packed)) iso_extended_attributes_t;
 
 typedef struct iso_pathtable_record {
-	unsigned char length;
-	unsigned char ext_attr_length;
-	unsigned long extent;
+	unsigned char	   length;
+	unsigned char	   ext_attr_length;
+	unsigned long	   extent;
 	unsigned short int parent;
-	char name[0];
+	char			   name[0];
 } __attribute__ ((packed)) iso_pathtable_record_t;
 
 /*#pragma pack(pop) */

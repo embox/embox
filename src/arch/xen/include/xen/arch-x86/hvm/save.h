@@ -147,11 +147,11 @@ struct hvm_hw_cpu {
 	union {
 		uint32_t pending_event;
 		struct {
-			uint8_t pending_vector : 8;
-			uint8_t pending_type : 3;
-			uint8_t pending_error_valid : 1;
+			uint8_t	 pending_vector : 8;
+			uint8_t	 pending_type : 3;
+			uint8_t	 pending_error_valid : 1;
 			uint32_t pending_reserved : 19;
-			uint8_t pending_valid : 1;
+			uint8_t	 pending_valid : 1;
 		};
 	};
 	/* error code for pending event */
@@ -256,11 +256,11 @@ struct hvm_hw_cpu_compat {
 	union {
 		uint32_t pending_event;
 		struct {
-			uint8_t pending_vector : 8;
-			uint8_t pending_type : 3;
-			uint8_t pending_error_valid : 1;
+			uint8_t	 pending_vector : 8;
+			uint8_t	 pending_type : 3;
+			uint8_t	 pending_error_valid : 1;
 			uint32_t pending_reserved : 19;
-			uint8_t pending_valid : 1;
+			uint8_t	 pending_valid : 1;
 		};
 	};
 	/* error code for pending event */
@@ -270,7 +270,7 @@ struct hvm_hw_cpu_compat {
 static inline int _hvm_hw_fix_cpu(void *h) {
 
 	union hvm_hw_cpu_union {
-		struct hvm_hw_cpu nat;
+		struct hvm_hw_cpu		 nat;
 		struct hvm_hw_cpu_compat cmp;
 	} *ucpu = (union hvm_hw_cpu_union *)h;
 
@@ -402,7 +402,7 @@ struct hvm_hw_pci_irqs {
 	 */
 	union {
 		unsigned long i[16 / sizeof (unsigned long)]; /* DECLARE_BITMAP(i, 32*4); */
-		uint64_t pad[2];
+		uint64_t	  pad[2];
 	};
 };
 
@@ -415,7 +415,7 @@ struct hvm_hw_isa_irqs {
 	 */
 	union {
 		unsigned long i[1];  /* DECLARE_BITMAP(i, 16); */
-		uint64_t pad[1];
+		uint64_t	  pad[1];
 	};
 };
 
@@ -442,16 +442,16 @@ struct hvm_hw_pit {
 	struct hvm_hw_pit_channel {
 		uint32_t count; /* can be 65536 */
 		uint16_t latched_count;
-		uint8_t count_latched;
-		uint8_t status_latched;
-		uint8_t status;
-		uint8_t read_state;
-		uint8_t write_state;
-		uint8_t write_latch;
-		uint8_t rw_mode;
-		uint8_t mode;
-		uint8_t bcd; /* not supported */
-		uint8_t gate; /* timer start */
+		uint8_t	 count_latched;
+		uint8_t	 status_latched;
+		uint8_t	 status;
+		uint8_t	 read_state;
+		uint8_t	 write_state;
+		uint8_t	 write_latch;
+		uint8_t	 rw_mode;
+		uint8_t	 mode;
+		uint8_t	 bcd; /* not supported */
+		uint8_t	 gate; /* timer start */
 	} channels[3];  /* 3 x 16 bytes */
 	uint32_t speaker_data_on;
 	uint32_t pad0;

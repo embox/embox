@@ -96,7 +96,7 @@ PaError Pa_OpenStream(PaStream **stream,
 	assert(streamCallback != NULL);
 
 	D("stream=%p in_param=%p out_param=%p samplerate=%f"
-	  " frames/buffer=%lu flags=%lu callback=%p data=%p",
+			" frames/buffer=%lu flags=%lu callback=%p data=%p",
 			stream, inputParameters, outputParameters, sampleRate,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 

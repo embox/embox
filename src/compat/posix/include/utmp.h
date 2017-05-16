@@ -41,8 +41,8 @@ struct exit_status {              /* Type for ut_exit, below */
 struct utmp {
 	short ut_type;                /* Type of record */
 	pid_t ut_pid;                 /* PID of login process */
-	char ut_line[UT_LINESIZE];    /* Device name of tty - "/dev/" */
-	char ut_id[UT_IDSIZE];        /* Terminal name suffix,
+	char  ut_line[UT_LINESIZE];   /* Device name of tty - "/dev/" */
+	char  ut_id[UT_IDSIZE];       /* Terminal name suffix,
 	                or inittab(5) ID */
 	char ut_user[UT_NAMESIZE];    /* Username */
 	char ut_host[UT_HOSTSIZE];    /* Hostname for remote login, or
@@ -54,7 +54,7 @@ struct utmp {
 	/* The ut_session and ut_tv fields must be the same size when
 	  compiled 32- and 64-bit.  This allows data files and shared
 	  memory to be shared between 32- and 64-bit applications. */
-	long ut_session;             /* Session ID */
+	long		   ut_session;   /* Session ID */
 	struct timeval ut_tv;        /* Time entry was made */
 
 	int32_t ut_addr_v6[4];        /* Internet address of remote
@@ -65,8 +65,8 @@ struct utmp {
 
 struct lastlog {
 	int32_t ll_time;                    /* When user logged in */
-	char ll_line[UT_LINESIZE];          /* Terminal line name */
-	char ll_host[UT_HOSTSIZE];          /* Host user came from */
+	char	ll_line[UT_LINESIZE];       /* Terminal line name */
+	char	ll_host[UT_HOSTSIZE];       /* Host user came from */
 };
 
 #define ut_name ut_user

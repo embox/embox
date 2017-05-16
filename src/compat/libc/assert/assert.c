@@ -56,13 +56,13 @@ void __assertion_handle_failure(const struct __assertion_point *point) {
 	print_oops();
 #endif
 	printk(
-			" ASSERTION FAILED on CPU %d\n"
-			LOCATION_FUNC_FMT("\t", "\n") "\n"
-										  "%s\n",
+		" ASSERTION FAILED on CPU %d\n"
+		LOCATION_FUNC_FMT("\t", "\n") "\n"
+		"%s\n",
 
-			cpu_get_id(),
-			LOCATION_FUNC_ARGS(&point->location),
-			point->expression);
+		cpu_get_id(),
+		LOCATION_FUNC_ARGS(&point->location),
+		point->expression);
 
 	if (*__assertion_message_buff) {
 		printk("\n\t(%s)\n", __assertion_message_buff);
@@ -72,7 +72,7 @@ void __assertion_handle_failure(const struct __assertion_point *point) {
 
 	spin_unlock(&assert_lock);  /* leave IRQs off */
 
-	out:
+out:
 	arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT);
 	/* NOTREACHED */
 }

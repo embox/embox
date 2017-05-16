@@ -30,7 +30,7 @@ EMBOX_UNIT_INIT(init);
 
 /*TODO naming nodes as in file */
 struct __node {
-	char *name;
+	char *	   name;
 	net_node_t node;
 };
 

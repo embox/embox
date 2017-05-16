@@ -381,7 +381,7 @@ static int cdfs_find_file(cdfs_t *cdfs, char *name, int len,
 
 	/* Find filename in directory */
 	return cdfs_find_in_dir(cdfs, dir, name + split + 1,
-			len - split - 1, cache, rec);
+				   len - split - 1, cache, rec);
 }
 
 struct tm tm;
@@ -920,7 +920,7 @@ static int cdfsfs_mount(void *dev, void *dir) {
 		return 0;
 	}
 
-	error:
+error:
 	cdfs_free_fs(dir_nas);
 
 	return rc;

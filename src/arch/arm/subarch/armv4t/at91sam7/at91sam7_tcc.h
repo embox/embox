@@ -137,11 +137,11 @@ typedef struct _AT91S_TC {
 /*              SOFTWARE API DEFINITION  FOR Timer Counter Interface */
 /* ***************************************************************************** */
 typedef struct _AT91S_TCB {
-	AT91S_TC TCB_TC0;       /* TC Channel 0 */
+	AT91S_TC   TCB_TC0;     /* TC Channel 0 */
 	at91_reg_t Reserved0[4];    /* */
-	AT91S_TC TCB_TC1;       /* TC Channel 1 */
+	AT91S_TC   TCB_TC1;     /* TC Channel 1 */
 	at91_reg_t Reserved1[4];    /* */
-	AT91S_TC TCB_TC2;       /* TC Channel 2 */
+	AT91S_TC   TCB_TC2;     /* TC Channel 2 */
 	at91_reg_t Reserved2[4];    /* */
 	at91_reg_t TCB_BCR;     /* TC Block Control Register */
 	at91_reg_t TCB_BMR;     /* TC Block Mode Register */

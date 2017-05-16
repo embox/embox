@@ -146,7 +146,7 @@ int bootp_client(struct net_device *dev) {
 	}
 
 	ret = bootp_process(&bph_rep, dev);
-	error:
+error:
 	close(sock);
 	return ret;
 }

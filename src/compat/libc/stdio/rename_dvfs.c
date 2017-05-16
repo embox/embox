@@ -116,7 +116,7 @@ int rename(const char *src_name, const char *dst_name) {
 	fclose(out);
 
 	return 0;
-	err_out:
+err_out:
 	if (in) {
 		fclose(in);
 	}

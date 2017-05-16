@@ -43,7 +43,7 @@ typedef struct slab {
 /* some information about page  */
 typedef struct page_info {
 	cache_t *cache;
-	slab_t *slab;
+	slab_t * slab;
 } page_info_t;
 
 static struct page_allocator *slab_pa;
@@ -89,8 +89,8 @@ static page_info_t *ptr_to_page(void *objp) {
 cache_t cache_chain = {
 	.name = "__cache_chain",
 	.num  = (PAGE_SIZE() * CACHE_CHAIN_SIZE
-			- binalign_bound(sizeof(slab_t), 4))
-			/ binalign_bound(sizeof(cache_t), 4),
+		- binalign_bound(sizeof(slab_t), 4))
+		/ binalign_bound(sizeof(cache_t), 4),
 	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct slist_link)),
 	.slabs_full = DLIST_INIT(cache_chain.slabs_full),
 	.slabs_free = DLIST_INIT(cache_chain.slabs_free),

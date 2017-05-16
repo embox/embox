@@ -133,11 +133,11 @@ enum usb_speed {
 
 struct usb_hcd_ops {
 	void *(*hcd_hci_alloc)(struct usb_hcd *hcd, void *args);
-	void (*hcd_hci_free)(struct usb_hcd *hcd, void *spec);
+	void  (*hcd_hci_free)(struct usb_hcd *hcd, void *spec);
 	void *(*endp_hci_alloc)(struct usb_endp *endp);
-	void (*endp_hci_free)(struct usb_endp *endp, void *spec);
+	void  (*endp_hci_free)(struct usb_endp *endp, void *spec);
 	void *(*req_hci_alloc)(struct usb_request *req);
-	void (*req_hci_free)(struct usb_request *req, void *spec);
+	void  (*req_hci_free)(struct usb_request *req, void *spec);
 
 	int (*hcd_start)(struct usb_hcd *hcd);
 	int (*hcd_stop)(struct usb_hcd *hcd);
@@ -152,12 +152,12 @@ extern void usb_hub_ctrl(struct usb_hub_port *port, enum usb_hub_request request
 		unsigned short value);
 
 struct usb_endp {
-	struct usb_dev *dev;
-	unsigned char address;
+	struct usb_dev *   dev;
+	unsigned char	   address;
 	enum usb_direction direction;
 	enum usb_comm_type type;
-	unsigned short max_packet_size;
-	unsigned char interval;
+	unsigned short	   max_packet_size;
+	unsigned char	   interval;
 
 	struct usb_queue req_queue;
 
@@ -201,37 +201,37 @@ static inline void usb_endp_fill_from_desc(struct usb_endp *endp,
 
 struct usb_desc_getconf_data {
 	struct usb_desc_configuration config_desc;
-	struct usb_desc_interface interface_desc;
-	struct usb_desc_endpoint endp_descs[USB_DEV_MAX_ENDP];
+	struct usb_desc_interface	  interface_desc;
+	struct usb_desc_endpoint	  endp_descs[USB_DEV_MAX_ENDP];
 } __attribute__((packed));
 
 struct usb_dev {
 	enum usb_dev_plug_state plug_state;
-	unsigned int use_count;
+	unsigned int			use_count;
 
 	unsigned short idx; /**< index allocated for device */
 	unsigned short bus_idx; /**<  index of device on bus. On `reseted' is 0,
 	               after `addressed' is idx */
 	struct dlist_head dev_link;
 
-	struct usb_hcd *hcd;
+	struct usb_hcd *	 hcd;
 	struct usb_hub_port *port;
-	unsigned char endp_n;
-	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];
-	unsigned char c_config;
-	unsigned char c_interface;
+	unsigned char		 endp_n;
+	struct usb_endp *	 endpoints[USB_DEV_MAX_ENDP];
+	unsigned char		 c_config;
+	unsigned char		 c_interface;
 
-	struct usb_desc_device dev_desc;
-	struct usb_desc_interface iface_desc;
+	struct usb_desc_device		  dev_desc;
+	struct usb_desc_interface	  iface_desc;
 	struct usb_desc_getconf_data *getconf_data;
-	struct usb_desc_getconf_data tgetconf_data;
+	struct usb_desc_getconf_data  tgetconf_data;
 
 	struct usb_desc_interface *interface_desc;
 
 	void *class_specific;
 
 	struct usb_driver *drv;
-	void *drv_data;
+	void *			   drv_data;
 
 	enum usb_speed speed;
 };
@@ -293,11 +293,11 @@ struct usb_port_status {
 } __attribute__((packed));
 
 struct usb_hub_port {
-	struct usb_hub *hub;
+	struct usb_hub *	 hub;
 	usb_hub_port_state_t state;
-	struct sys_timer post_timer;
+	struct sys_timer	 post_timer;
 
-	int idx;
+	int				idx;
 	usb_hub_state_t status;
 	usb_hub_state_t changed;
 
@@ -307,8 +307,8 @@ struct usb_hub_port {
 };
 
 struct usb_hub {
-	struct usb_hcd *hcd;
-	usb_hub_port_t port_n;
+	struct usb_hcd *	hcd;
+	usb_hub_port_t		port_n;
 	struct usb_hub_port ports[USB_RH_MAX_PORT];
 };
 
@@ -327,10 +327,10 @@ static inline void usb_port_device_unbind(struct usb_hub_port *port,
 struct usb_hcd {
 	enum usb_host_state state;
 	struct usb_hcd_ops *ops;
-	struct dlist_head lnk;
-	struct usb_hub *root_hub;
+	struct dlist_head	lnk;
+	struct usb_hub *	root_hub;
 
-	index_data_t idx_data[INDEX_DATA_LEN(USB_HC_MAX_DEV)];
+	index_data_t	 idx_data[INDEX_DATA_LEN(USB_HC_MAX_DEV)];
 	struct indexator enumerator;
 	struct usb_queue reset_queue;
 
@@ -338,17 +338,17 @@ struct usb_hcd {
 };
 
 struct usb_request {
-	struct usb_endp *endp;
-	usb_token_t token;
-	char *buf;
-	size_t len;
-	enum usb_request_status req_stat;
+	struct usb_endp *		 endp;
+	usb_token_t				 token;
+	char *					 buf;
+	size_t					 len;
+	enum usb_request_status	 req_stat;
 	usb_request_notify_hnd_t notify_hnd;
-	void *hnd_data;
+	void *					 hnd_data;
 
 	struct usb_queue_link req_link;
 
-	void *hci_specific;
+	void *					  hci_specific;
 	struct usb_control_header ctrl_header;
 };
 
@@ -428,13 +428,13 @@ typedef unsigned char usb_class_t;
 
 struct usb_class {
 	struct dlist_head lnk;
-	usb_class_t usb_class;
-	int (*get_conf)(struct usb_class *cls, struct usb_dev *dev);
-	void (*get_conf_hnd)(struct usb_request *req, void *arg);
-	void *(*class_alloc)(struct usb_class *cls, struct usb_dev *dev);
-	void (*class_free)(struct usb_class *cls, struct usb_dev *dev, void *spec);
-	void (*class_handle)(struct usb_class *cls, struct usb_dev *dev);
-	void (*class_release)(struct usb_class *cls, struct usb_dev *dev);
+	usb_class_t		  usb_class;
+	int				  (*get_conf)(struct usb_class *cls, struct usb_dev *dev);
+	void			  (*get_conf_hnd)(struct usb_request *req, void *arg);
+	void *			  (*class_alloc)(struct usb_class *cls, struct usb_dev *dev);
+	void			  (*class_free)(struct usb_class *cls, struct usb_dev *dev, void *spec);
+	void			  (*class_handle)(struct usb_class *cls, struct usb_dev *dev);
+	void			  (*class_release)(struct usb_class *cls, struct usb_dev *dev);
 };
 
 static inline usb_class_t usb_dev_class(struct usb_dev *dev) {

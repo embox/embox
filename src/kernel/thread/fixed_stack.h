@@ -11,7 +11,7 @@
 #include <stddef.h>
 
 struct thread_stack {
-	void              *stack;         /**< Allocated thread stack buffer. */
+	void * stack;                     /**< Allocated thread stack buffer. */
 	size_t stack_sz;                  /**< Stack size. */
 };
 

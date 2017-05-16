@@ -7,7 +7,7 @@
 #include <fs/dvfs.h>
 
 struct DIR_struct {
-	struct dirent dirent;
+	struct dirent  dirent;
 	struct dir_ctx ctx;
 	struct dentry *dir_dentry;
 	struct dentry *prv_dentry;

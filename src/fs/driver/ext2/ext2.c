@@ -432,7 +432,7 @@ int ext2_open(struct nas *nas) {
 
 	return 0;
 
-	out: ext2_close(nas);
+out: ext2_close(nas);
 	return rc;
 }
 
@@ -892,7 +892,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 		goto error;
 	}
 	if (NULL == (fsi->e2fs_gd = ext2_buff_alloc(dir_nas,
-					sizeof(struct ext2_gd) * fsi->s_ncg))) {
+			sizeof(struct ext2_gd) * fsi->s_ncg))) {
 		rc = ENOMEM;
 		goto error;
 	}
@@ -905,7 +905,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 	}
 	return 0;
 
-	error:
+error:
 	ext2_free_fs(dir_nas);
 
 	return -rc;
@@ -1387,7 +1387,7 @@ static int ext2_read_sblock(struct nas *nas) {
 
 	fsi->s_desc_per_block = fsi->s_block_size / sizeof(struct ext2_gd);
 
-	out:
+out:
 	ext2_buff_free(nas, sbbuf);
 	return ret;
 }
@@ -1443,7 +1443,7 @@ static int ext2_read_gdblock(struct nas *nas) {
 				(fsi->s_ncg - gdpb * i) * sizeof(struct ext2_gd)
 				: fsi->s_block_size);
 	}
-	out:
+out:
 	ext2_buff_free(nas, gdbuf);
 	return ret;
 }
@@ -1542,7 +1542,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 		dir_fi->f_pointer += buf_size;
 	}
 
-	out: ext2_close(dir_nas);
+out: ext2_close(dir_nas);
 	ext2_buff_free(dir_nas, name_buff);
 	return rc;
 }
@@ -1825,7 +1825,7 @@ int ext2_write_map(struct nas *nas, long position,
 		ext2_write_sector(nas, bp_tindir, 1, b3);/* release triple indirect blk */
 	}
 
-	out:
+out:
 	if (NULL != bp) {
 		ext2_buff_free(nas, (char *) bp);
 	}
@@ -2236,7 +2236,7 @@ static int ext2_alloc_inode(struct nas *nas,
 
 	return 0;
 
-	out: vfs_del_leaf(nas->node);
+out: vfs_del_leaf(nas->node);
 	if (NULL != fi) {
 		if (NULL != fi->f_buf) {
 			ext2_buff_free(nas, fi->f_buf);
@@ -2534,7 +2534,7 @@ static int ext2_new_node(struct nas *nas,
 
 	/* New inode acquired.  Try to make directory entry. */
 	if (0 != (rc = ext2_dir_operation(parents_nas, (char *) nas->node->name,
-					&fi->f_num, ENTER, nas->node->mode))) {
+			&fi->f_num, ENTER, nas->node->mode))) {
 		return rc;
 	}
 	/* The caller has to return the directory ext2_file_info (*dir_fi).  */
@@ -2549,7 +2549,7 @@ static int ext2_unlink_file(struct nas *dir_nas, struct nas *nas) {
 		return rc;
 	}
 	return ext2_dir_operation(dir_nas,
-			(char *) nas->node->name, NULL, DELETE, 0);
+				   (char *) nas->node->name, NULL, DELETE, 0);
 }
 
 static int ext2_remove_dir(struct nas *dir_nas, struct nas *nas) {

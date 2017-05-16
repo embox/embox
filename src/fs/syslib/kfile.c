@@ -80,14 +80,14 @@ struct file_desc *kopen(struct node *node, int flag) {
 		return (struct file_desc *)idesc;
 	}
 
-	free_out:
+free_out:
 	if (ret < 0) {
 		file_desc_destroy(desc);
 		SET_ERRNO(-ret);
 		return NULL;
 	}
 
-	out:
+out:
 	return desc;
 }
 
@@ -115,7 +115,7 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 
 	ret = file->ops->write(file, (void *)buf, size);
 
-	end:
+end:
 	return ret;
 }
 
@@ -139,7 +139,7 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 
 	ret = desc->ops->read(desc, buf, size);
 
-	end:
+end:
 	return ret;
 }
 

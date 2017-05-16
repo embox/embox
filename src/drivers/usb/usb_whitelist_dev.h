@@ -17,10 +17,10 @@
 
 #define USB_WHITELIST_SN_LEN 64
 struct usb_whitelist_rule {
-	unsigned int id;
+	unsigned int   id;
 	unsigned short vid;
 	unsigned short pid;
-	char sn[USB_WHITELIST_SN_LEN];
+	char		   sn[USB_WHITELIST_SN_LEN];
 };
 
 #define USB_WHITELIST_IO_ADD   _IOW('u', 0, struct usb_whitelist_rule)

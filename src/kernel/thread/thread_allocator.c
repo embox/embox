@@ -24,7 +24,7 @@ static_assert(STACK_SZ > sizeof(struct thread));
 
 typedef union thread_pool_entry {
 	struct thread thread;
-	char stack[STACK_SZ];
+	char		  stack[STACK_SZ];
 } thread_pool_entry_t;
 
 #ifdef STACK_PROTECT_MMU

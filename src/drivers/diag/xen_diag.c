@@ -59,6 +59,6 @@ static void diag_xen_putc(const struct diag *diag, char ch) {
 }
 
 DIAG_OPS_DECLARE(
-		.init = diag_xen_init,
-		.putc = diag_xen_putc,
+	.init = diag_xen_init,
+	.putc = diag_xen_putc,
 );

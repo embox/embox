@@ -29,16 +29,16 @@
 
 /* TODO make set of rules as a hash table */
 struct match_rule {
-	struct sk_buff *skbuf;
-	net_node_t next_node;
+	struct sk_buff * skbuf;
+	net_node_t		 next_node;
 	struct list_head lnk;
-	uint32_t priority;
+	uint32_t		 priority;
 };
 
 typedef struct match_rule *match_rule_t;
 
 typedef struct net_node_matcher {
-	struct net_node node;
+	struct net_node	 node;
 	struct list_head match_rx_rules;
 	struct list_head match_tx_rules;
 } *net_node_matcher_t;

@@ -89,7 +89,7 @@ static int efm32_uart_getc(struct uart *dev) {
 
 static int efm32_uart_setup(struct uart *dev, const struct uart_params *params) {
 
-	LEUART_TypeDef      *leuart = (void *) dev->base_addr;
+	LEUART_TypeDef *leuart = (void *) dev->base_addr;
 	LEUART_Init_TypeDef init    = LEUART_INIT_DEFAULT;
 
 	/* Enable CORE LE clock in order to access LE modules */

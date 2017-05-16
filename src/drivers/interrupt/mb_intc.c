@@ -25,7 +25,7 @@ EMBOX_UNIT_INIT(unit_init);
  */
 struct irqc_regs {
 	/* 0x00 */
-	uint32_t isr;           /**< interrupt status register */
+	uint32_t			isr; /**< interrupt status register */
 	/* 0x04 */ uint32_t ipr; /**< interrupt pending register */
 	/* 0x08 */ uint32_t ier; /**< interrupt enable register */
 	/* 0x0C */ uint32_t iar; /**< interrupt acknowledge register */

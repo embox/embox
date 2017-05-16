@@ -67,7 +67,7 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	 */
 	security_node_cred_fill(node.node);
 	return 0;
-	out:
+out:
 	vfs_del_leaf(node.node);
 	return retval;
 }

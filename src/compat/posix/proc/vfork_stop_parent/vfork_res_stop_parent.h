@@ -16,9 +16,9 @@
 
 struct task_vfork {
 	struct pt_regs ptregs;
-	pid_t child_pid;
-	jmp_buf env;
-	void *stack;
+	pid_t		   child_pid;
+	jmp_buf		   env;
+	void *		   stack;
 };
 
 #endif /* VFORK_RES_STOP_PARENT_H_ */

@@ -30,13 +30,13 @@
 
 struct fuse_data {
 	struct fuse_file_info fi;
-	char name[FUSE_MAX_NAMELEN];
+	char				  name[FUSE_MAX_NAMELEN];
 };
 
 struct fuse_sb_priv_data {
 	struct fuse_lowlevel_ops *fuse_lowlevel_ops;
-	struct task *fuse_task;
-	struct thread *stub_thread;
+	struct task *			  fuse_task;
+	struct thread *			  stub_thread;
 };
 
 static struct task *fuse_in(struct fuse_sb_priv_data *data) {
@@ -278,7 +278,7 @@ static int fuse_iterate(struct inode *next, struct inode *parent, struct dir_ctx
 		res = -1;
 	}
 
-	out:
+out:
 	fuse_req_free(req);
 	return res;
 }

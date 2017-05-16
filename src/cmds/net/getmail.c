@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 	}
 
 	return 0;
-	error:
+error:
 	if (ret == 0) {
 		assert(!pop3_ok(&p3s));
 		printf("%s: server error: %s\n", argv[0], pop3_status(&p3s));

@@ -35,7 +35,7 @@ static struct node *__vfs_subtree_create_child(struct node *parent, const char *
 
 struct lookup_tuple {
 	const char *name;
-	size_t len;
+	size_t		len;
 };
 
 static int vfs_lookup_cmp(struct tree_link *link, void *data) {
@@ -257,7 +257,7 @@ static int __vfs_subtree_lookup_existing(struct node *parent,
 		}
 	}
 
-	out: if (p_end_existent) {
+out: if (p_end_existent) {
 		*p_end_existent = str_path;
 	}
 
@@ -387,7 +387,7 @@ struct node *vfs_subtree_get_child_next(struct node *parent, struct node *prev_c
 		return NULL;
 	}
 
-	out:
+out:
 	return tree_element(chld_link, struct node, tree_link);
 }
 

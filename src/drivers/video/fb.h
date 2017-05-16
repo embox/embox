@@ -78,13 +78,13 @@ struct fb_fillrect {
 };
 
 struct fb_image {
-	uint32_t dx;
-	uint32_t dy;
-	uint32_t width;
-	uint32_t height;
-	uint32_t fg_color;
-	uint32_t bg_color;
-	uint32_t depth;
+	uint32_t	dx;
+	uint32_t	dy;
+	uint32_t	width;
+	uint32_t	height;
+	uint32_t	fg_color;
+	uint32_t	bg_color;
+	uint32_t	depth;
 	const char *data;
 };
 
@@ -94,9 +94,9 @@ struct fbcurpos {
 };
 
 struct fb_cursor {
-	uint16_t enable;
-	uint16_t rop;
-	const char *mask;
+	uint16_t		enable;
+	uint16_t		rop;
+	const char *	mask;
 	struct fbcurpos hot;
 	struct fb_image image;
 };
@@ -106,8 +106,8 @@ struct fb_cursor {
  */
 
 struct fb_ops {
-	int (*fb_get_var)(struct fb_info *info, struct fb_var_screeninfo *var);
-	int (*fb_set_var)(struct fb_info *info, const struct fb_var_screeninfo *var);
+	int	 (*fb_get_var)(struct fb_info *info, struct fb_var_screeninfo *var);
+	int	 (*fb_set_var)(struct fb_info *info, const struct fb_var_screeninfo *var);
 	void (*fb_copyarea)(struct fb_info *info, const struct fb_copyarea *area);
 	void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect);
 	void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
@@ -118,8 +118,8 @@ struct fb_info {
 	int id; /**< ID, monothonically incremented for each fb */
 
 	struct fb_ops ops; /**< Operations on fb, allowed to be modified by driver */
-	char *screen_base; /**< Start of frame buffer */
-	size_t screen_size; /**< Maximum lenght of frame buffer */
+	char *		  screen_base; /**< Start of frame buffer */
+	size_t		  screen_size; /**< Maximum lenght of frame buffer */
 
 	struct fb_var_screeninfo var; /**< Current variable settins */
 };

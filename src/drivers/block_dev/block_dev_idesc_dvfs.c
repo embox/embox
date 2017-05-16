@@ -173,9 +173,9 @@ int bdev_read_block(struct dev_module *devmod, void *buf, int blk) {
 	devmod->dev_file.pos = blk * bdev->block_size;
 
 	return devmod->dev_file.f_idesc.idesc_ops->id_readv(
-			&devmod->dev_file.f_idesc,
-			buf,
-			bdev->block_size);
+		&devmod->dev_file.f_idesc,
+		buf,
+		bdev->block_size);
 }
 
 int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
@@ -194,9 +194,9 @@ int bdev_write_block(struct dev_module *devmod, void *buf, int blk) {
 	devmod->dev_file.pos = blk * bdev->block_size;
 
 	return devmod->dev_file.f_idesc.idesc_ops->id_writev(
-			&devmod->dev_file.f_idesc,
-			buf,
-			bdev->block_size);
+		&devmod->dev_file.f_idesc,
+		buf,
+		bdev->block_size);
 }
 
 int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count) {

@@ -30,11 +30,11 @@ EMBOX_UNIT_INIT(integratorcp_pit_init);
  */
 static int integratorcp_pit_init(void) {
 	if (NULL == mmap_device_memory(
-			(void *) ICU_BASE,
-			0x10,
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			MAP_FIXED,
-			(unsigned long) ICU_BASE)) {
+				(void *) ICU_BASE,
+				0x10,
+				PROT_READ | PROT_WRITE | PROT_NOCACHE,
+				MAP_FIXED,
+				(unsigned long) ICU_BASE)) {
 		return -1;
 	}
 

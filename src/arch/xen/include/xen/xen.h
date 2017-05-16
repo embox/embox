@@ -584,8 +584,8 @@ struct vcpu_time_info {
 	 *   ((10^9 << 32) / tsc_to_system_mul) >> tsc_shift
 	 */
 	uint32_t tsc_to_system_mul;
-	int8_t tsc_shift;
-	int8_t pad1[3];
+	int8_t	 tsc_shift;
+	int8_t	 pad1[3];
 }; /* 32 bytes */
 typedef struct vcpu_time_info vcpu_time_info_t;
 
@@ -621,7 +621,7 @@ struct vcpu_info {
 #else /* XEN_HAVE_PV_UPCALL_MASK */
 	uint8_t pad0;
 #endif /* XEN_HAVE_PV_UPCALL_MASK */
-	xen_ulong_t evtchn_pending_sel;
+	xen_ulong_t			  evtchn_pending_sel;
 	struct arch_vcpu_info arch;
 	struct vcpu_time_info time;
 }; /* 64 bytes (x86) */
@@ -727,16 +727,16 @@ typedef struct shared_info shared_info_t;
 #ifdef XEN_HAVE_PV_GUEST_ENTRY
 struct start_info {
 	/* THE FOLLOWING ARE FILLED IN BOTH ON INITIAL BOOT AND ON RESUME.    */
-	char magic[32];             /* "xen-<version>-<platform>".            */
+	char		  magic[32];    /* "xen-<version>-<platform>".            */
 	unsigned long nr_pages;     /* Total pages allocated to this domain.  */
 	unsigned long shared_info;  /* MACHINE address of shared info struct. */
-	uint32_t flags;             /* SIF_xxx flags.                         */
-	xen_pfn_t store_mfn;        /* MACHINE page number of shared page.    */
-	uint32_t store_evtchn;      /* Event channel for store communication. */
+	uint32_t	  flags;        /* SIF_xxx flags.                         */
+	xen_pfn_t	  store_mfn;    /* MACHINE page number of shared page.    */
+	uint32_t	  store_evtchn; /* Event channel for store communication. */
 	union {
 		struct {
 			xen_pfn_t mfn;      /* MACHINE page number of console page.   */
-			uint32_t evtchn;    /* Event channel for console page.        */
+			uint32_t  evtchn;   /* Event channel for console page.        */
 		} domU;
 		struct {
 			uint32_t info_off;  /* Offset of console_info struct.         */

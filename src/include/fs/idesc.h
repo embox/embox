@@ -16,12 +16,12 @@ struct idesc_xattrops;
 #include <kernel/sched/waitq.h>
 
 struct idesc {
-	mode_t idesc_amode;
-	struct waitq idesc_waitq;
-	const struct idesc_ops *idesc_ops;
+	mode_t						 idesc_amode;
+	struct waitq				 idesc_waitq;
+	const struct idesc_ops *	 idesc_ops;
 	const struct idesc_xattrops *idesc_xattrops;
-	unsigned int idesc_flags;
-	int idesc_count;
+	unsigned int				 idesc_flags;
+	int							 idesc_count;
 };
 
 struct iovec;
@@ -31,10 +31,10 @@ struct iovec;
 struct idesc_ops {
 	ssize_t (*id_readv)(struct idesc *idesc, const struct iovec *iov, int cnt);
 	ssize_t (*id_writev)(struct idesc *idesc, const struct iovec *iov, int cnt);
-	void (*close)(struct idesc *idesc);
-	int (*ioctl)(struct idesc *idesc, int request, void *data);
-	int (*fstat)(struct idesc *idesc, void *buff);
-	int (*status)(struct idesc *idesc, int mask);
+	void	(*close)(struct idesc *idesc);
+	int		(*ioctl)(struct idesc *idesc, int request, void *data);
+	int		(*fstat)(struct idesc *idesc, void *buff);
+	int		(*status)(struct idesc *idesc, int mask);
 };
 
 struct idesc_xattrops {

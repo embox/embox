@@ -16,17 +16,17 @@
 
 #define MODOPS_ENV_PER_TASK \
 	OPTION_MODULE_GET(embox__kernel__task__resource__env, \
-		NUMBER, env_per_task)
+			NUMBER, env_per_task)
 #define MODOPS_ENV_STR_LEN \
 	OPTION_MODULE_GET(embox__kernel__task__resource__env, \
-		NUMBER, env_str_len)
+			NUMBER, env_str_len)
 
 struct task_env {
 	char **envs;
 	size_t next;
-	char *vals[MODOPS_ENV_PER_TASK + 1];
-	char storage[MODOPS_ENV_PER_TASK][MODOPS_ENV_STR_LEN];
-	char buff[MODOPS_ENV_STR_LEN];
+	char * vals[MODOPS_ENV_PER_TASK + 1];
+	char   storage[MODOPS_ENV_PER_TASK][MODOPS_ENV_STR_LEN];
+	char   buff[MODOPS_ENV_STR_LEN];
 };
 
 #endif /* ENV_H_ */

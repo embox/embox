@@ -36,12 +36,12 @@ void init_events(void)
 	/* Set the event delivery callbacks */
 #ifdef __i386__
 	HYPERVISOR_set_callbacks(
-			FLAT_KERNEL_CS, (unsigned long)hypervisor_callback,
-			FLAT_KERNEL_CS, (unsigned long)failsafe_callback);
+		FLAT_KERNEL_CS, (unsigned long)hypervisor_callback,
+		FLAT_KERNEL_CS, (unsigned long)failsafe_callback);
 #elif defined (__x86_64__)
 	HYPERVISOR_set_callbacks(
-			(unsigned long)hypervisor_callback,
-			(unsigned long)failsafe_callback, 0);
+		(unsigned long)hypervisor_callback,
+		(unsigned long)failsafe_callback, 0);
 #else
 #error "Unsupported architecture"
 #endif

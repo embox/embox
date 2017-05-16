@@ -55,8 +55,8 @@ struct xenkbd_motion
 
 struct xenkbd_key
 {
-	uint8_t type;         /* XENKBD_TYPE_KEY */
-	uint8_t pressed;      /* 1 if pressed; 0 otherwise */
+	uint8_t	 type;        /* XENKBD_TYPE_KEY */
+	uint8_t	 pressed;     /* 1 if pressed; 0 otherwise */
 	uint32_t keycode;     /* KEY_* from linux/input.h */
 };
 
@@ -72,11 +72,11 @@ struct xenkbd_position
 
 union xenkbd_in_event
 {
-	uint8_t type;
-	struct xenkbd_motion motion;
-	struct xenkbd_key key;
+	uint8_t				   type;
+	struct xenkbd_motion   motion;
+	struct xenkbd_key	   key;
 	struct xenkbd_position pos;
-	char pad[XENKBD_IN_EVENT_SIZE];
+	char				   pad[XENKBD_IN_EVENT_SIZE];
 };
 
 /* Out events (frontend -> backend) */
@@ -92,7 +92,7 @@ union xenkbd_in_event
 union xenkbd_out_event
 {
 	uint8_t type;
-	char pad[XENKBD_OUT_EVENT_SIZE];
+	char	pad[XENKBD_OUT_EVENT_SIZE];
 };
 
 /* shared page */

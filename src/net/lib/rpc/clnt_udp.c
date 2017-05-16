@@ -75,7 +75,7 @@ struct client *clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	*psock = sock;
 
 	return clnt;
-	exit_with_error:
+exit_with_error:
 	auth_destroy(ath);
 	clnt_free(clnt);
 	return NULL;
@@ -122,7 +122,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 	ktime_get_timeval(&tmp);
 	timeradd(&tmp, &timeout, &until);
 
-	send_again:
+send_again:
 	res = sendto(clnt->sock, buff, buff_len, 0,
 			(struct sockaddr *)&clnt->extra.udp.sin, sizeof clnt->extra.udp.sin);
 	ktime_get_timeval(&sent);
@@ -141,7 +141,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 		goto send_again;
 	}
 
-	recv_again:
+recv_again:
 	res = recvfrom(clnt->sock, buff, sizeof buff, 0, NULL, NULL);
 	ktime_get_timeval(&tmp);
 	if (res == -1) {
@@ -174,7 +174,7 @@ static enum clnt_stat clntudp_call(struct client *clnt, uint32_t procnum,
 	xdr_destroy(&xstream);
 
 	clnt->err.status = RPC_SUCCESS;
-	exit_with_status:
+exit_with_status:
 	return clnt->err.status;
 }
 

@@ -119,10 +119,10 @@ typedef struct ext3_journal_superblock_s {
 } ext3_journal_superblock_t;
 
 typedef struct ext3_journal_specific_s {
-	journal_block_t *j_sb_buffer;
+	journal_block_t *		   j_sb_buffer;
 	ext3_journal_superblock_t *j_superblock;
 	/* Version of the superblock format */
-	int j_format_version;
+	int					  j_format_version;
 	struct ext2fs_dinode *ext3_journal_inode;
 	/*
 	 * Journal uuid: identifies the object (filesystem, LVM volume etc)

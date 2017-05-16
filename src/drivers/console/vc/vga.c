@@ -24,12 +24,12 @@ typedef struct vchar {
 }__attribute__((packed)) vchar_t;
 
 struct diag_vterm_data {
-	char attr;
+	char	 attr;
 	vchar_t *video;
 };
 
 struct vga_vterm_video {
-	struct vterm_video video;
+	struct vterm_video	   video;
 	struct diag_vterm_data data;
 };
 
@@ -103,7 +103,7 @@ struct vterm_video *vc_vga_init(void) {
 }
 
 struct vc_video_diag {
-	struct diag diag;
+	struct diag			diag;
 	struct vterm_video *video;
 };
 

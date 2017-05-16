@@ -109,7 +109,7 @@ uintmax_t wcstoumax(const wchar_t *restrict nptr, wchar_t **restrict endptr,
 		acc = UINTMAX_MAX;
 		errno = ERANGE;
 	} else if (!any) {
-		noconv:
+noconv:
 		errno = EINVAL;
 	} else if (neg) {
 		acc = -acc;

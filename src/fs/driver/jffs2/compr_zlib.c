@@ -104,7 +104,7 @@ static int jffs2_zlib_compress(unsigned char *data_in,
 	*dstlen = def_strm.total_out;
 	*sourcelen = def_strm.total_in;
 	ret = 0;
-	out:
+out:
 	mutex_unlock(&deflate_sem);
 	return ret;
 }

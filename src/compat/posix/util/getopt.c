@@ -14,7 +14,7 @@
 int opterr = 1;
 int optind = 1;
 int optopt = 0;
-char  *optarg = NULL;
+char *optarg = NULL;
 
 static int sp = 1;
 static int not_opt = 0;

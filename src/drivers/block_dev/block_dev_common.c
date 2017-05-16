@@ -220,7 +220,7 @@ int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t 
 			 */
 			buffer_encrypt(bh);
 			if (blksize != (res = bdev->driver->write(bdev, bh->data,
-							blksize, blkno + i))) {
+					blksize, blkno + i))) {
 				buffer_decrypt(bh);
 				bcache_buffer_unlock(bh);
 				return res;

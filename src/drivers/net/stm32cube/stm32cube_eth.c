@@ -71,7 +71,7 @@ static void low_level_init(unsigned char mac[6]) {
 	HAL_ETH_DMATxDescListInit(&stm32_eth_handler, DMATxDscrTab, &Tx_Buff[0][0],
 			ETH_TXBUFNB); /*for Transmission process*/
 	if (HAL_OK != (err = HAL_ETH_DMARxDescListInit(&stm32_eth_handler, DMARxDscrTab, &Rx_Buff[0][0],
-					ETH_RXBUFNB))) { /*for Reception process*/
+			ETH_RXBUFNB))) {         /*for Reception process*/
 		log_error("HAL_ETH_DMARxDescListInit %d\n", err);
 	}
 

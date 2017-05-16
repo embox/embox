@@ -14,8 +14,8 @@
 typedef void (*watchdog_handler_t)(struct sys_timer *timer, void *param);
 
 struct watchdog {
-	struct sys_timer timer;
-	struct timeval time_period;
+	struct sys_timer   timer;
+	struct timeval	   time_period;
 	watchdog_handler_t handler;
 };
 

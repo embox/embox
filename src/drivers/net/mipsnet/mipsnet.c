@@ -207,7 +207,7 @@ static irq_return_t mipsnet_interrupt_handler(unsigned int irq, void *dev_id) {
 
 	return ret;
 
-	out_badirq:
+out_badirq:
 	log_info("%s: irq %d for unknown device\n", dev->name, irq);
 
 	return ret;

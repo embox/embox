@@ -35,7 +35,7 @@
 
 struct sk_buff_extra {
 	unsigned char extra[MODOPS_EXTRA_SIZE];
-	char __extra_pad[EXTRA_PAD_SIZE];
+	char		  __extra_pad[EXTRA_PAD_SIZE];
 } EXTRA_ATTR;
 
 POOL_DEF(skb_extra_pool, struct sk_buff_extra, MODOPS_AMOUNT_SKB_EXTRA);

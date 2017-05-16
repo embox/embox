@@ -28,7 +28,7 @@ void task_resource_init(const struct task *task) {
 	task_resource_foreach(res) {
 		assert(res->resource_offset != NULL);
 		assert(binalign_check_bound(
-				*res->resource_offset, sizeof(void *)));
+					*res->resource_offset, sizeof(void *)));
 		if (res->init != NULL) {
 			res->init(task, (void *) task->resources + *res->resource_offset);
 		}

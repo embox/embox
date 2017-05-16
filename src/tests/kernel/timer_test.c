@@ -119,7 +119,7 @@ TEST_CASE("Timer could be started many times") {
 }
 
 struct timer_mutex {
-	int counter;
+	int			 counter;
 	struct mutex mutex;
 };
 

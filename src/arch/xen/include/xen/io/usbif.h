@@ -78,8 +78,8 @@ enum usb_spec_version {
  */
 struct usbif_request_segment {
 	grant_ref_t gref;
-	uint16_t offset;
-	uint16_t length;
+	uint16_t	offset;
+	uint16_t	length;
 };
 
 struct usbif_urb_request {
@@ -120,9 +120,9 @@ typedef struct usbif_urb_request usbif_urb_request_t;
 struct usbif_urb_response {
 	uint16_t id; /* request id */
 	uint16_t start_frame;  /* start frame (ISO) */
-	int32_t status; /* status (non-ISO) */
-	int32_t actual_length; /* actual transfer length */
-	int32_t error_count; /* number of ISO errors */
+	int32_t	 status; /* status (non-ISO) */
+	int32_t	 actual_length; /* actual transfer length */
+	int32_t	 error_count; /* number of ISO errors */
 };
 typedef struct usbif_urb_response usbif_urb_response_t;
 
@@ -139,8 +139,8 @@ typedef struct usbif_conn_request usbif_conn_request_t;
 
 struct usbif_conn_response {
 	uint16_t id; /* request id */
-	uint8_t portnum; /* port number */
-	uint8_t speed; /* usb_device_speed */
+	uint8_t	 portnum; /* port number */
+	uint8_t	 speed; /* usb_device_speed */
 };
 typedef struct usbif_conn_response usbif_conn_response_t;
 

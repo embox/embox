@@ -30,8 +30,8 @@
  */
 #define __lang_void_switch(expr, on_void, on_rest, ...) \
 	__builtin_choose_expr(__lang_typeof_void(expr), \
-		on_void(expr, ## __VA_ARGS__), \
-		on_rest(__lang_subst_void(expr, 0), ## __VA_ARGS__))
+			on_void(expr, ## __VA_ARGS__), \
+			on_rest(__lang_subst_void(expr, 0), ## __VA_ARGS__))
 
 /**
  * Surrounds an @a expr with @a pre_stmt and @a post_stmt statements.
@@ -44,9 +44,9 @@
 /** @return An expression of the same type as the given one. */
 #define __lang_eval_before(expr, post_stmt) \
 	__lang_void_switch(expr,          \
-		__lang_eval_void_before,    \
-		__lang_eval_nonvoid_before, \
-		post_stmt)
+			__lang_eval_void_before,    \
+			__lang_eval_nonvoid_before, \
+			post_stmt)
 
 /** @return An expression of the same type as the given one. */
 #define __lang_eval_after(expr, pre_stmt) \

@@ -82,7 +82,7 @@ typedef struct net_driver {
  */
 struct net_header_info {
 	unsigned short type; /* packet type */
-	const void *src_hw;  /* source hw address
+	const void *   src_hw; /* source hw address
 	                        use device addr if null */
 	const void *dst_hw;  /* destination hw address
 	                        if null use dst_p for resolving
@@ -109,24 +109,24 @@ typedef struct net_device_ops {
  * structure of net device
  */
 typedef struct net_device {
-	struct dlist_head rx_lnk;
-	int index;
-	char name[IFNAMSIZ]; /**< Name of the interface.  */
-	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
-	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
-	unsigned short type; /**< interface hardware type      */
-	unsigned char hdr_len; /**< hardware header length      */
-	unsigned char addr_len; /**< hardware address length      */
-	unsigned int flags; /**< interface flags (a la BSD)   */
-	unsigned int mtu; /**< interface MTU value          */
-	unsigned long base_addr; /**< device I/O address           */
-	unsigned int irq; /**< device IRQ number            */
-	struct net_device_stats stats;
+	struct dlist_head			 rx_lnk;
+	int							 index;
+	char						 name[IFNAMSIZ]; /**< Name of the interface.  */
+	unsigned char				 dev_addr[MAX_ADDR_LEN]; /**< hw address              */
+	unsigned char				 broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
+	unsigned short				 type; /**< interface hardware type      */
+	unsigned char				 hdr_len; /**< hardware header length      */
+	unsigned char				 addr_len; /**< hardware address length      */
+	unsigned int				 flags; /**< interface flags (a la BSD)   */
+	unsigned int				 mtu; /**< interface MTU value          */
+	unsigned long				 base_addr; /**< device I/O address           */
+	unsigned int				 irq; /**< device IRQ number            */
+	struct net_device_stats		 stats;
 	const struct net_device_ops *ops; /**< Hardware description  */
-	const struct net_driver *drv_ops; /**< Management operations        */
-	struct sk_buff_head dev_queue;
-	struct net_node *pnet_node;
-	void *priv; /**< private data */
+	const struct net_driver *	 drv_ops; /**< Management operations        */
+	struct sk_buff_head			 dev_queue;
+	struct net_node *			 pnet_node;
+	void *						 priv; /**< private data */
 } net_device_t;
 
 /**

@@ -154,11 +154,11 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 
 	return 0;
 
-	out_free_data:
+out_free_data:
 	sysfree(nic_priv->data);
-	out_free_nic:
+out_free_nic:
 	etherdev_free(nic);
-	out_ret:
+out_ret:
 	return res;
 }
 

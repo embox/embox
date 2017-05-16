@@ -71,7 +71,7 @@ int httpd_try_respond_file(const struct client_info *cinfo, const struct http_re
 			remain_send_bytes -= sent_bytes;
 		}
 	}
-	out:
+out:
 	fclose(file);
 	return retcode;
 }

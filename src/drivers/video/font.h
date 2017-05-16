@@ -15,10 +15,10 @@
 #define VGA8x16_IDX     1
 
 struct font_desc {
-	uint8_t idx;
+	uint8_t		idx;
 	const char *name;
-	uint32_t width;
-	uint32_t height;
+	uint32_t	width;
+	uint32_t	height;
 	const char *data;
 };
 

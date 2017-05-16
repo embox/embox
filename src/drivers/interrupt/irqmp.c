@@ -23,7 +23,7 @@ EMBOX_UNIT_INIT(unit_init);
 
 struct irqmp_regs {
 	/* 0x00 */
-	uint32_t level;
+	uint32_t			level;
 	/* 0x04 */ uint32_t pending;
 	/* 0x08 */ uint32_t force;
 	/* 0x0C */ uint32_t clear;

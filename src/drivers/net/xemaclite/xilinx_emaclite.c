@@ -64,11 +64,11 @@ typedef struct mdio_regs {
 } mdio_regs_t;
 
 typedef struct pingpong_regs {
-	uint8_t pack[0x07F0];
+	uint8_t		pack[0x07F0];
 	mdio_regs_t mdio_regs;
-	uint32_t len; /*0x07F4*/
-	uint32_t gie;
-	uint32_t ctrl;
+	uint32_t	len; /*0x07F4*/
+	uint32_t	gie;
+	uint32_t	ctrl;
 } pingpong_regs_t;
 
 typedef struct xilinx_emaclite_regs {

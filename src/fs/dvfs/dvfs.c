@@ -132,7 +132,7 @@ extern const struct idesc_ops idesc_file_ops;
 struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 	struct file *desc;
 	struct idesc *res;
-	struct inode  *i_no;
+	struct inode *i_no;
 
 	assert(lookup);
 
@@ -172,7 +172,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
  */
 int dvfs_remove(const char *path) {
 	struct lookup lookup;
-	struct inode  *i_no;
+	struct inode *i_no;
 	int res;
 
 	dvfs_lookup(path, &lookup);
@@ -452,13 +452,13 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	}
 
 	goto err_ok;
-	err_free_all:
+err_free_all:
 	dvfs_destroy_inode(d->d_inode);
 	if (bdev_file) {
 		dvfs_close(bdev_file);
 	}
 	return err;
-	err_ok:
+err_ok:
 	return 0;
 }
 
@@ -506,7 +506,7 @@ int dvfs_umount(struct dentry *mpoint) {
 	dentry_ref_dec(mpoint);
 
 	if ((err = _dentry_destroy(mpoint,
-					!(mpoint->flags & DVFS_DIR_VIRTUAL)))) {
+			!(mpoint->flags & DVFS_DIR_VIRTUAL)))) {
 		return err;
 	}
 

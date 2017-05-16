@@ -48,10 +48,10 @@ EMBOX_UNIT_INIT(ti816x_init);
 	min(min(RX_BUFF_LEN, skb_max_size()), (ETH_FRAME_LEN + ETH_FCS_LEN))
 
 struct emac_desc_head {
-	char buf[EMAC_SAFE_PADDING];
+	char			 buf[EMAC_SAFE_PADDING];
 	struct emac_desc desc;
-	char data[RX_BUFF_LEN];
-	struct sk_buff *skb;
+	char			 data[RX_BUFF_LEN];
+	struct sk_buff * skb;
 } __attribute__ ((aligned(0x4)));
 
 static struct emac_desc_head *head_from_desc(struct emac_desc *desc) {
@@ -115,7 +115,7 @@ struct ti816x_priv {
 
 	struct emac_desc *tx_wait_head;
 	struct emac_desc *tx_wait_tail;
-	int tx_busy;
+	int				  tx_busy;
 };
 
 static void ti816x_config(struct net_device *dev);
@@ -605,11 +605,11 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 
 		macstatus = REG_LOAD(EMAC_BASE + EMAC_R_MACSTATUS);
 		log_error("\tMACSTATUS: %#lx\n"
-				  "\t\tidle %lx\n"
-				  "\t\ttxerrcode %lx; txerrch %lx\n"
-				  "\t\trxerrcode %lx; rxerrch %lx\n"
-				  "\t\trgmiigig %lx; rgmiifullduplex %lx\n"
-				  "\t\trxqosact %lx; rxflowact %lx; txflowact %lx\n",
+				"\t\tidle %lx\n"
+				"\t\ttxerrcode %lx; txerrch %lx\n"
+				"\t\trxerrcode %lx; rxerrch %lx\n"
+				"\t\trgmiigig %lx; rgmiifullduplex %lx\n"
+				"\t\trxqosact %lx; rxflowact %lx; txflowact %lx\n",
 				macstatus,
 				IDLE(macstatus),
 				TXERRCODE(macstatus), TXERRCH(macstatus),
@@ -628,8 +628,8 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 	}
 	if (macinvector) {
 		log_debug("ti816x_interrupt_macmisc0: unhandled interrupt\n"
-				  "\tMACINVECTOR: %#lx\n"
-				  "\tCMMISCINTSTAT: %#lx\n",
+				"\tMACINVECTOR: %#lx\n"
+				"\tCMMISCINTSTAT: %#lx\n",
 				macinvector,
 				REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT));
 	}

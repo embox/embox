@@ -20,7 +20,7 @@ struct net_device;
  * structute of inet(IP) device
  */
 typedef struct in_device {
-	struct dlist_head lnk;
+	struct dlist_head  lnk;
 	struct net_device *dev;
 
 	in_addr_t ifa_address;

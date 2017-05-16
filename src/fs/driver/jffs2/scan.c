@@ -22,16 +22,16 @@
 #define DEFAULT_EMPTY_SCAN_SIZE 1024
 
 #define DIRTY_SPACE(x) do { typeof(x)_x = (x); \
-							c->free_size -= _x; c->dirty_size += _x; \
-							jeb->free_size -= _x; jeb->dirty_size += _x; \
+		c->free_size -= _x; c->dirty_size += _x; \
+		jeb->free_size -= _x; jeb->dirty_size += _x; \
 } while (0)
 #define USED_SPACE(x) do { typeof(x)_x = (x); \
-						   c->free_size -= _x; c->used_size += _x; \
-						   jeb->free_size -= _x; jeb->used_size += _x; \
+		c->free_size -= _x; c->used_size += _x; \
+		jeb->free_size -= _x; jeb->used_size += _x; \
 } while (0)
 #define UNCHECKED_SPACE(x) do { typeof(x)_x = (x); \
-								c->free_size -= _x; c->unchecked_size += _x; \
-								jeb->free_size -= _x; jeb->unchecked_size += _x; \
+		c->free_size -= _x; c->unchecked_size += _x; \
+		jeb->free_size -= _x; jeb->unchecked_size += _x; \
 } while (0)
 
 #define noisy_printk(noise, args ...) do { \
@@ -255,7 +255,7 @@ int jffs2_scan_medium(struct jffs2_sb_info *c)
 		jffs2_erase_pending_trigger(c);
 	}
 	ret = 0;
-	out:
+out:
 	if (buf_size) {
 		sysfree(flashbuf);
 	}
@@ -368,7 +368,7 @@ static int jffs2_scan_eraseblock(struct jffs2_sb_info *c,
 
 	noise = 10;
 
-	scan_more:
+scan_more:
 	while (ofs < jeb->offset + c->sector_size) {
 
 		jffs2_dbg_acct_paranoia_check_nolock(c, jeb);
@@ -416,7 +416,7 @@ static int jffs2_scan_eraseblock(struct jffs2_sb_info *c,
 			ofs += 4;
 
 			D1(printk( "Found empty flash at 0x%08x\n", ofs));
-			more_empty:
+more_empty:
 			inbuf_ofs = ofs - buf_ofs;
 			while (inbuf_ofs < buf_len) {
 				if (*(uint32_t *)(&buf[inbuf_ofs]) != 0xffffffff) {

@@ -13,5 +13,5 @@ static void diag_stub_putc(const struct diag *diag, char ch)  {
 }
 
 DIAG_OPS_DECLARE(
-		.putc = diag_stub_putc,
+	.putc = diag_stub_putc,
 );

@@ -130,12 +130,12 @@ struct jffs2_raw_dirent {
 	jint32_t version;
 	jint32_t ino; /* == zero for unlink */
 	jint32_t mctime;
-	uint8_t nsize;
-	uint8_t type;
-	uint8_t unused[2];
+	uint8_t	 nsize;
+	uint8_t	 type;
+	uint8_t	 unused[2];
 	jint32_t node_crc;
 	jint32_t name_crc;
-	uint8_t name[0];
+	uint8_t	 name[0];
 } __attribute__((packed));
 
 /* The JFFS2 raw inode structure: Used for storage on physical media.  */
@@ -151,7 +151,7 @@ struct jffs2_raw_inode {
 	jint32_t hdr_crc;
 	jint32_t ino;        /* Inode number.  */
 	jint32_t version;    /* Version number.  */
-	jmode_t mode;       /* The file's type or mode.  */
+	jmode_t	 mode;      /* The file's type or mode.  */
 	jint16_t uid;        /* The file's owner.  */
 	jint16_t gid;        /* The file's group.  */
 	jint32_t isize;      /* Total resultant size of this inode (used for truncations)  */
@@ -161,17 +161,17 @@ struct jffs2_raw_inode {
 	jint32_t offset;     /* Where to begin to write.  */
 	jint32_t csize;      /* (Compressed) data size */
 	jint32_t dsize;      /* Size of the node's data. (after decompression) */
-	uint8_t compr;       /* Compression algorithm used */
-	uint8_t usercompr;   /* Compression algorithm requested by the user */
+	uint8_t	 compr;      /* Compression algorithm used */
+	uint8_t	 usercompr;  /* Compression algorithm requested by the user */
 	jint16_t flags;      /* See JFFS2_INO_FLAG_* */
 	jint32_t data_crc;   /* CRC for the (compressed) data.  */
 	jint32_t node_crc;   /* CRC for the raw inode (excluding data)  */
-	uint8_t data[0];
+	uint8_t	 data[0];
 } __attribute__((packed));
 
 union jffs2_node_union {
-	struct jffs2_raw_inode i;
-	struct jffs2_raw_dirent d;
+	struct jffs2_raw_inode	  i;
+	struct jffs2_raw_dirent	  d;
 	struct jffs2_unknown_node u;
 };
 
@@ -192,8 +192,8 @@ struct jffs2_sb_info {
 	unsigned int flags;
 
 	struct task_struct *gc_task;    /* GC task struct */
-	struct completion gc_thread_start; /* GC thread start completion */
-	struct completion gc_thread_exit; /* GC thread exit completion port */
+	struct completion	gc_thread_start; /* GC thread start completion */
+	struct completion	gc_thread_exit; /* GC thread exit completion port */
 
 	struct semaphore alloc_sem; /* Used to protect all the following
 	                   fields, and also to protect against
@@ -223,7 +223,7 @@ struct jffs2_sb_info {
 
 	uint32_t nospc_dirty_size;
 
-	uint32_t nr_blocks;
+	uint32_t				 nr_blocks;
 	struct jffs2_eraseblock *blocks;    /* The whole array of blocks. Used for getting blocks
 	                     * from the offset (blocks[ofs / sector_size]) */
 	struct jffs2_eraseblock *nextblock; /* The block we're currently filling */
@@ -246,9 +246,9 @@ struct jffs2_sb_info {
 	                       against erase completion handler */
 	wait_queue_head_t erase_wait;       /* For waiting for erases to complete */
 
-	wait_queue_head_t inocache_wq;
+	wait_queue_head_t		   inocache_wq;
 	struct jffs2_inode_cache **inocache_list;
-	spinlock_t inocache_lock;
+	spinlock_t				   inocache_lock;
 
 	/* Sem to allow jffs2_garbage_collect_deletion_dirent to
 	   drop the erase_completion_lock while it's holding a pointer
@@ -257,19 +257,19 @@ struct jffs2_sb_info {
 
 #ifdef CONFIG_JFFS2_FS_WRITEBUFFER
 	/* Write-behind buffer for NAND flash */
-	unsigned char *wbuf;
-	uint32_t wbuf_ofs;
-	uint32_t wbuf_len;
-	uint32_t wbuf_pagesize;
+	unsigned char *		   wbuf;
+	uint32_t			   wbuf_ofs;
+	uint32_t			   wbuf_len;
+	uint32_t			   wbuf_pagesize;
 	struct jffs2_inodirty *wbuf_inodes;
 
 	struct rw_semaphore wbuf_sem;   /* Protects the write buffer */
 
 	/* Information about out-of-band area usage... */
 	struct nand_oobinfo *oobinfo;
-	uint32_t badblock_pos;
-	uint32_t fsdata_pos;
-	uint32_t fsdata_len;
+	uint32_t			 badblock_pos;
+	uint32_t			 fsdata_pos;
+	uint32_t			 fsdata_len;
 #endif
 
 };
@@ -309,7 +309,7 @@ struct jffs2_inode_info {
 	struct jffs2_inode_cache *inocache;
 
 	uint16_t flags;
-	uint8_t usercompr;
+	uint8_t	 usercompr;
 };
 
 #define timestamp ktime_get_timeseconds
@@ -334,7 +334,7 @@ struct _inode;
 struct super_block;
 
 struct iovec {
-	void *iov_base;
+	void *	iov_base;
 	ssize_t iov_len;
 };
 
@@ -370,18 +370,18 @@ static inline unsigned int full_name_hash(const unsigned char *name,
 struct _inode {
 	uint32_t i_ino;
 
-	int i_count;
-	mode_t i_mode;
+	int		i_count;
+	mode_t	i_mode;
 	nlink_t i_nlink;         /* Could we dispense with this? */
-	uid_t i_uid;
-	gid_t i_gid;
-	time_t i_atime;
-	time_t i_mtime;
-	time_t i_ctime;
+	uid_t	i_uid;
+	gid_t	i_gid;
+	time_t	i_atime;
+	time_t	i_mtime;
+	time_t	i_ctime;
 
 	unsigned short i_rdev;  /* For devices only */
 	struct _inode *i_parent;  /* For directories only */
-	off_t i_size;       /* For files only */
+	off_t		   i_size; /* For files only */
 
 	struct super_block *i_sb;
 
@@ -393,14 +393,14 @@ struct _inode {
 
 struct super_block {
 	struct jffs2_sb_info jffs2_sb;
-	struct _inode *s_root;
-	unsigned long s_mount_count;
-	struct block_dev *bdev;
+	struct _inode *		 s_root;
+	unsigned long		 s_mount_count;
+	struct block_dev *	 bdev;
 
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD
-	struct mutex s_lock;        /* Lock the inode cache */
+	struct mutex  s_lock;       /* Lock the inode cache */
 	struct thread s_gc_thread;
-	char s_gc_thread_stack[CYGNUM_JFFS2_GC_THREAD_STACK_SIZE];
+	char		  s_gc_thread_stack[CYGNUM_JFFS2_GC_THREAD_STACK_SIZE];
 /*       mtab_entry *mte; */
 #endif
 };
@@ -497,7 +497,7 @@ static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c) {
 #define __init
 
 typedef struct jffs2_fs_info {
-	char mntto[PATH_MAX];
+	char			   mntto[PATH_MAX];
 	struct super_block jffs2_sb;
 } jffs2_fs_info_t;
 

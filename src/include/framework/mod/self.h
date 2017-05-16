@@ -42,7 +42,7 @@
 
 #define __MOD_MEMBER_DECLS(_mod_nm) \
 	ARRAY_SPREAD_DECLARE(const struct mod_member *, \
-		__MOD_MEMBERS(_mod_nm))
+			__MOD_MEMBERS(_mod_nm))
 
 #define MOD_SELF_INIT_DECLS(_mod_nm) \
 	struct __mod_private __MOD_PRIVATE(_mod_nm); \
@@ -75,7 +75,7 @@
 
 #define __MOD_MEMBER_DEF(mod_nm, ops, data) \
 	__MOD_MEMBER_DEF_NM(mod_nm, ops, data, \
-		MACRO_GUARD(MACRO_CONCAT(__mod_member__, mod_nm)))
+			MACRO_GUARD(MACRO_CONCAT(__mod_member__, mod_nm)))
 
 #define __MOD_MEMBER_DEF_NM(mod_nm, _ops, _data, member_nm) \
 	static const struct mod_member member_nm = {                  \

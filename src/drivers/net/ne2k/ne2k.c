@@ -35,8 +35,8 @@
 
 /* The per-packet-header format. */
 struct e8390_pkt_hdr {
-	uint8_t status; /* status */
-	uint8_t next;   /* pointer to next packet. */
+	uint8_t	 status; /* status */
+	uint8_t	 next;  /* pointer to next packet. */
 	uint16_t count; /* header + packet lenght in bytes */
 };
 

@@ -22,11 +22,11 @@ typedef TERMINAL_IO SCREEN_IO;
 
 typedef struct _SCREEN {
 	SCREEN_CALLBACK *callback;
-	TERMINAL terminal[1];
-	char string[CMDLINE_MAX_LENGTH + 1]; /**< line itself */
-	int cursor;   /**< cursor current position */
-	const char *prompt;
-	bool running;
+	TERMINAL		 terminal[1];
+	char			 string[CMDLINE_MAX_LENGTH + 1]; /**< line itself */
+	int				 cursor; /**< cursor current position */
+	const char *	 prompt;
+	bool			 running;
 } SCREEN;
 
 SCREEN *screen_init(SCREEN *, SCREEN_IO *io);

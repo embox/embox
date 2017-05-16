@@ -29,7 +29,7 @@ struct sock *sock_next(const struct sock *sk) {
 	assert(sk->p_ops != NULL);
 
 	return dlist_next_entry_if_not_last(sk, sk->p_ops->sock_list,
-			struct sock, lnk);
+				   struct sock, lnk);
 }
 
 struct sock *sock_lookup(const struct sock *sk,

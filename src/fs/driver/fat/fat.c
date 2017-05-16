@@ -404,7 +404,7 @@ static int fatfs_mount(void *dev, void *dir) {
 
 	return fat_mount_files(dir_nas);
 
-	error:
+error:
 	fat_free_fs(dir_nas);
 
 	return rc;
@@ -423,7 +423,7 @@ static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
 	struct volinfo *vi = &fsi->vi;
 	if (vi->filesystem == FAT32) {
 		return fat_read_sector(fsi, fat_sector_buff,
-				vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
+					   vi->dataarea + (di->currentcluster - 2) * vi->secperclus);
 	}
 	else {
 		return fat_read_sector(fsi, fat_sector_buff, vi->rootdir);

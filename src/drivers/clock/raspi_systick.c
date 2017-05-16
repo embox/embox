@@ -75,11 +75,11 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 static int this_init(void) {
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
-			(void *) ((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK),
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			binalign_bound(sizeof(struct raspi_timer_regs), MMU_PAGE_SIZE),
-			MAP_FIXED,
-			((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK)
+		(void *) ((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK),
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		binalign_bound(sizeof(struct raspi_timer_regs), MMU_PAGE_SIZE),
+		MAP_FIXED,
+		((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK)
 	);
 
 	clock_source_register(&this_clock_source);

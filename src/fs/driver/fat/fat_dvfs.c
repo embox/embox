@@ -179,7 +179,7 @@ static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo
 		inode->flags |= S_IRWXA;
 	}
 	return 0;
-	err_out:
+err_out:
 	return -1;
 }
 
@@ -194,8 +194,8 @@ static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo
 */
 static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
 	return fat_read_sector(fsi,
-			di->p_scratch,
-			fsi->vi.secperclus * di->currentcluster + di->currentsector);
+				   di->p_scratch,
+				   fsi->vi.secperclus * di->currentcluster + di->currentsector);
 }
 
 /* @brief Figure out if node at specific path exists or not
@@ -264,9 +264,9 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	}
 
 	goto succ_out;
-	err_out:
+err_out:
 	node = NULL;
-	succ_out:
+succ_out:
 	di->currentcluster = tmp_clus;
 	di->currententry = tmp_ent;
 	di->currentsector = tmp_sec;
@@ -335,7 +335,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 		.fsi          = fsi,
 		.volinfo      = &fsi->vi,
 		.dirsector    = di->currentsector +
-				di->currentcluster * fsi->vi.secperclus,
+			di->currentcluster * fsi->vi.secperclus,
 		.diroffset    = di->currententry,
 		.cluster      = cluster,
 		.firstcluster = cluster,
@@ -662,7 +662,7 @@ static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 
 	return 0;
 
-	err_out:
+err_out:
 	fat_fs_free(fsi);
 	return -1;
 }

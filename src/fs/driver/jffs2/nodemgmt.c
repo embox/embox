@@ -171,7 +171,7 @@ static int jffs2_do_reserve_space(struct jffs2_sb_info *c,
 		uint32_t minsize, uint32_t *ofs, uint32_t *len) {
 	struct jffs2_eraseblock *jeb = c->nextblock;
 
-	restart:
+restart:
 	if (jeb && minsize > jeb->free_size) {
 		/* Skip the end of this block and file it as having some dirty space */
 		/* If there's a pending write to it, flush now */
@@ -667,7 +667,7 @@ void jffs2_mark_node_obsolete(struct jffs2_sb_info *c,
 		}
 		spin_unlock(&c->erase_completion_lock);
 	}
-	out_erase_sem:
+out_erase_sem:
 	up(&c->erase_free_sem);
 }
 

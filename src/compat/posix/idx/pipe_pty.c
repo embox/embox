@@ -35,7 +35,7 @@ struct pty;
 
 struct idesc_pty {
 	struct idesc idesc;
-	struct pty *pty;
+	struct pty * pty;
 };
 
 #define MAX_PTY 20
@@ -52,8 +52,8 @@ static inline int pty_wait(struct idesc *idesc, struct tty *t, int flags) {
 	struct idesc_wait_link wl;
 
 	return IDESC_WAIT_LOCKED(mutex_unlock(&t->lock),
-			idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
-			mutex_lock(&t->lock));
+				   idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
+				   mutex_lock(&t->lock));
 }
 
 size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {
@@ -344,7 +344,7 @@ int ppty(int ptyfds[2]) {
 
 	return 0;
 
-	out_err:
+out_err:
 	if (ptyfds[1] >= 0) {
 		idesc_table_del(it, ptyfds[1]);
 	}

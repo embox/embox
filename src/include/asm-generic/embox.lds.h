@@ -21,7 +21,7 @@
 	__SECTION_SYMBOLS(_ ## section, . ## section) \
 
 #define MEMORY_REGION(name) \
-	name: ORIGIN = LDS_REGION_BASE_ ## name, LENGTH = LDS_REGION_SIZE_ ## name
+name: ORIGIN = LDS_REGION_BASE_ ## name, LENGTH = LDS_REGION_SIZE_ ## name
 #define HAS_MEMORY_REGION(name) \
 	defined(LDS_REGION_BASE_ ## name)
 

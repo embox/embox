@@ -24,7 +24,7 @@ struct lego_dc_msg {
 } __attribute__ ((packed));
 
 struct lego_dc_msg_full {
-	uint16_t len;
+	uint16_t		   len;
 	struct lego_dc_msg body;
 } __attribute__ ((packed));
 

@@ -530,7 +530,7 @@ static int jffs2_get_inode_nodes(struct jffs2_sb_info *c, struct jffs2_inode_inf
 
 	return 0;
 
-	free_out:
+free_out:
 	jffs2_free_tmp_dnode_info_list(&ret_tn);
 	jffs2_free_full_dirent_list(ret_fd);
 	return err;
@@ -599,7 +599,7 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 			f->metadata = fn;
 			mdata_ver = tn->version;
 		}
-		next_tn:
+next_tn:
 		BUG_ON(rb->rb_left);
 		if (rb->rb_parent && rb->rb_parent->rb_left == rb) {
 			/* We were then left-hand child of our parent. We need
@@ -648,7 +648,7 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 		latest_node->mode = cpu_to_jemode(S_IFDIR|S_IRUGO|S_IWUSR|S_IXUGO);
 		latest_node->version = cpu_to_je32(0);
 		latest_node->atime = latest_node->ctime =
-						latest_node->mtime = cpu_to_je32(0);
+				latest_node->mtime = cpu_to_je32(0);
 		latest_node->isize = cpu_to_je32(0);
 		latest_node->gid = cpu_to_je16(0);
 		latest_node->uid = cpu_to_je16(0);
@@ -781,7 +781,7 @@ int jffs2_do_read_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 		uint32_t ino, struct jffs2_raw_inode *latest_node) {
 	JFFS2_DBG_READINODE("read inode #%u\n", ino);
 
-	retry_inocache:
+retry_inocache:
 	spin_lock(&c->inocache_lock);
 	f->inocache = jffs2_get_ino_cache(c, ino);
 

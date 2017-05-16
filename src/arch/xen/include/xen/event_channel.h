@@ -117,7 +117,7 @@ typedef struct evtchn_alloc_unbound evtchn_alloc_unbound_t;
  */
 struct evtchn_bind_interdomain {
 	/* IN parameters. */
-	domid_t remote_dom;
+	domid_t		  remote_dom;
 	evtchn_port_t remote_port;
 	/* OUT parameters. */
 	evtchn_port_t local_port;
@@ -205,7 +205,7 @@ typedef struct evtchn_send evtchn_send_t;
  */
 struct evtchn_status {
 	/* IN parameters */
-	domid_t dom;
+	domid_t		  dom;
 	evtchn_port_t port;
 	/* OUT parameters */
 #define EVTCHNSTAT_closed       0  /* Channel is not in use.                 */
@@ -221,7 +221,7 @@ struct evtchn_status {
 			domid_t dom;
 		} unbound;                 /* EVTCHNSTAT_unbound */
 		struct {
-			domid_t dom;
+			domid_t		  dom;
 			evtchn_port_t port;
 		} interdomain;             /* EVTCHNSTAT_interdomain */
 		uint32_t pirq;             /* EVTCHNSTAT_pirq        */
@@ -245,7 +245,7 @@ typedef struct evtchn_status evtchn_status_t;
 struct evtchn_bind_vcpu {
 	/* IN parameters. */
 	evtchn_port_t port;
-	uint32_t vcpu;
+	uint32_t	  vcpu;
 };
 typedef struct evtchn_bind_vcpu evtchn_bind_vcpu_t;
 
@@ -321,16 +321,16 @@ typedef struct evtchn_set_priority evtchn_set_priority_t;
 struct evtchn_op {
 	uint32_t cmd; /* enum event_channel_op */
 	union {
-		struct evtchn_alloc_unbound alloc_unbound;
+		struct evtchn_alloc_unbound	   alloc_unbound;
 		struct evtchn_bind_interdomain bind_interdomain;
-		struct evtchn_bind_virq bind_virq;
-		struct evtchn_bind_pirq bind_pirq;
-		struct evtchn_bind_ipi bind_ipi;
-		struct evtchn_close close;
-		struct evtchn_send send;
-		struct evtchn_status status;
-		struct evtchn_bind_vcpu bind_vcpu;
-		struct evtchn_unmask unmask;
+		struct evtchn_bind_virq		   bind_virq;
+		struct evtchn_bind_pirq		   bind_pirq;
+		struct evtchn_bind_ipi		   bind_ipi;
+		struct evtchn_close			   close;
+		struct evtchn_send			   send;
+		struct evtchn_status		   status;
+		struct evtchn_bind_vcpu		   bind_vcpu;
+		struct evtchn_unmask		   unmask;
 	} u;
 };
 typedef struct evtchn_op evtchn_op_t;

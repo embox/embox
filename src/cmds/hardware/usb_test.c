@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 
 	if ((write == 1 && len != -1) || (write == 0 && len == -1)) {
 		fprintf(stderr, "Should be specified exactly one operation "
-						"(-r LENGTH or -w [ DATA ])\n");
+				"(-r LENGTH or -w [ DATA ])\n");
 		usage(argv[0]);
 		return 1;
 
@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
 	res = usb_test_write(ddesc, endp, argv + optind, argc - optind,
 			(setup_tok ? USB_TOKEN_SETUP : 0)
 			| (ack_tok ? USB_TOKEN_STATUS : 0));
-	exit:
+exit:
 	usb_dev_desc_close(ddesc);
 
 	return res;

@@ -39,7 +39,7 @@ typedef struct iphdr {
 	__u8 version : 4, /* version = 4 */
 			ihl : 4; /* ihl = 5 */
 #endif
-	__u8 tos;                 /**< Type of Services, always 0 */
+	__u8   tos;               /**< Type of Services, always 0 */
 	__be16 tot_len;           /**< packet length */
 	__be16 id;                /**< for packet fragmentation */
 	/** ________________________________________________________________
@@ -47,10 +47,10 @@ typedef struct iphdr {
 	 * |MF (more fragments)|DF (don’t fragment)  |always 0|fragment offset|
 	 * |___________________|_____________________|________|_______________|
 	 */
-	__be16 frag_off;          /**< flags + position of the fragment in the data flow */
-	__u8 ttl;                 /**< Time to live */
-	__u8 proto;               /**< next header */
-	__be16 check;             /**< header's checksum */
+	__be16	  frag_off;       /**< flags + position of the fragment in the data flow */
+	__u8	  ttl;            /**< Time to live */
+	__u8	  proto;          /**< next header */
+	__be16	  check;          /**< header's checksum */
 	in_addr_t saddr;          /**< source address */
 	in_addr_t daddr;          /**< destination address */
 } __attribute__((packed)) iphdr_t;

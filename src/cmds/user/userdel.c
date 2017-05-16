@@ -71,7 +71,7 @@ static int passwd_del(char *name) {
 
 static void print_help(void) {
 	printf("Usage:\tuserdel [option] LOGIN\n"
-		   "Options: see 'man usage'\n");
+			"Options: see 'man usage'\n");
 }
 
 int main(int argc, char **argv) {
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	out:
+out:
 	print_help();
 	return 0;
 }

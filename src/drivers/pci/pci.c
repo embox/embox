@@ -27,15 +27,15 @@
 EMBOX_UNIT_INIT(pci_init);
 
 typedef struct pci_slot {
-	uint8_t bus;
-	uint8_t slot;
-	uint8_t func;
+	uint8_t	 bus;
+	uint8_t	 slot;
+	uint8_t	 func;
 	uint16_t ven;
 	uint16_t dev;
-	uint8_t base_clase;
-	uint8_t subclass;
-	uint8_t rev;
-	uint8_t irq;
+	uint8_t	 base_clase;
+	uint8_t	 subclass;
+	uint8_t	 rev;
+	uint8_t	 irq;
 	uint32_t bar[6];
 } pci_slot_t;
 

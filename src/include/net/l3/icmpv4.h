@@ -107,7 +107,7 @@ enum icmp_code {
 struct icmpbody_echo {
 	__be16 id;   /* An identifier of the message sequence */
 	__be16 seq;  /* A sequence number of the message */
-	__u8 data[]; /* Zero or more octets of arbitrary data */
+	__u8   data[]; /* Zero or more octets of arbitrary data */
 } __attribute__((packed));
 
 /**
@@ -126,7 +126,7 @@ struct icmpbody_dest_unreach {
  */
 struct icmpbody_source_quench {
 	__be32 zero; /* Unused */
-	__u8 msg[];  /* The internet header plus the first 64 bits
+	__u8   msg[]; /* The internet header plus the first 64 bits
 	                of the original datagram's data */
 } __attribute__((packed));
 
@@ -149,7 +149,7 @@ struct icmpbody_redirect {
  */
 struct icmpbody_time_exceed {
 	__be32 zero; /* Unused */
-	__u8 msg[];  /* The internet header plus the first 64 bits
+	__u8   msg[]; /* The internet header plus the first 64 bits
 	                of the original datagram's data */
 } __attribute__((packed));
 
@@ -157,10 +157,10 @@ struct icmpbody_time_exceed {
  * ICMPv4 Body for Parameter Problem Message
  */
 struct icmpbody_param_prob {
-	__u8 ptr;     /* Pointer */
-	__u8 zero1;   /* Unused */
+	__u8   ptr;   /* Pointer */
+	__u8   zero1; /* Unused */
 	__be16 zero2; /* Unused */
-	__u8 msg[];   /* The internet header plus the first 64 bits
+	__u8   msg[]; /* The internet header plus the first 64 bits
 	                 of the original datagram's data */
 } __attribute__((packed));
 
@@ -187,19 +187,19 @@ struct icmpbody_info {
  * ICMPv4 Header Structure
  */
 typedef struct icmphdr {
-	__u8 type;    /* Message type */
-	__u8 code;    /* Message code */
+	__u8   type;  /* Message type */
+	__u8   code;  /* Message code */
 	__be16 check; /* Message checksum */
 	union {       /* Message body */
 		/* ICMPv4 Bodies: */
-		struct icmpbody_echo echo;
-		struct icmpbody_dest_unreach dest_unreach;
+		struct icmpbody_echo		  echo;
+		struct icmpbody_dest_unreach  dest_unreach;
 		struct icmpbody_source_quench source_quench;
-		struct icmpbody_redirect redirect;
-		struct icmpbody_time_exceed time_exceed;
-		struct icmpbody_param_prob param_prob;
-		struct icmpbody_timestamp timestamp;
-		struct icmpbody_info info;
+		struct icmpbody_redirect	  redirect;
+		struct icmpbody_time_exceed	  time_exceed;
+		struct icmpbody_param_prob	  param_prob;
+		struct icmpbody_timestamp	  timestamp;
+		struct icmpbody_info		  info;
 	} __attribute__((packed)) body[];
 } __attribute__((packed)) icmphdr_t;
 

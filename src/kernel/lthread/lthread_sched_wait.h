@@ -25,9 +25,9 @@ struct sys_timer;
  */
 struct sched_wait_info {
 	struct sys_timer *tmr;
-	clock_t remain;
-	clock_t last_sync;
-	int status;
+	clock_t			  remain;
+	clock_t			  last_sync;
+	int				  status;
 };
 
 /**
@@ -103,7 +103,7 @@ extern int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain);
 					break;}                                               \
                                                                          \
 				__wait_ret = sched_wait_timeout_lthread(self,            \
-						&__wait_timeout);        \
+				&__wait_timeout);        \
 			} while (!__wait_ret);                                       \
 		}                                                                \
                                                                          \

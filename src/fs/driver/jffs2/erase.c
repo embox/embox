@@ -22,7 +22,7 @@
 
 struct erase_priv_struct {
 	struct jffs2_eraseblock *jeb;
-	struct jffs2_sb_info *c;
+	struct jffs2_sb_info *	 c;
 };
 
 static void jffs2_erase_failed(struct jffs2_sb_info *c, struct jffs2_eraseblock *jeb, uint32_t bad_offset);
@@ -111,7 +111,7 @@ void jffs2_erase_pending_blocks(struct jffs2_sb_info *c, int count) {
 	}
 
 	spin_unlock(&c->erase_completion_lock);
-	done:
+done:
 	D1(printk( "jffs2_erase_pending_blocks completed\n"));
 
 	up(&c->erase_free_sem);
@@ -293,7 +293,7 @@ static int jffs2_block_check_erase(struct jffs2_sb_info *c,
 		cond_resched();
 	}
 	ret = 0;
-	fail:
+fail:
 	kfree(ebuf);
 	return ret;
 }
@@ -390,7 +390,7 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c,
 	wake_up(&c->erase_wait);
 	return;
 
-	filebad:
+filebad:
 	spin_lock(&c->erase_completion_lock);
 	/* Stick it on a list (any list) so erase_failed can take it
 	 * right off again.  Silly, but shouldn't happen often.
@@ -400,7 +400,7 @@ static void jffs2_mark_erased_block(struct jffs2_sb_info *c,
 	jffs2_erase_failed(c, jeb, bad_offset);
 	return;
 
-	refile:
+refile:
 	/* Stick it back on the list from whence it came and come back later */
 	jffs2_erase_pending_trigger(c);
 	spin_lock(&c->erase_completion_lock);

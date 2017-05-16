@@ -21,7 +21,7 @@ static_assert(LINES_N * LEDS_PER_LINE == LEDDRV_LED_N);
 
 struct leddrv_pin_desc {
 	GPIO_TypeDef *gpio; /**< gpio port  */
-	unsigned int pin; /**< pin mask */
+	unsigned int  pin; /**< pin mask */
 };
 
 #define LEDBLOCK_MAJOR 2
@@ -148,12 +148,12 @@ static inline void leddrv_pin_init(const struct leddrv_pin_desc *pd, unsigned in
 void leddrv_ll_init(void) {
 	/* Enable GPIOs clocks */
 	RCC_AHB1PeriphClockCmd(
-			RCC_AHB1Periph_GPIOA |
-			RCC_AHB1Periph_GPIOB |
-			RCC_AHB1Periph_GPIOC |
-			RCC_AHB1Periph_GPIOD |
-			RCC_AHB1Periph_GPIOE,
-			ENABLE);
+		RCC_AHB1Periph_GPIOA |
+		RCC_AHB1Periph_GPIOB |
+		RCC_AHB1Periph_GPIOC |
+		RCC_AHB1Periph_GPIOD |
+		RCC_AHB1Periph_GPIOE,
+		ENABLE);
 
 	leddrv_pin_init(&leddrv_shf_clk, GPIO_Mode_OUT);
 	leddrv_pin_init(&leddrv_str_clk, GPIO_Mode_OUT);

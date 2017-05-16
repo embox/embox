@@ -27,9 +27,9 @@ int main(int argc, char *argv[]) {
 		int ipc_fd = cnc_ctrl_ipc_init();
 
 		printf("HTTP/1.1 %d %s\r\n"
-			   "Content-Type: %s\r\n"
-			   "Connection: close\r\n"
-			   "\r\n", 200, "OK", "text/plain");
+				"Content-Type: %s\r\n"
+				"Connection: close\r\n"
+				"\r\n", 200, "OK", "text/plain");
 
 		dup2(ipc_fd, STDOUT_FILENO);
 		close(STDIN_FILENO);

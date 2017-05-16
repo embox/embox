@@ -136,8 +136,8 @@ struct fec_buf_desc {
 #if 0
 	uint32_t flags2;
 	uint16_t payload_checksum; /* Used only for RX */
-	uint8_t protocol;          /* Used only for RX */
-	uint8_t header_len;        /* Used only for RX */
+	uint8_t	 protocol;         /* Used only for RX */
+	uint8_t	 header_len;       /* Used only for RX */
 	uint16_t pad1;             /* Unused */
 	uint16_t flags3;           /* Used only for RX */
 	uint32_t timestamp;

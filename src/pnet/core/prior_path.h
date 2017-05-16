@@ -15,13 +15,13 @@
 #include <pnet/core/types.h>
 
 struct pnet_path {
-	unsigned char    *own_mac;
-	unsigned char partner_mac[MAX_ADDR_LEN];
+	unsigned char *own_mac;
+	unsigned char  partner_mac[MAX_ADDR_LEN];
 	unsigned short type;   /* IP, ARP */
 	struct in_addr sin_addr;   /*log addr*/
-	short sin_family;            /* UDP, TCP */
+	short		   sin_family;   /* UDP, TCP */
 	unsigned short sin_port;
-	char prior_level;
+	char		   prior_level;
 };
 
 extern struct pnet_path *pnet_get_dev_prior(struct net_device *dev);

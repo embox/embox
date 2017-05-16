@@ -33,9 +33,9 @@
 EMBOX_UNIT_INIT(tun_init);
 
 struct tun {
-	struct mutex mtx_use;
+	struct mutex		mtx_use;
 	struct sk_buff_head rx_q;
-	struct waitq wq;
+	struct waitq		wq;
 };
 
 static struct net_device *tun_g_array[TUN_N];
@@ -278,11 +278,11 @@ static int tun_init(void) {
 
 	return 0;
 
-	err_inetdev_deregister:
+err_inetdev_deregister:
 	/* inetdev_deregister */
-	err_netdev_free:
+err_netdev_free:
 	netdev_free(tdev);
-	err_deinit:
+err_deinit:
 	tun_deinit();
 	return err;
 

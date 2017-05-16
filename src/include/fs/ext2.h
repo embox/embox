@@ -368,18 +368,18 @@ struct ext2sb {
 	uint32_t s_inodes_per_group;   /* # Inodes per group */
 	uint32_t s_mtime;              /* Mount time */
 	uint32_t s_wtime;              /* Write time */
-	u16_t s_mnt_count;             /* Mount count */
-	u16_t s_max_mnt_count;         /* Maximal mount count */
-	u16_t s_magic;                 /* Magic signature */
-	u16_t s_state;                 /* File system state */
-	u16_t s_errors;                /* Behaviour when detecting errors */
-	u16_t s_minor_rev_level;       /* minor revision level */
+	u16_t	 s_mnt_count;          /* Mount count */
+	u16_t	 s_max_mnt_count;      /* Maximal mount count */
+	u16_t	 s_magic;              /* Magic signature */
+	u16_t	 s_state;              /* File system state */
+	u16_t	 s_errors;             /* Behaviour when detecting errors */
+	u16_t	 s_minor_rev_level;    /* minor revision level */
 	uint32_t s_lastcheck;          /* time of last check */
 	uint32_t s_checkinterval;      /* max. time between checks */
 	uint32_t s_creator_os;         /* OS */
 	uint32_t s_rev_level;          /* Revision level */
-	u16_t s_def_resuid;            /* Default uid for reserved blocks */
-	u16_t s_def_resgid;            /* Default gid for reserved blocks */
+	u16_t	 s_def_resuid;         /* Default uid for reserved blocks */
+	u16_t	 s_def_resgid;         /* Default gid for reserved blocks */
 	/*
 	 * These fields are for EXT2_DYNAMIC_REV superblocks only.
 	 *
@@ -394,33 +394,33 @@ struct ext2sb {
 	 * things it doesn't understand...
 	 */
 	uint32_t s_first_ino;          /* First non-reserved inode */
-	u16_t s_inode_size;            /* size of inode structure */
-	u16_t s_block_group_nr;        /* block group # of this superblock */
+	u16_t	 s_inode_size;         /* size of inode structure */
+	u16_t	 s_block_group_nr;     /* block group # of this superblock */
 	uint32_t s_feature_compat;     /* compatible feature set */
 	uint32_t s_feature_incompat;   /* incompatible feature set */
 	uint32_t s_feature_ro_compat;  /* readonly-compatible feature set */
-	u8_t s_uuid[16];               /* 128-bit uuid for volume */
-	char s_volume_name[16];        /* volume name */
-	char s_last_mounted[64];       /* directory where last mounted */
+	u8_t	 s_uuid[16];           /* 128-bit uuid for volume */
+	char	 s_volume_name[16];    /* volume name */
+	char	 s_last_mounted[64];   /* directory where last mounted */
 	uint32_t s_algorithm_usage_bitmap;  /* For compression */
 	/*
 	 * Performance hints.  Directory preallocation should only
 	 * happen if the EXT2_COMPAT_PREALLOC flag is on.
 	 */
-	u8_t s_prealloc_blocks;         /* Nr of blocks to try to preallocate*/
-	u8_t s_prealloc_dir_blocks;     /* Nr to preallocate for dirs */
+	u8_t  s_prealloc_blocks;        /* Nr of blocks to try to preallocate*/
+	u8_t  s_prealloc_dir_blocks;    /* Nr to preallocate for dirs */
 	u16_t s_padding1;
 	/*
 	 * Journaling support valid if EXT3_FEATURE_COMPAT_HAS_JOURNAL set.
 	 */
-	u8_t s_journal_uuid[16];        /* uuid of journal superblock */
+	u8_t	 s_journal_uuid[16];    /* uuid of journal superblock */
 	uint32_t s_journal_inum;        /* inode number of journal file */
 	uint32_t s_journal_dev;         /* device number of journal file */
 	uint32_t s_last_orphan;         /* start of list of inodes to delete */
 	uint32_t s_hash_seed[4];        /* HTREE hash seed */
-	u8_t s_def_hash_version;        /* Default hash version to use */
-	u8_t s_reserved_char_pad;
-	u16_t s_reserved_word_pad;
+	u8_t	 s_def_hash_version;    /* Default hash version to use */
+	u8_t	 s_reserved_char_pad;
+	u16_t	 s_reserved_word_pad;
 	uint32_t s_default_mount_opts;
 	uint32_t s_first_meta_bg;       /* First metablock block group */
 	uint32_t s_reserved[190];       /* Padding to the end of the block */
@@ -431,10 +431,10 @@ struct ext2_gd {
 	uint32_t block_bitmap;      /* Blocks bitmap block */
 	uint32_t inode_bitmap;      /* Inodes bitmap block */
 	uint32_t inode_table;       /* Inodes table block */
-	u16_t free_blocks_count;    /* Free blocks count */
-	u16_t free_inodes_count;    /* Free inodes count */
-	u16_t used_dirs_count;      /* Directories count */
-	u16_t pad;
+	u16_t	 free_blocks_count; /* Free blocks count */
+	u16_t	 free_inodes_count; /* Free inodes count */
+	u16_t	 used_dirs_count;   /* Directories count */
+	u16_t	 pad;
 	uint32_t reserved[3];
 };
 
@@ -442,9 +442,9 @@ struct ext2_gd {
 struct  ext2fs_direct {
 	uint32_t e2d_ino;       /* inode number of entry */
 	uint16_t e2d_reclen;    /* length of this record */
-	uint8_t e2d_namlen;     /* length of string in d_name */
-	uint8_t e2d_type;       /* file type */
-	char e2d_name[EXT2FS_MAXNAMLEN];/* name with length<=EXT2FS_MAXNAMLEN */
+	uint8_t	 e2d_namlen;    /* length of string in d_name */
+	uint8_t	 e2d_type;      /* file type */
+	char	 e2d_name[EXT2FS_MAXNAMLEN];/* name with length<=EXT2FS_MAXNAMLEN */
 };
 
 /* Current position in block */
@@ -510,24 +510,24 @@ struct ext2fs_dinode {
 	uint32_t i_faddr;       /* 112: fragment address */
 	union {
 		struct {
-			u8_t l_i_frag;          /* Fragment number / */
-			u8_t l_i_fsize;         /* Fragment size / */
+			u8_t  l_i_frag;         /* Fragment number / */
+			u8_t  l_i_fsize;        /* Fragment size / */
 			u16_t i_pad1;
 			u16_t l_i_uid_high;    /* these 2 fields    / */
 			u16_t l_i_gid_high;    /* were reserved2[0] / */
 			u32_t l_i_reserved2;
 		} linux2;
 		struct {
-			u8_t h_i_frag;          /* Fragment number / */
-			u8_t h_i_fsize;         /* Fragment size / */
+			u8_t  h_i_frag;         /* Fragment number / */
+			u8_t  h_i_fsize;        /* Fragment size / */
 			u16_t h_i_mode_high;
 			u16_t h_i_uid_high;
 			u16_t h_i_gid_high;
 			u32_t h_i_author;
 		} hurd2;
 		struct {
-			u8_t m_i_frag;          /* Fragment number / */
-			u8_t m_i_fsize;         /* Fragment size / */
+			u8_t  m_i_frag;         /* Fragment number / */
+			u8_t  m_i_fsize;        /* Fragment size / */
 			u16_t m_pad1;
 			u32_t m_i_reserved2[2];
 		} masix2;
@@ -536,28 +536,28 @@ struct ext2fs_dinode {
 
 /* in-memory data for ext2fs */
 typedef struct ext2_fs_info {
-	struct ext2sb e2sb;
+	struct ext2sb	 e2sb;
 	struct  ext2_gd *e2fs_gd; /* group descripors */
 	/* The following items are only used when the super_block is in memory. */
-	int32_t s_bshift;   /* ``lblkno'' calc of logical blkno */
-	int32_t s_bmask;    /* ``blkoff'' calc of blk offsets */
-	int64_t s_qbmask;   /* ~fs_bmask - for use with quad size */
-	int32_t s_fsbtodb;  /* fsbtodb and dbtofsb shift constant */
-	int32_t s_ncg;  /* number of cylinder groups */
+	int32_t	 s_bshift;  /* ``lblkno'' calc of logical blkno */
+	int32_t	 s_bmask;   /* ``blkoff'' calc of blk offsets */
+	int64_t	 s_qbmask;  /* ~fs_bmask - for use with quad size */
+	int32_t	 s_fsbtodb; /* fsbtodb and dbtofsb shift constant */
+	int32_t	 s_ncg; /* number of cylinder groups */
 	uint32_t s_block_size;             /* block size in bytes. */
 	uint32_t s_inodes_per_block;       /* Number of inodes per block */
 	uint32_t s_itb_per_group;          /* Number of inode table blocks per group */
 	uint32_t s_gdb_count;              /* Number of group descriptor blocks */
 	uint32_t s_desc_per_block;         /* Number of group descriptors per block */
 	uint32_t s_groups_count;           /* Number of groups in the fs */
-	size_t s_page_count;               /* Number of pages of embox for file r/w buffer*/
-	u16_t s_sectors_in_block;          /* s_block_size / 512 */
+	size_t	 s_page_count;             /* Number of pages of embox for file r/w buffer*/
+	u16_t	 s_sectors_in_block;       /* s_block_size / 512 */
 	uint32_t s_bsearch;                /* all data blocks  below this block are in use*/
-	u8_t s_blocksize_bits;             /* Used to calculate offsets (e.g. inode block),
+	u8_t	 s_blocksize_bits;         /* Used to calculate offsets (e.g. inode block),
 	                                    * always s_log_block_size + 10.
 	                                    */
 	journal_t *journal; /* ext3 journal. XXX it would be better to have separate ext3_fs_info */
-	char mntto[PATH_MAX];
+	char	   mntto[PATH_MAX];
 } ext2_fs_info_t;
 
 /*
@@ -565,16 +565,16 @@ typedef struct ext2_fs_info {
  */
 typedef struct ext2_file_info {
 	struct ext2fs_dinode f_di;          /* copy of on-disk inode */
-	uint f_nishift;         /* for blocks in indirect block */
-	int32_t f_ind_cache_block;
-	int32_t f_ind_cache[IND_CACHE_SZ];
+	uint				 f_nishift; /* for blocks in indirect block */
+	int32_t				 f_ind_cache_block;
+	int32_t				 f_ind_cache[IND_CACHE_SZ];
 
-	char        *f_buf;     /* buffer for data block */
-	size_t f_buf_size;      /* size of data block */
+	char *	f_buf;          /* buffer for data block */
+	size_t	f_buf_size;     /* size of data block */
 	int64_t f_buf_blkno;    /* block number of data block */
-	long f_pointer;         /* local seek pointer */
+	long	f_pointer;      /* local seek pointer */
 
-	ino_t f_num;                /* inode number on its (minor) device */
+	ino_t	 f_num;             /* inode number on its (minor) device */
 	uint32_t f_bsearch;         /* where to start search for new blocks,
 	                             * also this is last allocated block.
 	                             */
@@ -586,13 +586,13 @@ typedef struct ext2_file_info {
 } ext2_file_info_t;
 
 struct ext2_xattr_ent {
-	uint8_t e_name_len;
-	uint8_t e_name_index;
+	uint8_t	 e_name_len;
+	uint8_t	 e_name_index;
 	uint16_t e_value_offs;
 	uint32_t e_value_block;
 	uint32_t e_value_size;
 	uint32_t e_hash;
-	char e_name[];
+	char	 e_name[];
 };
 
 struct ext2_xattr_hdr {
@@ -600,7 +600,7 @@ struct ext2_xattr_hdr {
 	uint32_t h_refcount;
 	uint32_t h_blocks;
 	uint32_t h_hash;
-	uint8_t reserved[16];
+	uint8_t	 reserved[16];
 	struct ext2_xattr_ent
 			h_entries[];
 };

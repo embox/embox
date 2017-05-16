@@ -25,7 +25,7 @@ static int test_fd;
 static const char test_file_contains[] = {
 	"\""
 	  #include "initfs_test_file.txt"
-			   "\""
+	"\""
 };
 /* array has a null terminated symbol the size equal size of array except one */
 #define SIZE_OF_FILE (sizeof(test_file_contains) - 1)

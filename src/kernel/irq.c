@@ -32,15 +32,15 @@
 #include <mem/objalloc.h>
 
 struct irq_entry {
-	irq_handler_t handler;
-	void *dev_id;
+	irq_handler_t	  handler;
+	void *			  dev_id;
 	struct dlist_head action_link;
 };
 
 struct irq_action {
 	struct irq_entry *entry;
 	struct dlist_head entry_list;
-	int sharing_supported;
+	int				  sharing_supported;
 };
 
 #if OPTION_GET(NUMBER, action_n) <= 0
@@ -112,7 +112,7 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 		irqctrl_enable(irq_nr);
 	}
 
-	out_unlock: irq_unlock();
+out_unlock: irq_unlock();
 	return ret;
 }
 
@@ -147,7 +147,7 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 		}
 	}
 
-	out_unlock: irq_unlock();
+out_unlock: irq_unlock();
 	return ret;
 }
 

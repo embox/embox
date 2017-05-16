@@ -25,15 +25,15 @@ struct task {
 	int status;
 	int tsk_id;
 
-	struct task *parent;
+	struct task *	  parent;
 	struct dlist_head child_list;
 	struct dlist_head child_lnk;
 
-	char tsk_name[MAX_TASK_NAME_LEN];
-	struct thread *tsk_main;
+	char			tsk_name[MAX_TASK_NAME_LEN];
+	struct thread * tsk_main;
 	task_priority_t tsk_priority;
-	clock_t tsk_clock;
-	char resources[];
+	clock_t			tsk_clock;
+	char			resources[];
 };
 
 __BEGIN_DECLS

@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
 	}
 
 	return 0;
-	error:
+error:
 	if (ret == 0) {
 		assert(!smtp_ok(&ss));
 		printf("%s: server error: %s\n", argv[0], smtp_status(&ss));

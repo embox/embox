@@ -24,7 +24,7 @@ EMBOX_UNIT_INIT(pci_bios_init);
 #include <util/binalign.h>
 
 struct space_allocator {
-	void *space_base;
+	void * space_base;
 	size_t space_size;
 };
 
@@ -69,7 +69,7 @@ static int pci_slot_configure(uint32_t busn, uint32_t devfn){
 		window = space_alloc(&pci_allocator, length, length);
 		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), (uint32_t)window);
 		log_debug("pci bus %d fn = %d bar_num %d "
-				  "bar = 0x%X win = 0x%X len = 0x%X\n",
+				"bar = 0x%X win = 0x%X len = 0x%X\n",
 				busn, devfn, bar_num,
 				bar, (uint32_t)window, (uint32_t)length);
 	}

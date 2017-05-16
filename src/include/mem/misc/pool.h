@@ -53,7 +53,7 @@ struct pool {
  */
 #define POOL_DEF_ATTR(name, object_type, size, attr) \
 	static union { \
-		object_type object; \
+		object_type		  object; \
 		struct slist_link free_link; \
 	} __pool_storage ## name[size] \
 	attr __attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \

@@ -25,7 +25,7 @@ EMBOX_UNIT_INIT(usb_whitelist_dev_init);
 
 struct usb_whitelist_temp_string {
 	short lang_array[2];
-	char str_sn[2 * USB_WHITELIST_SN_LEN];
+	char  str_sn[2 * USB_WHITELIST_SN_LEN];
 };
 
 POOL_DEF(usb_whitelist_temp_strings, struct usb_whitelist_temp_string, 16);
@@ -35,8 +35,8 @@ static const char *builtin_whitelist = OPTION_STRING_GET(whitelist);
 #define USB_WHITELIST_MAX_RULES 16
 
 static struct usb_whitelist_conf {
-	unsigned int next_id;
-	int rules_n;
+	unsigned int			  next_id;
+	int						  rules_n;
 	struct usb_whitelist_rule rules[USB_WHITELIST_MAX_RULES];
 } whitelist_conf;
 
@@ -139,8 +139,8 @@ static void usb_wl_sn_len_got(struct usb_request *req, void *arg) {
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
 			USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_STRING << 8 | dev->dev_desc.i_serial_number,
-				lang_id, tstrs->str_sn[0],
-				&tstrs->str_sn);
+			lang_id, tstrs->str_sn[0],
+			&tstrs->str_sn);
 }
 
 static void usb_wl_lang_array_got(struct usb_request *req, void *arg) {
@@ -153,8 +153,8 @@ static void usb_wl_lang_array_got(struct usb_request *req, void *arg) {
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
 			USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_STRING << 8 | dev->dev_desc.i_serial_number,
-				lang_id, 2,
-				&tstrs->str_sn);
+			lang_id, 2,
+			&tstrs->str_sn);
 }
 
 int usb_whitelist_check(struct usb_dev *dev) {
@@ -177,8 +177,8 @@ int usb_whitelist_check(struct usb_dev *dev) {
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
 			USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_STRING << 8,
-				0, sizeof(tstrs->lang_array),
-				&tstrs->lang_array);
+			0, sizeof(tstrs->lang_array),
+			&tstrs->lang_array);
 
 	return -EBUSY;
 }

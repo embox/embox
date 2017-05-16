@@ -33,14 +33,14 @@ WINDOW *curscr;
 #define SCREEN_MAX_HEIGHT 200
 
 typedef struct SCREEN {
-	char *type;
-	FILE *out;
-	FILE *in;
-	WINDOW std_win;   /* stdscr storage */
-	chtype std_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
-	WINDOW cur_win;   /* curscr storage */
-	chtype cur_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
-	bool curses_mode; /* terminal mode (normal or curses) */
+	char *		   type;
+	FILE *		   out;
+	FILE *		   in;
+	WINDOW		   std_win; /* stdscr storage */
+	chtype		   std_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
+	WINDOW		   cur_win; /* curscr storage */
+	chtype		   cur_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
+	bool		   curses_mode; /* terminal mode (normal or curses) */
 	struct termios last_mode;
 } SCREEN;
 
@@ -205,7 +205,7 @@ WINDOW *subwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 WINDOW *derwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 		int begin_x) {
 	return subwin(orig, nlines, ncols, orig->begy + begin_y,
-			orig->begx + begin_x);
+				   orig->begx + begin_x);
 }
 
 int delwin(WINDOW *win) {

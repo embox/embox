@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
 			}
 		}
 		else {
-			after_chain:
+after_chain:
 			/* else */ if (((oper == 'R') || (oper == 'D') || (oper == 'I')
 					|| (oper == 'L'))
 					&& (rule_num == -1)) {
@@ -213,7 +213,7 @@ int main(int argc, char **argv) {
 				rule_num -= 1;
 			}
 			else {
-				after_rule_num:
+after_rule_num:
 				/* else */ if ((oper == 'P')
 						&& (rule.target == NF_TARGET_UNKNOWN)) {
 					rule.target = nf_target_get_by_name(argv[ind]);

@@ -473,7 +473,7 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 		}
 	}
 
-	out:
+out:
 	fclose(passwdf);
 	return res;
 }

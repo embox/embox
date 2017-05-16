@@ -136,17 +136,17 @@ static int hello_srs_main(int argc, char *argv[] )
 	}
 
 	printf(
-			"HTTP/1.1 %d %s\r\n"
-			"Content-Type: %s\r\n"
-			"Connection: close\r\n"
-			"\r\n", 200, "OK", "text/html");
+		"HTTP/1.1 %d %s\r\n"
+		"Content-Type: %s\r\n"
+		"Connection: close\r\n"
+		"\r\n", 200, "OK", "text/html");
 
 	printf("<HTML>"
-		   "<HEAD>"
-		   "<TITLE>Fact</TITLE>"
-		   "</HEAD>"
-		   "<BODY>"
-		   "Body: ");
+			"<HEAD>"
+			"<TITLE>Fact</TITLE>"
+			"</HEAD>"
+			"<BODY>"
+			"Body: ");
 	if (flag == 1) {
 		Out1(a);
 	}
@@ -156,8 +156,8 @@ static int hello_srs_main(int argc, char *argv[] )
 	}
 
 	printf(
-			"</BODY>"
-			"</HTML>");
+		"</BODY>"
+		"</HTML>");
 
 	free(query);
 	fflush(stdout);

@@ -584,9 +584,9 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 		/* mirror the FAT into copy 2 */
 		if (DFS_OK == result) {
 			result = fat_write_sector(
-					fsi,
-					p_scratch,
-					(*p_scratchcache) + volinfo->secperfat
+				fsi,
+				p_scratch,
+				(*p_scratchcache) + volinfo->secperfat
 					);
 		}
 		break;

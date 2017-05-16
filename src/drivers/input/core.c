@@ -61,7 +61,7 @@ int input_dev_input(struct input_dev *dev) {
 		}
 		lthread_launch(&indev_handler_lt);
 	}
-	out_unlock:
+out_unlock:
 	irq_unlock();
 
 	return 0;

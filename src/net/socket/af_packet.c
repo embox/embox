@@ -59,9 +59,9 @@ static const struct sock_proto_ops packet_sock_ops_struct = {
 EMBOX_NET_SOCK(AF_PACKET, SOCK_RAW, HOST_ETH_P_ALL, 0, packet_sock_ops_struct);
 
 struct packet_sock {
-	struct sock sk;
-	struct dlist_head lnk;
-	struct sockaddr_ll sll;
+	struct sock			sk;
+	struct dlist_head	lnk;
+	struct sockaddr_ll	sll;
 	struct sk_buff_head rx_q;
 };
 

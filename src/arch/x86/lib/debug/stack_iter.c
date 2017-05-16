@@ -21,8 +21,8 @@ int stack_iter_next(stack_iter_t *f);
 
 static inline int is_traps_pc(void *pc) {
 	return check_range((char *) pc,
-			__lang_extern_ref(char, _traps_text_start),
-			__lang_extern_ref(char, _traps_text_end));
+				   __lang_extern_ref(char, _traps_text_start),
+				   __lang_extern_ref(char, _traps_text_end));
 }
 
 void stack_iter_context(stack_iter_t *f, struct context *ctx) {

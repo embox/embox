@@ -81,25 +81,25 @@ typedef int TRexNodeType;
 
 typedef struct tagTRexNode {
 	TRexNodeType type;
-	int left;
-	int right;
-	int next;
+	int			 left;
+	int			 right;
+	int			 next;
 }TRexNode;
 
 struct TRex {
 	const TRexChar *_eol;
 	const TRexChar *_bol;
 	const TRexChar *_p;
-	int _first;
-	int _op;
-	TRexNode *_nodes;
-	int _nallocated;
-	int _nsize;
-	int _nsubexpr;
-	TRexMatch *_matches;
-	int _currsubexp;
-	void *_jmpbuf;
-	TRexChar *_error;
+	int				_first;
+	int				_op;
+	TRexNode *		_nodes;
+	int				_nallocated;
+	int				_nsize;
+	int				_nsubexpr;
+	TRexMatch *		_matches;
+	int				_currsubexp;
+	void *			_jmpbuf;
+	TRexChar *		_error;
 };
 
 static int trex_list(TRex *exp);

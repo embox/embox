@@ -58,8 +58,8 @@ static void at91uart_diag_putc(const struct diag *diag, char ch) {
 }
 
 DIAG_OPS_DECLARE(
-		.init = at91uart_diag_init,
-		.putc = at91uart_diag_putc,
-		.getc = at91uart_diag_getc,
-		.kbhit = at91uart_diag_hasrx,
+	.init = at91uart_diag_init,
+	.putc = at91uart_diag_putc,
+	.getc = at91uart_diag_getc,
+	.kbhit = at91uart_diag_hasrx,
 );

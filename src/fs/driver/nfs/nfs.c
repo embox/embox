@@ -394,7 +394,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 		return 0;
 	}
 
-	error:
+error:
 	nfs_free_fs(dir_nas);
 
 	return rc;
@@ -433,7 +433,7 @@ static int nfsfs_umount(void *dir) {
 
 static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) {
 	struct nas *nas;
-	node_t  *node;
+	node_t *node;
 	nfs_file_info_t *fi;
 	const char *name;
 	mode_t mode;
@@ -612,7 +612,7 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 	req.new.fname = &name;
 	/* set attribute of new file */
 	req.mode_vf = req.uid_vf = req.gid_vf = req.size_vf =
-									req.set_atime = req.set_mtime =  VALUE_FOLLOWS_YES;
+			req.set_atime = req.set_mtime =  VALUE_FOLLOWS_YES;
 	req.uid = req.gid = 0;
 
 	/* send nfs CREATE command   */
@@ -864,7 +864,7 @@ static int nfs_lookup(struct nas *nas) {
 
 	/* send read command */
 	return nfs_call_proc_nfs(nas, NFSPROC3_LOOKUP,
-			(char *) &req, (char *) &reply);
+				   (char *) &req, (char *) &reply);
 }
 
 static int nfs_mount(struct nas *nas) {

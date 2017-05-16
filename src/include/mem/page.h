@@ -18,13 +18,13 @@
 #include <module/embox/mem/page_api.h>
 
 struct page_allocator {
-	void *pages_start;
+	void *		 pages_start;
 	unsigned int pages_n;
-	size_t page_size;
+	size_t		 page_size;
 
 	size_t free;
 
-	size_t bitmap_len;
+	size_t		   bitmap_len;
 	unsigned long *bitmap;
 };
 

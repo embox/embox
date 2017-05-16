@@ -18,9 +18,9 @@
 
 struct pushpull {
 	unsigned char *buf;
-	unsigned int buflen;
-	unsigned int ofs;
-	unsigned int reserve;
+	unsigned int   buflen;
+	unsigned int   ofs;
+	unsigned int   reserve;
 };
 
 static inline void init_pushpull(struct pushpull *pp,

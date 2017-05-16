@@ -48,11 +48,11 @@ EMBOX_UNIT_INIT(integratorcp_init);
 
 static int integratorcp_clock_setup(struct time_dev_conf *conf) {
 	if (NULL == mmap_device_memory(
-			(void *) TIMER_BASE,
-			0x28,
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			MAP_FIXED,
-			(unsigned long) TIMER_BASE)) {
+				(void *) TIMER_BASE,
+				0x28,
+				PROT_READ | PROT_WRITE | PROT_NOCACHE,
+				MAP_FIXED,
+				(unsigned long) TIMER_BASE)) {
 		return -1;
 	}
 
@@ -90,5 +90,5 @@ static int integratorcp_init(void) {
 	clock_source_register(&integratorcp_cs);
 
 	return irq_attach(CLOCK_IRQ, clock_handler, 0, &integratorcp_cs,
-			"integratorcp_clk");
+				   "integratorcp_clk");
 }

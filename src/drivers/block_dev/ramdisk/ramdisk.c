@@ -97,13 +97,13 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	ramdisk->bdev->block_size = PAGE_SIZE();
 	return ramdisk;
 
-	err_free_bdev_idx:
+err_free_bdev_idx:
 	index_free(&ramdisk_idx, idx);
-	err_free_mem:
+err_free_mem:
 	phymem_free(ramdisk->p_start_addr, page_n);
-	err_free_ramdisk:
+err_free_ramdisk:
 	pool_free(&ramdisk_pool, ramdisk);
-	err_out:
+err_out:
 	return err_ptr(err);
 
 }

@@ -31,7 +31,7 @@
 
 struct rt_entry_info {
 	struct dlist_head lnk;
-	struct rt_entry entry;
+	struct rt_entry	  entry;
 };
 
 POOL_DEF(rt_entry_info_pool, struct rt_entry_info, OPTION_GET(NUMBER,route_table_size));
@@ -239,7 +239,7 @@ struct rt_entry *rt_fib_get_first(void) {
 	}
 
 	return &dlist_next_entry_or_null(&rt_entry_info_list,
-			struct rt_entry_info, lnk)->entry;
+				   struct rt_entry_info, lnk)->entry;
 }
 
 struct rt_entry *rt_fib_get_next(struct rt_entry *entry) {
@@ -254,7 +254,7 @@ struct rt_entry *rt_fib_get_next(struct rt_entry *entry) {
 	}
 
 	return &dlist_entry(rt_info->lnk.next,
-			struct rt_entry_info, lnk)->entry;
+				   struct rt_entry_info, lnk)->entry;
 }
 
 /* ToDo: It's too ugly to perform sorting for every packet.

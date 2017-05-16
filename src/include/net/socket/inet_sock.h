@@ -39,12 +39,12 @@ struct inet_sock_opt {
  * @var mc_ttl - Multicasting TTL
  */
 typedef struct inet_sock {
-	struct sock sk;            /* Base socket class (MUST BE FIRST) */
+	struct sock		   sk;     /* Base socket class (MUST BE FIRST) */
 	struct sockaddr_in src_in; /* address from which the socket
 	                              receives packets */
-	struct sockaddr_in dst_in; /* really address of destonation host */
-	int16_t uc_ttl;
-	uint16_t id;
+	struct sockaddr_in	 dst_in; /* really address of destonation host */
+	int16_t				 uc_ttl;
+	uint16_t			 id;
 	struct inet_sock_opt opt;
 } inet_sock_t;
 

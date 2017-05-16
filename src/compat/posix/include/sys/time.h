@@ -20,7 +20,7 @@
  * suseconds_t    tv_usec     microseconds
  */
 struct timeval {
-	time_t tv_sec;
+	time_t		tv_sec;
 	suseconds_t tv_usec;
 };
 

@@ -154,7 +154,7 @@ int mod_enable(const struct mod *mod) {
 	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
 
 	return 0;
-	opfailed:
+opfailed:
 	mod_flag_set(mod, MOD_FLAG_OPFAILED);
 	return -EINTR;
 }
@@ -182,7 +182,7 @@ int mod_disable(const struct mod *mod) {
 	mod_flag_tgl(mod, MOD_FLAG_ENABLED);
 	return 0;
 
-	opfailed:
+opfailed:
 	mod_flag_set(mod, MOD_FLAG_OPFAILED);
 	return -EINTR;
 }

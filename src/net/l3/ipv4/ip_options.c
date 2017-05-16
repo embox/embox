@@ -201,13 +201,13 @@ int ip_options_compile(sk_buff_t *skb, ip_options_t *opt) {
 
 	}
 
-	end:
+end:
 	if (!optsfault)
 	{
 		return 0;
 	}
 
-	error:
+error:
 	curroptlen = (int) (optsfault - (unsigned char *) iph);
 	icmp_discard(skb, ICMP_PARAM_PROB, ICMP_PTR_ERROR,
 			(uint8_t)curroptlen);

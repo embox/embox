@@ -112,12 +112,12 @@ typedef enum __ns_sect {
  * leading _'s on the member names.  Use the accessor functions, not the _'s.
  */
 typedef struct __ns_msg {
-	const u_char    *_msg, *_eom;
-	u_int16_t _id, _flags, _counts[ns_s_max];
-	const u_char    *_sections[ns_s_max];
-	ns_sect _sect;
-	int _rrnum;
-	const u_char    *_msg_ptr;
+	const u_char *_msg, *_eom;
+	u_int16_t	  _id, _flags, _counts[ns_s_max];
+	const u_char *_sections[ns_s_max];
+	ns_sect		  _sect;
+	int			  _rrnum;
+	const u_char *_msg_ptr;
 } ns_msg;
 
 /* Private data structure - do not use from outside library. */
@@ -138,11 +138,11 @@ extern const struct _ns_flagdata _ns_flagdata[];
  * This is a parsed record.  It is caller allocated and has no dynamic data.
  */
 typedef struct __ns_rr {
-	char name[NS_MAXDNAME];
-	u_int16_t type;
-	u_int16_t rr_class;
-	u_int32_t ttl;
-	u_int16_t rdlength;
+	char		  name[NS_MAXDNAME];
+	u_int16_t	  type;
+	u_int16_t	  rr_class;
+	u_int32_t	  ttl;
+	u_int16_t	  rdlength;
 	const u_char *rdata;
 } ns_rr;
 
@@ -222,9 +222,9 @@ typedef enum __ns_update_operation {
  * This structure is used for TSIG authenticated messages
  */
 struct ns_tsig_key {
-	char name[NS_MAXDNAME], alg[NS_MAXDNAME];
+	char		   name[NS_MAXDNAME], alg[NS_MAXDNAME];
 	unsigned char *data;
-	int len;
+	int			   len;
 };
 typedef struct ns_tsig_key ns_tsig_key;
 
@@ -232,11 +232,11 @@ typedef struct ns_tsig_key ns_tsig_key;
  * This structure is used for TSIG authenticated TCP messages
  */
 struct ns_tcp_tsig_state {
-	int counter;
+	int				counter;
 	struct dst_key *key;
-	void *ctx;
-	unsigned char sig[NS_PACKETSZ];
-	int siglen;
+	void *			ctx;
+	unsigned char	sig[NS_PACKETSZ];
+	int				siglen;
 };
 typedef struct ns_tcp_tsig_state ns_tcp_tsig_state;
 

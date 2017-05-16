@@ -47,10 +47,10 @@ typedef struct thread *pthread_t;
 #define PTHREAD_CREATE_DETACHED     THREAD_FLAG_DETACHED
 
 typedef struct pthread_attr {
-	uint32_t flags; /* scope, inherit, detachstate */
-	void *stack;
-	uint32_t stack_size;
-	int policy;
+	uint32_t		   flags; /* scope, inherit, detachstate */
+	void *			   stack;
+	uint32_t		   stack_size;
+	int				   policy;
 	struct sched_param sched_param;
 } pthread_attr_t;
 

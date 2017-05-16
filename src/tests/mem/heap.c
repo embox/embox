@@ -140,6 +140,6 @@ TEST_CASE("Allocates many objects with different size") {
 }
 
 TEST_CASE("malloc fails when trying to allocate a very large"
-		  " chunk of memory") {
+		" chunk of memory") {
 	test_assert_null(malloc(4294966160));
 }

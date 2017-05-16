@@ -67,18 +67,18 @@ struct ntphdr {
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
 	__u8 mode : 3,
 			version : 3,
-			leap : 2;
+			leap	: 2;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
 	__u8 leap : 2,                 /* leap indicator */
 			version : 3,         /* version number */
-			mode : 3;            /* mode */
+			mode	: 3;         /* mode */
 #endif
-	__u8 stratum;                /* stratum */
-	__u8 poll;                   /* poll exponent */
-	__s8 precision;              /* precision exponent */
+	__u8			  stratum;   /* stratum */
+	__u8			  poll;      /* poll exponent */
+	__s8			  precision; /* precision exponent */
 	struct ntp_data_s rootdelay; /* root delay */
 	struct ntp_data_s rootdisp;  /* root dispersion */
-	char refid[4];               /* reference ID */
+	char			  refid[4];  /* reference ID */
 	struct ntp_data_l reftime;   /* reference timestamp */
 	struct ntp_data_l org;       /* origin timestamp */
 	struct ntp_data_l rec;       /* receive timestamp */

@@ -51,8 +51,8 @@
 #define __ARRAY_SPREAD_PRIVATE_DEF(type, array_nm, private_nm, \
 			section_order_tag) \
 	__ARRAY_SPREAD_ENTRY_DEF(type, array_nm,              \
-		__ARRAY_SPREAD_PRIVATE(array_nm, private_nm), \
-		section_order_tag)
+			__ARRAY_SPREAD_PRIVATE(array_nm, private_nm), \
+			section_order_tag)
 
 /* Here goes API implementation. */
 
@@ -87,7 +87,7 @@
 
 #define __ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm, ptr_nm, order, ...) \
 	__ARRAY_SPREAD_ENTRY_DEF(static typeof(array_nm[0]), array_nm, \
-		ptr_nm, "1_body" #order) = { __VA_ARGS__ }
+			ptr_nm, "1_body" #order) = { __VA_ARGS__ }
 
 #define __ARRAY_SPREAD_ADD_NAMED(array_nm, ptr_nm, ...) \
 	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm, ptr_nm, , __VA_ARGS__)
@@ -97,13 +97,13 @@
 
 #define __ARRAY_SPREAD_ADD(array_nm, ...) \
 	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm,                  \
-		__ARRAY_SPREAD_GUARD(array_nm),                        \
-		, __VA_ARGS__)
+			__ARRAY_SPREAD_GUARD(array_nm),                        \
+			, __VA_ARGS__)
 
 #define __ARRAY_SPREAD_ADD_ORDERED(array_nm, order, ...) \
 	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm,                  \
-		__ARRAY_SPREAD_GUARD(array_nm),                        \
-		order, __VA_ARGS__)
+			__ARRAY_SPREAD_GUARD(array_nm),                        \
+			order, __VA_ARGS__)
 
 /* Spread size calculations. */
 
@@ -130,7 +130,7 @@
 
 #define __array_range_foreach(element, array_begin, array_end) \
 	__array_range_foreach_nm(element, array_begin, array_end, \
-		MACRO_GUARD(__ptr), MACRO_GUARD(__end))
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_range_foreach_nm(element, array_begin, array_end, _ptr, _end) \
 	for (const typeof(element) *_ptr = (array_begin), *_end = (array_end); \
@@ -138,7 +138,7 @@
 
 #define __array_nullterm_foreach(element, array) \
 	__array_nullterm_foreach_nm(element, array, \
-		MACRO_GUARD(__ptr))
+			MACRO_GUARD(__ptr))
 
 #define __array_nullterm_foreach_nm(element, array, _ptr) \
 	for (const typeof(element) *_ptr = (array); ((element) = *_ptr); ++_ptr)
@@ -147,12 +147,12 @@
 
 #define __array_foreach_ptr(element_ptr, array, size) \
 	__array_range_foreach_ptr_nm(element_ptr, array, \
-		MACRO_GUARD(__ptr) + (size), \
-		MACRO_GUARD(__ptr), MACRO_GUARD(__end))
+			MACRO_GUARD(__ptr) + (size), \
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_range_foreach_ptr(element_ptr, array_begin, array_end) \
 	__array_range_foreach_ptr_nm(element_ptr, array_begin, array_end, \
-		MACRO_GUARD(__ptr), MACRO_GUARD(__end))
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_range_foreach_ptr_nm(element_ptr, array_begin, array_end, \
 			_ptr, _end) \
@@ -163,7 +163,7 @@
 
 #define __array_spread_foreach(element, array)            \
 	__array_spread_foreach_nm(element, array,             \
-		ARRAY_SPREAD_SIZE(array), MACRO_GUARD(__ptr))
+			ARRAY_SPREAD_SIZE(array), MACRO_GUARD(__ptr))
 
 #define __array_spread_foreach_nm(element, array, size, _ptr)    \
 	for (typeof(element) volatile const *_ptr = (array),         \
@@ -172,8 +172,8 @@
 
 #define __array_spread_foreach_ptr(element_ptr, array)     \
 	__array_spread_foreach_ptr_nm(element_ptr, array,      \
-		MACRO_GUARD(__ptr) + ARRAY_SPREAD_SIZE(array), \
-		MACRO_GUARD(__ptr), MACRO_GUARD(__end))
+			MACRO_GUARD(__ptr) + ARRAY_SPREAD_SIZE(array), \
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_spread_foreach_ptr_nm(element_ptr, array_begin,           \
 			array_end, _ptr, _end)                                            \
@@ -184,7 +184,7 @@
 
 #define __array_spread_nullterm_foreach(element, array) \
 	__array_spread_nullterm_foreach_nm(element, array,  \
-		MACRO_GUARD(__ptr))
+			MACRO_GUARD(__ptr))
 
 #define __array_spread_nullterm_foreach_nm(element, array, _ptr) \
 	for (typeof(element) volatile const *_ptr = (array);         \

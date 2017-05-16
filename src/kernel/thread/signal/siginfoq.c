@@ -24,7 +24,7 @@
 
 struct siginfoq_link {
 	struct slist_link link;
-	siginfo_t info;
+	siginfo_t		  info;
 };
 typedef member_t (struct siginfoq_link, link) siginfoq_member_t;
 

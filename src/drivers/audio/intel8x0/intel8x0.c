@@ -49,11 +49,11 @@ struct intel_ac_hw_dev {
 
 struct intel_ac_dev_priv {
 	struct intel_ac_hw_dev *hw_dev;
-	int devid;
-	uint8_t *out_buf;
-	uint32_t out_buf_len;
-	uint8_t *in_buf;
-	uint32_t in_buf_len;
+	int						devid;
+	uint8_t *				out_buf;
+	uint32_t				out_buf_len;
+	uint8_t *				in_buf;
+	uint32_t				in_buf_len;
 
 	uint32_t cur_buff_offset;
 };

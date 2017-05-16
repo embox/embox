@@ -61,7 +61,7 @@ enum xsd_sockmsg_type
 /* We hand errors as strings, for portability. */
 struct xsd_errors
 {
-	int errnum;
+	int			errnum;
 	const char *errstring;
 };
 #ifdef EINVAL
@@ -114,12 +114,12 @@ enum xs_watch_type
 typedef uint32_t XENSTORE_RING_IDX;
 #define MASK_XENSTORE_IDX(idx) ((idx) & (XENSTORE_RING_SIZE-1))
 struct xenstore_domain_interface {
-	char req[XENSTORE_RING_SIZE]; /* Requests to xenstore daemon. */
-	char rsp[XENSTORE_RING_SIZE]; /* Replies and async watch events. */
+	char			  req[XENSTORE_RING_SIZE]; /* Requests to xenstore daemon. */
+	char			  rsp[XENSTORE_RING_SIZE]; /* Replies and async watch events. */
 	XENSTORE_RING_IDX req_cons, req_prod;
 	XENSTORE_RING_IDX rsp_cons, rsp_prod;
-	uint32_t server_features; /* Bitmap of features supported by the server */
-	uint32_t connection;
+	uint32_t		  server_features; /* Bitmap of features supported by the server */
+	uint32_t		  connection;
 };
 
 /* Violating this is very bad.  See docs/misc/xenstore.txt. */

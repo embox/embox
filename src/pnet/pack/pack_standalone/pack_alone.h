@@ -12,7 +12,7 @@
 #define PNET_PACK_MAX_DATA_LEN 64
 
 struct pnet_pack_data {
-	int len;
+	int	 len;
 	char buff[PNET_PACK_MAX_DATA_LEN];
 };
 

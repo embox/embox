@@ -28,10 +28,10 @@ typedef struct ip6hdr {
 	__u8 version : 4,
 			priority : 4;
 #endif
-	__u8 flow_lbl[3];
-	__be16 payload_len;
-	__u8 nexthdr;
-	__u8 hop_limit;
+	__u8			flow_lbl[3];
+	__be16			payload_len;
+	__u8			nexthdr;
+	__u8			hop_limit;
 	struct in6_addr saddr;
 	struct in6_addr daddr;
 } __attribute__((packed)) ip6hdr_t;

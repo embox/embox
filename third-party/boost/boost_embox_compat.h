@@ -98,7 +98,7 @@ struct ipv6_mreq
 
 struct sockaddr_un {
 	unsigned short sun_family;  /* AF_UNIX */
-	char sun_path[90];
+	char		   sun_path[90];
 };
 
 /*FIXME */

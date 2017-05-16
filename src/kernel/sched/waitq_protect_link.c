@@ -19,7 +19,7 @@ struct waitq_link_protect {
 	struct dlist_head thread_link;
 
 	struct waitq_link *uwql;
-	struct waitq_link pwql;
+	struct waitq_link  pwql;
 };
 
 static inline struct dlist_head *thread_wql_protected_list(void) {

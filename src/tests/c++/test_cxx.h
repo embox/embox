@@ -21,8 +21,8 @@
 	__TEST_FIXTURE_OP_DEF(case_setup, _case_setup);                            \
 	__TEST_FIXTURE_OP_DEF(case_teardown, _case_teardown);                      \
 	__EMBOX_TEST_SUITE_NM_EXT("" _description, &__TEST_FIXTURE_OP(suite_setup), \
-		&__TEST_FIXTURE_OP(suite_teardown), &__TEST_FIXTURE_OP(case_setup), \
-		&__TEST_FIXTURE_OP(case_teardown), __test_suite,                   \
-		MACRO_GUARD(__test_private), true)
+			&__TEST_FIXTURE_OP(suite_teardown), &__TEST_FIXTURE_OP(case_setup), \
+			&__TEST_FIXTURE_OP(case_teardown), __test_suite,                   \
+			MACRO_GUARD(__test_private), true)
 
 #endif /* SRC_TESTS_C___TEST_CXX_H_ */

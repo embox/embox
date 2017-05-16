@@ -61,12 +61,12 @@ static unsigned char n_fs_mounted = 0;  /* a counter to track the number of jffs
  * Directory operations
  */
 struct jffs2_dirsearch {
-	struct _inode *dir;         /* directory to search */
+	struct _inode *		 dir;   /* directory to search */
 	const unsigned char *path;  /* path to follow */
-	struct _inode *node;        /* Node found */
+	struct _inode *		 node;  /* Node found */
 	const unsigned char *name;  /* last name fragment used */
-	int namelen;                /* name fragment length */
-	bool last;                  /* last name in path? */
+	int					 namelen; /* name fragment length */
+	bool				 last;  /* last name in path? */
 };
 
 typedef struct jffs2_dirsearch jffs2_dirsearch_t;
@@ -83,7 +83,7 @@ static void icache_evict(struct _inode *root_i, struct _inode *i) {
 	struct _inode *this = root_i, *next;
 	struct _inode *parent;
 
-	restart:
+restart:
 	D2(printf("icache_evict\n"));
 	/* If this is an absolute search path from the root,
 	 * remove all cached inodes with i_count of zero (these are only
@@ -302,7 +302,7 @@ static int jffs2_read_super(struct super_block *sb) {
 
 	return 0;
 
-	out_nodes:
+out_nodes:
 	jffs2_free_ino_caches(c);
 	jffs2_free_raw_node_refs(c);
 	sysfree(c->blocks);
@@ -1056,7 +1056,7 @@ struct _inode *jffs2_iget(struct super_block *sb, uint32_t ino) {
 void jffs2_iput(struct _inode *i) {
 	struct _inode *parent;
 
-	recurse:
+recurse:
 	if (!i) {
 		printf("jffs2_iput() called with NULL inode\n");
 		/* and let it fault... */
@@ -1425,7 +1425,7 @@ static size_t jffs2fs_read(struct file_desc *desc, void *buff, size_t size) {
 	len = min(size, fi->_inode->i_size - desc->cursor);
 
 	if (0 != (rc = jffs2_read_inode_range(c, f,
-					(unsigned char *) buff, desc->cursor, len))) {
+			(unsigned char *) buff, desc->cursor, len))) {
 		SET_ERRNO(rc);
 		return 0;
 	}
@@ -1538,7 +1538,7 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 			if (ino) {
 				inode = jffs2_iget(dir_i->i_sb, ino);
 				if (NULL == (vfs_node = vfs_subtree_lookup(dir_nas->node,
-								(const char *) fd_list->name))) {
+						(const char *) fd_list->name))) {
 					vfs_node = vfs_subtree_create(dir_nas->node,
 							(const char *) fd_list->name, inode->i_mode);
 					if (NULL == vfs_node) {
@@ -1575,7 +1575,7 @@ static int jffs2fs_create(struct node *parent_node, struct node *node) {
 	if (node_is_directory(node)) {
 		node->mode |= S_IRUGO|S_IXUGO|S_IWUSR;
 		if (0 != (rc = jffs2_ops_mkdir(parents_fi->_inode,
-						(const char *) &node->name, node->mode))) {
+				(const char *) &node->name, node->mode))) {
 			return -rc;
 		}
 		/* file info for new dir will be allocate into */
@@ -1588,8 +1588,8 @@ static int jffs2fs_create(struct node *parent_node, struct node *node) {
 			return ENOMEM;
 		}
 		if (0 != (rc = jffs2_create(parents_fi->_inode,
-						(const unsigned char *) &node->name,
-						node->mode, &fi->_inode))) {
+				(const unsigned char *) &node->name,
+				node->mode, &fi->_inode))) {
 			return -rc;
 		}
 	}
@@ -1610,12 +1610,12 @@ static int jffs2fs_delete(struct node *node) {
 	fi = node->nas->fi->privdata;
 	if (node_is_directory(node)) {
 		if (0 != (rc = jffs2_ops_rmdir(par_fi->_inode,
-						(const char *) node->name))) {
+				(const char *) node->name))) {
 			return -rc;
 		}
 	} else {
 		if (0 != (rc = jffs2_ops_unlink(par_fi->_inode,
-						(const char *) node->name))) {
+				(const char *) node->name))) {
 			return -rc;
 		}
 	}
@@ -1724,7 +1724,7 @@ static int jffs2fs_mount(void *dev, void *dir) {
 
 	return 0;
 
-	error:
+error:
 	jffs2_free_fs(dir_nas);
 
 	return -rc;

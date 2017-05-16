@@ -16,19 +16,19 @@ struct fb_var_screeninfo;
 
 struct fb_videomode {
 	const char *name;   /* optional */
-	uint32_t refresh;   /* optional */
-	uint32_t xres;
-	uint32_t yres;
-	uint32_t pixclock;
-	uint32_t left_margin;
-	uint32_t right_margin;
-	uint32_t upper_margin;
-	uint32_t lower_margin;
-	uint32_t hsync_len;
-	uint32_t vsync_len;
-	uint32_t sync;
-	uint32_t vmode;
-	uint32_t flag;
+	uint32_t	refresh; /* optional */
+	uint32_t	xres;
+	uint32_t	yres;
+	uint32_t	pixclock;
+	uint32_t	left_margin;
+	uint32_t	right_margin;
+	uint32_t	upper_margin;
+	uint32_t	lower_margin;
+	uint32_t	hsync_len;
+	uint32_t	vsync_len;
+	uint32_t	sync;
+	uint32_t	vmode;
+	uint32_t	flag;
 };
 
 extern void fb_videomode_to_var(struct fb_var_screeninfo *var,

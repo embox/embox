@@ -26,7 +26,7 @@
  */
 struct context {
 	/* 0x00 */
-	uint32_t eip;           /**< instruction pointer */
+	uint32_t			eip; /**< instruction pointer */
 	/* 0x04 */ uint32_t ebx; /**< base register */
 	/* 0x08 */ uint32_t edi; /**< Destination index register */
 	/* 0x0c */ uint32_t esi; /**< Source index register */

@@ -220,7 +220,7 @@ typedef struct grant_entry_v1 grant_entry_v1_t;
  */
 struct grant_entry_header {
 	uint16_t flags;
-	domid_t domid;
+	domid_t	 domid;
 };
 typedef struct grant_entry_header grant_entry_header_t;
 
@@ -241,8 +241,8 @@ union grant_entry_v2 {
 	 */
 	struct {
 		grant_entry_header_t hdr;
-		uint32_t pad0;
-		uint64_t frame;
+		uint32_t			 pad0;
+		uint64_t			 frame;
 	} full_page;
 
 	/*
@@ -252,9 +252,9 @@ union grant_entry_v2 {
 	 */
 	struct {
 		grant_entry_header_t hdr;
-		uint16_t page_off;
-		uint16_t length;
-		uint64_t frame;
+		uint16_t			 page_off;
+		uint16_t			 length;
+		uint64_t			 frame;
 	} sub_page;
 
 	/*
@@ -268,9 +268,9 @@ union grant_entry_v2 {
 	 */
 	struct {
 		grant_entry_header_t hdr;
-		domid_t trans_domid;
-		uint16_t pad0;
-		grant_ref_t gref;
+		domid_t				 trans_domid;
+		uint16_t			 pad0;
+		grant_ref_t			 gref;
 	} transitive;
 
 	uint32_t __spacer[4]; /* Pad to a power of two */
@@ -337,14 +337,14 @@ typedef uint32_t grant_handle_t;
  */
 struct gnttab_map_grant_ref {
 	/* IN parameters. */
-	uint64_t host_addr;
-	uint32_t flags;               /* GNTMAP_* */
+	uint64_t	host_addr;
+	uint32_t	flags;            /* GNTMAP_* */
 	grant_ref_t ref;
-	domid_t dom;
+	domid_t		dom;
 	/* OUT parameters. */
-	int16_t status;               /* => enum grant_status */
+	int16_t		   status;        /* => enum grant_status */
 	grant_handle_t handle;
-	uint64_t dev_bus_addr;
+	uint64_t	   dev_bus_addr;
 };
 typedef struct gnttab_map_grant_ref gnttab_map_grant_ref_t;
 DEFINE_XEN_GUEST_HANDLE(gnttab_map_grant_ref_t);
@@ -362,8 +362,8 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_map_grant_ref_t);
  */
 struct gnttab_unmap_grant_ref {
 	/* IN parameters. */
-	uint64_t host_addr;
-	uint64_t dev_bus_addr;
+	uint64_t	   host_addr;
+	uint64_t	   dev_bus_addr;
 	grant_handle_t handle;
 	/* OUT parameters. */
 	int16_t status;               /* => enum grant_status */
@@ -382,7 +382,7 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_unmap_grant_ref_t);
  */
 struct gnttab_setup_table {
 	/* IN parameters. */
-	domid_t dom;
+	domid_t	 dom;
 	uint32_t nr_frames;
 	/* OUT parameters. */
 	int16_t status;               /* => enum grant_status */
@@ -418,8 +418,8 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_dump_table_t);
  */
 struct gnttab_transfer {
 	/* IN parameters. */
-	xen_pfn_t mfn;
-	domid_t domid;
+	xen_pfn_t	mfn;
+	domid_t		domid;
 	grant_ref_t ref;
 	/* OUT parameters. */
 	int16_t status;
@@ -455,9 +455,9 @@ struct gnttab_copy {
 	struct {
 		union {
 			grant_ref_t ref;
-			xen_pfn_t gmfn;
+			xen_pfn_t	gmfn;
 		} u;
-		domid_t domid;
+		domid_t	 domid;
 		uint16_t offset;
 	} source, dest;
 	uint16_t len;
@@ -481,7 +481,7 @@ struct gnttab_query_size {
 	/* OUT parameters. */
 	uint32_t nr_frames;
 	uint32_t max_nr_frames;
-	int16_t status;               /* => enum grant_status */
+	int16_t	 status;              /* => enum grant_status */
 };
 typedef struct gnttab_query_size gnttab_query_size_t;
 DEFINE_XEN_GUEST_HANDLE(gnttab_query_size_t);
@@ -499,8 +499,8 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_query_size_t);
  */
 struct gnttab_unmap_and_replace {
 	/* IN parameters. */
-	uint64_t host_addr;
-	uint64_t new_addr;
+	uint64_t	   host_addr;
+	uint64_t	   new_addr;
 	grant_handle_t handle;
 	/* OUT parameters. */
 	int16_t status;               /* => enum grant_status */
@@ -538,7 +538,7 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_set_version_t);
 struct gnttab_get_status_frames {
 	/* IN parameters. */
 	uint32_t nr_frames;
-	domid_t dom;
+	domid_t	 dom;
 	/* OUT parameters. */
 	int16_t status;               /* => enum grant_status */
 	XEN_GUEST_HANDLE(uint64_t) frame_list;
@@ -552,7 +552,7 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_get_status_frames_t);
  */
 struct gnttab_get_version {
 	/* IN parameters */
-	domid_t dom;
+	domid_t	 dom;
 	uint16_t pad;
 	/* OUT parameters */
 	uint32_t version;
@@ -579,7 +579,7 @@ DEFINE_XEN_GUEST_HANDLE(gnttab_swap_grant_ref_t);
  */
 struct gnttab_cache_flush {
 	union {
-		uint64_t dev_bus_addr;
+		uint64_t	dev_bus_addr;
 		grant_ref_t ref;
 	} a;
 	uint16_t offset; /* offset from start of grant */

@@ -14,12 +14,12 @@
 
 struct location {
 	const char *file;
-	int line;
+	int			line;
 };
 
 struct location_func {
 	struct location at;
-	const char *func;
+	const char *	func;
 };
 
 #ifndef __cplusplus

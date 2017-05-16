@@ -23,8 +23,8 @@ EMBOX_TEST_SUITE("sched_wait_*_lthread test");
 
 struct lt_test {
 	struct lthread lt;
-	int timeout;
-	int res;
+	int			   timeout;
+	int			   res;
 };
 
 static int done = 0, ready = 0;

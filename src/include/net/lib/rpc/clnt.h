@@ -54,8 +54,8 @@ enum clnt_stat {
 struct rpc_err {
 	enum clnt_stat status;
 	union {
-		int error;
-		enum auth_stat reason;
+		int					 error;
+		enum auth_stat		 reason;
 		struct mismatch_info mminfo;
 	} extra;
 };
@@ -68,17 +68,17 @@ struct clnt_ops {
 };
 
 struct client {
-	struct auth *ath;
+	struct auth *		   ath;
 	const struct clnt_ops *ops;
-	int sock;
-	struct rpc_err err;
-	uint32_t prognum;
-	uint32_t versnum;
+	int					   sock;
+	struct rpc_err		   err;
+	uint32_t			   prognum;
+	uint32_t			   versnum;
 	/* Protocol specific options */
 	union {
 		struct {
 			struct sockaddr_in sin;
-			struct timeval resend;
+			struct timeval	   resend;
 		} udp;
 		struct {
 			unsigned int sendsz;

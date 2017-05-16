@@ -72,11 +72,11 @@ static volatile struct raspi_interrupt_regs *const regs =
 static int this_init(void) {
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
-			(void *) ((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK),
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			binalign_bound(sizeof(struct raspi_interrupt_regs), MMU_PAGE_SIZE),
-			MAP_FIXED,
-			((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK)
+		(void *) ((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK),
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		binalign_bound(sizeof(struct raspi_interrupt_regs), MMU_PAGE_SIZE),
+		MAP_FIXED,
+		((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK)
 	);
 	return 0;
 }

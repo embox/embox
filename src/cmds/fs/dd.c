@@ -43,8 +43,8 @@ typedef void (*dd_param_t)(const struct dd_param_ent *dpent,
 
 struct dd_param_ent {
 	const char *name;
-	off_t offset;
-	dd_param_t type;
+	off_t		offset;
+	dd_param_t	type;
 };
 
 static int write_stdout(char *buff, size_t size, unsigned int addr) {
@@ -246,12 +246,12 @@ int main(int argc, char **argv) {
 		dp.count--;
 	} while (dp.count != 0);
 
-	out_cmd:
+out_cmd:
 	free(tbuf);
-	out_ofd_close:
+out_ofd_close:
 	close(ofd);
-	out_ifd_close:
+out_ifd_close:
 	close(ifd);
-	out:
+out:
 	return err;
 }

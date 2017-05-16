@@ -29,11 +29,11 @@
 
 #define EMBOX_TEST_SUITE(description) \
 	__EMBOX_TEST_SUITE_NM("" description, __test_suite, \
-		MACRO_GUARD(__test_private), true)
+			MACRO_GUARD(__test_private), true)
 
 #define TEST_CASE(description) \
 	__TEST_CASE_NM("" description, MACRO_GUARD(__test_case_struct), \
-		MACRO_GUARD(__test_case))
+			MACRO_GUARD(__test_case))
 
 #define TEST_SETUP_SUITE(setup) \
 	__TEST_FIXTURE_OP_DEF(suite_setup, setup)
@@ -54,15 +54,15 @@
 	__TEST_FIXTURE_OP_DECL(case_setup);                                        \
 	__TEST_FIXTURE_OP_DECL(case_teardown);                                     \
 	__EMBOX_TEST_SUITE_NM_EXT(_description, &__TEST_FIXTURE_OP(suite_setup),   \
-		&__TEST_FIXTURE_OP(suite_teardown), &__TEST_FIXTURE_OP(case_setup), \
-		&__TEST_FIXTURE_OP(case_teardown), test_suite_nm, test_private_nm, \
-		_autorun)
+			&__TEST_FIXTURE_OP(suite_teardown), &__TEST_FIXTURE_OP(case_setup), \
+			&__TEST_FIXTURE_OP(case_teardown), test_suite_nm, test_private_nm, \
+			_autorun)
 
 #define __EMBOX_TEST_SUITE_NM_EXT(_description, _suite_setup, _suite_teardown, \
 			_case_setup, _case_teardown, test_suite_nm, test_private_nm, _autorun) \
 	EXTERN_C const struct mod_ops __test_mod_ops;                    \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct test_case *,     \
-		__TEST_CASES_ARRAY, NULL);                               \
+			__TEST_CASES_ARRAY, NULL);                               \
 	static struct __test_private test_private_nm;                    \
 	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);                            \
 	const struct test_mod mod_self = {                               \

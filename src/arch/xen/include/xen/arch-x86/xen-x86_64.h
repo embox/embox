@@ -161,8 +161,8 @@ struct cpu_user_regs {
 	uint32_t entry_vector;  /* private */
 	__DECL_REG(ip);
 	uint16_t cs, _pad0[1];
-	uint8_t saved_upcall_mask;
-	uint8_t _pad1[3];
+	uint8_t	 saved_upcall_mask;
+	uint8_t	 _pad1[3];
 	__DECL_REG(flags);      /* rflags.IF == !saved_upcall_mask */
 	__DECL_REG(sp);
 	uint16_t ss, _pad2[3];

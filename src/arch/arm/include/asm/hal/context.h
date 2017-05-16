@@ -8,14 +8,14 @@
 
 struct context_kregs {
 	/* 0x00 */
-	uint32_t lr;           /**< Return address for #context_switch(). */
+	uint32_t			lr; /**< Return address for #context_switch(). */
 	/* 0x04 */ uint32_t cpsr; /**< State register */
 	/* 0x08 */ uint32_t sp; /**< Stack pointer */
 };
 
 struct context {
 	struct context_kregs kregs;
-	struct pt_regs *uregs;
+	struct pt_regs *	 uregs;
 };
 
 #else /* __ASSEMBLER__ */

@@ -154,7 +154,7 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
  */
 #define tree_foreach_link_safe(link, tree, begin, end, next) \
 	__tree_foreach_link_safe(link, MACRO_GUARD(next_link), MACRO_GUARD(end_link), \
-		tree, begin, end, next)
+			tree, begin, end, next)
 
 #define __tree_foreach_link_safe(link, next_link, end_link, tree, begin, end, next) \
 	for (struct tree_link *next_link = (link = begin(tree), next(link)) \
@@ -170,7 +170,7 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
  */
 #define tree_foreach(element, tree, link_member, begin, end, next) \
 	__tree_foreach(MACRO_GUARD(link), MACRO_GUARD(end_link), \
-		element, tree, link_member, begin, end, next)
+			element, tree, link_member, begin, end, next)
 
 #define __tree_foreach(link, end_link, \
 			element, tree, link_member, begin, end, next) \
@@ -183,12 +183,12 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
 /** Iterating only on children of node (not all subtree). */
 #define tree_foreach_children_link(link, tree) \
 	tree_foreach_link(link, tree, \
-		tree_children_begin, tree_children_end, tree_children_next)
+			tree_children_begin, tree_children_end, tree_children_next)
 
 /** Iterating with casting only on children of node (not all subtree). */
 #define tree_foreach_children(element, tree, link_member) \
 	tree_foreach(element, tree, link_member, \
-		tree_children_begin, tree_children_end, tree_children_next)
+			tree_children_begin, tree_children_end, tree_children_next)
 
 /**
  * Postorder iteration on tree.
@@ -196,7 +196,7 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
  */
 #define tree_postorder_traversal_link(link, tree) \
 	tree_foreach_link(link, tree, \
-		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 /**
  * Postorder iteration on tree.
@@ -206,11 +206,11 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
  */
 #define tree_postorder_traversal_link_safe(link, tree) \
 	tree_foreach_link_safe(link, tree, \
-		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 /** Postorder iteration with casting. */
 #define tree_postorder_traversal(element, tree, link_member) \
 	tree_foreach(element, tree, link_member, \
-		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 #endif /* UTIL_TREE_H_ */

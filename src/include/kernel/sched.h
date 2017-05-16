@@ -60,15 +60,15 @@ struct schedee {
 	 *
 	 * Returns schedee to which context switched.
 	 */
-	struct schedee    *(*process)(struct schedee *prev, struct schedee *next);
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next);
 
 	/* Fields corresponding to the state in the scheduler state machine. */
 	unsigned int active;  /**< Running on a CPU. TODO SMP-only. */
 	unsigned int ready;   /**< Managed by the scheduler. */
 	unsigned int waiting; /**< Waiting for an event. */
 
-	struct affinity affinity;
-	struct sched_timing sched_timing;
+	struct affinity			affinity;
+	struct sched_timing		sched_timing;
 	struct schedee_priority priority;
 
 	struct waitq_link waitq_link; /**< Used as a link in different waitqs. */

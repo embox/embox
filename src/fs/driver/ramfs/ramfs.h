@@ -28,8 +28,8 @@ typedef struct ramfs_fs_info {
 } ramfs_fs_info_t;
 
 typedef struct ramfs_file_info {
-	int index;                  /* number of file in FS*/
-	int mode;                   /* mode in which this file was opened */
+	int		 index;             /* number of file in FS*/
+	int		 mode;              /* mode in which this file was opened */
 	uint32_t pointer;           /* current (BYTE) pointer */
 } ramfs_file_info_t;
 

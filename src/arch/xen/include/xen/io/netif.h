@@ -165,10 +165,10 @@
 #define XEN_NETIF_MAX_TX_SIZE 0xFFFF
 struct netif_tx_request {
 	grant_ref_t gref;      /* Reference to buffer page */
-	uint16_t offset;       /* Offset within buffer page */
-	uint16_t flags;        /* NETTXF_* */
-	uint16_t id;           /* Echoed in response message. */
-	uint16_t size;         /* Packet size in bytes.       */
+	uint16_t	offset;    /* Offset within buffer page */
+	uint16_t	flags;     /* NETTXF_* */
+	uint16_t	id;        /* Echoed in response message. */
+	uint16_t	size;      /* Packet size in bytes.       */
 };
 typedef struct netif_tx_request netif_tx_request_t;
 
@@ -245,12 +245,12 @@ typedef struct netif_extra_info netif_extra_info_t;
 
 struct netif_tx_response {
 	uint16_t id;
-	int16_t status;        /* NETIF_RSP_* */
+	int16_t	 status;       /* NETIF_RSP_* */
 };
 typedef struct netif_tx_response netif_tx_response_t;
 
 struct netif_rx_request {
-	uint16_t id;           /* Echoed in response message.        */
+	uint16_t	id;        /* Echoed in response message.        */
 	grant_ref_t gref;      /* Reference to incoming granted frame */
 };
 typedef struct netif_rx_request netif_rx_request_t;
@@ -275,7 +275,7 @@ struct netif_rx_response {
 	uint16_t id;
 	uint16_t offset;       /* Offset in page of start of received packet  */
 	uint16_t flags;        /* NETRXF_* */
-	int16_t status;        /* -ve: NETIF_RSP_* ; +ve: Rx'ed pkt size. */
+	int16_t	 status;       /* -ve: NETIF_RSP_* ; +ve: Rx'ed pkt size. */
 };
 typedef struct netif_rx_response netif_rx_response_t;
 

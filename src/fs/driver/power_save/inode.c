@@ -272,7 +272,7 @@ static struct buffer_head *qnx6_check_first_superblock(struct qnx6_superblock *s
 		if (fs32_to_cpu(sbi, sb->sb_magic) == QNX6_SUPER_MAGIC) {
 			/* we got a big endian fs */
 			QNX6DEBUG((KERN_INFO "qnx6: fs got different"
-								 " endianness.\n"));
+					" endianness.\n"));
 			return bh;
 		} else {
 			sbi->s_bytesex = BYTESEX_LE;
@@ -280,11 +280,11 @@ static struct buffer_head *qnx6_check_first_superblock(struct qnx6_superblock *s
 		if (!silent) {
 			if (offset == 0) {
 				printk(KERN_ERR "qnx6: wrong signature (magic)"
-								" in superblock #1.\n");
+						" in superblock #1.\n");
 			} else {
 				printk(KERN_INFO "qnx6: wrong signature (magic)"
-								 " at position (0x%lx) - will try"
-								 " alternative position (0x0000).\n",
+						" at position (0x%lx) - will try"
+						" alternative position (0x0000).\n",
 						offset * s->s_blocksize);
 			}
 		}
@@ -417,7 +417,7 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	if (fs32_to_cpu(sbi, sb2->sb_magic) != QNX6_SUPER_MAGIC) {
 		if (!silent) {
 			printk(KERN_ERR "qnx6: wrong signature (magic)"
-							" in superblock #2.\n");
+					" in superblock #2.\n");
 		}
 		goto out;
 	}
@@ -454,7 +454,7 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	}
 	if (sb1->Longfile.levels > QNX6_PTR_MAX_LEVELS) {
 		printk(KERN_ERR "qnx6: too many longfilename levels"
-						" (max %i, sb %i)\n",
+				" (max %i, sb %i)\n",
 				QNX6_PTR_MAX_LEVELS, sb1->Longfile.levels);
 		goto out;
 	}
@@ -497,23 +497,23 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	}
 	return 0;
 
-	out3:
+out3:
 #if 0
 	dput(s->s_root);
 	s->s_root = NULL;
 #endif
-	out2:
+out2:
 	iput(sbi->longfile);
-	out1:
+out1:
 	iput(sbi->nodes);
-	out:
+out:
 	if (bh1) {
 		brelse(bh1);
 	}
 	if (bh2) {
 		brelse(bh2);
 	}
-	outnobh:
+outnobh:
 	qnx6_sb_info_free(qs);
 	s->s_fs_info = NULL;
 	return ret;
@@ -564,7 +564,7 @@ struct node *qnx6_iget_wname(struct qnx6_superblock *sb, unsigned ino,
 	struct node *node;
 	struct qnx6_sb_info *sbi = QNX6_SB(sb);
 	struct qnx6_inode_entry *raw_node;
-	struct qnx6_node_info   *ei;
+	struct qnx6_node_info *ei;
 
 	struct buffer_head *bh = NULL;
 	__u32 n, offs;
@@ -587,8 +587,8 @@ struct node *qnx6_iget_wname(struct qnx6_superblock *sb, unsigned ino,
 
 	if (ino == 0) {
 		printk(KERN_ERR "qnx6: bad node number on dev %s: %u is "
-						"out of range\n",
-				/*sb->s_id, ino);*/ /*XXX */
+				"out of range\n",
+		        /*sb->s_id, ino);*/ /*XXX */
 				"qnx test", ino);
 		iget_failed(node);
 		return ERR_PTR(-EIO);
@@ -758,8 +758,8 @@ static int qnx6fs_format(void *dev) {
 
 struct dirent_masq {
 	struct qnx6_superblock *d_sb;
-	struct node *d_parent;
-	struct filesystem *d_fs;
+	struct node *			d_parent;
+	struct filesystem *		d_fs;
 };
 
 static int embox_mount_filldir(void *dirent, const char *name, int size,

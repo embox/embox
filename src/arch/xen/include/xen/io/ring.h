@@ -112,23 +112,23 @@ typedef unsigned int RING_IDX;
 			} tapif_user;                                                   \
 			uint8_t pvt_pad[4];                                             \
 		} private;                                                          \
-		uint8_t __pad[44];                                                  \
+		uint8_t						 __pad[44];                                                  \
 		union __name ## _sring_entry ring[1]; /* variable-length */           \
 	};                                                                      \
                                                                         \
 /* "Front" end's private variables */                                   \
 	struct __name ## _front_ring {                                            \
-		RING_IDX req_prod_pvt;                                              \
-		RING_IDX rsp_cons;                                                  \
-		unsigned int nr_ents;                                               \
+		RING_IDX		 req_prod_pvt;                                              \
+		RING_IDX		 rsp_cons;                                                  \
+		unsigned int	 nr_ents;                                               \
 		struct __name ## _sring *sring;                                       \
 	};                                                                      \
                                                                         \
 /* "Back" end's private variables */                                    \
 	struct __name ## _back_ring {                                             \
-		RING_IDX rsp_prod_pvt;                                              \
-		RING_IDX req_cons;                                                  \
-		unsigned int nr_ents;                                               \
+		RING_IDX		 rsp_prod_pvt;                                              \
+		RING_IDX		 req_cons;                                                  \
+		unsigned int	 nr_ents;                                               \
 		struct __name ## _sring *sring;                                       \
 	};                                                                      \
                                                                         \

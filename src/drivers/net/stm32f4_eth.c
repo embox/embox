@@ -261,7 +261,7 @@ static void ETH_GPIO_Config(void) {
 typedef ETH_DMADESCTypeDef eth_dma_desc_t;
 
 struct stm32eth_state {
-	eth_dma_desc_t tx_tab[TXTAB_LEN];
+	eth_dma_desc_t	tx_tab[TXTAB_LEN];
 	eth_dma_desc_t *tx_head;
 	eth_dma_desc_t *tx_tail;
 	struct sk_buff *tx_skb[TXTAB_LEN];
@@ -288,7 +288,7 @@ static struct sk_buff *stm32eth_tx_skb_get(struct stm32eth_state *state) {
 
 extern ETH_DMADESCTypeDef DMARxDscrTab[ETH_RXBUFNB];
 extern uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE];
-extern ETH_DMADESCTypeDef  *DMARxDescToGet;
+extern ETH_DMADESCTypeDef *DMARxDescToGet;
 extern ETH_DMA_Rx_Frame_infos *DMA_RX_FRAME_infos;
 
 static void stm32eth_dma_tx_init(struct stm32eth_state *state) {

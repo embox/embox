@@ -21,11 +21,11 @@ extern const char *smac_def_file_label;
 struct smac_entry {
 	char subject[SMAC_LABELLEN];
 	char object [SMAC_LABELLEN];
-	int flags;
+	int	 flags;
 };
 
 struct smac_env {
-	int n;
+	int				  n;
 	struct smac_entry entries[];
 };
 

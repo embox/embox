@@ -25,9 +25,9 @@ extern void getopt_init(void); /* TODO remove this */
 #define optional_argument 2
 struct option {
 	const char *name;
-	int has_arg;
-	int        *flag;
-	int val;
+	int			has_arg;
+	int *		flag;
+	int			val;
 };
 
 extern int getopt_long(int argc, char *const argv[],

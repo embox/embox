@@ -87,7 +87,7 @@ TEST_CASE("send() fails on listening socket") {
 }
 
 TEST_CASE("sendto() and sendmsg() fails on not-null address"
-		  " pointer") {
+		" pointer") {
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 
 	test_assert_equal(-1, sendto(c, "", 1, 0, to_sa(&addr),
@@ -98,7 +98,7 @@ TEST_CASE("sendto() and sendmsg() fails on not-null address"
 }
 
 TEST_CASE("recv(), recvfrom() and recvmsg() fails on listening"
-		  " socket") {
+		" socket") {
 	test_assert_equal(-1, recv(l, buf, 1, 0));
 	test_assert_equal(ENOTCONN, errno);
 
@@ -155,7 +155,7 @@ TEST_CASE("accept() returns first connected client") {
 }
 
 TEST_CASE("getsockname() returns not unspecified address when"
-		  " a socket was connected") {
+		" a socket was connected") {
 	struct sockaddr_in tmp;
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 

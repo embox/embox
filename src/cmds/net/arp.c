@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 			}
 			/*TODO checked interface and use default */
 			return neighbour_add(ETH_P_IP, &addr, sizeof addr, ifdev->dev,
-					ARP_HRD_ETHERNET, &hwaddr[0], sizeof hwaddr, NEIGHBOUR_FLAG_PERMANENT);
+						   ARP_HRD_ETHERNET, &hwaddr[0], sizeof hwaddr, NEIGHBOUR_FLAG_PERMANENT);
 		case 'i':
 			if (NULL == (ifdev = inetdev_get_by_name(optarg))) {
 				printf("arp: can't find interface %s\n", optarg);

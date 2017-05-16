@@ -168,11 +168,11 @@ struct ebpb32 {
  *	IMPORTANT NOTE Boot code section is appended to ebpb to fit different offset
  */
 struct lbr {
-	uint8_t jump[3];        /* JMP instruction */
-	uint8_t oemid[8];       /* OEM ID, space-padded */
+	uint8_t	   jump[3];     /* JMP instruction */
+	uint8_t	   oemid[8];    /* OEM ID, space-padded */
 	struct bpb bpb;             /* BIOS Parameter Block */
 	union {
-		struct ebpb ebpb;       /* FAT12/16 Extended BIOS Parameter Block */
+		struct ebpb	  ebpb;     /* FAT12/16 Extended BIOS Parameter Block */
 		struct ebpb32 ebpb32;   /* FAT32 Extended BIOS Parameter Block */
 	} ebpb;
 	uint8_t sig_55;         /* 0x55 signature byte */
@@ -196,10 +196,10 @@ struct volinfo {
 
 	/*	uint8_t oemid[9]; */		/* OEM ID ASCIIZ */
 	/*	uint8_t system[9]; */		/* system ID ASCIIZ */
-	uint8_t label[12];          /* volume label ASCIIZ */
+	uint8_t	 label[12];         /* volume label ASCIIZ */
 	uint32_t startsector;       /* starting sector of filesystem */ /* TODO eliminate this field in new vfs as it handles partition on it's own */
 	uint16_t bytepersec;        /* Bytes per sector */
-	uint8_t secperclus;         /* sectors per cluster */
+	uint8_t	 secperclus;        /* sectors per cluster */
 	uint16_t reservedsecs;      /* reserved sectors */
 	uint32_t numsecs;           /* number of sectors in volume */
 	uint32_t secperfat;         /* sectors per FAT */
@@ -219,19 +219,19 @@ struct volinfo {
 #define DFS_DI_BLANKENT     0x01    /* Searching for blank entry */
 
 struct fat_fs_info {
-	struct volinfo vi;
+	struct volinfo	  vi;
 	struct block_dev *bdev;
-	struct node *root;
+	struct node *	  root;
 };
 
 struct fat_file_info {
 	struct fat_fs_info *fsi;
-	struct volinfo *volinfo;        /* vol_info_t used to open this file */
-	uint32_t dirsector;         /* physical sector containing dir entry of this file */
-	uint8_t diroffset;          /* # of this entry within the dir sector */
-	int mode;                   /* mode in which this file was opened */
-	uint32_t firstcluster;      /* first cluster of file */
-	uint32_t filelen;           /* byte length of file */
+	struct volinfo *	volinfo;    /* vol_info_t used to open this file */
+	uint32_t			dirsector; /* physical sector containing dir entry of this file */
+	uint8_t				diroffset; /* # of this entry within the dir sector */
+	int					mode;   /* mode in which this file was opened */
+	uint32_t			firstcluster; /* first cluster of file */
+	uint32_t			filelen; /* byte length of file */
 
 	uint32_t cluster;           /* current cluster */
 	uint32_t pointer;           /* current (BYTE) pointer */
@@ -242,11 +242,11 @@ struct fat_file_info {
  */
 struct dirinfo {
 	struct fat_file_info fi;    /* Must be first field in structure */
-	uint32_t currentcluster;    /* current cluster in dir */
-	uint8_t currentsector;      /* current sector in cluster */
-	uint8_t currententry;       /* current dir entry in sector */
-	uint8_t *p_scratch;         /* ptr to user-supplied scratch buffer (one sector) */
-	uint8_t flags;              /* internal DOSFS flags */
+	uint32_t			 currentcluster; /* current cluster in dir */
+	uint8_t				 currentsector; /* current sector in cluster */
+	uint8_t				 currententry; /* current dir entry in sector */
+	uint8_t *			 p_scratch; /* ptr to user-supplied scratch buffer (one sector) */
+	uint8_t				 flags; /* internal DOSFS flags */
 };
 
 #include <framework/mod/options.h>

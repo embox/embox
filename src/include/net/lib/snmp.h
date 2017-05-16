@@ -14,20 +14,20 @@
 #include <net/lib/snmp_mib.h>
 
 struct snmp_desc {
-	uint8_t version;
-	char *security;
-	uint32_t id;
-	uint8_t error;
-	uint8_t error_index;
-	enum pdu_type pdu_type;
+	uint8_t			  version;
+	char *			  security;
+	uint32_t		  id;
+	uint8_t			  error;
+	uint8_t			  error_index;
+	enum pdu_type	  pdu_type;
 	struct dlist_head varbind_list;
 };
 
 struct varbind {
 	struct dlist_head link;
-	uint8_t oid_len;
-	char *oid;
-	obj_data_t data;
+	uint8_t			  oid_len;
+	char *			  oid;
+	obj_data_t		  data;
 };
 
 /* Functions for manipulating with SNMP */

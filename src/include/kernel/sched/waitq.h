@@ -22,12 +22,12 @@ struct schedee;
 
 struct waitq {
 	struct dlist_head list;
-	spinlock_t lock;
+	spinlock_t		  lock;
 };
 
 struct waitq_link {
 	struct dlist_head link;
-	struct schedee *schedee;
+	struct schedee *  schedee;
 };
 
 #define WAITQ_INIT(wq)  { \

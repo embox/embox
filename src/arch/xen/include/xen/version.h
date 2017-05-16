@@ -67,7 +67,7 @@ typedef struct xen_platform_parameters xen_platform_parameters_t;
 #define XENVER_get_features 6
 struct xen_feature_info {
 	unsigned int submap_idx;    /* IN: which 32-bit submap to return */
-	uint32_t submap;            /* OUT: 32-bit submap */
+	uint32_t	 submap;        /* OUT: 32-bit submap */
 };
 typedef struct xen_feature_info xen_feature_info_t;
 

@@ -16,10 +16,10 @@
 struct diag;
 
 struct diag_ops {
-	int (*init)(const struct diag *diag);
+	int	 (*init)(const struct diag *diag);
 	char (*getc)(const struct diag *diag);
 	void (*putc)(const struct diag *diag, char ch);
-	int (*kbhit)(const struct diag *diag);
+	int	 (*kbhit)(const struct diag *diag);
 };
 
 struct diag {

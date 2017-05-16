@@ -66,9 +66,9 @@ enum {
 struct fs_info {
 	char buff[MODOPS_DATA_BUFF_SZ];    /* general buffer for commands and data transfering */
 	char cmd_buff[MODOPS_CMD_BUFF_SZ]; /* command buffer */
-	int cmd_sock;                      /* command socket */
-	int is_connected;                  /* connection is esteblishment */
-	int stat_code;                     /* result of last command */
+	int	 cmd_sock;                     /* command socket */
+	int	 is_connected;                 /* connection is esteblishment */
+	int	 stat_code;                    /* result of last command */
 };
 
 /* FTP Method info */
@@ -76,7 +76,7 @@ struct fm_info {
 	const char *mtd_name;
 	const char *mtd_usage;
 	const char *mtd_description;
-	int (*mtd_hnd)(struct fs_info *);
+	int			(*mtd_hnd)(struct fs_info *);
 };
 
 /* FTP Session commands */
@@ -911,7 +911,7 @@ int main(int argc, char **argv) {
 			break;
 		}
 
-		parse_cmd:
+parse_cmd:
 		/* Skip spaces */
 		skip_spaces(cmd_name);
 

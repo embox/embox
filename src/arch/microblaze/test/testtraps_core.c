@@ -51,7 +51,7 @@ int testtraps_fire_softtrap(uint32_t number, void *data) {
 
 #endif
 	__asm__ __volatile__ (""
-						  "addi %0, r3, 0\n\t"
+	"addi %0, r3, 0\n\t"
 	: "=r" (res) : : "memory"
 	);
 

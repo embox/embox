@@ -69,7 +69,7 @@ typedef int (*nf_test_hnd)(const struct nf_rule *r,
 
 struct nf_rule {
 	struct dlist_head lnk;
-	enum nf_target target;
+	enum nf_target	  target;
 	NF_DECL_NOT_FIELD(hwaddr_src, char [ETH_ALEN]);
 	NF_DECL_NOT_FIELD(hwaddr_dst, char [ETH_ALEN]);
 	NF_DECL_NOT_FIELD(saddr, struct in_addr);
@@ -78,7 +78,7 @@ struct nf_rule {
 	NF_DECL_NOT_FIELD(sport, in_port_t);
 	NF_DECL_NOT_FIELD(dport, in_port_t);
 	nf_test_hnd test_hnd;
-	void *test_hnd_data;
+	void *		test_hnd_data;
 };
 
 /**

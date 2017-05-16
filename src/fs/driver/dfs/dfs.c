@@ -225,7 +225,7 @@ int dfs_format(void) {
 		.max_inode_count = DFS_INODES_MAX,
 		.buff_bk = 2,
 		.free_space = _capacity(sizeof(struct dfs_sb_info)) +
-				DFS_INODES_MAX * _capacity(sizeof(struct dfs_dir_entry)),
+			DFS_INODES_MAX * _capacity(sizeof(struct dfs_dir_entry)),
 	};
 
 	/* Configure root directory */

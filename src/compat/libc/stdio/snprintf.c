@@ -13,7 +13,7 @@
 #include "printf_impl.h"
 
 struct printchar_handler_data {
-	char *str;
+	char * str;
 	size_t left;
 };
 

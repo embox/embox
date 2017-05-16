@@ -11,7 +11,7 @@
 #include <sys/wait.h>
 
 struct exec_data {
-	int argc;
+	int	   argc;
 	char **argv;
 };
 

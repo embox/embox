@@ -52,14 +52,14 @@ typedef struct kflock_lock {
 	off_t             start;
 	off_t             len;
 	pid_t             pid;*/
-	struct flock flock;
+	struct flock	  flock;
 	struct dlist_head kflock_link;
 	/*struct wait_queue wq; */
 } kflock_lock_t;
 
 typedef struct kflock {
 	struct dlist_head locks;
-	spinlock_t kflock_guard;
+	spinlock_t		  kflock_guard;
 } kflock_t;
 
 /**

@@ -47,7 +47,7 @@ int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_
 	}
 
 	return usb_ms_transfer(mass->usb_dev, cmd, cmd_len, usb_dir, data, data_len,
-			usb_scsi_notify);
+				   usb_scsi_notify);
 }
 
 #define SCSI_CMD_LEN 16
@@ -63,7 +63,7 @@ int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd) {
 	}
 
 	return scsi_cmd(dev, scmd, cmd->scmd_len, cmd->scmd_obuf,
-			cmd->scmd_olen);
+				   cmd->scmd_olen);
 }
 
 static void scsi_fixup_inquiry(void *buf, struct scsi_dev *dev,
@@ -224,7 +224,7 @@ static void scsi_sense_input(struct scsi_dev *dev, int res) {
 	data = (struct scsi_data_sense *) dev->scsi_data_scratchpad;
 	acode = data->dsns_additional_code;
 	assertf(acode == 0x28 || acode == 0x29, "Don't know how to recover "
-											"unknown error %x", acode);
+			"unknown error %x", acode);
 
 	/* 0x28 and 0x29 are just required attention, seems that can go on */
 

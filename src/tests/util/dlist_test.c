@@ -32,7 +32,7 @@ static struct dlist_head dynamic_dlist;
  * item head, due to each element can be added in two different lists
  */
 struct element {
-	int data;                      /**< element data */
+	int				  data;        /**< element data */
 	struct dlist_head lnk;         /**< item head for first list */
 	struct dlist_head another_lnk; /**< item head for second list */
 };
@@ -52,7 +52,7 @@ TEST_CASE("Add a single element to a dlist") {
 }
 
 TEST_CASE("Add two elements to a dlist"
-		  " first added by dlist_add_next and second with dlist_add_prev") {
+		" first added by dlist_add_next and second with dlist_add_prev") {
 	struct dlist_head *dlist = &static_dlist; /*initialization is not required*/
 
 	test_assert_not_zero(dlist_empty(dlist));

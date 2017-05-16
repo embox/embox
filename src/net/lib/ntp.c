@@ -119,23 +119,23 @@ const char *ntp_stratum_error(const struct ntphdr *ntph) {
 		{ "AUTO", "Autokey sequence failed" },
 		{ "BCST", "The association belongs to a broadcast server" },
 		{ "CRYP", "Cryptographic authentication or identification"
-				  " failed" },
+			" failed" },
 		{ "DENY", "Access denied by remote server" },
 		{ "DROP", "Lost peer in symmetric mode" },
 		{ "RSTR", "Access denied due to local policy" },
 		{ "INIT", "The association has not yet synchronized for"
-				  " the first time" },
+			" the first time" },
 		{ "MCST", "The association belongs to a manycast server" },
 		{ "NKEY", "No key found. Either the key was never"
-				  " installed or is not trusted" },
+			" installed or is not trusted" },
 		{ "RATE", "Rate exceeded. The server has temporarily"
-				  " denied access because the client exceeded the"
-				  " rate threshold" },
+			" denied access because the client exceeded the"
+			" rate threshold" },
 		{ "RMOT", "Somebody is tinkering with the association"
-				  " from a remote host running ntpdc. Not to worry"
-				  " unless some rascal has stolen your keys" },
+			" from a remote host running ntpdc. Not to worry"
+			" unless some rascal has stolen your keys" },
 		{ "STEP", "A step change in system time has occurred,"
-				  " but the association has not yet resynchronized" }
+			" but the association has not yet resynchronized" }
 	};
 	size_t i;
 

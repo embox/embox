@@ -20,11 +20,11 @@ enum fformat {
 /* http://soundfile.sapp.org/doc/WaveFormat/ */
 struct wave_header {
 	/* RIFF header */
-	uint8_t ChunkID[4];      /* "RIFF" in ASCII */
+	uint8_t	 ChunkID[4];     /* "RIFF" in ASCII */
 	uint32_t ChunkSize;
-	uint8_t Format[4];       /* "WAVE" in ASCII */
+	uint8_t	 Format[4];      /* "WAVE" in ASCII */
 	/* fmt subchunk */
-	uint8_t Subchunk1ID[4];  /* "fmt " in ASCII */
+	uint8_t	 Subchunk1ID[4]; /* "fmt " in ASCII */
 	uint32_t Subchunk1Size;  /* 16 for PCM */
 	uint16_t AudioFormat;    /* 1 for PCM */
 	uint16_t NumChannels;    /* 1 for mono, 2 for stereo, etc. */
@@ -33,7 +33,7 @@ struct wave_header {
 	uint16_t BlockAlign;     /* == NumChannels * BitsPerSample/8 */
 	uint16_t BitsPerSample;
 	/* data subchunk */
-	uint8_t Subchunk2ID[4];    /* "data" in ASCII */
+	uint8_t	 Subchunk2ID[4];   /* "data" in ASCII */
 	uint32_t Subchunk2Size;  /* == NumSamples * NumChannels * BitsPerSample/8;
 	                also this is actual size of following data in bytes */
 	/* The actual sound data follows */

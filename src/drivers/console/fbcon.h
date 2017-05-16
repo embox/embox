@@ -18,16 +18,16 @@
 
 struct fbcon_displ_data {
 	const struct font_desc *font;
-	int fg_color;
-	int bg_color;
-	int cur_color;
+	int						fg_color;
+	int						bg_color;
+	int						cur_color;
 };
 
 struct fbcon {
 	struct vc vc_this;
 
 	struct vterm_video vterm_video;
-	struct vterm vterm;
+	struct vterm	   vterm;
 
 	struct fbcon_displ_data *fbcon_disdata;
 

@@ -44,14 +44,14 @@ struct tftp_msg {
 		} cmd /*__attribute__ ((packed))*/;
 		struct {
 			uint16_t block_num;
-			char stuff[SEGSIZE];
+			char	 stuff[SEGSIZE];
 		} data /*__attribute__ ((packed))*/;
 		struct {
 			uint16_t block_num;
 		} ack /*__attribute__ ((packed))*/;
 		struct {
 			uint16_t error_code;
-			char error_msg[1];
+			char	 error_msg[1];
 		} err /*__attriibute__ ((packed))*/;
 	} op /*__attribute__ ((packed))*/;
 } __attribute__ ((packed));
@@ -414,7 +414,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 			goto error;           /* TODO send error package */
 
 		}
-		send_msg:
+send_msg:
 		/* send request / data */
 		ret = tftp_msg_send(&snd, snd_len, sock);
 		if (ret != 0) {
@@ -436,7 +436,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on) {
 
 	return 0;
 
-	error:
+error:
 	if (sock >= 0) {
 		close(sock);
 	}
@@ -521,7 +521,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 			goto error;
 		}
 
-		send_msg:
+send_msg:
 		/* send request / ack */
 		ret = tftp_msg_send(&snd, snd_len, sock);
 		if (ret != 0) {
@@ -548,7 +548,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on) {
 
 	return 0;
 
-	error:
+error:
 	if (sock >= 0) {
 		close(sock);
 	}

@@ -31,9 +31,9 @@ typedef struct _CONSOLE_CALLBACK {
 
 typedef struct _CONSOLE {
 	CONSOLE_CALLBACK *callback;
-	CMDLINE model[1];
-	SCREEN view[1];
-	char prompt[OPTION_GET(NUMBER, prompt_len) + 1];
+	CMDLINE			  model[1];
+	SCREEN			  view[1];
+	char			  prompt[OPTION_GET(NUMBER, prompt_len) + 1];
 } CONSOLE;
 
 CONSOLE *console_init(CONSOLE *, CONSOLE_CALLBACK *callback);

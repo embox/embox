@@ -63,7 +63,7 @@ static int move_road(struct lthread *self) {
 	 * lthread_yield() functions. */
 	goto *lthread_resume(self, && update);
 
-	update:
+update:
 	is_game_over |= is_obstacle(car_line_nr*RACE_ROAD_LEN + 1);
 	if (is_game_over) {
 		return 0;
@@ -72,7 +72,7 @@ static int move_road(struct lthread *self) {
 	race_update_road();
 	race_print_road(road);
 
-	wait:
+wait:
 	to_wait = RACE_ROAD_UPD_MS - (step / RACE_LVL_STEP) * RACE_LVLUP_MS;
 
 	if (SCHED_WAIT_TIMEOUT_LTHREAD(self, 0, to_wait) == -EAGAIN) {
@@ -87,7 +87,7 @@ static int move_road(struct lthread *self) {
 static int move_car(struct lthread *self) {
 	goto *lthread_resume(self, && update);
 
-	update:
+update:
 	if (is_game_over) {
 		return 0;
 	}
@@ -105,7 +105,7 @@ static int move_car(struct lthread *self) {
 		}
 	}
 
-	wait:
+wait:
 	if (SCHED_WAIT_TIMEOUT_LTHREAD(self, 0, RACE_CAR_UPD_MS) == -EAGAIN) {
 		return lthread_yield(&& update, && wait);
 	}

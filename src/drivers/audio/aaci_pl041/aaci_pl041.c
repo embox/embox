@@ -35,27 +35,27 @@ EMBOX_UNIT_INIT(aaci_pl041_init);
 #define FRAME_PERIOD_US  50
 
 struct aaci_runtime {
-	void *base;
-	void *fifo;
+	void *	 base;
+	void *	 fifo;
 	uint32_t cr;
 };
 
 struct aaci_pl041_hw_dev {
-	uint32_t base_addr;
-	uint32_t maincr;
+	uint32_t			base_addr;
+	uint32_t			maincr;
 	struct aaci_runtime aaci_runtime;
-	uint32_t fifo_depth;
+	uint32_t			fifo_depth;
 };
 
 static struct aaci_pl041_hw_dev aaci_pl041_hw_dev;
 
 struct aaci_pl041_dev_priv {
 	struct aaci_pl041_hw_dev *hw_dev;
-	int devid;
-	uint8_t *out_buf;
-	uint32_t out_buf_len;
-	uint8_t *in_buf;
-	uint32_t in_buf_len;
+	int						  devid;
+	uint8_t *				  out_buf;
+	uint32_t				  out_buf_len;
+	uint8_t *				  in_buf;
+	uint32_t				  in_buf_len;
 
 	uint32_t cur_buff_offset;
 };
@@ -321,7 +321,7 @@ uint16_t ac97_reg_read(unsigned short reg) {
 			v = ~0;
 		}
 	} while (retries);
-	out:
+out:
 	return v;
 }
 
@@ -452,11 +452,11 @@ static int aaci_pl041_init(void) {
 	int ret;
 
 	aaci_pl041_hw_dev.base_addr = (uintptr_t)mmap_device_memory(
-			(void *)BASE_ADDR,
-			0x1000,
-			PROT_WRITE | PROT_READ,
-			MAP_FIXED,
-			BASE_ADDR);
+		(void *)BASE_ADDR,
+		0x1000,
+		PROT_WRITE | PROT_READ,
+		MAP_FIXED,
+		BASE_ADDR);
 	/* Set MAINCR to allow slot 1 and 2 data IO */
 	aaci_pl041_hw_dev.maincr = AACI_MAINCR_IE | AACI_MAINCR_SL1RXEN | AACI_MAINCR_SL1TXEN |
 			AACI_MAINCR_SL2RXEN | AACI_MAINCR_SL2TXEN;
@@ -499,6 +499,6 @@ static int aaci_pl041_init(void) {
 		goto out;
 	}
 
-	out:
+out:
 	return ret;
 }

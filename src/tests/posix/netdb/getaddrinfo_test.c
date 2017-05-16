@@ -52,7 +52,7 @@ TEST_TEARDOWN(case_teardown);
 int ret;
 static struct addrinfo hints_, *res;
 static struct {
-	struct sockaddr_in in;
+	struct sockaddr_in	in;
 	struct sockaddr_in6 in6;
 } addr;
 
@@ -60,47 +60,47 @@ static struct {
 static struct addrinfo *hints, *ai;
 
 TEST_CASE("getaddrinfo() fails with EAI_NONAME if node and"
-		  " service unspecified") {
+		" service unspecified") {
 	test_assert_equal(EAI_NONAME, GET_AI(NULL, NULL));
 }
 
 TEST_CASE("getaddrinfo() fails with EAI_FAMILY if family not"
-		  " supported") {
+		" supported") {
 	hints->ai_family = BAD_FAMILY;
 	test_assert_equal(EAI_FAMILY, GET_AI(NODE_NAME, SERV_NAME));
 }
 
 TEST_CASE("getaddrinfo() fails with EAI_SOCKTYPE if socket type"
-		  " not supported") {
+		" not supported") {
 	hints->ai_socktype = BAD_SOCKTYPE;
 	test_assert_equal(EAI_SOCKTYPE, GET_AI(NODE_NAME, SERV_NAME));
 }
 
 TEST_CASE("getaddrinfo() fails with EAI_SERVICE if service not"
-		  " supported for socket type") {
+		" supported for socket type") {
 	hints->ai_protocol = BAD_PROTOCOL;
 	test_assert_equal(EAI_SERVICE, GET_AI(NODE_NAME, SERV_NAME));
 }
 
 TEST_CASE("getaddrinfo() fails with EAI_SOCKTYPE if socket type"
-		  " not supported with specified protocol") {
+		" not supported with specified protocol") {
 	hints->ai_socktype = SOCKTYPE;
 	hints->ai_protocol = BAD_PROTOCOL;
 	test_assert_equal(EAI_SOCKTYPE, GET_AI(NODE_NAME, SERV_NAME));
 }
 
 TEST_CASE("getaddrinfo() fails with EAI_SERVICE on bad service"
-		  " name") {
+		" name") {
 	test_assert_equal(EAI_SERVICE, GET_AI(NODE_NAME, BAD_NAME));
 }
 
 TEST_CASE("getaddrinfo() fails with EAI_NONAME on bad node"
-		  " name") {
+		" name") {
 	test_assert_equal(EAI_NONAME, GET_AI(BAD_NAME, SERV_NAME));
 }
 
 TEST_CASE("getaddrinfo() returns addrinfo with specified"
-		  " nodename, servname, family, socktype and protocol") {
+		" nodename, servname, family, socktype and protocol") {
 	hints->ai_family = FAMILY;
 	hints->ai_socktype = SOCKTYPE;
 	hints->ai_protocol = PROTOCOL;
@@ -115,7 +115,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 }
 
 TEST_CASE("getaddrinfo() returns addrinfo with specified"
-		  " nodename, servname, family and socktype") {
+		" nodename, servname, family and socktype") {
 	hints->ai_family = FAMILY;
 	hints->ai_socktype = SOCKTYPE;
 	test_assert_equal(0, GET_AI(NODE_NAME, SERV_NAME));
@@ -129,7 +129,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 }
 
 TEST_CASE("getaddrinfo() returns addrinfo with specified"
-		  " nodename, servname, family and protocol") {
+		" nodename, servname, family and protocol") {
 	hints->ai_family = FAMILY;
 	hints->ai_protocol = PROTOCOL;
 	test_assert_equal(0, GET_AI(NODE_NAME, SERV_NAME));
@@ -143,7 +143,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 }
 
 TEST_CASE("getaddrinfo() returns addrinfo with specified"
-		  " nodename, servname and family") {
+		" nodename, servname and family") {
 	hints->ai_family = FAMILY;
 	test_assert_equal(0, GET_AI(NODE_NAME, SERV_NAME));
 
@@ -161,7 +161,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 }
 
 TEST_CASE("getaddrinfo() returns addrinfo with specified"
-		  " servname, socktype and loopback-address") {
+		" servname, socktype and loopback-address") {
 	hints->ai_socktype = SOCKTYPE;
 	test_assert_equal(0, GET_AI(NULL, SERV_NAME));
 
@@ -182,7 +182,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 }
 
 TEST_CASE("getaddrinfo() returns addrinfo with specified"
-		  " servname, flag AI_PASSIVE, socktype and any-address") {
+		" servname, flag AI_PASSIVE, socktype and any-address") {
 	hints->ai_flags |= AI_PASSIVE;
 	hints->ai_socktype = SOCKTYPE;
 	test_assert_equal(0, GET_AI(NULL, SERV_NAME));
@@ -204,7 +204,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 }
 
 TEST_CASE("getaddrinfo() ignores AI_PASSIVE flag if nodename is"
-		  " specified") {
+		" specified") {
 	hints->ai_flags |= AI_PASSIVE;
 	hints->ai_socktype = SOCKTYPE;
 	test_assert_equal(0, GET_AI(NODE_NAME, SERV_NAME));
@@ -218,7 +218,7 @@ TEST_CASE("getaddrinfo() ignores AI_PASSIVE flag if nodename is"
 }
 
 TEST_CASE("getaddrinfo() returns addrinfo with port 0 if"
-		  " servname not specified") {
+		" servname not specified") {
 	hints->ai_family = FAMILY;
 	hints->ai_socktype = SOCKTYPE;
 	test_assert_equal(0, GET_AI(NODE_NAME, NULL));
@@ -232,7 +232,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with port 0 if"
 }
 
 TEST_CASE("getaddrinfo() doesn't return error if"
-		  " servname is empty string") {
+		" servname is empty string") {
 
 	hints_.ai_socktype = SOCK_DGRAM;
 	hints_.ai_family = AF_UNSPEC;

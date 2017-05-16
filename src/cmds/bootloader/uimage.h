@@ -136,19 +136,19 @@ typedef struct image_header {
 	uint32_t ih_load;       /* Data	 Load  Address		*/
 	uint32_t ih_ep;         /* Entry Point Address		*/
 	uint32_t ih_dcrc;       /* Image Data CRC Checksum	*/
-	uint8_t ih_os;          /* Operating System		*/
-	uint8_t ih_arch;        /* CPU architecture		*/
-	uint8_t ih_type;        /* Image Type			*/
-	uint8_t ih_comp;        /* Compression Type		*/
-	uint8_t ih_name[IH_NMLEN];      /* Image Name		*/
+	uint8_t	 ih_os;         /* Operating System		*/
+	uint8_t	 ih_arch;       /* CPU architecture		*/
+	uint8_t	 ih_type;       /* Image Type			*/
+	uint8_t	 ih_comp;       /* Compression Type		*/
+	uint8_t	 ih_name[IH_NMLEN];     /* Image Name		*/
 } image_header_t;
 
 #define IMAGE_HEADER_SIZE sizeof(image_header_t)
 
 typedef struct image_info {
-	ulong start, end;                /* start/end of blob */
-	ulong image_start, image_len;    /* start of image within blob, len of image */
-	ulong load;                      /* load addr for the image */
+	ulong	start, end;              /* start/end of blob */
+	ulong	image_start, image_len;  /* start of image within blob, len of image */
+	ulong	load;                    /* load addr for the image */
 	uint8_t comp, type, os;          /* compression, type of image, os type */
 } image_info_t;
 

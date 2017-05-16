@@ -41,9 +41,9 @@ EMBOX_UNIT_INIT(ti8168_clk_init);
 
 struct gptimer13_1 {
 	uint32_t tidr;      /* 0x00 */
-	char unused0[12];   /* 0x04 */
+	char	 unused0[12]; /* 0x04 */
 	uint32_t cfg;       /* 0x10 */
-	char unused1[12];   /* 0x14 */
+	char	 unused1[12]; /* 0x14 */
 	uint32_t eoi;       /* 0x20 */
 	uint32_t irqstat_raw;   /* 0x24 */
 	uint32_t irqstat;   /* 0x28 */

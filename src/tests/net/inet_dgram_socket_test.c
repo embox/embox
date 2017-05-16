@@ -94,7 +94,7 @@ TEST_CASE("sendto() and sendmsg() works on disconnected socket") {
 }
 
 TEST_CASE("sendto() and sendmsg() with not-null address pointer works"
-		  " on connected socket") {
+		" on connected socket") {
 	addr.sin_port = htons(OTHER_PORT);
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 
@@ -137,7 +137,7 @@ TEST_CASE("recv() works on connected socket") {
 
 #if 0
 TEST_CASE("recvfrom() and recvmsg() works on disconnected"
-		  " socket") {
+		" socket") {
 	struct sockaddr_in tmp;
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 	test_assert_zero(getsockname(c, to_sa(&addr), &addrlen));
@@ -179,7 +179,7 @@ TEST_CASE("recvfrom() and recvmsg() works on connected socket") {
 }
 
 TEST_CASE("getsockname() returns not unspecified address when"
-		  " a socket was connected") {
+		" a socket was connected") {
 	struct sockaddr_in tmp;
 	test_assert_zero(connect(c, to_sa(&addr), addrlen));
 

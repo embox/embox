@@ -54,11 +54,11 @@ EMBOX_UNIT_INIT(ns16550_init);
 static int ns16550_init(void) {
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
-			(void *) (COM_BASE & ~MMU_PAGE_MASK),
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			binalign_bound(sizeof (struct com), MMU_PAGE_SIZE),
-			MAP_FIXED,
-			COM_BASE & ~MMU_PAGE_MASK
+		(void *) (COM_BASE & ~MMU_PAGE_MASK),
+		PROT_READ | PROT_WRITE | PROT_NOCACHE,
+		binalign_bound(sizeof (struct com), MMU_PAGE_SIZE),
+		MAP_FIXED,
+		COM_BASE & ~MMU_PAGE_MASK
 	);
 	return 0;
 }
@@ -79,7 +79,7 @@ static int ns16550_diag_kbhit(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-		.putc = ns16550_diag_putc,
-		.getc = ns16550_diag_getc,
-		.kbhit = ns16550_diag_kbhit,
+	.putc = ns16550_diag_putc,
+	.getc = ns16550_diag_getc,
+	.kbhit = ns16550_diag_kbhit,
 );

@@ -17,8 +17,8 @@
 #define SMTP_PATH_LEN    256
 
 struct smtp_session {
-	int sock;
-	int code;
+	int	 sock;
+	int	 code;
 	char status[SMTP_STATUS_LEN + 1];
 };
 

@@ -354,7 +354,7 @@ int kgetpeername(struct sock *sk, struct sockaddr *addr,
 #define CASE_GETSOCKOPT(test_name, field, expression) \
 case test_name:                                   \
 	memcpy(optval, &sk->opt.field,                \
-		min(*optlen, sizeof sk->opt.field));  \
+			min(*optlen, sizeof sk->opt.field));  \
 	expression;                                   \
 	*optlen = min(*optlen, sizeof sk->opt.field); \
 	break
@@ -372,7 +372,7 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 			return -EOPNOTSUPP;
 		}
 		return sk->f_ops->getsockopt(sk, level, optname,
-				optval, optlen);
+					   optval, optlen);
 	}
 
 	switch (optname) {
@@ -383,7 +383,7 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 				strncpy(optval, &sk->opt.so_bindtodevice->name[0],
 				*optlen);
 				*optlen = min(*optlen,
-						strlen(&sk->opt.so_bindtodevice->name[0]));
+				strlen(&sk->opt.so_bindtodevice->name[0]));
 				break);
 		CASE_GETSOCKOPT(SO_BROADCAST, so_broadcast, );
 		CASE_GETSOCKOPT(SO_DOMAIN, so_domain, );
@@ -475,5 +475,5 @@ int ksetsockopt(struct sock *sk, int level, int optname,
 		return ret;
 	}
 	return sk->f_ops->setsockopt(sk, level, optname,
-			optval, optlen);
+				   optval, optlen);
 }

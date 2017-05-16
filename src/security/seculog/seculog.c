@@ -17,7 +17,7 @@
 #define REC_HND_N 32
 
 struct seculog_rec_handle {
-	struct dlist_head rh_lnk;
+	struct dlist_head	   rh_lnk;
 	struct seculog_record *record;
 };
 

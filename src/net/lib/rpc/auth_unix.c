@@ -52,7 +52,7 @@ struct auth *authunix_create(char *host, int uid, int gid,
 	memcpy(&ath->verf, &__opaque_auth_null, sizeof __opaque_auth_null);
 
 	return ath;
-	exit_with_error:
+exit_with_error:
 	auth_free(ath);
 	free(data);
 	return NULL;

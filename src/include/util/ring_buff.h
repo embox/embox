@@ -19,9 +19,9 @@
  */
 struct ring_buff {
 	struct ring ring;
-	size_t capacity;   /**< capacity of buffer in elements */
-	void  *storage;    /**< storage */
-	size_t elem_size;  /**< size of element */
+	size_t		capacity; /**< capacity of buffer in elements */
+	void *		storage; /**< storage */
+	size_t		elem_size; /**< size of element */
 };
 
 #include <sys/cdefs.h>

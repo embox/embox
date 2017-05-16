@@ -22,32 +22,32 @@
 
 /* Collection of information about elf. */
 typedef struct {
-	FILE         *fd;
+	FILE *fd;
 	/* Should we reverse bytes when reading */
 	int need_reverse;
 	/* Header of the file */
 	Elf32_Ehdr header;
-	char         **sections;
+	char **	   sections;
 	/* Section table */
 	Elf32_Shdr sh_table[128];
 	/* Program table */
 	Elf32_Phdr ph_table[128];
 	/* String table. Contains section names */
-	char         *string_table;
+	char *string_table;
 	/* Symbol table */
 	Elf32_Sym sym_table[128];
 	/* Section header index of the associated string table for symbol table */
 	int sym_names_shidx;
 	/* Symbol names */
-	char         *sym_names;
+	char *		 sym_names;
 	unsigned int sym_count;
 	/* Elf .dynamic section */
-	Elf32_Dyn dyn_section[128];
+	Elf32_Dyn	 dyn_section[128];
 	unsigned int dyn_count;
 	/* Elf relocation array */
-	Elf32_Rel rel_array[128];
+	Elf32_Rel	 rel_array[128];
 	unsigned int rel_count;
-	Elf32_Addr base_addr;   /* For shared libraries */
+	Elf32_Addr	 base_addr; /* For shared libraries */
 } Elf32_Obj;
 
 static int elf_read_section_header_table(int elf_file, Elf32_Obj *elf) {
@@ -73,8 +73,8 @@ static int elf_read_symbol_names(int elf_file, Elf32_Obj *elf) {
 }
 
 typedef struct elf_objlist_item {
-	Elf32_Obj                *obj;
-	struct elf_objlist_item  *next;
+	Elf32_Obj *				 obj;
+	struct elf_objlist_item *next;
 } Elf32_Objlist_item;
 
 typedef struct {
@@ -89,7 +89,7 @@ static void print_usage(void) {
 }
 
 typedef struct header_item {
-	int i;
+	int			  i;
 	unsigned char desc[70];
 } header_item_t;
 

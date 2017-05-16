@@ -155,7 +155,7 @@ int smac_access(const char *s_subject, const char *s_object,
 
 	/* 7 */
 	ret = -EACCES;
-	out:
+out:
 
 #if SMAC_AUDIT
 	if ((ret == -EACCES && (SMAC_AUDIT & 1))
@@ -176,7 +176,7 @@ int smac_getenv(void *buf, size_t buflen, struct smac_env **oenv) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IROTH, &audit))) {
+			S_IROTH, &audit))) {
 		return res;
 	}
 
@@ -198,7 +198,7 @@ int smac_flushenv(void) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IWOTH, &audit))) {
+			S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -215,7 +215,7 @@ int smac_addenv(const char *subject, const char *object, int flags) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IWOTH, &audit))) {
+			S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -257,7 +257,7 @@ int smac_labelset(const char *label) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IWOTH, &audit))) {
+			S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -277,7 +277,7 @@ int smac_labelget(char *label, size_t len) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-					S_IROTH, &audit))) {
+			S_IROTH, &audit))) {
 		return res;
 	}
 

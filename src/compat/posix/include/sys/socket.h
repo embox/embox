@@ -22,30 +22,30 @@ typedef unsigned short sa_family_t;
 
 typedef struct sockaddr {
 	sa_family_t sa_family; /* Address family, AF_xxx */
-	char sa_data[14];      /* 14 bytes of protocol address */
+	char		sa_data[14]; /* 14 bytes of protocol address */
 } sockaddr_t;
 
 struct sockaddr_storage {
 	sa_family_t ss_family;
-	char __ss_storage[100];
+	char		__ss_storage[100];
 };
 
 struct iovec;
 
 struct msghdr {
-	void *msg_name;              /* optional address*/
-	socklen_t msg_namelen;       /* size of address */
+	void *		  msg_name;      /* optional address*/
+	socklen_t	  msg_namelen;   /* size of address */
 	struct iovec *msg_iov;       /* scatter/gather array */
-	int msg_iovlen;              /* members in msg_iov */
-	void         *msg_control;   /* ancillary data, see below */
-	socklen_t msg_controllen;    /* ancillary data buffer len */
-	int msg_flags;               /* flags on received message */
+	int			  msg_iovlen;    /* members in msg_iov */
+	void *		  msg_control;   /* ancillary data, see below */
+	socklen_t	  msg_controllen; /* ancillary data buffer len */
+	int			  msg_flags;     /* flags on received message */
 };
 
 struct cmsghdr {
 	socklen_t cmsg_len;           /* data byte count, including the cmsghdr */
-	int cmsg_level;               /* originating protocol */
-	int cmsg_type;                /* protocol-specific type */
+	int		  cmsg_level;         /* originating protocol */
+	int		  cmsg_type;          /* protocol-specific type */
 };
 
 struct linger {

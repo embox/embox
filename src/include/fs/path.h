@@ -12,7 +12,7 @@ struct node;
 struct mount_descriptor;
 
 struct path {
-	struct node *node;
+	struct node *			 node;
 	struct mount_descriptor *mnt_desc;
 };
 

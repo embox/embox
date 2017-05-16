@@ -10,10 +10,10 @@ struct i2c_adapter {
 };
 
 struct i2c_bus {
-	int id;
-	int free_entry;
+	int					id;
+	int					free_entry;
 	struct i2c_adapter *adapter;
-	struct i2c_device devices;
+	struct i2c_device	devices;
 };
 
 int register_i2c_bus(struct i2c_adapter *);

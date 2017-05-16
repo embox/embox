@@ -38,7 +38,7 @@ void closelog(void);
 #define UNIX_PATH_MAX 255
 struct sockaddr_un {
 	sa_family_t sun_family;                          /* AF_UNIX */
-	char sun_path[UNIX_PATH_MAX];                    /* pathname */
+	char		sun_path[UNIX_PATH_MAX];             /* pathname */
 };
 
 typedef unsigned int u_int;

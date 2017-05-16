@@ -335,7 +335,7 @@ void rb_erase(struct rb_node *elm, struct rb_root *head) {
 	} else {
 		RB_HEAD(head) = child;
 	}
-	color:
+color:
 	if (color == RB_BLACK) {
 		rb_remove_color(head, parent, child);
 	}
@@ -387,7 +387,7 @@ struct rb_node *rb_prev(struct rb_node *elm) {
  * wrote them. dwmw2.
  */
 struct rb_node *rb_first(struct rb_root *root) {
-	struct rb_node  *n;
+	struct rb_node *n;
 
 	n = root->rb_node;
 	if (!n) {

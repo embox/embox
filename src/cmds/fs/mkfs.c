@@ -95,8 +95,8 @@ int main(int argc, char **argv) {
 	int min_argc;
 	unsigned int operation_flag;
 	int blocks;
-	char         *path;
-	const char   *fs_name;
+	char *path;
+	const char *fs_name;
 	unsigned int fs_type;
 	char *fs_specific;
 

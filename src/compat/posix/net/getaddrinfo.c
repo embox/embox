@@ -22,7 +22,7 @@
 #define ADDRINFO_TUPLE_POOL_SZ OPTION_GET(NUMBER, addrinfo_pool_size)
 
 struct addrinfo_tuple {
-	struct addrinfo ai;
+	struct addrinfo			ai;
 	struct sockaddr_storage __ai_ai_addr_storage;
 };
 
@@ -189,7 +189,7 @@ static int explore_node(const char *nodename,
 	const int *family, *socktype, *protocol;
 	struct addrinfo *ai_head, **ai_last_ptr;
 	struct {
-		struct sockaddr_in in;
+		struct sockaddr_in	in;
 		struct sockaddr_in6 in6;
 	} addr;
 	struct sockaddr *sa;

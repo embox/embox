@@ -97,11 +97,11 @@ __END_DECLS
 #define task_foreach_thread(th, tsk) \
 	th = task_get_main(tsk); \
 	for (struct thread *nxt = dlist_entry(th->thread_link.next, \
-					struct thread, thread_link), \
+			struct thread, thread_link), \
 			*loop = NULL; \
 			(th != task_get_main(tsk)) || !loop; \
 			loop = th, th = nxt, nxt = dlist_entry(th->thread_link.next, \
-					struct thread, thread_link))
+			struct thread, thread_link))
 
 #include <kernel/task/task_table.h>
 

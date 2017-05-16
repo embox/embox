@@ -31,8 +31,8 @@ struct fuse_module *fuse_module_lookup(char *fuse_type) {
 
 struct fuse_mount_params {
 	volatile struct fuse_module *fm;
-	char *dev;
-	char *dest;
+	char *						 dev;
+	char *						 dest;
 };
 
 extern int dentry_fill(struct super_block *, struct inode *,

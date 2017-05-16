@@ -73,7 +73,7 @@ static int exec(int argc, char *argv[]) {
 		ret = JVM_CleanUp();
 	}
 
-	end:
+end:
 	pcsl_mem_finalize();
 
 	return ret;

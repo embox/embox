@@ -29,20 +29,20 @@ struct idesc_ops;
 
 struct device {
 	struct dev_operations *dev_dops;
-	struct idesc_ops *dev_iops;
+	struct idesc_ops *	   dev_iops;
 };
 
 struct dev_operations {
-	int (*probe)  (struct dev_module *mod, void *dev_priv);
+	int	 (*probe)  (struct dev_module *mod, void *dev_priv);
 	void (*remove) (struct dev_module *mod);
 };
 
 struct dev_module {
-	struct file dev_file;
-	int dev_id;
-	char name[DEV_NAME_LEN];
+	struct file	   dev_file;
+	int			   dev_id;
+	char		   name[DEV_NAME_LEN];
 	struct device *device;
-	void  *dev_priv;
+	void *		   dev_priv;
 };
 
 extern struct dev_module *dev_module_create(struct device *dev,

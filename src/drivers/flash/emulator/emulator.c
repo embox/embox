@@ -72,7 +72,7 @@ static int flash_emu_program(struct flash_dev *dev, uint32_t base,
 		return -ENODEV;
 	}
 	return block_dev_write_buffered(bdev, (const char *) data,
-			len, (uint32_t) base);
+				   len, (uint32_t) base);
 }
 
 static int flash_emu_read(struct flash_dev *dev,
@@ -84,7 +84,7 @@ static int flash_emu_read(struct flash_dev *dev,
 		return -ENODEV;
 	}
 	return block_dev_read_buffered(bdev, (char *) data,
-			len, (uint32_t) base);
+				   len, (uint32_t) base);
 }
 
 static struct flash_dev_drv flash_emu_drv = {

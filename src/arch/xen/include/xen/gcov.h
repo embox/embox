@@ -65,7 +65,7 @@ struct xencov_file
 	uint32_t version;
 	uint32_t stamp;
 	uint32_t fn_len;
-	char filename[1];
+	char	 filename[1];
 };
 
 /**
@@ -97,8 +97,8 @@ struct xencov_function
  */
 struct xencov_functions
 {
-	uint32_t tag; /* XENCOV_TAG_FUNC */
-	uint32_t num;
+	uint32_t			   tag; /* XENCOV_TAG_FUNC */
+	uint32_t			   num;
 	struct xencov_function xencov_function[1];
 };
 

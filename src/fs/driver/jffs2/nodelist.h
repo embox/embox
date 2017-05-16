@@ -68,8 +68,8 @@ struct jffs2_raw_node_ref
 	    for this inode instead. The inode_cache will have NULL in the first
 	    word so you know when you've got there :) */
 	struct jffs2_raw_node_ref *next_phys;
-	uint32_t flash_offset;
-	uint32_t __totlen; /* This may die; use ref_totlen(c, jeb, ) below */
+	uint32_t				   flash_offset;
+	uint32_t				   __totlen; /* This may die; use ref_totlen(c, jeb, ) below */
 };
 
 /* flash_offset & 3 always has to be zero, because nodes are
@@ -96,11 +96,11 @@ struct jffs2_inode_cache {
 	    temporary lists of dirents, and later must be set to
 	    NULL to mark the end of the raw_node_ref->next_in_ino
 	    chain. */
-	struct jffs2_inode_cache *next;
+	struct jffs2_inode_cache * next;
 	struct jffs2_raw_node_ref *nodes;
-	uint32_t ino;
-	int nlink;
-	int state;
+	uint32_t				   ino;
+	int						   nlink;
+	int						   state;
 };
 
 /* Inode states for 'state' above. We need the 'GC' state to prevent
@@ -124,9 +124,9 @@ struct jffs2_inode_cache {
 struct jffs2_full_dnode
 {
 	struct jffs2_raw_node_ref *raw;
-	uint32_t ofs; /* The offset to which the data of this node belongs */
-	uint32_t size;
-	uint32_t frags; /* Number of fragments which currently refer
+	uint32_t				   ofs; /* The offset to which the data of this node belongs */
+	uint32_t				   size;
+	uint32_t				   frags; /* Number of fragments which currently refer
 	        to this node. When this reaches zero,
 	        the node is obsolete.  */
 };
@@ -138,20 +138,20 @@ struct jffs2_full_dnode
 */
 struct jffs2_tmp_dnode_info
 {
-	struct rb_node rb;
+	struct rb_node			 rb;
 	struct jffs2_full_dnode *fn;
-	uint32_t version;
+	uint32_t				 version;
 };
 
 struct jffs2_full_dirent
 {
 	struct jffs2_raw_node_ref *raw;
-	struct jffs2_full_dirent *next;
-	uint32_t version;
-	uint32_t ino; /* == zero for unlink */
-	unsigned int nhash;
-	unsigned char type;
-	unsigned char name[0];
+	struct jffs2_full_dirent * next;
+	uint32_t				   version;
+	uint32_t				   ino; /* == zero for unlink */
+	unsigned int			   nhash;
+	unsigned char			   type;
+	unsigned char			   name[0];
 };
 
 /*
@@ -160,17 +160,17 @@ struct jffs2_full_dirent
 */
 struct jffs2_node_frag
 {
-	struct rb_node rb;
+	struct rb_node			 rb;
 	struct jffs2_full_dnode *node; /* NULL for holes */
-	uint32_t size;
-	uint32_t ofs; /* The offset to which this fragment belongs */
+	uint32_t				 size;
+	uint32_t				 ofs; /* The offset to which this fragment belongs */
 };
 
 struct jffs2_eraseblock
 {
 	struct list_head list;
-	int bad_count;
-	uint32_t offset;        /* of this block in the MTD */
+	int				 bad_count;
+	uint32_t		 offset; /* of this block in the MTD */
 
 	uint32_t unchecked_size;
 	uint32_t used_size;

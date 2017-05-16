@@ -13,8 +13,8 @@
 
 struct rwlock {
 	struct waitq wq;
-	int status;
-	int count;
+	int			 status;
+	int			 count;
 };
 
 typedef struct rwlock rwlock_t;

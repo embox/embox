@@ -424,7 +424,7 @@ void arasan_rx_poll(struct net_device *dev) {
 		}
 	}
 
-	error:
+error:
 	dma_intr_ena = REG_LOAD(DMA_INTERRUPT_ENABLE);
 	dma_intr_ena |= DMA_INTERRUPT_ENABLE_RECEIVE_DONE;
 	REG_STORE(DMA_INTERRUPT_ENABLE, dma_intr_ena);

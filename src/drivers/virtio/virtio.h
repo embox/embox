@@ -49,7 +49,7 @@
 static inline int virtio_has_feature(uint32_t feature,
 		unsigned long base_addr) {
 	return feature & virtio_load32(VIRTIO_REG_DEVICE_F,
-			base_addr);
+				   base_addr);
 }
 
 static inline void virtio_set_feature(uint32_t feature,

@@ -42,8 +42,8 @@ TEST_CASE("Trex test") {
 	test_assert_false(match_string("^\\a{2,}", "1abcd"));
 
 	test_assert_true(
-			match_string("Simple\\s[a-zA-Z]+\\stest", "Simple simple test"));
+		match_string("Simple\\s[a-zA-Z]+\\stest", "Simple simple test"));
 
 	test_assert_false(
-			match_string("Simple\\s[a-zA-Z]+\\stest", "Simpl simple test"));
+		match_string("Simple\\s[a-zA-Z]+\\stest", "Simpl simple test"));
 }

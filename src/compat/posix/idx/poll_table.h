@@ -25,7 +25,7 @@ struct idesc_poll {
 
 struct idesc_poll_table {
 	struct idesc_poll idesc_poll[MODOPS_IDESC_TABLE_SIZE];
-	int size;
+	int				  size;
 };
 
 extern int poll_table_count(struct idesc_poll_table *pt);

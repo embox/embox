@@ -33,9 +33,9 @@
 #define HVM_MAX_VCPUS        128
 
 struct hvm_info_table {
-	char signature[8];        /* "HVM INFO" */
+	char	 signature[8];    /* "HVM INFO" */
 	uint32_t length;
-	uint8_t checksum;
+	uint8_t	 checksum;
 
 	/* Should firmware build APIC descriptors (APIC MADT / MP BIOS)? */
 	uint8_t apic_mode;

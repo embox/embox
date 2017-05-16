@@ -20,15 +20,15 @@
 struct nas;
 
 typedef struct file_lock_shared {
-	struct thread *holder;
+	struct thread *	  holder;
 	struct dlist_head flock_link;
 } flock_shared_t;
 
 typedef struct file_lock {
-	struct mutex exlock;
-	long shlock_count;
+	struct mutex	  exlock;
+	long			  shlock_count;
 	struct dlist_head shlock_holders;
-	spinlock_t flock_guard;
+	spinlock_t		  flock_guard;
 } flock_t;
 
 typedef struct node {
@@ -36,37 +36,37 @@ typedef struct node {
 	char name[NAME_MAX + 1];
 
 	mode_t mode;               /* discrete access mode Read-Write-Execution */
-	uid_t uid;                /* owner user ID */
-	gid_t gid;                /* owner group ID */
+	uid_t  uid;               /* owner user ID */
+	gid_t  gid;               /* owner group ID */
 
 	/* node attribute structure (extended information about node)*/
-	struct nas            *nas;
+	struct nas *nas;
 
 	int mounted;                   /* is mount point*/
 
 	/* Two locks is temporary solution for compatibility,
 	 * only kflock should stay in future */
 	kflock_t kflock;
-	flock_t flock;
+	flock_t	 flock;
 
 	/* service data structure for enabling tree operation */
 	struct tree_link tree_link;
 } node_t;
 
 struct node_info {
-	size_t size;
+	size_t		 size;
 	unsigned int mtime;
 };
 
 struct node_fi {
 	struct node_info ni;
-	void  *privdata;
+	void *			 privdata;
 };
 
 typedef struct nas {
-	struct node          *node;
-	struct filesystem    *fs;
-	struct node_fi       *fi;
+	struct node *	   node;
+	struct filesystem *fs;
+	struct node_fi *   fi;
 } nas_t;
 
 /**

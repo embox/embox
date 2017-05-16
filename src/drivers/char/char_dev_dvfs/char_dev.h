@@ -16,10 +16,10 @@ struct file_operations;
 
 struct device_module {
 	struct file_operations *fops;
-	struct idesc_ops *idesc_ops;
-	const char *name;
-	void *dev_data;
-	struct dlist_head cdev_list;
+	struct idesc_ops *		idesc_ops;
+	const char *			name;
+	void *					dev_data;
+	struct dlist_head		cdev_list;
 };
 
 #define CHAR_DEV_DEF(name, file_op, idesc_op, priv) \

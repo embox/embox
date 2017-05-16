@@ -82,8 +82,8 @@
  */
 #define CALLBACKOP_register                0
 struct callback_register {
-	uint16_t type;
-	uint16_t flags;
+	uint16_t	   type;
+	uint16_t	   flags;
 	xen_callback_t address;
 };
 typedef struct callback_register callback_register_t;

@@ -43,16 +43,16 @@ static void set_vendor_id(struct cpu_info *info) {
 	 * EBX, ECX, EDX to clobber list, so I have to call CPUID twice.
 	 */
 	asm volatile ("xorl %%eax, %%eax	\n\t"
-				  "cpuid				\n\t"
-				  "movl %%ebx, %0		\n\t"
-				  "movl %%ecx, %1		\n\t"
+	"cpuid				\n\t"
+	"movl %%ebx, %0		\n\t"
+	"movl %%ecx, %1		\n\t"
 	: "=g" (r[0]), "=g" (r[2])
 	:
 	: "%ebx", "%ecx");
 
 	asm volatile ("xorl %%eax, %%eax	\n\t"
-				  "cpuid				\n\t"
-				  "movl %%edx, %0		\n\t"
+	"cpuid				\n\t"
+	"movl %%edx, %0		\n\t"
 	: "=g" (r[1])
 	:
 	: "%edx");

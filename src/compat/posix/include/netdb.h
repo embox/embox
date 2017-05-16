@@ -20,10 +20,10 @@ __BEGIN_DECLS
  * Host name entity
  */
 struct hostent {
-	char *h_name;       /* Official name of the host */
+	char * h_name;      /* Official name of the host */
 	char **h_aliases;   /* Alias list */
-	int h_addrtype;     /* Host address type */
-	int h_length;       /* Length of address */
+	int	   h_addrtype;  /* Host address type */
+	int	   h_length;    /* Length of address */
 	char **h_addr_list; /* List of addresses */
 #define h_addr h_addr_list[0]
 };
@@ -64,9 +64,9 @@ extern const char *hstrerror(int error_code);
  * Network name entity
  */
 struct netent {
-	char *n_name;     /* Official name of the host */
-	char **n_aliases; /* Alias list */
-	int n_addrtype;   /* Network address type */
+	char *	 n_name;  /* Official name of the host */
+	char **	 n_aliases; /* Alias list */
+	int		 n_addrtype; /* Network address type */
 	uint32_t n_net;   /* Network number (HOST) */
 };
 
@@ -83,9 +83,9 @@ extern struct netent *getnetbyname(const char *name);
  * Protocol name entity
  */
 struct protoent {
-	char *p_name;     /* Official name of the protocol */
+	char * p_name;    /* Official name of the protocol */
 	char **p_aliases; /* Alias list */
-	int p_proto;      /* The protocol number */
+	int	   p_proto;   /* The protocol number */
 };
 
 /**
@@ -101,10 +101,10 @@ extern struct protoent *getprotobynumber(int proto);
  * Service name entity
  */
 struct servent {
-	char *s_name;     /* Official name of the service */
+	char * s_name;    /* Official name of the service */
 	char **s_aliases; /* Alias list */
-	int s_port;       /* The port number (BE) */
-	char *s_proto;    /* The name of the protocol */
+	int	   s_port;    /* The port number (BE) */
+	char * s_proto;   /* The name of the protocol */
 };
 
 /**
@@ -122,13 +122,13 @@ extern struct servent *getservbyport(int port,
  * Address information entity
  */
 struct addrinfo {
-	int ai_flags;             /* Input flags */
-	int ai_family;            /* Socket family */
-	int ai_socktype;          /* Socket type */
-	int ai_protocol;          /* Socket protocol */
-	socklen_t ai_addrlen;     /* Length of socket address */
+	int				 ai_flags; /* Input flags */
+	int				 ai_family; /* Socket family */
+	int				 ai_socktype; /* Socket type */
+	int				 ai_protocol; /* Socket protocol */
+	socklen_t		 ai_addrlen; /* Length of socket address */
 	struct sockaddr *ai_addr; /* Socket address */
-	char *ai_canonname;       /* Service's canonical name */
+	char *			 ai_canonname; /* Service's canonical name */
 	struct addrinfo *ai_next; /* Next entity */
 };
 

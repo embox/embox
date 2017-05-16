@@ -6,7 +6,7 @@
 
 struct function_sample_info {
 	const char *name;
-	int counter;
+	int			counter;
 };
 
 extern int start_profiler(int interval);

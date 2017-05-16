@@ -52,21 +52,21 @@
  */
 typedef struct amba_bar_info {
 	uint32_t start;
-	bool prefetchable;
-	bool cacheable;
+	bool	 prefetchable;
+	bool	 cacheable;
 	uint32_t mask;
-	uint8_t type;
-	bool used;
+	uint8_t	 type;
+	bool	 used;
 } amba_bar_info_t;
 
 /**
  * Amba device info
  */
 typedef struct amba_dev_info {
-	uint8_t venID;
+	uint8_t	 venID;
 	uint16_t devID;
-	uint8_t version;
-	uint8_t irq;
+	uint8_t	 version;
+	uint8_t	 irq;
 } amba_dev_info_t;
 
 struct amba_dev;
@@ -77,14 +77,14 @@ typedef void (*HANDLER_DATA_FUNC)(struct amba_dev *dev);
  * Amba device
  */
 typedef struct amba_dev {
-	amba_dev_info_t dev_info;        /**< VendorID, DeviceID, version, IRQ */
-	amba_bar_info_t bar[4];
-	uint8_t slot;                    /**< information about location */
+	amba_dev_info_t	  dev_info;      /**< VendorID, DeviceID, version, IRQ */
+	amba_bar_info_t	  bar[4];
+	uint8_t			  slot;          /**< information about location */
 	HANDLER_DATA_FUNC show_info;     /**< show brief description */
-	char dev_name[16];               /**< logical name */
-	bool is_ahb;
-	bool is_master;
-	uint32_t user_def[3];            /**< info from user registers */
+	char			  dev_name[16];  /**< logical name */
+	bool			  is_ahb;
+	bool			  is_master;
+	uint32_t		  user_def[3];   /**< info from user registers */
 } amba_dev_t;
 
 /** AHB master devices */

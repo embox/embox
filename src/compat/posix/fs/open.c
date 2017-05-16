@@ -132,7 +132,7 @@ int open(const char *path, int __oflag, ...) {
 	it = task_resource_idesc_table(task_self());
 	rc = idesc_table_add(it, (struct idesc *)kfile, 0);
 
-	out:
+out:
 	closedir(dir);
 
 	return rc >= 0 ? rc : SET_ERRNO(-rc);

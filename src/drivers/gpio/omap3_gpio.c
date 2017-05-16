@@ -218,7 +218,7 @@ static int gpio_init(void) {
 		sprintf(str,"OMAP_GPIO%d", i);
 
 		if (0 != (ret = irq_attach(GPIO_IRQ(i + 1),
-						irq_gpio_handler, 0, gpio, str))) {
+				irq_gpio_handler, 0, gpio, str))) {
 			return ret;
 		}
 	}

@@ -15,14 +15,14 @@ typedef u_int bpf_u_int32;
 typedef int pcap_t;
 
 struct bpf_program {
-	u_int bf_len;
+	u_int			 bf_len;
 	struct bpf_insn *bf_insns;
 };
 
 struct pcap_pkthdr {
 	struct timeval ts;  /* time stamp */
-	bpf_u_int32 caplen; /* length of portion present */
-	bpf_u_int32 len;    /* length this packet (off wire) */
+	bpf_u_int32	   caplen; /* length of portion present */
+	bpf_u_int32	   len; /* length this packet (off wire) */
 };
 
 #define PCAP_ERRBUF_SIZE 128

@@ -38,9 +38,9 @@
 * @brief Should be used as inode->i_data, but only for directories
 */
 struct initfs_dir_info {
-	char  *path;
+	char * path;
 	size_t path_len;
-	char  *name;
+	char * name;
 	size_t name_len;
 };
 

@@ -125,7 +125,7 @@ TEST_CASE("accept() fails on invalid arguments") {
 }
 
 TEST_CASE("send(), sendto() and sendmsg() fails on"
-		  " bad descriptor") {
+		" bad descriptor") {
 	test_assert_equal(-1, send(BAD_SOCK, NULL, 0, 0));
 	test_assert_equal(EBADF, errno);
 	test_assert_equal(-1, sendto(BAD_SOCK, NULL, 0, 0, NULL, 0));
@@ -135,7 +135,7 @@ TEST_CASE("send(), sendto() and sendmsg() fails on"
 }
 
 TEST_CASE("send(), sendto() and sendmsg() fails on"
-		  " invalid arguments") {
+		" invalid arguments") {
 	test_assert_equal(-1, sendmsg(sock, NULL, 0));
 	test_assert_equal(EINVAL, errno);
 	msg.msg_iovlen = 0;
@@ -147,7 +147,7 @@ TEST_CASE("send(), sendto() and sendmsg() fails on"
 }
 
 TEST_CASE("recv(), recvfrom() and recvmsg() fails on"
-		  " bad descriptor") {
+		" bad descriptor") {
 	test_assert_equal(-1, recv(BAD_SOCK, NULL, 0, 0));
 	test_assert_equal(EBADF, errno);
 	test_assert_equal(-1, recvfrom(BAD_SOCK, NULL, 0, 0,
@@ -158,7 +158,7 @@ TEST_CASE("recv(), recvfrom() and recvmsg() fails on"
 }
 
 TEST_CASE("recv(), recvfrom() and recvmsg() fails on"
-		  " invalid arguments") {
+		" invalid arguments") {
 	test_assert_equal(-1, recvmsg(sock, NULL, 0));
 	test_assert_equal(EINVAL, errno);
 	msg.msg_iovlen = 0;
@@ -184,7 +184,7 @@ TEST_CASE("shutdown() fails on invalid arguments") {
 }
 
 TEST_CASE("send(), sendto() and sendmsg() fails"
-		  " after shutdown with SHUT_WR") {
+		" after shutdown with SHUT_WR") {
 	test_assert_equal(-1, shutdown(sock, SHUT_WR));
 	test_assert_equal(ENOTCONN, errno);
 
@@ -198,7 +198,7 @@ TEST_CASE("send(), sendto() and sendmsg() fails"
 }
 
 TEST_CASE("send(), sendto() and sendmsg() fails"
-		  " after shutdown with SHUT_RDWR") {
+		" after shutdown with SHUT_RDWR") {
 	test_assert_equal(-1, shutdown(sock, SHUT_RDWR));
 	test_assert_equal(ENOTCONN, errno);
 
@@ -212,7 +212,7 @@ TEST_CASE("send(), sendto() and sendmsg() fails"
 }
 
 TEST_CASE("recv(), recvfrom() and recvmsg() fails"
-		  " after shutdown with SHUT_RD") {
+		" after shutdown with SHUT_RD") {
 	test_assert_equal(-1, shutdown(sock, SHUT_RD));
 	test_assert_equal(ENOTCONN, errno);
 
@@ -226,7 +226,7 @@ TEST_CASE("recv(), recvfrom() and recvmsg() fails"
 }
 
 TEST_CASE("recv(), recvfrom() and recvmsg() fails"
-		  " after shutdown with SHUT_RDWR") {
+		" after shutdown with SHUT_RDWR") {
 	test_assert_equal(-1, shutdown(sock, SHUT_RDWR));
 	test_assert_equal(ENOTCONN, errno);
 
@@ -240,7 +240,7 @@ TEST_CASE("recv(), recvfrom() and recvmsg() fails"
 }
 
 TEST_CASE("getsockname() and getpeername() fails"
-		  " on bad descriptor") {
+		" on bad descriptor") {
 	test_assert_equal(-1, getsockname(BAD_SOCK, &addr, &addrlen));
 	test_assert_equal(EBADF, errno);
 	test_assert_equal(-1, getpeername(BAD_SOCK, &addr, &addrlen));
@@ -248,7 +248,7 @@ TEST_CASE("getsockname() and getpeername() fails"
 }
 
 TEST_CASE("getsockname() and getpeername() fails"
-		  " on invalid arguments") {
+		" on invalid arguments") {
 	socklen_t bad_len = BAD_LEN;
 	test_assert_equal(-1, getsockname(sock, NULL, &addrlen));
 	test_assert_equal(EINVAL, errno);

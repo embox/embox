@@ -38,7 +38,7 @@ static int parse_addr_option(char *optarg, int opt, char **addr_p) {
 	*addr_p = (char *) number;
 	return 0;
 
-	inval:
+inval:
 	print_usage();
 	return -EINVAL;
 }

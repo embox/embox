@@ -72,7 +72,7 @@
 #define __SYSCALL5(NR,type,name,type1,arg1,type2,arg2,type3,arg3,type4,arg4,   \
 			type5,arg5)                                                          \
 	static inline type name(type1 arg1,type2 arg2,type3 arg3,type4 arg4,           \
-		type5 arg5)                                                          \
+			type5 arg5)                                                          \
 	{                                                                              \
 		long __res;                                                                    \
 		__asm__ volatile ("int $0x80"                                                  \
@@ -91,14 +91,14 @@
 #define __SYSCALL6(NR,type,name,type1,arg1,type2,arg2,type3,arg3,type4,arg4,   \
 			type5,arg5,type6,arg6)                                               \
 	static inline type name(type1 arg1,type2 arg2,type3 arg3,type4 arg4,           \
-		type5 arg5,type6 arg6)                                               \
+			type5 arg5,type6 arg6)                                               \
 	{                                                                              \
 		long __res;                                                                    \
 		__asm__ volatile ("push %%ebp;"                                                \
-						  "movl %%eax,%%ebp;"                                          \
-						  "movl %1,%%eax;"                                             \
-						  "int $0x80;"                                                 \
-						  "pop %%ebp"                                                  \
+		"movl %%eax,%%ebp;"                                          \
+		"movl %1,%%eax;"                                             \
+		"int $0x80;"                                                 \
+		"pop %%ebp"                                                  \
                                                                                \
 		: "=a" (__res)                                                         \
 		: "i"  (NR),                                                           \

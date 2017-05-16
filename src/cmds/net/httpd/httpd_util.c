@@ -19,8 +19,8 @@ static const char *ext2type_jpeg[] = {
 	".jpeg", ".jpg", NULL
 };
 static const struct ext2type_table_item {
-	const char *type;
-	const char *ext;
+	const char * type;
+	const char * ext;
 	const char **exts;
 } httpd_ext2type_table[] = {
 	{ .exts = ext2type_html, .type = "text/html", },

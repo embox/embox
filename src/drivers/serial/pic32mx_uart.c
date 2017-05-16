@@ -244,8 +244,8 @@ static int pic32_uart_diag_init(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-		.init = pic32_uart_diag_init,
-		.putc = pic32_uart_diag_putc,
-		.getc = pic32_uart_diag_getc,
-		.kbhit = pic32_uart_diag_kbhit,
+	.init = pic32_uart_diag_init,
+	.putc = pic32_uart_diag_putc,
+	.getc = pic32_uart_diag_getc,
+	.kbhit = pic32_uart_diag_kbhit,
 );

@@ -19,14 +19,14 @@ typedef volatile unsigned long __gpio_mask_t;
 #define GPIO_REG_SIZE 0x2000
 
 struct omap_pin_handler {
-	int mask;
-	void *data;
+	int			  mask;
+	void *		  data;
 	irq_handler_t handler;
 };
 
 struct gpio {
-	unsigned long base;
-	int gpio_nr;
+	unsigned long			base;
+	int						gpio_nr;
 	struct omap_pin_handler pin[N_PINS];
 };
 

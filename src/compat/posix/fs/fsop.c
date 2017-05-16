@@ -62,7 +62,7 @@ int truncate(const char *path, off_t length) {
 	}
 
 	res = ktruncate(node.node, length);
-	end:
+end:
 	return res;
 }
 

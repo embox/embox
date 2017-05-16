@@ -126,7 +126,7 @@ static void field_init(void) {
 		field[f2d(0, i)] = field[f2d(SIZE-1, i)] = '|';
 	}
 	field[f2d(0,0)] = field[f2d(0,SIZE-1)] = \
-					field[f2d(SIZE-1,0)] = field[f2d(SIZE-1,SIZE-1)] = '+';
+			field[f2d(SIZE-1,0)] = field[f2d(SIZE-1,SIZE-1)] = '+';
 	for (i = 1; i < SIZE-1; i++) {
 		for (j = 1; j < SIZE-1; j++) {
 			field[f2d(i,j)] = '.';

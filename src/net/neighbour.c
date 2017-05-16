@@ -104,8 +104,8 @@ static int nbr_send_request(struct neighbour *nbr) {
 	struct in_device *in_dev;
 	struct {
 		struct ndpbody_neighbor_solicit body;
-		struct ndpoptions_ll_addr ops;
-		char __ops_ll_addr_storage[MAX_ADDR_LEN];
+		struct ndpoptions_ll_addr		ops;
+		char							__ops_ll_addr_storage[MAX_ADDR_LEN];
 	} __attribute__((packed)) nbr_solicit;
 
 	++nbr->sent_times;
@@ -114,7 +114,7 @@ static int nbr_send_request(struct neighbour *nbr) {
 		in_dev = inetdev_get_by_dev(nbr->dev);
 		assert(in_dev != NULL);
 		return arp_discover(nbr->dev, nbr->ptype, nbr->plen,
-				&in_dev->ifa_address, &nbr->paddr[0]);
+					   &in_dev->ifa_address, &nbr->paddr[0]);
 	}
 	else {
 		assert(nbr->ptype == ETH_P_IPV6);
@@ -127,8 +127,8 @@ static int nbr_send_request(struct neighbour *nbr) {
 		memcpy(nbr_solicit.ops.ll_addr, &nbr->dev->dev_addr[0],
 				nbr->dev->addr_len);
 		return ndp_send(NDP_NEIGHBOR_SOLICIT, 0, &nbr_solicit,
-				sizeof nbr_solicit.body + sizeof nbr_solicit.ops
-				+ nbr->dev->addr_len, nbr->dev);
+					   sizeof nbr_solicit.body + sizeof nbr_solicit.ops
+					   + nbr->dev->addr_len, nbr->dev);
 	}
 }
 

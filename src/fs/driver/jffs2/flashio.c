@@ -138,7 +138,7 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 		}
 		to += vecs[i].iov_len;
 	}
-	writev_out:
+writev_out:
 	if (retlen) {
 		*retlen = totlen;
 	}

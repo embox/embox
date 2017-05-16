@@ -46,8 +46,8 @@ struct sk_buff;
  * Ethernet Header Structure
  */
 struct ethhdr {
-	uint8_t h_dest[ETH_ALEN];    /* Destination ethernet address */
-	uint8_t h_source[ETH_ALEN];  /* Source ethernet address */
+	uint8_t	 h_dest[ETH_ALEN];   /* Destination ethernet address */
+	uint8_t	 h_source[ETH_ALEN]; /* Source ethernet address */
 	uint16_t h_proto;            /* Packet type ID */
 } __attribute__((packed));
 

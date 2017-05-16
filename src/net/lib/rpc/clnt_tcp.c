@@ -78,7 +78,7 @@ struct client *clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 	*psock = sock;
 
 	return clnt;
-	exit_with_error:
+exit_with_error:
 	auth_destroy(ath);
 	clnt_free(clnt);
 	return NULL;
@@ -140,7 +140,7 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 	}
 
 	assert(clnt->err.status == RPC_SUCCESS);
-	exit_with_status:
+exit_with_status:
 	xdr_destroy(&xstream);
 	return clnt->err.status;
 }

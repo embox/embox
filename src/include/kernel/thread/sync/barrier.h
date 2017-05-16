@@ -13,8 +13,8 @@
 
 struct barrier {
 	struct waitq wq;
-	int current_count;
-	int count;
+	int			 current_count;
+	int			 count;
 };
 
 typedef struct barrier barrier_t;

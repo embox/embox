@@ -44,9 +44,9 @@
 struct sk_buff_data_fixed {
 	size_t links;
 
-	char __ip_align[IP_ALIGN_SIZE];
+	char		  __ip_align[IP_ALIGN_SIZE];
 	unsigned char data[MODOPS_DATA_SIZE];
-	char __data_pad[DATA_PAD_SIZE];
+	char		  __data_pad[DATA_PAD_SIZE];
 };
 
 struct sk_buff_data {

@@ -134,10 +134,10 @@ struct ti81xx_endp_csr0 {
 	uint16_t csr0;
 	uint16_t pad1[2];
 	uint16_t count0;
-	uint8_t type0;
-	uint8_t naklim0;
-	uint8_t pad2[3];
-	uint8_t config;
+	uint8_t	 type0;
+	uint8_t	 naklim0;
+	uint8_t	 pad2[3];
+	uint8_t	 config;
 } __attribute__((packed));
 
 struct ti81xx_endp {
@@ -146,19 +146,19 @@ struct ti81xx_endp {
 	uint16_t rx_maxp;
 	uint16_t rx_csr;
 	uint16_t rx_count;
-	uint8_t tx_type;
-	uint8_t tx_interv;
-	uint8_t rx_type;
-	uint8_t rx_interv;
-	uint8_t pad0[2];
+	uint8_t	 tx_type;
+	uint8_t	 tx_interv;
+	uint8_t	 rx_type;
+	uint8_t	 rx_interv;
+	uint8_t	 pad0[2];
 } __attribute__((packed));
 
 struct ti81xx_usb {
 	uint32_t rev;
-	uint8_t pad0[16];
+	uint8_t	 pad0[16];
 	uint32_t ctrl;
 	uint32_t stat;
-	uint8_t pad1[4];
+	uint8_t	 pad1[4];
 	uint32_t irq_stat;
 	uint32_t irq_eoi;
 	uint32_t irq_statraw0;
@@ -169,52 +169,52 @@ struct ti81xx_usb {
 	uint32_t irq_set1;
 	uint32_t irq_clear0;
 	uint32_t irq_clear1;
-	uint8_t pad2[40];
+	uint8_t	 pad2[40];
 	uint32_t txmode;
 	uint32_t rxmode;
-	uint8_t pad3[8];
+	uint8_t	 pad3[8];
 	uint32_t rndis[15];
-	uint8_t pad4[20];
+	uint8_t	 pad4[20];
 	uint32_t autoreq;
 	uint32_t srp_fix_time;
 	uint32_t teardown;
-	uint8_t pad5[4];
+	uint8_t	 pad5[4];
 	uint32_t phy_utmi;
 	uint32_t mgc_utmi;
 	uint32_t mode;
-	uint8_t pad6[20 + 3 * 0x100];
+	uint8_t	 pad6[20 + 3 * 0x100];
 	/* mentor registers */
-	uint8_t m_faddr;
-	uint8_t m_power;
+	uint8_t	 m_faddr;
+	uint8_t	 m_power;
 	uint16_t m_intrtx;
 	uint16_t m_intrrx;
 	uint16_t m_intrtxe;
 	uint16_t m_intrrxe;
-	uint8_t m_intrusb;
-	uint8_t m_intrusbe;
+	uint8_t	 m_intrusb;
+	uint8_t	 m_intrusbe;
 	uint16_t m_frame;
-	uint8_t m_index;
-	uint8_t m_testmode;
-	uint8_t pad7[0x10];
+	uint8_t	 m_index;
+	uint8_t	 m_testmode;
+	uint8_t	 pad7[0x10];
 	uint32_t fifo0;
 	uint32_t fifo[TI81_USB_ENDP_N];
 
-	uint8_t m_devctl;
-	uint8_t pad8[1];
-	uint8_t m_txfifo_sz;
-	uint8_t m_rxfifo_sz;
+	uint8_t	 m_devctl;
+	uint8_t	 pad8[1];
+	uint8_t	 m_txfifo_sz;
+	uint8_t	 m_rxfifo_sz;
 	uint16_t m_txfifo_addr;
 	uint16_t m_rxfifo_addr;
-	uint8_t pad9[4];
+	uint8_t	 pad9[4];
 	uint16_t m_hwver;
-	uint8_t pad10[2 + 0x90];
+	uint8_t	 pad10[2 + 0x90];
 
 	struct ti81xx_endp_csr0 csr0;
-	struct ti81xx_endp csr[TI81_USB_ENDP_N];
+	struct ti81xx_endp		csr[TI81_USB_ENDP_N];
 } __attribute__((packed));
 
 struct ti81xx_hcd_hci {
-	struct ti81xx_usb *tiusb;
+	struct ti81xx_usb * tiusb;
 	struct usb_request *cendp_req;
 	struct usb_request *endp_req[TI81_USB_ENDP_N];
 };
@@ -796,7 +796,7 @@ static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data) {
 	REG_STORE(&tiusb->irq_eoi, 1);
 
 	DBG(printk("%s: stat=0x%08lx devctl=0x%08lx m_intrstat=0x%02x "
-			   "intrstat0=0x%08lx intrstat1=0x%08lx\n",
+			"intrstat0=0x%08lx intrstat1=0x%08lx\n",
 			__func__,
 			REG_LOAD(&tiusb->stat),
 			REG_LOAD(&tiusb->m_devctl),

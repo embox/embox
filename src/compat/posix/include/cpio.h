@@ -20,12 +20,12 @@
 
 struct cpio_entry {
 	mode_t mode;       /**< Regular permissions and the file type.*/
-	uid_t uid;         /**< User id of the owner. */
-	gid_t gid;         /**< Group id of the owner. */
-	long mtime;        /**< Modification time, since the Unix epoch start. */
-	char   *name;      /**< Pathname (not necessarily NULL-terminated).*/
+	uid_t  uid;        /**< User id of the owner. */
+	gid_t  gid;        /**< Group id of the owner. */
+	long   mtime;      /**< Modification time, since the Unix epoch start. */
+	char * name;       /**< Pathname (not necessarily NULL-terminated).*/
 	size_t name_len;   /**< Bytes in the pathname.*/
-	char   *data;
+	char * data;
 	size_t size;
 };
 

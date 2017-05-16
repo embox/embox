@@ -67,8 +67,8 @@ struct e1000_rx_desc {
 	uint32_t buffer_address_h;
 	uint16_t length;
 	uint16_t check_sum;
-	uint8_t status;
-	uint8_t error;
+	uint8_t	 status;
+	uint8_t	 error;
 	uint16_t reserved;
 };
 
@@ -76,20 +76,20 @@ struct e1000_tx_desc {
 	uint32_t buffer_address;
 	uint32_t buffer_address_h; /* not used */
 	uint16_t length;
-	uint8_t checksum_offload;
-	uint8_t cmd;
-	uint8_t status; /* + reserved, not used */
-	uint8_t checksum_start;
+	uint8_t	 checksum_offload;
+	uint8_t	 cmd;
+	uint8_t	 status; /* + reserved, not used */
+	uint8_t	 checksum_start;
 	uint16_t special;
 };
 
 struct e1000_priv {
-	struct sk_buff_head txing_queue;
-	struct sk_buff_head tx_dev_queue;
+	struct sk_buff_head	 txing_queue;
+	struct sk_buff_head	 tx_dev_queue;
 	struct e1000_tx_desc tx_descs[E1000_TXDESC_NR] __attribute__((aligned(16)));
 
 	struct e1000_rx_desc rx_descs[E1000_RXDESC_NR] __attribute__((aligned(16)));
-	struct sk_buff *rx_skbs[E1000_RXDESC_NR];
+	struct sk_buff *	 rx_skbs[E1000_RXDESC_NR];
 
 	char link_status;
 };
@@ -145,7 +145,7 @@ static int e1000_xmit(struct net_device *dev) {
 
 		skb_queue_push(&nic_priv->txing_queue, skb);
 	}
-	out_unlock:
+out_unlock:
 	irq_unlock();
 	return 0;
 }
@@ -227,7 +227,7 @@ static void e1000_rx(struct net_device *dev) {
 			}
 			skb->dev = dev;
 			netif_rx(skb);
-			drop_pack:
+drop_pack:
 			tail = cur;
 
 			cur = (1 + tail) % E1000_RXDESC_NR;
@@ -418,11 +418,11 @@ static int e1000_init(struct pci_slot_dev *pci_dev) {
 	nic->drv_ops = &_drv_ops;
 	nic->irq = pci_dev->irq;
 	nic->base_addr = (uintptr_t) mmap_device_memory(
-			(void *) (pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK),
-			0x6000, /* XXX */
-			PROT_WRITE | PROT_READ,
-			MAP_FIXED,
-			pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
+		(void *) (pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK),
+		0x6000,     /* XXX */
+		PROT_WRITE | PROT_READ,
+		MAP_FIXED,
+		pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
 	nic_priv = e1000_get_priv(nic);
 	memset(nic_priv, 0, sizeof(*nic_priv));
 	skb_queue_init(&nic_priv->txing_queue);

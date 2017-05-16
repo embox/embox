@@ -82,7 +82,7 @@ TEST_CASE("Create lthreads with different priorities") {
 	for (int i = 0; i < LTHREAD_QUANTITY; i++) {
 		lthread_init(&lts[i], run2);
 		test_assert_zero(
-				schedee_priority_set(&lts[i].schedee, SCHED_PRIORITY_MAX - i)
+			schedee_priority_set(&lts[i].schedee, SCHED_PRIORITY_MAX - i)
 		);
 		lthread_launch(&lts[i]);
 	}

@@ -46,7 +46,7 @@ int statfs(const char *path, struct statfs *buf);
 
 struct sockaddr_un {
 	unsigned short sun_family;  /* AF_UNIX */
-	char sun_path[108];
+	char		   sun_path[108];
 };
 
 #include <sys/mman.h>

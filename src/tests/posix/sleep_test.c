@@ -115,7 +115,7 @@ TEST_CASE("sleep sort") {
 
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(
-				pthread_create(&t[i], 0, handler2, (void *) i));
+			pthread_create(&t[i], 0, handler2, (void *) i));
 		test_assert_not_null(t[i]);
 	}
 	for (i = 0; i < NUM_THREADS; i++) {

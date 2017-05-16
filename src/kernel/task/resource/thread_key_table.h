@@ -15,8 +15,8 @@
 
 struct thread_key_table {
 	struct indexator indexator;
-	index_data_t index_buffer[INDEX_DATA_LEN(MODOPS_THREAD_KEY_QUANTITY)];
-	struct mutex mutex;
+	index_data_t	 index_buffer[INDEX_DATA_LEN(MODOPS_THREAD_KEY_QUANTITY)];
+	struct mutex	 mutex;
 };
 
 #endif /* THREAD_KEY_TABLE_H_ */

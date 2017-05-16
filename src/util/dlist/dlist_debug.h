@@ -29,7 +29,7 @@
  * not initialized now.
  */
 struct dlist_head {
-	uintptr_t poison;          /**< Valid value is zero or ~&head. */
+	uintptr_t		   poison; /**< Valid value is zero or ~&head. */
 	struct dlist_head *next;   /**<pointer to next item in the list*/
 	struct dlist_head *prev;   /**<pointer to previous item in the list*/
 	/**

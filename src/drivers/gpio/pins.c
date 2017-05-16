@@ -19,7 +19,7 @@
 #define N_PINS 8 * (sizeof(int))
 
 struct handler_item_t {
-	int mask;
+	int			  mask;
 	pin_handler_t handler;
 };
 

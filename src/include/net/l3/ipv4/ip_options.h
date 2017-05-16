@@ -28,15 +28,15 @@ struct sk_buff;
  * @var ts_needaddr - Need to record addr of outgoing dev
  */
 typedef struct ip_options {
-	in_addr_t faddr;
+	in_addr_t	  faddr;
 	unsigned char optlen;
 	unsigned char srr;
 	unsigned char rr;
 	unsigned char ts;
 	unsigned char
 			is_strictroute : 1,
-			srr_is_hit : 1,
-			is_changed : 1,
+			srr_is_hit	: 1,
+			is_changed	: 1,
 			rr_needaddr : 1,
 			ts_needtime : 1,
 			ts_needaddr : 1;

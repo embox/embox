@@ -60,7 +60,7 @@ struct tm {
 
 struct timespec {
 	time_t tv_sec;  /*Seconds */
-	long tv_nsec;   /*Nanoseconds */
+	long   tv_nsec; /*Nanoseconds */
 };
 
 #include <sys/cdefs.h>

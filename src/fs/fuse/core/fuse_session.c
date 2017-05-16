@@ -46,10 +46,10 @@ struct fuse_session {
 struct fuse_chan {
 	struct fuse_chan_ops op;
 	struct fuse_session *se;
-	int fd;
-	size_t bufsize;
-	void *data;
-	int compat;
+	int					 fd;
+	size_t				 bufsize;
+	void *				 data;
+	int					 compat;
 };
 
 static struct fuse_chan *fuse_chan_new_common(struct fuse_chan_ops *op, int fd,
@@ -73,7 +73,7 @@ static struct fuse_chan *fuse_chan_new_common(struct fuse_chan_ops *op, int fd,
 struct fuse_chan *fuse_chan_new_compat24(struct fuse_chan_ops_compat24 *op,
 		int fd, size_t bufsize, void *data) {
 	return fuse_chan_new_common((struct fuse_chan_ops *) op, fd, bufsize, data,
-			24);
+				   24);
 }
 
 static int fuse_kern_chan_receive(struct fuse_chan *chp, char *buf,
@@ -84,7 +84,7 @@ static int fuse_kern_chan_receive(struct fuse_chan *chp, char *buf,
 	struct fuse_session *se = fuse_chan_session(ch);
 	assert(se != NULL);
 
-	restart: res = read(fuse_chan_fd(ch), buf, size);
+restart: res = read(fuse_chan_fd(ch), buf, size);
 	err = errno;
 
 	if (fuse_session_exited(se)) {
@@ -241,7 +241,7 @@ int fuse_chan_recv(struct fuse_chan **chp, char *buf, size_t size) {
 	struct fuse_chan *ch = *chp;
 
 	return ((struct fuse_chan_ops_compat24 *) &ch->op)->receive(ch, buf,
-			size);
+				   size);
 }
 
 int fuse_session_receive_buf(struct fuse_session *se, struct fuse_buf *buf,

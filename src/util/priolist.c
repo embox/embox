@@ -51,7 +51,7 @@ void priolist_del(struct priolist_link *link, struct priolist *list) {
 
 		if (next_node_link != &list->node_list) {
 			struct priolist_link *next = member_to_object(
-					next_node_link, priolist_node_t);
+				next_node_link, priolist_node_t);
 
 			if (dlist_empty(&next->prio_link)) {
 				dlist_add_next(&next->prio_link, &link->prio_link);

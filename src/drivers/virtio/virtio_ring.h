@@ -54,7 +54,7 @@ struct vring_used {
 	uint16_t flags;                /* Flags */
 #define VRING_USED_F_NO_NOTIFY 0x1 /* Don't notify when the guest adds to
 	                                  the available ring */
-	uint16_t idx;                  /* Next ring id */
+	uint16_t			   idx;    /* Next ring id */
 	struct vring_used_elem ring[]; /* Rings */
 	/* uint16_t avail_event;       -- placed at ring[-1].id */
 #define vring_avail_event(vr) ((vr)->used->ring[(vr)->num].id)
@@ -64,8 +64,8 @@ struct vring_used {
  * VirtIO Ring
  */
 struct vring {
-	uint16_t num;              /* The number of descriptors */
-	struct vring_desc *desc;   /* The list of actual descriptors */
+	uint16_t			num;   /* The number of descriptors */
+	struct vring_desc * desc;  /* The list of actual descriptors */
 	struct vring_avail *avail; /* A ring of available descriptor heads with
 	                              free-running index */
 	/* uint8_t pad[];          -- Padding (without reference) */

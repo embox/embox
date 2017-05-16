@@ -411,7 +411,7 @@ static int inet_getsockopt(struct sock *sk, int level,
 			return -EOPNOTSUPP;
 		}
 		return sk->p_ops->getsockopt(sk, level, optname, optval,
-				optlen);
+					   optlen);
 	}
 
 	switch (optname) {
@@ -439,7 +439,7 @@ static int inet_setsockopt(struct sock *sk, int level,
 			return -EOPNOTSUPP;
 		}
 		return sk->p_ops->setsockopt(sk, level, optname, optval,
-				optlen);
+					   optlen);
 	}
 
 	switch (optname) {

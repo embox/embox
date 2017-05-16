@@ -18,7 +18,7 @@ struct uart_params;
 struct uart_diag {
 	struct diag diag;
 
-	struct uart *uart;
+	struct uart *			  uart;
 	const struct uart_params *params;
 };
 

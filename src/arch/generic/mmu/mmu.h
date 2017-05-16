@@ -52,13 +52,13 @@ extern int ctx_counter;
 /* Useful defines */
 #define mmu_set_ptd_entry(addr,ptr)                              \
 	mmu_set_val((void *)(addr),                                  \
-		((((unsigned long)(ptr))>>4) & MMU_PTD_PMASK)    \
-		| (MMU_ET_PTD))
+			((((unsigned long)(ptr))>>4) & MMU_PTD_PMASK)    \
+			| (MMU_ET_PTD))
 
 #define mmu_set_pte_entry(addr,ptr,flags)                        \
 	mmu_set_val((void *)(addr),                                  \
-		((((unsigned long)(ptr))>>4) & MMU_PTE_PMASK)    \
-		| (MMU_ET_PTE | flags))
+			((((unsigned long)(ptr))>>4) & MMU_PTE_PMASK)    \
+			| (MMU_ET_PTE | flags))
 
 #define mmu_get_ptd_ptr(entry) \
 	((((unsigned long)(entry)) & MMU_PTD_PMASK) << 4)

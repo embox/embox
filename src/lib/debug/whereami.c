@@ -34,7 +34,7 @@ static void *bt_buff[MAX_DEPTH];
 
 #define tb_safe_snprintf(p, sz, fmt, ...) \
 	({ ptrdiff_t __sz = sz; assert(__sz >= 0); \
-	   __sz ? min(snprintf(p, __sz, fmt, ## __VA_ARGS__), __sz-1) : 0; })
+		__sz ? min(snprintf(p, __sz, fmt, ## __VA_ARGS__), __sz-1) : 0; })
 
 static inline int tb_decimal_width(int i) {
 	char buff[11];
@@ -87,7 +87,7 @@ static size_t tb_snprint_symbol(char *buff, size_t buff_sz, void *addr) {
 
 	p += tb_safe_snprintf(p, end-p, "%s:%d", fname, loc->line);
 
-	out:
+out:
 	return end-p;
 }
 

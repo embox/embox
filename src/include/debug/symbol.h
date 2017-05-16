@@ -12,8 +12,8 @@
 #include <util/location.h>
 
 struct symbol {
-	void *addr;
-	const char *name;
+	void *			addr;
+	const char *	name;
 	struct location loc;
 };
 

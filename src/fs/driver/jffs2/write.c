@@ -71,10 +71,10 @@ struct jffs2_full_dnode *jffs2_write_dnode(struct jffs2_sb_info *c,
 	unsigned long cnt = 2;
 
 	D1(
-			if (je32_to_cpu(ri->hdr_crc) != crc32(0, ri, sizeof(struct jffs2_unknown_node)-4)) {
-				printk(KERN_CRIT "Eep. CRC not correct in jffs2_write_dnode()\n");
-				BUG();
-			}
+		if (je32_to_cpu(ri->hdr_crc) != crc32(0, ri, sizeof(struct jffs2_unknown_node)-4)) {
+			printk(KERN_CRIT "Eep. CRC not correct in jffs2_write_dnode()\n");
+			BUG();
+		}
 	);
 	vecs[0].iov_base = ri;
 	vecs[0].iov_len = sizeof(*ri);
@@ -106,7 +106,7 @@ struct jffs2_full_dnode *jffs2_write_dnode(struct jffs2_sb_info *c,
 	if (!datalen || !data) {
 		cnt = 1;
 	}
-	retry:
+retry:
 	fn->raw = raw;
 
 	raw->flash_offset = flash_ofs;
@@ -117,7 +117,7 @@ struct jffs2_full_dnode *jffs2_write_dnode(struct jffs2_sb_info *c,
 			(je32_to_cpu(ri->version) < f->highest_version)) {
 		BUG_ON(!retried);
 		D1(printk( "jffs2_write_dnode : dnode_version %d, "
-				   "highest version %d -> updating dnode\n",
+				"highest version %d -> updating dnode\n",
 				je32_to_cpu(ri->version), f->highest_version));
 		ri->version = cpu_to_je32(++f->highest_version);
 		ri->node_crc = cpu_to_je32(crc32(0, ri, sizeof(*ri)-8));
@@ -232,10 +232,10 @@ struct jffs2_full_dirent *jffs2_write_dirent(struct jffs2_sb_info *c, struct jff
 			je32_to_cpu(rd->name_crc)));
 
 	D1(
-			if (je32_to_cpu(rd->hdr_crc) != crc32(0, rd, sizeof(struct jffs2_unknown_node)-4)) {
-				printk(KERN_CRIT "Eep. CRC not correct in jffs2_write_dirent()\n");
-				BUG();
-			}
+		if (je32_to_cpu(rd->hdr_crc) != crc32(0, rd, sizeof(struct jffs2_unknown_node)-4)) {
+			printk(KERN_CRIT "Eep. CRC not correct in jffs2_write_dirent()\n");
+			BUG();
+		}
 	);
 
 	vecs[0].iov_base = rd;
@@ -265,7 +265,7 @@ struct jffs2_full_dirent *jffs2_write_dirent(struct jffs2_sb_info *c, struct jff
 	memcpy(fd->name, name, namelen);
 	fd->name[namelen] = 0;
 
-	retry:
+retry:
 	fd->raw = raw;
 
 	raw->flash_offset = flash_ofs;
@@ -276,7 +276,7 @@ struct jffs2_full_dirent *jffs2_write_dirent(struct jffs2_sb_info *c, struct jff
 			(je32_to_cpu(rd->version) < f->highest_version)) {
 		BUG_ON(!retried);
 		D1(printk( "jffs2_write_dirent : dirent_version %d, "
-				   "highest version %d -> updating dirent\n",
+				"highest version %d -> updating dirent\n",
 				je32_to_cpu(rd->version), f->highest_version));
 		rd->version = cpu_to_je32(++f->highest_version);
 		fd->version = je32_to_cpu(rd->version);
@@ -374,7 +374,7 @@ int jffs2_write_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 		uint32_t datalen, cdatalen;
 		int retried = 0;
 
-		retry:
+retry:
 		D2(printk( "jffs2_commit_write() loop: 0x%x to write to 0x%x\n", writelen, offset));
 
 		ret = jffs2_reserve_space(c, sizeof(*ri) +

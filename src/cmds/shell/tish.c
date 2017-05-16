@@ -42,12 +42,12 @@
 #define PROMPT_BUF_LEN 32
 
 struct cmd_data {
-	int argc;
-	char *argv[(SHELL_INPUT_BUFF_SZ + 1) / 2];
-	char cmdline_buf[SHELL_INPUT_BUFF_SZ];
+	int				  argc;
+	char *			  argv[(SHELL_INPUT_BUFF_SZ + 1) / 2];
+	char			  cmdline_buf[SHELL_INPUT_BUFF_SZ];
 	const struct cmd *cmd;
-	bool on_fg;
-	volatile int started;
+	bool			  on_fg;
+	volatile int	  started;
 };
 
 static char *cmd_generator(const char *text, int state) {

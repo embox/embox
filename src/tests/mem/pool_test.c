@@ -13,7 +13,7 @@
 #define OBJECTS_QUANTITY 0x10
 
 struct test_obj {
-	int a;
+	int	 a;
 	char b;
 };
 
@@ -67,7 +67,7 @@ TEST_CASE("pool_alloc should return NULL when the pool becomes full") {
 }
 
 TEST_CASE("After freeing all objects using pool_free one should be able to "
-		  "allocate the same number of objects again") {
+		"allocate the same number of objects again") {
 	for (int i = 0; i < 2; ++i) {
 		do_alloc(&my_pool, objects, MY_POOL_SZ);
 		test_assert_null(pool_alloc(&my_pool));

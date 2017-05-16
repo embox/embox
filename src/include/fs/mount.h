@@ -15,12 +15,12 @@ struct path;
 
 #define MOUNT_DESC_STRINFO_LEN 16
 struct mount_descriptor {
-	struct node *mnt_point;
-	struct node *mnt_root;
+	struct node *			 mnt_point;
+	struct node *			 mnt_root;
 	struct mount_descriptor *mnt_parent;
-	struct dlist_head mnt_mounts;
-	struct dlist_head mnt_child;
-	char mnt_dev[MOUNT_DESC_STRINFO_LEN];
+	struct dlist_head		 mnt_mounts;
+	struct dlist_head		 mnt_child;
+	char					 mnt_dev[MOUNT_DESC_STRINFO_LEN];
 };
 
 extern struct mount_descriptor *mount_table(void);

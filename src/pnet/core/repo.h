@@ -15,9 +15,9 @@
 #include <pnet/core/types.h>
 
 struct pnet_module {
-	const char *name;
-	int type;
-	struct net_node *node;
+	const char *	   name;
+	int				   type;
+	struct net_node *  node;
 	struct pnet_proto *proto;
 	/*connect;
 	start;
@@ -30,18 +30,18 @@ struct pnet_module {
 #define __PNET_REPO_NODE_ADD(str_id,pnode) \
 	ARRAY_SPREAD_DECLARE(const struct pnet_module, __pnet_mod_repo); \
 	ARRAY_SPREAD_ADD(__pnet_mod_repo, { \
-			.name = str_id,             \
-			.node = &pnode,             \
-			.proto = NULL               \
-		})
+				.name = str_id,             \
+				.node = &pnode,             \
+				.proto = NULL               \
+			})
 
 #define __PNET_REPO_PROTO_ADD(str_id, pproto) \
 	ARRAY_SPREAD_DECLARE(const struct pnet_module, __pnet_mod_repo); \
 	ARRAY_SPREAD_ADD(__pnet_mod_repo, { \
-			.name = str_id,             \
-			.node = NULL,               \
-			.proto = &pproto            \
-		})
+				.name = str_id,             \
+				.node = NULL,               \
+				.proto = &pproto            \
+			})
 
 #define __PNET_PROTO_DEF_NAME(str_id, _name, ...) \
 	static struct pnet_proto _name = { \

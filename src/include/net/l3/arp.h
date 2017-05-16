@@ -54,10 +54,10 @@ struct arpbody {
 struct arphdr {
 	uint16_t ar_hrd;   /* Hardware address space */
 	uint16_t ar_pro;   /* Protocol address space */
-	uint8_t ar_hln;    /* Length of hardware address */
-	uint8_t ar_pln;    /* Length of protocol address */
+	uint8_t	 ar_hln;   /* Length of hardware address */
+	uint8_t	 ar_pln;   /* Length of protocol address */
 	uint16_t ar_op;    /* Operation code */
-	uint8_t ar_body[]; /* Message body */
+	uint8_t	 ar_body[]; /* Message body */
 } __attribute__((packed));
 
 #define ARP_MIN_HEADER_SIZE (sizeof(struct arphdr))

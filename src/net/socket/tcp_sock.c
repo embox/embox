@@ -451,7 +451,7 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	tcp_sk = to_tcp_sock(sk);
 	debug_print(3, "tcp_sendmsg: sk %p\n", to_sock(tcp_sk));
 
-	sendmsg_again:
+sendmsg_again:
 	assert(tcp_sk->state < TCP_MAX_STATE);
 	switch (tcp_sk->state) {
 	default:

@@ -124,9 +124,9 @@ struct ohci_reg {
 } __attribute__((packed));
 
 struct ohci_hcd {
-	struct usb_hcd *hcd;
+	struct usb_hcd *  hcd;
 	struct ohci_hcca *hcca;
-	struct ohci_reg *base;
+	struct ohci_reg * base;
 
 };
 
@@ -155,10 +155,10 @@ static inline struct usb_endp *ohci2endp(struct ohci_ed *ed) {
 }
 
 struct ohci_td {
-	uint32_t flags;
-	uint32_t buf_p;
-	uint32_t next_td;
-	uint32_t buf_end;
+	uint32_t			flags;
+	uint32_t			buf_p;
+	uint32_t			next_td;
+	uint32_t			buf_end;
 	struct usb_request *req;
 } __attribute__((packed,aligned(16)));
 

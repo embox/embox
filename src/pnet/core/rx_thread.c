@@ -34,7 +34,7 @@ static int sleeping[PNET_PRIORITY_COUNT];
 #endif
 
 struct pnet_wait_unit {
-	struct event event;
+	struct event	 event;
 	struct ring_buff buff;
 };
 

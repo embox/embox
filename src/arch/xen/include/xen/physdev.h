@@ -125,7 +125,7 @@ DEFINE_XEN_GUEST_HANDLE(physdev_set_iobitmap_t);
 struct physdev_apic {
 	/* IN */
 	unsigned long apic_physbase;
-	uint32_t reg;
+	uint32_t	  reg;
 	/* IN or OUT */
 	uint32_t value;
 };
@@ -207,8 +207,8 @@ DEFINE_XEN_GUEST_HANDLE(physdev_restore_msi_t);
 #define PHYSDEVOP_manage_pci_add_ext     20
 struct physdev_manage_pci_ext {
 	/* IN */
-	uint8_t bus;
-	uint8_t devfn;
+	uint8_t	 bus;
+	uint8_t	 devfn;
 	unsigned is_extfn;
 	unsigned is_virtfn;
 	struct {
@@ -228,10 +228,10 @@ struct physdev_op {
 	uint32_t cmd;
 	union {
 		struct physdev_irq_status_query irq_status_query;
-		struct physdev_set_iopl set_iopl;
-		struct physdev_set_iobitmap set_iobitmap;
-		struct physdev_apic apic_op;
-		struct physdev_irq irq_op;
+		struct physdev_set_iopl			set_iopl;
+		struct physdev_set_iobitmap		set_iobitmap;
+		struct physdev_apic				apic_op;
+		struct physdev_irq				irq_op;
 	} u;
 };
 typedef struct physdev_op physdev_op_t;
@@ -271,8 +271,8 @@ DEFINE_XEN_GUEST_HANDLE(physdev_get_free_pirq_t);
 struct physdev_pci_mmcfg_reserved {
 	uint64_t address;
 	uint16_t segment;
-	uint8_t start_bus;
-	uint8_t end_bus;
+	uint8_t	 start_bus;
+	uint8_t	 end_bus;
 	uint32_t flags;
 };
 typedef struct physdev_pci_mmcfg_reserved physdev_pci_mmcfg_reserved_t;
@@ -286,8 +286,8 @@ DEFINE_XEN_GUEST_HANDLE(physdev_pci_mmcfg_reserved_t);
 struct physdev_pci_device_add {
 	/* IN */
 	uint16_t seg;
-	uint8_t bus;
-	uint8_t devfn;
+	uint8_t	 bus;
+	uint8_t	 devfn;
 	uint32_t flags;
 	struct {
 		uint8_t bus;
@@ -313,8 +313,8 @@ DEFINE_XEN_GUEST_HANDLE(physdev_pci_device_add_t);
 struct physdev_pci_device {
 	/* IN */
 	uint16_t seg;
-	uint8_t bus;
-	uint8_t devfn;
+	uint8_t	 bus;
+	uint8_t	 devfn;
 };
 typedef struct physdev_pci_device physdev_pci_device_t;
 DEFINE_XEN_GUEST_HANDLE(physdev_pci_device_t);

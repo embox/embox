@@ -204,7 +204,7 @@ typedef struct {
  * Terminal internal representation
  */
 typedef struct {
-	TERMINAL_IO io[1];
+	TERMINAL_IO	   io[1];
 	struct vtbuild builder[1];
 	struct vtparse parser[1];
 

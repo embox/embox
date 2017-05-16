@@ -27,11 +27,11 @@
 #include <drivers/video/fb.h>
 
 struct cirrus_chip_info {
-	unsigned int *regbase;
+	unsigned int *					regbase;
 	const struct fb_var_screeninfo *screen_info;
-	int doubleVCLK;
-	int multiplexing;
-	char *screen_base;
+	int								doubleVCLK;
+	int								multiplexing;
+	char *							screen_base;
 };
 
 static struct cirrus_chip_info cirrus_chip_info;

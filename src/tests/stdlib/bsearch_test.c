@@ -64,6 +64,6 @@ TEST_CASE("Test that existing last unique item will be found") {
 }
 
 TEST_CASE("Test that existing not-unique item will be found. "
-		  "Result must be the rightmost one") {
+		"Result must be the rightmost one") {
 	found(find(2), 3);
 }

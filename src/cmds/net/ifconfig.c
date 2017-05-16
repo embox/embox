@@ -22,23 +22,23 @@
 #include <util/array.h>
 
 struct ifconfig_args {
-	char with_a;
-	char with_s;
-	char with_arp, arp;
-	char with_promisc, promisc;
-	char with_allmulti, allmulti;
-	char with_mcast; int mcast;
-	char with_p2p; char p2p; struct in_addr p2p_addr;
-	char with_bcast; char bcast; struct in_addr bcast_addr;
-	char with_iface; char iface[IFNAMSIZ];
-	char with_addr; int addr_family; struct in_addr addr_in;
+	char			with_a;
+	char			with_s;
+	char			with_arp, arp;
+	char			with_promisc, promisc;
+	char			with_allmulti, allmulti;
+	char			with_mcast; int mcast;
+	char			with_p2p; char p2p; struct in_addr p2p_addr;
+	char			with_bcast; char bcast; struct in_addr bcast_addr;
+	char			with_iface; char iface[IFNAMSIZ];
+	char			with_addr; int addr_family; struct in_addr addr_in;
 	struct in6_addr addr_in6;
-	char with_netmask; struct in_addr netmask;
-	char with_mtu; int mtu;
-	char with_irq; int irq;
-	char with_ioaddr; void *ioaddr;
-	char with_hw; unsigned char hw_addr[MAX_ADDR_LEN];
-	char with_up_or_down; char up;
+	char			with_netmask; struct in_addr netmask;
+	char			with_mtu; int mtu;
+	char			with_irq; int irq;
+	char			with_ioaddr; void *ioaddr;
+	char			with_hw; unsigned char hw_addr[MAX_ADDR_LEN];
+	char			with_up_or_down; char up;
 };
 
 static int ifconfig_args_not_empty(struct ifconfig_args *args) {

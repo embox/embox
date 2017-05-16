@@ -32,7 +32,7 @@ typedef int (*__trap_handler)(uint32_t nr, void *data);
 
 /** Defines traps environment for sparc structure */
 typedef struct __traps_env {
-	uint32_t base_addr;
+	uint32_t	   base_addr;
 	__trap_handler hw_traps[CONFIG_MAX_HWTRAP_NUMBER];
 	__trap_handler soft_traps[CONFIG_MAX_SOFTTRAP_NUMBER];
 	__trap_handler interrupts[CONFIG_MAX_INTERRUPT_NUMBER];

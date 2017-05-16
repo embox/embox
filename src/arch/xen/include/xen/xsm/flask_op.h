@@ -176,23 +176,23 @@ struct xen_flask_op {
 #define FLASK_RELABEL_DOMAIN    24
 	uint32_t interface_version; /* XEN_FLASK_INTERFACE_VERSION */
 	union {
-		struct xen_flask_load load;
+		struct xen_flask_load		load;
 		struct xen_flask_setenforce enforce;
 		/* FLASK_CONTEXT_TO_SID and FLASK_SID_TO_CONTEXT */
 		struct xen_flask_sid_context sid_context;
-		struct xen_flask_access access;
+		struct xen_flask_access		 access;
 		/* FLASK_CREATE, FLASK_RELABEL, FLASK_MEMBER */
 		struct xen_flask_transition transition;
-		struct xen_flask_userlist userlist;
+		struct xen_flask_userlist	userlist;
 		/* FLASK_GETBOOL, FLASK_SETBOOL */
-		struct xen_flask_boolean boolean;
+		struct xen_flask_boolean		  boolean;
 		struct xen_flask_setavc_threshold setavc_threshold;
-		struct xen_flask_hash_stats hash_stats;
-		struct xen_flask_cache_stats cache_stats;
+		struct xen_flask_hash_stats		  hash_stats;
+		struct xen_flask_cache_stats	  cache_stats;
 		/* FLASK_ADD_OCONTEXT, FLASK_DEL_OCONTEXT */
 		struct xen_flask_ocontext ocontext;
-		struct xen_flask_peersid peersid;
-		struct xen_flask_relabel relabel;
+		struct xen_flask_peersid  peersid;
+		struct xen_flask_relabel  relabel;
 	} u;
 };
 typedef struct xen_flask_op xen_flask_op_t;

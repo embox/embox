@@ -83,7 +83,7 @@ static int usermod(char *name, char *home, char *shell, char *pswd,
 
 static void print_help(void) {
 	printf("Usage:\tusermod [option] LOGIN\n"
-		   "Options: see 'man usage'\n");
+			"Options: see 'man usage'\n");
 }
 
 int main(int argc, char **argv) {
@@ -143,7 +143,7 @@ int main(int argc, char **argv) {
 		return usermod(name, home, shell, pswd, gecos, new_name, group);
 	}
 
-	out:
+out:
 	print_help();
 	return 0;
 }

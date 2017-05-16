@@ -58,11 +58,11 @@ typedef __u64 __fs64;
 #define QNX6_BH_BLOCK_MASK  ~(0x3ff) /*really? */
 
 struct qnx6_superblock {
-	unsigned char s_blocksize_bits;
-	unsigned long s_blocksize;
-	void *s_fs_info;
+	unsigned char	  s_blocksize_bits;
+	unsigned long	  s_blocksize;
+	void *			  s_fs_info;
 	struct block_dev *s_bdev;
-	struct node *s_root;
+	struct node *	  s_root;
 };
 
 struct qnx_file {
@@ -75,23 +75,23 @@ static inline struct node *qnx6_file_node(struct qnx_file *f) {
 }
 
 struct qnx6_sb_info {
-	struct buffer_head  *sb_buf;    /* superblock buffer */
+	struct buffer_head *	 sb_buf; /* superblock buffer */
 	struct qnx6_super_block *sb;        /* our superblock */
-	int s_blks_off;         /* blkoffset fs-startpoint */
-	int s_ptrbits;          /* indirect pointer bitfield */
-	unsigned long s_mount_opt;          /* all mount options */
-	int s_bytesex;          /* holds endianess info */
-	struct node *nodes;
-	struct node *longfile;
+	int						 s_blks_off; /* blkoffset fs-startpoint */
+	int						 s_ptrbits; /* indirect pointer bitfield */
+	unsigned long			 s_mount_opt; /* all mount options */
+	int						 s_bytesex; /* holds endianess info */
+	struct node *			 nodes;
+	struct node *			 longfile;
 };
 
 struct qnx6_node_info {
 	__fs32 di_block_ptr[QNX6_NO_DIRECT_POINTERS];
-	__u8 di_filelevels;
-	__u32 i_dir_start_lookup;
+	__u8   di_filelevels;
+	__u32  i_dir_start_lookup;
 
 	/* new added */
-	loff_t i_size;
+	loff_t					i_size;
 	struct qnx6_superblock *i_sb;
 
 };

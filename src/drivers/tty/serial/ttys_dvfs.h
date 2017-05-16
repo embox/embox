@@ -13,7 +13,7 @@
 struct uart;
 struct tty_uart {
 	struct idesc idesc;
-	struct tty tty;
+	struct tty	 tty;
 	struct uart *uart;
 };
 

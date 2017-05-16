@@ -54,6 +54,6 @@ static int mcp_init(const struct diag *dev) {
 }
 
 DIAG_OPS_DECLARE(
-		.init = mcp_init,
-		.putc = mcp_putc,
+	.init = mcp_init,
+	.putc = mcp_putc,
 );

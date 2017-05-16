@@ -27,9 +27,9 @@ struct vc_callbacks {
 };
 
 struct vc {
-	const char *name;
+	const char *			   name;
 	const struct vc_callbacks *callbacks;
-	struct fb_info *fb; /**< current fb to draw, NULL is valid */
+	struct fb_info *		   fb; /**< current fb to draw, NULL is valid */
 };
 
 extern int mpx_register_vc(struct vc *);

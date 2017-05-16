@@ -78,10 +78,10 @@ static int periph_memory_init(void) {
 		addr_end   *= MMU_PAGE_SIZE;
 
 		struct marea *marea = marea_create(
-				addr_start,
-				addr_end,
-				PROT_READ | PROT_WRITE | PROT_NOCACHE,
-				false
+			addr_start,
+			addr_end,
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			false
 				);
 
 		if (NULL == marea) {

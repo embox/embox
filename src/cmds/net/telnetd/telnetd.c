@@ -332,12 +332,12 @@ static void *telnetd_client_handler(void *args) {
 		}
 	} /* while(1) */
 
-	out_kill:
-	out_close:
+out_kill:
+out_close:
 	close(pptyfd[0]);
 	close(sock);
 
-	out:
+out:
 	MD(printf("exiting from telnet_thread_handler\n"));
 	_exit(0);
 
@@ -442,7 +442,7 @@ int main(int argc, char **argv) {
 		telnet_connections_count++;
 	}
 
-	listen_failed:
+listen_failed:
 	res = -errno;
 	close(listening_descr);
 

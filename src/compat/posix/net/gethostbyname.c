@@ -121,7 +121,7 @@ static struct hostent *get_hostent_from_net(const char *hostname) {
 			goto out_rr_loop;
 		}
 	}
-	out_rr_loop:
+out_rr_loop:
 
 	dns_result_free(&result);
 

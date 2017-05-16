@@ -65,7 +65,7 @@ static void mm_segment_free(void *segment, int page_cnt) {
 
 struct mm_segment {
 	struct dlist_head link;
-	size_t size;
+	size_t			  size;
 };
 
 static inline int pointer_inside_segment(void *segment, size_t size, void *pointer) {

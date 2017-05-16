@@ -17,7 +17,7 @@
 #include <kernel/spinlock.h>
 
 struct runq {
-	runq_t queue;
+	runq_t	   queue;
 	spinlock_t lock;
 };
 

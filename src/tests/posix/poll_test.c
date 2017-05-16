@@ -40,7 +40,7 @@ TEST_CASE("poll() returns 0 if no events occurred") {
 }
 
 TEST_CASE("poll() wait at least timeout and returns 0"
-		  " if no events occurred") {
+		" if no events occurred") {
 	test_assert_equal(0, poll(&fds_r, nfds, TIMEOUT));
 }
 

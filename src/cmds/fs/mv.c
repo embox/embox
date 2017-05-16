@@ -23,8 +23,8 @@
 
 static void print_usage(void) {
 	printf("Usage: mv [-rfh] path\n"
-		   "\t-f - do not prompt before overwrite\n"
-		   "\t-h - print this help\n");
+			"\t-f - do not prompt before overwrite\n"
+			"\t-h - print this help\n");
 }
 
 int main(int argc, char **argv) {

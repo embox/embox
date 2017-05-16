@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 
 	if (input_err) {
 		fprintf(stderr, "invalid invocation\n"
-						"Usage: %s [-a ADDR] [-p PORT] [set|clr] BIT_NUM\n", argv[0]);
+				"Usage: %s [-a ADDR] [-p PORT] [set|clr] BIT_NUM\n", argv[0]);
 		return -1;
 	}
 

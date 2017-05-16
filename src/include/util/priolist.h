@@ -33,7 +33,7 @@ struct priolist {
 struct priolist_link {
 	struct dlist_head node_link;  /**< elements tier, regular list (sorted) */
 	struct dlist_head prio_link;  /**< priority tier, headless */
-	int prio;
+	int				  prio;
 };
 
 typedef member_t (struct priolist_link, node_link) priolist_node_t;

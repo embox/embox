@@ -68,7 +68,7 @@ struct tree_link *tree_postorder_next(struct tree_link *link) {
 		/* It's not a last element in list. */
 		/* TODO dirty hack. XXX O(n) time. */
 		return tree_postorder_begin(
-				dlist_entry(link->list_link.next, struct tree_link, list_link));
+			dlist_entry(link->list_link.next, struct tree_link, list_link));
 	} else {
 		/* Next link is a parent */
 		return link->par;

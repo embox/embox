@@ -24,8 +24,8 @@ EMBOX_UNIT_INIT(idesc_serial_init);
 static struct lthread uart_rx_irq_handler;
 
 struct uart_rx {
-	struct uart *uart;
-	int data;
+	struct uart *	  uart;
+	int				  data;
 	struct dlist_head lnk;
 };
 

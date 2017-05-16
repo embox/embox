@@ -14,8 +14,8 @@
 
 static void vterm_video_scroll_up(struct vterm_video *vi, unsigned short delta) {
 	assert(
-			vi && vi->ops && vi->ops->copy_rows
-			&& vi->ops->clear_rows);
+		vi && vi->ops && vi->ops->copy_rows
+		&& vi->ops->clear_rows);
 
 	vi->ops->copy_rows(vi, 0, delta, vi->height - delta);
 	vi->ops->clear_rows(vi, vi->height - delta, delta);

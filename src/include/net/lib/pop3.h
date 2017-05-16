@@ -15,9 +15,9 @@
 #define POP3_STATUS_LEN 512
 
 struct pop3_session {
-	int sock;
-	int ok;
-	char status[POP3_STATUS_LEN + 1];
+	int	  sock;
+	int	  ok;
+	char  status[POP3_STATUS_LEN + 1];
 	char *data;
 };
 

@@ -47,7 +47,7 @@ static int init(void) {
 
 	return 0;
 
-	error:
+error:
 	AcpiTerminate();
 	return -1;
 }

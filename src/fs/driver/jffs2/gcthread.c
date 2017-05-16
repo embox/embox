@@ -105,7 +105,7 @@ static void jffs2_garbage_collect_thread(cyg_addrword_t data) {
 
 		if (jffs2_garbage_collect_pass(c) == -ENOSPC) {
 			printf("No space for garbage collection. "
-				   "Aborting JFFS2 GC thread\n");
+					"Aborting JFFS2 GC thread\n");
 			break;
 		}
 		cyg_fs_unlock(mte, mte->fs->syncmode);

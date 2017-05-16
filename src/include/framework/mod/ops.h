@@ -69,14 +69,14 @@ struct mod_member_ops {
  * Mods framework manages each mod through this special interface.
  */
 struct mod_info {
-	const struct mod     *mod;  /**< Corresponding module. */
+	const struct mod *	  mod;  /**< Corresponding module. */
 	const struct mod_ops *ops;  /**< (optional) Available operations. */
-	void                 *data; /**< (optional) Module specific data. */
+	void *				  data; /**< (optional) Module specific data. */
 };
 
 struct mod_member {
 	const struct mod_member_ops *ops;  /**< (optional) Available operations. */
-	void                        *data; /**< (optional) Member specific data. */
+	void *						 data; /**< (optional) Member specific data. */
 };
 
 #endif /* FRAMEWORK_MOD_API_H_ */

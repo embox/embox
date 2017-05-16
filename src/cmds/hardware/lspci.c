@@ -22,8 +22,8 @@
 
 struct pci_reg {
 	uint8_t offset;
-	int width;
-	char name[100];
+	int		width;
+	char	name[100];
 };
 
 static struct pci_reg endpoint_regs[] = {
@@ -127,7 +127,7 @@ static inline size_t pci_get_region_size(uint32_t region_reg) {
 
 static void show_device(struct pci_slot_dev *pci_dev, int full) {
 	printf("%02d:%2x.%d (PCI dev %04X:%04X) [%d %d]\n"
-		   "\t %s: %s %s (rev %02d)\n",
+			"\t %s: %s %s (rev %02d)\n",
 			pci_dev->busn,
 			pci_dev->slot,
 			pci_dev->func,

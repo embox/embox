@@ -13,7 +13,7 @@ struct rb_node {
 	struct rb_node *rb_left;    /* left element */
 	struct rb_node *rb_right;   /* right element */
 	struct rb_node *rb_parent;  /* parent element */
-	int rb_color;           /* node color */
+	int				rb_color; /* node color */
 };
 
 struct rb_root {

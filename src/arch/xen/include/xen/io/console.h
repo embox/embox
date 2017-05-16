@@ -32,8 +32,8 @@ typedef uint32_t XENCONS_RING_IDX;
 #define MASK_XENCONS_IDX(idx, ring) ((idx) & (sizeof(ring)-1))
 
 struct xencons_interface {
-	char in[1024];
-	char out[2048];
+	char			 in[1024];
+	char			 out[2048];
 	XENCONS_RING_IDX in_cons, in_prod;
 	XENCONS_RING_IDX out_cons, out_prod;
 };

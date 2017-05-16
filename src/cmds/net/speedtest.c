@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 		case '?':
 		case 'h':
 			printf("%s: [-K <bytes K>] [-M <bytes M>] [-G <bytes G>]"
-				   "protocol://address:port\n", argv[0]);
+					"protocol://address:port\n", argv[0]);
 			return 0;
 		case 'K':
 		case 'M':

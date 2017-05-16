@@ -40,21 +40,21 @@
 
 struct jffs2_compressor {
 	struct list_head list;
-	int priority;                  /* used by prirority comr. mode */
-	char *name;
-	char compr;                    /* JFFS2_COMPR_XXX */
-	int (*compress)(unsigned char *data_in, unsigned char *cpage_out,
+	int				 priority;     /* used by prirority comr. mode */
+	char *			 name;
+	char			 compr;        /* JFFS2_COMPR_XXX */
+	int				 (*compress)(unsigned char *data_in, unsigned char *cpage_out,
 			uint32_t *srclen, uint32_t *destlen, void *model);
 	int (*decompress)(unsigned char *cdata_in, unsigned char *data_out,
 			uint32_t cdatalen, uint32_t datalen, void *model);
-	int usecount;
-	int disabled;                  /* if seted the compressor won't compress */
+	int			   usecount;
+	int			   disabled;       /* if seted the compressor won't compress */
 	unsigned char *compr_buf;      /* used by size compr. mode */
-	uint32_t compr_buf_size;       /* used by size compr. mode */
-	uint32_t stat_compr_orig_size;
-	uint32_t stat_compr_new_size;
-	uint32_t stat_compr_blocks;
-	uint32_t stat_decompr_blocks;
+	uint32_t	   compr_buf_size; /* used by size compr. mode */
+	uint32_t	   stat_compr_orig_size;
+	uint32_t	   stat_compr_new_size;
+	uint32_t	   stat_compr_blocks;
+	uint32_t	   stat_decompr_blocks;
 };
 
 int jffs2_register_compressor(struct jffs2_compressor *comp);

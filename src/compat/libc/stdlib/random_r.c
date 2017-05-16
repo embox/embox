@@ -214,10 +214,10 @@ struct random_data *buf;
 		(void) random_r(buf, &discard);
 	}
 
-	done:
+done:
 	return 0;
 
-	fail:
+fail:
 	return -1;
 }
 
@@ -299,7 +299,7 @@ struct random_data *buf;
 
 	return 0;
 
-	fail:
+fail:
 	SET_ERRNO(EINVAL);
 	return -1;
 }
@@ -360,7 +360,7 @@ struct random_data *buf;
 
 	return 0;
 
-	fail:
+fail:
 	SET_ERRNO(EINVAL);
 	return -1;
 }
@@ -426,7 +426,7 @@ int32_t *result;
 	}
 	return 0;
 
-	fail:
+fail:
 	SET_ERRNO(EINVAL);
 	return -1;
 }

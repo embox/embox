@@ -45,15 +45,15 @@ extern void Audio_MAL_I2S_IRQHandler(void);
 #define BUF_N 2
 
 struct pa_strm {
-	int started;
-	int paused;
-	int completed;
-	int sample_format;
-	PaStreamCallback *callback;
-	void *callback_data;
-	size_t chan_buf_len;
-	uint16_t in_buf[MAX_BUF_LEN];
-	uint16_t out_buf[MAX_BUF_LEN * OUTPUT_CHAN_N * BUF_N];
+	int					   started;
+	int					   paused;
+	int					   completed;
+	int					   sample_format;
+	PaStreamCallback *	   callback;
+	void *				   callback_data;
+	size_t				   chan_buf_len;
+	uint16_t			   in_buf[MAX_BUF_LEN];
+	uint16_t			   out_buf[MAX_BUF_LEN * OUTPUT_CHAN_N * BUF_N];
 	volatile unsigned char out_buf_empty_mask;
 };
 static_assert(BUF_N <= 8);
@@ -235,12 +235,12 @@ PaError Pa_OpenStream(PaStream **stream,
 	*stream = &pa_stream;
 	return paNoError;
 
-	err_irq_detach:
+err_irq_detach:
 	irq_detach(STM32F4_AUDIO_I2S_DMA_IRQ, NULL);
-	err_thread_free:
+err_thread_free:
 	thread_delete(pa_thread);
 	pa_thread = NULL;
-	err_out:
+err_out:
 	return paUnanticipatedHostError;
 }
 

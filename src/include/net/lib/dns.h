@@ -61,22 +61,22 @@ typedef struct dnshdr {
 	__be16 id;      /* unique id */
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
 	__u16 rd : 1,
-			tc : 1,
-			aa : 1,
+			tc	   : 1,
+			aa	   : 1,
 			opcode : 4,
-			qr : 1,
-			rcode : 4,
-			z : 3,
-			ra : 1;
+			qr	   : 1,
+			rcode  : 4,
+			z	   : 3,
+			ra	   : 1;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
 	__u16 qr : 1,     /* type of the message */
 			opcode : 4, /* type of the operation */
-			aa : 1, /* authoritative answer */
-			tc : 1, /* truncation */
-			rd : 1, /* recursion desired */
-			ra : 1, /* recursion available */
-			z : 3,  /* reserved (must be zero) */
-			rcode : 4; /* response code */
+			aa	   : 1, /* authoritative answer */
+			tc	   : 1, /* truncation */
+			rd	   : 1, /* recursion desired */
+			ra	   : 1, /* recursion available */
+			z	   : 3, /* reserved (must be zero) */
+			rcode  : 4; /* response code */
 #endif
 	__be16 qdcount; /* number of questions */
 	__be16 ancount; /* number of answers */
@@ -133,7 +133,7 @@ struct dns_rr_cname {
 	char cname[DNS_MAX_NAME_SZ];
 };                                                    /* Canonical name format */
 struct dns_rr_soa {
-	char mname[DNS_MAX_NAME_SZ]; char rname[DNS_MAX_NAME_SZ]; uint32_t serial;
+	char	mname[DNS_MAX_NAME_SZ]; char rname[DNS_MAX_NAME_SZ]; uint32_t serial;
 	int32_t refresh; int32_t retry; int32_t expire; int32_t minimum;
 };                                                                          /* SOA mark format */
 struct dns_rr_mb {
@@ -187,29 +187,29 @@ enum dns_class {
  * DNS Resource Record header
  */
 struct dns_rr {
-	char rname[DNS_MAX_NAME_SZ]; /* an owner name */
+	char	 rname[DNS_MAX_NAME_SZ]; /* an owner name */
 	uint16_t rtype;              /* type of a record */
 	uint16_t rclass;             /* class of a record */
 	uint32_t rttl;               /* time life of this record */
 	uint16_t rdlength;           /* size of rdata field */
 	union {
-		struct dns_rr_a a;
-		struct dns_rr_ns ns;
-		struct dns_rr_md md;
-		struct dns_rr_mf mf;
+		struct dns_rr_a		a;
+		struct dns_rr_ns	ns;
+		struct dns_rr_md	md;
+		struct dns_rr_mf	mf;
 		struct dns_rr_cname cname;
-		struct dns_rr_soa soa;
-		struct dns_rr_mb mb;
-		struct dns_rr_mg mg;
-		struct dns_rr_mr mr;
-		struct dns_rr_null null;
-		struct dns_rr_wks wks;
-		struct dns_rr_ptr ptr;
+		struct dns_rr_soa	soa;
+		struct dns_rr_mb	mb;
+		struct dns_rr_mg	mg;
+		struct dns_rr_mr	mr;
+		struct dns_rr_null	null;
+		struct dns_rr_wks	wks;
+		struct dns_rr_ptr	ptr;
 		struct dns_rr_hinfo hinfo;
 		struct dns_rr_minfo minfo;
-		struct dns_rr_mx mx;
-		struct dns_rr_txt txt;
-		struct dns_rr_aaaa aaaa;
+		struct dns_rr_mx	mx;
+		struct dns_rr_txt	txt;
+		struct dns_rr_aaaa	aaaa;
 	} rdata;                    /* resource data */
 };
 
@@ -217,7 +217,7 @@ struct dns_rr {
  * DNS Question header
  */
 struct dns_q {
-	char qname[DNS_MAX_NAME_SZ]; /* domain name */
+	char	 qname[DNS_MAX_NAME_SZ]; /* domain name */
 	uint16_t qtype;              /* type of the query */
 	uint16_t qclass;             /* class of the query */
 };
@@ -227,16 +227,16 @@ struct dns_q {
  */
 struct dns_result {
 	/* Queries */
-	size_t qdcount;
+	size_t		  qdcount;
 	struct dns_q *qd;
 	/* Answers */
-	size_t ancount;
+	size_t		   ancount;
 	struct dns_rr *an;
 	/* Authoitative nameservers */
-	size_t nscount;
+	size_t		   nscount;
 	struct dns_rr *ns;
 	/* Additional records */
-	size_t arcount;
+	size_t		   arcount;
 	struct dns_rr *ar;
 };
 

@@ -20,14 +20,14 @@
 
 #define MODOPS_IDESC_TABLE_SIZE \
 	OPTION_MODULE_GET(embox__kernel__task__resource__idesc_table, \
-		NUMBER, idesc_table_size)
+			NUMBER, idesc_table_size)
 struct idesc;
 
 struct idesc_table {
 	struct idesc *idesc_table[MODOPS_IDESC_TABLE_SIZE];
 
 	struct indexator indexator;
-	index_data_t index_buffer[INDEX_DATA_LEN(MODOPS_IDESC_TABLE_SIZE)];
+	index_data_t	 index_buffer[INDEX_DATA_LEN(MODOPS_IDESC_TABLE_SIZE)];
 };
 
 #define idesc_cloexec_set(desc) \

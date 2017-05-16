@@ -141,14 +141,14 @@ static inline void packet_print(const struct tcp_sock *tcp_sk,
 
 	tcp_get_now(&now);
 	debug_print(1, "%ld.%ld %s:%d %s sk %p skb %p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
-			/* info */
+	        /* info */
 			now.tv_sec, now.tv_usec,
 			inet_ntop(family, addr, &buff[0], sizeof buff),
 			ntohs(port), msg,
 			tcp_sk != NULL ? to_sock(tcp_sk) : NULL, skb,
-			/* seq, ack, seq_len */
+	        /* seq, ack, seq_len */
 			ntohl(skb->h.th->seq), ntohl(skb->h.th->ack_seq), tcp_seq_length(skb->h.th, skb->nh.raw),
-			/* flags */
+	        /* flags */
 			(skb->h.th->ack ? "ACK" : ""), (skb->h.th->syn ? "SYN" : ""),
 			(skb->h.th->fin ? "FIN" : ""), (skb->h.th->rst ? "RST" : ""),
 			(skb->h.th->psh ? "PSH" : ""), (skb->h.th->urg ? "URG" : ""),
@@ -529,7 +529,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
 	union {
-		struct inet_sock *in;
+		struct inet_sock * in;
 		struct inet6_sock *in6;
 	} newsk;
 	struct tcp_sock *tcp_newsk;
@@ -927,7 +927,7 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		assert(seq - tcp_sk->last_ack < ack2last_ack);
 		/* assert(ack > tcp_sk->self.seq); -- without overflow checks */
 		debug_print(10, "process_ack: invalid acknowledgments:"
-						"last_ack=%u ack=%u seq=%u\n",
+				"last_ack=%u ack=%u seq=%u\n",
 				tcp_sk->last_ack, ack, seq);
 		switch (tcp_sk->state) {
 		default:
@@ -1033,7 +1033,7 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 				skb->nh.raw);
 		if (old_check != tcph->check) {
 			log_error("pre_process: error: invalid checksum %hx(%hx)"
-					  " sk %p skb %p\n",
+					" sk %p skb %p\n",
 					ntohs(old_check), ntohs(tcph->check),
 					to_sock(tcp_sk), skb);
 			return TCP_RET_DROP;
@@ -1078,8 +1078,8 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 				&& (seq_last2rem_seq <= rem_len)) { }
 		else {
 			debug_print(10, "pre_process: received old package:"
-							" rem_seq=%u seq=%u seq_last=%u"
-							" rem_last=%u\n",
+					" rem_seq=%u seq=%u seq_last=%u"
+					" rem_last=%u\n",
 					tcp_sk->rem.seq, ntohl(tcph->seq),
 					ntohl(tcph->seq) + seq_len,
 					tcp_sk->rem.seq + rem_len);
@@ -1361,7 +1361,7 @@ static void tcp_timer_handler(struct sys_timer *timer,
 				&& tcp_is_expired(&tcp_sk->rcv_time,
 				TCP_TIMEWAIT_DELAY)) {
 			debug_print(7, "tcp_timer_handler: release timewait"
-						   " sk %p\n",
+					" sk %p\n",
 					to_sock(tcp_sk));
 			tcp_sock_release(tcp_sk);
 		}
@@ -1371,7 +1371,7 @@ static void tcp_timer_handler(struct sys_timer *timer,
 				TCP_SYNC_TIMEOUT)) {
 			assert(tcp_sk->parent != NULL);
 			debug_print(7, "tcp_timer_handler: release nonsync"
-						   " sk %p\n",
+					" sk %p\n",
 					to_sock(tcp_sk));
 			tcp_sock_release(tcp_sk);
 		}

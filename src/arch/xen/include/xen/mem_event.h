@@ -115,7 +115,7 @@ typedef struct mem_event_st {
 	uint16_t fault_in_gpt : 1;
 	uint16_t available : 10;
 
-	uint16_t reason;
+	uint16_t				  reason;
 	struct mem_event_regs_x86 x86_regs;
 } mem_event_request_t, mem_event_response_t;
 

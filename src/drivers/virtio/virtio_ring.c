@@ -30,7 +30,7 @@ size_t vring_size(uint16_t num) {
 			+ num * sizeof(struct vring_used_elem);
 
 	return binalign_bound(vring_desc_sz * num + vring_avail_sz,
-			VIRTIO_VRING_ALIGN)
+				   VIRTIO_VRING_ALIGN)
 		   + binalign_bound(vring_used_sz, VIRTIO_VRING_ALIGN);
 }
 
@@ -43,8 +43,8 @@ void vring_init(struct vring *vr, uint16_t num, void *mem) {
 			VIRTIO_VRING_ALIGN));
 	vr->avail = mem + num * sizeof(struct vring_desc);
 	vr->used = (void *)binalign_bound(
-			(uintptr_t)&vr->avail->ring[num] + sizeof(uint16_t),
-			VIRTIO_VRING_ALIGN);
+		(uintptr_t)&vr->avail->ring[num] + sizeof(uint16_t),
+		VIRTIO_VRING_ALIGN);
 	assert(binalign_check_bound((uintptr_t)vr->used,
 			VIRTIO_VRING_ALIGN));
 }

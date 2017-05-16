@@ -56,8 +56,8 @@ struct ioreq {
 	uint32_t size;          /* size in bytes */
 	uint32_t vp_eport;      /* evtchn for notifications to/from device model */
 	uint16_t _pad0;
-	uint8_t state : 4;
-	uint8_t data_is_ptr : 1;  /* if 1, data above is the guest paddr
+	uint8_t	 state : 4;
+	uint8_t	 data_is_ptr : 1; /* if 1, data above is the guest paddr
 	                         * of the real data to use. */
 	uint8_t dir : 1;          /* 1=read, 0=write */
 	uint8_t df : 1;
@@ -72,10 +72,10 @@ struct shared_iopage {
 typedef struct shared_iopage shared_iopage_t;
 
 struct buf_ioreq {
-	uint8_t type;    /* I/O type                    */
-	uint8_t pad : 1;
-	uint8_t dir : 1;  /* 1=read, 0=write             */
-	uint8_t size : 2; /* 0=>1, 1=>2, 2=>4, 3=>8. If 8, use two buf_ioreqs */
+	uint8_t	 type;   /* I/O type                    */
+	uint8_t	 pad : 1;
+	uint8_t	 dir : 1; /* 1=read, 0=write             */
+	uint8_t	 size : 2; /* 0=>1, 1=>2, 2=>4, 3=>8. If 8, use two buf_ioreqs */
 	uint32_t addr : 20;/* physical address            */
 	uint32_t data;   /* data                        */
 };
@@ -85,7 +85,7 @@ typedef struct buf_ioreq buf_ioreq_t;
 struct buffered_iopage {
 	unsigned int read_pointer;
 	unsigned int write_pointer;
-	buf_ioreq_t buf_ioreq[IOREQ_BUFFER_SLOT_NUM];
+	buf_ioreq_t	 buf_ioreq[IOREQ_BUFFER_SLOT_NUM];
 }; /* NB. Size of this structure must be no greater than one page. */
 typedef struct buffered_iopage buffered_iopage_t;
 

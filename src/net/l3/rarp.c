@@ -163,9 +163,9 @@ static int rarp_hnd_request(const struct arphdr *rarph,
 
 	/* send reply */
 	return rarp_send(skb, dev, ntohs(rarph->ar_pro),
-			rarph->ar_pln, RARP_OP_REPLY, &dev->dev_addr[0],
-			&src_paddr[0], &dst_haddr[0], &dst_paddr[0],
-			&tar_haddr[0]);
+				   rarph->ar_pln, RARP_OP_REPLY, &dev->dev_addr[0],
+				   &src_paddr[0], &dst_haddr[0], &dst_paddr[0],
+				   &tar_haddr[0]);
 }
 
 static int rarp_hnd_reply(const struct arphdr *rarph,

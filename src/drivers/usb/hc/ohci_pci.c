@@ -24,8 +24,8 @@
 
 #define OHCI_WRITE_STATE(ohcd, state) \
 	OHCI_WRITE(ohcd, &ohcd->base->hc_control, \
-		(OHCI_READ(ohcd, &ohcd->base->hc_control) & \
-		~OHCI_CTRL_FUNC_STATE_MASK) | state)
+			(OHCI_READ(ohcd, &ohcd->base->hc_control) & \
+			~OHCI_CTRL_FUNC_STATE_MASK) | state)
 
 /* OHCI private stuff */
 /* HCCAs are in separate pool to prevent huge padding */
@@ -387,7 +387,7 @@ static void ohci_ed_sched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {
 	}
 
 	assertf(i < OHCI_HCCA_INTERRUPT_LIST_N, "%s: there is no empty slot for "
-											"interrupt request", __func__);
+			"interrupt request", __func__);
 }
 
 static int ohci_ed_desched_interrupt(struct ohci_hcd *ohcd, struct ohci_ed *ed) {

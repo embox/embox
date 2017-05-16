@@ -21,8 +21,8 @@ typedef uint32_t in_addr_t; /* An unsigned integral type of exactly 32 bits. */
  */
 struct in_addr {
 	union {
-		uint8_t s_addr8[4];
-		uint16_t s_addr16[2];
+		uint8_t	  s_addr8[4];
+		uint16_t  s_addr16[2];
 		in_addr_t s_addr;
 	};
 };
@@ -31,8 +31,8 @@ struct in_addr {
  * Socket address for IP protocol
  */
 struct sockaddr_in {
-	sa_family_t sin_family;       /* AF_INET */
-	in_port_t sin_port;           /* Port number (BE) */
+	sa_family_t	   sin_family;    /* AF_INET */
+	in_port_t	   sin_port;      /* Port number (BE) */
 	struct in_addr sin_addr;      /* IP address (BE) */
 };
 
@@ -41,7 +41,7 @@ struct sockaddr_in {
  */
 struct in6_addr {
 	union {
-		uint8_t s6_addr[16];
+		uint8_t	 s6_addr[16];
 		uint16_t s6_addr16[8];
 		uint32_t s6_addr32[4];
 	};
@@ -51,11 +51,11 @@ struct in6_addr {
  * Socket address for IPv6 protocol
  */
 struct sockaddr_in6 {
-	sa_family_t sin6_family;   /* AF_INET6 */
-	in_port_t sin6_port;       /* Port number (BE) */
-	uint32_t sin6_flowinfo;    /* Ipv6 traffic class and flow information */
+	sa_family_t		sin6_family; /* AF_INET6 */
+	in_port_t		sin6_port; /* Port number (BE) */
+	uint32_t		sin6_flowinfo; /* Ipv6 traffic class and flow information */
 	struct in6_addr sin6_addr; /* Ipv6 address (BE) */
-	uint32_t sin6_scope_id;    /* Set of interfaces for a scope */
+	uint32_t		sin6_scope_id; /* Set of interfaces for a scope */
 };
 
 /**

@@ -41,19 +41,19 @@ struct input_dev_ops {
 /*describe input device instance */
 struct input_dev {
 	const struct input_dev_ops *ops;
-	const char *name; /* registered name /dev/input/<name> */
-	enum input_dev_type type;
-	int proto;
-	int irq;
-	void *data;
+	const char *				name; /* registered name /dev/input/<name> */
+	enum input_dev_type			type;
+	int							proto;
+	int							irq;
+	void *						data;
 
 	indev_event_cb_t *event_cb; /* callback on event. NULL is valid and
 	                   means input dev isn't opened */
 	struct dlist_head global_indev_list; /* global device list */
 	struct dlist_head post_link; /* link in to process queue */
 
-	struct ring_buff rbuf;
-	struct input_event event_buf[INPUT_DEV_EVENT_QUEUE_LEN];
+	struct ring_buff	rbuf;
+	struct input_event	event_buf[INPUT_DEV_EVENT_QUEUE_LEN];
 	struct input_event *curprocessd; /* pointer to allocated but not valid
 	                    input event (@a event_get
 	                    may fail) */

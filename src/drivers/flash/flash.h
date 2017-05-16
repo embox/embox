@@ -28,8 +28,8 @@
 
 typedef struct {
 	uint32_t offset;
-	size_t len;
-	int flasherr;
+	size_t	 len;
+	int		 flasherr;
 	uint32_t err_address;
 } flash_getconfig_erase_t;
 
@@ -47,7 +47,7 @@ typedef struct {
 
 typedef struct flash_block_info
 {
-	size_t block_size;
+	size_t	 block_size;
 	uint32_t blocks;
 } flash_block_info_t;
 

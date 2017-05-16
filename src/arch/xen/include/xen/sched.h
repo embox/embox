@@ -129,13 +129,13 @@ DEFINE_XEN_GUEST_HANDLE(sched_shutdown_t);
 struct sched_poll {
 	XEN_GUEST_HANDLE(evtchn_port_t) ports;
 	unsigned int nr_ports;
-	uint64_t timeout;
+	uint64_t	 timeout;
 };
 typedef struct sched_poll sched_poll_t;
 DEFINE_XEN_GUEST_HANDLE(sched_poll_t);
 
 struct sched_remote_shutdown {
-	domid_t domain_id;         /* Remote domain ID */
+	domid_t		 domain_id;    /* Remote domain ID */
 	unsigned int reason;       /* SHUTDOWN_* => enum sched_shutdown_reason */
 };
 typedef struct sched_remote_shutdown sched_remote_shutdown_t;

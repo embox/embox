@@ -51,22 +51,22 @@
 /** &foo --> &foo.bar;  @a struct_ptr must not be null; @see #member_t() */
 #define member_of_object(struct_ptr, member_type) \
 	member_cast_in(member_cast_out(struct_ptr, \
-		member_type, object), member)
+			member_type, object), member)
 
 /** &foo --> &foo.bar; NULL --> NULL;  @see #member_t() */
 #define member_of_object_or_null(struct_ptr, member_type) \
 	member_cast_in_or_null(member_cast_out_or_null(struct_ptr, \
-		member_type, object), member)
+			member_type, object), member)
 
 /** &foo.bar --> &foo;  @a member_ptr must not be null; @see #member_t() */
 #define member_to_object(member_ptr, member_type) \
 	member_cast_in(member_cast_out(member_ptr, \
-		member_type, member), object)
+			member_type, member), object)
 
 /** &foo.bar --> &foo; NULL --> NULL;  @see #member_t() */
 #define member_to_object_or_null(member_ptr, member_type) \
 	member_cast_in_or_null(member_cast_out_or_null(member_ptr, \
-		member_type, member), object)
+			member_type, member), object)
 
 /** typeof(foo.bar);  @a type is (an expr of) a struct or a union */
 #define member_typeof(type, member_nm) \

@@ -20,13 +20,13 @@ TEST_SETUP(case_setup);
 TEST_TEARDOWN(case_teardown);
 
 TEST_CASE("critical_inside should return false "
-		  "when called outside any critical section") {
+		"when called outside any critical section") {
 	test_assert_false(critical_inside(CRITICAL_IRQ_LOCK));
 	test_assert_false(critical_inside(CRITICAL_SCHED_LOCK));
 }
 
 TEST_CASE("critical_allows should return true "
-		  "when called outside any critical section") {
+		"when called outside any critical section") {
 	test_assert_true(critical_allows(CRITICAL_IRQ_LOCK));
 	test_assert_true(critical_allows(CRITICAL_SCHED_LOCK));
 }

@@ -80,10 +80,10 @@ static inline void slist_insert_after_link(struct slist_link *new_link,
 }
 #define slist_insert_after(element, after_element, member_t) \
 	slist_insert_after_link(member_of_object(element, member_t), \
-		member_of_object(after_element, member_t))
+			member_of_object(after_element, member_t))
 #define slist_insert_after_element(element, after_element, link_member) \
 	slist_insert_after_link(member_cast_in(element, link_member), \
-		member_cast_in(after_element, link_member))
+			member_cast_in(after_element, link_member))
 
 static inline void slist_add_first_link(struct slist_link *new_link,
 		struct slist *list) {
@@ -109,7 +109,7 @@ static inline struct slist_link *slist_remove_first_link(struct slist *list) {
 	member_to_object_or_null(slist_remove_first_link(slist), member_t)
 #define slist_remove_first_element(slist, element_type, link_member) \
 	member_cast_out_or_null(slist_remove_first_link(slist), element_type, \
-		link_member)
+			link_member)
 
 #define slist_foreach_link(link, slist) \
 	__slist_foreach_link(link, slist)
@@ -124,9 +124,9 @@ static inline struct slist_link *slist_remove_first_link(struct slist *list) {
 
 #define __slist_foreach__(node, slist, iter_cast, cast_arg) \
 	__slist_foreach_guarded(node, slist, iter_cast, cast_arg, \
-		MACRO_GUARD(__iter), \
-		MACRO_GUARD(__head), \
-		MACRO_GUARD(__next))
+			MACRO_GUARD(__iter), \
+			MACRO_GUARD(__head), \
+			MACRO_GUARD(__next))
 
 #define __slist_foreach_guarded(node, slist, iter_cast_assign, cast_arg, \
 			_iter, _head, _next) \

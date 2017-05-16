@@ -14,7 +14,7 @@ typedef int (*callback_reg_t) (callback_t callback);
 
 struct callback_mng {
 	callback_reg_t reg;
-	callback_t cb_do;
+	callback_t	   cb_do;
 };
 
 #endif /* FRAMEWORK_SERVICE_TYPES_H_ */

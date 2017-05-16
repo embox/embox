@@ -18,8 +18,8 @@ struct thread;
  * Defines Mutex structure.
  */
 struct mutex {
-	struct waitq wq;
-	struct schedee *holder;
+	struct waitq	 wq;
+	struct schedee * holder;
 	struct mutexattr attr;
 
 	int lock_count;

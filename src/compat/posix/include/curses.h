@@ -27,15 +27,15 @@ typedef unsigned long chtype;
 typedef unsigned long attr_t;
 
 typedef struct window {
-	uint16_t cury, curx; /* cursor position */
-	uint16_t begy, begx; /* left upper window corner */
-	uint16_t endy, endx; /* right lower window corner */
+	uint16_t	   cury, curx; /* cursor position */
+	uint16_t	   begy, begx; /* left upper window corner */
+	uint16_t	   endy, endx; /* right lower window corner */
 	struct window *parent;
-	attr_t attrs;
-	chtype bkgd;         /* background color */
-	chtype *lines;
-	bool scrollok;       /* may scroll */
-	bool clearok;        /* clear screen on next refresh */
+	attr_t		   attrs;
+	chtype		   bkgd; /* background color */
+	chtype *	   lines;
+	bool		   scrollok; /* may scroll */
+	bool		   clearok; /* clear screen on next refresh */
 } WINDOW;
 
 extern int COLS;

@@ -31,13 +31,13 @@
  */
 struct buffer_head {
 	struct block_dev *bdev;              /* device buffer_header is from */
-	int block;                      /* start block number */
-	size_t blocksize;               /* size of mapping */
-	int flags;                      /* buffer state bitmap */
-	struct mutex mutex;             /* synchronizes concurrent access to block */
+	int				  block;        /* start block number */
+	size_t			  blocksize;    /* size of mapping */
+	int				  flags;        /* buffer state bitmap */
+	struct mutex	  mutex;        /* synchronizes concurrent access to block */
 	struct dlist_head bh_next;      /* link to global list of buffer_heads */
-	char *data;                     /* pointer to block's data */
-	int lock_count;         /* lock count to support multiplie locks */
+	char *			  data;         /* pointer to block's data */
+	int				  lock_count; /* lock count to support multiplie locks */
 	/*
 	 * XXX Seems it is not better solution to have back reference to journal.
 	 */

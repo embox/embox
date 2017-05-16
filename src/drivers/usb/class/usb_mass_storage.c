@@ -95,7 +95,7 @@ int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
 	}
 
 	return usb_endp_bulk(dev->endpoints[mass->blkout], usb_ms_transfer_done,
-			&req_ctx->cbw, sizeof(struct usb_mscbw));
+				   &req_ctx->cbw, sizeof(struct usb_mscbw));
 }
 
 static void *usb_class_mass_alloc(struct usb_class *cls, struct usb_dev *dev) {

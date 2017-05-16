@@ -29,10 +29,10 @@ struct es1370_hw_dev {
 
 struct es1370_dev_priv {
 	struct es1370_hw_dev *hw_dev;
-	int devid;
-	uint8_t *out_buf;
-	uint32_t out_buf_len;
-	uint8_t *in_buf;
+	int					  devid;
+	uint8_t *			  out_buf;
+	uint32_t			  out_buf_len;
+	uint8_t *			  in_buf;
 
 	uint32_t cur_buff_offset;
 };

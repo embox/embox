@@ -42,12 +42,12 @@ typedef void (*sys_timer_handler_t)(struct sys_timer *timer, void *param);
 struct sys_timer {
 	sys_timer_queue_t lnk;
 
-	uint32_t load;
-	uint32_t cnt;
+	uint32_t			load;
+	uint32_t			cnt;
 	sys_timer_handler_t handle;
-	void       *param;
-	unsigned int flags;
-	uint32_t state;   /**< do we use timer_set or timer_init_start? */
+	void *				param;
+	unsigned int		flags;
+	uint32_t			state; /**< do we use timer_set or timer_init_start? */
 };
 
 static inline bool timer_is_preallocated(struct sys_timer *tmr) {

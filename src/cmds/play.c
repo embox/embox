@@ -17,7 +17,7 @@
 
 static void print_usage(void) {
 	printf("Usage: play [WAVAUDIOFILE]\n"
-		   "       play -s\n");
+			"       play -s\n");
 }
 
 double _sin(double x) {
@@ -202,12 +202,12 @@ int main(int argc, char **argv) {
 		goto err_terminate_pa;
 	}
 
-	err_terminate_pa:
+err_terminate_pa:
 	if (paNoError != (err = Pa_Terminate())) {
 		printf("Portaudio error: could not terminate!\n");
 	}
 
-	err_close_fd:
+err_close_fd:
 	if (fd) {
 		fclose(fd);
 	}

@@ -201,13 +201,13 @@ void stifle_history(int max) {
 
 int read_history(const char *filename) {
 	return -1 != linenoiseHistoryLoad(filename != NULL
-			? (char *)filename : DEFAULT_HISTORY_FILE)
+				   ? (char *)filename : DEFAULT_HISTORY_FILE)
 		   ? 0 : errno;
 }
 
 int write_history(const char *filename) {
 	return -1 != linenoiseHistorySave(filename != NULL
-			? (char *)filename : DEFAULT_HISTORY_FILE)
+				   ? (char *)filename : DEFAULT_HISTORY_FILE)
 		   ? 0 : errno;
 }
 

@@ -19,7 +19,7 @@ struct block_dev;
 struct filesystem {
 	struct fs_driver *drv;              /* file system driver */
 	struct block_dev *bdev;             /* block device, where is this file system */
-	void             *fsi;              /* file system information (extended information) */
+	void *			  fsi;              /* file system information (extended information) */
 
 	const struct kfile_operations *file_op;
 };

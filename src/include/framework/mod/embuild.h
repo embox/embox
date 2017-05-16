@@ -148,7 +148,7 @@
 #define __MOD_DEF(mod_nm) \
 	struct __mod_private __MOD_PRIVATE(mod_nm) __attribute__((weak)); \
 	ARRAY_SPREAD_DEF_TERMINATED(const struct mod_member *, \
-		__MOD_MEMBERS(mod_nm), NULL); \
+			__MOD_MEMBERS(mod_nm), NULL); \
 	extern const struct mod_app __MOD_APP(mod_nm) \
 	__attribute__ ((weak)); \
 	extern const struct mod_build_info __MOD_BUILDINFO(mod_nm) \
@@ -158,7 +158,7 @@
 	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL); \
     \
 	ARRAY_SPREAD_DECLARE(const struct mod *const,      \
-		__mod_registry);                      \
+			__mod_registry);                      \
 	ARRAY_SPREAD_ADD(__mod_registry, &__MOD(mod_nm)) /* TODO don't like it. -- Eldar */
 #endif /* __MOD_DEF */
 
@@ -169,13 +169,13 @@
 	extern struct logger __MOD_LOGGER(_mod_nm)         \
 	__attribute__ ((weak));                          \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
-		__MOD_REQUIRES(_mod_nm), NULL);                  \
+			__MOD_REQUIRES(_mod_nm), NULL);                  \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
-		__MOD_PROVIDES(_mod_nm), NULL);                  \
+			__MOD_PROVIDES(_mod_nm), NULL);                  \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
-		__MOD_CONTENTS(_mod_nm), NULL);                  \
+			__MOD_CONTENTS(_mod_nm), NULL);                  \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
-		__MOD_AFTER_DEPS(_mod_nm), NULL);                \
+			__MOD_AFTER_DEPS(_mod_nm), NULL);                \
 	const struct mod_build_info __MOD_BUILDINFO(_mod_nm) = { \
 		.pkg_name   = _package_name,                         \
 		.mod_name   = _mod_name,                             \

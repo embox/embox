@@ -563,11 +563,11 @@ struct blkif_request_segment {
  * Starting ring element for any I/O request.
  */
 struct blkif_request {
-	uint8_t operation;           /* BLKIF_OP_???                         */
-	uint8_t nr_segments;         /* number of segments                   */
-	blkif_vdev_t handle;         /* only for read/write requests         */
-	uint64_t id;                 /* private guest value, echoed in resp  */
-	blkif_sector_t sector_number;/* start sector idx on disk (r/w only)  */
+	uint8_t						 operation; /* BLKIF_OP_???                         */
+	uint8_t						 nr_segments; /* number of segments                   */
+	blkif_vdev_t				 handle; /* only for read/write requests         */
+	uint64_t					 id; /* private guest value, echoed in resp  */
+	blkif_sector_t				 sector_number;/* start sector idx on disk (r/w only)  */
 	struct blkif_request_segment seg[BLKIF_MAX_SEGMENTS_PER_REQUEST];
 };
 typedef struct blkif_request blkif_request_t;
@@ -580,21 +580,21 @@ struct blkif_request_discard {
 	uint8_t operation;           /* BLKIF_OP_DISCARD                     */
 	uint8_t flag;                /* BLKIF_DISCARD_SECURE or zero         */
 #define BLKIF_DISCARD_SECURE (1<<0)  /* ignored if discard-secure=0      */
-	blkif_vdev_t handle;         /* same as for read/write requests      */
-	uint64_t id;                 /* private guest value, echoed in resp  */
+	blkif_vdev_t   handle;       /* same as for read/write requests      */
+	uint64_t	   id;           /* private guest value, echoed in resp  */
 	blkif_sector_t sector_number;/* start sector idx on disk             */
-	uint64_t nr_sectors;         /* number of contiguous sectors to discard*/
+	uint64_t	   nr_sectors;   /* number of contiguous sectors to discard*/
 };
 typedef struct blkif_request_discard blkif_request_discard_t;
 
 struct blkif_request_indirect {
-	uint8_t operation;           /* BLKIF_OP_INDIRECT                    */
-	uint8_t indirect_op;         /* BLKIF_OP_{READ/WRITE}                */
-	uint16_t nr_segments;        /* number of segments                   */
-	uint64_t id;                 /* private guest value, echoed in resp  */
+	uint8_t		   operation;    /* BLKIF_OP_INDIRECT                    */
+	uint8_t		   indirect_op;  /* BLKIF_OP_{READ/WRITE}                */
+	uint16_t	   nr_segments;  /* number of segments                   */
+	uint64_t	   id;           /* private guest value, echoed in resp  */
 	blkif_sector_t sector_number;/* start sector idx on disk (r/w only)  */
-	blkif_vdev_t handle;         /* same as for read/write requests      */
-	grant_ref_t indirect_grefs[BLKIF_MAX_INDIRECT_PAGES_PER_REQUEST];
+	blkif_vdev_t   handle;       /* same as for read/write requests      */
+	grant_ref_t	   indirect_grefs[BLKIF_MAX_INDIRECT_PAGES_PER_REQUEST];
 #ifdef __i386__
 	uint64_t pad;                /* Make it 64 byte aligned on i386      */
 #endif
@@ -603,8 +603,8 @@ typedef struct blkif_request_indirect blkif_request_indirect_t;
 
 struct blkif_response {
 	uint64_t id;                     /* copied from request */
-	uint8_t operation;               /* copied from request */
-	int16_t status;                  /* BLKIF_RSP_???       */
+	uint8_t	 operation;              /* copied from request */
+	int16_t	 status;                 /* BLKIF_RSP_???       */
 };
 typedef struct blkif_response blkif_response_t;
 

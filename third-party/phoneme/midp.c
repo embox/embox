@@ -27,9 +27,9 @@ static void *phoneme_run(void *data) {
 }
 
 struct __jvm_params {
-	int argc;
+	int	   argc;
 	char **argv;
-	int code;
+	int	   code;
 };
 
 /* Notify java task about system events. */

@@ -32,7 +32,7 @@ javacall_result javacall_time_initialize_timer(
 	is_cyclic = (cyclic == JAVACALL_TRUE ? TIMER_PERIODIC : TIMER_ONESHOT);
 
 	if (0 > (res = timer_set(&timer, is_cyclic, wakeupInMilliSecondsFromNow,
-					(sys_timer_handler_t)func, NULL))) {
+			(sys_timer_handler_t)func, NULL))) {
 		return emboxErrno2javaErrno(res);
 	}
 

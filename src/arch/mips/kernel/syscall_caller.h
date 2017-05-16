@@ -101,7 +101,7 @@
 #define __SYSCALL5(NR,type,name,type1,arg1,type2,arg2,type3,arg3,type4,arg4,   \
 			type5,arg5)                                                          \
 	static inline type name(type1 arg1,type2 arg2,type3 arg3,type4 arg4,           \
-		type5 arg5)                                                          \
+			type5 arg5)                                                          \
 	{                                                                              \
 		long __res;                                                                    \
 		__asm__ volatile (                                                             \

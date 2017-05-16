@@ -22,11 +22,11 @@ struct pci_id {
 
 struct pci_driver {
 	const struct mod mod;
-	int (*init)(struct pci_slot_dev *pci_dev);
-	const char *name;
+	int				 (*init)(struct pci_slot_dev *pci_dev);
+	const char *	 name;
 
 	const struct pci_id *id_table;
-	unsigned int id_table_n;
+	unsigned int		 id_table_n;
 };
 
 #define PCI_DRIVER_TABLE(_drv_name, _init_func, _id_table) \

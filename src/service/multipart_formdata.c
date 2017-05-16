@@ -24,7 +24,7 @@ static char mpfd_g_buf[BUFF_SZ];
 
 struct parseenv {
 	char *pb;
-	int blen;
+	int	  blen;
 };
 
 static char *strstrp(const char *s, const char *h) {
@@ -128,11 +128,11 @@ int main(int argc, char *argv[]) {
 		close(fd);
 
 		httpcode = 200;
-		out_header:
+out_header:
 		printf("HTTP/1.1 %d %s\r\n"
-			   "Content-Type: %s\r\n"
-			   "Connection: close\r\n"
-			   "\r\n", httpcode, "OK", "text/plain");
+				"Content-Type: %s\r\n"
+				"Connection: close\r\n"
+				"\r\n", httpcode, "OK", "text/plain");
 		fflush(stdout);
 	}
 

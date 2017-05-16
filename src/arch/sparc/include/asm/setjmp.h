@@ -15,7 +15,7 @@
 
 typedef struct {
 	/* 0x0 */
-	uint32_t fp;
+	uint32_t		   fp;
 	/* 0x4 */ uint32_t i7;
 	/* 0x8 */ uint32_t sp;
 	/* 0xc */ uint32_t o7;

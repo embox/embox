@@ -131,7 +131,7 @@ typedef struct xen_kexec_exec {
 #define KEXEC_CMD_kexec_load_v1         1 /* obsolete since 0x00040400 */
 #define KEXEC_CMD_kexec_unload_v1       2 /* obsolete since 0x00040400 */
 typedef struct xen_kexec_load_v1 {
-	int type;
+	int				  type;
 	xen_kexec_image_t image;
 } xen_kexec_load_v1_t;
 
@@ -158,8 +158,8 @@ typedef struct xen_kexec_load_v1 {
  */
 #define KEXEC_CMD_kexec_get_range       3
 typedef struct xen_kexec_range {
-	int range;
-	int nr;
+	int			  range;
+	int			  nr;
 	unsigned long size;
 	unsigned long start;
 } xen_kexec_range_t;
@@ -202,8 +202,8 @@ DEFINE_XEN_GUEST_HANDLE(xen_kexec_segment_t);
 
 #define KEXEC_CMD_kexec_load 4
 typedef struct xen_kexec_load {
-	uint8_t type;         /* One of KEXEC_TYPE_* */
-	uint8_t _pad;
+	uint8_t	 type;        /* One of KEXEC_TYPE_* */
+	uint8_t	 _pad;
 	uint16_t arch;        /* ELF machine type (EM_*). */
 	uint32_t nr_segments;
 	union {

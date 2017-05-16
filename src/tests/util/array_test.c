@@ -39,7 +39,7 @@ ARRAY_SPREAD_DEF(static const struct aligned, spread_1_aligned);
 ARRAY_SPREAD_ADD_NAMED(spread_1_aligned, spread_aligned_element, {{0}});
 
 TEST_CASE("Pointers to a spread array and to the first array element should "
-		  "be equal") {
+		"be equal") {
 	volatile unsigned int head = (unsigned int) spread_1_aligned;
 	volatile unsigned int element = (unsigned int) spread_aligned_element;
 

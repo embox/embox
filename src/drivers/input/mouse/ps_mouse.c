@@ -25,7 +25,7 @@ EMBOX_UNIT_INIT(ps_mouse_init);
 
 struct ps2_mouse_indev {
 	struct input_dev input_dev;
-	char byteseq_state;
+	char			 byteseq_state;
 };
 
 static void kmc_send_auxcmd(unsigned char val) {
@@ -84,7 +84,7 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 
 	ps2mouse->byteseq_state = (ps2mouse->byteseq_state + 1) % 3;
 
-	out:
+out:
 	return ret;
 }
 

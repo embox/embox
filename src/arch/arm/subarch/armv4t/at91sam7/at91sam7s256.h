@@ -654,17 +654,17 @@ typedef struct _AT91S_PWMC_CH {
 /*              SOFTWARE API DEFINITION  FOR Pulse Width Modulation Controller Interface */
 /* ***************************************************************************** */
 typedef struct _AT91S_PWMC {
-	at91_reg_t PWMC_MR;     /* PWMC Mode Register */
-	at91_reg_t PWMC_ENA;    /* PWMC Enable Register */
-	at91_reg_t PWMC_DIS;    /* PWMC Disable Register */
-	at91_reg_t PWMC_SR;     /* PWMC Status Register */
-	at91_reg_t PWMC_IER;    /* PWMC Interrupt Enable Register */
-	at91_reg_t PWMC_IDR;    /* PWMC Interrupt Disable Register */
-	at91_reg_t PWMC_IMR;    /* PWMC Interrupt Mask Register */
-	at91_reg_t PWMC_ISR;    /* PWMC Interrupt Status Register */
-	at91_reg_t Reserved0[55];       /* */
-	at91_reg_t PWMC_VR;     /* PWMC Version Register */
-	at91_reg_t Reserved1[64];       /* */
+	at91_reg_t	  PWMC_MR;  /* PWMC Mode Register */
+	at91_reg_t	  PWMC_ENA; /* PWMC Enable Register */
+	at91_reg_t	  PWMC_DIS; /* PWMC Disable Register */
+	at91_reg_t	  PWMC_SR;  /* PWMC Status Register */
+	at91_reg_t	  PWMC_IER; /* PWMC Interrupt Enable Register */
+	at91_reg_t	  PWMC_IDR; /* PWMC Interrupt Disable Register */
+	at91_reg_t	  PWMC_IMR; /* PWMC Interrupt Mask Register */
+	at91_reg_t	  PWMC_ISR; /* PWMC Interrupt Status Register */
+	at91_reg_t	  Reserved0[55];    /* */
+	at91_reg_t	  PWMC_VR;  /* PWMC Version Register */
+	at91_reg_t	  Reserved1[64];    /* */
 	AT91S_PWMC_CH PWMC_CH[32];      /* PWMC Channel 0 */
 } AT91S_PWMC, *AT91PS_PWMC;
 

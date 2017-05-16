@@ -21,12 +21,12 @@
 #include <unistd.h>
 
 struct ntpd_param {
-	int running;
-	int sock;
-	in_addr_t addr;
-	int poll;
+	int				  running;
+	int				  sock;
+	in_addr_t		  addr;
+	int				  poll;
 	struct sys_timer *tmr;
-	int replied;
+	int				  replied;
 };
 
 static int send_request(struct ntpd_param *param) {

@@ -78,7 +78,7 @@ TEST_CASE("connect() fails on unreachable address") {
 }
 
 TEST_CASE("getsockname() returns unspecified address when a socket"
-		  " was created") {
+		" was created") {
 	struct sockaddr_in tmp;
 	addr.sin_port = 0;
 

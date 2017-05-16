@@ -13,9 +13,9 @@
 
 struct xattr_ent {
 	struct dlist_head xe_lnk;
-	char xe_name[XATTR_MAX_NSIZE];
-	char xe_val[XATTR_MAX_VSIZE];
-	size_t xe_len;
+	char			  xe_name[XATTR_MAX_NSIZE];
+	char			  xe_val[XATTR_MAX_VSIZE];
+	size_t			  xe_len;
 };
 
 struct xattr_list {

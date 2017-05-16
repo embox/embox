@@ -27,8 +27,8 @@ struct dkey {
 };
 
 struct dvalue {
-	struct dkey key;
-	struct dentry dentry;
+	struct dkey		  key;
+	struct dentry	  dentry;
 	struct dlist_head link;
 };
 

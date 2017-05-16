@@ -259,14 +259,14 @@ static void dwc_release_channel(uint chan) {
  */
 static int dwc_power_on(void) {
 	log_info("Powering on Synopsys DesignWare Hi-Speed  USB 2.0 On-The-Go "
-			 "Controller");
+			"Controller");
 
 	return bcm2835_setpower(POWER_USB, true);
 }
 
 static void dwc_power_off(void) {
 	log_info("Powering off Synopsys DesignWare Hi-Speed USB 2.0 On-The-Go "
-			 "Controller");
+			"Controller");
 
 	bcm2835_setpower(POWER_USB, false);
 }
@@ -438,8 +438,8 @@ enum usb_bmRequestType_fields {
  * descriptor and endpoint descriptor, for the faked root hub.  */
 static const struct {
 	struct usb_desc_configuration configuration;
-	struct usb_desc_interface interface;
-	struct usb_desc_endpoint endpoint;
+	struct usb_desc_interface	  interface;
+	struct usb_desc_endpoint	  endpoint;
 } __attribute__((packed)) root_hub_configuration = {
 	.configuration = {
 		.b_length = sizeof(struct usb_desc_configuration),
@@ -449,7 +449,7 @@ static const struct {
 		.b_configuration_value = 1,
 		.i_configuration = 0,
 		.bm_attributes = USB_CONFIGURATION_ATTRIBUTE_RESERVED_HIGH |
-				USB_CONFIGURATION_ATTRIBUTE_SELF_POWERED,
+		USB_CONFIGURATION_ATTRIBUTE_SELF_POWERED,
 		.b_max_power = 0,
 	},
 	.interface = {
@@ -507,14 +507,14 @@ static const struct {
 static const struct usb_desc_hub root_hub_hub_descriptor = {
 	/* b_desc_length is the base size plus the length of the var_data */
 	.b_desc_length = sizeof(struct usb_desc_hub) +
-			2 * sizeof(root_hub_hub_descriptor.var_data[0]),
+		2 * sizeof(root_hub_hub_descriptor.var_data[0]),
 	.b_desc_type = USB_DESCRIPTOR_TYPE_HUB,
 	.b_nbr_ports = 1,
 	.w_hub_characteristics = 0,
 	.b_pwr_on_2_pwr_good = 0,
 	.b_hub_contr_current = 0,
 	.var_data = { 0x00 /* DeviceRemovable */,
-				  0xff, /* PortPwrCtrlMask */ },
+		0xff, /* PortPwrCtrlMask */ },
 };
 
 #define USB_DEVICE_STATUS_SELF_POWERED  (1 << 0)
@@ -557,7 +557,7 @@ static void dwc_host_port_status_changed(void) {
 	if (req != NULL) {
 		root_hub_status_change_request = NULL;
 		log_debug("Host port status changed; "
-				  "responding to status changed transfer on root hub");
+				"responding to status changed transfer on root hub");
 		*(uint8_t *)req->buf = 0x2; /* 0x2 means Port 1 status changed (bit 0 is
 		                             used for the hub itself) */
 		_req->actual_size = 1;
@@ -1081,11 +1081,11 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 	channel_pending_xfers[chan] = req;
 
 	log_debug("Setting up transactions on channel %u:\n"
-			  "\t\tmax_packet_size=%u, "
-			  "endpoint_number=%u, endpoint_direction=%s,\n"
-			  "\t\tlow_speed=%u, endpoint_type=%s, device_address=%u,\n\t\t"
-			  "size=%u, packet_count=%u, packet_id=%u, split_enable=%u, "
-			  "complete_split=%u",
+			"\t\tmax_packet_size=%u, "
+			"endpoint_number=%u, endpoint_direction=%s,\n"
+			"\t\tlow_speed=%u, endpoint_type=%s, device_address=%u,\n\t\t"
+			"size=%u, packet_count=%u, packet_id=%u, split_enable=%u, "
+			"complete_split=%u",
 			chan,
 			characteristics.max_packet_size,
 			characteristics.endpoint_number,
@@ -1308,8 +1308,8 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 			 * remaining to be transferred).  */
 			if (!interrupts.transfer_completed) {
 				log_error("transfer_completed flag not "
-						  "set on channel %u as expected "
-						  "(interrupts=0x%08x, transfer=0x%08x).", chan,
+						"set on channel %u as expected "
+						"(interrupts=0x%08x, transfer=0x%08x).", chan,
 						interrupts.val, chanptr->transfer.val);
 				return XFER_FAILED;
 			}
@@ -1324,7 +1324,7 @@ static enum dwc_intr_status dwc_handle_normal_channel_halted(
 			if (_req->short_attempt && _req->attempted_bytes_remaining == 0 &&
 					type != USB_COMM_INTERRUPT) {
 				log_debug("Starting next part of %u-byte transfer "
-						  "after short attempt of %u bytes",
+						"after short attempt of %u bytes",
 						req->len, _req->attempted_size);
 				_req->complete_split = 0;
 				_req->next_data_pid = chanptr->transfer.packet_id;
@@ -1412,8 +1412,8 @@ static void dwc_handle_channel_halted_interrupt(uint chan) {
 	enum dwc_intr_status intr_status;
 
 	log_debug("Handling channel %u halted interrupt"
-			  "\t\t(interrupts pending: 0x%08x, characteristics=0x%08x, "
-			  "transfer=0x%08x)",
+			"\t\t(interrupts pending: 0x%08x, characteristics=0x%08x, "
+			"transfer=0x%08x)",
 			chan, interrupts.val, chanptr->characteristics.val,
 			chanptr->transfer.val);
 
@@ -1429,7 +1429,7 @@ static void dwc_handle_channel_halted_interrupt(uint chan) {
 		/* An error occurred. Complete the transfer immediately with an error
 		 * status. */
 		log_error("Transfer error on channel %u (interrupts pending: 0x%08x, "
-				  " packet_count=%u)", chan, interrupts.val,
+				" packet_count=%u)", chan, interrupts.val,
 				chanptr->transfer.packet_count);
 		intr_status = XFER_FAILED;
 	} else if (interrupts.frame_overrun) {

@@ -23,8 +23,8 @@
 
 wctype_t wctype(const char *property) {
 	static const struct {
-		const char  *name;
-		wctype_t mask;
+		const char *name;
+		wctype_t	mask;
 	} props[] = {
 		{ "alnum",  _AN },
 		{ "alpha",  _A },
@@ -51,8 +51,8 @@ wctype_t wctype(const char *property) {
 
 wctrans_t wctrans(const char *charclass) {
 	static const struct {
-		const char  *name;
-		wctrans_t type;
+		const char *name;
+		wctrans_t	type;
 	} classes[] = {
 		{ "tolower", _L },
 		{ "toupper", _U },

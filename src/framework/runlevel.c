@@ -83,7 +83,7 @@ int runlevel_set(runlevel_nr_t level) {
 				goto mod_fail;
 			}
 		}
-		mod_fail:
+mod_fail:
 		if (runlevel_change_hook(init_level + d, ret)) {
 			return ret;
 		}

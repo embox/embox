@@ -85,7 +85,7 @@ static char *http_admin_build_iface_list(void) {
 	cJSON_Delete(iface_array);
 	freeifaddrs(ifa);
 	return json_list;
-	outerr:
+outerr:
 	cJSON_Delete(iface_array);
 	freeifaddrs(ifa);
 	return strdup("{}");
@@ -149,7 +149,7 @@ static void http_admin_post(char *post_data) {
 		arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
 	}
 
-	outerr:
+outerr:
 	cJSON_Delete(post_json);
 }
 
@@ -157,10 +157,10 @@ static int http_admin_main(int argc, char *argv[]) {
 	char *method;
 
 	printf(
-			"HTTP/1.1 %d %s\r\n"
-			"Content-Type: %s\r\n"
-			"Connection: close\r\n"
-			"\r\n", 200, "OK", "application/json");
+		"HTTP/1.1 %d %s\r\n"
+		"Content-Type: %s\r\n"
+		"Connection: close\r\n"
+		"\r\n", 200, "OK", "application/json");
 
 	method = getenv("REQUEST_METHOD");
 	if (0 == strcmp("GET", method)) {

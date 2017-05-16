@@ -64,8 +64,8 @@ struct cpu_saved_ctx {
 
 struct irq_saved_state {
 	struct cpu_saved_ctx ctx;
-	uint32_t sp;
-	uint32_t lr;
+	uint32_t			 sp;
+	uint32_t			 lr;
 };
 
 extern void __irq_trampoline(uint32_t sp, uint32_t lr);

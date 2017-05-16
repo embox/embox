@@ -51,7 +51,7 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 /* Use for exception which doesn't push error code. */
 #define EXCEPTION(n, name)  \
 	.globl name; \
-	name:; \
+name:; \
 	pushl $(0); \
 	pushl $(n); \
 	jmp excep_stub
@@ -59,7 +59,7 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 /* Use for exception which pushes error code. */
 #define EXCEPTION_ERR(n, name)  \
 	.globl name; \
-	name:; \
+name:; \
 	pushl $(n); \
 	jmp excep_stub
 

@@ -64,9 +64,9 @@ typedef struct journal_block_s {
 	 * XXX suppose the better solution will be add *bh not *bh[8]
 	 */
 	struct buffer_head *bh[8]; /** Corresponding buffer_heads (up to 8) */
-	block_t blocknr;     /** Block number. */
-	char *data;      /** Pointer to in-memory data. */
-	struct dlist_head b_next; /** Linked list entry. */
+	block_t				blocknr; /** Block number. */
+	char *				data; /** Pointer to in-memory data. */
+	struct dlist_head	b_next; /** Linked list entry. */
 } journal_block_t;
 
 /*********** File system specific ***********/
@@ -105,11 +105,11 @@ typedef int (*journal_update_t)(journal_t *jp);
 typedef int (*journal_trans_freespace_t)(journal_t *jp, size_t nblocks);
 
 typedef struct journal_fs_specific_s {
-	journal_commit_t commit;
-	journal_update_t update;
-	journal_bmap_t bmap;
+	journal_commit_t		  commit;
+	journal_update_t		  update;
+	journal_bmap_t			  bmap;
 	journal_trans_freespace_t trans_freespace;
-	void *data;
+	void *					  data;
 } journal_fs_specific_t;
 
 /*********** File system specific ***********/
@@ -122,7 +122,7 @@ typedef struct journal_fs_specific_s {
  */
 struct journal_handle_s {
 	transaction_t *h_transaction;
-	int h_buffer_credits;
+	int			   h_buffer_credits;
 };
 
 /*
@@ -260,9 +260,9 @@ struct journal_s {
 	 * store the journal.
 	 */
 	struct block_dev *j_dev;
-	size_t j_blocksize;
-	size_t j_disk_sectorsize;
-	block_t j_blk_offset;
+	size_t			  j_blocksize;
+	size_t			  j_disk_sectorsize;
+	block_t			  j_blk_offset;
 
 	/* Total maximum capacity of the journal region on disk. */
 	size_t j_maxlen;

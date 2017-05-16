@@ -75,7 +75,7 @@ static match_rule_t rule_get_by_id(net_node_t node, char *id);
 	}
 
 struct rule {
-	char *option;
+	char *		 option;
 	_rule_setter setter;
 };
 

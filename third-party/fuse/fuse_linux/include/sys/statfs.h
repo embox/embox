@@ -23,13 +23,13 @@ typedef struct {
 struct statfs {
 	__SWORD_TYPE f_type;    /* type of file system (see below) */
 	__SWORD_TYPE f_bsize;   /* optimal transfer block size */
-	fsblkcnt_t f_blocks;    /* total data blocks in file system */
-	fsblkcnt_t f_bfree;     /* free blocks in fs */
-	fsblkcnt_t f_bavail;    /* free blocks available to
+	fsblkcnt_t	 f_blocks;  /* total data blocks in file system */
+	fsblkcnt_t	 f_bfree;   /* free blocks in fs */
+	fsblkcnt_t	 f_bavail;  /* free blocks available to
 	                           unprivileged user */
-	fsfilcnt_t f_files;     /* total file nodes in file system */
-	fsfilcnt_t f_ffree;     /* free file nodes in fs */
-	fsid_t f_fsid;          /* file system id */
+	fsfilcnt_t	 f_files;   /* total file nodes in file system */
+	fsfilcnt_t	 f_ffree;   /* free file nodes in fs */
+	fsid_t		 f_fsid;    /* file system id */
 	__SWORD_TYPE f_namelen; /* maximum length of filenames */
 	__SWORD_TYPE f_frsize;  /* fragment size (since Linux 2.6) */
 	__SWORD_TYPE f_spare[5];

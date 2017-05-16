@@ -30,7 +30,7 @@ static int pa_info_init(void) {
 
 	if (_dev_cnt > MAX_DEV_CNT) {
 		log_error("Increase max_dev_count option!"
-				  " Need %d, have %d\n",
+				" Need %d, have %d\n",
 				_dev_cnt, MAX_DEV_CNT);
 
 		_dev_cnt = MAX_DEV_CNT;

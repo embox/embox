@@ -137,18 +137,18 @@ static char **history = NULL;
  * We pass this state to functions implementing specific editing
  * functionalities. */
 struct linenoiseState {
-	int fdin;             /* Terminal file descriptor. */
-	int fdout;             /* Terminal file descriptor. */
-	char *buf;          /* Edited line buffer. */
-	size_t buflen;      /* Edited line buffer size. */
+	int			fdin;     /* Terminal file descriptor. */
+	int			fdout;     /* Terminal file descriptor. */
+	char *		buf;    /* Edited line buffer. */
+	size_t		buflen; /* Edited line buffer size. */
 	const char *prompt; /* Prompt to display. */
-	size_t plen;        /* Prompt length. */
-	size_t pos;         /* Current cursor position. */
-	size_t oldpos;      /* Previous refresh cursor position. */
-	size_t len;         /* Current edited line length. */
-	size_t cols;        /* Number of columns in terminal. */
-	size_t maxrows;     /* Maximum num of rows used so far (multiline mode) */
-	int history_index;  /* The history index we are currently editing. */
+	size_t		plen;   /* Prompt length. */
+	size_t		pos;    /* Current cursor position. */
+	size_t		oldpos; /* Previous refresh cursor position. */
+	size_t		len;    /* Current edited line length. */
+	size_t		cols;   /* Number of columns in terminal. */
+	size_t		maxrows; /* Maximum num of rows used so far (multiline mode) */
+	int			history_index; /* The history index we are currently editing. */
 };
 
 /*static void linenoiseAtExit(void); */
@@ -219,7 +219,7 @@ static int enableRawMode(int fd, struct termios *orig_termios, int *rawmode) {
 
 	return 0;
 
-	fatal:
+fatal:
 	errno = ENOTTY;
 	return -1;
 }

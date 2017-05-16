@@ -90,7 +90,7 @@ static int ntpdate_exec(struct ntphdr *req, in_addr_t server_addr,
 
 	ret = 0;
 
-	error:
+error:
 	close(sock);
 	return ret;
 }

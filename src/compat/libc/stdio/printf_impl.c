@@ -318,11 +318,11 @@ int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 	unsigned int ops;
 	const char *begin;
 	union {
-		void *vp;
-		char ca[2];
-		char *cp;
+		void *				   vp;
+		char				   ca[2];
+		char *				   cp;
 		unsigned long long int ulli;
-		long double ld;
+		long double			   ld;
 	} tmp;
 
 	assert(printchar_handler != NULL);
@@ -337,7 +337,7 @@ int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 
 		/* check first symbol */
 		if (*format != '%') {
-			single_print:
+single_print:
 			++pc;
 			printchar_handler(printchar_data, *format);
 			continue;
@@ -356,7 +356,7 @@ int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
 			case '0': ops |= OPS_FLAG_ZERO_PAD; break;
 			}
 		}
-		after_flags:
+after_flags:
 
 		/* get width */
 		if (*format == '*') {

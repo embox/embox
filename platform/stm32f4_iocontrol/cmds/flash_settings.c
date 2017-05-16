@@ -29,7 +29,7 @@
 struct flashset_network_settings {
 	struct sockaddr fsn_addr;
 	struct sockaddr fsn_mask;
-	unsigned char fsn_mac[MAX_ADDR_LEN];
+	unsigned char	fsn_mac[MAX_ADDR_LEN];
 };
 
 static struct flashset_network_settings fsn_network;
@@ -81,7 +81,7 @@ static int flashset_nic_store(const char *nic_name) {
 	fd = open("nic", O_CREAT);
 	errcode = write(fd, (char *) &fsn_network, sizeof(fsn_network));
 
-	outerr:
+outerr:
 	close(fd);
 	return errcode;
 }
@@ -106,12 +106,12 @@ static int flashset_nic_restore(const char *nic_name) {
 	}
 
 	if ((errcode = inetdev_set_addr(iface_dev,
-					((struct sockaddr_in *) &fsn_network.fsn_addr)->sin_addr.s_addr))) {
+			((struct sockaddr_in *) &fsn_network.fsn_addr)->sin_addr.s_addr))) {
 		goto outerr;
 	}
 
 	if ((errcode = inetdev_set_mask(iface_dev,
-					((struct sockaddr_in *) &fsn_network.fsn_mask)->sin_addr.s_addr))) {
+			((struct sockaddr_in *) &fsn_network.fsn_mask)->sin_addr.s_addr))) {
 		goto outerr;
 	}
 
@@ -120,7 +120,7 @@ static int flashset_nic_restore(const char *nic_name) {
 	}
 
 	errcode = 0;
-	outerr:
+outerr:
 	close(fd);
 	return errcode;
 }

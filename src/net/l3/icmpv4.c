@@ -144,9 +144,9 @@ static int icmp_hnd_dest_unreach(const struct icmphdr *icmph,
 	len -= sizeof *icmph + sizeof *dest_unreach;
 
 	return icmp_notify_an_error(icmph, &dest_unreach->msg[0], len,
-			icmph->code == ICMP_FRAG_NEEDED
-			? ntohs(dest_unreach->mtu) : 0,
-			icmph->code == ICMP_FRAG_NEEDED, skb);
+				   icmph->code == ICMP_FRAG_NEEDED
+				   ? ntohs(dest_unreach->mtu) : 0,
+				   icmph->code == ICMP_FRAG_NEEDED, skb);
 }
 
 static int icmp_hnd_source_quench(const struct icmphdr *icmph,
@@ -169,7 +169,7 @@ static int icmp_hnd_source_quench(const struct icmphdr *icmph,
 	len -= sizeof *icmph + sizeof *source_quench;
 
 	return icmp_notify_an_error(icmph, &source_quench->msg[0],
-			len, 0, 0, skb);
+				   len, 0, 0, skb);
 }
 
 static int icmp_hnd_echo_request(const struct icmphdr *icmph,
@@ -195,7 +195,7 @@ static int icmp_hnd_echo_request(const struct icmphdr *icmph,
 	echo_rep = &icmp_hdr(skb)->body[0].echo;
 
 	return icmp_send(ICMP_ECHO_REPLY, 0, echo_rep,
-			sizeof *echo_rep + len, skb);
+				   sizeof *echo_rep + len, skb);
 }
 
 static int icmp_hnd_param_prob(const struct icmphdr *icmph,
@@ -221,11 +221,11 @@ static int icmp_hnd_param_prob(const struct icmphdr *icmph,
 	len -= sizeof *icmph + sizeof *param_prob;
 
 	return icmp_notify_an_error(icmph, &param_prob->msg[0], len,
-			icmph->code == ICMP_PTR_ERROR ? param_prob->ptr : 0,
-			(icmph->code == ICMP_PTR_ERROR)
-			&& (param_prob->ptr < IP_HEADER_SIZE(
-			(const struct iphdr *)&param_prob->msg[0])),
-			skb);
+				   icmph->code == ICMP_PTR_ERROR ? param_prob->ptr : 0,
+				   (icmph->code == ICMP_PTR_ERROR)
+				   && (param_prob->ptr < IP_HEADER_SIZE(
+					   (const struct iphdr *)&param_prob->msg[0])),
+				   skb);
 }
 
 static int icmp_hnd_timestamp_request(const struct icmphdr *icmph,
@@ -253,7 +253,7 @@ static int icmp_hnd_timestamp_request(const struct icmphdr *icmph,
 	tstamp_rep->recv = tstamp_rep->trans = htonl(msec_since_12am);
 
 	return icmp_send(ICMP_TIMESTAMP_REPLY, 0, tstamp_rep,
-			sizeof *tstamp_rep, skb);
+				   sizeof *tstamp_rep, skb);
 }
 
 static int icmp_rcv(struct sk_buff *skb) {
@@ -297,7 +297,7 @@ static int icmp_rcv(struct sk_buff *skb) {
 		return icmp_hnd_dest_unreach(icmph, &icmph->body[0].dest_unreach, skb);
 	case ICMP_SOURCE_QUENCH:
 		return icmp_hnd_source_quench(icmph,
-				&icmph->body[0].source_quench, skb);
+					   &icmph->body[0].source_quench, skb);
 	case ICMP_REDIRECT:
 	case ICMP_TIME_EXCEED:
 	case ICMP_INFO_REQUEST:
@@ -308,7 +308,7 @@ static int icmp_rcv(struct sk_buff *skb) {
 		return icmp_hnd_param_prob(icmph, &icmph->body[0].param_prob, skb);
 	case ICMP_TIMESTAMP_REQUEST:
 		return icmp_hnd_timestamp_request(icmph,
-				&icmph->body[0].timestamp, skb);
+					   &icmph->body[0].timestamp, skb);
 	}
 
 	skb_free(skb);
@@ -319,11 +319,11 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		...) {
 	struct {
 		union {
-			struct icmpbody_dest_unreach dest_unreach;
+			struct icmpbody_dest_unreach  dest_unreach;
 			struct icmpbody_source_quench source_quench;
-			struct icmpbody_redirect redirect;
-			struct icmpbody_time_exceed time_exceed;
-			struct icmpbody_param_prob param_prob;
+			struct icmpbody_redirect	  redirect;
+			struct icmpbody_time_exceed	  time_exceed;
+			struct icmpbody_param_prob	  param_prob;
 		} __attribute__((packed));
 		char __body_msg_storage[ICMP_DISCARD_MAX_SIZE];
 	} __attribute__((packed)) body;
@@ -332,7 +332,7 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	size_t body_msg_sz;
 
 	if (!(ip_is_local(
-			ip_hdr(skb)->saddr, 0)
+				ip_hdr(skb)->saddr, 0)
 			|| ip_is_local(ip_hdr(skb)->daddr, 0))
 			|| (ip_hdr(skb)->frag_off & htons(IP_OFFSET))
 			|| (ip_data_length(ip_hdr(skb)) < ICMP_DISCARD_MIN_SIZE)
@@ -403,6 +403,6 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	}
 
 	return icmp_send(type, code, &body,
-			sizeof body - sizeof body.__body_msg_storage + body_msg_sz,
-			skb);
+				   sizeof body - sizeof body.__body_msg_storage + body_msg_sz,
+				   skb);
 }

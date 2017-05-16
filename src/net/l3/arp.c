@@ -117,8 +117,8 @@ static int arp_update_neighbour(const struct arphdr *arph,
 	assert(arpb != NULL);
 
 	return neighbour_add(ntohs(arph->ar_pro), arpb->ar_spa,
-			arph->ar_pln, dev, ntohs(arph->ar_hrd), arpb->ar_sha,
-			arph->ar_hln, 0);
+				   arph->ar_pln, dev, ntohs(arph->ar_hrd), arpb->ar_sha,
+				   arph->ar_hln, 0);
 }
 
 static int arp_hnd_request(const struct arphdr *arph,
@@ -172,8 +172,8 @@ static int arp_hnd_request(const struct arphdr *arph,
 
 	/* send reply */
 	return arp_send(skb, dev, ntohs(arph->ar_pro), arph->ar_pln,
-			ARP_OP_REPLY, &dev->dev_addr[0], &src_paddr[0],
-			&dst_haddr[0], &dst_paddr[0]);
+				   ARP_OP_REPLY, &dev->dev_addr[0], &src_paddr[0],
+				   &dst_haddr[0], &dst_paddr[0]);
 }
 
 static int arp_hnd_reply(const struct arphdr *arph,
@@ -297,5 +297,5 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 int arp_discover(struct net_device *dev, uint16_t pro,
 		uint8_t pln, const void *spa, const void *tpa) {
 	return arp_send(NULL, dev, pro, pln, ARP_OP_REQUEST,
-			&dev->dev_addr[0], spa, &dev->broadcast[0], tpa);
+				   &dev->dev_addr[0], spa, &dev->broadcast[0], tpa);
 }

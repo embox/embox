@@ -216,13 +216,13 @@ struct cpu_offline_action
 struct mcinfo_recovery
 {
 	struct mcinfo_common common;
-	uint16_t mc_bank; /* bank nr */
-	uint8_t action_flags;
-	uint8_t action_types;
+	uint16_t			 mc_bank; /* bank nr */
+	uint8_t				 action_flags;
+	uint8_t				 action_types;
 	union {
 		struct page_offline_action page_retire;
-		struct cpu_offline_action cpu_offline;
-		uint8_t pad[MAX_UNION_SIZE];
+		struct cpu_offline_action  cpu_offline;
+		uint8_t					   pad[MAX_UNION_SIZE];
 	} action_info;
 };
 
@@ -251,26 +251,26 @@ DEFINE_XEN_GUEST_HANDLE(mc_info_t);
 #define MC_CAPS_AMD_ECX 6   /* cpuid level 0x80000001 (%ecx) */
 
 struct mcinfo_logical_cpu {
-	uint32_t mc_cpunr;
-	uint32_t mc_chipid;
-	uint16_t mc_coreid;
-	uint16_t mc_threadid;
-	uint32_t mc_apicid;
-	uint32_t mc_clusterid;
-	uint32_t mc_ncores;
-	uint32_t mc_ncores_active;
-	uint32_t mc_nthreads;
-	int32_t mc_cpuid_level;
-	uint32_t mc_family;
-	uint32_t mc_vendor;
-	uint32_t mc_model;
-	uint32_t mc_step;
-	char mc_vendorid[16];
-	char mc_brandid[64];
-	uint32_t mc_cpu_caps[MC_NCAPS];
-	uint32_t mc_cache_size;
-	uint32_t mc_cache_alignment;
-	int32_t mc_nmsrvals;
+	uint32_t		  mc_cpunr;
+	uint32_t		  mc_chipid;
+	uint16_t		  mc_coreid;
+	uint16_t		  mc_threadid;
+	uint32_t		  mc_apicid;
+	uint32_t		  mc_clusterid;
+	uint32_t		  mc_ncores;
+	uint32_t		  mc_ncores_active;
+	uint32_t		  mc_nthreads;
+	int32_t			  mc_cpuid_level;
+	uint32_t		  mc_family;
+	uint32_t		  mc_vendor;
+	uint32_t		  mc_model;
+	uint32_t		  mc_step;
+	char			  mc_vendorid[16];
+	char			  mc_brandid[64];
+	uint32_t		  mc_cpu_caps[MC_NCAPS];
+	uint32_t		  mc_cache_size;
+	uint32_t		  mc_cache_alignment;
+	int32_t			  mc_nmsrvals;
 	struct mcinfo_msr mc_msrvalues[__MC_MSR_ARRAYSIZE];
 };
 typedef struct mcinfo_logical_cpu xen_mc_logical_cpu_t;
@@ -382,10 +382,10 @@ struct xen_mc_physcpuinfo {
 #define MC_MSRINJ_MAXMSRS       8
 struct xen_mc_msrinject {
 	/* IN */
-	uint32_t mcinj_cpunr;           /* target processor id */
-	uint32_t mcinj_flags;           /* see MC_MSRINJ_F_* below */
-	uint32_t mcinj_count;           /* 0 .. count-1 in array are valid */
-	uint32_t _pad0;
+	uint32_t		  mcinj_cpunr;  /* target processor id */
+	uint32_t		  mcinj_flags;  /* see MC_MSRINJ_F_* below */
+	uint32_t		  mcinj_count;  /* 0 .. count-1 in array are valid */
+	uint32_t		  _pad0;
 	struct mcinfo_msr mcinj_msr[MC_MSRINJ_MAXMSRS];
 };
 
@@ -406,7 +406,7 @@ struct xen_mc_mceinject {
 #define XEN_MC_INJECT_CPU_BROADCAST 0x8
 
 struct xen_mc_inject_v2 {
-	uint32_t flags;
+	uint32_t			 flags;
 	struct xenctl_bitmap cpumap;
 };
 #endif
@@ -415,11 +415,11 @@ struct xen_mc {
 	uint32_t cmd;
 	uint32_t interface_version; /* XEN_MCA_INTERFACE_VERSION */
 	union {
-		struct xen_mc_fetch mc_fetch;
+		struct xen_mc_fetch		   mc_fetch;
 		struct xen_mc_notifydomain mc_notifydomain;
-		struct xen_mc_physcpuinfo mc_physcpuinfo;
-		struct xen_mc_msrinject mc_msrinject;
-		struct xen_mc_mceinject mc_mceinject;
+		struct xen_mc_physcpuinfo  mc_physcpuinfo;
+		struct xen_mc_msrinject	   mc_msrinject;
+		struct xen_mc_mceinject	   mc_mceinject;
 #if defined(__XEN__) || defined(__XEN_TOOLS__)
 		struct xen_mc_inject_v2 mc_inject_v2;
 #endif

@@ -55,7 +55,7 @@ enum ndp_code {
  */
 struct ndpbody_router_solicit {
 	__be32 zero;     /* Reserved */
-	__u32 options[]; /* Options:
+	__u32  options[]; /* Options:
 	                     - Source link-layer address */
 } __attribute__((packed));
 
@@ -67,17 +67,17 @@ struct ndpbody_router_advert {
 	                       IPv6 packets */
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 	__u8 zero : 6,        /* Reserved */
-			other : 1,  /* Other configuration flag */
+			other	: 1, /* Other configuration flag */
 			managed : 1; /* Managed address configuration flag */
 #elif __BYTE_ORDER == __BIG_ENDIAN
 	__u8 managed : 1,
 			other : 1,
-			zero : 6;
+			zero  : 6;
 #endif
 	__be16 life_time;    /* Router lifetime */
 	__be32 reachbl_time; /* Reachable Time */
 	__be32 retrans_time; /* Retransmission time (milliseconds) */
-	__u32 options[];     /* Options:
+	__u32  options[];    /* Options:
 	                         - Source link-layer address
 	                         - MTU
 	                         - Prefix Information */
@@ -87,9 +87,9 @@ struct ndpbody_router_advert {
  * NDP Body for Neighbor Solicitation Message
  */
 struct ndpbody_neighbor_solicit {
-	__be32 zero;            /* Reserved */
+	__be32			zero;   /* Reserved */
 	struct in6_addr target; /* Target Address */
-	__u32 options[];        /* Options:
+	__u32			options[]; /* Options:
 	                            - Source link-layer address */
 } __attribute__((packed));
 
@@ -99,19 +99,19 @@ struct ndpbody_neighbor_solicit {
 struct ndpbody_neighbor_advert {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 	__u32 zero1 : 5,         /* Reserved */
-			override : 1,  /* Override flag */
+			override  : 1, /* Override flag */
 			solicited : 1, /* Solicited flag */
-			router : 1,    /* Router flag */
-			zero2 : 24;    /* Reserved */
+			router	  : 1, /* Router flag */
+			zero2	  : 24; /* Reserved */
 #elif __BYTE_ORDER == __BIG_ENDIAN
 	__u32 router : 1,
 			solicited : 1,
-			override : 1,
-			zero1 : 5,
-			zero2 : 24;
+			override  : 1,
+			zero1	  : 5,
+			zero2	  : 24;
 #endif
 	struct in6_addr target; /* Target Address */
-	__u32 options[];        /* Options:
+	__u32			options[]; /* Options:
 	                            - Target link-layer address */
 } __attribute__((packed));
 
@@ -119,10 +119,10 @@ struct ndpbody_neighbor_advert {
  * NDP Body for Redirect Message
  */
 struct ndpbody_redirect {
-	__be32 zero;            /* Reserved */
+	__be32			zero;   /* Reserved */
 	struct in6_addr target; /* Target Address */
 	struct in6_addr dest;   /* Destination Address */
-	__u32 options[];        /* Options:
+	__u32			options[]; /* Options:
 	                            - Target link-layer address
 	                            - Redirected Header */
 } __attribute__((packed));
@@ -166,7 +166,7 @@ enum ndp_options_len {
  */
 struct ndpoptions_ll_addr {
 	struct ndpoptionshdr hdr; /* Option header */
-	__u8 ll_addr[];           /* The variable length
+	__u8				 ll_addr[]; /* The variable length
 	                             link-layer address */
 } __attribute__((packed));
 
@@ -175,7 +175,7 @@ struct ndpoptions_ll_addr {
  */
 struct ndpoptions_prefix_info {
 	struct ndpoptionshdr hdr; /* Option header */
-	__u8 prefix_len;          /* The number of leading bits in the
+	__u8				 prefix_len; /* The number of leading bits in the
 	                             prefix that are valid */
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 	__u8 zero1 : 6,             /* Reserved */
@@ -185,11 +185,11 @@ struct ndpoptions_prefix_info {
 #elif __BYTE_ORDER == __BIG_ENDIAN
 	__u8 onlink : 1,
 			autonom : 1,
-			zero1 : 6;
+			zero1	: 6;
 #endif
-	__be32 valid_lifetime;    /* Valid Lifetime */
-	__be32 prefer_lifetime;   /* Preferred Lifetime */
-	__be32 zero2;             /* Reserved */
+	__be32			valid_lifetime; /* Valid Lifetime */
+	__be32			prefer_lifetime; /* Preferred Lifetime */
+	__be32			zero2;    /* Reserved */
 	struct in6_addr prefix;   /* An IPv6 address or a prefix of an
 	                             IPv6 address */
 } __attribute__((packed));
@@ -199,8 +199,8 @@ struct ndpoptions_prefix_info {
  */
 struct ndpoptions_redirected_hdr {
 	struct ndpoptionshdr hdr; /* Option header */
-	__u16 zero[3];            /* Reserved */
-	__u64 msg[];              /* IP header + data */
+	__u16				 zero[3]; /* Reserved */
+	__u64				 msg[]; /* IP header + data */
 } __attribute__((packed));
 
 /**
@@ -208,8 +208,8 @@ struct ndpoptions_redirected_hdr {
  */
 struct ndpoptions_mtu {
 	struct ndpoptionshdr hdr; /* Option header */
-	__be16 zero;              /* Reserved */
-	__be32 mtu;               /* The recommended MTU
+	__be16				 zero; /* Reserved */
+	__be32				 mtu; /* The recommended MTU
 	                             for the link */
 } __attribute__((packed));
 

@@ -959,18 +959,18 @@ struct usb_dwc_request {
 	 * allow HCDs to customize the variables they can use, perhaps   *
 	 * by embedding the usb_xfer_request in another struct.          *
 	 *****************************************************************/
-	void *cur_data_ptr;
-	uint8_t complete_split : 1;
-	uint8_t short_attempt  : 1;
-	uint8_t need_sof       : 1;
-	uint8_t control_phase  : 2;
-	uint8_t next_data_pid  : 2;
-	uint32_t attempted_size;
-	uint32_t attempted_packets_remaining;
-	uint32_t attempted_bytes_remaining;
-	uint32_t csplit_retries;
+	void *		   cur_data_ptr;
+	uint8_t		   complete_split : 1;
+	uint8_t		   short_attempt  : 1;
+	uint8_t		   need_sof       : 1;
+	uint8_t		   control_phase  : 2;
+	uint8_t		   next_data_pid  : 2;
+	uint32_t	   attempted_size;
+	uint32_t	   attempted_packets_remaining;
+	uint32_t	   attempted_bytes_remaining;
+	uint32_t	   csplit_retries;
 	struct thread *deferer_thread;
-	struct sem deferer_thread_sema;
+	struct sem	   deferer_thread_sema;
 };
 
 #endif /* _USB_DWC_REGS_H_ */

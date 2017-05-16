@@ -28,7 +28,7 @@
 
 struct fb_dev {
 	struct dlist_head link;
-	struct fb_info info;
+	struct fb_info	  info;
 };
 
 static int fb_update_current_var(struct fb_info *info);

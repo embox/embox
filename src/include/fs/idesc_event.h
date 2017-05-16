@@ -18,7 +18,7 @@ struct idesc;
  * The same as struct wait_link link but have poll flags
  */
 struct idesc_wait_link {
-	int iwq_masks;
+	int				  iwq_masks;
 	struct waitq_link link;
 };
 

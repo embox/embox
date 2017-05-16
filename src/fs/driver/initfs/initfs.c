@@ -30,7 +30,7 @@
 
 struct initfs_file_info {
 	struct node_info ni; /* must be the first member */
-	char *addr;
+	char *			 addr;
 };
 
 POOL_DEF(fdesc_pool, struct initfs_file_info,

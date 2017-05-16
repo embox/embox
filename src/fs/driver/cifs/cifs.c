@@ -30,9 +30,9 @@
 
 struct cifs_fs_info
 {
-	SMBCCTX *ctx;
+	SMBCCTX *	 ctx;
 	struct node *mntto;
-	char url[PATH_MAX];
+	char		 url[PATH_MAX];
 };
 
 /* ntfs filesystem description pool */
@@ -44,8 +44,8 @@ typedef struct smbitem smbitem;
 struct smbitem
 {
 	smbitem *next;
-	int type;
-	char name[1];
+	int		 type;
+	char	 name[1];
 };
 
 static mode_t
@@ -259,7 +259,7 @@ embox_cifs_mount(void *dev, void *dir)
 
 	return 0;
 
-	error:
+error:
 	embox_cifs_umount(dir);
 	return -rc;
 }

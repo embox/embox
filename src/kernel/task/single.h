@@ -24,7 +24,7 @@
 
 struct task {
 	struct thread *tsk_main;
-	char resources[];
+	char		   resources[];
 };
 
 __BEGIN_DECLS

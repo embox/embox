@@ -130,10 +130,10 @@ int main(int argc, char **argv) {
 
 	write_wave(argv[1], (uint8_t *)in_buf, cur_ptr * 4);
 
-	err_terminate_pa:
+err_terminate_pa:
 	if (paNoError != (err = Pa_Terminate())) {
 		printf("Portaudio error: could not terminate!\n");
 	}
-	err_exit:
+err_exit:
 	return 0;
 }

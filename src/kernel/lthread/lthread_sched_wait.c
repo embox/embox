@@ -90,7 +90,7 @@ int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain) {
 	}
 
 	if ((res = timer_set(&info->tmr, TIMER_ONESHOT, jiffies2ms(info->remain),
-					sched_wait_timeout_handler, &self->schedee))) {
+			sched_wait_timeout_handler, &self->schedee))) {
 		return res;
 	}
 

@@ -139,7 +139,7 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 
 			struct ring edit_ring;
 			size_t erase_len = ring_data_size(
-					tty_edit_ring(t, &edit_ring), TTY_IO_BUFF_SZ);
+				tty_edit_ring(t, &edit_ring), TTY_IO_BUFF_SZ);
 
 			if (erase_len) {
 				if (!erase_all) {
@@ -169,7 +169,7 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 		}
 	}
 
-	done:
+done:
 	got_data = (raw_mode || is_eol || ch == cc[VEOF]);
 
 	if (got_data) {
@@ -197,7 +197,7 @@ static char *tty_read_raw(struct tty *t, char *buff, char *end) {
 	size_t block_size;
 
 	while ((block_size = ring_can_read(
-					tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, end - buff))) {
+				tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, end - buff))) {
 
 		/* No processing is required to read raw data. */
 		memcpy(buff, t->i_buff + raw_ring.tail, block_size);
@@ -235,7 +235,7 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 	eof = t->termios.c_cc[VEOF];
 
 	while ((block_size = ring_can_read(
-					&t->i_canon_ring, TTY_IO_BUFF_SZ, end - buff))) {
+				&t->i_canon_ring, TTY_IO_BUFF_SZ, end - buff))) {
 		const char *line_start = t->i_buff + t->i_canon_ring.tail;
 		size_t line_len;
 		int got_line;

@@ -18,7 +18,7 @@
  */
 struct logger {
 	const struct mod *mod;
-	struct logging logging;
+	struct logging	  logging;
 };
 
 /**

@@ -41,11 +41,11 @@
 #define FEC_MMFR_DATA(v)    (v & 0xffff)
 
 struct fec_priv {
-	uint32_t base_addr;
+	uint32_t			 base_addr;
 	struct fec_buf_desc *rbd_base;
-	int rbd_index;
+	int					 rbd_index;
 	struct fec_buf_desc *tbd_base;
-	int tbd_index;
+	int					 tbd_index;
 };
 
 static struct fec_priv fec_priv;
@@ -253,10 +253,10 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		priv->tbd_index = (priv->tbd_index + 1) % TX_BUF_FRAMES;
 	}
-	out1:
+out1:
 	ipl_restore(sp);
 
-	out:
+out:
 	skb_free(skb);
 
 	return res;

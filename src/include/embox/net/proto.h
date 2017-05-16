@@ -16,7 +16,7 @@ struct sk_buff;
  */
 typedef struct net_proto {
 	unsigned short pack;
-	unsigned char type;
+	unsigned char  type;
 	int (*handle)(struct sk_buff *skb);
 	void (*handle_error)(const struct sk_buff *skb, int error_info);
 } net_proto_t;
@@ -39,11 +39,11 @@ ARRAY_SPREAD_DECLARE(const struct net_proto, __net_proto_registry);
 	static void _handle_error(const struct sk_buff *skb, int error_info);    \
 	ARRAY_SPREAD_DECLARE(const struct net_proto, __net_proto_registry);      \
 	ARRAY_SPREAD_ADD_NAMED(__net_proto_registry,                             \
-		__net_proto_ ## _pack ## _type, {                                    \
-			.pack = _pack,                                               \
-			.type = _type,                                               \
-			.handle = _handle,                                           \
-			.handle_error = _handle_error                                \
-		})
+			__net_proto_ ## _pack ## _type, {                                    \
+				.pack = _pack,                                               \
+				.type = _type,                                               \
+				.handle = _handle,                                           \
+				.handle_error = _handle_error                                \
+			})
 
 #endif /* EMBOX_NET_PROTO_H_ */

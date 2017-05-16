@@ -64,9 +64,9 @@ struct qnx6_inode_entry {
 	__fs16 di_mode;
 	__fs16 di_ext_mode;
 	__fs32 di_block_ptr[QNX6_NO_DIRECT_POINTERS];
-	__u8 di_filelevels;
-	__u8 di_status;
-	__u8 di_unknown2[2];
+	__u8   di_filelevels;
+	__u8   di_status;
+	__u8   di_unknown2[2];
 	__fs32 di_zero2[6];
 };
 
@@ -77,8 +77,8 @@ struct qnx6_inode_entry {
  */
 struct qnx6_dir_entry {
 	__fs32 de_node;
-	__u8 de_size;
-	char de_fname[QNX6_SHORT_NAME_MAX];
+	__u8   de_size;
+	char   de_fname[QNX6_SHORT_NAME_MAX];
 };
 
 /*
@@ -86,41 +86,41 @@ struct qnx6_dir_entry {
  */
 struct qnx6_long_dir_entry {
 	__fs32 de_node;
-	__u8 de_size;
-	__u8 de_unknown[3];
+	__u8   de_size;
+	__u8   de_unknown[3];
 	__fs32 de_long_node;
 	__fs32 de_checksum;
 };
 
 struct qnx6_long_filename {
 	__fs16 lf_size;
-	__u8 lf_fname[QNX6_LONG_NAME_MAX];
+	__u8   lf_fname[QNX6_LONG_NAME_MAX];
 };
 
 struct qnx6_root_node {
 	__fs64 size;
 	__fs32 ptr[QNX6_NO_DIRECT_POINTERS];
-	__u8 levels;
-	__u8 mode;
-	__u8 spare[6];
+	__u8   levels;
+	__u8   mode;
+	__u8   spare[6];
 };
 
 struct qnx6_super_block {
-	__fs32 sb_magic;
-	__fs32 sb_checksum;
-	__fs64 sb_serial;
-	__fs32 sb_ctime;        /* time the fs was created */
-	__fs32 sb_atime;        /* last access time */
-	__fs32 sb_flags;
-	__fs16 sb_version1;         /* filesystem version information */
-	__fs16 sb_version2;         /* filesystem version information */
-	__u8 sb_volumeid[16];
-	__fs32 sb_blocksize;
-	__fs32 sb_num_inodes;
-	__fs32 sb_free_inodes;
-	__fs32 sb_num_blocks;
-	__fs32 sb_free_blocks;
-	__fs32 sb_allocgroup;
+	__fs32				  sb_magic;
+	__fs32				  sb_checksum;
+	__fs64				  sb_serial;
+	__fs32				  sb_ctime; /* time the fs was created */
+	__fs32				  sb_atime; /* last access time */
+	__fs32				  sb_flags;
+	__fs16				  sb_version1; /* filesystem version information */
+	__fs16				  sb_version2; /* filesystem version information */
+	__u8				  sb_volumeid[16];
+	__fs32				  sb_blocksize;
+	__fs32				  sb_num_inodes;
+	__fs32				  sb_free_inodes;
+	__fs32				  sb_num_blocks;
+	__fs32				  sb_free_blocks;
+	__fs32				  sb_allocgroup;
 	struct qnx6_root_node Inode;
 	struct qnx6_root_node Bitmap;
 	struct qnx6_root_node Longfile;
@@ -129,17 +129,17 @@ struct qnx6_super_block {
 
 /* Audi MMI 3G superblock layout is different to plain qnx6 */
 struct qnx6_mmi_super_block {
-	__fs32 sb_magic;
-	__fs32 sb_checksum;
-	__fs64 sb_serial;
-	__u8 sb_spare0[12];
-	__u8 sb_id[12];
-	__fs32 sb_blocksize;
-	__fs32 sb_num_inodes;
-	__fs32 sb_free_inodes;
-	__fs32 sb_num_blocks;
-	__fs32 sb_free_blocks;
-	__u8 sb_spare1[4];
+	__fs32				  sb_magic;
+	__fs32				  sb_checksum;
+	__fs64				  sb_serial;
+	__u8				  sb_spare0[12];
+	__u8				  sb_id[12];
+	__fs32				  sb_blocksize;
+	__fs32				  sb_num_inodes;
+	__fs32				  sb_free_inodes;
+	__fs32				  sb_num_blocks;
+	__fs32				  sb_free_blocks;
+	__u8				  sb_spare1[4];
 	struct qnx6_root_node Inode;
 	struct qnx6_root_node Bitmap;
 	struct qnx6_root_node Longfile;

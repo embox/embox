@@ -65,7 +65,7 @@ static int on_tab(SCREEN_CALLBACK *cb, SCREEN *view, int by) {
 
 		if (common > 0) {
 			return cmdline_chars_insert(cb->outer->model,
-					proposals[0] + offset, common);
+						   proposals[0] + offset, common);
 		}
 
 		screen_out_puts(this->view, NULL);

@@ -18,7 +18,7 @@
 
 static void help_invalid_mode(const char *mode) {
 	printf("chmod: invalid mode: '%s'\n"
-		   "Try 'chmod -h' for more information.\n", mode);
+			"Try 'chmod -h' for more information.\n", mode);
 }
 
 static void help(void) {
@@ -32,7 +32,7 @@ static int build_mode(char *mode_str, mode_t *mode) {
 	mode_t type = 0;
 	mode_t mask = 0;
 
-	parse:
+parse:
 	if (count >= CHMOD_MAX_MODES) {
 		printf("chmod: too many modes: %s\n", mode_str);
 		return -1;

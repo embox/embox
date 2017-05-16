@@ -56,7 +56,7 @@ static int route_show(int flags) {
 
 static void print_help() {
 	printf("route [-hn] [-A family] {add|del} <target> [gw <Gw]"
-		   "[netmask <Nm>] [[dev] If]\n");
+			"[netmask <Nm>] [[dev] If]\n");
 }
 
 int main(int argc, char **argv) {
@@ -198,7 +198,7 @@ int main(int argc, char **argv) {
 
 	if (rt_act == ADD) {
 		return rt_add_route(netdev, target, netmask, gw,
-				gw == INADDR_ANY ? RTF_UP : RTF_UP | RTF_GATEWAY);
+					   gw == INADDR_ANY ? RTF_UP : RTF_UP | RTF_GATEWAY);
 	} else {
 		return rt_del_route(netdev, target, netmask, gw);
 	}

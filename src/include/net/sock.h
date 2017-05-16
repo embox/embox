@@ -43,16 +43,16 @@ enum sock_state {
 };
 
 struct sock_opt {
-	int so_acceptconn;
+	int				   so_acceptconn;
 	struct net_device *so_bindtodevice;
-	int so_broadcast;
-	int so_domain;
-	int so_dontroute;
-	int so_error;
-	struct linger so_linger;
-	int so_oobinline;
-	int so_protocol;
-	int so_rcvbuf;
+	int				   so_broadcast;
+	int				   so_domain;
+	int				   so_dontroute;
+	int				   so_error;
+	struct linger	   so_linger;
+	int				   so_oobinline;
+	int				   so_protocol;
+	int				   so_rcvbuf;
 #define SOCK_OPT_DEFAULT_RCVBUF   16384
 	int so_rcvlowat;
 #define SOCK_OPT_DEFAULT_RCVLOWAT 1
@@ -70,25 +70,25 @@ struct sock_opt {
 
 /* Base class for family sockets */
 struct sock {
-	struct idesc idesc;
-	struct sock_xattr sock_xattr;
-	struct dlist_head lnk;
-	enum sock_state state;
-	struct sock_opt opt;
+	struct idesc		idesc;
+	struct sock_xattr	sock_xattr;
+	struct dlist_head	lnk;
+	enum sock_state		state;
+	struct sock_opt		opt;
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
-	unsigned int rx_data_len;
+	unsigned int		rx_data_len;
 	/*unsigned int tx_data_len; */
-	unsigned char shutdown_flag; /* FIXME */
-	struct proto_sock *p_sk;
-	const struct sock_family_ops *f_ops;
-	const struct sock_proto_ops *p_ops;
+	unsigned char				   shutdown_flag; /* FIXME */
+	struct proto_sock *			   p_sk;
+	const struct sock_family_ops * f_ops;
+	const struct sock_proto_ops *  p_ops;
 	const struct net_pack_out_ops *o_ops;
-	const struct sockaddr *src_addr;
-	const struct sockaddr *dst_addr;
-	struct timeval last_packet_tstamp;
-	size_t addr_len;
-	int err;
+	const struct sockaddr *		   src_addr;
+	const struct sockaddr *		   dst_addr;
+	struct timeval				   last_packet_tstamp;
+	size_t						   addr_len;
+	int							   err;
 };
 
 static inline int sock_err(struct sock *sk) {
@@ -122,7 +122,7 @@ struct sock_family_ops {
 			void *optval, socklen_t *optlen);
 	int (*setsockopt)(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen);
-	int (*shutdown)(struct sock *sk, int how);
+	int			 (*shutdown)(struct sock *sk, int how);
 	struct pool *sock_pool;
 };
 
@@ -142,8 +142,8 @@ struct sock_proto_ops {
 			void *optval, socklen_t *optlen);
 	int (*setsockopt)(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen);
-	int (*shutdown)(struct sock *sk, int how);
-	struct pool *sock_pool;
+	int				   (*shutdown)(struct sock *sk, int how);
+	struct pool *	   sock_pool;
 	struct dlist_head *sock_list;
 };
 

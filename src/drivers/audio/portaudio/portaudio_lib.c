@@ -23,12 +23,12 @@
 #include <drivers/audio/audio_dev.h>
 
 struct pa_strm {
-	uint8_t devid;
-	uint8_t number_of_chan;
+	uint8_t	 devid;
+	uint8_t	 number_of_chan;
 	uint32_t sample_format;
 
 	PaStreamCallback *callback;
-	void *user_data;
+	void *			  user_data;
 
 	int active;
 };
@@ -83,7 +83,7 @@ static void *pa_thread_hnd(void *arg) {
 
 	if (!pa_stream.callback) {
 		log_debug("No callback provided for PA thread. "
-				  "That's probably not what you want.");
+				"That's probably not what you want.");
 		return NULL;
 	}
 
@@ -153,7 +153,7 @@ static void *pa_thread_hnd(void *arg) {
 				_stereo_to_mono(out_buf, inp_frames);
 			} else {
 				log_error("Audio configuration is broken!"
-						  "Check the number of channels.\n");
+						"Check the number of channels.\n");
 				return NULL;
 			}
 		}
@@ -188,7 +188,7 @@ PaError Pa_OpenStream(PaStream **stream,
 	assert(streamCallback != NULL);
 
 	log_debug("stream %p input %p output %p rate %f"
-			  " framesPerBuffer %lu flags %lu callback %p user_data %p",
+			" framesPerBuffer %lu flags %lu callback %p user_data %p",
 			stream, inputParameters, outputParameters, sampleRate,
 			framesPerBuffer, streamFlags, streamCallback, userData);
 

@@ -14,7 +14,7 @@
 EMBOX_TEST_SUITE("stdlib/getopt test");
 
 TEST_CASE("We pass to getopt function both string arguments as \"-h\" "
-		  "we expected that getopt find the 'h' option and return it") {
+		"we expected that getopt find the 'h' option and return it") {
 	int opt;
 	char *argv[3];
 
@@ -29,8 +29,8 @@ TEST_CASE("We pass to getopt function both string arguments as \"-h\" "
 }
 
 TEST_CASE("We pass to getopt string  \"h\" as argv and \"a\" as ops "
-		  "we expected that getopt return '?' because 'h' is a missing option"
-		  " argument ") {
+		"we expected that getopt return '?' because 'h' is a missing option"
+		" argument ") {
 	int opt;
 	char *argv[3];
 
@@ -45,9 +45,9 @@ TEST_CASE("We pass to getopt string  \"h\" as argv and \"a\" as ops "
 }
 
 TEST_CASE("We pass to getopt string  \"-i 1\" as argv and \"i:\" as ops "
-		  "it means that we pass option with the next parameter '1' "
-		  "we expect that getopt returns 'i' option and puts \"1\" string to"
-		  " optarg") {
+		"it means that we pass option with the next parameter '1' "
+		"we expect that getopt returns 'i' option and puts \"1\" string to"
+		" optarg") {
 	int opt;
 	char *argv[4];
 
@@ -65,10 +65,10 @@ TEST_CASE("We pass to getopt string  \"-i 1\" as argv and \"i:\" as ops "
 }
 
 struct opt_snapshot {
-	int code;
-	int index;
-	int option;
-	int error;
+	int	  code;
+	int	  index;
+	int	  option;
+	int	  error;
 	char *argument;
 };
 
@@ -105,7 +105,7 @@ static void getopt_test(int argc, char *argv[], const char *opts,
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command"
-		  " without options and arguments") {
+		" without options and arguments") {
 	char *argv[] = {
 		"prog"
 	};
@@ -118,7 +118,7 @@ TEST_CASE("Test opt_xxx_ valiables after command"
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		  " without options with many argument") {
+		" without options with many argument") {
 	char *argv[] = {
 		"prog", "x", "y", "z"
 	};
@@ -131,7 +131,7 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		  " with one option and without arguments") {
+		" with one option and without arguments") {
 	char *argv[] = {
 		"prog", "-a"
 	};
@@ -145,7 +145,7 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		  " with one option and many arguments") {
+		" with one option and many arguments") {
 	char *argv[] = {
 		"prog", "-a", "x", "y", "z"
 	};
@@ -159,7 +159,7 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		  " with many single options and many arguments") {
+		" with many single options and many arguments") {
 	char *argv[] = {
 		"prog", "-ade", "-j", "x", "y", "z"
 	};
@@ -176,7 +176,7 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		  " with many options with argument and without arguments") {
+		" with many options with argument and without arguments") {
 	char *argv[] = {
 		"prog", "-abb_opt", "-c", "c_opt", "-def",
 		"f_opt", "-j"
@@ -197,7 +197,7 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		  " with many options with argument and with arguments") {
+		" with many options with argument and with arguments") {
 	char *argv[] = {
 		"prog", "-abb_opt", "-c", "c_opt", "-def",
 		"f_opt", "-j", "x", "y"
@@ -218,7 +218,7 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		  " with many options with argument and with arguments (shuffle)") {
+		" with many options with argument and with arguments (shuffle)") {
 	char *argv[] = {
 		"prog", "-abb_opt", "x", "-c", "c_opt", "-def",
 		"f_opt", "y", "-j", "z"
@@ -239,7 +239,7 @@ TEST_CASE("Test opt_xxx_ valiables after command "
 }
 
 TEST_CASE("Test opt_xxx_ valiables after command "
-		  " with single option and argument without spaces between them") {
+		" with single option and argument without spaces between them") {
 	char *argv[] = {
 		"prog", "-ax", "-bb_opt", "y"
 	};

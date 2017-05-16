@@ -183,13 +183,13 @@ static inline struct dlist_head *dlist_prev(const struct dlist_head *list) {
  */
 #define dlist_prev_entry_or_null(list, element_type, link_member) \
 	member_cast_out_or_null(!dlist_empty(list) ? dlist_prev(list) : NULL, \
-		element_type, \
-		link_member)
+			element_type, \
+			link_member)
 
 #define dlist_next_entry_or_null(list, element_type, link_member) \
 	member_cast_out_or_null(!dlist_empty(list) ? dlist_next(list) : NULL, \
-		element_type, \
-		link_member)
+			element_type, \
+			link_member)
 
 /**
  * @def dlist_next_if_not_last()
@@ -203,7 +203,7 @@ static inline struct dlist_head *dlist_prev(const struct dlist_head *list) {
 
 #define dlist_next_entry_if_not_last(element, list, element_type, link_member) \
 	member_cast_out_or_null(dlist_next_if_not_last(member_cast_in(element, \
-		link_member), list), element_type, link_member)
+			link_member), list), element_type, link_member)
 
 /**
  * @def dlist_add_prev_entry()
@@ -287,9 +287,9 @@ static inline struct dlist_head *dlist_last_or_null(const struct dlist_head *lis
 
 #define dlist_foreach_safe(link, head) \
 	__dlist_foreach_safe(link, head, \
-		MACRO_GUARD(__link), \
-		MACRO_GUARD(__head), \
-		MACRO_GUARD(__next))
+			MACRO_GUARD(__link), \
+			MACRO_GUARD(__head), \
+			MACRO_GUARD(__next))
 
 #define __dlist_foreach_safe(link, head, __link, __head, __next) \
 	for (struct dlist_head *__link,       \
@@ -302,9 +302,9 @@ static inline struct dlist_head *dlist_last_or_null(const struct dlist_head *lis
 
 #define dlist_foreach_entry_safe(link, head, member) \
 	__dlist_foreach_entry_safe(link, head, member, \
-		MACRO_GUARD(__link), \
-		MACRO_GUARD(__head), \
-		MACRO_GUARD(__next))
+			MACRO_GUARD(__link), \
+			MACRO_GUARD(__head), \
+			MACRO_GUARD(__next))
 
 #define __dlist_foreach_entry_safe(link, head, member, __link, __head, __next) \
 	for (struct dlist_head *__link,                                 \

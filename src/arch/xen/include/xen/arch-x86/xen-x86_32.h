@@ -102,7 +102,7 @@
 #undef set_xen_guest_handle_raw
 #define set_xen_guest_handle_raw(hnd, val)                  \
 	do { if ( sizeof(hnd) == 8 ) {*(uint64_t *)&(hnd) = 0;}   \
-		 (hnd).p = val;                                     \
+		(hnd).p = val;                                     \
 	} while ( 0 )
 #define uint64_aligned_t uint64_t __attribute__((aligned(8)))
 #define __XEN_GUEST_HANDLE_64(name) __guest_handle_64_ ## name
@@ -123,8 +123,8 @@ struct cpu_user_regs {
 	uint16_t entry_vector;  /* private */
 	uint32_t eip;
 	uint16_t cs;
-	uint8_t saved_upcall_mask;
-	uint8_t _pad0;
+	uint8_t	 saved_upcall_mask;
+	uint8_t	 _pad0;
 	uint32_t eflags;        /* eflags.IF == !saved_upcall_mask */
 	uint32_t esp;
 	uint16_t ss, _pad1;

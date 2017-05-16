@@ -22,7 +22,7 @@
 	.align 2;                              \
 	.type symbol, @function;              \
 	.ent symbol, 0;                      \
-	symbol:.frame $sp, 0, $ra
+symbol:.frame $sp, 0, $ra
 
 /*
  * NESTED - declare nested routine entry point
@@ -32,7 +32,7 @@
 	.align 2;                             \
 	.type symbol, @function;             \
 	.ent symbol, 0;                     \
-	symbol:.frame $sp, framesize, rpc
+symbol:.frame $sp, framesize, rpc
 
 /*
  * END - mark end of function

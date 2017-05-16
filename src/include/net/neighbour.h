@@ -17,20 +17,20 @@
  * Neighbour entity
  */
 struct neighbour {
-	struct dlist_head lnk;             /* lnk */
-	unsigned short ptype;              /* protocol */
-	unsigned char paddr[MAX_ADDR_LEN]; /* protocol address */
-	unsigned char plen;                /* protocol address len  */
-	struct net_device *dev;            /* net device */
-	int incomplete;                    /* is incomplete */
-	unsigned short htype;              /* hw space */
-	unsigned char haddr[MAX_ADDR_LEN]; /* hw address */
-	unsigned char hlen;                /* hw address len */
-	unsigned int flags;                /* flags */
+	struct dlist_head	lnk;           /* lnk */
+	unsigned short		ptype;         /* protocol */
+	unsigned char		paddr[MAX_ADDR_LEN]; /* protocol address */
+	unsigned char		plen;          /* protocol address len  */
+	struct net_device * dev;           /* net device */
+	int					incomplete;    /* is incomplete */
+	unsigned short		htype;         /* hw space */
+	unsigned char		haddr[MAX_ADDR_LEN]; /* hw address */
+	unsigned char		hlen;          /* hw address len */
+	unsigned int		flags;         /* flags */
 	struct sk_buff_head w_queue;       /* waiting queue */
-	unsigned long expire;              /* lifetime */
-	unsigned long resend;              /* resend timeout */
-	unsigned int sent_times;           /* how much times request was sent */
+	unsigned long		expire;        /* lifetime */
+	unsigned long		resend;        /* resend timeout */
+	unsigned int		sent_times;    /* how much times request was sent */
 };
 
 /**

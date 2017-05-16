@@ -40,7 +40,7 @@ javacall_result utf16_to_utf8(const javacall_utf16 *pUtf16,
 	}
 
 	if (0 > (res = javautil_unicode_utf16_to_utf8(pUtf16, utf16Len,
-					*pUtf8, *utf8Len, utf8Len))) {
+			*pUtf8, *utf8Len, utf8Len))) {
 		free(*pUtf8);
 		return res;
 	}

@@ -65,7 +65,7 @@ javacall_result javacall_event_receive(
 	}
 	*outEventLen = read(java_pipe[0], binaryBuffer, actual_size);
 
-	out:
+out:
 	return res;
 }
 

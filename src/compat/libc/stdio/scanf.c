@@ -312,7 +312,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 		}
 	}
 
-	out:
+out:
 	return converted;
 }
 

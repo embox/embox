@@ -57,20 +57,20 @@ EMBOX_UNIT_INIT(greth_init);
 /* GRETH buffer descriptor */
 struct greth_bd {
 	volatile uint32_t status;
-	uint32_t address;
+	uint32_t		  address;
 };
 
 struct greth_regs {
-	uint32_t control;
-	uint32_t status;
-	uint32_t mac_msb;
-	uint32_t mac_lsb;
-	uint32_t mdio;
+	uint32_t		 control;
+	uint32_t		 status;
+	uint32_t		 mac_msb;
+	uint32_t		 mac_lsb;
+	uint32_t		 mdio;
 	struct greth_bd *tx_desc_p;
 	struct greth_bd *rx_desc_p;
-	uint32_t edcl_ip;
-	uint32_t hash_msb;
-	uint32_t hash_lsb;
+	uint32_t		 edcl_ip;
+	uint32_t		 hash_msb;
+	uint32_t		 hash_lsb;
 };
 
 struct greth_dev {
@@ -159,7 +159,7 @@ static int greth_set_mac_address(struct net_device *dev, const void *addr) {
 	}
 	REG_STORE(&regs->mac_msb, dev->dev_addr[0] << 8 | dev->dev_addr[1]);
 	REG_STORE(&regs->mac_lsb, dev->dev_addr[2] << 24 |
-				dev->dev_addr[3] << 16 | dev->dev_addr[4] << 8 | dev->dev_addr[5]);
+			dev->dev_addr[3] << 16 | dev->dev_addr[4] << 8 | dev->dev_addr[5]);
 
 	return ENOERR;
 }

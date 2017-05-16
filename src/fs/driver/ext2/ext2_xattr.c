@@ -141,7 +141,7 @@ static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk,
 	}
 
 	if (0 > (res = ext2_read_sector(node->nas, (char *) xattr_blk, 1,
-					d2h32(dinode->i_facl)))) {
+			d2h32(dinode->i_facl)))) {
 		ext2_buff_free(node->nas, (char *) xattr_blk);
 		return res;
 	}
@@ -345,7 +345,7 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 		xattr_bswap(xattr_blk, xattr_blk, SECTOR_SIZE);
 
 		if ((res = ext2_write_sector(node->nas, (char *) xattr_blk,
-						1, d2h32(dinode->i_facl)))) {
+				1, d2h32(dinode->i_facl)))) {
 			res = -EIO;
 			goto cleanup_out;
 		}
@@ -433,7 +433,7 @@ int ext2fs_setxattr(struct node *node, const char *name, const char *value,
 	ext2_write_sector(node->nas, (char *) xattr_blk, 1,
 			d2h32(dinode->i_facl));
 
-	cleanup_out:
+cleanup_out:
 	if (xattr_blk) {
 		ext2_buff_free(node->nas, (char *) xattr_blk);
 	}

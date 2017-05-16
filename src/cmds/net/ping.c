@@ -42,12 +42,12 @@
 #define MAX_PADLEN       65507
 
 struct ping_info {
-	int count;           /* Stop after sending count ECHO_REQUEST packets. */
-	int padding_size;    /* The number of data bytes to be sent. */
-	int timeout;         /* Time  to wait for a response, in seconds. */
-	int interval;        /* Wait  interval milliseconds between sending each packet. */
-	int pattern;         /* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
-	int ttl;             /* IP Time to Live. */
+	int			   count; /* Stop after sending count ECHO_REQUEST packets. */
+	int			   padding_size; /* The number of data bytes to be sent. */
+	int			   timeout; /* Time  to wait for a response, in seconds. */
+	int			   interval; /* Wait  interval milliseconds between sending each packet. */
+	int			   pattern; /* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
+	int			   ttl;  /* IP Time to Live. */
 	struct in_addr dst;  /* Destination host */
 };
 
@@ -58,7 +58,7 @@ struct packet_in {
 	struct {
 		struct icmphdr hdr;
 		union {
-			struct icmpbody_echo echo_rep;
+			struct icmpbody_echo		 echo_rep;
 			struct icmpbody_dest_unreach dest_unreach;
 		} __attribute__((packed)) body;
 	} __attribute__((packed)) icmp;
@@ -85,8 +85,8 @@ struct ping_stat {
 
 static void print_usage(void) {
 	printf("Usage: ping [-c count] [-i interval]\n"
-		   "            [-p pattern] [-s packetsize] [-t ttl]\n"
-		   "            [-I interface] [-W timeout] destination\n");
+			"            [-p pattern] [-s packetsize] [-t ttl]\n"
+			"            [-I interface] [-W timeout] destination\n");
 }
 
 static void ping_report_stat(struct ping_info *pinfo, struct ping_stat *stat) {
@@ -268,7 +268,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name, struct
 	}
 
 	ret = stat.cnt_request - stat.cnt_replies;
-	out:
+out:
 	free(tx_pack);
 	free(rx_pack);
 	close(sk);

@@ -336,7 +336,7 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 
 	return 0;
 
-	out_nomem:
+out_nomem:
 	virtio_priv_fini(dev_priv, dev);
 	return -ENOMEM;
 }

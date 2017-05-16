@@ -42,7 +42,7 @@ static int uart_attach_irq(struct uart *uart) {
 	}
 
 	return irq_attach(uart->irq_num, uart->irq_handler, 0, uart,
-			uart->dev_name);
+				   uart->dev_name);
 }
 
 static int uart_detach_irq(struct uart *uart) {

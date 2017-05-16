@@ -36,7 +36,7 @@
 
 struct ntfs_fs_info {
 	struct ntfs_device *ntfs_dev;
-	ntfs_volume *ntfs_vol;
+	ntfs_volume *		ntfs_vol;
 };
 
 struct ntfs_file_info {
@@ -45,7 +45,7 @@ struct ntfs_file_info {
 
 struct ntfs_desc_info {
 	ntfs_inode *ni;
-	ntfs_attr *attr;
+	ntfs_attr * attr;
 };
 
 /* ntfs filesystem description pool */
@@ -328,7 +328,7 @@ static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode 
 	ntfs_inode_close(ni);
 	return 0;
 
-	error:
+error:
 	if (close_on_err) {
 		ntfs_inode_close(ni);
 	}
@@ -455,7 +455,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 
 	return 0;
 
-	error:
+error:
 	embox_ntfs_umount(dir);
 
 	return -rc;
@@ -558,7 +558,7 @@ static size_t ntfs_write(struct file_desc *file_desc, void *buf, size_t size) {
 
 struct ntfs_bdev_desc {
 	struct block_dev *dev;
-	size_t pos;
+	size_t			  pos;
 };
 
 /**
@@ -606,7 +606,7 @@ static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 
 	NDevSetOpen(dev);
 	return 0;
-	err_out:
+err_out:
 	free(dev->d_private);
 	dev->d_private = NULL;
 	errno = err;

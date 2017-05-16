@@ -387,7 +387,7 @@ static void fbcon_diag_putc(const struct diag *diag, char ch) {
 }
 
 DIAG_OPS_DECLARE(
-		.putc = fbcon_diag_putc,
+	.putc = fbcon_diag_putc,
 );
 
 static int fbcon_init(void) {

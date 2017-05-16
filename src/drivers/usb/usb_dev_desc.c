@@ -119,7 +119,7 @@ int usb_request_cb(struct usb_dev_desc *ddesc, int endp_n, usb_token_t token,
 
 struct usb_req_data {
 	struct thread *thr;
-	volatile int res;
+	volatile int   res;
 };
 
 static void usb_req_notify(struct usb_request *req, void *arg) {

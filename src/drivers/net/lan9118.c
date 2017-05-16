@@ -249,7 +249,7 @@ static void lan9118_rx(struct net_device *dev) {
 		assert(rx_status != 0);
 
 		packet_len = ((rx_status & 0x3FFF0000) >> 16);
-		repeat:
+repeat:
 		packet_len -= 4; /* checksum */
 
 		if (rx_status & _LAN9118_RX_STS_ES) {
@@ -352,9 +352,9 @@ static int lan9118_open(struct net_device *dev) {
 
 #if LAN9118_IRQ_TYPE == LAN9118_IRQ_GPIO
 	gpio_pin_irq_attach(gpio_by_num(LAN9118_PORT), 1 << LAN9118_PIN,
-				lan9118_irq_handler,
-				GPIO_MODE_INT_MODE_LEVEL1,
-				dev);
+			lan9118_irq_handler,
+			GPIO_MODE_INT_MODE_LEVEL1,
+			dev);
 #else
 	irq_attach(LAN9118_IRQ_NR, lan9118_irq_handler, 0, dev, "lan9118 INTERRUPT");
 #endif

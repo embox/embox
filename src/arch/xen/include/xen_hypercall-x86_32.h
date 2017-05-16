@@ -53,7 +53,7 @@ typedef struct {
 #define __pte(x) ((pte_t) { (x) })
 #else
 #define __pte(x) ({ unsigned long long _x = (x);        \
-					((pte_t) {(unsigned long)(_x), (unsigned long)(_x>>32)}); })
+		((pte_t) {(unsigned long)(_x), (unsigned long)(_x>>32)}); })
 #endif
 extern char hypercall_page[4096];
 
@@ -171,8 +171,8 @@ HYPERVISOR_set_callbacks(
 		unsigned long failsafe_selector, unsigned long failsafe_address)
 {
 	return _hypercall4(int, set_callbacks,
-			event_selector, event_address,
-			failsafe_selector, failsafe_address);
+				   event_selector, event_address,
+				   failsafe_selector, failsafe_address);
 }
 
 static inline int
@@ -242,7 +242,7 @@ HYPERVISOR_update_va_mapping(
 	pte_hi = new_val.pte_high;
 #endif
 	return _hypercall4(int, update_va_mapping, va,
-			new_val.pte_low, pte_hi, flags);
+				   new_val.pte_low, pte_hi, flags);
 }
 
 static inline int
@@ -289,7 +289,7 @@ HYPERVISOR_update_va_mapping_otherdomain(
 	pte_hi = new_val.pte_high;
 #endif
 	return _hypercall5(int, update_va_mapping_otherdomain, va,
-			new_val.pte_low, pte_hi, flags, domid);
+				   new_val.pte_low, pte_hi, flags, domid);
 }
 
 static inline int
@@ -311,7 +311,7 @@ HYPERVISOR_suspend(
 		unsigned long srec)
 {
 	return _hypercall3(int, sched_op, SCHEDOP_shutdown,
-			SHUTDOWN_suspend, srec);
+				   SHUTDOWN_suspend, srec);
 }
 
 static inline int

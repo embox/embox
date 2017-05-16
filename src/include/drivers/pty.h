@@ -15,7 +15,7 @@
 #include <drivers/tty.h>
 
 struct pty {
-	struct tty tty; /* slave side */
+	struct tty	  tty; /* slave side */
 	struct idesc *master;
 };
 

@@ -93,8 +93,8 @@ static int raspi_diag_hasrx(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-		.init = raspi_diag_setup,
-		.putc = raspi_diag_putc,
-		.getc = raspi_diag_getc,
-		.kbhit = raspi_diag_hasrx,
+	.init = raspi_diag_setup,
+	.putc = raspi_diag_putc,
+	.getc = raspi_diag_getc,
+	.kbhit = raspi_diag_hasrx,
 );

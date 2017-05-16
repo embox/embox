@@ -24,8 +24,8 @@
 
 static void print_usage(void) {
 	printf("Usage:\n"
-		   "\tcp [-h] [-r|-R] SOURCE DEST\n"
-		   "\tcp [-h] [-r|-R] SOURCE DIR\n");
+			"\tcp [-h] [-r|-R] SOURCE DEST\n"
+			"\tcp [-h] [-r|-R] SOURCE DIR\n");
 }
 
 static char cp_g_src_path[PATH_MAX], cp_g_dst_path[PATH_MAX];

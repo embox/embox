@@ -41,14 +41,14 @@
 
 typedef struct {
 	unsigned long l;
-	unsigned int owner;
+	unsigned int  owner;
 	__SPIN_CONTENTION_FIELD
 } spinlock_t;
 
 /* XXX use 'field : value' instead of '.field = value' syntax because g++ does not support
  * the second one, but supports the first one in the trivial order --Alexander */
 #define SPIN_INIT(state) \
-	{ l: state, owner: -1u, __SPIN_CONTENTION_FIELD_INIT }
+	{ l:state, owner:-1u, __SPIN_CONTENTION_FIELD_INIT }
 
 static inline void spin_init(spinlock_t *lock, unsigned int state) {
 	lock->l = state;
@@ -243,9 +243,9 @@ static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
  */
 #define spin_protected_if(lock, cond) \
 	__spin_protected_if(lock, cond, \
-		MACRO_GUARD(__done), \
-		MACRO_GUARD(__lock), \
-		MACRO_GUARD(__cond))
+			MACRO_GUARD(__done), \
+			MACRO_GUARD(__lock), \
+			MACRO_GUARD(__cond))
 
 #define __spin_protected_if(lock, cond, __done, __lock, __cond) \
 	for (int __done = 0; !__done; ) \
@@ -257,14 +257,14 @@ static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
 
 #define SPIN_PROTECTED_DO(lock, expr) \
 	__lang_surround(expr,             \
-		spinlock_t *__lock = (lock);  \
-		spin_lock(__lock),            \
-		spin_unlock(__lock))
+			spinlock_t *__lock = (lock);  \
+			spin_lock(__lock),            \
+			spin_unlock(__lock))
 
 #define SPIN_IPL_PROTECTED_DO(lock, expr) \
 	__lang_surround(expr,                    \
-		spinlock_t *__lock = (lock);         \
-		ipl_t __ipl = spin_lock_ipl(__lock), \
-		spin_unlock_ipl(__lock, __ipl))
+			spinlock_t *__lock = (lock);         \
+			ipl_t __ipl = spin_lock_ipl(__lock), \
+			spin_unlock_ipl(__lock, __ipl))
 
 #endif /* !KERNEL_SPINLOCK_H_ */

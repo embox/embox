@@ -70,10 +70,10 @@ struct xenfb_resize
 
 union xenfb_out_event
 {
-	uint8_t type;
+	uint8_t				type;
 	struct xenfb_update update;
 	struct xenfb_resize resize;
-	char pad[XENFB_OUT_EVENT_SIZE];
+	char				pad[XENFB_OUT_EVENT_SIZE];
 };
 
 /* In events (backend -> frontend) */
@@ -96,7 +96,7 @@ union xenfb_out_event
 
 struct xenfb_refresh_period
 {
-	uint8_t type;    /* XENFB_TYPE_UPDATE_PERIOD */
+	uint8_t	 type;   /* XENFB_TYPE_UPDATE_PERIOD */
 	uint32_t period; /* period of refresh, in ms,
 	                  * XENFB_NO_REFRESH if no refresh is needed */
 };
@@ -105,9 +105,9 @@ struct xenfb_refresh_period
 
 union xenfb_in_event
 {
-	uint8_t type;
+	uint8_t						type;
 	struct xenfb_refresh_period refresh_period;
-	char pad[XENFB_IN_EVENT_SIZE];
+	char						pad[XENFB_IN_EVENT_SIZE];
 };
 
 /* shared page */
@@ -133,11 +133,11 @@ struct xenfb_page
 	uint32_t in_cons, in_prod;
 	uint32_t out_cons, out_prod;
 
-	int32_t width;          /* the width of the framebuffer (in pixels) */
-	int32_t height;         /* the height of the framebuffer (in pixels) */
+	int32_t	 width;         /* the width of the framebuffer (in pixels) */
+	int32_t	 height;        /* the height of the framebuffer (in pixels) */
 	uint32_t line_length;   /* the length of a row of pixels (in bytes) */
 	uint32_t mem_length;    /* the length of the framebuffer (in bytes) */
-	uint8_t depth;          /* the depth of a pixel (in bits) */
+	uint8_t	 depth;         /* the depth of a pixel (in bits) */
 
 	/*
 	 * Framebuffer page directory

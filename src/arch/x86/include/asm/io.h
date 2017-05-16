@@ -94,7 +94,7 @@ static inline uint32_t in32(unsigned long port) {
 /* so would easier */
 #define __INS(suffix) \
 	static inline void ins ## suffix(unsigned short port, void *addr, \
-		unsigned long count) {                  \
+			unsigned long count) {                  \
 		__asm__ __volatile__ (                          \
 			"cld ; rep ; ins" #suffix               \
 			: "=D" (addr), "=c" (count)             \
@@ -104,7 +104,7 @@ static inline uint32_t in32(unsigned long port) {
 
 #define __OUTS(suffix) \
 	static inline void outs ## suffix(unsigned short port, const void *addr, \
-		unsigned long count) {                \
+			unsigned long count) {                \
 		__asm__ __volatile__ (                        \
 			"cld ; rep ; outs" #suffix            \
 			: "=S" (addr), "=c" (count)           \

@@ -88,9 +88,9 @@ static int gic_init(void) {
 
 	tmp = REG_LOAD(GICD_TYPER);
 	printk("\n"
-		   "\t\tNumber of SPI: %d\n"
-		   "\t\tNumber of supported CPU interfaces: %d\n"
-		   "\t\tSecutity Extension %s implemented\n",
+			"\t\tNumber of SPI: %d\n"
+			"\t\tNumber of supported CPU interfaces: %d\n"
+			"\t\tSecutity Extension %s implemented\n",
 			GICD_TYPER_ITLINES(tmp) * 32,
 			1 + GICD_TYPER_CPUNR(tmp),
 			GICD_TYPER_SECEXT(tmp) ? "" : "not ");

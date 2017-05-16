@@ -74,7 +74,7 @@ struct xen_memory_reservation {
 	XEN_GUEST_HANDLE(xen_pfn_t) extent_start;
 
 	/* Number of extents, and size/alignment of each (2^extent_order pages). */
-	xen_ulong_t nr_extents;
+	xen_ulong_t	 nr_extents;
 	unsigned int extent_order;
 
 #if __XEN_INTERFACE_VERSION__ >= 0x00030209
@@ -250,12 +250,12 @@ DEFINE_XEN_GUEST_HANDLE(xen_add_to_physmap_t);
 struct xen_add_to_physmap_batch {
 	/* IN */
 	/* Which domain to change the mapping for. */
-	domid_t domid;
+	domid_t	 domid;
 	uint16_t space; /* => enum phys_map_space */
 
 	/* Number of pages to go through */
 	uint16_t size;
-	domid_t foreign_domid; /* IFF gmfn_foreign */
+	domid_t	 foreign_domid; /* IFF gmfn_foreign */
 
 	/* Indexes into space being mapped. */
 	XEN_GUEST_HANDLE(xen_ulong_t) idxs;
@@ -334,7 +334,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_memory_map_t);
  */
 #define XENMEM_set_memory_map       13
 struct xen_foreign_memory_map {
-	domid_t domid;
+	domid_t				  domid;
 	struct xen_memory_map map;
 };
 typedef struct xen_foreign_memory_map xen_foreign_memory_map_t;
@@ -469,7 +469,7 @@ struct xen_mem_sharing_op {
 		struct mem_sharing_op_nominate {  /* OP_NOMINATE_xxx           */
 			union {
 				uint64_aligned_t gfn;     /* IN: gfn to nominate       */
-				uint32_t grant_ref;       /* IN: grant ref to nominate */
+				uint32_t		 grant_ref; /* IN: grant ref to nominate */
 			} u;
 			uint64_aligned_t handle;      /* OUT: the handle           */
 		} nominate;
@@ -478,13 +478,13 @@ struct xen_mem_sharing_op {
 			uint64_aligned_t source_handle; /* IN: handle to the source page */
 			uint64_aligned_t client_gfn;    /* IN: the client gfn */
 			uint64_aligned_t client_handle; /* IN: handle to the client page */
-			domid_t client_domain;  /* IN: the client domain id */
+			domid_t			 client_domain; /* IN: the client domain id */
 		} share;
 		struct mem_sharing_op_debug {     /* OP_DEBUG_xxx */
 			union {
 				uint64_aligned_t gfn;      /* IN: gfn to debug          */
 				uint64_aligned_t mfn;      /* IN: mfn to debug          */
-				uint32_t gref;     /* IN: gref to debug         */
+				uint32_t		 gref; /* IN: gref to debug         */
 			} u;
 		} debug;
 	} u;
@@ -530,7 +530,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_mem_sharing_op_t);
 
 /* vNUMA node memory ranges */
 struct xen_vmemrange {
-	uint64_t start, end;
+	uint64_t	 start, end;
 	unsigned int flags;
 	unsigned int nid;
 };
@@ -548,7 +548,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_vmemrange_t);
  */
 struct xen_vnuma_topology_info {
 	/* IN */
-	domid_t domid;
+	domid_t	 domid;
 	uint16_t pad;
 	/* IN/OUT */
 	unsigned int nr_vnodes;

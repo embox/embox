@@ -26,8 +26,8 @@ typedef int (*unit_op_t)(void);
 
 struct unit {
 	struct mod mod;
-	unit_op_t init;
-	unit_op_t fini;
+	unit_op_t  init;
+	unit_op_t  fini;
 };
 
 extern const struct mod_ops __unit_mod_ops;

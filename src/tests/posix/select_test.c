@@ -114,7 +114,7 @@ TEST_CASE("descriptor becomes ready to write after a time") {
 }
 
 TEST_CASE("some of descriptors are ready when select() is "
-		  "called (zero timeout)") {
+		"called (zero timeout)") {
 	fd_set read_fds;
 	fd_set write_fds;
 	struct timeval timeout;
@@ -148,7 +148,7 @@ TEST_CASE("some of descriptors are ready when select() is "
 }
 
 TEST_CASE("some of descriptors are ready when select() "
-		  "is called (no timeout)") {
+		"is called (no timeout)") {
 	fd_set read_fds;
 	fd_set write_fds;
 	int ret;

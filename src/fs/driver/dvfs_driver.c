@@ -18,7 +18,7 @@
 #include <util/member.h>
 
 struct dvfs_driver_head {
-	struct dlist_head link;
+	struct dlist_head	   link;
 	struct dumb_fs_driver *drv;
 };
 

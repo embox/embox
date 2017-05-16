@@ -154,7 +154,7 @@ uint16_t jffs2_compress(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 		printk(KERN_ERR "JFFS2: unknow compression mode.\n");
 		break;
 	}
-	out:
+out:
 	if (ret == JFFS2_COMPR_NONE) {
 		*cpage_out = data_in;
 		*datalen = *cdatalen;
@@ -239,7 +239,7 @@ int jffs2_register_compressor(struct jffs2_compressor *comp) {
 		}
 	}
 	list_add_tail(&comp->list, &jffs2_compressor_list);
-	out:
+out:
 	D2(list_for_each_entry(this, &jffs2_compressor_list, list) {
 				printk( "Compressor \"%s\", prio %d\n", this->name, this->priority);
 			})
@@ -383,7 +383,7 @@ int jffs2_set_compressor_priority(const char *name, int priority) {
 	spin_unlock(&jffs2_compressor_list_lock);
 	printk(KERN_WARNING "JFFS2: compressor %s not found.\n",name);
 	return 1;
-	reinsert:
+reinsert:
 	/* list is sorted in the order of priority, so if
 	 * we change it we have to reinsert it into the
 	 * good place

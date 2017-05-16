@@ -143,15 +143,15 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 	if (len < je32_to_cpu(ri->dsize)) {
 		memcpy(buf, decomprbuf + ofs, len);
 	}
-	out_decomprbuf:
+out_decomprbuf:
 	if (decomprbuf != buf && decomprbuf != readbuf) {
 		kfree(decomprbuf);
 	}
-	out_readbuf:
+out_readbuf:
 	if (readbuf != buf) {
 		kfree(readbuf);
 	}
-	out_ri:
+out_ri:
 	jffs2_free_raw_inode(ri);
 
 	return ret;

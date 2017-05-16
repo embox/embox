@@ -23,24 +23,24 @@
  */
 typedef struct amba_registry_vendor_info {
 	const uint8_t ven_id;
-	const char      *ven_name;
+	const char *  ven_name;
 } amba_registry_vendor_info_t;
 
 /**
  * Information describing device.
  */
 typedef struct amba_registry_device_info {
-	const uint8_t ven_id;
+	const uint8_t  ven_id;
 	const uint16_t dev_id;
-	const char      *dev_name;
+	const char *   dev_name;
 } amba_registry_device_info_t;
 
 /**
  * Device entry in AMBA registry.
  */
 typedef struct amba_registry_device_entry {
-	struct list_head            *next;
-	struct list_head            *prev;
+	struct list_head *			 next;
+	struct list_head *			 prev;
 	amba_registry_device_info_t *dev_info;
 } amba_registry_device_entry_t;
 
@@ -49,10 +49,10 @@ typedef struct amba_registry_device_entry {
  * list of device belong to this vendors.
  */
 typedef struct amba_registry_vendor_entry {
-	struct list_head            *next;
-	struct list_head            *prev;
+	struct list_head *			 next;
+	struct list_head *			 prev;
 	amba_registry_vendor_info_t *ven_info;
-	struct list_head dev_list;
+	struct list_head			 dev_list;
 } amba_registry_vendor_entry_t;
 
 /**

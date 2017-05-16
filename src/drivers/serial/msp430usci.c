@@ -95,8 +95,8 @@ static int msp430usci_diag_kbhit(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-		.init = msp430usci_diag_init,
-		.putc = msp430usci_diag_putc,
-		.getc = msp430usci_diag_getc,
-		.kbhit = msp430usci_diag_kbhit,
+	.init = msp430usci_diag_init,
+	.putc = msp430usci_diag_putc,
+	.getc = msp430usci_diag_getc,
+	.kbhit = msp430usci_diag_kbhit,
 );

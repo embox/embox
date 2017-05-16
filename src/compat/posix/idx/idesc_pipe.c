@@ -46,8 +46,8 @@ struct idesc_pipe {
 
 struct pipe {
 	struct ring_buff *buff;         /**< Buffer to store data */
-	size_t buf_size;                /**< Size of buffer. May be changed by pipe_set_buf_size() */
-	struct mutex mutex;             /**< Global pipe mutex */
+	size_t			  buf_size;     /**< Size of buffer. May be changed by pipe_set_buf_size() */
+	struct mutex	  mutex;        /**< Global pipe mutex */
 
 	struct idesc_pipe read_desc;    /**< Reading end of pipe */
 	struct idesc_pipe write_desc;   /**< Writing end of pipe */
@@ -104,9 +104,9 @@ static int pipe_wait(struct idesc *idesc, struct pipe *pipe, int flags) {
 	struct idesc_wait_link wl;
 
 	return IDESC_WAIT_LOCKED(
-			mutex_unlock(&pipe->mutex),
-			idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
-			mutex_lock(&pipe->mutex));
+		mutex_unlock(&pipe->mutex),
+		idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
+		mutex_lock(&pipe->mutex));
 }
 
 static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
@@ -254,7 +254,7 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 		res += 0; /*TODO Where is errors counter */
 	}
 
-	out:
+out:
 	mutex_unlock(&pipe->mutex);
 
 	return res;
@@ -266,7 +266,7 @@ static const struct idesc_ops idesc_pipe_ops = {
 	.close = pipe_close,
 	.ioctl = pipe_fcntl,
 	.status = idesc_pipe_status
-	        /*.fcntl = pipe_fcntl,*/
+	    /*.fcntl = pipe_fcntl,*/
 };
 
 static int idesc_pipe_init(struct idesc_pipe *pdesc, struct pipe *pipe,
@@ -346,7 +346,7 @@ int pipe2(int pipefd[2], int flags) {
 
 	return 0;
 
-	out_err:
+out_err:
 	if (pipefd[1] >= 0) {
 		idesc_table_del(it, pipefd[1]);
 	}

@@ -119,12 +119,12 @@ EMBOX_UNIT_INIT(r6040_init);
  */
 typedef struct eth_desc {
 	volatile uint16_t status;
-	uint16_t dlen;
-	unsigned char *buf;
-	struct eth_desc *DNX;
-	unsigned short HIDX;
-	unsigned short Reserved1;
-	unsigned short Reserved2;
+	uint16_t		  dlen;
+	unsigned char *	  buf;
+	struct eth_desc * DNX;
+	unsigned short	  HIDX;
+	unsigned short	  Reserved1;
+	unsigned short	  Reserved2;
 	/* Extra info, used by driver */
 	unsigned short dlen_orig;
 } __attribute__((aligned(32))) eth_desc_t;

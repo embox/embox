@@ -126,7 +126,7 @@ struct vcpu_register_runstate_memory_area {
 	union {
 		XEN_GUEST_HANDLE(vcpu_runstate_info_t) h;
 		struct vcpu_runstate_info *v;
-		uint64_t p;
+		uint64_t				   p;
 	} addr;
 };
 typedef struct vcpu_register_runstate_memory_area vcpu_register_runstate_memory_area_t;
@@ -221,7 +221,7 @@ struct vcpu_register_time_memory_area {
 	union {
 		XEN_GUEST_HANDLE(vcpu_time_info_t) h;
 		struct vcpu_time_info *v;
-		uint64_t p;
+		uint64_t			   p;
 	} addr;
 };
 typedef struct vcpu_register_time_memory_area vcpu_register_time_memory_area_t;

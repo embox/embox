@@ -40,7 +40,7 @@ enum xattr_cmd_op {
 
 static void print_usage(void) {
 	printf("Usage: xattr [-cdpwh] [-lx] [attr_name] [attr_value] file "
-		   "[file ...]\n");
+			"[file ...]\n");
 }
 
 static int xattr_print_value(const char *path, const char *name) {
@@ -153,7 +153,7 @@ static int xattr_do_iter(const char *path, int (*xattr_iter_fn)(const char *path
 	}
 
 	rc = 0;
-	free_list:
+free_list:
 	phymem_free(list, page_n);
 	return rc;
 }

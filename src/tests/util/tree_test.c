@@ -14,7 +14,7 @@
 EMBOX_TEST_SUITE("util/tree test");
 
 struct int_tree {
-	int data;
+	int				 data;
 	struct tree_link link;
 };
 

@@ -53,9 +53,9 @@ extern size_t ip_data_length(const struct iphdr *iph);
 struct ip_pseudohdr {
 	in_addr_t src_ip;
 	in_addr_t dst_ip;
-	uint8_t zero;
-	uint8_t protocol;
-	uint16_t data_len;
+	uint8_t	  zero;
+	uint8_t	  protocol;
+	uint16_t  data_len;
 } __attribute__((packed));
 
 /**

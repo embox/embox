@@ -233,7 +233,7 @@ int pthread_setschedparam(pthread_t thread, int policy,
 		const struct sched_param *param) {
 	assertf((policy != SCHED_FIFO && policy != SCHED_RR) ||
 			param->sched_priority >= 200, "In current realization you must "
-										  "use SCHED_FIFO and SCHED_RR only with priority more or equal 200");
+			"use SCHED_FIFO and SCHED_RR only with priority more or equal 200");
 
 	thread->policy = policy;
 	return schedee_priority_set(&thread->schedee, param->sched_priority);

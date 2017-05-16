@@ -49,10 +49,10 @@ int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
 			| USB_DEV_REQ_TYPE_DEV,
 			USB_DEV_REQ_GET_DESC,
 			USB_DESC_TYPE_CONFIG << 8,
-				dev->c_config,
-				sizeof(struct usb_desc_configuration) + sizeof(struct usb_desc_interface) +
+			dev->c_config,
+			sizeof(struct usb_desc_configuration) + sizeof(struct usb_desc_interface) +
 			(dev->endp_n - 1) * sizeof(struct usb_desc_endpoint),
-				dev->getconf_data);
+			dev->getconf_data);
 
 	return 0;
 }
@@ -93,8 +93,8 @@ static void usb_class_fallback_get_conf_hnd(struct usb_request *req, void *arg) 
 				!= USB_DESC_TYPE_ENDPOINT) {
 
 			printk("usb_core: vendor=%04x product=%04x "
-				   "seems cannot be handled by generic "
-				   "class; disabling\n",
+					"seems cannot be handled by generic "
+					"class; disabling\n",
 					dev->dev_desc.id_vendor,
 					dev->dev_desc.id_product);
 

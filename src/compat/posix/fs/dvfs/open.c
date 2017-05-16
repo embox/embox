@@ -19,7 +19,7 @@ int open(const char *path, int __oflag, ...) {
 	struct idesc_table *it;
 	int res;
 	struct lookup lookup;
-	struct inode  *i_no;
+	struct inode *i_no;
 
 	dvfs_lookup(path, &lookup);
 

@@ -34,12 +34,12 @@
  */
 struct dgram_buf {
 	struct sk_buff_head fragments;
-	struct dlist_head next_buf;   /* linked list pointers */
+	struct dlist_head	next_buf; /* linked list pointers */
 	struct buf_id {
 		in_addr_t saddr;
 		in_addr_t daddr;
-		uint16_t id;
-		uint8_t protocol;
+		uint16_t  id;
+		uint8_t	  protocol;
 	} buf_id;
 	int is_last_frag_received;
 	int meat;
@@ -240,7 +240,7 @@ static struct sk_buff *ip_frag_build(const struct sk_buff *big_skb, int frag_off
 	memcpy(frag->mac.raw + len, big_skb->mac.raw + frag_offset, frag_size - len);
 	frag->nh.raw = frag->mac.raw + big_skb->dev->hdr_len;
 	frag->nh.iph->frag_off = htons(
-			(((frag_offset - len) >> 3) /* data offset / 8 */) | mf_flag);
+		(((frag_offset - len) >> 3) /* data offset / 8 */) | mf_flag);
 	frag->nh.iph->tot_len = htons(frag_size - big_skb->dev->hdr_len);
 
 	return frag;

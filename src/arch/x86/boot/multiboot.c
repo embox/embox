@@ -89,7 +89,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 		aout_symbol_table_t *aout_sym = &(mbi->u.aout_sym);
 
 		printk("aout_symbol_table: tabsize = 0x%0x, "
-			   "strsize = 0x%x, addr = 0x%x\n",
+				"strsize = 0x%x, addr = 0x%x\n",
 				(unsigned) aout_sym->tabsize,
 				(unsigned) aout_sym->strsize,
 				(unsigned) aout_sym->addr);
@@ -100,7 +100,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 		elf_section_header_table_t *elf_sec = &(mbi->u.elf_sec);
 
 		printk("elf_sec: num = %u, size = 0x%x,"
-			   " addr = 0x%x, shndx = 0x%x\n",
+				" addr = 0x%x, shndx = 0x%x\n",
 				(unsigned) elf_sec->num, (unsigned) elf_sec->size,
 				(unsigned) elf_sec->addr, (unsigned) elf_sec->shndx);
 	}
@@ -116,7 +116,7 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 				mmap = (memory_map_t *)((unsigned long) mmap
 				+ mmap->size + sizeof(mmap->size))) {
 			printk(" size = 0x%x, base_addr = 0x%x%x,"
-				   " length = 0x%x%x, type = 0x%x\n",
+					" length = 0x%x%x, type = 0x%x\n",
 					(unsigned) mmap->size,
 					(unsigned) mmap->base_addr_high,
 					(unsigned) mmap->base_addr_low,

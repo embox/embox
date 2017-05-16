@@ -24,8 +24,8 @@ typedef void (*shell_run_ft)(void);
 typedef int (*shell_exec_ft)(const char *line);
 
 struct shell {
-	const char *name;
-	shell_run_ft run;
+	const char *  name;
+	shell_run_ft  run;
 	shell_exec_ft exec;
 };
 
