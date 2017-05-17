@@ -93,6 +93,20 @@ static inline void cp15_set_nsacr(uint32_t val) {
 	isb();
 }
 
+static inline uint32_t cp15_get_mvbar(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %0, c12, c0, 1    @ get MVBAR" : "=r" (val) : : "cc");
+	return val;
+}
+
+static inline uint32_t cp15_get_vbar(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %0, c12, c0, 0    @ get VBAR" : "=r" (val) : : "cc");
+	return val;
+}
+
 #endif
 
 /**
