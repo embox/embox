@@ -10,42 +10,45 @@
 
 #define BIT(n)         (1 << n)
 
-#define L2X0_CACHE_ID                    0x000
-#define L2X0_CACHE_TYPE                  0x004
-#define L2X0_CTRL                        0x100
-#define L2X0_AUX_CTRL                    0x104
-#define L310_TAG_LATENCY_CTRL            0x108
-#define L310_DATA_LATENCY_CTRL           0x10C
-#define L2X0_EVENT_CNT_CTRL              0x200
-#define L2X0_EVENT_CNT1_CFG              0x204
-#define L2X0_EVENT_CNT0_CFG              0x208
-#define L2X0_EVENT_CNT1_VAL              0x20C
-#define L2X0_EVENT_CNT0_VAL              0x210
-#define L2X0_INTR_MASK                   0x214
-#define L2X0_MASKED_INTR_STAT            0x218
-#define L2X0_RAW_INTR_STAT               0x21C
-#define L2X0_INTR_CLEAR                  0x220
-#define L2X0_CACHE_SYNC                  0x730
-#define L2X0_DUMMY_REG                   0x740
-#define L2X0_INV_LINE_PA                 0x770
-#define L2X0_INV_WAY                     0x77C
-#define L2X0_CLEAN_LINE_PA               0x7B0
-#define L2X0_CLEAN_LINE_IDX              0x7B8
-#define L2X0_CLEAN_WAY                   0x7BC
-#define L2X0_CLEAN_INV_LINE_PA           0x7F0
-#define L2X0_CLEAN_INV_LINE_IDX          0x7F8
-#define L2X0_CLEAN_INV_WAY               0x7FC
-#define L2X0_LOCKDOWN_WAY_D_BASE         0x900
-#define L2X0_LOCKDOWN_WAY_I_BASE         0x904
-#define L2X0_LOCKDOWN_STRIDE             0x08
-#define L310_ADDR_FILTER_START           0xC00
-#define L310_ADDR_FILTER_END             0xC04
-#define L2X0_TEST_OPERATION              0xF00
-#define L2X0_LINE_DATA                   0xF10
-#define L2X0_LINE_TAG                    0xF30
-#define L2X0_DEBUG_CTRL                  0xF40
-#define L310_PREFETCH_CTRL               0xF60
-#define L310_POWER_CTRL                  0xF80
+#define L2X0_CACHE_ID                    (PL310_BASE + 0x000)
+#define L2X0_CACHE_TYPE                  (PL310_BASE + 0x004)
+#define L2X0_CTRL                        (PL310_BASE + 0x100)
+#define L2X0_AUX_CTRL                    (PL310_BASE + 0x104)
+# define L2X0_AUX_INSTR_PREFETCH         (1 << 29)
+# define L2X0_AUX_DATA_PREFETCH          (1 << 28)
+#define L310_TAG_LATENCY_CTRL            (PL310_BASE + 0x108)
+#define L310_DATA_LATENCY_CTRL           (PL310_BASE + 0x10C)
+#define L2X0_EVENT_CNT_CTRL              (PL310_BASE + 0x200)
+#define L2X0_EVENT_CNT1_CFG              (PL310_BASE + 0x204)
+#define L2X0_EVENT_CNT0_CFG              (PL310_BASE + 0x208)
+#define L2X0_EVENT_CNT1_VAL              (PL310_BASE + 0x20C)
+#define L2X0_EVENT_CNT0_VAL              (PL310_BASE + 0x210)
+#define L2X0_INTR_MASK                   (PL310_BASE + 0x214)
+#define L2X0_MASKED_INTR_STAT            (PL310_BASE + 0x218)
+#define L2X0_RAW_INTR_STAT               (PL310_BASE + 0x21C)
+#define L2X0_INTR_CLEAR                  (PL310_BASE + 0x220)
+#define L2X0_CACHE_SYNC                  (PL310_BASE + 0x730)
+#define L2X0_DUMMY_REG                   (PL310_BASE + 0x740)
+#define L2X0_INV_LINE_PA                 (PL310_BASE + 0x770)
+#define L2X0_INV_WAY                     (PL310_BASE + 0x77C)
+#define L2X0_CLEAN_LINE_PA               (PL310_BASE + 0x7B0)
+#define L2X0_CLEAN_LINE_IDX              (PL310_BASE + 0x7B8)
+#define L2X0_CLEAN_WAY                   (PL310_BASE + 0x7BC)
+#define L2X0_CLEAN_INV_LINE_PA           (PL310_BASE + 0x7F0)
+#define L2X0_CLEAN_INV_LINE_IDX          (PL310_BASE + 0x7F8)
+#define L2X0_CLEAN_INV_WAY               (PL310_BASE + 0x7FC)
+#define L2X0_LOCKDOWN_WAY_D_BASE         (PL310_BASE + 0x900)
+#define L2X0_LOCKDOWN_WAY_I_BASE         (PL310_BASE + 0x904)
+#define L2X0_LOCKDOWN_STRIDE             (PL310_BASE + 0x908)
+#define L310_ADDR_FILTER_START           (PL310_BASE + 0xC00)
+#define L310_ADDR_FILTER_END             (PL310_BASE + 0xC04)
+#define L2X0_TEST_OPERATION              (PL310_BASE + 0xF00)
+#define L2X0_LINE_DATA                   (PL310_BASE + 0xF10)
+#define L2X0_LINE_TAG                    (PL310_BASE + 0xF30)
+#define L2X0_DEBUG_CTRL                  (PL310_BASE + 0xF40)
+#define L310_PREFETCH_CTRL               (PL310_BASE + 0xF60)
+#define L310_POWER_CTRL                  (PL310_BASE + 0xF80)
+#define L70_INVAL	                 (PL310_BASE + 0xFFC)
 # define   L310_DYNAMIC_CLK_GATING_EN    (1 << 1)
 # define   L310_STNDBY_MODE_EN           (1 << 0)
 
