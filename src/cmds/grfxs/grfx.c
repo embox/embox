@@ -1,28 +1,27 @@
-#include <stdio.h>
+/* This file provides simple example of
+work nuklear on OS Embox */
 
 /* includes for nuklear*/
+#include <stdio.h>
 #define NK_PRIVATE
 #define NK_API
 #define NK_INTERN static
-#define NK_INCLUDE_FIXED_TYPES
-#define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_DEFAULT_ALLOCATOR
-#define NK_INCLUDE_VERTEX_BUFFER_OUTPUT
 #define NK_INCLUDE_FONT_BAKING
 #define NK_INCLUDE_DEFAULT_FONT
 
 #define NK_IMPLEMENTATION
 #include "nuklear.h"
 
-/* includes from fbcon */
-#include <drivers/console/mpx.h>
-#include <drivers/video/fb.h>
-//#include <drivers/input/input_dev.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+#include "nk_embox_render.h"
 
 /* callbacks */
 static void inpevent(struct vc *vc, struct input_event *ev)
 {
-    printf("\nWhat are doing with graphic window??	\n");
+    //printf("\nWhat are doing with graphic window??	\n");
 }
 
 
@@ -65,41 +64,40 @@ const struct vc_callbacks thiscbs = {
 	.schedule_devisualization = devisn,
 };
 
-
-int main(int argc, char *argv[]) {
-
-	/* register callbacks */
-	struct vc this_vc = {
+struct vc this_vc = {
 		.name = "simple app",
 		.callbacks = &thiscbs,
-	};
+};
 
-	mpx_register_vc(&this_vc);
+float your_text_width_calculation(nk_handle handle, float height, const char *text, int len){
+    return 16;
+}
 
-	/* initial items for nuklear */
-    struct nk_font_atlas atlas;
-	int w, h;
-	struct nk_font *font;
-	struct nk_context ctx;
-	
-	
-	nk_font_atlas_init_default(&atlas);
-	nk_font_atlas_begin(&atlas);
-	font = nk_font_atlas_add_default(&atlas, 13, 0);
-	nk_font_atlas_bake(&atlas, &w, &h, NK_FONT_ATLAS_RGBA32);
-	nk_font_atlas_end(&atlas, nk_handle_id(0), 0);
-	
-	nk_init_default(&ctx, &font->handle);
-	
-	/* start of work with nuklear buffers */
-	struct nk_buffer dev_cmds;
-	
-	nk_buffer_init_default(&dev_cmds);
+int main(int argc, char *argv[]) {
+/* register callbacks */
+		mpx_register_vc(&this_vc);
+  
+    /* GUI */
+    static struct nk_context ctx;
+    
+    int width = 0, 
+        height = 0;
 
-	while(1) {}
+    static struct nk_user_font font;
+    font.userdata.ptr = &width;
+    font.height = font_vga_8x16.height;
+    font.width = your_text_width_calculation;
+    nk_init_default(&ctx, &font);
+    
+    width = this_vc.fb->var.xres;
+    height = this_vc.fb->var.yres;
+    
+
+	while(1) {
+		draw(&this_vc, &ctx, width, height);
+	}
 
 	/* end of work */
-    nk_font_atlas_clear(&atlas);
     nk_free(&ctx);
     
 	/* checking working command */
