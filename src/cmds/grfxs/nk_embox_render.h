@@ -11,7 +11,8 @@ extern const struct font_desc font_vga_8x8, font_vga_8x16;
 #define MAX(a, b) ((a > b) ? a : b) 
 #define SIGN(a)   ((a > 0) ? 1 : -1)
 
-extern unsigned char **images;
+//extern unsigned char **images;
+
 
 int rgba_to_device_color(struct vc *vc, uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha){
     switch (vc->fb->var.bits_per_pixel){
@@ -293,50 +294,80 @@ void embox_add_text(struct vc *vc, int x, int y, int fg_color, int bg_color, con
     } 
 
 }
+
+
+int image_reg_x, image_reg_y, image_reg_w, image_reg_h, image_x, image_y, image_w, image_h;
 void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, int h, int color){
-    struct fb_fillrect rect;
-    rect.width = 1;
-    rect.height = 1;
-    rect.rop = ROP_COPY;
-    
-    // this is coordinates which will be translated from need coordinates to origin picture
-    int origX, origY;
+    image_reg_x = img.region[0]; 
+    image_reg_y = img.region[1];
+    image_reg_w = img.region[2];
+    image_reg_h = img.region[3];
+    image_x = x;
+    image_y = y;
+    image_w = w;
+    image_h = h;
 
-    for (int nY = 0; nY <= h; nY++)
+    int or_w, or_h, or_format;
+
+    //if (image_w * image_h == 0 )
     {
-	    for (float nX = 0; nX <= w; nX++)
-	    {
-            rect.dx = x + nX;
-            rect.dy = y + nY;
-
-            origX = (nX * img.region[2]) / w;
-            origY = (nY * img.region[3]) / h;
-
-            /* offset in pixet array according to the image format*/
-            uint32_t nOffset = (origX + img.region[0] + (origY + img.region[1]) * img.w) * 4;
-
-            /* for skinning example */
-            // int nRed = (int)images[img.handle.id][nOffset+0];
-            // int nGreen = (int)images[img.handle.id][nOffset+1];
-            // int nBlue = (int)images[img.handle.id][nOffset+2];
-            // int nAlpha = (int)images[img.handle.id][nOffset+3];
-            
-            int nRed = (int)images[0][nOffset+0];
-            int nGreen = (int)images[0][nOffset+1];
-            int nBlue = (int)images[0][nOffset+2];
-            int nAlpha = (int)images[0][nOffset+3];
-            
-            
-            rect.color = rgba_to_device_color(vc, nRed, nGreen, nBlue, nAlpha);
-            
-            if (nAlpha < 3)
-                continue;            
-            
-            fb_fillrect(vc->fb, &rect);
-
-        }
-    } 
+        stbi_load("gwen.png", &or_w, &or_h, &or_format, 0);
+    }
 }
+
+
+// void embox_add_image(struct vc *vc, struct nk_image img, int x, int y, int w, int h, int color){
+//     struct fb_fillrect rect;
+//     rect.width = 1;
+//     rect.height = 1;
+//     rect.rop = ROP_COPY;rect.color = rgba_to_device_color(vc, nRed, nGreen, nBlue, nAlpha);
+            
+//             if (nAlpha < 3)
+//                 continue;            
+            
+//             fb_fillrect(vc->fb, &rect);
+
+    
+//     // this is coordinates which will be translated from need coordinates to origin picture
+//     int origX, origY;
+
+//     for (int nY = 0; nY <= h; nY++)
+//     {
+// 	    for (float nX = 0; nX <= w; nX++)
+//     {
+//             rect.dx = x + nX;
+//             rect.dy = y + nY;
+
+//             origX = (nX * img.region[2]) / w;
+//             origY = (nY * img.region[3]) / h;
+
+//             /* offset in pixet array according to the image format*/
+//             uint32_t nOffset = (origX + int n = orig[i]*4;
+
+//            img.region[0] + (origY + img.region[1]) * img.w) * 4;
+
+//             /* for skinning example */
+//             // int nRed = (int)images[img.handle.id][nOffset+0];
+//             // int nGreen = (int)images[img.handle.id][nOffset+1];
+//             // int nBlue = (int)images[img.handle.id][nOffset+2];
+//             // int nAlpha = (int)images[img.handle.id][nOffset+3];
+            
+//             int nRed = (int)images[0][nOffset+0];
+//             int nGreen = (int)images[0][nOffset+1];
+//             int nBlue = (int)images[0][nOffset+2];
+//             int nAlpha = (int)images[0][nOffset+3];
+            
+            
+//             rect.color = rgba_to_device_color(vc, nRed, nGreen, nBlue, nAlpha);
+            
+//             if (nAlpha < 3)
+//                 continue;            
+            
+//             fb_fillrect(vc->fb, &rect);
+
+//         }
+//     } 
+// }
 
 
 static void draw( struct vc *vc, struct nk_context *ctx, int width, int height){ 

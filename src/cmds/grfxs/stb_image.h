@@ -301,6 +301,8 @@ RECENT REVISION HISTORY:
 //     want the zlib decoder to be available, #define STBI_SUPPORT_ZLIB
 //
 
+extern struct vc this_vc;
+
 
 #ifndef STBI_NO_STDIO
 #include <stdio.h>
@@ -4133,6 +4135,8 @@ STBIDEF char *stbi_zlib_decode_malloc_guesssize(const char *buffer, int len, int
    if (p == NULL) return NULL;
    a.zbuffer = (stbi_uc *) buffer;
    a.zbuffer_end = (stbi_uc *) buffer + len;
+   
+   
    if (stbi__do_zlib(&a, p, initial_size, 1, 1)) {
       if (outlen) *outlen = (int) (a.zout - a.zout_start);
       return a.zout_start;
@@ -4150,8 +4154,11 @@ STBIDEF char *stbi_zlib_decode_malloc(char const *buffer, int len, int *outlen)
 STBIDEF char *stbi_zlib_decode_malloc_guesssize_headerflag(const char *buffer, int len, int initial_size, int *outlen, int parse_header)
 {
    stbi__zbuf a;
+
+   // want don't domalloc here
    char *p = (char *) stbi__malloc(initial_size);
    if (p == NULL) return NULL;
+
    a.zbuffer = (stbi_uc *) buffer;
    a.zbuffer_end = (stbi_uc *) buffer + len;
    if (stbi__do_zlib(&a, p, initial_size, 1, parse_header)) {
@@ -4336,12 +4343,14 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
       }
 
       if (depth == 8) {
+            
          if (img_n != out_n)
             cur[img_n] = 255; // first pixel
          raw += img_n;
          cur += out_n;
          prior += out_n;
       } else if (depth == 16) {
+            
          if (img_n != out_n) {
             cur[filter_bytes]   = 255; // first pixel top byte
             cur[filter_bytes+1] = 255; // first pixel bottom byte
@@ -4454,6 +4463,7 @@ static int stbi__create_png_image_raw(stbi__png *a, stbi_uc *raw, stbi__uint32 r
             if (k > 6) *cur++ = scale * ((*in >> 1) & 0x01);
          }
          if (img_n != out_n) {
+               
             int q;
             // insert alpha = 255
             cur = a->out + stride*j;
@@ -4497,7 +4507,7 @@ static int stbi__create_png_image(stbi__png *a, stbi_uc *image_data, stbi__uint3
    int p;
    if (!interlaced)
       return stbi__create_png_image_raw(a, image_data, image_data_len, out_n, a->s->img_x, a->s->img_y, depth, color);
-
+    
    // de-interlacing
    final = (stbi_uc *) stbi__malloc_mad3(a->s->img_x, a->s->img_y, out_bytes, 0);
    for (p=0; p < 7; ++p) {
@@ -4583,38 +4593,55 @@ static int stbi__compute_transparency16(stbi__png *z, stbi__uint16 tc[3], int ou
    return 1;
 }
 
-static int stbi__expand_png_palette(stbi__png *a, stbi_uc *palette, int len, int pal_img_n)
+
+extern void embox_fill_rect(struct vc *vc, int x, int y, int w, int h, int col);
+extern int rgba_to_device_color(struct vc *vc, uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha);
+extern int image_reg_x, image_reg_y, image_reg_w, image_reg_h, image_x, image_y, image_w, image_h;
+int stbi__expand_png_palette(stbi__png *a, stbi_uc *palette, int len, int pal_img_n)
 {
-   stbi__uint32 i, pixel_count = a->s->img_x * a->s->img_y;
-   stbi_uc *p, *temp_out, *orig = a->out;
-
-   p = (stbi_uc *) stbi__malloc_mad2(pixel_count, pal_img_n, 0);
-   if (p == NULL) return stbi__err("outofmem", "Out of memory");
-
-   // between here and free(out) below, exitting would leak
-   temp_out = p;
+   stbi_uc *orig = a->out;
+   stbi__uint32 r, g, b;
 
    if (pal_img_n == 3) {
-      for (i=0; i < pixel_count; ++i) {
-         int n = orig[i]*4;
-         p[0] = palette[n  ];
-         p[1] = palette[n+1];
-         p[2] = palette[n+2];
-         p += 3;
+    for(int j = image_y; j < image_y + image_h; j++){
+            for (int i = image_x; i < image_x + image_w; i++){
+                  int i0 = image_reg_x + (i - image_x) * image_reg_w / image_w;
+                  int j0 = image_reg_y + (j - image_y) * image_reg_h / image_h;
+
+                  int n = orig[j0 * a->s->img_x + i0]*4;
+                  
+                  r = palette[n  ];
+                  g = palette[n+1];
+                  b = palette[n+2];
+
+                  stbi__uint32 color = rgba_to_device_color(&this_vc, r, g, b, 255);
+                 
+                 
+                  embox_fill_rect(&this_vc, i, j, 1, 1, color);
+            }
       }
    } else {
-      for (i=0; i < pixel_count; ++i) {
-         int n = orig[i]*4;
-         p[0] = palette[n  ];
-         p[1] = palette[n+1];
-         p[2] = palette[n+2];
-         p[3] = palette[n+3];
-         p += 4;
+      for(int j = image_y; j < image_y + image_h; j++){
+            for (int i = image_x; i < image_x + image_w; i++){
+                  int i0 = image_reg_x + (i - image_x) * image_reg_w / image_w;
+                  int j0 = image_reg_y + (j - image_y) * image_reg_h / image_h;
+
+                  int n = orig[j0 * a->s->img_x + i0]*4;
+                  
+                  r = palette[n  ];
+                  g = palette[n+1];
+                  b = palette[n+2];
+                  stbi__uint32 al = palette[n+3];
+
+                  stbi__uint32 color = rgba_to_device_color(&this_vc, r, g, b, al);
+                  if (al < 3)
+                        continue;     
+                  embox_fill_rect(&this_vc, i, j, 1, 1, color);
+            }
       }
    }
+   
    STBI_FREE(a->out);
-   a->out = temp_out;
-
    STBI_NOTUSED(len);
 
    return 1;
@@ -4810,6 +4837,7 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
                   if (!stbi__compute_transparency(z, tc, s->img_out_n)) return 0;
                }
             }
+            
             if (is_iphone && stbi__de_iphone_flag && s->img_out_n > 2)
                stbi__de_iphone(z);
             if (pal_img_n) {

@@ -111,7 +111,12 @@ const struct vc_callbacks thiscbs = {
 	.visualized = visd,
 	.schedule_devisualization = devisn,
 };
+struct vc this_vc = {
+		.name = "simple app",
+		.callbacks = &thiscbs,
+	};
 
+    
 float your_text_width_calculation(nk_handle handle, float height, const char *text, int len){
     return 16;
 }
@@ -120,10 +125,7 @@ float your_text_width_calculation(nk_handle handle, float height, const char *te
 int main(int argc, char *argv[]) {
 
 	/* register callbacks */
-	struct vc this_vc = {
-		.name = "simple app",
-		.callbacks = &thiscbs,
-	};
+	
 
 	mpx_register_vc(&this_vc);
 
@@ -142,8 +144,8 @@ int main(int argc, char *argv[]) {
     font.width = your_text_width_calculation;
     nk_init_default(&ctx, &font);
     
-    width = this_vc.fb->var.xres;
-    height = this_vc.fb->var.yres;
+    width = this_vc.fb->var.yres;
+    height = this_vc.fb->var.xres;
 
     /* load image for the widget items */
     int im_w, im_h, im_format;
@@ -153,7 +155,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     else 
-        printf("\nLoaded image: width = %i\theight = %i\tformat = %i", im_w, im_h, im_format);
+        printf("\nLoaded image: id = %i   width = %i\theight = %i\tformat = %i",(int)*images[0], im_w, im_h, im_format);
 
 
     {   /* skin */

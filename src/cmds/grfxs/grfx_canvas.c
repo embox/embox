@@ -18,8 +18,10 @@ example of work nuklear on OS Embox */
 
 #include "nk_embox_render.h"
 
-unsigned char **images;
+
+//unsigned char **images;
 extern const struct font_desc font_vga_8x8, font_vga_8x16;
+
 
 
 struct nk_canvas {
@@ -91,6 +93,10 @@ const struct vc_callbacks thiscbs = {
 	.visualized = visd,
 	.schedule_devisualization = devisn,
 };
+struct vc this_vc = {
+		.name = "simple app",
+		.callbacks = &thiscbs,
+};
 
 float your_text_width_calculation(nk_handle handle, float height, const char *text, int len){
     return 16;
@@ -99,12 +105,7 @@ float your_text_width_calculation(nk_handle handle, float height, const char *te
 int main(int argc, char *argv[]) {
 
 	/* register callbacks */
-	struct vc this_vc = {
-		.name = "simple app",
-		.callbacks = &thiscbs,
-	};
-
-	mpx_register_vc(&this_vc);
+		mpx_register_vc(&this_vc);
   
     /* GUI */
     static struct nk_context ctx;
@@ -155,27 +156,27 @@ int main(int argc, char *argv[]) {
             
 
             /* load some image */
-            int im_w, im_h, im_format;
-            images[0] = stbi_load("SPBGU_logo.png", &im_w, &im_h, &im_format, 0);
-            if (images[0] == NULL)
-                printf("\nstbi_load doesn't work. :(\n");
-            else {
-                printf("\nLoaded image: id = %i   width = %i\theight = %i\tformat = %i", (int)*images[0], im_w, im_h, im_format);
+            // int im_w, im_h, im_format;
+            // images[0] = stbi_load("SPBGU_logo.png", &im_w, &im_h, &im_format, 0);
+            // if (images[0] == NULL)
+            //     printf("\nstbi_load doesn't work. :(\n");
+            // else {
+            //     printf("\nLoaded image: id = %i   width = %i\theight = %i\tformat = %i", (int)*images[0], im_w, im_h, im_format);
 
                 struct nk_image im;
-                im.handle.ptr = images[0];
-                im.handle.id = (uint32_t)*images[0];
-                im.w = im_w;
-                im.h = im_h;
+                im.handle.ptr = "SPBGU_logo.png";
+                im.handle.id = 0;
+                im.w = 0;
+                im.h = 0;
                 im.region[0] = 0;
                 im.region[1] = 0;
-                im.region[2] = im_w;
-                im.region[3] = im_h;
+                im.region[2] = 267;
+                im.region[3] = 333;
                 
-                nk_draw_image(canvas.painter, nk_rect(310, 100, 150, 150), &im, nk_rgb(100, 0, 0));
-            }
+                nk_draw_image(canvas.painter, nk_rect(320, 10, 130, 150), &im, nk_rgb(100, 0, 0));
+           // }
 
-            stbi_image_free(images[0]);            
+           // stbi_image_free(images[0]);            
         }
         canvas_end(&ctx, &canvas);
 
