@@ -210,3 +210,10 @@ static struct periph_memory_desc imx_uart_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(imx_uart_mem);
+
+static struct periph_memory_desc iomuxc_mem = {
+	.start = IOMUXC_BASE,
+	.len   = 0x1000,
+};
+
+PERIPH_MEMORY_DEFINE(iomuxc_mem);
