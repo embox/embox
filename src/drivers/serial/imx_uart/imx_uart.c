@@ -92,7 +92,7 @@ static void imxuart_configure_pins(void) {
 		REG32_STORE(IOMUXC_BASE + 0x920, 3);
 		break;
 	case 1:
-		/* Nothing to done */
+		/* Nothing to be done */
 		break;
 	case 2:
 		/* TX */
@@ -131,7 +131,7 @@ static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
 	UART(UBMR) = 0x015b;
 	UART(UMCR) = 0;
 
-	if (params->irq) {
+	if (params && params->irq) {
 		uint32_t reg;
 
 		reg = UART(UFCR);
@@ -210,3 +210,10 @@ static struct periph_memory_desc imx_uart_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(imx_uart_mem);
+
+static struct periph_memory_desc iomuxc_mem = {
+	.start = IOMUXC_BASE,
+	.len   = 0x1000,
+};
+
+PERIPH_MEMORY_DEFINE(iomuxc_mem);
