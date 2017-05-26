@@ -70,12 +70,12 @@ void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
 	*pte &= ~(L1D_TEX_MASK | L1D_B | L1D_C);
 	if (value & VMEM_PAGE_CACHEABLE) {
-//		*pte |= L1D_TEX_USE;
-//		*pte |= L1D_TEX_B | L1D_TEX_C;
-		*pte |= L1D_C;// | L1D_B;
+		*pte |= L1D_TEX_USE;   /* Outer strongly-ordered memory */
+		*pte |= L1D_C | L1D_B; /* Inner write-through cached memory */
 	} else {
-		*pte |= L1D_B;
+		*pte |= L1D_B;         /* Shareable device memory */
 	}
+
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
