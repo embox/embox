@@ -77,8 +77,6 @@ extern void vmem_off(void);
 static int pl310_init(void) {
 	memset(_test_buf, 0, BUF_SZ);
 
-	vmem_off();
-
 	REG_STORE(L2X0_CTRL, 0);
 
 	REG_ORIN(L2X0_AUX_CTRL, L2X0_AUX_INSTR_PREFETCH);
@@ -98,13 +96,10 @@ static int pl310_init(void) {
 	asm volatile ("mcr p15, 0, %0, c8, c6, 0" : : "r" (0));
 	asm volatile ("mcr p15, 0, %0, c8, c5, 0" : : "r" (0));
 
+#if 0
 	t = 0xffffff;
 	while(t--);
 
-	vmem_on();
-	return 0;
-
-	_reg_dump("init");
 	log_debug("Start memory test\n");
 
 	int t1 = clock();
@@ -116,14 +111,8 @@ static int pl310_init(void) {
 	int t2 = clock();
 	log_debug("Time elapsed: %d\n", t2 - t1);
 
-	_reg_dump("Finish memory test");
-
-	vmem_info(0x02020000);
-
-	vmem_info(0x00a00000);
-	vmem_info(0x00a01000);
-	vmem_info(0x00a02000);
-
+	log_debug("Finish memory test");
+#endif
 	return 0;
 }
 
