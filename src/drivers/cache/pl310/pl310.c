@@ -113,6 +113,8 @@ static int pl310_init(void) {
 
 	log_debug("Finish memory test");
 #endif
+	_reg_dump("");
+
 	return 0;
 }
 
