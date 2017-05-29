@@ -33,7 +33,7 @@ struct nk_canvas {
 
 static void
 canvas_begin(struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
-    int x, int y, int width, int height, struct nk_color background_color){
+    uint32_t x, uint32_t y, uint32_t width, uint32_t height, struct nk_color background_color){
     /* save style properties which will be overwritten */
     canvas->panel_padding = ctx->style.window.padding;
     canvas->item_spacing = ctx->style.window.spacing;
@@ -74,6 +74,9 @@ static void
 visd(struct vc *vc, struct fb_info *fbinfo){
 
     /* fill all window with white */
+    
+    /* for natural monitor orientation*/
+    /*
     struct fb_fillrect rect;
     rect.dx = 0;
     rect.dy = 0;
@@ -81,8 +84,10 @@ visd(struct vc *vc, struct fb_info *fbinfo){
     rect.height = vc->fb->var.yres;
     rect.rop = ROP_COPY;
     rect.color = rgba_to_device_color(vc, 255, 255, 255, 255);
+    */
 
-    fb_fillrect(vc->fb, &rect);
+    /* for changed monitore orientation*/
+    embox_fill_rect(vc, 0, 0, vc->fb->var.yres, vc->fb->var.xres, rgba_to_device_color(vc, 255, 255, 255, 255));
 }
 static void 
 devisn(struct vc *vc) {
@@ -112,7 +117,7 @@ int main(int argc, char *argv[]) {
     static struct nk_canvas canvas;
     
 
-    int width = 0, 
+    uint32_t width = 0, 
         height = 0;
 
     static struct nk_user_font font;
@@ -133,21 +138,12 @@ int main(int argc, char *argv[]) {
             canvas.painter->use_clipping = NK_CLIPPING_OFF;  
 
             nk_fill_rect(canvas.painter, nk_rect(15,15,140,140), 5, nk_rgb(247, 230, 154));
-            nk_fill_rect(canvas.painter, nk_rect(20,20,130,130), 5, nk_rgb(188, 174, 118));
+            nk_fill_rect(canvas.painter, nk_rect(20,20,135,135), 5, nk_rgb(188, 174, 118));
             nk_draw_text(canvas.painter, nk_rect(30, 30, 100, 20), "Text to draw", 12, &font, nk_rgb(188,174,118), nk_rgb(0,0,0));
             nk_fill_rect(canvas.painter, nk_rect(160,20,70,70), 0, nk_rgb(0,0,255));
             nk_fill_circle(canvas.painter, nk_rect(20,160,60,60), nk_rgb(255,0,0));
             nk_fill_triangle(canvas.painter, 160, 160, 230, 160, 195, 220, nk_rgb(0,255,0));
             nk_fill_arc(canvas.painter, 195, 120, 30, 0, 3.141592654f * 3.0f / 4.0f, nk_rgb(255,255,0));
-
-            // {float points[10];
-            // points[0] = 235; points[1] = 135;
-            // points[2] = 252; points[3] = 170;
-            // points[6] = 288; points[7] = 100;
-            // points[8] = 305; points[9] = 135;
-            // //points[10] = 150; points[11] = 350;
-            // nk_fill_polygon(canvas.painter, points, 3, nk_rgb(0,0,0));}
-
             nk_stroke_line(canvas.painter, 15, 10, 100, 10, 2.0f, nk_rgb(189,45,75));
             nk_stroke_rect(canvas.painter, nk_rect(235, 20, 70, 70), 10, 3, nk_rgb(0,0,255));
             nk_stroke_curve(canvas.painter, 235, 130, 252, 170, 288, 80, 305, 130, 1, nk_rgb(0,150,220));
@@ -156,7 +152,7 @@ int main(int argc, char *argv[]) {
             
 
             /* load some image */
-            // int im_w, im_h, im_format;
+            // uint32_t im_w, im_h, im_format;
             // images[0] = stbi_load("SPBGU_logo.png", &im_w, &im_h, &im_format, 0);
             // if (images[0] == NULL)
             //     printf("\nstbi_load doesn't work. :(\n");
@@ -182,7 +178,6 @@ int main(int argc, char *argv[]) {
 
          /* Draw each element */
          draw(&this_vc, &ctx, width, height);
-         printf("Cucumber\n");
     }
     nk_free(&ctx);
 

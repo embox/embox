@@ -61,7 +61,7 @@ struct nk_canvas {
 };
 
 struct media {
-    int skin;
+    uint32_t skin;
     struct nk_image menu;
     struct nk_image check;
     struct nk_image check_cursor;
@@ -92,6 +92,9 @@ static void
 visd(struct vc *vc, struct fb_info *fbinfo){
 
     /* fill all window with white */
+    
+    /* for natural monitor orientation*/
+    /*
     struct fb_fillrect rect;
     rect.dx = 0;
     rect.dy = 0;
@@ -99,8 +102,10 @@ visd(struct vc *vc, struct fb_info *fbinfo){
     rect.height = vc->fb->var.yres;
     rect.rop = ROP_COPY;
     rect.color = rgba_to_device_color(vc, 255, 255, 255, 255);
+    */
 
-    fb_fillrect(vc->fb, &rect);
+    /* for changed monitore orientation*/
+    embox_fill_rect(vc, 0, 0, vc->fb->var.yres, vc->fb->var.xres, rgba_to_device_color(vc, 255, 255, 255, 255));
 }
 static void 
 devisn(struct vc *vc) {
@@ -135,7 +140,7 @@ int main(int argc, char *argv[]) {
     static struct nk_context ctx;
     static struct media media;
 
-    int width = 0, 
+    uint32_t width = 0, 
         height = 0;
 
     static struct nk_user_font font;
@@ -148,8 +153,8 @@ int main(int argc, char *argv[]) {
     height = this_vc.fb->var.xres;
 
     /* load image for the widget items */
-    int im_w, im_h, im_format;
-    images[0] = stbi_load("gwen.png", &im_w, &im_h, &im_format, 0);
+    uint32_t im_w, im_h, im_format;
+    images[0] = stbi_load("gwen.png", (int*) &im_w, (int*) &im_h, (int*) &im_format, 0);
     if (images[0] == NULL){
         printf("\nstbi_load doesn't work. :(\n");
         return 0;
@@ -466,10 +471,10 @@ int main(int argc, char *argv[]) {
     while (1) 
     {/* GUI */
         {//struct nk_panel layout, tab;
-        if (nk_begin(&ctx, "Demo", nk_rect(50, 50, 300, 420),
+        if (nk_begin(&ctx, "Demo", nk_rect(0, 0, width, height),
             NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_TITLE))
         {
-            int i;
+            uint32_t i;
             float id;
             static int slider = 10;
             static int field_len;
@@ -515,28 +520,10 @@ int main(int argc, char *argv[]) {
             }
             nk_chart_end(&ctx);
 
-            nk_layout_row_dynamic(&ctx, 250, 1);
-            if (nk_group_begin(&ctx, "Standard", NK_WINDOW_BORDER|NK_WINDOW_BORDER))
-            {
-                if (nk_tree_push(&ctx, NK_TREE_NODE, "Window", NK_MAXIMIZED)) {
-                    static int selected[8];
-                    if (nk_tree_push(&ctx, NK_TREE_NODE, "Next", NK_MAXIMIZED)) {
-                        nk_layout_row_dynamic(&ctx, 20, 1);
-                        for (i = 0; i < 4; ++i)
-                            nk_selectable_label(&ctx, (selected[i]) ? "Selected": "Unselected", NK_TEXT_LEFT, &selected[i]);
-                        nk_tree_pop(&ctx);
+            nk_layout_row_dynamic(&ctx, height, 1);
+            nk_layout_row_dynamic(&ctx, 20, 1);
+            nk_layout_row_dynamic(&ctx, 20, 1);
                     }
-                    if (nk_tree_push(&ctx, NK_TREE_NODE, "Previous", NK_MAXIMIZED)) {
-                        nk_layout_row_dynamic(&ctx, 20, 1);
-                        for (i = 4; i < 8; ++i)
-                            nk_selectable_label(&ctx, (selected[i]) ? "Selected": "Unselected", NK_TEXT_LEFT, &selected[i]);
-                        nk_tree_pop(&ctx);
-                    }
-                    nk_tree_pop(&ctx);
-                }
-                nk_group_end(&ctx);
-            }
-        }
         nk_end(&ctx);}
 
          /* Draw each element */
