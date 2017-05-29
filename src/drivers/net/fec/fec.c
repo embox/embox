@@ -83,13 +83,18 @@ extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
 
 static int phy_read_reg(int mii_id, int regnum) {
+	uint32_t timeout = 0xFFFFFF;
 	phy_wait_flag = 0;
 	REG32_STORE(ENET_MMFR, FEC_MMFR_ST | FEC_MMFR_OP_READ |
 		FEC_MMFR_PA(mii_id) | FEC_MMFR_RA(regnum) |
 		FEC_MMFR_TA);
 
-	while (!phy_wait_flag)
+	while (!phy_wait_flag && timeout--)
 		;
+
+	if (timeout == 0) {
+		log_error("phy read timeout");
+	}
 
 	return REG32_LOAD(ENET_MMFR);
 }
