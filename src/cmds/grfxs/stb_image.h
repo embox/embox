@@ -4594,9 +4594,9 @@ static int stbi__compute_transparency16(stbi__png *z, stbi__uint16 tc[3], int ou
 }
 
 
-extern void embox_fill_rect(struct vc *vc, int x, int y, int w, int h, int col);
+extern void embox_fill_rect(struct vc *vc, uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint32_t col);
 extern int rgba_to_device_color(struct vc *vc, uint32_t red, uint32_t green, uint32_t blue, uint32_t alpha);
-extern int image_reg_x, image_reg_y, image_reg_w, image_reg_h, image_x, image_y, image_w, image_h;
+extern uint32_t image_reg_x, image_reg_y, image_reg_w, image_reg_h, image_x, image_y, image_w, image_h;
 int stbi__expand_png_palette(stbi__png *a, stbi_uc *palette, int len, int pal_img_n)
 {
    stbi_uc *orig = a->out;
