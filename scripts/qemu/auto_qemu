@@ -147,6 +147,8 @@ guess_machine() {
 				echo "-M integratorcp"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "vexpress-a9" > /dev/null; then
 				echo "-M vexpress-a9"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "sabrelite" > /dev/null; then
+				echo "-M sabrelite"
 			fi
 			;;
 		microblaze)
@@ -192,6 +194,7 @@ NIC2QEMU=(
 	[lan9118]="lan9118"
 	[lan91c111]="smc91c111"
 	[mipsnet]="mipsnet"
+	[fec]="imx.enet"
 )
 
 IFS=" " read -a qemu_nics <<< "$AUTOQEMU_NICS"
@@ -210,7 +213,7 @@ if [ $nic_n -gt 0 ]; then
 		fi
 
 		nic_model=${NIC2QEMU[${qemu_nics[$ni]}]}
-		echo 
+		echo
 		if [ ! $nic_model ]; then
 			error "nic model ${qemu_nics[$ni]} is not supported"
 		fi
@@ -237,7 +240,7 @@ if [ $sound_n -gt 0 ]; then
 
 	for so in "${!qemu_sound[@]}"; do
 		sound_model=${AUDIO2QEMU[${qemu_sound[$so]}]}
-		echo 
+		echo
 		if [ $sound_model = "default" ]; then
 			sound_lines="$sound_lines"
 		else
@@ -279,7 +282,7 @@ if [ $graphic_n -gt 0 ]; then
 
 	else
 		graphic_lines=$AUTOQEMU_NOGRAPHIC_ARG
-	fi	
+	fi
 
 fi
 
