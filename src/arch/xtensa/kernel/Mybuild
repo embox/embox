@@ -1,0 +1,10 @@
+
+package embox.arch.xtensa.kernel
+
+module arch extends embox.arch.arch {
+	source "arch.c"
+}
+
+module boot {
+	source "boot_entry.c"
+}
