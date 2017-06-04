@@ -1,0 +1,11 @@
+package embox.mem
+
+module fixed_heap extends heap_place {
+	option number start_addr
+	option number end_addr
+	option string allocator_name = "__heap_pgallocator"
+
+	source "fixed_heap.c"
+
+	depends embox.mem.bitmask
+}
