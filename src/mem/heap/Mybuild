@@ -24,7 +24,7 @@ module mspace_malloc {
 	depends boundary_markers
 
 	depends page_api
-	depends embox.mem.static_heap
+	depends embox.mem.heap_place
 }
 
 module heap_bm extends heap_api {
@@ -40,7 +40,7 @@ module heap_bm extends heap_api {
 module heap_simple extends heap_api {
 	source "heap_simple.c"
 
-	depends embox.mem.static_heap
+	depends embox.mem.heap_place
 }
 
 module sysmalloc_task_based extends sysmalloc_api {
@@ -52,7 +52,12 @@ module sysmalloc_task_based extends sysmalloc_api {
 	depends embox.kernel.task.kernel_task
 }
 
-module static_heap {
+@DefaultImpl(static_heap)
+abstract module heap_place {
+	
+}
+
+module static_heap extends heap_place {
 	option number heap_size = 1048576
 	option string section = ".bss..reserve"
 	option string start_symbol = "_heap_start"
