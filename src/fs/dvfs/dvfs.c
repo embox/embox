@@ -150,7 +150,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
 	if (desc->f_ops->open) {
 		res = desc->f_ops->open(i_no, &desc->f_idesc);
 		if (err(res)) {
-			return res;
+			return NULL;
 		}
 	}
 	return &desc->f_idesc;

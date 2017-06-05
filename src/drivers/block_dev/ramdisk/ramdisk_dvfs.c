@@ -28,6 +28,7 @@
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
+#define RAMDISK_SIZE OPTION_GET(NUMBER,size)
 #define RAMDISK_BLOCK_SIZE OPTION_GET(NUMBER,block_size)
 
 POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
@@ -46,7 +47,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	char buf[256];
 	struct block_dev *bdev;
 	struct ramdisk *ram;
-	const size_t ramdisk_size = binalign_bound(size, RAMDISK_BLOCK_SIZE);
+	const size_t ramdisk_size = binalign_bound(size, RAMDISK_SIZE);
 	const size_t page_n = (ramdisk_size + PAGE_SIZE() - 1) / PAGE_SIZE();
 
 	if (NULL == (ram = pool_alloc(&ramdisk_pool)))

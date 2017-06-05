@@ -8,7 +8,6 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
-
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
@@ -230,7 +229,8 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 		.d_lnk   = dentry->d_lnk
 	};
 
-	inode->i_dentry = dentry;
+	if (inode)
+		inode->i_dentry = dentry;
 
 	dlist_init(&dentry->children);
 	dlist_head_init(&dentry->children_lnk);

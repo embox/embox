@@ -7,3 +7,11 @@ Example:
 
 tftpboot 0x10000000 embox.bin
 go 0x10000000
+
+
+You can also run this template on QEMU with auto_qemu scipt.
+
+To use SD card with raw image sdcard.img, run this command:
+
+./scripts/qemu/auto_qemu -drive if=sd,index=0,file=sdcard.img,format=raw
+
