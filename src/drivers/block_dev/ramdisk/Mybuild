@@ -4,6 +4,7 @@ package embox.driver
 abstract module ramdisk {
 	option number ramdisk_quantity = 8
 	option number size = 1048576
+	option number block_size = 512
 }
 
 module ramdisk_old extends ramdisk {
