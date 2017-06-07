@@ -123,3 +123,14 @@ module arch extends embox.arch.arch {
 	depends system_init
 }
 
+@Build(stage=1,script="true")
+@BuildDepends(core)
+module sdram {
+	source "sdram_init.c"
+
+	depends embox.kernel.time.jiffies
+	depends embox.kernel.sched.sched
+	depends embox.kernel.time.timer_handler
+	depends embox.kernel.time.timekeeper
+	depends system_init
+}
