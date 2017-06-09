@@ -4,4 +4,5 @@ package third_party.freedesktop.mesa
 @Build(script="$(EXTERNAL_MAKE)")
 module  mesa_imx6 {
 	source "^BUILD/extbld/^MOD_PATH/install/mesa.a"
+	depends third_party.freedesktop.mesa.libdrm_imx6
 }
