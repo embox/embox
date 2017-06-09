@@ -1,6 +1,6 @@
-diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c11/threads_posix.h mesa-17.0.3/include/c11/threads_posix.h
+diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/include/c11/threads_posix.h mesa-17.0.3/include/c11/threads_posix.h
 --- mesa-17.0.3-orig/include/c11/threads_posix.h	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/include/c11/threads_posix.h	2017-05-02 16:46:01.638412034 +0300
++++ mesa-17.0.3/include/c11/threads_posix.h	2017-06-09 16:08:24.895070946 +0300
 @@ -35,6 +35,7 @@
  #include <unistd.h>
  #include <sched.h>
@@ -18,9 +18,9 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c11
  #define EMULATED_THREADS_USE_NATIVE_TIMEDLOCK
  #endif
  
-diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c99_alloca.h mesa-17.0.3/include/c99_alloca.h
+diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/include/c99_alloca.h mesa-17.0.3/include/c99_alloca.h
 --- mesa-17.0.3-orig/include/c99_alloca.h	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/include/c99_alloca.h	2017-05-02 17:02:50.890389943 +0300
++++ mesa-17.0.3/include/c99_alloca.h	2017-06-09 16:08:24.939071164 +0300
 @@ -35,7 +35,7 @@
  
  #  define alloca _alloca
@@ -30,9 +30,33 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c99
  
  #  include <alloca.h>
  
-diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c mesa-17.0.3/src/compiler/nir/nir_instr_set.c
+diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compiler/Makefile.glsl.am mesa-17.0.3/src/compiler/Makefile.glsl.am
+--- mesa-17.0.3-orig/src/compiler/Makefile.glsl.am	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/compiler/Makefile.glsl.am	2017-06-09 16:19:03.842239299 +0300
+@@ -53,7 +53,7 @@
+ 	glsl/tests/sampler-types-test			\
+ 	glsl/tests/uniform-initializer-test
+ 
+-noinst_PROGRAMS = glsl_compiler
++#noinst_PROGRAMS = glsl_compiler
+ 
+ glsl_tests_blob_test_SOURCES =				\
+ 	glsl/tests/blob_test.c
+diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compiler/Makefile.nir.am mesa-17.0.3/src/compiler/Makefile.nir.am
+--- mesa-17.0.3-orig/src/compiler/Makefile.nir.am	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/compiler/Makefile.nir.am	2017-06-09 16:19:18.830313636 +0300
+@@ -51,7 +51,7 @@
+ 	$(MKDIR_GEN)
+ 	$(PYTHON_GEN) $(srcdir)/nir/nir_opt_algebraic.py > $@ || ($(RM) $@; false)
+ 
+-noinst_PROGRAMS += spirv2nir
++#noinst_PROGRAMS += spirv2nir
+ 
+ spirv2nir_SOURCES = \
+ 	spirv/spirv2nir.c
+diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c mesa-17.0.3/src/compiler/nir/nir_instr_set.c
 --- mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/src/compiler/nir/nir_instr_set.c	2017-05-02 17:03:20.234389300 +0300
++++ mesa-17.0.3/src/compiler/nir/nir_instr_set.c	2017-06-09 16:08:24.943071173 +0300
 @@ -20,7 +20,6 @@
   * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
   * IN THE SOFTWARE.
@@ -41,9 +65,9 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compile
  #include "nir_instr_set.h"
  #include "nir_vla.h"
  
-diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c mesa-17.0.3/src/compiler/nir/nir_liveness.c
+diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c mesa-17.0.3/src/compiler/nir/nir_liveness.c
 --- mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/src/compiler/nir/nir_liveness.c	2017-05-02 17:03:14.746389421 +0300
++++ mesa-17.0.3/src/compiler/nir/nir_liveness.c	2017-06-09 16:08:25.171072302 +0300
 @@ -23,7 +23,6 @@
   * Authors:
   *    Jason Ekstrand (jason@jlekstrand.net)
@@ -52,9 +76,9 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compile
  #include "nir.h"
  #include "nir_worklist.h"
  #include "nir_vla.h"
-diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/debug.c mesa-17.0.3/src/util/debug.c
+diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/util/debug.c mesa-17.0.3/src/util/debug.c
 --- mesa-17.0.3-orig/src/util/debug.c	2017-04-01 18:33:37.000000000 +0300
-+++ mesa-17.0.3/src/util/debug.c	2017-05-02 16:46:01.638412034 +0300
++++ mesa-17.0.3/src/util/debug.c	2017-06-09 16:08:25.171072302 +0300
 @@ -21,6 +21,7 @@
   * IN THE SOFTWARE.
   */
@@ -63,9 +87,9 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/de
  #include <string.h>
  #include "main/macros.h"
  #include "debug.h"
-diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/ralloc.c mesa-17.0.3/src/util/ralloc.c
+diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/util/ralloc.c mesa-17.0.3/src/util/ralloc.c
 --- mesa-17.0.3-orig/src/util/ralloc.c	2017-04-01 18:33:37.000000000 +0300
-+++ mesa-17.0.3/src/util/ralloc.c	2017-05-02 16:46:01.638412034 +0300
++++ mesa-17.0.3/src/util/ralloc.c	2017-06-09 16:08:25.175072324 +0300
 @@ -66,7 +66,7 @@
  #endif
     ralloc_header
