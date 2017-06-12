@@ -31,6 +31,7 @@
 /*not posix */
 #define _SC_NPROCESSORS_ONLN  103
 #define _SC_NPROCESSORS_CONF  _SC_NPROCESSORS_ONLN
+#define _SC_PHYS_PAGES        104
 
 /*
 _SC_2_C_BIND

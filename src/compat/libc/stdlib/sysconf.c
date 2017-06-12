@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <time.h>
+
 #include <mem/page.h>
 #include <hal/cpu.h>
 
@@ -23,6 +24,9 @@ long int sysconf(int name) {
 		return NCPU;
 	case _SC_GETPW_R_SIZE_MAX:
 		return 0x200;
+	case _SC_PHYS_PAGES:
+		//FIXME
+		return 0x1000;
 	default:
 		return -EINVAL;
 	}
