@@ -1,0 +1,291 @@
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/configure.ac mesa-17.0.3/configure.ac
+--- mesa-17.0.3-orig/configure.ac	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/configure.ac	2017-06-12 17:06:53.015879424 +0300
+@@ -278,37 +278,38 @@
+ 
+ dnl Add flags for gcc and g++
+ if test "x$GCC" = xyes; then
+-    CFLAGS="$CFLAGS -Wall"
++    CFLAGS="$CFLAGS"
++#    CFLAGS="$CFLAGS -Wall"
+ 
+-    if test "x$USE_GNU99" = xyes; then
++#    if test "x$USE_GNU99" = xyes; then
+ 	CFLAGS="$CFLAGS -std=gnu99"
+-    else
+-	CFLAGS="$CFLAGS -std=c99"
+-    fi
++#    else
++#	CFLAGS="$CFLAGS -std=c99"
++#    fi
+ 
+     # Enable -Werror=implicit-function-declaration and
+     # -Werror=missing-prototypes, if available, or otherwise, just
+     # -Wmissing-prototypes.  This is particularly useful to avoid
+     # generating a loadable driver module that has undefined symbols.
+-    save_CFLAGS="$CFLAGS"
+-    AC_MSG_CHECKING([whether $CC supports -Werror=missing-prototypes])
+-    CFLAGS="$CFLAGS -Werror=implicit-function-declaration"
+-    CFLAGS="$CFLAGS -Werror=missing-prototypes"
+-    AC_LINK_IFELSE([AC_LANG_PROGRAM()],
+-		   AC_MSG_RESULT([yes]),
+-		   [CFLAGS="$save_CFLAGS -Wmissing-prototypes";
+-		    AC_MSG_RESULT([no])]);
++#    save_CFLAGS="$CFLAGS"
++#    AC_MSG_CHECKING([whether $CC supports -Werror=missing-prototypes])
++#    CFLAGS="$CFLAGS -Werror=implicit-function-declaration"
++#    CFLAGS="$CFLAGS -Werror=missing-prototypes"
++#    AC_LINK_IFELSE([AC_LANG_PROGRAM()],
++#		   AC_MSG_RESULT([yes]),
++#		   [CFLAGS="$save_CFLAGS -Wmissing-prototypes";
++#		    AC_MSG_RESULT([no])]);
+ 
+     # Enable -fvisibility=hidden if using a gcc that supports it
+-    save_CFLAGS="$CFLAGS"
+-    AC_MSG_CHECKING([whether $CC supports -fvisibility=hidden])
+-    VISIBILITY_CFLAGS="-fvisibility=hidden"
+-    CFLAGS="$CFLAGS $VISIBILITY_CFLAGS"
+-    AC_LINK_IFELSE([AC_LANG_PROGRAM()], AC_MSG_RESULT([yes]),
+-		   [VISIBILITY_CFLAGS=""; AC_MSG_RESULT([no])]);
++#    save_CFLAGS="$CFLAGS"
++#    AC_MSG_CHECKING([whether $CC supports -fvisibility=hidden])
++#    VISIBILITY_CFLAGS="-fvisibility=hidden"
++#    CFLAGS="$CFLAGS $VISIBILITY_CFLAGS"
++#    AC_LINK_IFELSE([AC_LANG_PROGRAM()], AC_MSG_RESULT([yes]),
++#		   [VISIBILITY_CFLAGS=""; AC_MSG_RESULT([no])]);
+ 
+     # Restore CFLAGS; VISIBILITY_CFLAGS are added to it where needed.
+-    CFLAGS=$save_CFLAGS
++#    CFLAGS=$save_CFLAGS
+ 
+     # We don't want floating-point math functions to set errno or trap
+     CFLAGS="$CFLAGS -fno-math-errno -fno-trapping-math"
+@@ -319,35 +320,36 @@
+     # - non-Linux/Posix OpenGL portions needs to build on MSVC 2013 (which
+     #   supports most of C99)
+     # - the rest has no compiler compiler restrictions
+-    MSVC2013_COMPAT_CFLAGS="-Werror=pointer-arith"
+-    MSVC2013_COMPAT_CXXFLAGS="-Werror=pointer-arith"
++#    MSVC2013_COMPAT_CFLAGS="-Werror=pointer-arith"
++#    MSVC2013_COMPAT_CXXFLAGS="-Werror=pointer-arith"
+ 
+     # Enable -Werror=vla if compiler supports it
+-    save_CFLAGS="$CFLAGS"
+-    AC_MSG_CHECKING([whether $CC supports -Werror=vla])
+-    CFLAGS="$CFLAGS -Werror=vla"
+-    AC_LINK_IFELSE([AC_LANG_PROGRAM()],
+-		   [MSVC2013_COMPAT_CFLAGS="$MSVC2013_COMPAT_CFLAGS -Werror=vla";
+-		    MSVC2013_COMPAT_CXXFLAGS="$MSVC2013_COMPAT_CXXFLAGS -Werror=vla";
+-		    AC_MSG_RESULT([yes])],
+-		    AC_MSG_RESULT([no]));
+-    CFLAGS="$save_CFLAGS"
++#    save_CFLAGS="$CFLAGS"
++#    AC_MSG_CHECKING([whether $CC supports -Werror=vla])
++#    CFLAGS="$CFLAGS -Werror=vla"
++#    AC_LINK_IFELSE([AC_LANG_PROGRAM()],
++#		   [MSVC2013_COMPAT_CFLAGS="$MSVC2013_COMPAT_CFLAGS -Werror=vla";
++#		    MSVC2013_COMPAT_CXXFLAGS="$MSVC2013_COMPAT_CXXFLAGS -Werror=vla";
++#		    AC_MSG_RESULT([yes])],
++#		    AC_MSG_RESULT([no]));
++#    CFLAGS="$save_CFLAGS"
+ fi
+ if test "x$GXX" = xyes; then
+-    CXXFLAGS="$CXXFLAGS -Wall"
++    CXXFLAGS="$CXXFLAGS"
++#    CXXFLAGS="$CXXFLAGS -Wall"
+ 
+     # Enable -fvisibility=hidden if using a gcc that supports it
+-    save_CXXFLAGS="$CXXFLAGS"
+-    AC_MSG_CHECKING([whether $CXX supports -fvisibility=hidden])
+-    VISIBILITY_CXXFLAGS="-fvisibility=hidden"
+-    CXXFLAGS="$CXXFLAGS $VISIBILITY_CXXFLAGS"
+-    AC_LANG_PUSH([C++])
+-    AC_LINK_IFELSE([AC_LANG_PROGRAM()], AC_MSG_RESULT([yes]),
+-		   [VISIBILITY_CXXFLAGS="" ; AC_MSG_RESULT([no])]);
+-    AC_LANG_POP([C++])
++#    save_CXXFLAGS="$CXXFLAGS"
++#    AC_MSG_CHECKING([whether $CXX supports -fvisibility=hidden])
++#    VISIBILITY_CXXFLAGS="-fvisibility=hidden"
++#    CXXFLAGS="$CXXFLAGS $VISIBILITY_CXXFLAGS"
++#    AC_LANG_PUSH([C++])
++#    AC_LINK_IFELSE([AC_LANG_PROGRAM()], AC_MSG_RESULT([yes]),
++#		   [VISIBILITY_CXXFLAGS="" ; AC_MSG_RESULT([no])]);
++#    AC_LANG_POP([C++])
+ 
+     # Restore CXXFLAGS; VISIBILITY_CXXFLAGS are added to it where needed.
+-    CXXFLAGS=$save_CXXFLAGS
++#    CXXFLAGS=$save_CXXFLAGS
+ 
+     # We don't want floating-point math functions to set errno or trap
+     CXXFLAGS="$CXXFLAGS -fno-math-errno -fno-trapping-math"
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c11/threads_posix.h mesa-17.0.3/include/c11/threads_posix.h
+--- mesa-17.0.3-orig/include/c11/threads_posix.h	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/include/c11/threads_posix.h	2017-06-12 17:06:53.111879422 +0300
+@@ -35,6 +35,7 @@
+ #include <unistd.h>
+ #include <sched.h>
+ #include <stdint.h> /* for intptr_t */
++#include <pthread.h>
+ 
+ /*
+ Configuration macro:
+@@ -43,7 +44,7 @@
+     Use pthread_mutex_timedlock() for `mtx_timedlock()'
+     Otherwise use mtx_trylock() + *busy loop* emulation.
+ */
+-#if !defined(__CYGWIN__) && !defined(__APPLE__) && !defined(__NetBSD__)
++#if !defined(__CYGWIN__) && !defined(__APPLE__) && !defined(__NetBSD__) && !defined(__EMBOX__)
+ #define EMULATED_THREADS_USE_NATIVE_TIMEDLOCK
+ #endif
+ 
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c99_alloca.h mesa-17.0.3/include/c99_alloca.h
+--- mesa-17.0.3-orig/include/c99_alloca.h	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/include/c99_alloca.h	2017-06-12 17:06:53.111879422 +0300
+@@ -35,7 +35,7 @@
+ 
+ #  define alloca _alloca
+ 
+-#elif defined(__sun) || defined(__CYGWIN__)
++#elif defined(__sun) || defined(__CYGWIN__) || defined(__EMBOX__)
+ 
+ #  include <alloca.h>
+ 
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compiler/Makefile.glsl.am mesa-17.0.3/src/compiler/Makefile.glsl.am
+--- mesa-17.0.3-orig/src/compiler/Makefile.glsl.am	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/compiler/Makefile.glsl.am	2017-06-12 17:06:53.111879422 +0300
+@@ -53,7 +53,7 @@
+ 	glsl/tests/sampler-types-test			\
+ 	glsl/tests/uniform-initializer-test
+ 
+-noinst_PROGRAMS = glsl_compiler
++#noinst_PROGRAMS = glsl_compiler
+ 
+ glsl_tests_blob_test_SOURCES =				\
+ 	glsl/tests/blob_test.c
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compiler/Makefile.nir.am mesa-17.0.3/src/compiler/Makefile.nir.am
+--- mesa-17.0.3-orig/src/compiler/Makefile.nir.am	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/compiler/Makefile.nir.am	2017-06-12 17:06:53.111879422 +0300
+@@ -51,7 +51,7 @@
+ 	$(MKDIR_GEN)
+ 	$(PYTHON_GEN) $(srcdir)/nir/nir_opt_algebraic.py > $@ || ($(RM) $@; false)
+ 
+-noinst_PROGRAMS += spirv2nir
++#noinst_PROGRAMS += spirv2nir
+ 
+ spirv2nir_SOURCES = \
+ 	spirv/spirv2nir.c
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c mesa-17.0.3/src/compiler/nir/nir_instr_set.c
+--- mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/compiler/nir/nir_instr_set.c	2017-06-12 17:06:53.111879422 +0300
+@@ -20,7 +20,6 @@
+  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+  * IN THE SOFTWARE.
+  */
+-
+ #include "nir_instr_set.h"
+ #include "nir_vla.h"
+ 
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c mesa-17.0.3/src/compiler/nir/nir_liveness.c
+--- mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/compiler/nir/nir_liveness.c	2017-06-12 17:06:53.111879422 +0300
+@@ -23,7 +23,6 @@
+  * Authors:
+  *    Jason Ekstrand (jason@jlekstrand.net)
+  */
+-
+ #include "nir.h"
+ #include "nir_worklist.h"
+ #include "nir_vla.h"
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/gallium/auxiliary/hud/hud_context.c mesa-17.0.3/src/gallium/auxiliary/hud/hud_context.c
+--- mesa-17.0.3-orig/src/gallium/auxiliary/hud/hud_context.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/hud/hud_context.c	2017-06-12 17:06:53.475879414 +0300
+@@ -36,6 +36,7 @@
+ #include <inttypes.h>
+ #include <signal.h>
+ #include <stdio.h>
++#include <unistd.h>
+ 
+ #include "hud/hud_context.h"
+ #include "hud/hud_private.h"
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/gallium/auxiliary/os/os_misc.c mesa-17.0.3/src/gallium/auxiliary/os/os_misc.c
+--- mesa-17.0.3-orig/src/gallium/auxiliary/os/os_misc.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/os/os_misc.c	2017-06-12 17:06:53.479879414 +0300
+@@ -47,7 +47,7 @@
+ #endif
+ 
+ 
+-#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_CYGWIN) || defined(PIPE_OS_SOLARIS)
++#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_CYGWIN) || defined(PIPE_OS_SOLARIS) || defined(__EMBOX__)
+ #  include <unistd.h>
+ #elif defined(PIPE_OS_APPLE) || defined(PIPE_OS_BSD)
+ #  include <sys/sysctl.h>
+@@ -124,7 +124,7 @@
+ bool
+ os_get_total_physical_memory(uint64_t *size)
+ {
+-#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_CYGWIN) || defined(PIPE_OS_SOLARIS)
++#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_CYGWIN) || defined(PIPE_OS_SOLARIS) || defined(__EMBOX__)
+    const long phys_pages = sysconf(_SC_PHYS_PAGES);
+    const long page_size = sysconf(_SC_PAGE_SIZE);
+ 
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/gallium/auxiliary/os/os_time.c mesa-17.0.3/src/gallium/auxiliary/os/os_time.c
+--- mesa-17.0.3-orig/src/gallium/auxiliary/os/os_time.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/os/os_time.c	2017-06-12 17:06:53.479879414 +0300
+@@ -36,6 +36,10 @@
+ #include "pipe/p_defines.h"
+ #include "util/u_atomic.h"
+ 
++#if defined(__EMBOX__)
++#define PIPE_OS_UNIX
++#endif
++
+ #if defined(PIPE_OS_UNIX)
+ #  include <time.h> /* timeval */
+ #  include <sys/time.h> /* timeval */
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/main/mm.h mesa-17.0.3/src/mesa/main/mm.h
+--- mesa-17.0.3-orig/src/mesa/main/mm.h	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/main/mm.h	2017-06-12 17:06:53.479879414 +0300
+@@ -38,8 +38,8 @@
+    struct mem_block *heap;
+    unsigned ofs;
+    unsigned size;
+-   unsigned free:1;
+-   unsigned reserved:1;
++   unsigned free;
++   unsigned reserved;
+ };
+ 
+ 
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp mesa-17.0.3/src/mesa/state_tracker/st_glsl_to_tgsi.cpp
+--- mesa-17.0.3-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2017-06-12 17:06:53.479879414 +0300
+@@ -55,7 +55,7 @@
+ #include "st_glsl_types.h"
+ #include "st_nir.h"
+ 
+-#include <algorithm>
++//#include <algorithm>
+ 
+ #define PROGRAM_ANY_CONST ((1 << PROGRAM_STATE_VAR) |    \
+                            (1 << PROGRAM_CONSTANT) |     \
+@@ -5961,7 +5961,7 @@
+ {
+    sort_inout_decls sorter;
+    sorter.mapping = mapping;
+-   std::sort(decls, decls + count, sorter);
++//   std::sort(decls, decls + count, sorter);
+ }
+ 
+ static unsigned
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/debug.c mesa-17.0.3/src/util/debug.c
+--- mesa-17.0.3-orig/src/util/debug.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/util/debug.c	2017-06-12 17:06:53.479879414 +0300
+@@ -21,6 +21,7 @@
+  * IN THE SOFTWARE.
+  */
+ 
++#include <strings.h>
+ #include <string.h>
+ #include "main/macros.h"
+ #include "debug.h"
+
