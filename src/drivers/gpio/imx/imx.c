@@ -1,0 +1,93 @@
+/**
+ * @file imx.c
+ * @brief
+ * @author Denis Deryugin <deryugin.denis@gmail.com>
+ * @version
+ * @date 13.06.2017
+ */
+
+#include <drivers/common/memory.h>
+#include <drivers/gpio.h>
+#include <drivers/gpio/imx.h>
+#include <embox/unit.h>
+#include <hal/reg.h>
+#include <util/log.h>
+
+#define BASE_ADDR(n) ((OPTION_GET(NUMBER, base_addr)) + (n) * 0x4000)
+
+#define GPIO_NUM(pointer) (((int) pointer - BASE_ADDR(0)) / 0x4000)
+#define GPIO_MAX 4
+
+#define GPIO_DR(n)         (BASE_ADDR(n) + 0x00)
+#define GPIO_GDIR(n)       (BASE_ADDR(n) + 0x04)
+#define GPIO_PSR(n)        (BASE_ADDR(n) + 0x08)
+#define GPIO_ICR1(n)       (BASE_ADDR(n) + 0x0C)
+#define GPIO_ICR2(n)       (BASE_ADDR(n) + 0x10)
+#define GPIO_IMR(n)        (BASE_ADDR(n) + 0x14)
+#define GPIO_ISR(n)        (BASE_ADDR(n) + 0x18)
+#define GPIO_EDGE_SEL(n)   (BASE_ADDR(n) + 0x1C)
+
+#define GPIO_DIR_IN     0
+#define GPIO_DIR_OUT    1
+
+EMBOX_UNIT_INIT(imx_gpio_init);
+
+static int imx_gpio_init(void) {
+	for (int i = 0; i <= GPIO_MAX; i++)
+		log_debug("GPIO%d base address=%p", i, BASE_ADDR(i));
+	return 0;
+}
+
+struct gpio *gpio_by_num(int num_port) {
+	return (void*) BASE_ADDR(num_port);
+}
+
+int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
+	uint32_t val = 0;
+	uint32_t tmp;
+
+	int num = GPIO_NUM(gpio);
+
+	log_debug("Set GPIO%d;mask=0x%08x;mode=%d", num, mask, mode);
+
+	switch (mode) {
+	case GPIO_MODE_INPUT:
+		val = mask * GPIO_DIR_IN;
+		break;
+	case GPIO_MODE_OUTPUT:
+		val = mask * GPIO_DIR_OUT;
+		break;
+	default:
+		return -1;
+	}
+
+	tmp = REG32_LOAD(GPIO_GDIR(num));
+	tmp &= ~mask;
+	tmp |= val;
+	REG32_CLEAR(GPIO_GDIR(num), tmp);
+
+	return 0;
+}
+
+void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
+	int num = GPIO_NUM(gpio);
+
+	log_debug("set level %d for GPIO#%d 0x%08x", level, num, mask);
+
+	REG32_ORIN(GPIO_DR(num), mask * level);
+}
+
+gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask) {
+	int num = GPIO_NUM(gpio);
+	int ret = REG32_LOAD(GPIO_DR(num)) & mask;
+
+	log_debug("get level for GPIO#%d 0x%08x=0x%08x", num, mask, ret);
+
+	return ret;
+}
+
+static struct periph_memory_desc imx_gpio_mem = {
+	.start = BASE_ADDR(0),
+	.len   = 0x4000 * 5,
+};
+PERIPH_MEMORY_DEFINE(imx_gpio_mem);
