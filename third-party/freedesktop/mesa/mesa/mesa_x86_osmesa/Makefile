@@ -20,7 +20,6 @@ MESA_CPPFLAGS += $(SRC_DIR))/arch/$(ARCH)/include
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	export PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79:$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79/etnaviv;\
 	cd $(PKG_SOURCE_DIR) && aclocal && autoconf &&( \
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
