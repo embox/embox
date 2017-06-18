@@ -11,6 +11,7 @@
 #include <asm/regs.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
+#include <kernel/printk.h>
 
 mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
 	return (mmu_pmd_t*) (((uint32_t)*pgd) & ~MMU_PAGE_MASK);
@@ -69,12 +70,12 @@ void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
 	*pte &= ~(L1D_TEX_MASK | L1D_B | L1D_C);
 	if (value & VMEM_PAGE_CACHEABLE) {
-		*pte |= L1D_TEX_USE;
-		*pte |= L1D_TEX_B | L1D_TEX_C;
-		*pte |= L1D_C | L1D_B;
+		*pte |= L1D_TEX_USE;   /* Outer strongly-ordered memory */
+		*pte |= L1D_C | L1D_B; /* Inner write-through cached memory */
 	} else {
-		*pte |= L1D_B;
+		*pte |= L1D_B;         /* Shareable device memory */
 	}
+
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
@@ -88,4 +89,42 @@ void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
 		*pte &= ~L1D_XN;
 	}
 #endif
+}
+
+#define L1_ADDR_MASK 0xFFFFFC00
+#define L2_ADDR_MASK 0xFFF
+
+static uint32_t *get_l1_desc(uint32_t virt_addr)
+{
+	uint32_t *_translation_table = (void*)vmem_current_context();
+	int l1_idx = virt_addr >> 20;
+	return &_translation_table[l1_idx];
+}
+
+static uint32_t *get_l2_desc( uint32_t virt_addr, uint32_t l1_desc)
+{
+    uint32_t *l2_tbl = (uint32_t*)(l1_desc & L1_ADDR_MASK);
+    int l2_idx = (virt_addr >> 12) & 0xFF;
+    return &l2_tbl[l2_idx];
+}
+
+uint32_t vmem_info(uint32_t vaddr)
+{
+    uint32_t *l1_desc = get_l1_desc(vaddr);
+    printk("l1 desc %p\n", (void*) *l1_desc);
+    uint32_t *l2_desc;
+
+    vaddr &= ~0xFFF;
+
+    printk("vmem info: base %p; vaddr %p", (void*) vmem_current_context(), (void *) vaddr);
+
+    if (*l1_desc == 0x0) {
+        printk(" unmapped l1_desc = 0x%X\n", *l1_desc);
+        return 0x0;
+    }
+
+    l2_desc = get_l2_desc(vaddr, *l1_desc);
+    printk("->%p desc(%p);\n", (void *) ((*l2_desc) & ~L2_ADDR_MASK), (void *) (*l2_desc));
+    printk("l1 desc %p\n", (void*) *l1_desc);
+    return ((*l2_desc) & ~L2_ADDR_MASK);
 }

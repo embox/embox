@@ -1,0 +1,7 @@
+package embox.test.spi
+
+module imx6_test {
+	source "imx6_spi.c"
+
+	depends embox.driver.spi.imx6_ecspi
+}

@@ -18,9 +18,11 @@
 
 #include <mem/objalloc.h>
 #include <kernel/time/timer.h>
+#include <kernel/time/time.h>
 
 #include <util/math.h>
 #include <util/dlist.h>
+#include <util/log.h>
 
 #include <framework/mod/options.h>
 
@@ -42,11 +44,12 @@ struct dgram_buf {
 	int               is_last_frag_received;
 	int               meat;
 	int               len; /* total length of original datagram */
-	struct sys_timer *timer;
 	int               buf_ttl;
+	int               is_deleted;
 };
 
 static DLIST_DEFINE(__dgram_buf_list);
+static struct sys_timer ip_frag_timer;
 
 OBJALLOC_DEF(__dgram_bufs, struct dgram_buf, MAX_BUFS_CNT);
 
@@ -58,7 +61,11 @@ static struct dgram_buf *ip_buf_create(struct iphdr *iph);
 static void buf_delete(struct dgram_buf *buf);
 static void ip_buf_add_skb(struct dgram_buf *buf, struct sk_buff *skb);
 static struct sk_buff *build_packet(struct dgram_buf *buf);
-//static void ttl_handler(struct sys_timer *timer, void *param);
+
+static inline void buf_set_deleted(struct dgram_buf *buf) {
+	buf->is_deleted = 1;
+	skb_queue_purge(&buf->fragments);
+}
 
 static inline int ip_offset(struct sk_buff *skb) {
 	int offset;
@@ -70,21 +77,30 @@ static inline int ip_offset(struct sk_buff *skb) {
 	return offset;
 }
 
-#if 0
 static void ttl_handler(struct sys_timer *timer, void *param) {
 	struct dgram_buf *buf;
+	int i;
 
-	buf = (struct dgram_buf *)param;
+	i = 0;
 
-	if (buf->buf_ttl == 0) {
-		/*icmp_send(buf->next_skbuff, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);*/
-		buf_delete(buf);
-		timer_close(timer);
-	} else {
-		*(volatile int *)buf->buf_ttl -= 1;
+	dlist_foreach_entry(buf, &__dgram_buf_list, next_buf) {
+		i ++;
+		if (buf->is_deleted) {
+			continue;
+		}
+
+		if (buf->buf_ttl == 0) {
+			/*icmp_send(buf->next_skbuff, ICMP_TIME_EXCEEDED, ICMP_EXC_FRAGTIME, 0);*/
+			buf_set_deleted(buf);
+		} else {
+			buf->buf_ttl -= 1;
+		}
+	}
+
+	if (i == 0) {
+		timer_stop(timer);
 	}
 }
-#endif
 
 static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 	struct dgram_buf *buf;
@@ -92,6 +108,10 @@ static inline struct dgram_buf *ip_find(struct iphdr *iph) {
 	assert(iph);
 
 	dlist_foreach_entry(buf, &__dgram_buf_list, next_buf) {
+		if (buf->is_deleted) {
+			buf_delete(buf);
+			continue;
+		}
 		if (buf->buf_id.daddr == iph->daddr
 			&& buf->buf_id.saddr == iph->saddr
 			&& buf->buf_id.protocol == iph->proto
@@ -108,7 +128,9 @@ static void ip_buf_add_skb(struct dgram_buf *buf, struct sk_buff *skb) {
 
 	assert(buf && skb);
 
-	buf->buf_ttl = max(buf->buf_ttl, ntohs(skb->nh.iph->ttl));
+	/* We use ttl >> 4 just to make sure time to wait is not very big.
+	 * Usually, ttl is 64, so ttl >> 4 = 4 seconds */
+	buf->buf_ttl = max(buf->buf_ttl, skb->nh.iph->ttl >> 4);
 
 	offset = ip_offset(skb);
 
@@ -160,22 +182,27 @@ static struct sk_buff *build_packet(struct dgram_buf *buf) {
 
 	/* recalculate length */
 	skb->len = buf->len + ihlen;
-	buf_delete(buf);
+	buf_set_deleted(buf);
 
 	return skb;
 }
 
 static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 	struct dgram_buf *buf;
-	//sys_timer_t *timer;
 
 	assert(iph);
 
 	buf = (struct dgram_buf*) objalloc(&__dgram_bufs);
-	if (!buf)
+	if (!buf) {
 		return NULL;
+	}
 
-	//timer_set(&timer, TIMER_ONESHOT, TIMER_TICK, ttl_handler, (void *)buf);
+	if (!timer_is_inited(&ip_frag_timer)) {
+		timer_init(&ip_frag_timer, TIMER_PERIODIC, ttl_handler, NULL);
+		log_debug("timer init");
+	}
+	timer_start(&ip_frag_timer, ms2jiffies(TIMER_TICK));
+
 	skb_queue_init(&buf->fragments);
 	dlist_head_init(&buf->next_buf);
 	dlist_add_prev(&buf->next_buf, &__dgram_buf_list);
@@ -187,14 +214,13 @@ static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 	buf->len = 0;
 	buf->is_last_frag_received = 0;
 	buf->meat = 0;
-	//buf->timer = timer;
 	buf->buf_ttl = MSL;
+	buf->is_deleted = 0;
 
 	return buf;
 }
 
 static void buf_delete(struct dgram_buf *buf) {
-	skb_queue_purge(&buf->fragments);
 	dlist_del(&buf->next_buf);
 	objfree(&__dgram_bufs, (void*)buf);
 }

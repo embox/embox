@@ -44,6 +44,12 @@
 #define REG32_STORE(addr, val) \
 	do { *((volatile uint32_t *)(addr)) = (val); } while (0)
 
+#define REG32_ORIN(addr, mask) \
+	REG32_STORE(addr, REG32_LOAD(addr) | ((uint32_t) mask))
+
+#define REG32_CLEAR(addr, mask) \
+	REG32_STORE(addr, REG32_LOAD(addr) & (~((uint32_t) mask)))
+
 #define REG16_LOAD(addr) \
 	*((volatile uint16_t *)(addr))
 

@@ -27,6 +27,7 @@
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
 #define RAMDISK_SIZE OPTION_GET(NUMBER,size)
+#define RAMDISK_BLOCK_SIZE OPTION_GET(NUMBER,block_size)
 
 POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
 INDEX_DEF(ramdisk_idx,0,MAX_DEV_QUANTITY);
@@ -94,7 +95,7 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	}
 
 	ramdisk->bdev->size = ramdisk_size;
-	ramdisk->bdev->block_size = PAGE_SIZE();
+	ramdisk->bdev->block_size = RAMDISK_BLOCK_SIZE;
 	return ramdisk;
 
 err_free_bdev_idx:

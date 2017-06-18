@@ -24,15 +24,13 @@ extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 extern struct file_operations fat_fops;
 
 int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
-	struct dev_module *devmod;
 	size_t ret;
 	int blk;
 	int blkpersec = fsi->vi.bytepersec / fsi->bdev->block_size;
-	devmod = fsi->bdev->dev_module;
 
 	blk = sector * blkpersec;
-	ret = bdev_read_blocks(devmod, buffer, blk, blkpersec);
 
+	ret = block_dev_read(fsi->bdev, (char*) buffer, fsi->vi.bytepersec, blk);
 	if (ret != fsi->vi.bytepersec)
 		return DFS_ERRMISC;
 	else
@@ -40,15 +38,12 @@ int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
 }
 
 int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
-	struct dev_module *devmod;
 	size_t ret;
 	int blk;
 	int blkpersec = fsi->vi.bytepersec / fsi->bdev->block_size;
-	devmod = fsi->bdev->dev_module;
 
 	blk = sector * blkpersec;
-	ret = bdev_write_blocks(devmod, buffer, blk, blkpersec);
-
+	ret = block_dev_write(fsi->bdev, (char*) buffer, fsi->vi.bytepersec, blk);
 	if (ret != fsi->vi.bytepersec)
 		return DFS_ERRMISC;
 	else
@@ -496,114 +491,6 @@ struct super_block_operations fat_sbops = {
 	.destroy_inode = fat_destroy_inode,
 };
 
-
-/**
- * @brief Fill given volinfo struct with info from first FS sector
- *
- * @note Actually, it's copy-paste from old fat driver, but with use
- * of devmodule, not raw block device.
- *
- * @param devmod Module related to block device
- * @param volinfo Structure to be filled
- *
- * @return Error code
- * @retval -1 Fail
- * @retval 0  Success
- */
-static int fat_get_vi(struct dev_module *devmod, struct volinfo *volinfo) {
-	struct lbr *lbr = (struct lbr *) fat_sector_buff;
-	if (0 > bdev_read_block(devmod, lbr, 0))
-		return -1;
-
-	if (lbr->jump[0] != 0xeb || lbr->jump[2] != 0x90 ||
-		lbr->sig_55 != 0x55 || lbr->sig_aa != 0xaa)
-		return -1;
-
-	volinfo->bytepersec = lbr->bpb.bytepersec_l + (lbr->bpb.bytepersec_h << 8);
-	if (volinfo->bytepersec == 0)
-		return -1;
-
-	volinfo->startsector = 0;
-	volinfo->secperclus = lbr->bpb.secperclus;
-	volinfo->reservedsecs = (uint16_t) lbr->bpb.reserved_l |
-		  (((uint16_t) lbr->bpb.reserved_h) << 8);
-
-	volinfo->numsecs =  (uint16_t) lbr->bpb.sectors_s_l |
-		  (((uint16_t) lbr->bpb.sectors_s_h) << 8);
-
-	if (!volinfo->numsecs)
-		volinfo->numsecs = (uint32_t) lbr->bpb.sectors_l_0 |
-		  (((uint32_t) lbr->bpb.sectors_l_1) << 8) |
-		  (((uint32_t) lbr->bpb.sectors_l_2) << 16) |
-		  (((uint32_t) lbr->bpb.sectors_l_3) << 24);
-
-	if (volinfo->numsecs == 0)
-		return -1;
-
-	/**
-	 * If secperfat is 0, we must be in a FAT32 volume
-	 */
-	volinfo->secperfat =  (uint16_t) lbr->bpb.secperfat_l |
-		  (((uint16_t) lbr->bpb.secperfat_h) << 8);
-
-	if (!volinfo->secperfat) {
-		volinfo->secperfat = (uint32_t) lbr->ebpb.ebpb32.fatsize_0 |
-		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_1) << 8) |
-		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_2) << 16) |
-		  (((uint32_t) lbr->ebpb.ebpb32.fatsize_3) << 24);
-
-		if (volinfo->secperfat == 0)
-			return -1;
-
-		memcpy(volinfo->label, lbr->ebpb.ebpb32.label, MSDOS_NAME);
-		volinfo->label[11] = 0;
-	} else {
-		memcpy(volinfo->label, lbr->ebpb.ebpb.label, MSDOS_NAME);
-		volinfo->label[11] = 0;
-	}
-
-	/* note: if rootentries is 0, we must be in a FAT32 volume. */
-	volinfo->rootentries =  (uint16_t) lbr->bpb.rootentries_l |
-		  (((uint16_t) lbr->bpb.rootentries_h) << 8);
-
-	volinfo->fat1 = volinfo->reservedsecs;
-
-	/**
-	 * The calculation below is designed to round up the root directory size
-	 * for FAT12/16 and to simply ignore the root directory for FAT32, since
-	 * it's a normal, expandable file in that situation.
-	 */
-
-	if (volinfo->rootentries) {
-		volinfo->rootdir = volinfo->reservedsecs + lbr->bpb.numfats * volinfo->secperfat;
-		volinfo->dataarea = volinfo->rootdir
-			+ (((volinfo->rootentries * 32) + (volinfo->bytepersec - 1))
-			/ volinfo->bytepersec);
-	} else {
-		volinfo->dataarea = volinfo->fat1 + (volinfo->secperfat * 2);
-		volinfo->rootdir = (uint32_t) lbr->ebpb.ebpb32.root_0 |
-		  (((uint32_t) lbr->ebpb.ebpb32.root_1) << 8) |
-		  (((uint32_t) lbr->ebpb.ebpb32.root_2) << 16) |
-		  (((uint32_t) lbr->ebpb.ebpb32.root_3) << 24);
-	}
-
-	if (0 == volinfo->secperclus) {
-		return -1;
-	} else {
-		volinfo->numclusters = (volinfo->numsecs - volinfo->dataarea) /
-			volinfo->secperclus;
-	}
-
-	if (volinfo->numclusters < 4085)
-		volinfo->filesystem = FAT12;
-	else if (volinfo->numclusters < 65525)
-		volinfo->filesystem = FAT16;
-	else
-		volinfo->filesystem = FAT32;
-
-	return 0;
-}
-
 /* @brief Initializing fat super_block
  * @param sb  Structure to be initialized
  * @param dev Storage device
@@ -625,7 +512,7 @@ static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	sb->sb_fops = &fat_fops;
 	sb->sb_ops  = &fat_sbops;
 
-	if (fat_get_vi(dev->dev_module, &fsi->vi))
+	if (fat_get_volinfo(dev, &fsi->vi, 0))
 		goto err_out;
 
 	return 0;
