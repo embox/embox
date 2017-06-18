@@ -57,16 +57,16 @@ extern int termios_gotc(const struct termios *tio, char ch,
 		struct ring *ring, char *buf, size_t buflen);
 
 /**
- * @brief
+ * @brief Checks the current status of ECHO and ECHOE flags.
  *
- * @return
+ * @return Value that depends on which flag is enabled. 
  */
-extern int termios_get_status(const struct termios *tio, char *verase);
+extern int termios_echo_status(const struct termios *tio, char *verase);
 
 /**
  * @brief Provides newline control: IGNCR, ICRNL, INLCR.
  *
- * @return Value that shows if newline was handled.
+ * @return Value that indicates whether a newline was handled.
  */
 extern int termios_handle_newline(const struct termios *tio,
 		char ch, int *is_eol);
@@ -74,47 +74,46 @@ extern int termios_handle_newline(const struct termios *tio,
 /**
  * @brief Provides erase/kill control: VKILL, VERASE.
  *
- * @return
+ * @return Number of characters to erase.
  */
-extern int termios_handle_erase(const struct termios *tio, char ch, int *raw_mode,
-		struct ring *ring, struct ring *canon_ring, size_t buflen);
+extern int termios_handle_erase(const struct termios *tio, char ch, 
+		int *raw_mode, struct ring *ring, struct ring *canon_ring, size_t buflen);
 
 /**
- * @brief
+ * @brief Updates the ring and checks status of a buffer after 
+ * processing input character.
  *
  * @return
  */
-extern int termios_get_data(const struct termios *tio, char ch,
+extern int termios_input_status(const struct termios *tio, char ch,
 		struct ring *ring, struct ring *canon_ring);
 
 /**
- * @brief
+ * @brief Processes the current character after reading.
  *
- * @return
+ * @return Pointer to the next character to read.
  */
 extern char *termios_read(const struct termios *tio, char *buff, char *end,
 		struct ring *ring, struct ring *canon_ring, char *i_buff, size_t buflen);
 
 /**
- * @brief
- *
- * @return
+ * @brief Sets the buffer size and timeout.
  */
-extern size_t termios_update_size(const struct termios *tio,
-		size_t size, unsigned long *timeout);
+extern void termios_update_size(const struct termios *tio,
+		size_t *size, unsigned long *timeout);
 
 /**
- * @brief
+ * @brief Updates rings depending on the current state of termios.
  */
 extern void termios_update_ring(const struct termios *tio, 
 		struct ring *ring, struct ring *canon_ring);
 
 /**
- * @brief
+ * @brief Checks whether termios can read.
  *
  * @return
  */
-extern int termios_get_result(const struct termios *tio,
+extern int termios_can_read(const struct termios *tio,
 		struct ring *ring, struct ring *canon_ring, size_t buflen);
 
 /**

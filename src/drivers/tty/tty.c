@@ -65,7 +65,7 @@ static void tty_echo_erase(struct tty *t) {
 
 	/* See also http://users.sosdg.org/~qiyong/mxr/source/drivers/tty/tty.c#L1430
 	 * as example of how ECHOE flag is handled in Minix. */
-	status = termios_get_status(&t->termios, &verase);
+	status = termios_echo_status(&t->termios, &verase);
 
 	switch(status) {
 	case ECHO:
@@ -81,8 +81,8 @@ static void tty_echo_erase(struct tty *t) {
 	}
 }
 
-static inline int tty_get_data(struct tty *t, char ch) {
-	return termios_get_data(&t->termios, ch, &t->i_ring, &t->i_canon_ring);
+static inline int tty_input_status(struct tty *t, char ch) {
+	return termios_input_status(&t->termios, ch, &t->i_ring, &t->i_canon_ring);
 }
 
 static int tty_input(struct tty *t, char ch, unsigned char flag) {
@@ -90,7 +90,7 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	int is_eol;
 
 	if (termios_handle_newline(&t->termios, ch, &is_eol)) {
-		return tty_get_data(t, ch);
+		return tty_input_status(t, ch);
 	}
 
 	int erase_len = termios_handle_erase(&t->termios, ch, &raw_mode,
@@ -102,7 +102,7 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 			tty_echo_erase(t);
 		}
 
-		return tty_get_data(t, ch);
+		return tty_input_status(t, ch);
 	}
 
 	/* Finally, store and echo the char.
@@ -117,7 +117,7 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 		}
 	}
 
-	return tty_get_data(t, ch);
+	return tty_input_status(t, ch);
 }
 
 static void tty_rx_do(struct tty *t) {
@@ -137,8 +137,8 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 
 	curr = buff;
 	end = buff + size;
-	size = termios_update_size(&t->termios, size, &timeout);
 
+	termios_update_size(&t->termios, &size, &timeout);
 	idesc_wait_init(&iwl, POLLIN | POLLERR);
 
 	threadsig_lock();
@@ -277,7 +277,7 @@ size_t tty_status(struct tty *t, int status_nr) {
 	switch (status_nr) {
 	case POLLIN:
 		IRQ_LOCKED_DO(tty_rx_do(t));
-		res = termios_get_result(&t->termios, 
+		res = termios_can_read(&t->termios, 
 			&t->i_ring, &t->i_canon_ring, TTY_IO_BUFF_SZ);
 		break;
 	case POLLOUT:

@@ -88,7 +88,7 @@ struct ring *termios_raw_ring(struct ring *r, struct ring *i_ring,
 	return r;
 }
 
-int termios_get_status(const struct termios *t, char *verase) {
+int termios_echo_status(const struct termios *t, char *verase) {
 	if (!TIO_L(t, ECHOE)) {
 		*verase = t->c_cc[VERASE];
 		return ECHO;
@@ -120,8 +120,8 @@ int termios_handle_erase(const struct termios *t, char ch, int *raw_mode,
 	struct ring *i_ring, struct ring *i_canon_ring, size_t buflen) {
 
 	*raw_mode = !TIO_L(t, ICANON);
-	
 	int erase_all = (ch == t->c_cc[VKILL]);
+
 	if (erase_all || ch == t->c_cc[VERASE] || ch == '\b') {
 
 		struct ring edit_ring;
@@ -143,7 +143,7 @@ int termios_handle_erase(const struct termios *t, char ch, int *raw_mode,
 	return -1;
 }
 
-int termios_get_data(const struct termios *t, char ch,
+int termios_input_status(const struct termios *t, char ch,
 	struct ring *i_ring, struct ring *i_canon_ring) {
 	
 	int raw_mode = !TIO_L(t, ICANON);
@@ -160,25 +160,6 @@ int termios_get_data(const struct termios *t, char ch,
 	}
 
 	return got_data;
-}
-
-char *termios_read_raw(const struct termios *t, char *buff, char *end,
-	struct ring *i_ring, struct ring *i_canon_ring, char *i_buff, size_t buflen) {
-	
-	struct ring raw_ring;
-	size_t block_size;
-
-	while ((block_size = ring_can_read(
-		termios_raw_ring(&raw_ring, i_ring, i_canon_ring), buflen, end - buff))) {
-
-		/* No processing is required to read raw data. */
-		memcpy(buff, i_buff + raw_ring.tail, block_size);
-		buff += block_size;
-
-		ring_just_read(i_ring, buflen, block_size);
-	}
-
-	return buff;
 }
 
 size_t termios_find_line_len(const struct termios *t, 
@@ -243,8 +224,19 @@ char *termios_read_cooked(const struct termios *t, char *buff, char *end,
 char *termios_read(const struct termios *t, char *curr, char *end,
 	struct ring *i_ring, struct ring *i_canon_ring, char *i_buff, size_t buflen) {
 
-	char *next = termios_read_raw(t, curr, end, 
-		i_ring, i_canon_ring, i_buff, buflen);
+	struct ring raw_ring;
+	size_t block_size;
+	char *next = curr;
+
+	while ((block_size = ring_can_read(
+		termios_raw_ring(&raw_ring, i_ring, i_canon_ring), buflen, end - next))) {
+
+		/* No processing is required to read raw data. */
+		memcpy(curr, i_buff + raw_ring.tail, block_size);
+		next += block_size;
+
+		ring_just_read(i_ring, buflen, block_size);
+	}
 
 	if (TIO_L(t, ICANON)) {
 		next = termios_read_cooked(t, next, end, 
@@ -254,22 +246,20 @@ char *termios_read(const struct termios *t, char *curr, char *end,
 	return next;
 }
 
-size_t termios_update_size(const struct termios *t, size_t size,
+void termios_update_size(const struct termios *t, size_t *size,
 		unsigned long *timeout) {
 
 	cc_t vmin = t->c_cc[VMIN];
 	cc_t vtime = t->c_cc[VTIME];
 
 	if (((vmin == 0) && (vtime == 0))) {
-		size = 0;
+		*size = 0;
 		*timeout = 0;
 	} else {
-		size = vtime == 0 ? min(size, vmin) : 1;
+		*size = vtime == 0 ? min(*size, vmin) : 1;
 		*timeout = vmin > 0 ? SCHED_TIMEOUT_INFINITE
 				: vtime * 100; /* deciseconds to milliseconds */
 	}
-
-	return size;
 }
 
 void termios_update_ring(const struct termios *t, 
@@ -280,7 +270,7 @@ void termios_update_ring(const struct termios *t,
 	}
 }
 
-int termios_get_result(const struct termios *t,
+int termios_can_read(const struct termios *t,
 	struct ring *i_ring, struct ring *i_canon_ring, size_t buflen) {
 	
 	struct ring raw_ring;
