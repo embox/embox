@@ -15,21 +15,23 @@ include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(PKG_SOURCE_DIR) && aclocal && autoconf &&( \
-			/configure \
+	cd $(PKG_SOURCE_DIR) && aclocal && autoreconf --force --install && automake --add-missing && ( \
+			./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--disable-shared --enable-static \
 			--disable-debug --enable-osmesa \
-			PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa-17.0.3/src/mesa/ \
-			CC=$(EMBOX_GCC) \
-			CXX=$(EMBOX_GXX) \
+			GL_LIBS="-L$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/install" \
+			GL_CFLAGS="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-17.0.3/include" \
+			OSMESA_LIBS="-L$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/install" \
+			OSMESA_CFLAGS="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-17.0.3/include" \
 	)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX); \
 	)
 	touch $@
 
 $(INSTALL) :
+	cp $(PKG_SOURCE_DIR)/.libs/libGLU.a $(PKG_INSTALL_DIR)/libGLU.a
 	touch $@
