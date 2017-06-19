@@ -288,4 +288,48 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/de
  #include <string.h>
  #include "main/macros.h"
  #include "debug.h"
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/ralloc.c mesa-17.0.3/src/util/ralloc.c
+--- mesa-17.0.3-orig/src/util/ralloc.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/util/ralloc.c	2017-06-19 14:55:55.942393197 +0300
+@@ -636,8 +636,9 @@
+    linear_header *new_node;
+    linear_size_chunk *ptr;
+    unsigned full_size;
+-
++#ifdef DEBUG
+    assert(first->magic == LMAGIC);
++#endif
+    assert(!latest->next);
+ 
+    size = ALIGN_POT(size, SUBALLOC_ALIGNMENT);
+@@ -709,7 +710,9 @@
+       return;
+ 
+    node = LINEAR_PARENT_TO_HEADER(ptr);
++#ifdef DEBUG
+    assert(node->magic == LMAGIC);
++#endif
+ 
+    while (node) {
+       void *ptr = node;
+@@ -728,7 +731,9 @@
+       return;
+ 
+    node = LINEAR_PARENT_TO_HEADER(ptr);
++#ifdef DEBUG
+    assert(node->magic == LMAGIC);
++#endif
+ 
+    while (node) {
+       ralloc_steal(new_ralloc_ctx, node);
+@@ -741,7 +746,9 @@
+ ralloc_parent_of_linear_parent(void *ptr)
+ {
+    linear_header *node = LINEAR_PARENT_TO_HEADER(ptr);
++#ifdef DEBUG
+    assert(node->magic == LMAGIC);
++#endif
+    return node->ralloc_parent;
+ }
+ 
 
