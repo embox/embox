@@ -11,6 +11,10 @@
 
 #include <time.h>
 
+#define TFD_TIMER_ABSTIME (1 << 0)
+#define TFD_TIMER_CANCEL_ON_SET (1 << 1)
+#define TFD_SETTIME_FLAGS (TFD_TIMER_ABSTIME | TFD_TIMER_CANCEL_ON_SET)
+
 extern int timerfd_create(int clockid, int flags);
 
 extern int timerfd_settime(int fd, int flags,

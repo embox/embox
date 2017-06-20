@@ -13,6 +13,7 @@
 
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
+#include <kernel/printk.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
@@ -31,7 +32,11 @@ struct idesc_timerfd {
 };
 
 struct timerfd {
-	struct itimerspec *timerspec; /**< The initial expiration and interval of the timer */
+	int timer_flags; /**< TFD flags */
+	/**
+	 * Current setting - initial expiration and interval
+	 */
+	struct itimerspec cur_value;
 	struct mutex mutex; /**< Global timerfd mutex */
 
 	struct idesc_timerfd read_desc; /**< The descriptor of the timer */
@@ -83,10 +88,15 @@ static void timerfd_free(struct timerfd *timerfd) {
  * timerfd_create - creates a new timer object, and returns a file descriptor
  * that refers to that timer.
  *
+ * Only CLOCK_MONOTONIC is supported for now.
+ *
  * @clockid: the clock that is used to mark the progress of the timer
  * @flags: ignored in this version
  */
 int timerfd_create(int clockid, int flags) {
+	printk("timerfd_create invoked.\n");
+	assert(clockid == CLOCK_MONOTONIC);
+
 	int fd;
 	struct idesc_table *it;
 	struct timerfd *timerfd;
@@ -100,17 +110,19 @@ int timerfd_create(int clockid, int flags) {
 		result = ENOMEM;
 		goto out_err;
 	}
+	printk("Allocated timerfd at %p, size %d.\n", (void *)timerfd, sizeof(*timerfd));
 
 	idesc_init(&timerfd->read_desc.idesc, &idesc_timerfd_ops, S_IROTH);
 	timerfd->read_desc.timerfd = timerfd;
 
-	fd = idesc_table_add(it, &timerfd->read_desc.idesc, flags);
+	fd = idesc_table_add(it, &timerfd->read_desc.idesc, 0);
 	if (fd < 0) {
 		result = ENOMEM;
 		goto out_err;
 	}
+	printk("Assigned fd %p.\n", (void *)fd);
 
-	return 0;
+	return fd;
 
 out_err:
 	if (fd >= 0) {
@@ -135,6 +147,7 @@ out_err:
  */
 int timerfd_settime(int fd, int flags, const struct itimerspec *new_value,
 		struct itimerspec *old_value) {
+	printk("timerfd_settime invoked.\n");
 	// TODO
 	return 42;
 }

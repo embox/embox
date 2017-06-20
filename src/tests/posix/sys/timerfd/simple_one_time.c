@@ -8,6 +8,7 @@
  */
 
 #include <embox/test.h>
+#include <kernel/printk.h>
 #include <unistd.h>
 #include <inttypes.h>
 #include <stdint.h>
@@ -17,6 +18,7 @@
 EMBOX_TEST_SUITE("timerfd suite");
 
 TEST_CASE("simple timerfd test") {
+	printk("\n");
 	int timeout_sec = 1;
 
 	int error_code;
@@ -26,13 +28,15 @@ TEST_CASE("simple timerfd test") {
 
 	/* create new timer */
 	timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
-	test_assert_not_zero(timer_fd);
+	test_assert_true(timer_fd >= 0);
+	printk("Test: timer created.\n");
 
 	/* set timeout */
 	timeout.it_value.tv_sec = timeout_sec;
 	timeout.it_value.tv_nsec = 0;
 	error_code = timerfd_settime(timer_fd, 0, &timeout, NULL);
 	test_assert_zero(error_code);
+	printk("Test: timer set.\n");
 
 	read(timer_fd, &expirations_number, sizeof(expirations_number)); // blocking
 	test_assert(expirations_number == 1);
