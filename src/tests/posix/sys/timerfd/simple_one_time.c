@@ -20,20 +20,21 @@ TEST_CASE("simple timerfd test") {
 	int timeout_sec = 1;
 
 	int error_code;
-	int timerfd = -1;
+	int timer_fd = -1;
 	struct itimerspec timeout;
 	uint64_t expirations_number;
 
 	/* create new timer */
-	timerfd = timerfd_create(CLOCK_MONOTONIC, 0);
-	test_assert_not_zero(timerfd);
+	timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+	test_assert_not_zero(timer_fd);
 
 	/* set timeout */
 	timeout.it_value.tv_sec = timeout_sec;
 	timeout.it_value.tv_nsec = 0;
-	error_code = timerfd_settime(timerfd, 0, &timeout, NULL);
+	error_code = timerfd_settime(timer_fd, 0, &timeout, NULL);
 	test_assert_zero(error_code);
 
-	read(timerfd, &expirations_number, sizeof(expirations_number));
+	read(timer_fd, &expirations_number, sizeof(expirations_number)); // blocking
 	test_assert(expirations_number == 1);
+	close(timer_fd);
 }
