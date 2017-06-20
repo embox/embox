@@ -6,13 +6,17 @@
  * @author Kirill Smirenko
  */
 
+#include <errno.h>
 #include <stddef.h>
+#include <sys/stat.h>
 #include <time.h>
 
-#include <kernel/task.h>
-#include <kernel/task/resource/idesc_table.h>
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
+#include <kernel/thread/sync/mutex.h>
+#include <kernel/task.h>
+#include <kernel/task/resource/idesc_table.h>
+#include <mem/sysmalloc.h>
 
 // ----------------------------------------------------------------------------
 // Base structures
@@ -46,7 +50,6 @@ static ssize_t timerfd_read(struct idesc *idesc, const struct iovec *iov,
 
 static void timerfd_close(struct idesc *idesc) {
 	// TODO
-	return 0;
 }
 
 static const struct idesc_ops idesc_timerfd_ops = {
