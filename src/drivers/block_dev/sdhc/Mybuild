@@ -9,3 +9,13 @@ module sdhc {
 
 	depends embox.driver.block_common
 }
+
+module imx6_sdhc {
+	option number base_addr
+
+	option number log_level=0
+
+	source "imx6_sdhc.c"
+
+	depends embox.driver.block_common
+}
