@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <time.h>
 
@@ -18,6 +19,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <mem/sysmalloc.h>
+#include <timespec_utils.h>
 
 // ----------------------------------------------------------------------------
 // Base structures
@@ -32,11 +34,11 @@ struct idesc_timerfd {
 };
 
 struct timerfd {
-	int timer_flags; /**< TFD flags */
+	clockid_t clk_id; /** Clock ID of this timer */
 	/**
 	 * Current setting - initial expiration and interval
 	 */
-	struct itimerspec cur_value;
+	struct itimerspec curr_value;
 	struct mutex mutex; /**< Global timerfd mutex */
 
 	struct idesc_timerfd read_desc; /**< The descriptor of the timer */
@@ -72,6 +74,8 @@ static struct timerfd *timerfd_alloc(void) {
 	if (!timerfd) {
 		return NULL;
 	}
+
+	memset(&timerfd->curr_value, 0, sizeof(struct itimerspec));
 	mutex_init(&timerfd->mutex);
 
 	return timerfd;
@@ -112,6 +116,7 @@ int timerfd_create(int clockid, int flags) {
 	}
 	printk("Allocated timerfd at %p, size %d.\n", (void *)timerfd, sizeof(*timerfd));
 
+	timerfd->clk_id = clockid;
 	idesc_init(&timerfd->read_desc.idesc, &idesc_timerfd_ops, S_IROTH);
 	timerfd->read_desc.timerfd = timerfd;
 
@@ -147,9 +152,8 @@ out_err:
  */
 int timerfd_settime(int fd, int flags, const struct itimerspec *new_value,
 		struct itimerspec *old_value) {
-	printk("timerfd_settime invoked.\n");
-	// TODO
-	return 42;
+	printk("timerfd_settime (stub) invoked.\n");
+	return 0;
 }
 
 /**
@@ -167,6 +171,49 @@ int timerfd_settime(int fd, int flags, const struct itimerspec *new_value,
  * @curr_value: is used to return the current setting of the timer
  */
 int timerfd_gettime(int fd, struct itimerspec *curr_value) {
-	// TODO
-	return 42;
+	printk("timerfd_gettime invoked.\n");
+
+	struct idesc_table *it;
+	struct idesc *idesc;
+	struct timerfd *timerfd;
+	struct timespec *it_value, *it_interval;
+	struct timespec current_time, diff;
+
+	assert(curr_value);
+
+	it = task_resource_idesc_table(task_self());
+	assert(it);
+	idesc = idesc_table_get(it, fd);
+	timerfd = idesc_to_timerfd(idesc);
+	printk("Retrieved timerfd at %p, size %d.\n", (void *)timerfd, sizeof(*timerfd));
+
+	mutex_lock(&timerfd->mutex);
+	it_value = &timerfd->curr_value.it_value;
+	it_interval = &timerfd->curr_value.it_interval;
+	mutex_unlock(&timerfd->mutex);
+
+	// copy timer interval to output
+	memcpy(&curr_value->it_interval, it_interval, sizeof(struct timespec));
+
+	// calculate time remaining until next expiration
+	clock_gettime(timerfd->clk_id, &current_time);
+	timespec_diff(&current_time, it_value, &diff);
+	if (timespec_is_non_negative(&diff)) {
+		// timer has not expired for the first time
+		memcpy(&curr_value->it_value, &diff, sizeof(struct timespec));
+	} else if (timespec_is_positive(it_interval)) {
+		// timer has expired for the first time
+		// seek the nearest expiration time (after one or several intervals)
+		do {
+			timespec_inc_by(&diff, it_interval);
+		} while (!timespec_is_non_negative(&diff));
+		// now diff contains the next expiration time;
+		// we need to return relative time
+		timespec_diff(&current_time, &diff, &curr_value->it_value);
+	} else {
+		// timer has already expired and been disarmed
+		memset(&curr_value->it_value, 0, sizeof(struct timespec));
+	}
+
+	return 0;
 }
