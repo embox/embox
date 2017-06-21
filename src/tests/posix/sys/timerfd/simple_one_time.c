@@ -19,19 +19,43 @@
 EMBOX_TEST_SUITE("timerfd suite");
 
 TEST_CASE("timerfd create and get (disarmed)") {
-	printk("\n");
 	int timer_fd = -1;
 	struct itimerspec old_value;
 
 	timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
 	test_assert_true(timer_fd >= 0);
-	printk("Test: timer created.\n");
 
 	timerfd_gettime(timer_fd, &old_value);
 	test_assert_true(timespec_is_zero(&old_value.it_value));
 	test_assert_true(timespec_is_zero(&old_value.it_interval));
 
 	close(timer_fd);
+}
+
+TEST_CASE("timerfd create, set and get") {
+	int timer_fd = -1;
+	struct itimerspec timer_setting, old_value;
+
+	timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+	test_assert_true(timer_fd >= 0);
+
+	timer_setting.it_value.tv_sec = 2;
+	timer_setting.it_value.tv_nsec = 0;
+	timer_setting.it_interval.tv_sec = 0;
+	timer_setting.it_interval.tv_nsec = 0;
+	timerfd_settime(timer_fd, 0, &timer_setting, NULL);
+
+	// first gettime: timer not expired yet
+	sleep(1);
+	timerfd_gettime(timer_fd, &old_value);
+	test_assert_false(timespec_is_zero(&old_value.it_value));
+	test_assert_true(timespec_is_zero(&old_value.it_interval));
+
+	// first gettime: timer expired
+	sleep(1);
+	timerfd_gettime(timer_fd, &old_value);
+	test_assert_true(timespec_is_zero(&old_value.it_value));
+	test_assert_true(timespec_is_zero(&old_value.it_interval));
 }
 
 TEST_CASE("timerfd create, set and read") {
