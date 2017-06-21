@@ -12,6 +12,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
 #include <time.h>
 
 #include <fs/idesc.h>
@@ -47,26 +48,6 @@ struct timerfd {
 };
 
 // ----------------------------------------------------------------------------
-// Idesc operations
-
-static const struct idesc_ops idesc_timerfd_ops;
-
-static ssize_t timerfd_read(struct idesc *idesc, const struct iovec *iov,
-		int cnt) {
-	// TODO
-	return 0;
-}
-
-static void timerfd_close(struct idesc *idesc) {
-	// TODO
-}
-
-static const struct idesc_ops idesc_timerfd_ops = {
-		.id_readv = timerfd_read,
-		.close = timerfd_close
-};
-
-// ----------------------------------------------------------------------------
 // Allocation and deallocation
 
 static struct timerfd *timerfd_alloc(void) {
@@ -88,7 +69,68 @@ static void timerfd_free(struct timerfd *timerfd) {
 }
 
 // ----------------------------------------------------------------------------
+// Idesc operations
+
+static const struct idesc_ops idesc_timerfd_ops;
+
+static ssize_t timerfd_read(struct idesc *idesc, const struct iovec *iov,
+		int cnt) {
+	printk("timerfd_read() invoked.\n");
+	/*
+	struct timerfd *timerfd;
+	void *buf;
+	uint64_t expirations_count = 0LL;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == sizeof(uint64_t));
+	assert(idesc->idesc_ops == &idesc_timerfd_ops);
+	assert(idesc->idesc_amode == S_IROTH);
+
+	if (!iov->iov_len) {
+		return 0;
+	}
+
+	timerfd = idesc_to_timerfd(idesc);
+	mutex_lock(&timerfd->mutex);
+	mutex_unlock(&timerfd->mutex);
+
+	// return sizeof(uint64_t);
+	*/
+	// TODO
+	return 0;
+}
+
+static void timerfd_close(struct idesc *idesc) {
+	struct idesc_timerfd *idesc_timerfd;
+	struct timerfd *timerfd;
+
+	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_timerfd_ops);
+
+	idesc_timerfd = (struct idesc_timerfd *)idesc;
+	timerfd = idesc_to_timerfd(idesc);
+
+	mutex_lock(&timerfd->mutex);
+	idesc_timerfd->idesc.idesc_amode = 0;
+	mutex_unlock(&timerfd->mutex);
+
+	timerfd_free(timerfd);
+}
+
+static const struct idesc_ops idesc_timerfd_ops = {
+		.id_readv = timerfd_read,
+		.close = timerfd_close
+};
+
+// ----------------------------------------------------------------------------
 // Helpers
+
+/*
+static int idesc_timerfd_isclosed(struct idesc_timerfd *idesc_timerfd) {
+	return idesc_timerfd->idesc.idesc_amode == 0;
+}
+*/
 
 static struct timerfd *timerfd_find_by_fd(int fd) {
 	struct idesc_table *it;
@@ -100,7 +142,7 @@ static struct timerfd *timerfd_find_by_fd(int fd) {
 	return idesc_to_timerfd(idesc);
 }
 
-void do_timerfd_gettime(struct timerfd *timerfd,
+static void do_timerfd_gettime(struct timerfd *timerfd,
 		struct itimerspec *curr_value) {
 	struct timespec *it_value, *it_interval;
 	struct timespec current_time, diff;

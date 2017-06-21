@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief A simple test for timerfd.
+ * @brief Tests for timerfd.
  * @details Sets the timer and calls read() on it once.
  *
  * @date 04.04.17
@@ -79,7 +79,7 @@ TEST_CASE("timerfd create, set and read") {
 	test_assert_zero(error_code);
 	printk("Test: timer set.\n");
 
-	read(timer_fd, &expirations_number, sizeof(expirations_number)); // blocking
+	read(timer_fd, &expirations_number, sizeof(uint64_t)); // blocking
 	printk("Read expirations number: %llu\n", expirations_number);
 	test_assert(expirations_number == 1);
 	close(timer_fd);
