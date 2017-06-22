@@ -25,7 +25,7 @@ TEST_CASE("request zero-length") {
 static void run_wait_task(void *(*fn)(void *), void *arg) {
 	pid_t p;
 
-	p = new_task("", fn, NULL);
+	p = new_task("", fn, arg);
 
 	while (-EINTR == task_waitpid(p));
 }
@@ -36,17 +36,15 @@ static void *mmap_test_child(void *arg) {
 		void *ptr = mmap(NULL, PAGE_SIZE(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
 		if (!ptr)
 			break;
-		if (!allocated && ptr) {
-			allocated = 1;
-			test_emit('a');
-		}
+		allocated++;
 	}
-	test_emit('b');
+	*(int *) arg = allocated;
 	_exit(0);
 }
 
 TEST_CASE("unmap after exit") {
-	run_wait_task(mmap_test_child, NULL);
-	run_wait_task(mmap_test_child, NULL);
-	test_assert_emitted("abab");
+	int alloc_count_a, alloc_count_b;
+	run_wait_task(mmap_test_child, &alloc_count_a);
+	run_wait_task(mmap_test_child, &alloc_count_b);
+	test_assert_equal(alloc_count_a, alloc_count_b);
 }
