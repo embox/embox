@@ -1,5 +1,7 @@
 #include <embox/test.h>
+#include <kernel/task.h>
 #include <sys/mman.h>
+#include <unistd.h>
 
 EMBOX_TEST_SUITE("anonymous mmap");
 
