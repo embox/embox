@@ -17,4 +17,8 @@ extern struct marea *marea_create(uint32_t start, uint32_t end, uint32_t flags, 
 
 extern void marea_destroy(struct marea *marea);
 
+extern struct phy_page *phy_page_create(void *page, size_t page_number);
+
+extern void phy_page_destroy(struct phy_page *phy_page);
+
 #endif /* MAREA_H_ */

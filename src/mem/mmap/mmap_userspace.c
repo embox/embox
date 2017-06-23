@@ -36,14 +36,17 @@ void *mmap_userspace_add(void *addr, size_t len, int prot) {
 	struct emmap *emmap;
 	size_t pages;
 
+	emmap = task_self_resource_mmap();
+
 	pages = (len + MMU_PAGE_SIZE - 1) / MMU_PAGE_SIZE;
 	phy_addr = phymem_alloc(pages);
 
 	if (addr == NULL) {
+		if (phy_addr) {
+			mmap_add_phy_page(emmap, phy_page_create(phy_addr, pages));
+		}
 		return phy_addr;
 	}
-
-	emmap = task_self_resource_mmap();
 
 	marea = marea_create((uint32_t)addr, (uint32_t)addr + len, PROT_READ | PROT_WRITE | PROT_EXEC, true);
 	mmap_add_marea(emmap, marea);
