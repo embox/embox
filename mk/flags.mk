@@ -189,7 +189,7 @@ override COMMON_CCFLAGS += -fno-strict-aliasing -fno-common
 override COMMON_CCFLAGS += -Wall -Werror
 override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 
-override COMMON_CCFLAGS += -Wno-gnu-designator
+#override COMMON_CCFLAGS += -Wno-gnu-designator
 
 ifneq ($(COMPILER),clang)
 # Not clang means gcc
@@ -202,6 +202,9 @@ override COMMON_CCFLAGS += -Wno-misleading-indentation
 # application, we decided to keep explicit null checks and disable the warning.
 override COMMON_CCFLAGS += -Wno-nonnull-compare
 endif
+
+override COMMON_CCFLAGS += -Wno-error=format-truncation=
+override COMMON_CCFLAGS += -Wno-error=alloc-size-larger-than=
 
 override COMMON_CCFLAGS += -Wformat
 

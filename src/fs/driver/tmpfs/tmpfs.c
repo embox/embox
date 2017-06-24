@@ -58,7 +58,7 @@ static int tmpfs_format(void *path);
 static int tmpfs_mount(void *dev, void *dir);
 
 static int tmpfs_init(void * par) {
-	struct path dir_path, dev_path, root;
+	struct path dir_path, dev_path/*, root*/;
 	struct node *dev_node;
 	int res;
 	struct ramdisk *ramdisk;
@@ -90,7 +90,7 @@ static int tmpfs_init(void * par) {
 
 	/* mount filesystem */
 	dev_path.node = dev_node;
-	dev_path.mnt_desc = root.mnt_desc;
+	//dev_path.mnt_desc = root.mnt_desc;
 	return tmpfs_mount(dev_path.node, dir_path.node);
 }
 

@@ -23,7 +23,7 @@ int create_partitions(struct block_dev *bdev) {
 	struct mbr mbr;
 	int rc;
 	int part_n;
-	char part_name[0x16];
+	char part_name[50];
 	struct block_dev *part_bdev;
 
 	/* Read partition table */
