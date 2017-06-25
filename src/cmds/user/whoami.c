@@ -18,7 +18,6 @@ int main(int argc, char **argv) {
 	struct passwd pwd, *result;
 	char buf[BUF_LEN];
 
-
 	if (0 != (res = getpwuid_r(uid, &pwd, buf, BUF_LEN, &result))) {
 		return res;
 	}

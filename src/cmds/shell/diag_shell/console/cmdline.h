@@ -21,22 +21,22 @@
  */
 typedef struct _CMDLINE_HISTORY {
 	char array[CMDLINE_HISTORY_SIZE][CMDLINE_MAX_LENGTH + 1]; /**< history itself */
-	int index;                                                /**< last entry in history */
+	int  index;                                               /**< last entry in history */
 } CMDLINE_HISTORY;
 
 /**
  * Command line internal representation
  */
 typedef struct _CMDLINE {
-	char string[CMDLINE_MAX_LENGTH + 1]; /**< line itself */
-	int length;                          /**< string length */
-	int cursor;                          /**< cursor current position */
+	char            string[CMDLINE_MAX_LENGTH + 1]; /**< line itself */
+	int             length;              /**< string length */
+	int             cursor;              /**< cursor current position */
 	CMDLINE_HISTORY history[1];          /**< editing history */
-	int history_cursor;                  /**< current position in history */
-	char is_insert_mode;                 /**< INSERT mode */
+	int             history_cursor;      /**< current position in history */
+	char            is_insert_mode;      /**< INSERT mode */
 } CMDLINE;
 
-CMDLINE * cmdline_init(CMDLINE *);
+CMDLINE *cmdline_init(CMDLINE *);
 
 bool cmdline_history_backward(CMDLINE *cmdline);
 bool cmdline_history_forward(CMDLINE *cmdline);

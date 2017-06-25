@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "v:p:e:r:asw"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'v':
 			vid = strtoul(optarg, NULL, 0);
 			break;
@@ -119,7 +119,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (0 != usb_dev_desc_get_desc(ddesc, &usb_test_dev_desc,
-				&usb_test_iface_desc)) {
+			&usb_test_iface_desc)) {
 		fprintf(stderr, "can't get device descriptor\n");
 		return 1;
 	}

@@ -19,7 +19,7 @@ static int chown_do(char *files[], uid_t owner_id, gid_t group_id, bool is_group
 		char *file = *file_p;
 		struct stat st_buf;
 
-		if(!is_group_set) {
+		if (!is_group_set) {
 			res = stat(file, &st_buf);
 			if (res) {
 				fprintf(stderr, "stat(%s, ..) return error = %d\n",

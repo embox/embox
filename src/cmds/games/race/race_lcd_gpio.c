@@ -14,7 +14,7 @@
 #include "race.h"
 
 void race_print_road(const char *road) {
-	for (int i = 0; i < RACE_ROAD_WDT*RACE_ROAD_LEN; i++) {
+	for (int i = 0; i < RACE_ROAD_WDT * RACE_ROAD_LEN; i++) {
 		lcd_putc(road[i]);
 	}
 }

@@ -39,7 +39,7 @@ parse:
 	}
 
 	while (*modep != '=' && *modep != '+' && *modep != '-') {
-		switch(*(modep++)) {
+		switch (*(modep++)) {
 		case 'u':
 			type |= 0700;
 			break;
@@ -51,7 +51,7 @@ parse:
 			break;
 		case 'a':
 			type |= 0777;
-		break;
+			break;
 		default:
 			help_invalid_mode(mode_str);
 			return -1;
@@ -65,7 +65,7 @@ parse:
 	op = *(modep++);
 
 	while (*modep != '\0') {
-		switch(*(modep++)) {
+		switch (*(modep++)) {
 		case 'r':
 			mask |= 0444;
 			break;
@@ -75,9 +75,9 @@ parse:
 		case 'x':
 			mask |= 0111;
 			break;
-		//case 'X':
-		//	dir_mask |= 0111;
-		//	break;
+		/*case 'X': */
+		/*	dir_mask |= 0111; */
+		/*	break; */
 		case ',':
 			count++;
 			goto parse;
@@ -87,7 +87,7 @@ parse:
 		}
 	}
 
-	switch(op) {
+	switch (op) {
 	case '+':
 		*mode |= (mask & type);
 		break;

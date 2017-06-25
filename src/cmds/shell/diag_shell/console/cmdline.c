@@ -13,7 +13,7 @@
 #include <util/math.h>
 #include <util/array.h>
 
-CMDLINE * cmdline_init(CMDLINE *this) {
+CMDLINE *cmdline_init(CMDLINE *this) {
 	CMDLINE_HISTORY *history;
 	if (this == NULL) {
 		return NULL;
@@ -33,7 +33,7 @@ CMDLINE * cmdline_init(CMDLINE *this) {
 
 static bool cmdline_history_move_to(CMDLINE *cmdline, int to) {
 	int new_pos;
-	CMDLINE_HISTORY * history = cmdline->history;
+	CMDLINE_HISTORY *history = cmdline->history;
 	if (to < 0) {
 		to = to + (-to / CMDLINE_HISTORY_SIZE + 1) * CMDLINE_HISTORY_SIZE;
 	}
@@ -71,7 +71,7 @@ bool cmdline_history_forward(CMDLINE *cmdline) {
 
 bool cmdline_history_new_entry(CMDLINE *cmdline) {
 	bool ret = true;
-	CMDLINE_HISTORY * history = cmdline->history;
+	CMDLINE_HISTORY *history = cmdline->history;
 	if (cmdline->string[0] == '\0') {
 		return false;
 	}

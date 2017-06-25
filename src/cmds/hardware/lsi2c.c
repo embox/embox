@@ -27,7 +27,7 @@ static void print_error(void) {
 
 static int i2c_bus_callback(int bus_id, void *cookie)
 {
-	struct lsi2c_cb *c = (struct lsi2c_cb*)cookie;
+	struct lsi2c_cb *c = (struct lsi2c_cb *) cookie;
 
 	c->nbuses++;
 	return 0;

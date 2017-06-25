@@ -54,7 +54,7 @@ int main(int argc, char **argv) {
 
 	printk("Execution time of 64 and 32 bit division in nanoseconds:\n"
 			"   div64    div32\n\n");
-	for(i = 0; i < ITER_COUNT; i++) {
+	for (i = 0; i < ITER_COUNT; i++) {
 		printk("%8d %8d\n", div64time(), div32time());
 	}
 

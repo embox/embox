@@ -18,7 +18,7 @@ static void print_usage(void) {
 
 static void fake_disable(const struct mod *mod) {
 	const struct mod *dep;
-	int enabled = mod->priv->flags & 0x1; // XXX fix later
+	int enabled = mod->priv->flags & 0x1; /* XXX fix later */
 
 	if (!enabled) {
 		return;

@@ -21,16 +21,16 @@ int main(int argc, char **argv) {
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
 		switch (opt) {
-			case 'h': /* help message */
-				print_usage();
-				return 0;
-			default:
-				break;
+		case 'h':     /* help message */
+			print_usage();
+			return 0;
+		default:
+			break;
 		}
 	}
 
-	mode = S_IFBLK; // XXX this should be an argument, creating block dev
-	mode |= S_IRALL | S_IWALL; // TODO umask. -- Eldar
+	mode = S_IFBLK; /* XXX this should be an argument, creating block dev */
+	mode |= S_IRALL | S_IWALL; /* TODO umask. -- Eldar */
 
 	if (argc > 1) {
 		struct path root, child;

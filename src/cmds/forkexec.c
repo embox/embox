@@ -21,7 +21,7 @@ int main(int argc, char **argv) {
 	char *filename;
 	int pid;
 
-	filename = malloc(strlen(argv[argc-1]));
+	filename = malloc(strlen(argv[argc - 1]));
 	strcpy(filename, argv[argc - 1]);
 	pid = new_task(filename, new_task_entry, filename);
 
@@ -37,8 +37,12 @@ int main(int argc, char **argv) {
 extern int execve_syscall(const char *filename, char *const argv[], char *const envp[]);
 
 static void *new_task_entry(void *filename) {
-	char *argv[2] = {filename, NULL};
-	char *envp[1] = {NULL};
+	char *argv[2] = {
+		filename, NULL
+	};
+	char *envp[1] = {
+		NULL
+	};
 
 	execve_syscall(filename, argv, envp);
 

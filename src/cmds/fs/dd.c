@@ -5,7 +5,7 @@
  * @date 30.01.13
  * @author Andrey Gazukin
  * @author Anton Kozlov
- * 	-- output to file
+ *  -- output to file
  */
 
 #include <errno.h>
@@ -26,10 +26,10 @@
 #define DD_FORMAT_HEX_C      "hex_c"
 
 struct dd_param {
-	size_t bs;
-	size_t count;
-	size_t skip;
-	size_t seek;
+	size_t      bs;
+	size_t      count;
+	size_t      skip;
+	size_t      seek;
 
 	const char *ifile;
 	const char *ofile;
@@ -43,8 +43,8 @@ typedef void (*dd_param_t)(const struct dd_param_ent *dpent,
 
 struct dd_param_ent {
 	const char *name;
-	off_t offset;
-	dd_param_t type;
+	off_t       offset;
+	dd_param_t  type;
 };
 
 static int write_stdout(char *buff, size_t size, unsigned int addr) {
@@ -188,7 +188,7 @@ int main(int argc, char **argv) {
 		struct stat buff;
 
 		err = fstat(ifd, &buff);
-		if(err < 0) {
+		if (err < 0) {
 			goto out;
 		}
 		dp.count = buff.st_size;
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 		goto out_ofd_close;
 	}
 
-	if(0 == strcmp(dp.format, DD_FORMAT_HEX_C)) {
+	if (0 == strcmp(dp.format, DD_FORMAT_HEX_C)) {
 		format = 1;
 	}
 
@@ -220,8 +220,8 @@ int main(int argc, char **argv) {
 			goto out_cmd;
 		}
 
-		dp.skip --;
-	} while (dp.skip != 0);
+		dp.skip--;
+	} while (dp.skip != 0) ;
 
 	do {
 		unsigned int addr = 0;
@@ -243,7 +243,7 @@ int main(int argc, char **argv) {
 			break;
 		}
 		addr += n_read;
-		dp.count --;
+		dp.count--;
 	} while (dp.count != 0);
 
 out_cmd:

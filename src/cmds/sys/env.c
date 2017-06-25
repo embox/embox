@@ -12,11 +12,14 @@
 int main(int argc, char *argv[]) {
 	char **env;
 
-	if (!environ) return 0;
+	if (!environ) {
+		return 0;
+	}
 
 	env = environ;
-	do
+	do {
 		printf("%s\n", *env);
+	}
 	while (*++env);
 
 	return 0;

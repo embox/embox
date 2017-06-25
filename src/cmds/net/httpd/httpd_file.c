@@ -75,4 +75,3 @@ out:
 	fclose(file);
 	return retcode;
 }
-

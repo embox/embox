@@ -4,9 +4,9 @@
  * @date 16.04.12
  * @author Ilia Vaprol
  * @author Anton Kozlov
- * 	- CGI related changes
+ *  - CGI related changes
  * @author Andrey Golikov
- * 	- Linux adaptation
+ *  - Linux adaptation
  */
 
 #include <assert.h>
@@ -21,11 +21,11 @@
 #include "httpd.h"
 
 #ifdef __EMBUILD_MOD__
-#	include <framework/mod/options.h>
-#	define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
-#	define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
-#	define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
-#	define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
+#   include <framework/mod/options.h>
+#   define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
+#   define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
+#   define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
+#   define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
 #endif /* __EMBUILD_MOD__ */
 
 #define BUFF_SZ     1024
@@ -51,9 +51,9 @@ static int httpd_wait_cgi_child(pid_t target, int opts) {
 
 static void httpd_on_cgi_child(const struct client_info *cinfo, pid_t child) {
 	if (child > 0) {
-	       if (!USE_PARALLEL_CGI) {
-		       httpd_wait_cgi_child(child, 0);
-	       }
+		if (!USE_PARALLEL_CGI) {
+			httpd_wait_cgi_child(child, 0);
+		}
 	} else {
 		httpd_header(cinfo, 500, strerror(-child));
 	}
@@ -69,14 +69,14 @@ static void httpd_client_process(struct client_info *cinfo) {
 	}
 
 	httpd_debug("method=%s uri_target=%s uri_query=%s",
-			   hreq.method, hreq.uri.target, hreq.uri.query);
+			hreq.method, hreq.uri.target, hreq.uri.query);
 
 	if ((cgi_child = httpd_try_respond_script(cinfo, &hreq))) {
 		httpd_on_cgi_child(cinfo, cgi_child);
 	} else if (USE_REAL_CMD && (cgi_child = httpd_try_respond_cmd(cinfo, &hreq))) {
 		httpd_on_cgi_child(cinfo, cgi_child);
 	} else if (httpd_try_respond_file(cinfo, &hreq,
-				httpd_g_outbuf, sizeof(httpd_g_outbuf))) {
+			httpd_g_outbuf, sizeof(httpd_g_outbuf))) {
 		/* file sent, nothing to do */
 	} else {
 		httpd_header(cinfo, 404, "");
@@ -92,7 +92,7 @@ int main(int argc, char **argv) {
 	const int family = AF_INET;
 
 	inaddr.sin_family = AF_INET;
-	inaddr.sin_port= htons(80);
+	inaddr.sin_port = htons(80);
 	inaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 #elif USE_IP_VER == 6
 	struct sockaddr_in6 inaddr;
@@ -100,7 +100,7 @@ int main(int argc, char **argv) {
 	const int family = AF_INET6;
 
 	inaddr.sin6_family = AF_INET6;
-	inaddr.sin6_port= htons(80);
+	inaddr.sin6_port = htons(80);
 	memcpy(&inaddr.sin6_addr, &in6addr_any, sizeof(inaddr.sin6_addr));
 #else
 #error Unknown USE_IP_VER

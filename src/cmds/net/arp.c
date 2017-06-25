@@ -35,21 +35,21 @@ static int print_arp_entity(const struct neighbour *n,
 			macaddr_print(hw_addr, &n->haddr[0]);
 		}
 		else {
-			sprintf((char *)hw_addr, "%s", "(incomplete)");
+			sprintf((char *) hw_addr, "%s", "(incomplete)");
 		}
 		printf("%-15s %-6s  %-17s %-5s %-5s\n",
 				inet_ntop(n->ptype == ETH_P_IP ? AF_INET : AF_INET6,
-					n->paddr, addr, INET6_ADDRSTRLEN),
-			n->dev->type == ARP_HRD_ETHERNET ? "ether" : "", hw_addr,
-			~n->flags & NEIGHBOUR_FLAG_PERMANENT ? "C" : "P",
-			n->dev->name);
+				n->paddr, addr, INET6_ADDRSTRLEN),
+				n->dev->type == ARP_HRD_ETHERNET ? "ether" : "", hw_addr,
+				~n->flags & NEIGHBOUR_FLAG_PERMANENT ? "C" : "P",
+				n->dev->name);
 	}
 	return 0;
 }
 
 static void print_arp_cache(struct in_device *in_dev) {
 	printf("Address         HWtype  HWaddress         Flags Iface\n");
-	neighbour_foreach((neighbour_foreach_ft)&print_arp_entity, in_dev);
+	neighbour_foreach((neighbour_foreach_ft) & print_arp_entity, in_dev);
 }
 
 int main(int argc, char **argv) {
@@ -70,14 +70,14 @@ int main(int argc, char **argv) {
 				printf("arp: please first specify the interface\n");
 				return -EINVAL;
 			}
-			//TODO checked interface and use default
+			/*TODO checked interface and use default */
 			return neighbour_del(ETH_P_IP, &addr, ifdev->dev);
 		case 's':
 			if (0 == inet_aton(optarg, &addr)) {
 				printf("arp: invalid IP address: %s\n", optarg);
 				return -EINVAL;
 			}
-			if(argc <= optind) {
+			if (argc <= optind) {
 				print_usage();
 				return -EINVAL;
 			}
@@ -90,9 +90,9 @@ int main(int argc, char **argv) {
 				printf("arp: please first specify the interface\n");
 				return -EINVAL;
 			}
-			//TODO checked interface and use default
+			/*TODO checked interface and use default */
 			return neighbour_add(ETH_P_IP, &addr, sizeof addr, ifdev->dev,
-					ARP_HRD_ETHERNET, &hwaddr[0], sizeof hwaddr, NEIGHBOUR_FLAG_PERMANENT);
+						   ARP_HRD_ETHERNET, &hwaddr[0], sizeof hwaddr, NEIGHBOUR_FLAG_PERMANENT);
 		case 'i':
 			if (NULL == (ifdev = inetdev_get_by_name(optarg))) {
 				printf("arp: can't find interface %s\n", optarg);
@@ -101,10 +101,10 @@ int main(int argc, char **argv) {
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		case 'h':
 			print_usage();
-			/* FALLTHROUGH */
+		/* FALLTHROUGH */
 		default:
 			return 0;
 		}

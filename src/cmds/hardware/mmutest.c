@@ -17,7 +17,6 @@ static void print_usage(void) {
 	printf("Usage: mmumap [-h][-p pid] [-t] [-v virt_addr] [-o page_options]\n");
 }
 
-
 int main(int argc, char **argv) {
 	int opt;
 	pid_t pid = 0;
@@ -36,7 +35,7 @@ int main(int argc, char **argv) {
 			pid = strtoul(optarg, NULL, 0);
 			break;
 		case 't':
-			table_addr = (uintptr_t)mmu_get_root(pid);
+			table_addr = (uintptr_t) mmu_get_root(pid);
 			printf("table address: 0x%" PRIXPTR "\n", table_addr);
 			return 0;
 		case 'o':

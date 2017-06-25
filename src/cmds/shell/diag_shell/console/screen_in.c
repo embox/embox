@@ -8,4 +8,3 @@
 #include "screen.h"
 #include <assert.h>
 #include "console.h"
-

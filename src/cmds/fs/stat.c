@@ -25,14 +25,14 @@ static void print_statistic(void *stat) {
 	filestat = (stat_t *) stat;
 
 	printf("Size: %d    Blocks: %d    IO Block: %d  \n",
-		(int)filestat->st_size, filestat->st_blocks, (int)filestat->st_blksize);
+			(int) filestat->st_size, filestat->st_blocks, (int) filestat->st_blksize);
 	printf("Dev: %d    Inode: %d    Links: %d  \n",
-		filestat->st_dev, filestat->st_ino, filestat->st_nlink);
+			filestat->st_dev, filestat->st_ino, filestat->st_nlink);
 	printf("Access: %d    Uid: %d    Gid: %d  \n",
-		filestat->st_mode, filestat->st_uid, filestat->st_gid);
-	printf("Access: %ld  \n", (long)filestat->st_atime);
-	printf("Modify: %ld  \n", (long)filestat->st_mtime);
-	printf("Change: %ld  \n", (long)filestat->st_ctime);
+			filestat->st_mode, filestat->st_uid, filestat->st_gid);
+	printf("Access: %ld  \n", (long) filestat->st_atime);
+	printf("Modify: %ld  \n", (long) filestat->st_mtime);
+	printf("Change: %ld  \n", (long) filestat->st_ctime);
 }
 
 int main(int argc, char **argv) {

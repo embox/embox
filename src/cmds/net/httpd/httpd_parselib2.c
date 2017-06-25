@@ -57,4 +57,3 @@ int httpd_build_request(struct client_info *cinfo, struct http_req *hreq, char *
 
 	return nbyte;
 }
-

@@ -21,10 +21,10 @@
 	OPTION_MODULE_GET(embox__cmd__sh__shell_registry, NUMBER, input_buff_sz)
 
 typedef void (*shell_run_ft)(void);
-typedef int  (*shell_exec_ft)(const char *line);
+typedef int (*shell_exec_ft)(const char *line);
 
 struct shell {
-	const char *  name;
+	const char   *name;
 	shell_run_ft  run;
 	shell_exec_ft exec;
 };
@@ -56,15 +56,16 @@ static inline int shell_exec(const struct shell *shell, const char *line) {
 
 	ret = shell->exec(line);
 
-	if (ret)
+	if (ret) {
 		log_error("Shell exec error #%d", ret);
+	}
 
 	return ret;
 }
 
-extern const struct shell * shell_lookup(const char *shell_name);
+extern const struct shell *shell_lookup(const char *shell_name);
 
-extern const struct shell * shell_any(void);
+extern const struct shell *shell_any(void);
 
 #define SHELL_DEF(...) \
 	ARRAY_SPREAD_DECLARE(const struct shell, __shell_registry); \
