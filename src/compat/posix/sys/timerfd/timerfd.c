@@ -21,8 +21,8 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
+#include <kernel/time/time.h>
 #include <mem/sysmalloc.h>
-#include <timespec_utils.h>
 
 // ----------------------------------------------------------------------------
 // Base structures
@@ -37,11 +37,9 @@ struct idesc_timerfd {
 };
 
 struct timerfd {
-	clockid_t clk_id; /** Clock ID of this timer */
-	/**
-	 * Current setting - initial expiration and interval
-	 */
-	struct itimerspec curr_value;
+	clockid_t clk_id; /**< Clock ID of this timer */
+	time64_t expiration;
+	time64_t interval;
 	struct mutex mutex; /**< Global timerfd mutex */
 
 	struct idesc_timerfd read_desc; /**< The descriptor of the timer */
@@ -57,8 +55,8 @@ static struct timerfd *timerfd_alloc(void) {
 	if (!timerfd) {
 		return NULL;
 	}
-
-	memset(&timerfd->curr_value, 0, sizeof(struct itimerspec));
+	timerfd->expiration = 0LL;
+	timerfd->interval = 0LL;
 	mutex_init(&timerfd->mutex);
 
 	return timerfd;
@@ -126,6 +124,7 @@ static const struct idesc_ops idesc_timerfd_ops = {
 // ----------------------------------------------------------------------------
 // Helpers
 
+// TODO uncomment when timerfd_read() is written
 /*
 static int idesc_timerfd_isclosed(struct idesc_timerfd *idesc_timerfd) {
 	return idesc_timerfd->idesc.idesc_amode == 0;
@@ -142,40 +141,68 @@ static struct timerfd *timerfd_find_by_fd(int fd) {
 	return idesc_to_timerfd(idesc);
 }
 
+static void timerfd_rearm(struct timerfd *timerfd, time64_t expiration,
+		time64_t interval) {
+	mutex_lock(&timerfd->mutex);
+	timerfd->expiration = expiration;
+	timerfd->interval = interval;
+	mutex_unlock(&timerfd->mutex);
+}
+
+static void do_timerfd_settime(struct timerfd *timerfd,
+		const struct itimerspec *new_value, int flags) {
+	struct timespec ts_now;
+	time64_t now, expiration, interval;
+
+	assert(timerfd);
+	assert(new_value);
+
+	clock_gettime(timerfd->clk_id, &ts_now);
+	now = timespec_to_ns(&ts_now);
+
+	if (flags & TFD_TIMER_ABSTIME) {
+		expiration = timespec_to_ns(&new_value->it_value);
+	} else {
+		expiration = now + timespec_to_ns(&new_value->it_value);
+	}
+	interval = timespec_to_ns(&new_value->it_interval);
+
+	timerfd_rearm(timerfd, expiration, interval);
+}
+
 static void do_timerfd_gettime(struct timerfd *timerfd,
 		struct itimerspec *curr_value) {
-	struct timespec *it_value, *it_interval;
-	struct timespec current_time, diff;
+	struct timespec out_value, out_interval;
+	struct timespec ts_now;
+	time64_t now, remaining, next_expiration;
 
+	assert(timerfd);
 	assert(curr_value);
 
 	mutex_lock(&timerfd->mutex);
-	it_value = &timerfd->curr_value.it_value;
-	it_interval = &timerfd->curr_value.it_interval;
-	mutex_unlock(&timerfd->mutex);
+	out_interval = ns_to_timespec(timerfd->interval);
+	memcpy(&curr_value->it_interval, &out_interval, sizeof(struct timespec));
 
-	// copy timer interval to output
-	memcpy(&curr_value->it_interval, it_interval, sizeof(struct timespec));
+	clock_gettime(timerfd->clk_id, &ts_now);
+	now = timespec_to_ns(&ts_now);
+	remaining = timerfd->expiration - now;
 
-	// calculate time remaining until next expiration
-	clock_gettime(timerfd->clk_id, &current_time);
-	timespec_diff(&current_time, it_value, &diff);
-	if (timespec_is_non_negative(&diff)) {
-		// timer has not expired for the first time
-		memcpy(&curr_value->it_value, &diff, sizeof(struct timespec));
-	} else if (timespec_is_positive(it_interval)) {
-		// timer has expired for the first time
-		// seek the nearest expiration time (after one or several intervals)
+	if (remaining > 0) {
+		// armed, not expired
+		out_value = ns_to_timespec(remaining);
+	} else if (timerfd->interval > 0) {
+		// expired but rearmed; seek the nearest expiration time
+		next_expiration = timerfd->expiration;
 		do {
-			timespec_inc_by(&diff, it_interval);
-		} while (!timespec_is_non_negative(&diff));
-		// now diff contains the next expiration time;
-		// we need to return relative time
-		timespec_diff(&current_time, &diff, &curr_value->it_value);
+			next_expiration += timerfd->interval;
+		} while (next_expiration < now);
+		out_value = ns_to_timespec(next_expiration - now);
 	} else {
-		// timer has already expired and been disarmed
-		memset(&curr_value->it_value, 0, sizeof(struct timespec));
+		// expired and disarmed
+		out_value = ns_to_timespec(0);
 	}
+	memcpy(&curr_value->it_value, &out_value, sizeof(struct timespec));
+	mutex_unlock(&timerfd->mutex);
 }
 
 // ----------------------------------------------------------------------------
@@ -239,7 +266,6 @@ int timerfd_create(int clockid, int flags) {
 int timerfd_settime(int fd, int flags, const struct itimerspec *new_value,
 		struct itimerspec *old_value) {
 	struct timerfd *timerfd;
-	struct timespec current_time;
 
 	assert(new_value);
 	if (flags & ~TFD_SETTIME_FLAGS) {
@@ -248,24 +274,11 @@ int timerfd_settime(int fd, int flags, const struct itimerspec *new_value,
 
 	timerfd = timerfd_find_by_fd(fd);
 	assert(timerfd);
-	clock_gettime(timerfd->clk_id, &current_time);
 
 	if (old_value) {
 		do_timerfd_gettime(timerfd, old_value);
 	}
-
-	mutex_lock(&timerfd->mutex);
-	if (flags & TFD_TIMER_ABSTIME) {
-		memcpy(&timerfd->curr_value.it_value, &new_value->it_value,
-			sizeof(struct timespec));
-	} else {
-		timespec_inc_by(&current_time, &new_value->it_value);
-		memcpy(&timerfd->curr_value.it_value, &current_time,
-			sizeof(struct timespec));
-	}
-	memcpy(&timerfd->curr_value.it_interval, &new_value->it_interval,
-		sizeof(struct timespec));
-	mutex_unlock(&timerfd->mutex);
+	do_timerfd_settime(timerfd, new_value, flags);
 
 	return 0;
 }

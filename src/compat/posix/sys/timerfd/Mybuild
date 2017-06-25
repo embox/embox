@@ -2,5 +2,4 @@ package embox.compat.posix
 
 module timerfd {
 	source "timerfd.c"
-	source "timespec_utils.c"
 }
