@@ -50,7 +50,3 @@ void *phymem_alloc(size_t page_number) {
 void phymem_free(void *page, size_t page_number) {
 	page_free(__phymem_allocator, page, page_number);
 }
-
-void phymem_only_free(void *page, size_t page_number) {
-	page_free(__phymem_allocator, page, page_number);
-}

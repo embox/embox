@@ -131,7 +131,7 @@ void mmap_clear(struct emmap *mmap) {
 	}
 
 	dlist_foreach_entry(phy_page, &mmap->page_list, page_link) {
-		phymem_only_free(phy_page->page, phy_page->page_number);
+		phymem_free(phy_page->page, phy_page->page_number);
 
 		phy_page_destroy(phy_page);
 	}
