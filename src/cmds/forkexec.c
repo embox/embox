@@ -33,6 +33,7 @@
 
 //static void *new_task_entry(void *file);
 
+
 int main(int argc, char **argv) {
     /*char *filename;
 	int pid;
@@ -52,8 +53,33 @@ int main(int argc, char **argv) {
         return err;
     }
 
-    Elf32_Shdr * section_header_table = malloc(sizeof(Elf32_Shdr)*header.e_shnum);
+    Elf32_Phdr * ph_table = malloc(header.e_phnum * header.e_phentsize);
+    elf_read_ph_table(elf_file , &header, ph_table);
 
+    char * instructions = NULL;
+    int (*functionPtr)();
+
+    int offset = header.e_entry;
+    for(int i =0; i < header.e_phnum; i++)
+    {
+        if(ph_table[i].p_type == PT_LOAD && ph_table[i].p_flags == 5)
+        {
+            offset -= ph_table[i].p_vaddr;
+            instructions = malloc(ph_table[i].p_memsz);
+            printf("Segment flag : %d \n", ph_table[i].p_flags);
+            printf("Offset : %d \n", offset);
+            elf_read_segment(elf_file, &(ph_table[i]), instructions);
+
+        }
+    }
+    instructions += offset;
+    functionPtr = (void *)instructions;
+    printf("%x \n", (int) instructions);
+
+
+    printf("Answer : %d \n", functionPtr());
+
+    /*Elf32_Shdr * section_header_table = malloc(sizeof(Elf32_Shdr)*header.e_shnum);
 
     // read section header table
     if((err = elf_read_sh_table(elf_file, &header, section_header_table)) < 0)
@@ -74,28 +100,20 @@ int main(int argc, char **argv) {
     // text section. Used to iterate a table
     Elf32_Shdr *text_section = section_header_table;
 
-    int i = 0;
-
     while(strcmp(names + text_section->sh_name, ".text") != 0)
     {
         text_section++;
-        i++;
-        // iterate through all table and didn't find .text section
-        if(i == header.e_shnum) return -1;
     }
 
     void * instructions = malloc(text_section->sh_size);
     elf_read_section(elf_file, text_section, instructions);
-
-    printf("Code address : %p \n", instructions);
-
     int (*functionPtr)();
 
     functionPtr = instructions;
     printf("Result : %d", functionPtr());
 
-    /*
-    /*filename = malloc(strlen(argv[argc-1]));
+    int pid = vfork();*/
+    /*char * filename = malloc(strlen(argv[argc-1]));
 	strcpy(filename, argv[argc - 1]);
 	pid = new_task(filename, new_task_entry, filename);
 
@@ -105,8 +123,8 @@ int main(int argc, char **argv) {
 
 	free(filename);
 
-	return pid > 0 ? 0 : pid;
-    */
+    return pid > 0 ? 0 : pid;*/
+
 
     return 0;
 }
