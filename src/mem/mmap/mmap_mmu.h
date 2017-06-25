@@ -23,10 +23,10 @@ struct marea {
 };
 
 struct phy_page {
-    void *page;
-    size_t page_number;
+	void *page;
+	size_t page_number;
 
-    struct dlist_head page_link;
+	struct dlist_head page_link;
 };
 
 struct emmap {
@@ -35,7 +35,7 @@ struct emmap {
 	mmu_ctx_t ctx;
 
 	struct dlist_head marea_list;
-    struct dlist_head page_list;
+	struct dlist_head page_list;
 };
 
 extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
