@@ -169,7 +169,7 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 }
 
 static int devfs_mount_end(struct super_block *sb) {
-	return 0;
+	return block_devs_init();
 }
 struct dev_wraper {
 	struct file_operations *fops;

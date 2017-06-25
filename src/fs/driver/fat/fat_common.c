@@ -240,16 +240,15 @@ uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
 uint32_t fat_get_volinfo(void *bdev, struct volinfo *volinfo, uint32_t startsector) {
 	struct lbr *lbr = (struct lbr *) fat_sector_buff;
 
-	volinfo->bytepersec = lbr->bpb.bytepersec_l + (lbr->bpb.bytepersec_h << 8);
-	volinfo->startsector = startsector;
-
-	if (0 > block_dev_read( bdev,
-			(char *) fat_sector_buff,
-			sizeof(struct lbr),
-			0)) {     /* TODO start sector */
+	if (0 > block_dev_read(	bdev,
+				(char *) fat_sector_buff,
+				sizeof(struct lbr),
+				0)) { /* TODO start sector */
 		return DFS_ERRMISC;
 	}
 
+	volinfo->bytepersec = lbr->bpb.bytepersec_l + (lbr->bpb.bytepersec_h << 8);
+	volinfo->startsector = startsector;
 	volinfo->secperclus = lbr->bpb.secperclus;
 	volinfo->reservedsecs = (uint16_t) lbr->bpb.reserved_l |
 			(((uint16_t) lbr->bpb.reserved_h) << 8);

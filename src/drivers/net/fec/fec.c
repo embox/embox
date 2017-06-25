@@ -30,7 +30,6 @@
 #include <embox/unit.h>
 
 #include <framework/mod/options.h>
-
 /* FEC MII MMFR bits definition */
 #define FEC_MMFR_ST     (1 << 30)
 #define FEC_MMFR_OP_READ    (2 << 28)
@@ -80,14 +79,22 @@ static void fec_reg_dump(const char *title) {
 	log_debug("ENET_MRBR %10x %10x", ENET_MRBR, REG32_LOAD(ENET_MRBR));
 }
 
+extern void dcache_inval(const void *p, size_t size);
+extern void dcache_flush(const void *p, size_t size);
+
 static int phy_read_reg(int mii_id, int regnum) {
+	uint32_t timeout = 0xFFFFFF;
 	phy_wait_flag = 0;
 	REG32_STORE(ENET_MMFR, FEC_MMFR_ST | FEC_MMFR_OP_READ |
 			FEC_MMFR_PA(mii_id) | FEC_MMFR_RA(regnum) |
 			FEC_MMFR_TA);
 
-	while (!phy_wait_flag)
+	while (!phy_wait_flag && timeout--)
 		;
+
+	if (timeout == 0) {
+		log_error("phy read timeout");
+	}
 
 	return REG32_LOAD(ENET_MMFR);
 }
@@ -133,9 +140,6 @@ static struct fec_buf_desc _rx_desc_ring[RX_BUF_FRAMES] __attribute__ ((aligned(
 
 static uint8_t _tx_buf[TX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
 static uint8_t _rx_buf[RX_BUF_FRAMES][2048] __attribute__ ((aligned(0x10)));
-
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
 
 static void fec_tbd_init(struct fec_priv *fec)
 {
@@ -200,6 +204,7 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 	show_packet(data, skb->len, "tx");
 
 	priv = dev->priv;
+	dcache_inval(priv, sizeof(struct fec_priv));
 	assert((uint32_t)priv->tbd_base == REG32_LOAD(ENET_TDSR));
 
 	sp = ipl_save();
@@ -229,8 +234,9 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 		REG32_STORE(ENET_TDAR, 1 << 24);
 		__asm__ ("nop");
 
-		int timeout = 0xFF;
-		while (--timeout) {
+		int timeout = 0xFFF;
+		while(--timeout) {
+			dcache_inval((void*) ENET_TDAR, 4);
 			if (!(REG32_LOAD(ENET_TDAR))) {
 				break;
 			}
@@ -240,8 +246,8 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 			log_error("TX timeout ENET_TDAR is not zero...");
 		}
 
-		timeout = 0xFFFFFF;
-		while (--timeout) {
+		timeout = 0xFFFF;
+		while(--timeout) {
 			dcache_inval(desc, sizeof(struct fec_buf_desc));
 			if (!(desc->flags & FLAG_R)) {
 				break;
@@ -252,13 +258,13 @@ static int fec_xmit(struct net_device *dev, struct sk_buff *skb) {
 		}
 
 		priv->tbd_index = (priv->tbd_index + 1) % TX_BUF_FRAMES;
+		dcache_flush(priv, sizeof(struct fec_priv));
 	}
 out1:
 	ipl_restore(sp);
 
 out:
 	skb_free(skb);
-
 	return res;
 }
 
@@ -335,8 +341,8 @@ static void _reset(struct net_device *dev) {
 
 	REG32_STORE(ENET_ECR, REG32_LOAD(ENET_ECR) | ENET_ETHEREN); /* Note: should be last ENET-related init step */
 
-	REG32_STORE(ENET_RDAR, (1 << 24));
 
+	REG32_STORE(ENET_RDAR, (1 << 24));
 	fec_reg_dump("ENET dump embox...\n");
 
 	fec_phy_id = phy_discovery();
@@ -364,12 +370,29 @@ static int imx6_receive(struct net_device *dev_id, struct fec_priv *priv) {
 	struct sk_buff *skb;
 	int res = 0;
 
-	while (1) {
+	desc = &_rx_desc_ring[priv->rbd_index];
+	dcache_inval(desc, sizeof(struct fec_buf_desc));
+	if (desc->flags & FLAG_E) {
+		/* IRQ happened, but buf is empty, so check
+		 * other buffer frames */
+		for (int i = 0; i < RX_BUF_FRAMES; i++) {
+			desc = &_rx_desc_ring[i];
+			dcache_inval(desc, sizeof(struct fec_buf_desc));
+			if (!(desc->flags & FLAG_E)) {
+				log_debug("found frame %d, should be %d", i, priv->rbd_index);
+				break;
+			}
+		}
+	}
+
+
+	while(!(desc->flags & FLAG_E)) {
+		log_debug("Receiving packet %d", priv->rbd_index);
 		desc = &_rx_desc_ring[priv->rbd_index];
 		dcache_inval(desc, sizeof(struct fec_buf_desc));
-		if (desc->flags & FLAG_E) {
-			break;
-		}
+
+		priv->rbd_index = (priv->rbd_index + 1) % RX_BUF_FRAMES;
+		dcache_flush(priv, sizeof(struct fec_priv));
 
 		skb = skb_alloc(desc->len);
 		if (!skb) {
@@ -386,12 +409,13 @@ static int imx6_receive(struct net_device *dev_id, struct fec_priv *priv) {
 
 		netif_rx(skb);
 
-		priv->rbd_index = (priv->rbd_index + 1) % RX_BUF_FRAMES;
-
 		desc->flags |= FLAG_R;
 		dcache_flush(desc, sizeof(struct fec_buf_desc));
 
 		REG32_STORE(ENET_RDAR, (1 << 24));
+
+		desc = &_rx_desc_ring[priv->rbd_index];
+		dcache_inval(desc, sizeof(struct fec_buf_desc));
 	}
 
 	return res;
@@ -404,7 +428,7 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 	assert(dev_id);
 
 	priv = ((struct net_device *)dev_id)->priv;
-
+	dcache_inval(priv, sizeof(struct fec_priv));
 	state = REG32_LOAD(ENET_EIR);
 
 	log_debug("Interrupt mask %#010x", state);
