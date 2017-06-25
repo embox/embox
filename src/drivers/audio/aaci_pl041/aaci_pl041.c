@@ -35,36 +35,34 @@ EMBOX_UNIT_INIT(aaci_pl041_init);
 #define FRAME_PERIOD_US  50
 
 struct aaci_runtime {
-	void *	 base;
-	void *	 fifo;
+	void *base;
+	void *fifo;
 	uint32_t cr;
 };
 
 struct aaci_pl041_hw_dev {
-	uint32_t			base_addr;
-	uint32_t			maincr;
+	uint32_t base_addr;
+	uint32_t maincr;
 	struct aaci_runtime aaci_runtime;
-	uint32_t			fifo_depth;
+	uint32_t fifo_depth;
 };
 
 static struct aaci_pl041_hw_dev aaci_pl041_hw_dev;
 
 struct aaci_pl041_dev_priv {
 	struct aaci_pl041_hw_dev *hw_dev;
-	int						  devid;
-	uint8_t *				  out_buf;
-	uint32_t				  out_buf_len;
-	uint8_t *				  in_buf;
-	uint32_t				  in_buf_len;
+	int devid;
+	uint8_t *out_buf;
+	uint32_t out_buf_len;
+	uint8_t *in_buf;
+	uint32_t in_buf_len;
 
 	uint32_t cur_buff_offset;
 };
 static void udelay(int delay) {
 	volatile int i;
 
-	for (i = delay * 10; i != 0; i-- ) {
-		;
-	}
+	for (i = delay * 10; i != 0; i-- );
 }
 static void aaci_chan_wait_ready(struct aaci_runtime *aacirun, uint32_t mask) {
 	uint32_t val;
@@ -89,14 +87,14 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	hw_dev = priv->hw_dev;
 	aacirun = &hw_dev->aaci_runtime;
 
-	/*log_debug("dev = 0x%X", dev); */
+	//log_debug("dev = 0x%X", dev);
 
 	ptr = audio_dev_get_out_cur_ptr(dev);
 	len = hw_dev->fifo_depth;
 
 	/* writing 16 bytes at a time */
-	for (; len > 0; len -= 16) {
-		asm (
+	for ( ; len > 0; len -= 16) {
+		asm(
 			"ldmia	%0!, {r0, r1, r2, r3}\n\t"
 			"stmia	%1, {r0, r1, r2, r3}"
 			: "+r" (ptr)
@@ -105,8 +103,8 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 
 	}
 
-	/* */
-	/*aaci_chan_wait_ready(aacirun, AACI_SR_TXB); */
+	//
+	//aaci_chan_wait_ready(aacirun, AACI_SR_TXB);
 	stat = REG32_LOAD(aacirun->base + AACI_SR);
 	aacirun->cr |= AACI_CR_EN | 0x8; /* TODO 4 slot but don't clear why it is required */
 
@@ -116,9 +114,10 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 	} else {
 		ie |= AACI_IE_URIE | AACI_IE_TXIE;
 	}
-	/*ie |= AACI_IE_URIE | AACI_IE_TXIE; */
+	//ie |= AACI_IE_URIE | AACI_IE_TXIE;
 	REG32_STORE(aacirun->base + AACI_IE, ie);
 	REG32_STORE(aacirun->base + AACI_TXCR, aacirun->cr);
+
 
 }
 
@@ -153,12 +152,12 @@ static void aaci_pl041_dev_resume(struct audio_dev *dev) {
 
 static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	log_debug("dev = 0x%X", dev);
-	switch (cmd) {
+	switch(cmd) {
 	case ADIOCTL_IN_SUPPORT:
 		return 0;
 	case ADIOCTL_OUT_SUPPORT:
 		return AD_STEREO_SUPPORT |
-			   AD_16BIT_SUPPORT;
+		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:
 		return aaci_pl041_hw_dev.fifo_depth * FIFO_SAMPLE_SZ;
 	}
@@ -220,12 +219,10 @@ static void aaci_ac97_select_codec(struct aaci_pl041_hw_dev *hw_dev) {
 	 * Ensure that the slot 1/2 RX registers are empty.
 	 */
 	v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR);
-	if (v & AACI_SLFR_2RXV) {
+	if (v & AACI_SLFR_2RXV)
 		REG32_LOAD(hw_dev->base_addr + AACI_SL2RX);
-	}
-	if (v & AACI_SLFR_1RXV) {
+	if (v & AACI_SLFR_1RXV)
 		REG32_LOAD(hw_dev->base_addr + AACI_SL1RX);
-	}
 
 	if (maincr != REG32_LOAD(hw_dev->base_addr + AACI_MAINCR)) {
 		REG32_STORE(hw_dev->base_addr + AACI_MAINCR, maincr);
@@ -258,9 +255,8 @@ void ac97_reg_write(unsigned short reg, unsigned short val) {
 		v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR);
 	} while ((v & (AACI_SLFR_1TXB | AACI_SLFR_2TXB)) && --timeout);
 
-	if (v & (AACI_SLFR_1TXB | AACI_SLFR_2TXB)) {
+	if (v & (AACI_SLFR_1TXB | AACI_SLFR_2TXB))
 		log_error("timeout waiting for write to complete\n");
-	}
 }
 
 uint16_t ac97_reg_read(unsigned short reg) {
@@ -298,7 +294,7 @@ uint16_t ac97_reg_read(unsigned short reg) {
 	timeout = FRAME_PERIOD_US * 8;
 	do {
 		udelay(1);
-		/*cond_resched(); */
+		//cond_resched();
 		v = REG32_LOAD(hw_dev->base_addr + AACI_SLFR) & (AACI_SLFR_1RXV | AACI_SLFR_2RXV);
 	} while ((v != (AACI_SLFR_1RXV|AACI_SLFR_2RXV)) && --timeout);
 
@@ -383,7 +379,7 @@ static int aaci_size_fifo(struct aaci_pl041_hw_dev *hw_dev) {
  * Interrupt support.
  */
 static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
-	/*log_debug("base = 0x%X channel = %d mask = 0x%X", base, channel, mask); */
+	//log_debug("base = 0x%X channel = %d mask = 0x%X", base, channel, mask);
 
 	if (mask & AACI_ISR_ORINTR) {
 		REG32_STORE(base + AACI_INTCLR, AACI_ICLR_RXOEC1 << channel);
@@ -401,21 +397,21 @@ static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
 	}
 
 	if (mask & AACI_ISR_TXCINTR) {
-		/*
-		AACITXINTR 1-4
-		If the FIFO is enabled, the FIFO transmit interrupt is asserted
-		when the PrimeCell AACI transmit FIFO is less than, or equal to,
-		half-empty and the mask bit TxIE is set. The FIFO transmit
-		interrupt is cleared by filling the transmit FIFO to more than half
-		full.
-		*/
+	/*
+	AACITXINTR 1-4
+	If the FIFO is enabled, the FIFO transmit interrupt is asserted
+	when the PrimeCell AACI transmit FIFO is less than, or equal to,
+	half-empty and the mask bit TxIE is set. The FIFO transmit
+	interrupt is cleared by filling the transmit FIFO to more than half
+	full.
+	*/
 		struct aaci_runtime *aacirun;
 		uint32_t val;
 
 		aacirun = &aaci_pl041_hw_dev.aaci_runtime;
 		/* we must disable irq because fulling fifo will be in light thread */
 		val = REG32_LOAD(aacirun->base + AACI_IE);
-		val &= ~(AACI_IE_URIE | AACI_IE_TXIE);
+		val &= ~( AACI_IE_URIE | AACI_IE_TXIE);
 		REG32_STORE(aacirun->base + AACI_IE, val);
 
 		Pa_StartStream(NULL);
@@ -452,11 +448,11 @@ static int aaci_pl041_init(void) {
 	int ret;
 
 	aaci_pl041_hw_dev.base_addr = (uintptr_t)mmap_device_memory(
-		(void *)BASE_ADDR,
-		0x1000,
-		PROT_WRITE | PROT_READ,
-		MAP_FIXED,
-		BASE_ADDR);
+			(void*)BASE_ADDR,
+			0x1000,
+			PROT_WRITE | PROT_READ,
+			MAP_FIXED,
+			BASE_ADDR);
 	/* Set MAINCR to allow slot 1 and 2 data IO */
 	aaci_pl041_hw_dev.maincr = AACI_MAINCR_IE | AACI_MAINCR_SL1RXEN | AACI_MAINCR_SL1TXEN |
 			AACI_MAINCR_SL2RXEN | AACI_MAINCR_SL2TXEN;
@@ -480,9 +476,8 @@ static int aaci_pl041_init(void) {
 	 */
 	REG32_LOAD(BASE_ADDR + AACI_CTRL_CH1);
 	ret = aaci_pl041_probe_ac97(BASE_ADDR);
-	if (ret) {
+	if (ret)
 		goto out;
-	}
 
 	/*
 	 * Size the FIFOs (must be multiple of 16).

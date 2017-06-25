@@ -12,15 +12,11 @@
 
 #include "httpd.h"
 
-static const char *ext2type_html[] = {
-	".html", ".htm", NULL
-};
-static const char *ext2type_jpeg[] = {
-	".jpeg", ".jpg", NULL
-};
+static const char *ext2type_html[] = { ".html", ".htm", NULL };
+static const char *ext2type_jpeg[] = { ".jpeg", ".jpg", NULL };
 static const struct ext2type_table_item {
-	const char * type;
-	const char * ext;
+	const char *type;
+	const char *ext;
 	const char **exts;
 } httpd_ext2type_table[] = {
 	{ .exts = ext2type_html, .type = "text/html", },
@@ -40,7 +36,7 @@ const char *httpd_filename2content_type(const char *filename) {
 
 	file_ext = strrchr(filename, '.');
 	if (file_ext) {
-		for (i_table = 0; i_table < ARRAY_SIZE(httpd_ext2type_table); i_table++) {
+		for (i_table = 0; i_table < ARRAY_SIZE(httpd_ext2type_table); i_table ++) {
 			const struct ext2type_table_item *ti = &httpd_ext2type_table[i_table];
 
 			if (ti->ext) {
@@ -72,12 +68,13 @@ int httpd_header(const struct client_info *cinfo, int st, const char *msg) {
 	}
 
 	fprintf(skf,
-			"HTTP/1.1 %d %s\r\n"
-			"Content-Type: %s\r\n"
-			"Connection: close\r\n"
-			"\r\n",
-			st, msg, "text/plain");
+		"HTTP/1.1 %d %s\r\n"
+		"Content-Type: %s\r\n"
+		"Connection: close\r\n"
+		"\r\n",
+		st, msg, "text/plain");
 
 	fclose(skf);
 	return 0;
 }
+

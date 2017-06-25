@@ -18,7 +18,7 @@ EMBOX_TEST_SUITE("util/slist test");
 TEST_SETUP(setup);
 
 struct element {
-	int				  some_stuff;
+	int some_stuff;
 	struct slist_link lnk;
 };
 
@@ -58,9 +58,7 @@ TEST_CASE("slist_init should have the same effect as static initializer") {
 }
 
 TEST_CASE("slist_link_init should have the same effect as static initializer") {
-	struct element e = {
-		.lnk = SLIST_LINK_INIT(&e.lnk), .some_stuff = 42,
-	};
+	struct element e = { .lnk = SLIST_LINK_INIT(&e.lnk), .some_stuff = 42, };
 	char buff[sizeof(e.lnk)];
 	memcpy(buff, &e.lnk, sizeof(e.lnk));
 	memset(&e.lnk, 0xA5, sizeof(e.lnk)); /* poison. */

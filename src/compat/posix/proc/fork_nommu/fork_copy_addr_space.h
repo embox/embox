@@ -18,13 +18,13 @@
 
 struct stack_space {
 	struct dlist_head list;
-	struct thread *	  thread;
-	void *			  stack;
-	size_t			  stack_sz;
+	struct thread *thread;
+	void *stack;
+	size_t stack_sz;
 };
 
 struct heap_space {
-	void * heap;
+	void *heap;
 	size_t heap_sz;
 
 	struct dlist_head store_space;
@@ -37,14 +37,14 @@ struct static_space {
 
 struct addr_space {
 	struct addr_space *parent_addr_space;
-	unsigned int	   child_count;
+	unsigned int child_count;
 
 	struct pt_regs pt_entry;
 
 	struct thread *parent_thread;
 
-	struct dlist_head	stack_space_head;
-	struct heap_space	heap_space;
+	struct dlist_head stack_space_head;
+	struct heap_space heap_space;
 	struct static_space static_space;
 };
 
@@ -74,3 +74,4 @@ extern void fork_static_restore(struct static_space *sspc);
 extern void fork_static_cleanup(struct static_space *sspc);
 
 #endif /* FORK_COPY_ADDR_SPACE_H_ */
+

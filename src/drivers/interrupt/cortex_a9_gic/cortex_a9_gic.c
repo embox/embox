@@ -147,9 +147,8 @@ void irqctrl_eoi(unsigned int irq) {
 
 void interrupt_handle(void) {
 	unsigned int irq = REG_LOAD(GICC_IAR);
-	if (irq == SPURIOUS_IRQ) {
+	if (irq == SPURIOUS_IRQ)
 		return;
-	}
 
 	/* TODO check if IRQ number is correct */
 

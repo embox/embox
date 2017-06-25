@@ -23,7 +23,7 @@ int fioctl(FILE *file, int request, ...) {
 	}
 
 	va_start(args, request);
-	data = va_arg(args, void *);
+	data = va_arg(args, void*);
 	res = ioctl(file->fd, request, data);
 	va_end(args);
 

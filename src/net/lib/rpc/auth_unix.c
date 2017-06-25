@@ -14,7 +14,7 @@
 
 static struct auth_ops authunix_ops;
 
-struct auth *authunix_create(char *host, int uid, int gid,
+struct auth * authunix_create(char *host, int uid, int gid,
 		int user_gids_len, int *user_gids) {
 	struct auth *ath;
 	char *data;
@@ -63,5 +63,5 @@ static void authunix_destroy(struct auth *ath) {
 }
 
 static struct auth_ops authunix_ops = {
-	.destroy = authunix_destroy
+		.destroy = authunix_destroy
 };

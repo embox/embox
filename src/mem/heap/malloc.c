@@ -53,9 +53,8 @@ void *malloc(size_t size) {
 }
 
 void free(void *ptr) {
-	if (ptr == NULL) {
+	if (ptr == NULL)
 		return;
-	}
 	/* XXX this workaround for such situation:
 	 * module ConstructionGlobal invokes constructors inside kernel task for all applications,
 	 * and call malloc. After a while Qt application call realloc() on some memory previously
@@ -90,8 +89,7 @@ void *realloc(void *ptr, size_t size) {
 }
 
 void *calloc(size_t nmemb, size_t size) {
-	if (nmemb == 0 || size == 0) {
+	if (nmemb == 0 || size == 0)
 		return NULL; /* ok */
-	}
 	return mspace_calloc(nmemb, size, task_self_mspace());
 }

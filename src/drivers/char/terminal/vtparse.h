@@ -25,11 +25,11 @@ struct vtparse;
 typedef void (*vtparse_callback_t)(struct vtparse *, struct vt_token *);
 
 struct vtparse {
-	vtparse_state_t	   state;
+	vtparse_state_t state;
 	vtparse_callback_t cb;
-	struct vt_token	   token;
-	short			   token_params[VTPARSE_TOKEN_PARAMS_MAX];
-	void *			   user_data;
+	struct vt_token token;
+	short token_params[VTPARSE_TOKEN_PARAMS_MAX];
+	void* user_data;
 };
 
 typedef struct vtparse *vtparse_t;

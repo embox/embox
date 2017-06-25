@@ -25,21 +25,21 @@ typedef __u64 __le64;
 typedef __u64 __be64;
 
 /* bsd */
-typedef unsigned char u_char;
-typedef unsigned short u_short;
-typedef unsigned int u_int;
-typedef unsigned long u_long;
+typedef unsigned char     u_char;
+typedef unsigned short    u_short;
+typedef unsigned int      u_int;
+typedef unsigned long     u_long;
 
 /* sysv */
-typedef unsigned char unchar;
-typedef unsigned short ushort;
-typedef unsigned int uint;
-typedef unsigned long ulong;
+typedef unsigned char     unchar;
+typedef unsigned short    ushort;
+typedef unsigned int      uint;
+typedef unsigned long     ulong;
 
 /* minix */
-typedef unsigned char u8_t;
-typedef unsigned short int u16_t;
-typedef unsigned long int u32_t;
+typedef unsigned char 		u8_t;
+typedef unsigned short int 	u16_t;
+typedef unsigned long int 	u32_t;
 
 #endif /* __ASSEMBLER__ */
 

@@ -30,7 +30,7 @@ int poll_table_count(struct idesc_poll_table *pt) {
 
 	for (i = 0; i < pt->size; i++) {
 		idesc = poll_table_idx2idesc(pt->idesc_poll[i].fd);
-		/*idesc = pt->idesc_poll[i].idesc; */
+		//idesc = pt->idesc_poll[i].idesc;
 		/* in poll we must treat wrong descriptors and setup revents in
 		 * POLLNVAL value
 		 */
@@ -69,11 +69,10 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 	for (i = 0; i < pt->size; i++) {
 		struct idesc_poll *idesc_poll = &pt->idesc_poll[i];
 
-		/*assert(idesc_poll->idesc); */
+		//assert(idesc_poll->idesc);
 		idesc = poll_table_idx2idesc(idesc_poll->fd);
-		if (!idesc) {
+		if (!idesc)
 			continue;
-		}
 
 		idesc_wait_cleanup(idesc,  &idesc_poll->wait_link);
 	}
@@ -88,11 +87,10 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 	for (i = 0; i < pt->size; i++) {
 		struct idesc_poll *ip = &pt->idesc_poll[i];
 
-		/*assert(ip->idesc); */
+		//assert(ip->idesc);
 		idesc = poll_table_idx2idesc(ip->fd);
-		if (!idesc) {
+		if (!idesc)
 			continue;
-		}
 
 		idesc_wait_init(&ip->wait_link, ip->i_poll_mask);
 		idesc_wait_prepare(idesc, &ip->wait_link);

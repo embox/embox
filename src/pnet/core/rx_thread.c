@@ -18,7 +18,7 @@
 #include <pnet/core/core.h>
 #include <pnet/pack/pnet_pack.h>
 
-/*#define PNET_THREAD_DEBUG */
+//#define PNET_THREAD_DEBUG
 
 EMBOX_UNIT_INIT(rx_thread_init);
 
@@ -34,7 +34,7 @@ static int sleeping[PNET_PRIORITY_COUNT];
 #endif
 
 struct pnet_wait_unit {
-	struct event	 event;
+	struct event event;
 	struct ring_buff buff;
 };
 
@@ -64,7 +64,7 @@ static int rx_thread_init(void) {
 		ring_buff_init(&pack_storage[i].buff, sizeof(net_packet_t), RX_THRD_BUF_SIZE,
 				(void *) pack_bufs[i]);
 		pnet_rx_threads[i] = thread_create(0, pnet_rx_thread_hnd, &pack_storage[i]);
-		if (err(pnet_rx_threads[i])) {
+		if(err(pnet_rx_threads[i])) {
 			return -1;
 		}
 

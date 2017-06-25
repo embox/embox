@@ -48,3 +48,4 @@ TEST_CASE("Three-step event waiting should support event occured before wait") {
 	waitq_wait_prepare(&waitq, &waitq_link);
 	waitq_wait_cleanup(&waitq, &waitq_link);
 }
+

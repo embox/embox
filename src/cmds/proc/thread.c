@@ -38,20 +38,18 @@ static void print_stat(void) {
 		task_foreach(task) {
 			task_foreach_thread(t, task) {
 				printf(" %4d %4d %8d %c %c %c %c %9lds\n",
-						t->id, task_get_id(t->task),
-						schedee_priority_get(&t->schedee),
-						(t == thread_self()) ? '*' : ' ',
-						sched_active(&t->schedee) ? 'A' : ' ',
-						t->schedee.ready        ? 'R' : ' ',
-						t->schedee.waiting      ? 'W' : ' ',
-						thread_get_running_time(t)/CLOCKS_PER_SEC);
+					t->id, task_get_id(t->task),
+					schedee_priority_get(&t->schedee),
+					(t == thread_self()) ? '*' : ' ',
+					sched_active(&t->schedee) ? 'A' : ' ',
+					t->schedee.ready        ? 'R' : ' ',
+					t->schedee.waiting      ? 'W' : ' ',
+					thread_get_running_time(t)/CLOCKS_PER_SEC);
 
-				if (t->schedee.ready || sched_active(&t->schedee)) {
+				if (t->schedee.ready || sched_active(&t->schedee))
 					running++;
-				}
-				else {
+				else
 					sleeping++;
-				}
 			}
 		}
 	}
@@ -60,13 +58,13 @@ static void print_stat(void) {
 	total = running + sleeping;
 
 	printf("Total %d threads: \n"
-			"\t%d running\n"
-			"\t%d sleeping\n", total, running, sleeping);
+		"\t%d running\n"
+		"\t%d sleeping\n", total, running, sleeping);
 }
 
 static struct thread *thread_lookup(thread_id_t id) {
 	struct thread *t;
-	struct task *task;
+	struct task * task;
 
 	sched_lock();
 	{
@@ -111,7 +109,7 @@ int main(int argc, char **argv) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			break;

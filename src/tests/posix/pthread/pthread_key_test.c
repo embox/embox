@@ -12,9 +12,11 @@ EMBOX_TEST_SUITE("posix/pthread_key_api");
 static pthread_key_t key;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
 
+
 static void make_key(void) {
 	pthread_key_create(&key, NULL);
 }
+
 
 TEST_CASE("create key for thread") {
 	void *ptr;
@@ -25,5 +27,6 @@ TEST_CASE("create key for thread") {
 	ptr = malloc(OBJECT_SIZE);
 	test_assert_null(ptr);
 	test_assert_zero(pthread_setspecific(key, ptr));
+
 
 }

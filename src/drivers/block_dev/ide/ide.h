@@ -188,7 +188,7 @@
 /*
  * Parameters returned by read drive parameters command
  */
-struct hdparam {
+struct hdparam  {
 	unsigned short config;               /* General configuration bits */
 	unsigned short cylinders;            /* Cylinders */
 	unsigned short reserved;
@@ -197,14 +197,14 @@ struct hdparam {
 	unsigned short unfbytes;             /* Unformatted bytes/sector */
 	unsigned short sectors;              /* Sectors per track */
 	unsigned short vendorunique[3];
-	char		   serial[20];           /* Serial number */
+	char serial[20];                     /* Serial number */
 	unsigned short buffertype;           /* Buffer type */
 	unsigned short buffersize;           /* Buffer size, in 512-byte units */
 	unsigned short necc;                 /* ECC bytes appended */
-	char		   rev[8];               /* Firmware revision */
-	char		   model[40];            /* Model name */
-	unsigned char  nsecperint;           /* Sectors per interrupt */
-	unsigned char  resv0;                /* Reserved */
+	char rev[8];                         /* Firmware revision */
+	char model[40];                      /* Model name */
+	unsigned char nsecperint;            /* Sectors per interrupt */
+	unsigned char resv0;                 /* Reserved */
 	unsigned short usedmovsd;            /* Can use double word read/write? */
 	unsigned short caps;                 /* Capabilities */
 	unsigned short resv1;                /* Reserved */
@@ -248,24 +248,24 @@ struct hdparam {
 	unsigned short last_lun;             /* Reserved (word 126) */
 	unsigned short word127;              /* Reserved (word 127) */
 	unsigned short dlf;                  /* Device lock function
-	                                    * 15:9  reserved
-	                                    * 8     security level 1:max 0:high
-	                                    * 7:6   reserved
-	                                    * 5     enhanced erase
-	                                    * 4     expire
-	                                    * 3     frozen
-	                                    * 2     locked
-	                                    * 1     en/disabled
-	                                    * 0     capability
-	                                    */
+										* 15:9  reserved
+										* 8     security level 1:max 0:high
+										* 7:6   reserved
+										* 5     enhanced erase
+										* 4     expire
+										* 3     frozen
+										* 2     locked
+										* 1     en/disabled
+										* 0     capability
+										*/
 
 	unsigned short csfo;                 /* Current set features options
-	                                    * 15:4 reserved
-	                                    * 3      auto reassign
-	                                    * 2      reverting
-	                                    * 1      read-look-ahead
-	                                    * 0      write cache
-	                                    */
+										* 15:4 reserved
+										* 3      auto reassign
+										* 2      reverting
+										* 1      read-look-ahead
+										* 0      write cache
+										*/
 
 	unsigned short words130_155[26];     /* Reserved vendor words 130-155 */
 	unsigned short word156;
@@ -277,23 +277,23 @@ struct hd;
 
 struct prd {
 	unsigned long addr;
-	int			  len;
+	int len;
 };
 
-typedef struct hdc {
+typedef struct hdc  {
 	int status;                          /* Controller status */
 
 	int iobase;                          /* I/O port registers base address */
 	int irq;                             /* IRQ for controller */
 	int bmregbase;                       /* Busmaster register base */
 
-	char *	   bufp;                     /* Buffer pointer for next transfer */
-	int		   nsects;                   /* Number of sectors left to transfer */
-	int		   result;                   /* Result of transfer */
-	int		   dir;                      /* Transfer direction */
+	char *bufp;                          /* Buffer pointer for next transfer */
+	int nsects;                          /* Number of sectors left to transfer */
+	int result;                          /* Result of transfer */
+	int dir;                             /* Transfer direction */
 	struct hd *active;                   /* Active drive for transfer */
 
-	struct prd *  prds;                  /* PRD list for DMA transfer */
+	struct prd *prds;                    /* PRD list for DMA transfer */
 	unsigned long prds_phys;             /* Physical address of PRD list */
 
 	struct waitq waitq;
@@ -308,18 +308,18 @@ typedef struct dev_geometry {
 } dev_geometry_t;
 
 typedef struct hd {
-	int			   idx;
-	void *		   bdev;       /* Device */
-	hdc_t *		   hdc;          /* Controller */
+	int   idx;
+	void *bdev;                /* Device */
+	hdc_t *hdc;                  /* Controller */
 	struct hdparam param;        /* Drive parameter block */
-	int			   drvsel;       /* Drive select on controller */
-	int			   use32bits;    /* Use 32 bit transfers */
-	int			   sectbufs;     /* Number of sector buffers */
-	int			   lba;          /* LBA mode */
-	int			   iftype;       /* IDE interface type (ATA/ATAPI) */
-	int			   media;        /* Device media type (hd, cdrom, ...) */
-	int			   multsect;     /* Sectors per interrupt */
-	int			   udmamode;     /* UltraDMA mode */
+	int drvsel;                  /* Drive select on controller */
+	int use32bits;               /* Use 32 bit transfers */
+	int sectbufs;                /* Number of sector buffers */
+	int lba;                     /* LBA mode */
+	int iftype;                  /* IDE interface type (ATA/ATAPI) */
+	int media;                   /* Device media type (hd, cdrom, ...) */
+	int multsect;                /* Sectors per interrupt */
+	int udmamode;                /* UltraDMA mode */
 	/*
 	 * Geometry
 	 */

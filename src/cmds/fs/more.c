@@ -13,13 +13,14 @@
 #include <errno.h>
 #include <curses.h>
 
+
 #define TAB_SIZE 4
 #define MAX_SCREEN_WIDTH 256
 
 static char buff[MAX_SCREEN_WIDTH], info[MAX_SCREEN_WIDTH];
 
 static void screen(FILE *fp) {
-	int cmd = 0, columns, lines, x, y;
+    int cmd = 0, columns, lines, x, y;
 	WINDOW *std;
 	bool endOfFile = false;
 
@@ -28,36 +29,36 @@ static void screen(FILE *fp) {
 	if (columns >= MAX_SCREEN_WIDTH - 1) {
 		columns = MAX_SCREEN_WIDTH - 1;
 	}
-	lines   = std->endy - std->begy;
+	lines	= std->endy - std->begy;
 	refresh();
 	cbreak();
 	noecho();
 
-	while (1) {
+	while (1){
 		if (!endOfFile) {
 			for (x = 0; x < lines - 1; x++) {
 				for (y = 0; y < columns; y++) {
 					buff[y] = !endOfFile ? getc(fp) : ' ';
 
 					switch ((int)buff[y]) {
-					case EOF:
-						buff[y] = ' ';
-						endOfFile = true;
-						break;
-					case '\n':
-						/*	End of the line, filling the rest of buffer */
-						memset(buff + y, ' ', columns - y);
-						y = columns;
-						break;
-					case '\t':
-						/*	Perform tab instert	*/
-						memset(buff + y, ' ', TAB_SIZE);
-						y += TAB_SIZE - 1;
-						break;
+						case EOF:
+							buff[y] = ' ';
+							endOfFile = true;
+							break;
+						case '\n':
+							/*	End of the line, filling the rest of buffer */
+							memset(buff + y, ' ', columns - y);
+							y = columns;
+							break;
+						case '\t':
+							/*	Perform tab instert	*/
+							memset(buff + y, ' ', TAB_SIZE);
+							y += TAB_SIZE - 1;
+							break;
 					}
 				}
 				/*	In case if we got out of the actual line size	*/
-				buff[columns] = '\n';
+				buff[columns]= '\n';
 				addstr(buff);
 			}
 			memset(info, '\0', columns);
@@ -87,12 +88,12 @@ int main(int argc, char **argv) {
 	FILE *fp;
 
 	if (argc < 2) {
-		printf("Usage: more [FILE]\n");
+		printf ("Usage: more [FILE]\n");
 		return 0;
 	}
 
 	if (NULL == (fp = fopen(argv[1], "r"))) {
-		printf("Can't open this file!\n");
+		printf ("Can't open this file!\n");
 		return 0;
 	}
 

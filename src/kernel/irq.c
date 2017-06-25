@@ -31,16 +31,17 @@
 #include <hal/ipl.h>
 #include <mem/objalloc.h>
 
+
 struct irq_entry {
-	irq_handler_t	  handler;
-	void *			  dev_id;
+	irq_handler_t handler;
+	void *dev_id;
 	struct dlist_head action_link;
 };
 
 struct irq_action {
 	struct irq_entry *entry;
 	struct dlist_head entry_list;
-	int				  sharing_supported;
+	int sharing_supported;
 };
 
 #if OPTION_GET(NUMBER, action_n) <= 0
@@ -74,20 +75,20 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 	/* Check if irq exists and device support sharing
 	 * and new device also support sharing */
 	if (irq_table[irq_nr]) {
-		if (!(irq_table[irq_nr]->sharing_supported && (flags & IF_SHARESUP))) {
+		if(! (irq_table[irq_nr]->sharing_supported && (flags & IF_SHARESUP))) {
 			/* IRQ sharing is not supported for this IRQ number */
 			ret = -EBUSY;
 			goto out_unlock;
 		}
 		action = irq_table[irq_nr];
-		/* Else action allocation */
-	} else if (!(action = objalloc(&irq_actions))) {
+	/* Else action allocation */
+	} else if (! (action = objalloc(&irq_actions))) {
 		ret = -ENOMEM;
 		goto out_unlock;
 	}
 
 	/* Action entry allocation */
-	if (!(action->entry = objalloc(&irq_entries))) {
+	if (! (action->entry = objalloc(&irq_entries))) {
 		if (dlist_empty(&(irq_table[irq_nr]->entry_list))) {
 			objfree(&irq_actions, action);
 		}
@@ -112,7 +113,7 @@ int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 		irqctrl_enable(irq_nr);
 	}
 
-out_unlock: irq_unlock();
+	out_unlock: irq_unlock();
 	return ret;
 }
 
@@ -147,7 +148,7 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 		}
 	}
 
-out_unlock: irq_unlock();
+	out_unlock: irq_unlock();
 	return ret;
 }
 

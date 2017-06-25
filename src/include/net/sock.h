@@ -24,7 +24,8 @@
 #include <net/skbuff.h>
 #include <netinet/in.h>
 
-struct proto_sock; /*TODO What does it mean */
+
+struct proto_sock; //TODO What does it mean
 struct sock_family_ops;
 struct sock_proto_ops;
 struct net_pack_out_ops;
@@ -43,16 +44,16 @@ enum sock_state {
 };
 
 struct sock_opt {
-	int				   so_acceptconn;
+	int so_acceptconn;
 	struct net_device *so_bindtodevice;
-	int				   so_broadcast;
-	int				   so_domain;
-	int				   so_dontroute;
-	int				   so_error;
-	struct linger	   so_linger;
-	int				   so_oobinline;
-	int				   so_protocol;
-	int				   so_rcvbuf;
+	int so_broadcast;
+	int so_domain;
+	int so_dontroute;
+	int so_error;
+	struct linger so_linger;
+	int so_oobinline;
+	int so_protocol;
+	int so_rcvbuf;
 #define SOCK_OPT_DEFAULT_RCVBUF   16384
 	int so_rcvlowat;
 #define SOCK_OPT_DEFAULT_RCVLOWAT 1
@@ -70,25 +71,25 @@ struct sock_opt {
 
 /* Base class for family sockets */
 struct sock {
-	struct idesc		idesc;
-	struct sock_xattr	sock_xattr;
-	struct dlist_head	lnk;
-	enum sock_state		state;
-	struct sock_opt		opt;
+	struct idesc idesc;
+	struct sock_xattr sock_xattr;
+	struct dlist_head lnk;
+	enum sock_state state;
+	struct sock_opt opt;
 	struct sk_buff_head rx_queue;
 	struct sk_buff_head tx_queue;
-	unsigned int		rx_data_len;
-	/*unsigned int tx_data_len; */
-	unsigned char				   shutdown_flag; /* FIXME */
-	struct proto_sock *			   p_sk;
-	const struct sock_family_ops * f_ops;
-	const struct sock_proto_ops *  p_ops;
+	unsigned int rx_data_len;
+	//unsigned int tx_data_len;
+	unsigned char shutdown_flag; /* FIXME */
+	struct proto_sock *p_sk;
+	const struct sock_family_ops *f_ops;
+	const struct sock_proto_ops *p_ops;
 	const struct net_pack_out_ops *o_ops;
-	const struct sockaddr *		   src_addr;
-	const struct sockaddr *		   dst_addr;
-	struct timeval				   last_packet_tstamp;
-	size_t						   addr_len;
-	int							   err;
+	const struct sockaddr *src_addr;
+	const struct sockaddr *dst_addr;
+	struct timeval last_packet_tstamp;
+	size_t addr_len;
+	int err;
 };
 
 static inline int sock_err(struct sock *sk) {
@@ -122,7 +123,7 @@ struct sock_family_ops {
 			void *optval, socklen_t *optlen);
 	int (*setsockopt)(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen);
-	int			 (*shutdown)(struct sock *sk, int how);
+	int (*shutdown)(struct sock *sk, int how);
 	struct pool *sock_pool;
 };
 
@@ -137,13 +138,13 @@ struct sock_proto_ops {
 	int (*sendmsg)(struct sock *sk, struct msghdr *msg, int flags);
 	int (*recvmsg)(struct sock *sk, struct msghdr *msg, int flags);
 	int (*fillmsg)(struct sock *sk, struct msghdr *msg,
-			struct sk_buff *skb); /*FIXME remove me */
+			struct sk_buff *skb); //FIXME remove me
 	int (*getsockopt)(struct sock *sk, int level, int optname,
 			void *optval, socklen_t *optlen);
 	int (*setsockopt)(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen);
-	int				   (*shutdown)(struct sock *sk, int how);
-	struct pool *	   sock_pool;
+	int (*shutdown)(struct sock *sk, int how);
+	struct pool *sock_pool;
 	struct dlist_head *sock_list;
 };
 
@@ -156,17 +157,19 @@ struct proto_sock {
  * @arg p_sk - derived of proto_sock
  *             (proto_sock MUST BE FIRST field in derived socket type)
  */
-static inline struct sock *to_sock(const void *p_sk) {
+static inline struct sock * to_sock(const void *p_sk) {
 	assert(p_sk != NULL);
 	return ((const struct proto_sock *)p_sk)->sk;
 }
 
-extern struct sock *sock_create(int family, int type, int protocol);
+
+extern struct sock * sock_create(int family, int type, int protocol);
 
 extern void sock_release(struct sock *sk);
 
 extern void sock_hash(struct sock *sk);
 extern void sock_unhash(struct sock *sk);
+
 
 extern void sock_rcv(struct sock *sk, struct sk_buff *skb,
 		unsigned char *p_data, size_t size);
@@ -191,9 +194,9 @@ static inline void sock_set_so_error(struct sock *sk, int error) {
 typedef int (*sock_lookup_tester_ft)(const struct sock *sk,
 		const struct sk_buff *skb);
 
-extern struct sock *sock_iter(const struct sock_proto_ops *p_ops);
-extern struct sock *sock_next(const struct sock *sk);
-extern struct sock *sock_lookup(const struct sock *sk,
+extern struct sock * sock_iter(const struct sock_proto_ops *p_ops);
+extern struct sock * sock_next(const struct sock *sk);
+extern struct sock * sock_lookup(const struct sock *sk,
 		const struct sock_proto_ops *p_ops,
 		sock_lookup_tester_ft tester,
 		const struct sk_buff *skb);

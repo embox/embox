@@ -33,7 +33,7 @@ DIR *opendir(const char *path) {
 	int res;
 
 	if (!strcmp(path, ".")) {
-		path = "";/*getcwd(cur_path, PATH_MAX); */
+		path = "";//getcwd(cur_path, PATH_MAX);
 	}
 
 	res = fs_perm_lookup(path, NULL, &node_path);

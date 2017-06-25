@@ -84,36 +84,35 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 	switch ((int)ctx->fs_ctx & 3) {
 	case 0:
 		/* Block device */
-		for (i = ((int) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++) {
+		for (i = ((int) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++)
 			if (bdevtab[i]) {
-				ctx->fs_ctx = (void *) ((int) ctx->fs_ctx + 0x4);
+				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, bdevtab[i], S_IFBLK);
 				return 0;
 			}
-		}
 		/* Fall through */
-		ctx->fs_ctx = (void *) ((int) 0x1);
+		ctx->fs_ctx = (void*) ((int) 0x1);
 	case 1:
 		/* Char device */
 		i = 0;
 		array_spread_foreach_ptr(dev_module, __char_device_registry) {
 			if (i++ == (int) ctx->fs_ctx >> 2) {
-				ctx->fs_ctx = (void *) ((int) ctx->fs_ctx + 0x4);
+				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, dev_module, S_IFCHR);
 				return 0;
 			}
 		}
 		dlist_foreach_entry(dev_module, &cdev_repo_list, cdev_list) {
 			if (i++ == (int) ctx->fs_ctx >> 2) {
-				ctx->fs_ctx = (void *) ((int) ctx->fs_ctx + 0x4);
+				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, dev_module, S_IFCHR);
 				return 0;
 			}
 		}
 		/* Fall through */
-		ctx->fs_ctx = (void *) ((int) 0x1);
+		ctx->fs_ctx = (void*) ((int) 0x1);
 	case 2:
-	/* Fall through */
+		/* Fall through */
 	case 3:
 	default:
 		/* wtf */
@@ -123,6 +122,7 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 	/* End of directory */
 	return -1;
 }
+
 
 /**
  * @brief Find file in directory
@@ -142,12 +142,11 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 		return NULL;
 	}
 
-	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
+	for (i = 0; i < MAX_BDEV_QUANTITY; i++)
 		if (bdevtab[i] && !strcmp(bdevtab[i]->name, name)) {
 			devfs_fill_inode(node, bdevtab[i], S_IFBLK);
 			return node;
 		}
-	}
 
 	array_spread_foreach_ptr(dev_module, __char_device_registry) {
 		if (!strcmp(dev_module->name, name)) {
@@ -185,6 +184,7 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 
 	return dev->fops->open(node, desc);
 }
+
 
 static int devfs_pathname(struct inode *node, char *buf, int flags) {
 	struct device_module *dev_module;

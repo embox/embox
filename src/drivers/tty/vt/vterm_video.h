@@ -39,3 +39,4 @@ extern int vterm_video_init(struct vterm_video *vi, const struct vterm_video_ops
 		unsigned short width, unsigned short height);
 
 #endif /* VIDEO_TERM_H_ */
+

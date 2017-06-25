@@ -18,3 +18,4 @@
 #include <module/embox/kernel/addr_space.h>
 
 #endif /* ADDR_SPACE_H_ */
+

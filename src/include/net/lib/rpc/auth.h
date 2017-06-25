@@ -40,8 +40,8 @@ enum auth_flavor {
 
 struct opaque_auth {
 	enum auth_flavor flavor;
-	char *			 data;
-	uint32_t		 data_len;
+	char *data;
+	uint32_t data_len;
 };
 
 struct auth_ops {
@@ -49,28 +49,28 @@ struct auth_ops {
 };
 
 struct auth {
-	struct opaque_auth	   cred;
-	struct opaque_auth	   verf;
+	struct opaque_auth cred;
+	struct opaque_auth verf;
 	const struct auth_ops *ops;
 };
 
 struct authunix_parms {
-	uint32_t  stamp;
-	char *	  host;
-	uint32_t  uid;
-	uint32_t  gid;
+	uint32_t stamp;
+	char *host;
+	uint32_t uid;
+	uint32_t gid;
 	uint32_t *gids;
-	uint32_t  gids_len;
+	uint32_t gids_len;
 };
 
 extern const struct opaque_auth __opaque_auth_null;
 
 /* Auth factory */
-extern struct auth *auth_alloc(void);
+extern struct auth * auth_alloc(void);
 extern void auth_free(struct auth *ath);
 
-extern struct auth *authnone_create(void);
-extern struct auth *authunix_create(char *host, int uid, int gid,
+extern struct auth * authnone_create(void);
+extern struct auth * authunix_create(char *host, int uid, int gid,
 		int user_gids_len, int *user_gids);
 
 extern void auth_destroy(struct auth *ath);

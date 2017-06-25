@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+
 #include <mem/misc/pool.h>
 
 #include <fs/idesc.h>
@@ -27,7 +28,8 @@
 POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 
 #define idesc_to_uart(desc) \
-	(((struct  tty_uart *)desc)->uart)
+	(((struct  tty_uart*)desc)->uart)
+
 
 static const struct idesc_ops idesc_serial_ops;
 
@@ -187,7 +189,7 @@ static int serial_status(struct idesc *idesc, int mask) {
 
 	if (mask & POLLERR) {
 		/* is there any exeptions */
-		res += 0; /*TODO Where is errors counter */
+		res += 0; //TODO Where is errors counter
 	}
 
 	return res;
@@ -203,10 +205,10 @@ static int serial_fstat(struct idesc *data, void *buff) {
 }
 
 static const struct idesc_ops idesc_serial_ops = {
-	.id_readv = serial_read,
-	.id_writev = serial_write,
-	.ioctl = serial_ioctl,
-	.close = serial_close,
-	.status = serial_status,
-	.fstat = serial_fstat,
+		.id_readv = serial_read,
+		.id_writev = serial_write,
+		.ioctl = serial_ioctl,
+		.close = serial_close,
+		.status = serial_status,
+		.fstat = serial_fstat,
 };

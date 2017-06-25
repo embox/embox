@@ -39,11 +39,14 @@
 #define X86_T_GENERAL_PROTECTION    0x0D /* General Protection */
 #define X86_T_PAGE_FAULT            0x0E /* Page Fault */
 
+
+
 extern void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr);
 extern void idt_init(void);
 extern void gdt_init(void);
 
 #else
+
 
 #endif /* __ASSEMBLER__ */
 

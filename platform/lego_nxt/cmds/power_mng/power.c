@@ -27,7 +27,7 @@ static int power_mng_cmd(int argc, char **argv) {
 			nxt_flash();
 		}
 		if (buts & NXT_BUTTON_DOWN) {
-			break;
+		    break;
 		}
 		usleep(200);
 	}

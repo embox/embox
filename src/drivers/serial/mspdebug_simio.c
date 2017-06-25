@@ -1,8 +1,8 @@
 /**
- * @file
+ * @file 
  * @brief mspdebug simio console driver
  *
- * @author  Anton Kozlov
+ * @author  Anton Kozlov 
  * @date    06.05.2015
  */
 
@@ -28,8 +28,8 @@ static int mspdebug_diag_kbhit(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-	.init = mspdebug_diag_init,
-	.putc = mspdebug_diag_putc,
-	.getc = mspdebug_diag_getc,
-	.kbhit = mspdebug_diag_kbhit,
+		.init = mspdebug_diag_init,
+		.putc = mspdebug_diag_putc,
+		.getc = mspdebug_diag_getc,
+		.kbhit = mspdebug_diag_kbhit,
 );

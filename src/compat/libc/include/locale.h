@@ -24,15 +24,15 @@ __BEGIN_DECLS
 #define LC_COLLATE        3
 #define LC_MONETARY       4
 #define LC_MESSAGES       5
-#define LC_ALL        6
-#define LC_PAPER      7
-#define LC_NAME       8
-#define LC_ADDRESS    9
-#define LC_TELEPHONE      10
-#define LC_MEASUREMENT    11
+#define	LC_ALL		  6
+#define LC_PAPER	  7
+#define LC_NAME		  8
+#define LC_ADDRESS	  9
+#define LC_TELEPHONE	  10
+#define LC_MEASUREMENT	  11
 #define LC_IDENTIFICATION 12
 
-static inline char *setlocale(int category, const char *locale) {
+static inline char * setlocale(int category, const char *locale) {
 	(void)category; (void)locale;
 	return NULL;
 }

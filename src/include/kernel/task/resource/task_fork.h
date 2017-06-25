@@ -20,3 +20,4 @@ extern void fork_addr_space_store(struct addr_space *adrspc);
 extern void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point);
 
 #endif /* TASK_FORK_H_ */
+

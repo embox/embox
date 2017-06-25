@@ -68,9 +68,10 @@ __BEGIN_DECLS
 
 /* TODO not implemented */
 
-#define S_TYPEISMQ(buf)    /*Test for a message queue */
-#define S_TYPEISSEM(buf)   /*Test for a semaphore */
-#define S_TYPEISSHM(buf)   /*Test for a shared memory object */
+#define S_TYPEISMQ(buf)    //Test for a message queue
+#define S_TYPEISSEM(buf)   //Test for a semaphore
+#define S_TYPEISSHM(buf)   //Test for a shared memory object
+
 
 #define S_ISUID 0004000                 /* set user id on execution */
 #define S_ISGID 0002000                 /* set group id on execution */
@@ -79,53 +80,54 @@ __BEGIN_DECLS
 #define ALLPERMS        (mode_t)(S_ISUID|S_ISGID|S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO)
 
 typedef struct stat {
-	int	   st_dev;        /* ID of device containing file */
-	int	   st_ino;        /* inode number */
-	int	   st_mode;       /* protection */
-	int	   st_nlink;      /* number of hard links */
-	int	   st_uid;        /* user ID of owner */
-	int	   st_gid;        /* group ID of owner */
-	int	   st_rdev;       /* device ID (if special file) */
-	size_t st_size;       /* total size, in bytes */
-	size_t st_blksize;    /* blocksize for file system I/O */
-	int	   st_blocks;     /* number of 512B blocks allocated */
-/*	unsigned  st_atime;   / * time of last access * / */
-/*	unsigned  st_mtime;   / * time of last modification * / */
-/*	unsigned  st_ctime;   / * time of last status change * / */
+	int       st_dev;     /* ID of device containing file */
+	int       st_ino;     /* inode number */
+	int       st_mode;    /* protection */
+	int       st_nlink;   /* number of hard links */
+	int       st_uid;     /* user ID of owner */
+	int       st_gid;     /* group ID of owner */
+	int       st_rdev;    /* device ID (if special file) */
+	size_t    st_size;    /* total size, in bytes */
+	size_t    st_blksize; /* blocksize for file system I/O */
+	int       st_blocks;  /* number of 512B blocks allocated */
+//	unsigned  st_atime;   /* time of last access */
+//	unsigned  st_mtime;   /* time of last modification */
+//	unsigned  st_ctime;   /* time of last status change */
 
-	struct timespec st_atim;  /* time of last access */
-	struct timespec st_mtim;  /* time of last modification */
-	struct timespec st_ctim;  /* time of last status change */
+    struct timespec st_atim;  /* time of last access */
+    struct timespec st_mtim;  /* time of last modification */
+    struct timespec st_ctim;  /* time of last status change */
 #define st_atime st_atim.tv_sec      /* Backward compatibility */
 #define st_mtime st_mtim.tv_sec
 #define st_ctime st_ctim.tv_sec
 } stat_t;
 
 /* typedef struct statfs  { */
-/*  unsigned int bsize;        /\* Fundamental file system block size *\/ */
-/*  unsigned int iosize;       /\* Optimal transfer block size *\/ */
-/*  unsigned int blocks;       /\* Total data blocks in file system *\/ */
-/*  unsigned int bfree;        /\* Free blocks in fs *\/ */
-/*  unsigned int files;        /\* Total file nodes in file system *\/ */
-/*  unsigned int ffree;        /\* Free file nodes in fs *\/ */
-/*  unsigned int cachesize;    /\* Cache buffers *\/ */
-/*  char fstype[NAME_MAX];   /\* File system type name *\/ */
-/*  char mntto[PATH_MAX];       /\* Directory on which mounted *\/ */
-/*  char mntfrom[PATH_MAX];     /\* Mounted file system *\/ */
+/* 	unsigned int bsize;        /\* Fundamental file system block size *\/ */
+/* 	unsigned int iosize;       /\* Optimal transfer block size *\/ */
+/* 	unsigned int blocks;       /\* Total data blocks in file system *\/ */
+/* 	unsigned int bfree;        /\* Free blocks in fs *\/ */
+/* 	unsigned int files;        /\* Total file nodes in file system *\/ */
+/* 	unsigned int ffree;        /\* Free file nodes in fs *\/ */
+/* 	unsigned int cachesize;    /\* Cache buffers *\/ */
+/* 	char fstype[NAME_MAX];   /\* File system type name *\/ */
+/* 	char mntto[PATH_MAX];       /\* Directory on which mounted *\/ */
+/* 	char mntfrom[PATH_MAX];     /\* Mounted file system *\/ */
 /* } statfs_t; */
 
 /**
  * Get file status (size, mode, mtime and so on)
  */
 extern int chmod(const char *path, mode_t mode);
-/*extern int    fchmod(int, mode_t); */
+//extern int    fchmod(int, mode_t);
 extern int    stat(const char *, struct stat *);
 extern int    lstat(const char *, struct stat *);
 extern int    fstat(int fd, struct stat *);
-extern int mkfifo(const char *, mode_t);
-extern int mknod(const char *, mode_t, dev_t);
-extern int mkdir(const char *, mode_t );
+extern int    mkfifo(const char *, mode_t);
+extern int    mknod(const char *, mode_t, dev_t);
+extern int    mkdir (const char *, mode_t );
 extern mode_t umask(mode_t mode);
+
 
 /*
  * Special values for utimensat and futimens

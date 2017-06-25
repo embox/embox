@@ -8,6 +8,7 @@
 #ifndef ES1370_H_
 #define ES1370_H_
 
+
 #define ES1370_REG_CONTROL          0x00 /* Interups/Chip select */
 #define ES1370_REG_STATUS           0x04
 #define ES1370_REG_UART_DATA        0x08 /* UART */
@@ -48,6 +49,7 @@
 #define ES1370_FMT_STEREO      1
 #define ES1370_FMT_S16         2
 #define ES1370_FMT_MASK        3
+
 
 #define CTRL_ADC_STOP   0x80000000  /* 1 = ADC stopped */
 #define CTRL_XCTL1      0x40000000  /* electret mic bias */
@@ -121,15 +123,18 @@
 #define SCTRL_P1FMT       0x00000003  /* format mask */
 #define SCTRL_SH_P1FMT    0
 
+
 /* for ES1370_REG_MEMPAGE */
 #define ADC_MEM_PAGE      0x0d
 #define DAC_MEM_PAGE      0x0c /* for DAC1 and DAC2 */
+
 
 /* channels or subdevices */
 #define DAC1_CHAN        0
 #define ADC1_CHAN        1
 #define MIXER            2
 #define DAC2_CHAN        3
+
 
 /*max is 64k long words for es1370 = 256k bytes */
 #define ES1370_MAX_BUF_LEN 0x40000

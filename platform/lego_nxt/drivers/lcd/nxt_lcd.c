@@ -14,7 +14,7 @@
 
 EMBOX_UNIT_INIT(unit_lcd_init);
 
-/*TODO move to bsp */
+//TODO move to bsp
 #define SPI_BITRATE     2000000
 #define CLOCK_FREQUENCY 48054850
 
@@ -73,7 +73,7 @@ static void nxt_lcd_set_col(__u32 coladdr) {
 	nxt_lcd_command(0x10 | ((coladdr >> 4) & 0xF));
 }
 
-/* XXX defined but not used */
+// XXX defined but not used
 #if 0
 static void nxt_lcd_set_temp_comp(__u32 tc) {
 	nxt_lcd_command(0x24 | (tc & 3));
@@ -96,7 +96,7 @@ static void nxt_lcd_set_page_address(__u32 pa) {
 	nxt_lcd_command(0xB0 | (pa & 0xf));
 }
 
-/* XXX defined but not used */
+// XXX defined but not used
 #if 0
 static void nxt_lcd_set_frame_rate(__u32 fr) {
 	nxt_lcd_command(0xA0 | (fr & 1));
@@ -146,17 +146,13 @@ void nxt_lcd_set_all_pixels_on(__u32 on) {
 }
 
 static void nxt_lcd_power_up(void) {
-	/*sleep(20); */
+	//sleep(20);
 	int i = 0;
-	while (i < 10000) {
-		i++;
-	}
+	while (i<10000) {i++;}
 	nxt_lcd_reset();
-	/*sleep(20); */
+	//sleep(20);
 	i = 0;
-	while (i < 10000) {
-		i++;
-	}
+	while (i<10000) {i++;}
 	nxt_lcd_set_multiplex_rate(3);
 	nxt_lcd_set_bias_ratio(3);
 	nxt_lcd_set_pot(0x60);
@@ -168,12 +164,12 @@ static void nxt_lcd_power_up(void) {
 	REG_STORE(AT91C_SPI_TNPR, (__u32)display_buffer);
 	REG_STORE(AT91C_SPI_TNCR, 132);
 	nxt_lcd_enable(1);
-	/*nxt_lcd_set_all_pixels_on(1); */
+	//nxt_lcd_set_all_pixels_on(1);
 }
 
 void nxt_lcd_force_update(void) {
 	int i;
-	__u8 *disp = (__u8 *) display_buffer;
+	__u8 *disp = (__u8*) display_buffer;
 	REG_STORE(AT91C_SPI_IER, AT91C_SPI_ENDTX);
 
 	for (i = 0; i < NXT_LCD_DEPTH; i++) {

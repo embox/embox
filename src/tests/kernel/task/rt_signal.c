@@ -23,9 +23,7 @@ static void test_sig_handler(int sig, siginfo_t *info, void *ctx) {
 }
 
 static void *test_task_entry(void *data) {
-	struct sigaction act  = {
-		0
-	};
+	struct sigaction act  = { 0 };
 	int err;
 
 	act.sa_flags = (SA_SIGINFO);
@@ -34,7 +32,7 @@ static void *test_task_entry(void *data) {
 	err = sigaction(MY_SIGRT, &act, NULL);
 	test_assert_zero(err);
 
-	while (1)
+	while(1)
 		sleep(0);
 
 	return NULL;

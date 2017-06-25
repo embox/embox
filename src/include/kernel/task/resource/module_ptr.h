@@ -17,3 +17,4 @@ extern void task_self_module_ptr_set(const struct mod *);
 extern const struct mod *task_module_ptr_get(struct task *);
 
 #endif /* TASK_RESOURCE_MODULE_PTR_H_ */
+

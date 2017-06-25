@@ -1,8 +1,8 @@
 /******************************************************************************
  * xen-x86_32.h
- *
+ * 
  * Guest OS interface to x86 32-bit Xen.
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -59,22 +59,22 @@
 #define __MACH2PHYS_VIRT_START_PAE     0xF5800000
 #define __MACH2PHYS_VIRT_END_PAE       0xF6800000
 #define HYPERVISOR_VIRT_START_PAE      \
-	mk_unsigned_long(__HYPERVISOR_VIRT_START_PAE)
+    mk_unsigned_long(__HYPERVISOR_VIRT_START_PAE)
 #define MACH2PHYS_VIRT_START_PAE       \
-	mk_unsigned_long(__MACH2PHYS_VIRT_START_PAE)
+    mk_unsigned_long(__MACH2PHYS_VIRT_START_PAE)
 #define MACH2PHYS_VIRT_END_PAE         \
-	mk_unsigned_long(__MACH2PHYS_VIRT_END_PAE)
+    mk_unsigned_long(__MACH2PHYS_VIRT_END_PAE)
 
 /* Non-PAE bounds are obsolete. */
 #define __HYPERVISOR_VIRT_START_NONPAE 0xFC000000
 #define __MACH2PHYS_VIRT_START_NONPAE  0xFC000000
 #define __MACH2PHYS_VIRT_END_NONPAE    0xFC400000
 #define HYPERVISOR_VIRT_START_NONPAE   \
-	mk_unsigned_long(__HYPERVISOR_VIRT_START_NONPAE)
+    mk_unsigned_long(__HYPERVISOR_VIRT_START_NONPAE)
 #define MACH2PHYS_VIRT_START_NONPAE    \
-	mk_unsigned_long(__MACH2PHYS_VIRT_START_NONPAE)
+    mk_unsigned_long(__MACH2PHYS_VIRT_START_NONPAE)
 #define MACH2PHYS_VIRT_END_NONPAE      \
-	mk_unsigned_long(__MACH2PHYS_VIRT_END_NONPAE)
+    mk_unsigned_long(__MACH2PHYS_VIRT_END_NONPAE)
 
 #define __HYPERVISOR_VIRT_START __HYPERVISOR_VIRT_START_PAE
 #define __MACH2PHYS_VIRT_START  __MACH2PHYS_VIRT_START_PAE
@@ -95,15 +95,15 @@
 #if defined(__XEN__) || defined(__XEN_TOOLS__)
 #undef ___DEFINE_XEN_GUEST_HANDLE
 #define ___DEFINE_XEN_GUEST_HANDLE(name, type)                  \
-	typedef struct { type *p; }                                 \
-	__guest_handle_ ## name;                                \
-	typedef struct { union { type *p; uint64_aligned_t q; }; }  \
-	__guest_handle_64_ ## name
+    typedef struct { type *p; }                                 \
+        __guest_handle_ ## name;                                \
+    typedef struct { union { type *p; uint64_aligned_t q; }; }  \
+        __guest_handle_64_ ## name
 #undef set_xen_guest_handle_raw
 #define set_xen_guest_handle_raw(hnd, val)                  \
-	do { if ( sizeof(hnd) == 8 ) {*(uint64_t *)&(hnd) = 0;}   \
-		(hnd).p = val;                                     \
-	} while ( 0 )
+    do { if ( sizeof(hnd) == 8 ) *(uint64_t *)&(hnd) = 0;   \
+         (hnd).p = val;                                     \
+    } while ( 0 )
 #define uint64_aligned_t uint64_t __attribute__((aligned(8)))
 #define __XEN_GUEST_HANDLE_64(name) __guest_handle_64_ ## name
 #define XEN_GUEST_HANDLE_64(name) __XEN_GUEST_HANDLE_64(name)
@@ -112,26 +112,26 @@
 #ifndef __ASSEMBLY__
 
 struct cpu_user_regs {
-	uint32_t ebx;
-	uint32_t ecx;
-	uint32_t edx;
-	uint32_t esi;
-	uint32_t edi;
-	uint32_t ebp;
-	uint32_t eax;
-	uint16_t error_code;    /* private */
-	uint16_t entry_vector;  /* private */
-	uint32_t eip;
-	uint16_t cs;
-	uint8_t	 saved_upcall_mask;
-	uint8_t	 _pad0;
-	uint32_t eflags;        /* eflags.IF == !saved_upcall_mask */
-	uint32_t esp;
-	uint16_t ss, _pad1;
-	uint16_t es, _pad2;
-	uint16_t ds, _pad3;
-	uint16_t fs, _pad4;
-	uint16_t gs, _pad5;
+    uint32_t ebx;
+    uint32_t ecx;
+    uint32_t edx;
+    uint32_t esi;
+    uint32_t edi;
+    uint32_t ebp;
+    uint32_t eax;
+    uint16_t error_code;    /* private */
+    uint16_t entry_vector;  /* private */
+    uint32_t eip;
+    uint16_t cs;
+    uint8_t  saved_upcall_mask;
+    uint8_t  _pad0;
+    uint32_t eflags;        /* eflags.IF == !saved_upcall_mask */
+    uint32_t esp;
+    uint16_t ss, _pad1;
+    uint16_t es, _pad2;
+    uint16_t ds, _pad3;
+    uint16_t fs, _pad4;
+    uint16_t gs, _pad5;
 };
 typedef struct cpu_user_regs cpu_user_regs_t;
 DEFINE_XEN_GUEST_HANDLE(cpu_user_regs_t);
@@ -145,14 +145,14 @@ DEFINE_XEN_GUEST_HANDLE(cpu_user_regs_t);
 #define xen_cr3_to_pfn(cr3) (((unsigned)(cr3) >> 12) | ((unsigned)(cr3) << 20))
 
 struct arch_vcpu_info {
-	unsigned long cr2;
-	unsigned long pad[5]; /* sizeof(vcpu_info_t) == 64 */
+    unsigned long cr2;
+    unsigned long pad[5]; /* sizeof(vcpu_info_t) == 64 */
 };
 typedef struct arch_vcpu_info arch_vcpu_info_t;
 
 struct xen_callback {
-	unsigned long cs;
-	unsigned long eip;
+    unsigned long cs;
+    unsigned long eip;
 };
 typedef struct xen_callback xen_callback_t;
 

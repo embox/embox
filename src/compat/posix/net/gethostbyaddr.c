@@ -18,7 +18,7 @@
 #include <sys/socket.h>
 #include <util/array.h>
 
-struct hostent *gethostbyaddr(const void *addr, socklen_t len,
+struct hostent * gethostbyaddr(const void *addr, socklen_t len,
 		int type) {
 	int ret;
 	struct hostent *he;

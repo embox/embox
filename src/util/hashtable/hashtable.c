@@ -59,7 +59,7 @@ int hashtable_put(struct hashtable *ht, struct hashtable_item *ht_item) {
 		dlist_init(&ht->table[idx].list);
 	}
 
-	ht->table[idx].cnt++;
+	ht->table[idx].cnt ++;
 	dlist_add_next(&ht_item->lnk, &ht->table[idx].list);
 
 	dlist_add_prev(dlist_head_init(&ht_item->general_lnk), &ht->all);
@@ -67,7 +67,7 @@ int hashtable_put(struct hashtable *ht, struct hashtable_item *ht_item) {
 	return ENOERR;
 }
 
-void *hashtable_get(struct hashtable *ht, void *key) {
+void *hashtable_get(struct hashtable *ht, void* key) {
 	size_t idx;
 	struct hashtable_item *htel;
 
@@ -78,7 +78,7 @@ void *hashtable_get(struct hashtable *ht, void *key) {
 		return NULL;
 	}
 	dlist_foreach_entry(htel, &ht->table[idx].list, lnk) {
-		if (0 == ht->cmp(key, htel->key)) {
+		if(0 == ht->cmp(key, htel->key)) {
 			return htel->value;
 		}
 	}
@@ -94,7 +94,7 @@ struct hashtable_item *hashtable_del(struct hashtable *ht, void *key) {
 
 	idx = ht->get_hash_key(key) % ht->table_size;
 	dlist_foreach_entry(htel, &ht->table[idx].list, lnk) {
-		if (0 == ht->cmp(key, htel->key)) {
+		if(0 == ht->cmp(key, htel->key)) {
 			dlist_del_init(&htel->lnk);
 			dlist_del_init(&htel->general_lnk);
 
@@ -113,7 +113,7 @@ void hashtable_destroy(struct hashtable *ht) {
 
 	assert(ht);
 
-	for (i = 0; i < ht->table_size; i++) {
+	for(i = 0; i < ht->table_size; i ++) {
 		if (0 == ht->table[i].cnt) {
 			continue;
 		}

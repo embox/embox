@@ -7,6 +7,7 @@
  * @author Eldar Abusalimov
  */
 
+
 #include <string.h>
 #include <embox/unit.h>
 
@@ -19,8 +20,8 @@
 #define MAX_NODE_QUANTITY OPTION_GET(NUMBER,fnode_quantity)
 
 struct node_tuple {
-	struct node	   node;
-	struct nas	   nas;
+	struct node node;
+	struct nas nas;
 	struct node_fi fi;
 };
 

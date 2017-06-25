@@ -35,3 +35,4 @@ static FILE stderr_struct = {
 	.flags = O_WRONLY,
 };
 FILE *stderr = &stderr_struct;
+

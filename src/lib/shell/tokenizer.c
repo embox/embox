@@ -15,7 +15,7 @@
 #include <stddef.h>
 
 /* Parse single quotes */
-static char *parse_sq(char **str) {
+static char * parse_sq(char **str) {
 	char *ret;
 	char *ptr = *str;
 
@@ -35,7 +35,7 @@ static char *parse_sq(char **str) {
 }
 
 /* Parse double quotes */
-static char *parse_dq(char **str) {
+static char * parse_dq(char **str) {
 	/* right_ptr - point to current processing character,
 	 * left_ptr  - point to the end of processed substring */
 	char *left_ptr, *right_ptr, *ret;
@@ -78,7 +78,7 @@ static char *parse_dq(char **str) {
 	return ret;
 }
 
-static char *cmdline_next_token(char **str) {
+static char * cmdline_next_token(char **str) {
 	char *ret;
 	char *ptr = *str;
 

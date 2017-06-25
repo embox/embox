@@ -39,7 +39,7 @@ int fs_perm_mask(struct node *node) {
 int fs_perm_check(struct node *node, int fd_flags) {
 	/* Here, we rely on the fact that fd_flags correspond to OTH perm bits. */
 	return (fd_flags & ~fs_perm_mask(node)) ? -EACCES :
-		   security_node_permissions(node, fd_flags);
+		security_node_permissions(node, fd_flags);
 }
 
 static int quick_lookup(const char *path, struct path *nodelast) {
@@ -63,12 +63,10 @@ int fs_perm_lookup(const char *path, const char **pathlast,
 		return -EINVAL;
 	}
 
-	if (path[0] == '/') {
+	if (path[0] == '/')
 		vfs_get_root_path(&node_path);
-	}
-	else {
+	else
 		vfs_get_leaf_path(&node_path);
-	}
 
 	while (1) {
 		path = path_next(path + len, &len);

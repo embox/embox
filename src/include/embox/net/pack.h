@@ -38,7 +38,7 @@ struct net_pack {
 	int (*rcv_pack)(struct sk_buff *skb,struct net_device *dev);
 };
 
-extern const struct net_pack *net_pack_lookup(unsigned short type);
+extern const struct net_pack * net_pack_lookup(unsigned short type);
 
 #include <util/array.h>
 
@@ -50,7 +50,7 @@ ARRAY_SPREAD_DECLARE(const struct net_pack, __net_pack_registry);
 #define EMBOX_NET_PACK(_type, _rcv_pack)                                 \
 	static int _rcv_pack(struct sk_buff *skb, struct net_device *dev);   \
 	ARRAY_SPREAD_ADD_NAMED(__net_pack_registry,                          \
-			__net_pack_ ## _type, {                                        \
+			__net_pack_##_type, {                                        \
 				.type = _type,                                           \
 				.rcv_pack = _rcv_pack                                    \
 			})
@@ -59,5 +59,6 @@ ARRAY_SPREAD_DECLARE(const struct net_pack, __net_pack_registry);
 #ifdef __CDT_PARSER__
 #define EMBOX_NET_PACK(_type, _rcv_pack)
 #endif
+
 
 #endif /* EMBOX_NET_PACK_H_ */

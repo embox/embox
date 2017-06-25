@@ -17,3 +17,4 @@ typedef unsigned short usb_token_t;
 #define USB_TOKEN_STATUS                0x0008
 
 #endif /* DRIVERS_USB_TOKEN_H_ */
+

@@ -17,9 +17,9 @@
 
 struct usb_hid_indev {
 	struct input_dev input_dev;
-	struct usb_dev * usb_dev;
-	char			 input_data[USB_HID_MAX_INPUT_LEN];
-	bool			 running;
+	struct usb_dev *usb_dev;
+	char input_data[USB_HID_MAX_INPUT_LEN];
+	bool running;
 };
 
 POOL_DEF(usb_hid_indevs, struct usb_hid_indev, USB_HID_MAX_DEVS);
@@ -42,7 +42,7 @@ static int usb_hid_event_get(struct input_dev *dev, struct input_event *ev) {
 #endif
 
 	ev->value = ((int16_t) hindev->input_data[1]) << 16
-			| (0xffff & ((int16_t) hindev->input_data[2]));
+		| (0xffff & ((int16_t) hindev->input_data[2]));
 
 	return 0;
 }

@@ -30,7 +30,7 @@ static int writetcp(struct client *clnt, char *buf, size_t len);
 
 static const struct clnt_ops clnttcp_ops;
 
-struct client *clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
+struct client * clnttcp_create(struct sockaddr_in *raddr, uint32_t prognum,
 		uint32_t versnum, int *psock, unsigned int sendsz, unsigned int recvsz) {
 	struct client *clnt;
 	struct auth *ath;
@@ -102,7 +102,7 @@ static enum clnt_stat clnttcp_call(struct client *clnt, uint32_t procnum,
 	memcpy(&msg_call.b.call.verf, &clnt->ath->verf, sizeof clnt->ath->verf);
 
 	if (-1 == setsockopt(clnt->sock, SOL_SOCKET, SO_RCVTIMEO,
-			&timeout, sizeof timeout)) {
+				&timeout, sizeof timeout)) {
 		log_error("setsockopt error");
 		clnt->err.extra.error = errno;
 		return clnt->err.status = RPC_SYSTEMERROR;
@@ -188,7 +188,7 @@ static int writetcp(struct client *clnt, char *buff, size_t len) {
 }
 
 static const struct clnt_ops clnttcp_ops = {
-	.call = clnttcp_call,
-	.geterr = clnttcp_geterr,
-	.destroy = clnttcp_destroy
+		.call = clnttcp_call,
+		.geterr = clnttcp_geterr,
+		.destroy = clnttcp_destroy
 };

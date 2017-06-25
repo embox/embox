@@ -32,18 +32,15 @@ int sigstate_send(struct sigstate *sigstate, int sig, const siginfo_t *info) {
 
 	assert(sigstate);
 
-	if (!check_range(sig, 1, _SIG_TOTAL)) {
+	if (!check_range(sig, 1, _SIG_TOTAL))
 		return -EINVAL;
-	}
 
 	irq_lock();
 
-	if (info) {
+	if (info)
 		err = siginfoq_enqueue(&sigstate->infoq, sig, info);
-	}
-	if (!err) {
+	if (!err)
 		sigaddset(&sigstate->pending, sig);
-	}
 
 	irq_unlock();
 
@@ -54,9 +51,8 @@ static int sigset_first(sigset_t *set) {
 	int sig;
 
 	sig = bitmap_find_first_bit(set->bitmap, _SIG_TOTAL);
-	if (sig == _SIG_TOTAL) {
+	if (sig == _SIG_TOTAL)
 		sig = 0;  /* no pending signal */
-	}
 	assert(check_range(sig, 0, _SIG_TOTAL));
 
 	return sig;
@@ -73,15 +69,14 @@ int sigstate_receive(struct sigstate *sigstate, siginfo_t *info) {
 	sig = sigset_first(&sigstate->pending);
 	if (sig) {
 		nr_left = siginfoq_dequeue(&sigstate->infoq, sig, info);
-		if (nr_left <= 0) {
+		if (nr_left <= 0)
 			/* no more (or no at all) pending signals for this signo */
 			sigdelset(&sigstate->pending, sig);
-		}
 
 		if (nr_left < 0) {
 			/* signal was not queued, fill in siginfo by hand */
 			info->si_signo = sig;
-			/* TODO the rest */
+			// TODO the rest
 		}
 	}
 
@@ -89,3 +84,4 @@ int sigstate_receive(struct sigstate *sigstate, siginfo_t *info) {
 
 	return sig;
 }
+

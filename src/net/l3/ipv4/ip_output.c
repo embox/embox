@@ -40,7 +40,7 @@
 
 static const struct net_pack_out_ops ip_out_ops_struct;
 const struct net_pack_out_ops *const ip_out_ops
-	= &ip_out_ops_struct;
+		= &ip_out_ops_struct;
 
 static int ip_xmit(struct sk_buff *skb) {
 	int ret;
@@ -64,7 +64,7 @@ static int ip_xmit(struct sk_buff *skb) {
 		ret = rt_fib_route_ip(daddr, &daddr);
 		if (ret != 0) {
 			DBG(printk("ip_xmit: unknown target for %s\n",
-					inet_ntoa(*(struct in_addr *)&daddr)));
+						inet_ntoa(*(struct in_addr *)&daddr)));
 			skb_free(skb);
 			return ret;
 		}
@@ -104,6 +104,7 @@ static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
 	skb_queue_purge(&tx_buf);
 	return ret;
 }
+
 
 int ip_forward(struct sk_buff *skb) {
 	iphdr_t *iph = ip_hdr(skb);
@@ -179,7 +180,7 @@ int ip_forward(struct sk_buff *skb) {
 		} else {
 			/* Fragmentation is disabled */
 			icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_FRAG_NEEDED,
-					(uint16_t)best_route->dev->mtu);   /* Support RFC 1191 */
+					  (uint16_t)best_route->dev->mtu); /* Support RFC 1191 */
 			return -1;
 		}
 	}
@@ -232,17 +233,17 @@ static int ip_make(const struct sock *sk,
 			&dev);
 	if (ret != 0) {
 		DBG(printk("ip_make: unknown device for %s\n",
-				inet_ntoa(*(struct in_addr *)&dst_ip)));
+					inet_ntoa(*(struct in_addr *)&dst_ip)));
 		return ret;
 	}
 	assert(dev != NULL);
 
 	assert(inetdev_get_by_dev(dev) != NULL);
-	/*src_ip = inetdev_get_by_dev(dev)->ifa_address; / * TODO it's better! * / */
+	//src_ip = inetdev_get_by_dev(dev)->ifa_address; /* TODO it's better! */
 	ret = rt_fib_source_ip(dst_ip, dev, &src_ip);
 	if (ret != 0) {
 		DBG(printk("ip_make: can't resolve source ip for %s\n",
-				inet_ntoa(*(struct in_addr *)&dst_ip)));
+					inet_ntoa(*(struct in_addr *)&dst_ip)));
 		return ret;
 	}
 
@@ -255,11 +256,12 @@ static int ip_make(const struct sock *sk,
 		ip_length = IP_MIN_HEADER_SIZE;
 	}
 
+
 	hdr_size = dev->hdr_len + ip_length;
 	max_size = min(dev->mtu, skb_max_size());
 	if (hdr_size > max_size) {
 		DBG(printk("ip_make: hdr_size %zu is too big (max %zu)\n",
-				hdr_size, max_size));
+					hdr_size, max_size));
 		return -EMSGSIZE;
 	}
 
@@ -273,7 +275,7 @@ static int ip_make(const struct sock *sk,
 	skb = skb_realloc(hdr_size + *data_size, *out_skb);
 	if (skb == NULL) {
 		DBG(printk("ip_make: can't realloc packet for size %zu\n",
-				hdr_size + *data_size));
+					hdr_size + *data_size));
 		return -ENOMEM;
 	}
 

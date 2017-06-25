@@ -21,6 +21,7 @@
 
 #include <embox/unit.h>
 
+
 #include <pnet/core/core.h>
 #include <pnet/core/repo.h>
 #include <pnet/pack/pnet_pack.h>
@@ -138,9 +139,9 @@ static void init_adc(void) {
 	REG_STORE(AT91C_PMC_PCER, (1 << AT91C_ID_ADC));
 	REG_STORE(AT91C_ADC_MR, 0);
 	REG_ORIN(AT91C_ADC_MR, AT91C_ADC_TRGEN_DIS);
-	REG_ORIN(AT91C_ADC_MR, 0x00000500); /* 4MHz */
-	REG_ORIN(AT91C_ADC_MR, 0x001f0000); /* 64uS */
-	REG_ORIN(AT91C_ADC_MR, 0x03000000); /* 750nS */
+	REG_ORIN(AT91C_ADC_MR, 0x00000500); // 4MHz
+	REG_ORIN(AT91C_ADC_MR, 0x001f0000); // 64uS
+	REG_ORIN(AT91C_ADC_MR, 0x03000000); // 750nS
 	REG_STORE(AT91C_ADC_CHER, AT91C_ADC_CH6 | AT91C_ADC_CH4);
 	REG_STORE(AT91C_ADC_CR, AT91C_ADC_START);
 }
@@ -150,7 +151,7 @@ static void init_adc(void) {
  *  mode.
  */
 static void  nxt_bt_timer_handler(struct sys_timer *timer, void *param) {
-	static int bt_last_state; /*TODO init state? //inited with 0, ok */
+	static int bt_last_state; //TODO init state? //inited with 0, ok
 	int bt_state = REG_LOAD(AT91C_ADC_CDR6) > 0x200 ? 1 : 0;
 
 	if (bt_last_state != bt_state) {
@@ -179,13 +180,13 @@ static int nxt_bluetooth_init(void) {
 	data_pack = NULL;
 
 	irq_attach(OPTION_GET(NUMBER,irq_num),
-			nxt_bt_us_handler, 0, NULL, "nxt bt reader");
-	/* TODO error handling? */
+		nxt_bt_us_handler, 0, NULL, "nxt bt reader");
+	// TODO error handling?
 
 	init_usart();
 	init_control_pins();
 	init_adc();
 
-	/*TODO may be it must set when bt has been connected? */
+	//TODO may be it must set when bt has been connected?
 	return timer_set(&ntx_bt_timer, TIMER_PERIODIC, 200, nxt_bt_timer_handler, NULL);
 }

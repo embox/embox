@@ -35,7 +35,7 @@ static int indev_cb(struct input_dev *indev) {
 
 	while (0 == input_dev_event(indev, &ev)) {
 		printk("input event: dev_type=%s, type=%08x, value=%08x\n",
-				dev_type_map(ev.devtype), ev.type, ev.value);
+			dev_type_map(ev.devtype), ev.type, ev.value);
 	}
 
 	return 0;
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "i:"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'i':
 			indev_name = optarg;
 			break;

@@ -17,3 +17,4 @@ char *strchrnul(const char *str, int ch) {
 
 	return (char *) str;
 }
+

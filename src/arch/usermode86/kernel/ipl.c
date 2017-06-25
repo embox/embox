@@ -10,13 +10,13 @@
 #include <hal/ipl.h>
 
 void ipl_init(void) {
-	host_ipl_init();
+        host_ipl_init();
 }
 
 ipl_t ipl_save(void) {
-	return host_ipl_save();
+        return host_ipl_save();
 }
 
 void ipl_restore(ipl_t ipl) {
-	host_ipl_restore(ipl);
+        host_ipl_restore(ipl);
 }

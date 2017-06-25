@@ -31,6 +31,6 @@ static int pnet_linux_rx(struct pnet_pack *pack) {
 }
 
 PNET_NODE_DEF("linux gate", {
-			.rx_hnd = pnet_linux_rx,
-			.tx_hnd = NULL
-		});
+	.rx_hnd = pnet_linux_rx,
+	.tx_hnd = NULL
+});

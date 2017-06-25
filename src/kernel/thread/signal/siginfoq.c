@@ -24,9 +24,9 @@
 
 struct siginfoq_link {
 	struct slist_link link;
-	siginfo_t		  info;
+	siginfo_t info;
 };
-typedef member_t (struct siginfoq_link, link) siginfoq_member_t;
+typedef member_t(struct siginfoq_link, link) siginfoq_member_t;
 
 OBJALLOC_DEF(siginfoq_link_pool, struct siginfoq_link, LINK_POOL_SZ);
 
@@ -44,9 +44,8 @@ int siginfoq_enqueue(struct siginfoq *infoq, int sig,
 	assert(info);
 
 	infoq_el = objalloc(&siginfoq_link_pool);
-	if (!infoq_el) {
+	if (!infoq_el)
 		return -ENOMEM;
-	}
 
 	memcpy(&infoq_el->info, info, sizeof(*info));
 	infoq_el->info.si_signo = sig;
@@ -80,16 +79,14 @@ int siginfoq_dequeue(struct siginfoq *infoq, int sig, siginfo_t *info) {
 		}
 	}
 
-	if (!first_el) {
+	if (!first_el)
 		return -ENOENT;
-	}
 
-	/* XXX need slist method to unlink an element -- Eldar */
+	// XXX need slist method to unlink an element -- Eldar
 	assert(last_link->next == &first_el->link);
 	last_link->next = first_el->link.next;
-	if (infoq->last == &first_el->link) {
+	if (infoq->last == &first_el->link)
 		infoq->last = last_link;
-	}
 	assert(infoq->last->next == &queue->sentinel);
 
 	memcpy(info, &first_el->info, sizeof(*info));

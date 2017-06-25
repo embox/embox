@@ -26,6 +26,7 @@
 
 PCI_DRIVER("rtl8139", rtl8139_init, PCI_VENDOR_ID_REALTEK, PCI_DEV_ID_REALTEK_8139);
 
+
 #define RX_BUF_SIZE (32 * 1024)
 #define TX_BUF_SIZE 1536
 
@@ -43,7 +44,7 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 	memcpy(msg_buf, skb->mac.raw, skb->len);
 
 	out32(((256 << 11) & 0x003f0000) | size,
-			dev->base_addr + RTL8139_TX_STAT_0 + (entry * 4));
+		dev->base_addr + RTL8139_TX_STAT_0 + (entry * 4));
 	cur_tx++;
 
 	skb_free(skb); /* free packet */
@@ -51,7 +52,7 @@ static int xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static inline void wrap_copy(uint8_t *dst, const unsigned char *ring,
-		uint32_t offset, size_t size) {
+				uint32_t offset, size_t size) {
 	uint32_t left = RX_BUF_SIZE - offset;
 
 	if (size > left) {
@@ -116,10 +117,10 @@ static int open(struct net_device *dev) {
 	out8(CR_RX_ENABLE | CR_TX_ENABLE, dev->base_addr + RTL8139_CR);
 	/* Using 32K ring */
 	out32(RCR_RCV_32K | RCR_NO_WRAP | RCR_FIFO_NONE | RCR_DMA_UNLIM | \
-			RCR_AC_BROADCAST | RCR_AC_MYPHYS,
-			dev->base_addr + RTL8139_RCR);
+		RCR_AC_BROADCAST | RCR_AC_MYPHYS,
+		dev->base_addr + RTL8139_RCR);
 	out32(TCR_IFG96 | (6 << TCR_DMA_SHIFT) | (8 << TCR_RETRY_SHIFT),
-			dev->base_addr + RTL8139_TCR);
+		dev->base_addr + RTL8139_TCR);
 	/* Lock Config[01234] and BMCR register writes */
 	out8(CFG9346_LOCK, dev->base_addr + RTL8139_9346CR);
 
@@ -128,13 +129,13 @@ static int open(struct net_device *dev) {
 	/* init Tx buffer DMA addresses (4 registers) */
 	for (int i = 0; i < 4; i++) {
 		out32((uint32_t) tx_buf[i],
-				dev->base_addr + RTL8139_TX_ADDR_0 + (i * 4));
+			dev->base_addr + RTL8139_TX_ADDR_0 + (i * 4));
 	}
 
 	out32(0, dev->base_addr + RTL8139_MPC); /* missed packet counter */
 	out32(in32(dev->base_addr + RTL8139_RCR) | RCR_AC_BROADCAST | \
-			RCR_AC_MULTICAST | RCR_AC_MYPHYS | RCR_AC_ALLPHYS,
-			dev->base_addr + RTL8139_RCR);
+		RCR_AC_MULTICAST | RCR_AC_MYPHYS | RCR_AC_ALLPHYS,
+		dev->base_addr + RTL8139_RCR);
 
 	for (int i = 0; i < 8; i++) {
 		out8(0xFF, dev->base_addr + RTL8139_MAR0 + i);
@@ -145,18 +146,18 @@ static int open(struct net_device *dev) {
 	}
 
 	out16(in16(dev->base_addr + RTL8139_MULT_INTR) & MULT_INTR_CLEAR,
-			dev->base_addr + RTL8139_MULT_INTR); /* no early-rx interrupts */
+		dev->base_addr + RTL8139_MULT_INTR); /* no early-rx interrupts */
 
 	/* make sure RxTx has started */
 	if (!(in8(dev->base_addr + RTL8139_CR) & CR_RX_ENABLE) ||
-			!(in8(dev->base_addr + RTL8139_CR) & CR_TX_ENABLE)) {
+	    !(in8(dev->base_addr + RTL8139_CR) & CR_TX_ENABLE)) {
 		out8(CR_RX_ENABLE | CR_TX_ENABLE, dev->base_addr + RTL8139_CR);
 	}
 
 	/* Enable interrupts */
 	out16(ISR_PCI_ERR | ISR_PCSTIMEOUT | ISR_RX_UNDERRUN | ISR_RX_OVERFLOW | \
-			ISR_RX_FIFOOVER | ISR_TX_ERR | ISR_TX_OK | ISR_RX_ERR | ISR_RX_OK,
-			dev->base_addr + RTL8139_IMR);
+		ISR_RX_FIFOOVER | ISR_TX_ERR | ISR_TX_OK | ISR_RX_ERR | ISR_RX_OK,
+		dev->base_addr + RTL8139_IMR);
 	return ENOERR;
 }
 

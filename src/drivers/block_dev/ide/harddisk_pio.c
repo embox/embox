@@ -110,6 +110,7 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
 
+
 	while (sectsleft > 0) {
 		/* Select drive */
 		ide_select_drive(hd);
@@ -182,11 +183,12 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 	return result == 0 ? count : result;
 }
 
-static int idedisk_init(void *args) {
+static int idedisk_init (void *args) {
 	hd_t *drive;
 	size_t size;
 	char path[PATH_MAX];
 	struct block_dev *bdev;
+
 
 	drive = (hd_t *)args;
 	/* Make new device */

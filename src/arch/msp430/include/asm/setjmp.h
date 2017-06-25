@@ -13,7 +13,7 @@
 
 #ifndef __ASSEMBLER__
 
-typedef int __jmp_buf[_JBLEN];
+typedef	int __jmp_buf[_JBLEN];
 
 #endif
 

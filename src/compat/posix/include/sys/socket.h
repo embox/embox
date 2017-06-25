@@ -22,36 +22,38 @@ typedef unsigned short sa_family_t;
 
 typedef struct sockaddr {
 	sa_family_t sa_family; /* Address family, AF_xxx */
-	char		sa_data[14]; /* 14 bytes of protocol address */
+	char sa_data[14];      /* 14 bytes of protocol address */
 } sockaddr_t;
 
 struct sockaddr_storage {
 	sa_family_t ss_family;
-	char		__ss_storage[100];
+	char __ss_storage[100];
 };
 
 struct iovec;
 
 struct msghdr {
-	void *		  msg_name;      /* optional address*/
-	socklen_t	  msg_namelen;   /* size of address */
+	void *msg_name;              /* optional address*/
+	socklen_t msg_namelen;       /* size of address */
 	struct iovec *msg_iov;       /* scatter/gather array */
-	int			  msg_iovlen;    /* members in msg_iov */
-	void *		  msg_control;   /* ancillary data, see below */
-	socklen_t	  msg_controllen; /* ancillary data buffer len */
-	int			  msg_flags;     /* flags on received message */
+	int           msg_iovlen;    /* members in msg_iov */
+	void         *msg_control;   /* ancillary data, see below */
+	socklen_t     msg_controllen;/* ancillary data buffer len */
+	int           msg_flags;     /* flags on received message */
 };
 
+
 struct cmsghdr {
-	socklen_t cmsg_len;           /* data byte count, including the cmsghdr */
-	int		  cmsg_level;         /* originating protocol */
-	int		  cmsg_type;          /* protocol-specific type */
+	socklen_t     cmsg_len;       /* data byte count, including the cmsghdr */
+	int           cmsg_level;     /* originating protocol */
+	int           cmsg_type;      /* protocol-specific type */
 };
 
 struct linger {
-	int l_onoff;                  /* indicates whether linger option is enabled */
-	int l_linger;                 /* linger time, in seconds */
+	int         l_onoff;          /* indicates whether linger option is enabled */
+	int         l_linger;         /* linger time, in seconds */
 };
+
 
 /**
  * Supported protocol/address families
@@ -101,6 +103,7 @@ enum {
 	SOCK_PACKET    = 10, /* packet socket */
 	SOCK_TYPE_MAX        /* i.e. SOCK_PACKET + 1 */
 };
+
 
 /* POSIX descriptions
 SO_ACCEPTCONN    Socket is accepting connections.
@@ -161,6 +164,7 @@ SO_TYPE    Socket type.
 #define SO_POSIX_MAX    19
 /* }; */
 
+
 /* POSIX descriptions
 MSG_CTRUNC    Control data truncated.
 MSG_DONTROUTE    Send without using routing tables.
@@ -193,33 +197,38 @@ MSG_WAITALL    Wait for complete message.
 
 #define MSG_EOF       MSG_FIN
 
+
+
+
 /* Setsockoptions(2) level. Thanks to BSD these must match IPPROTO_xxx */
 #define SOL_SOCKET 1
 #define SOL_IP      0
-/*#define SOL_ICMP    1   / * No-no-no! Due to Linux :-) we cannot use SOL_ICMP=1 * / */
+//#define SOL_ICMP    1   /* No-no-no! Due to Linux :-) we cannot use SOL_ICMP=1 */
 #define SOL_TCP     6
 #define SOL_UDP     17
-/*#define SOL_IPV6    41 */
-/*#define SOL_ICMPV6  58 */
-/*#define SOL_SCTP    132 */
-/*#define SOL_UDPLITE 136 / * UDP-Lite (RFC 3828) * / */
+//#define SOL_IPV6    41
+//#define SOL_ICMPV6  58
+//#define SOL_SCTP    132
+//#define SOL_UDPLITE 136 /* UDP-Lite (RFC 3828) */
 #define SOL_RAW     255
-/*#define SOL_IPX     256 */
-/*#define SOL_AX25    257 */
-/*#define SOL_ATALK   258 */
-/*#define SOL_NETROM  259 */
-/*#define SOL_ROSE    260 */
-/*#define SOL_DECNET  261 */
-/*#define SOL_X25     262 */
-/*#define SOL_PACKET  263 */
-/*#define SOL_ATM     264 / * ATM layer (cell level) * / */
-/*#define SOL_AAL     265 / * ATM Adaption Layer (packet level) * / */
-/*#define SOL_IRDA    266 */
-/*#define SOL_NETBEUI 267 */
-/*#define SOL_LLC     268 */
-/*#define SOL_DCCP    269 */
-/*#define SOL_NETLINK 270 */
-/*#define SOL_TIPC    271 */
+//#define SOL_IPX     256
+//#define SOL_AX25    257
+//#define SOL_ATALK   258
+//#define SOL_NETROM  259
+//#define SOL_ROSE    260
+//#define SOL_DECNET  261
+//#define SOL_X25     262
+//#define SOL_PACKET  263
+//#define SOL_ATM     264 /* ATM layer (cell level) */
+//#define SOL_AAL     265 /* ATM Adaption Layer (packet level) */
+//#define SOL_IRDA    266
+//#define SOL_NETBEUI 267
+//#define SOL_LLC     268
+//#define SOL_DCCP    269
+//#define SOL_NETLINK 270
+//#define SOL_TIPC    271
+
+
 
 /* specified by libc */
 #define SHUT_RD   0 /* all receptions will be disallowed */
@@ -262,10 +271,10 @@ __BEGIN_DECLS
 /**
  * create an endpoint for communication.
  * @param protocol The protocol specifies a particular protocol to be used with the socket.
- *  Normally only a single protocol exists to support a particular socket type within a
- *  given protocol family, in which case protocol can be specified as 0.
+ * 	Normally only a single protocol exists to support a particular socket type within a
+ * 	given protocol family, in which case protocol can be specified as 0.
  * @return On success, a file descriptor for the new socket is returned.
- *  On error, result < 0.
+ * 	On error, result < 0.
  */
 extern int socket(int domain, int type, int protocol);
 

@@ -88,17 +88,15 @@ static inline int ring_wraps(struct ring *r, size_t r_size) {
 
 static inline size_t ring_data_size(struct ring *r, size_t r_size) {
 	size_t data_size = (r->head - r->tail);
-	if (ring_wraps(r, r_size)) {
+	if (ring_wraps(r, r_size))
 		data_size += r_size;
-	}
 	return data_size;
 }
 
 static inline size_t ring_room_size(struct ring *r, size_t r_size) {
 	size_t room_size = (r->tail - r->head - 1);
-	if (!ring_wraps(r, r_size)) {
+	if (!ring_wraps(r, r_size))
 		room_size += r_size;
-	}
 	return room_size;
 }
 
@@ -132,17 +130,15 @@ static inline size_t ring_can_write(struct ring *r, size_t r_size,
 
 /** @return New value of tail. */
 static inline size_t ring_fixup_tail(struct ring *r, size_t r_size) {
-	if (r->tail >= r_size) {
+	if (r->tail >= r_size)
 		r->tail -= r_size;
-	}
 	return r->tail;
 }
 
 /** @return New value of head. */
 static inline size_t ring_fixup_head(struct ring *r, size_t r_size) {
-	if (r->head >= r_size) {
+	if (r->head >= r_size)
 		r->head -= r_size;
-	}
 	return r->head;
 }
 

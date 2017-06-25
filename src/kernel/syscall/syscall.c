@@ -67,47 +67,47 @@ void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_
 
 #if 0
 struct new_stat {
-	unsigned long st_dev;
-	unsigned long st_ino;
-	unsigned long st_nlink;
+          unsigned long   st_dev;
+          unsigned long   st_ino;
+          unsigned long   st_nlink;
 
-	unsigned int  st_mode;
-	unsigned int  st_uid;
-	unsigned int  st_gid;
-	unsigned int  __pad0;
-	unsigned long st_rdev;
-	long		  st_size;
-	long		  st_blksize;
-	long		  st_blocks;              /* Number 512-byte blocks allocated. */
+          unsigned int    st_mode;
+          unsigned int    st_uid;
+          unsigned int    st_gid;
+          unsigned int    __pad0;
+          unsigned long   st_rdev;
+          long            st_size;
+          long            st_blksize;
+          long            st_blocks;      /* Number 512-byte blocks allocated. */
 
-	unsigned long n_st_atime;
-	unsigned long st_atime_nsec;
-	unsigned long n_st_mtime;
-	unsigned long st_mtime_nsec;
-	unsigned long n_st_ctime;
-	unsigned long st_ctime_nsec;
-	long		  __unused[3];
-};
+          unsigned long   n_st_atime;
+          unsigned long   st_atime_nsec;
+          unsigned long   n_st_mtime;
+          unsigned long   st_mtime_nsec;
+          unsigned long   n_st_ctime;
+          unsigned long   st_ctime_nsec;
+          long            __unused[3];
+ };
 #else
 struct new_stat
 {
-	short		   st_dev;
-	unsigned short st_ino;
-	unsigned int   st_mode;
-	unsigned short st_nlink;
-	unsigned short st_uid;
-	unsigned short st_gid;
-	short		   st_rdev;
-	long		   st_size;
-	long		   n_st_atime;
-	long		   st_spare1;
-	long		   n_st_mtime;
-	long		   st_spare2;
-	long		   n_st_ctime;
-	long		   st_spare3;
-	long		   st_blksize;
-	long		   st_blocks;
-	long		   st_spare4[2];
+  short		st_dev;
+  unsigned short st_ino;
+  unsigned int	st_mode;
+  unsigned short st_nlink;
+  unsigned short st_uid;
+  unsigned short st_gid;
+  short		st_rdev;
+  long		st_size;
+  long	n_st_atime;
+  long		st_spare1;
+  long	n_st_mtime;
+  long		st_spare2;
+  long	n_st_ctime;
+  long		st_spare3;
+  long		st_blksize;
+  long		st_blocks;
+  long	st_spare4[2];
 };
 #endif
 

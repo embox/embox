@@ -26,6 +26,7 @@
 
 #include <kalman_filter.h>
 
+
 static float angles[3];
 static float speed = 0;
 static int inited = 0;
@@ -35,9 +36,8 @@ static struct kalman_filter kalman[3];
 static void stm32f3_delay(void) {
 	size_t i = 0;
 
-	for (i = 0; i < 10000; i++) {
+	for (i = 0; i < 10000; i++)
 		;
-	}
 }
 
 static void init_leds(void) {
@@ -51,10 +51,9 @@ static void init_leds(void) {
 	led_init(LED6);
 }
 
+
 #define INC_WINDOW_SIZE 10
-float incs[INC_WINDOW_SIZE] = {
-	0
-};
+float incs[INC_WINDOW_SIZE] = {0};
 int inc_index = 0;
 float average_inc = 0;
 
@@ -104,15 +103,11 @@ void update_angles(float *acc, float *gyro, float dt) {
 }
 
 static void speed_test(void) {
-	float acc[3] = {
-		0
-	};
-	float gyro[3] = {
-		0
-	};
+	float acc[3] = {0};
+	float gyro[3] = {0};
 	int prev = 0;
 
-	while (1) {
+	while(1) {
 		time64_t current;
 		float dt, compensation;
 
@@ -146,15 +141,16 @@ static void speed_test(void) {
 			led_on(LED3);
 		}
 
-		stm32f3_delay(); /*TODO nanosleep/usleep? */
+		stm32f3_delay(); //TODO nanosleep/usleep?
 	}
 }
 
+
+
+
 #if 0
 static void gyro_test(void) {
-	float buf[3] = {
-		0
-	};
+	float buf[3] = {0};
 	float x, y;
 
 	for (size_t i = 0; i < 100; i++) {

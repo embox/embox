@@ -39,7 +39,7 @@ static int node_getlabel(struct node *n, char *label, size_t lablen) {
 	int res = 0;
 
 	if (0 > (res = kfile_xattr_get(n, smac_xattrkey, label,
-			lablen))) {
+					lablen))) {
 		strcpy(label, smac_def_file_label);
 	}
 
@@ -54,7 +54,7 @@ static int idesc_getlabel(struct idesc *idesc, char *label, size_t lablen) {
 	int res = 0;
 
 	if (0 > (res = idesc_getxattr(idesc, smac_xattrkey, label,
-			lablen))) {
+					lablen))) {
 		strcpy(label, smac_def_file_label);
 	}
 
@@ -128,7 +128,7 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 	smac_audit_prepare(&audit, __func__, node->name);
 
 	if (1 != (res = security_xattr_is_service_access(name, S_IROTH,
-			&audit))) {
+					&audit))) {
 		return res;
 	}
 
@@ -140,7 +140,7 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 }
 
 int security_xattr_set(struct node *node, const char *name,
-		const char *value, size_t len, int flags) {
+			const char *value, size_t len, int flags) {
 	char label[SMAC_LABELLEN];
 	struct smac_audit audit;
 	int res;
@@ -148,7 +148,7 @@ int security_xattr_set(struct node *node, const char *name,
 	smac_audit_prepare(&audit, __func__, node->name);
 
 	if (1 != (res = security_xattr_is_service_access(name, S_IWOTH,
-			&audit))) {
+					&audit))) {
 		return res;
 	}
 
@@ -181,7 +181,7 @@ int security_xattr_idesc_get(struct idesc *idesc, const char *name, char *value,
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (1 != (res = security_xattr_is_service_access(name, S_IROTH,
-			&audit))) {
+					&audit))) {
 		return res;
 	}
 
@@ -200,7 +200,7 @@ int security_xattr_idesc_set(struct idesc *idesc, const char *name, const char *
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (1 != (res = security_xattr_is_service_access(name, S_IWOTH,
-			&audit))) {
+					&audit))) {
 		return res;
 	}
 
@@ -229,7 +229,7 @@ int security_sock_create(struct sock *sock) {
 	char *secure_label;
 	if (NULL != (secure_label = task_resource_security(task_self()))) {
 		if ((0 != strcmp(secure_label, smac_floor)) &&
-				(0 != strcmp(secure_label, smac_admin))) { /*FIXME problem with su -c dropbeard */
+				(0 != strcmp(secure_label, smac_admin))) { //FIXME problem with su -c dropbeard
 			idesc_setxattr(&sock->idesc, smac_xattrkey, secure_label, strlen(secure_label) + 1, 0);
 		}
 	}

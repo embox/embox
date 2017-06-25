@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-char *strdup(const char *s) {
+char * strdup(const char *s) {
 	char *ret;
 
 	ret = malloc(strlen(s) + 1);

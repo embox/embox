@@ -14,3 +14,4 @@
 extern struct vterm_video *vc_vga_init(void);
 
 #endif /* CONSOLE_VC_VGA_H_ */
+

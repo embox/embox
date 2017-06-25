@@ -53,7 +53,7 @@ int spi_init(void) {
 	SpiHandle.Init.NSS               = SPI_NSS_SOFT;
 	SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLE;
 	SpiHandle.Init.Mode              = SPI_MODE_MASTER;
-
+	
 	if (HAL_SPI_Init(&SpiHandle) != HAL_OK) {
 		printf("%s\n", "HAL_SPI_Init error\n");
 		return -1;
@@ -63,7 +63,7 @@ int spi_init(void) {
 }
 
 void nrf24_setupPins() {
-	GPIO_InitTypeDef GPIO_InitStruct;
+	GPIO_InitTypeDef  GPIO_InitStruct;
 
 	printf("NRF24 init\n");
 
@@ -94,7 +94,7 @@ void nrf24_setupPins() {
 	HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 #endif
 
-	/*CS_H(); */
+	//CS_H();
 #if MODOPS_SPI == 2
 	HAL_GPIO_WritePin(GPIOB, SPIx_CS_PIN, GPIO_PIN_SET);
 #else

@@ -71,7 +71,7 @@ static inline void __set_mark(mmu_ctx_t ctx, vaddr_t vaddr, uint32_t clear_lomar
 	tlbhi |= set_himark;
 	tlblo |= set_lomark;
 
-	if (1) { /*ctx == cur_ctx */
+	if (1) { //ctx == cur_ctx
 		set_utlb_record(index, tlblo, tlbhi);
 	}
 
@@ -97,7 +97,7 @@ static inline mmu_page_flags_t mmu_page_get_flags(mmu_ctx_t ctx, vaddr_t vaddr) 
 }
 
 static inline void mmu_page_set_flags(mmu_ctx_t ctx, vaddr_t vaddr,
-		mmu_page_flags_t flags) {
+						mmu_page_flags_t flags) {
 	__set_mark(ctx, vaddr, MMU_PAGE_CACHEABLE | MMU_PAGE_WRITEABLE | MMU_PAGE_EXECUTEABLE, flags, 0, 0);
 }
 

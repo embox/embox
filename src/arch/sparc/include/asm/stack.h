@@ -33,7 +33,7 @@ struct stack_frame {
 	uint32_t xargs[6];
 	/** TODO I don't know. Seems to be just a place holder. -- Eldar */
 	uint32_t xxargs[1];
-} __attribute__ ((aligned(STACK_ALIGNMENT)));
+}__attribute__ ((aligned (STACK_ALIGNMENT)));
 
 #else /* __ASSEMBLER__ */
 

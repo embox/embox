@@ -94,13 +94,13 @@ static int imx6_gpt_init(void) {
 	clock_source_register(&imx6_gpt_clock_source);
 
 	return irq_attach(GPT_IRQ,
-				   clock_handler,
-				   0,
-				   &imx6_gpt_clock_source,
-				   "i.MX6 General Purpose Timer");
+	                  clock_handler,
+	                  0,
+	                  &imx6_gpt_clock_source,
+	                  "i.MX6 General Purpose Timer");
 }
 
-static int imx6_gpt_config(struct time_dev_conf *conf) {
+static int imx6_gpt_config(struct time_dev_conf * conf) {
 	return 0;
 }
 

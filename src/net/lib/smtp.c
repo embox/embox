@@ -235,7 +235,7 @@ int smtp_code(struct smtp_session *ss) {
 	return ss != NULL ? ss->code : 0;
 }
 
-const char *smtp_status(struct smtp_session *ss) {
+const char * smtp_status(struct smtp_session *ss) {
 	if (ss == NULL) {
 		return NULL;
 	}

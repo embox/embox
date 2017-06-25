@@ -45,7 +45,7 @@ EMBOX_UNIT_INIT(bpi_intc_init);
 #define GICC_EOI           (GICC_BASE + 0x10)
 
 /** CPUTargetList[0] corresponds to CPU interface 0 */
-#define CPU_TARGET_LIST_0 (1 << 16)
+#define CPU_TARGET_LIST_0 (1 << 16) 
 
 void software_init_hook(void) {
 	int i;
@@ -65,7 +65,7 @@ void software_init_hook(void) {
 
 	/**
 	 * The GICC_PMR for a CPU interface defines a priority threshold for the target processor.
-	 * The GIC only signals pending interrupts with a higher priority than this threshold value
+	 * The GIC only signals pending interrupts with a higher priority than this threshold value 
 	 * to the target processor.
 	 */
 	REG_STORE(GICC_PMR, 0xf0);
@@ -87,8 +87,8 @@ void irqctrl_enable(unsigned int interrupt_nr) {
 
 void irqctrl_disable(unsigned int interrupt_nr) {
 	assert(interrupt_nr <= SGI_MAX_SRC);
-	/**
-	 * Writing 1 to a Clear-enable bit disables forwarding of
+	/** 
+	 * Writing 1 to a Clear-enable bit disables forwarding of 
 	 * the corresponding interrupt from the Distributor to the CPU interfaces
 	 * Writes to bits corresponding to the SGIs are ignored.
 	 * SGIs are always enabled.
@@ -113,7 +113,7 @@ void irqctrl_force(unsigned int interrupt_nr) {
 	/** SGI is made pending by writing to the SGIR */
 	REG_STORE(GICD_SGIR, CPU_TARGET_LIST_0 | (interrupt_nr & 0xf));
 
-	/**
+	/** 
 	 * Writing to a Set-active bit Activates the corresponding interrupt
 	 * REG_STORE(GICD_ISACTIVER(interrupt_nr >> 5), 1 << (interrupt_nr & 0x1f));
 	 */
@@ -132,8 +132,8 @@ void interrupt_handle(void) {
 		/**
 		 * A processor writes to this register to inform the CPU interface either:
 		 *	1. that it has completed the processing of the specified interrupt
-		 *	2. in a GICv2 implementation, when the appropriate GICC_CTLR.EOImode bit
-		 *	   is set to 1, to indicate that the interface should perform priority drop
+		 *	2. in a GICv2 implementation, when the appropriate GICC_CTLR.EOImode bit 
+		 *	   is set to 1, to indicate that the interface should perform priority drop 
 		 *	   for the specified interrupt.
 		 */
 		REG_STORE(GICC_EOI, irqstat);

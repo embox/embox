@@ -15,7 +15,7 @@
 #include <kernel/printk.h>
 #define D(fmt, ...) \
 	do { \
-		printk("%s: " fmt "\n", __func__, ## __VA_ARGS__); \
+		printk("%s: " fmt "\n", __func__, ##__VA_ARGS__); \
 	} while (0)
 
 #define PA_STUB_VALID_STREAM ((void *) 0xff0)
@@ -30,25 +30,17 @@ PaError Pa_Terminate(void) {
 	return paNoError;
 }
 
-PaHostApiIndex Pa_GetHostApiCount(void) {
-	return 1;
-}
-PaDeviceIndex Pa_GetDeviceCount(void) {
-	return 1;
-}
-PaDeviceIndex Pa_GetDefaultOutputDevice(void) {
-	return 0;
-}
-PaDeviceIndex Pa_GetDefaultInputDevice(void) {
-	return 0;
-}
+PaHostApiIndex Pa_GetHostApiCount(void) { return 1; }
+PaDeviceIndex Pa_GetDeviceCount(void) { return 1; }
+PaDeviceIndex Pa_GetDefaultOutputDevice(void) { return 0; }
+PaDeviceIndex Pa_GetDefaultInputDevice(void) { return 0; }
 
-const char *Pa_GetErrorText(PaError errorCode) {
+const char * Pa_GetErrorText(PaError errorCode) {
 	D("errcode=%d", errorCode);
 	return "Pa_GetErrorText not implemented";
 }
 
-const PaDeviceInfo *Pa_GetDeviceInfo(PaDeviceIndex device) {
+const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
 	static const PaDeviceInfo info = {
 		.structVersion = 1,
 		.name = "portaudio_stub",
@@ -67,12 +59,12 @@ const PaDeviceInfo *Pa_GetDeviceInfo(PaDeviceIndex device) {
 	return pa_info;
 }
 
-const PaHostApiInfo *Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
+const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
 	D("api_index=%d info=%p", hostApi, NULL);
 	return NULL;
 }
 
-const PaStreamInfo *Pa_GetStreamInfo(PaStream *stream) {
+const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 	static PaStreamInfo info = {
 		.structVersion = 1,
 		.inputLatency = 0,
@@ -85,7 +77,7 @@ const PaStreamInfo *Pa_GetStreamInfo(PaStream *stream) {
 	return pa_info;
 }
 
-PaError Pa_OpenStream(PaStream **stream,
+PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
 		double sampleRate, unsigned long framesPerBuffer,

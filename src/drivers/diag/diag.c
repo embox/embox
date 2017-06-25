@@ -105,7 +105,8 @@ void iodev_setup(const struct iodev_ops *new_iodev) {
 	cdiag = new_iodev;
 }
 
-struct iodev_ops const *iodev_current(void) {
+struct iodev_ops const*iodev_current(void) {
 	return cdiag;
 }
 #endif
+

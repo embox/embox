@@ -17,8 +17,8 @@ void __dlist_debug_check(const struct dlist_head *head) {
 	uintptr_t poison = head->poison;
 
 	assert((!poison || (void *) ~poison == head) &&
-			n->prev == head &&
-			p->next == head,
+		n->prev == head &&
+		p->next == head,
 			"\n"
 			"head: %p, poison: %p\n"
 			"prev: %p, n: %p, p: %p\n"
@@ -28,3 +28,4 @@ void __dlist_debug_check(const struct dlist_head *head) {
 			n, n->next, n->prev);
 #endif
 }
+

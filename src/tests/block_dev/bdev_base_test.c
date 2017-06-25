@@ -26,7 +26,7 @@ TEST_CASE("Fill one block with constant value") {
 	char rbuffer[sizeof(wbuffer)];
 
 	bdev = open(BDEV_NAME, O_RDWR);
-	test_assert(bdev > 0);
+	test_assert(bdev >0);
 
 	block_size = 512;
 #if 0

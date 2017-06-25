@@ -12,6 +12,7 @@
 #include <fs/file_operation.h>
 #include <fs/file_desc.h>
 
+
 #define ZERO_DEV_NAME "zero"
 
 /* forward declaration */
@@ -38,10 +39,10 @@ static size_t zero_write(struct file_desc *desc, void *buf, size_t size) {
 }
 
 static const struct kfile_operations zero_ops = {
-	.open = zero_open,
-	.close = zero_close,
-	.read = zero_read,
-	.write = zero_write
+		.open = zero_open,
+		.close = zero_close,
+		.read = zero_read,
+		.write = zero_write
 };
 
 static int zero_init(void) {

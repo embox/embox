@@ -51,6 +51,7 @@ static int smac_env_n;
 #define foreach_entry(ent) \
 	for (ent = smac_env; ent != smac_env + smac_env_n; ++ent)
 
+
 int smac_audit_prepare(struct smac_audit *audit, const char *fn_name, const char *file_name) {
 
 	audit->fn_name = fn_name;
@@ -116,14 +117,14 @@ int smac_access(const char *s_subject, const char *s_object,
 
 	/* 2 */
 	if (0 == strcmp(s_subject, smac_hat)
-			&& 0 == (~(S_IROTH | S_IXOTH) & may_access)) {
+		&& 0 == (~(S_IROTH | S_IXOTH) & may_access)) {
 		ret = 0;
 		goto out;
 	}
 
 	/* 3 */
 	if (0 == strcmp(s_object, smac_floor)
-			&& 0 == (~(S_IROTH | S_IXOTH) & may_access)) {
+		&& 0 == (~(S_IROTH | S_IXOTH) & may_access)) {
 		ret = 0;
 		goto out;
 	}
@@ -176,7 +177,7 @@ int smac_getenv(void *buf, size_t buflen, struct smac_env **oenv) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-			S_IROTH, &audit))) {
+					S_IROTH, &audit))) {
 		return res;
 	}
 
@@ -198,7 +199,7 @@ int smac_flushenv(void) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-			S_IWOTH, &audit))) {
+					S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -215,7 +216,7 @@ int smac_addenv(const char *subject, const char *object, int flags) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-			S_IWOTH, &audit))) {
+					S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -257,7 +258,7 @@ int smac_labelset(const char *label) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-			S_IWOTH, &audit))) {
+					S_IWOTH, &audit))) {
 		return res;
 	}
 
@@ -277,7 +278,7 @@ int smac_labelget(char *label, size_t len) {
 	smac_audit_prepare(&audit, __func__, NULL);
 
 	if (0 != (res = smac_access(task_self_resource_security(), smac_admin,
-			S_IROTH, &audit))) {
+					S_IROTH, &audit))) {
 		return res;
 	}
 
@@ -294,10 +295,10 @@ static int smac_init(void) {
 	strcpy(((struct smac_task *) task_self_resource_security())->label, smac_admin);
 
 	/* should allow ourself do anything with not labeled file as there is no
-	 * security at all.
+ 	 * security at all.
 	 * Otherwise boot could hang at mount, etc.
 	 */
-	smac_addenv(smac_admin, smac_def_file_label,
+ 	 smac_addenv(smac_admin, smac_def_file_label,
 			S_IROTH | S_IWOTH | S_IXOTH);
 
 	return 0;

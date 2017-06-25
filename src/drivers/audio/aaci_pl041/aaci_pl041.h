@@ -8,6 +8,7 @@
 #ifndef AACI_PL041_H_
 #define AACI_PL041_H_
 
+
 #define AACI_CTRL_CH1        0x00
 #define AACI_CTRL_CH2        0x14
 #define AACI_CTRL_CH3        0x28
@@ -150,7 +151,8 @@
 /*
  * Main flag register bits. P66
  */
-#define MAINFR_TXB   (1 << 1)   /* transmit busy */
-#define MAINFR_RXB   (1 << 0)   /* receive busy */
+#define MAINFR_TXB   (1 << 1)	/* transmit busy */
+#define MAINFR_RXB   (1 << 0)	/* receive busy */
+
 
 #endif /* AACI_PL041_H_ */

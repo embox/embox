@@ -10,7 +10,7 @@
 #include <string.h>
 #include <netdb.h>
 
-struct netent *getnetbyname(const char *name) {
+struct netent * getnetbyname(const char *name) {
 	struct netent *ne;
 	char **aliases;
 

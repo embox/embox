@@ -36,7 +36,7 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 
 	/* check if mode is incorrect */
 	if (((mode & GPIO_MODE_OUT_SECTION) && (mode & GPIO_MODE_IN_SECTION)) ||
-			((mode & GPIO_MODE_IN_INT_EN) && (mode & GPIO_MODE_IN_INT_DIS))) {
+		((mode & GPIO_MODE_IN_INT_EN) && (mode & GPIO_MODE_IN_INT_DIS))) {
 		return -1;
 	}
 
@@ -120,10 +120,11 @@ gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask){
 	return mask & (gpio_reg_read(gpio->base, GPIO_DATAIN));
 }
 
-static int gpio_pin_number(gpio_mask_t mask) {
+
+static int gpio_pin_number (gpio_mask_t mask) {
 	int pin_nr;
 
-	for (pin_nr = 0; pin_nr < N_PINS; pin_nr++) {
+	for(pin_nr = 0; pin_nr < N_PINS; pin_nr++) {
 		if (mask & (1 << pin_nr)) {
 			break;
 		}
@@ -196,12 +197,12 @@ int gpio_pin_irq_detach(struct gpio *gpio, gpio_mask_t mask,
 }
 
 static int gpio_init(void) {
-	/*uint32_t rev; */
+	//uint32_t rev;
 	int i, ret;
 	struct gpio *gpio;
 	char str [255];
 
-	for (i = 0; i < GPIO_MODULE_CNT; i++) {
+	for(i = 0; i < GPIO_MODULE_CNT; i++) {
 
 		gpio = &omap_gpio[i];
 
@@ -212,7 +213,7 @@ static int gpio_init(void) {
 		/*
 		rev = gpio_reg_read(gpio->base, GPIO_REVISION);
 		 printk("maj = %d, min = %d\n",
-		        GPIO_REVISION_MAJOR(rev), GPIO_REVISION_MINOR(rev)); */
+				GPIO_REVISION_MAJOR(rev), GPIO_REVISION_MINOR(rev)); */
 
 		*str = 0;
 		sprintf(str,"OMAP_GPIO%d", i);

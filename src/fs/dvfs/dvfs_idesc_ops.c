@@ -81,3 +81,4 @@ const struct idesc_ops idesc_file_ops = {
 	.fstat = idesc_file_ops_stat,
 	.status = idesc_file_ops_status,
 };
+

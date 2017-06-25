@@ -12,3 +12,4 @@
 extern void *stack_ptr(void);
 
 #endif /* HAL_STACK_H_ */
+

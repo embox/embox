@@ -64,13 +64,14 @@
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 
+
 struct lthread {
 	struct schedee schedee;
-	int			   (*run)(struct lthread *); /**< Start routine */
-	ptrdiff_t	   label_offset;  /**< Used for calculating label for goto */
+	int (*run)(struct lthread *); /**< Start routine */
+	ptrdiff_t label_offset;       /**< Used for calculating label for goto */
 	/* Auxiliary structure for waiting with timeout. */
 	struct sched_wait_info info;
-	struct schedee *	   joining; /**< joining schedee with stack */
+	struct schedee *joining; /**< joining schedee with stack */
 };
 
 /**

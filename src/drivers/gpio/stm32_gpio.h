@@ -35,4 +35,5 @@ struct gpio {
 #define GPIO_D ((struct gpio *) (GPIO_PORT_BASE + 3 * GPIO_PORT_SIZE))
 #define GPIO_E ((struct gpio *) (GPIO_PORT_BASE + 4 * GPIO_PORT_SIZE))
 
+
 #endif /* STM32_GPIO_H_ */

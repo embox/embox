@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			return ENOERR;
@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 				} else {
 					task_set_affinity(task, strtol(argv[argc - 2], NULL, 16));
 					printf("tid %d's new affinity mask: %x\n",
-							tid, task_get_affinity(task));
+						tid, task_get_affinity(task));
 				}
 			}
 

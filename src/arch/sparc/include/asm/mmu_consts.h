@@ -16,3 +16,4 @@
 #define LEON_CNR_FADDR       0x00000400 /** Fault Address Register */
 
 #endif /* SPARC_MMU_CORE_H */
+

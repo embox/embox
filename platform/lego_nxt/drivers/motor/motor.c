@@ -58,7 +58,7 @@ void nxt_motor_tacho_set_counter(nxt_motor_t *motor, uint32_t limit, tacho_handl
 }
 
 static void nxt_motor_init(nxt_motor_t *motor, int8_t power, uint32_t limit,
-		tacho_handler_t lim_handler) {
+			tacho_handler_t lim_handler) {
 	nxt_motor_tacho_set_counter(motor, limit, lim_handler);
 
 	pin_set_input_monitor((1 << motor->m_0) | (1 << motor->m_1),
@@ -75,9 +75,10 @@ uint32_t nxt_motor_tacho_get_counter(nxt_motor_t *motor) {
 	return motor->tacho_limit - motor->tacho_count;
 }
 
+
 static void motor_pin_handler(int ch_mask, int mon_mask) {
 	size_t i;
-/*	for (i = 0; i < NXT_AVR_N_OUTPUTS; i++) { */
+//	for (i = 0; i < NXT_AVR_N_OUTPUTS; i++) {
 	for (i = 0; i < ARRAY_SIZE(pin_motor_S0); i++) {
 		if (pin_motor_S0[i] & mon_mask) {
 			nxt_motors[i].tacho_count--;

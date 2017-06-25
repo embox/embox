@@ -5,6 +5,7 @@
  * @author Ilia Vaprol
  */
 
+
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
@@ -22,6 +23,7 @@
 #include <net/lib/rpc/rpc_msg.h>
 #include <net/lib/rpc/pmap.h>
 
+
 #include <util/log.h>
 
 #include <kernel/time/ktime.h>
@@ -30,7 +32,7 @@
 
 static const struct clnt_ops clntudp_ops;
 
-struct client *clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
+struct client * clntudp_create(struct sockaddr_in *raddr, uint32_t prognum,
 		uint32_t versnum, struct timeval resend, int *psock) {
 	struct client *clnt;
 	struct auth *ath;
@@ -193,7 +195,7 @@ static void clntudp_destroy(struct client *clnt) {
 }
 
 static const struct clnt_ops clntudp_ops = {
-	.call = clntudp_call,
-	.geterr = clntudp_geterr,
-	.destroy = clntudp_destroy
+		.call = clntudp_call,
+		.geterr = clntudp_geterr,
+		.destroy = clntudp_destroy
 };

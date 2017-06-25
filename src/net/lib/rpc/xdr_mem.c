@@ -16,12 +16,8 @@
 
 static const struct xdr_ops xdrmem_ops;
 
-static xdr_unit_t encode_unit(xdr_unit_t u) {
-	return htonl(u);
-}
-static xdr_unit_t decode_unit(xdr_unit_t u) {
-	return ntohl(u);
-}
+static xdr_unit_t encode_unit(xdr_unit_t u) { return htonl(u); }
+static xdr_unit_t decode_unit(xdr_unit_t u) { return ntohl(u); }
 
 void xdrmem_create(struct xdr *xs, char *addr,
 		size_t size, enum xdr_op oper) {
@@ -114,11 +110,11 @@ static int xdrmem_setpos(struct xdr *xs, size_t pos) {
 }
 
 static const struct xdr_ops xdrmem_ops = {
-	.destroy = &xdrmem_destroy,
-	.getunit = &xdrmem_getunit,
-	.putunit = &xdrmem_putunit,
-	.getbytes = &xdrmem_getbytes,
-	.putbytes = &xdrmem_putbytes,
-	.getpos = &xdrmem_getpos,
-	.setpos = &xdrmem_setpos,
+		.destroy = &xdrmem_destroy,
+		.getunit = &xdrmem_getunit,
+		.putunit = &xdrmem_putunit,
+		.getbytes = &xdrmem_getbytes,
+		.putbytes = &xdrmem_putbytes,
+		.getpos = &xdrmem_getpos,
+		.setpos = &xdrmem_setpos,
 };

@@ -7,6 +7,7 @@
 #include <cmd/shell.h>
 #include <string.h>
 
+
 ARRAY_SPREAD_DEF(const struct shell, __shell_registry);
 
 const struct shell *shell_lookup(const char *shell_name) {

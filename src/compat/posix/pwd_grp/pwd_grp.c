@@ -78,7 +78,7 @@ static int read_int_field(FILE *stream, const char *format, void *field, int del
 
 	if (delim != (val = fgetc(stream))) {
 		/* fscanf can eat blank charactes, so if it used as delim, here we beleive it
-		 * was on place, but stolen. Otherwise, report inproper stream format
+ 		 * was on place, but stolen. Otherwise, report inproper stream format
 		 */
 		if (isspace(delim)) {
 			ungetc(val, stream);
@@ -211,7 +211,7 @@ struct passwd *getpwuid(uid_t uid) {
 	struct passwd *res;
 
 	if (0 != getpwuid_r(uid, &getpwuid_buffer, buff, 80, &res)) {
-		/*TODO errno must be set */
+		//TODO errno must be set
 		return NULL;
 	}
 
@@ -273,7 +273,7 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 }
 
 int getgrnam_r(const char *name, struct group *grp,
-		char *buf, size_t buflen, struct group **result) {
+	char *buf, size_t buflen, struct group **result) {
 	int res;
 	FILE *file;
 
@@ -297,7 +297,7 @@ int getgrnam_r(const char *name, struct group *grp,
 
 }
 
-struct group *getgrgid(gid_t gid) {
+struct group * getgrgid(gid_t gid) {
 	static struct group *result;
 	struct group grp;
 	char buf[64];
@@ -313,7 +313,7 @@ struct group *getgrgid(gid_t gid) {
 }
 
 int getgrgid_r(gid_t gid, struct group *grp,
-		char *buf, size_t buflen, struct group **result) {
+	char *buf, size_t buflen, struct group **result) {
 	int res;
 	FILE *file;
 
@@ -446,7 +446,7 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 	}
 
 	while (read_field(passwdf, &buf, &buf_len, &temp, '=') != EOF) {
-		if (0 == strcmp(temp, "GROUP")) {
+		if(0 == strcmp(temp, "GROUP")) {
 			if (0 != read_int_field(passwdf, "%hd", &passwd->pw_gid, '\n')) {
 				res = -1;
 				goto out;
@@ -454,7 +454,7 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 			continue;
 		}
 
-		if (0 == strcmp(temp, "HOME")) {
+		if(0 == strcmp(temp, "HOME")) {
 			if (0 != read_field(passwdf, &buf, &buf_len,
 					&passwd->pw_dir, '\n')) {
 				res = -1;
@@ -463,7 +463,7 @@ int get_defpswd(struct passwd *passwd, char *buf, size_t buf_len) {
 			continue;
 		}
 
-		if (0 == strcmp(temp, "SHELL")) {
+		if(0 == strcmp(temp, "SHELL")) {
 			if (0 != read_field(passwdf, &buf, &buf_len,
 					&passwd->pw_shell, '\n')) {
 				res = -1;

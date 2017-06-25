@@ -31,3 +31,4 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 void irqctrl_force(unsigned int interrupt_nr) {
 	NVIC_SetPendingIRQ(interrupt_nr);
 }
+

@@ -98,13 +98,13 @@ static int inet_addr_tester(const struct sockaddr *lhs_sa,
 
 	assert(lhs_in->sin_family == AF_INET);
 	return (lhs_in->sin_family == rhs_in->sin_family)
-		   && ((0 == memcmp(&lhs_in->sin_addr, &rhs_in->sin_addr,
-		   sizeof lhs_in->sin_addr))
-		   || (0 == memcmp(&lhs_in->sin_addr, &inaddr_any,
-		   sizeof lhs_in->sin_addr))
-		   || (0 == memcmp(&rhs_in->sin_addr, &inaddr_any,
-		   sizeof rhs_in->sin_addr)))
-		   && (lhs_in->sin_port == rhs_in->sin_port);
+			&& ((0 == memcmp(&lhs_in->sin_addr, &rhs_in->sin_addr,
+							sizeof lhs_in->sin_addr))
+					|| (0 == memcmp(&lhs_in->sin_addr, &inaddr_any,
+							sizeof lhs_in->sin_addr))
+					|| (0 == memcmp(&rhs_in->sin_addr, &inaddr_any,
+							sizeof rhs_in->sin_addr)))
+			&& (lhs_in->sin_port == rhs_in->sin_port);
 }
 
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
@@ -133,13 +133,13 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		 * is not POSIX-specified behavior, but it used in Linux, BSD, Windows.
 		 * E.g. manual for Linux - http://man7.org/linux/man-pages/man7/ip.7.html */
 		if (!sock_addr_alloc_port(sk->p_ops, &addr_in.sin_port,
-				inet_addr_tester, (const struct sockaddr *)&addr_in,
-				sizeof addr_in)) {
+					inet_addr_tester, (const struct sockaddr *)&addr_in,
+					sizeof addr_in)) {
 			return -ENOMEM;
 		}
 	}
 	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
-			addrlen)) {
+				addrlen)) {
 		/* TODO consider opt.so_reuseaddr */
 		return -EADDRINUSE;
 	}
@@ -158,8 +158,8 @@ static int inet_bind_local(struct sock *sk) {
 	addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	if (!sock_addr_alloc_port(sk->p_ops, &addr_in.sin_port,
-			inet_addr_tester, (const struct sockaddr *)&addr_in,
-			sizeof addr_in)) {
+				inet_addr_tester, (const struct sockaddr *)&addr_in,
+				sizeof addr_in)) {
 		return -ENOMEM;
 	}
 
@@ -311,7 +311,7 @@ static int inet_sendmsg(struct sock *sk, struct msghdr *msg,
 	addr_in = (const struct sockaddr_in *)msg->msg_name;
 	if ((addr_in != NULL) &&
 			((msg->msg_namelen != sizeof *addr_in)
-			|| (addr_in->sin_family != AF_INET))) {
+				|| (addr_in->sin_family != AF_INET))) {
 		return -EINVAL;
 	}
 
@@ -411,7 +411,7 @@ static int inet_getsockopt(struct sock *sk, int level,
 			return -EOPNOTSUPP;
 		}
 		return sk->p_ops->getsockopt(sk, level, optname, optval,
-					   optlen);
+				optlen);
 	}
 
 	switch (optname) {
@@ -439,7 +439,7 @@ static int inet_setsockopt(struct sock *sk, int level,
 			return -EOPNOTSUPP;
 		}
 		return sk->p_ops->setsockopt(sk, level, optname, optval,
-					   optlen);
+				optlen);
 	}
 
 	switch (optname) {

@@ -41,55 +41,55 @@ struct lookup;
 
 struct super_block {
 	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
-	struct block_dev *			 bdev;
-	struct file *				 bdev_file;
-	struct dentry *				 root;
-	struct dlist_head *			 inode_list;
+	struct block_dev *bdev;
+	struct file      *bdev_file;
+	struct dentry     *root;
+	struct dlist_head *inode_list;
 
 	struct super_block_operations *sb_ops;
-	struct inode_operations *	   sb_iops;
-	struct dentry_operations *	   sb_dops;
-	struct file_operations *	   sb_fops;
+	struct inode_operations	      *sb_iops;
+	struct dentry_operations      *sb_dops;
+	struct file_operations        *sb_fops;
 
 	void *sb_data;
 };
 
 struct super_block_operations {
 	struct inode *(*alloc_inode)(struct super_block *sb);
-	int			  (*destroy_inode)(struct inode *inode);
-	int			  (*write_inode)(struct inode *inode);
-	int			  (*umount_begin)(struct super_block *sb);
+	int           (*destroy_inode)(struct inode *inode);
+	int           (*write_inode)(struct inode *inode);
+	int           (*umount_begin)(struct super_block *sb);
 	struct idesc *(*open_idesc)(struct lookup *l);
 };
 
 struct inode {
-	int	   i_no;
-	int	   start_pos; /* location on disk */
+	int    i_no;
+	int    start_pos; /* location on disk */
 	size_t length;
-	int	   flags;
+	int    flags;
 	uid_t  i_owner_id;
 	gid_t  i_group_id;
 	mode_t i_mode;
 
-	struct dentry *			 i_dentry;
-	struct super_block *	 i_sb;
-	struct inode_operations *i_ops;
+	struct dentry *i_dentry;
+	struct super_block *i_sb;
+	struct inode_operations	*i_ops;
 
 	void *i_data;
 };
 
 struct inode_operations {
-	int			  (*create)(struct inode *i_new, struct inode *i_dir, int mode);
+	int           (*create)(struct inode *i_new, struct inode *i_dir, int mode);
 	struct inode *(*lookup)(char const *name, struct dentry const *dir);
-	int			  (*remove)(struct inode *inode);
-	int			  (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
-	int			  (*rmdir)(struct dentry *dir);
-	int			  (*truncate)(struct inode *inode, size_t len);
-	int			  (*pathname)(struct inode *inode, char *buf, int flags);
-	int			  (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
-	int			  (*rename)(struct inode *node, struct inode *new_parent, const char *new_name);
-	int			  (*getxattr)(struct inode *node, const char *name, char *value, size_t size);
-	int			  (*setxattr)(struct inode *node, const char *name, const char *value, size_t size, int flags);
+	int           (*remove)(struct inode *inode);
+	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
+	int           (*rmdir)(struct dentry *dir);
+	int           (*truncate)(struct inode *inode, size_t len);
+	int           (*pathname)(struct inode *inode, char *buf, int flags);
+	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
+	int           (*rename)(struct inode *node, struct inode *new_parent, const char *new_name);
+	int           (*getxattr)(struct inode *node, const char *name, char *value, size_t size);
+	int           (*setxattr)(struct inode *node, const char *name, const char *value, size_t size, int flags);
 };
 
 struct dentry {
@@ -98,10 +98,10 @@ struct dentry {
 	int flags;
 	int usage_count;
 
-	struct inode *		d_inode;
+	struct inode *d_inode;
 	struct super_block *d_sb;
 
-	struct dentry *	  parent;
+	struct dentry     *parent;
 	struct dlist_head children; /* Subelements of directory */
 	struct dlist_head children_lnk;
 
@@ -118,7 +118,7 @@ struct file {
 	struct idesc f_idesc;
 
 	struct dentry *f_dentry;
-	struct inode * f_inode;
+	struct inode  *f_inode;
 
 	off_t pos;
 
@@ -135,28 +135,28 @@ struct file {
 
 struct file_operations {
 	struct idesc *(*open)(struct inode *node, struct idesc *desc);
-	int			  (*close)(struct file *desc);
-	size_t		  (*read)(struct file *desc, void *buf, size_t size);
-	size_t		  (*write)(struct file *desc, void *buf, size_t size);
-	int			  (*ioctl)(struct file *desc, int request, void *data);
+	int    (*close)(struct file *desc);
+	size_t (*read)(struct file *desc, void *buf, size_t size);
+	size_t (*write)(struct file *desc, void *buf, size_t size);
+	int    (*ioctl)(struct file *desc, int request, void *data);
 };
 
 struct dumb_fs_driver {
 	const char name[FS_NAME_LEN];
-	int		   (*format)(void *dev, void *priv);
-	int		   (*fill_sb)(struct super_block *sb, struct file *dev);
-	int		   (*mount_end)(struct super_block *sb);
+	int (*format)(void *dev, void *priv);
+	int (*fill_sb)(struct super_block *sb, struct file *dev);
+	int (*mount_end)(struct super_block *sb);
 };
 
 struct auto_mount {
-	char				   mount_path[DVFS_MAX_PATH_LEN];
+	char mount_path[DVFS_MAX_PATH_LEN];
 	struct dumb_fs_driver *fs_driver;
 };
 
 struct dvfsmnt {
-	struct dvfsmnt *	mnt_parent;
-	struct dentry *		mnt_mountpoint;
-	struct dentry *		mnt_root;
+	struct dvfsmnt *mnt_parent;
+	struct dentry  *mnt_mountpoint;
+	struct dentry  *mnt_root;
 	struct super_block *mnt_sb;
 
 	struct dlist_head children;
@@ -166,15 +166,15 @@ struct dvfsmnt {
 };
 
 struct dir_ctx {
-	int	  flags;
+	int   flags;
 	void *fs_ctx;
 };
 
 #define DFS_CREAT 0x0001
-extern struct inode *dvfs_alloc_inode(struct super_block *sb);
+extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
 extern int            dvfs_destroy_inode(struct inode *inode);
 
-extern struct file *dvfs_alloc_file(void);
+extern struct file   *dvfs_alloc_file(void);
 extern int            dvfs_destroy_file(struct file *desc);
 
 extern struct dentry *dvfs_alloc_dentry(void);

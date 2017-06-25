@@ -36,7 +36,7 @@ static int make_socket(const struct timeval *timeout, int *out_sock,
 	}
 
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-			timeout, sizeof *timeout)) {
+				timeout, sizeof *timeout)) {
 		ret = -errno;
 		close(sock);
 		assert(ret != 0);
@@ -44,7 +44,7 @@ static int make_socket(const struct timeval *timeout, int *out_sock,
 	}
 
 	if (-1 == connect(sock, (const struct sockaddr *)addr_in,
-			sizeof *addr_in)) {
+				sizeof *addr_in)) {
 		ret = -errno;
 		close(sock);
 		assert(ret != 0);

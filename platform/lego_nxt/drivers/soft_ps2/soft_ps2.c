@@ -68,7 +68,7 @@ static int parity(uint8_t val) {
 
 void hard_delay(int val) {
 	volatile int tmp = val;
-	while (tmp--) {
+	while (tmp --) {
 	}
 }
 
@@ -145,7 +145,7 @@ static void ps2_handler(pin_mask_t state, pin_mask_t mask) {
 				pin_set_low(DATA);
 			}
 			write_val >>= 1;
-			cnt--;
+			cnt --;
 		} else {
 			if (cnt == 0) {
 				pin_set_high(DATA);

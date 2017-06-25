@@ -20,8 +20,8 @@
 
 #define MMU_DATA_SECUR_FAULT 0x09
 #define MMU_INST_SECUR_FAULT 0x01
-#define MMU_DATA_MISS_FAULT  MMU_DATA_SECUR_FAULT /*XXX 0x2c please fill in */
-#define MMU_INST_MISS_FAULT  MMU_INST_SECUR_FAULT /*XXX 0x3C please fill in */
+#define MMU_DATA_MISS_FAULT  MMU_DATA_SECUR_FAULT //XXX 0x2c please fill in
+#define MMU_INST_MISS_FAULT  MMU_INST_SECUR_FAULT //XXX 0x3C please fill in
 
 /** Defines handler for traps_dispatcher in microblaze archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);
@@ -32,7 +32,7 @@ typedef int (*__trap_handler)(uint32_t nr, void *data);
 
 /** Defines traps environment for sparc structure */
 typedef struct __traps_env {
-	uint32_t	   base_addr;
+	uint32_t base_addr;
 	__trap_handler hw_traps[CONFIG_MAX_HWTRAP_NUMBER];
 	__trap_handler soft_traps[CONFIG_MAX_SOFTTRAP_NUMBER];
 	__trap_handler interrupts[CONFIG_MAX_INTERRUPT_NUMBER];

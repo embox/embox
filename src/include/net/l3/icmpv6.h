@@ -42,27 +42,27 @@ enum icmp6_code {
 	/* Destination Unreachable Message */
 	ICMP6_NET_UNREACH   = 0, /* No route to destination */
 	ICMP6_ADMIN_PROHIBT = 1, /* Communication with destination
-	                            administratively prohibited */
+								administratively prohibited */
 	ICMP6_NOT_NEIGHBOUR = 2, /* Beyond scope of source address */
 	ICMP6_HOST_UNREACH  = 3, /* Address unreachable */
 	ICMP6_PORT_UNREACH  = 4, /* Port unreachable */
 	/* Packet Too Big Message */
-	/* 0 - unused (SHOULD) */
+		/* 0 - unused (SHOULD) */
 	/* Time Exceeded Message */
 	ICMP6_HOP_LIMIT     = 0, /* Hop limit exceeded in transit */
 	ICMP6_FRAG_TIME     = 1, /* Fragment reassembly time
-	                            exceeded */
+								exceeded */
 	/* Parameter Problem Message */
 	ICMP6_HEADER_ERROR  = 0, /* Erroneous header field
-	                            encountered */
+								encountered */
 	ICMP6_NEXT_ERROR    = 1, /* Unrecognized Next Header type
-	                            encountered */
+								encountered */
 	ICMP6_OPTION_ERROR  = 2, /* Unrecognized IPv6 option
-	                            encountered */
+								encountered */
 	/* Echo Request Message */
-	/* 0 - always (MUST) */
+		/* 0 - always (MUST) */
 	/* Echo Reply Message */
-	/* 0 - always (MUST) */
+		/* 0 - always (MUST) */
 };
 
 /**
@@ -70,9 +70,9 @@ enum icmp6_code {
  */
 struct icmp6body_dest_unreach {
 	__be32 zero; /* Unused */
-	__u8   msg[]; /* As much of invoking packet as possible
-	                without the ICMPv6 packet exceeding the
-	                minimum IPv6 MTU */
+	__u8 msg[];  /* As much of invoking packet as possible
+					without the ICMPv6 packet exceeding the
+					minimum IPv6 MTU */
 } __attribute__((packed));
 
 /**
@@ -80,10 +80,10 @@ struct icmp6body_dest_unreach {
  */
 struct icmp6body_pack_too_big {
 	__be32 mtu; /* The Maximum Transmission Unit of the
-	               next-hop link */
+				   next-hop link */
 	__u8 msg[]; /* As much of invoking packet as possible
-	               without the ICMPv6 packet exceeding the
-	               minimum IPv6 MTU */
+				   without the ICMPv6 packet exceeding the
+				   minimum IPv6 MTU */
 } __attribute__((packed));
 
 /**
@@ -91,9 +91,9 @@ struct icmp6body_pack_too_big {
  */
 struct icmp6body_time_exceed {
 	__be32 zero; /* Unused */
-	__u8   msg[]; /* As much of invoking packet as possible
-	                without the ICMPv6 packet exceeding the
-	                minimum IPv6 MTU */
+	__u8 msg[];  /* As much of invoking packet as possible
+					without the ICMPv6 packet exceeding the
+					minimum IPv6 MTU */
 } __attribute__((packed));
 
 /**
@@ -101,9 +101,9 @@ struct icmp6body_time_exceed {
  */
 struct icmp6body_param_prob {
 	__be32 ptr; /* Pointer */
-	__u8   msg[]; /* As much of invoking packet as possible
-	               without the ICMPv6 packet exceeding the
-	               minimum IPv6 MTU */
+	__u8 msg[]; /* As much of invoking packet as possible
+				   without the ICMPv6 packet exceeding the
+				   minimum IPv6 MTU */
 } __attribute__((packed));
 
 /**
@@ -112,7 +112,7 @@ struct icmp6body_param_prob {
 struct icmp6body_echo {
 	__be16 id;   /* An identifier of the message sequence */
 	__be16 seq;  /* A sequence number of the message */
-	__u8   data[]; /* Zero or more octets of arbitrary data */
+	__u8 data[]; /* Zero or more octets of arbitrary data */
 } __attribute__((packed));
 
 /**
@@ -126,20 +126,20 @@ typedef struct icmp6hdr {
 		/* ICMPv6 Bodies: */
 		struct icmp6body_dest_unreach dest_unreach;
 		struct icmp6body_pack_too_big pack_too_big;
-		struct icmp6body_time_exceed  time_exceed;
-		struct icmp6body_echo		  echo;
+		struct icmp6body_time_exceed time_exceed;
+		struct icmp6body_echo echo;
 
 		/* NDP Bodies: */
-		struct ndpbody_router_solicit	router_solicit;
-		struct ndpbody_router_advert	router_advert;
+		struct ndpbody_router_solicit router_solicit;
+		struct ndpbody_router_advert router_advert;
 		struct ndpbody_neighbor_solicit neighbor_solicit;
-		struct ndpbody_neighbor_advert	neighbor_advert;
+		struct ndpbody_neighbor_advert neighbor_advert;
 	} __attribute__((packed)) body[];
 } __attribute__((packed)) icmp6hdr_t;
 
 #define ICMP6_MIN_HEADER_SIZE (sizeof(struct icmp6hdr))
 
-static inline struct icmp6hdr *icmp6_hdr(
+static inline struct icmp6hdr * icmp6_hdr(
 		const struct sk_buff *skb) {
 	return skb->h.icmp6h;
 }

@@ -15,18 +15,18 @@ struct file_struct {
 	int fd;
 	int flags;
 
-	int			(*readfn)(void *, char *, int);
-	int			(*writefn)(void *, const char *, int);
-	fpos_t		(*seekfn)(void *, fpos_t, int);
-	int			(*closefn)(void *);
+	int (*readfn)(void *, char *, int);
+	int (*writefn)(void *, const char *, int);
+	fpos_t (*seekfn)(void *, fpos_t, int);
+	int (*closefn)(void *);
 	const void *cookie;
-	char		has_ungetc;
-	int			ungetc;
+	char has_ungetc;
+	int ungetc;
 
-	int	  buftype;
+	int buftype;
 	void *obuf;
-	int	  obuf_sz;
-	int	  obuf_len;
+	int obuf_sz;
+	int obuf_len;
 };
 
 extern int funopen_check(FILE *f);

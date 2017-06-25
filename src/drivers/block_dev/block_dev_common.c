@@ -50,7 +50,7 @@ static int block_dev_cache_free(void *dev) {
 	phymem_free(cache->pool, cache->depth * cache->blkfactor);
 	pool_free(&cache_pool, cache);
 
-	return 0;
+	return  0;
 }
 
 struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata) {
@@ -78,7 +78,7 @@ struct block_dev *block_dev_create_common(char *path, void *driver, void *privda
 		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
-	strncpy(bdev->name, strrchr(path, '/') ? strrchr(path, '/') + 1 : path, NAME_MAX);
+	strncpy (bdev->name, strrchr(path, '/') ? strrchr(path, '/') + 1 : path, NAME_MAX);
 
 	return bdev;
 }
@@ -282,9 +282,8 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 		return bdev->block_size;
 	default:
 		assert(bdev->driver);
-		if (NULL == bdev->driver->ioctl) {
+		if (NULL == bdev->driver->ioctl)
 			return -ENOSYS;
-		}
 
 		return bdev->driver->ioctl(bdev, cmd, args, 0);
 	}
@@ -316,9 +315,9 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 
 	/* cache size is a multiple of the memory page */
 	pagecnt = 1;
-	if (cache->blksize > PAGE_SIZE()) {
+	if(cache->blksize > PAGE_SIZE()) {
 		pagecnt = cache->blksize / PAGE_SIZE();
-		if (cache->blksize % PAGE_SIZE()) {
+		if(cache->blksize % PAGE_SIZE()) {
 			pagecnt++;
 		}
 	}
@@ -329,7 +328,7 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	}
 	cache->depth = blocks;
 
-	return cache;
+	return  cache;
 }
 
 block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
@@ -341,12 +340,12 @@ block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
 	}
 	bdev = block_dev(dev);
 
-	if (NULL == (cache = bdev->cache)) {
+	if(NULL == (cache = bdev->cache)) {
 		return NULL;
 	}
 
 	/* set pointer to the buffer in pool */
-	if (cache->lastblkno != blkno) {
+	if(cache->lastblkno != blkno) {
 		cache->buff_cntr++;
 		cache->buff_cntr %= cache->depth;
 
@@ -359,3 +358,4 @@ block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
 
 	return cache;
 }
+

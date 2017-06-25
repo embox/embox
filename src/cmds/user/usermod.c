@@ -98,11 +98,11 @@ int main(int argc, char **argv) {
 
 			switch (opt) {
 			case 'd':
-				/*todo: isdir */
+				//todo: isdir
 				strcpy(home, optarg);
 				break;
 			case 's':
-				/*todo: isshell */
+				//todo: isshell
 				strcpy(shell, optarg);
 				break;
 			case 'p':

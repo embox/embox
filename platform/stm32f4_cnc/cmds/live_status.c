@@ -57,11 +57,11 @@ int main(int argc, char *argv[]) {
 	fds[1].events = POLLERR;
 
 	buf_len = snprintf(buf, sizeof(buf),
-			"HTTP/1.1 200 OK\r\n"
-			"Content-Type: text/event-stream\r\n"
-			"Cache-Control: no-cache\r\n"
-			"Connection: keep-alive\r\n"
-			"\r\n");
+		"HTTP/1.1 200 OK\r\n"
+		"Content-Type: text/event-stream\r\n"
+		"Cache-Control: no-cache\r\n"
+		"Connection: keep-alive\r\n"
+		"\r\n");
 
 	iov[0].iov_base = SSE_HEADER;
 	iov[0].iov_len = strlen(SSE_HEADER);

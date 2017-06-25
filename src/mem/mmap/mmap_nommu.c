@@ -99,7 +99,7 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 
 		marea = dlist_entry(item, struct marea, glob_link);
 		s_ptr = marea->end;
-	} while (1);
+	} while(1);
 
 	return NULL;
 }
@@ -110,7 +110,7 @@ int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 
 static int init() {
 	/*
-	 * Initializing this module early was lead to all except 32 pages
+ 	 * Initializing this module early was lead to all except 32 pages
 	 * belong to mmap_nommu, and I see no reason to do it. Anton Kozlov
 	 */
 

@@ -85,7 +85,7 @@ static int icmp6_hnd_echo_request(const struct icmp6hdr *icmp6h,
 	echo_rep.seq = echo_req->seq;
 
 	return icmp6_send(skb, ICMP6_ECHO_REPLY, 0, &echo_rep,
-				   sizeof echo_rep);
+			sizeof echo_rep);
 }
 
 static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
@@ -96,8 +96,8 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 	const struct ndpoptions_ll_addr *ops;
 	struct {
 		struct ndpbody_neighbor_advert body;
-		struct ndpoptions_ll_addr	   ops;
-		char						   __ops_ll_addr_storage[MAX_ADDR_LEN];
+		struct ndpoptions_ll_addr ops;
+		char __ops_ll_addr_storage[MAX_ADDR_LEN];
 	} __attribute__((packed)) nbr_advert;
 
 	if (ip6_hdr(skb)->hop_limit != 255) {
@@ -121,7 +121,7 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 	assert(in_dev != NULL);
 
 	if (0 != memcmp(&in_dev->ifa6_address, &nbr_solicit->target,
-			sizeof in_dev->ifa6_address)) {
+				sizeof in_dev->ifa6_address)) {
 		skb_free(skb);
 		return 0; /* error: not for us */
 	}
@@ -164,8 +164,8 @@ static int ndp_hnd_neighbor_solicit(const struct icmp6hdr *icmp6h,
 			in_dev->dev->addr_len);
 
 	return icmp6_send(skb, NDP_NEIGHBOR_ADVERT, 0,
-				   &nbr_advert, sizeof nbr_advert.body
-				   + sizeof nbr_advert.ops + in_dev->dev->addr_len);
+			&nbr_advert, sizeof nbr_advert.body
+				+ sizeof nbr_advert.ops + in_dev->dev->addr_len);
 }
 
 static int ndp_hnd_neighbor_advert(const struct icmp6hdr *icmp6h,
@@ -253,15 +253,15 @@ static int icmp6_rcv(struct sk_buff *skb) {
 		break; /* error: unknown type */
 	case ICMP6_ECHO_REQUEST:
 		return icmp6_hnd_echo_request(icmp6h,
-					   &icmp6h->body[0].echo, skb);
+				&icmp6h->body[0].echo, skb);
 	case ICMP6_ECHO_REPLY:
 		break;
 	case NDP_NEIGHBOR_SOLICIT:
 		return ndp_hnd_neighbor_solicit(icmp6h,
-					   &icmp6h->body[0].neighbor_solicit, skb);
+				&icmp6h->body[0].neighbor_solicit, skb);
 	case NDP_NEIGHBOR_ADVERT:
 		return ndp_hnd_neighbor_advert(icmp6h,
-					   &icmp6h->body[0].neighbor_advert, skb);
+				&icmp6h->body[0].neighbor_advert, skb);
 	}
 
 	skb_free(skb);

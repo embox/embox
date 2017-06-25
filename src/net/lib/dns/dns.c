@@ -23,6 +23,7 @@
 #include <util/log.h>
 #include <framework/mod/options.h>
 
+
 /**
  * DNS query timeout
  */
@@ -32,7 +33,7 @@ union dns_msg {
 	char raw[DNS_MAX_MESSAGE_SZ];
 	struct {
 		struct dnshdr hdr;
-		char		  data[1];
+		char data[1];
 	} msg;
 };
 
@@ -139,9 +140,9 @@ static int label_to_name(const char *label, const char *buff, size_t buff_sz,
 	if (out_field_sz != NULL) {
 		*out_field_sz = field_sz
 				+ (one_line /* if it's haven't labels */
-				? sizeof(char)         /* plus one byte at the end
-		                                  of the loop */
-				: 0);
+						? sizeof(char) /* plus one byte at the end
+										  of the loop */
+						: 0);
 	}
 
 	return 0;
@@ -234,13 +235,13 @@ static int dns_query_execute(union dns_msg *req, size_t req_sz,
 	}
 
 	if (-1 == connect(sock, (struct sockaddr *)&nameserver_addr,
-			sizeof nameserver_addr)) {
+				sizeof nameserver_addr)) {
 		close(sock);
 		return -errno;
 	}
 
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-			&timeout, sizeof timeout)) {
+				&timeout, sizeof timeout)) {
 		close(sock);
 		return -errno;
 	}
@@ -333,19 +334,19 @@ static int dns_rr_a_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 static int dns_rr_ns_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ns.nsdname,
-				   &rr->rdata.ns.nsdname[0], NULL);
+			&rr->rdata.ns.nsdname[0], NULL);
 }
 
 static int dns_rr_cname_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.cname.cname,
-				   &rr->rdata.cname.cname[0], NULL);
+			&rr->rdata.cname.cname[0], NULL);
 }
 
 static int dns_rr_ptr_parse(struct dns_rr *rr, const char *data, size_t field_sz,
 		const char *buff, size_t buff_sz) {
 	return label_to_name(data, buff, buff_sz, sizeof rr->rdata.ptr.ptrdname,
-				   &rr->rdata.ptr.ptrdname[0], NULL);
+			&rr->rdata.ptr.ptrdname[0], NULL);
 }
 
 static int dns_rr_aaaa_parse(struct dns_rr *rr, const char *data, size_t field_sz,

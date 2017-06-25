@@ -30,7 +30,7 @@ int leddrv_init(void) {
 }
 
 static inline int leddrv_check(unsigned int led_n) {
-	return led_n >= LEDDRV_LED_N ? -EINVAL : 0;
+	return led_n >= LEDDRV_LED_N ? -EINVAL: 0;
 }
 
 int leddrv_set(unsigned int led_n) {

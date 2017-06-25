@@ -18,7 +18,7 @@
 #include <kernel/thread/thread_local.h>
 
 int thread_local_alloc(struct thread *t, size_t size) {
-	void *storage;
+	void * storage;
 	size_t storage_size;
 
 	storage_size = size * sizeof(t->local.storage[0]);

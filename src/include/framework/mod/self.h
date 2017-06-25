@@ -32,13 +32,13 @@
 # error "Do not include without __EMBUILD_MOD__ defined (e.g. from lib code)!"
 #endif /* __EMBUILD_MOD__ */
 
-/* well, this is rather bad idea */
-/* TODO it would be better to use something like weakref or alias. -- Eldar */
+// well, this is rather bad idea
+// TODO it would be better to use something like weakref or alias. -- Eldar
 #define mod_self __MOD(__EMBUILD_MOD__)
 #define mod_logger __MOD_LOGGER(__EMBUILD_MOD__)
 
 /** The #mod structure corresponding to the self mod. */
-/*extern struct mod mod_self __attribute__((weak)); */
+//extern struct mod mod_self __attribute__((weak));
 
 #define __MOD_MEMBER_DECLS(_mod_nm) \
 	ARRAY_SPREAD_DECLARE(const struct mod_member *, \
@@ -47,19 +47,19 @@
 #define MOD_SELF_INIT_DECLS(_mod_nm) \
 	struct __mod_private __MOD_PRIVATE(_mod_nm); \
 	EXTERN_C const struct mod_app __MOD_APP(_mod_nm) \
-	__attribute__ ((weak)); \
+			__attribute__ ((weak)); \
 	__MOD_MEMBER_DECLS(_mod_nm); \
 	EXTERN_C const struct mod_app __MOD_APP(_mod_nm) \
-	__attribute__ ((weak)); \
+			__attribute__ ((weak)); \
 	EXTERN_C const struct mod_build_info __MOD_BUILDINFO(_mod_nm) \
-	__attribute__((weak))
+			__attribute__((weak))
 
 #define MOD_SELF_INIT(_mod_nm, _ops) { \
-		/* .ops        = */ _ops, \
-		/* .priv       = */ &__MOD_PRIVATE(_mod_nm), \
-		/* .app        = */ &__MOD_APP(_mod_nm), \
-		/* .members    = */ __MOD_MEMBERS(_mod_nm), \
-		/* .build_info = */ &__MOD_BUILDINFO(_mod_nm), \
+	/* .ops        = */ _ops, \
+	/* .priv       = */ &__MOD_PRIVATE(_mod_nm), \
+	/* .app        = */ &__MOD_APP(_mod_nm), \
+	/* .members    = */ __MOD_MEMBERS(_mod_nm), \
+	/* .build_info = */ &__MOD_BUILDINFO(_mod_nm), \
 }
 
 /**

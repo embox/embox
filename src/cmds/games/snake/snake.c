@@ -12,6 +12,7 @@
 
 #include <drivers/diag.h>
 
+
 #ifndef ESC
 #define ESC 0x1b
 #endif
@@ -42,22 +43,12 @@ typedef struct {
 static point head, tail, diff;
 static char diff_char = 'l';
 
-static point dxp = {
-	1,0
-};
-static point dxm = {
-	-1,0
-};
-static point dyp = {
-	0,1
-};
-static point dym = {
-	0,-1
-};
+static point dxp = {1,0};
+static point dxm = {-1,0};
+static point dyp = {0,1};
+static point dym = {0,-1};
 
-static point nil = {
-	0,0
-};
+static point nil = {0,0};
 
 static int score = 0;
 
@@ -66,11 +57,10 @@ static int f2d(int x, int y) {
 }
 
 static point d2f(int offset) {
-	point p = {
-		offset % SIZE, offset / SIZE
-	};
+	point p = {offset % SIZE, offset / SIZE};
 	return p;
 }
+
 
 static void gotoxy(point p) {
 	printf("%c%c%d;%dH",ESC,CSI,p.y+2,p.x+1);
@@ -126,26 +116,21 @@ static void field_init(void) {
 		field[f2d(0, i)] = field[f2d(SIZE-1, i)] = '|';
 	}
 	field[f2d(0,0)] = field[f2d(0,SIZE-1)] = \
-			field[f2d(SIZE-1,0)] = field[f2d(SIZE-1,SIZE-1)] = '+';
-	for (i = 1; i < SIZE-1; i++) {
-		for (j = 1; j < SIZE-1; j++) {
+		      field[f2d(SIZE-1,0)] = field[f2d(SIZE-1,SIZE-1)] = '+';
+	for (i=1;i<SIZE-1;i++)
+		for (j=1;j<SIZE-1;j++)
 			field[f2d(i,j)] = '.';
-		}
-	}
 	snake_init();
-	for (i = 0; i < SIZE; i++) {
-		for (j = 0; j < SIZE; j++) {
+	for (i=0;i<SIZE;i++) {
+		for (j=0;j<SIZE;j++)
 			printf("%c",field[f2d(j,i)]);
-		}
 		putchar('\n');
 	}
 	fruit_draw();
 }
 
 static point point_plus(point p1, point p2) {
-	point p = {
-		p1.x + p2.x, p1.y + p2.y
-	};
+	point p = {p1.x + p2.x, p1.y + p2.y};
 	return p;
 }
 
@@ -186,9 +171,8 @@ static int snake_update(void) {
 	switch (new_pos) {
 	case FRU:
 		if (!speed_count--) {
-			if (sleep_time >= MIN_SLEEP_TIME) {
+			if (sleep_time >= MIN_SLEEP_TIME)
 				sleep_time -= SLEEP_TIME_DEC;
-			}
 			speed_count = SPEED_INC;
 		}
 		head = p;

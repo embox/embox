@@ -33,7 +33,7 @@ static void init_leds(void) {
 }
 
 static void stm32f4_delay(int i) {
-	while (--i > 0)
+	while(--i > 0)
 		;
 }
 
@@ -43,7 +43,7 @@ static uint16_t gy_30_read_light_level(void) {
 	do {
 		while (HAL_I2C_Master_Receive_IT(&I2cHandle, (uint16_t)GY30_ADDR, (void *) &level, 2) != HAL_OK)
 			;
-	} while (HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
+	} while(HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
 
 	return level;
 }
@@ -54,7 +54,7 @@ static int gy_30_config(uint8_t mode) {
 			;
 		while (HAL_I2C_GetState(&I2cHandle) != HAL_I2C_STATE_READY)
 			;
-	} while (HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
+	} while(HAL_I2C_GetError(&I2cHandle) == HAL_I2C_ERROR_AF);
 	stm32f4_delay(5000000);
 	printf("%s\n", "> gy_30_config OK\n");
 	return 0;

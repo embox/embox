@@ -10,8 +10,8 @@
 #define X86_STACK_ITER_H_
 
 typedef struct stack_iter {
-	void *fp;
-	void *pc;
+	void* fp;
+	void* pc;
 } stack_iter_t;
 
 #endif /* X86_STACK_ITER_H_ */

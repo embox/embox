@@ -44,7 +44,7 @@ TEST_CASE("waitpid for any child should wait till child finished") {
 
 	child_pid = new_task("", test_waitpid_child,
 			param2void(TEST_WAITPID_SLEEP_MUL,
-			TEST_WAITPID_CHILD_ECODE));
+				TEST_WAITPID_CHILD_ECODE));
 
 	wp_ret = waitpid(-1, &status, 0);
 	test_assert_equal(wp_ret, child_pid);
@@ -61,7 +61,7 @@ TEST_CASE("waitpid WNOHANG for any child shouldn't wait till child finished") {
 
 	child_pid = new_task("", test_waitpid_child,
 			param2void(TEST_WAITPID_SLEEP_MUL,
-			TEST_WAITPID_CHILD_ECODE));
+				TEST_WAITPID_CHILD_ECODE));
 
 	wp_ret = waitpid(-1, &status, WNOHANG);
 	test_assert_equal(wp_ret, 0);
@@ -81,7 +81,7 @@ TEST_CASE("waitpid for explicit child should wait till child finished") {
 
 	child_pid = new_task("", test_waitpid_child,
 			param2void(TEST_WAITPID_SLEEP_MUL,
-			TEST_WAITPID_CHILD_ECODE));
+				TEST_WAITPID_CHILD_ECODE));
 
 	wp_ret = waitpid(child_pid, &status, 0);
 	test_assert_equal(wp_ret, child_pid);
@@ -97,7 +97,7 @@ TEST_CASE("waitpid for any child should wait till all child finished") {
 	for (i = 0; i < 2; i++) {
 		cpid[i] = new_task("", test_waitpid_child,
 				param2void(TEST_WAITPID_SLEEP_MUL,
-				TEST_WAITPID_CHILD_ECODE + i));
+					TEST_WAITPID_CHILD_ECODE + i));
 		pid_sum += cpid[i];
 		ecode_sum += i;
 	}
@@ -124,7 +124,7 @@ TEST_CASE("waitpid for any child should wait till child finished in order") {
 	for (i = 0; i < 2; i++) {
 		cpid[i] = new_task("", test_waitpid_child,
 				param2void(i * TEST_WAITPID_SLEEP_MUL,
-				TEST_WAITPID_CHILD_ECODE + i));
+					TEST_WAITPID_CHILD_ECODE + i));
 	}
 
 	for (i = 0; i < 2; i++) {
@@ -146,7 +146,7 @@ TEST_CASE("waitpid for target child should wait till it finished") {
 	for (i = 0; i < 2; i++) {
 		cpid[i] = new_task("", test_waitpid_child,
 				param2void(i * TEST_WAITPID_SLEEP_MUL,
-				TEST_WAITPID_CHILD_ECODE + i));
+					TEST_WAITPID_CHILD_ECODE + i));
 	}
 
 	wp_ret = waitpid(cpid[1], &status, 0);
@@ -174,7 +174,7 @@ TEST_CASE("waitpid for target child should wait till it finished") {
 	for (i = 0; i < 2; i++) {
 		cpid[i] = new_task("", test_waitpid_child,
 				param2void(i * TEST_WAITPID_SLEEP_MUL,
-				TEST_WAITPID_CHILD_ECODE + i));
+					TEST_WAITPID_CHILD_ECODE + i));
 	}
 
 	wp_ret = waitpid(cpid[1], &status, 0);

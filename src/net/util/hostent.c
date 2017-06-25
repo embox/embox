@@ -28,7 +28,7 @@ static char *hentry_addrs[MODOPS_MAX_ADDRS_NUM + 1]; /* for null-terminated */
 static size_t hentry_addrs_sz;
 static char hentry_addrs_storage[MODOPS_MAX_ADDRS_NUM][MODOPS_MAX_ADDR_LEN];
 
-struct hostent *hostent_create(void) {
+struct hostent * hostent_create(void) {
 	memset(&hentry_storage, 0, sizeof hentry_storage);
 	hentry_storage.h_aliases = &hentry_aliases[0];
 	hentry_storage.h_addr_list = &hentry_addrs[0];
@@ -113,7 +113,7 @@ int hostent_add_addr(struct hostent *he, const void *addr) {
 	return 0;
 }
 
-struct hostent *hostent_make(const char *name, int addrtype,
+struct hostent * hostent_make(const char *name, int addrtype,
 		int addrlen, const void *addr) {
 	struct hostent *he;
 

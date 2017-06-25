@@ -35,7 +35,7 @@
 
 #define EXCEPTION_TABLE_SZ OPTION_GET(NUMBER,irq_table_size)
 
-/* Table 2.17. Exception return behavior in Cortex-M4 doc */
+// Table 2.17. Exception return behavior in Cortex-M4 doc
 #define interrupted_from_fpu_mode(lr) ((lr & 0xF0) == 0xE0)
 
 /**
@@ -50,7 +50,7 @@
 
 EMBOX_UNIT_INIT(nvic_init);
 
-static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned(128 * sizeof(int))));
+static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
 
 extern void *trap_table_start;
 extern void *trap_table_end;
@@ -64,8 +64,8 @@ struct cpu_saved_ctx {
 
 struct irq_saved_state {
 	struct cpu_saved_ctx ctx;
-	uint32_t			 sp;
-	uint32_t			 lr;
+	uint32_t sp;
+	uint32_t lr;
 };
 
 extern void __irq_trampoline(uint32_t sp, uint32_t lr);
@@ -121,15 +121,15 @@ void interrupt_handle(struct context *regs) {
 	state.sp = regs->sp;
 	state.lr = regs->lr;
 	assert(!interrupted_from_fpu_mode(state.lr));
-	ctx = (struct cpu_saved_ctx *) state.sp;
+	ctx = (struct cpu_saved_ctx*) state.sp;
 	memcpy(&state.ctx, ctx, sizeof *ctx);
 
 	/* It does not matter what value of psr is, just set up sime correct value.
 	 * This value is only used to go further, after return from interrupt_handle.
 	 * 0x01000000 is a default value of psr and (ctx->psr & 0xFF) is irq number if any. */
 	ctx->psr = 0x01000000 | (ctx->psr & 0xFF);
-	ctx->r[0] = (uint32_t) &state; /* we want pass the state to __pending_handle() */
-	ctx->r[1] = (uint32_t) regs; /* we want pass the registers to __pending_handle() */
+	ctx->r[0] = (uint32_t) &state; // we want pass the state to __pending_handle()
+	ctx->r[1] = (uint32_t) regs; // we want pass the registers to __pending_handle()
 	ctx->lr = (uint32_t) __pending_handle;
 	ctx->pc = ctx->lr;
 
@@ -154,7 +154,7 @@ static int nvic_init(void) {
 
 	/* load head from bootstrap table */
 	for (ptr = &trap_table_start, i = 0; ptr != &trap_table_end; ptr += 4, i++) {
-		exception_table[i] = *(int32_t *) ptr;
+		exception_table[i] = * (int32_t *) ptr;
 	}
 
 	ipl = ipl_save();

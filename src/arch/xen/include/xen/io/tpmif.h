@@ -37,10 +37,10 @@
 #include "../grant_table.h"
 
 struct tpmif_tx_request {
-	unsigned long addr;   /* Machine address of packet.   */
-	grant_ref_t	  ref;    /* grant table access reference */
-	uint16_t	  unused;
-	uint16_t	  size;   /* Packet size in bytes.        */
+    unsigned long addr;   /* Machine address of packet.   */
+    grant_ref_t ref;      /* grant table access reference */
+    uint16_t unused;
+    uint16_t size;        /* Packet size in bytes.        */
 };
 typedef struct tpmif_tx_request tpmif_tx_request_t;
 
@@ -55,12 +55,12 @@ typedef uint32_t TPMIF_RING_IDX;
 /* This structure must fit in a memory page. */
 
 struct tpmif_ring {
-	struct tpmif_tx_request req;
+    struct tpmif_tx_request req;
 };
 typedef struct tpmif_ring tpmif_ring_t;
 
 struct tpmif_tx_interface {
-	struct tpmif_ring ring[TPMIF_TX_RING_SIZE];
+    struct tpmif_ring ring[TPMIF_TX_RING_SIZE];
 };
 typedef struct tpmif_tx_interface tpmif_tx_interface_t;
 
@@ -92,15 +92,16 @@ typedef struct tpmif_tx_interface tpmif_tx_interface_t;
  */
 
 enum tpmif_state {
-	TPMIF_STATE_IDLE,        /* no contents / vTPM idle / cancel complete */
-	TPMIF_STATE_SUBMIT,      /* request ready / vTPM working */
-	TPMIF_STATE_FINISH,      /* response ready / vTPM idle */
-	TPMIF_STATE_CANCEL,      /* cancel requested / vTPM working */
+    TPMIF_STATE_IDLE,        /* no contents / vTPM idle / cancel complete */
+    TPMIF_STATE_SUBMIT,      /* request ready / vTPM working */
+    TPMIF_STATE_FINISH,      /* response ready / vTPM idle */
+    TPMIF_STATE_CANCEL,      /* cancel requested / vTPM working */
 };
 /* Note: The backend should only change state to IDLE or FINISH, while the
  * frontend should only change to SUBMIT or CANCEL. Status changes do not need
  * to use atomic operations.
  */
+
 
 /* The shared page for vTPM request/response packets looks like:
  *
@@ -118,14 +119,14 @@ enum tpmif_state {
  * the TPM_CAP_PROP_INPUT_BUFFER property from the TPM.
  */
 struct tpmif_shared_page {
-	uint32_t length;         /* request/response length in bytes */
+    uint32_t length;         /* request/response length in bytes */
 
-	uint8_t state;           /* enum tpmif_state */
-	uint8_t locality;        /* for the current request */
-	uint8_t pad;             /* should be zero */
+    uint8_t state;           /* enum tpmif_state */
+    uint8_t locality;        /* for the current request */
+    uint8_t pad;             /* should be zero */
 
-	uint8_t	 nr_extra_pages; /* extra pages for long packets; may be zero */
-	uint32_t extra_pages[0]; /* grant IDs; length is actually nr_extra_pages */
+    uint8_t nr_extra_pages;  /* extra pages for long packets; may be zero */
+    uint32_t extra_pages[0]; /* grant IDs; length is actually nr_extra_pages */
 };
 typedef struct tpmif_shared_page tpmif_shared_page_t;
 

@@ -70,3 +70,4 @@ int usb_queue_done(struct usb_queue *q, struct usb_queue_link *l);
 int usb_queue_remove(struct usb_queue *q, struct usb_queue_link *l);
 
 #endif /* USB_QUEUE_H_ */
+

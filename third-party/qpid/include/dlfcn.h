@@ -10,7 +10,7 @@
 
 #include <errno.h>
 
-#define RTLD_NOW    0x2
+#define RTLD_NOW	0x2
 
 static inline
 void  *dlopen(const char *, int) {
@@ -32,5 +32,6 @@ extern char  *dlerror(void) {
 	DPRINT();
 	return "dl* functions are not implemented";
 }
+
 
 #endif /* DLFCN_H_ */

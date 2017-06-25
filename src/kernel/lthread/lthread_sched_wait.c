@@ -40,7 +40,7 @@ void sched_wait_prepare_lthread(struct lthread *self, clock_t timeout) {
 	if (info->status & SCHED_WAIT_STARTED &&
 			info->remain != SCHED_TIMEOUT_INFINITE) {
 		int diff = cur_time - info->last_sync;
-		info->remain = max((int)info->remain - diff, 0);
+	 	info->remain = max((int)info->remain - diff, 0);
 	}
 
 	info->last_sync = cur_time;

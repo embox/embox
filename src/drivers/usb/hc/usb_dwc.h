@@ -34,7 +34,7 @@
 #ifndef _USB_DWC_REGS_H_
 #define _USB_DWC_REGS_H_
 
-/* #include <usb_util.h> */
+// #include <usb_util.h>
 #include <assert.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread/sync/semaphore.h>
@@ -104,6 +104,7 @@ struct dwc_regs {
 
 	/* 0x01c : Core USB configuration */
 	uint32_t core_usb_configuration;
+
 
 	/**
 	 * 0x010 : Core Reset Register.
@@ -881,8 +882,8 @@ struct dwc_regs {
 	} host_channels[DWC_NUM_CHANNELS];
 
 	uint32_t host_reserved_after_channels[(0x800 - 0x500 -
-	(DWC_NUM_CHANNELS * sizeof(struct dwc_host_channel))) /
-	sizeof(uint32_t)];
+						(DWC_NUM_CHANNELS * sizeof(struct dwc_host_channel))) /
+						 sizeof(uint32_t)];
 
 	/**@}*/
 
@@ -937,11 +938,11 @@ struct usb_dwc_request {
 	/** Setup data for the USB control request.  Must be filled in for control
 	 * transfers; ignored otherwise.  Note: consider using usb_control_msg() for
 	 * control transfers instead.  */
-	/* struct usb_control_setup_data setup_data; */
+	// struct usb_control_setup_data setup_data;
 
 	/** Callback function that will be called when this USB transfer has been
 	 * successfully completed or has failed.  */
-	/*usb_xfer_completed_t completion_cb_func; */
+	//usb_xfer_completed_t completion_cb_func;
 
 	/*********************
 	 * Output variables   *
@@ -959,18 +960,18 @@ struct usb_dwc_request {
 	 * allow HCDs to customize the variables they can use, perhaps   *
 	 * by embedding the usb_xfer_request in another struct.          *
 	 *****************************************************************/
-	void *		   cur_data_ptr;
-	uint8_t		   complete_split : 1;
-	uint8_t		   short_attempt  : 1;
-	uint8_t		   need_sof       : 1;
-	uint8_t		   control_phase  : 2;
-	uint8_t		   next_data_pid  : 2;
-	uint32_t	   attempted_size;
-	uint32_t	   attempted_packets_remaining;
-	uint32_t	   attempted_bytes_remaining;
-	uint32_t	   csplit_retries;
+	void *cur_data_ptr;
+	uint8_t complete_split : 1;
+	uint8_t short_attempt  : 1;
+	uint8_t need_sof       : 1;
+	uint8_t control_phase  : 2;
+	uint8_t next_data_pid  : 2;
+	uint32_t attempted_size;
+	uint32_t attempted_packets_remaining;
+	uint32_t attempted_bytes_remaining;
+	uint32_t csplit_retries;
 	struct thread *deferer_thread;
-	struct sem	   deferer_thread_sema;
+	struct sem deferer_thread_sema;
 };
 
 #endif /* _USB_DWC_REGS_H_ */

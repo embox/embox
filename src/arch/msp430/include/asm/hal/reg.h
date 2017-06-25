@@ -16,9 +16,10 @@
 	*((volatile char *)(addr))
 
 #define __REG_ORIN(addr, mask) \
-	__REG_STORE(addr, REG_LOAD(addr) | (char)(mask))
+		__REG_STORE(addr, REG_LOAD(addr) | (char)(mask))
 
 #define __REG_ANDIN(addr, mask) \
-	__REG_STORE(addr, REG_LOAD(addr) & (char)(mask))
+		__REG_STORE(addr, REG_LOAD(addr) & (char)(mask))
 
 #endif /* MSP430_REG_H_ */
+

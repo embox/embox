@@ -16,7 +16,7 @@ struct pnet_path *pnet_get_dev_prior(struct net_device *dev) {
 	return NULL;
 }
 
-static struct pnet_path prior_table[0x10]; /*TODO convert it to list or heap */
+static struct pnet_path prior_table[0x10]; //TODO convert it to list or heap
 static int prior_cnt = 0;
 
 struct pnet_path *pnet_calc_socket_path(struct sock *sock) {

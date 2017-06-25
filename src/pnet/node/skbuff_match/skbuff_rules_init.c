@@ -28,16 +28,16 @@
 
 EMBOX_UNIT_INIT(init);
 
-/*TODO naming nodes as in file */
+//TODO naming nodes as in file
 struct __node {
-	char *	   name;
+	char *name;
 	net_node_t node;
 };
 
 static struct __node nodes[NODES_COUNT];
 
 static net_node_t get_node_by_name(char *name);
-static char *parse_type(const char *rule);
+static char* parse_type(const char *rule);
 
 static const char *rules[] = {
 	#include <pnet_rules.inc>
@@ -72,22 +72,21 @@ static int form_rule(match_rule_t rule, const char *rule_elem, int num) {
 		}
 		break;
 	case 5:
-		pnet_rule_set_src_udp_port(rule, *(uint16_t *) rule_elem);
+		pnet_rule_set_src_udp_port(rule, *(uint16_t*) rule_elem);
 		break;
 	case 6:
-		rule->next_node = get_node_by_name((char *)rule_elem);
+		rule->next_node = get_node_by_name((char*)rule_elem);
 		break;
 	}
 
 	return 0;
 }
 
-static char *parse_type(const char *rule) {
+static char* parse_type(const char *rule) {
 	char *cur;
 
-	for (cur = (char *)rule; *cur != ':'; cur++) {
+	for(cur = (char*)rule; *cur != ':'; cur++)
 		;
-	}
 
 	*cur = '\0';
 	cur++;
@@ -121,25 +120,25 @@ static int init(void) {
 	new_rule = pnet_rule_alloc();
 
 	graph = NULL;
-	for (i = 0; i < ARRAY_SIZE(rules); i++) {
+	for(i = 0; i < ARRAY_SIZE(rules); i++) {
 		rule_elem = rules[i];
 
-		if (strncmp("TYPE", rule_elem, 4) == 0) {
-			tmp = (char *)rule_elem;
+		if(strncmp("TYPE", rule_elem, 4) == 0) {
+			tmp = (char*)rule_elem;
 			rule_elem = parse_type(rule_elem);
 			nodes[node_cur].node = pnet_get_module(tmp + 5);
-			nodes[node_cur].name = (char *)rule_elem;
+			nodes[node_cur].name = (char*)rule_elem;
 			pnet_graph_add_node(graph, nodes[node_cur++].node);
-		} else if (strncmp("GRAPH", rule_elem, 5) == 0) {
+		} else if(strncmp("GRAPH", rule_elem, 5) == 0) {
 			graph = pnet_graph_create("lin_graph");
 		} else if (strncmp("RULES", rule_elem, 5) == 0) {
-			match_node =  get_node_by_name((char *)rule_elem + 6);
+			match_node =  get_node_by_name((char*)rule_elem + 6);
 			match = (net_node_matcher_t) match_node;
 			cur = 0;
-		} else if (strncmp("LINK_SRC", rule_elem, 8) == 0) {
-			src_node = get_node_by_name((char *)rule_elem + 9);
+		} else if(strncmp("LINK_SRC", rule_elem, 8) == 0) {
+			src_node = get_node_by_name((char*)rule_elem + 9);
 			rule_elem = rules[++i];
-			dst_node = get_node_by_name((char *)rule_elem + 9);
+			dst_node = get_node_by_name((char*)rule_elem + 9);
 			pnet_node_link(src_node, dst_node);
 		} else {
 			cur++;

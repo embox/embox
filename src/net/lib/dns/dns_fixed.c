@@ -15,6 +15,6 @@
  */
 #define MODOPS_NAMESERVER OPTION_STRING_GET(nameserver)
 
-const char *dns_get_nameserver(void) {
+const char * dns_get_nameserver(void) {
 	return MODOPS_NAMESERVER;
 }

@@ -28,18 +28,18 @@ enum pdu_type {
 
 typedef struct obj_data {
 	enum pdu_type type;
-	void *		  data;
-	uint8_t		  datalen;
+	void *data;
+	uint8_t datalen;
 } *obj_data_t;
 
 extern struct mib_obj mib_root;
 
 typedef struct mib_obj {
-	const char *	  name;
-	uint8_t			  id;
+	const char *name;
+	uint8_t id;
 	struct dlist_head parent_link;
 	struct dlist_head children;
-	obj_data_t		  data;
+	obj_data_t data;
 } *mib_obj_t;
 
 typedef void (*mib_register_func)(void);
@@ -59,6 +59,6 @@ extern int mib_init_all(void);
 #define MIB_OBJECT_REGISTER(init) \
 	ARRAY_SPREAD_DECLARE(const mib_register_func, \
 			__mib_register); \
-	ARRAY_SPREAD_ADD(__mib_register, init)
+    ARRAY_SPREAD_ADD(__mib_register, init)
 
 #endif /* NET_LIB_SNMP_MIB_H_ */

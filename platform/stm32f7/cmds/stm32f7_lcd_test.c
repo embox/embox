@@ -17,7 +17,8 @@ static void lcd_test(void) {
 	/* Initialize the LCD Layers */
 	BSP_LCD_LayerDefaultInit(LTDC_ACTIVE_LAYER, LCD_FRAMEBUFFER);
 
-	/* Set LCD Foreground Layer  */
+
+	  /* Set LCD Foreground Layer  */
 	BSP_LCD_SelectLayer(LTDC_ACTIVE_LAYER);
 
 	BSP_LCD_SetFont(&LCD_DEFAULT_FONT);
@@ -41,7 +42,7 @@ static void lcd_test(void) {
 
 int main(int argc, char *argv[]) {
 	printf("STM32F7 LCD test start\n");
-
+	
 	lcd_test();
 
 	while (1) {

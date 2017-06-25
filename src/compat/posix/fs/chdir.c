@@ -43,14 +43,14 @@ int chdir(const char *path) {
 	}
 
 	/*check if such path exists in fs*/
-	if (0 != fs_perm_lookup(path, NULL, &last)) {
+	if(0 != fs_perm_lookup(path, NULL, &last)){
 		SET_ERRNO(ENOENT);
 		return -1;
 	}
 
 	/*check if it is a directory*/
 	kfile_fill_stat(last.node, &buff);
-	if (!S_ISDIR(buff.st_mode)) {
+	if(!S_ISDIR(buff.st_mode)){
 		SET_ERRNO(ENOTDIR);
 		return -1;
 	}

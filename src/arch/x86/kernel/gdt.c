@@ -22,7 +22,7 @@ void gdt_set_gate(uint8_t nr, uint32_t base, uint32_t limit, uint8_t ac, uint8_t
 	gdt[nr].limit_low   = limit & 0xffff;
 	gdt[nr].granularity = (limit >> 16) & 0x0F;
 
-	gdt[nr].granularity |= (gran & 0xF0);
+	gdt[nr].granularity|= (gran & 0xF0);
 	gdt[nr].access      = ac;
 }
 

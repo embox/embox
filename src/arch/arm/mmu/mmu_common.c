@@ -88,7 +88,7 @@ void mmu_flush_tlb(void) {
 	uint32_t zero = 0;
 
 	__asm__ __volatile__ (
-		"mcr p15, 0, %[zero], c8, c7, 0" : : [zero] "r" (zero) :
+			"mcr p15, 0, %[zero], c8, c7, 0" : : [zero] "r" (zero) :
 	);
 }
 
@@ -122,7 +122,7 @@ void mmu_set_context(mmu_ctx_t ctx) {
  * @return Pointer to translation table
  */
 mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return (void *) ctx;
+	return (void*) ctx;
 }
 
 /* Software accessible MMU registers */
@@ -341,6 +341,7 @@ uint32_t _get_plepcr(void) {
 	);
 	return val;
 }
+
 
 /*******************************
  Identification registers
@@ -563,13 +564,14 @@ void _print_mmu_regs(void) {
 	log_debug("TLB Lockdown Attribues:    %#10x", _get_mmu_tlb_lockdown_attributes());
 
 	log_debug("PLEIDR:                    %#10x", _get_pleidr());
-
+	
 	if (_get_pleidr()) {
 		log_debug("PLEASR:                    %#10x", _get_pleasr());
 		log_debug("PLESFR:                    %#10x", _get_plesfr());
 		log_debug("PLEAUR:                    %#10x", _get_pleuar());
 		log_debug("PLEPCR:                    %#10x", _get_plepcr());
 	}
+
 
 	log_debug("MIDR:                      %#10x", _get_midr());
 	log_debug("CTR:                       %#10x", _get_ctr());

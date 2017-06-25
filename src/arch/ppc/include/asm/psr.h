@@ -12,26 +12,26 @@
 #ifndef __ASSEMBLER__
 
 #define PPC_REG_GET(reg)                               \
-	static inline unsigned int __get_ ## reg(void) {     \
-		unsigned int retval;                           \
-		__asm__ __volatile__ (                         \
-			"mf"#reg " %0"                              \
-			: "=r" (retval)                            \
-			: /* no input */                           \
-			: "memory"                                 \
-		);                                             \
-		return retval;                                 \
-	}                                                  \
+    static inline unsigned int __get_##reg(void) {     \
+        unsigned int retval;                           \
+        __asm__ __volatile__ (                         \
+            "mf"#reg" %0"                              \
+            : "=r" (retval)                            \
+            : /* no input */                           \
+            : "memory"                                 \
+        );                                             \
+        return retval;                                 \
+    }                                                  \
 
 #define PPC_REG_SET(reg)                               \
-	static inline void __set_ ## reg(unsigned int val) { \
-		__asm__ __volatile__ (                         \
-			"mt"#reg " %0"                              \
-			: /* no output */                          \
-			: "r" (val)                                \
-			: /* unspecified register FIXME */         \
-		);                                             \
-	}                                                  \
+    static inline void __set_##reg(unsigned int val) { \
+        __asm__ __volatile__ (                         \
+            "mt"#reg" %0"                              \
+            : /* no output */                          \
+            : "r" (val)                                \
+            : /* unspecified register FIXME */         \
+        );                                             \
+    }                                                  \
 
 
 /**
@@ -70,6 +70,7 @@ PPC_REG_GET(tbl)
 PPC_REG_SET(tbl)
 PPC_REG_GET(tbu)
 PPC_REG_SET(tbu)
+
 
 #undef PPC_REG_GET
 #undef PPC_REG_SET

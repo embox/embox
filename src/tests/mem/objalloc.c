@@ -12,7 +12,7 @@
 
 EMBOX_TEST_SUITE("objalloc test");
 
-OBJALLOC_DEF(allocator, int, TOTAL_OBJECTS);
+OBJALLOC_DEF(allocator, int , TOTAL_OBJECTS);
 
 TEST_CASE("test for macro OBJALLOC_DEF") {
 	void *obj = objalloc(&allocator);

@@ -28,7 +28,7 @@ struct pt_regs {
 	uint32_t globals[8]; /**< Global registers. */
 	uint32_t ins[8];     /**< Input registers. */
 	uint32_t reserved[2];/**< Only for res_vfork alignment */
-} __attribute__ ((aligned(8)));
+}__attribute__ ((aligned (8)));
 
 #define PT_REGS_ALIGN    8
 

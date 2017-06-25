@@ -82,8 +82,8 @@ static inline void __slist_insert_link(struct __slist_link *link,
 	({ \
 		struct slist_link *__slist_link__ = (link);                \
 		__slist_link__                                             \
-		? slist_element(__slist_link__, type, m_link) \
-		: NULL;                                            \
+				? slist_element(__slist_link__, type, m_link) \
+				: NULL;                                            \
 	})
 
 #define __slist_first(slist, type, m_link) \
@@ -98,5 +98,6 @@ static inline void __slist_insert_link(struct __slist_link *link,
 
 #define __slist_remove_first(slist, type, m_link) \
 	__slist_link_safe_cast(slist_remove_first_link(slist), type, m_link)
+
 
 #endif /* UTIL_SLIST_IMPL_H_ */

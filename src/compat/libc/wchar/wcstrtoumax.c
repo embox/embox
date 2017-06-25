@@ -61,9 +61,8 @@ uintmax_t wcstoumax(const wchar_t *restrict nptr, wchar_t **restrict endptr,
 		c = *s++;
 	} else {
 		neg = 0;
-		if (c == L'+') {
+		if (c == L'+')
 			c = *s++;
-		}
 	}
 
 	if ((base == 0 || base == 16) && c == L'0' && (*s == L'x' || *s == L'X')) {

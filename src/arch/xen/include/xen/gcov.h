@@ -35,7 +35,7 @@
 #define XENCOV_TAG_COUNTER(n)   (XENCOV_TAG_BASE+0x30u+((n)&0xfu))
 #define XENCOV_TAG_END          (XENCOV_TAG_BASE+0x2eu)
 #define XENCOV_IS_TAG_COUNTER(n) \
-	((n) >= XENCOV_TAG_COUNTER(0) && (n) < XENCOV_TAG_COUNTER(XENCOV_COUNTERS))
+    ((n) >= XENCOV_TAG_COUNTER(0) && (n) < XENCOV_TAG_COUNTER(XENCOV_COUNTERS))
 #define XENCOV_COUNTER_NUM(n) ((n)-XENCOV_TAG_COUNTER(0))
 
 /*
@@ -61,12 +61,13 @@
  */
 struct xencov_file
 {
-	uint32_t tag; /* XENCOV_TAG_FILE */
-	uint32_t version;
-	uint32_t stamp;
-	uint32_t fn_len;
-	char	 filename[1];
+    uint32_t tag; /* XENCOV_TAG_FILE */
+    uint32_t version;
+    uint32_t stamp;
+    uint32_t fn_len;
+    char filename[1];
 };
+
 
 /**
  * Counters information
@@ -75,9 +76,9 @@ struct xencov_file
  */
 struct xencov_counter
 {
-	uint32_t tag; /* XENCOV_TAG_COUNTER(n) */
-	uint32_t num;
-	uint64_t values[1];
+    uint32_t tag; /* XENCOV_TAG_COUNTER(n) */
+    uint32_t num;
+    uint64_t values[1];
 };
 
 /**
@@ -86,9 +87,9 @@ struct xencov_counter
  */
 struct xencov_function
 {
-	uint32_t ident;
-	uint32_t checksum;
-	uint32_t num_counters[1];
+    uint32_t ident;
+    uint32_t checksum;
+    uint32_t num_counters[1];
 };
 
 /**
@@ -97,9 +98,9 @@ struct xencov_function
  */
 struct xencov_functions
 {
-	uint32_t			   tag; /* XENCOV_TAG_FUNC */
-	uint32_t			   num;
-	struct xencov_function xencov_function[1];
+    uint32_t tag; /* XENCOV_TAG_FUNC */
+    uint32_t num;
+    struct xencov_function xencov_function[1];
 };
 
 /**
@@ -107,7 +108,8 @@ struct xencov_functions
  */
 struct xencov_end
 {
-	uint32_t tag; /* XENCOV_TAG_END */
+    uint32_t tag; /* XENCOV_TAG_END */
 };
 
 #endif /* __XEN_PUBLIC_GCOV_H__ */
+

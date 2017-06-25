@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief It is a debug version of pool.c
- *
+ *  
  * @see For more information see pool_debug.c
  *
  * @date 04.03.2016

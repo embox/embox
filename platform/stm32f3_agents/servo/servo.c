@@ -22,7 +22,7 @@ static TIM_OC_InitTypeDef servo_output_config;
  */
 static void handle_error(void) {
 	BSP_LED_On(LED3);
-	while (1) ;
+	while(1);
 }
 
 /**
@@ -86,17 +86,14 @@ int servo_init(void) {
 	/* Required for handle_error() */
 	BSP_LED_Init(LED3);
 
-	if (HAL_Init() != HAL_OK) {
+	if (HAL_Init() != HAL_OK)
 		handle_error();
-	}
 
-	if (_timer_init()) {
+	if (_timer_init())
 		handle_error();
-	}
 
-	if (_pwm_init()) {
+	if (_pwm_init())
 		handle_error();
-	}
 
 	return 0;
 }
@@ -118,21 +115,19 @@ int servo_init(void) {
  * and stall. Look handle_error() for details.
  */
 int servo_set(int pos) {
-	if (pos < MIN_POS) {
+	if (pos < MIN_POS)
 		pos = MIN_POS;
-	}
 
-	if (pos > MAX_POS) {
+	if (pos > MAX_POS)
 		pos = MAX_POS;
-	}
 
 	pos = SERVO_0 + pos * (SERVO_180 - SERVO_0) / (MAX_POS - MIN_POS);
 
 	servo_output_config.Pulse = pos;
 
 	if (HAL_TIM_PWM_ConfigChannel(&servo_thandle,
-			&servo_output_config,
-			TIM_CHANNEL_2) != HAL_OK) {
+	                              &servo_output_config,
+	                              TIM_CHANNEL_2) != HAL_OK) {
 		handle_error();
 	}
 

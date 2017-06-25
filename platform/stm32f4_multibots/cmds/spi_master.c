@@ -75,7 +75,7 @@ static int spi_init(void) {
 	SpiHandle.Init.NSS               = SPI_NSS_SOFT;
 	SpiHandle.Init.TIMode            = SPI_TIMODE_DISABLE;
 	SpiHandle.Init.Mode              = SPI_MODE_MASTER;
-
+	
 	if (HAL_SPI_Init(&SpiHandle) != HAL_OK) {
 		printf("%s\n", "HAL_SPI_Init error\n");
 		return -1;
@@ -100,7 +100,7 @@ static void spi_sync(void) {
 		if (HAL_SPI_TransmitReceive(&SpiHandle, (uint8_t *)&txackbytes, (uint8_t *)&rxackbytes, 1, 10000000) != HAL_OK) {
 			printf("%s\n", ">>> spi_sync error");
 		}
-	} while (rxackbytes != SPI_SLAVE_SYNBYTE);
+	} while(rxackbytes != SPI_SLAVE_SYNBYTE);
 }
 
 static int spi_test(void) {
@@ -109,18 +109,18 @@ static int spi_test(void) {
 
 	printf("SPI test\n");
 
-	while (1) {
+	while(1) {
 		spi_delay(1000000);
 		res = 0;
-		/* sync */
+		// sync
 		spi_sync();
 		printf(">> synchronized\n");
-		/* request data */
+		// request data
 		if (HAL_SPI_Transmit(&SpiHandle, &cmd, 1, SPI_TIMEOUT_MAX) != HAL_OK) {
 			printf("HAL SPI Transmit error\n");
 			return -1;
 		}
-		/* data from slave */
+		// data from slave
 		if (HAL_SPI_Receive(&SpiHandle, &res, 1, SPI_TIMEOUT_MAX) != HAL_OK) {
 			printf("HAL_SPI_Receive error 1\n");
 			return -1;
@@ -138,19 +138,20 @@ static void init_leds() {
 	BSP_LED_Init(LED6);
 }
 
+
 int main(int argc, char *argv[]) {
 	int res;
 
 	printf("SPI master start!\n");
 
-	/*HAL_Init(); */
+	//HAL_Init();
 
 	init_leds();
 	res = spi_init();
 	if (res < 0) {
 		return -1;
 	}
-	BSP_LED_Toggle(LED3);
+    BSP_LED_Toggle(LED3);
 	spi_test();
 
 	return 0;

@@ -10,7 +10,7 @@
 
 #include <drivers/irqctrl.h>
 
-#define TACTL     0x180
+#define TACTL 	  0x180
 
 #define TACTL_IE  (1 << 1)
 #define TACTL_IFG (1 << 0)
@@ -44,3 +44,5 @@ void irqctrl_force(unsigned int interrupt_nr) {
 	}
 	REG_ORIN(TACTL, TACTL_IFG);
 }
+
+

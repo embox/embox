@@ -51,7 +51,7 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	assert(gpio);
 
 	if ((mode & GPIO_MODE_OUT_SECTION) &&
-			(mode & GPIO_MODE_IN_SECTION)) { /* mode is incorrect */
+		(mode & GPIO_MODE_IN_SECTION)) { /* mode is incorrect */
 		return -1;
 	}
 
@@ -69,7 +69,7 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 
 void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
 
-	if (level) {
+	if(level) {
 		set_data(mask);
 	} else {
 		clear_data(mask);
@@ -87,7 +87,7 @@ static int gpio_init(void) {
 	/* Example: blink led */
 	set_control(GPIO_RTCRD);
 	out32(RDC_DATA, PCI_ADDR_SEL);
-/*	out32(0, PCI_DATA_REG);          // red led on */
-/*	out32(GPIO_RTCRD, PCI_DATA_REG); // red led off */
+//	out32(0, PCI_DATA_REG);          // red led on
+//	out32(GPIO_RTCRD, PCI_DATA_REG); // red led off
 	return 0;
 }

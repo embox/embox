@@ -56,14 +56,14 @@
  * @val bit's mask want to be set
  */
 static inline void msr_set(uint32_t val) {
-	__asm__ __volatile__ ("msrset r0, %0" : : "i" (val));
+	__asm__ __volatile__ ("msrset r0, %0" ::"i"(val));
 }
 /**
  * Clears some bits in msr register
  * @val bit's mask want to be cleared
  */
 static inline void msr_clr(uint32_t val) {
-	__asm__ __volatile__ ("msrclr r0, %0" : : "i" (val));
+	__asm__ __volatile__ ("msrclr r0, %0" ::"i"(val));
 }
 
 #else
@@ -125,19 +125,19 @@ static inline void msr_set_value(uint32_t val) {
 }
 
 static inline void msr_set_ie(void) {
-	__asm__ __volatile__ ("msrset r0, %0" : : "i" (REVERSE_MASK(MSR_IE_BIT)));
+	__asm__ __volatile__ ("msrset r0, %0" ::"i"(REVERSE_MASK(MSR_IE_BIT)));
 }
 
 static inline void msr_clr_ie(void) {
-	__asm__ __volatile__ ("msrclr r0, %0" : : "i" (REVERSE_MASK(MSR_IE_BIT)));
+	__asm__ __volatile__ ("msrclr r0, %0" ::"i"(REVERSE_MASK(MSR_IE_BIT)));
 }
 
 static inline void msr_set_ee(void) {
-	__asm__ __volatile__ ("msrset r0, %0" : : "i" (REVERSE_MASK(MSR_EE_BIT)));
+	__asm__ __volatile__ ("msrset r0, %0" ::"i"(REVERSE_MASK(MSR_EE_BIT)));
 }
 
 static inline void msr_clr_ee(void) {
-	__asm__ __volatile__ ("msrclr r0, %0" : : "i" (REVERSE_MASK(MSR_EE_BIT)));
+	__asm__ __volatile__ ("msrclr r0, %0" ::"i"(REVERSE_MASK(MSR_EE_BIT)));
 }
 
 static inline uint32_t msr_get_bit(int bit) {

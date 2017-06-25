@@ -12,9 +12,8 @@ char *strupr(char *string) {
 	char *cp;
 
 	for (cp = string; *cp; ++cp) {
-		if ('a' <= *cp && *cp <= 'z') {
+		if ('a' <= *cp && *cp <= 'z')
 			*cp += 'A' - 'a';
-		}
 	}
 
 	return(string);

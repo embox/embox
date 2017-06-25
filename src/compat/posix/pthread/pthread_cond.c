@@ -28,6 +28,7 @@ int pthread_cond_signal(pthread_cond_t *cond) {
 	return cond_signal(cond);
 }
 
+
 int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex,
 		const struct timespec *abstime) {
 	return cond_timedwait(cond, mutex, abstime);
@@ -43,6 +44,7 @@ int pthread_condattr_init(pthread_condattr_t *attr) {
 	return ENOERR;
 }
 
+
 int pthread_condattr_destroy(pthread_condattr_t *attr) {
 	condattr_destroy(attr);
 
@@ -54,6 +56,7 @@ int pthread_condattr_getpshared(const pthread_condattr_t *attr, int *pshared) {
 
 	return ENOERR;
 }
+
 
 int pthread_condattr_setpshared(pthread_condattr_t *attr, int pshared) {
 	condattr_setpshared(attr, pshared);

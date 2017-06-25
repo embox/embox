@@ -17,7 +17,7 @@
 
 typedef uint32_t __ipl_t;
 
-/* XXX Now it acts as a flag indicating whether module is initialized. -- Eldar */
+// XXX Now it acts as a flag indicating whether module is initialized. -- Eldar
 extern __ipl_t __cur_ipl;
 
 extern void apic_init(void);

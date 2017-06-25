@@ -70,7 +70,7 @@ static char xuartlite_diag_getc(const struct diag *diag) {
 }
 
 static void xuartlite_diag_putc(const struct diag *diag, char ch) {
-	while (!can_tx_trans()) ;
+	while (!can_tx_trans());
 	uart->tx_data = (unsigned int)ch;
 }
 
@@ -79,7 +79,7 @@ static int xuartlite_diag_has_symbol(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-	.putc = xuartlite_diag_putc,
-	.getc = xuartlite_diag_getc,
-	.kbhit = xuartlite_diag_has_symbol,
+		.putc = xuartlite_diag_putc,
+		.getc = xuartlite_diag_getc,
+		.kbhit = xuartlite_diag_has_symbol,
 );

@@ -48,9 +48,8 @@ int semaphore_timedwait(struct sem *restrict s, const struct timespec *restrict 
 			ret = -ETIMEDOUT;
 		}
 
-		if (!tryenter_sched_lock(s)) {
+		if (!tryenter_sched_lock(s))
 			ret = 0;
-		}
 	}
 
 	return ret;

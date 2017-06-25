@@ -24,3 +24,4 @@ int external_build_lib_call(void) {
 
 	return 314;
 }
+

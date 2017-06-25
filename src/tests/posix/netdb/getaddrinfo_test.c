@@ -35,15 +35,15 @@ TEST_TEARDOWN(case_teardown);
 
 #define GET_AI(nodename, servname)                        \
 	((ret = getaddrinfo(nodename, servname, hints, &res)) \
-	? (ai = res = NULL, ret) : (ai = res, ret))
+		? (ai = res = NULL, ret) : (ai = res, ret))
 
 #define EQUAL_AI(family, socktype, protocol, addr)           \
 	((ai->ai_flags == 0) && (ai->ai_family == family)        \
-	&& (ai->ai_socktype == socktype)                     \
-	&& (ai->ai_protocol == protocol)                     \
-	&& (ai->ai_addrlen == sizeof addr)                   \
-	&& (0 == memcmp(ai->ai_addr, &addr, ai->ai_addrlen)) \
-	&& (ai->ai_canonname == NULL))
+		&& (ai->ai_socktype == socktype)                     \
+		&& (ai->ai_protocol == protocol)                     \
+		&& (ai->ai_addrlen == sizeof addr)                   \
+		&& (0 == memcmp(ai->ai_addr, &addr, ai->ai_addrlen)) \
+		&& (ai->ai_canonname == NULL))
 
 #define NEXT_AI() \
 	(ai = ai->ai_next)
@@ -52,7 +52,7 @@ TEST_TEARDOWN(case_teardown);
 int ret;
 static struct addrinfo hints_, *res;
 static struct {
-	struct sockaddr_in	in;
+	struct sockaddr_in in;
 	struct sockaddr_in6 in6;
 } addr;
 
@@ -110,7 +110,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 	addr.in.sin_addr.s_addr = htonl(NODE_ADDR);
 	addr.in.sin_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(FAMILY, SOCKTYPE, PROTOCOL,
-			addr.in));
+				addr.in));
 	test_assert_null(NEXT_AI());
 }
 
@@ -124,7 +124,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 	addr.in.sin_addr.s_addr = htonl(NODE_ADDR);
 	addr.in.sin_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(FAMILY, SOCKTYPE, PROTOCOL,
-			addr.in));
+				addr.in));
 	test_assert_null(NEXT_AI());
 }
 
@@ -138,7 +138,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 	addr.in.sin_addr.s_addr = htonl(NODE_ADDR);
 	addr.in.sin_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(FAMILY, SOCKTYPE, PROTOCOL,
-			addr.in));
+				addr.in));
 	test_assert_null(NEXT_AI());
 }
 
@@ -151,10 +151,10 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 	addr.in.sin_addr.s_addr = htonl(NODE_ADDR);
 	addr.in.sin_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(FAMILY, SOCK_STREAM, IPPROTO_TCP,
-			addr.in));
+				addr.in));
 	test_assert_not_null(NEXT_AI());
 	test_assert_true(EQUAL_AI(FAMILY, SOCK_DGRAM, IPPROTO_UDP,
-			addr.in));
+				addr.in));
 	test_assert_not_null(NEXT_AI());
 	test_assert_true(EQUAL_AI(FAMILY, SOCK_RAW, 0, addr.in));
 	test_assert_null(NEXT_AI());
@@ -169,7 +169,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 	addr.in.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
 	addr.in.sin_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(AF_INET, SOCKTYPE, PROTOCOL,
-			addr.in));
+				addr.in));
 	test_assert_not_null(NEXT_AI());
 
 	addr.in6.sin6_family = AF_INET6;
@@ -177,7 +177,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 			sizeof addr.in6.sin6_addr);
 	addr.in6.sin6_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(AF_INET6, SOCKTYPE, PROTOCOL,
-			addr.in6));
+				addr.in6));
 	test_assert_null(NEXT_AI());
 }
 
@@ -191,7 +191,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 	addr.in.sin_addr.s_addr = htonl(INADDR_ANY);
 	addr.in.sin_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(AF_INET, SOCKTYPE, PROTOCOL,
-			addr.in));
+				addr.in));
 	test_assert_not_null(NEXT_AI());
 
 	addr.in6.sin6_family = AF_INET6;
@@ -199,7 +199,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with specified"
 			sizeof addr.in6.sin6_addr);
 	addr.in6.sin6_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(AF_INET6, SOCKTYPE, PROTOCOL,
-			addr.in6));
+				addr.in6));
 	test_assert_null(NEXT_AI());
 }
 
@@ -213,7 +213,7 @@ TEST_CASE("getaddrinfo() ignores AI_PASSIVE flag if nodename is"
 	addr.in.sin_addr.s_addr = htonl(NODE_ADDR);
 	addr.in.sin_port = htons(SERV_PORT);
 	test_assert_true(EQUAL_AI(FAMILY, SOCKTYPE, PROTOCOL,
-			addr.in));
+				addr.in));
 	test_assert_null(NEXT_AI());
 }
 
@@ -227,7 +227,7 @@ TEST_CASE("getaddrinfo() returns addrinfo with port 0 if"
 	addr.in.sin_addr.s_addr = htonl(NODE_ADDR);
 	addr.in.sin_port = 0;
 	test_assert_true(EQUAL_AI(FAMILY, SOCKTYPE, PROTOCOL,
-			addr.in));
+				addr.in));
 	test_assert_null(NEXT_AI());
 }
 

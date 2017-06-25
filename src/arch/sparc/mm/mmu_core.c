@@ -54,8 +54,8 @@ mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
 }
 
 int mmu_valid_entry(mmu_pte_t pte) {
-	return (((unsigned int) pte) & MMU_PTE_ET) |
-		   (((unsigned int) pte) & MMU_ET_PTD);
+        return (((unsigned int) pte) & MMU_PTE_ET) |
+                            (((unsigned int) pte) & MMU_ET_PTD);
 }
 
 mmu_ctx_t mmu_create_context(void) {

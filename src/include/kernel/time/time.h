@@ -88,9 +88,7 @@ static inline clock_t ns_to_clock(uint32_t hz, time64_t ns) {
 }
 
 static inline struct timespec cycles64_to_timespec(uint32_t hz, uint64_t cycles) {
-	struct timespec ts = {
-		0, 0
-	};
+	struct timespec ts = {0, 0};
 	assert(hz != 0);
 	ts.tv_sec = cycles / hz;
 	ts.tv_nsec = ((cycles % hz) * NSEC_PER_SEC) / hz;
@@ -98,17 +96,13 @@ static inline struct timespec cycles64_to_timespec(uint32_t hz, uint64_t cycles)
 }
 
 static inline struct timespec cycles32_to_timespec(uint32_t cycles, uint32_t mult, uint32_t shift) {
-	struct timespec ts = {
-		0, 0
-	};
+	struct timespec ts = {0, 0};
 	ts.tv_nsec = ((uint64_t)cycles * mult) >> shift;
 	return ts;
 }
 
 static inline struct timespec jiffies_to_timespec(uint32_t hz, uint32_t jiffies) {
-	struct timespec ts = {
-		0, 0
-	};
+	struct timespec ts = {0, 0};
 	assert(hz != 0);
 	ts.tv_sec = jiffies / hz;
 	ts.tv_nsec = (NSEC_PER_SEC / hz) * (jiffies % hz);

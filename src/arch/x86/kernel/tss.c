@@ -49,7 +49,7 @@ static inline void tss_fill(void) {
 }
 
 static void tss_flush(void) {
-	__asm__ __volatile__ ("ltr %%ax" : : "a" __TSS);
+	__asm__ __volatile__ ("ltr %%ax": : "a" __TSS);
 }
 
 static int tss_init(void) {

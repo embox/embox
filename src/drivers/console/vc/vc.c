@@ -11,7 +11,7 @@
 
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
-#include <drivers/char_dev.h> /*XXX */
+#include <drivers/char_dev.h> //XXX
 #include <fs/idesc.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
@@ -100,14 +100,15 @@ static int vc_status(struct idesc *idesc, int mask) {
 }
 
 static const struct idesc_ops idesc_vc_ops = {
-	.id_readv = vc_read,
-	.id_writev = vc_write,
-	.ioctl = vc_ioctl,
-	.close = vc_close,
-	.status = vc_status,
-	.fstat = vc_fstat,
+		.id_readv = vc_read,
+		.id_writev = vc_write,
+		.ioctl = vc_ioctl,
+		.close = vc_close,
+		.status = vc_status,
+		.fstat = vc_fstat,
 };
 
 static int vc_init(void) {
 	return char_dev_register("vc", &vc_file_ops);
 }
+

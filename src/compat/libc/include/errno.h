@@ -23,7 +23,7 @@
 #define ENOEXEC          8     /* Exec format error */
 #define EBADF            9     /* Bad file handle */
 #define EAGAIN           11    /* Try again later */
-#define ECHILD           10    /* No child processes */
+#define	ECHILD           10    /* No child processes */
 #define EWOULDBLOCK      EAGAIN
 #define ENOMEM           12    /* Out of memory */
 #define EFAULT           14    /* Bad adress posix.1 */
@@ -40,12 +40,13 @@
 #define ENOSPC           28    /* No space left on device */
 #define ESPIPE           29    /* Illegal seek */
 #define EROFS            30    /* Read-only file system */
-#define EMLINK           31    /* Too many links */
+#define	EMLINK           31    /* Too many links */
 #define EDOM             33    /* Argument to math function out of domain */
 #define ERANGE           34    /* Math result cannot be represented */
 #define EDEADLK          35    /* Resource deadlock would occur */
 #define EDEADLOCK        EDEADLK
 #define ENOSYS           38    /* Function not implemented */
+
 
 #define ELOOP            40    /* Too many levels of symbolic links. */
 #define ENOMSG           42    /* No message of desired type */
@@ -82,7 +83,7 @@
 #define EOPNOTSUPP       327   /* Operation not supported */
 #define EPFNOSUPPORT     328   /* Protocol family not supported */
 #define EAFNOSUPPORT     329   /* Address family not supported by */
-/* protocol family */
+                               /* protocol family */
 #define EADDRINUSE       330   /* Address already in use */
 #define EADDRNOTAVAIL    331   /* Can't assign requested address */
 

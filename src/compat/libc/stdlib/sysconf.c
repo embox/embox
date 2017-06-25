@@ -13,13 +13,13 @@
 #include <hal/cpu.h>
 
 long int sysconf(int name) {
-	switch (name) {
+	switch(name) {
 	case _SC_PAGESIZE:
 		return PAGE_SIZE();
 	case _SC_CLK_TCK:
 		return CLK_TCK;
 	case _SC_NPROCESSORS_ONLN:
-		/*http://www.gnu.org/software/libc/manual/html_node/Processor-Resources.html */
+	//http://www.gnu.org/software/libc/manual/html_node/Processor-Resources.html
 		return NCPU;
 	default:
 		return -EINVAL;

@@ -38,9 +38,9 @@
 * @brief Should be used as inode->i_data, but only for directories
 */
 struct initfs_dir_info {
-	char * path;
+	char  *path;
 	size_t path_len;
-	char * name;
+	char  *name;
 	size_t name_len;
 };
 
@@ -66,7 +66,7 @@ static int initfs_ioctl(struct file *desc, int request, void *data) {
 
 	p_addr = data;
 
-	*p_addr = (char *) inode->start_pos;
+	*p_addr = (char*) inode->start_pos;
 
 	return 0;
 }
@@ -80,9 +80,9 @@ static int initfs_ioctl(struct file *desc, int request, void *data) {
 * @return Negative error code
 */
 static int initfs_fill_inode_entry(struct inode *node,
-		char *cpio,
-		struct cpio_entry *entry,
-		struct initfs_dir_info *di) {
+                                   char *cpio,
+                                   struct cpio_entry *entry,
+                                   struct initfs_dir_info *di) {
 	*node = (struct inode) {
 		.i_no      = (int) cpio,
 		.start_pos = (int) entry->data,
@@ -94,7 +94,7 @@ static int initfs_fill_inode_entry(struct inode *node,
 }
 
 static struct initfs_dir_info *child_dir(struct initfs_dir_info *parent,
-		struct cpio_entry *entry) {
+                                         struct cpio_entry *entry) {
 	struct initfs_dir_info *di = NULL;
 
 	if (entry->mode & S_IFDIR) {
@@ -118,18 +118,17 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 
 	while ((cpio = cpio_parse_entry(cpio, &entry)))
 		if (!memcmp(di->path, entry.name, di->path_len) &&
-				!strncmp(name,
-				entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
-				strlen(name)) &&
-				strrchr(entry.name + di->path_len + 1, '/') == NULL) {
-			if (NULL == (node = dvfs_alloc_inode(dir->d_sb))) {
+		    !strncmp(name,
+		             entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
+		             strlen(name)) &&
+			strrchr(entry.name + di->path_len + 1, '/') == NULL) {
+			if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
 				return NULL;
-			}
 
 			initfs_fill_inode_entry(node,
-					cpio,
-					&entry,
-					child_dir(di, &entry));
+			                        cpio,
+			                        &entry,
+			                        child_dir(di, &entry));
 
 			return node;
 		}
@@ -146,19 +145,18 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 
 	assert(di);
 
-	if (!cpio) {
+	if (!cpio)
 		cpio = &_initfs_start;
-	}
 
 	while ((prev = cpio, cpio = cpio_parse_entry(cpio, &entry))) {
 		if (!memcmp(di->path, entry.name, di->path_len) &&
-				entry.name[di->path_len] != '\0' &&
-				strrchr(entry.name + di->path_len + 1, '/') == NULL) {
+			entry.name[di->path_len] != '\0' &&
+			strrchr(entry.name + di->path_len + 1, '/') == NULL) {
 
 			initfs_fill_inode_entry(next,
-					prev,
-					&entry,
-					child_dir(di, &entry));
+						prev,
+					       &entry,
+						child_dir(di, &entry));
 			ctx->fs_ctx = cpio;
 			return 0;
 		}
@@ -172,9 +170,8 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct cpio_entry entry;
 	char *c;
 
-	if (NULL == cpio_parse_entry((char *) inode->i_no, &entry)) {
+	if (NULL == cpio_parse_entry((char*) inode->i_no, &entry))
 		return -1;
-	}
 
 	switch (flags) {
 	case DVFS_PATH_FS:
@@ -183,9 +180,8 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 		break;
 	case DVFS_NAME:
 		c = strrchr(entry.name, '/');
-		if (c) {
+		if (c)
 			c++;
-		}
 		memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
 		buf[entry.name_len - (c ? (c - entry.name) : 0)] = '\0';
 		break;

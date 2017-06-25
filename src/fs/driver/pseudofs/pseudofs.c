@@ -9,6 +9,7 @@
 
 #include <fs/fs_driver.h>
 
+
 static int pseudofs_create(struct node *parent_node, struct node *new_node) {
 	return 0;
 }

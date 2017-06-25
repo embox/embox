@@ -26,7 +26,7 @@ static size_t sentry_aliases_sz;
 static char sentry_aliases_storage[MODOPS_MAX_ALIASES_NUM][MODOPS_MAX_NAME_LEN];
 static char sentry_proto_storage[MODOPS_MAX_PROTO_LEN];
 
-struct servent *servent_create(void) {
+struct servent * servent_create(void) {
 	memset(&sentry_storage, 0, sizeof sentry_storage);
 	sentry_storage.s_aliases = &sentry_aliases[0];
 	sentry_aliases[0] = NULL;
@@ -107,7 +107,7 @@ int servent_set_proto(struct servent *se, const char *proto) {
 	return 0;
 }
 
-struct servent *servent_make(const char *name, int port,
+struct servent * servent_make(const char *name, int port,
 		const char *proto) {
 	struct servent *se;
 

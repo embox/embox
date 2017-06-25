@@ -73,7 +73,7 @@ int seteuid(uid_t uid) {
 	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (u_area->euid == ROOT_UID || u_area->reuid == uid) {
-		u_area->euid = uid;
+	       u_area->euid = uid;
 	} else {
 		SET_ERRNO(EPERM);
 		return -1;
@@ -128,7 +128,7 @@ int setegid(gid_t gid) {
 	struct task_u_area *u_area = task_self_resource_u_area();
 
 	if (u_area->egid == ROOT_UID || u_area->regid == gid) {
-		u_area->egid = gid;
+	       u_area->egid = gid;
 	} else {
 		SET_ERRNO(EPERM);
 		return -1;

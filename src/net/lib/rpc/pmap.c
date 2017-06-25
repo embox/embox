@@ -16,12 +16,8 @@
 
 uint16_t pmap_getport(struct sockaddr_in *raddr, uint32_t prognum,
 		uint32_t versnum, uint32_t protocol) {
-	const struct timeval resend_every = {
-		5, 0
-	};
-	const struct timeval timeout = {
-		60, 0
-	};
+	const struct timeval resend_every = { 5, 0 };
+	const struct timeval timeout = { 60, 0 };
 	uint16_t port;
 	int sock;
 	struct client *clnt;

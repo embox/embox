@@ -9,7 +9,7 @@
 #include <kernel/thread.h>
 #include <kernel/addr_space.h>
 
-static struct thread *saved_prev __cpudata__; /* XXX */
+static struct thread *saved_prev __cpudata__; // XXX
 
 /**
  * Any fresh thread must call this function from a trampoline.
@@ -47,3 +47,4 @@ void thread_context_switch(struct thread *prev, struct thread *next) {
 
 	sched_finish_switch(&prev->schedee);
 }
+

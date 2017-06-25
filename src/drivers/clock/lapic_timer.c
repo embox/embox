@@ -32,8 +32,8 @@ static struct clock_source lapic_clock_source;
 static struct time_event_device lapic_event_device;
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-	clock_tick_handler(irq_nr, dev_id);
-	return IRQ_HANDLED;
+        clock_tick_handler(irq_nr, dev_id);
+        return IRQ_HANDLED;
 }
 
 static struct time_event_device lapic_event_device = {
@@ -94,9 +94,9 @@ int lapic_clock_setup(struct time_dev_conf *conf) {
 	outb(0xB2, 0x43);
 
 	/* 1193180/100 Hz = 11931 = 2e9bh */
-	outb(0x9B, 0x42);   /* LSB */
-	inb(0x60);  /* short delay */
-	outb(0x2E, 0x42);   /* MSB */
+	outb(0x9B, 0x42);	/* LSB */
+	inb(0x60);	/* short delay */
+	outb(0x2E, 0x42);	/* MSB */
 
 	/* Reset PIT one-shot counter (start counting) */
 	tmp = inb(0x61) & 0xFE;
@@ -107,7 +107,7 @@ int lapic_clock_setup(struct time_dev_conf *conf) {
 	lapic_write(LAPIC_TIMER_ICR, 0xFFFFFFFF);
 
 	/* Now wait until PIT counter reaches zero */
-	while (!(inb(0x61) & 0x20)) ;
+	while(!(inb(0x61) & 0x20));
 
 	/* Stop APIC timer */
 	lapic_write(LAPIC_LVT_TR, 0x10000);

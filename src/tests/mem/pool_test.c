@@ -13,13 +13,14 @@
 #define OBJECTS_QUANTITY 0x10
 
 struct test_obj {
-	int	 a;
+	int a;
 	char b;
 };
 
 POOL_DEF(pool, struct test_obj, OBJECTS_QUANTITY);
 
 EMBOX_TEST_SUITE("fixed size pool test");
+
 
 TEST_CASE("single object allocation") {
 	struct test_obj *obj;
@@ -31,8 +32,8 @@ TEST_CASE("single object allocation") {
 TEST_CASE("test object freeing") {
 	struct test_obj *objs[OBJECTS_QUANTITY + 1];
 	int i;
-	for (i = 0; i < OBJECTS_QUANTITY; i++) {
-		if (NULL == (objs[i] = pool_alloc(&pool))) {
+	for(i = 0; i < OBJECTS_QUANTITY; i ++) {
+		if(NULL == (objs[i] = pool_alloc(&pool))) {
 			break;
 		}
 	}
@@ -111,6 +112,7 @@ TEST_CASE("Only objects from pool may belong to it") {
 
 	do_free(&my_pool, objects, MY_POOL_SZ);
 }
+
 
 static void do_alloc(struct pool *pool, struct object *objects[], int nr) {
 	size_t i;

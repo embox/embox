@@ -24,14 +24,14 @@ extern int path_is_single_dot(const char *path);
  * @param p_len Pointer to store first node name's length
  *
  * @return Path stripped from leading '/' if any
- *  NULL if empty path supplied or none left
+ * 	NULL if empty path supplied or none left
  */
 extern const char *path_next(const char *path, size_t *p_len);
 
 /*
  * remove the top directory name from path
  */
-extern void path_cut_mount_dir(char *path, char *mount_dir);
+extern void path_cut_mount_dir(char *path, char *mount_dir) ;
 
 /*
  *  move the last name of the whole directory to the top of tail

@@ -28,14 +28,14 @@ static char assert_recursive_lock __cpudata__ = 0;
 
 #if BANNER_PRINT
 static const char oops_banner[] =
-		"\n  ______"
-		"\n |  ____|                                            __          __"
-		"\n | |___  _ __ ___            ____  ____  ____  _____/ /   _____ / /"
-		"\n |  ___|| \'_ ` _ \\          / __ \\/ __ \\/ __ \\/ ___/ /   |_____| |"
-		"\n | |____| | | | | |_ _ _   / /_/ / /_/ / /_/ (__  )_/    |_____| |"
-		"\n |______|_| |_| |_(_|_|_)  \\____/\\____/ .___/____(_)           | |"
-		"\n                                     /_/                        \\_\\"
-		"\n";
+	"\n  ______"
+	"\n |  ____|                                            __          __"
+	"\n | |___  _ __ ___            ____  ____  ____  _____/ /   _____ / /"
+	"\n |  ___|| \'_ ` _ \\          / __ \\/ __ \\/ __ \\/ ___/ /   |_____| |"
+	"\n | |____| | | | | |_ _ _   / /_/ / /_/ / /_/ (__  )_/    |_____| |"
+	"\n |______|_| |_| |_(_|_|_)  \\____/\\____/ .___/____(_)           | |"
+	"\n                                     /_/                        \\_\\"
+	"\n";
 
 static void print_oops(void) {
 	printk("\n%s", oops_banner);
@@ -64,9 +64,8 @@ void __assertion_handle_failure(const struct __assertion_point *point) {
 		LOCATION_FUNC_ARGS(&point->location),
 		point->expression);
 
-	if (*__assertion_message_buff) {
+	if (*__assertion_message_buff)
 		printk("\n\t(%s)\n", __assertion_message_buff);
-	}
 
 	whereami();
 
@@ -76,5 +75,6 @@ out:
 	arch_shutdown(ARCH_SHUTDOWN_MODE_ABORT);
 	/* NOTREACHED */
 }
+
 
 #endif

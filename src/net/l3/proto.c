@@ -13,7 +13,7 @@
 
 ARRAY_SPREAD_DEF(const struct net_proto, __net_proto_registry);
 
-const struct net_proto *net_proto_lookup(unsigned short pack,
+const struct net_proto * net_proto_lookup(unsigned short pack,
 		unsigned char type) {
 	const struct net_proto *nproto;
 

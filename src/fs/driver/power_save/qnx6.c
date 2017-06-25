@@ -30,6 +30,7 @@
 #define PSEVDOFS_NAME "vfat"
 #define FS_NAME "qnx6"
 
+
 static int qnx6fs_open(struct node *node, struct file_desc *file_desc,
 		int flags);
 static int qnx6fs_close(struct file_desc *desc);
@@ -49,7 +50,7 @@ static struct kfile_operations qnx6_fop = {
 static struct idesc *qnx6fs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return err_ptr(EINVAL);
 	}
 
@@ -59,7 +60,7 @@ static struct idesc *qnx6fs_open(struct node *node, struct file_desc *desc, int 
 static int qnx6fs_close(struct file_desc *desc) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 
@@ -69,7 +70,7 @@ static int qnx6fs_close(struct file_desc *desc) {
 static size_t qnx6fs_read(struct file_desc *desc, void *buff, size_t size) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 
@@ -79,14 +80,15 @@ static size_t qnx6fs_read(struct file_desc *desc, void *buff, size_t size) {
 static size_t qnx6fs_write(struct file_desc *desc, void *buff, size_t size) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 
 	return drv->file_op->write(desc, buff, size);
 }
 
-static int qnx6fs_init(void *par);
+
+static int qnx6fs_init(void * par);
 static int qnx6fs_format(void *path);
 static int qnx6fs_mount(void *dev, void *dir);
 static int qnx6fs_create(struct node *parent_node, struct node *node);
@@ -94,10 +96,11 @@ static int qnx6fs_delete(struct node *node);
 static int qnx6fs_truncate(struct node *node, off_t length);
 static int qnx6fs_umount(void *dir);
 
+
 static struct fsop_desc qnx6_fsop = {
-	.init        = qnx6fs_init,
-	.format      = qnx6fs_format,
-	.mount       = qnx6fs_mount,
+	.init	     = qnx6fs_init,
+	.format	     = qnx6fs_format,
+	.mount	     = qnx6fs_mount,
 	.create_node = qnx6fs_create,
 	.delete_node = qnx6fs_delete,
 
@@ -109,7 +112,7 @@ static struct fsop_desc qnx6_fsop = {
 	.umount      = qnx6fs_umount,
 };
 
-static int qnx6fs_init(void *par) {
+static int qnx6fs_init(void * par) {
 
 	return 0;
 };
@@ -123,7 +126,7 @@ static struct fs_driver qnx6fs_driver = {
 static int qnx6fs_create(struct node *parent_node, struct node *node) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 
@@ -133,7 +136,7 @@ static int qnx6fs_create(struct node *parent_node, struct node *node) {
 static int qnx6fs_delete(struct node *node) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 
@@ -143,7 +146,7 @@ static int qnx6fs_delete(struct node *node) {
 static int qnx6fs_format(void *dev) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 
@@ -153,14 +156,14 @@ static int qnx6fs_format(void *dev) {
 static int qnx6fs_mount(void *dev, void *dir) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 
 	return drv->fsop->mount(dev, dir);
 }
 
-static int qnx6fs_truncate(struct node *node, off_t length) {
+static int qnx6fs_truncate (struct node *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
@@ -171,7 +174,7 @@ static int qnx6fs_truncate(struct node *node, off_t length) {
 static int qnx6fs_umount(void *dir) {
 	struct fs_driver *drv;
 
-	if (NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
+	if(NULL == (drv = fs_driver_find_drv(PSEVDOFS_NAME))) {
 		return -1;
 	}
 

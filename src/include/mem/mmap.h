@@ -11,7 +11,7 @@
 
 #include <module/embox/mem/mmap_api.h>
 
-/*TODO: */
+//TODO:
 #define MAREA_ALIGMENT            0x1000
 #define MAREA_ALIGMENT_MASK       (MAREA_ALIGMENT - 1)
 

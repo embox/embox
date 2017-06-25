@@ -13,6 +13,7 @@
 #include <kernel/task/resource/mmap.h>
 #include <mem/mmap.h>
 
+
 TASK_RESOURCE_DEF(task_mmap_desc, struct emmap);
 
 static void task_mmap_init(const struct task *task, void *mmap_space) {
@@ -58,7 +59,7 @@ static const struct task_resource_desc task_mmap_desc = {
 	.resource_offset = &task_mmap_offset
 };
 
-struct emmap *task_resource_mmap(const struct task *task) {
+struct emmap * task_resource_mmap(const struct task *task) {
 	assert(task != NULL);
 	return (void *)task->resources + task_mmap_offset;
 }

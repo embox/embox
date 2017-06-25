@@ -8,9 +8,9 @@
  */
 
 #include <pnet/core/core.h>
-/*#include <pnet/pack/pnet_pack.h> */
+//#include <pnet/pack/pnet_pack.h>
 
-int pnet_rx_thread_add(struct pnet_pack *pack) {
+int pnet_rx_thread_add(struct pnet_pack * pack) {
 	pnet_process(pack);
 	return 0;
 }

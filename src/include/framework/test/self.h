@@ -16,6 +16,7 @@
 #ifndef FRAMEWORK_TEST_SELF_H_
 #define FRAMEWORK_TEST_SELF_H_
 
+
 #include <stddef.h>
 #include <sys/cdefs.h>
 
@@ -47,8 +48,9 @@
 #define TEST_TEARDOWN(teardown_each) \
 	__TEST_FIXTURE_OP_DEF(case_teardown, teardown_each)
 
+
 #define __EMBOX_TEST_SUITE_NM(_description, test_suite_nm, test_private_nm,    \
-			_autorun)                                                              \
+		_autorun)                                                              \
 	__TEST_FIXTURE_OP_DECL(suite_setup);                                       \
 	__TEST_FIXTURE_OP_DECL(suite_teardown);                                    \
 	__TEST_FIXTURE_OP_DECL(case_setup);                                        \
@@ -59,7 +61,7 @@
 			_autorun)
 
 #define __EMBOX_TEST_SUITE_NM_EXT(_description, _suite_setup, _suite_teardown, \
-			_case_setup, _case_teardown, test_suite_nm, test_private_nm, _autorun) \
+		_case_setup, _case_teardown, test_suite_nm, test_private_nm, _autorun) \
 	EXTERN_C const struct mod_ops __test_mod_ops;                    \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct test_case *,     \
 			__TEST_CASES_ARRAY, NULL);                               \
@@ -94,6 +96,7 @@
 	ARRAY_SPREAD_ADD(__TEST_CASES_ARRAY, &test_case_nm); \
 	static void run_nm(void)
 
+
 #define __TEST_FIXTURE_OP(fixture_nm) \
 	MACRO_CONCAT(__test_fixture_, fixture_nm)
 
@@ -104,7 +107,7 @@
 # define __TEST_FIXTURE_OP_DEF(fixture_nm, function_nm)  \
 	static int function_nm(void);                        \
 	static const __test_fixture_op_t                     \
-	__TEST_FIXTURE_OP(fixture_nm) = function_nm; \
+			__TEST_FIXTURE_OP(fixture_nm) = function_nm; \
 	static int function_nm(void)
 #endif /* __cplusplus */
 
@@ -126,12 +129,12 @@ static inline const struct mod *test_mod_self() {
 # undef  __TEST_FIXTURE_OP_DEF
 # define __TEST_FIXTURE_OP_DEF(ignored, function_nm) \
 	static int function_nm(); \
-	typedef typeof (function_nm) __test_fixture_placeholder
+	typedef typeof(function_nm) __test_fixture_placeholder
 
 # undef  __TEST_CASE
 # define __TEST_CASE(ignored) \
 	static void MACRO_GUARD(__test_case)(void); \
-	typedef typeof (MACRO_GUARD (__test_case)) __test_case_placeholder; \
+	typedef typeof(MACRO_GUARD(__test_case)) __test_case_placeholder; \
 	static void MACRO_GUARD(__test_case)(void)
 
 #endif /* __CDT_PARSER__ */

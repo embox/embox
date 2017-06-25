@@ -13,6 +13,7 @@
 
 EMBOX_TEST_SUITE("regex");
 
+
 TEST_CASE(" The structure type regex_t contains at least the following member:"
 		"size_t    re_nsub") {
 	regex_t regex;
@@ -53,6 +54,7 @@ TEST_CASE("full string match") {
 	test_assert_not_zero(regexec(&regex, "hell", 10, match, 0));
 	regfree(&regex);
 }
+
 
 TEST_CASE("pattern with posix classes: alnum") {
 	regex_t regex;

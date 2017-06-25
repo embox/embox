@@ -12,3 +12,4 @@
 /* TODO, added to make Qt build sucessfull */
 
 #endif /* COMPAT_POSIX_RESOLV_H_ */
+

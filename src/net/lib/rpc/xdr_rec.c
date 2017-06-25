@@ -17,12 +17,8 @@
 
 static const struct xdr_ops xdrrec_ops;
 
-static xdr_unit_t encode_unit(xdr_unit_t u) {
-	return htonl(u);
-}
-static xdr_unit_t decode_unit(xdr_unit_t u) {
-	return ntohl(u);
-}
+static xdr_unit_t encode_unit(xdr_unit_t u) { return htonl(u); }
+static xdr_unit_t decode_unit(xdr_unit_t u) { return ntohl(u); }
 
 #define LAST_DATA     1
 #define NOT_LAST_DATA 0
@@ -39,19 +35,15 @@ void xdrrec_create(struct xdr *xs, size_t sendsz, size_t recvsz,
 	assert((xs != NULL) && (handle != NULL)
 			&& (readit != NULL) && (writeit != NULL));
 
-	if (sendsz == 0) {
-		sendsz = BUFF_SEND_SZ;
-	}
-	if (recvsz == 0) {
-		recvsz = BUFF_RECV_SZ;
-	}
+	if (sendsz == 0) { sendsz = BUFF_SEND_SZ; }
+	if (recvsz == 0) { recvsz = BUFF_RECV_SZ; }
 
 	sendsz += BYTES_PER_XDR_UNIT + (BYTES_PER_XDR_UNIT
 			- sendsz % BYTES_PER_XDR_UNIT) % BYTES_PER_XDR_UNIT;
 	recvsz += BYTES_PER_XDR_UNIT + (BYTES_PER_XDR_UNIT
 			- sendsz % BYTES_PER_XDR_UNIT) % BYTES_PER_XDR_UNIT;
-	assert(sendsz % BYTES_PER_XDR_UNIT == 0); /* TODO debug */
-	assert(recvsz % BYTES_PER_XDR_UNIT == 0); /* TODO debug */
+	assert(sendsz % BYTES_PER_XDR_UNIT == 0); // TODO debug
+	assert(recvsz % BYTES_PER_XDR_UNIT == 0); // TODO debug
 
 	buff = (char *)malloc(sendsz + recvsz);
 	assert(buff != NULL);
@@ -244,11 +236,11 @@ static int prepare_data(struct xdr *xs, uint32_t necessary) {
 }
 
 static const struct xdr_ops xdrrec_ops = {
-	.destroy = &xdrrec_destroy,
-	.getunit = &xdrrec_getunit,
-	.putunit = &xdrrec_putunit,
-	.getbytes = &xdrrec_getbytes,
-	.putbytes = &xdrrec_putbytes,
-	.getpos = &xdrrec_getpos,
-	.setpos = &xdrrec_setpos,
+		.destroy = &xdrrec_destroy,
+		.getunit = &xdrrec_getunit,
+		.putunit = &xdrrec_putunit,
+		.getbytes = &xdrrec_getbytes,
+		.putbytes = &xdrrec_putbytes,
+		.getpos = &xdrrec_getpos,
+		.setpos = &xdrrec_setpos,
 };

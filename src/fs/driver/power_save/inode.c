@@ -61,6 +61,7 @@ static struct kfile_operations qnx6_fop = {
 	.write = qnx6fs_write,
 };
 
+
 struct qnx6_fs_info {
 	struct qnx6_superblock f_sb;
 };
@@ -77,7 +78,7 @@ uint32_t crc32_be(uint32_t crc, unsigned char const *p, size_t len) {
 }
 static void qnx6_put_super(struct qnx6_superblock *sb) __attribute__((used));
 static struct node *qnx6_alloc_node(struct qnx6_superblock *sb, const char *name,
-		size_t namelen);
+	       	size_t namelen);
 static void qnx6_destroy_node(struct node *node) __attribute__((used));
 static int qnx6_statfs(struct dentry *dentry, void *buf) __attribute__((used));
 
@@ -155,9 +156,8 @@ static unsigned qnx6_block_map(struct node *node, unsigned no)
 		levelptr = (no >> bitdelta) & mask;
 		ptr = ((__fs32 *)bh->b_data)[levelptr];
 
-		if (!qnx6_check_blockptr(ptr)) {
+		if (!qnx6_check_blockptr(ptr))
 			return 0;
-		}
 
 		block = qnx6_get_devblock(s, ptr);
 		brelse(bh);
@@ -165,14 +165,15 @@ static unsigned qnx6_block_map(struct node *node, unsigned no)
 	return block;
 }
 
-/*static int qnx6_statfs(struct dentry *dentry, struct kstatfs *buf)*/ /*XXX */
+/*static int qnx6_statfs(struct dentry *dentry, struct kstatfs *buf)*/ //XXX
 static int qnx6_statfs(struct dentry *dentry, void *buf)
 {
 #if 0
-	/*struct qnx6_superblock *sb = dentry->d_sb;*/ /*XXX */
+	/*struct qnx6_superblock *sb = dentry->d_sb;*/ //XXX
 	struct qnx6_superblock *sb = NULL;
 	struct qnx6_sb_info *sbi = QNX6_SB(sb);
-	/*__u64 id = huge_encode_dev(sb->s_bdev->bd_dev);*/ /*XXX */
+	/*__u64 id = huge_encode_dev(sb->s_bdev->bd_dev);*/ //XXX
+
 
 	buf->f_type    = sb->s_magic;
 	buf->f_bsize   = sb->s_blocksize;
@@ -197,29 +198,24 @@ static int qnx6_statfs(struct dentry *dentry, void *buf)
 static const char *qnx6_checkroot(struct qnx6_superblock *s)
 {
 #if 0
-	static char match_root[2][3] = {
-		".\0\0", "..\0"
-	};
+	static char match_root[2][3] = {".\0\0", "..\0"};
 	int i, error = 0;
 	struct qnx6_dir_entry *dir_entry;
 	struct node *root = s->s_root->d_node;
 	struct address_space *mapping = root->i_mapping;
 	struct page *page = read_mapping_page(mapping, 0, NULL);
-	if (IS_ERR(page)) {
+	if (IS_ERR(page))
 		return "error reading root directory";
-	}
 	kmap(page);
 	dir_entry = page_address(page);
 	for (i = 0; i < 2; i++) {
 		/* maximum 3 bytes - due to match_root limitation */
-		if (strncmp(dir_entry[i].de_fname, match_root[i], 3)) {
+		if (strncmp(dir_entry[i].de_fname, match_root[i], 3))
 			error = 1;
-		}
 	}
 	qnx6_put_page(page);
-	if (error) {
+	if (error)
 		return "error reading root directory.";
-	}
 #endif
 	return NULL;
 }
@@ -230,30 +226,30 @@ void qnx6_superblock_debug(struct qnx6_super_block *sb, struct qnx6_superblock *
 	struct qnx6_sb_info *sbi = QNX6_SB(s);
 
 	QNX6DEBUG((KERN_INFO "magic: %08x\n",
-			fs32_to_cpu(sbi, sb->sb_magic)));
+				fs32_to_cpu(sbi, sb->sb_magic)));
 	QNX6DEBUG((KERN_INFO "checksum: %08x\n",
-			fs32_to_cpu(sbi, sb->sb_checksum)));
+				fs32_to_cpu(sbi, sb->sb_checksum)));
 	QNX6DEBUG((KERN_INFO "serial: %llx\n",
-			fs64_to_cpu(sbi, sb->sb_serial)));
+				fs64_to_cpu(sbi, sb->sb_serial)));
 	QNX6DEBUG((KERN_INFO "flags: %08x\n",
-			fs32_to_cpu(sbi, sb->sb_flags)));
+				fs32_to_cpu(sbi, sb->sb_flags)));
 	QNX6DEBUG((KERN_INFO "blocksize: %08x\n",
-			fs32_to_cpu(sbi, sb->sb_blocksize)));
+				fs32_to_cpu(sbi, sb->sb_blocksize)));
 	QNX6DEBUG((KERN_INFO "num_nodes: %08x\n",
-			fs32_to_cpu(sbi, sb->sb_num_nodes)));
+				fs32_to_cpu(sbi, sb->sb_num_nodes)));
 	QNX6DEBUG((KERN_INFO "free_nodes: %08x\n",
-			fs32_to_cpu(sbi, sb->sb_free_nodes)));
+				fs32_to_cpu(sbi, sb->sb_free_nodes)));
 	QNX6DEBUG((KERN_INFO "num_blocks: %08x\n",
-			fs32_to_cpu(sbi, sb->sb_num_blocks)));
+				fs32_to_cpu(sbi, sb->sb_num_blocks)));
 	QNX6DEBUG((KERN_INFO "free_blocks: %08x\n",
-			fs32_to_cpu(sbi, sb->sb_free_blocks)));
+				fs32_to_cpu(sbi, sb->sb_free_blocks)));
 	QNX6DEBUG((KERN_INFO "node_levels: %02x\n",
-			sb->Inode.levels));
+				sb->Inode.levels));
 }
 #endif
 
 static struct buffer_head *qnx6_check_first_superblock(struct qnx6_superblock *s,
-		int offset, int silent)
+				int offset, int silent)
 {
 	struct qnx6_sb_info *sbi = QNX6_SB(s);
 	struct buffer_head *bh;
@@ -274,17 +270,16 @@ static struct buffer_head *qnx6_check_first_superblock(struct qnx6_superblock *s
 			QNX6DEBUG((KERN_INFO "qnx6: fs got different"
 					" endianness.\n"));
 			return bh;
-		} else {
+		} else
 			sbi->s_bytesex = BYTESEX_LE;
-		}
 		if (!silent) {
 			if (offset == 0) {
 				printk(KERN_ERR "qnx6: wrong signature (magic)"
-						" in superblock #1.\n");
+					" in superblock #1.\n");
 			} else {
 				printk(KERN_INFO "qnx6: wrong signature (magic)"
-						" at position (0x%lx) - will try"
-						" alternative position (0x0000).\n",
+					" at position (0x%lx) - will try"
+					" alternative position (0x0000).\n",
 						offset * s->s_blocksize);
 			}
 		}
@@ -299,7 +294,7 @@ static void iput(struct node *node) {
 }
 
 static struct node *qnx6_private_node(struct qnx6_superblock *s,
-		struct qnx6_root_node *p);
+					struct qnx6_root_node *p);
 
 static struct qnx6_sb_info __alloc_sbi;
 static char __alloc_alloced;
@@ -330,9 +325,8 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	int bootblock_offset = QNX6_BOOTBLOCK_SIZE;
 
 	qs = qnx6_sb_info_alloc();
-	if (!qs) {
+	if (!qs)
 		return -ENOMEM;
-	}
 	s->s_fs_info = qs;
 
 	/* Superblock always is 512 Byte long */
@@ -345,12 +339,10 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	/* parse the mount-options */
 	if (test_opt(s, MMI_FS)) {
 		sb1 = qnx6_mmi_fill_super(s, silent);
-		if (sb1) {
+		if (sb1)
 			goto mmi_success;
-		}
-		else {
+		else
 			goto outnobh;
-		}
 	}
 #endif
 
@@ -359,7 +351,7 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	/* Check the superblock signatures
 	   start with the first superblock */
 	bh1 = qnx6_check_first_superblock(s,
-			bootblock_offset / QNX6_SUPERBLOCK_SIZE, silent);
+		bootblock_offset / QNX6_SUPERBLOCK_SIZE, silent);
 	if (!bh1) {
 		/* try again without bootblock offset */
 		bh1 = qnx6_check_first_superblock(s, 0, silent);
@@ -393,19 +385,18 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	/* blocksize invalidates bh - pull it back in */
 	brelse(bh1);
 	bh1 = sb_bread(s, bootblock_offset >> s->s_blocksize_bits);
-	if (!bh1) {
+	if (!bh1)
 		goto outnobh;
-	}
 	sb1 = (struct qnx6_super_block *)bh1->b_data;
 
 	/* calculate second superblock blocknumber */
 	offset = fs32_to_cpu(sbi, sb1->sb_num_blocks) +
-			(bootblock_offset >> s->s_blocksize_bits) +
-			(QNX6_SUPERBLOCK_AREA >> s->s_blocksize_bits);
+		(bootblock_offset >> s->s_blocksize_bits) +
+		(QNX6_SUPERBLOCK_AREA >> s->s_blocksize_bits);
 
 	/* set bootblock offset */
 	sbi->s_blks_off = (bootblock_offset >> s->s_blocksize_bits) +
-			(QNX6_SUPERBLOCK_AREA >> s->s_blocksize_bits);
+			  (QNX6_SUPERBLOCK_AREA >> s->s_blocksize_bits);
 
 	/* next the second superblock */
 	bh2 = sb_bread(s, offset);
@@ -415,24 +406,23 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	}
 	sb2 = (struct qnx6_super_block *)bh2->b_data;
 	if (fs32_to_cpu(sbi, sb2->sb_magic) != QNX6_SUPER_MAGIC) {
-		if (!silent) {
+		if (!silent)
 			printk(KERN_ERR "qnx6: wrong signature (magic)"
 					" in superblock #2.\n");
-		}
 		goto out;
 	}
 
 	/* checksum check - start at byte 8 and end at byte 512 */
 #if 0
 	if (fs32_to_cpu(sbi, sb2->sb_checksum) !=
-			crc32_be(0, (unsigned char *)(bh2->b_data + 8), 504)) {
+				crc32_be(0, (unsigned char *)(bh2->b_data + 8), 504)) {
 		printk(KERN_ERR "qnx6: superblock #2 checksum error\n");
 		goto out;
 	}
 #endif
 
 	if (fs64_to_cpu(sbi, sb1->sb_serial) >=
-			fs64_to_cpu(sbi, sb2->sb_serial)) {
+					fs64_to_cpu(sbi, sb2->sb_serial)) {
 		/* superblock #1 active */
 		sbi->sb_buf = bh1;
 		sbi->sb = (struct qnx6_super_block *)bh1->b_data;
@@ -449,13 +439,13 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	/* sanity check - limit maximum indirect pointer levels */
 	if (sb1->Inode.levels > QNX6_PTR_MAX_LEVELS) {
 		printk(KERN_ERR "qnx6: too many node levels (max %i, sb %i)\n",
-				QNX6_PTR_MAX_LEVELS, sb1->Inode.levels);
+			QNX6_PTR_MAX_LEVELS, sb1->Inode.levels);
 		goto out;
 	}
 	if (sb1->Longfile.levels > QNX6_PTR_MAX_LEVELS) {
 		printk(KERN_ERR "qnx6: too many longfilename levels"
 				" (max %i, sb %i)\n",
-				QNX6_PTR_MAX_LEVELS, sb1->Longfile.levels);
+			QNX6_PTR_MAX_LEVELS, sb1->Longfile.levels);
 		goto out;
 	}
 
@@ -463,13 +453,11 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	sbi = QNX6_SB(s);
 	sbi->s_ptrbits = bit_ctz(s->s_blocksize / 4);
 	sbi->nodes = qnx6_private_node(s, &sb1->Inode);
-	if (!sbi->nodes) {
+	if (!sbi->nodes)
 		goto out;
-	}
 	sbi->longfile = qnx6_private_node(s, &sb1->Longfile);
-	if (!sbi->longfile) {
+	if (!sbi->longfile)
 		goto out1;
-	}
 
 	/* prefetch root node */
 	root = qnx6_iget(s, QNX6_ROOT_INO);
@@ -482,17 +470,15 @@ static int qnx6_fill_super(struct qnx6_superblock *s, void *data, int silent)
 	ret = -ENOMEM;
 	s->s_root = root;
 #if 0
-	if (!s->s_root) {
+	if (!s->s_root)
 		goto out2;
-	}
 #endif
 
 	ret = -EINVAL;
 	errmsg = qnx6_checkroot(s);
 	if (errmsg != NULL) {
-		if (!silent) {
+		if (!silent)
 			printk(KERN_ERR "qnx6: %s\n", errmsg);
-		}
 		goto out3;
 	}
 	return 0;
@@ -507,12 +493,10 @@ out2:
 out1:
 	iput(sbi->nodes);
 out:
-	if (bh1) {
+	if (bh1)
 		brelse(bh1);
-	}
-	if (bh2) {
+	if (bh2)
 		brelse(bh2);
-	}
 outnobh:
 	qnx6_sb_info_free(qs);
 	s->s_fs_info = NULL;
@@ -535,7 +519,7 @@ static struct node *new_node(struct qnx6_superblock *sb) {
 }
 
 static struct node *qnx6_private_node(struct qnx6_superblock *s,
-		struct qnx6_root_node *p)
+					struct qnx6_root_node *p)
 {
 	struct node *node = new_node(s);
 	if (node) {
@@ -564,7 +548,7 @@ struct node *qnx6_iget_wname(struct qnx6_superblock *sb, unsigned ino,
 	struct node *node;
 	struct qnx6_sb_info *sbi = QNX6_SB(sb);
 	struct qnx6_inode_entry *raw_node;
-	struct qnx6_node_info *ei;
+	struct qnx6_node_info	*ei;
 
 	struct buffer_head *bh = NULL;
 	__u32 n, offs;
@@ -572,13 +556,11 @@ struct node *qnx6_iget_wname(struct qnx6_superblock *sb, unsigned ino,
 	/*node = iget_locked(sb, ino); */
 	/*node = qnx6_embox_iget(sb, ino); */
 	node = qnx6_alloc_node(sb, name, namelen);
-	if (!node) {
+	if (!node)
 		return ERR_PTR(-ENOMEM);
-	}
 #if 0
-	if (!(node->i_state & I_NEW)) {
+	if (!(node->i_state & I_NEW))
 		return node;
-	}
 #endif
 
 	ei = QNX6_I(node);
@@ -588,8 +570,8 @@ struct node *qnx6_iget_wname(struct qnx6_superblock *sb, unsigned ino,
 	if (ino == 0) {
 		printk(KERN_ERR "qnx6: bad node number on dev %s: %u is "
 				"out of range\n",
-		        /*sb->s_id, ino);*/ /*XXX */
-				"qnx test", ino);
+		       /*sb->s_id, ino);*/ //XXX
+		       "qnx test", ino);
 		iget_failed(node);
 		return ERR_PTR(-EIO);
 	}
@@ -621,7 +603,7 @@ struct node *qnx6_iget_wname(struct qnx6_superblock *sb, unsigned ino,
 #endif
 
 	memcpy(&ei->di_block_ptr, &raw_node->di_block_ptr,
-			sizeof(raw_node->di_block_ptr));
+				sizeof(raw_node->di_block_ptr));
 	ei->di_filelevels = raw_node->di_filelevels;
 
 	brelse(bh);
@@ -633,15 +615,14 @@ struct node *qnx6_iget(struct qnx6_superblock *sb, unsigned ino) {
 }
 
 static struct node *qnx6_alloc_node(struct qnx6_superblock *sb, const char *name,
-		size_t namelen)
+	       	size_t namelen)
 {
 	struct qnx6_node_info *ei;
 	struct node *node;
 
 	ei = pool_alloc(&qnx6_node_pool);
-	if (!ei) {
+	if (!ei)
 		return NULL;
-	}
 
 	node = node_alloc(name, namelen);
 	if (!node) {
@@ -685,7 +666,7 @@ static size_t qnx6fs_read(struct file_desc *desc, void *buff, size_t size) {
 		offs = desc->cursor & (~QNX6_BH_BLOCK_MASK);
 
 		toread = min(size, min(QNX6_BH_BLOCK_SIZE - offs,
-				QNX6_I(desc->node)->i_size - desc->cursor));
+					QNX6_I(desc->node)->i_size - desc->cursor));
 		if (toread <= 0) {
 			break;
 		}
@@ -713,7 +694,8 @@ static size_t qnx6fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return -1;
 }
 
-static int qnx6fs_init(void *par);
+
+static int qnx6fs_init(void * par);
 static int qnx6fs_format(void *path);
 static int qnx6fs_mount(void *dev, void *dir);
 static int qnx6fs_create(struct node *parent_node, struct node *node);
@@ -721,10 +703,11 @@ static int qnx6fs_delete(struct node *node);
 static int qnx6fs_truncate(struct node *node, off_t length);
 static int qnx6fs_umount(void *dir);
 
+
 static struct fsop_desc qnx6_fsop = {
-	.init        = qnx6fs_init,
-	.format      = qnx6fs_format,
-	.mount       = qnx6fs_mount,
+	.init	     = qnx6fs_init,
+	.format	     = qnx6fs_format,
+	.mount	     = qnx6fs_mount,
 	.create_node = qnx6fs_create,
 	.delete_node = qnx6fs_delete,
 
@@ -736,7 +719,7 @@ static struct fsop_desc qnx6_fsop = {
 	.umount      = qnx6fs_umount,
 };
 
-static int qnx6fs_init(void *par) {
+static int qnx6fs_init(void * par) {
 
 	return 0;
 };
@@ -758,8 +741,8 @@ static int qnx6fs_format(void *dev) {
 
 struct dirent_masq {
 	struct qnx6_superblock *d_sb;
-	struct node *			d_parent;
-	struct filesystem *		d_fs;
+	struct node *d_parent;
+	struct filesystem *d_fs;
 };
 
 static int embox_mount_filldir(void *dirent, const char *name, int size,
@@ -773,7 +756,7 @@ static int embox_mount_filldir(void *dirent, const char *name, int size,
 		return 0;
 	}
 
-	n = qnx6_iget_wname(dmasq->d_sb, node, name, size);
+ 	n = qnx6_iget_wname(dmasq->d_sb, node, name, size);
 	if (IS_ERR(n)) {
 		int err = PTR_ERR(n);
 		return err;
@@ -841,7 +824,7 @@ static int qnx6fs_mount(void *dev, void *dir) {
 	return 0;
 }
 
-static int qnx6fs_truncate(struct node *node, off_t length) {
+static int qnx6fs_truncate (struct node *node, off_t length) {
 
 	return -1;
 }
@@ -849,9 +832,9 @@ static int qnx6fs_truncate(struct node *node, off_t length) {
 static int qnx6_umount_entry(struct node *node) {
 	struct node *child;
 
-	if (node_is_directory(node)) {
-		while (NULL != (child = vfs_subtree_get_child_next(node, NULL))) {
-			if (node_is_directory(child)) {
+	if(node_is_directory(node)) {
+		while(NULL != (child = vfs_subtree_get_child_next(node, NULL))) {
+			if(node_is_directory(child)) {
 				qnx6_umount_entry(child);
 			}
 
@@ -874,7 +857,7 @@ static int qnx6fs_umount(void *dir) {
 	/* delete all entry node */
 	qnx6_umount_entry(dir_node);
 
-	if (NULL != dir_nas->fs) {
+	if(NULL != dir_nas->fs) {
 		fsi = dir_nas->fs->fsi;
 
 		qnx6_put_super(&fsi->f_sb);

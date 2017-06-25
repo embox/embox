@@ -32,13 +32,13 @@ static inline struct usb_class_cdc *usb2cdcdata(struct usb_dev *dev) {
  * @c alternated_cfg, and on success calls callback @c cb
  */
 extern void cdc_set_interface(struct usb_dev *dev, size_t iface,
-		size_t alternated_cfg, usb_request_notify_hnd_t cb);
+        size_t alternated_cfg, usb_request_notify_hnd_t cb);
 
 /**
  * Obtain the interface, specified by @c index,
  * in the current configuration
  */
 extern struct usb_desc_interface *cdc_get_interface(
-		struct usb_desc_configuration *conf, size_t index);
+        struct usb_desc_configuration *conf, size_t index);
 
 #endif /* USB_CDC_H_ */

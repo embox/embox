@@ -29,7 +29,7 @@ int statvfs(const char *path, struct statvfs *buf) {
 	if (res == -1) {
 		return -1;
 	}
-	switch (st_buf.st_mode & S_IFMT) {
+	switch(st_buf.st_mode & S_IFMT) {
 	case S_IFBLK:
 	case S_IFDIR:
 	case S_IFREG:
@@ -66,7 +66,7 @@ unsigned long fsname2fsid(const char *name) {
 }
 
 char *fsid2fsname(unsigned long f_sid) {
-	switch (f_sid) {
+	switch(f_sid) {
 	case FSID_VFAT:
 		return "vfat";
 	case FSID_EXT2:
@@ -132,7 +132,7 @@ int fstatvfs(int fd, struct statvfs *buf) {
 	}
 	memset(buf, 0, sizeof(struct statvfs));
 
-	switch (st_buf.st_mode & S_IFMT) {
+	switch(st_buf.st_mode & S_IFMT) {
 	case S_IFBLK:
 		statvfs_fill_from_bdev((struct file *)idesc, buf);
 		break;

@@ -20,10 +20,9 @@ void sched_timing_init(struct schedee *s) {
 clock_t sched_timing_get(struct schedee *s) {
 	clock_t running = s->sched_timing.running_time;
 
-	if (sched_active(s)) {
+	if (sched_active(s))
 		/* Add the least recent time slice (being used now). */
 		running += clock() - s->sched_timing.last_sync;
-	}
 
 	return running;
 }

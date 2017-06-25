@@ -54,7 +54,7 @@ pid_t task_waitpid_posix(pid_t pid, int *status, int options) {
 	}
 
 	while (0 > WAITQ_WAIT(task_resource_waitpid(task_self()),
-			(ret = task_collect(pid, status)))) ;
+			(ret = task_collect(pid, status))));
 
 	return ret;
 

@@ -20,3 +20,4 @@ static inline int pthread_attr_setscope(pthread_attr_t *attr,
 __END_DECLS
 
 #endif /* PJSIP_PTHREAD_H_ */
+

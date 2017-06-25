@@ -12,7 +12,7 @@
 #include <sys/xattr.h>
 #include <sys/socket.h>
 
-/*#include <drivers/block_dev/ramdisk/ramdisk.h> */
+//#include <drivers/block_dev/ramdisk/ramdisk.h>
 #include <mem/page.h>
 
 #include <fs/mount.h>
@@ -51,7 +51,7 @@ static const char *xattr_vl4 = "value4";
 #define MAX_ATTR_L 32
 #define MAX_ATTR_N 4
 static int check_xattr(const char *path, int fd, const char *name, const char *value) {
-	char buf[MAX_ATTR_L];
+        char buf[MAX_ATTR_L];
 	int ret;
 	const int vlen = strlen(value) + 1;
 
@@ -109,113 +109,81 @@ TEST_CASE("xattr should be ok for clean file") {
 	const char *xattr_nms[1] = {};
 	const char *xattr_vls[1] = {};
 
-	test_assert_zero(check_xattr_list(TEST_CLEAN_FILE_NM, 0, xattr_nms, xattr_vls));
+        test_assert_zero(check_xattr_list(TEST_CLEAN_FILE_NM, 0, xattr_nms, xattr_vls));
 }
 
 TEST_CASE("xattr should be listed and getted") {
-	const char *xattr_nms[5] = {
-		xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2
-	};
-	const char *xattr_vls[5] = {
-		xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2
-	};
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
 
-	test_assert_zero(check_xattr_list(TEST_FILE_NM, 0, xattr_nms, xattr_vls));
+        test_assert_zero(check_xattr_list(TEST_FILE_NM, 0, xattr_nms, xattr_vls));
 }
 
 TEST_CASE("xattr should be listed and getted through fd interface") {
-	const char *xattr_nms[5] = {
-		xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2
-	};
-	const char *xattr_vls[5] = {
-		xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2
-	};
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
 
 	int fd = open(TEST_FILE_NM, O_RDONLY);
 
-	test_assert_zero(check_xattr_list(NULL, fd, xattr_nms, xattr_vls));
+        test_assert_zero(check_xattr_list(NULL, fd, xattr_nms, xattr_vls));
 
 	close(fd);
 }
 
 TEST_CASE("xattr should be removed") {
-	const char *xattr_nms[4] = {
-		xattr_nm4, xattr_nm3, xattr_nm2
-	};
-	const char *xattr_vls[4] = {
-		xattr_vl4, xattr_vl3, xattr_vl2
-	};
+	const char *xattr_nms[4] = {xattr_nm4, xattr_nm3, xattr_nm2};
+	const char *xattr_vls[4] = {xattr_vl4, xattr_vl3, xattr_vl2};
 
 	test_assert_equal(setxattr(TEST_FILE2_NM, "non_existing_attr", NULL, 0, XATTR_REMOVE), -1);
 	test_assert_equal(ENOENT, errno);
 
 	test_assert_zero(setxattr(TEST_FILE_NM, xattr_nm1, NULL, 0, XATTR_REMOVE));
-	test_assert_zero(check_xattr_list(TEST_FILE_NM, 0, xattr_nms, xattr_vls));
+        test_assert_zero(check_xattr_list(TEST_FILE_NM, 0, xattr_nms, xattr_vls));
 }
 
 TEST_CASE("xattr should be replaced") {
-	const char *xattr_nms_old[5] = {
-		xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2
-	};
-	const char *xattr_vls_old[5] = {
-		xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2
-	};
+	const char *xattr_nms_old[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls_old[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
 
-	const char *xattr_nms[5] = {
-		xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2
-	};
-	const char *xattr_vls[5] = {
-		xattr_vl4, xattr_vl3, xattr_vl1n, xattr_vl2
-	};
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1n, xattr_vl2};
 
 	test_assert_zero(check_xattr_list(TEST_FILE2_NM, 0, xattr_nms_old, xattr_vls_old));
 	test_assert_equal(setxattr(TEST_FILE2_NM, "non_existing_attr", xattr_vl1n, strlen(xattr_vl1n),
-			XATTR_REPLACE), -1);
+				XATTR_REPLACE), -1);
 	test_assert_equal(ENOENT, errno);
 
 	test_assert_zero(setxattr(TEST_FILE2_NM, xattr_nm1, xattr_vl1n, strlen(xattr_vl1n),
-			XATTR_REPLACE));
-	test_assert_zero(check_xattr_list(TEST_FILE2_NM, 0, xattr_nms, xattr_vls));
+				XATTR_REPLACE));
+        test_assert_zero(check_xattr_list(TEST_FILE2_NM, 0, xattr_nms, xattr_vls));
 }
 
 TEST_CASE("xattr entry should be added for file with xattr") {
-	const char *xattr_nms[5] = {
-		xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2
-	};
-	const char *xattr_vls[5] = {
-		xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2
-	};
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
 
 	test_assert_equal(setxattr(TEST_FILE_ADD_NM, xattr_nm1, xattr_vl1, strlen(xattr_vl1),
-			XATTR_CREATE), -1);
+				XATTR_CREATE), -1);
 	test_assert_equal(EEXIST, errno);
 
 	test_assert_zero(setxattr(TEST_FILE_ADD_NM, xattr_nm3, xattr_vl3, strlen(xattr_vl3),
-			XATTR_CREATE));
+				XATTR_CREATE));
 	test_assert_zero(check_xattr_list(TEST_FILE_ADD_NM, 0, xattr_nms, xattr_vls));
 }
 
 TEST_CASE("xattr entry should be added for clean file") {
-	const char *xattr_nms[2] = {
-		xattr_nm1
-	};
-	const char *xattr_vls[2] = {
-		xattr_vl1
-	};
+	const char *xattr_nms[2] = {xattr_nm1};
+	const char *xattr_vls[2] = {xattr_vl1};
 
 	test_assert_zero(setxattr(TEST_FILE_ADD_CLEAN_NM, xattr_nm1, xattr_vl1, strlen(xattr_vl1),
-			XATTR_CREATE));
+				XATTR_CREATE));
 
 	test_assert_zero(check_xattr_list(TEST_FILE_ADD_CLEAN_NM, 0, xattr_nms, xattr_vls));
 }
 
 TEST_CASE("xattr should be setted and retrived on socket") {
-	const char *xattr_nms[5] = {
-		xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2
-	};
-	const char *xattr_vls[5] = {
-		xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2
-	};
+	const char *xattr_nms[5] = {xattr_nm4, xattr_nm3, xattr_nm1, xattr_nm2};
+	const char *xattr_vls[5] = {xattr_vl4, xattr_vl3, xattr_vl1, xattr_vl2};
 	const char **i_xattr, **i_value;
 	int sock_fd;
 
@@ -227,7 +195,7 @@ TEST_CASE("xattr should be setted and retrived on socket") {
 			i_xattr++, i_value++) {
 
 		test_assert_zero(fsetxattr(sock_fd, *i_xattr, *i_value,
-				strlen(*i_value) + 1, 0));
+					strlen(*i_value) + 1, 0));
 	}
 
 	test_assert_zero(check_xattr_list(NULL, sock_fd, xattr_nms, xattr_vls));
@@ -236,16 +204,16 @@ TEST_CASE("xattr should be setted and retrived on socket") {
 }
 
 static int setup_suite(void) {
-	int res;
+        int res;
 
-	if ((res = mount(FS_DEV, FS_DIR, FS_NAME))) {
-		return res;
-	}
+        if ((res = mount(FS_DEV, FS_DIR, FS_NAME))) {
+                return res;
+        }
 
-	return 0;
+        return 0;
 
 }
 
 static int teardown_suite(void) {
-	return 0;
+        return 0;
 }

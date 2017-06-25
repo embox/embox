@@ -32,7 +32,7 @@ static struct dlist_head dynamic_dlist;
  * item head, due to each element can be added in two different lists
  */
 struct element {
-	int				  data;        /**< element data */
+	int data;                      /**< element data */
 	struct dlist_head lnk;         /**< item head for first list */
 	struct dlist_head another_lnk; /**< item head for second list */
 };

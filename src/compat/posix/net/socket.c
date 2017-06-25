@@ -40,7 +40,7 @@ static int get_index(struct sock *sk) {
 }
 
 #define  socket_idesc_check(sockfd, sk) \
-	if (!idesc_index_valid(sockfd) || !index_descriptor_get(sockfd)) { \
+	if (!idesc_index_valid(sockfd) || !index_descriptor_get(sockfd)) {\
 		return SET_ERRNO(EBADF);            \
 	}                                \
 	if (NULL == (sk = idesc_sock_get(sockfd))) { \
@@ -74,12 +74,11 @@ int bind(int sockfd, const struct sockaddr *addr,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!addr || (addrlen <= 0)) {
+	if (!addr || (addrlen <= 0))
 		return SET_ERRNO(EINVAL);
-	}
 
 	ret = kbind(sk, addr, addrlen);
-	if (ret < 0) {
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -93,9 +92,8 @@ int connect(int sockfd, const struct sockaddr *addr, socklen_t addrlen) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (!addr || (addrlen <= 0)) {
+	if (!addr || (addrlen <= 0))
 		return SET_ERRNO(EINVAL);
-	}
 
 	ret = kconnect(sk, addr, addrlen, sk->idesc.idesc_flags);
 	if (ret < 0) {
@@ -157,12 +155,11 @@ ssize_t send(int sockfd, const void *buff, size_t size,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (sk->shutdown_flag & (SHUT_WR + 1)) {
+	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
-	}
 
-/*	if (!size) */
-/*		return 0; */
+//	if (!size)
+//		return 0;
 
 	/* TODO remove this */
 	if (flags & (MSG_EOR | MSG_OOB)) {
@@ -197,12 +194,11 @@ ssize_t sendto(int sockfd, const void *buff, size_t size,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (sk->shutdown_flag & (SHUT_WR + 1)) {
+	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
-	}
 
-/*	if (!size) */
-/*		return 0; */
+//	if (!size)
+//		return 0;
 
 	/* TODO remove this */
 	if (flags != 0) {
@@ -235,9 +231,8 @@ ssize_t sendmsg(int sockfd, const struct msghdr *msg, int flags) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (sk->shutdown_flag & (SHUT_WR + 1)) {
+	if (sk->shutdown_flag & (SHUT_WR + 1))
 		return SET_ERRNO(EPIPE);
-	}
 
 	/* TODO remove this */
 	if (flags != 0) {
@@ -268,9 +263,8 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (sk->shutdown_flag & (SHUT_RD + 1)) {
+	if (sk->shutdown_flag & (SHUT_RD + 1))
 		return SET_ERRNO(EPIPE);
-	}
 
 	/* TODO remove this */
 	if (flags != 0) {
@@ -306,9 +300,8 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (sk->shutdown_flag & (SHUT_RD + 1)) {
+	if (sk->shutdown_flag & (SHUT_RD + 1))
 		return SET_ERRNO(EPIPE);
-	}
 
 	/* TODO remove this */
 	if (flags != 0) {
@@ -346,9 +339,8 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (sk->shutdown_flag & (SHUT_RD + 1)) {
+	if (sk->shutdown_flag & (SHUT_RD + 1))
 		return SET_ERRNO(EPIPE);
-	}
 
 	if ((msg == NULL) || (msg->msg_iov == NULL)
 			|| (msg->msg_iovlen == 0)) {
@@ -383,12 +375,11 @@ int shutdown(int sockfd, int how) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (how != SHUT_RD && how != SHUT_WR && how != SHUT_RDWR) {
+	if (how != SHUT_RD && how != SHUT_WR && how != SHUT_RDWR)
 		return SET_ERRNO(EINVAL);
-	}
 
 	ret = kshutdown(sk, how);
-	if (ret < 0) {
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -408,7 +399,7 @@ int getsockname(int sockfd, struct sockaddr *addr,
 	}
 
 	ret = kgetsockname(sk, addr, addrlen);
-	if (ret < 0) {
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -429,7 +420,7 @@ int getpeername(int sockfd, struct sockaddr *addr,
 	}
 
 	ret = kgetpeername(sk, addr, addrlen);
-	if (ret < 0) {
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 
@@ -449,7 +440,7 @@ int getsockopt(int sockfd, int level, int optname, void *optval,
 	}
 
 	ret = kgetsockopt(sk, level, optname, optval, optlen);
-	if (ret < 0) {
+	if (ret < 0){
 		return SET_ERRNO(-ret);
 	}
 

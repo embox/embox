@@ -51,8 +51,8 @@ struct raspi_timer_regs {
 
 #define RELOAD_VALUE (SYS_CLOCK / (CLOCK_DIVIDER * 1000))
 
-static volatile struct raspi_timer_regs *const regs =
-		(volatile struct raspi_timer_regs *)BCM2835_SYSTEM_TIMER_BASE;
+static volatile struct raspi_timer_regs * const regs =
+		(volatile struct raspi_timer_regs*)BCM2835_SYSTEM_TIMER_BASE;
 
 static inline void raspi_systick_clear(void) {
 	regs->CS = BCM2835_SYSTEM_TIMER_MATCH_3;
@@ -75,20 +75,20 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 static int this_init(void) {
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
-		(void *) ((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK),
-		PROT_READ | PROT_WRITE | PROT_NOCACHE,
-		binalign_bound(sizeof(struct raspi_timer_regs), MMU_PAGE_SIZE),
-		MAP_FIXED,
-		((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK)
-	);
+			(void*) ((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK),
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			binalign_bound(sizeof(struct raspi_timer_regs), MMU_PAGE_SIZE),
+			MAP_FIXED,
+			((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK)
+			);
 
 	clock_source_register(&this_clock_source);
 	irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source,
-			"Raspberry PI systick timer");
+		"Raspberry PI systick timer");
 	return 0;
 }
 
-static int this_config(struct time_dev_conf *conf) {
+static int this_config(struct time_dev_conf * conf) {
 	raspi_systick_clear();
 	/* From that point interrupts will occur. */
 	raspi_systick_comare(RELOAD_VALUE);

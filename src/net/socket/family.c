@@ -12,7 +12,7 @@
 
 ARRAY_SPREAD_DEF(const struct net_family, __net_family_registry);
 
-const struct net_family *net_family_lookup(int family) {
+const struct net_family * net_family_lookup(int family) {
 	const struct net_family *nfamily;
 
 	net_family_foreach(nfamily) {
@@ -24,7 +24,7 @@ const struct net_family *net_family_lookup(int family) {
 	return NULL;
 }
 
-const struct net_family_type *net_family_type_lookup(
+const struct net_family_type * net_family_type_lookup(
 		const struct net_family *nfamily, int type) {
 	const struct net_family_type *nftype;
 

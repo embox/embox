@@ -15,9 +15,9 @@
 #define POP3_STATUS_LEN 512
 
 struct pop3_session {
-	int	  sock;
-	int	  ok;
-	char  status[POP3_STATUS_LEN + 1];
+	int sock;
+	int ok;
+	char status[POP3_STATUS_LEN + 1];
 	char *data;
 };
 
@@ -25,8 +25,8 @@ extern int pop3_open(struct pop3_session *p3s, const char *host,
 		unsigned short port);
 extern int pop3_close(struct pop3_session *p3s);
 extern int pop3_ok(struct pop3_session *p3s);
-extern const char *pop3_status(struct pop3_session *p3s);
-extern const char *pop3_data(struct pop3_session *p3s);
+extern const char * pop3_status(struct pop3_session *p3s);
+extern const char * pop3_data(struct pop3_session *p3s);
 
 extern int pop3_stat(struct pop3_session *p3s);
 extern int pop3_list(struct pop3_session *p3s,

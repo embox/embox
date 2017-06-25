@@ -32,14 +32,12 @@ struct pnet_graph *pnet_graph_create(char *name) {
 	struct pnet_graph *gr;
 
 	list_for_each_entry(gr, &pnet_graphs, lnk) {
-		if (!strcmp(gr->name, name)) {
+		if(!strcmp(gr->name, name))
 			return NULL;
-		}
 	}
 
-	if (NULL == (gr = (struct pnet_graph *) objalloc(&graphs))) {
+	if (NULL == (gr = (struct pnet_graph *) objalloc(&graphs)))
 		return NULL;
-	}
 
 	INIT_LIST_HEAD(&gr->nodes);
 	INIT_LIST_HEAD(&gr->lnk);
@@ -62,7 +60,7 @@ int pnet_graph_start(struct pnet_graph *graph) {
 	}
 
 	list_for_each_entry(node, &graph->nodes, gr_link) {
-		if (NULL != (hnd = pnet_proto_start(node))) {
+		if(NULL != (hnd = pnet_proto_start(node))) {
 			hnd(node);
 		}
 	}
@@ -83,7 +81,7 @@ int pnet_graph_stop(struct pnet_graph *graph) {
 	}
 
 	list_for_each_entry(node, &graph->nodes, gr_link) {
-		if (NULL != (hnd = pnet_proto_stop(node))) {
+		if(NULL != (hnd = pnet_proto_stop(node))) {
 			hnd(node);
 		}
 	}

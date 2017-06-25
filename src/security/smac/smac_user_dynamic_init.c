@@ -14,6 +14,7 @@ EMBOX_UNIT_INIT(smac_user_dynamic_init_init);
 #define SMAC_USER_INIT_DB "/smac_users.init"
 #define SMAC_USER_TARGET_DB "/smac_users"
 
+
 static int smac_user_dynamic_init_init(void) {
 	const char *cmds[] = {
 		"cp " SMAC_USER_INIT_DB " " SMAC_USER_TARGET_DB,

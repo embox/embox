@@ -85,9 +85,8 @@ int net_tx(struct sk_buff *skb,
 		ret = neighbour_send_after_resolve(hdr_info->type,
 				hdr_info->dst_p, hdr_info->p_len,
 				dev, skb);
-		if (ret != 0) {
+		if (ret != 0)
 			log_debug("neighbour_send_after_resolve = %d", ret);
-		}
 
 		return ret;
 	}

@@ -23,3 +23,4 @@ void context_init(struct context *ctx, unsigned int flags,
 		ctx->cpsr |= I_BIT | F_BIT;
 	}
 }
+

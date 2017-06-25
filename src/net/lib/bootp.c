@@ -16,13 +16,11 @@
 
 #include <net/lib/bootp.h>
 
-static const uint8_t dhcp_magic_cookie[4] = {
-	0x63, 0x82, 0x53, 0x63
-};
+static const uint8_t dhcp_magic_cookie[4] = { 0x63, 0x82, 0x53, 0x63 };
 static const uint8_t dhcp_discovery_options[] = {
-	TAG_DHCP_MESS_TYPE, 1, BOOTPREQUEST,     /* required by busybox */
-	TAG_DHCP_PARM_REQ_LIST, 0,     /* request option all option list from server */
-	TAG_END     /* the end */
+		TAG_DHCP_MESS_TYPE, 1, BOOTPREQUEST, /* required by busybox */
+		TAG_DHCP_PARM_REQ_LIST, 0, /* request option all option list from server */
+		TAG_END /* the end */
 };
 
 int bootp_build_request(struct bootphdr *bph, uint8_t opcode,
@@ -52,8 +50,8 @@ static int bootp_valid(struct bootphdr *bph, uint8_t opcode) {
 	}
 
 	if ((bph->op != opcode) || (0 != memcmp(&bph->vend[0],
-			&dhcp_magic_cookie[0], sizeof dhcp_magic_cookie))) {
-		return -EINVAL;
+				&dhcp_magic_cookie[0], sizeof dhcp_magic_cookie))) {
+			return -EINVAL;
 	}
 
 	return 0;
@@ -71,7 +69,7 @@ uint8_t *bootp_get_opt(struct bootphdr *bph, uint8_t opt_type) {
 
 	tag = &bph->vend[sizeof(dhcp_magic_cookie)];
 	while (tag < &bph->vend[sizeof(bph->vend)]) {
-		switch (*tag) {
+		switch(*tag) {
 		default:
 			if (*tag == opt_type) {
 				return tag + 2;

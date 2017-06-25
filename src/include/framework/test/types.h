@@ -14,9 +14,9 @@
 /**
  * Each test case implements this interface.
  */
-typedef void (*test_case_run_t)(void);
+typedef void(*test_case_run_t)(void);
 
-typedef int (*__test_fixture_op_t)(void);
+typedef int(*__test_fixture_op_t)(void);
 
 struct test_suite;
 struct test_case;
@@ -37,7 +37,7 @@ struct test_suite {
 	/** If test should be run when module loaded */
 	bool autorun;
 	/** Internal data managed by framework. */
-	struct __test_private *	  test_priv;
+	struct __test_private *test_priv;
 	struct __test_fixture_ops suite_fixture_ops;
 	struct __test_fixture_ops case_fixture_ops;
 };
@@ -53,7 +53,7 @@ struct test_case {
 
 struct __test_assertion_point {
 	struct location_func location;
-	const char *		 reason;
+	const char *reason;
 };
 
 struct __test_private {
@@ -61,7 +61,7 @@ struct __test_private {
 };
 
 struct test_mod {
-	struct mod		  mod;
+	struct mod mod;
 	struct test_suite suite;
 };
 

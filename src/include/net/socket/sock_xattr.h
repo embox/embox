@@ -18,3 +18,4 @@ struct sock_xattr;
 extern void sock_xattr_init(struct sock *sock);
 
 #endif /* NET_SOCKET_XATTR_H_ */
+

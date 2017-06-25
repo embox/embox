@@ -14,6 +14,7 @@ TEST_CASE("strlcpy with zero size") {
 	char src[] = "string";
 	char dst[sizeof(src) + 1];
 
+
 	test_assert_equal(strlen(src), strlcpy(dst, src, 0));
 }
 

@@ -15,7 +15,7 @@
 #include <util/array.h>
 #include <unistd.h>
 
-char ***task_self_environ_ptr(void) {
+char *** task_self_environ_ptr(void) {
 	return &task_self_resource_env()->envs;
 }
 
@@ -38,7 +38,7 @@ static size_t env_lookup(const char *name, char **vals, size_t next) {
 	return i;
 }
 
-char *getenv(const char *name) {
+char * getenv(const char *name) {
 	size_t index;
 	struct task_env *env;
 

@@ -113,12 +113,12 @@ int bootp_client(struct net_device *dev) {
 	}
 
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE,
-			&dev->name[0], strlen(&dev->name[0]))) {
+				&dev->name[0], strlen(&dev->name[0]))) {
 		ret = -errno;
 		goto error;
 	}
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-			&timeout, sizeof timeout)) {
+				&timeout, sizeof timeout)) {
 		ret = -errno;
 		goto error;
 	}
@@ -135,7 +135,7 @@ int bootp_client(struct net_device *dev) {
 	addr.sin_addr.s_addr = htonl(INADDR_BROADCAST);
 
 	if (-1 == sendto(sock, &bph_req, sizeof bph_req, 0,
-			(struct sockaddr *)&addr, sizeof addr)) {
+				(struct sockaddr *)&addr, sizeof addr)) {
 		ret = -errno;
 		goto error;
 	}
@@ -158,7 +158,7 @@ int main(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch (opt) {
 		case 'h':
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			print_usage();
 			return 0;

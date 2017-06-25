@@ -26,14 +26,14 @@ INDEX_DEF(dev_module_idx, 0, MAX_DEV_MODULE_COUNT);
  * @return
  */
 struct dev_module *dev_module_create(struct device *dev, const char *name,
-		void *privdata) {
+                                     void *privdata) {
 	struct dev_module *devmod;
 	int id;
 
 	assert(dev);
 	assert(name);
 	assert(privdata); /* No known devices without privdata. Currently
-	           *  it's up to legacy of the old FS */
+			   *  it's up to legacy of the old FS */
 
 	devmod = pool_alloc(&dev_module_pool);
 	id = index_alloc(&dev_module_idx, INDEX_MIN);

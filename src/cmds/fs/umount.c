@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 		case 'h':
 			print_usage();
 			return 0;
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}
@@ -40,7 +40,7 @@ int main(int argc, char **argv) {
 	}
 	dir = argv[argc - 1];
 
-	switch (umount(dir)) {
+	switch(umount(dir)) {
 	case -EBUSY:
 		printf("Can't unmount %s, device is in use.\n", dir);
 		break;

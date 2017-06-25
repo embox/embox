@@ -42,8 +42,8 @@ TEST_CASE("one sleep") {
 	test_assert_true(epsilon < (TIME_TO_SLEEP / USEC_PER_MSEC + EPSILON_BORDER));
 }
 
-static void *handler_timeout(void *args) {
-	struct waitq *wq = (struct waitq *) args;
+static void * handler_timeout(void* args) {
+	struct waitq *wq = (struct waitq*) args;
 	test_assert_equal(-ETIMEDOUT, SCHED_WAIT_TIMEOUT(0, 10));
 	waitq_wakeup(wq, 1);
 	return NULL;
@@ -59,7 +59,7 @@ TEST_CASE("timeout sleep") {
 	waitq_link_init(&wql);
 	waitq_wait_prepare(&wq, &wql);
 
-	test_assert_zero(pthread_create(&t, 0, handler_timeout, (void *) &wq));
+	test_assert_zero(pthread_create(&t, 0, handler_timeout, (void*) &wq));
 	test_assert_not_null(t);
 
 	test_assert_zero(sched_wait_timeout(1000, &remain));
@@ -73,7 +73,7 @@ TEST_CASE("timeout sleep") {
  *  assert right done sequence of threads
  */
 
-static void *handler1(void *args) {
+static void * handler1(void* args) {
 	usleep(TIME_TO_SLEEP * (uint32_t) args);
 	test_emit('0' + (uint32_t) args);
 	return NULL;
@@ -103,7 +103,7 @@ TEST_CASE("simple multi-threaded check") {
  * run NUM_THREADS threads and with progressive time to sleep
  * after execute buffer2 must be "87654321"
  */
-static void *handler2(void *args) {
+static void * handler2(void* args) {
 	usleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
 	test_emit('1' + (uint32_t) args);
 	return NULL;
@@ -115,7 +115,7 @@ TEST_CASE("sleep sort") {
 
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(
-			pthread_create(&t[i], 0, handler2, (void *) i));
+				pthread_create(&t[i], 0, handler2, (void *) i));
 		test_assert_not_null(t[i]);
 	}
 	for (i = 0; i < NUM_THREADS; i++) {
@@ -137,3 +137,5 @@ TEST_CASE("many sleeps") {
 		usleep((i % 17) * USEC_PER_MSEC);
 	}
 }
+
+

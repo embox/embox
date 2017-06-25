@@ -28,7 +28,7 @@
 
 struct fb_dev {
 	struct dlist_head link;
-	struct fb_info	  info;
+	struct fb_info info;
 };
 
 static int fb_update_current_var(struct fb_info *info);
@@ -80,7 +80,7 @@ struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_s
 			info->id = fb_count++;
 			dlist_init(&dev->link);
 			dlist_add_next(&dev->link, &fb_list);
-		} else {
+		} else{
 			info = NULL;
 		}
 	}
@@ -92,6 +92,7 @@ struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_s
 
 		memcpy(&info->ops, ops, sizeof(struct fb_ops));
 		fb_ops_fixup(&info->ops);
+
 
 		/* FIXME probably should be in open/start */
 		fb_update_current_var(info);
@@ -169,6 +170,7 @@ void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 	info->ops.fb_fillrect(info, rect);
 }
 
+
 static int fb_update_current_var(struct fb_info *info) {
 	if (info->ops.fb_get_var != NULL) {
 		return info->ops.fb_get_var(info, &info->var);
@@ -184,9 +186,7 @@ static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
 	assert(dst != NULL);
 	assert(src != NULL);
 
-	if (len == 0) {
-		return;
-	}
+	if (len == 0) return;
 
 	mask1 = ~(uint32_t)0 << dstn;
 	mask2 = ~(~(uint32_t)0 << (dstn + len) % (sizeof(*dst) * CHAR_BIT));
@@ -220,12 +220,10 @@ static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
 
 		if (dstn + len <= sizeof(*dst) * CHAR_BIT) {
 			mask1 &= mask2 != 0 ? mask2 : mask1;
-			if (shift > 0) {
+			if (shift > 0)
 				fb_writel(((fb_readl(src) >> roff) & mask1) | (fb_readl(dst) & ~mask1), dst);
-			}
-			else if (srcn + len <= sizeof(*dst) * CHAR_BIT) {
+			else if (srcn + len <= sizeof(*dst) * CHAR_BIT)
 				fb_writel(((fb_readl(src) << loff) & mask1) | (fb_readl(dst) & ~mask1), dst);
-			}
 			else {
 				lval = fb_readl(src);
 				++src;
@@ -260,9 +258,8 @@ static void bitcpy(uint32_t *dst, uint32_t dstn, uint32_t *src, uint32_t srcn,
 				lval = rval;
 			}
 
-			if (left <= roff) {
+			if (left <= roff)
 				fb_writel(((lval << loff) & mask2) | (fb_readl(dst) & ~mask2), dst);
-			}
 			else {
 				rval = fb_readl(src);
 				fb_writel((((lval << loff) | (rval >> roff)) & mask2) | (fb_readl(dst) & ~mask2), dst);
@@ -279,9 +276,7 @@ static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
 	assert(dst != NULL);
 	assert(src != NULL);
 
-	if (len == 0) {
-		return;
-	}
+	if (len == 0) return;
 
 	dst += (len - 1) / (sizeof(*dst) * CHAR_BIT);
 	src += (len - 1) / (sizeof(*src) * CHAR_BIT);
@@ -327,12 +322,10 @@ static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
 
 		if (dstn + 1 >= len) {
 			mask1 &= mask2 != 0 ? mask2 : mask1;
-			if (shift < 0) {
+			if (shift < 0)
 				fb_writel(((fb_readl(src) << loff) & mask1) | (fb_readl(dst) & ~mask1), dst);
-			}
-			else if (srcn + 1 >= len) {
+			else if (srcn + 1 >= len)
 				fb_writel(((fb_readl(src) >> roff) & mask1) | (fb_readl(dst) & ~mask1), dst);
-			}
 			else {
 				rval = fb_readl(src);
 				--src;
@@ -367,9 +360,8 @@ static void bitcpy_rev(uint32_t *dst, uint32_t dstn, uint32_t *src,
 				rval = lval;
 			}
 
-			if (left <= loff) {
+			if (left <= loff)
 				fb_writel(((rval >> roff) & mask2) | (fb_readl(dst) & ~mask2), dst);
-			}
 			else {
 				lval = fb_readl(src);
 				fb_writel((((rval << roff) | (lval >> loff)) & mask2) | (fb_readl(dst) & ~mask2), dst);
@@ -385,9 +377,7 @@ static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *
 	assert(area != NULL);
 
 	if ((area->dx >= info->var.xres) || (area->dy >= info->var.yres)
-			|| (area->sx >= info->var.xres) || (area->sy >= info->var.yres)) {
-		return;
-	}
+			|| (area->sx >= info->var.xres) || (area->sy >= info->var.yres)) return;
 
 	width = min(area->width, info->var.xres - max(area->sx, area->dx));
 	height = min(area->height, info->var.yres - max(area->sy, area->dy));
@@ -429,14 +419,14 @@ static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *
 
 static uint32_t pixel_to_pat(uint32_t bpp, uint32_t pixel) {
 	return bpp == 1 ? 0xffffffffUL * pixel
-		   : bpp == 2 ? 0x55555555UL * pixel
-		   : bpp == 4 ? 0x11111111UL * pixel
-		   : bpp == 8 ? 0x01010101UL * pixel
-		   : bpp == 12 ? 0x01001001UL * pixel
-		   : bpp == 16 ? 0x00010001UL * pixel
-		   : bpp == 24 ? 0x01000001UL * pixel
-		   : bpp == 32 ? 0x00000001UL * pixel
-		   : 0xbadffbad;
+			: bpp == 2 ? 0x55555555UL * pixel
+			: bpp == 4 ? 0x11111111UL * pixel
+			: bpp == 8 ? 0x01010101UL * pixel
+			: bpp == 12 ? 0x01001001UL * pixel
+			: bpp == 16 ? 0x00010001UL * pixel
+			: bpp == 24 ? 0x01000001UL * pixel
+			: bpp == 32 ? 0x00000001UL * pixel
+			: 0xbadffbad;
 }
 
 static void bitfill(uint32_t *dst, uint32_t dstn, uint32_t pat,
@@ -445,9 +435,7 @@ static void bitfill(uint32_t *dst, uint32_t dstn, uint32_t pat,
 
 	assert(dst != NULL);
 
-	if (len == 0) {
-		return;
-	}
+	if (len == 0) return;
 
 	mask1 = ~(uint32_t)0 << dstn;
 	mask2 = ~(~(uint32_t)0 << (dstn + len) % (sizeof(*dst) * CHAR_BIT));
@@ -481,9 +469,7 @@ static void bitfill_rev(uint32_t *dst, uint32_t dstn, uint32_t pat,
 
 	assert(dst != NULL);
 
-	if (len == 0) {
-		return;
-	}
+	if (len == 0) return;
 
 	mask1 = ~(uint32_t)0 << dstn;
 	mask2 = ~(~(uint32_t)0 << (dstn + len) % (sizeof(*dst) * CHAR_BIT));
@@ -528,14 +514,12 @@ static void bitfill_rev(uint32_t *dst, uint32_t dstn, uint32_t pat,
 static void fb_default_fillrect(struct fb_info *info, const struct fb_fillrect *rect) {
 	uint32_t width, height, pat_orig, pat, *dst, dstn, loff, roff;
 	void (*fill_op)(uint32_t *dst, uint32_t dstn, uint32_t pat,
-			uint32_t loff, uint32_t roff, uint32_t len);
+		uint32_t loff, uint32_t roff, uint32_t len);
 
 	assert(info != NULL);
 	assert(rect != NULL);
 
-	if ((rect->dx >= info->var.xres) || (rect->dy >= info->var.yres)) {
-		return;
-	}
+	if ((rect->dx >= info->var.xres) || (rect->dy >= info->var.yres)) return;
 
 	width = min(rect->width, info->var.xres - rect->dx);
 	height = min(rect->height, info->var.yres - rect->dy);
@@ -594,9 +578,7 @@ static void fb_default_cursor(struct fb_info *info, const struct fb_cursor *curs
 	assert(info != NULL);
 	assert(cursor != NULL);
 
-	if (!cursor->enable) {
-		return;
-	}
+	if (!cursor->enable) return;
 
 	rect.width = rect.height = 1;
 	rect.rop = cursor->rop;

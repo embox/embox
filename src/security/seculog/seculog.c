@@ -17,7 +17,7 @@
 #define REC_HND_N 32
 
 struct seculog_rec_handle {
-	struct dlist_head	   rh_lnk;
+	struct dlist_head rh_lnk;
 	struct seculog_record *record;
 };
 
@@ -94,11 +94,12 @@ static struct seculog_rec_handle *seculog_rec_handle_alloc(struct seculog_record
 	struct seculog_rec_handle *rech;
 
 	if (NULL != (rech = pool_alloc(&seculog_rec_handle_pool))) {
-/*		return rech; */
+//		return rech;
 
-		dlist_head_init(&rech->rh_lnk);
-		rech->record = rec;
-		seculog_record_inc_ref(rec);
+
+	dlist_head_init(&rech->rh_lnk);
+	rech->record = rec;
+	seculog_record_inc_ref(rec);
 	}
 
 	return rech;
@@ -162,3 +163,4 @@ int seculog_close(struct seculog_desc *desc) {
 
 	return seculog_unsubscribe(&desc->subscb);
 }
+

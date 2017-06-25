@@ -44,9 +44,9 @@
 struct sk_buff_data_fixed {
 	size_t links;
 
-	char		  __ip_align[IP_ALIGN_SIZE];
+	char __ip_align[IP_ALIGN_SIZE];
 	unsigned char data[MODOPS_DATA_SIZE];
-	char		  __data_pad[DATA_PAD_SIZE];
+	char __data_pad[DATA_PAD_SIZE];
 };
 
 struct sk_buff_data {
@@ -65,17 +65,17 @@ size_t skb_max_size(void) {
 	return MODOPS_DATA_SIZE;
 }
 
-void *skb_data_cast_in(struct sk_buff_data *skb_data) {
+void * skb_data_cast_in(struct sk_buff_data *skb_data) {
 	assert(skb_data != NULL);
 	return skb_get_data_pointner(skb_data);
 }
 
-struct sk_buff_data *skb_data_cast_out(void *data) {
+struct sk_buff_data * skb_data_cast_out(void *data) {
 	assert(data != NULL);
 	return member_cast_out(data - IP_ALIGN_SIZE, struct sk_buff_data, __data);
 }
 
-struct sk_buff_data *skb_data_alloc(size_t size) {
+struct sk_buff_data * skb_data_alloc(size_t size) {
 	ipl_t sp;
 	struct sk_buff_data *skb_data;
 
@@ -99,7 +99,7 @@ struct sk_buff_data *skb_data_alloc(size_t size) {
 	return skb_data;
 }
 
-struct sk_buff_data *skb_data_clone(struct sk_buff_data *skb_data) {
+struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data) {
 	ipl_t sp;
 
 	assert(skb_data != NULL);

@@ -22,7 +22,7 @@ int __lthread_is_disabled(struct lthread *lt) {
 	assert(lt);
 
 	return SPIN_IPL_PROTECTED_DO(&lt->schedee.lock,
-				   lt->schedee.waiting && lt->info.status == 0);
+		lt->schedee.waiting && lt->info.status == 0);
 }
 
 /** locks: IPL, sched. lthread->run must be atomic. */
@@ -39,9 +39,8 @@ static struct schedee *lthread_process(struct schedee *prev,
 
 	lt->label_offset = lt->run(lt);
 
-	if (lt->joining && __lthread_is_disabled(lt)) {
+	if (lt->joining && __lthread_is_disabled(lt))
 		sched_wakeup(lt->joining);
-	}
 
 	return NULL;
 }

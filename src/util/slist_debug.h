@@ -17,14 +17,14 @@ struct slist_link;
 struct __slist_link;
 
 struct slist {
-	unsigned int		poison;
-	int					offset;
+	unsigned int poison;
+	int offset;
 	struct __slist_link l;
 };
 
 struct slist_link {
-	unsigned int		poison;
-	struct slist *		slist;
+	unsigned int poison;
+	struct slist *slist;
 	struct __slist_link l;
 };
 
@@ -47,7 +47,7 @@ struct slist_link {
 
 #define __slist_check(expr) \
 	({ \
-		typeof(expr)__slist_expr = (expr); \
+		typeof(expr) __slist_expr = (expr); \
 		assert(__slist_expr != NULL);       \
 		__slist_expr;                       \
 	})

@@ -23,6 +23,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+
 #include <cmd/cmdline.h>
 #include <cmd/shell.h>
 
@@ -33,6 +34,8 @@
 
 #include <kernel/task.h>
 
+
+
 #define PROMPT_FMT OPTION_STRING_GET(prompt)
 
 #define RICH_PROMPT_SUPPORT OPTION_GET(NUMBER, rich_prompt_support)
@@ -42,15 +45,15 @@
 #define PROMPT_BUF_LEN 32
 
 struct cmd_data {
-	int				  argc;
-	char *			  argv[(SHELL_INPUT_BUFF_SZ + 1) / 2];
-	char			  cmdline_buf[SHELL_INPUT_BUFF_SZ];
+	int argc;
+	char *argv[(SHELL_INPUT_BUFF_SZ + 1) / 2];
+	char cmdline_buf[SHELL_INPUT_BUFF_SZ];
 	const struct cmd *cmd;
-	bool			  on_fg;
-	volatile int	  started;
+	bool on_fg;
+	volatile int started;
 };
 
-static char *cmd_generator(const char *text, int state) {
+static char * cmd_generator(const char *text, int state) {
 	static int last_ind;
 	static size_t text_len;
 	int ind;
@@ -75,9 +78,10 @@ static char *cmd_generator(const char *text, int state) {
 	return NULL;
 }
 
-static char **cmd_completion(const char *text, int start,
+static char ** cmd_completion(const char *text, int start,
 		int end) {
 	char **matches;
+
 
 	if (start == 0) {
 		matches = rl_completion_matches((char *)text,
@@ -126,6 +130,7 @@ static int process_builtin(struct cmd_data *cdata) {
 		return ret;
 	}
 
+
 	return 0;
 }
 
@@ -151,7 +156,7 @@ static void cmd_data_copy(struct cmd_data *dst, const struct cmd_data *src) {
 	dst->on_fg = src->on_fg;
 }
 
-static void *run_cmd(void *data) {
+static void * run_cmd(void *data) {
 	int ret;
 	struct cmd_data cdata;
 
@@ -366,9 +371,8 @@ static void tish_run(void) {
 		if (line[0] != '\0' && line[0] != '/') {
 			add_history(line); /* Add to the history. */
 			err = tish_exec(line);
-			if (err) {
+			if (err)
 				printf("tish error: #%d\n", err);
-			}
 		} else if (!strncmp(line,"/historylen",11)) {
 			/* The "/historylen" command will change the history len. */
 			int len = atoi(line+11);
@@ -384,10 +388,10 @@ static void tish_run(void) {
 }
 
 SHELL_DEF({
-			.name = "tish",
-			.exec = tish_exec,
-			.run  = tish_run,
-		});
+	.name = "tish",
+	.exec = tish_exec,
+	.run  = tish_run,
+	});
 
 int main(int argc, char **argv) {
 	tish_run();

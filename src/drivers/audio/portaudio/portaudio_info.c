@@ -30,8 +30,8 @@ static int pa_info_init(void) {
 
 	if (_dev_cnt > MAX_DEV_CNT) {
 		log_error("Increase max_dev_count option!"
-				" Need %d, have %d\n",
-				_dev_cnt, MAX_DEV_CNT);
+		          " Need %d, have %d\n",
+		          _dev_cnt, MAX_DEV_CNT);
 
 		_dev_cnt = MAX_DEV_CNT;
 	}
@@ -63,33 +63,29 @@ PaDeviceIndex Pa_GetDeviceCount(void) {
 	return _dev_cnt;
 }
 
-PaDeviceIndex Pa_GetDefaultInputDevice(void) {
+PaDeviceIndex Pa_GetDefaultInputDevice (void) {
 	struct audio_dev *audio_dev;
-
+	
 	for (int i = 0; i < _dev_cnt; i++) {
 		audio_dev = audio_dev_get_by_idx(i);
-		if (!audio_dev || !audio_dev->ad_ops || !audio_dev->ad_ops->ad_ops_ioctl) {
+		if (!audio_dev || !audio_dev->ad_ops || !audio_dev->ad_ops->ad_ops_ioctl)
 			continue;
-		}
-		if (audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_IN_SUPPORT, NULL) != 0) {
+		if (audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_IN_SUPPORT, NULL) != 0)
 			return i;
-		}
 	}
 
 	return paNoDevice;
 }
 
-PaDeviceIndex Pa_GetDefaultOutputDevice(void) {
+PaDeviceIndex Pa_GetDefaultOutputDevice (void) {
 	struct audio_dev *audio_dev;
-
+	
 	for (int i = 0; i < _dev_cnt; i++) {
 		audio_dev = audio_dev_get_by_idx(i);
-		if (!audio_dev || !audio_dev->ad_ops || !audio_dev->ad_ops->ad_ops_ioctl) {
+		if (!audio_dev || !audio_dev->ad_ops || !audio_dev->ad_ops->ad_ops_ioctl)
 			continue;
-		}
-		if (audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_OUT_SUPPORT, NULL) != 0) {
+		if (audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_OUT_SUPPORT, NULL) != 0)
 			return i;
-		}
 	}
 
 	return paNoDevice;
@@ -99,20 +95,18 @@ const char *Pa_GetErrorText(PaError errorCode) {
 	return "Pa_GetErrorText not implemented";
 }
 
-const PaDeviceInfo *Pa_GetDeviceInfo(PaDeviceIndex device) {
-	if (device >= _dev_cnt) {
+const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
+	if (device >= _dev_cnt)
 		return NULL;
-	}
-	else {
+	else
 		return (const PaDeviceInfo *) &_info[device];
-	}
 }
 
-const PaHostApiInfo *Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
+const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
 	return NULL;
 }
 
-const PaStreamInfo *Pa_GetStreamInfo(PaStream *stream) {
+const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 	static PaStreamInfo info = {
 		.structVersion = 1,
 		.inputLatency = 0,

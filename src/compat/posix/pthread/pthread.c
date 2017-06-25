@@ -12,6 +12,7 @@
 #include <kernel/thread.h>
 #include <util/err.h>
 
+
 int pthread_attr_destroy(pthread_attr_t *attr) {
 	return ENOERR;
 }
@@ -23,7 +24,7 @@ int pthread_attr_getdetachstate(const pthread_attr_t *attr, int *detachstate) {
 
 /*
 int pthread_attr_getguardsize(const pthread_attr_t *attr, size_t *guardsize) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 int pthread_attr_getinheritsched(const pthread_attr_t *attr, int *inheritsched) {
@@ -46,15 +47,15 @@ int pthread_attr_getschedpolicy(const pthread_attr_t *attr, int *policy) {
 
 /*
 int pthread_attr_getscope(const pthread_attr_t *attr, int *contentionscope) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 
 int pthread_attr_getstackaddr(const pthread_attr_t *attr, void **stackaddr) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 
 int pthread_attr_getstacksize(const pthread_attr_t *attr, size_t *stacksize) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 int pthread_attr_init(pthread_attr_t *attr) {
@@ -84,7 +85,7 @@ int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate) {
 
 /*
 int pthread_attr_setguardsize(pthread_attr_t *attr, size_t guardsize) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 
@@ -98,7 +99,7 @@ int pthread_attr_setinheritsched(pthread_attr_t *attr, int inheritsched) {
 }
 
 int pthread_attr_setschedparam(pthread_attr_t *attr, const struct sched_param *param) {
-	/*TODO move copy to other place */
+	//TODO move copy to other place
 	attr->sched_param.sched_priority = param->sched_priority;
 
 	return -ENOSYS;
@@ -112,17 +113,18 @@ int pthread_attr_setschedpolicy(pthread_attr_t *attr, int policy) {
 
 /*
 int pthread_attr_setscope(pthread_attr_t *attr, int contentionscope) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 
 int pthread_attr_setstackaddr(pthread_attr_t *attr, void *stackaddr) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 
 int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
+
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		void *(*start_routine)(void *), void *arg) {
@@ -192,7 +194,7 @@ void pthread_exit(void *value_ptr) {
 
 /*
 int pthread_getconcurrency(void) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 
@@ -207,11 +209,12 @@ int pthread_join(pthread_t thread, void **value_ptr) {
 	return thread_join(thread, value_ptr);
 }
 
+
 int pthread_once(pthread_once_t *once_control, void (*init_routine)(void)) {
-	if ((NULL == init_routine) || (NULL == once_control)) {
+	if((NULL == init_routine) || (NULL == once_control)) {
 		return -EINVAL;
 	}
-	if (pthread_mutex_trylock(once_control)) {
+	if(pthread_mutex_trylock(once_control)) {
 		return 0;
 	}
 	init_routine();
@@ -226,7 +229,7 @@ pthread_t pthread_self(void) {
 /*
 
 int pthread_setconcurrency(int new_level) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 int pthread_setschedparam(pthread_t thread, int policy,
@@ -242,3 +245,4 @@ int pthread_setschedparam(pthread_t thread, int policy,
 int pthread_setschedprio(pthread_t thread, int prio) {
 	return schedee_priority_set(&thread->schedee, prio);
 }
+

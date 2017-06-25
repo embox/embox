@@ -31,17 +31,17 @@ struct usb_mscbw {
 	uint32_t cbw_signature;
 	uint32_t cbw_tag;
 	uint32_t cbw_transfer_len;
-	uint8_t	 cbw_flags;
-	uint8_t	 cbw_lun;
-	uint8_t	 cbw_len;
-	uint8_t	 cbw_cb[USB_CBW_CB_MAXLEN];
+	uint8_t  cbw_flags;
+	uint8_t  cbw_lun;
+	uint8_t  cbw_len;
+	uint8_t  cbw_cb[USB_CBW_CB_MAXLEN];
 } __attribute__((packed));
 
 struct usb_mscsw {
 	uint32_t csw_signature;
 	uint32_t csw_tag;
 	uint32_t csw_data_resude;
-	uint8_t	 csw_status;
+	uint8_t  csw_status;
 } __attribute__((packed));
 
 struct usb_mass_request_ctx {
@@ -52,8 +52,8 @@ struct usb_mass_request_ctx {
 	} req_state;
 
 	enum usb_direction dir;
-	void *			   buf;
-	size_t			   len;
+	void *buf;
+	size_t len;
 
 	struct usb_mscbw cbw;
 	struct usb_mscsw csw;
@@ -67,7 +67,7 @@ struct usb_mass {
 
 	uint8_t maxlun;
 
-	char						blkin, blkout;
+	char blkin, blkout;
 	struct usb_mass_request_ctx req_ctx;
 };
 
@@ -77,6 +77,7 @@ static inline struct usb_mass *usb2massdata(struct usb_dev *dev) {
 
 extern int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
 		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len,
-		usb_request_notify_hnd_t notify_hnd);
+	       	usb_request_notify_hnd_t notify_hnd);
 
 #endif /* USB_CLASS_USB_MASS_STORAGE_H_ */
+

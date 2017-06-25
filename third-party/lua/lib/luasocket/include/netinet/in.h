@@ -22,7 +22,7 @@ struct ip_mreq {
 
 struct ipv6_mreq {
 	struct in6_addr ipv6mr_multiaddr;
-	unsigned int	ipv6mr_interface;
+	unsigned int ipv6mr_interface;
 };
 
 #endif /* LUASOCKET_NETINET_IN_H_ */

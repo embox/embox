@@ -37,7 +37,7 @@ void endnetent(void) {
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
 #define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
 
-struct netent *getnetent(void) {
+struct netent * getnetent(void) {
 	char netent_buff[NETENT_BUFF_SZ];
 	struct netent *ne, *result;
 	char *tmp, *name, *net_str;

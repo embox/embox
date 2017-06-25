@@ -22,6 +22,6 @@ static int net_null_rx_hnd(struct pnet_pack *pack) {
 }
 
 PNET_NODE_DEF("null node", {
-			.tx_hnd = net_null_tx_hnd,
-			.rx_hnd = net_null_rx_hnd
-		});
+	.tx_hnd = net_null_tx_hnd,
+	.rx_hnd = net_null_rx_hnd
+});

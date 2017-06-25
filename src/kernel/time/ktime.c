@@ -37,7 +37,7 @@ struct timespec *ktime_get_timespec(struct timespec *ts) {
 time_t ktime_get_timeseconds(void) {
 	struct timespec ts;
 
-	ktime_get_timespec(&ts);
+	ktime_get_timespec (&ts);
 	return ts.tv_sec;
 }
 

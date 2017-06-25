@@ -36,14 +36,15 @@ EMBOX_UNIT_INIT(stm32eth_init);
 
 static ETH_HandleTypeDef stm32_eth_handler;
 
-static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB] __attribute__ ((aligned(4)));
-static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] __attribute__ ((aligned(4)));
 
-static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB] __attribute__ ((aligned(4)));
-static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] __attribute__ ((aligned(4)));
+static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB]__attribute__ ((aligned (4)));
+static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] __attribute__ ((aligned (4)));
+
+static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB]__attribute__ ((aligned (4)));
+static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] __attribute__ ((aligned (4)));
 
 static void low_level_init(unsigned char mac[6]) {
-	/*uint32_t regvalue; */
+	//uint32_t regvalue;
 	int err;
 
 	memset(&stm32_eth_handler, 0, sizeof(stm32_eth_handler));
@@ -52,11 +53,11 @@ static void low_level_init(unsigned char mac[6]) {
 	/* Fill ETH_InitStructure parametrs */
 	stm32_eth_handler.Init.MACAddr = mac;
 	stm32_eth_handler.Init.AutoNegotiation = ETH_AUTONEGOTIATION_DISABLE;
-	/*stm32_eth_handler.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE; */
+	//stm32_eth_handler.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
 	stm32_eth_handler.Init.Speed = ETH_SPEED_100M;
 	stm32_eth_handler.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
 	stm32_eth_handler.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
-	stm32_eth_handler.Init.ChecksumMode = ETH_CHECKSUM_BY_SOFTWARE;/*ETH_CHECKSUM_BY_HARDWARE; */
+	stm32_eth_handler.Init.ChecksumMode = ETH_CHECKSUM_BY_SOFTWARE;//ETH_CHECKSUM_BY_HARDWARE;
 	stm32_eth_handler.Init.PhyAddress = PHY_ADDRESS;
 	stm32_eth_handler.Init.RxMode = ETH_RXINTERRUPT_MODE;
 
@@ -71,7 +72,7 @@ static void low_level_init(unsigned char mac[6]) {
 	HAL_ETH_DMATxDescListInit(&stm32_eth_handler, DMATxDscrTab, &Tx_Buff[0][0],
 			ETH_TXBUFNB); /*for Transmission process*/
 	if (HAL_OK != (err = HAL_ETH_DMARxDescListInit(&stm32_eth_handler, DMARxDscrTab, &Rx_Buff[0][0],
-			ETH_RXBUFNB))) {         /*for Reception process*/
+			ETH_RXBUFNB))) { /*for Reception process*/
 		log_error("HAL_ETH_DMARxDescListInit %d\n", err);
 	}
 
@@ -101,15 +102,14 @@ static struct sk_buff *low_level_input(void) {
 	struct sk_buff *skb;
 	int len;
 	uint8_t *buffer;
-	uint32_t i = 0;
+	uint32_t i=0;
 	__IO ETH_DMADescTypeDef *dmarxdesc;
 
 	skb = NULL;
 
 	/* get received frame */
-	if (HAL_ETH_GetReceivedFrame_IT(&stm32_eth_handler) != HAL_OK) {
+	if (HAL_ETH_GetReceivedFrame_IT(&stm32_eth_handler) != HAL_OK)
 		return NULL;
-	}
 
 	/* Obtain the size of the packet and put it into the "len" variable. */
 	len = stm32_eth_handler.RxFrameInfos.length;
@@ -123,37 +123,39 @@ static struct sk_buff *low_level_input(void) {
 		memcpy(skb->mac.raw, buffer, len);
 	}
 
-	/* Release descriptors to DMA */
-	dmarxdesc = stm32_eth_handler.RxFrameInfos.FSRxDesc;
+	  /* Release descriptors to DMA */
+	  dmarxdesc = stm32_eth_handler.RxFrameInfos.FSRxDesc;
 
-	/* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-	for (i = 0; i < stm32_eth_handler.RxFrameInfos.SegCount; i++)
-	{
-		dmarxdesc->Status |= ETH_DMARXDESC_OWN;
-		dmarxdesc = (ETH_DMADescTypeDef *)(dmarxdesc->Buffer2NextDescAddr);
-	}
+	  /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
+	  for (i=0; i< stm32_eth_handler.RxFrameInfos.SegCount; i++)
+	  {
+	    dmarxdesc->Status |= ETH_DMARXDESC_OWN;
+	    dmarxdesc = (ETH_DMADescTypeDef *)(dmarxdesc->Buffer2NextDescAddr);
+	  }
 
-	/* Clear Segment_Count */
-	stm32_eth_handler.RxFrameInfos.SegCount = 0;
+	  /* Clear Segment_Count */
+	  stm32_eth_handler.RxFrameInfos.SegCount =0;
 
-	/* When Rx Buffer unavailable flag is set: clear it and resume reception */
-	if ((stm32_eth_handler.Instance->DMASR & ETH_DMASR_RBUS) != (uint32_t)RESET)
-	{
-		/* Clear RBUS ETHERNET DMA flag */
-		stm32_eth_handler.Instance->DMASR = ETH_DMASR_RBUS;
-		/* Resume DMA reception */
-		stm32_eth_handler.Instance->DMARPDR = 0;
-	}
+
+	  /* When Rx Buffer unavailable flag is set: clear it and resume reception */
+	  if ((stm32_eth_handler.Instance->DMASR & ETH_DMASR_RBUS) != (uint32_t)RESET)
+	  {
+	    /* Clear RBUS ETHERNET DMA flag */
+		  stm32_eth_handler.Instance->DMASR = ETH_DMASR_RBUS;
+	    /* Resume DMA reception */
+		  stm32_eth_handler.Instance->DMARPDR = 0;
+	  }
 	return skb;
 }
+
 
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb);
 static int stm32eth_open(struct net_device *dev);
 static int stm32eth_set_mac(struct net_device *dev, const void *addr);
 static const struct net_driver stm32eth_ops = {
-	.xmit = stm32eth_xmit,
-	.start = stm32eth_open,
-	.set_macaddr = stm32eth_set_mac,
+		.xmit = stm32eth_xmit,
+		.start = stm32eth_open,
+		.set_macaddr = stm32eth_set_mac,
 };
 
 static int stm32eth_open(struct net_device *dev) {

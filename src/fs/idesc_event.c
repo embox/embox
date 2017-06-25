@@ -29,7 +29,7 @@ int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl) {
 
 int idesc_notify(struct idesc *idesc, int mask) {
 
-	/*TODO MASK */
+	//TODO MASK
 	waitq_wakeup(&idesc->idesc_waitq, 0);
 
 	return 0;

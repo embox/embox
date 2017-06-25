@@ -17,3 +17,4 @@ int wcscmp(const wchar_t *s1, const wchar_t *s2) {
 
 	return *s1 - *s2;
 }
+

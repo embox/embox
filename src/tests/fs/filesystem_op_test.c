@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
+
 #include <fs/vfs.h>
 #include <fs/fs_driver.h>
 #include <fs/mount.h>
@@ -83,7 +84,7 @@ TEST_CASE("generic filesystem test") {
 static int setup_suite(void) {
 	int res;
 
-	if (0 != (res = err(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())))) {
+	if(0 != (res = err(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())))) {
 		return res;
 	}
 

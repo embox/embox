@@ -44,15 +44,15 @@ int usb_class_generic_get_conf(struct usb_class *class, struct usb_dev *dev) {
 	ctrl_endp = dev->endpoints[0];
 
 	usb_endp_control(ctrl_endp, class->get_conf_hnd, NULL,
-			USB_DEV_REQ_TYPE_RD
+		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
-			USB_DEV_REQ_GET_DESC,
-			USB_DESC_TYPE_CONFIG << 8,
-			dev->c_config,
-			sizeof(struct usb_desc_configuration) + sizeof(struct usb_desc_interface) +
+		USB_DEV_REQ_GET_DESC,
+		USB_DESC_TYPE_CONFIG << 8,
+		dev->c_config,
+		sizeof(struct usb_desc_configuration) + sizeof(struct usb_desc_interface) +
 			(dev->endp_n - 1) * sizeof(struct usb_desc_endpoint),
-			dev->getconf_data);
+		dev->getconf_data);
 
 	return 0;
 }
@@ -86,11 +86,11 @@ static void usb_class_fallback_get_conf_hnd(struct usb_request *req, void *arg) 
 
 	for (i = 0; i < dev->endp_n - 1; i++) {
 		struct usb_desc_endpoint *endp_desc =
-				&dev->getconf_data->endp_descs[i];
+			&dev->getconf_data->endp_descs[i];
 
 		if (endp_desc->b_length != sizeof(struct usb_desc_endpoint)
 				|| endp_desc->b_desc_type
-				!= USB_DESC_TYPE_ENDPOINT) {
+					!= USB_DESC_TYPE_ENDPOINT) {
 
 			printk("usb_core: vendor=%04x product=%04x "
 					"seems cannot be handled by generic "

@@ -15,7 +15,7 @@
 
 #define tree_element(link, element_type, link_member) \
 	(link == NULL ? NULL \
-	: member_cast_out(link, element_type, link_member))
+		 : member_cast_out(link, element_type, link_member))
 
 /**
  * Link on element of tree, keeping in each element.
@@ -65,7 +65,7 @@ extern void tree_move_link(struct tree_link *parent, struct tree_link *link);
  *   This parent can not exist.
  * @param link Unlinked element
  * @return
- *  true, if element was in the tree before deletion.
+ * 	true, if element was in the tree before deletion.
  */
 extern int tree_unlink_link(struct tree_link *link);
 
@@ -143,6 +143,7 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
 			link != end_link; \
 			link = next(link))
 
+
 /**
  * Iteration on tree. Elements are links (without casting from links).
  * Calculates next element before processing of current.
@@ -159,8 +160,8 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
 #define __tree_foreach_link_safe(link, next_link, end_link, tree, begin, end, next) \
 	for (struct tree_link *next_link = (link = begin(tree), next(link)) \
 			, *end_link = end(tree); \
-			link != end_link; \
-			link = next_link, next_link = next(link))
+		link != end_link; \
+		link = next_link, next_link = next(link))
 
 /**
  * Iteration with casting.
@@ -175,20 +176,20 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
 #define __tree_foreach(link, end_link, \
 			element, tree, link_member, begin, end, next) \
 	for (struct tree_link *link = begin(tree), \
-			*end_link = end(tree); \
-			link != end_link \
+			*end_link = end(tree);\
+		link != end_link \
 			&& (element = tree_element(link, typeof(*element), link_member)); \
-			link = next(link))
+		link = next(link))
 
 /** Iterating only on children of node (not all subtree). */
 #define tree_foreach_children_link(link, tree) \
 	tree_foreach_link(link, tree, \
-			tree_children_begin, tree_children_end, tree_children_next)
+		tree_children_begin, tree_children_end, tree_children_next)
 
 /** Iterating with casting only on children of node (not all subtree). */
 #define tree_foreach_children(element, tree, link_member) \
 	tree_foreach(element, tree, link_member, \
-			tree_children_begin, tree_children_end, tree_children_next)
+		tree_children_begin, tree_children_end, tree_children_next)
 
 /**
  * Postorder iteration on tree.
@@ -196,7 +197,7 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
  */
 #define tree_postorder_traversal_link(link, tree) \
 	tree_foreach_link(link, tree, \
-			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 /**
  * Postorder iteration on tree.
@@ -206,11 +207,11 @@ extern struct tree_link *tree_children_next(struct tree_link *tree);
  */
 #define tree_postorder_traversal_link_safe(link, tree) \
 	tree_foreach_link_safe(link, tree, \
-			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 /** Postorder iteration with casting. */
 #define tree_postorder_traversal(element, tree, link_member) \
 	tree_foreach(element, tree, link_member, \
-			tree_postorder_begin, tree_postorder_end, tree_postorder_next)
+		tree_postorder_begin, tree_postorder_end, tree_postorder_next)
 
 #endif /* UTIL_TREE_H_ */

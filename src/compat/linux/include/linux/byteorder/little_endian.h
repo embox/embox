@@ -46,27 +46,27 @@
 #define __be16_to_cpu(x) __swab16(( __u16)(__be16)(x))
 
 static inline __le64 __cpu_to_le64p(const __u64 *p) {
-	return (__le64)*p;
+	return ( __le64)*p;
 }
 
 static inline __u64 __le64_to_cpup(const __le64 *p) {
-	return (__u64)*p;
+	return ( __u64)*p;
 }
 
 static inline __le32 __cpu_to_le32p(const __u32 *p) {
-	return (__le32)*p;
+	return ( __le32)*p;
 }
 
 static inline __u32 __le32_to_cpup(const __le32 *p) {
-	return (__u32)*p;
+	return ( __u32)*p;
 }
 
 static inline __le16 __cpu_to_le16p(const __u16 *p) {
-	return (__le16)*p;
+	return ( __le16)*p;
 }
 
 static inline __u16 __le16_to_cpup(const __le16 *p) {
-	return (__u16)*p;
+	return ( __u16)*p;
 }
 
 static inline __be64 __cpu_to_be64p(const __u64 *p) {

@@ -83,6 +83,7 @@
 #error Unsupported USARTx
 #endif
 
+
 #define STM32_USART_FLAGS(uart)   uart->ISR
 #define STM32_USART_RXDATA(uart)  uart->RDR
 #define STM32_USART_TXDATA(uart)  uart->TDR

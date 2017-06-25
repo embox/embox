@@ -12,3 +12,4 @@ void cxx_app_startup(void) {
 
 void cxx_app_termination(void) {
 }
+

@@ -6,6 +6,7 @@
  * @author Ivan Tretyakov
  */
 
+
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -13,8 +14,8 @@
 #include <string.h>
 #include <util/array.h>
 
-#define MV_RECURSIVE    (0x1 << 0)
-#define MV_FORCE        (0x1 << 1)
+#define MV_RECURSIVE	(0x1 << 0)
+#define MV_FORCE		(0x1 << 1)
 #define DESC_NOT_EXIST  (0x1 << 2)
 #define DESC_IS_DIR     (0x1 << 3)
 
@@ -37,7 +38,7 @@ int main(int argc, char **argv) {
 	opt_cnt = 0;
 
 	while (-1 != (opt = getopt(argc, argv, "fh"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return ENOERR;
@@ -48,7 +49,7 @@ int main(int argc, char **argv) {
 			printf("mv: invalid option -- '%c'\n", optopt);
 			return -EINVAL;
 		}
-		opt_cnt++;
+		opt_cnt ++;
 	}
 	/* if desc is directory */
 	if (-1 == stat(argv[argc-1], &sb)) {
@@ -77,7 +78,7 @@ int main(int argc, char **argv) {
 			printf("dest '%s' is not a directory\n", argv[argc-1]);
 			return -EINVAL;
 		} else {
-			if (mkdir(argv[argc-1], 0777)) {
+			if(mkdir(argv[argc-1], 0777)) {
 				printf("can't create directory %s\n", argv[argc-1]);
 				return -EINVAL;
 			}

@@ -14,6 +14,7 @@
 #include <sys/time.h>
 #include <netinet/tcp.h>
 
+
 #include <linux/types.h>
 #include <linux/list.h>
 #include <net/socket/inet_sock.h>
@@ -25,32 +26,32 @@ typedef struct tcphdr {
 	__be32 seq;
 	__be32 ack_seq;
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
-	__u16 res1 : 4,
-			doff : 4,
-			fin	 : 1,
-			syn	 : 1,
-			rst	 : 1,
-			psh	 : 1,
-			ack	 : 1,
-			urg	 : 1,
-			ece	 : 1,
-			cwr	 : 1;
+	__u16 res1:4,
+		doff:4,
+		fin:1,
+		syn:1,
+		rst:1,
+		psh:1,
+		ack:1,
+		urg:1,
+		ece:1,
+		cwr:1;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
-	__u16 doff : 4,
-			res1 : 4,
-			cwr	 : 1,
-			ece	 : 1,
-			urg	 : 1,
-			ack	 : 1,
-			psh	 : 1,
-			rst	 : 1,
-			syn	 : 1,
-			fin	 : 1;
+	__u16 doff:4,
+		res1:4,
+		cwr:1,
+		ece:1,
+		urg:1,
+		ack:1,
+		psh:1,
+		rst:1,
+		syn:1,
+		fin:1;
 #endif
 	__be16 window;
 	__be16 check;
 	__be16 urg_ptr;
-	__u32  options[]; /* 32bit aligned options */
+	__u32 options[]; /* 32bit aligned options */
 } __attribute__((packed)) tcphdr_t;
 
 #define TCP_MIN_HEADER_SIZE  sizeof(struct tcphdr)
@@ -74,40 +75,40 @@ enum tcp_sock_state {
 
 struct tcp_wind {
 	uint16_t value;
-	uint8_t	 factor;
+	uint8_t factor;
 	uint32_t size;
 };
 
 struct tcp_seq_state {
-	uint32_t		seq;
+	uint32_t seq;
 	struct tcp_wind wind;
 };
 
 typedef struct tcp_sock {
-	struct proto_sock	 p_sk;  /* Base proto_sock class (MUST BE FIRST) */
-	enum tcp_sock_state	 state; /* Socket state */
+	struct proto_sock p_sk;     /* Base proto_sock class (MUST BE FIRST) */
+	enum tcp_sock_state state;  /* Socket state */
 	struct tcp_seq_state self;  /* Some informations about this socket */
 	struct tcp_seq_state rem;   /* Informations about remote socket */
-	uint32_t			 last_ack; /* Last acknowledged sequence number */
-	uint32_t			 ack_flag; /* Acknowledgment for flags (SYN or FIN) */
-	struct tcp_sock *	 parent; /* Listening socket to which it belongs */
+	uint32_t last_ack;          /* Last acknowledged sequence number */
+	uint32_t ack_flag;          /* Acknowledgment for flags (SYN or FIN) */
+	struct tcp_sock *parent;    /* Listening socket to which it belongs */
 	union {
 		struct list_head conn_lnk;   /* Link for conn_xxx lists */
 		struct list_head conn_ready; /* Queue of incoming ready connections */
 	};
 	struct list_head conn_wait; /* Queue of incoming waiting connections */
 	struct list_head conn_free; /* Queue of free sockets for incoming connections */
-	unsigned int	 free_wait_queue_len; /* @a conn_wait length plus @a conn_free length */
-	unsigned int	 free_wait_queue_max; /* Maximum @a conn_wait length plus @a conn_free length */
-	unsigned int	 lock;      /* Tool for synchronization */
-	struct timeval	 syn_time;  /* The time when synchronization started */
-	struct timeval	 ack_time;  /* The time when message was ACKed */
-	struct timeval	 rcv_time;  /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
-	unsigned int	 dup_ack;   /* Amount of duplicated packets */
-	unsigned int	 rexmit_mode; /* Socket in rexmit mode */
+	unsigned int free_wait_queue_len; /* @a conn_wait length plus @a conn_free length */
+	unsigned int free_wait_queue_max; /* Maximum @a conn_wait length plus @a conn_free length */
+	unsigned int lock;          /* Tool for synchronization */
+	struct timeval syn_time;    /* The time when synchronization started */
+	struct timeval ack_time;    /* The time when message was ACKed */
+	struct timeval rcv_time;    /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
+	unsigned int dup_ack;       /* Amount of duplicated packets */
+	unsigned int rexmit_mode;   /* Socket in rexmit mode */
 } tcp_sock_t;
 
-static inline struct tcp_sock *to_tcp_sock(
+static inline struct tcp_sock * to_tcp_sock(
 		const struct sock *sk) {
 	return (struct tcp_sock *)sk->p_sk;
 }
@@ -144,7 +145,7 @@ enum {
 	TCP_ST_SYNC      /* Connection is in a synchronized state */
 };
 
-static inline struct tcphdr *tcp_hdr(const struct sk_buff *skb) {
+static inline struct tcphdr * tcp_hdr(const struct sk_buff *skb) {
 	return skb->h.th;
 }
 

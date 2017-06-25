@@ -35,7 +35,7 @@ int char_dev_init_all(void) {
 }
 
 int char_dev_register(const char *name, const struct kfile_operations *ops) {
-	struct path node;
+	struct path  node;
 	struct nas *dev_nas;
 
 	if (vfs_lookup("/dev", &node)) {

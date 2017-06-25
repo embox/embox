@@ -26,7 +26,7 @@ __BEGIN_DECLS
 
 /* Data structure describing a polling request */
 struct pollfd {
-	int	  fd;      /* file descriptor */
+	int fd;        /* file descriptor */
 	short events;  /* requested events */
 	short revents; /* returned events */
 };

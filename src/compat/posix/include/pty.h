@@ -18,3 +18,4 @@ extern pid_t forkpty(int *amaster, char *name, const struct termios *termp,
 		const struct winsize *winp);
 
 #endif /* POSIX_PTY_H_ */
+

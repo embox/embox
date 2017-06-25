@@ -14,7 +14,7 @@ int pthread_mutex_destroy(pthread_mutex_t *mutex) {
 
 /*
 int pthread_mutex_getprioceiling(const pthread_mutex_t *mutex, int *prioceiling) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 
@@ -30,7 +30,7 @@ int pthread_mutex_lock(pthread_mutex_t *mutex) {
 
 /*
 int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling, int *old_ceiling) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 
@@ -48,15 +48,15 @@ int pthread_mutexattr_destroy(pthread_mutexattr_t *attr) {
 
 /*
 int pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *attr, int *prioceiling) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 
 int pthread_mutexattr_getprotocol(const pthread_mutexattr_t *attr, int *protocol) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 
 int pthread_mutexattr_getpshared(const pthread_mutexattr_t *attr, int *pshared) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 
@@ -70,15 +70,15 @@ int pthread_mutexattr_init(pthread_mutexattr_t *attr) {
 
 /*
 int pthread_mutexattr_setprioceiling(pthread_mutexattr_t *attr, int prioceiling) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 
 int pthread_mutexattr_setprotocol(pthread_mutexattr_t *attr, int protocol) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 
 int pthread_mutexattr_setpshared(pthread_mutexattr_t *attr, int pshared) {
-    return -ENOSYS;
+	return -ENOSYS;
 }
 */
 

@@ -11,11 +11,11 @@ void button_init(Button_TypeDef button) {
 }
 
 void button_wait_set(Button_TypeDef button) {
-	while (BSP_PB_GetState(button) != SET)
+	while(BSP_PB_GetState(button) != SET) 
 		;
 }
 
 void button_wait_reset(Button_TypeDef button) {
-	while (BSP_PB_GetState(button) != RESET)
+	while(BSP_PB_GetState(button) != RESET) 
 		;
 }

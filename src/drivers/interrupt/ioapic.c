@@ -19,7 +19,7 @@
 
 #include <module/embox/driver/interrupt/lapic.h>
 
-#define IOAPIC_DEF_ADDR           0xFEC00000
+#define IOAPIC_DEF_ADDR	          0xFEC00000
 
 #define IOREGSEL                  (IOAPIC_DEF_ADDR + 0x00)
 #define IOREGWIN                  (IOAPIC_DEF_ADDR + 0x10)
@@ -46,11 +46,12 @@ static inline void ioapic_write(uint8_t reg, uint32_t val) {
 	*((volatile uint32_t *)(IOREGWIN)) = val;
 }
 
+
 static inline void i8259_disable(void)
 {
 	outb(0xFF, PIC2_DATA);
 	outb(0xFF, PIC1_DATA);
-	/*inb(PIC1_DATA); */
+	//inb(PIC1_DATA);
 }
 
 /**
@@ -110,7 +111,7 @@ void irqctrl_enable(unsigned int irq) {
 
 	if (irq == 0) {
 		/* LAPIC timer interrupt */
-		return;
+		return ;
 	}
 
 	low = irq_redir_low(irq);
@@ -125,7 +126,7 @@ void irqctrl_disable(unsigned int irq) {
 
 	if (irq == 0) {
 		/* LAPIC timer interrupt */
-		return;
+		return ;
 	}
 
 	low = ioapic_read(IOAPIC_REDIR_TABLE + irq * 2);
@@ -134,15 +135,15 @@ void irqctrl_disable(unsigned int irq) {
 }
 
 void irqctrl_force(unsigned int irq) {
-	/* TODO Emm?.. -- Eldar */
+	// TODO Emm?.. -- Eldar
 }
 
 int irqctrl_pending(unsigned int irq) {
-	/* TODO Emm?.. -- Anton */
+	// TODO Emm?.. -- Anton
 	return 1;
 }
 
 void irqctrl_eoi(unsigned int irq) {
-	/*TODO: irq >= 16 */
+	//TODO: irq >= 16
 	lapic_send_eoi();
 }

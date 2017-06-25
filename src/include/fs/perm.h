@@ -53,3 +53,4 @@ int fs_perm_lookup_relative(const char *path, const char **pathlast,
 		struct path *nodelast);
 
 #endif /* SRC_FS_PERM_H_ */
+

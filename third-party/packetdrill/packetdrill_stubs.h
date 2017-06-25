@@ -13,7 +13,7 @@
 
 #include <stdio.h>
 #define PD_STUB(msg, ...) \
-	fprintf(stderr, ">>> packetdrill: " msg "\n", ## __VA_ARGS__)
+	fprintf(stderr, ">>> packetdrill: " msg "\n", ##__VA_ARGS__)
 
 #define PD_STUB_USE(msg) \
 	PD_STUB("%s" msg, __func__)
@@ -30,25 +30,25 @@
 #define MCL_FUTURE  (PD_STUB("MCL_FUTURE"), 0x02)
 
 struct ifreq {
-	char ifr_name[IFNAMSIZ];   /* Interface name */
+	char    ifr_name[IFNAMSIZ];/* Interface name */
 	union {
 #if 0
-		struct sockaddrifr_addr		 ifr_addr;
-		struct sockaddrifr_dstaddr	 ifr_dstaddr;
+		struct sockaddrifr_addr ifr_addr;
+		struct sockaddrifr_dstaddr ifr_dstaddr;
 		struct sockaddrifr_broadaddr ifr_broadaddr;
-		struct sockaddrifr_netmask	 ifr_netmask;
-		struct sockaddrifr_hwaddr	 ifr_hwaddr;
+		struct sockaddrifr_netmask ifr_netmask;
+		struct sockaddrifr_hwaddr ifr_hwaddr;
 #endif
-		short ifr_flags;
-		int	  ifr_ifindex;
-		int	  ifr_metric;
-		int	  ifr_mtu;
+		short   ifr_flags;
+		int     ifr_ifindex;
+		int     ifr_metric;
+		int     ifr_mtu;
 #if 0
 		struct ifmapifr_map ifr_map;
 #endif
-		char  ifr_slave[IFNAMSIZ];
-		char  ifr_newname[IFNAMSIZ];
-		char *ifr_data;
+		char    ifr_slave[IFNAMSIZ];
+		char    ifr_newname[IFNAMSIZ];
+		char *  ifr_data;
 	};
 };
 
@@ -90,3 +90,4 @@ static inline FILE *fropen(void *cookie, int (*readfn)(void *, char *, int)) {
 #include <sys/types.h>
 
 #endif /* PACKETDRILL_STUBS_H_ */
+

@@ -50,29 +50,24 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 	const size_t ramdisk_size = binalign_bound(size, RAMDISK_SIZE);
 	const size_t page_n = (ramdisk_size + PAGE_SIZE() - 1) / PAGE_SIZE();
 
-	if (NULL == (ram = pool_alloc(&ramdisk_pool))) {
+	if (NULL == (ram = pool_alloc(&ramdisk_pool)))
 		goto err_out;
-	}
 
 	ram->blocks = ramdisk_size / RAMDISK_BLOCK_SIZE;
 	ram->p_start_addr = phymem_alloc(page_n);
-	if (NULL == (ram->p_start_addr)) {
+	if (NULL == (ram->p_start_addr))
 		goto err_free_ramdisk;
-	}
 
 	strcpy(buf, dvfs_last_link(path));
-	if (buf[strlen(buf) - 1] == '/') {
+	if (buf[strlen(buf) - 1] == '/')
 		goto err_free_mem;
-	}
 
-	if (0 > (ram->idx = block_dev_named(buf, &ramdisk_idx))) {
+	if (0 > (ram->idx = block_dev_named(buf, &ramdisk_idx)))
 		goto err_free_mem;
-	}
 
 	bdev = block_dev_create(buf, &ramdisk_pio_driver, NULL);
-	if (!bdev) {
+	if (!bdev)
 		goto err_free_mem;
-	}
 
 	bdev->privdata = ram;
 	bdev->block_size = RAMDISK_BLOCK_SIZE;
@@ -101,15 +96,13 @@ int ramdisk_delete(const char *name) {
 
 	bdev = block_dev_find(name);
 
-	if (!bdev) {
+	if (!bdev)
 		return -ENOENT;
-	}
 
 	ram = bdev->privdata;
 
-	if (!pool_belong(&ramdisk_pool, ram)) {
+	if (!pool_belong(&ramdisk_pool, ram))
 		return -EINVAL;
-	}
 
 	ramsize = ram->blocks * RAMDISK_BLOCK_SIZE + PAGE_SIZE() - 1;
 
@@ -133,6 +126,7 @@ static int read_sectors(struct block_dev *bdev,
 	memcpy(buffer, read_addr, count);
 	return count;
 }
+
 
 static int write_sectors(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {

@@ -18,7 +18,7 @@ enum net_hnd_results {
 	NET_HND_FORWARD, /**< @brief Packet should go further to @link next_node @link */
 	NET_HND_FORWARD_DEFAULT, /**< @brief Packet should go to default next node */
 	NET_HND_STOP, /**< @brief Packet done processing and should not be
-	          processed further */
+			  processed further */
 	NET_HND_STOP_FREE, /**< @brief Packet done processing and should be freed */
 };
 
@@ -26,9 +26,9 @@ enum net_hnd_results {
 #define NET_TX_DFAULT -2
 
 extern int pnet_entry(struct pnet_pack *pack);
-extern int pnet_process(struct pnet_pack *pack);
+extern int pnet_process(struct pnet_pack * pack);
 
-extern int pnet_rx_thread_add(struct pnet_pack *pack);
+extern int pnet_rx_thread_add(struct pnet_pack * pack);
 
 extern int netif_rx(void *pack);
 

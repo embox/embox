@@ -16,9 +16,9 @@
 #include <string.h>
 #include <util/binalign.h>
 
-#include <mem/vmem.h> /* for mmu_handle_page_fault() */
+#include <mem/vmem.h> // for mmu_handle_page_fault()
 
-/*#define MMU_DEBUG */
+//#define MMU_DEBUG
 
 #ifdef MMU_DEBUG
 #define MMU_DEBUG_PRINT(x) x
@@ -30,18 +30,18 @@ mmu_pgd_t *context_table[0x100]  __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_cnt;
 
 static inline void mmu_set_mmureg(unsigned long addr_reg,
-		unsigned long regval) {
-	__asm__ __volatile__ (
+				unsigned long regval) {
+	__asm__ __volatile__(
 		"sta %0, [%1] %2\n\t"
 		:
-		: "r" (regval), "r" (addr_reg), "i" (ASI_M_MMUREGS)
+		: "r"(regval), "r"(addr_reg), "i"(ASI_M_MMUREGS)
 		: "memory"
 	);
 }
 
 static inline unsigned long mmu_get_mmureg(unsigned long addr_reg) {
 	register int retval;
-	__asm__ __volatile__ (
+	__asm__ __volatile__(
 		"lda [%1] %2, %0\n\t"
 		: "=r" (retval)
 		: "r" (addr_reg), "i" (ASI_M_MMUREGS)
@@ -56,7 +56,7 @@ static inline void mmu_set_ctable_ptr(unsigned long paddr) {
 }
 
 static inline void mmu_flush_cache_all(void) {
-	__asm__ __volatile__ (
+	__asm__ __volatile__(
 		"flush\n\t"
 		"sta %%g0, [%%g0] %0\n\t"
 		:
@@ -66,7 +66,7 @@ static inline void mmu_flush_cache_all(void) {
 }
 
 static inline void mmu_set_val(void *addr, unsigned long value) {
-	__asm__ __volatile__ (
+	__asm__ __volatile__(
 		"swap [%2], %0"
 		: "=&r" (value)
 		: "0" (value), "r" (addr)
@@ -82,7 +82,7 @@ static int mmu_handle_page_fault(uint32_t trap_nr, void *data) {
 #endif
 	far = mmu_get_mmureg(LEON_CNR_FADDR);
 
-	/* TODO handle types of FT (invalid address, protection error, etc.) */
+	// TODO handle types of FT (invalid address, protection error, etc.)
 	MMU_DEBUG_PRINT(printk("\nfsr - 0x%x, far - 0x%x\n", fsr, far));
 	vmem_handle_page_fault((mmu_vaddr_t) far);
 
@@ -100,7 +100,7 @@ void mmu_on(void) {
 
 	/* Turn on MMU */
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
-	val |= 0x1; /* set E */
+	val |= 0x1; // set E
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 
 	mmu_flush_cache_all();
@@ -112,13 +112,13 @@ void mmu_off(void) {
 	uint32_t val;
 
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
-	val &= ~0x1; /* set E */
+	val &= ~0x1; // set E
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 }
 
 static void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp) {
 	mmu_set_val((unsigned long *) ctxp,
-			(MMU_ET_PTD | (((unsigned long) pgdp) >> 4)));
+		(MMU_ET_PTD | (((unsigned long) pgdp) >> 4)));
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
@@ -158,16 +158,16 @@ void mmu_pte_set(mmu_pte_t *ptep, mmu_pte_t addr) {
 
 void mmu_pgd_set(mmu_pgd_t *pgdp, mmu_pmd_t *pmdp) {
 	mmu_set_val((unsigned long *) pgdp,
-			(MMU_ET_PTD | (((unsigned long) pmdp) >> 4)));
+		(MMU_ET_PTD | (((unsigned long) pmdp) >> 4)));
 }
 
 void mmu_pmd_set(mmu_pmd_t *pmdp, mmu_pte_t *ptep) {
 	mmu_set_val((unsigned long *) pmdp,
-			(MMU_ET_PTD | (((unsigned long) ptep) >> 4)));
+		(MMU_ET_PTD | (((unsigned long) ptep) >> 4)));
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
-	return;
+	return ;
 }
 
 void mmu_pmd_unset(mmu_pmd_t *pmd) {
@@ -207,7 +207,7 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
-	/*MMU_DEBUG_PRINT(printk("\nmmu_pte_set_usermode does not implemented!\n")); */
+	//MMU_DEBUG_PRINT(printk("\nmmu_pte_set_usermode does not implemented!\n"));
 }
 
 void mmu_pte_set_executable(mmu_pte_t *pte, int value) {

@@ -17,7 +17,7 @@
 
 static void print_usage(void) {
 	printf("Usage: play [WAVAUDIOFILE]\n"
-			"       play -s\n");
+	       "       play -s\n");
 }
 
 double _sin(double x) {
@@ -30,15 +30,15 @@ double _sin(double x) {
 		m = -1.;
 	}
 	return m * (x - x * x * x / 6. + x * x * x * x * x / 120.
-		   - x * x * x * x * x * x * x / (120 * 6 * 7)
-		   + x * x * x * x * x * x * x * x * x/ (120 * 6 * 7 * 8 * 9));
+		- x * x * x * x * x * x * x / (120 * 6 * 7)
+		+ x * x * x * x * x * x * x * x * x/ (120 * 6 * 7 * 8 * 9));
 }
 
 static int _sin_w = 100;
 static int _sin_h = 30000;
 static int sin_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
-		const PaStreamCallbackTimeInfo *timeInfo,
+		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
 	uint16_t *data;
@@ -59,11 +59,11 @@ static int _bl = 64 * 1024 * 1024;
 static int _fchan = 2;
 static int fd_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
-		const PaStreamCallbackTimeInfo *timeInfo,
+		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
 	static int _ptr = 0;
-	int read_bytes;
+        int read_bytes;
 
 	read_bytes = min(_bl - _ptr, framesPerBuffer * _fchan * 2); /* Stereo 16-bit */
 	memcpy(outputBuffer, &_fbuffer[_ptr], read_bytes);
@@ -129,16 +129,16 @@ int main(int argc, char **argv) {
 			return 0;
 		}
 
-		chan_n          = *((uint16_t *) &fmt_buf[22]);
-		sample_rate     = *((uint32_t *) &fmt_buf[24]);
-		bits_per_sample = *((uint16_t *) &fmt_buf[34]);
-		fdata_len       = *((uint32_t *) &fmt_buf[40]);
+		chan_n          = *((uint16_t*) &fmt_buf[22]);
+		sample_rate     = *((uint32_t*) &fmt_buf[24]);
+		bits_per_sample = *((uint16_t*) &fmt_buf[34]);
+		fdata_len       = *((uint32_t*) &fmt_buf[40]);
 		printf("File size:             %d bytes\n",
-				*((uint32_t *) &fmt_buf[4]));
+		       *((uint32_t*) &fmt_buf[4]));
 		printf("File type header:      %c%c%c%c\n",
-				fmt_buf[8], fmt_buf[9], fmt_buf[10], fmt_buf[11]);
-		printf("Length of format data: %d\n", *((uint32_t *) &fmt_buf[16]));
-		printf("Type format:           %d\n", *((uint16_t *) &fmt_buf[20]));
+		        fmt_buf[8], fmt_buf[9], fmt_buf[10], fmt_buf[11]);
+		printf("Length of format data: %d\n", *((uint32_t*) &fmt_buf[16]));
+		printf("Type format:           %d\n", *((uint16_t*) &fmt_buf[20]));
 		printf("Number of channels:    %d\n", chan_n);
 		printf("Sample rate:           %d\n", sample_rate);
 		printf("Bits per sample:       %d\n", bits_per_sample);
@@ -154,6 +154,7 @@ int main(int argc, char **argv) {
 		_bl = min(fread(_fbuffer, 1, 64 * 1024 * 1024, fd), _bl);
 		_fchan = chan_n;
 	}
+
 
 	/* Initialize PA */
 	if (paNoError != (err = Pa_Initialize())) {
@@ -189,7 +190,7 @@ int main(int argc, char **argv) {
 	}
 
 	sleep_msec = 1000 * (fdata_len /
-			(bits_per_sample / 8 * sample_rate * chan_n));
+	           (bits_per_sample / 8 * sample_rate * chan_n));
 	Pa_Sleep(sleep_msec);
 
 	if (paNoError != (err = Pa_StopStream(stream))) {
@@ -203,13 +204,11 @@ int main(int argc, char **argv) {
 	}
 
 err_terminate_pa:
-	if (paNoError != (err = Pa_Terminate())) {
+	if (paNoError != (err = Pa_Terminate()))
 		printf("Portaudio error: could not terminate!\n");
-	}
 
 err_close_fd:
-	if (fd) {
+	if (fd)
 		fclose(fd);
-	}
 	return 0;
 }

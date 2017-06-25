@@ -11,7 +11,7 @@
 
 #include <netdb.h>
 
-extern struct protoent *protoent_create(void);
+extern struct protoent * protoent_create(void);
 extern int protoent_set_name(struct protoent *pe, const char *name);
 extern int protoent_add_alias(struct protoent *pe, const char *alias);
 extern int protoent_set_proto(struct protoent *pe, int proto);

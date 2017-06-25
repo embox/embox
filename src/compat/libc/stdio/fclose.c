@@ -15,7 +15,7 @@ extern void stdio_file_free(FILE *file);
 int fclose(FILE *file) {
 	int res;
 
-	if (NULL == file) {
+	if (NULL == file){
 		SET_ERRNO(EBADF);
 		return -1;
 	}
@@ -39,3 +39,4 @@ int fclose(FILE *file) {
 
 	return res;
 }
+

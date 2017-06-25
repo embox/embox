@@ -11,7 +11,7 @@
 
 #include <util/priolist.h>
 
-typedef struct priolist runq_t;
+typedef struct priolist      runq_t;
 typedef struct priolist_link runq_item_t;
 
 #endif /* KERNEL_THREAD_QUEUE_PRIOQ_H_ */

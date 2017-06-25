@@ -15,3 +15,4 @@ extern void thread_wait_init(struct thread_wait *tw);
 #include <module/embox/kernel/thread/thread_wait.h>
 
 #endif /* THREAD_WAIT_H_ */
+

@@ -57,7 +57,7 @@ int kfile_xattr_get(struct node *node, const char *name, char *value, size_t len
 }
 
 int kfile_xattr_set(struct node *node, const char *name,
-		const char *value, size_t len, int flags) {
+			const char *value, size_t len, int flags) {
 	const struct fsop_desc *fsop;
 	int err;
 
@@ -98,3 +98,4 @@ int kfile_xattr_list(struct node *node, char *list, size_t len) {
 
 	return err;
 }
+

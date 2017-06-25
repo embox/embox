@@ -15,16 +15,16 @@
 extern const struct uart_ops stm32_uart_ops;
 
 static struct uart stm32_ttyS0 = {
-	.uart_ops = &stm32_uart_ops,
-	.irq_num = USARTx_IRQn,
-	.base_addr = (unsigned long) USARTx,
-	.params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
-	}
+		.uart_ops = &stm32_uart_ops,
+		.irq_num = USARTx_IRQn,
+		.base_addr = (unsigned long) USARTx,
+		.params = {
+				.baud_rate = OPTION_GET(NUMBER,baud_rate),
+				.parity = 0,
+				.n_stop = 1,
+				.n_bits = 8,
+				.irq = true,
+		}
 };
 
 TTYS_DEF("ttyS0", &stm32_ttyS0);

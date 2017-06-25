@@ -145,7 +145,7 @@ extern void thread_init(struct thread *t, int priority,
  * @return Pointer to new thread
  */
 extern struct thread *thread_init_stack(void *stack, size_t stack_sz,
-		int priority, void *(*run)(void *), void *arg);
+	       	int priority, void *(*run)(void *), void *arg);
 
 /**
  * Marks the thread identified by thread as detached. When a detached

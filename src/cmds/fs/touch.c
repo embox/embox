@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;

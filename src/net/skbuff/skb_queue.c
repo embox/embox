@@ -18,7 +18,7 @@ void skb_queue_init(struct sk_buff_head *queue) {
 
 	queue->next = (struct sk_buff *)queue;
 	queue->prev = (struct sk_buff *)queue;
-	/*INIT_LIST_HEAD(((struct sk_buff *)queue->lnk)); */
+	//INIT_LIST_HEAD(((struct sk_buff *)queue->lnk));
 }
 
 void skb_queue_purge(struct sk_buff_head *queue) {
@@ -43,7 +43,7 @@ void skb_queue_push(struct sk_buff_head *queue, struct sk_buff *skb) {
 	ipl_restore(sp);
 }
 
-struct sk_buff *skb_queue_front(struct sk_buff_head *queue) {
+struct sk_buff * skb_queue_front(struct sk_buff_head *queue) {
 	struct sk_buff *skb;
 
 	if (queue == NULL) {
@@ -60,7 +60,7 @@ struct sk_buff *skb_queue_front(struct sk_buff_head *queue) {
 	return skb;
 }
 
-struct sk_buff *skb_queue_pop(struct sk_buff_head *queue) {
+struct sk_buff * skb_queue_pop(struct sk_buff_head *queue) {
 	ipl_t sp;
 	struct sk_buff *skb;
 

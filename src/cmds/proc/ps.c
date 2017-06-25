@@ -16,6 +16,7 @@ static void print_usage(void) {
 	printf("Usage: ps [-a]\n");
 }
 
+
 static void print_all(void) {
 	struct task *task;
 
@@ -42,7 +43,7 @@ int main(int argc, char **argv) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			break;

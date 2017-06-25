@@ -28,7 +28,7 @@
  * Runtime context for a test case.
  */
 struct test_run_context {
-	jmp_buf					before_run;
+	jmp_buf before_run;
 	struct test_emit_buffer emitting;
 };
 
@@ -77,7 +77,7 @@ int test_suite_run(const struct test_suite *test) {
 			++failures;
 		}
 		++total;
-		/* TODO this looks ugly. */
+		// TODO this looks ugly.
 		if (ret == -EINTR) {
 			break;
 		}

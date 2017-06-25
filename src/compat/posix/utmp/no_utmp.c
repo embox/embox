@@ -42,3 +42,4 @@ int utmpname(const char *file) {
 	errno = ENOSYS;
 	return -1;
 }
+

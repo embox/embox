@@ -23,9 +23,8 @@ static void waitq_add(struct waitq *wq, struct waitq_link *wql) {
 
 	ipl = spin_lock_ipl(&wq->lock);
 
-	if (dlist_empty(&wql->link)) {
+	if (dlist_empty(&wql->link))
 		dlist_add_prev(&wql->link, &wq->list);
-	}
 
 	spin_unlock_ipl(&wq->lock, ipl);
 }
@@ -37,9 +36,8 @@ static void waitq_del(struct waitq *wq, struct waitq_link *wql) {
 
 	ipl = spin_lock_ipl(&wq->lock);
 
-	if (!dlist_empty(&wql->link)) {
+	if (!dlist_empty(&wql->link))
 		dlist_del_init(&wql->link);
-	}
 
 	spin_unlock_ipl(&wq->lock, ipl);
 }
@@ -80,15 +78,13 @@ static void __waitq_wakeup(struct waitq *wq, int nr) {
 
 	dlist_foreach_entry(wql, &wq->list, link) {
 		assert(wql->schedee);
-		if (!sched_wakeup(wql->schedee)) {
+		if (!sched_wakeup(wql->schedee))
 			continue;
-		}
 
-		/* TODO mark this wql as the one who has woken the thread up? -- Eldar */
+		// TODO mark this wql as the one who has woken the thread up? -- Eldar
 
-		if (!--nr) {
+		if (!--nr)
 			break;
-		}
 	}
 }
 

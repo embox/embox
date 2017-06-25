@@ -9,39 +9,39 @@
 #ifndef PACKEDRILL_PCAP_H_
 #define PACKEDRILL_PCAP_H_
 
-typedef int bpf_int32;
-typedef u_int bpf_u_int32;
+typedef	int bpf_int32;
+typedef	u_int bpf_u_int32;
 
 typedef int pcap_t;
 
 struct bpf_program {
-	u_int			 bf_len;
+	u_int bf_len;
 	struct bpf_insn *bf_insns;
 };
 
 struct pcap_pkthdr {
-	struct timeval ts;  /* time stamp */
-	bpf_u_int32	   caplen; /* length of portion present */
-	bpf_u_int32	   len; /* length this packet (off wire) */
+	struct timeval ts;	/* time stamp */
+	bpf_u_int32 caplen;	/* length of portion present */
+	bpf_u_int32 len;	/* length this packet (off wire) */
 };
 
 #define PCAP_ERRBUF_SIZE 128
 #define BIOCIMMEDIATE (PD_STUB("BIOCIMMEDIATE"), 0)
 
-#define DLT_NULL    0   /* BSD loopback encapsulation */
-#define DLT_EN10MB  1   /* Ethernet (10Mb) */
-#define DLT_EN3MB   2   /* Experimental Ethernet (3Mb) */
-#define DLT_AX25    3   /* Amateur Radio AX.25 */
-#define DLT_PRONET  4   /* Proteon ProNET Token Ring */
-#define DLT_CHAOS   5   /* Chaos */
-#define DLT_IEEE802 6   /* 802.5 Token Ring */
-#define DLT_ARCNET  7   /* ARCNET, with BSD-style header */
-#define DLT_SLIP    8   /* Serial Line IP */
-#define DLT_PPP     9   /* Point-to-point Protocol */
-#define DLT_FDDI    10  /* FDDI */
+#define DLT_NULL	0	/* BSD loopback encapsulation */
+#define DLT_EN10MB	1	/* Ethernet (10Mb) */
+#define DLT_EN3MB	2	/* Experimental Ethernet (3Mb) */
+#define DLT_AX25	3	/* Amateur Radio AX.25 */
+#define DLT_PRONET	4	/* Proteon ProNET Token Ring */
+#define DLT_CHAOS	5	/* Chaos */
+#define DLT_IEEE802	6	/* 802.5 Token Ring */
+#define DLT_ARCNET	7	/* ARCNET, with BSD-style header */
+#define DLT_SLIP	8	/* Serial Line IP */
+#define DLT_PPP		9	/* Point-to-point Protocol */
+#define DLT_FDDI	10	/* FDDI */
 
-#define DLT_LOOP    12
-#define DLT_RAW     14  /* raw IP */
+#define DLT_LOOP	12
+#define DLT_RAW		14	/* raw IP */
 
 #include <stdio.h>
 static inline void pcap_perror(pcap_t *pcap, char *msg) {
@@ -101,5 +101,6 @@ static inline int pcap_next_ex(pcap_t *p, struct pcap_pkthdr **pkt_header, const
 	PD_STUB_USE();
 	return 0;
 }
+
 
 #endif /* PACKEDRILL_PCAP_H_ */

@@ -65,7 +65,7 @@ static void mb_mapping_getstates(modbus_mapping_t *mb_mapping) {
 	}
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char*argv[]) {
 	int listen_socket, client_socket;
 	modbus_t *ctx;
 	modbus_mapping_t *mb_mapping;
@@ -101,13 +101,13 @@ int main(int argc, char *argv[]) {
 	}
 
 	listen_socket = modbus_tcp_listen(ctx, 1);
-	for (;; ) {
+	for (;;) {
 		client_socket = modbus_tcp_accept(ctx, &listen_socket);
 		if (-1 == client_socket) {
 			break;
 		}
 
-		for (;; ) {
+		for (;;) {
 			int query_len;
 
 			query_len = modbus_receive(ctx, query);

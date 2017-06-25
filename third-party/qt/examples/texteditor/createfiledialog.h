@@ -5,28 +5,28 @@
 
 class CreateFileDialog : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-explicit CreateFileDialog(QTextEdit *textEdit, QString *fileName, QMainWindow *mainWindow);
+    explicit CreateFileDialog(QTextEdit *textEdit, QString *fileName, QMainWindow *mainWindow);
 
 private slots:
-void createFile();
-void close();
+    void createFile();
+    void close();
 
 private:
-QPushButton *createButton(const QString &text, const char *member);
+    QPushButton *createButton(const QString &text, const char *member);
 
-QLineEdit *fileNameEdit;
+    QLineEdit *fileNameEdit;
 
-QLabel *fileNameLabel;
+    QLabel *fileNameLabel;
 
-QPushButton *okButton;
-QPushButton *cancelButton;
-QDir currentDir;
-QTextEdit *textEdit;
-QString *fileName;
-QMainWindow *mainWindow;
-QMdiSubWindow *subwindow;
+    QPushButton *okButton;
+    QPushButton *cancelButton;
+    QDir currentDir;
+    QTextEdit *textEdit;
+    QString *fileName;
+    QMainWindow *mainWindow;
+    QMdiSubWindow *subwindow;
 };
 
-#endif /* CREATEFILEDIALOG_H */
+#endif // CREATEFILEDIALOG_H

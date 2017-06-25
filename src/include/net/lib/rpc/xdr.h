@@ -33,11 +33,11 @@ enum xdr_op {
 union xdrrec_hdr {
 	struct {
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
-		uint32_t len : 31,
-				is_last : 1;
+		uint32_t len:31,
+			is_last:1;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
-		uint32_t is_last : 1,
-				len : 31;
+		uint32_t is_last:1,
+			len:31;
 #endif
 	} h;
 	xdr_unit_t unit;
@@ -47,47 +47,47 @@ typedef int (*xdrproc_t)(struct xdr *, void *, ...);
 typedef int (*xdrrec_hnd_t)(char *, char *, int);
 
 struct xdr_ops {
-	int	   (*getunit)(struct xdr *xs, xdr_unit_t *to);
-	int	   (*putunit)(struct xdr *xs, const xdr_unit_t *from);
-	int	   (*getbytes)(struct xdr *xs, char *to, size_t size);
-	int	   (*putbytes)(struct xdr *xs, const char *from, size_t size);
+	int (*getunit)(struct xdr *xs, xdr_unit_t *to);
+	int (*putunit)(struct xdr *xs, const xdr_unit_t *from);
+	int (*getbytes)(struct xdr *xs, char *to, size_t size);
+	int (*putbytes)(struct xdr *xs, const char *from, size_t size);
 	size_t (*getpos)(struct xdr *xs);
-	int	   (*setpos)(struct xdr *xs, size_t pos);
-	void   (*destroy)(struct xdr *xs);
+	int (*setpos)(struct xdr *xs, size_t pos);
+	void (*destroy)(struct xdr *xs);
 };
 
 struct xdr {
-	enum xdr_op			  oper;
+	enum xdr_op oper;
 	const struct xdr_ops *ops;
 	/* Specific options */
 	union {
 		struct {
-			char * buff;
-			char * curr;
+			char *buff;
+			char *curr;
 			size_t left;
 		} mem;
 		struct {
 			char *handle;
 			/* in-coming */
 			xdrrec_hnd_t in_hnd;
-			char *		 in_base;
-			char *		 in_curr;
-			char *		 in_boundry;
-			size_t		 in_prep;
-			size_t		 in_left;
-			char		 in_last;
+			char *in_base;
+			char *in_curr;
+			char *in_boundry;
+			size_t in_prep;
+			size_t in_left;
+			char in_last;
 			/* out-going */
 			xdrrec_hnd_t out_hnd;
-			char *		 out_base;
-			char *		 out_hdr;
-			char *		 out_curr;
-			char *		 out_boundry;
+			char *out_base;
+			char *out_hdr;
+			char *out_curr;
+			char *out_boundry;
 		} rec;
 	} extra;
 };
 
 struct xdr_discrim {
-	int		  value;
+	int value;
 	xdrproc_t proc;
 };
 

@@ -27,8 +27,10 @@ struct idesc_table {
 	struct idesc *idesc_table[MODOPS_IDESC_TABLE_SIZE];
 
 	struct indexator indexator;
-	index_data_t	 index_buffer[INDEX_DATA_LEN(MODOPS_IDESC_TABLE_SIZE)];
+	index_data_t index_buffer[INDEX_DATA_LEN(MODOPS_IDESC_TABLE_SIZE)];
 };
+
+
 
 #define idesc_cloexec_set(desc) \
 	(desc = (struct idesc *)(((uintptr_t)desc) | 0x1))
@@ -60,7 +62,7 @@ extern int idesc_table_fork(struct idesc_table *t, struct idesc_table *par_tab);
 
 extern struct idesc *idesc_table_get(struct idesc_table *t, int idx);
 
-extern struct idesc_table *task_resource_idesc_table(
+extern struct idesc_table * task_resource_idesc_table(
 		const struct task *task);
 
 #define task_self_resource_idesc_table() \

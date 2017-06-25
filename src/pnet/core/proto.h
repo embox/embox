@@ -20,22 +20,22 @@ typedef int (*net_node_hnd)(struct net_node *node);
 typedef struct net_node *(*net_alloc_hnd)(void);
 
 struct pnet_node_actions {
-	net_hnd		  rx_hnd;
-	net_hnd		  tx_hnd;
+	net_hnd rx_hnd;
+	net_hnd tx_hnd;
 	net_alloc_hnd alloc;
-	net_node_hnd  free;
-	net_node_hnd  start;
-	net_node_hnd  stop;
+	net_node_hnd free;
+	net_node_hnd start;
+	net_node_hnd stop;
 };
 
 typedef struct pnet_proto {
-	const char *			 name;
+	const char *name;
 	struct pnet_node_actions actions;
 } *pnet_proto_t;
 
 #define __ACCESSOR(pref, res_type, fun) \
-	static inline res_type pref ## fun(struct net_node *node) { \
-		return (node->proto ? node->proto->actions.fun : NULL); \
+	static inline res_type pref##fun(struct net_node *node) { \
+		return (node->proto ? node->proto->actions.fun : NULL);\
 	}
 
 __ACCESSOR(pnet_proto_, net_hnd, rx_hnd)

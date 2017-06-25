@@ -18,9 +18,9 @@
 
 struct pushpull {
 	unsigned char *buf;
-	unsigned int   buflen;
-	unsigned int   ofs;
-	unsigned int   reserve;
+	unsigned int buflen;
+	unsigned int ofs;
+	unsigned int reserve;
 };
 
 static inline void init_pushpull(struct pushpull *pp,
@@ -32,7 +32,7 @@ static inline void init_pushpull(struct pushpull *pp,
 }
 
 static inline int pushbit(struct pushpull *pp, int bit, int use_reserved) {
-	if (pp->ofs >= pp->buflen - (use_reserved ? 0 : pp->reserve)) {
+	if (pp->ofs >= pp->buflen - (use_reserved?0:pp->reserve)) {
 		return -ENOSPC;
 	}
 

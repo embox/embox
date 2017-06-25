@@ -14,7 +14,7 @@
 #include <kernel/task.h>
 #include <kernel/thread.h>
 
-static void *idle_run(void *arg) {
+static void * idle_run(void *arg) {
 	while (1) {
 		arch_idle();
 	}

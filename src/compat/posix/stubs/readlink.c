@@ -17,3 +17,4 @@ ssize_t readlink(const char *path, char *buf, size_t bufsize) {
 	printk(">>> %s %s %s %zu\n", __func__, path, buf, bufsize);
 	return SET_ERRNO(ENOSYS);
 }
+

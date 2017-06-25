@@ -27,7 +27,7 @@ struct cmd_desc {
 };
 
 struct cmd {
-	cmd_exec_t		 exec;
+	cmd_exec_t exec;
 	struct cmd_desc *desc;
 };
 

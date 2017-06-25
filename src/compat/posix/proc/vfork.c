@@ -17,7 +17,7 @@
 #include <compiler.h>
 
 static void *vfork_body_exit_stub(void *arg) {
-	_exit(*((int *) arg));
+	_exit(*((int*) arg));
 }
 
 /*

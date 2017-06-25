@@ -24,7 +24,7 @@ static inline void swap(void *fst, void *snd, size_t size) {
 }
 
 void qsort(void *vbase, size_t nmemb, size_t size,
-		int (*compar)(const void *, const void *)) {
+		int(*compar)(const void *, const void *)) {
 	char *base = (char *) vbase;
 
 	if (nmemb < 4) {

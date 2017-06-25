@@ -18,28 +18,28 @@
 
 #define TRY_CAPTURE_AHBM_DEV(dev,venID,devID) \
 	if (-1 == capture_amba_dev(dev, venID, devID, true, true)) { \
-		LOG_ERROR("can't capture ahbm dev venID=0x%X, devID=0x%X\n", \
-				venID, devID); \
-		return -1; \
-	}
+	LOG_ERROR("can't capture ahbm dev venID=0x%X, devID=0x%X\n", \
+			venID, devID); \
+	return -1; \
+}
 
 #define TRY_CAPTURE_AHBSL_DEV(dev,venID,devID) \
 	if (-1 == capture_amba_dev(dev, venID, devID, true, false)) { \
-		LOG_ERROR("can't capture ahbsl dev venID=0x%X, devID=0x%X\n", \
-				venID, devID); \
-		return -1; \
-	}
+	LOG_ERROR("can't capture ahbsl dev venID=0x%X, devID=0x%X\n", \
+			venID, devID); \
+	return -1; \
+}
 
 #define TRY_CAPTURE_APB_DEV(dev,venID,devID) \
 	if (-1 == capture_amba_dev(dev, venID, devID, false, false)) { \
-		LOG_ERROR("can't capture apb dev venID=0x%X, devID=0x%X\n",    \
-				venID, devID); \
-		return -1; \
-	}
+	LOG_ERROR("can't capture apb dev venID=0x%X, devID=0x%X\n",    \
+			venID, devID); \
+	return -1; \
+}
 
-#define AHB_MASTER_BASE          0xFFFFF000 /* max: 64 devices */
-#define AHB_SLAVE_BASE           0xFFFFF800 /* max: 64 devices */
-#define APB_BASE                 0x800FF000 /* max: 512 devices */
+#define AHB_MASTER_BASE          0xFFFFF000 // max: 64 devices
+#define AHB_SLAVE_BASE           0xFFFFF800 // max: 64 devices
+#define APB_BASE                 0x800FF000 // max: 512 devices
 
 /* max devices on AMBA bus */
 #define AHB_MASTERS_QUANTITY     0x10
@@ -52,21 +52,21 @@
  */
 typedef struct amba_bar_info {
 	uint32_t start;
-	bool	 prefetchable;
-	bool	 cacheable;
+	bool     prefetchable;
+	bool     cacheable;
 	uint32_t mask;
-	uint8_t	 type;
-	bool	 used;
+	uint8_t  type;
+	bool     used;
 } amba_bar_info_t;
 
 /**
  * Amba device info
  */
 typedef struct amba_dev_info {
-	uint8_t	 venID;
-	uint16_t devID;
-	uint8_t	 version;
-	uint8_t	 irq;
+	uint8_t   venID;
+	uint16_t  devID;
+	uint8_t   version;
+	uint8_t   irq;
 } amba_dev_info_t;
 
 struct amba_dev;
@@ -77,14 +77,14 @@ typedef void (*HANDLER_DATA_FUNC)(struct amba_dev *dev);
  * Amba device
  */
 typedef struct amba_dev {
-	amba_dev_info_t	  dev_info;      /**< VendorID, DeviceID, version, IRQ */
-	amba_bar_info_t	  bar[4];
-	uint8_t			  slot;          /**< information about location */
-	HANDLER_DATA_FUNC show_info;     /**< show brief description */
-	char			  dev_name[16];  /**< logical name */
-	bool			  is_ahb;
-	bool			  is_master;
-	uint32_t		  user_def[3];   /**< info from user registers */
+	amba_dev_info_t    dev_info;     /**< VendorID, DeviceID, version, IRQ */
+	amba_bar_info_t    bar[4];
+	uint8_t            slot;         /**< information about location */
+	HANDLER_DATA_FUNC  show_info;    /**< show brief description */
+	char               dev_name[16]; /**< logical name */
+	bool               is_ahb;
+	bool               is_master;
+	uint32_t           user_def[3];  /**< info from user registers */
 } amba_dev_t;
 
 /** AHB master devices */
@@ -98,12 +98,12 @@ extern amba_dev_t *apb_devices[APB_QUANTITY];
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-/*int capture_ahbm_dev(AHB_DEV *ahb_dev, uint8_t vendor_id, uint16_t device_id); */
+//int capture_ahbm_dev(AHB_DEV *ahb_dev, uint8_t vendor_id, uint16_t device_id);
 /*
  * pnp_dev must be allocated by caller
  * returns 0 if ok, non-zero otherwise
  */
-/*int capture_ahbsl_dev(AHB_DEV *ahb_dev, uint8_t vendor_id, uint16_t device_id); */
+//int capture_ahbsl_dev(AHB_DEV *ahb_dev, uint8_t vendor_id, uint16_t device_id);
 
 /**
  * Fill amba device.
@@ -115,7 +115,7 @@ extern amba_dev_t *apb_devices[APB_QUANTITY];
  * @return false (0) slot is empty
  */
 extern int fill_amba_dev(amba_dev_t *dev, uint8_t slot_number,
-		bool is_ahb, bool is_master);
+				bool is_ahb, bool is_master);
 
 /**
  * Capture amba pnp device.
@@ -127,7 +127,7 @@ extern int fill_amba_dev(amba_dev_t *dev, uint8_t slot_number,
  * @return slot number or -1 if error
  */
 extern int capture_amba_dev(amba_dev_t *apb_dev, uint8_t vendor_id,
-		uint16_t device_id, bool is_ahb, bool is_master);
+			uint16_t device_id, bool is_ahb, bool is_master);
 
 /**
  * Free amba device.

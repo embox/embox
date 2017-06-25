@@ -25,8 +25,8 @@ EMBOX_UNIT_INIT(net_dev_init);
 /* single entry for all devices
        devices
    o  o  o
-    \ | /
-      o
+	\ | /
+	  o
       dev_entry
 
 */

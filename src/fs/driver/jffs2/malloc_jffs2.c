@@ -98,3 +98,4 @@ void jffs2_free_inode_cache(struct jffs2_inode_cache *x) {
 	D1(printk( "Freeing inocache at %p\n", x));
 	sysfree(x);
 }
+

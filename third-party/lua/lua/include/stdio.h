@@ -10,7 +10,7 @@
 
 __BEGIN_DECLS
 
-static inline FILE *tmpfile(void) {
+static inline FILE * tmpfile(void) {
 	return SET_ERRNO(ENOSYS), NULL;
 }
 

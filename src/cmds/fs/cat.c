@@ -11,6 +11,7 @@
 #include <string.h>
 #include <errno.h>
 
+
 static void print_usage(void) {
 	printf("Usage: cat [OPTION]... [FILE]...\n");
 }
@@ -33,7 +34,7 @@ int main(int argc, char **argv) {
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			return 0;

@@ -28,14 +28,14 @@
 static struct node *__vfs_get_parent(struct node *child);
 static int __vfs_subtree_lookup_existing(struct node *parent,
 		const char *str_path, const char **p_end_existent, struct node **child);
-static struct node *__vfs_subtree_create(struct node *parent, const char *path,
+static struct node * __vfs_subtree_create(struct node *parent, const char *path,
 		mode_t mode, int intermediate);
 static struct node *__vfs_subtree_create_child(struct node *parent, const char *name,
 		size_t len, mode_t mode);
 
 struct lookup_tuple {
 	const char *name;
-	size_t		len;
+	size_t len;
 };
 
 static int vfs_lookup_cmp(struct tree_link *link, void *data) {
@@ -110,7 +110,7 @@ static void __vfs_lookup_existing(const struct path *parent,
 		if_mounted_follow_down(path);
 		if (-ERR_CHILD_MOUNTED
 				!= __vfs_subtree_lookup_existing(path->node, str_path,
-				p_end_existent, &node)) {
+						p_end_existent, &node)) {
 			path->node = node;
 			break;
 		}
@@ -257,7 +257,7 @@ static int __vfs_subtree_lookup_existing(struct node *parent,
 		}
 	}
 
-out: if (p_end_existent) {
+	out: if (p_end_existent) {
 		*p_end_existent = str_path;
 	}
 
@@ -287,7 +287,7 @@ static struct node *__vfs_subtree_create(struct node *parent, const char *path,
 
 		if (!path) {
 			/* Node already exist, set mode. */
-			/*XXX wtf?? parent->mode = mode; */
+			//XXX wtf?? parent->mode = mode;
 			return *tmp_parent;
 		}
 
@@ -335,17 +335,14 @@ struct node *vfs_subtree_create_child(struct node *parent, const char *name,
 
 struct node *vfs_subtree_lookup_childn(struct node *parent, const char *name,
 		size_t len) {
-	struct lookup_tuple lookup = {
-		.name = name, .len = len
-	};
+	struct lookup_tuple lookup = { .name = name, .len = len };
 	struct tree_link *tlink;
 	struct node *ret;
 
 	assert(parent);
 
-	if (path_is_double_dot(name)) {
+	if (path_is_double_dot(name))
 		return (ret = __vfs_get_parent(parent)) ? ret : parent;
-	}
 
 	tlink = tree_lookup_child(&(parent->tree_link), vfs_lookup_cmp, &lookup);
 
@@ -436,7 +433,7 @@ node_t *vfs_get_root(void) {
 
 	if (!root_node) {
 		root_node = vfs_create_root();
-		/*TODO set pseudofs driver */
+		//TODO set pseudofs driver
 	}
 
 	return root_node;

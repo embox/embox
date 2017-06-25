@@ -14,8 +14,8 @@
 
 struct sem {
 	struct waitq wq;
-	int			 value;
-	int			 max_value;
+	int value;
+	int max_value;
 };
 
 extern void semaphore_init(struct sem *s, int val);

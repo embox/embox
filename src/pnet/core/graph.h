@@ -23,11 +23,11 @@ enum pnet_graph_state {
 };
 
 struct pnet_graph {
-	char				  name[MAX_GRAPH_NAME_SIZE];
-	int					  id;
+	char name[MAX_GRAPH_NAME_SIZE];
+	int id;
 	enum pnet_graph_state state;
-	struct list_head	  nodes;
-	struct list_head	  lnk;
+	struct list_head nodes;
+	struct list_head lnk;
 };
 
 extern struct pnet_graph *pnet_get_graph(int sock);

@@ -25,6 +25,7 @@
  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+
 #include <stddef.h>
 #include <assert.h>
 
@@ -43,6 +44,7 @@ typedef __u64 __fs64;
 
 #include "qnx6_fs.h"
 
+
 #if 1
 #ifdef CONFIG_QNX6FS_DEBUG
 #define QNX6DEBUG(X) printk X
@@ -55,14 +57,14 @@ typedef __u64 __fs64;
 
 #define QNX6_BH_BLOCK_SIZE 1024
 #define QNX6_BH_BLOCK_SHIFT 10
-#define QNX6_BH_BLOCK_MASK  ~(0x3ff) /*really? */
+#define QNX6_BH_BLOCK_MASK  ~(0x3ff) //really?
 
 struct qnx6_superblock {
-	unsigned char	  s_blocksize_bits;
-	unsigned long	  s_blocksize;
-	void *			  s_fs_info;
+	unsigned char s_blocksize_bits;
+	unsigned long s_blocksize;
+	void *s_fs_info;
 	struct block_dev *s_bdev;
-	struct node *	  s_root;
+	struct node *s_root;
 };
 
 struct qnx_file {
@@ -75,23 +77,23 @@ static inline struct node *qnx6_file_node(struct qnx_file *f) {
 }
 
 struct qnx6_sb_info {
-	struct buffer_head *	 sb_buf; /* superblock buffer */
-	struct qnx6_super_block *sb;        /* our superblock */
-	int						 s_blks_off; /* blkoffset fs-startpoint */
-	int						 s_ptrbits; /* indirect pointer bitfield */
-	unsigned long			 s_mount_opt; /* all mount options */
-	int						 s_bytesex; /* holds endianess info */
-	struct node *			 nodes;
-	struct node *			 longfile;
+	struct buffer_head	*sb_buf;	/* superblock buffer */
+	struct qnx6_super_block	*sb;		/* our superblock */
+	int			s_blks_off;	/* blkoffset fs-startpoint */
+	int			s_ptrbits;	/* indirect pointer bitfield */
+	unsigned long		s_mount_opt;	/* all mount options */
+	int			s_bytesex;	/* holds endianess info */
+	struct node *		nodes;
+	struct node *		longfile;
 };
 
 struct qnx6_node_info {
-	__fs32 di_block_ptr[QNX6_NO_DIRECT_POINTERS];
-	__u8   di_filelevels;
-	__u32  i_dir_start_lookup;
+	__fs32			di_block_ptr[QNX6_NO_DIRECT_POINTERS];
+	__u8			di_filelevels;
+	__u32			i_dir_start_lookup;
 
 	/* new added */
-	loff_t					i_size;
+	loff_t i_size;
 	struct qnx6_superblock *i_sb;
 
 };
@@ -105,12 +107,12 @@ static inline struct buffer_head *sb_bread(struct qnx6_superblock *sb, unsigned 
 	unsigned bdev_blksize;
 
 	/* FIXME */
-	bdev_blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+       	bdev_blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 
 	if (bh && buffer_new(bh)) {
 		/* FIXME */
 		if (fs_blksize != bdev->driver->read(bdev, bh->data, fs_blksize,
-				block * fs_blksize / bdev_blksize)) {
+					block * fs_blksize / bdev_blksize)) {
 			bcache_buffer_unlock(bh);
 			return NULL;
 		}
@@ -125,7 +127,7 @@ static inline void brelse(struct buffer_head *bh) {
 
 static inline int qnx6_sb_set_blocksize(struct qnx6_superblock *sb, int size) {
 
-	switch (size) {
+	switch(size) {
 	case 512:
 		sb->s_blocksize = size;
 		sb->s_blocksize_bits = 9;
@@ -143,11 +145,11 @@ static inline int qnx6_sb_set_blocksize(struct qnx6_superblock *sb, int size) {
 
 extern struct node *qnx6_iget(struct qnx6_superblock *sb, unsigned ino);
 extern struct dentry *qnx6_lookup(struct node *dir, struct dentry *dentry,
-		unsigned int flags);
+					unsigned int flags);
 
 #ifdef CONFIG_QNX6FS_DEBUG
 extern void qnx6_superblock_debug(struct qnx6_super_block *,
-		struct qnx6_superblock *);
+						struct qnx6_superblock *);
 #endif
 
 extern const struct node_operations qnx6_dir_node_operations;
@@ -163,10 +165,10 @@ static inline struct qnx6_node_info *QNX6_I(struct node *node)
 	return node->nas->fi->privdata;
 }
 
-#define clear_opt(o, opt)       (o &= ~(QNX6_MOUNT_ ## opt))
-#define set_opt(o, opt)         (o |= (QNX6_MOUNT_ ## opt))
-#define test_opt(sb, opt)       (QNX6_SB(sb)->s_mount_opt & \
-	QNX6_MOUNT_ ## opt)
+#define clear_opt(o, opt)		(o &= ~(QNX6_MOUNT_##opt))
+#define set_opt(o, opt)			(o |= (QNX6_MOUNT_##opt))
+#define test_opt(sb, opt)		(QNX6_SB(sb)->s_mount_opt & \
+					 QNX6_MOUNT_##opt)
 enum {
 	BYTESEX_LE,
 	BYTESEX_BE,
@@ -204,7 +206,7 @@ static inline __fs16 cpu_to_fs16(struct qnx6_sb_info *sbi, __u16 n)
 }
 
 extern struct qnx6_super_block *qnx6_mmi_fill_super(struct qnx6_superblock *s,
-		int silent);
+						    int silent);
 
 static inline void *embox_bh_data(struct buffer_head *bh) {
 	return bh->data;
@@ -218,4 +220,4 @@ static inline void qnx6_embox_put_bh(struct buffer_head *bh)
 extern int qnx6_readdir(struct qnx_file *filp, void *dirent, filldir_t filldir);
 
 extern struct buffer_head *qnx6_get_block(struct node *node, unsigned int iblock,
-		int create);
+			int create);

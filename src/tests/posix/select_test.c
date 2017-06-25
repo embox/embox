@@ -279,7 +279,7 @@ static void fill_pipe(const int pipe_fds[]) {
 	flags = fcntl(pipe_fds[WRITE_END], F_GETFL);
 	flags |= O_NONBLOCK;
 	ret = fcntl(pipe_fds[WRITE_END], F_SETFL, flags);
-	if (ret == -1) {
+	if(ret == -1) {
 		return;
 	}
 

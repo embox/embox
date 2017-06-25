@@ -24,15 +24,14 @@ EMBOX_UNIT_INIT(unit_init);
  * Microblaze interrupt controller registers definitions.
  */
 struct irqc_regs {
-	/* 0x00 */
-	uint32_t			isr; /**< interrupt status register */
-	/* 0x04 */ uint32_t ipr; /**< interrupt pending register */
-	/* 0x08 */ uint32_t ier; /**< interrupt enable register */
-	/* 0x0C */ uint32_t iar; /**< interrupt acknowledge register */
-	/* 0x10 */ uint32_t sie; /**< set interrupt enable bits */
-	/* 0x14 */ uint32_t cie; /**< clear interrupt enable bits */
-	/* 0x18 */ uint32_t ivr; /**< interrupt vector register */
-	/* 0x1C */ uint32_t mer; /**< master enable register */
+	/* 0x00 */uint32_t isr; /**< interrupt status register */
+	/* 0x04 */uint32_t ipr; /**< interrupt pending register */
+	/* 0x08 */uint32_t ier; /**< interrupt enable register */
+	/* 0x0C */uint32_t iar; /**< interrupt acknowledge register */
+	/* 0x10 */uint32_t sie; /**< set interrupt enable bits */
+	/* 0x14 */uint32_t cie; /**< clear interrupt enable bits */
+	/* 0x18 */uint32_t ivr; /**< interrupt vector register */
+	/* 0x1C */uint32_t mer; /**< master enable register */
 };
 
 #define MER_HIE_BIT     30
@@ -65,7 +64,7 @@ void irqctrl_disable(unsigned int irq) {
 	REG_STORE(&irqc->cie, 1UL << irq);
 }
 
-/*TODO this not set in microblaze */
+//TODO this not set in microblaze
 void irqctrl_force(unsigned int irq_num) {
 
 }

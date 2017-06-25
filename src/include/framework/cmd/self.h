@@ -19,7 +19,7 @@
 #define __EMBOX_CMD_DEF(_exec) \
 	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);              \
 	extern struct cmd_desc __MOD_CMD(__EMBUILD_MOD__)  \
-	__attribute__((weak));                     \
+			__attribute__((weak));                     \
 	struct cmd_mod mod_self = {                        \
 		.mod = MOD_SELF_INIT(__EMBUILD_MOD__, NULL),   \
 		.cmd = {                                       \
@@ -42,7 +42,7 @@
 # undef  EMBOX_CMD
 # define EMBOX_CMD(function_nm) \
 	static int function_nm(int, char **); \
-	typedef typeof (function_nm) __cmd_placeholder; \
+	typedef typeof(function_nm) __cmd_placeholder; \
 	static int function_nm(int, char **)
 
 #endif /* __CDT_PARSER__ */

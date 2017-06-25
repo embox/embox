@@ -37,11 +37,11 @@ struct time_dev_conf {
  * @name - name of device
  */
 struct time_event_device {
-	void		(*event_handler)(void);
-	int			(*config)(struct time_dev_conf *);
-	uint32_t	event_hz;
-	uint32_t	irq_nr;
-	int			(*pending) (unsigned int nr);
+	void (*event_handler)(void);
+	int (*config)(struct time_dev_conf *);
+	uint32_t event_hz;
+	uint32_t irq_nr;
+	int (*pending) (unsigned int nr);
 	const char *name;
 };
 
@@ -55,7 +55,7 @@ struct time_event_device {
  */
 struct time_counter_device {
 	uint32_t cycle_hz;
-	cycle_t	 (*read)(void);
+	cycle_t (*read)(void);
 };
 
 #endif /* KERNEL_TIME_TIME_DEVICE_H_ */

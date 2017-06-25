@@ -35,7 +35,7 @@ struct list_head {
 	struct list_head name = LIST_HEAD_INIT(name)
 
 #define INIT_LIST_HEAD(ptr) do { \
-		(ptr)->next = (ptr); (ptr)->prev = (ptr); \
+	(ptr)->next = (ptr); (ptr)->prev = (ptr); \
 } while (0)
 
 /*
@@ -45,7 +45,7 @@ struct list_head {
  * the prev/next entries already!
  */
 static inline void __list_add(struct list_head *_new,
-		struct list_head *prev, struct list_head *next) {
+			struct list_head *prev, struct list_head *next) {
 	next->prev = _new;
 	_new->next = next;
 	_new->prev = prev;
@@ -73,7 +73,7 @@ static inline void list_add(struct list_head *_new, struct list_head *head) {
  * This is useful for implementing queues.
  */
 static inline void list_add_tail(struct list_head *_new,
-		struct list_head *head) {
+			struct list_head *head) {
 	__list_add(_new, head->prev, head);
 }
 
@@ -126,7 +126,7 @@ static inline void list_move(struct list_head *list, struct list_head *head) {
  * @head: the head that will follow our entry
  */
 static inline void list_move_tail(struct list_head *list,
-		struct list_head *head) {
+			struct list_head *head) {
 	__list_del(list->prev, list->next);
 	list_add_tail(list, head);
 }
@@ -140,7 +140,7 @@ static inline int list_empty(struct list_head *head) {
 }
 
 static inline void __list_splice(struct list_head *list,
-		struct list_head *head) {
+			struct list_head *head) {
 	struct list_head *first = list->next;
 	struct list_head *last = list->prev;
 	struct list_head *at = head->next;
@@ -158,10 +158,9 @@ static inline void __list_splice(struct list_head *list,
  * @head: the place to add it in the first list.
  */
 static inline void list_splice(struct list_head *list,
-		struct list_head *head) {
-	if (!list_empty(list)) {
+			struct list_head *head) {
+	if (!list_empty(list))
 		__list_splice(list, head);
-	}
 }
 
 /**
@@ -172,7 +171,7 @@ static inline void list_splice(struct list_head *list,
  * The list at @list is reinitialised
  */
 static inline void list_splice_init(struct list_head *list,
-		struct list_head *head) {
+			struct list_head *head) {
 	if (!list_empty(list)) {
 		__list_splice(list, head);
 		INIT_LIST_HEAD(list);
@@ -186,8 +185,8 @@ static inline void list_splice_init(struct list_head *list,
  * @member:	the name of the list_struct within the struct.
  */
 #define list_entry(ptr, type, member) ({ \
-		const typeof(((type *) 0)->member) *__mptr = (ptr); \
-		(type *)((char *) __mptr - offsetof(type,member));})
+	const typeof( ((type *) 0)->member ) *__mptr = (ptr); \
+	(type *)( (char *) __mptr - offsetof(type,member) );})
 
 /**
  * list_for_each	-	iterate over a list
@@ -196,7 +195,7 @@ static inline void list_splice_init(struct list_head *list,
  */
 #define list_for_each(pos, head) \
 	for (pos = (head)->next; pos != (head); \
-			pos = pos->next)
+		pos = pos->next)
 
 /**
  * list_for_each_prev	-	iterate over a list backwards
@@ -205,7 +204,7 @@ static inline void list_splice_init(struct list_head *list,
  */
 #define list_for_each_prev(pos, head) \
 	for (pos = (head)->prev; pos != (head); \
-			pos = pos->prev)
+		pos = pos->prev)
 
 /**
  * list_for_each_safe - iterate over a list safe against
@@ -216,7 +215,7 @@ static inline void list_splice_init(struct list_head *list,
  */
 #define list_for_each_safe(pos, n, head) \
 	for (pos = (head)->next, n = pos->next; pos != (head); \
-			pos = n, n = pos->next)
+		pos = n, n = pos->next)
 
 /**
  * list_for_each_entry	-	iterate over list of given type
@@ -224,10 +223,10 @@ static inline void list_splice_init(struct list_head *list,
  * @head:	the head for your list.
  * @member:	the name of the list_struct within the struct.
  */
-#define list_for_each_entry(pos, head, member)              \
-	for (pos = list_entry((head)->next, typeof(*pos), member);  \
-			&pos->member != (head);                     \
-			pos = list_entry(pos->member.next, typeof(*pos), member))
+#define list_for_each_entry(pos, head, member)				\
+	for (pos = list_entry((head)->next, typeof(*pos), member);	\
+		&pos->member != (head); 					\
+		pos = list_entry(pos->member.next, typeof(*pos), member))
 
 /**
  * list_for_each_entry_safe - iterate over list of given
@@ -237,10 +236,10 @@ static inline void list_splice_init(struct list_head *list,
  * @head:	the head for your list.
  * @member:	the name of the list_struct within the struct.
  */
-#define list_for_each_entry_safe(pos, n, head, member)          \
-	for (pos = list_entry((head)->next, typeof(*pos), member),  \
-			n = list_entry(pos->member.next, typeof(*pos), member); \
-			&pos->member != (head);                     \
-			pos = n, n = list_entry(n->member.next, typeof(*n), member))
+#define list_for_each_entry_safe(pos, n, head, member)			\
+	for (pos = list_entry((head)->next, typeof(*pos), member),	\
+		n = list_entry(pos->member.next, typeof(*pos), member);	\
+		&pos->member != (head); 					\
+		pos = n, n = list_entry(n->member.next, typeof(*n), member))
 
 #endif /* COMPAT_LINUX_LINUX_LIST_H_ */

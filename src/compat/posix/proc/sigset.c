@@ -15,6 +15,7 @@
  * @author Eldar Abusalimov
  */
 
+
 #include <errno.h>
 #include <signal.h>
 
@@ -35,18 +36,16 @@ int sigfillset(sigset_t *set)
 
 int sigismember(const sigset_t *set, int signo)
 {
-	if (!check_range(signo, 1, _SIG_TOTAL)) { /* signal 0 is reserved */
+	if (!check_range(signo, 1, _SIG_TOTAL))  /* signal 0 is reserved */
 		return -EINVAL;
-	}
 
 	return bitmap_test_bit(set->bitmap, signo);
 }
 
 int sigaddset(sigset_t *set, int signo)
 {
-	if (!check_range(signo, 1, _SIG_TOTAL)) {
+	if (!check_range(signo, 1, _SIG_TOTAL))
 		return -EINVAL;
-	}
 
 	bitmap_set_bit(set->bitmap, signo);
 	return 0;
@@ -54,10 +53,11 @@ int sigaddset(sigset_t *set, int signo)
 
 int sigdelset(sigset_t *set, int signo)
 {
-	if (!check_range(signo, 1, _SIG_TOTAL)) {
+	if (!check_range(signo, 1, _SIG_TOTAL))
 		return -EINVAL;
-	}
 
 	bitmap_clear_bit(set->bitmap, signo);
 	return 0;
 }
+
+

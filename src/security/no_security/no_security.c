@@ -38,7 +38,7 @@ int security_xattr_get(struct node *node, const char *name, char *value, size_t 
 }
 
 int security_xattr_set(struct node *node, const char *name,
-		const char *value, size_t len, int flags) {
+			const char *value, size_t len, int flags) {
 	return 0;
 }
 

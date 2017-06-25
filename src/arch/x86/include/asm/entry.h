@@ -14,7 +14,7 @@
 #ifdef __ASSEMBLER__
 
 #define SETUP_SEGMENTS            \
-	movw $(__KERNEL_DS), %dx;  \
+	movw    $(__KERNEL_DS), %dx;  \
 	movw    %dx, %ds;             \
 	movw    %dx, %es;
 
@@ -50,21 +50,21 @@
 
 #define RESTORE_ALL  \
 	RESTORE_ALL_REGS \
-	add $8, %esp;  \
+	add   $8, %esp;  \
 	iret;
 
 #define CALL_WPTREGS \
-	subl $28, %esp;          \
+	subl 	$28, %esp;          \
 	SAVE_ALL_REGS;              \
-	movl PT_END(%esp), %ecx; \
-	movl    %ecx, PT_EIP(%esp); \
-	push    %cs;                \
-	popl PT_CS(%esp);        \
+	movl	PT_END(%esp), %ecx; \
+	movl	%ecx, PT_EIP(%esp); \
+	push	%cs;				\
+	popl	PT_CS(%esp);		\
 	pushf;                      \
-	popl PT_EFLAGS(%esp);    \
-	movl    %esp, %eax;         \
-	addl $PT_END+4, %eax;    \
-	movl    %eax, PT_ESP(%esp); \
+	popl	PT_EFLAGS(%esp);    \
+	movl	%esp, %eax;         \
+	addl	$PT_END+4, %eax;    \
+	movl	%eax, PT_ESP(%esp); \
 	push    %esp;               \
 	call
 

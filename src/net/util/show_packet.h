@@ -12,12 +12,13 @@
 #include <util/log.h>
 #include <stdint.h>
 
+
 #define STR_BYTES 16
 
+
 static inline void show_packet(uint8_t *raw, int size, char *title) {
-	if (!&mod_logger) {
+	if (!&mod_logger)
 		return;
-	}
 
 	if (mod_logger.logging.level >= LOG_DEBUG - 1) {
 
@@ -38,9 +39,8 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
 				int pos = i * STR_BYTES + j;
 				if (pos < size) {
 					char c = (char) *(raw + pos);
-					if (c < 33 || c > 126) {
+					if (c < 33 || c > 126)
 						c = '.';
-					}
 
 					log_raw(LOG_DEBUG, "%c", c);
 				}

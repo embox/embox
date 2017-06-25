@@ -14,3 +14,5 @@ extern struct waitq_link *waitq_link_find_protected(struct waitq_link *pwql);
 extern void waitq_link_delete_protected(struct waitq_link *pwql);
 
 #endif /* SCHED_WAITQ_PROTECT_LINK_H_ */
+
+

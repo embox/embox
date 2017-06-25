@@ -9,13 +9,13 @@
 #include <javacall_os.h>
 
 void javacall_os_initialize(void){
-	return;
+    return;
 }
 
 void javacall_os_dispose() {
-	return;
+    return;
 }
 
-void javacall_os_flush_icache(unsigned char *address, int size) {
+void javacall_os_flush_icache(unsigned char* address, int size) {
 	return;
 }

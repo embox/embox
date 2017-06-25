@@ -68,7 +68,7 @@ struct tree_link *tree_postorder_next(struct tree_link *link) {
 		/* It's not a last element in list. */
 		/* TODO dirty hack. XXX O(n) time. */
 		return tree_postorder_begin(
-			dlist_entry(link->list_link.next, struct tree_link, list_link));
+				dlist_entry(link->list_link.next, struct tree_link, list_link));
 	} else {
 		/* Next link is a parent */
 		return link->par;
@@ -81,7 +81,7 @@ struct tree_link *tree_postorder_begin(struct tree_link *tree) {
 	}
 	while (!dlist_empty(&tree->children)) {
 		tree = dlist_entry(dlist_first(&tree->children),
-				struct tree_link, list_link);
+					struct tree_link, list_link);
 	}
 	return tree;
 }
@@ -140,10 +140,11 @@ struct tree_link *tree_children_end(struct tree_link *tree) {
 	return dlist_entry(lnk->next, struct tree_link, list_link);
 }
 
+
 struct tree_link *tree_children_next(struct tree_link *tree) {
-	return dlist_entry(tree->list_link.next, struct tree_link, list_link);
+	    return dlist_entry(tree->list_link.next, struct tree_link, list_link);
 }
 
 struct tree_link *tree_children_prev(struct tree_link *tree) {
-	return dlist_entry(tree->list_link.next, struct tree_link, list_link);
+	    return dlist_entry(tree->list_link.next, struct tree_link, list_link);
 }

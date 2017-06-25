@@ -16,4 +16,5 @@
  #define NULL 0
 #endif /* ! __cplusplus */
 
+
 #endif /* NULL_DEF_H_ */

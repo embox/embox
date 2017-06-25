@@ -17,6 +17,7 @@ static void print_usage(void) {
 	printf("Usage: mmumap [-h][-p pid] [-t] [-v virt_addr] [-o page_options]\n");
 }
 
+
 int main(int argc, char **argv) {
 	int opt;
 	pid_t pid = 0;

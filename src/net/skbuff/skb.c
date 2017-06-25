@@ -31,11 +31,11 @@
 #define MODOPS_AMOUNT_SKB       OPTION_GET(NUMBER, amount_skb)
 POOL_DEF(skb_pool, struct sk_buff, MODOPS_AMOUNT_SKB);
 
-struct sk_buff *skb_wrap(size_t size, struct sk_buff_data *skb_data) {
+struct sk_buff * skb_wrap(size_t size, struct sk_buff_data *skb_data) {
 	return skb_wrap_local(size, skb_data, &skb_pool);
 }
 
-struct sk_buff *skb_wrap_local(size_t size, struct sk_buff_data *skb_data,
+struct sk_buff * skb_wrap_local(size_t size, struct sk_buff_data *skb_data,
 		struct pool *pl) {
 	ipl_t sp;
 	struct sk_buff *skb;
@@ -44,11 +44,11 @@ struct sk_buff *skb_wrap_local(size_t size, struct sk_buff_data *skb_data,
 	assert(size != 0);
 	assert(skb_data != NULL);
 
-	/* TODO move it */
-/*	if (size > skb_max_size()) { */
-/*		log_error("skb_wrap: error: size is too big\n"); */
-/*		return NULL; / * error: invalid argument * / */
-/*	} */
+	// TODO move it
+//	if (size > skb_max_size()) {
+//		log_error("skb_wrap: error: size is too big\n");
+//		return NULL; /* error: invalid argument */
+//	}
 
 	sp = ipl_save();
 	{
@@ -75,11 +75,11 @@ struct sk_buff *skb_wrap_local(size_t size, struct sk_buff_data *skb_data,
 	return skb;
 }
 
-struct sk_buff *skb_alloc(size_t size) {
+struct sk_buff * skb_alloc(size_t size) {
 	return skb_alloc_local(size, &skb_pool);
 }
 
-struct sk_buff *skb_alloc_local(size_t size, struct pool *pl) {
+struct sk_buff * skb_alloc_local(size_t size, struct pool *pl) {
 	struct sk_buff *skb;
 	struct sk_buff_data *skb_data;
 
@@ -97,7 +97,7 @@ struct sk_buff *skb_alloc_local(size_t size, struct pool *pl) {
 	return skb;
 }
 
-struct sk_buff *skb_realloc(size_t size, struct sk_buff *skb) {
+struct sk_buff * skb_realloc(size_t size, struct sk_buff *skb) {
 	if (skb == NULL) {
 		return skb_alloc(size);
 	}
@@ -172,7 +172,7 @@ static void skb_copy_data(struct sk_buff_data *to_data,
 			from->len);
 }
 
-struct sk_buff *skb_copy(const struct sk_buff *skb) {
+struct sk_buff * skb_copy(const struct sk_buff *skb) {
 	struct sk_buff *copied;
 
 	assert(skb != NULL);
@@ -188,7 +188,7 @@ struct sk_buff *skb_copy(const struct sk_buff *skb) {
 	return copied;
 }
 
-struct sk_buff *skb_clone(const struct sk_buff *skb) {
+struct sk_buff * skb_clone(const struct sk_buff *skb) {
 	struct sk_buff *cloned;
 	struct sk_buff_data *cloned_data;
 
@@ -210,7 +210,7 @@ struct sk_buff *skb_clone(const struct sk_buff *skb) {
 	return cloned;
 }
 
-struct sk_buff *skb_declone(struct sk_buff *skb) {
+struct sk_buff * skb_declone(struct sk_buff *skb) {
 	struct sk_buff_data *decloned_data;
 
 	assert(skb != NULL);
@@ -226,7 +226,7 @@ struct sk_buff *skb_declone(struct sk_buff *skb) {
 
 	skb_shift_ref(skb,
 			skb_get_data_pointner(decloned_data)
-			- skb_get_data_pointner(skb->data));
+					- skb_get_data_pointner(skb->data));
 	skb_copy_data(decloned_data, skb);
 
 	skb_data_free(skb->data);

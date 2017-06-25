@@ -18,6 +18,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 
+
 EMBOX_NET_PACK(ETH_P_IPV6, ip6_rcv);
 
 #include <util/log.h>
@@ -42,9 +43,9 @@ static int ip6_rcv(struct sk_buff *skb, struct net_device *dev) {
 	assert(skb->dev != NULL);
 	assert(inetdev_get_by_dev(skb->dev) != NULL);
 	if (0 != memcmp(&inetdev_get_by_dev(skb->dev)->ifa6_address,
-			&skb->nh.ip6h->daddr, sizeof(struct in6_addr))) {
-/*		skb_free(skb); */
-/*		return 0; / * error: not for us * / */
+				&skb->nh.ip6h->daddr, sizeof(struct in6_addr))) {
+//		skb_free(skb);
+//		return 0; /* error: not for us */
 	}
 
 	/* Setup transport layer header */

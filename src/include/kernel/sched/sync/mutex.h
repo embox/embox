@@ -18,8 +18,8 @@ struct thread;
  * Defines Mutex structure.
  */
 struct mutex {
-	struct waitq	 wq;
-	struct schedee * holder;
+	struct waitq wq;
+	struct schedee *holder;
 	struct mutexattr attr;
 
 	int lock_count;
@@ -68,5 +68,6 @@ extern void mutex_priority_inherit(struct schedee *self, struct mutex *mutex);
  * @param self Current schedee which priority to uninherit.
  */
 extern void mutex_priority_uninherit(struct schedee *self);
+
 
 #endif /* KERNEL_SCHEDEE_SYNC_MUTEX_H_ */

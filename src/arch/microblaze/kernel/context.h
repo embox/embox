@@ -14,8 +14,7 @@
 #include <stdint.h>
 
 struct context {
-	/* 0x00 */
-	uint32_t			r1; /* stack pointer */
+	/* 0x00 */ uint32_t r1; /* stack pointer */
 	/* 0x04 */ uint32_t r2;
 
 	/* r3-r12 are volatile register (caller-save) */

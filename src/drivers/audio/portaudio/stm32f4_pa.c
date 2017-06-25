@@ -45,15 +45,15 @@ extern void Audio_MAL_I2S_IRQHandler(void);
 #define BUF_N 2
 
 struct pa_strm {
-	int					   started;
-	int					   paused;
-	int					   completed;
-	int					   sample_format;
-	PaStreamCallback *	   callback;
-	void *				   callback_data;
-	size_t				   chan_buf_len;
-	uint16_t			   in_buf[MAX_BUF_LEN];
-	uint16_t			   out_buf[MAX_BUF_LEN * OUTPUT_CHAN_N * BUF_N];
+	int started;
+	int paused;
+	int completed;
+	int sample_format;
+	PaStreamCallback *callback;
+	void *callback_data;
+	size_t chan_buf_len;
+	uint16_t in_buf[MAX_BUF_LEN];
+	uint16_t out_buf[MAX_BUF_LEN * OUTPUT_CHAN_N * BUF_N];
 	volatile unsigned char out_buf_empty_mask;
 };
 static_assert(BUF_N <= 8);
@@ -71,9 +71,7 @@ static void strm_get_data(struct pa_strm *strm, int buf_index) {
 	if (rc == paComplete) {
 		strm->completed = 1;
 	}
-	else {
-		assert(rc == paContinue);
-	}
+	else assert(rc == paContinue);
 
 	buf = strm->out_buf + buf_index * strm->chan_buf_len * OUTPUT_CHAN_N;
 	for (i_in = 0; i_in < strm->chan_buf_len; ++i_in) {
@@ -133,22 +131,16 @@ PaError Pa_Terminate(void) {
 	return paNoError;
 }
 
-PaHostApiIndex Pa_GetHostApiCount(void) {
-	return 1;
-}
-PaDeviceIndex Pa_GetDeviceCount(void) {
-	return 1;
-}
-PaDeviceIndex Pa_GetDefaultOutputDevice(void) {
-	return 0;
-}
+PaHostApiIndex Pa_GetHostApiCount(void) { return 1; }
+PaDeviceIndex Pa_GetDeviceCount(void) { return 1; }
+PaDeviceIndex Pa_GetDefaultOutputDevice(void) { return 0; }
 
-const char *Pa_GetErrorText(PaError errorCode) {
+const char * Pa_GetErrorText(PaError errorCode) {
 	D(": %d", __func__, errorCode);
 	return "Pa_GetErrorText not implemented";
 }
 
-const PaDeviceInfo *Pa_GetDeviceInfo(PaDeviceIndex device) {
+const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
 	static const PaDeviceInfo info = {
 		.structVersion = 1,
 		.name = "stm32f4_audio",
@@ -166,12 +158,12 @@ const PaDeviceInfo *Pa_GetDeviceInfo(PaDeviceIndex device) {
 	return device == 0 ? &info : NULL;
 }
 
-const PaHostApiInfo *Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
+const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
 	D(": %d = NULL", __func__, hostApi);
 	return NULL;
 }
 
-const PaStreamInfo *Pa_GetStreamInfo(PaStream *stream) {
+const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
 	static PaStreamInfo info = {
 		.structVersion = 1,
 		.inputLatency = 0,
@@ -183,7 +175,7 @@ const PaStreamInfo *Pa_GetStreamInfo(PaStream *stream) {
 	return stream != NULL ? &info : NULL;
 }
 
-PaError Pa_OpenStream(PaStream **stream,
+PaError Pa_OpenStream(PaStream** stream,
 		const PaStreamParameters *inputParameters,
 		const PaStreamParameters *outputParameters,
 		double sampleRate, unsigned long framesPerBuffer,
@@ -221,14 +213,14 @@ PaError Pa_OpenStream(PaStream **stream,
 	}
 
 	if (0 != irq_attach(STM32F4_AUDIO_I2S_DMA_IRQ, stm32f4_audio_i2s_dma_interrupt,
-			0, strm, "stm32f4_audio")) {
+				0, strm, "stm32f4_audio")) {
 		goto err_thread_free;
 	}
 
 	EVAL_AUDIO_SetAudioInterface(AUDIO_INTERFACE_I2S);
 
 	if (0 != EVAL_AUDIO_Init(OUTPUT_DEVICE_HEADPHONE, MODOPS_VOLUME,
-			sampleRate)) {
+				sampleRate)) {
 		goto err_irq_detach;
 	}
 

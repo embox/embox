@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <netdb.h>
 
-struct netent *getnetbyaddr(uint32_t net, int type) {
+struct netent * getnetbyaddr(uint32_t net, int type) {
 	struct netent *ne;
 
 	setnetent(1);

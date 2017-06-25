@@ -11,4 +11,4 @@
 
 int phoneme_midp(int argc, char **argv);
 
-#endif /* PHONEME_EMBOX_MIDP_H_ */
+#endif // PHONEME_EMBOX_MIDP_H_

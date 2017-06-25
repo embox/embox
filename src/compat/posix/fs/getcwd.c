@@ -13,7 +13,7 @@
 #include <string.h>
 #include <unistd.h>
 
-char *getcwd(char *buff, size_t size) {
+char * getcwd(char *buff, size_t size) {
 	const char *dir;
 
 	if ((buff == NULL) || (size == 0)) {

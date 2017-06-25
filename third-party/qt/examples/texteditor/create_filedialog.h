@@ -5,20 +5,20 @@
 
 class TRY : public QWidget
 {
-Q_OBJECT
+    Q_OBJECT
 public:
-explicit TRY();
+    explicit TRY();
 
 private slots:
-void createFile(QString name);
+    void createFile(QString name);
 
 private:
-QLineEdit fileNameEdit;
+    QLineEdit fileNameEdit;
 
-QLabel *fileNameLabel;
+    QLabel *fileNameLabel;
 
-QPushButton *okButton;
-QPushButton *cancelButton;
+    QPushButton *okButton;
+    QPushButton *cancelButton;
 };
 
-#endif /* CREATEFILEDIALOG_H */
+#endif // CREATEFILEDIALOG_H

@@ -8,15 +8,15 @@
 #include <stdio.h>
 
 void clearerr(FILE *stream) {
-	/*TODO: */
+	//TODO:
 }
 
 int feof(FILE *file) {
-	/*TODO: */
+	//TODO:
 	return 0;
 }
 
 int ferror(FILE *file) {
-	/*TODO: */
+	//TODO:
 	return 0;
 }

@@ -13,3 +13,4 @@ struct sk_buff;
 extern void sock_packet_add(struct sk_buff *skb, unsigned short protocol);
 
 #endif /* SOCKET_PACKET_H_ */
+

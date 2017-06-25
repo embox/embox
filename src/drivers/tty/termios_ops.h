@@ -43,3 +43,4 @@ extern int termios_gotc(const struct termios *tio, char ch,
 		struct ring *ring, char *buf, size_t buflen);
 
 #endif /* DRIVERS_TERMIOS_OPS_H_ */
+

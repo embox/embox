@@ -86,7 +86,7 @@ int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t msec,
 		return -EINVAL;
 	}
 
-	if (NULL == (tmr = (sys_timer_t *) pool_alloc(&timer_pool))) {
+	if (NULL == (tmr = (sys_timer_t*) pool_alloc(&timer_pool))) {
 		return -ENOMEM;
 	}
 

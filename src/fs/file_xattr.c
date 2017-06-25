@@ -59,3 +59,4 @@ static int file_idesc_removexattr(struct idesc *idesc, const char *name) {
 
 	return kfile_xattr_set(desc->node, name, NULL, 0, XATTR_REMOVE);
 }
+

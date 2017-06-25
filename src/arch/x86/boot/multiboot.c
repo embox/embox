@@ -24,7 +24,7 @@ void multiboot_save_info(unsigned long magic, struct multiboot_info *mbi) {
 
 	multiboot_info = mbi;
 
-	if (multiboot_info->flags & MULTIBOOT_INFO_VIDEO_INFO) {
+	if(multiboot_info->flags & MULTIBOOT_INFO_VIDEO_INFO) {
 		/* setup video mode */
 	}
 }
@@ -50,16 +50,16 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 	/* Are mem_* valid?  */
 	if (CHECK_FLAG(mbi->flags, 0)) {
 		printk("mem_lower = %uKB, mem_upper = %uKB\n",
-				(unsigned)mbi->mem_lower, (unsigned)mbi->mem_upper);
+			(unsigned)mbi->mem_lower, (unsigned)mbi->mem_upper);
 	}
 
 	/* Is boot_device valid?  */
-	if (CHECK_FLAG(mbi->flags, 1)) {
+	if (CHECK_FLAG (mbi->flags, 1)) {
 		printk("boot_device = 0x%x\n", (unsigned)mbi->boot_device);
 	}
 
 	/* Is the command line passed?  */
-	if (CHECK_FLAG(mbi->flags, 2)) {
+	if (CHECK_FLAG (mbi->flags, 2)) {
 		printk("cmdline = %s\n", (char *) mbi->cmdline);
 	}
 
@@ -69,12 +69,12 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 		int i;
 
 		printk("mods_count = %d, mods_addr = 0x%x\n",
-				(int) mbi->mods_count, (int) mbi->mods_addr);
+			(int) mbi->mods_count, (int) mbi->mods_addr);
 		for (i = 0, mod = (multiboot_module_t *) mbi->mods_addr;
-				i < mbi->mods_count; i++, mod += sizeof(multiboot_module_t)) {
+			i < mbi->mods_count; i++, mod += sizeof(multiboot_module_t)) {
 			printk(" mod_start = 0x%x, mod_end = 0x%x, string = %s\n",
-					(unsigned) mod->mod_start,
-					(unsigned) mod->mod_end, (char *) mod->string);
+				(unsigned) mod->mod_start,
+				(unsigned) mod->mod_end, (char *) mod->string);
 		}
 	}
 
@@ -89,10 +89,10 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 		aout_symbol_table_t *aout_sym = &(mbi->u.aout_sym);
 
 		printk("aout_symbol_table: tabsize = 0x%0x, "
-				"strsize = 0x%x, addr = 0x%x\n",
-				(unsigned) aout_sym->tabsize,
-				(unsigned) aout_sym->strsize,
-				(unsigned) aout_sym->addr);
+			"strsize = 0x%x, addr = 0x%x\n",
+			(unsigned) aout_sym->tabsize,
+			(unsigned) aout_sym->strsize,
+			(unsigned) aout_sym->addr);
 	}
 
 	/* Is the section header table of ELF valid?  */
@@ -100,29 +100,28 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 		elf_section_header_table_t *elf_sec = &(mbi->u.elf_sec);
 
 		printk("elf_sec: num = %u, size = 0x%x,"
-				" addr = 0x%x, shndx = 0x%x\n",
-				(unsigned) elf_sec->num, (unsigned) elf_sec->size,
-				(unsigned) elf_sec->addr, (unsigned) elf_sec->shndx);
-	}
+			" addr = 0x%x, shndx = 0x%x\n",
+			(unsigned) elf_sec->num, (unsigned) elf_sec->size,
+			(unsigned) elf_sec->addr, (unsigned) elf_sec->shndx);
+        }
 
 	/* Are mmap_* valid?  */
 	if (CHECK_FLAG(mbi->flags, 6)) {
 		memory_map_t *mmap;
 
 		printk("mmap_addr = 0x%x, mmap_length = 0x%x\n",
-				(unsigned) mbi->mmap_addr, (unsigned) mbi->mmap_length);
+			(unsigned) mbi->mmap_addr, (unsigned) mbi->mmap_length);
 		for (mmap = (memory_map_t *) mbi->mmap_addr;
-				(unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
-				mmap = (memory_map_t *)((unsigned long) mmap
-				+ mmap->size + sizeof(mmap->size))) {
+		    (unsigned long) mmap < mbi->mmap_addr + mbi->mmap_length;
+			mmap = (memory_map_t *)((unsigned long) mmap
+			     + mmap->size + sizeof(mmap->size)))
 			printk(" size = 0x%x, base_addr = 0x%x%x,"
-					" length = 0x%x%x, type = 0x%x\n",
-					(unsigned) mmap->size,
-					(unsigned) mmap->base_addr_high,
-					(unsigned) mmap->base_addr_low,
-					(unsigned) mmap->length_high,
-					(unsigned) mmap->length_low,
-					(unsigned) mmap->type);
-		}
+				" length = 0x%x%x, type = 0x%x\n",
+				(unsigned) mmap->size,
+				(unsigned) mmap->base_addr_high,
+				(unsigned) mmap->base_addr_low,
+				(unsigned) mmap->length_high,
+				(unsigned) mmap->length_low,
+				(unsigned) mmap->type);
 	}
 }

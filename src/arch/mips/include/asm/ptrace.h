@@ -10,6 +10,7 @@
 #ifndef MIPS_PTRACE_H_
 #define MIPS_PTRACE_H_
 
+
 #ifndef __ASSEMBLER__
 /* registers description
  * $0 - always zero
@@ -43,6 +44,7 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 }
 
 #else /* assembler */
+
 
 /*
  * Offsets of register values in saved context.
@@ -86,5 +88,6 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 #define PT_SIZE   0x84
 
 #endif /* __ASSEMBLER__ */
+
 
 #endif /* MIPS_PTRACE_H_ */

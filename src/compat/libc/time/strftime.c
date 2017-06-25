@@ -25,17 +25,17 @@
  * %T - The time in 24-hour notation (%H:%M:%S)
  */
 size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm) {
-	static char mon_name[12][4] = {
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-	};
+    static char mon_name[12][4] = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
 	size_t count = 0;
 
 	assert(s != NULL);
 	assert(fmt != NULL);
 	assert(tm != NULL);
 
-	for (;; ) {
+	for (;;) {
 		while (*fmt && *fmt != '%') {
 			if (count < max - 1) {
 				s[count++] = *fmt++;
@@ -90,7 +90,7 @@ size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm) {
 			break;
 		case 'T':
 			sprintf(&s[count], "%02d:%02d:%02d",
-					tm->tm_hour, tm->tm_min, tm->tm_sec);
+				tm->tm_hour, tm->tm_min, tm->tm_sec);
 			count += 8;
 			break;
 		default:

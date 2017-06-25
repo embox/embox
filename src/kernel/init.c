@@ -33,6 +33,7 @@ void kernel_start(void) {
 	}
 }
 
+
 /**
  * The initialization functions are called to set up interrupts, perform
  * further memory configuration, initialization of drivers, devices.

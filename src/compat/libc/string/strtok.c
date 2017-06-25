@@ -18,7 +18,7 @@ char *strtok_r(char *str, const char *delim, char **saveptr) {
 		if ('\0' == (ch = *str++)) {
 			return NULL;
 		}
-	} while (strchr(delim, ch));
+	} while(strchr(delim, ch));
 
 	/* skip not delimiting characters */
 	*saveptr = str + strcspn(str, delim);

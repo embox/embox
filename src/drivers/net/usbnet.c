@@ -65,7 +65,7 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 	in_endp = nic_priv->usbdev->endpoints[2];
 	assert(in_endp);
 
-	switch (req->req_stat) {
+	switch(req->req_stat) {
 	case USB_REQ_NOERR:
 		memcpy(nic_priv->pdata, req->buf, req->len);
 		nic_priv->pdata += req->len;
@@ -147,7 +147,7 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 	}
 
 	res = timer_init_start_msec(&nic_priv->timer, TIMER_ONESHOT,
-			USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
+		USBNET_TIMER_FREQ, usbnet_timer_handler, nic_priv);
 	if (res < 0) {
 		goto out_free_data;
 	}

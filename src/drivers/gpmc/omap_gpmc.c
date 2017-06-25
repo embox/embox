@@ -65,9 +65,9 @@ static uint32_t gpmc_reg_read(int offset) {
 	return REG_LOAD(GPMC_BASE_ADDRESS + offset);
 }
 
-/*static void gpmc_reg_write(int offset, uint32_t val) { */
-/*	REG_STORE(base_addr + offset, val); */
-/*} */
+//static void gpmc_reg_write(int offset, uint32_t val) {
+//	REG_STORE(base_addr + offset, val);
+//}
 
 static uint32_t gpmc_cs_reg_read(int cs, int offset) {
 	unsigned long reg_addr;
@@ -94,16 +94,15 @@ static int gpmc_cs_enable_mem(int cs, uint32_t base, uint32_t size) {
 
 #if 0
 	if (gpmc_cs_enabled(cs)) {
-		return -1; /* it is so? */
+		return -1; // it is so?
 	}
 
 	/*
 	* Ensure that base address is aligned on a
 	* boundary equal to or greater than size.
 	*/
-	if (base & (size - 1)) {
+	if (base & (size - 1))
 		return -EINVAL;
-	}
 #endif
 
 	mask = (1 << GPMC_SECTION_SHIFT) - size;
@@ -127,9 +126,8 @@ static int gpmc_init(void) {
 	uint32_t l;
 
 	l = gpmc_reg_read(GPMC_REVISION);
-	if (GPMC_REVISION_MAJOR(l) != 5 || GPMC_REVISION_MINOR(l) != 0) { /* revision 5.0 for OMAP35xx */
+	if (GPMC_REVISION_MAJOR(l) != 5 || GPMC_REVISION_MINOR(l) != 0) // revision 5.0 for OMAP35xx
 		return -1;
-	}
 
 	return 0;
 }

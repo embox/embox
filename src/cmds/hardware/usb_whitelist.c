@@ -21,7 +21,7 @@
 static const char usb_wl_dump_hdr_magic[] = "UWLD";
 
 struct usb_wl_dump_hdr {
-	char		  df_magic[4];
+	char df_magic[4];
 	unsigned long df_crc32;
 } __attribute__((packed));
 
@@ -47,9 +47,8 @@ static int usb_wl_load(int fdwl, struct usb_whitelist_rule **wl_rules_ptr,
 	struct usb_whitelist_rule *wl_rules;
 
 	ret = ioctl(fdwl, USB_WHITELIST_IO_GETN, &rules_n);
-	if (ret < 0) {
+	if (ret < 0)
 		return ret;
-	}
 
 	if (rules_n == 0) {
 		*rules_n_ptr = 0;
@@ -62,7 +61,7 @@ static int usb_wl_load(int fdwl, struct usb_whitelist_rule **wl_rules_ptr,
 	}
 
 	if (0 > (ret = read(fdwl, wl_rules,
-			rules_n * sizeof(struct usb_whitelist_rule)))) {
+				rules_n * sizeof(struct usb_whitelist_rule)))) {
 		free(wl_rules);
 		return ret;
 	}
@@ -94,9 +93,8 @@ static int usb_wl_print(int fdwl) {
 				strpid, wl_rule->sn);
 	}
 
-	if (rules_n) {
+	if (rules_n)
 		free(wl_rules);
-	}
 	return 0;
 }
 
@@ -113,9 +111,9 @@ static int usb_wl_dump_hdr_check(const struct usb_whitelist_rule *wl_rules,
 		int wl_rules_n, const struct usb_wl_dump_hdr *df_header) {
 
 	return 0 == memcmp(df_header->df_magic, usb_wl_dump_hdr_magic,
-				   USB_WL_DUMP_HDR_MAGIC_LEN)
-		   && df_header->df_crc32 == count_crc32((void *) wl_rules,
-				   (void *) (wl_rules + wl_rules_n));
+			USB_WL_DUMP_HDR_MAGIC_LEN)
+		&& df_header->df_crc32 == count_crc32((void *) wl_rules,
+				(void *) (wl_rules + wl_rules_n));
 }
 
 static int usb_wl_dump_save(int fdwl, const char *filename) {
@@ -151,9 +149,8 @@ static int usb_wl_dump_save(int fdwl, const char *filename) {
 
 	ret = 0;
 out:
-	if (rules_n) {
+	if (rules_n)
 		free(wl_rules);
-	}
 	return ret;
 }
 

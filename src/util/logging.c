@@ -19,7 +19,7 @@ char *log_levels[LOG_DEBUG] = {
 	"debug"
 };
 
-void logging_raw(struct logging *logging, int level, const char *fmt, ...) {
+void logging_raw(struct logging *logging, int level, const char* fmt, ...) {
 	assert(logging);
 
 	if (level <= logging->level) {

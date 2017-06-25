@@ -14,7 +14,7 @@
 #include <kernel/printk.h>
 
 mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return (mmu_pmd_t *) (((uint32_t)*pgd) & ~MMU_PAGE_MASK);
+	return (mmu_pmd_t*) (((uint32_t)*pgd) & ~MMU_PAGE_MASK);
 }
 
 mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
@@ -27,7 +27,7 @@ mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 
 void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
 	*pgd = (mmu_pgd_t) ((((uint32_t)pmd) & ~MMU_PAGE_MASK)
-			| ARM_MMU_TYPE_PAGE);
+		| ARM_MMU_TYPE_PAGE);
 
 }
 

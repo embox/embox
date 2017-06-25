@@ -16,21 +16,19 @@
 
 #include <util/array.h>
 
-ARRAY_SPREAD_DEF(const struct cmd *const, __cmd_registry);
+ARRAY_SPREAD_DEF(const struct cmd * const, __cmd_registry);
 
 extern void getopt_init(void);
 
 int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	int err;
 
-	if (!cmd) {
+	if (!cmd)
 		return -EINVAL;
-	}
 
 	err = mod_activate_app(cmd2mod(cmd));
-	if (err) {
+	if (err)
 		return err;
-	}
 
 	getopt_init();
 
@@ -52,3 +50,4 @@ const struct cmd *cmd_lookup(const char *name) {
 
 	return NULL;
 }
+

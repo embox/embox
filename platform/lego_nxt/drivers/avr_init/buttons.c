@@ -15,6 +15,7 @@ static nxt_buttons_mask_t buttons_accum_state = 0;
 static int old_state = 0;
 static int state_count = DEL;
 
+
 /* Buttons pressed at now */
 nxt_buttons_mask_t nxt_buttons_pushed(void) {
 	return buttons_state;

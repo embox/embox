@@ -25,12 +25,12 @@ ARRAY_SPREAD_DEF(const struct mod *const, __mod_runlevel2);
 ARRAY_SPREAD_DEF(const struct mod *const, __mod_runlevel3);
 ARRAY_SPREAD_DEF(const struct mod *const, __mod_runlevel4);
 
-static const struct mod *const volatile *mod_runlevels_start[RUNLEVEL_NRS_TOTAL] = {
+static const struct mod *const volatile*mod_runlevels_start[RUNLEVEL_NRS_TOTAL] = {
 	__mod_runlevel0, __mod_runlevel1, __mod_runlevel2, __mod_runlevel3,
 	__mod_runlevel4,
 };
 
-static const struct mod *const volatile *mod_runlevels_end[RUNLEVEL_NRS_TOTAL] = {
+static const struct mod *const volatile*mod_runlevels_end[RUNLEVEL_NRS_TOTAL] = {
 	__ARRAY_SPREAD_PRIVATE(__mod_runlevel0, tail),
 	__ARRAY_SPREAD_PRIVATE(__mod_runlevel1, tail),
 	__ARRAY_SPREAD_PRIVATE(__mod_runlevel2, tail),
@@ -45,14 +45,14 @@ static int runlevel_change_hook(runlevel_nr_t new_rl, int res) {
 		printk("runlevel: init level is %d\n", init_level);
 	} else {
 		printk("Failed to get into level %d, current level %d\n",
-				new_rl, init_level);
+					new_rl, init_level);
 	}
 
 	return res;
 }
 
 int runlevel_set(runlevel_nr_t level) {
-	const struct mod *const volatile **start_mods, *const volatile **end_mods;
+	const struct mod *const volatile**start_mods, *const volatile**end_mods;
 	int (*mod_op)(const struct mod *);
 	int d;
 
@@ -73,7 +73,7 @@ int runlevel_set(runlevel_nr_t level) {
 	}
 
 	while (init_level != level) {
-		const struct mod *const volatile *mod;
+		const struct mod *const volatile*mod;
 		int ret;
 
 		ret = 0;

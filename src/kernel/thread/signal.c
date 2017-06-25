@@ -35,14 +35,14 @@ void thread_signal_handle(void) {
 	while ((sig = sigstate_receive(sigstate, &info))) {
 		struct sigaction *act = sig_table + sig;
 
-		/* TODO locks? */
+		// TODO locks?
 		if (act->sa_flags & SA_SIGINFO) {
 			assert(act->sa_sigaction && "expected at least a fallback handler");
-			act->sa_sigaction(sig, &info, NULL);
+ 			act->sa_sigaction(sig, &info, NULL);
 
 		} else {
 			assert(act->sa_handler && "expected at least a fallback handler");
-			act->sa_handler(sig);
+ 			act->sa_handler(sig);
 		}
 
 	}

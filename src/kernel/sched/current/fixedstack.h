@@ -25,7 +25,7 @@ static inline struct schedee *__schedee_get_current(void) {
 	 * Get current stack pointer and apply mask.
 	 */
 	return (struct schedee *) (((uint32_t)__builtin_frame_address(0))
-		   & (~(THREAD_STACK_SIZE - 1)));
+			& (~(THREAD_STACK_SIZE - 1)));
 }
 
 #define __schedee_set_current(schedee) do { (void) schedee; } while (0)

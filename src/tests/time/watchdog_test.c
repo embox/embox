@@ -12,11 +12,13 @@
 #include <unistd.h>
 #include <kernel/printk.h>
 
+
 EMBOX_TEST_SUITE("Test_watchdog");
+
 
 static struct timeval time_to_wait;
 static void *thread_without_timeout(void *);
-static void *thread_with_timeout(void *arg);
+static void *thread_with_timeout(void * arg);
 static void time_is_out(struct sys_timer *timer, void *param);
 static watchdog_t w;
 static int flag;
@@ -26,19 +28,21 @@ TEST_TEARDOWN(wdog_teardown);
 
 TEST_CASE("Checking working with no timeouts")
 {
-	struct thread *p_thread = NULL;
+	struct thread * p_thread = NULL;
 	p_thread = thread_create(0, &thread_without_timeout, NULL);
 	thread_join(p_thread, NULL);
 }
 
+
 TEST_CASE("Checking working with timeout")
 {
-	struct thread *p_thread = NULL;
+	struct thread * p_thread = NULL;
 	p_thread = thread_create(0, &thread_with_timeout, NULL);
 	thread_join(p_thread, NULL);
 }
 
-static int wdog_setup(void)
+
+static int wdog_setup (void)
 {
 	time_to_wait.tv_sec = 2;
 	time_to_wait.tv_usec = 0;
@@ -49,14 +53,15 @@ static int wdog_setup(void)
 	return 0;
 }
 
-static int wdog_teardown(void)
+static int wdog_teardown (void)
 {
 	watchdog_close(&w);
 
 	return 0;
 }
 
-static void *thread_without_timeout(void *arg)
+
+static void *thread_without_timeout(void * arg)
 {
 	watchdog_start(&w);
 	sleep(1);
@@ -66,7 +71,7 @@ static void *thread_without_timeout(void *arg)
 	return NULL;
 }
 
-static void *thread_with_timeout(void *arg)
+static void *thread_with_timeout(void * arg)
 {
 	watchdog_start(&w);
 	sleep(3);
@@ -78,3 +83,4 @@ static void *thread_with_timeout(void *arg)
 static void time_is_out(struct sys_timer *timer, void *param) {
 	flag = 1;
 }
+

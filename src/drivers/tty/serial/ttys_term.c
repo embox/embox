@@ -9,6 +9,7 @@
 #include <drivers/ttys.h>
 #include <drivers/serial/uart_device.h>
 
+
 static inline struct uart *tty2uart(struct tty *tty) {
 	struct tty_uart *tu;
 	tu = member_cast_out(tty, struct tty_uart, tty);

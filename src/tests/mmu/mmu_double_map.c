@@ -27,10 +27,10 @@ static mmu_ctx_t ctx;
 TEST_CASE("Double map phy_page to different address") {
 	int i;
 
-	for (i = 0; i < sizeof(test_page); i++ ) {
+	for(i = 0; i < sizeof(test_page); i++ ) {
 		test_page[i] = (char)i & 0x7F;
 	}
-	for (i = 0; i < sizeof(test_page); i++ ) {
+	for(i = 0; i < sizeof(test_page); i++ ) {
 		test_assert_equal(TEST_VIRT_ADDR_MAP[i], (char)i & 0x7F);
 	}
 }
@@ -46,7 +46,7 @@ static int mmu_case_setup(void) {
 	if (res) {
 		return res;
 	}
-	memset((void *)test_page, 0, VMEM_PAGE_SIZE);
+	memset((void*)test_page, 0, VMEM_PAGE_SIZE);
 
 	return 0;
 }

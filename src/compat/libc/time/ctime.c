@@ -24,15 +24,15 @@ static long days_of_month(int year, int month);
 static bool is_leap_year(int year);
 
 #define year_length(year) \
-	(is_leap_year(year) ? 31622400 : 31536000)
+		(is_leap_year(year) ? 31622400 : 31536000)
 
 static bool is_leap_year(int year) {
 	if (year % 400 == 0) {
 		return true;
 	} else if (year % 100 == 0) {
-		return false;
+	   return false;
 	} else if (year % 4 == 0) {
-		return true;
+	   return true;
 	}
 
 	return false;
@@ -127,31 +127,33 @@ static long days_of_month(int year, int month) {
 	return days_of_month;
 }
 
-char *asctime(const struct tm *timeptr) {
-	static char wday_name[7][4] = {
-		"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
-	};
-	static char mon_name[12][4] = {
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-	};
-	static char result[26];
 
-	sprintf(result, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",
-			wday_name[timeptr->tm_wday],
-			mon_name[timeptr->tm_mon],
-			timeptr->tm_mday, timeptr->tm_hour,
-			timeptr->tm_min, timeptr->tm_sec,
-			1900 + timeptr->tm_year);
-	return result;
+char *asctime(const struct tm *timeptr) {
+    static char wday_name[7][4] = {
+        "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+    };
+    static char mon_name[12][4] = {
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+    };
+    static char result[26];
+
+
+    sprintf(result, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",
+        wday_name[timeptr->tm_wday],
+        mon_name[timeptr->tm_mon],
+        timeptr->tm_mday, timeptr->tm_hour,
+        timeptr->tm_min, timeptr->tm_sec,
+        1900 + timeptr->tm_year);
+    return result;
 }
 
 struct tm *localtime_r(const time_t *timep, struct tm *result) {
-	/*TODO local time not use timezone now */
+	//TODO local time not use timezone now
 	return gmtime_r(timep, result);
 }
 
 struct tm *localtime(const time_t *timep) {
-	/*TODO local time not use timezone now */
+	//TODO local time not use timezone now
 	return gmtime(timep);
 }

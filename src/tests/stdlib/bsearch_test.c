@@ -20,9 +20,7 @@ static int int_comp(const void *fst, const void *snd) {
 }
 
 /* Test array of numbers. */
-static const int a[] = {
-	0, 1, 2, 2, 4, 5, 10, 10, 20
-};
+static const int a[] = {0, 1, 2, 2, 4, 5, 10, 10, 20};
 /* Count of numbers in array. */
 static const int cnt = 9;
 
@@ -35,11 +33,11 @@ static void not_found(void *res) {
  * Check if number was found
  *    and result pointer corresponds to expected index ans.
  */
-static void found(void *res, size_t ans) {
+static void found(void * res, size_t ans) {
 	test_assert((res - (void *)a) / sizeof(int) == ans);
 }
 
-static void *find(int num) {
+static void * find(int num) {
 	return bsearch((int *)&num, a, cnt, sizeof(int), int_comp);
 }
 
@@ -64,6 +62,6 @@ TEST_CASE("Test that existing last unique item will be found") {
 }
 
 TEST_CASE("Test that existing not-unique item will be found. "
-		"Result must be the rightmost one") {
+			"Result must be the rightmost one") {
 	found(find(2), 3);
 }

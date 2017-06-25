@@ -43,23 +43,23 @@ struct idt_gate {
 	 */
 	uint16_t selector;
 	/** unused, set to 0 */
-	uint8_t _zero;
+	uint8_t  _zero;
 	/**
 	 *   7   6   5   4   3           0
 	 * +---+---+---+---+---+---+---+---+
 	 * | P | DPL   | S |    GateType   |
 	 * +---+---+---+---+---+---+---+---+
 	 * GateType:
-	 *  0x5 32 bit Task gate
-	 *  0x6 16-bit interrupt gate
-	 *  0x7 16-bit trap gate
-	 *  0xE 32-bit interrupt gate
-	 *  0xF 32-bit trap gate
+	 * 	0x5 32 bit Task gate
+	 * 	0x6 16-bit interrupt gate
+	 * 	0x7 16-bit trap gate
+	 * 	0xE 32-bit interrupt gate
+	 * 	0xF 32-bit trap gate
 	 * S   - Storage Segment
 	 * DPL - Descriptor Privilege Level
 	 * P   - Present, can be set to 0 for unused interrupts or for Paging.
 	 */
-	uint8_t attr;
+	uint8_t  attr;
 	/**
 	 * Higher part of the offset.
 	 */
@@ -84,7 +84,7 @@ void idt_set_gate(uint8_t nr, uint32_t base, uint16_t sel, uint8_t attr) {
 #define __FWD_DECL(sym) ({ extern void sym(void); &sym; })
 
 #define IDT_EXCEPT(nr) \
-	idt_set_gate(nr, (unsigned) __FWD_DECL(t_excep ## nr), __KERNEL_CS, 0x8E)
+	idt_set_gate(nr, (unsigned) __FWD_DECL(t_excep##nr), __KERNEL_CS, 0x8E)
 
 static void idt_init_except(void) {
 	IDT_EXCEPT(0);  IDT_EXCEPT(1);  IDT_EXCEPT(2);  IDT_EXCEPT(3);
@@ -100,7 +100,7 @@ static void idt_init_except(void) {
 #ifndef INTERRUPT_STUB
 
 #define IDT_IRQ(nr) \
-	idt_set_gate(nr + 32, (unsigned) __FWD_DECL(irq ## nr), __KERNEL_CS, 0x8E)
+	idt_set_gate(nr + 32, (unsigned) __FWD_DECL(irq##nr), __KERNEL_CS, 0x8E)
 
 static void idt_init_irq(void) {
 	/* Master PIC */
@@ -112,7 +112,7 @@ static void idt_init_irq(void) {
 }
 
 #else
-#define idt_init_irq() do { } while (0)
+#define idt_init_irq() do { } while(0)
 #endif /* INTERRUPT_STUB */
 
 #ifndef SYSCALL_STUB
@@ -122,7 +122,7 @@ static void idt_init_syscall(void) {
 }
 
 #else
-#define idt_init_syscall() do { } while (0)
+#define idt_init_syscall() do { } while(0)
 #endif
 
 #ifdef SMP
@@ -133,18 +133,18 @@ static void idt_init_smp(void) {
 
 #else /* !SMP */
 
-#define idt_init_smp() do { } while (0)
+#define idt_init_smp() do { } while(0)
 
 #endif /* SMP */
 
 static struct idt_pointer idt_ptr;
 
 void idt_load(void) {
-	__asm__ __volatile__ (
+	__asm__ __volatile__(
 		"lidt %0\n\t"
 		:
-		: "m" (idt_ptr.limit),
-		"m" (idt_ptr)
+		: "m"(idt_ptr.limit),
+		  "m"(idt_ptr)
 	);
 }
 
@@ -153,7 +153,7 @@ void idt_init(void) {
 	idt_ptr.base = (uint32_t) idt;
 
 	/* zero IDT */
-	memset((unsigned char *) &idt, 0, sizeof(idt));
+	memset((unsigned char*) &idt, 0, sizeof(idt));
 
 	idt_init_except();
 	idt_init_irq();

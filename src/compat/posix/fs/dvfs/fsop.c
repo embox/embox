@@ -22,24 +22,21 @@ int mkdir(const char *pathname, mode_t mode) {
 
 	dvfs_lookup(pathname, &lu);
 
-	if (lu.item) {
+	if (lu.item)
 		return SET_ERRNO(EEXIST);
-	}
 
 	parent[0] = '\0';
 	strncat(parent, pathname, sizeof(parent) - 1);
-	if (parent[strlen(parent) - 1] == '/') {
+	if (parent[strlen(parent) - 1] == '/')
 		parent[strlen(parent) - 1] = '\0';
-	}
 
 	t = strrchr(parent, '/');
 	if (t) {
 		memset(t + 1, '\0', parent + DVFS_MAX_PATH_LEN - t);
 
 		dvfs_lookup(parent, &lu);
-		if (!lu.item) {
+		if (!lu.item)
 			return SET_ERRNO(ENOENT);
-		}
 
 		lu.parent = lu.item;
 		lu.item = NULL;
@@ -49,7 +46,7 @@ int mkdir(const char *pathname, mode_t mode) {
 	}
 
 	res = dvfs_create_new(pathname + strlen(parent), &lu,
-			S_IFDIR | (mode & DVFS_DIR_VIRTUAL));
+			       S_IFDIR | (mode & DVFS_DIR_VIRTUAL));
 	if (res) {
 		return SET_ERRNO(-res);
 	}
@@ -90,30 +87,25 @@ int truncate(const char *path, off_t length) {
 	struct lookup lu;
 
 	assert(path);
-	if (length < 0) {
+	if (length < 0)
 		return -EINVAL;
-	}
 
 	dvfs_lookup(path, &lu);
 
-	if (!lu.item) {
+	if (!lu.item)
 		return -ENOENT;
-	}
 
-	if (FILE_TYPE(lu.item->flags, S_IFDIR)) {
+	if (FILE_TYPE(lu.item->flags, S_IFDIR))
 		return -EISDIR;
-	}
 
-	if (!FILE_TYPE(lu.item->flags, S_IFREG)) {
+	if (!FILE_TYPE(lu.item->flags, S_IFREG))
 		return -EINVAL;
-	}
 
 	assert(lu.item->d_inode);
 	assert(lu.item->d_inode->i_ops);
 
-	if (!lu.item->d_inode->i_ops->truncate) {
+	if (!lu.item->d_inode->i_ops->truncate)
 		return -EPERM;
-	}
 
 	return lu.item->d_inode->i_ops->truncate(lu.item->d_inode, length);
 }
@@ -121,3 +113,4 @@ int truncate(const char *path, off_t length) {
 int flock(int fd, int operation) {
 	return 0;
 }
+

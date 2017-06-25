@@ -9,7 +9,7 @@
 #include <javacall_memory.h>
 #include <stdlib.h>
 
-void *javacall_memory_heap_allocate(long size, /*OUT*/ long *outSize) {
+void* javacall_memory_heap_allocate(long size, /*OUT*/ long* outSize) {
 	void *heap = malloc(size);
 
 	if (!heap) {
@@ -21,14 +21,14 @@ void *javacall_memory_heap_allocate(long size, /*OUT*/ long *outSize) {
 	return heap;
 }
 
-void javacall_memory_heap_deallocate(void *heap) {
+void javacall_memory_heap_deallocate(void* heap) {
 	free(heap);
 }
 
-void */*OPTIONAL*/ javacall_malloc(unsigned int size){
-	return malloc(size);
+void* /*OPTIONAL*/ javacall_malloc(unsigned int size){
+	return malloc(size) ;
 }
 
-void /*OPTIONAL*/ javacall_free(void *ptr) {
+void  /*OPTIONAL*/ javacall_free(void* ptr) {
 	free(ptr);
 }

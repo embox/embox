@@ -28,6 +28,7 @@
 #include <net/l3/ipv6.h>
 #include <net/l2/ethernet.h>
 
+
 #include <kernel/time/timer.h>
 
 #include <embox/net/pack.h>
@@ -71,15 +72,16 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
  * +12. Add timeout (i.e. sockopts) to tcp_sock.c
  */
 
+
 /* Error code of TCP handlers */
 enum tcp_ret_code {
 	TCP_RET_OK,       /* all ok, don't free packet */
 	TCP_RET_DROP,     /* drop packet */
 	TCP_RET_SEND_SEQ, /* send packet */
 	TCP_RET_SEND,     /* send acknowledgment or other packet
-	                     without outgoing queue using OLD skb*/
+						 without outgoing queue using OLD skb*/
 	TCP_RET_SEND_ALLOC, /* send acknowledgment or other packet
-	                      without outgoing queue using NEW skb */
+						  without outgoing queue using NEW skb */
 	TCP_RET_RST,      /* reset (only for pre_process) */
 	TCP_RET_FREE      /* drop packet and free socket */
 };
@@ -98,12 +100,10 @@ static void tcp_get_now(struct timeval *out_now);
 
 /************************ Debug functions ******************************/
 #if !TCP_DEBUG
-void debug_print(__u8 code, const char *msg, ...) {
-}
+void debug_print(__u8 code, const char *msg, ...) { }
 static inline void packet_print(const struct tcp_sock *tcp_sk,
 		const struct sk_buff *skb, const char *msg, int family,
-		const void *addr, in_port_t port) {
-}
+		const void *addr, in_port_t port) { }
 
 #else
 
@@ -112,19 +112,19 @@ void debug_print(__u8 code, const char *msg, ...) {
 
 	va_start(args, msg);
 	switch (code) {
-/*default: */
-/*	case 0:  / * default * / */
+//default:
+//	case 0:  /* default */
 	case 1:  /* in/out package print */
-/*	case 2:  / * socket state * / */
+//	case 2:  /* socket state */
 	case 3:  /* global functions */
-/*	case 4:  / * hash/unhash * / */
-/*	case 5:  / * lock/unlock * / */
-/*	case 6:	 / * sock_alloc/sock_free * / */
-/*	case 7:  / * tcp_default_timer action * / */
-/*	case 8:  / * state's handler * / */
-/*	case 9:  / * sending package * / */
-/*	case 10: / * pre_process * / */
-/*	case 11: / * tcp_handle * / */
+//	case 4:  /* hash/unhash */
+//	case 5:  /* lock/unlock */
+//	case 6:	 /* sock_alloc/sock_free */
+//	case 7:  /* tcp_default_timer action */
+//	case 8:  /* state's handler */
+//	case 9:  /* sending package */
+//	case 10: /* pre_process */
+//	case 11: /* tcp_handle */
 		sched_lock();
 		log_debug(msg, args);
 		sched_unlock();
@@ -141,14 +141,14 @@ static inline void packet_print(const struct tcp_sock *tcp_sk,
 
 	tcp_get_now(&now);
 	debug_print(1, "%ld.%ld %s:%d %s sk %p skb %p seq %u ack %u seq_len %u flags %s %s %s %s %s %s %s %s\n",
-	        /* info */
+			// info
 			now.tv_sec, now.tv_usec,
 			inet_ntop(family, addr, &buff[0], sizeof buff),
 			ntohs(port), msg,
 			tcp_sk != NULL ? to_sock(tcp_sk) : NULL, skb,
-	        /* seq, ack, seq_len */
+			// seq, ack, seq_len
 			ntohl(skb->h.th->seq), ntohl(skb->h.th->ack_seq), tcp_seq_length(skb->h.th, skb->nh.raw),
-	        /* flags */
+			// flags
 			(skb->h.th->ack ? "ACK" : ""), (skb->h.th->syn ? "SYN" : ""),
 			(skb->h.th->fin ? "FIN" : ""), (skb->h.th->rst ? "RST" : ""),
 			(skb->h.th->psh ? "PSH" : ""), (skb->h.th->urg ? "URG" : ""),
@@ -238,12 +238,10 @@ static void tcp_sock_rcv(struct tcp_sock *tcp_sk,
 }
 
 void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) {
-	const char *str_state[TCP_MAX_STATE] = {
-		"TCP_CLOSED", "TCP_LISTEN",
-		"TCP_SYN_SENT", "TCP_SYN_RECV_PRE", "TCP_SYN_RECV", "TCP_ESTABIL",
-		"TCP_FINWAIT_1", "TCP_FINWAIT_2", "TCP_CLOSEWAIT", "TCP_CLOSING",
-		"TCP_LASTACK", "TCP_TIMEWAIT"
-	};
+	const char *str_state[TCP_MAX_STATE] = {"TCP_CLOSED", "TCP_LISTEN",
+			"TCP_SYN_SENT", "TCP_SYN_RECV_PRE", "TCP_SYN_RECV", "TCP_ESTABIL",
+			"TCP_FINWAIT_1", "TCP_FINWAIT_2", "TCP_CLOSEWAIT", "TCP_CLOSING",
+			"TCP_LASTACK", "TCP_TIMEWAIT"};
 	struct sock *sk = to_sock(tcp_sk);
 
 	switch (new_state) {
@@ -252,7 +250,7 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 	case TCP_SYN_SENT:
 	case TCP_SYN_RECV:
 		tcp_get_now(&tcp_sk->syn_time); /* set when SYN sent */
-	/* fallthrough */
+		/* fallthrough */
 	case TCP_FINWAIT_1:
 	case TCP_LASTACK:
 		tcp_sk->ack_flag = tcp_sk->self.seq + 1;
@@ -280,7 +278,7 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk, enum tcp_sock_state new_state) 
 			tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 			assert(to_sock(tcp_sk->parent) != NULL);
 
-			/*FIXME tcp_accept must notify without rx_data_len */
+			//FIXME tcp_accept must notify without rx_data_len
 			to_sock(tcp_sk->parent)->rx_data_len++;
 			sock_notify(to_sock(tcp_sk->parent), POLLIN);
 		}
@@ -345,8 +343,8 @@ static void tcp_xmit(struct sk_buff *skb,
 	packet_print(tcp_sk, skb, "<=",
 			ip_hdr(skb)->version == 4 ? AF_INET : AF_INET6,
 			ip_hdr(skb)->version == 4
-			? (void *)&ip_hdr(skb)->daddr
-			: (void *)&ip6_hdr(skb)->daddr,
+				? (void *)&ip_hdr(skb)->daddr
+				: (void *)&ip6_hdr(skb)->daddr,
 			tcp_hdr(skb)->dest);
 
 	out_ops = out_ops != NULL ? out_ops :
@@ -407,7 +405,7 @@ static void send_rst_reply(struct sk_buff *skb) {
 	/* make packet with L3 header */
 	assert(out_ops->make_pack != NULL);
 	if (0 != out_ops->make_pack(NULL, NULL, &tcph_size,
-			&skb)) {
+				&skb)) {
 		return; /* error: see ret */
 	}
 	else if (tcph_size < TCP_MIN_HEADER_SIZE) {
@@ -515,6 +513,7 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 	sock_release(to_sock(tcp_sk));
 }
 
+
 /****************** Handlers of TCP states ***********************/
 static enum tcp_ret_code tcp_st_closed(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
@@ -529,7 +528,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
 	union {
-		struct inet_sock * in;
+		struct inet_sock *in;
 		struct inet6_sock *in6;
 	} newsk;
 	struct tcp_sock *tcp_newsk;
@@ -813,6 +812,7 @@ static enum tcp_ret_code tcp_st_timewait(struct tcp_sock *tcp_sk,
 	return TCP_RET_DROP;
 }
 
+
 /************************ Process functions ****************************/
 static enum tcp_ret_code process_rst(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph) {
@@ -823,7 +823,7 @@ static enum tcp_ret_code process_rst(struct tcp_sock *tcp_sk,
 	case TCP_FINWAIT_1:
 	case TCP_FINWAIT_2:
 	case TCP_TIMEWAIT: /* don't wait for tcp_timer to collect
-		                  the socket */
+						  the socket */
 		/* socket have a state only after close call.
 		 * It could be freed only here */
 		return TCP_RET_FREE;
@@ -832,7 +832,7 @@ static enum tcp_ret_code process_rst(struct tcp_sock *tcp_sk,
 			/* invalid reset */
 			break;
 		}
-	/* PASSTHROUGH */
+		/* PASSTHROUGH */
 	case TCP_SYN_RECV:
 	case TCP_ESTABIL:
 	case TCP_CLOSEWAIT:
@@ -867,7 +867,7 @@ static void confirm_ack(struct tcp_sock *tcp_sk,
 				debug_print(9, "confirm_ack: remove skb %p\n",
 						sent_skb);
 				skb_free(sent_skb); /* list_del_init will done
-				                       at skb_free */
+									   at skb_free */
 			}
 		} while (ack2seq > seq_len);
 	}
@@ -927,7 +927,7 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 		assert(seq - tcp_sk->last_ack < ack2last_ack);
 		/* assert(ack > tcp_sk->self.seq); -- without overflow checks */
 		debug_print(10, "process_ack: invalid acknowledgments:"
-				"last_ack=%u ack=%u seq=%u\n",
+					"last_ack=%u ack=%u seq=%u\n",
 				tcp_sk->last_ack, ack, seq);
 		switch (tcp_sk->state) {
 		default:
@@ -967,15 +967,15 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 #if 0
 static inline int tcp_opt_process(struct tcphdr *tcph, struct tcphdr *otcph, struct tcp_sock *tcp_sk) {
 	char *ptr = (char *) &tcph->options;
-	for (;; ) {
-		switch (*ptr) {
+	for(;;) {
+		switch(*ptr) {
 		case TCP_OPT_KIND_EOL:
 			return (int) ptr - (int) &tcph->options;
 		case TCP_OPT_KIND_NOP:
 			ptr++;
 			break;
 		case TCP_OPT_KIND_MSS:
-			ptr += 2;
+			ptr+=2;
 			tcp_sk->mss = ntohs((__be16) *ptr);
 		}
 	}
@@ -1006,14 +1006,14 @@ static enum tcp_ret_code process_opt(struct tcp_sock *tcp_sk,
 			ptr += *(ptr + 1);
 			break;
 		}
-		/* TODO this is hack to fix cycling when ptr does not change */
+		// TODO this is hack to fix cycling when ptr does not change
 		if (prev_ptr == ptr) {
 			++ptr;
 		}
 	} while (ptr < end);
 
-	/* TODO revert this comment */
-	/*assert(ptr == end); */
+	// TODO revert this comment
+	//assert(ptr == end);
 
 	return TCP_RET_OK;
 }
@@ -1033,9 +1033,9 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 				skb->nh.raw);
 		if (old_check != tcph->check) {
 			log_error("pre_process: error: invalid checksum %hx(%hx)"
-					" sk %p skb %p\n",
-					ntohs(old_check), ntohs(tcph->check),
-					to_sock(tcp_sk), skb);
+						" sk %p skb %p\n",
+						ntohs(old_check), ntohs(tcph->check),
+						to_sock(tcp_sk), skb);
 			return TCP_RET_DROP;
 		}
 	}
@@ -1078,8 +1078,8 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 				&& (seq_last2rem_seq <= rem_len)) { }
 		else {
 			debug_print(10, "pre_process: received old package:"
-					" rem_seq=%u seq=%u seq_last=%u"
-					" rem_last=%u\n",
+						" rem_seq=%u seq=%u seq_last=%u"
+						" rem_last=%u\n",
 					tcp_sk->rem.seq, ntohl(tcph->seq),
 					ntohl(tcph->seq) + seq_len,
 					tcp_sk->rem.seq + rem_len);
@@ -1125,18 +1125,18 @@ static enum tcp_ret_code pre_process(struct tcp_sock *tcp_sk,
 
 /************************ Handlers table *******************************/
 static const tcp_handler_t tcp_st_handler[TCP_MAX_STATE] = {
-	[ TCP_CLOSED ] = tcp_st_closed,
-	[ TCP_LISTEN ] = tcp_st_listen,
-	[ TCP_SYN_SENT ] = tcp_st_syn_sent,
-	[ TCP_SYN_RECV_PRE ] = tcp_st_syn_recv_pre,
-	[ TCP_SYN_RECV ] = tcp_st_syn_recv,
-	[ TCP_ESTABIL ] = tcp_st_estabil,
-	[ TCP_FINWAIT_1 ] = tcp_st_finwait_1,
-	[ TCP_FINWAIT_2 ] = tcp_st_finwait_2,
-	[ TCP_CLOSEWAIT ] = tcp_st_closewait,
-	[ TCP_CLOSING ] = tcp_st_closing,
-	[ TCP_LASTACK ] = tcp_st_lastack,
-	[ TCP_TIMEWAIT ] = tcp_st_timewait
+		[ TCP_CLOSED ] = tcp_st_closed,
+		[ TCP_LISTEN ] = tcp_st_listen,
+		[ TCP_SYN_SENT ] = tcp_st_syn_sent,
+		[ TCP_SYN_RECV_PRE ] = tcp_st_syn_recv_pre,
+		[ TCP_SYN_RECV ] = tcp_st_syn_recv,
+		[ TCP_ESTABIL ] = tcp_st_estabil,
+		[ TCP_FINWAIT_1 ] = tcp_st_finwait_1,
+		[ TCP_FINWAIT_2 ] = tcp_st_finwait_2,
+		[ TCP_CLOSEWAIT ] = tcp_st_closewait,
+		[ TCP_CLOSING ] = tcp_st_closing,
+		[ TCP_LASTACK ] = tcp_st_lastack,
+		[ TCP_TIMEWAIT ] = tcp_st_timewait
 };
 
 static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
@@ -1175,7 +1175,7 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
 	switch (ret) {
 	case TCP_RET_FREE:
 		/* skb may be listed in sock, so they must be free exactly
-		 * in this order */
+ 		 * in this order */
 		skb_free(skb);
 		tcp_sock_release(tcp_sk);
 		break;
@@ -1188,7 +1188,7 @@ static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb,
 			skb_free(skb);
 			return TCP_RET_DROP; /* error: ENOMEM */
 		}
-	/* fallthrough */
+		/* fallthrough */
 	case TCP_RET_SEND_ALLOC:
 		out_skb = ret != TCP_RET_SEND_ALLOC ? skb : NULL;
 		if (0 != alloc_prep_skb(tcp_sk, 0, NULL, &out_skb)) {
@@ -1243,36 +1243,36 @@ static int tcp4_rcv_tester_strict(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET)
-		   && ip_tester_dst(sk, skb) && ip_tester_src(sk, skb)
-		   && (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
-		   && (sock_inet_get_dst_port(sk) == tcp_hdr(skb)->source);
+			&& ip_tester_dst(sk, skb) && ip_tester_src(sk, skb)
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
+			&& (sock_inet_get_dst_port(sk) == tcp_hdr(skb)->source);
 };
 
 static int tcp6_rcv_tester_strict(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET6)
-		   && ip6_tester_dst(sk, skb) && ip6_tester_src(sk, skb)
-		   && (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
-		   && (sock_inet_get_dst_port(sk) == tcp_hdr(skb)->source);
+			&& ip6_tester_dst(sk, skb) && ip6_tester_src(sk, skb)
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
+			&& (sock_inet_get_dst_port(sk) == tcp_hdr(skb)->source);
 };
 
 static int tcp4_rcv_tester_soft(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET)
-		   && ip_tester_dst_or_any(sk, skb)
-		   && (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
-		   && (sock_inet_get_dst_port(sk) == 0);
+			&& ip_tester_dst_or_any(sk, skb)
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
+			&& (sock_inet_get_dst_port(sk) == 0);
 }
 
 static int tcp6_rcv_tester_soft(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_INET6)
-		   && ip6_tester_dst_or_any(sk, skb)
-		   && (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
-		   && (sock_inet_get_dst_port(sk) == 0);
+			&& ip6_tester_dst_or_any(sk, skb)
+			&& (sock_inet_get_src_port(sk) == tcp_hdr(skb)->dest)
+			&& (sock_inet_get_dst_port(sk) == 0);
 }
 
 extern uint16_t skb_get_secure_level(const struct sk_buff *skb);
@@ -1310,14 +1310,14 @@ static int tcp_rcv(struct sk_buff *skb) {
 
 	sk = sock_lookup(NULL, tcp_sock_ops,
 			ip_check_version(ip_hdr(skb))
-			? tcp4_rcv_tester_strict
-			: tcp6_rcv_tester_strict,
+				? tcp4_rcv_tester_strict
+				: tcp6_rcv_tester_strict,
 			skb);
 	if (sk == NULL) {
 		sk = sock_lookup(NULL, tcp_sock_ops,
 				ip_check_version(ip_hdr(skb))
-				? tcp4_rcv_tester_soft
-				: tcp6_rcv_tester_soft,
+					? tcp4_rcv_tester_soft
+					: tcp6_rcv_tester_soft,
 				skb);
 	}
 
@@ -1326,7 +1326,7 @@ static int tcp_rcv(struct sk_buff *skb) {
 	if (tcp_sk) {
 		if (tcp_rcv_need_check_security(tcp_sk)) {
 			/* if we have socket with secure label we have to check secure level */
-			if (sock_get_secure_level(sk) > skb_get_secure_level(skb)) {
+			if (sock_get_secure_level(sk) >	skb_get_secure_level(skb)) {
 				skb_free(skb);
 				return 0;
 			}
@@ -1336,8 +1336,8 @@ static int tcp_rcv(struct sk_buff *skb) {
 	packet_print(tcp_sk, skb, "=>",
 			ip_check_version(ip_hdr(skb)) ? AF_INET : AF_INET6,
 			ip_check_version(ip_hdr(skb))
-			? (void *)&ip_hdr(skb)->saddr
-			: (void *)&ip6_hdr(skb)->saddr,
+				? (void *)&ip_hdr(skb)->saddr
+				: (void *)&ip6_hdr(skb)->saddr,
 			tcp_hdr(skb)->source);
 
 	tcp_process(tcp_sk, skb);
@@ -1359,25 +1359,25 @@ static void tcp_timer_handler(struct sys_timer *timer,
 		tcp_sk = to_tcp_sock(sk);
 		if ((tcp_sk->state == TCP_TIMEWAIT)
 				&& tcp_is_expired(&tcp_sk->rcv_time,
-				TCP_TIMEWAIT_DELAY)) {
+					TCP_TIMEWAIT_DELAY)) {
 			debug_print(7, "tcp_timer_handler: release timewait"
-					" sk %p\n",
+					 	" sk %p\n",
 					to_sock(tcp_sk));
 			tcp_sock_release(tcp_sk);
 		}
 		else if ((tcp_sock_get_status(tcp_sk) == TCP_ST_NONSYNC)
 				&& !list_empty(&tcp_sk->conn_lnk)
 				&& tcp_is_expired(&tcp_sk->syn_time,
-				TCP_SYNC_TIMEOUT)) {
+					TCP_SYNC_TIMEOUT)) {
 			assert(tcp_sk->parent != NULL);
 			debug_print(7, "tcp_timer_handler: release nonsync"
-					" sk %p\n",
+						" sk %p\n",
 					to_sock(tcp_sk));
 			tcp_sock_release(tcp_sk);
 		}
 		else if ((tcp_sock_get_status(tcp_sk) != TCP_ST_NOTEXIST)
 				&& tcp_is_expired(&tcp_sk->ack_time,
-				TCP_REXMIT_DELAY)
+					TCP_REXMIT_DELAY)
 				&& (tcp_sk->last_ack != tcp_sk->self.seq)) {
 			debug_print(7, "tcp_timer_handler: rexmit sk %p\n",
 					to_sock(tcp_sk));

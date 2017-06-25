@@ -33,15 +33,15 @@ WINDOW *curscr;
 #define SCREEN_MAX_HEIGHT 200
 
 typedef struct SCREEN {
-	char *		   type;
-	FILE *		   out;
-	FILE *		   in;
-	WINDOW		   std_win; /* stdscr storage */
-	chtype		   std_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
-	WINDOW		   cur_win; /* curscr storage */
-	chtype		   cur_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
-	bool		   curses_mode; /* terminal mode (normal or curses) */
-	struct termios last_mode;
+	char *type;
+	FILE *out;
+	FILE *in;
+	WINDOW std_win;   /* stdscr storage */
+	chtype std_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
+	WINDOW cur_win;   /* curscr storage */
+	chtype cur_buff[SCREEN_MAX_HEIGHT][SCREEN_MAX_WIDTH];
+	bool curses_mode; /* terminal mode (normal or curses) */
+    struct termios last_mode;
 } SCREEN;
 
 static SCREEN screen;
@@ -99,7 +99,7 @@ static void window_fill(WINDOW *win, chtype ch, uint16_t begy,
 	}
 }
 
-static SCREEN *newterm(char *type, FILE *outfile, FILE *infile) {
+static SCREEN * newterm(char *type, FILE *outfile, FILE *infile) {
 	int res;
 
 	COLS = SCREEN_WIDTH;
@@ -137,7 +137,7 @@ static int screen_change_mode(void) {
 	}
 
 	if (-1 == tcsetattr(fileno(screen.in), TCSANOW,
-			&screen.last_mode)) {
+				&screen.last_mode)) {
 		return -errno;
 	}
 
@@ -148,7 +148,7 @@ static int screen_change_mode(void) {
 	return 0;
 }
 
-WINDOW *initscr(void) {
+WINDOW * initscr(void) {
 	if (NULL == newterm("", stdout, stdin)) {
 		return NULL;
 	}
@@ -156,7 +156,7 @@ WINDOW *initscr(void) {
 	return stdscr;
 }
 
-WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x) {
+WINDOW * newwin(int nlines, int ncols, int begin_y, int begin_x) {
 	WINDOW *win;
 
 	if ((nlines <= 0) || (ncols <= 0)
@@ -180,7 +180,7 @@ WINDOW *newwin(int nlines, int ncols, int begin_y, int begin_x) {
 	return win;
 }
 
-WINDOW *subwin(WINDOW *orig, int nlines, int ncols, int begin_y,
+WINDOW * subwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 		int begin_x) {
 	WINDOW *win;
 
@@ -202,10 +202,10 @@ WINDOW *subwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 	return win;
 }
 
-WINDOW *derwin(WINDOW *orig, int nlines, int ncols, int begin_y,
+WINDOW * derwin(WINDOW *orig, int nlines, int ncols, int begin_y,
 		int begin_x) {
 	return subwin(orig, nlines, ncols, orig->begy + begin_y,
-				   orig->begx + begin_x);
+			orig->begx + begin_x);
 }
 
 int delwin(WINDOW *win) {
@@ -690,7 +690,7 @@ void wbkgdset(WINDOW *win, chtype ch) {
 }
 
 int cbreak(void) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
@@ -702,7 +702,7 @@ int cbreak(void) {
 }
 
 int nocbreak(void) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
@@ -714,7 +714,7 @@ int nocbreak(void) {
 }
 
 int raw(void) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
@@ -727,7 +727,7 @@ int raw(void) {
 }
 
 int noraw(void) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
@@ -740,7 +740,7 @@ int noraw(void) {
 }
 
 int echo(void) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
@@ -752,7 +752,7 @@ int echo(void) {
 }
 
 int noecho(void) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
@@ -764,7 +764,7 @@ int noecho(void) {
 }
 
 int nl(void) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
@@ -776,7 +776,7 @@ int nl(void) {
 }
 
 int nonl(void) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;
@@ -788,7 +788,7 @@ int nonl(void) {
 }
 
 int nodelay(WINDOW *win, bool bf) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fileno(screen.in), &t)) {
 		return ERR;

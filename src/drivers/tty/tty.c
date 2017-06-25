@@ -32,13 +32,12 @@ extern void tty_task_break_check(struct tty *t, char ch);
 
 static inline void tty_notify(struct tty *t, int mask) {
 	assert(t);
-	if (t->idesc) {
+	if (t->idesc)
 		idesc_notify(t->idesc, mask);
-	}
 }
 
 #define MUTEX_UNLOCKED_DO(expr, m) \
-	__lang_surround(expr, mutex_unlock(m), mutex_lock(m))
+		__lang_surround(expr, mutex_unlock(m), mutex_lock(m))
 
 static inline void tty_out_wake(struct tty *t) {
 	t->ops->out_wake(t);
@@ -46,13 +45,13 @@ static inline void tty_out_wake(struct tty *t) {
 
 /* called from mutex locked context */
 static int tty_output(struct tty *t, char ch) {
-	/* TODO locks? context? -- Eldar */
+	// TODO locks? context? -- Eldar
 	int len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
 	if (len > 0) {
 		MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
 	}
 	return len;
-	/* t->ops->tx_char(t, ch); */
+	// t->ops->tx_char(t, ch);
 }
 
 /* called from mutex locked context */
@@ -64,21 +63,17 @@ static void tty_echo(struct tty *t, char ch) {
 static void tty_echo_erase(struct tty *t) {
 	cc_t *cc = t->termios.c_cc;
 
-	if (!TC_L(t, ECHO)) {
+	if (!TC_L(t, ECHO))
 		return;
-	}
 
 	/* See also http://users.sosdg.org/~qiyong/mxr/source/drivers/tty/tty.c#L1430
 	 * as example of how ECHOE flag is handled in Minix. */
-	if (!TC_L(t, ECHOE)) {
+	if (!TC_L(t, ECHOE))
 		tty_output(t, cc[VERASE]);
-	}
 
-	else {
-		for (char *ch = "\b \b"; *ch; ++ch) {
+	else
+		for (char *ch = "\b \b"; *ch; ++ch)
 			tty_output(t, *ch);
-		}
-	}
 }
 
 /*
@@ -119,18 +114,13 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	/* Newline control: IGNCR, ICRNL, INLCR */
 	ignore_cr = TC_I(t, IGNCR) && ch == '\r';
 	if (!ignore_cr) {
-		if (TC_I(t, ICRNL) && ch == '\r') {
-			ch = '\n';
-		}
-		if (TC_I(t, INLCR) && ch == '\n') {
-			ch = '\r';
-		}
+		if (TC_I(t, ICRNL) && ch == '\r') ch = '\n';
+		if (TC_I(t, INLCR) && ch == '\n') ch = '\r';
 	}
 	is_eol = (ch == '\n' || ch == cc[VEOL]);
 
-	if (ignore_cr) {
+	if (ignore_cr)
 		goto done;
-	}
 
 	/* Handle erase/kill */
 	if (!raw_mode) {
@@ -139,12 +129,11 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 
 			struct ring edit_ring;
 			size_t erase_len = ring_data_size(
-				tty_edit_ring(t, &edit_ring), TTY_IO_BUFF_SZ);
+						tty_edit_ring(t, &edit_ring), TTY_IO_BUFF_SZ);
 
 			if (erase_len) {
-				if (!erase_all) {
+				if (!erase_all)
 					erase_len = 1;
-				}
 
 				t->i_ring.head -= erase_len - TTY_IO_BUFF_SZ;
 				ring_fixup_head(&t->i_ring, TTY_IO_BUFF_SZ);
@@ -163,11 +152,9 @@ static int tty_input(struct tty *t, char ch, unsigned char flag) {
 	 * handled. This lets canonical read to see the line with \n or EOL at the
 	 * end, even when some chars are missing. */
 
-	if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > !(raw_mode || is_eol)) {
-		if (ring_write_all_from(&t->i_ring, t->i_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
+	if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > !(raw_mode || is_eol))
+		if (ring_write_all_from(&t->i_ring, t->i_buff, TTY_IO_BUFF_SZ, &ch, 1))
 			tty_echo(t, ch);
-		}
-	}
 
 done:
 	got_data = (raw_mode || is_eol || ch == cc[VEOF]);
@@ -175,10 +162,9 @@ done:
 	if (got_data) {
 		t->i_canon_ring.head = t->i_ring.head;
 
-		if (raw_mode) {
+		if (raw_mode)
 			/* maintain it empty */
 			t->i_canon_ring.tail = t->i_canon_ring.head;
-		}
 	}
 
 	return got_data;
@@ -247,11 +233,10 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 		block_size = line_len;
 
 		if (got_line) {
-			++block_size;  /* Line end char is always consumed... */
+ 			++block_size;  /* Line end char is always consumed... */
 
-			if (!is_eof) { /* ...but EOF is discarded and not copied to user. */
-				++line_len;
-			}
+			if (!is_eof)  /* ...but EOF is discarded and not copied to user. */
+	 			++line_len;
 		}
 
 		memcpy(buff, line_start, line_len);
@@ -260,9 +245,8 @@ static char *tty_read_cooked(struct tty *t, char *buff, char *end) {
 		ring_just_read(&t->i_ring, TTY_IO_BUFF_SZ, block_size);
 		ring_just_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, block_size);
 
-		if (got_line) {
+		if (got_line)
 			break;
-		}
 	}
 
 	return buff;
@@ -337,13 +321,11 @@ static int tty_blockin_output(struct tty *t, char ch) {
 	idesc_wait_init(&iwl, POLLOUT | POLLERR);
 
 	do {
-		if (tty_output(t, ch)) {
+		if (tty_output(t, ch))
 			return 0;
-		}
 
-		if (!t->idesc) {
+		if (!t->idesc)
 			return -EBADF;
-		}
 
 		ret = idesc_wait_prepare(t->idesc, &iwl);
 		if (!ret) {
@@ -367,11 +349,9 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 	threadsig_lock();
 	mutex_lock(&t->lock);
 
-	for (count = size; count > 0; count--, buff++) {
-		if ((ret = tty_blockin_output(t, *buff))) {
+	for (count = size; count > 0; count--, buff++)
+		if ((ret = tty_blockin_output(t, *buff)))
 			break;
-		}
-	}
 
 	mutex_unlock(&t->lock);
 	threadsig_unlock();
@@ -429,8 +409,8 @@ size_t tty_status(struct tty *t, int status_nr) {
 		IRQ_LOCKED_DO(tty_rx_do(t));
 
 		res = ring_can_read(tty_raw_ring(t, &raw_ring), TTY_IO_BUFF_SZ, 1) ||
-				(TC_L(t, ICANON)
-				&& ring_can_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, 1));
+			(TC_L(t, ICANON)
+			 	&& ring_can_read(&t->i_canon_ring, TTY_IO_BUFF_SZ, 1));
 		break;
 	case POLLOUT:
 		res = ring_can_write(&t->o_ring, TTY_IO_BUFF_SZ, 1);
@@ -485,9 +465,8 @@ int tty_rx_locked(struct tty *t, char ch, unsigned char flag) {
 
 	tty_task_break_check(t, ch);
 
-	if (!ring_write(&t->rx_ring, TTY_RX_BUFF_SZ, 1)) {
+	if (!ring_write(&t->rx_ring, TTY_RX_BUFF_SZ, 1))
 		return -1;
-	}
 
 	*slot = (flag<<CHAR_BIT) | (unsigned char) ch;
 
@@ -496,12 +475,12 @@ int tty_rx_locked(struct tty *t, char ch, unsigned char flag) {
 	return 0;
 }
 
+
 int tty_rx_dequeue(struct tty *t) {
 	uint16_t *slot = t->rx_buff + t->rx_ring.tail;
 
-	if (!ring_read(&t->rx_ring, TTY_RX_BUFF_SZ, 1)) {
+	if (!ring_read(&t->rx_ring, TTY_RX_BUFF_SZ, 1))
 		return -1;
-	}
 
 	return (int) *slot;
 }
@@ -509,9 +488,8 @@ int tty_rx_dequeue(struct tty *t) {
 int tty_out_getc(struct tty *t) {
 	char ch;
 	/* TODO Locks */
-	if (!ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
+	if (!ring_read_all_into(&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ, &ch, 1))
 		return -1;
-	}
 
 	tty_notify(t, POLLOUT);
 

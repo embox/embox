@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 	}
 
 	our.sin_family = AF_INET;
-	our.sin_port = htons(SNMP_AGENT_PORT);
+	our.sin_port= htons(SNMP_AGENT_PORT);
 	our.sin_addr.s_addr = htonl(SNMP_ADDR);
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {

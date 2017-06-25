@@ -24,34 +24,34 @@ struct task;
 struct mutex;
 
 struct condattr {
-	int		  pshared;
-	clockid_t clock_id;
+	int        pshared;
+	clockid_t  clock_id;
 };
 
 struct cond {
-	struct waitq	wq;
+	struct waitq wq;
 	struct condattr attr;
-	struct task *	task; /*task where cond was created */
+	struct task* task; //task where cond was created
 };
 
 typedef struct cond cond_t;
 
 #define COND_INIT_STATIC \
-	{ \
-		{     /*wait_queue init */ \
-			{ /* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL}, \
-			/* spinlock_t lock*/ \
-			{ /*l*/ __SPIN_UNLOCKED, \
-				/* owner */ -1,   \
-				/*contention_count */ SPIN_CONTENTION_LIMIT \
-			} \
-		}, \
-		{     /*condattr init */ \
-			/* pshared */ PROCESS_PRIVATE, \
-			/* clock_id */ CLOCK_MONOTONIC, \
-		}, \
-		/* task */ NULL \
-	}
+		{ \
+			{ /*wait_queue init */ \
+				{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL}, \
+				/* spinlock_t lock*/ \
+				{ /*l*/__SPIN_UNLOCKED, \
+					/* owner */ -1,   \
+					/*contention_count */SPIN_CONTENTION_LIMIT\
+				} \
+			}, \
+			{ /*condattr init */ \
+				/* pshared */ PROCESS_PRIVATE, \
+				/* clock_id */ CLOCK_MONOTONIC, \
+			}, \
+			/* task */ NULL \
+		}
 
 __BEGIN_DECLS
 struct timespec;

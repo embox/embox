@@ -39,7 +39,7 @@ static unsigned qnx6_lfile_checksum(char *name, unsigned size)
 	char *end = name + size;
 	while (name < end) {
 		crc = ((crc >> 1) + *(name++)) ^
-				((crc & 0x00000001) ? 0x80000000 : 0);
+			((crc & 0x00000001) ? 0x80000000 : 0);
 	}
 	return crc;
 }
@@ -61,15 +61,14 @@ static unsigned last_entry(struct node *node, unsigned long page_nr)
 {
 	unsigned long last_byte = QNX6_I(node)->i_size;
 	last_byte -= page_nr << QNX6_BH_BLOCK_SHIFT;
-	if (last_byte > QNX6_BH_BLOCK_SIZE) {
+	if (last_byte > QNX6_BH_BLOCK_SIZE)
 		last_byte = QNX6_BH_BLOCK_SIZE;
-	}
 	return last_byte / QNX6_DIR_ENTRY_SIZE;
 }
 
 static struct qnx6_long_filename *qnx6_longname(struct qnx6_superblock *sb,
-		struct qnx6_long_dir_entry *de,
-		struct buffer_head **p)
+					 struct qnx6_long_dir_entry *de,
+					 struct buffer_head **p)
 {
 	struct buffer_head *bh;
 	struct qnx6_sb_info *sbi = QNX6_SB(sb);
@@ -78,18 +77,17 @@ static struct qnx6_long_filename *qnx6_longname(struct qnx6_superblock *sb,
 	__u32 offs = (s << sb->s_blocksize_bits) & ~QNX6_BH_BLOCK_MASK;
 
 	bh = qnx6_get_block(sbi->longfile, n, 0);
-	if (!bh) {
+	if (!bh)
 		return NULL;
-	}
 
 	return (struct qnx6_long_filename *)(bh->data + offs);
 
 }
 
 static int qnx6_dir_longfilename(struct node *node,
-		struct qnx6_long_dir_entry *de,
-		void *dirent, loff_t pos,
-		unsigned de_node, filldir_t filldir)
+			struct qnx6_long_dir_entry *de,
+			void *dirent, loff_t pos,
+			unsigned de_node, filldir_t filldir)
 {
 	struct qnx6_long_filename *lf;
 	struct qnx6_superblock *s = QNX6_I(node)->i_sb;
@@ -122,12 +120,11 @@ static int qnx6_dir_longfilename(struct node *node,
 	/* calc & validate longfilename checksum
 	   mmi 3g filesystem does not have that checksum */
 	if (!test_opt(s, MMI_FS) && fs32_to_cpu(sbi, de->de_checksum) !=
-			qnx6_lfile_checksum((char *) lf->lf_fname, lf_size)) {
+			qnx6_lfile_checksum((char *) lf->lf_fname, lf_size))
 		printk(KERN_INFO "qnx6: long filename checksum error.\n");
-	}
 
 	QNX6DEBUG((KERN_INFO "qnx6_readdir:%.*s node:%u\n",
-			lf_size, lf->lf_fname, de_node));
+					lf_size, lf->lf_fname, de_node));
 	if (filldir(dirent, (char *) lf->lf_fname, lf_size, pos, de_node,
 			DT_UNKNOWN) < 0) {
 		qnx6_embox_put_bh(buffer_head);
@@ -151,11 +148,10 @@ int qnx6_readdir(struct qnx_file *filp, void *dirent, filldir_t filldir)
 	unsigned start = (pos & ~QNX6_BH_BLOCK_MASK) / QNX6_DIR_ENTRY_SIZE;
 	bool done = false;
 
-	if (filp->f_pos >= ei->i_size) {
+	if (filp->f_pos >= ei->i_size)
 		return 0;
-	}
 
-	for (; !done && n < npages; n++, start = 0) {
+	for ( ; !done && n < npages; n++, start = 0) {
 		struct buffer_head *buffer_head = qnx6_get_bh(node, n);
 		int limit = last_entry(node, n);
 		struct qnx6_dir_entry *de;
@@ -166,33 +162,32 @@ int qnx6_readdir(struct qnx_file *filp, void *dirent, filldir_t filldir)
 			filp->f_pos = (n + 1) << QNX6_BH_BLOCK_SHIFT;
 			return PTR_ERR(buffer_head);
 		}
-		de = ((struct qnx6_dir_entry *)embox_bh_data(buffer_head)) + start; /*XXX */
+		de = ((struct qnx6_dir_entry *)embox_bh_data(buffer_head)) + start; //XXX
 		for (; i < limit; i++, de++, pos += QNX6_DIR_ENTRY_SIZE) {
 			int size = de->de_size;
 			__u32 no_node = fs32_to_cpu(sbi, de->de_node);
 
-			if (!no_node || !size) {
+			if (!no_node || !size)
 				continue;
-			}
 
 			if (size > QNX6_SHORT_NAME_MAX) {
 				/* long filename detected
 				   get the filename from long filename
 				   structure / block */
 				if (!qnx6_dir_longfilename(node,
-						(struct qnx6_long_dir_entry *)de,
-						dirent, pos, no_node,
-						filldir)) {
+					(struct qnx6_long_dir_entry *)de,
+					dirent, pos, no_node,
+					filldir)) {
 					done = true;
 					break;
 				}
 			} else {
 				QNX6DEBUG((KERN_INFO "qnx6_readdir:%.*s"
-						" node:%u\n", size, de->de_fname,
-						no_node));
+				   " node:%u\n", size, de->de_fname,
+							no_node));
 				if (filldir(dirent, de->de_fname, size,
-						pos, no_node, DT_UNKNOWN)
-						< 0) {
+				      pos, no_node, DT_UNKNOWN)
+					< 0) {
 					done = true;
 					break;
 				}
@@ -209,7 +204,7 @@ int qnx6_readdir(struct qnx_file *filp, void *dirent, filldir_t filldir)
  * check if the long filename is correct.
  */
 static unsigned qnx6_long_match(int len, const char *name,
-		struct qnx6_long_dir_entry *de, struct node *dir)
+			struct qnx6_long_dir_entry *de, struct node *dir)
 {
 	struct qnx6_superblock *s = QNX6_I(dir)->i_sb;
 	struct qnx6_sb_info *sbi = QNX6_SB(s);
@@ -217,9 +212,8 @@ static unsigned qnx6_long_match(int len, const char *name,
 	int thislen;
 	struct qnx6_long_filename *lf = qnx6_longname(s, de, &page);
 
-	if (IS_ERR(lf)) {
+	if (IS_ERR(lf))
 		return 0;
-	}
 
 	thislen = fs16_to_cpu(sbi, lf->lf_size);
 	if (len != thislen) {
@@ -238,17 +232,17 @@ static unsigned qnx6_long_match(int len, const char *name,
  * check if the filename is correct.
  */
 static unsigned qnx6_match(struct qnx6_superblock *s, int len, const char *name,
-		struct qnx6_dir_entry *de)
+			struct qnx6_dir_entry *de)
 {
 	struct qnx6_sb_info *sbi = QNX6_SB(s);
-	if (memcmp(name, de->de_fname, len) == 0) {
+	if (memcmp(name, de->de_fname, len) == 0)
 		return fs32_to_cpu(sbi, de->de_node);
-	}
 	return 0;
 }
 
+
 static unsigned qnx6_find_entry(int len, struct node *dir, const char *name,
-		struct page **res_page)
+			 struct page **res_page)
 {
 	struct qnx6_superblock *s = QNX6_I(dir)->i_sb;
 	struct qnx6_node_info *ei = QNX6_I(dir);
@@ -261,13 +255,11 @@ static unsigned qnx6_find_entry(int len, struct node *dir, const char *name,
 
 	*res_page = NULL;
 
-	if (npages == 0) {
+	if (npages == 0)
 		return 0;
-	}
 	start = ei->i_dir_start_lookup;
-	if (start >= npages) {
+	if (start >= npages)
 		start = 0;
-	}
 	n = start;
 
 	do {
@@ -280,32 +272,27 @@ static unsigned qnx6_find_entry(int len, struct node *dir, const char *name,
 			for (i = 0; i < limit; i++, de++) {
 				if (len <= QNX6_SHORT_NAME_MAX) {
 					/* short filename */
-					if (len != de->de_size) {
+					if (len != de->de_size)
 						continue;
-					}
 					ino = qnx6_match(s, len, name, de);
-					if (ino) {
+					if (ino)
 						goto found;
-					}
 				} else if (de->de_size == 0xff) {
 					/* deal with long filename */
 					lde = (struct qnx6_long_dir_entry *)de;
 					ino = qnx6_long_match(len,
-							name, lde, dir);
-					if (ino) {
+								name, lde, dir);
+					if (ino)
 						goto found;
-					}
-				} else {
+				} else
 					printk(KERN_ERR "qnx6: undefined "
-							"filename size in node.\n");
-				}
+						"filename size in node.\n");
 			}
 			qnx6_embox_put_page(page);
 		}
 
-		if (++n >= npages) {
+		if (++n >= npages)
 			n = 0;
-		}
 	} while (n != start);
 	return 0;
 

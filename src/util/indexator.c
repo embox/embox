@@ -23,7 +23,7 @@ static int ind_check(struct indexator *ind, size_t idx) {
 	if (idx == INDEX_NONE) {
 		return -EINVAL;
 	}
-
+	
 	if (!((idx >= ind->start) && (idx <= ind->end))) {
 		return -EINVAL;
 	}
@@ -155,7 +155,7 @@ void index_clean(struct indexator *ind) {
 	ind->max = ind->prev = ind->clamp_max = ind->end;
 
 	buf_sz = binalign_bound(index_capacity(ind), sizeof(*ind->mask) * CHAR_BIT)
-			/ CHAR_BIT;
+							/ CHAR_BIT;
 	memset(ind->mask, 0, buf_sz);
 }
 
@@ -256,7 +256,7 @@ int index_locked(struct indexator *ind, size_t idx) {
 void index_unlock(struct indexator *ind, size_t idx) {
 
 	if (ind_check(ind, idx)) {
-		return;
+		return ;
 	}
 
 	ind_unset_bit(ind, idx);
@@ -279,13 +279,13 @@ void index_unlock(struct indexator *ind, size_t idx) {
 			}
 			if (((idx > ind->prev) && (idx < ind->last))
 					|| ((ind->prev > ind->last)
-					&& ((idx > ind->prev) || (idx < ind->last)))
+						&& ((idx > ind->prev) || (idx < ind->last)))
 					|| (ind->prev == ind->last)) {
 				ind->prev = idx;
 			}
 			if (((idx < ind->next) && (idx > ind->last))
 					|| ((ind->next < ind->last)
-					&& ((idx < ind->next) || (idx > ind->last)))
+						&& ((idx < ind->next) || (idx > ind->last)))
 					|| (ind->next == ind->last)) {
 				ind->next = idx;
 			}

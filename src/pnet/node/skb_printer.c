@@ -30,8 +30,8 @@ static void print_skb(struct sk_buff *skb) {
 	for (i = 0; i < skb->len; i += 16) {
 		for (j = 0; j < 16; j += 2) {
 			printf("%02x%02x ",
-					(uint8_t)skb->mac.raw[i + j],
-					(uint8_t)skb->mac.raw[i + j + 1]);
+				(uint8_t)skb->mac.raw[i + j],
+				(uint8_t)skb->mac.raw[i + j + 1]);
 		}
 		printf("\n");
 	}
@@ -47,6 +47,6 @@ static int handler(struct pnet_pack *pack) {
 }
 
 PNET_NODE_DEF("skb printer", {
-			.rx_hnd = handler,
-			.tx_hnd = NULL
-		});
+	.rx_hnd = handler,
+	.tx_hnd = NULL
+});

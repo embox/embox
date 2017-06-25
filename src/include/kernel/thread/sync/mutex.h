@@ -17,14 +17,15 @@
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/sync/mutex.h>
 
+
 #define MUTEX_INIT_STATIC \
 	{                                                  \
 		{ /* wait_queue init */                        \
-			{ /* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
+			{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
 			/* spinlock_t lock*/                       \
-			{ /*l*/ __SPIN_UNLOCKED,                    \
-				/* owner */ (unsigned int)-1,       \
-				/*contention_count */ SPIN_CONTENTION_LIMIT \
+			{ /*l*/__SPIN_UNLOCKED,                    \
+				/* owner */ (unsigned int)-1,		\
+				/*contention_count */SPIN_CONTENTION_LIMIT \
 			}                                          \
 		},                                             \
 		/* holder*/ NULL,                              \
@@ -37,21 +38,21 @@
 #define RMUTEX_INIT_STATIC \
 	{                                                  \
 		{ /* wait_queue init */                        \
-			{ /* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
+			{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
 			/* spinlock_t lock*/                       \
-			{ /*l*/ __SPIN_UNLOCKED,                    \
+			{ /*l*/__SPIN_UNLOCKED,                    \
 				/* owner */ -1,                        \
-				/*contention_count */ SPIN_CONTENTION_LIMIT \
+				/*contention_count */SPIN_CONTENTION_LIMIT \
 			}                                          \
 		},                                             \
 		/* holder*/ NULL, \
 		{ /*mutexattr init */ \
 			/* type */ MUTEX_RECURSIVE, \
-		}, \
+			}, \
 		/* lock_couunt */ 0 \
 	}
 
-#define MUTEX_INIT(m)  {.wq = WAITQ_INIT(m.wq), .holder = NULL, .lock_count = 0}
+#define MUTEX_INIT(m)  {.wq=WAITQ_INIT(m.wq), .holder=NULL, .lock_count=0}
 
 __BEGIN_DECLS
 

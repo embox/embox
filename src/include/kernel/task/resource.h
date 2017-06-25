@@ -16,20 +16,20 @@ struct thread;
 
 struct task_resource_desc {
 	void (*init)(const struct task *task, void *resource_space);
-	int	 (*inherit)(const struct task *task,
+	int (*inherit)(const struct task *task,
 			const struct task *parent);
-	void	(*deinit)(const struct task *task);
-	size_t	resource_size; /* to be used in on-stack allocation */
+	void (*deinit)(const struct task *task);
+	size_t resource_size; /* to be used in on-stack allocation */
 	size_t *resource_offset;
-	int		(*exec)(const struct task *task, const char *path, char *const argv[]);
+	int (*exec)(const struct task *task, const char *path, char *const argv[]);
 };
 
 typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *next);
 
 #define TASK_RESOURCE_DEF(desc, type) \
-	typeof(type)__kernel_task_resource_storage_ ## desc \
-	__attribute__((aligned(sizeof(void *)), \
-			section(".bss.ktask.resource"))); \
+	typeof(type) __kernel_task_resource_storage_##desc \
+			__attribute__((aligned(sizeof(void *)), \
+						section(".bss.ktask.resource"))); \
 	static const struct task_resource_desc desc; \
 	ARRAY_SPREAD_DECLARE(const struct task_resource_desc *const, \
 			task_resource_desc_array); \

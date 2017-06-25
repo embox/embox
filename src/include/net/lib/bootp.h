@@ -31,24 +31,24 @@
 /**
  * Magic code
  */
-/*extern const unsigned char dhcp_magic_cookie[4]; */
+//extern const unsigned char dhcp_magic_cookie[4];
 
 typedef struct bootphdr {
-	__u8	  op;     /* message type */
-	__u8	  htype;  /* hw_addr type */
-	__u8	  hlen;   /* hw_addr length */
-	__u8	  hops;   /* gateway hops */
-	__be32	  xid;    /* transaction ID */
-	__be16	  secs;   /* seconds since boot began */
-	__be16	  res;    /* reserved */
+	__u8 op;          /* message type */
+	__u8 htype;       /* hw_addr type */
+	__u8 hlen;        /* hw_addr length */
+	__u8 hops;        /* gateway hops */
+	__be32 xid;       /* transaction ID */
+	__be16 secs;      /* seconds since boot began */
+	__be16 res;       /* reserved */
 	in_addr_t ciaddr; /* client IP address */
 	in_addr_t yiaddr; /* 'your' (client) IP address */
 	in_addr_t siaddr; /* server IP address */
 	in_addr_t giaddr; /* gateway IP address */
-	__u8	  chaddr[16]; /* client hardware address */
-	__s8	  sname[64]; /* server host name */
-	__s8	  file[128]; /* boot file name */
-	__u8	  vend[64]; /* optional vedor-specific data */
+	__u8 chaddr[16];  /* client hardware address */
+	__s8 sname[64];   /* server host name */
+	__s8 file[128];   /* boot file name */
+	__u8 vend[64];    /* optional vedor-specific data */
 } __attribute__((packed)) bootphdr_t;
 
 #define BOOTP_HEADER_SIZE sizeof(struct bootphdr)

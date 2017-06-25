@@ -24,7 +24,7 @@ void timer_strat_start(struct sys_timer *tmr) {
 
 	ipl = ipl_save();
 	/* new timer added to begining of the list to sure, that it will not
-	 * be processed. Otherwise, if a new timer added while handling some
+ 	 * be processed. Otherwise, if a new timer added while handling some
 	 * other one, it will be processed during same timer_strat_sched
 	 * request, not the next. */
 	dlist_add_next(&tmr->lnk, &sys_timers_list);

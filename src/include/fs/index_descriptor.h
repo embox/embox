@@ -38,4 +38,5 @@ extern int index_descriptor_fstat(int fd, struct stat *buff);
 
 __END_DECLS
 
+
 #endif /* INDEX_DESCRIPTOR_H_ */

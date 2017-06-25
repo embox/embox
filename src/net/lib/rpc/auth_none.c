@@ -11,7 +11,7 @@
 
 static struct auth_ops authnone_ops;
 
-struct auth *authnone_create(void) {
+struct auth * authnone_create(void) {
 	struct auth *ath;
 
 	ath = auth_alloc();
@@ -31,5 +31,5 @@ static void authnone_destroy(struct auth *ath) {
 }
 
 static struct auth_ops authnone_ops = {
-	.destroy = authnone_destroy
+		.destroy = authnone_destroy
 };

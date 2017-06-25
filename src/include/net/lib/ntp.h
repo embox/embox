@@ -42,9 +42,9 @@
  */
 #define NTP_STRATUM_UNSPEC    0 /* kiss-o'-death message */
 #define NTP_STRATUM_PRIMARY   1 /* primary reference (e.g.,
-	                              synchronized by radio clock */
+								  synchronized by radio clock */
 #define NTP_STRATUM_SECONDARY 2 /* 2-15: secondary reference
-	                              (synchronized by NTP or SNTP) */
+								  (synchronized by NTP or SNTP) */
 #define NTP_STRATUM_UNSYNC    16 /* 16-255: reserved */
 
 /**
@@ -65,20 +65,20 @@ struct ntp_data_l {
 
 struct ntphdr {
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
-	__u8 mode : 3,
-			version : 3,
-			leap	: 2;
+	__u8 mode:3,
+		version:3,
+		leap:2;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
-	__u8 leap : 2,                 /* leap indicator */
-			version : 3,         /* version number */
-			mode	: 3;         /* mode */
+	__u8 leap:2,                 /* leap indicator */
+		version:3,               /* version number */
+		mode:3;                  /* mode */
 #endif
-	__u8			  stratum;   /* stratum */
-	__u8			  poll;      /* poll exponent */
-	__s8			  precision; /* precision exponent */
+	__u8 stratum;                /* stratum */
+	__u8 poll;                   /* poll exponent */
+	__s8 precision;              /* precision exponent */
 	struct ntp_data_s rootdelay; /* root delay */
 	struct ntp_data_s rootdisp;  /* root dispersion */
-	char			  refid[4];  /* reference ID */
+	char refid[4];               /* reference ID */
 	struct ntp_data_l reftime;   /* reference timestamp */
 	struct ntp_data_l org;       /* origin timestamp */
 	struct ntp_data_l rec;       /* receive timestamp */
@@ -96,7 +96,7 @@ extern int ntp_timespec_to_data_l(const struct timespec *ts,
 extern int ntp_mode_client(const struct ntphdr *ntph);
 extern int ntp_mode_server(const struct ntphdr *ntph);
 extern int ntp_valid_stratum(const struct ntphdr *ntph);
-extern const char *ntp_stratum_error(const struct ntphdr *ntph);
+extern const char * ntp_stratum_error(const struct ntphdr *ntph);
 extern int ntp_delay(const struct ntphdr *ntph,
 		struct timespec *recv_time, struct timespec *out_ts);
 extern int ntp_offset(const struct ntphdr *ntp,

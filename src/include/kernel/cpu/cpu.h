@@ -19,7 +19,7 @@ struct thread;
  */
 extern void cpu_init(unsigned int cpu_id, struct thread *idle);
 extern void cpu_bind(unsigned int cpu_id, struct thread *t);
-extern struct thread *cpu_get_idle(unsigned int cpu_id);
+extern struct thread * cpu_get_idle(unsigned int cpu_id);
 extern clock_t cpu_get_started(unsigned int cpu_id);
 
 /**

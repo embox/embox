@@ -18,8 +18,7 @@ static int display_x;
 static int display_y;
 
 __u8 font[N_CHARS][FONT_WIDTH] = {
-/* 0x00 */
-	{0x3E, 0x36, 0x2A, 0x36, 0x3E},
+/* 0x00 */ {0x3E, 0x36, 0x2A, 0x36, 0x3E},
 /* 0x01 */ {0x3E, 0x55, 0x61, 0x55, 0x3E},
 /* 0x02 */ {0x3E, 0x6B, 0x5F, 0x6B, 0x3E},
 /* 0x03 */ {0x0C, 0x1E, 0x3C, 0x1E, 0x0C},
@@ -211,24 +210,24 @@ void display_clear_screen(void) {
 }
 
 int display_draw(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t *buff) {
-	uint32_t x_offset, y_offset, i, j, k;
-	y *= 8;
-	width *= 8;
-	if ((x > NXT_LCD_WIDTH) || (y > 64)) {
-		return 0;
-	}
+   	uint32_t x_offset, y_offset, i, j, k;
+   	y *= 8;
+   	width *= 8;
+   	if ((x > NXT_LCD_WIDTH) || (y > 64)) {
+   		return 0;
+   	}
 
-	width = min((NXT_LCD_WIDTH - x), width);
-	height = min((64 - y), height);
+   	width = min((NXT_LCD_WIDTH - x), width);
+   	height = min((64 - y), height);
 
-	for (y_offset = 0; y_offset < height; y_offset += 8) {
+   	for (y_offset = 0; y_offset < height; y_offset += 8) {
 		for (x_offset = 0; x_offset < width; x_offset++) {
 			i = (y + y_offset) >> 3;
 			j = x + x_offset;
 			k = (y_offset >> 3) + x_offset;
-			display_buffer[i][j] = buff[k];
+   			display_buffer[i][j] = buff[k];
 		}
-	}
+   	}
 	nxt_lcd_force_update();
 	return 0;
 }
@@ -245,9 +244,10 @@ int display_part(uint8_t x, uint8_t y, uint8_t part_of_byte, uint8_t q) {
 int display_little_field(uint8_t x, uint8_t y, uint8_t height, uint8_t offset,  uint8_t q) {
 	uint8_t i;
 	i = ((1 << height) - 1) << offset;
-	display_buffer[y][x] = (q == 1 ? i : ~i);
+	display_buffer[y][x] = (q == 1 ? i : ~i );
 	return 0;
 }
+
 
 int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q) {
 	uint32_t x_offset, y_offset;
@@ -281,10 +281,11 @@ int display_fill(uint8_t x, uint8_t y, uint8_t width, uint8_t height, uint8_t q)
 	return 0;
 }
 
+
 void tab_display(const char *str) {
 	int i = 0;
 	display_x = 2;
-	while (*str && (i < 13)) {
+	while (*str && ( i < 13)) {
 		if (*str != '\n') {
 			display_char(*str);
 		}

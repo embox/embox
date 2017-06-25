@@ -8,7 +8,7 @@
 
 struct DIR_struct {
 	struct dirent current;
-	struct path	  path;
+	struct path path;
 };
 
 #endif /* DIRENT_IMPL_H_ */

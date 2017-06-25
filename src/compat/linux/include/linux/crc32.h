@@ -13,4 +13,5 @@
 
 #define crc32(val, s, len) crc32_accumulate(val, (unsigned char *)s, len)
 
+
 #endif /* __LINUX_CRC32_H_ */

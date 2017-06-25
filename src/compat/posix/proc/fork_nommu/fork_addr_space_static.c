@@ -68,3 +68,4 @@ void fork_static_cleanup(struct static_space *sspc) {
 	sspc->bss_store = NULL;
 	sspc->data_store = NULL;
 }
+

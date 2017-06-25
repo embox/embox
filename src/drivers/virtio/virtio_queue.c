@@ -56,7 +56,7 @@ void virtqueue_destroy(struct virtqueue *vq,
 	sysfree(vq->ring_mem);
 }
 
-struct vring_desc *virtqueue_alloc_desc(struct virtqueue *vq) {
+struct vring_desc * virtqueue_alloc_desc(struct virtqueue *vq) {
 	struct vring_desc *vrd;
 
 	assert(vq != NULL);

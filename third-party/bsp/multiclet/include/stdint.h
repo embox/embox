@@ -1,13 +1,13 @@
 
 #ifndef STDINT
-#define STDINT
+#define	STDINT
 
 #include "mc-stdio.h"
 
-#define Multiclet
-#define NULL (void *)0
-#define FLT_MAX 3.40282346638528859812e+38F
-#define DBL_MAX 1.79769313486231570815e+308L
+#define	Multiclet
+#define	NULL (void*)0
+#define FLT_MAX	3.40282346638528859812e+38F
+#define DBL_MAX	1.79769313486231570815e+308L
 
 typedef unsigned char uint8_t;
 typedef signed char int8_t;

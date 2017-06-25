@@ -8,7 +8,7 @@
 #ifndef _NETINET_IP_H_
 #define _NETINET_IP_H_
 
-#define IPTOS_LOWDELAY  0x10
-#define IP_TOS          0x1
+#define IPTOS_LOWDELAY	0x10
+#define IP_TOS			0x1
 
 #endif

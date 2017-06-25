@@ -35,12 +35,8 @@ static int client_tcp(size_t nbyte, struct sockaddr_in *in) {
 	}
 
 	memset(&buff[0], 0, sizeof buff);
-	for (i = 1; i < 11; ++i) {
-		buff[i] = i;
-	}
-	for (i = 1; i < 11; ++i) {
-		buff[sizeof buff - 1 - i] = i;
-	}
+	for (i = 1; i < 11; ++i) buff[i] = i;
+	for (i = 1; i < 11; ++i) buff[sizeof buff - 1 - i] = i;
 
 	while (nbyte != 0) {
 		ssize_t ret;
@@ -91,9 +87,9 @@ int main(int argc, char *argv[]) {
 				return -EINVAL;
 			}
 			nbyte += count * (
-				opt == 'K' ? 1024
-				: opt == 'M' ? 1024 * 1024
-				: 1024 * 1024 * 1024);
+					opt == 'K' ? 1024
+					: opt == 'M' ? 1024 * 1024
+					: 1024 * 1024 * 1024);
 			break;
 		}
 	}

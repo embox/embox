@@ -20,16 +20,16 @@ struct audio_dev_ops {
 	void (*ad_ops_resume)(struct audio_dev *dev);
 	void (*ad_ops_stop)(struct audio_dev *dev);
 	void (*ad_ops_add_sample)(struct audio_dev *dev, uint8_t *buf);
-	int	 (*ad_ops_ioctl)(struct audio_dev *dev, int cmd, void *args);
+	int (*ad_ops_ioctl)(struct audio_dev *dev, int cmd, void *args);
 };
 
 struct audio_dev {
 	struct audio_dev_ops *ad_ops;
-	const char *		  ad_name;
-	void *				  ad_priv;
-	size_t				  buf_len;
-	uint8_t				  num_of_chan;
-	uint8_t				  max_chan;
+	const char *ad_name;
+	void *ad_priv;
+	size_t buf_len;
+	uint8_t num_of_chan;
+	uint8_t max_chan;
 };
 
 #define AUDIO_DEV_DEF(name, ops, priv) \

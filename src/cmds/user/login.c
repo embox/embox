@@ -63,7 +63,7 @@ static int utmp_login(short ut_type, const char *ut_user) {
 
 struct taskdata {
 	const struct passwd *pwd;
-	const char *		 cmd;
+	const char *cmd;
 };
 
 #if OPTION_GET(BOOLEAN, security_support)
@@ -86,6 +86,7 @@ static void login_set_security(struct taskdata *tdata) {
 
 }
 #endif
+
 
 static void *taskshell(void *data) {
 	const struct shell *shell;
@@ -140,7 +141,7 @@ static unsigned char stdin_vintr;
 static unsigned char vdisable = -1;
 
 static int fileno_vintr_disable(int fd) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fd, &t)) {
 		return -errno;
@@ -157,7 +158,7 @@ static int fileno_vintr_disable(int fd) {
 }
 
 static int fileno_vintr_enable(int fd) {
-	struct termios t;
+    struct termios t;
 
 	if (-1 == tcgetattr(fd, &t)) {
 		return -errno;
@@ -178,6 +179,7 @@ static inline void seculog_make_rec(const char *username, char allowed) {
 
 	seculog_record(SECULOG_LABEL_LOGIN_ACT, seculog_msg);
 }
+
 
 static int login_user(const char *name, const char *cmd, char with_pass) {
 	char pwdbuf[BUF_LEN], passbuf[BUF_LEN];
@@ -259,7 +261,7 @@ int main(int argc, char **argv) {
 		getopt_init();
 
 		while (-1 != (opt = getopt(argc, argv, "pc:"))) {
-			switch (opt) {
+			switch(opt) {
 			case 'c':
 				cmd = optarg;
 				break;
@@ -274,6 +276,7 @@ int main(int argc, char **argv) {
 		if (optind < argc) {
 			name = argv[optind];
 		}
+
 
 		return login_user(name, cmd, with_pass);
 	}
@@ -291,7 +294,7 @@ int main(int argc, char **argv) {
 
 		free(name);
 
-	} while (1);
+	} while(1);
 
 	return 0;
 }

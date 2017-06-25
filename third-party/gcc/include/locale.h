@@ -9,8 +9,9 @@ struct lconv;
 
 __BEGIN_DECLS
 
-struct lconv *localeconv(void);
+struct lconv * localeconv(void);
 
 __END_DECLS
 
 #endif /* GCC_LOCALE_H_ */
+

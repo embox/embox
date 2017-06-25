@@ -6,17 +6,17 @@
 
 static inline unsigned long virt_to_phys(volatile void *address)
 {
-	return (unsigned long)address;
+         return (unsigned long)address;
 }
 
 static inline void *phys_to_virt(unsigned long address)
 {
-	return (void *)address;
+         return (void*)address;
 }
 
 static inline void __iomem *ioremap(unsigned long offset, unsigned long size)
 {
-	return (void __iomem *)offset;
+         return (void __iomem*)offset;
 }
 
 #define __ioremap(offset, size, flags)  ioremap(offset, size)

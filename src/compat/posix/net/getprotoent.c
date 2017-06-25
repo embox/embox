@@ -37,7 +37,7 @@ void endprotoent(void) {
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
 #define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
 
-struct protoent *getprotoent(void) {
+struct protoent * getprotoent(void) {
 	char protoent_buff[PROTOENT_BUFF_SZ];
 	struct protoent *pe, *result;
 	char *tmp, *name, *proto_str;

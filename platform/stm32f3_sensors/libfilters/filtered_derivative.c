@@ -8,9 +8,7 @@
 #include <libfilters/filtered_derivative.h>
 
 float filtered_derivative(float inc) {
-	static float f_dv[FD_WIN_SIZE] = {
-		0
-	};
+	static float f_dv[FD_WIN_SIZE] = {0};
 	static int index_l = 0;
 	static int index_h = FD_WIN_SIZE / 2;
 	static int index = 0;

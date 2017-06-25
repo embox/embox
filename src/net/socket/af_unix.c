@@ -55,7 +55,7 @@ static int unix_create(struct socket *sock, int type, int protocol) {
 		return res;
 	}
 
-	sk = sk_alloc(/*net,*/ PF_UNIX, (struct proto *)&unix_proto);
+	sk = sk_alloc(/*net,*/PF_UNIX, (struct proto *)&unix_proto);
 	if (sk == NULL) {
 		return -ENOMEM;
 	}
@@ -64,18 +64,18 @@ static int unix_create(struct socket *sock, int type, int protocol) {
 }
 
 static const struct family_ops unix_dgram_ops = {
-	.family =   PF_UNIX,
+		.family =	PF_UNIX,
 };
 
 static const struct family_ops unix_stream_ops = {
-	.family =   PF_UNIX,
+		.family =	PF_UNIX,
 };
 
 static const struct family_ops unix_seqpacket_ops = {
-	.family =   PF_UNIX,
+		.family =	PF_UNIX,
 };
 
 static const struct proto unix_proto = {
-	.name = "UNIX",
-	.obj_size = sizeof(struct unix_sock),
+		.name = "UNIX",
+		.obj_size = sizeof(struct unix_sock),
 };

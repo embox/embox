@@ -24,6 +24,7 @@
 #define  I8042_MODE_DISABLE    0x10
 #define  I8042_MODE_INTERRUPT  0x01
 
+
 /* Status */
 #define I8042_STS_PERR      0x80    /* Parity error */
 #define I8042_STS_TMO       0x40    /* Timeout */
@@ -40,7 +41,7 @@
 	do {} while (0 == ((status = inb(I8042_STS_PORT)) & I8042_STS_OBF))
 #define keyboard_wait_write(status) \
 	do {} while (0 != ((status = inb(I8042_STS_PORT)) & I8042_STS_IBF))
-#define kmc_wait_ibe()  while (inb(I8042_STS_PORT) & I8042_STS_IBF)
+#define kmc_wait_ibe()	while (inb(I8042_STS_PORT) & I8042_STS_IBF)
 
 static inline int keyboard_havechar(void) {
 	unsigned char c = inb(I8042_STS_PORT);

@@ -18,11 +18,11 @@ static void print_usage(void) {
 	printf("Usage: ide \n");
 }
 
-static void print_drive(struct ide_tab *ide) {
+static void print_drive (struct ide_tab *ide) {
 	hd_t *drive;
 	int dev_size, dev_bsize;
 
-	for (int i  = 0; i < 4; i++) {
+	for(int i  = 0; i < 4; i++) {
 		printf("\nIDE Channel %d-%d: ", i/2, i%2);
 
 		if (i%2) {
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "ah"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'a':
 			break;
 		case 'h':

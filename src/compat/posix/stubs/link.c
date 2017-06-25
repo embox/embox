@@ -17,3 +17,4 @@ int link(const char *oldpath, const char *newpath) {
 	printk(">>> %s %s %s\n", __func__, oldpath, newpath);
 	return SET_ERRNO(ENOSYS);
 }
+

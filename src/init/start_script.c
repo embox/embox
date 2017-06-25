@@ -38,7 +38,7 @@ static int run_script(void) {
 	setup_tty(OPTION_STRING_GET(tty_dev));
 
 	printf("\nStarted shell [%s] on device [%s]\n",
-			OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
+		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
 
 	printf("loading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {

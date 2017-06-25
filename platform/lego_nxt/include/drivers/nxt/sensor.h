@@ -28,10 +28,10 @@ typedef enum {
  * Sensor structure type
  */
 struct nxt_sensor {
-	uint8_t		  id;
+	uint8_t id;
 	sensor_type_t type;
-	uint8_t		  def_comm;
-	i2c_port_t	  i2c_port;
+	uint8_t def_comm;
+	i2c_port_t i2c_port;
 };
 /** type for @link #nxt_sensor sensor structure @endlink */
 typedef struct nxt_sensor nxt_sensor_t;

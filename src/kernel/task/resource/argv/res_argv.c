@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 
+
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_argv.h>
@@ -15,10 +16,10 @@
 #define ARG_LENGTH    OPTION_GET(NUMBER, arg_length)
 
 struct task_argv {
-	int	  argc;
-	char  argv_buff[ARGS_QUANTITY][ARG_LENGTH];
+	int argc;
+	char argv_buff[ARGS_QUANTITY][ARG_LENGTH];
 	char *argv[ARGS_QUANTITY + 1]; /* null terminated */
-	char  path[ARG_LENGTH];
+	char path[ARG_LENGTH];
 };
 
 TASK_RESOURCE_DEF(task_argv_desc, struct task_argv);
@@ -89,11 +90,10 @@ char *task_resource_argv_path(const struct task *task) {
 int argv_to_argc(char *const argv[]) {
 	int argc;
 
-	if (argv == NULL) {
+	if (argv == NULL)
 		return 0;
-	}
 
-	for (argc = 0; argv[argc]; argc++) {
+	for (argc = 0; argv[argc]; argc ++) {
 	}
 
 	return argc;

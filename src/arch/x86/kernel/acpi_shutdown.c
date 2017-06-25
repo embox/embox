@@ -9,6 +9,7 @@
 
 #include <acpi.h>
 
+
 void acpi_shutdown(void) {
 	ACPI_STATUS status;
 

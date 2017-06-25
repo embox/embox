@@ -39,6 +39,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 	assertf(!(flag & (O_CREAT | O_EXCL)), "use kcreat() instead kopen()");
 	assertf(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
 
+
 	nas = node->nas;
 	/* if we try open a file (not special) we must have the file system */
 	if (NULL == nas->fs ) {
@@ -56,7 +57,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 		ops = nas->fs->file_op;
 	}
 
-	if (ops == NULL) {
+	if(ops == NULL) {
 		SET_ERRNO(ENOSUPP);
 		return NULL;
 	}
@@ -69,7 +70,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 	desc->ops = ops;
 
 	idesc = desc->ops->open(node, desc, flag);
-	if (err(idesc)) {
+	if (err(idesc)){
 		ret = (int)idesc;
 		goto free_out;
 	}
@@ -90,6 +91,7 @@ free_out:
 out:
 	return desc;
 }
+
 
 ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	ssize_t ret;
@@ -143,6 +145,7 @@ end:
 	return ret;
 }
 
+
 void kclose(struct file_desc *desc) {
 	assert(desc);
 	assert(desc->ops);
@@ -164,20 +167,20 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	ni = &nas->fi->ni;
 
 	switch (origin) {
-	case SEEK_SET:
-		desc->cursor = offset;
-		break;
+		case SEEK_SET:
+			desc->cursor = offset;
+			break;
 
-	case SEEK_CUR:
-		desc->cursor += offset;
-		break;
+		case SEEK_CUR:
+			desc->cursor += offset;
+			break;
 
-	case SEEK_END:
-		desc->cursor = ni->size + offset;
-		break;
+		case SEEK_END:
+			desc->cursor = ni->size + offset;
+			break;
 
-	default:
-		return -EINVAL;
+		default:
+			return -EINVAL;
 	}
 
 	return desc->cursor;

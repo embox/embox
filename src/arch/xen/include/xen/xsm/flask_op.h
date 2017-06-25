@@ -28,128 +28,128 @@
 #define XEN_FLASK_INTERFACE_VERSION 1
 
 struct xen_flask_load {
-	XEN_GUEST_HANDLE(char) buffer;
-	uint32_t size;
+    XEN_GUEST_HANDLE(char) buffer;
+    uint32_t size;
 };
 
 struct xen_flask_setenforce {
-	uint32_t enforcing;
+    uint32_t enforcing;
 };
 
 struct xen_flask_sid_context {
-	/* IN/OUT: sid to convert to/from string */
-	uint32_t sid;
-	/* IN: size of the context buffer
-	 * OUT: actual size of the output context string
-	 */
-	uint32_t size;
-	XEN_GUEST_HANDLE(char) context;
+    /* IN/OUT: sid to convert to/from string */
+    uint32_t sid;
+    /* IN: size of the context buffer
+     * OUT: actual size of the output context string
+     */
+    uint32_t size;
+    XEN_GUEST_HANDLE(char) context;
 };
 
 struct xen_flask_access {
-	/* IN: access request */
-	uint32_t ssid;
-	uint32_t tsid;
-	uint32_t tclass;
-	uint32_t req;
-	/* OUT: AVC data */
-	uint32_t allowed;
-	uint32_t audit_allow;
-	uint32_t audit_deny;
-	uint32_t seqno;
+    /* IN: access request */
+    uint32_t ssid;
+    uint32_t tsid;
+    uint32_t tclass;
+    uint32_t req;
+    /* OUT: AVC data */
+    uint32_t allowed;
+    uint32_t audit_allow;
+    uint32_t audit_deny;
+    uint32_t seqno;
 };
 
 struct xen_flask_transition {
-	/* IN: transition SIDs and class */
-	uint32_t ssid;
-	uint32_t tsid;
-	uint32_t tclass;
-	/* OUT: new SID */
-	uint32_t newsid;
+    /* IN: transition SIDs and class */
+    uint32_t ssid;
+    uint32_t tsid;
+    uint32_t tclass;
+    /* OUT: new SID */
+    uint32_t newsid;
 };
 
 struct xen_flask_userlist {
-	/* IN: starting SID for list */
-	uint32_t start_sid;
-	/* IN: size of user string and output buffer
-	 * OUT: number of SIDs returned */
-	uint32_t size;
-	union {
-		/* IN: user to enumerate SIDs */
-		XEN_GUEST_HANDLE(char) user;
-		/* OUT: SID list */
-		XEN_GUEST_HANDLE(uint32) sids;
-	} u;
+    /* IN: starting SID for list */
+    uint32_t start_sid;
+    /* IN: size of user string and output buffer
+     * OUT: number of SIDs returned */
+    uint32_t size;
+    union {
+        /* IN: user to enumerate SIDs */
+        XEN_GUEST_HANDLE(char) user;
+        /* OUT: SID list */
+        XEN_GUEST_HANDLE(uint32) sids;
+    } u;
 };
 
 struct xen_flask_boolean {
-	/* IN/OUT: numeric identifier for boolean [GET/SET]
-	 * If -1, name will be used and bool_id will be filled in. */
-	uint32_t bool_id;
-	/* OUT: current enforcing value of boolean [GET/SET] */
-	uint8_t enforcing;
-	/* OUT: pending value of boolean [GET/SET] */
-	uint8_t pending;
-	/* IN: new value of boolean [SET] */
-	uint8_t new_value;
-	/* IN: commit new value instead of only setting pending [SET] */
-	uint8_t commit;
-	/* IN: size of boolean name buffer [GET/SET]
-	 * OUT: actual size of name [GET only] */
-	uint32_t size;
-	/* IN: if bool_id is -1, used to find boolean [GET/SET]
-	 * OUT: textual name of boolean [GET only]
-	 */
-	XEN_GUEST_HANDLE(char) name;
+    /* IN/OUT: numeric identifier for boolean [GET/SET]
+     * If -1, name will be used and bool_id will be filled in. */
+    uint32_t bool_id;
+    /* OUT: current enforcing value of boolean [GET/SET] */
+    uint8_t enforcing;
+    /* OUT: pending value of boolean [GET/SET] */
+    uint8_t pending;
+    /* IN: new value of boolean [SET] */
+    uint8_t new_value;
+    /* IN: commit new value instead of only setting pending [SET] */
+    uint8_t commit;
+    /* IN: size of boolean name buffer [GET/SET]
+     * OUT: actual size of name [GET only] */
+    uint32_t size;
+    /* IN: if bool_id is -1, used to find boolean [GET/SET]
+     * OUT: textual name of boolean [GET only]
+     */
+    XEN_GUEST_HANDLE(char) name;
 };
 
 struct xen_flask_setavc_threshold {
-	/* IN */
-	uint32_t threshold;
+    /* IN */
+    uint32_t threshold;
 };
 
 struct xen_flask_hash_stats {
-	/* OUT */
-	uint32_t entries;
-	uint32_t buckets_used;
-	uint32_t buckets_total;
-	uint32_t max_chain_len;
+    /* OUT */
+    uint32_t entries;
+    uint32_t buckets_used;
+    uint32_t buckets_total;
+    uint32_t max_chain_len;
 };
 
 struct xen_flask_cache_stats {
-	/* IN */
-	uint32_t cpu;
-	/* OUT */
-	uint32_t lookups;
-	uint32_t hits;
-	uint32_t misses;
-	uint32_t allocations;
-	uint32_t reclaims;
-	uint32_t frees;
+    /* IN */
+    uint32_t cpu;
+    /* OUT */
+    uint32_t lookups;
+    uint32_t hits;
+    uint32_t misses;
+    uint32_t allocations;
+    uint32_t reclaims;
+    uint32_t frees;
 };
 
 struct xen_flask_ocontext {
-	/* IN */
-	uint32_t ocon;
-	uint32_t sid;
-	uint64_t low, high;
+    /* IN */
+    uint32_t ocon;
+    uint32_t sid;
+    uint64_t low, high;
 };
 
 struct xen_flask_peersid {
-	/* IN */
-	evtchn_port_t evtchn;
-	/* OUT */
-	uint32_t sid;
+    /* IN */
+    evtchn_port_t evtchn;
+    /* OUT */
+    uint32_t sid;
 };
 
 struct xen_flask_relabel {
-	/* IN */
-	uint32_t domid;
-	uint32_t sid;
+    /* IN */
+    uint32_t domid;
+    uint32_t sid;
 };
 
 struct xen_flask_op {
-	uint32_t cmd;
+    uint32_t cmd;
 #define FLASK_LOAD              1
 #define FLASK_GETENFORCE        2
 #define FLASK_SETENFORCE        3
@@ -174,26 +174,26 @@ struct xen_flask_op {
 #define FLASK_DEL_OCONTEXT      22
 #define FLASK_GET_PEER_SID      23
 #define FLASK_RELABEL_DOMAIN    24
-	uint32_t interface_version; /* XEN_FLASK_INTERFACE_VERSION */
-	union {
-		struct xen_flask_load		load;
-		struct xen_flask_setenforce enforce;
-		/* FLASK_CONTEXT_TO_SID and FLASK_SID_TO_CONTEXT */
-		struct xen_flask_sid_context sid_context;
-		struct xen_flask_access		 access;
-		/* FLASK_CREATE, FLASK_RELABEL, FLASK_MEMBER */
-		struct xen_flask_transition transition;
-		struct xen_flask_userlist	userlist;
-		/* FLASK_GETBOOL, FLASK_SETBOOL */
-		struct xen_flask_boolean		  boolean;
-		struct xen_flask_setavc_threshold setavc_threshold;
-		struct xen_flask_hash_stats		  hash_stats;
-		struct xen_flask_cache_stats	  cache_stats;
-		/* FLASK_ADD_OCONTEXT, FLASK_DEL_OCONTEXT */
-		struct xen_flask_ocontext ocontext;
-		struct xen_flask_peersid  peersid;
-		struct xen_flask_relabel  relabel;
-	} u;
+    uint32_t interface_version; /* XEN_FLASK_INTERFACE_VERSION */
+    union {
+        struct xen_flask_load load;
+        struct xen_flask_setenforce enforce;
+        /* FLASK_CONTEXT_TO_SID and FLASK_SID_TO_CONTEXT */
+        struct xen_flask_sid_context sid_context;
+        struct xen_flask_access access;
+        /* FLASK_CREATE, FLASK_RELABEL, FLASK_MEMBER */
+        struct xen_flask_transition transition;
+        struct xen_flask_userlist userlist;
+        /* FLASK_GETBOOL, FLASK_SETBOOL */
+        struct xen_flask_boolean boolean;
+        struct xen_flask_setavc_threshold setavc_threshold;
+        struct xen_flask_hash_stats hash_stats;
+        struct xen_flask_cache_stats cache_stats;
+        /* FLASK_ADD_OCONTEXT, FLASK_DEL_OCONTEXT */
+        struct xen_flask_ocontext ocontext;
+        struct xen_flask_peersid peersid;
+        struct xen_flask_relabel relabel;
+    } u;
 };
 typedef struct xen_flask_op xen_flask_op_t;
 DEFINE_XEN_GUEST_HANDLE(xen_flask_op_t);

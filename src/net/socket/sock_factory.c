@@ -18,7 +18,7 @@
 #include <util/err.h>
 #include <security/security.h>
 
-static struct sock *sock_alloc(
+static struct sock * sock_alloc(
 		const struct sock_family_ops *f_ops,
 		const struct sock_proto_ops *p_ops) {
 	ipl_t sp;
@@ -69,7 +69,7 @@ static void sock_free(struct sock *sk) {
 	assert(sk->p_ops != NULL);
 	assert(((sk->p_sk == NULL) && (sk->p_ops->sock_pool == NULL))
 			|| ((sk->p_sk != NULL)
-			&& (sk->p_ops->sock_pool != NULL)));
+				&& (sk->p_ops->sock_pool != NULL)));
 
 	sp = ipl_save();
 	{
@@ -84,8 +84,8 @@ static void sock_free(struct sock *sk) {
 static void sock_opt_init(struct sock_opt *opt, int family,
 		int type, int protocol) {
 	static const struct timeval
-			default_rcvtimeo = SOCK_OPT_DEFAULT_RCVTIMEO,
-			default_sndtimeo = SOCK_OPT_DEFAULT_SNDTIMEO;
+		default_rcvtimeo = SOCK_OPT_DEFAULT_RCVTIMEO,
+		default_sndtimeo = SOCK_OPT_DEFAULT_SNDTIMEO;
 
 	assert(opt != NULL);
 
@@ -132,6 +132,7 @@ static void sock_init(struct sock *sk, int family, int type,
 	sock_xattr_init(sk);
 	security_sock_create(sk);
 }
+
 
 struct sock *sock_create(int family, int type, int protocol) {
 	int ret;
@@ -182,6 +183,7 @@ struct sock *sock_create(int family, int type, int protocol) {
 
 	sock_hash(new_sk);
 
+
 	return new_sk;
 }
 
@@ -195,3 +197,5 @@ void sock_release(struct sock *sk) {
 	skb_queue_purge(&sk->tx_queue);
 	sock_free(sk);
 }
+
+

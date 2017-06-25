@@ -16,10 +16,10 @@
 struct diag;
 
 struct diag_ops {
-	int	 (*init)(const struct diag *diag);
+	int (*init)(const struct diag *diag);
 	char (*getc)(const struct diag *diag);
 	void (*putc)(const struct diag *diag, char ch);
-	int	 (*kbhit)(const struct diag *diag);
+	int (*kbhit)(const struct diag *diag);
 };
 
 struct diag {
@@ -74,11 +74,12 @@ extern int diag_setup(const struct diag *diag);
 #define DIAG_IMPL_NAME(_modname) \
 	MACRO_CONCAT(_modname, diag_impl)
 
+
 #define DIAG_OPS_DECLARE(...) \
 	static const struct diag_ops __DIAG_OPS_NAME(__EMBUILD_MOD__) = { __VA_ARGS__ }; \
 	const struct diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = { \
 		.ops = &__DIAG_OPS_NAME(__EMBUILD_MOD__), \
-	}
+       	}
 
 #define __DIAG_OPS_NAME(_modname) \
 	MACRO_CONCAT(_modname, _diag_ops)

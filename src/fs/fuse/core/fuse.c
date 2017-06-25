@@ -6,10 +6,10 @@
  * @author Alexander Kalmuk
  */
 
-/* Needed by fuse_common.h */
+// Needed by fuse_common.h
 #define _FILE_OFFSET_BITS 64
 
-/* it is from fuse-ext2fs.c */
+// it is from fuse-ext2fs.c
 #define FUSE_USE_VERSION 25
 #include <fuse_lowlevel.h>
 #include <fuse_opt.h>
@@ -20,11 +20,13 @@
 #include <stdlib.h>
 #include <fs/dvfs.h>
 
+
 #include "fuse_req_alloc.h"
 
 #define EMBOX_FUSE_NIY() printf("EMBOX_FUSE_NIY: %s\n", __func__)
 
-/* EMBOX SPECIFIC */
+
+	/* EMBOX SPECIFIC */
 struct fuse_req_embox *fuse_req_alloc(void) {
 	return malloc(sizeof(struct fuse_req_embox));
 }
@@ -33,27 +35,27 @@ void fuse_req_free(struct fuse_req_embox *req) {
 	free(req);
 }
 
-/* CTX */
+	/* CTX */
 const struct fuse_ctx *fuse_req_ctx(fuse_req_t req) {
 	EMBOX_FUSE_NIY();
 	return NULL;
 }
 
-/* REPLY */
+	/* REPLY */
 int fuse_reply_err(fuse_req_t req, int err) {
 	EMBOX_FUSE_NIY();
 	return 0;
 }
 
 int fuse_reply_attr(fuse_req_t req, const struct stat *attr,
-		double attr_timeout) {
+            double attr_timeout) {
 	EMBOX_FUSE_NIY();
 	return 0;
 }
 
 int fuse_reply_create(fuse_req_t req, const struct fuse_entry_param *e,
-		const struct fuse_file_info *fi) {
-	/* XXX fi is currently unused */
+              const struct fuse_file_info *fi) {
+	// XXX fi is currently unused
 	fuse_reply_entry(req, e);
 	return 0;
 }
@@ -109,7 +111,8 @@ int fuse_reply_readlink(fuse_req_t req, const char *linkname) {
 	return 0;
 }
 
-/* FUSE_OPT */
+
+	/* FUSE_OPT */
 int fuse_opt_add_arg(struct fuse_args *args, const char *arg) {
 	EMBOX_FUSE_NIY();
 	return 0;
@@ -119,7 +122,8 @@ void fuse_opt_free_args(struct fuse_args *args) {
 	EMBOX_FUSE_NIY();
 }
 
-/* SIGNAL */
+
+	/* SIGNAL */
 int fuse_set_signal_handlers(struct fuse_session *se) {
 	EMBOX_FUSE_NIY();
 	return 0;
@@ -129,7 +133,8 @@ void fuse_remove_signal_handlers(struct fuse_session *se) {
 	EMBOX_FUSE_NIY();
 }
 
-/* MOUNT/UMOUNT  */
+
+	/* MOUNT/UMOUNT  */
 int fuse_mount_compat25(const char *mountpoint, struct fuse_args *args) {
 	EMBOX_FUSE_NIY();
 	return 0;
@@ -139,13 +144,14 @@ void fuse_unmount_compat22(const char *mountpoint) {
 	EMBOX_FUSE_NIY();
 }
 
-/* DIRENT */
+
+	/* DIRENT */
 size_t fuse_dirent_size(size_t namelen) {
 	return FUSE_DIRENT_ALIGN(FUSE_NAME_OFFSET + namelen);
 }
 
 char *fuse_add_dirent(char *buf, const char *name, const struct stat *stbuf,
-		off_t off) {
+              off_t off) {
 
 	unsigned namelen = strlen(name);
 	unsigned entlen = FUSE_NAME_OFFSET + namelen;
@@ -158,9 +164,9 @@ char *fuse_add_dirent(char *buf, const char *name, const struct stat *stbuf,
 	dirent->namelen = namelen;
 	dirent->type = (stbuf->st_mode & 0170000) >> 12;
 	strncpy(dirent->name, name, namelen);
-	if (padlen) {
-		memset(buf + entlen, 0, padlen);
-	}
+	if (padlen)
+	    memset(buf + entlen, 0, padlen);
 
 	return buf + entsize;
 }
+

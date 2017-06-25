@@ -27,7 +27,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static int mips_clock_setup(struct time_dev_conf *conf) {
+static int mips_clock_setup(struct time_dev_conf * conf) {
 	mips_write_c0_compare(COUNT_OFFSET);
 	mips_write_c0_count(0);
 	return ENOERR;

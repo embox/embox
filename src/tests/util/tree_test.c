@@ -14,12 +14,11 @@
 EMBOX_TEST_SUITE("util/tree test");
 
 struct int_tree {
-	int				 data;
+	int data;
 	struct tree_link link;
 };
 
-static void dispose(struct tree_link *link) { /* Nothing to do. */
-}
+static void dispose(struct tree_link *link) { /* Nothing to do. */ }
 
 /** Pool of nodes. */
 static struct int_tree nodes[100];
@@ -62,16 +61,14 @@ static void compare(struct tree_link *root) {
 	int i;
 	i = 0;
 #if 0
-	printf("tree: ");
+	printf ("tree: ");
 	tree_postorder_traversal(link, elem, root, link) {
 		printf("%d ", elem->data);
 	}
-	printf("\n");
+	printf ("\n");
 #endif
-	tree_postorder_traversal_link(link, root) {
-	}
-	tree_postorder_traversal_link_safe(link, root) {
-	}
+	tree_postorder_traversal_link(link, root) {}
+	tree_postorder_traversal_link_safe(link, root) {}
 	tree_postorder_traversal(elem, root, link) {
 		/* printf("%d %d %d\n", i, elem->data, ans[i]); */
 		test_assert(elem->data == ans[i]);
@@ -251,9 +248,7 @@ TEST_CASE("Delete subtree") {
 
 TEST_CASE("After adding tree element must be in children") {
 	struct tree_link root, child, *item;
-	struct tree_link *pattern[] = {
-		&child
-	};
+	struct tree_link *pattern[] = {&child};
 	int pattern_pos = 0;
 
 	tree_link_init(&root);

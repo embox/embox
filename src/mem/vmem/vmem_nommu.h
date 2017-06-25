@@ -12,10 +12,10 @@
 #include <stdint.h>
 
 static inline void *mmap_device_memory(void *addr,
-		size_t len,
-		int prot,
-		int flags,
-		uint64_t physical){
+                           size_t len,
+                           int prot,
+                           int flags,
+                           uint64_t physical){
 	(void) addr;
 	(void) len;
 	(void) prot;

@@ -15,6 +15,7 @@
 
 #include <fs/idesc.h>
 
+
 static void idesc_file_ops_close(struct idesc *idesc) {
 	assert(idesc);
 
@@ -49,6 +50,7 @@ static ssize_t idesc_file_ops_write(struct idesc *idesc, const struct iovec *iov
 	return kwrite(buf, nbyte, (struct file_desc *)idesc);
 }
 
+
 static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
 	assert(idesc);
 
@@ -75,3 +77,4 @@ const struct idesc_ops idesc_file_ops = {
 	.fstat = idesc_file_ops_stat,
 	.status = idesc_file_ops_status,
 };
+

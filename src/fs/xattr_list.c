@@ -126,7 +126,7 @@ int getxattr_generic(struct xattr_list *xlst, const char *name,
 }
 
 int setxattr_generic(struct xattr_list *xlst, const char *name,
-		const char *value, size_t len, int flags) {
+			const char *value, size_t len, int flags) {
 	struct xattr_ent *xent;
 	struct dlist_head *add_next;
 

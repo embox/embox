@@ -10,7 +10,7 @@
 #ifndef MIPS_REGDEF_H_
 #define MIPS_REGDEF_H_
 
-/*http://www.doc.ic.ac.uk/lab/secondyear/spim/node10.html */
+//http://www.doc.ic.ac.uk/lab/secondyear/spim/node10.html
 /*
  * Symbolic register names for 32 bit ABI
  */
@@ -52,5 +52,6 @@
 #define fp      $30     /* frame pointer */
 #define s8      $30     /* same like fp! */
 #define ra      $31     /* return address */
+
 
 #endif /* MIPS_REGDEF_H_ */

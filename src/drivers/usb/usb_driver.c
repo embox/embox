@@ -79,7 +79,7 @@ static int usb_driver_match_table(struct usb_dev *dev,
 			return 1;
 		}
 
-		id++;
+		id ++;
 	}
 
 	return 0;

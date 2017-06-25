@@ -38,7 +38,7 @@ static struct sockaddr_in addr;
 static socklen_t addrlen;
 static struct msghdr msg;
 
-static inline struct sockaddr *to_sa(struct sockaddr_in *sa_in) {
+static inline struct sockaddr * to_sa(struct sockaddr_in *sa_in) {
 	return (struct sockaddr *)sa_in;
 }
 

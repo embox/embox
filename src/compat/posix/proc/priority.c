@@ -25,7 +25,7 @@ static int xetpriority_match(int which, id_t who, struct task *task) {
 		struct task *self = task_self();
 		struct task_u_area *self_u = task_resource_u_area(self);
 
-		switch (which) {
+		switch(which) {
 		case PRIO_PROCESS:
 			real_who = task_get_id(task_self());
 			break;

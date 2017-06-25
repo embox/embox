@@ -10,11 +10,11 @@
 #define X86_CACHE_H_
 
 static inline void cache_data_enable(void) {
-	/*TODO: */
+	//TODO:
 }
 
 static inline void cache_data_disable(void) {
-	/*TODO: */
+	//TODO:
 }
 
 #endif /* X86_CACHE_H_ */

@@ -25,7 +25,7 @@ static __u8 extract_snmp(char *dst, unsigned char **src);
 static int snmp_alloc_var(struct varbind *var, char **userbuf, size_t *bufsize);
 
 __u32 snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet) {
-	char *cur = (char *)snmp_packet;
+	char *cur = (char*)snmp_packet;
 	struct varbind *var;
 	__u32 packet_len = 0;
 
@@ -72,11 +72,11 @@ __u32 snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet) {
 
 int snmp_parse(struct snmp_desc *snmp_desc, const char *snmp_recv, char *userbuf, size_t bufsize) {
 	__u32 len;
-	unsigned char *cur = (unsigned char *)snmp_recv;
+	unsigned char *cur = (unsigned char*)snmp_recv;
 
 	/* Extract SNMP: inclusion: snmp<-pdu<-data */
 	cur += __HDR_LEN; /* snmp main header*/
-	extract_snmp((char *)&snmp_desc->version, &cur);
+	extract_snmp((char*)&snmp_desc->version, &cur);
 
 	/* extract security string */
 	len = extract_snmp(userbuf, &cur);
@@ -88,9 +88,9 @@ int snmp_parse(struct snmp_desc *snmp_desc, const char *snmp_recv, char *userbuf
 	/* Extract PDU*/
 	snmp_desc->pdu_type = *cur; /* pdu header */
 	cur += 2;
-	extract_snmp((char *)&snmp_desc->id, &cur);
-	extract_snmp((char *)&snmp_desc->error, &cur);
-	extract_snmp((char *)&snmp_desc->error_index, &cur);
+	extract_snmp((char*)&snmp_desc->id, &cur);
+	extract_snmp((char*)&snmp_desc->error, &cur);
+	extract_snmp((char*)&snmp_desc->error_index, &cur);
 
 	dlist_init(&snmp_desc->varbind_list);
 
@@ -171,13 +171,13 @@ static int snmp_alloc_var(struct varbind *var, char **userbuf, size_t *bufsize) 
 static __u8 snmp_len(struct snmp_desc *snmp_desc) {
 	/* +2 bytes for every field (i.e. 2*2) + 2 for pdu header */
 	return (pdu_len(snmp_desc) + strlen(snmp_desc->security) +
-		   sizeof(snmp_desc->version) + 2 * __HDR_LEN + __HDR_LEN);
+			sizeof(snmp_desc->version) + 2 * __HDR_LEN + __HDR_LEN);
 }
 
 static __u8 pdu_len(struct snmp_desc *snmp_desc) {
 	/* +2 for data header +data_len +2 bytes for every fields (i.e. +2*3) */
 	return (data_len(snmp_desc) + sizeof(snmp_desc->error)
-		   + sizeof(snmp_desc->error_index) + sizeof(__id) + __HDR_LEN * 3 + __HDR_LEN);
+			+ sizeof(snmp_desc->error_index) + sizeof(__id) + __HDR_LEN * 3 + __HDR_LEN);
 }
 
 static __u8 data_len(struct snmp_desc *snmp_desc) {

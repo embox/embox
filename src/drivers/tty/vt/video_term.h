@@ -17,7 +17,7 @@
 struct vterm {
 
 	struct vterm_video *video;
-	struct input_dev *	indev;
+	struct input_dev *indev;
 
 	struct tty tty;
 };

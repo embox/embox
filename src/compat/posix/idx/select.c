@@ -42,13 +42,13 @@ static int select_fds2pt(struct idesc_poll_table *pt,
 		poll_mask = 0;
 
 		if (readfds && FD_ISSET(i, readfds)) {
-			poll_mask |= POLLIN;/*IDESC_STAT_READ; */
+			poll_mask |= POLLIN;//IDESC_STAT_READ;
 		}
 		if (writefds && FD_ISSET(i, writefds)) {
-			poll_mask |= POLLOUT;/*IDESC_STAT_WRITE; */
+			poll_mask |= POLLOUT;//IDESC_STAT_WRITE;
 		}
 		if (exceptfds && FD_ISSET(i, exceptfds)) {
-			poll_mask |= POLLERR;/*IDESC_STAT_EXEPT; */
+			poll_mask |= POLLERR;//IDESC_STAT_EXEPT;
 		}
 
 		if (poll_mask) {
@@ -63,7 +63,7 @@ static int select_fds2pt(struct idesc_poll_table *pt,
 			pl = &pt->idesc_poll[cnt++];
 
 			pl->fd = i;
-			/* pl->idesc = idesc; */
+			// pl->idesc = idesc;
 			pl->i_poll_mask = poll_mask;
 			pl->o_poll_mask = 0;
 		}
@@ -88,7 +88,7 @@ static void select_pt2fds(struct idesc_poll_table *pt,
 		FD_ZERO(exceptfds);
 	}
 
-	for (int i = 0; i < pt->size; i++) {
+	for (int i = 0; i < pt->size; i ++) {
 		struct idesc_poll *pl;
 
 		pl = &pt->idesc_poll[i];
@@ -135,3 +135,4 @@ int select(int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds, struc
 	select_pt2fds(&pt, readfds, writefds, exceptfds);
 	return ret;
 }
+

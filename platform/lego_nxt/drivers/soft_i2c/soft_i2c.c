@@ -44,7 +44,7 @@ void scl_set_high(pin_mask_t mask) {
 }
 
 static void i2c_port_process(i2c_port_t *port) {
-	REG_LOAD(AT91C_TC0_SR); /*it's norm */
+	REG_LOAD(AT91C_TC0_SR); //it's norm
 	switch (port->state) {
 	case SOFT_I2C_START:
 		if (pin_get_input(port->sda) && pin_get_input(port->scl)) {
@@ -132,7 +132,7 @@ static void i2c_port_process(i2c_port_t *port) {
 				pin_set_low(port->sda);
 			}
 			port->write_byte <<= 1;
-			if (port->bit_cnt-- == 0) { /*0_o */
+			if (port->bit_cnt-- == 0) { //0_o
 				pin_set_high(port->sda);
 				port->state = SOFT_I2C_WRITE_ACK_RISE;
 			} else {

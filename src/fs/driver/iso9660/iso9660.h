@@ -6,8 +6,10 @@
  * @author Andrey Gazukin
  */
 
+
 #ifndef ISO9660_H_
 #define ISO9660_H_
+
 
 /*
  * iso9660.h
@@ -47,35 +49,37 @@
 
 typedef int64_t off64_t;
 
+
 #define CDFS_BLOCKSIZE         2048
 #define CDFS_POOLDEPTH         10
 
 #define PS1                     '/'     /* Primary path separator */
 #define PS2                     '\\'    /* Alternate path separator */
 
+
 typedef struct cdfs {
-	void *						  bdev;
-	int							  blks;
-	int							  volblks;
-	int							  vdblk;
-	int							  joliet;
-	unsigned char *				  path_table_buffer;
+	void *bdev;
+	int blks;
+	int volblks;
+	int vdblk;
+	int joliet;
+	unsigned char *path_table_buffer;
 	struct iso_pathtable_record **path_table;
-	int							  path_table_records;
+	int path_table_records;
 } cdfs_t;
 
 typedef struct cdfs_fs_info {
 	struct fsops *ops;
-	char		  mntto[PATH_MAX];
-	void *		  data;
+	char mntto[PATH_MAX];
+	void *data;
 } cdfs_fs_info_t;
 
 typedef struct cdfs_file_info {
-	int		flags;
+	int flags;
 	off64_t pos;
-	int		extent;
-	int		size;
-	time_t	date;
+	int extent;
+	int size;
+	time_t date;
 } cdfs_file_info_t;
 
 #endif /* ISO9660_H_ */

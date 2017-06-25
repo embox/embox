@@ -10,9 +10,9 @@
 
 #ifndef __cplusplus
 #ifdef __WCHAR_TYPE__
-typedef __WCHAR_TYPE__ wchar_t;
+ typedef __WCHAR_TYPE__ wchar_t;
 #else
-typedef int wchar_t;
+ typedef int wchar_t;
 #endif /*__wchar_t_defined */
 #endif /* __cplusplus */
 

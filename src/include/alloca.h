@@ -10,6 +10,6 @@
 
 #include <stddef.h> /* size_t in standard library */
 
-extern void *alloca(size_t size);
+extern void * alloca(size_t size);
 
 #endif /* ALLOCA_H_ */

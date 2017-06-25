@@ -23,7 +23,7 @@ static char *nentry_aliases[MODOPS_MAX_ALIASES_NUM + 1]; /* for null-termanated 
 static size_t nentry_aliases_sz;
 static char nentry_aliases_storage[MODOPS_MAX_ALIASES_NUM][MODOPS_MAX_NAME_LEN];
 
-struct netent *netent_create(void) {
+struct netent * netent_create(void) {
 	memset(&nentry_storage, 0, sizeof nentry_storage);
 	nentry_storage.n_aliases = &nentry_aliases[0];
 	nentry_aliases[0] = NULL;

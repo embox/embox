@@ -173,6 +173,7 @@ void usb_endp_free(struct usb_endp *endp) {
 	pool_free(&usb_endps, endp);
 }
 
+
 static struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 	struct usb_hcd *hcd = endp->dev->hcd;
 	struct usb_request *req;
@@ -219,3 +220,4 @@ void usb_request_free(struct usb_request *req) {
 
 	pool_free(&usb_requests, req);
 }
+

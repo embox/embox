@@ -46,10 +46,10 @@
 /* Spread arrays implementation-private entries are named as follows
  * to prevent namespace pollution. */
 #define __ARRAY_SPREAD_PRIVATE(array_nm, private_nm) \
-	__array_spread__ ## array_nm ## __ ## private_nm
+	__array_spread__##array_nm##__##private_nm
 
 #define __ARRAY_SPREAD_PRIVATE_DEF(type, array_nm, private_nm, \
-			section_order_tag) \
+		section_order_tag) \
 	__ARRAY_SPREAD_ENTRY_DEF(type, array_nm,              \
 			__ARRAY_SPREAD_PRIVATE(array_nm, private_nm), \
 			section_order_tag)
@@ -66,14 +66,14 @@
  *  - second time - to add necessary attributes (alignment in particular). */
 #define __ARRAY_SPREAD_DEF_TERMINATED(element_t, array_nm, terminator) \
 	element_t volatile array_nm[] __attribute__ ((used,          \
-	        /* Some versions of GCC do not take into an account section    \
-	         * attribute if it appears after the definition. */        \
+		/* Some versions of GCC do not take into an account section    \
+		 * attribute if it appears after the definition. */            \
 			section(__ARRAY_SPREAD_SECTION(array_nm, "0_head")))) =    \
-	{ /* Empty anchor to the array head. */ };                     \
+		{ /* Empty anchor to the array head. */ };                     \
 	__ARRAY_SPREAD_PRIVATE_DEF(element_t, array_nm, term, "8_term") =  \
-	{ terminator /* Terminating element (if any). */ };            \
+		{ terminator /* Terminating element (if any). */ };            \
 	__ARRAY_SPREAD_PRIVATE_DEF(element_t, array_nm, tail, "9_tail") =  \
-	{ /* Empty anchor at the very end of the array. */ }
+		{ /* Empty anchor at the very end of the array. */ }
 
 #define __ARRAY_SPREAD_DEF(element_t, array_nm) \
 	__ARRAY_SPREAD_DEF_TERMINATED(element_t, array_nm, /* empty */)
@@ -87,7 +87,7 @@
 
 #define __ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm, ptr_nm, order, ...) \
 	__ARRAY_SPREAD_ENTRY_DEF(static typeof(array_nm[0]), array_nm, \
-			ptr_nm, "1_body" #order) = { __VA_ARGS__ }
+		ptr_nm, "1_body" #order) = { __VA_ARGS__ }
 
 #define __ARRAY_SPREAD_ADD_NAMED(array_nm, ptr_nm, ...) \
 	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm, ptr_nm, , __VA_ARGS__)
@@ -97,25 +97,25 @@
 
 #define __ARRAY_SPREAD_ADD(array_nm, ...) \
 	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm,                  \
-			__ARRAY_SPREAD_GUARD(array_nm),                        \
-			, __VA_ARGS__)
+		__ARRAY_SPREAD_GUARD(array_nm),                        \
+		, __VA_ARGS__)
 
 #define __ARRAY_SPREAD_ADD_ORDERED(array_nm, order, ...) \
 	__ARRAY_SPREAD_ADD_NAMED_ORDERED(array_nm,                  \
-			__ARRAY_SPREAD_GUARD(array_nm),                        \
-			order, __VA_ARGS__)
+		__ARRAY_SPREAD_GUARD(array_nm),                        \
+		order, __VA_ARGS__)
 
 /* Spread size calculations. */
 
 #define __ARRAY_SPREAD_SIZE(array_nm) \
-	__ARRAY_SPREAD_SIZE_MARKER(array_nm, tail)
+		__ARRAY_SPREAD_SIZE_MARKER(array_nm, tail)
 
 #define __ARRAY_SPREAD_SIZE_IGNORE_TERMINATING(array_nm) \
-	__ARRAY_SPREAD_SIZE_MARKER(array_nm, term)
+		__ARRAY_SPREAD_SIZE_MARKER(array_nm, term)
 
 #define __ARRAY_SPREAD_SIZE_MARKER(array_nm, marker) \
 	({ \
-		extern typeof(array_nm)__ARRAY_SPREAD_PRIVATE(array_nm, marker); \
+		extern typeof(array_nm) __ARRAY_SPREAD_PRIVATE(array_nm, marker); \
 		(size_t) (__ARRAY_SPREAD_PRIVATE(array_nm, marker) - array_nm);   \
 	})
 
@@ -155,8 +155,8 @@
 			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_range_foreach_ptr_nm(element_ptr, array_begin, array_end, \
-			_ptr, _end) \
-	for (typeof(element_ptr)_ptr = (array_begin), _end = (array_end); \
+		_ptr, _end) \
+	for (typeof(element_ptr) _ptr = (array_begin), _end = (array_end); \
 			(_ptr < _end) && ((element_ptr) = _ptr); ++_ptr)
 
 /* Spread array iterators. */
@@ -167,7 +167,7 @@
 
 #define __array_spread_foreach_nm(element, array, size, _ptr)    \
 	for (typeof(element) volatile const *_ptr = (array),         \
-			*_end = _ptr + (size);                           \
+				*_end = _ptr + (size);                           \
 			(_ptr < _end) && (((element) = *_ptr) || 1); ++_ptr)
 
 #define __array_spread_foreach_ptr(element_ptr, array)     \
@@ -176,9 +176,9 @@
 			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
 #define __array_spread_foreach_ptr_nm(element_ptr, array_begin,           \
-			array_end, _ptr, _end)                                            \
+		array_end, _ptr, _end)                                            \
 	for (typeof(*element_ptr) volatile const *_ptr = (array_begin),       \
-			*_end = (array_end);                                      \
+				*_end = (array_end);                                      \
 			(_ptr < _end) && ((element_ptr) = (typeof(element_ptr))_ptr); \
 			++_ptr)
 
@@ -190,6 +190,7 @@
 	for (typeof(element) volatile const *_ptr = (array);         \
 			((element) = *_ptr); ++_ptr)
 
+
 /* Help Eclipse CDT. */
 #ifdef __CDT_PARSER__
 
@@ -199,7 +200,7 @@
 
 # undef  __ARRAY_SPREAD_ADD
 # define __ARRAY_SPREAD_ADD(array_nm, ...) \
-	typedef typeof (array_nm[0]) __array_spread_element_placeholder
+	typedef typeof(array_nm[0]) __array_spread_element_placeholder
 
 # undef  __ARRAY_SPREAD_ADD_NAMED
 # define __ARRAY_SPREAD_ADD_NAMED(array_nm, ptr_nm, ...) \

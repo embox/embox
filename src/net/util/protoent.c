@@ -23,7 +23,7 @@ static char *pentry_aliases[MODOPS_MAX_ALIASES_NUM + 1]; /* for null-termanated 
 static size_t pentry_aliases_sz;
 static char pentry_aliases_storage[MODOPS_MAX_ALIASES_NUM][MODOPS_MAX_NAME_LEN];
 
-struct protoent *protoent_create(void) {
+struct protoent * protoent_create(void) {
 	memset(&pentry_storage, 0, sizeof pentry_storage);
 	pentry_storage.p_aliases = &pentry_aliases[0];
 	pentry_aliases[0] = NULL;

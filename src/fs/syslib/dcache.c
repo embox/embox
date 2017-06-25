@@ -27,8 +27,8 @@ struct dkey {
 };
 
 struct dvalue {
-	struct dkey		  key;
-	struct dentry	  dentry;
+	struct dkey key;
+	struct dentry dentry;
 	struct dlist_head link;
 };
 
@@ -38,7 +38,7 @@ POOL_DEF(ht_item_pool, struct hashtable_item, DCACHE_SIZE);
 static size_t dcache_hash(void *key);
 static int dcache_cmp(void *key1, void *key2);
 
-HASHTABLE_DEF(dcache_ht, DCACHE_TABLE_SIZE, &dcache_hash, &dcache_cmp);
+HASHTABLE_DEF(dcache_ht, DCACHE_TABLE_SIZE,	&dcache_hash, &dcache_cmp);
 
 static struct hashtable *dcache_table = &dcache_ht;
 static struct dlist_head values;
@@ -129,6 +129,7 @@ int dcache_add(const char *prefix, const char *rest, struct dentry *dentry) {
 	struct dvalue *dvalue;
 	int res;
 
+
 	if (!dentry) {
 		return -EINVAL;
 	}
@@ -142,10 +143,10 @@ int dcache_add(const char *prefix, const char *rest, struct dentry *dentry) {
 	}
 
 	if (NULL == dcache_table) {
-		res = dcache_lazy_init();
-		if (res != 0) {
-			return res;
-		}
+		 res = dcache_lazy_init();
+		 if (res != 0) {
+			 return res;
+		 }
 	}
 
 	if (NULL == (dvalue = pool_alloc(&dcache_dentry_pool))) {
@@ -188,10 +189,10 @@ struct dentry *dcache_get(const char *prefix, const char *rest) {
 		return NULL;
 	}
 	if (NULL == dcache_table) {
-		res = dcache_lazy_init();
-		if (res != 0) {
-			return NULL;
-		}
+		 res = dcache_lazy_init();
+		 if (res != 0) {
+			 return NULL;
+		 }
 	}
 
 	compound_dentry(dkey.fullpath, pref_tmp, rest);
@@ -207,3 +208,4 @@ static int dcache_init(void) {
 
 	return 0;
 }
+

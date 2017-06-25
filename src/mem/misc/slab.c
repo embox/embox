@@ -43,7 +43,7 @@ typedef struct slab {
 /* some information about page  */
 typedef struct page_info {
 	cache_t *cache;
-	slab_t * slab;
+	slab_t *slab;
 } page_info_t;
 
 static struct page_allocator *slab_pa;
@@ -79,7 +79,7 @@ void print_slab_info(cache_t *cachep, slab_t *slabp) {
 #endif
 
 /* return information about page which an object belongs to */
-static page_info_t *ptr_to_page(void *objp) {
+static page_info_t* ptr_to_page(void *objp) {
 	unsigned int index = ((unsigned int) objp - (unsigned int) heap_start_ptr)
 			/ PAGE_SIZE();
 	return &(pages[index]);
@@ -89,8 +89,8 @@ static page_info_t *ptr_to_page(void *objp) {
 cache_t cache_chain = {
 	.name = "__cache_chain",
 	.num  = (PAGE_SIZE() * CACHE_CHAIN_SIZE
-		- binalign_bound(sizeof(slab_t), 4))
-		/ binalign_bound(sizeof(cache_t), 4),
+				- binalign_bound(sizeof(slab_t), 4))
+				/ binalign_bound(sizeof(cache_t), 4),
 	.obj_size = binalign_bound(sizeof(cache_t), sizeof(struct slist_link)),
 	.slabs_full = DLIST_INIT(cache_chain.slabs_full),
 	.slabs_free = DLIST_INIT(cache_chain.slabs_free),
@@ -122,7 +122,7 @@ static void cache_slab_destroy(cache_t *cachep, slab_t *slabp) {
 
 /* init slab descriptor and slab objects */
 static void cache_slab_init(cache_t *cachep, slab_t *slabp) {
-	char *elem = (char *) slabp + binalign_bound(sizeof(slab_t), 4);
+	char *elem = (char*) slabp + binalign_bound(sizeof(slab_t), 4);
 
 	slabp->inuse = 0;
 	dlist_head_init(&slabp->cache_link);
@@ -139,12 +139,11 @@ static void cache_slab_init(cache_t *cachep, slab_t *slabp) {
 static int cache_grow(cache_t *cachep) {
 	int pages_count;
 	page_info_t *page;
-	slab_t *slabp;
+	slab_t * slabp;
 	size_t slab_size = 1 << cachep->slab_order;
 
-	if (!(slabp = (slab_t *) page_alloc(slab_pa, slab_size))) {
+	if (!(slabp = (slab_t*) page_alloc(slab_pa, slab_size)))
 		return 0;
-	}
 
 	page = ptr_to_page(slabp);
 	pages_count = slab_size;
@@ -182,9 +181,8 @@ static void cache_estimate(unsigned int gfporder, size_t size,
 	count = 0;
 	while (count * size + binalign_bound(base, 4) <= wastage)
 		count++;
-	if (count > 0) {
+	if (count > 0)
 		count--;
-	}
 
 	/* return number objects that fit, and total space wasted */
 	*num = count;
@@ -205,9 +203,8 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 		cache_estimate(cachep->slab_order, cachep->obj_size, &left_over,
 				&cachep->num);
 
-		if (cachep->slab_order >= MAX_SLAB_ORDER) { /* order == 3, 8 pages */
+		if (cachep->slab_order >= MAX_SLAB_ORDER) /* order == 3, 8 pages */
 			break;
-		}
 
 		if (!cachep->num) { /* we could not fit any objects on slab */
 			cachep->slab_order++;
@@ -217,10 +214,9 @@ int cache_init(cache_t *cachep, size_t obj_size, size_t obj_num) {
 		/* We want that wastage was lower than
 		 * (1 / MAX_INT_FRAGM_ORDER) * 100% */
 		if (left_over * MAX_INT_FRAGM_ORDER <= PAGE_SIZE()
-				<< cachep->slab_order) {
+				<< cachep->slab_order)
 			break; /* Acceptable internal fragmentation. */
 
-		}
 		cachep->slab_order++;
 	} while (1);
 
@@ -260,9 +256,8 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 	cache_t *cachep;
 
 	if (!name || strlen(name) >= __CACHE_NAMELEN - 1 || obj_size <= 0
-			|| obj_size >= PAGE_SIZE() << MAX_OBJ_ORDER) {
+			|| obj_size >= PAGE_SIZE() << MAX_OBJ_ORDER)
 		return NULL;
-	}
 
 	if (!(cachep = (cache_t *) cache_alloc(&cache_chain))) {
 		return NULL;
@@ -281,9 +276,8 @@ cache_t *cache_create(char *name, size_t obj_size, size_t obj_num) {
 static void destroy_slabs(cache_t *cachep, struct dlist_head *slabs) {
 	slab_t *slabp;
 
-	if (dlist_empty(slabs)) {
+	if (dlist_empty(slabs))
 		return;
-	}
 	/* remove this slab from the list */
 	dlist_foreach_entry(slabp, slabs, cache_link) {
 		dlist_del(&slabp->cache_link);
@@ -305,7 +299,7 @@ int cache_destroy(cache_t *cachep) {
 }
 
 void *cache_alloc(cache_t *cachep) {
-	slab_t *slabp;
+	slab_t * slabp;
 	void *objp;
 
 	assert(cachep);
@@ -341,15 +335,14 @@ void *cache_alloc(cache_t *cachep) {
 	return objp;
 }
 
-void cache_free(cache_t *cachep, void *objp) {
-	slab_t *slabp;
-	page_info_t *page;
+void cache_free(cache_t *cachep, void* objp) {
+	slab_t * slabp;
+	page_info_t* page;
 
 	assert(cachep);
 
-	if (objp == NULL) {
+	if (objp == NULL)
 		return;
-	}
 
 	page = ptr_to_page(objp);
 	slabp = GET_PAGE_SLAB(page);
@@ -372,7 +365,7 @@ void cache_free(cache_t *cachep, void *objp) {
 }
 
 int cache_shrink(cache_t *cachep) {
-	slab_t *slabp;
+	slab_t * slabp;
 	int ret = 0;
 
 	assert(cachep);

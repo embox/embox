@@ -24,13 +24,13 @@ static_assert(STACK_SZ > sizeof(struct thread));
 
 typedef union thread_pool_entry {
 	struct thread thread;
-	char		  stack[STACK_SZ];
+	char stack[STACK_SZ];
 } thread_pool_entry_t;
 
 #ifdef STACK_PROTECT_MMU
 #include <mem/vmem.h>
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
-		__attribute__ ((aligned(VMEM_PAGE_SIZE))));
+    __attribute__ ((aligned (VMEM_PAGE_SIZE))));
 #else
 POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
 #endif
@@ -48,7 +48,7 @@ struct thread *thread_alloc(void) {
 
 	thread_stack_init(t, STACK_SZ);
 
-	stack_protect(t, STACK_SZ);
+    stack_protect(t, STACK_SZ);
 
 	return t;
 }
@@ -58,10 +58,10 @@ void thread_free(struct thread *t) {
 
 	assert(t != NULL);
 
-	/* TODO may be this is not the best way... -- Eldar */
+	// TODO may be this is not the best way... -- Eldar
 	block = member_cast_out(t, thread_pool_entry_t, thread);
 
-	stack_protect_release(t);
+    stack_protect_release(t);
 
 	memset(block, 0xa5, sizeof(*block));
 

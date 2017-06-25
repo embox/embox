@@ -16,7 +16,7 @@
 
 #define LAST_IN_PATH         0x01
 
-/*XXX */
+//XXX
 #include <fs/mount.h>
 
 extern void if_mounted_follow_down(struct path *path);
@@ -40,7 +40,7 @@ extern void vfs_get_leaf_path(struct path *path);
  * @return negative on error
  */
 extern int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
-		size_t plen);
+	size_t plen);
 
 extern int vfs_add_leaf(node_t *child, node_t *parent);
 
@@ -105,6 +105,7 @@ static inline int vfs_get_path_till_root(struct path *node, struct path *root, c
 	return vfs_get_pathbynode_tilln(node, root, path, pathlen);
 }
 
+
 /**
  * @brief Get path of node in system vfs tree.
  *
@@ -138,5 +139,6 @@ extern struct node *vfs_subtree_create(struct node *parent, const char *path, mo
 extern struct node *vfs_subtree_create_intermediate(struct node *parent, const char *path, mode_t mode);
 
 extern node_t *vfs_subtree_get_parent(node_t *node);
+
 
 #endif /* FS_VFS_H_ */

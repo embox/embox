@@ -29,7 +29,7 @@ static inline void traps_status_save(uint32_t *status) {
 
 static inline void traps_status_restore(uint32_t *status) {
 	(*status & MSR_EE_MASK) ? msr_set_ee() :
-	msr_clr_ee();
+				    msr_clr_ee();
 }
 
 void traps_save_env(traps_env_t *env) {

@@ -15,14 +15,15 @@ void  syslog(int prio, const char *format, ...) {
 void openlog(const char *ident, int option, int facility) {
 }
 
+
 int dn_expand(unsigned char *msg, unsigned char *eomorig,
-		unsigned char *comp_dn, char *exp_dn,
-		int length) {
+              unsigned char *comp_dn, char *exp_dn,
+              int length) {
 	return -1;
 }
 
 int res_query(const char *dname, int class, int type,
-		unsigned char *answer, int anslen) {
+              unsigned char *answer, int anslen) {
 	return -1;
 }
 
@@ -37,6 +38,7 @@ unsigned int alarm(unsigned int seconds) {
 	return 0;
 }
 
+
 #include <dirent.h>
 void seekdir(DIR *dirp, long offset) {
 }
@@ -45,6 +47,7 @@ long telldir(DIR *dirp) {
 	errno = EPERM;
 	return -1;
 }
+
 
 void setgrent(void) {
 }
@@ -63,6 +66,7 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 
 void atexit(void *addr) {
 }
+
 
 int fork(void) {
 	return -1;

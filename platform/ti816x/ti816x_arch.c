@@ -21,5 +21,5 @@ void arch_shutdown(arch_shutdown_mode_t mode) {
 	if (mode == ARCH_SHUTDOWN_MODE_REBOOT) {
 		REG_STORE(0x481800a0, 0x2);
 	}
-	while (1) ;
+	while (1);
 }

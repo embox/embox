@@ -40,14 +40,14 @@ int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_
 	if (!sdev->attached) {
 		return -ENODEV;
 	}
-	if (scmd->scmd_opcode == 0x2a) {
+	if(scmd->scmd_opcode == 0x2a) {
 		usb_dir = USB_DIRECTION_OUT;
 	} else {
 		usb_dir = USB_DIRECTION_IN;
 	}
 
 	return usb_ms_transfer(mass->usb_dev, cmd, cmd_len, usb_dir, data, data_len,
-				   usb_scsi_notify);
+			usb_scsi_notify);
 }
 
 #define SCSI_CMD_LEN 16
@@ -63,7 +63,7 @@ int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd) {
 	}
 
 	return scsi_cmd(dev, scmd, cmd->scmd_len, cmd->scmd_obuf,
-				   cmd->scmd_olen);
+			cmd->scmd_olen);
 }
 
 static void scsi_fixup_inquiry(void *buf, struct scsi_dev *dev,
@@ -137,13 +137,11 @@ void scsi_state_transit(struct scsi_dev *dev,
 		const struct scsi_dev_state *to) {
 	const struct scsi_dev_state *from = dev->state;
 
-	if (from && from->sds_leave) {
+	if (from && from->sds_leave)
 		from->sds_leave(dev);
-	}
 
-	if (to->sds_enter) {
+	if (to->sds_enter)
 		to->sds_enter(dev);
-	}
 
 	dev->state = to;
 }

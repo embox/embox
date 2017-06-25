@@ -16,13 +16,13 @@
 #define DIGITAL_IDX    1
 #define CHARACTER_IDX  2
 
-static char block_dev_check_type_name(char *p) {
+static char block_dev_check_type_name (char *p) {
 	if (*p == '#') {
 		return DIGITAL_IDX;
 	} else if (*p == '*') {
 		return CHARACTER_IDX;
 	} else {
-		/* specifies the full name of the device */
+	/* specifies the full name of the device */
 		return WHOLE_NAME;
 	}
 }
@@ -32,12 +32,12 @@ static void block_dev_select_name(char *name, int idx) {
 
 	p = name;
 	if (*p) {
-		p += strlen(p+1);
+	    p += strlen(p+1);
 	} else {
 		return;
 	}
 
-	switch (block_dev_check_type_name(p)) {
+	switch (block_dev_check_type_name (p)) {
 	case WHOLE_NAME:
 		break;
 
@@ -64,3 +64,4 @@ int block_dev_named(char *name, struct indexator *indexator) {
 
 	return (int)idx;
 }
+

@@ -21,8 +21,8 @@
  * @param buflen @a buf length
  *
  * @return
- *  NULL on error
- *  pointer to user entered password
+ * 	NULL on error
+ * 	pointer to user entered password
  */
 char *getpass_r(const char *prompt, char *buf, size_t buflen) {
 	size_t pass_len;
@@ -60,7 +60,7 @@ char *getpass_r(const char *prompt, char *buf, size_t buflen) {
 
 	if (buf[pass_len - 1] != '\n') {
 		return NULL; /* error: no newline at the end of line.
-		                password is too long or EOF is encountered */
+						password is too long or EOF is encountered */
 	}
 
 	buf[pass_len - 1] = '\0';
@@ -69,7 +69,7 @@ char *getpass_r(const char *prompt, char *buf, size_t buflen) {
 	return buf;
 }
 
-char *getpass(const char *prompt) {
+char * getpass(const char *prompt) {
 	static char pass[PASS_MAX + 2]; /* for \n\0 */
 	return getpass_r(prompt, pass, sizeof(pass));
 }

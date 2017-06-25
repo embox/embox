@@ -53,9 +53,7 @@ int main(int argc, char **argv) {
 	int test_nr = -1;
 	int opt;
 	/* TODO it must be agreed with shell maximum command length */
-	char test_name[100] = {
-		0
-	};
+	char test_name[100] = { 0 };
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hn:t:i"))) {
@@ -77,7 +75,7 @@ int main(int argc, char **argv) {
 		case '?':
 		case 'h':
 			print_usage();
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}

@@ -13,3 +13,4 @@
 extern uint16_t crc16(uint16_t crc, uint8_t const *buffer, size_t len);
 
 #endif /* LIB_CRC16_H_ */
+

@@ -68,14 +68,13 @@ static void show_mount_list(void) {
 
 	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
 		if (d->flags & DVFS_MOUNT_POINT) {
-			if (dentry_full_path(d, mount_path)) {
+			if (dentry_full_path(d, mount_path))
 				continue;
-			}
 
 			printf("%s on %s type %s\n",
-					d->d_sb->fs_drv->name,
-					mount_path,
-					d->d_sb->fs_drv->name);
+			d->d_sb->fs_drv->name,
+			mount_path,
+			d->d_sb->fs_drv->name);
 		}
 	}
 }
@@ -100,7 +99,7 @@ int main(int argc, char **argv) {
 			break;
 		case 'h':
 			print_usage();
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}
@@ -124,7 +123,7 @@ int main(int argc, char **argv) {
 			return 0;
 		}
 
-		if (0 > mount(dev, dir, fs_type)) {
+		if(0 > mount(dev, dir, fs_type)) {
 			return -errno;
 		}
 		return 0;

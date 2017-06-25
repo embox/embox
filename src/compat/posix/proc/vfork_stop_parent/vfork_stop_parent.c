@@ -59,7 +59,7 @@ static void vfork_waiting(void) {
 
 		task_start(child, vfork_child_task, &task_vfork->ptregs);
 
-		while (SCHED_WAIT(!task_is_vforking(parent))) ;
+		while (SCHED_WAIT(!task_is_vforking(parent)));
 	}
 	vfork_wait_signal_restore(&ochildsa);
 
@@ -108,3 +108,4 @@ void vfork_child_done(struct task *child, void * (*run)(void *), void *arg) {
 		run(arg);
 	}
 }
+

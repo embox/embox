@@ -50,10 +50,10 @@ int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
 	size_t len = mmu_size_align(marea->end - marea->start);
 
 	return vmem_map_region(mmap->ctx,
-				   marea->start,
-				   marea->start,
-				   len,
-				   marea_to_vmem_flags(marea->flags));
+			marea->start,
+			marea->start,
+			len,
+			marea_to_vmem_flags(marea->flags));
 }
 
 void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
@@ -171,7 +171,7 @@ struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) 
 
 		marea = dlist_entry(item, struct marea, mmap_link);
 		s_ptr = MAREA_ALIGN_UP(marea->end);
-	} while (1);
+	} while(1);
 
 	return NULL;
 }

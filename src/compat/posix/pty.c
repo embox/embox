@@ -11,7 +11,7 @@
 extern int ppty(int pptyfds[2]);
 
 int openpty(int *amaster, int *aslave, char *name, const struct termios *termp,
-		const struct winsize *winp) {
+	       	const struct winsize *winp) {
 	int fds[2];
 	int ret;
 

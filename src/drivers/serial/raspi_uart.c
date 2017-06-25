@@ -39,10 +39,12 @@
 #define UART0_IMSC   UART0_OFFSET + 0x38 /* Interrupt Mask Set Clear Register */
 #define UART0_ICR    UART0_OFFSET + 0x44 /* Interrupt Clear Register */
 
+
 static void delay(int32_t count) {
 	while (count--)
 		;
 }
+
 
 static int raspi_diag_setup(const struct diag *diag) {
 	/* Disable UART0. */
@@ -70,7 +72,7 @@ static int raspi_diag_setup(const struct diag *diag) {
 
 	/* Mask all interrupts. */
 	REG_STORE(UART0_IMSC, (1 << 1) | (1 << 4) | (1 << 5) | (1 << 6) |
-			(1 << 7) | (1 << 8) | (1 << 9) | (1 << 10));
+						  (1 << 7) | (1 << 8) | (1 << 9) | (1 << 10));
 
 	/* Enable UART0, receive & transfer part of UART. */
 	REG_STORE(UART0_CR, (1 << 0) | (1 << 8) | (1 << 9));
@@ -93,8 +95,8 @@ static int raspi_diag_hasrx(const struct diag *diag) {
 }
 
 DIAG_OPS_DECLARE(
-	.init = raspi_diag_setup,
-	.putc = raspi_diag_putc,
-	.getc = raspi_diag_getc,
-	.kbhit = raspi_diag_hasrx,
+		.init = raspi_diag_setup,
+		.putc = raspi_diag_putc,
+		.getc = raspi_diag_getc,
+		.kbhit = raspi_diag_hasrx,
 );

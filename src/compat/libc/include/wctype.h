@@ -37,16 +37,14 @@ WCFUNC(xdigit);
 #undef WCFUNC
 
 static inline wint_t towlower(wint_t wc) {
-	if (wc == WEOF) {
+	if (wc == WEOF)
 		return WEOF;
-	}
 	return (wc < (wint_t)0x100 ? tolower(wc) : wc);
 }
 
 static inline wint_t towupper(wint_t wc) {
-	if (wc == WEOF) {
+	if (wc == WEOF)
 		return WEOF;
-	}
 	return (wc < (wint_t)0x100 ? toupper(wc) : wc);
 }
 

@@ -20,7 +20,7 @@ struct net_device;
  * structute of inet(IP) device
  */
 typedef struct in_device {
-	struct dlist_head  lnk;
+	struct dlist_head lnk;
 	struct net_device *dev;
 
 	in_addr_t ifa_address;
@@ -40,26 +40,26 @@ extern int inetdev_unregister_dev(struct net_device *dev);
  * Get inet_devive by name
  * @param if_name - interface name
  */
-extern struct in_device *inetdev_get_by_name(const char *name);
+extern struct in_device * inetdev_get_by_name(const char *name);
 
 /**
  * get pointer on in_device struct linked with pointed net_device
  * @param dev
  * @return pointer on in_device struct, NULL if error
  */
-extern struct in_device *inetdev_get_by_dev(struct net_device *dev);
+extern struct in_device * inetdev_get_by_dev(struct net_device *dev);
 
 /**
  * find known netdev device has pointed ip address
  * @param ipaddr - ip devices address
  */
-extern struct in_device *inetdev_get_by_addr(in_addr_t addr);
+extern struct in_device * inetdev_get_by_addr(in_addr_t addr);
 
 /**
  * Get loopback device. Probably temporarily needed
  * @return pointer to the loopback device
  */
-extern struct in_device *inetdev_get_loopback_dev(void);
+extern struct in_device * inetdev_get_loopback_dev(void);
 
 /**
  * Set IP address (sw)
@@ -86,8 +86,8 @@ extern int inetdev_set_bcast(struct in_device *in_dev, in_addr_t bcast);
 extern in_addr_t inetdev_get_addr(struct in_device *in_dev);
 
 /* iterator functions */
-extern struct in_device *inetdev_get_first(void);
-extern struct in_device *inetdev_get_next(struct in_device *in_dev);
+extern struct in_device * inetdev_get_first(void);
+extern struct in_device * inetdev_get_next(struct in_device *in_dev);
 
 /**
  * generate new id for requiered interface

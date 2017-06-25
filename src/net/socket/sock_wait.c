@@ -22,8 +22,8 @@ int sock_wait(struct sock *sk, int flags, int timeout) {
 	}
 
 	return IDESC_WAIT_LOCKED(sched_unlock(),
-				   &sk->idesc, &wl, flags, timeout,
-				   sched_lock());
+			&sk->idesc, &wl, flags, timeout,
+			sched_lock());
 }
 
 void sock_notify(struct sock *sk, int flags) {

@@ -36,12 +36,12 @@ static void pnet_pack_free(struct pnet_pack *pack) {
 static struct pnet_pack *pnet_pack_alloc(void *data, size_t len) {
 	struct pnet_pack *pack;
 
-	if (NULL == (pack = objalloc(&net_packs))) {
+	if(NULL == (pack = objalloc(&net_packs))) {
 		return NULL;
 	}
 
-	if (NULL == data) {
-		if (NULL == (pack->data = skb_alloc(len))) {
+	if(NULL == data) {
+		if(NULL == (pack->data = skb_alloc(len))) {
 			pnet_pack_free(pack);
 			return NULL;
 		}

@@ -35,8 +35,8 @@ static int tbp_cmp(const void *fst, const void *snd) {
 	struct __trace_block *a, *b;
 	a = *((struct __trace_block **)fst);
 	b = *((struct __trace_block **)snd);
-	return (int) ((a->time < b->time) -
-		   (b->time < a->time));
+	return (int) (	(a->time < b->time) -
+					(b->time < a->time));
 }
 
 static void print_instrument_trace_block_stat(int amount) {
@@ -47,13 +47,11 @@ static void print_instrument_trace_block_stat(int amount) {
 	const struct symbol *s;
 	struct __trace_block *table[TABLE_SIZE];
 	int counter = 0, l, i;
-	char *buff = (char *) malloc(sizeof(char) * 256);
-	if (tb) {
-		do {
-			table[counter++] = tb;
-			tb = auto_profile_tb_next(tb);
-		} while (tb);
-	}
+	char *buff = (char*) malloc (sizeof(char) * 256);
+	if (tb) do {
+		table[counter++] = tb;
+		tb = auto_profile_tb_next(tb);
+	} while (tb);
 
 	qsort(table, counter, sizeof(struct trace_block *), tbp_cmp);
 
@@ -82,7 +80,7 @@ static void print_instrument_trace_block_stat(int amount) {
 		} else {
 			printf("%40s ", buff);
 		}
-		/*printf("%10lld %20llu %20llu %15.9Lf\n", tb->count, tb->time, tb->max_time, (long double) tb->time / ((long double)get_current_tb_resolution() * (long double) tb->count)); */
+		//printf("%10lld %20llu %20llu %15.9Lf\n", tb->count, tb->time, tb->max_time, (long double) tb->time / ((long double)get_current_tb_resolution() * (long double) tb->count));
 		printf("%10lld %20llu %20llu %15llu\n", tb->count, tb->time, tb->max_time, tb->time / tb->count);
 	}
 	free(buff);
@@ -98,8 +96,8 @@ static void print_trace_block_stat(void) {
 	{
 		if (tb->active) {
 			printf("%2d %15s %12lld %20llu %10Lfs\n", number, tb->name,
-					tb->count, tb->time, (long double) 1.0 * tb->time / 1000000000);
-			/* Converting from nanoseconds to seconds */
+				tb->count, tb->time, (long double) 1.0 * tb->time / 1000000000);
+				/* Converting from nanoseconds to seconds */
 		}
 		number++;
 	}
@@ -116,8 +114,8 @@ static void print_entered_blocks(void) {
 	array_spread_nullterm_foreach(tb, __trace_blocks_array)
 	{
 		if (tb->is_entered) {
-			printf("Trace block:%25s\nLocation:%28s, %40s:%d\n\n", tb->name, tb->location.func,
-					tb->location.at.file, tb->location.at.line);
+			printf("Trace block:%25s\nLocation:%28s, %40s:%d\n\n" , tb->name, tb->location.func,
+				tb->location.at.file, tb->location.at.line);
 		}
 		number++;
 	}
@@ -175,7 +173,7 @@ int main(int argc, char **argv) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
 			break;

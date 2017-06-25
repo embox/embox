@@ -13,6 +13,7 @@
 
 #include <kernel/sched/schedee_priority.h>
 
+
 struct runq_queue {
 	struct dlist_head list[SCHED_PRIORITY_TOTAL];
 };

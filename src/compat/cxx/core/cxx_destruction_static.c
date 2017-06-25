@@ -13,7 +13,7 @@
 #define TABLE_SIZE OPTION_GET(NUMBER,table_size)
 
 struct atexit_func_entry {
-	void  (*destructor_func)(void *);
+	void (*destructor_func)(void *);
 	void *obj_ptr;
 	void *dso_handle;
 };
@@ -28,7 +28,7 @@ int __cxa_atexit(void (*f)(void *), void *objptr, void *dso)
 {
 	if (__atexit_func_count >= TABLE_SIZE) {
 		printf("__cxa_atexit: static destruction table overflow.\n");
-		/* FIXME: assert(false); */
+		// FIXME: assert(false);
 		return -1;
 	};
 	__atexit_funcs[__atexit_func_count].destructor_func = f;
@@ -54,7 +54,7 @@ void __cxa_finalize(void *f) {
 		return;
 	};
 
-	for (; i >= 0; --i)
+	for ( ; i >= 0; --i)
 	{
 		if (__atexit_funcs[i].destructor_func == f)
 		{

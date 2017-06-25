@@ -1,8 +1,8 @@
 /******************************************************************************
  * xen.h
- *
+ * 
  * Guest OS interface to Xen.
- *
+ * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
  * deal in the Software without restriction, including without limitation the
@@ -137,11 +137,11 @@ DEFINE_XEN_GUEST_HANDLE(xen_ulong_t);
 #define __HYPERVISOR_dom0_op __HYPERVISOR_platform_op
 #endif
 
-/*
+/* 
  * VIRTUAL INTERRUPTS
- *
+ * 
  * Virtual interrupts that a guest OS may receive from Xen.
- *
+ * 
  * In the side comments, 'V.' denotes a per-VCPU VIRQ while 'G.' denotes a
  * global VIRQ. The former can be bound once per VCPU and cannot be re-bound.
  * The latter can be allocated only once per guest: they must initially be
@@ -190,7 +190,7 @@ DEFINE_XEN_GUEST_HANDLE(xen_ulong_t);
  *                     (x) encodes the PFD as follows:
  *                     x == 0 => PFD == DOMID_SELF
  *                     x != 0 => PFD == x - 1
- *
+ * 
  * Sub-commands: ptr[1:0] specifies the appropriate MMU_* command.
  * -------------
  * ptr[1:0] == MMU_NORMAL_PT_UPDATE:
@@ -215,12 +215,12 @@ DEFINE_XEN_GUEST_HANDLE(xen_ulong_t);
  *  2). Keep on going, filling out the upper (PUD or L3), and middle (PMD
  *      or L2).
  *  3). Start filling out the PTE table (L1) with the PTE entries. Once
- *      done, make sure to set each of those entries to RO (so writeable bit
- *      is unset). Once that has been completed, set the PMD (L2) for this
- *      PTE table as RO.
+ *  	done, make sure to set each of those entries to RO (so writeable bit
+ *  	is unset). Once that has been completed, set the PMD (L2) for this
+ *  	PTE table as RO.
  *  4). When completed with all of the PMD (L2) entries, and all of them have
- *      been set to RO, make sure to set RO the PUD (L3). Do the same
- *      operation on PGD (L4) pagetable entries that have a PUD (L3) entry.
+ *  	been set to RO, make sure to set RO the PUD (L3). Do the same
+ *  	operation on PGD (L4) pagetable entries that have a PUD (L3) entry.
  *  5). Now before you can use those pages (so setting the cr3), you MUST also
  *      pin them so that the hypervisor can verify the entries. This is done
  *      via the HYPERVISOR_mmuext_op(MMUEXT_PIN_L4_TABLE, guest physical frame
@@ -236,13 +236,13 @@ DEFINE_XEN_GUEST_HANDLE(xen_ulong_t);
  * To deallocate the pages, the operations are the reverse of the steps
  * mentioned above. The argument is MMUEXT_UNPIN_TABLE for all levels and the
  * pagetable MUST not be in use (meaning that the cr3 is not set to it).
- *
+ * 
  * ptr[1:0] == MMU_MACHPHYS_UPDATE:
  * Updates an entry in the machine->pseudo-physical mapping table.
  * ptr[:2]  -- Machine address within the frame whose mapping to modify.
  *             The frame must belong to the FD, if one is specified.
  * val      -- Value to write into the mapping entry.
- *
+ * 
  * ptr[1:0] == MMU_PT_UPDATE_PRESERVE_AD:
  * As MMU_NORMAL_PT_UPDATE above, but A/D bits currently in the PTE are ORed
  * with those in @val.
@@ -406,26 +406,26 @@ DEFINE_XEN_GUEST_HANDLE(xen_ulong_t);
 
 #ifndef __ASSEMBLY__
 struct mmuext_op {
-	unsigned int cmd; /* => enum mmuext_cmd */
-	union {
-		/* [UN]PIN_TABLE, NEW_BASEPTR, NEW_USER_BASEPTR
-		 * CLEAR_PAGE, COPY_PAGE, [UN]MARK_SUPER */
-		xen_pfn_t mfn;
-		/* INVLPG_LOCAL, INVLPG_ALL, SET_LDT */
-		unsigned long linear_addr;
-	} arg1;
-	union {
-		/* SET_LDT */
-		unsigned int nr_ents;
-		/* TLB_FLUSH_MULTI, INVLPG_MULTI */
+    unsigned int cmd; /* => enum mmuext_cmd */
+    union {
+        /* [UN]PIN_TABLE, NEW_BASEPTR, NEW_USER_BASEPTR
+         * CLEAR_PAGE, COPY_PAGE, [UN]MARK_SUPER */
+        xen_pfn_t     mfn;
+        /* INVLPG_LOCAL, INVLPG_ALL, SET_LDT */
+        unsigned long linear_addr;
+    } arg1;
+    union {
+        /* SET_LDT */
+        unsigned int nr_ents;
+        /* TLB_FLUSH_MULTI, INVLPG_MULTI */
 #if __XEN_INTERFACE_VERSION__ >= 0x00030205
-		XEN_GUEST_HANDLE(const_void) vcpumask;
+        XEN_GUEST_HANDLE(const_void) vcpumask;
 #else
-		const void *vcpumask;
+        const void *vcpumask;
 #endif
-		/* COPY_PAGE */
-		xen_pfn_t src_mfn;
-	} arg2;
+        /* COPY_PAGE */
+        xen_pfn_t src_mfn;
+    } arg2;
 };
 typedef struct mmuext_op mmuext_op_t;
 DEFINE_XEN_GUEST_HANDLE(mmuext_op_t);
@@ -532,8 +532,8 @@ typedef uint16_t domid_t;
  * NB. The fields are natural pointer/address size for this architecture.
  */
 struct mmu_update {
-	uint64_t ptr;       /* Machine address of PTE. */
-	uint64_t val;       /* New contents of PTE.    */
+    uint64_t ptr;       /* Machine address of PTE. */
+    uint64_t val;       /* New contents of PTE.    */
 };
 typedef struct mmu_update mmu_update_t;
 DEFINE_XEN_GUEST_HANDLE(mmu_update_t);
@@ -548,8 +548,8 @@ DEFINE_XEN_GUEST_HANDLE(mmu_update_t);
  * any unused bits in the upper portion must be zero.
  */
 struct multicall_entry {
-	xen_ulong_t op, result;
-	xen_ulong_t args[6];
+    xen_ulong_t op, result;
+    xen_ulong_t args[6];
 };
 typedef struct multicall_entry multicall_entry_t;
 DEFINE_XEN_GUEST_HANDLE(multicall_entry_t);
@@ -563,67 +563,67 @@ DEFINE_XEN_GUEST_HANDLE(multicall_entry_t);
 #endif
 
 struct vcpu_time_info {
-	/*
-	 * Updates to the following values are preceded and followed by an
-	 * increment of 'version'. The guest can therefore detect updates by
-	 * looking for changes to 'version'. If the least-significant bit of
-	 * the version number is set then an update is in progress and the guest
-	 * must wait to read a consistent set of values.
-	 * The correct way to interact with the version number is similar to
-	 * Linux's seqlock: see the implementations of read_seqbegin/read_seqretry.
-	 */
-	uint32_t version;
-	uint32_t pad0;
-	uint64_t tsc_timestamp;   /* TSC at last update of time vals.  */
-	uint64_t system_time;     /* Time, in nanosecs, since boot.    */
-	/*
-	 * Current system time:
-	 *   system_time +
-	 *   ((((tsc - tsc_timestamp) << tsc_shift) * tsc_to_system_mul) >> 32)
-	 * CPU frequency (Hz):
-	 *   ((10^9 << 32) / tsc_to_system_mul) >> tsc_shift
-	 */
-	uint32_t tsc_to_system_mul;
-	int8_t	 tsc_shift;
-	int8_t	 pad1[3];
+    /*
+     * Updates to the following values are preceded and followed by an
+     * increment of 'version'. The guest can therefore detect updates by
+     * looking for changes to 'version'. If the least-significant bit of
+     * the version number is set then an update is in progress and the guest
+     * must wait to read a consistent set of values.
+     * The correct way to interact with the version number is similar to
+     * Linux's seqlock: see the implementations of read_seqbegin/read_seqretry.
+     */
+    uint32_t version;
+    uint32_t pad0;
+    uint64_t tsc_timestamp;   /* TSC at last update of time vals.  */
+    uint64_t system_time;     /* Time, in nanosecs, since boot.    */
+    /*
+     * Current system time:
+     *   system_time +
+     *   ((((tsc - tsc_timestamp) << tsc_shift) * tsc_to_system_mul) >> 32)
+     * CPU frequency (Hz):
+     *   ((10^9 << 32) / tsc_to_system_mul) >> tsc_shift
+     */
+    uint32_t tsc_to_system_mul;
+    int8_t   tsc_shift;
+    int8_t   pad1[3];
 }; /* 32 bytes */
 typedef struct vcpu_time_info vcpu_time_info_t;
 
 struct vcpu_info {
-	/*
-	 * 'evtchn_upcall_pending' is written non-zero by Xen to indicate
-	 * a pending notification for a particular VCPU. It is then cleared
-	 * by the guest OS /before/ checking for pending work, thus avoiding
-	 * a set-and-check race. Note that the mask is only accessed by Xen
-	 * on the CPU that is currently hosting the VCPU. This means that the
-	 * pending and mask flags can be updated by the guest without special
-	 * synchronisation (i.e., no need for the x86 LOCK prefix).
-	 * This may seem suboptimal because if the pending flag is set by
-	 * a different CPU then an IPI may be scheduled even when the mask
-	 * is set. However, note:
-	 *  1. The task of 'interrupt holdoff' is covered by the per-event-
-	 *     channel mask bits. A 'noisy' event that is continually being
-	 *     triggered can be masked at source at this very precise
-	 *     granularity.
-	 *  2. The main purpose of the per-VCPU mask is therefore to restrict
-	 *     reentrant execution: whether for concurrency control, or to
-	 *     prevent unbounded stack usage. Whatever the purpose, we expect
-	 *     that the mask will be asserted only for short periods at a time,
-	 *     and so the likelihood of a 'spurious' IPI is suitably small.
-	 * The mask is read before making an event upcall to the guest: a
-	 * non-zero mask therefore guarantees that the VCPU will not receive
-	 * an upcall activation. The mask is cleared when the VCPU requests
-	 * to block: this avoids wakeup-waiting races.
-	 */
-	uint8_t evtchn_upcall_pending;
+    /*
+     * 'evtchn_upcall_pending' is written non-zero by Xen to indicate
+     * a pending notification for a particular VCPU. It is then cleared 
+     * by the guest OS /before/ checking for pending work, thus avoiding
+     * a set-and-check race. Note that the mask is only accessed by Xen
+     * on the CPU that is currently hosting the VCPU. This means that the
+     * pending and mask flags can be updated by the guest without special
+     * synchronisation (i.e., no need for the x86 LOCK prefix).
+     * This may seem suboptimal because if the pending flag is set by
+     * a different CPU then an IPI may be scheduled even when the mask
+     * is set. However, note:
+     *  1. The task of 'interrupt holdoff' is covered by the per-event-
+     *     channel mask bits. A 'noisy' event that is continually being
+     *     triggered can be masked at source at this very precise
+     *     granularity.
+     *  2. The main purpose of the per-VCPU mask is therefore to restrict
+     *     reentrant execution: whether for concurrency control, or to
+     *     prevent unbounded stack usage. Whatever the purpose, we expect
+     *     that the mask will be asserted only for short periods at a time,
+     *     and so the likelihood of a 'spurious' IPI is suitably small.
+     * The mask is read before making an event upcall to the guest: a
+     * non-zero mask therefore guarantees that the VCPU will not receive
+     * an upcall activation. The mask is cleared when the VCPU requests
+     * to block: this avoids wakeup-waiting races.
+     */
+    uint8_t evtchn_upcall_pending;
 #ifdef XEN_HAVE_PV_UPCALL_MASK
-	uint8_t evtchn_upcall_mask;
+    uint8_t evtchn_upcall_mask;
 #else /* XEN_HAVE_PV_UPCALL_MASK */
-	uint8_t pad0;
+    uint8_t pad0;
 #endif /* XEN_HAVE_PV_UPCALL_MASK */
-	xen_ulong_t			  evtchn_pending_sel;
-	struct arch_vcpu_info arch;
-	struct vcpu_time_info time;
+    xen_ulong_t evtchn_pending_sel;
+    struct arch_vcpu_info arch;
+    struct vcpu_time_info time;
 }; /* 64 bytes (x86) */
 #ifndef __XEN__
 typedef struct vcpu_info vcpu_info_t;
@@ -639,51 +639,51 @@ typedef struct vcpu_info vcpu_info_t;
  * of this structure remaining constant.
  */
 struct shared_info {
-	struct vcpu_info vcpu_info[XEN_LEGACY_MAX_VCPUS];
+    struct vcpu_info vcpu_info[XEN_LEGACY_MAX_VCPUS];
 
-	/*
-	 * A domain can create "event channels" on which it can send and receive
-	 * asynchronous event notifications. There are three classes of event that
-	 * are delivered by this mechanism:
-	 *  1. Bi-directional inter- and intra-domain connections. Domains must
-	 *     arrange out-of-band to set up a connection (usually by allocating
-	 *     an unbound 'listener' port and avertising that via a storage service
-	 *     such as xenstore).
-	 *  2. Physical interrupts. A domain with suitable hardware-access
-	 *     privileges can bind an event-channel port to a physical interrupt
-	 *     source.
-	 *  3. Virtual interrupts ('events'). A domain can bind an event-channel
-	 *     port to a virtual interrupt source, such as the virtual-timer
-	 *     device or the emergency console.
-	 *
-	 * Event channels are addressed by a "port index". Each channel is
-	 * associated with two bits of information:
-	 *  1. PENDING -- notifies the domain that there is a pending notification
-	 *     to be processed. This bit is cleared by the guest.
-	 *  2. MASK -- if this bit is clear then a 0->1 transition of PENDING
-	 *     will cause an asynchronous upcall to be scheduled. This bit is only
-	 *     updated by the guest. It is read-only within Xen. If a channel
-	 *     becomes pending while the channel is masked then the 'edge' is lost
-	 *     (i.e., when the channel is unmasked, the guest must manually handle
-	 *     pending notifications as no upcall will be scheduled by Xen).
-	 *
-	 * To expedite scanning of pending notifications, any 0->1 pending
-	 * transition on an unmasked channel causes a corresponding bit in a
-	 * per-vcpu selector word to be set. Each bit in the selector covers a
-	 * 'C long' in the PENDING bitfield array.
-	 */
-	xen_ulong_t evtchn_pending[sizeof(xen_ulong_t) * 8];
-	xen_ulong_t evtchn_mask[sizeof(xen_ulong_t) * 8];
+    /*
+     * A domain can create "event channels" on which it can send and receive
+     * asynchronous event notifications. There are three classes of event that
+     * are delivered by this mechanism:
+     *  1. Bi-directional inter- and intra-domain connections. Domains must
+     *     arrange out-of-band to set up a connection (usually by allocating
+     *     an unbound 'listener' port and avertising that via a storage service
+     *     such as xenstore).
+     *  2. Physical interrupts. A domain with suitable hardware-access
+     *     privileges can bind an event-channel port to a physical interrupt
+     *     source.
+     *  3. Virtual interrupts ('events'). A domain can bind an event-channel
+     *     port to a virtual interrupt source, such as the virtual-timer
+     *     device or the emergency console.
+     * 
+     * Event channels are addressed by a "port index". Each channel is
+     * associated with two bits of information:
+     *  1. PENDING -- notifies the domain that there is a pending notification
+     *     to be processed. This bit is cleared by the guest.
+     *  2. MASK -- if this bit is clear then a 0->1 transition of PENDING
+     *     will cause an asynchronous upcall to be scheduled. This bit is only
+     *     updated by the guest. It is read-only within Xen. If a channel
+     *     becomes pending while the channel is masked then the 'edge' is lost
+     *     (i.e., when the channel is unmasked, the guest must manually handle
+     *     pending notifications as no upcall will be scheduled by Xen).
+     * 
+     * To expedite scanning of pending notifications, any 0->1 pending
+     * transition on an unmasked channel causes a corresponding bit in a
+     * per-vcpu selector word to be set. Each bit in the selector covers a
+     * 'C long' in the PENDING bitfield array.
+     */
+    xen_ulong_t evtchn_pending[sizeof(xen_ulong_t) * 8];
+    xen_ulong_t evtchn_mask[sizeof(xen_ulong_t) * 8];
 
-	/*
-	 * Wallclock time: updated only by control software. Guests should base
-	 * their gettimeofday() syscall on this wallclock-base value.
-	 */
-	uint32_t wc_version;      /* Version counter: see vcpu_time_info_t. */
-	uint32_t wc_sec;          /* Secs  00:00:00 UTC, Jan 1, 1970.  */
-	uint32_t wc_nsec;         /* Nsecs 00:00:00 UTC, Jan 1, 1970.  */
+    /*
+     * Wallclock time: updated only by control software. Guests should base
+     * their gettimeofday() syscall on this wallclock-base value.
+     */
+    uint32_t wc_version;      /* Version counter: see vcpu_time_info_t. */
+    uint32_t wc_sec;          /* Secs  00:00:00 UTC, Jan 1, 1970.  */
+    uint32_t wc_nsec;         /* Nsecs 00:00:00 UTC, Jan 1, 1970.  */
 
-	struct arch_shared_info arch;
+    struct arch_shared_info arch;
 
 };
 #ifndef __XEN__
@@ -726,36 +726,36 @@ typedef struct shared_info shared_info_t;
  */
 #ifdef XEN_HAVE_PV_GUEST_ENTRY
 struct start_info {
-	/* THE FOLLOWING ARE FILLED IN BOTH ON INITIAL BOOT AND ON RESUME.    */
-	char		  magic[32];    /* "xen-<version>-<platform>".            */
-	unsigned long nr_pages;     /* Total pages allocated to this domain.  */
-	unsigned long shared_info;  /* MACHINE address of shared info struct. */
-	uint32_t	  flags;        /* SIF_xxx flags.                         */
-	xen_pfn_t	  store_mfn;    /* MACHINE page number of shared page.    */
-	uint32_t	  store_evtchn; /* Event channel for store communication. */
-	union {
-		struct {
-			xen_pfn_t mfn;      /* MACHINE page number of console page.   */
-			uint32_t  evtchn;   /* Event channel for console page.        */
-		} domU;
-		struct {
-			uint32_t info_off;  /* Offset of console_info struct.         */
-			uint32_t info_size; /* Size of console_info struct from start.*/
-		} dom0;
-	} console;
-	/* THE FOLLOWING ARE ONLY FILLED IN ON INITIAL BOOT (NOT RESUME).     */
-	unsigned long pt_base;      /* VIRTUAL address of page directory.     */
-	unsigned long nr_pt_frames; /* Number of bootstrap p.t. frames.       */
-	unsigned long mfn_list;     /* VIRTUAL address of page-frame list.    */
-	unsigned long mod_start;    /* VIRTUAL address of pre-loaded module   */
-	                            /* (PFN of pre-loaded module if           */
-	                            /*  SIF_MOD_START_PFN set in flags).      */
-	unsigned long mod_len;      /* Size (bytes) of pre-loaded module.     */
+    /* THE FOLLOWING ARE FILLED IN BOTH ON INITIAL BOOT AND ON RESUME.    */
+    char magic[32];             /* "xen-<version>-<platform>".            */
+    unsigned long nr_pages;     /* Total pages allocated to this domain.  */
+    unsigned long shared_info;  /* MACHINE address of shared info struct. */
+    uint32_t flags;             /* SIF_xxx flags.                         */
+    xen_pfn_t store_mfn;        /* MACHINE page number of shared page.    */
+    uint32_t store_evtchn;      /* Event channel for store communication. */
+    union {
+        struct {
+            xen_pfn_t mfn;      /* MACHINE page number of console page.   */
+            uint32_t  evtchn;   /* Event channel for console page.        */
+        } domU;
+        struct {
+            uint32_t info_off;  /* Offset of console_info struct.         */
+            uint32_t info_size; /* Size of console_info struct from start.*/
+        } dom0;
+    } console;
+    /* THE FOLLOWING ARE ONLY FILLED IN ON INITIAL BOOT (NOT RESUME).     */
+    unsigned long pt_base;      /* VIRTUAL address of page directory.     */
+    unsigned long nr_pt_frames; /* Number of bootstrap p.t. frames.       */
+    unsigned long mfn_list;     /* VIRTUAL address of page-frame list.    */
+    unsigned long mod_start;    /* VIRTUAL address of pre-loaded module   */
+                                /* (PFN of pre-loaded module if           */
+                                /*  SIF_MOD_START_PFN set in flags).      */
+    unsigned long mod_len;      /* Size (bytes) of pre-loaded module.     */
 #define MAX_GUEST_CMDLINE 1024
-	int8_t cmd_line[MAX_GUEST_CMDLINE];
-	/* The pfn range here covers both page table and p->m table frames.   */
-	unsigned long first_p2m_pfn;/* 1st pfn forming initial P->M table.    */
-	unsigned long nr_p2m_frames;/* # of pfns forming initial P->M table.  */
+    int8_t cmd_line[MAX_GUEST_CMDLINE];
+    /* The pfn range here covers both page table and p->m table frames.   */
+    unsigned long first_p2m_pfn;/* 1st pfn forming initial P->M table.    */
+    unsigned long nr_p2m_frames;/* # of pfns forming initial P->M table.  */
 };
 typedef struct start_info start_info_t;
 
@@ -789,14 +789,14 @@ typedef struct start_info start_info_t;
  */
 struct xen_multiboot_mod_list
 {
-	/* Address of first byte of the module */
-	uint32_t mod_start;
-	/* Address of last byte of the module (inclusive) */
-	uint32_t mod_end;
-	/* Address of zero-terminated command line */
-	uint32_t cmdline;
-	/* Unused, must be zero */
-	uint32_t pad;
+    /* Address of first byte of the module */
+    uint32_t mod_start;
+    /* Address of last byte of the module (inclusive) */
+    uint32_t mod_end;
+    /* Address of zero-terminated command line */
+    uint32_t cmdline;
+    /* Unused, must be zero */
+    uint32_t pad;
 };
 /*
  * `incontents 200 startofday_dom0_console Dom0_console
@@ -807,44 +807,44 @@ struct xen_multiboot_mod_list
  * have a working VGA/VESA console.
  */
 typedef struct dom0_vga_console_info {
-	uint8_t video_type; /* DOM0_VGA_CONSOLE_??? */
+    uint8_t video_type; /* DOM0_VGA_CONSOLE_??? */
 #define XEN_VGATYPE_TEXT_MODE_3 0x03
 #define XEN_VGATYPE_VESA_LFB    0x23
 #define XEN_VGATYPE_EFI_LFB     0x70
 
-	union {
-		struct {
-			/* Font height, in pixels. */
-			uint16_t font_height;
-			/* Cursor location (column, row). */
-			uint16_t cursor_x, cursor_y;
-			/* Number of rows and columns (dimensions in characters). */
-			uint16_t rows, columns;
-		} text_mode_3;
+    union {
+        struct {
+            /* Font height, in pixels. */
+            uint16_t font_height;
+            /* Cursor location (column, row). */
+            uint16_t cursor_x, cursor_y;
+            /* Number of rows and columns (dimensions in characters). */
+            uint16_t rows, columns;
+        } text_mode_3;
 
-		struct {
-			/* Width and height, in pixels. */
-			uint16_t width, height;
-			/* Bytes per scan line. */
-			uint16_t bytes_per_line;
-			/* Bits per pixel. */
-			uint16_t bits_per_pixel;
-			/* LFB physical address, and size (in units of 64kB). */
-			uint32_t lfb_base;
-			uint32_t lfb_size;
-			/* RGB mask offsets and sizes, as defined by VBE 1.2+ */
-			uint8_t red_pos, red_size;
-			uint8_t green_pos, green_size;
-			uint8_t blue_pos, blue_size;
-			uint8_t rsvd_pos, rsvd_size;
+        struct {
+            /* Width and height, in pixels. */
+            uint16_t width, height;
+            /* Bytes per scan line. */
+            uint16_t bytes_per_line;
+            /* Bits per pixel. */
+            uint16_t bits_per_pixel;
+            /* LFB physical address, and size (in units of 64kB). */
+            uint32_t lfb_base;
+            uint32_t lfb_size;
+            /* RGB mask offsets and sizes, as defined by VBE 1.2+ */
+            uint8_t  red_pos, red_size;
+            uint8_t  green_pos, green_size;
+            uint8_t  blue_pos, blue_size;
+            uint8_t  rsvd_pos, rsvd_size;
 #if __XEN_INTERFACE_VERSION__ >= 0x00030206
-			/* VESA capabilities (offset 0xa, VESA command 0x4f00). */
-			uint32_t gbl_caps;
-			/* Mode attributes (offset 0x0, VESA command 0x4f01). */
-			uint16_t mode_attrs;
+            /* VESA capabilities (offset 0xa, VESA command 0x4f00). */
+            uint32_t gbl_caps;
+            /* Mode attributes (offset 0x0, VESA command 0x4f01). */
+            uint16_t mode_attrs;
 #endif
-		} vesa_lfb;
-	} u;
+        } vesa_lfb;
+    } u;
 } dom0_vga_console_info_t;
 #define xen_vga_console_info dom0_vga_console_info
 #define xen_vga_console_info_t dom0_vga_console_info_t
@@ -879,8 +879,8 @@ __DEFINE_XEN_GUEST_HANDLE(uint64, uint64_t);
 
 #ifndef __ASSEMBLY__
 struct xenctl_bitmap {
-	XEN_GUEST_HANDLE_64(uint8) bitmap;
-	uint32_t nr_bits;
+    XEN_GUEST_HANDLE_64(uint8) bitmap;
+    uint32_t nr_bits;
 };
 #endif
 

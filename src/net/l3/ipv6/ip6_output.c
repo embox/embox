@@ -20,7 +20,7 @@
 
 static const struct net_pack_out_ops ip6_out_ops_struct;
 const struct net_pack_out_ops *const ip6_out_ops
-	= &ip6_out_ops_struct;
+		= &ip6_out_ops_struct;
 
 static int ip6_xmit(struct sk_buff *skb) {
 	const struct in6_addr *daddr;
@@ -71,12 +71,12 @@ static int ip6_make(const struct sock *sk,
 			|| (to_in6->sin6_family == AF_INET6));
 
 	memcpy(&dst_ip6, to_in6 != NULL ? &to_in6->sin6_addr
-			: in6_sk != NULL ? &in6_sk->dst_in6.sin6_addr
-			: &(*out_skb)->nh.ip6h->saddr,     /* make a reply */
+				: in6_sk != NULL ? &in6_sk->dst_in6.sin6_addr
+				: &(*out_skb)->nh.ip6h->saddr, /* make a reply */
 			sizeof dst_ip6);
 	/* FIXME use route */
 	if (0 == memcmp(&dst_ip6, &in6addr_loopback,
-			sizeof dst_ip6)) {
+				sizeof dst_ip6)) {
 		dev = netdev_get_by_name("lo");
 	}
 	else {

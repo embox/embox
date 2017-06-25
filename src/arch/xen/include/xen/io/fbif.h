@@ -43,11 +43,11 @@
 
 struct xenfb_update
 {
-	uint8_t type;    /* XENFB_TYPE_UPDATE */
-	int32_t x;      /* source x */
-	int32_t y;      /* source y */
-	int32_t width;  /* rect width */
-	int32_t height; /* rect height */
+    uint8_t type;    /* XENFB_TYPE_UPDATE */
+    int32_t x;      /* source x */
+    int32_t y;      /* source y */
+    int32_t width;  /* rect width */
+    int32_t height; /* rect height */
 };
 
 /*
@@ -58,22 +58,22 @@ struct xenfb_update
 
 struct xenfb_resize
 {
-	uint8_t type;    /* XENFB_TYPE_RESIZE */
-	int32_t width;   /* width in pixels */
-	int32_t height;  /* height in pixels */
-	int32_t stride;  /* stride in bytes */
-	int32_t depth;   /* depth in bits */
-	int32_t offset;  /* offset of the framebuffer in bytes */
+    uint8_t type;    /* XENFB_TYPE_RESIZE */
+    int32_t width;   /* width in pixels */
+    int32_t height;  /* height in pixels */
+    int32_t stride;  /* stride in bytes */
+    int32_t depth;   /* depth in bits */
+    int32_t offset;  /* offset of the framebuffer in bytes */
 };
 
 #define XENFB_OUT_EVENT_SIZE 40
 
 union xenfb_out_event
 {
-	uint8_t				type;
-	struct xenfb_update update;
-	struct xenfb_resize resize;
-	char				pad[XENFB_OUT_EVENT_SIZE];
+    uint8_t type;
+    struct xenfb_update update;
+    struct xenfb_resize resize;
+    char pad[XENFB_OUT_EVENT_SIZE];
 };
 
 /* In events (backend -> frontend) */
@@ -96,18 +96,18 @@ union xenfb_out_event
 
 struct xenfb_refresh_period
 {
-	uint8_t	 type;   /* XENFB_TYPE_UPDATE_PERIOD */
-	uint32_t period; /* period of refresh, in ms,
-	                  * XENFB_NO_REFRESH if no refresh is needed */
+    uint8_t type;    /* XENFB_TYPE_UPDATE_PERIOD */
+    uint32_t period; /* period of refresh, in ms,
+                      * XENFB_NO_REFRESH if no refresh is needed */
 };
 
 #define XENFB_IN_EVENT_SIZE 40
 
 union xenfb_in_event
 {
-	uint8_t						type;
-	struct xenfb_refresh_period refresh_period;
-	char						pad[XENFB_IN_EVENT_SIZE];
+    uint8_t type;
+    struct xenfb_refresh_period refresh_period;
+    char pad[XENFB_IN_EVENT_SIZE];
 };
 
 /* shared page */
@@ -116,41 +116,41 @@ union xenfb_in_event
 #define XENFB_IN_RING_LEN (XENFB_IN_RING_SIZE / XENFB_IN_EVENT_SIZE)
 #define XENFB_IN_RING_OFFS 1024
 #define XENFB_IN_RING(page) \
-	((union xenfb_in_event *)((char *)(page) + XENFB_IN_RING_OFFS))
+    ((union xenfb_in_event *)((char *)(page) + XENFB_IN_RING_OFFS))
 #define XENFB_IN_RING_REF(page, idx) \
-	(XENFB_IN_RING((page))[(idx) % XENFB_IN_RING_LEN])
+    (XENFB_IN_RING((page))[(idx) % XENFB_IN_RING_LEN])
 
 #define XENFB_OUT_RING_SIZE 2048
 #define XENFB_OUT_RING_LEN (XENFB_OUT_RING_SIZE / XENFB_OUT_EVENT_SIZE)
 #define XENFB_OUT_RING_OFFS (XENFB_IN_RING_OFFS + XENFB_IN_RING_SIZE)
 #define XENFB_OUT_RING(page) \
-	((union xenfb_out_event *)((char *)(page) + XENFB_OUT_RING_OFFS))
+    ((union xenfb_out_event *)((char *)(page) + XENFB_OUT_RING_OFFS))
 #define XENFB_OUT_RING_REF(page, idx) \
-	(XENFB_OUT_RING((page))[(idx) % XENFB_OUT_RING_LEN])
+    (XENFB_OUT_RING((page))[(idx) % XENFB_OUT_RING_LEN])
 
 struct xenfb_page
 {
-	uint32_t in_cons, in_prod;
-	uint32_t out_cons, out_prod;
+    uint32_t in_cons, in_prod;
+    uint32_t out_cons, out_prod;
 
-	int32_t	 width;         /* the width of the framebuffer (in pixels) */
-	int32_t	 height;        /* the height of the framebuffer (in pixels) */
-	uint32_t line_length;   /* the length of a row of pixels (in bytes) */
-	uint32_t mem_length;    /* the length of the framebuffer (in bytes) */
-	uint8_t	 depth;         /* the depth of a pixel (in bits) */
+    int32_t width;          /* the width of the framebuffer (in pixels) */
+    int32_t height;         /* the height of the framebuffer (in pixels) */
+    uint32_t line_length;   /* the length of a row of pixels (in bytes) */
+    uint32_t mem_length;    /* the length of the framebuffer (in bytes) */
+    uint8_t depth;          /* the depth of a pixel (in bits) */
 
-	/*
-	 * Framebuffer page directory
-	 *
-	 * Each directory page holds PAGE_SIZE / sizeof(*pd)
-	 * framebuffer pages, and can thus map up to PAGE_SIZE *
-	 * PAGE_SIZE / sizeof(*pd) bytes.  With PAGE_SIZE == 4096 and
-	 * sizeof(unsigned long) == 4/8, that's 4 Megs 32 bit and 2 Megs
-	 * 64 bit.  256 directories give enough room for a 512 Meg
-	 * framebuffer with a max resolution of 12,800x10,240.  Should
-	 * be enough for a while with room leftover for expansion.
-	 */
-	unsigned long pd[256];
+    /*
+     * Framebuffer page directory
+     *
+     * Each directory page holds PAGE_SIZE / sizeof(*pd)
+     * framebuffer pages, and can thus map up to PAGE_SIZE *
+     * PAGE_SIZE / sizeof(*pd) bytes.  With PAGE_SIZE == 4096 and
+     * sizeof(unsigned long) == 4/8, that's 4 Megs 32 bit and 2 Megs
+     * 64 bit.  256 directories give enough room for a 512 Meg
+     * framebuffer with a max resolution of 12,800x10,240.  Should
+     * be enough for a while with room leftover for expansion.
+     */
+    unsigned long pd[256];
 };
 
 /*

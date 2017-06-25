@@ -68,7 +68,7 @@
  * to be added to OMAP37XX_CTRL_BASE
  */
 
-#define OMAP37XX_CTRL_BASE                        0x48002000
+#define OMAP37XX_CTRL_BASE						  0x48002000
 
 #define CONTROL_PADCONF_GPIO_112                  0x0134
 #define CONTROL_PADCONF_GPIO_113                  0x0136
@@ -359,10 +359,10 @@
 #define CONTROL_PADCONF_UART3_RX_IRRX             0x019E
 #define CONTROL_PADCONF_UART3_TX_IRTX             0x01A0
 
-#define __arch_putw(v,a)        (*(volatile unsigned short *)(a) = (v))
-#define writew(v,a)             __arch_putw(v,a)
+#define __arch_putw(v,a)		(*(volatile unsigned short *)(a) = (v))
+#define writew(v,a)				__arch_putw(v,a)
 
-#define MUX_VAL(OFFSET,VALUE) \
-	writew((VALUE), OMAP37XX_CTRL_BASE + (OFFSET));
+#define MUX_VAL(OFFSET,VALUE)\
+     writew((VALUE), OMAP37XX_CTRL_BASE + (OFFSET));
 
 #endif

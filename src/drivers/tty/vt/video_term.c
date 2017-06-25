@@ -69,16 +69,14 @@ int vterm_input(struct vterm *vt, struct input_event *event) {
 		tty_rx_putc(&vt->tty, 0x1B, 0);
 		tty_rx_putc(&vt->tty, '[', 0);
 
-		for (const char *pch = esc_body; *pch; ++pch) {
+		for (const char *pch = esc_body; *pch; ++pch)
 			tty_rx_putc(&vt->tty, *pch, 0);
-		}
 
 	} else {
 		char ch = vterm_key_to_char(keycode);
 
-		if (ch) {
+		if (ch)
 			tty_rx_putc(&vt->tty, ch, 0);
-		}
 	}
 
 	return 0;

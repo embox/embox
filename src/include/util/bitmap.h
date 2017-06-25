@@ -55,3 +55,4 @@ static inline unsigned int bitmap_find_first_bit(const unsigned long *bitmap,
 }
 
 #endif /* UTIL_BITMAP_H_ */
+

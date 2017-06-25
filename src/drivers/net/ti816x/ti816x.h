@@ -52,21 +52,21 @@
 #define EMAC_R_CMEMCONTROL       0x08 /* Emulation Control Register */
 #define EMAC_R_CMINTCTRL         0x0C /* Interrupt Control Register */
 #define EMAC_R_CMRXTHRESHINTEN   0x10 /* Receive Threshold Interrupt Enable
-	                                     Register */
+										 Register */
 #define EMAC_R_CMRXINTEN         0x14 /* Receive Interrupt Enable Register */
 #define EMAC_R_CMTXINTEN         0x18 /* Transmit Interrupt Enable Register */
 #define EMAC_R_CMMISCINTEN       0x1C /* Miscellaneous Interrupt Enable
-	                                     Register */
+										 Register */
 #define EMAC_R_CMRXTHRESHINTSTAT 0x40 /* Receive Threshold Interrupt Status
-	                                     Register */
+										 Register */
 #define EMAC_R_CMRXINTSTAT       0x44 /* Receive Interrupt Status Register */
 #define EMAC_R_CMTXINTSTAT       0x48 /* Transmit Interrupt Status Register */
 #define EMAC_R_CMMISCINTSTAT     0x4C /* Miscellaneous Interrupt Status
-	                                     Register */
+										 Register */
 #define EMAC_R_CMRXINTMAX        0x70 /* Receive Interrupts Per Millisecond
-	                                     Register */
+										 Register */
 #define EMAC_R_CMTXINTMAX        0x74 /* Transmit Interrupts Per Millisecond
-	                                     Register */
+										 Register */
 
 /**
  * EMAC Module Registers
@@ -77,42 +77,42 @@
 #define EMAC_R_RXCONTROL         0x014 /* Receive Control Register */
 #define EMAC_R_RXTEARDOWN        0x018 /* Receive Teardown Register */
 #define EMAC_R_TXINTSTATRAW      0x080 /* Transmit Interrupt Status (Unmasked)
-	                                      Register */
+										  Register */
 #define EMAC_R_TXINTSTATMASKED   0x084 /* Transmit Interrupt Status (Masked)
-	                                      Register */
+										  Register */
 #define EMAC_R_TXINTMASKSET      0x088 /* Transmit Interrupt Mask Set
-	                                      Register */
+										  Register */
 #define EMAC_R_TXINTMASKCLEAR    0x08C /* Transmit Interrupt Clear Register */
 #define EMAC_R_MACINVECTOR       0x090 /* MAC Input Vector Registe */
 #define EMAC_R_MACEOIVECTOR      0x094 /* MAC End of Interrupt Vector
-	                                      Register */
+										  Register */
 #define EMAC_R_RXINTSTATRAW      0x0A0 /* Receive Interrupt Status (Unmasked)
-	                                      Register */
+										  Register */
 #define EMAC_R_RXINTSTATMASKED   0x0A4 /* Receive Interrupt Status (Masked)
-	                                      Register */
+										  Register */
 #define EMAC_R_RXINTMASKSET      0x0A8 /* Receive Interrupt Mask Set Register */
 #define EMAC_R_RXINTMASKCLEAR    0x0AC /* Receive Interrupt Mask Clear
-	                                      Register */
+										  Register */
 #define EMAC_R_MACINTSTATRAW     0x0B0 /* MAC Interrupt Status (Unmasked)
-	                                      Register */
+										  Register */
 #define EMAC_R_MACINTSTATMASKED  0x0B4 /* MAC Interrupt Status (Masked)
-	                                      Register */
+										  Register */
 #define EMAC_R_MACINTMASKSET     0x0B8 /* MAC Interrupt Mask Set Register */
 #define EMAC_R_MACINTMASKCLEAR   0x0BC /* MAC Interrupt Mask Clear Register */
 #define EMAC_R_RXMBPENABLE       0x100 /* Receive Multicast/Broadcast/
-	                                      Promiscuous Channel Enable Register */
+										  Promiscuous Channel Enable Register */
 #define EMAC_R_RXUNICASTSET      0x104 /* Receive Unicast Enable Set Register */
 #define EMAC_R_RXUNICASTCLEAR    0x108 /* Receive Unicast Clear Register */
 #define EMAC_R_RXMAXLEN          0x10C /* Receive Maximum Length Register */
 #define EMAC_R_RXBUFFEROFFSET    0x110 /* Receive Buffer Offset Register */
 #define EMAC_R_RXFILTERLOWTHRESH 0x114 /* Receive Filter Low Priority Frame
-	                                      Threshold Register */
+										  Threshold Register */
 #define EMAC_R_RXFLOWTHRESH(n)  (0x120 + n * 0x4) /* Receive Channel n[0-7]
-	                                                 Flow Control Threshold
-	                                                 Register */
+													 Flow Control Threshold
+													 Register */
 #define EMAC_R_RXFREEBUFFER(n)  (0x140 + n * 0x4) /* Receive Channel n[0-7]
-	                                                 Free Buffer Count
-	                                                 Register */
+													 Free Buffer Count
+													 Register */
 #define EMAC_R_MACCONTROL        0x160 /* MAC Control Register */
 #define EMAC_R_MACSTATUS         0x164 /* MAC Status Register */
 #define EMAC_R_EMCONTROL         0x168 /* Emulation Control Register */
@@ -120,29 +120,29 @@
 #define EMAC_R_MACCONFIG         0x170 /* MAC Configuration Register */
 #define EMAC_R_SOFTRESET         0x174 /* Soft Reset Register */
 #define EMAC_R_MACSRCADDRLO      0x1D0 /* MAC Source Address Low Bytes
-	                                      Register */
+										  Register */
 #define EMAC_R_MACSRCADDRHI      0x1D4 /* MAC Source Address High Bytes
-	                                      Register */
+										  Register */
 #define EMAC_R_MACHASH1          0x1D8 /* MAC Hash Address Register 1 */
 #define EMAC_R_MACHASH2          0x1DC /* MAC Hash Address Register 2 */
 #define EMAC_R_BOFFTEST          0x1E0 /* Back Off Test Register */
 #define EMAC_R_TPACETEST         0x1E4 /* Transmit Pacing Algorithm Test
-	                                      Register */
+										  Register */
 #define EMAC_R_RXPAUSE           0x1E8 /* Receive Pause Timer Register */
 #define EMAC_R_TXPAUSE           0x1EC /* Transmit Pause Timer Register */
 #define EMAC_R_MACADDRLO         0x500 /* MAC Address Low Bytes Register,
-	                                      Used in Receive Address Matching */
+										  Used in Receive Address Matching */
 #define EMAC_R_MACADDRHI         0x504 /* MAC Address High Bytes Register,
-	                                      Used in Receive Address Matching */
+										  Used in Receive Address Matching */
 #define EMAC_R_MACINDEX          0x508 /* MAC Index Register */
 #define EMAC_R_TXHDP(n)          0x600 /* Transmit Channel n[0-7] DMA Head
-	                                      Descriptor Pointer Register */
+										  Descriptor Pointer Register */
 #define EMAC_R_RXHDP(n)          0x620 /* Receive Channel n[0-7] DMA Head
-	                                      Descriptor Pointer Register */
+										  Descriptor Pointer Register */
 #define EMAC_R_TXCP(n)           0x640 /* Transmit Channel n[0-7] Completion
-	                                      Pointer Register */
+										  Pointer Register */
 #define EMAC_R_RXCP(n)           0x660 /* Receive Channel n[0-7] Completion
-	                                      Pointer Register */
+										  Pointer Register */
 
 /**
  * MDIO Registers
@@ -152,17 +152,17 @@
 #define MDIO_R_ALIVE            0x08 /* PHY Alive Status register */
 #define MDIO_R_LINK             0x0C /* PHY Link Status Register */
 #define MDIO_R_LINKINTRAW       0x10 /* MDIO Link Status Change Interrupt
-	                                    (Unmasked) Register */
+										(Unmasked) Register */
 #define MDIO_R_LINKINTMASKED    0x14 /* MDIO Link Status Change Interrupt
-	                                    (Masked) Register */
+										(Masked) Register */
 #define MDIO_R_USERINTRAW       0x20 /* MDIO User Command Complete Interrupt
-	                                    (Unmasked) Register */
+										(Unmasked) Register */
 #define MDIO_R_USERINTMASKED    0x24 /* MDIO User Command Complete Interrupt
-	                                    (Masked) Register */
+										(Masked) Register */
 #define MDIO_R_USERINTMASKSET   0x28 /* MDIO User Command Complete Interrupt
-	                                    Mask Set Register */
+										Mask Set Register */
 #define MDIO_R_USERINTMASKCLEAR 0x2C /* MDIO User Command Complete Interrupt
-	                                    Mask Clear Register */
+										Mask Clear Register */
 #define MDIO_R_USERACCESS0      0x80 /* MDIO User Access Register 0 */
 #define MDIO_R_USERPHYSEL0      0x84 /* MDIO User PHY Select Register 0 */
 #define MDIO_R_USERACCESS1      0x88 /* MDIO User Access Register 1 */
@@ -221,7 +221,7 @@ struct emac_desc {
 #define CM_R_MACID0_LO 0x630 /* Ethernet MAC ID0 Low Register */
 #define CM_R_MACID0_HI 0x634 /* Ethernet MAC ID0 High Register */
 
-/*TODO remove this when mdio is created */
+//TODO remove this when mdio is created
 extern void emac_mdio_config(void);
 
 #include <framework/mod/options.h>

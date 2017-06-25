@@ -12,7 +12,7 @@
 #include <util/slist.h>
 
 struct siginfoq {
-	struct slist	   queue;
+	struct slist       queue;
 	struct slist_link *last;
 };
 

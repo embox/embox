@@ -9,7 +9,7 @@
 #include "cmdline.h"
 #include <stddef.h>
 
-SCREEN *screen_init(SCREEN *this, SCREEN_IO *io) {
+SCREEN * screen_init(SCREEN *this, SCREEN_IO *io) {
 	if (this == NULL || io == NULL) {
 		return NULL;
 	}

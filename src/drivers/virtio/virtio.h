@@ -30,12 +30,12 @@
  * VirtIO Device Status
  */
 #define VIRTIO_CONFIG_S_ACKNOWLEDGE 0x01 /* Guest OS has found the device and
-	                                        recognized it as a valid virtio
-	                                        device */
+											recognized it as a valid virtio
+											device */
 #define VIRTIO_CONFIG_S_DRIVER      0x02 /* Guest OS knows how to drive the
-	                                        device */
+											device */
 #define VIRTIO_CONFIG_S_DRIVER_OK   0x04 /* Driver is set up and ready to drive
-	                                        the device */
+											the device */
 #define VIRTIO_CONFIG_S_FAILED      0x80 /* Something went wront */
 
 /**
@@ -49,7 +49,7 @@
 static inline int virtio_has_feature(uint32_t feature,
 		unsigned long base_addr) {
 	return feature & virtio_load32(VIRTIO_REG_DEVICE_F,
-				   base_addr);
+			base_addr);
 }
 
 static inline void virtio_set_feature(uint32_t feature,
@@ -78,7 +78,7 @@ static inline uint16_t virtio_get_queue_size(
 static inline void virtio_set_queue_addr(void *q_addr,
 		unsigned long base_addr) {
 	assert(binalign_check_bound((uintptr_t)q_addr,
-			VIRTIO_VRING_ALIGN));
+				VIRTIO_VRING_ALIGN));
 	virtio_store32((uintptr_t)q_addr / VIRTIO_VRING_ALIGN,
 			VIRTIO_REG_QUEUE_A, base_addr);
 }

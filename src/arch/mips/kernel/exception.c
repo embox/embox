@@ -21,9 +21,7 @@ void mips_c_exception_handler(pt_regs_t *regs) {
 	regs->pc += 4;
 }
 
-second_exception_handler_t exception_handlers[MIPS_EXCEPTIONS_QUANTITY] = {
-	mips_c_exception_handler
-};
+second_exception_handler_t exception_handlers[MIPS_EXCEPTIONS_QUANTITY] = {mips_c_exception_handler};
 
 /*
 * Copy the generic exception handlers to their final destination.
@@ -34,7 +32,7 @@ static void mips_setup_exc_table(void) {
 	size_t i;
 
 	/* set all exception handler */
-	for (i = 0; i < MIPS_EXCEPTIONS_QUANTITY; i++) {
+	for (i = 0; i < MIPS_EXCEPTIONS_QUANTITY; i ++) {
 		exception_handlers[i] = mips_c_exception_handler;
 	}
 }

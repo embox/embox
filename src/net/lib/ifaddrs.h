@@ -15,9 +15,9 @@
 __BEGIN_DECLS
 
 struct ifaddrs {
-	struct ifaddrs * ifa_next;          /* Next item in list */
-	char *			 ifa_name;          /* Name of interface */
-	unsigned int	 ifa_flags;         /* Flags from SIOCGIFFLAGS */
+	struct ifaddrs *ifa_next;           /* Next item in list */
+	char *ifa_name;                     /* Name of interface */
+	unsigned int ifa_flags;             /* Flags from SIOCGIFFLAGS */
 	struct sockaddr *ifa_addr;          /* Address of interface */
 	struct sockaddr *ifa_netmask;       /* Netmask of interface */
 	union {

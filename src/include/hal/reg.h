@@ -25,12 +25,12 @@
 
 #ifndef __REG_ORIN
 #define __REG_ORIN(addr, mask) \
-	REG_STORE(addr, REG_LOAD(addr) | (unsigned long)(mask))
+		REG_STORE(addr, REG_LOAD(addr) | (unsigned long)(mask))
 #endif /* __REG_ORIN */
 
 #ifndef __REG_ANDIN
 #define __REG_ANDIN(addr, mask) \
-	REG_STORE(addr, REG_LOAD(addr) & (unsigned long)(mask))
+		REG_STORE(addr, REG_LOAD(addr) & (unsigned long)(mask))
 #endif /* __REG_ANDIN */
 
 #define REG_STORE(addr, value) __REG_STORE(addr, value)

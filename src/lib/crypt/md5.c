@@ -27,7 +27,7 @@
 
   This code implements the MD5 Algorithm defined in RFC 1321, whose
   text is available at
-    http://www.ietf.org/rfc/rfc1321.txt
+	http://www.ietf.org/rfc/rfc1321.txt
   The code is derived from the text of the RFC, including the test suite
   (section A.5) but excluding the rest of Appendix A.  It does not include
   any code or documentation that is identified in the RFC as being
@@ -38,14 +38,14 @@
   that follows (in reverse chronological order):
 
   2002-04-13 lpd Clarified derivation from RFC 1321; now handles byte order
-    either statically or dynamically; added missing #include <string.h>
-    in library.
+	either statically or dynamically; added missing #include <string.h>
+	in library.
   2002-03-11 lpd Corrected argument list for main(), and added int return
-    type, in test program and T value program.
+	type, in test program and T value program.
   2002-02-21 lpd Added missing #include <stdio.h> in test program.
   2000-07-03 lpd Patched to eliminate warnings about "constant is
-    unsigned in ANSI C, signed in traditional"; made test program
-    self-checking.
+	unsigned in ANSI C, signed in traditional"; made test program
+	self-checking.
   1999-11-04 lpd Edited comments slightly for automatic TOC extraction.
   1999-10-18 lpd Fixed typo in header comment (ansi2knr rather than md5).
   1999-05-03 lpd Original version.
@@ -65,7 +65,7 @@
 #  define MD5_BYTE_ORDER 0
 #endif
 
-#define T_MASK ((md5_word_t) ~0)
+#define T_MASK ((md5_word_t)~0)
 #define T1 /* 0xd76aa478 */ (T_MASK ^ 0x28955b87)
 #define T2 /* 0xe8c7b756 */ (T_MASK ^ 0x173848a9)
 #define T3    0x242070db
@@ -163,7 +163,7 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 
 		if (*((const md5_byte_t *)&w)) /* dynamic little-endian */
 #endif
-#if MD5_BYTE_ORDER <= 0     /* little-endian */
+#if MD5_BYTE_ORDER <= 0		/* little-endian */
 		{
 			/*
 			 * On little-endian machines, we can process properly aligned
@@ -182,7 +182,7 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 #if MD5_BYTE_ORDER == 0
 		else /* dynamic big-endian */
 #endif
-#if MD5_BYTE_ORDER >= 0     /* big-endian */
+#if MD5_BYTE_ORDER >= 0		/* big-endian */
 		{
 			/*
 			 * On big-endian machines, we must arrange the bytes in the
@@ -194,11 +194,10 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 #  if MD5_BYTE_ORDER == 0
 			X = xbuf; /* (dynamic only) */
 #  else
-#    define xbuf X      /* (static only) */
+#    define xbuf X		/* (static only) */
 #  endif
-			for (i = 0; i < 16; ++i, xp += 4) {
-				xbuf[i] = xp[0] + (xp[1] << 8) + (xp[2] << 16) + (xp[3] << 24);
-			}
+			for (i = 0; i < 16; ++i, xp += 4)
+			xbuf[i] = xp[0] + (xp[1] << 8) + (xp[2] << 16) + (xp[3] << 24);
 		}
 #endif
 	}
@@ -209,8 +208,8 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 	/* Let [abcd k s i] denote the operation
 	 * a = b + ((a + F(b,c,d) + X[k] + T[i]) <<< s). */
 #define F(x, y, z) (((x) & (y)) | (~(x) & (z)))
-#define SET(a, b, c, d, k, s, Ti) \
-	t = a + F(b,c,d) + X[k] + Ti; \
+#define SET(a, b, c, d, k, s, Ti)\
+	t = a + F(b,c,d) + X[k] + Ti;\
 	a = ROTATE_LEFT(t, s) + b
 	/* Do the following 16 operations. */
 	SET(a, b, c, d,  0,  7,  T1);
@@ -235,8 +234,8 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 	/* Let [abcd k s i] denote the operation
 	 * a = b + ((a + G(b,c,d) + X[k] + T[i]) <<< s). */
 #define G(x, y, z) (((x) & (z)) | ((y) & ~(z)))
-#define SET(a, b, c, d, k, s, Ti) \
-	t = a + G(b,c,d) + X[k] + Ti; \
+#define SET(a, b, c, d, k, s, Ti)\
+	t = a + G(b,c,d) + X[k] + Ti;\
 	a = ROTATE_LEFT(t, s) + b
 	/* Do the following 16 operations. */
 	SET(a, b, c, d,  1,  5, T17);
@@ -261,8 +260,8 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 	/* Let [abcd k s t] denote the operation
 	 * a = b + ((a + H(b,c,d) + X[k] + T[i]) <<< s). */
 #define H(x, y, z) ((x) ^ (y) ^ (z))
-#define SET(a, b, c, d, k, s, Ti) \
-	t = a + H(b,c,d) + X[k] + Ti; \
+#define SET(a, b, c, d, k, s, Ti)\
+	t = a + H(b,c,d) + X[k] + Ti;\
 	a = ROTATE_LEFT(t, s) + b
 	/* Do the following 16 operations. */
 	SET(a, b, c, d,  5,  4, T33);
@@ -287,8 +286,8 @@ static void md5_process(md5_state_t *pms, const md5_byte_t *data /*[64]*/) {
 	/* Let [abcd k s t] denote the operation
 	 * a = b + ((a + I(b,c,d) + X[k] + T[i]) <<< s). */
 #define I(x, y, z) ((y) ^ ((x) | ~(z)))
-#define SET(a, b, c, d, k, s, Ti) \
-	t = a + I(b,c,d) + X[k] + Ti; \
+#define SET(a, b, c, d, k, s, Ti)\
+	t = a + I(b,c,d) + X[k] + Ti;\
 	a = ROTATE_LEFT(t, s) + b
 	/* Do the following 16 operations. */
 	SET(a, b, c, d,  0,  6, T49);
@@ -348,9 +347,8 @@ void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes) {
 		int copy = (offset + nbytes > 64 ? 64 - offset : nbytes);
 
 		memcpy(pms->buf + offset, p, copy);
-		if (offset + copy < 64) {
+		if (offset + copy < 64)
 			return;
-		}
 		p += copy;
 		left -= copy;
 		md5_process(pms, pms->buf);
@@ -369,11 +367,11 @@ void md5_append(md5_state_t *pms, const md5_byte_t *data, int nbytes) {
 
 void md5_finish(md5_state_t *pms, md5_byte_t digest[16]) {
 	static const md5_byte_t pad[64] = {
-		0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-	};
+			0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+			   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+		};
 	md5_byte_t data[8];
 	int i;
 

@@ -191,7 +191,7 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 	}
 
 	rstt = usb_endp_request_alloc(endp, notify_hnd, arg, USB_TOKEN_STATUS | dntoken,
-			NULL, 0);
+		       	NULL, 0);
 	if (!rstt) {
 		goto out2;
 	}
@@ -253,11 +253,11 @@ static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg);
 void usb_dev_addr_assign(struct usb_dev *dev) {
 
 	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_set_addr, NULL,
-			USB_DEV_REQ_TYPE_WR
+		USB_DEV_REQ_TYPE_WR
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
-			USB_DEV_REQ_SET_ADDR, dev->idx,
-			0, 0, NULL);
+		USB_DEV_REQ_SET_ADDR, dev->idx,
+		0, 0, NULL);
 }
 
 static void usb_dev_request_hnd_set_addr(struct usb_request *req, void *arg) {
@@ -268,13 +268,14 @@ static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg);
 void usb_dev_configure(struct usb_dev *dev) {
 
 	usb_endp_control(dev->endpoints[0], usb_dev_request_hnd_dev_desc, NULL,
-			USB_DEV_REQ_TYPE_RD
+		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
-			USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_DEV << 8,
-			0, sizeof(struct usb_desc_device),
-			&dev->dev_desc);
+		USB_DEV_REQ_GET_DESC, USB_DESC_TYPE_DEV << 8,
+		0, sizeof(struct usb_desc_device),
+		&dev->dev_desc);
 }
+
 
 static void usb_dev_request_hnd_dev_desc(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
@@ -295,18 +296,19 @@ void usb_whitelist_accepts(struct usb_dev *dev) {
 				"getconf_data\n", __func__);
 	}
 
+
 	printk("usb_core: found vendor=%04x product=%04x; initializing\n",
 			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header, NULL,
-			USB_DEV_REQ_TYPE_RD
-			| USB_DEV_REQ_TYPE_STD
-			| USB_DEV_REQ_TYPE_DEV, USB_DEV_REQ_GET_DESC,
-			USB_DESC_TYPE_CONFIG << 8,
-			dev->c_config,
-			sizeof(struct usb_desc_configuration) +
+		USB_DEV_REQ_TYPE_RD
+		| USB_DEV_REQ_TYPE_STD
+		| USB_DEV_REQ_TYPE_DEV, USB_DEV_REQ_GET_DESC,
+		USB_DESC_TYPE_CONFIG << 8,
+		dev->c_config,
+		sizeof(struct usb_desc_configuration) +
 			sizeof(struct usb_desc_interface),
-			dev->getconf_data);
+		dev->getconf_data);
 }
 
 void usb_whitelist_rejects(struct usb_dev *dev) {
@@ -331,24 +333,24 @@ static void usb_dev_request_hnd_conf_header(struct usb_request *req, void *arg) 
 
 		dev->c_config += 1;
 		usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header, NULL,
-				USB_DEV_REQ_TYPE_RD
+			USB_DEV_REQ_TYPE_RD
 				| USB_DEV_REQ_TYPE_STD
 				| USB_DEV_REQ_TYPE_DEV,
-				USB_DEV_REQ_GET_DESC,
-				USB_DESC_TYPE_CONFIG << 8,
-				dev->c_config,
-				sizeof(struct usb_desc_configuration) +
+			USB_DEV_REQ_GET_DESC,
+			USB_DESC_TYPE_CONFIG << 8 ,
+			dev->c_config,
+			sizeof(struct usb_desc_configuration) +
 				sizeof(struct usb_desc_interface),
-				dev->getconf_data);
+			dev->getconf_data);
 	} else {
 		dev->c_interface = 0;
 		usb_endp_control(ctrl_endp, usb_dev_request_hnd_set_conf, NULL,
-				USB_DEV_REQ_TYPE_WR
+			USB_DEV_REQ_TYPE_WR
 				| USB_DEV_REQ_TYPE_STD
 				| USB_DEV_REQ_TYPE_DEV,
-				USB_DEV_REQ_SET_CONF,
-				dev->getconf_data->config_desc.b_configuration_value,
-				0, 0, NULL);
+			USB_DEV_REQ_SET_CONF,
+			dev->getconf_data->config_desc.b_configuration_value,
+			0, 0, NULL);
 
 	}
 }
@@ -399,3 +401,4 @@ int usb_hcd_register(struct usb_hcd *hcd) {
 
 	return 0;
 }
+

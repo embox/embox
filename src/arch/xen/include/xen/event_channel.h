@@ -88,10 +88,10 @@ DEFINE_XEN_GUEST_HANDLE(evtchn_port_t);
  *  2. <rdom> may be DOMID_SELF, allowing loopback connections.
  */
 struct evtchn_alloc_unbound {
-	/* IN parameters */
-	domid_t dom, remote_dom;
-	/* OUT parameters */
-	evtchn_port_t port;
+    /* IN parameters */
+    domid_t dom, remote_dom;
+    /* OUT parameters */
+    evtchn_port_t port;
 };
 typedef struct evtchn_alloc_unbound evtchn_alloc_unbound_t;
 
@@ -116,11 +116,11 @@ typedef struct evtchn_alloc_unbound evtchn_alloc_unbound_t;
  *  1. <remote_dom> may be DOMID_SELF, allowing loopback connections.
  */
 struct evtchn_bind_interdomain {
-	/* IN parameters. */
-	domid_t		  remote_dom;
-	evtchn_port_t remote_port;
-	/* OUT parameters. */
-	evtchn_port_t local_port;
+    /* IN parameters. */
+    domid_t remote_dom;
+    evtchn_port_t remote_port;
+    /* OUT parameters. */
+    evtchn_port_t local_port;
 };
 typedef struct evtchn_bind_interdomain evtchn_bind_interdomain_t;
 
@@ -137,11 +137,11 @@ typedef struct evtchn_bind_interdomain evtchn_bind_interdomain_t;
  *     binding cannot be changed.
  */
 struct evtchn_bind_virq {
-	/* IN parameters. */
-	uint32_t virq; /* enum virq */
-	uint32_t vcpu;
-	/* OUT parameters. */
-	evtchn_port_t port;
+    /* IN parameters. */
+    uint32_t virq; /* enum virq */
+    uint32_t vcpu;
+    /* OUT parameters. */
+    evtchn_port_t port;
 };
 typedef struct evtchn_bind_virq evtchn_bind_virq_t;
 
@@ -152,12 +152,12 @@ typedef struct evtchn_bind_virq evtchn_bind_virq_t;
  *  2. Only a sufficiently-privileged domain may bind to a physical IRQ.
  */
 struct evtchn_bind_pirq {
-	/* IN parameters. */
-	uint32_t pirq;
+    /* IN parameters. */
+    uint32_t pirq;
 #define BIND_PIRQ__WILL_SHARE 1
-	uint32_t flags; /* BIND_PIRQ__* */
-	/* OUT parameters. */
-	evtchn_port_t port;
+    uint32_t flags; /* BIND_PIRQ__* */
+    /* OUT parameters. */
+    evtchn_port_t port;
 };
 typedef struct evtchn_bind_pirq evtchn_bind_pirq_t;
 
@@ -168,9 +168,9 @@ typedef struct evtchn_bind_pirq evtchn_bind_pirq_t;
  *     may not be changed.
  */
 struct evtchn_bind_ipi {
-	uint32_t vcpu;
-	/* OUT parameters. */
-	evtchn_port_t port;
+    uint32_t vcpu;
+    /* OUT parameters. */
+    evtchn_port_t port;
 };
 typedef struct evtchn_bind_ipi evtchn_bind_ipi_t;
 
@@ -180,8 +180,8 @@ typedef struct evtchn_bind_ipi evtchn_bind_ipi_t;
  * (EVTCHNSTAT_unbound), awaiting a new connection.
  */
 struct evtchn_close {
-	/* IN parameters. */
-	evtchn_port_t port;
+    /* IN parameters. */
+    evtchn_port_t port;
 };
 typedef struct evtchn_close evtchn_close_t;
 
@@ -190,8 +190,8 @@ typedef struct evtchn_close evtchn_close_t;
  * endpoint is <port>.
  */
 struct evtchn_send {
-	/* IN parameters. */
-	evtchn_port_t port;
+    /* IN parameters. */
+    evtchn_port_t port;
 };
 typedef struct evtchn_send evtchn_send_t;
 
@@ -204,29 +204,29 @@ typedef struct evtchn_send evtchn_send_t;
  *     channel for which <dom> is not DOMID_SELF.
  */
 struct evtchn_status {
-	/* IN parameters */
-	domid_t		  dom;
-	evtchn_port_t port;
-	/* OUT parameters */
+    /* IN parameters */
+    domid_t  dom;
+    evtchn_port_t port;
+    /* OUT parameters */
 #define EVTCHNSTAT_closed       0  /* Channel is not in use.                 */
 #define EVTCHNSTAT_unbound      1  /* Channel is waiting interdom connection.*/
 #define EVTCHNSTAT_interdomain  2  /* Channel is connected to remote domain. */
 #define EVTCHNSTAT_pirq         3  /* Channel is bound to a phys IRQ line.   */
 #define EVTCHNSTAT_virq         4  /* Channel is bound to a virtual IRQ line */
 #define EVTCHNSTAT_ipi          5  /* Channel is bound to a virtual IPI line */
-	uint32_t status;
-	uint32_t vcpu;                 /* VCPU to which this channel is bound.   */
-	union {
-		struct {
-			domid_t dom;
-		} unbound;                 /* EVTCHNSTAT_unbound */
-		struct {
-			domid_t		  dom;
-			evtchn_port_t port;
-		} interdomain;             /* EVTCHNSTAT_interdomain */
-		uint32_t pirq;             /* EVTCHNSTAT_pirq        */
-		uint32_t virq;             /* EVTCHNSTAT_virq        */
-	} u;
+    uint32_t status;
+    uint32_t vcpu;                 /* VCPU to which this channel is bound.   */
+    union {
+        struct {
+            domid_t dom;
+        } unbound;                 /* EVTCHNSTAT_unbound */
+        struct {
+            domid_t dom;
+            evtchn_port_t port;
+        } interdomain;             /* EVTCHNSTAT_interdomain */
+        uint32_t pirq;             /* EVTCHNSTAT_pirq        */
+        uint32_t virq;             /* EVTCHNSTAT_virq        */
+    } u;
 };
 typedef struct evtchn_status evtchn_status_t;
 
@@ -243,9 +243,9 @@ typedef struct evtchn_status evtchn_status_t;
  *     has its binding reset to vcpu0).
  */
 struct evtchn_bind_vcpu {
-	/* IN parameters. */
-	evtchn_port_t port;
-	uint32_t	  vcpu;
+    /* IN parameters. */
+    evtchn_port_t port;
+    uint32_t vcpu;
 };
 typedef struct evtchn_bind_vcpu evtchn_bind_vcpu_t;
 
@@ -254,8 +254,8 @@ typedef struct evtchn_bind_vcpu evtchn_bind_vcpu_t;
  * a notification to the appropriate VCPU if an event is pending.
  */
 struct evtchn_unmask {
-	/* IN parameters. */
-	evtchn_port_t port;
+    /* IN parameters. */
+    evtchn_port_t port;
 };
 typedef struct evtchn_unmask evtchn_unmask_t;
 
@@ -270,8 +270,8 @@ typedef struct evtchn_unmask evtchn_unmask_t;
  *     as these events are likely to be lost.
  */
 struct evtchn_reset {
-	/* IN parameters. */
-	domid_t dom;
+    /* IN parameters. */
+    domid_t dom;
 };
 typedef struct evtchn_reset evtchn_reset_t;
 
@@ -283,13 +283,13 @@ typedef struct evtchn_reset evtchn_reset_t;
  * avoid losing any events.
  */
 struct evtchn_init_control {
-	/* IN parameters. */
-	uint64_t control_gfn;
-	uint32_t offset;
-	uint32_t vcpu;
-	/* OUT parameters. */
-	uint8_t link_bits;
-	uint8_t _pad[7];
+    /* IN parameters. */
+    uint64_t control_gfn;
+    uint32_t offset;
+    uint32_t vcpu;
+    /* OUT parameters. */
+    uint8_t link_bits;
+    uint8_t _pad[7];
 };
 typedef struct evtchn_init_control evtchn_init_control_t;
 
@@ -297,8 +297,8 @@ typedef struct evtchn_init_control evtchn_init_control_t;
  * EVTCHNOP_expand_array: add an additional page to the event array.
  */
 struct evtchn_expand_array {
-	/* IN parameters. */
-	uint64_t array_gfn;
+    /* IN parameters. */
+    uint64_t array_gfn;
 };
 typedef struct evtchn_expand_array evtchn_expand_array_t;
 
@@ -306,9 +306,9 @@ typedef struct evtchn_expand_array evtchn_expand_array_t;
  * EVTCHNOP_set_priority: set the priority for an event channel.
  */
 struct evtchn_set_priority {
-	/* IN parameters. */
-	uint32_t port;
-	uint32_t priority;
+    /* IN parameters. */
+    uint32_t port;
+    uint32_t priority;
 };
 typedef struct evtchn_set_priority evtchn_set_priority_t;
 
@@ -319,19 +319,19 @@ typedef struct evtchn_set_priority evtchn_set_priority_t;
  * Superceded by new event_channel_op() hypercall since 0x00030202.
  */
 struct evtchn_op {
-	uint32_t cmd; /* enum event_channel_op */
-	union {
-		struct evtchn_alloc_unbound	   alloc_unbound;
-		struct evtchn_bind_interdomain bind_interdomain;
-		struct evtchn_bind_virq		   bind_virq;
-		struct evtchn_bind_pirq		   bind_pirq;
-		struct evtchn_bind_ipi		   bind_ipi;
-		struct evtchn_close			   close;
-		struct evtchn_send			   send;
-		struct evtchn_status		   status;
-		struct evtchn_bind_vcpu		   bind_vcpu;
-		struct evtchn_unmask		   unmask;
-	} u;
+    uint32_t cmd; /* enum event_channel_op */
+    union {
+        struct evtchn_alloc_unbound    alloc_unbound;
+        struct evtchn_bind_interdomain bind_interdomain;
+        struct evtchn_bind_virq        bind_virq;
+        struct evtchn_bind_pirq        bind_pirq;
+        struct evtchn_bind_ipi         bind_ipi;
+        struct evtchn_close            close;
+        struct evtchn_send             send;
+        struct evtchn_status           status;
+        struct evtchn_bind_vcpu        bind_vcpu;
+        struct evtchn_unmask           unmask;
+    } u;
 };
 typedef struct evtchn_op evtchn_op_t;
 DEFINE_XEN_GUEST_HANDLE(evtchn_op_t);
@@ -366,9 +366,9 @@ typedef uint32_t event_word_t;
 #define EVTCHN_FIFO_NR_CHANNELS (1 << EVTCHN_FIFO_LINK_BITS)
 
 struct evtchn_fifo_control_block {
-	uint32_t ready;
-	uint32_t _rsvd;
-	uint32_t head[EVTCHN_FIFO_MAX_QUEUES];
+    uint32_t ready;
+    uint32_t _rsvd;
+    uint32_t head[EVTCHN_FIFO_MAX_QUEUES];
 };
 typedef struct evtchn_fifo_control_block evtchn_fifo_control_block_t;
 

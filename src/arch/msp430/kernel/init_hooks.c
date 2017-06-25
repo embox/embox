@@ -16,7 +16,7 @@
 #define CALBC1_16 (TAG_DCO_30 + 3)
 
 #define DCOCTL  0x56
-#define BCSCTL1 0x57
+#define BCSCTL1	0x57
 
 extern int _bss_vma, _bss_len;
 extern int _data_vma, _data_lma, _data_len;

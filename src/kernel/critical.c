@@ -56,9 +56,8 @@ void critical_request_dispatch(struct critical_dispatcher *d) {
 	inv_mask = d->mask;
 
 	for (pp = cpudata_ptr(&dispatch_queue); *pp; pp = &(*pp)->next) {
-		if ((*pp)->mask & inv_mask) {
+		if ((*pp)->mask & inv_mask)
 			break;
-		}
 	}
 
 	d->next = *pp;

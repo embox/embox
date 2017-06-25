@@ -5,7 +5,7 @@
 
 struct sockaddr_un {
 	sa_family_t sun_family;
-	char		sun_path[64];
+	char sun_path[64];
 };
 
 #endif /* LUASOCKET_SYS_UN_H_ */

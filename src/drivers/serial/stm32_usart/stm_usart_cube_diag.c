@@ -40,7 +40,7 @@
 static int stm32_uart_putc(struct uart *dev, int ch) {
 	USART_TypeDef *uart = (void *) dev->base_addr;
 
-	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0) ;
+	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0);
 
 	STM32_USART_TXDATA(uart) = (uint8_t) ch;
 
@@ -86,7 +86,7 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 
 	memset(&UartHandle, 0, sizeof(UartHandle));
 
-	UartHandle.Instance = (void *) dev->base_addr;
+	UartHandle.Instance = (void*) dev->base_addr;
 
 	UartHandle.Init.BaudRate = params->baud_rate;
 	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
@@ -100,47 +100,47 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	}
 
 	if (dev->params.irq) {
-		/* Enable the UART Data Register not empty Interrupt */
-		__HAL_UART_ENABLE_IT(&UartHandle, UART_IT_RXNE);
+	    /* Enable the UART Data Register not empty Interrupt */
+	    __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_RXNE);
 	}
 
 	return 0;
 }
 
 const struct uart_ops stm32_uart_ops = {
-	.uart_getc = stm32_uart_getc,
-	.uart_putc = stm32_uart_putc,
-	.uart_hasrx = stm32_uart_hasrx,
-	.uart_setup = stm32_uart_setup,
+		.uart_getc = stm32_uart_getc,
+		.uart_putc = stm32_uart_putc,
+		.uart_hasrx = stm32_uart_hasrx,
+		.uart_setup = stm32_uart_setup,
 };
 
 static struct uart stm32_diag = {
-	.uart_ops = &stm32_uart_ops,
-	.irq_num = USARTx_IRQn,
-	.base_addr = (unsigned long) USARTx,
+		.uart_ops = &stm32_uart_ops,
+		.irq_num = USARTx_IRQn,
+		.base_addr = (unsigned long) USARTx,
 };
 
 #if 0
 static const struct uart_params uart_defparams = {
-	.baud_rate = OPTION_GET(NUMBER,baud_rate),
-	.parity = 0,
-	.n_stop = 1,
-	.n_bits = 8,
-	.irq = true,
+		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = true,
 };
 #endif
 static const struct uart_params diag_defparams = {
-	.baud_rate = OPTION_GET(NUMBER,baud_rate),
-	.parity = 0,
-	.n_stop = 1,
-	.n_bits = 8,
-	.irq = false,
+		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = false,
 };
 
 const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-	.diag = {
-		.ops = &uart_diag_ops,
-	},
-	.uart = &stm32_diag,
-	.params = &diag_defparams,
+		.diag = {
+			.ops = &uart_diag_ops,
+		},
+		.uart = &stm32_diag,
+		.params = &diag_defparams,
 };

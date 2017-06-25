@@ -28,7 +28,7 @@ TEST_CASE("duplicate part of a string with strndup()") {
 	int i;
 
 	/* performing allocation many times causes more chances to get error,
-	 * esspecially when allocating from heap.
+ 	 * esspecially when allocating from heap.
 	 */
 	for (i = 0; i < 5; i++) {
 		dst = strndup(src, prefix_len);

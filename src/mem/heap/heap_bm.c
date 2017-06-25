@@ -24,7 +24,7 @@
 #if DEBUG
 #define printd(...) printk(__VA_ARGS__)
 #else
-#define printd(...) do {} while (0);
+#define printd(...) do {} while(0);
 #endif
 
 struct free_block_link {
@@ -101,7 +101,7 @@ static void set_end_size(struct free_block *block) {
 	*(uint32_t *) ((void *) block + size - 4) = size;
 }
 
-static struct free_block *concatenate_prev(struct free_block *block) {
+static struct free_block * concatenate_prev(struct free_block *block) {
 	size_t prev_size, new_size;
 	struct free_block *pblock; /* prev block */
 
@@ -123,7 +123,7 @@ static struct free_block *concatenate_prev(struct free_block *block) {
 	return pblock;
 }
 
-static struct free_block *concatenate_next(struct free_block *block) {
+static struct free_block * concatenate_next(struct free_block *block) {
 	size_t size;
 	struct free_block *nblock; /* next block */
 
@@ -150,7 +150,7 @@ static void block_set_size(struct free_block *block, size_t size) {
 	block->size = flags | size;
 }
 
-static struct free_block *cut(struct free_block_link *free_blocks_list,
+static struct free_block * cut(struct free_block_link *free_blocks_list,
 		struct free_block *block, size_t size) {
 	struct free_block *nblock; /* new block */
 	size_t offset;

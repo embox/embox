@@ -29,6 +29,7 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
+
 /* */
 #define CMCTR_BASE    0x38094000
 
@@ -121,10 +122,12 @@
 #define DMA_INTERRUPT_ENABLE_RECEIVE_DONE             (1 << 4)
 #define MAC_TRANSMIT_CONTROL_TRANSMIT_ENABLE          (1 << 0)
 
+
 #define MAC_MDIO_CONTROL_READ_WRITE(VAL)              ((VAL) << 10)
 #define MAC_MDIO_CONTROL_REG_ADDR(VAL)                ((VAL) << 5)
 #define MAC_MDIO_CONTROL_PHY_ADDR(VAL)                ((VAL) << 0)
 #define MAC_MDIO_CONTROL_START_FRAME(VAL)             ((VAL) << 15)
+
 
 /* DMA descriptor fields */
 #define DMA_RDES0_OWN_BIT      (1 << 31)
@@ -142,9 +145,10 @@
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
 
+
 static void time_delay( int delay) {
 	volatile int i = delay * 0x100;
-	while (i--) ;
+	while(i--);
 }
 
 static int arasan_gemac_mdio_read(int mii_id, int regnum) {
@@ -183,8 +187,8 @@ int arasan_gemac_mdio_write(int mii_id, int regnum, uint16_t value)
 }
 
 static void _reg_dump() {
-	dcache_flush((void *)BASE_ADDR, 0x200);
-	dcache_inval((void *)BASE_ADDR, 0x200);
+	dcache_flush((void*)BASE_ADDR, 0x200);
+	dcache_inval((void*)BASE_ADDR, 0x200);
 	printk("Arasan ethernet DMA registers:\n");
 	printk("======================================================\n");
 	printk("CONFIGURATION                       %8x\n", REG32_LOAD(DMA_CONFIGURATION));
@@ -217,14 +221,14 @@ struct arasan_dma_desc {
 #define TX_RING_SIZE 8
 #define RX_RING_SIZE 128
 
-static struct sk_buff *_rx_skbs[RX_RING_SIZE];
+static struct sk_buff * _rx_skbs[RX_RING_SIZE];
 static struct arasan_dma_desc _rx_ring[RX_RING_SIZE];
 static struct arasan_dma_desc _tx_ring[TX_RING_SIZE];
 static int _tx_head, _tx_tail;
-/*static int _rx_head, _rx_tail; */
+//static int _rx_head, _rx_tail;
 
 static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
-	/*printk("Arasan xmit\n"); */
+	//printk("Arasan xmit\n");
 	struct arasan_dma_desc *d;
 	uint32_t misc = 0;
 
@@ -245,14 +249,14 @@ static int arasan_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	_tx_tail = (_tx_tail + 1) % TX_RING_SIZE;
 
-	/*_reg_dump(); */
+	//_reg_dump();
 	return 0;
 }
 
 static int arasan_phy_discovery(void) {
 	int id;
 	int bus;
-	for (bus = 0; bus < 32; bus++) {
+	for (bus = 0; bus < 32; bus ++) {
 		id = arasan_gemac_mdio_read(bus, MII_PHYSID1) & 0xFFFF;
 		if (id != 0xFFFF && id != 0x0 ) {
 			return bus;
@@ -300,7 +304,7 @@ static void arasan_rx_ring_init(void) {
 	for (int i = 0; i < RX_RING_SIZE; i++) {
 		arasan_alloc_rx_buff(i);
 	}
-	/*_rx_head = _rx_tail = 0; */
+	//_rx_head = _rx_tail = 0;
 	REG32_STORE(DMA_RECEIVE_BASE_ADDRESS, (uint32_t)_rx_ring);
 }
 
@@ -363,17 +367,17 @@ static int arasan_set_macaddr(struct net_device *dev, const void *addr) {
 	const uint8_t *_macaddr = addr;
 
 	log_debug("addr = %x:%x:%x:%x:%x:%x",
-			_macaddr[0], _macaddr[1], _macaddr[2],
-			_macaddr[3], _macaddr[4], _macaddr[5]);
+		_macaddr[0], _macaddr[1], _macaddr[2],
+		_macaddr[3], _macaddr[4], _macaddr[5]);
 
 	mac_lo  = (_macaddr[5] << 8) |
-			(_macaddr[4] << 0);
+	          (_macaddr[4] << 0);
 
 	mac_mid = (_macaddr[3] << 8) |
-			(_macaddr[2] << 0);
+	          (_macaddr[2] << 0);
 
 	mac_hi  = (_macaddr[1] << 8) |
-			(_macaddr[0] << 0);
+	          (_macaddr[0] << 0);
 
 	REG32_STORE(MAC_ADDRESS1_HIGH, mac_hi);
 	REG32_STORE(MAC_ADDRESS1_MED, mac_mid);
@@ -416,7 +420,7 @@ void arasan_rx_poll(struct net_device *dev) {
 			dcache_inval(skb->mac.raw, packet_len);
 
 			skb->dev = dev;
-			/*show_packet(skb->mac.raw, packet_len, "rx"); */
+			//show_packet(skb->mac.raw, packet_len, "rx");
 
 			netif_rx(skb);
 
@@ -457,11 +461,12 @@ static void arasan_phy_reset(void) {
 
 	gpio_settings(gpio_port, 1 << PHY_RESET_PIN, GPIO_MODE_OUTPUT);
 
-	for (i = 100000; i > 0; i--) {
+	for (i=100000; i > 0; i--) {
 	}
 
 	gpio_set_level(gpio_port, 1 << PHY_RESET_PIN, 1);
 }
+
 
 static void arasan_dma_soft_reset(void) {
 	uint32_t reg;
@@ -505,6 +510,8 @@ static struct periph_memory_desc arasan_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(arasan_mem);
+
+
 
 static struct periph_memory_desc cmctr_mem = {
 	.start = CMCTR_BASE,

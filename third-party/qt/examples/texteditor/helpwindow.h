@@ -11,15 +11,15 @@
 #include <QtGui>
 
 class EWisard : public QWizard {
-Q_OBJECT
+    Q_OBJECT
 
-public:
-EWisard();
+    public:
+    	EWisard();
 
-void setVisible(bool visible);
+    	void setVisible(bool visible);
 
-private:
-QMdiSubWindow *subwindow;
+    private:
+        QMdiSubWindow *subwindow;
 };
 
 QT_END_NAMESPACE

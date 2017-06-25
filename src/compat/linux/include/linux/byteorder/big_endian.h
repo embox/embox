@@ -70,26 +70,26 @@ static inline __u16 __le16_to_cpup(const __le16 *p) {
 }
 
 static inline __be64 __cpu_to_be64p(const __u64 *p) {
-	return (__be64)*p;
+	return ( __be64)*p;
 }
 
 static inline __u64 __be64_to_cpup(const __be64 *p) {
-	return (__u64)*p;
+	return ( __u64)*p;
 }
 static inline __be32 __cpu_to_be32p(const __u32 *p) {
-	return (__be32)*p;
+	return ( __be32)*p;
 }
 
 static inline __u32 __be32_to_cpup(const __be32 *p) {
-	return (__u32)*p;
+	return ( __u32)*p;
 }
 
 static inline __be16 __cpu_to_be16p(const __u16 *p) {
-	return (__be16)*p;
+	return ( __be16)*p;
 }
 
 static inline __u16 __be16_to_cpup(const __be16 *p) {
-	return (__u16)*p;
+	return ( __u16)*p;
 }
 
 #define __cpu_to_le64s(x) __swab64s((x))

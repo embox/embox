@@ -15,14 +15,14 @@ struct sock_proto_ops;
  * Each netsock implements this interface.
  */
 struct net_sock {
-	int							 family;
-	int							 type;
-	int							 protocol;
-	int							 is_default;
+	int family;
+	int type;
+	int protocol;
+	int is_default;
 	const struct sock_proto_ops *ops;
 };
 
-extern const struct net_sock *net_sock_lookup(int family,
+extern const struct net_sock * net_sock_lookup(int family,
 		int type, int protocol);
 
 #include <util/array.h>
@@ -37,7 +37,7 @@ ARRAY_SPREAD_DECLARE(const struct net_sock, __net_sock_registry);
 	ARRAY_SPREAD_DECLARE(const struct net_sock,                        \
 			__net_sock_registry);                                      \
 	ARRAY_SPREAD_ADD_NAMED(__net_sock_registry,                        \
-			__net_sock_ ## _family ## _type ## _protocol, {                  \
+			__net_sock_##_family##_type##_protocol, {                  \
 				.family = _family,                                     \
 				.type = _type,                                         \
 				.protocol = _protocol,                                 \

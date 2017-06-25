@@ -27,7 +27,7 @@ static struct net_node *add_mod(const char *str_id, struct pnet_graph *graph, st
 }
 
 static int bt_main(int argc, char **argv) {
-	struct pnet_graph *graph;
+	struct pnet_graph *graph ;
 	struct net_node *hw_data, *hw_ctrl, *bc_data, *bc_ctrl, *dc_format_data,
 			*dc_format_ctrl, *dc_exec;
 

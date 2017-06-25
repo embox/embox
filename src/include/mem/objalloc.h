@@ -33,7 +33,7 @@
  *  @param objects_nr   - initial count of objects in allocator
  */
 #define OBJALLOC_DEF(allocator_nm, object_t, objects_nr) \
-	__OBJALLOC_DEF(allocator_nm, object_t, objects_nr)
+	  __OBJALLOC_DEF(allocator_nm, object_t, objects_nr)
 
 /**
  * Structure represents storage for object you save.
@@ -72,6 +72,6 @@ extern void *objalloc(objalloc_t *allocator);
  * @param allocator corresponding to freeing object
  * @param object pointer at start address of the memory, that must be free
  */
-extern void objfree(objalloc_t *allocator, void *object);
+extern void objfree(objalloc_t *allocator, void* object);
 
 #endif /*MEM_OBJ_ALLOC_H_ */

@@ -5,7 +5,7 @@
  * @date 13.02.09
  * @author Alexey Fomin
  * @author Anton Kozlov
- *  - access_type added
+ * 	- access_type added
  */
 
 #include <unistd.h>
@@ -96,7 +96,7 @@ int main(int argc, char **argv) {
 		case '?':
 		case 'h':
 			print_usage();
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}

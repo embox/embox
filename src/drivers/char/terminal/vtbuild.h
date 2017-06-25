@@ -21,7 +21,7 @@ typedef void (*vtbuild_callback_t)(struct vtbuild *, char ch);
 
 struct vtbuild {
 	vtbuild_callback_t cb;
-	void *			   user_data;
+	void *user_data;
 };
 
 struct vtbuild *vtbuild_init(struct vtbuild *builder, vtbuild_callback_t cb);

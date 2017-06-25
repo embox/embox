@@ -14,8 +14,8 @@ struct thread;
 
 struct fuse_sb_priv_data {
 	struct fuse_lowlevel_ops *fuse_lowlevel_ops;
-	struct task *			  fuse_task;
-	struct thread *			  stub_thread;
+	struct task *fuse_task;
+	struct thread *stub_thread;
 };
 
 extern const struct super_block_operations fuse_sbops;

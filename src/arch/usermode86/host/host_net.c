@@ -44,18 +44,16 @@ static int tun_alloc(const char *dev, char *out_dev, int len) {
 
 	memset(&ifr, 0, sizeof(ifr));
 	ifr.ifr_flags = IFF_TAP | IFF_NO_PI;
-	if (dev) {
+	if (dev)
 		strncpy(ifr.ifr_name, dev, IFNAMSIZ);
-	}
 
 	if ((err = host_ioctl(fd, TUNSETIFF, &ifr)) < 0) {
 		host_close(fd);
 		return -errno;
 	}
 
-	if (out_dev) {
+	if (out_dev)
 		strncpy(out_dev, ifr.ifr_name, len);
-	}
 	return fd;
 }
 
@@ -116,3 +114,4 @@ int host_net_rx(struct host_net_adp *hnet, void *buf, int len) {
 void host_net_tx(struct host_net_adp *hnet, const void *buf, int len) {
 	host_write(hnet->fd, buf, len);
 }
+

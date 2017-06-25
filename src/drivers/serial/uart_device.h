@@ -23,10 +23,10 @@ struct tty;
 
 struct uart_params {
 	uint32_t baud_rate;
-	bool	 parity;
-	int		 n_stop;
-	int		 n_bits;
-	bool	 irq;
+	bool parity;
+	int n_stop;
+	int n_bits;
+	bool irq;
 };
 
 struct uart_ops {
@@ -39,19 +39,19 @@ struct uart_ops {
 struct uart {
 	/* declarative */
 	const struct uart_ops *uart_ops;
-	short				   irq_num;
-	uint32_t			   base_addr;
-	irq_handler_t		   irq_handler;
+	short irq_num;
+	uint32_t base_addr;
+	irq_handler_t irq_handler;
 
 	/* management */
 	struct dlist_head lnk;
-	char			  dev_name[UART_NAME_MAXLEN];
-	int				  idx;
+	char dev_name[UART_NAME_MAXLEN];
+	int idx;
 
 	/* runtime */
-	int				   state;
+	int state;
 	struct uart_params params;
-	struct tty *	   tty;
+	struct tty *tty;
 };
 
 /**
@@ -59,7 +59,7 @@ struct uart {
  *
  * @param uart Uart descriptor
  * @param uart_params Pointer to uart params. If not null, used to assign
- *  default params
+ * 	default params
  *
  * @return uart instance pointer on success
  * @return NULL on error

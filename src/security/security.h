@@ -105,7 +105,7 @@ extern int security_xattr_get(struct node *node, const char *name, char *value, 
  *
  */
 extern int security_xattr_set(struct node *node, const char *name,
-		const char *value, size_t len, int flags);
+			const char *value, size_t len, int flags);
 
 /**
  * @brief Check for xattr set.
@@ -129,5 +129,6 @@ extern int security_xattr_idesc_list(struct idesc *idesc, char *list, size_t len
 struct sock;
 extern int security_sock_create(struct sock *sock);
 extern int security_sock_label(struct sock *sock, char *label, size_t len);
+
 
 #endif /* SECURITY_SECURITY_H_ */

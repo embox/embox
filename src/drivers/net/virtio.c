@@ -66,15 +66,11 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	sched_lock();
 	{
 		desc_id = vq->next_free_desc;
-		do {
-			desc = virtqueue_alloc_desc(vq);
-		} while (desc == NULL);
+		do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
 		vring_desc_init(desc, hdr, sizeof *hdr, VRING_DESC_F_NEXT);
 		desc->next = vq->next_free_desc;
 
-		do {
-			desc = virtqueue_alloc_desc(vq);
-		} while (desc == NULL);
+		do { desc = virtqueue_alloc_desc(vq); } while (desc == NULL);
 		vring_desc_init(desc, skb_data_cast_in(skb_data), skb->len, 0);
 
 		vring_push_desc(desc_id, &vq->ring);
@@ -295,21 +291,15 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 
 	/* add receive buffer */
 	vq = &dev_priv->rq;
-	if (MODOPS_PREP_BUFF_CNT * 2 > vq->ring.num) {
-		goto out_nomem;
-	}
+	if (MODOPS_PREP_BUFF_CNT * 2 > vq->ring.num) goto out_nomem;
 
 	for (i = 0; i < MODOPS_PREP_BUFF_CNT; ++i) {
 		desc_id = vq->next_free_desc;
 		desc = virtqueue_alloc_desc(vq);
-		if (desc == NULL) {
-			goto out_nomem;
-		}
+		if (desc == NULL) goto out_nomem;
 
 		skb_extra = skb_extra_alloc();
-		if (skb_extra == NULL) {
-			goto out_nomem;
-		}
+		if (skb_extra == NULL) goto out_nomem;
 
 		vring_desc_init(desc, skb_extra_cast_in(skb_extra),
 				sizeof(struct virtio_net_hdr),
@@ -317,14 +307,10 @@ static int virtio_priv_init(struct virtio_priv *dev_priv,
 		desc->next = vq->next_free_desc;
 
 		desc = virtqueue_alloc_desc(vq);
-		if (desc == NULL) {
-			goto out_nomem;
-		}
+		if (desc == NULL) goto out_nomem;
 
 		skb_data = skb_data_alloc(skb_max_size());
-		if (skb_data == NULL) {
-			goto out_nomem;
-		}
+		if (skb_data == NULL) goto out_nomem;
 
 		vring_desc_init(desc,
 				skb_data_cast_in(skb_data), skb_max_size(),

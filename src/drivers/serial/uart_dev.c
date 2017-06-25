@@ -37,7 +37,7 @@ static inline void uart_state_clear(struct uart *uart, int mask) {
 static int uart_fill_name(struct uart *dev) {
 
 	dev->idx = index_alloc(&serial_indexator, INDEX_MIN);
-	if (dev->idx < 0) {
+	if(dev->idx < 0) {
 		return -EBUSY;
 	}
 
@@ -57,7 +57,7 @@ static int uart_attach_irq(struct uart *uart) {
 	}
 
 	return irq_attach(uart->irq_num, uart->irq_handler, 0, uart,
-				   uart->dev_name);
+			uart->dev_name);
 }
 
 static int uart_detach_irq(struct uart *uart) {
@@ -79,7 +79,7 @@ static int uart_setup(struct uart *uart) {
 	return 0;
 }
 
-extern int ttys_register(const char *name, void *dev_info);
+extern int ttys_register(const char*name, void *dev_info);
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
 
@@ -164,3 +164,4 @@ int uart_get_params(struct uart *uart, struct uart_params *params) {
 
 	return 0;
 }
+

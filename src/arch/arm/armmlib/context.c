@@ -24,3 +24,4 @@ void context_init(struct context *ctx, unsigned int flags,
 		ctx->control = CM3_CONTROL_NPRIV;
 	}
 }
+

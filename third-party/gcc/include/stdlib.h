@@ -12,3 +12,4 @@ extern int atexit(void (*func)(void));
 __END_DECLS
 
 #endif /* GCC_STDLIB_H_ */
+

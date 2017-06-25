@@ -44,9 +44,9 @@ extern size_t ip6_data_length(const struct ip6hdr *ip6h);
 struct ip6_pseudohdr {
 	struct in6_addr src_ip6;
 	struct in6_addr dst_ip6;
-	uint32_t		len;
-	uint8_t			zero[3];
-	uint8_t			hdr;
+	uint32_t len;
+	uint8_t zero[3];
+	uint8_t hdr;
 } __attribute__((packed));
 
 /**

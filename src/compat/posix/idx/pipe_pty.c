@@ -35,7 +35,7 @@ struct pty;
 
 struct idesc_pty {
 	struct idesc idesc;
-	struct pty * pty;
+	struct pty *pty;
 };
 
 #define MAX_PTY 20
@@ -52,8 +52,8 @@ static inline int pty_wait(struct idesc *idesc, struct tty *t, int flags) {
 	struct idesc_wait_link wl;
 
 	return IDESC_WAIT_LOCKED(mutex_unlock(&t->lock),
-				   idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
-				   mutex_lock(&t->lock));
+			idesc, &wl, flags, SCHED_TIMEOUT_INFINITE,
+			mutex_lock(&t->lock));
 }
 
 size_t pty_read(struct pty *pt, struct idesc *idesc, char *buff, size_t size) {
@@ -113,21 +113,21 @@ static int pty_master_status(struct idesc *idesc, int mask);
 static int pty_slave_status(struct idesc *idesc, int mask);
 
 static const struct idesc_ops pty_master_ops = {
-	.id_writev = pty_master_write,
-	.id_readv  = pty_master_read,
-	.close = pty_close,
-	.ioctl = pty_ioctl,
-	/*.fstat = pty_fstat,*/
-	.status = pty_master_status,
+		.id_writev = pty_master_write,
+		.id_readv  = pty_master_read,
+		.close = pty_close,
+		.ioctl = pty_ioctl,
+		/*.fstat = pty_fstat,*/
+		.status = pty_master_status,
 };
 
 static const struct idesc_ops pty_slave_ops = {
-	.id_writev  = pty_slave_write,
-	.id_readv   = pty_slave_read,
-	.close  = pty_close,
-	.ioctl  = pty_ioctl,
-	.fstat  = pty_fstat,
-	.status = pty_slave_status,
+		.id_writev  = pty_slave_write,
+		.id_readv   = pty_slave_read,
+		.close  = pty_close,
+		.ioctl  = pty_ioctl,
+		.fstat  = pty_fstat,
+		.status = pty_slave_status,
 };
 
 static struct pty *pty_create(void) {
@@ -135,9 +135,9 @@ static struct pty *pty_create(void) {
 
 	pty = pool_alloc(&pty_pool);
 
-/*	if (pty) { */
-/*		pty_init(&pty->pty); */
-/*	} */
+//	if (pty) {
+//		pty_init(&pty->pty);
+//	}
 
 	return pty;
 }
@@ -184,15 +184,13 @@ static void pty_close(struct idesc *idesc) {
 		if (idesc == *ipty_pm) {
 			idesc_pty_delete((struct idesc_pty *) idesc, ipty_pm);
 			/* Wake up writing end if it is sleeping. */
-			if (*ipty_ps) {
+			if (*ipty_ps)
 				idesc_notify(*ipty_ps, POLLIN | POLLOUT | POLLERR);
-			}
 		} else if (idesc == *ipty_ps) {
 			idesc_pty_delete((struct idesc_pty *) idesc, ipty_ps);
 			/* Wake up reading end if it is sleeping. */
-			if (*ipty_pm) {
+			if (*ipty_pm)
 				idesc_notify(*ipty_pm, POLLIN | POLLOUT | POLLERR);
-			}
 		}
 
 		/* Free memory if both of ends are closed. */
@@ -261,14 +259,14 @@ static int pty_ioctl(struct idesc *idesc, int request, void *data) {
 	return tty_ioctl(pty_to_tty(ipty->pty), request, data);
 }
 
-/*TODO check it */
+//TODO check it
 static int pty_master_status(struct idesc *idesc, int mask) {
 	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
 	struct pty *pty = ipty->pty;
 	int res;
 
 	/* if slave is closed read/write/err will not block and will
-	 * cause error */
+ 	 * cause error */
 	if (!ipty->pty->tty.idesc) {
 		return 1;
 	}
@@ -294,7 +292,7 @@ static int pty_slave_status(struct idesc *idesc, int mask) {
 	struct pty *pty = ipty->pty;
 
 	/* if master is closed read/write/err will not block and will
-	 * cause error */
+ 	 * cause error */
 	if (!ipty->pty->master) {
 		return 1;
 	}

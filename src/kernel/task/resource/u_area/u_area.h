@@ -16,15 +16,15 @@
 struct task;
 
 struct task_u_area {
-	uid_t reuid;
-	uid_t euid;
-	gid_t regid;
-	gid_t egid;
+	uid_t	reuid;
+	uid_t   euid;
+	gid_t	regid;
+	gid_t	egid;
 };
 
 __BEGIN_DECLS
 
-extern struct task_u_area *task_resource_u_area(
+extern struct task_u_area * task_resource_u_area(
 		const struct task *task);
 
 #define task_self_resource_u_area() \

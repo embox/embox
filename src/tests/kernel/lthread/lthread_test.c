@@ -33,10 +33,8 @@ TEST_CASE("Launch simple lthread") {
 	lthread_launch(&lt);
 
 	/* Spin, waiting lthread finished */
-	while (1) {
-		if (done == 1) {
-			break;
-		}
+	while(1) {
+		if(done == 1) break;
 		ksleep(0);
 	}
 
@@ -60,10 +58,8 @@ TEST_CASE("Call sched from lthread") {
 	lthread_launch(&lt);
 
 	/* Spin, waiting lthread finished */
-	while (1) {
-		if (done == 1) {
-			break;
-		}
+	while(1) {
+		if(done == 1) break;
 		ksleep(0);
 	}
 
@@ -79,7 +75,7 @@ TEST_CASE("Create lthreads with different priorities") {
 	struct lthread lts[LTHREAD_QUANTITY];
 	done = 0;
 
-	for (int i = 0; i < LTHREAD_QUANTITY; i++) {
+	for(int i = 0; i < LTHREAD_QUANTITY; i++) {
 		lthread_init(&lts[i], run2);
 		test_assert_zero(
 			schedee_priority_set(&lts[i].schedee, SCHED_PRIORITY_MAX - i)
@@ -88,7 +84,7 @@ TEST_CASE("Create lthreads with different priorities") {
 	}
 
 	/* deleting occurs onle after finishing */
-	for (int i = 0; i < LTHREAD_QUANTITY; i++) {
+	for(int i = 0; i < LTHREAD_QUANTITY; i++) {
 		lthread_join(&lts[i]);
 	}
 
@@ -145,3 +141,4 @@ TEST_CASE("Test several launches") {
 
 	lthread_join(&lt);
 }
+

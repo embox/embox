@@ -6,6 +6,7 @@
  * @author Andrey Gazukin
  */
 
+
 /*
  * hd.c
  *
@@ -39,6 +40,7 @@
  * SUCH DAMAGE.
  */
 
+
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
@@ -59,7 +61,7 @@
 #include <mem/phymem.h>
 
 static hdc_t hdctab[HD_CONTROLLERS];
-static hd_t hdtab[HD_DRIVES];
+static hd_t  hdtab[HD_DRIVES];
 static struct ide_tab ide;
 static long tmr_cmd_start_time;
 
@@ -72,8 +74,8 @@ static void hd_fixstring(unsigned char *s, int len) {
 	unsigned char *end = s + len;
 
 	/* Convert from big-endian to host byte order */
-	for (p = end; p != s; ) {
-		unsigned short *pp = (unsigned short *) (p -= 2);
+	for (p = end ; p != s;) {
+		 unsigned short *pp = (unsigned short *) (p -= 2);
 		*pp = ((*pp & 0x00FF) << 8) | ((*pp & 0xFF00) >> 8);
 	}
 
@@ -97,30 +99,14 @@ static void hd_fixstring(unsigned char *s, int len) {
 
 static void hd_error(char *func, unsigned char error) {
 
-	if (error & HDCE_BBK) {
-		log_debug("bad block  ");
-	}
-	if (error & HDCE_UNC) {
-		log_debug("uncorrectable data  ");
-	}
-	if (error & HDCE_MC) {
-		log_debug("media change  ");
-	}
-	if (error & HDCE_IDNF) {
-		log_debug("id not found  ");
-	}
-	if (error & HDCE_MCR) {
-		log_debug("media change requested  ");
-	}
-	if (error & HDCE_ABRT) {
-		log_debug("abort  ");
-	}
-	if (error & HDCE_TK0NF) {
-		log_debug("track 0 not found  ");
-	}
-	if (error & HDCE_AMNF) {
-		log_debug("address mark not found  ");
-	}
+	if (error & HDCE_BBK)   log_debug("bad block  ");
+	if (error & HDCE_UNC)   log_debug("uncorrectable data  ");
+	if (error & HDCE_MC)    log_debug("media change  ");
+	if (error & HDCE_IDNF)  log_debug("id not found  ");
+	if (error & HDCE_MCR)   log_debug("media change requested  ");
+	if (error & HDCE_ABRT)  log_debug("abort  ");
+	if (error & HDCE_TK0NF) log_debug("track 0 not found  ");
+	if (error & HDCE_AMNF)  log_debug("address mark not found  ");
 
 	return;
 }
@@ -128,7 +114,7 @@ static void hd_error(char *func, unsigned char error) {
 static long system_read_timer(void) {
 	struct timespec ts;
 
-	ktime_get_timespec(&ts);
+	ktime_get_timespec (&ts);
 	return (long) ts.tv_sec;
 }
 
@@ -145,11 +131,12 @@ static int tmr_chk_timeout(long timeout) {
 
 	/* timed out yet ? */
 	if (curTime >= (tmr_cmd_start_time + timeout)) {
-		return 1;    /* yes */
+	  return 1;      /* yes */
 	}
 	/* no timeout yet */
 	return 0;
 }
+
 
 int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
 	unsigned char status, error;
@@ -202,7 +189,7 @@ void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects) {
 	outb((unsigned char) track, hd->hdc->iobase + HDC_TRACKLSB);
 	outb((unsigned char) (track >> 8), hd->hdc->iobase + HDC_TRACKMSB);
 	outb((((unsigned char) head & 0xFF) | (unsigned char) hd->drvsel),
-			hd->hdc->iobase + HDC_DRVHD);
+		 hd->hdc->iobase + HDC_DRVHD);
 }
 
 void pio_read_buffer(hd_t *hd, char *buffer, int size) {
@@ -224,6 +211,7 @@ void pio_write_buffer(hd_t *hd, char *buffer, int size) {
 		outsw(hdc->iobase + HDC_DATA, buffer, size / 2);
 	}
 }
+
 
 static int hd_identify(hd_t *hd) {
 	struct block_dev *bdev = hd->bdev;
@@ -248,7 +236,7 @@ static int hd_identify(hd_t *hd) {
 			(char *) &(hd->param), sizeof(hd->param) / 2);
 
 	/* XXX this was added when ide drive with reported block size equals 64
-	 * However, block dev tries to use this and fails */
+ 	 * However, block dev tries to use this and fails */
 	if (bdev) {
 		static_assert(bdev->size == 512);
 		if (hd->param.unfbytes < bdev->block_size) {
@@ -284,14 +272,14 @@ static int hd_identify(hd_t *hd) {
 			return -EIO;
 		}
 		if (hd->cyls == 0xFFFF && hd->heads == 0xFFFF
-				&& hd->sectors == 0xFFFF) {
+			&& hd->sectors == 0xFFFF) {
 			return -EIO;
 		}
 	} else {
 		hd->lba = 1;
 		hd->blks = (hd->param.totalsec1 << 16) | hd->param.totalsec0;
 		if (hd->media == IDE_DISK && (hd->blks == 0 ||
-				hd->blks == 0xFFFFFFFF)) {
+			hd->blks == 0xFFFFFFFF)) {
 			return -EIO;
 		}
 	}
@@ -300,7 +288,7 @@ static int hd_identify(hd_t *hd) {
 }
 
 static int hd_cmd(hd_t *hd, unsigned int cmd,
-		unsigned int feat, unsigned int nsects) {
+				  unsigned int feat, unsigned int nsects) {
 	/* Ignore interrupt for command */
 	hd->hdc->dir = HD_XFER_IGNORE;
 
@@ -361,7 +349,7 @@ static void hd_read_hndl(hdc_t *hdc) {
 		hd_error("hdread", error);
 		hdc->result = -EIO;
 	} else {
-		/* Read sector data */
+	/* Read sector data */
 		nsects = hdc->active->multsect;
 		if (nsects > hdc->nsects) {
 			nsects = hdc->nsects;
@@ -439,7 +427,7 @@ static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
 	}
 
 	if ((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
-			&& (HD_XFER_IGNORE != hdc->dir)) {
+			              && (HD_XFER_IGNORE != hdc->dir)) {
 		hdc->result = 1;
 		waitq_wakeup_all(&hdc->waitq);
 	}
@@ -518,7 +506,7 @@ static int get_interface_type(hdc_t *hdc, int drvsel) {
 }
 
 static int setup_controller(hdc_t *hdc, int iobase, int irq,
-		int bmregbase, int *masterif, int *slaveif) {
+					int bmregbase, int *masterif, int *slaveif) {
 	int res;
 
 	*hdc = (struct hdc) {
@@ -530,10 +518,9 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 
 	waitq_init(&hdc->waitq);
 
-	if (hdc->bmregbase) {
+	if (hdc->bmregbase)
 		/* Allocate one page for PRD list */
 		hdc->prds = (struct prd *) phymem_alloc(1);
-	}
 
 	/* Assume no devices connected to controller */
 	*masterif = HDIF_NONE;
@@ -595,19 +582,19 @@ static int ide_create_block_dev(hd_t *hd) {
 	const struct block_dev_module *bdev;
 
 	switch (hd->media) {
-	case IDE_CDROM:
-		bdev = block_dev_lookup("idecd");
-		break;
-	case IDE_DISK:
-		if (hd->udmamode == -1) {
-			bdev = block_dev_lookup("idedisk");
-		} else {
-			bdev = block_dev_lookup("idedisk_udma");
-		}
+		case IDE_CDROM:
+			bdev = block_dev_lookup("idecd");
+			break;
+		case IDE_DISK:
+			if (hd->udmamode == -1) {
+				bdev = block_dev_lookup("idedisk");
+			} else {
+				bdev = block_dev_lookup("idedisk_udma");
+			}
 
-		break;
-	default:
-		bdev = NULL;
+			break;
+		default:
+			bdev = NULL;
 	}
 	if (bdev == NULL) {
 		return 0;
@@ -618,7 +605,7 @@ static int ide_create_block_dev(hd_t *hd) {
 }
 
 static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
-		int udmasel, int iftype, int numslot) {
+			int udmasel, int iftype, int numslot) {
 	int rc;
 
 	/* Initialize drive block */
@@ -702,33 +689,26 @@ static int ide_init(void) {
 	int slaveif;
 	int numhd;
 	int i;
-	int irq[] = {
-		HDC0_IRQ, HDC1_IRQ
-	};
-	int iobase[] = {
-		HDC0_IOBASE, HDC1_IOBASE
-	};
+	int irq[] = {HDC0_IRQ, HDC1_IRQ};
+	int iobase[] = {HDC0_IOBASE, HDC1_IOBASE};
 
 	numhd = HD_DRIVES;
 
 	idedisk_idx = &harddisk_idx;
 
 	for (i = 0; i < HD_CONTROLLERS; i++) {
-		if (numhd < i * 2 + 1) {
+		if (numhd < i * 2 + 1)
 			break;
-		}
 
 		rc = setup_controller(&hdctab[i], iobase[i],
 				irq[i], 0, &masterif, &slaveif);
 		if (rc >= 0) {
-			if (numhd >= i * 2 + 1 && masterif > HDIF_UNKNOWN) {
+			if (numhd >= i * 2 + 1 && masterif > HDIF_UNKNOWN)
 				setup_hd(&hdtab[i * 2], &hdctab[i], HD0_DRVSEL,
 						BM_SR_DRV0, masterif, i * 2);
-			}
-			if (numhd >= i * 2 + 2 && slaveif > HDIF_UNKNOWN) {
+			if (numhd >= i * 2 + 2 && slaveif > HDIF_UNKNOWN)
 				setup_hd(&hdtab[i * 2 + 1], &hdctab[i], HD1_DRVSEL,
 						BM_SR_DRV1, slaveif, i * 2 + 1);
-			}
 		}
 	}
 

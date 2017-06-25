@@ -20,11 +20,11 @@
 static void vtparse_callback(struct vtparse *parser, struct vt_token *);
 
 static void vtbuild_putc(struct vtbuild *builder, char ch) {
-	TERMINAL *terminal = (TERMINAL *) builder->user_data;
+	TERMINAL* terminal = (TERMINAL*) builder->user_data;
 	terminal->io->putc(ch);
 }
 
-TERMINAL *terminal_init(TERMINAL *this, TERMINAL_IO *io) {
+TERMINAL * terminal_init(TERMINAL *this, TERMINAL_IO *io) {
 	if (this == NULL) {
 		return NULL;
 	}
@@ -63,20 +63,20 @@ static bool is_valid_action(vt_action_t action) {
 	case VT_ACTION_OSC_START:
 	case VT_ACTION_OSC_PUT:
 	case VT_ACTION_OSC_END:
-	/* Operating System Command */
-	/* ignore them as unused in our system
-	  -- Eldar*/
+		/* Operating System Command */
+		/* ignore them as unused in our system
+		  -- Eldar*/
 	case VT_ACTION_HOOK:
 	case VT_ACTION_PUT:
 	case VT_ACTION_UNHOOK:
-	/* device control strings */
-	/* ignore them as unused in our system
-	  -- Eldar*/
+		/* device control strings */
+		/* ignore them as unused in our system
+		  -- Eldar*/
 	case VT_ACTION_IGNORE:
 	case VT_ACTION_COLLECT:
 	case VT_ACTION_PARAM:
 	case VT_ACTION_CLEAR:
-	/* ignore as VTParser internal states */
+		/* ignore as VTParser internal states */
 	default:
 		/* unknown */
 		return false;
@@ -142,18 +142,16 @@ static void vtparse_callback(struct vtparse *parser, struct vt_token *token) {
 	int *queue_len = &terminal->vt_token_queue_len;
 	if (*queue_len < VTPARSER_TOKEN_QUEUE_AMOUNT) {
 		terminal->vt_token_queue[terminal->vt_token_queue_head + (*queue_len)++]
-			= *token;
+				= *token;
 	} else {
 		/* TODO*/
 		assert(false);
 	}
 }
 #if 0
-static char *ACTION_NAMES[] = {
-	"<no action>", "CLEAR", "COLLECT", "CSI_DISPATCH",
-	"ESC_DISPATCH", "EXECUTE", "HOOK", "IGNORE", "OSC_END", "OSC_PUT",
-	"OSC_START", "PARAM", "PRINT", "PUT", "UNHOOK",
-};
+static char *ACTION_NAMES[] = { "<no action>", "CLEAR", "COLLECT", "CSI_DISPATCH",
+		"ESC_DISPATCH", "EXECUTE", "HOOK", "IGNORE", "OSC_END", "OSC_PUT",
+		"OSC_START", "PARAM", "PRINT", "PUT", "UNHOOK", };
 #endif
 
 /*
@@ -213,7 +211,7 @@ bool terminal_receive(TERMINAL *this, TERMINAL_TOKEN *token,
 }
 
 bool terminal_transmit(TERMINAL *terminal, TERMINAL_TOKEN token,
-		short *params, int params_len) {
+						short *params, int params_len) {
 	struct vt_token vt_token;
 
 	if (NULL == vt_from_term_token(&vt_token, token, params, params_len)) {
@@ -229,7 +227,7 @@ bool terminal_transmit_va(TERMINAL *terminal, TERMINAL_TOKEN token, int params_l
 	va_list args;
 	int i;
 	short params[VTPARSE_TOKEN_PARAMS_MAX];
-	/*short params[0x20]; */
+	//short params[0x20];
 
 	assert(params_len <= VTPARSE_TOKEN_PARAMS_MAX);
 

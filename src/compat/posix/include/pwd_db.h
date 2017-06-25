@@ -19,4 +19,5 @@
 #define SHADOW_FILE  FS_DB_PREFIX "/shadow"
 #define ADDUSER_FILE FS_DB_PREFIX "/adduser.conf"
 
+
 #endif /* PWD_GRP_DB_H_ */

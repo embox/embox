@@ -20,6 +20,7 @@
 #include <kernel/thread.h>
 #include <kernel/time/time.h>
 
+
 static inline int cond_is_static_inited(cond_t *c) {
 	/* Static initializer can't really init list now, so if this condition's
 	 * true initialization is not finished */
@@ -31,7 +32,7 @@ static void condattr_copy(const struct condattr *source, struct condattr *dest) 
 }
 
 void cond_init(cond_t *c, const struct condattr *attr) {
-	struct thread *current;
+	struct thread* current;
 
 	assert(c);
 
@@ -82,7 +83,7 @@ int cond_wait(cond_t *c, struct mutex *m) {
 }
 
 int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
-	struct thread *current = thread_self();
+	struct thread* current = thread_self();
 	struct timespec relative_time;
 	clock_t timeout;
 	int res;
@@ -102,7 +103,7 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	} else {
 		clock_gettime(CLOCK_REALTIME, &relative_time);
 		relative_time = timespec_sub(*ts, relative_time);
-		timeout = (clock_t) (timespec_to_ns(&relative_time) / NSEC_PER_MSEC); /*TODO overflow */
+		timeout = (clock_t) (timespec_to_ns(&relative_time) / NSEC_PER_MSEC); //TODO overflow
 	}
 
 	if (cond_is_static_inited(c)) {
@@ -127,12 +128,12 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	mutex_lock(m);
 
 	/* RETURN VALUE
-	   All condition variable functions return 0 on success and a non-zero error code on error. */
+       All condition variable functions return 0 on success and a non-zero error code on error. */
 	return -res;
 }
 
 int cond_signal(cond_t *c) {
-	struct thread *current = thread_self();
+	struct thread* current = thread_self();
 
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
@@ -155,7 +156,7 @@ int cond_signal(cond_t *c) {
 }
 
 int cond_broadcast(cond_t *c) {
-	struct thread *current = thread_self();
+	struct thread* current = thread_self();
 
 	assert(c);
 	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));

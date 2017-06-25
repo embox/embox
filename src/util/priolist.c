@@ -32,10 +32,9 @@ void priolist_add(struct priolist_link *link, struct priolist *list) {
 			iter = member_to_object(iter->prio_link.next, priolist_prio_t);
 		} while (iter != first);
 
-		if (!last || last->prio != link->prio) {
+		if (!last || last->prio != link->prio)
 			/* new prio, new element in a prio tier */
 			dlist_add_prev(&link->prio_link, &iter->prio_link);
-		}
 	}
 
 	dlist_add_prev(&link->node_link, next_node_link);
@@ -51,11 +50,10 @@ void priolist_del(struct priolist_link *link, struct priolist *list) {
 
 		if (next_node_link != &list->node_list) {
 			struct priolist_link *next = member_to_object(
-				next_node_link, priolist_node_t);
+					next_node_link, priolist_node_t);
 
-			if (dlist_empty(&next->prio_link)) {
+			if (dlist_empty(&next->prio_link))
 				dlist_add_next(&next->prio_link, &link->prio_link);
-			}
 		}
 
 		dlist_del_init(&link->prio_link);
@@ -63,3 +61,4 @@ void priolist_del(struct priolist_link *link, struct priolist *list) {
 
 	dlist_del_init(&link->node_link);
 }
+

@@ -27,7 +27,7 @@ typedef struct __mmu_env {
 	uint32_t status;          /**< MMU enabled/disabled */
 
 	__mmu_ctx_t *ctx;              /**< context table */
-	uint32_t	 cur_ctx;
+	uint32_t cur_ctx;
 
 	uint32_t data_fault_cnt;  /**< Counter for data page faults */
 	uint32_t inst_fault_cnt;  /**< Counter for instruction page faults */

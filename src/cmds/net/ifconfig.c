@@ -22,31 +22,31 @@
 #include <util/array.h>
 
 struct ifconfig_args {
-	char			with_a;
-	char			with_s;
-	char			with_arp, arp;
-	char			with_promisc, promisc;
-	char			with_allmulti, allmulti;
-	char			with_mcast; int mcast;
-	char			with_p2p; char p2p; struct in_addr p2p_addr;
-	char			with_bcast; char bcast; struct in_addr bcast_addr;
-	char			with_iface; char iface[IFNAMSIZ];
-	char			with_addr; int addr_family; struct in_addr addr_in;
-	struct in6_addr addr_in6;
-	char			with_netmask; struct in_addr netmask;
-	char			with_mtu; int mtu;
-	char			with_irq; int irq;
-	char			with_ioaddr; void *ioaddr;
-	char			with_hw; unsigned char hw_addr[MAX_ADDR_LEN];
-	char			with_up_or_down; char up;
+	char with_a;
+	char with_s;
+	char with_arp, arp;
+	char with_promisc, promisc;
+	char with_allmulti, allmulti;
+	char with_mcast; int mcast;
+	char with_p2p; char p2p; struct in_addr p2p_addr;
+	char with_bcast; char bcast; struct in_addr bcast_addr;
+	char with_iface; char iface[IFNAMSIZ];
+	char with_addr; int addr_family; struct in_addr addr_in;
+			struct in6_addr addr_in6;
+	char with_netmask; struct in_addr netmask;
+	char with_mtu; int mtu;
+	char with_irq; int irq;
+	char with_ioaddr; void *ioaddr;
+	char with_hw; unsigned char hw_addr[MAX_ADDR_LEN];
+	char with_up_or_down; char up;
 };
 
 static int ifconfig_args_not_empty(struct ifconfig_args *args) {
 	return args->with_up_or_down || args->with_arp || args->with_promisc
-		   || args->with_allmulti || args->with_mtu || args->with_netmask
-		   || args->with_irq || args->with_ioaddr || args->with_bcast
-		   || args->with_p2p || args->with_hw || args->with_mcast
-		   || args->with_addr;
+		|| args->with_allmulti || args->with_mtu || args->with_netmask
+		|| args->with_irq || args->with_ioaddr || args->with_bcast
+		|| args->with_p2p || args->with_hw || args->with_mcast
+		|| args->with_addr;
 }
 
 static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *args) {
@@ -57,53 +57,39 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 
 	if (args->with_up_or_down && !args->up) { /* down device */
 		ret = netdev_flag_down(iface->dev, IFF_UP);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_arp) { /* set flag IFF_NOARP (default 0 means ARP enabled) */
 		ret = (!args->arp ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_NOARP);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_promisc) { /* set flag IFF_PROMISC (default 0) */
 		ret = (args->promisc ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_PROMISC);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_allmulti) { /* set flag IFF_ALLMULTI (default 0) */
 		ret = (args->allmulti ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_ALLMULTI);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_mcast) { /* set flag IFF_MULTICAST (default 0) */
 		ret = (args->allmulti ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_MULTICAST);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_p2p) { /* set flag IFF_POINTOPOINT */
 		/* TODO use p2p_addr */
 		ret = (args->p2p ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_POINTOPOINT);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_addr) { /* set new IP address to iface */
 		if (args->addr_family == AF_INET) {
 			ret = inetdev_set_addr(iface, args->addr_in.s_addr);
-			if (ret != 0) {
-				return ret;
-			}
+			if (ret != 0) return ret;
 		}
 		else {
 			assert(args->addr_family == AF_INET6);
@@ -114,52 +100,38 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 
 	if (args->with_netmask) { /* set new mask to iface */
 		ret = inetdev_set_mask(iface, args->netmask.s_addr);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_bcast) { /* set broadcast addr */
 		if (args->bcast && args->bcast_addr.s_addr) {
 			ret = inetdev_set_bcast(iface, args->bcast_addr.s_addr);
-			if (ret != 0) {
-				return ret;
-			}
+			if (ret != 0) return ret;
 		}
 		else {
 			ret = (args->bcast ? netdev_flag_up : netdev_flag_down)(iface->dev, IFF_BROADCAST);
-			if (ret != 0) {
-				return ret;
-			}
+			if (ret != 0) return ret;
 		}
 	}
 
 	if (args->with_mtu) { /* set new MTU value */
 		ret = netdev_set_mtu(iface->dev, args->mtu);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_irq) { /* set new IRQ number */
 		ret = netdev_set_irq(iface->dev, args->irq);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_ioaddr) { /* set new base addr */
 		ret = netdev_set_baseaddr(iface->dev, (unsigned long)args->ioaddr);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	if (args->with_up_or_down && args->up) { /* up device */
 		ret = netdev_flag_up(iface->dev, IFF_UP);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	/**
@@ -168,9 +140,7 @@ static int ifconfig_setup_iface(struct in_device *iface, struct ifconfig_args *a
 	 */
 	if (args->with_hw) { /* set new MAC address to iface */
 		ret = netdev_set_macaddr(iface->dev, &args->hw_addr[0]);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	return 0;
@@ -200,55 +170,33 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 	printf("\n\t");
 	in.s_addr = iface->ifa_address;
 	printf("inet addr:%s", inet_ntop(AF_INET, &in, s_in,
-			INET_ADDRSTRLEN));
+				INET_ADDRSTRLEN));
 	if (iface->dev->flags & IFF_BROADCAST) {
 		in.s_addr = iface->ifa_broadcast;
 		printf("  Bcast:%s", inet_ntop(AF_INET, &in, s_in,
-				INET_ADDRSTRLEN));
+					INET_ADDRSTRLEN));
 	}
 	in.s_addr = iface->ifa_mask;
 	printf("  Mask:%s", inet_ntop(AF_INET, &in, s_in,
-			INET_ADDRSTRLEN));
+				INET_ADDRSTRLEN));
 
 	printf("\n\t");
 	printf("inet6 addr: %s/??", inet_ntop(AF_INET6,
-			&iface->ifa6_address, s_in6, INET6_ADDRSTRLEN));
+				&iface->ifa6_address, s_in6, INET6_ADDRSTRLEN));
 	printf("  Scope:Host");
 
 	printf("\n\t");
-	if (iface->dev->flags & IFF_UP) {
-		printf("UP ");
-	}
-	if (iface->dev->flags & IFF_BROADCAST) {
-		printf("BROADCAST ");
-	}
-	if (iface->dev->flags & IFF_DEBUG) {
-		printf("DEBUG ");
-	}
-	if (iface->dev->flags & IFF_LOOPBACK) {
-		printf("LOOPBACK ");
-	}
-	if (iface->dev->flags & IFF_POINTOPOINT) {
-		printf("POINTOPOINT ");
-	}
-	if (iface->dev->flags & IFF_NOTRAILERS) {
-		printf("NOTRAILERS ");
-	}
-	if (iface->dev->flags & IFF_RUNNING) {
-		printf("RUNNING ");
-	}
-	if (iface->dev->flags & IFF_NOARP) {
-		printf("NOARP ");
-	}
-	if (iface->dev->flags & IFF_PROMISC) {
-		printf("PROMISC ");
-	}
-	if (iface->dev->flags & IFF_ALLMULTI) {
-		printf("ALLMULTI ");
-	}
-	if (iface->dev->flags & IFF_MULTICAST) {
-		printf("MULTICAST ");
-	}
+	if (iface->dev->flags & IFF_UP) printf("UP ");
+	if (iface->dev->flags & IFF_BROADCAST) printf("BROADCAST ");
+	if (iface->dev->flags & IFF_DEBUG) printf("DEBUG ");
+	if (iface->dev->flags & IFF_LOOPBACK) printf("LOOPBACK ");
+	if (iface->dev->flags & IFF_POINTOPOINT) printf("POINTOPOINT ");
+	if (iface->dev->flags & IFF_NOTRAILERS) printf("NOTRAILERS ");
+	if (iface->dev->flags & IFF_RUNNING) printf("RUNNING ");
+	if (iface->dev->flags & IFF_NOARP) printf("NOARP ");
+	if (iface->dev->flags & IFF_PROMISC) printf("PROMISC ");
+	if (iface->dev->flags & IFF_ALLMULTI) printf("ALLMULTI ");
+	if (iface->dev->flags & IFF_MULTICAST) printf("MULTICAST ");
 	printf(" MTU:%d  Metric:%d", iface->dev->mtu, 0);
 
 	printf("\n\tRX packets:%ld errors:%ld dropped:%ld overruns:%ld frame:%ld",
@@ -266,9 +214,8 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 			stat->rx_bytes, stat->rx_bytes / 1048576,
 			stat->tx_bytes, stat->tx_bytes / 1048576);
 
-	if (!(iface->dev->flags & IFF_LOOPBACK)) {
+	if (!(iface->dev->flags & IFF_LOOPBACK))
 		printf("\n\tInterrupt:%d Base address:%p", iface->dev->irq, (void *)iface->dev->base_addr);
-	}
 
 	printf("\n\n");
 
@@ -290,33 +237,15 @@ static int ifconfig_print_short_info(struct in_device *iface) {
 			iface->dev->mtu, 0,
 			stat->rx_packets, stat->rx_err, stat->rx_dropped, stat->rx_over_errors,
 			stat->tx_packets, stat->tx_err, stat->tx_dropped, 0UL);
-	if (iface->dev->flags & IFF_UP) {
-		printf("U");
-	}
-	if (iface->dev->flags & IFF_BROADCAST) {
-		printf("B");
-	}
-	if (iface->dev->flags & IFF_DEBUG) {
-		printf("D");
-	}
-	if (iface->dev->flags & IFF_LOOPBACK) {
-		printf("L");
-	}
-	if (iface->dev->flags & IFF_RUNNING) {
-		printf("R");
-	}
-	if (iface->dev->flags & IFF_NOARP) {
-		printf("O");
-	}
-	if (iface->dev->flags & IFF_PROMISC) {
-		printf("P");
-	}
-	if (iface->dev->flags & IFF_ALLMULTI) {
-		printf("A");
-	}
-	if (iface->dev->flags & IFF_MULTICAST) {
-		printf("M");
-	}
+	if (iface->dev->flags & IFF_UP) printf("U");
+	if (iface->dev->flags & IFF_BROADCAST) printf("B");
+	if (iface->dev->flags & IFF_DEBUG) printf("D");
+	if (iface->dev->flags & IFF_LOOPBACK) printf("L");
+	if (iface->dev->flags & IFF_RUNNING) printf("R");
+	if (iface->dev->flags & IFF_NOARP) printf("O");
+	if (iface->dev->flags & IFF_PROMISC) printf("P");
+	if (iface->dev->flags & IFF_ALLMULTI) printf("A");
+	if (iface->dev->flags & IFF_MULTICAST) printf("M");
 	printf("\n");
 
 	return 0;
@@ -326,12 +255,10 @@ static int ifconfig_show_one_iface(struct in_device *iface, char use_short_fmt) 
 	int ret;
 
 	ret = use_short_fmt ? ifconfig_print_short_hdr() : ifconfig_print_long_hdr();
-	if (ret != 0) {
-		return ret;
-	}
+	if (ret != 0) return ret;
 
 	return use_short_fmt ? ifconfig_print_short_info(iface)
-		   : ifconfig_print_long_info(iface);
+			: ifconfig_print_long_info(iface);
 }
 
 static int ifconfig_show_all_iface(char show_disabled, char use_short_fmt) {
@@ -339,20 +266,14 @@ static int ifconfig_show_all_iface(char show_disabled, char use_short_fmt) {
 	struct in_device *iface;
 
 	ret = use_short_fmt ? ifconfig_print_short_hdr() : ifconfig_print_long_hdr();
-	if (ret != 0) {
-		return ret;
-	}
+	if (ret != 0) return ret;
 
 	for (iface = inetdev_get_first(); iface != NULL;
 			iface = inetdev_get_next(iface)) {
-		if (!(iface->dev->flags & IFF_UP) && !show_disabled) {
-			continue;
-		}
+		if (!(iface->dev->flags & IFF_UP) && !show_disabled) continue;
 		ret = use_short_fmt ? ifconfig_print_short_info(iface)
 				: ifconfig_print_long_info(iface);
-		if (ret != 0) {
-			return ret;
-		}
+		if (ret != 0) return ret;
 	}
 
 	return 0;
@@ -386,12 +307,8 @@ int main(int argc, char *argv[]) {
 			printf("  unix (UNIX Domain) inet (DARPA Internet) inet6 (IPv6)\n");
 			return 0;
 		}
-		else if (!strcmp("-a", argv[i])) {
-			args.with_a = 1;
-		}
-		else if (!strcmp("-s", argv[i])) {
-			args.with_s = 1;
-		}
+		else if (!strcmp("-a", argv[i])) args.with_a = 1;
+		else if (!strcmp("-s", argv[i])) args.with_s = 1;
 		else if (!args.with_iface) {
 			args.with_iface = 1;
 			strncpy(&args.iface[0], argv[i], ARRAY_SIZE(args.iface));
@@ -431,9 +348,7 @@ int main(int argc, char *argv[]) {
 				|| !strcmp("-broadcast", argv[i])) {
 			args.with_bcast = 1;
 			args.bcast = argv[i][0] != '-';
-			if (args.bcast && inet_aton(argv[i], &args.bcast_addr)) {
-				++i;
-			}
+			if (args.bcast && inet_aton(argv[i], &args.bcast_addr)) ++i;
 		}
 		else if (!strcmp("irq", argv[i])) {
 			args.with_irq = 1;
@@ -514,6 +429,6 @@ int main(int argc, char *argv[]) {
 	}
 
 	return ifconfig_args_not_empty(&args) ? ifconfig_setup_iface(iface, &args)
-		   : args.with_iface ? ifconfig_show_one_iface(iface, args.with_s)
-		   : ifconfig_show_all_iface(args.with_a, args.with_s);
+			: args.with_iface ? ifconfig_show_one_iface(iface, args.with_s)
+			: ifconfig_show_all_iface(args.with_a, args.with_s);
 }

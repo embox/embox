@@ -25,5 +25,5 @@ void test_emit_into(struct test_emit_buffer *b, char ch) {
 			b->ptr++;
 		}
 	}
-out: ipl_restore(ipl);
+	out: ipl_restore(ipl);
 }

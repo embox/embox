@@ -20,12 +20,8 @@
 
 #define FLAG_N 0x01
 
-enum route_action {
-	ADD, DEL
-};
-enum target_type {
-	NET, HOST
-};
+enum route_action {ADD, DEL};
+enum target_type {NET, HOST};
 
 static int route_show(int flags) {
 	struct rt_entry *rt;
@@ -56,7 +52,7 @@ static int route_show(int flags) {
 
 static void print_help() {
 	printf("route [-hn] [-A family] {add|del} <target> [gw <Gw]"
-			"[netmask <Nm>] [[dev] If]\n");
+					"[netmask <Nm>] [[dev] If]\n");
 }
 
 int main(int argc, char **argv) {
@@ -75,20 +71,20 @@ int main(int argc, char **argv) {
 
 	while ((i = getopt(argc, argv, "A:nFV")) != EOF) {
 		switch (i) {
-		case 'F':
-			break;
-		case 'A':
-			if (strcmp(optarg, "inet")) {
-				/* NIY */
-				return -EINVAL;
-			}
-			break;
-		case 'n':
-			d_flags |= FLAG_N;
-			break;
-		default:
-			print_help();
-			return 0;
+			case 'F':
+				break;
+			case 'A':
+				if (strcmp(optarg, "inet")) {
+					/* NIY */
+					return -EINVAL;
+				}
+				break;
+			case 'n':
+				d_flags |= FLAG_N;
+				break;
+			default:
+				print_help();
+				return 0;
 		}
 	}
 
@@ -142,7 +138,7 @@ int main(int argc, char **argv) {
 			return -EINVAL;
 		}
 		netmask = inet_addr(argv[0]);
-		if (netmask == INADDR_BROADCAST && strcmp(argv[0], "255.255.255.255")) {
+		if (netmask == INADDR_BROADCAST &&strcmp(argv[0], "255.255.255.255")) {
 			printf("Unknown netmask: %s.\n", argv[0]);
 			return -EINVAL;
 		}
@@ -198,8 +194,9 @@ int main(int argc, char **argv) {
 
 	if (rt_act == ADD) {
 		return rt_add_route(netdev, target, netmask, gw,
-					   gw == INADDR_ANY ? RTF_UP : RTF_UP | RTF_GATEWAY);
+					gw == INADDR_ANY ? RTF_UP : RTF_UP | RTF_GATEWAY);
 	} else {
 		return rt_del_route(netdev, target, netmask, gw);
 	}
 }
+

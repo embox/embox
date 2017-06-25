@@ -8,6 +8,7 @@
 #ifndef SERIAL_8250_H_
 #define SERIAL_8250_H_
 
+
 /**
  * UART registers
  *           +---------------------+---------------------+

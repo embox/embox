@@ -16,8 +16,8 @@ div_t div(int num, int denom)
 	r.rem = num % denom;
 	/**
 	 * The ANSI standard says that |r.quot| <= |n/d|, where
-	 * n/d is to be computed in infinite precision.  In other
-	 * words, we should always truncate the quotient towards
+     * n/d is to be computed in infinite precision.  In other
+     * words, we should always truncate the quotient towards
 	 * 0, never -infinity.
 	 *
 	 * Machine division and remainer may work either way when

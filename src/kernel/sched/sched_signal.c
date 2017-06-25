@@ -13,7 +13,7 @@ void sched_signal(struct schedee *s) {
 		if (s->ready) {
 			sched_post_switch();
 		} else {
-			sched_wakeup(s); /* XXX -EINTR */
+			sched_wakeup(s); // XXX -EINTR
 		}
 	}
 	sched_unlock();

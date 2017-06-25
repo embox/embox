@@ -51,6 +51,7 @@ int rmdir(const char *pathname) {
 	return rc;
 }
 
+
 int truncate(const char *path, off_t length) {
 	struct path node;
 	int res;
@@ -69,3 +70,4 @@ end:
 int flock(int fd, int operation) {
 	return kflock(fd, operation);
 }
+

@@ -16,7 +16,7 @@
 
 EMBOX_UNIT_INIT(init);
 
-static int copy(const char *from, const char *to) {
+static int copy(const char* from, const char* to) {
 	FILE *fromf, *tof;
 	int a;
 
@@ -64,3 +64,4 @@ static int init(void) {
 
 	return 0;
 }
+

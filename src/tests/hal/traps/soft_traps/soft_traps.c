@@ -58,7 +58,7 @@ TEST_CASE("call soft trap and check its return value") {
 	traps_set_env(testtraps_env());
 
 	testtraps_set_handler(TRAP_TYPE_SOFTTRAP, TEST_SOFT_TRAP_NUMBER,
-			test_handler);
+			 test_handler);
 	retval = testtraps_fire_softtrap(TEST_SOFT_TRAP_NUMBER, NULL);
 	traps_restore_env(&prev_env);
 
@@ -74,6 +74,7 @@ TEST_CASE("call soft trap and check correct change user data send to routine") {
 
 	traps_save_env(&prev_env);
 	traps_set_env(testtraps_env());
+
 
 	testtraps_set_handler(TRAP_TYPE_SOFTTRAP, TEST_SOFT_TRAP_NUMBER,
 			test_handler);

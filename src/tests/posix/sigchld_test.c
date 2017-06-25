@@ -17,7 +17,7 @@ static void run_wait_task(void *(*fn)(void *), void *arg) {
 
 	p = new_task("", fn, NULL);
 
-	while (-EINTR == task_waitpid(p)) ;
+	while (-EINTR == task_waitpid(p));
 }
 
 static void *sigchld_test_child(void *arg) {
@@ -52,3 +52,5 @@ TEST_CASE("sigchld handler should be triggered") {
 	run_wait_task(sigchld_test_with_handler, NULL);
 	test_assert_emitted("abc");
 }
+
+

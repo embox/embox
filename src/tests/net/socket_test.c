@@ -151,7 +151,7 @@ TEST_CASE("recv(), recvfrom() and recvmsg() fails on"
 	test_assert_equal(-1, recv(BAD_SOCK, NULL, 0, 0));
 	test_assert_equal(EBADF, errno);
 	test_assert_equal(-1, recvfrom(BAD_SOCK, NULL, 0, 0,
-			NULL, NULL));
+				NULL, NULL));
 	test_assert_equal(EBADF, errno);
 	test_assert_equal(-1, recvmsg(BAD_SOCK, &msg, 0));
 	test_assert_equal(EBADF, errno);
@@ -191,7 +191,7 @@ TEST_CASE("send(), sendto() and sendmsg() fails"
 	test_assert_equal(-1, send(sock, NULL, 0, 0));
 	test_assert_equal(EPIPE, errno);
 	test_assert_equal(-1, sendto(sock, NULL, 0, 0,
-			NULL, 0));
+				NULL, 0));
 	test_assert_equal(EPIPE, errno);
 	test_assert_equal(-1, sendmsg(sock, &msg, 0));
 	test_assert_equal(EPIPE, errno);
@@ -205,7 +205,7 @@ TEST_CASE("send(), sendto() and sendmsg() fails"
 	test_assert_equal(-1, send(sock, NULL, 0, 0));
 	test_assert_equal(EPIPE, errno);
 	test_assert_equal(-1, sendto(sock, NULL, 0, 0,
-			NULL, 0));
+				NULL, 0));
 	test_assert_equal(EPIPE, errno);
 	test_assert_equal(-1, sendmsg(sock, &msg, 0));
 	test_assert_equal(EPIPE, errno);
@@ -219,7 +219,7 @@ TEST_CASE("recv(), recvfrom() and recvmsg() fails"
 	test_assert_equal(-1, recv(sock, NULL, 0, 0));
 	test_assert_equal(EPIPE, errno);
 	test_assert_equal(-1, recvfrom(sock, NULL, 0, 0,
-			NULL, 0));
+				NULL, 0));
 	test_assert_equal(EPIPE, errno);
 	test_assert_equal(-1, recvmsg(sock, &msg, 0));
 	test_assert_equal(EPIPE, errno);
@@ -233,7 +233,7 @@ TEST_CASE("recv(), recvfrom() and recvmsg() fails"
 	test_assert_equal(-1, recv(sock, NULL, 0, 0));
 	test_assert_equal(EPIPE, errno);
 	test_assert_equal(-1, recvfrom(sock, NULL, 0, 0,
-			NULL, 0));
+				NULL, 0));
 	test_assert_equal(EPIPE, errno);
 	test_assert_equal(-1, recvmsg(sock, &msg, 0));
 	test_assert_equal(EPIPE, errno);

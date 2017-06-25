@@ -10,7 +10,7 @@
 typedef unsigned int uint32_t;
 #endif
 
-/*bit macro */
+//bit macro
 #define SET_BIT(ELEMENT, BIT_NUM) ELEMENT |= (1 << BIT_NUM));
 #define CLR_BIT(ELEMENT, BIT_NUM) ELEMENT &= (~(1 << BIT_NUM));
 

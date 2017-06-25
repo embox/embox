@@ -39,7 +39,7 @@ int ktruncate(struct node *node, off_t length) {
 	drv = nas->fs->drv;
 
 	if (NULL == drv || NULL == drv->fsop || NULL == drv->fsop->truncate) {
-		/*errno = EPERM; */
+		//errno = EPERM;
 		return 0;
 	}
 
@@ -55,7 +55,7 @@ int kfile_fill_stat(struct node *node, struct stat *stat_buff) {
 	struct nas *nas;
 	struct node_info *ni;
 
-	memset(stat_buff, 0, sizeof(struct stat));
+	memset(stat_buff, 0 , sizeof(struct stat));
 
 	nas = node->nas;
 	ni = &nas->fi->ni;

@@ -33,42 +33,42 @@ EMBOX_UNIT_INIT(emaclite_init);
 #define PKTSIZE 0x800
 
 /* Xmit complete */
-#define XEL_TSR_XMIT_BUSY_MASK      0x00000001UL
+#define XEL_TSR_XMIT_BUSY_MASK		0x00000001UL
 /* Xmit interrupt enable bit */
-#define XEL_TSR_XMIT_IE_MASK        0x00000008UL
+#define XEL_TSR_XMIT_IE_MASK		0x00000008UL
 /* Buffer is active, SW bit only */
-#define XEL_TSR_XMIT_ACTIVE_MASK    0x80000000UL
+#define XEL_TSR_XMIT_ACTIVE_MASK	0x80000000UL
 /* Program the MAC address */
-#define XEL_TSR_PROGRAM_MASK        0x00000002UL
+#define XEL_TSR_PROGRAM_MASK		0x00000002UL
 /* define for programming the MAC address into the EMAC Lite */
-#define XEL_TSR_PROG_MAC_ADDR   (XEL_TSR_XMIT_BUSY_MASK | XEL_TSR_PROGRAM_MASK)
+#define XEL_TSR_PROG_MAC_ADDR	(XEL_TSR_XMIT_BUSY_MASK | XEL_TSR_PROGRAM_MASK)
 
 /* Transmit packet length upper byte */
-#define XEL_TPLR_LENGTH_MASK_HI     0x0000FF00UL
+#define XEL_TPLR_LENGTH_MASK_HI		0x0000FF00UL
 /* Transmit packet length lower byte */
-#define XEL_TPLR_LENGTH_MASK_LO     0x000000FFUL
+#define XEL_TPLR_LENGTH_MASK_LO		0x000000FFUL
 
 /* Recv complete */
-#define XEL_RSR_RECV_DONE_MASK      0x00000001UL
+#define XEL_RSR_RECV_DONE_MASK		0x00000001UL
 /* Recv interrupt enable bit */
-#define XEL_RSR_RECV_IE_MASK        0x00000008UL
+#define XEL_RSR_RECV_IE_MASK		0x00000008UL
 
 /* Global Interrupt Enable Register (GIER) Bit Masks */
-#define XEL_GIER_GIE_MASK   0x80000000  /* Global Enable */
+#define XEL_GIER_GIE_MASK	0x80000000 	/* Global Enable */
 
 /* Transmit Packet Length Register (TPLR) */
-#define XEL_TPLR_LENGTH_MASK    0x0000FFFF  /* Tx packet length */
+#define XEL_TPLR_LENGTH_MASK	0x0000FFFF 	/* Tx packet length */
 
 typedef struct mdio_regs {
 	uint32_t regs;
 } mdio_regs_t;
 
 typedef struct pingpong_regs {
-	uint8_t		pack[0x07F0];
+	uint8_t pack[0x07F0];
 	mdio_regs_t mdio_regs;
-	uint32_t	len; /*0x07F4*/
-	uint32_t	gie;
-	uint32_t	ctrl;
+	uint32_t len; /*0x07F4*/
+	uint32_t gie;
+	uint32_t ctrl;
 } pingpong_regs_t;
 
 typedef struct xilinx_emaclite_regs {
@@ -137,7 +137,7 @@ static pingpong_regs_t *get_rx_buff(void) {
 /*FIXME bad function (may be use if dest and src align 4)*/
 static void memcpy32(volatile uint32_t *dest, void *src, size_t len) {
 	size_t lenw = (size_t) ((len & (~3)) >> 2);
-	volatile uint32_t *srcw = (uint32_t *) ((uint32_t) (src) & (~3));
+	volatile uint32_t *srcw = (uint32_t*) ((uint32_t) (src) & (~3));
 
 	while (lenw--) {
 		*dest++ = *srcw++;
@@ -178,7 +178,7 @@ static int emaclite_xmit(struct net_device *dev, struct sk_buff *skb) {
 		memmove(aligned_data, skb->mac.raw, skb->len);
 	}
 
-	memcpy32((uint32_t *) TX_PACK, aligned_data, skb->len);
+	memcpy32((uint32_t*) TX_PACK, aligned_data, skb->len);
 	TX_LEN_REG = skb->len & XEL_TPLR_LENGTH_MASK;
 	TX_CTRL_REG |= XEL_TSR_XMIT_BUSY_MASK;
 	show_packet(skb->mac.raw, skb->len, "TX");
@@ -260,10 +260,8 @@ static irq_return_t emaclite_irq_handler(unsigned int irq_num, void *dev_id) {
 	return IRQ_HANDLED;
 }
 /*default 00-00-5E-00-FA-CE*/
-static const unsigned char default_mac[ETH_ALEN] = {
-	0x00, 0x00, 0x5E, 0x00, 0xFA,
-	0xCE
-};
+static const unsigned char default_mac[ETH_ALEN] = { 0x00, 0x00, 0x5E, 0x00, 0xFA,
+		0xCE };
 
 static int emaclite_open(struct net_device *dev) {
 	if (NULL == dev) {
@@ -312,14 +310,14 @@ static int emaclite_set_mac_address(struct net_device *dev, const void *addr) {
 		return -EINVAL;
 	}
 #if 0
-	out_be32(emaclite.baseaddress + XEL_TSR_OFFSET, 0);
+	out_be32 (emaclite.baseaddress + XEL_TSR_OFFSET, 0);
 	/* Set the length */
-	out_be32(emaclite.baseaddress + XEL_TPLR_OFFSET, ENET_ADDR_LENGTH);
+	out_be32 (emaclite.baseaddress + XEL_TPLR_OFFSET, ENET_ADDR_LENGTH);
 	/* Update the MAC address in the EMAC Lite */
-	out_be32(emaclite.baseaddress + XEL_TSR_OFFSET, XEL_TSR_PROG_MAC_ADDR);
+	out_be32 (emaclite.baseaddress + XEL_TSR_OFFSET, XEL_TSR_PROG_MAC_ADDR);
 	/* Wait for EMAC Lite to finish with the MAC address update */
-	while ((in_be32(emaclite.baseaddress + XEL_TSR_OFFSET) &
-			XEL_TSR_PROG_MAC_ADDR) != 0) ;
+	while ((in_be32 (emaclite.baseaddress + XEL_TSR_OFFSET) &
+					XEL_TSR_PROG_MAC_ADDR) != 0);
 #endif
 	return ENOERR;
 }

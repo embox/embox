@@ -15,3 +15,4 @@ extern void button_wait_set(Button_TypeDef button);
 extern void button_wait_reset(Button_TypeDef button);
 
 #endif /* PLATFORM_STM32F3_SENSORS_LIBMISC_LED_H_ */
+

@@ -18,6 +18,7 @@
 #include <drivers/block_dev/partition.h>
 #include <mem/phymem.h>
 
+
 extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 static block_dev_driver_t idedisk_udma_driver;
 
@@ -51,13 +52,13 @@ static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
 
 	/* Clear INTR & ERROR flags */
 	outb(inb(hdc->bmregbase + BM_STATUS_REG) | BM_SR_INT | BM_SR_ERR,
-			hdc->bmregbase + BM_STATUS_REG);
+		 hdc->bmregbase + BM_STATUS_REG);
 }
 
 static void start_dma(hdc_t *hdc) {
 	/* Start DMA operation */
 	outb(inb(hdc->bmregbase + BM_COMMAND_REG) | BM_CR_START,
-			hdc->bmregbase + BM_COMMAND_REG);
+		 hdc->bmregbase + BM_COMMAND_REG);
 }
 
 static int stop_dma(hdc_t *hdc) {
@@ -65,7 +66,7 @@ static int stop_dma(hdc_t *hdc) {
 
 	/* Stop DMA channel and check DMA status */
 	outb(inb(hdc->bmregbase + BM_COMMAND_REG) & ~BM_CR_START,
-			hdc->bmregbase + BM_COMMAND_REG);
+	   hdc->bmregbase + BM_COMMAND_REG);
 
 	/* Get DMA status */
 	dmastat = inb(hdc->bmregbase + BM_STATUS_REG);
@@ -97,6 +98,7 @@ static int hd_read_udma(struct block_dev *bdev, char *buffer, size_t count, blkn
 	hd = (hd_t *) bdev->privdata;
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
+
 
 	while (sectsleft > 0) {
 		/* Select drive */
@@ -234,10 +236,10 @@ static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blk
 	return result == 0 ? count : result;
 }
 
-static int idedisk_udma_init(void *args) {
+static int idedisk_udma_init (void *args) {
 	hd_t *drive;
 	double size;
-	char path[PATH_MAX];
+	char   path[PATH_MAX];
 
 	drive = (hd_t *)args;
 	/* Make new device */
@@ -251,9 +253,9 @@ static int idedisk_udma_init(void *args) {
 				&idedisk_udma_driver, drive);
 		if (NULL != drive->bdev) {
 			size = (double) drive->param.cylinders *
-					(double) drive->param.heads *
-					(double) drive->param.unfbytes *
-					(double) (drive->param.sectors + 1);
+				   (double) drive->param.heads *
+				   (double) drive->param.unfbytes *
+				   (double) (drive->param.sectors + 1);
 			block_dev(drive->bdev)->size = (size_t) size;
 		} else {
 			return -1;

@@ -6,7 +6,7 @@
  * @date 13.09.2011
  * @author Anton Bondarev
  * @author Anton Kozlov
- *  - shell invocation
+ * 	- shell invocation
  */
 
 #include <string.h>
@@ -46,3 +46,4 @@ void *task_exec_callback(void *arg) {
 void *task_exit_callback(void *arg) {
 	return arg;
 }
+

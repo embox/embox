@@ -12,6 +12,8 @@
 
 #include <util/dlist.h>
 
+
 typedef struct dlist_head sys_timer_queue_t;
+
 
 #endif /* HEAD_TIMER_H_ */

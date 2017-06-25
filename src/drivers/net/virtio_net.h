@@ -33,12 +33,12 @@
  * VirtIO Network Device Feature Bits
  */
 #define VIRTIO_NET_F_CSUM           0x000001 /* Device handles pkts w/ partial
-	                                            csum */
+												csum */
 #define VIRTIO_NET_F_GUEST_CSUM     0x000002 /* Guest handles pkts w/ partial
-	                                            csum */
+												csum */
 #define VIRTIO_NET_F_MAC            0x000020 /* Device has given MAC address */
 #define VIRTIO_NET_F_GSO            0x000040 /* Device handles pkts w/ any GSO
-	                                            type */
+												type */
 #define VIRTIO_NET_F_GUEST_TSO4     0x000080 /* Guest can receive TSOv4 */
 #define VIRTIO_NET_F_GUEST_TSO6     0x000100 /* Guest can receive TSOv6 */
 #define VIRTIO_NET_F_GUEST_ECN      0x000200 /* Guest can receive TSO w/ ECN */
@@ -49,17 +49,17 @@
 #define VIRTIO_NET_F_HOST_UFO       0x004000 /* Device can receive UFO */
 #define VIRTIO_NET_F_MRG_RXBUF      0x008000 /* Guest can merge receive buff */
 #define VIRTIO_NET_F_STATUS         0x010000 /* Configuration status field
-	                                            is available */
+												is available */
 #define VIRTIO_NET_F_CTRL_VQ        0x020000 /* Control channel is available */
 #define VIRTIO_NET_F_CTRL_RX        0x040000 /* Control channel RX mode
-	                                            support */
+												support */
 #define VIRTIO_NET_F_CTRL_VLAN      0x080000 /* Control channel VLAN
-	                                            filtering */
+												filtering */
 #define VIRTIO_NET_F_CTRL_RX_EXTRA  0x100000 /* Extra RX mode control support */
 #define VIRTIO_NET_F_GUEST_ANNOUNCE 0x200000 /* Guest can send gratuitous
-	                                            pkts */
+												pkts */
 #define VIRTIO_NET_F_MQ             0x400000 /* Device supports Receive Flow
-	                                            Steering */
+												Steering */
 #define VIRTIO_NET_F_CTRL_MAC_ADDR  0x800000 /* Set MAC address */
 
 /**
@@ -75,7 +75,7 @@ struct virtio_net_hdr {
 	uint8_t flags;        /* Flags */
 #define VIRTIO_NET_HDR_F_NEEDS_CSUM 0x1
 	uint8_t gso_type;     /* Type of Generic segmentation
-	                         offload (GSO) */
+							 offload (GSO) */
 #define VIRTIO_NET_HDR_GSO_NONE 0x00
 #define VIRTIO_NET_HDR_GSO_TPV4 0x01
 #define VIRTIO_NET_HDR_GSO_UDP  0x03

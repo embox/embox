@@ -18,17 +18,17 @@
 #define __libelf_u16_t    __u16
 #define __libelf_i32_t    __s32
 
-typedef __libelf_u32_t Elf32_Addr;
-typedef __libelf_u16_t Elf32_Half;
-typedef __libelf_u32_t Elf32_Off;
-typedef __libelf_i32_t Elf32_Sword;
-typedef __libelf_u32_t Elf32_Word;
+typedef __libelf_u32_t    Elf32_Addr;
+typedef __libelf_u16_t    Elf32_Half;
+typedef __libelf_u32_t    Elf32_Off;
+typedef __libelf_i32_t    Elf32_Sword;
+typedef __libelf_u32_t    Elf32_Word;
 
 /**
  * ELF Header. Code style from specification.
  */
 typedef struct {
-	uint8_t	   e_ident[EI_NIDENT];
+	uint8_t    e_ident[EI_NIDENT];
 	Elf32_Half e_type;
 	Elf32_Half e_machine;
 	Elf32_Word e_version;
@@ -85,8 +85,8 @@ typedef struct {
 	Elf32_Word st_name;
 	Elf32_Addr st_value;
 	Elf32_Word st_size;
-	uint8_t	   st_info;
-	uint8_t	   st_other;
+	uint8_t    st_info;
+	uint8_t    st_other;
 	Elf32_Half st_shndx;
 } Elf32_Sym;
 
@@ -103,9 +103,9 @@ typedef struct {
  * Relocation table entry in sections with SHT_RELA type.
  * Code style from specification
  */
-typedef struct {
-	Elf32_Addr	r_offset;
-	Elf32_Word	r_info;
+typedef struct{
+	Elf32_Addr  r_offset;
+	Elf32_Word  r_info;
 	Elf32_Sword r_addend;
 } Elf32_Rela;
 

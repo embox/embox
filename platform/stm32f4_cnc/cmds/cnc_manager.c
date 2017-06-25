@@ -21,15 +21,13 @@ static int cnc_ctrl_ipc_init(void) {
 int main(int argc, char *argv[]) {
 
 	if (0 == strncmp(getenv("QUERY_STRING"), "run", strlen("run"))) {
-		char *arg[] = {
-			"cnc_control", "test", NULL
-		};
+		char *arg[] = { "cnc_control", "test", NULL };
 		int ipc_fd = cnc_ctrl_ipc_init();
 
 		printf("HTTP/1.1 %d %s\r\n"
-				"Content-Type: %s\r\n"
-				"Connection: close\r\n"
-				"\r\n", 200, "OK", "text/plain");
+			"Content-Type: %s\r\n"
+			"Connection: close\r\n"
+			"\r\n", 200, "OK", "text/plain");
 
 		dup2(ipc_fd, STDOUT_FILENO);
 		close(STDIN_FILENO);

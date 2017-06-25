@@ -21,6 +21,7 @@ INDEX_DEF(scsi_disk_idx, 0, 26);
 
 extern const struct block_dev_driver bdev_driver_scsi;
 
+
 static void scsi_user_input(struct scsi_dev *dev, int res) {
 	if (res) {
 		scsi_dev_recover(dev);
@@ -40,7 +41,7 @@ static const struct scsi_dev_state scsi_state_user = {
 	.sds_input = scsi_user_input,
 };
 
-static void *scsi_create_thread(void *arg) {
+static void* scsi_create_thread(void *arg) {
 	struct block_dev *bdev;
 	struct scsi_dev *sdev;
 	char path[0x10]; /* enough for /dev/sdx */
@@ -90,3 +91,4 @@ void scsi_dev_wake(struct scsi_dev *dev, int res) {
 	dev->cmd_complete = res;
 	waitq_wakeup_all(&dev->wq);
 }
+

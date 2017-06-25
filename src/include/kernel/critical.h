@@ -31,23 +31,23 @@
  * @code
  *  irq_lock(); // Kernel enters interrupts locked context.
  *  {
- *      ...
- *      // A hardware interrupt occurs here but actual dispatching is deferred.
- *      ...
+ *  	...
+ *  	// A hardware interrupt occurs here but actual dispatching is deferred.
+ *  	...
  *  }
  *  irq_unlock(); // Interrupts are unlocked and pending dispatch takes place.
  *
  *  irq_dispatch(); // Processing pending interrupt requests.
  *  {
- *      some_irq_handler(); // Registered interrupt handler is invoked.
- *      {
- *          ...
- *          // Handler wakes up some thread,
- *          // but rescheduling can't occur immediately
- *          // because of being inside interrupt handler.
- *          sched_wakeup();
- *          ...
- *      }
+ *  	some_irq_handler(); // Registered interrupt handler is invoked.
+ *  	{
+ *  		...
+ *  		// Handler wakes up some thread,
+ *  		// but rescheduling can't occur immediately
+ *  		// because of being inside interrupt handler.
+ *  		sched_wakeup();
+ *  		...
+ *  	}
  *  }
  *
  *  scheduling(); // Scheduling and thread preemption is performed here.
@@ -130,15 +130,15 @@
 
 struct critical_dispatcher {
 	struct critical_dispatcher *next;
-	unsigned int				mask; /**< Inverted in case when dispatching is not pending. */
-	void						(*dispatch)(void);
+	unsigned int mask; /**< Inverted in case when dispatching is not pending. */
+	void (*dispatch)(void);
 };
 
 #define CRITICAL_DISPATCHER_DEF(name, dispatch_fn, critical_mask) \
 	static struct critical_dispatcher name __cpudata__ = {        \
 		.dispatch = (dispatch_fn),                                \
 		.mask = ~((critical_mask)                                 \
-			| __CRITICAL_HARDER(critical_mask)),              \
+				| __CRITICAL_HARDER(critical_mask)),              \
 	}
 
 extern unsigned int __critical_count __cpudata__;
@@ -173,15 +173,15 @@ static inline void critical_enter(unsigned int level) {
 }
 
 static inline void critical_leave(unsigned int level) {
-	if (critical_count() == __CRITICAL_COUNT(level)) {
+	if (critical_count() == __CRITICAL_COUNT(level))
 		bkl_unlock();
-	}
 	__critical_count_sub(__CRITICAL_COUNT(level));
 }
 
 static inline int critical_pending(struct critical_dispatcher *d) {
 	return d->mask & 0x1;
 }
+
 
 #include <sys/cdefs.h>
 __BEGIN_DECLS
@@ -201,7 +201,7 @@ __END_DECLS
 
 /* Check all level masks. */
 #if ~0 != \
-	__CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_LOCK)        \
+	  __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_LOCK)        \
 	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_IRQ_HANDLER)     \
 	& __CRITICAL_CHECK_BIT_BLOCK(CRITICAL_SCHED_LOCK)
 # error "CRITICAL_XXX must contain a single contiguous block of bits"

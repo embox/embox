@@ -9,6 +9,7 @@
 #include <string.h>
 #include <errno.h>
 
+
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
 
@@ -46,16 +47,16 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 	assert(mnt_point_path->mnt_desc != NULL ||
 			(mnt_point_path->mnt_desc == NULL && mnt_root == NULL));
 
-	if (mnt_point_path->node == NULL) {
+	if(mnt_point_path->node == NULL) {
 		return NULL;
 	}
 
-	if (mnt_root != NULL && mnt_point_path->node ==
+	if(mnt_root != NULL && mnt_point_path->node ==
 			mnt_point_path->mnt_desc->mnt_root) {
 		return NULL;
 	}
 
-	if (NULL == (mdesc = pool_alloc(&mount_desc_pool))) {
+	if(NULL == (mdesc = pool_alloc(&mount_desc_pool))) {
 		return NULL;
 	}
 
@@ -87,7 +88,7 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 
 int mount_table_del(struct mount_descriptor *mdesc) {
 
-	if (mdesc == NULL) {
+	if(mdesc == NULL) {
 		return -EINVAL;
 	}
 

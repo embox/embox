@@ -2,7 +2,7 @@
 #define X86_CPU_INFO_H_
 
 struct cpu_info {
-	char		 vendor_id[13];
+	char vendor_id[13];
 	unsigned int freq;
 };
 

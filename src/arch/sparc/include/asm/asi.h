@@ -7,13 +7,13 @@
  * @author Paul Hatchman (paul@sfe.com.au)
  *		- Pioneer work for sun4m
  * @author Pete A. Zaitcev <zaitcev@ipmce.su>
- *      - Joint edition for sun4c+sun4m
+ * 		- Joint edition for sun4c+sun4m
  */
 
 #ifndef SPARC_ASI_H_
 #define SPARC_ASI_H_
 
-#include <framework/mod/options.h> /* for ASI_M_MMUREGS */
+#include <framework/mod/options.h> // for ASI_M_MMUREGS
 
 /* The first batch are for the sun4c. */
 
@@ -98,6 +98,7 @@
 #define ASI_M_SBUS         0x2E   /* Direct SBus access */
 #define ASI_M_CTL          0x2F   /* Control Space (ECC and MXCC are here) */
 
+
 /* This is ROSS HyperSparc only. */
 #define ASI_M_FLUSH_IWHOLE 0x31   /* Flush entire ICACHE; wo, ss */
 
@@ -107,7 +108,7 @@
 
 #define ASI_M_DCDR         0x39   /* Data Cache Diagnostics Register rw, ss */
 
-#define ASI_M_VIKING_TMP1  0x40   /* Emulation temporary 1 on Viking */
+#define ASI_M_VIKING_TMP1  0x40	  /* Emulation temporary 1 on Viking */
 /* only available on SuperSparc I */
 /* #define ASI_M_VIKING_TMP2  0x41 */  /* Emulation temporary 2 on Viking */
 
@@ -116,46 +117,46 @@
 /* FIXME: non-standard Leon ASI definition */
 #if defined(CONFIG_LEON) || defined(CONFIG_LEON3)
 #undef ASI_M_MMUREGS
-#define ASI_M_MMUREGS       0x19
+#define ASI_M_MMUREGS		0x19
 #endif /* CONFIG_LEON */
 
 #ifndef CONFIG_LEON_3
 
 /* ASI codes */
-#define ASI_LEON_PCI        0x04
-#define ASI_LEON_IFLUSH     0x05
-#define ASI_LEON_DFLUSH     0x06
-#define ASI_LEON_ITAG       0x0c
-#define ASI_LEON_IDATA      0x0d
-#define ASI_LEON_DTAG       0x0e
-#define ASI_LEON_DDATA      0x0f
-#define ASI_LEON_MMUFLUSH   0x18
-#define ASI_LEON_MMUREGS    0x19
-#define ASI_LEON_BYPASS     0x1c
-#define ASI_LEON_FLUSH_PAGE 0x10
+#define ASI_LEON_PCI		0x04
+#define ASI_LEON_IFLUSH		0x05
+#define ASI_LEON_DFLUSH		0x06
+#define ASI_LEON_ITAG		0x0c
+#define ASI_LEON_IDATA		0x0d
+#define ASI_LEON_DTAG		0x0e
+#define ASI_LEON_DDATA		0x0f
+#define ASI_LEON_MMUFLUSH	0x18
+#define ASI_LEON_MMUREGS	0x19
+#define ASI_LEON_BYPASS		0x1c
+#define ASI_LEON_FLUSH_PAGE	0x10
 /*
 #define ASI_LEON_FLUSH_SEGMENT	0x11
 #define ASI_LEON_FLUSH_REGION	0x12
 */
-#define ASI_LEON_FLUSH_CTX  0x13
-#define ASI_LEON_DCTX       0x14
-#define ASI_LEON_ICTX       0x15
-#define ASI_MMU_DIAG        0x1d
+#define ASI_LEON_FLUSH_CTX	0x13
+#define ASI_LEON_DCTX		0x14
+#define ASI_LEON_ICTX		0x15
+#define ASI_MMU_DIAG		0x1d
 
-#define ASI_LEON_DCACHE_MISS    0x1
+#define ASI_LEON_DCACHE_MISS	0x1
 
 #else
 
-#define ASI_LEON_DCACHE_MISS    0x1
+#define ASI_LEON_DCACHE_MISS	0x1
 
 #define ASI_LEON_CACHEREGS 0x02
-#define ASI_LEON_IFLUSH     0x10
-#define ASI_LEON_DFLUSH     0x11
+#define ASI_LEON_IFLUSH		0x10
+#define ASI_LEON_DFLUSH		0x11
 
-#define ASI_LEON_MMUFLUSH   0x18
-#define ASI_LEON_MMUREGS    0x19
-#define ASI_LEON_BYPASS     0x1c
-#define ASI_LEON_FLUSH_PAGE 0x10
+#define ASI_LEON_MMUFLUSH	0x18
+#define ASI_LEON_MMUREGS	0x19
+#define ASI_LEON_BYPASS		0x1c
+#define ASI_LEON_FLUSH_PAGE	0x10
 
 /*
 constant ASI_SYSR    : asi_type := "00010"; -- 0x02

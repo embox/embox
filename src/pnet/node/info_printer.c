@@ -17,7 +17,7 @@ static void print_pack(struct pnet_pack *pack) {
 	struct sk_buff *skb;
 
 	printf("%d: ", stamp++);
-	switch (pack->dir) {
+	switch(pack->dir) {
 	case PNET_PACK_DIRECTION_RX:
 		printf("RX");
 		break;
@@ -40,6 +40,6 @@ static int net_info_rx_hnd(struct pnet_pack *pack) {
 }
 
 PNET_NODE_DEF("info printer", {
-			.rx_hnd = net_info_rx_hnd,
-			.tx_hnd = net_info_tx_hnd
-		});
+	.rx_hnd = net_info_rx_hnd,
+	.tx_hnd = net_info_tx_hnd
+});

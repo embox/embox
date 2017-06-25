@@ -47,21 +47,20 @@ struct gptimer_regs {
 	 * The prescaler is clocked by the system clock and decremented on each
 	 * clock cycle.
 	 */
-	/* 0x00 */
-	uint32_t scaler_counter;
+	/* 0x00 */uint32_t scaler_counter;
 	/**
 	 * When the prescaler underflows,
 	 * it is reloaded from the prescaler reload
 	 * register and a timer tick is generated.
 	 */
-	/* 0x04 */ uint32_t scaler_reload;
+	/* 0x04 */uint32_t scaler_reload;
 	/*-------+----+----+-----+---------+
 	 | resrv | DF | SI | IRQ | ntimers |
 	 | 31-10 | 9  | 8  | 7-3 | 2-0     |
 	 +-------+----+----+-----+---------*/
-	/* 0x08 */ uint32_t cfg;
+	/* 0x08 */uint32_t cfg;
 	/* Just a place holder. */
-	/* 0x0C */ uint32_t dummy;
+	/* 0x0C */uint32_t dummy;
 	/**
 	 * Register sets for each implemented timer.
 	 */
@@ -70,8 +69,7 @@ struct gptimer_regs {
 		 * Timer Counter value.
 		 * Decremented by 1 for each prescaler tick.
 		 */
-		/* 0xn0 */
-		uint32_t counter;
+		/* 0xn0 */uint32_t counter;
 		/**
 		 * Timer Reload value.
 		 * This value is loaded into the timer counter
@@ -80,14 +78,14 @@ struct gptimer_regs {
 		 * the RS bit is set in the control register and the
 		 * timer underflows.
 		 */
-		/* 0xn4 */ uint32_t reload;
+		/* 0xn4 */uint32_t reload;
 		/*------+----+----+----+----+----+----+----+
 		 | resv | DH | CH | IP | IE | LD | RS | EN |
 		 | 31-7 | 6  | 5  | 4  | 3  | 2  | 1  | 0  |
 		 +------+----+----+----+----+----+----+----*/
-		/* 0xn8 */ uint32_t ctrl;
+		/* 0xn8 */uint32_t ctrl;
 		/* Just a place holder. */
-		/* 0xnC */ uint32_t dummy;
+		/* 0xnC */uint32_t dummy;
 	} timer[];
 };
 
@@ -99,7 +97,7 @@ static struct time_event_device gptimer_ed;
 static struct clock_source gptimer_cs;
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-	/* XXX clock_hander is called from arch part */
+	// XXX clock_hander is called from arch part
 	clock_tick_handler(irq_nr,dev_id);
 	return IRQ_HANDLED;
 }
@@ -133,6 +131,7 @@ static int gptimer_init(void) {
 	return irq_attach(irq_nr, clock_handler, 0, &gptimer_cs, "gptimer");
 }
 
+
 static int gptimer_config(struct time_dev_conf *conf);
 
 static cycle_t gptimer_read(void) {
@@ -140,7 +139,7 @@ static cycle_t gptimer_read(void) {
 }
 
 static struct time_event_device gptimer_ed = {
-	.config = gptimer_config,
+	.config = gptimer_config ,
 	.event_hz = TIMER0_RELOAD + 1,
 };
 

@@ -9,6 +9,7 @@
 #ifndef KFLOCK_H_
 #define KFLOCK_H_
 
+
 #include <fcntl.h>
 
 #include <util/dlist.h>
@@ -16,33 +17,33 @@
 #include <sched.h>
 /*
 typedef struct kflock_exclusive {
-    struct mutex      lock;
-    struct dlist_head kflock_link;
-    short             whence;
-    off_t             start;
-    off_t             len;
-    pid_t             pid;
+	struct mutex      lock;
+	struct dlist_head kflock_link;
+	short             whence;
+	off_t             start;
+	off_t             len;
+	pid_t             pid;
 } kflock_exclusive_t;
 
 typedef struct kflock_shared {
-    struct dlist_head kflock_link;
-    short             whence;
-    off_t             start;
-    off_t             len;
-    pid_t             pid;
+	struct dlist_head kflock_link;
+	short             whence;
+	off_t             start;
+	off_t             len;
+	pid_t             pid;
 } kflock_shared_t;
 
 typedef union kflock_both {
-    kflock_exclusive_t exlock;
-    kflock_shared_t    shlock;
+	kflock_exclusive_t exlock;
+	kflock_shared_t    shlock;
 } kflock_both_t;
 
 typedef struct kflock {
-    struct dlist_head exlock_list;
-    long              exlock_count;
-    struct dlist_head shlock_list;
-    long              shlock_count;
-    spinlock_t        flock_guard;
+	struct dlist_head exlock_list;
+	long              exlock_count;
+	struct dlist_head shlock_list;
+	long              shlock_count;
+	spinlock_t        flock_guard;
 } kflock_t;
 */
 
@@ -52,15 +53,16 @@ typedef struct kflock_lock {
 	off_t             start;
 	off_t             len;
 	pid_t             pid;*/
-	struct flock	  flock;
+	struct flock      flock;
 	struct dlist_head kflock_link;
-	/*struct wait_queue wq; */
+	//struct wait_queue wq;
 } kflock_lock_t;
 
 typedef struct kflock {
 	struct dlist_head locks;
-	spinlock_t		  kflock_guard;
+	spinlock_t        kflock_guard;
 } kflock_t;
+
 
 /**
  * @brief Fcntl functions implementation

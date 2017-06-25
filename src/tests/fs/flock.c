@@ -22,6 +22,7 @@ static void fs_test_flock(void) {
 			(void *) &fd);
 	test_assert_zero(err(fftt));
 
+
 	sftt = thread_create(THREAD_FLAG_SUSPENDED, second_flock_test_thread,
 			(void *) &fd);
 	test_assert_zero(err(sftt));

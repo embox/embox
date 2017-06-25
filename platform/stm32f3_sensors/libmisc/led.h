@@ -15,3 +15,4 @@ extern void led_on(Led_TypeDef led);
 extern void led_off(Led_TypeDef led);
 
 #endif /* PLATFORM_STM32F3_SENSORS_LIBMISC_LED_H_ */
+

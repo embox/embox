@@ -49,7 +49,7 @@ struct mismatch_info {
 /* Reply to a RPC request that was accepted by the server */
 struct accepted_reply {
 	struct opaque_auth verf;
-	enum accept_stat   stat;
+	enum accept_stat stat;
 	union {
 		struct {
 			void *decoder;
@@ -63,7 +63,7 @@ struct accepted_reply {
 struct rejected_reply {
 	enum reject_stat stat;
 	union {
-		enum auth_stat		 reason;
+		enum auth_stat reason;
 		struct mismatch_info mminfo;
 	} d; /* data */
 };
@@ -79,20 +79,20 @@ struct reply_body {
 
 /* Body of a RPC request call */
 struct call_body {
-	uint32_t		   rpcvers;
-	uint32_t		   prog;
-	uint32_t		   vers;
-	uint32_t		   proc;
+	uint32_t rpcvers;
+	uint32_t prog;
+	uint32_t vers;
+	uint32_t proc;
 	struct opaque_auth cred;
 	struct opaque_auth verf;
 };
 
 /* RPC message */
 struct rpc_msg {
-	uint32_t	  xid;
+	uint32_t xid;
 	enum msg_type type;
 	union {
-		struct call_body  call;
+		struct call_body call;
 		struct reply_body reply;
 	} b; /* body */
 };

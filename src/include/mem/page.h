@@ -18,13 +18,13 @@
 #include <module/embox/mem/page_api.h>
 
 struct page_allocator {
-	void *		 pages_start;
+	void *pages_start;
 	unsigned int pages_n;
-	size_t		 page_size;
+	size_t page_size;
 
 	size_t free;
 
-	size_t		   bitmap_len;
+	size_t bitmap_len;
 	unsigned long *bitmap;
 };
 
@@ -39,14 +39,14 @@ extern void page_free(struct page_allocator *allocator, void *page, size_t page_
 extern int page_belong(struct page_allocator *allocator, void *page);
 
 #define PAGE_ALLOCATOR_DEF(name, space, page_number, page_size) \
-	static unsigned long ctrl_space_ ## name[ page_number/32 ]; \
+	static unsigned long ctrl_space_##name[ page_number/32 ]; \
 	static struct page_allocator name = { \
-		space, \
-		page_number, \
-		page_size, \
-		page_size * page_number, \
-		(sizeof(unsigned long) * page_number/32), \
-		ctrl_space_ ## name \
+			space, \
+			page_number, \
+			page_size, \
+			page_size * page_number, \
+			(sizeof(unsigned long) * page_number/32), \
+			ctrl_space_##name \
 	}
 
 #endif /* MEM_PAGE_H_ */
