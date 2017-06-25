@@ -60,9 +60,41 @@ void *mmap_device_memory(void *addr,
 	return addr;
 }
 
+/**
+ * @brief Try to munmap MAP_ANONYMOUS memory
+ *
+ * @param addr
+ * @param size
+ *
+ * @return 1 if requested to unmapp not MAP_ANONYMOUS mapping
+ * @return 0 if successfully unmapped
+ * @return negative error if this is MAP_ANONYMOUS memory,
+ * 	but error arise during unmapping
+ */
+static int munmap_anon(void *addr, size_t size) {
+	struct page_allocator *anon_pages = __phymem_allocator;
+
+	if (!page_belong(anon_pages, addr) || !page_belong(anon_pages, addr + size)) {
+		return 1;
+	}
+
+	void *start = (void *)((uintptr_t)addr & -MMU_PAGE_SIZE);
+	/* below is complex to handle addr not page-aligned, but size page-aligned
+	 * actual number of pages is (size + 1)/MMU_PAGE_SIZE */
+	int pages = (addr + size - start + MMU_PAGE_SIZE - 1) / MMU_PAGE_SIZE;
+
+	phymem_free(start, pages);
+	return 0;
+}
+
 int munmap(void *addr, size_t size) {
 	struct emmap *emmap = self_mmap();
 	struct marea *marea;
+
+	int anon_res = munmap_anon(addr, size);
+	if (1 != anon_res) {
+		return anon_res;
+	}
 
 	marea = mmap_find_marea(emmap, (mmu_vaddr_t) addr);
 	if (NULL == marea) {
