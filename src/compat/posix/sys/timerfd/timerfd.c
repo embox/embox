@@ -147,7 +147,7 @@ static ssize_t timerfd_read(struct idesc *idesc, const struct iovec *iov,
 	memcpy(buf, &expirations_count, read_size);
 	return read_size;
 
-	out_err:
+out_err:
 	mutex_unlock(&timerfd->mutex);
 	return error_code;
 }
@@ -272,7 +272,7 @@ int timerfd_create(int clockid, int flags) {
 
 	return fd;
 
-	out_err:
+out_err:
 	if (fd >= 0) {
 		idesc_table_del(it, fd);
 	}
