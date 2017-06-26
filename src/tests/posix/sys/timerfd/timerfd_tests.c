@@ -148,31 +148,39 @@ TEST_CASE("timerfd set and get (with interval)") {
 	close(timer_fd);
 }
 
-/*
-TEST_CASE("timerfd create, set and read") {
-	printk("\n");
-	int timeout_sec = 1;
-
-	int error_code;
+TEST_CASE("timerfd set and read (one-time)") {
 	int timer_fd = -1;
 	struct itimerspec timeout;
 	uint64_t expirations_number = 0LL;
 
-	// create new timer
 	timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
 	test_assert_true(timer_fd >= 0);
-	printk("Test: timer created.\n");
 
-	// set timeout
-	timeout.it_value.tv_sec = timeout_sec;
+	timeout.it_value.tv_sec = 1;
 	timeout.it_value.tv_nsec = 0;
-	error_code = timerfd_settime(timer_fd, 0, &timeout, NULL);
-	test_assert_zero(error_code);
-	printk("Test: timer set.\n");
+	timerfd_settime(timer_fd, 0, &timeout, NULL);
 
 	read(timer_fd, &expirations_number, sizeof(uint64_t)); // blocking
-	printk("Read expirations number: %llu\n", expirations_number);
-	test_assert(expirations_number == 1);
+	test_assert_true(expirations_number == 1);
 	close(timer_fd);
 }
-*/
+
+TEST_CASE("timerfd set and read (expired several times)") {
+	int timer_fd = -1;
+	struct itimerspec timeout;
+	uint64_t expirations_number = 0LL;
+
+	timer_fd = timerfd_create(CLOCK_MONOTONIC, 0);
+	test_assert_true(timer_fd >= 0);
+
+	timeout.it_value.tv_sec = 0;
+	timeout.it_value.tv_nsec = NSEC_PER_SEC / 2;
+	timeout.it_interval.tv_sec = 0;
+	timeout.it_interval.tv_nsec = NSEC_PER_SEC / 4;
+	timerfd_settime(timer_fd, 0, &timeout, NULL);
+
+	sleep(1);
+	read(timer_fd, &expirations_number, sizeof(uint64_t));
+	test_assert_true(expirations_number == 3);
+	close(timer_fd);
+}

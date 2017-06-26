@@ -14,6 +14,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
@@ -67,36 +68,88 @@ static void timerfd_free(struct timerfd *timerfd) {
 }
 
 // ----------------------------------------------------------------------------
+// Helpers
+
+static struct timerfd *timerfd_find_by_fd(int fd) {
+	struct idesc_table *it;
+	struct idesc *idesc;
+
+	it = task_resource_idesc_table(task_self());
+	assert(it);
+	idesc = idesc_table_get(it, fd);
+	return idesc_to_timerfd(idesc);
+}
+
+static void timerfd_rearm(struct timerfd *timerfd, time64_t expiration,
+		time64_t interval) {
+	timerfd->expiration = expiration;
+	timerfd->interval = interval;
+}
+
+static void timerfd_disarm(struct timerfd *timerfd) {
+	timerfd->expiration = 0LL;
+	timerfd->interval = 0LL;
+}
+
+// ----------------------------------------------------------------------------
 // Idesc operations
 
 static const struct idesc_ops idesc_timerfd_ops;
 
 static ssize_t timerfd_read(struct idesc *idesc, const struct iovec *iov,
 		int cnt) {
-	printk("timerfd_read() invoked.\n");
-	/*
 	struct timerfd *timerfd;
 	void *buf;
+	struct timespec ts_now;
+	int error_code;
+	time64_t now, remaining, next_expiration;
 	uint64_t expirations_count = 0LL;
+	size_t read_size = sizeof(uint64_t);
 
 	assert(iov);
-	buf = iov->iov_base;
-	assert(cnt == sizeof(uint64_t));
 	assert(idesc->idesc_ops == &idesc_timerfd_ops);
 	assert(idesc->idesc_amode == S_IROTH);
+	buf = iov->iov_base;
 
-	if (!iov->iov_len) {
-		return 0;
+	if (iov->iov_len < sizeof(uint64_t)) {
+		return -EINVAL;
+	}
+	timerfd = idesc_to_timerfd(idesc);
+
+	mutex_lock(&timerfd->mutex);
+	if (!timerfd->expiration && !timerfd->interval) {
+		// disarmed; return 0
+		error_code = 0;
+		goto out_err;
 	}
 
-	timerfd = idesc_to_timerfd(idesc);
-	mutex_lock(&timerfd->mutex);
-	mutex_unlock(&timerfd->mutex);
+	clock_gettime(timerfd->clk_id, &ts_now);
+	now = timespec_to_ns(&ts_now);
+	remaining = timerfd->expiration - now;
 
-	// return sizeof(uint64_t);
-	*/
-	// TODO
-	return 0;
+	next_expiration = timerfd->expiration;
+	if (remaining > 0) {
+		usleep(remaining / USEC_PER_MSEC);
+	}
+
+	do {
+		next_expiration += timerfd->interval;
+		++expirations_count;
+	} while (next_expiration < now);
+
+	if (timerfd->interval > 0) {
+		timerfd_rearm(timerfd, next_expiration, timerfd->interval);
+	} else {
+		timerfd_disarm(timerfd);
+	}
+
+	mutex_unlock(&timerfd->mutex);
+	memcpy(buf, &expirations_count, read_size);
+	return read_size;
+
+	out_err:
+	mutex_unlock(&timerfd->mutex);
+	return error_code;
 }
 
 static void timerfd_close(struct idesc *idesc) {
@@ -122,32 +175,7 @@ static const struct idesc_ops idesc_timerfd_ops = {
 };
 
 // ----------------------------------------------------------------------------
-// Helpers
-
-// TODO uncomment when timerfd_read() is written
-/*
-static int idesc_timerfd_isclosed(struct idesc_timerfd *idesc_timerfd) {
-	return idesc_timerfd->idesc.idesc_amode == 0;
-}
-*/
-
-static struct timerfd *timerfd_find_by_fd(int fd) {
-	struct idesc_table *it;
-	struct idesc *idesc;
-
-	it = task_resource_idesc_table(task_self());
-	assert(it);
-	idesc = idesc_table_get(it, fd);
-	return idesc_to_timerfd(idesc);
-}
-
-static void timerfd_rearm(struct timerfd *timerfd, time64_t expiration,
-		time64_t interval) {
-	mutex_lock(&timerfd->mutex);
-	timerfd->expiration = expiration;
-	timerfd->interval = interval;
-	mutex_unlock(&timerfd->mutex);
-}
+// Logic of the interface functions
 
 static void do_timerfd_settime(struct timerfd *timerfd,
 		const struct itimerspec *new_value, int flags) {
@@ -167,7 +195,9 @@ static void do_timerfd_settime(struct timerfd *timerfd,
 	}
 	interval = timespec_to_ns(&new_value->it_interval);
 
+	mutex_lock(&timerfd->mutex);
 	timerfd_rearm(timerfd, expiration, interval);
+	mutex_unlock(&timerfd->mutex);
 }
 
 static void do_timerfd_gettime(struct timerfd *timerfd,
