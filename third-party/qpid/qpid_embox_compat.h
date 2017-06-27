@@ -170,14 +170,6 @@ typedef unsigned int uint;
 
 
 #include <signal.h>
-static inline
-int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
-	(void)how;
-	(void)set;
-	(void)oldset;
-	DPRINT();
-	return 0;
-}
 
 
 // instead of gcc Thread-Local Storage
