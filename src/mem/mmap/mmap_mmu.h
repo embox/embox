@@ -47,5 +47,6 @@ extern int mmap_mapping(struct emmap *emmap);
 
 extern void mmap_add_phy_page(struct emmap *mmap, struct phy_page *phy_page);
 extern void mmap_del_phy_page(struct phy_page *phy_page);
+extern struct phy_page *mmap_find_phy_page(struct emmap *mmap, void *start);
 
 #endif /* MEM_MMAP_MMU_H_ */

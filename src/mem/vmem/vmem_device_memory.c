@@ -73,6 +73,8 @@ void *mmap_device_memory(void *addr,
  */
 static int munmap_anon(void *addr, size_t size) {
 	struct page_allocator *anon_pages = __phymem_allocator;
+	struct emmap *emmap = self_mmap();
+	struct phy_page *phy_page;
 
 	if (!page_belong(anon_pages, addr) || !page_belong(anon_pages, addr + size)) {
 		return 1;
@@ -83,7 +85,16 @@ static int munmap_anon(void *addr, size_t size) {
 	 * actual number of pages is (size + 1)/MMU_PAGE_SIZE */
 	int pages = (addr + size - start + MMU_PAGE_SIZE - 1) / MMU_PAGE_SIZE;
 
+	phy_page = mmap_find_phy_page(emmap, start);
+	if (NULL == phy_page) {
+		return SET_ERRNO(ENOENT);
+	}
+
 	phymem_free(start, pages);
+
+	mmap_del_phy_page(phy_page);
+	phy_page_destroy(phy_page);
+
 	return 0;
 }
 

@@ -96,6 +96,16 @@ void mmap_del_phy_page(struct phy_page *phy_page) {
 	dlist_del(&phy_page->page_link);
 }
 
+struct phy_page *mmap_find_phy_page(struct emmap *mmap, void *start) {
+	struct phy_page *phy_page;
+	dlist_foreach_entry(phy_page, &mmap->page_list, page_link) {
+		if (start == phy_page->page) {
+			return phy_page;
+		}
+	}
+	return NULL;
+}
+
 void mmap_init(struct emmap *mmap) {
 	int err;
 	dlist_init(&mmap->marea_list);
