@@ -22,7 +22,7 @@ matrix:
     before_install: echo N/A
     install: brew install uncrustify
     before_script: echo N/A
-    script: ./run_uncrustify.sh
+    script: ./run_uncrustify.sh -travis
 
 before_install:
   - travis_retry sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa

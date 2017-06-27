@@ -1,6 +1,12 @@
 #!/bin/bash
 
-files=$(git diff --name-only)
+if [ $# -eq 0 ]
+  then
+	files=$(git diff --name-only)
+  else 
+	files=$(find src -type f -name "*.[ch]")
+fi
+
 if [ -s uncrustify_diff.txt ]
 then
 	rm uncrustify_diff.txt
@@ -20,6 +26,12 @@ for item in $files ; do
 
 done
 
+rm -rf out
+
+if [ -s uncrustify_diff.txt ]
+then
+	cat uncrustify_diff.txt
+	exit 1
+fi
 #find out -type f -empty -delete
 #rsync -ah out/ ./
-rm -rf out
