@@ -90,6 +90,10 @@ static int munmap_anon(void *addr, size_t size) {
 		return SET_ERRNO(ENOENT);
 	}
 
+	if (pages != phy_page->page_number) {
+		return SET_ERRNO(EINVAL);
+	}
+
 	phymem_free(start, pages);
 
 	mmap_del_phy_page(phy_page);
