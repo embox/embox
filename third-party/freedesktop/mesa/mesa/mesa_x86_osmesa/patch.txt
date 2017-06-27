@@ -1,123 +1,3 @@
-diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/configure.ac mesa-17.0.3/configure.ac
---- mesa-17.0.3-orig/configure.ac	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/configure.ac	2017-06-12 17:06:53.015879424 +0300
-@@ -278,37 +278,38 @@
- 
- dnl Add flags for gcc and g++
- if test "x$GCC" = xyes; then
--    CFLAGS="$CFLAGS -Wall"
-+    CFLAGS="$CFLAGS"
-+#    CFLAGS="$CFLAGS -Wall"
- 
--    if test "x$USE_GNU99" = xyes; then
-+#    if test "x$USE_GNU99" = xyes; then
- 	CFLAGS="$CFLAGS -std=gnu99"
--    else
--	CFLAGS="$CFLAGS -std=c99"
--    fi
-+#    else
-+#	CFLAGS="$CFLAGS -std=c99"
-+#    fi
- 
-     # Enable -Werror=implicit-function-declaration and
-     # -Werror=missing-prototypes, if available, or otherwise, just
-     # -Wmissing-prototypes.  This is particularly useful to avoid
-     # generating a loadable driver module that has undefined symbols.
--    save_CFLAGS="$CFLAGS"
--    AC_MSG_CHECKING([whether $CC supports -Werror=missing-prototypes])
--    CFLAGS="$CFLAGS -Werror=implicit-function-declaration"
--    CFLAGS="$CFLAGS -Werror=missing-prototypes"
--    AC_LINK_IFELSE([AC_LANG_PROGRAM()],
--		   AC_MSG_RESULT([yes]),
--		   [CFLAGS="$save_CFLAGS -Wmissing-prototypes";
--		    AC_MSG_RESULT([no])]);
-+#    save_CFLAGS="$CFLAGS"
-+#    AC_MSG_CHECKING([whether $CC supports -Werror=missing-prototypes])
-+#    CFLAGS="$CFLAGS -Werror=implicit-function-declaration"
-+#    CFLAGS="$CFLAGS -Werror=missing-prototypes"
-+#    AC_LINK_IFELSE([AC_LANG_PROGRAM()],
-+#		   AC_MSG_RESULT([yes]),
-+#		   [CFLAGS="$save_CFLAGS -Wmissing-prototypes";
-+#		    AC_MSG_RESULT([no])]);
- 
-     # Enable -fvisibility=hidden if using a gcc that supports it
--    save_CFLAGS="$CFLAGS"
--    AC_MSG_CHECKING([whether $CC supports -fvisibility=hidden])
--    VISIBILITY_CFLAGS="-fvisibility=hidden"
--    CFLAGS="$CFLAGS $VISIBILITY_CFLAGS"
--    AC_LINK_IFELSE([AC_LANG_PROGRAM()], AC_MSG_RESULT([yes]),
--		   [VISIBILITY_CFLAGS=""; AC_MSG_RESULT([no])]);
-+#    save_CFLAGS="$CFLAGS"
-+#    AC_MSG_CHECKING([whether $CC supports -fvisibility=hidden])
-+#    VISIBILITY_CFLAGS="-fvisibility=hidden"
-+#    CFLAGS="$CFLAGS $VISIBILITY_CFLAGS"
-+#    AC_LINK_IFELSE([AC_LANG_PROGRAM()], AC_MSG_RESULT([yes]),
-+#		   [VISIBILITY_CFLAGS=""; AC_MSG_RESULT([no])]);
- 
-     # Restore CFLAGS; VISIBILITY_CFLAGS are added to it where needed.
--    CFLAGS=$save_CFLAGS
-+#    CFLAGS=$save_CFLAGS
- 
-     # We don't want floating-point math functions to set errno or trap
-     CFLAGS="$CFLAGS -fno-math-errno -fno-trapping-math"
-@@ -319,35 +320,36 @@
-     # - non-Linux/Posix OpenGL portions needs to build on MSVC 2013 (which
-     #   supports most of C99)
-     # - the rest has no compiler compiler restrictions
--    MSVC2013_COMPAT_CFLAGS="-Werror=pointer-arith"
--    MSVC2013_COMPAT_CXXFLAGS="-Werror=pointer-arith"
-+#    MSVC2013_COMPAT_CFLAGS="-Werror=pointer-arith"
-+#    MSVC2013_COMPAT_CXXFLAGS="-Werror=pointer-arith"
- 
-     # Enable -Werror=vla if compiler supports it
--    save_CFLAGS="$CFLAGS"
--    AC_MSG_CHECKING([whether $CC supports -Werror=vla])
--    CFLAGS="$CFLAGS -Werror=vla"
--    AC_LINK_IFELSE([AC_LANG_PROGRAM()],
--		   [MSVC2013_COMPAT_CFLAGS="$MSVC2013_COMPAT_CFLAGS -Werror=vla";
--		    MSVC2013_COMPAT_CXXFLAGS="$MSVC2013_COMPAT_CXXFLAGS -Werror=vla";
--		    AC_MSG_RESULT([yes])],
--		    AC_MSG_RESULT([no]));
--    CFLAGS="$save_CFLAGS"
-+#    save_CFLAGS="$CFLAGS"
-+#    AC_MSG_CHECKING([whether $CC supports -Werror=vla])
-+#    CFLAGS="$CFLAGS -Werror=vla"
-+#    AC_LINK_IFELSE([AC_LANG_PROGRAM()],
-+#		   [MSVC2013_COMPAT_CFLAGS="$MSVC2013_COMPAT_CFLAGS -Werror=vla";
-+#		    MSVC2013_COMPAT_CXXFLAGS="$MSVC2013_COMPAT_CXXFLAGS -Werror=vla";
-+#		    AC_MSG_RESULT([yes])],
-+#		    AC_MSG_RESULT([no]));
-+#    CFLAGS="$save_CFLAGS"
- fi
- if test "x$GXX" = xyes; then
--    CXXFLAGS="$CXXFLAGS -Wall"
-+    CXXFLAGS="$CXXFLAGS"
-+#    CXXFLAGS="$CXXFLAGS -Wall"
- 
-     # Enable -fvisibility=hidden if using a gcc that supports it
--    save_CXXFLAGS="$CXXFLAGS"
--    AC_MSG_CHECKING([whether $CXX supports -fvisibility=hidden])
--    VISIBILITY_CXXFLAGS="-fvisibility=hidden"
--    CXXFLAGS="$CXXFLAGS $VISIBILITY_CXXFLAGS"
--    AC_LANG_PUSH([C++])
--    AC_LINK_IFELSE([AC_LANG_PROGRAM()], AC_MSG_RESULT([yes]),
--		   [VISIBILITY_CXXFLAGS="" ; AC_MSG_RESULT([no])]);
--    AC_LANG_POP([C++])
-+#    save_CXXFLAGS="$CXXFLAGS"
-+#    AC_MSG_CHECKING([whether $CXX supports -fvisibility=hidden])
-+#    VISIBILITY_CXXFLAGS="-fvisibility=hidden"
-+#    CXXFLAGS="$CXXFLAGS $VISIBILITY_CXXFLAGS"
-+#    AC_LANG_PUSH([C++])
-+#    AC_LINK_IFELSE([AC_LANG_PROGRAM()], AC_MSG_RESULT([yes]),
-+#		   [VISIBILITY_CXXFLAGS="" ; AC_MSG_RESULT([no])]);
-+#    AC_LANG_POP([C++])
- 
-     # Restore CXXFLAGS; VISIBILITY_CXXFLAGS are added to it where needed.
--    CXXFLAGS=$save_CXXFLAGS
-+#    CXXFLAGS=$save_CXXFLAGS
- 
-     # We don't want floating-point math functions to set errno or trap
-     CXXFLAGS="$CXXFLAGS -fno-math-errno -fno-trapping-math"
 diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/include/c11/threads_posix.h mesa-17.0.3/include/c11/threads_posix.h
 --- mesa-17.0.3-orig/include/c11/threads_posix.h	2017-04-01 18:33:36.000000000 +0300
 +++ mesa-17.0.3/include/c11/threads_posix.h	2017-06-12 17:06:53.111879422 +0300
@@ -242,20 +122,23 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/gallium
  #if defined(PIPE_OS_UNIX)
  #  include <time.h> /* timeval */
  #  include <sys/time.h> /* timeval */
-diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/main/mm.h mesa-17.0.3/src/mesa/main/mm.h
---- mesa-17.0.3-orig/src/mesa/main/mm.h	2017-04-01 18:33:37.000000000 +0300
-+++ mesa-17.0.3/src/mesa/main/mm.h	2017-06-12 17:06:53.479879414 +0300
-@@ -38,8 +38,8 @@
-    struct mem_block *heap;
-    unsigned ofs;
-    unsigned size;
--   unsigned free:1;
--   unsigned reserved:1;
-+   unsigned free;
-+   unsigned reserved;
- };
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/main/compiler.h mesa-17.0.3/src/mesa/main/compiler.h
+--- mesa-17.0.3-orig/src/mesa/main/compiler.h  2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/main/compiler.h       2017-06-27 14:10:57.442988538 +0300
+@@ -40,6 +40,13 @@
  
+ #include "c99_compat.h" /* inline, __func__, etc. */
  
++#if defined(__EMBOX__)
++#ifdef __GNUC__
++#define _NORETURN __attribute__ ((noreturn))
++#else
++#define _NORETURN
++#endif /* __GNUC__ */
++#endif /* __EMBOX__ */
+ 
+ #ifdef __cplusplus
+ extern "C" {
 diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp mesa-17.0.3/src/mesa/state_tracker/st_glsl_to_tgsi.cpp
 --- mesa-17.0.3-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2017-04-01 18:33:37.000000000 +0300
 +++ mesa-17.0.3/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2017-06-12 17:06:53.479879414 +0300
