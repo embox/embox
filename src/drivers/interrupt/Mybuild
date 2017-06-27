@@ -94,6 +94,12 @@ module no_interrupts extends irqctrl_api {
 	source "no_interrupts.c"
 }
 
+module xen extends irqctrl_api {
+	source "xen.h"
+	source "xen.c"
+}
+
+
 module integratorcp_pic extends irqctrl_api {
 	source "integratorcp_pic.c", "integratorcp_pic.h"
 }
