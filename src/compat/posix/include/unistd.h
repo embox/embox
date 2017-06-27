@@ -245,6 +245,13 @@ extern int gethostname(char *name, size_t len);
 
 extern int chown(const char *path, uid_t owner, gid_t group);
 
+
+/*******************************************
+ * stubs
+ *******************************************/
+static inline void sync(void) {
+}
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_UNISTD_H_ */

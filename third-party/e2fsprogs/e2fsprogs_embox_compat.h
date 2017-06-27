@@ -96,10 +96,6 @@ static inline void tzset (void) {
 	printf(">>> tzset\n");
 }
 
-static inline void sync(void) {
-	printf("sync\n");
-}
-
 static inline int daemon(int nochdir, int noclose) {
 	printf(">>> daemon, nochdir - %d, noclose - %d\n", nochdir, noclose);
 	return -1;
