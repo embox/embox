@@ -19,6 +19,7 @@ matrix:
   include:
   - env: UNCRUSTIFY
     os: osx
+    before_install: echo N/A
     install: brew install uncrustify
     before_script: echo N/A
     script: run_uncrustify.sh
