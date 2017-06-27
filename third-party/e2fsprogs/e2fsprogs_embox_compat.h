@@ -63,18 +63,6 @@ static inline ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset
 	return -1;
 }
 
-/****************** Functions for mke2fs *******************/
-
-static inline FILE *popen(const char *command, const char *type) {
-	printf(">>> popen, command - %s, type - %s\n", command, type);
-	return NULL;
-}
-
-static inline int pclose(FILE *stream) {
-	printf(">>> pclose\n");
-	return -1;
-}
-
 /****************** Functions for e2fsck *******************/
 
 #define SI_USER         0

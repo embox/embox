@@ -229,6 +229,20 @@ extern void setbuf(FILE *stream, char *buf);
 /* #define _GNU_SOURCE  */
 extern int asprintf(char **strp, const char *fmt, ...);
 
+/*******************************************
+ * stubs
+ *******************************************/
+static inline FILE *popen(const char *command, const char *type) {
+	(void) command;
+	(void) type;
+	return NULL;
+}
+
+static inline int pclose(FILE *stream) {
+	(void) stream;
+	return 0;
+}
+
 __END_DECLS
 
 #endif /* STDIO_H_ */
