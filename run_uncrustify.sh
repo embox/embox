@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 
 files=$(git diff --name-only)
 if [ -s uncrustify_diff.txt ]
