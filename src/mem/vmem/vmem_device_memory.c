@@ -85,13 +85,12 @@ static int munmap_anon(void *addr, size_t size) {
 	 * actual number of pages is (size + 1)/MMU_PAGE_SIZE */
 	int pages = (addr + size - start + MMU_PAGE_SIZE - 1) / MMU_PAGE_SIZE;
 
-	phy_page = mmap_find_phy_page(emmap, start);
-	if (NULL == phy_page) {
-		return SET_ERRNO(ENOENT);
-	}
-
 	phymem_free(start, pages);
 
+	phy_page = mmap_find_phy_page(emmap, start);
+	if (NULL == phy_page) {
+		return SET_ERRNO(EINVAL);
+	}
 	mmap_del_phy_page(phy_page);
 	phy_page_destroy(phy_page);
 
