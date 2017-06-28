@@ -139,6 +139,67 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/ma
  
  #ifdef __cplusplus
  extern "C" {
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/main/mm.h mesa-17.0.3/src/mesa/main/mm.h
+--- mesa-17.0.3-orig/src/mesa/main/mm.h        2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/main/mm.h     2017-06-27 18:28:58.096253603 +0300
+@@ -38,8 +38,13 @@
+    struct mem_block *heap;
+    unsigned ofs;
+    unsigned size;
++#if !defined(__EMBOX__)
+    unsigned free:1;
+    unsigned reserved:1;
++#else
++   unsigned free;
++   unsigned reserved;
++#endif
+ };
+ 
+ 
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/program/prog_instruction.h mesa-17.0.3/src/mesa/program/prog_instruction.h
+--- mesa-17.0.3-orig/src/mesa/program/prog_instruction.h       2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/program/prog_instruction.h    2017-06-27 19:18:01.243197282 +0300
+@@ -223,7 +223,7 @@
+    enum prog_opcode Opcode;
+    struct prog_src_register SrcReg[3];
+    struct prog_dst_register DstReg;
+-
++#if !defined(__EMBOX__)
+    /**
+     * Saturate each value of the vectored result to the range [0,1].
+     *
+@@ -245,8 +245,30 @@
+    /** True if tex instruction should do shadow comparison */
+    GLuint TexShadow:1;
+    /*@}*/
++#else
++   /**
++    * Saturate each value of the vectored result to the range [0,1].
++    *
++    * \since
++    * ARB_fragment_program
++    */
++   GLuint Saturate;
+ 
+    /**
++    * \name Extra fields for TEX, TXB, TXD, TXL, TXP instructions.
++    */
++   /*@{*/
++   /** Source texture unit. */
++   GLuint TexSrcUnit;
++
++   /** Source texture target, one of TEXTURE_{1D,2D,3D,CUBE,RECT}_INDEX */
++   GLuint TexSrcTarget;
++
++   /** True if tex instruction should do shadow comparison */
++   GLuint TexShadow;
++   /*@}*/
++#endif 
++   /**
+     * For BRA and CAL instructions, the location to jump to.
+     * For BGNLOOP, points to ENDLOOP (and vice-versa).
+     * For BRK, points to ENDLOOP
+
 diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp mesa-17.0.3/src/mesa/state_tracker/st_glsl_to_tgsi.cpp
 --- mesa-17.0.3-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2017-04-01 18:33:37.000000000 +0300
 +++ mesa-17.0.3/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2017-06-12 17:06:53.479879414 +0300
@@ -160,6 +221,36 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/st
  }
  
  static unsigned
+diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/mesa/vbo/vbo.h mesa-17.0.3/src/mesa/vbo/vbo.h
+bo/vbo.h mesa-17.0.3/src/mesa/vbo/vbo.h
+--- mesa-17.0.3-orig/src/mesa/vbo/vbo.h        2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/vbo/vbo.h     2017-06-27 18:29:31.010612701 +0300
+@@ -44,6 +44,7 @@
+ struct gl_transform_feedback_object;
+ 
+ struct _mesa_prim {
++#if !defined(__EMBOX__)
+    GLuint mode:8;    /**< GL_POINTS, GL_LINES, GL_QUAD_STRIP, etc */
+    GLuint indexed:1;
+    GLuint begin:1;
+@@ -52,7 +53,16 @@
+    GLuint no_current_update:1;
+    GLuint is_indirect:1;
+    GLuint pad:18;
+-
++#else
++   GLuint mode;    /**< GL_POINTS, GL_LINES, GL_QUAD_STRIP, etc */
++   GLuint indexed;
++   GLuint begin;
++   GLuint end;
++   GLuint weak;
++   GLuint no_current_update;
++   GLuint is_indirect;
++   GLuint pad;
++#endif
+    GLuint start;
+    GLuint count;
+    GLint basevertex;
 diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/debug.c mesa-17.0.3/src/util/debug.c
 --- mesa-17.0.3-orig/src/util/debug.c	2017-04-01 18:33:37.000000000 +0300
 +++ mesa-17.0.3/src/util/debug.c	2017-06-12 17:06:53.479879414 +0300
