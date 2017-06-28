@@ -24,6 +24,9 @@ matrix:
     before_script:
       - echo $PWD
       - echo $(git rev-parse HEAD)
+      - echo $(git rev-parse HEAD~1)
+      - echo $(git rev-parse HEAD~2)
+      - echo $(git rev-parse HEAD~3)
       - echo $TRAVIS_PULL_REQUEST_SHA
       - git diff $(git rev-parse HEAD) $TRAVIS_PULL_REQUEST_SHA > smth.txt
       - cat smth.txt
