@@ -13,6 +13,7 @@
 
 #include <drivers/tty/termios_ops.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <drivers/tty.h>
 
 #define TIO_I(t, flag) ((t)->c_iflag & (flag))
 #define TIO_O(t, flag) ((t)->c_oflag & (flag))
@@ -88,14 +89,28 @@ struct ring *termios_raw_ring(struct ring *r, struct ring *i_ring,
 	return r;
 }
 
-int termios_echo_status(const struct termios *t, char *verase) {
+int termios_echo_erase(const struct termios *t, 
+	struct ring *o_ring, char *o_buff, size_t buflen) {
+
+	int result = 0;
+	
+	if (!TIO_L(t, ECHO)) {
+		return -1;
+	}
+
+	/* See also 
+	 * http://cinnabar.sosdg.org/~qiyong/mxr/source/minix/drivers/tty/tty/tty.c#L1251
+	 * as example of how ECHOE flag is handled in Minix. */
 	if (!TIO_L(t, ECHOE)) {
-		*verase = t->c_cc[VERASE];
-		return ECHO;
+		result += termios_putc(t, t->c_cc[VERASE], o_ring, o_buff, buflen);
 	}
 	else {
-		return ECHOE;
+		for (char *ch = "\b \b"; *ch; ++ch) {
+			result += termios_putc(t, *ch, o_ring, o_buff, buflen);
+		}
 	}
+
+	return result;
 }
 
 int termios_handle_newline(const struct termios *t, char ch, int *is_eol) {
@@ -116,11 +131,12 @@ int termios_handle_newline(const struct termios *t, char ch, int *is_eol) {
 	return ignore_cr;
 }
 
-int termios_handle_erase(const struct termios *t, char ch, int *raw_mode,
-	struct ring *i_ring, struct ring *i_canon_ring, size_t buflen) {
+int termios_handle_erase(const struct termios *t, char ch, 
+	struct ring *i_ring, struct ring *i_canon_ring, 
+	struct ring *o_ring, char *o_buff, size_t buflen) {
 
-	*raw_mode = !TIO_L(t, ICANON);
 	int erase_all = (ch == t->c_cc[VKILL]);
+	int result = 0;
 
 	if (erase_all || ch == t->c_cc[VERASE] || ch == '\b') {
 
@@ -135,31 +151,74 @@ int termios_handle_erase(const struct termios *t, char ch, int *raw_mode,
 
 			i_ring->head -= erase_len - buflen;
 			ring_fixup_head(i_ring, buflen);
+
+			while (erase_len--) {
+				result += termios_echo_erase(t, o_ring, o_buff, buflen);
+			}
 		}
 
-		return erase_len;
+		return result;
 	}
 
 	return -1;
 }
 
-int termios_input_status(const struct termios *t, char ch,
-	struct ring *i_ring, struct ring *i_canon_ring) {
+int termios_input_status(const struct termios *t,
+	struct termios_i_buff *b, char ch) {
 	
 	int raw_mode = !TIO_L(t, ICANON);
 	int is_eol = (ch == '\n' || ch == t->c_cc[VEOL]);
 	int got_data = (raw_mode || is_eol || ch == t->c_cc[VEOF]);
 
 	if (got_data) {
-		i_canon_ring->head = i_ring->head;
+		b->canon_ring->head = b->ring->head;
 
 		if (raw_mode) {
 			/* maintain it empty */
-			i_canon_ring->tail = i_canon_ring->head;
+			b->canon_ring->tail = b->canon_ring->head;
 		}
 	}
 
 	return got_data;
+}
+
+int termios_input(const struct termios *t, char ch, int *is_ready,
+	struct termios_i_buff *b, struct ring *o_ring, char *o_buff, size_t buflen) {
+
+	int raw_mode = !TIO_L(t, ICANON);
+	int is_eol;
+
+	*is_ready = 0;
+
+	if (termios_handle_newline(t, ch, &is_eol)) {
+		return termios_input_status(t, b, ch);
+	}
+
+	/* Handle erase/kill */
+	if (!raw_mode) {
+		int result = termios_handle_erase(t, ch, 
+			b->ring, b->canon_ring, o_ring, o_buff, buflen);
+
+		if (result >= 0) {
+			*is_ready = result;
+			return termios_input_status(t, b, ch);
+		}
+	}
+
+	/* Finally, store and echo the char.
+	 *
+	 * When i_ring is near to become full, only raw or a line ending chars are
+	 * handled. This lets canonical read to see the line with \n or EOL at the
+	 * end, even when some chars are missing. */
+
+	if (ring_room_size(b->ring, b->buflen) > !(raw_mode || is_eol)) {
+		if (ring_write_all_from(b->ring, b->buff, b->buflen, &ch, 1)) {
+			termios_gotc(t, ch, o_ring, o_buff, buflen);
+			*is_ready = 1;
+		}
+	}
+
+	return termios_input_status(t, b, ch);
 }
 
 size_t termios_find_line_len(const struct termios *t, 
@@ -181,15 +240,15 @@ size_t termios_find_line_len(const struct termios *t,
 	return offset;
 }
 
-char *termios_read_cooked(const struct termios *t, char *buff, char *end,
-	struct ring *i_ring, struct ring *i_canon_ring, char *i_buff, size_t buflen) {
+char *termios_read_cooked(const struct termios *t, 
+	struct termios_i_buff *b, char *buff, char *end) {
 
 	size_t block_size;
 
 	assert(TIO_L(t, ICANON));
 
-	while ((block_size = ring_can_read(i_canon_ring, buflen, end - buff))) {
-		const char *line_start = i_buff + i_canon_ring->tail;
+	while ((block_size = ring_can_read(b->canon_ring, b->buflen, end - buff))) {
+		const char *line_start = b->buff + b->canon_ring->tail;
 		size_t line_len;
 		int got_line;
 		int is_eof;
@@ -200,18 +259,18 @@ char *termios_read_cooked(const struct termios *t, char *buff, char *end,
 		block_size = line_len;
 
 		if (got_line) {
- 			++block_size;  /* Line end char is always consumed... */
+			++block_size;  /* Line end char is always consumed... */
 
 			if (!is_eof) { /* ...but EOF is discarded and not copied to user. */
-	 			++line_len;
-	 		}
+				++line_len;
+			}
 		}
 
 		memcpy(buff, line_start, line_len);
 		buff += line_len;
 
-		ring_just_read(i_ring, buflen, block_size);
-		ring_just_read(i_canon_ring, buflen, block_size);
+		ring_just_read(b->ring, b->buflen, block_size);
+		ring_just_read(b->canon_ring, b->buflen, block_size);
 
 		if (got_line) {
 			break;
@@ -221,33 +280,33 @@ char *termios_read_cooked(const struct termios *t, char *buff, char *end,
 	return buff;
 }
 
-char *termios_read(const struct termios *t, char *curr, char *end,
-	struct ring *i_ring, struct ring *i_canon_ring, char *i_buff, size_t buflen) {
+char *termios_read(const struct termios *t, 
+	struct termios_i_buff *b, char *curr, char *end) {
 
 	struct ring raw_ring;
 	size_t block_size;
 	char *next = curr;
 
 	while ((block_size = ring_can_read(
-		termios_raw_ring(&raw_ring, i_ring, i_canon_ring), buflen, end - next))) {
+			termios_raw_ring(&raw_ring, b->ring, 
+			b->canon_ring), b->buflen, end - next))) {
 
 		/* No processing is required to read raw data. */
-		memcpy(curr, i_buff + raw_ring.tail, block_size);
+		memcpy(curr, b->buff + raw_ring.tail, block_size);
 		next += block_size;
 
-		ring_just_read(i_ring, buflen, block_size);
+		ring_just_read(b->ring, b->buflen, block_size);
 	}
 
 	if (TIO_L(t, ICANON)) {
-		next = termios_read_cooked(t, next, end, 
-			i_ring, i_canon_ring, i_buff, buflen);
+		next = termios_read_cooked(t, b, next, end);
 	}
 
 	return next;
 }
 
-void termios_update_size(const struct termios *t, size_t *size,
-		unsigned long *timeout) {
+void termios_update_size(const struct termios *t, 
+	size_t *size, unsigned long *timeout) {
 
 	cc_t vmin = t->c_cc[VMIN];
 	cc_t vtime = t->c_cc[VTIME];
@@ -290,4 +349,13 @@ void termios_init(struct termios *t) {
 	t->c_oflag = TERMIOS_OFLAG_INIT;
 	t->c_cflag = TERMIOS_CFLAG_INIT;
 	t->c_lflag = TERMIOS_LFLAG_INIT;
+}
+
+void termios_i_buff_init(struct termios_i_buff *b, struct ring *ring, 
+	char *buff, struct ring *canon_ring, size_t buflen) {
+
+	b->ring = ring;
+	b->buff = buff;
+	b->canon_ring = canon_ring;
+	b->buflen = buflen;
 }

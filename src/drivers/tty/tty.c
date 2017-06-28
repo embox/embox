@@ -53,78 +53,22 @@ static int tty_output(struct tty *t, char ch) {
 	// t->ops->tx_char(t, ch);
 }
 
-/* called from mutex locked context */
-static void tty_echo(struct tty *t, char ch) {
-	termios_gotc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
-	MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
-}
-
-static void tty_echo_erase(struct tty *t) {
-	int status;
-	char verase;
-
-	/* See also http://users.sosdg.org/~qiyong/mxr/source/drivers/tty/tty.c#L1430
-	 * as example of how ECHOE flag is handled in Minix. */
-	status = termios_echo_status(&t->termios, &verase);
-
-	switch(status) {
-	case ECHO:
-		tty_output(t, verase);
-		break;
-	case ECHOE:
-		for (char *ch = "\b \b"; *ch; ++ch) {
-			tty_output(t, *ch);
-		}
-		break;
-	default:
-		return;
-	}
-}
-
-static inline int tty_input_status(struct tty *t, char ch) {
-	return termios_input_status(&t->termios, ch, &t->i_ring, &t->i_canon_ring);
-}
-
-static int tty_input(struct tty *t, char ch, unsigned char flag) {
-	int raw_mode;
-	int is_eol;
-
-	if (termios_handle_newline(&t->termios, ch, &is_eol)) {
-		return tty_input_status(t, ch);
-	}
-
-	int erase_len = termios_handle_erase(&t->termios, ch, &raw_mode,
-		&t->i_ring, &t->i_canon_ring, TTY_IO_BUFF_SZ);
-
-	/* Handle erase/kill */
-	if (!raw_mode && erase_len >= 0) {
-		while (erase_len--) {
-			tty_echo_erase(t);
-		}
-
-		return tty_input_status(t, ch);
-	}
-
-	/* Finally, store and echo the char.
-	 *
-	 * When i_ring is near to become full, only raw or a line ending chars are
-	 * handled. This lets canonical read to see the line with \n or EOL at the
-	 * end, even when some chars are missing. */
-
-	if (ring_room_size(&t->i_ring, TTY_IO_BUFF_SZ) > !(raw_mode || is_eol)) {
-		if (ring_write_all_from(&t->i_ring, t->i_buff, TTY_IO_BUFF_SZ, &ch, 1)) {
-			tty_echo(t, ch);
-		}
-	}
-
-	return tty_input_status(t, ch);
-}
-
 static void tty_rx_do(struct tty *t) {
 	int ich;
+	int is_ready;
+
+	termios_i_buff b;
+
+	termios_i_buff_init(&b, &t->i_ring, 
+		t->i_buff, &t->i_canon_ring, TTY_IO_BUFF_SZ);
 
 	while ((ich = tty_rx_dequeue(t)) != -1) {
-		tty_input(t, (char) ich, (unsigned char) (ich>>CHAR_BIT));
+		termios_input(&t->termios, (char) ich, &is_ready, &b,
+			&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+
+		if (is_ready) {
+			MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
+		}
 	}
 }
 
@@ -134,6 +78,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	char *curr, *next, *end;
 	unsigned long timeout;
 	size_t count;
+	termios_i_buff b;
 
 	curr = buff;
 	end = buff + size;
@@ -148,8 +93,10 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		tty_rx_do(t);
 		rc = idesc_wait_prepare(t->idesc, &iwl);
 
-		next = termios_read(&t->termios, curr, end, 
-			&t->i_ring, &t->i_canon_ring, t->i_buff, TTY_IO_BUFF_SZ);
+		termios_i_buff_init(&b, &t->i_ring, 
+			t->i_buff, &t->i_canon_ring, TTY_IO_BUFF_SZ);
+
+		next = termios_read(&t->termios, &b, curr, end);
 
 		count = next - curr;
 		curr = next;
