@@ -19,7 +19,9 @@ matrix:
   include:
   - env: UNCRUSTIFY
     os: osx
-    before_install: echo N/A
+    before_install: 
+      - echo $PWD
+      - git -C AwesomeLemon/embox diff $(git -C AwesomeLemon/embox rev-parse HEAD) $TRAVIS_PULL_REQUEST_SHA
     install: brew install uncrustify
     before_script: echo N/A
     script: ./run_uncrustify.sh -travis
