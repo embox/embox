@@ -21,6 +21,8 @@ do
             Otherwise uncommited diff is checked. \
             Option -v shows uncrustify suggestions for code style, when it's not set, \
             only file names with differences are shown."
+        exit 1
+        ;;
 	    *)
 	    HASHES+=($key)
 	    ;;
@@ -56,9 +58,10 @@ for item in $files ; do
   if [ -s out/$item ] #if not empty
   then
   	git diff --no-index -- out/$item $item > uncrustify_diff_cur.txt
-    if ! [ -s uncrustify_diff_cur.txt ]; then
-        $item >> uncrustify_diff_filenames.txt
-        uncrustify_diff_cur >> uncrustify_diff.txt
+  	#cat uncrustify_diff_cur.txt
+    if [ -s uncrustify_diff_cur.txt ]; then
+        echo $item >> uncrustify_diff_filenames.txt
+        cat uncrustify_diff_cur.txt >> uncrustify_diff.txt
     fi
    
   	#git diff -- $item out/$item $diffargs >> uncrustify_diff.txt
@@ -76,9 +79,9 @@ then
     else
         cat uncrustify_diff_filenames.txt
 	fi
+	rm uncrustify_diff*
 	exit 1
 fi
-
 rm uncrustify_diff*
 #find out -type f -empty -delete
 #rsync -ah out/ ./
