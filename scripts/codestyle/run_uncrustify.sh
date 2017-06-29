@@ -15,6 +15,12 @@ do
 	    -v|--verbose)
 	    VERBOSE=true
 	    ;;
+        -h|--help)
+        echo "If SHA is provided to the script, \
+            uncrustify checks code style of files that are different in SHA and HEAD. \
+            Otherwise uncommited diff is checked. \
+            Option -v shows uncrustify suggestions for code style, when it's not set, \
+            only file names with differences are shown."
 	    *)
 	    HASHES+=($key)
 	    ;;
@@ -49,7 +55,12 @@ for item in $files ; do
   uncrustify -f $item -c uncrustify_cfg.ini > out/$item
   if [ -s out/$item ] #if not empty
   then
-  	git diff --no-index -- out/$item $item >> uncrustify_diff.txt
+  	git diff --no-index -- out/$item $item > uncrustify_diff_cur.txt
+    if ! [ -s uncrustify_diff_cur.txt ]; then
+        $item >> uncrustify_diff_filenames.txt
+        uncrustify_diff_cur >> uncrustify_diff.txt
+    fi
+   
   	#git diff -- $item out/$item $diffargs >> uncrustify_diff.txt
   fi
 
@@ -59,11 +70,15 @@ rm -rf out
 
 if [ -s uncrustify_diff.txt ]
 then
-	echo "The differences that don't comply with the code style are written to uncrustify_diff.txt"
+	echo "Some files don't comply with code style:"
 	if $VERBOSE; then
 		cat uncrustify_diff.txt
+    else
+        cat uncrustify_diff_filenames.txt
 	fi
 	exit 1
 fi
+
+rm uncrustify_diff*
 #find out -type f -empty -delete
 #rsync -ah out/ ./
