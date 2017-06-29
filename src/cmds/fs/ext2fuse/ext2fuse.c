@@ -26,7 +26,7 @@ static struct fuse_lowlevel_ops *ext2fuse_ops;
 
 extern struct fuse_sb_priv_data ext2fuse_sb_priv_data;
 
-static void *stub_run(void *arg) {
+static void * stub_run(void *arg) {
 	while (1) {
 		sleep(0);
 	}
@@ -34,9 +34,9 @@ static void *stub_run(void *arg) {
 }
 
 extern void fuse_ext2_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
-		size_t size);
+            size_t size);
 extern void fuse_ext2_setxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
-		const char *value, size_t size, int flags);
+              const char *value, size_t size, int flags);
 
 int main(int argc, char *argv[]) {
 	init_ext2_stuff();
@@ -50,7 +50,8 @@ int main(int argc, char *argv[]) {
 
 	ext2fuse_ops->init(argv[1]);
 
-	while (1) {
+
+	while(1) {
 		sleep(0);
 	}
 

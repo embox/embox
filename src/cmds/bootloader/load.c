@@ -58,7 +58,7 @@ static void _NORETURN load_and_run(char *image_vma, char *image_lma, size_t imag
 		irqctrl_disable(irq);
 	}
 
-	callme = (typeof(callme))image_vma;
+	callme = (typeof(callme)) image_vma;
 	callme();
 }
 
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
 		case '?':
 		case 'h':
 			print_usage();
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}

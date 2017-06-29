@@ -19,6 +19,7 @@
 
 #include <fs/file_operation.h>
 
+
 static void print_usage(void) {
 	printf("Usage: md5sum [FILE]\n");
 }
@@ -30,7 +31,7 @@ int main(int argc, char **argv) {
 	char *addr;
 	md5_state_t state;
 	md5_byte_t digest[16];
-	char hex_output[16 * 2 + 1];
+	char hex_output[16*2 + 1];
 	int di;
 	int err;
 
@@ -40,7 +41,7 @@ int main(int argc, char **argv) {
 		case '?':
 		case 'h':
 			print_usage();
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}
@@ -54,9 +55,8 @@ int main(int argc, char **argv) {
 	err = fioctl(fd, 0, &addr);
 	fclose(fd);
 
-	if (err < 0) {
+	if (err < 0)
 		printf("Target filesystem not supported!\n");
-	}
 	stat((char *) argv[argc - 1], &st);
 	/* Compute MD5 sum */
 	md5_init(&state);

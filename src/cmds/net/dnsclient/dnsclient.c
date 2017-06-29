@@ -13,6 +13,7 @@ static void print_usage(void) {
 	printf("Usage: dnsclient [-h] [-is IP address]\n");
 }
 
+
 int main(int argc, char **argv) {
 	int opt;
 	char *addr;
@@ -39,7 +40,7 @@ int main(int argc, char **argv) {
 		printf("Resolv Server IP: %s\n", dns_get_nameserver());
 	} else {
 		if (argc == 3) {
-			addr = dns_routine(argv[argc - 1]);
+			addr = dns_routine(argv[argc-1]);
 			printf(" Resolv Server IP: %s\n", addr);
 		} else {
 			printf("Wrong arguments");

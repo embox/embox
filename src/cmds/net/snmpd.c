@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 	}
 
 	our.sin_family = AF_INET;
-	our.sin_port = htons(SNMP_AGENT_PORT);
+	our.sin_port= htons(SNMP_AGENT_PORT);
 	our.sin_addr.s_addr = htonl(SNMP_ADDR);
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
@@ -80,7 +80,7 @@ int main(int argc, char **argv) {
 		return -errno;
 	}
 
-	if (bind(sock, (struct sockaddr *) &our, sizeof(our)) < 0) {
+	if (bind(sock, (struct sockaddr *)&our, sizeof(our)) < 0) {
 		printf("can not bind socket\n");
 		close(sock);
 		return -errno;
@@ -104,12 +104,12 @@ int main(int argc, char **argv) {
 			continue;
 		}
 
-		if (recvfrom(sock, snmpbuf, MAX_SNMP_LEN, 0, (struct sockaddr *) &addr, &sklen) > 0) {
+		if (recvfrom(sock, snmpbuf, MAX_SNMP_LEN, 0, (struct sockaddr *)&addr, &sklen) > 0) {
 			size_t len;
 			snmp_parse(&snmp, snmpbuf, varbuf, MAX_PDU_LEN);
 			build_response(&snmp);
 			len = snmp_build(&snmp, snmpbuf);
-			sendto(sock, snmpbuf, len, 0, (struct sockaddr *) &addr, sklen);
+			sendto(sock, snmpbuf, len, 0, (struct sockaddr *)&addr, sklen);
 		}
 	}
 

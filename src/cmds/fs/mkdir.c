@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
 	int mode = 0777;
 
 	while (-1 != (opt = getopt(argc - 1, argv, "hm:v"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;

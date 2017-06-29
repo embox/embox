@@ -15,9 +15,8 @@
 int main(int argc, char *argv[]) {
 	char *path = argc < 2 ? MODOPS_HOME_DIR : argv[1];
 
-	if (-1 == chdir(path)) {
+	if (-1 == chdir(path))
 		return -errno;
-	}
 
 	return 0;
 }

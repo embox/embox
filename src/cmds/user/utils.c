@@ -99,7 +99,7 @@ int user_set_options_spwd(struct spwd *result, char *name, char *pswd) {
 	return 0;
 }
 
-int user_copy(const char *from, const char *to) {
+int user_copy(const char* from, const char* to) {
 	FILE *fromf, *tof;
 	int a;
 

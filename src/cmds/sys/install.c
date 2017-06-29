@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "mb:t:"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'm':
 			mount_manage = false;
 			break;
@@ -98,3 +98,4 @@ int main(int argc, char *argv[]) {
 
 	return 0;
 }
+

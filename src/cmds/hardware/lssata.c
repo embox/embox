@@ -19,7 +19,7 @@ struct lssata_cb {
 
 struct hba_port_reg {
 	uint8_t offset;
-	char    name[100];
+	char name[100];
 };
 
 static struct hba_port_reg generic_hba_regs[] = {
@@ -68,33 +68,31 @@ static void print_error(void) {
 	printf("Wrong parameters\n");
 }
 
-static void dump_port_regs(struct ahci_hba *hba, int port)
+static void dump_port_regs(struct ahci_hba* hba, int port)
 {
 	int i = 0;
 	uintptr_t offs = hba->base_addr + 0x100 + 0x80 * i;
 
 	for (i = 0; i < 0x80; i += 4)
 	{
-		uint32_t val = *(volatile uint32_t *) (offs + i);
-		if ((i / 4) % 4 == 0) {
+		uint32_t val = *(volatile uint32_t*)(offs + i);
+		if ((i/4) % 4 == 0)
 			printf("%02X: ", i);
-		}
 		printf("%08X ", val);
-		if ((i / 4) % 4 == 3) {
+		if ((i/4) % 4 == 3)
 			printf("\n");
-		}
 	}
 	printf("\n");
 }
 
-static void dump_port_regs_descr(struct ahci_hba *hba, int port)
+static void dump_port_regs_descr(struct ahci_hba* hba, int port)
 {
 	int i = 0;
 	uintptr_t offs = hba->base_addr + 0x100 + 0x80 * i;
 
 	while (generic_port_regs[i].name[0] != 0)
 	{
-		uint32_t val = *(volatile uint32_t *) (offs + generic_port_regs[i].offset);
+		uint32_t val = *(volatile uint32_t*)(offs + generic_port_regs[i].offset);
 		printf("%s (%x): %x\n", generic_port_regs[i].name, generic_port_regs[i].offset, val);
 		i++;
 	}
@@ -110,59 +108,53 @@ static void dump_ports(struct ahci_hba *hba, struct lssata_cb *c)
 		printf("port #%d:\n", i);
 		if (c->hexdump)
 		{
-			if (c->describe) {
+			if (c->describe)
 				dump_port_regs_descr(hba, i);
-			}
-			else {
+			else
 				dump_port_regs(hba, i);
-			}
 		}
 	}
 }
 
-static void dump_sata_regs(struct ahci_hba *hba)
+static void dump_sata_regs(struct ahci_hba* hba)
 {
 	int i = 0;
 
 	for (i = 0; i < 0x100; i += 4)
 	{
-		uint32_t val = *(volatile uint32_t *) (hba->base_addr + i);
-		if ((i / 4) % 4 == 0) {
+		uint32_t val = *(volatile uint32_t*)(hba->base_addr + i);
+		if ((i/4) % 4 == 0)
 			printf("%02X: ", i);
-		}
 		printf("%08X ", val);
-		if ((i / 4) % 4 == 3) {
+		if ((i/4) % 4 == 3)
 			printf("\n");
-		}
 	}
 	printf("\n");
 }
 
-static void dump_sata_regs_descr(struct ahci_hba *hba)
+static void dump_sata_regs_descr(struct ahci_hba* hba)
 {
 	int i = 0;
 
 	while (generic_hba_regs[i].name[0] != 0)
 	{
-		uint32_t val = *(volatile uint32_t *) (hba->base_addr + generic_hba_regs[i].offset);
+		uint32_t val = *(volatile uint32_t*)(hba->base_addr + generic_hba_regs[i].offset);
 		printf("%s (%x): %x\n", generic_hba_regs[i].name, generic_hba_regs[i].offset, val);
 		i++;
 	}
 	printf("\n");
 }
 
-static int sata_callback(struct ahci_hba *hba, void *cookie) {
-	struct lssata_cb *c = (struct lssata_cb *) cookie;
+static int sata_callback(struct ahci_hba* hba, void *cookie) {
+	struct lssata_cb *c = (struct lssata_cb*)cookie;
 
-	printf("hba at %p:\n", (void *) hba->base_addr);
+	printf("hba at %p:\n", (void*)hba->base_addr);
 	if (c->hexdump)
 	{
-		if (c->describe) {
+		if (c->describe)
 			dump_sata_regs_descr(hba);
-		}
-		else {
+		else
 			dump_sata_regs(hba);
-		}
 	}
 
 	dump_ports(hba, c);

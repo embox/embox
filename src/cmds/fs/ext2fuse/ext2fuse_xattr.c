@@ -13,20 +13,20 @@
 
 #include <fs/dvfs.h>
 
-/* Needed by fuse_common.h */
+// Needed by fuse_common.h
 #define _FILE_OFFSET_BITS 64
 
-/* it is from fuse-ext2fs.c */
+// it is from fuse-ext2fs.c
 #define FUSE_USE_VERSION 25
-#include <fuse_lowlevel.h> /* fuse */
-#include <fuse_opt.h> /* fuse */
-#include <fuse_kernel.h> /* fuse */
+#include <fuse_lowlevel.h> // fuse
+#include <fuse_opt.h> // fuse
+#include <fuse_kernel.h> // fuse
 
 #define EXT2_FLAT_INCLUDES 0
 
-#include <ext2fs/ext2fs.h> /* e2fsprogs */
-#include <ext2fs/ext2_fs.h> /* e2fsprogs */
-#include <ext2fs.h> /* ext2fuse */
+#include <ext2fs/ext2fs.h> // e2fsprogs
+#include <ext2fs/ext2_fs.h> // e2fsprogs
+#include <ext2fs.h> // ext2fuse
 
 #define EXT2_MAX_NAMELEN 255
 
@@ -35,10 +35,10 @@ static int ext2_getxattr(struct ext2_inode *node, const char *name,
 static int ext2_setxattr(struct ext2_inode *node, const char *name,
 		const char *value, size_t size, int flags);
 
-extern ext2_filsys fs; /* from ext2fuse-src-0.8.1/src/fuse-ext2fs.c */
+extern ext2_filsys fs; // from ext2fuse-src-0.8.1/src/fuse-ext2fs.c
 
 void fuse_ext2_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
-		size_t size) {
+			size_t size) {
 	int rc;
 	int value_actual_size;
 	struct ext2_inode inode;
@@ -62,7 +62,7 @@ void fuse_ext2_getxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
 }
 
 void fuse_ext2_setxattr(fuse_req_t req, fuse_ino_t ino, const char *name,
-		const char *value, size_t size, int flags) {
+              const char *value, size_t size, int flags) {
 	int rc;
 	int written;
 	struct ext2_inode inode;
@@ -95,7 +95,7 @@ static int ext2_getxattr(struct ext2_inode *node, const char *name,
 	entry = (struct ext2_ext_attr_entry *) attr_start;
 
 	while (!EXT2_EXT_IS_LAST_ENTRY(entry)) {
-		entry_name = (char *) entry + sizeof(struct ext2_ext_attr_entry);
+		entry_name = (char *)entry + sizeof(struct ext2_ext_attr_entry);
 
 		if (entry->e_name_len == strlen(name)) {
 			if (!strncmp(entry_name, name, entry->e_name_len)) {
@@ -128,7 +128,7 @@ static int ext2_setxattr(struct ext2_inode *node, const char *name,
 	struct ext2_ext_attr_entry *entry;
 	struct ext2_ext_attr_header *header;
 	blk_t blknr;
-	/* The place within a block from where values start */
+	// The place within a block from where values start
 	uint32_t e_value_offs = fs->blocksize;
 
 	buf = malloc(fs->blocksize);
@@ -146,7 +146,7 @@ static int ext2_setxattr(struct ext2_inode *node, const char *name,
 
 	ext2fs_read_ext_attr(fs, node->i_file_acl, buf);
 
-	header = (struct ext2_ext_attr_header *) buf;
+	header = (struct ext2_ext_attr_header*)buf;
 	attr_start = buf + sizeof(struct ext2_ext_attr_header);
 	entry = (struct ext2_ext_attr_entry *) attr_start;
 
@@ -160,15 +160,15 @@ static int ext2_setxattr(struct ext2_inode *node, const char *name,
 	entry->e_value_size = size;
 	entry->e_value_offs = e_value_offs - entry->e_value_size;
 	strcpy(EXT2_EXT_ATTR_NAME(entry), name);
-	*(uint32_t *) EXT2_EXT_ATTR_NEXT(entry) = 0;
-	/*entry->e_hash = ext2fs_ext_attr_hash_entry(entry, (char *)value); */
+	*(uint32_t*)EXT2_EXT_ATTR_NEXT(entry) = 0;
+	//entry->e_hash = ext2fs_ext_attr_hash_entry(entry, (char *)value);
 
 	/* FIXME: Use ext2fs_adjust_ea_refcount */
 	header->h_magic = EXT2_EXT_ATTR_MAGIC;
 	header->h_refcount = 1;
 	header->h_blocks = 1;
 
-	/* TODO: Check that entries do not intersect with values */
+	// TODO: Check that entries do not intersect with values
 
 	memcpy(buf + entry->e_value_offs, value, entry->e_value_size);
 	ext2fs_write_ext_attr2(fs, node->i_file_acl, buf);

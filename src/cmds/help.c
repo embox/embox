@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
 		case '?':
 		case 'h':
 			print_usage();
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}

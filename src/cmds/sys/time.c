@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	if (NULL == (cmd = cmd_lookup(argv[1]))) {
+	if(NULL == (cmd = cmd_lookup(argv[1]))) {
 		printf("wrong command name\n");
 		return -EINVAL;
 	}

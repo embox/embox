@@ -20,15 +20,15 @@ extern char _ram_size;
 static void show_regions(void) {
 	printf("| region name |   start    |    end     |    size    |    free    |\n");
 	printf("|  sdram      | 0x%8X | 0x%8X | 0x%8X | 0x%8X |\n",
-			(uint32_t) &_ram_base,
-			(uint32_t) &_ram_base + (uint32_t) &_ram_size,
-			(uint32_t) __phymem_end, (uint32_t) __phymem_allocator->free);
+			(uint32_t)&_ram_base,
+			(uint32_t)&_ram_base + (uint32_t)&_ram_size,
+			(uint32_t)__phymem_end, (uint32_t)__phymem_allocator->free);
 #if 0
 	phymem_alloc(0x10);
 	printf("|  sdram      | 0x%8X | 0x%8X | 0x%8X | 0x%8X |\n",
-			(uint32_t) &_ram_base,
-			(uint32_t) &_ram_base + (uint32_t) &_ram_size,
-			(uint32_t) __phymem_end, __phymem_allocator->free);
+			(uint32_t)&_ram_base,
+			(uint32_t)&_ram_base + (uint32_t)&_ram_size,
+			(uint32_t)__phymem_end, __phymem_allocator->free);
 #endif
 }
 

@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
 	for (i = 0, rr = result.an; i < result.ancount; ++i, ++rr) {
 		if (rr->rtype == DNS_RR_TYPE_A) {
 			printf("Name: %s\tAddress: %s\n", &rr->rname[0],
-					inet_ntoa(*(struct in_addr *) &rr->rdata.a.address[0]));
+					inet_ntoa(*(struct in_addr *)&rr->rdata.a.address[0]));
 		}
 	}
 

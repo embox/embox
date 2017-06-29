@@ -18,14 +18,14 @@ static void print_usage(void) {
 	printf("Usage: ide \n");
 }
 
-static void print_drive(struct ide_tab *ide) {
+static void print_drive (struct ide_tab *ide) {
 	hd_t *drive;
 	int dev_size, dev_bsize;
 
-	for (int i  = 0; i < 4; i++) {
-		printf("\nIDE Channel %d-%d: ", i / 2, i % 2);
+	for(int i  = 0; i < 4; i++) {
+		printf("\nIDE Channel %d-%d: ", i/2, i%2);
 
-		if (i % 2) {
+		if (i%2) {
 			printf(" Slave  Disk:");
 		} else {
 			printf(" Master Disk:");
@@ -36,7 +36,7 @@ static void print_drive(struct ide_tab *ide) {
 			drive = (hd_t *) ide->drive[i];
 			dev_bsize = block_dev_ioctl(drive->bdev, IOCTL_GETBLKSIZE, NULL, 0);
 			dev_size = block_dev_ioctl(drive->bdev, IOCTL_GETDEVSIZE, NULL, 0);
-			printf(" %s;", ((struct node *) block_dev(drive->bdev)->dev_vfs_info)->name);
+			printf(" %s;", ((struct node *)block_dev(drive->bdev)->dev_vfs_info)->name);
 			printf(" %s", drive->param.serial);
 			printf(" %s", drive->param.model);
 			printf(" %5.3fM", ((float) dev_size) * dev_bsize / (1024 * 1024));
@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "ah"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'a':
 			break;
 		case 'h':

@@ -28,12 +28,14 @@ static void print_usage(void) {
 	printf("Usage: lspnp [-b bus_type] [-n dev_id] [-h]\n");
 }
 
+
 #define AMBA_BT_AHBM  1
 #define AMBA_BT_AHBSL 2
 #define AMBA_BT_APB   3
 #define AMBA_BT_ALL   0
 
 /*-------------Utils---------------------------------------------------*/
+
 
 static inline void print_table_row(int n, int ven_id, int dev_id,
 		const char *ven_name, const char *dev_name, int ver, int irq) {
@@ -72,9 +74,7 @@ const char UNKNOWN[] = "<unknown>";
 static void show_dev(amba_dev_t *dev, bool show_user) {
 
 	char *ven_name, *dev_name;
-	if (NULL == dev) {
-		return;
-	}
+	if (NULL == dev) return;
 
 	if ((!show_user) || (NULL == dev->show_info)) {
 		ven_name = amba_registry_get_ven_name(dev->dev_info.venID);
@@ -151,9 +151,9 @@ static int print_apb_pnp_devs(void) {
 
 static void print_ahbm_pnp_dev(uint32_t slot) {
 	amba_dev_t dev;
-	if (slot > AHB_MASTERS_QUANTITY) {
-		printf("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
-		return;
+	if (slot >AHB_MASTERS_QUANTITY) {
+    		printf("print_ahbm_pnp_dev: Too big arg. The quantity of AHB masters is %d\n",AHB_MASTERS_QUANTITY);
+    		return;
 	}
 
 	if (NULL != ahbm_devices[slot]) {
@@ -169,7 +169,7 @@ static void print_ahbm_pnp_dev(uint32_t slot) {
 
 static void print_ahbsl_pnp_dev(uint32_t slot) {
 	amba_dev_t dev;
-	if (slot > AHB_SLAVES_QUANTITY) {
+	if (slot >AHB_SLAVES_QUANTITY) {
 		printf("print_ahbsl_pnp_dev: Too big arg. The quantity of AHB slaves is %d\n",AHB_SLAVES_QUANTITY);
 		return;
 	}
@@ -240,45 +240,45 @@ static func_show_bus_t set_bus_type(const char *key_value) {
 	if (0 == strncmp(key_value, "ahbm", 5)) {
 		return show_ahbm;
 	} else if (0 == strncmp(key_value, "ahbsl", 5)) {
-		return show_ahbsl;
+		return  show_ahbsl;
 	} else if (0 == strncmp(key_value, "apb", 5)) {
-		return show_apb;
+		return  show_apb;
 	} else if (0 == strncmp(key_value, "all", 5)) {
-		return show_all;
+		return  show_all;
 	}
 	return NULL;
 }
 
 const char *msg[] = {
-	"  ven:dev          Vendor Name                  Device Name      ver irq",
-	"00.67:596              Unknown                      Unknown     0x10   8",
-	"        450800000",
-	"01.8e:67e              Unknown                      Unknown     0x04   9",
-	"        748800000",
-	"02.1f:586              Unknown                      Unknown     0x11  16",
-	"        63E00000",
-	"03.e0:e9d              Unknown                      Unknown     0x11  17",
-	"        8BB600000",
-	"04.16:882              Unknown                      Unknown     0x16   3",
-	"        966000000",
-	"05.84:19e              Unknown                      Unknown     0x0a  27",
-	"08.53:665              Unknown                      Unknown     0x13   6",
-	"        84C800000",
-	"09.77:4c7              Unknown                      Unknown     0x00  10",
-	"        apb:F000000",
-	"0a.0f:0d3              Unknown                      Unknown     0x02  13",
-	"        7B7000000",
-	"0b.30:c48              Unknown                      Unknown     0x1b   6",
-	"        64CB00000",
-	"0c.66:30c              Unknown                      Unknown     0x04   3",
-	"        F24400000",
-	"0d.5b:663              Unknown                      Unknown     0x06   4",
-	"        B67300000",
-	"0e.66:d08              Unknown                      Unknown     0x0b   6",
-	"        6400000",
-	"0f.66:c38              Unknown                      Unknown     0x10   0",
-	"        82100000",
-	NULL,
+"  ven:dev          Vendor Name                  Device Name      ver irq",
+"00.67:596              Unknown                      Unknown     0x10   8",
+"        450800000",
+"01.8e:67e              Unknown                      Unknown     0x04   9",
+"        748800000",
+"02.1f:586              Unknown                      Unknown     0x11  16",
+"        63E00000",
+"03.e0:e9d              Unknown                      Unknown     0x11  17",
+"        8BB600000",
+"04.16:882              Unknown                      Unknown     0x16   3",
+"        966000000",
+"05.84:19e              Unknown                      Unknown     0x0a  27",
+"08.53:665              Unknown                      Unknown     0x13   6",
+"        84C800000",
+"09.77:4c7              Unknown                      Unknown     0x00  10",
+"        apb:F000000",
+"0a.0f:0d3              Unknown                      Unknown     0x02  13",
+"        7B7000000",
+"0b.30:c48              Unknown                      Unknown     0x1b   6",
+"        64CB00000",
+"0c.66:30c              Unknown                      Unknown     0x04   3",
+"        F24400000",
+"0d.5b:663              Unknown                      Unknown     0x06   4",
+"        B67300000",
+"0e.66:d08              Unknown                      Unknown     0x0b   6",
+"        6400000",
+"0f.66:c38              Unknown                      Unknown     0x10   0",
+"        82100000",
+NULL,
 };
 
 int main(int argc, char **argv) {
@@ -287,7 +287,7 @@ int main(int argc, char **argv) {
 	int opt;
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "n:b:h"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return 0;

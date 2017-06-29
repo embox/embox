@@ -36,15 +36,15 @@ static int make_socket(const struct timeval *timeout, int *out_sock,
 	}
 
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
-			timeout, sizeof *timeout)) {
+				timeout, sizeof *timeout)) {
 		ret = -errno;
 		close(sock);
 		assert(ret != 0);
 		return ret;
 	}
 
-	if (-1 == connect(sock, (const struct sockaddr *) addr_in,
-			sizeof *addr_in)) {
+	if (-1 == connect(sock, (const struct sockaddr *)addr_in,
+				sizeof *addr_in)) {
 		ret = -errno;
 		close(sock);
 		assert(ret != 0);
@@ -124,14 +124,14 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 		}
 
 		printf("server %s, stratum %hhd, offset %ld.%.6ld, delay %ld.%.6ld\n",
-				inet_ntoa(*(struct in_addr *) &addr),
+				inet_ntoa(*(struct in_addr *)&addr),
 				rep->stratum,
 				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC,
 				delay.tv_sec, delay.tv_nsec / NSEC_PER_USEC);
 
 		printf("[%s] adjust time server %s offset %ld.%.6ld sec\n",
 				ctime(&ts.tv_sec),
-				inet_ntoa(*(struct in_addr *) &addr),
+				inet_ntoa(*(struct in_addr *)&addr),
 				offset.tv_sec, offset.tv_nsec / NSEC_PER_USEC);
 	}
 	else {
@@ -205,7 +205,7 @@ int main(int argc, char **argv) {
 		printf("%s: error: no server specified\n", argv[0]);
 		return -EINVAL;
 	}
-	else if (!inet_aton(argv[optind], (struct in_addr *) &addr)) {
+	else if (!inet_aton(argv[optind], (struct in_addr *)&addr)) {
 		printf("%s: error: invalid address %s\n", argv[0],
 				argv[optind]);
 		return -EINVAL;

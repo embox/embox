@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (-1 == statvfs(argv[argc - 1], &st_buf)) {
+	if (-1 == statvfs(argv[argc-1], &st_buf)) {
 		return -errno;
 	}
 	printf("block dev  | file system |   size     |  mount point\n");

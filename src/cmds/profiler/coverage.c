@@ -47,11 +47,11 @@ int main(int argc, char *argv[]) {
 		out = stdout;
 	}
 
+
 	sym_n = coverage_getstat(&sym_table, &cov_bitmap);
 	if (sym_n <= 0) {
-		if (outfile) {
+		if (outfile)
 			fclose(out);
-		}
 		return sym_n;
 	}
 
@@ -63,9 +63,8 @@ int main(int argc, char *argv[]) {
 				bitmap_test_bit(cov_bitmap, i) ? "true" : "false");
 	}
 
-	if (outfile) {
+	if (outfile)
 		fclose(out);
-	}
 
 	return 0;
 }

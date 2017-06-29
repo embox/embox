@@ -86,8 +86,8 @@ int main(int argc, char **argv) {
 				printf("%s: failed to set priority for %d (%s): %s\n",
 						argv[0], who,
 						which == PRIO_PROCESS ? "process ID"
-						: which == PRIO_PGRP ? "process group ID"
-						: "user ID",
+							: which == PRIO_PGRP ? "process group ID"
+							: "user ID",
 						strerror(errno));
 				ret = -errno;
 			}

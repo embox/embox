@@ -44,6 +44,7 @@ static void move_cursor_to(SCREEN *this, int col) {
 
 }
 
+
 void screen_out_update(SCREEN *this, CMDLINE *cmdline) {
 	int i;
 	bool dirty = true;
@@ -87,7 +88,7 @@ void screen_out_puts(SCREEN *this, const char *str) {
 }
 
 void screen_out_show_prompt(SCREEN *this, const char *prompt) {
-	static const char *default_prompt = "";
+	static const char * default_prompt = "";
 	if (this == NULL) {
 		return;
 	}
@@ -104,6 +105,7 @@ void screen_out_show_prompt(SCREEN *this, const char *prompt) {
 			TERMINAL_TOKEN_PARAM_SGR_INTENSITY_BOLD);
 
 	transmit_string(this, prompt);
+
 
 	terminal_transmit_va(this->terminal, TERMINAL_TOKEN_SGR, 1,
 			TERMINAL_TOKEN_PARAM_SGR_RESET);

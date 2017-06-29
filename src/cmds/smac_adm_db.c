@@ -100,3 +100,4 @@ int cmd_smac_adm_user_get(const char *name, char *buf, size_t buflen) {
 	strncpy(buf, spwd->sp_pwdp, buflen);
 	return 0;
 }
+

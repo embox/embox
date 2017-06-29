@@ -16,22 +16,16 @@ int main(int argc, char *argv[]) {
 
 	for (i = 1; i < argc; ++i) {
 		equal = strchr(argv[i], '=');
-		if (!equal) {
-			continue;
-		}
+		if (!equal) continue;
 
 		if (*(equal + 1)) {
 			res = putenv(argv[i]);
-			if (res == -1) {
-				return -errno;
-			}
+			if (res == -1) return -errno;
 		}
 		else {
 			*equal = '\0';
 			res = unsetenv(argv[i]);
-			if (res == -1) {
-				return -errno;
-			}
+			if (res == -1) return -errno;
 		}
 	}
 

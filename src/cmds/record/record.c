@@ -35,25 +35,24 @@ static int cur_ptr;
 
 static int record_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
-		const PaStreamCallbackTimeInfo *timeInfo,
+		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
 	int i;
 	framesPerBuffer = 2 * 32 / 4 * 0xff00; /* XXX */
 
 	for (i = 0; i < framesPerBuffer; i++) {
-		if (cur_ptr > sizeof(in_buf)) {
+		if (cur_ptr > sizeof(in_buf))
 			break;
-		}
-		in_buf[cur_ptr] = ((int *) inputBuffer)[i];
+		in_buf[cur_ptr] = ((int*)inputBuffer)[i];
 		cur_ptr++;
 	}
 
-	if (cur_ptr * 4 > sizeof(in_buf)) {
+	if (cur_ptr * 4 > sizeof(in_buf))
 		return paComplete;
-	}
 	return paContinue;
 }
+
 
 int main(int argc, char **argv) {
 	int opt;
@@ -128,12 +127,11 @@ int main(int argc, char **argv) {
 		goto err_terminate_pa;
 	}
 
-	write_wave(argv[1], (uint8_t *) in_buf, cur_ptr * 4);
+	write_wave(argv[1], (uint8_t*)in_buf, cur_ptr * 4);
 
 err_terminate_pa:
-	if (paNoError != (err = Pa_Terminate())) {
+	if (paNoError != (err = Pa_Terminate()))
 		printf("Portaudio error: could not terminate!\n");
-	}
 err_exit:
 	return 0;
 }

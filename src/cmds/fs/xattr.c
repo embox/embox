@@ -21,7 +21,7 @@
 #include <mem/page.h>
 #include <mem/phymem.h>
 
-#define XATTR_MAX_BSIZE  (1024 * 4)
+#define XATTR_MAX_BSIZE  (1024*4)
 
 #define XATTR_CMD_OP_HEX    (1 << 0)
 #define XATTR_CMD_OP_VDISP  (1 << 1)
@@ -57,7 +57,7 @@ static int xattr_print_value(const char *path, const char *name) {
 
 	if (XATTR_CMD_OP_HEX & xattr_cmd_op_flags) {
 		char *ptr = rvalue;
-		while (size--) {
+		while(size--) {
 			printf("%02hhX", (unsigned char) *ptr++);
 			printf("|");
 		}
@@ -81,7 +81,7 @@ static int scan_hex_value(char *rvalue, const char *hex_str) {
 	dst = (unsigned char *) rvalue;
 	end = src + size;
 
-	while (src < end) {
+	while(src < end) {
 		sscanf(src, "%hhX", dst);
 		dst++;
 		src += 2;
@@ -187,6 +187,7 @@ static int clear_xattr_fn(const char *path, const char *name) {
 	return rc;
 }
 
+
 /*
  * xattr [-lx] file ... # list
  * xattr -c file ... # clear all xattr
@@ -242,7 +243,7 @@ int main(int argc, char **argv) {
 
 	unpos_args = argv + optind;
 
-	switch (cmd_op) {
+	switch(cmd_op) {
 	case XATTR_CMD_UNSPECIFIED:
 	case XATTR_CMD_LIST:
 		return xattr_do_iter(unpos_args[0], print_xattr_fn);

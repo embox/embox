@@ -31,6 +31,7 @@ static int get_default_pwd(struct passwd *result, char *name, char *buf,
 	return 0;
 }
 
+
 static int get_default_spwd(struct spwd *result) {
 	result->sp_pwdp = crypt(def_sp_pwdp, NULL);
 
@@ -144,11 +145,11 @@ int main(int argc, char **argv) {
 
 			switch (opt) {
 			case 'd':
-				/*todo: isdir */
+				//todo: isdir
 				strcpy(home, optarg);
 				break;
 			case 's':
-				/*todo: isshell */
+				//todo: isshell
 				strcpy(shell, optarg);
 				break;
 			case 'p':

@@ -6,6 +6,7 @@
  * @author Ivan Tretyakov
  */
 
+
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
@@ -13,8 +14,8 @@
 #include <string.h>
 #include <util/array.h>
 
-#define MV_RECURSIVE    (0x1 << 0)
-#define MV_FORCE        (0x1 << 1)
+#define MV_RECURSIVE	(0x1 << 0)
+#define MV_FORCE		(0x1 << 1)
 #define DESC_NOT_EXIST  (0x1 << 2)
 #define DESC_IS_DIR     (0x1 << 3)
 
@@ -37,7 +38,7 @@ int main(int argc, char **argv) {
 	opt_cnt = 0;
 
 	while (-1 != (opt = getopt(argc, argv, "fh"))) {
-		switch (opt) {
+		switch(opt) {
 		case 'h':
 			print_usage();
 			return ENOERR;
@@ -48,10 +49,10 @@ int main(int argc, char **argv) {
 			printf("mv: invalid option -- '%c'\n", optopt);
 			return -EINVAL;
 		}
-		opt_cnt++;
+		opt_cnt ++;
 	}
 	/* if desc is directory */
-	if (-1 == stat(argv[argc - 1], &sb)) {
+	if (-1 == stat(argv[argc-1], &sb)) {
 		flags |= DESC_NOT_EXIST;
 	} else {
 		switch (sb.st_mode & S_IFMT) {
@@ -60,10 +61,10 @@ int main(int argc, char **argv) {
 			break;
 		case S_IFREG:
 			if (!(flags & MV_FORCE)) {
-				printf("file '%s' already exist use -f for rewrite it\n", argv[argc - 1]);
+				printf("file '%s' already exist use -f for rewrite it\n", argv[argc-1]);
 				return -EINVAL;
 			} else {
-				remove(argv[argc - 1]);
+				remove(argv[argc-1]);
 			}
 			break;
 		default:
@@ -74,11 +75,11 @@ int main(int argc, char **argv) {
 	/* if there are several source files dest must be a directory */
 	if (((argc - opt_cnt) > 3) && !(flags & DESC_IS_DIR)) {
 		if (!(flags & DESC_NOT_EXIST)) {
-			printf("dest '%s' is not a directory\n", argv[argc - 1]);
+			printf("dest '%s' is not a directory\n", argv[argc-1]);
 			return -EINVAL;
 		} else {
-			if (mkdir(argv[argc - 1], 0777)) {
-				printf("can't create directory %s\n", argv[argc - 1]);
+			if(mkdir(argv[argc-1], 0777)) {
+				printf("can't create directory %s\n", argv[argc-1]);
 				return -EINVAL;
 			}
 			flags |= DESC_IS_DIR;
@@ -89,7 +90,7 @@ int main(int argc, char **argv) {
 		return -ENOSUPP;
 	}
 
-	if (rename(argv[argc - 2], argv[argc - 1])) {
+	if (rename(argv[argc-2], argv[argc-1])) {
 		return -errno;
 	}
 

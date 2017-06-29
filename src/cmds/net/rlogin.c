@@ -50,14 +50,14 @@ static void print_usage(void) {
 	printf("Usage: rlogin [-l username] <server> \n");
 }
 
-/* Allow to turn off/on extra debugging information */
+	/* Allow to turn off/on extra debugging information */
 #if 0
-#   define RLOGIN_DEBUG(x) do { \
-		x; \
-} while (0);
+#	define RLOGIN_DEBUG(x) do {\
+		x;\
+	} while (0);
 #else
-#   define RLOGIN_DEBUG(x) do { \
-} while (0);
+#	define RLOGIN_DEBUG(x) do{\
+	} while (0);
 #endif
 
 struct rlogin_state {
@@ -259,15 +259,15 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (!inet_aton(argv[argc - 1], &dst.sin_addr)) {
-		printf("Invalid ip address %s\n", argv[argc - 1]);
+	if (!inet_aton(argv[argc -1], &dst.sin_addr)) {
+		printf("Invalid ip address %s\n", argv[argc -1]);
 		return -EINVAL;
 	}
 	dst.sin_family = AF_INET;
 	dst.sin_port = htons(RLOGIN_PORT);
 
 	our.sin_family = AF_INET;
-	our.sin_port = htons(RLOGIN_PORT + tries++);
+	our.sin_port= htons(RLOGIN_PORT + tries++);
 	our.sin_addr.s_addr = htonl(RLOGIN_ADDR);
 
 	if ((sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
@@ -275,12 +275,12 @@ int main(int argc, char **argv) {
 		return -errno;
 	}
 
-	if ((res = bind(sock, (struct sockaddr *) &our, sizeof(our))) < 0) {
+	if ((res = bind(sock, (struct sockaddr *)&our, sizeof(our))) < 0) {
 		printf("can not bind socket\n");
 		goto exit;
 	}
 
-	if (connect(sock, (struct sockaddr *) &dst, sizeof dst) < 0) {
+	if (connect(sock, (struct sockaddr *)&dst, sizeof dst) < 0) {
 		printf("Error... Cant connect to remote address %s:%d\n",
 				inet_ntoa(dst.sin_addr), RLOGIN_PORT);
 		res = -errno;

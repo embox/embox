@@ -92,10 +92,10 @@ int main(int argc, char **argv) {
 			break;
 		case '?':
 			printf("Invalid option `-%c'\n", optopt);
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
-		/* FALLTHROUGH */
+			/* FALLTHROUGH */
 		default:
 			return 0;
 		}
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* Get destination hardware address. */
-	if (macaddr_scan((const unsigned char *) argv[argc - 1], &tha[0]) == NULL) {
+	if (macaddr_scan((const unsigned char *)argv[argc - 1], &tha[0]) == NULL) {
 		printf("rarping: invalid MAC address: %s\n", argv[argc - 1]);
 		return -EINVAL;
 	}
@@ -119,12 +119,12 @@ int main(int argc, char **argv) {
 	memcpy(&spa[0], &in_dev->ifa_address, pln);
 
 	/* Get addresses in human-readable form */
-	macaddr_print((unsigned char *) &tha_str[0], &tha[0]);
-	macaddr_print((unsigned char *) &sha_str[0], &sha[0]);
-	strcpy(&spa_str[0], inet_ntoa(*(struct in_addr *) &spa[0]));
+	macaddr_print((unsigned char *)&tha_str[0], &tha[0]);
+	macaddr_print((unsigned char *)&sha_str[0], &sha[0]);
+	strcpy(&spa_str[0], inet_ntoa(*(struct in_addr *)&spa[0]));
 
 	printf("RARPING %s from %s(%s) %s\n", &tha_str[0], &sha_str[0],
-			&spa_str[0], in_dev->dev->name);
+		&spa_str[0], in_dev->dev->name);
 	for (size_t i = 1; i <= cnt; i++) {
 		neighbour_clean(in_dev->dev);
 		send_request(in_dev->dev, ETH_P_IP, sizeof in_dev->ifa_address,
@@ -133,12 +133,12 @@ int main(int argc, char **argv) {
 		ret = neighbour_get_paddr(ARP_HRD_ETHERNET, &tha[0], in_dev->dev,
 				ETH_P_IP, pln, &tpa[0]);
 		if (ret == 0) {
-			strcpy(&tpa_str[0], inet_ntoa(*(struct in_addr *) &tpa[0]));
+			strcpy(&tpa_str[0], inet_ntoa(*(struct in_addr *)&tpa[0]));
 			printf("Unicast reply from %s(%s)  %dms\n", &tha_str[0], &tpa_str[0], -1);
 			cnt_resp++;
 		}
 	}
-	printf("Sent %d probes (%d broadcast(s))\n", (int) cnt, 1);
+	printf("Sent %d probes (%d broadcast(s))\n", (int)cnt, 1);
 	printf("Received %d response(s)\n", cnt_resp);
 
 	return 0;

@@ -12,10 +12,10 @@
 #include "race.h"
 
 /** ANSI Escape */
-#define ESC     '\033'
+#define ESC		'\033'
 
 /** ANSI Control Sequence Introducer */
-#define CSI     '['
+#define CSI		'['
 
 void race_print_road(const char *road) {
 	int i, j;
@@ -25,9 +25,8 @@ void race_print_road(const char *road) {
 
 	for (i = 0; i < RACE_ROAD_WDT; i++) {
 		putchar('|');
-		for (j = 0; j < RACE_ROAD_LEN; j++) {
+		for (j = 0; j < RACE_ROAD_LEN; j++)
 			putchar(road[i * RACE_ROAD_LEN + j]);
-		}
 		putchar('|');
 		putchar('\n');
 	}
