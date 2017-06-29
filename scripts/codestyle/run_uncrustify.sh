@@ -28,13 +28,13 @@ do
 	shift
 done
 
-if [ ${#HASHES[@]} -eq 2 ];
+if [ ${#HASHES[@]} -eq 1 ];
 then 
-	diffargs="${HASHES[0]} ${HASHES[1]}"
+	diffargs="${HASHES[0]}"
 fi
 
 files=$(git diff --name-only $diffargs)
-echo $diffargs
+#echo $diffargs
 #files=$(find ../../ -type f -name "*.[ch]") #all files - I'll leave it just in case
 
 if [ -s uncrustify_diff.txt ]
