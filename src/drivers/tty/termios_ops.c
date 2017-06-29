@@ -20,9 +20,6 @@
 #define TIO_C(t, flag) ((t)->c_cflag & (flag))
 #define TIO_L(t, flag) ((t)->c_lflag & (flag))
 
-#define TIO_RES_GOT_DATA (1 << 0)
-#define TIO_RES_GOT_ECHO (1 << 1)
-
 static int tio_putc(char ch, struct ring *ring,
 		char *buf, size_t buflen) {
 	return ring_write_all_from(ring, buf, buflen, &ch, 1);
@@ -189,7 +186,7 @@ int termios_input(const struct termios *t, char ch, struct termios_i_buff *b,
 	struct ring *o_ring, char *o_buff, size_t buflen) {
 
 	int raw_mode = !TIO_L(t, ICANON);
-	int result = 0;
+	int got_echo = 0;
 	int is_eol;
 
 	if (termios_handle_newline(t, ch, &is_eol)) {
@@ -202,10 +199,8 @@ int termios_input(const struct termios *t, char ch, struct termios_i_buff *b,
 			b->ring, b->canon_ring, o_ring, o_buff, buflen);
 
 		if (status >= 0) {
-			result += status > 0 ? TIO_RES_GOT_ECHO : 0;
-			result += termios_input_status(t, b, ch);
-
-			return result;
+			got_echo = status > 0 ? TERMIOS_RES_GOT_ECHO : 0;
+			return termios_input_status(t, b, ch) | got_echo;
 		}
 	}
 
@@ -218,13 +213,11 @@ int termios_input(const struct termios *t, char ch, struct termios_i_buff *b,
 	if (ring_room_size(b->ring, b->buflen) > !(raw_mode || is_eol)) {
 		if (ring_write_all_from(b->ring, b->buff, b->buflen, &ch, 1)) {
 			termios_gotc(t, ch, o_ring, o_buff, buflen);
-			result += TIO_RES_GOT_ECHO;
+			got_echo = TERMIOS_RES_GOT_ECHO;
 		}
 	}
 
-	result += termios_input_status(t, b, ch);
-
-	return result;
+	return termios_input_status(t, b, ch) | got_echo;
 }
 
 static size_t termios_find_line_len(const struct termios *t, 

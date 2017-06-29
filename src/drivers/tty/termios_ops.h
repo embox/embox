@@ -35,8 +35,8 @@
 #define TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
 			ECHO | ECHOE | ECHOK | ECHONL)
 
-#define TERMIOS_INPUT_GOT_DATA(t) ((t) & (1 << 0))
-#define TERMIOS_INPUT_GOT_ECHO(t) ((t) & (1 << 1))
+#define TERMIOS_RES_GOT_DATA (1 << 0)
+#define TERMIOS_RES_GOT_ECHO (1 << 1)
 
 struct ring;
 struct termios;

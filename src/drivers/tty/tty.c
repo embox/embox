@@ -64,7 +64,7 @@ static void tty_rx_do(struct tty *t) {
 		int result = termios_input(&t->termios, (char) ich, &b,
 			&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
 
-		if (TERMIOS_INPUT_GOT_ECHO(result)) {
+		if (result & TERMIOS_RES_GOT_ECHO) {
 			MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
 		}
 	}
