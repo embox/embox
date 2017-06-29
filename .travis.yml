@@ -25,8 +25,6 @@ matrix:
       - echo $PWD
       - echo $(git rev-parse HEAD)
       - echo $(git rev-parse HEAD~1)
-      - echo $(git rev-parse HEAD~2)
-      - echo $(git rev-parse HEAD~3)
       - echo $TRAVIS_PULL_REQUEST_SHA
       - cd scripts/codestyle
     script: ./travis_uncrustify.sh
