@@ -15,7 +15,7 @@ for item in $files ; do
 
   dn=$(dirname $item)
   mkdir -p out/$dn
-  ~/uncrustify_git/uncrustify/build/uncrustify -f $item -c uncrustify_cfg.ini > out/$item
+  uncrustify -f $item -c uncrustify_cfg.ini > out/$item
   #uncrustify -f $item -c uncrustify_cfg.ini > out/$item
   #mv -f out/$item $item
 
