@@ -28,7 +28,8 @@ matrix:
       - echo $(git rev-parse HEAD~2)
       - echo $(git rev-parse HEAD~3)
       - echo $TRAVIS_PULL_REQUEST_SHA
-    script: scripts/codestyle/travis_uncrustify.sh
+      - cd script/codestyle
+    script: ./travis_uncrustify.sh
 
 before_install:
   - travis_retry sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
