@@ -16,11 +16,9 @@ do
 	    VERBOSE=true
 	    ;;
         -h|--help)
-        echo "If SHA is provided to the script, \
-            uncrustify checks code style of files that are different in SHA and HEAD. \
-            Otherwise uncommited diff is checked. \
-            Option -v shows uncrustify suggestions for code style, when it's not set, \
-            only file names with differences are shown."
+        echo "If SHA is provided to the script, uncrustify checks code style of files that are different in SHA and HEAD. "
+        echo ""
+        echo "Otherwise uncommited diff is checked. Option -v shows uncrustify suggestions for code style, when it's not set, only file names with differences are shown."
         exit 1
         ;;
 	    *)
