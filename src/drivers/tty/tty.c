@@ -55,18 +55,16 @@ static int tty_output(struct tty *t, char ch) {
 
 static void tty_rx_do(struct tty *t) {
 	int ich;
-	int is_ready;
-
 	termios_i_buff b;
 
 	termios_i_buff_init(&b, &t->i_ring, 
 		t->i_buff, &t->i_canon_ring, TTY_IO_BUFF_SZ);
 
 	while ((ich = tty_rx_dequeue(t)) != -1) {
-		termios_input(&t->termios, (char) ich, &is_ready, &b,
+		int result = termios_input(&t->termios, (char) ich, &b,
 			&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
 
-		if (is_ready) {
+		if (TERMIOS_INPUT_GOT_ECHO(result)) {
 			MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
 		}
 	}

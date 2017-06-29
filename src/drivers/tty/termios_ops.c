@@ -20,6 +20,9 @@
 #define TIO_C(t, flag) ((t)->c_cflag & (flag))
 #define TIO_L(t, flag) ((t)->c_lflag & (flag))
 
+#define TIO_RES_GOT_DATA (1 << 0)
+#define TIO_RES_GOT_ECHO (1 << 1)
+
 static int tio_putc(char ch, struct ring *ring,
 		char *buf, size_t buflen) {
 	return ring_write_all_from(ring, buf, buflen, &ch, 1);
@@ -73,7 +76,7 @@ int termios_gotc(const struct termios *t, char ch, struct ring *ring,
  *    edit_ring  [------------------------------------------------********---]
  */
 
-struct ring *termios_edit_ring(struct ring *r, struct ring *i_ring,
+static struct ring *termios_edit_ring(struct ring *r, struct ring *i_ring,
 	struct ring *i_canon_ring) {
 	
 	r->tail = i_canon_ring->head;
@@ -81,7 +84,7 @@ struct ring *termios_edit_ring(struct ring *r, struct ring *i_ring,
 	return r;
 }
 
-struct ring *termios_raw_ring(struct ring *r, struct ring *i_ring,
+static struct ring *termios_raw_ring(struct ring *r, struct ring *i_ring,
 	struct ring *i_canon_ring) {
 
 	r->tail = i_ring->tail;
@@ -89,7 +92,7 @@ struct ring *termios_raw_ring(struct ring *r, struct ring *i_ring,
 	return r;
 }
 
-int termios_echo_erase(const struct termios *t, 
+static int termios_echo_erase(const struct termios *t, 
 	struct ring *o_ring, char *o_buff, size_t buflen) {
 
 	int result = 0;
@@ -113,7 +116,7 @@ int termios_echo_erase(const struct termios *t,
 	return result;
 }
 
-int termios_handle_newline(const struct termios *t, char ch, int *is_eol) {
+static int termios_handle_newline(const struct termios *t, char ch, int *is_eol) {
 	int ignore_cr = TIO_I(t, IGNCR) && ch == '\r';
 
 	if (!ignore_cr) {
@@ -131,7 +134,7 @@ int termios_handle_newline(const struct termios *t, char ch, int *is_eol) {
 	return ignore_cr;
 }
 
-int termios_handle_erase(const struct termios *t, char ch, 
+static int termios_handle_erase(const struct termios *t, char ch, 
 	struct ring *i_ring, struct ring *i_canon_ring, 
 	struct ring *o_ring, char *o_buff, size_t buflen) {
 
@@ -163,7 +166,7 @@ int termios_handle_erase(const struct termios *t, char ch,
 	return -1;
 }
 
-int termios_input_status(const struct termios *t,
+static int termios_input_status(const struct termios *t,
 	struct termios_i_buff *b, char ch) {
 	
 	int raw_mode = !TIO_L(t, ICANON);
@@ -182,13 +185,12 @@ int termios_input_status(const struct termios *t,
 	return got_data;
 }
 
-int termios_input(const struct termios *t, char ch, int *is_ready,
-	struct termios_i_buff *b, struct ring *o_ring, char *o_buff, size_t buflen) {
+int termios_input(const struct termios *t, char ch, struct termios_i_buff *b, 
+	struct ring *o_ring, char *o_buff, size_t buflen) {
 
 	int raw_mode = !TIO_L(t, ICANON);
+	int result = 0;
 	int is_eol;
-
-	*is_ready = 0;
 
 	if (termios_handle_newline(t, ch, &is_eol)) {
 		return termios_input_status(t, b, ch);
@@ -196,12 +198,14 @@ int termios_input(const struct termios *t, char ch, int *is_ready,
 
 	/* Handle erase/kill */
 	if (!raw_mode) {
-		int result = termios_handle_erase(t, ch, 
+		int status = termios_handle_erase(t, ch, 
 			b->ring, b->canon_ring, o_ring, o_buff, buflen);
 
-		if (result >= 0) {
-			*is_ready = result;
-			return termios_input_status(t, b, ch);
+		if (status >= 0) {
+			result += status > 0 ? TIO_RES_GOT_ECHO : 0;
+			result += termios_input_status(t, b, ch);
+
+			return result;
 		}
 	}
 
@@ -214,14 +218,16 @@ int termios_input(const struct termios *t, char ch, int *is_ready,
 	if (ring_room_size(b->ring, b->buflen) > !(raw_mode || is_eol)) {
 		if (ring_write_all_from(b->ring, b->buff, b->buflen, &ch, 1)) {
 			termios_gotc(t, ch, o_ring, o_buff, buflen);
-			*is_ready = 1;
+			result += TIO_RES_GOT_ECHO;
 		}
 	}
 
-	return termios_input_status(t, b, ch);
+	result += termios_input_status(t, b, ch);
+
+	return result;
 }
 
-size_t termios_find_line_len(const struct termios *t, 
+static size_t termios_find_line_len(const struct termios *t, 
 	const char *buff, size_t size, int *is_eof) {
 	
 	size_t offset;
@@ -240,7 +246,7 @@ size_t termios_find_line_len(const struct termios *t,
 	return offset;
 }
 
-char *termios_read_cooked(const struct termios *t, 
+static char *termios_read_cooked(const struct termios *t, 
 	struct termios_i_buff *b, char *buff, char *end) {
 
 	size_t block_size;

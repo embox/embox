@@ -35,6 +35,9 @@
 #define TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
 			ECHO | ECHOE | ECHOK | ECHONL)
 
+#define TERMIOS_INPUT_GOT_DATA(t) ((t) & (1 << 0))
+#define TERMIOS_INPUT_GOT_ECHO(t) ((t) & (1 << 1))
+
 struct ring;
 struct termios;
 
@@ -68,8 +71,8 @@ extern int termios_gotc(const struct termios *t, char ch,
  *
  * @return
  */
-extern int termios_input(const struct termios *t, char ch, int *is_ready,
-	struct termios_i_buff *b, struct ring *o_ring, char *o_buff, size_t buflen);
+extern int termios_input(const struct termios *t, char ch, 
+		struct termios_i_buff *b, struct ring *o_ring, char *o_buff, size_t buflen);
 
 /**
  * @brief
@@ -108,6 +111,6 @@ extern void termios_init(struct termios *t);
  * @brief Initializes input buffer.
  */
 extern void termios_i_buff_init(struct termios_i_buff *b, struct ring *ring, 
-	char *buff, struct ring *canon_ring, size_t buflen);
+		char *buff, struct ring *canon_ring, size_t buflen);
 
 #endif /* DRIVERS_TERMIOS_OPS_H_ */
