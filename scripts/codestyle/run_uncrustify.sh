@@ -28,9 +28,9 @@ do
 	shift
 done
 
-if [ ${#HASHES[@]} -eq 1 ];
+if [ ${#HASHES[@]} -eq 2 ];
 then 
-	diffargs="${HASHES[0]}"
+	diffargs="${HASHES[0]} ${HASHES[1]}"
 fi
 
 files=$(git diff --name-only $diffargs)
@@ -80,6 +80,6 @@ then
 	rm uncrustify_diff*
 	exit 1
 fi
-rm uncrustify_diff*
+rm uncrustify_diff* &> /dev/null
 #find out -type f -empty -delete
 #rsync -ah out/ ./
