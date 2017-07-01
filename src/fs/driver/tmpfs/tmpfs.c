@@ -58,7 +58,7 @@ static int tmpfs_format(void *path);
 static int tmpfs_mount(void *dev, void *dir);
 
 static int tmpfs_init(void * par) {
-	struct path dir_path, dev_path/*, root*/;
+	struct path dir_path, dev_path;
 	struct node *dev_node;
 	int res;
 	struct ramdisk *ramdisk;
@@ -90,7 +90,6 @@ static int tmpfs_init(void * par) {
 
 	/* mount filesystem */
 	dev_path.node = dev_node;
-	//dev_path.mnt_desc = root.mnt_desc;
 	return tmpfs_mount(dev_path.node, dir_path.node);
 }
 
@@ -418,25 +417,6 @@ static tmpfs_file_info_t *tmpfs_create_file(struct nas *nas) {
 
 	return fi;
 }
-
-/*
-static node_t *tmpfs_create_dot(node_t *parent_node, const char *name) {
-	node_t *dot_node;
-	struct nas *parent_nas, *nas;
-
-	parent_nas = parent_node->nas;
-
-	dot_node = vfs_create_child(parent_node, name, S_IFDIR);
-	if (dot_node) {
-		nas = dot_node->nas;
-		nas->fs = parent_nas->fs;
-		// don't need create fi for directory - take root node fi /
-		nas->fi->privdata = parent_nas->fi->privdata;
-	}
-
-	return dot_node;
-}
-*/
 
 static int tmpfs_create(struct node *parent_node, struct node *node) {
 	struct nas *nas;
