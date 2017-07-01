@@ -1,0 +1,14 @@
+package embox.fs.syslib
+
+@DefaultImpl(idesc_mmap_stub)
+abstract module idesc_mmap {
+}
+
+module idesc_mmap_stub extends idesc_mmap {
+	source "idesc_mmap_stub.h"
+}
+
+module idesc_mmap_oldfs extends idesc_mmap {
+	source "idesc_mmap_decl.h"
+	source "idesc_mmap_oldfs.c"
+}
