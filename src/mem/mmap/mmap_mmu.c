@@ -13,6 +13,7 @@
 #include <hal/mmu.h>
 
 #include <mem/mmap.h>
+#include <mem/phymem.h>
 #include <mem/vmem.h>
 #include <mem/mapping/marea.h>
 
@@ -87,9 +88,28 @@ void mmap_del_marea(struct marea *marea) {
 	dlist_del(&marea->mmap_link);
 }
 
+void mmap_add_phy_page(struct emmap *mmap, struct phy_page *phy_page) {
+	dlist_add_prev(&phy_page->page_link, &mmap->page_list);
+}
+
+void mmap_del_phy_page(struct phy_page *phy_page) {
+	dlist_del(&phy_page->page_link);
+}
+
+struct phy_page *mmap_find_phy_page(struct emmap *mmap, void *start) {
+	struct phy_page *phy_page;
+	dlist_foreach_entry(phy_page, &mmap->page_list, page_link) {
+		if (start == phy_page->page) {
+			return phy_page;
+		}
+	}
+	return NULL;
+}
+
 void mmap_init(struct emmap *mmap) {
 	int err;
 	dlist_init(&mmap->marea_list);
+	dlist_init(&mmap->page_list);
 
 	if ((err = vmem_init_context(&mmap->ctx))) {
 		panic("%s: %s\n", __func__, strerror(-err));
@@ -112,11 +132,18 @@ void mmap_free(struct emmap *mmap) {
 
 void mmap_clear(struct emmap *mmap) {
 	struct marea *marea;
+	struct phy_page *phy_page;
 
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		vmem_unmap_region(mmap->ctx, marea->start, mmu_size_align(marea->end - marea->start));
 
 		marea_destroy(marea);
+	}
+
+	dlist_foreach_entry(phy_page, &mmap->page_list, page_link) {
+		phymem_free(phy_page->page, phy_page->page_number);
+
+		phy_page_destroy(phy_page);
 	}
 }
 
