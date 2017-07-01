@@ -18,12 +18,14 @@
 #include <drivers/block_dev/partition.h>
 #include <framework/mod/options.h>
 
+#define PART_NAME_MAX 64
+
 /* TODO Create Partition as drive */
 int create_partitions(struct block_dev *bdev) {
 	struct mbr mbr;
 	int rc;
 	int part_n;
-	char part_name[50];
+	char part_name[PART_NAME_MAX];
 	struct block_dev *part_bdev;
 
 	/* Read partition table */
@@ -42,7 +44,7 @@ int create_partitions(struct block_dev *bdev) {
 			return part_n;
 		}
 
-		sprintf(part_name, "%s/%s%d", "/dev/", bdev->name, part_n + 1);
+		sprintf(part_name, "/dev/%s%d", bdev->name, part_n + 1);
 		part_bdev = block_dev_create(part_name, bdev->driver, NULL);
 		if (!part_bdev) {
 			return -ENOMEM;
