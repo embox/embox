@@ -36,6 +36,8 @@ extern struct dirent *readdir(DIR *);
 
 extern int            readdir_r(DIR *, struct dirent *, struct dirent **);
 
+extern void           rewinddir(DIR *dirp);
+
 __END_DECLS
 
 #endif /* DIRENT_H_ */

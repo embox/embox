@@ -17,6 +17,7 @@
 
 static void *boot_stub(void *arg) {
 	panic("Entering boot_stub");
+	return 0;
 }
 
 extern void thread_set_current(struct thread *t);

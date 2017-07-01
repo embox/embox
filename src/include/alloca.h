@@ -10,6 +10,15 @@
 
 #include <stddef.h> /* size_t in standard library */
 
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+
 extern void * alloca(size_t size);
+
+#ifdef        __GNUC__
+# define alloca(size)        __builtin_alloca (size)
+#endif /* GCC.  */
+
+__END_DECLS
 
 #endif /* ALLOCA_H_ */

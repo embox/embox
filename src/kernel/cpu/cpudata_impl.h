@@ -23,7 +23,7 @@ extern char __cpudata_start, __cpudata_block_end, __cpudata_end;
 #define __cpudata__         __attribute__((section(".cpudata.data")))
 
 #define __cpudata_cpu_ptr(cpu_id, name) \
-	((typeof(name))(((char *)(name)) + (cpu_id * __CPUDATA_BLOCK_SZ)))
+	((__typeof__(name))(((char *)(name)) + (cpu_id * __CPUDATA_BLOCK_SZ)))
 
 #endif /* !__ASSEMBLER__ */
 

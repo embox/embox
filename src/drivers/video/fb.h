@@ -60,6 +60,28 @@ struct fb_var_screeninfo {
 	uint32_t vmode;
 };
 
+
+struct fb_fix_screeninfo {
+	char id[16];               /* identification string eg "TT Builtin" */
+	/* Start of frame buffer mem (physical address) */
+	unsigned long smem_start;
+	uint32_t smem_len;         /* Length of frame buffer mem */
+	uint32_t type;             /* see FB_TYPE_*		*/
+	uint32_t type_aux;         /* Interleave for interleaved Planes */
+	uint32_t visual;           /* see FB_VISUAL_*		*/
+	uint16_t xpanstep;         /* zero if no hardware panning  */
+	uint16_t ypanstep;         /* zero if no hardware panning  */
+	uint16_t ywrapstep;        /* zero if no hardware ywrap    */
+	uint32_t line_length;      /* length of a line in bytes    */
+	/* Start of Memory Mapped I/O (physical address)*/
+	unsigned long mmio_start;
+	uint32_t mmio_len;         /* Length of Memory Mapped I/O  */
+	/* Indicate to driver which	specific chip/card we have */
+	uint32_t accel;
+	uint16_t capabilities;     /* see FB_CAP_*			*/
+	uint16_t reserved[2];      /* Reserved for future compatibility */
+};
+
 struct fb_copyarea {
 	uint32_t dx;
 	uint32_t dy;
@@ -141,6 +163,9 @@ extern void fb_copyarea(struct fb_info *info, const struct fb_copyarea *area);
 extern void fb_fillrect(struct fb_info *info, const struct fb_fillrect *rect);
 extern void fb_imageblit(struct fb_info *info, const struct fb_image *image);
 extern void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor);
+
+
+extern int fb_devfs_create(const struct fb_ops *ops, char *map_base, size_t map_size);
 
 __END_DECLS
 

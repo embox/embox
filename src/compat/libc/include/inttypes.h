@@ -138,7 +138,7 @@ __END_DECLS
 #define    PRIdPTR     PRId32
 #define    PRIiPTR     PRIi32
 
-#define    PRIdMAX     PRId32
+#define    PRIdMAX     PRId64
 #define    PRIiMAX     PRIi32
 
 /* The fprintf() macros for unsigned integers are:
@@ -185,15 +185,22 @@ __END_DECLS
 #define    PRIXLEAST32 "X"
 #define    PRIXFAST32  "X"
 
+#define    PRIu64      "llu"
+#define    PRIi64      "lli"
+#define    PRIx64      "llx"
+#define    PRIX64      "llX"
+#define    PRId64      "lld"
+
 #define    PRIoPTR     PRIo32
 #define    PRIuPTR     PRIu32
 #define    PRIxPTR     PRIx32
 #define    PRIXPTR     "lX"
 
+
 #define    PRIoMAX     PRIo32
-#define    PRIuMAX     PRIu32
-#define    PRIxMAX     PRIx32
-#define    PRIXMAX     PRIX32
+#define    PRIuMAX     PRIu64
+#define    PRIxMAX     PRIx64
+#define    PRIXMAX     PRIX64
 
 /* The fscanf() macros for signed integers are:
  * SCNdN SCNdLEASTN SCNdFASTN SCNdMAX SCNdPTR SCNiN SCNiLEASTN SCNiFASTN
@@ -252,7 +259,12 @@ __END_DECLS
 #define    SCNxMAX       SCNx32
 
 //TODO this is C99 standard. It's required for mruby
+#if 0
+#ifndef NAN
 #define 	NAN   __builtin_nan("")
+#endif
+#ifndef INFINITY
 #define 	INFINITY   __builtin_inf()
-
+#endif
+#endif
 #endif /* INTTYPES_H_ */

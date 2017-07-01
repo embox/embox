@@ -61,17 +61,6 @@ static inline int initgroups(const char *user, gid_t group) {
 	return 0;
 }
 
-static inline FILE *popen(const char *command, const char *type) {
-	(void) command;
-	(void) type;
-	return NULL;
-}
-
-static inline int pclose(FILE *stream) {
-	(void) stream;
-	return 0;
-}
-
 static inline char *ttyname(int fd) {
 	static char buf[16];
 	(void) fd;

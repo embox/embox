@@ -203,6 +203,8 @@ static inline int wctomb(char *s, wchar_t wchar) {
 	return 0;
 }
 
+extern int atexit(void (*func)(void));
+
 __END_DECLS
 
 #endif /* STDLIB_H_ */

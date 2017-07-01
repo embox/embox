@@ -14,6 +14,6 @@
 #include <utime.h>
 
 void rewinddir(DIR *dirp) {
-	printk(">>> %s %p\n", __func__, dirp);
+	printk("STUB >>> %s %p\n", __func__, dirp);
 }
 

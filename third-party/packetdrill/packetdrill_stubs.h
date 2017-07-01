@@ -60,8 +60,6 @@ struct sockaddr_dl {
 
 struct iovec;
 
-extern int asprintf(char **strp, const char *fmt, ...);
-
 static inline char *strsignal(int sig) {
 	PD_STUB_USE();
 	return "i-know-but-won't-tell-you-signal";

@@ -141,6 +141,12 @@ static inline int sigprocmask(int how, const sigset_t *set, sigset_t *oldset) {
 	return -ENOSYS;
 }
 
+static inline
+int pthread_sigmask(int how, const sigset_t *set, sigset_t *oldset) {
+	(void)how; (void)set; (void)oldset;
+	return -ENOSYS;
+}
+
 extern sighandler_t signal(int signo, sighandler_t fn);
 extern int sigaction(int signo, const struct sigaction * /*restrict*/ act,
 		struct sigaction * /*restrict*/ oact);

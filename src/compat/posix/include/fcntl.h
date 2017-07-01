@@ -76,7 +76,10 @@ extern int fcntl(int fd, int cmd, ...);
 #define O_NOFOLLOW         0x8000
 
 /* file descriptor flags */
-#define FD_CLOEXEC         0x0001
+#define FD_CLOEXEC         0x0010
+/* TODO not POSIX */
+#define O_CLOEXEC          FD_CLOEXEC
+
 
 struct flock {
 	short  l_type;   /* Type of lock; F_RDLCK, F_WRLCK, F_UNLCK. */

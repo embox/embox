@@ -160,3 +160,7 @@ static module div {
 	source "ldiv.c"
 	/* source "lldiv.c" */
 }
+
+static module asprintf {
+	source "asprintf.c"
+}

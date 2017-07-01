@@ -27,9 +27,11 @@
 #define _SC_PAGESIZE          1
 #define _SC_PAGE_SIZE         _SC_PAGESIZE
 #define _SC_CLK_TCK           2
+#define _SC_GETPW_R_SIZE_MAX  3
 /*not posix */
-#define _SC_NPROCESSORS_ONLN  3
+#define _SC_NPROCESSORS_ONLN  103
 #define _SC_NPROCESSORS_CONF  _SC_NPROCESSORS_ONLN
+#define _SC_PHYS_PAGES        104
 
 /*
 _SC_2_C_BIND
@@ -242,6 +244,13 @@ extern char *getpass(const char *prompt);
 extern int gethostname(char *name, size_t len);
 
 extern int chown(const char *path, uid_t owner, gid_t group);
+
+
+/*******************************************
+ * stubs
+ *******************************************/
+static inline void sync(void) {
+}
 
 __END_DECLS
 

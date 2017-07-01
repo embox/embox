@@ -1,0 +1,11 @@
+package third_party.freedesktop.mesa
+
+
+@BuildDepends(third_party.freedesktop.mesa.mesa_osmesa)
+@BuildDepends(third_party.freedesktop.mesa.libglu_osmesa)
+@Build(script="$(EXTERNAL_MAKE)")
+module  mesa_demos_osmesa {
+	source "^BUILD/extbld/^MOD_PATH/install/mesa_demos_osdemo.o"
+
+	depends third_party.freedesktop.mesa.mesa_osmesa
+}

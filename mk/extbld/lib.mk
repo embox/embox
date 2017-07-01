@@ -43,7 +43,7 @@ sources_download := $(filter-out %.git,$(PKG_SOURCES))
 # Return PKG_ARCHIVE_NAME of the specified package in case if
 # the url does not contain package name
 pkg_archive_name  = $(if $(call eq,$(PKG_ARCHIVE_NAME),""),$(call notdir,$1),$(PKG_ARCHIVE_NAME))
-sources_extract  := $(filter %.tar.gz %.tar.bz2 %tgz %tbz %zip,$(call pkg_archive_name,$(sources_download)))
+sources_extract  := $(filter %.tar.gz %.tar.bz2 %.tar.xz %tgz %tbz %zip,$(call pkg_archive_name,$(sources_download)))
 
 DOWNLOAD  := $(BUILD_DIR)/.downloaded
 $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)

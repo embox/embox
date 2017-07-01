@@ -32,6 +32,8 @@ static inline int munmap(void *addr, size_t size) {
 	return 0;
 }
 
+#include <module/embox/fs/syslib/idesc_mmap.h>
+
 static inline void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	(void) addr;
 	(void) len;
@@ -40,6 +42,9 @@ static inline void *mmap(void *addr, size_t len, int prot, int flags, int fd, of
 	(void) fd;
 	(void) off;
 
+	if(fd) {
+		return idesc_mmap(addr, len, prot, flags, fd, off);
+	}
 	return NULL;
 }
 

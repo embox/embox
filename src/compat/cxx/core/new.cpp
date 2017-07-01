@@ -75,10 +75,19 @@ void operator delete(void* ptr) throw() {
 	std::free(ptr);
 }
 
+void operator delete(void* ptr, unsigned int i) throw() {
+	/* XXX */
+	std::free(ptr);
+}
+
 void operator delete(void* ptr, const std::nothrow_t& nothrow_const) throw() {
 	::operator delete(ptr);
 }
 
+void operator delete[](void* ptr, unsigned int) throw() {
+	/* XXX */
+	::operator delete(ptr);
+}
 
 // Forwarding functions for array of objects
 void* operator new[](std::size_t size) throw(std::bad_alloc) {

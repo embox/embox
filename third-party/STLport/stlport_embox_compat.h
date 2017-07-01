@@ -54,11 +54,6 @@ namespace std {
 		DPRINT();
 		return -1;
 	}
-	static inline int atexit(void (*function)(void)) {
-		(void)function;
-		DPRINT();
-		return -1;
-	}
 	static inline size_t mbstowcs(wchar_t *dest, const char *src, size_t n) {
 		(void)dest;
 		(void)src;

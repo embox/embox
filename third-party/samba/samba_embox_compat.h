@@ -62,9 +62,6 @@ struct sockaddr_un {
 typedef __u16 u_int16_t;
 typedef __u32 u_int32_t;
 
-static inline void atexit(void *addr) {
-	printf(">>> atexit(%p)\n",addr);
-}
 
 static inline void *dlsym(void *handle, const char *symbol) {
 	printf(">>> dlsym(%p,%s)\n",handle,symbol);
@@ -177,10 +174,12 @@ long telldir(DIR *dirp) {
 	return -1;
 }
 
+#if 0
 static inline
 void rewinddir(DIR *dirp) {
 	DPRINT();
 }
+#endif
 
 static inline
 int fnmatch(const char *pattern, const char *string, int flags) {

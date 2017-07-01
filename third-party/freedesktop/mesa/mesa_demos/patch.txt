@@ -1,0 +1,162 @@
+diff -aur -x configure -x Makefile.in mesa-demos-8.3.0-orig/configure.ac mesa-demos-8.3.0/configure.ac
+--- mesa-demos-8.3.0-orig/configure.ac	2015-12-10 00:06:44.000000000 +0300
++++ mesa-demos-8.3.0/configure.ac	2017-06-20 13:19:36.383564382 +0300
+@@ -53,18 +53,18 @@
+ 
+ dnl Get the pkg-config definitions for libGL.  We include a fallback
+ dnl path for GL implementation that don't provide a .pc file
+-PKG_CHECK_MODULES(GL, [gl], [], [
+-		  AC_CHECK_HEADER([GL/gl.h],
+-		  		  [],
+-		  		  AC_MSG_ERROR([GL not found]))
+-		  AC_CHECK_LIB([GL],
+-			       [glBegin],
+-			       [GL_LIBS=-lGL],
+-			       AC_MSG_ERROR([GL required]))
+-		  ])
++#PKG_CHECK_MODULES(GL, [gl], [], [
++#		  AC_CHECK_HEADER([GL/gl.h],
++#		  		  [],
++#		  		  AC_MSG_ERROR([GL not found]))
++#		  AC_CHECK_LIB([GL],
++#			       [glBegin],
++#			       [GL_LIBS=-lGL],
++#			       AC_MSG_ERROR([GL required]))
++#		  ])
+ 
+-DEMO_CFLAGS="$DEMO_CFLAGS $GL_CFLAGS"
+-DEMO_LIBS="$DEMO_LIBS $GL_LIBS"
++#DEMO_CFLAGS="$DEMO_CFLAGS $GL_CFLAGS"
++#DEMO_LIBS="$DEMO_LIBS $GL_LIBS"
+ 
+ dnl Check for GLUT
+ glut_enabled=no
+@@ -94,9 +94,9 @@
+ 		[])
+ 
+ dnl Check for GLEW
+-PKG_CHECK_MODULES(GLEW, [glew >= 1.5.4])
+-DEMO_CFLAGS="$DEMO_CFLAGS $GLEW_CFLAGS"
+-DEMO_LIBS="$DEMO_LIBS $GLEW_LIBS"
++#PKG_CHECK_MODULES(GLEW, [glew >= 1.5.4])
++#DEMO_CFLAGS="$DEMO_CFLAGS $GLEW_CFLAGS"
++#DEMO_LIBS="$DEMO_LIBS $GLEW_LIBS"
+ 
+ # LIBS was set by AC_CHECK_LIB above
+ LIBS=""
+@@ -279,7 +279,8 @@
+     DEMO_LIBS="$DEMO_LIBS -lX11"
+     ;;
+ *)
+-    DEMO_LIBS="$DEMO_LIBS -lm"
++    #DEMO_LIBS="$DEMO_LIBS -lm"
++    DEMO_LIBS="$DEMO_LIBS"
+     ;;
+ esac
+ 
+diff -aur -x configure -x Makefile.in mesa-demos-8.3.0-orig/src/Makefile.am mesa-demos-8.3.0/src/Makefile.am
+--- mesa-demos-8.3.0-orig/src/Makefile.am	2012-06-25 19:34:58.000000000 +0400
++++ mesa-demos-8.3.0/src/Makefile.am	2017-06-20 13:10:01.646111810 +0300
+@@ -24,24 +24,27 @@
+ 
+ SUBDIRS = \
+ 	util \
+-	data \
+-	demos \
+-	egl \
+-	fp \
+-	fpglsl \
+-	glsl \
+-        gs \
+-	objviewer \
+-	osdemos \
+-	perf \
+-	rbug \
+-	redbook \
+-	samples \
+-	slang \
+-	tests \
+-	tools \
+-	trivial \
+-	vp \
+-	vpglsl \
+-	wgl \
+-	xdemos
++	osdemos
++
++#	util \
++#	data \
++#	demos \
++#	egl \
++#	fp \
++#	fpglsl \
++#	glsl \
++#        gs \
++#	objviewer \
++#	osdemos \
++#	perf \
++#	rbug \
++#	redbook \
++#	samples \
++#	slang \
++#	tests \
++#	tools \
++#	trivial \
++#	vp \
++#	vpglsl \
++#	wgl \
++#	xdemos
+diff -aur -x configure -x Makefile.in mesa-demos-8.3.0-orig/src/osdemos/Makefile.am mesa-demos-8.3.0/src/osdemos/Makefile.am
+--- mesa-demos-8.3.0-orig/src/osdemos/Makefile.am	2013-05-03 22:21:16.000000000 +0400
++++ mesa-demos-8.3.0/src/osdemos/Makefile.am	2017-06-20 13:10:01.646111810 +0300
+@@ -28,13 +28,15 @@
+ 
+ if HAVE_OSMESA
+ bin_PROGRAMS = \
+-	osdemo \
+-	osdemo16 \
+-	osdemo32
++	osdemo
++
++#	osdemo \
++#	osdemo16 \
++#	osdemo32
+ endif
+ 
+-osdemo16_SOURCES = osdemo16.c
+-osdemo32_SOURCES = osdemo32.c
++#osdemo16_SOURCES = osdemo16.c
++#osdemo32_SOURCES = osdemo32.c
+ osdemo_LDADD = $(OSMESA_LIBS) ../util/libutil.la
+-osdemo16_LDADD = $(OSMESA_LIBS) $(OSMESA16_LIBS) ../util/libutil.la
+-osdemo32_LDADD = $(OSMESA32_LIBS) ../util/libutil.la
++#osdemo16_LDADD = $(OSMESA_LIBS) $(OSMESA16_LIBS) ../util/libutil.la
++#osdemo32_LDADD = $(OSMESA32_LIBS) ../util/libutil.la
+diff -aur -x configure -x Makefile.in mesa-demos-8.3.0-orig/src/util/Makefile.am mesa-demos-8.3.0/src/util/Makefile.am
+--- mesa-demos-8.3.0-orig/src/util/Makefile.am	2012-06-25 19:34:58.000000000 +0400
++++ mesa-demos-8.3.0/src/util/Makefile.am	2017-06-20 13:10:01.646111810 +0300
+@@ -29,15 +29,15 @@
+ 
+ noinst_LTLIBRARIES = libutil.la
+ 
+-if HAVE_GLUT
+-AM_CFLAGS += \
+-	$(GLUT_CFLAGS)
+-AM_LDFLAGS += \
+-	$(GLUT_LIBS)
+-SHADERUTIL_SRC = \
+-	shaderutil.c \
+-	shaderutil.h
+-endif
++#if HAVE_GLUT
++#AM_CFLAGS += \
++#	$(GLUT_CFLAGS)
++#AM_LDFLAGS += \
++#	$(GLUT_LIBS)
++#SHADERUTIL_SRC = \
++#	shaderutil.c \
++#	shaderutil.h
++#endif
+ 
+ libutil_la_SOURCES = \
+ 	gl_wrap.h \

@@ -14,7 +14,7 @@ int getrusage(int who, struct rusage *r_usage) {
 	memset(r_usage, 0, sizeof *r_usage);
 	return SET_ERRNO(ENOSYS);
 }
-
+#if 0
 FILE * popen(const char *command, const char *mode) {
 	printk(">>> %s %s %s\n", __func__, command, mode);
 	return SET_ERRNO(ENOSYS), NULL;
@@ -24,6 +24,7 @@ int pclose(FILE *stream) {
 	printk(">>> %s %p\n", __func__, stream);
 	return SET_ERRNO(ENOSYS);
 }
+#endif
 
 int fchown(int fildes, uid_t owner, gid_t group) {
 	printk(">>> %s %d %u %u\n", __func__, fildes, owner, group);

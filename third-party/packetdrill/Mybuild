@@ -8,7 +8,7 @@ package third_party
 module packetdrill {
 	source "^BUILD/extbld/^MOD_PATH/install/packetdrill.o"
 
-	source "asprintf.c"
+	depends embox.compat.libc.stdio.asprintf
 
 	@InitFS(target_dir="packetdrill_tests")
 	source "simple-connect.pkt",
