@@ -1,0 +1,12 @@
+package embox.driver.video
+@DefaultImpl(fb_devfs_stub)
+abstract module fb_devfs {
+}
+
+module fb_devfs_stub extends fb_devfs {
+	source "fb_devfs_stub.c"
+}
+
+module fb_devfs_old extends fb_devfs {
+	source "fb_devfs_old.c"
+}

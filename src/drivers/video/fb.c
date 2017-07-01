@@ -97,6 +97,7 @@ struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_s
 		/* FIXME probably should be in open/start */
 		fb_update_current_var(info);
 	}
+	fb_devfs_create(ops, map_base, map_size);
 
 	return info;
 }

@@ -13,6 +13,7 @@ module fb {
 	depends fb_videomodes
 	depends fonts
 	depends embox.driver.char_dev
+	depends embox.driver.video.fb_devfs
 }
 
 module bochs {
