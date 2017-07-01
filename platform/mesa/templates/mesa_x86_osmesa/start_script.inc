@@ -6,7 +6,4 @@
 "route add 10.0.2.0 netmask 255.255.255.0 eth0",
 "route add default gw 10.0.2.10 eth0",
 
-"export PWD=/",
-"export HOME=/",
-"export QT_QPA_FONTDIR=/fonts",
-"texteditor -platform emboxvc",
+"osdemo_fb embox_s.png"
