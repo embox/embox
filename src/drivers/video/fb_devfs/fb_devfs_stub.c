@@ -4,6 +4,8 @@
  * @date Jul 1, 2017
  * author Anton Bondarev
  */
+#include <stddef.h>
+
 #include <drivers/video/fb.h>
 
 int fb_devfs_create(const struct fb_ops *ops, char *map_base, size_t map_size) {

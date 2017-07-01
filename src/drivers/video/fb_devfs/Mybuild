@@ -1,4 +1,5 @@
 package embox.driver.video
+
 @DefaultImpl(fb_devfs_stub)
 abstract module fb_devfs {
 }
