@@ -35,6 +35,8 @@ struct idesc_ops {
 	int (*ioctl)(struct idesc *idesc, int request, void *data);
 	int (*fstat)(struct idesc *idesc, void *buff);
 	int (*status)(struct idesc *idesc, int mask);
+	void *(*idesc_mmap)(struct idesc *idesc, void *addr, size_t len, int prot,
+			int flags, int fd, off_t off);
 };
 
 struct idesc_xattrops {
