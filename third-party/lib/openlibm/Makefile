@@ -35,6 +35,7 @@ endif
 endif
 
 $(CONFIGURE) :
+	cp openlibm_fenv_stubs.h $(PKG_SOURCE_DIR)/openlibm_fenv_stubs.h
 	touch $@
 
 $(BUILD) :
