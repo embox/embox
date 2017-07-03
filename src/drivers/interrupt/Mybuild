@@ -97,6 +97,7 @@ module no_interrupts extends irqctrl_api {
 module xen extends irqctrl_api {
 	source "xen.h"
 	source "xen.c"
+	depends embox.arch.xen.traps
 }
 
 
