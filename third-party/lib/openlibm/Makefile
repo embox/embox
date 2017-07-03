@@ -13,8 +13,9 @@ include $(EXTBLD_LIB)
 include $(ROOT_DIR)/mk/core/compiler.mk
 
 ifeq ($(COMPILER),clang)
-
+COMPILER_SPEC := "USECLANG=1"
 else
+COMPILER_SPEC := "USEGCC=1"
 OLIBM_ARCH ?=
 ifneq ($(filter x86 usermode86,$(ARCH)),)
 OLIBM_ARCH := i386
@@ -41,7 +42,7 @@ $(CONFIGURE) :
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) \
-			USEGCC=1 \
+			$(COMPILER_SPEC) \
 			ARCH=$(OLIBM_ARCH) \
 			OS=Embox \
 			CC=$(EMBOX_GCC) \
