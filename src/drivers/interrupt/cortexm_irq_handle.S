@@ -59,4 +59,4 @@ __pending_handle:
     bl     nvic_set_pendsv
     cpsie  i
     # DO NOT RETURN
-1: b       1
+1: b       1b

@@ -29,7 +29,7 @@
 #error  __USER_LABEL_PREFIX__ not defined
 #endif
 
-#define SYM(x) CONCAT (__USER_LABEL_PREFIX__, x)
+#define SYM(x) x
 
 #ifdef __ELF__
 #define TYPE(x) .type SYM(x),function
@@ -79,9 +79,9 @@
 
 .thumb
 .thumb_func
-	.globl SYM (setjmp)
-	TYPE (setjmp)
-SYM (setjmp):
+	.globl SYM(setjmp)
+	TYPE(setjmp)
+SYM(setjmp):
 	/* Save registers in jump buffer.  */
 	stmia	r0!, {r4, r5, r6, r7}
 	mov	r1, r8
