@@ -39,7 +39,6 @@ then
 fi
 
 files=$(git diff --name-only $diffargs);
-#echo $diffargs
 #files=$(find ../../ -type f -name "*.[ch]") #all files - I'll leave it just in case
 
 folders_to_format=$(cat folders_to_format.txt)
@@ -55,14 +54,12 @@ mkdir -p out
 for item in $files ; do
   if_process_item=false
   for folder in $folders_to_format ; do
-    if [[ $item == $folder* ]] ; then
-      echo "a"
+    if [[ $item == $folder* ]] ; then      
       if_process_item=true;
       break;
     fi
   done
   if [ "$if_process_item" = false ] ; then
-    # echo $if_process_item
     continue
   fi
   item="../../"$item #git shows path starting from repo's root and we're at depth of 2.
