@@ -38,9 +38,12 @@ then
 	diffargs="${HASHES[0]} ${HASHES[1]}"
 fi
 
-files=$(git diff --name-only $diffargs)
+files=$(git diff --name-only $diffargs);
 #echo $diffargs
 #files=$(find ../../ -type f -name "*.[ch]") #all files - I'll leave it just in case
+
+folders_to_format=$(cat folders_to_format.txt)
+echo $folders_to_format;
 
 if [ -s uncrustify_diff.txt ]
 then
@@ -50,10 +53,22 @@ fi
 mkdir -p out
 
 for item in $files ; do
+  if_process_item=false
+  for folder in $folders_to_format ; do
+    if [[ $item == $folder* ]] ; then
+      echo "a"
+      if_process_item=true;
+      break;
+    fi
+  done
+  if [ "$if_process_item" = false ] ; then
+    # echo $if_process_item
+    continue
+  fi
   item="../../"$item #git shows path starting from repo's root and we're at depth of 2.
   if ! ([ ${item: -2} == '.c' ] ||  [ ${item: -2} == '.h' ]); then
-  	echo $item" is not a .c or .h file"
-  	continue;
+    echo $item" is not a .c or .h file"
+    continue;
   fi
   dn=$(dirname $item)
   mkdir -p out/$dn
