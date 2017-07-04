@@ -7,40 +7,110 @@
  */
 
 #ifndef DRIVERS_TERMIOS_OPS_H_
+
+#include <util/ring.h>
+
 #define DRIVERS_TERMIOS_OPS_H_
+
+#define TERMIOS_CC_INIT \
+	{ \
+		[VEOF]   = __TERMIOS_CTRL('d'),  \
+		[VEOL]   = ((cc_t) ~0), /* undef */ \
+		[VERASE] = 0177,             \
+		[VINTR]  = __TERMIOS_CTRL('c'),  \
+		[VKILL]  = __TERMIOS_CTRL('u'),  \
+		[VMIN]   = 1,                \
+		[VQUIT]  = __TERMIOS_CTRL('\\'), \
+		[VTIME]  = 0,                \
+		[VSUSP]  = __TERMIOS_CTRL('z'),  \
+		[VSTART] = __TERMIOS_CTRL('q'),  \
+		[VSTOP]  = __TERMIOS_CTRL('s'),  \
+	}
+
+#define __TERMIOS_CTRL(ch)  (cc_t) ((ch) & 0x1f)
+
+#define TERMIOS_IFLAG_INIT  (tcflag_t) (BRKINT | ICRNL | IXON)
+#define TERMIOS_OFLAG_INIT  (tcflag_t) (OPOST | ONLCR | OXTABS)
+#define TERMIOS_CFLAG_INIT  (tcflag_t) (CREAD | CS8 | HUPCL)
+#define TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
+			ECHO | ECHOE | ECHOK | ECHONL)
+
+#define TERMIOS_RES_GOT_DATA (1 << 0)
+#define TERMIOS_RES_GOT_ECHO (1 << 1)
 
 struct ring;
 struct termios;
+
+typedef struct termios_i_buff {
+	struct ring       *ring;
+	char              *buff;
+	struct ring       *canon_ring;
+	size_t            buflen;
+} termios_i_buff;
 
 /**
  * @brief Does associated with termios mapping of input symbol to string,
  * i.e. \r -> \r\n
  *
- * @param tio
- * @param ch
- * @param ring
- * @param buf
- * @param buflen
- *
  * @return Number of writed symbols
  */
-extern int termios_putc(const struct termios *tio, char ch,
+extern int termios_putc(const struct termios *t, char ch,
 		struct ring *ring, char *buf, size_t buflen);
 
 /**
  * @brief Does associated with termios mapping of symbol to it's visual
  * representation string.
  *
- * @param tio
- * @param ch
- * @param ring
- * @param buf
- * @param buflen
+ * @return
+ */
+extern int termios_gotc(const struct termios *t, char ch,
+		struct ring *ring, char *buf, size_t buflen);
+
+/**
+ * @brief Processes the current character after reading.
  *
  * @return
  */
-extern int termios_gotc(const struct termios *tio, char ch,
-		struct ring *ring, char *buf, size_t buflen);
+extern int termios_input(const struct termios *t, char ch, 
+		struct termios_i_buff *b, struct ring *o_ring, char *o_buff, size_t buflen);
+
+/**
+ * @brief
+ *
+ * @return Pointer to the next characters for reading.
+ */
+extern char *termios_read(const struct termios *t, 
+		struct termios_i_buff *b, char *buff, char *end);
+
+/**
+ * @brief Sets the buffer size and timeout.
+ */
+extern void termios_update_size(const struct termios *t,
+		size_t *size, unsigned long *timeout);
+
+/**
+ * @brief Updates rings depending on the current state of termios.
+ */
+extern void termios_update_ring(const struct termios *t, 
+		struct ring *ring, struct ring *canon_ring);
+
+/**
+ * @brief Checks whether termios can read.
+ *
+ * @return
+ */
+extern int termios_can_read(const struct termios *t,
+		struct ring *ring, struct ring *canon_ring, size_t buflen);
+
+/**
+ * @brief Initializes termios.
+ */
+extern void termios_init(struct termios *t);
+
+/**
+ * @brief Initializes input buffer.
+ */
+extern void termios_i_buff_init(struct termios_i_buff *b, struct ring *ring, 
+		char *buff, struct ring *canon_ring, size_t buflen);
 
 #endif /* DRIVERS_TERMIOS_OPS_H_ */
-

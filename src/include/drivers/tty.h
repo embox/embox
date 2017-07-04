@@ -22,29 +22,6 @@
 
 /* Defaults */
 
-#define TTY_TERMIOS_CC_INIT \
-	{ \
-		[VEOF]   = __TTY_CTRL('d'),  \
-		[VEOL]   = ((cc_t) ~0), /* undef */ \
-		[VERASE] = 0177,             \
-		[VINTR]  = __TTY_CTRL('c'),  \
-		[VKILL]  = __TTY_CTRL('u'),  \
-		[VMIN]   = 1,                \
-		[VQUIT]  = __TTY_CTRL('\\'), \
-		[VTIME]  = 0,                \
-		[VSUSP]  = __TTY_CTRL('z'),  \
-		[VSTART] = __TTY_CTRL('q'),  \
-		[VSTOP]  = __TTY_CTRL('s'),  \
-	}
-
-#define __TTY_CTRL(ch)  (cc_t) ((ch) & 0x1f)
-
-#define TTY_TERMIOS_IFLAG_INIT  (tcflag_t) (BRKINT | ICRNL | IXON)
-#define TTY_TERMIOS_OFLAG_INIT  (tcflag_t) (OPOST | ONLCR | OXTABS)
-#define TTY_TERMIOS_CFLAG_INIT  (tcflag_t) (CREAD | CS8 | HUPCL)
-#define TTY_TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
-			ECHO | ECHOE | ECHOK | ECHONL)
-
 #define TTY_IO_BUFF_SZ \
 	OPTION_MODULE_GET(embox__driver__tty__tty, NUMBER, io_buff_sz)
 
