@@ -97,7 +97,10 @@ then
 	rm uncrustify_diff*
 	exit 1
 fi
+
 rm uncrustify_diff* &> /dev/null
+
 #find out -type f -empty -delete
 #rsync -ah out/ ./
 
+exit 0 #neccessary if 'rm' fails
