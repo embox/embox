@@ -15,10 +15,27 @@ env:
     - TEMPLATE=arm/stm32_f4
     - TEMPLATE=x86/qemu
     - TEMPLATE=x86/test/lang
+matrix:
+  include:
+  - env: UNCRUSTIFY
+    os: osx
+    before_install: echo N/A
+    install: brew install uncrustify
+    before_script:
+      - echo $PWD
+      - echo $(git rev-parse HEAD)
+      - echo $(git rev-parse HEAD~1)
+      - echo $TRAVIS_PULL_REQUEST_SHA
+      - cd scripts/codestyle
+    script: ./travis_uncrustify.sh
 
 before_install:
   - travis_retry sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
   - travis_retry sudo apt-get update -qq
+  - echo 'travis variables'
+  - echo $TRAVIS_COMMIT
+  - echo $TRAVIS_PULL_REQUEST
+  - echo $TRAVIS_PULL_REQUEST_SHA
 
 # TODO make it template-specific
 install:
