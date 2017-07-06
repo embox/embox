@@ -122,16 +122,6 @@ static inline ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset
 	return -1;
 }
 
-static inline int major(dev_t dev) {
-	printf(">>> major, dev - %d\n", dev);
-	return -1;
-}
-
-static inline int minor(dev_t dev) {
-	printf(">>> minor, dev - %d\n", dev);
-	return -1;
-}
-
 static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid %d\n", gid);
 	return NULL;
