@@ -93,7 +93,8 @@ static int tun_setup(struct net_device *dev) {
 	return 0;
 }
 
-static int    tun_dev_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *tun_dev_open(struct node *node,
+	struct file_desc *file_desc, int flags);
 static int    tun_dev_close(struct file_desc *desc);
 static size_t tun_dev_read(struct file_desc *desc, void *buf, size_t size);
 static size_t tun_dev_write(struct file_desc *desc, void *buf, size_t size);
