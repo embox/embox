@@ -2,8 +2,8 @@
 PKG_NAME := packetdrill
 PKG_VER  := d799c219acfa
 
-PKG_SOURCES := https://code.google.com/p/packetdrill.git
-PKG_MD5     := -
+PKG_SOURCES := https://storage.googleapis.com/google-code-archive-source/v2/code.google.com/packetdrill/source-archive.zip
+PKG_MD5     := 1c203d1474022b0aad2364f3ab92494e
 PKG_SOURCE_DIR := $(BUILD_DIR)/$(PKG_NAME)/gtests/net/$(PKG_NAME)
 
 PKG_PATCHES := packetdrill.patch

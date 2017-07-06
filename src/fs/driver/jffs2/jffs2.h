@@ -29,6 +29,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/uio.h>
 
 #include <asm/bug.h>
 #include <asm/semaphore.h>
@@ -332,11 +333,6 @@ struct jffs2_inode_info {
 
 struct _inode;
 struct super_block;
-
-struct iovec {
-        void *iov_base;
-        ssize_t iov_len;
-};
 
 static inline unsigned int full_name_hash(const unsigned char * name,
 		unsigned int len) {

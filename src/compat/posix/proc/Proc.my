@@ -61,10 +61,8 @@ static module sigset {
 static module exit {
 	source "exit.c"
 
-	/*TODO tsort loop
 	depends vfork
 	depends exec
-	*/
 	depends signal
 }
 
