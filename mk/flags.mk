@@ -203,7 +203,7 @@ else
 	# application, we decided to keep explicit null checks and disable the warning.
 	override COMMON_CCFLAGS += -Wno-nonnull-compare
 
-	override GCC_VERSION := $(word 3,$(shell $(CC) -v 2>&1 | grep -e "^gcc"))
+	override GCC_VERSION := $(word 3,$(shell $(CC) --version 2>&1 | grep -e "^gcc"))
 	override GCC_VERSION_MAJOR := $(word 1,$(subst ., ,$(GCC_VERSION)))
 
 ifeq ($(GCC_VERSION_MAJOR),7)
