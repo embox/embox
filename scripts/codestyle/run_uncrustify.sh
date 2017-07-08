@@ -1,5 +1,4 @@
 #!/bin/bash
-
 if [ $# -gt 3 ]; then
 echo "Too many parameters specified"
 	exit 1
@@ -38,9 +37,12 @@ then
 	diffargs="${HASHES[0]} ${HASHES[1]}"
 fi
 
+UNCRUSTIFY_BASE=$(dirname $0)
+cd $UNCRUSTIFY_BASE
 files=$(git diff --name-only $diffargs);
 
 folders_to_format=$(cat folders_to_format.txt)
+echo "Following folders will be processed:"
 echo $folders_to_format;
 
 if [ -s uncrustify_diff.txt ]
@@ -91,9 +93,10 @@ then
 		cat uncrustify_diff_filenames.txt
 	fi
 	rm uncrustify_diff*
+	cd -
 	exit 1
 fi
 
 rm uncrustify_diff* &> /dev/null
-
+cd - &> /dev/null
 exit 0 #neccessary if 'rm' fails
