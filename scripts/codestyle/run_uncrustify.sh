@@ -63,20 +63,21 @@ for item in $files ; do
 	if [ "$if_process_item" = false ] ; then
 		continue
 	fi
+	origitem=$item
 	item="../../"$item #git shows path starting from repo's root and we're at depth of 2.
 	if ! ([ ${item: -2} == '.c' ] ||	[ ${item: -2} == '.h' ]); then
 		echo $item" is not a .c or .h file"
 		continue;
 	fi
-	dn=$(dirname $item)
+	dn=$(dirname $origitem)
 	mkdir -p out/$dn
-	uncrustify -f $item -c uncrustify_cfg.ini > out/$item
-	if [ -s out/$item ]
+	uncrustify -f $item -c uncrustify_cfg.ini > out/$origitem
+	if [ -s out/$origitem ]
 	then
-		git diff --no-index -- $item out/$item > uncrustify_diff_cur.txt
+		git diff --no-index -- $item out/$origitem > uncrustify_diff_cur.txt
 		if [ -s uncrustify_diff_cur.txt ]; then
-				echo $item >> uncrustify_diff_filenames.txt
-				cat uncrustify_diff_cur.txt >> uncrustify_diff.txt
+			echo $origitem >> uncrustify_diff_filenames.txt
+			cat uncrustify_diff_cur.txt >> uncrustify_diff.txt
 		fi
 	fi
 
