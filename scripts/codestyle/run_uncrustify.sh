@@ -13,22 +13,22 @@ do
 	key="$1"
 	case $key in
 		-v|--verbose)
-		VERBOSE=true
-		;;
+			VERBOSE=true
+			;;
 		-h|--help)
-		echo "run_uncrustify.sh [options] [<SHA1> <SHA2>]"
-		echo ""
-		echo "If SHA is provided to the script, uncrustify checks code style of files that are different in SHA and HEAD. "
-		echo "Otherwise uncommited diff is checked."
-		echo ""
-		echo "Options:"
-		echo "-v|--verbose : shows uncrustify suggestions for code style. When not set, only file names with differences are shown."
-		echo "-h|--help		: shows this message"
-		exit 1
-		;;
+			echo "run_uncrustify.sh [options] [<SHA1> <SHA2>]"
+			echo ""
+			echo "If SHA is provided to the script, uncrustify checks code style of files that are different in SHA and HEAD. "
+			echo "Otherwise uncommited diff is checked."
+			echo ""
+			echo "Options:"
+			echo "-v|--verbose : shows uncrustify suggestions for code style. When not set, only file names with differences are shown."
+			echo "-h|--help	: shows this message"
+			exit 1
+			;;
 		*)
-		HASHES+=($key)
-		;;
+			HASHES+=($key)
+			;;
 esac
 shift
 done
@@ -71,7 +71,7 @@ for item in $files ; do
 	uncrustify -f $item -c uncrustify_cfg.ini > out/$item
 	if [ -s out/$item ]
 	then
-		git diff --no-index -- out/$item $item > uncrustify_diff_cur.txt
+		git diff --no-index -- $item out/$item > uncrustify_diff_cur.txt
 		if [ -s uncrustify_diff_cur.txt ]; then
 				echo $item >> uncrustify_diff_filenames.txt
 				cat uncrustify_diff_cur.txt >> uncrustify_diff.txt
