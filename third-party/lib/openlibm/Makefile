@@ -1,23 +1,26 @@
-
+# https://github.com/JuliaLang/openlibm After merge mips supporting
+# https://github.com/embox/openlibm/archive/2252cbd02c176a31f74fa10f8fcdf926c3124987.tar.gz
 PKG_NAME := openlibm
-PKG_VER := ef29d06db1b57c415cbee51b90b492ae89812b5d
+PKG_VER := 2252cbd02c176a31f74fa10f8fcdf926c3124987
 
-PKG_DOWNLOADS_SEPARATE := true
+# PKG_DOWNLOADS_SEPARATE := true
+PKG_ARCHIVE_NAME := openlibm-$(PKG_VER).tar.gz
 
-PKG_SOURCES := https://github.com/JuliaLang/openlibm/archive/$(PKG_VER).tar.gz
-PKG_MD5 := 4bc22ffc211f959080173587e81742ec
+PKG_SOURCES := https://github.com/embox/openlibm/archive/$(PKG_VER).tar.gz
+PKG_MD5 := 2252cbd02c176a31f74fa10f8fcdf926c3124987
 
-PKG_PATCHES := openlibm_embox.patch
+PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 include $(ROOT_DIR)/mk/core/compiler.mk
 
 ifeq ($(COMPILER),clang)
-
+COMPILER_SPEC := "USECLANG=1"
 else
+COMPILER_SPEC := "USEGCC=1"
 OLIBM_ARCH ?=
 ifneq ($(filter x86 usermode86,$(ARCH)),)
-OLIBM_ARCH := i386
+OLIBM_ARCH := i387
 endif
 ifeq ($(ARCH), arm)
 OLIBM_CPU  := $(subst -mcpu=,,$(filter -mcpu=%,$(CFLAGS)))
@@ -27,20 +30,23 @@ ifeq ($(strip $(OLIBM_CPU)),cortex-m7)
 OLIBM_ARCH :=""
 else
 OLIBM_ARCH := $(subst -march=,,$(filter -march=%,$(CFLAGS)))
-endif
+endif # cortex-m7
 ifeq ($(strip $(OLIBM_ARCH)),)
 $(error OLIBM_ARCH -march is undefined)
-endif
-endif
-endif
+endif # -march is undefined
+else ifeq ($(ARCH), mips)
+OLIBM_ARCH := mips
+endif # arm
+endif # COMPILER
 
 $(CONFIGURE) :
+	cp openlibm_fenv_stubs.h $(PKG_SOURCE_DIR)/include/openlibm_fenv_stubs.h
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) \
-			USEGCC=1 \
+			$(COMPILER_SPEC) \
 			ARCH=$(OLIBM_ARCH) \
 			OS=Embox \
 			CC=$(EMBOX_GCC) \

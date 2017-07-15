@@ -1,0 +1,27 @@
+diff -aur -x configure 2252cbd02c176a31f74fa10f8fcdf926c3124987-orig/Make.inc openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987/Make.inc
+--- 2252cbd02c176a31f74fa10f8fcdf926c3124987-orig/Make.inc	2017-04-04 16:27:54.000000000 +0300
++++ openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987/Make.inc	2017-07-04 13:50:14.284537482 +0300
+@@ -57,7 +57,7 @@
+ ifeq ($(findstring arm,$(ARCH)),arm)
+ override ARCH := arm
+ MARCH ?= armv7-a
+-CFLAGS_add += -mhard-float
++# CFLAGS_add += -mhard-float
+ endif
+ ifeq ($(findstring powerpc,$(ARCH)),powerpc)
+ override ARCH := powerpc
+diff -aur -x configure 2252cbd02c176a31f74fa10f8fcdf926c3124987-orig/src/Make.files openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987/src/Make.files
+--- 2252cbd02c176a31f74fa10f8fcdf926c3124987-orig/src/Make.files	2017-04-04 16:27:54.000000000 +0300
++++ openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987/src/Make.files	2017-07-04 13:54:55.369403785 +0300
+@@ -57,6 +57,10 @@
+ 	s_catanl.c s_csinl.c s_cacosl.c s_cexpl.c s_csinhl.c s_ccoshl.c \
+ 	s_clogl.c s_ctanhl.c s_ccosl.c s_cbrtl.c
+ endif
++ifneq ($(filter $(ARCH),arm),)
++$(CUR_SRCS) += s_roundl.c
++endif
++
+ 
+ # C99 complex functions
+ $(CUR_SRCS) +=	s_ccosh.c s_ccoshf.c s_cexp.c s_cexpf.c \
+
