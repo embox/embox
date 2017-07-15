@@ -83,7 +83,7 @@ void arch_shutdown(arch_shutdown_mode_t mode) {
 	case ARCH_SHUTDOWN_MODE_REBOOT:
 	case ARCH_SHUTDOWN_MODE_ABORT:
 	default:
-		HAL_NVIC_SystemReset();
+		//HAL_NVIC_SystemReset();
 		break;
 	}
 

@@ -565,8 +565,18 @@ static void fb_default_imageblit(struct fb_info *info, const struct fb_image *im
 		rect.dy = image->dy + j * rect.height;
 		for (i = 0; i < image->width; ++i) {
 			rect.dx = image->dx + i * rect.width;
+
+			/* commented because of lines below
 			rect.color = *(uint8_t *)(image->data + j) & (1 << ((image->width - i - 1)))
 					? image->fg_color : image->bg_color;
+			*/
+
+			/* this lines add transparency of background*/
+			if (*(uint8_t *)(image->data + j) & (1 << ((image->width - i - 1))))
+				rect.color =  image->fg_color;
+			else 
+			 continue;
+
 			info->ops.fb_fillrect(info, &rect);
 		}
 	}
