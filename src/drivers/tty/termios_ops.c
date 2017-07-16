@@ -12,8 +12,6 @@
 #include <util/ring.h>
 
 #include <drivers/tty/termios_ops.h>
-#include <kernel/thread/thread_sched_wait.h>
-#include <drivers/tty.h>
 
 #define TIO_I(t, flag) ((t)->c_iflag & (flag))
 #define TIO_O(t, flag) ((t)->c_oflag & (flag))
@@ -315,7 +313,7 @@ void termios_update_size(const struct termios *t,
 		*timeout = 0;
 	} else {
 		*size = vtime == 0 ? min(*size, vmin) : 1;
-		*timeout = vmin > 0 ? SCHED_TIMEOUT_INFINITE
+		*timeout = vmin > 0 ? TERMIOS_TIME_INF
 				: vtime * 100; /* deciseconds to milliseconds */
 	}
 }

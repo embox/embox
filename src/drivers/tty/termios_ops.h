@@ -38,6 +38,8 @@
 #define TERMIOS_RES_GOT_DATA (1 << 0)
 #define TERMIOS_RES_GOT_ECHO (1 << 1)
 
+#define TERMIOS_TIME_INF ((unsigned long)-1)
+
 struct ring;
 struct termios;
 
