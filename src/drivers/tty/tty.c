@@ -82,6 +82,10 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 	end = buff + size;
 
 	termios_update_size(&t->termios, &size, &timeout);
+	if (timeout == TERMIOS_TIME_INF) {
+		timeout = SCHED_TIMEOUT_INFINITE;
+	}
+
 	idesc_wait_init(&iwl, POLLIN | POLLERR);
 
 	threadsig_lock();
