@@ -18,16 +18,14 @@ env:
 matrix:
   include:
   - env: UNCRUSTIFY
-    os: osx
-    before_install: echo N/A
-    install: brew install uncrustify
+    before_install:
+      - travis_retry sudo apt-get update -qq
+    install:
+      - travis_retry sudo apt-get install -qq uncrustify
     before_script:
-      - echo $PWD
-      - echo $(git rev-parse HEAD)
-      - echo $(git rev-parse HEAD~1)
-      - echo $TRAVIS_PULL_REQUEST_SHA
-      - cd scripts/codestyle
-    script: ./travis_uncrustify.sh
+      - true
+    script:
+      - ./scripts/codestyle/travis_uncrustify.sh
 
 before_install:
   - travis_retry sudo add-apt-repository -y ppa:team-gcc-arm-embedded/ppa
