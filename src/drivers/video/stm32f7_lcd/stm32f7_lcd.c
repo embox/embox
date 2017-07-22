@@ -47,23 +47,23 @@ static void stm32f7_lcd_fillrect(struct fb_info *info,
 	//BSP_LCD_SetTextColor(0xff000000);
 	//BSP_LCD_DrawPixel(rect->dx, rect->dy, 0xffff0000);
 	//BSP_LCD_DrawPixel(rect->dx, rect->dy, 0xff000000);
-	BSP_LCD_FillRect(rect->dx, rect->dy, rect->width, rect->height);
+	BSP_LCD_FillRect(rect->dy, info->var.xres - rect->dx, rect->width, rect->height);
 }
 
-#define BG_COLOR  0xFF000000
-#define TXT_COLOR 0xFFAAAAAA
-static uint32_t _get_color(const uint8_t *data, int num, int depth) {
-	switch (depth) {
-	case 1:
-		if (data[num / 8] & (1 << (8 - num % 8)))
-			return TXT_COLOR;
-		else
-			return BG_COLOR;
-	default:
-		log_error("Unsupported color depth: %d\n", depth);
-		return BG_COLOR;
-	}
-}
+// #define BG_COLOR  0xFF000000
+// #define TXT_COLOR 0xFFAAAAAA
+// static uint32_t _get_color(const uint8_t *data, int num, int depth) {
+// 	switch (depth) {
+// 	case 1:
+// 		if (data[num / 8] & (1 << (8 - num % 8)))
+// 			return TXT_COLOR;
+// 		else
+// 			return BG_COLOR;
+// 	default:
+// 		log_error("Unsupported color depth: %d\n", depth);
+// 		return BG_COLOR;
+// 	}
+// }
 
 static void stm32f7_lcd_imageblit(struct fb_info *info,
 		const struct fb_image *image) {
@@ -73,11 +73,14 @@ static void stm32f7_lcd_imageblit(struct fb_info *info,
 	int dx = image->dx;
 	int height = image->height;
 	int width = image->width;
-	int depth = image->depth;
+	//int depth = image->depth;
 
 	for (int j = dy; j < dy + height; j++)
-		for (int i = dx; i < dx + width; i++)
-			BSP_LCD_DrawPixel(i, j, _get_color((uint8_t *)image->data, n++, depth));
+		for (int i = dx; i < dx + width; i++){
+			if (((image->data)[n / 8]) & (1 << (8 - n % 8)))
+				BSP_LCD_DrawPixel(j,  info->var.xres - i, image->fg_color);
+			n++;
+		}
 }
 
 static struct fb_ops stm32f7_lcd_ops = {
