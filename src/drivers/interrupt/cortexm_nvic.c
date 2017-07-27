@@ -167,6 +167,31 @@ static int nvic_init(void) {
 	return 0;
 }
 
+static void hnd_stub(void) {
+	/* It's just a stub. DO NOTHING */
+}
+
+void nvic_table_fill_stubs(void) {
+	int i;
+
+	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
+		exception_table[i] = ((int) hnd_stub) | 1;
+	}
+
+	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
+			(int) exception_table);
+}
+
+#else
+
+/* These functions are used in src/drivers/interrupt/cortexm_irq_handle.S */
+
+void interrupt_handle(struct context *regs) {
+}
+
+void nvic_set_pendsv(void) {
+}
+
 #endif
 
 void irqctrl_enable(unsigned int interrupt_nr) {
@@ -195,19 +220,4 @@ void irqctrl_force(unsigned int interrupt_nr) {
 	if (nr >= 0) {
 		REG_STORE(NVIC_SET_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
 	}
-}
-
-static void hnd_stub(void) {
-	/* It's just a stub. DO NOTHING */
-}
-
-void nvic_table_fill_stubs(void) {
-	int i;
-
-	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
-		exception_table[i] = ((int) hnd_stub) | 1;
-	}
-
-	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
-			(int) exception_table);
 }
