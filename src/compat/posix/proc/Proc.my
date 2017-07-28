@@ -62,7 +62,7 @@ static module exit {
 	source "exit.c"
 
 	depends vfork
-	depends exec
+	//depends exec
 	depends signal
 }
 
