@@ -19,12 +19,13 @@ matrix:
   include:
   - env: UNCRUSTIFY
     before_install:
-      - travis_retry sudo apt-get update -qq
-    install:
-      - travis_retry sudo apt-get install -qq uncrustify
-    before_script:
       - true
+    install:
+      - SRC=$PWD/uncrustify INSTALL=$PWD/uncrustify/dist ./scripts/codestyle/install_uncrustify.sh
+    before_script:
+      - export PATH=$PWD/uncrustify/dist/bin:$PATH
     script:
+      - uncrustify -v
       - ./scripts/codestyle/travis_uncrustify.sh
 
 before_install:
