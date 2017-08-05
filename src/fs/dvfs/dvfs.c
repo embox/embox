@@ -225,7 +225,7 @@ int dvfs_close(struct file *desc) {
  * @retval -ENOSYS Function is not implemented in file system driver
  */
 int dvfs_write(struct file *desc, char *buf, int count) {
-	int res;
+	int res = 0; /* Assign to avoid compiler warning when use -O2 */
 	int retcode = count;
 	struct inode *inode;
 	if (!desc)
@@ -370,7 +370,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	struct lookup lookup;
 	const struct dumb_fs_driver *drv;
 	struct super_block *sb;
-	struct dentry *d;
+	struct dentry *d = NULL;
 	struct file *bdev_file;
 	int err;
 
@@ -430,9 +430,12 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 
 	goto err_ok;
 err_free_all:
-	dvfs_destroy_inode(d->d_inode);
-	if (bdev_file)
+	if (d != NULL) {
+		dvfs_destroy_inode(d->d_inode);
+	}
+	if (bdev_file) {
 		dvfs_close(bdev_file);
+	}
 	return err;
 err_ok:
 	return 0;
@@ -478,6 +481,7 @@ int dvfs_umount(struct dentry *mpoint) {
 			return err;
 	}
 
+	dentry_ref_dec(mpoint);
 	dentry_ref_dec(mpoint);
 
 	if ((err = _dentry_destroy(mpoint,

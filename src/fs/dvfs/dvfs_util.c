@@ -25,6 +25,10 @@ POOL_DEF(dentry_pool, struct dentry, DENTRY_POOL_SIZE);
 POOL_DEF(file_pool, struct file, FILE_POOL_SIZE);
 POOL_DEF(mnt_pool, struct dvfsmnt, MNT_POOL_SIZE);
 
+#define FREE_DENTRY_ANY    0
+#define FREE_DENTRY_INODE  1
+static int dvfs_free_dentry(int with_ino);
+
 /* Default FS-nondependent operations */
 /* @brief Alloc inode and set it superblock and inode_operations
  * @param sb Superblock of related file system
@@ -37,12 +41,22 @@ struct inode *dvfs_alloc_inode(struct super_block *sb) {
 	if (!sb)
 		return NULL;
 
-	if ((inode = pool_alloc(&inode_pool)))
-		*inode = (struct inode) {
-			.i_no = -1,
-			.i_sb = sb,
-			.i_ops = sb->sb_iops,
-		};
+	inode = pool_alloc(&inode_pool);
+	if (!inode) {
+		if (!dvfs_free_dentry(FREE_DENTRY_INODE)) {
+			inode = pool_alloc(&inode_pool);
+		} else {
+			return NULL;
+		}
+	}
+
+	assert(inode);
+
+	*inode = (struct inode) {
+		.i_no = -1,
+		.i_sb = sb,
+		.i_ops = sb->sb_iops,
+	};
 
 	return inode;
 }
@@ -122,6 +136,30 @@ int dvfs_destroy_inode(struct inode *inode) {
 */
 DLIST_DEFINE(dentry_dlist);
 
+/**
+ * @brief Free entries with zero usage count (i. e. cached entries)
+ *
+ * @param mode  FREE_DENTRY_ANY	   Find any dentry to delete
+ *              FREE_DENTRY_INODE  Find dentry with inodes
+ *
+ * @return 0      if succeeded
+ *         -EBUSY if no free dentry found
+ */
+static int dvfs_free_dentry(int mode) {
+	struct dentry *dentry;
+	dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
+		if (mode == FREE_DENTRY_INODE && dentry->d_inode == NULL)
+			continue;
+
+		if (dentry->usage_count == 0) {
+			dvfs_destroy_dentry(dentry);
+			return 0;
+		}
+	}
+
+	return -EBUSY;
+}
+
 /* @brief Get new dentry from pool
  *
  * @return Pointer to the new dentry
@@ -129,25 +167,20 @@ DLIST_DEFINE(dentry_dlist);
  */
 struct dentry *dvfs_alloc_dentry(void) {
 	struct dentry *dentry = pool_alloc(&dentry_pool);
-	struct dentry *temp = NULL;;
 	if (!dentry) {
-		/* Freeing unused dentries */
-		dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
-			if (dentry->usage_count == 0) {
-				temp = dentry;
-				break;
-			}
-		}
-		if (temp) {
-			dvfs_destroy_dentry(temp);
+		if (!dvfs_free_dentry(0)) {
 			dentry = pool_alloc(&dentry_pool);
-		} else
+		} else {
 			return NULL;
+		}
 	}
 
 	memset(dentry, 0, sizeof(struct dentry));
+	dentry_ref_inc(dentry);
+
 	dlist_add_next(&dentry->d_lnk, &dentry_dlist);
 	dlist_init(&dentry->children);
+
 	return dentry;
 }
 
@@ -221,16 +254,15 @@ int inode_fill(struct super_block *sb, struct inode *inode,
  */
 int dentry_fill(struct super_block *sb, struct inode *inode,
                       struct dentry *dentry, struct dentry *parent) {
-	*dentry = (struct dentry) {
-		.d_inode = inode,
-		.d_sb    = sb,
-		.d_ops   = sb ? sb->sb_dops : NULL,
-		.parent  = parent,
-		.d_lnk   = dentry->d_lnk
-	};
+	dentry->d_inode = inode;
+	dentry->d_sb    = sb;
+	dentry->d_ops   = sb ? sb->sb_dops : NULL;
+	dentry->parent  = parent;
+	dentry->d_lnk   = dentry->d_lnk;
 
-	if (inode)
+	if (inode) {
 		inode->i_dentry = dentry;
+	}
 
 	dlist_init(&dentry->children);
 	dlist_head_init(&dentry->children_lnk);
@@ -243,10 +275,13 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 }
 
 int dentry_ref_inc(struct dentry *dentry) {
+	assert(dentry);
 	return ++dentry->usage_count;
 }
 
 int dentry_ref_dec(struct dentry *dentry) {
+	assert(dentry);
+	assert(dentry->usage_count > 0);
 	return --dentry->usage_count;
 }
 
