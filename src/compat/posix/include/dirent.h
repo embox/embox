@@ -19,8 +19,8 @@ struct dirent {
 	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
 
 	/*only for linux compatible */
-    off_t          d_off;       /* not an offset; see NOTES */
-    unsigned short d_reclen;    /* length of this record */
+	off_t          d_off;       /* not an offset; see NOTES */
+	unsigned short d_reclen;    /* length of this record */
 	unsigned char  d_type;      /* type of file; not supported
 	                            by all filesystem types */
 };
