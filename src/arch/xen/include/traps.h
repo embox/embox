@@ -45,7 +45,7 @@ struct pt_regs {
 	unsigned long rbp;
 	unsigned long rbx;
 /* arguments: non interrupts/non tracing syscalls only save upto here*/
- 	unsigned long r11;
+	unsigned long r11;
 	unsigned long r10;
 	unsigned long r9;
 	unsigned long r8;
@@ -65,14 +65,16 @@ struct pt_regs {
 /* top of stack page */
 };
 
-
 #endif
 
-//void dump_regs(struct pt_regs *regs);
-//void stack_walk(void);
+/* unused */
+#if 0
+void dump_regs(struct pt_regs *regs);
+void stack_walk(void);
 
-//#define TRAP_PF_PROT   0x1
-//#define TRAP_PF_WRITE  0x2
-//#define TRAP_PF_USER   0x4
+#define TRAP_PF_PROT   0x1
+#define TRAP_PF_WRITE  0x2
+#define TRAP_PF_USER   0x4
+#endif
 
 #endif /* _TRAPS_H_ */
