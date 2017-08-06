@@ -37,3 +37,11 @@ third-party/ti/syslink_2_21_01_05
 # Vagrant
 /.vagrant
 /*-console.log
+# Idea and Cmake
+.idea/
+CMakeLists.txt
+backup/
+cmake-build-debug/
+src/.idea/
+src/CMakeLists.txt
+src/cmake-build-debug/

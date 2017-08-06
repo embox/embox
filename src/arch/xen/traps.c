@@ -1,7 +1,21 @@
+
 #include <stdint.h>
 #include <xen/xen.h>
+#include <kernel/printk.h>
 
+extern shared_info_t xen_shared_info;
+
+#if defined(__i386__)
 #include <xen_hypercall-x86_32.h>
+/*
+#elif defined(__x86_64__)
+#include <hypercall-x86_64.h>
+#elif defined(__arm__) || defined(__aarch64__)
+#include <hypercall-arm.h>
+*/
+#else
+#error "Unsupported architecture"
+#endif
 
 /*
  * These are assembler stubs in entry.S.
@@ -27,24 +41,59 @@ void spurious_interrupt_bug(void);
 void machine_check(void);
 
 /* Dummy implementation.  Should actually do something */
-void do_divide_error(void) {}
-void do_debug(void) {}
-void do_int3(void) {}
-void do_overflow(void) {}
-void do_bounds(void) {}
-void do_invalid_op(void) {}
-void do_device_not_available(void) {}
-void do_coprocessor_segment_overrun(void) {}
-void do_invalid_TSS(void) {}
-void do_segment_not_present(void) {}
-void do_stack_segment(void) {}
-void do_general_protection(void) {}
-void do_page_fault(void) {}
-void do_coprocessor_error(void) {}
-void do_simd_coprocessor_error(void) {}
-void do_alignment_check(void) {}
-void do_spurious_interrupt_bug(void) {}
-void do_machine_check(void) {}
+void do_divide_error(void) {
+	printk("DIVIDE ERROR called\n");
+}
+void do_debug(void) {
+	printk("ERROR_1\n");
+}
+void do_int3(void) {
+	printk("ERROR_2\n");
+}
+void do_overflow(void) {
+	printk("ERROR_3\n");
+}
+void do_bounds(void) {
+	printk("ERROR_4\n");
+}
+void do_invalid_op(void) {
+	printk("ERROR_5\n");
+}
+void do_device_not_available(void) {
+	printk("ERROR_6\n");
+}
+void do_coprocessor_segment_overrun(void) {
+	printk("ERROR_7\n");
+}
+void do_invalid_TSS(void) {
+	printk("ERROR_8\n");
+}
+void do_segment_not_present(void) {
+	printk("ERROR_9\n");
+}
+void do_stack_segment(void) {
+	printk("ERROR_10\n");
+}
+void do_general_protection(void) {
+	printk("ERROR_11\n");
+}
+void do_page_fault(void) {
+	printk("ERROR_12\n");
+}
+void do_coprocessor_error(void) {
+	printk("ERROR_13\n");
+}
+void do_simd_coprocessor_error(void) {
+	printk("ERROR_14\n");
+}
+void do_alignment_check(void) {
+	printk("ERROR_15\n");
+}
+void do_spurious_interrupt_bug(void) {
+	printk("ERROR_16\n");
+}
+void do_machine_check(void) {
+}
 
 /*
  * Submit a virtual IDT to teh hypervisor. This consists of tuples
@@ -73,8 +122,21 @@ static trap_info_t trap_table[] = {
     {  0, 0,           0, 0                           }
 };
 
+/* Assembler interface fns in entry.S. */
+void hypervisor_callback(void);
+void failsafe_callback(void);
+
 void trap_init(void)
 {
-    HYPERVISOR_set_trap_table(trap_table);    
-}
+    HYPERVISOR_set_trap_table(trap_table);
 
+#ifdef __i386__
+    HYPERVISOR_set_callbacks(
+		    FLAT_KERNEL_CS, (unsigned long)hypervisor_callback,
+		    FLAT_KERNEL_CS, (unsigned long)failsafe_callback);
+#else
+    HYPERVISOR_set_callbacks(
+		    (unsigned long)hypervisor_callback,
+		    (unsigned long)failsafe_callback, 0);
+#endif
+}

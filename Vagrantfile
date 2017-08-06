@@ -12,6 +12,8 @@ Vagrant.configure("2") do |config|
 
     xen.vm.provision "shell", inline: <<-SHELL
     DEBIAN_FRONTEND=noninteractive \
+	  apt-get -y update
+    DEBIAN_FRONTEND=noninteractive \
 	  apt-get -y install \
 		  xen-hypervisor-amd64
 

@@ -19,6 +19,8 @@
 extern void kernel_start(void);
 
 /* Xen interface */
+extern void trap_init(void);
+
 uint8_t xen_features[XENFEAT_NR_SUBMAPS * 32];
 
 extern shared_info_t xen_shared_info;
@@ -35,6 +37,8 @@ void xen_kernel_start(start_info_t * start_info) {
 	HYPERVISOR_shared_info = &xen_shared_info;
 	
 	init_events();
+
+	trap_init();
 
 	kernel_start();
 }
