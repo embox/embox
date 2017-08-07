@@ -504,6 +504,7 @@ static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx
 		if (next_dentry->flags & DVFS_DIR_VIRTUAL) {
 			if (i++ == (ctx->flags & ~DVFS_CHILD_VIRTUAL)) {
 				ctx->flags++;
+				dentry_ref_inc(next_dentry);
 				lookup->item = next_dentry;
 
 				return next_dentry;
@@ -541,7 +542,9 @@ static int iterate_cached(struct super_block *sb,
 	lookup->item = next_dentry;
 
 	if ((cached = dvfs_cache_get(full_path, lookup))) {
+		dentry_ref_dec(next_dentry);
 		dvfs_destroy_dentry(next_dentry);
+		dentry_ref_inc(cached);
 		lookup->item = cached;
 	} else {
 		dvfs_pathname(next_inode, next_dentry->name, 0);
