@@ -13,7 +13,7 @@ module block_common {
 	depends embox.fs.buffer_cache
 	depends embox.fs.buffer_crypt_api
 	depends embox.mem.phymem
-	depends embox.mem.static_heap
+	depends embox.mem.heap_place
 }
 
 module block {
