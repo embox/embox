@@ -20,3 +20,8 @@ module priority_based_test {
 	depends embox.framework.LibFramework
 }
 
+module fair_policy_test {
+	source "fair_policy_test.c"
+	depends embox.compat.posix.pthreads
+}
+
