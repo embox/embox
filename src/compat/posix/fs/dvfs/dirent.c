@@ -56,8 +56,7 @@ int closedir(DIR *dir) {
 		return -1;
 	}
 
-	dentry_ref_inc(dir->dir_dentry);
-	dvfs_destroy_dentry(dir->dir_dentry);
+	dentry_ref_dec(dir->dir_dentry);
 
 	pool_free(&dir_pool, dir);
 
@@ -89,6 +88,8 @@ struct dirent *readdir(DIR *dir) {
 		return NULL;
 	}
 	fill_dirent(&dir->dirent, l.item);
+
+	dentry_ref_dec(l.item);
 
 	return &dir->dirent;
 }

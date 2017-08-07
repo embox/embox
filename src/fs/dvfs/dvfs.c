@@ -225,7 +225,7 @@ int dvfs_close(struct file *desc) {
  * @retval -ENOSYS Function is not implemented in file system driver
  */
 int dvfs_write(struct file *desc, char *buf, int count) {
-	int res;
+	int res = 0; /* Assign to avoid compiler warning when use -O2 */
 	int retcode = count;
 	struct inode *inode;
 	if (!desc)
@@ -370,7 +370,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	struct lookup lookup;
 	const struct dumb_fs_driver *drv;
 	struct super_block *sb;
-	struct dentry *d;
+	struct dentry *d = NULL;
 	struct file *bdev_file;
 	int err;
 
@@ -430,9 +430,12 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 
 	goto err_ok;
 err_free_all:
-	dvfs_destroy_inode(d->d_inode);
-	if (bdev_file)
+	if (d != NULL) {
+		dvfs_destroy_inode(d->d_inode);
+	}
+	if (bdev_file) {
 		dvfs_close(bdev_file);
+	}
 	return err;
 err_ok:
 	return 0;
@@ -479,6 +482,7 @@ int dvfs_umount(struct dentry *mpoint) {
 	}
 
 	dentry_ref_dec(mpoint);
+	dentry_ref_dec(mpoint);
 
 	if ((err = _dentry_destroy(mpoint,
 	                           !(mpoint->flags & DVFS_DIR_VIRTUAL))))
@@ -500,6 +504,7 @@ static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx
 		if (next_dentry->flags & DVFS_DIR_VIRTUAL) {
 			if (i++ == (ctx->flags & ~DVFS_CHILD_VIRTUAL)) {
 				ctx->flags++;
+				dentry_ref_inc(next_dentry);
 				lookup->item = next_dentry;
 
 				return next_dentry;
@@ -537,7 +542,9 @@ static int iterate_cached(struct super_block *sb,
 	lookup->item = next_dentry;
 
 	if ((cached = dvfs_cache_get(full_path, lookup))) {
+		dentry_ref_dec(next_dentry);
 		dvfs_destroy_dentry(next_dentry);
+		dentry_ref_inc(cached);
 		lookup->item = cached;
 	} else {
 		dvfs_pathname(next_inode, next_dentry->name, 0);
