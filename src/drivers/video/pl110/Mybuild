@@ -1,0 +1,9 @@
+package embox.driver.video
+
+module pl110 {
+	option number base_addr=0xc0000000
+
+	depends embox.driver.video.fb
+
+	source "pl110.c"
+}
