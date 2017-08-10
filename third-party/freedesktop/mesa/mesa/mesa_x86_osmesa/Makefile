@@ -14,9 +14,9 @@ PKG_PATCHES := patch.txt
 include $(EXTBLD_LIB)
 
 
-MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include 
+MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
-MESA_CPPFLAGS += $(SRC_DIR))/arch/$(ARCH)/include
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
@@ -37,6 +37,7 @@ $(CONFIGURE) :
 			--disable-gles1 --disable-gles2 \
 			CC=$(EMBOX_GCC) \
 			CXX=$(EMBOX_GXX) \
+			CPPFLAGS='$(MESA_CPPFLAGS)' \
 	)
 	touch $@
 
