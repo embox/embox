@@ -21,6 +21,9 @@
 #include <GL/glu.h>
 #include <GL/gl.h>
 
+static int Width = 800;
+static int Height = 800;
+
 extern void cxx_app_startup(void);
 void *create_video_buffer(void) {
 	long int screensize = 0;
@@ -31,6 +34,9 @@ void *create_video_buffer(void) {
 
 	printf("%dx%d, %dbpp\n", fb_info->var.xres, fb_info->var.yres,
 			fb_info->var.bits_per_pixel);
+
+	Width = fb_info->var.xres;
+	Height = fb_info->var.yres;
 
 	/* Figure out the size of the screen in bytes */
 	screensize = fb_info->var.xres * fb_info->var.yres
@@ -66,9 +72,6 @@ void destroy_video_buffer(void *buffer) {
  *
  *
  *********************************/
-static int Width = 400;
-static int Height = 400;
-
 
 static void
 Sphere(float radius, int slices, int stacks)
