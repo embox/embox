@@ -1,0 +1,5 @@
+package embox.compat.atomic
+
+module pseudo_atomic {
+	source "pseudo_atomic.c"
+}

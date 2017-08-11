@@ -193,16 +193,6 @@ override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 ifeq ($(COMPILER),clang)
 	override COMMON_CCFLAGS += -Wno-gnu-designator
 else
-	# Not clang means gcc
-	# This option conflicts with some third-party stuff, so we disable it.
-	override COMMON_CCFLAGS += -Wno-misleading-indentation
-
-	# GCC 6 seems to have many library functions declared as __nonnull__, like
-	# fread, fwrite, fprintf, ...  Since accessing NULL in embox without MMU
-	# support could cause real damage to whole system in contrast with segfault of
-	# application, we decided to keep explicit null checks and disable the warning.
-	override COMMON_CCFLAGS += -Wno-nonnull-compare
-
 	override GCC_VERSION := $(word 3,$(shell $(CC) --version 2>&1 | grep -e "^gcc"))
 	override GCC_VERSION_MAJOR := $(word 1,$(subst ., ,$(GCC_VERSION)))
 
@@ -230,6 +220,19 @@ override CFLAGS  = $(COMMON_CCFLAGS)
 override CFLAGS += -std=gnu99
 #override CFLAGS += -fexceptions
 override CFLAGS += $(cflags)
+
+ifneq ($(COMPILER),clang)
+	# Not clang means gcc
+	# This option conflicts with some third-party stuff, so we disable it.
+	override CFLAGS += -Wno-misleading-indentation
+
+	# GCC 6 seems to have many library functions declared as __nonnull__, like
+	# fread, fwrite, fprintf, ...  Since accessing NULL in embox without MMU
+	# support could cause real damage to whole system in contrast with segfault of
+	# application, we decided to keep explicit null checks and disable the warning.
+	override CFLAGS += -Wno-nonnull-compare
+endif
+
 
 # Linker flags
 ldflags := $(LDFLAGS)
