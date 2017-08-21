@@ -34,8 +34,8 @@ BLOCK_DEV_DEF(STM32F4_SD_DEVNAME, &stm32f4_sd_driver);
 
 static int stm32f4_sd_init(void *arg) {
 	struct block_dev *bdev;
-	if (block_dev_lookup(STM32F4_SD_DEVNAME) && (SD_Init() == SD_OK)) {
-		bdev = block_dev_create_common(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
+	if (block_dev_lookup(STM32F4_SD_DEVNAME) && (BSP_SD_Init() == MSD_OK)) {
+		bdev = block_dev_create(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
 		bdev->size = stm32f4_sd_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
 		return 0;
 	} else {
@@ -45,11 +45,8 @@ static int stm32f4_sd_init(void *arg) {
 
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size) {
 	SD_CardInfo info;
-	int res = SD_GetCardInfo(&info);
 
-	if (res != SD_OK) {
-		return -1;
-	}
+	BSP_SD_GetCardInfo(&info);
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
@@ -67,8 +64,8 @@ static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 	assert(count <= SD_BUF_SIZE);
 	int res;
 	size_t bsize = bdev->block_size;
-	res = SD_ReadBlock((uint8_t*) sd_buf, blkno * bsize, bsize) ? -1 : bsize;
-	while (SD_GetStatus() != SD_TRANSFER_OK);
+	res = BSP_SD_ReadBlocks((uint32_t *) sd_buf, blkno * bsize, bsize, 1) ? -1 : bsize;
+	while (BSP_SD_GetStatus() != SD_TRANSFER_OK);
 
 	memcpy(buf, sd_buf, bsize);
 	return res;
@@ -79,8 +76,8 @@ static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 	int res;
 	size_t bsize = bdev->block_size;
 	memcpy(sd_buf, buf, bsize);
-	res = SD_WriteBlock((uint8_t*) sd_buf, blkno * bsize, bsize) ? -1 : bsize;
-	while (SD_GetStatus() != SD_TRANSFER_OK);
+	res = BSP_SD_WriteBlocks((uint32_t *) sd_buf, blkno * bsize, bsize, 1) ? -1 : bsize;
+	while (BSP_SD_GetStatus() != SD_TRANSFER_OK);
+
 	return res;
 }
-

@@ -78,7 +78,8 @@ static module core extends third_party.bsp.st_bsp_api {
 		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_wwdg.c",
 		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_fmc.c",
 		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_sdmmc.c",
-		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c"
+		"STM32Cube_FW_F4_V1.13.0/Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_ll_usb.c",
+		"STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM324xG_EVAL/stm324xg_eval_sd.c"
 
 
 		@IncludeExport(path="")

@@ -2,13 +2,12 @@ package embox.driver.sd
 
 abstract module sd { }
 
-@BuildDepends(third_party.bsp.st_f4.core)
+@BuildDepends(third_party.bsp.stmf4cube.core)
 module stm32f4_sd extends sd {
 	option number sd_buf_size=4096
 
 	source "stm32f4_sd.c"
-	source "stm32f4_discovery_sdio_sd.c"
 
 	depends embox.driver.block_common
-	depends third_party.bsp.st_f4.core
+	depends third_party.bsp.stmf4cube.core
 }
