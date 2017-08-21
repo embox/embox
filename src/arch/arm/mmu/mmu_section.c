@@ -8,7 +8,6 @@
 
 #include <string.h>
 #include <asm/hal/mmu.h>
-#include <asm/regs.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
 

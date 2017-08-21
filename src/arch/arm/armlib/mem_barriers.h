@@ -22,6 +22,8 @@
  * @date	23.11.2015
  */
 
+#ifndef __ASSEMBLER__
+
 /**
  * This instruction ensures all data memory accesses are completed before the
  * next instruction.
@@ -30,3 +32,21 @@ static inline void data_mem_barrier(void) {
 	__asm__ __volatile__("mcr p15, 0, %0, c7, c10, 5"
 			: : "r" (0) : "memory");
 }
+
+#ifndef __ARCH_ARM__
+static inline void isb(void) {
+	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 4"
+			: : "r" (0) : "memory");
+}
+#else
+ #if __ARCH_ARM__ >= 7
+ #define isb(option) __asm__ __volatile__ ("isb " #option : : : "memory")
+ #else
+ static inline void isb(void) {
+ 	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 4"
+ 			: : "r" (0) : "memory");
+ }
+ #endif
+#endif
+
+#endif /* __ASSEMBLER__ */

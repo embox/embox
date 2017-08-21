@@ -2,23 +2,6 @@ package embox.arch.arm.armlib
 
 abstract module cpu { }
 
-abstract module setup_exception_table { }
-
-module low_excpt_table extends setup_exception_table {
-	source "low_excpt_table.S"
-	depends lib
-}
-
-module high_excpt_table extends setup_exception_table {
-	source "high_excpt_table.S"
-	depends lib
-}
-
-module static_excpt_table extends setup_exception_table {
-	source "static_excpt_table.S"
-	depends lib
-}
-
 module arch {
 	depends embox.arch.arm.armlib.locore
 	depends embox.arch.arm.armlib.interrupt
@@ -27,26 +10,19 @@ module arch {
 	depends embox.arch.arm.libarch
 }
 
-module head {
-	source "head.S"
-}
-
-module context extends embox.arch.context {
-	source "context.c",
-		"context.h",
-		"context_switch.S"
-}
 
 module locore extends embox.arch.locore {
+	option number log_level=0
 
 	option number irq_stack_size = 0x100
 
-	source "entry.S",
-		"exception_table.S",
-		"exception_handler.c"
+	source "entry.S"
+	source "exception_table.S"
+	source "exception_handler.c"
 
 	depends head
 	depends setup_exception_table
+	//depends armv7_monitor_mode
 }
 
 module interrupt extends embox.arch.interrupt {
@@ -54,11 +30,12 @@ module interrupt extends embox.arch.interrupt {
 	depends locore
 }
 
-static module lib {
-	source "copy_excpt_table.S"
-}
 
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
+}
+
+module armv7_monitor_mode {
+	source "monitor_exception_table.S"
 }
 
