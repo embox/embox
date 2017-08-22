@@ -23,7 +23,7 @@
 #define SYSTEM16 "FAT16   "
 #define SYSTEM32 "FAT32   "
 
-uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE]; /* XXX */
+uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE] __attribute__((aligned(16)));
 
 uint32_t fat_get_next(struct fat_fs_info *fsi,
 		struct dirinfo * dirinfo, struct dirent * dirent);
@@ -625,9 +625,10 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 
 	if (dir_is_root(dirname)) {
 		dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
-		if (volinfo->filesystem == FAT32)
-			dirinfo->currentsector = volinfo->dataarea +
-				((volinfo->rootdir - 2) * volinfo->secperclus);
+		if (volinfo->filesystem == FAT32) {
+			dirinfo->currentsector = volinfo->dataarea;
+			dirinfo->currentsector += ((volinfo->rootdir - 2) * volinfo->secperclus);
+		}
 		else
 			dirinfo->currentsector = (volinfo->rootdir % volinfo->secperclus);
 		return fat_read_sector(fsi, dirinfo->p_scratch, dirinfo->currentsector + dirinfo->currentcluster * volinfo->secperclus);

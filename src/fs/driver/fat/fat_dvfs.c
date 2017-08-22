@@ -50,6 +50,10 @@ int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) 
 		return DFS_OK;
 }
 
+static int fat_sec_by_clus(struct fat_fs_info *fsi, int clus) {
+	return (clus - 2) * fsi->vi.secperclus + fsi->vi.dataarea;
+}
+
 /**
  * @brief Fill dirent with dirinfo data
  *
@@ -83,21 +87,36 @@ static int fat_reset_dir(struct dirinfo *di) {
 	struct dirent de;
 	struct volinfo *vi;
 
+	vi = &di->fi.fsi->vi;
+
 	if (di->fi.dirsector == 0) {
 		/* This is root dir */
-		vi = &di->fi.fsi->vi;
-		di->currentcluster = (vi->rootdir % vi->secperclus);
-		di->currentsector = vi->rootdir % vi->secperclus;
+		di->currentcluster = vi->rootdir / vi->secperclus;
+		if (vi->filesystem == FAT32) {
+			di->currentsector = 0;
+			di->currentcluster = 2;
+		} else {
+			di->currentsector = (vi->rootdir % vi->secperclus);
+		}
+
+		di->currententry = 1;
 	} else {
 		fat_dirent_by_file(&di->fi, &de);
-		di->currentcluster = (uint32_t) de.startclus_l_l |
-		  ((uint32_t) de.startclus_l_h) << 8 |
-		  ((uint32_t) de.startclus_h_l) << 16 |
-		  ((uint32_t) de.startclus_h_h) << 24;
+
+		if (vi->filesystem == FAT32) {
+			di->currentcluster = (uint32_t) de.startclus_l_l |
+			  ((uint32_t) de.startclus_l_h) << 8 |
+			  ((uint32_t) de.startclus_h_l) << 16 |
+			  ((uint32_t) de.startclus_h_h) << 24;
+		} else {
+			di->currentcluster = (uint32_t) de.startclus_l_l |
+			  ((uint32_t) de.startclus_l_h) << 8;
+		}
 		di->currentsector = 0;
+		di->currententry = 0;
+		di->currententry = 0;
 	}
 
-	di->currententry = 0;
 
 	return 0;
 }
@@ -145,8 +164,7 @@ static int fat_fill_inode(struct inode *inode, struct dirent *de, struct dirinfo
 		.volinfo = vi,
 	};
 
-	fi->dirsector = di->currentsector +
-		di->currentcluster * vi->secperclus;
+	fi->dirsector = di->currentsector + fat_sec_by_clus(sb->sb_data, di->currentcluster);
 	fi->diroffset = di->currententry - 1;
 	fi->cluster = (uint32_t) de->startclus_l_l |
 	  ((uint32_t) de->startclus_l_h) << 8 |
@@ -179,9 +197,11 @@ err_out:
 * @retval 0 Success
 */
 static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
-	return fat_read_sector(fsi,
-	                       di->p_scratch,
-	                       fsi->vi.secperclus * di->currentcluster + di->currentsector);
+	int sector;
+
+	sector = fat_sec_by_clus(fsi, di->currentcluster) + di->currentsector;
+
+	return fat_read_sector(fsi, di->p_scratch, sector);
 }
 
 /* @brief Figure out if node at specific path exists or not
@@ -313,8 +333,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	*fi = (struct fat_file_info) {
 		.fsi          = fsi,
 		.volinfo      = &fsi->vi,
-		.dirsector    = di->currentsector +
-			di->currentcluster * fsi->vi.secperclus,
+		.dirsector    = di->currentsector + fat_sec_by_clus(fsi, di->currentcluster),
 		.diroffset    = di->currententry,
 		.cluster      = cluster,
 		.firstcluster = cluster,

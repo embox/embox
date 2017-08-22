@@ -243,8 +243,8 @@ struct fat_file_info {
 struct dirinfo {
 	struct fat_file_info fi;	/* Must be first field in structure */
 	uint32_t currentcluster;	/* current cluster in dir */
-	uint8_t currentsector;		/* current sector in cluster */
-	uint8_t currententry;		/* current dir entry in sector */
+	uint32_t currentsector;		/* current sector in cluster */
+	uint32_t currententry;		/* current dir entry in sector */
 	uint8_t *p_scratch;			/* ptr to user-supplied scratch buffer (one sector) */
 	uint8_t flags;				/* internal DOSFS flags */
 };
