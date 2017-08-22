@@ -10,5 +10,6 @@ module bundle {
 	depends embox.arch.arm.armlib.locore
 	
 	depends embox.arch.arm.armlib.arch
+	depends embox.arch.arm.armlib.armv7_monitor_mode
 }
 
