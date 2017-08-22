@@ -4,6 +4,7 @@ abstract module sd { }
 
 @BuildDepends(third_party.bsp.stmf4cube.core)
 module stm32f4_sd extends sd {
+	option boolean use_local_buf=true /* Used to fix align problems */
 	option number sd_buf_size=4096
 
 	source "stm32f4_sd.c"
