@@ -1,0 +1,14 @@
+package embox.driver.gpu
+
+module ipu_v3 {
+	option number log_level=0
+
+	option number base_addr
+
+	source "ipuv3.c"
+	source "ipuv3_fb.c"
+	source "ipu_disp.c"
+
+	depends embox.driver.clk.ccm_imx6
+	depends embox.driver.video.fb
+}
