@@ -17,6 +17,7 @@ module mmu_small_page extends embox.arch.mmu {
 	option number page_size=4096
 	option number domain_access=3
 	option number log_level = 0
+	option number v5_format=0 /* Required for ARMv5 translation */
 
 	source "mmu.h"
 
