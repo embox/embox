@@ -35,7 +35,7 @@ void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
 
 void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 	*pte = (mmu_pte_t) ((((uint32_t)addr) & ~MMU_PAGE_MASK)
-			| 0x030 | L1D_TYPE_SD);
+		| L1D_TYPE_SD | ARM_MMU_PAGE_READ_ACC);
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
@@ -63,13 +63,20 @@ int mmu_pte_present(mmu_pte_t *pte) {
 }
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
-
+	if (value & VMEM_PAGE_WRITABLE) {
+		*pte |= ARM_MMU_PAGE_WRITE_ACC;
+	}
 }
 
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
-	*pte &= ~(L1D_TEX_MASK | L1D_B | L1D_C);
+	*pte &= ~(L1D_B | L1D_C);
+#ifndef V5_FORMAT
+	*pte &= ~L1D_TEX_MASK;
+#endif
 	if (value & VMEM_PAGE_CACHEABLE) {
+#ifndef V5_FORMAT
 		*pte |= L1D_TEX_USE;   /* Outer strongly-ordered memory */
+#endif
 		*pte |= L1D_C | L1D_B; /* Inner write-through cached memory */
 	} else {
 		*pte |= L1D_B;         /* Shareable device memory */

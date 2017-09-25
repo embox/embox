@@ -534,7 +534,7 @@ void _print_mmu_regs(void) {
 	log_debug("TLB Lockdown Attribues:    %#10x", _get_mmu_tlb_lockdown_attributes());
 
 	log_debug("PLEIDR:                    %#10x", _get_pleidr());
-	
+
 	if (_get_pleidr()) {
 		log_debug("PLEASR:                    %#10x", _get_pleasr());
 		log_debug("PLESFR:                    %#10x", _get_plesfr());

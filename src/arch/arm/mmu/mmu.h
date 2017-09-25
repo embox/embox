@@ -9,6 +9,7 @@
 #ifndef ARM_MMU_H_
 #define ARM_MMU_H_
 
+#include <framework/mod/options.h>
 #include <stdint.h>
 
 typedef uintptr_t __mmu_paddr_t;
@@ -27,14 +28,20 @@ typedef uint32_t __mmu_pte_t;
 #define __MMU_PTE_SHIFT	20
 #define __MMU_PMD_SHIFT	20
 #define __MMU_PGD_SHIFT	20
+
 #elif defined __MODULE__embox__arch__arm__mmu_small_page__H_
 /* Small page mode */
 #define __MMU_PTE_SHIFT	12
 #define __MMU_PMD_SHIFT	12
 #define __MMU_PGD_SHIFT	20
+#if OPTION_MODULE_GET(embox__arch__arm__mmu_small_page, NUMBER, v5_format) == 1
+#define V5_FORMAT
+#endif
+
 #else
 #error Unsupported paging mode
 #endif
+
 
 /* Bits 0:1 are for section mode
  * Bits 3:2 are for cache and buffer. They are clear for now. */
@@ -47,7 +54,12 @@ typedef uint32_t __mmu_pte_t;
 #define ARM_MMU_SECTION_READ_ACC   0x0800
 #define ARM_MMU_SECTION_WRITE_ACC  0x0400
 
+#ifdef V5_FORMAT
 #define ARM_MMU_PAGE_READ_ACC      0x0AA0
 #define ARM_MMU_PAGE_WRITE_ACC     0x0550
+#else /* V5_FORMAT */
+#define ARM_MMU_PAGE_READ_ACC      0x0020
+#define ARM_MMU_PAGE_WRITE_ACC     0x0010
+#endif /* V5_FORMAT */
 
 #endif /* ARM_MMU_H_ */
