@@ -92,8 +92,6 @@ run_check() {
 
 	sudo chmod 666 $OUTPUT_FILE
 
-	cat $OUTPUT_FILE
-
 	ret=1
 	for success_pattern in '^run: success auto poweroff' 'embox>' '[a-z]\+@embox'; do
 		if grep "$success_pattern" $OUTPUT_FILE &>/dev/null ; then
@@ -111,6 +109,8 @@ run_check() {
 
 kill_bg() {
 	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
+
+	cat $OUTPUT_FILE
 }
 
 ## FIXME not working
@@ -149,6 +149,11 @@ run_bg_wrapper() {
 	run_check
 	ret=$?
 
+	echo "====================="
+	echo "Embox output on start"
+	echo "====================="
+	cat $OUTPUT_FILE
+
 	if [ 0 -ne $ret ]; then
 		kill_bg
 		exit $ret
@@ -160,6 +165,9 @@ run_bg_wrapper() {
 
 kill_bg_wrapper() {
 	sim_bg=$(cat $OTHER_ARGS)
+	echo "==================="
+	echo "Embox output on end"
+	echo "==================="
 	kill_bg
 }
 
