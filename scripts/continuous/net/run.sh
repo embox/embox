@@ -97,6 +97,15 @@ tap_up() {
 	sudo /sbin/ifconfig tap0 hw ether aa:bb:cc:dd:ee:ff up
 	sudo /sbin/ifconfig tap0 inet6 del fe80::a8bb:ccff:fedd:eeff/64
 	sudo /sbin/ifconfig tap0 inet6 add fe80::10:0:2:10/64
+
+	local gw=$(/sbin/ip route | sed -n "s/default via .* dev \([0-9a-z_]\+\) .*$/\1/p")
+	echo gw=$gw
+	if [ "$gw" ]; then
+		echo "Enable IP Forwarding for $gw"
+		sudo iptables -t nat -A POSTROUTING -o $gw -j MASQUERADE
+		sudo sysctl net.ipv4.ip_forward=1
+	fi
+
 	sudo service isc-dhcp-server start
 }
 
