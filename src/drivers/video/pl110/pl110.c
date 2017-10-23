@@ -12,6 +12,7 @@
 #include <sys/mman.h>
 
 #include <hal/reg.h>
+#include <drivers/common/memory.h>
 #include <drivers/video/fb.h>
 #include <mem/page.h>
 #include <util/binalign.h>
@@ -153,3 +154,10 @@ static int pl110_lcd_init(void) {
 
 	return 0;
 }
+
+static struct periph_memory_desc pl110_mem = {
+	.start = PL110_BASE,
+	.len   = 0x400,
+};
+
+PERIPH_MEMORY_DEFINE(pl110_mem);
