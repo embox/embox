@@ -65,7 +65,7 @@ int main(int argc, char *argv[]) {
 		args.with_s = 1;
 
 	uname(&info);
-	processor = NULL;
+	processor = OPTION_STRING_GET(processor);
 	platform = OPTION_STRING_GET(platform);
 	system = OPTION_STRING_GET(system);
 
