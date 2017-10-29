@@ -22,7 +22,7 @@ env:
     - TEMPLATE=sparc/qemu
     - TEMPLATE=mips/qemu
     - TEMPLATE=ppc/qemu
-    - TEMPLATE=microblaze/petalogix
+    - TEMPLATE=microblaze/qemu
     - TEMPLATE=usermode86/debug
 matrix:
   include:
