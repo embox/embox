@@ -224,7 +224,7 @@ int pop3_ok(struct pop3_session *p3s) {
 		return -EINVAL;
 	}
 
-	return p3s != NULL ? p3s->ok : 0;
+	return p3s->ok;
 }
 
 const char * pop3_status(struct pop3_session *p3s) {
