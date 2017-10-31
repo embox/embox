@@ -28,6 +28,7 @@ module uname {
 
 	option string system = "Embox-OS"
 	option string platform = ""
+	option string processor = "unknown"
 
 	depends embox.compat.posix.util.utsname
 	depends embox.framework.LibFramework
