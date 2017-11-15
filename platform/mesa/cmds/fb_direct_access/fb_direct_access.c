@@ -12,14 +12,19 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <util/math.h>
 
 #include <drivers/video/fb.h>
+
+#define FRAME_WIDTH	640
+#define FRAME_HEIGHT	480
 
 int main() {
 	long int screensize = 0;
 	uint8_t *fbp = 0;
-	int x = 0, y = 0;
-	long int location = 0;
+	int x, y, width, height;
+	int bytes_per_pixel;
+	long int idx = 0;
 	struct fb_info *fb_info;
 
 	fb_info = fb_lookup(0);
@@ -27,53 +32,46 @@ int main() {
 	printf("%dx%d, %dbpp\n", fb_info->var.xres, fb_info->var.yres, fb_info->var.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */
-	screensize = fb_info->var.xres * fb_info->var.yres * fb_info->var.bits_per_pixel / 8;
+	bytes_per_pixel = fb_info->var.bits_per_pixel / 8;
+	screensize = fb_info->var.xres * fb_info->var.yres * bytes_per_pixel;
 
-#if 1
 	/* Map the device to memory */
-	fbp = (uint8_t *) mmap_device_memory((void *)fb_info->screen_base, screensize, PROT_READ | PROT_WRITE, MAP_SHARED,
+	fbp = mmap_device_memory((void *)fb_info->screen_base,
+			screensize,
+			PROT_READ | PROT_WRITE | PROT_NOCACHE,
+			MAP_SHARED,
 			(uint64_t)((uintptr_t)fb_info->screen_base));
+
 	if ((int) fbp == -1) {
 		perror("Error: failed to map framebuffer device to memory");
 		exit(4);
 	}
 	printf("The framebuffer device was mapped to memory successfully.\n");
-#endif
-	x = 0;
-	y = 0; /* Where we are going to put the pixel */
 
-	/*struct fb_fillrect rect = {
-			0,
-			0,
-			3,
-			100,
-			0x0FF0,
-			ROP_COPY,
-	};
-	fb_fillrect(fb_info, &rect);
-	*/
-#if 1
-	/* Figure out where in memory to put the pixel */
-	for (y = 0; y < 300; y++)
-		for (x = 0; x < 300; x++) {
+	width = min(FRAME_WIDTH, fb_info->var.xres);
+	height = min(FRAME_HEIGHT, fb_info->var.yres);
+	idx = fb_info->var.xoffset + fb_info->var.xres * fb_info->var.yoffset;
 
-			location = (x + fb_info->var.xoffset) * (fb_info->var.bits_per_pixel / 8)
-					+ (y + fb_info->var.yoffset) * fb_info->var.xres * (fb_info->var.bits_per_pixel / 8);
+	for (y = 0; y < height; y++) {
+		idx += fb_info->var.xres;
 
-			if (fb_info->var.bits_per_pixel == 32) {
-				*(fbp + location) = 100; /* Some blue */
-				*(fbp + location + 1) = 15 + (x - 100) / 2; /* A little green*/
-				*(fbp + location + 2) = 200 - (y - 100) / 5; /* A lot of red */
-				*(fbp + location + 3) = 0; /* No transparency */
-			} else { /* assume 16bpp */
-				int b = 10;
-				int g = (x - 100) / 6; /* A little green */
-				int r = 31 - (y - 100) / 16; /* A lot of red */
-				unsigned short int t = r << 11 | g << 5 | b;
-				*((unsigned short int*) (fbp + location)) = t;
+		for (x = 0; x < width; x++) {
+			if (bytes_per_pixel == 4) {
+				((uint32_t *)fbp)[idx + x] = (0 << 24) |                    /* No transparency */
+							((200 - (y - 100) / 5) << 16) | /* A lot of red */
+							((15 + (x - 100) / 2) << 8) |   /* A little green*/
+							(100 << 0);                     /* Some blue */
+			} else { /* assume RGB565 */
+				int b = (x + y) / ((width + height) / 0x1F);
+				int g = x / (width / 0x3F);
+				int r = (height - y) / (height / 0x1F);
+				uint16_t t = ((r & 0x1F) << 11) |
+						((g & 0x3F) << 5) | (b & 0x1F);
+				((uint16_t *)fbp)[idx + x] = t;
 			}
 		}
-#endif
+	}
+
 	munmap(fbp, screensize);
 	return 0;
 }
