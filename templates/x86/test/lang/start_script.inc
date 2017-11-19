@@ -20,7 +20,7 @@
 "lua doit.lua",
 "lua tofi_mod.lua new_file.txt",
 "cat new_file.txt",
-"lua http_request.lua http://habrahabr.ru",
+//"lua http_request.lua http://habrahabr.ru",
 "tclsh run_embox_cmd.tcl",
 "tclsh fib.tcl",
 "tclsh tcludp_localhost.tcl",
