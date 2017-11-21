@@ -59,7 +59,7 @@ void *bsearch(const void *key, const void *base,
 			left = mid;
 		}
 	}
-	if (compar(left, key) == 0) {
+	if (compar(key, left) == 0) {
 		return left;
 	} else {
 		return NULL;
