@@ -41,13 +41,13 @@ test_suite_setup() {
 
 	export CONTINIOUS_RUN_TIMEOUT=120
 	AUTOQEMU_NICS="" AUTOQEMU_NICS_CONFIG="" KERNEL=$EMBOX1_KERNEL $CONT_RUN generic/qemu_bg \
-		 "-net nic,vlan=0,model=e1000,macaddr=AA:BB:CC:DD:EE:12
+		 "-net nic,vlan=0,model=virtio,macaddr=AA:BB:CC:DD:EE:12
 			-net tap,vlan=0,script=./scripts/qemu/start_script,downscript=./scripts/qemu/stop_script
-			-net nic,model=e1000,vlan=1,macaddr=AA:BB:CC:DD:EE:22 -net socket,vlan=1,listen=:12345" \
+			-net nic,model=virtio,vlan=1,macaddr=AA:BB:CC:DD:EE:22 -net socket,vlan=1,listen=:12345" \
 		 $QEMU1_PID_FILE
 
 	AUTOQEMU_NICS="" AUTOQEMU_NICS_CONFIG="" KERNEL=$EMBOX2_KERNEL $CONT_RUN generic/qemu_bg \
-		 "-net nic,model=e1000,vlan=3,macaddr=AA:BB:CC:DD:EE:23
+		 "-net nic,model=virtio,vlan=3,macaddr=AA:BB:CC:DD:EE:23
 			-net socket,vlan=3,connect=:12345" \
 		 $QEMU2_PID_FILE
 
