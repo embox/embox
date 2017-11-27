@@ -8,6 +8,7 @@ module fb {
 	source "fb.h"
 
 	option number fb_amount=2
+	option number log_level = 0
 	depends embox.mem.pool
 	@NoRuntime depends embox.compat.libc.all
 	depends fb_videomodes

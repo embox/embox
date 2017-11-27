@@ -23,8 +23,8 @@ PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 
 static int bochs_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
 
-	if (var->xres > VBE_DISPI_MAX_XRES 
-			|| var->yres > VBE_DISPI_MAX_YRES 
+	if (var->xres > VBE_DISPI_MAX_XRES
+			|| var->yres > VBE_DISPI_MAX_YRES
 			|| var->bits_per_pixel > VBE_DISPI_MAX_BPP) {
 		return -EINVAL;
 	}
@@ -53,7 +53,7 @@ static int bochs_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	var->yres_virtual   = vbe_read(VBE_DISPI_INDEX_VIRT_HEIGHT);
 	var->xoffset        = vbe_read(VBE_DISPI_INDEX_X_OFFSET);
 	var->yoffset        = vbe_read(VBE_DISPI_INDEX_Y_OFFSET);
-
+	var->fmt            = RGBA888;
 	return 0;
 }
 
@@ -64,8 +64,8 @@ static const struct fb_ops bochs_ops = {
 
 static int bochs_init(struct pci_slot_dev *pci_dev) {
 	char *mmap_base = (char *)(pci_dev->bar[0] & ~0xf); /* FIXME */
-	size_t mmap_len = binalign_bound(VBE_DISPI_MAX_XRES 
-			* VBE_DISPI_MAX_YRES 
+	size_t mmap_len = binalign_bound(VBE_DISPI_MAX_XRES
+			* VBE_DISPI_MAX_YRES
 			* VBE_DISPI_MAX_BPP / 8, PAGE_SIZE());
 	struct fb_info *info;
 

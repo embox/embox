@@ -382,7 +382,7 @@ static int cl_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	var->xres = 1280;
 	var->yres = 1024;
 	var->bits_per_pixel = 16;
-	
+	var->fmt = RGB565;
 	return 0;
 }
 
