@@ -176,7 +176,7 @@ ARCH2QEMU=(
 
 QEMU=${AUTOQEMU_PREFIX}qemu-system-${ARCH2QEMU[$AUTOQEMU_ARCH]:-$AUTOQEMU_ARCH}
 AWK=$(which gawk >/dev/null && echo gawk || echo awk)
-QEMU_VER=$($QEMU --version | $AWK '{ if(match($0,".*version ([0-9.]+).*", m)) {n=split(m[1],a,".");for(i=0;++i<=n;)printf "%02d",a[i]} }')
+QEMU_VER=$($QEMU --version | $AWK -f $DATADIR/qemuver.awk)
 
 if [ $QEMU_VER -gt 010200 ]; then
 	MB_XEMACLINE="xlnx.xps-ethernetlite"

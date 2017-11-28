@@ -28,7 +28,11 @@ For MAC OS X (requires [MacPorts](https://www.macports.org/install.php) installe
 $ sudo port install i386-elf-gcc i386-elf-binutils cpio gawk qemu
 ```
 
-For alternative instructions please refer to Emdocker wiki page https://github.com/embox/embox/wiki/Emdocker
+For any system with Docker (more info on wiki [Emdocker](https://github.com/embox/embox/wiki/Emdocker)):
+```
+$ ./scripts/docker/docker_start.sh
+$ . ./scripts/docker/docker_rc.sh
+```
 
 ### Building Embox
 First of all:

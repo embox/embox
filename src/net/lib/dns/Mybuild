@@ -6,7 +6,7 @@ abstract module dns {
 }
 
 module dns_fixed extends dns {
-	option string nameserver="10.0.0.11"
+	option string nameserver="8.8.8.8"
 	source "dns_fixed.c"
 
 	depends dns_query

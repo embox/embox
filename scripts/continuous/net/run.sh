@@ -22,7 +22,7 @@ test_case_target_should_reply_to_ping() {
 	test_retcode
 }
 
-test_case_target_should_reply_to_big_ping() {
+disabled_test_case_target_should_reply_to_big_ping() {
 	ping $EMBOX_IP -c 4 -s 16384
 	test_retcode
 }
@@ -49,7 +49,7 @@ test_case_snmp_should_reply() {
 	test_retcode
 }
 
-test_case_interactive_tests_should_success() {
+disabled_test_case_interactive_tests_should_success() {
 	sudo killall in.rlogind
 	expect $EXPECT_TESTS_BASE/framework/run_all.exp
 	test_retcode
@@ -97,6 +97,15 @@ tap_up() {
 	sudo /sbin/ifconfig tap0 hw ether aa:bb:cc:dd:ee:ff up
 	sudo /sbin/ifconfig tap0 inet6 del fe80::a8bb:ccff:fedd:eeff/64
 	sudo /sbin/ifconfig tap0 inet6 add fe80::10:0:2:10/64
+
+	local gw=$(/sbin/ip route | sed -n "s/default via .* dev \([0-9a-z_]\+\) .*$/\1/p")
+	echo gw=$gw
+	if [ "$gw" ]; then
+		echo "Enable IP Forwarding for $gw"
+		sudo iptables -t nat -A POSTROUTING -o $gw -j MASQUERADE
+		sudo sysctl net.ipv4.ip_forward=1
+	fi
+
 	sudo service isc-dhcp-server start
 }
 

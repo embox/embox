@@ -11,11 +11,13 @@
 "route add default gw 10.0.2.10 eth0",
 
 "bootpc eth0",
+"ifconfig",
+"route",
 
 "ping 10.0.2.10",
 "ping 8.8.8.8",
 "ping google.com",
 "httpd &",
 "telnetd &",
-"dropbeard",
+//"dropbeard",
 "snmpd &",

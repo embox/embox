@@ -41,10 +41,10 @@ atml2run=(
 	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
 	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
 	['x86/test/packetdrill']=packetdrill_run
-	['sparc/debug']=default_run
-	['mips/debug']=default_run
-	['ppc/debug']=default_run
-	['microblaze/petalogix']=default_run
+	['sparc/qemu']=default_run
+	['mips/qemu']=default_run
+	['ppc/qemu']=default_run
+	['microblaze/qemu']=default_run
 	['usermode86/debug']=default_run
 	['generic/qemu']=default_run
 	['generic/qemu_bg']=run_bg_wrapper
@@ -92,8 +92,6 @@ run_check() {
 
 	sudo chmod 666 $OUTPUT_FILE
 
-	cat $OUTPUT_FILE
-
 	ret=1
 	for success_pattern in '^run: success auto poweroff' 'embox>' '[a-z]\+@embox'; do
 		if grep "$success_pattern" $OUTPUT_FILE &>/dev/null ; then
@@ -111,6 +109,8 @@ run_check() {
 
 kill_bg() {
 	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
+
+	cat $OUTPUT_FILE
 }
 
 ## FIXME not working
@@ -149,6 +149,11 @@ run_bg_wrapper() {
 	run_check
 	ret=$?
 
+	echo "====================="
+	echo "Embox output on start"
+	echo "====================="
+	cat $OUTPUT_FILE
+
 	if [ 0 -ne $ret ]; then
 		kill_bg
 		exit $ret
@@ -160,6 +165,9 @@ run_bg_wrapper() {
 
 kill_bg_wrapper() {
 	sim_bg=$(cat $OTHER_ARGS)
+	echo "==================="
+	echo "Embox output on end"
+	echo "==================="
 	kill_bg
 }
 
