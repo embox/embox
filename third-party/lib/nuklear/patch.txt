@@ -1,6 +1,6 @@
 diff -aur -x configure ../nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b-orig/nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h
 --- ../nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b-orig/nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h	2017-01-25 01:06:59.000000000 +0300
-+++ nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h	2017-02-03 15:19:11.812864622 +0300
++++ nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h	2017-11-28 16:56:56.700951340 +0300
 @@ -272,7 +272,7 @@
   */
  #ifndef NK_API
@@ -10,3 +10,12 @@ diff -aur -x configure ../nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b-orig/
  #else
  #define NK_API extern
  #endif
+@@ -446,7 +446,7 @@
+ struct nk_style_window;
+ 
+ enum {nk_false, nk_true};
+-struct nk_color {nk_byte r,g,b,a;};
++struct nk_color {nk_byte r,g,b,a;} __attribute__ ((aligned(4)));
+ struct nk_colorf {float r,g,b,a;};
+ struct nk_vec2 {float x,y;};
+ struct nk_vec2i {short x, y;};
