@@ -39,6 +39,33 @@ __BEGIN_DECLS
 #define FB_MODE_IS_FIRST      16
 #define FB_MODE_IS_FROM_VAR   32
 
+enum pix_chan {
+	ALPHA_CHAN,
+	RED_CHAN,
+	GREEN_CHAN,
+	BLUE_CHAN,
+};
+
+enum pix_fmt {
+	UNKNOWN = 0,
+	RGB888,
+	BGR888,
+	RGBA8888,
+	BGRA8888,
+	RGB565,
+	BGR565,
+};
+
+extern int pix_fmt_has_alpha(enum pix_fmt fmt);
+extern int pix_fmt_bpp(enum pix_fmt fmt);
+extern int pix_fmt_chan_bits(enum pix_fmt fmt, enum pix_chan chan);
+extern int pix_fmt_chan_get_val(enum pix_fmt fmt, enum pix_chan chan,
+		void *data);
+extern void pix_fmt_chan_set_val(enum pix_fmt fmt, enum pix_chan chan,
+		void *data, int val);
+extern int pix_fmt_convert(void *src, void *dst, int n,
+		enum pix_fmt in, enum pix_fmt out);
+
 struct fb_info;
 
 struct fb_var_screeninfo {
@@ -58,6 +85,7 @@ struct fb_var_screeninfo {
 	uint32_t vsync_len;
 	uint32_t sync;
 	uint32_t vmode;
+	enum pix_fmt fmt;
 };
 
 

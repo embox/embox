@@ -37,6 +37,7 @@ static int stm32f7_lcd_get_var(struct fb_info *info,
 	var->xres_virtual = var->xres = BSP_LCD_GetXSize();
 	var->yres_virtual = var->yres = BSP_LCD_GetYSize();
 	var->bits_per_pixel = 24;
+	var->fmt = BGR888;
 
 	return 0;
 }
@@ -44,7 +45,7 @@ static int stm32f7_lcd_get_var(struct fb_info *info,
 static void stm32f7_lcd_fillrect(struct fb_info *info,
 		const struct fb_fillrect *rect) {
 	BSP_LCD_SetTextColor(rect->color | 0xff000000);
-	BSP_LCD_FillRect(rect->dy, info->var.xres - rect->dx, rect->width, rect->height);
+	BSP_LCD_FillRect(rect->dx, rect->dy, rect->width, rect->height);
 }
 
 static uint32_t stm32f7_get_image_color(const struct fb_image *image, int num) {
@@ -71,9 +72,7 @@ static void stm32f7_lcd_imageblit(struct fb_info *info,
 
 	for (int j = dy; j < dy + height; j++) {
 		for (int i = dx; i < dx + width; i++) {
-			BSP_LCD_DrawPixel(j,
-				  info->var.xres - i,
-				  stm32f7_get_image_color(image, n));
+			BSP_LCD_DrawPixel(i, j, stm32f7_get_image_color(image, n));
 		}
 	}
 }

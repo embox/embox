@@ -47,6 +47,7 @@ static int generic_get_var(struct fb_info *info, struct fb_var_screeninfo *var) 
 	var->xres_virtual = var->xres = MBOOT_VWIDTH;
 	var->yres_virtual = var->yres = MBOOT_VWIDTH;
 	var->bits_per_pixel = MBOOT_VDEPTH;
+	var->fmt = RGBA8888;
 
 	return 0;
 }

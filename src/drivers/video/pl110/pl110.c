@@ -72,7 +72,7 @@ static int pl110_lcd_get_var(struct fb_info *info,
 	tmp = 16 * (tmp + 1);
 	var->xres_virtual = var->xres = tmp;
 
-	tmp = (REG32_LOAD(PL110_TIMING1) & PL110_LPP_MASK) + 1;
+	tmp = (REG32_LOAD(PL110_TIMING1) & PL110_LPP_MASK) - 1;
 	var->yres_virtual = var->yres = tmp;
 
 	tmp = REG32_LOAD(PL110_CONTROL) & PL110_BPP_MASK;
@@ -87,44 +87,14 @@ static int pl110_lcd_get_var(struct fb_info *info,
 	}
 
 	var->bits_per_pixel = tmp;
+	var->fmt = RGB888;
 
 	return 0;
-}
-
-static uint32_t pl110_get_image_color(const struct fb_image *image, int num) {
-	switch (image->depth) {
-	case 1:
-		if (image->data[num / 8] & (1 << (8 - num % 8))) {
-			return image->fg_color;
-		} else {
-			return image->bg_color;
-		}
-	case 32:
-		return ((uint32_t *) image->data)[num];
-	default:
-		log_error("Unsupported color depth: %d\n", image->depth);
-		return image->bg_color;
-	}
-}
-
-static void pl110_lcd_imageblit(struct fb_info *info,
-		const struct fb_image *image) {
-	int dy = image->dy, dx = image->dx;
-	int height = image->height, width = image->width;
-	int n;
-
-	for (int j = dy; j < dy + height; j++) {
-		for (int i = dx; i < dx + width; i++) {
-			pl110_fb[j * pl110_fb_width + i] =
-				pl110_get_image_color(image, n++);
-		}
-	}
 }
 
 static struct fb_ops pl110_lcd_ops = {
 	.fb_set_var   = pl110_lcd_set_var,
 	.fb_get_var   = pl110_lcd_get_var,
-	.fb_imageblit = pl110_lcd_imageblit,
 };
 
 static int pl110_lcd_init(void) {
@@ -151,6 +121,9 @@ static int pl110_lcd_init(void) {
 
 	pl110_fb_width  = PL110_MAX_WIDTH;
 	pl110_fb_height = PL110_MAX_HEIGHT;
+
+	for (int i = 0; i < 640 * 480; i++)
+		pl110_fb[i] = 0xff000000;
 
 	return 0;
 }
