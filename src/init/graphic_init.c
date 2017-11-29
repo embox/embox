@@ -54,7 +54,7 @@ static int mode_init(void) {
 
 	fb_videomode_to_var(&var, mode);
 	var.bits_per_pixel = SET_BPP;
-	var.fmt = SET_BPP == 16 ? BGR565 : RGBA888;
+	var.fmt = SET_BPP == 16 ? BGR565 : RGBA8888;
 	ret = fb_set_var(fbinfo, &var);
 	if (ret != 0) {
 		return -EIO;

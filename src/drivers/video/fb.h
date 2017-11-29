@@ -49,7 +49,9 @@ enum pix_chan {
 enum pix_fmt {
 	UNKNOWN = 0,
 	RGB888,
-	RGBA888,
+	BGR888,
+	RGBA8888,
+	BGRA8888,
 	RGB565,
 	BGR565,
 };

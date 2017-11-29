@@ -605,13 +605,15 @@ static void fb_default_cursor(struct fb_info *info, const struct fb_cursor *curs
 }
 
 int pix_fmt_has_alpha(enum pix_fmt fmt) {
-	return fmt == RGBA888;
+	return (fmt == RGBA8888) || (fmt == BGRA8888);
 }
 
 int pix_fmt_bpp(enum pix_fmt fmt) {
 	switch (fmt) {
 	case RGB888:
-	case RGBA888:
+	case BGR888:
+	case RGBA8888:
+	case BGRA8888:
 		return 32;
 	case RGB565:
 	case BGR565:
@@ -624,11 +626,13 @@ int pix_fmt_bpp(enum pix_fmt fmt) {
 
 int pix_fmt_chan_bits(enum pix_fmt fmt, enum pix_chan chan) {
 	switch (fmt) {
+	case BGR888:
 	case RGB888:
 		if (chan == ALPHA_CHAN)
 			return 0;
 		return 8;
-	case RGBA888:
+	case BGRA8888:
+	case RGBA8888:
 		return 8;
 	case RGB565:
 	case BGR565:
@@ -679,7 +683,22 @@ int pix_fmt_chan_get_val(enum pix_fmt fmt, enum pix_chan chan, void *data) {
 			log_error("Wrong pixel channel enum\n");
 			return 0;
 		}
-	case RGBA888:
+	case BGR888:
+		tmp = (int) *((uint32_t *) data);
+		switch (chan) {
+		case ALPHA_CHAN:
+			return 0;
+		case RED_CHAN:
+			return (tmp >> 16) & 0xFF;
+		case GREEN_CHAN:
+			return (tmp >> 8) & 0xFF;
+		case BLUE_CHAN:
+			return tmp & 0xFF;
+		default:
+			log_error("Wrong pixel channel enum\n");
+			return 0;
+		}
+	case RGBA8888:
 		tmp = (int) *((uint32_t *) data);
 		switch (chan) {
 		case ALPHA_CHAN:
@@ -690,6 +709,21 @@ int pix_fmt_chan_get_val(enum pix_fmt fmt, enum pix_chan chan, void *data) {
 			return (tmp >> 8) & 0xFF;
 		case BLUE_CHAN:
 			return (tmp >> 16) & 0xFF;
+		default:
+			log_error("Wrong pixel channel enum\n");
+			return 0;
+		}
+	case BGRA8888:
+		tmp = (int) *((uint32_t *) data);
+		switch (chan) {
+		case ALPHA_CHAN:
+			return (tmp >> 24) & 0xFF;
+		case RED_CHAN:
+			return (tmp >> 16) & 0xFF;
+		case GREEN_CHAN:
+			return (tmp >> 8) & 0xFF;
+		case BLUE_CHAN:
+			return tmp & 0xFF;
 		default:
 			log_error("Wrong pixel channel enum\n");
 			return 0;
@@ -762,7 +796,31 @@ void pix_fmt_chan_set_val(enum pix_fmt fmt, enum pix_chan chan, void *data, int 
 			return;
 		}
 		*((uint32_t *) data) = tmp;
-	case RGBA888:
+		return;
+	case BGR888:
+		tmp = (int) *((uint32_t *) data);
+		switch (chan) {
+		case ALPHA_CHAN:
+			return;
+		case BLUE_CHAN:
+			tmp &= ~0xFF0000;
+			tmp |= val << 16;
+			break;
+		case GREEN_CHAN:
+			tmp &= ~0x00FF00;
+			tmp |= val << 8;
+			break;
+		case RED_CHAN:
+			tmp &= ~0x0000FF;
+			tmp |= val;
+			break;
+		default:
+			log_error("Wrong pixel channel enum");
+			return;
+		}
+		*((uint32_t *) data) = tmp;
+		return;
+	case RGBA8888:
 		tmp = (int) *((uint32_t *) data);
 		switch (chan) {
 		case ALPHA_CHAN:
@@ -780,6 +838,31 @@ void pix_fmt_chan_set_val(enum pix_fmt fmt, enum pix_chan chan, void *data, int 
 		case BLUE_CHAN:
 			tmp &= ~0x00FF0000;
 			tmp |= val << 16;
+			break;
+		default:
+			log_error("Wrong pixel channel enum");
+			return;
+		}
+		*((uint32_t *) data) = tmp;
+		return;
+	case BGRA8888:
+		tmp = (int) *((uint32_t *) data);
+		switch (chan) {
+		case ALPHA_CHAN:
+			tmp &= ~0xFF000000;
+			tmp |= val << 24;
+			break;
+		case RED_CHAN:
+			tmp &= ~0x00FF0000;
+			tmp |= val << 16;
+			break;
+		case GREEN_CHAN:
+			tmp &= ~0x0000FF00;
+			tmp |= val << 8;
+			break;
+		case BLUE_CHAN:
+			tmp &= ~0x000000FF;
+			tmp |= val;
 			break;
 		default:
 			log_error("Wrong pixel channel enum");

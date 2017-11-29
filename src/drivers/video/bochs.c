@@ -53,7 +53,7 @@ static int bochs_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 	var->yres_virtual   = vbe_read(VBE_DISPI_INDEX_VIRT_HEIGHT);
 	var->xoffset        = vbe_read(VBE_DISPI_INDEX_X_OFFSET);
 	var->yoffset        = vbe_read(VBE_DISPI_INDEX_Y_OFFSET);
-	var->fmt            = RGBA888;
+	var->fmt            = RGBA8888;
 	return 0;
 }
 
