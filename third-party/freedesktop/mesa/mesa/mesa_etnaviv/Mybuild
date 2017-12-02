@@ -3,6 +3,17 @@ package third_party.freedesktop.mesa
 @BuildDepends(third_party.freedesktop.mesa.libdrm)
 @Build(script="$(EXTERNAL_MAKE)")
 module  mesa_etnaviv {
-	source "^BUILD/extbld/^MOD_PATH/install/mesa.a"
-	depends third_party.freedesktop.mesa.libdrm
+	source "^BUILD/extbld/^MOD_PATH/install/libglapi.a"
+	source "^BUILD/extbld/^MOD_PATH/install/libOSMesa.a"
+	source "^BUILD/extbld/^MOD_PATH/install/libetnavivdrm.a"
+	source "^BUILD/extbld/^MOD_PATH/install/libetnaviv.a"
+	source "^BUILD/extbld/^MOD_PATH/install/libpipe_loader_static.a"
+	source "^BUILD/extbld/^MOD_PATH/install/libwsw.a"
+
+	depends embox.compat.posix.util.gettimeofday
+	depends embox.compat.posix.sched
+	depends embox.compat.posix.fs.rewinddir_api
+	depends embox.compat.posix.pthread_key
+
+	depends third_party.freedesktop.mesa.libdrm_etnaviv
 }

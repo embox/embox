@@ -1,6 +1,6 @@
-diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/include/c11/threads_posix.h mesa-17.0.3/include/c11/threads_posix.h
+diff -aur mesa-17.0.3-orig/include/c11/threads_posix.h mesa-17.0.3/include/c11/threads_posix.h
 --- mesa-17.0.3-orig/include/c11/threads_posix.h	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/include/c11/threads_posix.h	2017-06-09 16:08:24.895070946 +0300
++++ mesa-17.0.3/include/c11/threads_posix.h	2018-09-12 12:40:07.109370650 +0300
 @@ -35,6 +35,7 @@
  #include <unistd.h>
  #include <sched.h>
@@ -18,9 +18,9 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/include/c11
  #define EMULATED_THREADS_USE_NATIVE_TIMEDLOCK
  #endif
  
-diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/include/c99_alloca.h mesa-17.0.3/include/c99_alloca.h
+diff -aur mesa-17.0.3-orig/include/c99_alloca.h mesa-17.0.3/include/c99_alloca.h
 --- mesa-17.0.3-orig/include/c99_alloca.h	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/include/c99_alloca.h	2017-06-09 16:08:24.939071164 +0300
++++ mesa-17.0.3/include/c99_alloca.h	2018-09-12 12:40:07.113370633 +0300
 @@ -35,7 +35,7 @@
  
  #  define alloca _alloca
@@ -30,9 +30,23 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/include/c99
  
  #  include <alloca.h>
  
-diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compiler/Makefile.glsl.am mesa-17.0.3/src/compiler/Makefile.glsl.am
+diff -aur mesa-17.0.3-orig/Makefile.in mesa-17.0.3/Makefile.in
+--- mesa-17.0.3-orig/Makefile.in	2017-04-01 18:33:51.000000000 +0300
++++ mesa-17.0.3/Makefile.in	2018-09-12 12:40:24.989294659 +0300
+@@ -197,8 +197,8 @@
+ 	$(top_srcdir)/src/gbm/main/gbm.pc.in \
+ 	$(top_srcdir)/src/mapi/es1api/glesv1_cm.pc.in \
+ 	$(top_srcdir)/src/mapi/es2api/glesv2.pc.in bin/ar-lib \
+-	bin/compile bin/config.guess bin/config.sub bin/install-sh \
+-	bin/ltmain.sh bin/missing
++	bin/compile bin/config.guess bin/config.sub bin/depcomp \
++	bin/install-sh bin/ltmain.sh bin/missing
+ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+ distdir = $(PACKAGE)-$(VERSION)
+ top_distdir = $(distdir)
+diff -aur mesa-17.0.3-orig/src/compiler/Makefile.glsl.am mesa-17.0.3/src/compiler/Makefile.glsl.am
 --- mesa-17.0.3-orig/src/compiler/Makefile.glsl.am	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/src/compiler/Makefile.glsl.am	2017-06-09 16:19:03.842239299 +0300
++++ mesa-17.0.3/src/compiler/Makefile.glsl.am	2018-09-12 12:40:07.113370633 +0300
 @@ -53,7 +53,7 @@
  	glsl/tests/sampler-types-test			\
  	glsl/tests/uniform-initializer-test
@@ -42,9 +56,9 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compile
  
  glsl_tests_blob_test_SOURCES =				\
  	glsl/tests/blob_test.c
-diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compiler/Makefile.nir.am mesa-17.0.3/src/compiler/Makefile.nir.am
+diff -aur mesa-17.0.3-orig/src/compiler/Makefile.nir.am mesa-17.0.3/src/compiler/Makefile.nir.am
 --- mesa-17.0.3-orig/src/compiler/Makefile.nir.am	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/src/compiler/Makefile.nir.am	2017-06-09 16:19:18.830313636 +0300
++++ mesa-17.0.3/src/compiler/Makefile.nir.am	2018-09-12 12:40:07.429369283 +0300
 @@ -51,7 +51,7 @@
  	$(MKDIR_GEN)
  	$(PYTHON_GEN) $(srcdir)/nir/nir_opt_algebraic.py > $@ || ($(RM) $@; false)
@@ -54,31 +68,313 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compile
  
  spirv2nir_SOURCES = \
  	spirv/spirv2nir.c
-diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c mesa-17.0.3/src/compiler/nir/nir_instr_set.c
---- mesa-17.0.3-orig/src/compiler/nir/nir_instr_set.c	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/src/compiler/nir/nir_instr_set.c	2017-06-09 16:08:24.943071173 +0300
-@@ -20,7 +20,6 @@
-  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-  * IN THE SOFTWARE.
-  */
--
- #include "nir_instr_set.h"
- #include "nir_vla.h"
+diff -aur mesa-17.0.3-orig/src/gallium/auxiliary/hud/hud_context.c mesa-17.0.3/src/gallium/auxiliary/hud/hud_context.c
+--- mesa-17.0.3-orig/src/gallium/auxiliary/hud/hud_context.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/hud/hud_context.c	2018-09-12 12:40:07.577368651 +0300
+@@ -36,6 +36,7 @@
+ #include <inttypes.h>
+ #include <signal.h>
+ #include <stdio.h>
++#include <unistd.h>
  
-diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c mesa-17.0.3/src/compiler/nir/nir_liveness.c
---- mesa-17.0.3-orig/src/compiler/nir/nir_liveness.c	2017-04-01 18:33:36.000000000 +0300
-+++ mesa-17.0.3/src/compiler/nir/nir_liveness.c	2017-06-09 16:08:25.171072302 +0300
-@@ -23,7 +23,6 @@
-  * Authors:
-  *    Jason Ekstrand (jason@jlekstrand.net)
-  */
+ #include "hud/hud_context.h"
+ #include "hud/hud_private.h"
+diff -aur mesa-17.0.3-orig/src/gallium/auxiliary/os/os_misc.c mesa-17.0.3/src/gallium/auxiliary/os/os_misc.c
+--- mesa-17.0.3-orig/src/gallium/auxiliary/os/os_misc.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/os/os_misc.c	2018-09-12 12:40:07.577368651 +0300
+@@ -47,7 +47,7 @@
+ #endif
+ 
+ 
+-#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_CYGWIN) || defined(PIPE_OS_SOLARIS)
++#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_CYGWIN) || defined(PIPE_OS_SOLARIS) || defined(__EMBOX__)
+ #  include <unistd.h>
+ #elif defined(PIPE_OS_APPLE) || defined(PIPE_OS_BSD)
+ #  include <sys/sysctl.h>
+@@ -124,7 +124,7 @@
+ bool
+ os_get_total_physical_memory(uint64_t *size)
+ {
+-#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_CYGWIN) || defined(PIPE_OS_SOLARIS)
++#if defined(PIPE_OS_LINUX) || defined(PIPE_OS_CYGWIN) || defined(PIPE_OS_SOLARIS) || defined(__EMBOX__)
+    const long phys_pages = sysconf(_SC_PHYS_PAGES);
+    const long page_size = sysconf(_SC_PAGE_SIZE);
+ 
+diff -aur mesa-17.0.3-orig/src/gallium/auxiliary/os/os_time.c mesa-17.0.3/src/gallium/auxiliary/os/os_time.c
+--- mesa-17.0.3-orig/src/gallium/auxiliary/os/os_time.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/os/os_time.c	2018-09-12 12:40:07.577368651 +0300
+@@ -36,6 +36,10 @@
+ #include "pipe/p_defines.h"
+ #include "util/u_atomic.h"
+ 
++#if defined(__EMBOX__)
++#define PIPE_OS_UNIX
++#endif
++
+ #if defined(PIPE_OS_UNIX)
+ #  include <time.h> /* timeval */
+ #  include <sys/time.h> /* timeval */
+diff -aur mesa-17.0.3-orig/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c mesa-17.0.3/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c
+--- mesa-17.0.3-orig/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c	2018-09-12 12:40:08.201365986 +0300
+@@ -36,6 +36,7 @@
+ #include <unistd.h>
+ 
+ #include "loader.h"
++#include "target-helpers/drm_helper.h"
+ #include "target-helpers/drm_helper_public.h"
+ #include "state_tracker/drm_driver.h"
+ #include "pipe_loader_priv.h"
+@@ -44,7 +45,7 @@
+ #include "util/u_dl.h"
+ #include "util/u_debug.h"
+ 
+-#define DRM_RENDER_NODE_DEV_NAME_FORMAT "%s/renderD%d"
++#define DRM_RENDER_NODE_DEV_NAME_FORMAT "%s/card"
+ #define DRM_RENDER_NODE_MAX_NODES 63
+ #define DRM_RENDER_NODE_MIN_MINOR 128
+ #define DRM_RENDER_NODE_MAX_MINOR (DRM_RENDER_NODE_MIN_MINOR + DRM_RENDER_NODE_MAX_NODES)
+@@ -258,6 +259,8 @@
+          dev->ops->release(&dev);
+       }
+       j++;
++
++      break;
+    }
+ 
+    return j;
+diff -aur mesa-17.0.3-orig/src/gallium/auxiliary/renderonly/renderonly.c mesa-17.0.3/src/gallium/auxiliary/renderonly/renderonly.c
+--- mesa-17.0.3-orig/src/gallium/auxiliary/renderonly/renderonly.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/renderonly/renderonly.c	2018-09-12 12:40:07.577368651 +0300
+@@ -26,6 +26,7 @@
+ 
+ #include "renderonly/renderonly.h"
+ 
++#include <unistd.h> /* int close(int fd); */
+ #include <errno.h>
+ #include <fcntl.h>
+ #include <stdio.h>
+diff -aur mesa-17.0.3-orig/src/gallium/auxiliary/target-helpers/drm_helper.h mesa-17.0.3/src/gallium/auxiliary/target-helpers/drm_helper.h
+--- mesa-17.0.3-orig/src/gallium/auxiliary/target-helpers/drm_helper.h	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/target-helpers/drm_helper.h	2018-09-12 12:40:08.205365969 +0300
+@@ -1,6 +1,8 @@
+ #ifndef DRM_HELPER_H
+ #define DRM_HELPER_H
+ 
++#define GALLIUM_ETNAVIV
++
+ #include <stdio.h>
+ #include "target-helpers/inline_debug_helper.h"
+ #include "target-helpers/drm_helper_public.h"
+diff -aur mesa-17.0.3-orig/src/gallium/auxiliary/target-helpers/sw_helper_public.h mesa-17.0.3/src/gallium/auxiliary/target-helpers/sw_helper_public.h
+--- mesa-17.0.3-orig/src/gallium/auxiliary/target-helpers/sw_helper_public.h	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/target-helpers/sw_helper_public.h	2018-09-12 12:40:08.201365986 +0300
+@@ -1,6 +1,8 @@
+ #ifndef _SW_HELPER_PUBLIC_H
+ #define _SW_HELPER_PUBLIC_H
+ 
++#include "target-helpers/inline_sw_helper.h"
++
+ struct pipe_screen;
+ struct sw_winsys;
+ 
+diff -aur mesa-17.0.3-orig/src/gallium/drivers/etnaviv/etnaviv_clear_blit.c mesa-17.0.3/src/gallium/drivers/etnaviv/etnaviv_clear_blit.c
+--- mesa-17.0.3-orig/src/gallium/drivers/etnaviv/etnaviv_clear_blit.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/drivers/etnaviv/etnaviv_clear_blit.c	2018-09-13 14:32:03.873916327 +0300
+@@ -297,7 +299,7 @@
+     * to non-aligned: can fall back to rendering-based copy?
+     * XXX this goes wrong when source surface is supertiled.
+     */
+-   if (util_blitter_is_copy_supported(ctx->blitter, dst, src)) {
++   if (0 && util_blitter_is_copy_supported(ctx->blitter, dst, src)) {
+       etna_blit_save_state(ctx);
+       util_blitter_copy_texture(ctx->blitter, dst, dst_level, dstx, dsty, dstz,
+                                 src, src_level, src_box);
+diff -aur mesa-17.0.3-orig/src/gallium/drivers/etnaviv/Makefile.am mesa-17.0.3/src/gallium/drivers/etnaviv/Makefile.am
+--- mesa-17.0.3-orig/src/gallium/drivers/etnaviv/Makefile.am	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/drivers/etnaviv/Makefile.am	2018-09-12 12:40:07.577368651 +0300
+@@ -31,7 +31,6 @@
+ 
+ libetnaviv_la_SOURCES = $(C_SOURCES)
+ 
+-noinst_PROGRAMS = etnaviv_compiler
+ 
+ etnaviv_compiler_SOURCES = \
+ 	etnaviv_compiler_cmdline.c
+diff -aur mesa-17.0.3-orig/src/gallium/Makefile.am mesa-17.0.3/src/gallium/Makefile.am
+--- mesa-17.0.3-orig/src/gallium/Makefile.am	2017-04-01 18:33:36.000000000 +0300
++++ mesa-17.0.3/src/gallium/Makefile.am	2018-09-12 12:40:08.201365986 +0300
+@@ -15,7 +15,9 @@
+ 	drivers/ddebug \
+ 	drivers/noop \
+ 	drivers/trace \
+-	drivers/rbug
++	drivers/rbug \
++	winsys/sw/wrapper \
++	drivers/softpipe \ # To be compiled with MESA
+ 
+ ## freedreno/msm/kgsl
+ if HAVE_GALLIUM_FREEDRENO
+diff -aur mesa-17.0.3-orig/src/gallium/targets/osmesa/target.c mesa-17.0.3/src/gallium/targets/osmesa/target.c
+--- mesa-17.0.3-orig/src/gallium/targets/osmesa/target.c	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/targets/osmesa/target.c	2018-09-13 16:38:45.358895868 +0300
+@@ -24,8 +24,10 @@
+ #include "target-helpers/inline_sw_helper.h"
+ #include "target-helpers/inline_debug_helper.h"
+ 
++#include "pipe-loader/pipe_loader.h"
+ #include "sw/null/null_sw_winsys.h"
+ 
++#include <stdio.h>
+ 
+ struct pipe_screen *
+ osmesa_create_screen(void);
+@@ -34,20 +38,17 @@
+ struct pipe_screen *
+ osmesa_create_screen(void)
+ {
+-   struct sw_winsys *winsys;
+    struct pipe_screen *screen;
++	struct pipe_loader_device *dev;
+ 
+    /* We use a null software winsys since we always just render to ordinary
+     * driver resources.
+     */
+-   winsys = null_sw_create();
+-   if (!winsys)
+-      return NULL;
+ 
++	int ret = pipe_loader_probe(&dev, 1);
+    /* Create llvmpipe or softpipe screen */
+-   screen = sw_screen_create(winsys);
++   screen = pipe_loader_create_screen(dev);
+    if (!screen) {
+-      winsys->destroy(winsys);
+       return NULL;
+    }
+ 
+diff -aur mesa-17.0.3-orig/src/mesa/main/compiler.h mesa-17.0.3/src/mesa/main/compiler.h
+--- mesa-17.0.3-orig/src/mesa/main/compiler.h	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/main/compiler.h	2018-09-12 12:40:07.577368651 +0300
+@@ -40,6 +40,13 @@
+ 
+ #include "c99_compat.h" /* inline, __func__, etc. */
+ 
++#if defined(__EMBOX__)
++#ifdef __GNUC__
++#define _NORETURN __attribute__ ((noreturn))
++#else
++#define _NORETURN
++#endif /* __GNUC__ */
++#endif /* __EMBOX__ */
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff -aur mesa-17.0.3-orig/src/mesa/main/mm.h mesa-17.0.3/src/mesa/main/mm.h
+--- mesa-17.0.3-orig/src/mesa/main/mm.h	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/main/mm.h	2018-09-12 12:40:07.577368651 +0300
+@@ -38,8 +38,13 @@
+    struct mem_block *heap;
+    unsigned ofs;
+    unsigned size;
++#if !defined(__EMBOX__)
+    unsigned free:1;
+    unsigned reserved:1;
++#else
++   unsigned free;
++   unsigned reserved;
++#endif
+ };
+ 
+ 
+diff -aur mesa-17.0.3-orig/src/mesa/program/prog_instruction.h mesa-17.0.3/src/mesa/program/prog_instruction.h
+--- mesa-17.0.3-orig/src/mesa/program/prog_instruction.h	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/program/prog_instruction.h	2018-09-12 12:40:07.577368651 +0300
+@@ -223,7 +223,7 @@
+    enum prog_opcode Opcode;
+    struct prog_src_register SrcReg[3];
+    struct prog_dst_register DstReg;
 -
- #include "nir.h"
- #include "nir_worklist.h"
- #include "nir_vla.h"
-diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/util/debug.c mesa-17.0.3/src/util/debug.c
++#if !defined(__EMBOX__)
+    /**
+     * Saturate each value of the vectored result to the range [0,1].
+     *
+@@ -245,8 +245,24 @@
+    /** True if tex instruction should do shadow comparison */
+    GLuint TexShadow:1;
+    /*@}*/
++#else
++   GLuint Saturate;
+ 
+    /**
++    * \name Extra fields for TEX, TXB, TXD, TXL, TXP instructions.
++    */
++   /*@{*/
++   /** Source texture unit. */
++   GLuint TexSrcUnit;
++
++   /** Source texture target, one of TEXTURE_{1D,2D,3D,CUBE,RECT}_INDEX */
++   GLuint TexSrcTarget;
++
++   /** True if tex instruction should do shadow comparison */
++   GLuint TexShadow;
++   /*@}*/
++#endif 
++   /**
+     * For BRA and CAL instructions, the location to jump to.
+     * For BGNLOOP, points to ENDLOOP (and vice-versa).
+     * For BRK, points to ENDLOOP
+diff -aur mesa-17.0.3-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp mesa-17.0.3/src/mesa/state_tracker/st_glsl_to_tgsi.cpp
+--- mesa-17.0.3-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2018-09-12 12:40:07.685368189 +0300
+@@ -55,7 +55,6 @@
+ #include "st_glsl_types.h"
+ #include "st_nir.h"
+ 
+-#include <algorithm>
+ 
+ #define PROGRAM_ANY_CONST ((1 << PROGRAM_STATE_VAR) |    \
+                            (1 << PROGRAM_CONSTANT) |     \
+@@ -5961,7 +5961,6 @@
+ {
+    sort_inout_decls sorter;
+    sorter.mapping = mapping;
+-   std::sort(decls, decls + count, sorter);
+ }
+ 
+ static unsigned
+diff -aur mesa-17.0.3-orig/src/mesa/vbo/vbo.h mesa-17.0.3/src/mesa/vbo/vbo.h
+--- mesa-17.0.3-orig/src/mesa/vbo/vbo.h	2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/mesa/vbo/vbo.h	2018-09-12 12:40:07.685368189 +0300
+@@ -44,6 +44,7 @@
+ struct gl_transform_feedback_object;
+ 
+ struct _mesa_prim {
++#if !defined(__EMBOX__)
+    GLuint mode:8;    /**< GL_POINTS, GL_LINES, GL_QUAD_STRIP, etc */
+    GLuint indexed:1;
+    GLuint begin:1;
+@@ -52,7 +53,16 @@
+    GLuint no_current_update:1;
+    GLuint is_indirect:1;
+    GLuint pad:18;
+-
++#else
++   GLuint mode;    /**< GL_POINTS, GL_LINES, GL_QUAD_STRIP, etc */
++   GLuint indexed;
++   GLuint begin;
++   GLuint end;
++   GLuint weak;
++   GLuint no_current_update;
++   GLuint is_indirect;
++   GLuint pad;
++#endif
+    GLuint start;
+    GLuint count;
+    GLint basevertex;
+diff -aur mesa-17.0.3-orig/src/util/debug.c mesa-17.0.3/src/util/debug.c
 --- mesa-17.0.3-orig/src/util/debug.c	2017-04-01 18:33:37.000000000 +0300
-+++ mesa-17.0.3/src/util/debug.c	2017-06-09 16:08:25.171072302 +0300
++++ mesa-17.0.3/src/util/debug.c	2018-09-12 12:40:08.201365986 +0300
 @@ -21,6 +21,7 @@
   * IN THE SOFTWARE.
   */
@@ -87,45 +383,65 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/util/de
  #include <string.h>
  #include "main/macros.h"
  #include "debug.h"
-diff -aur -x configure -x aclocal.m4 -x Makefile.in mesa-17.0.3-orig/src/util/ralloc.c mesa-17.0.3/src/util/ralloc.c
+diff -aur mesa-17.0.3-orig/src/util/ralloc.c mesa-17.0.3/src/util/ralloc.c
 --- mesa-17.0.3-orig/src/util/ralloc.c	2017-04-01 18:33:37.000000000 +0300
-+++ mesa-17.0.3/src/util/ralloc.c	2017-06-09 16:08:25.175072324 +0300
-@@ -66,7 +66,7 @@
- #endif
-    ralloc_header
++++ mesa-17.0.3/src/util/ralloc.c	2018-09-12 12:40:08.201365986 +0300
+@@ -636,8 +636,9 @@
+    linear_header *new_node;
+    linear_size_chunk *ptr;
+    unsigned full_size;
+-
++#ifdef DEBUG
+    assert(first->magic == LMAGIC);
++#endif
+    assert(!latest->next);
+ 
+    size = ALIGN_POT(size, SUBALLOC_ALIGNMENT);
+@@ -709,7 +710,9 @@
+       return;
+ 
+    node = LINEAR_PARENT_TO_HEADER(ptr);
++#ifdef DEBUG
+    assert(node->magic == LMAGIC);
++#endif
+ 
+    while (node) {
+       void *ptr = node;
+@@ -728,7 +731,9 @@
+       return;
+ 
+    node = LINEAR_PARENT_TO_HEADER(ptr);
++#ifdef DEBUG
+    assert(node->magic == LMAGIC);
++#endif
+ 
+    while (node) {
+       ralloc_steal(new_ralloc_ctx, node);
+@@ -741,7 +746,9 @@
+ ralloc_parent_of_linear_parent(void *ptr)
  {
--#ifdef DEBUG
-+#ifndef NDEBUG
-    /* A canary value used to determine whether a pointer is ralloc'd. */
-    unsigned canary;
+    linear_header *node = LINEAR_PARENT_TO_HEADER(ptr);
++#ifdef DEBUG
+    assert(node->magic == LMAGIC);
++#endif
+    return node->ralloc_parent;
+ }
+ 
+--- mesa-17.0.3-orig/include/c99_math.h	2018-09-24 12:24:06.719247764 +0300
++++ mesa-17.0.3/include/c99_math.h	2018-09-24 15:36:58.531447702 +0300
+@@ -190,6 +190,7 @@
+  * undefines those functions, which in glibc 2.23, are defined as macros rather
+  * than functions as in glibc 2.22.
+  */
++#ifdef __cplusplus
+ #if __cplusplus >= 201103L && (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 23))
+ #include <cmath>
+ 
+@@ -206,6 +207,6 @@
+ using std::islessgreater;
+ using std::isunordered;
  #endif
-@@ -93,7 +93,7 @@
- {
-    ralloc_header *info = (ralloc_header *) (((char *) ptr) -
- 					    sizeof(ralloc_header));
--#ifdef DEBUG
-+#ifndef NDEBUG
-    assert(info->canary == CANARY);
- #endif
-    return info;
-@@ -145,7 +145,7 @@
+-
++#endif
  
-    add_child(parent, info);
- 
--#ifdef DEBUG
-+#ifndef NDEBUG
-    info->canary = CANARY;
- #endif
- 
-@@ -567,9 +567,9 @@
- #define LMAGIC 0x87b9c7d3
- 
- struct linear_header {
--#ifdef DEBUG
-+//#ifndef NDEBUG
-    unsigned magic;   /* for debugging */
--#endif
-+//#endif
-    unsigned offset;  /* points to the first unused byte in the buffer */
-    unsigned size;    /* size of the buffer */
-    void *ralloc_parent;          /* new buffers will use this */
+ #endif /* #define _C99_MATH_H_ */
