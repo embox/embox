@@ -33,6 +33,28 @@ diff -ur qt-everywhere-opensource-src-4.8.5/src/corelib/global/qglobal.h source/
  #elif defined(__MAKEDEPEND__)
  #else
  #  error "Qt has not been ported to this OS - talk to qt-bugs@trolltech.com"
+@@ -533,7 +533,7 @@
+-#      define Q_COMPILER_VARIADIC_TEMPLATES
+-#      define Q_COMPILER_AUTO_FUNCTION
+-#      define Q_COMPILER_AUTO_TYPE
+-#      define Q_COMPILER_EXTERN_TEMPLATES
+-#      define Q_COMPILER_DEFAULT_DELETE_MEMBERS
+-#      define Q_COMPILER_CLASS_ENUM
+-#      define Q_COMPILER_INITIALIZER_LISTS
++#      //define Q_COMPILER_VARIADIC_TEMPLATES
++#      //define Q_COMPILER_AUTO_FUNCTION
++#      //define Q_COMPILER_AUTO_TYPE
++#      //define Q_COMPILER_EXTERN_TEMPLATES
++#      //define Q_COMPILER_DEFAULT_DELETE_MEMBERS
++#      //define Q_COMPILER_CLASS_ENUM
++#      //define Q_COMPILER_INITIALIZER_LISTS
+@@ -2315,1 +2315,2 @@
+-    Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
++    Q_DECL_CONSTEXPR inline QFlags(Zero = 0) : i(0) {}
++    Q_DECL_CONSTEXPR inline QFlags(int n) : i(n) {}
+@@ -2327,0 +2327,2 @@
++    Q_DECL_CONSTEXPR inline QFlags operator|(int mask) const { return QFlags(Enum(i | mask)); }
++    Q_DECL_CONSTEXPR inline QFlags operator|(uint mask) const { return QFlags(Enum(i | mask)); }
 diff -ur qt-everywhere-opensource-src-4.8.5/src/corelib/io/qprocess.cpp source/src/corelib/io/qprocess.cpp
 --- qt-everywhere-opensource-src-4.8.5/src/corelib/io/qprocess.cpp	2013-06-07 09:16:52.000000000 +0400
 +++ source/src/corelib/io/qprocess.cpp	2014-03-07 11:57:58.097783990 +0400
@@ -257,3 +279,16 @@ diff -ur qt-everywhere-opensource-src-4.8.5/src/plugins/platforms/platforms.pro 
  }
  
  qnx {
+--- qt-everywhere-opensource-src-4.8.5/src/network/socket/qudpsocket.cpp	2013-06-07 09:17:00.000000000 +0400
++++ source/src/network/socket/qudpsocket.cpp	2014-03-07 11:57:58.097783990 +0400
+@@ -327,1 +327,1 @@
+-    return bind(QHostAddress::Any, port);
++    return bind((const QHostAddress) QHostAddress::Any, (quint16) port);
+--- qt-everywhere-opensource-src-4.8.5/src/gui/styles/qcommonstyle.cpp	2013-06-07 09:17:00.000000000 +0400
++++ source/src/gui/styles/qcommonstyle.cpp	2014-03-07 11:57:58.097783990 +0400
+@@ -762,1 +762,1 @@
+-            QPalette::ColorGroup cg = (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled))
++            QPalette::ColorGroup cg = (widget ? widget->isEnabled() : ((bool) (vopt->state & QStyle::State_Enabled)))
+@@ -775,1 +775,1 @@
+-            QPalette::ColorGroup cg = (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled))
++            QPalette::ColorGroup cg = (widget ? widget->isEnabled() : ((bool) (vopt->state & QStyle::State_Enabled)))
