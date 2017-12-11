@@ -65,9 +65,19 @@ static struct time_event_device integratorcp_event_device = {
 	.irq_nr = CLOCK_IRQ
 };
 
+static cycle_t integratorcp_counter_read(void) {
+	return REG32_LOAD(TMR_VAL) & 0xFFFF;
+}
+
+static struct time_counter_device integratorcp_counter_device = {
+	.cycle_hz = 1000,
+	.read = integratorcp_counter_read,
+};
+
 static struct clock_source integratorcp_cs = {
 	.name = "integratorcp_clk",
 	.event_device = &integratorcp_event_device,
+	.counter_device = &integratorcp_counter_device,
 	.read = clock_source_read /* attach default read function */
 };
 
