@@ -149,4 +149,5 @@ module integratorcp_clock extends embox.arch.clock {
 
 	depends embox.kernel.time.clock_source
 	depends embox.driver.interrupt.irqctrl_api
+	depends embox.driver.periph_memory
 }

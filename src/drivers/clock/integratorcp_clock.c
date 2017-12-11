@@ -12,6 +12,7 @@
 #include <kernel/irq.h>
 
 #include <embox/unit.h>
+#include <drivers/common/memory.h>
 #include <kernel/printk.h>
 
 #define HZ 1000
@@ -47,15 +48,6 @@
 EMBOX_UNIT_INIT(integratorcp_init);
 
 static int integratorcp_clock_setup(struct time_dev_conf * conf) {
-	if (NULL == mmap_device_memory(
-		(void*) TIMER_BASE,
-		0x28,
-		PROT_READ | PROT_WRITE | PROT_NOCACHE,
-		MAP_FIXED,
-		(unsigned long) TIMER_BASE)) {
-		return -1;
-	}
-
 	/* Setup counter value */
 	REG_STORE(TMR_CTRL, TCTRL_DISABLE);
 	REG_STORE(TMR_LOAD, TIMER_COUNT);
@@ -68,15 +60,15 @@ static int integratorcp_clock_setup(struct time_dev_conf * conf) {
 }
 
 static struct time_event_device integratorcp_event_device = {
-		.config = integratorcp_clock_setup,
-		.event_hz = 1000, .name = "integratorcp_clk",
-		.irq_nr = CLOCK_IRQ
+	.config = integratorcp_clock_setup,
+	.event_hz = 1000, .name = "integratorcp_clk",
+	.irq_nr = CLOCK_IRQ
 };
 
 static struct clock_source integratorcp_cs = {
-		.name = "integratorcp_clk",
-		.event_device = &integratorcp_event_device,
-		.read = clock_source_read /* attach default read function */
+	.name = "integratorcp_clk",
+	.event_device = &integratorcp_event_device,
+	.read = clock_source_read /* attach default read function */
 };
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
@@ -86,9 +78,15 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 }
 
 static int integratorcp_init(void) {
-
 	clock_source_register(&integratorcp_cs);
 
 	return irq_attach(CLOCK_IRQ, clock_handler, 0, &integratorcp_cs,
 			"integratorcp_clk");
 }
+
+static struct periph_memory_desc integratorcp_clock_mem = {
+	.start = TIMER_BASE,
+	.len   = 0x30,
+};
+
+PERIPH_MEMORY_DEFINE(integratorcp_clock_mem);
