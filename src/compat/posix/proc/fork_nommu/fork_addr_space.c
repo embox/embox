@@ -74,7 +74,7 @@ void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) 
 static void fork_addr_space_child_del(struct addr_space *child) {
 	struct addr_space *parent;
 
-	assert(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
+	assertf(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
 
 	parent = child->parent_addr_space;
 	if (!parent) {
