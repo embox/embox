@@ -15,7 +15,7 @@ $(CONFIGURE) :
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			CC=$(EMBOX_GCC) \
-			CPPFLAGS=-DJOBS=0 \
+			CPPFLAGS="-DJOBS=0 -I$(ROOT_DIR)/third-party/dash/include ${EMBOX_IMPORTED_CPPFLAGS}" \
 	)
 	touch $@
 
