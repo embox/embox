@@ -33,8 +33,13 @@
 
 /* The relative placement of sections within a particular array is controlled
  * by the value of order_tag argument. */
+#if defined __LCC__
+#define __ARRAY_SPREAD_SECTION(array_nm, order_tag) \
+	".array_spread." #array_nm order_tag ".rodata,\"a\";#"
+#else
 #define __ARRAY_SPREAD_SECTION(array_nm, order_tag) \
 	".array_spread." #array_nm order_tag ".rodata,\"a\",%progbits;#"
+#endif
 
 /* Every array entry, group of entries or marker symbols are backed by an
  * individual array (empty for markers) defined as follows. */
