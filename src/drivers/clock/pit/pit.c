@@ -13,14 +13,13 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include <asm/io.h>
 #include <hal/clock.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 #include <util/array.h>
-
+#include <drivers/clock/pit/regs.h>
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ_NR             OPTION_GET(NUMBER,irq_num)
@@ -36,8 +35,6 @@ static int pit_clock_init(void);
 static struct clock_source pit_clock_source;
 static struct time_event_device pit_event_device;
 static struct time_counter_device pit_counter_device;
-
-//EMBOX_UNIT_INIT(pit_clock_init);
 
 /**
  * The PIT chip uses the following I/O ports:
@@ -95,9 +92,9 @@ static struct time_counter_device pit_counter_device;
 static cycle_t i8253_read(void) {
 	unsigned char lsb, msb;
 
-	out8(PIT_SEL0 | PIT_LATCH, MODE_REG);
-	lsb = in8(CHANNEL0);
-	msb = in8(CHANNEL0);
+	pit_out8(PIT_SEL0 | PIT_LATCH, MODE_REG);
+	lsb = pit_in8(CHANNEL0);
+	msb = pit_in8(CHANNEL0);
 
 	return PIT_LOAD - ((msb << 8) | lsb);
 }
@@ -146,11 +143,11 @@ static int pit_clock_setup(struct time_dev_conf * conf) {
 
 	/* Propose switch by all modes in future */
 	/* Set control byte */
-	out8(PIT_SEL0 | PIT_16BIT | PIT_RATEGEN, MODE_REG);
+	pit_out8(PIT_SEL0 | PIT_16BIT | PIT_RATEGEN, MODE_REG);
 
 	/* Send divisor */
-	out8(divisor & 0xFF, CHANNEL0);
-	out8(divisor >> 8, CHANNEL0);
+	pit_out8(divisor & 0xFF, CHANNEL0);
+	pit_out8(divisor >> 8, CHANNEL0);
 
 	return ENOERR;
 }
