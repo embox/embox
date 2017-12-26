@@ -1,5 +1,9 @@
 package embox.arch.arm.imx
 
+module arch extends embox.arch.arch {
+	source "arch.c"
+}
+
 module cpuinfo {
 	@IncludeExport(path="arch/arm/imx")
 	source "cpuinfo.h"
