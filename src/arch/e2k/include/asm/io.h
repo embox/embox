@@ -92,4 +92,15 @@ static inline uint64_t e2k_read64(void *addr) {
 	return res;
 }
 
+/* x86 port simulation */
+#define E2K_X86_IO_PORT_BASE	0xfff0000000UL
+
+static inline void e2k_out8(uint8_t val, int port) {
+	e2k_write8(E2K_X86_IO_PORT_BASE + port, val);
+}
+
+static inline uint8_t e2k_in8(int port) {
+	return e2k_read8(E2K_X86_IO_PORT_BASE + port);
+}
+
 #endif /* E2K_IO_H_ */
