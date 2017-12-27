@@ -50,7 +50,7 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
 		if ((rt_info->entry.rt_dst == dst) &&
                 ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
     			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
-    			((rt_info->entry.dev == dev) || (INADDR_ANY == dev))) {
+    			((rt_info->entry.dev == dev) || (NULL == dev))) {
 			flag = false;
 			return 0;
 		}
@@ -80,7 +80,7 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
 		if ((rt_info->entry.rt_dst == dst) &&
                 ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
     			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
-    			((rt_info->entry.dev == dev) || (INADDR_ANY == dev))) {
+    			((rt_info->entry.dev == dev) || (NULL == dev))) {
 			dlist_del_init_entry(rt_info, lnk);
 			pool_free(&rt_entry_info_pool, rt_info);
 			return 0;
