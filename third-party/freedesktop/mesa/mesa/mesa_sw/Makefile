@@ -50,8 +50,11 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	cp $(PKG_SOURCE_DIR)/src/mesa/.libs/libmesa.a $(PKG_INSTALL_DIR)/libmesa.a
+	#	cp $(PKG_SOURCE_DIR)/src/mesa/.libs/libmesa.a $(PKG_INSTALL_DIR)/libmesa.a
 	cp $(PKG_SOURCE_DIR)/src/mesa/.libs/libmesagallium.a $(PKG_INSTALL_DIR)/libmesagallium.a
 	cp $(PKG_SOURCE_DIR)/src/mapi/shared-glapi/.libs/libglapi.a $(PKG_INSTALL_DIR)/libglapi.a
 	cp $(PKG_SOURCE_DIR)/src/mesa/drivers/osmesa/.libs/libOSMesa.a $(PKG_INSTALL_DIR)/libOSMesa.a
+	cp $(PKG_SOURCE_DIR)/src/gallium/winsys/etnaviv/drm/.libs/libetnavivdrm.a $(PKG_INSTALL_DIR)/libetnavivdrm.a
+	cp $(PKG_SOURCE_DIR)/src/gallium/drivers/etnaviv/.libs/libetnaviv.a $(PKG_INSTALL_DIR)/libetnaviv.a
+	cp $(PKG_SOURCE_DIR)/src/gallium/auxiliary/.libs/libgallium.a $(PKG_INSTALL_DIR)/libgallium.a
 	touch $@

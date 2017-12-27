@@ -1,0 +1,270 @@
+diff -aur libdrm-2.4.79-orig/configure libdrm-2.4.79/configure
+--- libdrm-2.4.79-orig/configure	2017-04-08 23:01:03.000000000 +0300
++++ libdrm-2.4.79/configure	2018-09-24 13:43:04.509502137 +0300
+@@ -13358,7 +13358,7 @@
+     pthread_stubs_possible="no"
+     ;;
+ * )
+-    pthread_stubs_possible="yes"
++    pthread_stubs_possible="no"
+     ;;
+ esac
+ 
+diff -aur libdrm-2.4.79-orig/configure.ac libdrm-2.4.79/configure.ac
+--- libdrm-2.4.79-orig/configure.ac	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/configure.ac	2018-09-24 13:42:22.807813709 +0300
+@@ -68,7 +68,7 @@
+     pthread_stubs_possible="no"
+     ;;
+ * )
+-    pthread_stubs_possible="yes"
++    pthread_stubs_possible="no"
+     ;;
+ esac
+ 
+diff -aur libdrm-2.4.79-orig/etnaviv/etnaviv_cmd_stream.c libdrm-2.4.79/etnaviv/etnaviv_cmd_stream.c
+--- libdrm-2.4.79-orig/etnaviv/etnaviv_cmd_stream.c	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/etnaviv/etnaviv_cmd_stream.c	2018-09-24 13:42:22.819814207 +0300
+@@ -230,14 +230,15 @@
+ 	struct etna_cmd_stream_priv *priv = etna_cmd_stream_priv(stream);
+ 	struct drm_etnaviv_gem_submit_reloc *reloc;
+ 	uint32_t idx = APPEND(&priv->submit, relocs);
+-	uint32_t addr = 0;
+-
++	uint32_t addr = etna_bo_map(r->bo);
++#if 0
+ 	reloc = &priv->submit.relocs[idx];
+ 
+ 	reloc->reloc_idx = bo2idx(stream, r->bo, r->flags);
+ 	reloc->reloc_offset = r->offset;
+ 	reloc->submit_offset = stream->offset * 4; /* in bytes */
+ 	reloc->flags = 0;
+-
+-	etna_cmd_stream_emit(stream, addr);
++#endif
++	addr += r->offset;
++	etna_cmd_stream_emit(stream, addr - 0x10000000);
+ }
+diff -aur libdrm-2.4.79-orig/etnaviv/etnaviv_device.c libdrm-2.4.79/etnaviv/etnaviv_device.c
+--- libdrm-2.4.79-orig/etnaviv/etnaviv_device.c	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/etnaviv/etnaviv_device.c	2018-09-24 13:42:22.819814207 +0300
+@@ -29,7 +29,6 @@
+ #endif
+ 
+ #include <stdlib.h>
+-#include <linux/stddef.h>
+ #include <linux/types.h>
+ #include <errno.h>
+ #include <sys/mman.h>
+diff -aur libdrm-2.4.79-orig/include/drm/drm.h libdrm-2.4.79/include/drm/drm.h
+--- libdrm-2.4.79-orig/include/drm/drm.h	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/include/drm/drm.h	2018-09-24 13:42:22.827814538 +0300
+@@ -40,6 +40,14 @@
+ #include <asm/ioctl.h>
+ typedef unsigned int drm_handle_t;
+ 
++#elif defined(__EMBOX__)
++
++#include <linux/types.h>
++#include <sys/ioctl.h>
++
++typedef size_t   __kernel_size_t;
++typedef unsigned long drm_handle_t;
++
+ #else /* One of the BSDs */
+ 
+ #include <sys/ioccom.h>
+diff -aur libdrm-2.4.79-orig/m4/libtool.m4 libdrm-2.4.79/m4/libtool.m4
+--- libdrm-2.4.79-orig/m4/libtool.m4	2017-04-08 23:01:01.000000000 +0300
++++ libdrm-2.4.79/m4/libtool.m4	2018-09-24 13:42:22.827814538 +0300
+@@ -3849,29 +3849,7 @@
+ # LT_LIB_M
+ # --------
+ # check for math library
+-AC_DEFUN([LT_LIB_M],
+-[AC_REQUIRE([AC_CANONICAL_HOST])dnl
+ LIBM=
+-case $host in
+-*-*-beos* | *-*-cegcc* | *-*-cygwin* | *-*-haiku* | *-*-pw32* | *-*-darwin*)
+-  # These system don't have libm, or don't need it
+-  ;;
+-*-ncr-sysv4.3*)
+-  AC_CHECK_LIB(mw, _mwvalidcheckl, LIBM=-lmw)
+-  AC_CHECK_LIB(m, cos, LIBM="$LIBM -lm")
+-  ;;
+-*)
+-  AC_CHECK_LIB(m, cos, LIBM=-lm)
+-  ;;
+-esac
+-AC_SUBST([LIBM])
+-])# LT_LIB_M
+-
+-# Old name:
+-AU_ALIAS([AC_CHECK_LIBM], [LT_LIB_M])
+-dnl aclocal-1.4 backwards compatibility:
+-dnl AC_DEFUN([AC_CHECK_LIBM], [])
+-
+ 
+ # _LT_COMPILER_NO_RTTI([TAGNAME])
+ # -------------------------------
+diff -aur libdrm-2.4.79-orig/Makefile.am libdrm-2.4.79/Makefile.am
+--- libdrm-2.4.79-orig/Makefile.am	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/Makefile.am	2018-09-24 13:42:22.807813709 +0300
+@@ -115,7 +115,7 @@
+ libdrm_la_LTLIBRARIES = libdrm.la
+ libdrm_ladir = $(libdir)
+ libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
+-libdrm_la_LIBADD = @CLOCK_LIB@ -lm
++libdrm_la_LIBADD = @CLOCK_LIB@
+ 
+ libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
+ AM_CFLAGS = \
+diff -aur libdrm-2.4.79-orig/Makefile.in libdrm-2.4.79/Makefile.in
+--- libdrm-2.4.79-orig/Makefile.in	2017-04-08 23:01:04.000000000 +0300
++++ libdrm-2.4.79/Makefile.in	2018-09-24 13:43:03.309454607 +0300
+@@ -563,7 +563,7 @@
+ libdrm_la_LTLIBRARIES = libdrm.la
+ libdrm_ladir = $(libdir)
+ libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
+-libdrm_la_LIBADD = @CLOCK_LIB@ -lm
++libdrm_la_LIBADD = @CLOCK_LIB@
+ libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
+ AM_CFLAGS = \
+ 	$(WARN_CFLAGS) \
+diff -aur libdrm-2.4.79-orig/tests/exynos/Makefile.am libdrm-2.4.79/tests/exynos/Makefile.am
+--- libdrm-2.4.79-orig/tests/exynos/Makefile.am	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/tests/exynos/Makefile.am	2018-09-24 13:42:22.819814207 +0300
+@@ -1,5 +1,4 @@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS)\
+ 	-I $(top_srcdir)/include/drm \
+ 	-I $(top_srcdir)/libkms/ \
+diff -aur libdrm-2.4.79-orig/tests/exynos/Makefile.in libdrm-2.4.79/tests/exynos/Makefile.in
+--- libdrm-2.4.79-orig/tests/exynos/Makefile.in	2017-04-08 23:01:05.000000000 +0300
++++ libdrm-2.4.79/tests/exynos/Makefile.in	2018-09-24 13:43:03.869476798 +0300
+@@ -358,7 +358,6 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS)\
+ 	-I $(top_srcdir)/include/drm \
+ 	-I $(top_srcdir)/libkms/ \
+diff -aur libdrm-2.4.79-orig/tests/modetest/Makefile.am libdrm-2.4.79/tests/modetest/Makefile.am
+--- libdrm-2.4.79-orig/tests/modetest/Makefile.am	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/tests/modetest/Makefile.am	2018-09-24 13:42:22.819814207 +0300
+@@ -3,7 +3,6 @@
+ AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS))
+ 
+ AM_CFLAGS += \
+-	-pthread \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/tests \
+ 	-I$(top_srcdir)
+diff -aur libdrm-2.4.79-orig/tests/modetest/Makefile.in libdrm-2.4.79/tests/modetest/Makefile.in
+--- libdrm-2.4.79-orig/tests/modetest/Makefile.in	2017-04-08 23:01:05.000000000 +0300
++++ libdrm-2.4.79/tests/modetest/Makefile.in	2018-09-24 13:43:03.997481870 +0300
+@@ -335,7 +335,7 @@
+ 	cursor.h \
+ 	modetest.c
+ 
+-AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS)) -pthread \
++AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS)) \
+ 	-I$(top_srcdir)/include/drm -I$(top_srcdir)/tests \
+ 	-I$(top_srcdir)
+ modetest_SOURCES = $(MODETEST_FILES)
+diff -aur libdrm-2.4.79-orig/tests/nouveau/Makefile.am libdrm-2.4.79/tests/nouveau/Makefile.am
+--- libdrm-2.4.79-orig/tests/nouveau/Makefile.am	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/tests/nouveau/Makefile.am	2018-09-24 13:42:22.819814207 +0300
+@@ -1,5 +1,4 @@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS) \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/nouveau \
+diff -aur libdrm-2.4.79-orig/tests/nouveau/Makefile.in libdrm-2.4.79/tests/nouveau/Makefile.in
+--- libdrm-2.4.79-orig/tests/nouveau/Makefile.in	2017-04-08 23:01:05.000000000 +0300
++++ libdrm-2.4.79/tests/nouveau/Makefile.in	2018-09-24 13:43:04.029483137 +0300
+@@ -531,7 +531,6 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS) \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/nouveau \
+diff -aur libdrm-2.4.79-orig/xf86drm.c libdrm-2.4.79/xf86drm.c
+--- libdrm-2.4.79-orig/xf86drm.c	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/xf86drm.c	2018-09-24 13:42:22.807813709 +0300
+@@ -2938,6 +2938,7 @@
+ 
+ static int drmParseSubsystemType(int maj, int min)
+ {
++    return DRM_BUS_PLATFORM;
+ #ifdef __linux__
+     char path[PATH_MAX + 1];
+     char link[PATH_MAX + 1] = "";
+@@ -3528,7 +3529,7 @@
+     dev->bustype = DRM_BUS_PLATFORM;
+ 
+     dev->businfo.platform = (drmPlatformBusInfoPtr)ptr;
+-
++#if 0
+     ret = drmParsePlatformBusInfo(maj, min, dev->businfo.platform);
+     if (ret < 0)
+         goto free_device;
+@@ -3541,7 +3542,7 @@
+         if (ret < 0)
+             goto free_device;
+     }
+-
++#endif
+     *device = dev;
+ 
+     return 0;
+@@ -3877,6 +3878,8 @@
+         else
+             local_devices[i] = d;
+         i++;
++
++	break;
+     }
+     node_count = i;
+ 
+diff -aur libdrm-2.4.79-orig/xf86drm.h libdrm-2.4.79/xf86drm.h
+--- libdrm-2.4.79-orig/xf86drm.h	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.79/xf86drm.h	2018-09-24 13:42:22.807813709 +0300
+@@ -47,7 +47,17 @@
+ #define DRM_MAX_MINOR   16
+ #endif
+ 
+-#if defined(__linux__)
++#define SCNu64
++#if defined(__linux__) 
++
++#define DRM_IOCTL_NR(n)		_IOC_NR(n)
++#define DRM_IOC_VOID		_IOC_NONE
++#define DRM_IOC_READ		_IOC_READ
++#define DRM_IOC_WRITE		_IOC_WRITE
++#define DRM_IOC_READWRITE	_IOC_READ|_IOC_WRITE
++#define DRM_IOC(dir, group, nr, size) _IOC(dir, group, nr, size)
++
++#elif defined(__EMBOX__)
+ 
+ #define DRM_IOCTL_NR(n)		_IOC_NR(n)
+ #define DRM_IOC_VOID		_IOC_NONE
+@@ -82,11 +92,11 @@
+ #define DRM_CONTROL_DEV_NAME  "%s/drmC%d"
+ #define DRM_RENDER_DEV_NAME  "%s/drmR%d"
+ #else
+-#define DRM_DIR_NAME  "/dev/dri"
++#define DRM_DIR_NAME  "/dev/"
+ #define DRM_DEV_NAME  "%s/card%d"
+ #define DRM_CONTROL_DEV_NAME  "%s/controlD%d"
+ #define DRM_RENDER_DEV_NAME  "%s/renderD%d"
+-#define DRM_PROC_NAME "/proc/dri/" /* For backward Linux compatibility */
++#define DRM_PROC_NAME "/proc/"
+ #endif
+ 
+ #define DRM_ERR_NO_DEVICE  (-1001)
