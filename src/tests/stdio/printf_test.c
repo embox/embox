@@ -112,7 +112,7 @@ TEST_CASE("Test of %n specifier") {
 
 TEST_CASE("Test of snprintf with truncated output") {
 	char random_char, backup_char;
-	char dest[4];
+	char dest[10];
 
 	backup_char = random_char = 17;
 
