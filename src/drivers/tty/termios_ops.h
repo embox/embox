@@ -35,10 +35,21 @@
 #define TERMIOS_LFLAG_INIT  (tcflag_t) (ICANON | ISIG | \
 			ECHO | ECHOE | ECHOK | ECHONL)
 
-#define TERMIOS_RES_GOT_DATA (1 << 0)
-#define TERMIOS_RES_GOT_ECHO (1 << 1)
+#define TERMIOS_RES_GOT_DATA    (1 << 0)
+#define TERMIOS_RES_GOT_ECHO    (1 << 1)
+#define TERMIOS_RES_GOT_NEWLINE (1 << 2)
 
 #define TERMIOS_TIME_INF ((unsigned long)-1)
+
+#define TIO_I(t, flag) ((t)->c_iflag & (flag))
+#define TIO_O(t, flag) ((t)->c_oflag & (flag))
+#define TIO_C(t, flag) ((t)->c_cflag & (flag))
+#define TIO_L(t, flag) ((t)->c_lflag & (flag))
+
+#define TTY_I(t, flag) ((t)->termios.c_iflag & (flag))
+#define TTY_O(t, flag) ((t)->termios.c_oflag & (flag))
+#define TTY_C(t, flag) ((t)->termios.c_cflag & (flag))
+#define TTY_L(t, flag) ((t)->termios.c_lflag & (flag))
 
 struct ring;
 struct termios;
@@ -73,7 +84,7 @@ extern int termios_gotc(const struct termios *t, char ch,
  *
  * @return
  */
-extern int termios_input(const struct termios *t, char ch, 
+extern int termios_input(const struct termios *t, char ch,
 		struct termios_i_buff *b, struct ring *o_ring, char *o_buff, size_t buflen);
 
 /**
@@ -81,7 +92,7 @@ extern int termios_input(const struct termios *t, char ch,
  *
  * @return Pointer to the next characters for reading.
  */
-extern char *termios_read(const struct termios *t, 
+extern char *termios_read(const struct termios *t,
 		struct termios_i_buff *b, char *buff, char *end);
 
 /**
@@ -93,7 +104,7 @@ extern void termios_update_size(const struct termios *t,
 /**
  * @brief Updates rings depending on the current state of termios.
  */
-extern void termios_update_ring(const struct termios *t, 
+extern void termios_update_ring(const struct termios *t,
 		struct ring *ring, struct ring *canon_ring);
 
 /**
@@ -112,7 +123,7 @@ extern void termios_init(struct termios *t);
 /**
  * @brief Initializes input buffer.
  */
-extern void termios_i_buff_init(struct termios_i_buff *b, struct ring *ring, 
+extern void termios_i_buff_init(struct termios_i_buff *b, struct ring *ring,
 		char *buff, struct ring *canon_ring, size_t buflen);
 
 #endif /* DRIVERS_TERMIOS_OPS_H_ */
