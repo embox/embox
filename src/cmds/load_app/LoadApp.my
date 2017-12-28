@@ -1,0 +1,24 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "load_app",
+	help = "Load and execute program",
+	man = '''
+		AUTHORS
+			Artem Sharganov
+	''')
+module load_app {
+	source "load_app.c"
+
+	depends embox.fs.core
+	depends embox.lib.LibElf
+}
+
+@Build(stage=1, script="$(LOADABLE_MAKE) SRC=hello.c DST=loadable_hello_world")
+module loadable_hello_world {
+	@InitFS
+	@AddPrefix("../../../build/loadable") // FIXME: teach initfs to handle absolute path
+	source "loadable_hello_world"
+
+	depends load_app
+}

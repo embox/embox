@@ -15,6 +15,7 @@ export SUBPLATFORM_TEMPLATE_DIR  = templates/
 
 export BUILD_DIR       = $(ROOT_DIR)/build/base
 export EXTERNAL_BUILD_DIR  = $(ROOT_DIR)/build/extbld
+export LOADABLE_DIR    = $(ROOT_DIR)/build/loadable
 
 export DOC_DIR         = $(ROOT_DIR)/build/doc
 
