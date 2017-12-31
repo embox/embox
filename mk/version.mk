@@ -1,1 +1,1 @@
-export EMBOX_VERSION := 0.3.19
+export EMBOX_VERSION := 0.3.20
