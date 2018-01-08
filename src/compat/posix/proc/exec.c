@@ -64,6 +64,9 @@ int exec_call(void) {
 		}
 	}
 
+	if (ecode == 0) {
+		task_exit(0);
+	}
 	return ecode;
 }
 
