@@ -117,6 +117,7 @@ static void *test_vfork_fourth(void *arg) {
 	pid_t pid;
 	pid_t parent_pid;
 	int res;
+	char *cmd[] = { "help", (char *)0 };
 
 	parent_pid = getpid();
 
@@ -129,7 +130,7 @@ static void *test_vfork_fourth(void *arg) {
 		close(1);
 		close(2);
 		/* When vfork() returns 0, we are in the child process. */
-		if (execv("help", NULL) == -1) {
+		if (execv("help", cmd) == -1) {
 			test_assert(0);
 		}
 	}
