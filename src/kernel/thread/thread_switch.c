@@ -33,6 +33,7 @@ static void thread_prepare_switch(struct thread *prev, struct thread *next) {
 	sched_start_switch(&next->schedee);
 }
 
+extern void thread_set_current(struct thread *t);
 void thread_context_switch(struct thread *prev, struct thread *next) {
 	thread_prepare_switch(prev, next);
 
@@ -40,6 +41,7 @@ void thread_context_switch(struct thread *prev, struct thread *next) {
 	cpudata_var(saved_prev) = prev;
 	ADDR_SPACE_PREPARE_SWITCH();
 
+	thread_set_current(next);
 	context_switch(&prev->context, &next->context);  /* implies cc barrier */
 
 	ADDR_SPACE_FINISH_SWITCH();

@@ -52,9 +52,13 @@ static int id_counter = 0; // TODO make it an indexator
 
 static struct thread *__current_thread __cpudata__;
 
-/* Used also in boot_thread.c */
+/* Used in boot_thread.c and thread_switch.c */
 void thread_set_current(struct thread *t) {
 	cpudata_var(__current_thread) = t;
+}
+
+struct thread *thread_self(void) {
+	return cpudata_var(__current_thread);
 }
 
 /**
@@ -164,7 +168,6 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 	next_t = mcast_out(next, struct thread, schedee);
 	prev_t = mcast_out(prev, struct thread, schedee);
 
-	thread_set_current(next_t);
 
 	/* Threads context switch */
 	if (prev != next) {
@@ -178,10 +181,6 @@ static struct schedee *thread_process(struct schedee *prev, struct schedee *next
 	}
 
 	return &thread_self()->schedee;
-}
-
-struct thread *thread_self(void) {
-	return cpudata_var(__current_thread);
 }
 
 void thread_init(struct thread *t, int priority,
