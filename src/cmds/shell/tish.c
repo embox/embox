@@ -33,7 +33,7 @@
 #include <embox/unit.h>
 
 #include <kernel/task.h>
-
+#include <kernel/task/resource/module_ptr.h>
 
 
 #define PROMPT_FMT OPTION_STRING_GET(prompt)
@@ -168,6 +168,7 @@ static void * run_cmd(void *data) {
 		/* running noninteractive */
 	}
 
+	task_self_module_ptr_set(cmd2mod(cdata.cmd));
 	ret = cmd_exec(cdata.cmd, cdata.argc, cdata.argv);
 	if (ret != 0) {
 		printf("%s: Command returned with code %d: %s\n",
