@@ -45,6 +45,7 @@ static void *bs_idle_run(void *arg) {
 	panic("%s runned\n", __func__);
 }
 
+extern void thread_set_current(struct thread *t);
 void startup_ap(void) {
 	struct thread *bs_idle;
 	int self_id = lapic_id();
@@ -58,12 +59,14 @@ void startup_ap(void) {
 			SCHED_PRIORITY_MIN, bs_idle_run, NULL);
 	cpu_init(self_id, bs_idle);
 	task_thread_register(task_kernel_task(), bs_idle);
+	thread_set_current(bs_idle);
 	sched_set_current(&bs_idle->schedee);
 
 	ap_ack = 1;
 
 	__spin_unlock(&startup_lock);
 	ipl_enable();
+
 
 	while (1)
 		arch_idle();
