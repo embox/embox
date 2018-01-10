@@ -6,7 +6,7 @@
 
 #define __BSD_VISIBLE 1
 
-#include <../../build/extbld/third_party/lib/OpenLibmImpl/install/openlibm_math.h>
+#include <../../build/extbld/third_party/lib/OpenLibm/install/openlibm_math.h>
 
 static inline int finite(double x) {
 	return isfinite(x);
