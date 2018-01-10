@@ -27,13 +27,13 @@ void fork_static_store(struct static_space *sspc) {
 		return;
 	}
 
-	if (!sspc->bss_store) {
+	if (!sspc->bss_store && app->bss_sz) {
 		sspc->bss_store = sysmalloc(app->bss_sz);
 		assert(sspc->bss_store);
 	}
 	memcpy(sspc->bss_store, app->bss, app->bss_sz);
 
-	if (!sspc->data_store) {
+	if (!sspc->data_store && app->data_sz) {
 		sspc->data_store = sysmalloc(app->data_sz);
 		assert(sspc->data_store);
 	}
@@ -48,11 +48,15 @@ void fork_static_restore(struct static_space *sspc) {
 		return;
 	}
 
-	assert(sspc->bss_store);
-	assert(sspc->data_store);
+	if (app->bss_sz) {
+		assert(sspc->bss_store);
+		memcpy(app->bss, sspc->bss_store, app->bss_sz);
+	}
 
-	memcpy(app->bss, sspc->bss_store, app->bss_sz);
-	memcpy(app->data, sspc->data_store, app->data_sz);
+	if (app->data_sz) {
+		assert(sspc->data_store);
+		memcpy(app->data, sspc->data_store, app->data_sz);
+	}
 }
 
 void fork_static_cleanup(struct static_space *sspc) {

@@ -27,7 +27,7 @@ extern void tty_task_break_check(struct tty *t, char ch);
 
 static inline void tty_notify(struct tty *t, int mask) {
 	assert(t);
-	
+
 	if (t->idesc) {
 		idesc_notify(t->idesc, mask);
 	}
@@ -44,7 +44,7 @@ static inline void tty_out_wake(struct tty *t) {
 static int tty_output(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
 	int len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
-	
+
 	if (len > 0) {
 		MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
 	}
@@ -57,7 +57,7 @@ static void tty_rx_do(struct tty *t) {
 	int ich;
 	termios_i_buff b;
 
-	termios_i_buff_init(&b, &t->i_ring, 
+	termios_i_buff_init(&b, &t->i_ring,
 		t->i_buff, &t->i_canon_ring, TTY_IO_BUFF_SZ);
 
 	while ((ich = tty_rx_dequeue(t)) != -1) {
@@ -66,6 +66,10 @@ static void tty_rx_do(struct tty *t) {
 
 		if (result & TERMIOS_RES_GOT_ECHO) {
 			MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
+		}
+
+		if (result & TERMIOS_RES_GOT_NEWLINE) {
+			tty_notify(t, POLLIN);
 		}
 	}
 }
@@ -95,7 +99,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		tty_rx_do(t);
 		rc = idesc_wait_prepare(t->idesc, &iwl);
 
-		termios_i_buff_init(&b, &t->i_ring, 
+		termios_i_buff_init(&b, &t->i_ring,
 			t->i_buff, &t->i_canon_ring, TTY_IO_BUFF_SZ);
 
 		next = termios_read(&t->termios, &b, curr, end);
@@ -122,7 +126,7 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 
 		idesc_wait_cleanup(t->idesc, &iwl);
 	} while (!rc);
-	
+
 	mutex_unlock(&t->lock);
 	threadsig_unlock();
 
@@ -226,7 +230,7 @@ size_t tty_status(struct tty *t, int status_nr) {
 	switch (status_nr) {
 	case POLLIN:
 		IRQ_LOCKED_DO(tty_rx_do(t));
-		res = termios_can_read(&t->termios, 
+		res = termios_can_read(&t->termios,
 			&t->i_ring, &t->i_canon_ring, TTY_IO_BUFF_SZ);
 		break;
 	case POLLOUT:
@@ -288,6 +292,18 @@ int tty_rx_dequeue(struct tty *t) {
 
 	if (!ring_read(&t->rx_ring, TTY_RX_BUFF_SZ, 1)) {
 		return -1;
+	}
+
+	if (TTY_I(t, IGNCR) && *slot == '\r') {
+		t->rx_ring.tail += TTY_RX_BUFF_SZ - 1;
+		ring_fixup_tail(&t->rx_ring, TTY_RX_BUFF_SZ);
+		return tty_rx_dequeue(t);
+	}
+
+	if (TTY_I(t, ICRNL) && *slot == '\r') {
+		*slot = '\n';
+	} else if (TTY_I(t, INLCR) && *slot == '\n') {
+		*slot = '\r';
 	}
 
 	return (int) *slot;

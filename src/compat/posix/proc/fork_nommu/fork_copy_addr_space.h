@@ -41,14 +41,12 @@ struct addr_space {
 
 	struct pt_regs pt_entry;
 
-	struct thread *parent_thread;
-
 	struct dlist_head stack_space_head;
 	struct heap_space heap_space;
 	struct static_space static_space;
 };
 
-extern void fork_addr_space_prepare_switch(void);
+extern void fork_addr_space_prepare_switch();
 extern void fork_addr_space_finish_switch(void *safe_point);
 
 #define __ADDR_SPACE_PREPARE_SWITCH() \
@@ -59,12 +57,12 @@ extern void fork_addr_space_finish_switch(void *safe_point);
 
 /* Stack */
 struct thread;
-extern void fork_stack_store(struct addr_space *adrspc);
+extern void fork_stack_store(struct addr_space *adrspc, struct thread *th);
 extern void fork_stack_restore(struct addr_space *adrspc, void *stack_safe_point);
 extern void fork_stack_cleanup(struct addr_space *adrspc);
 
 /* Heap */
-extern void fork_heap_store(struct heap_space *hpspc);
+extern void fork_heap_store(struct heap_space *hpspc, struct task *tk);
 extern void fork_heap_restore(struct heap_space *hpspc);
 extern void fork_heap_cleanup(struct heap_space *hpspc);
 

@@ -9,19 +9,17 @@
 #include "fork_copy_addr_space.h"
 #include <kernel/thread.h>
 #include <kernel/task/resource/task_fork.h>
-
 #include <sys/types.h>
 #include <mem/sysmalloc.h>
 
-void fork_stack_store(struct addr_space *adrspc) {
+void fork_stack_store(struct addr_space *adrspc, struct thread *th) {
 	size_t st_size;
 	struct stack_space *stspc = NULL, *tmp;
-	struct thread *thread = thread_self();
 
-	st_size = thread_stack_get_size(thread);
+	st_size = thread_stack_get_size(thread_self());
 
 	dlist_foreach_entry(tmp, &adrspc->stack_space_head, list) {
-		if (tmp->thread == thread) {
+		if (tmp->thread == th) {
 			stspc = tmp;
 		}
 	}
@@ -29,8 +27,7 @@ void fork_stack_store(struct addr_space *adrspc) {
 	if (stspc == NULL) {
 		stspc = sysmalloc(sizeof(*stspc));
 		memset(stspc, 0, sizeof(*stspc));
-		stspc->thread = thread;
-
+		stspc->thread = th;
 		dlist_init(&stspc->list);
 		dlist_add_prev(&stspc->list, &adrspc->stack_space_head);
 	}
@@ -45,7 +42,7 @@ void fork_stack_store(struct addr_space *adrspc) {
 		stspc->stack_sz = st_size;
 	}
 
-	memcpy(stspc->stack, thread_stack_get(thread), st_size);
+	memcpy(stspc->stack, thread_stack_get(thread_self()), st_size);
 }
 
 void fork_stack_restore(struct addr_space *adrspc, void *stack_safe_point) {

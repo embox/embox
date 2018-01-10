@@ -10,22 +10,27 @@
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_fork.h>
 #include <mem/sysmalloc.h>
+
 #include <sys/types.h>
-
-void fork_addr_space_prepare_switch(void) {
-	struct addr_space *adrspc;
-
-	adrspc = fork_addr_space_get(task_self());
-	if (!adrspc) {
-		return;
-	}
-
-	fork_addr_space_store(adrspc);
-}
 
 static int fork_addr_space_is_shared(struct addr_space *adrspc) {
 	return adrspc->parent_addr_space || adrspc->child_count;
 }
+
+void fork_addr_space_prepare_switch() {
+	struct addr_space *adrspc;
+
+	adrspc = fork_addr_space_get(task_self());
+
+	if (!adrspc)
+		return;
+
+	if (!fork_addr_space_is_shared(adrspc))
+		return;
+
+	fork_addr_space_store(adrspc);
+}
+
 
 void fork_addr_space_finish_switch(void *safe_point) {
 	struct addr_space *adrspc;
@@ -50,7 +55,6 @@ struct addr_space *fork_addr_space_create(struct addr_space *parent) {
 
 	dlist_init(&adrspc->stack_space_head);
 
-	adrspc->parent_thread = thread_self();
 	if (parent) {
 		adrspc->parent_addr_space = parent;
 		parent->child_count++;
@@ -60,8 +64,8 @@ struct addr_space *fork_addr_space_create(struct addr_space *parent) {
 }
 
 void fork_addr_space_store(struct addr_space *adrspc) {
-	fork_stack_store(adrspc);
-	fork_heap_store(&adrspc->heap_space);
+	fork_stack_store(adrspc, thread_self());
+	fork_heap_store(&adrspc->heap_space, task_self());
 	fork_static_store(&adrspc->static_space);
 }
 
@@ -74,7 +78,7 @@ void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) 
 static void fork_addr_space_child_del(struct addr_space *child) {
 	struct addr_space *parent;
 
-	assert(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
+	assertf(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
 
 	parent = child->parent_addr_space;
 	if (!parent) {

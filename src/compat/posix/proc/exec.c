@@ -64,6 +64,9 @@ int exec_call(void) {
 		}
 	}
 
+	if (ecode == 0) {
+		task_exit(0);
+	}
 	return ecode;
 }
 
@@ -79,27 +82,29 @@ int execv(const char *path, char *const argv[]) {
 
 	cmd_name[0] = '\0';
 
-	for (i = 0; argv[i] != NULL; i ++) {
-		len = strlen(cmd_name);
-		if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
-			break;
-		}
-		strncat(cmd_name, argv[i], MAX_TASK_NAME_LEN - len - 1);
-		if (argv[i + 1] == NULL) {
-			break;
-		}
+	if (argv != NULL) {
+		for (i = 0; argv[i] != NULL; i ++) {
+			len = strlen(cmd_name);
+			if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
+				break;
+			}
+			strncat(cmd_name, argv[i], MAX_TASK_NAME_LEN - len - 1);
+			if (argv[i + 1] == NULL) {
+				break;
+			}
 
-		/* this code is required the only if argv is not NULL terminated */
-		if (i >= 3){
-			// TODO for protection from a lot of arguments
-			break;
-		}
+			/* this code is required the only if argv is not NULL terminated */
+			if (i >= 3){
+				// TODO for protection from a lot of arguments
+				break;
+			}
 
-		len = strlen(cmd_name);
-		if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
-			break;
+			len = strlen(cmd_name);
+			if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
+				break;
+			}
+			strncat(cmd_name, " ", MAX_TASK_NAME_LEN - len - 1);
 		}
-		strncat(cmd_name, " ", MAX_TASK_NAME_LEN - len - 1);
 	}
 
 	task_set_name(task, cmd_name);
