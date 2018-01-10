@@ -9,6 +9,6 @@
 #ifndef MATH_H_
 #define MATH_H_
 
-#include <module/third_party/lib/OpenLibm.h>
+#include <module/embox/compat/libc/math.h>
 
 #endif /* MATH_H_ */
