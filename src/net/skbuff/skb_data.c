@@ -16,6 +16,7 @@
 #include <util/log.h>
 #include <util/member.h>
 #include <util/binalign.h>
+#include <mem/sysmalloc.h>
 
 #include <hal/ipl.h>
 
@@ -41,8 +42,12 @@
 #define SKB_DATA_SIZE(size) \
 	IP_ALIGN_SIZE + MODOPS_DATA_SIZE + (size) + sizeof(size_t)
 
+#define ALLOCATED_POOL 0
+#define ALLOCATED_MALLOC 1
+
 struct sk_buff_data_fixed {
 	size_t links;
+	int alloc_type;
 
 	char __ip_align[IP_ALIGN_SIZE];
 	unsigned char data[MODOPS_DATA_SIZE];
@@ -51,6 +56,7 @@ struct sk_buff_data_fixed {
 
 struct sk_buff_data {
 	size_t links;
+	int alloc_type;
 
 	char __data[];
 } DATA_ATTR;
@@ -63,6 +69,10 @@ void *skb_get_data_pointner(struct sk_buff_data *skb_data) {
 
 size_t skb_max_size(void) {
 	return MODOPS_DATA_SIZE;
+}
+
+static inline bool skb_data_is_huge(size_t size) {
+	return size > skb_max_size();
 }
 
 void * skb_data_cast_in(struct sk_buff_data *skb_data) {
@@ -78,13 +88,16 @@ struct sk_buff_data * skb_data_cast_out(void *data) {
 struct sk_buff_data * skb_data_alloc(size_t size) {
 	ipl_t sp;
 	struct sk_buff_data *skb_data;
-
-	skb_data = NULL;
+	int alloc_type = -1;
 
 	sp = ipl_save();
 	{
-		if (skb_max_size() >= size) {
+		if (!skb_data_is_huge(size)) {
 			skb_data = pool_alloc(&skb_data_pool);
+			alloc_type = ALLOCATED_POOL;
+		} else {
+			skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
+			alloc_type = ALLOCATED_MALLOC;
 		}
 	}
 	ipl_restore(sp);
@@ -94,6 +107,7 @@ struct sk_buff_data * skb_data_alloc(size_t size) {
 		return NULL; /* error: no memory */
 	}
 
+	skb_data->alloc_type = alloc_type;
 	skb_data->links = 1;
 
 	return skb_data;
@@ -125,9 +139,17 @@ void skb_data_free(struct sk_buff_data *skb_data) {
 	sp = ipl_save();
 	{
 		if (--skb_data->links == 0) {
-			assert(pool_belong(&skb_data_pool, skb_data));
-
-			pool_free(&skb_data_pool, skb_data);
+			switch (skb_data->alloc_type) {
+			case ALLOCATED_POOL:
+				pool_free(&skb_data_pool, skb_data);
+				break;
+			case ALLOCATED_MALLOC:
+				sysfree(skb_data);
+				break;
+			default:
+				log_error("Wrong skb->alloc_type = %d", skb_data->alloc_type);
+				break;
+			}
 		}
 	}
 	ipl_restore(sp);
