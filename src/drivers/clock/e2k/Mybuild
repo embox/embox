@@ -1,0 +1,11 @@
+package embox.driver.clock
+
+module e2k extends embox.arch.clock {
+	source "e2k.c"
+
+	option number irq_num=0
+
+	depends embox.kernel.irq
+	@NoRuntime depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.kernel.time.timer_handler
+}
