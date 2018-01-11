@@ -12,10 +12,12 @@
 #include <unistd.h>
 #include <stdint.h>
 
+#include "lapic.h"
+
+#ifdef LAPIC_REGS_X86_H_
 #include <asm/msr.h>
 #include <asm/ap.h>
-
-#include "lapic.h"
+#endif
 
 #include <kernel/panic.h>
 
@@ -105,11 +107,13 @@ void lapic_send_ipi(unsigned int vector, unsigned int cpu, int type) {
 }
 
 static inline void lapic_enable_in_msr(void) {
+#ifdef LAPIC_REGS_X86_H_ /* Needed only on x86 */
 	uint32_t msr_hi, msr_lo;
 
 	ia32_msr_read(IA32_APIC_BASE, &msr_lo, &msr_hi);
 	msr_lo |= (1 << IA32_APIC_BASE_ENABLE_BIT);
 	ia32_msr_write(IA32_APIC_BASE, msr_lo, msr_hi);
+#endif /* LAPIC_REGS_X86_H_ */
 }
 
 int lapic_enable(void) {

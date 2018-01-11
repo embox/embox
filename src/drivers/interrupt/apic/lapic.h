@@ -9,6 +9,8 @@
 #define DRIVER_INTERRUPT_LAPIC_H_
 
 #include <stdint.h>
+#include <drivers/interrupt/lapic/regs.h>
+#include <drivers/interrupt/ioapic/regs.h>
 
 #define LOCAL_APIC_DEF_ADDR	 0xFEE00000 /* Default local apic address */
 
@@ -35,14 +37,6 @@
 #define LAPIC_IPI_TO_ALL           2
 #define LAPIC_IPI_TO_ALL_BUT_SELF  3
 
-static inline uint32_t lapic_read(uint32_t reg) {
-	return *((volatile uint32_t *) reg);
-}
-
-static inline void lapic_write(uint32_t reg, uint32_t value) {
-	*((volatile uint32_t *) reg) = value;
-}
-
 static inline uint32_t lapic_id(void) {
 	return lapic_read(LAPIC_ID) >> 24;
 }
@@ -63,4 +57,3 @@ extern void lapic_send_init_ipi(uint32_t apic_id);
 extern void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline);
 
 #endif /* DRIVER_INTERRUPT_LAPIC_H_ */
-

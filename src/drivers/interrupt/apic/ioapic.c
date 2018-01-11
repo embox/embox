@@ -12,17 +12,17 @@
 
 #include <asm/io.h>
 
-#include "i8259_regs.h"
 #include "lapic.h"
 
 #include <drivers/irqctrl.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
 
-#define IOAPIC_DEF_ADDR	          0xFEC00000
+#ifdef LAPIC_REGS_X86_H_
+#include "../i8259_regs.h"
+#endif
 
-#define IOREGSEL                  (IOAPIC_DEF_ADDR + 0x00)
-#define IOREGWIN                  (IOAPIC_DEF_ADDR + 0x10)
+#define IOAPIC_DEF_ADDR	          0xFEC00000
 
 #define IOAPIC_ID                 0x0
 #define IOAPIC_VERSION            0x1
@@ -36,22 +36,13 @@
 
 EMBOX_UNIT_INIT(ioapic_enable);
 
-static inline uint32_t ioapic_read(uint8_t reg) {
-	*((volatile uint32_t *)(IOREGSEL)) = reg;
-	return *((volatile uint32_t *)(IOREGWIN));
-}
-
-static inline void ioapic_write(uint8_t reg, uint32_t val) {
-	*((volatile uint32_t *)(IOREGSEL)) = reg;
-	*((volatile uint32_t *)(IOREGWIN)) = val;
-}
-
-
 static inline void i8259_disable(void)
 {
+#ifdef IOAPIC_REGS_X86_H_ /* Needed only for x86 */
 	outb(0xFF, PIC2_DATA);
 	outb(0xFF, PIC1_DATA);
 	//inb(PIC1_DATA);
+#endif /* IOAPIC_REGS_X86_H_ */
 }
 
 /**
@@ -64,7 +55,7 @@ static int ioapic_enable(void) {
 	}
 	inited = 1;
 
-#if 1
+#ifdef IOAPIC_REGS_X86_H_
 	/* I'm not sure that it is correct */
 	outb(0x70, 0x22);
 	outb(0x01, 0x23);

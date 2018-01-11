@@ -1,0 +1,38 @@
+package embox.driver.interrupt
+
+@DefaultImpl(ioapic_regs_x86)
+abstract module ioapic_regs {}
+module ioapic_regs_x86 extends ioapic_regs {
+	@IncludeExport(path="drivers/interrupt/ioapic", target_name="regs.h")
+	source "ioapic_regs_x86.h"
+}
+
+module ioapic_regs_e2k extends ioapic_regs {
+	@IncludeExport(path="drivers/interrupt/ioapic", target_name="regs.h")
+	source "ioapic_regs_e2k.h"
+}
+
+module ioapic extends irqctrl_api {
+	source "ioapic.c", "ioapic.h"
+
+	depends lapic
+}
+
+@DefaultImpl(lapic_regs_x86)
+abstract module lapic_regs {}
+module lapic_regs_x86 extends lapic_regs {
+	@IncludeExport(path="drivers/interrupt/lapic", target_name="regs.h")
+	source "lapic_regs_x86.h"
+}
+
+module lapic_regs_e2k extends lapic_regs {
+	@IncludeExport(path="drivers/interrupt/lapic", target_name="regs.h")
+	source "lapic_regs_e2k.h"
+}
+
+module lapic {
+	source "lapic.c", "lapic.h"
+
+	depends lapic_regs
+	depends ioapic_regs
+}

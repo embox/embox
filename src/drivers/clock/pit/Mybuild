@@ -1,0 +1,24 @@
+package embox.driver.clock
+
+@DefaultImpl(pit_regs_x86)
+abstract module pit_regs {}
+module pit_regs_x86 extends pit_regs {
+	@IncludeExport(path="drivers/clock/pit", target_name="regs.h")
+	source "pit_regs_x86.h"
+}
+
+module pit_regs_e2k extends pit_regs {
+	@IncludeExport(path="drivers/clock/pit", target_name="regs.h")
+	source "pit_regs_e2k.h"
+}
+
+module pit extends embox.arch.clock {
+	source "pit.c"
+
+	option number irq_num=0
+
+	depends pit_regs
+	depends embox.kernel.irq
+	@NoRuntime depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.kernel.time.timer_handler
+}

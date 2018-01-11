@@ -1,0 +1,16 @@
+package embox.arch.e2k
+
+abstract module cpu { }
+
+module arch {
+	source "entry.c"
+
+	depends embox.arch.e2k.locore
+}
+
+module x86_boot {
+	source "boot.S"
+}
+
+module locore extends embox.arch.locore {
+}

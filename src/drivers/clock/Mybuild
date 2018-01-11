@@ -30,16 +30,6 @@ module mb_timer extends embox.arch.clock {
 	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
-module pit extends embox.arch.clock {
-	source "pit.c"
-
-	option number irq_num=0
-
-	depends embox.kernel.irq
-	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
-}
-
 module cortexa9 extends embox.arch.clock {
 	option number periph_base_addr
 	option number irq_num
