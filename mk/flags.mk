@@ -229,7 +229,8 @@ override CFLAGS += -std=gnu99
 override CFLAGS += $(cflags)
 
 ifneq ($(COMPILER),clang)
-	# Not clang means gcc
+ifneq ($(COMPILER),lcc)
+	# Not clang nor lcc means gcc
 	# This option conflicts with some third-party stuff, so we disable it.
 	override CFLAGS += -Wno-misleading-indentation
 
@@ -238,6 +239,7 @@ ifneq ($(COMPILER),clang)
 	# support could cause real damage to whole system in contrast with segfault of
 	# application, we decided to keep explicit null checks and disable the warning.
 	override CFLAGS += -Wno-nonnull-compare
+endif
 endif
 
 
