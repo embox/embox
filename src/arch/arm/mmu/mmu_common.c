@@ -85,11 +85,11 @@ void mmu_off(void) {
 #endif
 }
 
-void mmu_flush_tlb(void) {
-	uint32_t zero = 0;
-
+__attribute__ ((naked)) void mmu_flush_tlb(void) {
 	__asm__ __volatile__ (
-			"mcr p15, 0, %[zero], c8, c7, 0" : : [zero] "r" (zero) :
+			"mov r0, #0\t\n"
+			"mcr p15, 0, r0, c8, c7, 0\t\n"
+			"bx lr\t\n"
 	);
 }
 
@@ -107,10 +107,10 @@ mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 	return (mmu_ctx_t) pgd;
 }
 
-void mmu_set_context(mmu_ctx_t ctx) {
+__attribute__ ((naked)) void mmu_set_context(mmu_ctx_t ctx) {
 	__asm__ __volatile__ (
-		"mcr p15, 0, %[addr], c2, c0, 0\n\t"
-		: : [addr] "r" (ctx) :
+		"mcr p15, 0, r0, c2, c0, 0\n"
+		"bx lr"
 	);
 }
 
