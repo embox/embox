@@ -11,6 +11,9 @@
 
 static struct thread *saved_prev __cpudata__; // XXX
 
+static struct context *prev_ctx __cpudata__;
+static struct context *next_ctx __cpudata__;
+
 /**
  * Any fresh thread must call this function from a trampoline.
  * Basically it emulates returning from the scheduler as it would be done
@@ -39,12 +42,21 @@ void thread_context_switch(struct thread *prev, struct thread *next) {
 
 	/* Preserve initial semantics of prev/next. */
 	cpudata_var(saved_prev) = prev;
-	ADDR_SPACE_PREPARE_SWITCH();
 
 	thread_set_current(next);
-	context_switch(&prev->context, &next->context);  /* implies cc barrier */
+
+	/* Store context pointers in static variables as after address space switch
+	 * we may have corrupt stack before changing the stack pointer */
+	cpudata_var(prev_ctx) = &prev->context;
+	cpudata_var(next_ctx) = &next->context;
+
+	ADDR_SPACE_PREPARE_SWITCH();
+
+	/* implies cc barrier */
+	context_switch(cpudata_var(prev_ctx), cpudata_var(next_ctx));
 
 	ADDR_SPACE_FINISH_SWITCH();
+
 	prev = cpudata_var(saved_prev);
 
 	sched_finish_switch(&prev->schedee);
