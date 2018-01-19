@@ -21,7 +21,7 @@ mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
 }
 
 mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
-	return 0;
+	return *pte & ~MMU_PAGE_MASK;
 }
 
 void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
