@@ -33,9 +33,10 @@ void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 
 		if (ptr == NULL) {
 			errno = EPERM;
+			return MAP_FAILED;
 		}
 
-		return MAP_FAILED;
+		return ptr;
 	} else {
 		if (fd > 0) {
 			return idesc_mmap(addr, len, prot, flags, fd, off);
