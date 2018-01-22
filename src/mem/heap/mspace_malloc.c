@@ -153,10 +153,18 @@ void *mspace_malloc(size_t size, struct dlist_head *mspace) {
 }
 
 int mspace_free(void *ptr, struct dlist_head *mspace) {
-	void *segment;
+	void *segment, *phys_ptr;
 
 	assert(ptr);
 	assert(mspace);
+
+	phys_ptr = (void *) vaddr_to_paddr(vmem_current_context(), (mmu_vaddr_t) ptr);
+
+	if (phys_ptr != ptr) {
+		/* Assume this area was allocated in parent before fork */
+		/* TODO figure out how to actually free this memory */
+		return 0;
+	}
 
 	segment = pointer_to_segment(ptr, mspace);
 
