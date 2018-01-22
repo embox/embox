@@ -20,6 +20,8 @@
 
 #include <mem/heap_bm.h>
 #include <mem/page.h>
+#include <mem/sysmalloc.h>
+#include <mem/vmem.h>
 
 #include <util/dlist.h>
 #include <util/array.h>
@@ -292,5 +294,23 @@ void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_spa
 	if (!dlist_empty(store_space)) {
 		dlist_del(store_space);
 		dlist_add_prev(mspace, store_space->next);
+	}
+}
+
+void mspace_deep_remap(mmu_ctx_t ctx, struct dlist_head *mspace, struct dlist_head *child) {
+	struct mm_segment *mm;
+	void *ptr;
+
+	if (dlist_empty(mspace)) {
+		return;
+	}
+
+	dlist_foreach_entry(mm, mspace, link) {
+		ptr = sysmemalign(MMU_PAGE_SIZE, mm->size);
+		memcpy(ptr, mm, mm->size);
+		dlist_init(ptr);
+		dlist_add_next(ptr, child);
+
+		vmem_remap(ctx, mm, ptr, mm->size);
 	}
 }
