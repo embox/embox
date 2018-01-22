@@ -85,3 +85,35 @@ void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
 	panic("MMU page fault: virt_addr - 0x%x\n", (unsigned int) virt_addr);
 }
 
+mmu_paddr_t vaddr_to_paddr(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
+#ifdef NOMMU
+	return virt_addr;
+#else
+	mmu_pgd_t *pgd;
+	mmu_pmd_t *pmd;
+	mmu_pte_t *pte;
+	size_t pgd_idx, pmd_idx, pte_idx;
+
+	pgd = mmu_get_root(ctx);
+	vmem_get_idx_from_vaddr(virt_addr, &pgd_idx, &pmd_idx, &pte_idx);
+	pmd = mmu_pgd_value(pgd + pgd_idx);
+	pte = mmu_pmd_value(pmd + pmd_idx);
+
+	return mmu_pte_value(pte + pte_idx) | (virt_addr & MMU_PAGE_MASK);
+#endif /* NOMMU */
+}
+
+void vmem_remap(mmu_ctx_t ctx, void *ptr_old,
+		void *ptr_new, size_t sz) {
+	int res;
+
+	vmem_unmap_region(ctx, (mmu_vaddr_t) ptr_old, sz);
+	res = vmem_map_region(ctx,
+			(mmu_paddr_t) ptr_new,
+			(mmu_vaddr_t) ptr_old,
+			sz, VMEM_PAGE_WRITABLE | VMEM_PAGE_EXECUTABLE | VMEM_PAGE_CACHEABLE);
+
+	if (res != 0) {
+		log_error("Failed to remap");
+	}
+}

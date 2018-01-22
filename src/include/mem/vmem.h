@@ -9,6 +9,8 @@
 #ifndef MEM_VMEM_H_
 #define MEM_VMEM_H_
 
+#include <util/log.h>
+
 #include <hal/mmu.h>
 #include <stddef.h>
 #include <sys/mman.h>
@@ -47,5 +49,9 @@ extern int vmem_mmu_enabled(void);
 extern void mmu_flush_tlb(void);
 
 extern void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx);
+
+extern mmu_paddr_t vaddr_to_paddr(mmu_ctx_t ctx, mmu_vaddr_t virt_addr);
+
+extern void vmem_remap(mmu_ctx_t ctx, void *ptr_old, void *ptr_new, size_t sz);
 
 #endif /* MEM_VMEM_H_ */
