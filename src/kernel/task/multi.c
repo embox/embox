@@ -22,6 +22,7 @@
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
 
+#include <mem/sysmalloc.h>
 #include <util/binalign.h>
 #include <util/err.h>
 #include <compiler.h>
@@ -77,8 +78,9 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 			goto out_unlock;
 		}
 
-		trampoline_arg = thread_stack_alloc(thd,
-				sizeof *trampoline_arg);
+		//trampoline_arg = thread_stack_alloc(thd,
+		//		sizeof *trampoline_arg);
+		trampoline_arg = sysmalloc(sizeof *trampoline_arg);
 		if (trampoline_arg == NULL) {
 			res = -ENOMEM;
 			goto out_threadfree;
@@ -88,8 +90,9 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 		trampoline_arg->run_arg = arg;
 		thread_set_run_arg(thd, trampoline_arg);
 
-		self_task = thread_stack_alloc(thd,
-				sizeof *self_task + TASK_RESOURCE_SIZE);
+		//self_task = thread_stack_alloc(thd,
+		//		sizeof *self_task + TASK_RESOURCE_SIZE);
+		self_task = sysmalloc(sizeof *self_task + TASK_RESOURCE_SIZE);
 		if (self_task == NULL) {
 			res = -ENOMEM;
 			goto out_threadfree;
@@ -188,8 +191,9 @@ int task_prepare(const char *name) {
 		schedee_priority_set(&thd->schedee,
 			schedee_priority_get(&thread_self()->schedee));
 
-		self_task = thread_stack_alloc(thd,
-				sizeof *self_task + TASK_RESOURCE_SIZE);
+		//self_task = thread_stack_alloc(thd,
+		//		sizeof *self_task + TASK_RESOURCE_SIZE);
+		self_task = sysmalloc(sizeof *self_task + TASK_RESOURCE_SIZE);
 		if (self_task == NULL) {
 			res = -ENOMEM;
 			goto out_threadfree;
@@ -266,12 +270,11 @@ static void task_make_children_daemons(struct task *task) {
 	}
 }
 
-void task_do_exit(struct task *task, int status) {
+static void _NORETURN task_actual_exit(void) {
 	struct thread *thr, *main_thr;
-
-	assert(critical_inside(CRITICAL_SCHED_LOCK));
-
+	struct task *task = task_self();
 	main_thr = task->tsk_main;
+	int status = (int) thread_self()->run_arg;
 	assert(main_thr);
 
 	task->status = status;
@@ -295,6 +298,35 @@ void task_do_exit(struct task *task, int status) {
 
 	/* At the end terminate main thread */
 	thread_terminate(main_thr);
+
+	task_finish_exit();
+}
+
+#include <kernel/thread.h>
+#include <kernel/addr_space.h>
+
+extern void thread_context_switch(struct thread *prev, struct thread *next);
+static uint8_t safe_stack[1024];
+
+void _NORETURN task_do_exit(struct task *task, int status) {
+	struct thread *t = thread_self();
+	struct context ctx;
+
+	assert(critical_inside(CRITICAL_SCHED_LOCK));
+	assert(thread_self()->task == task);
+	/* Due to MMU mapping physical address of current stack may be not the same
+	 * as virtual address, so we can't free MMU tables safely.
+	 *
+	 * That's why we have to reinit current thread to have a 1-1 mapped stack */
+
+	/* TODO free previous stack */
+ 	t->run_arg = (void *) status;
+	context_init(&t->context, CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
+		task_actual_exit, safe_stack);
+	context_switch(&ctx, &t->context);
+
+	/* NOTREACHED */
+	panic("%s failed", __func__);
 }
 
 void task_start_exit(void) {
@@ -326,7 +358,7 @@ void _NORETURN task_exit(void *res) {
 
 	task_do_exit(task_self(), TASKST_EXITED_MASK | ((int) res & TASKST_EXITST_MASK));
 
-	task_finish_exit();
+	//task_finish_exit();
 }
 
 void task_delete(struct task *tsk) {
