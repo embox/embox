@@ -802,7 +802,7 @@ void pix_fmt_chan_set_val(enum pix_fmt fmt, enum pix_chan chan, void *data, int 
 		switch (chan) {
 		case ALPHA_CHAN:
 			return;
-		case BLUE_CHAN:
+		case RED_CHAN:
 			tmp &= ~0xFF0000;
 			tmp |= val << 16;
 			break;
@@ -810,7 +810,7 @@ void pix_fmt_chan_set_val(enum pix_fmt fmt, enum pix_chan chan, void *data, int 
 			tmp &= ~0x00FF00;
 			tmp |= val << 8;
 			break;
-		case RED_CHAN:
+		case BLUE_CHAN:
 			tmp &= ~0x0000FF;
 			tmp |= val;
 			break;
