@@ -17,6 +17,7 @@
 #define PAGE_CACHE_SIZE         PAGE_SIZE()
 
 #define GFP_KERNEL    0
+#define GFP_NOWAIT    1
 
 #define PageLocked(pg) 1
 #define Page_Uptodate(pg) 0
