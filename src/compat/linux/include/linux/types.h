@@ -24,6 +24,8 @@ typedef __u32 __be32;
 typedef __u64 __le64;
 typedef __u64 __be64;
 
+typedef uint32_t u32;
+
 /* bsd */
 typedef unsigned char     u_char;
 typedef unsigned short    u_short;
