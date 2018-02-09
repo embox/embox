@@ -36,8 +36,14 @@
 
 #define RELOAD_VALUE (SYS_CLOCK / (CLOCK_DIVIDER * 1000))
 
+/* It is used for STM32 Cube */
+void (*cortexm_external_clock_hnd)(void);
+
 static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
+	if (cortexm_external_clock_hnd) {
+		cortexm_external_clock_hnd();
+	}
 	clock_tick_handler(irq_nr, data);
 	return IRQ_HANDLED;
 }
