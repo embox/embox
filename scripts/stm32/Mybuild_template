@@ -1,0 +1,22 @@
+/* GENERATED FILE */
+
+package stm32_PLATFORM_.cmd
+
+@AutoCmd
+@Cmd(name="_EXAMPLE_", help="")
+@BuildDepends(third_party.bsp.stm_PLATFORM_cube.core)
+module _EXAMPLE_ {
+	source "Src/embox_main.c"
+	depends _EXAMPLE__Lib
+}
+
+@BuildDepends(third_party.bsp.stm_PLATFORM_cube.core)
+module _EXAMPLE__Lib {
+	@Cflags("-Wno-unused")
+	@IncludePath("$(ROOT_DIR)/platform/stm32_PLATFORM_/cmds/_EXAMPLE_/Inc")
+	_SOURCES_
+
+	depends third_party.bsp.stm_PLATFORM_cube.stm32_PLATFORM__discovery_bsp
+    depends third_party.bsp.stm_PLATFORM_cube.stm32_PLATFORM__discovery_components
+    depends third_party.bsp.stm_PLATFORM_cube.stm32_PLATFORM__discovery_utilities
+}
