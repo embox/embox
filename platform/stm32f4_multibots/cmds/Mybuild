@@ -8,7 +8,7 @@ module spi_master {
 
 	source "spi_master.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends spi_lib
 }
 
@@ -20,7 +20,7 @@ module spi_slave {
 
 	source "spi_slave.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends spi_lib
 }
 
@@ -32,7 +32,7 @@ module nrf24_test {
 
 	source "nrf24_test.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends spi_lib
 }
 
@@ -44,7 +44,7 @@ module nrf24_tx {
 
 	source "nrf24_tx.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends nrf24_lib
 }
 
@@ -56,7 +56,7 @@ module nrf24_rx {
 
 	source "nrf24_rx_irq.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends nrf24_lib
 }
 
@@ -67,7 +67,7 @@ static module nrf24_lib {
 	source "nrf24.c",
 		"nrf24_hw.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends spi_lib
 }
 
@@ -77,7 +77,7 @@ static module spi_lib {
 
 	source "spi_lib.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 }
 
 @AutoCmd
@@ -86,7 +86,7 @@ static module spi_lib {
 module gy_30 {
 	source "gy_30.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends embox.driver.i2c.stm32f4.i2c
 }
 
@@ -96,7 +96,7 @@ module gy_30 {
 module i2c_master {
 	source "i2c_master.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends embox.driver.i2c.stm32f4.i2c
 }
 
@@ -106,6 +106,6 @@ module i2c_master {
 module i2c_slave {
 	source "i2c_slave.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
 	depends embox.driver.i2c.stm32f4.i2c
 }

@@ -108,10 +108,12 @@ static module system_init {
 
 @Build(stage=1,script="true")
 @BuildDepends(core)
-static module stm32f4_discovery {
+static module stm32f4_discovery_bsp {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery")
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/core")
-	source "./STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery.c"
+	source "./STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery.c",
+			"./STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_accelerometer.c",
+			"./STM32Cube_FW_F4_V1.13.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c"
 }
 
 @Build(stage=1,script="true")
