@@ -1,7 +1,7 @@
 package third_party.bsp.stmf7cube
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
-@BuildArtifactPath(cppflags="-DSTM32F746xx -I$(ROOT_DIR)/third-party/bsp/stmf7cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/,Drivers/STM32F7xx_HAL_Driver/Inc  Drivers/BSP/STM32746G-Discovery/ Drivers/CMSIS/Device/ST/STM32F7xx/Include Drivers/CMSIS/Include Projects/STM32746G-Discovery/Examples/BSP/Inc Utilities/Log)")
+@BuildArtifactPath(cppflags="-DSTM32F746xx -DUSBD_LPM_ENABLED=1 -I$(ROOT_DIR)/third-party/bsp/stmf7cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/,Drivers/STM32F7xx_HAL_Driver/Inc  Drivers/BSP/STM32746G-Discovery/ Drivers/CMSIS/Device/ST/STM32F7xx/Include Drivers/CMSIS/Include Projects/STM32746G-Discovery/Examples/BSP/Inc Utilities/Log Middlewares/ST/STM32_USB_Device_Library/Core/Inc Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc Middlewares/ST/STM32_USB_Host_Library/Core/Inc Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc Middlewares/Third_Party/FatFs/src)")
 static module core extends third_party.bsp.st_bsp_api {
 
 	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
@@ -9,6 +9,8 @@ static module core extends third_party.bsp.st_bsp_api {
 	@Cflags("-Wno-unused")
 	@DefineMacro("STM32F746xx")
 	@DefineMacro("HAL_ETH_MODULE_ENABLED")
+	@DefineMacro("HAL_PCD_MODULE_ENABLED")
+	@DefineMacro("HAL_HCD_MODULE_ENABLED")
 	@DefineMacro("USE_HAL_DRIVER")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Inc")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
@@ -136,6 +138,47 @@ static module stm32f7_discovery_utilities {
     @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Utilities/Log")
     @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/core")
 	source "./STM32Cube_FW_F7_V1.5.0/Utilities/Log/lcd_log.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module middlewares_usb_device {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Device/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_conf_template.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Device/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_bot.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_data.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_scsi.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_storage_template.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module middlewares_usb_host {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Host/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_conf_template.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ctlreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ioreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Host/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc_bot.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc_scsi.c"
 }
 
 @Build(stage=1,script="true")
