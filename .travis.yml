@@ -15,6 +15,7 @@ env:
     - TEMPLATE=arm/stm32_f4
     - TEMPLATE=x86/qemu
     - TEMPLATE=x86/smp
+    - TEMPLATE=x86/user_apps
     - TEMPLATE=x86/test/lang
     - TEMPLATE=x86/test/fs
     - TEMPLATE=x86/test/net
