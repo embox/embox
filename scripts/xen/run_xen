@@ -15,4 +15,4 @@ cp $ROOD_DIR/build/base/bin/embox /tmp/xen_embox
 # copy config to well-accessable location, avoid problems with sshfs and sudo
 cp $SRC_DOMCONFIG $DOMCONFIG
 
-sudo xl -vvv create -c $DOMCONFIG $@
+sudo xl -vvv create -c -f $DOMCONFIG $@
