@@ -111,12 +111,18 @@ define filter_static_modules
 	$(call topsort,$(strip $(foreach m,$1,$(if $(get $(get m->type).isStatic),$m))),filter_static_reacheables)
 endef
 
+_topsort_error_fatal=
+# TODO enable fatal mode
+#_topsort_error_fatal=1
+
 # Performs topological sort of library modules.
 # 1. Vertexes
-# 2. Function of one argument returning vertex's reacheable vertex
+# 2. Function of one argument returning vertex's reacheable vertexes
 define topsort
-	$(shell echo $(foreach v,$1,$(foreach u,$(filter $1,$(call $2,$v)) $v,$v $u)) | $(TSORT) | $(TAC))
+	$(shell $(if $(_topsort_error_fatal),set -eo pipefail;) echo $(foreach v,$1,$(foreach u,$(filter $1,$(call $2,$v)) $v,$v $u)) | $(TSORT) 2>&1 | awk -f $(ROOT_DIR)/mk/tsortdiag.awk | $(TAC))
+	$(if $(_topsort_error_fatal),$(if $(eq 0,$(.SHELLSTATUS)),,$(info Error: stop after finding cycle(s))$(error Mybuild stop)))
 endef
+
 
 $(def_all)
 
