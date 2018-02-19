@@ -4,3 +4,4 @@
 "route add 10.0.2.0 netmask 255.255.255.0 eth0",
 "route add default gw 10.0.2.10 eth0",
 "date -s 201206011922.40",
+"forkexec hello",

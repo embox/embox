@@ -22,8 +22,7 @@ module mmap_mmu extends mmap_api {
 	
 	depends embox.kernel.task.resource.mmap
 	depends embox.kernel.task.resource.mmap_notify
-	/* TODO tsort loop
+	/* TODO tsort loop: mmap_init calls for vmem_init_context, which must be initialized */
 	depends embox.mem.vmem
-	*/
 	depends embox.arch.mmu
 }
