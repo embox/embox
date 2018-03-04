@@ -123,13 +123,8 @@ do_exception:
 	pushl %edx
 	pushl %eax
 	call *%edi
-	jmp ret_from_exception
-    
-ret_from_exception:
-	movb CS(%esp),%cl
-	test $2,%cl          # slow return to ring 2 or 3
-	jne  safesti
-        RESTORE_ALL
+	addl $8,%esp
+	RESTORE_ALL
 
 # A note on the "critical region" in our callback handler.
 # We want to avoid stacking callback handlers due to events occurring
