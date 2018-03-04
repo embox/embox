@@ -1,7 +1,10 @@
 
 #include <stdint.h>
 #include <xen/xen.h>
+#include <xen/event.h> // pt_regs
 #include <kernel/printk.h>
+#include <kernel/panic.h>
+#include <kernel/irq.h>
 
 extern shared_info_t xen_shared_info;
 
@@ -41,8 +44,18 @@ void spurious_interrupt_bug(void);
 void machine_check(void);
 
 /* Dummy implementation.  Should actually do something */
-void do_divide_error(void) {
+void do_divide_error(struct pt_regs *regs, int error_code) {
 	printk("DIVIDE ERROR called\n");
+
+	extern int test_irqctrl_div_zero;
+	if (test_irqctrl_div_zero) {
+		printk("called from test\n");
+		irq_dispatch(test_irqctrl_div_zero);
+		regs->eip += 3; // sizeof idivl
+		return;
+	}
+
+	panic("DIVIDE ERROR panic");
 }
 void do_debug(void) {
 	printk("ERROR_1\n");

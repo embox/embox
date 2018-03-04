@@ -13,8 +13,7 @@
 #include <drivers/irqctrl.h>
 #include <xen/event.h>
 
-extern shared_info_t xen_shared_info;
-extern void do_divide_error(void);
+int test_irqctrl_div_zero;
 
 EMBOX_UNIT_INIT(xen_int_init);
 
@@ -32,7 +31,11 @@ void irqctrl_disable(unsigned int irq) {
 void irqctrl_force(unsigned int irq) {
 	printk("xen force interrupt %d\n", irq);
 	int x = 0;
+	test_irqctrl_div_zero = irq;
+	__asm__ __volatile("" ::: "memory");
 	int y = 100 / x; /* make div-by-zero execption */
+	__asm__ __volatile("" ::: "memory");
+	test_irqctrl_div_zero = 0;
 	printk("%d\n", y); /* avoid optimizing out by compiler */
 }
 
