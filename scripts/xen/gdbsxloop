@@ -1,0 +1,35 @@
+#!/bin/sh
+
+BASE=$(dirname $0)
+
+LCK=gdbsx.lck
+PORT=1234
+BITNESS=32
+
+touch $LCK
+
+emboxdomid() {
+	xl list | awk '$1 == "embox" { print $2 }'
+}
+
+gdbsxbg() {
+	echo GDBXSBG: Looking for embox domain...
+	DOM=$(emboxdomid)
+	while [ -z $DOM ]; do
+		sleep 0.5
+		DOM=$(emboxdomid)
+	done
+	echo GDBXSBG: Embox domain id is $DOM
+	gdbsx -a $DOM $BITNESS $PORT
+}
+
+while [ -f $LCK ]; do
+	gdbsxbg &
+	gdbsxloopid=$!
+
+	$BASE/run_xen -p 
+
+	xl destroy embox
+	killall gdbsx
+	kill $gdbsxloopid
+done
