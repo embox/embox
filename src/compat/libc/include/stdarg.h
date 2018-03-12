@@ -40,6 +40,14 @@ Boston, MA 02110-1301, USA.  */
 #ifndef STDARG_H_
 #define STDARG_H_
 
+#if defined(__e2k__)
+
+#define __STDARG_H
+typedef void* va_list;
+
+#include "va-e2k.h"
+
+#if 0
 #ifdef __LCC__
 #define __STDARG_H
 
@@ -64,6 +72,8 @@ typedef va_list __gnuc_va_list;
 
 #define va_end(ap)              ((void)0)
 #define va_copy(dest, src)      ((dest) = (src))
+#endif
+#endif
 
 #else
 /* If not LCC, we assume it's GCC */
