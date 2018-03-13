@@ -13,15 +13,12 @@ _ram_base = ORIGIN(RAM);
 _ram_size = LENGTH(RAM);
 
 SECTIONS {
-	. = 0x1000000 - 0x10000; /* Fixed entry address */
-	.data : {
-		*(.x86_boot)
-	}
-
-	. = 0x1000000;
-	_start = .;
 	.text : {
-		. = 0x1006000;
+		_start = .;
+		/* 0x00FF0000 */
+		*(.x86_boot)
+
+		. = ALIGN(0x10000);
 		*(.e2k_entry)
 	}
 }
