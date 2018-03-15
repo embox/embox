@@ -4,6 +4,9 @@ abstract module cpu { }
 
 module arch {
 	source "entry.c"
+	source "kernel_entry.S"
+	source "e2k_interrupt.c"
+	source "e2k_syscall.c"
 
 	depends embox.arch.e2k.locore
 }
