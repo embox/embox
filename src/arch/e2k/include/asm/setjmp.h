@@ -12,11 +12,14 @@
 
 #define _JBRNUM 7
 
-#define THREAD_  (_JBRNUM + 0)
-#define SIGNAL_  (_JBRNUM + 1)
-#define SAVE_    (_JBRNUM + 2)
-#define SIGMASK_ (_JBRNUM + 3)
-#define KSTTOP   (_JBRNUM + 4)
+#if 0
+#define E2K_JMBBUFF_THREAD_  (_JBRNUM + 0)
+#define E2K_JMBBUFF_SIGNAL_  (_JBRNUM + 1)
+#define E2K_JMBBUFF_SAVE_    (_JBRNUM + 2)
+#define E2K_JMBBUFF_SIGMASK_ (_JBRNUM + 3)
+#define E2K_JMBBUFF_KSTTOP   (_JBRNUM + 4)
+#endif
+
 #define _JBLEN   (_JBRNUM + 5)
 
 #ifndef __ASSEMBLER__
@@ -31,8 +34,19 @@ struct _jump_regs {
 	uint64_t usd_hi;
 };
 
+
+
 typedef uint64_t __jmp_buf[_JBLEN];
 
 #endif /* __ASSEMBLER__ */
+
+
+#define E2K_JMBBUFF_CR0_HI    0x00
+#define E2K_JMBBUFF_CR1_LO    0x08
+#define E2K_JMBBUFF_CR1_HI    0x10
+#define E2K_JMBBUFF_PCSP_HI   0x18
+#define E2K_JMBBUFF_PCS_HI    0x20
+#define E2K_JMBBUFF_USD_LO    0x28
+#define E2K_JMBBUFF_USD_HI    0x30
 
 #endif /* SRC_ARCH_E2K_INCLUDE_ASM_SETJMP_H_ */
