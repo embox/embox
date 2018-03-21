@@ -21,6 +21,7 @@
 #define PCI_VENDOR_ID_PLX                 0x10B5
 #define PCI_VENDOR_ID_XILINX              0x10EE
 #define PCI_VENDOR_ID_VIRTIO              0x1AF4
+#define PCI_VENDOR_ID_SMI                 0x126f
 
 /* Cirrus device id's */
 #define PCI_DEV_ID_CIRRUS_5446            0x00b8
@@ -80,5 +81,11 @@
 
 /* VirtIO device id's */
 #define PCI_DEV_ID_VIRTIO_NET             0x1000
+
+#define PCI_DEV_ID_LYNX_EXP	0x0750
+#define PCI_DEV_ID_LYNX_SE	0x0718
+#define PCI_DEV_ID_LYNX_EM	0x0712
+#define PCI_DEV_ID_LYNX_3DM	0x0720
+#define PCI_DEV_ID_VOYAGER 	0x0501
 
 #endif /* PCI_ID_H_ */
