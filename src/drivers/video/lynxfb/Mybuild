@@ -1,0 +1,11 @@
+package embox.driver.video
+
+module lynxfb {
+	option number log_level = 1
+
+	depends embox.driver.video.fb
+	depends embox.driver.pci
+
+
+	source "lynxfb.c"
+}
