@@ -18,3 +18,10 @@ module ti81xx extends pci_chip {
 	@IncludeExport(path="drivers/pci/pci_chip")
 	source "pci_utils.h"
 }
+
+module pci_chip_elbrus extends pci_chip {
+	source "pci_chip_elbrus.c"
+
+	@IncludeExport(path="drivers/pci/pci_chip")
+	source "pci_utils.h"
+}
