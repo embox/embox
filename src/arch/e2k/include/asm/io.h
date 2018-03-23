@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
+#include <e2k_mas.h>
+
 #define WMB_AFTER_ATOMIC	".word 0x00008001\n" \
 				".word 0x30000084\n"
 
@@ -46,49 +48,49 @@ static void wmb() {
 
 static inline void e2k_write8(uint8_t val, void *addr) {
        asm volatile ("stb,2\t0x0, [%0] %2, %1" :
-		: "r" (addr), "r" (val), "i" (6) : "memory");
+		: "r" (addr), "r" (val), "i" (MAS_IOADDR) : "memory");
 }
 
 static inline void e2k_write16(uint16_t val, void *addr) {
        asm volatile ("sth,2\t0x0, [%0] %2, %1" :
-		: "r" (addr), "r" (val), "i" (6) : "memory");
+		: "r" (addr), "r" (val), "i" (MAS_IOADDR) : "memory");
 }
 
 static inline void e2k_write32(uint32_t val, void *addr) {
        asm volatile ("stw,2\t0x0, [%0] %2, %1" :
-		: "r" (addr), "r" (val), "i" (6) : "memory");
+		: "r" (addr), "r" (val), "i" (MAS_IOADDR) : "memory");
 }
 
 static inline void e2k_write64(uint64_t val, void *addr) {
        asm volatile ("std,2\t0x0, [%0] %2, %1" :
-		: "r" (addr), "r" (val), "i" (6) : "memory");
+		: "r" (addr), "r" (val), "i" (MAS_IOADDR) : "memory");
 }
 
 static inline uint8_t e2k_read8(void *addr) {
 	register uint8_t res;
 	asm volatile ("ldb,2 \t0x0, [%1] %2, %0" :
-		"=r" (res) : "r" (addr), "i" (6));
+		"=r" (res) : "r" (addr), "i" (MAS_IOADDR));
 	return res;
 }
 
 static inline uint16_t e2k_read16(void *addr) {
 	register uint16_t res;
 	asm volatile ("ldh,2 \t0x0, [%1] %2, %0" :
-		"=r" (res) : "r" (addr), "i" (6));
+		"=r" (res) : "r" (addr), "i" (MAS_IOADDR));
 	return res;
 }
 
 static inline uint32_t e2k_read32(void *addr) {
 	register uint32_t res;
 	asm volatile ("ldw,2 \t0x0, [%1] %2, %0" :
-		"=r" (res) : "r" (addr), "i" (6));
+		"=r" (res) : "r" (addr), "i" (MAS_IOADDR));
 	return res;
 }
 
 static inline uint64_t e2k_read64(void *addr) {
 	register uint64_t res;
 	asm volatile ("ldd,2 \t0x0, [%1] %2, %0" :
-		"=r" (res) : "r" (addr), "i" (6));
+		"=r" (res) : "r" (addr), "i" (MAS_IOADDR));
 	return res;
 }
 
