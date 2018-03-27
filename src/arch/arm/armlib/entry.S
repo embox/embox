@@ -6,6 +6,7 @@
  * @author Anton Kozlov
  */
 
+#include <arm/fpu.h>
 #include <asm/modes.h>
 
 .text
@@ -17,7 +18,7 @@ irq_handler:
 	sub    LR, LR, #4
 
 	/* save temp register*/
-	stmfd  sp!, {r0}
+	stmfd  sp!, {r0, r1}
 	/* storing LP */
 	stmfd  sp!, {lr}
 	/*storing SPSR and valuable regs*/
@@ -27,24 +28,23 @@ irq_handler:
 	/* pointer to saved on special stack registers */
 	mov    r0, sp
 	/* return stack pointer to normal value */
-	add    sp, sp, #(4 * 3)
+	add    sp, sp, #(4 * (4))
 
 	/* return to previous CPU mode with disabled interrupts */
-	//orr    lr, lr, #I_BIT | F_BIT
-	//msr    CPSR, lr
 	msr    CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
 
 	/* now we have previous mode and sp */
-	stmfd  sp!, {r1-r12, lr}
+	ARM_FPU_CONTEXT_SAVE_DEC(r1, sp)
+	stmfd  sp!, {r2-r12, lr}
 
 	/* restore spsr, lr, tmp reg */
 	ldmfd  r0!, {r1} /* spsr */
 	ldmfd  r0!, {r2} /* lr */
-	ldmfd  r0!, {r3} /* tmp reg */
+	ldmfd  r0!, {r3, r4} /* tmp reg */
 
-	stmfd  sp!, {r3}  /* store tmp reg on the stack */
+	stmfd  sp!, {r3, r4}  /* store tmp reg on the stack */
 	/* store sp */
-	add    r3, sp, #(14 * 4)
+	add    r3, sp, #((14 + FPU_DATA_LEN) * 4)
 	stmfd  sp!, {r3}
 
 	/* store lr */
@@ -61,6 +61,10 @@ irq_handler:
 	msr    CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
 
 	/* restore spsr */
+	add    r0, r0, #17 * 4
+	add    r0, r0, #4 * FPU_DATA_LEN
+	ARM_FPU_CONTEXT_LOAD_DEC(r1, r0)
+	sub    r0, r0, #17 * 4
 	ldmfd  r0!, {r1}
 	msr    SPSR, r1
 
@@ -71,11 +75,12 @@ irq_handler:
 	mov    sp, r0
 	/* restore sp */
 	ldmfd  sp!, {r3} /* only for balance */
+
 	/* restore tmp reg */
 	ldmfd  sp!, {r0}
 
 	ldmfd  sp!, {r1-r12, lr}
-
+	add    sp, sp, #FPU_DATA_LEN*4
 	msr    CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
 	stmfd  sp!, {lr}
 	/*regs & SPSR on theirs places, as before handler */
