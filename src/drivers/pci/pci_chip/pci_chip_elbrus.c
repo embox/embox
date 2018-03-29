@@ -32,7 +32,8 @@ static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 	tmp = e2k_read32((void*)(dev_addr + pci_conf_base));
 
 	if (tmp == 0xFFFFFFFF) {
-		return PCI_VENDOR_WRONG;
+		* (uint32_t *) ptr = PCI_VENDOR_WRONG;
+		return PCIUTILS_NODATA;
 	}
 
 	if (size == 1) {

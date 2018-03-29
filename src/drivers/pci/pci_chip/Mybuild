@@ -20,6 +20,8 @@ module ti81xx extends pci_chip {
 }
 
 module pci_chip_elbrus extends pci_chip {
+	option number log_level=1
+
 	source "pci_chip_elbrus.c"
 
 	@IncludeExport(path="drivers/pci/pci_chip")
