@@ -8,13 +8,15 @@
 #ifndef SRC_DRIVERS_VIDEO_LYNXFB_LYNXFB_HW750_H_
 #define SRC_DRIVERS_VIDEO_LYNXFB_LYNXFB_HW750_H_
 
+#include <stdint.h>
+
 #include "lynxfb.h"
 
 
 #define DEFAULT_SM750_CHIP_CLOCK 		290
 #define DEFAULT_SM750LE_CHIP_CLOCK  	333
 #ifndef SM750LE_REVISION_ID
-#define SM750LE_REVISION_ID ((unsigned char)0xfe)
+#define SM750LE_REVISION_ID ((uint8_t)0xfe)
 #endif
 
 
