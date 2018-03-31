@@ -8,4 +8,5 @@ module lynxfb {
 
 
 	source "lynxfb.c"
+	source "lynxfb_hw750.c"
 }
