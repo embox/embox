@@ -5,8 +5,12 @@
  * @author Anton Bondarev
  */
 
+
 #include "lynxfb.h"
 #include "lynxfb_hw750.h"
+
+#include "ddk750_chip.h"
+void volatile *mmio750;
 
 int lynxfb_hw750_map(struct sm750_share *share, struct pci_dev *pdev) {
 	return 0;

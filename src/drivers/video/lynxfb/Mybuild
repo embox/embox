@@ -9,4 +9,6 @@ module lynxfb {
 
 	source "lynxfb.c"
 	source "lynxfb_hw750.c"
+	source "ddk750_chip.c"
+	source "ddk750_power.c"
 }
