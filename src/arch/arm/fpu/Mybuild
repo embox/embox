@@ -1,0 +1,19 @@
+package embox.arch.arm.fpu
+
+@DefaultImpl(fpu_stub)
+abstract module fpu {
+}
+
+module fpu_stub extends fpu {
+	@IncludeExport(path="arm",target_name="fpu.h")
+	source "stub.h"
+}
+
+module vfp extends fpu {
+	option number log_level = 0
+
+	@IncludeExport(path="arm",target_name="fpu.h")
+	source "vfp.h"
+
+	source "vfp.c"
+}

@@ -13,6 +13,8 @@
 
 #include <asm/modes.h>
 
+#include <arm/fpu.h>
+
 void context_init(struct context *ctx, unsigned int flags,
 		void (*routine_fn)(void), void *sp) {
 	ctx->lr = (uint32_t) routine_fn;
@@ -22,5 +24,7 @@ void context_init(struct context *ctx, unsigned int flags,
 	if (flags & CONTEXT_IRQDISABLE) {
 		ctx->cpsr |= I_BIT | F_BIT;
 	}
+
+	arm_fpu_context_init(&ctx->fpu_data);
 }
 

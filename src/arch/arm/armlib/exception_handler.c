@@ -9,8 +9,10 @@
 
 #include <kernel/panic.h>
 #include <kernel/printk.h>
+#include <kernel/thread.h>
 
 #include <asm/cp15.h>
+#include <arm/fpu.h>
 
 uint32_t GLOBAL_LR1 = 0;
 uint32_t GLOBAL_SP1 = 0;
@@ -59,4 +61,41 @@ void arm_exception_handler(unsigned int *regs) {
 		printk(">>>>>>>>>>>>>>> NS=1 updated \n");
 		//while(1);
 	}
+}
+
+void arm_undefined_exception(unsigned int *regs) {
+	struct thread *cur = thread_self();
+
+	if (cur) {
+		log_debug("Thread %p now uses VFP registers", cur);
+		cur->context.fpu_data[0] |= 0xf << 20;
+	} else {
+		log_debug("Now kernel uses VFP registers");
+	}
+
+	log_debug("regs:\n"
+			"%08x %08x %08x %08x\n"
+			"%08x %08x %08x %08x\n"
+			"%08x %08x %08x %08x\n"
+			"%08x %08x %08x %08x\n",
+			"%08x %08x %08x %08x\n",
+			regs[0], regs[1], regs[2], regs[3],
+			regs[4], regs[5], regs[6], regs[7],
+			regs[8], regs[9], regs[10], regs[11],
+			regs[12], regs[13], regs[14], regs[15],
+			regs[16], regs[17], regs[18], regs[19]);
+
+#ifdef ARM_FPU_VFP_H_
+	{
+		uint32_t tmp;
+		/* Enable VFP access */
+		asm volatile ("mrc p15, 0, %0, c1, c0, 2" : "=r" (tmp) :);
+		tmp |= 0xf << 20;
+		asm volatile ("mcr p15, 0, %0, c1, c0, 2" : : "r" (tmp));
+
+		asm volatile ("VMRS %0, FPEXC" : "=r" (tmp) :);
+		tmp |= 1 << 30;
+		asm volatile ("VMSR FPEXC, %0" : : "r" (tmp));
+	}
+#endif
 }
