@@ -107,4 +107,56 @@ struct lynxfb_par {
 	struct lynx_share *share;
 };
 
+
+//TODO
+#define BITS_PER_LONG 64
+#if BITS_PER_LONG == 64
+
+# define do_div(n,base) ({					\
+	uint32_t __base = (base);				\
+	uint32_t __rem;						\
+	__rem = ((uint64_t)(n)) % __base;			\
+	(n) = ((uint64_t)(n)) / __base;				\
+	__rem;							\
+ })
+
+#elif BITS_PER_LONG == 32
+
+extern uint32_t __div64_32(uint64_t *dividend, uint32_t divisor);
+
+/* The unnecessary pointer compare is there
+ * to check for type safety (n must be 64bit)
+ */
+# define do_div(n,base) ({				\
+	uint32_t __base = (base);			\
+	uint32_t __rem;					\
+	(void)(((typeof((n)) *)0) == ((uint64_t *)0));	\
+	if (likely(((n) >> 32) == 0)) {			\
+		__rem = (uint32_t)(n) % __base;		\
+		(n) = (uint32_t)(n) / __base;		\
+	} else 						\
+		__rem = __div64_32(&(n), __base);	\
+	__rem;						\
+ })
+
+#else /* BITS_PER_LONG == ?? */
+
+# error do_div() does not yet support the C64
+
+#endif /* BITS_PER_LONG */
+
+#include <util/binalign.h>
+#define ALIGN(x,a) __binalign_mask(x, (typeof(x))(a) - 1)
+
+
+
+static inline unsigned long ps_to_hz(unsigned int psvalue)
+{
+	unsigned long long numerator = 1000 * 1000 * 1000 * 1000ULL;
+	/* 10^12 / picosecond period gives frequency in Hz */
+	//do_div(numerator, psvalue);
+
+	return (unsigned long)numerator;
+}
+
 #endif /* SRC_DRIVERS_VIDEO_LYNXFB_LYNXFB_H_ */

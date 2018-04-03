@@ -86,4 +86,12 @@ struct sm750_share {
 	 */
 };
 
+struct fb_var_screeninfo;
+extern int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
+		  struct fb_var_screeninfo *var,
+		  unsigned int line_length);
+
+extern int hw_sm750_output_setMode(struct lynxfb_output *output,
+			    struct fb_var_screeninfo *var);
+
 #endif /* SRC_DRIVERS_VIDEO_LYNXFB_LYNXFB_HW750_H_ */
