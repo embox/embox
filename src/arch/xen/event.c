@@ -2,6 +2,7 @@
 #include <xen/xen.h>
 #include <xen/event.h>
 
+#include <kernel/irq.h>
 // headers below have xen_ prefix added to name 
 #include <xen_barrier.h>
 
@@ -126,6 +127,9 @@ void do_hypervisor_callback(struct pt_regs *regs)
 
 			/* Combine the two offsets to get the port */
 			evtchn_port_t port = (pending_selector << 5) + event_offset;
+
+			irq_dispatch(port);
+
 			/* Handler the event */
 			handlers[port](port, regs);
 			/* Clear the pending flag */

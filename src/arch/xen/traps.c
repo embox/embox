@@ -47,7 +47,7 @@ void machine_check(void);
 void do_divide_error(struct pt_regs *regs, int error_code) {
 	printk("DIVIDE ERROR called\n");
 
-	extern int test_irqctrl_div_zero;
+	int test_irqctrl_div_zero = 10; //TODO: Em... ?
 	if (test_irqctrl_div_zero) {
 		printk("called from test\n");
 		irq_dispatch(test_irqctrl_div_zero);
