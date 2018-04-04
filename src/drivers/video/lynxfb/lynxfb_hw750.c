@@ -7,7 +7,13 @@
 
 #include <util/log.h>
 
+#include <errno.h>
+#include <sys/mman.h>
+
 #include <drivers/video/fb.h>
+
+#include <drivers/pci/pci.h>
+#include <drivers/pci/pci_driver.h>
 
 #include "lynxfb.h"
 #include "lynxfb_hw750.h"
@@ -18,8 +24,71 @@
 #include "ddk750_chip.h"
 void volatile *mmio750;
 
-int lynxfb_hw750_map(struct sm750_share *share, struct pci_dev *pdev) {
-	return 0;
+
+#define pci_resource_start(d, b) (d->bar[(b)] & ~0xF)
+
+int lynxfb_hw750_map(struct sm750_share *spec_share, struct pci_slot_dev *pdev) {
+	struct lynx_share *share = &spec_share->share;
+	int ret = 0;
+
+	share->vidreg_start = pci_resource_start(pdev, 1);
+	share->vidreg_size = 0x00200000; /*SZ_2M */
+
+	/* reserve the vidreg space of smi adaptor
+	 * if you do this, u need to add release region code
+	 * in lynxfb_remove, or memory will not be mapped again
+	 * successfully
+	 * */
+
+
+	/* now map mmio and vidmem */
+	share->pvReg = mmap_device_memory(share->vidreg_start,
+			share->vidreg_size,
+			PROT_READ|PROT_WRITE|PROT_NOCACHE,
+			MAP_FIXED,
+			(unsigned long) share->vidreg_start);
+	if (MAP_FAILED == share->pvReg) {
+		log_error("mmio failed");
+		ret = -EFAULT;
+		goto exit;
+	}
+#if 0
+	share->accel.dprBase = share->pvReg + DE_BASE_ADDR_TYPE1;
+	share->accel.dpPortBase = share->pvReg + DE_PORT_ADDR_TYPE1;
+
+	ddk750_set_mmio(share->pvReg, share->devid, share->revid);
+#endif
+	mmio750 = share->pvReg;
+	sm750_set_chip_type(share->devid, share->revid);
+
+	share->vidmem_start = pci_resource_start(pdev, 0);
+	/* don't use pdev_resource[x].end - resource[x].start to
+	 * calculate the resource size, its only the maximum available
+	 * size but not the actual size, use
+	 * @hw_sm750_getVMSize function can be safe.
+	 * */
+	share->vidmem_size = ddk750_get_vm_size();//share);
+
+	log_info("video memory size = %lld mb", share->vidmem_size >> 20);
+
+	/* reserve the vidmem space of smi adaptor */
+
+	share->pvMem = mmap_device_memory(share->vidmem_start,
+			share->vidmem_size,
+			PROT_READ|PROT_WRITE|PROT_NOCACHE,
+			MAP_FIXED,
+			(unsigned long) share->vidmem_start);
+
+	if (MAP_FAILED == share->pvMem) {
+		log_error("Map video memory failed");
+		ret = -EFAULT;
+		goto exit;
+	}
+
+	log_info("video memory vaddr = %p", share->pvMem);
+exit:
+
+	return ret;
 }
 
 int lynxfb_hw750_inithw(struct sm750_share *share, struct pci_dev *pdev) {
@@ -27,8 +96,29 @@ int lynxfb_hw750_inithw(struct sm750_share *share, struct pci_dev *pdev) {
 }
 
 /* 	chip specific g_option configuration routine */
-void lynxfb_hw750_setup(struct sm750_share *share) {
+void lynxfb_hw750_setup(struct sm750_share *spec_share) {
+	int swap = 0;
 
+	spec_share->state.initParm.chip_clk = 0;
+	spec_share->state.initParm.mem_clk = 0;
+	spec_share->state.initParm.master_clk = 0;
+	spec_share->state.initParm.powerMode = 0;
+	spec_share->state.initParm.setAllEngOff = 0;
+	spec_share->state.initParm.resetMemory = 1;
+
+	if (spec_share->share.revid != SM750LE_REVISION_ID) {
+		if (swap) {
+			spec_share->state.dataflow = sm750_simul_sec;
+		}
+		else {
+			spec_share->state.dataflow = sm750_simul_pri;
+		}
+	} else {
+		/* SM750LE only have one crt channel */
+		spec_share->state.dataflow = sm750_simul_sec;
+		/* sm750le do not have complex attributes */
+		spec_share->state.nocrt = 0;
+	}
 }
 
 int lynxfb_hw750_set_drv(struct lynxfb_par *par) {

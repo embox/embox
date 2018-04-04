@@ -95,6 +95,8 @@ static const struct fb_ops lynxfb_ops = {
 };
 
 static void lynxfb_hw_init(struct pci_slot_dev *pci_dev) {
+	struct lynx_share *share = &lynxfb_share.share;
+
 #if 0
 	int g_specId;
 	size_t spec_offset;
@@ -112,31 +114,28 @@ static void lynxfb_hw_init(struct pci_slot_dev *pci_dev) {
 	}
 #endif
 
-	lynxfb_share.share.devid = pci_dev->device;
-	lynxfb_share.share.revid = pci_dev->rev;
+	share->devid = pci_dev->device;
+	share->revid = pci_dev->rev;
+	log_debug("devid = %x, revid = %x", share->devid, share->revid);
 
 	lynxfb_hw750_setup(&lynxfb_share);
+
+	lynxfb_hw750_map(&lynxfb_share, pci_dev);
+
+	lynxfb_hw750_inithw(&lynxfb_share, pci_dev);
 
 }
 
 static int lynxfb_init(struct pci_slot_dev *pci_dev) {
-	char *mmap_base = (char *)(pci_dev->bar[0] & ~0xf); /* FIXME */
-	size_t mmap_len = binalign_bound(2048 * 2048 * 32 / 8, PAGE_SIZE());
 	struct fb_info *info;
+	struct lynx_share *share = &lynxfb_share.share;
 
 	lynxfb_hw_init(pci_dev);
 
-	if (MAP_FAILED == mmap_device_memory(mmap_base,
-				mmap_len,
-			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) mmap_base)) {
-		return -EIO;
-	}
-
-	info = fb_create(&lynxfb_ops, mmap_base, mmap_len);
+	info = fb_create(&lynxfb_ops, share->pvMem, share->vidmem_size);
 	if (info == NULL) {
-		munmap(mmap_base, mmap_len);
+		munmap(share->pvMem, share->vidmem_size);
+		munmap(share->pvReg, share->vidreg_size);
 		return -ENOMEM;
 	}
 

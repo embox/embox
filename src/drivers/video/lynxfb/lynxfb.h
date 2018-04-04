@@ -11,6 +11,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
+
 /* please use revision id to distinguish sm750le and sm750*/
 #define LYNXFB_SPC_SM750          0
 #define LYNXFB_SPC_SM712          1
@@ -34,10 +35,14 @@ struct lynx_share {
 	size_t vidreg_start;
 	size_t vidmem_size;
 	size_t vidreg_size;
-
+	void          *pvReg;
+	unsigned char *pvMem;
+#if 0
 	/* function pointers */
 	void (*suspend)(struct lynx_share *);
 	void (*resume)(struct lynx_share *);
+#endif
+
 };
 
 struct lynxfb_crtc {
