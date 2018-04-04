@@ -18,7 +18,10 @@
 #include <drivers/irqctrl.h>
 #include <xen/event.h>
 
+#define CLEAR_BIT(field, bit) __asm__ __volatile__ ("lock btrl %1,%0":"=m" ((field)):"Ir"((bit)):"memory")
+
 extern shared_info_t xen_shared_info;
+shared_info_t *shared_info;
 
 EMBOX_UNIT_INIT(xen_int_init);
 
@@ -32,7 +35,6 @@ static int xen_int_init(void) {
 	{
 		return -1;
 	}
-	port = op_sender.port;
 	evtchn_bind_interdomain_t op_recipient;
 	op_recipient.remote_dom = DOMID_SELF;
 	op_recipient.remote_port = op_sender.port;
@@ -40,6 +42,7 @@ static int xen_int_init(void) {
 	{
 		return -1;
 	}
+	port = op_recipient.local_port;
 	return 0;
 }
 
@@ -53,10 +56,18 @@ void irqctrl_disable(unsigned int irq) {
 void irqctrl_force(unsigned int irq) {
 	struct evtchn_send event;
 	event.port = port;
+	shared_info = &xen_shared_info;
+	int size = sizeof(xen_ulong_t) * 8;
+	//shared_info->evtchn_mask[irq / size] &= ~(1UL << irq % size); //TODO: Need to choose..
+	//CLEAR_BIT(shared_info->evtchn_mask[irq / size], irq % size);
+	shared_info->evtchn_mask[irq / size] &= 0;
+	shared_info->vcpu_info[0].evtchn_upcall_mask = 0; //TODO: Searching for the right bit..
+
 	if (HYPERVISOR_event_channel_op(EVTCHNOP_send, &event) != 0) {
 		panic("ops");
 	};
 }
 
 void interrupt_handle(void) {
+	printk("Here is IRQ!");
 }
