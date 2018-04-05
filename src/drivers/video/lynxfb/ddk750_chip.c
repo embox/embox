@@ -251,7 +251,8 @@ unsigned int ddk750_get_vm_size(void)
 	return data;
 }
 
-int ddk750_init_hw(struct initchip_param *pInitParam)
+//int ddk750_init_hw(struct initchip_param *pInitParam)
+int ddk750_init_hw(struct sm750_init_status *pInitParam)
 {
 	unsigned int reg;
 
@@ -269,6 +270,7 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
 		reg = peek32(VGA_CONFIGURATION);
 		reg |= (VGA_CONFIGURATION_PLL | VGA_CONFIGURATION_MODE);
 		poke32(VGA_CONFIGURATION, reg);
+		log_debug("set panel pll and graphic mode via mmio_88");
 	} else {
 #if 0
 #if defined(__i386__) || defined(__x86_64__)
@@ -280,13 +282,16 @@ int ddk750_init_hw(struct initchip_param *pInitParam)
 	}
 
 	/* Set the Main Chip Clock */
-	set_chip_clock(MHz((unsigned int)pInitParam->chipClock));
+	//set_chip_clock(MHz((unsigned int)pInitParam->chipClock));
+	set_chip_clock(MHz((unsigned int)pInitParam->chip_clk));
 
 	/* Set up memory clock. */
-	set_memory_clock(MHz(pInitParam->memClock));
+	//set_memory_clock(MHz(pInitParam->memClock));
+	set_memory_clock(MHz(pInitParam->mem_clk));
 
 	/* Set up master clock */
-	set_master_clock(MHz(pInitParam->masterClock));
+	//set_master_clock(MHz(pInitParam->masterClock));
+	set_master_clock(MHz(pInitParam->master_clk));
 
 	/*
 	 * Reset the memory controller.

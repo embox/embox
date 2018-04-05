@@ -108,7 +108,8 @@ extern void sm750_set_chip_type(unsigned short devId, uint8_t revId);
 extern unsigned int sm750_calc_pll_value(unsigned int request, struct  pll_value *pll);
 extern unsigned int sm750_format_pll_reg(struct pll_value *pPLL);
 extern unsigned int ddk750_get_vm_size(void);
-extern int ddk750_init_hw(struct initchip_param *pinit_param);
+struct sm750_init_status;
+extern int ddk750_init_hw(struct sm750_init_status *pinit_param);
 
 
 #endif /* SRC_DRIVERS_VIDEO_LYNXFB_DDK750_CHIP_H_ */

@@ -124,6 +124,9 @@ static void lynxfb_hw_init(struct pci_slot_dev *pci_dev) {
 
 	lynxfb_hw750_inithw(&lynxfb_share, pci_dev);
 
+	//TODO double set memory
+	memset(share->pvMem, 0x0, share->vidmem_size);
+	memset(share->pvMem, 0x0, share->vidmem_size);
 }
 
 static int lynxfb_init(struct pci_slot_dev *pci_dev) {
