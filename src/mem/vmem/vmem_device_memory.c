@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 
+#include <util/log.h>
 
 #include <stddef.h>
 #include <sys/mman.h>

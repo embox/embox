@@ -13,6 +13,8 @@ module mmap_nommu extends mmap_api {
 }
 
 module mmap_mmu extends mmap_api {
+	option number log_level=0
+
 	source "mmap_mmu.h"
 	source "mmap_mmu.c"
 	source "marea.c"
