@@ -36,7 +36,7 @@ void xen_kernel_start(start_info_t * start_info) {
 	xen_start_info_global = start_info;
 	HYPERVISOR_shared_info = &xen_shared_info;
 	
-	init_events();
+	/*init_events();*/
 
 	trap_init();
 

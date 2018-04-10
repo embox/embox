@@ -17,3 +17,7 @@ module traps {
 module event {
 	source "event.c"
 }
+
+module ipl extends embox.arch.interrupt {
+	source "ipl.c", "ipl.h"
+}
