@@ -46,16 +46,6 @@ void machine_check(void);
 /* Dummy implementation.  Should actually do something */
 void do_divide_error(struct pt_regs *regs, int error_code) {
 	printk("DIVIDE ERROR called\n");
-
-	int test_irqctrl_div_zero = 10; //TODO: Em... ?
-	if (test_irqctrl_div_zero) {
-		printk("called from test\n");
-		irq_dispatch(test_irqctrl_div_zero);
-		regs->eip += 3; // sizeof idivl
-		return;
-	}
-
-	panic("DIVIDE ERROR panic");
 }
 void do_debug(void) {
 	printk("ERROR_1\n");
