@@ -14,12 +14,14 @@
 #include <xen/event_channel.h>
 #include <xen/io/console.h>
 #include <xen/event.h>
+#include <xenstore.h>
 
 /* Embox interface */
 extern void kernel_start(void);
 
 /* Xen interface */
 extern void trap_init(void);
+extern int xenstore_init(start_info_t *);
 
 uint8_t xen_features[XENFEAT_NR_SUBMAPS * 32];
 
@@ -35,8 +37,10 @@ void xen_kernel_start(start_info_t * start_info) {
 
 	xen_start_info_global = start_info;
 	HYPERVISOR_shared_info = &xen_shared_info;
-	
+
 	/*init_events();*/
+
+	xenstore_init(start_info);
 
 	trap_init();
 

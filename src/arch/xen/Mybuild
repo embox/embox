@@ -8,10 +8,15 @@ module xen_header {
 module boot {
 	source "boot.S",
 		"kernel_init.c"
+        depends xenstore
 }
 
 module traps {
 	source "traps.c"
+}
+
+module xenstore {
+        source "xenstore.c"
 }
 
 module event {
