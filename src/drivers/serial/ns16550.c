@@ -7,6 +7,7 @@
  */
 
 #include <hal/reg.h>
+#include <drivers/common/memory.h>
 #include <drivers/diag.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -83,3 +84,10 @@ DIAG_OPS_DECLARE(
 		.getc = ns16550_diag_getc,
 		.kbhit = ns16550_diag_kbhit,
 );
+
+static struct periph_memory_desc ns16550_mem = {
+	.start = COM_BASE,
+	.len   = 0x1000,
+};
+
+PERIPH_MEMORY_DEFINE(ns16550_mem);
