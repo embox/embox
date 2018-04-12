@@ -56,10 +56,28 @@
 #define REG16_STORE(addr, val) \
 	do { *((volatile uint16_t *)(addr)) = (val); } while (0)
 
+#define REG16_ORIN(addr, mask) \
+	REG16_STORE(addr, REG16_LOAD(addr) | ((uint8_t) mask))
+
+#define REG16_ANDIN(addr, mask) \
+	REG16_STORE(addr, REG16_LOAD(addr) & ((uint8_t) mask))
+
+#define REG16_CLEAR(addr, mask) \
+	REG16_STORE(addr, REG16_LOAD(addr) & (~((uint8_t) mask)))
+
 #define REG8_LOAD(addr) \
 	*((volatile uint8_t *)(addr))
 
 #define REG8_STORE(addr, val) \
 	do { *((volatile uint8_t *)(addr)) = (val); } while (0)
+
+#define REG8_ORIN(addr, mask) \
+	REG8_STORE(addr, REG8_LOAD(addr) | ((uint8_t) mask))
+
+#define REG8_ANDIN(addr, mask) \
+	REG8_STORE(addr, REG8_LOAD(addr) & ((uint8_t) mask))
+
+#define REG8_CLEAR(addr, mask) \
+	REG8_STORE(addr, REG8_LOAD(addr) & (~((uint8_t) mask)))
 
 #endif /* HAL_REG_H_ */
