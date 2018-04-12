@@ -54,6 +54,8 @@ module mips_intc extends irqctrl_api {
 
 module omap3_intc extends irqctrl_api {
 	source "omap3_intc.c", "omap3_intc.h"
+
+	depends embox.driver.periph_memory
 }
 
 module bpi_intc extends irqctrl_api {
