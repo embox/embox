@@ -12,6 +12,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 
+#include <drivers/common/memory.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
