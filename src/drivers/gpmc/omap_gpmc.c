@@ -6,10 +6,12 @@
  * @author Alexander Kalmuk
  */
 
+#include <drivers/common/memory.h>
 #include <errno.h>
 #include <kernel/printk.h>
 #include <embox/unit.h>
 #include <hal/reg.h>
+#include <mem/vmem.h>
 
 #define GPMC_MEMORY_START  0x00000000
 #define GPMC_MEMORY_END    0x3fffffff
@@ -114,11 +116,16 @@ static int gpmc_cs_enable_mem(int cs, uint32_t base, uint32_t size) {
 	l |= GPMC_CONFIG7_CSVALID;
 	gpmc_cs_reg_write(cs, GPMC_CS_CONFIG7, l);
 
+#ifndef NOMMU
+	vmem_map_region(vmem_current_context(), base, base, size, VMEM_PAGE_WRITABLE);
+#endif
+
 	return 0;
 }
 
 int gpmc_cs_init(int cs, uint32_t *base, uint32_t size) {
 	*base = GPMC_MEMORY_START + GPMC_CS_MEMORY_MAX * cs;
+
 	return gpmc_cs_enable_mem(cs, *base, size);
 }
 
@@ -131,3 +138,10 @@ static int gpmc_init(void) {
 
 	return 0;
 }
+
+static struct periph_memory_desc omap_gpmc_mem = {
+	.start = GPMC_BASE_ADDRESS,
+	.len   = 0x200,
+};
+
+PERIPH_MEMORY_DEFINE(omap_gpmc_mem);

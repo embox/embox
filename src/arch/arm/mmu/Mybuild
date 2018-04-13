@@ -25,6 +25,8 @@ module mmu_small_page extends embox.arch.mmu {
 	source "mmu_common.c"
 
 	source "mmu_small_page.c"
+
+	depends embox.mem.vmem
 }
 
 module mmu_test extends embox.arch.testtrap {

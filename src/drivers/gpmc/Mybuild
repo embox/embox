@@ -4,4 +4,6 @@ abstract module gpmc_api { }
 
 module omap3_gpmc extends gpmc_api {
 	source "omap_gpmc.c"
+
+	depends embox.driver.periph_memory
 }

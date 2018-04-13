@@ -94,6 +94,8 @@ module ns16550 extends embox.driver.diag.diag_api {
 	option number base_addr = 0x49020000
 
 	source "ns16550.c"
+
+	depends embox.driver.periph_memory
 }
 
 module bpi extends embox.driver.diag.diag_api {

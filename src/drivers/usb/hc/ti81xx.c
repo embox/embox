@@ -225,35 +225,6 @@ static inline struct ti81xx_hcd_hci *usb2hcd(struct usb_hcd *hcd) {
 	return hcd->hci_specific;
 }
 
-#define REG8_LOAD(reg) \
-	(* (volatile uint8_t *) reg)
-
-#define REG8_STORE(reg, val) \
-	do { \
-		* (volatile uint8_t *) reg = (uint8_t) val; \
-	} while(0);
-
-#define REG8_ANDIN(reg, val) \
-	REG8_STORE(reg, REG8_LOAD(reg) & (val));
-
-#define REG8_ORIN(reg, val) \
-	REG8_STORE(reg, REG8_LOAD(reg) | (val));
-
-#define REG16_LOAD(reg) \
-	(* (volatile uint16_t *) reg)
-
-#define REG16_STORE(reg, val) \
-	do { \
-		* (volatile uint16_t *) reg = (uint16_t) val; \
-	} while(0);
-
-#define REG16_ANDIN(reg, val) \
-	REG16_STORE(reg, REG16_LOAD(reg) & (val));
-
-#define REG16_ORIN(reg, val) \
-	REG16_STORE(reg, REG16_LOAD(reg) | (val));
-
-
 static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data);
 
 static inline struct ti81xx_usb *hcd2ti(struct usb_hcd *hcd) {

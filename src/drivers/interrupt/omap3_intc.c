@@ -12,6 +12,7 @@
 #include <hal/reg.h>
 #include <hal/ipl.h>
 #include <hal/mmu.h>
+#include <drivers/common/memory.h>
 #include <drivers/irqctrl.h>
 #include <mem/vmem.h>
 #include <util/binalign.h>
@@ -137,3 +138,9 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
+static struct periph_memory_desc omap3_intc_mem = {
+	.start = OMAP35X_INTC_BASE,
+	.len   = 0x1000,
+};
+
+PERIPH_MEMORY_DEFINE(omap3_intc_mem);
