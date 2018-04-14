@@ -103,3 +103,10 @@ module hpet {
 	depends embox.kernel.time.clock_source
 	depends third_party.lib.acpica
 }
+
+module xen extends embox.arch.clock {
+	source "xen.c"
+
+	depends embox.kernel.time.clock_source
+	depends embox.kernel.irq
+}
