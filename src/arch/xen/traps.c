@@ -45,55 +45,55 @@ void machine_check(void);
 
 /* Dummy implementation.  Should actually do something */
 void do_divide_error(struct pt_regs *regs, int error_code) {
-	printk("DIVIDE ERROR called\n");
+	panic("DIVIDE ERROR called\n");
 }
 void do_debug(void) {
-	printk("ERROR_1\n");
+	panic("ERROR_1\n");
 }
 void do_int3(void) {
-	printk("ERROR_2\n");
+	panic("ERROR_2\n");
 }
 void do_overflow(void) {
-	printk("ERROR_3\n");
+	panic("ERROR_3\n");
 }
 void do_bounds(void) {
-	printk("ERROR_4\n");
+	panic("ERROR_4\n");
 }
 void do_invalid_op(void) {
-	printk("ERROR_5\n");
+	panic("ERROR_5\n");
 }
 void do_device_not_available(void) {
-	printk("ERROR_6\n");
+	panic("ERROR_6\n");
 }
 void do_coprocessor_segment_overrun(void) {
-	printk("ERROR_7\n");
+	panic("ERROR_7\n");
 }
 void do_invalid_TSS(void) {
-	printk("ERROR_8\n");
+	panic("ERROR_8\n");
 }
 void do_segment_not_present(void) {
-	printk("ERROR_9\n");
+	panic("ERROR_9\n");
 }
 void do_stack_segment(void) {
-	printk("ERROR_10\n");
+	panic("ERROR_10\n");
 }
 void do_general_protection(void) {
-	printk("ERROR_11\n");
+	panic("ERROR_11\n");
 }
 void do_page_fault(void) {
-	printk("ERROR_12\n");
+	panic("ERROR_12\n");
 }
 void do_coprocessor_error(void) {
-	printk("ERROR_13\n");
+	panic("ERROR_13\n");
 }
 void do_simd_coprocessor_error(void) {
-	printk("ERROR_14\n");
+	panic("ERROR_14\n");
 }
 void do_alignment_check(void) {
-	printk("ERROR_15\n");
+	panic("ERROR_15\n");
 }
 void do_spurious_interrupt_bug(void) {
-	printk("ERROR_16\n");
+	panic("ERROR_16\n");
 }
 void do_machine_check(void) {
 }
