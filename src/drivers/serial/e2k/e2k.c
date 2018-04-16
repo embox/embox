@@ -13,46 +13,113 @@
 #include <drivers/serial/diag_serial.h>
 #include <embox/unit.h>
 
+#include "am85c30.h"
+
 EMBOX_UNIT_INIT(uart_init);
 
-#define UART_BASE 0x83200040
+#define UART_BASE         0x83200040
 #define IRQ_NUM 0
 
-static int e2k_setup(struct uart *dev, const struct uart_params *params) {
+
+#if 0
+static unsigned long		am85c30_com_port = 0;
+
+#define	boot_am85c30_com_port		boot_get_vo_value(am85c30_com_port)
+#define	boot_am85c30_serial_boot_console		\
+		((serial_console_opts_t)	\
+			(boot_get_vo_value(am85c30_serial_boot_console)))
+#endif
+static inline void
+am85c30_com_outb(void *iomem_addr, uint8_t byte)
+{
+	e2k_write8(byte, iomem_addr);
+	wmb();	/* waiting for write to serial port completion */
+}
+
+static inline uint8_t
+am85c30_com_inb(void *iomem_addr)
+{
+	rmb();	/* waiting for read from serial port completion */
+	wmb();	/* waiting for write to serial port completion */
+	return e2k_read8(iomem_addr);
+}
+
+static inline uint8_t
+am85c30_com_inb_command(void* iomem_addr, uint8_t reg_num)
+{
+	e2k_write8(reg_num, iomem_addr);
+	wmb();	/* waiting for write to serial port completion */
+	rmb();	/* waiting for read from serial port completion */
+	return e2k_read8(iomem_addr);
+}
+
+static inline void
+am85c30_com_outb_command(void *iomem_addr, uint8_t reg_num, uint8_t val)
+{
+	e2k_write8(reg_num, iomem_addr);
+	wmb();	/* waiting for write to serial port completion */
+
+	e2k_write8(val, iomem_addr);
+	wmb();	/* waiting for write to serial port completion */
+}
+
+static int am85c30_setup(struct uart *dev, const struct uart_params *params) {
+	//unsigned long port;
+
+	//port = UART_BASE;
+	//uint8_t val;
+
+	//val = am85c30_com_inb_command(port, AM85C30_RR0);
+
+	//am85c30_com_outb_command(port, 0, 0);
+
 	return 0;
 }
 
-static uint8_t _cmd(void *addr) {
-	e2k_write8(0, addr);
-	wmb();
-	return e2k_read8(addr);
-}
+int am85c30_putc(struct uart *dev, int ch) {
+	unsigned long port;
 
-int e2k_putc(struct uart *dev, int ch) {
-	int timeout = 0xfff;
-	while (0 == (_cmd(UART_BASE) & (1 << 2)) && timeout--);
-	e2k_write8(ch, (void *) UART_BASE + 1);
+	port = UART_BASE;
+	while ((am85c30_com_inb_command(port, AM85C30_RR0) & AM85C30_D2) == 0)
+		;
+	am85c30_com_outb(port + 0x01, ch);
 
 	return 0;
 }
 
-static int e2k_getc(struct uart *dev) {
-	return 0;
+static int am85c30_has_symbol(struct uart *dev) {
+	unsigned long port;
+
+	port = UART_BASE;
+	uint8_t val;
+
+	val = am85c30_com_inb_command(port, AM85C30_RR0);
+
+	//e2k_putc(dev, (val &0xF));
+	//printk("0x%x\n", val);
+	return val & 1;
 }
 
-static int e2k_has_symbol(struct uart *dev) {
-	return 0;
+static int am85c30_getc(struct uart *dev) {
+	unsigned long port;
+
+	am85c30_putc(dev, '8');
+	port = UART_BASE;
+	while (((am85c30_com_inb_command(port, AM85C30_RR0)) & AM85C30_D0) == 0)
+		;
+	return am85c30_com_inb(port + 0x01);
 }
 
-static const struct uart_ops e2k_uart_ops = {
-	.uart_getc = e2k_getc,
-	.uart_putc = e2k_putc,
-	.uart_hasrx = e2k_has_symbol,
-	.uart_setup = e2k_setup,
+
+static const struct uart_ops am85c30_uart_ops = {
+	.uart_getc = am85c30_getc,
+	.uart_putc = am85c30_putc,
+	.uart_hasrx = am85c30_has_symbol,
+	.uart_setup = am85c30_setup,
 };
 
 static struct uart uart0 = {
-	.uart_ops = &e2k_uart_ops,
+	.uart_ops = &am85c30_uart_ops,
 	.irq_num = IRQ_NUM,
 	.base_addr = UART_BASE,
 };
