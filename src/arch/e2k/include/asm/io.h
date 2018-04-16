@@ -40,7 +40,35 @@ static void e2k_wait_all(void) {
 			: : "i" (0), "i" (1), "i" (1), "i" (0), "i" (0), "i" (1), "i" (1) : "memory");
 }
 
+#define _sal	0x100	/* store-after-load modifier for _lt_c */
+#define _sas	0x80	/* store-after-store modifier for _st_c */
+#define _trap	0x40	/* stop the conveyor untill interrupt */
+#define _ma_c	0x20
+#define _fl_c	0x10
+#define _ld_c	0x8	/* stop until all load operations complete */
+#define _st_c	0x4	/* stop until store operations complete */
+#define _all_e	0x2
+#define _all_c	0x1
+
+#define E2K_WAIT(num) \
+({ \
+	asm volatile ("{wait ma_c=%5, fl_c=%4, "\
+			"ld_c = %3, st_c=%2, all_e=%1, all_c=%0}" \
+		      : \
+		      : "i" (((num) & 0x1)), \
+			"i" (((num) & 0x2)  >> 1), \
+			"i" (((num) & 0x4)  >> 2), \
+			"i" (((num) & 0x8)  >> 3), \
+			"i" (((num) & 0x10) >> 4), \
+			"i" (((num) & 0x20) >> 5) \
+		      : "memory" ); \
+})
+
+#define mb()	E2K_WAIT(_st_c | _ld_c)
+#define rmb()	E2K_WAIT(_ld_c)
+
 static void wmb() {
+	_Pragma ("no_asm_inline")
 	asm volatile (	".word 0x00008001\n"
 			".word 0x30000084\n"
 			::: "memory");
@@ -49,6 +77,7 @@ static void wmb() {
 static inline void e2k_write8(uint8_t val, void *addr) {
        asm volatile ("stb,2\t0x0, [%0] %2, %1" :
 		: "r" (addr), "r" (val), "i" (MAS_IOADDR) : "memory");
+       wmb();
 }
 
 static inline void e2k_write16(uint16_t val, void *addr) {
@@ -70,6 +99,7 @@ static inline uint8_t e2k_read8(void *addr) {
 	register uint8_t res;
 	asm volatile ("ldb,2 \t0x0, [%1] %2, %0" :
 		"=r" (res) : "r" (addr), "i" (MAS_IOADDR));
+	wmb();
 	return res;
 }
 
