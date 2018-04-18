@@ -1,0 +1,9 @@
+package embox.driver.clock
+
+module ti8168_clk extends embox.arch.clock {
+	source "ti_8168.c"
+
+	depends embox.kernel.irq
+	depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.kernel.time.timer_handler
+}
