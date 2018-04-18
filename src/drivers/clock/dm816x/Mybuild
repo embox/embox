@@ -1,7 +1,7 @@
 package embox.driver.clock
 
-module ti8168_clk extends embox.arch.clock {
-	source "ti_8168.c"
+module dm816x_timer extends embox.arch.clock {
+	source "dm816x_timer.c"
 
 	depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
