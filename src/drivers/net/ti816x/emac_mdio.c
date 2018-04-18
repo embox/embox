@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <hal/reg.h>
-#include <drivers/net/ti816x.h>
+#include "emac.h"
 #include <util/log.h>
 
 #include <framework/mod/options.h>

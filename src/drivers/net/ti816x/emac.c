@@ -15,7 +15,7 @@
 
 #include <kernel/irq.h>
 #include <hal/reg.h>
-#include <drivers/net/ti816x.h>
+#include "emac.h"
 
 #include <mem/misc/pool.h>
 
