@@ -30,6 +30,10 @@
 #include <util/log.h>
 #include <util/dlist.h>
 
+#include <mem/vmem.h>
+#include <hal/mmu.h>
+#include <drivers/common/memory.h>
+
 #include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
@@ -721,3 +725,18 @@ static int ti816x_init(void) {
 
 	return inetdev_register_dev(nic);
 }
+
+
+static struct periph_memory_desc emac_region = {
+	.start = (uint32_t) EMAC_BASE,
+	.len   = 0x800,
+};
+
+PERIPH_MEMORY_DEFINE(emac_region);
+
+static struct periph_memory_desc emac_mdio_region = {
+	.start = (uint32_t) MDIO_BASE,
+	.len   = 0x800,
+};
+
+PERIPH_MEMORY_DEFINE(emac_mdio_region);
