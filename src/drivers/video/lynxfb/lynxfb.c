@@ -122,7 +122,7 @@ static void lynxfb_hw_init(struct pci_slot_dev *pci_dev) {
 
 	lynxfb_hw750_map(&lynxfb_share, pci_dev);
 
-	lynxfb_hw750_inithw(&lynxfb_share, pci_dev);
+	lynxfb_hw750_inithw(&lynxfb_share);
 
 	//TODO double set memory
 	memset(share->pvMem, 0x0, share->vidmem_size);
@@ -135,7 +135,7 @@ static int lynxfb_init(struct pci_slot_dev *pci_dev) {
 
 	lynxfb_hw_init(pci_dev);
 
-	info = fb_create(&lynxfb_ops, share->pvMem, share->vidmem_size);
+	info = fb_create(&lynxfb_ops, (char *)share->pvMem, share->vidmem_size);
 	if (info == NULL) {
 		munmap(share->pvMem, share->vidmem_size);
 		munmap(share->pvReg, share->vidreg_size);

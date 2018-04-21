@@ -88,10 +88,15 @@ struct sm750_share {
 
 struct fb_var_screeninfo;
 extern int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
-		  struct fb_var_screeninfo *var,
+		  const struct fb_var_screeninfo *var,
 		  unsigned int line_length);
 
 extern int hw_sm750_output_setMode(struct lynxfb_output *output,
-			    struct fb_var_screeninfo *var);
+			    const struct fb_var_screeninfo *var);
+
+extern void lynxfb_hw750_setup(struct sm750_share *spec_share);
+struct pci_slot_dev;
+extern int lynxfb_hw750_map(struct sm750_share *spec_share, struct pci_slot_dev *pdev);
+extern int lynxfb_hw750_inithw(struct sm750_share *spec_share);
 
 #endif /* SRC_DRIVERS_VIDEO_LYNXFB_LYNXFB_HW750_H_ */

@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <drivers/video/fb.h>
 
 #include "ddk750_reg.h"
 #include "ddk750_chip.h"

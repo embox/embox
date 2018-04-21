@@ -42,7 +42,7 @@ int lynxfb_hw750_map(struct sm750_share *spec_share, struct pci_slot_dev *pdev) 
 
 
 	/* now map mmio and vidmem */
-	share->pvReg = mmap_device_memory(share->vidreg_start,
+	share->pvReg = mmap_device_memory((void*)share->vidreg_start,
 			share->vidreg_size,
 			PROT_READ|PROT_WRITE|PROT_NOCACHE,
 			MAP_FIXED,
@@ -73,7 +73,7 @@ int lynxfb_hw750_map(struct sm750_share *spec_share, struct pci_slot_dev *pdev) 
 
 	/* reserve the vidmem space of smi adaptor */
 
-	share->pvMem = mmap_device_memory(share->vidmem_start,
+	share->pvMem = mmap_device_memory((void*)share->vidmem_start,
 			share->vidmem_size,
 			PROT_READ|PROT_WRITE|PROT_NOCACHE,
 			MAP_FIXED,
@@ -91,7 +91,7 @@ exit:
 	return ret;
 }
 
-int lynxfb_hw750_inithw(struct sm750_share *spec_share, struct pci_dev *pdev) {
+int lynxfb_hw750_inithw(struct sm750_share *spec_share) {
 	struct lynx_share *share = &spec_share->share;
 	struct sm750_init_status *parm;
 
@@ -216,15 +216,14 @@ int lynxfb_hw750_set_drv(struct lynxfb_par *par) {
 
 /* set the controller's mode for @crtc charged with @var and @fix parameters */
 int hw_sm750_crtc_setMode(struct lynxfb_crtc *crtc,
-			  struct fb_var_screeninfo *var,
+			  const struct fb_var_screeninfo *var,
 			  unsigned int line_length)
 {
-	int ret, fmt;
+	int ret;//, fmt;
 	uint32_t reg;
 	struct mode_parameter modparm;
 	clock_type_t clock;
-	struct sm750_dev *sm750_dev;
-	struct lynxfb_par *par;
+	//struct lynxfb_par *par;
 
 	ret = 0;
 #if 0
@@ -342,7 +341,7 @@ exit:
 }
 
 int hw_sm750_output_setMode(struct lynxfb_output *output,
-			    struct fb_var_screeninfo *var)
+			    const struct fb_var_screeninfo *var)
 {
 	int ret;
 	disp_output_t dispSet;
