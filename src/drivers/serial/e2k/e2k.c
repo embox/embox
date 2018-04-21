@@ -80,9 +80,9 @@ int am85c30_putc(struct uart *dev, int ch) {
 	unsigned long port;
 
 	port = UART_BASE;
-	while ((am85c30_com_inb_command(port, AM85C30_RR0) & AM85C30_D2) == 0)
+	while ((am85c30_com_inb_command((void*)port, AM85C30_RR0) & AM85C30_D2) == 0)
 		;
-	am85c30_com_outb(port + 0x01, ch);
+	am85c30_com_outb((void*)port + 0x01, ch);
 
 	return 0;
 }
@@ -93,9 +93,9 @@ static int am85c30_has_symbol(struct uart *dev) {
 	port = UART_BASE;
 	uint8_t val;
 
-	val = am85c30_com_inb_command(port, AM85C30_RR0);
+	val = am85c30_com_inb_command((void*)port, AM85C30_RR0);
 
-	//e2k_putc(dev, (val &0xF));
+	//am85c30_putc(dev, '0' + (val &0xF));
 	//printk("0x%x\n", val);
 	return val & 1;
 }
@@ -105,9 +105,9 @@ static int am85c30_getc(struct uart *dev) {
 
 	am85c30_putc(dev, '8');
 	port = UART_BASE;
-	while (((am85c30_com_inb_command(port, AM85C30_RR0)) & AM85C30_D0) == 0)
+	while (((am85c30_com_inb_command((void*)port, AM85C30_RR0)) & AM85C30_D0) == 0)
 		;
-	return am85c30_com_inb(port + 0x01);
+	return am85c30_com_inb((void*)port + 0x01);
 }
 
 
