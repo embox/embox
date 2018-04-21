@@ -4,6 +4,8 @@
 
 static int last_cpuid = 0;
 
+void kernel_start(void);
+
 __attribute__ ((__section__(".e2k_entry")))
 void e2k_entry(void) {
 	int cpuid;
