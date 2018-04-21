@@ -33,7 +33,7 @@
 	__rval; \
 })
 
-static void e2k_wait_all(void) {
+static inline void e2k_wait_all(void) {
 	_Pragma ("no_asm_inline")
 	asm volatile ("wait \ttrap = %0, ma_c = %1, fl_c = %2, ld_c = %3, "
 			"st_c = %4, all_e = %5, all_c = %6"
@@ -67,7 +67,7 @@ static void e2k_wait_all(void) {
 #define mb()	E2K_WAIT(_st_c | _ld_c)
 #define rmb()	E2K_WAIT(_ld_c)
 
-static void wmb() {
+static inline void wmb() {
 	_Pragma ("no_asm_inline")
 	asm volatile (	".word 0x00008001\n"
 			".word 0x30000084\n"
@@ -128,11 +128,11 @@ static inline uint64_t e2k_read64(void *addr) {
 #define E2K_X86_IO_PORT_BASE	0xfff0000000UL
 
 static inline void e2k_out8(uint8_t val, int port) {
-	e2k_write8(E2K_X86_IO_PORT_BASE + port, val);
+	e2k_write8(val, (void *)(E2K_X86_IO_PORT_BASE + port));
 }
 
 static inline uint8_t e2k_in8(int port) {
-	return e2k_read8(E2K_X86_IO_PORT_BASE + port);
+	return e2k_read8((void *)(E2K_X86_IO_PORT_BASE + port));
 }
 
 #endif /* E2K_IO_H_ */
