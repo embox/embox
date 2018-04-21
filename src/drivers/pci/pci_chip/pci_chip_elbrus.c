@@ -49,7 +49,6 @@ static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 
 static inline uint32_t e2k_pci_config_write(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, int size, uint32_t value) {
-	void *ptr;
 	/* TODO Get pmc 0xd64100 */
 	/* pci_mem_core_t *ppmc = (pci_mem_core_t *) (pMACHINE->pPMC); */
 	/* TODO Get SIC_RT_PCICFG_BASE */
@@ -58,7 +57,7 @@ static inline uint32_t e2k_pci_config_write(uint32_t bus, uint32_t dev_fn,
 
 	log_error("*******************");
 
-	e2k_write32(value, dev_addr + pci_conf_base);
+	e2k_write32(value, (void*)dev_addr + pci_conf_base);
 /*
 	ptr = (void *) (pci_conf_base + where);
 	if (size == 1) {
