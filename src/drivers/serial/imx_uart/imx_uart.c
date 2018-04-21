@@ -18,6 +18,7 @@ EMBOX_UNIT_INIT(uart_init);
 #define IOMUXC_BASE	OPTION_GET(NUMBER,iomuxc_base)
 #define UART_NUM	OPTION_GET(NUMBER,num)
 #define IRQ_NUM		(58 + UART_NUM)
+#define PIN_CONFIG	OPTION_GET(BOOLEAN,pin_config)
 
 #if UART_NUM == 0
 #define UART_BASE 0x02020000
@@ -81,7 +82,7 @@ static void imxuart_configure_pins(void) {
 	 * RXD/TXD. To do it, we need first to config MUX mode register
 	 * and then set source for the UART like follows; look manual for
 	 * more details */
-
+#if PIN_CONFIG
 	switch(UART_NUM) {
 	case 0:
 		/* TX */
@@ -111,7 +112,7 @@ static void imxuart_configure_pins(void) {
 		REG32_STORE(IOMUXC_BASE + 0x938, 1);
 		break;
 	}
-
+#endif
 	return;
 }
 

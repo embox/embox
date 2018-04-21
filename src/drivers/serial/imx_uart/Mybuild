@@ -4,6 +4,7 @@ module imx_uart {
 	option number num=1
 	option number baud_rate=115200
 	option number iomuxc_base=0x020e0000
+	option boolean pin_config=false
 
 	source "imx_uart.c"
 
