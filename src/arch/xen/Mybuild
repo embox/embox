@@ -19,6 +19,10 @@ module xenstore {
         source "xenstore.c"
 }
 
+module xenstore_test {
+	source "xenstore_test.c"
+}
+
 module event {
 	source "event.c"
 }
