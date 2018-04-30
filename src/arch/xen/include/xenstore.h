@@ -14,3 +14,4 @@
 int xenstore_init(start_info_t *start);
 int xenstore_write(char *key, char *value);
 int xenstore_read(char *key, char *value, int value_length);
+int xenstore_ls(char *key, char *values, int value_length);

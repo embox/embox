@@ -6,11 +6,12 @@
 #include <kernel/printk.h>
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(xenstore_test);
-
 static evtchn_port_t xenstore_evt;
 extern char _text_vma;
-struct xenstore_domain_interface *xenstore;
+static struct xenstore_domain_interface *xenstore;
+
+/* Current request ID */
+static int req_id = 0;
 
 /* Initialise the XenStore */
 int xenstore_init(start_info_t *start) {
@@ -25,7 +26,7 @@ int xenstore_init(start_info_t *start) {
 }
 
 /* Write a request to the back end */
-int xenstore_write_request(char *message, int length) {
+static int xenstore_write_request(char *message, int length) {
 	/* Check that the message will fit */
 	if (length > XENSTORE_RING_SIZE)
 	{
@@ -54,7 +55,7 @@ int xenstore_write_request(char *message, int length) {
 }
 
 /* Read a response from the response ring */
-int xenstore_read_response(char *message, int length) {
+static int xenstore_read_response(char *message, int length) {
 	int i;
 	for (i = xenstore->rsp_cons; length > 0; i++, length--)
 	{
@@ -74,9 +75,6 @@ int xenstore_read_response(char *message, int length) {
 	xenstore->rsp_cons = i;
 	return 0;
 }
-
-/* Current request ID */
-static int req_id = 0;
 
 #define NOTIFY() \
 	do { \
@@ -174,21 +172,4 @@ int xenstore_ls(char *key, char *values, int value_length) {
 	xenstore_read_response(values, value_length);
 	IGNORE(msg.len - value_length);
 	return -2;
-}
-
-/* Test the XenStore driver */
-void xenstore_test() {
-	char domid[6];
-	int domid_len = xenstore_read("domid", domid, 6);
-	domid[domid_len] = '\0';
-
-	if (domid[0] != 'E') {
-		char local_dom[32] = "/local/domain/";
-		strcat(local_dom, domid);
-		char ls[128];
-		int len = xenstore_ls(local_dom, ls, 128);
-		test_assert_zero(len > 0 && ls[0] != 'E' ? 0 : -1);
-	} else {
-		test_assert_zero(-1);
-	}
 }
