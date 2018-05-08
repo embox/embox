@@ -16,7 +16,7 @@ hardware_init_hook:
 	ldr r0, =arm_trap_table
 	mcr p15, 0, r0, c12, c0, 0
 
-#ifdef CORTEXA9
+#ifdef CORTEX_A9
 	ldr r0, =_monitor_vectors
 	mcr p15, 0, r0, c12, c0, 1
 #endif
