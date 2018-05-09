@@ -511,9 +511,10 @@ uint32_t _get_csselr(void) {
 	return val;
 }
 void _print_mmu_regs(void) {
-	uint32_t fault_status;
 	/* Sometimes accessing this registers crushes the emulator */
 #if LOG_LEVEL > 0
+	uint32_t fault_status;
+
 	log_debug("ARM MMU registers summary:");
 	log_debug("TLB Type:                  %#10x", _get_mmu_tlb_type());
 	log_debug("SCTRL:                     %#10x", cp15_get_sctrl());
@@ -523,12 +524,15 @@ void _print_mmu_regs(void) {
 	log_debug("Translation Table Base 0:  %#10x", _get_mmu_translation_table_base_0());
 	log_debug("Translation Table Base 1:  %#10x", _get_mmu_translation_table_base_1());
 	log_debug("Domain Access Conrol:      %#10x", _get_mmu_domain_access_control());
-	log_debug("Data Fault Status:         %#10x", fault_status = _get_mmu_data_fault_status());
+
+	fault_status = _get_mmu_data_fault_status();
+	log_debug("Data Fault Status:         %#10x", fault_status);
 	if (fault_status) {
 		log_debug("Data Fault Address:        %#10x",  _get_mmu_data_fault_address());
 	}
-	log_debug("Instruction Fault Status:  %#10x", fault_status = _get_mmu_instruction_fault_status());
 
+	fault_status = _get_mmu_instruction_fault_status();
+	log_debug("Instruction Fault Status:  %#10x", fault_status);
 	if (fault_status) {
 		log_debug("Instruction Fault Address: %#10x", _get_mmu_instruction_fault_address());
 	}
