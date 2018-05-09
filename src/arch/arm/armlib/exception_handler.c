@@ -40,7 +40,7 @@ void arm_exception_handler(unsigned int *regs) {
 		log_debug("BKPT happened");
 		regs[15] += 4;
 	} else {
-		printk("EXCEPTION:\n"
+		printk("\nEXCEPTION:\n"
 				"r0=%08x r1=%08x r2=%08x r3=%08x\n"
 				"r4=%08x r5=%08x r6=%08x r7=%08x\n"
 				"r8=%08x r9=%08x r10=%08x r11=%08x\n"
@@ -54,12 +54,13 @@ void arm_exception_handler(unsigned int *regs) {
 		printk("REGS* = %p\n", regs);
 		val = get_cpsr();
 		printk("[SMC] cpsr = %x\n", val);
-		printk("[SMC] mbvar = %x\n", cp15_get_mvbar());
 		printk("[SMC] vbar = %x\n",  cp15_get_vbar());
-
+#ifdef CORTEX_A9
+		printk("[SMC] mbvar = %x\n", cp15_get_mvbar());
 		cp15_set_scr(0x1);
 		printk(">>>>>>>>>>>>>>> NS=1 updated \n");
-		//while(1);
+#endif
+		while(1);
 	}
 }
 
