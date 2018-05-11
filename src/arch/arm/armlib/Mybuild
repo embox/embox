@@ -15,7 +15,7 @@ module locore extends embox.arch.locore {
 	option number log_level=0
 
 	depends exceptions
-	depends head
+	depends embox.arch.arm.head
 	depends reset_handler
 	depends setup_exception_table
 }
