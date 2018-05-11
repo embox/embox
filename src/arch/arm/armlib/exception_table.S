@@ -122,7 +122,7 @@ undef_handler:
 
     ldmfd sp!, {r0-r12, r14}
 
-    rfe sp
+    rfe sp!
 #endif /* __ARM_NEON__ */
 
 prefetch_abt_handler:

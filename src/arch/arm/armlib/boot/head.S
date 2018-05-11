@@ -13,11 +13,15 @@
 
 .text
 bootldr_start:
-
+    ldr     r0, =hardware_init_hook
+    cmp	    r0, #0
+    beq	    sw_init_hook
+    bl      hardware_init_hook
+sw_init_hook:
+/* zero bss */
     ldr	    r0, =_bss_vma
     mov	    r1, #0
     ldr	    r2, =_bss_len
-
     bl	    memset
 
 /* copy data section */
@@ -27,13 +31,6 @@ bootldr_start:
 
     bl	    memcpy
 
-hw_init_hook:
-    ldr     r0, =hardware_init_hook
-    cmp	    r0, #0
-    beq	    sw_init_hook
-    bl      hardware_init_hook
-
-sw_init_hook:
     ldr     r0, =software_init_hook
     cmp	    r0, #0
     beq	    krn_start
