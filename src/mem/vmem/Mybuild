@@ -22,6 +22,7 @@ module vmem extends vmem_api {
 	depends vmem_alloc
 
 	depends embox.mem.mmap_mmu
+	depends embox.fs.syslib.idesc_mmap
 }
 
 module vmem_alloc {
