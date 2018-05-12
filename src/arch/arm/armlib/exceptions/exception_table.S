@@ -83,8 +83,8 @@ undef_handler:
     stmfd sp!, {r2}
     ldmfd r0, {r0-r2}  /* Restore temp regs */
 
+    mov r0, sp		/* Pointer to registers */
     stmfd sp!, {r0-r12, r14}
-
     bl arm_undefined_exception
 
     ldmfd sp!, {r0-r12, r14}
