@@ -112,7 +112,11 @@ int irqctrl_pending(unsigned int interrupt_nr) {
 }
 
 void interrupt_handle(void) {
+	//printk("Enter IRQ!\n");
+
 	unsigned int irq = REG_LOAD(OMAP35X_INTC_SIR_IRQ) & INTC_SIR_IRQ_ACTIVE_MASK;
+
+	//printk("IRQ=%d\n", irq);
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
