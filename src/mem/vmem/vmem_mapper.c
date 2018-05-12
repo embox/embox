@@ -6,6 +6,8 @@
  * @author Anton Bulychev
  */
 
+#include <util/log.h>
+
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
@@ -140,6 +142,9 @@ static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_a
 	mmu_paddr_t p_end = phy_addr + reg_size;
 	size_t pgd_idx, pmd_idx, pte_idx;
 
+	log_debug("ctx=%x phy_addr=%x virt_addr=%x reg_size=%x flags=%x",
+			ctx, phy_addr, virt_addr, reg_size, flags);
+
 	/* Considering that all boundaries are already aligned */
 	assert(!(virt_addr & MMU_PAGE_MASK));
 	assert(!(phy_addr  & MMU_PAGE_MASK));
@@ -165,6 +170,9 @@ static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_a
 				phy_addr  += MMU_PAGE_SIZE;
 
 				if (phy_addr >= p_end) {
+					log_debug("mapped ctx=%x phy_addr %x to vaddr=%x size=%x flags=%x",
+							ctx, phy_addr, virt_addr, reg_size, flags);
+
 					return ENOERR;
 				}
 			}
@@ -174,6 +182,9 @@ static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_a
 
 		pmd_idx = 0;
 	}
+
+	log_error("didn't mapped ctx=%x vaddr=%x size=%x flags=%x",
+			ctx, virt_addr, reg_size, flags);
 
 	return -EINVAL;
 }

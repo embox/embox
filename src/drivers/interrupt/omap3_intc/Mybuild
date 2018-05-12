@@ -1,0 +1,7 @@
+package embox.driver.interrupt
+
+module omap3_intc extends embox.driver.interrupt.irqctrl_api {
+	source "omap3_intc.c", "omap3_intc.h"
+
+	depends embox.driver.periph_memory
+}

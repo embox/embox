@@ -3,6 +3,10 @@
 #include <hal/reg.h>
 #include <kernel/printk.h>
 
+#include <hal/mmu.h>
+#include <drivers/common/memory.h>
+#include <mem/vmem.h>
+
 EMBOX_UNIT_INIT(ahci_ti8168_init);
 
 static struct ahci_hba ti8168_hba= {
@@ -20,3 +24,17 @@ int ahci_ti8168_init(void) {
 	register_ahci_hba(&ti8168_hba);
 	return 0;
 }
+
+static struct periph_memory_desc ahci_ti8168_mem = {
+	.start = 0x4A140000,
+	.len   = 0x1000,
+};
+
+PERIPH_MEMORY_DEFINE(ahci_ti8168_mem);
+
+static struct periph_memory_desc ti816x_power_mem = {
+	.start = 0x48180000,
+	.len   = 0x1000,
+};
+
+PERIPH_MEMORY_DEFINE(ti816x_power_mem);

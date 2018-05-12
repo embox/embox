@@ -53,6 +53,7 @@ struct com {
 EMBOX_UNIT_INIT(ns16550_init);
 
 static int ns16550_init(void) {
+#if 0
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
 			(void*) (COM_BASE & ~MMU_PAGE_MASK),
@@ -61,6 +62,7 @@ static int ns16550_init(void) {
 			MAP_FIXED,
 			COM_BASE & ~MMU_PAGE_MASK
 			);
+#endif
 	return 0;
 }
 

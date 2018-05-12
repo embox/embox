@@ -5,7 +5,7 @@ module locore extends embox.arch.locore {
 	source "exception_table.S"
 	source "exception_handlers.c"
 
-	depends embox.arch.arm.armlib.head
+	depends embox.arch.arm.head
 }
 
 module interrupt extends embox.arch.interrupt {

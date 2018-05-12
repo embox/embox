@@ -6,6 +6,7 @@
  * @author Anton Bulychev
  */
 
+#include <util/log.h>
 #include <framework/mod/options.h>
 
 #include <assert.h>
@@ -61,8 +62,12 @@ static int vmem_alloc_init(void) {
 	pmd_allocator = page_allocator_init(pmd_raw, sizeof(pmd_raw), MMU_PMD_SIZE);
 	pte_allocator = page_allocator_init(pte_raw, sizeof(pte_raw), MMU_PTE_SIZE);
 
+	assert(pgd_allocator);
+	assert(pmd_allocator);
+	assert(pte_allocator);
 	virt_page_allocator = page_allocator_init(virtual_page_raw, VIRTUAL_PAGES_COUNT * MMU_PAGE_SIZE, MMU_PAGE_SIZE);
 
+	log_debug("%p", virt_page_allocator);
 	return 0;
 }
 
@@ -75,6 +80,8 @@ mmu_pgd_t *vmem_alloc_pgd_table(void) {
 
 	if (addr)
 		memset(addr, 0, MMU_PGD_SIZE);
+
+	log_debug("%p", addr);
 
 	return addr;
 }
@@ -89,6 +96,8 @@ mmu_pmd_t *vmem_alloc_pmd_table(void) {
 	if (addr)
 		memset(addr, 0, MMU_PMD_SIZE);
 
+//	log_debug("%p", addr);
+
 	return addr;
 }
 
@@ -101,6 +110,8 @@ mmu_pte_t *vmem_alloc_pte_table(void) {
 
 	if (addr)
 		memset(addr, 0, MMU_PTE_SIZE);
+
+	log_debug("%p", addr);
 
 	return addr;
 }

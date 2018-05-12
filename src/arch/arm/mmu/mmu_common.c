@@ -130,7 +130,7 @@ mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
 uint32_t _get_mmu_tlb_type(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
-		"mrc p15, 0, %[out], c0, c0, 0" : [out] "=r" (val) :
+		"mrc p15, 0, %[out], c0, c0, 3" : [out] "=r" (val) :
 	);
 	return val;
 }
@@ -219,7 +219,7 @@ uint32_t _get_mmu_normal_memory_remap(void) {
 uint32_t _get_mmu_fsce_pid(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
-		"mrc p15, 0, %[out], c13, c2, 0" : [out] "=r" (val) :
+		"mrc p15, 0, %[out], c13, c0, 0" : [out] "=r" (val) :
 	);
 	return val;
 }
@@ -227,11 +227,12 @@ uint32_t _get_mmu_fsce_pid(void) {
 uint32_t _get_mmu_context_id(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
-		"mrc p15, 0, %[out], c13, c2, 1" : [out] "=r" (val) :
+		"mrc p15, 0, %[out], c13, c0, 1" : [out] "=r" (val) :
 	);
 	return val;
 }
-
+#ifdef CORTEX_A9
+/* CP15 c15 implemented */
 uint32_t _get_mmu_peripheral_port_memory_remap(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
@@ -271,7 +272,10 @@ uint32_t _get_mmu_tlb_lockdown_attributes(void) {
 	);
 	return val;
 }
+#endif
 
+#ifdef CORTEX_A9
+/* CP15 c11, Reserved for TCM DMA registers */
 uint32_t _get_pleidr(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
@@ -311,7 +315,7 @@ uint32_t _get_plepcr(void) {
 	);
 	return val;
 }
-
+#endif
 
 /*******************************
  Identification registers
@@ -509,6 +513,8 @@ uint32_t _get_csselr(void) {
 void _print_mmu_regs(void) {
 	/* Sometimes accessing this registers crushes the emulator */
 #if LOG_LEVEL > 0
+	uint32_t fault_status;
+
 	log_debug("ARM MMU registers summary:");
 	log_debug("TLB Type:                  %#10x", _get_mmu_tlb_type());
 	log_debug("SCTRL:                     %#10x", cp15_get_sctrl());
@@ -518,21 +524,38 @@ void _print_mmu_regs(void) {
 	log_debug("Translation Table Base 0:  %#10x", _get_mmu_translation_table_base_0());
 	log_debug("Translation Table Base 1:  %#10x", _get_mmu_translation_table_base_1());
 	log_debug("Domain Access Conrol:      %#10x", _get_mmu_domain_access_control());
-	log_debug("Data Fault Status:         %#10x", _get_mmu_data_fault_status());
-	log_debug("Instruction Fault Status:  %#10x", _get_mmu_instruction_fault_status());
-	log_debug("Data Fault Address:        %#10x", _get_mmu_data_fault_address());
-	log_debug("Instruction Fault Address: %#10x", _get_mmu_instruction_fault_address());
+
+	fault_status = _get_mmu_data_fault_status();
+	log_debug("Data Fault Status:         %#10x", fault_status);
+	if (fault_status) {
+		log_debug("Data Fault Address:        %#10x",  _get_mmu_data_fault_address());
+	}
+
+	fault_status = _get_mmu_instruction_fault_status();
+	log_debug("Instruction Fault Status:  %#10x", fault_status);
+	if (fault_status) {
+		log_debug("Instruction Fault Address: %#10x", _get_mmu_instruction_fault_address());
+	}
+
 	log_debug("TLB lockdown:              %#10x", _get_mmu_tlb_lockdown());
+
 	log_debug("Primary Region Remap:      %#10x", _get_mmu_primary_region_remap());
 	log_debug("Normal Memory Remap:       %#10x", _get_mmu_normal_memory_remap());
+
 	log_debug("FSCE PID:                  %#10x", _get_mmu_fsce_pid());
+
 	log_debug("Context ID:                %#10x", _get_mmu_context_id());
+#ifdef CORTEX_A9
+	/* CP15 c15 implemented */
 	log_debug("Peripheral port remap:     %#10x", _get_mmu_peripheral_port_memory_remap());
+
 	log_debug("TLB Lockdown Index:        %#10x", _get_mmu_tlb_lockdown_index());
 	log_debug("TLB Lockdown VA:           %#10x", _get_mmu_tlb_lockdown_va());
 	log_debug("TLB Lockdown PA:           %#10x", _get_mmu_tlb_lockdown_pa());
 	log_debug("TLB Lockdown Attribues:    %#10x", _get_mmu_tlb_lockdown_attributes());
-
+#endif /* CORTEX_A9 */
+#ifdef CORTEX_A9
+/* CP15 c11, Reserved for TCM DMA registers */
 	log_debug("PLEIDR:                    %#10x", _get_pleidr());
 
 	if (_get_pleidr()) {
@@ -541,8 +564,7 @@ void _print_mmu_regs(void) {
 		log_debug("PLEAUR:                    %#10x", _get_pleuar());
 		log_debug("PLEPCR:                    %#10x", _get_plepcr());
 	}
-
-
+#endif /* CORTEX_A9 */
 	log_debug("MIDR:                      %#10x", _get_midr());
 	log_debug("CTR:                       %#10x", _get_ctr());
 	log_debug("TCMTR:                     %#10x", _get_tcmtr());
@@ -570,5 +592,6 @@ void _print_mmu_regs(void) {
 	log_debug("CLIDR:                      %#10x", _get_clidr());
 	log_debug("AIDR:                       %#10x", _get_aidr());
 	log_debug("CSSELR:                     %#10x", _get_csselr());
+
 #endif
 }

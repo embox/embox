@@ -9,6 +9,10 @@
 #include <stdint.h>
 #include <hal/reg.h>
 
+#include <hal/mmu.h>
+#include <drivers/common/memory.h>
+#include <mem/vmem.h>
+
 #include <drivers/pci/pci_chip/pci_utils.h>
 
 #include <embox/unit.h>
@@ -296,3 +300,31 @@ static int ti81xx_pci_init(void) {
 
 	return 0;
 }
+
+static struct periph_memory_desc pci_chip_mem = {
+	.start = TI81_CM,
+	.len   = 0x1000,
+};
+
+PERIPH_MEMORY_DEFINE(pci_chip_mem);
+
+static struct periph_memory_desc pci_root_mem = {
+	.start = TI81_PRCM,
+	.len   = 0x1000,
+};
+
+PERIPH_MEMORY_DEFINE(pci_root_mem);
+
+static struct periph_memory_desc pci_region0_mem = {
+	.start = TI81_PCI_REGION0,
+	.len   = 0x4000,
+};
+
+PERIPH_MEMORY_DEFINE(pci_region0_mem);
+
+static struct periph_memory_desc pci_region1_mem = {
+	.start = TI81_PCI_REGION1,
+	.len   = 0x100000,
+};
+
+PERIPH_MEMORY_DEFINE(pci_region1_mem);

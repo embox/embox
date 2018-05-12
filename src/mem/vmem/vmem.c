@@ -6,6 +6,8 @@
  * @author Anton Bulychev
  */
 
+#include <util/log.h>
+
 #include <embox/unit.h>
 #include <hal/mmu.h>
 #include <kernel/panic.h>

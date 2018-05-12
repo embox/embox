@@ -17,6 +17,10 @@
 #include <kernel/printk.h>
 #include <mem/misc/pool.h>
 
+#include <hal/mmu.h>
+#include <drivers/common/memory.h>
+#include <mem/vmem.h>
+
 #include <drivers/usb/usb.h>
 #include <embox/unit.h>
 
@@ -841,3 +845,21 @@ static int usb_ti81xx_init(void) {
 
 	return usb_hcd_register(hcd);
 }
+
+static struct periph_memory_desc hc_ti816x_mem = {
+	.start = PRCM_BASE,
+	.len   = 0x1000,
+};
+PERIPH_MEMORY_DEFINE(hc_ti816x_mem);
+
+static struct periph_memory_desc ti816x_cm_mem = {
+	.start = CM_BASE,
+	.len   = 0x1000,
+};
+PERIPH_MEMORY_DEFINE(ti816x_cm_mem);
+
+static struct periph_memory_desc ti816x_usb0_mem = {
+	.start = TI8168_USB0_BASE,
+	.len   = 0x1000,
+};
+PERIPH_MEMORY_DEFINE(ti816x_usb0_mem);

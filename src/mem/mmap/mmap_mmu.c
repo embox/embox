@@ -6,6 +6,8 @@
  * @author Anton Bulychev
  */
 
+#include <util/log.h>
+
 #include <errno.h>
 #include <stdlib.h>
 #include <sys/mman.h>
@@ -81,6 +83,7 @@ static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
 }
 
 void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
+	log_debug("add to %p start %p end %p",marea, marea->start, marea->end);
 	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
 }
 
@@ -218,6 +221,7 @@ int mmap_mapping(struct emmap *emmap) {
 	int err;
 
 	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
+		log_debug("do_map: to %p start %p end %p", marea, marea->start, marea->end);
 		err = mmap_do_marea_map(emmap, marea);
 		if (err) {
 			goto out_err;

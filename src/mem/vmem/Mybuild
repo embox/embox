@@ -11,6 +11,8 @@ module vmem_nommu extends vmem_api {
 }
 
 module vmem extends vmem_api {
+	option number log_level = 0
+
 	source "vmem.c", "vmem_mapper.c", "vmem_unmapper.c"
 	source "vmem_context.c"
 	source "vmem_device_memory.c"
@@ -23,6 +25,8 @@ module vmem extends vmem_api {
 }
 
 module vmem_alloc {
+	option number log_level = 0
+
 	option number virtual_pages_count = 20
 
 	option number pgd_count = 2048

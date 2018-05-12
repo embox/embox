@@ -3,3 +3,8 @@ package embox.arch.arm
 
 
 abstract module cmsis { }
+
+
+module head {
+	source "head.S"
+}

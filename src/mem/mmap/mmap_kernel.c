@@ -5,6 +5,8 @@
  * @author: Anton Bondarev
  */
 
+#include <util/log.h>
+
 #include <stddef.h>
 
 #include <util/dlist.h>
@@ -15,7 +17,6 @@
 #include <kernel/panic.h>
 
 #include <mem/vmem.h>
-
 
 #include <module/embox/mem/mmap_mmu.h>
 
@@ -42,6 +43,7 @@ int mmap_kernel_init(void) {
 	dlist_foreach_entry(marea, &early_emmap.marea_list, mmap_link) {
 		dlist_del_init(&marea->mmap_link);
 		dlist_add_next(&marea->mmap_link, &emmap->marea_list);
+		log_debug("add to %p start %p end %p",marea, marea->start, marea->end);
 	}
 	ret = vmem_map_kernel();
 	assert(ret == 0);
