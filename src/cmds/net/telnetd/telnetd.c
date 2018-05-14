@@ -130,16 +130,16 @@ static int utmp_login(short ut_type, const char *host) {
 
 	return 0;
 }
-
+#include <kernel/printk.h>
 static void *shell_hnd(void* args) {
 	int ret;
 	int *msg = (int*)args;
 	struct sockaddr_in sockaddr;
-	socklen_t socklen;
+	socklen_t socklen = sizeof(sockaddr);
 
 	ret = getpeername(msg[2], (struct sockaddr *)&sockaddr, &socklen);
 	if (ret != 0) {
-		MD(printf("getpeername return error: %d\n", ret));
+		MD(printf("getpeername return error: %d\n", errno));
 		_exit(ret);
 	}
 
@@ -147,7 +147,6 @@ static void *shell_hnd(void* args) {
 	if (ret != 0) {
 		MD(printf("utmp_login LOGIN error: %d\n", ret));
 	}
-
 	if (-1 == close(STDIN_FILENO)) {
 		MD(printf("close STDIN_FILENO error: %d\n", errno));
 	}
@@ -157,7 +156,6 @@ static void *shell_hnd(void* args) {
 	if (-1 == close(STDERR_FILENO)) {
 		MD(printf("close STDERR_FILENO error: %d\n", errno));
 	}
-
 	if (-1 == dup2(msg[0], STDIN_FILENO)) {
 		MD(printf("dup2 STDIN_FILENO error: %d\n", errno));
 	}
@@ -167,8 +165,11 @@ static void *shell_hnd(void* args) {
 	if (-1 == dup2(msg[1], STDERR_FILENO)) {
 		MD(printf("dup2 STDERR_FILENO error: %d\n", errno));
 	}
-
-	system("tish");
+	ret = system("tish");
+	if (ret != 0) {
+		printk("system return error: %d\n", ret);
+		_exit(ret);
+	}
 
 	ret = utmp_login(DEAD_PROCESS, "");
 	if (ret != 0) {
