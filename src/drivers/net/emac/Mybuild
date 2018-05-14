@@ -3,6 +3,8 @@ package embox.driver.net
 module emac {
 	option number log_level		= 0
 	option number prep_buff_cnt	= 128 /* the number of prepared buffers for rxing */
+	option number emac_base         = 0x4A100000
+	option number mdio_base         = 0x4A100800
 
 	@IncludeExport(path="drivers/net")
 	source "emac.h"

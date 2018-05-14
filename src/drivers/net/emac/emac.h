@@ -14,8 +14,8 @@
 /**
  * EMAC0/MDIO Base Address
  */
-#define EMAC_BASE_ADDR 0x4A100000
-#define MDIO_BASE_ADDR 0x4A100000
+#define EMAC_BASE_ADDR OPTION_GET(NUMBER, emac_base)
+#define MDIO_BASE_ADDR OPTION_GET(NUMBER, mdio_base)
 
 /**
  * CPGMAC0 Interrupts
@@ -30,7 +30,7 @@
  */
 #define EMAC_OFFSET      0x00000000 /* EMAC module */
 #define EMAC_CTRL_OFFSET 0x00000900 /* EMAC control module */
-#define MDIO_OFFSET      0x00000800 /* MDIO module */
+#define MDIO_OFFSET      0x00000000 /* MDIO module */
 
 /**
  * EMAC0/MDIO Module and Control Module Base Address
