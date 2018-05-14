@@ -734,6 +734,13 @@ static struct periph_memory_desc emac_region = {
 
 PERIPH_MEMORY_DEFINE(emac_region);
 
+static struct periph_memory_desc emac_ctrl_region = {
+	.start = (uint32_t) EMAC_CTRL_BASE,
+	.len   = 0x800,
+};
+
+PERIPH_MEMORY_DEFINE(emac_ctrl_region);
+
 static struct periph_memory_desc emac_mdio_region = {
 	.start = (uint32_t) MDIO_BASE,
 	.len   = 0x800,

@@ -14,33 +14,17 @@
 /**
  * EMAC0/MDIO Base Address
  */
-#define EMAC_BASE_ADDR OPTION_GET(NUMBER, emac_base)
-#define MDIO_BASE_ADDR OPTION_GET(NUMBER, mdio_base)
+#define EMAC_BASE	OPTION_GET(NUMBER, emac_base)
+#define EMAC_CTRL_BASE	OPTION_GET(NUMBER, emac_ctrl_base)
+#define MDIO_BASE	OPTION_GET(NUMBER, mdio_base)
 
 /**
  * CPGMAC0 Interrupts
  */
-#define MACRXTHR0 40 /* CPGMAC0 Receive threshold interrupt */
-#define MACRXINT0 41 /* CPGMAC0 Receive pending interrupt */
-#define MACTXINT0 42 /* CPGMAC0 Transmit pending interrupt */
-#define MACMISC0  43 /* CPGMAC0 Stat, Host, MDIO LINKINT or MDIO USERINT */
-
-/**
- * EMAC/MDIO Registers - Base Address Offset
- */
-#define EMAC_OFFSET      0x00000000 /* EMAC module */
-#define EMAC_CTRL_OFFSET 0x00000900 /* EMAC control module */
-#define MDIO_OFFSET      0x00000000 /* MDIO module */
-
-/**
- * EMAC0/MDIO Module and Control Module Base Address
- */
-#define EMAC_BASE \
-	(EMAC_BASE_ADDR + EMAC_OFFSET)      /* EMAC Module Base */
-#define EMAC_CTRL_BASE \
-	(EMAC_BASE_ADDR + EMAC_CTRL_OFFSET) /* EMAC Control Module Base */
-#define MDIO_BASE \
-	(MDIO_BASE_ADDR + MDIO_OFFSET)      /* MDIO Module Base */
+#define MACRXTHR0 (OPTION_GET(NUMBER, irq_base) + 0) /* CPGMAC0 Receive threshold interrupt */
+#define MACRXINT0 (OPTION_GET(NUMBER, irq_base) + 1) /* CPGMAC0 Receive pending interrupt */
+#define MACTXINT0 (OPTION_GET(NUMBER, irq_base) + 2) /* CPGMAC0 Transmit pending interrupt */
+#define MACMISC0  (OPTION_GET(NUMBER, irq_base) + 3) /* CPGMAC0 Stat, Host, MDIO LINKINT or MDIO USERINT */
 
 #define EMAC_CHANNEL_COUNT 8
 
