@@ -11,7 +11,7 @@ module All {
 		pid
 }
 
-@DefaultImpl(exec_stub)
+@DefaultImpl(exec_exchanged)
 abstract module exec_lib { }
 
 
@@ -35,7 +35,7 @@ static module vfork_entry {
 	depends embox.kernel.task.resource.vfork
 }
 
-@DefaultImpl(vfork_stub)
+@DefaultImpl(vfork_exchanged)
 abstract module vfork { }
 
 static module waitpid {
