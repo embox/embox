@@ -152,6 +152,16 @@
 #define MDIO_R_USERACCESS1      0x88 /* MDIO User Access Register 1 */
 #define MDIO_R_USERPHYSEL1      0x8C /* MDIO User PHY Select Register 1 */
 
+/* MDIO bits */
+#define MDIO_CONTROL_IDLE		(0x80000000)
+#define MDIO_CONTROL_ENABLE		(0x40000000)
+#define MDIO_CONTROL_FAULT_ENABLE	(0x40000)
+#define MDIO_CONTROL_FAULT		(0x80000)
+#define MDIO_USERACCESS0_GO		(0x80000000)
+#define MDIO_USERACCESS0_WRITE_READ	(0x0)
+#define MDIO_USERACCESS0_WRITE_WRITE	(0x40000000)
+#define MDIO_USERACCESS0_ACK		(0x20000000)
+
 /**
  * EMAC Buffer Descriptor
  */
@@ -194,6 +204,19 @@ struct emac_desc {
 #define EMAC_DESC_F_CRCERROR   0x0002U /* CRC Error (CRCERROR) Flag */
 #define EMAC_DESC_F_NOMATCH    0x0001U /* No Match (NOMATCH) Flag */
 
+/* Basic mode control register. */
+#define BMCR_RESV		0x003f	/* Unused...		       */
+#define BMCR_SPEED1000		0x0040	/* MSB of Speed (1000)	       */
+#define BMCR_CTST		0x0080	/* Collision test	       */
+#define BMCR_FULLDPLX		0x0100	/* Full duplex		       */
+#define BMCR_ANRESTART		0x0200	/* Auto negotiation restart    */
+#define BMCR_ISOLATE		0x0400	/* Disconnect DP83840 from MII */
+#define BMCR_PDOWN		0x0800	/* Powerdown the DP83840       */
+#define BMCR_ANENABLE		0x1000	/* Enable auto negotiation     */
+#define BMCR_SPEED100		0x2000	/* Select 100Mbps	       */
+#define BMCR_LOOPBACK		0x4000	/* TXD loopback bits	       */
+#define BMCR_RESET		0x8000	/* Reset the DP83840	       */
+
 /**
  * Control Module Base Address
  */
@@ -224,5 +247,12 @@ extern void emac_mdio_config(void);
 #else
 #error "setup ethernet speed"
 #endif
+
+void emac_mdio_enable(void);
+void emac_detect_phy(void);
+void emac_autonegotiate(void);
+void emac_mdio_writereg(unsigned char reg_num,unsigned short data);
+int emac_mdio_readreg(unsigned char reg_num);
+void emac_mdelay(int value);
 
 #endif /* DRIVERS_ETHERNET_TI816X_H_ */
