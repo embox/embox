@@ -192,8 +192,11 @@ void emac_autonegotiate(void) {
 	val = emac_mdio_readreg(MII_ADVERTISE);
 
 	log_debug("MII_ADVERTISE=%08x", val);
-	val = ADVERTISE_100FULL | ADVERTISE_100HALF | ADVERTISE_10FULL |
-							ADVERTISE_10HALF;
+#if EMAC_VERSION == 0
+	val = PHY_ADV;
+#else
+	val = ADVERTISE_10FULL;
+#endif
 	emac_mdio_writereg(MII_ADVERTISE, val);
 
 	tmp = emac_mdio_readreg(MII_BMCR);
@@ -219,8 +222,7 @@ void emac_autonegotiate(void) {
 	log_debug("speed reg = %08x", emac_mdio_readreg(0x1));
 }
 
-void emac_mdio_config(void)
-{
+void emac_mdio_config(void) {
 	log_debug("emac_mdio_config started");
 
 	emac_mdio_enable();
@@ -234,7 +236,6 @@ void emac_mdio_config(void)
 #if (OPTION_GET(NUMBER, speed) == 100)
 	return;
 #else
-	return;
 	emac_mdio_writereg(MAX_CR,res);
 	res=emac_mdio_readreg(MAX_GMIICR);
 	log_debug("EMC res3=%x",res);

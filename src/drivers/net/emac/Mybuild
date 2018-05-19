@@ -7,6 +7,9 @@ module emac {
 	option number emac_ctrl_base    = 0x4A100900
 	option number mdio_base         = 0x4A100800
 	option number irq_base		= 40 /* Assume that IRQ's are following each other */
+
+	option number version		= 0 /* 1 is for AM3505 */
+
 	@IncludeExport(path="drivers/net")
 	source "emac.h"
 

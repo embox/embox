@@ -231,18 +231,22 @@ struct emac_desc {
 //TODO remove this when mdio is created
 extern void emac_mdio_config(void);
 
+#define EMAC_VERSION (OPTION_GET(NUMBER, version))
+
 #include <framework/mod/options.h>
 #if (OPTION_GET(NUMBER, speed) == 100)
 
 #define MACCTRL_INIT (FULLDUPLEX | TXPACE)
 #define RXMBP_INIT \
 	(RXNOCHAIN | RXCSFEN | RXCAFEN | RXBROADEN | RXMULTEN)
+#define PHY_ADV (ADVERTISE_100FULL | ADVERTISE_100HALF)
 
 #elif (OPTION_GET(NUMBER, speed) == 1000)
 
 #define RXMBP_INIT \
 	(RXCMFEN | RXCSFEN | RXCEFEN | RXCAFEN | RXBROADEN | RXMULTEN)
 #define MACCTRL_INIT (FULLDUPLEX | GIG)
+#define PHY_ADV (ADVERTISE_1000XFULL | ADVERTISE_1000XHALF)
 
 #else
 #error "setup ethernet speed"
