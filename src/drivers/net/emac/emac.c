@@ -152,12 +152,39 @@ static inline void emac_ctrl_enable_pacing(void) {
 	REG_STORE(EMAC_CTRL_BASE + EMAC_R_CMTXINTMAX, TXIMAX(4));
 }
 
+/* MACEOIVECTOR bits */
+#define RXTHRESHEOI 0x0
+#define RXEOI       0x1
+#define TXEOI       0x2
+#define MISCEOI     0x3
+
+#define LVL_INTR_CLEAR 0x48002594
+static void emac_eoi(int flag) {
+	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, flag);
+
+#if EMAC_VERSION == 1
+	if (flag == TXEOI) {
+		REG_STORE(LVL_INTR_CLEAR, 1 << 3);
+	} else if (flag == RXTHRESHEOI) {
+		REG_STORE(LVL_INTR_CLEAR, 1 << 2);
+	} else if (flag == RXEOI) {
+		REG_STORE(LVL_INTR_CLEAR, 1 << 1);
+	} else if (flag == MISCEOI) {
+		REG_STORE(LVL_INTR_CLEAR, 1 << 0);
+	}
+#endif
+}
+
 static void cm_load_mac(struct net_device *dev) {
 	unsigned long mac_hi, mac_lo;
 
+#if EMAC_VERSION == 0
 	mac_hi = REG_LOAD(CM_BASE + CM_R_MACID0_HI);
 	mac_lo = REG_LOAD(CM_BASE + CM_R_MACID0_LO);
-
+#else
+	mac_hi = 0xdeadca;
+	mac_lo = 0xfebabe;
+#endif
 	assert(dev != NULL);
 	dev->dev_addr[0] = mac_hi & 0xff;
 	dev->dev_addr[1] = (mac_hi >> 8) & 0xff;
@@ -407,7 +434,6 @@ static const struct net_driver ti816x_ops = {
 	.set_macaddr = ti816x_set_macaddr
 };
 
-#define RXTHRESHEOI 0x0 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 		void *dev_id) {
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE
@@ -415,7 +441,7 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 
 	log_debug("ti816x_interrupt_macrxthr0: unhandled interrupt\n");
 
-	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXTHRESHEOI);
+	emac_eoi(RXTHRESHEOI);
 
 	return IRQ_HANDLED;
 }
@@ -429,7 +455,6 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 			| EMAC_DESC_F_UNDERSIZED | EMAC_DESC_F_CONTROL   \
 			| EMAC_DESC_F_OVERRUN | EMAC_DESC_F_CODEERROR    \
 			| EMAC_DESC_F_ALIGNERROR | EMAC_DESC_F_CRCERROR))
-#define RXEOI 0x1 /* MACEOIVECTOR */
 #define CHECK_RXERR_2(x) \
 	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT       \
 			| EMAC_DESC_F_JABBER       \
@@ -445,7 +470,6 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	struct emac_desc *desc;
 	struct emac_desc_head *hdesc;
 	struct sk_buff *skb;
-	log_debug("ti rx int");
 
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE
 				+ EMAC_R_CMRXINTSTAT));
@@ -518,15 +542,29 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 		emac_queue_activate(dev_priv->rx_head, EMAC_R_RXHDP(DEFAULT_CHANNEL));
 	}
 
-	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, RXEOI);
+	emac_eoi(RXEOI);
 
 	return IRQ_HANDLED;
 }
 
+#define STATPEND (0x1 << 27) /* MACINVECTOR */
+#define HOSTPEND (0x1 << 26)
+#define TXPEND (DEFAULT_MASK << 16)
+#define RXPEND (DEFAULT_MASK << 0)
+#define IDLE(x) ((x >> 31) & 0x1) /* MACSTATUS */
+#define TXERRCODE(x) ((x >> 20) & 0xf)
+#define TXERRCH(x) ((x >> 16) & 0x7)
+#define RXERRCODE(x) ((x >> 12) & 0xf)
+#define RXERRCH(x) ((x >> 8) & 0x7)
+#define RGMIIGIG(x) ((x >> 4) & 0x1)
+#define RGMIIFULLDUPLEX(x) ((x >> 3) & 0x1)
+#define RXQOSACT(x) ((x >> 2) & 0x1)
+#define RXFLOWACT(x) ((x >> 1) & 0x1)
+#define TXFLOWACT(x) ((x >> 0) & 0x1)
+
 #define CHECK_TXOK(x) 1
 #define CHECK_TXERR(x) \
 	((x) & (EMAC_DESC_F_OWNER | EMAC_DESC_F_TDOWNCMPLT))
-#define TXEOI 0x2 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 		void *dev_id) {
 	struct ti816x_priv *dev_priv;
@@ -536,12 +574,15 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	struct emac_desc_head *hdesc;
 
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMTXINTSTAT));
-	log_debug("ti tx int");
 
 	dev_priv = netdev_priv(dev_id, struct ti816x_priv);
 	assert(dev_priv != NULL);
 
 	desc = dev_priv->tx_cur_head;
+
+	if (desc == NULL) {
+		return IRQ_HANDLED;
+	}
 
 	do {
 		hdesc = head_from_desc(desc);
@@ -573,26 +614,11 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 	}
 	ipl_restore(sp);
 
-	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, TXEOI);
+	emac_eoi(TXEOI);
 
 	return IRQ_HANDLED;
 }
 
-#define STATPEND (0x1 << 27) /* MACINVECTOR */
-#define HOSTPEND (0x1 << 26)
-#define TXPEND (DEFAULT_MASK << 16)
-#define RXPEND (DEFAULT_MASK << 0)
-#define IDLE(x) ((x >> 31) & 0x1) /* MACSTATUS */
-#define TXERRCODE(x) ((x >> 20) & 0xf)
-#define TXERRCH(x) ((x >> 16) & 0x7)
-#define RXERRCODE(x) ((x >> 12) & 0xf)
-#define RXERRCH(x) ((x >> 8) & 0x7)
-#define RGMIIGIG(x) ((x >> 4) & 0x1)
-#define RGMIIFULLDUPLEX(x) ((x >> 3) & 0x1)
-#define RXQOSACT(x) ((x >> 2) & 0x1)
-#define RXFLOWACT(x) ((x >> 1) & 0x1)
-#define TXFLOWACT(x) ((x >> 0) & 0x1)
-#define MISCEOI 0x3 /* MACEOIVECTOR */
 static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		void *dev_id) {
 	unsigned long macinvector;
@@ -637,7 +663,7 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 				REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT));
 	}
 
-	REG_STORE(EMAC_BASE + EMAC_R_MACEOIVECTOR, MISCEOI);
+	emac_eoi(MISCEOI);
 
 	return IRQ_HANDLED;
 }
@@ -662,7 +688,6 @@ static void ti816x_config(struct net_device *dev) {
 	cm_load_mac(dev);
 
 	/* initialization of EMAC and MDIO modules */
-	emac_mdio_config();
 	emac_clear_ctrl_regs();
 	emac_clear_hdp();
 	emac_set_stat_regs(0);
@@ -678,6 +703,8 @@ static void ti816x_config(struct net_device *dev) {
 	emac_enable_rx_and_tx_irq();
 	emac_enable_rx_and_tx_dma();
 	emac_set_macctrl(GMIIEN);
+
+	emac_mdio_config();
 
 	/* enable all the EMAC/MDIO interrupts in the control module */
 	/* emac_ctrl_enable_irq(); -- would done when opening */
@@ -734,9 +761,26 @@ static struct periph_memory_desc emac_region = {
 
 PERIPH_MEMORY_DEFINE(emac_region);
 
+static struct periph_memory_desc emac_ctrl_region = {
+	.start = (uint32_t) EMAC_CTRL_BASE,
+	.len   = 0x800,
+};
+
+PERIPH_MEMORY_DEFINE(emac_ctrl_region);
+
 static struct periph_memory_desc emac_mdio_region = {
 	.start = (uint32_t) MDIO_BASE,
 	.len   = 0x800,
 };
 
 PERIPH_MEMORY_DEFINE(emac_mdio_region);
+
+#if EMAC_VERSION == 1
+/* Neccessary to clear interrupts */
+static struct periph_memory_desc emac_cm_region = {
+	.start = (uint32_t) LVL_INTR_CLEAR,
+	.len   = 4,
+};
+
+PERIPH_MEMORY_DEFINE(emac_cm_region);
+#endif

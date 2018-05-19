@@ -14,33 +14,17 @@
 /**
  * EMAC0/MDIO Base Address
  */
-#define EMAC_BASE_ADDR 0x4A100000
-#define MDIO_BASE_ADDR 0x4A100000
+#define EMAC_BASE	OPTION_GET(NUMBER, emac_base)
+#define EMAC_CTRL_BASE	OPTION_GET(NUMBER, emac_ctrl_base)
+#define MDIO_BASE	OPTION_GET(NUMBER, mdio_base)
 
 /**
  * CPGMAC0 Interrupts
  */
-#define MACRXTHR0 40 /* CPGMAC0 Receive threshold interrupt */
-#define MACRXINT0 41 /* CPGMAC0 Receive pending interrupt */
-#define MACTXINT0 42 /* CPGMAC0 Transmit pending interrupt */
-#define MACMISC0  43 /* CPGMAC0 Stat, Host, MDIO LINKINT or MDIO USERINT */
-
-/**
- * EMAC/MDIO Registers - Base Address Offset
- */
-#define EMAC_OFFSET      0x00000000 /* EMAC module */
-#define EMAC_CTRL_OFFSET 0x00000900 /* EMAC control module */
-#define MDIO_OFFSET      0x00000800 /* MDIO module */
-
-/**
- * EMAC0/MDIO Module and Control Module Base Address
- */
-#define EMAC_BASE \
-	(EMAC_BASE_ADDR + EMAC_OFFSET)      /* EMAC Module Base */
-#define EMAC_CTRL_BASE \
-	(EMAC_BASE_ADDR + EMAC_CTRL_OFFSET) /* EMAC Control Module Base */
-#define MDIO_BASE \
-	(MDIO_BASE_ADDR + MDIO_OFFSET)      /* MDIO Module Base */
+#define MACRXTHR0 (OPTION_GET(NUMBER, irq_base) + 0) /* CPGMAC0 Receive threshold interrupt */
+#define MACRXINT0 (OPTION_GET(NUMBER, irq_base) + 1) /* CPGMAC0 Receive pending interrupt */
+#define MACTXINT0 (OPTION_GET(NUMBER, irq_base) + 2) /* CPGMAC0 Transmit pending interrupt */
+#define MACMISC0  (OPTION_GET(NUMBER, irq_base) + 3) /* CPGMAC0 Stat, Host, MDIO LINKINT or MDIO USERINT */
 
 #define EMAC_CHANNEL_COUNT 8
 
@@ -168,6 +152,16 @@
 #define MDIO_R_USERACCESS1      0x88 /* MDIO User Access Register 1 */
 #define MDIO_R_USERPHYSEL1      0x8C /* MDIO User PHY Select Register 1 */
 
+/* MDIO bits */
+#define MDIO_CONTROL_IDLE		(0x80000000)
+#define MDIO_CONTROL_ENABLE		(0x40000000)
+#define MDIO_CONTROL_FAULT_ENABLE	(0x40000)
+#define MDIO_CONTROL_FAULT		(0x80000)
+#define MDIO_USERACCESS0_GO		(0x80000000)
+#define MDIO_USERACCESS0_WRITE_READ	(0x0)
+#define MDIO_USERACCESS0_WRITE_WRITE	(0x40000000)
+#define MDIO_USERACCESS0_ACK		(0x20000000)
+
 /**
  * EMAC Buffer Descriptor
  */
@@ -210,6 +204,19 @@ struct emac_desc {
 #define EMAC_DESC_F_CRCERROR   0x0002U /* CRC Error (CRCERROR) Flag */
 #define EMAC_DESC_F_NOMATCH    0x0001U /* No Match (NOMATCH) Flag */
 
+/* Basic mode control register. */
+#define BMCR_RESV		0x003f	/* Unused...		       */
+#define BMCR_SPEED1000		0x0040	/* MSB of Speed (1000)	       */
+#define BMCR_CTST		0x0080	/* Collision test	       */
+#define BMCR_FULLDPLX		0x0100	/* Full duplex		       */
+#define BMCR_ANRESTART		0x0200	/* Auto negotiation restart    */
+#define BMCR_ISOLATE		0x0400	/* Disconnect DP83840 from MII */
+#define BMCR_PDOWN		0x0800	/* Powerdown the DP83840       */
+#define BMCR_ANENABLE		0x1000	/* Enable auto negotiation     */
+#define BMCR_SPEED100		0x2000	/* Select 100Mbps	       */
+#define BMCR_LOOPBACK		0x4000	/* TXD loopback bits	       */
+#define BMCR_RESET		0x8000	/* Reset the DP83840	       */
+
 /**
  * Control Module Base Address
  */
@@ -224,21 +231,32 @@ struct emac_desc {
 //TODO remove this when mdio is created
 extern void emac_mdio_config(void);
 
+#define EMAC_VERSION (OPTION_GET(NUMBER, version))
+
 #include <framework/mod/options.h>
 #if (OPTION_GET(NUMBER, speed) == 100)
 
 #define MACCTRL_INIT (FULLDUPLEX | TXPACE)
 #define RXMBP_INIT \
 	(RXNOCHAIN | RXCSFEN | RXCAFEN | RXBROADEN | RXMULTEN)
+#define PHY_ADV (ADVERTISE_100FULL | ADVERTISE_100HALF)
 
 #elif (OPTION_GET(NUMBER, speed) == 1000)
 
 #define RXMBP_INIT \
 	(RXCMFEN | RXCSFEN | RXCEFEN | RXCAFEN | RXBROADEN | RXMULTEN)
 #define MACCTRL_INIT (FULLDUPLEX | GIG)
+#define PHY_ADV (ADVERTISE_1000XFULL | ADVERTISE_1000XHALF)
 
 #else
 #error "setup ethernet speed"
 #endif
+
+void emac_mdio_enable(void);
+void emac_detect_phy(void);
+void emac_autonegotiate(void);
+void emac_mdio_writereg(unsigned char reg_num,unsigned short data);
+int emac_mdio_readreg(unsigned char reg_num);
+void emac_mdelay(int value);
 
 #endif /* DRIVERS_ETHERNET_TI816X_H_ */
