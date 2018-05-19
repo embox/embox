@@ -181,7 +181,7 @@ void emac_detect_phy(void) {
 }
 
 void emac_autonegotiate(void) {
-	int tmp, val, cntr;
+	int tmp, val, cntr = 0;
 
 	tmp = emac_mdio_readreg(MII_BMCR);
 	val = tmp | BMCR_FULLDPLX | BMCR_ANENABLE |
