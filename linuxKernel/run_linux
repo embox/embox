@@ -1,0 +1,2 @@
+#!/bin/sh
+sudo xl -vvv create -c -f config.cfg
