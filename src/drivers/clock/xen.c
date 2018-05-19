@@ -14,7 +14,13 @@
 
 #include <embox/unit.h>
 
+#include <math.h>
+#include <time.h>
+#include <xen/xen.h>
+
 EMBOX_UNIT_INIT(xen_clock_init);
+
+extern shared_info_t xen_shared_info;
 
 static int integratorcp_clock_setup(struct time_dev_conf * conf) {
 	return 0;
@@ -43,13 +49,22 @@ static struct clock_source xen_cs = {
 	.read = clock_source_read /* attach default read function */
 };
 
-static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-	for (int i = 0; i < 10; i++) {
-		clock_tick_handler(irq_nr, dev_id);
-	}
-	return IRQ_HANDLED;
+static uint64_t system_time;
+
+static uint64_t xen_time(void) {
+	return xen_shared_info.vcpu_info[0].time.system_time;
 }
 
+static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
+	uint64_t time = xen_time();
+
+	const int n = (time - system_time) / NSEC_PER_MSEC;
+	for (int i = 0; i < n; i++) {
+		clock_tick_handler(irq_nr, dev_id);
+	}
+
+	return IRQ_HANDLED;
+}
 
 static int xen_clock_init(void) {
 
@@ -62,6 +77,8 @@ static int xen_clock_init(void) {
 		panic("Error has happened during timer initialization.\n");
 	}
 	xen_event_device.irq_nr = op.port;
+
+	system_time = xen_time();
 
 	return irq_attach(op.port, clock_handler, 0, &xen_cs, "xen clock irq");
 }
