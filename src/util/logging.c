@@ -30,3 +30,15 @@ void logging_raw(struct logging *logging, int level, const char* fmt, ...) {
 		va_end(args);
 	}
 }
+
+void logging_boot_raw(struct logging *logging, const char* fmt, ...) {
+	assert(logging);
+
+	if (LOG_INFO <= logging->level) {
+		va_list args;
+
+		va_start(args, fmt);
+		vprintk(fmt, args);
+		va_end(args);
+	}
+}
