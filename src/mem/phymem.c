@@ -4,13 +4,13 @@
  * @date Oct 5, 2012
  * @author: Anton Bondarev
  */
+#include <util/log.h>
 
 #include <stdint.h>
 #include <sys/mman.h>
 #include <mem/phymem.h>
 #include <mem/page.h>
 #include <util/binalign.h>
-#include <kernel/printk.h>
 
 #include <embox/unit.h>
 
@@ -29,7 +29,8 @@ static int phymem_init(void) {
 	const size_t mem_len = phymem_alloc_end - phymem_alloc_start;
 	void *va;
 
-	printk("start=%p, end=%p, size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
+	log_boot_start();
+	log_boot("start=%p end=%p size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
 
 	va = mmap_device_memory(phymem_alloc_start,
 			binalign_bound(mem_len, PAGE_SIZE()),
@@ -39,7 +40,7 @@ static int phymem_init(void) {
 
 	if (va)
 		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
-
+	log_boot_stop();
 	return phymem_alloc_start == va ? 0 : -EIO;
 }
 
