@@ -42,7 +42,4 @@ extern char *log_levels[];
 extern void logging_raw(struct logging *logging, int level,
 	const char* fmt, ...);
 
-extern void logging_boot_raw(struct logging *logging,
-	const char* fmt, ...);
-
 #endif /* UTIL_LOGGING_H_ */
