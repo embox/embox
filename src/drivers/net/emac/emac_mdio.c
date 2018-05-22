@@ -195,7 +195,8 @@ void emac_autonegotiate(void) {
 #if EMAC_VERSION == 0
 	val = PHY_ADV;
 #else
-	val = ADVERTISE_10FULL;
+	val = ADVERTISE_100FULL | ADVERTISE_100HALF |
+		ADVERTISE_10HALF | ADVERTISE_10FULL;
 #endif
 	emac_mdio_writereg(MII_ADVERTISE, val);
 
@@ -218,8 +219,28 @@ void emac_autonegotiate(void) {
 		log_error("Autonegotiation not completed");
 	}
 
-	log_debug("MII_BMSR=%08x", tmp);
-	log_debug("speed reg = %08x", emac_mdio_readreg(0x1));
+	tmp = emac_mdio_readreg(MII_LPA);
+	tmp |= emac_mdio_readreg(MII_ADVERTISE);
+
+	log_boot_start();
+
+	if (tmp & ADVERTISE_100FULL) {
+		log_boot("\t100 Mbps FULL");
+		emac_set_macctrl(1 | 0x20 | (1 << 15));
+	} else if (tmp & ADVERTISE_100HALF) {
+		log_boot("\t100 Mbps HALF");
+		emac_set_macctrl(0 | 0x20 | (1 << 15));
+	} else if (tmp & ADVERTISE_10FULL) {
+		log_boot("\t10 Mbps FULL");
+		emac_set_macctrl(1 | 0x20);
+	} else if (tmp & ADVERTISE_10HALF) {
+		log_boot("\t10 Mbps HALF");
+		emac_set_macctrl(0 | 0x20);
+	} else {
+		log_boot("Auto negotiatie error");
+	}
+
+	log_boot_stop();
 }
 
 void emac_mdio_config(void) {

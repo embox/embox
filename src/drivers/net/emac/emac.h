@@ -258,5 +258,6 @@ void emac_autonegotiate(void);
 void emac_mdio_writereg(unsigned char reg_num,unsigned short data);
 int emac_mdio_readreg(unsigned char reg_num);
 void emac_mdelay(int value);
+ void emac_set_macctrl(unsigned long v);
 
 #endif /* DRIVERS_ETHERNET_TI816X_H_ */
