@@ -7,3 +7,11 @@ module math_test {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module fpu_context_consistency_test {
+	source "fpu_context_consistency_test.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
