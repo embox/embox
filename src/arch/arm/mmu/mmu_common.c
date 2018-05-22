@@ -69,20 +69,20 @@ void mmu_on(void) {
 	_print_mmu_regs();
 }
 
-/**
-* @brief Turn MMU off
-*
-* @note Clear flag CR_M at c1, the control register
-*/
-void mmu_off(void) {
-#ifndef NOMMU
-	__asm__ __volatile__ (
-		"mrc p15, 0, r0, c1, c0, 0\n\t"
-		"bic r0, r0, %[flag]\n\t"
-		"mcr p15, 0, r0, c1, c0, 0"
-		: : [flag] "I" (CR_M)
-	);
-#endif
+ /**
+ * @brief Turn MMU off
+ *
+ * @note Clear flag CR_M at c1, the control register
+ */
+ void mmu_off(void) {
+ #ifndef NOMMU
+ 	__asm__ __volatile__ (
+ 		"mrc p15, 0, r0, c1, c0, 0\n\t"
+ 		"bic r0, r0, %[flag]\n\t"
+ 		"mcr p15, 0, r0, c1, c0, 0"
+ 		: : [flag] "I" (CR_M)
+ 	);
+ #endif
 }
 
 void mmu_flush_tlb(void) {
@@ -511,87 +511,88 @@ uint32_t _get_csselr(void) {
 	return val;
 }
 void _print_mmu_regs(void) {
+#if LOG_LEVEL >= LOG_INFO
 	/* Sometimes accessing this registers crushes the emulator */
-#if LOG_LEVEL > 0
 	uint32_t fault_status;
 
-	log_debug("ARM MMU registers summary:");
-	log_debug("TLB Type:                  %#10x", _get_mmu_tlb_type());
-	log_debug("SCTRL:                     %#10x", cp15_get_sctrl());
-	log_debug("ACTRL:                     %#10x", cp15_get_actrl());
-	log_debug("CPACR:                     %#10x", cp15_get_cpacr());
-	log_debug("Non-Secure Access Control: %#10x", cp15_get_nsacr());
-	log_debug("Translation Table Base 0:  %#10x", _get_mmu_translation_table_base_0());
-	log_debug("Translation Table Base 1:  %#10x", _get_mmu_translation_table_base_1());
-	log_debug("Domain Access Conrol:      %#10x", _get_mmu_domain_access_control());
+	log_boot_start();
+
+	log_boot("ARM MMU registers summary:\n");
+	log_boot("TLB Type:                  %#10x\n", _get_mmu_tlb_type());
+	log_boot("SCTRL:                     %#10x\n", cp15_get_sctrl());
+	log_boot("ACTRL:                     %#10x\n", cp15_get_actrl());
+	log_boot("CPACR:                     %#10x\n", cp15_get_cpacr());
+	log_boot("Non-Secure Access Control: %#10x\n", cp15_get_nsacr());
+	log_boot("Translation Table Base 0:  %#10x\n", _get_mmu_translation_table_base_0());
+	log_boot("Translation Table Base 1:  %#10x\n", _get_mmu_translation_table_base_1());
+	log_boot("Domain Access Conrol:      %#10x\n", _get_mmu_domain_access_control());
 
 	fault_status = _get_mmu_data_fault_status();
-	log_debug("Data Fault Status:         %#10x", fault_status);
+	log_boot("Data Fault Status:         %#10x\n", fault_status);
 	if (fault_status) {
-		log_debug("Data Fault Address:        %#10x",  _get_mmu_data_fault_address());
+		log_boot("Data Fault Address:        %#10x\n",  _get_mmu_data_fault_address());
 	}
 
 	fault_status = _get_mmu_instruction_fault_status();
-	log_debug("Instruction Fault Status:  %#10x", fault_status);
+	log_boot("Instruction Fault Status:  %#10x\n", fault_status);
 	if (fault_status) {
-		log_debug("Instruction Fault Address: %#10x", _get_mmu_instruction_fault_address());
+		log_boot("Instruction Fault Address: %#10x\n", _get_mmu_instruction_fault_address());
 	}
 
-	log_debug("TLB lockdown:              %#10x", _get_mmu_tlb_lockdown());
+	log_boot("TLB lockdown:              %#10x\n", _get_mmu_tlb_lockdown());
 
-	log_debug("Primary Region Remap:      %#10x", _get_mmu_primary_region_remap());
-	log_debug("Normal Memory Remap:       %#10x", _get_mmu_normal_memory_remap());
+	log_boot("Primary Region Remap:      %#10x\n", _get_mmu_primary_region_remap());
+	log_boot("Normal Memory Remap:       %#10x\n", _get_mmu_normal_memory_remap());
 
-	log_debug("FSCE PID:                  %#10x", _get_mmu_fsce_pid());
+	log_boot("FSCE PID:                  %#10x\n", _get_mmu_fsce_pid());
 
-	log_debug("Context ID:                %#10x", _get_mmu_context_id());
+	log_boot("Context ID:                %#10x\n", _get_mmu_context_id());
 #ifdef CORTEX_A9
 	/* CP15 c15 implemented */
-	log_debug("Peripheral port remap:     %#10x", _get_mmu_peripheral_port_memory_remap());
+	log_boot("Peripheral port remap:     %#10x\n", _get_mmu_peripheral_port_memory_remap());
 
-	log_debug("TLB Lockdown Index:        %#10x", _get_mmu_tlb_lockdown_index());
-	log_debug("TLB Lockdown VA:           %#10x", _get_mmu_tlb_lockdown_va());
-	log_debug("TLB Lockdown PA:           %#10x", _get_mmu_tlb_lockdown_pa());
-	log_debug("TLB Lockdown Attribues:    %#10x", _get_mmu_tlb_lockdown_attributes());
-#endif /* CORTEX_A9 */
-#ifdef CORTEX_A9
-/* CP15 c11, Reserved for TCM DMA registers */
-	log_debug("PLEIDR:                    %#10x", _get_pleidr());
+	log_boot("TLB Lockdown Index:        %#10x\n", _get_mmu_tlb_lockdown_index());
+	log_boot("TLB Lockdown VA:           %#10x\n", _get_mmu_tlb_lockdown_va());
+	log_boot("TLB Lockdown PA:           %#10x\n", _get_mmu_tlb_lockdown_pa());
+	log_boot("TLB Lockdown Attribues:    %#10x\n", _get_mmu_tlb_lockdown_attributes());
+	/* CP15 c11, Reserved for TCM DMA registers */
+	log_boot("PLEIDR:                    %#10x\n", _get_pleidr());
 
 	if (_get_pleidr()) {
-		log_debug("PLEASR:                    %#10x", _get_pleasr());
-		log_debug("PLESFR:                    %#10x", _get_plesfr());
-		log_debug("PLEAUR:                    %#10x", _get_pleuar());
-		log_debug("PLEPCR:                    %#10x", _get_plepcr());
+		log_boot("PLEASR:                    %#10x\n", _get_pleasr());
+		log_boot("PLESFR:                    %#10x\n", _get_plesfr());
+		log_boot("PLEAUR:                    %#10x\n", _get_pleuar());
+		log_boot("PLEPCR:                    %#10x\n", _get_plepcr());
 	}
 #endif /* CORTEX_A9 */
-	log_debug("MIDR:                      %#10x", _get_midr());
-	log_debug("CTR:                       %#10x", _get_ctr());
-	log_debug("TCMTR:                     %#10x", _get_tcmtr());
-	log_debug("TLBTR:                     %#10x", _get_tlbtr());
-	log_debug("MPIDR:                     %#10x", _get_mpidr());
-	log_debug("REVIDR:                    %#10x", _get_revidr());
+	log_boot("MIDR:                      %#10x\n", _get_midr());
+	log_boot("CTR:                       %#10x\n", _get_ctr());
+	log_boot("TCMTR:                     %#10x\n", _get_tcmtr());
+	log_boot("TLBTR:                     %#10x\n", _get_tlbtr());
+	log_boot("MPIDR:                     %#10x\n", _get_mpidr());
+	log_boot("REVIDR:                    %#10x\n", _get_revidr());
 
-	log_debug("PFR0:                      %#10x", _get_pfr0());
-	log_debug("PFR1:                      %#10x", _get_pfr1());
-	log_debug("DFR0:                      %#10x", _get_dfr0());
-	log_debug("AFR0:                      %#10x", _get_afr0());
+	log_boot("PFR0:                      %#10x\n", _get_pfr0());
+	log_boot("PFR1:                      %#10x\n", _get_pfr1());
+	log_boot("DFR0:                      %#10x\n", _get_dfr0());
+	log_boot("AFR0:                      %#10x\n", _get_afr0());
 
-	log_debug("MMFR0:                      %#10x", _get_mmfr0());
-	log_debug("MMFR1:                      %#10x", _get_mmfr1());
-	log_debug("MMFR2:                      %#10x", _get_mmfr2());
-	log_debug("MMFR3:                      %#10x", _get_mmfr3());
+	log_boot("MMFR0:                     %#10x\n", _get_mmfr0());
+	log_boot("MMFR1:                     %#10x\n", _get_mmfr1());
+	log_boot("MMFR2:                     %#10x\n", _get_mmfr2());
+	log_boot("MMFR3:                     %#10x\n", _get_mmfr3());
 
-	log_debug("ISAR0:                      %#10x", _get_isar0());
-	log_debug("ISAR1:                      %#10x", _get_isar1());
-	log_debug("ISAR2:                      %#10x", _get_isar2());
-	log_debug("ISAR3:                      %#10x", _get_isar3());
-	log_debug("ISAR4:                      %#10x", _get_isar4());
+	log_boot("ISAR0:                     %#10x\n", _get_isar0());
+	log_boot("ISAR1:                     %#10x\n", _get_isar1());
+	log_boot("ISAR2:                     %#10x\n", _get_isar2());
+	log_boot("ISAR3:                     %#10x\n", _get_isar3());
+	log_boot("ISAR4:                     %#10x\n", _get_isar4());
 
-	log_debug("CCSIDR:                     %#10x", _get_ccsidr());
-	log_debug("CLIDR:                      %#10x", _get_clidr());
-	log_debug("AIDR:                       %#10x", _get_aidr());
-	log_debug("CSSELR:                     %#10x", _get_csselr());
+	log_boot("CCSIDR:                    %#10x\n", _get_ccsidr());
+	log_boot("CLIDR:                     %#10x\n", _get_clidr());
+	log_boot("AIDR:                      %#10x\n", _get_aidr());
+	log_boot("CSSELR:                    %#10x\n", _get_csselr());
 
+	log_boot_stop();
 #endif
 }
