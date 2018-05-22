@@ -58,4 +58,16 @@ extern struct logger mod_logger __attribute__ ((weak));
 #define log_error(fmt, ...) \
 	log_logp(LOG_ERROR, fmt, ## __VA_ARGS__)
 
+#define log_boot(fmt, ...) \
+	if (&mod_logger) \
+		logging_raw(&mod_logger.logging, LOG_INFO, "\t\t\t" fmt "", ## __VA_ARGS__)
+
+#define log_boot_start()  \
+	if (&mod_logger) \
+		logging_raw(&mod_logger.logging, LOG_INFO, "\n")
+
+#define log_boot_stop()  \
+	if (&mod_logger) \
+		logging_raw(&mod_logger.logging, LOG_INFO, "\t\t")
+
 #endif /* UTIL_LOG_H_ */

@@ -32,6 +32,7 @@
 #define cmd_platform(mod_name) \
 	mod($(if $(PLATFORM),$(PLATFORM).cmd.##mod_name))
 
+#include "src/util/logging.h"
 #include "mods.conf"
 
 #elif defined(__CONFIG_LDS_H__)
