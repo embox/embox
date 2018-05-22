@@ -3,12 +3,12 @@ package embox.cmd
 
 @AutoCmd
 @Cmd(name = "sleep",
-	help = "sleep for specified usec num",
+	help = "sleep for specified msec num",
 	man = '''
 		NAME
-			sleep - freezes for specified number of useconds.
+			sleep - sleep for specified number of microseconds.
 		SYNOPSIS
-			sleep USEC
+			sleep MSEC
 		DESCRIPTION
 
 		AUTHOR

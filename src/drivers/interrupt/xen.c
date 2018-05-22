@@ -6,68 +6,106 @@
  * @author
  */
 
-#include <stdint.h>
-#include <kernel/irq.h>
-#include <kernel/panic.h>
-#include <embox/unit.h>
-#include <kernel/printk.h>
-#include <xen_hypercall-x86_32.h>
-#include <xen/xen.h>
 #include <string.h>
+#include <util/bitmap.h>
+#include <kernel/irq.h>
+#include <kernel/printk.h>
+#include <xen/event.h>
+#include <xen_hypercall-x86_32.h>
+#include <embox/unit.h>
 
 #include <drivers/irqctrl.h>
-#include <xen/event.h>
-
-#define CLEAR_BIT(field, bit) __asm__ __volatile__ ("lock btrl %1,%0":"=m" ((field)):"Ir"((bit)):"memory")
-
-extern shared_info_t xen_shared_info;
-shared_info_t *shared_info;
 
 EMBOX_UNIT_INIT(xen_int_init);
 
-int port;
+static struct {
+	int port1;
+	int port2;
+} test_ports[2];
+
+extern shared_info_t xen_shared_info;
+
+static int make_test_events(void) {
+	int res;
+	for (int i = 0; i < ARRAY_SIZE(test_ports); ++i) {
+		evtchn_alloc_unbound_t op_alloc = {
+			.dom = DOMID_SELF,
+			.remote_dom = DOMID_SELF,
+		};
+		if ((res = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound, &op_alloc))) {
+			return res;
+		}
+		evtchn_bind_interdomain_t op_bind = {
+			.remote_dom = DOMID_SELF,
+			.remote_port = op_alloc.port,
+		};
+		if ((res = HYPERVISOR_event_channel_op(EVTCHNOP_bind_interdomain, &op_bind))) {
+			return res;
+		}
+
+		test_ports[i].port1 = op_alloc.port;
+		test_ports[i].port2 = op_bind.local_port;
+	}
+	return 0;
+}
+
+static int init_event_mask(void) {
+	memset(xen_shared_info.evtchn_mask, 0xff, sizeof(xen_shared_info.evtchn_mask));
+	memset(xen_shared_info.evtchn_pending, 0, sizeof(xen_shared_info.evtchn_pending));
+	return 0;
+}
 
 static int xen_int_init(void) {
-	evtchn_alloc_unbound_t op_sender;
-	op_sender.dom = DOMID_SELF;
-	op_sender.remote_dom = DOMID_SELF;
-	if (HYPERVISOR_event_channel_op (EVTCHNOP_alloc_unbound, &op_sender) != 0)
-	{
-		return -1;
+	int res;
+
+	if ((res = init_event_mask())) {
+		return res;
 	}
-	evtchn_bind_interdomain_t op_recipient;
-	op_recipient.remote_dom = DOMID_SELF;
-	op_recipient.remote_port = op_sender.port;
-	if ( HYPERVISOR_event_channel_op ( EVTCHNOP_bind_interdomain, &op_recipient) != 0 )
-	{
-		return -1;
+
+	if ((res = make_test_events())) {
+		return res;
 	}
-	port = op_recipient.local_port;
+
 	return 0;
 }
 
 void irqctrl_enable(unsigned int irq) {
+	bitmap_clear_bit(xen_shared_info.evtchn_mask, irq);
 }
 
 void irqctrl_disable(unsigned int irq) {
-	printk("in disable\n");
+	bitmap_set_bit(xen_shared_info.evtchn_mask, irq);
+}
+
+static int find_other_test_port(int port) {
+	for (int i = 0; i < ARRAY_SIZE(test_ports); ++i) {
+		if (test_ports[i].port1 == port) {
+			return test_ports[i].port2;
+		}
+		if (test_ports[i].port2 == port) {
+			return test_ports[i].port1;
+		}
+	}
+	return -1;
 }
 
 void irqctrl_force(unsigned int irq) {
-	struct evtchn_send event;
-	event.port = port;
-	shared_info = &xen_shared_info;
-	int size = sizeof(xen_ulong_t) * 8;
-	//shared_info->evtchn_mask[irq / size] &= ~(1UL << irq % size); //TODO: Need to choose..
-	//CLEAR_BIT(shared_info->evtchn_mask[irq / size], irq % size);
-	shared_info->evtchn_mask[irq / size] &= 0;
-	shared_info->vcpu_info[0].evtchn_upcall_mask = 0; //TODO: Searching for the right bit..
+	int res;
 
-	if (HYPERVISOR_event_channel_op(EVTCHNOP_send, &event) != 0) {
-		panic("ops");
+	const int port = find_other_test_port(irq);
+	if (port < 0) {
+		printk("%s: unable to force %d\n", __func__, irq);
+		return;
+	}
+
+	struct evtchn_send ev_send = {
+		.port = port,
 	};
+	if ((res = HYPERVISOR_event_channel_op(EVTCHNOP_send, &ev_send))) {
+		printk("%s: send %d failed: %d\n", __func__, irq, res);
+	}
 }
 
-void interrupt_handle(void) {
-	printk("Here is IRQ!");
+void irqctrl_eoi(unsigned int irq) {
+	bitmap_clear_bit(xen_shared_info.evtchn_pending, irq);
 }

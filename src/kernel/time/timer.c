@@ -23,6 +23,7 @@ static int inited = 0;
 
 static struct lthread clock_handler_lt;
 extern struct clock_source *cs_jiffies;
+static clock_t last_cs_jiffies;
 
 void clock_tick_handler(int irq_num, void *dev_id) {
 	struct clock_source *cs = (struct clock_source *) dev_id;
@@ -45,7 +46,12 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 }
 
 static int clock_handler(struct lthread *self) {
-	timer_strat_sched();
+	clock_t jiffies = cs_jiffies->jiffies;
+
+	while (last_cs_jiffies < jiffies) {
+		timer_strat_sched();
+		last_cs_jiffies++;
+	}
 	return 0;
 }
 
@@ -53,6 +59,9 @@ static int init(void) {
 	lthread_init(&clock_handler_lt, &clock_handler);
 	schedee_priority_set(&clock_handler_lt.schedee, CLOCK_HND_PRIORITY);
 
+	if (cs_jiffies) {
+		last_cs_jiffies = cs_jiffies->jiffies;
+	}
 	inited = 1;
 
 	return 0;
