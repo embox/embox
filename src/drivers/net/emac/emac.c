@@ -14,6 +14,7 @@
 #include <embox/unit.h>
 
 #include <kernel/irq.h>
+#include <kernel/printk.h>
 #include <hal/reg.h>
 #include "emac.h"
 
@@ -230,9 +231,9 @@ static void emac_set_macaddr(unsigned char (*addr)[6]) {
 	int i;
 	unsigned long mac_hi, mac_lo;
 
-	mac_hi = ((*addr)[3] << 24) | ((*addr)[2] << 16)
-			| ((*addr)[1] << 8) | ((*addr)[0] << 0);
-	mac_lo = ((*addr)[5] << 8) | ((*addr)[4] << 0);
+	mac_hi = ((*addr)[2] << 24) | ((*addr)[3] << 16)
+			| ((*addr)[4] << 8) | ((*addr)[5] << 0);
+	mac_lo = ((*addr)[0] << 8) | ((*addr)[1] << 0);
 
 	for (i = 0; i < EMAC_CHANNEL_COUNT; ++i) {
 		REG_STORE(EMAC_BASE + EMAC_R_MACINDEX, MACINDEX(i));
@@ -240,6 +241,8 @@ static void emac_set_macaddr(unsigned char (*addr)[6]) {
 		REG_STORE(EMAC_BASE + EMAC_R_MACADDRLO,
 				mac_lo | VALID | MATCHFILT | CHANNEL(i));
 	}
+
+	log_debug("set macaddr %06x %06x", mac_hi, mac_lo);
 
 	REG_STORE(EMAC_BASE + EMAC_R_MACSRCADDRHI, mac_hi);
 	REG_STORE(EMAC_BASE + EMAC_R_MACSRCADDRLO, mac_lo);
@@ -287,8 +290,8 @@ static void emac_enable_rxmbp(void) {
 #define TXPACE (0x1 << 6)
 #define GMIIEN (0x1 << 5)
 #define FULLDUPLEX (0x1 << 0)
-static void emac_set_macctrl(unsigned long v) {
-	REG_ORIN(EMAC_BASE + EMAC_R_MACCONTROL, v);
+void emac_set_macctrl(unsigned long v) {
+	REG_STORE(EMAC_BASE + EMAC_R_MACCONTROL, v);
 }
 
 #define HOSTMASK (0x1 << 1)
@@ -698,13 +701,12 @@ static void ti816x_config(struct net_device *dev) {
 	emac_set_max_frame_len(RX_FRAME_MAX_LEN);
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
-	emac_set_macctrl(MACCTRL_INIT);
+	emac_mdio_config();
 	emac_alloc_rx_queue(netdev_priv(dev, struct ti816x_priv));
 	emac_enable_rx_and_tx_irq();
 	emac_enable_rx_and_tx_dma();
-	emac_set_macctrl(GMIIEN);
 
-	emac_mdio_config();
+	REG_ORIN(EMAC_BASE + EMAC_R_MACCONTROL, 0x20);
 
 	/* enable all the EMAC/MDIO interrupts in the control module */
 	/* emac_ctrl_enable_irq(); -- would done when opening */
