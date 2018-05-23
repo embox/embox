@@ -1,3 +1,9 @@
 #!/bin/sh
+
+# Setting network
+brctl addbr br0
+ip link set br0 up
+
+# Creating machine with linux
 cd $(dirname $0)
 sudo xl -vvv create -c -f config.cfg
