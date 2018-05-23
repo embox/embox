@@ -1,2 +1,3 @@
 #!/bin/sh
+cd $(dirname $0)
 sudo xl -vvv create -c -f config.cfg
