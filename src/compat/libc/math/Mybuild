@@ -6,6 +6,7 @@ abstract module math {
 
 static module math_stub extends embox.compat.libc.math {
 	source "stub.c"
+	source "stub.h"
 }
 
 static module math_openlibm extends embox.compat.libc.math {
