@@ -17,3 +17,12 @@ module vfp extends fpu {
 
 	source "vfp.c"
 }
+
+module vfp9_s extends fpu {
+	option number log_level = 0
+
+	@IncludeExport(path="arm",target_name="fpu.h")
+	source "vfp9_s.h"
+
+	source "vfp9_s.c"
+}
