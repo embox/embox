@@ -22,6 +22,10 @@ static inline void arm_fpu_context_init(void *opaque) {
 	/* Do nothing */
 }
 
+static inline int try_vfp_instructions(void) {
+	return 0;
+}
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* ARM_FPU_STUB_H_ */

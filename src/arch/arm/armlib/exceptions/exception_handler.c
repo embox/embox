@@ -86,7 +86,7 @@ void arm_undefined_exception(unsigned int *regs) {
 			regs[12], regs[13], regs[14], regs[15],
 			regs[16], regs[17], regs[18], regs[19]);
 
-#ifdef ARM_FPU_VFP_H_
+#ifdef ARM_FPU_VFP
 	{
 		uint32_t tmp;
 		/* Enable VFP access */
