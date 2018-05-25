@@ -18,11 +18,11 @@
 #include "stack_iter.h"
 
 int stack_iter_next(stack_iter_t *f) {
-	f->fp = (void*) *((int*)f->fp - 3);
-	f->pc = (void*) *((int*)f->fp);
-	f->lr = (void*) *((int*)f->fp - 1);
+	f->fp = (void *) *((int *) (f->fp - 0xc));
+	f->pc = (void *) *((int *) f->fp);
+	f->lr = (void *) *((int *) (f->fp - 0x4));
 
-	return *((int*)f->fp - 3) != 0;
+	return (void *) *((int *) (f->fp - 0xc)) != 0;
 }
 
 void stack_iter_context(stack_iter_t *f, struct context *ctx) {
@@ -48,11 +48,6 @@ void stack_iter_current(stack_iter_t *f) {
 	 * by hand */
 
 	stack_iter_next(f);
-	f->fp = (void*) *((int*)f->fp - 3);
-}
-
-void *stack_iter_get_fp(stack_iter_t *f) {
-	return f->fp - 3;
 }
 
 void *stack_iter_get_retpc(stack_iter_t *f) {

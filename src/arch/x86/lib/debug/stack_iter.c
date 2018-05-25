@@ -58,10 +58,6 @@ int stack_iter_next(stack_iter_t *f) {
 	return 1;
 }
 
-void* stack_iter_get_fp(stack_iter_t *f) {
-	return f->fp;
-}
-
 void* stack_iter_get_retpc(stack_iter_t *f) {
 	return f->pc;
 }

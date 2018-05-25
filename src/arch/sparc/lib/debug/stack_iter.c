@@ -36,10 +36,6 @@ int stack_iter_next(stack_iter_t *f) {
 	}
 }
 
-void* stack_iter_get_fp(stack_iter_t *f) {
-	return (*f)->reg_window.fp;
-}
-
 void* stack_iter_get_retpc(stack_iter_t *f) {
 	return (*f)->reg_window.ret_pc + RETPC_OFFSET;
 }
