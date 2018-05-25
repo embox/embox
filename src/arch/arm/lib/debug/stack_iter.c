@@ -50,10 +50,6 @@ void stack_iter_current(stack_iter_t *f) {
 	stack_iter_next(f);
 }
 
-void *stack_iter_get_fp(stack_iter_t *f) {
-	return f->fp - 4;
-}
-
 void *stack_iter_get_retpc(stack_iter_t *f) {
 	return f->pc;
 }
