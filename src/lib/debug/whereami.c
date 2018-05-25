@@ -111,14 +111,20 @@ static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
 	char *end = buff + buff_sz;
 	int is_current = (t == thread_self());
 
-	p += tb_safe_snprintf(p, end-p,
-		" --   %08x %c %c %c %c  thread %d  task %d ",
-		t->critical_count,
-		is_current      ? '*' : ' ',
-		sched_active(&t->schedee) ? 'A' : ' ',
-		t->schedee.ready        ? 'R' : ' ',
-		t->schedee.waiting      ? 'W' : ' ',
-		t->id, task_get_id(t->task));
+	if (t == NULL) {
+		p += tb_safe_snprintf(p, end-p,
+				" -- Current thread is NULL, it seems that kernel"
+				" was not initialized yet ");
+	} else {
+		p += tb_safe_snprintf(p, end-p,
+				" --   %08x %c %c %c %c  thread %d  task %d ",
+				t->critical_count,
+				is_current      ? '*' : ' ',
+				sched_active(&t->schedee) ? 'A' : ' ',
+				t->schedee.ready        ? 'R' : ' ',
+				t->schedee.waiting      ? 'W' : ' ',
+				t->id, task_get_id(t->task));
+	}
 
 	memset(p, '-', end-p-1);
 	*(end-1) = '\0';
