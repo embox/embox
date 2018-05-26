@@ -7,4 +7,5 @@ module exceptions {
 	source "exception_table.S"
 	source "exception_handler.c"
 	source "exceptions.S"
+	source "arm_undefined_exception_handler.c"
 }
