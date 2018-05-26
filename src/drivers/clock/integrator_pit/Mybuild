@@ -1,0 +1,13 @@
+package embox.driver.clock
+
+module integrator_pit extends embox.arch.clock {
+	option number log_level = 0
+
+	option number base_addr = 0x13000000
+	
+	source "integrator_pit.c"
+
+	depends embox.kernel.time.clock_source
+	depends embox.driver.interrupt.irqctrl_api
+	depends embox.driver.periph_memory
+}

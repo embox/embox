@@ -17,7 +17,7 @@
 
 #define HZ 1000
 
-#define TIMER_BASE   OPTION_GET(NUMBER,integratorcp_clock_base)
+#define TIMER_BASE   OPTION_GET(NUMBER,base_addr)
 
 /* Interrupt vector for timer (TMR1) */
 #define CLOCK_IRQ	5
