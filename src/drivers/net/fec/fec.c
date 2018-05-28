@@ -39,17 +39,7 @@
 #define FEC_MMFR_TA     (2 << 16)
 #define FEC_MMFR_DATA(v)    (v & 0xffff)
 
-struct fec_priv {
-	uint32_t base_addr;
-	struct fec_buf_desc *rbd_base;
-	int rbd_index;
-	struct fec_buf_desc *tbd_base;
-	int tbd_index;
-};
-
 static struct fec_priv fec_priv;
-
-static int volatile phy_wait_flag;
 
 static void fec_reg_dump(const char * title) {
 	log_debug("%s", title);
@@ -81,37 +71,6 @@ static void fec_reg_dump(const char * title) {
 
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
-
-static int phy_read_reg(int mii_id, int regnum) {
-	uint32_t timeout = 0xFFFFFF;
-	phy_wait_flag = 0;
-	REG32_STORE(ENET_MMFR, FEC_MMFR_ST | FEC_MMFR_OP_READ |
-		FEC_MMFR_PA(mii_id) | FEC_MMFR_RA(regnum) |
-		FEC_MMFR_TA);
-
-	while (!phy_wait_flag && timeout--)
-		;
-
-	if (timeout == 0) {
-		log_error("phy read timeout");
-	}
-
-	return REG32_LOAD(ENET_MMFR);
-}
-
-static void phy_reg_dump(const char *title, int mii_id) {
-	log_debug("%s\n", title);
-
-	log_debug("MII_BMCR       %10x %10x", MII_BMCR, phy_read_reg(mii_id, MII_BMCR));
-	log_debug("MII_BMSR       %10x %10x", MII_BMSR, phy_read_reg(mii_id, MII_BMSR));
-	log_debug("MII_PHYSID1    %10x %10x", MII_PHYSID1, phy_read_reg(mii_id, MII_PHYSID1));
-	log_debug("MII_PHYSID2    %10x %10x", MII_PHYSID2, phy_read_reg(mii_id, MII_PHYSID2));
-	log_debug("MII_ADVERTISE  %10x %10x", MII_ADVERTISE, phy_read_reg(mii_id, MII_ADVERTISE));
-	log_debug("MII_LPA        %10x %10x", MII_LPA, phy_read_reg(mii_id, MII_LPA));
-	log_debug("MII_EXPANSION  %10x %10x", MII_EXPANSION, phy_read_reg(mii_id, MII_EXPANSION));
-
-	log_debug("\n");
-}
 
 static void emac_set_macaddr(unsigned char _macaddr[6]) {
 	uint32_t mac_hi, mac_lo;
@@ -268,17 +227,9 @@ out:
 	return res;
 }
 
-static int fec_phy_id = 0;
-static int phy_discovery(void) {
-	int id;
-	int bus;
-	for (bus = 0; bus < 32; bus ++) {
-		id = phy_read_reg(bus, MII_PHYSID1) & 0xFFFF;
-		if (id != 0xFFFF && id != 0x0 ) {
-			return bus;
-		}
-	}
-	return -1;
+static void fec_mdio_init(struct net_device *dev) {
+	phy_detect(dev);
+	phy_autoneg(dev, FEC_SPEED);
 }
 
 static void _reset(struct net_device *dev) {
@@ -297,6 +248,7 @@ static void _reset(struct net_device *dev) {
 	/* set mii speed */
 	REG32_STORE(ENET_MSCR, 0x1a);
 
+
 	/*
 	 * Set interrupt mask register
 	 */
@@ -306,50 +258,61 @@ static void _reset(struct net_device *dev) {
 	 * Receive Frame Interrupt
 	 * Receive Buffer Interrupt
 	 */
-	REG32_STORE(ENET_EIMR, 0x0 | ENET_EIR_RXB | ENET_EIR_RXF | ENET_EIR_MII);
-	/*
-	 * Clear FEC-Lite interrupt event register(IEVENT)
-	 */
+	REG32_STORE(ENET_EIMR, ENET_EIR_RXB | ENET_EIR_RXF);
+	/* Clear FEC-Lite interrupt event register(IEVENT) */
 	REG32_STORE(ENET_EIR, 0xffc00000);
 
 	/* Full-Duplex Enable */
-	 REG32_STORE(ENET_TCR, (1 << 2));
+	REG32_STORE(ENET_TCR, (1 << 2));
 
 	/* MAX_FL frame length*/
-	/* Enables 10-Mbit/s mode of the RMII or RGMII ?*/
+
+	fec_mdio_init(dev);
+
 	/* MII or RMII mode, as indicated by the RMII_MODE field. */
-#if (OPTION_GET(NUMBER, speed) == 1000)
-	 REG32_STORE(ENET_RCR, 0x5ee0044);
+#if FEC_SPEED == 1000
+	REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RGMII_EN);
+	REG32_STORE(ENET_ECR, 0xF0000100 | ENET_SPEED);
+#elif FEC_SPEED == 100
+	REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RGMII_EN);
+	REG32_STORE(ENET_ECR, 0xF0000100);
+#elif FEC_SPEED == 10
+	REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RMII_10T |
+			ENET_RCR_RGMII_EN);
+	REG32_STORE(ENET_ECR, 0xF0000100);
 #else
-	 REG32_STORE(ENET_RCR, 0x5ee0104);
+#error "Wrong FEC speed"
 #endif
+
+	/* Enables 10-Mbit/s mode of the RMII or RGMII ?*/
 	/* Maximum Receive Buffer Size Register
 	 * Receive buffer size in bytes. This value, concatenated with the four
 	 * least-significant bits of this register (which are always zero),
-	 * is the effective maximum receive buffer size.
-	 */
+	 * is the effective maximum receive buffer size. */
 	REG32_STORE(ENET_MRBR, 0x5f0);
 
 	fec_rbd_init(dev->priv, RX_BUF_FRAMES, 0x600);
 
 	fec_tbd_init(dev->priv);
-
+#if 0
+#if FEC_SPEED == 1000
+	REG32_STORE(ENET_ECR, 0xF0000100 | ENET_SPEED);
+#else
 	REG32_STORE(ENET_ECR, 0xF0000100);
-
-	 /* Transmit FIFO Write 64 bytes */
+#endif
+#endif
+	/* Transmit FIFO Write 64 bytes */
 	REG32_STORE(ENET_TFWR, 0x100);
 
-	REG32_STORE(ENET_ECR, REG32_LOAD(ENET_ECR) | ENET_ETHEREN); /* Note: should be last ENET-related init step */
-
+	/* Note: this should be last ENET-related init step */
+	REG32_STORE(ENET_ECR, REG32_LOAD(ENET_ECR) | ENET_ETHEREN);
 
 	REG32_STORE(ENET_RDAR, (1 << 24));
 	fec_reg_dump("ENET dump embox...\n");
-
-	fec_phy_id = phy_discovery();
-	phy_reg_dump("PHY %x reg dump\n", fec_phy_id);
 }
 
 static int fec_open(struct net_device *dev) {
+	assert(dev);
 
 	_reset(dev);
 
@@ -445,19 +408,127 @@ static irq_return_t imx6_irq_handler(unsigned int irq_num, void *dev_id) {
 		imx6_receive(dev_id, priv);
 	}
 
-	if (state & ENET_EIR_MII) {
-		phy_wait_flag = 1;
-	}
-
 	REG32_STORE(ENET_EIR, state);
 
 	return IRQ_HANDLED;
 }
 
+/* MII-related definitios */
+#define FEC_IEVENT_MII          0x00800000
+#define FEC_MII_DATA_ST		0x40000000	/* Start of frame delimiter */
+#define FEC_MII_DATA_OP_RD	0x20000000	/* Perform a read operation */
+#define FEC_MII_DATA_OP_WR	0x10000000	/* Perform a write operation */
+#define FEC_MII_DATA_PA_MSK	0x0f800000	/* PHY Address field mask */
+#define FEC_MII_DATA_RA_MSK	0x007c0000	/* PHY Register field mask */
+#define FEC_MII_DATA_TA		0x00020000	/* Turnaround */
+#define FEC_MII_DATA_DATAMSK	0x0000ffff	/* PHY data field */
+
+#define FEC_MII_DATA_RA_SHIFT	18	/* MII Register address bits */
+#define FEC_MII_DATA_PA_SHIFT	23	/* MII PHY address bits */
+
+#define FEC_MII_DATA_RA_SHIFT	18	/* MII Register address bits */
+#define FEC_MII_DATA_PA_SHIFT	23	/* MII PHY address bits */
+static int fec_mdio_read(struct net_device *dev, uint8_t regAddr) {
+	struct fec_priv *fec = dev->priv;
+	uint32_t reg;		/* convenient holder for the PHY register */
+	uint32_t phy;		/* convenient holder for the PHY */
+	int val;
+	int retry = 0;
+
+	/* Reading from any PHY's register is done by properly
+	 * programming the FEC's MII data register. */
+	REG32_STORE(ENET_EIR, FEC_IEVENT_MII);
+	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
+	phy = fec->phy_id << FEC_MII_DATA_PA_SHIFT;
+
+	REG32_STORE(ENET_MMFR, FEC_MII_DATA_ST | FEC_MII_DATA_OP_RD |
+			FEC_MII_DATA_TA | phy | reg);
+
+	/* Wait for the related interrupt */
+	while (!(REG32_LOAD(ENET_EIR) & FEC_IEVENT_MII)) {
+		if (retry++ > 0xffff) {
+			log_error("MDIO write failed");
+			return -1;
+		}
+	}
+
+	/* Clear MII interrupt bit */
+	REG32_STORE(ENET_EIR, FEC_IEVENT_MII);
+
+	/* It's now safe to read the PHY's register */
+	val = REG32_LOAD(ENET_MMFR) & 0xFFFF;
+	log_debug("reg:%02x val:%#x", regAddr, val);
+	return val;
+}
+
+static int fec_mdio_write(struct net_device *dev, uint8_t regAddr, uint16_t data) {
+	struct fec_priv *fec = dev->priv;
+	uint32_t reg;		/* convenient holder for the PHY register */
+	uint32_t phy;		/* convenient holder for the PHY */
+	int retry = 0;
+
+	reg = regAddr << FEC_MII_DATA_RA_SHIFT;
+	phy = fec->phy_id << FEC_MII_DATA_PA_SHIFT;
+
+	REG32_STORE(ENET_MMFR, FEC_MII_DATA_ST | FEC_MII_DATA_OP_WR |
+		FEC_MII_DATA_TA | phy | reg | data);
+
+	/* Wait for the MII interrupt */
+	while (!(REG32_LOAD(ENET_EIR) & FEC_IEVENT_MII)) {
+		if (retry++ > 0xffff) {
+			log_error("MDIO write failed");
+			return -1;
+		}
+	}
+
+	/* Clear MII interrupt bit */
+	REG32_STORE(ENET_EIR, FEC_IEVENT_MII);
+	log_debug("reg:%02x val:%#x", regAddr, data);
+
+	return 0;
+}
+
+static void fec_set_phyid(struct net_device *dev, uint8_t phyid) {
+	struct fec_priv *fec = dev->priv;
+	fec->phy_id = phyid;
+}
+
+static int fec_set_speed(struct net_device *dev, int speed) {
+	speed = net_to_mbps(speed);
+
+	if (speed != FEC_SPEED) {
+		log_error("Can't set %dmbps as driver is configured "
+				"to force %dmbps", speed, FEC_SPEED);
+		return -1;
+	}
+
+	switch (speed) {
+	case 1000:
+		REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RGMII_EN);
+		REG32_STORE(ENET_ECR, 0xF0000100 | ENET_SPEED);
+		break;
+	case 100:
+		REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RGMII_EN);
+		REG32_STORE(ENET_ECR, 0xF0000100);
+		break;
+	case 10:
+		REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RMII_10T |
+				ENET_RCR_RGMII_EN);
+		REG32_STORE(ENET_ECR, 0xF0000100);
+		break;
+	}
+
+	return 0;
+}
+
 static const struct net_driver fec_drv_ops = {
-	.xmit = fec_xmit,
-	.start = fec_open,
-	.set_macaddr = fec_set_macaddr
+	.xmit        = fec_xmit,
+	.start       = fec_open,
+	.set_macaddr = fec_set_macaddr,
+	.mdio_read   = fec_mdio_read,
+	.mdio_write  = fec_mdio_write,
+	.set_phyid   = fec_set_phyid,
+	.set_speed   = fec_set_speed
 };
 
 EMBOX_UNIT_INIT(fec_init);
@@ -470,12 +541,13 @@ static int fec_init(void) {
 	}
 
 	nic->drv_ops = &fec_drv_ops;
+
 	fec_priv.base_addr = NIC_BASE;
 	fec_priv.rbd_base =  _rx_desc_ring;
 	fec_priv.tbd_base =  _tx_desc_ring;
 	nic->priv = &fec_priv;
 
-	tmp = irq_attach(ENET_IRQ, imx6_irq_handler, 0, nic, "i.MX6 enet");
+	tmp = irq_attach(ENET_IRQ, imx6_irq_handler, 0, nic, "FEC");
 	if (tmp)
 		return tmp;
 
