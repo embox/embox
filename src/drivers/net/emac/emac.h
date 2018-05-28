@@ -10,6 +10,7 @@
 #define DRIVERS_ETHERNET_TI816X_H_
 
 #include <endian.h>
+#include <net/mii.h>
 
 /**
  * EMAC0/MDIO Base Address
@@ -203,19 +204,6 @@ struct emac_desc {
 #define EMAC_DESC_F_ALIGNERROR 0x0004U /* Alignment Error (ALIGNERROR) Flag */
 #define EMAC_DESC_F_CRCERROR   0x0002U /* CRC Error (CRCERROR) Flag */
 #define EMAC_DESC_F_NOMATCH    0x0001U /* No Match (NOMATCH) Flag */
-
-/* Basic mode control register. */
-#define BMCR_RESV		0x003f	/* Unused...		       */
-#define BMCR_SPEED1000		0x0040	/* MSB of Speed (1000)	       */
-#define BMCR_CTST		0x0080	/* Collision test	       */
-#define BMCR_FULLDPLX		0x0100	/* Full duplex		       */
-#define BMCR_ANRESTART		0x0200	/* Auto negotiation restart    */
-#define BMCR_ISOLATE		0x0400	/* Disconnect DP83840 from MII */
-#define BMCR_PDOWN		0x0800	/* Powerdown the DP83840       */
-#define BMCR_ANENABLE		0x1000	/* Enable auto negotiation     */
-#define BMCR_SPEED100		0x2000	/* Select 100Mbps	       */
-#define BMCR_LOOPBACK		0x4000	/* TXD loopback bits	       */
-#define BMCR_RESET		0x8000	/* Reset the DP83840	       */
 
 /**
  * Control Module Base Address
