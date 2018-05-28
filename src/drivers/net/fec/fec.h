@@ -10,6 +10,7 @@
 #define DRIVERS_IMX6_NET_H_
 
 #include <stdint.h>
+#include <framework/mod/options.h>
 
 #define NIC_BASE OPTION_GET(NUMBER, base_addr)
 #define ENET_IRQ OPTION_GET(NUMBER, irq_nr)
@@ -61,12 +62,15 @@
 
 /* ENET_ECR */
 #define ENET_ECR_DBSWP (1 << 8)
+#define ENET_SPEED     (1 << 5) /* 1000 Mbp/s enable */
 #define ENET_ETHEREN   (1 << 1) /* Ethernet enable */
 #define ENET_RESET     (1 << 0)
 
 /* ENET_RCR */
 #define ENET_FRAME_LEN_OFFSET 16
+#define ENET_RCR_RMII_10T    (1 << 9)
 #define ENET_RCR_FCE         (1 << 5)
+#define ENET_RCR_RGMII_EN    (1 << 6)
 #define ENET_RCR_MII_MODE    (1 << 2)
 
 /* ENET_TCR */
@@ -146,6 +150,15 @@ struct fec_buf_desc {
 #endif
 };
 
+struct fec_priv {
+	uint32_t base_addr;
+	struct fec_buf_desc *rbd_base;
+	int rbd_index;
+	struct fec_buf_desc *tbd_base;
+	int tbd_index;
+
+	int phy_id;
+};
 
 /* the defins of MII operation */
 #define FEC_MII_ST      0x40000000
@@ -177,5 +190,9 @@ struct fec_buf_desc {
 	((FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_RD)) | FEC_MII_PA(pa) | FEC_MII_RA(ra))
 #define FEC_MII_WRITE(pa, ra, v) \
 	(FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_WR)|	FEC_MII_PA(pa) | FEC_MII_RA(ra) | FEC_MII_SET_DATA(v))
+
+void fec_mdio_init(struct fec_priv *fec);
+
+#define FEC_SPEED	OPTION_GET(NUMBER, speed)
 
 #endif /* DRIVERS_IMX6_NET_H_ */
