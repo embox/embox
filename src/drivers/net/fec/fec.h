@@ -10,7 +10,10 @@
 #define DRIVERS_IMX6_NET_H_
 
 #include <stdint.h>
+
 #include <framework/mod/options.h>
+#include <net/netdevice.h>
+#include <net/phy.h>
 
 #define NIC_BASE OPTION_GET(NUMBER, base_addr)
 #define ENET_IRQ OPTION_GET(NUMBER, irq_nr)
@@ -190,8 +193,6 @@ struct fec_priv {
 	((FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_RD)) | FEC_MII_PA(pa) | FEC_MII_RA(ra))
 #define FEC_MII_WRITE(pa, ra, v) \
 	(FEC_MII_FRAME | FEC_MII_OP(FEC_MII_OP_WR)|	FEC_MII_PA(pa) | FEC_MII_RA(ra) | FEC_MII_SET_DATA(v))
-
-void fec_mdio_init(struct fec_priv *fec);
 
 #define FEC_SPEED	OPTION_GET(NUMBER, speed)
 

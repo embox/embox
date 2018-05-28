@@ -8,7 +8,7 @@ module fec {
 
 	option number speed=100
 
-	source "fec.c", "fec_mdio.c"
+	source "fec.c"
 
 	depends embox.driver.periph_memory
 	depends embox.net.skbuff
@@ -18,4 +18,6 @@ module fec {
 	depends embox.net.core
 	depends embox.net.entry_api
 	depends embox.net.util.show_packet
+
+	depends phy
 }
