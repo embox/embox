@@ -1,0 +1,10 @@
+package embox.driver.net
+
+module phy {
+	option number log_level=0
+
+	@IncludeExport(path="net")
+	source "phy.h"
+
+	source "phy.c"
+}

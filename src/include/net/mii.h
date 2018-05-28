@@ -155,4 +155,43 @@ static inline int net_is_1000(int net_speed) {
 	return !!(net_speed & (NET_1000HALF | NET_1000FULL));
 }
 
+static inline int net_to_mbps(int net_speed) {
+	if (net_is_10(net_speed)) {
+		return 10;
+	}
+
+	if (net_is_100(net_speed)) {
+		return 100;
+	}
+
+	if (net_is_1000(net_speed)) {
+		return 1000;
+	}
+
+	return 0;
+}
+
+static inline int net_is_fullduplex(int net_speed) {
+	return !!(net_speed & (NET_10FULL | NET_100FULL | NET_1000FULL));
+}
+
+static inline int net_top_speed(int net_speed) {
+	if (net_speed & NET_1000FULL) {
+		return NET_1000FULL;
+	} else if (net_speed & NET_1000HALF) {
+		return NET_1000HALF;
+	} else if (net_speed & NET_100FULL) {
+		return NET_100FULL;
+	} else if (net_speed & NET_100HALF) {
+		return NET_100HALF;
+	} else if (net_speed & NET_10FULL) {
+		return NET_10FULL;
+	} else if (net_speed & NET_10HALF) {
+		return NET_10HALF;
+	}
+
+	return 0;
+}
+
+
 #endif /* MII_H_ */

@@ -9,16 +9,12 @@
 #ifndef NET_NETDEVICE_H_
 #define NET_NETDEVICE_H_
 
-//#include <util/array.h>
 #include <assert.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <net/if.h>
-//#include <arpa/inet.h>
-
 #include <net/skbuff.h>
 #include <util/dlist.h>
-
-//#include <util/hashtable.h>
 
 /**
  * Prototypes
@@ -75,6 +71,10 @@ typedef struct net_driver {
 	int (*stop)(struct net_device *dev);
 	int (*xmit)(struct net_device *dev, struct sk_buff *skb);
 	int (*set_macaddr)(struct net_device *dev, const void *addr);
+	int (*mdio_read)(struct net_device *dev, uint8_t reg);
+	int (*mdio_write)(struct net_device *dev, uint8_t reg, uint16_t data);
+	void (*set_phyid)(struct net_device *dev, uint8_t phyid);
+	int (*set_speed)(struct net_device *dev, int speed);
 } net_driver_t;
 
 
