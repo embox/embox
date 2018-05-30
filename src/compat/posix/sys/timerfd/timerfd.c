@@ -246,7 +246,7 @@ static void do_timerfd_gettime(struct timerfd *timerfd,
  * @flags: ignored in this version
  */
 int timerfd_create(int clockid, int flags) {
-	int fd;
+	int fd = -1;
 	struct idesc_table *it;
 	struct timerfd *timerfd;
 	int result = 0;
