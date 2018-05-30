@@ -32,57 +32,56 @@ irq_handler:
 
 	/* return to previous CPU mode with disabled interrupts */
 	msr    CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
-
 	/* now we have previous mode and sp */
-	ARM_FPU_CONTEXT_SAVE_DEC(r1, sp)
-	stmfd  sp!, {r2-r12, lr}
 
 	/* restore spsr, lr, tmp reg */
 	ldmfd  r0!, {r1} /* spsr */
-	ldmfd  r0!, {r2} /* lr */
-	ldmfd  r0!, {r3, r4} /* tmp reg */
+	stmfd  sp!, {r1} /* spsr */
+	ldmfd  r0!, {r1} /* lr */
+	stmfd  sp!, {r1} /* lr */
 
-	stmfd  sp!, {r3, r4}  /* store tmp reg on the stack */
-	/* store sp */
-	add    r3, sp, #((14 + FPU_DATA_LEN) * 4)
-	stmfd  sp!, {r3}
+	sub    sp, sp, #8 /* 2 tmp reg * 4 */
 
-	/* store lr */
-	stmfd  sp!, {r2}
+	stmfd  sp!, {r2-r12}
 
-	/* store spsr */
-	stmfd  sp!, {r1}
+	add    sp, sp, #(44 + 8) /* 11 reg + 2 tmp reg * 4 */
+
+	ldmfd  r0, {r3, r4} /* tmp reg */
+	stmfd  sp!, {r3, r4}    /* store tmp reg on the stack */
+	sub    sp, sp, #44      /* 11 * 4 */
+
+	add    r0, sp, #(52 + 8) /* top of pt_regs */
+
+	stmfd  sp!, {r0, lr}
 
 	mov    r0, sp
+
+	ARM_FPU_CONTEXT_SAVE_DEC(r1, sp)
 
 	bl     interrupt_handle
 
-	mov    r0, sp
-	msr    CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
+	msr    CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
 
-	/* restore spsr */
-	add    r0, r0, #17 * 4
-	add    r0, r0, #4 * FPU_DATA_LEN
-	ARM_FPU_CONTEXT_LOAD_DEC(r1, r0)
-	sub    r0, r0, #17 * 4
-	ldmfd  r0!, {r1}
+	ARM_FPU_CONTEXT_LOAD_DEC(r1, sp)
+
+	ldmfd  sp!, {r0, lr}
+	ldmfd  sp!, {r2-r12}
+
+	mov    sp, r0
+
+	msr    CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
+	sub    r0, r0, #8
+
+	ldmfd  r0!, {r1} /* lr */
+	mov    lr, r1
+	ldmfd  r0!, {r1} /* spsr */
 	msr    SPSR, r1
 
-	/* restore lr */
-	ldmfd  r0!, {lr}
+	sub    r0, r0, #16
 
-	msr    CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
-	mov    sp, r0
-	/* restore sp */
-	ldmfd  sp!, {r3} /* only for balance */
+	ldmfd  r0, {r0, r1} /* tmp reg */
+	stmfd sp!, {lr}
 
-	/* restore tmp reg */
-	ldmfd  sp!, {r0}
-
-	ldmfd  sp!, {r1-r12, lr}
-	add    sp, sp, #FPU_DATA_LEN*4
-	msr    CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
-	stmfd  sp!, {lr}
 	/*regs & SPSR on theirs places, as before handler */
 	/*returning from interrupt handler, CPSR <- SPSR */
 	ldmfd  sp!, {pc}^
