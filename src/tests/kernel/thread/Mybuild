@@ -7,6 +7,13 @@ module thread_test {
 	depends embox.framework.LibFramework
 }
 
+module thread_systimer_irq_test {
+    source "thread_systimer_irq_test.c"
+
+    depends embox.kernel.thread.core
+    depends embox.framework.LibFramework
+}
+
 module thread_priority_test {
 	option number threads_quantity=256
 	source "thread_priority_test.c"
