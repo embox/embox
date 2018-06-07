@@ -16,6 +16,16 @@
 
 #ifndef __ASSEMBLER__
 #include <string.h>
+#include <stdint.h>
+
+struct pt_regs_fpu {
+	uint32_t   fpexc;
+	union  {
+		float  s[64];
+		double d[32];
+	} vfp_regs;
+};
+
 static inline void arm_fpu_context_init(void *opaque) {
 	memset(opaque, 0, sizeof(uint32_t) * FPU_DATA_LEN);
 }
