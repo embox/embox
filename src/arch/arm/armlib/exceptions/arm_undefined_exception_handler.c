@@ -7,24 +7,42 @@
  */
 #include <util/log.h>
 
-#include <kernel/thread.h>
+#include <stdint.h>
+
+#include <kernel/printk.h>
 
 #include <arm/fpu.h>
 
-void arm_undefined_exception(unsigned int *regs) {
-	if (try_vfp_instructions()) {
+struct pt_regs_exception {
+#ifdef ARM_FPU_VFP
+	struct pt_regs_fpu vfp;
+#endif
+
+	uint32_t lr;
+	uint32_t sp;
+	uint32_t regs[13]; /* r0-12 */
+	uint32_t prev_lr; /* previous mode lr */
+	uint32_t spsr;
+};
+
+void arm_undefined_exception(struct pt_regs_exception *pt_regs) {
+#ifdef ARM_FPU_VFP
+	if (try_vfp_instructions(/* &pt_regs ->vfp */)) {
 		return;
 	}
+#endif
 
-	log_debug("regs:\n"
+	printk("Undefined exception: ret pc = 0x%08X spsr = 0x%08X\n",
+			pt_regs->prev_lr, pt_regs->spsr);
+
+	printk("regs:\n"
 			"%08x %08x %08x %08x\n"
 			"%08x %08x %08x %08x\n"
 			"%08x %08x %08x %08x\n"
-			"%08x %08x %08x %08x\n",
-			"%08x %08x %08x %08x\n",
-			regs[0], regs[1], regs[2], regs[3],
-			regs[4], regs[5], regs[6], regs[7],
-			regs[8], regs[9], regs[10], regs[11],
-			regs[12], regs[13], regs[14], regs[15],
-			regs[16], regs[17], regs[18], regs[19]);
+			"%08x sp(r13) %08x lr (r14) %08x\n",
+			pt_regs->regs[0], pt_regs->regs[1], pt_regs->regs[2],
+			pt_regs->regs[3], pt_regs->regs[4], pt_regs->regs[5],
+			pt_regs->regs[6], pt_regs->regs[7],	pt_regs->regs[8],
+			pt_regs->regs[9], pt_regs->regs[10], pt_regs->regs[11],
+			pt_regs->regs[12], pt_regs->prev_lr, pt_regs->spsr);
 }
