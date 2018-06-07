@@ -2,21 +2,21 @@
 package embox.cmd
 
 @AutoCmd
-@Cmd(name = "sleep",
-	help = "sleep for specified usec num",
+@Cmd(name = "msleep",
+	help = "msleep for specified msec num",
 	man = '''
 		NAME
-			sleep - freezes for specified number of useconds.
+			msleep - freezes for specified number of mseconds.
 		SYNOPSIS
-			sleep USEC
+			msleep MSEC
 		DESCRIPTION
 
 		AUTHOR
 			Anton Kozlov
 	''')
-module sleep {
+module msleep {
 	@IncludePath("$(SRC_DIR)/compat/posix/include")
-	source "sleep.c"
+	source "msleep.c"
 
 	depends embox.compat.libc.stdio.printf
 	depends embox.compat.libc.stdlib.core       /* atol   */

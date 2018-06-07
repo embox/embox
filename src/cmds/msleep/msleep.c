@@ -12,7 +12,7 @@
 #include <sys/types.h>
 
 static void usage(char *arg0) {
-	printf("usage: %s USEC\n", arg0);
+	printf("usage: %s MSEC\n", arg0);
 }
 
 int main(int argc, char **argv) {
