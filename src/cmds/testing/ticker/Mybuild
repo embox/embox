@@ -1,0 +1,30 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "ticker",
+     help = "Helps estimate timer frequency",
+     man  = '''
+     	NAME
+		ticker - manual test for estimating timer frequency
+	SYNOPSIS
+		ticker [-c count] [-i interval]
+	DESCRIPTION
+		Print message and call usleep() for N times
+	OPTIONS
+		-c count
+		      Number of ticks (infite by default)
+		-i interval
+		      Interval between ticks in seconds. It's possible to pass
+		      float values, i.e. -i 12.34
+	AUTHORS
+		Anton Bondarev <anton.bondarev2310@gmail.com>
+	''')
+
+module ticker {
+	source "ticker.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.util.sleep
+}
