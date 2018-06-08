@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 	char         *path;
 	const char   *fs_name;
 	unsigned int fs_type;
-	char *fs_specific;
+	char *fs_specific = NULL;
 
 	min_argc = MIN_ARGS_OF_MKFS;
 

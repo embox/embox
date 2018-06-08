@@ -84,7 +84,7 @@ static int fat_dirent_by_file(struct fat_file_info *fi, struct dirent *de) {
  * @return Negative error code or zero if succeed
  */
 static int fat_reset_dir(struct dirinfo *di) {
-	struct dirent de;
+	struct dirent de = { }; /* Initialize with zeroes to fit -O2 */
 	struct volinfo *vi;
 
 	vi = &di->fi.fsi->vi;
