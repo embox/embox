@@ -542,10 +542,10 @@ static int jffs2_do_read_inode_internal(struct jffs2_sb_info *c,
 	struct jffs2_tmp_dnode_info *tn = NULL;
 	struct rb_root tn_list;
 	struct rb_node *rb, *repl_rb;
-	struct jffs2_full_dirent *fd_list;
+	struct jffs2_full_dirent *fd_list = NULL;
 	struct jffs2_full_dnode *fn = NULL;
 	uint32_t crc;
-	uint32_t latest_mctime, mctime_ver;
+	uint32_t latest_mctime = 0, mctime_ver;
 	uint32_t mdata_ver = 0;
 	size_t retlen;
 	int ret;
