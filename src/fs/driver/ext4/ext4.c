@@ -1828,7 +1828,7 @@ static int ext4_dir_operation(struct nas *nas, char *string, ino_t *numb,
 	int i, e_hit, t, match;
 	uint32_t pos;
 	unsigned new_slots;
-	uint32_t b;
+	uint32_t b = 0;
 	int extended;
 	int required_space;
 	int string_len;
