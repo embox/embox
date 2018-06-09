@@ -23,6 +23,14 @@ struct context {
 	uint32_t control;
 };
 
+/* Context saved by CPU on exception entering */
+struct exc_saved_base_ctx {
+	uint32_t r[5];
+	uint32_t lr;
+	uint32_t pc;
+	uint32_t psr;
+};
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* SRC_ARCH_ARM_CORTEXA8_KERNEL_CONTEXT_H_ */

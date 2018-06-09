@@ -65,15 +65,8 @@ struct irq_enter_ctx {
 	uint32_t control;
 };
 
-struct cpu_saved_base_ctx {
-	uint32_t r[5];
-	uint32_t lr;
-	uint32_t pc;
-	uint32_t psr;
-};
-
 struct irq_saved_state {
-	struct cpu_saved_base_ctx ctx;
+	struct exc_saved_base_ctx ctx;
 	uint32_t misc[20];
 } __attribute__((packed));
 
@@ -114,7 +107,9 @@ extern void interrupt_handle_enter(void);
  */
 static void fill_irq_saved_ctx(struct irq_saved_state *state,
                uint32_t *opaque, struct irq_enter_ctx *regs) {
-	struct cpu_saved_base_ctx *ctx = (struct cpu_saved_base_ctx *) opaque;
+	struct exc_saved_base_ctx *ctx;
+
+	ctx = (struct exc_saved_base_ctx *) opaque;
 
 	if (!interrupted_from_fpu_mode(regs->lr)) {
 		memcpy(&state->ctx, ctx, BASE_CTX_SIZE);
@@ -177,13 +172,14 @@ static int nvic_init(void) {
 	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
 		exception_table[i] = ((int) interrupt_handle_enter) | 1;
 	}
-	assert(EXCEPTION_TABLE_SZ >= 14);
-	exception_table[14] = ((int) __pendsv_handle) | 1;
 
 	/* load head from bootstrap table */
 	for (ptr = &trap_table_start, i = 0; ptr != &trap_table_end; ptr += 4, i++) {
 		exception_table[i] = * (int32_t *) ptr;
 	}
+
+	assert(EXCEPTION_TABLE_SZ >= 14);
+	exception_table[14] = ((int) __pendsv_handle) | 1;
 
 	ipl = ipl_save();
 

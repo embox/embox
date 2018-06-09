@@ -45,7 +45,7 @@ static void *fpu_context_thr1_hnd(void *arg) {
 
 static void *fpu_context_thr2_hnd(void *arg) {
 	float res = 1.0f;
-	int i;
+	int i = 0;
 
 	for (i = 0; i < TICK_COUNT; ) {
 		res_out[1][i] = res;

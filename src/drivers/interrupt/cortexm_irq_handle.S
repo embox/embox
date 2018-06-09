@@ -13,8 +13,10 @@
 interrupt_handle_enter:
 
     mov    r0, sp
-    # It should be a size of struct context, but we align it up to multiple of 8
-    # due to ARMv7-M manual (see AAPCS 5.2.1.2)
+    # "In the Cortex-M7 processor CCR.STKALIGN is read-only and has a value of 1.
+    # This means that the exception stack frame starting address
+    # is always 8-byte aligned."
+    # So we align it for 8 byte for all cortex-m
     sub    sp, #64
     str    r0, [sp, #56]
     stmia  sp, {r0 - r12, lr}
