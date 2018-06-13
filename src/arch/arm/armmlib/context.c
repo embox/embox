@@ -12,6 +12,7 @@
 #include <hal/context.h>
 
 #include <asm/modes.h>
+#include <arm/fpu.h>
 
 void context_init(struct context *ctx, unsigned int flags,
 		void (*routine_fn)(void), void *sp) {
@@ -23,5 +24,7 @@ void context_init(struct context *ctx, unsigned int flags,
 	} else {
 		ctx->control = CM3_CONTROL_NPRIV;
 	}
+
+	arm_fpu_context_init(&ctx->fpu_data);
 }
 
