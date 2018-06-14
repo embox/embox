@@ -6,12 +6,13 @@
  * @date    30.07.2014
  */
 
+#include <sys/types.h>
+#include <assert.h>
+
 #include "fork_copy_addr_space.h"
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_fork.h>
 #include <mem/sysmalloc.h>
-
-#include <sys/types.h>
 
 static int fork_addr_space_is_shared(struct addr_space *adrspc) {
 	return adrspc->parent_addr_space || adrspc->child_count;
@@ -34,6 +35,8 @@ void fork_addr_space_prepare_switch() {
 
 void fork_addr_space_finish_switch(void *safe_point) {
 	struct addr_space *adrspc;
+
+	assert(safe_point);
 
 	adrspc = fork_addr_space_get(task_self());
 	if (!adrspc) {
@@ -70,6 +73,8 @@ void fork_addr_space_store(struct addr_space *adrspc) {
 }
 
 void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) {
+	assert(adrspc);
+	assert(stack_safe_point);
 	fork_stack_restore(adrspc, stack_safe_point);
 	fork_heap_restore(&adrspc->heap_space);
 	fork_static_restore(&adrspc->static_space);
@@ -78,7 +83,7 @@ void fork_addr_space_restore(struct addr_space *adrspc, void *stack_safe_point) 
 static void fork_addr_space_child_del(struct addr_space *child) {
 	struct addr_space *parent;
 
-	assertf(child->child_count == 0, "%s: deleting address space with childs is NIY", __func__);
+	assertf(child->child_count == 0, "%s: deleting address space with children is NIY", __func__);
 
 	parent = child->parent_addr_space;
 	if (!parent) {
@@ -100,7 +105,7 @@ static void fork_addr_space_init(const struct task *task, void *space) {
 
 static void fork_addr_space_deinit(const struct task *task) {
 	assert(task == task_self());
-	fork_addr_space_delete(task_self());
+	fork_addr_space_delete((struct task *)task);
 }
 
 TASK_RESOURCE_DECLARE(static,
@@ -132,6 +137,7 @@ void fork_addr_space_delete(struct task *task) {
 	fork_static_cleanup(&adrspc->static_space);
 
 	fork_addr_space_child_del(adrspc);
+
 	sysfree(adrspc);
 
 	fork_addr_space_set(task, NULL);

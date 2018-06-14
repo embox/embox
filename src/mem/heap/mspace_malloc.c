@@ -271,6 +271,10 @@ void mspace_deep_restore(struct dlist_head *mspace, struct dlist_head *store_spa
 	struct dlist_head *raw_mm;
 	void *p;
 
+	assert(mspace);
+	assert(store_space);
+	assert(buf);
+
 	dlist_init(mspace);
 
 	p = buf;
