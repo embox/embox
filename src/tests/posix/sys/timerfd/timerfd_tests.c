@@ -7,20 +7,23 @@
  * @author Kirill Smirenko
  */
 
-#include <embox/test.h>
-#include <inttypes.h>
-#include <kernel/printk.h>
-#include <kernel/time/time.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <sys/timerfd.h>
 #include <time.h>
 #include <unistd.h>
+#include <inttypes.h>
+#include <stdint.h>
+#include <stdio.h>
+
+#include <sys/timerfd.h>
+
+#include <embox/test.h>
+
+#include <kernel/printk.h>
+#include <kernel/time/time.h>
 
 EMBOX_TEST_SUITE("timerfd suite");
 
-// a difference of less than 4 milliseconds is assumed okay
-#define MAX_ALLOWED_TIME_DIFF 4LL * NSEC_PER_MSEC
+// a difference of less than 32 milliseconds is assumed okay
+#define MAX_ALLOWED_TIME_DIFF 32LL * NSEC_PER_MSEC
 
 static int timespec_is_zero(const struct timespec *ts) {
 	return (ts->tv_sec == 0) && (ts->tv_nsec == 0);
@@ -70,7 +73,7 @@ TEST_CASE("timerfd set and get (one-time timer)") {
 	timerfd_settime(timer_fd, 0, &timer_setting, NULL);
 
 	// first gettime: timer not expired yet
-	usleep(USEC_PER_SEC / 4 * 3);
+	usleep(USEC_PER_SEC / 4);
 	timerfd_gettime(timer_fd, &curr_value);
 
 	clock_gettime(CLOCK_MONOTONIC, &ts_now);
@@ -79,7 +82,7 @@ TEST_CASE("timerfd set and get (one-time timer)") {
 	test_assert_true(timespec_is_zero(&curr_value.it_interval));
 
 	// second gettime: timer expired
-	usleep(USEC_PER_SEC / 4);
+	usleep(USEC_PER_SEC * 2);
 	timerfd_gettime(timer_fd, &curr_value);
 	test_assert_true(timespec_is_zero(&curr_value.it_value));
 	test_assert_true(timespec_is_zero(&curr_value.it_interval));
@@ -104,7 +107,7 @@ TEST_CASE("timerfd set and get (one-time, absolute time set)") {
 	timerfd_settime(timer_fd, TFD_TIMER_ABSTIME, &timer_setting, NULL);
 
 	// first gettime: timer not expired yet
-	usleep(USEC_PER_SEC / 4 * 3);
+	usleep(USEC_PER_SEC / 4);
 	timerfd_gettime(timer_fd, &curr_value);
 
 	clock_gettime(CLOCK_MONOTONIC, &ts_now);
@@ -113,7 +116,7 @@ TEST_CASE("timerfd set and get (one-time, absolute time set)") {
 	test_assert_true(timespec_is_zero(&curr_value.it_interval));
 
 	// second gettime: timer expired
-	usleep(USEC_PER_SEC / 4);
+	usleep(USEC_PER_SEC * 2);
 	timerfd_gettime(timer_fd, &curr_value);
 	test_assert_true(timespec_is_zero(&curr_value.it_value));
 	test_assert_true(timespec_is_zero(&curr_value.it_interval));
