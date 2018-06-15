@@ -56,15 +56,6 @@ module greth {
 	depends embox.compat.posix.util.sleep
 }
 
-module usermode {
-	source "usermode.c"
-	depends embox.net.skbuff
-	depends embox.net.l2.ethernet
-	depends embox.kernel.irq
-	depends embox.net.dev
-	depends embox.net.entry_api
-}
-
 abstract module lan9118 {}
 
 /* Version of LAN9118 driver with usual interrupt controller */
