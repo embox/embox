@@ -16,24 +16,6 @@ module tun {
 	depends embox.net.dev
 }
 
-module virtio {
-	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
-	option number log_level = 0
-	@IncludeExport(path="drivers/net")
-	source "virtio_net.h"
-	source "virtio.c"
-
-	depends embox.net.skbuff
-	depends embox.net.skbuff_extra
-	depends embox.driver.pci
-	depends embox.net.l2.ethernet
-	depends embox.kernel.irq
-	depends embox.net.dev
-	depends embox.net.entry_api
-	depends embox.driver.virtio
-	depends embox.net.core
-}
-
 module rtl8139 {
 	@IncludeExport(path="drivers/net")
 	source "rtl8139.h"
