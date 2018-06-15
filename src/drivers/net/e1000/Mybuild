@@ -1,0 +1,15 @@
+package embox.driver.net
+
+module e1000 {
+	@IncludeExport(path="drivers/net")
+	source "e1000.h"
+	source "e1000.c"
+
+	depends embox.net.skbuff
+	depends embox.compat.libc.all
+	depends embox.driver.pci
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}
