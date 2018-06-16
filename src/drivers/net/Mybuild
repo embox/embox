@@ -16,17 +16,6 @@ module tun {
 	depends embox.net.dev
 }
 
-module usbnet {
-	source "usbnet.c"
-
-	depends embox.driver.usb.class.cdc
-	depends embox.net.skbuff
-	depends embox.net.l2.ethernet
-	depends embox.net.dev
-	depends embox.net.entry_api
-	depends embox.net.core
-}
-
 @BuildDepends(third_party.bsp.st_f4.core)
 module stm32f4_eth {
 	source "stm32f4_eth.c"
