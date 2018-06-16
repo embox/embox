@@ -1,0 +1,11 @@
+package embox.driver.net
+
+module r6040 {
+	@IncludeExport(path="drivers/net")
+	source "r6040.h"
+	source "r6040.c"
+
+	depends embox.compat.libc.all
+	depends embox.kernel.timer.sleep_api
+	depends embox.kernel.irq
+}
