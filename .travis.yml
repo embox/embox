@@ -20,10 +20,10 @@ env:
     - TEMPLATE=x86/test/fs
     - TEMPLATE=x86/test/net
     - TEMPLATE=x86/test/packetdrill
-    #- TEMPLATE=sparc/qemu
-    #- TEMPLATE=mips/qemu
-    #- TEMPLATE=ppc/qemu
-    #- TEMPLATE=microblaze/qemu
+    - TEMPLATE=sparc/qemu
+    - TEMPLATE=mips/qemu
+    - TEMPLATE=ppc/qemu
+    - TEMPLATE=microblaze/qemu
     - TEMPLATE=usermode86/debug
 matrix:
   include:
