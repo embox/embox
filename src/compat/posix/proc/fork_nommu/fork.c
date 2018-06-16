@@ -50,29 +50,28 @@ void _NORETURN fork_body(struct pt_regs *ptregs) {
 		panic("%s returning", __func__);
 	}
 
-	adrspc = fork_addr_space_get(parent);
-	if (!adrspc) {
-		adrspc = fork_addr_space_create(NULL);
-		fork_addr_space_set(parent, adrspc);
-	}
-
-	/* Save the stack of the current thread */
-	fork_stack_store(adrspc, thread_self());
-
-	child = task_table_get(child_pid);
-	child_adrspc = fork_addr_space_create(adrspc);
-
-	/* Can't use fork_addr_space_store() as we use
-	 * different task as data source */
-	fork_stack_store(child_adrspc, child->tsk_main);
-	fork_heap_store(&child_adrspc->heap_space, task_self());
-	fork_static_store(&child_adrspc->static_space);
-
-	memcpy(&child_adrspc->pt_entry, ptregs, sizeof(*ptregs));
-
 	sched_lock();
 	{
+		adrspc = fork_addr_space_get(parent);
+		if (!adrspc) {
+			adrspc = fork_addr_space_create(NULL);
+			fork_addr_space_set(parent, adrspc);
+		}
+
+		/* Save the stack of the current thread */
+		fork_stack_store(adrspc, thread_self());
+
 		child = task_table_get(child_pid);
+		child_adrspc = fork_addr_space_create(adrspc);
+
+		/* Can't use fork_addr_space_store() as we use
+		 * different task as data source */
+		fork_stack_store(child_adrspc, child->tsk_main);
+		fork_heap_store(&child_adrspc->heap_space, task_self());
+		fork_static_store(&child_adrspc->static_space);
+
+		memcpy(&child_adrspc->pt_entry, ptregs, sizeof(*ptregs));
+
 		task_start(child, fork_child_trampoline, NULL);
 		fork_addr_space_set(child, child_adrspc);
 		thread_stack_set(child->tsk_main, thread_stack_get(thread_self()));
