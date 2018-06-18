@@ -11,4 +11,3 @@ module stm32f4_eth {
 	depends embox.net.core
 	depends embox.net.entry_api
 }
-
