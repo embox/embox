@@ -22,6 +22,15 @@ OLIBM_ARCH ?=
 ifneq ($(filter x86 usermode86,$(ARCH)),)
 OLIBM_ARCH := i387
 endif
+
+ifneq ($(filter mips,$(ARCH)),)
+OLIBM_ARCH := mips
+endif
+
+ifneq ($(filter ppc powerpc,$(ARCH)),)
+OLIBM_ARCH := powerpc
+endif
+
 ifeq ($(ARCH), arm)
 OLIBM_CPU  := $(subst -mcpu=,,$(filter -mcpu=%,$(CFLAGS)))
 ifeq ($(strip $(OLIBM_CPU)),cortex-m7)
@@ -31,12 +40,12 @@ OLIBM_ARCH :=""
 else
 OLIBM_ARCH := $(subst -march=,,$(filter -march=%,$(CFLAGS)))
 endif # cortex-m7
+
 ifeq ($(strip $(OLIBM_ARCH)),)
 $(error OLIBM_ARCH -march is undefined)
 endif # -march is undefined
-else ifeq ($(ARCH), mips)
-OLIBM_ARCH := mips
-endif # arm
+endif # arm 
+
 endif # COMPILER
 
 $(CONFIGURE) :
