@@ -1,0 +1,8 @@
+package third_party.lib
+
+module estransform {
+	@IncludeExport
+	source "esTransform.h"
+
+	source "esTransform.c"
+}
