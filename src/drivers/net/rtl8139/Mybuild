@@ -1,0 +1,15 @@
+package embox.driver.net
+
+module rtl8139 {
+	@IncludeExport(path="drivers/net")
+	source "rtl8139.h"
+	source "rtl8139.c"
+
+	depends embox.net.skbuff
+	depends embox.compat.libc.all
+	depends embox.driver.pci
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.dev
+	depends embox.net.entry_api
+}

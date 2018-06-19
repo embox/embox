@@ -1,0 +1,10 @@
+package embox.driver.net
+
+module tun {
+	source "tun.c"
+
+	depends embox.net.entry_api
+	depends embox.net.l2.ethernet
+	depends embox.net.dev
+}
+
