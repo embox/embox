@@ -17,7 +17,7 @@
 #include <embox/unit.h>
 #include <kernel/printk.h>
 
-EMBOX_UNIT_INIT(integratorcp_pit_init);
+EMBOX_UNIT_INIT(integrator_pic_init);
 
 #define ICU_BASE 0x14000000
 /* Registers for interrupt control unit - enable/flag/master */
@@ -28,7 +28,7 @@ EMBOX_UNIT_INIT(integratorcp_pit_init);
 /**
  * Initialize the PIC
  */
-static int integratorcp_pit_init(void) {
+static int integrator_pic_init(void) {
 	if (NULL == mmap_device_memory(
 		(void*) ICU_BASE,
 		0x10,
@@ -37,8 +37,6 @@ static int integratorcp_pit_init(void) {
 		(unsigned long) ICU_BASE)) {
 		return -1;
 	}
-
-
 
 	REG_STORE(ICU_IRQENCLR, ((1 << IRQCTRL_IRQS_TOTAL) - 1));
 	return 0;

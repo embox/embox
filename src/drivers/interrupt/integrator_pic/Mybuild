@@ -1,0 +1,10 @@
+package embox.driver.interrupt
+
+module integrator_pic extends irqctrl_api {
+	option number log_level = 0
+
+	option number base_addr = 0x14000000
+
+	source "integrator_pic.c"
+	source "integrator_pic.h"
+}

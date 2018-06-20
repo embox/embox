@@ -38,6 +38,9 @@
 // Table 2.17. Exception return behavior in Cortex-M4 doc
 #define interrupted_from_fpu_mode(lr) ((lr & 0xF0) == 0xE0)
 
+#define BASE_CTX_SIZE  (8 * 4)
+#define FPU_CTX_SIZE   (BASE_CTX_SIZE + 18 * 4)
+
 /**
  * ENABLE, CLEAR, SET_PEND, CLR_PEND, ACTIVE is a base of bit arrays
  * to calculate bit offset in array: calculate 32-bit word offset
@@ -55,18 +58,17 @@ static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128
 extern void *trap_table_start;
 extern void *trap_table_end;
 
-struct cpu_saved_ctx {
-	uint32_t r[5];
+struct irq_enter_ctx {
+	uint32_t r[13];
 	uint32_t lr;
-	uint32_t pc;
-	uint32_t psr;
+	uint32_t sp;
+	uint32_t control;
 };
 
 struct irq_saved_state {
-	struct cpu_saved_ctx ctx;
-	uint32_t sp;
-	uint32_t lr;
-};
+	struct exc_saved_base_ctx ctx;
+	uint32_t misc[20];
+} __attribute__((packed));
 
 extern void __irq_trampoline(uint32_t sp, uint32_t lr);
 extern void __pending_handle(void);
@@ -103,38 +105,59 @@ extern void interrupt_handle_enter(void);
  *          |
  *          v
  */
-void interrupt_handle(struct context *regs) {
+static void fill_irq_saved_ctx(struct irq_saved_state *state,
+               uint32_t *opaque, struct irq_enter_ctx *regs) {
+	struct exc_saved_base_ctx *ctx;
+
+	ctx = (struct exc_saved_base_ctx *) opaque;
+
+	if (!interrupted_from_fpu_mode(regs->lr)) {
+		memcpy(&state->ctx, ctx, BASE_CTX_SIZE);
+		state->misc[0] = regs->lr;
+		state->misc[1] = regs->sp;
+	} else {
+		memcpy(&state->ctx, ctx, FPU_CTX_SIZE);
+		state->misc[18] = regs->lr;
+		state->misc[19] = regs->sp;
+	}
+
+	/* It does not matter what value of psr is, just set up sime correct value.
+	 * This value is only used to go further, after return from interrupt_handle.
+	 * 0x01000000 is a default value of psr and (ctx->psr & 0xFF) is irq number if any. */
+	state->ctx.psr = 0x01000000 | (ctx->psr & 0xFF);
+	state->ctx.r[0] = (uint32_t) state; // pass the state to __pending_handle()
+	state->ctx.r[1] = (uint32_t) regs; // pass the registers to __pending_handle()
+	state->ctx.lr = (uint32_t) __pending_handle;
+	state->ctx.pc = state->ctx.lr;
+}
+
+
+void interrupt_handle(struct irq_enter_ctx *regs,
+		struct irq_saved_state *state) {
 	uint32_t source;
-	struct irq_saved_state state;
-	struct cpu_saved_ctx *ctx;
 
 	source = REG_LOAD(SCB_ICSR) & 0x1ff;
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
+	irqctrl_disable(source);
 	critical_enter(CRITICAL_IRQ_HANDLER);
+	{
+		ipl_enable();
 
-	irq_dispatch(source);
+		irq_dispatch(source);
 
+		ipl_disable();
+	}
+	irqctrl_enable(source);
 	critical_leave(CRITICAL_IRQ_HANDLER);
 
-	state.sp = regs->sp;
-	state.lr = regs->lr;
-	assert(!interrupted_from_fpu_mode(state.lr));
-	ctx = (struct cpu_saved_ctx*) state.sp;
-	memcpy(&state.ctx, ctx, sizeof *ctx);
+	fill_irq_saved_ctx(state, (uint32_t *) regs->sp, regs);
 
-	/* It does not matter what value of psr is, just set up sime correct value.
-	 * This value is only used to go further, after return from interrupt_handle.
-	 * 0x01000000 is a default value of psr and (ctx->psr & 0xFF) is irq number if any. */
-	ctx->psr = 0x01000000 | (ctx->psr & 0xFF);
-	ctx->r[0] = (uint32_t) &state; // we want pass the state to __pending_handle()
-	ctx->r[1] = (uint32_t) regs; // we want pass the registers to __pending_handle()
-	ctx->lr = (uint32_t) __pending_handle;
-	ctx->pc = ctx->lr;
-
-	/* Now return from interrupt context into __pending_handle */
-	__irq_trampoline(state.sp, state.lr);
+	/* Now return from interrupt context into __pending_handle.
+	 * Pass &state as a top of 'interrupted' stack to use state.ctx
+	 * for returning into __pending_handle. */
+	__irq_trampoline((uint32_t) state, regs->lr);
 }
 
 void nvic_set_pendsv(void) {
@@ -149,13 +172,14 @@ static int nvic_init(void) {
 	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
 		exception_table[i] = ((int) interrupt_handle_enter) | 1;
 	}
-	assert(EXCEPTION_TABLE_SZ >= 14);
-	exception_table[14] = ((int) __pendsv_handle) | 1;
 
 	/* load head from bootstrap table */
 	for (ptr = &trap_table_start, i = 0; ptr != &trap_table_end; ptr += 4, i++) {
 		exception_table[i] = * (int32_t *) ptr;
 	}
+
+	assert(EXCEPTION_TABLE_SZ >= 14);
+	exception_table[14] = ((int) __pendsv_handle) | 1;
 
 	ipl = ipl_save();
 

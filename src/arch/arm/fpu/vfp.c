@@ -11,9 +11,10 @@
 #include <util/log.h>
 #include <util/math.h>
 
+#include <kernel/thread.h>
+
 #include <embox/unit.h>
 #include <framework/mod/options.h>
-#include <kernel/printk.h>
 
 EMBOX_UNIT_INIT(vfp_init);
 
@@ -29,7 +30,7 @@ static int vfp_init(void) {
 	/* Enable FPU extensions */
 	asm volatile ("VMSR FPEXC, %0" : : "r" (val));
 
-	asm volatile ("VMRS %0, FPEXC" : "=r" (sid));
+	asm volatile ("VMRS %0, FPSID" : "=r" (sid));
 
 	log_info("VPF info:\n"
 			"\t\t\t %s\n"
@@ -51,4 +52,29 @@ static int vfp_init(void) {
 	asm volatile ("mcr p15, 0, %0, c1, c0, 2" : : "r" (val));
 
 	return 0;
+}
+
+int try_vfp_instructions(void) {
+	struct thread *cur;
+	uint32_t tmp;
+
+	cur = thread_self();
+	if (cur) {
+		log_debug("Thread %p now uses VFP registers", cur);
+		cur->context.fpu_data[0] |= 0xf << 20;
+	} else {
+		log_debug("Now kernel uses VFP registers");
+	}
+
+	/* Enable cp10 &cp11 coprocessor access */
+	asm volatile ("mrc p15, 0, %0, c1, c0, 0" : "=r" (tmp) :);
+	tmp |= 0xf << 20;
+	asm volatile ("mcr p15, 0, %0, c1, c0, 2" : : "r" (tmp));
+
+	/* Enable VFP access */
+	asm volatile ("VMRS %0, FPEXC" : "=r" (tmp) :);
+	tmp |= 1 << 30;
+	asm volatile ("VMSR FPEXC, %0" : : "r" (tmp));
+
+	return 1;
 }

@@ -1,21 +1,48 @@
 /**
  * @file
- * @brief Low-level interrupt handler
  *
- * @date 23.07.10
- * @author Anton Kozlov
+ * @date May 24, 2018
+ * @author Anton Bondarev
  */
 
-#include <arm/fpu.h>
 #include <asm/modes.h>
+#include <arm/fpu.h>
 
 .text
 .align 4
-.global	swi_handler
-.global	irq_handler
 
-irq_handler:
-	sub    LR, LR, #4
+.global	undef_handler
+.global	prefetch_abt_handler
+.global	fiq_handler
+.global	prefetch_abt_handler
+.global arm_unresolvable_exception
+.global data_abt_handler
+
+undef_handler:
+#ifdef __ARM_NEON__
+	sub r14, r14, #4
+
+	stmfd sp!, {r0-r2} /* Save temp regs */
+	mov r2, r14
+	mrs r1, SPSR
+	mov r0, sp         /* Pointer to saved regs */
+	add sp, sp, #12    /* Return SP to previous state */
+
+	msr CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
+	stmfd sp!, {r1}    /* Store arguments for RFE instruction */
+	stmfd sp!, {r2}
+	ldmfd r0, {r0-r2}  /* Restore temp regs */
+
+	mov r0, sp		/* Pointer to registers */
+	stmfd sp!, {r0-r12, r14}
+	bl arm_undefined_exception
+
+	ldmfd sp!, {r0-r12, r14}
+
+	rfe sp!
+#else /* __ARM_NEON__ */
+
+	sub r14, r14, #4
 
 	/* save temp register*/
 	stmfd  sp!, {r0, r1}
@@ -54,11 +81,11 @@ irq_handler:
 
 	stmfd  sp!, {r0, lr}
 
-	mov    r0, sp
-
 	ARM_FPU_CONTEXT_SAVE_DEC(r1, sp)
 
-	bl     interrupt_handle
+	mov    r0, sp
+
+	bl     arm_undefined_exception
 
 	msr    CPSR, #ARM_MODE_SYS | I_BIT | F_BIT
 
@@ -69,7 +96,7 @@ irq_handler:
 
 	mov    sp, r0
 
-	msr    CPSR, #ARM_MODE_IRQ | I_BIT | F_BIT
+	msr    CPSR, #ARM_MODE_UND | I_BIT | F_BIT
 	sub    r0, r0, #8
 
 	ldmfd  r0!, {r1} /* lr */
@@ -87,29 +114,21 @@ irq_handler:
 	ldmfd  sp!, {pc}^
 	/*continue from place, where interrupt raised */
 
-swi_handler:
+#endif /* __ARM_NEON__ */
 
-	/* storing LP */
-	stmfd	sp!, {lr}
-	/*storing SPSR and valuable regs*/
-	mrs		LR, SPSR
-	stmfd	sp!, {r0-r12, lr}
 
-	stmfd sp!, {lr} /* stoirqring address of returning in interrupted program flow */
+prefetch_abt_handler:
+fiq_handler:
+	sub r14, r14, #4
+	b arm_unresolvable_exception
+data_abt_handler:
+	sub r14, r14, #8
 
-	bl swi_handle
-
-	ldmfd sp!, {lr}
-	/* now interrupted program is unaffected, interrupt serviced, correctly exiting handler */
-
-	/*interrupts are disabled, so restoring goes OK */
-	ldmfd	sp!, {r0-r12, lr}
-	msr		SPSR, LR
-	/*regs & SPSR on theirs places, as before handler */
-	/*returning from interrupt handler, CPSR <- SPSR */
-	ldmfd       sp!, {pc}^
-	/*continue from place, where interrupt raised */
-
-die:
-	b die
-
+arm_unresolvable_exception:
+	nop
+	stmfd sp!, {r0-r12, r14}
+	mrs r0, CPSR
+	mrs r1, SPSR
+	stmfd sp!, {r0, r1}
+	mov r0, sp
+	b arm_exception_handler

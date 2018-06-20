@@ -80,7 +80,3 @@ module xen extends irqctrl_api {
 	source "xen.c"
 	depends embox.arch.xen.traps
 }
-
-module integratorcp_pic extends irqctrl_api {
-	source "integratorcp_pic.c", "integratorcp_pic.h"
-}
