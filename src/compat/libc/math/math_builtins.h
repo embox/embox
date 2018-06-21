@@ -21,4 +21,4 @@ extern double floor(double x);
 extern float floorf(float x);
 extern long double floorl(long double x);
 
-#endif /* SRC_COMPAT_LIBC_MATH_STUB_H_ */
+#endif /* SRC_COMPAT_LIBC_MATH_MATH_BUILTINS_H_ */
