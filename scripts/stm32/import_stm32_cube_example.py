@@ -5,6 +5,7 @@ import os
 import argparse
 import shutil
 import subprocess
+import textwrap
 
 class ExampleInfo:
 	def __init__(self, src, dst, script_dir, example_name, platform):
@@ -89,7 +90,13 @@ def find_irq_handlers_in_file(info, file):
 				' -I_STM32_PATH_/Drivers/STM32F7xx_HAL_Driver/Inc'			+ \
 				' -I_STM32_PATH_/Drivers/BSP/STM32746G-Discovery'			+ \
 				' -I_STM32_PATH_/Drivers/CMSIS/Device/ST/STM32F7xx/Include'	+ \
-				' -I_STM32_PATH_/Drivers/CMSIS/Include',
+				' -I_STM32_PATH_/Drivers/CMSIS/Include'						+ \
+				' -I_STM32_PATH_/Utilities/Log'								+ \
+				' -I_STM32_PATH_/Middlewares/Third_Party/FatFs/src'			+ \
+				' -I_STM32_PATH_/Middlewares/ST/STM32_USB_Device_Library/Core/Inc' + \
+				' -I_STM32_PATH_/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc' + \
+				' -I_STM32_PATH_/Middlewares/ST/STM32_USB_Host_Library/Core/Inc' + \
+				' -I_STM32_PATH_/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc',
 				'f4' :
 				' -DSTM32F407xx'											+ \
 				' -I_SRC_/Inc'												+ \
@@ -157,10 +164,23 @@ def import_example(info):
 	generate_new_main(info)
 
 def main():
-	parser = argparse.ArgumentParser(description='Import STM32 Cube Example into Embox')
-	parser.add_argument('platform', help='f4 or f7')
+	parser = argparse.ArgumentParser(
+		prog='import_stm32_cube_example.py',
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+		description=textwrap.dedent('''\
+			Example of use
+			--------------------------------
+			Do the following to import LTDC_Display_1Layer example:
+			# ./scripts/stm32/import_stm32_cube_example.py --name LTDC_Display_1Layer --platform f7
+			<path to>/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Examples/LTDC/LTDC_Display_1Layer
+			''')
+	)
+	parser.add_argument('--platform', help='f4 or f7')
 	parser.add_argument('src', help='Source folder containing Cube example')
-	parser.add_argument('dest', nargs='?', default='', help='Destination folder. Default value is')
+	parser.add_argument('dest', nargs='?', default='', help='Destination folder '
+						'(./platform/stm32<platform>/cmds by default)')
+	parser.add_argument('--name', default='', help='Imported example name '
+						'(corresponds to Cube\'s example name by default)')
 	args = parser.parse_args()
 
 	platform = args.platform
@@ -169,7 +189,12 @@ def main():
 		args.dest = os.getcwd() + '/platform/stm32%s/cmds' % platform
 
 	src = os.path.normpath(args.src)
-	example_name = os.path.basename(src)
+
+	if args.name == '':
+		example_name = os.path.basename(src)
+	else:
+		example_name = args.name
+
 	dst = '%s/%s' % (os.path.normpath(args.dest), example_name)
 	script_dir = os.path.dirname(sys.argv[0])
 
