@@ -183,6 +183,17 @@ static module middlewares_usb_host {
 
 @Build(stage=1,script="true")
 @BuildDepends(core)
+static module middlewares_fat_fs {
+	@DefineMacro("_STR_VOLUME_ID=0")
+	/* FIXME: Do not use FatFs config from USB_Host/MSC_Standalone */
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Host/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/Third_Party/FatFs/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/Third_Party/FatFs/src/ff.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
 module arch extends embox.arch.arch {
 	source "arch.c"
 
