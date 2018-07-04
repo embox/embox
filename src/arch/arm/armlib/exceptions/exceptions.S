@@ -12,11 +12,11 @@
 .align 4
 
 .global	undef_handler
+.global	data_abt_handler
 .global	prefetch_abt_handler
 .global	fiq_handler
 .global	prefetch_abt_handler
 .global arm_unresolvable_exception
-.global data_abt_handler
 
 undef_handler:
 #ifdef __ARM_NEON__
@@ -121,7 +121,6 @@ prefetch_abt_handler:
 fiq_handler:
 	sub r14, r14, #4
 	b arm_unresolvable_exception
-data_abt_handler:
 	sub r14, r14, #8
 
 arm_unresolvable_exception:
@@ -132,3 +131,8 @@ arm_unresolvable_exception:
 	stmfd sp!, {r0, r1}
 	mov r0, sp
 	b arm_exception_handler
+
+data_abt_handler:
+	stmfd sp!, {r0-r12,r14}
+	mov r0, r13
+	b arm_data_abort_exception
