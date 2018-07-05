@@ -15,6 +15,7 @@
 #define NRF24
 
 #include "nRF24L01.h"
+#include "nrf24_stm32_cube.h"
 #include <stdint.h>
 
 #define LOW 0
@@ -26,11 +27,13 @@
 #define NRF24_TRANSMISSON_OK 0
 #define NRF24_MESSAGE_LOST   1
 
+#define NRF24_MAX_PAYLOAD 32
+
 /* adjustment functions */
 void    nrf24_init();
 void    nrf24_rx_address(uint8_t* adr);
 void    nrf24_tx_address(uint8_t* adr);
-void    nrf24_config(uint8_t channel, uint8_t pay_length);
+int     nrf24_config(uint8_t channel, uint8_t pay_length);
 
 /* state check functions */
 uint8_t nrf24_dataReady();
@@ -40,7 +43,7 @@ uint8_t nrf24_rxFifoEmpty();
 
 /* core TX / RX functions */
 void    nrf24_send(uint8_t* value);
-void    nrf24_getData(uint8_t* data);
+int     nrf24_getData(uint8_t* data);
 
 /* use in dynamic length mode */
 uint8_t nrf24_payloadLength();
@@ -65,31 +68,5 @@ void    nrf24_configRegister(uint8_t reg, uint8_t value);
 void    nrf24_readRegister(uint8_t reg, uint8_t* value, uint8_t len);
 void    nrf24_writeRegister(uint8_t reg, uint8_t* value, uint8_t len);
 
-/* -------------------------------------------------------------------------- */
-/* You should implement the platform spesific functions in your code */
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-/* In this function you should do the following things:
- *    - Set MISO pin input
- *    - Set MOSI pin output
- *    - Set SCK pin output
- *    - Set CSN pin output
- *    - Set CE pin output     */
-/* -------------------------------------------------------------------------- */
-extern void nrf24_setupPins();
-
-/* -------------------------------------------------------------------------- */
-/* nrf24 CE pin control function
- *    - state:1 => Pin HIGH
- *    - state:0 => Pin LOW     */
-/* -------------------------------------------------------------------------- */
-extern void nrf24_ce_digitalWrite(uint8_t state);
-
-/* -------------------------------------------------------------------------- */
-/* nrf24 CE pin control function
- *    - state:1 => Pin HIGH
- *    - state:0 => Pin LOW     */
-/* -------------------------------------------------------------------------- */
-extern void nrf24_csn_digitalWrite(uint8_t state);
+int nrf24_handle_interrupt(void);
 #endif
