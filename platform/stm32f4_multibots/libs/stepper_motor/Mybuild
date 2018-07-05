@@ -1,0 +1,11 @@
+package stm32f4_multibot.libs
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+static module stepper_motor {
+	source "stepper_motor.c"
+
+	@IncludeExport(path="libs")
+	source "stepper_motor.h"
+
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+}
