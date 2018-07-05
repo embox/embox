@@ -1,0 +1,11 @@
+package stm32f4_multibot.libs
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module ir {
+	source "ir.c"
+
+	@IncludeExport(path="libs")
+	source "ir.h"
+
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+}
