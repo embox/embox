@@ -5,7 +5,7 @@ module am85c30 extends embox.driver.diag.diag_api {
 	option number base_addr=0x83200040
 	option number irq_num
 
-	source "e2k.c"
+	source "am85c30.c"
 
 	depends core
 	depends diag
