@@ -1,3 +1,5 @@
+#include "../am85c30/am85c30.h"
+
 /**
  * @file e2k.c
  * @brief Monocube serial driver
@@ -13,7 +15,6 @@
 #include <drivers/serial/diag_serial.h>
 #include <embox/unit.h>
 
-#include "am85c30.h"
 
 EMBOX_UNIT_INIT(uart_init);
 

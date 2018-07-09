@@ -441,4 +441,4 @@
 *	Upper Byte of Time Constant
 */
 
-#endif /* SRC_DRIVERS_SERIAL_E2K_AM85C30_H_ */
+#endif /* SRC_DRIVERS_SERIAL_AM85C30_AM85C30_H_ */
