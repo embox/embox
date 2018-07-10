@@ -170,9 +170,6 @@ static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_a
 				phy_addr  += MMU_PAGE_SIZE;
 
 				if (phy_addr >= p_end) {
-					log_debug("mapped ctx=%x phy_addr %x to vaddr=%x size=%x flags=%x",
-							ctx, phy_addr, virt_addr, reg_size, flags);
-
 					return ENOERR;
 				}
 			}
