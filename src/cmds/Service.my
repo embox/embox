@@ -2,10 +2,10 @@ package embox.cmd
 
 @AutoCmd
 @Cmd(name = "service",
-	help = "Starts services (like commands running in background)",
+	help = "Control services (like commands running in background)",
 	man = '''
 		NAME
-			service - Starts services (like commands running in background)
+			service - Control services (like commands running in background)
 		SYNOPSIS
 			service NAME
 		DESCRIPTION
