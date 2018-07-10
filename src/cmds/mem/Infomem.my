@@ -1,0 +1,39 @@
+package embox.cmd.mem
+
+@AutoCmd
+@Cmd(name = "infomem",
+	help = "get information about memory",
+	man = '''
+		NAME
+			infomem - get information about memory
+		SYNOPSIS
+			infomem [-hpsvi]
+		DESCRIPTION
+			Displays information about virtual memory, 
+								physical memory, used segments and sections
+		OPTIONS
+			-h 
+				displays help
+			-p
+				displays physical memory
+			-s 
+				displays text/rodata/data/bss sections
+			-v 
+				displays virtual memory
+			-i
+				displays periph segments
+
+			(without options displays all memory information)
+		AUTHOR
+			Evgenij Bogdanov
+	''')
+module infomem {
+	source "infomem.c"
+	
+	@NoRuntime depends embox.compat.libc.stdio.printf
+	depends embox.compat.posix.util.getopt
+	depends embox.mem.phymem
+	depends embox.mem.vmem_alloc
+	depends embox.mem.vmem
+	depends embox.driver.periph_memory
+}

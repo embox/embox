@@ -18,4 +18,8 @@ extern struct page_allocator *__phymem_allocator;
 extern void *phymem_alloc(size_t page_number);
 extern void phymem_free(void *page, size_t page_number);
 
+extern char *const phymem_allocated_start(void);
+extern char *const phymem_allocated_end(void);
+extern struct page_allocator *phy_allocator(void);
+
 #endif /* MEM_PHYMEM_H_ */

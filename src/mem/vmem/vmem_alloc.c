@@ -155,3 +155,18 @@ void vmem_free_page(void *addr) {
 	if (page_belong(virt_page_allocator, addr))
 		page_free(virt_page_allocator, addr, 1);
 }
+
+struct page_allocator *get_pgd_allocator(void) {
+	return pgd_allocator;
+}
+
+struct page_allocator *get_pmd_allocator(void) {
+	return pmd_allocator;
+}
+
+struct page_allocator *get_pte_allocator(void) {
+#if (PTE_COUNT > 1)
+	return pte_allocator;
+#endif
+	return NULL;
+}

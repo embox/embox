@@ -16,10 +16,14 @@ struct periph_memory_desc {
 	uint32_t len;
 };
 
+#define PERIPH_MAX_SEGMENTS 64
+
 #define PERIPH_MEMORY_DEFINE(_mem_desc)	\
 	ARRAY_SPREAD_DECLARE(const struct periph_memory_desc *, \
-		__periph_mem_registry);	\
+			__periph_mem_registry);	\
 	ARRAY_SPREAD_ADD(__periph_mem_registry, \
-		&_mem_desc)
+			&_mem_desc)
+
+extern int periph_desc(struct periph_memory_desc **buff);
 
 #endif /* _DRIVERS_COMMON_MEMORY_H */
