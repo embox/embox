@@ -59,7 +59,7 @@ int mmu_pmd_present(mmu_pmd_t *pmd) {
 }
 
 int mmu_pte_present(mmu_pte_t *pte) {
-	return 0;
+	return (((uint32_t)*pte) & ARM_MMU_SMALL_PAGE) == ARM_MMU_SMALL_PAGE;
 }
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
