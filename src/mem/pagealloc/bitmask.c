@@ -124,8 +124,10 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 
 	while (sizeof(struct page_allocator) + bitmap_len > pages_start - start) {
 		pages_start += page_size;
-		pages --;
-		assert(pages > 0);
+		pages--;
+		if (pages <= 0) {
+			return NULL;
+		}
 	}
 
 	allocator = (struct page_allocator *) start;
