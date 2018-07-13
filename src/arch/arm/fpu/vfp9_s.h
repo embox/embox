@@ -40,7 +40,7 @@ extern int try_vfp_instructions(void /*struct pt_regs_fpu *vfp */);
 	stmia     stack!, {tmp}; \
 	ands      tmp, tmp, #1<<30; \
 	beq       fpu_out_save_inc; \
-	vstmia stack!, {d0-d15}; \
+	vstmia    stack!, {d0-d15}; \
 fpu_out_save_inc:
 
 #define ARM_FPU_CONTEXT_SAVE_DEC(tmp, stack) \
@@ -48,7 +48,7 @@ fpu_out_save_inc:
 	sub       stack, stack, #(4 * 32); \
 	tst       tmp, #1<<30;             \
 	beq       fpu_skip_save_dec;       \
-	fstmiad   stack, {d0-d15};         \
+	vstmia    stack, {d0-d15};         \
 fpu_skip_save_dec:                     \
 	stmfd     stack!, {tmp};
 
@@ -66,7 +66,7 @@ fpu_out_load_inc:
 	/* vmsr      FPEXC, tmp; */ \
 	ands      tmp, tmp, #1<<30; \
 	beq       fpu_skip_load_dec; \
-	fldmfdd   stack, {d0-d15}; \
+	vldmia    stack, {d0-d15}; \
 fpu_skip_load_dec: \
 	add       stack, stack, #4 * 32;
 
