@@ -19,6 +19,13 @@ module page {
 	depends embox.framework.LibFramework
 }
 
+module page_allocator {
+	source "page_allocator.c"
+
+	depends embox.mem.page_api
+	depends embox.framework.LibFramework
+}
+
 @TestFor(embox.mem.heap_api)
 module heap {
 	source "heap.c"
