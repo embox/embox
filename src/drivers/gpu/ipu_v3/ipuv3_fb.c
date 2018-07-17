@@ -13,8 +13,8 @@
 #include "ipu_regs.h"
 #include "ipu_priv.h"
 
-#define IPU_MAX_WIDTH	1280
-#define IPU_MAX_HEIGHT	800
+#define IPU_MAX_WIDTH  OPTION_GET(NUMBER, xres)
+#define IPU_MAX_HEIGHT OPTION_GET(NUMBER, yres)
 
 static uint16_t ipu_fb[IPU_MAX_WIDTH * IPU_MAX_HEIGHT]
 			__attribute__ ((aligned (0x8)));
