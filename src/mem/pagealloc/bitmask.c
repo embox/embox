@@ -112,7 +112,7 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 	unsigned int pages;
 	size_t bitmap_len;
 
-	if (len < page_size) {
+	if (len < page_size + sizeof(struct page_allocator)) {
 		return NULL;
 	}
 
