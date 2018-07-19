@@ -35,8 +35,16 @@ double log10(double x) {
 	return __builtin_log10(x);
 }
 
-double ceill(double x) {
+long double ceill(long double x) {
 	return __builtin_ceill(x);
+}
+
+double ceil(double x) {
+	return __builtin_ceil(x);
+}
+
+float ceilf(float x) {
+	return __builtin_ceilf(x);
 }
 
 double floor(double x) {

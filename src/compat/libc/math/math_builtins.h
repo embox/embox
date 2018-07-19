@@ -15,7 +15,9 @@ extern double fabs(double x);
 extern double roundl(double x);
 extern double pow(double x, double y);
 extern double log10(double x);
-extern double ceill(double x);
+extern double ceil(double x);
+extern float ceilf(float x);
+extern long double ceill(long double x);
 
 extern double floor(double x);
 extern float floorf(float x);
