@@ -13,6 +13,8 @@ ifeq (arm,$(EMBOX_ARCH))
 AUTOCONF_TARGET_TRIPLET := arm-none-eabi
 else ifeq (sparc,$(EMBOX_ARCH))
 AUTOCONF_TARGET_TRIPLET := sparc-elf
+else ifeq (mips,$(EMBOX_ARCH))
+AUTOCONF_TARGET_TRIPLET := mips-elf
 else ifeq (x86,$(EMBOX_ARCH))
 AUTOCONF_TARGET_TRIPLET := i386-pc-elf
 else
@@ -38,6 +40,7 @@ $(CONFIGURE) :
 			--disable-libssp \
 			--without-newlib \
 			--enable-languages=c,c++ \
+			--enable-soft-float \
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
 			CFLAGS_FOR_TARGET="$(cppflags) $(target_libgcc_cppflags) $${EMBOX_IMPORTED_CFLAGS}" \
