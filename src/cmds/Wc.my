@@ -1,0 +1,30 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "wc",
+	help = "wc util(copies the functionality of wc from GNU coreutils)",
+	man = '''
+		NAME
+			wc - wc util(copies the functionality of wc from GNU coreutils)
+		SYNOPSIS
+			wc [OPTIONS] [FILE_NAME]
+
+		DESCRIPTION
+			Displays the number of lines, letters, bytes, and the longest line in the files
+		OPTIONS
+			-l 
+				displays the number of lines
+			-w
+				displays the number of words
+			-c 
+				displays the number of bytes
+			-L 
+				dispays the lenght of longest line
+
+			(without options displays number of line, words and bytes)
+		AUTHORS
+			Filipp Chubukov
+	''')
+module wc {
+	source "wc.c"
+}
