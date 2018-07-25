@@ -5,6 +5,7 @@
 * @version 0.1
 * @date 2015-06-01
 */
+#include <util/log.h>
 
 #include <assert.h>
 #include <errno.h>
@@ -17,8 +18,6 @@
 #include <fs/dcache.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
-
-#include <kernel/printk.h>
 
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 
@@ -98,6 +97,9 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		path++;
 
 	len = dvfs_path_next_len(path);
+	if (len >= DENTRY_NAME_LEN) {
+		return -ENAMETOOLONG;
+	}
 	memcpy(buff, path, len);
 	buff[len] = '\0';
 
