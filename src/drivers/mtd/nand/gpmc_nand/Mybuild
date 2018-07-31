@@ -1,0 +1,10 @@
+package embox.driver.mtd.nand
+
+module gpmc_nand {
+	option number log_level = 1
+
+	source "gpmc_nand.c"
+
+	depends embox.driver.mtd.nand_dev
+	depends embox.driver.gpmc.omap3_gpmc
+}

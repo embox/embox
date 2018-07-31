@@ -38,7 +38,7 @@
 #define NAND_CMD_RNDOUTSTART    0xE0
 #define NAND_CMD_CACHEDPROG     0x15
 
-#define NAND_CMD_NONE          (uint32_t )(-1)
+#define NAND_CMD_NONE           0xFF
 
 /* Status bits */
 #define NAND_STATUS_FAIL        0x01
@@ -48,8 +48,8 @@
 #define NAND_STATUS_WP          0x80
 
 struct nand_dev_ops {
-	int (*nand_write)(uint32_t cmd, uint32_t addr, uint32_t data);
-	int (*nand_read)(uint32_t cmd, uint32_t addr, uint32_t *data);
+	int (*nand_write)(uint8_t cmd, uint32_t addr, uint32_t data);
+	int (*nand_read)(uint8_t cmd, uint32_t addr, uint32_t *data);
 };
 
 struct nand_device {
