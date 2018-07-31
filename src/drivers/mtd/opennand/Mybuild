@@ -1,0 +1,6 @@
+package embox.driver.mtd
+
+module opennand {
+	@IncludeExport(path="drivers/mtd")
+	source "opennand.h"
+}
