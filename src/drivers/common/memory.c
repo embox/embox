@@ -21,6 +21,7 @@
 #include <mem/misc/pool.h>
 #include <mem/mmap.h>
 #include <embox/unit.h>
+#include <util/array.h>
 
 ARRAY_SPREAD_DEF(struct periph_memory_desc *, __periph_mem_registry);
 
@@ -29,7 +30,7 @@ EMBOX_UNIT_INIT(periph_memory_init);
 static struct _segment {
 	uint32_t start;
 	uint32_t end;
-} _segments[64];
+} _segments[PERIPH_MAX_SEGMENTS];
 
 static struct emmap *self_mmap(void) {
 	if (0 == mmap_kernel_inited()) {
@@ -98,6 +99,17 @@ static int periph_memory_init(void) {
 	}
 
 	return 0;
+}
+
+int periph_desc(struct periph_memory_desc **buff) {
+	struct periph_memory_desc *elem;
+
+	int i = 0;
+	array_spread_foreach(elem, __periph_mem_registry) {
+		buff[i++] = elem;
+	}
+
+	return i;
 }
 
 #endif /* NOMMU */
