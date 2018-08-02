@@ -2,4 +2,5 @@ package embox.arch.e2k
 
 static module libarch extends embox.arch.libarch {
 	source "e2k_setjmp.S"
+	source "e2k_syscall.S"
 }
