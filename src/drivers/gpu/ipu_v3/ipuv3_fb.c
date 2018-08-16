@@ -5,11 +5,14 @@
  * @version
  * @date 05.10.2017
  */
+#include <util/log.h>
+
+#include <string.h>
 
 #include <embox/unit.h>
 #include <drivers/video/fb.h>
-#include <string.h>
-#include <util/log.h>
+#include <kernel/irq.h>
+
 #include "ipu_regs.h"
 #include "ipu_priv.h"
 
@@ -74,7 +77,7 @@ static struct fb_ops mxcfb_ops = {
 };
 
 extern void dcache_flush(const void *p, size_t size);
-static irqreturn_t mxcfb_irq_handler(unsigned int irq, void *data) {
+static irq_return_t mxcfb_irq_handler(unsigned int irq, void *data) {
 	struct ipu_soc *ipu = mxc_fbi.ipu;
 	int i;
 	uint32_t int_stat, int_ctrl;
@@ -102,7 +105,7 @@ static int ipu_init(void) {
 	mxc_fbi.ipu_ch = MEM_BG_SYNC;
 
 	irq_attach(IPU1_SYNC_IRQ, mxcfb_irq_handler, 0, NULL, "IPU framebuffer");
-	ipu_request_irq(ipu_get(), 23, NULL, 0, "", NULL);
+	ipu_request_irq(ipu_get(), 23, /*NULL,*/ 0, "", NULL);
 
 	mxcfb_set_par(mxc_fbi.fbi, &mxc_fbi.fbi->var);
 

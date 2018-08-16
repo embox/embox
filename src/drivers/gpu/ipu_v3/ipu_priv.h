@@ -12,8 +12,11 @@
  */
 #ifndef __INCLUDE_IPU_PRV_H__
 #define __INCLUDE_IPU_PRV_H__
+
+#include <stdint.h>
+
 #include <kernel/irq.h>
-#include "uboot_ipu_compat.h"
+#include <hal/reg.h>
 #include <util/log.h>
 /* Globals */
 extern int dmfc_type_setup;
@@ -43,8 +46,8 @@ enum imx_ipu_type {
 };
 
 struct ipu_pltfm_data {
-	u32 id;
-	u32 devtype;
+	uint32_t id;
+	uint32_t devtype;
 	int (*init) (int);
 	void (*pg) (int);
 
@@ -81,144 +84,144 @@ struct ipu_soc {
 	uint32_t channel_enable_mask;
 };
 
-static inline u32 ipu_cm_read(struct ipu_soc *ipu, unsigned offset)
+static inline uint32_t ipu_cm_read(struct ipu_soc *ipu, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->cm_reg + offset);
+	return REG32_LOAD(ipu->cm_reg + offset);
 }
 
 static inline void ipu_cm_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->cm_reg + offset);
+	REG32_STORE(ipu->cm_reg + offset, value);
 }
 
-static inline u32 ipu_idmac_read(struct ipu_soc *ipu, unsigned offset)
+static inline uint32_t ipu_idmac_read(struct ipu_soc *ipu, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->idmac_reg + offset);
+	return REG32_LOAD(ipu->idmac_reg + offset);
 }
 
 static inline void ipu_idmac_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->idmac_reg + offset);
+	REG32_STORE(ipu->idmac_reg + offset, value);
 }
 
-static inline u32 ipu_dc_read(struct ipu_soc *ipu, unsigned offset) {
+static inline uint32_t ipu_dc_read(struct ipu_soc *ipu, unsigned offset) {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->dc_reg + offset);
+	return REG32_LOAD(ipu->dc_reg + offset);
 }
 
 static inline void ipu_dc_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset) {
+		uint32_t value, unsigned offset) {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->dc_reg + offset);
+	REG32_STORE(ipu->dc_reg + offset, value);
 }
 
-static inline u32 ipu_dc_tmpl_read(struct ipu_soc *ipu, unsigned offset) {
+static inline uint32_t ipu_dc_tmpl_read(struct ipu_soc *ipu, unsigned offset) {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->dc_tmpl_reg + offset);
+	return REG32_LOAD(ipu->dc_tmpl_reg + offset);
 }
 
 static inline void ipu_dc_tmpl_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->dc_tmpl_reg + offset);
+	REG32_STORE(ipu->dc_tmpl_reg + offset, value);
 }
 
-static inline u32 ipu_dmfc_read(struct ipu_soc *ipu, unsigned offset)
+static inline uint32_t ipu_dmfc_read(struct ipu_soc *ipu, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->dmfc_reg + offset);
+	return REG32_LOAD(ipu->dmfc_reg + offset);
 }
 
 static inline void ipu_dmfc_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->dmfc_reg + offset);
+	REG32_STORE(ipu->dmfc_reg + offset, value);
 }
 
-static inline u32 ipu_dp_read(struct ipu_soc *ipu, unsigned offset)
+static inline uint32_t ipu_dp_read(struct ipu_soc *ipu, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->dp_reg + offset);
+	return REG32_LOAD(ipu->dp_reg + offset);
 }
 
 static inline void ipu_dp_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->dp_reg + offset);
+	REG32_STORE(ipu->dp_reg + offset, value);
 }
 
-static inline u32 ipu_di_read(struct ipu_soc *ipu, int di, unsigned offset)
+static inline uint32_t ipu_di_read(struct ipu_soc *ipu, int di, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->di_reg[di] + offset);
+	return REG32_LOAD(ipu->di_reg[di] + offset);
 }
 
 static inline void ipu_di_write(struct ipu_soc *ipu, int di,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->di_reg[di] + offset);
+	REG32_STORE(ipu->di_reg[di] + offset, value);
 }
 
-static inline u32 ipu_csi_read(struct ipu_soc *ipu, int csi, unsigned offset)
+static inline uint32_t ipu_csi_read(struct ipu_soc *ipu, int csi, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->csi_reg[csi] + offset);
+	return REG32_LOAD(ipu->csi_reg[csi] + offset);
 }
 
 static inline void ipu_csi_write(struct ipu_soc *ipu, int csi,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->csi_reg[csi] + offset);
+	REG32_STORE(ipu->csi_reg[csi] + offset, value);
 }
 
-static inline u32 ipu_smfc_read(struct ipu_soc *ipu, unsigned offset)
+static inline uint32_t ipu_smfc_read(struct ipu_soc *ipu, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->smfc_reg + offset);
+	return REG32_LOAD(ipu->smfc_reg + offset);
 }
 
 static inline void ipu_smfc_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->smfc_reg + offset);
+	REG32_STORE(ipu->smfc_reg + offset, value);
 }
 
-static inline u32 ipu_vdi_read(struct ipu_soc *ipu, unsigned offset)
+static inline uint32_t ipu_vdi_read(struct ipu_soc *ipu, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->vdi_reg + offset);
+	return REG32_LOAD(ipu->vdi_reg + offset);
 }
 
 static inline void ipu_vdi_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->vdi_reg + offset);
+	REG32_STORE(ipu->vdi_reg + offset, value);
 }
 
-static inline u32 ipu_ic_read(struct ipu_soc *ipu, unsigned offset)
+static inline uint32_t ipu_ic_read(struct ipu_soc *ipu, unsigned offset)
 {
 	log_debug("%p", (void*) offset);
-	return readl(ipu->ic_reg + offset);
+	return REG32_LOAD(ipu->ic_reg + offset);
 }
 
 static inline void ipu_ic_write(struct ipu_soc *ipu,
-		u32 value, unsigned offset)
+		uint32_t value, unsigned offset)
 {
 	log_debug("0x%x->%p", value, (void*) offset);
-	writel(value, ipu->ic_reg + offset);
+	REG32_STORE(ipu->ic_reg + offset, value);
 }
 
 #endif				/* __INCLUDE_IPU_PRV_H__ */

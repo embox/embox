@@ -8,7 +8,10 @@
 #ifndef SRC_DRIVERS_GPU_IPU_V3_IPU_REGS_H_
 #define SRC_DRIVERS_GPU_IPU_V3_IPU_REGS_H_
 
-#include "uboot_ipu_compat.h"
+#include <stdbool.h>
+#include <stdint.h>
+
+typedef uint32_t dma_addr_t;
 
 /*!
  * Enumeration of VDI MOTION select
@@ -32,7 +35,7 @@ typedef enum {
 /*  IPU Pixel format definitions */
 /*  Four-character-code (FOURCC) */
 #define fourcc(a, b, c, d)\
-	 (((__u32)(a)<<0)|((__u32)(b)<<8)|((__u32)(c)<<16)|((__u32)(d)<<24))
+	 (((uint32_t)(a)<<0)|((uint32_t)(b)<<8)|((uint32_t)(c)<<16)|((uint32_t)(d)<<24))
 
 /*!
  * @name IPU Pixel Formats
@@ -106,19 +109,19 @@ typedef enum {
 } cs_t;
 
 struct ipu_pos {
-	u32 x;
-	u32 y;
+	uint32_t x;
+	uint32_t y;
 };
 
 struct ipu_crop {
 	struct ipu_pos pos;
-	u32 w;
-	u32 h;
+	uint32_t w;
+	uint32_t h;
 };
 
 struct ipu_deinterlace {
 	bool	enable;
-	u8	motion; /*see ipu_motion_sel*/
+	uint8_t	motion; /*see ipu_motion_sel*/
 #define IPU_DEINTERLACE_FIELD_TOP	0
 #define IPU_DEINTERLACE_FIELD_BOTTOM	1
 #define IPU_DEINTERLACE_FIELD_MASK	\
@@ -129,13 +132,13 @@ struct ipu_deinterlace {
 #define IPU_DEINTERLACE_RATE_MASK	\
 		(IPU_DEINTERLACE_RATE_EN | IPU_DEINTERLACE_RATE_FRAME1)
 #define IPU_DEINTERLACE_MAX_FRAME	2
-	u8	field_fmt;
+	uint8_t	field_fmt;
 };
 
 struct ipu_input {
-	u32 width;
-	u32 height;
-	u32 format;
+	uint32_t width;
+	uint32_t height;
+	uint32_t format;
 	struct ipu_crop crop;
 	dma_addr_t paddr;
 
@@ -146,20 +149,20 @@ struct ipu_input {
 struct ipu_alpha {
 #define IPU_ALPHA_MODE_GLOBAL	0
 #define IPU_ALPHA_MODE_LOCAL	1
-	u8 mode;
-	u8 gvalue; /* 0~255 */
+	uint8_t mode;
+	uint8_t gvalue; /* 0~255 */
 	dma_addr_t loc_alp_paddr;
 };
 
 struct ipu_colorkey {
 	bool enable;
-	u32 value; /* RGB 24bit */
+	uint32_t value; /* RGB 24bit */
 };
 
 struct ipu_overlay {
-	u32	width;
-	u32	height;
-	u32	format;
+	uint32_t	width;
+	uint32_t	height;
+	uint32_t	format;
 	struct ipu_crop crop;
 	struct ipu_alpha alpha;
 	struct ipu_colorkey colorkey;
@@ -167,10 +170,10 @@ struct ipu_overlay {
 };
 
 struct ipu_output {
-	u32	width;
-	u32	height;
-	u32	format;
-	u8	rotate;
+	uint32_t	width;
+	uint32_t	height;
+	uint32_t	format;
+	uint8_t	rotate;
 	struct ipu_crop crop;
 	dma_addr_t paddr;
 };
@@ -184,13 +187,13 @@ struct ipu_task {
 
 #define IPU_TASK_PRIORITY_NORMAL 0
 #define IPU_TASK_PRIORITY_HIGH	1
-	u8	priority;
+	uint8_t	priority;
 
 #define	IPU_TASK_ID_ANY	0
 #define	IPU_TASK_ID_VF	1
 #define	IPU_TASK_ID_PP	2
 #define	IPU_TASK_ID_MAX 3
-	u8	task_id;
+	uint8_t	task_id;
 
 	int	timeout;
 };
@@ -538,7 +541,7 @@ static const int g_ipu_hw_rev = 4;
 
 #define dc_ch_offset(ch) \
 ({ \
-	const u8 _offset[] = { \
+	const uint8_t _offset[] = { \
 		0, 0x1C, 0x38, 0x54, 0x58, 0x5C, 0x78, 0, 0x94, 0xB4}; \
 	_offset[ch]; \
 })
@@ -1025,7 +1028,7 @@ extern int32_t ipu_enable_channel(struct ipu_soc *ipu, ipu_channel_t channel);
 extern int32_t ipu_disable_channel(struct ipu_soc *ipu, ipu_channel_t channel, bool wait_for_stop);
 
 int ipu_request_irq(struct ipu_soc *ipu, uint32_t irq,
-		    irqreturn_t(*handler) (int, void *),
+		    /* irq_return_t(*handler) (int, void *), */
 		    uint32_t irq_flags, const char *devname, void *dev_id);
 
 void ipu_uninit_sync_panel(struct ipu_soc *ipu, int disp);

@@ -1,6 +1,12 @@
-#include <errno.h>
 #include <util/log.h>
-#include "uboot_ipu_compat.h"
+
+#include <errno.h>
+#include <stdint.h>
+
+#include <drivers/lvds/imx/ldb.h>
+#include <drivers/clk/ccm_imx6.h>
+#include <drivers/video/fb.h>
+
 #include "ipu_regs.h"
 #include "ipu_priv.h"
 
@@ -13,7 +19,7 @@ static void _ipu_di_data_wave_config(struct ipu_soc *ipu,
 				int di, int wave_gen,
 				int access_size, int component_size)
 {
-	u32 reg;
+	uint32_t reg;
 	reg = (access_size << DI_DW_GEN_ACCESS_SIZE_OFFSET) |
 	    (component_size << DI_DW_GEN_COMPONENT_SIZE_OFFSET);
 	ipu_di_write(ipu, di, reg, DI_DW_GEN(wave_gen));
@@ -23,7 +29,7 @@ static void _ipu_di_data_pin_config(struct ipu_soc *ipu,
 			int di, int wave_gen, int di_pin, int set,
 			int up, int down)
 {
-	u32 reg;
+	uint32_t reg;
 
 	reg = ipu_di_read(ipu, di, DI_DW_GEN(wave_gen));
 	reg &= ~(0x3 << (di_pin * 2));
@@ -43,7 +49,7 @@ static void _ipu_di_sync_config(struct ipu_soc *ipu,
 				int cnt_polarity_trigger_src,
 				int cnt_up, int cnt_down)
 {
-	u32 reg;
+	uint32_t reg;
 
 	reg = (run_count << 19) | (++run_src << 16) |
 	    (offset_count << 3) | ++offset_src;
@@ -67,7 +73,7 @@ static void _ipu_dc_map_config(struct ipu_soc *ipu,
 {
 	log_debug("Enter %s", __func__);
 	int ptr = map * 3 + byte_num;
-	u32 reg;
+	uint32_t reg;
 
 	reg = ipu_dc_read(ipu, DC_MAP_CONF_VAL(ptr));
 	reg &= ~(0xFFFF << (16 * (ptr & 0x1)));
@@ -83,17 +89,17 @@ static void _ipu_dc_map_config(struct ipu_soc *ipu,
 static void _ipu_dc_map_clear(struct ipu_soc *ipu, int map)
 {
 	log_debug("Enter %s", __func__);
-	u32 reg = ipu_dc_read(ipu, DC_MAP_CONF_PTR(map));
+	uint32_t reg = ipu_dc_read(ipu, DC_MAP_CONF_PTR(map));
 	ipu_dc_write(ipu, reg & ~(0xFFFF << (16 * (map & 0x1))),
 		     DC_MAP_CONF_PTR(map));
 }
 
 static void _ipu_dc_write_tmpl(struct ipu_soc *ipu,
-			int word, u32 opcode, u32 operand, int map,
+			int word, uint32_t opcode, uint32_t operand, int map,
 			int wave, int glue, int sync, int stop)
 {
 	log_debug("Enter %s", __func__);
-	u32 reg;
+	uint32_t reg;
 
 	if (opcode == WRG) {
 		reg = sync;
@@ -126,7 +132,7 @@ static void _ipu_dc_write_tmpl(struct ipu_soc *ipu,
 static void _ipu_dc_link_event(struct ipu_soc *ipu,
 		int chan, int event, int addr, int priority)
 {
-	u32 reg;
+	uint32_t reg;
 	reg = ipu_dc_read(ipu, DC_RL_CH(chan, event));
 	reg &= ~(0xFFFF << (16 * (event & 0x1)));
 	reg |= ((addr << 8) | priority) << (16 * (event & 0x1));
@@ -136,7 +142,7 @@ static void _ipu_dc_link_event(struct ipu_soc *ipu,
 void _ipu_dc_init(struct ipu_soc *ipu, int dc_chan, int di, bool interlaced, uint32_t pixel_fmt)
 {
 	log_debug("enter %s, dc_chan=%d, di=%d\n", __func__, dc_chan, di);
-	u32 reg;
+	uint32_t reg;
 
 	_ipu_dc_link_event(ipu, dc_chan, DC_EVT_NL, 5, 3);
 	_ipu_dc_link_event(ipu, dc_chan, DC_EVT_EOL, 6, 2);
