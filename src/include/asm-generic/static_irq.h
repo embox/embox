@@ -18,14 +18,10 @@
 	. = n * 4; \
 	*(.trap_table.routine_##n);
 
+/* Currently, we allow to define handlers starting from
+ * SVCall, please take a look at exception_table.S and
+ * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0553a/CIHIGCIF.html */
 #define STATIC_IRQ_TABLE \
-	SIRQ_TABLE_ENTRY(4) \
-	SIRQ_TABLE_ENTRY(5) \
-	SIRQ_TABLE_ENTRY(6) \
-	SIRQ_TABLE_ENTRY(7) \
-	SIRQ_TABLE_ENTRY(8) \
-	SIRQ_TABLE_ENTRY(9) \
-	SIRQ_TABLE_ENTRY(10) \
 	SIRQ_TABLE_ENTRY(11) \
 	SIRQ_TABLE_ENTRY(12) \
 	SIRQ_TABLE_ENTRY(13) \
