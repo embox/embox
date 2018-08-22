@@ -1,0 +1,29 @@
+package stm32f4_multibot.cmd
+
+@AutoCmd
+@Cmd(name="robot_test", help="Robot test")
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module robot_test {
+	option number log_level=4
+
+	source "main.c"
+
+	depends stm32f4_multibot.libs.stepper_motor
+	depends stm32f4_multibot.libs.ir
+	depends stm32f4_multibot.libs.gy_30
+	depends stm32f4_multibot.libs.nrf24
+
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+	depends embox.compat.posix.util.sleep
+}
+
+@AutoCmd
+@Cmd(name="send_robot_cmd", help="Send command to robot")
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module send_robot_cmd {
+	source "send_robot_cmd.c"
+
+	depends stm32f4_multibot.libs.nrf24
+
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+}
