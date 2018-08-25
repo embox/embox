@@ -14,8 +14,11 @@ module common {
 	depends embox.util.indexator
 }
 
-module periph_memory {
-	@IncludeExport(path="drivers/common")
+@DefaultImpl(periph_memory_mmap)
+abstract module periph_memory { }
+
+module periph_memory_mmap extends periph_memory {
+	@IncludeExport(path="drivers/common", target_name="memory.h")
 	source "memory.h"
 
 	source "memory.c"
@@ -23,4 +26,9 @@ module periph_memory {
 	depends embox.arch.mmu
 	depends embox.mem.mmap_api
 	depends embox.util.Array
+}
+
+module periph_memory_stub extends periph_memory {
+	@IncludeExport(path="drivers/common", target_name="memory.h")
+	source "memory_impl_stub.h"
 }
