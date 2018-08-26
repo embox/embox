@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 #include <stdint.h>
-#include <sys/mman.h>
 
 #include <hal/reg.h>
 #include <drivers/common/memory.h>
