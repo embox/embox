@@ -27,6 +27,18 @@ module core_old extends core {
 	@NoRuntime depends embox.driver.tty.serial_oldfs
 }
 
+module core_notty extends core {
+	option number uart_max_n = 4
+
+	source "uart_dev.c"
+
+	@IncludeExport(path="drivers/serial")
+	source "uart_device.h"
+
+	@NoRuntime depends embox.util.indexator
+	@NoRuntime depends embox.driver.tty.serial_stub
+}
+
 module diag {
 	source "diag_serial.c"
 
