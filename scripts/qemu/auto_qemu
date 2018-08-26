@@ -149,6 +149,8 @@ guess_machine() {
 				echo "-M vexpress-a9"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "sabrelite" > /dev/null; then
 				echo "-M sabrelite"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s811evb" > /dev/null; then
+				echo "-M lm3s811evb"
 			fi
 			;;
 		microblaze)
