@@ -7,21 +7,39 @@ ENTRY(_start)
 MEMORY {
 	MEMORY_REGION(RAM)
 	MEMORY_REGION(ROM)
+	MEMORY_REGION(BOOTINFO)
 }
 
 _ram_base = ORIGIN(RAM);
 _ram_size = LENGTH(RAM);
 
 SECTIONS {
-	. = 0x1000000 - 0x10000; /* Fixed entry address */
-	.data : {
+	.bootinfo : {
+		_bootinfo_start = .;
+		/* . = 0x1000000 - 0x10000; */
+		/* 0x00FF0000 */
 		*(.x86_boot)
-	}
+		. = _bootinfo_start + 0x10000;
+		_bootinfo_end = .;
+	} SECTION_REGION(bootinfo)
 
-	. = 0x1000000;
-	_start = .;
 	.text : {
-		. = 0x1006000;
-		*(.e2k_entry)
+		_start = .;
+		/* 0x01000000 */
+		*(.e2k_entry);
+
+		 _t_entry = .;
+		/* Interrupt handler */
+		*(.ttable_entry0)
+		. = _t_entry + 0x800;
+		/* Syscall handler */
+		*(.ttable_entry1)
+		. = _t_entry + 0x1000;
+		/* longjmp handler */
+		*(.ttable_entry2)
+		. = _t_entry + 0x1800;
+		_t_entry_end = .;
+
+		/* text */
 	}
 }

@@ -18,6 +18,7 @@
  *         VFS calls.
  */
 
+#include <stdint.h>
 #include <cpio.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -84,8 +85,8 @@ static int initfs_fill_inode_entry(struct inode *node,
                                    struct cpio_entry *entry,
                                    struct initfs_dir_info *di) {
 	*node = (struct inode) {
-		.i_no      = (int) cpio,
-		.start_pos = (int) entry->data,
+		.i_no      = (intptr_t) cpio,
+		.start_pos = (intptr_t) entry->data,
 		.length    = (size_t) entry->size,
 		.i_data    = di,
 		.flags     = entry->mode & (S_IFMT | S_IRWXA),

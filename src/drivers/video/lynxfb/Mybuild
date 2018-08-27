@@ -1,0 +1,16 @@
+package embox.driver.video
+
+module lynxfb {
+	option number log_level = 1
+
+	depends embox.driver.video.fb
+	depends embox.driver.pci
+
+
+	source "lynxfb.c"
+	source "lynxfb_hw750.c"
+	source "ddk750_chip.c"
+	source "ddk750_power.c"
+	source "ddk750_display.c"
+	source "ddk750_mode.c"
+}

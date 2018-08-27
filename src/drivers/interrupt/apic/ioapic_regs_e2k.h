@@ -16,13 +16,13 @@
 #define IOREGWIN                  (IOAPIC_DEF_ADDR + 0x10)
 
 static inline uint32_t ioapic_read(uint8_t reg) {
-	e2k_write32(reg, IOREGSEL);
-	return e2k_read32(IOREGWIN);
+	e2k_write32(reg, (void *)IOREGSEL);
+	return e2k_read32((void *)IOREGWIN);
 }
 
 static inline void ioapic_write(uint8_t reg, uint32_t val) {
-	e2k_write32(reg, IOREGSEL);
-	e2k_write32(val, IOREGWIN);
+	e2k_write32(reg, (void *)IOREGSEL);
+	e2k_write32(val, (void *)IOREGWIN);
 }
 
 #endif /* IOAPIC_REGS_E2K_H_ */
