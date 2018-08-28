@@ -23,11 +23,8 @@ extern void _ipu_dp_dc_enable(struct ipu_soc *ipu, ipu_channel_t channel);
 
 static struct ipu_soc ipu_soc;
 
-#define DMA_CHANNEL                 23
-
-#define idma_mask(ch)		        (1UL << (ch & 0x1F))
+#define idma_mask(ch)		(1UL << (ch & 0x1F))
 #define idma_is_set(ipu, reg, dma)	(ipu_idmac_read(ipu, reg(dma)) & idma_mask(dma))
-
 
 /**
  * @brief Perform software reset for all IPU modules
@@ -126,12 +123,10 @@ int ipu_probe(void) {
 	return 0;
 }
 
-int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel_params_t *params)
-{
-	int ret = 0;
-
+int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel_params_t *params) {
+	/* note: assume channel is MEM_BG_SYNC
+	 *       assume DI=0			*/
 	log_debug("init channel = %d", IPU_CHAN_ID(channel));
-	ret = 0;
 	/* Re-enable error interrupts every time a channel is initialized */
 	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_INT_CTRL(5));
 	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_INT_CTRL(6));
@@ -139,9 +134,10 @@ int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel
 	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_INT_CTRL(10));
 
 	ipu->dc_di_assignment[5] = 0;
+
 	_ipu_dc_init(ipu, 5, 0, 0, IPU_PIX_FMT_RGB666);
 
-	return ret;
+	return 0;
 }
 
 void ipu_uninit_channel(struct ipu_soc *ipu, ipu_channel_t channel) {
