@@ -1,9 +1,11 @@
 /**
- * @file
- *
+ * @file ipuv3.c
+ * @brief Probe/irq handle/reset/channel init/etc
  * @data Sep 15, 2017
  * @author Anton Bondarev
  */
+
+#include <assert.h>
 #include <hal/reg.h>
 #include <drivers/common/memory.h>
 #include <drivers/video/fb.h>
@@ -126,7 +128,7 @@ int ipu_probe(void) {
 int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel_params_t *params) {
 	/* note: assume channel is MEM_BG_SYNC
 	 *       assume DI=0			*/
-	log_debug("init channel = %d", IPU_CHAN_ID(channel));
+	log_debug("init channel = %d", IPU_CHAN_VIDEO_IN_DMA(channel));
 	/* Re-enable error interrupts every time a channel is initialized */
 	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_INT_CTRL(5));
 	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_INT_CTRL(6));
@@ -159,7 +161,9 @@ int32_t ipu_init_channel_buffer(struct ipu_soc *ipu, ipu_channel_t channel,
 				uint16_t width, uint16_t height,
 				uint32_t stride,
 				dma_addr_t phyaddr_0) {
-	uint32_t dma_chan = DMA_CHANNEL;
+	uint32_t dma_chan = IPU_CHAN_VIDEO_IN_DMA(channel);
+
+	assert(dma_chan == 23); /* XXX */
 
 	_ipu_ch_param_init(ipu, dma_chan, pixel_fmt, width, height, stride, 0, 0, 0,
 			   phyaddr_0);
@@ -170,7 +174,9 @@ int32_t ipu_init_channel_buffer(struct ipu_soc *ipu, ipu_channel_t channel,
 int32_t ipu_enable_channel(struct ipu_soc *ipu, ipu_channel_t channel) {
 	uint32_t reg;
 	uint32_t ipu_conf;
-	uint32_t in_dma = DMA_CHANNEL;
+	uint32_t in_dma = IPU_CHAN_VIDEO_IN_DMA(channel);
+
+	assert(in_dma == 23); /* XXX */
 
 	ipu_conf = IPU_CONF_DP_EN | IPU_CONF_DC_EN | IPU_CONF_DMFC_EN;
 	ipu_conf |= IPU_CONF_DI0_EN;
@@ -190,7 +196,9 @@ int32_t ipu_enable_channel(struct ipu_soc *ipu, ipu_channel_t channel) {
 
 void _ipu_clear_buffer_ready(struct ipu_soc *ipu, ipu_channel_t channel, ipu_buffer_t type,
 		uint32_t bufNum) {
-	uint32_t dma_ch = DMA_CHANNEL;
+	uint32_t dma_ch = IPU_CHAN_VIDEO_IN_DMA(channel);
+
+	assert(dma_ch == 23); /* XXX */
 
 	ipu_cm_write(ipu, 0xF0300000, IPU_GPR); /* write one to clear */
 	ipu_cm_write(ipu, idma_mask(dma_ch), IPU_CHA_BUF0_RDY(dma_ch));
@@ -204,7 +212,9 @@ void ipu_clear_buffer_ready(struct ipu_soc *ipu, ipu_channel_t channel, ipu_buff
 
 int32_t ipu_disable_channel(struct ipu_soc *ipu, ipu_channel_t channel, bool wait_for_stop) {
 	uint32_t reg;
-	uint32_t in_dma = DMA_CHANNEL;
+	uint32_t in_dma = IPU_CHAN_VIDEO_IN_DMA(channel);
+
+	assert(in_dma == 23); /* XXX */
 
 	reg = ipu_idmac_read(ipu, IDMAC_WM_EN(in_dma));
 	ipu_idmac_write(ipu, reg & ~idma_mask(in_dma), IDMAC_WM_EN(in_dma));
