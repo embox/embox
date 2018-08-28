@@ -284,3 +284,10 @@ static struct periph_memory_desc dcic2_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(dcic2_mem);
+
+static struct periph_memory_desc src_mem = {
+	.start = SRC_BASE,
+	.len   = 0x4,
+};
+
+PERIPH_MEMORY_DEFINE(src_mem);
