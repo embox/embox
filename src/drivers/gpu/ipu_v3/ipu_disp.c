@@ -236,11 +236,16 @@ void _ipu_init_dc_mappings(struct ipu_soc *ipu) {
 }
 
 int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
-			    uint16_t width, uint16_t height,
-			    uint32_t pixel_fmt,
-			    uint16_t h_start_width, uint16_t h_sync_width,
-			    uint16_t v_sync_width)
-{
+			    struct fb_info *fbi,
+			    uint32_t pixel_fmt) {
+	uint16_t width = fbi->var.xres;
+	uint16_t height = fbi->var.yres;
+	uint16_t h_start_width = fbi->var.left_margin;
+	uint16_t h_sync_width = fbi->var.hsync_len;
+	uint16_t h_end_width = fbi->var.right_margin;
+	uint16_t v_start_width = fbi->var.upper_margin;
+	uint16_t v_sync_width = fbi->var.vsync_len;
+	uint16_t v_end_width = fbi->var.lower_margin;
 	uint32_t reg;
 	uint32_t di_gen;
 	uint32_t div;
@@ -250,8 +255,13 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
 	if ((v_sync_width == 0) || (h_sync_width == 0))
 		return -EINVAL;
 
-	h_total = width + h_sync_width + h_start_width ;
-	v_total = height + v_sync_width;
+	if (v_end_width < 2) {
+		v_end_width = 2;
+		log_debug("Adjusted v_end_width");
+	}
+
+	h_total = width + h_sync_width + h_start_width + h_end_width;
+	v_total = height + v_sync_width + v_start_width + v_end_width;
 
 	/* try ipu clk first*/
 	ipu_di_write(ipu, disp, 3 << 20, DI_GENERAL);
@@ -293,7 +303,7 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
 
 	/* Setup active data waveform to sync with DC */
 	_ipu_di_sync_config(ipu, disp, 4, 0, DI_SYNC_HSYNC,
-			    v_sync_width, DI_SYNC_HSYNC, height,
+			    v_sync_width + v_start_width, DI_SYNC_HSYNC, height,
 			    DI_SYNC_VSYNC, 0, DI_SYNC_NONE,
 			    DI_SYNC_NONE, 0, 0);
 	_ipu_di_sync_config(ipu, disp, 5, 0, DI_SYNC_CLK,

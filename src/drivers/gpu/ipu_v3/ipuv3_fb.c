@@ -19,6 +19,14 @@
 #define IPU_MAX_WIDTH  OPTION_GET(NUMBER, xres)
 #define IPU_MAX_HEIGHT OPTION_GET(NUMBER, yres)
 
+/* TODO handle this other way! */
+#define UPPER_MARGIN OPTION_GET(NUMBER, upper_margin)
+#define LOWER_MARGIN OPTION_GET(NUMBER, lower_margin)
+#define LEFT_MARGIN  OPTION_GET(NUMBER, left_margin)
+#define RIGHT_MARGIN OPTION_GET(NUMBER, right_margin)
+#define VSYNC_LEN    OPTION_GET(NUMBER, vsync_len)
+#define HSYNC_LEN    OPTION_GET(NUMBER, hsync_len)
+
 static uint16_t ipu_fb[IPU_MAX_WIDTH * IPU_MAX_HEIGHT]
 			__attribute__ ((aligned (0x8)));
 
@@ -47,18 +55,21 @@ static int mxcfb_set_par(struct fb_info *fbi, const struct fb_var_screeninfo *va
 
 	ipu_init_channel(mxc_fbi.ipu, mxc_fbi.ipu_ch, 0);
 
-	ipu_cm_write(mxc_fbi.ipu, 0x300000, IPU_CONF);
-
-	fbi->var.xres           = IPU_MAX_WIDTH;
-	fbi->var.yres           = IPU_MAX_HEIGHT;
-	fbi->var.bits_per_pixel = 16;
-	fbi->var.xoffset        = fbi->var.yoffset = 0;
+	fbi->var = (struct fb_var_screeninfo) {
+		.xres           = IPU_MAX_WIDTH,
+		.yres           = IPU_MAX_HEIGHT,
+		.bits_per_pixel = 16, /* Always use R5G6B5 */
+		.upper_margin   = UPPER_MARGIN,
+		.lower_margin   = LOWER_MARGIN,
+		.left_margin    = LEFT_MARGIN,
+		.right_margin   = RIGHT_MARGIN,
+		.hsync_len      = HSYNC_LEN,
+		.vsync_len      = VSYNC_LEN,
+	};
 
 	ipu_init_sync_panel(mxc_fbi.ipu, mxc_fbi.ipu_di,
-				fbi->var.xres, fbi->var.yres,
-				IPU_PIX_FMT_RGB666,
-				0, 200, 3);
-
+				fbi,
+				IPU_PIX_FMT_RGB666);
 
 	ipu_init_channel_buffer(mxc_fbi.ipu,
 					 mxc_fbi.ipu_ch, IPU_INPUT_BUFFER,

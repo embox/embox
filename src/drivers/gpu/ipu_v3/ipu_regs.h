@@ -1016,11 +1016,9 @@ extern int32_t ipu_init_channel_buffer(struct ipu_soc *ipu, ipu_channel_t channe
 				uint32_t stride,
 				dma_addr_t phyaddr_0);
 
-extern int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
-			    uint16_t width, uint16_t height,
-			    uint32_t pixel_fmt,
-			    uint16_t h_start_width, uint16_t h_sync_width,
-			    uint16_t v_sync_width);
+int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
+			    struct fb_info *fbi,
+			    uint32_t pixel_fmt);
 
 extern  int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel_params_t *params);
 
