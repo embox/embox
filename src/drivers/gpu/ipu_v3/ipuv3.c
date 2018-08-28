@@ -69,6 +69,8 @@ int ipu_probe() {
 	ipu->vdi_reg		= (void*) IPU_BASE + IPU_VDI_REG_BASE;
 	ipu->disp_base[1]	= (void*) IPU_BASE + IPU_DISP1_BASE;
 
+	memset((void*) ipu->cpmem_base, 0, IPU_CPMEM_REG_LEN);
+
 	clk_enable("ipu1");
 	clk_enable("ipu1_di0");
 	clk_enable("ldb_di0");

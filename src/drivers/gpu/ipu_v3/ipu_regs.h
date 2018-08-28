@@ -274,6 +274,7 @@ static const int g_ipu_hw_rev = 4;
 #define IPU_CPMEM_REG_BASE 	({g_ipu_hw_rev >= 4 ? \
 				   (0x00100000) : \
 				   (0x01000000); })
+#define IPU_CPMEM_REG_LEN	0x20000
 #define IPU_LUT_REG_BASE	0x01020000
 #define IPU_SRM_REG_BASE 	({g_ipu_hw_rev >= 4 ? \
 				   (0x00140000) : \
