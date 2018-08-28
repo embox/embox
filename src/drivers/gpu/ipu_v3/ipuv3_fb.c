@@ -42,11 +42,11 @@ struct mxcfb_info {
 static struct mxcfb_info mxc_fbi;
 
 static int mxcfb_set_par(struct fb_info *fbi, const struct fb_var_screeninfo *var) {
-	ipu_disable_channel(mxc_fbi.ipu, mxc_fbi.ipu_ch, 0);
-	ipu_uninit_channel(mxc_fbi.ipu, mxc_fbi.ipu_ch);
-
 	if (mxc_fbi.ipu_ch != MEM_BG_SYNC)
 		return 0;
+
+	ipu_disable_channel(mxc_fbi.ipu, mxc_fbi.ipu_ch, 0);
+	ipu_uninit_channel(mxc_fbi.ipu, mxc_fbi.ipu_ch);
 
 	fbi->screen_base = (void*) ipu_fb;
 	fbi->screen_size = IPU_MAX_WIDTH * IPU_MAX_HEIGHT * 2;
