@@ -10,6 +10,8 @@
 #include "ipu_regs.h"
 #include "ipu_priv.h"
 
+#include <drivers/lvds/imx/ldb.h>
+
 #define SYNC_WAVE 0
 #define NULL_WAVE (-1)
 
@@ -193,13 +195,37 @@ void _ipu_dp_dc_enable(struct ipu_soc *ipu, ipu_channel_t channel)
 	clk_enable("ipu1_di0");
 }
 
-void _ipu_init_dc_mappings(struct ipu_soc *ipu)
-{
-	log_debug("Enter %s", __func__);
-	_ipu_dc_map_clear(ipu, 0);
-	_ipu_dc_map_config(ipu, 1, 0, 5, 0xFC);
-	_ipu_dc_map_config(ipu, 1, 1, 11, 0xFC);
-	_ipu_dc_map_config(ipu, 1, 2, 17, 0xFC);
+enum {
+	IPU_RGB24_MAP = 0,
+	IPU_RGB565_MAP = 1,
+};
+
+void _ipu_init_dc_mappings(struct ipu_soc *ipu) {
+	/* Configure maps (used in ipu_init_sync_panel)
+	 *
+	 * Configuration is done in the following way:
+	 *	_ipu_dc_map_config(ipu, MAP, COLOR, OFFSET, CONST)
+	 *
+	 *	last const is currently unknown
+	 *
+	 *	MAP is just a number 0 ... 5
+	 *
+	 *	COLOR is: 0 for RED
+	 *	          1 for GREEN
+	 *	          2 for BLUE
+	 *
+	 *	OFFSET is the highest bit of the color
+	 * */
+	/* RGB24 */
+	_ipu_dc_map_clear(ipu, IPU_RGB24_MAP);
+	_ipu_dc_map_config(ipu, IPU_RGB24_MAP, 0, 7, 0xFF);
+	_ipu_dc_map_config(ipu, IPU_RGB24_MAP, 1, 15, 0xFF);
+	_ipu_dc_map_config(ipu, IPU_RGB24_MAP, 2, 23, 0xFF);
+	/* RGB565 */
+	_ipu_dc_map_clear(ipu, IPU_RGB565_MAP);
+	_ipu_dc_map_config(ipu, IPU_RGB565_MAP, 0, 5, 0xFC);
+	_ipu_dc_map_config(ipu, IPU_RGB565_MAP, 1, 11, 0xFC);
+	_ipu_dc_map_config(ipu, IPU_RGB565_MAP, 2, 17, 0xFC);
 }
 
 int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
@@ -231,7 +257,12 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
 	_ipu_di_data_wave_config(ipu, disp, SYNC_WAVE, div - 1, div - 1);
 	_ipu_di_data_pin_config(ipu, disp, SYNC_WAVE, DI_PIN15, 3, 0, div * 2);
 
-	map = 1;
+	/* XXX hardcoded for use with LVDS */
+	if (ldb_bits() == 18) {
+		map = IPU_RGB565_MAP;
+	} else { /* Assume 24 bits */
+		map = IPU_RGB24_MAP;
+	}
 
 	/*clear DI*/
 	di_gen = ipu_di_read(ipu, disp, DI_GENERAL);
