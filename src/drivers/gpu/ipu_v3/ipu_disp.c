@@ -1,4 +1,10 @@
-#include <util/log.h>
+/**
+ * @file ipu_disp.c
+ * @brief Configure channels, waves etc
+ * @author Denis Deryugin <deryugin.denis@gmail.com>
+ * @version
+ * @date 28.08.2018
+ */
 
 #include <errno.h>
 #include <stdint.h>
@@ -11,6 +17,7 @@
 #include "ipu_priv.h"
 
 #include <drivers/lvds/imx/ldb.h>
+#include <util/log.h>
 
 #define SYNC_WAVE 0
 #define NULL_WAVE (-1)
