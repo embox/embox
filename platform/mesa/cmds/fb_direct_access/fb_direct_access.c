@@ -16,8 +16,7 @@
 
 #include <drivers/video/fb.h>
 
-#define FRAME_WIDTH	640
-#define FRAME_HEIGHT	480
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 int main() {
 	long int screensize = 0;
@@ -48,8 +47,8 @@ int main() {
 	}
 	printf("The framebuffer device was mapped to memory successfully.\n");
 
-	width = min(FRAME_WIDTH, fb_info->var.xres);
-	height = min(FRAME_HEIGHT, fb_info->var.yres);
+	width = fb_info->var.xres;
+	height = fb_info->var.yres;
 	idx = fb_info->var.xoffset + fb_info->var.xres * fb_info->var.yoffset;
 
 	for (y = 0; y < height; y++) {
@@ -62,9 +61,9 @@ int main() {
 							((15 + (x - 100) / 2) << 8) |   /* A little green*/
 							(100 << 0);                     /* Some blue */
 			} else { /* assume RGB565 */
-				int b = (x + y) / ((width + height) / 0x1F);
-				int g = x / (width / 0x3F);
-				int r = (height - y) / (height / 0x1F);
+				int b = MIN(0x1F, (1 + x + y) / ((width + height) / 0x1F));
+				int g = MIN(0x3F, (x + 1) / (width / 0x3F));
+				int r = MIN(0x1F, (1 + height - y) / (height / 0x1F));
 				uint16_t t = ((r & 0x1F) << 11) |
 						((g & 0x3F) << 5) | (b & 0x1F);
 				((uint16_t *)fbp)[idx + x] = t;
