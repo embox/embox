@@ -11,6 +11,7 @@
 #include <string.h>
 #include <util/log.h>
 
+#include <drivers/gpio.h>
 #include "ipu_regs.h"
 #include "ipu_priv.h"
 #include "ipu_param_mem.h"
@@ -26,6 +27,28 @@ static struct ipu_soc ipu_soc;
 
 #define idma_mask(ch)		        (1UL << (ch & 0x1F))
 #define idma_is_set(ipu, reg, dma)	(ipu_idmac_read(ipu, reg(dma)) & idma_mask(dma))
+
+
+/**
+ * @brief Perform software reset for all IPU modules
+ */
+static void ipu_reset(void) {
+#define SRC_BASE 0x20D8000
+# define SRC_IPU_RESET (1 << 3)
+	REG32_ORIN(SRC_BASE, SRC_IPU_RESET);
+	int timeout=0xfffff;
+	while(timeout--) {
+		if (!(REG32_LOAD(SRC_BASE) & SRC_IPU_RESET)) {
+			break;
+		}
+	}
+
+	if (timeout == 0) {
+		log_error("IPU reset timeout!\n");
+	} else {
+		log_debug("IPU reset ok!\n");
+	}
+}
 
 static int ipu_mem_reset(struct ipu_soc *ipu) {
 	int i = 1000000;
@@ -48,7 +71,7 @@ struct ipu_soc *ipu_get() {
 	return &ipu_soc;
 }
 
-int ipu_probe() {
+int ipu_probe(void) {
 	struct ipu_soc *ipu = ipu_get();
 
 	clk_enable("ipu1");
@@ -68,6 +91,21 @@ int ipu_probe() {
 	ipu->dc_tmpl_reg	= (void*) IPU_BASE + IPU_DC_TMPL_REG_BASE;
 	ipu->vdi_reg		= (void*) IPU_BASE + IPU_VDI_REG_BASE;
 	ipu->disp_base[1]	= (void*) IPU_BASE + IPU_DISP1_BASE;
+
+	ipu_reset();
+
+	/* Disable all channels */
+	ipu_idmac_write(ipu, 0x0, IDMAC_WM_EN(0));
+	ipu_idmac_write(ipu, 0x0, IDMAC_WM_EN(32));
+
+	ipu_idmac_write(ipu, 0x0, IDMAC_WM_EN(0));
+	ipu_idmac_write(ipu, 0x0, IDMAC_WM_EN(32));
+
+	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_CHA_CUR_BUF(0));
+	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_CHA_CUR_BUF(32));
+
+	ipu_cm_write(ipu, 0x0, IPU_CHA_DB_MODE_SEL(0));
+	ipu_cm_write(ipu, 0x0, IPU_CHA_DB_MODE_SEL(32));
 
 	memset((void*) ipu->cpmem_base, 0, IPU_CPMEM_REG_LEN);
 
