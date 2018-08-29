@@ -13,6 +13,13 @@ module interrupt extends embox.arch.interrupt {
 	depends locore
 }
 
+/* This module setup the greater priority for faults (UsageFault, BusFault, MemFault)
+ * and lower priority for any other interrupts and exceptions. */
+module interrupt_prio extends embox.arch.interrupt {
+	source "ipl_impl_prio.h"
+	depends locore
+}
+
 module context extends embox.arch.context {
 	source "context.c",
 		"context.h",
