@@ -6,14 +6,16 @@
  * @date 07.10.2017
  */
 
-#include <drivers/common/memory.h>
-#include <embox/unit.h>
-#include <hal/reg.h>
-#include <framework/mod/options.h>
 #include <util/log.h>
-#include <kernel/printk.h>
 
-static int ldb_init(void);
+#include <drivers/common/memory.h>
+#include <hal/reg.h>
+
+#include <drivers/clk/ccm_imx6.h>
+
+#include <framework/mod/options.h>
+#include <embox/unit.h>
+
 EMBOX_UNIT_INIT(ldb_init);
 
 #define LDB_CTRL	OPTION_GET(NUMBER,base_addr)
@@ -69,7 +71,6 @@ EMBOX_UNIT_INIT(ldb_init);
 
 #define LDB_SPLIT_MODE_EN		0x00000010
 
-extern int clk_enable(char *clk_name);
 static int ldb_init(void) {
 	uint32_t reg;
 

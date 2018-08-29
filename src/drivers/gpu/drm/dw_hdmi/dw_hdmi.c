@@ -4,26 +4,22 @@
  * @date 30.03.2017
  * @author Anton Bondarev
  */
+#include <util/log.h>
 #include <stdint.h>
 
 #include <drivers/common/memory.h>
-
+#include <drivers/clk/ccm_imx6.h>
 #include <hal/reg.h>
-
-#include <util/log.h>
 
 #include <embox/unit.h>
 
 #include "dw_hdmi.h"
-
 
 #include <framework/mod/options.h>
 
 #define DW_HDMI_BASE          OPTION_GET(NUMBER, base_addr)
 
 EMBOX_UNIT_INIT(dw_hdmi_init);
-
-extern int clk_enable(char *clk_name);
 
 struct dw_hdmi {
 	uint32_t regs;

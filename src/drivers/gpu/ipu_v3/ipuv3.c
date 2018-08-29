@@ -5,15 +5,18 @@
  * @author Anton Bondarev
  */
 
+#include <util/log.h>
+
+#include <string.h>
 #include <assert.h>
+
 #include <hal/reg.h>
 #include <drivers/common/memory.h>
 #include <drivers/video/fb.h>
+#include <drivers/clk/ccm_imx6.h>
 #include <kernel/irq.h>
-#include <string.h>
-#include <util/log.h>
-
 #include <drivers/gpio.h>
+
 #include "ipu_regs.h"
 #include "ipu_priv.h"
 #include "ipu_param_mem.h"

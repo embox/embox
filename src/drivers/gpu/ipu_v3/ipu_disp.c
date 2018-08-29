@@ -6,6 +6,8 @@
  * @date 28.08.2018
  */
 
+#include <util/log.h>
+
 #include <errno.h>
 #include <stdint.h>
 
@@ -15,9 +17,6 @@
 
 #include "ipu_regs.h"
 #include "ipu_priv.h"
-
-#include <drivers/lvds/imx/ldb.h>
-#include <util/log.h>
 
 #define SYNC_WAVE 0
 #define NULL_WAVE (-1)
