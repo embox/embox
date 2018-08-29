@@ -9,6 +9,9 @@
 #ifndef FRAMEWORK_MOD_EMBUILD_LIGHT_IMPL_H_
 #define FRAMEWORK_MOD_EMBUILD_LIGHT_IMPL_H_
 
+#define USE_MOD_NAMES \
+	OPTION_MODULE_GET(embox__framework__embuild_light,BOOLEAN,use_mod_names)
+
 #if 1 /* switch some mod_def to tottaly empty will help estimate how much
 		 mod_def is taking space */
 #define __MOD_DEF(mod_nm) \
@@ -39,7 +42,16 @@
 		.name    = cmd_name, \
 	}
 
+#if USE_MOD_NAMES
+#define __MOD_BUILDINFO_DEF(_mod_nm, _package_name, _mod_name) \
+	const struct mod_build_info __MOD_BUILDINFO(_mod_nm) = { \
+		.pkg_name   = _package_name,                         \
+		.mod_name   = _mod_name,                             \
+	}
+#else
 #define __MOD_BUILDINFO_DEF(_mod_nm, _package_name, _mod_name)
+#endif
+
 #define __MOD_DEP_DEF(mod_nm, dep_nm)
 #define __MOD_CONTENTS_DEF(mod_nm, content_nm)
 #define __MOD_AFTER_DEP_DEF(mod_nm, dep_nm)

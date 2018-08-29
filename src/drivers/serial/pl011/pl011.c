@@ -5,7 +5,6 @@
  * @author: Anton Bondarev
  */
 #include <stdint.h>
-#include <sys/mman.h>
 
 #include <hal/reg.h>
 #include <drivers/common/memory.h>
@@ -105,7 +104,7 @@ static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
 
-static struct periph_memory_desc pl011_mem = {
+static const struct periph_memory_desc pl011_mem = {
 	.start = UART_BASE,
 	.len   = 0x48,
 };
