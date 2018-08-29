@@ -33,6 +33,25 @@ module stm32f4_pa extends portaudio_api {
 	depends embox.kernel.irq_api
 }
 
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module stm32f4_pa_cube extends portaudio_api {
+	option number volume=70
+	option number sample_rate
+	option number buf_cnt=0x4
+	source "stm32f4_pa_cube.c"
+
+	@IncludeExport(path="drivers/audio")
+	source "portaudio.h"
+
+	depends third_party.bsp.stmf4cube.core
+	depends embox.util.DList
+	depends embox.compat.libc.assert
+	depends embox.compat.posix.util.sleep
+	depends embox.mem.pool
+	depends embox.mem.heap_api
+	depends embox.kernel.irq_api
+}
+
 module portaudio_stub extends portaudio_api {
 	source "portaudio_stub.c"
 
