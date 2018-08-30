@@ -25,13 +25,21 @@
 #define NVIC_SET_PEND_BASE (NVIC_BASE + 0x100)
 #define NVIC_CLR_PEND_BASE (NVIC_BASE + 0x180)
 #define NVIC_ACTIVE_BASE (NVIC_BASE + 0x200)
-#define NVIC_PRIOR_BASE (NVIC_BASE + 0x300)
+#define NVIC_PRIORITY_BASE (NVIC_BASE + 0x300)
 
 #define SCB_BASE 0xe000ed00
 #define SCB_ICSR  (SCB_BASE + 0x04)
 #define SCB_VTOR  (SCB_BASE + 0x08)
 #define SCB_SHPR1 (SCB_BASE + 0x18)
+#define SCB_SHPR2 (SCB_BASE + 0x1C)
+# define SCB_PRIO_SVCALL   24
 #define SCB_SHPR3 (SCB_BASE + 0x20)
+# define SCB_PRIO_PENDSV   16
+# define SCB_PRIO_SYSTICK  24
+#define SCB_SHCRS (SCB_BASE + 0x24)
+# define SCB_SHCRS_EN_MEM_FAULT   16
+# define SCB_SHCRS_EN_BUS_FAULT   17
+# define SCB_SHCRS_EN_USAGE_FAULT 18
 
 #define EXCEPTION_TABLE_SZ OPTION_GET(NUMBER,irq_table_size)
 
@@ -41,6 +49,11 @@
 #define BASE_CTX_SIZE  (8 * 4)
 #define FPU_CTX_SIZE   (BASE_CTX_SIZE + 18 * 4)
 
+#ifndef IRQ_PRIO_SHIFT
+#define IRQ_PRIO_SHIFT 4
+#define IRQ_MIN_NONFAULT_PRIO (1 << IRQ_PRIO_SHIFT)
+#endif
+
 /**
  * ENABLE, CLEAR, SET_PEND, CLR_PEND, ACTIVE is a base of bit arrays
  * to calculate bit offset in array: calculate 32-bit word offset
@@ -49,9 +62,11 @@
  *     nr / 32
  */
 
-#ifndef STATIC_IRQ_EXTENTION
-
 EMBOX_UNIT_INIT(nvic_init);
+
+static void nvic_setup_priorities(void);
+
+#ifndef STATIC_IRQ_EXTENTION
 
 static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
 
@@ -188,6 +203,8 @@ static int nvic_init(void) {
 
 	ipl_restore(ipl);
 
+	nvic_setup_priorities();
+
 	return 0;
 }
 
@@ -216,7 +233,39 @@ void interrupt_handle(struct context *regs) {
 void nvic_set_pendsv(void) {
 }
 
+void nvic_table_fill_stubs(void) {
+
+}
+
+static int nvic_init(void) {
+	nvic_setup_priorities();
+	return 0;
+}
+
 #endif
+
+static void nvic_setup_priorities(void) {
+	int i;
+
+	/* Enable MemManage, BusFault and UsageFault */
+	REG_STORE(SCB_SHCRS,
+		(1 << SCB_SHCRS_EN_MEM_FAULT) |
+		(1 << SCB_SHCRS_EN_BUS_FAULT) |
+		(1 << SCB_SHCRS_EN_USAGE_FAULT));
+
+	REG8_STORE(SCB_SHPR1 + 0, 0);
+	REG8_STORE(SCB_SHPR1 + 1, 0);
+	REG8_STORE(SCB_SHPR1 + 2, 0);
+
+	/* Set priorities of Systick and PendSV to 1 */
+	REG8_STORE(SCB_SHPR3 + 2, IRQ_MIN_NONFAULT_PRIO);
+	REG8_STORE(SCB_SHPR3 + 3, IRQ_MIN_NONFAULT_PRIO);
+
+	/* Set to all other interrupts priority equal to 1 */
+	for (i = 0; i < 240; i++) {
+		REG8_STORE(NVIC_PRIORITY_BASE + i, IRQ_MIN_NONFAULT_PRIO);
+	}
+}
 
 void irqctrl_enable(unsigned int interrupt_nr) {
 	int nr = (int) interrupt_nr - 16;

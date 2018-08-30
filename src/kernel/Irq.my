@@ -8,6 +8,7 @@ module irq_static extends irq_api {
 	source "irq_static.h"
 	source "arm_m_irq.S"
 	depends irq_lock
+	depends irq_stack
 }
 
 module no_irq extends irq_api {
