@@ -1,6 +1,20 @@
-#include <errno.h>
+/**
+ * @file ipu_disp.c
+ * @brief Configure channels, waves etc
+ * @author Denis Deryugin <deryugin.denis@gmail.com>
+ * @version
+ * @date 28.08.2018
+ */
+
 #include <util/log.h>
-#include "uboot_ipu_compat.h"
+
+#include <errno.h>
+#include <stdint.h>
+
+#include <drivers/lvds/imx/ldb.h>
+#include <drivers/clk/ccm_imx6.h>
+#include <drivers/video/fb.h>
+
 #include "ipu_regs.h"
 #include "ipu_priv.h"
 
@@ -13,7 +27,7 @@ static void _ipu_di_data_wave_config(struct ipu_soc *ipu,
 				int di, int wave_gen,
 				int access_size, int component_size)
 {
-	u32 reg;
+	uint32_t reg;
 	reg = (access_size << DI_DW_GEN_ACCESS_SIZE_OFFSET) |
 	    (component_size << DI_DW_GEN_COMPONENT_SIZE_OFFSET);
 	ipu_di_write(ipu, di, reg, DI_DW_GEN(wave_gen));
@@ -23,7 +37,7 @@ static void _ipu_di_data_pin_config(struct ipu_soc *ipu,
 			int di, int wave_gen, int di_pin, int set,
 			int up, int down)
 {
-	u32 reg;
+	uint32_t reg;
 
 	reg = ipu_di_read(ipu, di, DI_DW_GEN(wave_gen));
 	reg &= ~(0x3 << (di_pin * 2));
@@ -43,7 +57,7 @@ static void _ipu_di_sync_config(struct ipu_soc *ipu,
 				int cnt_polarity_trigger_src,
 				int cnt_up, int cnt_down)
 {
-	u32 reg;
+	uint32_t reg;
 
 	reg = (run_count << 19) | (++run_src << 16) |
 	    (offset_count << 3) | ++offset_src;
@@ -67,7 +81,7 @@ static void _ipu_dc_map_config(struct ipu_soc *ipu,
 {
 	log_debug("Enter %s", __func__);
 	int ptr = map * 3 + byte_num;
-	u32 reg;
+	uint32_t reg;
 
 	reg = ipu_dc_read(ipu, DC_MAP_CONF_VAL(ptr));
 	reg &= ~(0xFFFF << (16 * (ptr & 0x1)));
@@ -83,17 +97,17 @@ static void _ipu_dc_map_config(struct ipu_soc *ipu,
 static void _ipu_dc_map_clear(struct ipu_soc *ipu, int map)
 {
 	log_debug("Enter %s", __func__);
-	u32 reg = ipu_dc_read(ipu, DC_MAP_CONF_PTR(map));
+	uint32_t reg = ipu_dc_read(ipu, DC_MAP_CONF_PTR(map));
 	ipu_dc_write(ipu, reg & ~(0xFFFF << (16 * (map & 0x1))),
 		     DC_MAP_CONF_PTR(map));
 }
 
 static void _ipu_dc_write_tmpl(struct ipu_soc *ipu,
-			int word, u32 opcode, u32 operand, int map,
+			int word, uint32_t opcode, uint32_t operand, int map,
 			int wave, int glue, int sync, int stop)
 {
 	log_debug("Enter %s", __func__);
-	u32 reg;
+	uint32_t reg;
 
 	if (opcode == WRG) {
 		reg = sync;
@@ -126,7 +140,7 @@ static void _ipu_dc_write_tmpl(struct ipu_soc *ipu,
 static void _ipu_dc_link_event(struct ipu_soc *ipu,
 		int chan, int event, int addr, int priority)
 {
-	u32 reg;
+	uint32_t reg;
 	reg = ipu_dc_read(ipu, DC_RL_CH(chan, event));
 	reg &= ~(0xFFFF << (16 * (event & 0x1)));
 	reg |= ((addr << 8) | priority) << (16 * (event & 0x1));
@@ -136,7 +150,7 @@ static void _ipu_dc_link_event(struct ipu_soc *ipu,
 void _ipu_dc_init(struct ipu_soc *ipu, int dc_chan, int di, bool interlaced, uint32_t pixel_fmt)
 {
 	log_debug("enter %s, dc_chan=%d, di=%d\n", __func__, dc_chan, di);
-	u32 reg;
+	uint32_t reg;
 
 	_ipu_dc_link_event(ipu, dc_chan, DC_EVT_NL, 5, 3);
 	_ipu_dc_link_event(ipu, dc_chan, DC_EVT_EOL, 6, 2);
@@ -187,21 +201,50 @@ void _ipu_dp_dc_enable(struct ipu_soc *ipu, ipu_channel_t channel)
 	clk_enable("ipu1_di0");
 }
 
-void _ipu_init_dc_mappings(struct ipu_soc *ipu)
-{
-	log_debug("Enter %s", __func__);
-	_ipu_dc_map_clear(ipu, 0);
-	_ipu_dc_map_config(ipu, 1, 0, 5, 0xFC);
-	_ipu_dc_map_config(ipu, 1, 1, 11, 0xFC);
-	_ipu_dc_map_config(ipu, 1, 2, 17, 0xFC);
+enum {
+	IPU_RGB24_MAP = 0,
+	IPU_RGB565_MAP = 1,
+};
+
+void _ipu_init_dc_mappings(struct ipu_soc *ipu) {
+	/* Configure maps (used in ipu_init_sync_panel)
+	 *
+	 * Configuration is done in the following way:
+	 *	_ipu_dc_map_config(ipu, MAP, COLOR, OFFSET, CONST)
+	 *
+	 *	last const is currently unknown
+	 *
+	 *	MAP is just a number 0 ... 5
+	 *
+	 *	COLOR is: 0 for RED
+	 *	          1 for GREEN
+	 *	          2 for BLUE
+	 *
+	 *	OFFSET is the highest bit of the color
+	 * */
+	/* RGB24 */
+	_ipu_dc_map_clear(ipu, IPU_RGB24_MAP);
+	_ipu_dc_map_config(ipu, IPU_RGB24_MAP, 0, 7, 0xFF);
+	_ipu_dc_map_config(ipu, IPU_RGB24_MAP, 1, 15, 0xFF);
+	_ipu_dc_map_config(ipu, IPU_RGB24_MAP, 2, 23, 0xFF);
+	/* RGB565 */
+	_ipu_dc_map_clear(ipu, IPU_RGB565_MAP);
+	_ipu_dc_map_config(ipu, IPU_RGB565_MAP, 0, 5, 0xFC);
+	_ipu_dc_map_config(ipu, IPU_RGB565_MAP, 1, 11, 0xFC);
+	_ipu_dc_map_config(ipu, IPU_RGB565_MAP, 2, 17, 0xFC);
 }
 
 int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
-			    uint16_t width, uint16_t height,
-			    uint32_t pixel_fmt,
-			    uint16_t h_start_width, uint16_t h_sync_width,
-			    uint16_t v_sync_width)
-{
+			    struct fb_info *fbi,
+			    uint32_t pixel_fmt) {
+	uint16_t width = fbi->var.xres;
+	uint16_t height = fbi->var.yres;
+	uint16_t h_start_width = fbi->var.left_margin;
+	uint16_t h_sync_width = fbi->var.hsync_len;
+	uint16_t h_end_width = fbi->var.right_margin;
+	uint16_t v_start_width = fbi->var.upper_margin;
+	uint16_t v_sync_width = fbi->var.vsync_len;
+	uint16_t v_end_width = fbi->var.lower_margin;
 	uint32_t reg;
 	uint32_t di_gen;
 	uint32_t div;
@@ -211,8 +254,13 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
 	if ((v_sync_width == 0) || (h_sync_width == 0))
 		return -EINVAL;
 
-	h_total = width + h_sync_width + h_start_width ;
-	v_total = height + v_sync_width;
+	if (v_end_width < 2) {
+		v_end_width = 2;
+		log_debug("Adjusted v_end_width");
+	}
+
+	h_total = width + h_sync_width + h_start_width + h_end_width;
+	v_total = height + v_sync_width + v_start_width + v_end_width;
 
 	/* try ipu clk first*/
 	ipu_di_write(ipu, disp, 3 << 20, DI_GENERAL);
@@ -225,7 +273,12 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
 	_ipu_di_data_wave_config(ipu, disp, SYNC_WAVE, div - 1, div - 1);
 	_ipu_di_data_pin_config(ipu, disp, SYNC_WAVE, DI_PIN15, 3, 0, div * 2);
 
-	map = 1;
+	/* XXX hardcoded for use with LVDS */
+	if (ldb_bits() == 18) {
+		map = IPU_RGB565_MAP;
+	} else { /* Assume 24 bits */
+		map = IPU_RGB24_MAP;
+	}
 
 	/*clear DI*/
 	di_gen = ipu_di_read(ipu, disp, DI_GENERAL);
@@ -249,7 +302,7 @@ int32_t ipu_init_sync_panel(struct ipu_soc *ipu, int disp,
 
 	/* Setup active data waveform to sync with DC */
 	_ipu_di_sync_config(ipu, disp, 4, 0, DI_SYNC_HSYNC,
-			    v_sync_width, DI_SYNC_HSYNC, height,
+			    v_sync_width + v_start_width, DI_SYNC_HSYNC, height,
 			    DI_SYNC_VSYNC, 0, DI_SYNC_NONE,
 			    DI_SYNC_NONE, 0, 0);
 	_ipu_di_sync_config(ipu, disp, 5, 0, DI_SYNC_CLK,

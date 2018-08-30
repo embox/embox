@@ -1,15 +1,21 @@
 /**
- * @file
- *
+ * @file ipuv3.c
+ * @brief Probe/irq handle/reset/channel init/etc
  * @data Sep 15, 2017
  * @author Anton Bondarev
  */
+
+#include <util/log.h>
+
+#include <string.h>
+#include <assert.h>
+
 #include <hal/reg.h>
 #include <drivers/common/memory.h>
 #include <drivers/video/fb.h>
+#include <drivers/clk/ccm_imx6.h>
 #include <kernel/irq.h>
-#include <string.h>
-#include <util/log.h>
+#include <drivers/gpio.h>
 
 #include "ipu_regs.h"
 #include "ipu_priv.h"
@@ -22,15 +28,34 @@ extern void _ipu_dp_dc_enable(struct ipu_soc *ipu, ipu_channel_t channel);
 
 static struct ipu_soc ipu_soc;
 
-#define dev_dbg(x, ...) printk(__VA_ARGS__)
-
 #define idma_mask(ch)		(1UL << (ch & 0x1F))
 #define idma_is_set(ipu, reg, dma)	(ipu_idmac_read(ipu, reg(dma)) & idma_mask(dma))
 
-static int ipu_mem_reset(struct ipu_soc *ipu) {
-	ipu_cm_write(ipu, 0x807FFFFF, IPU_MEM_RST);
+/**
+ * @brief Perform software reset for all IPU modules
+ */
+static void ipu_reset(void) {
+#define SRC_BASE 0x20D8000
+# define SRC_IPU_RESET (1 << 3)
+	REG32_ORIN(SRC_BASE, SRC_IPU_RESET);
+	int timeout=0xfffff;
+	while(timeout--) {
+		if (!(REG32_LOAD(SRC_BASE) & SRC_IPU_RESET)) {
+			break;
+		}
+	}
 
+	if (timeout == 0) {
+		log_error("IPU reset timeout!\n");
+	} else {
+		log_debug("IPU reset ok!\n");
+	}
+}
+
+static int ipu_mem_reset(struct ipu_soc *ipu) {
 	int i = 1000000;
+
+	ipu_cm_write(ipu, 0x807FFFFF, IPU_MEM_RST);
 
 	while (i-- > 0) {
 		if (!(ipu_cm_read(ipu, IPU_MEM_RST) & (1 << 31)))
@@ -48,7 +73,7 @@ struct ipu_soc *ipu_get() {
 	return &ipu_soc;
 }
 
-int ipu_probe() {
+int ipu_probe(void) {
 	struct ipu_soc *ipu = ipu_get();
 
 	clk_enable("ipu1");
@@ -69,6 +94,23 @@ int ipu_probe() {
 	ipu->vdi_reg		= (void*) IPU_BASE + IPU_VDI_REG_BASE;
 	ipu->disp_base[1]	= (void*) IPU_BASE + IPU_DISP1_BASE;
 
+	ipu_reset();
+
+	/* Disable all channels */
+	ipu_idmac_write(ipu, 0x0, IDMAC_WM_EN(0));
+	ipu_idmac_write(ipu, 0x0, IDMAC_WM_EN(32));
+
+	ipu_idmac_write(ipu, 0x0, IDMAC_WM_EN(0));
+	ipu_idmac_write(ipu, 0x0, IDMAC_WM_EN(32));
+
+	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_CHA_CUR_BUF(0));
+	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_CHA_CUR_BUF(32));
+
+	ipu_cm_write(ipu, 0x0, IPU_CHA_DB_MODE_SEL(0));
+	ipu_cm_write(ipu, 0x0, IPU_CHA_DB_MODE_SEL(32));
+
+	memset((void*) ipu->cpmem_base, 0, IPU_CPMEM_REG_LEN);
+
 	clk_enable("ipu1");
 	clk_enable("ipu1_di0");
 	clk_enable("ldb_di0");
@@ -86,12 +128,10 @@ int ipu_probe() {
 	return 0;
 }
 
-int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel_params_t *params)
-{
-	int ret = 0;
-
-	dev_dbg(ipu->dev, "init channel = %d\n", IPU_CHAN_ID(channel));
-	ret = 0;
+int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel_params_t *params) {
+	/* note: assume channel is MEM_BG_SYNC
+	 *       assume DI=0			*/
+	log_debug("init channel = %d", IPU_CHAN_VIDEO_IN_DMA(channel));
 	/* Re-enable error interrupts every time a channel is initialized */
 	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_INT_CTRL(5));
 	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_INT_CTRL(6));
@@ -99,9 +139,10 @@ int32_t ipu_init_channel(struct ipu_soc *ipu, ipu_channel_t channel, ipu_channel
 	ipu_cm_write(ipu, 0xFFFFFFFF, IPU_INT_CTRL(10));
 
 	ipu->dc_di_assignment[5] = 0;
+
 	_ipu_dc_init(ipu, 5, 0, 0, IPU_PIX_FMT_RGB666);
 
-	return ret;
+	return 0;
 }
 
 void ipu_uninit_channel(struct ipu_soc *ipu, ipu_channel_t channel) {
@@ -123,7 +164,9 @@ int32_t ipu_init_channel_buffer(struct ipu_soc *ipu, ipu_channel_t channel,
 				uint16_t width, uint16_t height,
 				uint32_t stride,
 				dma_addr_t phyaddr_0) {
-	uint32_t dma_chan = 23;
+	uint32_t dma_chan = IPU_CHAN_VIDEO_IN_DMA(channel);
+
+	assert(dma_chan == 23); /* XXX */
 
 	_ipu_ch_param_init(ipu, dma_chan, pixel_fmt, width, height, stride, 0, 0, 0,
 			   phyaddr_0);
@@ -134,7 +177,9 @@ int32_t ipu_init_channel_buffer(struct ipu_soc *ipu, ipu_channel_t channel,
 int32_t ipu_enable_channel(struct ipu_soc *ipu, ipu_channel_t channel) {
 	uint32_t reg;
 	uint32_t ipu_conf;
-	uint32_t in_dma = 23;
+	uint32_t in_dma = IPU_CHAN_VIDEO_IN_DMA(channel);
+
+	assert(in_dma == 23); /* XXX */
 
 	ipu_conf = IPU_CONF_DP_EN | IPU_CONF_DC_EN | IPU_CONF_DMFC_EN;
 	ipu_conf |= IPU_CONF_DI0_EN;
@@ -154,7 +199,9 @@ int32_t ipu_enable_channel(struct ipu_soc *ipu, ipu_channel_t channel) {
 
 void _ipu_clear_buffer_ready(struct ipu_soc *ipu, ipu_channel_t channel, ipu_buffer_t type,
 		uint32_t bufNum) {
-	uint32_t dma_ch = 23;
+	uint32_t dma_ch = IPU_CHAN_VIDEO_IN_DMA(channel);
+
+	assert(dma_ch == 23); /* XXX */
 
 	ipu_cm_write(ipu, 0xF0300000, IPU_GPR); /* write one to clear */
 	ipu_cm_write(ipu, idma_mask(dma_ch), IPU_CHA_BUF0_RDY(dma_ch));
@@ -168,7 +215,9 @@ void ipu_clear_buffer_ready(struct ipu_soc *ipu, ipu_channel_t channel, ipu_buff
 
 int32_t ipu_disable_channel(struct ipu_soc *ipu, ipu_channel_t channel, bool wait_for_stop) {
 	uint32_t reg;
-	uint32_t in_dma = 23;
+	uint32_t in_dma = IPU_CHAN_VIDEO_IN_DMA(channel);
+
+	assert(in_dma == 23); /* XXX */
 
 	reg = ipu_idmac_read(ipu, IDMAC_WM_EN(in_dma));
 	ipu_idmac_write(ipu, reg & ~idma_mask(in_dma), IDMAC_WM_EN(in_dma));
@@ -195,7 +244,7 @@ void ipu_clear_irq(struct ipu_soc *ipu, uint32_t irq) {
 }
 
 int ipu_request_irq(struct ipu_soc *ipu, uint32_t irq,
-		    irqreturn_t(*handler) (int, void *),
+		    /* irq_return_t(*handler) (int, void *), */
 		    uint32_t irq_flags, const char *devname, void *dev_id) {
 	uint32_t reg;
 
@@ -238,3 +287,10 @@ static struct periph_memory_desc dcic2_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(dcic2_mem);
+
+static struct periph_memory_desc src_mem = {
+	.start = SRC_BASE,
+	.len   = 0x4,
+};
+
+PERIPH_MEMORY_DEFINE(src_mem);

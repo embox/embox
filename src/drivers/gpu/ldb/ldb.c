@@ -6,16 +6,20 @@
  * @date 07.10.2017
  */
 
-#include <drivers/common/memory.h>
-#include <embox/unit.h>
-#include <hal/reg.h>
-#include <framework/mod/options.h>
 #include <util/log.h>
 
-static int ldb_init(void);
+#include <drivers/common/memory.h>
+#include <hal/reg.h>
+
+#include <drivers/clk/ccm_imx6.h>
+
+#include <framework/mod/options.h>
+#include <embox/unit.h>
+
 EMBOX_UNIT_INIT(ldb_init);
 
 #define LDB_CTRL	OPTION_GET(NUMBER,base_addr)
+#define DATA_WIDTH	OPTION_GET(NUMBER,data_width)
 
 #define LDB_CH0_OFF     0x0
 #define LDB_CH0_DI0     0x1
@@ -67,7 +71,6 @@ EMBOX_UNIT_INIT(ldb_init);
 
 #define LDB_SPLIT_MODE_EN		0x00000010
 
-extern int clk_enable(char *clk_name);
 static int ldb_init(void) {
 	uint32_t reg;
 
@@ -81,15 +84,24 @@ static int ldb_init(void) {
 	reg |= LDB_BIT_MAP_CH0_SPWG | LDB_BIT_MAP_CH1_SPWG;
 	reg &= ~(LDB_CH0_MODE_MASK | LDB_CH1_MODE_MASK);
 	reg &= ~(LDB_DATA_WIDTH_CH0_MASK | LDB_DATA_WIDTH_CH1_MASK);
+#if DATA_WIDTH == 18
 	reg |= LDB_DATA_WIDTH_CH0_18 | LDB_DATA_WIDTH_CH1_18;
+#elif DATA_WIDTH == 24
+	reg |= LDB_DATA_WIDTH_CH0_24 | LDB_DATA_WIDTH_CH1_24;
+#else
+#error "Unsupported data width"
+#endif
 	reg &= ~LDB_SPLIT_MODE_EN;
 	reg |= LDB_CH0_MODE_EN_TO_DI0;
-	reg &= ~LDB_DATA_WIDTH_CH1_18;
-
 	REG32_STORE(LDB_CTRL, reg);
+
 	clk_enable("ldb_di0");
 
 	return 0;
+}
+
+int ldb_bits(void) {
+	return DATA_WIDTH;
 }
 
 static struct periph_memory_desc ldb_iomux_mem = {
