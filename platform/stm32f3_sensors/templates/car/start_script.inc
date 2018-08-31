@@ -1,2 +1,2 @@
 "help",
-"sensors"
+"motor_control"
