@@ -49,16 +49,13 @@ void motor_disable(struct motor *m) {
 
 
 void motor_run(struct motor *m, enum motor_run_direction dir) {
-	uint8_t input;
+	uint8_t input_pin;
 
-	if (dir == MOTOR_RUN_LEFT) {
-		input = 0;
-	} else if (dir == MOTOR_RUN_RIGHT) {
-		input = 1;
-	}
-	HAL_GPIO_WritePin(GPIOD, m->input[!input], GPIO_PIN_RESET);
+	input_pin = (dir == MOTOR_RUN_FORWARD) ? 1 : 0;
+
+	HAL_GPIO_WritePin(GPIOD, m->input[!input_pin], GPIO_PIN_RESET);
 	stm32f3_delay(0xFF); /* FIXME may be it is not needed */
-	HAL_GPIO_WritePin(GPIOD, m->input[input], GPIO_PIN_SET);
+	HAL_GPIO_WritePin(GPIOD, m->input[input_pin], GPIO_PIN_SET);
 }
 
 void motor_stop(struct motor *m) {
