@@ -7,6 +7,7 @@
  */
 
 #include <asm/regs.h>
+#include <asm/cp15.h>
 
 .extern arm_trap_table
 
