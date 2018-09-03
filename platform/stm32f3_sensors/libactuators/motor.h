@@ -27,8 +27,8 @@ struct motor {
 };
 
 enum motor_run_direction {
-	MOTOR_RUN_LEFT,
-	MOTOR_RUN_RIGHT
+	MOTOR_RUN_FORWARD,
+	MOTOR_RUN_BACKWARD
 };
 
 extern void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx, uint16_t enable,

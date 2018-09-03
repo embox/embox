@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 	/* Wait until button get pressed */
 	button_wait_set(BUTTON_USER);
 
-	motor_run(&motor1, MOTOR_RUN_RIGHT);
+	motor_run(&motor1, MOTOR_RUN_FORWARD);
 	{
 		if (fault_detect()) {
 			fault_handle();
