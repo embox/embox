@@ -306,4 +306,13 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-17.0.3-orig/src/util/ra
     return node->ralloc_parent;
  }
  
+--- mesa-17.0.3-orig/src/gallium/auxiliary/renderonly/renderonly.c     2017-04-01 18:33:37.000000000 +0300
++++ mesa-17.0.3/src/gallium/auxiliary/renderonly/renderonly.c          2017-06-19 14:55:55.942393197 +0300
+@@ -31,6 +31,7 @@
+ #include <stdio.h>
+ #include <sys/ioctl.h>
+ #include <xf86drm.h>
++#include <unistd.h>
 
+ #include "state_tracker/drm_driver.h"
+ #include "pipe/p_screen.h"
