@@ -2,17 +2,13 @@ package third_party.freedesktop.mesa
 
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.freedesktop.mesa.libdrm_imx6)
 module  mesa_osmesa {
 	source "^BUILD/extbld/^MOD_PATH/install/libOSMesa.a"
-	//source "^BUILD/extbld/^MOD_PATH/install/libmesa.a"
-	//source "^BUILD/extbld/^MOD_PATH/install/libmesagallium.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libglapi.a"
 
-	/*
-	depends embox.compat.libc.stdio.asprintf
-	depends embox.compat.posix.proc.atexit_api
 	depends embox.compat.posix.fs.rewinddir_api
-	*/
-	//@NoRuntime depends third_party.STLport.core
+	depends embox.compat.posix.fs.chown_api
+	depends embox.compat.posix.fs.mknod_api
 	@NoRuntime depends embox.compat.posix.pthread_key
 }
