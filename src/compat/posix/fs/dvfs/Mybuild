@@ -9,7 +9,9 @@ module all_dvfs extends all {
 		umask,
 		xattr_dvfs,
 		libgen,
-		chmod_dvfs
+		chmod_dvfs,
+		chown_dvfs,
+		mknod_dvfs
 }
 
 static module file_dvfs extends file {
