@@ -14,13 +14,13 @@ PKG_PATCHES := patch.txt
 include $(EXTBLD_LIB)
 
 
-MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include 
+MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
 MESA_CPPFLAGS += $(SRC_DIR))/arch/$(ARCH)/include
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	export PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79:$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79/etnaviv;\
+	export PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.79:$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.79/etnaviv;\
 	cd $(PKG_SOURCE_DIR) && aclocal && autoconf &&( \
 		./configure --host=arm-none-eabi --target=arm-none-eabi \
 			--enable-static  --disable-shared \

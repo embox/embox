@@ -16,7 +16,7 @@ include $(EXTBLD_LIB)
 
 MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
-MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include -O2 -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79/
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include -O2 -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.79/
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
@@ -39,7 +39,7 @@ $(CONFIGURE) :
 			CXX=$(EMBOX_GXX) \
 			CFLAGS='-O2' \
 			CPPFLAGS='-O2 $(MESA_CPPFLAGS)' \
-			LIBDRM_CFLAGS='-I$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79/include/drm/' \
+			LIBDRM_CFLAGS='-I$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm/libdrm-2.4.79/include/drm/' \
 	)
 	touch $@
 

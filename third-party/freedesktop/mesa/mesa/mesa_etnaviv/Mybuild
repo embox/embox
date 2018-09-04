@@ -1,8 +1,8 @@
 package third_party.freedesktop.mesa
 
-@BuildDepends(third_party.freedesktop.mesa.libdrm_imx6)
+@BuildDepends(third_party.freedesktop.mesa.libdrm)
 @Build(script="$(EXTERNAL_MAKE)")
 module  mesa_etnaviv {
 	source "^BUILD/extbld/^MOD_PATH/install/mesa.a"
-	depends third_party.freedesktop.mesa.libdrm_imx6
+	depends third_party.freedesktop.mesa.libdrm
 }
