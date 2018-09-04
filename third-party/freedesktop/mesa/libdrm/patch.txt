@@ -46,10 +46,11 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/include/d
 diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h libdrm-2.4.79/xf86drm.h
 --- libdrm-2.4.79-orig/xf86drm.h	2017-04-08 23:00:58.000000000 +0300
 +++ libdrm-2.4.79/xf86drm.h	2017-04-13 18:16:57.642129477 +0300
-@@ -47,7 +47,16 @@
+@@ -47,7 +47,17 @@
  #define DRM_MAX_MINOR   16
  #endif
  
++#define SCNu64
 -#if defined(__linux__)
 +#if defined(__linux__) 
 +
@@ -64,3 +65,158 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h
  
  #define DRM_IOCTL_NR(n)		_IOC_NR(n)
  #define DRM_IOC_VOID		_IOC_NONE
+--- libdrm-2.4.79-orig/built-aux/ltmain.sh	2018-09-03 18:05:45.810536972 +0300
++++ libdrm-2.4.79/build-aux/ltmain.sh	2018-09-03 18:08:15.025429193 +0300
+@@ -7009,35 +7009,7 @@
+ 	;;
+ 
+       -l*)
+-	if test X-lc = "X$arg" || test X-lm = "X$arg"; then
+-	  case $host in
+-	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-beos* | *-cegcc* | *-*-haiku*)
+-	    # These systems don't actually have a C or math library (as such)
+-	    continue
+-	    ;;
+-	  *-*-os2*)
+-	    # These systems don't actually have a C library (as such)
+-	    test X-lc = "X$arg" && continue
+-	    ;;
+-	  *-*-openbsd* | *-*-freebsd* | *-*-dragonfly* | *-*-bitrig*)
+-	    # Do not include libc due to us having libc/libc_r.
+-	    test X-lc = "X$arg" && continue
+-	    ;;
+-	  *-*-rhapsody* | *-*-darwin1.[012])
+-	    # Rhapsody C and math libraries are in the System framework
+-	    func_append deplibs " System.ltframework"
+-	    continue
+-	    ;;
+-	  *-*-sco3.2v5* | *-*-sco5v6*)
+-	    # Causes problems with __ctype
+-	    test X-lc = "X$arg" && continue
+-	    ;;
+-	  *-*-sysv4.2uw2* | *-*-sysv5* | *-*-unixware* | *-*-OpenUNIX*)
+-	    # Compiler inserts libc in the correct place for threads to work
+-	    test X-lc = "X$arg" && continue
+-	    ;;
+-	  esac
+-	elif test X-lc_r = "X$arg"; then
++	if test X-lc_r = "X$arg"; then
+ 	 case $host in
+ 	 *-*-openbsd* | *-*-freebsd* | *-*-dragonfly* | *-*-bitrig*)
+ 	   # Do not include libc_r directly, use -pthread flag.
+@@ -7070,7 +7042,7 @@
+ 	continue
+ 	;;
+ 
+-      -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe \
++      -mt|-mthreads|-kthread|-Kthread|--thread-safe \
+       |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
+ 	func_append compiler_flags " $arg"
+ 	func_append compile_command " $arg"
+@@ -7610,7 +7582,7 @@
+ 	lib=
+ 	found=false
+ 	case $deplib in
+-	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe \
++	-mt|-mthreads|-kthread|-Kthread|--thread-safe \
+         |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
+ 	  if test prog,link = "$linkmode,$pass"; then
+ 	    compile_deplibs="$deplib $compile_deplibs"
+--- libdrm-2.4.79-orig/m4/libtool.m4	2018-09-03 15:55:23.100981361 +0300
++++ libdrm-2.4.79/m4/libtool.m4	2018-09-03 18:15:20.982011031 +0300
+@@ -3849,29 +3849,7 @@
+ # LT_LIB_M
+ # --------
+ # check for math library
+-AC_DEFUN([LT_LIB_M],
+-[AC_REQUIRE([AC_CANONICAL_HOST])dnl
+ LIBM=
+-case $host in
+-*-*-beos* | *-*-cegcc* | *-*-cygwin* | *-*-haiku* | *-*-pw32* | *-*-darwin*)
+-  # These system don't have libm, or don't need it
+-  ;;
+-*-ncr-sysv4.3*)
+-  AC_CHECK_LIB(mw, _mwvalidcheckl, LIBM=-lmw)
+-  AC_CHECK_LIB(m, cos, LIBM="$LIBM -lm")
+-  ;;
+-*)
+-  AC_CHECK_LIB(m, cos, LIBM=-lm)
+-  ;;
+-esac
+-AC_SUBST([LIBM])
+-])# LT_LIB_M
+-
+-# Old name:
+-AU_ALIAS([AC_CHECK_LIBM], [LT_LIB_M])
+-dnl aclocal-1.4 backwards compatibility:
+-dnl AC_DEFUN([AC_CHECK_LIBM], [])
+-
+ 
+ # _LT_COMPILER_NO_RTTI([TAGNAME])
+ # -------------------------------
+--- libdrm-2.4.79-orig/Makefile.am	2018-09-03 18:25:23.918562755 +0300
++++ libdrm-2.4.79/Makefile.am	2018-09-03 18:25:33.546765066 +0300
+@@ -115,7 +115,7 @@
+ libdrm_la_LTLIBRARIES = libdrm.la
+ libdrm_ladir = $(libdir)
+ libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
+-libdrm_la_LIBADD = @CLOCK_LIB@ -lm
++libdrm_la_LIBADD = @CLOCK_LIB@
+ 
+ libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
+ AM_CFLAGS = \
+--- libdrm-2.4.79-orig/tests/modetest/Makefile.am	2018-09-03 18:44:33.110854241 +0300
++++ libdrm-2.4.79/tests/modetest/Makefile.am	2018-09-03 18:44:41.231026388 +0300
+@@ -3,7 +3,6 @@
+ AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS))
+ 
+ AM_CFLAGS += \
+-	-pthread \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/tests \
+ 	-I$(top_srcdir)
+--- libdrm-2.4.79-orig/tests/nouveau/Makefile.am	2018-09-03 18:45:33.300130319 +0300
++++ libdrm-2.4.79/tests/nouveau/Makefile.am	2018-09-03 18:45:40.488282725 +0300
+@@ -1,5 +1,4 @@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS) \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/nouveau \
+--- libdrm-2.4.79-orig/tests/nouveau/Makefile.in	2018-09-03 18:46:01.812734867 +0300
++++ libdrm-2.4.79/tests/nouveau/Makefile.in	2018-09-03 18:46:11.196933847 +0300
+@@ -531,7 +531,6 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS) \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/nouveau \
+@@ -585,7 +584,7 @@
+ 	echo " rm -f" $$list; \
+ 	rm -f $$list
+ 
+-threaded$(EXEEXT): $(threaded_OBJECTS) $(threaded_DEPENDENCIES) $(EXTRA_threaded_DEPENDENCIES) 
++threaded$(EXEEXT): $(threaded_OBJECTS) $(threaded_DEPENDENCIES) $(EXTRA_threaded_DEPENDENCIES)
+ 	@rm -f threaded$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(threaded_OBJECTS) $(threaded_LDADD) $(LIBS)
+ 
+--- libdrm-2.4.79-orig/tests/exynos/Makefile.in	2018-09-03 18:46:35.157441909 +0300
++++ libdrm-2.4.79/tests/exynos/Makefile.in	2018-09-03 18:46:44.141632415 +0300
+@@ -358,7 +358,6 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS)\
+ 	-I $(top_srcdir)/include/drm \
+ 	-I $(top_srcdir)/libkms/ \
+--- libdrm-2.4.79-orig/tests/exynos/Makefile.am 2018-09-03 18:46:35.157441909 +0300
++++ libdrm-2.4.79/tests/exynos/Makefile.am	2018-09-03 18:46:47.669707227 +0300
+@@ -1,5 +1,4 @@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS)\
+ 	-I $(top_srcdir)/include/drm \
+ 	-I $(top_srcdir)/libkms/ \
