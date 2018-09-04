@@ -364,6 +364,11 @@ static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
 			AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
 	case ADIOCTL_BUFLEN:
 		return INTEL_AC_MAX_BUF_LEN;
+	case ADIOCTL_SET_RATE:
+	{
+		int rate = *(int *) args;
+		return ac97_set_rate(rate);
+	}
 	}
 	SET_ERRNO(EINVAL);
 	return -1;

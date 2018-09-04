@@ -57,6 +57,21 @@ int ac97_get_vol(void) {
 	return 0x3F & ac97_reg_read(AC97_MASTER);
 }
 
+int ac97_set_rate(uint16_t rate) {
+	if ((rate != 8000) && (rate != 11025) &&
+		(rate != 16000) && (rate != 22050) &&
+		(rate != 44100) && (rate != 48000)) {
+		return -1;
+	}
+
+	ac97_reg_write(AC97_DAC_RATE, rate);
+	return 0;
+}
+
+int ac97_get_rate(void) {
+	return ac97_reg_read(AC97_DAC_RATE);
+}
+
 /**
  * @brief Initialize codec, setup static values and so on
  *
