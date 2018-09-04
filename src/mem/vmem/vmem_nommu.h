@@ -32,7 +32,7 @@ static inline int munmap(void *addr, size_t size) {
 	return 0;
 }
 
-#include <module/embox/fs/syslib/idesc_mmap.h>
+#include <module/embox/fs/syslib/idesc_mmap_api.h>
 
 static inline void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	(void) addr;
