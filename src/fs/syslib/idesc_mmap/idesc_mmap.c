@@ -14,7 +14,7 @@
 #include <fs/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
 
-#include <module/embox/fs/syslib/idesc_mmap.h>
+#include <module/embox/fs/syslib/idesc_mmap_api.h>
 
 void *
 idesc_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {

@@ -7,7 +7,7 @@ abstract module vmem_api {
 module vmem_nommu extends vmem_api {
 	source "vmem_nommu.h"
 
-	depends embox.fs.syslib.idesc_mmap
+	depends embox.fs.syslib.idesc_mmap_api
 }
 
 module vmem extends vmem_api {
