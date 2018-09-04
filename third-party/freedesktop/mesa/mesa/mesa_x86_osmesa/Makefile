@@ -16,7 +16,7 @@ include $(EXTBLD_LIB)
 
 MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
-MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include -O2 -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79/
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
@@ -37,13 +37,15 @@ $(CONFIGURE) :
 			--disable-gles1 --disable-gles2 \
 			CC=$(EMBOX_GCC) \
 			CXX=$(EMBOX_GXX) \
-			CPPFLAGS='$(MESA_CPPFLAGS)' \
+			CFLAGS='-O2' \
+			CPPFLAGS='-O2 $(MESA_CPPFLAGS)' \
+			LIBDRM_CFLAGS='-I$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm_imx6/libdrm-2.4.79/include/drm/' \
 	)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' LIBDRM_CFLAGS='' V=1; \
 	)
 	touch $@
 
