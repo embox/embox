@@ -181,6 +181,7 @@ PaError Pa_OpenStream(PaStream** stream,
 		PaStreamFlags streamFlags, PaStreamCallback *streamCallback,
 		void *userData) {
 	struct audio_dev *audio_dev;
+	int rate = (int) sampleRate;
 
 	assert(stream != NULL);
 	assert(streamFlags == paNoFlag || streamFlags == paClipOff);
@@ -220,6 +221,8 @@ PaError Pa_OpenStream(PaStream** stream,
 	if (audio_dev->buf_len == -1) {
 		return paInvalidDevice;
 	}
+
+	audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_SET_RATE, &rate);
 
 	/* TODO work on mono sound device */
 	audio_dev->num_of_chan = 2;
