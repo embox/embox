@@ -47,6 +47,8 @@ extern uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev);
 #define ADIOCTL_IN_SUPPORT  1
 #define ADIOCTL_OUT_SUPPORT 2
 #define ADIOCTL_BUFLEN      3
+#define ADIOCTL_SET_RATE    6
+#define ADIOCTL_GET_RATE    7
 
 /* ioctl support list */
 #define AD_MONO_SUPPORT    (1 << 0)
