@@ -19,7 +19,7 @@
 #include <util/log.h>
 
 #define GIC_CPU_BASE           OPTION_GET(NUMBER, cpu_base_addr)
-#define GIC_DISTRIBUTOR_BASE   OPTION_GET(NUMBER, distributor_base_addr)
+#define GIC_DISTRIBUTOR_BASE   (uint32_t)OPTION_GET(NUMBER, distributor_base_addr)
 
 EMBOX_UNIT_INIT(gic_init);
 
