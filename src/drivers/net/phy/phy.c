@@ -34,11 +34,14 @@ static void set_phyid(struct net_device *dev, int phyid) {
 }
 
 int phy_detect(struct net_device *dev) {
+	uint32_t phyid[2] ;
+
 	assert(dev);
 	for (int i = 0; i < 32; i++) {
 		set_phyid(dev, i);
-		if (phy_read(dev, MII_PHYSID1) != 0xffff) {
-			log_debug("Detected phyid=%d", i);
+		if ((phyid[0] = phy_read(dev, MII_PHYSID1)) != 0xffff) {
+			phyid[1] = phy_read(dev, MII_PHYSID2);
+			log_debug("Detected phyaddr=%d ,ID=%X:%X", i, phyid[0], phyid[1]);
 			return 0;
 		}
 	}
