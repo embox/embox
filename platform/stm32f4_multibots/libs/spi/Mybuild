@@ -1,7 +1,7 @@
 package stm32f4_multibot.libs
 
 @BuildDepends(third_party.bsp.stmf4cube.core)
-static module spi {
+module spi {
 	option number log_level=0
 
 	source "spi_hal_msp.c"
