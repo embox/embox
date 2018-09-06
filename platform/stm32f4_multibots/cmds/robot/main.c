@@ -6,12 +6,11 @@
  * @author Alex Kalmuk
  */
 
-#include <errno.h>
 #include <stdio.h>
 #include <unistd.h>
-
-#include <util/log.h>
-#include <kernel/thread.h>
+#include <stdbool.h>
+#include <string.h>
+#include <pthread.h>
 
 #include <libs/nrf24.h>
 #include <libs/gy_30.h>
@@ -170,7 +169,7 @@ static void robot_config_motors(struct stepper_motor *motor1,
 
 static int robot_config_gy_30(int i2c_nr, int mode) {
 	if (gy_30_init(i2c_nr) < 0) {
-		log_error("gy_30_init failed\n");
+		printf("gy_30_init failed\n");
 		return -1;
 	}
 
@@ -180,7 +179,8 @@ static int robot_config_gy_30(int i2c_nr, int mode) {
 }
 
 static void main_loop(void) {
-	struct thread *light_th, *ir_th, *nrf24_th;
+	pthread_t light_th, ir_th, nrf24_th;
+	int res;
 	struct light_robot robot;
 	uint8_t tx_addr[5] = {0xAA,0xBB,0xCC,0xDD,0x01};
 	uint8_t rx_addr[5] = {0xEE,0xFF,0xAA,0xBB,0x02};
@@ -206,26 +206,26 @@ static void main_loop(void) {
 	ir_receiver_init(&robot.ir_rcv, GPIO_PIN_1, GPIOD, EXTI1_IRQn);
 	printf("IR LED (TSAL) and Receiver (TSOP) are configured\n");
 
-	light_th = thread_create(0, light_sensor_loop, NULL);
-	if (!light_th) {
+	res = pthread_create(&light_th, 0, light_sensor_loop, NULL);
+	if (res != 0) {
 		printf("Light thread creation failure\n");
 		return;
 	}
-	thread_detach(light_th);
+	pthread_detach(light_th);
 
-	ir_th = thread_create(0, ir_sensor_loop, &robot);
-	if (!ir_th) {
+	res = pthread_create(&ir_th, 0, ir_sensor_loop, &robot);
+	if (res != 0) {
 		printf("IR thread creation failure\n");
 		return;
 	}
-	thread_detach(ir_th);
+	pthread_detach(ir_th);
 
-	nrf24_th = thread_create(0, nrf24_loop, &robot);
-	if (!nrf24_th) {
+	res = pthread_create(&nrf24_th, 0, nrf24_loop, &robot);
+	if (res != 0) {
 		printf("NRF24 thread creation failure\n");
 		return;
 	}
-	thread_detach(nrf24_th);
+	pthread_detach(nrf24_th);
 
 	robot.move = 0;
 	while (1) {
