@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 #include <assert.h>
 #include <hal/context.h>
 
@@ -22,6 +23,8 @@
 
 void context_init(struct context *ctx, unsigned int flags,
 		void (*routine_fn)(void), void *sp) {
+	memset(ctx, 0, sizeof(*ctx));
+
 	ctx->lr = (uint32_t) routine_fn;
 	ctx->sp = (uint32_t) sp;
 	ctx->cpsr = ARM_MODE_SYS;
