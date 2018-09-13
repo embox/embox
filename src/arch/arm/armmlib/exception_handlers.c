@@ -16,14 +16,30 @@
 #define SCB_BASE 0xe000ed00
 #define SCB_CONF_FAULT_STATUS (SCB_BASE + 0x28)
 #define SCB_HARD_FAULT_STATUS  (SCB_BASE + 0x2C)
+#define SCB_MEM_FAULT_ADDRESS  (SCB_BASE + 0x34)
+#define SCB_BUS_FAULT_ADDRESS  (SCB_BASE + 0x38)
 
 static void print_fault_status(void) {
-	uint32_t conf_faults = REG_LOAD(SCB_CONF_FAULT_STATUS);
+	uint32_t conf_faults = REG32_LOAD(SCB_CONF_FAULT_STATUS);
+	uint32_t bus_fault_status, mem_fault_status, usage_fault_status;
 
-	printk("Memory Management Fault Status register = %x\n", conf_faults & 0xf);
-	printk("Bus Fault Status register = %x\n", (conf_faults >> 8) & 0xf);
-	printk("Usage Fault Status register = %x\n", (conf_faults >> 16) & 0xff);
-	printk("Hard Fault Status register = %lx\n", REG_LOAD(SCB_HARD_FAULT_STATUS));
+	mem_fault_status = conf_faults & 0xf;
+	bus_fault_status = (conf_faults >> 8) & 0xf;
+	usage_fault_status = (conf_faults >> 16) & 0xff;
+
+	printk("MemManage Fault Status register = %x\n", mem_fault_status);
+	if (mem_fault_status) {
+		printk("  MemManage Fault Address = %x\n",
+				REG32_LOAD(SCB_MEM_FAULT_ADDRESS));
+	}
+	printk("Bus Fault Status register = %x\n", bus_fault_status);
+	if (bus_fault_status) {
+		printk("  Bus Fault Address = %x\n",
+				REG32_LOAD(SCB_BUS_FAULT_ADDRESS));
+	}
+	printk("Usage Fault Status register = %x\n", usage_fault_status);
+	printk("Hard Fault Status register = %x\n",
+			REG32_LOAD(SCB_HARD_FAULT_STATUS));
 }
 
 /* Print exception info and return */
