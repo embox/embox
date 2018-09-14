@@ -8,3 +8,7 @@ abstract module cmsis { }
 module head {
 	source "head.S"
 }
+
+module static_irq_table {
+	source "static_irq_table.lds.S"
+}
