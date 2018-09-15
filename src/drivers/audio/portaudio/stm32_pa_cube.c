@@ -5,7 +5,7 @@
  * @date 25.09.14
  * @author Ilia Vaprol
  * @author Alexander Kalmuk
- *           Adaptation for STM32F4 Cube
+ *           Adaptation for STM32F4/F7 Cube
  */
 
 #include <stdlib.h>
@@ -26,9 +26,7 @@
 
 #include <drivers/audio/portaudio.h>
 
-#include "stm32f4_discovery_audio.h"
-
-extern void Audio_MAL_I2S_IRQHandler(void);
+#include <drivers/audio/stm32_audio.h>
 
 #define MODOPS_VOLUME      OPTION_GET(NUMBER, volume)
 #define MODOPS_SAMPLE_RATE OPTION_GET(NUMBER, sample_rate)
@@ -39,10 +37,15 @@ extern void Audio_MAL_I2S_IRQHandler(void);
 		printk("%s" fmt "\n", __VA_ARGS__); \
 	} while (0)
 
-#define STM32F4_AUDIO_I2S_DMA_IRQ (I2S3_DMAx_IRQ + 16)
-
 #define MAX_BUF_LEN (160 * 6)
-#define OUTPUT_CHAN_N 2
+#define CHAN_N      OPTION_GET(NUMBER, chan_n)
+#define SLOT_N      OPTION_GET(NUMBER, slot_n)
+/* TODO chan_n - (1 for mono, 2 for stereo). Each of channels can include several
+ * slots (slot_n). Currently we interprete each OUTPUT slot as OUTPUT channel.
+ * E.g. for STM32F7-Discovery we have 2 channels with 2 slots on each channel
+ * (64 bit audio frame).
+ * So if we play mono wav, we just copy each 16 bit sample 4 times. */
+#define OUTPUT_CHAN_N (CHAN_N * SLOT_N)
 #define BUF_N 2
 
 struct pa_strm {
@@ -62,7 +65,7 @@ static_assert(BUF_N <= 8);
 static struct thread *pa_thread;
 static struct pa_strm pa_stream;
 
-static irq_return_t stm32f4_audio_i2s_dma_interrupt(unsigned int irq_num, void *dev_id);
+static irq_return_t stm32_audio_dma_interrupt(unsigned int irq_num, void *dev_id);
 
 static void strm_get_data(struct pa_strm *strm, int buf_index) {
 	uint16_t *buf;
@@ -103,7 +106,7 @@ static void *pa_thread_hnd(void *arg) {
 				buf_index = empty_mask >> 1;
 			} else {
 				/* there are some empty buffers, but should be 1 */
-				printk("stm32f4_pa: underrun!\n");
+				printk("stm32_pa: underrun!\n");
 				buf_index = bit_ffs(empty_mask);
 			}
 
@@ -149,7 +152,7 @@ const char * Pa_GetErrorText(PaError errorCode) {
 const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
 	static const PaDeviceInfo info = {
 		.structVersion = 1,
-		.name = "stm32f4_audio",
+		.name = "stm32_audio",
 		.hostApi = 0,
 		.maxInputChannels = 1,
 		.maxOutputChannels = 1,
@@ -165,8 +168,12 @@ const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
 }
 
 const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
-	D(": %d = NULL", __func__, hostApi);
-	return NULL;
+	static const PaHostApiInfo info = {
+		.structVersion = 1,
+		.name = "stm32f4_audio_host_api",
+	};
+	D(": %d = %p", __func__, hostApi, hostApi == 0 ? &info : NULL);
+	return hostApi == 0 ? &info : NULL;
 }
 
 const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
@@ -218,8 +225,8 @@ PaError Pa_OpenStream(PaStream** stream,
 		goto err_out;
 	}
 
-	if (0 != irq_attach(STM32F4_AUDIO_I2S_DMA_IRQ, stm32f4_audio_i2s_dma_interrupt,
-				0, strm, "stm32f4_audio")) {
+	if (0 != irq_attach(STM32_AUDIO_DMA_IRQ, stm32_audio_dma_interrupt,
+				0, strm, "stm32_audio")) {
 		goto err_thread_free;
 	}
 
@@ -232,7 +239,7 @@ PaError Pa_OpenStream(PaStream** stream,
 	return paNoError;
 
 err_irq_detach:
-	irq_detach(STM32F4_AUDIO_I2S_DMA_IRQ, NULL);
+	irq_detach(STM32_AUDIO_DMA_IRQ, NULL);
 err_thread_free:
 	thread_delete(pa_thread);
 	pa_thread = NULL;
@@ -245,7 +252,7 @@ PaError Pa_CloseStream(PaStream *stream) {
 
 	BSP_AUDIO_OUT_Stop(CODEC_PDWN_HW);
 
-	irq_detach(STM32F4_AUDIO_I2S_DMA_IRQ, NULL);
+	irq_detach(STM32_AUDIO_DMA_IRQ, NULL);
 
 	thread_delete(pa_thread);
 	pa_thread = NULL;
@@ -308,26 +315,17 @@ void Pa_Sleep(long msec) {
 	usleep(msec * USEC_PER_MSEC);
 }
 
-static void stm32f4_audio_irq_fill_buffer(int buf_index) {
+static void stm32_audio_irq_fill_buffer(int buf_index) {
 	pa_stream.out_buf_empty_mask |= 1 << buf_index;
 	sched_wakeup(&pa_thread->schedee);
 }
 
 void BSP_AUDIO_OUT_HalfTransfer_CallBack(void) {
-	stm32f4_audio_irq_fill_buffer(0);
+	stm32_audio_irq_fill_buffer(0);
 }
 
 void BSP_AUDIO_OUT_TransferComplete_CallBack(void) {
-	stm32f4_audio_irq_fill_buffer(1);
+	stm32_audio_irq_fill_buffer(1);
 }
 
-static irq_return_t stm32f4_audio_i2s_dma_interrupt(unsigned int irq_num, void *dev_id) {
-	/* struct pa_strm *strm = dev_id; */
-	extern I2S_HandleTypeDef hAudioOutI2s;
-
-	HAL_DMA_IRQHandler(hAudioOutI2s.hdmatx);
-	return IRQ_HANDLED;
-}
-
-static_assert(63 == STM32F4_AUDIO_I2S_DMA_IRQ);
-STATIC_IRQ_ATTACH(63, stm32f4_audio_i2s_dma_interrupt, &pa_stream);
+STATIC_IRQ_ATTACH(STM32_AUDIO_DMA_IRQ, stm32_audio_dma_interrupt, &pa_stream);
