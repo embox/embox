@@ -16,6 +16,10 @@ package embox.cmd
 	''')
 
 module play {
+	option boolean play_from_flash = false
+	/* 256 * 1024 / 4 */
+	option number frames_per_buffer = 65536
+
 	source "play.c"
 
 	depends embox.driver.audio.portaudio_api

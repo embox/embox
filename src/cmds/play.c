@@ -14,10 +14,17 @@
 #include <drivers/audio/portaudio.h>
 #include <fs/file_format.h>
 #include <util/math.h>
+#include <framework/mod/options.h>
+
+#define PLAY_FROM_FLASH OPTION_GET(BOOLEAN, play_from_flash)
+#define FRAMES_PER_BUFFER OPTION_GET(NUMBER, frames_per_buffer)
 
 static void print_usage(void) {
 	printf("Usage: play [WAVAUDIOFILE]\n"
-	       "       play -s\n");
+	       "       play -s\n"
+	       "       play -f <audio address in ROM>\n"
+	       "            (E.g. play -f 08080000. \n"
+	       "            Use \"./st-flash write [WAV_FILE] 0x08080000\")\n");
 }
 
 double _sin(double x) {
@@ -54,9 +61,15 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 	return 0;
 }
 
-static uint8_t _fbuffer[64 * 1024 * 1024];
-static int _bl = 64 * 1024 * 1024;
+static uint8_t *audio_start_ptr;
+
+#if !PLAY_FROM_FLASH
+#define FBUFFER_SIZE (64 * 1024 * 1024)
+static uint8_t _fbuffer[FBUFFER_SIZE];
+#endif
+static int _bl = 0;
 static int _fchan = 2;
+
 static int fd_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
@@ -66,7 +79,7 @@ static int fd_callback(const void *inputBuffer, void *outputBuffer,
         int read_bytes;
 
 	read_bytes = min(_bl - _ptr, framesPerBuffer * _fchan * 2); /* Stereo 16-bit */
-	memcpy(outputBuffer, &_fbuffer[_ptr], read_bytes);
+	memcpy(outputBuffer, audio_start_ptr + _ptr, read_bytes);
 	_ptr += read_bytes;
 
 	printf("|");
@@ -83,7 +96,11 @@ static int fd_callback(const void *inputBuffer, void *outputBuffer,
 int main(int argc, char **argv) {
 	int opt;
 	int err;
+#if PLAY_FROM_FLASH
+	uint32_t audio_flash_addr;
+#else
 	FILE *fd = NULL;
+#endif
 	static uint8_t fmt_buf[128];
 	int chan_n = 2;
 	int sample_rate = 44100;
@@ -103,13 +120,26 @@ int main(int argc, char **argv) {
 
 	callback = &fd_callback;
 
-	while (-1 != (opt = getopt(argc, argv, "nsh"))) {
+	while (-1 != (opt = getopt(argc, argv, "nshf:"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
 		case 's':
 			callback = &sin_callback;
+			break;
+		case 'f':
+#if !PLAY_FROM_FLASH
+			printf("Error: play command does not configured with"
+					" PLAY_FROM_FLASH = true\n");
+			return -1;
+#else
+			if ((optarg == NULL) || (!sscanf(optarg, "%x", &audio_flash_addr))) {
+				print_usage();
+				return -1;
+			}
+			printf("Audio file flash address is 0x%x\n", audio_flash_addr);
+#endif
 			break;
 		default:
 			printf("Unknown argument: %c", opt);
@@ -118,6 +148,11 @@ int main(int argc, char **argv) {
 	}
 
 	if (callback == fd_callback) {
+#if PLAY_FROM_FLASH
+		audio_start_ptr = (uint8_t *) audio_flash_addr;
+		memcpy(fmt_buf, audio_start_ptr, 44);
+#else
+		audio_start_ptr = _fbuffer;
 		if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
 			printf("Can't open file %s\n", argv[argc - 1]);
 			return 0;
@@ -128,6 +163,7 @@ int main(int argc, char **argv) {
 			printf("%s is not a RIFF audio file\n", argv[argc - 1]);
 			return 0;
 		}
+#endif
 
 		chan_n          = *((uint16_t*) &fmt_buf[22]);
 		sample_rate     = *((uint32_t*) &fmt_buf[24]);
@@ -151,7 +187,11 @@ int main(int argc, char **argv) {
 
 		printf("Progress:\n");
 
-		_bl = min(fread(_fbuffer, 1, 64 * 1024 * 1024, fd), _bl);
+#if PLAY_FROM_FLASH
+		_bl = fdata_len;
+#else
+		_bl = min(fread(_fbuffer, 1, FBUFFER_SIZE, fd), FBUFFER_SIZE);
+#endif
 		_fchan = chan_n;
 	}
 
@@ -174,7 +214,7 @@ int main(int argc, char **argv) {
 			NULL,
 			&out_par,
 			sample_rate,
-			256 * 1024 / 4,
+			FRAMES_PER_BUFFER,
 			0,
 			callback,
 			NULL);
@@ -208,7 +248,9 @@ err_terminate_pa:
 		printf("Portaudio error: could not terminate!\n");
 
 err_close_fd:
+#if !PLAY_FROM_FLASH
 	if (fd)
 		fclose(fd);
+#endif
 	return 0;
 }
