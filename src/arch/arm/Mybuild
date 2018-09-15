@@ -9,6 +9,6 @@ module head {
 	source "head.S"
 }
 
-module static_irq_table {
+module static_irq_table extends embox.kernel.static_irq_table_impl {
 	source "static_irq_table.lds.S"
 }
