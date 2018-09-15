@@ -9,14 +9,10 @@ module locore extends embox.arch.locore {
 }
 
 module interrupt extends embox.arch.interrupt {
-	source "ipl_impl.h"
-	depends locore
-}
+	option boolean nvic_use_prio = false
+	option number nvic_prio_shift = 4 /* Implementation defined */
 
-/* This module setup the greater priority for faults (UsageFault, BusFault, MemFault)
- * and lower priority for any other interrupts and exceptions. */
-module interrupt_prio extends embox.arch.interrupt {
-	source "ipl_impl_prio.h"
+	source "ipl_impl.h"
 	depends locore
 }
 

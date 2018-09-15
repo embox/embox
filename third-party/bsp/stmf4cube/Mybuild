@@ -128,9 +128,6 @@ static module stm32f4_discovery_bsp {
 @BuildDepends(core)
 module arch extends embox.arch.arch {
 	source "arch.c"
-	@IncludeExport(path="cortexm/", target_name="arch.h")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/core/STM32Cube_FW_F4_V1.13.0/Drivers/CMSIS/Device/ST/STM32F4xx/Include/")
-	source "arch.h"
 
 	depends system_init
 }

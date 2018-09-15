@@ -49,11 +49,6 @@
 #define BASE_CTX_SIZE  (8 * 4)
 #define FPU_CTX_SIZE   (BASE_CTX_SIZE + 18 * 4)
 
-#ifndef IRQ_PRIO_SHIFT
-#define IRQ_PRIO_SHIFT 4
-#define IRQ_MIN_NONFAULT_PRIO (1 << IRQ_PRIO_SHIFT)
-#endif
-
 /**
  * ENABLE, CLEAR, SET_PEND, CLR_PEND, ACTIVE is a base of bit arrays
  * to calculate bit offset in array: calculate 32-bit word offset
@@ -258,12 +253,12 @@ static void nvic_setup_priorities(void) {
 	REG8_STORE(SCB_SHPR1 + 2, 0);
 
 	/* Set priorities of Systick and PendSV to 1 */
-	REG8_STORE(SCB_SHPR3 + 2, IRQ_MIN_NONFAULT_PRIO);
-	REG8_STORE(SCB_SHPR3 + 3, IRQ_MIN_NONFAULT_PRIO);
+	REG8_STORE(SCB_SHPR3 + 2, NVIC_MIN_PRIO);
+	REG8_STORE(SCB_SHPR3 + 3, NVIC_MIN_PRIO);
 
 	/* Set to all other interrupts priority equal to 1 */
 	for (i = 0; i < 240; i++) {
-		REG8_STORE(NVIC_PRIORITY_BASE + i, IRQ_MIN_NONFAULT_PRIO);
+		REG8_STORE(NVIC_PRIORITY_BASE + i, NVIC_MIN_PRIO);
 	}
 }
 
