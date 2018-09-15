@@ -1,0 +1,19 @@
+diff -aur -x configure ../STM32Cube_FW_F7_V1.5.0-orig/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Include/core_cm7.h STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Include/core_cm7.h
+--- ../STM32Cube_FW_F7_V1.5.0-orig/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Include/core_cm7.h	2016-09-23 18:01:30.000000000 +0300
++++ STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Include/core_cm7.h	2018-09-06 19:46:19.161239071 +0300
+@@ -1905,6 +1905,7 @@
+  */
+ __STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
+ {
++#if 0
+   if ((int32_t)(IRQn) < 0)
+   {
+     SCB->SHPR[(((uint32_t)(int32_t)IRQn) & 0xFUL)-4UL] = (uint8_t)((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL);
+@@ -1913,6 +1914,7 @@
+   {
+     NVIC->IP[((uint32_t)(int32_t)IRQn)]                = (uint8_t)((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL);
+   }
++#endif
+ }
+ 
+ 
