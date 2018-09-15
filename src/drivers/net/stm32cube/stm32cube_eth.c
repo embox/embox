@@ -32,8 +32,6 @@ EMBOX_UNIT_INIT(stm32eth_init);
 
 #define STM32ETH_IRQ (ETH_IRQn + 16)
 
-#define PHY_ADDRESS       0x00 /* Relative to STM324xG-EVAL Board */
-
 static ETH_HandleTypeDef stm32_eth_handler;
 
 static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB]__attribute__ ((aligned (4)));
