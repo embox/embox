@@ -135,12 +135,11 @@ static void fill_irq_saved_ctx(struct irq_saved_state *state,
 	 * This value is only used to go further, after return from interrupt_handle.
 	 * 0x01000000 is a default value of psr and (ctx->psr & 0xFF) is irq number if any. */
 	state->ctx.psr = 0x01000000 | (ctx->psr & 0xFF);
-	state->ctx.r[0] = (uint32_t) state; // pass the state to __pending_handle()
+	state->ctx.r[0] = (uint32_t) regs->lr; // pass LR to __pending_handle()
 	state->ctx.r[1] = (uint32_t) regs; // pass the registers to __pending_handle()
 	state->ctx.lr = (uint32_t) __pending_handle;
 	state->ctx.pc = state->ctx.lr;
 }
-
 
 void interrupt_handle(struct irq_enter_ctx *regs,
 		struct irq_saved_state *state) {
@@ -150,16 +149,8 @@ void interrupt_handle(struct irq_enter_ctx *regs,
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
-	irqctrl_disable(source);
 	critical_enter(CRITICAL_IRQ_HANDLER);
-	{
-		ipl_enable();
-
-		irq_dispatch(source);
-
-		ipl_disable();
-	}
-	irqctrl_enable(source);
+	irq_dispatch(source);
 	critical_leave(CRITICAL_IRQ_HANDLER);
 
 	fill_irq_saved_ctx(state, (uint32_t *) regs->sp, regs);

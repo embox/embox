@@ -64,8 +64,17 @@ __pending_handle:
     add    r1, r1, #52
     ldmdb  r1, {r2 - r12}
 
-    bl     critical_dispatch_pending
+    # Call critical_dispatch_pending if we are already exited
+    # from all nested interrupt handlers. If we were interrupted
+    # from irq handler (0xfffffff1) then just return back.
+    # So we check wheter the value is 0xfffffff9 or 0xffffffe9
+    ldr    r1, =#0xffffff09
+    and    r0, r0, #0xffffff0f
+    cmp    r0, r1
+    bne.n  __call_pendsv
+    bl critical_dispatch_pending
 
+__call_pendsv:
     # Generate PendSV interrupt
     mov    r0, #0x0
     msr    BASEPRI, r0
