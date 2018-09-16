@@ -67,6 +67,8 @@ __pending_handle:
     bl     critical_dispatch_pending
 
     # Generate PendSV interrupt
+    mov    r0, #0x0
+    msr    BASEPRI, r0
     cpsid  i
     bl     nvic_set_pendsv
     cpsie  i
