@@ -243,11 +243,13 @@ static void nvic_setup_priorities(void) {
 	REG8_STORE(SCB_SHPR1 + 1, 0);
 	REG8_STORE(SCB_SHPR1 + 2, 0);
 
-	/* Set priorities of Systick and PendSV to 1 */
-	REG8_STORE(SCB_SHPR3 + 2, NVIC_MIN_PRIO);
-	REG8_STORE(SCB_SHPR3 + 3, NVIC_MIN_PRIO);
+	/* Set priorities of PendSV to maximum. It can be used it the following
+	* way. When we use interrupts priorities, we can generate PendSV from
+	* any other irq handler, because it's of the maximal priority. */
+	REG8_STORE(SCB_SHPR3 + 2, NVIC_MAX_PRIO);
 
-	/* Set to all other interrupts priority equal to 1 */
+	/* Set to all other interrupts priority to minimal  */
+	REG8_STORE(SCB_SHPR3 + 3, NVIC_MIN_PRIO);
 	for (i = 0; i < 240; i++) {
 		REG8_STORE(NVIC_PRIORITY_BASE + i, NVIC_MIN_PRIO);
 	}

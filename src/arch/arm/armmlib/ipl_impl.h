@@ -21,6 +21,7 @@
 		NUMBER, nvic_prio_shift)
 
 #define NVIC_MIN_PRIO ((0xf << NVIC_PRIO_SHIFT) & 0xff)
+#define NVIC_MAX_PRIO ((0x1 << NVIC_PRIO_SHIFT) & 0xff)
 
 typedef uint32_t __ipl_t;
 

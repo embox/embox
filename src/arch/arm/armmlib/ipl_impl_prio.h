@@ -21,7 +21,7 @@ static inline void ipl_init(void) {
 
 static inline __ipl_t ipl_save(void) {
 	uint32_t r;
-	uint32_t prio = NVIC_MIN_PRIO;
+	uint32_t prio = NVIC_MAX_PRIO;
 	__asm__ __volatile__ (
 		"mrs %0, BASEPRI;\n\t"
 		: "=r"(r));
