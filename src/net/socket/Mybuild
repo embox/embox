@@ -27,6 +27,8 @@ module tcp_sock {
 }
 
 module udp_sock {
+	option number log_level=0
+
 	source "udp_sock.c"
 
 	depends net_sock
