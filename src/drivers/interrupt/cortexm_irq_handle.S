@@ -11,13 +11,13 @@
 .syntax unified
 .global interrupt_handle_enter
 interrupt_handle_enter:
-
     mov    r0, sp
+    push   {lr}
     # "In the Cortex-M7 processor CCR.STKALIGN is read-only and has a value of 1.
     # This means that the exception stack frame starting address
     # is always 8-byte aligned."
-    # So we align it for 8 byte for all cortex-m
-    sub    sp, #64
+    # So we align it for 8 byte for all cortex-m (here, 60 + sizeof (lr))
+    sub    sp, #60
     str    r0, [sp, #56]
     stmia  sp, {r0 - r12, lr}
 
