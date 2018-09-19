@@ -132,7 +132,7 @@ static size_t tb_snprint_thread_state(char *buff, size_t buff_sz,
 	return buff_sz;
 }
 
-void traceback_dump_thread(struct thread *t) {
+static void do_traceback_dump_thread(struct thread *t, int skip) {
 	struct context *ctx;
 	int is_current;
 	int size, limit;
@@ -149,7 +149,7 @@ void traceback_dump_thread(struct thread *t) {
 	tb_snprint_thread_state(buff, sizeof(buff), t);
 	printk("\n\n%s\n\n", buff);
 
-	for (int i = is_current ? 3 : 0; i < limit; ++i) {
+	for (int i = skip; i < limit; ++i) {
 		tb_snprint_stack_frame(buff, sizeof(buff),
 			size-i, bt_buff[i]);
 		printk("%s\n", buff);
@@ -159,20 +159,24 @@ void traceback_dump_thread(struct thread *t) {
 	printk("\n%s\n", buff);
 }
 
+void traceback_dump_thread(struct thread *t) {
+	do_traceback_dump_thread(t, (t == thread_self()) ? 1 : 0);
+}
+
 void traceback_dump(void) {
-	traceback_dump_thread(thread_self());
+	do_traceback_dump_thread(thread_self(), 2);
 }
 
 void whereami(void) {
 	struct thread *t;
 	struct task *task;
 
-	traceback_dump();
+	do_traceback_dump_thread(thread_self(), 2);
 
 	task_foreach(task) {
 		task_foreach_thread(t, task) {
 			if (t != thread_self())
-				traceback_dump_thread(t);
+				do_traceback_dump_thread(t, 0);
 		}
 	}
 }
