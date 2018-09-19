@@ -1,40 +1,31 @@
 /**
  * @file
  *
- * @date 29.08.18
- * @author Alexander Kalmuk
+ * @date 01.07.10
+ * @author Anton Kozlov
  */
 
 #ifndef HAL_IPL_IMPL_H_
 #define HAL_IPL_IMPL_H_
 
 static inline void ipl_init(void) {
-	uint32_t ipl = 0;
 	__asm__ __volatile__ (
 		"cpsie i \n\t");
 
-	__asm__ __volatile__ (
-		"msr BASEPRI, %0;\n\t"
-		:
-		: "r"(ipl));
 }
 
 static inline __ipl_t ipl_save(void) {
-	uint32_t r;
-	uint32_t prio = NVIC_MAX_PRIO;
+	register uint32_t r;
 	__asm__ __volatile__ (
-		"mrs %0, BASEPRI;\n\t"
+		"mrs %0, PRIMASK;\n\t"
+		"cpsid i \n\t"
 		: "=r"(r));
-	__asm__ __volatile__ (
-		"msr BASEPRI, %0;\n\t"
-		:
-		: "r"(prio));
 	return r;
 }
 
 static inline void ipl_restore(__ipl_t ipl) {
 	__asm__ __volatile__ (
-		"msr BASEPRI, %0;\n\t"
+		"msr PRIMASK, %0;\n\t"
 		:
 		: "r"(ipl));
 }

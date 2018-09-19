@@ -14,31 +14,34 @@
 
 /* SCB - System Control Block */
 #define SCB_BASE 0xe000ed00
-#define SCB_CONF_FAULT_STATUS (SCB_BASE + 0x28)
+#define SCB_MEM_FAULT_STATUS   (SCB_BASE + 0x28)
+# define SCB_MEM_FAULT_MMARVALID (1 << 7)
+#define SCB_BUS_FAULT_STATUS   (SCB_BASE + 0x29)
+# define SCB_BUS_FAULT_BFARVALID (1 << 7)
+#define SCB_USAGE_FAULT_STATUS (SCB_BASE + 0x2A)
 #define SCB_HARD_FAULT_STATUS  (SCB_BASE + 0x2C)
 #define SCB_MEM_FAULT_ADDRESS  (SCB_BASE + 0x34)
 #define SCB_BUS_FAULT_ADDRESS  (SCB_BASE + 0x38)
 
 static void print_fault_status(void) {
-	uint32_t conf_faults = REG32_LOAD(SCB_CONF_FAULT_STATUS);
 	uint32_t bus_fault_status, mem_fault_status, usage_fault_status;
 
-	mem_fault_status = conf_faults & 0xf;
-	bus_fault_status = (conf_faults >> 8) & 0xf;
-	usage_fault_status = (conf_faults >> 16) & 0xff;
+	mem_fault_status = REG8_LOAD(SCB_MEM_FAULT_STATUS);
+	bus_fault_status = REG8_LOAD(SCB_BUS_FAULT_STATUS);
+	usage_fault_status = REG16_LOAD(SCB_USAGE_FAULT_STATUS);
 
-	printk("MemManage Fault Status register = %x\n", mem_fault_status);
-	if (mem_fault_status) {
-		printk("  MemManage Fault Address = %x\n",
+	printk("MemManage Fault Status register = 0x%02x\n", mem_fault_status);
+	if (mem_fault_status & SCB_MEM_FAULT_MMARVALID) {
+		printk("  MemManage Fault Address = 0x%08x\n",
 				REG32_LOAD(SCB_MEM_FAULT_ADDRESS));
 	}
-	printk("Bus Fault Status register = %x\n", bus_fault_status);
-	if (bus_fault_status) {
-		printk("  Bus Fault Address = %x\n",
+	printk("Bus Fault Status register = 0x%02x\n", bus_fault_status);
+	if (bus_fault_status & SCB_BUS_FAULT_BFARVALID) {
+		printk("  Bus Fault Address = 0x%08x\n",
 				REG32_LOAD(SCB_BUS_FAULT_ADDRESS));
 	}
-	printk("Usage Fault Status register = %x\n", usage_fault_status);
-	printk("Hard Fault Status register = %x\n",
+	printk("Usage Fault Status register = 0x%04x\n", usage_fault_status);
+	printk("Hard Fault Status register = 0x%08x\n",
 			REG32_LOAD(SCB_HARD_FAULT_STATUS));
 }
 
@@ -48,8 +51,8 @@ void exc_default_handler(struct exc_saved_base_ctx *ctx, int xpsr) {
 
 	printk("\nEXCEPTION (0x%x):\n"
 			"Exception saved context:\n"
-			"  r0=%08x r1=%08x r2=%08x r3=%08x\n"
-			"  r12=%08x lr=%08x pc=%08x xPSR=%08x\n",
+			"  r0=0x%08x r1=0x%08x r2=0x%08x r3=0x%08x\n"
+			"  r12=0x%08x lr=0x%08x pc(ret)=0x%08x xPSR=0x%08x\n",
 			exp_nr,
 			ctx->r[0], ctx->r[1], ctx->r[2], ctx->r[3],
 			ctx->r[4], ctx->lr, ctx->pc, ctx->psr);

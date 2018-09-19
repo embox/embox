@@ -11,11 +11,17 @@ package embox.cmd
 	DESCRIPTION
 	OPTIONS
 		-s Use simple sinusiod instead of file
+		-m <addr> Play WAV from the specified address in memory
+			(ROM, RAM, SDRAM).
 	AUTHORS
 		Denis Deryugin <deryugin.denis@gmail.com>
 	''')
 
 module play {
+	option boolean use_local_buffer = true
+	/* 256 * 1024 / 4 */
+	option number frames_per_buffer = 65536
+
 	source "play.c"
 
 	depends embox.driver.audio.portaudio_api

@@ -32,8 +32,6 @@ EMBOX_UNIT_INIT(stm32eth_init);
 
 #define STM32ETH_IRQ (ETH_IRQn + 16)
 
-#define PHY_ADDRESS       0x01 /* Relative to STM324xG-EVAL Board */
-
 static ETH_HandleTypeDef stm32_eth_handler;
 
 static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB]__attribute__ ((aligned (4)));
@@ -131,30 +129,29 @@ static struct sk_buff *low_level_input(void) {
 	/* copy received frame to pbuf chain */
 	if (skb != NULL) {
 		memcpy(skb->mac.raw, buffer, len);
+	} else {
+		log_error("skb_alloc failed\n");
 	}
 
-	  /* Release descriptors to DMA */
-	  dmarxdesc = stm32_eth_handler.RxFrameInfos.FSRxDesc;
+	/* Release descriptors to DMA */
+	dmarxdesc = stm32_eth_handler.RxFrameInfos.FSRxDesc;
 
-	  /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-	  for (i=0; i< stm32_eth_handler.RxFrameInfos.SegCount; i++)
-	  {
-	    dmarxdesc->Status |= ETH_DMARXDESC_OWN;
-	    dmarxdesc = (ETH_DMADescTypeDef *)(dmarxdesc->Buffer2NextDescAddr);
-	  }
+	/* Set Own bit in Rx descriptors: gives the buffers back to DMA */
+	for (i=0; i< stm32_eth_handler.RxFrameInfos.SegCount; i++) {
+		dmarxdesc->Status |= ETH_DMARXDESC_OWN;
+		dmarxdesc = (ETH_DMADescTypeDef *)(dmarxdesc->Buffer2NextDescAddr);
+	}
 
-	  /* Clear Segment_Count */
-	  stm32_eth_handler.RxFrameInfos.SegCount =0;
+	/* Clear Segment_Count */
+	stm32_eth_handler.RxFrameInfos.SegCount =0;
 
-
-	  /* When Rx Buffer unavailable flag is set: clear it and resume reception */
-	  if ((stm32_eth_handler.Instance->DMASR & ETH_DMASR_RBUS) != (uint32_t)RESET)
-	  {
-	    /* Clear RBUS ETHERNET DMA flag */
-		  stm32_eth_handler.Instance->DMASR = ETH_DMASR_RBUS;
-	    /* Resume DMA reception */
-		  stm32_eth_handler.Instance->DMARPDR = 0;
-	  }
+	/* When Rx Buffer unavailable flag is set: clear it and resume reception */
+	if ((stm32_eth_handler.Instance->DMASR & ETH_DMASR_RBUS) != (uint32_t)RESET) {
+		/* Clear RBUS ETHERNET DMA flag */
+		stm32_eth_handler.Instance->DMASR = ETH_DMASR_RBUS;
+		/* Resume DMA reception */
+		stm32_eth_handler.Instance->DMARPDR = 0;
+	}
 	return skb;
 }
 

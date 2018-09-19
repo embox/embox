@@ -14,10 +14,17 @@
 #include <drivers/audio/portaudio.h>
 #include <fs/file_format.h>
 #include <util/math.h>
+#include <framework/mod/options.h>
+
+#define USE_LOCAL_BUFFER OPTION_GET(BOOLEAN, use_local_buffer)
+#define FRAMES_PER_BUFFER OPTION_GET(NUMBER, frames_per_buffer)
 
 static void print_usage(void) {
 	printf("Usage: play [WAVAUDIOFILE]\n"
-	       "       play -s\n");
+	       "       play -s\n"
+	       "       play -m <audio address in memory (ROM, RAM, SDRAM)>\n"
+	       "            (E.g. play -m 08080000. \n"
+	       "            Use \"./st-flash write [WAV_FILE] 0x08080000\")\n");
 }
 
 double _sin(double x) {
@@ -53,10 +60,21 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 
 	return 0;
 }
+#define FBUFFER_SIZE (64 * 1024 * 1024)
+#define AUDIO_ADDR_UNINITIALIZED ((uint32_t) -1)
 
-static uint8_t _fbuffer[64 * 1024 * 1024];
-static int _bl = 64 * 1024 * 1024;
+static uint32_t audio_memory_addr = AUDIO_ADDR_UNINITIALIZED;
+
+#if USE_LOCAL_BUFFER
+static uint8_t audio_buff[FBUFFER_SIZE];
+static uint8_t *_fbuffer = audio_buff;
+#else
+static uint8_t *_fbuffer = NULL;
+#endif
+
+static int _bl = 0;
 static int _fchan = 2;
+
 static int fd_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
@@ -66,7 +84,7 @@ static int fd_callback(const void *inputBuffer, void *outputBuffer,
         int read_bytes;
 
 	read_bytes = min(_bl - _ptr, framesPerBuffer * _fchan * 2); /* Stereo 16-bit */
-	memcpy(outputBuffer, &_fbuffer[_ptr], read_bytes);
+	memcpy(outputBuffer, _fbuffer + _ptr, read_bytes);
 	_ptr += read_bytes;
 
 	printf("|");
@@ -103,13 +121,20 @@ int main(int argc, char **argv) {
 
 	callback = &fd_callback;
 
-	while (-1 != (opt = getopt(argc, argv, "nsh"))) {
+	while (-1 != (opt = getopt(argc, argv, "nshm:"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
 		case 's':
 			callback = &sin_callback;
+			break;
+		case 'm':
+			if ((optarg == NULL) || (!sscanf(optarg, "%x", &audio_memory_addr))) {
+				print_usage();
+				return -1;
+			}
+			printf("Audio file memory address is 0x%x\n", audio_memory_addr);
 			break;
 		default:
 			printf("Unknown argument: %c", opt);
@@ -118,15 +143,26 @@ int main(int argc, char **argv) {
 	}
 
 	if (callback == fd_callback) {
-		if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
-			printf("Can't open file %s\n", argv[argc - 1]);
-			return 0;
+		if ((audio_memory_addr == AUDIO_ADDR_UNINITIALIZED) && !_fbuffer) {
+			return -1;
 		}
 
-		fread(fmt_buf, 1, 44, fd);
-		if (raw_get_file_format(fmt_buf) != RIFF_FILE) {
-			printf("%s is not a RIFF audio file\n", argv[argc - 1]);
-			return 0;
+		if (audio_memory_addr != AUDIO_ADDR_UNINITIALIZED) {
+			/* Get audio info from memory */
+			memcpy(fmt_buf, (void*) audio_memory_addr, 44);
+		} else if (_fbuffer) {
+			/* Get audio info from file */
+			if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
+				printf("Can't open file %s\n", argv[argc - 1]);
+				return 0;
+			}
+
+			fread(fmt_buf, 1, 44, fd);
+			if (raw_get_file_format(fmt_buf) != RIFF_FILE) {
+				printf("%s is not a RIFF audio file\n", argv[argc - 1]);
+				return 0;
+			}
+			_bl = min(fread(_fbuffer, 1, FBUFFER_SIZE, fd), FBUFFER_SIZE);
 		}
 
 		chan_n          = *((uint16_t*) &fmt_buf[22]);
@@ -151,7 +187,10 @@ int main(int argc, char **argv) {
 
 		printf("Progress:\n");
 
-		_bl = min(fread(_fbuffer, 1, 64 * 1024 * 1024, fd), _bl);
+		if (audio_memory_addr != AUDIO_ADDR_UNINITIALIZED) {
+			_bl = fdata_len;
+		}
+
 		_fchan = chan_n;
 	}
 
@@ -174,7 +213,7 @@ int main(int argc, char **argv) {
 			NULL,
 			&out_par,
 			sample_rate,
-			256 * 1024 / 4,
+			FRAMES_PER_BUFFER,
 			0,
 			callback,
 			NULL);

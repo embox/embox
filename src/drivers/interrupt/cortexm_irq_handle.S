@@ -11,13 +11,13 @@
 .syntax unified
 .global interrupt_handle_enter
 interrupt_handle_enter:
-
     mov    r0, sp
+    push   {lr}
     # "In the Cortex-M7 processor CCR.STKALIGN is read-only and has a value of 1.
     # This means that the exception stack frame starting address
     # is always 8-byte aligned."
-    # So we align it for 8 byte for all cortex-m
-    sub    sp, #64
+    # So we align it for 8 byte for all cortex-m (here, 60 + sizeof (lr))
+    sub    sp, #60
     str    r0, [sp, #56]
     stmia  sp, {r0 - r12, lr}
 
@@ -64,9 +64,20 @@ __pending_handle:
     add    r1, r1, #52
     ldmdb  r1, {r2 - r12}
 
-    bl     critical_dispatch_pending
+    # Call critical_dispatch_pending if we are already exited
+    # from all nested interrupt handlers. If we were interrupted
+    # from irq handler (0xfffffff1) then just return back.
+    # So we check wheter the value is 0xfffffff9 or 0xffffffe9
+    ldr    r1, =#0xffffff09
+    and    r0, r0, #0xffffff0f
+    cmp    r0, r1
+    bne.n  __call_pendsv
+    bl critical_dispatch_pending
 
+__call_pendsv:
     # Generate PendSV interrupt
+    mov    r0, #0x0
+    msr    BASEPRI, r0
     cpsid  i
     bl     nvic_set_pendsv
     cpsie  i

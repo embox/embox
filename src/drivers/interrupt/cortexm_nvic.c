@@ -49,11 +49,6 @@
 #define BASE_CTX_SIZE  (8 * 4)
 #define FPU_CTX_SIZE   (BASE_CTX_SIZE + 18 * 4)
 
-#ifndef IRQ_PRIO_SHIFT
-#define IRQ_PRIO_SHIFT 4
-#define IRQ_MIN_NONFAULT_PRIO (1 << IRQ_PRIO_SHIFT)
-#endif
-
 /**
  * ENABLE, CLEAR, SET_PEND, CLR_PEND, ACTIVE is a base of bit arrays
  * to calculate bit offset in array: calculate 32-bit word offset
@@ -140,12 +135,11 @@ static void fill_irq_saved_ctx(struct irq_saved_state *state,
 	 * This value is only used to go further, after return from interrupt_handle.
 	 * 0x01000000 is a default value of psr and (ctx->psr & 0xFF) is irq number if any. */
 	state->ctx.psr = 0x01000000 | (ctx->psr & 0xFF);
-	state->ctx.r[0] = (uint32_t) state; // pass the state to __pending_handle()
+	state->ctx.r[0] = (uint32_t) regs->lr; // pass LR to __pending_handle()
 	state->ctx.r[1] = (uint32_t) regs; // pass the registers to __pending_handle()
 	state->ctx.lr = (uint32_t) __pending_handle;
 	state->ctx.pc = state->ctx.lr;
 }
-
 
 void interrupt_handle(struct irq_enter_ctx *regs,
 		struct irq_saved_state *state) {
@@ -155,16 +149,8 @@ void interrupt_handle(struct irq_enter_ctx *regs,
 
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
-	irqctrl_disable(source);
 	critical_enter(CRITICAL_IRQ_HANDLER);
-	{
-		ipl_enable();
-
-		irq_dispatch(source);
-
-		ipl_disable();
-	}
-	irqctrl_enable(source);
+	irq_dispatch(source);
 	critical_leave(CRITICAL_IRQ_HANDLER);
 
 	fill_irq_saved_ctx(state, (uint32_t *) regs->sp, regs);
@@ -257,13 +243,15 @@ static void nvic_setup_priorities(void) {
 	REG8_STORE(SCB_SHPR1 + 1, 0);
 	REG8_STORE(SCB_SHPR1 + 2, 0);
 
-	/* Set priorities of Systick and PendSV to 1 */
-	REG8_STORE(SCB_SHPR3 + 2, IRQ_MIN_NONFAULT_PRIO);
-	REG8_STORE(SCB_SHPR3 + 3, IRQ_MIN_NONFAULT_PRIO);
+	/* Set priorities of PendSV to maximum. It can be used it the following
+	* way. When we use interrupts priorities, we can generate PendSV from
+	* any other irq handler, because it's of the maximal priority. */
+	REG8_STORE(SCB_SHPR3 + 2, NVIC_MAX_PRIO);
 
-	/* Set to all other interrupts priority equal to 1 */
+	/* Set to all other interrupts priority to minimal  */
+	REG8_STORE(SCB_SHPR3 + 3, NVIC_MIN_PRIO);
 	for (i = 0; i < 240; i++) {
-		REG8_STORE(NVIC_PRIORITY_BASE + i, IRQ_MIN_NONFAULT_PRIO);
+		REG8_STORE(NVIC_PRIORITY_BASE + i, NVIC_MIN_PRIO);
 	}
 }
 
