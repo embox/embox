@@ -54,7 +54,11 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 
 #define MODOPS_VERIFY_CHKSUM OPTION_GET(BOOLEAN, verify_chksum)
 
+#if OPTION_GET(NUMBER, log_level) >= LOG_DEBUG
+#define TCP_DEBUG 1
+#else
 #define TCP_DEBUG 0
+#endif
 
 /** TODO
  * +1. Create default socket for resetting
@@ -334,7 +338,7 @@ static void tcp_xmit(struct sk_buff *skb,
 	if (out_ops != NULL) {
 		int ret = out_ops->snd_pack(skb);
 		if (ret != 0) {
-			log_debug("tcp_xmit: snd_pack = %d", ret);
+			log_debug("snd_pack = %d", ret);
 		}
 	}
 }
@@ -361,7 +365,7 @@ static void tcp_rexmit(struct tcp_sock *tcp_sk) {
 			tcp_sock_unlock(tcp_sk, TCP_SYNC_WRITE_QUEUE);
 			return;
 		}
-		log_debug("tcp_rexmit: send skb %p, postponed %p", skb_send, skb);
+		log_debug("send skb %p, postponed %p", skb_send, skb);
 	}
 	tcp_sock_unlock(tcp_sk, TCP_SYNC_WRITE_QUEUE);
 
@@ -415,7 +419,7 @@ static void send_rst_reply(struct sk_buff *skb) {
  */
 static void send_nonseq_from_sock(struct tcp_sock *tcp_sk,
 		struct sk_buff *skb) {
-	log_debug("send_nonseq_from_sock: send %p", skb);
+	log_debug("send %p", skb);
 	tcp_set_seq_field(skb->h.th, tcp_sk->self.seq);
 	tcp_set_check_field(skb->h.th, skb->nh.raw);
 	tcp_xmit(skb, tcp_sk, NULL);
@@ -432,7 +436,7 @@ void send_seq_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb) {
 
 	skb_send = skb_clone(skb);
 
-	log_debug("send_seq_from_sock: send %p = %p", skb, skb_send);
+	log_debug("send %p = %p", skb, skb_send);
 
 	tcp_sock_lock(tcp_sk, TCP_SYNC_WRITE_QUEUE);
 	{
@@ -924,7 +928,7 @@ static enum tcp_ret_code process_ack(struct tcp_sock *tcp_sk,
 			/* All ok, our flag was confirmed */
 		}
 		else { /* Else unmark ack flag */
-			log_debug("process_ack: sk %p unmark ack\n",
+			log_debug("sk %p unmark ack\n",
 					to_sock(tcp_sk));
 			/* XXX remove const qualifier */
 			((struct tcphdr *)tcph)->ack = 0;
