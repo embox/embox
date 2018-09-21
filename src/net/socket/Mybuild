@@ -12,6 +12,8 @@ module raw_sock {
 }
 
 module tcp_sock {
+	option number log_level=0
+
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
 	option number max_simultaneous_tx_pack = 0
