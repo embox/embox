@@ -5,7 +5,7 @@
  * @date 18.06.12
  * @author Ilia Vaprol
  */
-
+#include <util/log.h>
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
@@ -67,7 +67,7 @@ static int tcp_init(struct sock *sk) {
 	tcp_sk = to_tcp_sock(sk);
 	assert(tcp_sk != NULL);
 
-	debug_print(3, "tcp_init: sk %p\n", to_sock(tcp_sk));
+	log_debug("sk %p", to_sock(tcp_sk));
 
 	tcp_sk->p_sk = tcp_sk->p_sk; /* already initialized */
 	tcp_sk->state = TCP_CLOSED;
@@ -99,7 +99,7 @@ static int tcp_close(struct sock *sk) {
 	tcp_sk = to_tcp_sock(sk);
 	assert(tcp_sk != NULL);
 
-	debug_print(3, "tcp_close: sk %p\n", to_sock(tcp_sk));
+	log_debug("sk %p", to_sock(tcp_sk));
 
 	tcp_sock_lock(tcp_sk, TCP_SYNC_STATE);
 	{
@@ -166,7 +166,7 @@ static int tcp_connect(struct sock *sk,
 	tcp_sk = to_tcp_sock(sk);
 	assert(tcp_sk != NULL);
 
-	debug_print(3, "tcp_connect: sk %p\n", to_sock(tcp_sk));
+	log_debug("sk %p", to_sock(tcp_sk));
 
 	tcp_sock_lock(tcp_sk, TCP_SYNC_STATE);
 	{
@@ -263,7 +263,7 @@ static int tcp_listen(struct sock *sk, int backlog) {
 	tcp_sk = to_tcp_sock(sk);
 	assert(tcp_sk != NULL);
 
-	debug_print(3, "tcp_listen: sk %p\n", to_sock(tcp_sk));
+	log_debug("sk %p", to_sock(tcp_sk));
 
 	tcp_sock_lock(tcp_sk, TCP_SYNC_STATE);
 	{
@@ -328,8 +328,7 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 	assert(newsk != NULL);
 
 	tcp_sk = to_tcp_sock(sk);
-	debug_print(3, "tcp_accept: sk %p, st%d\n",
-			to_sock(tcp_sk), tcp_sk->state);
+	log_debug("sk %p, st%d", to_sock(tcp_sk), tcp_sk->state);
 
 	assert(tcp_sk->state < TCP_MAX_STATE);
 	if (tcp_sk->state != TCP_LISTEN) {
@@ -392,7 +391,7 @@ static int tcp_write(struct tcp_sock *tcp_sk, void *buff, size_t len) {
 			break;
 		}
 
-		debug_print(3, "tcp_sendmsg: sending len %d\n", bytes);
+		log_debug("sending len %d", bytes);
 
 		tcp_build(skb->h.th,
 				sock_inet_get_dst_port(to_sock(tcp_sk)),
@@ -450,7 +449,7 @@ static int tcp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 
 	tcp_sk = to_tcp_sock(sk);
-	debug_print(3, "tcp_sendmsg: sk %p\n", to_sock(tcp_sk));
+	log_debug("sk %p", to_sock(tcp_sk));
 
 sendmsg_again:
 	assert(tcp_sk->state < TCP_MAX_STATE);
@@ -508,7 +507,7 @@ static int tcp_recvmsg(struct sock *sk, struct msghdr *msg,
 
 	tcp_sk = to_tcp_sock(sk);
 
-	debug_print(3, "tcp_recvmsg: sk %p\n", to_sock(tcp_sk));
+	log_debug("sk %p", to_sock(tcp_sk));
 
 	assert(tcp_sk->state < TCP_MAX_STATE);
 	switch (tcp_sk->state) {
