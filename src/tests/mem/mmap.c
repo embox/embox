@@ -36,7 +36,7 @@ static void *mmap_test_child(void *arg) {
 	int allocated = 0;
 	while (1) {
 		void *ptr = mmap(NULL, PAGE_SIZE(), PROT_READ | PROT_WRITE, MAP_SHARED | MAP_ANONYMOUS, -1, 0);
-		if (ptr != MAP_FAILED)
+		if (ptr == MAP_FAILED)
 			break;
 		allocated++;
 	}
