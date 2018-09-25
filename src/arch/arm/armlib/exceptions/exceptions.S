@@ -7,6 +7,7 @@
 
 #include <asm/modes.h>
 #include <arm/fpu.h>
+#include <asm/cp15.h>
 
 .text
 .align 4
@@ -124,7 +125,17 @@ fiq_handler:
 	sub r14, r14, #8
 
 arm_unresolvable_exception:
-	nop
+	/* This exception may occur if MMU tables or stack pointer
+	 * were corrupted, but we still need to print something, i.e.
+	 * here we try to avoid infinite recoursive exception */
+
+	/* First, make sure MMU is off before accessing stack */
+	mrc p15, 0, r0, c1, c0, 0
+	and r0, r0, #~CR_M
+	mcr p15, 0, r0, c1, c0, 0
+	/* Second, make sure stack pointer has sane value */
+	ldr sp, =_stack_top
+	/* Now we are ready to process exception itself */
 	stmfd sp!, {r0-r12, r14}
 	mrs r0, CPSR
 	mrs r1, SPSR
@@ -133,6 +144,12 @@ arm_unresolvable_exception:
 	b arm_exception_handler
 
 data_abt_handler:
+	/* Same as with arm_unresolvable_exception we need
+	 * to make sure that RAM access will be safe */
+	mrc p15, 0, r0, c1, c0, 0
+	and r0, r0, #~CR_M
+	mcr p15, 0, r0, c1, c0, 0
+	ldr sp, =_stack_top
 	stmfd sp!, {r0-r12,r14}
-	mov r0, r13
+	mov r0, sp
 	b arm_data_abort_exception
