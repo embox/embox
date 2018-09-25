@@ -1,0 +1,11 @@
+package platform.etnaviv
+
+module xml_headers {
+	@IncludeExport(path="etnaviv_xml")
+	source "state_3d.xml.h",
+		"state_2d.xml.h",
+		"state_hi.xml.h",
+		"state.xml.h",
+		"common.xml.h",
+		"cmdstream.xml.h"
+}

@@ -1,0 +1,844 @@
+#ifndef CUBE_CMD_H_
+#define CUBE_CMD_H_
+
+static uint32_t cmdbuf1[1024] = { /* seq 85 */
+    0x18000000, /* NOP (make space for PIPE switch) */
+    0x00000000,
+    0x18000000, /* NOP (make space for PIPE switch) */
+    0x00000000,
+    0x18000000,
+    0x00000000,
+    0x18000000,
+    0x00000000,
+    0x18000000,
+    0x00000000,
+/* set up */
+    0x08010e05, /* LOAD_STATE (1) Base: 0x03814 Size: 1 Fixp: 0 */
+    0x00000001, /*   GLOBAL.VERTEX_ELEMENT_CONFIG := 0x1 */
+    0x08010380, /* LOAD_STATE (1) Base: 0x00E00 Size: 1 Fixp: 0 */
+    0x00000001, /*   RA.CONTROL := 0x1 */
+    0x0801028b, /* LOAD_STATE (1) Base: 0x00A2C Size: 1 Fixp: 0 */
+    0x34000001, /*   PA.W_CLIP_LIMIT := 0x34000001 */
+    0x0801028a, /* LOAD_STATE (1) Base: 0x00A28 Size: 1 Fixp: 0 */
+    0x00000011, /*   PA.SYSTEM_MODE := 0x11 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xff3fffff, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=0,UNK23=0,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08010306, /* LOAD_STATE (1) Base: 0x00C18 Size: 1 Fixp: 0 */
+    0x00000000, /*   SE.LAST_PIXEL_ENABLE := 0x0 */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000002, /*   GLOBAL.FLUSH_CACHE := DEPTH=0,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x0801050b, /* LOAD_STATE (1) Base: 0x0142C Size: 1 Fixp: 0 */
+    0xfffcffff, /*   PE.COLOR_FORMAT := 0xfffcffff */ /* SUPERTILE */
+    0x0801050a, /* LOAD_STATE (1) Base: 0x01428 Size: 1 Fixp: 0 */
+    0xfffcfffc, /*   PE.ALPHA_CONFIG := 0xfffcfffc */
+    0x0801050a, /* LOAD_STATE (1) Base: 0x01428 Size: 1 Fixp: 0 */
+    0xff1bff1b, /*   PE.ALPHA_CONFIG := 0xff1bff1b */
+    0x0801050a, /* LOAD_STATE (1) Base: 0x01428 Size: 1 Fixp: 0 */
+    0xf0f7f0f7, /*   PE.ALPHA_CONFIG := 0xf0f7f0f7 */
+    0x0801050a, /* LOAD_STATE (1) Base: 0x01428 Size: 1 Fixp: 0 */
+    0x0fff0fff, /*   PE.ALPHA_CONFIG := 0xfff0fff */
+    0x08010509, /* LOAD_STATE (1) Base: 0x01424 Size: 1 Fixp: 0 */
+    0x00000000, /*   PE.ALPHA_BLEND_COLOR := 0x0 */
+    0x08010508, /* LOAD_STATE (1) Base: 0x01420 Size: 1 Fixp: 0 */
+    0xfffffffc, /*   PE.ALPHA_OP := ALPHA_TEST=0,ALPHA_TEST_MASK=0,ALPHA_FUNC=ALWAYS,ALPHA_FUNC_MASK=1(residue:ffffff0c) */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfffff8ff, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=OFF,CULL_FACE_MODE_MASK=0,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xffffcfff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:ffffc0ff) */
+    0x08010507, /* LOAD_STATE (1) Base: 0x0141C Size: 1 Fixp: 0 */
+    0xffff00df, /*   PE.STENCIL_CONFIG := 0xffff00df */
+    0x08010506, /* LOAD_STATE (1) Base: 0x01418 Size: 1 Fixp: 0 */
+    0xfffffff7, /*   PE.STENCIL_OP := STENCIL_FUNC_FRONT=ALWAYS,STENCIL_FUNC_FRONT_MASK=0,STENCIL_FUNC_BACK=ALWAYS,STENCIL_FUNC_BACK_MASK=1(residue:fff0fff0) */
+    0x08010506, /* LOAD_STATE (1) Base: 0x01418 Size: 1 Fixp: 0 */
+    0xfff7ffff, /*   PE.STENCIL_OP := STENCIL_FUNC_FRONT=ALWAYS,STENCIL_FUNC_FRONT_MASK=1,STENCIL_FUNC_BACK=ALWAYS,STENCIL_FUNC_BACK_MASK=0(residue:fff0fff0) */
+    0x08010507, /* LOAD_STATE (1) Base: 0x0141C Size: 1 Fixp: 0 */
+    0xffffffbf, /*   PE.STENCIL_CONFIG := 0xffffffbf */
+    0x08010507, /* LOAD_STATE (1) Base: 0x0141C Size: 1 Fixp: 0 */
+    0xffffff7f, /*   PE.STENCIL_CONFIG := 0xffffff7f */
+    0x08010506, /* LOAD_STATE (1) Base: 0x01418 Size: 1 Fixp: 0 */
+    0xfffff0ff, /*   PE.STENCIL_OP := STENCIL_FUNC_FRONT=ALWAYS,STENCIL_FUNC_FRONT_MASK=1,STENCIL_FUNC_BACK=ALWAYS,STENCIL_FUNC_BACK_MASK=1(residue:fff0f0f0) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffcffff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffcf0ff) */
+    0x08010506, /* LOAD_STATE (1) Base: 0x01418 Size: 1 Fixp: 0 */
+    0xf0ffffff, /*   PE.STENCIL_OP := STENCIL_FUNC_FRONT=ALWAYS,STENCIL_FUNC_FRONT_MASK=1,STENCIL_FUNC_BACK=ALWAYS,STENCIL_FUNC_BACK_MASK=1(residue:f0f0fff0) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffcffff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffcf0ff) */
+    0x08010506, /* LOAD_STATE (1) Base: 0x01418 Size: 1 Fixp: 0 */
+    0xffff0fff, /*   PE.STENCIL_OP := STENCIL_FUNC_FRONT=ALWAYS,STENCIL_FUNC_FRONT_MASK=1,STENCIL_FUNC_BACK=ALWAYS,STENCIL_FUNC_BACK_MASK=1(residue:fff00ff0) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffcffff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffcf0ff) */
+    0x08010506, /* LOAD_STATE (1) Base: 0x01418 Size: 1 Fixp: 0 */
+    0x0fffffff, /*   PE.STENCIL_OP := STENCIL_FUNC_FRONT=ALWAYS,STENCIL_FUNC_FRONT_MASK=1,STENCIL_FUNC_BACK=ALWAYS,STENCIL_FUNC_BACK_MASK=1(residue:0ff0fff0) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffcffff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffcf0ff) */
+    0x08010506, /* LOAD_STATE (1) Base: 0x01418 Size: 1 Fixp: 0 */
+    0xffffff0f, /*   PE.STENCIL_OP := STENCIL_FUNC_FRONT=ALWAYS,STENCIL_FUNC_FRONT_MASK=1,STENCIL_FUNC_BACK=ALWAYS,STENCIL_FUNC_BACK_MASK=1(residue:fff0ff00) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffcffff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffcf0ff) */
+    0x08010506, /* LOAD_STATE (1) Base: 0x01418 Size: 1 Fixp: 0 */
+    0xff0fffff, /*   PE.STENCIL_OP := STENCIL_FUNC_FRONT=ALWAYS,STENCIL_FUNC_FRONT_MASK=1,STENCIL_FUNC_BACK=ALWAYS,STENCIL_FUNC_BACK_MASK=1(residue:ff00fff0) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffcffff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffcf0ff) */
+    0x0801050b, /* LOAD_STATE (1) Base: 0x0142C Size: 1 Fixp: 0 */
+    0xffffefff, /*   PE.COLOR_FORMAT := 0xffffefff */
+    0x08010305, /* LOAD_STATE (1) Base: 0x00C14 Size: 1 Fixp: 0 */
+    0x00000000, /*   SE.DEPTH_BIAS := 0x0 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xffffafff, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=SOLID,FILL_MODE_MASK=0,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfff9ffff, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=SMOOTH,SHADE_MODEL_MASK=0,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x0801050b, /* LOAD_STATE (1) Base: 0x0142C Size: 1 Fixp: 0 */
+    0xffdfffe5, /*   PE.COLOR_FORMAT := 0xffdfffe5 */
+    0x0801050c, /* LOAD_STATE (1) Base: 0x01430 Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   PE.COLOR_ADDR := *rt_physical */
+    0x0801050d, /* LOAD_STATE (1) Base: 0x01434 Size: 1 Fixp: 0 */
+    0x00000700, /*   PE.COLOR_STRIDE := 0x700 */
+    0x08010e06, /* LOAD_STATE (1) Base: 0x03818 Size: 1 Fixp: 0 */
+    0xfff40ef4, /*   GLOBAL.MULTI_SAMPLE_CONFIG := 0xfff40ef4 */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000002, /*   GLOBAL.FLUSH_CACHE := DEPTH=0,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x0801050b, /* LOAD_STATE (1) Base: 0x0142C Size: 1 Fixp: 0 */
+    0xfffdffff, /*   PE.COLOR_FORMAT := 0xfffdffff */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000002, /*   GLOBAL.FLUSH_CACHE := DEPTH=0,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010598, /* LOAD_STATE (1) Base: 0x01660 Size: 1 Fixp: 0 */
+    0x00000000, /*   TS.COLOR_CLEAR_VALUE := 0x0 */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a003200, /*   TS.COLOR_STATUS_BASE := *rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   TS.COLOR_SURFACE_BASE := *rt_physical */
+    0x08010595, /* LOAD_STATE (1) Base: 0x01654 Size: 1 Fixp: 0 */
+    0x00000002, /*   TS.MEM_CONFIG := 0x2 */
+    0x08010304, /* LOAD_STATE (1) Base: 0x00C10 Size: 1 Fixp: 0 */
+    0x00000000, /*   SE.DEPTH_SCALE := 0x0 */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xf7ffffcf, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:f7fff0cf) */
+    0x08010504, /* LOAD_STATE (1) Base: 0x01410 Size: 1 Fixp: 0 */
+    0x7e6a0000, /*   PE.DEPTH_ADDR := *z_physical */
+    0x08010505, /* LOAD_STATE (1) Base: 0x01414 Size: 1 Fixp: 0 */
+    0x00000380, /*   PE.DEPTH_STRIDE := 0x380 */
+    0x08010507, /* LOAD_STATE (1) Base: 0x0141C Size: 1 Fixp: 0 */
+    0xffffffec, /*   PE.STENCIL_CONFIG := 0xffffffec */
+    0x08010515, /* LOAD_STATE (1) Base: 0x01454 Size: 1 Fixp: 0 */
+    0x00000000, /*   PE.UNK01454 := 0x0 */
+    0x08010503, /* LOAD_STATE (1) Base: 0x0140C Size: 1 Fixp: 0 */
+    0x477fff00, /*   PE.DEPTH_NORMALIZE := 65535.000000 */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffcffff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffcf0ff) */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000001, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=0,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x0801059b, /* LOAD_STATE (1) Base: 0x0166C Size: 1 Fixp: 0 */
+    0xffffffff, /*   TS.DEPTH_CLEAR_VALUE := 0xffffffff */
+    0x08010599, /* LOAD_STATE (1) Base: 0x01664 Size: 1 Fixp: 0 */
+    0x7a003900, /*   TS.DEPTH_STATUS_BASE := *0x7a003900 */
+    0x0801059a, /* LOAD_STATE (1) Base: 0x01668 Size: 1 Fixp: 0 */
+    0x7e6a0000, /*   TS.DEPTH_SURFACE_BASE := *z_physical */
+    0x08010595, /* LOAD_STATE (1) Base: 0x01654 Size: 1 Fixp: 0 */
+    0x0000004b,//0x0000004b, /*   TS.MEM_CONFIG := 0x4b */ /* XXX */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffdffff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffdf0ff) */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a002a00, /*   TS.COLOR_STATUS_BASE := *aux_rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f284000, /*   TS.COLOR_SURFACE_BASE := *aux_rt_physical */
+    0x08010594, /* LOAD_STATE (1) Base: 0x01650 Size: 1 Fixp: 0 */
+    0x00000001, /*   RS.FLUSH_CACHE := 0x1 */
+    0x08010581, /* LOAD_STATE (1) Base: 0x01604 Size: 1 Fixp: 0 */
+    0x00004486, /*   RS.CONFIG := SOURCE_FORMAT=A8R8G8B8,UNK7=1,DEST_FORMAT=R5G6B5,UNK14=1,SWAP_RB=0 */
+    0x08010582, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f284000, /*   RS.SOURCE_ADDR := *aux_rt_physical */
+    0x08010583, /* LOAD_STATE (1) Base: 0x0160C Size: 1 Fixp: 0 */
+    0x00000400, /*   RS.SOURCE_STRIDE := 0x400 */
+    0x08010584, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f284000, /*   RS.DEST_ADDR := *aux_rt_physical */
+    0x08010585, /* LOAD_STATE (1) Base: 0x01614 Size: 1 Fixp: 0 */
+    0x00000400, /*   RS.DEST_STRIDE := 0x400 */
+    0x08010588, /* LOAD_STATE (1) Base: 0x01620 Size: 1 Fixp: 0 */
+    0x00040010, //0x00040010, /*   RS.WINDOW_SIZE := HEIGHT=4,WIDTH=16 */ /* XXX */
+    0x0801058f, /* LOAD_STATE (1) Base: 0x0163C Size: 1 Fixp: 0 */
+    0x0001FFFF, /*   RS.CLEAR_CONTROL := BITS=0x0,MODE=0x0 */ /* XXX */
+    0x08010580, /* LOAD_STATE (1) Base: 0x01600 Size: 1 Fixp: 0 */
+    0xbeebbeeb, /*   RS.KICKER := 0xbeebbeeb */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a003200, /*   TS.COLOR_STATUS_BASE := *rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   TS.COLOR_SURFACE_BASE := *rt_physical */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a002a00, /*   TS.COLOR_STATUS_BASE := *aux_rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f284000, /*   TS.COLOR_SURFACE_BASE := *aux_rt_physical */
+    0x08010594, /* LOAD_STATE (1) Base: 0x01650 Size: 1 Fixp: 0 */
+    0x00000001, /*   RS.FLUSH_CACHE := 0x1 */
+    0x08010581, /* LOAD_STATE (1) Base: 0x01604 Size: 1 Fixp: 0 */
+    0x00004486, /*   RS.CONFIG := SOURCE_FORMAT=A8R8G8B8,UNK7=1,DEST_FORMAT=R5G6B5,UNK14=1,SWAP_RB=0 */
+    0x08010582, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f284000, /*   RS.SOURCE_ADDR := *aux_rt_physical */
+    0x08010583, /* LOAD_STATE (1) Base: 0x0160C Size: 1 Fixp: 0 */
+    0x00000400, /*   RS.SOURCE_STRIDE := 0x400 */
+    0x08010584, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f284000, /*   RS.DEST_ADDR := *aux_rt_physical */
+    0x08010585, /* LOAD_STATE (1) Base: 0x01614 Size: 1 Fixp: 0 */
+    0x00000400, /*   RS.DEST_STRIDE := 0x400 */
+    0x08010588, /* LOAD_STATE (1) Base: 0x01620 Size: 1 Fixp: 0 */
+    0x00040010, /*   RS.WINDOW_SIZE := HEIGHT=4,WIDTH=16 */
+    0x0801058f, /* LOAD_STATE (1) Base: 0x0163C Size: 1 Fixp: 0 */
+    0x00000000, /*   RS.CLEAR_CONTROL := BITS=0x0,MODE=0x0 */
+    0x08010580, /* LOAD_STATE (1) Base: 0x01600 Size: 1 Fixp: 0 */
+    0xbeebbeeb, /*   RS.KICKER := 0xbeebbeeb */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a003200, /*   TS.COLOR_STATUS_BASE := *rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   TS.COLOR_SURFACE_BASE := *rt_physical */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a002a00, /*   TS.COLOR_STATUS_BASE := *aux_rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f284000, /*   TS.COLOR_SURFACE_BASE := *aux_rt_physical */
+    0x08010594, /* LOAD_STATE (1) Base: 0x01650 Size: 1 Fixp: 0 */
+    0x00000001, /*   RS.FLUSH_CACHE := 0x1 */
+    0x08010581, /* LOAD_STATE (1) Base: 0x01604 Size: 1 Fixp: 0 */
+    0x00004486, /*   RS.CONFIG := SOURCE_FORMAT=A8R8G8B8,UNK7=1,DEST_FORMAT=R5G6B5,UNK14=1,SWAP_RB=0 */
+    0x08010582, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f284000, /*   RS.SOURCE_ADDR := *aux_rt_physical */
+    0x08010583, /* LOAD_STATE (1) Base: 0x0160C Size: 1 Fixp: 0 */
+    0x00000400, /*   RS.SOURCE_STRIDE := 0x400 */
+    0x08010584, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f284000, /*   RS.DEST_ADDR := *aux_rt_physical */
+    0x08010585, /* LOAD_STATE (1) Base: 0x01614 Size: 1 Fixp: 0 */
+    0x00000400, /*   RS.DEST_STRIDE := 0x400 */
+    0x08010588, /* LOAD_STATE (1) Base: 0x01620 Size: 1 Fixp: 0 */
+    0x00040010, /*   RS.WINDOW_SIZE := HEIGHT=4,WIDTH=16 */
+    0x0801058f, /* LOAD_STATE (1) Base: 0x0163C Size: 1 Fixp: 0 */
+    0x00000000, /*   RS.CLEAR_CONTROL := BITS=0x0,MODE=0x0 */
+    0x08010580, /* LOAD_STATE (1) Base: 0x01600 Size: 1 Fixp: 0 */
+    0xbeebbeeb, /*   RS.KICKER := 0xbeebbeeb */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a003200, /*   TS.COLOR_STATUS_BASE := *rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   TS.COLOR_SURFACE_BASE := *rt_physical */
+    0x08010e02, /* LOAD_STATE (1) Base: 0x03808 Size: 1 Fixp: 0 */
+    0x00000705, /*   GLOBAL.SEMAPHORE_TOKEN := FROM=RA,TO=PE */
+    0x08010f00, /* LOAD_STATE (1) Base: 0x03C00 Size: 1 Fixp: 0 */
+    0x00000705, /*   GLOBAL.STALL_TOKEN := FROM=RA,TO=PE */
+    0x08010581, /* LOAD_STATE (1) Base: 0x01604 Size: 1 Fixp: 0 */
+    0x00000606, /*   RS.CONFIG := SOURCE_FORMAT=A8R8G8B8,UNK7=0,DEST_FORMAT=A8R8G8B8,UNK14=0,SWAP_RB=0 */
+    0x0802058c, /* LOAD_STATE (1) Base: 0x01630 Size: 2 Fixp: 0 */
+    0xffffffff, /*   RS.DITHER[0] := 0xffffffff */
+    0xffffffff, /*   RS.DITHER[1] := 0xffffffff */
+    0x00000100, /* PAD */
+    0x08010584, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7a003200, /*   RS.DEST_ADDR := *rt_ts_physical */
+    0x08010585, /* LOAD_STATE (1) Base: 0x01614 Size: 1 Fixp: 0 */
+    0x00000040, /*   RS.DEST_STRIDE := 0x40 */
+    0x08010588, /* LOAD_STATE (1) Base: 0x01620 Size: 1 Fixp: 0 */
+    0x001c0010, /*   RS.WINDOW_SIZE := HEIGHT=28,WIDTH=16 */
+    0x08010590, /* LOAD_STATE (1) Base: 0x01640 Size: 1 Fixp: 0 */
+    0x55555555, /*   RS.FILL_VALUE[0] := 0x55555555 */
+    0x0801058f, /* LOAD_STATE (1) Base: 0x0163C Size: 1 Fixp: 0 */
+    0x0001ffff, /*   RS.CLEAR_CONTROL := BITS=0xffff,MODE=0x1 */
+    0x080105a8, /* LOAD_STATE (1) Base: 0x016A0 Size: 1 Fixp: 0 */
+    0x00000000, /*   RS.EXTRA_CONFIG := AA=0x0,ENDIAN=NO_SWAP */
+    0x08010580, /* LOAD_STATE (1) Base: 0x01600 Size: 1 Fixp: 0 */
+    0xbeebbeeb, /*   RS.KICKER := 0xbeebbeeb */
+    0x08010598, /* LOAD_STATE (1) Base: 0x01660 Size: 1 Fixp: 0 */
+    0xff1f1f1f, /*   TS.COLOR_CLEAR_VALUE := 0xff7f7f7f */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000002, /*   GLOBAL.FLUSH_CACHE := DEPTH=0,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010598, /* LOAD_STATE (1) Base: 0x01660 Size: 1 Fixp: 0 */
+    0xff1f1f1f, /*   TS.COLOR_CLEAR_VALUE := 0xff7f7f7f */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a003200, /*   TS.COLOR_STATUS_BASE := *rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   TS.COLOR_SURFACE_BASE := *rt_physical */
+    0x08010595, /* LOAD_STATE (1) Base: 0x01654 Size: 1 Fixp: 0 */
+    0x0000004b, /*   TS.MEM_CONFIG := 0x4b    Enable depth fast clear  */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfffffaff, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=CCW,CULL_FACE_MODE_MASK=0,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xffffcfff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:ffffc0ff) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffffff4, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffff0f4) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xffffcfff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:ffffc0ff) */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xfffff7ff, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=0(residue:fffff0ff) */
+    0x08010500, /* LOAD_STATE (1) B2se: 0x01400 Size: 1 Fixp: 0 */
+    0xfffffff5, /*   PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:fffff0f5) */
+    0x08010501, /* LOAD_STATE (1) Base: 0x01404 Size: 1 Fixp: 0 */
+    0x00000000, /*   PE.DEPTH_NEAR := 0.000000 */
+    0x08010502, /* LOAD_STATE (1) Base: 0x01408 Size: 1 Fixp: 0 */
+    0x3f800000, /*   PE.DEPTH_FAR := 1.000000 */
+    0x08010503, /* LOAD_STATE (1) Base: 0x0140C Size: 1 Fixp: 0 */
+    0x477fff00, /*   PE.DEPTH_NORMALIZE := 65535.000000 */
+    0x08010285, /* LOAD_STATE (1) Base: 0x00A14 Size: 1 Fixp: 0 */
+    0x00000000, /*   PA.VIEWPORT_OFFSET_Z := 0.000000 */
+    0x08010282, /* LOAD_STATE (1) Base: 0x00A08 Size: 1 Fixp: 0 */
+    0x3f800000, /*   PA.VIEWPORT_SCALE_Z := 1.000000 */
+    0x08010500, /* LOAD_STATE (1) Base: 0x01400 Size: 1 Fixp: 0 */
+    0xffcfffff, /*3  PE.DEPTH_CONFIG := DEPTH_FUNC=ALWAYS,DEPTH_FUNC_MASK=1(residue:ffcff0ff) */
+    0x0c010283, /* LOAD_STATE (1) Base: 0x00A0C Size: 1 Fixp: 1 */
+    0x00c80000,// / 2 * 3, /*   PA.VIEWPORT_OFFSET_X = 200.000000 */
+    0x0c010284, /* LOAD_STATE (1) Base: 0x00A10 Size: 1 Fixp: 1 */
+    0x00780000 * 2, /*   PA.VIEWPORT_OFFSET_Y = 120.000000 */
+    0x0c010280, /* LOAD_STATE (1) Base: 0x00A00 Size: 1 Fixp: 1 */
+    0x00c80000, /*   PA.VIEWPORT_SCALE_X = 200.000000 */
+    0x0c010281, /* LOAD_STATE (1) Base: 0x00A04 Size: 1 Fixp: 1 */
+    0x00780000 * 2, /*   PA.VIEWPORT_SCALE_Y = 120.000000 */
+    0x0c010300, /* LOAD_STATE (1) Base: 0x00C00 Size: 1 Fixp: 1 */
+    0x00000000, /*   SE.SCISSOR_LEFT = 0.000000 */
+    0x0c010301, /* LOAD_STATE (1) Base: 0x00C04 Size: 1 Fixp: 1 */
+    0x00000000, /*   SE.SCISSOR_TOP = 0.000000 */
+    0x0c010302, /* LOAD_STATE (1) Base: 0x00C08 Size: 1 Fixp: 1 */
+    0x01900000 * 1 + 5, /*   SE.SCISSOR_RIGHT = 400.000076 */
+    0x0c010303, /* LOAD_STATE (1) Base: 0x00C0C Size: 1 Fixp: 1 */
+    0x00f00000 * 2 + 5, /*   SE.SCISSOR_BOTTOM = 240.000076 */ /* shader setup */
+    0x08010200, /* LOAD_STATE (1) Base: 0x00800 Size: 1 Fixp: 0 */
+    0x00000018, /*   VS.END_PC := 0x18 */
+    0x08030202, /* LOAD_STATE (1) Base: 0x00808 Size: 3 Fixp: 0 */
+    0x00000103, /*   VS.INPUT_COUNT := COUNT=0x3,COUNT2=0x1 */
+    0x00000006, /*   VS.TEMP_REGISTER_CONTROL := NUM_TEMPS=0x6 */
+    0x00000004, /*   VS.OUTPUT[0] := 0x4 */
+    0x0801020e, /* LOAD_STATE (1) Base: 0x00838 Size: 1 Fixp: 0 */
+    0x00000000, /*   VS.START_PC := 0x0 */
+    0x0801142d, /* LOAD_STATE (1) Base: 0x050B4 Size: 1 Fixp: 0 */
+    0x3f000000, /*   VS.UNIFORMS[45] := 0.500000  u11.y */
+    0x0801142c, /* LOAD_STATE (1) Base: 0x050B0 Size: 1 Fixp: 0 */
+    0x3f800000, /*   VS.UNIFORMS[44] := 1.000000  u11.x */
+    0x0801141b, /* LOAD_STATE (1) Base: 0x0506C Size: 1 Fixp: 0 */
+    0x00000000, /*   VS.UNIFORMS[27] := 0.000000  u6.w */
+    0x08011417, /* LOAD_STATE (1) Base: 0x0505C Size: 1 Fixp: 0 */
+    0x41a00000, /*   VS.UNIFORMS[23] := 20.000000 u5.w */
+    0x08011413, /* LOAD_STATE (1) Base: 0x0504C Size: 1 Fixp: 0 */
+    0x40000000, /*   VS.UNIFORMS[19] := 2.000000 u4.w */
+    0x08601000, /* LOAD_STATE (1) Base: 0x04000 Size: 96 Fixp: 0 */
+    0x01831009, /*   VS.INST_MEM[0] := 0x1831009 */
+    0x00000000, /*   VS.INST_MEM[1] := 0x0 */
+    0x00000000, /*   VS.INST_MEM[2] := 0x0 */
+    0x203fc048, /*   VS.INST_MEM[3] := 0x203fc048 */
+    0x02031009, /*   VS.INST_MEM[4] := 0x2031009 */
+    0x00000000, /*   VS.INST_MEM[5] := 0x0 */
+    0x00000000, /*   VS.INST_MEM[6] := 0x0 */
+    0x203fc058, /*   VS.INST_MEM[7] := 0x203fc058 */
+    0x07841003, /*   VS.INST_MEM[8] := 0x7841003 */
+    0x39000800, /*   VS.INST_MEM[9] := 0x39000800 */
+    0x00000050, /*   VS.INST_MEM[10] := 0x50 */
+    0x00000000, /*   VS.INST_MEM[11] := 0x0 */
+    0x07841002, /*   VS.INST_MEM[12] := 0x7841002 */
+    0x39001800, /*   VS.INST_MEM[13] := 0x39001800 */
+    0x00aa0050, /*   VS.INST_MEM[14] := 0xaa0050 */
+    0x00390048, /*   VS.INST_MEM[15] := 0x390048 */
+    0x07841002, /*   VS.INST_MEM[16] := 0x7841002 */
+    0x39002800, /*   VS.INST_MEM[17] := 0x39002800 */
+    0x01540050, /*   VS.INST_MEM[18] := 0x1540050 */
+    0x00390048, /*   VS.INST_MEM[19] := 0x390048 */
+    0x07841002, /*   VS.INST_MEM[20] := 0x7841002 */
+    0x39003800, /*   VS.INST_MEM[21] := 0x39003800 */
+    0x01fe0050, /*   VS.INST_MEM[22] := 0x1fe0050 */
+    0x00390048, /*   VS.INST_MEM[23] := 0x390048 */
+    0x03851003, /*   VS.INST_MEM[24] := 0x3851003 */
+    0x29004800, /*   VS.INST_MEM[25] := 0x29004800 */
+    0x000000d0, /*   VS.INST_MEM[26] := 0xd0 */
+    0x00000000, /*   VS.INST_MEM[27] := 0x0 */
+    0x03851002, /*   VS.INST_MEM[28] := 0x3851002 */
+    0x29005800, /*   VS.INST_MEM[29] := 0x29005800 */
+    0x00aa00d0, /*   VS.INST_MEM[30] := 0xaa00d0 */
+    0x00290058, /*   VS.INST_MEM[31] := 0x290058 */
+    0x03811002, /*   VS.INST_MEM[32] := 0x3811002 */
+    0x29006800, /*   VS.INST_MEM[33] := 0x29006800 */
+    0x015400d0, /*   VS.INST_MEM[34] := 0x15400d0 */
+    0x00290058, /*   VS.INST_MEM[35] := 0x290058 */
+    0x07851003, /*   VS.INST_MEM[36] := 0x7851003 */
+    0x39007800, /*   VS.INST_MEM[37] := 0x39007800 */
+    0x00000050, /*   VS.INST_MEM[38] := 0x50 */
+    0x00000000, /*   VS.INST_MEM[39] := 0x0 */
+    0x07851002, /*   VS.INST_MEM[40] := 0x7851002 */
+    0x39008800, /*   VS.INST_MEM[41] := 0x39008800 */
+    0x00aa0050, /*   VS.INST_MEM[42] := 0xaa0050 */
+    0x00390058, /*   VS.INST_MEM[43] := 0x390058 */
+    0x07851002, /*   VS.INST_MEM[44] := 0x7851002 */
+    0x39009800, /*   VS.INST_MEM[45] := 0x39009800 */
+    0x01540050, /*   VS.INST_MEM[46] := 0x1540050 */
+    0x00390058, /*   VS.INST_MEM[47] := 0x390058 */
+    0x07801002, /*   VS.INST_MEM[48] := 0x7801002 */
+    0x3900a800, /*   VS.INST_MEM[49] := 0x3900a800 */
+    0x01fe0050, /*   VS.INST_MEM[50] := 0x1fe0050 */
+    0x00390058, /*   VS.INST_MEM[51] := 0x390058 */
+    0x0401100c, /*   VS.INST_MEM[52] := 0x401100c */
+    0x00000000, /*   VS.INST_MEM[53] := 0x0 */
+    0x00000000, /*   VS.INST_MEM[54] := 0x0 */
+    0x003fc008, /*   VS.INST_MEM[55] := 0x3fc008 */
+    0x03801002, /*   VS.INST_MEM[56] := 0x3801002 */
+    0x69000800, /*   VS.INST_MEM[57] := 0x69000800 */
+    0x01fe00c0, /*   VS.INST_MEM[58] := 0x1fe00c0 */
+    0x00290038, /*   VS.INST_MEM[59] := 0x290038 */
+    0x03831005, /*   VS.INST_MEM[60] := 0x3831005 */
+    0x29000800, /*   VS.INST_MEM[61] := 0x29000800 */
+    0x01480040, /*   VS.INST_MEM[62] := 0x1480040 */
+    0x00000000, /*   VS.INST_MEM[63] := 0x0 */
+    0x0383100d, /*   VS.INST_MEM[64] := 0x383100d */
+    0x00000000, /*   VS.INST_MEM[65] := 0x0 */
+    0x00000000, /*   VS.INST_MEM[66] := 0x0 */
+    0x00000038, /*   VS.INST_MEM[67] := 0x38 */
+    0x03801003, /*   VS.INST_MEM[68] := 0x3801003 */
+    0x29000800, /*   VS.INST_MEM[69] := 0x29000800 */
+    0x014801c0, /*   VS.INST_MEM[70] := 0x14801c0 */
+    0x00000000, /*   VS.INST_MEM[71] := 0x0 */
+    0x00801005, /*   VS.INST_MEM[72] := 0x801005 */
+    0x29001800, /*   VS.INST_MEM[73] := 0x29001800 */
+    0x01480040, /*   VS.INST_MEM[74] := 0x1480040 */
+    0x00000000, /*   VS.INST_MEM[75] := 0x0 */
+    0x0080108f, /*   VS.INST_MEM[76] := 0x80108f */
+    0x3fc06800, /*   VS.INST_MEM[77] := 0x3fc06800 */
+    0x00000050, /*   VS.INST_MEM[78] := 0x50 */
+    0x203fc068, /*   VS.INST_MEM[79] := 0x203fc068 */
+    0x03801003, /*   VS.INST_MEM[80] := 0x3801003 */
+    0x00000800, /*   VS.INST_MEM[81] := 0x800 */
+    0x01480140, /*   VS.INST_MEM[82] := 0x1480140 */
+    0x00000000, /*   VS.INST_MEM[83] := 0x0 */
+    0x04001009, /*   VS.INST_MEM[84] := 0x4001009 */
+    0x00000000, /*   VS.INST_MEM[85] := 0x0 */
+    0x00000000, /*   VS.INST_MEM[86] := 0x0 */
+    0x200000b8, /*   VS.INST_MEM[87] := 0x200000b8 */
+    0x02041001, /*   VS.INST_MEM[88] := 0x2041001 */
+    0x2a804800, /*   VS.INST_MEM[89] := 0x2a804800 */
+    0x00000000, /*   VS.INST_MEM[90] := 0x0 */
+    0x003fc048, /*   VS.INST_MEM[91] := 0x3fc048 */
+    0x02041003, /*   VS.INST_MEM[92] := 0x2041003 */
+    0x2a804800, /*   VS.INST_MEM[93] := 0x2a804800 */
+    0x00aa05c0, /*   VS.INST_MEM[94] := 0xaa05c0 */
+    0x00000002, /*   VS.INST_MEM[95] := 0x2 */
+    0x00000000, /* PAD */
+    0x08010380, /* LOAD_STATE (1) Base: 0x00E00 Size: 1 Fixp: 0 */
+    0x00000001, /*   RA.CONTROL := 0x1 */
+    0x08020400, /* LOAD_STATE (1) Base: 0x01000 Size: 2 Fixp: 0 */
+    0x00000001, /*   PS.END_PC := 0x1 */
+    0x00000001, /*   PS.OUTPUT_REG := 0x1 */
+    0x00000001, /* PAD */
+    0x08010406, /* LOAD_STATE (1) Base: 0x01018 Size: 1 Fixp: 0 */
+    0x00000000, /*   PS.START_PC := 0x0 */
+    0x08010290, /* LOAD_STATE (1) Base: 0x00A40 Size: 1 Fixp: 0 */
+    0x00000200, /*   PA.SHADER_ATTRIBUTES[0] := 0x200 */
+    0x08010e08, /* LOAD_STATE (1) Base: 0x03820 Size: 1 Fixp: 0 */
+    0x00000004, /*   GLOBAL.PS_VARYING_NUM_COMPONENTS := VAR0=0x4,VAR1=0x0,VAR2=0x0,VAR3=0x0,VAR4=0x0,VAR5=0x0,VAR6=0x0,VAR7=0x0 */
+    0x08020e0a, /* LOAD_STATE (1) Base: 0x03828 Size: 2 Fixp: 0 */
+    0x00000055, /*   GLOBAL.PS_VARYING_COMPONENT_USE[0] := COMP0=USED,COMP1=USED,COMP2=USED,COMP3=USED,COMP4=UNUSED,COMP5=UNUSED,COMP6=UNUSED,COMP7=UNUSED,COMP8=UNUSED,COMP9=UNUSED,COMP10=UNUSED,COMP11=UNUSED,COMP12=UNUSED,COMP13=UNUSED,COMP14=UNUSED,COMP15=UNUSED */
+    0x00000000, /*   GLOBAL.PS_VARYING_COMPONENT_USE[1] := COMP0=UNUSED,COMP1=UNUSED,COMP2=UNUSED,COMP3=UNUSED,COMP4=UNUSED,COMP5=UNUSED,COMP6=UNUSED,COMP7=UNUSED,COMP8=UNUSED,COMP9=UNUSED,COMP10=UNUSED,COMP11=UNUSED,COMP12=UNUSED,COMP13=UNUSED,COMP14=UNUSED,COMP15=UNUSED */
+    0x01140000, /* PAD */
+    0x08041800, /* LOAD_STATE (1) Base: 0x06000 Size: 4 Fixp: 0 */
+    0x00000000, /*   PS.INST_MEM[0] := 0x0 */
+    0x00000000, /*   PS.INST_MEM[1] := 0x0 */
+    0x00000000, /*   PS.INST_MEM[2] := 0x0 */
+    0x00000000, /*   PS.INST_MEM[3] := 0x0 */
+    0x017a0000, /* PAD */ /* glDrawArrays 1 */
+    0x08010402, /* LOAD_STATE (1) Base: 0x01008 Size: 1 Fixp: 0 */
+    0x00001f02, /*   PS.INPUT_COUNT := COUNT=0x2,COUNT2=0x1f */
+    0x08010403, /* LOAD_STATE (1) Base: 0x0100C Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.TEMP_REGISTER_CONTROL := NUM_TEMPS=0x2 */
+    0x08010404, /* LOAD_STATE (1) Base: 0x01010 Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.CONTROL := 0x2 */
+    0x0801028c, /* LOAD_STATE (1) Base: 0x00A30 Size: 1 Fixp: 0 */
+    0x00000100, /*   PA.ATTRIBUTE_ELEMENT_COUNT := 0x100 */
+    0x08010e07, /* LOAD_STATE (1) Base: 0x0381C Size: 1 Fixp: 0 */
+    0x00000004, /*   GLOBAL.VS_VARYING_NUM_COMPONENTS := VAR0=0x4,VAR1=0x0,VAR2=0x0,VAR3=0x0,VAR4=0x0,VAR5=0x0,VAR6=0x0,VAR7=0x0 */
+    0x0801020c, /* LOAD_STATE (1) Base: 0x00830 Size: 1 Fixp: 0 */
+    0x0f3f0582, /*   VS.LOAD_BALANCING := 0xf3f0582 */
+    0x08010201, /* LOAD_STATE (1) Base: 0x00804 Size: 1 Fixp: 0 */
+    0x00000002, /*   VS.OUTPUT_COUNT := 0x2 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfffffff3, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=0,POINT_SIZE_MASK=0,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08101400, /* LOAD_STATE (1) Base: 0x05000 Size: 16 Fixp: 0 */
+    0x3fbf00b4, /*   VS.UNIFORMS[0] := 1.492209 mvp[0][0] u0 */
+    0x3fa8f7a3, /*   VS.UNIFORMS[1] := 1.320057 mvp[0][1] */
+    0xc01d7d33, /*   VS.UNIFORMS[2] := -2.460767 mvp[0][2] */
+    0xbf1d7d33, /*   VS.UNIFORMS[3] := -0.615192 mvp[0][3] */
+    0x3e86b73c, /*   VS.UNIFORMS[4] := 0.263117 mvp[1][0] u1 */
+    0x403303b5, /*   VS.UNIFORMS[5] := 2.797101 mvp[1][1] */
+    0x401c0ad2, /*   VS.UNIFORMS[6] := 2.438160 mvp[1][2] */
+    0x3f1c0ad2, /*   VS.UNIFORMS[7] := 0.609540 mvp[1][3] */
+    0xbfc1f304, /*   VS.UNIFORMS[8] := -1.515229 mvp[2][0] u2 */
+    0x3fe49248, /*   VS.UNIFORMS[9] := 1.785714 mvp[2][1]*/
+    0xbfffffff, /*   VS.UNIFORMS[10] := -2.000000 mvp[2][2] */
+    0xbeffffff, /*   VS.UNIFORMS[11] := -0.500000 mvp[2][3] */
+    0x00000000, /*   VS.UNIFORMS[12] := 0.000000 mvp[3][0] u3 */
+    0x00000000, /*   VS.UNIFORMS[13] := 0.000000 mvp[3][1] */
+    0x40000000, /*   VS.UNIFORMS[14] := 2.000000 mvp[3][2] */
+    0x41000000, /*   VS.UNIFORMS[15] := 8.000000 mvp[3][3] */
+    0x00003152, /* PAD */
+    0x08031410, /* LOAD_STATE (1) Base: 0x05040 Size: 3 Fixp: 0 */
+    0x3f3244ed, /*   VS.UNIFORMS[16] := 0.696364 normal[0][0] u4 */
+    0x3ebd3e50, /*   VS.UNIFORMS[17] := 0.369616 normal[0][1] */
+    0x3f1d7d33, /*   VS.UNIFORMS[18] := 0.615192 normal[0][2] */
+    0x08031414, /* LOAD_STATE (1) Base: 0x05050 Size: 3 Fixp: 0 */
+    0x3dfb782d, /*   VS.UNIFORMS[20] := 0.122788 normal[1][0] u5 */
+    0x3f487f08, /*   VS.UNIFORMS[21] := 0.783188 normal[1][1] */
+    0xbf1c0ad2, /*   VS.UNIFORMS[22] := -0.609540 normal[1][2] */
+    0x08031418, /* LOAD_STATE (1) Base: 0x05060 Size: 3 Fixp: 0 */
+    0xbf3504f3, /*   VS.UNIFORMS[24] := -0.707107 normal[2][0] u6 */
+    0x3effffff, /*   VS.UNIFORMS[25] := 0.500000 normal[2][1] */
+    0x3effffff, /*   VS.UNIFORMS[26] := 0.500000 normal[2][2] */
+    0x0810141c, /* LOAD_STATE (1) Base: 0x05070 Size: 16 Fixp: 0 */
+    0x3f3244ed, /*   VS.UNIFORMS[28] := 0.696364 mv[0][0] u7 */
+    0x3ebd3e50, /*   VS.UNIFORMS[29] := 0.369616 mv[0][1] */
+    0x3f1d7d33, /*   VS.UNIFORMS[30] := 0.615192 mv[0][2] */
+    0x00000000, /*   VS.UNIFORMS[31] := 0.000000 mv[0][3] */
+    0x3dfb782d, /*   VS.UNIFORMS[32] := 0.122788 mv[1][0] u8 */
+    0x3f487f08, /*   VS.UNIFORMS[33] := 0.783188 mv[1][1] */
+    0xbf1c0ad2, /*   VS.UNIFORMS[34] := -0.609540 mv[1][2] */
+    0x00000000, /*   VS.UNIFORMS[35] := 0.000000 mv[1][3] */
+    0xbf3504f3, /*   VS.UNIFORMS[36] := -0.707107 mv[2][0] u9 */
+    0x3effffff, /*   VS.UNIFORMS[37] := 0.500000 mv[2][1] */
+    0x3effffff, /*   VS.UNIFORMS[38] := 0.500000 mv[2][2] */
+    0x00000000, /*   VS.UNIFORMS[39] := 0.000000 mv[2][3] */
+    0x00000000, /*   VS.UNIFORMS[40] := 0.000000 mv[3][0] u10 */
+    0x00000000, /*   VS.UNIFORMS[41] := 0.000000 mv[3][1] */
+    0xc1000000, /*   VS.UNIFORMS[42] := -8.000000 mv[3][2] */
+    0x3f800000, /*   VS.UNIFORMS[43] := 1.000000 mv[3][3] */
+    0x00000201, /* PAD */
+    0x08010193, /* LOAD_STATE (1) Base: 0x0064C Size: 1 Fixp: 0 */
+    0x7c24de80, /*   FE.VERTEX_STREAM_BASE_ADDR := *0x7c24de80 */
+    0x08010194, /* LOAD_STATE (1) Base: 0x00650 Size: 1 Fixp: 0 */
+    0x00000024, /*   FE.VERTEX_STREAM_CONTROL := VERTEX_STRIDE=0x24 */
+    0x08010180, /* LOAD_STATE (1) Base: 0x00600 Size: 1 Fixp: 0 */
+    0x0c003008, /*   FE.VERTEX_ELEMENT_CONFIG[0] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x0,END=0xc */
+    0x08010181, /* LOAD_STATE (1) Base: 0x00604 Size: 1 Fixp: 0 */
+    0x180c3008, /*   FE.VERTEX_ELEMENT_CONFIG[1] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0xc,END=0x18 */
+    0x08010182, /* LOAD_STATE (1) Base: 0x00608 Size: 1 Fixp: 0 */
+    0x24183088, /*   FE.VERTEX_ELEMENT_CONFIG[2] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=1,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x18,END=0x24 */
+    0x08010208, /* LOAD_STATE (1) Base: 0x00820 Size: 1 Fixp: 0 */
+    0x00020100, /*   VS.INPUT[0] := 0x20100 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xffffffcf, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=0,POINT_SPRITE_MASK=0,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x28000000, /* DRAW_PRIMITIVES (5) */
+    0x00000005, /*  */
+    0x00000000, /*  */
+    0x00000002, /*  */ /* glDrawArrays 2 */
+    0x08010402, /* LOAD_STATE (1) Base: 0x01008 Size: 1 Fixp: 0 */
+    0x00001f02, /*   PS.INPUT_COUNT := COUNT=0x2,COUNT2=0x1f */
+    0x08010403, /* LOAD_STATE (1) Base: 0x0100C Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.TEMP_REGISTER_CONTROL := NUM_TEMPS=0x2 */
+    0x08010404, /* LOAD_STATE (1) Base: 0x01010 Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.CONTROL := 0x2 */
+    0x0801028c, /* LOAD_STATE (1) Base: 0x00A30 Size: 1 Fixp: 0 */
+    0x00000100, /*   PA.ATTRIBUTE_ELEMENT_COUNT := 0x100 */
+    0x08010e07, /* LOAD_STATE (1) Base: 0x0381C Size: 1 Fixp: 0 */
+    0x00000004, /*   GLOBAL.VS_VARYING_NUM_COMPONENTS := VAR0=0x4,VAR1=0x0,VAR2=0x0,VAR3=0x0,VAR4=0x0,VAR5=0x0,VAR6=0x0,VAR7=0x0 */
+    0x0801020c, /* LOAD_STATE (1) Base: 0x00830 Size: 1 Fixp: 0 */
+    0x0f3f0582, /*   VS.LOAD_BALANCING := 0xf3f0582 */
+    0x08010201, /* LOAD_STATE (1) Base: 0x00804 Size: 1 Fixp: 0 */
+    0x00000002, /*   VS.OUTPUT_COUNT := 0x2 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfffffff3, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=0,POINT_SIZE_MASK=0,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08010193, /* LOAD_STATE (1) Base: 0x0064C Size: 1 Fixp: 0 */
+    0x7c24df10, /*   FE.VERTEX_STREAM_BASE_ADDR := *0x7c24df10 */
+    0x08010194, /* LOAD_STATE (1) Base: 0x00650 Size: 1 Fixp: 0 */
+    0x00000024, /*   FE.VERTEX_STREAM_CONTROL := VERTEX_STRIDE=0x24 */
+    0x08010180, /* LOAD_STATE (1) Base: 0x00600 Size: 1 Fixp: 0 */
+    0x0c003008, /*   FE.VERTEX_ELEMENT_CONFIG[0] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x0,END=0xc */
+    0x08010181, /* LOAD_STATE (1) Base: 0x00604 Size: 1 Fixp: 0 */
+    0x180c3008, /*   FE.VERTEX_ELEMENT_CONFIG[1] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0xc,END=0x18 */
+    0x08010182, /* LOAD_STATE (1) Base: 0x00608 Size: 1 Fixp: 0 */
+    0x24183088, /*   FE.VERTEX_ELEMENT_CONFIG[2] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=1,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x18,END=0x24 */
+    0x08010208, /* LOAD_STATE (1) Base: 0x00820 Size: 1 Fixp: 0 */
+    0x00020100, /*   VS.INPUT[0] := 0x20100 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xffffffcf, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=0,POINT_SPRITE_MASK=0,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x28000000, /* DRAW_PRIMITIVES (5) */
+    0x00000005, /*  */
+    0x00000004, /*  */
+    0x00000002, /*  */ /* glDrawArrays 3 */
+    0x08010402, /* LOAD_STATE (1) Base: 0x01008 Size: 1 Fixp: 0 */
+    0x00001f02, /*   PS.INPUT_COUNT := COUNT=0x2,COUNT2=0x1f */
+    0x08010403, /* LOAD_STATE (1) Base: 0x0100C Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.TEMP_REGISTER_CONTROL := NUM_TEMPS=0x2 */
+    0x08010404, /* LOAD_STATE (1) Base: 0x01010 Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.CONTROL := 0x2 */
+    0x0801028c, /* LOAD_STATE (1) Base: 0x00A30 Size: 1 Fixp: 0 */
+    0x00000100, /*   PA.ATTRIBUTE_ELEMENT_COUNT := 0x100 */
+    0x08010e07, /* LOAD_STATE (1) Base: 0x0381C Size: 1 Fixp: 0 */
+    0x00000004, /*   GLOBAL.VS_VARYING_NUM_COMPONENTS := VAR0=0x4,VAR1=0x0,VAR2=0x0,VAR3=0x0,VAR4=0x0,VAR5=0x0,VAR6=0x0,VAR7=0x0 */
+    0x0801020c, /* LOAD_STATE (1) Base: 0x00830 Size: 1 Fixp: 0 */
+    0x0f3f0582, /*   VS.LOAD_BALANCING := 0xf3f0582 */
+    0x08010201, /* LOAD_STATE (1) Base: 0x00804 Size: 1 Fixp: 0 */
+    0x00000002, /*   VS.OUTPUT_COUNT := 0x2 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfffffff3, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=0,POINT_SIZE_MASK=0,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08010193, /* LOAD_STATE (1) Base: 0x0064C Size: 1 Fixp: 0 */
+    0x7c24e030, /*   FE.VERTEX_STREAM_BASE_ADDR := *0x7c24e030 */
+    0x08010194, /* LOAD_STATE (1) Base: 0x00650 Size: 1 Fixp: 0 */
+    0x00000024, /*   FE.VERTEX_STREAM_CONTROL := VERTEX_STRIDE=0x24 */
+    0x08010180, /* LOAD_STATE (1) Base: 0x00600 Size: 1 Fixp: 0 */
+    0x0c003008, /*   FE.VERTEX_ELEMENT_CONFIG[0] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x0,END=0xc */
+    0x08010181, /* LOAD_STATE (1) Base: 0x00604 Size: 1 Fixp: 0 */
+    0x180c3008, /*   FE.VERTEX_ELEMENT_CONFIG[1] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0xc,END=0x18 */
+    0x08010182, /* LOAD_STATE (1) Base: 0x00608 Size: 1 Fixp: 0 */
+    0x24183088, /*   FE.VERTEX_ELEMENT_CONFIG[2] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=1,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x18,END=0x24 */
+    0x08010208, /* LOAD_STATE (1) Base: 0x00820 Size: 1 Fixp: 0 */
+    0x00020100, /*   VS.INPUT[0] := 0x20100 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xffffffcf, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=0,POINT_SPRITE_MASK=0,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x28000000, /* DRAW_PRIMITIVES (5) */
+    0x00000005, /*  */
+    0x00000008, /*  */
+    0x00000002, /*  */ /* glDrawArrays 4 */
+    0x08010402, /* LOAD_STATE (1) Base: 0x01008 Size: 1 Fixp: 0 */
+    0x00001f02, /*   PS.INPUT_COUNT := COUNT=0x2,COUNT2=0x1f */
+    0x08010403, /* LOAD_STATE (1) Base: 0x0100C Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.TEMP_REGISTER_CONTROL := NUM_TEMPS=0x2 */
+    0x08010404, /* LOAD_STATE (1) Base: 0x01010 Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.CONTROL := 0x2 */
+    0x0801028c, /* LOAD_STATE (1) Base: 0x00A30 Size: 1 Fixp: 0 */
+    0x00000100, /*   PA.ATTRIBUTE_ELEMENT_COUNT := 0x100 */
+    0x08010e07, /* LOAD_STATE (1) Base: 0x0381C Size: 1 Fixp: 0 */
+    0x00000004, /*   GLOBAL.VS_VARYING_NUM_COMPONENTS := VAR0=0x4,VAR1=0x0,VAR2=0x0,VAR3=0x0,VAR4=0x0,VAR5=0x0,VAR6=0x0,VAR7=0x0 */
+    0x0801020c, /* LOAD_STATE (1) Base: 0x00830 Size: 1 Fixp: 0 */
+    0x0f3f0582, /*   VS.LOAD_BALANCING := 0xf3f0582 */
+    0x08010201, /* LOAD_STATE (1) Base: 0x00804 Size: 1 Fixp: 0 */
+    0x00000002, /*   VS.OUTPUT_COUNT := 0x2 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfffffff3, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=0,POINT_SIZE_MASK=0,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08010193, /* LOAD_STATE (1) Base: 0x0064C Size: 1 Fixp: 0 */
+    0x7c24e1e0, /*   FE.VERTEX_STREAM_BASE_ADDR := *0x7c24e1e0 */
+    0x08010194, /* LOAD_STATE (1) Base: 0x00650 Size: 1 Fixp: 0 */
+    0x00000024, /*   FE.VERTEX_STREAM_CONTROL := VERTEX_STRIDE=0x24 */
+    0x08010180, /* LOAD_STATE (1) Base: 0x00600 Size: 1 Fixp: 0 */
+    0x0c003008, /*   FE.VERTEX_ELEMENT_CONFIG[0] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x0,END=0xc */
+    0x08010181, /* LOAD_STATE (1) Base: 0x00604 Size: 1 Fixp: 0 */
+    0x180c3008, /*   FE.VERTEX_ELEMENT_CONFIG[1] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0xc,END=0x18 */
+    0x08010182, /* LOAD_STATE (1) Base: 0x00608 Size: 1 Fixp: 0 */
+    0x24183088, /*   FE.VERTEX_ELEMENT_CONFIG[2] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=1,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x18,END=0x24 */
+    0x08010208, /* LOAD_STATE (1) Base: 0x00820 Size: 1 Fixp: 0 */
+    0x00020100, /*   VS.INPUT[0] := 0x20100 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xffffffcf, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=0,POINT_SPRITE_MASK=0,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x28000000, /* DRAW_PRIMITIVES (5) */
+    0x00000005, /*  */
+    0x0000000c, /*  */
+    0x00000002, /*  */ /* glDrawArrays 5 */
+    0x08010402, /* LOAD_STATE (1) Base: 0x01008 Size: 1 Fixp: 0 */
+    0x00001f02, /*   PS.INPUT_COUNT := COUNT=0x2,COUNT2=0x1f */
+    0x08010403, /* LOAD_STATE (1) Base: 0x0100C Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.TEMP_REGISTER_CONTROL := NUM_TEMPS=0x2 */
+    0x08010404, /* LOAD_STATE (1) Base: 0x01010 Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.CONTROL := 0x2 */
+    0x0801028c, /* LOAD_STATE (1) Base: 0x00A30 Size: 1 Fixp: 0 */
+    0x00000100, /*   PA.ATTRIBUTE_ELEMENT_COUNT := 0x100 */
+    0x08010e07, /* LOAD_STATE (1) Base: 0x0381C Size: 1 Fixp: 0 */
+    0x00000004, /*   GLOBAL.VS_VARYING_NUM_COMPONENTS := VAR0=0x4,VAR1=0x0,VAR2=0x0,VAR3=0x0,VAR4=0x0,VAR5=0x0,VAR6=0x0,VAR7=0x0 */
+    0x0801020c, /* LOAD_STATE (1) Base: 0x00830 Size: 1 Fixp: 0 */
+    0x0f3f0582, /*   VS.LOAD_BALANCING := 0xf3f0582 */
+    0x08010201, /* LOAD_STATE (1) Base: 0x00804 Size: 1 Fixp: 0 */
+    0x00000002, /*   VS.OUTPUT_COUNT := 0x2 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfffffff3, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=0,POINT_SIZE_MASK=0,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08010193, /* LOAD_STATE (1) Base: 0x0064C Size: 1 Fixp: 0 */
+    0x7c24e420, /*   FE.VERTEX_STREAM_BASE_ADDR := *0x7c24e420 */
+    0x08010194, /* LOAD_STATE (1) Base: 0x00650 Size: 1 Fixp: 0 */
+    0x00000024, /*   FE.VERTEX_STREAM_CONTROL := VERTEX_STRIDE=0x24 */
+    0x08010180, /* LOAD_STATE (1) Base: 0x00600 Size: 1 Fixp: 0 */
+    0x0c003008, /*   FE.VERTEX_ELEMENT_CONFIG[0] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x0,END=0xc */
+    0x08010181, /* LOAD_STATE (1) Base: 0x00604 Size: 1 Fixp: 0 */
+    0x180c3008, /*   FE.VERTEX_ELEMENT_CONFIG[1] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0xc,END=0x18 */
+    0x08010182, /* LOAD_STATE (1) Base: 0x00608 Size: 1 Fixp: 0 */
+    0x24183088, /*   FE.VERTEX_ELEMENT_CONFIG[2] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=1,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x18,END=0x24 */
+    0x08010208, /* LOAD_STATE (1) Base: 0x00820 Size: 1 Fixp: 0 */
+    0x00020100, /*   VS.INPUT[0] := 0x20100 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xffffffcf, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=0,POINT_SPRITE_MASK=0,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x28000000, /* DRAW_PRIMITIVES (5) */
+    0x00000005, /*  */
+    0x00000010, /*  */
+    0x00000002, /*  */ /* glDrawArrays 6 */
+    0x08010402, /* LOAD_STATE (1) Base: 0x01008 Size: 1 Fixp: 0 */
+    0x00001f02, /*   PS.INPUT_COUNT := COUNT=0x2,COUNT2=0x1f */
+    0x08010403, /* LOAD_STATE (1) Base: 0x0100C Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.TEMP_REGISTER_CONTROL := NUM_TEMPS=0x2 */
+    0x08010404, /* LOAD_STATE (1) Base: 0x01010 Size: 1 Fixp: 0 */
+    0x00000002, /*   PS.CONTROL := 0x2 */
+    0x0801028c, /* LOAD_STATE (1) Base: 0x00A30 Size: 1 Fixp: 0 */
+    0x00000100, /*   PA.ATTRIBUTE_ELEMENT_COUNT := 0x100 */
+    0x08010e07, /* LOAD_STATE (1) Base: 0x0381C Size: 1 Fixp: 0 */
+    0x00000004, /*   GLOBAL.VS_VARYING_NUM_COMPONENTS := VAR0=0x4,VAR1=0x0,VAR2=0x0,VAR3=0x0,VAR4=0x0,VAR5=0x0,VAR6=0x0,VAR7=0x0 */
+    0x0801020c, /* LOAD_STATE (1) Base: 0x00830 Size: 1 Fixp: 0 */
+    0x0f3f0582, /*   VS.LOAD_BALANCING := 0xf3f0582 */
+    0x08010201, /* LOAD_STATE (1) Base: 0x00804 Size: 1 Fixp: 0 */
+    0x00000002, /*   VS.OUTPUT_COUNT := 0x2 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xfffffff3, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=0,POINT_SIZE_MASK=0,POINT_SPRITE_ENABLE=1,POINT_SPRITE_MASK=1,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x08010193, /* LOAD_STATE (1) Base: 0x0064C Size: 1 Fixp: 0 */
+    0x7c24e6f0, /*   FE.5ERTEX_STREAM_BASE_ADDR := *0x7c24e6f0 */
+    0x08010194, /* LOAD_STATE (1) Base: 0x00650 Size: 1 Fixp: 0 */
+    0x00000024, /*   FE.VERTEX_STREAM_CONTROL := VERTEX_STRIDE=0x24 */
+    0x08010180, /* LOAD_STATE (1) Base: 0x00600 Size: 1 Fixp: 0 */
+    0x0c003008, /*   FE.VERTEX_ELEMENT_CONFIG[0] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x0,END=0xc */
+    0x08010181, /* LOAD_STATE (1) Base: 0x00604 Size: 1 Fixp: 0 */
+    0x180c3008, /*   FE.VERTEX_ELEMENT_CONFIG[1] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=0,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0xc,END=0x18 */
+    0x08010182, /* LOAD_STATE (1) Base: 0x00608 Size: 1 Fixp: 0 */
+    0x24183088, /*   FE.VERTEX_ELEMENT_CONFIG[2] := TYPE=FLOAT,ENDIAN=NO_SWAP,NONCONSECUTIVE=1,STREAM=0x0,NUM=3,NORMALIZE=OFF,START=0x18,END=0x24 */
+    0x08010208, /* LOAD_STATE (1) Base: 0x00820 Size: 1 Fixp: 0 */
+    0x00020100, /*   VS.INPUT[0] := 0x20100 */
+    0x0801028d, /* LOAD_STATE (1) Base: 0x00A34 Size: 1 Fixp: 0 */
+    0xffffffcf, /*   PA.CONFIG := UNK0=1,UNK1=1,POINT_SIZE_ENABLE=1,POINT_SIZE_MASK=1,POINT_SPRITE_ENABLE=0,POINT_SPRITE_MASK=0,UNK6=1,UNK7=1,CULL_FACE_MODE=0x3,CULL_FACE_MODE_MASK=1,UNK11=1,FILL_MODE=0x3,FILL_MODE_MASK=1,UNK15=1,SHADE_MODEL=0x3,SHADE_MODEL_MASK=1,UNK19=1,UNK20=1,UNK21=1,UNK22=1,UNK23=1,UNK24=1,UNK25=1,UNK26=1,UNK27=1,UNK28=1,UNK29=1,UNK30=1,UNK31=1 */
+    0x28000000, /* DRAW_PRIMITIVES (5) */
+    0x00000005, /*  */
+    0x00000014, /*  */
+    0x00000002, /*  */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003  /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+};
+
+uint32_t cmdbuf2[] = { /* seq 89 */
+    0x18000000, /* NOP (make space for PIPE switch) */
+    0x00000000,
+    0x18000000,
+    0x00000000,
+    0x18000000,
+    0x00000000,
+    0x18000000,
+    0x00000000,
+
+    /* flush color and depth cache three times */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+#if 0
+    /* resolve main rt to main rt */
+    0x08010581, /* LOAD_STATE (1) Base: 0x01604 Size: 1 Fixp: 0 */
+    0x00004585, /*   RS.CONFIG := SOURCE_FORMAT=X8R8G8B8,UNK7=1,DEST_FORMAT=X8R8G8B8,UNK14=1,SWAP_RB=0 */
+    0x08010583, /* LOAD_STATE (1) Base: 0x0160C Size: 1 Fixp: 0 */
+    0x80001c00, /*   RS.SOURCE_STRIDE := 0x80001c00 */
+    0x08010585, /* LOAD_STATE (1) Base: 0x01614 Size: 1 Fixp: 0 */
+    0x80001c00, /*   RS.DEST_STRIDE := 0x80001c00 */
+    0x0801058c, /* LOAD_STATE (1) Base: 0x01630 Size: 1 Fixp: 0 */
+    0xffffffff, /*   RS.DITHER[0] := 0xffffffff */
+    0x0801058d, /* LOAD_STATE (1) Base: 0x01634 Size: 1 Fixp: 0 */
+    0xffffffff, /*   RS.DITHER[1] := 0xffffffff */
+    0x0801058f, /* LOAD_STATE (1) Base: 0x0163C Size: 1 Fixp: 0 */
+    0x00000000, /*   RS.CLEAR_CONTROL := BITS=0x0,MODE=0x0 */
+    0x080105a8, /* LOAD_STATE (1) Base: 0x016A0 Size: 1 Fixp: 0 */
+    0x00000000, /*   RS.EXTRA_CONFIG := AA=0x0,ENDIAN=NO_SWAP */
+    0x08010582, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   RS.SOURCE_ADDR := *rt_physical */
+    0x08010584, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   RS.DEST_ADDR := *rt_physical */
+#if 1
+    0x080105b0, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   RS.PIPE_SOURCE_ADDR := *rt_physical */
+    0x080105b8, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f338700, /*   RS.PIPE_DEST_ADDR := *bmp_physical */
+#endif
+    0x08010588, /* LOAD_STATE (1) Base: 0x01620 Size: 1 Fixp: 0 */
+    0x010001c0 >> 2, /*   RS.WINDOW_SIZE := HEIGHT=256,WIDTH=448 */
+#endif
+    0x08010580, /* LOAD_STATE (1) Base: 0x01600 Size: 1 Fixp: 0 */
+    0xbeebbeeb  /*   RS.KICKER := 0xbeebbeeb */
+};
+
+uint32_t cmdbuf3[] = { /* seq 91 */
+    0x18000000, /* NOP (make space for PIPE switch) */
+    0x00000000,
+    0x18000000,
+    0x00000000,
+    0x18000000,
+    0x00000000,
+    0x18000000,
+    0x00000000,
+
+    /* resolve aux target to aux target (why?!?) */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a002a00, /*   TS.COLOR_STATUS_BASE := *aux_rt_ts_physical */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f284000, /*   TS.COLOR_SURFACE_BASE := *aux_rt_physical */
+    0x08010594, /* LOAD_STATE (1) Base: 0x01650 Size: 1 Fixp: 0 */
+    0x00000001, /*   RS.FLUSH_CACHE := 0x1 */
+    0x08010581, /* LOAD_STATE (1) Base: 0x01604 Size: 1 Fixp: 0 */
+    0x00004486, /*   RS.CONFIG := SOURCE_FORMAT=A8R8G8B8,UNK7=1,DEST_FORMAT=R5G6B5,UNK14=1,SWAP_RB=0 */
+    0x08010582, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f284000, /*   RS.SOURCE_ADDR := *aux_rt_physical */
+    0x08010583, /* LOAD_STATE (1) Base: 0x0160C Size: 1 Fixp: 0 */
+    0x00000400 | (1 << 31), /*   RS.SOURCE_STRIDE := 0x400 */
+    0x08010584, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f284000, /*   RS.DEST_ADDR := *aux_rt_physical */
+    0x08010585, /* LOAD_STATE (1) Base: 0x01614 Size: 1 Fixp: 0 */
+    0x00000400 | (1 << 31), /*   RS.DEST_STRIDE := 0x400 */
+#if 1
+    0x080105b0, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   RS.PIPE_SOURCE_ADDR := *rt_physical */
+    0x080105b8, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f338700, /*   RS.PIPE_DEST_ADDR := *bmp_physical */
+#endif
+    0x08010588, /* LOAD_STATE (1) Base: 0x01620 Size: 1 Fixp: 0 */
+    0x00080010, /*   RS.WINDOW_SIZE := HEIGHT=4,WIDTH=16 */
+    0x0801058f, /* LOAD_STATE (1) Base: 0x0163C Size: 1 Fixp: 0 */
+    0x00000000, /*   RS.CLEAR_CONTROL := BITS=0x0,MODE=0x0 */
+    0x08010580, /* LOAD_STATE (1) Base: 0x01600 Size: 1 Fixp: 0 */
+    0xbeebbeeb, /*   RS.KICKER := 0xbeebbeeb */
+
+    /* set up TS for main render target and flush color cache (twice) */
+    0x08010596, /* LOAD_STATE (1) Base: 0x01658 Size: 1 Fixp: 0 */
+    0x7a003200, /*   TS.COLOR_STATUS_BASE := *0x7a003200 */
+    0x08010597, /* LOAD_STATE (1) Base: 0x0165C Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   TS.COLOR_SURFACE_BASE := *0x7f2c8700 */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000002, /*   GLOBAL.FLUSH_CACHE := DEPTH=0,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010595, /* LOAD_STATE (1) Base: 0x01654 Size: 1 Fixp: 0 */
+    0x00000049, /*   TS.MEM_CONFIG := 0x49 */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000002, /*   GLOBAL.FLUSH_CACHE := DEPTH=0,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x0801050b, /* LOAD_STATE (1) Base: 0x0142C Size: 1 Fixp: 0 */
+    0xfffcffff  /*   PE.COLOR_FORMAT := 0xfffcffff */
+};
+
+uint32_t cmdbuf4[36] = { /* seq 101 */
+    0x18000000, /* NOP (make space for PIPE switch) */
+    0x00000000,
+    0x18000000,
+    0x00000000,
+    0x18000000,
+    0x00000000,
+    0x18000000,
+    0x00000000, /* copy pixels from render target to output bitmap */
+    0x08010e03, /* LOAD_STATE (1) Base: 0x0380C Size: 1 Fixp: 0 */
+    0x00000003, /*   GLOBAL.FLUSH_CACHE := DEPTH=1,COLOR=1,3D_TEXTURE=0,2D=0,UNK4=0,SHADER_L1=0,SHADER_L2=0 */
+    0x08010581, /* LOAD_STATE (1) Base: 0x01604 Size: 1 Fixp: 0 */
+    0x00000585, /*   RS.CONFIG := SOURCE_FORMAT=X8R8G8B8,UNK7=1,DEST_FORMAT=X8R8G8B8,UNK14=0,SWAP_RB=0 */
+    0x08010583, /* LOAD_STATE (1) Base: 0x0160C Size: 1 Fixp: 0 */
+    0x80001c00, /*   RS.SOURCE_STRIDE := 0x80001c00 */
+    0x08010585, /* LOAD_STATE (1) Base: 0x01614 Size: 1 Fixp: 0 */
+    0x00000640 | (1 << 31), /*   RS.DEST_STRIDE := 0x640 */
+    0x0801058c, /* LOAD_STATE (1) Base: 0x01630 Size: 1 Fixp: 0 */
+    0xffffffff, /*   RS.DITHER[0] := 0xffffffff */
+    0x0801058d, /* LOAD_STATE (1) Base: 0x01634 Size: 1 Fixp: 0 */
+    0xffffffff, /*   RS.DITHER[1] := 0xffffffff */
+    0x0801058f, /* LOAD_STATE (1) Base: 0x0163C Size: 1 Fixp: 0 */
+    0x00000000, /*   RS.CLEAR_CONTROL := BITS=0x0,MODE=0x0 */
+    0x080105a8, /* LOAD_STATE (1) Base: 0x016A0 Size: 1 Fixp: 0 */
+    0x00000000, /*   RS.EXTRA_CONFIG := AA=0x0,ENDIAN=NO_SWAP */
+    0x08010582, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   RS.SOURCE_ADDR := *rt_physical */
+    0x08010584, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f338700, /*   RS.DEST_ADDR := *bmp_physical */
+#if 0
+    0x080105b0, /* LOAD_STATE (1) Base: 0x01608 Size: 1 Fixp: 0 */
+    0x7f2c8700, /*   RS.PIPE_SOURCE_ADDR := *rt_physical */
+    0x080105b8, /* LOAD_STATE (1) Base: 0x01610 Size: 1 Fixp: 0 */
+    0x7f338700, /*   RS.PIPE_DEST_ADDR := *bmp_physical */
+#endif
+    0x08010588, /* LOAD_STATE (1) Base: 0x01620 Size: 1 Fixp: 0 */
+    0x00f00190, /*   RS.WINDOW_SIZE := HEIGHT=240,WIDTH=400 */
+    0x08010580, /* LOAD_STATE (1) Base: 0x01600 Size: 1 Fixp: 0 */
+    0xbeebbeeb  /*   RS.KICKER := 0xbeebbeeb */
+};
+
+#endif /* CUBE_CMD_H_ */
