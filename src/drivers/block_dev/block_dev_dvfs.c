@@ -35,13 +35,13 @@ static struct device block_device = {
  *
  * @return Pointer to created device or NULL if failed
  */
-struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
+struct block_dev *block_dev_create(const char *path, void *driver, void *privdata) {
 	struct block_dev *bdev;
 	char full_path[256];
 	struct lookup lu;
 	struct dev_module *devmod;
 
-	if (NULL == (bdev = block_dev_create_common(path, driver, privdata)))
+	if (NULL == (bdev = block_dev_create_common(dvfs_last_link(path), driver, privdata)))
 		return NULL;
 
 	bdev->dev_ops = &bdev_dev_ops;

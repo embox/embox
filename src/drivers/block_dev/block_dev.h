@@ -75,7 +75,7 @@ struct indexator;
 struct block_dev;
 struct dev_module;
 
-extern struct block_dev *block_dev_create(char *name, void *driver, void *privdata);
+extern struct block_dev *block_dev_create(const char *name, void *driver, void *privdata);
 extern struct block_dev *block_dev(void *bdev);
 
 extern block_dev_cache_t *block_dev_cache_init(void *bdev, int blocks);
@@ -90,7 +90,7 @@ extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(char *name, struct indexator *indexator);
 extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
-extern struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata);
+extern struct block_dev *block_dev_create_common(const char *path, void *driver, void *privdata);
 extern struct block_dev *block_dev_find(const char *bd_name);
 
 #include <util/array.h>

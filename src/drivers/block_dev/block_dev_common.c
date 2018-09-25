@@ -53,7 +53,7 @@ static int block_dev_cache_free(void *dev) {
 	return  0;
 }
 
-struct block_dev *block_dev_create_common(char *path, void *driver, void *privdata) {
+struct block_dev *block_dev_create_common(const char *path, void *driver, void *privdata) {
 	struct block_dev *bdev;
 	size_t bdev_id;
 
