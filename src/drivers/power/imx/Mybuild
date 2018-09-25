@@ -1,0 +1,14 @@
+package embox.driver.power
+
+module imx {
+	@IncludeExport(path="drivers/power")
+	source "imx.h"
+
+	option number gpc_base=0x020DC000 /* imx6q */
+	option number anadig_base=0x020C8110 /* imx6q */
+	option number log_level=0
+
+	source "imx.c"
+
+	depends embox.driver.periph_memory
+}
