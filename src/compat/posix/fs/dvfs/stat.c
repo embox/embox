@@ -18,6 +18,14 @@ int stat(const char *path, struct stat *buf) {
 
 	fd = open(path, O_RDONLY); /* Actually, flag should be smth O_PATH */
 
+	if (fd == -1 && errno == EISDIR) {
+		/* Stub */
+		*buf = (struct stat) {
+			.st_mode = S_IFDIR | S_IRWXA,
+		};
+		return 0;
+	}
+
 	ret = fstat(fd, buf);
 
 	close(fd);
