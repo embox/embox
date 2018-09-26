@@ -1,0 +1,8 @@
+package third_party.freedesktop.mesa
+
+@Build(script="$(EXTERNAL_MAKE)")
+module  libdrm {
+	source "^BUILD/extbld/^MOD_PATH/install/libdrm.a"
+
+	depends embox.fs.syslib.idesc_mmap
+}

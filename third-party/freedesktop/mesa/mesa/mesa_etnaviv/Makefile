@@ -16,29 +16,48 @@ include $(EXTBLD_LIB)
 
 MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
-MESA_CPPFLAGS += $(SRC_DIR))/arch/$(ARCH)/include
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/
+MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/include/drm/
+MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/etnaviv
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	export PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.79:$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.79/etnaviv;\
+	export PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79:$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/etnaviv;\
 	cd $(PKG_SOURCE_DIR) && aclocal && autoconf &&( \
-		./configure --host=arm-none-eabi --target=arm-none-eabi \
+		patch configure -p0 < $(SRC_DIR)/../third-party/freedesktop/mesa/mesa/mesa_etnaviv/configure.patch;\
+		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
+			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			--enable-static  --disable-shared \
-			--with-gallium-drivers=etnaviv --enable-dri=no --enable-gbm=no \
+			--enable-gallium-osmesa \
+			--with-gallium-drivers=etnaviv \
+			--disable-gallium-llvm --disable-gallium-tests \
+			--disable-driglx-direct --disable-dri \
 			--disable-egl \
-			--disable-largefile --enable-gallium-llvm=no --enable-valgrind=no \
+			--disable-largefile --disable-valgrind \
+			--disable-va \
+			--disable-gbm \
+			--disable-vdpau \
+			--disable-glx --disable-glx-tls \
+			--disable-asm \
+			--disable-gles1 --disable-gles2 \
 			CC=$(EMBOX_GCC) \
 			CXX=$(EMBOX_GXX) \
+			CPPFLAGS='$(MESA_CPPFLAGS)' \
 	)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		$(MAKE); \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cp $(PKG_SOURCE_DIR)/.libs/libdrm.a $(PKG_INSTALL_DIR)/libdrm.a
-	cp $(PKG_SOURCE_DIR)/etnaviv/.libs/libdrm_etnaviv.a $(PKG_INSTALL_DIR)/libdrm_etnaviv.a
+	cp $(PKG_SOURCE_DIR)/src/mapi/shared-glapi/.libs/libglapi.a $(PKG_INSTALL_DIR)/libglapi.a
+	cp $(PKG_SOURCE_DIR)/src/gallium/targets/osmesa/.libs/libOSMesa.a $(PKG_INSTALL_DIR)/
+	cp $(PKG_SOURCE_DIR)/src/gallium/drivers/etnaviv/.libs/libetnaviv.a $(PKG_INSTALL_DIR)
+	cp $(PKG_SOURCE_DIR)/src/gallium/auxiliary/pipe-loader/.libs/libpipe_loader_static.a $(PKG_INSTALL_DIR)/libpipe_loader_static.a
+	cp $(PKG_SOURCE_DIR)/src/gallium/winsys/sw/wrapper/.libs/libwsw.a $(PKG_INSTALL_DIR)
+	cp $(PKG_SOURCE_DIR)/src/gallium/winsys/etnaviv/drm/.libs/libetnavivdrm.a $(PKG_INSTALL_DIR)
 	touch $@

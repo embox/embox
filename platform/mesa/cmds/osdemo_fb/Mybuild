@@ -19,11 +19,36 @@ package embox.cmd
 module osdemo_fb {
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_osmesa/glu-9.0.0/include")
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-17.0.3/include")
-	source "osdemo_fb.c"
-	source "text_layout.c"
+	source "osdemo_fb.c", "text_layout.c"
 
 	depends embox.driver.video.fonts
 
 	depends third_party.freedesktop.mesa.mesa_osmesa
 	depends third_party.freedesktop.mesa.libglu_osmesa
+}
+
+@AutoCmd
+@Cmd(name = "osdemo_imx6",
+	help = "Adopted osdemo application from mesa_demo",
+	man = '''
+		NAME
+			osdemo_fb - Adopted osdemo application from mesa_demo
+		SYNOPSIS
+			osdemo_fb
+		DESCRIPTION
+			osdemo_fb - Adopted osdemo application from mesa_demo
+		AUTHORS
+			Anton Bondarev
+	''')
+
+@BuildDepends(third_party.freedesktop.mesa.mesa_etnaviv)
+@BuildDepends(third_party.freedesktop.mesa.libglu_etnaviv)
+@Build(stage=2,script="true")
+module osdemo_imx6 {
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_etnaviv/glu-9.0.0/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-17.0.3/include")
+	source "osdemo_fb.c", "text_layout.c"
+
+	depends third_party.freedesktop.mesa.mesa_etnaviv
+	depends third_party.freedesktop.mesa.libglu_etnaviv
 }
