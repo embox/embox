@@ -6,6 +6,7 @@ abstract module cmsis { }
 
 
 module head {
+	option boolean mmu_boot=false
 	source "head.S"
 }
 
