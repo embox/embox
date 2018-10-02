@@ -1,0 +1,85 @@
+diff -aur -x configure pjproject-2.2.1-orig/third_party/srtp/crypto/include/rdbx.h pjproject-2.2.1/third_party/srtp/crypto/include/rdbx.h
+--- pjproject-2.2.1-orig/third_party/srtp/crypto/include/rdbx.h	2008-01-23 23:17:42.000000000 +0300
++++ pjproject-2.2.1/third_party/srtp/crypto/include/rdbx.h	2018-10-01 21:27:50.575971907 +0300
+@@ -107,10 +107,10 @@
+  */
+ 
+ 
+-/* index_init(&pi) initializes a packet index pi (sets it to zero) */
++/* index_do_init(&pi) initializes a packet index pi (sets it to zero) */
+ 
+ void
+-index_init(xtd_seq_num_t *pi);
++index_do_init(xtd_seq_num_t *pi);
+ 
+ /* index_advance(&pi, s) advances a xtd_seq_num_t forward by s */
+ 
+diff -aur -x configure pjproject-2.2.1-orig/third_party/srtp/crypto/replay/rdbx.c pjproject-2.2.1/third_party/srtp/crypto/replay/rdbx.c
+--- pjproject-2.2.1-orig/third_party/srtp/crypto/replay/rdbx.c	2008-01-23 23:17:42.000000000 +0300
++++ pjproject-2.2.1/third_party/srtp/crypto/replay/rdbx.c	2018-10-01 21:27:29.919961149 +0300
+@@ -88,7 +88,7 @@
+ 
+ 
+ void
+-index_init(xtd_seq_num_t *pi) {
++index_do_init(xtd_seq_num_t *pi) {
+ #ifdef NO_64BIT_MATH
+   *pi = make64(0,0);
+ #else
+@@ -186,7 +186,7 @@
+ err_status_t
+ rdbx_init(rdbx_t *rdbx) {
+   v128_set_to_zero(&rdbx->bitmask);
+-  index_init(&rdbx->index);
++  index_do_init(&rdbx->index);
+ 
+   return err_status_ok;
+ }
+diff -aur -x configure pjproject-2.2.1-orig/third_party/srtp/srtp.def pjproject-2.2.1/third_party/srtp/srtp.def
+--- pjproject-2.2.1-orig/third_party/srtp/srtp.def	2008-01-23 23:17:42.000000000 +0300
++++ pjproject-2.2.1/third_party/srtp/srtp.def	2018-10-01 21:26:43.943937124 +0300
+@@ -57,7 +57,7 @@
+ rdbx_estimate_index
+ rdbx_check
+ rdbx_add_index
+-index_init
++index_do_init
+ index_advance
+ index_guess
+ octet_get_weight
+@@ -89,4 +89,4 @@
+ aes_icm_alloc_ismacryp
+ crypto_alloc
+ crypto_free
+-\ No newline at end of file
+\ No newline at end of file
++\ No newline at end of file
+diff -aur -x configure pjproject-2.2.1-orig/third_party/srtp/test/roc_driver.c pjproject-2.2.1/third_party/srtp/test/roc_driver.c
+--- pjproject-2.2.1-orig/third_party/srtp/test/roc_driver.c	2008-01-23 23:17:42.000000000 +0300
++++ pjproject-2.2.1/third_party/srtp/test/roc_driver.c	2018-10-01 21:27:06.715949038 +0300
+@@ -90,9 +90,9 @@
+   uint32_t ircvd;
+   double failure_rate;
+ 
+-  index_init(&local);
+-  index_init(&ref);
+-  index_init(&est);
++  index_do_init(&local);
++  index_do_init(&ref);
++  index_do_init(&est);
+ 
+   printf("\n\ttesting sequential insertion...");
+   for (i=0; i < 2048; i++) {
+@@ -118,9 +118,9 @@
+ 
+ 
+   printf("\ttesting non-sequential insertion...");
+-  index_init(&local);
+-  index_init(&ref);
+-  index_init(&est);
++  index_do_init(&local);
++  index_do_init(&ref);
++  index_do_init(&est);
+   ut_init(&utc);
+   
+   for (i=0; i < num_trials; i++) {
