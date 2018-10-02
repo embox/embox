@@ -10,7 +10,8 @@ include $(EXTBLD_LIB)
 PKG_PATCHES := pjproject.patch \
 	simpleua_default_loglevel.patch \
 	mutex_loglevel_increase.patch \
-	kmalloc.patch
+	kmalloc.patch \
+	srtp.patch
 
 DISABLE_FEATURES := \
 	l16-codec   \
@@ -59,5 +60,14 @@ $(INSTALL) :
 	for f in $(BUILD_ROOT)/pjsip-apps/bin/*-$(AUTOCONF_TARGET_TRIPLET); do \
 		fn=$$(basename $$f); \
 		cp $$f $(PKG_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET)}.o; \
+	done
+	for f in $(BUILD_ROOT)/pjsip/lib/*-$(AUTOCONF_TARGET_TRIPLET).a \
+			$(BUILD_ROOT)/pjmedia/lib/*-$(AUTOCONF_TARGET_TRIPLET).a \
+			$(BUILD_ROOT)/pjlib/lib/*-$(AUTOCONF_TARGET_TRIPLET).a \
+			$(BUILD_ROOT)/pjlib-util/lib/*-$(AUTOCONF_TARGET_TRIPLET).a \
+			$(BUILD_ROOT)/pjnath/lib/*-$(AUTOCONF_TARGET_TRIPLET).a \
+			$(BUILD_ROOT)/third_party/lib/*-$(AUTOCONF_TARGET_TRIPLET).a; do \
+		fn=$$(basename $$f); \
+		cp $$f $(PKG_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET).a}.a; \
 	done
 	touch $@
