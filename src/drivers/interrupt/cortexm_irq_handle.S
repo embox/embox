@@ -68,7 +68,7 @@ __pending_handle:
     # from all nested interrupt handlers. If we were interrupted
     # from irq handler (0xfffffff1) then just return back.
     # So we check wheter the value is 0xfffffff9 or 0xffffffe9
-    ldr    r1, =#0xffffff09
+    mov    r1, #0xffffff09
     and    r0, r0, #0xffffff0f
     cmp    r0, r1
     bne.n  __call_pendsv
