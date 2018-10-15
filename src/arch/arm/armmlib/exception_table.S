@@ -45,7 +45,7 @@ trap_table_end:
 
 exp_default_entry:
     mov  r0, sp
-    mrs  r1, PSR
+    mrs  r1, IPSR
     bl   exc_default_handler
 
 start:
@@ -53,4 +53,3 @@ start:
     bx r1
 die:
     b 	    die
-
