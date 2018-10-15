@@ -46,14 +46,12 @@ static void print_fault_status(void) {
 }
 
 /* Print exception info and return */
-void exc_default_handler(struct exc_saved_base_ctx *ctx, int xpsr) {
-	int exp_nr = xpsr & 0xFF;
-
+void exc_default_handler(struct exc_saved_base_ctx *ctx, int ipsr) {
 	printk("\nEXCEPTION (0x%x):\n"
 			"Exception saved context:\n"
 			"  r0=0x%08x r1=0x%08x r2=0x%08x r3=0x%08x\n"
 			"  r12=0x%08x lr=0x%08x pc(ret)=0x%08x xPSR=0x%08x\n",
-			exp_nr,
+			ipsr,
 			ctx->r[0], ctx->r[1], ctx->r[2], ctx->r[3],
 			ctx->r[4], ctx->lr, ctx->pc, ctx->psr);
 
