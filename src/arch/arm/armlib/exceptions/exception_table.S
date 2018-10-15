@@ -51,6 +51,7 @@ swi_handler_addr:
     .word swi_handler
 prefetch_abt_handler_addr:
     .word prefetch_abt_handler
+.global data_abt_handler_addr
 data_abt_handler_addr:
     .word data_abt_handler
 irq_handler_addr:
