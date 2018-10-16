@@ -34,15 +34,16 @@ int mkdir(const char *pathname, mode_t mode) {
 	if (t) {
 		memset(t + 1, '\0', parent + DVFS_MAX_PATH_LEN - t);
 
-		dvfs_lookup(parent, &lu);
-		if (!lu.item)
-			return SET_ERRNO(ENOENT);
+		if ((res = dvfs_lookup(parent, &lu)))
+			return SET_ERRNO(-res);
 
 		lu.parent = lu.item;
 		lu.item = NULL;
 	} else {
 		parent[0] = '\0';
-		dvfs_lookup(pathname, &lu);
+		if ((res = dvfs_lookup(pathname, &lu))) {
+			return SET_ERRNO(-res);
+		}
 	}
 
 	res = dvfs_create_new(pathname + strlen(parent), &lu,
@@ -85,15 +86,15 @@ int rmdir(const char *pathname) {
  **/
 int truncate(const char *path, off_t length) {
 	struct lookup lu;
+	int err;
 
 	assert(path);
 	if (length < 0)
 		return -EINVAL;
 
-	dvfs_lookup(path, &lu);
-
-	if (!lu.item)
-		return -ENOENT;
+	if ((err = dvfs_lookup(path, &lu))) {
+		return err;
+	}
 
 	if (FILE_TYPE(lu.item->flags, S_IFDIR))
 		return -EISDIR;

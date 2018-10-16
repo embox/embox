@@ -55,8 +55,6 @@ int dentry_full_path(struct dentry *dentry, char *buf) {
 	return 0;
 }
 
-extern int dentry_fill(struct super_block *, struct inode *,
-                       struct dentry *, struct dentry *);
 extern struct dentry *local_lookup(struct dentry *parent, char *name);
 
 /**
@@ -82,8 +80,10 @@ int dvfs_path_next_len(const char *path) {
  * @param lookup Structure which is to contain result of path walk
  *
  * @return Negative error code
- * @retval       0 Ok
- * @retval -ENOENT Node not found
+ * @retval             0 Ok
+ * @retval       -ENOENT Node not found
+ * @retval      -ENOTDIR Intermediate part of the path is not a directory
+ * @retval -ENAMETOOLONG path is too long
  */
 int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
 	char buff[DENTRY_NAME_LEN];
@@ -154,13 +154,18 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
  * @param lookup Structure where result will be stored
  *
  * @return Negative error code
- * @retval       0 Ok
- * @retval -ENOENT No node found or incorrect root/pwd dentry
+ * @retval             0 Ok
+ * @retval       -ENOENT No node found or incorrect root/pwd dentry
+ * @retval      -ENOTDIR Intermediate part of the path is not a directory
+ * @retval -ENAMETOOLONG path is too long
  */
 int dvfs_lookup(const char *path, struct lookup *lookup) {
 	struct dentry *dentry;
 	struct dentry *res;
 	int errcode;
+
+	assert(path);
+	assert(lookup);
 
 	if (*path == '/') {
 		dentry = task_fs()->root;

@@ -14,11 +14,10 @@
 int getxattr(const char *path, const char *name, char *value, size_t size) {
 	struct lookup lookup;
 	struct inode *inode;
+	int err;
 
-	dvfs_lookup(path, &lookup);
-
-	if (!lookup.item) {
-		return SET_ERRNO(ENOENT);
+	if ((err = dvfs_lookup(path, &lookup))) {
+		return err;
 	}
 	inode = lookup.item->d_inode;
 
@@ -33,11 +32,10 @@ int setxattr(const char *path, const char *name, const char *value, size_t size,
 	       	int flags) {
 	struct lookup lookup;
 	struct inode *inode;
+	int err;
 
-	dvfs_lookup(path, &lookup);
-
-	if (!lookup.item) {
-		return SET_ERRNO(ENOENT);
+	if ((err = dvfs_lookup(path, &lookup))) {
+		return err;
 	}
 	inode = lookup.item->d_inode;
 

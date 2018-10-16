@@ -16,7 +16,7 @@ int dvfs_xattr_get(const char *path, const char *name, char *value, size_t size)
 	int err;
 
 	if ((err = dvfs_lookup(path, &lu)))
-		return SET_ERRNO(ENOSUPP);
+		return SET_ERRNO(-err);
 
 	inode = lookup->item->d_inode;
 	if (!inode->i_ops->getxattr)

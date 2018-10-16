@@ -18,9 +18,8 @@ int chown(const char *path, uid_t owner, gid_t group) {
 		return SET_ERRNO(EFAULT);
 	}
 
-	res = dvfs_lookup(path, &lookup);
-	if (res) {
-		return SET_ERRNO(ENOENT);
+	if ((res = dvfs_lookup(path, &lookup))) {
+		return SET_ERRNO(-res);
 	}
 	assert(lookup.item);
 	assert(lookup.item->d_inode);
