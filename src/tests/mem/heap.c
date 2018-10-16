@@ -142,5 +142,16 @@ TEST_CASE("Allocates many objects with different size") {
 
 TEST_CASE("malloc fails when trying to allocate a very large"
 		" chunk of memory") {
+#ifdef __GNUC__
+#if __GNUC__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Walloc-size-larger-than="
+#endif
+#endif
 	test_assert_null(malloc(4294966160));
+#ifdef __GNUC__
+#if __GNUC__ > 6
+#pragma GCC diagnostic pop
+#endif
+#endif
 }
