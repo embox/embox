@@ -5,6 +5,7 @@
 * @version 0.1
 * @date 2015-06-01
 */
+#include <util/log.h>
 
 #include <assert.h>
 #include <errno.h>
@@ -17,8 +18,6 @@
 #include <fs/dcache.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
-
-#include <kernel/printk.h>
 
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 
@@ -56,8 +55,6 @@ int dentry_full_path(struct dentry *dentry, char *buf) {
 	return 0;
 }
 
-extern int dentry_fill(struct super_block *, struct inode *,
-                       struct dentry *, struct dentry *);
 extern struct dentry *local_lookup(struct dentry *parent, char *name);
 
 /**
@@ -83,8 +80,10 @@ int dvfs_path_next_len(const char *path) {
  * @param lookup Structure which is to contain result of path walk
  *
  * @return Negative error code
- * @retval       0 Ok
- * @retval -ENOENT Node not found
+ * @retval             0 Ok
+ * @retval       -ENOENT Node not found
+ * @retval      -ENOTDIR Intermediate part of the path is not a directory
+ * @retval -ENAMETOOLONG path is too long
  */
 int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
 	char buff[DENTRY_NAME_LEN];
@@ -98,6 +97,9 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		path++;
 
 	len = dvfs_path_next_len(path);
+	if (len >= DENTRY_NAME_LEN) {
+		return -ENAMETOOLONG;
+	}
 	memcpy(buff, path, len);
 	buff[len] = '\0';
 
@@ -152,13 +154,18 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
  * @param lookup Structure where result will be stored
  *
  * @return Negative error code
- * @retval       0 Ok
- * @retval -ENOENT No node found or incorrect root/pwd dentry
+ * @retval             0 Ok
+ * @retval       -ENOENT No node found or incorrect root/pwd dentry
+ * @retval      -ENOTDIR Intermediate part of the path is not a directory
+ * @retval -ENAMETOOLONG path is too long
  */
 int dvfs_lookup(const char *path, struct lookup *lookup) {
 	struct dentry *dentry;
 	struct dentry *res;
 	int errcode;
+
+	assert(path);
+	assert(lookup);
 
 	if (*path == '/') {
 		dentry = task_fs()->root;

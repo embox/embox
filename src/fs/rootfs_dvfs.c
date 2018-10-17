@@ -46,6 +46,7 @@ static int rootfs_mount(void) {
 	const struct auto_mount *auto_mnt;
 	struct lookup lu;
 	char *tmp;
+	int err;
 
 	dev = OPTION_STRING_GET(bdev);
 	fs_type = OPTION_STRING_GET(fstype);
@@ -64,7 +65,12 @@ static int rootfs_mount(void) {
 		if (fsdrv == auto_mnt->fs_driver)
 			continue;
 
-		dvfs_lookup(auto_mnt->mount_path, &lu);
+		err = dvfs_lookup(auto_mnt->mount_path, &lu);
+
+		if (err && err != -ENOENT) {
+			continue;
+		}
+
 		if (lu.item == NULL) {
 			tmp = strrchr(auto_mnt->mount_path, '/');
 			dvfs_create_new(tmp ? tmp + 1: auto_mnt->mount_path,

@@ -1,6 +1,8 @@
 package embox.fs.dvfs
 
 module core extends embox.fs.fs_api {
+	option number log_level = 1
+
 	@IncludeExport(path="fs")
 	source "dvfs.h"
 

@@ -215,6 +215,8 @@ struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file *bdev);
 extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);
 extern int dvfs_umount(struct dentry *d);
 
+extern int dentry_fill(struct super_block *, struct inode *,
+                       struct dentry *d, struct dentry *parent);
 extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
 extern int dentry_ref_inc(struct dentry *dentry);

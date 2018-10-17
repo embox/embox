@@ -21,8 +21,6 @@
 
 /* Utility functions */
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
-extern int dentry_fill(struct super_block *, struct inode *,
-                       struct dentry *, struct dentry *);
 extern int            dvfs_update_root(void);
 extern struct dentry *dvfs_root(void);
 extern int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup);

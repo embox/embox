@@ -55,13 +55,16 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		int fs_type, int operation_flag, char *fs_specific) {
 		const struct dumb_fs_driver *drv = dumb_fs_driver_find(fs_name);
 		struct lookup lu = {};
+		int err;
 
 		if (!drv) {
 			printf("Unknown FS type: %s. Check your configuration.\n", fs_name);
 			return 0;
 		}
 
-		dvfs_lookup(path, &lu);
+		if ((err = dvfs_lookup(path, &lu))) {
+			return err;
+		}
 
 		if (!lu.item) {
 			printf("File %s not found.\n", path);
