@@ -30,15 +30,21 @@
 #define AC97_INT_PAGING		0x24
 #define AC97_POWERDOWN		0x26
 #define AC97_DAC_RATE		0x2C
+#define AC97_ADC_RATE		0x34
 #define AC97_DAC_SLOT_MAP	0x6C
 #define AC97_ADC_SLOT_MAP	0x6E
+
+enum ac97_slot {
+	AC97_FRONT_DAC,
+	AC97_MIC_ADC
+};
 
 extern int ac97_init(void);
 extern int ac97_reset(void);
 extern int ac97_set_vol(int vol);
 extern int ac97_get_vol(void);
-extern int ac97_set_rate(uint16_t rate);
-extern int ac97_get_rate(void);
+extern int ac97_set_rate(uint16_t rate, enum ac97_slot slot);
+extern int ac97_get_rate(enum ac97_slot slot);
 
 extern uint16_t ac97_reg_read(uint16_t reg);
 extern void ac97_reg_write(uint16_t reg, uint16_t val);

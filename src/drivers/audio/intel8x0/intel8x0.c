@@ -390,13 +390,12 @@ static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
 			AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
 	case ADIOCTL_BUFLEN:
 		return INTEL_AC_SAMPLE_SZ * INTEL_AC_DESC_LEN;
-		return INTEL_AC_SAMPLE_SZ * INTEL_AC_DESC_LEN;
 	case ADIOCTL_GET_RATE:
-		return ac97_get_rate();
+		return ac97_get_rate(devid == 2 ? AC97_MIC_ADC : AC97_FRONT_DAC);
 	case ADIOCTL_SET_RATE:
 	{
 		int rate = *(int *) args;
-		return ac97_set_rate(rate);
+		return ac97_set_rate(rate, devid == 2 ? AC97_MIC_ADC : AC97_FRONT_DAC);
 	}
 	}
 	SET_ERRNO(EINVAL);
