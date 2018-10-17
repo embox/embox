@@ -21,6 +21,12 @@ std::new_handler std::set_new_handler(std::new_handler handler) throw() {
 	return prev_handler;
 }
 
+#ifdef __GNUC__
+#if __GNUC__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
+#endif
+#endif
 // Implementation of new and delete operators for single object
 void* operator new(std::size_t size) throw(std::bad_alloc) {
 	void *ptr;
@@ -43,6 +49,11 @@ void* operator new(std::size_t size) throw(std::bad_alloc) {
 
 	return ptr;
 }
+#ifdef __GNUC__
+#if __GNUC__ > 6
+#pragma GCC diagnostic pop
+#endif
+#endif
 
 void* operator new(std::size_t size, const std::nothrow_t& nothrow_const) throw() {
 	void *ptr;
@@ -88,12 +99,21 @@ void operator delete[](void* ptr, unsigned int) throw() {
 	/* XXX */
 	::operator delete(ptr);
 }
-
+#ifdef __GNUC__
+#if __GNUC__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated"
+#endif
+#endif
 // Forwarding functions for array of objects
 void* operator new[](std::size_t size) throw(std::bad_alloc) {
 	return ::operator new(size);
 }
-
+#ifdef __GNUC__
+#if __GNUC__ > 6
+#pragma GCC diagnostic pop
+#endif
+#endif
 void* operator new[](std::size_t size, const std::nothrow_t& nothrow_const) throw() {
 	return ::operator new(size, nothrow_const);
 }
