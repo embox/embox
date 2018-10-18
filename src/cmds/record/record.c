@@ -33,12 +33,46 @@ static void write_wave(char *name, uint8_t *buf, int len) {
 static uint32_t in_buf[4 * 2 * 32 / 4 * 0xff00]; /* Hardcoded 4x intel-ac buffer size */
 static int cur_ptr;
 
+double _sin(double x) {
+	double m = 1.;
+	while (x > 2. * 3.14)
+		x -= 2. * 3.14;
+
+	if (x > 3.14) {
+		x -= 3.14;
+		m = -1.;
+	}
+	return m * (x - x * x * x / 6. + x * x * x * x * x / 120.
+		- x * x * x * x * x * x * x / (120 * 6 * 7)
+		+ x * x * x * x * x * x * x * x * x/ (120 * 6 * 7 * 8 * 9));
+}
+
+static int _sin_w = 100;
+static int _sin_h = 30000;
+static int sin_callback(const void *inputBuffer, void *outputBuffer,
+		unsigned long framesPerBuffer,
+		const PaStreamCallbackTimeInfo* timeInfo,
+		PaStreamCallbackFlags statusFlags,
+		void *userData) {
+	int i;
+
+	for (i = 0; i < framesPerBuffer; i++) {
+		double x = 2 * 3.14 * (i % _sin_w) / _sin_w;
+		int tmp = (1. + _sin(x)) * _sin_h;
+		in_buf[cur_ptr] = (tmp << 16) | tmp;
+		cur_ptr++;
+	}
+
+	return 0;
+}
+
 static int record_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
 	int i;
+
 	framesPerBuffer = 2 * 32 / 4 * 0xff00; /* XXX */
 
 	for (i = 0; i < framesPerBuffer; i++) {
@@ -59,20 +93,29 @@ int main(int argc, char **argv) {
 	int err;
 	int sample_rate = 44100;
 	int sleep_msec = 50000;
+	char *filename;
 	PaStream *stream = NULL;
 
 	struct PaStreamParameters in_par;
+	PaStreamCallback *callback;
 
 	if (argc < 2) {
 		print_usage();
 		return 0;
 	}
 
+	callback = &record_callback;
+	filename = argv[1];
+
 	while (-1 != (opt = getopt(argc, argv, "nsh"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
+		case 's':
+			callback = &sin_callback;
+			filename = argv[2];
+			break;
 		default:
 			printf("Unknown argument: %c", opt);
 			return 0;
@@ -100,7 +143,7 @@ int main(int argc, char **argv) {
 			sample_rate,
 			256 * 1024 / 4,
 			0,
-			record_callback,
+			callback,
 			NULL);
 
 	if (err != paNoError) {
@@ -108,12 +151,17 @@ int main(int argc, char **argv) {
 		goto err_terminate_pa;
 	}
 
+	if (callback == record_callback) {
+		printf("Recording! Speak to the microphone\n");
+	} else if (callback == sin_callback) {
+		printf("Recording sin()! Instead of getting sound from your microphone\n"
+				"sin will be recorded to the output file\n");
+	}
+
 	if (paNoError != (err = Pa_StartStream(stream))) {
 		printf("Portaudio error: could not start stream!\n");
 		goto err_terminate_pa;
 	}
-
-	printf("Recording! Speak to the microphone\n");
 
 	Pa_Sleep(sleep_msec);
 
@@ -127,7 +175,7 @@ int main(int argc, char **argv) {
 		goto err_terminate_pa;
 	}
 
-	write_wave(argv[1], (uint8_t*)in_buf, cur_ptr * 4);
+	write_wave(filename, (uint8_t*)in_buf, cur_ptr * 4);
 
 err_terminate_pa:
 	if (paNoError != (err = Pa_Terminate()))
