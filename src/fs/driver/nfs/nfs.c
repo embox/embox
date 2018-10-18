@@ -609,7 +609,7 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 	req.new.dir_fh = &parent_fi->fh.name_fh;
 	/* set new file name */
 	memset((void *) &name, 0, sizeof(name));
-	strncpy(name.data, node->name, NAME_MAX);
+	strncpy(name.data, node->name, NAME_MAX + 1);
 	name.len = strlen(node->name);
 	req.new.fname = &name;
 	/* set attribute of new file */

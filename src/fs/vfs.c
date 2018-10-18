@@ -70,8 +70,19 @@ int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
 		if (nnlen + 1 > ll) {
 			return -ERANGE;
 		}
-
+#ifdef __GNUC__
+#if __GNUC__ > 7
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+#endif
 		p = strncpy(p - nnlen, node->node->name, nnlen);
+#ifdef __GNUC__
+#if __GNUC__ > 7
+#pragma GCC diagnostic pop
+#endif
+#endif
 		*--p = '/';
 		ll -= nnlen + 1;
 
@@ -466,8 +477,19 @@ int vfs_get_relative_path(struct node *node, char *path, size_t path_len) {
 		if (nnlen + 1 > ll) {
 			return -ERANGE;
 		}
-
+#ifdef __GNUC__
+#if __GNUC__ > 7
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+#endif
 		p = strncpy(p - nnlen, node->name, nnlen);
+#ifdef __GNUC__
+#if __GNUC__ > 7
+#pragma GCC diagnostic pop
+#endif
+#endif
 		*--p = '/';
 		ll -= nnlen + 1;
 
