@@ -16,7 +16,7 @@
 static void wc_util(FILE *file_in, int *lines_in_file, int *words_in_file,
 		int *bytes_in_file,int *max_line_in_file) {
 
-	int byte_walker, prev_byte;
+	int byte_walker, prev_byte = 0;
 	int count_len = 0;
 	bool prev_symbol = false;
 	bool next_symbol = false;
