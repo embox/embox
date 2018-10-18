@@ -46,7 +46,8 @@
 struct intel_ac_hw_dev {
 	//uint32_t base_addr_nam;
 	uint32_t base_addr_namb;
-	int po_lvi; /* Last Valid Index  */
+	int po_lvi; /* Last Valid Index for PO */
+	int mic_lc; /* Last Completed Buffer for MIC */
 };
 
 struct intel_ac_dev_priv {
@@ -250,10 +251,14 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 	log_debug("MIC Status Register = %#x", mic_status);
 	log_debug("PCM Status Register = %#x", pcm_status);
 
-	if (mic_status & ICH_LVBCI) { /* The last valid buffer completed */
-		/* Currently we can be interrupted in MIC only if 
-		 * al buffers are completed */
-		out8(0x0, NAMB_REG(INTEL_AC_MIC_CR));
+	if (mic_status & ICH_BCIS) { /* Interrupt on buffer completion */
+		int mic_lvi;
+
+		hw_dev->mic_lc = (hw_dev->mic_lc + 1) % INTEL_AC_BUFFER_SZ;
+		/* Set Last Valid Index as next to the current one */
+		mic_lvi = (hw_dev->mic_lc + 1) % INTEL_AC_BUFFER_SZ;
+		out8(mic_lvi, NAMB_REG(INTEL_AC_MIC_LVI));
+
 		Pa_StartStream(NULL);
 	} else if (po_status & ICH_BCIS) { /* Interrupt on buffer completion */
 		/* Currently we are interruped after each buffer */
@@ -313,12 +318,17 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 		buf = INTEL_AC_MIC_BUF;
 		lvi = INTEL_AC_MIC_LVI;
 		cr  = INTEL_AC_MIC_CR;
-		ioc_irq = false;
+		ioc_irq = true;
+
+		intel_ac_hw_dev.mic_lc = -1;
 		break;
 	default:
 		log_error("Unsupported AC97 device id!");
 		return;
 	}
+	/* Reset all registers */
+	out8(ICH_RESETREGS, NAMB_REG(cr));
+
 	out32((uint32_t)_desc_list_by_dev(dev), NAMB_REG(buf));
 
 	/* Setup buffers, currently just zeroes */
@@ -434,7 +444,10 @@ AUDIO_DEV_DEF("intel_ac_dac2", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel
 AUDIO_DEV_DEF("intel_ac_adc1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_adc1);
 
 uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
-	return _in_buf_by_dev(audio_dev);
+	struct intel_ac_dev_priv *priv = audio_dev->ad_priv;
+	uint8_t *buf = _in_buf_by_dev(audio_dev);
+	buf += INTEL_AC_SAMPLE_SZ * INTEL_AC_DESC_LEN * priv->hw_dev->mic_lc;
+	return buf;
 }
 
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
