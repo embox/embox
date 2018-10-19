@@ -25,16 +25,16 @@ env:
     - TEMPLATE=ppc/qemu
     - TEMPLATE=microblaze/qemu
     - TEMPLATE=usermode86/debug
-matrix:
-  include:
-  - env: UNCRUSTIFY
-    install:
-      - SRC=$PWD/uncrustify INSTALL=$PWD/uncrustify/dist ./scripts/codestyle/install_uncrustify.sh
-    before_script:
-      - export PATH=$PWD/uncrustify/dist/bin:$PATH
-    script:
-      - uncrustify -v
-      - ./scripts/codestyle/travis_uncrustify.sh
+#matrix:
+#  include:
+#  - env: UNCRUSTIFY
+#    install:
+#      - SRC=$PWD/uncrustify INSTALL=$PWD/uncrustify/dist ./scripts/codestyle/install_uncrustify.sh
+#    before_script:
+#      - export PATH=$PWD/uncrustify/dist/bin:$PATH
+#    script:
+#      - uncrustify -v
+#      - ./scripts/codestyle/travis_uncrustify.sh
 
 before_script:
   - set -e # make this script fail as soon as any individual command fail
