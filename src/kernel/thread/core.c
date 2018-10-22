@@ -254,6 +254,7 @@ void thread_delete(struct thread *t) {
 
 	task_thread_unregister(t->task, t);
 	thread_local_free(t);
+	thread_wait_deinit(&t->thread_wait);
 
 	if (zombie) {
 		thread_free(zombie);

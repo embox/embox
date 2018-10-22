@@ -47,18 +47,27 @@ static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 #define SCHED_WAIT_TIMER_INIT(_tmr, ...) \
 	timer_init_start(&_tmr, __VA_ARGS__)
 
+#define SCHED_WAIT_TIMER_ADD(_tmr) \
+	thread_wait_add(&(thread_self()->thread_wait), &_tmr)
+
 #define SCHED_WAIT_TIMER_CLOSE(_tmr) \
-	timer_close(&_tmr)
-#else
+	timer_close(&_tmr);\
+	thread_wait_del(&(thread_self()->thread_wait), &_tmr)
+#else /* timers allocate from pool not on stack */
 #define SCHED_WAIT_TIMER_DEF(_tmr) \
 	struct sys_timer *_tmr;
 
 #define SCHED_WAIT_TIMER_INIT(_tmr, ...) \
-	timer_set(&_tmr, __VA_ARGS__)
+	timer_set(&_tmr, __VA_ARGS__);\
+	thread_wait_add(&(thread_self()->thread_wait), _tmr)
+
+#define SCHED_WAIT_TIMER_ADD(_tmr) \
+	thread_wait_add(&(thread_self()->thread_wait), _tmr)
 
 #define SCHED_WAIT_TIMER_CLOSE(_tmr) \
-	timer_close(_tmr)
-#endif
+	timer_close(_tmr);\
+	thread_wait_del(&(thread_self()->thread_wait), _tmr)
+#endif /* timer_allocate_on_stack */
 
 int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 	SCHED_WAIT_TIMER_DEF(tmr);
@@ -72,10 +81,12 @@ int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 	}
 
 	cur_time = clock();
+	SCHED_WAIT_TIMER_ADD(tmr);
 	if ((res = SCHED_WAIT_TIMER_INIT(tmr, TIMER_ONESHOT, jiffies2ms(timeout),
 			sched_wait_timeout_handler, schedee_get_current()))) {
 		return res;
 	}
+
 
 	schedule();
 	diff = clock() - cur_time;
