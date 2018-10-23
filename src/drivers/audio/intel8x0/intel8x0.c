@@ -393,8 +393,10 @@ static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	int devid = ((struct intel_ac_dev_priv*)dev->ad_priv)->devid;
 	switch(cmd) {
 	case ADIOCTL_IN_SUPPORT:
+		/* There are to input channels by default
+		 * in Record Select Control Register (Index 1Ah) */
 		return devid == 2 ?
-			AD_MONO_SUPPORT | AD_16BIT_SUPPORT : 0;
+			AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
 	case ADIOCTL_OUT_SUPPORT:
 		return devid == 0 ?
 			AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
