@@ -62,7 +62,7 @@ static void _mono_to_stereo(void *buf, int len) {
 static void _stereo_to_mono(void *buf, int len) {
 	/* Assume data is 16-bit */
 	uint16_t *b16 = buf;
-	for (int i = 0; i < len / 2; i++) {
+	for (int i = 0; i < len; i++) {
 		b16[i] = b16[i * 2];
 	}
 }
