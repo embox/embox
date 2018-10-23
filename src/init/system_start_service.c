@@ -5,6 +5,7 @@
  * @date 04.10.11
  * @author Alexander Kalmuk
  */
+#include <util/log.h>
 
 #include <errno.h>
 #include <stdio.h>
@@ -32,6 +33,9 @@ int system_start(void) {
 	setup_tty(OPTION_STRING_GET(tty_dev));
 
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
+#if OPTION_GET(NUMBER,log_level) >= LOG_INFO
+		printf(">%s\n", command);
+#endif
 		argc = cmdline_tokenize((char *)command, argv);
 		if (0 == strncmp(argv[0], "pthread", 7)) {
 			cmd = cmd_lookup(argv[1]);
