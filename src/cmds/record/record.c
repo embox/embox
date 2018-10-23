@@ -16,21 +16,37 @@
 #include <fs/file_format.h>
 #include <util/math.h>
 
+/* Maximum recording duration in milliseconds */
+#define MAX_REC_DURATION 50000
+#define AUDIO_BUFFER_SIZE 0x800000
+
+static int sample_rate;
+static int chan_n;
+
 static void print_usage(void) {
-	printf("Usage: record [FILENAME]\n");
+	printf("Usage: record [flags] [FILENAME]\n"
+			"-r - sample rate (8000, 16000,...)\n"
+			"-c - channel count (1 or 2)\n"
+			"-d - recording duration in msec\n"
+			"-s - \"record\" sin() instead of using microphone\n"
+			"Examples:\n"
+			"  record stereo44100.wav - record stereo44100.wav with default settings\n"
+			"  record -r 8000 -c 1 -d 10000 mono8000.wav - record 10 sec mono 8000hz\n"
+			"  record -s sin.wav - record sin() to sin.wav\n"
+		);
 }
 
 static void write_wave(char *name, uint8_t *buf, int len) {
 	struct wave_header hdr;
 	int fd = open(name, O_CREAT | O_RDWR);
 
-	_wave_header_fill(&hdr, 2, 44100, 16, len);
+	_wave_header_fill(&hdr, chan_n, sample_rate, 16, len);
 
 	write(fd, &hdr, sizeof(hdr));
 	write(fd, buf, len);
 }
 
-static uint32_t in_buf[4 * 2 * 32 / 4 * 0xff00]; /* Hardcoded 4x intel-ac buffer size */
+static uint16_t in_buf[AUDIO_BUFFER_SIZE];
 static int cur_ptr;
 
 double _sin(double x) {
@@ -59,8 +75,11 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 	for (i = 0; i < framesPerBuffer; i++) {
 		double x = 2 * 3.14 * (i % _sin_w) / _sin_w;
 		int tmp = (1. + _sin(x)) * _sin_h;
-		in_buf[cur_ptr] = (tmp << 16) | tmp;
-		cur_ptr++;
+
+		in_buf[cur_ptr++] = tmp;
+		if (chan_n == 2) {
+			in_buf[cur_ptr++] = tmp;
+		}
 	}
 
 	return 0;
@@ -72,27 +91,24 @@ static int record_callback(const void *inputBuffer, void *outputBuffer,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
 	int i;
-
-	framesPerBuffer = 2 * 32 / 4 * 0xff00; /* XXX */
+	uint16_t *in_data16 = (uint16_t *)inputBuffer;
 
 	for (i = 0; i < framesPerBuffer; i++) {
 		if (cur_ptr > sizeof(in_buf))
 			break;
-		in_buf[cur_ptr] = ((int*)inputBuffer)[i];
-		cur_ptr++;
+		memcpy(&in_buf[cur_ptr], &in_data16[chan_n * i], 2 * chan_n);
+		cur_ptr += chan_n;
 	}
 
-	if (cur_ptr * 4 > sizeof(in_buf))
+	if (cur_ptr * 2 > sizeof(in_buf))
 		return paComplete;
 	return paContinue;
 }
 
-
 int main(int argc, char **argv) {
 	int opt;
 	int err;
-	int sample_rate = 44100;
-	int sleep_msec = 50000;
+	int sleep_msec = MAX_REC_DURATION;
 	char *filename;
 	PaStream *stream = NULL;
 
@@ -104,23 +120,49 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	sample_rate = 44100;
+	chan_n = 2;
 	callback = &record_callback;
-	filename = argv[1];
 
-	while (-1 != (opt = getopt(argc, argv, "nsh"))) {
+	while (-1 != (opt = getopt(argc, argv, "nshd:r:c:"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
 		case 's':
 			callback = &sin_callback;
-			filename = argv[2];
+			break;
+		case 'd':
+			if ((optarg == NULL) || (!sscanf(optarg, "%d", &sleep_msec))) {
+				print_usage();
+				return -1;
+			}
+			if (sleep_msec > MAX_REC_DURATION) {
+				printf("Specified recording duration %d exceeds maximum %d\n",
+						sleep_msec, MAX_REC_DURATION);
+				print_usage();
+				return -1;
+			}
+			break;
+		case 'r':
+			if ((optarg == NULL) || (!sscanf(optarg, "%d", &sample_rate))) {
+				print_usage();
+				return -1;
+			}
+			break;
+		case 'c':
+			if ((optarg == NULL) || (!sscanf(optarg, "%d", &chan_n))) {
+				print_usage();
+				return -1;
+			}
 			break;
 		default:
 			printf("Unknown argument: %c", opt);
 			return 0;
 		}
 	}
+
+	filename = argv[argc - 1];
 
 	cur_ptr = 0;
 	/* Initialize PA */
@@ -131,7 +173,7 @@ int main(int argc, char **argv) {
 
 	in_par = (PaStreamParameters) {
 		.device                    = Pa_GetDefaultInputDevice(),
-		.channelCount              = 2,
+		.channelCount              = chan_n,
 		.sampleFormat              = paInt16,
 		.suggestedLatency          = 10,
 		.hostApiSpecificStreamInfo = NULL,
@@ -158,6 +200,10 @@ int main(int argc, char **argv) {
 				"sin will be recorded to the output file\n");
 	}
 
+	printf("Recording wav pararemeters:\n"
+			"file - %s, duration - %d msec, rate - %d hz, %s wav\n\n",
+			filename, sleep_msec, sample_rate, chan_n == 1 ? "mono" : "stereo");
+
 	if (paNoError != (err = Pa_StartStream(stream))) {
 		printf("Portaudio error: could not start stream!\n");
 		goto err_terminate_pa;
@@ -175,7 +221,7 @@ int main(int argc, char **argv) {
 		goto err_terminate_pa;
 	}
 
-	write_wave(filename, (uint8_t*)in_buf, cur_ptr * 4);
+	write_wave(filename, (uint8_t*)in_buf, cur_ptr * 2);
 
 err_terminate_pa:
 	if (paNoError != (err = Pa_Terminate()))
