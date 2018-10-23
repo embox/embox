@@ -23,10 +23,17 @@ struct audio_dev_ops {
 	int (*ad_ops_ioctl)(struct audio_dev *dev, int cmd, void *args);
 };
 
+typedef enum {
+	AUDIO_DEV_OUTPUT,
+	AUDIO_DEV_INPUT,
+	AUDIO_DEV_BOTH
+} audio_dev_dir_t;
+
 struct audio_dev {
 	struct audio_dev_ops *ad_ops;
 	const char *ad_name;
 	void *ad_priv;
+	audio_dev_dir_t dir;
 	size_t buf_len;
 	uint8_t num_of_chan;
 	uint8_t max_chan;

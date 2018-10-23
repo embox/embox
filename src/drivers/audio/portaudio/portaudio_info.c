@@ -6,12 +6,14 @@
  * @date 2016-06-28
  */
 
+#include <assert.h>
 #include <embox/unit.h>
 
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
 
 #include <util/log.h>
+#include <util/math.h>
 
 #define MAX_DEV_CNT OPTION_GET(NUMBER, max_dev_count)
 
@@ -51,12 +53,13 @@ static int pa_info_init(void) {
 		int max_input_chan = 0, max_output_chan = 0;
 		dev = audio_dev_get_by_idx(i);
 
-		if (dev->ad_ops->ad_ops_ioctl) {
-			max_output_chan = pa_get_audio_support(dev, ADIOCTL_OUT_SUPPORT);
-			max_input_chan  = pa_get_audio_support(dev, ADIOCTL_IN_SUPPORT);
-		} else {
-			log_error("Impossible to get audio info");
-		}
+		assert(dev->ad_ops->ad_ops_ioctl);
+
+		max_output_chan = pa_get_audio_support(dev, ADIOCTL_OUT_SUPPORT);
+		max_input_chan  = pa_get_audio_support(dev, ADIOCTL_IN_SUPPORT);
+
+		dev->num_of_chan = max(max_output_chan, max_input_chan);
+		dev->dir = max_output_chan ? AUDIO_DEV_OUTPUT : AUDIO_DEV_INPUT;
 
 		_info[i] = (PaDeviceInfo) {
 			.structVersion = 1,

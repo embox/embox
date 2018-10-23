@@ -67,6 +67,39 @@ static void _stereo_to_mono(void *buf, int len) {
 	}
 }
 
+/* Sort out problems related to the number of channels */
+static void pa_do_audio_convertion(struct audio_dev *audio_dev,
+		uint8_t *out_buf, uint8_t *in_buf, int inp_frames) {
+	if (pa_stream.number_of_chan != audio_dev->num_of_chan) {
+		if (pa_stream.number_of_chan == 1 && audio_dev->num_of_chan == 2) {
+			switch (audio_dev->dir) {
+			case AUDIO_DEV_OUTPUT:
+				_mono_to_stereo(out_buf, inp_frames);
+				break;
+			case AUDIO_DEV_INPUT:
+				_stereo_to_mono(in_buf, inp_frames);
+				break;
+			default:
+				break;
+			}
+		} else if (pa_stream.number_of_chan == 2 && audio_dev->num_of_chan == 1) {
+			switch (audio_dev->dir) {
+			case AUDIO_DEV_OUTPUT:
+				_stereo_to_mono(out_buf, inp_frames);
+				break;
+			case AUDIO_DEV_INPUT:
+				_mono_to_stereo(in_buf, inp_frames);
+				break;
+			default:
+				break;
+			}
+		} else {
+			log_error("Audio configuration is broken!"
+				  "Check the number of channels.\n");
+		}
+	}
+}
+
 static void *pa_thread_hnd(void *arg) {
 	int err;
 	struct audio_dev *audio_dev;
@@ -117,8 +150,9 @@ static void *pa_thread_hnd(void *arg) {
 
 	/* TODO Handle bitrate problems */
 
-	inp_frames = out_frames;
 	while (1) {
+		inp_frames = out_frames;
+
 		SCHED_WAIT(pa_stream.active);
 
 		out_buf = audio_dev_get_out_cur_ptr(audio_dev);
@@ -129,6 +163,10 @@ static void *pa_thread_hnd(void *arg) {
 		if (out_buf)
 			memset(out_buf, 0, audio_dev->buf_len);
 
+		if (audio_dev->dir == AUDIO_DEV_INPUT) {
+			pa_do_audio_convertion(audio_dev, out_buf, in_buf, inp_frames);
+		}
+
 		err = pa_stream.callback(in_buf,
 			out_buf,
 			inp_frames,
@@ -136,27 +174,17 @@ static void *pa_thread_hnd(void *arg) {
 			0,
 			pa_stream.user_data);
 
-		_buf_scale(out_buf, inp_frames, out_frames);
-
 		if (err) {
 			log_error("User callback error: %d", err);
 			if(err == paComplete) {
 				Pa_CloseStream(&pa_stream);
 			}
 		}
-		/* Sort out problems related to the number of channels */
-		if (pa_stream.number_of_chan != audio_dev->num_of_chan) {
-			if (pa_stream.number_of_chan == 1 && audio_dev->num_of_chan == 2) {
-				_mono_to_stereo(out_buf, inp_frames);
-			} else if (pa_stream.number_of_chan == 2 && audio_dev->num_of_chan == 1) {
-				_stereo_to_mono(out_buf, inp_frames);
-			} else {
-				log_error("Audio configuration is broken!"
-					  "Check the number of channels.\n");
-				return NULL;
-			}
-		}
 
+		if (audio_dev->dir == AUDIO_DEV_OUTPUT) {
+			_buf_scale(out_buf, inp_frames, out_frames);
+			pa_do_audio_convertion(audio_dev, out_buf, in_buf, inp_frames);
+		}
 		pa_stream.active = 0;
 
 		audio_dev->ad_ops->ad_ops_resume(audio_dev);
@@ -228,9 +256,6 @@ PaError Pa_OpenStream(PaStream** stream,
 	if ((prev_rate != -1) && (prev_rate != rate)) {
 		audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_SET_RATE, &rate);
 	}
-
-	/* TODO work on mono sound device */
-	audio_dev->num_of_chan = 2;
 
 	pa_thread = thread_create(THREAD_FLAG_SUSPENDED, pa_thread_hnd, NULL);
 
