@@ -23,7 +23,12 @@ EMBOX_TEST_SUITE("stdio/printf test");
 		test_assert_str_equal(answer, buff);       \
 	} while(0)
 
-
+#ifdef __GNUC__
+#if __GNUC__ > 6
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
+#endif
 TEST_CASE("Test of specifier with type integer") {
 	/* test zero */
 	TEST_STR_FMT("0", "%d", 0);
@@ -118,20 +123,9 @@ TEST_CASE("Test of snprintf with truncated output") {
 
 	test_assert_equal(3, snprintf(&random_char, 0, "012"));
 	test_assert_equal(random_char, backup_char);
-#ifdef __GNUC__
-#if __GNUC__ > 6
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-truncation"
-#endif
-#endif
 	test_assert_equal(4, snprintf(dest, 4, "1234"));
 	test_assert_str_equal(dest, "123");
 	test_assert_equal(8, snprintf(dest, 2, "12345678"));
-#ifdef __GNUC__
-#if __GNUC__ > 6
-#pragma GCC diagnostic pop
-#endif
-#endif
 	test_assert_str_equal(dest, "1");
 }
 
@@ -167,4 +161,9 @@ TEST_CASE("Test of specifier with type float") {
 
 	TEST_STR_FMT(" 23", "% .0f", 23.0);
 }
+#endif
+#ifdef __GNUC__
+#if __GNUC__ > 6
+#pragma GCC diagnostic pop
+#endif
 #endif

@@ -16,23 +16,23 @@
 #include <sys/types.h>
 #include <signal.h>
 
-#define LEN_OF_NAME 32
+#define SERVICE_NAME_LEN 32
 #define OBJECTS_QUANTITY 0x10
 
 struct service_list {
 	struct dlist_head dlist_item;
-	char service_name[LEN_OF_NAME];
+	char service_name[SERVICE_NAME_LEN];
 	pid_t pid;
 };
 
-POOL_DEF(pool, struct service_list, OBJECTS_QUANTITY);		 
+POOL_DEF(pool, struct service_list, OBJECTS_QUANTITY);
 
 static DLIST_DEFINE(head);
 
 static void service_add(const char *name, pid_t service_pid) {
   	struct service_list *new_element;
 	struct service_list *tmp;
-		
+
 	dlist_foreach_entry(tmp, &head, dlist_item) {
 		if (strcmp(tmp->service_name, name) == 0) {
 			printf("Service is already running.\n");
@@ -40,29 +40,30 @@ static void service_add(const char *name, pid_t service_pid) {
 		}
 	}
 
-  	new_element = pool_alloc(&pool);
+	new_element = pool_alloc(&pool);
 
 	if (new_element == NULL) {
 		log_error("Pool is full.");
 		return;
 	}
-	
-  	strncpy(new_element->service_name,name,LEN_OF_NAME);
+
+	strncpy(new_element->service_name, name, SERVICE_NAME_LEN - 1);
+	new_element->service_name[SERVICE_NAME_LEN - 1] = '\0';
 
 	new_element->pid = service_pid;
-   
+
   	dlist_init(&new_element->dlist_item);
-  
-  	dlist_add_next(&new_element->dlist_item, &head); 
+
+	dlist_add_next(&new_element->dlist_item, &head);
 }
 
 static void service_delete(const char *name) {
 	struct service_list *tmp;
-	
+
 	dlist_foreach_entry(tmp, &head, dlist_item) {
 		if (strcmp(tmp->service_name, name) == 0) {
 			int kill_result = kill(tmp->pid, SIGKILL);
-			
+
 			if (kill_result != 0) {
 				printf("Error: the service was launched but is not working now.\n");
 				return;
@@ -81,7 +82,7 @@ static void service_delete(const char *name) {
 
 static void listprint(void) {
 	struct service_list *tmp;
-	
+
 	dlist_foreach_entry(tmp, &head, dlist_item) {
 		printf("%s\n", tmp->service_name);
 	}
@@ -90,7 +91,7 @@ static void listprint(void) {
 static int service_run(const char *path, char *const argv[]) {
 	pid_t pid;
 	pid = vfork();
-	
+
 	if (pid < 0) {
 		int err = errno;
 		printf("vfork() error(%d): %s", err, strerror(err));
@@ -126,7 +127,7 @@ int main(int argc, char **argv) {
 	}
 
 	argv[argc] = NULL;
-	printf("Starting service: %s\n", command);		
-	
+	printf("Starting service: %s\n", command);
+
 	return service_run(command, &argv[1]);
 }

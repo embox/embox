@@ -115,11 +115,13 @@ static void ignore_telnet_options(int sock, int pptyfd) {
 static int utmp_login(short ut_type, const char *host) {
 	struct utmp utmp;
 
+	memset(&utmp, 0, sizeof(utmp));
+
 	utmp.ut_type = ut_type;
 	utmp.ut_pid = getpid();
 	snprintf(utmp.ut_id, UT_IDSIZE, "/%d", utmp.ut_pid);
 	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
-	strncpy(utmp.ut_host, host, UT_HOSTSIZE);
+	strncpy(utmp.ut_host, host, UT_HOSTSIZE - 1);
 	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));
 
 	gettimeofday(&utmp.ut_tv, NULL);

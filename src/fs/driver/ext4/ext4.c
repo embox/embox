@@ -2006,7 +2006,7 @@ static int ext4_dir_operation(struct nas *nas, char *string, ino_t *numb,
 		ext4_add_lo_hi(fi->f_di.i_size_lo, fi->f_di.i_size_hi, (uint32_t) dp->rec_len);
 		/* Send the change to disk if the directory is extended. */
 		if (extended) {
-			memcpy(&fdi, &fi->f_di, sizeof(struct ext4_dir));
+			memcpy(&fdi, &fi->f_di, sizeof(struct ext4_inode));
 			ext4_rw_inode(nas, &fdi, EXT4_W_INODE);
 		}
 	}

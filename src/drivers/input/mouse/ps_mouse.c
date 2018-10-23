@@ -49,7 +49,7 @@ static int kmc_write_aux(unsigned char val) {
 static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *ev) {
 	struct ps2_mouse_indev *ps2mouse = (struct ps2_mouse_indev *) dev;
 	unsigned char data;
-	int ret;
+	int ret = 0;
 
 	if ((inb(I8042_STS_PORT) & 0x21) != 0x21) {
 		/* this is keyboard scan code */

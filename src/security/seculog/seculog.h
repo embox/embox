@@ -31,7 +31,7 @@ extern int seculog_record(seculog_label_t label, const char *msg);
 
 struct seculog_record {
 	seculog_label_t label;
-	char msg[SECULOG_RECORD_MAX_MSG_N];
+	char msg[SECULOG_RECORD_MAX_MSG_N + 1];
 
 	int refcount;
 };

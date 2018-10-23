@@ -136,8 +136,7 @@ char *asctime(const struct tm *timeptr) {
         "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
     };
-    static char result[26];
-
+    static char result[33];
 
     sprintf(result, "%.3s %.3s%3d %.2d:%.2d:%.2d %d\n",
         wday_name[timeptr->tm_wday],

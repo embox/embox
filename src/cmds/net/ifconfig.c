@@ -311,7 +311,7 @@ int main(int argc, char *argv[]) {
 		else if (!strcmp("-s", argv[i])) args.with_s = 1;
 		else if (!args.with_iface) {
 			args.with_iface = 1;
-			strncpy(&args.iface[0], argv[i], ARRAY_SIZE(args.iface));
+			strncpy(&args.iface[0], argv[i], ARRAY_SIZE(args.iface) - 1);
 		}
 		else if (!strcmp("up", argv[i]) || !strcmp("down", argv[i])) {
 			args.with_up_or_down = 1;
