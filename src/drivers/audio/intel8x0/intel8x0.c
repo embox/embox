@@ -48,6 +48,7 @@ struct intel_ac_hw_dev {
 	uint32_t base_addr_namb;
 	int po_lvi; /* Last Valid Index for PO */
 	int mic_lc; /* Last Completed Buffer for MIC */
+	struct audio_dev *audio_dev;
 };
 
 struct intel_ac_dev_priv {
@@ -259,12 +260,12 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 		mic_lvi = (hw_dev->mic_lc + 1) % INTEL_AC_BUFFER_SZ;
 		out8(mic_lvi, NAMB_REG(INTEL_AC_MIC_LVI));
 
-		Pa_StartStream(NULL);
+		Pa_StartStream(hw_dev->audio_dev->stream);
 	} else if (po_status & ICH_BCIS) { /* Interrupt on buffer completion */
 		/* Currently we are interruped after each buffer */
 		hw_dev->po_lvi = (hw_dev->po_lvi + 1) % INTEL_AC_BUFFER_SZ;
 		out8(hw_dev->po_lvi, NAMB_REG(INTEL_AC_PO_LVI));
-		Pa_StartStream(NULL);
+		Pa_StartStream(hw_dev->audio_dev->stream);
 	}
 
 	out16(0x1F, NAMB_REG(INTEL_AC_PO_SR));
@@ -326,6 +327,8 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 		log_error("Unsupported AC97 device id!");
 		return;
 	}
+	intel_ac_hw_dev.audio_dev = dev;
+
 	/* Reset all registers */
 	out8(ICH_RESETREGS, NAMB_REG(cr));
 

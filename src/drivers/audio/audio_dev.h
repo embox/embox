@@ -33,6 +33,11 @@ struct audio_dev {
 	struct audio_dev_ops *ad_ops;
 	const char *ad_name;
 	void *ad_priv;
+	/* XXX It is used in audio drivers to wake up call portaudio.
+	 * Probably, audio device shouldn't know about streams.
+	 * Portaudio implementation should maintain correspondace between
+	 * streams and auidio devices. */
+	void *stream;
 	audio_dev_dir_t dir;
 	size_t buf_len;
 	uint8_t num_of_chan;
