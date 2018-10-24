@@ -1,0 +1,73 @@
+diff -aur SDL2-2.0.8-orig/libtool SDL2-2.0.8/libtool
+--- SDL2-2.0.8-orig/libtool	2018-10-24 15:05:44.441355051 +0300
++++ libtool	2018-10-24 15:05:20.017557159 +0300
+@@ -347,8 +347,8 @@
+ old_archive_from_expsyms_cmds=""
+ 
+ # Commands used to build a shared archive.
+-archive_cmds="\$CC -shared \$pic_flag \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
+-archive_expsym_cmds="\$CC -shared \$pic_flag \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-retain-symbols-file \$wl\$export_symbols -o \$lib"
++archive_cmds="\$CC \$pic_flag \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname -o \$lib"
++archive_expsym_cmds="\$CC \$pic_flag \$libobjs \$deplibs \$compiler_flags \${wl}-soname \$wl\$soname \${wl}-retain-symbols-file \$wl\$export_symbols -o \$lib"
+ 
+ # Commands used to build a loadable module if different from building
+ # a shared archive.
+@@ -2426,7 +2426,7 @@
+ 	  continue
+ 	  ;;
+ 
+-	-shared | -static | -prefer-pic | -prefer-non-pic)
++	-static | -prefer-pic | -prefer-non-pic)
+ 	  later+=" $arg"
+ 	  continue
+ 	  ;;
+@@ -2513,13 +2513,6 @@
+ 
+     for arg in $later; do
+       case $arg in
+-      -shared)
+-	test "$build_libtool_libs" != yes && \
+-	  func_fatal_configuration "can not build a shared library"
+-	build_old_libs=no
+-	continue
+-	;;
+-
+       -static)
+ 	build_libtool_libs=no
+ 	build_old_libs=yes
+@@ -5604,12 +5597,6 @@
+     for arg
+     do
+       case $arg in
+-      -shared)
+-	test "$build_libtool_libs" != yes && \
+-	  func_fatal_configuration "can not build a shared library"
+-	build_old_libs=no
+-	break
+-	;;
+       -all-static | -static | -static-libtool-libs)
+ 	case $arg in
+ 	-all-static)
+@@ -10218,7 +10218,7 @@
+ predep_objects="/usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/8/crtbeginS.o"
+ postdep_objects="/usr/lib/gcc/x86_64-linux-gnu/8/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/8/../../../x86_64-linux-gnu/crtn.o"
+ predeps=""
+-postdeps="-lstdc++ -lm -lgcc_s -lc -lgcc_s"
++postdeps="-lstdc++ -lm -lc"
+ 
+ # The library search path used internally by the compiler when linking
+ # a shared library.
+--- SDL2-2.0.8-orig/src/video/SDL_video.c	2018-10-24 15:05:44.441355051 +0300
++++ src/video/SDL_video.c	2018-10-29 16:18:56.850943881 +0300
+@@ -56,8 +56,11 @@
+ #include <emscripten.h>
+ #endif
+ 
++extern VideoBootStrap EMBOX_bootstrap;
++
+ /* Available video drivers */
+ static VideoBootStrap *bootstrap[] = {
++    &EMBOX_bootstrap,
+ #if SDL_VIDEO_DRIVER_COCOA
+     &COCOA_bootstrap,
+ #endif

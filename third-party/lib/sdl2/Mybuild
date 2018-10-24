@@ -1,0 +1,22 @@
+package third_party.lib
+
+/* It's hardcoded for i386 */
+
+@Build(script="$(EXTERNAL_MAKE)")
+module sdl2 {
+	option number log_level = 0
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "libSDL2.a"
+
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_osmesa/glu-9.0.0/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-17.0.3/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-17.0.3/src/mesa/main/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/lib/sdl2/SDL2-2.0.8/src/video/qnx/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/lib/sdl2/SDL2-2.0.8/include/")
+	source "embox.c", "gl.c"
+
+	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.stubs
+	depends embox.driver.video.fb_overlay
+}
