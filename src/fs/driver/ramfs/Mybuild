@@ -1,13 +1,17 @@
 package embox.fs.driver
 
-module ramfs {
+@DefaultImpl(ramfs_old)
+abstract module ramfs {
+	option number inode_quantity=64
+	option number ramfs_descriptor_quantity=4
+	option number ramfs_file_size=4096
+}
+
+module ramfs_old extends ramfs {
 	@IncludeExport(path="fs")
 	source "ramfs.h"
 
 	source "ramfs.c"
-	option number inode_quantity=64
-	option number ramfs_descriptor_quantity=4
-	option number ramfs_file_size=4096
 
 	depends embox.mem.pool
 
@@ -15,4 +19,12 @@ module ramfs {
 	depends embox.fs.driver.repo
 
 	depends embox.driver.ramdisk
+}
+
+
+module ramfs_dvfs extends ramfs {
+	source "ramfs_dvfs.c"
+
+	depends embox.mem.pool
+	depends embox.driver.ramdisk_dvfs
 }
