@@ -155,7 +155,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
  *
  * @return Negative error code
  * @retval             0 Ok
- * @retval       -ENOENT No node found or incorrect root/pwd dentry
+ * @retval       -ENOENT Incorrect root/pwd dentry
  * @retval      -ENOTDIR Intermediate part of the path is not a directory
  * @retval -ENAMETOOLONG path is too long
  */
@@ -197,8 +197,9 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	}
 
 	errcode = dvfs_path_walk(path, dentry, lookup);
-	if (!errcode)
+	if (!errcode) {
 		dvfs_cache_add(lookup->item);
+	}
 
-	return errcode;
+	return errcode == -ENOENT ? 0 : errcode;
 }
