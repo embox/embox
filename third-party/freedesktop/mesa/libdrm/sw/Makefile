@@ -29,6 +29,7 @@ $(CONFIGURE) :
 			--disable-freedreno \
 			--disable-vc4 \
 			--enable-cairo-tests=no \
+			--disable-dependency-tracking \
 			CC=$(EMBOX_GCC) \
 	)
 	touch $@

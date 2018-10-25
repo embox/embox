@@ -36,6 +36,7 @@ $(CONFIGURE) :
 			--disable-glx --disable-glx-tls \
 			--disable-asm \
 			--disable-gles1 --disable-gles2 \
+			--disable-dependency-tracking \
 			CC=$(EMBOX_GCC) \
 			CXX=$(EMBOX_GXX) \
 			CFLAGS='-O2' \
