@@ -1,0 +1,404 @@
+diff -aur ioq3-orig/Makefile ioq3/Makefile
+--- ioq3-orig/Makefile	2018-10-24 13:15:48.213375709 +0300
++++ ioq3/Makefile	2018-10-30 17:57:43.309239932 +0300
+@@ -101,6 +101,7 @@
+     CROSS_COMPILING=1
+   endif
+ endif
++CROSS_COMPILING=1
+ export CROSS_COMPILING
+ 
+ ifndef VERSION
+@@ -120,7 +121,7 @@
+ endif
+ 
+ ifndef BASEGAME_CFLAGS
+-BASEGAME_CFLAGS=
++BASEGAME_CFLAGS=-g
+ endif
+ 
+ ifndef MISSIONPACK
+@@ -128,7 +129,7 @@
+ endif
+ 
+ ifndef MISSIONPACK_CFLAGS
+-MISSIONPACK_CFLAGS=-DMISSIONPACK
++MISSIONPACK_CFLAGS=-DMISSIONPACK -g
+ endif
+ 
+ ifndef COPYDIR
+@@ -158,10 +159,12 @@
+ ifndef USE_OPENAL
+ USE_OPENAL=1
+ endif
++USE_OPENAL=0
+ 
+ ifndef USE_OPENAL_DLOPEN
+ USE_OPENAL_DLOPEN=1
+ endif
++USE_OPENAL_DLOPEN=0
+ 
+ ifndef USE_CURL
+ USE_CURL=1
+@@ -174,6 +177,7 @@
+     USE_CURL_DLOPEN=1
+   endif
+ endif
++USE_CURL_DLOPEN=0
+ 
+ ifndef USE_CODEC_VORBIS
+ USE_CODEC_VORBIS=1
+@@ -223,9 +227,11 @@
+ USE_LOCAL_HEADERS=$(USE_INTERNAL_LIBS)
+ endif
+ 
++USE_LOCAL_HEADERS=0
+ ifndef USE_RENDERER_DLOPEN
+ USE_RENDERER_DLOPEN=1
+ endif
++USE_RENDERER_DLOPEN=0
+ 
+ ifndef USE_YACC
+ USE_YACC=0
+@@ -236,7 +242,7 @@
+ endif
+ 
+ ifndef DEBUG_CFLAGS
+-DEBUG_CFLAGS=-ggdb -O0
++DEBUG_CFLAGS=-ggdb -O2 -g
+ endif
+ 
+ #############################################################################
+@@ -274,7 +280,6 @@
+ TOMSFASTMATHSRCDIR=$(AUTOUPDATERSRCDIR)/rsa_tools/tomsfastmath-0.13.1
+ LOKISETUPDIR=misc/setup
+ NSISDIR=misc/nsis
+-SDLHDIR=$(MOUNT_DIR)/SDL2
+ LIBSDIR=$(MOUNT_DIR)/libs
+ 
+ bin_path=$(shell which $(1) 2> /dev/null)
+@@ -303,7 +308,7 @@
+   OPENAL_CFLAGS ?= $(shell $(PKG_CONFIG) --silence-errors --cflags openal)
+   OPENAL_LIBS ?= $(shell $(PKG_CONFIG) --silence-errors --libs openal)
+   SDL_CFLAGS ?= $(shell $(PKG_CONFIG) --silence-errors --cflags sdl2|sed 's/-Dmain=SDL_main//')
+-  SDL_LIBS ?= $(shell $(PKG_CONFIG) --silence-errors --libs sdl2)
++ # SDL_LIBS ?= $(shell $(PKG_CONFIG) --silence-errors --libs sdl2)
+ else
+   # assume they're in the system default paths (no -I or -L needed)
+   CURL_LIBS ?= -lcurl
+@@ -314,7 +319,7 @@
+ ifeq ($(SDL_CFLAGS),)
+   ifneq ($(call bin_path, sdl2-config),)
+     SDL_CFLAGS = $(shell sdl2-config --cflags)
+-    SDL_LIBS = $(shell sdl2-config --libs)
++    #SDL_LIBS = $(shell sdl2-config --libs)
+   endif
+ endif
+ 
+@@ -349,16 +354,16 @@
+     -pipe -DUSE_ICON -DARCH_STRING=\\\"$(ARCH)\\\"
+   CLIENT_CFLAGS += $(SDL_CFLAGS)
+ 
+-  OPTIMIZEVM = -O3
++  OPTIMIZEVM = -O2
+   OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+ 
+   ifeq ($(ARCH),x86_64)
+-    OPTIMIZEVM = -O3
++    OPTIMIZEVM = -O2
+     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+     HAVE_VM_COMPILED = true
+   else
+   ifeq ($(ARCH),x86)
+-    OPTIMIZEVM = -O3 -march=i586
++    OPTIMIZEVM = -O2 -march=i586
+     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+     HAVE_VM_COMPILED=true
+   else
+@@ -388,7 +393,7 @@
+ 
+   SHLIBEXT=so
+   SHLIBCFLAGS=-fPIC -fvisibility=hidden
+-  SHLIBLDFLAGS=-shared $(LDFLAGS)
++  SHLIBLDFLAGS=-static $(LDFLAGS) -r
+ 
+   THREAD_LIBS=-lpthread
+   LIBS=-ldl -lm
+@@ -433,7 +438,7 @@
+   LIBS = -framework Cocoa
+   CLIENT_LIBS=
+   RENDERER_LIBS=
+-  OPTIMIZEVM = -O3
++  OPTIMIZEVM = -O2
+ 
+   # Default minimum Mac OS X version
+   ifeq ($(MACOSX_VERSION_MIN),)
+@@ -534,8 +539,8 @@
+     CLIENT_EXTRA_FILES += $(LIBSDIR)/macosx/libSDL2-2.0.0.dylib
+   else
+     BASE_CFLAGS += -I/Library/Frameworks/SDL2.framework/Headers
+-    CLIENT_LIBS += -framework SDL2
+-    RENDERER_LIBS += -framework SDL2
++    #CLIENT_LIBS += -framework SDL2
++    #RENDERER_LIBS += -framework SDL2
+   endif
+ 
+   OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+@@ -613,19 +618,19 @@
+   endif
+ 
+   ifeq ($(ARCH),x86_64)
+-    OPTIMIZEVM = -O3
++    OPTIMIZEVM = -O2
+     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+     HAVE_VM_COMPILED = true
+   endif
+   ifeq ($(ARCH),x86)
+-    OPTIMIZEVM = -O3 -march=i586
++    OPTIMIZEVM = -O2 -march=i586
+     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+     HAVE_VM_COMPILED = true
+   endif
+ 
+   SHLIBEXT=dll
+   SHLIBCFLAGS=
+-  SHLIBLDFLAGS=-shared $(LDFLAGS)
++  SHLIBLDFLAGS=-static $(LDFLAGS)
+ 
+   BINEXT=.exe
+ 
+@@ -723,7 +728,7 @@
+ 
+   SHLIBEXT=so
+   SHLIBCFLAGS=-fPIC
+-  SHLIBLDFLAGS=-shared $(LDFLAGS)
++  SHLIBLDFLAGS=-static $(LDFLAGS)
+ 
+   THREAD_LIBS=-lpthread
+   # don't need -ldl (FreeBSD)
+@@ -771,16 +776,16 @@
+     -pipe -DUSE_ICON -DMAP_ANONYMOUS=MAP_ANON
+   CLIENT_CFLAGS += $(SDL_CFLAGS)
+ 
+-  OPTIMIZEVM = -O3
++  OPTIMIZEVM = -O2
+   OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+ 
+   ifeq ($(ARCH),x86_64)
+-    OPTIMIZEVM = -O3
++    OPTIMIZEVM = -O2
+     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+     HAVE_VM_COMPILED = true
+   else
+   ifeq ($(ARCH),x86)
+-    OPTIMIZEVM = -O3 -march=i586
++    OPTIMIZEVM = -O2 -march=i586
+     OPTIMIZE = $(OPTIMIZEVM) -ffast-math
+     HAVE_VM_COMPILED=true
+   else
+@@ -815,7 +820,7 @@
+ 
+   SHLIBEXT=so
+   SHLIBCFLAGS=-fPIC
+-  SHLIBLDFLAGS=-shared $(LDFLAGS)
++  SHLIBLDFLAGS=-static $(LDFLAGS)
+ 
+   THREAD_LIBS=-lpthread
+   LIBS=-lm
+@@ -847,7 +852,7 @@
+   LIBS=-lm
+   SHLIBEXT=so
+   SHLIBCFLAGS=-fPIC
+-  SHLIBLDFLAGS=-shared $(LDFLAGS)
++  SHLIBLDFLAGS=-static $(LDFLAGS)
+   THREAD_LIBS=-lpthread
+ 
+   BASE_CFLAGS = -Wall -fno-strict-aliasing -Wimplicit -Wstrict-prototypes
+@@ -873,11 +878,11 @@
+   BASE_CFLAGS=-Dstricmp=strcasecmp -Xcpluscomm -woff 1185 \
+     -I. -I$(ROOT)/usr/include
+   CLIENT_CFLAGS += $(SDL_CFLAGS)
+-  OPTIMIZE = -O3
++  OPTIMIZE = -O2
+ 
+   SHLIBEXT=so
+   SHLIBCFLAGS=
+-  SHLIBLDFLAGS=-shared
++  SHLIBLDFLAGS=-static
+ 
+   LIBS=-ldl -lm -lgen
+   AUTOUPDATER_LIBS += -ldl
+@@ -910,10 +915,10 @@
+     -pipe -DUSE_ICON
+   CLIENT_CFLAGS += $(SDL_CFLAGS)
+ 
+-  OPTIMIZEVM = -O3 -funroll-loops
++  OPTIMIZEVM = -O2 -funroll-loops
+ 
+   ifeq ($(ARCH),sparc)
+-    OPTIMIZEVM += -O3 \
++    OPTIMIZEVM += -O2 \
+       -fstrength-reduce -falign-functions=2 \
+       -mtune=ultrasparc3 -mv8plus -mno-faster-structs
+     HAVE_VM_COMPILED=true
+@@ -932,13 +937,13 @@
+ 
+   SHLIBEXT=so
+   SHLIBCFLAGS=-fPIC
+-  SHLIBLDFLAGS=-shared $(LDFLAGS)
++  SHLIBLDFLAGS=-static $(LDFLAGS)
+ 
+   THREAD_LIBS=-lpthread
+   LIBS=-lsocket -lnsl -ldl -lm
+   AUTOUPDATER_LIBS += -ldl
+ 
+-  BOTCFLAGS=-O0
++  BOTCFLAGS=-O2
+ 
+   CLIENT_LIBS +=$(SDL_LIBS) -lX11 -lXext -liconv -lm
+   RENDERER_LIBS = $(SDL_LIBS)
+@@ -949,11 +954,11 @@
+ # SETUP AND BUILD -- GENERIC
+ #############################################################################
+   BASE_CFLAGS=
+-  OPTIMIZE = -O3
++  OPTIMIZE = -O2
+ 
+   SHLIBEXT=so
+   SHLIBCFLAGS=-fPIC
+-  SHLIBLDFLAGS=-shared
++  SHLIBLDFLAGS=-static
+ 
+ endif #Linux
+ endif #darwin
+@@ -976,6 +981,7 @@
+   BASE_CFLAGS += -DNO_VM_COMPILED
+   BUILD_GAME_QVM=0
+ endif
++BASE_CFLAGS += -DNO_VM_COMPILED
+ 
+ TARGETS =
+ 
+@@ -1602,7 +1608,7 @@
+ 
+ define DO_UI_Q3LCC
+ $(echo_cmd) "UI_Q3LCC $<"
+-$(Q)$(Q3LCC) $(BASEGAME_CFLAGS) -DUI -o $@ $<
++$(Q)$(Q3LCC) $(BASEGAME_CFLAGS) -DUI -o $@  $<
+ endef
+ 
+ define DO_Q3LCC_MISSIONPACK
+@@ -2189,31 +2195,37 @@
+ ifneq ($(USE_RENDERER_DLOPEN),0)
+ $(B)/$(CLIENTBIN)$(FULLBINEXT): $(Q3OBJ) $(LIBSDLMAIN)
+ 	$(echo_cmd) "LD $@"
+-	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) \
+-		-o $@ $(Q3OBJ) \
+-		$(LIBSDLMAIN) $(CLIENT_LIBS) $(LIBS)
++	#$(Q)$(CC)
++	ar rvs $@.a $(Q3OBJ)
++	#gcc $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) \
++	#	-o $@ $(Q3OBJ) -r -static
++
++	#	$(LIBSDLMAIN) $(CLIENT_LIBS) -r #$(LIBS) -r
++	#LABEL
+ 
+ $(B)/renderer_opengl1_$(SHLIBNAME): $(Q3ROBJ) $(JPGOBJ)
+ 	$(echo_cmd) "LD $@"
+-	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3ROBJ) $(JPGOBJ) \
+-		$(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
++	ar rvs $@ $(Q3ROBJ) $(JPGOBJ)
++#	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3ROBJ) $(JPGOBJ) \
++#		-r -static
++#		$(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
+ 
+ $(B)/renderer_opengl2_$(SHLIBNAME): $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ)
+ 	$(echo_cmd) "LD $@"
+-	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
+-		$(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
++	ar rvs $@ $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ)
++#		-r -static
++		# $(THREAD_LIBS) $(LIBSDLMAIN) $(RENDERER_LIBS) $(LIBS)
+ else
+ $(B)/$(CLIENTBIN)$(FULLBINEXT): $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) $(LIBSDLMAIN)
+ 	$(echo_cmd) "LD $@"
+-	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) \
+-		-o $@ $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) \
+-		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
++	ar rvs $@.a $(Q3OBJ) $(Q3ROBJ) $(JPGOBJ) \
++		#-r -static
++		#$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
+ 
+ $(B)/$(CLIENTBIN)_opengl2$(FULLBINEXT): $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) $(LIBSDLMAIN)
+ 	$(echo_cmd) "LD $@"
+-	$(Q)$(CC) $(CLIENT_CFLAGS) $(CFLAGS) $(CLIENT_LDFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) \
+-		-o $@ $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
+-		$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
++	ar rvs $@.a $(Q3OBJ) $(Q3R2OBJ) $(Q3R2STRINGOBJ) $(JPGOBJ) \
++		#$(LIBSDLMAIN) $(CLIENT_LIBS) $(RENDERER_LIBS) $(LIBS)
+ endif
+ 
+ ifneq ($(strip $(LIBSDLMAIN)),)
+@@ -2357,7 +2369,8 @@
+ 
+ $(B)/$(SERVERBIN)$(FULLBINEXT): $(Q3DOBJ)
+ 	$(echo_cmd) "LD $@"
+-	$(Q)$(CC) $(CFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) -o $@ $(Q3DOBJ) $(LIBS)
++	ar rvs $@.a $(Q3DOBJ)
++	#$(Q)$(CC) $(CFLAGS) $(LDFLAGS) $(NOTSHLIBLDFLAGS) -o $@ $(Q3DOBJ) $(LIBS)
+ 
+ 
+ 
+@@ -2398,7 +2411,7 @@
+ 
+ $(B)/$(BASEGAME)/cgame$(SHLIBNAME): $(Q3CGOBJ)
+ 	$(echo_cmd) "LD $@"
+-	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3CGOBJ)
++	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(Q3CGOBJ) -r -static
+ 
+ $(B)/$(BASEGAME)/vm/cgame.qvm: $(Q3CGVMOBJ) $(CGDIR)/cg_syscalls.asm $(Q3ASM)
+ 	$(echo_cmd) "Q3ASM $@"
+@@ -2443,7 +2456,7 @@
+ 
+ $(B)/$(MISSIONPACK)/cgame$(SHLIBNAME): $(MPCGOBJ)
+ 	$(echo_cmd) "LD $@"
+-	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(MPCGOBJ)
++	$(Q)$(CC) $(CFLAGS) $(SHLIBLDFLAGS) -o $@ $(MPCGOBJ) -r -static
+ 
+ $(B)/$(MISSIONPACK)/vm/cgame.qvm: $(MPCGVMOBJ) $(CGDIR)/cg_syscalls.asm $(Q3ASM)
+ 	$(echo_cmd) "Q3ASM $@"
+diff -aur ioq3-orig/code/renderergl1/tr_init.c ioq3/code/renderergl1/tr_init.c
+--- ioq3-orig/code/renderergl1/tr_init.c	2018-10-24 14:04:17.000000000 +0300
++++ ioq3/code/renderergl1/tr_init.c	2018-11-06 13:38:06.489802422 +0300
+@@ -269,7 +269,7 @@
+ 	{ "Mode  0: 320x240",		320,	240,	1 },
+ 	{ "Mode  1: 400x300",		400,	300,	1 },
+ 	{ "Mode  2: 512x384",		512,	384,	1 },
+-	{ "Mode  3: 640x480",		640,	480,	1 },
++	{ "Mode  3: 640x480",		320,	240,	1 },
+ 	{ "Mode  4: 800x600",		800,	600,	1 },
+ 	{ "Mode  5: 960x720",		960,	720,	1 },
+ 	{ "Mode  6: 1024x768",		1024,	768,	1 },
+diff -aur ioq3-orig/code/renderergl2/tr_init.c ioq3/code/renderergl2/tr_init.c
+--- ioq3-orig/code/renderergl2/tr_init.c	2018-10-24 14:04:17.000000000 +0300
++++ ioq3/code/renderergl2/tr_init.c	2018-11-06 13:38:14.377846548 +0300
+@@ -347,7 +347,7 @@
+ 	{ "Mode  0: 320x240",		320,	240,	1 },
+ 	{ "Mode  1: 400x300",		400,	300,	1 },
+ 	{ "Mode  2: 512x384",		512,	384,	1 },
+-	{ "Mode  3: 640x480",		640,	480,	1 },
++	{ "Mode  3: 640x480",		320,	240,	1 },
+ 	{ "Mode  4: 800x600",		800,	600,	1 },
+ 	{ "Mode  5: 960x720",		960,	720,	1 },
+ 	{ "Mode  6: 1024x768",		1024,	768,	1 },
+diff -aur ioq3-orig/code/sys/sys_main.c ioq3/code/sys/sys_main.c
+--- ioq3-orig/code/sys/sys_main.c	2018-10-24 14:04:17.000000000 +0300
++++ ioq3/code/sys/sys_main.c	2018-11-06 13:40:09.114474148 +0300
+@@ -319,6 +319,7 @@
+ cpuFeatures_t Sys_GetProcessorFeatures( void )
+ {
+ 	cpuFeatures_t features = 0;
++	return features;
+ 
+ #ifndef DEDICATED
+ 	if( SDL_HasRDTSC( ) )      features |= CF_RDTSC;
