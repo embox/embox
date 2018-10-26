@@ -24,6 +24,7 @@ extern const unsigned char _ctype[];
 #define __ismask(x) (_ctype[(int)(unsigned char)(x)])
 
 #include <sys/cdefs.h>
+#include <stdint.h>
 __BEGIN_DECLS
 
 /* Checks for an alphanumeric character. */
@@ -55,6 +56,10 @@ static inline int isxdigit(int c) { return __ismask(c) & (_D | _X); }
 static inline int tolower(int c) { return isupper(c) ? c - ('A' - 'a') : c; }
 /* Convert a character to upper case */
 static inline int toupper(int c) { return islower(c) ? c - ('a' - 'A') : c; }
+
+extern const unsigned short **__ctype_b_loc(void);
+extern int32_t **__ctype_tolower_loc(void);
+extern int32_t **__ctype_toupper_loc(void);
 
 __END_DECLS
 
