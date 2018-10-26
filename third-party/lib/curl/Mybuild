@@ -1,0 +1,9 @@
+package third_party.lib
+
+@Build(script="$(EXTERNAL_MAKE)")
+module curl {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/")
+	source "libcurl.a"
+
+	depends embox.compat.posix.LibPosix
+}
