@@ -1,0 +1,14 @@
+package embox.kernel.thread
+
+@DefaultImpl(thread_wait_on_stack)
+abstract module thread_wait { }
+
+module thread_wait_stub extends thread_wait {
+	source "thread_wait_stub.c"
+	source "thread_wait_stub.h"
+}
+
+module thread_wait_on_stack extends thread_wait {
+	source "thread_wait_on_stack.c"
+	source "thread_wait_on_stack.h"
+}

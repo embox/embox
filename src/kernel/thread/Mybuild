@@ -30,8 +30,8 @@ module core {
 }
 
 module sched_wait {
-	option boolean timer_allocate_on_stack = true
 	source "thread_sched_wait.c"
+	depends thread_wait
 }
 
 @DefaultImpl(signal_impl)
@@ -96,15 +96,6 @@ module thread_cancel_enable extends thread_cancel {
 module thread_cancel_disable extends thread_cancel {
 	source "thread_cancel_disable.h"
 }
-
-@DefaultImpl(thread_wait_stub)
-abstract module thread_wait { }
-
-module thread_wait_stub extends thread_wait {
-	source "thread_wait_stub.c"
-	source "thread_wait_stub.h"
-}
-
 
 @DefaultImpl(stack_protect_none)
 abstract module stack_protect { }

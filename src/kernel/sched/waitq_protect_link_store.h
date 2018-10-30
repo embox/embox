@@ -11,8 +11,8 @@
 
 #include <util/dlist.h>
 
-struct thread_wait {
-	struct dlist_head wql_protected_list;
+struct waitq_protect_link {
+	struct dlist_head waitq_protect_list;
 };
 
 #endif /* SCHED_WAITQ_PROTECT_THREAD_H_ */

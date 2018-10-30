@@ -12,8 +12,7 @@
 #include <mem/sysmalloc.h>
 #include <kernel/panic.h>
 
-#include <kernel/thread/thread_wait.h>
-#include "waitq_protect_link.h"
+#include <kernel/sched/waitq_protect_link.h>
 
 struct waitq_link_protect {
 	struct dlist_head thread_link;
@@ -23,7 +22,7 @@ struct waitq_link_protect {
 };
 
 static inline struct dlist_head *thread_wql_protected_list(void) {
-	return &thread_self()->thread_wait.wql_protected_list;
+	return &thread_self()->waitq_list.waitq_protect_list;
 }
 
 struct waitq_link *waitq_link_create_protected(struct waitq_link *uwql) {
