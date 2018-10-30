@@ -19,16 +19,14 @@
 #include <unistd.h>
 
 #include <drivers/video/fb.h>
+#include <drivers/video/fb_overlay.h>
 
 #include <GL/osmesa.h>
 #include <GL/glu.h>
 #include <GL/gl.h>
 
-
 extern void cxx_app_startup(void);
-extern void text_layout_init(struct fb_info *fbi, void *base);
-extern void put_char(int x, int y, char ch);
-extern void put_string(int x, int y, char *str);
+extern void fb_overlay_init(struct fb_info *fbi, void *base);
 
 static int Width;
 static int Height;
@@ -65,7 +63,7 @@ void init_buffers(void) {
 	printf("The framebuffer device was mapped to memory successfully.\n");
 
 	sw_base = malloc(Width * Height * mesa_fbi->var.bits_per_pixel / 8);
-	text_layout_init(mesa_fbi, sw_base);
+	fb_overlay_init(mesa_fbi, sw_base);
 }
 
 static void swap_buffers() {
@@ -90,8 +88,8 @@ static void swap_buffers() {
 
 		fps_str[4] = '0' + fps / 10;
 		fps_str[5] = '0' + fps % 10;
-		put_string(0, 0, "Embox MESA demo v0.2");
-		put_string(0, 1, fps_str);
+		fb_overlay_put_string(0, 0, "Embox MESA demo v0.2");
+		fb_overlay_put_string(0, 1, fps_str);
 	}
 
 	memcpy(hw_base,
