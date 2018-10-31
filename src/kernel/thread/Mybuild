@@ -19,7 +19,6 @@ module core {
 	depends thread_local
 	depends thread_cancel
 	depends signal_api
-	depends thread_wait
 
 	depends embox.compat.libc.assert
 
@@ -31,7 +30,6 @@ module core {
 
 module sched_wait {
 	source "thread_sched_wait.c"
-	depends thread_wait
 }
 
 @DefaultImpl(signal_impl)
