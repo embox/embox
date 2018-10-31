@@ -21,7 +21,7 @@
 #include <kernel/thread/thread_cancel.h>
 #include <kernel/sched.h>
 #include <kernel/thread/thread_wait.h>
-
+#include <kernel/sched/waitq_protect_link.h>
 #include <util/dlist.h>
 
 struct task;
@@ -65,7 +65,9 @@ struct thread {
 	thread_local_t     local;
 	thread_cancel_t    cleanups;
 
-	struct thread_wait thread_wait;
+	struct waitq_protect_link waitq_list;
+
+	struct thread_wait thread_wait_list;
 
 	int                policy;
 };

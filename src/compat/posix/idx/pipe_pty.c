@@ -45,6 +45,10 @@ POOL_DEF(ipty_pool, struct idesc_pty, 2 * MAX_PTY);
 static void pty_out_wake(struct tty *t) {
 	struct pty *pty = pty_from_tty(t);
 
+	if (NULL == pty->master) {
+		return;
+	}
+
 	idesc_notify(pty->master, POLLIN);
 }
 

@@ -6,7 +6,7 @@
  * @date    04.06.2014
  */
 
-#include "waitq_protect_link.h"
+#include <kernel/sched/waitq_protect_link.h>
 
 struct waitq_link *waitq_link_create_protected(struct waitq_link *uwql) {
 	return uwql;

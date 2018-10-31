@@ -55,17 +55,12 @@ abstract module waitq_protect_link { }
 
 module waitq_protect_link_stub extends waitq_protect_link {
 	source "waitq_protect_link_stub.c"
+	source "waitq_protect_link_stub.h"
 }
 
 module waitq_protect_link_store extends waitq_protect_link {
-	source "waitq_protect_link.c"
-
-	depends waitq_protect_link_thread_plugin
-}
-
-module waitq_protect_link_thread_plugin extends embox.kernel.thread.thread_wait {
-	source "waitq_protect_link_thread_plugin.c"
-	source "waitq_protect_link_thread_plugin.h"
+	source "waitq_protect_link_store.c"
+	source "waitq_protect_link_store.h"
 }
 
 @DefaultImpl(idle_thread)

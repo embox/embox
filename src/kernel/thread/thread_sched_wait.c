@@ -15,6 +15,8 @@
 
 #include <kernel/thread.h>
 
+#include <kernel/thread/thread_wait.h>
+
 static int sched_intr(int res) {
 	struct thread *t = thread_self();
 	struct sigstate *sigst = &t->sigstate;
@@ -40,30 +42,35 @@ static void sched_wait_timeout_handler(struct sys_timer *timer, void *data) {
 	sched_wakeup(s);
 }
 
-#if OPTION_GET(BOOLEAN, timer_allocate_on_stack)
-#define SCHED_WAIT_TIMER_DEF(_tmr) \
-	struct sys_timer _tmr;
 
-#define SCHED_WAIT_TIMER_INIT(_tmr, ...) \
-	timer_init_start(&_tmr, __VA_ARGS__)
+void thread_wait_init(struct thread_wait *tw) {
+	dlist_init(&tw->thread_waitq_list);
+}
 
-#define SCHED_WAIT_TIMER_CLOSE(_tmr) \
-	timer_close(&_tmr)
-#else
-#define SCHED_WAIT_TIMER_DEF(_tmr) \
-	struct sys_timer *_tmr;
+static inline void thread_wait_add(struct thread_wait *tw, struct sys_timer *tmr) {
+	dlist_add_next(&tw->thread_waitq_list, dlist_init(&tmr->st_wait_link));
+}
 
-#define SCHED_WAIT_TIMER_INIT(_tmr, ...) \
-	timer_set(&_tmr, __VA_ARGS__)
+static inline void thread_wait_del(struct sys_timer *tmr) {
+	dlist_del(&tmr->st_wait_link);
+}
 
-#define SCHED_WAIT_TIMER_CLOSE(_tmr) \
-	timer_close(_tmr)
-#endif
+void thread_wait_deinit(struct thread_wait *tw) {
+	struct sys_timer *tmr;
+
+	dlist_foreach_entry_safe(tmr, &tw->thread_waitq_list, st_wait_link) {
+		timer_close(tmr);
+	}
+	dlist_init(&tw->thread_waitq_list);
+}
 
 int sched_wait_timeout(clock_t timeout, clock_t *remain) {
-	SCHED_WAIT_TIMER_DEF(tmr);
+	struct sys_timer tmr;
 	clock_t remain_v, cur_time;
 	int res, diff;
+	struct thread *thr;
+
+	thr = thread_self();
 
 	if (timeout == SCHED_TIMEOUT_INFINITE) {
 		remain_v = SCHED_TIMEOUT_INFINITE;
@@ -72,14 +79,18 @@ int sched_wait_timeout(clock_t timeout, clock_t *remain) {
 	}
 
 	cur_time = clock();
-	if ((res = SCHED_WAIT_TIMER_INIT(tmr, TIMER_ONESHOT, jiffies2ms(timeout),
+	thread_wait_add(&thr->thread_wait_list, &tmr);
+	if ((res = timer_init_start_msec(&tmr, TIMER_ONESHOT, jiffies2ms(timeout),
 			sched_wait_timeout_handler, schedee_get_current()))) {
+		thread_wait_del(&tmr);
 		return res;
 	}
 
 	schedule();
 	diff = clock() - cur_time;
-	SCHED_WAIT_TIMER_CLOSE(tmr);
+
+	timer_close(&tmr);
+	thread_wait_del(&tmr);
 
 	if (diff < timeout) {
 		remain_v = timeout - diff;
