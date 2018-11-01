@@ -32,8 +32,9 @@ struct in_addr {
  */
 struct sockaddr_in {
 	sa_family_t      sin_family;  /* AF_INET */
-	in_port_t		 sin_port;    /* Port number (BE) */
+	in_port_t        sin_port;    /* Port number (BE) */
 	struct in_addr   sin_addr;    /* IP address (BE) */
+	char             sin_zero[8];
 };
 
 /**
@@ -141,6 +142,10 @@ extern const struct in6_addr in6addr_loopback; /* ::1 */
 									for superuser use */
 #define IPPORT_USERRESERVED 5000 /* Ports >= IPPORT_USERRESERVED are
 									reserved for explicit use */
+
+#define IPV6_MULTICAST_IF   1
+#define IPV6_LEAVE_GROUP    2
+#define IPV6_JOIN_GROUP     4
 
 #include <arpa/inet.h>
 
