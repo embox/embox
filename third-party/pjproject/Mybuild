@@ -1,10 +1,8 @@
-
 package third_party.pjproject
 
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 @BuildDepends(third_party.STLport.core)
 module core {
-
 	depends embox.net.lib.getifaddrs
 
 	depends embox.compat.posix.pthreads
@@ -25,6 +23,98 @@ module core {
 	depends embox.driver.audio.portaudio_api
 
 	depends third_party.STLport.core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/pjproject-2.2.1/pjsip/include")
+static module libpjsip {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	source "libpjsip.a",
+			"libpjsip-simple.a",
+			"libpjsip-ua.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpjsua {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	source "libpjsua.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/pjproject-2.2.1/pjlib-util/include")
+static module libpjlib_util {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	source "libpjlib-util.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/pjproject-2.2.1/pjlib/include")
+static module libpj {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	source "libpj.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/pjproject-2.2.1/pjmedia/include")
+static module libpjmedia {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	source "libpjmedia.a",
+			"libpjmedia-codec.a",
+			"libpjmedia-audiodev.a",
+			"libpjsdp.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/pjproject-2.2.1/pjnath/include")
+static module libpjnath {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	source "libpjnath.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpj_third_party {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	source "libresample.a",
+			"libsrtp.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(libpjsua)
+@BuildDepends(libpjsip)
+@BuildDepends(libpjmedia)
+@BuildDepends(libpj)
+@BuildDepends(libpjlib_util)
+@BuildDepends(libpjnath)
+@BuildDepends(libpj_third_party)
+@Build(stage=2,script="true")
+static module libpj_all {
+	@NoRuntime depends libpjsua,
+			libpjsip,
+			libpjmedia,
+			libpj,
+			libpjlib_util,
+			libpjnath,
+			libpj_third_party
 }
 
 @AutoCmd

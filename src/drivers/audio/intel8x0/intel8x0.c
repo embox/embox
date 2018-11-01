@@ -46,7 +46,11 @@
 struct intel_ac_hw_dev {
 	//uint32_t base_addr_nam;
 	uint32_t base_addr_namb;
-	int po_lvi; /* Last Valid Index  */
+	int po_cur_buf;
+	int mic_cur_buf;
+	/* XXX po and mic are currently used to wake up portaudio */
+	struct audio_dev *mic;
+	struct audio_dev *po;
 };
 
 struct intel_ac_dev_priv {
@@ -239,6 +243,8 @@ static int intel_ac_buf_init(int n, struct audio_dev *dev, bool ioc_irq) {
 static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 	struct intel_ac_hw_dev *hw_dev = (struct intel_ac_hw_dev *) dev_id;
 	uint8_t po_status, mic_status, pcm_status;
+	int irq_mask = ICH_BCIS | ICH_LVBCI | ICH_CELV;
+
 	po_status = in8(NAMB_REG(INTEL_AC_PO_SR));
 	mic_status = in8(NAMB_REG(INTEL_AC_MIC_SR));
 	pcm_status = in8(NAMB_REG(INTEL_AC_PCM_IN_SR));
@@ -250,16 +256,24 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 	log_debug("MIC Status Register = %#x", mic_status);
 	log_debug("PCM Status Register = %#x", pcm_status);
 
-	if (mic_status & ICH_LVBCI) { /* The last valid buffer completed */
-		/* Currently we can be interrupted in MIC only if 
-		 * al buffers are completed */
-		out8(0x0, NAMB_REG(INTEL_AC_MIC_CR));
-		Pa_StartStream(NULL);
-	} else if (po_status & ICH_BCIS) { /* Interrupt on buffer completion */
+	/* It's normal behaviour when only ICH_BCIS (Interrupt on Buffer
+	 * Completion) happens, but sometimes we can get ICH_CELV or ICH_LVBCI */
+	if (mic_status & irq_mask) {
+		int mic_lvi;
+
+		hw_dev->mic_cur_buf = (hw_dev->mic_cur_buf + 1) % INTEL_AC_BUFFER_SZ;
+		/* Set Last Valid Index as next to the current one */
+		mic_lvi = (hw_dev->mic_cur_buf + 1) % INTEL_AC_BUFFER_SZ;
+		out8(mic_lvi, NAMB_REG(INTEL_AC_MIC_LVI));
+
+		Pa_StartStream(hw_dev->mic->stream);
+	}
+
+	if (po_status & irq_mask) {
 		/* Currently we are interruped after each buffer */
-		hw_dev->po_lvi = (hw_dev->po_lvi + 1) % INTEL_AC_BUFFER_SZ;
-		out8(hw_dev->po_lvi, NAMB_REG(INTEL_AC_PO_LVI));
-		Pa_StartStream(NULL);
+		hw_dev->po_cur_buf = (hw_dev->po_cur_buf + 1) % INTEL_AC_BUFFER_SZ;
+		out8(hw_dev->po_cur_buf, NAMB_REG(INTEL_AC_PO_LVI));
+		Pa_StartStream(hw_dev->po->stream);
 	}
 
 	out16(0x1F, NAMB_REG(INTEL_AC_PO_SR));
@@ -306,19 +320,31 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 		cr  = INTEL_AC_PO_CR;
 		ioc_irq = true;
 
-		/* Initialize last valid index as the second descriptor */
-		intel_ac_hw_dev.po_lvi = 1;
+		/* Since initially play is started from buffer number 0,
+		 * we set the current buffer to fill as the next one */
+		intel_ac_hw_dev.po_cur_buf = 1;
+		intel_ac_hw_dev.po = dev;
 		break;
 	case 2:
 		buf = INTEL_AC_MIC_BUF;
 		lvi = INTEL_AC_MIC_LVI;
 		cr  = INTEL_AC_MIC_CR;
-		ioc_irq = false;
+		ioc_irq = true;
+
+		/* Since initially record is started from buffer number 0,
+		 * we set the current buffer to read as -1, because there is
+		 * still no filled buffers  */
+		intel_ac_hw_dev.mic_cur_buf = -1;
+		intel_ac_hw_dev.mic = dev;
 		break;
 	default:
 		log_error("Unsupported AC97 device id!");
 		return;
 	}
+
+	/* Reset all registers */
+	out8(ICH_RESETREGS, NAMB_REG(cr));
+
 	out32((uint32_t)_desc_list_by_dev(dev), NAMB_REG(buf));
 
 	/* Setup buffers, currently just zeroes */
@@ -383,20 +409,21 @@ static int intel_ac_ioctl(struct audio_dev *dev, int cmd, void *args) {
 	int devid = ((struct intel_ac_dev_priv*)dev->ad_priv)->devid;
 	switch(cmd) {
 	case ADIOCTL_IN_SUPPORT:
+		/* There are to input channels by default
+		 * in Record Select Control Register (Index 1Ah) */
 		return devid == 2 ?
-			AD_MONO_SUPPORT | AD_16BIT_SUPPORT : 0;
+			AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
 	case ADIOCTL_OUT_SUPPORT:
 		return devid == 0 ?
 			AD_STEREO_SUPPORT | AD_16BIT_SUPPORT : 0;
 	case ADIOCTL_BUFLEN:
 		return INTEL_AC_SAMPLE_SZ * INTEL_AC_DESC_LEN;
-		return INTEL_AC_SAMPLE_SZ * INTEL_AC_DESC_LEN;
 	case ADIOCTL_GET_RATE:
-		return ac97_get_rate();
+		return ac97_get_rate(devid == 2 ? AC97_MIC_ADC : AC97_FRONT_DAC);
 	case ADIOCTL_SET_RATE:
 	{
 		int rate = *(int *) args;
-		return ac97_set_rate(rate);
+		return ac97_set_rate(rate, devid == 2 ? AC97_MIC_ADC : AC97_FRONT_DAC);
 	}
 	}
 	SET_ERRNO(EINVAL);
@@ -435,12 +462,15 @@ AUDIO_DEV_DEF("intel_ac_dac2", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel
 AUDIO_DEV_DEF("intel_ac_adc1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_adc1);
 
 uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
-	return _in_buf_by_dev(audio_dev);
+	struct intel_ac_dev_priv *priv = audio_dev->ad_priv;
+	uint8_t *buf = _in_buf_by_dev(audio_dev);
+	buf += INTEL_AC_SAMPLE_SZ * INTEL_AC_DESC_LEN * priv->hw_dev->mic_cur_buf;
+	return buf;
 }
 
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	struct intel_ac_dev_priv *priv = audio_dev->ad_priv;
 	uint8_t *buf = _out_buf_by_dev(audio_dev);
-	buf += INTEL_AC_SAMPLE_SZ * INTEL_AC_DESC_LEN * priv->hw_dev->po_lvi;
+	buf += INTEL_AC_SAMPLE_SZ * INTEL_AC_DESC_LEN * priv->hw_dev->po_cur_buf;
 	return buf;
 }

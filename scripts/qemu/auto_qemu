@@ -14,11 +14,11 @@ ARCHs=()
 NICs=()
 
 info() {
-	echo $@ >&2
+	echo -e $@ >&2
 }
 
 error() {
-	echo $@ >&2
+	echo -e $@ >&2
 	exit 1
 }
 
@@ -205,7 +205,7 @@ sudo=""
 nic_lines=""
 nic_n=${#qemu_nics[*]}
 if [ $nic_n -gt 0 ]; then
-	sudo=sudo
+	sudo='sudo -E'
 	for ni in "${!qemu_nics[@]}"; do
 
 		if [ ${qemu_nics_config[$ni]} ] && [ ${qemu_nics_config[$ni]} != "-" ]; then
@@ -252,6 +252,13 @@ if [ $sound_n -gt 0 ]; then
 			sound_lines="$sound_lines -soundhw $sound_model"
 		fi
 	done
+	if [[ -z "${QEMU_AUDIO_DRV}" ]]; then
+		# Use ALSA by default
+		export QEMU_AUDIO_DRV=alsa
+		info 'Using host ALSA subsystem. You can change it by setting QEMU_AUDIO_DRV'
+		info 'For example, "export QEMU_AUDIO_DRV=oss"\n'
+	fi
+	info 'QEMU_AUDIO_DRV is now' ${QEMU_AUDIO_DRV} '\n'
 fi
 
 
