@@ -317,3 +317,18 @@ int netdev_set_irq(struct net_device *dev, int irq_num) {
 
 	return 0;
 }
+
+unsigned int if_nametoindex(const char *name) {
+	struct net_device *dev;
+
+	assert(name);
+
+	dev = netdev_get_by_name(name);
+
+	if (dev) {
+		return dev->index;
+	} else {
+		errno = ENOENT;
+		return 0;
+	}
+}
