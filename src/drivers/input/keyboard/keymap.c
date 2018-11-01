@@ -56,10 +56,6 @@ int keymap_kbd(struct input_event *event) {
 		return -1;
 	}
 
-	if (!(event->type & KEY_PRESSED)) {
-		return -1;
-	}
-
 	cur_map = event->value & SHIFT_PRESSED ? shift_map : key_map;
 	val = cur_map[key_index];
 
@@ -74,7 +70,7 @@ int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4]) {
 	int keycode = keymap_kbd(event);
 	int seq_len = 0;
 
-	if(keycode < 0) {
+	if (keycode < 0 || !(event->type & KEY_PRESSED)) {
 		return 0;
 	}
 
