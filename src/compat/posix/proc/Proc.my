@@ -14,7 +14,6 @@ module All {
 @DefaultImpl(exec_exchanged)
 abstract module exec_lib { }
 
-
 static module exec {
 	source "exec.c"
 	depends vfork
@@ -31,6 +30,7 @@ abstract module fork { }
 static module vfork_entry {
 	source "vfork.c"
 
+	depends embox.compat.posix.proc.exit
 	depends embox.kernel.task.resource.argv
 	depends embox.kernel.task.resource.vfork
 }
@@ -56,14 +56,6 @@ static module signal {
 static module sigset {
 	source "sigset.c"
 	depends embox.util.Bitmap
-}
-
-static module exit {
-	source "exit.c"
-
-	depends vfork
-	//depends exec
-	depends signal
 }
 
 static module uid {
