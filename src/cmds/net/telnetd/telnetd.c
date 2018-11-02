@@ -336,6 +336,7 @@ static void *telnetd_client_handler(void* args) {
 	} /* while(1) */
 
 out_kill:
+	write(pptyfd[0], "exit\n", 6);
 out_close:
 	close(pptyfd[0]);
 	close(sock);
