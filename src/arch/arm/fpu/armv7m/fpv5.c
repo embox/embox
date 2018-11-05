@@ -23,15 +23,15 @@ static int fpv5_init(void) {
 
 	/* Enable FPU */
 	/** FIXME Currently FPU is enabled permanently */
-	REG_STORE(CPACR, REG_LOAD(CPACR) | (0xf << 20));
+	REG_STORE(FPU_CPACR, REG_LOAD(FPU_CPACR) | (0xf << 20));
 
 	/* Disable FPU context preservation/restoration on exception
 	 * entry and exit, because we can guarantee every irq handler
 	 * execute without using FPU */
-	REG_STORE(FPCCR, REG_LOAD(FPCCR) & ~(0x3 << 30));
+	REG_STORE(FPU_FPCCR, REG_LOAD(FPU_FPCCR) & ~(0x3 << 30));
 
-	mvfr0 = REG_LOAD(MVFR0);
-	fpccr = REG_LOAD(FPCCR);
+	mvfr0 = REG_LOAD(FPU_MVFR0);
+	fpccr = REG_LOAD(FPU_FPCCR);
 
 	log_boot_start();
 	log_boot("FPv4/FPv5 info:\n"
@@ -51,8 +51,8 @@ static int fpv5_init(void) {
 			 (((mvfr0 >> 4) & 0xf) == 0x2) ? "yes" : "no",
 			 (((mvfr0 >> 8) & 0xf) == 0x0) ? "no" : "Unknown",
 			 (((mvfr0 >> 0) & 0xf) == 0x1) ? "16 x 64-bit registers" : "Unknown",
-			 REG_LOAD(MVFR1),
-			 REG_LOAD(CPACR),
+			 REG_LOAD(FPU_MVFR1),
+			 REG_LOAD(FPU_CPACR),
 			 fpccr,
 			 (fpccr & (1 << 31)) ? "yes" : "no",
 			 (fpccr & (1 << 30)) ? "yes" : "no"
