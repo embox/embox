@@ -293,7 +293,8 @@ PaError Pa_OpenStream(PaStream** stream,
 		audio_dev->ad_ops->ad_ops_ioctl(audio_dev, ADIOCTL_SET_RATE, &rate);
 	}
 
-	audio_dev->stream = pa_stream;
+	audio_dev_open_stream(audio_dev, pa_stream);
+
 	pa_stream->state = PA_STREAM_RUNNING;
 	pa_stream->pa_thread = thread_create(THREAD_FLAG_SUSPENDED,
 								pa_thread_hnd, pa_stream);
