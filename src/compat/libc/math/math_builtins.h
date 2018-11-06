@@ -23,4 +23,9 @@ extern double floor(double x);
 extern float floorf(float x);
 extern long double floorl(long double x);
 
+#define	isnan(x) \
+    ((sizeof (x) == sizeof (float)) ? __builtin_isnanf(x) \
+    : (sizeof (x) == sizeof (double)) ? __builtin_isnan(x) \
+    : __builtin_isnanl(x))
+
 #endif /* SRC_COMPAT_LIBC_MATH_MATH_BUILTINS_H_ */
