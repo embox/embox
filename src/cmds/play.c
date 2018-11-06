@@ -150,6 +150,7 @@ int main(int argc, char **argv) {
 		if (audio_memory_addr != AUDIO_ADDR_UNINITIALIZED) {
 			/* Get audio info from memory */
 			memcpy(fmt_buf, (void*) audio_memory_addr, 44);
+			_fbuffer = (uint8_t*) audio_memory_addr;
 		} else if (_fbuffer) {
 			/* Get audio info from file */
 			if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
