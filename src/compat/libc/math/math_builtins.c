@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief built-in version some math functions
+ * @brief built-in version for some math functions
  *        https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
