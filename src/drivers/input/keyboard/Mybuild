@@ -12,6 +12,7 @@ module keyboard {
 
 	depends kbd_defs
 	depends embox.driver.input.core
+	depends embox.driver.tty.vterm
 }
 
 module keymap {

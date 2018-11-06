@@ -19,9 +19,9 @@ package embox.cmd
 module osdemo_fb {
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_osmesa/glu-9.0.0/include")
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-17.0.3/include")
-	source "osdemo_fb.c", "text_layout.c"
+	source "osdemo_fb.c"
 
-	depends embox.driver.video.fonts
+	depends embox.driver.video.fb_overlay
 
 	depends third_party.freedesktop.mesa.mesa_osmesa
 	depends third_party.freedesktop.mesa.libglu_osmesa

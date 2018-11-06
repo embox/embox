@@ -59,7 +59,7 @@ int vterm_input(struct vterm *vt, struct input_event *event) {
 	int keycode;
 
 	keycode = keymap_kbd(event);
-	if (keycode < 0) {
+	if (keycode < 0 || !(event->type & KEY_PRESSED)) {
 		return 0;
 	}
 

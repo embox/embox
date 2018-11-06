@@ -1,0 +1,19 @@
+package third_party.games
+
+@App
+@AutoCmd
+@Build(script="$(EXTERNAL_MAKE)",stage=2)
+@Cmd(name = "quake3", help = "")
+
+module quake3 {
+	@AddPrefix("^BUILD/extbld/third_party/games/quake3/release-linux-x86_64/")
+	source "ioquake3.x86_64.a"
+
+	source "compat.c"
+
+	depends embox.compat.posix.LibPosix
+	depends embox.compat.libc.str
+	depends embox.net.lib.getifaddrs
+	depends third_party.lib.curl
+	depends third_party.lib.sdl2
+}

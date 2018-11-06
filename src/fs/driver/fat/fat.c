@@ -182,6 +182,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 		nas = node->nas;
 		nas->fs = parent_nas->fs;
 		nas->fi->privdata = fi;
+		fi->fsi = parent_nas->fs->fsi;
 
 		if (de.attr & ATTR_DIRECTORY) {
 			fat_create_dir_entry(nas);

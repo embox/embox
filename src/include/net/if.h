@@ -29,4 +29,6 @@
 #define IFF_ALLMULTI    0x0200 /* receive all multicast packets */
 #define IFF_MULTICAST   0x1000 /* supports multicast */
 
+extern unsigned int if_nametoindex(const char *);
+
 #endif /* NET_IF_H_ */

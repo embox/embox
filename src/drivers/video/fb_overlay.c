@@ -1,5 +1,5 @@
 /**
- * @file text_layout.c
+ * @file text_overlay.c
  * @brief Some functions to put text to frame
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
@@ -12,18 +12,18 @@
 #include <drivers/video/font.h>
 
 static struct fb_info *text_fb = 0;
-static void *sw_base = 0;
+static void *overlay_sw_base = 0;
 struct font_desc const *font = &font_vga_8x16;
 
 #define CHAR_WIDTH  8
 #define CHAR_HEIGHT 16
 
-void text_layout_init(struct fb_info *fbi, void *base) {
+void fb_overlay_init(struct fb_info *fbi, void *base) {
 	text_fb = fbi;
-	sw_base = base;
+	overlay_sw_base = base;
 }
 
-void put_char(int x, int y, char ch) {
+void fb_overlay_put_char(int x, int y, char ch) {
 	char const *data;
 	uint8_t *dest;
 
@@ -31,7 +31,7 @@ void put_char(int x, int y, char ch) {
 
 	data = font->data + (unsigned char)ch * CHAR_HEIGHT * CHAR_WIDTH / 8;
 
-	dest = sw_base + bytes_per_pixel * x * CHAR_WIDTH +
+	dest = overlay_sw_base + bytes_per_pixel * x * CHAR_WIDTH +
 		bytes_per_pixel * y * CHAR_HEIGHT * text_fb->var.xres;
 
 	for (int i = 0; i < CHAR_HEIGHT; i++) {
@@ -48,9 +48,9 @@ void put_char(int x, int y, char ch) {
 	}
 }
 
-void put_string(int x, int y, char *str) {
+void fb_overlay_put_string(int x, int y, char *str) {
 	while (*str) {
-		put_char(x++, y, *str);
+		fb_overlay_put_char(x++, y, *str);
 		str++;
 	}
 }

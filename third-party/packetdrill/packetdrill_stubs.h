@@ -65,11 +65,6 @@ static inline char *strsignal(int sig) {
 	return "i-know-but-won't-tell-you-signal";
 }
 
-static inline int if_nametoindex(const char *name) {
-	PD_STUB_USE();
-	return 1;
-}
-
 static inline int mlockall(int flags) {
 	PD_STUB_USE();
 	return 0;

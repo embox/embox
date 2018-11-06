@@ -80,3 +80,28 @@ diff -aur -x configure openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987-orig/sr
  
  # C99 complex functions
  $(CUR_SRCS) +=	s_ccosh.c s_ccoshf.c s_cexp.c s_cexpf.c \
+--- openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987-orig/i387/fenv.c	2017-04-04 16:27:54.000000000 +0300
++++ openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987/i387/fenv.c	2018-11-06 12:17:54.813900232 +0300
+@@ -70,22 +70,6 @@
+ int
+ __test_sse(void)
+ {
+-	int flag, nflag;
+-	int dx_features;
+-
+-	/* Am I a 486? */
+-	getfl(&flag);
+-	nflag = flag ^ 0x200000;
+-	setfl(nflag);
+-	getfl(&nflag);
+-	if (flag != nflag) {
+-		/* Not a 486, so CPUID should work. */
+-		cpuid_dx(&dx_features);
+-		if (dx_features & 0x2000000) {
+-			__has_sse = __SSE_YES;
+-			return (1);
+-		}
+-	}
+ 	__has_sse = __SSE_NO;
+ 	return (0);
+ }
