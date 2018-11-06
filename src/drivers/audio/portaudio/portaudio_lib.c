@@ -83,8 +83,17 @@ static void _stereo_to_mono(void *buf, int len) {
 static void pa_do_audio_convertion(struct pa_strm *pa_stream,
 		struct audio_dev *audio_dev, uint8_t *out_buf,
 		uint8_t *in_buf, int inp_frames) {
-	if (pa_stream->number_of_chan != audio_dev->num_of_chan) {
-		if (pa_stream->number_of_chan == 1 && audio_dev->num_of_chan == 2) {
+
+	int num_of_chan = audio_dev->ad_ops->ad_ops_ioctl(audio_dev,
+		audio_dev->dir == AUDIO_DEV_OUTPUT
+		? ADIOCTL_OUT_SUPPORT
+		: ADIOCTL_IN_SUPPORT,
+		NULL);
+	assert(num_of_chan > 0);
+	num_of_chan = num_of_chan & AD_STEREO_SUPPORT ? 2 : 1;
+
+	if (pa_stream->number_of_chan != num_of_chan) {
+		if (pa_stream->number_of_chan == 1 && num_of_chan == 2) {
 			switch (audio_dev->dir) {
 			case AUDIO_DEV_OUTPUT:
 				_mono_to_stereo(out_buf, inp_frames);
@@ -95,7 +104,7 @@ static void pa_do_audio_convertion(struct pa_strm *pa_stream,
 			default:
 				break;
 			}
-		} else if (pa_stream->number_of_chan == 2 && audio_dev->num_of_chan == 1) {
+		} else if (pa_stream->number_of_chan == 2 && num_of_chan == 1) {
 			switch (audio_dev->dir) {
 			case AUDIO_DEV_OUTPUT:
 				_stereo_to_mono(out_buf, inp_frames);
@@ -121,6 +130,7 @@ static void *pa_thread_hnd(void *arg) {
 	uint8_t *in_buf;
 	int inp_frames;
 	int out_frames;
+	int buf_len;
 
 	audio_dev = audio_dev_get_by_idx(pa_stream->devid);
 	assert(audio_dev);
@@ -128,8 +138,15 @@ static void *pa_thread_hnd(void *arg) {
 	assert(audio_dev->ad_ops->ad_ops_start);
 	assert(audio_dev->ad_ops->ad_ops_resume);
 
+	buf_len = audio_dev->ad_ops->ad_ops_ioctl(audio_dev,
+								ADIOCTL_BUFLEN, NULL);
+	if (buf_len == -1) {
+		log_error("Couldn't get audio device buf_len");
+		return NULL;
+	}
+
 	if (!pa_stream->callback) {
-		log_debug("No callback provided for PA thread. "
+		log_error("No callback provided for PA thread. "
 				"That's probably not what you want.");
 		return NULL;
 	}
@@ -137,7 +154,7 @@ static void *pa_thread_hnd(void *arg) {
 	SCHED_WAIT(pa_stream->active);
 	audio_dev->ad_ops->ad_ops_start(audio_dev);
 
-	out_frames = audio_dev->buf_len; /* This one is in bytes */
+	out_frames = buf_len; /* This one is in bytes */
 
 	switch (pa_stream->sample_format) {
 	case paInt8:
@@ -175,10 +192,10 @@ static void *pa_thread_hnd(void *arg) {
 		out_buf = audio_dev_get_out_cur_ptr(audio_dev);
 		in_buf  = audio_dev_get_in_cur_ptr(audio_dev);
 
-		log_debug("out_buf = 0x%X, buf_len %d", out_buf, audio_dev->buf_len);
+		log_debug("out_buf = 0x%X, buf_len %d", out_buf, buf_len);
 
 		if (out_buf) {
-			memset(out_buf, 0, audio_dev->buf_len);
+			memset(out_buf, 0, buf_len);
 		}
 
 		if (audio_dev->dir == AUDIO_DEV_INPUT) {
@@ -280,12 +297,6 @@ PaError Pa_OpenStream(PaStream** stream,
 	assert(audio_dev->ad_ops);
 	assert(audio_dev->ad_ops->ad_ops_ioctl);
 	assert(audio_dev->ad_ops->ad_ops_start);
-
-	audio_dev->buf_len = audio_dev->ad_ops->ad_ops_ioctl(audio_dev,
-								ADIOCTL_BUFLEN, NULL);
-	if (audio_dev->buf_len == -1) {
-		return paInvalidDevice;
-	}
 
 	prev_rate = audio_dev->ad_ops->ad_ops_ioctl(audio_dev,
 		ADIOCTL_GET_RATE, NULL);

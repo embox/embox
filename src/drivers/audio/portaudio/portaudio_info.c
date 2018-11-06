@@ -58,9 +58,6 @@ static int pa_info_init(void) {
 		max_output_chan = pa_get_audio_support(dev, ADIOCTL_OUT_SUPPORT);
 		max_input_chan  = pa_get_audio_support(dev, ADIOCTL_IN_SUPPORT);
 
-		dev->num_of_chan = max(max_output_chan, max_input_chan);
-		dev->dir = max_output_chan ? AUDIO_DEV_OUTPUT : AUDIO_DEV_INPUT;
-
 		_info[i] = (PaDeviceInfo) {
 			.structVersion = 1,
 			.name = dev->ad_name,

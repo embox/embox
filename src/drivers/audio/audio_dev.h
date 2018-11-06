@@ -34,14 +34,11 @@ struct audio_dev {
 	const char *ad_name;
 	void *ad_priv;
 	audio_dev_dir_t dir;
-	size_t buf_len;
-	uint8_t num_of_chan;
-	uint8_t max_chan;
 };
 
-#define AUDIO_DEV_DEF(name, ops, priv) \
+#define AUDIO_DEV_DEF(name, ops, priv, dir) \
 	ARRAY_SPREAD_DECLARE(const struct audio_dev, __audio_device_registry); \
-	ARRAY_SPREAD_ADD(__audio_device_registry, {ops,name, priv} )
+	ARRAY_SPREAD_ADD(__audio_device_registry, {ops,name, priv, dir} )
 
 extern struct audio_dev *audio_dev_get_by_idx(int idx);
 
