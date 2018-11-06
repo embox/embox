@@ -12,20 +12,6 @@
 #include <endian.h>
 #include <net/mii.h>
 
-/**
- * EMAC0/MDIO Base Address
- */
-#define EMAC_BASE	OPTION_GET(NUMBER, emac_base)
-#define EMAC_CTRL_BASE	OPTION_GET(NUMBER, emac_ctrl_base)
-#define MDIO_BASE	OPTION_GET(NUMBER, mdio_base)
-
-/**
- * CPGMAC0 Interrupts
- */
-#define MACRXTHR0 (OPTION_GET(NUMBER, irq_base) + 0) /* CPGMAC0 Receive threshold interrupt */
-#define MACRXINT0 (OPTION_GET(NUMBER, irq_base) + 1) /* CPGMAC0 Receive pending interrupt */
-#define MACTXINT0 (OPTION_GET(NUMBER, irq_base) + 2) /* CPGMAC0 Transmit pending interrupt */
-#define MACMISC0  (OPTION_GET(NUMBER, irq_base) + 3) /* CPGMAC0 Stat, Host, MDIO LINKINT or MDIO USERINT */
 
 #define EMAC_CHANNEL_COUNT 8
 
@@ -36,6 +22,10 @@
 #define EMAC_R_CMSOFTRESET       0x04 /* Software Reset Register */
 #define EMAC_R_CMEMCONTROL       0x08 /* Emulation Control Register */
 #define EMAC_R_CMINTCTRL         0x0C /* Interrupt Control Register */
+# define EMAC_CMINTCTRL_C0_TX (0x1 << 17) /* CMINTCTRL */
+# define EMAC_CMINTCTRL_C0_RX (0x1 << 16)
+# define EMAC_CMINTCTRL_INTPRESCALE(x) ((x & 0x7ff) << 0)
+
 #define EMAC_R_CMRXTHRESHINTEN   0x10 /* Receive Threshold Interrupt Enable
 										 Register */
 #define EMAC_R_CMRXINTEN         0x14 /* Receive Interrupt Enable Register */
@@ -50,16 +40,21 @@
 										 Register */
 #define EMAC_R_CMRXINTMAX        0x70 /* Receive Interrupts Per Millisecond
 										 Register */
+# define EMAC_CMRXINTMAX_RXIMAX(x) ((x & 0x3f) << 0) /* CMRXINTMAX */
+
 #define EMAC_R_CMTXINTMAX        0x74 /* Transmit Interrupts Per Millisecond
 										 Register */
+# define EMAC_CMTXINTMAX_TXIMAX(x) ((x & 0x3f) << 0) /* CMTXINTMAX */
 
 /**
  * EMAC Module Registers
  */
 #define EMAC_R_CPGMACIDVER       0x000 /* Identification and Version Register */
 #define EMAC_R_TXCONTROL         0x004 /* Transmit Control Register */
+# define EMAC_TXCONTROL_TXEN (0x1 << 0)
 #define EMAC_R_TXTEARDOWN        0x008 /* Transmit Teardown Register */
 #define EMAC_R_RXCONTROL         0x014 /* Receive Control Register */
+# define EMAC_RXCONTROL_RXEN (0x1 << 0)
 #define EMAC_R_RXTEARDOWN        0x018 /* Receive Teardown Register */
 #define EMAC_R_TXINTSTATRAW      0x080 /* Transmit Interrupt Status (Unmasked)
 										  Register */
@@ -68,9 +63,25 @@
 #define EMAC_R_TXINTMASKSET      0x088 /* Transmit Interrupt Mask Set
 										  Register */
 #define EMAC_R_TXINTMASKCLEAR    0x08C /* Transmit Interrupt Clear Register */
-#define EMAC_R_MACINVECTOR       0x090 /* MAC Input Vector Registe */
+
+#define EMAC_R_MACINVECTOR       0x090 /* MAC Input Vector Register */
+# define EMAC_MACINV_STATPEND  (0x1 << 27)
+# define EMAC_MACINV_HOSTPEND  (0x1 << 26)
+# define EMAC_MACINV_TXPEND    (DEFAULT_MASK << 16)
+# define EMAC_MACINV_RXPEND    (DEFAULT_MASK << 0)
+
 #define EMAC_R_MACEOIVECTOR      0x094 /* MAC End of Interrupt Vector
 										  Register */
+/* MACEOIVECTOR bits */
+# define EMAC_MACEOIVEC_RXTHRESHEOI 0x0
+# define EMAC_MACEOIVEC_RXEOI       0x1
+# define EMAC_MACEOIVEC_TXEOI       0x2
+# define EMAC_MACEOIVEC_MISCEOI     0x3
+
+/* interrupts bits */
+# define EMAC_MACINT_HOSTMASK  (0x1 << 1)
+# define EMAC_MACINT_STATMASK  (0x1 << 0)
+
 #define EMAC_R_RXINTSTATRAW      0x0A0 /* Receive Interrupt Status (Unmasked)
 										  Register */
 #define EMAC_R_RXINTSTATMASKED   0x0A4 /* Receive Interrupt Status (Masked)
@@ -84,8 +95,17 @@
 										  Register */
 #define EMAC_R_MACINTMASKSET     0x0B8 /* MAC Interrupt Mask Set Register */
 #define EMAC_R_MACINTMASKCLEAR   0x0BC /* MAC Interrupt Mask Clear Register */
+
 #define EMAC_R_RXMBPENABLE       0x100 /* Receive Multicast/Broadcast/
 										  Promiscuous Channel Enable Register */
+# define EMAC_RXMBP_RXNOCHAIN  (0x1 << 28) /* single buffer */
+# define EMAC_RXMBP_RXCMFEN    (0x1 << 24) /* short msg */
+# define EMAC_RXMBP_RXCSFEN    (0x1 << 23) /* short msg */
+# define EMAC_RXMBP_RXCEFEN    (0x1 << 22) /* short msg */
+# define EMAC_RXMBP_RXCAFEN    (0x1 << 21) /* promiscuous */
+# define EMAC_RXMBP_RXBROADEN  (0x1 << 13) /* broadcast */
+# define EMAC_RXMBP_RXMULTEN   (0x1 << 5) /* multicast */
+
 #define EMAC_R_RXUNICASTSET      0x104 /* Receive Unicast Enable Set Register */
 #define EMAC_R_RXUNICASTCLEAR    0x108 /* Receive Unicast Clear Register */
 #define EMAC_R_RXMAXLEN          0x10C /* Receive Maximum Length Register */
@@ -99,7 +119,18 @@
 													 Free Buffer Count
 													 Register */
 #define EMAC_R_MACCONTROL        0x160 /* MAC Control Register */
-#define EMAC_R_MACSTATUS         0x164 /* MAC Status Register */
+# define EMAC_R_MACSTATUS         0x164 /* MAC Status Register */
+# define EMAC_MACSTAT_IDLE(x)            ((x >> 31) & 0x1) /* MACSTATUS */
+# define EMAC_MACSTAT_TXERRCODE(x)       ((x >> 20) & 0xf)
+# define EMAC_MACSTAT_TXERRCH(x)         ((x >> 16) & 0x7)
+# define EMAC_MACSTAT_RXERRCODE(x)       ((x >> 12) & 0xf)
+# define EMAC_MACSTAT_RXERRCH(x)         ((x >> 8) & 0x7)
+# define EMAC_MACSTAT_RGMIIGIG(x)        ((x >> 4) & 0x1)
+# define EMAC_MACSTAT_RGMIIFULLDUPLEX(x) ((x >> 3) & 0x1)
+# define EMAC_MACSTAT_RXQOSACT(x)        ((x >> 2) & 0x1)
+# define EMAC_MACSTAT_RXFLOWACT(x)       ((x >> 1) & 0x1)
+# define EMAC_MACSTAT_TXFLOWACT(x)       ((x >> 0) & 0x1)
+
 #define EMAC_R_EMCONTROL         0x168 /* Emulation Control Register */
 #define EMAC_R_FIFOCONTROL       0x16C /* FIFO Control Register */
 #define EMAC_R_MACCONFIG         0x170 /* MAC Configuration Register */
@@ -154,56 +185,15 @@
 #define MDIO_R_USERPHYSEL1      0x8C /* MDIO User PHY Select Register 1 */
 
 /* MDIO bits */
-#define MDIO_CONTROL_IDLE		(0x80000000)
-#define MDIO_CONTROL_ENABLE		(0x40000000)
-#define MDIO_CONTROL_FAULT_ENABLE	(0x40000)
-#define MDIO_CONTROL_FAULT		(0x80000)
-#define MDIO_USERACCESS0_GO		(0x80000000)
-#define MDIO_USERACCESS0_WRITE_READ	(0x0)
-#define MDIO_USERACCESS0_WRITE_WRITE	(0x40000000)
-#define MDIO_USERACCESS0_ACK		(0x20000000)
+#define MDIO_CONTROL_IDLE            (0x80000000)
+#define MDIO_CONTROL_ENABLE          (0x40000000)
+#define MDIO_CONTROL_FAULT_ENABLE    (0x40000)
+#define MDIO_CONTROL_FAULT           (0x80000)
+#define MDIO_USERACCESS0_GO          (0x80000000)
+#define MDIO_USERACCESS0_WRITE_READ  (0x0)
+#define MDIO_USERACCESS0_WRITE_WRITE (0x40000000)
+#define MDIO_USERACCESS0_ACK         (0x20000000)
 
-/**
- * EMAC Buffer Descriptor
- */
-struct emac_desc {
-	uint32_t next;
-	uint32_t data;
-#if __BYTE_ORDER == __BIG_ENDIAN
-	uint16_t data_off;
-	uint16_t data_len;
-#elif __BYTE_ORDER == __LITTLE_ENDIAN
-	uint16_t data_len;
-	uint16_t data_off;
-#endif
-#if __BYTE_ORDER == __BIG_ENDIAN
-	uint16_t flags;
-	uint16_t packet_len;
-#elif __BYTE_ORDER == __LITTLE_ENDIAN
-	uint16_t packet_len;
-	uint16_t flags;
-#endif
-};
-
-/**
- * EMAC Descriptor Flags
- */
-#define EMAC_DESC_F_SOP        0x8000U /* Start of Packet (SOP) Flag */
-#define EMAC_DESC_F_EOP        0x4000U /* End of Packet (EOP) Flag */
-#define EMAC_DESC_F_OWNER      0x2000U /* Ownership (OWNER) Flag */
-#define EMAC_DESC_F_EOQ        0x1000U /* End of Queue (EOQ) Flag */
-#define EMAC_DESC_F_TDOWNCMPLT 0x0800U /* Teardown Complete (TDOWNCMPLT) Flag */
-#define EMAC_DESC_F_PASSCRC    0x0400U /* Pass CRC (PASSCRC) Flag */
-#define EMAC_DESC_F_JABBER     0x0200U /* Jabber Flag */
-#define EMAC_DESC_F_OVERSIZE   0x0100U /* Oversize Flag */
-#define EMAC_DESC_F_FRAGMENT   0x0080U /* Fragment Flag */
-#define EMAC_DESC_F_UNDERSIZED 0x0040U /* Undersized Flag */
-#define EMAC_DESC_F_CONTROL    0x0020U /* Control Flag */
-#define EMAC_DESC_F_OVERRUN    0x0010U /* Overrun Flag */
-#define EMAC_DESC_F_CODEERROR  0x0008U /* Code Error (CODEERROR) Flag */
-#define EMAC_DESC_F_ALIGNERROR 0x0004U /* Alignment Error (ALIGNERROR) Flag */
-#define EMAC_DESC_F_CRCERROR   0x0002U /* CRC Error (CRCERROR) Flag */
-#define EMAC_DESC_F_NOMATCH    0x0001U /* No Match (NOMATCH) Flag */
 
 /**
  * Control Module Base Address
@@ -226,13 +216,13 @@ extern void emac_mdio_config(void);
 
 #define MACCTRL_INIT (FULLDUPLEX | TXPACE)
 #define RXMBP_INIT \
-	(RXNOCHAIN | RXCSFEN | RXCAFEN | RXBROADEN | RXMULTEN)
+	(EMAC_RXMBP_RXNOCHAIN | EMAC_RXMBP_RXCSFEN | EMAC_RXMBP_RXCAFEN | EMAC_RXMBP_RXBROADEN | EMAC_RXMBP_RXMULTEN)
 #define PHY_ADV (ADVERTISE_100FULL | ADVERTISE_100HALF)
 
 #elif (OPTION_GET(NUMBER, speed) == 1000)
 
 #define RXMBP_INIT \
-	(RXCMFEN | RXCSFEN | RXCEFEN | RXCAFEN | RXBROADEN | RXMULTEN)
+	(EMAC_RXMBP_RXCMFEN | EMAC_RXMBP_RXCSFEN | EMAC_RXMBP_RXCEFEN | EMAC_RXMBP_RXCAFEN | EMAC_RXMBP_RXBROADEN | EMAC_RXMBP_RXMULTEN)
 #define MACCTRL_INIT (FULLDUPLEX | GIG)
 #define PHY_ADV (ADVERTISE_1000XFULL | ADVERTISE_1000XHALF)
 
@@ -248,4 +238,7 @@ int emac_mdio_readreg(unsigned char reg_num);
 void emac_mdelay(int value);
  void emac_set_macctrl(unsigned long v);
 
+#if EMAC_VERSION == 1
+#define LVL_INTR_CLEAR 0x48002594
+#endif /* EMAC_VERSION == 1 */
 #endif /* DRIVERS_ETHERNET_TI816X_H_ */

@@ -4,11 +4,16 @@
  * @data 08.02.2016
  * @author: Anton Bondarev
  */
-#include <hal/reg.h>
-#include "emac.h"
 #include <util/log.h>
 
+#include <hal/reg.h>
+#include "emac.h"
+
+#include <drivers/common/memory.h>
+
 #include <framework/mod/options.h>
+
+#define MDIO_BASE	OPTION_GET(NUMBER, mdio_base)
 
 #define MAX_PAGESEL 31
 #define MAX_IR 20
@@ -202,3 +207,10 @@ void emac_mdio_config(void) {
 	log_debug("emac_mdio_config ended");
 #endif
 }
+
+static struct periph_memory_desc emac_mdio_region = {
+	.start = (uint32_t) MDIO_BASE,
+	.len   = 0x800,
+};
+
+PERIPH_MEMORY_DEFINE(emac_mdio_region);
