@@ -47,7 +47,9 @@ extern struct audio_dev *audio_dev_get_by_name(char name[]);
 extern uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev);
 extern uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev);
 
-extern void audio_dev_open_stream(struct audio_dev *audio_dev,
+extern void audio_dev_open_out_stream(struct audio_dev *audio_dev,
+	void *stream);
+extern void audio_dev_open_in_stream(struct audio_dev *audio_dev,
 	void *stream);
 
 /* ioctl commands */
