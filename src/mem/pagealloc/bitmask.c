@@ -61,14 +61,18 @@ static void mark_n_busy(struct page_allocator *allocator,
 static void mark_n_free(struct page_allocator *allocator,
 		unsigned int start_page, unsigned int page_q) {
 	unsigned int page_i;
+	int count_free = 0;
 
 	assert(allocator);
 	assert(start_page + page_q <= allocator->pages_n);
 	for (page_i = start_page; page_i < start_page + page_q; page_i++) {
-		bitmap_clear_bit(allocator->bitmap, page_i);
+		if (bitmap_test_bit(allocator->bitmap, page_i)) {
+			bitmap_clear_bit(allocator->bitmap, page_i);
+			++count_free;
+		}
 	}
 
-	allocator->free += page_q * allocator->page_size;
+	allocator->free += count_free * allocator->page_size;
 }
 
 static void *search_multi_page(struct page_allocator *allocator, size_t page_q) {
