@@ -123,7 +123,12 @@ const PaDeviceInfo * Pa_GetDeviceInfo(PaDeviceIndex device) {
 }
 
 const PaHostApiInfo * Pa_GetHostApiInfo(PaHostApiIndex hostApi) {
-	return NULL;
+	static const PaHostApiInfo info = {
+		.structVersion = 1,
+		.name = "embox_audio_host_api",
+	};
+	log_debug(": %d = %p", hostApi, hostApi == 0 ? &info : NULL);
+	return hostApi == 0 ? &info : NULL;
 }
 
 const PaStreamInfo * Pa_GetStreamInfo(PaStream *stream) {
