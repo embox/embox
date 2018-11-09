@@ -206,6 +206,7 @@ static inline int wctomb(char *s, wchar_t wchar) {
 extern int atexit(void (*func)(void));
 
 static inline size_t mbstowcs(wchar_t *dest, const char *src, size_t n) {
+	(void)dest; (void)src; (void)n;
 	return 0;
 }
 
