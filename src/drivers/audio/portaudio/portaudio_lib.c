@@ -349,6 +349,7 @@ PaError Pa_OpenStream(PaStream** stream,
 	pa_stream->state = PA_STREAM_RUNNING;
 	pa_stream->pa_thread = thread_create(THREAD_FLAG_SUSPENDED,
 								pa_thread_hnd, pa_stream);
+	schedee_priority_set(&pa_stream->pa_thread->schedee, SCHED_PRIORITY_MAX);
 
 	return paNoError;
 }
