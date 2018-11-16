@@ -300,7 +300,7 @@ int ip_frag(const struct sk_buff *skb, uint32_t mtu,
 	align_MTU = mtu - (mtu - len) % 8;
 
 	/* copy sk_buff without last fragment. All this fragments have size MTU */
-	while (offset < skb->len - align_MTU) {
+	while (offset < skb->len - align_MTU + len) {
 		fragment = ip_frag_build(skb, offset, align_MTU, IP_MF);
 		if (!fragment) {
 			skb_queue_purge(tx_buf);

@@ -10,6 +10,8 @@
 #ifndef KERNEL_THREAD_TYPES_H_
 #define KERNEL_THREAD_TYPES_H_
 
+#include <config/embox/kernel/thread/core.h>
+
 #include <kernel/thread/common_types.h>
 #include <hal/context.h>
 #include <hal/cpu.h>
@@ -70,6 +72,8 @@ struct thread {
 	struct thread_wait thread_wait_list;
 
 	int                policy;
-};
+} __attribute__ ((aligned(
+		OPTION_MODULE_GET(embox__kernel__thread__core, \
+					NUMBER,stack_align))));
 
 #endif /* KERNEL_THREAD_TYPES_H_ */

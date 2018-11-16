@@ -12,5 +12,6 @@
 #include <stdint.h>
 
 extern int gpmc_cs_init(int cs, uint32_t *base, uint32_t size);
+extern int gpmc_cs_enabled(int cs);
 
 #endif /* DRIVERS_GPMC_H_ */

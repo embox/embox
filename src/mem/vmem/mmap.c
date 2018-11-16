@@ -16,7 +16,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <mem/sysmalloc.h>
-#include <module/embox/fs/syslib/idesc_mmap.h>
+#include <module/embox/fs/syslib/idesc_mmap_api.h>
 #include <util/log.h>
 
 extern void *mmap_userspace_add(void *addr, size_t len, int prot);

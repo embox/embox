@@ -2,8 +2,13 @@ package embox.driver.serial
 
 module ns16550 extends embox.driver.diag.diag_api {
 	option number base_addr = 0x49020000
+	option number irq_num = 0
+	option number baud_rate = 115200
 
 	source "ns16550.c"
 
 	depends embox.driver.periph_memory
+	depends core
+	depends diag
+	depends embox.driver.char_dev
 }
