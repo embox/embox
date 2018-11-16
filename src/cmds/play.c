@@ -27,7 +27,7 @@ static void print_usage(void) {
 	       "            Use \"./st-flash write [WAV_FILE] 0x08080000\")\n");
 }
 
-double _sin(double x) {
+static double _sin(double x) {
 	double m = 1.;
 	while (x > 2. * 3.14)
 		x -= 2. * 3.14;
@@ -74,26 +74,25 @@ static uint8_t *_fbuffer = NULL;
 
 static int _bl = 0;
 static int _fchan = 2;
+static int _buf_cur_ptr = 0;
 
 static int fd_callback(const void *inputBuffer, void *outputBuffer,
 		unsigned long framesPerBuffer,
 		const PaStreamCallbackTimeInfo* timeInfo,
 		PaStreamCallbackFlags statusFlags,
 		void *userData) {
-	static int _ptr = 0;
-        int read_bytes;
+	int read_bytes;
 
-	read_bytes = min(_bl - _ptr, framesPerBuffer * _fchan * 2); /* Stereo 16-bit */
-	memcpy(outputBuffer, _fbuffer + _ptr, read_bytes);
-	_ptr += read_bytes;
+	read_bytes = min(_bl - _buf_cur_ptr, framesPerBuffer * _fchan * 2); /* Stereo 16-bit */
+	memcpy(outputBuffer, _fbuffer + _buf_cur_ptr, read_bytes);
+	_buf_cur_ptr += read_bytes;
 
 	printf("|");
 	fflush(stdout);
-	if (_ptr < _bl) {
+	if (_buf_cur_ptr < _bl) {
 		return paContinue;
 	} else {
 		printf("\n");
-		_ptr = 0;
 		return paComplete;
 	}
 }
@@ -119,6 +118,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	_buf_cur_ptr = 0;
 	callback = &fd_callback;
 
 	while (-1 != (opt = getopt(argc, argv, "nshm:"))) {
