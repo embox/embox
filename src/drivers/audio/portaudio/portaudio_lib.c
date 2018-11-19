@@ -23,6 +23,7 @@
 
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
+#include <drivers/audio/audio_utils.h>
 
 enum pa_state {
 	PA_STREAM_RUNNING,
@@ -49,67 +50,24 @@ struct pa_strm {
 
 POOL_DEF(pa_strm_pool, struct pa_strm, MODOPS_PA_STREAM_COUNT);
 
-/**
- * @brief Duplicate left channel for the buffer
- */
-static void _mono_to_stereo(void *buf, int len) {
-	/* Assume data is 16-bit */
-	uint16_t *b16 = buf;
-	for (int i = len * 2 - 1; i >= 0; i--) {
-		b16[i] = b16[i / 2];
-	}
-}
-
-/**
- * @brief Remove right channel from audio buffer
- */
-static void _stereo_to_mono(void *buf, int len) {
-	/* Assume data is 16-bit */
-	uint16_t *b16 = buf;
-	for (int i = 0; i < len; i++) {
-		b16[i] = b16[i * 2];
-	}
-}
-
 static void pa_do_rate_conversion(struct pa_strm *pa_stream,
 		struct audio_dev *audio_dev, uint8_t *buf, int inp_frames) {
-	int i, len, div;
-	uint32_t *buf32 = (uint32_t *) buf;
+	int cur_rate, out_rate;
 	int audio_dev_rate = audio_dev->ad_ops->ad_ops_ioctl(audio_dev,
 			ADIOCTL_GET_RATE, NULL);
 
-	if (pa_stream->rate == audio_dev_rate) {
-		return;
-	}
+	cur_rate = audio_dev->dir == AUDIO_DEV_OUTPUT
+		? audio_dev_rate : pa_stream->rate;
+	out_rate = audio_dev->dir == AUDIO_DEV_OUTPUT
+		? pa_stream->rate : audio_dev_rate;
 
-	len = inp_frames;
-
-	if (audio_dev_rate > pa_stream->rate) {
-		div = audio_dev_rate / pa_stream->rate;
-		assert(div > 1);
-
-		switch (audio_dev->dir) {
-		case AUDIO_DEV_OUTPUT:
-			for (i = len - 1; i >= 0; i--) {
-				buf32[i] = buf32[i / div];
-			}
-			break;
-		case AUDIO_DEV_INPUT:
-			for (i = 0; i < len; i++) {
-				buf32[i] = buf32[div * i];
-			}
-			break;
-		default:
-			break;
-		}
-	}
+	audio_convert_rate(cur_rate, out_rate, buf, inp_frames);
 }
 
 /* Sort out problems related to the number of channels */
-static void pa_do_channel_convertion(struct pa_strm *pa_stream,
-		struct audio_dev *audio_dev, uint8_t *out_buf,
-		uint8_t *in_buf, int inp_frames) {
-
+static void pa_do_channel_conversion(struct pa_strm *pa_stream,
+		struct audio_dev *audio_dev, uint8_t *buf, int inp_frames) {
+	int cur_chan, out_chan;
 	int num_of_chan = audio_dev->ad_ops->ad_ops_ioctl(audio_dev,
 		audio_dev->dir == AUDIO_DEV_OUTPUT
 		? ADIOCTL_OUT_SUPPORT
@@ -118,34 +76,12 @@ static void pa_do_channel_convertion(struct pa_strm *pa_stream,
 	assert(num_of_chan > 0);
 	num_of_chan = num_of_chan & AD_STEREO_SUPPORT ? 2 : 1;
 
-	if (pa_stream->number_of_chan != num_of_chan) {
-		if (pa_stream->number_of_chan == 1 && num_of_chan == 2) {
-			switch (audio_dev->dir) {
-			case AUDIO_DEV_OUTPUT:
-				_mono_to_stereo(out_buf, inp_frames);
-				break;
-			case AUDIO_DEV_INPUT:
-				_stereo_to_mono(in_buf, inp_frames);
-				break;
-			default:
-				break;
-			}
-		} else if (pa_stream->number_of_chan == 2 && num_of_chan == 1) {
-			switch (audio_dev->dir) {
-			case AUDIO_DEV_OUTPUT:
-				_stereo_to_mono(out_buf, inp_frames);
-				break;
-			case AUDIO_DEV_INPUT:
-				_mono_to_stereo(in_buf, inp_frames);
-				break;
-			default:
-				break;
-			}
-		} else {
-			log_error("Audio configuration is broken!"
-				  "Check the number of channels.\n");
-		}
-	}
+	cur_chan = audio_dev->dir == AUDIO_DEV_OUTPUT
+		? pa_stream->number_of_chan : num_of_chan;
+	out_chan = audio_dev->dir == AUDIO_DEV_OUTPUT
+		? num_of_chan : pa_stream->number_of_chan;
+
+	audio_convert_channels(cur_chan, out_chan, buf, inp_frames);
 }
 
 static void *pa_thread_hnd(void *arg) {
@@ -212,8 +148,7 @@ static void *pa_thread_hnd(void *arg) {
 
 	div = audio_dev_rate / pa_stream->rate;
 	assert(div > 0);
-	inp_frames = out_frames;
-	inp_frames /= div;
+	inp_frames = out_frames / div;
 
 	while (1) {
 		SCHED_WAIT(pa_stream->active);
@@ -235,7 +170,7 @@ static void *pa_thread_hnd(void *arg) {
 		if (audio_dev->dir == AUDIO_DEV_INPUT) {
 			pa_do_rate_conversion(pa_stream, audio_dev, in_buf,
 				inp_frames);
-			pa_do_channel_convertion(pa_stream, audio_dev, out_buf, in_buf,
+			pa_do_channel_conversion(pa_stream, audio_dev, in_buf,
 				inp_frames);
 		}
 
@@ -262,7 +197,7 @@ static void *pa_thread_hnd(void *arg) {
 		}
 
 		if (audio_dev->dir == AUDIO_DEV_OUTPUT) {
-			pa_do_channel_convertion(pa_stream, audio_dev, out_buf, in_buf,
+			pa_do_channel_conversion(pa_stream, audio_dev, out_buf,
 				inp_frames);
 			pa_do_rate_conversion(pa_stream, audio_dev, out_buf,
 				inp_frames * div);
