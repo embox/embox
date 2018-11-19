@@ -75,7 +75,7 @@ EMBOX_UNIT_INIT(uart_init);
 
 #define UART_SELECT_PIN(n)	(IOMUXC_BASE + 0x920 + n * 8)
 #define MUX_PIN_CTL_TX(n)	(IOMUXC_BASE + 0x2a8 + n * 8)
-#define MUX_PIN_CTL_RX(n)	(IOMUXC_BASE + 0x2ac + n * 8)a
+#define MUX_PIN_CTL_RX(n)	(IOMUXC_BASE + 0x2ac + n * 8)
 
 static void imxuart_configure_pins(void) {
 	/* We need to configure UART pins to use them as
@@ -100,7 +100,7 @@ static void imxuart_configure_pins(void) {
 		REG32_STORE(IOMUXC_BASE + 0x0B4, 2);
 		REG32_STORE(IOMUXC_BASE + 0x930, 0);
 		/* RX */
-		REG32_STORE(IOMUXC_BASE + 0x0B4, 2);
+		REG32_STORE(IOMUXC_BASE + 0x0B8, 2);
 		REG32_STORE(IOMUXC_BASE + 0x930, 1);
 		break;
 	case 3:
