@@ -144,6 +144,8 @@ PaHostApiIndex Pa_GetHostApiCount(void) { return 1; }
 PaDeviceIndex Pa_GetDeviceCount(void) { return 1; }
 PaDeviceIndex Pa_GetDefaultOutputDevice(void) { return 0; }
 
+PaDeviceIndex Pa_GetDefaultInputDevice(void) { return 1; }
+
 const char * Pa_GetErrorText(PaError errorCode) {
 	D(": %d", __func__, errorCode);
 	return "Pa_GetErrorText not implemented";

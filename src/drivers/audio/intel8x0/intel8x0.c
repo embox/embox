@@ -48,9 +48,9 @@ struct intel_ac_hw_dev {
 	uint32_t base_addr_namb;
 	int po_cur_buf;
 	int mic_cur_buf;
-	/* XXX po and mic are currently used to wake up portaudio */
-	struct audio_dev *mic;
-	struct audio_dev *po;
+	/* XXX po_stream and mic_stream are currently used to wake up portaudio */
+	void *mic_stream;
+	void *po_stream;
 };
 
 struct intel_ac_dev_priv {
@@ -266,14 +266,14 @@ static irq_return_t iac_interrupt(unsigned int irq_num, void *dev_id) {
 		mic_lvi = (hw_dev->mic_cur_buf + 1) % INTEL_AC_BUFFER_SZ;
 		out8(mic_lvi, NAMB_REG(INTEL_AC_MIC_LVI));
 
-		Pa_StartStream(hw_dev->mic->stream);
+		Pa_StartStream(hw_dev->mic_stream);
 	}
 
 	if (po_status & irq_mask) {
 		/* Currently we are interruped after each buffer */
 		hw_dev->po_cur_buf = (hw_dev->po_cur_buf + 1) % INTEL_AC_BUFFER_SZ;
 		out8(hw_dev->po_cur_buf, NAMB_REG(INTEL_AC_PO_LVI));
-		Pa_StartStream(hw_dev->po->stream);
+		Pa_StartStream(hw_dev->po_stream);
 	}
 
 	out16(0x1F, NAMB_REG(INTEL_AC_PO_SR));
@@ -323,7 +323,6 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 		/* Since initially play is started from buffer number 0,
 		 * we set the current buffer to fill as the next one */
 		intel_ac_hw_dev.po_cur_buf = 1;
-		intel_ac_hw_dev.po = dev;
 		break;
 	case 2:
 		buf = INTEL_AC_MIC_BUF;
@@ -335,7 +334,6 @@ static void intel_ac_dev_start(struct audio_dev *dev) {
 		 * we set the current buffer to read as -1, because there is
 		 * still no filled buffers  */
 		intel_ac_hw_dev.mic_cur_buf = -1;
-		intel_ac_hw_dev.mic = dev;
 		break;
 	default:
 		log_error("Unsupported AC97 device id!");
@@ -457,9 +455,19 @@ static struct intel_ac_dev_priv intel_ac_adc1 = {
 	.in_buf_len  = sizeof(adc1_in_buf)
 };
 
-AUDIO_DEV_DEF("intel_ac_dac1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_dac1);
-AUDIO_DEV_DEF("intel_ac_dac2", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_dac2);
-AUDIO_DEV_DEF("intel_ac_adc1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_adc1);
+AUDIO_DEV_DEF("intel_ac_dac1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_dac1, AUDIO_DEV_OUTPUT);
+AUDIO_DEV_DEF("intel_ac_dac2", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_dac2, AUDIO_DEV_OUTPUT);
+AUDIO_DEV_DEF("intel_ac_adc1", (struct audio_dev_ops *)&intel_ac_dev_ops, &intel_ac_adc1, AUDIO_DEV_INPUT);
+
+void audio_dev_open_out_stream(struct audio_dev *audio_dev, void *stream) {
+	struct intel_ac_dev_priv *priv = audio_dev->ad_priv;
+	priv->hw_dev->po_stream = stream;
+}
+
+void audio_dev_open_in_stream(struct audio_dev *audio_dev, void *stream) {
+	struct intel_ac_dev_priv *priv = audio_dev->ad_priv;
+	priv->hw_dev->mic_stream = stream;
+}
 
 uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
 	struct intel_ac_dev_priv *priv = audio_dev->ad_priv;

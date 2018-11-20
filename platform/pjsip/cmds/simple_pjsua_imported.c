@@ -11,6 +11,8 @@
 
 #include <framework/mod/options.h>
 
+#include <mem/heap/mspace_malloc.h>
+
 #define THIS_FILE	"APP"
 
 #define SIP_DOMAIN	OPTION_STRING_GET(sip_domain)
@@ -18,6 +20,14 @@
 #define SIP_PASSWD	OPTION_STRING_GET(sip_passwd)
 
 #define PJ_MAX_PORTS 16
+
+#if OPTION_GET(BOOLEAN,use_extern_mem)
+#define MM_SET_HEAP(type, p_prev_type) \
+	mspace_set_heap(type, p_prev_type)
+#else
+#define MM_SET_HEAP(type, prev_type) \
+	(void) prev_type
+#endif
 
 static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id,
 				pjsip_rx_data *rdata) {
@@ -30,7 +40,12 @@ static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id,
 			ci.remote_info.ptr));
 
 	/* Automatically answer incoming calls with 200/OK */
-	pjsua_call_answer(call_id, 200, NULL, NULL);
+	{
+		heap_type_t prev_type;
+		MM_SET_HEAP(HEAP_RAM, &prev_type);
+		pjsua_call_answer(call_id, 200, NULL, NULL);
+		MM_SET_HEAP(prev_type, NULL);
+	}
 }
 
 static void on_call_state(pjsua_call_id call_id, pjsip_event *e) {
@@ -83,6 +98,7 @@ static void on_call_media_state(pjsua_call_id call_id) {
 static void error_exit(const char *title, pj_status_t status) {
 	pjsua_perror(THIS_FILE, title, status);
 	pjsua_destroy();
+	MM_SET_HEAP(HEAP_RAM, NULL);
 	exit(1);
 }
 
@@ -146,6 +162,8 @@ int main(int argc, char *argv[]) {
 	pjsua_acc_id acc_id;
 	pj_status_t status;
 
+	MM_SET_HEAP(HEAP_EXTERN_MEM, NULL);
+
 	status = pjsua_create();
 	if (status != PJ_SUCCESS) {
 		error_exit("pjsua_create() failed", status);
@@ -164,7 +182,14 @@ int main(int argc, char *argv[]) {
 	/* If URL is specified, make call to the URL. */
 	if (argc > 1) {
 		pj_str_t uri = pj_str(argv[1]);
-		status = pjsua_call_make_call(acc_id, &uri, 0, NULL, NULL, NULL);
+
+		{
+			heap_type_t prev_type;
+			MM_SET_HEAP(HEAP_RAM, &prev_type);
+			status = pjsua_call_make_call(acc_id, &uri, 0, NULL, NULL, NULL);
+			MM_SET_HEAP(prev_type, NULL);
+		}
+
 		if (status != PJ_SUCCESS) {
 			error_exit("Error making call", status);
 		}
@@ -189,6 +214,7 @@ int main(int argc, char *argv[]) {
 
 	/* Destroy pjsua */
 	pjsua_destroy();
+	MM_SET_HEAP(HEAP_RAM, NULL);
 
 	return 0;
 }

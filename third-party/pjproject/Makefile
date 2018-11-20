@@ -13,6 +13,10 @@ PKG_PATCHES := pjproject.patch \
 	kmalloc.patch \
 	srtp.patch
 
+ifeq ($(PJSIP_ENABLE_CXX),false)
+PKG_PATCHES	+= pjsua2_disable.patch
+endif
+
 DISABLE_FEATURES := \
 	l16-codec   \
 	ilbc-codec  \
@@ -53,13 +57,20 @@ $(BUILD) :
 	)
 	touch $@
 
+# XXX Since in both core_c and core_cxx cases we always have core/ folder
+# just copy all includes here
+# PKG_INSTALL_DIR is build/extbld/pjproject/core_c/install or
+# build/extbld/pjproject/core_cxx/install
+PJSIP_INCLUDE_DIR := $(PKG_INSTALL_DIR)/../../core/include
+PJSIP_INSTALL_DIR := $(PKG_INSTALL_DIR)/../../core/install
+
 $(INSTALL) :
 	for f in $(BUILD_ROOT)/pjsip-apps/bin/samples/$(AUTOCONF_TARGET_TRIPLET)/*; do \
-       		cp $$f $(PKG_INSTALL_DIR)/$$(basename $$f).o; \
+		cp $$f $(PJSIP_INSTALL_DIR)/$$(basename $$f).o; \
 	done
 	for f in $(BUILD_ROOT)/pjsip-apps/bin/*-$(AUTOCONF_TARGET_TRIPLET); do \
 		fn=$$(basename $$f); \
-		cp $$f $(PKG_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET)}.o; \
+		cp $$f $(PJSIP_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET)}.o; \
 	done
 	for f in $(BUILD_ROOT)/pjsip/lib/*-$(AUTOCONF_TARGET_TRIPLET).a \
 			$(BUILD_ROOT)/pjmedia/lib/*-$(AUTOCONF_TARGET_TRIPLET).a \
@@ -68,6 +79,13 @@ $(INSTALL) :
 			$(BUILD_ROOT)/pjnath/lib/*-$(AUTOCONF_TARGET_TRIPLET).a \
 			$(BUILD_ROOT)/third_party/lib/*-$(AUTOCONF_TARGET_TRIPLET).a; do \
 		fn=$$(basename $$f); \
-		cp $$f $(PKG_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET).a}.a; \
+		cp $$f $(PJSIP_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET).a}.a; \
 	done
+	# Copy includes
+	mkdir $(PJSIP_INCLUDE_DIR)
+	mkdir $(PJSIP_INCLUDE_DIR)/pjsip && cp -r $(BUILD_ROOT)/pjsip/include/* $(PJSIP_INCLUDE_DIR)/pjsip
+	mkdir $(PJSIP_INCLUDE_DIR)/pjlib-util && cp -r $(BUILD_ROOT)/pjlib-util/include/* $(PJSIP_INCLUDE_DIR)/pjlib-util
+	mkdir $(PJSIP_INCLUDE_DIR)/pjlib && cp -r $(BUILD_ROOT)/pjlib/include/* $(PJSIP_INCLUDE_DIR)/pjlib
+	mkdir $(PJSIP_INCLUDE_DIR)/pjmedia && cp -r $(BUILD_ROOT)/pjmedia/include/* $(PJSIP_INCLUDE_DIR)/pjmedia
+	mkdir $(PJSIP_INCLUDE_DIR)/pjnath && cp -r $(BUILD_ROOT)/pjnath/include/* $(PJSIP_INCLUDE_DIR)/pjnath
 	touch $@

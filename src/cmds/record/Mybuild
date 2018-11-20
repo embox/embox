@@ -16,6 +16,8 @@ package embox.cmd
 	''')
 
 module record {
+	option boolean use_local_buffer = true
+
 	source "record.c"
 
 	depends embox.driver.audio.portaudio_api

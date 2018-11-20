@@ -1,4 +1,3 @@
-#define PJ_SOCKADDR_IN_SIN_ZERO_LEN    0
 #define PJ_IOQUEUE_MAX_HANDLES         8
 #define PJ_LOG_USE_STACK_BUFFER        0
 

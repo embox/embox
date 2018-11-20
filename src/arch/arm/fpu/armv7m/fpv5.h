@@ -15,8 +15,8 @@
 #define FPU_DATA_LEN 32
 
 /* Common registers for all ARMv7-M */
-#define MVFR0 0xE000EF40
-#define MVFR1 0xE000EF44
+#define FPU_MVFR0 0xE000EF40
+#define FPU_MVFR1 0xE000EF44
 
 #ifndef __ASSEMBLER__
 #include <string.h>
@@ -37,22 +37,24 @@ static inline void arm_fpu_context_init(void *opaque) {
 
 #else
 
-/* TODO write in the more efficient way with UsageFault */
+/* TODO write in the more efficient way with UsageFault.
+ * ow these function do not store CPACR and just check
+ * whether FPU is on or off.  */
 
 #define ARM_FPU_CONTEXT_SAVE_INC(tmp, stack) \
-	ldr       tmp, =CPACR; \
+	ldr       tmp, =FPU_CPACR; \
 	ldr       tmp, [tmp]; \
 	tst       tmp, #0xF00000; \
 	beq       fpu_out_save_inc; \
-	vstmia    stack!, {s0-s31};
+	vstmia    stack!, {s0-s31}; \
 fpu_out_save_inc:
 
 #define ARM_FPU_CONTEXT_LOAD_INC(tmp, stack) \
-	ldr       tmp, =CPACR; \
+	ldr       tmp, =FPU_CPACR; \
 	ldr       tmp, [tmp]; \
 	tst       tmp, #0xF00000; \
-	beq       fpu_out_save_inc; \
-	vldmia    stack!, {s0-s31};
+	beq       fpu_out_load_inc; \
+	vldmia    stack!, {s0-s31}; \
 fpu_out_load_inc:
 
 #endif /* __ASSEMBLER__ */

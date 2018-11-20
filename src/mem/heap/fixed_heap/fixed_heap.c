@@ -13,16 +13,15 @@
 
 EMBOX_UNIT_INIT(fixed_heap_init);
 
-#define HEAP_START OPTION_GET(NUMBER,start_addr)
-#define HEAP_END   OPTION_GET(NUMBER,end_addr)
+#define HEAP_START  OPTION_GET(NUMBER,heap_start)
+#define HEAP_SIZE   OPTION_GET(NUMBER,heap_size)
 
 #define ALLOCATOR_NAME OPTION_GET(STRING,allocator_name)
 
 struct page_allocator *ALLOCATOR_NAME;
 
 static int fixed_heap_init(void) {
-	size_t heap_size = (size_t) HEAP_END - (size_t) HEAP_START;
-	ALLOCATOR_NAME = page_allocator_init((char *) HEAP_START, heap_size, PAGE_SIZE());
+	ALLOCATOR_NAME = page_allocator_init((char *)HEAP_START, HEAP_SIZE, PAGE_SIZE());
 	if (NULL == ALLOCATOR_NAME) {
 		return -ENOSUPP;
 	}

@@ -19,6 +19,11 @@ module boundary_markers {
 }
 
 module mspace_malloc {
+	option number log_level = 1
+
+	@IncludeExport(path="mem/heap")
+	source "mspace_malloc.h"
+
 	source "mspace_malloc.c"
 
 	depends boundary_markers

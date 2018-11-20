@@ -1,0 +1,75 @@
+--- STM32Cube_FW_F7_V1.5.0.orig/Drivers/BSP/Components/Common/audio.h	2018-11-15 16:20:56.160479060 +0300
++++ STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/Common/audio.h	2018-11-15 16:44:06.461632797 +0300
+@@ -92,6 +92,7 @@
+   uint32_t  (*SetMute)(uint16_t, uint32_t);
+   uint32_t  (*SetOutputMode)(uint16_t, uint8_t);
+   uint32_t  (*Reset)(uint16_t);
++  uint32_t  (*SetVolume2)(uint16_t, uint8_t, uint16_t);
+ }AUDIO_DrvTypeDef;
+ /**
+   * @}
+diff -aur STM32Cube_FW_F7_V1.5.0.orig/Drivers/BSP/Components/wm8994/wm8994.c STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/wm8994/wm8994.c
+--- STM32Cube_FW_F7_V1.5.0.orig/Drivers/BSP/Components/wm8994/wm8994.c	2018-11-15 16:20:56.100479004 +0300
++++ STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/wm8994/wm8994.c	2018-11-15 16:44:34.621637238 +0300
+@@ -101,7 +101,8 @@
+   wm8994_SetMute,  
+   wm8994_SetOutputMode,
+ 
+-  wm8994_Reset
++  wm8994_Reset,
++  wm8994_SetVolume2,
+ };
+ 
+ static uint32_t outputEnabled = 0;
+@@ -729,6 +730,28 @@
+   return counter;
+ }
+ 
++uint32_t wm8994_SetVolume2(uint16_t DeviceAddr, uint8_t Volume, uint16_t OutputInputDevice)
++{
++	uint32_t ret = 0;
++	uint16_t output_device = OutputInputDevice & 0xFF;
++	uint16_t input_device = OutputInputDevice & 0xFF00;
++
++	if (output_device && input_device) {
++		ret = wm8994_SetVolume(DeviceAddr, Volume);
++	} else if (output_device) {
++		int inputPrevState = inputEnabled;
++		inputEnabled = 0;
++		ret = wm8994_SetVolume(DeviceAddr, Volume);
++		inputEnabled = inputPrevState;
++	} else if (input_device) {
++		int outputPrevState = outputEnabled;
++		outputEnabled = 0;
++		ret = wm8994_SetVolume(DeviceAddr, Volume);
++		outputEnabled = outputPrevState;
++	}
++	return ret;
++}
++
+ /**
+   * @brief Sets higher or lower the codec volume level.
+   * @param DeviceAddr: Device address on communication Bus.
+diff -aur STM32Cube_FW_F7_V1.5.0.orig/Drivers/BSP/Components/wm8994/wm8994.h STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/wm8994/wm8994.h
+--- STM32Cube_FW_F7_V1.5.0.orig/Drivers/BSP/Components/wm8994/wm8994.h	2018-11-15 16:20:56.088478993 +0300
++++ STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/wm8994/wm8994.h	2018-11-15 16:24:34.544696771 +0300
+@@ -152,6 +152,7 @@
+ uint32_t wm8994_Resume(uint16_t DeviceAddr);
+ uint32_t wm8994_Stop(uint16_t DeviceAddr, uint32_t Cmd);
+ uint32_t wm8994_SetVolume(uint16_t DeviceAddr, uint8_t Volume);
++uint32_t wm8994_SetVolume2(uint16_t DeviceAddr, uint8_t Volume, uint16_t OutputInputDevice);
+ uint32_t wm8994_SetMute(uint16_t DeviceAddr, uint32_t Cmd);
+ uint32_t wm8994_SetOutputMode(uint16_t DeviceAddr, uint8_t Output);
+ uint32_t wm8994_SetFrequency(uint16_t DeviceAddr, uint32_t AudioFreq);
+Only in STM32Cube_FW_F7_V1.5.0.orig/Drivers/BSP/Components/wm8994/: wm8994.o
+--- STM32Cube_FW_F7_V1.5.0.orig/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_audio.c	2018-11-15 16:20:55.912478827 +0300
++++ STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_audio.c	2018-11-15 16:26:55.164839831 +0300
+@@ -337,7 +337,7 @@
+ uint8_t BSP_AUDIO_OUT_SetVolume(uint8_t Volume)
+ {
+   /* Call the codec volume control function with converted volume value */
+-  if(audio_drv->SetVolume(AUDIO_I2C_ADDRESS, Volume) != 0)
++  if(audio_drv->SetVolume2(AUDIO_I2C_ADDRESS, Volume, OUTPUT_DEVICE_HEADPHONE) != 0)
+   {
+     return AUDIO_ERROR;
+   }

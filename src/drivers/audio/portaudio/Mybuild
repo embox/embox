@@ -5,6 +5,13 @@ abstract module portaudio_api {
 	source "portaudio.h"
 }
 
+module audio_utils {
+	@IncludeExport(path="drivers/audio")
+	source "audio_utils.h"
+
+	source "audio_utils.c"
+}
+
 module portaudio_lib extends portaudio_api {
 	option number max_dev_count=4
 	option number pa_stream_count=2
@@ -12,6 +19,8 @@ module portaudio_lib extends portaudio_api {
 
 	source "portaudio_lib.c"
 	source "portaudio_info.c"
+
+	depends audio_utils
 }
 
 @BuildDepends(third_party.bsp.st_f4.core)
