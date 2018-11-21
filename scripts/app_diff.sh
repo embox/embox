@@ -15,7 +15,7 @@ SRC_APP_DIR=$EMBOX_DIR/$3 #third-party/fuse/fuse
 
 cd $EXTBLD_APP_DIR
 mkdir -p $APP_NAME-orig
-tar xzf $EMBOX_DIR/download/${APP_NAME}.tar.gz -C $APP_NAME-orig --strip-components=1
+tar xf $EMBOX_DIR/download/${APP_NAME}.tar.* -C $APP_NAME-orig --strip-components=1
 diff -aur -x configure $APP_NAME-orig $APP_NAME | grep -v "^Only in" | tee $SRC_APP_DIR/patch.txt
 rm -rf $APP_NAME-orig
 
