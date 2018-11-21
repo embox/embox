@@ -1,0 +1,105 @@
+diff -aur -x configure dropbear-2018.76-orig/debug.h dropbear-2018.76/debug.h
+--- dropbear-2018.76-orig/debug.h	2018-02-27 17:25:10.000000000 +0300
++++ dropbear-2018.76/debug.h	2018-11-21 18:03:25.515616703 +0300
+@@ -63,7 +63,7 @@
+ 
+ /* To debug with GDB it is easier to run with no forking of child processes.
+    You will need to pass "-F" as well. */
+-/* #define DEBUG_NOFORK */
++#define DEBUG_NOFORK
+ 
+ 
+ /* For testing as non-root on shadowed systems, include the crypt of a password
+diff -aur -x configure dropbear-2018.76-orig/includes.h dropbear-2018.76/includes.h
+--- dropbear-2018.76-orig/includes.h	2018-02-27 17:25:10.000000000 +0300
++++ dropbear-2018.76/includes.h	2018-11-21 18:16:57.153967154 +0300
+@@ -25,17 +25,16 @@
+ #ifndef DROPBEAR_INCLUDES_H_
+ #define DROPBEAR_INCLUDES_H_
+ 
++#include "stubs.h"
+ 
+ #include "options.h"
+ #include "debug.h"
+ 
+ #include <sys/types.h>
+ #include <sys/ioctl.h>
+-#include <sys/param.h> /* required for BSD4_4 define */
+ #include <sys/socket.h>
+ #include <sys/stat.h>
+ #include <sys/time.h>
+-#include <sys/un.h>
+ #include <sys/wait.h>
+ #include <sys/resource.h>
+ 
+@@ -50,7 +49,6 @@
+ #include <string.h>
+ #include <termios.h>
+ #include <unistd.h>
+-#include <syslog.h>
+ #include <netdb.h>
+ #include <ctype.h>
+ #include <stdarg.h>
+@@ -85,8 +83,6 @@
+ #include <netinet/in_systm.h>
+ #endif
+ 
+-#include <netinet/ip.h>
+-
+ #ifdef HAVE_NETINET_TCP_H
+ #include <netinet/tcp.h>
+ #endif
+diff -aur -x configure dropbear-2018.76-orig/packet.c dropbear-2018.76/packet.c
+--- dropbear-2018.76-orig/packet.c	2018-02-27 17:25:12.000000000 +0300
++++ dropbear-2018.76/packet.c	2018-11-21 18:03:25.519616793 +0300
+@@ -95,12 +95,12 @@
+ 
+ #else /* No writev () */
+ 	/* Get the next buffer in the queue of encrypted packets to write*/
+-	writebuf = (buffer*)examine(&ses.writequeue);
++	buffer *writebuf = (buffer*)examine(&ses.writequeue);
+ 
+ 	/* The last byte of the buffer is not to be transmitted, but is 
+ 	 * a cleartext packet_type indicator */
+-	packet_type = writebuf->data[writebuf->len-1];
+-	len = writebuf->len - 1 - writebuf->pos;
++	int packet_type = writebuf->data[writebuf->len-1];
++	int len = writebuf->len - 1 - writebuf->pos;
+ 	TRACE2(("write_packet type %d len %d/%d", packet_type,
+ 			len, writebuf->len-1))
+ 	dropbear_assert(len > 0);
+diff -aur -x configure dropbear-2018.76-orig/svr-authpubkey.c dropbear-2018.76/svr-authpubkey.c
+--- dropbear-2018.76-orig/svr-authpubkey.c	2018-02-27 17:25:12.000000000 +0300
++++ dropbear-2018.76/svr-authpubkey.c	2018-11-21 18:03:25.519616793 +0300
+@@ -457,7 +457,7 @@
+ 	}
+ 	/* check permissions - don't want group or others +w */
+ 	if (filestat.st_mode & (S_IWGRP | S_IWOTH)) {
+-		badperm = 1;
++		//badperm = 1;
+ 		TRACE(("wrong perms"))
+ 	}
+ 	if (badperm) {
+diff -aur -x configure dropbear-2018.76-orig/sysoptions.h dropbear-2018.76/sysoptions.h
+--- dropbear-2018.76-orig/sysoptions.h	2018-02-27 17:25:12.000000000 +0300
++++ dropbear-2018.76/sysoptions.h	2018-11-21 18:16:09.968895796 +0300
+@@ -69,7 +69,7 @@
+ /* Each port might have at least a v4 and a v6 address */
+ #define MAX_LISTEN_ADDR (DROPBEAR_MAX_PORTS*3)
+ 
+-#define _PATH_TTY "/dev/tty"
++#define _PATH_TTY "/dev_pty_0"
+ 
+ #define _PATH_CP "/bin/cp"
+ 
+@@ -253,9 +253,7 @@
+ 
+ /* Source for randomness. This must be able to provide hundreds of bytes per SSH
+  * connection without blocking. */
+-#ifndef DROPBEAR_URANDOM_DEV
+-#define DROPBEAR_URANDOM_DEV "/dev/urandom"
+-#endif
++#define DROPBEAR_URANDOM_DEV "/etc/dropbear/random"
+ 
+ /* client keyboard interactive authentication is often used for password auth.
+  rfc4256 */
