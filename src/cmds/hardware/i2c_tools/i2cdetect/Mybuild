@@ -1,0 +1,28 @@
+package embox.cmd.i2c_tools
+
+@AutoCmd
+@Cmd(name = "i2cdetect",
+	help = "detect I2C chips",
+	man = '''
+		NAME
+			i2cdetect - detect I2C chips
+		SYNOPSIS
+			i2cdetect -h
+			i2cdetect -l
+			i2cdetect [-y] i2cbus
+			i2cdetect -F i2cbus
+		DESCRIPTION
+			i2cdetect is a program to scan an I2C bus for devices. 
+			It outputs a table with the list of detected devices on the specified bus. 
+			i2cbus indicates the number or name of the I2C bus to be scanned,
+			 and should correspond to one of the busses listed by i2cdetect -l
+		OPTIONS
+			-y Disable interactive mode.
+			-l print list of busses
+			-h print help
+		AUTHOR
+			Anton Bondarev
+	''')
+module i2cdetect {
+	source "i2cdetect.c"
+}
