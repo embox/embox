@@ -22,6 +22,10 @@
 #define STATIC_IRQ_ATTACH(_irq_nr, _hnd, _data) \
 	__STATIC_IRQ_ATTACH(_irq_nr, __static_irq__ ## _irq_nr, _hnd, _data)
 
+/* First, handle irq with _hnd(). After irq is handled we need
+ * to exit irq and call critical_dispatch_pending() in a right place
+ * with interrupts enabled. To do this, let's call interrupt_handle_enter()
+ * like in the case with non-static interrupts. */
 #define __STATIC_IRQ_ATTACH(_irq_nr, _static_hnd, _hnd, _data) \
 	__attribute__((naked)) static void _static_hnd(void) { \
 		asm("stmdb sp!, {r0-r12, lr}"); \
