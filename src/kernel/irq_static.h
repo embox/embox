@@ -23,10 +23,16 @@
 	__STATIC_IRQ_ATTACH(_irq_nr, __static_irq__ ## _irq_nr, _hnd, _data)
 
 #define __STATIC_IRQ_ATTACH(_irq_nr, _static_hnd, _hnd, _data) \
-	static void _static_hnd(void) { \
+	__attribute__((naked)) static void _static_hnd(void) { \
+		asm("stmdb sp!, {r0-r12, lr}"); \
 		assertf(irq_stack_protection() == 0, \
 			"Stack overflow detected on irq handler %s\n", __func__); \
+		critical_enter(CRITICAL_IRQ_HANDLER); \
 		_hnd(_irq_nr, _data); \
+		critical_leave(CRITICAL_IRQ_HANDLER); \
+		asm("ldmia sp!, {r0-r12, lr}"); \
+		/* Finally, exit from interrupt */ \
+		asm("b interrupt_handle_enter"); \
 	} \
 	ARM_M_IRQ_HANDLER_DEF(_irq_nr, _static_hnd);
 

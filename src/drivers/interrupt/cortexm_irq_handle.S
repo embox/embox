@@ -9,6 +9,8 @@
 .text
 .thumb
 .syntax unified
+
+.thumb_func
 .global interrupt_handle_enter
 interrupt_handle_enter:
     mov    r0, sp
@@ -30,6 +32,7 @@ interrupt_handle_enter:
 
     bl     interrupt_handle
 
+.thumb_func
 .global __irq_trampoline
 __irq_trampoline:
 
@@ -38,6 +41,7 @@ __irq_trampoline:
     # http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0552a/Babefdjc.html
     bx     r1
 
+.thumb_func
 .global __pendsv_handle
 __pendsv_handle:
 
@@ -59,6 +63,7 @@ out:
     mov    sp, r0
     bx     r14
 
+.thumb_func
 .global __pending_handle
 __pending_handle:
     add    r1, r1, #52
