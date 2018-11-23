@@ -2,16 +2,17 @@
  * @file
  * @brief
  *
- * @author  Anton Kozlov
- * @date    17.04.2014
+ * @author  Anton Kozlov & Mark Kovalev
+ * @date    21.11.2018
  */
 
-#ifndef DROPBEAR_2014_63_STUBS_H_
-#define DROPBEAR_2014_63_STUBS_H_
+#ifndef DROPBEAR_STUBS_H_
+#define DROPBEAR_STUBS_H_
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <sys/socket.h>
 
 #define LOG_AUTH 0
 
@@ -26,6 +27,7 @@
 #define LOG_INFO	7
 #define LOG_DEBUG	8
 
+#define UIO_MAXIOV	1024
 
 static inline void openlog(const char *ident, int option, int facility) {
 	(void) ident;
@@ -70,4 +72,4 @@ static inline char *ttyname(int fd) {
 
 extern int daemon(int nochdir, int noclose);
 
-#endif /* DROPBEAR_2014_63_STUBS_H_ */
+#endif /* DROPBEAR_STUBS_H_ */
