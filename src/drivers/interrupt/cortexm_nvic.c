@@ -60,6 +60,7 @@
 EMBOX_UNIT_INIT(nvic_init);
 
 static void nvic_setup_priorities(void);
+extern void __pendsv_handle(void);
 
 #ifndef STATIC_IRQ_EXTENTION
 
@@ -67,6 +68,67 @@ static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128
 
 extern void *trap_table_start;
 extern void *trap_table_end;
+
+extern void interrupt_handle_enter(void);
+
+static void hnd_stub(void) {
+	/* It's just a stub. DO NOTHING */
+}
+
+void nvic_table_fill_stubs(void) {
+	int i;
+
+	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
+		exception_table[i] = ((int) hnd_stub) | 1;
+	}
+
+	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
+			(int) exception_table);
+}
+
+static int nvic_init(void) {
+	ipl_t ipl;
+	int i;
+	void *ptr;
+
+	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
+		exception_table[i] = ((int) interrupt_handle_enter) | 1;
+	}
+
+	/* load head from bootstrap table */
+	for (ptr = &trap_table_start, i = 0; ptr != &trap_table_end; ptr += 4, i++) {
+		exception_table[i] = * (int32_t *) ptr;
+	}
+
+	assert(EXCEPTION_TABLE_SZ >= 14);
+	exception_table[14] = ((int) __pendsv_handle) | 1;
+
+	ipl = ipl_save();
+
+	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
+			(int) exception_table);
+
+	ipl_restore(ipl);
+
+	nvic_setup_priorities();
+
+	return 0;
+}
+
+#else
+
+void nvic_table_fill_stubs(void) {
+
+}
+
+static int nvic_init(void) {
+	nvic_setup_priorities();
+	return 0;
+}
+
+ARM_M_IRQ_HANDLER_DEF(14, __pendsv_handle);
+
+#endif
 
 struct irq_enter_ctx {
 	uint32_t r[13];
@@ -82,8 +144,6 @@ struct irq_saved_state {
 
 extern void __irq_trampoline(uint32_t sp, uint32_t lr);
 extern void __pending_handle(void);
-extern void __pendsv_handle(void);
-extern void interrupt_handle_enter(void);
 
 /*
  * Usual interrupt handling:
@@ -143,6 +203,7 @@ static void fill_irq_saved_ctx(struct irq_saved_state *state,
 
 void interrupt_handle(struct irq_enter_ctx *regs,
 		struct irq_saved_state *state) {
+#ifndef STATIC_IRQ_EXTENTION
 	uint32_t source;
 
 	source = REG_LOAD(SCB_ICSR) & 0x1ff;
@@ -152,6 +213,9 @@ void interrupt_handle(struct irq_enter_ctx *regs,
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	irq_dispatch(source);
 	critical_leave(CRITICAL_IRQ_HANDLER);
+#endif
+
+	/* Now return from irq */
 
 	fill_irq_saved_ctx(state, (uint32_t *) regs->sp, regs);
 
@@ -164,71 +228,6 @@ void interrupt_handle(struct irq_enter_ctx *regs,
 void nvic_set_pendsv(void) {
 	REG_STORE(SCB_ICSR, 1 << 28);
 }
-
-static int nvic_init(void) {
-	ipl_t ipl;
-	int i;
-	void *ptr;
-
-	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
-		exception_table[i] = ((int) interrupt_handle_enter) | 1;
-	}
-
-	/* load head from bootstrap table */
-	for (ptr = &trap_table_start, i = 0; ptr != &trap_table_end; ptr += 4, i++) {
-		exception_table[i] = * (int32_t *) ptr;
-	}
-
-	assert(EXCEPTION_TABLE_SZ >= 14);
-	exception_table[14] = ((int) __pendsv_handle) | 1;
-
-	ipl = ipl_save();
-
-	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
-			(int) exception_table);
-
-	ipl_restore(ipl);
-
-	nvic_setup_priorities();
-
-	return 0;
-}
-
-static void hnd_stub(void) {
-	/* It's just a stub. DO NOTHING */
-}
-
-void nvic_table_fill_stubs(void) {
-	int i;
-
-	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
-		exception_table[i] = ((int) hnd_stub) | 1;
-	}
-
-	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
-			(int) exception_table);
-}
-
-#else
-
-/* These functions are used in src/drivers/interrupt/cortexm_irq_handle.S */
-
-void interrupt_handle(struct context *regs) {
-}
-
-void nvic_set_pendsv(void) {
-}
-
-void nvic_table_fill_stubs(void) {
-
-}
-
-static int nvic_init(void) {
-	nvic_setup_priorities();
-	return 0;
-}
-
-#endif
 
 static void nvic_setup_priorities(void) {
 	int i;

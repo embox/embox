@@ -233,7 +233,7 @@ static irq_return_t stm32_audio_in_dma_interrupt(unsigned int irq_num,
 }
 
 static_assert(86 == STM32_AUDIO_IN_DMA_IRQ);
-STATIC_IRQ_ATTACH(STM32_AUDIO_IN_DMA_IRQ, stm32_audio_in_dma_interrupt, NULL);
+STATIC_IRQ_ATTACH(86, stm32_audio_in_dma_interrupt, NULL);
 
 /******** Functions for OUTPUT audio device ********/
 static void stm32_audio_out_start(struct audio_dev *dev) {
@@ -299,4 +299,4 @@ static irq_return_t stm32_audio_out_dma_interrupt(unsigned int irq_num,
 }
 
 static_assert(76 == STM32_AUDIO_OUT_DMA_IRQ);
-STATIC_IRQ_ATTACH(STM32_AUDIO_OUT_DMA_IRQ, stm32_audio_out_dma_interrupt, NULL);
+STATIC_IRQ_ATTACH(76, stm32_audio_out_dma_interrupt, NULL);
