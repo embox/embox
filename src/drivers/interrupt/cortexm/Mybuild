@@ -1,0 +1,8 @@
+package embox.driver.interrupt
+
+module cortexm_nvic extends embox.driver.interrupt.irqctrl_api {
+	option number irq_table_size = 16
+	source "cortexm_nvic.c",
+			"cortexm_nvic.h",
+			"cortexm_irq_handle.S"
+}
