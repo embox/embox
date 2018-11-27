@@ -46,8 +46,7 @@
 // Table 2.17. Exception return behavior in Cortex-M4 doc
 #define interrupted_from_fpu_mode(lr) ((lr & 0xF0) == 0xE0)
 
-#define BASE_CTX_SIZE  (8 * 4)
-#define FPU_CTX_SIZE   (BASE_CTX_SIZE + 18 * 4)
+#define FPU_CTX_SIZE   18
 
 /**
  * ENABLE, CLEAR, SET_PEND, CLR_PEND, ACTIVE is a base of bit arrays
@@ -178,18 +177,14 @@ extern void __pending_handle(void);
 static void fill_irq_saved_ctx(struct irq_saved_state *state,
                uint32_t *opaque, struct irq_enter_ctx *regs) {
 	struct exc_saved_base_ctx *ctx;
+	size_t offset;
 
 	ctx = (struct exc_saved_base_ctx *) opaque;
 
-	if (!interrupted_from_fpu_mode(regs->lr)) {
-		memcpy(&state->ctx, ctx, BASE_CTX_SIZE);
-		state->misc[0] = regs->lr;
-		state->misc[1] = regs->sp;
-	} else {
-		memcpy(&state->ctx, ctx, FPU_CTX_SIZE);
-		state->misc[18] = regs->lr;
-		state->misc[19] = regs->sp;
-	}
+	/* Save LR and SP below the context. */
+	offset = interrupted_from_fpu_mode(regs->lr) ? FPU_CTX_SIZE : 0;
+	state->misc[offset] = regs->lr;
+	state->misc[offset + 1] = regs->sp;
 
 	/* It does not matter what value of psr is, just set up sime correct value.
 	 * This value is only used to go further, after return from interrupt_handle.
