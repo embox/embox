@@ -7,11 +7,11 @@ package platform.etnaviv.cmd
 @Build(stage=2,script="true")
 module etnaviv_2d_test {
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_etnaviv/glu-9.0.0/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-17.0.3/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/include/drm/")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/etnaviv")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/")
 
 	source "etnaviv_2d_test.c"
 
@@ -25,8 +25,8 @@ module etnaviv_2d_test {
 @BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
 @Build(stage=2,script="true")
 module cube {
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/include/drm/")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/")
 
 	source "cube.c"
 
@@ -41,8 +41,8 @@ module cube {
 @BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
 @Build(stage=2,script="true")
 module hardcode_cube {
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/include/drm/")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.79/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/")
 	source "hardcode_cube.c"
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
@@ -56,10 +56,10 @@ module hardcode_cube {
 @BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
 @Build(stage=2,script="true")
 module tri {
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-17.0.3/src")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-17.0.3/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-17.0.3/src/gallium/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-17.0.3/src/gallium/auxiliary")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/auxiliary")
 	source "tri.c"
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv

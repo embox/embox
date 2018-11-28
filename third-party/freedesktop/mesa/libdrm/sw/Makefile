@@ -1,13 +1,13 @@
 #https://dri.freedesktop.org/libdrm/libdrm-2.4.79.tar.bz2
 PKG_NAME := libdrm
-PKG_VER  := 2.4.79
+PKG_VER  := 2.4.96
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.bz2
+PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
 
 
 PKG_SOURCES := https://dri.freedesktop.org/libdrm/$(PKG_ARCHIVE_NAME)
 
-PKG_MD5     := 84ba6e8e6c97d2684938eb949e6dfdf8
+PKG_MD5     := dd0a89154ee3d60c37ee5b8099979875
 
 PKG_PATCHES := patch.txt
 

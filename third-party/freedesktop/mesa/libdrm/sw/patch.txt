@@ -1,6 +1,6 @@
-diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/configure.ac libdrm-2.4.79/configure.ac
---- libdrm-2.4.79-orig/configure.ac	2017-04-08 23:00:58.000000000 +0300
-+++ libdrm-2.4.79/configure.ac	2017-04-13 18:16:57.642129477 +0300
+diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.96-orig/configure.ac libdrm-2.4.96/configure.ac
+--- libdrm-2.4.96-orig/configure.ac	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/configure.ac	2017-04-13 18:16:57.642129477 +0300
 @@ -68,7 +68,7 @@
      pthread_stubs_possible="no"
      ;;
@@ -10,9 +10,9 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/configure
      ;;
  esac
  
-diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/etnaviv/etnaviv_device.c libdrm-2.4.79/etnaviv/etnaviv_device.c
---- libdrm-2.4.79-orig/etnaviv/etnaviv_device.c	2017-04-08 23:00:58.000000000 +0300
-+++ libdrm-2.4.79/etnaviv/etnaviv_device.c	2017-04-13 18:18:14.966512907 +0300
+diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.96-orig/etnaviv/etnaviv_device.c libdrm-2.4.96/etnaviv/etnaviv_device.c
+--- libdrm-2.4.96-orig/etnaviv/etnaviv_device.c	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/etnaviv/etnaviv_device.c	2017-04-13 18:18:14.966512907 +0300
 @@ -29,7 +29,7 @@
  #endif
  
@@ -22,9 +22,9 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/etnaviv/e
  #include <linux/types.h>
  #include <errno.h>
  #include <sys/mman.h>
-diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/include/drm/drm.h libdrm-2.4.79/include/drm/drm.h
---- libdrm-2.4.79-orig/include/drm/drm.h	2017-04-08 23:00:58.000000000 +0300
-+++ libdrm-2.4.79/include/drm/drm.h	2017-04-13 18:16:57.642129477 +0300
+diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.96-orig/include/drm/drm.h libdrm-2.4.96/include/drm/drm.h
+--- libdrm-2.4.96-orig/include/drm/drm.h	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/include/drm/drm.h	2017-04-13 18:16:57.642129477 +0300
 @@ -40,8 +40,17 @@
  
  #include <linux/types.h>
@@ -43,9 +43,9 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/include/d
  #else /* One of the BSDs */
  
  #include <sys/ioccom.h>
-diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h libdrm-2.4.79/xf86drm.h
---- libdrm-2.4.79-orig/xf86drm.h	2017-04-08 23:00:58.000000000 +0300
-+++ libdrm-2.4.79/xf86drm.h	2017-04-13 18:16:57.642129477 +0300
+diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.96-orig/xf86drm.h libdrm-2.4.96/xf86drm.h
+--- libdrm-2.4.96-orig/xf86drm.h	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/xf86drm.h	2017-04-13 18:16:57.642129477 +0300
 @@ -47,7 +47,17 @@
  #define DRM_MAX_MINOR   16
  #endif
@@ -76,8 +76,8 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h
 +#define DRM_CONTROL_DEV_NAME  "%s/controlD%d"
 +#define DRM_RENDER_DEV_NAME  "%s/renderD%d"
 +#define DRM_PROC_NAME "/proc/"
---- libdrm-2.4.79-orig/built-aux/ltmain.sh	2018-09-03 18:05:45.810536972 +0300
-+++ libdrm-2.4.79/build-aux/ltmain.sh	2018-09-03 18:08:15.025429193 +0300
+--- libdrm-2.4.96-orig/built-aux/ltmain.sh	2018-09-03 18:05:45.810536972 +0300
++++ libdrm-2.4.96/build-aux/ltmain.sh	2018-09-03 18:08:15.025429193 +0300
 @@ -7009,35 +7009,7 @@
  	;;
  
@@ -133,8 +133,8 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h
          |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
  	  if test prog,link = "$linkmode,$pass"; then
  	    compile_deplibs="$deplib $compile_deplibs"
---- libdrm-2.4.79-orig/m4/libtool.m4	2018-09-03 15:55:23.100981361 +0300
-+++ libdrm-2.4.79/m4/libtool.m4	2018-09-03 18:15:20.982011031 +0300
+--- libdrm-2.4.96-orig/m4/libtool.m4	2018-09-03 15:55:23.100981361 +0300
++++ libdrm-2.4.96/m4/libtool.m4	2018-09-03 18:15:20.982011031 +0300
 @@ -3849,29 +3849,7 @@
  # LT_LIB_M
  # --------
@@ -165,8 +165,8 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h
  
  # _LT_COMPILER_NO_RTTI([TAGNAME])
  # -------------------------------
---- libdrm-2.4.79-orig/Makefile.am	2018-09-03 18:25:23.918562755 +0300
-+++ libdrm-2.4.79/Makefile.am	2018-09-03 18:25:33.546765066 +0300
+--- libdrm-2.4.96-orig/Makefile.am	2018-09-03 18:25:23.918562755 +0300
++++ libdrm-2.4.96/Makefile.am	2018-09-03 18:25:33.546765066 +0300
 @@ -115,7 +115,7 @@
  libdrm_la_LTLIBRARIES = libdrm.la
  libdrm_ladir = $(libdir)
@@ -176,26 +176,28 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h
  
  libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
  AM_CFLAGS = \
---- libdrm-2.4.79-orig/tests/modetest/Makefile.am	2018-09-03 18:44:33.110854241 +0300
-+++ libdrm-2.4.79/tests/modetest/Makefile.am	2018-09-03 18:44:41.231026388 +0300
-@@ -3,7 +3,6 @@
+diff -aur libdrm-2.4.96-orig/tests/modetest/Makefile.am libdrm-2.4.96/tests/modetest/Makefile.am
+--- libdrm-2.4.96-orig/tests/modetest/Makefile.am	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/tests/modetest/Makefile.am	2018-09-24 13:42:22.819814207 +0300
+@@ -3,8 +3,7 @@
  AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS))
  
  AM_CFLAGS += \
+ 	-fvisibility=hidden \
 -	-pthread \
  	-I$(top_srcdir)/include/drm \
  	-I$(top_srcdir)/tests \
  	-I$(top_srcdir)
---- libdrm-2.4.79-orig/tests/nouveau/Makefile.am	2018-09-03 18:45:33.300130319 +0300
-+++ libdrm-2.4.79/tests/nouveau/Makefile.am	2018-09-03 18:45:40.488282725 +0300
+--- libdrm-2.4.96-orig/tests/nouveau/Makefile.am	2018-09-03 18:45:33.300130319 +0300
++++ libdrm-2.4.96/tests/nouveau/Makefile.am	2018-09-03 18:45:40.488282725 +0300
 @@ -1,5 +1,4 @@
  AM_CFLAGS = \
 -	-pthread \
  	$(WARN_CFLAGS) \
  	-I$(top_srcdir)/include/drm \
  	-I$(top_srcdir)/nouveau \
---- libdrm-2.4.79-orig/tests/nouveau/Makefile.in	2018-09-03 18:46:01.812734867 +0300
-+++ libdrm-2.4.79/tests/nouveau/Makefile.in	2018-09-03 18:46:11.196933847 +0300
+--- libdrm-2.4.96-orig/tests/nouveau/Makefile.in	2018-09-03 18:46:01.812734867 +0300
++++ libdrm-2.4.96/tests/nouveau/Makefile.in	2018-09-03 18:46:11.196933847 +0300
 @@ -531,7 +531,6 @@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
@@ -213,8 +215,8 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h
  	@rm -f threaded$(EXEEXT)
  	$(AM_V_CCLD)$(LINK) $(threaded_OBJECTS) $(threaded_LDADD) $(LIBS)
  
---- libdrm-2.4.79-orig/tests/exynos/Makefile.in	2018-09-03 18:46:35.157441909 +0300
-+++ libdrm-2.4.79/tests/exynos/Makefile.in	2018-09-03 18:46:44.141632415 +0300
+--- libdrm-2.4.96-orig/tests/exynos/Makefile.in	2018-09-03 18:46:35.157441909 +0300
++++ libdrm-2.4.96/tests/exynos/Makefile.in	2018-09-03 18:46:44.141632415 +0300
 @@ -358,7 +358,6 @@
  top_builddir = @top_builddir@
  top_srcdir = @top_srcdir@
@@ -223,11 +225,72 @@ diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.79-orig/xf86drm.h
  	$(WARN_CFLAGS)\
  	-I $(top_srcdir)/include/drm \
  	-I $(top_srcdir)/libkms/ \
---- libdrm-2.4.79-orig/tests/exynos/Makefile.am 2018-09-03 18:46:35.157441909 +0300
-+++ libdrm-2.4.79/tests/exynos/Makefile.am	2018-09-03 18:46:47.669707227 +0300
+--- libdrm-2.4.96-orig/tests/exynos/Makefile.am 2018-09-03 18:46:35.157441909 +0300
++++ libdrm-2.4.96/tests/exynos/Makefile.am	2018-09-03 18:46:47.669707227 +0300
 @@ -1,5 +1,4 @@
  AM_CFLAGS = \
 -	-pthread \
  	$(WARN_CFLAGS)\
  	-I $(top_srcdir)/include/drm \
  	-I $(top_srcdir)/libkms/ \
+diff -aur libdrm-2.4.96-orig/xf86drm.c libdrm-2.4.96/xf86drm.c
+--- libdrm-2.4.96-orig/xf86drm.c	2018-10-16 17:49:03.000000000 +0300
++++ libdrm-2.4.96/xf86drm.c	2018-11-28 14:03:26.122382266 +0300
+@@ -2980,6 +2980,7 @@
+ 
+ static int drmParseSubsystemType(int maj, int min)
+ {
++    return DRM_BUS_PLATFORM;
+ #ifdef __linux__
+     char path[PATH_MAX + 1];
+     char link[PATH_MAX + 1] = "";
+@@ -3022,21 +3023,11 @@
+ static void
+ get_pci_path(int maj, int min, char *pci_path)
+ {
+-    char path[PATH_MAX + 1], *term;
+-
+-    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+-    if (!realpath(path, pci_path)) {
+-        strcpy(pci_path, path);
+-        return;
+-    }
+-
+-    term = strrchr(pci_path, '/');
+-    if (term && strncmp(term, "/virtio", 7) == 0)
+-        *term = 0;
+ }
+ 
+ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
+ {
++    return DRM_BUS_PLATFORM;
+ #ifdef __linux__
+     unsigned int domain, bus, dev, func;
+     char pci_path[PATH_MAX + 1], *value;
+@@ -3592,7 +3583,7 @@
+     dev->bustype = DRM_BUS_PLATFORM;
+ 
+     dev->businfo.platform = (drmPlatformBusInfoPtr)ptr;
+-
++#if 0
+     ret = drmParsePlatformBusInfo(maj, min, dev->businfo.platform);
+     if (ret < 0)
+         goto free_device;
+@@ -3605,7 +3596,7 @@
+         if (ret < 0)
+             goto free_device;
+     }
+-
++#endif
+     *device = dev;
+ 
+     return 0;
+@@ -3948,6 +3939,8 @@
+         }
+         local_devices[i] = d;
+         i++;
++
++	break;
+     }
+     node_count = i;
+ 

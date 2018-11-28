@@ -1,13 +1,13 @@
 #https://mesa.freedesktop.org/archive/mesa-17.0.3.tar.xz
 
 PKG_NAME := mesa
-PKG_VER  := 17.0.3
+PKG_VER  := 18.2.5
 
 PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.xz
 
 PKG_SOURCES := https://mesa.freedesktop.org/archive/$(PKG_ARCHIVE_NAME)
 
-PKG_MD5     := 003072c044b3fb5eca8be2037f15e4ec
+PKG_MD5     := b31a43ebb8b37fb704a9a75c90bbd71b
 
 PKG_PATCHES := patch.txt
 
@@ -16,7 +16,7 @@ include $(EXTBLD_LIB)
 
 MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
-MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include -O2 -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.79/
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include -O2 -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.96/
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/linux/include
 
 $(CONFIGURE) :
@@ -37,11 +37,15 @@ $(CONFIGURE) :
 			--disable-asm \
 			--disable-gles1 --disable-gles2 \
 			--disable-dependency-tracking \
+			ZLIB_LIBS="-O2" \
+			PTHREADSTUBS_LIBS="-O2" \
+			PKG_CONFIG=true \
 			CC=$(EMBOX_GCC) \
 			CXX=$(EMBOX_GXX) \
-			CFLAGS='-O2' \
+			CFLAGS='$(MESA_CPPFLAGS)' \
+			PTHREAD_LIBS='-O2' \
 			CPPFLAGS='-O2 $(MESA_CPPFLAGS)' \
-			LIBDRM_CFLAGS='-I$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm/libdrm-2.4.79/include/drm/' \
+			LIBDRM_CFLAGS='-I$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm/libdrm-2.4.96/include/drm/'; \
 	)
 	touch $@
 
@@ -52,11 +56,8 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	#	cp $(PKG_SOURCE_DIR)/src/mesa/.libs/libmesa.a $(PKG_INSTALL_DIR)/libmesa.a
 	cp $(PKG_SOURCE_DIR)/src/mesa/.libs/libmesagallium.a $(PKG_INSTALL_DIR)/libmesagallium.a
 	cp $(PKG_SOURCE_DIR)/src/mapi/shared-glapi/.libs/libglapi.a $(PKG_INSTALL_DIR)/libglapi.a
 	cp $(PKG_SOURCE_DIR)/src/mesa/drivers/osmesa/.libs/libOSMesa.a $(PKG_INSTALL_DIR)/libOSMesa.a
-	#cp $(PKG_SOURCE_DIR)/src/gallium/winsys/etnaviv/drm/.libs/libetnavivdrm.a $(PKG_INSTALL_DIR)/libetnavivdrm.a
-	#cp $(PKG_SOURCE_DIR)/src/gallium/drivers/etnaviv/.libs/libetnaviv.a $(PKG_INSTALL_DIR)/libetnaviv.a
 	cp $(PKG_SOURCE_DIR)/src/gallium/auxiliary/.libs/libgallium.a $(PKG_INSTALL_DIR)/libgallium.a
 	touch $@

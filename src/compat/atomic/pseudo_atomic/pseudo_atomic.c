@@ -122,3 +122,19 @@ uint32_t __aeabi_atexit(void *obj, void *func, void *d) {
 
 void __sync_synchronize(void) {
 }
+
+uint32_t __sync_add_and_fetch_4(void *mem, uint32_t val) {
+	return __atomic_fetch_add_4(mem, val, 0) + val;
+}
+
+uint32_t __sync_sub_and_fetch_4(void *mem, uint32_t val) {
+	return __atomic_fetch_sub_8(mem, val, 0) - val;
+}
+
+uint32_t __sync_fetch_and_add_4(void *mem, uint32_t val) {
+	return __atomic_fetch_add_4(mem, val, 0);
+}
+
+uint32_t __sync_fetch_and_sub_4(void *mem, uint32_t val) {
+	return __atomic_fetch_sub_4(mem, val, 0);
+}

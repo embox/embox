@@ -83,7 +83,7 @@ static void init_prog(struct program *p)
 
 	/* create the pipe driver context and cso context */
 	p->pipe = p->screen->context_create(p->screen, NULL, 0);
-	p->cso = cso_create_context(p->pipe);
+	p->cso = cso_create_context(p->pipe, 0);
 
 	/* set clear color */
 	p->clear_color.f[0] = 0.3;
@@ -201,7 +201,7 @@ static void init_prog(struct program *p)
 							TGSI_SEMANTIC_COLOR };
 			const uint semantic_indexes[] = { 0, 0 };
 			p->vs = util_make_vertex_passthrough_shader(
-					p->pipe, 2, semantic_names, semantic_indexes, FALSE);
+					p->pipe, 2, (void *) semantic_names, semantic_indexes, FALSE);
 	}
 
 	/* fragment shader */
