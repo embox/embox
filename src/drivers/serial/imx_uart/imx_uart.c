@@ -9,13 +9,13 @@
 #include <drivers/diag.h>
 #include <drivers/serial/uart_device.h>
 #include <drivers/serial/diag_serial.h>
+#include <drivers/iomuxc.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 
 EMBOX_UNIT_INIT(uart_init);
 
-#define IOMUXC_BASE	OPTION_GET(NUMBER,iomuxc_base)
 #define UART_NUM	OPTION_GET(NUMBER,num)
 #define IRQ_NUM		(58 + UART_NUM)
 #define PIN_CONFIG	OPTION_GET(BOOLEAN,pin_config)
@@ -73,10 +73,6 @@ EMBOX_UNIT_INIT(uart_init);
 
 #include <kernel/printk.h>
 
-#define UART_SELECT_PIN(n)	(IOMUXC_BASE + 0x920 + n * 8)
-#define MUX_PIN_CTL_TX(n)	(IOMUXC_BASE + 0x2a8 + n * 8)
-#define MUX_PIN_CTL_RX(n)	(IOMUXC_BASE + 0x2ac + n * 8)
-
 static void imxuart_configure_pins(void) {
 	/* We need to configure UART pins to use them as
 	 * RXD/TXD. To do it, we need first to config MUX mode register
@@ -86,30 +82,30 @@ static void imxuart_configure_pins(void) {
 	switch(UART_NUM) {
 	case 0:
 		/* TX */
-		REG32_STORE(IOMUXC_BASE + 0x2A8, 1);
-		REG32_STORE(IOMUXC_BASE + 0x920, 2);
+		iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_SD3_DATA7, 1);
+		iomuxc_write(IOMUXC_UART1_UART_RX_DATA_SELECT_INPUT, 2);
 		/* RX */
-		REG32_STORE(IOMUXC_BASE + 0x2AC, 1);
-		REG32_STORE(IOMUXC_BASE + 0x920, 3);
+		iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_SD3_DATA6, 1);
+		iomuxc_write(IOMUXC_UART1_UART_RX_DATA_SELECT_INPUT, 3);
 		break;
 	case 1:
 		/* Nothing to be done */
 		break;
 	case 2:
 		/* TX */
-		REG32_STORE(IOMUXC_BASE + 0x0B4, 2);
-		REG32_STORE(IOMUXC_BASE + 0x930, 0);
+		iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA24, 2);
+		iomuxc_write(IOMUXC_UART3_UART_RX_DATA_SELECT_INPUT, 0);
 		/* RX */
-		REG32_STORE(IOMUXC_BASE + 0x0B8, 2);
-		REG32_STORE(IOMUXC_BASE + 0x930, 1);
+		iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA25, 2);
+		iomuxc_write(IOMUXC_UART3_UART_RX_DATA_SELECT_INPUT, 1);
 		break;
 	case 3:
 		/* TX */
-		REG32_STORE(IOMUXC_BASE + 0x1F8, 4);
-		REG32_STORE(IOMUXC_BASE + 0x938, 0);
+		iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_KEY_COL0, 4);
+		iomuxc_write(IOMUXC_UART4_UART_RX_DATA_SELECT_INPUT, 0);
 		/* RX */
-		REG32_STORE(IOMUXC_BASE + 0x1FC, 4);
-		REG32_STORE(IOMUXC_BASE + 0x938, 1);
+		iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_KEY_ROW0, 4);
+		iomuxc_write(IOMUXC_UART4_UART_RX_DATA_SELECT_INPUT, 1);
 		break;
 	}
 #endif
@@ -211,10 +207,3 @@ static struct periph_memory_desc imx_uart_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(imx_uart_mem);
-
-static struct periph_memory_desc iomuxc_mem = {
-	.start = IOMUXC_BASE,
-	.len   = 0x1000,
-};
-
-PERIPH_MEMORY_DEFINE(iomuxc_mem);
