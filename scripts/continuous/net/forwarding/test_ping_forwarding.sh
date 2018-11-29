@@ -36,6 +36,8 @@ build_embox() {
 }
 
 test_suite_setup() {
+	$CONT_RUN generic/save_conf
+
 	build_embox $EMBOX1_START_SCRIPT $EMBOX1_KERNEL
 	build_embox $EMBOX2_START_SCRIPT $EMBOX2_KERNEL
 
@@ -55,6 +57,8 @@ test_suite_setup() {
 }
 
 test_suite_teardown() {
+	$CONT_RUN generic/restore_conf
+
 	$CONT_RUN generic/qemu_bg_kill "" $QEMU1_PID_FILE || true
 	$CONT_RUN generic/qemu_bg_kill "" $QEMU2_PID_FILE || true
 	rm $EMBOX1_KERNEL $EMBOX2_KERNEL || true

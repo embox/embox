@@ -15,6 +15,7 @@ OTHER_ARGS="$@"
 
 TIMEOUT=${CONTINIOUS_RUN_TIMEOUT-45}
 
+EMCONF=./conf
 EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
 
@@ -50,6 +51,8 @@ atml2run=(
 	['generic/qemu']=default_run
 	['generic/qemu_bg']=run_bg_wrapper
 	['generic/qemu_bg_kill']=kill_bg_wrapper
+	['generic/save_conf']=save_conf
+	['generic/restore_conf']=restore_conf
 	['generic/fail']=false
 )
 
@@ -112,6 +115,8 @@ kill_bg() {
 	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
 
 	cat $OUTPUT_FILE
+
+	restore_conf
 }
 
 ## FIXME not working
@@ -170,6 +175,19 @@ kill_bg_wrapper() {
 	echo "Embox output on end"
 	echo "==================="
 	kill_bg
+}
+
+save_conf() {
+	echo "Save conf/ to $EMCONF.orig"
+	rm -rf $EMCONF.orig
+	cp -r $EMCONF $EMCONF.orig
+}
+
+restore_conf() {
+	if [ -d $EMCONF.orig ]; then
+		echo "Restore conf/ from $EMCONF.orig"
+		cp -rf $EMCONF.orig/* $EMCONF
+	fi
 }
 
 if ! echo ${!atml2run[@]} | grep $ATML &>/dev/null; then
