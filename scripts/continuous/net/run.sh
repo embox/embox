@@ -143,7 +143,7 @@ fi
 
 tap_down
 
-test_begin
+test_begin "ping forwarding test suite"
 	$TEST_PING_FORWARING_SCRIPT
 	test_retcode
 test_end
