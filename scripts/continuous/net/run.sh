@@ -22,7 +22,7 @@ test_case_target_should_reply_to_ping() {
 	test_retcode
 }
 
-disabled_test_case_target_should_reply_to_big_ping() {
+test_case_target_should_reply_to_big_ping() {
 	ping $EMBOX_IP -c 4 -s 16384
 	test_retcode
 }

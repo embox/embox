@@ -72,7 +72,7 @@ test_case_ping_forwarding() {
 	test_retcode
 }
 
-disabled_test_case_big_ping_forwarding() {
+test_case_big_ping_forwarding() {
 	echo "Test case \"embox should forward big ping\""
 	ping -I $TAP_DEV -c 4 -s 16384 $QEMU2_ETH0
 	test_retcode
