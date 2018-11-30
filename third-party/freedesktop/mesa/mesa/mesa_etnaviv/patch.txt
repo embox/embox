@@ -74,7 +74,7 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-18.2.5-orig/src/mesa/ma
     struct mem_block *heap;
     unsigned ofs;
     unsigned size;
-+#if !defined(__EMBOX__)
++#if 1
     unsigned free:1;
     unsigned reserved:1;
 +#else
@@ -92,7 +92,7 @@ diff -aur -x configure -x Makefile.in -x aclocal.m4 mesa-18.2.5-orig/src/mesa/pr
     struct prog_src_register SrcReg[3];
     struct prog_dst_register DstReg;
 -
-+#if !defined(__EMBOX__)
++#if 1
     /**
      * Saturate each value of the vectored result to the range [0,1].
      *
@@ -342,7 +342,7 @@ diff -aur mesa-18.2.5-orig/src/mesa/program/prog_parameter.h mesa-18.2.5/src/mes
  {
     const char *Name;        /**< Null-terminated string */
 -   gl_register_file Type:16;  /**< PROGRAM_CONSTANT or STATE_VAR */
-+   gl_register_file Type;  /**< PROGRAM_CONSTANT or STATE_VAR */
++   gl_register_file Type:16;  /**< PROGRAM_CONSTANT or STATE_VAR */
     GLenum16 DataType;         /**< GL_FLOAT, GL_FLOAT_VEC2, etc */
     /**
      * Number of components (1..4), or more.
@@ -368,17 +368,6 @@ diff -aur mesa-18.2.5-orig/src/util/disk_cache.c mesa-18.2.5/src/util/disk_cache
  
  #include <ctype.h>
  #include <ftw.h>
-diff -aur mesa-18.2.5-orig/src/util/macros.h mesa_osmesa/mesa-18.2.5/src/util/macros.h
---- mesa-18.2.5-orig/src/util/macros.h	2018-11-15 15:32:30.000000000 +0300
-+++ mesa-18.2.5/src/util/macros.h	2018-11-26 16:57:09.087062100 +0300
-@@ -63,7 +63,6 @@
-  */
- #define STATIC_ASSERT(COND) \
-    do { \
--      (void) sizeof(char [1 - 2*!(COND)]); \
-    } while (0)
- 
- 
 diff -aur mesa-18.2.5-orig/src/util/build_id.c mesa-18.2.5/src/util/build_id.c
 --- mesa-18.2.5-orig/src/util/build_id.c	2018-11-15 15:32:30.000000000 +0300
 +++ mesa-18.2.5/src/util/build_id.c	2018-11-26 17:43:40.410165708 +0300
@@ -647,62 +636,6 @@ diff -aur mesa-18.2.5-orig/meson.build mesa-18.2.5/meson.build
  endif
  if dep_dl.found()
    gl_priv_libs += '-ldl'
-diff -aur mesa-18.2.5-orig/src/mesa/vbo/vbo.h mesa-18.2.5/src/mesa/vbo/vbo.h
---- mesa-18.2.5-orig/src/mesa/vbo/vbo.h	2018-11-15 15:32:30.000000000 +0300
-+++ mesa-18.2.5/src/mesa/vbo/vbo.h	2018-11-27 12:36:44.045238643 +0300
-@@ -42,14 +42,14 @@
- 
- struct _mesa_prim
- {
--   GLuint mode:8;    /**< GL_POINTS, GL_LINES, GL_QUAD_STRIP, etc */
--   GLuint indexed:1;
--   GLuint begin:1;
--   GLuint end:1;
--   GLuint weak:1;
--   GLuint no_current_update:1;
--   GLuint is_indirect:1;
--   GLuint pad:18;
-+   GLuint mode;    /**< GL_POINTS, GL_LINES, GL_QUAD_STRIP, etc */
-+   GLuint indexed;
-+   GLuint begin;
-+   GLuint end;
-+   GLuint weak;
-+   GLuint no_current_update;
-+   GLuint is_indirect;
-+   GLuint pad;
- 
-    GLuint start;
-    GLuint count;
-diff -aur mesa-18.2.5-orig/src/mesa/main/mtypes.h mesa-18.2.5/src/mesa/main/mtypes.h
---- mesa-18.2.5-orig/src/mesa/main/mtypes.h	2018-11-15 15:32:30.000000000 +0300
-+++ mesa-18.2.5/src/mesa/main/mtypes.h	2018-11-27 12:52:28.970719504 +0300
-@@ -1420,12 +1420,12 @@
-    GLenum16 Format;         /**< Default: GL_RGBA, but may be GL_BGRA */
-    GLboolean Enabled;       /**< Whether the array is enabled */
-    GLubyte Size;            /**< Components per element (1,2,3,4) */
--   unsigned Normalized:1;   /**< Fixed-point values are normalized when converted to floats */
--   unsigned Integer:1;      /**< Fixed-point values are not converted to floats */
--   unsigned Doubles:1;      /**< double precision values are not converted to floats */
--   unsigned _ElementSize:8; /**< Size of each element in bytes */
-+   unsigned Normalized;   /**< Fixed-point values are normalized when converted to floats */
-+   unsigned Integer;      /**< Fixed-point values are not converted to floats */
-+   unsigned Doubles;      /**< double precision values are not converted to floats */
-+   unsigned _ElementSize; /**< Size of each element in bytes */
-    /** Index into gl_vertex_array_object::BufferBinding[] array */
--   unsigned BufferBindingIndex:6;
-+   unsigned BufferBindingIndex;
- 
-    /**
-     * Derived effective buffer binding index
-@@ -1440,7 +1440,7 @@
-     * Note that _mesa_update_vao_derived_arrays is called when binding
-     * the VAO to Array._DrawVAO.
-     */
--   unsigned _EffBufferBindingIndex:6;
-+   unsigned _EffBufferBindingIndex;
-    /**
-     * Derived effective relative offset.
-     *
 diff -aur mesa-18.2.5-orig/src/mesa/state_tracker/tests/Makefile.in mesa-18.2.5/src/mesa/state_tracker/tests/Makefile.in
 --- mesa-18.2.5-orig/src/mesa/state_tracker/st_glsl_to_tgsi_private.h	2018-11-15 15:32:30.000000000 +0300
 +++ mesa-18.2.5/src/mesa/state_tracker/st_glsl_to_tgsi_private.h	2018-11-27 13:53:09.117870555 +0300
@@ -843,132 +776,48 @@ diff -aur mesa-18.2.5-orig/src/mesa/state_tracker/st_glsl_to_tgsi_temprename.cpp
  
  /* Without c++11 define the nullptr for forward-compatibility
   * and better readibility */
-@@ -218,11 +218,14 @@
+@@ -196,9 +196,9 @@
+    /* Helper constants to make the tracking code more readable. */
+    static const int write_is_conditional = -1;
+    static const int conditionality_unresolved = 0;
+-   static const int conditionality_untouched;
+-   static const int write_is_unconditional;
++static const int conditionality_untouched = 0x3FFFFFFF;
+ 
++static const int write_is_unconditional = 0x3FFFFFFF - 1;
+    /* A bit field tracking the nexting levels of if-else clauses where the
+     * temporary has (so far) been written to in the if branch, but not in the
+     * else branch.
+@@ -218,11 +218,7 @@
     bool was_written_in_current_else_scope;
  };
  
 -const int
 -temp_comp_access::conditionality_untouched = numeric_limits<int>::max();
-+static const int write_is_conditional = 0xcafe;
-+static const int write_is_unconditional = 0xdead;
-+static const int conditionality_untouched = 0xbeef;
-+//const int
-+//temp_comp_access::conditionality_untouched = numeric_limits<int>::max();
  
 -const int
 -temp_comp_access::write_is_unconditional = numeric_limits<int>::max() - 1;
-+//const int
-+//temp_comp_access::write_is_unconditional = numeric_limits<int>::max() - 1;
  
  /* Class to track the access to all components of a temporary register. */
  class temp_access {
-@@ -266,7 +269,7 @@
+@@ -266,7 +262,7 @@
     scope_nesting_depth(depth),
     scope_begin(scope_begin),
     scope_end(-1),
 -   break_loop_line(numeric_limits<int>::max()),
-+//   break_loop_line(numeric_limits<int>::max()),
++   break_loop_line(0x3FFFFFFF),
     parent_scope(parent)
  {
  }
-@@ -355,12 +358,6 @@
- 
- const prog_scope *prog_scope::enclosing_conditional() const
- {
--   if (is_conditional())
--      return this;
--
--   if (parent_scope)
--      return parent_scope->enclosing_conditional();
--
-    return nullptr;
- }
- 
-@@ -551,8 +548,8 @@
+@@ -551,7 +547,7 @@
     first_write(-1),
     last_read(-1),
     last_write(-1),
 -   first_read(numeric_limits<int>::max()),
--   conditionality_in_loop_id(conditionality_untouched),
-+//   first_read(numeric_limits<int>::max()),
-+//   conditionality_in_loop_id(conditionality_untouched),
++   first_read(0x3FFFFFFF),
+    conditionality_in_loop_id(conditionality_untouched),
     if_scope_write_flags(0),
     next_ifelse_nesting_depth(0),
-    current_unpaired_if_write_scope(nullptr),
-@@ -573,8 +570,6 @@
-    /* If the conditionality of the first write is already resolved then
-     * no further checks are required.
-     */
--   if (conditionality_in_loop_id == write_is_unconditional ||
--       conditionality_in_loop_id == write_is_conditional)
-       return;
- 
-    /* Check whether we are in a condition within a loop */
-@@ -586,8 +581,6 @@
-        * resolved as unconditional in the enclosing loop then check whether
-        * we read before write in an IF/ELSE branch.
-        */
--      if ((conditionality_in_loop_id != write_is_conditional) &&
--          (conditionality_in_loop_id != enclosing_loop->id())) {
- 
-          if (current_unpaired_if_write_scope)  {
- 
-@@ -611,9 +604,7 @@
-           * it should survive a loop. This can be signaled like if it were
-           * conditionally written.
-           */
--         conditionality_in_loop_id = write_is_conditional;
-       }
--   }
- }
- 
- void temp_comp_access::record_write(int line, prog_scope *scope)
-@@ -630,22 +621,16 @@
-        */
-       const prog_scope *conditional = scope->enclosing_conditional();
-       if (!conditional || !conditional->innermost_loop()) {
--         conditionality_in_loop_id = write_is_unconditional;
-       }
-    }
- 
-    /* The conditionality of the first write is already resolved. */
--   if (conditionality_in_loop_id == write_is_unconditional ||
--       conditionality_in_loop_id == write_is_conditional)
-       return;
- 
-    /* If the nesting depth is larger than the supported level,
-     * then we assume conditional writes.
-     */
--   if (next_ifelse_nesting_depth >= supported_ifelse_nesting_depth) {
--      conditionality_in_loop_id = write_is_conditional;
-       return;
--   }
- 
-    /* If we are in an IF/ELSE scope within a loop and the loop has not
-     * been resolved already, then record this write.
-@@ -662,7 +647,6 @@
-       /* The first write in an IF branch within a loop implies unresolved
-        * conditionality (if it was untouched or unconditional before).
-        */
--      conditionality_in_loop_id = conditionality_unresolved;
-       was_written_in_current_else_scope = false;
-       record_if_write(scope);
-    } else {
-@@ -757,13 +741,12 @@
-      /* The temporary was not written in the IF branch corresponding
-       * to this ELSE branch, hence the write is conditional.
-       */
--      conditionality_in_loop_id = write_is_conditional;
-    }
- }
- 
- bool temp_comp_access::conditional_ifelse_write_in_loop() const
- {
--   return conditionality_in_loop_id <= conditionality_unresolved;
-+   return 0;
- }
- 
- void temp_comp_access::propagate_lifetime_to_dominant_write_scope()
 diff -aur mesa-18.2.5-orig/include/drm-uapi/drm.h .mesa-18.2.5/include/drm-uapi/drm.h
 --- mesa-18.2.5-orig/include/drm-uapi/drm.h	2018-11-15 15:32:30.000000000 +0300
 +++ mesa-18.2.5/include/drm-uapi/drm.h	2018-11-27 14:33:18.038728314 +0300
@@ -981,18 +830,6 @@ diff -aur mesa-18.2.5-orig/include/drm-uapi/drm.h .mesa-18.2.5/include/drm-uapi/
  #include <sys/types.h>
  typedef int8_t   __s8;
  typedef uint8_t  __u8;
-diff -aur mesa-18.2.5-orig/src/gallium/auxiliary/tgsi/tgsi_info.h mesa-18.2.5/src/gallium/auxiliary/tgsi/tgsi_info.h
---- mesa-18.2.5-orig/src/gallium/auxiliary/tgsi/tgsi_info.h	2018-11-15 15:32:30.000000000 +0300
-+++ mesa-18.2.5/src/gallium/auxiliary/tgsi/tgsi_info.h	2018-11-27 15:06:25.497385062 +0300
-@@ -79,7 +79,7 @@
-    unsigned pre_dedent:1;
-    unsigned post_indent:1;
-    enum tgsi_output_mode output_mode:4;
--   enum tgsi_opcode opcode:10;
-+   enum tgsi_opcode opcode;
- };
- 
- const struct tgsi_opcode_info *
 diff -aur mesa-18.2.5-orig/src/gallium/auxiliary/tgsi/tgsi_ureg.h mesa-18.2.5/src/gallium/auxiliary/tgsi/tgsi_ureg.h
 --- mesa-18.2.5-orig/src/gallium/auxiliary/tgsi/tgsi_ureg.h	2018-11-15 15:32:30.000000000 +0300
 +++ mesa-18.2.5/src/gallium/auxiliary/tgsi/tgsi_ureg.h	2018-11-27 15:14:22.242543610 +0300
@@ -1062,6 +899,17 @@ diff -aur mesa-18.2.5-orig/src/gallium/auxiliary/pipe-loader/pipe_loader_drm.c m
  #include "target-helpers/drm_helper_public.h"
  #include "state_tracker/drm_driver.h"
  #include "pipe_loader_priv.h"
+@@ -45,7 +46,7 @@
+ #include "util/u_dl.h"
+ #include "util/u_debug.h"
+ 
+-#define DRM_RENDER_NODE_DEV_NAME_FORMAT "%s/renderD%d"
+-#define DRM_RENDER_NODE_MAX_NODES 63
+-#define DRM_RENDER_NODE_MIN_MINOR 128
++#define DRM_RENDER_NODE_DEV_NAME_FORMAT "/dev/card"
++#define DRM_RENDER_NODE_MAX_NODES 0
++#define DRM_RENDER_NODE_MIN_MINOR 0
+ #define DRM_RENDER_NODE_MAX_MINOR (DRM_RENDER_NODE_MIN_MINOR + DRM_RENDER_NODE_MAX_NODES)
 diff -aur mesa-18.2.5-orig/src/loader/meson.build .mesa-18.2.5/src/loader/meson.build
 --- mesa-18.2.5-orig/src/loader/meson.build	2018-11-15 15:32:30.000000000 +0300
 +++ mesa-18.2.5/src/loader/meson.build	2018-11-28 13:37:12.429213122 +0300
@@ -1139,3 +987,225 @@ diff -aur mesa-18.2.5-orig/src/gallium/auxiliary/pipe-loader/pipe_loader_sw.c me
  #include "state_tracker/drisw_api.h"
  #include "state_tracker/sw_driver.h"
  #include "state_tracker/sw_winsys.h"
+diff -aur mesa-18.2.5-orig/src/util/macros.h mesa-18.2.5/src/util/macros.h
+--- mesa-18.2.5-orig/src/util/macros.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/util/macros.h	2018-11-30 19:56:38.935477971 +0300
+@@ -63,7 +63,6 @@
+  */
+ #define STATIC_ASSERT(COND) \
+    do { \
+-      (void) sizeof(char [1 - 2*!(COND)]); \
+    } while (0)
+ 
+ 
+@@ -292,7 +291,7 @@
+  * Macro for declaring an explicit conversion operator.  Defaults to an
+  * implicit conversion if C++11 is not supported.
+  */
+-#if __cplusplus >= 201103L
++#if 0
+ #define EXPLICIT_CONVERSION explicit
+ #elif defined(__cplusplus)
+ #define EXPLICIT_CONVERSION
+--- mesa-18.2.5-orig/src/gallium/auxiliary/util/u_debug_image.c	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/gallium/auxiliary/util/u_debug_image.c	2018-12-20 15:18:14.249309336 +0300
+@@ -34,9 +34,13 @@
+ 
+ #include <stdio.h>
+ 
++#include <drivers/video/fb.h>
++#include <drivers/video/fb_overlay.h>
+ 
+-#ifdef DEBUG
+ 
++#if 1
++
++static struct fb_info *mesa_fbi;
+ /**
+  * Dump an image to .ppm file.
+  * \param format  PIPE_FORMAT_x
+@@ -261,28 +273,30 @@
+    bmih.biYPelsPerMeter = 0;
+    bmih.biClrUsed = 0;
+    bmih.biClrImportant = 0;
++   mesa_fbi = fb_lookup(0);
+ 
+-   stream = fopen(filename, "wb");
+-   if (!stream)
+-      goto error1;
+-
+-   fwrite(&bmfh, 14, 1, stream);
+-   fwrite(&bmih, 40, 1, stream);
++   printf("%dx%d, %dbpp base %p\n", mesa_fbi->var.xres, mesa_fbi->var.yres,
++		   mesa_fbi->var.bits_per_pixel, mesa_fbi->screen_base);
+ 
+    y = height;
++
++   uint16_t *base = mesa_fbi->screen_base;
++
+    while (y--) {
+       float *ptr = rgba + (stride * y * 4);
+       for (x = 0; x < width; ++x) {
++      uint16_t *ptr_d = base + (y * mesa_fbi->var.xres + x);
+          struct bmp_rgb_quad pixel;
+          pixel.rgbRed   = float_to_ubyte(ptr[x*4 + 0]);
+          pixel.rgbGreen = float_to_ubyte(ptr[x*4 + 1]);
+          pixel.rgbBlue  = float_to_ubyte(ptr[x*4 + 2]);
+          pixel.rgbAlpha = float_to_ubyte(ptr[x*4 + 3]);
+-         fwrite(&pixel, 1, 4, stream);
++
++	 pix_fmt_convert(&pixel, ptr_d, 1, RGBA8888, RGB565);
++
+       }
+    }
+ 
+-   fclose(stream);
+ error1:
+    ;
+ }
+--- mesa-18.2.5-orig/src/gallium/auxiliary/util/u_debug_image.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/gallium/auxiliary/util/u_debug_image.h	2018-12-20 13:48:41.819002990 +0300
+@@ -32,7 +32,7 @@
+ #include "pipe/p_format.h"
+ 
+ 
+-#ifdef DEBUG
++#if 1
+ struct pipe_context;
+ struct pipe_surface;
+ struct pipe_transfer;
+--- mesa-18.2.5-orig/include/c11/threads.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/include/c11/threads.h	2018-12-19 17:06:36.701749715 +0300
+@@ -60,13 +60,7 @@
+ 
+ /*-------------------------- functions --------------------------*/
+ 
+-#if defined(_WIN32) && !defined(__CYGWIN__)
+-#include "threads_win32.h"
+-#elif defined(HAVE_PTHREAD)
+ #include "threads_posix.h"
+-#else
+-#error Not supported on this platform.
+-#endif
+ 
+ 
+ 
+--- mesa-18.2.5-orig/src/gallium/targets/osmesa/target.c	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/gallium/targets/osmesa/target.c	2018-12-19 17:00:49.457393698 +0300
+@@ -25,15 +25,27 @@
+ #include "target-helpers/inline_debug_helper.h"
+ 
+ #include "sw/null/null_sw_winsys.h"
+-
++#include <renderonly/renderonly.h>
+ 
+ struct pipe_screen *
+ osmesa_create_screen(void);
+ 
++static struct renderonly ro;
+ 
+ struct pipe_screen *
+ osmesa_create_screen(void)
+ {
++	struct etna_gpu *gpu;
++	int fd = open("/dev/card", 0);
++	struct etna_device *dev = etna_device_new(fd);
++	gpu = etna_gpu_new(dev, 0);
++	ro.gpu_fd = fd;
++	struct pipe_screen *ret = etna_screen_create(dev, gpu, &ro);
++
++	printf("\nCreated screen successfully!\n");
++
++	return ret;
++#if 0
+    struct sw_winsys *winsys;
+    struct pipe_screen *screen;
+ 
+@@ -53,4 +65,5 @@
+ 
+    /* Inject optional trace, debug, etc. wrappers */
+    return debug_screen_wrap(screen);
++#endif
+ }
+--- mesa-18.2.5-orig/src/gallium/auxiliary/util/u_debug.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/gallium/auxiliary/util/u_debug.h	2018-12-24 19:12:29.322450151 +0300
+@@ -193,10 +193,10 @@
+ 
+ 
+ /** Override standard assert macro */
+-#ifdef assert
+-#undef assert
+-#endif
+-#define assert(expr) debug_assert(expr)
++//#ifdef assert
++//#undef assert
++//#endif
++//#define assert(expr) debug_assert(expr)
+ 
+ 
+ /**
+--- mesa-18.2.5-orig/src/mesa/program/prog_parameter.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/mesa/program/prog_parameter.h	2018-12-25 12:19:34.877720656 +0300
+@@ -68,7 +68,8 @@
+    PROGRAM_MEMORY,      /**< for shared, global and local memory */
+    PROGRAM_IMAGE,       /**< for shader images, compile-time only */
+    PROGRAM_HW_ATOMIC,   /**< for hw atomic counters, compile-time only */
+-   PROGRAM_FILE_MAX
++   PROGRAM_FILE_MAX,
++   PROGRAM_STUB = (1 << 16) - 1,
+ } gl_register_file;
+ 
+ 
+--- mesa-18.2.5-orig/src/gallium/auxiliary/tgsi/tgsi_info.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/gallium/auxiliary/tgsi/tgsi_info.h	2018-12-25 12:28:49.120789700 +0300
+@@ -66,7 +66,8 @@
+    /**
+     * Example: TGSI_OPCODE_TEX
+     */
+-   TGSI_OUTPUT_OTHER           = 4
++   TGSI_OUTPUT_OTHER           = 4,
++   TGSI_BOUND                  = (1 << 10) - 1,
+ };
+ 
+ struct tgsi_opcode_info
+--- mesa-18.2.5-orig/src/gallium/include/pipe/p_shader_tokens.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/gallium/include/pipe/p_shader_tokens.h	2018-12-25 12:35:44.118699419 +0300
+@@ -613,6 +613,7 @@
+    TGSI_OPCODE_LOD                = 249,
+ 
+    TGSI_OPCODE_LAST               = 250,
++   TGSI_OPCODE_BOUND              = (1 << 10) - 1,
+ };
+ 
+ 
+diff -aur mesa-18.2.5-orig/include/EGL/eglplatform.h mesa-18.2.5/include/EGL/eglplatform.h
+--- mesa-18.2.5-orig/include/EGL/eglplatform.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/include/EGL/eglplatform.h	2019-02-18 12:36:19.358953030 +0300
+@@ -77,7 +77,7 @@
+ typedef HBITMAP EGLNativePixmapType;
+ typedef HWND    EGLNativeWindowType;
+ 
+-#elif defined(__WINSCW__) || defined(__SYMBIAN32__)  /* Symbian */
++#elif defined(__WINSCW__) || defined(__SYMBIAN32__)  /* Symbian */ || defined(__EMBOX__)
+ 
+ typedef int   EGLNativeDisplayType;
+ typedef void *EGLNativeWindowType;
+diff -aur -x configure mesa-18.2.5-orig/include/c99_math.h mesa-18.2.5/include/c99_math.h
+--- mesa-18.2.5-orig/include/c99_math.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/include/c99_math.h	2019-02-25 19:24:54.368694957 +0300
+@@ -184,7 +184,7 @@
+ #error "Need to include or define an fpclassify function"
+ #endif
+ 
+-
++#ifdef __cplusplus
+ /* Since C++11, the following functions are part of the std namespace. Their C
+  * counteparts should still exist in the global namespace, however cmath
+  * undefines those functions, which in glibc 2.23, are defined as macros rather
+@@ -207,5 +207,6 @@
+ using std::isunordered;
+ #endif
+ 
++#endif /* #ifdef __cplusplus */
+ 
+ #endif /* #define _C99_MATH_H_ */
