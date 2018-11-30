@@ -14,7 +14,7 @@ proc vfat_setup {} {
 
 TEST_SETUP_TARGET {vfat_setup}
 
-TEST_CASE {vfat test} {
+TEST_CASE_TARGET {vfat test} {
 	test_assert_regexp_equal "mkfs -t vfat /dev/hda\r"             ":/#"
 
 	test_assert_regexp_equal "mount -t vfat /dev/hda /vfat_mnt\r"  ":/#"

@@ -12,7 +12,9 @@ namespace import autotest::*
 
 set host_date ""
 
-proc get_host_date {} {
+TEST_SUITE_SETUP
+
+TEST_SETUP_HOST {
 	global host_date
 	# Get current host's date in the format same as in Embox (e.g. 2014-01-05).
 	spawn date -u --rfc-3339=date
@@ -23,19 +25,12 @@ proc get_host_date {} {
 	set host_date $expect_out(0,string)
 }
 
-TEST_SETUP_HOST {get_host_date}
-
-TEST_CASE {ntpdate test} {
+TEST_CASE_TARGET {ntpdate test} {
 	variable host_ip
 	global host_date
 
 	send "ntpdate $host_ip\r"
-	expect "ntpdate"
-	expect {
-	        timeout  { puts "ntpdate.exp: timeout\n"; exit 1 }
-	        -regexp "ntpdate:.*" { puts "$expect_out(buffer)\n"; exit 1 }
-	        ":/#"
-	}
+	test_assert_regexp_equal ":/#"
 
 	# And compare the host date with the Embox's one.
 	# XXX: compare the both times too, not only dates

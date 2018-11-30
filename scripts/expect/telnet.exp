@@ -7,7 +7,7 @@ namespace import autotest::*
 TEST_CASE {execute "help" command through telnet} {
 	set TELNET_PROMPT ":/#"
 
-	test_assert_regexp_equal "help\r\n"    $TELNET_PROMPT
+	test_assert_regexp_equal "help\r"    $TELNET_PROMPT
 
 	return 0
 }

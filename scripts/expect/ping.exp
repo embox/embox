@@ -4,10 +4,20 @@ source [file join [file dirname [info script]] framework/test_core.exp]
 
 namespace import autotest::*
 
-TEST_CASE {ping can send 1 packet without errors} {
+TEST_CASE_TARGET {Embox should ping host} {
 	variable host_ip
 
-	test_assert_regexp_equal "ping -c 1 $host_ip\r\n" "+0 errors"
+	send "ping -c 4 $host_ip\r"
+	test_assert_regexp_equal "0 errors"
+
+	return 0
+}
+
+TEST_CASE_TARGET {Embox should ping google.com} {
+	variable host_ip
+
+	send "ping -c 4 google.com\r"
+	test_assert_regexp_equal "0 errors"
 
 	return 0
 }
