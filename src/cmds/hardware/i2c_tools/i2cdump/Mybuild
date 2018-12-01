@@ -1,0 +1,23 @@
+package embox.cmd.i2c_tools
+
+@AutoCmd
+@Cmd(name = "i2cdump",
+	help = "examine I2C registers ",
+	man = '''
+		NAME
+			i2cdump - examine I2C registers 
+		SYNOPSIS
+			i2cdump [-r first-last] [-y] i2cbus address [mode] 
+		DESCRIPTION
+			i2cdump is a small helper program to examine registers visible through the I2C bus. 
+		OPTIONS
+			-r first-last
+				This option is only available with modes b, w, c and W. For mode W, first must be even and last must be odd.
+			-y Disable interactive mode
+			-h print help
+		AUTHOR
+			Anton Bondarev
+	''')
+module i2cdump {
+	source "i2cdump.c"
+}
