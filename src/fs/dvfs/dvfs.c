@@ -232,7 +232,7 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 	inode = desc->f_inode;
 	assert(inode);
 
-	if (inode->length - desc->pos < count) {
+	if (inode->length - desc->pos < count && !(inode->flags & DVFS_NO_LSEEK)) {
 		if (inode->i_ops && inode->i_ops->truncate) {
 			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
 			if (res)

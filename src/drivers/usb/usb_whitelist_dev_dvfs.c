@@ -318,22 +318,4 @@ static struct idesc_ops usb_whitelist_iops = {
 	.close = usb_whitelist_close,
 };
 
-static struct idesc *usb_whitelist_open(struct inode *node, struct idesc *idesc) {
-	struct file *file;
-	file = dvfs_alloc_file();
-	if (!file) {
-		return err_ptr(ENOMEM);
-	}
-	*file = (struct file) {
-		.f_idesc  = {
-				.idesc_ops   = &usb_whitelist_iops,
-		},
-	};
-	return &file->f_idesc;
-}
-
-static struct file_operations usb_whitelist_fops = {
-	.open  = usb_whitelist_open,
-};
-
-CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, &usb_whitelist_fops, &usb_whitelist_iops, NULL);
+CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, &usb_whitelist_iops, NULL, NULL);

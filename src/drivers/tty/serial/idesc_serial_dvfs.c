@@ -28,8 +28,7 @@
 #define idesc_to_uart(desc) \
 	(((struct  tty_uart*)desc)->uart)
 
-static const struct idesc_ops idesc_serial_ops;
-
+extern const struct idesc_ops idesc_serial_ops;
 
 POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 
@@ -186,11 +185,11 @@ static int serial_fstat(struct idesc *data, void *buff) {
 
 }
 
-static const struct idesc_ops idesc_serial_ops = {
-		.id_readv = serial_read,
-		.id_writev = serial_write,
-		.ioctl = serial_ioctl,
-		.close = serial_close,
-		.status = serial_status,
-		.fstat = serial_fstat,
+const struct idesc_ops idesc_serial_ops = {
+	.id_readv = serial_read,
+	.id_writev = serial_write,
+	.ioctl = serial_ioctl,
+	.close = serial_close,
+	.status = serial_status,
+	.fstat = serial_fstat,
 };

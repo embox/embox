@@ -29,7 +29,7 @@ INDEX_DEF(block_dev_idx, 0, MAX_DEV_QUANTITY);
 
 static struct block_dev *devtab[MAX_DEV_QUANTITY];
 
-struct block_dev **get_bdev_tab() {
+struct block_dev **get_bdev_tab(void) {
 	return &devtab[0];
 }
 

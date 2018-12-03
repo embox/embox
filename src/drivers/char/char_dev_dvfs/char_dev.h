@@ -9,25 +9,45 @@
 #ifndef CHAR_DEV_DVFS_H_
 #define CHAR_DEV_DVFS_H_
 
-#include <util/dlist.h>
+#include <drivers/device.h>
+#include <fs/dvfs.h>
 #include <util/array.h>
+#include <util/dlist.h>
+#include <util/macro.h>
+#include <util/member.h>
 
-struct file_operations;
+extern struct file_operations char_dev_fops;
 
-struct device_module {
-	struct file_operations *fops;
-	struct idesc_ops *idesc_ops;
-	const char *name;
-	void *dev_data;
-	struct dlist_head cdev_list;
-};
+#define CHAR_DEV_DEF(chname, idesc_op, open_fn, priv) \
+	static struct dev_operations MACRO_GUARD(dev_ops) = { \
+		.open = open_fn, \
+	}; \
+	static struct device MACRO_GUARD(ch_ops) = { \
+		.dev_dops = &MACRO_GUARD(dev_ops), \
+		.dev_iops = idesc_op, \
+	}; \
+	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \
+	ARRAY_SPREAD_ADD(__char_device_registry, { \
+		.dev_file = { \
+			.f_ops = &char_dev_fops, \
+			.f_idesc = { \
+				.idesc_ops = idesc_op, \
+			}, \
+		}, \
+		.dev_id   = STATIC_DEVMOD_ID, \
+		.device   = &MACRO_GUARD(ch_ops), \
+		.name     = chname, \
+		.dev_priv = priv, \
+	})
 
-#define CHAR_DEV_DEF(name, file_op, idesc_op, priv) \
-	ARRAY_SPREAD_DECLARE(const struct device_module, __char_device_registry); \
-	ARRAY_SPREAD_ADD(__char_device_registry, {file_op, idesc_op, name, priv} )
+extern int char_dev_register(struct dev_module *cdev);
 
-extern int char_dev_register(struct device_module *cdev);
+static inline struct dev_module *idesc_to_dev_module(struct idesc *desc) {
+	struct file *f = mcast_out(desc, struct file, f_idesc);
 
-extern struct dlist_head cdev_repo_list;
+	return mcast_out(f, struct dev_module, dev_file);
+}
+
+extern int char_dev_idesc_fstat(struct idesc *idesc, void *buff);
 
 #endif /* CHAR_DEV_DVFS_H_ */

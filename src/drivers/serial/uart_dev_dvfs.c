@@ -16,6 +16,7 @@
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 
+#include <drivers/device.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
 
@@ -114,8 +115,7 @@ int uart_get_params(struct uart *uart, struct uart_params *params) {
 
 INDEX_DEF(serial_indexator, 0, UART_MAX_N);
 
-POOL_DEF(cdev_serials_pool, struct device_module, 1);
-
+POOL_DEF(uart_pool, struct dev_module, UART_MAX_N);
 
 static int uart_fill_name(struct uart *dev) {
 
@@ -129,19 +129,24 @@ static int uart_fill_name(struct uart *dev) {
 	return 0;
 }
 
+extern const struct idesc_ops idesc_serial_ops;
+static struct device tty_device = {
+	.dev_iops = &idesc_serial_ops,
+};
+
+extern struct file_operations ttys_fops;
 
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
-	extern const struct file_operations ttys_fops;
-	struct device_module *cdev;
+	struct dev_module *cdev;
 
-	cdev = pool_alloc(&cdev_serials_pool);
+	cdev = pool_alloc(&uart_pool);
 	if (!cdev) {
 		return -ENOMEM;
 	}
 
 	if (uart_fill_name(uart)) {
-		pool_free(&cdev_serials_pool, cdev);
+		pool_free(&uart_pool, cdev);
 		return -EBUSY;
 	}
 
@@ -152,10 +157,10 @@ int uart_register(struct uart *uart,
 	}
 
 	memset(cdev, 0, sizeof(*cdev));
-	cdev->name = uart->dev_name;
-	cdev->fops = (struct file_operations*)&ttys_fops;
-	cdev->dev_data = uart;
-
+	memcpy(cdev->name, uart->dev_name, sizeof(uart->dev_name));
+	cdev->dev_priv = uart;
+	cdev->device = &tty_device;
+	cdev->dev_file.f_ops = &ttys_fops;
 	char_dev_register(cdev);
 
 	return 0;

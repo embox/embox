@@ -20,6 +20,7 @@
 #define MAX_DEV_MODULE_COUNT \
 	OPTION_MODULE_GET(embox__driver__common, NUMBER, max_dev_module_count)
 
+#define STATIC_DEVMOD_ID -1
 
 struct device;
 struct dev_module;
@@ -29,11 +30,12 @@ struct file;
 struct idesc_ops;
 
 struct device {
-	struct dev_operations *dev_dops;
-	struct idesc_ops *dev_iops;
+	const struct dev_operations *dev_dops;
+	const struct idesc_ops *dev_iops;
 };
 
 struct dev_operations {
+	int  (*open)   (struct dev_module *mod, void *dev_priv);
 	int  (*probe)  (struct dev_module *mod, void *dev_priv);
 	void (*remove) (struct dev_module *mod);
 };
