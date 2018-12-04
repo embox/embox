@@ -1,0 +1,42 @@
+package embox.cmd.i2c_tools
+
+@AutoCmd
+@Cmd(name = "i2cget",
+	help = "read from I2C/SMBus chip registers ",
+	man = '''
+		NAME
+			i2cget - read from I2C/SMBus chip registers
+		SYNOPSIS
+			i2cget [-y] i2cbus chip-address [data-address [mode]]
+		DESCRIPTION
+			i2cget is a small helper program to read registers visible through
+			 the I2C bus (or SMBus). 
+		OPTIONS
+			-y Disable interactive mode
+			-h print help
+			
+			There are two required options to i2cget. i2cbus indicates the
+			number or name of the I2C bus to be scanned. This number should 
+			correspond to one of the busses listed by i2cdetect -l.
+			chip-address specifies the address of the chip on that bus, and is
+			an integer between 0x03 and 0x77.
+			 
+			data-address specifies the address on that chip to read from, and 
+			is an integer between 0x00 and 0xFF. If omitted, the currently 
+			active register will be read (if that makes sense for the 
+			considered chip).
+
+			The mode parameter, if specified, is one of the letters b, w or c,
+			corresponding to a read byte data, a read 16-bit word data or a 
+			write byte/read byte transaction, respectively.
+		EXAMPLE
+			Read a single byte from I2C device at 7-bit address 0x24 on bus 2
+			# i2cget -y 2 0x24
+			Read a 16-bit word from I2C device at 7-bit address 0x24 on bus 2
+			# i2cget -y 2 0x24 w
+		AUTHOR
+			Anton Bondarev
+	''')
+module i2cget {
+	source "i2cget.c"
+}
