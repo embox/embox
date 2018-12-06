@@ -24,6 +24,11 @@ static module core {
 	source "strtoull.c"
 	source "atol.c"
 	source "itoa.c"
+	source "mbtowc.c"
+	source "wctomb.c"
+	source "wcstombs.c"
+	source "mbstowcs.c"
+	source "mblen.c"
 
 	depends config
 	@NoRuntime depends rand /* qsort required*/
