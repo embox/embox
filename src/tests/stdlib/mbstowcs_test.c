@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Test unit for stdlib/mbtowc.
+ * @brief Test unit for stdlib/mbstowcs.
  *
  * @date Nov 16, 2018
  * @author Chubukov Filipp
