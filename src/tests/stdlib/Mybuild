@@ -12,6 +12,18 @@ module bsearch_test {
 	depends embox.framework.LibFramework
 }
 
+module mbstowcs_test {
+	source "mbstowcs_test.c"
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+module wcstombs_test {
+	source "wcstombs_test.c"
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+
+
 module qsort_test {
 	source "qsort_test.c"
 
