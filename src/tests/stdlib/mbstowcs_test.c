@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 
-EMBOX_TEST_SUITE("stdlib/mbtowc_test");
+EMBOX_TEST_SUITE("stdlib/mbstowcs_test");
 
 TEST_CASE("compare ABC") {
 	int length = 0;
