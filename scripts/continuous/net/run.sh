@@ -22,7 +22,7 @@ test_case_target_should_reply_to_ping() {
 	test_retcode
 }
 
-disabled_test_case_target_should_reply_to_big_ping() {
+test_case_target_should_reply_to_big_ping() {
 	ping $EMBOX_IP -c 4 -s 16384
 	test_retcode
 }
@@ -49,12 +49,18 @@ test_case_snmp_should_reply() {
 	test_retcode
 }
 
-disabled_test_case_interactive_tests_should_success() {
+test_case_interactive_tests_should_success() {
 	sudo killall in.rlogind
-	expect $EXPECT_TESTS_BASE/framework/run_all.exp
+
+	expect $EXPECT_TESTS_BASE/framework/run_all.exp \
+		$EXPECT_TESTS_BASE/x86_net_tests.config 10.0.2.16 10.0.2.10 ""
+
 	test_retcode
 
-	cat testrun.log
+	# This file contains thw full log, which can be relatively large, so we do not
+	# print it to standard output.
+	#
+	# cat testrun.log
 }
 
 #test_case_ftp_should_be_able_to_upload_a_file() {
@@ -143,7 +149,7 @@ fi
 
 tap_down
 
-test_begin
+test_begin "ping forwarding test suite"
 	$TEST_PING_FORWARING_SCRIPT
 	test_retcode
 test_end

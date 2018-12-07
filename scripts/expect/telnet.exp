@@ -4,10 +4,44 @@ source [file join [file dirname [info script]] framework/test_core.exp]
 
 namespace import autotest::*
 
-TEST_CASE {execute "help" command through telnet} {
+TEST_SUITE_SETUP
+
+TEST_CASE_TARGET {Execute "help" command once} {
 	set TELNET_PROMPT ":/#"
 
-	test_assert_regexp_equal "help\r\n"    $TELNET_PROMPT
+	send "help\r"
+	test_assert_regexp_equal "Available commands" $TELNET_PROMPT
 
 	return 0
+}
+
+TEST_CASE_TARGET {Execute "help" multiple times} {
+	set TELNET_PROMPT ":/#"
+
+	for {set i 0} {$i < 128} {incr i} {
+		send "help\r"
+		test_assert_regexp_equal "Available commands" $TELNET_PROMPT
+		exec sleep 0.1
+	}
+
+	return 0
+}
+
+if {0} {
+TEST_CASE_HOST {Connect and exit several times telnet} {
+	variable embox_ip
+	set TELNET_PROMPT ":/#"
+
+	for {set i 0} {$i < 32} {incr i} {
+		exec sleep 0.5
+		puts "\nCONNECT iter=$i"
+
+		spawn telnet $embox_ip
+		test_assert_regexp_equal $TELNET_PROMPT
+		send "exit\r"
+		test_assert_regexp_equal "Connection closed by foreign host"
+	}
+
+	return 0
+}
 }

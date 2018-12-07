@@ -16,7 +16,7 @@ set host_passwd "rlogin"
 # !!! FIXME: This test does not work with Embox because on Embox we could not
 # run rlogin through telnet. Seems it is happened because telnet pass the
 # all received data into shell but not into rlogin client
-TEST_CASE {rlogin test} {
+TEST_CASE_TARGET {rlogin test} {
 	variable host_ip
 	global host_username
 	global host_passwd

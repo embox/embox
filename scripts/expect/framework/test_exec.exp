@@ -1,45 +1,42 @@
-set timeout 10
-
-proc ::autotest::test_exec {test_name test_body} {
+proc ::autotest::telnet_connect {} {
+	# https://stackoverflow.com/questions/30532532/expect-fails-when-running-proc-inside-proc
 	global spawn_id
 	variable embox_ip
-	variable setup_target_proc
-	variable teardown_target_proc
 
-	proc telnet_connect {} {
-		# The piece of embox's prompt
-		set TELNET_PROMPT ":/#"
-		expect {
-			timeout { puts "telnet.exp: connection timeout\n"; return -1 }
-			$TELNET_PROMPT
-		}
+	spawn telnet $embox_ip
+
+	# The piece of embox's prompt
+	set TELNET_PROMPT ":/#"
+	expect {
+		timeout { puts "\ntelnet: connection timeout\n"; exit 1 }
+		-re "$TELNET_PROMPT" { }
+	}
+	return 0
+}
+
+proc ::autotest::telnet_disconnect {} {
+	send "exit\r"
+	expect "Connection closed by foreign host"
+	return 0
+}
+
+proc ::autotest::test_exec {mode test_name test_body} {
+	# https://stackoverflow.com/questions/30532532/expect-fails-when-running-proc-inside-proc
+	global spawn_id
+
+	if {$test_body == ""} {
 		return 0
 	}
 
-	sleep 1
+	if {$mode == "target"} { telnet_connect }
 
-	spawn telnet $embox_ip
-	set res [telnet_connect]
+	set res [eval $test_body]
 	if {$res != 0} {
-		fail $test_name
-		exit 1
+		if {$mode == "target"} { telnet_disconnect }
+		return -1
 	}
 
-	if {$test_body != ""} {
-		if { $setup_target_proc != "" && [catch {eval $setup_target_proc}] } {
-			puts "error: incorrect setup_target_proc name - $setup_target_proc"
-			exit 1
-		}
+	if {$mode == "target"} { telnet_disconnect }
 
-		set res [eval $test_body]
-		if {$res != 0} {
-			exit 1
-		}
-
-		if { $teardown_target_proc != "" && [catch {eval $teardown_target_proc}] } {
-			puts "error: incorrect teardown_target_proc name - $teardown_target_proc"
-			exit 1
-		}
-	}
 	return 0
 }
