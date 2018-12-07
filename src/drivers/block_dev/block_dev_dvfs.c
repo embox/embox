@@ -57,8 +57,9 @@ struct block_dev *block_dev_create(const char *path, void *driver, void *privdat
 	if (NULL == (bdev = block_dev_create_common(dvfs_last_link(path), driver, privdata)))
 		return NULL;
 
-	bdev->dev_ops = &bdev_dev_ops;
 	devmod = dev_module_create(&block_device, dvfs_last_link(path), bdev);
+	bdev->dev_ops = &bdev_dev_ops;
+	devmod->dev_file.f_ops = &bdev_dev_ops;
 	bdev->dev_module = devmod;
 
 	return bdev;

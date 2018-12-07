@@ -4,11 +4,11 @@ module imx6_ecspi {
 	option number base_addr
 	option number log_level = 0
 
-	@IncludeExport(path="drivers/spi")
-	source "imx6_ecspi.h"
+	option number bus_id = 0
 
 	source "imx6_ecspi.c"
 
+	depends core
 	depends embox.driver.gpio.api
 	depends embox.driver.periph_memory
 }

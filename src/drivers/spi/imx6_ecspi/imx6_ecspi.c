@@ -8,7 +8,7 @@
 
 #include <drivers/common/memory.h>
 #include <drivers/gpio.h>
-#include <drivers/spi/imx6_ecspi.h>
+#include <drivers/spi.h>
 #include <embox/unit.h>
 #include <errno.h>
 #include <framework/mod/options.h>
@@ -16,6 +16,7 @@
 #include <util/log.h>
 
 #define BASE_ADDR OPTION_GET(NUMBER, base_addr)
+#define BUS_ID OPTION_GET(NUMBER, bus_id)
 
 #define ECSPI_RXDATA                      (BASE_ADDR + 0x00)
 #define ECSPI_TXDATA                      (BASE_ADDR + 0x04)
@@ -105,39 +106,46 @@ static uint8_t imx6_ecspi_transfer_byte(uint8_t val) {
 	return REG32_LOAD(ECSPI_RXDATA);
 }
 
-int imx6_ecspi_select(int bus, int cs) {
-	if (bus != 0) {
-		log_error("Only bus 0 is supported!\n");
-		return -ENOSUPP;
-	}
-
+static int imx6_ecspi_select(struct spi_device *dev, int cs) {
 	if (cs < 0 || cs > 3) {
 		log_error("Only cs=0..3 are avalable!");
 		return -EINVAL;
 	}
 
-	_ecspi_bus = bus;
 	_ecspi_cs = cs;
 
 	return 0;
 }
 
-int imx6_ecspi_transfer(uint8_t *inbuf, uint8_t *outbuf, int count, int flags) {
+static int imx6_ecspi_transfer(struct spi_device *dev, uint8_t *inbuf,
+		uint8_t *outbuf, int count) {
 	int cs = _ecspi_cs;
 	uint8_t val;
 
-	if (flags & SPI_CS_ACTIVE)
+	if (dev->flags & SPI_CS_ACTIVE) {
 		imx6_ecspi_set_cs(cs, 1);
+	}
 
 	while (count--) {
 		val = inbuf ? *inbuf++ : 0;
+		log_debug("tx %02x", val);
 		val = imx6_ecspi_transfer_byte(val);
+
+		log_debug("rx %02x", val);
 		if (outbuf)
 			*outbuf++ = val;
 	}
 
-	if (flags & SPI_CS_INACTIVE)
+	if (dev->flags & SPI_CS_INACTIVE) {
 		imx6_ecspi_set_cs(cs, 0);
+	}
 
 	return 0;
 }
+
+static struct spi_ops imx6_ecspi_ops = {
+	.select   = imx6_ecspi_select,
+	.transfer = imx6_ecspi_transfer
+};
+
+SPI_DEV_DEF("imx6_ecspi", &imx6_ecspi_ops, NULL, BUS_ID);

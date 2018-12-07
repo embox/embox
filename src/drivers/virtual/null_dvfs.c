@@ -17,27 +17,7 @@
 
 #define NULL_DEV_NAME "null"
 
-/* forward declaration */
-static struct idesc_ops idesc_cdev_null_ops;
-static struct file_operations null_ops;
-
-static struct idesc *null_open(struct inode *node, struct idesc *idesc) {
-	struct file *file;
-
-	file = dvfs_alloc_file();
-	if (!file) {
-		return err_ptr(ENOMEM);
-	}
-	*file = (struct file) {
-		.f_idesc  = {
-				.idesc_ops   = &idesc_cdev_null_ops,
-		},
-	};
-	return &file->f_idesc;
-}
-
 static void null_close(struct idesc *desc) {
-	dvfs_destroy_file((struct file *)desc);
 }
 
 static ssize_t null_write(struct idesc *desc, const struct iovec *iov, int cnt) {
@@ -56,14 +36,11 @@ static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return 0;
 }
 
-static struct file_operations null_ops = {
-		.open = null_open,
-};
-
 static struct idesc_ops idesc_cdev_null_ops = {
 	.close = null_close,
 	.id_readv = null_read,
 	.id_writev = null_write,
+	.fstat     = char_dev_idesc_fstat,
 };
 
-CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, &idesc_cdev_null_ops, NULL);
+CHAR_DEV_DEF(NULL_DEV_NAME, &idesc_cdev_null_ops, NULL, NULL);

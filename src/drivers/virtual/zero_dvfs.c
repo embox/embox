@@ -18,26 +18,7 @@
 
 #define ZERO_DEV_NAME "zero"
 
-/* forward declaration */
-static struct file_operations zero_ops;
-static struct idesc_ops idesc_cdev_zero_ops;
-
-static struct idesc *zero_open(struct inode *node, struct idesc *idesc) {
-	struct file *file;
-	file = dvfs_alloc_file();
-	if (!file) {
-		return err_ptr(ENOMEM);
-	}
-	*file = (struct file) {
-		.f_idesc  = {
-				.idesc_ops   = &idesc_cdev_zero_ops,
-		},
-	};
-	return &file->f_idesc;
-}
-
 static void zero_close(struct idesc *desc) {
-	dvfs_destroy_file((struct file *)desc);
 }
 
 static ssize_t zero_read(struct idesc *desc, const struct iovec *iov, int cnt) {
@@ -68,14 +49,11 @@ static ssize_t zero_write(struct idesc *desc, const struct iovec *iov, int cnt) 
 	return ret_size;
 }
 
-static struct file_operations zero_ops = {
-		.open = zero_open,
-};
-
 static struct idesc_ops idesc_cdev_zero_ops = {
-	.close = zero_close,
+	.close     = zero_close,
 	.id_readv  = zero_read,
 	.id_writev = zero_write,
+	.fstat     = char_dev_idesc_fstat,
 };
 
-CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_ops, &idesc_cdev_zero_ops, NULL);
+CHAR_DEV_DEF(ZERO_DEV_NAME, &idesc_cdev_zero_ops, NULL, NULL);

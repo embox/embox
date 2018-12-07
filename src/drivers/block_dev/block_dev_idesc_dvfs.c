@@ -138,11 +138,9 @@ struct idesc_ops idesc_bdev_ops = {
 
 static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
 	/* Assume node belongs to /devfs/ */
-	struct dev_module *devmod = ((struct block_dev *)node->i_data)->dev_module;
+	struct dev_module *devmod = node->i_data;
 
 	devmod->dev_file.f_inode = node;
-	devmod->dev_file.f_dentry = NULL;
-	devmod->dev_file.f_ops = NULL;
 	devmod->dev_file.pos = 0;
 	devmod->dev_file.f_idesc.idesc_ops = &idesc_bdev_ops;
 

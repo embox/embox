@@ -28,6 +28,7 @@
 #define DVFS_DIR_VIRTUAL   0x01000000
 #define DVFS_CHILD_VIRTUAL 0x02000000
 #define DVFS_MOUNT_POINT   0x04000000
+#define DVFS_NO_LSEEK      0x08000000
 
 #define FILE_TYPE(flags, ftype) ((((flags) & S_IFMT) == (ftype)) ? (ftype) : 0)
 
