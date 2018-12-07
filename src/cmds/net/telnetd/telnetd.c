@@ -23,7 +23,6 @@
 
 #include <util/math.h>
 
-
 #define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
 
 /* Telnetd address bind to */
@@ -132,7 +131,7 @@ static int utmp_login(short ut_type, const char *host) {
 
 	return 0;
 }
-#include <kernel/printk.h>
+
 static void *shell_hnd(void* args) {
 	int ret;
 	int *msg = (int*)args;
@@ -169,7 +168,7 @@ static void *shell_hnd(void* args) {
 	}
 	ret = system("tish");
 	if (ret != 0) {
-		printk("system return error: %d\n", ret);
+		printf("system return error: %d\n", ret);
 		_exit(ret);
 	}
 
@@ -182,6 +181,9 @@ static void *shell_hnd(void* args) {
 	return NULL;
 }
 
+/* Here we delete '\0' symbols from *buf:
+   abc\r\0de\r\0
+   abc\rde\r*/
 static int telnet_fix_crnul(unsigned char *buf, int len) {
 	unsigned char *bpi = buf, *bpo = buf;
 	while (bpi < buf + len) {
@@ -331,6 +333,12 @@ static void *telnetd_client_handler(void* args) {
 				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
 			}
 			sock_data_len = telnet_fix_crnul(s, sock_data_len);
+
+			/* TODO: Check if there's T_IAC in s and delete it and
+					 following commands, instead of dropping whole message */
+			if (memchr(s, T_IAC, sock_data_len) != NULL)
+				sock_data_len = 0;
+
 			if (errno == ECONNREFUSED) {
 				goto out_kill;
 			}
