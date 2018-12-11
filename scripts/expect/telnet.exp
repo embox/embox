@@ -27,7 +27,7 @@ TEST_CASE_TARGET {Execute "help" multiple times} {
 	return 0
 }
 
-if {0} {
+TEST_CASE_DECLARE_FIXME {
 TEST_CASE_HOST {Connect and exit several times telnet} {
 	variable embox_ip
 	set TELNET_PROMPT ":/#"
