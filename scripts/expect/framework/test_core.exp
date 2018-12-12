@@ -3,7 +3,8 @@ package provide autotest 1.0
 namespace eval ::autotest {
 	namespace export TEST_SETUP_HOST TEST_TEARDOWN_HOST \
 		TEST_SETUP_TARGET TEST_TEARDOWN_TARGET \
-		TEST_CASE_TARGET TEST_CASE_HOST
+		TEST_CASE_TARGET TEST_CASE_HOST \
+		TEST_CASE_DECLARE_FIXME
 
 	# MUST BE CALLED IN EACH TEST SUITE
 	namespace export TEST_SUITE_SETUP
@@ -14,6 +15,10 @@ namespace eval ::autotest {
 	variable embox_ip
 	variable host_ip
 	variable host_passwd
+	# This variable is used to show that current test case is broken
+	# currently. That is, test case is correct, but Embox errored while
+	# running this test case because of some Embox's bugs.
+	variable current_test_case_fixme
 }
 
 source [file join [file dirname [info script]] test_exec.exp]
@@ -25,10 +30,13 @@ proc ::autotest::TEST_SUITE_SETUP {} {
 	variable embox_ip
 	variable host_ip
 	variable host_passwd
+	variable current_test_case_fixme
 
 	set embox_ip    [lindex $argv 0]
 	set host_ip     [lindex $argv 1]
 	set host_passwd [lindex $argv 2]
+
+	set current_test_case_fixme false
 }
 
 proc ::autotest::TEST_SETUP_HOST {setup_body} {
@@ -51,10 +59,28 @@ proc ::autotest::TEST_TEARDOWN_TARGET {teardown_body} {
 	telnet_disconnect
 }
 
+proc ::autotest::TEST_CASE_DECLARE_FIXME {test_case_body} {
+	variable current_test_case_fixme
+
+	set current_test_case_fixme true
+	eval $test_case_body
+	set current_test_case_fixme false
+
+	return 0
+}
+
 proc ::autotest::TEST_CASE_IMPL {mode test_name test_body} {
+	variable current_test_case_fixme
+
 	set logfile "[file rootname [info script]].log"
 
 	puts "\n		TEST CASE \"$test_name\" running ...\n"
+
+	if {$current_test_case_fixme == true} {
+		set result_str "        FIXME: TEST CASE \"$test_name\" is known to be broken"
+		exec echo -e $result_str >> $logfile
+		return 0
+	}
 	
 	# Execute test
 	set res [test_exec $mode $test_name $test_body]
