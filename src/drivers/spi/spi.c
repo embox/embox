@@ -131,3 +131,6 @@ int spi_select(struct spi_device *dev, int cs) {
 
 	return dev->spi_ops->select(dev, cs);
 }
+
+/* Stub */
+const struct idesc_ops spi_iops __attribute__ ((weak));

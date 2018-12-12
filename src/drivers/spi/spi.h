@@ -34,7 +34,6 @@ extern int spi_dev_id(struct spi_device *dev);
 extern int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
 extern int spi_select(struct spi_device *dev, int cs);
 
-extern struct file_operations spi_fops;
 extern const struct idesc_ops spi_iops;
 
 #define SPI_REGISTRY_SZ 4
