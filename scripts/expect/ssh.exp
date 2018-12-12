@@ -1,0 +1,65 @@
+#!/usr/bin/expect
+
+source [file join [file dirname [info script]] framework/test_core.exp]
+
+namespace import autotest::*
+
+TEST_SUITE_SETUP
+
+TEST_CASE_HOST {Connect through SSH to Embox and execute "help" once} {
+	variable embox_ip
+	set SSH_PROMPT ":/#"
+
+	spawn ssh root@$embox_ip
+	expect {
+		timeout { puts "SSH connection error" }
+		-re "password:" {
+			send "root\r"
+			exp_continue
+		}
+		-re "Are you sure you want to continue connecting" {
+			send "yes\r"
+			exp_continue
+		}
+		-re $SSH_PROMPT {}
+	}
+
+	send "help\r"
+	test_assert_regexp_equal "Available commands" $SSH_PROMPT
+
+	send "exit\r"
+	test_assert_regexp_equal "Connection to .* closed"
+
+	return 0
+}
+
+TEST_CASE_DECLARE_FIXME {
+TEST_CASE_HOST {Connect and exit several times SSH} {
+	variable embox_ip
+	set SSH_PROMPT ":/#"
+
+	for {set i 0} {$i < 32} {incr i} {
+		exec sleep 0.5
+		puts "\nCONNECT iter=$i"
+
+		spawn ssh root@$embox_ip
+		expect {
+			timeout { puts "SSH connection error" }
+			-re "password:" {
+				send "root\r"
+				exp_continue
+			}
+			-re "Are you sure you want to continue connecting" {
+				send "yes\r"
+				exp_continue
+			}
+			-re $SSH_PROMPT {}
+		}
+
+		send "exit\r"
+		test_assert_regexp_equal "Connection to .* closed"
+	}
+
+	return 0
+}
+}
