@@ -1,11 +1,5 @@
 package embox.driver.virtual
 
-module tty_device {
-	source "tty_device.c"
-
-	depends embox.driver.video.fb
-}
-
 @DefaultImpl(null_old)
 abstract module null {
 }
