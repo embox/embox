@@ -142,7 +142,7 @@ static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
 
-static struct kfile_operations ext2_fop = {
+static struct file_operations ext2_fop = {
 	.open = ext2fs_open,
 	.close = ext2fs_close,
 	.read = ext2fs_read,

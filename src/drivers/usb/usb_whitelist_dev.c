@@ -231,7 +231,7 @@ static int usb_whitelist_ioctl(struct file_desc *desc, int request, void *data) 
 	return ret;
 }
 
-static const struct kfile_operations usb_whitelist_ops = {
+static const struct file_operations usb_whitelist_ops = {
 	.open  = usb_whitelist_open,
 	.ioctl = usb_whitelist_ioctl,
 	.read  = usb_whitelist_read,

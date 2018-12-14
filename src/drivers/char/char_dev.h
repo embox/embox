@@ -9,12 +9,12 @@
 #ifndef DEVICE_H_
 #define DEVICE_H_
 
-struct kfile_operations;
+struct file_operations;
 
 typedef int (* dev_module_init_ft)(void);
 struct dev_module {
 	const char * name;
-	const struct kfile_operations *fops;
+	const struct file_operations *fops;
 	const dev_module_init_ft init;
 };
 
@@ -25,6 +25,6 @@ struct dev_module {
 
 extern int char_dev_init_all(void);
 extern int char_dev_register(const char *name,
-		const struct kfile_operations *ops);
+		const struct file_operations *ops);
 
 #endif /* DEVICE_H_ */

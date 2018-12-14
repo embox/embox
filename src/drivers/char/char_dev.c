@@ -34,7 +34,7 @@ int char_dev_init_all(void) {
 	return 0;
 }
 
-int char_dev_register(const char *name, const struct kfile_operations *ops) {
+int char_dev_register(const char *name, const struct file_operations *ops) {
 	struct path  node;
 	struct nas *dev_nas;
 

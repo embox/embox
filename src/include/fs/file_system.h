@@ -21,7 +21,7 @@ struct filesystem {
 	struct block_dev *bdev;   			/* block device, where is this file system */
 	void             *fsi;    			/* file system information (extended information) */
 
-	const struct kfile_operations *file_op;
+	const struct file_operations *file_op;
 };
 
 extern struct filesystem *filesystem_create(const char *fs_driver);

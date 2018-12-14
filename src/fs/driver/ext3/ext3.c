@@ -344,7 +344,7 @@ static int ext3fs_umount(void *dir) {
 	return res;
 }
 
-static struct kfile_operations ext3_fop = {
+static struct file_operations ext3_fop = {
 	.open = ext3fs_open,
 	.close = ext3fs_close,
 	.read = ext3fs_read,

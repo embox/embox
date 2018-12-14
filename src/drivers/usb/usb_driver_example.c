@@ -85,7 +85,7 @@ static size_t example_write(struct file_desc *desc, void *buf, size_t size) {
 
 	return size;
 }
-static struct kfile_operations example_file_ops = {
+static struct file_operations example_file_ops = {
 	.open = example_open,
 	.close = example_close,
 	.read = example_read,

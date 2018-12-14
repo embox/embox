@@ -31,7 +31,7 @@ extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
 struct file_desc *kopen(struct node *node, int flag) {
 	struct nas *nas;
 	struct file_desc *desc;
-	const struct kfile_operations *ops;
+	const struct file_operations *ops;
 	int ret;
 	struct idesc *idesc;
 
@@ -52,7 +52,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 			SET_ERRNO(ENOSUPP);
 			return NULL;
 		}
-		ops = (struct kfile_operations *) nas->fs->drv->file_op;
+		ops = (struct file_operations *) nas->fs->drv->file_op;
 	} else {
 		ops = nas->fs->file_op;
 	}

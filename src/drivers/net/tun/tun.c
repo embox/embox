@@ -98,7 +98,7 @@ static struct idesc *tun_dev_open(struct node *node,
 static int    tun_dev_close(struct file_desc *desc);
 static size_t tun_dev_read(struct file_desc *desc, void *buf, size_t size);
 static size_t tun_dev_write(struct file_desc *desc, void *buf, size_t size);
-static const struct kfile_operations tun_dev_file_ops = {
+static const struct file_operations tun_dev_file_ops = {
 	.open  = tun_dev_open,
 	.read  = tun_dev_read,
 	.write = tun_dev_write,

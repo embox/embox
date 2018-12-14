@@ -16,7 +16,7 @@
 
 /* forward declaration */
 static int null_init(void);
-static const struct kfile_operations null_ops;
+static const struct file_operations null_ops;
 
 CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, NULL, null_init);
 
@@ -32,7 +32,7 @@ static size_t null_write(struct file_desc *desc, void *buf, size_t size) {
 	return size;
 }
 
-static const struct kfile_operations null_ops = {
+static const struct file_operations null_ops = {
 		.open = null_open,
 		.close = null_close,
 		.write = null_write

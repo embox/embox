@@ -132,7 +132,7 @@ static int initfs_mount(void *dev, void *dir) {
 	return 0;
 }
 
-static struct kfile_operations initfs_fop = {
+static struct file_operations initfs_fop = {
 	.open = initfs_open,
 	.close = initfs_close,
 	.read = initfs_read,

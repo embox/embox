@@ -17,7 +17,7 @@
 
 /* forward declaration */
 static int zero_init(void);
-static const struct kfile_operations zero_ops;
+static const struct file_operations zero_ops;
 
 CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_ops, NULL, zero_init);
 
@@ -38,7 +38,7 @@ static size_t zero_write(struct file_desc *desc, void *buf, size_t size) {
 	return size;
 }
 
-static const struct kfile_operations zero_ops = {
+static const struct file_operations zero_ops = {
 		.open = zero_open,
 		.close = zero_close,
 		.read = zero_read,

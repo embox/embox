@@ -42,7 +42,7 @@ static struct idesc *uart_fsop_open(struct node *node, struct file_desc *file_de
 	return idesc;
 }
 
-const struct kfile_operations ttys_fops = {
+const struct file_operations ttys_fops = {
 	.open = uart_fsop_open,
 };
 

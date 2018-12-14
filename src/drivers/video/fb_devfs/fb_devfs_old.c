@@ -22,7 +22,7 @@
 
 struct fb_device {
 	const struct fb_ops *fb_ops;
-	const struct kfile_operations *kfile_ops;
+	const struct file_operations *kfile_ops;
 	void *map_base;
 	size_t map_size;
 };
@@ -81,7 +81,7 @@ static struct idesc * fb_device_open(struct node *node, struct file_desc *file_d
 	return &file_desc->idesc;
 }
 
-static const struct kfile_operations fb_device_ops = {
+static const struct file_operations fb_device_ops = {
 	.open = fb_device_open,
 };
 
