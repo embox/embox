@@ -19,10 +19,10 @@
 extern struct file_operations char_dev_fops;
 
 #define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
-	static struct dev_operations MACRO_GUARD(dev_ops) = { \
+	static const struct dev_operations MACRO_GUARD(dev_ops) = { \
 		.open = open_fn, \
 	}; \
-	static struct device MACRO_GUARD(ch_ops) = { \
+	static const struct device MACRO_GUARD(ch_ops) = { \
 		.dev_dops = &MACRO_GUARD(dev_ops), \
 		.dev_iops = idesc_op, \
 	}; \
@@ -35,7 +35,7 @@ extern struct file_operations char_dev_fops;
 			}, \
 		}, \
 		.dev_id   = STATIC_DEVMOD_ID, \
-		.device   = &MACRO_GUARD(ch_ops), \
+		.device   = (struct device *)&MACRO_GUARD(ch_ops), \
 		.name     = chname, \
 		.dev_priv = priv, \
 	})
