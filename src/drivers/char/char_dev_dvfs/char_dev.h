@@ -18,7 +18,7 @@
 
 extern struct file_operations char_dev_fops;
 
-#define CHAR_DEV_DEF(chname, idesc_op, open_fn, priv) \
+#define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
 	static struct dev_operations MACRO_GUARD(dev_ops) = { \
 		.open = open_fn, \
 	}; \

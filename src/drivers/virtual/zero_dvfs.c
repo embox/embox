@@ -56,4 +56,4 @@ static struct idesc_ops idesc_cdev_zero_ops = {
 	.fstat     = char_dev_idesc_fstat,
 };
 
-CHAR_DEV_DEF(ZERO_DEV_NAME, &idesc_cdev_zero_ops, NULL, NULL);
+CHAR_DEV_DEF(ZERO_DEV_NAME, NULL, &idesc_cdev_zero_ops, NULL);
