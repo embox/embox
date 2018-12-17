@@ -28,6 +28,6 @@ int char_dev_init_all(void) {
  *
  * @return Always -1
  */
-int char_dev_register(const char *name, const struct file_operations *ops) {
+int char_dev_register(const char *name, const struct file_operations *ops, const struct dev_module *dev) {
 	return -ENOSUPP;
 }

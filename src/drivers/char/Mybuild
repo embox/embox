@@ -18,6 +18,7 @@ module char_dev_old extends char_dev {
 
 	source "char_dev.c"
 
+	depends embox.driver.common
 	depends embox.fs.core
 	depends embox.fs.driver.devfs
 }

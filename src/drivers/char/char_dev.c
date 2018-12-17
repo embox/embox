@@ -14,21 +14,19 @@
 #include <fs/vfs.h>
 #include <fs/file_operation.h>
 
+#include <kernel/printk.h>
+
 #include <util/array.h>
+#include <util/err.h>
+#include <util/log.h>
 
 ARRAY_SPREAD_DEF(const struct dev_module, __device_registry);
 
 int char_dev_init_all(void) {
-	int ret;
 	const struct dev_module *dev_module;
 
 	array_spread_foreach_ptr(dev_module, __device_registry) {
-		if (dev_module->init != NULL) {
-			ret = dev_module->init();
-			if (ret != 0) {
-				return ret;
-			}
-		}
+		char_dev_register(dev_module->name, dev_module->fops, dev_module);
 	}
 
 	return 0;
@@ -47,7 +45,35 @@ int char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
 	return 0;
 }
 
-int char_dev_register(const char *name, const struct file_operations *ops) {
+static struct idesc *char_dev_open(struct node *node, struct file_desc *file_desc, int flags) {
+	struct dev_module *dev = node->nas->fi->privdata;
+	int ret;
+
+	if (!dev) {
+		log_error("Can't open char device");
+		return NULL;
+	}
+
+	dev->d_idesc = &file_desc->idesc;
+
+	if (dev->device->dev_dops->open != NULL) {
+		ret = dev->device->dev_dops->open(dev, NULL);
+		if (ret != 0) {
+			return err_ptr(ret);
+		}
+	}
+
+	file_desc->idesc.idesc_ops = dev->device->dev_iops;
+
+	return &file_desc->idesc;
+}
+
+static struct file_operations char_file_ops = {
+	.open = char_dev_open,
+};
+
+int char_dev_register(const char *name, const struct file_operations *ops,
+		const struct dev_module *dev_module) {
 	struct path  node;
 	struct nas *dev_nas;
 
@@ -70,7 +96,8 @@ int char_dev_register(const char *name, const struct file_operations *ops) {
 		return -ENOMEM;
 	}
 
-	dev_nas->fs->file_op = ops;
+	dev_nas->fs->file_op = ops ? ops : &char_file_ops;
+	node.node->nas->fi->privdata = (void *) dev_module;
 
 	return 0;
 }
