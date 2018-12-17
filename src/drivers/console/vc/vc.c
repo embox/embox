@@ -85,30 +85,20 @@ static int vc_ioctl(struct idesc *desc, int request, void *data) {
 	return tty_ioctl(&vc_vterm.tty, request, data);
 }
 
-static int vc_fstat(struct idesc *data, void *buff) {
-	struct stat *st = buff;
-
-	st->st_mode = S_IFCHR;
-
-	return 0;
-
-}
-
 static int vc_status(struct idesc *idesc, int mask) {
 
 	return tty_status(&vc_vterm.tty, mask);
 }
 
 static const struct idesc_ops idesc_vc_ops = {
-		.id_readv = vc_read,
-		.id_writev = vc_write,
-		.ioctl = vc_ioctl,
-		.close = vc_close,
-		.status = vc_status,
-		.fstat = vc_fstat,
+	.id_readv = vc_read,
+	.id_writev = vc_write,
+	.ioctl = vc_ioctl,
+	.close = vc_close,
+	.status = vc_status,
+	.fstat = char_dev_idesc_fstat,
 };
 
 static int vc_init(void) {
 	return char_dev_register("vc", &vc_file_ops);
 }
-
