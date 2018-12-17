@@ -10,6 +10,8 @@
 
 #include <fs/idesc.h>
 #include <drivers/tty.h>
+#include <drivers/char_dev.h>
+
 struct uart;
 struct tty_uart {
 	struct idesc idesc;
@@ -17,9 +19,9 @@ struct tty_uart {
 	struct uart *uart;
 };
 
-#include <drivers/char_dev.h>
+extern int ttys_open(struct dev_module *mod, void *dev_priv);
+
 #define TTYS_DEF(name, uart) \
-		extern const struct file_operations ttys_fops; \
-		CHAR_DEV_DEF(name, (struct file_operations *)&ttys_fops, NULL, uart)
+		CHAR_DEV_DEF(name, &ttys_open, NULL, uart)
 
 #endif /* TTYS_H_ */

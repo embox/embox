@@ -48,6 +48,10 @@ POOL_DEF(cdev_serials_pool, struct dev_module, SERIAL_POOL_SIZE);
 
 extern const struct idesc_ops idesc_serial_ops;
 
+int ttys_open(struct dev_module *mod, void *dev_priv) {
+	return uart_open(mod->dev_priv);
+}
+
 int ttys_register(const char *name, void *dev_info) {
 	struct dev_module *cdev;
 
