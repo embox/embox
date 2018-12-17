@@ -267,7 +267,7 @@ static int tun_init(void) {
 			goto err_netdev_free;
 		}
 
-		err = char_dev_register(tun_name, &tun_dev_file_ops);
+		err = char_dev_register(tun_name, &tun_dev_file_ops, NULL);
 		if (err != 0) {
 			goto err_inetdev_deregister;
 		}

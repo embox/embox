@@ -302,5 +302,5 @@ static int usb_whitelist_dev_init(void) {
 
 	usb_whitelist_parse_builtin(wl_conf, builtin_whitelist);
 
-	return char_dev_register(USB_WHITELIST_DEV_NAME, &usb_whitelist_ops);
+	return char_dev_register(USB_WHITELIST_DEV_NAME, &usb_whitelist_ops, NULL);
 }

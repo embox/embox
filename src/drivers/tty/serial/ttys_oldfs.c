@@ -47,5 +47,5 @@ const struct file_operations ttys_fops = {
 };
 
 int ttys_register(const char*name, void *dev_info) {
-	return char_dev_register(name, &ttys_fops);
+	return char_dev_register(name, &ttys_fops, NULL);
 }

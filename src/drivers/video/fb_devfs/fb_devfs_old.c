@@ -90,6 +90,6 @@ int fb_devfs_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
 	fb_device.map_base = map_base;
 	fb_device.map_size = map_size;
 	fb_device.kfile_ops = &fb_device_ops;
-	char_dev_register("fb0", &fb_device_ops);
+	char_dev_register("fb0", &fb_device_ops, NULL);
 	return 0;
 }
