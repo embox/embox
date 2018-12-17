@@ -18,21 +18,13 @@
 
 #include <embox/unit.h>
 
+#define VC_DEV_NAME "vc"
+
 EMBOX_UNIT_INIT(vc_init);
 
 static struct vterm vc_vterm;
 
-static struct idesc *vc_open(struct node *node, struct file_desc *file_desc, int flags);
-
-static struct file_operations vc_file_ops = {
-	.open = vc_open,
-};
-static const struct idesc_ops idesc_vc_ops;
-
-/*
- * file_operations
- */
-static struct idesc *vc_open(struct node *node, struct file_desc *desc, int flags) {
+static int vc_open(struct dev_module *mod, void *dev_priv) {
 	struct vterm_video *vc_vga;
 
 	vc_vga = vc_vga_init();
@@ -41,12 +33,9 @@ static struct idesc *vc_open(struct node *node, struct file_desc *desc, int flag
 
 	vterm_open_indev(&vc_vterm, "keyboard");
 
-	assert(desc);
+	vc_vterm.tty.idesc = mod->d_idesc;
 
-	idesc_init(&desc->idesc, &idesc_vc_ops, S_IROTH | S_IWOTH);
-	vc_vterm.tty.idesc = &desc->idesc;
-
-	return &desc->idesc;
+	return 0;
 }
 
 static void vc_close(struct idesc *desc) {
@@ -81,24 +70,32 @@ static ssize_t vc_write(struct idesc *desc,  const struct iovec *iov, int cnt) {
 }
 
 static int vc_ioctl(struct idesc *desc, int request, void *data) {
-
 	return tty_ioctl(&vc_vterm.tty, request, data);
 }
 
 static int vc_status(struct idesc *idesc, int mask) {
-
 	return tty_status(&vc_vterm.tty, mask);
 }
 
 static const struct idesc_ops idesc_vc_ops = {
-	.id_readv = vc_read,
+	.id_readv  = vc_read,
 	.id_writev = vc_write,
-	.ioctl = vc_ioctl,
-	.close = vc_close,
-	.status = vc_status,
-	.fstat = char_dev_idesc_fstat,
+	.ioctl     = vc_ioctl,
+	.close     = vc_close,
+	.status    = vc_status,
+	.fstat     = char_dev_idesc_fstat,
+};
+
+static const struct dev_module vc_dev = {
+	.name = VC_DEV_NAME,
+	.device = &(struct device) {
+		.dev_iops = &idesc_vc_ops,
+		.dev_dops = &(struct dev_operations) {
+			.open = vc_open,
+		},
+	},
 };
 
 static int vc_init(void) {
-	return char_dev_register("vc", &vc_file_ops);
+	return char_dev_register(VC_DEV_NAME, NULL, &vc_dev);
 }
