@@ -17,19 +17,10 @@ module null_dvfs extends null {
 	depends embox.fs.driver.devfs_dvfs
 }
 
-@DefaultImpl(zero_old)
-abstract module zero {
-}
-
-module zero_old extends zero {
+module zero {
 	source "zero.c"
 
 	depends embox.compat.libc.all
 	depends embox.fs.driver.devfs
-}
-
-module zero_dvfs extends zero {
-	source "zero_dvfs.c"
-
-	depends embox.fs.driver.devfs_dvfs
+	depends embox.driver.char_dev
 }
