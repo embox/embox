@@ -27,4 +27,5 @@ extern int char_dev_init_all(void);
 extern int char_dev_register(const char *name,
 		const struct file_operations *ops);
 
+extern int char_dev_idesc_fstat(struct idesc *idesc, void *buff);
 #endif /* DEVICE_H_ */
