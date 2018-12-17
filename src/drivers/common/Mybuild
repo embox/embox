@@ -1,8 +1,8 @@
 package embox.driver
 
 module common {
-	option number device_name_len=32
-	option number max_dev_module_count=16
+	option number device_name_len=16
+	option number max_dev_module_count=8
 
 	@IncludeExport(path="drivers")
 	source "device.h"
