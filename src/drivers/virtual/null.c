@@ -1,43 +1,46 @@
 /**
  * @file
- * @brief Creates file /dev/null
+ * @brief Creates /dev/null
  *
  * @date 08.09.11
- * @author Anton Kozlov
+ * @author Anton Kozlov -- original implementation
+ * @author Denis Deryugin <deryugin.denis@gmail.com> -- port to new vfs
  */
+#include <errno.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
 
-#include <fs/file_desc.h>
+#include <util/err.h>
+
 #include <drivers/char_dev.h>
-#include <fs/file_operation.h>
-
 
 #define NULL_DEV_NAME "null"
 
-/* forward declaration */
-static int null_init(void);
-static const struct file_operations null_ops;
-
-CHAR_DEV_DEF(NULL_DEV_NAME, &null_ops, NULL, null_init);
-
-static struct idesc *null_open(struct node *node, struct file_desc *file_desc, int flags) {
-	return &file_desc->idesc;
+static void null_close(struct idesc *desc) {
 }
 
-static int null_close(struct file_desc *desc) {
+static ssize_t null_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+	int i;
+	ssize_t ret_size;
+
+	ret_size = 0;
+	for (i = 0; i < cnt; i++) {
+		ret_size += iov[i].iov_len;
+	}
+
+	return ret_size;
+}
+
+static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return 0;
 }
 
-static size_t null_write(struct file_desc *desc, void *buf, size_t size) {
-	return size;
-}
-
-static const struct file_operations null_ops = {
-		.open = null_open,
-		.close = null_close,
-		.write = null_write
+static const struct idesc_ops null_ops = {
+	.close = null_close,
+	.id_readv = null_read,
+	.id_writev = null_write,
+	.fstat     = char_dev_idesc_fstat,
 };
 
-static int null_init(void) {
-	return char_dev_register(NULL_DEV_NAME, &null_ops);
-}
+CHAR_DEV_DEF(NULL_DEV_NAME, NULL, &null_ops, NULL);

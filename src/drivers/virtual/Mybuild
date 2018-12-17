@@ -1,20 +1,10 @@
 package embox.driver.virtual
 
-@DefaultImpl(null_old)
-abstract module null {
-}
-
-module null_old extends null {
+module null {
 	source "null.c"
 
 	depends embox.fs.driver.devfs
-}
-
-module null_dvfs extends null {
-	source "null_dvfs.c"
-
-	depends embox.driver.char_dev_dvfs
-	depends embox.fs.driver.devfs_dvfs
+	depends embox.driver.char_dev
 }
 
 module zero {
