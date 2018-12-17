@@ -8,8 +8,14 @@
 
 #include <string.h>
 
+#include <fs/idesc.h>
+
+struct file {
+	struct idesc f_idesc;
+};
+
 #include <drivers/device.h>
-#include <fs/dvfs.h>
+//#include <fs/dvfs.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 
@@ -48,9 +54,9 @@ struct dev_module *dev_module_create(struct device *dev, const char *name,
 
 	memset(devmod, 0, sizeof(*devmod));
 	strncpy(devmod->name, name, DEV_NAME_LEN);
-	devmod->dev_file.f_idesc.idesc_ops = dev->dev_iops;
+	//devmod->dev_file.f_idesc.idesc_ops = dev->dev_iops;
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
-	dvfs_traling_slash_trim(devmod->name);
+	//dvfs_traling_slash_trim(devmod->name);
 	devmod->device   = dev;
 	devmod->dev_priv = privdata;
 	return devmod;

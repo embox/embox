@@ -10,7 +10,7 @@ module common {
 	source "device.c"
 
 	depends embox.compat.libc.str
-	depends embox.fs.driver.devfs_dvfs
+	depends embox.fs.driver.devfs
 	depends embox.util.indexator
 }
 
