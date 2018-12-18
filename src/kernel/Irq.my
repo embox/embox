@@ -27,8 +27,6 @@ module irq_static_light extends irq_api {
 
 module no_irq extends irq_api {
 	source "no_irq.c"
-
-	depends irq_static_common
 }
 
 module irq extends irq_api {
