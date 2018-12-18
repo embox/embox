@@ -6,6 +6,7 @@
  * @author: Anton Bondarev
  */
 
+#include <assert.h>
 #include <kernel/irq.h>
 
 extern char __static_irq_table_start;
