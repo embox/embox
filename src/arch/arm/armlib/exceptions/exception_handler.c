@@ -9,7 +9,7 @@
 
 #include <kernel/panic.h>
 #include <kernel/printk.h>
-#include <kernel/thread.h>
+#include <asm/hal/reg.h>
 
 #include <asm/cp15.h>
 #include <arm/fpu.h>
