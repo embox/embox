@@ -12,7 +12,11 @@ extern double modf(double x, double *i_ptr);
 extern double fmod(double x, double y);
 extern int signbit(double x);
 extern double fabs(double x);
-extern double roundl(double x);
+
+extern double round(double x);
+extern float roundf(float x);
+extern long double roundl(long double x);
+
 extern double pow(double x, double y);
 extern double log10(double x);
 extern double ceil(double x);
