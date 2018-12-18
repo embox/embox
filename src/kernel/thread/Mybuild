@@ -1,5 +1,10 @@
 package embox.kernel.thread
 
+module thread_none {
+	@IncludeExport(path="kernel/thread", target_name="types.h")
+	source "thread_none.h"
+}
+
 module core {
 	option number stack_align=4
 	option number thread_stack_size=8192
