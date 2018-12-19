@@ -1,5 +1,10 @@
 package embox.kernel.thread
 
+module thread_none {
+	@IncludeExport(path="kernel/thread", target_name="types.h")
+	source "thread_none.h"
+}
+
 module core {
 	option number stack_align=4
 	option number thread_stack_size=8192
@@ -9,12 +14,14 @@ module core {
 	source "thread_allocator.c"
 	source "thread_switch.c"
 
+	@IncludeExport(path="kernel/thread", target_name="types.h")
+	source "thread_types.h"
+
 	depends sched_wait
 
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.kernel.sched.sched_ticker
 	@NoRuntime depends embox.arch.context
-
 
 	depends stack_api
 	depends thread_local
