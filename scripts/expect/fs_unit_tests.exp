@@ -1,0 +1,44 @@
+#!/usr/bin/expect
+
+source [file join [file dirname [info script]] framework/test_core.exp]
+
+namespace import autotest::*
+
+TEST_SUITE_SETUP
+
+TEST_CASE_TARGET {Run fs concurrency tests multiple times} {
+	for {set i 0} {$i < 4} {incr i} {
+		test_exec_embox_cmd_timeout 30 "test -t concurrency_test\r"
+	}
+	return 0
+}
+
+TEST_CASE_TARGET {Run select_test several times} {
+	for {set i 0} {$i < 4} {incr i} {
+		test_exec_embox_cmd_timeout 30 "test -t select_test\r"
+	}
+	return 0
+}
+
+TEST_CASE_TARGET {Run pipe_test several times} {
+	for {set i 0} {$i < 4} {incr i} {
+		test_exec_embox_cmd_timeout 30 "test -t pipe_test\r"
+	}
+	return 0
+}
+
+TEST_CASE_TARGET {Run ppty_test several times} {
+	for {set i 0} {$i < 4} {incr i} {
+		test_exec_embox_cmd_timeout 30 "test -t ppty_test\r"
+	}
+	return 0
+}
+
+TEST_CASE_DECLARE_FIXME {
+TEST_CASE_TARGET {Run ramdisk_test multiple times} {
+	for {set i 0} {$i < 8} {incr i} {
+		test_exec_embox_cmd_timeout 30 "test -t ramdisk_test\r"
+	}
+	return 0
+}
+}

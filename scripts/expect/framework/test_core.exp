@@ -11,6 +11,8 @@ namespace eval ::autotest {
 
 	namespace export test_assert_regexp_equal
 	namespace export test_assert_regexp_equal_timeout
+	namespace export test_exec_embox_cmd
+	namespace export test_exec_embox_cmd_timeout
 
 	variable embox_ip
 	variable host_ip
