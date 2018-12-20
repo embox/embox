@@ -25,3 +25,29 @@ proc test_assert_regexp_equal_timeout {new_timeout args} {
 	set timeout 10
 	return 0
 }
+
+proc test_exec_embox_cmd_timeout {new_timeout cmd} {
+	set TELNET_PROMPT ":/#"
+
+	set timeout $new_timeout
+
+	send $cmd
+	expect {
+		timeout {
+			puts "\n\nautotest error: Timeout running \"$cmd\"\n\n"; exit 1
+		}
+		-re "error" {
+			puts "\n\nautotest error: Error running \"$cmd\"\n\n"; exit 1
+		}
+		-re "$TELNET_PROMPT" { }
+	}
+
+	set timeout 10
+
+	return 0
+}
+
+proc test_exec_embox_cmd {cmd} {
+	test_exec_embox_cmd_timeout 20 $cmd
+	return 0
+}

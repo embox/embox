@@ -1,0 +1,8 @@
+package embox.test.fs.concurrency
+
+module concurrency_test {
+	@InitFS
+	source "concurrency_test_file.txt"
+
+	source "concurrency_test.c"
+}
