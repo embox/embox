@@ -9,9 +9,10 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
+#include <mem/misc/pool.h>
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
-#include <drivers/char_dev.h> //XXX
+#include <drivers/char_dev.h>
 #include <fs/idesc.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
@@ -23,20 +24,6 @@
 EMBOX_UNIT_INIT(vc_init);
 
 static struct vterm vc_vterm;
-
-static int vc_open(struct dev_module *mod, void *dev_priv) {
-	struct vterm_video *vc_vga;
-
-	vc_vga = vc_vga_init();
-
-	vterm_init(&vc_vterm, vc_vga, NULL);
-
-	vterm_open_indev(&vc_vterm, "keyboard");
-
-	vc_vterm.tty.idesc = mod->d_idesc;
-
-	return 0;
-}
 
 static void vc_close(struct idesc *desc) {
 	vc_vterm.tty.idesc = NULL;
@@ -86,16 +73,32 @@ static const struct idesc_ops idesc_vc_ops = {
 	.fstat     = char_dev_idesc_fstat,
 };
 
-static const struct dev_module vc_dev = {
-	.name = VC_DEV_NAME,
-	.device = &(struct device) {
-		.dev_iops = &idesc_vc_ops,
-		.dev_dops = &(struct dev_operations) {
-			.open = vc_open,
-		},
-	},
-};
+static idesc *vc_open(struct dev_module *mod, void *dev_priv) {
+	struct vterm_video *vc_vga;
+
+	vc_vga = vc_vga_init();
+
+	vterm_init(&vc_vterm, vc_vga, NULL);
+
+	vterm_open_indev(&vc_vterm, "keyboard");
+
+	return char_dev_idesc_create(mod);
+}
+
+#define VC_POOL_SIZE OPTION_GET(NUMBER, vc_quantity)
+POOL_DEF(cdev_vc_pool, struct dev_module, VC_POOL_SIZE);
 
 static int vc_init(void) {
-	return char_dev_register(VC_DEV_NAME, NULL, &vc_dev);
+	struct dev_module *vc_dev;
+
+	vc_dev = pool_alloc(&cdev_vc_pool);
+	if (!vc_dev) {
+		return -ENOMEM;
+	}
+	memset(vc_dev, 0, sizeof(*vc_dev));
+	vc_dev->name = VC_DEV_NAME;
+	vc_dev->dev_iops = &idesc_vc_ops;
+	vc_dev->open = vc_open;
+
+	return char_dev_register(&vc_dev);
 }

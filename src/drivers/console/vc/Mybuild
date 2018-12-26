@@ -16,6 +16,8 @@ module vc {
 	@IncludeExport(path="drivers/console/vc")
 	source "vc_vga.h"
 
+	option number vc_quantity = 1
+
 	depends vga
 	depends embox.driver.tty.vterm
 	depends embox.driver.input.core
