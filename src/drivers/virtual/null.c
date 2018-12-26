@@ -6,14 +6,14 @@
  * @author Anton Kozlov -- original implementation
  * @author Denis Deryugin <deryugin.denis@gmail.com> -- port to new vfs
  */
-#include <errno.h>
 #include <stdlib.h>
-#include <sys/stat.h>
+#include <string.h>
 #include <sys/uio.h>
-
-#include <util/err.h>
+#include <sys/stat.h>
 
 #include <drivers/char_dev.h>
+
+#include <util/err.h>
 
 #define NULL_DEV_NAME "null"
 
@@ -37,10 +37,14 @@ static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 }
 
 static const struct idesc_ops null_ops = {
-	.close = null_close,
-	.id_readv = null_read,
+	.id_readv  = null_read,
 	.id_writev = null_write,
+	.close     = null_close,
 	.fstat     = char_dev_idesc_fstat,
 };
 
-CHAR_DEV_DEF(NULL_DEV_NAME, NULL, &null_ops, NULL);
+static struct idesc * null_open(struct dev_module *cdev, void *priv) {
+	return char_dev_idesc_create(cdev);
+}
+
+CHAR_DEV_DEF(NULL_DEV_NAME, null_open, NULL, &null_ops, NULL);
