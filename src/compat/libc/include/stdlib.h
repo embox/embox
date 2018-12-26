@@ -193,22 +193,16 @@ static inline int mkstemp(char *path_template) {
 	(void)path_template;
 	return -1;
 }
-static inline int mbtowc(wchar_t *pwc, const char *s, size_t n) {
-	(void)pwc; (void)s; (void)n;
-	return 0;
-}
-static inline int wctomb(char *s, wchar_t wchar) {
-	(void)s;
-	(void)wchar;
-	return 0;
-}
+
+extern int mbtowc(wchar_t *out, const char *in, size_t n);
+extern int wctomb(char *out, const wchar_t *in );
+
+extern int mblen(const char *str, size_t max);
 
 extern int atexit(void (*func)(void));
 
-static inline size_t mbstowcs(wchar_t *dest, const char *src, size_t n) {
-	(void)dest; (void)src; (void)n;
-	return 0;
-}
+extern size_t mbstowcs(wchar_t *wcstring, const char *mbstring, size_t n);
+extern size_t wcstombs(char *mbstr,  const wchar_t *wcstr, size_t max);
 
 __END_DECLS
 
