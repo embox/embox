@@ -10,12 +10,7 @@
 
 #include <fs/idesc.h>
 
-struct file {
-	struct idesc f_idesc;
-};
-
 #include <drivers/device.h>
-//#include <fs/dvfs.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 
@@ -31,12 +26,17 @@ INDEX_DEF(dev_module_idx, 0, MAX_DEV_MODULE_COUNT);
  *
  * @return
  */
-struct dev_module *dev_module_create(struct device *dev, const char *name,
-                                     void *privdata) {
+struct dev_module *dev_module_create(
+	const char *name,
+	struct idesc * (*open)  (struct dev_module *, void *),
+	int 		   (*close) (struct idesc *),
+	const struct idesc_ops *dev_iops,
+	void *privdata
+) {
 	struct dev_module *devmod;
 	int id;
 
-	assert(dev);
+	assert(dev_iops);
 	assert(name);
 	assert(privdata); /* No known devices without privdata. Currently
 			   *  it's up to legacy of the old FS */
@@ -53,12 +53,14 @@ struct dev_module *dev_module_create(struct device *dev, const char *name,
 	}
 
 	memset(devmod, 0, sizeof(*devmod));
+	devmod->dev_id = id;
 	strncpy(devmod->name, name, DEV_NAME_LEN);
-	//devmod->dev_file.f_idesc.idesc_ops = dev->dev_iops;
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
-	//dvfs_traling_slash_trim(devmod->name);
-	devmod->device   = dev;
+	devmod->dev_iops = dev_iops;
+	devmod->open = open;
+	devmod->close = close;
 	devmod->dev_priv = privdata;
+
 	return devmod;
 }
 
