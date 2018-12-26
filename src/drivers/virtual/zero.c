@@ -9,14 +9,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/uio.h>
+#include <sys/stat.h>
 
 #include <drivers/char_dev.h>
-#include <fs/file_operation.h>
-#include <fs/file_desc.h>
 
 #include <util/err.h>
-
-#include <drivers/char_dev.h>
 
 #define ZERO_DEV_NAME "zero"
 
@@ -52,10 +49,14 @@ static ssize_t zero_write(struct idesc *desc, const struct iovec *iov, int cnt) 
 }
 
 static const struct idesc_ops zero_ops = {
-	.close     = zero_close,
 	.id_readv  = zero_read,
 	.id_writev = zero_write,
+	.close     = zero_close,
 	.fstat     = char_dev_idesc_fstat,
 };
 
-CHAR_DEV_DEF(ZERO_DEV_NAME, NULL, &zero_ops, NULL);
+static struct idesc *zero_open(struct dev_module *cdev, void *priv) {
+	return char_dev_idesc_create(cdev);
+}
+
+CHAR_DEV_DEF(ZERO_DEV_NAME, zero_open, NULL, &zero_ops, NULL);
