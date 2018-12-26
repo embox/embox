@@ -45,7 +45,7 @@ extern const struct idesc_ops spi_iops;
 		.spi_ops = spi_dev_ops, \
 		.priv    = dev_priv, \
 	}; \
-	CHAR_DEV_DEF(dev_name, NULL, &spi_iops, &MACRO_CONCAT(spi_device, idx)) \
+	CHAR_DEV_DEF(dev_name, NULL, NULL, &spi_iops, &MACRO_CONCAT(spi_device, idx)) \
 
 /* IOCTL-related stuff */
 #define SPI_IOCTL_CS       0x1
