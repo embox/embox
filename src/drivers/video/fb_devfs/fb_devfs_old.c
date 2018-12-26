@@ -20,6 +20,8 @@
 #include <linux/fb.h>
 #include <drivers/char_dev.h>
 
+#define FB_POOL_SIZE 1
+
 struct fb_device {
 	const struct fb_ops *fb_ops;
 	const struct file_operations *kfile_ops;
@@ -85,11 +87,24 @@ static const struct file_operations fb_device_ops = {
 	.open = fb_device_open,
 };
 
+POOL_DEF(cdev_fb_pool, struct dev_module, FB_POOL_SIZE);
+
 int fb_devfs_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
+	struct dev_module *cdev;
+
+	cdev = pool_alloc(&cdev_fb_pool);
+	if (!cdev) {
+		return -ENOMEM;
+	}
+	memset(cdev, 0, sizeof(*cdev));
+	memcpy(cdev->name, "fb0", sizeof(cdev->name));
+	cdev->dev_iops = &fb_idesc_ops;
+
 	fb_device.fb_ops = ops;
 	fb_device.map_base = map_base;
 	fb_device.map_size = map_size;
 	fb_device.kfile_ops = &fb_device_ops;
-	char_dev_register("fb0", &fb_device_ops, NULL);
+	
+	char_dev_register(cdev);
 	return 0;
 }
