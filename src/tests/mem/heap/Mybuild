@@ -24,3 +24,12 @@ module heap_extended_test {
 	depends heap_helpers
 	depends embox.mem.heap_api
 }
+
+module heap_threads_test {
+	option number test_obj_size = 0x1000 /* in bytes */
+
+	source "heap_threads_test.c"
+
+	depends heap_helpers
+	depends embox.mem.heap_api
+}
