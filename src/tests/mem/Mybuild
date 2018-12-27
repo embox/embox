@@ -1,9 +1,5 @@
 package embox.test.mem
 
-module afterfree {
-	source "afterfree.c"
-}
-
 module objalloc {
 	source "objalloc.c"
 
@@ -23,15 +19,6 @@ module page_allocator {
 	source "page_allocator.c"
 
 	depends embox.mem.page_api
-	depends embox.framework.LibFramework
-}
-
-@TestFor(embox.mem.heap_api)
-module heap {
-	source "heap.c"
-
-	depends embox.compat.libc.all
-	depends embox.mem.heap_api
 	depends embox.framework.LibFramework
 }
 
