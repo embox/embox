@@ -126,17 +126,15 @@ static inline void *mm_to_segment(struct mm_segment *mm) {
 	return ((char *) mm + sizeof *mm);
 }
 
-static void *pointer_to_segment(void *ptr, struct dlist_head *mspace) {
+static void *pointer_to_mm(void *ptr, struct dlist_head *mspace) {
 	struct mm_segment *mm;
-	void *segment;
 
 	assert(ptr);
 	assert(mspace);
 
 	dlist_foreach_entry(mm, mspace, link) {
-		segment = mm_to_segment(mm);
-		if (pointer_inside_segment(segment, mm->size, ptr)) {
-			return segment;
+		if (pointer_inside_segment(mm_to_segment(mm), mm->size, ptr)) {
+			return mm;
 		}
 	}
 
@@ -200,15 +198,23 @@ void *mspace_malloc(size_t size, struct dlist_head *mspace) {
 }
 
 int mspace_free(void *ptr, struct dlist_head *mspace) {
-	void *segment;
+	struct mm_segment *mm;
 
 	assert(ptr);
 	assert(mspace);
 
-	segment = pointer_to_segment(ptr, mspace);
+	mm = pointer_to_mm(ptr, mspace);
 
-	if (segment != NULL) {
+	if (mm != NULL) {
+		void *segment;
+
+		segment = mm_to_segment(mm);
 		bm_free(segment, ptr);
+
+		if (bm_heap_is_empty(segment)) {
+			mm_segment_free(mm, mm->size / PAGE_SIZE());
+			dlist_del(&mm->link);
+		}
 	} else {
 		/* No segment containing pointer @c ptr was found. */
 #ifdef DEBUG
