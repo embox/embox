@@ -20,6 +20,7 @@ env:
     - TEMPLATE=x86/test/fs
     - TEMPLATE=x86/test/net
     - TEMPLATE=x86/test/packetdrill
+    - TEMPLATE=x86/test/qt-vnc
     - TEMPLATE=sparc/qemu
     - TEMPLATE=mips/qemu
     - TEMPLATE=ppc/qemu
