@@ -43,6 +43,7 @@ atml2run=(
 	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
 	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
 	['x86/test/packetdrill']=packetdrill_run
+	['x86/test/qt-vnc']="$(dirname $0)/qt/run.sh $ATML"
 	['sparc/qemu']=default_run
 	['mips/qemu']=default_run
 	['ppc/qemu']=default_run
