@@ -53,7 +53,7 @@ script:
   - set -e # make this script fail as soon as any individual command fail
   - . ./scripts/docker/docker_rc.sh
   - dr make confload-"$TEMPLATE"
-  - run dr make
+  - travis_wait run dr 'make &> build.log; tail -c 3M build.log'
   - run dr ./scripts/continuous/run.sh "$TEMPLATE"
 
 addons:
