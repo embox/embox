@@ -49,7 +49,6 @@ void devfs_fill_inode(struct inode *inode,
 
 	inode->i_data = devmod;
 	inode->flags |= flags;
-	devmod->dev_file.f_inode = inode;
 }
 
 ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
@@ -178,10 +177,9 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 	assert(node->i_data);
 
 	dev = node->i_data;
-	assert(dev->dev_file.f_ops);
-	assert(dev->dev_file.f_ops->open);
+	assert(dev->open);
 
-	return dev->dev_file.f_ops->open(node, desc);
+	return dev->open(dev, dev->dev_priv);
 }
 
 
@@ -220,9 +218,8 @@ static struct idesc *devfs_open_idesc(struct lookup *l) {
 	dev = i_no->i_data;
 
 	assert(dev);
-	assert(dev->dev_file.f_ops);
-	assert(dev->dev_file.f_ops->open);
-	desc = dev->dev_file.f_ops->open(i_no, NULL);
+	assert(dev->open);
+	desc = dev->open(dev, dev->dev_priv);
 
 	return desc;
 }
