@@ -136,15 +136,20 @@ struct idesc_ops idesc_bdev_ops = {
 	.fstat = bdev_idesc_fstat
 };
 
+/* Need of these functions should be considered, as they don't used anywhere */
+#if 0
 static struct idesc *bdev_idesc_open(struct inode *node, struct idesc *idesc) {
 	/* Assume node belongs to /devfs/ */
 	struct dev_module *devmod = node->i_data;
-
+	/*
 	devmod->dev_file.f_inode = node;
 	devmod->dev_file.pos = 0;
 	devmod->dev_file.f_idesc.idesc_ops = &idesc_bdev_ops;
 
 	return &devmod->dev_file.f_idesc;
+	*/
+	devmod->dev_iops = &idesc_bdev_ops;
+	return idesc;
 }
 
 struct file_operations bdev_dev_ops = {
@@ -159,7 +164,7 @@ int bdev_read_block(struct dev_module *devmod, void *buf, int blk) {
 
 	assert(devmod);
 	assert(buf);
-	assert(devmod->dev_file.f_idesc.idesc_ops->id_readv);
+	assert(devmod->dev_iops->id_readv);
 
 	bdev = devmod->dev_priv;
 	assert(bdev);
@@ -167,9 +172,9 @@ int bdev_read_block(struct dev_module *devmod, void *buf, int blk) {
 	 * some flags should be added to struct dev_module to check it.
 	 * Or maybe pools bounds could be used to check. */
 
-	devmod->dev_file.pos = blk * bdev->block_size;
+	// devmod->dev_file.pos = blk * bdev->block_size;
 
-	return devmod->dev_file.f_idesc.idesc_ops->id_readv(
+	return devmod->dev_iops->id_readv(
 			&devmod->dev_file.f_idesc,
 			buf,
 			bdev->block_size);
@@ -237,3 +242,4 @@ int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk, int count) {
 
 	return count * bdev->block_size;;
 }
+#endif
