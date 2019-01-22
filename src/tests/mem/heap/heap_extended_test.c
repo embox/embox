@@ -6,6 +6,8 @@
  * @date 26.12.2018
  * @author Alexander Kalmuk
  */
+#include <stdlib.h>
+
 #include <hal/ipl.h>
 #include <kernel/task.h>
 #include <embox/test.h>
@@ -16,6 +18,43 @@
 #define MAX_OBJ_SIZE OPTION_GET(NUMBER, max_obj_size)
 
 EMBOX_TEST_SUITE("heap extended test");
+
+static void *task_thr_realloc_hnd(void *opaque) {
+	int j;
+	void *ptr, *ptr_new;
+	size_t size;
+
+	for (size = MIN_OBJ_SIZE; size < MAX_OBJ_SIZE / 2; size *= 2) {
+		ptr = malloc(size);
+		test_assert_not_null(ptr);
+
+		/* Fill memory with 0x55 and last element is 0x1f */
+		memset(ptr, 0x55, size - 1);
+		*((char *) ptr + size - 1) = 0x1f;
+
+		/* Realloc object of twice size of the previously allocated one */
+		ptr_new = realloc(ptr, 2 * size);
+		test_assert_not_null(ptr);
+
+		for (j = 0; j < size - 1; j++) {
+			test_assert_equal(*((char *) ptr_new + j), 0x55);
+		}
+		test_assert_equal(*((char *) ptr_new + size - 1), 0x1f);
+
+		free(ptr_new);
+	}
+
+	return NULL;
+}
+
+TEST_CASE("Realloc different sizes") {
+	pid_t pid;
+
+	pid = new_task("heap_extended_test_task0", task_thr_realloc_hnd, NULL);
+	test_assert_true(pid >= 0);
+
+	task_waitpid(pid);
+}
 
 static void test_max_objs_allocation(bool is_kernel_heap) {
 	int count;
