@@ -9,6 +9,7 @@
  * at the same time.
  */
 #include <errno.h>
+#include <stddef.h>
 #include <drivers/char_dev.h>
 
 /**
@@ -28,6 +29,12 @@ int char_dev_init_all(void) {
  *
  * @return Always -1
  */
-int char_dev_register(const char *name, const struct file_operations *ops, const struct dev_module *dev) {
+int char_dev_register(const struct dev_module *cdev) {
 	return -ENOSUPP;
+}
+
+struct node;
+
+struct idesc *char_dev_open(struct node *node, int flags) {
+	return NULL;
 }
