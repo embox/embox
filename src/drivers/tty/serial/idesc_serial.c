@@ -9,7 +9,6 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
-
 #include <mem/misc/pool.h>
 
 #include <fs/idesc.h>
@@ -30,51 +29,7 @@ POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 #define idesc_to_uart(desc) \
 	(((struct  tty_uart*)desc)->uart)
 
-
 static const struct idesc_ops idesc_serial_ops;
-
-extern struct tty_ops uart_tty_ops;
-extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
-
-static int idesc_uart_bind(struct uart *uart) {
-	struct tty_uart *tu;
-
-	tu = pool_alloc(&uart_ttys);
-	if (!tu) {
-		return -ENOMEM;
-	}
-
-	tty_init(&tu->tty, &uart_tty_ops);
-
-	tu->uart = uart;
-	uart->tty = &tu->tty;
-	uart->tty->idesc = &tu->idesc;
-	uart->irq_handler = uart_irq_handler;
-
-	return 0;
-}
-
-static void idesc_uart_unbind(struct uart *uart) {
-	struct tty_uart *tu;
-
-	uart->tty->idesc = NULL;
-	tu = member_cast_out(uart->tty, struct tty_uart, tty);
-	pool_free(&uart_ttys, tu);
-}
-
-struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
-
-	assert(uart);
-	assert(mod);
-
-	if (idesc_uart_bind(uart)) {
-		return NULL;
-	}
-
-	idesc_init(uart->tty->idesc, &idesc_serial_ops, S_IROTH | S_IWOTH);
-
-	return uart->tty->idesc;
-}
 
 static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
 	void *buf;
@@ -150,9 +105,9 @@ static void serial_close(struct idesc *idesc) {
 	res = uart_close(uart);
 	assert(res == 0); /* TODO */
 
-	idesc_uart_unbind(uart);
-}
+	idesc_serial_close(idesc);
 
+}
 static int serial_ioctl(struct idesc *idesc, int request, void *data) {
 	struct uart *uart;
 
@@ -201,14 +156,17 @@ static int serial_fstat(struct idesc *data, void *buff) {
 	st->st_mode = S_IFCHR;
 
 	return 0;
-
 }
 
 static const struct idesc_ops idesc_serial_ops = {
-		.id_readv = serial_read,
-		.id_writev = serial_write,
-		.ioctl = serial_ioctl,
-		.close = serial_close,
-		.status = serial_status,
-		.fstat = serial_fstat,
+	.id_readv = serial_read,
+	.id_writev = serial_write,
+	.ioctl = serial_ioctl,
+	.close = serial_close,
+	.status = serial_status,
+	.fstat = serial_fstat,
 };
+
+const struct idesc_ops *idesc_serial_get_ops(void){
+	return &idesc_serial_ops;
+}

@@ -19,7 +19,6 @@
 #include <drivers/serial/uart_device.h>
 
 #include <fs/idesc.h>
-#include <fs/dvfs.h>
 
 #include "idesc_serial.h"
 
@@ -28,22 +27,20 @@
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
 
+POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
+
 #define idesc_to_uart(desc) \
 	(((struct  tty_uart*)desc)->uart)
-
-POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 
 extern struct tty_ops uart_tty_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
+static int idesc_uart_bind(struct uart *uart) {
 	struct tty_uart *tu;
-
-	assert(uart);
 
 	tu = pool_alloc(&uart_ttys);
 	if (!tu) {
-		return err_ptr(ENOMEM);
+		return -ENOMEM;
 	}
 
 	tty_init(&tu->tty, &uart_tty_ops);
@@ -53,11 +50,35 @@ struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
 	uart->tty->idesc = &tu->idesc;
 	uart->irq_handler = uart_irq_handler;
 
-	idesc_init(&tu->idesc, idesc_serial_get_ops(), mod);
+	return 0;
+}
 
-	return &tu->idesc;
+static void idesc_uart_unbind(struct uart *uart) {
+	struct tty_uart *tu;
+
+	uart->tty->idesc = NULL;
+	tu = member_cast_out(uart->tty, struct tty_uart, tty);
+	pool_free(&uart_ttys, tu);
+}
+
+struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
+
+	assert(uart);
+	assert(mod);
+
+	if (idesc_uart_bind(uart)) {
+		return NULL;
+	}
+
+	idesc_init(uart->tty->idesc, idesc_serial_get_ops(), S_IROTH | S_IWOTH);
+
+	return uart->tty->idesc;
 }
 
 void idesc_serial_close(struct idesc *idesc) {
-	pool_free(&uart_ttys, idesc);
+	struct uart *uart;
+
+	uart = idesc_to_uart(idesc);
+
+	idesc_uart_unbind(uart);
 }
