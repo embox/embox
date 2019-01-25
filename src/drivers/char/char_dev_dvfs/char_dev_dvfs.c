@@ -20,6 +20,9 @@
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
+#define IDESC_POOL_SIZE OPTION_GET(NUMBER, cdev_idesc_quantity)
+POOL_DEF(idesc_pool, struct idesc, IDESC_POOL_SIZE);
+
 static struct dev_module *devtab[MAX_DEV_QUANTITY];
 INDEX_DEF(char_dev_idx, 0, MAX_DEV_QUANTITY);
 
@@ -68,6 +71,20 @@ int char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
 	sb->st_mode = S_IFCHR;
 
 	return 0;
+}
+
+struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
+	struct idesc *idesc;
+
+	idesc = pool_alloc(&idesc_pool);
+	if (idesc == NULL) {
+		log_error("Can't allocate char device");
+		return NULL;
+	}
+
+	idesc_init(idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
+
+	return idesc;
 }
 
 #if 0

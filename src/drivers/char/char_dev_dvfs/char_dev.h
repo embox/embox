@@ -26,6 +26,7 @@
 extern int char_dev_init_all(void);
 extern int char_dev_register(struct dev_module *cdev);
 extern int char_dev_idesc_fstat(struct idesc *idesc, void *buff);
+extern struct idesc *char_dev_idesc_create(struct dev_module *cdev);
 
 static inline struct dev_module *idesc_to_dev_module(struct idesc *desc) {
 	struct file *f = mcast_out(desc, struct file, f_idesc);
