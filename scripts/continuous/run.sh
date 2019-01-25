@@ -36,6 +36,7 @@ packetdrill_run() {
 declare -A atml2run
 atml2run=(
 	['arm/qemu']=default_run
+	['arm/stm32f4cube']=true
 	['x86/qemu']=default_run
 	['x86/smp']=default_run
 	['x86/user_apps']=default_run
