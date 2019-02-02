@@ -9,7 +9,7 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <pthread.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
@@ -23,7 +23,14 @@
 
 #include <util/math.h>
 
+#include <framework/mod/options.h>
+
 #define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
+#define TELNETD_USE_PTHEAD      OPTION_GET(NUMBER,telnetd_use_pthread)
+
+#if TELNETD_USE_PTHEAD
+#include <pthread.h>
+#endif
 
 /* Telnetd address bind to */
 #define TELNETD_ADDR INADDR_ANY
@@ -132,7 +139,7 @@ static int utmp_login(short ut_type, const char *host) {
 	return 0;
 }
 
-static void *shell_hnd(void* args) {
+static inline void *shell_hnd(void* args) {
 	int ret;
 	int *msg = (int*)args;
 	struct sockaddr_in sockaddr;
@@ -166,12 +173,19 @@ static void *shell_hnd(void* args) {
 	if (-1 == dup2(msg[1], STDERR_FILENO)) {
 		MD(printf("dup2 STDERR_FILENO error: %d\n", errno));
 	}
+#if TELNETD_USE_PTHEAD
 	ret = system("tish");
 	if (ret != 0) {
 		printf("system return error: %d\n", ret);
 		_exit(ret);
 	}
-
+#else
+	ret = execv("tish", NULL);
+	if (ret != 0) {
+		printf("execv return error: %d\n", ret);
+		_exit(ret);
+	}
+#endif
 	ret = utmp_login(DEAD_PROCESS, "");
 	if (ret != 0) {
 		MD(printf("utmp_login DEAD error: %d\n", ret));
@@ -197,54 +211,63 @@ static int telnet_fix_crnul(unsigned char *buf, int len) {
 	return bpo - buf;
 }
 
+struct client_args {
+	int sock;
+	int pptyfd[2];
+};
+
+#if !TELNETD_USE_PTHEAD
+static void sigchild_handler(int sig) {
+	wait(NULL);
+	_exit(0);
+}
+#endif
+
 /* Shell thread for telnet */
-static void *telnetd_client_handler(void* args) {
+static void *telnetd_client_handler(struct client_args* client_args) {
 	/* Choose tmpbuff size a half of size of pbuff to make
 	 * replacement: \n\n...->\r\n\r\n... */
 	unsigned char sbuff[XBUFF_LEN], pbuff[XBUFF_LEN];
 	unsigned char *s = sbuff, *p = pbuff;
 	int sock_data_len = 0; /* len of rest of socket data in local buffer sbuff */
 	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
-	int sock = (int) args;
-	int msg[3];
-	int pptyfd[2];
+
 	int nfds;
 	fd_set readfds, writefds, exceptfds;
 	struct timeval timeout;
+#if TELNETD_USE_PTHEAD
 	pthread_t thread;
+	int msg[3];
+#endif
 
 	MD(printf("starting telnet_thread_handler\n"));
 	/* Set socket to be nonblock. See ignore_telnet_options() */
-	fcntl(sock, F_SETFL, O_NONBLOCK);
-
-	if (ppty(pptyfd) < 0) {
-		MD(printf("new pipe error: %d\n", errno));
-		close(sock);
-		goto out;
-	}
+	fcntl(client_args->sock, F_SETFL, O_NONBLOCK);
 
 	/* Send our parameters */
-	telnet_cmd(sock, T_WILL, O_GO_AHEAD);
-	telnet_cmd(sock, T_WILL, O_ECHO);
+	telnet_cmd(client_args->sock, T_WILL, O_GO_AHEAD);
+	telnet_cmd(client_args->sock, T_WILL, O_ECHO);
 
 	/* handle options from client */
-	ignore_telnet_options(sock, pptyfd[0]);
+	ignore_telnet_options(client_args->sock, client_args->pptyfd[0]);
 
-	fcntl(sock, F_SETFL, 0); /* O_NONBLOCK */
-
-	msg[0] = msg[1] = pptyfd[1];
-	msg[2] = sock;
+	fcntl(client_args->sock, F_SETFL, 0); /* O_NONBLOCK */
+#if TELNETD_USE_PTHEAD
+	msg[0] = msg[1] = client_args->pptyfd[1];
+	msg[2] = client_args->sock;
 
 	if (pthread_create(&thread, NULL, shell_hnd, (void *) &msg)) {
-		telnet_cmd(sock, T_INTERRUPT, 0);
-		close(sock);
-		close(pptyfd[0]);
-		close(pptyfd[1]);
+		telnet_cmd(client_args->sock, T_INTERRUPT, 0);
+		close(client_args->sock);
+		close(client_args->pptyfd[0]);
+		close(client_args->pptyfd[1]);
 		goto out;
 	}
-
+#else
+	signal(SIGCHLD, sigchild_handler);
+#endif
 	/* Preparations for select call */
-	nfds = max(sock, pptyfd[0]) + 1;
+	nfds = max(client_args->sock, client_args->pptyfd[0]) + 1;
 
 	timeout.tv_sec = 100;
 	timeout.tv_usec = 0;
@@ -260,15 +283,15 @@ static void *telnetd_client_handler(void* args) {
 		FD_ZERO(&writefds);
 		FD_ZERO(&exceptfds);
 
-		FD_SET(sock, &readfds);
-		FD_SET(pptyfd[0], &readfds);
+		FD_SET(client_args->sock, &readfds);
+		FD_SET(client_args->pptyfd[0], &readfds);
 		if (pipe_data_len > 0) {
-			FD_SET(sock, &writefds);
+			FD_SET(client_args->sock, &writefds);
 		}
 		if (sock_data_len > 0) {
-			FD_SET(pptyfd[0], &writefds);
+			FD_SET(client_args->pptyfd[0], &writefds);
 		}
-		FD_SET(sock, &exceptfds);
+		FD_SET(client_args->sock, &exceptfds);
 
 		MD(printf("."));
 
@@ -293,12 +316,12 @@ static void *telnetd_client_handler(void* args) {
 			continue;
 		}
 
-		if (FD_ISSET(sock, &exceptfds)) {
+		if (FD_ISSET(client_args->sock, &exceptfds)) {
 			goto out_kill;
 		}
 
-		if (FD_ISSET(sock, &writefds)) {
-			if ((len = write(sock, p, pipe_data_len)) > 0) {
+		if (FD_ISSET(client_args->sock, &writefds)) {
+			if ((len = write(client_args->sock, p, pipe_data_len)) > 0) {
 				pipe_data_len -= len;
 				p += len;
 			} else {
@@ -307,16 +330,16 @@ static void *telnetd_client_handler(void* args) {
 			}
 		}
 
-		if (FD_ISSET(pptyfd[0], &readfds)){
+		if (FD_ISSET(client_args->pptyfd[0], &readfds)){
 			p = pbuff;
-			if ((pipe_data_len = read(pptyfd[0], pbuff, XBUFF_LEN)) <= 0) {
+			if ((pipe_data_len = read(client_args->pptyfd[0], pbuff, XBUFF_LEN)) <= 0) {
 				MD(printf("read on pptyfd: %d %d\n", pipe_data_len, errno));
 				goto out_close;
 			}
 		}
 
-		if (FD_ISSET(pptyfd[0], &writefds)) {
-			if ((len = write(pptyfd[0], s, sock_data_len)) > 0) {
+		if (FD_ISSET(client_args->pptyfd[0], &writefds)) {
+			if ((len = write(client_args->pptyfd[0], s, sock_data_len)) > 0) {
 				sock_data_len -= len;
 				s += len;
 			} else {
@@ -327,9 +350,9 @@ static void *telnetd_client_handler(void* args) {
 			}
 		}
 
-		if (FD_ISSET(sock, &readfds)){
+		if (FD_ISSET(client_args->sock, &readfds)){
 			s = sbuff;
-			if ((sock_data_len = read(sock, s, XBUFF_LEN)) <= 0) {
+			if ((sock_data_len = read(client_args->sock, s, XBUFF_LEN)) <= 0) {
 				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
 			}
 			sock_data_len = telnet_fix_crnul(s, sock_data_len);
@@ -346,12 +369,13 @@ static void *telnetd_client_handler(void* args) {
 	} /* while(1) */
 
 out_kill:
-	write(pptyfd[0], "exit\n", 6);
+	write(client_args->pptyfd[0], "exit\n", 6);
 out_close:
-	close(pptyfd[0]);
-	close(sock);
-
+	close(client_args->pptyfd[0]);
+	close(client_args->sock);
+#if TELNETD_USE_PTHEAD
 out:
+#endif
 	MD(printf("exiting from telnet_thread_handler\n"));
 	_exit(0);
 
@@ -368,10 +392,55 @@ int main(int argc, char **argv) {
 	int telnet_connections_count;
 
 	if (argc > 1) {
-		client_descr = atoi(argv[1]);
-		MD(printf("telnetd: %d\n", client_descr));
-		telnetd_client_handler((void *)client_descr);
-		_exit(0);
+		struct client_args client_args;
+
+		if (0 == strcmp("connection", argv[1])) {
+			client_args.sock = atoi(argv[2]);
+
+			if (ppty(client_args.pptyfd) < 0) {
+				MD(printf("new pipe error: %d\n", errno));
+				close(client_args.sock);
+				_exit(0);
+			}
+#if !TELNETD_USE_PTHEAD
+			{
+				int child_pid;
+				char *child_argv[5];
+				char client_pty[10];
+
+				child_pid = vfork();
+				if (child_pid < 0) {
+					MD(printf("cannot vfork process err=%d\n", child_pid));
+					_exit(0);
+				}
+				child_argv[0] = "telnetd";
+				child_argv[1] = "shell";
+				child_argv[2] = argv[2];
+				child_argv[3] = itoa(client_args.pptyfd[1], client_pty, 10);
+				child_argv[4] = NULL;
+				if (child_pid == 0) {
+					res = execv("telnetd", child_argv);
+					if (res == -1) {
+						MD(printf("cannot execv process err=%d\n", errno));
+					}
+				}
+			}
+#endif
+
+			MD(printf("telnetd: %d\n", client_args.sock));
+			telnetd_client_handler(&client_args);
+			_exit(0);
+		}
+#if !TELNETD_USE_PTHEAD
+		if (0 == strcmp("shell", argv[1])) {
+			int msg[3];
+			msg[0] = msg[1] = atoi(argv[3]);
+			msg[2] = atoi(argv[2]);
+			MD(printf("telnetd: shell sock %d pty %d\n", msg[1], msg[2]));
+			shell_hnd(&msg);
+			_exit(0);
+		}
+#endif
 	}
 
 	telnet_connections_count = 0;
@@ -400,7 +469,7 @@ int main(int argc, char **argv) {
 	MD(printf("telnetd is ready to accept connections\n"));
 	while (1) {
 		int child_pid;
-		char *child_argv[3];
+		char *child_argv[4];
 		char client_desc_str[5];
 
 		if (telnet_connections_count >= TELNETD_MAX_CONNECTIONS) {
@@ -443,8 +512,9 @@ int main(int argc, char **argv) {
 			continue;
 		}
 		child_argv[0] = "telnetd";
-		child_argv[1] = itoa(client_descr, client_desc_str, 10);
-		child_argv[2] = NULL;
+		child_argv[1] = "connection";
+		child_argv[2] = itoa(client_descr, client_desc_str, 10);
+		child_argv[3] = NULL;
 		if (child_pid == 0) {
 			res = execv("telnetd", child_argv);
 			if (res == -1) {

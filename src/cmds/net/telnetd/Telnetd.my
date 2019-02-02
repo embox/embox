@@ -18,6 +18,7 @@ package embox.cmd.net
 module telnetd {
 	source "telnetd.c"
 
+	option number telnetd_use_pthread = 1
 	option number telnetd_max_connections = 5
 
 	depends embox.net.tcp_sock
