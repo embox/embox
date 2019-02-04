@@ -16,6 +16,7 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/socket/packet.h>
+#include <net/inetdevice.h>
 #include <util/log.h>
 
 #define LOG_LEVEL OPTION_GET(NUMBER, log_level)
@@ -53,6 +54,16 @@ int net_rx(struct sk_buff *skb) {
 	case PACKET_BROADCAST:
 	case PACKET_MULTICAST:
 		break;
+	}
+
+	/* Sometimes when a network driver enables interrupts before
+	* inetdev_register_dev(), interrupt can happen and we go
+	* right here without any inet device registered yet. */
+	if (!inetdev_get_by_dev(skb->dev)) {
+		log_debug("inet device is not registered yet for %s\n",
+			skb->dev->name);
+		skb_free(skb);
+		return 0;
 	}
 
 	/* setup L3 header */
