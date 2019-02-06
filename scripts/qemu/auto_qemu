@@ -159,6 +159,9 @@ guess_machine() {
 		mips)
 			echo "-M mipssim"
 			;;
+		mips64)
+			echo "-M mipssim"
+			;;
 		ppc)
 			echo "-M virtex-ml507"
 			;;
