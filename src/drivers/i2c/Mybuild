@@ -6,6 +6,10 @@ module at91_twi {
 }
 
 module i2c {
+	option number log_level=0
+
+	option number i2c_bus_max=4
+
 	source "i2c.c"
 	@IncludeExport(path="drivers/i2c")
 	source "i2c.h"

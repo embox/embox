@@ -1,117 +1,121 @@
+/**
+ * @file
+ *
+ * @date Nov 16, 2018
+ * @author Anton Bondarev
+ */
+
+#include <errno.h>
 #include <stdlib.h>
-#include <embox/unit.h>
+
+#include <util/dlist.h>
+#include <util/err.h>
+
+#include <mem/misc/pool.h>
 #include <drivers/i2c/i2c.h>
 
-EMBOX_UNIT_INIT(i2c_init);
+#include <framework/mod/options.h>
 
-// TODO: should be configured externally
-#define I2C_MAX_BUSES 4
+static struct i2c_bus *i2c_bus_repo[I2C_BUS_MAX];
 
-static struct i2c_bus i2c_buses[I2C_MAX_BUSES];
-// spinlock declaration goes here;
+POOL_DEF(i2c_bus_pool, struct i2c_bus, I2C_BUS_MAX);
 
-int __register_i2c_bus(struct i2c_adapter *dev)
-{
-	int i;
+int i2c_bus_register(struct i2c_adapter *adap, int id, const char *bus_name) {
+	struct i2c_bus *i2c_bus;
 
-	for (i = 0; i < I2C_MAX_BUSES; i++)
-		if (i2c_buses[i].free_entry)
-			break;
-
-	if (i == I2C_MAX_BUSES)
-		return 1;
-
-	i2c_buses[i].free_entry = 0;
-
-	i2c_buses[i].id = i;
-	i2c_buses[i].adapter = dev;
-	return 0;
-}
-
-int register_i2c_bus(struct i2c_adapter *dev)
-{
-	// FIXME: Acquire spinlock
-	int ret = __register_i2c_bus(dev);
-	// FIXME: Release spinlock
-	return ret;
-}
-
-int unregister_i2c_bus(int bus_id)
-{
-	if (bus_id < 0 || bus_id >= I2C_MAX_BUSES)
-		return 1;
-	// FIXME: acquire spinlock
-	// FIXME: release devices
-	i2c_buses[bus_id].free_entry = 1;
-	// FIXME: release spinlock
-	return 0;
-}
-
-struct i2c_bus* get_i2c_bus(int bus_id)
-{
-	if (bus_id < 0 || bus_id >= I2C_MAX_BUSES)
-		return NULL;
-	return &i2c_buses[bus_id];
-}
-
-int enumerate_i2c_buses(int (*callback)(int, void*), void* cookie)
-{
-	int i;
-
-	for (i = 0; i < I2C_MAX_BUSES; i++)
-		if (!i2c_buses[i].free_entry)
-		{
-			int ret = callback(i, cookie);
-			if (ret)
-				return ret;
-		}
-	return 0;
-}
-
-int register_i2c_device(int bus_id, struct i2c_device *dev)
-{
-	struct i2c_bus *bus = get_i2c_bus(bus_id);
-
-	if (!bus)
-		return 1;
-
-	// FIXME: acquire bus spinlock
-	dev->next = bus->devices.next;
-	bus->devices.next = dev;
-	// FIXME: release bus spinlock
-
-	return 0;
-}
-
-int enumerate_i2c_devices(int bus_id, int (*callback)(struct i2c_device*, void*), void *cookie)
-{
-	struct i2c_bus *bus = get_i2c_bus(bus_id);
-	struct i2c_device *cur;
-
-	if (!bus)
-		return 1;
-
-	cur = &bus->devices;
-
-	// FIXME: acquire bus spinlock
-	while (cur->next)
-	{
-		cur = cur->next;
-		int ret = callback(cur, cookie);
-		if (ret)
-			return ret;
+	if (id < 0 || id >= I2C_BUS_MAX) {
+		return -EINVAL;
 	}
-	// FIXME: release bus spinlock
+	if (!bus_name) {
+		return -EINVAL;
+	}
+
+	if (strlen(bus_name) > MAX_I2C_BUS_NAME) {
+		return -ENAMETOOLONG;
+	}
+
+	if (i2c_bus_repo[id]) {
+		return -EBUSY;
+	}
+
+	i2c_bus = pool_alloc(&i2c_bus_pool);
+	if (!i2c_bus) {
+		return -ENOMEM;
+	}
+
+	i2c_bus->i2c_adapter = adap;
+	i2c_bus->id = id;
+
+	strncpy(i2c_bus->name, bus_name, MAX_I2C_BUS_NAME - 1);
+	i2c_bus->name[MAX_I2C_BUS_NAME - 1] = '\0';
+
+	i2c_bus_repo[id] = i2c_bus;
 
 	return 0;
 }
 
-static int i2c_init(void)
-{
-	int i;
+int i2c_bus_unregister(int id) {
 
-	for (i = 0; i < I2C_MAX_BUSES; i++)
-		i2c_buses[i].free_entry = 1;
+	if (id < 0 || id >= I2C_BUS_MAX) {
+		return -EINVAL;
+	}
+	if (i2c_bus_repo[id]) {
+		pool_free(&i2c_bus_pool, i2c_bus_repo[id]);
+		i2c_bus_repo[id] = NULL;
+	}
 
 	return 0;
+}
+
+struct i2c_bus *i2c_bus_get(int id) {
+	if (id < 0 || id >= I2C_BUS_MAX) {
+		return err_ptr(EINVAL);
+	}
+	return i2c_bus_repo[id];
+}
+
+ssize_t i2c_bus_read(int id, uint16_t addr, uint8_t *ch, size_t sz) {
+	struct i2c_bus *bus;
+	struct i2c_msg msg = {
+			.addr = addr,
+			.buf = (uint8_t *)ch,
+			.flags = I2C_M_RD,
+			.len = sz
+	};
+
+	if (id < 0 || id >= I2C_BUS_MAX) {
+		return -EINVAL;
+	}
+	bus = i2c_bus_get(id);
+	if (err(bus) || bus == NULL) {
+		return -EBUSY;
+	}
+	assert(bus->i2c_adapter);
+	assert(bus->i2c_adapter->i2c_algo);
+	assert(bus->i2c_adapter->i2c_algo->i2c_master_xfer);
+
+	return bus->i2c_adapter->i2c_algo->i2c_master_xfer(bus->i2c_adapter, &msg, 1);
+}
+
+ssize_t i2c_bus_write(int id, uint16_t addr, const uint8_t *ch, size_t sz) {
+	struct i2c_bus *bus;
+	struct i2c_msg msg = {
+			.addr = addr,
+			.buf = (uint8_t *)ch,
+			.flags = 0,
+			.len = sz
+	};
+
+	if (id < 0 || id >= I2C_BUS_MAX) {
+		return -EINVAL;
+	}
+	bus = i2c_bus_get(id);
+	if (err(bus) || bus == NULL) {
+		return -EBUSY;
+	}
+	assert(bus->i2c_adapter);
+	assert(bus->i2c_adapter->i2c_algo);
+	assert(bus->i2c_adapter->i2c_algo->i2c_master_xfer);
+
+	return bus->i2c_adapter->i2c_algo->i2c_master_xfer(bus->i2c_adapter, &msg, 1);
 }

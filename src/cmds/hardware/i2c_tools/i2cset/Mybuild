@@ -1,0 +1,21 @@
+package embox.cmd.i2c_tools
+
+@AutoCmd
+@Cmd(name = "i2cset",
+	help = "set I2C registers ",
+	man = '''
+		NAME
+			i2cset - set I2C registers 
+		SYNOPSIS
+			i2cset [-y] i2cbus chip-address data-address [value] ... [mode]
+		DESCRIPTION
+			i2cset is a small helper program to set registers visible through the I2C bus. 
+		OPTIONS
+			-y Disable interactive mode
+			-h print help
+		AUTHOR
+			Anton Bondarev
+	''')
+module i2cset {
+	source "i2cset.c"
+}
