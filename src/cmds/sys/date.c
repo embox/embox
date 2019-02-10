@@ -79,42 +79,52 @@ static void set_date(char *new_date) {
 	settimeofday(&tv, NULL);
 }
 
-static char *get_next_key(char *string) {
-	while(*string++) {
-		if('%' == *string) {
-			return ++string;
-		}
-	}
-	return NULL;
-}
-#define MAX_NANOSECONDS 999999999
-static int check_format(char *string) {
-	char *str;
-	if(string[0] != '+') {
-		printf("invalid format string use '+%%N'\n");
+static int show_fdate(char *fmt) {
+
+	if (fmt[0] != '+') {
+		printf("invalid format string, use '+FORMAT'\n");
 		return -1;
 	}
-	if(NULL != (str = get_next_key(string))) {
-		switch(str[0]) {
-		case 'N': {
-			struct timeval tv;
-			time64_t ns;
 
-			ktime_get_timeval(&tv);
-			ns = timeval_to_ns(&tv);
-			printf("%lld\n", ns % MAX_NANOSECONDS);
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+
+	char *c = fmt + 1;
+	while (*c) {
+		if (*c != '%') {
+			printf("%c", *c);
+			++c;
+			continue;
+		}
+
+		++c;
+		if (!*c) {
+			// % ends format, without format specifier.
+			// Just print it out as best option;
+			printf("%c", '%');
 			break;
 		}
+
+		switch (*c) {
+		case 'N':
+			printf("%09llu", (unsigned long long)tv.tv_usec * NSEC_PER_USEC);
+			break;
+		case 's':
+			printf("%lld", (unsigned long long)tv.tv_sec);
+			break;
 		default:
-			break;
+			printf("%c", *c);
 		}
+
+		++c;
 	}
+	printf("\n");
+
 	return 0;
 }
 
 int main(int argc, char **argv) {
 	int opt;
-	//struct timeval tv;
 
 	getopt_init();
 
@@ -125,21 +135,18 @@ int main(int argc, char **argv) {
 			print_usage();
 			break;
 		case 's': /* set date*/
-			set_date(argv[2]);
+			set_date(optarg);
 			break;
 		default:
 			break;
 		}
 	}
 
-	/* show date and kernel time */
-	if (argc == 1) {
-		show_date();
-		//ktime_get_timeval(&tv);
-		//printf("ktime_get_timeval %d:%d (s:ms)\n", (int)tv.tv_sec, (int)tv.tv_usec/1000);
-		return 0;
+	if (optind < argc) {
+		return show_fdate(argv[optind]);
 	}
-	check_format(argv[argc-1]);
 
+	/* show date and kernel time */
+	show_date();
 	return 0;
 }
