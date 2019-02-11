@@ -311,7 +311,7 @@ static int tun_init(void) {
 		}
 		memset(cdev, 0, sizeof(*cdev));
 		memcpy(cdev->name, tun_name, sizeof(cdev->name));
-		cdev->open = tun_dev_open;
+		cdev->dev_open = tun_dev_open;
 		cdev->dev_iops = &tun_iops;
 		cdev->dev_priv = tdev;
 		err = char_dev_register(cdev);

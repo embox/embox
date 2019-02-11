@@ -57,8 +57,8 @@ struct dev_module *dev_module_create(
 	strncpy(devmod->name, name, DEV_NAME_LEN);
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
 	devmod->dev_iops = dev_iops;
-	devmod->open = open;
-	devmod->close = close;
+	devmod->dev_open = open;
+	devmod->dev_close = close;
 	devmod->dev_priv = privdata;
 
 	return devmod;

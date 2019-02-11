@@ -30,8 +30,8 @@ struct dev_module {
 
 	const struct idesc_ops *dev_iops;
 
-	struct idesc *(*open)  (struct dev_module *, void *);
-	int 		  (*close) (struct idesc *);
+	struct idesc *(*dev_open)  (struct dev_module *, void *);
+	int 		  (*dev_close) (struct idesc *);
 
 	void  *dev_priv;
 };

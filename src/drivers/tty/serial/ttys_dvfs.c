@@ -50,7 +50,7 @@ int ttys_register(const char *name, void *dev_info) {
 	}
 	memset(cdev, 0, sizeof(*cdev));
 	memcpy(cdev->name, name, sizeof(cdev->name));
-	cdev->open = uart_cdev_open;
+	cdev->dev_open = uart_cdev_open;
 	cdev->dev_iops = idesc_serial_get_ops();
 	cdev->dev_priv = dev_info;
 

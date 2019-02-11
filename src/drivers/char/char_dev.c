@@ -70,8 +70,8 @@ struct idesc *char_dev_open(struct node *node, int flags) {
 		return NULL;
 	}
 
-	if (cdev->open != NULL) {
-		return cdev->open(cdev, cdev->dev_priv);
+	if (cdev->dev_open != NULL) {
+		return cdev->dev_open(cdev, cdev->dev_priv);
 	}
 
 	return char_dev_idesc_create(cdev);

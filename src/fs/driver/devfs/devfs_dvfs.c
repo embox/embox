@@ -177,9 +177,9 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 	assert(node->i_data);
 
 	dev = node->i_data;
-	assert(dev->open);
+	assert(dev->dev_open);
 
-	return dev->open(dev, dev->dev_priv);
+	return dev->dev_open(dev, dev->dev_priv);
 }
 
 
@@ -218,8 +218,8 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	dev = i_no->i_data;
 
 	assert(dev);
-	assert(dev->open);
-	desc = dev->open(dev, dev->dev_priv);
+	assert(dev->dev_open);
+	desc = dev->dev_open(dev, dev->dev_priv);
 
 	return desc;
 }

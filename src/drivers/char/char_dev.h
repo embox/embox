@@ -20,8 +20,8 @@
 			.name = chname, \
 			.dev_priv = priv, \
 			.dev_iops = idesc_op, \
-			.open = open_fn, \
-			.close = close_fn, \
+			.dev_open = open_fn, \
+			.dev_close = close_fn, \
 			 })
 
 struct idesc_dev {

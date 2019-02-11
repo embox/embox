@@ -98,7 +98,7 @@ static int vc_init(void) {
 	memset(vc_dev, 0, sizeof(*vc_dev));
 	vc_dev->name = VC_DEV_NAME;
 	vc_dev->dev_iops = &idesc_vc_ops;
-	vc_dev->open = vc_open;
+	vc_dev->dev_open = vc_open;
 
 	return char_dev_register(&vc_dev);
 }

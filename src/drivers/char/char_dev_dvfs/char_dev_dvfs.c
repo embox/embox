@@ -96,8 +96,8 @@ static struct idesc *char_dev_open(struct inode *node, struct idesc *idesc) {
 		return NULL;
 	}
 
-	if (cdev->open != NULL) {
-		idesc = cdev->open(cdev, cdev->dev_priv);
+	if (cdev->dev_open != NULL) {
+		idesc = cdev->open(dev_cdev, cdev->dev_priv);
 		return idesc;
 	}
 
@@ -115,8 +115,8 @@ static struct idesc *char_dev_open(struct inode *node, struct idesc *idesc) {
 	 * Generally it should be symmetrics with idesc_close(), but
 	 * idesc ops has no open(), so we need to "imitate" opening like that */
 	/*
-	if (devmod->open) {
-		if (devmod->open(devmod, devmod->dev_priv)) {
+	if (devmod->dev_open) {
+		if (devmod->dev_open(devmod, devmod->dev_priv)) {
 			log_error("Failed to open %s", devmod->name);
 			return NULL;
 		}
