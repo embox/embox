@@ -205,7 +205,7 @@ static int devfs_ioctl(struct file *desc, int request, void *data) {
 }
 
 /* Call device-specific open() handler */
-static struct idesc *devfs_open_idesc(struct lookup *l) {
+static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	struct inode  *i_no;
 	struct dev_module *dev;
 	struct idesc *desc;
