@@ -73,6 +73,14 @@ int char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
 	return 0;
 }
 
+static void char_dev_idesc_close(struct idesc *idesc) {
+}
+
+static const struct idesc_ops idesc_char_dev_def_ops = {
+		.close = char_dev_idesc_close,
+		.fstat = char_dev_idesc_fstat,
+};
+
 struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
 	struct idesc *idesc;
 
@@ -82,7 +90,11 @@ struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
 		return NULL;
 	}
 
-	idesc_init(idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
+	if (cdev) {
+		idesc_init(idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
+	} else {
+		idesc_init(idesc, &idesc_char_dev_def_ops, S_IROTH | S_IWOTH);
+	}
 
 	return idesc;
 }
