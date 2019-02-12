@@ -13,6 +13,9 @@
 #error "Unsupported architecture"
 #endif
 
+#include <assert.h>
+#include <kernel/irq.h>
+
 #define NUM_CHANNELS (1024)
 
 //x86 only
@@ -97,6 +100,25 @@ static inline unsigned long int xchg(unsigned long int * old, unsigned long int 
 	return value;
 }
 
+static void handle(int irq) {
+	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+
+	irqctrl_disable(irq);
+	irqctrl_eoi(irq);
+	critical_enter(CRITICAL_IRQ_HANDLER);
+	{
+		ipl_enable();
+
+		irq_dispatch(irq);
+
+		ipl_disable();
+
+	}
+	irqctrl_enable(irq);
+	critical_leave(CRITICAL_IRQ_HANDLER);
+	critical_dispatch_pending();
+}
+
 /* Dispatch events to the correct handlers */
 void do_hypervisor_callback(struct pt_regs *regs)
 {
@@ -127,9 +149,7 @@ void do_hypervisor_callback(struct pt_regs *regs)
 			/* Combine the two offsets to get the port */
 			evtchn_port_t port = (pending_selector << 5) + event_offset;
 			/* Handler the event */
-			handlers[port](port, regs);
-			/* Clear the pending flag */
-			CLEAR_BIT(xen_shared_info.evtchn_pending[0], event_offset);
+			handle(port);
 		}
 	}
 }

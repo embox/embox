@@ -95,36 +95,36 @@ C_LABEL(divide_error):
 	pushl $0		# no error code
 	pushl $do_divide_error
 do_exception:
-    pushl %ds
+	pushl %ds
 	pushl %eax
-	xorl %eax, %eax
 	pushl %ebp
 	pushl %edi
 	pushl %esi
 	pushl %edx
-	decl %eax			# eax = -1
 	pushl %ecx
 	pushl %ebx
 	cld
+
+	movl ORIG_EAX(%esp), %edx	# get the error code
+
+	xorl %eax, %eax
+	decl %eax			# eax = -1
+	movl %eax, ORIG_EAX(%esp)
+
 	movl %es, %ecx
 	movl ES(%esp), %edi		# get the function address
-	movl ORIG_EAX(%esp), %edx	# get the error code
-	movl %eax, ORIG_EAX(%esp)
 	movl %ecx, ES(%esp)
+
 	movl $(FLAT_KERNEL_DS), %ecx
 	movl %ecx, %ds
 	movl %ecx, %es
+
 	movl %esp,%eax			# pt_regs pointer
-    pushl %edx
-    pushl %eax
+	pushl %edx
+	pushl %eax
 	call *%edi
-    jmp ret_from_exception
-    
-ret_from_exception:
-        movb CS(%esp),%cl
-	test $2,%cl          # slow return to ring 2 or 3
-	jne  safesti
-        RESTORE_ALL
+	addl $8,%esp
+	RESTORE_ALL
 
 # A note on the "critical region" in our callback handler.
 # We want to avoid stacking callback handlers due to events occurring
