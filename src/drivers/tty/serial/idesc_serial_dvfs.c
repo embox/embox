@@ -36,7 +36,7 @@ POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 extern struct tty_ops uart_tty_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
+struct idesc *idesc_serial_create(struct uart *uart, int __oflags) {
 	struct tty_uart *tu;
 
 	assert(uart);
@@ -53,7 +53,7 @@ struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
 	uart->tty->idesc = &tu->idesc;
 	uart->irq_handler = uart_irq_handler;
 
-	idesc_init(&tu->idesc, idesc_serial_get_ops(), mod);
+	idesc_init(&tu->idesc, idesc_serial_get_ops(), __oflags);
 
 	return &tu->idesc;
 }

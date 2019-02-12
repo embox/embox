@@ -15,6 +15,7 @@
 
 #include <drivers/tty.h>
 #include <drivers/ttys.h>
+#include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
 
 #include "idesc_serial.h"
@@ -150,21 +151,13 @@ static int serial_status(struct idesc *idesc, int mask) {
 	return res;
 }
 
-static int serial_fstat(struct idesc *data, void *buff) {
-	struct stat *st = buff;
-
-	st->st_mode = S_IFCHR;
-
-	return 0;
-}
-
 static const struct idesc_ops idesc_serial_ops = {
 	.id_readv = serial_read,
 	.id_writev = serial_write,
 	.ioctl = serial_ioctl,
 	.close = serial_close,
 	.status = serial_status,
-	.fstat = serial_fstat,
+	.fstat = char_dev_idesc_fstat,
 };
 
 const struct idesc_ops *idesc_serial_get_ops(void){

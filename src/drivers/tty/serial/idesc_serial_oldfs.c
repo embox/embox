@@ -61,10 +61,9 @@ static void idesc_uart_unbind(struct uart *uart) {
 	pool_free(&uart_ttys, tu);
 }
 
-struct idesc *idesc_serial_create(struct uart *uart, mode_t mod) {
+struct idesc *idesc_serial_create(struct uart *uart, int __oflags) {
 
 	assert(uart);
-	assert(mod);
 
 	if (idesc_uart_bind(uart)) {
 		return NULL;
