@@ -6,6 +6,7 @@
  */
 
 #include <ctype.h>
+#include <defines/null.h>
 
 /**< ASCII table */
 const unsigned char _ctype[] = {
@@ -34,3 +35,15 @@ _U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,       /* 192-207 */
 _U,_U,_U,_U,_U,_U,_U,_P,_U,_U,_U,_U,_U,_U,_U,_L,       /* 208-223 */
 _L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,       /* 224-239 */
 _L,_L,_L,_L,_L,_L,_L,_P,_L,_L,_L,_L,_L,_L,_L,_L};      /* 240-255 */
+
+const unsigned short **__ctype_b_loc(void) {
+	return NULL;
+}
+
+int32_t **__ctype_tolower_loc(void) {
+	return NULL;
+}
+
+int32_t **__ctype_toupper_loc(void) {
+	return NULL;
+}

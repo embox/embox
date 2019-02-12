@@ -1,6 +1,12 @@
 package embox.kernel.thread
 
+module thread_none {
+	@IncludeExport(path="kernel/thread", target_name="types.h")
+	source "thread_none.h"
+}
+
 module core {
+	option number stack_align=4
 	option number thread_stack_size=8192
 	option number thread_pool_size=16
 
@@ -8,18 +14,19 @@ module core {
 	source "thread_allocator.c"
 	source "thread_switch.c"
 
+	@IncludeExport(path="kernel/thread", target_name="types.h")
+	source "thread_types.h"
+
 	depends sched_wait
 
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.kernel.sched.sched_ticker
 	@NoRuntime depends embox.arch.context
 
-
 	depends stack_api
 	depends thread_local
 	depends thread_cancel
 	depends signal_api
-	depends thread_wait
 
 	depends embox.compat.libc.assert
 
@@ -30,7 +37,6 @@ module core {
 }
 
 module sched_wait {
-	option boolean timer_allocate_on_stack = true
 	source "thread_sched_wait.c"
 }
 
@@ -96,15 +102,6 @@ module thread_cancel_enable extends thread_cancel {
 module thread_cancel_disable extends thread_cancel {
 	source "thread_cancel_disable.h"
 }
-
-@DefaultImpl(thread_wait_stub)
-abstract module thread_wait { }
-
-module thread_wait_stub extends thread_wait {
-	source "thread_wait_stub.c"
-	source "thread_wait_stub.h"
-}
-
 
 @DefaultImpl(stack_protect_none)
 abstract module stack_protect { }

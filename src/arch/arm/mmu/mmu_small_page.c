@@ -21,7 +21,7 @@ mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
 }
 
 mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
-	return 0;
+	return ((uint32_t) *pte) & ~MMU_PAGE_MASK;
 }
 
 void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
@@ -59,7 +59,7 @@ int mmu_pmd_present(mmu_pmd_t *pmd) {
 }
 
 int mmu_pte_present(mmu_pte_t *pte) {
-	return 0;
+	return (((uint32_t)*pte) & ARM_MMU_SMALL_PAGE) == ARM_MMU_SMALL_PAGE;
 }
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {

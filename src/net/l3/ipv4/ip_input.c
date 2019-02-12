@@ -98,7 +98,12 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 
 	/* Forwarding */
 	assert(skb->dev);
-	assert(inetdev_get_by_dev(skb->dev));
+	if (!inetdev_get_by_dev(skb->dev)) {
+		log_debug("ip_rcv: dropped by input  because inet_dev is not set");
+		skb_free(skb);
+		return 0; /* didn't set inet dev yet */
+	}
+
 	if (inetdev_get_by_dev(skb->dev)->ifa_address != 0) {
 		/**
 		 * FIXME

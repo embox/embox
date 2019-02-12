@@ -101,9 +101,14 @@ struct clk {
 static const struct clk clks_repo[] = {
 	{ MXC_CCM_CCGR0, 3 << 24, "dcic1" },
 	{ MXC_CCM_CCGR0, 3 << 26, "dcic2" },
+	{ MXC_CCM_CCGR1, 3 << 24, "gpu2d" },
+	{ MXC_CCM_CCGR1, 3 << 26, "gpu3d" },
 	{ MXC_CCM_CCGR2, 1,       "iahb" },
 	{ MXC_CCM_CCGR2, 3 << 4,  "isfr" },
 	{ MXC_CCM_CCGR2, 0x33,    "hdmi" },
+	{ MXC_CCM_CCGR2, 1 << 3,  "i2c1" },
+	{ MXC_CCM_CCGR2, 1 << 4,  "i2c2" },
+	{ MXC_CCM_CCGR2, 1 << 5,  "i2c3" },
 	{ MXC_CCM_CCGR3, 3 << 0,  "ipu1" },
 	{ MXC_CCM_CCGR3, 3 << 2,  "ipu1_di0" },
 	{ MXC_CCM_CCGR3, 3 << 4,  "ipu1_di1" },
@@ -112,6 +117,8 @@ static const struct clk clks_repo[] = {
 	{ MXC_CCM_CCGR3, 3 << 10, "ipu2_di1" },
 	{ MXC_CCM_CCGR3, 3 << 12, "ldb_di0" },
 	{ MXC_CCM_CCGR3, 3 << 14, "ldb_di1" },
+	{ MXC_CCM_CCGR3, 3 << 30, "openvg" },
+	{ MXC_CCM_CCGR6, 3 << 14, "vpu" },
 };
 
 int clk_enable(char *clk_name) {

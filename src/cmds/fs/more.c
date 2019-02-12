@@ -17,71 +17,56 @@
 #define TAB_SIZE 4
 #define MAX_SCREEN_WIDTH 256
 
-static char buff[MAX_SCREEN_WIDTH], info[MAX_SCREEN_WIDTH];
-
 static void screen(FILE *fp) {
-    int cmd = 0, columns, lines, x, y;
-	WINDOW *std;
-	bool endOfFile = false;
+	char buff[MAX_SCREEN_WIDTH];
+	int cmd = 0, columns, lines, x, y, i;
 
+	WINDOW *std;
 	std = initscr();
 	columns = std->endx - std->begx;
 	if (columns >= MAX_SCREEN_WIDTH - 1) {
 		columns = MAX_SCREEN_WIDTH - 1;
 	}
-	lines	= std->endy - std->begy;
-	refresh();
-	cbreak();
-	noecho();
+	lines = std->endy - std->begy;
+	endwin();
 
-	while (1){
-		if (!endOfFile) {
-			for (x = 0; x < lines - 1; x++) {
-				for (y = 0; y < columns; y++) {
-					buff[y] = !endOfFile ? getc(fp) : ' ';
+	while (1) {
+		for (x = 0; x < lines - 1; x++) {
 
-					switch ((int)buff[y]) {
-						case EOF:
-							buff[y] = ' ';
-							endOfFile = true;
-							break;
-						case '\n':
-							/*	End of the line, filling the rest of buffer */
-							memset(buff + y, ' ', columns - y);
-							y = columns;
-							break;
-						case '\t':
-							/*	Perform tab instert	*/
-							memset(buff + y, ' ', TAB_SIZE);
-							y += TAB_SIZE - 1;
-							break;
+			for (y = 0; y < columns; y++) {
+				buff[y] = getc(fp);
+				switch ((int) buff[y]) {
+				case EOF:
+					for (i = 0; i < y; i++) {
+						printf("%c", buff[i]);
 					}
+					return;
+				case '\n':
+					/*	End of the line, filling the rest of buffer */
+					memset(buff + y, ' ', columns - y);
+					y = columns;
+					break;
+				case '\t':
+					/*	Perform tab instert	*/
+					memset(buff + y, ' ', TAB_SIZE);
+					y += TAB_SIZE - 1;
+					break;
 				}
-				/*	In case if we got out of the actual line size	*/
-				buff[columns]= '\n';
-				addstr(buff);
 			}
-			memset(info, '\0', columns);
-			memcpy(info, "---More---", 10);
-			memset(buff, ' ', columns);
-			if (endOfFile) {
-				strcat(info, " End of the file! Press 'q' to quit.");
+			/*	In case if we got out of the actual line size	*/
+			buff[columns - 1] = '\n';
+			for (i = 0; i < columns; i++) {
+				printf("%c", buff[i]);
 			}
-			memcpy(buff, info, strlen(info));
-			attron(A_REVERSE);
-			addstr(buff);
-			attron(A_NORMAL);
-			refresh();
 		}
 
+		printf("---More---\n");
 		cmd = getch();
+
 		if (cmd == 'q') {
-			endwin();
 			return;
 		}
 	}
-	endwin();
-	return;
 }
 
 int main(int argc, char **argv) {

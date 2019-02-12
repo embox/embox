@@ -119,6 +119,8 @@
 #define NET_1000HALF  (1 << 4)
 #define NET_1000FULL  (1 << 5)
 
+#define NET_GBIT      (NET_1000HALF | NET_1000FULL)
+
 static inline int net_speed_to_adv(int speed) {
 	int res = 0;
 	if (speed & NET_10HALF) { res |= ADVERTISE_10HALF; }
@@ -131,14 +133,17 @@ static inline int net_speed_to_adv(int speed) {
 	return res;
 }
 
-static inline int adv_to_net_speed(int adv) {
+static inline int adv_to_net_speed(int adv, int is_gigabit) {
 	int res = 0;
-	if (adv & ADVERTISE_10HALF) { res |= NET_10HALF; }
-	if (adv & ADVERTISE_10FULL) { res |= NET_10FULL; }
-	if (adv & ADVERTISE_100HALF) { res |= NET_100HALF; }
-	if (adv & ADVERTISE_100FULL) { res |= NET_100FULL; }
-	if (adv & ADVERTISE_1000XHALF) { res |= NET_1000HALF; }
-	if (adv & ADVERTISE_1000XFULL) { res |= NET_1000FULL; }
+	if (is_gigabit) {
+		if (adv & ADVERTISE_1000XHALF) { res |= NET_1000HALF; }
+		if (adv & ADVERTISE_1000XFULL) { res |= NET_1000FULL; }
+	} else {
+		if (adv & ADVERTISE_10HALF) { res |= NET_10HALF; }
+		if (adv & ADVERTISE_10FULL) { res |= NET_10FULL; }
+		if (adv & ADVERTISE_100HALF) { res |= NET_100HALF; }
+		if (adv & ADVERTISE_100FULL) { res |= NET_100FULL; }
+	}
 
 	return res;
 }

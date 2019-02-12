@@ -5,6 +5,8 @@ package third_party.bsp.stmf7cube
 static module core extends third_party.bsp.st_bsp_api {
 
 	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
+	option number eth_rx_packet_count = 5
+	option number eth_tx_packet_count = 5
 
 	@Cflags("-Wno-unused")
 	@DefineMacro("STM32F746xx")
@@ -78,6 +80,9 @@ static module core extends third_party.bsp.st_bsp_api {
 		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_sdmmc.c",
 		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_usb.c",
 		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c"
+
+		@IncludeExport(path="")
+		source "stm32f7xx_hal_conf.h"
 }
 
 @BuildDepends(core)

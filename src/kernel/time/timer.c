@@ -8,6 +8,7 @@
 
 #include <embox/unit.h>
 #include <module/embox/kernel/time/slowdown.h>
+#include <kernel/irq_lock.h>
 #include <kernel/time/timer.h>
 #include <kernel/time/clock_source.h>
 
@@ -23,6 +24,7 @@ static int inited = 0;
 
 static struct lthread clock_handler_lt;
 extern struct clock_source *cs_jiffies;
+static clock_t timer_sched_cnt;
 
 void clock_tick_handler(int irq_num, void *dev_id) {
 	struct clock_source *cs = (struct clock_source *) dev_id;
@@ -39,13 +41,23 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 		}
 
 		if (cs_jiffies->event_device &&	irq_num == cs_jiffies->event_device->irq_nr) {
+			timer_sched_cnt++;
 			lthread_launch(&clock_handler_lt);
 		}
 	}
 }
 
 static int clock_handler(struct lthread *self) {
-	timer_strat_sched();
+
+	int sched_cnt;
+	irq_lock();
+		sched_cnt = timer_sched_cnt;
+		timer_sched_cnt = 0;
+	irq_unlock();
+
+	while (0 < sched_cnt--) {
+		timer_strat_sched();
+	}
 	return 0;
 }
 

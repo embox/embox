@@ -10,6 +10,7 @@
 #define __LINUX_WAIT_H_
 
 #include <sys/wait.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 typedef struct { } wait_queue_head_t;
 
@@ -20,5 +21,9 @@ typedef struct { } wait_queue_head_t;
 
 static inline void wake_up(wait_queue_head_t *erase_wait)
 { /* Only used for waking up threads blocks on erases. Not used in eCos */ }
+
+
+#define wait_event_interruptible_timeout(wq, condition, timeout)	\
+		SCHED_WAIT_TIMEOUT(condition, timeout)
 
 #endif /* WAIT_H_ */

@@ -35,6 +35,10 @@ struct dev_module *dev_module_create(struct device *dev, const char *name,
 	assert(privdata); /* No known devices without privdata. Currently
 			   *  it's up to legacy of the old FS */
 
+	while (*name == '/') {
+		name++;
+	}
+
 	devmod = pool_alloc(&dev_module_pool);
 	id = index_alloc(&dev_module_idx, INDEX_MIN);
 	if (id == INDEX_NONE) {

@@ -46,11 +46,13 @@
 
 static char pgd_raw[(PGD_COUNT + 1) * MMU_PGD_SIZE] __attribute__ ((aligned(MMU_PGD_SIZE)));
 static char pmd_raw[(PMD_COUNT + 1) * MMU_PMD_SIZE] __attribute__ ((aligned(MMU_PMD_SIZE)));
-static char pte_raw[(PTE_COUNT + 1) * MMU_PTE_SIZE] __attribute__ ((aligned(MMU_PTE_SIZE)));
 
 static struct page_allocator *pgd_allocator;
 static struct page_allocator *pmd_allocator;
+#if (PTE_COUNT > 1)
 static struct page_allocator *pte_allocator;
+static char pte_raw[(PTE_COUNT + 1) * MMU_PTE_SIZE] __attribute__ ((aligned(MMU_PTE_SIZE)));
+#endif
 
 static char virtual_page_raw[(VIRTUAL_PAGES_COUNT + 1) * MMU_PAGE_SIZE] __attribute__ ((section(".bss.vmem_pages")));
 static struct page_allocator *virt_page_allocator;
@@ -60,11 +62,13 @@ EMBOX_UNIT_INIT(vmem_alloc_init);
 static int vmem_alloc_init(void) {
 	pgd_allocator = page_allocator_init(pgd_raw, sizeof(pgd_raw), MMU_PGD_SIZE);
 	pmd_allocator = page_allocator_init(pmd_raw, sizeof(pmd_raw), MMU_PMD_SIZE);
+#if (PTE_COUNT > 1)
 	pte_allocator = page_allocator_init(pte_raw, sizeof(pte_raw), MMU_PTE_SIZE);
-
+	assert(pte_allocator);
+#endif
 	assert(pgd_allocator);
 	assert(pmd_allocator);
-	assert(pte_allocator);
+
 	virt_page_allocator = page_allocator_init(virtual_page_raw, VIRTUAL_PAGES_COUNT * MMU_PAGE_SIZE, MMU_PAGE_SIZE);
 
 	log_debug("%p", virt_page_allocator);
@@ -101,7 +105,9 @@ mmu_pmd_t *vmem_alloc_pmd_table(void) {
 	return addr;
 }
 
+
 mmu_pte_t *vmem_alloc_pte_table(void) {
+#if (PTE_COUNT > 1)
 	void *addr;
 
 	assert(pte_allocator);
@@ -114,6 +120,11 @@ mmu_pte_t *vmem_alloc_pte_table(void) {
 	log_debug("%p", addr);
 
 	return addr;
+#else
+	log_error("PTE pool size is zero for current configuration");
+
+	return NULL;
+#endif
 }
 
 void *vmem_alloc_page() {
@@ -135,10 +146,27 @@ void vmem_free_pmd_table(mmu_pmd_t *pmd) {
 }
 
 void vmem_free_pte_table(mmu_pte_t *pte) {
+#if (PTE_COUNT > 1)
 	page_free(pte_allocator, pte, 1);
+#endif
 }
 
 void vmem_free_page(void *addr) {
 	if (page_belong(virt_page_allocator, addr))
 		page_free(virt_page_allocator, addr, 1);
+}
+
+struct page_allocator *get_pgd_allocator(void) {
+	return pgd_allocator;
+}
+
+struct page_allocator *get_pmd_allocator(void) {
+	return pmd_allocator;
+}
+
+struct page_allocator *get_pte_allocator(void) {
+#if (PTE_COUNT > 1)
+	return pte_allocator;
+#endif
+	return NULL;
 }

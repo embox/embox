@@ -22,10 +22,13 @@ START_SCRIPT=$ROOT_DIR/conf/start_script.inc
 CONT_BASE=$ROOT_DIR/scripts/continuous
 CONT_FS_MANAGE=$CONT_BASE/fs/img-manage.sh
 CONT_RUN=$CONT_BASE/run.sh
+PID_FILE=$BASE_DIR/qemu_bg.pid
 
 IMG_RO_CONTENT=$DATA_DIR/img-ro
 IMG_RW_CONTENT="$DATA_DIR/img-rw $IMG_RO_CONTENT"
 IMG_RW_GOLD=$DATA_DIR/img-rw-gold
+
+EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 
 posted_ret=0
 check_post_exit() {
@@ -109,6 +112,23 @@ banner() {
 	echo Starting test "$fs" filesystem
 	echo  ================================
 }
+
+interactive_tests() {
+	EXPECT_TEST_CONFIG=$1
+
+	$CONT_RUN generic/qemu_bg "" $PID_FILE
+
+	expect $EXPECT_TESTS_BASE/framework/run_all.exp \
+		$EXPECT_TEST_CONFIG 10.0.2.16 10.0.2.10 ""
+
+	check_post_exit "Interactive tests failed"
+
+	$CONT_RUN generic/qemu_bg_kill "" $PID_FILE
+	rm $PID_FILE
+}
+
+interactive_tests $EXPECT_TESTS_BASE/x86_fs_unit_tests.config
+interactive_tests $EXPECT_TESTS_BASE/x86_fs_shell_commands.config
 
 for f in $FS_TEST_RO; do
 	img=$BASE_DIR/$f.img

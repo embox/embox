@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief built-in version some math functions
+ * @brief built-in version for some math functions
  *        https://gcc.gnu.org/onlinedocs/gcc/Other-Builtins.html
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
@@ -23,7 +23,15 @@ double fabs(double x) {
 	return __builtin_fabs(x);
 }
 
-double roundl(double x) {
+double round(double x) {
+	return __builtin_round(x);
+}
+
+float roundf(float x) {
+	return __builtin_roundf(x);
+}
+
+long double roundl(long double x) {
 	return __builtin_roundl(x);
 }
 
@@ -35,8 +43,16 @@ double log10(double x) {
 	return __builtin_log10(x);
 }
 
-double ceill(double x) {
+long double ceill(long double x) {
 	return __builtin_ceill(x);
+}
+
+double ceil(double x) {
+	return __builtin_ceil(x);
+}
+
+float ceilf(float x) {
+	return __builtin_ceilf(x);
 }
 
 double floor(double x) {

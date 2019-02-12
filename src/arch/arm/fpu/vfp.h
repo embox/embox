@@ -41,16 +41,16 @@ extern int try_vfp_instructions(void);
 	stmia     stack!, {tmp}; \
 	tst       tmp, #0xF00000; \
 	beq       fpu_out_save_inc; \
-	vstmia stack!, {d0-d15}; \
-	vstmia stack!, {d16-d31}; \
+	vstmia    stack!, {d0-d15}; \
+	vstmia    stack!, {d16-d31}; \
 fpu_out_save_inc:
 
 #define ARM_FPU_CONTEXT_SAVE_DEC(tmp, stack) \
 	mrc       p15, 0, tmp, c1, c0, 2; \
 	tst       tmp, #0xF00000; \
 	beq       fpu_out_save_dec; \
-	fstmfdd   stack!, {d0-d15}; \
-	fstmfdd   stack!, {d16-d31}; \
+	vstmdb    stack!, {d0-d15}; \
+	vstmdb    stack!, {d16-d31}; \
 fpu_out_save_dec: \
 	stmfd     stack!, {tmp};
 
@@ -68,8 +68,8 @@ fpu_out_load_inc:
 	mcr       p15, 0, tmp, c1, c0, 2; \
 	tst       tmp, #0xF00000; \
 	beq       fpu_out_load_dec; \
-	fldmfdd   stack!, {d16-d31}; \
-	fldmfdd   stack!, {d0-d15}; \
+	vldmia   stack!, {d16-d31}; \
+	vldmia   stack!, {d0-d15}; \
 fpu_out_load_dec:
 
 #endif /* __ASSEMBLER__ */

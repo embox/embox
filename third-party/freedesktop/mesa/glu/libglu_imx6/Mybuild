@@ -1,0 +1,7 @@
+package third_party.freedesktop.mesa
+
+@BuildDepends(third_party.freedesktop.mesa.mesa_etnaviv)
+@Build(script="$(EXTERNAL_MAKE)")
+module  libglu_etnaviv {
+	source "^BUILD/extbld/^MOD_PATH/install/libGLU.a"
+}

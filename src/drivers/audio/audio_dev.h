@@ -23,18 +23,22 @@ struct audio_dev_ops {
 	int (*ad_ops_ioctl)(struct audio_dev *dev, int cmd, void *args);
 };
 
+typedef enum {
+	AUDIO_DEV_OUTPUT,
+	AUDIO_DEV_INPUT,
+	AUDIO_DEV_BOTH
+} audio_dev_dir_t;
+
 struct audio_dev {
 	struct audio_dev_ops *ad_ops;
 	const char *ad_name;
 	void *ad_priv;
-	size_t buf_len;
-	uint8_t num_of_chan;
-	uint8_t max_chan;
+	audio_dev_dir_t dir;
 };
 
-#define AUDIO_DEV_DEF(name, ops, priv) \
+#define AUDIO_DEV_DEF(name, ops, priv, dir) \
 	ARRAY_SPREAD_DECLARE(const struct audio_dev, __audio_device_registry); \
-	ARRAY_SPREAD_ADD(__audio_device_registry, {ops,name, priv} )
+	ARRAY_SPREAD_ADD(__audio_device_registry, {ops,name, priv, dir} )
 
 extern struct audio_dev *audio_dev_get_by_idx(int idx);
 
@@ -43,10 +47,17 @@ extern struct audio_dev *audio_dev_get_by_name(char name[]);
 extern uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev);
 extern uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev);
 
+extern void audio_dev_open_out_stream(struct audio_dev *audio_dev,
+	void *stream);
+extern void audio_dev_open_in_stream(struct audio_dev *audio_dev,
+	void *stream);
+
 /* ioctl commands */
 #define ADIOCTL_IN_SUPPORT  1
 #define ADIOCTL_OUT_SUPPORT 2
 #define ADIOCTL_BUFLEN      3
+#define ADIOCTL_SET_RATE    6
+#define ADIOCTL_GET_RATE    7
 
 /* ioctl support list */
 #define AD_MONO_SUPPORT    (1 << 0)

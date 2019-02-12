@@ -8,4 +8,5 @@ module exceptions {
 	source "exception_handler.c"
 	source "exceptions.S"
 	source "arm_undefined_exception_handler.c"
+	source "abort_exception_handler.c"
 }

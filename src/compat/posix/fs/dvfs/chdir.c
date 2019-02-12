@@ -21,7 +21,11 @@
  */
 int chdir(const char *path) {
 	struct lookup l;
-	dvfs_lookup(path, &l);
+	int err;
+
+	if ((err = dvfs_lookup(path, &l))) {
+		return SET_ERRNO(-err);
+	}
 	if (l.item != NULL) {
 		task_fs()->pwd = l.item;
 		return 0;

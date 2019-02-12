@@ -1,25 +1,29 @@
 #!/usr/bin/expect
 
-proc run_all_tests {} {
+source [file join [file dirname [info script]] test_core.exp]
+
+proc run_all_tests {tests_list_file embox_ip host_ip host_passwd} {
 	set logfile testrun.log
 	set dir [file dirname [info script]]
-	#TODO get tests_list_file in some better way
-	set tests_list_file [file join $dir ../tests_list.config]
 
 	set tests [split [exec cat $tests_list_file] "\n"]
 
 	exec rm -f $logfile
 
+	set test_res 0
 	set i 0
 	foreach t $tests {
 		incr i
 		puts "\n$i.  autotest: ======= running TEST SUITE: $t ... ======= "
 
-		exec rm -f .tmp.txt
-		exec touch .tmp.txt
+		set short_log $dir/../$t.log
+
+		exec rm -f .tmp.txt $short_log
+		exec touch .tmp.txt $short_log
 
 		set status 0
-		if {[catch {exec expect $dir/../$t.exp >> .tmp.txt} results options]} {
+
+		if {[catch {exec expect $dir/../$t.exp $embox_ip $host_ip $host_passwd >> .tmp.txt} results options]} {
 		    set details [dict get $options -errorcode]
 		    if {[lindex $details 0] eq "CHILDSTATUS"} {
 		        set status [lindex $details 2]
@@ -31,14 +35,25 @@ proc run_all_tests {} {
 
 		exec cat .tmp.txt >> $logfile
 
+		puts [exec cat $short_log]
 		if { $status != 0 } {
+			# Find the last failed test and print only its output
+			set line_failed_test [exec grep -n "TEST CASE.*running" $logfile | tail -1 | awk {{gsub(":","",$1); print $1}}]
+			puts [exec tail -n +$line_failed_test $logfile]
 			puts "    autotest: FAILED (error code = $status)"
-			puts [exec cat .tmp.txt]
-			exit 1
+			set test_res -1
 		} else {
 			puts "    autotest: PASSED"
 		}
 	}
+
+	return $test_res
 }
 
-run_all_tests
+set tests_list_file [lindex $argv 0]
+set embox_ip        [lindex $argv 1]
+set host_ip         [lindex $argv 2]
+set host_passwd     [lindex $argv 3]
+
+set retcode [run_all_tests $tests_list_file $embox_ip $host_ip $host_passwd]
+exit $retcode

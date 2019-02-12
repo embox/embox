@@ -21,7 +21,9 @@ int open(const char *path, int __oflag, ...) {
 	struct lookup lookup;
 	struct inode  *i_no;
 
-	dvfs_lookup(path, &lookup);
+	if ((res = dvfs_lookup(path, &lookup))) {
+		return SET_ERRNO(-res);
+	}
 
 	if (!lookup.item) {
 		if (__oflag & O_CREAT) {

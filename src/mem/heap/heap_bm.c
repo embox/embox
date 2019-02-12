@@ -39,11 +39,18 @@ struct free_block {
 	struct free_block_link link; /**<< Link in global list of free blocks. */
 };
 
+struct heap_desc {
+	/* This member must be first. */
+	struct free_block_link free_blocks; /* List of free blocks */
+	int count; /* Count of currently allocated objects */
+};
+
 #define get_clear_size(size) ((size) & ~3)
 #define get_flags(size) ((size) & 3)
 
 static struct free_block_link *heap_get_free_blocks(void *heap) {
-	return (struct free_block_link *) heap;
+	struct heap_desc *heap_desc = (struct heap_desc *) heap;
+	return &heap_desc->free_blocks;
 }
 
 static int block_is_busy(struct free_block *block) {
@@ -229,6 +236,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 	struct free_block_link *link;
 	void *ret_addr;
 	struct free_block_link *free_blocks_list;
+	struct heap_desc *heap_desc = (struct heap_desc *) heap;
 
 	if (size <= 0) {
 		return NULL;
@@ -277,6 +285,8 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 
 		ret_addr = (void *) ((uint32_t *) block + 1);
 
+		heap_desc->count++;
+
 		sched_unlock();
 		return ret_addr;
 	}
@@ -286,6 +296,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 
 void bm_free(void *heap, void *ptr) {
 	struct free_block *block;
+	struct heap_desc *heap_desc = (struct heap_desc *) heap;
 
 	assert(ptr);
 
@@ -299,6 +310,8 @@ void bm_free(void *heap, void *ptr) {
 	}
 
 	assert(block_is_busy(block));
+
+	heap_desc->count--;
 
 	afterfree(ptr, (get_clear_size(block->size) - sizeof(block->size)));
 
@@ -316,19 +329,23 @@ void bm_free(void *heap, void *ptr) {
 }
 
 void bm_init(void *heap, size_t size) {
+	struct heap_desc *heap_desc;
 	struct free_block *block;
 	struct free_block_link *free_blocks_list;
 	size_t actual_free_mem;
+
+	heap_desc = (struct heap_desc *) heap;
+	heap_desc->count = 0;
 
 	free_blocks_list = heap_get_free_blocks(heap);
 	free_blocks_list->next = free_blocks_list;
 	free_blocks_list->prev = free_blocks_list;
 
 	/* initial block */
-	block = heap + sizeof *free_blocks_list;
+	block = heap + sizeof *heap_desc;
 	/* structure of heap (@c size bytes):
-	 * | free_blocks_list | *** initial block *** | (sizeof block->size) bytes for busy block | */
-	actual_free_mem = size - (sizeof *free_blocks_list + sizeof block->size);
+	 * count | free_blocks_list | *** initial block *** | (sizeof block->size) bytes for busy block | */
+	actual_free_mem = size - (sizeof *heap_desc + sizeof block->size);
 
 	block->size = actual_free_mem;
 	set_end_size(block);
@@ -339,4 +356,9 @@ void bm_init(void *heap, size_t size) {
 	/* last work we mark as persistence busy */
 	block = (void *) block + get_clear_size(block->size);
 	mark_block(block);
+}
+
+int bm_heap_is_empty(void *heap) {
+	struct heap_desc *heap_desc = (struct heap_desc *) heap;
+	return heap_desc->count == 0;
 }

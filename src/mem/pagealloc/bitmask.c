@@ -61,14 +61,18 @@ static void mark_n_busy(struct page_allocator *allocator,
 static void mark_n_free(struct page_allocator *allocator,
 		unsigned int start_page, unsigned int page_q) {
 	unsigned int page_i;
+	int count_free = 0;
 
 	assert(allocator);
 	assert(start_page + page_q <= allocator->pages_n);
 	for (page_i = start_page; page_i < start_page + page_q; page_i++) {
-		bitmap_clear_bit(allocator->bitmap, page_i);
+		if (bitmap_test_bit(allocator->bitmap, page_i)) {
+			bitmap_clear_bit(allocator->bitmap, page_i);
+			++count_free;
+		}
 	}
 
-	allocator->free += page_q * allocator->page_size;
+	allocator->free += count_free * allocator->page_size;
 }
 
 static void *search_multi_page(struct page_allocator *allocator, size_t page_q) {
@@ -112,7 +116,7 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 	unsigned int pages;
 	size_t bitmap_len;
 
-	if (len < page_size) {
+	if (len < page_size + sizeof(struct page_allocator)) {
 		return NULL;
 	}
 
@@ -124,8 +128,10 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 
 	while (sizeof(struct page_allocator) + bitmap_len > pages_start - start) {
 		pages_start += page_size;
-		pages --;
-		assert(pages > 0);
+		pages--;
+		if (pages <= 0) {
+			return NULL;
+		}
 	}
 
 	allocator = (struct page_allocator *) start;

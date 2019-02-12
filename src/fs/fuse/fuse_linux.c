@@ -35,17 +35,16 @@ struct fuse_mount_params {
 	char *dest;
 };
 
-extern int dentry_fill(struct super_block *, struct inode *,
-                       struct dentry *, struct dentry *);
 static int fuse_fill_dentry(struct super_block *sb, char *dest) {
 	struct dentry *d;
 	struct lookup lookup;
+	int err;
 
-	dvfs_lookup(dest, &lookup);
+	if ((err = dvfs_lookup(dest, &lookup))) {
+		return err;
+	}
 
-	if (lookup.item == NULL)
-		return -ENOENT;
-
+	assert(lookup.item);
 	assert(lookup.item->flags & S_IFDIR);
 
 	if (!(lookup.item->flags & DVFS_DIR_VIRTUAL)) {

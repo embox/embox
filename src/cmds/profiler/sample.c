@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 
 	getopt_init();
 
-	while ((c = getopt(argc, argv, "hsl:ti:")) != -1) {
+	while ((c = getopt(argc, argv, "hsl:ti:")) != (char) -1) {
 		switch (c) {
 			case 'i':
 				if (1 != sscanf(optarg, "%d", &interval)) {

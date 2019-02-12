@@ -9,7 +9,7 @@
 
 #include <kernel/panic.h>
 #include <kernel/printk.h>
-#include <kernel/thread.h>
+#include <asm/hal/reg.h>
 
 #include <asm/cp15.h>
 #include <arm/fpu.h>
@@ -36,7 +36,8 @@ void mon_func(void) {
 void arm_exception_handler(unsigned int *regs) {
 	uint32_t val;
 
-	if ((*(uint32_t*)(regs[15])) == ARM_GDB_BAD_INSTRUCTION) {
+	if (regs && ((regs[15] & 0x3) == 0) && /* Avoid unaligned access */
+		(*(uint32_t*)(regs[15])) == ARM_GDB_BAD_INSTRUCTION) {
 		log_debug("BKPT happened");
 		regs[15] += 4;
 	} else {

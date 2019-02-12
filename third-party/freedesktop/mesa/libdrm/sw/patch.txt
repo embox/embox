@@ -1,0 +1,296 @@
+diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.96-orig/configure.ac libdrm-2.4.96/configure.ac
+--- libdrm-2.4.96-orig/configure.ac	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/configure.ac	2017-04-13 18:16:57.642129477 +0300
+@@ -68,7 +68,7 @@
+     pthread_stubs_possible="no"
+     ;;
+ * )
+-    pthread_stubs_possible="yes"
++    pthread_stubs_possible="no"
+     ;;
+ esac
+ 
+diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.96-orig/etnaviv/etnaviv_device.c libdrm-2.4.96/etnaviv/etnaviv_device.c
+--- libdrm-2.4.96-orig/etnaviv/etnaviv_device.c	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/etnaviv/etnaviv_device.c	2017-04-13 18:18:14.966512907 +0300
+@@ -29,7 +29,7 @@
+ #endif
+ 
+ #include <stdlib.h>
+-#include <linux/stddef.h>
++//#include <linux/stddef.h>
+ #include <linux/types.h>
+ #include <errno.h>
+ #include <sys/mman.h>
+diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.96-orig/include/drm/drm.h libdrm-2.4.96/include/drm/drm.h
+--- libdrm-2.4.96-orig/include/drm/drm.h	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/include/drm/drm.h	2017-04-13 18:16:57.642129477 +0300
+@@ -40,8 +40,17 @@
+ 
+ #include <linux/types.h>
+ #include <asm/ioctl.h>
++
+ typedef unsigned int drm_handle_t;
+ 
++#elif defined(__EMBOX__)
++
++#include <linux/types.h>
++#include <sys/ioctl.h>
++
++typedef size_t   __kernel_size_t;
++typedef unsigned long drm_handle_t;
++
+ #else /* One of the BSDs */
+ 
+ #include <sys/ioccom.h>
+diff -aur -x configure -x aclocal.m4 -x Makefile.in libdrm-2.4.96-orig/xf86drm.h libdrm-2.4.96/xf86drm.h
+--- libdrm-2.4.96-orig/xf86drm.h	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/xf86drm.h	2017-04-13 18:16:57.642129477 +0300
+@@ -47,7 +47,17 @@
+ #define DRM_MAX_MINOR   16
+ #endif
+ 
++#define SCNu64
+-#if defined(__linux__)
++#if defined(__linux__) 
++
++#define DRM_IOCTL_NR(n)		_IOC_NR(n)
++#define DRM_IOC_VOID		_IOC_NONE
++#define DRM_IOC_READ		_IOC_READ
++#define DRM_IOC_WRITE		_IOC_WRITE
++#define DRM_IOC_READWRITE	_IOC_READ|_IOC_WRITE
++#define DRM_IOC(dir, group, nr, size) _IOC(dir, group, nr, size)
++
++#elif defined(__EMBOX__)
+ 
+ #define DRM_IOCTL_NR(n)		_IOC_NR(n)
+ #define DRM_IOC_VOID		_IOC_NONE
+@@ -85,5 +85,5 @@
+-#define DRM_DIR_NAME  "/dev/dri"
+-#define DRM_DEV_NAME  "%s/card%d"
+-#define DRM_CONTROL_DEV_NAME  "%s/controlD%d"
+-#define DRM_RENDER_DEV_NAME  "%s/renderD%d"
+-#define DRM_PROC_NAME "/proc/dri/" /* For backward Linux compatibility */
++#define DRM_DIR_NAME  "/dev/"
++#define DRM_DEV_NAME  "%s/card%d"
++#define DRM_CONTROL_DEV_NAME  "%s/controlD%d"
++#define DRM_RENDER_DEV_NAME  "%s/renderD%d"
++#define DRM_PROC_NAME "/proc/"
+--- libdrm-2.4.96-orig/built-aux/ltmain.sh	2018-09-03 18:05:45.810536972 +0300
++++ libdrm-2.4.96/build-aux/ltmain.sh	2018-09-03 18:08:15.025429193 +0300
+@@ -7009,35 +7009,7 @@
+ 	;;
+ 
+       -l*)
+-	if test X-lc = "X$arg" || test X-lm = "X$arg"; then
+-	  case $host in
+-	  *-*-cygwin* | *-*-mingw* | *-*-pw32* | *-*-beos* | *-cegcc* | *-*-haiku*)
+-	    # These systems don't actually have a C or math library (as such)
+-	    continue
+-	    ;;
+-	  *-*-os2*)
+-	    # These systems don't actually have a C library (as such)
+-	    test X-lc = "X$arg" && continue
+-	    ;;
+-	  *-*-openbsd* | *-*-freebsd* | *-*-dragonfly* | *-*-bitrig*)
+-	    # Do not include libc due to us having libc/libc_r.
+-	    test X-lc = "X$arg" && continue
+-	    ;;
+-	  *-*-rhapsody* | *-*-darwin1.[012])
+-	    # Rhapsody C and math libraries are in the System framework
+-	    func_append deplibs " System.ltframework"
+-	    continue
+-	    ;;
+-	  *-*-sco3.2v5* | *-*-sco5v6*)
+-	    # Causes problems with __ctype
+-	    test X-lc = "X$arg" && continue
+-	    ;;
+-	  *-*-sysv4.2uw2* | *-*-sysv5* | *-*-unixware* | *-*-OpenUNIX*)
+-	    # Compiler inserts libc in the correct place for threads to work
+-	    test X-lc = "X$arg" && continue
+-	    ;;
+-	  esac
+-	elif test X-lc_r = "X$arg"; then
++	if test X-lc_r = "X$arg"; then
+ 	 case $host in
+ 	 *-*-openbsd* | *-*-freebsd* | *-*-dragonfly* | *-*-bitrig*)
+ 	   # Do not include libc_r directly, use -pthread flag.
+@@ -7070,7 +7042,7 @@
+ 	continue
+ 	;;
+ 
+-      -mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe \
++      -mt|-mthreads|-kthread|-Kthread|--thread-safe \
+       |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
+ 	func_append compiler_flags " $arg"
+ 	func_append compile_command " $arg"
+@@ -7610,7 +7582,7 @@
+ 	lib=
+ 	found=false
+ 	case $deplib in
+-	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe \
++	-mt|-mthreads|-kthread|-Kthread|--thread-safe \
+         |-threads|-fopenmp|-openmp|-mp|-xopenmp|-omp|-qsmp=*)
+ 	  if test prog,link = "$linkmode,$pass"; then
+ 	    compile_deplibs="$deplib $compile_deplibs"
+--- libdrm-2.4.96-orig/m4/libtool.m4	2018-09-03 15:55:23.100981361 +0300
++++ libdrm-2.4.96/m4/libtool.m4	2018-09-03 18:15:20.982011031 +0300
+@@ -3849,29 +3849,7 @@
+ # LT_LIB_M
+ # --------
+ # check for math library
+-AC_DEFUN([LT_LIB_M],
+-[AC_REQUIRE([AC_CANONICAL_HOST])dnl
+ LIBM=
+-case $host in
+-*-*-beos* | *-*-cegcc* | *-*-cygwin* | *-*-haiku* | *-*-pw32* | *-*-darwin*)
+-  # These system don't have libm, or don't need it
+-  ;;
+-*-ncr-sysv4.3*)
+-  AC_CHECK_LIB(mw, _mwvalidcheckl, LIBM=-lmw)
+-  AC_CHECK_LIB(m, cos, LIBM="$LIBM -lm")
+-  ;;
+-*)
+-  AC_CHECK_LIB(m, cos, LIBM=-lm)
+-  ;;
+-esac
+-AC_SUBST([LIBM])
+-])# LT_LIB_M
+-
+-# Old name:
+-AU_ALIAS([AC_CHECK_LIBM], [LT_LIB_M])
+-dnl aclocal-1.4 backwards compatibility:
+-dnl AC_DEFUN([AC_CHECK_LIBM], [])
+-
+ 
+ # _LT_COMPILER_NO_RTTI([TAGNAME])
+ # -------------------------------
+--- libdrm-2.4.96-orig/Makefile.am	2018-09-03 18:25:23.918562755 +0300
++++ libdrm-2.4.96/Makefile.am	2018-09-03 18:25:33.546765066 +0300
+@@ -115,7 +115,7 @@
+ libdrm_la_LTLIBRARIES = libdrm.la
+ libdrm_ladir = $(libdir)
+ libdrm_la_LDFLAGS = -version-number 2:4:0 -no-undefined
+-libdrm_la_LIBADD = @CLOCK_LIB@ -lm
++libdrm_la_LIBADD = @CLOCK_LIB@
+ 
+ libdrm_la_CPPFLAGS = -I$(top_srcdir)/include/drm
+ AM_CFLAGS = \
+diff -aur libdrm-2.4.96-orig/tests/modetest/Makefile.am libdrm-2.4.96/tests/modetest/Makefile.am
+--- libdrm-2.4.96-orig/tests/modetest/Makefile.am	2017-04-08 23:00:58.000000000 +0300
++++ libdrm-2.4.96/tests/modetest/Makefile.am	2018-09-24 13:42:22.819814207 +0300
+@@ -3,8 +3,7 @@
+ AM_CFLAGS = $(filter-out -Wpointer-arith, $(WARN_CFLAGS))
+ 
+ AM_CFLAGS += \
+ 	-fvisibility=hidden \
+-	-pthread \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/tests \
+ 	-I$(top_srcdir)
+--- libdrm-2.4.96-orig/tests/nouveau/Makefile.am	2018-09-03 18:45:33.300130319 +0300
++++ libdrm-2.4.96/tests/nouveau/Makefile.am	2018-09-03 18:45:40.488282725 +0300
+@@ -1,5 +1,4 @@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS) \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/nouveau \
+--- libdrm-2.4.96-orig/tests/nouveau/Makefile.in	2018-09-03 18:46:01.812734867 +0300
++++ libdrm-2.4.96/tests/nouveau/Makefile.in	2018-09-03 18:46:11.196933847 +0300
+@@ -531,7 +531,6 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS) \
+ 	-I$(top_srcdir)/include/drm \
+ 	-I$(top_srcdir)/nouveau \
+@@ -585,7 +584,7 @@
+ 	echo " rm -f" $$list; \
+ 	rm -f $$list
+ 
+-threaded$(EXEEXT): $(threaded_OBJECTS) $(threaded_DEPENDENCIES) $(EXTRA_threaded_DEPENDENCIES) 
++threaded$(EXEEXT): $(threaded_OBJECTS) $(threaded_DEPENDENCIES) $(EXTRA_threaded_DEPENDENCIES)
+ 	@rm -f threaded$(EXEEXT)
+ 	$(AM_V_CCLD)$(LINK) $(threaded_OBJECTS) $(threaded_LDADD) $(LIBS)
+ 
+--- libdrm-2.4.96-orig/tests/exynos/Makefile.in	2018-09-03 18:46:35.157441909 +0300
++++ libdrm-2.4.96/tests/exynos/Makefile.in	2018-09-03 18:46:44.141632415 +0300
+@@ -358,7 +358,6 @@
+ top_builddir = @top_builddir@
+ top_srcdir = @top_srcdir@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS)\
+ 	-I $(top_srcdir)/include/drm \
+ 	-I $(top_srcdir)/libkms/ \
+--- libdrm-2.4.96-orig/tests/exynos/Makefile.am 2018-09-03 18:46:35.157441909 +0300
++++ libdrm-2.4.96/tests/exynos/Makefile.am	2018-09-03 18:46:47.669707227 +0300
+@@ -1,5 +1,4 @@
+ AM_CFLAGS = \
+-	-pthread \
+ 	$(WARN_CFLAGS)\
+ 	-I $(top_srcdir)/include/drm \
+ 	-I $(top_srcdir)/libkms/ \
+diff -aur libdrm-2.4.96-orig/xf86drm.c libdrm-2.4.96/xf86drm.c
+--- libdrm-2.4.96-orig/xf86drm.c	2018-10-16 17:49:03.000000000 +0300
++++ libdrm-2.4.96/xf86drm.c	2018-11-28 14:03:26.122382266 +0300
+@@ -2980,6 +2980,7 @@
+ 
+ static int drmParseSubsystemType(int maj, int min)
+ {
++    return DRM_BUS_PLATFORM;
+ #ifdef __linux__
+     char path[PATH_MAX + 1];
+     char link[PATH_MAX + 1] = "";
+@@ -3022,21 +3023,11 @@
+ static void
+ get_pci_path(int maj, int min, char *pci_path)
+ {
+-    char path[PATH_MAX + 1], *term;
+-
+-    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+-    if (!realpath(path, pci_path)) {
+-        strcpy(pci_path, path);
+-        return;
+-    }
+-
+-    term = strrchr(pci_path, '/');
+-    if (term && strncmp(term, "/virtio", 7) == 0)
+-        *term = 0;
+ }
+ 
+ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
+ {
++    return DRM_BUS_PLATFORM;
+ #ifdef __linux__
+     unsigned int domain, bus, dev, func;
+     char pci_path[PATH_MAX + 1], *value;
+@@ -3592,7 +3583,7 @@
+     dev->bustype = DRM_BUS_PLATFORM;
+ 
+     dev->businfo.platform = (drmPlatformBusInfoPtr)ptr;
+-
++#if 0
+     ret = drmParsePlatformBusInfo(maj, min, dev->businfo.platform);
+     if (ret < 0)
+         goto free_device;
+@@ -3605,7 +3596,7 @@
+         if (ret < 0)
+             goto free_device;
+     }
+-
++#endif
+     *device = dev;
+ 
+     return 0;
+@@ -3948,6 +3939,8 @@
+         }
+         local_devices[i] = d;
+         i++;
++
++	break;
+     }
+     node_count = i;
+ 

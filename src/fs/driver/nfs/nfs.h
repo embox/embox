@@ -136,7 +136,7 @@ typedef struct create_params {
 /* RPC string */
 typedef struct rpc_string {
 	size_t len;
-	char data[NAME_MAX];
+	char data[NAME_MAX + 1];
 } rpc_string_t;
 
 typedef struct rpc_fh_string {

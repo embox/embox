@@ -61,6 +61,6 @@ int fcntl(int fd, int cmd, ...) {
 		return SET_ERRNO(-ret);
 	}
 
-	return 0;
+	return ret;
 }
 

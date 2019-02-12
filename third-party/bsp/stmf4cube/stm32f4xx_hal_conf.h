@@ -177,8 +177,14 @@
 /* Definition of the Ethernet driver buffers size and count */
 #define ETH_RX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for receive               */
 #define ETH_TX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for transmit              */
-#define ETH_RXBUFNB                    ((uint32_t)4)       /* 4 Rx buffers of size ETH_RX_BUF_SIZE  */
-#define ETH_TXBUFNB                    ((uint32_t)2)       /* 2 Tx buffers of size ETH_TX_BUF_SIZE  */
+
+#include <framework/mod/options.h>
+#include <module/third_party/bsp/stmf4cube/core.h>
+
+#define ETH_RXBUFNB \
+	OPTION_MODULE_GET(third_party__bsp__stmf4cube__core, NUMBER, eth_rx_packet_count)
+#define ETH_TXBUFNB \
+	OPTION_MODULE_GET(third_party__bsp__stmf4cube__core, NUMBER, eth_tx_packet_count)
 
 
 /* Section 2: PHY configuration section */

@@ -18,9 +18,19 @@ char *strndup(const char *s, size_t size) {
 	if (ret == NULL) {
 		return NULL;
 	}
-
+#ifdef __GNUC__
+#if __GNUC__ > 7
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+#endif
 	strncpy(ret, s, len);
 	ret[len] = '\0';
-
+#ifdef __GNUC__
+#if __GNUC__ > 7
+#pragma GCC diagnostic pop
+#endif
+#endif
 	return ret;
 }

@@ -1,65 +1,112 @@
 package provide autotest 1.0
 
 namespace eval ::autotest {
-    namespace export TEST_SETUP_HOST TEST_TEARDOWN_HOST \
-    	TEST_SETUP_TARGET TEST_TEARDOWN_TARGET TEST_CASE
-    namespace export test_assert_regexp_equal
+	namespace export TEST_SETUP_HOST TEST_TEARDOWN_HOST \
+		TEST_SETUP_TARGET TEST_TEARDOWN_TARGET \
+		TEST_CASE_TARGET TEST_CASE_HOST \
+		TEST_CASE_DECLARE_FIXME
 
-    variable setup_host_proc ""
-    variable teardown_host_proc ""
-    variable setup_target_proc ""
-    variable teardown_target_proc ""
+	# MUST BE CALLED IN EACH TEST SUITE
+	namespace export TEST_SUITE_SETUP
 
-    variable embox_ip "10.0.2.16"
-    variable host_ip "10.0.2.10"
+	namespace export test_assert_regexp_equal
+	namespace export test_assert_regexp_equal_timeout
+	namespace export test_exec_embox_cmd
+	namespace export test_exec_embox_cmd_timeout
+
+	variable embox_ip
+	variable host_ip
+	variable host_passwd
+	# This variable is used to show that current test case is broken
+	# currently. That is, test case is correct, but Embox errored while
+	# running this test case because of some Embox's bugs.
+	variable current_test_case_fixme
 }
 
 source [file join [file dirname [info script]] test_exec.exp]
 source [file join [file dirname [info script]] test_cmd.exp]
 
-proc init_test_suite {} {
-	set setup_host_proc ""
-	set teardown_host_proc ""
+proc ::autotest::TEST_SUITE_SETUP {} {
+	global argv
+
+	variable embox_ip
+	variable host_ip
+	variable host_passwd
+	variable current_test_case_fixme
+
+	set embox_ip    [lindex $argv 0]
+	set host_ip     [lindex $argv 1]
+	set host_passwd [lindex $argv 2]
+
+	set current_test_case_fixme false
 }
 
-proc ::autotest::TEST_SETUP_HOST {setup} {
-	variable setup_host_proc
-	set setup_host_proc $setup
+proc ::autotest::TEST_SETUP_HOST {setup_body} {
+	eval $setup_body
 }
 
-proc ::autotest::TEST_TEARDOWN_HOST {teardown} {
-	variable teardown_host_proc
-	set teardown_host_proc $teardown
+proc ::autotest::TEST_TEARDOWN_HOST {teardown_body} {
+	eval $teardown_body
 }
 
-proc ::autotest::TEST_SETUP_TARGET {setup} {
-	variable setup_target_proc
-	set setup_target_proc $setup
+proc ::autotest::TEST_SETUP_TARGET {setup_body} {
+	telnet_connect
+	eval $setup_body
+	telnet_disconnect
 }
 
-proc ::autotest::TEST_TEARDOWN_TARGET {teardown} {
-	variable teardown_target_proc
-	set teardown_target_proc $teardown
+proc ::autotest::TEST_TEARDOWN_TARGET {teardown_body} {
+	telnet_connect
+	eval $teardown_body
+	telnet_disconnect
 }
 
-proc ::autotest::TEST_CASE {test_name test_body} {
-	variable setup_host_proc
-	variable teardown_host_proc
+proc ::autotest::TEST_CASE_DECLARE_FIXME {test_case_body} {
+	variable current_test_case_fixme
 
-	#init_test_suite
+	set current_test_case_fixme true
+	eval $test_case_body
+	set current_test_case_fixme false
 
-	if { $setup_host_proc != "" && [catch {eval $setup_host_proc}] } {
-		puts "autotest: incorrect setup_host_proc name - $setup_host_proc"
-		exit 1
+	return 0
+}
+
+proc ::autotest::TEST_CASE_IMPL {mode test_name test_body} {
+	variable current_test_case_fixme
+
+	set logfile "[file rootname [info script]].log"
+
+	puts "\n		TEST CASE \"$test_name\" running ...\n"
+
+	if {$current_test_case_fixme == true} {
+		set result_str "        FIXME: TEST CASE \"$test_name\" is known to be broken"
+		exec echo -e $result_str >> $logfile
+		return 0
+	}
+	
+	# Execute test
+	set res [test_exec $mode $test_name $test_body]
+
+	if {[file exists $logfile]} {
+		if {$res != 0} {
+			set result_str "        TEST CASE \"$test_name\" ERROR"
+		} else {
+			set result_str "        TEST CASE \"$test_name\" OK"
+		}
+		exec echo -e $result_str >> $logfile
 	}
 
-	puts "\n              autotest: TEST CASE \"$test_name\" running ...\n"
-	test_exec $test_name $test_body
-
-	if { $teardown_host_proc != "" && [catch {eval $teardown_host_proc}] } {
-		puts "autotest: incorrect teardown_host_proc - $teardown_host_proc"
+	if {$res != 0} {
 		exit 1
 	}
 
 	return 0
+}
+
+proc ::autotest::TEST_CASE_TARGET {test_name test_body} {
+	return [TEST_CASE_IMPL "target" $test_name $test_body]
+}
+
+proc ::autotest::TEST_CASE_HOST {test_name test_body} {
+	return [TEST_CASE_IMPL "host" $test_name $test_body]
 }

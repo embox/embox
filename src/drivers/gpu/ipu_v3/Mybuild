@@ -4,6 +4,20 @@ module ipu_v3 {
 	option number log_level=0
 
 	option number base_addr
+	option number xres=1024
+	option number yres=768
+
+	/* TODO this should be handled
+	   somehow else!
+
+	   Default values are taken to work
+	   with i.Wave Rainbow G15S board */
+	option number upper_margin=0
+	option number lower_margin=0
+	option number left_margin=0
+	option number right_margin=0
+	option number vsync_len=3
+	option number hsync_len=200
 
 	source "ipuv3.c"
 	source "ipuv3_fb.c"

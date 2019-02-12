@@ -23,9 +23,12 @@
 
 #include <util/dlist.h>
 #include <util/array.h>
+#include <util/log.h>
 
 #include <kernel/printk.h>
 #include <kernel/panic.h>
+
+#include <mem/heap/mspace_malloc.h>
 
 /* TODO make it per task field */
 //static DLIST_DEFINE(task_mem_segments);
@@ -34,18 +37,38 @@
 
 extern struct page_allocator *__heap_pgallocator;
 extern struct page_allocator *__heap_pgallocator2 __attribute__((weak));
-static struct page_allocator ** const mm_page_allocs[] = {
-	&__heap_pgallocator,
-	&__heap_pgallocator2,
+extern struct page_allocator *__heap_fixed_pgallocator __attribute__((weak));
+
+struct mm_heap_allocator {
+	struct page_allocator **pg_allocator;
+	heap_type_t type;
 };
+
+static struct mm_heap_allocator const mm_page_allocs[] = {
+	{ &__heap_pgallocator, HEAP_RAM },
+	{ &__heap_pgallocator2, HEAP_FAST_RAM },
+	{ &__heap_fixed_pgallocator, HEAP_EXTERN_MEM },
+};
+
+static struct mm_heap_allocator const *mm_cur_allocator =
+	&mm_page_allocs[0];
 
 static void *mm_segment_alloc(int page_cnt) {
 	void *ret;
 	int i;
+
+	ret = page_alloc(*mm_cur_allocator->pg_allocator, page_cnt);
+	if (ret) {
+		return ret;
+	}
+
+	/* Requsted memory wasn't allocated by mm_cur_allocator->pg_allocator above,
+	 * because due to there is no more free memory. Try find new allocator */
 	for (i = 0; i < ARRAY_SIZE(mm_page_allocs); i++) {
-		if (mm_page_allocs[i]) {
-			ret = page_alloc(*mm_page_allocs[i], page_cnt);
+		if (mm_page_allocs[i].pg_allocator) {
+			ret = page_alloc(*mm_page_allocs[i].pg_allocator, page_cnt);
 			if (ret) {
+				mm_cur_allocator = &mm_page_allocs[i];
 				break;
 			}
 		}
@@ -53,11 +76,37 @@ static void *mm_segment_alloc(int page_cnt) {
 	return ret;
 }
 
+/* XXX This functionality is experimental and currently only used
+ * in PISJP (stm32f7-discovery). Please, be careful if you want to use
+ * this function. */
+int mspace_set_heap(heap_type_t type, heap_type_t *prev_type) {
+	if (prev_type) {
+		*prev_type = mm_cur_allocator->type;
+	}
+
+	switch (type) {
+	case HEAP_FAST_RAM:
+	case HEAP_RAM:
+	case HEAP_EXTERN_MEM:
+		if (!mm_page_allocs[type].pg_allocator) {
+			return -1;
+		}
+		mm_cur_allocator = &mm_page_allocs[type];
+		break;
+	default:
+		log_error("Unknown heap type - %d\n", type);
+		return -1;
+	}
+
+	return 0;
+}
+
 static void mm_segment_free(void *segment, int page_cnt) {
 	int i;
 	for (i = 0; i < ARRAY_SIZE(mm_page_allocs); i++) {
-		if (mm_page_allocs[i] && page_belong(*mm_page_allocs[i], segment)) {
-			page_free(*mm_page_allocs[i], segment, page_cnt);
+		if (mm_page_allocs[i].pg_allocator &&
+				page_belong(*mm_page_allocs[i].pg_allocator, segment)) {
+			page_free(*mm_page_allocs[i].pg_allocator, segment, page_cnt);
 			break;
 		}
 	}
@@ -77,17 +126,15 @@ static inline void *mm_to_segment(struct mm_segment *mm) {
 	return ((char *) mm + sizeof *mm);
 }
 
-static void *pointer_to_segment(void *ptr, struct dlist_head *mspace) {
+static void *pointer_to_mm(void *ptr, struct dlist_head *mspace) {
 	struct mm_segment *mm;
-	void *segment;
 
 	assert(ptr);
 	assert(mspace);
 
 	dlist_foreach_entry(mm, mspace, link) {
-		segment = mm_to_segment(mm);
-		if (pointer_inside_segment(segment, mm->size, ptr)) {
-			return segment;
+		if (pointer_inside_segment(mm_to_segment(mm), mm->size, ptr)) {
+			return mm;
 		}
 	}
 
@@ -151,15 +198,23 @@ void *mspace_malloc(size_t size, struct dlist_head *mspace) {
 }
 
 int mspace_free(void *ptr, struct dlist_head *mspace) {
-	void *segment;
+	struct mm_segment *mm;
 
 	assert(ptr);
 	assert(mspace);
 
-	segment = pointer_to_segment(ptr, mspace);
+	mm = pointer_to_mm(ptr, mspace);
 
-	if (segment != NULL) {
+	if (mm != NULL) {
+		void *segment;
+
+		segment = mm_to_segment(mm);
 		bm_free(segment, ptr);
+
+		if (bm_heap_is_empty(segment)) {
+			mm_segment_free(mm, mm->size / PAGE_SIZE());
+			dlist_del(&mm->link);
+		}
 	} else {
 		/* No segment containing pointer @c ptr was found. */
 #ifdef DEBUG

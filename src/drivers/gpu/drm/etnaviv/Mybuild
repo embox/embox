@@ -1,0 +1,24 @@
+package embox.driver.gpu
+
+@BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
+@Build(stage=2)
+module etnaviv_drm {
+	option number gpu3d_irq=41	/* Default values are for i.MX6q */
+	option number r2d_gpu2d_irq=42
+	option number v2d_gpu2d_irq=43
+
+	option number vivante_2d_base=0x134000
+	option number vivante_3d_base=0x130000
+
+	option number log_level=1
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv/")
+	source "etnaviv_dev.c", "etnaviv_gem.c", "etnaviv_gem_submit.c", "etnaviv_cmdbuf.c", "etnaviv_cmd_parser.c", "etnaviv_gpu.c", "etnaviv_buffer.c", "etnaviv_mmu.c", "etnaviv_iommu_v2.c", "etnaviv_iommu.c"
+
+	depends third_party.freedesktop.mesa.libdrm_etnaviv
+	depends embox.driver.gpu.drm.drm_dev
+	depends embox.driver.power.imx
+
+	depends platform.etnaviv.xml_headers
+}

@@ -13,16 +13,18 @@
 #ifndef __INCLUDE_IPU_PARAM_MEM_H__
 #define __INCLUDE_IPU_PARAM_MEM_H__
 
-#include "uboot_ipu_compat.h"
-#include "ipu_priv.h"
 #include <errno.h>
+#include <stdint.h>
+
+#include <hal/reg.h>
+#include "ipu_priv.h"
 #include <kernel/printk.h>
 
 #define dev_dbg(x, ...) printk(__VA_ARGS__)
 #define dev_warn(x, ...) printk(__VA_ARGS__)
 #define dev_err(x, ...) printk(__VA_ARGS__)
 
-extern u32 *ipu_cpmem_base;
+extern uint32_t *ipu_cpmem_base;
 
 struct ipu_ch_param_word {
 	uint32_t data[5];
@@ -51,25 +53,25 @@ struct ipu_ch_param {
 	int i = (bit) / 32; \
 	int off = (bit) % 32; \
 	unsigned reg_offset; \
-	u32 temp; \
+	uint32_t temp; \
 	reg_offset = sizeof(struct ipu_ch_param_word) * w / 4; \
 	reg_offset += i; \
-	temp = readl((u32 *)base + reg_offset); \
+	temp = REG32_LOAD((uint32_t *)base + reg_offset); \
 	temp |= (v) << off; \
-	writel(temp, (u32 *)base + reg_offset); \
+	REG32_STORE((uint32_t *)base + reg_offset, temp); \
 	if (((bit)+(size)-1)/32 > i) { \
 		reg_offset++; \
-		temp = readl((u32 *)base + reg_offset); \
+		temp = REG32_LOAD((uint32_t *)base + reg_offset); \
 		temp |= (v) >> (off ? (32 - off) : 0); \
-		writel(temp, (u32 *)base + reg_offset); \
+		REG32_STORE((uint32_t *)base + reg_offset, temp); \
 	} \
 }
 
 #define ipu_ch_param_mod_field(base, w, bit, size, v) { \
 	int i = (bit) / 32; \
 	int off = (bit) % 32; \
-	u32 mask = (1UL << size) - 1; \
-	u32 temp = _param_word(base, w)[i]; \
+	uint32_t mask = (1UL << size) - 1; \
+	uint32_t temp = _param_word(base, w)[i]; \
 	temp &= ~(mask << off); \
 	_param_word(base, w)[i] = temp | (v) << off; \
 	if (((bit)+(size)-1)/32 > i) { \
@@ -83,30 +85,30 @@ struct ipu_ch_param {
 #define ipu_ch_param_mod_field_io(base, w, bit, size, v) { \
 	int i = (bit) / 32; \
 	int off = (bit) % 32; \
-	u32 mask = (1UL << size) - 1; \
+	uint32_t mask = (1UL << size) - 1; \
 	unsigned reg_offset; \
-	u32 temp; \
+	uint32_t temp; \
 	reg_offset = sizeof(struct ipu_ch_param_word) * w / 4; \
 	reg_offset += i; \
-	temp = readl((u32 *)base + reg_offset); \
+	temp = REG32_LOAD((uint32_t *)base + reg_offset); \
 	temp &= ~(mask << off); \
 	temp |= (v) << off; \
-	writel(temp, (u32 *)base + reg_offset); \
+	REG32_STORE((uint32_t *)base + reg_offset, temp); \
 	if (((bit)+(size)-1)/32 > i) { \
 		reg_offset++; \
-		temp = readl((u32 *)base + reg_offset); \
+		temp = REG32_LOAD((uint32_t *)base + reg_offset); \
 		temp &= ~(mask >> (32 - off)); \
 		temp |= ((v) >> (off ? (32 - off) : 0)); \
-		writel(temp, (u32 *)base + reg_offset); \
+		REG32_STORE((uint32_t *)base + reg_offset, temp); \
 	} \
 }
 
 #define ipu_ch_param_read_field(base, w, bit, size) ({ \
-	u32 temp2; \
+	uint32_t temp2; \
 	int i = (bit) / 32; \
 	int off = (bit) % 32; \
-	u32 mask = (1UL << size) - 1; \
-	u32 temp1 = _param_word(base, w)[i]; \
+	uint32_t mask = (1UL << size) - 1; \
+	uint32_t temp1 = _param_word(base, w)[i]; \
 	temp1 = mask & (temp1 >> off); \
 	if (((bit)+(size)-1)/32 > i) { \
 		temp2 = _param_word(base, w)[i + 1]; \
@@ -117,18 +119,18 @@ struct ipu_ch_param {
 })
 
 #define ipu_ch_param_read_field_io(base, w, bit, size) ({ \
-	u32 temp1, temp2; \
+	uint32_t temp1, temp2; \
 	int i = (bit) / 32; \
 	int off = (bit) % 32; \
-	u32 mask = (1UL << size) - 1; \
+	uint32_t mask = (1UL << size) - 1; \
 	unsigned reg_offset; \
 	reg_offset = sizeof(struct ipu_ch_param_word) * w / 4; \
 	reg_offset += i; \
-	temp1 = readl((u32 *)base + reg_offset); \
+	temp1 = REG32_LOAD((uint32_t *)base + reg_offset); \
 	temp1 = mask & (temp1 >> off); \
 	if (((bit)+(size)-1)/32 > i) { \
 		reg_offset++; \
-		temp2 = readl((u32 *)base + reg_offset); \
+		temp2 = REG32_LOAD((uint32_t *)base + reg_offset); \
 		temp2 &= mask >> (off ? (32 - off) : 0); \
 		temp1 |= temp2 << (off ? (32 - off) : 0); \
 	} \
@@ -241,7 +243,7 @@ static inline void fill_cpmem(struct ipu_soc *ipu, int ch, struct ipu_ch_param *
 	/* 2 words, 5 valid data */
 	for (w = 0; w < 2; w++) {
 		for (i = 0; i < 5; i++) {
-			writel(params->word[w].data[i], addr);
+			REG32_STORE(addr, params->word[w].data[i]);
 			addr += 4;
 		}
 		addr += 12;
@@ -356,7 +358,7 @@ static inline void _ipu_ch_param_set_buffer(struct ipu_soc *ipu, uint32_t ch,
 static inline void _ipu_ch_param_set_rotation(struct ipu_soc *ipu, uint32_t ch,
 					      ipu_rotate_mode_t rot)
 {
-	u32 temp_rot = bitrev8(rot) >> 5;
+	uint32_t temp_rot = bitrev8(rot) >> 5;
 	int32_t sub_ch = 0;
 
 	ipu_ch_param_mod_field_io(ipu_ch_param_addr(ipu, ch), 0, 119, 3, temp_rot);
@@ -448,7 +450,7 @@ static inline void _ipu_ch_param_set_alpha_buffer_memory(struct ipu_soc *ipu, ui
 
 static inline void _ipu_ch_param_set_interlaced_scan(struct ipu_soc *ipu, uint32_t ch)
 {
-	u32 stride;
+	uint32_t stride;
 	int32_t sub_ch = 0;
 
 	sub_ch = __ipu_ch_get_third_buf_cpmem_num(ch);

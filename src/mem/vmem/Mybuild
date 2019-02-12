@@ -7,11 +7,11 @@ abstract module vmem_api {
 module vmem_nommu extends vmem_api {
 	source "vmem_nommu.h"
 
-	depends embox.fs.syslib.idesc_mmap
+	depends embox.fs.syslib.idesc_mmap_api
 }
 
 module vmem extends vmem_api {
-	option number log_level = 0
+	option number log_level = 1
 
 	source "vmem.c", "vmem_mapper.c", "vmem_unmapper.c"
 	source "vmem_context.c"
@@ -20,12 +20,13 @@ module vmem extends vmem_api {
 
 	depends embox.arch.mmu
 	depends vmem_alloc
-
+	depends embox.mem.phymem
 	depends embox.mem.mmap_mmu
+	depends embox.fs.syslib.idesc_mmap_api
 }
 
 module vmem_alloc {
-	option number log_level = 0
+	option number log_level = 1
 
 	option number virtual_pages_count = 20
 

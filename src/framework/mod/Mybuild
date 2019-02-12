@@ -34,6 +34,7 @@ module embuild_full extends embuild {
 }
 
 module embuild_light extends embuild {
+	option boolean use_mod_names = false
 
 	source "embuild_light_impl.h"
 }

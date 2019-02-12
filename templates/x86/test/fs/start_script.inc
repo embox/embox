@@ -9,5 +9,7 @@
 "export PWD=/",
 "export HOME=/",
 
+"telnetd &",
+
 "mkdir /mnt",
 "mkdir /mnt/fs_test",

@@ -29,17 +29,18 @@ static inline void fill_dirent(struct dirent *dirent, struct dentry *dentry) {
 DIR *opendir(const char *path) {
 	DIR *d;
 	struct lookup l;
+	int err;
 
-	if (dvfs_lookup(path, &l)) {
-		SET_ERRNO(ENOENT);
+	if ((err = dvfs_lookup(path, &l))) {
+		SET_ERRNO(-err);
 		return NULL;
 	}
 
-	d = pool_alloc(&dir_pool);
-	if (!d) {
+	if (!(d = pool_alloc(&dir_pool))) {
 		SET_ERRNO(ENOMEM);
 		return NULL;
 	}
+
 	*d = (DIR) {
 		.dir_dentry = l.item,
 	};

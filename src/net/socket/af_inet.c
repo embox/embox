@@ -154,6 +154,8 @@ static int inet_bind_local(struct sock *sk) {
 
 	assert(sk);
 
+	memset(&addr_in, 0, sizeof addr_in);
+
 	addr_in.sin_family = AF_INET;
 	addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 

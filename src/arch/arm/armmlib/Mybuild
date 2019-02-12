@@ -9,6 +9,9 @@ module locore extends embox.arch.locore {
 }
 
 module interrupt extends embox.arch.interrupt {
+	option boolean nvic_use_prio = false
+	option number nvic_prio_shift = 4 /* Implementation defined */
+
 	source "ipl_impl.h"
 	depends locore
 }

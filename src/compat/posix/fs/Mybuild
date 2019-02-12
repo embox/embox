@@ -13,7 +13,8 @@ module all_old extends all {
 		getcwd,
 		umask,
 		xattr,
-		libgen
+		libgen,
+		chown_old
 }
 
 @DefaultImpl(file_old)

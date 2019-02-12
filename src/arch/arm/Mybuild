@@ -6,5 +6,10 @@ abstract module cmsis { }
 
 
 module head {
+	option boolean mmu_boot=false
 	source "head.S"
+}
+
+module static_irq_table extends embox.kernel.static_irq_table_impl {
+	source "static_irq_table.lds.S"
 }

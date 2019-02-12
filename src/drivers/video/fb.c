@@ -924,8 +924,8 @@ void pix_fmt_chan_set_val(enum pix_fmt fmt, enum pix_chan chan, void *data, int 
 
 int pix_fmt_convert(void *src, void *dst, int n,
 		enum pix_fmt in, enum pix_fmt out) {
-	int src_step = pix_fmt_bpp(in);
-	int dst_step = pix_fmt_bpp(out);
+	int src_step = pix_fmt_bpp(in) / 8;
+	int dst_step = pix_fmt_bpp(out) / 8;
 	int alpha, red, green, blue;
 	int in_bits[] = {
 		pix_fmt_chan_bits(in, ALPHA_CHAN),

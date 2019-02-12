@@ -22,6 +22,7 @@
 #include <asm/regs.h>
 
 .extern irq_handler
+.extern data_abt_handler
 .extern setup_excpt_table
 .extern reset_handler
 
@@ -37,7 +38,7 @@ arm_trap_table:
     ldr pc, undef_handler_addr
     ldr pc, swi_handler_addr
     ldr pc, prefetch_abt_handler_addr
-    b data_abt_prepare
+    ldr pc, data_abt_handler_addr
     nop /*bad exception not_used:		.word not_used*/
     ldr pc, irq_handler_addr
     ldr pc, fiq_handler_addr
@@ -57,13 +58,3 @@ irq_handler_addr:
     .word irq_handler
 fiq_handler_addr:
     .word fiq_handler
-
-data_abt_prepare:
-	/* Prepare stack and call handler */
-	stmfd r13!, {r0-r3, r14}
-	add r14, pc, #0
-	ldr pc, data_abt_handler_addr
-	ldmfd r13!, {r0-r3, r14}
-	subs pc, lr, #8 // exception return
-
-

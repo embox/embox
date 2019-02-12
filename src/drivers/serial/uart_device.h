@@ -13,7 +13,7 @@
 #include <util/dlist.h>
 #include <kernel/irq.h>
 
-#define UART_NAME_MAXLEN 8
+#define UART_NAME_MAXLEN 16
 
 #define UART_STATE_OPEN (1 << 0)
 

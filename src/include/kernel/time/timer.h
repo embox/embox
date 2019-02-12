@@ -41,6 +41,7 @@ typedef void (*sys_timer_handler_t)(struct sys_timer *timer, void *param);
  */
 struct sys_timer {
 	sys_timer_queue_t lnk;
+	struct dlist_head st_wait_link;
 
 	uint32_t   load;
 	uint32_t   cnt;

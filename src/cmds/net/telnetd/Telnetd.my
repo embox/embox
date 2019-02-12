@@ -23,14 +23,12 @@ module telnetd {
 	depends embox.net.tcp_sock
 	depends embox.net.tcp
 
-	depends embox.compat.libc.all
 	depends embox.kernel.thread.core
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.proc.signal
 	depends embox.cmd.sh.tish
 	depends embox.compat.posix.utmp_api
-	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
+	depends embox.compat.posix.proc.exec
 	depends embox.compat.posix.idx.ppty
 	depends embox.compat.posix.proc.waitpid
 	depends embox.arch.vfork_entry

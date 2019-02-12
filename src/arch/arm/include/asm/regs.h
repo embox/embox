@@ -20,8 +20,6 @@
 
 #endif /* __ASSEMBLER__ */
 
-#include <asm/cp15.h>
-
 /**
  * c1, Auxiliary Control Register
  * read: MRC p15, 0, <Rd>, c1, c0, 1

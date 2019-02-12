@@ -110,9 +110,9 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	strncpy(dst_b, inet_ntoa(dst), sizeof(dst_b));
+	strncpy(dst_b, inet_ntoa(dst), sizeof(dst_b) - 1);
 	from.s_addr = in_dev->ifa_address;
-	strncpy(from_b, inet_ntoa(from), sizeof(from_b));
+	strncpy(from_b, inet_ntoa(from), sizeof(from_b) - 1);
 	printf("ARPING %s from %s %s\n", dst_b, from_b, in_dev->dev->name);
 	for (i = 1; i <= cnt; i++) {
 		neighbour_del(ETH_P_IP, &dst, in_dev->dev);

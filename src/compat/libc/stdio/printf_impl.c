@@ -172,6 +172,10 @@ static int print_f(void (*printchar_handler)(struct printchar_handler_data *d, i
 	assert(width >= 0);
 	assert(precision >= 0);
 
+	if (isnan(r)) {
+		r = 0.0;
+	}
+
 	postfix = end = str = &buff[0] + sizeof buff / sizeof buff[0] - 1;
 	*end = '\0';
 	prefix = signbit(r) ? (r = -r, base == 16)

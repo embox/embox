@@ -35,32 +35,31 @@ static struct device block_device = {
  *
  * @return Pointer to created device or NULL if failed
  */
-struct block_dev *block_dev_create(char *path, void *driver, void *privdata) {
+struct block_dev *block_dev_create(const char *path, void *driver, void *privdata) {
 	struct block_dev *bdev;
-	char full_path[256];
+	char full_path[DVFS_MAX_PATH_LEN];
 	struct lookup lu;
 	struct dev_module *devmod;
 
-	if (NULL == (bdev = block_dev_create_common(path, driver, privdata)))
-		return NULL;
-
-	bdev->dev_ops = &bdev_dev_ops;
+	assert(path);
+	assert(driver);
 
 	/* Get root of devfs in smarter way? */
-
 	strcpy(full_path, "/dev/");
-	strcat(full_path, path);
-
-	dvfs_lookup("/dev", &lu);
-	lu.parent = lu.item;
-	lu.item = NULL;
-
-	if (!lu.parent) {
-		block_dev_free(bdev);
+	strncat(full_path, path, DVFS_MAX_PATH_LEN - strlen("/dev") - 1);
+	if (dvfs_lookup("/dev", &lu)) {
 		return NULL;
 	}
 
+	lu.parent = lu.item;
+	lu.item = NULL;
+
+	if (NULL == (bdev = block_dev_create_common(dvfs_last_link(path), driver, privdata)))
+		return NULL;
+
 	devmod = dev_module_create(&block_device, dvfs_last_link(path), bdev);
+	bdev->dev_ops = &bdev_dev_ops;
+	devmod->dev_file.f_ops = &bdev_dev_ops;
 	bdev->dev_module = devmod;
 
 	return bdev;

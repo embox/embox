@@ -47,6 +47,7 @@ module diag_fd {
 	source "diag_fd.c"
 
 	depends embox.compat.posix.idx.dup
+	depends embox.compat.libc.stdio.rename
 	depends embox.fs.idesc
 	depends embox.kernel.task.api
 	depends embox.kernel.task.resource.idesc_table
@@ -75,6 +76,10 @@ module no_system_start extends system_start {
 }
 
 module system_start_service extends system_start {
+	option number log_level=0
+
+	option string tty_dev=""
+
 	@IncludePath("$(CONF_DIR)")
 	source "system_start_service.c"
 	depends setup_tty_api

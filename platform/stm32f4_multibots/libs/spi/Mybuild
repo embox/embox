@@ -1,0 +1,10 @@
+package stm32f4_multibot.libs
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module spi {
+	option number log_level=0
+
+	source "spi_hal_msp.c"
+
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+}

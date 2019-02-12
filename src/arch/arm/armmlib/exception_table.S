@@ -30,9 +30,13 @@ trap_table_start:
     .word 0 /* Reserved */
     .word 0 /* Reserved */
     .word 0 /* Reserved */
+#if 0
+    /* we use static_irq_attach for these handlers and below
+     * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0497a/Babefdjc.html */
     .word exp_default_entry /* SVCall */
     .word 0 /* Reserved for debug */
     .word 0 /* Reserved */
+#endif
 trap_table_end:
 
 
@@ -41,7 +45,7 @@ trap_table_end:
 
 exp_default_entry:
     mov  r0, sp
-    mrs  r1, PSR
+    mrs  r1, IPSR
     bl   exc_default_handler
 
 start:
@@ -49,4 +53,3 @@ start:
     bx r1
 die:
     b 	    die
-

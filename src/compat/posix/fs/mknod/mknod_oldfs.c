@@ -15,7 +15,7 @@ int mknod(const char *pathname, mode_t mode, dev_t dev) {
 	vfs_get_root_path(&root);
 	vfs_create(&root, pathname, mode, &child);
 
-	SETERNO(ENOSYS);
+	SET_ERRNO(ENOSYS);
 
 	return -1;
 }

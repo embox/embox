@@ -28,6 +28,7 @@
 #define DVFS_DIR_VIRTUAL   0x01000000
 #define DVFS_CHILD_VIRTUAL 0x02000000
 #define DVFS_MOUNT_POINT   0x04000000
+#define DVFS_NO_LSEEK      0x08000000
 
 #define FILE_TYPE(flags, ftype) ((((flags) & S_IFMT) == (ftype)) ? (ftype) : 0)
 
@@ -215,6 +216,8 @@ struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file *bdev);
 extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);
 extern int dvfs_umount(struct dentry *d);
 
+extern int dentry_fill(struct super_block *, struct inode *,
+                       struct dentry *d, struct dentry *parent);
 extern void dentry_upd_flags(struct dentry *dentry);
 extern int dentry_full_path(struct dentry *dentry, char *buf);
 extern int dentry_ref_inc(struct dentry *dentry);

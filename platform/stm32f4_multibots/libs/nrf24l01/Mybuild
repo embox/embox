@@ -1,0 +1,31 @@
+package stm32f4_multibot.libs
+
+/* Derived from https://github.com/kehribar/nrf24L01_plus */
+static module nrf24 {
+	option number rx_buf_sz = 512
+	option number log_level = 1
+
+	@IncludeExport(path="libs")
+	source "nrf24.h"
+	@IncludeExport(path="libs")
+	source "nRF24L01.h"
+
+	source "nrf24.c"
+
+	depends nrf24_cube_layer
+	depends embox.util.ring
+}
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+static module nrf24_cube_layer {
+	option number spi=2
+	option number log_level = 1
+
+	@IncludeExport(path="libs")
+	source "nrf24_stm32_cube.h"
+
+	source "nrf24_stm32_cube.c"
+
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+	depends stm32f4_multibot.libs.spi
+}

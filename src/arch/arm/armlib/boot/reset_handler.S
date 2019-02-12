@@ -6,6 +6,7 @@
  */
 #include <asm/modes.h>
 #include <asm/regs.h>
+#include <asm/cp15.h>
 #include <framework/mod/options.h>
 
 /* OPTION_GET(NUMBER,irq_stack_size) */

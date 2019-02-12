@@ -23,7 +23,6 @@
 
 #include <util/math.h>
 
-
 #define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
 
 /* Telnetd address bind to */
@@ -115,11 +114,13 @@ static void ignore_telnet_options(int sock, int pptyfd) {
 static int utmp_login(short ut_type, const char *host) {
 	struct utmp utmp;
 
+	memset(&utmp, 0, sizeof(utmp));
+
 	utmp.ut_type = ut_type;
 	utmp.ut_pid = getpid();
 	snprintf(utmp.ut_id, UT_IDSIZE, "/%d", utmp.ut_pid);
 	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
-	strncpy(utmp.ut_host, host, UT_HOSTSIZE);
+	strncpy(utmp.ut_host, host, UT_HOSTSIZE - 1);
 	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));
 
 	gettimeofday(&utmp.ut_tv, NULL);
@@ -130,7 +131,7 @@ static int utmp_login(short ut_type, const char *host) {
 
 	return 0;
 }
-#include <kernel/printk.h>
+
 static void *shell_hnd(void* args) {
 	int ret;
 	int *msg = (int*)args;
@@ -167,7 +168,7 @@ static void *shell_hnd(void* args) {
 	}
 	ret = system("tish");
 	if (ret != 0) {
-		printk("system return error: %d\n", ret);
+		printf("system return error: %d\n", ret);
 		_exit(ret);
 	}
 
@@ -180,6 +181,9 @@ static void *shell_hnd(void* args) {
 	return NULL;
 }
 
+/* Here we delete '\0' symbols from *buf:
+   abc\r\0de\r\0
+   abc\rde\r*/
 static int telnet_fix_crnul(unsigned char *buf, int len) {
 	unsigned char *bpi = buf, *bpo = buf;
 	while (bpi < buf + len) {
@@ -329,6 +333,12 @@ static void *telnetd_client_handler(void* args) {
 				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
 			}
 			sock_data_len = telnet_fix_crnul(s, sock_data_len);
+
+			/* TODO: Check if there's T_IAC in s and delete it and
+					 following commands, instead of dropping whole message */
+			if (memchr(s, T_IAC, sock_data_len) != NULL)
+				sock_data_len = 0;
+
 			if (errno == ECONNREFUSED) {
 				goto out_kill;
 			}
@@ -336,6 +346,7 @@ static void *telnetd_client_handler(void* args) {
 	} /* while(1) */
 
 out_kill:
+	write(pptyfd[0], "exit\n", 6);
 out_close:
 	close(pptyfd[0]);
 	close(sock);

@@ -10,6 +10,8 @@
 #ifndef COMPAT_LINUX_LINUX_TYPES_H_
 #define COMPAT_LINUX_LINUX_TYPES_H_
 
+#include <stdint.h>
+
 #ifndef __ASSEMBLER__
 
 #include <asm/types.h>
@@ -23,6 +25,8 @@ typedef __u32 __le32;
 typedef __u32 __be32;
 typedef __u64 __le64;
 typedef __u64 __be64;
+
+typedef uint32_t u32;
 
 /* bsd */
 typedef unsigned char     u_char;
@@ -40,6 +44,8 @@ typedef unsigned long     ulong;
 typedef unsigned char 		u8_t;
 typedef unsigned short int 	u16_t;
 typedef unsigned long int 	u32_t;
+
+typedef uint32_t          dma_addr_t;
 
 #endif /* __ASSEMBLER__ */
 

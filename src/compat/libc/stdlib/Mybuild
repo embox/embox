@@ -34,9 +34,18 @@ static module system {
 	depends embox.cmd.sh.shell_registry
 }
 
+static module multibyte {
+	source "wcstombs.c"
+	source "mbstowcs.c"
+	source "mblen.c"
+	source "mbtowc.c"
+	source "wctomb.c"
+}
+
 static module all {
 	depends core,
 		config,
 		rand,
-		system
+		system,
+		multibyte
 }

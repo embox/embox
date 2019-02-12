@@ -32,16 +32,24 @@ EMBOX_UNIT_INIT(stm32eth_init);
 
 #define STM32ETH_IRQ (ETH_IRQn + 16)
 
-#define PHY_ADDRESS       0x01 /* Relative to STM324xG-EVAL Board */
-
 static ETH_HandleTypeDef stm32_eth_handler;
-
 
 static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB]__attribute__ ((aligned (4)));
 static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] __attribute__ ((aligned (4)));
 
+#if ETH_TXBUFNB == 0
+#undef  ETH_TXBUFNB
+#define ETH_TXBUFNB 3
+#define TX_NO_BUFF  1
+#endif
+
+#ifdef TX_NO_BUFF
+static uint8_t Tx_Buff[0][ETH_TX_BUF_SIZE] __attribute__ ((aligned (4)));
 static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB]__attribute__ ((aligned (4)));
+#else
 static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] __attribute__ ((aligned (4)));
+static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB]__attribute__ ((aligned (4)));
+#endif
 
 static void low_level_init(unsigned char mac[6]) {
 	//uint32_t regvalue;
@@ -121,30 +129,29 @@ static struct sk_buff *low_level_input(void) {
 	/* copy received frame to pbuf chain */
 	if (skb != NULL) {
 		memcpy(skb->mac.raw, buffer, len);
+	} else {
+		log_error("skb_alloc failed\n");
 	}
 
-	  /* Release descriptors to DMA */
-	  dmarxdesc = stm32_eth_handler.RxFrameInfos.FSRxDesc;
+	/* Release descriptors to DMA */
+	dmarxdesc = stm32_eth_handler.RxFrameInfos.FSRxDesc;
 
-	  /* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-	  for (i=0; i< stm32_eth_handler.RxFrameInfos.SegCount; i++)
-	  {
-	    dmarxdesc->Status |= ETH_DMARXDESC_OWN;
-	    dmarxdesc = (ETH_DMADescTypeDef *)(dmarxdesc->Buffer2NextDescAddr);
-	  }
+	/* Set Own bit in Rx descriptors: gives the buffers back to DMA */
+	for (i=0; i< stm32_eth_handler.RxFrameInfos.SegCount; i++) {
+		dmarxdesc->Status |= ETH_DMARXDESC_OWN;
+		dmarxdesc = (ETH_DMADescTypeDef *)(dmarxdesc->Buffer2NextDescAddr);
+	}
 
-	  /* Clear Segment_Count */
-	  stm32_eth_handler.RxFrameInfos.SegCount =0;
+	/* Clear Segment_Count */
+	stm32_eth_handler.RxFrameInfos.SegCount =0;
 
-
-	  /* When Rx Buffer unavailable flag is set: clear it and resume reception */
-	  if ((stm32_eth_handler.Instance->DMASR & ETH_DMASR_RBUS) != (uint32_t)RESET)
-	  {
-	    /* Clear RBUS ETHERNET DMA flag */
-		  stm32_eth_handler.Instance->DMASR = ETH_DMASR_RBUS;
-	    /* Resume DMA reception */
-		  stm32_eth_handler.Instance->DMARPDR = 0;
-	  }
+	/* When Rx Buffer unavailable flag is set: clear it and resume reception */
+	if ((stm32_eth_handler.Instance->DMASR & ETH_DMASR_RBUS) != (uint32_t)RESET) {
+		/* Clear RBUS ETHERNET DMA flag */
+		stm32_eth_handler.Instance->DMASR = ETH_DMASR_RBUS;
+		/* Resume DMA reception */
+		stm32_eth_handler.Instance->DMARPDR = 0;
+	}
 	return skb;
 }
 
@@ -172,10 +179,20 @@ static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	__IO ETH_DMADescTypeDef *dma_tx_desc;
 
 	dma_tx_desc = stm32_eth_handler.TxDesc;
+
+#ifdef TX_NO_BUFF
+	dma_tx_desc->Buffer1Addr = (uint32_t) skb->mac.raw;
+#else
 	memcpy((void *)dma_tx_desc->Buffer1Addr, skb->mac.raw, skb->len);
+#endif
 
 	/* Prepare transmit descriptors to give to DMA */
 	HAL_ETH_TransmitFrame(&stm32_eth_handler, skb->len);
+
+#ifdef TX_NO_BUFF
+	while (dma_tx_desc->Status & ETH_DMATXDESC_OWN)
+		;
+#endif
 
 	skb_free(skb);
 

@@ -1,0 +1,54 @@
+package third_party.dropbear
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@App
+@AutoCmd
+@Cmd(name = "dropbear",
+	help = "Lightweight SSH2 server.",
+	man = '''
+		NAME
+			dropbear - lightweight SSH server
+
+		SYNOPSIS
+			dropbear [flag arguments] [-b banner] [-r hostkeyfile] [-p [address:]port]
+
+		DESCRIPTION
+			dropbear is a small SSH server
+
+		OPTIONS
+			-F	Don't fork into background.
+
+			-s	Disable password logins.
+
+			-g	Disable password logins for root.
+
+			-v	Display debug output (need #define DEBUG_TRACE 1)
+
+		AUTHOR
+			Matt Johnston (matt@ucc.asn.au).
+			Gerrit Pape (pape@smarden.org) wrote this manual page.
+	''')
+module dropbear {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "dropbear.o"
+
+	@NoRuntime depends embox.compat.posix.fs.dirent
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.type
+	@NoRuntime depends embox.kernel.task.resource.errno
+
+	@InitFS
+	source "etc"
+
+	@InitFS
+	source ".ssh/authorized_keys"
+
+	@InitFS(chmod="622")
+	source "dev_pty_0"
+
+	depends embox.compat.posix.stubs
+	depends embox.compat.posix.pty
+	depends embox.compat.posix.proc.vfork
+	depends embox.compat.posix.crypt
+	depends embox.compat.posix.fs.chown_api
+}

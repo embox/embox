@@ -62,6 +62,3 @@ static int gyro_init(void) {
 
     return 0;
 }
-void gyro_get(float *value) {
-	BSP_GYRO_GetXYZ(value);
-}

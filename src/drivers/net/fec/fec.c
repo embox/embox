@@ -269,21 +269,6 @@ static void _reset(struct net_device *dev) {
 
 	fec_mdio_init(dev);
 
-	/* MII or RMII mode, as indicated by the RMII_MODE field. */
-#if FEC_SPEED == 1000
-	REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RGMII_EN);
-	REG32_STORE(ENET_ECR, 0xF0000100 | ENET_SPEED);
-#elif FEC_SPEED == 100
-	REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RGMII_EN);
-	REG32_STORE(ENET_ECR, 0xF0000100);
-#elif FEC_SPEED == 10
-	REG32_STORE(ENET_RCR, 0x5ee0000 | ENET_RCR_RMII_10T |
-			ENET_RCR_RGMII_EN);
-	REG32_STORE(ENET_ECR, 0xF0000100);
-#else
-#error "Wrong FEC speed"
-#endif
-
 	/* Enables 10-Mbit/s mode of the RMII or RGMII ?*/
 	/* Maximum Receive Buffer Size Register
 	 * Receive buffer size in bytes. This value, concatenated with the four
@@ -294,13 +279,7 @@ static void _reset(struct net_device *dev) {
 	fec_rbd_init(dev->priv, RX_BUF_FRAMES, 0x600);
 
 	fec_tbd_init(dev->priv);
-#if 0
-#if FEC_SPEED == 1000
-	REG32_STORE(ENET_ECR, 0xF0000100 | ENET_SPEED);
-#else
-	REG32_STORE(ENET_ECR, 0xF0000100);
-#endif
-#endif
+
 	/* Transmit FIFO Write 64 bytes */
 	REG32_STORE(ENET_TFWR, 0x100);
 
@@ -496,7 +475,7 @@ static void fec_set_phyid(struct net_device *dev, uint8_t phyid) {
 static int fec_set_speed(struct net_device *dev, int speed) {
 	speed = net_to_mbps(speed);
 
-	if (speed != FEC_SPEED) {
+	if (speed != FEC_SPEED && FEC_SPEED != 0) {
 		log_error("Can't set %dmbps as driver is configured "
 				"to force %dmbps", speed, FEC_SPEED);
 		return -1;

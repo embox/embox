@@ -40,6 +40,9 @@ extern int mprotect(void *, size_t, int);
 extern void *mmap(void *, size_t, int, int, int, off_t);
 extern int munmap(void *, size_t);
 
+extern int shm_open(const char *name, int oflag, mode_t mode);
+extern int shm_unlink(const char *name);
+
 /* The following flags shall be defined for msync(): */
 #define MS_ASYNC       0x100 /* Perform asynchronous writes. */
 #define MS_SYNC        0x200 /* Perform synchronous writes. */

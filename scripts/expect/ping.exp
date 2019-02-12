@@ -4,10 +4,49 @@ source [file join [file dirname [info script]] framework/test_core.exp]
 
 namespace import autotest::*
 
-TEST_CASE {ping can send 1 packet without errors} {
+TEST_SUITE_SETUP
+
+TEST_CASE_TARGET {Embox should ping host} {
 	variable host_ip
 
-	test_assert_regexp_equal "ping -c 1 $host_ip\r\n" "+0 errors"
+	send "ping -c 4 $host_ip\r"
+	test_assert_regexp_equal "0 errors"
+
+	return 0
+}
+
+TEST_CASE_TARGET {Embox should ping google.com} {
+	variable host_ip
+
+	send "ping -c 4 google.com\r"
+	test_assert_regexp_equal "0 errors"
+
+	return 0
+}
+
+TEST_CASE_HOST {Embox should reply after ping flooding} {
+	variable embox_ip
+	variable host_passwd
+
+	# Flood for 10 seconds
+	set timeout 10
+	spawn sudo ping -f $embox_ip
+	expect "password" { send "$host_passwd\r" }
+	expect "try again" { puts "Incorrect password. Please, check host_passwd in test_core.c"; exit 1}
+	expect timeout
+	# Ctrl-C
+	send \x03
+
+	sleep 1
+
+	# Now check whether target replies or not
+	spawn ping -c 4 $embox_ip
+	expect timeout
+	lassign [wait] pid spawnid os_error_flag value
+	if {$value != 0} {
+		puts "Target won't reply after ping flooding"
+		exit 1
+	}
 
 	return 0
 }

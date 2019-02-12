@@ -131,6 +131,11 @@ static int mipsnet_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static int mipsnet_open(struct net_device *dev) {
+	struct mipsnet_regs *regs;
+
+	regs = (struct mipsnet_regs *)dev->base_addr;
+	out32(MIPSNET_INTCTL_TESTBIT, &regs->interruptControl);
+
 	return 0;
 }
 
@@ -215,7 +220,6 @@ out_badirq:
 static int mipsnet_init(void) {
 	struct net_device *netdev;
 	int err;
-	struct mipsnet_regs *regs;
 
 	netdev = etherdev_alloc(0);
 	if (!netdev) {
@@ -233,9 +237,6 @@ static int mipsnet_init(void) {
 	if (err) {
 		return err;
 	}
-
-	regs = (struct mipsnet_regs *)netdev->base_addr;
-	out32(MIPSNET_INTCTL_TESTBIT, &regs->interruptControl);
 
 	return inetdev_register_dev(netdev);
 }

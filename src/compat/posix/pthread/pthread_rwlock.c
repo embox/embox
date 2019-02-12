@@ -41,7 +41,7 @@ int pthread_rwlock_unlock(pthread_rwlock_t *rwlock) {
 
 int pthread_rwlock_wrlock(pthread_rwlock_t *rwlock) {
 	rwlock_write_up(rwlock);
-	return -ENOSYS;
+	return 0;
 }
 
 int pthread_rwlockattr_destroy(pthread_rwlockattr_t *attr) {

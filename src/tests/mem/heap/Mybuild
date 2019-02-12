@@ -1,0 +1,42 @@
+package embox.test.mem
+
+module afterfree {
+	source "afterfree.c"
+}
+
+@TestFor(embox.mem.heap_api)
+module heap {
+	source "heap.c"
+
+	depends embox.mem.heap_api
+}
+
+module heap_bm_test {
+	source "heap_bm_test.c"
+
+	depends embox.mem.heap_bm
+	depends embox.mem.static_heap
+}
+
+module heap_helpers {
+	source "heap_helpers.c"
+}
+
+module heap_extended_test {
+	option number min_obj_size = 0x4000 /* 16 Kb */
+	option number max_obj_size = 0x100000 /* 1 Mb */
+
+	source "heap_extended_test.c"
+
+	depends heap_helpers
+	depends embox.mem.heap_api
+}
+
+module heap_threads_test {
+	option number test_obj_size = 0x1000 /* in bytes */
+
+	source "heap_threads_test.c"
+
+	depends heap_helpers
+	depends embox.mem.heap_api
+}

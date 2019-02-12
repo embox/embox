@@ -15,6 +15,7 @@ OTHER_ARGS="$@"
 
 TIMEOUT=${CONTINIOUS_RUN_TIMEOUT-45}
 
+EMCONF=./conf
 EMKERNEL=./build/base/bin/embox
 OUTPUT_FILE=./cont.out
 
@@ -42,14 +43,18 @@ atml2run=(
 	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
 	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
 	['x86/test/packetdrill']=packetdrill_run
+	['x86/test/qt-vnc']="$(dirname $0)/qt/run.sh $ATML"
 	['sparc/qemu']=default_run
 	['mips/qemu']=default_run
 	['ppc/qemu']=default_run
 	['microblaze/qemu']=default_run
 	['usermode86/debug']=default_run
 	['generic/qemu']=default_run
-	['generic/qemu_bg']=run_bg_wrapper
+	['generic/qemu_bg']="run_bg_wrapper true"
+	['generic/qemu_bg_no_check']="run_bg_wrapper false"
 	['generic/qemu_bg_kill']=kill_bg_wrapper
+	['generic/save_conf']=save_conf
+	['generic/restore_conf']=restore_conf
 	['generic/fail']=false
 )
 
@@ -112,6 +117,8 @@ kill_bg() {
 	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
 
 	cat $OUTPUT_FILE
+
+	restore_conf
 }
 
 ## FIXME not working
@@ -142,13 +149,17 @@ default_run() {
 }
 
 run_bg_wrapper() {
+	check_if_started=$1
 
 	run_bg
 
 	sleep $TIMEOUT
 
-	run_check
-	ret=$?
+	ret=0
+	if [ "$check_if_started" = true ]; then
+		run_check
+		ret=$?
+	fi
 
 	echo "====================="
 	echo "Embox output on start"
@@ -170,6 +181,19 @@ kill_bg_wrapper() {
 	echo "Embox output on end"
 	echo "==================="
 	kill_bg
+}
+
+save_conf() {
+	echo "Save conf/ to $EMCONF.orig"
+	rm -rf $EMCONF.orig
+	cp -r $EMCONF $EMCONF.orig
+}
+
+restore_conf() {
+	if [ -d $EMCONF.orig ]; then
+		echo "Restore conf/ from $EMCONF.orig"
+		cp -rf $EMCONF.orig/* $EMCONF
+	fi
 }
 
 if ! echo ${!atml2run[@]} | grep $ATML &>/dev/null; then

@@ -30,12 +30,6 @@ module mb_intc extends irqctrl_api {
 	option number mbintc_base
 }
 
-module cortexm_nvic extends irqctrl_api {
-	option number irq_table_size = 16
-	source "cortexm_nvic.c", "cortexm_nvic.h"
-	source "cortexm_irq_handle.S"
-}
-
 module raspi extends irqctrl_api {
 	source "raspi.c", "raspi.h"
 

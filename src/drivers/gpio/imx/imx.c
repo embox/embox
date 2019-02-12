@@ -74,7 +74,11 @@ void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
 
 	log_debug("set level %d for GPIO#%d 0x%08x", level, num, mask);
 
-	REG32_ORIN(GPIO_DR(num), mask * level);
+	if (level == 0) {
+		REG32_CLEAR(GPIO_DR(num), mask);
+	} else {
+		REG32_ORIN(GPIO_DR(num), mask);
+	}
 }
 
 gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask) {

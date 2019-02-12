@@ -7,8 +7,11 @@
  */
 
 #include <asm/io.h>
+
 #include <embox/unit.h>
 #include <framework/mod/options.h>
+
+#include <hal/clock.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <kernel/time/clock_source.h>
@@ -75,13 +78,13 @@ static irq_return_t e2k_clock_handler(unsigned int irq_nr, void *dev_id) {
 #define LT_FREQ 500
 static int e2k_clock_init(void) {
 	uint32_t clock_hz = (1 + (10000000 + LT_FREQ) / 2000);
-	uint32_t val;
+
 	clock_source_register(&e2k_clock_source);
 	irq_attach(IRQ_NR, e2k_clock_handler, 0, &e2k_clock_source, "e2k clock");
 
 	/* Setup frequency */
-	e2k_write32(clock_hz << 9, E2K_COUNTER_LIMIT);
-	e2k_write32(LT_INVERT_COUNTER_CNTR_LAUNCH, E2K_COUNTER_CONTROL);
+	e2k_write32(clock_hz << 9, (void*)E2K_COUNTER_LIMIT);
+	e2k_write32(LT_INVERT_COUNTER_CNTR_LAUNCH, (void*)E2K_COUNTER_CONTROL);
 
 	return 0;
 }
@@ -91,7 +94,7 @@ static int e2k_clock_config(struct time_dev_conf * conf) {
 }
 
 static cycle_t e2k_clock_read(void) {
-	return e2k_read32(E2K_RESET_COUNTER_LOW); /* Ignore high 32 bits */
+	return e2k_read32((void*)E2K_RESET_COUNTER_LOW); /* Ignore high 32 bits */
 }
 
 static struct time_event_device e2k_clock_event = {

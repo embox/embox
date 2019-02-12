@@ -57,6 +57,37 @@ int ac97_get_vol(void) {
 	return 0x3F & ac97_reg_read(AC97_MASTER);
 }
 
+int ac97_set_rate(uint16_t rate, enum ac97_slot slot) {
+	if ((rate != 8000) && (rate != 11025) &&
+		(rate != 16000) && (rate != 22050) &&
+		(rate != 44100) && (rate != 48000)) {
+		return -1;
+	}
+
+	switch (slot) {
+	case AC97_FRONT_DAC:
+		ac97_reg_write(AC97_DAC_RATE, rate);
+		break;
+	case AC97_MIC_ADC:
+		ac97_reg_write(AC97_ADC_RATE, rate);
+		break;
+	default:
+		return -1;
+	}
+	return 0;
+}
+
+int ac97_get_rate(enum ac97_slot slot) {
+	switch (slot) {
+	case AC97_FRONT_DAC:
+		return ac97_reg_read(AC97_DAC_RATE);
+	case AC97_MIC_ADC:
+		return ac97_reg_read(AC97_ADC_RATE);
+	default:
+		return -1;
+	}
+}
+
 /**
  * @brief Initialize codec, setup static values and so on
  *

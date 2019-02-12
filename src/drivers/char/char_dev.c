@@ -16,11 +16,11 @@
 
 #include <util/array.h>
 
-ARRAY_SPREAD_DEF(const struct device_module, __device_registry);
+ARRAY_SPREAD_DEF(const struct dev_module, __device_registry);
 
 int char_dev_init_all(void) {
 	int ret;
-	const struct device_module *dev_module;
+	const struct dev_module *dev_module;
 
 	array_spread_foreach_ptr(dev_module, __device_registry) {
 		if (dev_module->init != NULL) {

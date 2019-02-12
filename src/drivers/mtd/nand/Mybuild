@@ -1,0 +1,12 @@
+package embox.driver.mtd
+
+module nand_dev {
+	option number log_level = 1
+
+	@IncludeExport(path="drivers/mtd")
+	source "nand.h"
+
+	source "nand.c"
+
+	depends embox.driver.block_common
+}

@@ -19,7 +19,6 @@
 
 int stack_iter_next(stack_iter_t *f) {
 	f->fp = (void *) *((int *) (f->fp - 0xc));
-	f->pc = (void *) *((int *) f->fp);
 	f->lr = (void *) *((int *) (f->fp - 0x4));
 
 	return (void *) *((int *) (f->fp - 0xc)) != 0;
@@ -27,7 +26,6 @@ int stack_iter_next(stack_iter_t *f) {
 
 void stack_iter_context(stack_iter_t *f, struct context *ctx) {
 	f->fp = (void*) ctx->system_r[11];	/* R11 is frame pointer */
-	f->pc = (void*) ctx->lr;
 	f->lr = (void*) ctx->lr;		/* R14 is link register */
 }
 
@@ -35,10 +33,8 @@ void stack_iter_current(stack_iter_t *f) {
 	__asm__ __volatile__ (
 		"mov %[fp], FP\n\t"
 		"mov %[lr], LR\n\t"
-		"mov %[pc], PC\n\t"
 		: [fp]"=r"(f->fp),
-		  [lr]"=r"(f->lr),
-		  [pc]"=r"(f->pc) : :
+		  [lr]"=r"(f->lr) : :
 	);
 	
 	/* We can't just take those registers
@@ -51,5 +47,6 @@ void stack_iter_current(stack_iter_t *f) {
 }
 
 void *stack_iter_get_retpc(stack_iter_t *f) {
-	return f->pc;
+	/* LR stores the actual address we should return to. */
+	return f->lr;
 }

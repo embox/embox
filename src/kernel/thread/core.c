@@ -230,7 +230,7 @@ void thread_init(struct thread *t, int priority,
 	schedee_init(&t->schedee, priority, thread_process);
 
 	/* initialize everthing else */
-	thread_wait_init(&t->thread_wait);
+	thread_wait_init(&t->thread_wait_list);
 }
 
 struct thread *thread_init_stack(void *stack, size_t stack_sz,
@@ -254,6 +254,7 @@ void thread_delete(struct thread *t) {
 
 	task_thread_unregister(t->task, t);
 	thread_local_free(t);
+	thread_wait_deinit(&t->thread_wait_list);
 
 	if (zombie) {
 		thread_free(zombie);

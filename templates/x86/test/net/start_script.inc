@@ -19,5 +19,5 @@
 "ping google.com",
 "httpd &",
 "telnetd &",
-//"dropbeard",
+"service dropbear -F",
 "snmpd &",

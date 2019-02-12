@@ -12,7 +12,7 @@
 #include <util/array.h>
 
 unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
-	char symbol_str[4];
+	char symbol_str[5];
 	size_t i, j, cur = 0;
 	unsigned int tmp;
 	for (i = 0; i < 5; i++) {
@@ -36,7 +36,7 @@ unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
 		res[i] = tmp;
 		cur += j + 1;
 	}
-	strncpy(symbol_str, (char *)&addr[cur], ARRAY_SIZE(symbol_str));
+	strncpy(symbol_str, (char *)&addr[cur], ARRAY_SIZE(symbol_str) - 1);
 	if (1 != sscanf (symbol_str, "%x", &tmp)) {
 		return NULL;
 	}

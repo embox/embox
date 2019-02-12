@@ -14,7 +14,7 @@
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
 
-#include "waitq_protect_link.h"
+#include <kernel/sched/waitq_protect_link.h>
 
 static void waitq_add(struct waitq *wq, struct waitq_link *wql) {
 	ipl_t ipl;

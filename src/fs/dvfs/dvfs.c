@@ -21,8 +21,6 @@
 
 /* Utility functions */
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
-extern int dentry_fill(struct super_block *, struct inode *,
-                       struct dentry *, struct dentry *);
 extern int            dvfs_update_root(void);
 extern struct dentry *dvfs_root(void);
 extern int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup);
@@ -234,7 +232,7 @@ int dvfs_write(struct file *desc, char *buf, int count) {
 	inode = desc->f_inode;
 	assert(inode);
 
-	if (inode->length - desc->pos < count) {
+	if (inode->length - desc->pos < count && !(inode->flags & DVFS_NO_LSEEK)) {
 		if (inode->i_ops && inode->i_ops->truncate) {
 			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
 			if (res)
