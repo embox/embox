@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <util/err.h>
 
@@ -218,8 +219,11 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	dev = i_no->i_data;
 
 	assert(dev);
+	if(__oflag & O_PATH) {
+		return char_dev_idesc_create(NULL);
+	}
 	assert(dev->dev_open);
-	desc = dev->dev_open(dev, dev->dev_priv);
+	desc = dev->dev_open(dev, (void *)__oflag);
 
 	return desc;
 }
