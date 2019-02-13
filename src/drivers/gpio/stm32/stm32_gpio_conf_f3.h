@@ -13,6 +13,4 @@
 #include "stm32f3xx_hal_gpio.h"
 #include "stm32f3_discovery.h"
 
-typedef uint16_t __gpio_mask_t;
-
 #endif
