@@ -11,13 +11,19 @@
 #include <sys/mman.h>
 
 #include <util/log.h>
+#include <embox/unit.h>
 
 #include <hal/reg.h>
 #include <drivers/common/memory.h>
 
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio_driver.h>
 
+#define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
 #define BASE_CTRL_ADDR OPTION_GET(NUMBER,base_addr)
+
+#define DWAPB_GPIO_PORTS_COUNT 4
+
+EMBOX_UNIT_INIT(dwapb_gpio_init);
 
 struct gpio_dwapb_port {
 	uint32_t dr; /* data */
@@ -25,26 +31,12 @@ struct gpio_dwapb_port {
 	uint32_t ctl;
 };
 
-static const struct gpio dwapb_port[4] = {{0}, {1}, {2}, {3}};
-
-static int valid_port_num(int port_num) {
-	if (port_num > 0 && port_num < 5) return 1;
-
-	return 0;
-}
-
-struct gpio *gpio_by_num(int num_port) {
-	assert(valid_port_num(num_port));
-
-	return (struct gpio *)&dwapb_port[num_port - 1];
-}
-
-int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
+static int dwapb_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode) {
 	struct gpio_dwapb_port *gpio_port;
 	uint32_t direction;
 	uint32_t ctl;
 
-	gpio_port = (void *)(BASE_CTRL_ADDR + gpio->port_id * sizeof(struct gpio_dwapb_port));
+	gpio_port = (void *)(BASE_CTRL_ADDR + port * sizeof(struct gpio_dwapb_port));
 
 	log_debug("%p mask 0x%X mode %d", gpio_port, mask, mode);
 	ctl = REG32_LOAD(&gpio_port->ctl);
@@ -64,11 +56,11 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	return 0;
 }
 
-void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
+static void dwapb_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
 	struct gpio_dwapb_port *gpio_port;
 	uint32_t dr;
 
-	gpio_port = (void *)(BASE_CTRL_ADDR + gpio->port_id * sizeof(struct gpio_dwapb_port));
+	gpio_port = (void *)(BASE_CTRL_ADDR + port * sizeof(struct gpio_dwapb_port));
 	dr = REG32_LOAD(&gpio_port->dr);
 	if (level) {
 		dr |= mask;
@@ -80,8 +72,20 @@ void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
 	REG32_STORE(&gpio_port->dr, dr);
 }
 
-gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask) {
+static gpio_mask_t dwapb_gpio_get(unsigned char port, gpio_mask_t mask) {
+	log_error("dwapb_gpio_get UNIMPLEMENTED\n");
 	return 0;
+}
+
+static struct gpio_chip dwapb_gpio_chip = {
+	.setup_mode = dwapb_gpio_setup_mode,
+	.get = dwapb_gpio_get,
+	.set = dwapb_gpio_set,
+	.nports = DWAPB_GPIO_PORTS_COUNT
+};
+
+static int dwapb_gpio_init(void) {
+	return gpio_register_chip(&dwapb_gpio_chip, GPIO_CHIP_ID);
 }
 
 static struct periph_memory_desc arasan_mem = {
@@ -90,4 +94,3 @@ static struct periph_memory_desc arasan_mem = {
 };
 
 PERIPH_MEMORY_DEFINE(arasan_mem);
-
