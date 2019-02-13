@@ -1,0 +1,14 @@
+package embox.driver.gpio
+
+abstract module pins { }
+
+module at91_pins extends pins {
+	source "at91_pins.c"
+
+	depends pins_core
+	depends embox.kernel.irq
+}
+
+module pins_core {
+	source "pins.c"
+}
