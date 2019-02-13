@@ -15,21 +15,25 @@
 
 #define RCC_APB2GPIOx 0x000001fc
 #define RCC_APB2AFIO  0x00000001
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio_driver.h>
 
 #include <hal/reg.h>
 #include <embox/unit.h>
 
+#define STM32_GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
+
 EMBOX_UNIT_INIT(stm32_gpio_init);
+
+static struct gpio_chip stm32_gpio_chip;
 
 static int stm32_gpio_init(void) {
 	REG_ORIN(RCC_APB1RSTR,RCC_APB1PWR);
 	REG_ORIN(RCC_APB2ENR,RCC_APB2GPIOx);
 	REG_ORIN(RCC_APB2ENR,RCC_APB2AFIO);
-	return 0;
+	return gpio_register_chip(&stm32_gpio_chip, STM32_GPIO_CHIP_ID);
 }
 
-static void set_state(struct gpio *gpio, gpio_mask_t mask, int new_state) {
+static void set_state(struct stm32_gpio *gpio, gpio_mask_t mask, int new_state) {
 	volatile unsigned int *reg = &(gpio->crl);
 	gpio_mask_t tmask = mask;
 	assert(gpio);
@@ -48,8 +52,11 @@ static void set_state(struct gpio *gpio, gpio_mask_t mask, int new_state) {
 
 }
 
-int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
+static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
+		int mode) {
 	int mode_val = 0;
+	struct stm32_gpio *gpio = STM32_GPIO(port);
+
 	assert(gpio);
 
 	if ((mode & GPIO_MODE_OUT_SECTION) &&
@@ -90,7 +97,9 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 	return 0;
 }
 
-void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level){
+static void stm32_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
+	struct stm32_gpio *gpio = STM32_GPIO(port);
+
 	assert(gpio);
 	assert((mask & ~((1 << 16) - 1)) == 0);
 
@@ -101,7 +110,15 @@ void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level){
 	}
 }
 
-gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask){
+static gpio_mask_t stm32_gpio_get(unsigned char port, gpio_mask_t mask){
+	struct stm32_gpio *gpio = STM32_GPIO(port);
 	assert(gpio);
 	return mask & REG_LOAD(&(gpio->idr));
 }
+
+static struct gpio_chip stm32_gpio_chip = {
+	.setup_mode = stm32_gpio_setup_mode,
+	.get = stm32_gpio_get,
+	.set = stm32_gpio_set,
+	.nports = GPIO_PORT_NUM
+};
