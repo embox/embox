@@ -9,7 +9,7 @@
  */
 
 #include <string.h>
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(lcd_test);
@@ -17,13 +17,13 @@ EMBOX_UNIT_INIT(lcd_test);
 /* low-level defines */
 
 /* below defines control pins */
-#define CTRL_PORT OPTION_GET(STRING,control_port)
+#define CTRL_PORT OPTION_GET(NUMBER,control_port)
 #define RS (1 << OPTION_GET(NUMBER, reg_select_pin))
 #define RW (1 << OPTION_GET(NUMBER, rw_pin))
 #define E (1 << OPTION_GET(NUMBER, clock_pin))
 
 /* Below defines data port */
-#define DATA_PORT OPTION_GET(STRING,data_port)
+#define DATA_PORT OPTION_GET(NUMBER,data_port)
 #define DATA_PINS_OFFSET OPTION_GET(NUMBER,data_pins_offset)
 #define BUSY_FLAG (1 << (7 + DATA_PINS_OFFSET))
 
@@ -44,29 +44,29 @@ static inline void nsdelay(int ns) {
 
 static int lcd_read(int reg) {
 	int val;
-	gpio_settings(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_INPUT);
-	gpio_set_level(CTRL_PORT, RS, reg);
-	gpio_set_level(CTRL_PORT, RW, 1);
+	gpio_setup_mode(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_INPUT);
+	gpio_set(CTRL_PORT, RS, reg);
+	gpio_set(CTRL_PORT, RW, 1);
 
-	gpio_set_level(CTRL_PORT, E, 1);
+	gpio_set(CTRL_PORT, E, 1);
 	nsdelay(140);
-	val = gpio_get_level(DATA_PORT, 0xff << DATA_PINS_OFFSET);
-	gpio_set_level(CTRL_PORT, E, 0);
+	val = gpio_get(DATA_PORT, 0xff << DATA_PINS_OFFSET);
+	gpio_set(CTRL_PORT, E, 0);
 	nsdelay(10);
 
 	return val;
 }
 
 static void lcd_write(int reg, int val) {
-	gpio_settings(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_OUTPUT);
-	gpio_set_level(DATA_PORT, 0xff << DATA_PINS_OFFSET, 0);
-	gpio_set_level(CTRL_PORT, RS, reg);
-	gpio_set_level(CTRL_PORT, RW, 0);
-	gpio_set_level(DATA_PORT, val << DATA_PINS_OFFSET, 1);
+	gpio_setup_mode(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_OUTPUT);
+	gpio_set(DATA_PORT, 0xff << DATA_PINS_OFFSET, 0);
+	gpio_set(CTRL_PORT, RS, reg);
+	gpio_set(CTRL_PORT, RW, 0);
+	gpio_set(DATA_PORT, val << DATA_PINS_OFFSET, 1);
 
-	gpio_set_level(CTRL_PORT, E, 1);
+	gpio_set(CTRL_PORT, E, 1);
 	nsdelay(140);
-	gpio_set_level(CTRL_PORT, E, 0);
+	gpio_set(CTRL_PORT, E, 0);
 	nsdelay(10);
 }
 
@@ -138,8 +138,8 @@ void lcd_putc(char ch) {
 static int lcd_test(void) {
 	char demo[] = "      Embox     \n   Rev unknown  ";
 
-	gpio_set_level(CTRL_PORT, E | RS | RW, 0);
-	gpio_settings(CTRL_PORT, RS | E | RW, GPIO_MODE_OUTPUT);
+	gpio_set(CTRL_PORT, E | RS | RW, 0);
+	gpio_setup_mode(CTRL_PORT, RS | E | RW, GPIO_MODE_OUTPUT);
 
 	lcd_write(0, 0x38);
 	nsdelay(39000);
