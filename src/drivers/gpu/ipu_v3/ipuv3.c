@@ -15,7 +15,6 @@
 #include <drivers/video/fb.h>
 #include <drivers/clk/ccm_imx6.h>
 #include <kernel/irq.h>
-#include <drivers/gpio.h>
 
 #include "ipu_regs.h"
 #include "ipu_priv.h"
