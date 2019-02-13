@@ -15,6 +15,7 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <util/err.h>
 
@@ -49,7 +50,6 @@ void devfs_fill_inode(struct inode *inode,
 
 	inode->i_data = devmod;
 	inode->flags |= flags;
-	devmod->dev_file.f_inode = inode;
 }
 
 ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
@@ -178,10 +178,9 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 	assert(node->i_data);
 
 	dev = node->i_data;
-	assert(dev->dev_file.f_ops);
-	assert(dev->dev_file.f_ops->open);
+	assert(dev->dev_open);
 
-	return dev->dev_file.f_ops->open(node, desc);
+	return dev->dev_open(dev, dev->dev_priv);
 }
 
 
@@ -207,7 +206,7 @@ static int devfs_ioctl(struct file *desc, int request, void *data) {
 }
 
 /* Call device-specific open() handler */
-static struct idesc *devfs_open_idesc(struct lookup *l) {
+static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	struct inode  *i_no;
 	struct dev_module *dev;
 	struct idesc *desc;
@@ -220,9 +219,11 @@ static struct idesc *devfs_open_idesc(struct lookup *l) {
 	dev = i_no->i_data;
 
 	assert(dev);
-	assert(dev->dev_file.f_ops);
-	assert(dev->dev_file.f_ops->open);
-	desc = dev->dev_file.f_ops->open(i_no, NULL);
+	if(__oflag & O_PATH) {
+		return char_dev_idesc_create(NULL);
+	}
+	assert(dev->dev_open);
+	desc = dev->dev_open(dev, (void *)__oflag);
 
 	return desc;
 }

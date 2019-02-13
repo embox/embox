@@ -12,6 +12,10 @@
 struct idesc;
 struct uart;
 
-extern struct idesc *idesc_serial_create(struct uart *uart, mode_t mod);
+extern struct idesc *idesc_serial_create(struct uart *uart, int __oflags);
+
+extern const struct idesc_ops *idesc_serial_get_ops(void);
+
+extern void idesc_serial_close(struct idesc *idesc);
 
 #endif /* IDESC_SERIAL_H_ */

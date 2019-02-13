@@ -53,7 +53,7 @@ static int    nfsfs_close(struct file_desc *desc);
 static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
 
-static struct kfile_operations nfsfs_fop = {
+static struct file_operations nfsfs_fop = {
 	.open = nfsfs_open,
 	.close = nfsfs_close,
 	.read = nfsfs_read,

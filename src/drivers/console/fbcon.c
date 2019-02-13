@@ -140,14 +140,6 @@ static int fbcon_idesc_ioctl(struct idesc *idesc, int request, void *data) {
 	return tty_ioctl(&(fbcon->vterm.tty), request, data);
 }
 
-static int fbcon_idesc_fstat(struct idesc *idesc, void *buff) {
-       struct stat *st = buff;
-
-       st->st_mode = S_IFCHR;
-
-       return 0;
-}
-
 static int fbcon_idesc_status(struct idesc *idesc, int mask) {
 	struct fbcon *fbcon = data2fbcon(idesc);
 
@@ -162,7 +154,7 @@ static const struct idesc_ops fbcon_idesc_ops = {
 	.id_writev  = fbcon_idesc_write,
 	.close  = fbcon_idesc_close,
 	.ioctl  = fbcon_idesc_ioctl,
-	.fstat  = fbcon_idesc_fstat,
+	.fstat  = char_dev_idesc_fstat,
 	.status = fbcon_idesc_status,
 };
 

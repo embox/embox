@@ -44,7 +44,7 @@ int open(const char *path, int __oflag, ...) {
 		dvfs_destroy_dentry(lookup.item);
 		return SET_ERRNO(EISDIR);
 	}
-	idesc = lookup.item->d_sb->sb_ops->open_idesc(&lookup);
+	idesc = lookup.item->d_sb->sb_ops->open_idesc(&lookup, __oflag);
 	if (err(idesc)) {
 		return SET_ERRNO(err(idesc));
 	}

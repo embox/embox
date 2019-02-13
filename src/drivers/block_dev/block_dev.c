@@ -54,7 +54,7 @@ static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
 	return n_write;
 }
 
-static struct kfile_operations blockdev_fop = {
+static struct file_operations blockdev_fop = {
 	.open = bdev_open,
 	.close = bdev_close,
 	.read = bdev_read,

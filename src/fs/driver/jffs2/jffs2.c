@@ -1367,7 +1367,7 @@ static int jffs2fs_close(struct file_desc *desc);
 static size_t jffs2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t jffs2fs_write(struct file_desc *desc, void *buf, size_t size);
 
-static struct kfile_operations jffs2_fop = {
+static struct file_operations jffs2_fop = {
 	.open = jffs2fs_open,
 	.close = jffs2fs_close,
 	.read = jffs2fs_read,

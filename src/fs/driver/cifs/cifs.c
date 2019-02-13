@@ -445,7 +445,7 @@ static const struct fsop_desc cifs_fsop = {
 	.umount = embox_cifs_umount,
 };
 
-static struct kfile_operations cifs_fop = {
+static struct file_operations cifs_fop = {
 	.open = cifs_open,
 	.close = cifs_close,
 	.read = cifs_read,

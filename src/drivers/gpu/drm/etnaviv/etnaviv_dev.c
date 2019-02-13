@@ -392,7 +392,7 @@ static struct idesc_ops etnaviv_dev_idesc_ops = {
 	.idesc_mmap = etnaviv_dev_idesc_mmap,
 };
 
-CHAR_DEV_DEF(ETNAVIV_DEV_NAME, &etnaviv_dev_ops, &etnaviv_dev_idesc_ops, NULL);
+CHAR_DEV_DEF(ETNAVIV_DEV_NAME, NULL, NULL, &etnaviv_dev_idesc_ops, NULL);
 
 static struct periph_memory_desc vivante3d_mem = {
 	.start = VIVANTE_3D_BASE,

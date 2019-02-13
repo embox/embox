@@ -122,7 +122,7 @@ extern const struct idesc_ops idesc_file_ops;
  * @retval -ENOENT File is directory or file not found and
  *                 creating is not requested
  */
-struct idesc *dvfs_file_open_idesc(struct lookup *lookup) {
+struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	struct file *desc;
 	struct idesc *res;
 	struct inode  *i_no;
@@ -344,7 +344,8 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 	if (!lookup.item) {
 		return err_ptr(ENOENT);
 	}
-	bdev_file = (struct file*) dvfs_file_open_idesc(&lookup);
+	/* TODO pass flags */
+	bdev_file = (struct file*) dvfs_file_open_idesc(&lookup, 0);
 	if (err(bdev_file)) {
 		return bdev_file;
 	}

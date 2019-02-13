@@ -785,7 +785,7 @@ static struct idesc *cdfsfs_open(struct node *node, struct file_desc *desc, int 
 static int    cdfsfs_close(struct file_desc *desc);
 static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size);
 
-static struct kfile_operations cdfsfs_fop = {
+static struct file_operations cdfsfs_fop = {
 	.open = cdfsfs_open,
 	.close = cdfsfs_close,
 	.read = cdfsfs_read,

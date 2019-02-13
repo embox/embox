@@ -34,7 +34,7 @@ struct fsop_desc {
 	int (*umount)(void *dir_node);
 };
 
-struct kfile_operations;
+struct file_operations;
 
 /**
  * Structure of file system driver.
@@ -44,7 +44,7 @@ struct kfile_operations;
 struct fs_driver {
 	const char                    *name;
 	bool		mount_dev_by_string;
-	const struct kfile_operations *file_op;
+	const struct file_operations *file_op;
 	const struct fsop_desc        *fsop;
 };
 

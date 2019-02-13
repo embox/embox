@@ -38,7 +38,7 @@ extern int kcreat(struct path *dir, const char *path, mode_t mode, struct path *
 int open(const char *path, int __oflag, ...) {
 	char path_buf[PATH_MAX];
 	char name[NAME_MAX];
-	struct file_desc *kfile;
+	struct idesc *kfile;
 	va_list args;
 	mode_t mode;
 	int rc;
@@ -129,7 +129,7 @@ int open(const char *path, int __oflag, ...) {
 	}
 
 	it = task_resource_idesc_table(task_self());
-	rc = idesc_table_add(it, (struct idesc *)kfile, 0);
+	rc = idesc_table_add(it, kfile, 0);
 
 out:
 	closedir(dir);

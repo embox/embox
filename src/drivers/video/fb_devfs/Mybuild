@@ -10,4 +10,6 @@ module fb_devfs_stub extends fb_devfs {
 
 module fb_devfs_old extends fb_devfs {
 	source "fb_devfs_old.c"
+
+	depends embox.driver.video.fb
 }

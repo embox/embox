@@ -233,7 +233,7 @@ static int    fatfs_close(struct file_desc *desc);
 static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size);
 
-static struct kfile_operations fatfs_fop = {
+static struct file_operations fatfs_fop = {
 	.open = fatfs_open,
 	.close = fatfs_close,
 	.read = fatfs_read,
