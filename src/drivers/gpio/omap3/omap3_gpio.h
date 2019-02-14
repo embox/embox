@@ -13,28 +13,12 @@
 #include <hal/reg.h>
 #include <kernel/irq.h>
 
-typedef volatile unsigned long __gpio_mask_t;
-
-#define N_PINS 8 * (sizeof(int))
 #define GPIO_REG_SIZE 0x2000
-
-struct omap_pin_handler {
-	int mask;
-	void *data;
-	irq_handler_t handler;
-};
-
-struct gpio {
-	unsigned long base;
-	int gpio_nr;
-	struct omap_pin_handler pin[N_PINS];
-};
 
 #define GPIO_BASE_ADDRESS(i)      ((i) == 1 ? 0x48310000 : (0x49050000 + ((i) - 2) * GPIO_REG_SIZE))
 #define GPIO_IRQ(i)               (28 + (i))
 #define GPIO_NUM_BY_IRQ(i)        ((i) - 28)
 #define GPIO_MODULE_CNT           6
-
 
 /* Register offsets from base address */
 #define GPIO_REVISION             0x00

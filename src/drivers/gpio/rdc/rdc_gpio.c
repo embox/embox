@@ -10,7 +10,9 @@
 #include <asm/io.h>
 #include <embox/unit.h>
 
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio_driver.h>
+
+#define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
 
 EMBOX_UNIT_INIT(gpio_init);
 
@@ -47,9 +49,7 @@ static inline void clear_data(unsigned long mask) {
 	out32(g_last_value, PCI_DATA_REG);
 }
 
-int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
-	assert(gpio);
-
+static int rdc_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode) {
 	if ((mode & GPIO_MODE_OUT_SECTION) &&
 		(mode & GPIO_MODE_IN_SECTION)) { /* mode is incorrect */
 		return -1;
@@ -57,31 +57,37 @@ int gpio_settings(struct gpio *gpio, gpio_mask_t mask, int mode) {
 
 	if (mode & GPIO_MODE_INPUT) {
 		/* raise logic level to turn off pull-down */
-		set_data(mask);
+		set_data(pins);
 		/* select as GPIO function */
-		set_control(mask);
+		set_control(pins);
 	} else if (mode & GPIO_MODE_OUTPUT) {
-		set_control(mask);
+		set_control(pins);
 	}
 
 	return 0;
 }
 
-void gpio_set_level(struct gpio *gpio, gpio_mask_t mask, char level) {
-
-	if(level) {
-		set_data(mask);
+static void rdc_gpio_set(unsigned char port, gpio_mask_t pins, char level) {
+	if (level) {
+		set_data(pins);
 	} else {
-		clear_data(mask);
+		clear_data(pins);
 	}
 }
 
-gpio_mask_t gpio_get_level(struct gpio *gpio, gpio_mask_t mask) {
+static gpio_mask_t rdc_gpio_get(unsigned char port, gpio_mask_t pins) {
 	unsigned long tmp;
 	out32(RDC_DATA, PCI_ADDR_SEL);
 	tmp = in32(PCI_DATA_REG);
-	return tmp & mask;
+	return tmp & pins;
 }
+
+static struct gpio_chip rdc_gpio_chip = {
+	.setup_mode = rdc_gpio_setup_mode,
+	.get = rdc_gpio_get,
+	.set = rdc_gpio_set,
+	.nports = 1
+};
 
 static int gpio_init(void) {
 	/* Example: blink led */
@@ -89,5 +95,5 @@ static int gpio_init(void) {
 	out32(RDC_DATA, PCI_ADDR_SEL);
 //	out32(0, PCI_DATA_REG);          // red led on
 //	out32(GPIO_RTCRD, PCI_DATA_REG); // red led off
-	return 0;
+	return gpio_register_chip(&rdc_gpio_chip, GPIO_CHIP_ID);
 }
