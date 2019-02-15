@@ -11,22 +11,22 @@
 #include <unistd.h>
 #include <string.h>
 
-#include <libs/gy_30.h>
+#include <drivers/sensors/gy_30.h>
 
-static void print_lx(uint8_t mode) {
+static void print_lx(int i2c_nr, uint8_t mode) {
 	uint16_t level;
 
 	printf("GY-30 running\n");
 
 	if (mode == BH1750_CONTINUOUS_HIGH_RES_MODE) {
-		gy_30_setup_mode(mode);
+		gy_30_setup_mode(i2c_nr, mode);
 	}
 
 	while (1) {
 		if (mode == BH1750_ONE_TIME_HIGH_RES_MODE) {
-			gy_30_setup_mode(mode);
+			gy_30_setup_mode(i2c_nr, mode);
 		}
-		level = gy_30_read_light_level();
+		level = gy_30_read_light_level(i2c_nr);
 		printf("level: %d lx\n", level);
 		sleep(1);
 	}
@@ -76,12 +76,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (gy_30_init(i2c_nr) < 0) {
-		printf("gy_30_init failed\n");;
-		return -1;
+	if (argc < 5) {
+		print_usage();
+		return 0;
 	}
 
-	print_lx(mode);
+	print_lx(i2c_nr, mode);
 
 	return 0;
 }
