@@ -7,5 +7,4 @@ module i2c_connect_boards {
 	source "i2c_connect_boards.c"
 
 	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
-	depends embox.driver.i2c.stm32f4
 }
