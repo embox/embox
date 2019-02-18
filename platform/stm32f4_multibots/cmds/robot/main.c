@@ -12,8 +12,10 @@
 #include <string.h>
 #include <pthread.h>
 
+#include <framework/mod/options.h>
+
 #include <libs/nrf24.h>
-#include <libs/gy_30.h>
+#include <drivers/sensors/gy_30.h>
 #include <libs/stepper_motor.h>
 #include <libs/ir.h>
 
@@ -22,6 +24,8 @@
 #define IR_OBSTACLE_THRESHOLD 10
 
 #define NRF24_PLAYLOAD_LEN    16
+
+#define GY_30_I2C_BUS_NR OPTION_GET(NUMBER, gy_30_i2c_bus_nr)
 
 struct light_robot {
 	struct stepper_motor motor1;
@@ -44,7 +48,7 @@ static void *light_sensor_loop(void *arg) {
 	uint16_t level;
 
 	while (1) {
-		level = gy_30_read_light_level();
+		level = gy_30_read_light_level(GY_30_I2C_BUS_NR);
 		printf("GY-30: light (lx) - %d\n", level);
 		sleep(1);
 	}
@@ -100,7 +104,7 @@ static int nrf24_handle_msg(struct light_robot *robot,
 		uint16_t level;
 		int tmp = 0;
 
-		level = gy_30_read_light_level();
+		level = gy_30_read_light_level(GY_30_I2C_BUS_NR);
 
 		usleep(100000);
 
@@ -167,13 +171,8 @@ static void robot_config_motors(struct stepper_motor *motor1,
 	motor_set_speed(motor2, MOTOR_MAX_SPEED);
 }
 
-static int robot_config_gy_30(int i2c_nr, int mode) {
-	if (gy_30_init(i2c_nr) < 0) {
-		printf("gy_30_init failed\n");
-		return -1;
-	}
-
-	gy_30_setup_mode(mode);
+static int robot_config_gy_30(int mode) {
+	gy_30_setup_mode(GY_30_I2C_BUS_NR, mode);
 
 	return 0;
 }
@@ -184,7 +183,6 @@ static void main_loop(void) {
 	struct light_robot robot;
 	uint8_t tx_addr[5] = {0xAA,0xBB,0xCC,0xDD,0x01};
 	uint8_t rx_addr[5] = {0xEE,0xFF,0xAA,0xBB,0x02};
-	int const i2c_nr = 1;
 
 	/* TODO Each robot must set it's own rx and tx address */
 	if (robot_config_nrf24(tx_addr, rx_addr, 96, NRF24_PLAYLOAD_LEN) < 0) {
@@ -196,7 +194,7 @@ static void main_loop(void) {
 	robot_config_motors(&robot.motor1, &robot.motor2);
 	printf("Stepper motors configured\n");
 
-	if (robot_config_gy_30(i2c_nr, BH1750_CONTINUOUS_HIGH_RES_MODE) < 0) {
+	if (robot_config_gy_30(BH1750_CONTINUOUS_HIGH_RES_MODE) < 0) {
 		printf("GY-30 initialization failed\n");
 		return;
 	}

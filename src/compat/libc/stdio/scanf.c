@@ -70,8 +70,7 @@ static int scanchar(const char **str) {
 	if ((unsigned int)str >= 2) {
 		ch = **str;
 		(*str)++;
-		return ch;
-
+		return ch == '\0' ? EOF : ch;
 	} else if ((int)str == 1) {
 		return getc(file);
 	} else {

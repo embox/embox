@@ -62,8 +62,38 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 
 	if (mode & GPIO_MODE_OUTPUT) {
 		GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+
+		if (mode & GPIO_MODE_OUT_OPEN_DRAIN) {
+			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+		}
+		if (mode & GPIO_MODE_OUT_PUSH_PULL) {
+			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+		}
 	} else if (mode & GPIO_MODE_INPUT) {
 		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+
+		if (mode & GPIO_MODE_IN_PULL_UP) {
+			GPIO_InitStruct.Pull = GPIO_PULLUP;
+		}
+		if (mode & GPIO_MODE_IN_PULL_DOWN) {
+			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+		}
+	} else if (mode & GPIO_MODE_OUT_ALTERNATE) {
+		GPIO_InitStruct.Alternate = GPIO_GET_ALTERNATE(mode);
+
+		if (mode & GPIO_MODE_OUT_OPEN_DRAIN) {
+			GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+		}
+		if (mode & GPIO_MODE_OUT_PUSH_PULL) {
+			GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		}
+
+		if (mode & GPIO_MODE_IN_PULL_UP) {
+			GPIO_InitStruct.Pull = GPIO_PULLUP;
+		}
+		if (mode & GPIO_MODE_IN_PULL_DOWN) {
+			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+		}
 	} else if (mode & GPIO_MODE_INT_MODE_RISING) {
 		GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 	} else if (mode & GPIO_MODE_INT_MODE_FALLING) {
