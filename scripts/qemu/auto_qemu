@@ -211,21 +211,31 @@ if [ $nic_n -gt 0 ]; then
 	sudo='sudo -E'
 	for ni in "${!qemu_nics[@]}"; do
 
-		if [ ${qemu_nics_config[$ni]} ] && [ ${qemu_nics_config[$ni]} != "-" ]; then
-			host_nic_config=${qemu_nics_config[$ni]}
-		else
-			host_nic_config="tap,script=$DATADIR/start_script,downscript=$DATADIR/stop_script"
-		fi
-
 		nic_model=${NIC2QEMU[${qemu_nics[$ni]}]}
 		echo
 		if [ ! $nic_model ]; then
 			error "nic model ${qemu_nics[$ni]} is not supported"
 		fi
+
+		if [ ${qemu_nics_config[$ni]} ] && [ ${qemu_nics_config[$ni]} != "-" ]; then
+			host_nic_config=${qemu_nics_config[$ni]}
+		else
+			if [ $nic_model = "virtio" ]; then
+				vnet_hdr="vnet_hdr=no"
+			else
+				vnet_hdr=""
+			fi
+			host_nic_config="tap,script=$DATADIR/start_script,downscript=$DATADIR/stop_script,$vnet_hdr"
+		fi
+
 		nic_macaddr="AA:BB:CC:DD:EE:0$(($ni + 2))"
+
+		# For new version of QEMU it should be in future:
+		# -nic $host_nic_config,model=$nic_model,mac=$nic_macaddr
+		#
 		nic_lines="$nic_lines \
-			-net nic,vlan=$ni,model=$nic_model,macaddr=$nic_macaddr \
-			-net $host_nic_config,vlan=$ni"
+			-net nic,netdev=n$ni,model=$nic_model,macaddr=$nic_macaddr \
+			-netdev $host_nic_config,id=n$ni"
 	done
 fi
 
