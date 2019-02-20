@@ -15,7 +15,6 @@ TEST_CASE_TARGET {Execute "help" command once} {
 	return 0
 }
 
-TEST_CASE_DECLARE_FIXME {
 TEST_CASE_TARGET {Execute "help" multiple times} {
 	set TELNET_PROMPT ":/#"
 
@@ -27,15 +26,13 @@ TEST_CASE_TARGET {Execute "help" multiple times} {
 
 	return 0
 }
-}
 
-TEST_CASE_DECLARE_FIXME {
 TEST_CASE_HOST {Connect and exit several times telnet} {
 	variable embox_ip
 	set TELNET_PROMPT ":/#"
 
 	for {set i 0} {$i < 32} {incr i} {
-		exec sleep 0.5
+		exec sleep 1.0
 		puts "\nCONNECT iter=$i"
 
 		spawn telnet $embox_ip
@@ -45,5 +42,4 @@ TEST_CASE_HOST {Connect and exit several times telnet} {
 	}
 
 	return 0
-}
 }

@@ -105,6 +105,9 @@ int execv(const char *path, char *const argv[]) {
 			}
 			strncat(cmd_name, " ", MAX_TASK_NAME_LEN - len - 1);
 		}
+	} else {
+		strncpy(cmd_name, path, MAX_TASK_NAME_LEN - 1);
+		cmd_name[MAX_TASK_NAME_LEN - 1] = '\0';
 	}
 
 	task_set_name(task, cmd_name);
