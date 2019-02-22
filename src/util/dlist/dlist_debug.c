@@ -8,24 +8,27 @@
 
 #include <assert.h>
 #include <util/dlist.h>
+#include <framework/mod/options.h>
 
 void __dlist_debug_check(const struct dlist_head *head) {
-	/* XXX: not working in util/tree because of tree_delete_link func */
-#if 0
+
+#if OPTION_GET(NUMBER, debug)
+
 	const struct dlist_head *p = head->prev;
 	const struct dlist_head *n = head->next;
 	uintptr_t poison = head->poison;
 
-	assert((!poison || (void *) ~poison == head) &&
-		n->prev == head &&
-		p->next == head,
+	assertf(((!poison || (void *) ~poison == head) &&
+			n->prev == head &&
+			p->next == head),
 			"\n"
-			"head: %p, poison: %p\n"
-			"prev: %p, n: %p, p: %p\n"
-			"next: %p, n: %p, p: %p\n",
-			head, (void *) poison,
-			p, p->next, p->prev,
-			n, n->next, n->prev);
+			"head: %p, poison: %lu, ~poison: %p,\n"
+			"n: %p, n->prev: %p,\n"
+			"p: %p, p->next: %p\n",
+			head, poison, (void *) ~poison,
+			n, n->prev,
+			p, p->next);
+
 #endif
 }
 

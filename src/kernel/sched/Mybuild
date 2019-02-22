@@ -46,7 +46,7 @@ module sched_ticker_stub extends sched_ticker {
 module wait_queue {
 	source "waitq.c"
 
-	depends embox.util.DList
+	depends embox.util.dlist
 	depends waitq_protect_link
 }
 
