@@ -20,6 +20,7 @@
 #include <drivers/video/fb.h>
 #include <drivers/video/font.h>
 #include <drivers/tty.h>
+#include <drivers/char_dev.h>
 #include <fs/index_descriptor.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/task.h>
