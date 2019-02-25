@@ -56,6 +56,8 @@ module security {
 }
 
 module sig_table {
+	option number sig_table_size=64
+
 	source "sig_table.c"
 
 	depends embox.kernel.task.task_resource
