@@ -17,6 +17,9 @@ package embox.cmd
 			Alex Kalmuk
 	''')
 module service {
+	option number service_name_len=32
+	option number services_count=16
+
 	source "service.c"
 
 	depends embox.compat.libc.stdio.printf
