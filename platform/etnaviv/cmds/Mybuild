@@ -85,3 +85,21 @@ module etnaviv_compiler {
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
 }
+
+@AutoCmd
+@Cmd(name = "quad_tex",
+	help = "Draw quad-texangle with purple background using gallium")
+
+@BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
+@Build(stage=2,script="true")
+module quad_tex {
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/auxiliary")
+	source "quad_tex.c"
+
+	depends third_party.freedesktop.mesa.libdrm_etnaviv
+	depends third_party.lib.estransform
+}
+
