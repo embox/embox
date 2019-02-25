@@ -11,6 +11,8 @@
 
 #include <errno.h>
 #include <linux/list.h>
+#include <linux/sizes.h>
+#include <linux/types.h>
 #include <linux/kernel.h>
 #include <mem/sysmalloc.h>
 #include <string.h>
@@ -38,8 +40,6 @@ static inline void *kzalloc(int a, int b) {
 
 #define DRM_ERROR log_error
 
-#define atomic_t int
-
 struct reservation_object {
 	int stub;
 };
@@ -62,27 +62,14 @@ static inline int order_base_2(int q) {
 	return res;
 };
 
-#define SZ_4K 4096
-#define SZ_2M (2 * 1024 * 1024)
-#define SZ_2G ((long long) 2 * 1024 * 1024 * 1024)
-
-#define __initconst
-#define __init
-#define __iomem
-
 #define BIT(n) (1 << (n))
 
-struct work_struct;
-struct dma_buf_attachment;
-struct vm_fault;
 struct platform_device;
 struct drm_device;
 struct drm_file;
 struct file;
 struct drm_gem_object;
 struct timespec;
-
-typedef int phys_addr_t;
 
 #define PHYS_OFFSET 0x10000000 /* Start of RAM */
 

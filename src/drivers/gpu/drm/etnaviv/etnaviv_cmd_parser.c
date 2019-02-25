@@ -14,8 +14,6 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-//#include <linux/kernel.h>
-
 #include <util/log.h>
 
 #include "etnaviv_compat.h"
@@ -31,60 +29,6 @@ struct etna_validation_state {
 	const struct drm_etnaviv_gem_submit_reloc *relocs;
 	unsigned int num_relocs;
 	uint32_t *start;
-};
-
-static const struct {
-	uint16_t offset;
-	uint16_t size;
-} etnaviv_sensitive_states[] __initconst = {
-#define ST(start, num) { (start) >> 2, (num) }
-	/* 2D */
-	ST(0x1200, 1),
-	ST(0x1228, 1),
-	ST(0x1238, 1),
-	ST(0x1284, 1),
-	ST(0x128c, 1),
-	ST(0x1304, 1),
-	ST(0x1310, 1),
-	ST(0x1318, 1),
-	ST(0x12800, 4),
-	ST(0x128a0, 4),
-	ST(0x128c0, 4),
-	ST(0x12970, 4),
-	ST(0x12a00, 8),
-	ST(0x12b40, 8),
-	ST(0x12b80, 8),
-	ST(0x12ce0, 8),
-	/* 3D */
-	ST(0x0644, 1),
-	ST(0x064c, 1),
-	ST(0x0680, 8),
-	ST(0x086c, 1),
-	ST(0x1028, 1),
-	ST(0x1410, 1),
-	ST(0x1430, 1),
-	ST(0x1458, 1),
-	ST(0x1460, 8),
-	ST(0x1480, 8),
-	ST(0x1500, 8),
-	ST(0x1520, 8),
-	ST(0x1608, 1),
-	ST(0x1610, 1),
-	ST(0x1658, 1),
-	ST(0x165c, 1),
-	ST(0x1664, 1),
-	ST(0x1668, 1),
-	ST(0x16a4, 1),
-	ST(0x16c0, 8),
-	ST(0x16e0, 8),
-	ST(0x1740, 8),
-	ST(0x17c0, 8),
-	ST(0x17e0, 8),
-	ST(0x2400, 14 * 16),
-	ST(0x10800, 32 * 16),
-	ST(0x14600, 16),
-	ST(0x14800, 8 * 8),
-#undef ST
 };
 
 #define ETNAVIV_STATES_SIZE (VIV_FE_LOAD_STATE_HEADER_OFFSET__MASK + 1u)

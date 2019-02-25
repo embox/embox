@@ -27,19 +27,16 @@ struct etnaviv_cmdbuf_suballoc;
 struct etnaviv_cmdbuf {
 	/* suballocator this cmdbuf is allocated from */
 	struct etnaviv_cmdbuf_suballoc *suballoc;
-	/* user context key, must be unique between all active users */
-	struct etnaviv_file_private *ctx;
 	/* cmdbuf properties */
 	int suballoc_offset;
 	void *vaddr;
+	void *ctx;
 	uint32_t size;
 	uint32_t user_size;
 	/* fence after which this buffer is to be disposed */
 	struct dma_fence *fence;
 	/* target exec state */
 	uint32_t exec_state;
-	/* per GPU in-flight list */
-	struct list_head node;
 	/* BOs attached to this command buffer */
 	unsigned int nr_bos;
 	struct etnaviv_vram_mapping *bo_map[0];
