@@ -16,6 +16,12 @@
 
 #ifdef NDEBUG
 
+#if defined __cplusplus
+# define __ASSERT_VOID_CAST static_cast<void>
+#else
+# define __ASSERT_VOID_CAST (void)
+#endif
+
 /* Do nothing.
  *
  * Implementation note: casting zero to typeof(condition) in the 'while' clause
@@ -26,7 +32,7 @@
  *      unused.
  */
 # define __assert(condition, expr_str, ...) \
-	do { } while ((__typeof__(condition)) 0)
+	(__ASSERT_VOID_CAST (0))
 
 #else
 
