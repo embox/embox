@@ -27,6 +27,15 @@ extern const unsigned char _ctype[];
 #include <stdint.h>
 __BEGIN_DECLS
 
+#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 ))
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+
+#endif /* __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 )) */
+#endif /*__GNUC__ */
+
 /* Checks for an alphanumeric character. */
 static inline int isalnum(int c) { return __ismask(c) & (_U | _L | _D); }
 /* Checks for an alphabetic character. */
@@ -56,6 +65,14 @@ static inline int isxdigit(int c) { return __ismask(c) & (_D | _X); }
 static inline int tolower(int c) { return isupper(c) ? c - ('A' - 'a') : c; }
 /* Convert a character to upper case */
 static inline int toupper(int c) { return islower(c) ? c - ('a' - 'A') : c; }
+
+#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 ))
+
+#pragma GCC diagnostic pop
+
+#endif /* __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 )) */
+#endif /*__GNUC__ */
 
 extern const unsigned short **__ctype_b_loc(void);
 extern int32_t **__ctype_tolower_loc(void);
