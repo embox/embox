@@ -9,12 +9,11 @@
 #ifndef FS_XATTR_H_
 #define FS_XATTR_H_
 
+#include <sys/types.h>
+#include <sys/xattr.h>
+
 #include <fs/node.h>
 #include <fs/fs_driver.h>
-
-#define XATTR_CREATE  (1 << 0)
-#define XATTR_REMOVE  (1 << 1)
-#define XATTR_REPLACE (1 << 2)
 
 #define XATTR_MAX_VSIZE 0xFF
 #define XATTR_MAX_NSIZE 32
