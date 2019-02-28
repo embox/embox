@@ -14,8 +14,8 @@
 #include <util/array.h>
 
 #define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv) \
-	ARRAY_SPREAD_DECLARE(const struct dev_module, __device_registry); \
-	ARRAY_SPREAD_ADD(__device_registry, { \
+	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \
+	ARRAY_SPREAD_ADD(__char_device_registry, { \
 			.name = chname, \
 			.dev_priv = priv, \
 			.dev_iops = idesc_op, \

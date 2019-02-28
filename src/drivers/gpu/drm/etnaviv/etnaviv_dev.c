@@ -190,7 +190,7 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data)
 }
 
 static int etnaviv_ref = 0;
-static struct idesc *etnaviv_dev_open(struct inode *node, struct idesc *idesc) {
+static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 	struct file *file;
 	int i;
 
@@ -378,10 +378,6 @@ static void *etnaviv_dev_idesc_mmap(struct idesc *idesc, void *addr, size_t len,
 	return res;
 }
 
-static struct file_operations etnaviv_dev_ops = {
-	.open = etnaviv_dev_open,
-};
-
 static struct idesc_ops etnaviv_dev_idesc_ops = {
 	.close = etnaviv_dev_close,
 	.id_readv = etnaviv_dev_read,
@@ -392,7 +388,7 @@ static struct idesc_ops etnaviv_dev_idesc_ops = {
 	.idesc_mmap = etnaviv_dev_idesc_mmap,
 };
 
-CHAR_DEV_DEF(ETNAVIV_DEV_NAME, NULL, NULL, &etnaviv_dev_idesc_ops, NULL);
+CHAR_DEV_DEF(ETNAVIV_DEV_NAME, etnaviv_dev_open, NULL, &etnaviv_dev_idesc_ops, NULL);
 
 static struct periph_memory_desc vivante3d_mem = {
 	.start = VIVANTE_3D_BASE,

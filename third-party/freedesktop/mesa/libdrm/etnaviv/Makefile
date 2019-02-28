@@ -19,6 +19,7 @@ $(CONFIGURE) :
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--enable-etnaviv-experimental-api \
 			--enable-static \
+			--disable-dependency-tracking \
 			--disable-shared \
 			--disable-tegra-experimental-api \
 			--disable-vmwgfx \

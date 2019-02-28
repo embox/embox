@@ -27,20 +27,12 @@ struct etnaviv_gem_object {
 	const struct etnaviv_gem_ops *ops;
 	pthread_mutex_t lock;
 
-	struct list_head gem_node;
 	struct etnaviv_gpu *gpu;     /* non-null if active */
 
 	int flags;
 };
 
 struct vm_area_struct;
-struct etnaviv_gem_ops {
-	int (*get_pages)(struct etnaviv_gem_object *);
-	void (*release)(struct etnaviv_gem_object *);
-	void *(*vmap)(struct etnaviv_gem_object *);
-	int (*mmap)(struct etnaviv_gem_object *, struct vm_area_struct *);
-};
-
 
 extern int etnaviv_gem_mmap_offset(struct drm_gem_object *obj, uint64_t *offset);
 

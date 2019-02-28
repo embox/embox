@@ -20,14 +20,13 @@
 #include "etnaviv_gem.h"
 #include "etnaviv_drv.h"
 
-
 int etnaviv_gem_obj_add(struct drm_device *dev, struct drm_gem_object *obj) {
 	return 0;
 }
 
 static int etnaviv_gem_new_impl(struct drm_device *dev, uint32_t size,
 		uint32_t flags, struct reservation_object *robj,
-		const struct etnaviv_gem_ops *ops, struct drm_gem_object **obj) {
+		void *ops, struct drm_gem_object **obj) {
 	struct etnaviv_gem_object *etnaviv_obj;
 	unsigned sz = sizeof(*etnaviv_obj);
 	etnaviv_obj = sysmalloc(sz);
@@ -38,10 +37,8 @@ static int etnaviv_gem_new_impl(struct drm_device *dev, uint32_t size,
 	}
 
 	etnaviv_obj->flags = flags;
-	etnaviv_obj->ops = ops;
 
 	mutex_init(&etnaviv_obj->lock);
-	INIT_LIST_HEAD(&etnaviv_obj->gem_node);
 
 	*obj = &etnaviv_obj->base;
 
@@ -109,8 +106,7 @@ int etnaviv_gem_mmap_offset(struct drm_gem_object *obj, uint64_t *offset) {
 }
 
 struct etnaviv_vram_mapping *etnaviv_gem_mapping_get(
-	struct drm_gem_object *obj, struct etnaviv_gpu *gpu)
-{
+	struct drm_gem_object *obj, struct etnaviv_gpu *gpu) {
 	struct etnaviv_gem_object *etnaviv_obj = to_etnaviv_bo(obj);
 	struct etnaviv_vram_mapping *mapping;
 

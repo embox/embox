@@ -23,6 +23,7 @@
  *
  **************************************************************************/
 
+
 #define USE_TRACE 0
 #define WIDTH 300
 #define HEIGHT 300
@@ -30,19 +31,33 @@
 #define FAR 1
 #define FLIP 0
 
+/* pipe_*_state structs */
 #include "pipe/p_state.h"
+/* pipe_context */
 #include "pipe/p_context.h"
+/* pipe_screen */
 #include "pipe/p_screen.h"
+/* PIPE_* */
 #include "pipe/p_defines.h"
+/* TGSI_SEMANTIC_{POSITION|GENERIC} */
 #include "pipe/p_shader_tokens.h"
+/* pipe_buffer_* helpers */
 #include "util/u_inlines.h"
 
+/* constant state object helper */
 #include "cso_cache/cso_context.h"
 
+/* u_sampler_view_default_template */
+#include "util/u_sampler.h"
+/* debug_dump_surface_bmp */
 #include "util/u_debug_image.h"
+/* util_draw_vertex_buffer helper */
 #include "util/u_draw_quad.h"
+/* FREE & CALLOC_STRUCT */
 #include "util/u_memory.h"
+/* util_make_[fragment|vertex]_passthrough_shader */
 #include "util/u_simple_shaders.h"
+/* to get a hardware pipe driver */
 #include "pipe-loader/pipe_loader.h"
 
 struct program
@@ -55,6 +70,7 @@ struct program
 	struct pipe_blend_state blend;
 	struct pipe_depth_stencil_alpha_state depthstencil;
 	struct pipe_rasterizer_state rasterizer;
+	struct pipe_sampler_state sampler;
 	struct pipe_viewport_state viewport;
 	struct pipe_framebuffer_state framebuffer;
 	struct pipe_vertex_element velem[2];
@@ -66,6 +82,8 @@ struct program
 
 	struct pipe_resource *vbuf;
 	struct pipe_resource *target;
+	struct pipe_resource *tex;
+	struct pipe_sampler_view *view;
 };
 
 static void init_prog(struct program *p)
@@ -95,22 +113,25 @@ static void init_prog(struct program *p)
 	{
 		float vertices[4][2][4] = {
 			{
-				{ 0.0f, -0.9f, 0.0f, 1.0f },
-				{ 1.0f, 0.0f, 0.0f, 1.0f }
+				{ 0.9f, 0.9f, 0.0f, 1.0f },
+				{ 1.0f, 1.0f, 0.0f, 1.0f }
 			},
 			{
 				{ -0.9f, 0.9f, 0.0f, 1.0f },
-				{ 0.0f, 1.0f, 0.0f, 1.0f }
+				{  0.0f, 1.0f, 0.0f, 1.0f }
 			},
 			{
-				{ 0.9f, 0.9f, 0.0f, 1.0f },
-				{ 0.0f, 0.0f, 1.0f, 1.0f }
+				{ -0.9f, -0.9f, 0.0f, 1.0f },
+				{  0.0f,  0.0f, 1.0f, 1.0f }
+			},
+			{
+				{ 0.9f, -0.9f, 0.0f, 1.0f },
+				{ 1.0f,  0.0f, 1.0f, 1.0f }
 			}
 		};
 
 		p->vbuf = pipe_buffer_create(p->screen, PIPE_BIND_VERTEX_BUFFER,
 					     PIPE_USAGE_DEFAULT, sizeof(vertices));
-
 		pipe_buffer_write(p->pipe, p->vbuf, 0, sizeof(vertices), vertices);
 	}
 
@@ -130,6 +151,45 @@ static void init_prog(struct program *p)
 		p->target = p->screen->resource_create(p->screen, &tmplt);
 	}
 
+	/* sampler texture */
+	{
+		uint32_t *ptr;
+		struct pipe_transfer *t;
+		struct pipe_resource t_tmplt;
+		struct pipe_sampler_view v_tmplt;
+		struct pipe_box box;
+
+		memset(&t_tmplt, 0, sizeof(t_tmplt));
+		t_tmplt.target = PIPE_TEXTURE_2D;
+		t_tmplt.format = PIPE_FORMAT_B8G8R8A8_UNORM; /* All drivers support this */
+		t_tmplt.width0 = 2;
+		t_tmplt.height0 = 2;
+		t_tmplt.depth0 = 1;
+		t_tmplt.array_size = 1;
+		t_tmplt.last_level = 0;
+		t_tmplt.bind = PIPE_BIND_RENDER_TARGET;
+
+		p->tex = p->screen->resource_create(p->screen, &t_tmplt);
+
+		memset(&box, 0, sizeof(box));
+		box.width = 2;
+		box.height = 2;
+		box.depth = 1;
+
+		ptr = p->pipe->transfer_map(p->pipe, p->tex, 0, PIPE_TRANSFER_WRITE, &box, &t);
+                for (int i = 0; i < 128; i++) {
+                   ptr[i * 4 + 0] = 0xffff0000;
+                   ptr[i * 4 + 1] = 0xff0000ff;
+                   ptr[i * 4 + 2] = 0xff00ff00;
+                   ptr[i * 4 + 3] = 0xffffff00;
+                }
+		p->pipe->transfer_unmap(p->pipe, t);
+
+		u_sampler_view_default_template(&v_tmplt, p->tex, p->tex->format);
+
+		p->view = p->pipe->create_sampler_view(p->pipe, p->tex, &v_tmplt);
+	}
+
 	/* disabled blending/masking */
 	memset(&p->blend, 0, sizeof(p->blend));
 	p->blend.rt[0].colormask = PIPE_MASK_RGBA;
@@ -139,19 +199,29 @@ static void init_prog(struct program *p)
 
 	/* rasterizer */
 	memset(&p->rasterizer, 0, sizeof(p->rasterizer));
-	p->rasterizer.cull_face         = PIPE_FACE_NONE;
+	p->rasterizer.cull_face = PIPE_FACE_NONE;
 	p->rasterizer.half_pixel_center = 1;
-	p->rasterizer.bottom_edge_rule  = 1;
-	p->rasterizer.depth_clip        = 1;
+	p->rasterizer.bottom_edge_rule = 1;
+	p->rasterizer.depth_clip = 1;
 
-	surf_tmpl.format = PIPE_FORMAT_B8G8R8A8_UNORM;
-	surf_tmpl.u.tex.level       = 0;
+	/* sampler */
+	memset(&p->sampler, 0, sizeof(p->sampler));
+	p->sampler.wrap_s = PIPE_TEX_WRAP_CLAMP_TO_EDGE;
+	p->sampler.wrap_t = PIPE_TEX_WRAP_CLAMP_TO_EDGE;
+	p->sampler.wrap_r = PIPE_TEX_WRAP_CLAMP_TO_EDGE;
+	p->sampler.min_mip_filter = PIPE_TEX_MIPFILTER_NONE;
+	p->sampler.min_img_filter = PIPE_TEX_MIPFILTER_LINEAR;
+	p->sampler.mag_img_filter = PIPE_TEX_MIPFILTER_LINEAR;
+	p->sampler.normalized_coords = 1;
+
+	surf_tmpl.format = PIPE_FORMAT_B8G8R8A8_UNORM; /* All drivers support this */
+	surf_tmpl.u.tex.level = 0;
 	surf_tmpl.u.tex.first_layer = 0;
-	surf_tmpl.u.tex.last_layer  = 0;
+	surf_tmpl.u.tex.last_layer = 0;
 	/* drawing destination */
 	memset(&p->framebuffer, 0, sizeof(p->framebuffer));
-	p->framebuffer.width    = WIDTH;
-	p->framebuffer.height   = HEIGHT;
+	p->framebuffer.width = WIDTH;
+	p->framebuffer.height = HEIGHT;
 	p->framebuffer.nr_cbufs = 1;
 	p->framebuffer.cbufs[0] = p->pipe->create_surface(p->pipe, p->target, &surf_tmpl);
 
@@ -184,38 +254,43 @@ static void init_prog(struct program *p)
 
 	/* vertex elements state */
 	memset(p->velem, 0, sizeof(p->velem));
-	p->velem[0].src_offset          = 0 * 4 * sizeof(float); /* offset 0, first element */
-	p->velem[0].instance_divisor    = 0;
+	p->velem[0].src_offset = 0 * 4 * sizeof(float); /* offset 0, first element */
+	p->velem[0].instance_divisor = 0;
 	p->velem[0].vertex_buffer_index = 0;
-	p->velem[0].src_format          = PIPE_FORMAT_R32G32B32A32_FLOAT;
+	p->velem[0].src_format = PIPE_FORMAT_R32G32B32A32_FLOAT;
 
-	p->velem[1].src_offset          = 1 * 4 * sizeof(float); /* offset 16, second element */
-	p->velem[1].instance_divisor    = 0;
+	p->velem[1].src_offset = 1 * 4 * sizeof(float); /* offset 16, second element */
+	p->velem[1].instance_divisor = 0;
 	p->velem[1].vertex_buffer_index = 0;
-	p->velem[1].src_format          = PIPE_FORMAT_R32G32B32A32_FLOAT;
+	p->velem[1].src_format = PIPE_FORMAT_R32G32B32A32_FLOAT;
 
 	/* vertex shader */
 	{
-			const enum tgsi_semantic semantic_names[] = { TGSI_SEMANTIC_POSITION,
-							TGSI_SEMANTIC_COLOR };
-			const uint semantic_indexes[] = { 0, 0 };
-			p->vs = util_make_vertex_passthrough_shader(
-					p->pipe, 2, (void *) semantic_names, semantic_indexes, FALSE);
+		const enum tgsi_semantic semantic_names[] =
+                   { TGSI_SEMANTIC_POSITION, TGSI_SEMANTIC_GENERIC };
+		const uint semantic_indexes[] = { 0, 0 };
+		p->vs = util_make_vertex_passthrough_shader(p->pipe, 2, semantic_names, semantic_indexes, FALSE);
 	}
 
 	/* fragment shader */
-	p->fs = util_make_fragment_passthrough_shader(p->pipe,
-                    TGSI_SEMANTIC_COLOR, TGSI_INTERPOLATE_PERSPECTIVE, TRUE);
+	p->fs = util_make_fragment_tex_shader(p->pipe, TGSI_TEXTURE_2D,
+	                                      TGSI_INTERPOLATE_LINEAR,
+	                                      TGSI_RETURN_TYPE_FLOAT,
+	                                      TGSI_RETURN_TYPE_FLOAT, false,
+                                              false);
 }
 
-static void close_prog(struct program *p) {
+static void close_prog(struct program *p)
+{
 	cso_destroy_context(p->cso);
 
 	p->pipe->delete_vs_state(p->pipe, p->vs);
 	p->pipe->delete_fs_state(p->pipe, p->fs);
 
 	pipe_surface_reference(&p->framebuffer.cbufs[0], NULL);
+	pipe_sampler_view_reference(&p->view, NULL);
 	pipe_resource_reference(&p->target, NULL);
+	pipe_resource_reference(&p->tex, NULL);
 	pipe_resource_reference(&p->vbuf, NULL);
 
 	p->pipe->destroy(p->pipe);
@@ -225,17 +300,27 @@ static void close_prog(struct program *p) {
 	FREE(p);
 }
 
-static void draw(struct program *p) {
+static void draw(struct program *p)
+{
+	const struct pipe_sampler_state *samplers[] = {&p->sampler};
+
 	/* set the render target */
 	cso_set_framebuffer(p->cso, &p->framebuffer);
 
 	/* clear the render target */
 	p->pipe->clear(p->pipe, PIPE_CLEAR_COLOR, &p->clear_color, 0, 0);
+
 	/* set misc state we care about */
 	cso_set_blend(p->cso, &p->blend);
 	cso_set_depth_stencil_alpha(p->cso, &p->depthstencil);
 	cso_set_rasterizer(p->cso, &p->rasterizer);
 	cso_set_viewport(p->cso, &p->viewport);
+
+	/* sampler */
+	cso_set_samplers(p->cso, PIPE_SHADER_FRAGMENT, 1, samplers);
+
+	/* texture sampler view */
+	cso_set_sampler_views(p->cso, PIPE_SHADER_FRAGMENT, 1, &p->view);
 
 	/* shaders */
 	cso_set_fragment_shader_handle(p->cso, p->fs);
@@ -246,8 +331,8 @@ static void draw(struct program *p) {
 
 	util_draw_vertex_buffer(p->pipe, p->cso,
 	                        p->vbuf, 0, 0,
-	                        PIPE_PRIM_TRIANGLES,
-	                        3,  /* verts */
+	                        PIPE_PRIM_QUADS,
+	                        4,  /* verts */
 	                        2); /* attribs/vert */
 
         p->pipe->flush(p->pipe, NULL, 0);
@@ -255,7 +340,8 @@ static void draw(struct program *p) {
 	debug_dump_surface_bmp(p->pipe, "result.bmp", p->framebuffer.cbufs[0]);
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
 	struct program *p = CALLOC_STRUCT(program);
 
 	init_prog(p);

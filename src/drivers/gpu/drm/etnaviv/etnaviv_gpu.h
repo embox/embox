@@ -100,7 +100,7 @@ struct etnaviv_gpu {
 
 	uint32_t memory_base;
 
-	struct etnaviv_file_private *lastctx;
+	void *lastctx;
 	int switch_context;
 
 	/* Fencing support */

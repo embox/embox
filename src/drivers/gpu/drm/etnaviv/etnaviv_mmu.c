@@ -39,8 +39,7 @@ int etnaviv_iommu_init(struct etnaviv_gpu *gpu) {
 	return 0;
 }
 
-void etnaviv_iommu_restore(struct etnaviv_gpu *gpu)
-{
+void etnaviv_iommu_restore(struct etnaviv_gpu *gpu) {
 	if (gpu->mmu.version == ETNAVIV_IOMMU_V1) {
 		etnaviv_iommuv1_restore(gpu);
 	} else {
@@ -51,8 +50,7 @@ void etnaviv_iommu_restore(struct etnaviv_gpu *gpu)
 extern struct etnaviv_iommu_ops etnaviv_iommu_ops;
 int etnaviv_iommu_get_suballoc_va(struct etnaviv_gpu *gpu, dma_addr_t paddr,
 				size_t size,
-				  uint32_t *iova)
-{
+				  uint32_t *iova) {
 	struct etnaviv_iommu *mmu = &gpu->mmu;
 
 	if (mmu->version == ETNAVIV_IOMMU_V1) {

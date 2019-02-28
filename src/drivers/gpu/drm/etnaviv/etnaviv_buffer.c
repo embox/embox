@@ -129,7 +129,7 @@ void etnaviv_buffer_dump(struct etnaviv_gpu *gpu,
 		if (i && !(i % 8))
 			printk("\n");
 		if (i % 8 == 0)
-			printk("\t0x%p: ", ptr + i);
+			printk("\t%p: ", ptr + i);
 		printk("%08x ", *(ptr + i));
 	}
 
