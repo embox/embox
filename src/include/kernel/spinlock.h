@@ -80,6 +80,8 @@ static inline int __spin_trylock_smp(spinlock_t *lock) {
 #else /* !(SMP || SPIN_DEBUG) */
 
 static inline int __spin_trylock_smp(spinlock_t *lock) {
+	(void)lock;
+
 	return 1;
 }
 
