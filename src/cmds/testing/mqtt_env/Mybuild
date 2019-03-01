@@ -1,0 +1,9 @@
+package embox.cmd.testing
+
+package server {
+	source "server.c"
+}
+
+package client {
+	source "client.c"	
+}
