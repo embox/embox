@@ -9,7 +9,12 @@
 #ifndef POSIX_SYS_XATTR_H_
 #define POSIX_SYS_XATTR_H_
 
-#include <fs/xattr.h>
+#include <sys/types.h>
+
+
+#define XATTR_CREATE  (1 << 0)
+#define XATTR_REMOVE  (1 << 1)
+#define XATTR_REPLACE (1 << 2)
 
 /**
  * @brief Get xattr

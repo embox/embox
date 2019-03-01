@@ -7,13 +7,15 @@
  */
 
 #include <errno.h>
-#include <fs/vfs.h>
 
+#include <fs/vfs.h>
 #include <fs/perm.h>
-#include <security/security.h>
+#include <fs/xattr.h>
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
+
+#include <security/security.h>
 
 #include <sys/xattr.h>
 
@@ -37,7 +39,7 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 }
 
 int setxattr(const char *path, const char *name, const char *value, size_t size,
-	       	int flags) {
+		int flags) {
 	int res;
 	struct path node;
 
@@ -75,7 +77,8 @@ int listxattr(const char *path, char *list, size_t size) {
 	return res;
 }
 
-int fsetxattr(int fd, const char *name, const char *value, size_t size, int flags) {
+int fsetxattr(int fd, const char *name, const char *value, size_t size,
+		int flags) {
 	struct idesc *idesc;
 	int res;
 
