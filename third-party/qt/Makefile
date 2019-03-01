@@ -16,6 +16,7 @@ endef
 QT_CONF_FLAGS := -hostprefix $(PKG_INSTALL_DIR)
 ifeq (arm,$(EMBOX_ARCH))
 QT_CONF_FLAGS += -arch arm -little-endian
+QT_CONF_FLAGS += -D QT_NO_ARM_EABI
 else ifeq (x86,$(EMBOX_ARCH))
 QT_CONF_FLAGS += -arch i386 -little-endian
 else ifeq (microblaze,$(EMBOX_ARCH))
@@ -52,7 +53,6 @@ QT_CONF_FLAGS += -D QT_NO_IM
 QT_CONF_FLAGS += -D Q_NO_POSIX_SIGNALS
 QT_CONF_FLAGS += -D QT_NO_BEARERMANAGEMENT
 QT_CONF_FLAGS += -D QT_NO_DYNAMIC_LIBRARY
-QT_CONF_FLAGS += -D QT_NO_ARM_EABI
 QT_CONF_FLAGS += -no-sql-sqlite
 QT_CONF_FLAGS += -nomake examples -nomake demos
 QT_CONF_FLAGS += -nomake translations
