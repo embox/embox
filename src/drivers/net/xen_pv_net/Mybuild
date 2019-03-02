@@ -2,4 +2,6 @@ package embox.driver.net
 
 module xen_pv_net {
 	source "xen_pv_net.c"
+
+	depends embox.arch.xen.xenstore
 }
