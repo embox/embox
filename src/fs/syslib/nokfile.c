@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <fs/kfile.h>
 
-struct file_desc *kopen(struct node *node, int flag) {
+struct idesc *kopen(struct node *node, int flag) {
 	return NULL;
 }
 
