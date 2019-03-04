@@ -1,5 +1,6 @@
 package embox.arch.arm.armlib
 
+@DefaultImpl(static_excpt_table)
 abstract module setup_exception_table { }
 
 module low_excpt_table extends setup_exception_table {
