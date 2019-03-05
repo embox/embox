@@ -14,9 +14,9 @@
 #include <kernel/printk.h>
 
 #define XS_MAX_KEY_LENGTH 		256
-#define XS_MAX_VALUE_LENGTH 	1024
-#define XS_MAX_NAME_LENGTH 		16
-#define XS_MAX_DOMID_LENGTH 	4
+#define XS_MAX_VALUE_LENGTH		1024
+#define XS_MAX_NAME_LENGTH		16
+#define XS_MAX_DOMID_LENGTH		4
 
 #define XS_LS_NOT_RECURSIVE		0
 #define XS_LS_RECURSIVE			1
