@@ -12,6 +12,7 @@
 #include <util/err.h>
 #include <util/indexator.h>
 
+#include <drivers/device.h>
 #include <mem/misc/pool.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>

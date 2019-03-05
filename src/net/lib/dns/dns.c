@@ -169,7 +169,7 @@ static int dns_q_format(struct dns_q *query, char *buff, size_t buff_sz) {
 		return -ENOMEM;
 	}
 	field_val = htons(query->qtype);
-	memcpy(buff, &field_val, sizeof field_sz);
+	memcpy(buff, &field_val, sizeof field_val);
 	bytes_left -= field_sz;
 	buff += field_sz;
 
@@ -178,7 +178,7 @@ static int dns_q_format(struct dns_q *query, char *buff, size_t buff_sz) {
 		return -ENOMEM;
 	}
 	field_val = htons(query->qclass);
-	memcpy(buff, &field_val, sizeof field_sz);
+	memcpy(buff, &field_val, sizeof field_val);
 
 	return 0;
 }
