@@ -37,10 +37,18 @@ int xenstore_ls_val(char *ls_key, int flag) {
 
 	output = ls_value;
 	while(*output != 0) {
+		int s;
 		memset(&key, 0, XS_MAX_KEY_LENGTH);
 		memset(&value, 0, XS_MAX_VALUE_LENGTH);
 		sprintf(key, "%s/%s", ls_key, output);
-		xenstore_read(key, value, XS_MAX_VALUE_LENGTH);
+		s = xenstore_read(key, value, XS_MAX_VALUE_LENGTH);
+
+		if (s < 0) {
+			printk("Can't read %s. Error %i\n", key, r);
+			output += strlen(output) + 1;
+			continue;
+		}
+
 		printk("%s = \"%s\"\n", key, value);
 
 		if (flag == XS_LS_RECURSIVE)
@@ -54,20 +62,33 @@ int xenstore_ls_val(char *ls_key, int flag) {
 static void xenstore_info() {
 	char key[XS_MAX_KEY_LENGTH];
 	char name[XS_MAX_NAME_LENGTH], domid[XS_MAX_DOMID_LENGTH];
+	int r;
 
 	printk("\n --- XenStore Info Begin ---\n");
+
 	memset(&name, 0, XS_MAX_NAME_LENGTH);
-	xenstore_read("name", name, XS_MAX_NAME_LENGTH);
+	r = xenstore_read("name", name, XS_MAX_NAME_LENGTH);
+
+	if (r < 0)
+		printk("Can't retrieve name. Error %i\n", r);
+
 	printk("\nname = %s\n", name);
 
 	memset(&domid, 0, XS_MAX_DOMID_LENGTH);
-	xenstore_read("domid", domid, XS_MAX_DOMID_LENGTH);
+	r = xenstore_read("domid", domid, XS_MAX_DOMID_LENGTH);
+	
+	if (r < 0)
+		printk("Can't retrieve domid. Error %i\n", r);
+
 	printk("\ndomid = %s\n", domid);
 
 	printk("\nDomain Home Path contents:\n");
 	memset(&key, 0, XS_MAX_KEY_LENGTH);
 	sprintf(key, "/local/domain/%s", domid);
-	xenstore_ls_val(key, XS_LS_RECURSIVE);
+	r = xenstore_ls_val(key, XS_LS_RECURSIVE);
+	
+	if (r < 0)
+		printk("Can't retrieve /local/domain/%s contents. Error %i\n", domid, r);
 
 	printk("\n --- XenStore Info End ---\n");
 }
