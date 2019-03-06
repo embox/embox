@@ -1,9 +1,59 @@
 package embox.cmd.testing
 
-package server {
+@AutoCmd
+@Cmd(name = "server",
+    help = "Write sorted lines of FILE to standard output.",
+    man = '''
+        NAME
+            sort - sort lines of text files
+
+        SYNOPSIS
+            sort [OPTION]... [FILE]...
+
+        DESCRIPTION
+            Write sorted lines of FILE to standard output.
+
+        OPTIONS
+            -b  ignore leading blanks
+
+            -f  fold lower case to upper case characters
+
+            -r  reverse the result of comparisons
+
+            -h  display help and exit
+
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+module server {
 	source "server.c"
 }
 
-package client {
+@AutoCmd
+@Cmd(name = "client",
+    help = "Write sorted lines of FILE to standard output.",
+    man = '''
+        NAME
+            sort - sort lines of text files
+
+        SYNOPSIS
+            sort [OPTION]... [FILE]...
+
+        DESCRIPTION
+            Write sorted lines of FILE to standard output.
+
+        OPTIONS
+            -b  ignore leading blanks
+
+            -f  fold lower case to upper case characters
+
+            -r  reverse the result of comparisons
+
+            -h  display help and exit
+
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+module client {
 	source "client.c"	
 }
