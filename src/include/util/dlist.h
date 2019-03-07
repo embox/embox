@@ -20,7 +20,7 @@
 #include <assert.h>
 #include <util/member.h>
 #include <util/macro.h>
-#include <module/embox/util/DList.h>
+#include <module/embox/util/dlist.h>
 
 /**
  * A service list data structure. It's used both for elements and for list head.
@@ -123,7 +123,6 @@ static inline void dlist_move(struct dlist_head *head, struct dlist_head *list) 
  * @return 1 if list is not empty and zero if empty *
  */
 static inline int dlist_empty(const struct dlist_head *head) {
-	__dlist_debug_check(head);
 	return (head == head->next);
 }
 

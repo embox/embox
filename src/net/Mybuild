@@ -7,7 +7,7 @@ module dev {
 	source "netdev.c"
 
 	depends embox.mem.sysmalloc_api
-	depends embox.util.DList
+	depends embox.util.dlist
 	depends embox.util.hashtable
 }
 
@@ -16,7 +16,7 @@ module core {
 
 	source "inetdev.c"
 	depends dev /* for dev.c */
-	depends embox.util.DList
+	depends embox.util.dlist
 	depends embox.mem.pool
 }
 

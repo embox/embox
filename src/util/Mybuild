@@ -47,7 +47,7 @@ static module LibUtil {
 	depends tree
 
 	depends Array
-	depends DList
+	depends dlist
 	depends SList
 	depends Bit
 }
