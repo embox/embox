@@ -19,6 +19,7 @@
 #include <drivers/video/fb.h>
 #include <linux/fb.h>
 #include <drivers/char_dev.h>
+#include <mem/misc/pool.h>
 
 #define FB_POOL_SIZE 1
 
