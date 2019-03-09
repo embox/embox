@@ -1,0 +1,18 @@
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+
+# The primary network interface
+allow-hotplug eth0
+auto eth0
+iface eth0 inet manual
+
+# Bridge interface for DomU networking
+auto xenbr0
+iface xenbr0 inet dhcp
+    bridge_ports eth0
