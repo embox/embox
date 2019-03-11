@@ -11,11 +11,11 @@
 
 #include <asm/io.h>
 
-static inline uint32_t lapic_read(uint32_t reg) {
+static inline uint32_t lapic_read(uint64_t reg) {
 	return e2k_read32((void *) reg);
 }
 
-static inline void lapic_write(uint32_t reg, uint32_t value) {
+static inline void lapic_write(uint64_t reg, uint32_t value) {
 	e2k_write32(value, (void *) reg);
 }
 
