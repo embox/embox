@@ -20,6 +20,7 @@
 
 #include <drivers/video/fb.h>
 #include <drivers/video/fb_overlay.h>
+#include <lib/fps.h>
 
 #include <GL/osmesa.h>
 #include <GL/glu.h>
@@ -34,7 +35,7 @@ static struct fb_info *mesa_fbi;
 static void *hw_base = 0;
 static void *sw_base = 0;
 
-static int animated_scene = 1;
+static int animated_scene;
 
 void init_buffers(void) {
 	long int screensize = 0;
@@ -63,38 +64,19 @@ void init_buffers(void) {
 	printf("The framebuffer device was mapped to memory successfully.\n");
 
 	sw_base = malloc(Width * Height * mesa_fbi->var.bits_per_pixel / 8);
-	fb_overlay_init(mesa_fbi, sw_base);
+	if (animated_scene) {
+		fps_set_format("Embox MESA demo v0.2\nFPS=%2d");
+	} else {
+		fps_set_format("Embox MESA demo v0.2");
+	}
 }
 
 static void swap_buffers() {
-	static struct timespec time_prev;
-	struct timespec time;
-	static int fps = 0;
-	static int counter = 0;
-
-	static char fps_str[] = "FPS=??";
-
-	if (animated_scene) {
-		/* Refresh FPS counter every second */
-		clock_gettime(CLOCK_REALTIME, &time);
-
-		counter++;
-
-		if (time.tv_sec != time_prev.tv_sec) {
-			time_prev = time;
-			fps = counter > 99 ? 99 : counter;
-			counter = 0;
-		}
-
-		fps_str[4] = '0' + fps / 10;
-		fps_str[5] = '0' + fps % 10;
-		fb_overlay_put_string(0, 0, "Embox MESA demo v0.2");
-		fb_overlay_put_string(0, 1, fps_str);
-	}
-
 	memcpy(hw_base,
 		sw_base,
 		mesa_fbi->var.bits_per_pixel / 8 * Width * Height);
+
+	fps_print(mesa_fbi);
 }
 
 static void destroy_video_buffer() {
@@ -250,6 +232,8 @@ int main(int argc, char **argv) {
 	GLenum format;
 	GLenum type;
 	int opt, depth = -1;
+
+	animated_scene = 1;
 
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hasd:"))) {

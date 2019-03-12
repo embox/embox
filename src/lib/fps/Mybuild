@@ -1,0 +1,14 @@
+package embox.lib
+
+module fps {
+	option number log_level=0
+
+	source "fps.c"
+
+	@IncludeExport(path="lib")
+	source "fps.h"
+
+	@NoRuntime depends embox.compat.libc.stdio.all
+	@NoRuntime depends embox.compat.libc.str
+	depends embox.driver.video.fb_overlay
+}
