@@ -35,8 +35,10 @@ int main(int argc, char *argv[]) {
 	if (sockfd < 0) {
 		timer = time(NULL);
 		cur_time = localtime(&timer);
-		strftime(timestamp, BUF_SIZE, "%d-%m-%Y %I:%M:%S %p", cur_time);
-		
+		strftime(timestamp, BUF_SIZE, "%d-%m-%Y %T", cur_time);
+
+		printf("[%s] Failed to start server: %s\n",
+				timestamp, strerror(sockfd));
 		fprintf(fd, "[%s] Failed to start server: %s\n",
 				timestamp, strerror(sockfd));
 		return sockfd;
@@ -48,9 +50,10 @@ int main(int argc, char *argv[]) {
 
 		timer = time(NULL);
 		cur_time = localtime(&timer);
-		strftime(timestamp, BUF_SIZE, "%d-%m-%Y %I:%M:%S %p", cur_time);
+		strftime(timestamp, BUF_SIZE, "%d-%m-%Y %T", cur_time);
 		
 		if (nread == -1) {
+			printf("[%s] Failed request.", timestamp);
 			fprintf(fd, "[%s] Failed request.", timestamp);
 			continue;
 		}
@@ -60,15 +63,19 @@ int main(int argc, char *argv[]) {
 						service, NI_MAXSERV, NI_NUMERICSERV);
 
 		if (r == 0) {
+			printf("[%s] Received %ld bytes from %s:%s. Message: %s\n",
+						timestamp, (long) nread, host, service, buf);
 			fprintf(fd, "[%s] Received %ld bytes from %s:%s. Message: %s\n",
 						timestamp, (long) nread, host, service, buf);
 		} else {
+			printf("[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
 			fprintf(fd, "[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
 		}
 
 		if (nread != sendto(sockfd, buf, nread, 0, 
 							(struct sockaddr *) &peer_addr, peer_addr_len))
 		{
+			printf("[%s] Failed to send response.", timestamp);
 			fprintf(fd, "[%s] Failed to send response.", timestamp);
 		}
 	}
