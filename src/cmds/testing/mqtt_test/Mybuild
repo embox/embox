@@ -1,0 +1,31 @@
+package embox.cmd.testing
+
+module mqtt_test {
+	source "mqtt_test.h"
+	source "mqtt_test.c"
+
+	depends embox.cmd.testing.server
+	depends embox.cmd.testing.client
+}
+
+@AutoCmd
+@Cmd(name = "server",
+    help = "MQTT test server",
+    man = '''
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+module server {
+	source "server.c"
+}
+
+@AutoCmd
+@Cmd(name = "client",
+    help = "MQTT test client",
+    man = '''
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+module client {
+	source "client.c"	
+}
