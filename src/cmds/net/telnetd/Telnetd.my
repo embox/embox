@@ -21,6 +21,7 @@ module telnetd {
 	option number telnetd_use_pthread = 1
 	option number telnetd_max_connections = 5
 
+	depends embox.net.socket
 	depends embox.net.tcp_sock
 	depends embox.net.tcp
 
@@ -31,6 +32,7 @@ module telnetd {
 	depends embox.compat.posix.utmp_api
 	depends embox.compat.posix.proc.exec
 	depends embox.compat.posix.idx.ppty
+	depends embox.compat.posix.idx.select
 	depends embox.compat.posix.proc.waitpid
 	depends embox.arch.vfork_entry
 }
