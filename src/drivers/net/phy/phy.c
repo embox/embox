@@ -6,6 +6,8 @@
  * @date 28.05.2018
  */
 
+#include <unistd.h>
+
 #include <net/phy.h>
 #include <util/log.h>
 
@@ -57,8 +59,7 @@ int phy_reset(struct net_device *dev) {
 	phy_write(dev, MII_BMCR, reg | BMCR_RESET);
 
 	while (phy_read(dev, MII_BMCR) & BMCR_RESET) {
-		int timeout = 0xfffffff;
-		while(timeout--);
+		usleep(1000);
 		if (retry++ > 0xffff) {
 			log_error("PHY reset failed");
 			return -1;
@@ -77,8 +78,7 @@ int phy_wait_autoneg(struct net_device *dev) {
 			return -1;
 		}
 
-		int timeout = 0xffffff;
-		while(timeout--);
+		usleep(1000);
 	}
 
 	return 0;
@@ -90,13 +90,13 @@ int phy_try_speed(struct net_device *dev, int speed) {
 
 	phy_write(dev, MII_ADVERTISE, net_speed_to_adv(speed));
 
-	reg = phy_read(dev, MII_BMCR);
-
-	phy_write(dev, MII_BMCR, reg | BMCR_ANRESTART);
-
-	phy_wait_autoneg(dev);
-
 	if (net_is_1000(speed)) {
+		reg = phy_read(dev, MII_BMCR);
+
+		phy_write(dev, MII_BMCR, reg | BMCR_ANRESTART);
+
+		phy_wait_autoneg(dev);
+
 		log_debug("Try 1Gbit speed");
 		reg = phy_read(dev, MII_BMSR);
 		if (reg & BMSR_ERCAP) {
