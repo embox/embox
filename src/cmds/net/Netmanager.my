@@ -19,6 +19,9 @@ package embox.cmd.net
 module netmanager {
 	source "netmanager.c"
 
+	depends embox.cmd.net.ifconfig
+	depends embox.cmd.net.route
+
 	depends embox.compat.libc.stdio.open
 	depends embox.compat.libc.stdio.print
 	depends embox.compat.libc.stdio.scanf
