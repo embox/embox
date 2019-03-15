@@ -1,15 +1,20 @@
 #include "emboxvccursor.h"
 #include <QtCore/qdebug.h>
 
+#include <QtGui/QImageReader>
+#include <QtGui/QRgb>
+
 QT_BEGIN_NAMESPACE
 
 static unsigned char *__calculateCursorLocation(struct fb_info *fb, int x, int y);
 
 QEmboxCursor::QEmboxCursor()
-: mouseX(0), mouseY(0), cursor_H(20), cursor_W(10), inited(0)
+: mouseX(0), mouseY(0), inited(0)
 {
-	cursor = QImage(QSize(cursor_W, cursor_H), QImage::Format_RGB16);
-	cursor.fill(Qt::red);
+	cursor.load(QString(":/def_cur.png"));
+	cursor = cursor.convertToFormat(QImage::Format_RGB16);
+	cursor_H = cursor.height();
+	cursor_W = cursor.width();
 
 	/* 4 is the upper bound for bytes per pixel */
 	dirtyRect = new unsigned char[cursor_H * cursor_W * 4];
@@ -59,14 +64,32 @@ int QEmboxCursor::imageChanged(struct fb_info *fb, unsigned char *begin) {
     return ret;
 }
 
+
 void QEmboxCursor::drawCursor(struct fb_info *fb, unsigned char *begin) {
     int shift, i;
-
     int bpp = fb->var.bits_per_pixel / 8;
 
     for (i = 0, shift = 0; i < cursor.height(); i++ , shift += fb->var.xres * bpp) {
     	memcpy(begin + shift, (const void *)cursor.constScanLine(i), cursor.bytesPerLine());
     }
+
+     prepareCursor(fb, begin);
+}
+
+void QEmboxCursor::prepareCursor(struct fb_info *fb, unsigned char *begin) {
+    int shift, i;
+
+    int bpp = fb->var.bits_per_pixel / 8;
+
+    for (i = 0, shift = 0; i < cursor_H; i++ , shift += fb->var.xres * bpp) {
+    	for (int j = 0; j < cursor_W * bpp; j++) {
+            QRgb rgb = cursor.pixel(j / bpp, i);
+            if (!(qRed(rgb) + qGreen(rgb) + qBlue(rgb))) {
+                *(begin + shift + j) = *(dirtyRect + i * cursor_W * bpp + j);
+            }
+    	}
+    }
+
 }
 
 void QEmboxCursor::storeDirtyRect(struct fb_info *fb, unsigned char *begin) {
