@@ -77,21 +77,6 @@ TEST_CASE_TARGET {dd if=/dev/zero of=1.txt count=1} {
 }
 
 TEST_CASE_DECLARE_FIXME {
-TEST_CASE_TARGET {Touch and rm on /dev/ should be rejected} {
-	set TELNET_PROMPT ":/#"
-
-	send "touch /dev/1.txt\r"
-	test_assert_regexp_equal "error" $TELNET_PROMPT
-	send "mv /dev/zero .\r"
-	test_assert_regexp_equal "error" $TELNET_PROMPT
-	send "rm /dev\r"
-	test_assert_regexp_equal "error" $TELNET_PROMPT
-
-	return 0
-}
-}
-
-TEST_CASE_DECLARE_FIXME {
 TEST_CASE_TARGET {cat 1.txt > 2.txt} {
 	set TELNET_PROMPT ":/#"
 
