@@ -1,18 +1,12 @@
 #ifndef E2K_IPL_IMPL_H_
 #define E2K_IPL_IMPL_H_
 
+#ifndef __ASSEMBLER__
+
 #include <stdint.h>
+#include <e2k_api.h>
 
 typedef uint32_t __ipl_t;
-
-/* UPSR register bits */
-#define UPSR_IE   (1 << 5) /* Enable interrutps */
-#define UPSR_NMIE (1 << 7) /* Enable non-maskable interrupts */
-
-/* PSR register bits */
-#define PSR_IE   (1 << 1) /* Enable interrutps */
-#define PSR_NMIE (1 << 4) /* Enable non-maskable interrupts */
-#define PSR_UIE  (1 << 5) /* Allow user to control interrupts */
 
 static inline void e2k_clear_upsr(uint32_t mask) {
 	uint32_t upsr;
@@ -40,5 +34,7 @@ static inline unsigned int ipl_save(void) {
 static inline void ipl_restore(unsigned int ipl) {
 	e2k_set_upsr(UPSR_IE | UPSR_NMIE);
 }
+
+#endif /* __ASSEMBLER__ */
 
 #endif /* E2K_IPL_IMPL_H_ */

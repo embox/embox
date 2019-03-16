@@ -34,8 +34,6 @@ struct _jump_regs {
 	uint64_t usd_hi;
 };
 
-
-
 typedef uint64_t __jmp_buf[_JBLEN];
 
 #endif /* __ASSEMBLER__ */
@@ -45,7 +43,7 @@ typedef uint64_t __jmp_buf[_JBLEN];
 #define E2K_JMBBUFF_CR1_LO    0x08
 #define E2K_JMBBUFF_CR1_HI    0x10
 #define E2K_JMBBUFF_PCSP_HI   0x18
-#define E2K_JMBBUFF_PCS_HI    0x20
+#define E2K_JMBBUFF_PSP_HI    0x20
 #define E2K_JMBBUFF_USD_LO    0x28
 #define E2K_JMBBUFF_USD_HI    0x30
 

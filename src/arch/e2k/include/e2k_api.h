@@ -4228,4 +4228,23 @@ do { \
 
 #endif /* __ASSEMBLER__ */
 
+#ifdef	__ASSEMBLER__
+/* Embox version of E2K_RETURN for using in assembler code */
+#define E2K_ASM_RETURN \
+	nop 5; \
+	ipd 2; \
+	return %ctpr3; \
+	ct %ctpr3; \
+	ipd 3;
+#endif /* __ASSEMBLER__ */
+
+/* UPSR register bits */
+#define UPSR_IE   (1 << 5) /* Enable interrutps */
+#define UPSR_NMIE (1 << 7) /* Enable non-maskable interrupts */
+
+/* PSR register bits */
+#define PSR_IE   (1 << 1) /* Enable interrutps */
+#define PSR_NMIE (1 << 4) /* Enable non-maskable interrupts */
+#define PSR_UIE  (1 << 5) /* Allow user to control interrupts */
+
 #endif /* _E2K_API_H_ */
