@@ -22,6 +22,7 @@ private:
 	void storeDirtyRect(struct fb_info *fb, unsigned char *begin);
 	void flushDirtyRect(struct fb_info *fb, unsigned char *begin);
 	void drawCursor(struct fb_info *fb, unsigned char *begin);
+        void prepareCursor(struct fb_info *fb, unsigned char *begin);
 	int imageChanged(struct fb_info *fb, unsigned char *begin);
 
     int mouseX, mouseY;
