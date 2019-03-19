@@ -10,15 +10,14 @@
  */
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include <stdint.h>
 #include <errno.h>
 
 #include <lib/crypt/md5.h>
-
-#include <fs/file_operation.h>
-
 
 static void print_usage(void) {
 	printf("Usage: md5sum [FILE]\n");
@@ -26,16 +25,20 @@ static void print_usage(void) {
 
 int main(int argc, char **argv) {
 	int opt;
-	FILE *fd;
+	int fd;
+	char buff[16];
+	size_t size;
 	stat_t st;
-	char *addr;
 	md5_state_t state;
 	md5_byte_t digest[16];
-	char hex_output[16*2 + 1];
 	int di;
-	int err;
+	char hex_output[16 * 2 + 1];
 
-	getopt_init();
+	if (argc < 2) {
+		print_usage();
+		return -EINVAL;
+	}
+
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch (opt) {
 		case '?':
@@ -47,25 +50,33 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	/* Get size and file's base addr */
-	if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
+	fd = open(argv[argc - 1], O_RDONLY);
+	if (fd < 0) {
 		printf("Can't open file %s\n", argv[argc - 1]);
-		return -errno;
+		return errno;
 	}
-	err = fioctl(fd, 0, &addr);
-	fclose(fd);
 
-	if (err < 0)
-		printf("Target filesystem not supported!\n");
-	stat((char *) argv[argc - 1], &st);
+	if (0 != fstat(fd, &st)) {
+		close(fd);
+		return errno;
+	}
+
 	/* Compute MD5 sum */
 	md5_init(&state);
-	md5_append(&state, (const md5_byte_t *) addr, st.st_size);
+	{
+		while (0 < (size = read(fd, buff, sizeof(buff)))) {
+			md5_append(&state, (const md5_byte_t *) buff, size);
+		}
+	}
 	md5_finish(&state, digest);
+
 	/* Prepare output */
 	for (di = 0; di < 16; ++di) {
 		sprintf(hex_output + di * 2, "%02x", digest[di]);
 	}
 	printf("%s %s\n", hex_output, argv[argc - 1]);
+
+	close(fd);
+
 	return 0;
 }

@@ -163,7 +163,7 @@ static int dd_cond_open(const char *path, int mode, int def_fd) {
 }
 
 int main(int argc, char **argv) {
-	struct dd_param dp;
+	struct dd_param dp = {0};
 	void *tbuf;
 	int ifd, ofd;
 	int n_read, n_write, err;
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
 		goto out_ofd_close;
 	}
 
-	if(0 == strcmp(dp.format, DD_FORMAT_HEX_C)) {
+	if((NULL != dp.format) && (0 == strcmp(dp.format, DD_FORMAT_HEX_C))) {
 		format = 1;
 	}
 
