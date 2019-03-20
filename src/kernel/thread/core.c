@@ -222,8 +222,14 @@ void thread_init(struct thread *t, int priority,
 	 * the end
 	 * +++++++++++++++ bottom (t->stack - allocated memory for the stack)
 	 */
+#ifndef CONTEXT_USE_STACK_SIZE
 	context_init(&t->context, CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
 			thread_trampoline, thread_stack_get(t) + thread_stack_get_size(t));
+#else
+	context_init(&t->context, CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
+			thread_trampoline, thread_stack_get(t) + thread_stack_get_size(t),
+			thread_stack_get_size(t));
+#endif
 
 	sigstate_init(&t->sigstate);
 
