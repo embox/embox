@@ -16,6 +16,12 @@ module arch {
 
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
+	source "ipl_impl.c"
+}
+
+module context extends embox.arch.context {
+	option number log_level = 0
+	source "context.c", "context_switch.S", "context.h"
 }
 
 module x86_boot {

@@ -4236,15 +4236,60 @@ do { \
 	return %ctpr3; \
 	ct %ctpr3; \
 	ipd 3;
+
+#define E2K_ASM_FLUSH_CPU \
+	flushr; \
+	nop 2;  \
+	flushc; \
+	nop 3;
+
 #endif /* __ASSEMBLER__ */
 
 /* UPSR register bits */
-#define UPSR_IE   (1 << 5) /* Enable interrutps */
-#define UPSR_NMIE (1 << 7) /* Enable non-maskable interrupts */
+#define UPSR_IE   (1UL << 5) /* Enable interrutps */
+#define UPSR_NMIE (1UL << 7) /* Enable non-maskable interrupts */
 
 /* PSR register bits */
-#define PSR_IE   (1 << 1) /* Enable interrutps */
-#define PSR_NMIE (1 << 4) /* Enable non-maskable interrupts */
-#define PSR_UIE  (1 << 5) /* Allow user to control interrupts */
+#define PSR_PM   (1UL << 0) /* Privileged mode */
+#define PSR_IE   (1UL << 1) /* Enable interrutps */
+#define PSR_NMIE (1UL << 4) /* Enable non-maskable interrupts */
+#define PSR_UIE  (1UL << 5) /* Allow user to control interrupts */
+
+/* We use this macro for Embox as default, and control IPL with UPSR */
+#define PSR_ALL_IRQ_ENABLED (PSR_IE | PSR_NMIE | PSR_UIE | PSR_PM)
+
+/* PSP.lo offsets */
+#define PSP_BASE  0
+#define PSP_SIZE  32
+#define PSP_RW    59
+/* PSP.hi offsets */
+#define PSP_IND   0
+
+/* PCSP.lo offsets */
+#define PCSP_BASE 0
+#define PCSP_SIZE 32
+#define PCSP_RW   59
+/* PCSP.hi offsets */
+#define PCSP_IND  0
+
+/* USD.lo offsets */
+#define USD_BASE  0
+/* USD.hi offsets */
+#define USD_SIZE  32
+#define USD_SIZE_MASK  0xFFFFFFFFUL
+
+/* CR0 offsets */
+#define CR0_IP 3
+/* CR1 offsets */
+#define CR1_WBS  33
+#define CR1_USSZ 36
+#define CR1_PSR  57
+
+/* Summary size of both CR0 and CR1 */
+#define SZ_OF_CR0_CR1 32
+
+#define E2_RWAR_R_ENABLE    0x1UL
+#define E2_RWAR_W_ENABLE    0x2UL
+#define E2_RWAR_RW_ENABLE   (E2_RWAR_R_ENABLE | E2_RWAR_W_ENABLE)
 
 #endif /* _E2K_API_H_ */
