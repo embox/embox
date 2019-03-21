@@ -25,7 +25,7 @@ module iperf {
 	@NoRuntime depends embox.compat.posix.pthreads
 	@NoRuntime depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.compat.libc.type
-	@NoRuntime depends third_party.lib.libgcc_toolchain
+	@NoRuntime depends embox.lib.libgcc
 }
 
 module iperf_stubs {

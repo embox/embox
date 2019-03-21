@@ -2,7 +2,8 @@ package third_party.qt
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include/QtCore")
-@BuildDepends(third_party.gcc.core)
+@BuildDepends(embox.lib.libsupcxx)
+@BuildDepends(embox.lib.libgcc)
 @BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(third_party.STLport.core)
 static module core {
@@ -24,4 +25,6 @@ static module core {
 	@NoRuntime depends embox.compat.posix.proc.waitpid
 	@NoRuntime depends embox.lib.LibExecStub
 	@NoRuntime depends embox.compat.posix.pthread_key
+	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.lib.libgcc
 }
