@@ -4293,4 +4293,16 @@ do { \
 #define E2_RWAR_W_ENABLE    0x2UL
 #define E2_RWAR_RW_ENABLE   (E2_RWAR_R_ENABLE | E2_RWAR_W_ENABLE)
 
+#ifndef	__ASSEMBLER__
+static inline uint32_t e2k_upsr_read(void) {
+	unsigned int upsr;
+	asm volatile ("rrs %%upsr, %0" : "=r"(upsr) :);
+	return upsr;
+}
+
+static inline void e2k_upsr_write(uint32_t val) {
+	asm volatile ("rws %0, %%upsr" : : "ri"(val));
+}
+#endif /* !__ASSEMBLER__ */
+
 #endif /* _E2K_API_H_ */
