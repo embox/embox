@@ -34,10 +34,6 @@ static void e2k_kernel_start(void) {
 	/* XXX Disable FPU. Should be enabled later. */
 	e2k_upsr_write(e2k_upsr_read() & ~UPSR_FE);
 
-	/* XXX We have to init UPSR too rigth here to guarantee consistent
-	 * behaviour. When we do use ipl_init here, CPU just hangs. */
-	ipl_init();
-
 	kernel_start();
 }
 
