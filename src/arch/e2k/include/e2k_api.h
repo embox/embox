@@ -4246,6 +4246,7 @@ do { \
 #endif /* __ASSEMBLER__ */
 
 /* UPSR register bits */
+#define UPSR_FE   (1UL << 0) /* Enable floating operations */
 #define UPSR_IE   (1UL << 5) /* Enable interrutps */
 #define UPSR_NMIE (1UL << 7) /* Enable non-maskable interrupts */
 

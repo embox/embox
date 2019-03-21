@@ -31,6 +31,9 @@ static void e2k_kernel_start(void) {
 	psr |= (PSR_IE | PSR_NMIE | PSR_UIE);
 	asm volatile ("rws %0, %%psr" : : "ri"(psr));
 
+	/* XXX Disable FPU. Should be enabled later. */
+	e2k_upsr_write(e2k_upsr_read() & ~UPSR_FE);
+
 	/* XXX We have to init UPSR too rigth here to guarantee consistent
 	 * behaviour. When we do use ipl_init here, CPU just hangs. */
 	ipl_init();
