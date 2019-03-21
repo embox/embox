@@ -8,9 +8,9 @@
 
 #include <hal/context.h>
 #include <embox/test.h>
-#include <stdio.h>
+#include <framework/mod/options.h>
 
-#define STACK_SZ 0x400
+#define STACK_SZ OPTION_GET(NUMBER, stack_sz)
 
 EMBOX_TEST_SUITE("context switch");
 
