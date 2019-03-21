@@ -32,10 +32,10 @@ module core_c extends core {
 }
 
 @Build(stage=2,script="$(EXTERNAL_MAKE) PJSIP_ENABLE_CXX=true")
-@BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.STLport.libstlportg)
 module core_cxx extends core {
 	depends pjsip_dependencies
-	depends third_party.STLport.core
+	depends third_party.STLport.libstlportg
 }
 
 @BuildDepends(core)
