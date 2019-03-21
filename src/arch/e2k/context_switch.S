@@ -7,19 +7,17 @@
  */
 
 #include <hal/context.h>
+#include <asm/linkage.h>
 #include <e2k_api.h>
 
 .section ".text", "ax"
 
 /* TODO Save and restore Global Registers. */
 
-.global $context_switch
-.type context_switch,@function
-$context_switch:
-	setwd wsz = 0x14, nfx = 0x0
-	setbn rsz = 0x3, rbs = 0x10, rcur = 0x0
+C_ENTRY(context_switch):
+	setwd wsz = 0x10, nfx = 0x0
 
-	/* Save current IPL */
+	/* Save prev UPSR */
 	rrd %upsr, %dr2
 	std %dr2, [%dr0 + E2K_CTX_UPSR]
 
@@ -82,8 +80,8 @@ $context_switch:
 	rwd %dr7, %pcsp.lo
 	rwd %dr8, %pcsp.hi
 
-	/* Restore UPSR */
-	ldd [%dr1 + E2K_CTX_UPSR],    %dr9
-	rwd %dr9, %upsr
+	/* Restore next UPSR */
+	ldd [%dr1 + E2K_CTX_UPSR],    %dr2
+	rwd %dr2, %upsr
 
 	E2K_ASM_RETURN

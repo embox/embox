@@ -5,15 +5,15 @@
  * @author Anton Bondarev
  */
 
+#include <asm/linkage.h>
+
 #define SYSCALL_NUMBER 1
 /*
  * syscall.
  */
 .text
 .align 8
-.global $syscall
-.type $syscall,@function
-$syscall:
+C_ENTRY(syscall):
 {
 	setwd wsz = 0x8
 	setbn rsz = 0x3, rbs = 0x4, rcur = 0x0
@@ -41,4 +41,3 @@ $syscall:
 {
 	ct %ctpr3
 }
-.size $syscall, .-$syscall

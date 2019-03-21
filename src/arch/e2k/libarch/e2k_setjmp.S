@@ -6,6 +6,7 @@
  * @author Anton Bondarev
  */
 #include <asm/setjmp.h>
+#include <asm/linkage.h>
 #include <e2k_api.h>
 
 .section ".text", "ax"
@@ -45,9 +46,7 @@ $update_pcsp_ind:
 
 	E2K_ASM_RETURN
 
-.global $setjmp
-.type setjmp,@function
-$setjmp:
+C_ENTRY(setjmp):
 	setwd wsz = 0x14, nfx = 0x0
 	/* It's for db[N] registers */
 	setbn rsz = 0x3, rbs = 0x10, rcur = 0x0
@@ -104,11 +103,7 @@ $setjmp:
 	adds 0, 0, %r0
 	E2K_ASM_RETURN
 
-.size $setjmp, . - $setjmp
-
-.global $longjmp
-.type longjmp,@function
-$longjmp:
+C_ENTRY(longjmp):
 	setwd wsz = 0x14, nfx = 0x0
 	setbn rsz = 0x3, rbs = 0x10, rcur = 0x0
 
@@ -150,5 +145,3 @@ $longjmp:
 	* argument of longjmp stored on r1 register. */
 	adds 0, %r1, %r0
 	E2K_ASM_RETURN
-
-.size $longjmp, . - $longjmp
