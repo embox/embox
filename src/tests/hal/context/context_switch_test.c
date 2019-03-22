@@ -8,9 +8,9 @@
 
 #include <hal/context.h>
 #include <embox/test.h>
-#include <stdio.h>
+#include <framework/mod/options.h>
 
-#define STACK_SZ 0x400
+#define STACK_SZ OPTION_GET(NUMBER, stack_sz)
 
 EMBOX_TEST_SUITE("context switch");
 
@@ -44,11 +44,19 @@ static void infinite(void) {
 }
 
 TEST_CASE("context switch test") {
+#ifndef CONTEXT_USE_STACK_SIZE
 	context_init(&entry_context, CONTEXT_PRIVELEGED,
 			entry, entry_stack + STACK_SZ);
 
 	context_init(&infinite_context, CONTEXT_PRIVELEGED,
 			infinite, infinite_stack + STACK_SZ);
+#else
+	context_init(&entry_context, CONTEXT_PRIVELEGED,
+			entry, entry_stack + STACK_SZ, STACK_SZ);
+
+	context_init(&infinite_context, CONTEXT_PRIVELEGED,
+			infinite, infinite_stack + STACK_SZ, STACK_SZ);
+#endif
 
 	TRACE("test begin\n");
 	context_switch(&redundant_context, &entry_context);

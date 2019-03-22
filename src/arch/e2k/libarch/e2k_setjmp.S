@@ -6,6 +6,7 @@
  * @author Anton Bondarev
  */
 #include <asm/setjmp.h>
+#include <asm/linkage.h>
 #include <e2k_api.h>
 
 .section ".text", "ax"
@@ -45,18 +46,17 @@ $update_pcsp_ind:
 
 	E2K_ASM_RETURN
 
-.global $setjmp
-.type setjmp,@function
-$setjmp:
-	setwd wsz = 0xE, nfx = 0x0
+C_ENTRY(setjmp):
+	setwd wsz = 0x14, nfx = 0x0
 	/* It's for db[N] registers */
-	setbn rsz = 0x3, rbs = 0xA, rcur = 0x0
+	setbn rsz = 0x3, rbs = 0x10, rcur = 0x0
 
-	/* We must disable interrupts here.
-	 */
-	rrd   %upsr, %dr1
-	andnd %dr1, (UPSR_IE | UPSR_NMIE), %dr1
-	rwd   %dr1, %upsr
+	/* We must disable interrupts here */
+	disp %ctpr1, ipl_save
+	ipd  3
+	call %ctpr1, wbs = 0x10
+	/* Store current IPL to dr9 */
+	addd 0, %db[0], %dr9
 
 	/* Store some registers to jmp_buf */
 	rrd %cr0.hi, %dr1
@@ -72,7 +72,7 @@ $setjmp:
 	addd 0, %dr7, %db[1]
 	disp %ctpr1, update_psp_ind
 	ipd  3
-	call %ctpr1, wbs = 0xA
+	call %ctpr1, wbs = 0x10
 	addd 0, %db[0], %dr6
 
 	/* Prepare CF stack to flush in longjmp */
@@ -82,7 +82,7 @@ $setjmp:
 	addd 0, %dr8, %db[1]
 	disp %ctpr1, update_pcsp_ind
 	ipd  3
-	call %ctpr1, wbs = 0xA
+	call %ctpr1, wbs = 0x10
 	addd 0, %db[0], %dr7
 
 	std %dr1, [%dr0 + E2K_JMBBUFF_CR0_HI]
@@ -94,32 +94,29 @@ $setjmp:
 	std %dr7, [%dr0 + E2K_JMBBUFF_PCSP_HI]
 
 	/* Enable interrupts */
-	rrd %upsr, %dr1
-	ord %dr1, (UPSR_IE | UPSR_NMIE), %dr1
-	rwd %dr1, %upsr
+	addd 0, %dr9, %db[0]
+	disp %ctpr1, ipl_restore
+	ipd  3
+	call %ctpr1, wbs = 0x10
 
 	/* return 0 */
 	adds 0, 0, %r0
 	E2K_ASM_RETURN
 
-.size $setjmp, . - $setjmp
+C_ENTRY(longjmp):
+	setwd wsz = 0x14, nfx = 0x0
+	setbn rsz = 0x3, rbs = 0x10, rcur = 0x0
 
-.global $longjmp
-.type longjmp,@function
-$longjmp:
-	setwd wsz = 0x9, nfx = 0x0
+	/* We must disable interrupts here */
+	disp %ctpr1, ipl_save
+	ipd  3
+	call %ctpr1, wbs = 0x10
+	/* Store current IPL to dr9 */
+	addd 0, %db[0], %dr9
 
 	/* We have to flush both RF and CF to memory because saved values
 	 * of P[C]SHTP can be not valid here. */
-	flushr
-	nop 2
-	flushc
-	nop 3
-
-	/* Disable interrupts */
-	rrd   %upsr, %dr2
-	andnd %dr2, (UPSR_IE | UPSR_NMIE), %dr2
-	rwd   %dr2, %upsr
+	E2K_ASM_FLUSH_CPU
 
 	/* Load registers previously saved in setjmp. */
 	ldd [%dr0 + E2K_JMBBUFF_CR0_HI], %dr2
@@ -139,13 +136,12 @@ $longjmp:
 	rwd %dr8, %pcsp.hi
 
 	/* Enable interrupts */
-	rrd %upsr, %dr2
-	ord %dr2, (UPSR_IE | UPSR_NMIE), %dr2
-	rwd %dr2, %upsr
+	addd 0, %dr9, %db[0]
+	disp %ctpr1, ipl_restore
+	ipd  3
+	call %ctpr1, wbs = 0x10
 
 	/* Actually, we return to setjmp caller with second
 	* argument of longjmp stored on r1 register. */
 	adds 0, %r1, %r0
 	E2K_ASM_RETURN
-
-.size $longjmp, . - $longjmp
