@@ -1,0 +1,30 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "memtest",
+     help = "Simple tool to measure memory performance",
+     man  = '''
+     	NAME
+		memtest -- simple test for memory performance
+	SYNOPSIS
+		memtest [-nh] [-l LENGTH]
+	DESCRIPTION
+		This command measures speed of memcpy() in RAM.
+	OPTIONS
+		-n Test non-cached memory
+		-l LENGTH Number of bytes to be copied (default 0x1000000)
+		-r REPEAT Number of repeats (default 64)
+	AUTHORS
+		Denis Deryugin <denis.deryugin@gmail.com>
+	''')
+
+module memtest {
+	source "memtest.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.util.sleep
+
+	depends embox.mem.vmem
+}
