@@ -224,13 +224,20 @@ uint32_t _get_mmu_fsce_pid(void) {
 	return val;
 }
 
-uint32_t _get_mmu_context_id(void) {
+uint32_t arm_get_contextidr(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
 		"mrc p15, 0, %[out], c13, c0, 1" : [out] "=r" (val) :
 	);
 	return val;
 }
+
+void arm_set_contextidr(uint32_t val) {
+	__asm__ __volatile__ (
+		"mcr p15, 0, %0, c13, c0, 1" : : "r" (val)
+	);
+}
+
 #ifdef CORTEX_A9
 /* CP15 c15 implemented */
 uint32_t _get_mmu_peripheral_port_memory_remap(void) {
@@ -546,7 +553,7 @@ void _print_mmu_regs(void) {
 
 	log_boot("FSCE PID:                  %#10x\n", _get_mmu_fsce_pid());
 
-	log_boot("Context ID:                %#10x\n", _get_mmu_context_id());
+	log_boot("Context ID:                %#10x\n", arm_get_contextidr());
 #ifdef CORTEX_A9
 	/* CP15 c15 implemented */
 	log_boot("Peripheral port remap:     %#10x\n", _get_mmu_peripheral_port_memory_remap());
