@@ -40,4 +40,5 @@ module mmap {
 	source "mmap.c"
 
 	depends embox.mem.vmem
+	depends embox.kernel.task.resource.mmap_full
 }
