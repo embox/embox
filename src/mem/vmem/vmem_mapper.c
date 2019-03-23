@@ -76,6 +76,26 @@ int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t 
 	return ENOERR;
 }
 
+/**
+ * @brief Change PTE attributes for given memory range: [virt_addr, virt_addr + len]
+ *
+ * @return Negative error value, zero if succeeded
+ */
+int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t len, vmem_page_flags_t flags) {
+	int ret;
+
+	while (len > 0) {
+		if ((ret = vmem_page_set_flags(ctx, virt_addr, flags))) {
+			return ret;
+		}
+
+		virt_addr += MMU_PAGE_SIZE;
+		len -= MMU_PAGE_SIZE;
+	}
+
+	return 0;
+}
+
 static void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags) {
 	mmu_pte_set_writable(pte, flags & VMEM_PAGE_WRITABLE);
 	mmu_pte_set_executable(pte, flags & VMEM_PAGE_EXECUTABLE);

@@ -24,6 +24,17 @@ EMBOX_UNIT_INIT(mmu_init);
 #define DOMAIN_ACCESS OPTION_GET(NUMBER, domain_access)
 #define CTX_NUMBER    32 /* TODO: make it related to number of tasks */
 #define LOG_LEVEL     OPTION_GET(NUMBER, log_level)
+
+#define KERNEL_ASID 0
+void arm_set_asid(uint32_t asid);
+
+uint32_t arm_get_contextidr(void);
+void arm_set_contextidr(uint32_t val);
+
+#define TTBR0_ADDR_MASK 0xFFFFFF00
+uint32_t arm_get_ttbr0(void);
+void arm_set_ttbr0(uint32_t val);
+
 /**
  * @brief Fill translation table and so on
  * @note Assume MMU is off right now
@@ -45,6 +56,8 @@ static int mmu_init(void) {
 		"mcr p15, 0, r0, c3, c0, 0\n\t"
 		: :
 	);
+
+	arm_set_asid(KERNEL_ASID);
 
 	return 0;
 }
@@ -108,10 +121,30 @@ mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
-	__asm__ __volatile__ (
-		"mcr p15, 0, %[addr], c2, c0, 0\n\t"
-		: : [addr] "r" (ctx) :
-	);
+	printk("set ctx %0x\n", ctx);
+	uint32_t ttbr0 = arm_get_ttbr0();
+	ttbr0 &= ~TTBR0_ADDR_MASK;
+	ttbr0 |= ctx & TTBR0_ADDR_MASK;
+	arm_set_ttbr0(ttbr0);
+}
+
+uint32_t arm_get_contextidr(void);
+void arm_set_contextidr(uint32_t val);
+
+#define CONTEXTIDR_ASID_MASK 0xFF
+uint32_t arm_get_asid(void) {
+	/* Suppose we always use short-descriptor format,
+	 * so ASID is in the CONTEXTIDR register */
+	return arm_get_contextidr() & CONTEXTIDR_ASID_MASK;
+}
+
+void arm_set_asid(uint32_t asid) {
+	/* Suppose we always use short-descriptor format,
+	 * so ASID is in the CONTEXTIDR register */
+	uint32_t contextidr = arm_get_contextidr() & ~CONTEXTIDR_ASID_MASK;
+	contextidr |= (asid & CONTEXTIDR_ASID_MASK);
+
+	return arm_set_contextidr(contextidr);
 }
 
 /**
@@ -224,13 +257,35 @@ uint32_t _get_mmu_fsce_pid(void) {
 	return val;
 }
 
-uint32_t _get_mmu_context_id(void) {
+uint32_t arm_get_contextidr(void) {
 	uint32_t val;
 	__asm__ __volatile__ (
 		"mrc p15, 0, %[out], c13, c0, 1" : [out] "=r" (val) :
 	);
 	return val;
 }
+
+void arm_set_contextidr(uint32_t val) {
+	__asm__ __volatile__ (
+		"mcr p15, 0, %0, c13, c0, 1\n\t"
+		: : "r" (val) :
+	);
+}
+
+uint32_t arm_get_ttbr0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c2, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+void arm_set_ttbr0(uint32_t val) {
+	__asm__ __volatile__ (
+		"mcr p15, 0, %0, c2, c0, 0" : : "r" (val)
+	);
+}
+
 #ifdef CORTEX_A9
 /* CP15 c15 implemented */
 uint32_t _get_mmu_peripheral_port_memory_remap(void) {
@@ -546,7 +601,7 @@ void _print_mmu_regs(void) {
 
 	log_boot("FSCE PID:                  %#10x\n", _get_mmu_fsce_pid());
 
-	log_boot("Context ID:                %#10x\n", _get_mmu_context_id());
+	log_boot("Context ID:                %#10x\n", arm_get_contextidr());
 #ifdef CORTEX_A9
 	/* CP15 c15 implemented */
 	log_boot("Peripheral port remap:     %#10x\n", _get_mmu_peripheral_port_memory_remap());
