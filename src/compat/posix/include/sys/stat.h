@@ -90,9 +90,6 @@ typedef struct stat {
 	size_t    st_size;    /* total size, in bytes */
 	size_t    st_blksize; /* blocksize for file system I/O */
 	int       st_blocks;  /* number of 512B blocks allocated */
-//	unsigned  st_atime;   /* time of last access */
-//	unsigned  st_mtime;   /* time of last modification */
-//	unsigned  st_ctime;   /* time of last status change */
 
     struct timespec st_atim;  /* time of last access */
     struct timespec st_mtim;  /* time of last modification */
