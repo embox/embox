@@ -13,7 +13,7 @@ module fs_full extends file {
 	depends embox.fs.core
 	depends embox.fs.file_desc
 	depends embox.security.api
-
+	depends embox.compat.posix.util.gettimeofday /* kfile_change_stat */
 	depends perm
 }
 
