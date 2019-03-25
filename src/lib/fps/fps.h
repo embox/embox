@@ -13,5 +13,8 @@
 
 extern void fps_set_format(const char *format);
 extern void fps_print(struct fb_info *fb);
+extern void fps_set_base(struct fb_info *fb, void *base);
+extern void *fps_enable_swap(struct fb_info *fb);
+extern int fps_swap(struct fb_info *fb);
 
 #endif /* LIB_FPS_H_ */

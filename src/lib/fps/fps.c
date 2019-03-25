@@ -36,6 +36,12 @@ void fps_set_format(const char *format) {
 	fps_format_string = format;
 }
 
+static uint8_t *fps_sw_base = 0;
+void fps_set_base(struct fb_info *fb, void *base) {
+	/* XXX works only with single FB */
+	fps_sw_base = base;
+}
+
 /**
  * @brief Print message to frame buffer at the left upper corner
  */
@@ -70,7 +76,7 @@ void fps_print(struct fb_info *fb) {
 
 	snprintf(msg_buf, sizeof(msg_buf), fps_format_string, fps);
 
-	fb_overlay_init(fb, fb->screen_base);
+	fb_overlay_init(fb, fps_sw_base != 0 ? (void *) fps_sw_base : (void *) fb->screen_base);
 
 	msg = msg_buf;
 	line = 0;
@@ -87,4 +93,41 @@ void fps_print(struct fb_info *fb) {
 
 		line++;
 	}
+}
+
+/**
+ * @brief Create second buffer for double buffering
+ */
+void *fps_enable_swap(struct fb_info *fb) {
+	size_t screen_sz;
+
+	assert(fb);
+	screen_sz = fb->var.xres * fb->var.yres *
+		fb->var.bits_per_pixel / 8;
+
+	if (fps_sw_base != 0) {
+		log_error("Can't initialize second frame buffer");
+		return fps_sw_base;
+	}
+
+	if (0 == (fps_sw_base = malloc(screen_sz))) {
+		log_error("Failed to allocate buffer");
+		return 0;
+	}
+
+	memset(fps_sw_base, 0, screen_sz);
+
+	return fps_sw_base;
+}
+
+/**
+ * @brief Copy temporary buffer to actual hw frame buffer
+ */
+int fps_swap(struct fb_info *fb) {
+	assert(fps_sw_base);
+
+	memcpy(fb->screen_base,
+		fps_sw_base,
+		fb->var.xres * fb->var.yres * fb->var.bits_per_pixel / 8);
+	return 0;
 }
