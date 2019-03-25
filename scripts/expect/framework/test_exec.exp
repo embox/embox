@@ -15,13 +15,20 @@ proc ::autotest::telnet_connect {} {
 }
 
 proc ::autotest::telnet_disconnect {} {
+	global spawn_id
 	send "exit\r"
 	expect "Connection closed by foreign host"
 	return 0
 }
 
+proc ::autotest::eval_test_body {test_body} {
+	global spawn_id
+	eval $test_body
+}
+
 proc ::autotest::test_exec {mode test_name test_body} {
 	# https://stackoverflow.com/questions/30532532/expect-fails-when-running-proc-inside-proc
+	variable res
 	global spawn_id
 
 	if {$test_body == ""} {
@@ -30,13 +37,9 @@ proc ::autotest::test_exec {mode test_name test_body} {
 
 	if {$mode == "target"} { telnet_connect }
 
-	set res [eval $test_body]
-	if {$res != 0} {
-		if {$mode == "target"} { telnet_disconnect }
-		return -1
-	}
+	set res [eval_test_body $test_body]
 
 	if {$mode == "target"} { telnet_disconnect }
 
-	return 0
+	return $res
 }
