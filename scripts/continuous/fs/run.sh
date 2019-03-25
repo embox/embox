@@ -127,6 +127,8 @@ interactive_tests() {
 	rm $PID_FILE
 }
 
+interactive_tests $EXPECT_TESTS_BASE/x86_fs_shell_commands.config
+
 for f in $FS_TEST_RO; do
 	img=$BASE_DIR/$f.img
 
