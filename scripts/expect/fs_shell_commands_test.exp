@@ -33,7 +33,6 @@ TEST_CASE_TARGET {pwd should show correct directory} {
 	return 0
 }
 
-TEST_CASE_DECLARE_FIXME {
 TEST_CASE_TARGET {Echo to regular file} {
 	set TELNET_PROMPT ":/#"
 
@@ -46,7 +45,6 @@ TEST_CASE_TARGET {Echo to regular file} {
 	test_exec_embox_cmd "rm 1.txt\r"
 
 	return 0
-}
 }
 
 # I don't know why, but sometimes this test is also failed.
