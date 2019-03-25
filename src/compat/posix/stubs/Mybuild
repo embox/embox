@@ -19,6 +19,5 @@ static module stubs {
 		"readlinkat.c",
 		"readlink.c",
 		"setpgid.c",
-		"sigsuspend.c",
-		"utime.c"
+		"sigsuspend.c"
 }
