@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Simple test to draw frame via embox/fb interface
  *
  * @date Jun 21, 2017
  * @author Anton Bondarev
