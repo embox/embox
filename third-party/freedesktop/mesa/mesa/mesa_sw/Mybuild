@@ -1,7 +1,7 @@
 package third_party.freedesktop.mesa
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.STLport.libstlportg)
 @BuildDepends(third_party.freedesktop.mesa.libdrm)
 module  mesa_osmesa {
 	source "^BUILD/extbld/^MOD_PATH/install/libOSMesa.a"

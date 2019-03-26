@@ -73,7 +73,7 @@ endif
 QT_CPPFLAGS := $(filter -I%,$(EMBOX_CPPFLAGS))
 QT_CPPFLAGS += -include qt_embox_compat.h
 ifeq (1,$(call option_get,stl_support))
-QT_CPPFLAGS += -I$(EXTERNAL_BUILD_DIR)/third_party/STLport/core/include/stlport
+QT_CPPFLAGS += -I$(EXTERNAL_BUILD_DIR)/third_party/STLport/libstlportg/include/stlport
 endif
 
 QT_CFLAGS   := $(QT_CPPFLAGS) -Wno-error

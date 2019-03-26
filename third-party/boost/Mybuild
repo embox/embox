@@ -2,7 +2,7 @@ package third_party.boost
 
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/boost/core/include")
-@BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.STLport.libstlportg)
 static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
 	source "libboost_atomic.a", "libboost_chrono.a",
@@ -17,6 +17,6 @@ static module core {
 	@NoRuntime depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.compat.libc.all
-	@NoRuntime depends third_party.STLport.core
+	@NoRuntime depends third_party.STLport.libstlportg
 	@NoRuntime depends embox.compat.posix.pthread_key
 }

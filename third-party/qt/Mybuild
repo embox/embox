@@ -5,7 +5,7 @@ package third_party.qt
 @BuildDepends(embox.lib.libsupcxx)
 @BuildDepends(embox.lib.libgcc)
 @BuildDepends(third_party.lib.OpenLibm)
-@BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.STLport.libstlportg)
 static module core {
 	option boolean stl_support=false
 	option boolean process_support=false

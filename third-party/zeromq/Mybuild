@@ -1,14 +1,14 @@
 package third_party.zeromq
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.STLport.libstlportg)
 @BuildDepends(third_party.gcc.core)
 static module core {
 	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.lib.cxx.lib
 
-	depends third_party.STLport.core
+	depends third_party.STLport.libstlportg
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source "lib/libzmq.a"
