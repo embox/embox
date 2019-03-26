@@ -1,5 +1,6 @@
 package third_party.freedesktop.mesa
 
+@App
 @BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
 @Build(script="$(EXTERNAL_MAKE)")
 module  mesa_etnaviv {
