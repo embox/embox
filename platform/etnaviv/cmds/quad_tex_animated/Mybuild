@@ -1,5 +1,6 @@
 package platform.etnaviv.cmd
 
+@App
 @AutoCmd
 @Cmd(name = "quad_tex_animated",
 	help = "Draw quad-texangle with purple background using gallium")
@@ -14,6 +15,7 @@ module quad_tex_animated {
 	source "quad_tex_animated.c"
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
+	depends third_party.freedesktop.mesa.mesa_etnaviv
 	depends third_party.lib.estransform
 
 	@InitFS
