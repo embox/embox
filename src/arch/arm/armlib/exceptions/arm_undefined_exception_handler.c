@@ -5,14 +5,15 @@
  * @author  Anton Kozlov
  * @date    23.10.2013
  */
-#include <util/log.h>
 
 #include <stdint.h>
 
-#include <kernel/printk.h>
-
 #include <arm/fpu.h>
+#include <framework/mod/options.h>
+#include <kernel/printk.h>
+#include <util/log.h>
 
+#define KEEP_GOING OPTION_GET(BOOLEAN,keep_going)
 struct pt_regs_exception {
 #ifdef ARM_FPU_VFP
 	struct pt_regs_fpu vfp;
@@ -45,4 +46,7 @@ void arm_undefined_exception(struct pt_regs_exception *pt_regs) {
 			pt_regs->regs[6], pt_regs->regs[7],	pt_regs->regs[8],
 			pt_regs->regs[9], pt_regs->regs[10], pt_regs->regs[11],
 			pt_regs->regs[12], pt_regs->prev_lr, pt_regs->spsr);
+#if !KEEP_GOING
+	while(1);
+#endif
 }
