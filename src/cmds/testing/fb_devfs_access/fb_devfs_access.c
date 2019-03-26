@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Simple test to draw screen Linux-style via /dev/..
  *
  * @date Jun 21, 2017
  * @author Anton Bondarev
@@ -14,7 +14,6 @@
 #include <sys/ioctl.h>
 
 #include <linux/fb.h>
-
 
 int main() {
 	int fbfd = 0;

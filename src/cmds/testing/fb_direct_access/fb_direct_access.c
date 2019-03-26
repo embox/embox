@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief Simple test to draw frame via embox/fb interface
  *
  * @date Jun 21, 2017
  * @author Anton Bondarev
@@ -19,7 +19,6 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 int main() {
-	//long int screensize = 0;
 	uint8_t *fbp = 0;
 	int x, y, width, height;
 	int bytes_per_pixel;
@@ -32,23 +31,9 @@ int main() {
 
 	/* Figure out the size of the screen in bytes */
 	bytes_per_pixel = fb_info->var.bits_per_pixel / 8;
-	//screensize = fb_info->var.xres * fb_info->var.yres * bytes_per_pixel;
 
 	/* Map the device to memory */
-	/* XXX just use raw physical address */
 	fbp = (uint8_t *) fb_info->screen_base;
-/*
-	fbp = mmap_device_memory((void *)fb_info->screen_base,
-			screensize,
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			MAP_SHARED,
-			(uint64_t)((uintptr_t)fb_info->screen_base));
-*/
-	if ((int) fbp == -1) {
-		perror("Error: failed to map framebuffer device to memory");
-		exit(4);
-	}
-	printf("The framebuffer device was mapped to memory successfully.\n");
 
 	width = fb_info->var.xres;
 	height = fb_info->var.yres;
@@ -74,7 +59,5 @@ int main() {
 		}
 	}
 
-	/* XXX we use raw physical address
-	munmap(fbp, screensize); */
 	return 0;
 }
