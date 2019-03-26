@@ -40,7 +40,7 @@ $(CONFIGURE) :
 			--disable-glx --disable-glx-tls \
 			--disable-asm \
 			--disable-dependency-tracking \
-			--disable-gles1 --disable-gles2 \
+			--enable-gles1 --enable-gles2 \
 			--disable-xvmc \
 			ZLIB_LIBS="-O2" \
 			PTHREADSTUBS_LIBS="-O2" \

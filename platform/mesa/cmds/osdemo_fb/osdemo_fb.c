@@ -32,14 +32,11 @@ extern void fb_overlay_init(struct fb_info *fbi, void *base);
 static int Width;
 static int Height;
 static struct fb_info *mesa_fbi;
-static void *hw_base = 0;
 static void *sw_base = 0;
 
 static int animated_scene;
 
 void init_buffers(void) {
-	long int screensize = 0;
-
 	mesa_fbi = fb_lookup(0);
 
 	printf("%dx%d, %dbpp\n", mesa_fbi->var.xres, mesa_fbi->var.yres,
@@ -48,22 +45,9 @@ void init_buffers(void) {
 	Width = mesa_fbi->var.xres;
 	Height = mesa_fbi->var.yres;
 
-	screensize = Width * Height * mesa_fbi->var.bits_per_pixel / 8;
-
-	/* Map the device to memory */
-	hw_base = 0 ? (uint8_t *) mmap_device_memory((void *) mesa_fbi->screen_base,
-			screensize, PROT_READ | PROT_WRITE, MAP_SHARED,
-			(uint64_t) ((uintptr_t) mesa_fbi->screen_base)) : (void *) mesa_fbi->screen_base;
-
-
-	if ((int) hw_base == -1) {
-		perror("Error: failed to map framebuffer device to memory");
-		exit(4);
-	}
-
 	printf("The framebuffer device was mapped to memory successfully.\n");
 
-	sw_base = malloc(Width * Height * mesa_fbi->var.bits_per_pixel / 8);
+	sw_base = fps_enable_swap(mesa_fbi);
 	if (animated_scene) {
 		fps_set_format("Embox MESA demo v0.2\nFPS=%2d");
 	} else {
@@ -72,23 +56,12 @@ void init_buffers(void) {
 }
 
 static void swap_buffers() {
-	memcpy(hw_base,
-		sw_base,
-		mesa_fbi->var.bits_per_pixel / 8 * Width * Height);
-
 	fps_print(mesa_fbi);
+	fps_swap(mesa_fbi);
 }
 
 static void destroy_video_buffer() {
-	long int screensize = 0;
 
-	/* Figure out the size of the screen in bytes */
-	screensize = mesa_fbi->var.xres * mesa_fbi->var.yres
-		* mesa_fbi->var.bits_per_pixel / 8;
-
-	munmap(hw_base, screensize);
-
-	free(sw_base);
 }
 
 /*********************************
@@ -256,7 +229,6 @@ int main(int argc, char **argv) {
 	init_buffers();
 	assert(mesa_fbi);
 	assert(sw_base);
-	assert(hw_base);
 
 	if (depth == -1) {
 		/* Argument not given */

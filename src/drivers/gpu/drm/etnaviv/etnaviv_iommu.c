@@ -1,18 +1,11 @@
-/*
- * Copyright (C) 2014 Christian Gmeiner <christian.gmeiner@gmail.com>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License version 2 as published by
- * the Free Software Foundation.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
+/**
+ * @file etnaviv_iommu.c
+ * @brief
+ * @version
+ * @date 25.03.2019
  */
+
+#include <stdlib.h>
 
 #include <asm-generic/dma-mapping.h>
 
@@ -46,18 +39,13 @@ static struct etnaviv_iommu_domain *to_etnaviv_domain(void *domain) {
 
 static int pgtable_alloc(struct etnaviv_iommu_domain_pgtable *pgtable,
 			 size_t size) {
-	pgtable->pgtable = dma_alloc_coherent(NULL, size, &pgtable->paddr, GFP_KERNEL);
+	pgtable->pgtable = malloc(size);
 	if (!pgtable->pgtable)
 		return -ENOMEM;
 
 	pgtable->paddr = (dma_addr_t) pgtable->pgtable;
 
 	return 0;
-}
-
-static void pgtable_free(struct etnaviv_iommu_domain_pgtable *pgtable,
-			 size_t size) {
-	dma_free_coherent(NULL, size, pgtable->pgtable, pgtable->paddr);
 }
 
 static uint32_t pgtable_read(struct etnaviv_iommu_domain_pgtable *pgtable,
@@ -83,10 +71,8 @@ static int __etnaviv_iommu_init(struct etnaviv_iommu_domain *etnaviv_domain) {
 	uint32_t *p;
 	int ret, i;
 
-	etnaviv_domain->bad_page_cpu = dma_alloc_coherent(etnaviv_domain->dev,
-						  SZ_4K,
-						  &etnaviv_domain->bad_page_dma,
-						  GFP_KERNEL);
+	etnaviv_domain->bad_page_cpu = malloc(SZ_4K);
+
 	if (!etnaviv_domain->bad_page_cpu)
 		return -ENOMEM;
 
@@ -96,9 +82,7 @@ static int __etnaviv_iommu_init(struct etnaviv_iommu_domain *etnaviv_domain) {
 
 	ret = pgtable_alloc(&etnaviv_domain->pgtable, PT_SIZE);
 	if (ret < 0) {
-		dma_free_coherent(etnaviv_domain->dev, SZ_4K,
-				  etnaviv_domain->bad_page_cpu,
-				  etnaviv_domain->bad_page_dma);
+		free(etnaviv_domain->bad_page_cpu);
 		return ret;
 	}
 
@@ -112,11 +96,9 @@ static int __etnaviv_iommu_init(struct etnaviv_iommu_domain *etnaviv_domain) {
 static void etnaviv_domain_free(struct iommu_domain *domain) {
 	struct etnaviv_iommu_domain *etnaviv_domain = to_etnaviv_domain(domain);
 
-	pgtable_free(&etnaviv_domain->pgtable, PT_SIZE);
+	free(etnaviv_domain->pgtable.pgtable);
 
-	dma_free_coherent(etnaviv_domain->dev, SZ_4K,
-			  etnaviv_domain->bad_page_cpu,
-			  etnaviv_domain->bad_page_dma);
+	free(etnaviv_domain->bad_page_cpu);
 
 	kfree(etnaviv_domain);
 }

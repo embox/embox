@@ -39,6 +39,7 @@
 #include <etnaviv_xml/common.xml.h>
 #include <etnaviv_xml/state_hi.xml.h>
 
+#include <mem/vmem.h>
 #define VERSION_NAME      "etnaviv"
 #define VERSION_NAME_LEN  9
 #define VERSION_DATE      "7 Dec 2017"
@@ -52,6 +53,9 @@
 #define R2D_GPU2D_IRQ	OPTION_GET(NUMBER,r2d_gpu2d_irq)
 #define V2D_GPU2D_IRQ	OPTION_GET(NUMBER,v2d_gpu2d_irq)
 
+#define ETNA_UNCACHED_BUFFER_SZ	(16 * 1024 * 1024)
+
+static uint8_t etnaviv_uncached_buffer[ETNA_UNCACHED_BUFFER_SZ] __attribute__ ((aligned (0x1000)));
 /*
  * DRM ioctls:
  */
@@ -192,7 +196,7 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data)
 static int etnaviv_ref = 0;
 static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 	struct file *file;
-	int i;
+	int i, err;
 
 	if (NULL == (file = dvfs_alloc_file())) {
 		return err_ptr(ENOMEM);
@@ -252,6 +256,13 @@ static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 	}
 
 	etnaviv_ref++;
+
+	if ((err = vmem_set_flags(vmem_current_context(),
+					(mmu_vaddr_t) etnaviv_uncached_buffer,
+					sizeof(etnaviv_uncached_buffer),
+					VMEM_PAGE_WRITABLE))) {
+		log_error("Failed to set page attributes! Error %d", err);
+	}
 
 	return &file->f_idesc;
 }
@@ -361,11 +372,10 @@ static int etnaviv_dev_idesc_status(struct idesc *idesc, int mask) {
 	return 0;
 }
 
-static uint8_t local_buffer[16 * 1024 * 1024] __attribute__ ((aligned (0x1000)));
 static int ptr = 0;
 static void *etnaviv_dev_idesc_mmap(struct idesc *idesc, void *addr, size_t len, int prot,
 			int flags, int fd, off_t off) {
-	void *res = &local_buffer[ptr];
+	void *res = &etnaviv_uncached_buffer[ptr];
 	struct drm_gem_object *obj;
 	obj = (void *) (uint32_t) off;
 

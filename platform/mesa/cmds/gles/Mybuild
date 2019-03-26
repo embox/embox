@@ -1,0 +1,44 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "gles_example",
+	help = "Simple application using OpenGL ES",
+	man = '''
+		AUTHORS
+			Denis Deryugin
+	''')
+@BuildDepends(third_party.freedesktop.mesa.mesa_osmesa)
+@BuildDepends(third_party.freedesktop.mesa.libglu_osmesa)
+@Build(stage=2,script="true")
+module gles_example_sw {
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_osmesa/glu-9.0.0/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include")
+	source "gles_example.c"
+
+	depends embox.driver.video.fb_overlay
+
+	depends third_party.freedesktop.mesa.mesa_osmesa
+	depends third_party.freedesktop.mesa.libglu_osmesa
+}
+
+@AutoCmd
+@Cmd(name = "gles_example",
+	help = "Simple application using OpenGL ES",
+	man = '''
+		AUTHORS
+			Denis Deryugin
+	''')
+
+@BuildDepends(third_party.freedesktop.mesa.mesa_etnaviv)
+@BuildDepends(third_party.freedesktop.mesa.libglu_etnaviv)
+@Build(stage=2,script="true")
+module gles_example_imx6 {
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_etnaviv/glu-9.0.0/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+	source "gles_example.c"
+
+	depends embox.driver.video.fb_overlay
+
+	depends third_party.freedesktop.mesa.mesa_etnaviv
+	depends third_party.freedesktop.mesa.libglu_etnaviv
+}
