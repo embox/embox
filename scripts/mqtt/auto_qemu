@@ -1,0 +1,14 @@
+#!/bin/bash
+ip=$(which ip)
+
+$ip link add name br0 type bridge
+$ip link set dev br0 up
+$ip addr add dev br0 10.0.2.1/24
+
+DATADIR=$(dirname "$0")
+
+sudo -E qemu-system-i386 -kernel ./build/base/bin/embox -enable-kvm -m 256 -nographic \
+-netdev tap,id=n0,ifname="tap0",script=$DATADIR/start_script,downscript=$DATADIR/stop_script,vnet_hdr=no \
+-device virtio-net-pci,netdev=n0,mac=AA:BB:CC:DD:EE:02
+
+$ip link delete br0 type bridge
