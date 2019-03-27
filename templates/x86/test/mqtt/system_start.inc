@@ -6,3 +6,6 @@
 "service telnetd",
 "service httpd",
 "tish",
+"mkdir -v log",
+"mkfs -q /dev/log0 8192",
+"mount -t ramfs /dev/log0 /log",
