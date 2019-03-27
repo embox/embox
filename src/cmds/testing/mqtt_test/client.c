@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
     ssize_t nwrite;
     char buf[BUF_SIZE], msg[BUF_SIZE];
 	/* logging */
-	FILE *fd = fopen("log/client.log", "a");
+	// FILE *fd = fopen("log/client.log", "a");
 	char timestamp[BUF_SIZE];
 	time_t timer;
 	struct tm *cur_time;
@@ -29,8 +29,8 @@ int main(int argc, char *argv[]) {
 		
 		printf("[%s] Failed to connect to server: %s\n",
 				timestamp, strerror(sockfd));
-		fprintf(fd, "[%s] Failed to connect to server: %s\n",
-				timestamp, strerror(sockfd));
+		// fprintf(fd, "[%s] Failed to connect to server: %s\n",
+		// 		timestamp, strerror(sockfd));
 		return sockfd;
 	}
 	
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 		strftime(timestamp, BUF_SIZE, "%d-%m-%Y %T", cur_time);
 
 		if (len > BUF_SIZE) {
-			fprintf(fd, "[%s] Message too long.", timestamp);
+			// fprintf(fd, "[%s] Message too long.", timestamp);
 			sleep(i);
 			continue;
 		}
@@ -52,28 +52,28 @@ int main(int argc, char *argv[]) {
 		nwrite = write(sockfd, msg, len);
 		if (nwrite != len) {
 			printf("[%s] partial/failed write.\n", timestamp);
-			fprintf(fd, "[%s] partial/failed write.\n", timestamp);
+			// fprintf(fd, "[%s] partial/failed write.\n", timestamp);
 			sleep(i);
 			continue;
 		}
 
 		printf("[%s] Sent %ld bytes to server. Message: %s\n",
 				timestamp, (long) nwrite, msg);
-		fprintf(fd, "[%s] Sent %ld bytes to server. Message: %s\n",
-					 timestamp, (long) nwrite, msg);
+		// fprintf(fd, "[%s] Sent %ld bytes to server. Message: %s\n",
+		// 			 timestamp, (long) nwrite, msg);
 
 		nwrite = read(sockfd, buf, BUF_SIZE);
 		if (nwrite == -1) {
 			printf("[%s] Read failure: %s\n", timestamp, strerror(errno));
-			fprintf(fd, "[%s] Read failure: %s\n", timestamp, strerror(errno));
+			// fprintf(fd, "[%s] Read failure: %s\n", timestamp, strerror(errno));
 			sleep(i);
 			continue;
 		}
 
 		printf("[%s] Recieved %ld bytes from server. Message: %s\n",
 				timestamp, (long) nwrite, msg);
-		fprintf(fd, "[%s] Recieved %ld bytes from server. Message: %s\n",
-					timestamp, (long) nwrite, msg);
+		// fprintf(fd, "[%s] Recieved %ld bytes from server. Message: %s\n",
+		// 			timestamp, (long) nwrite, msg);
 		
 		sleep(i);
 	}
@@ -82,7 +82,7 @@ int main(int argc, char *argv[]) {
 	cur_time = localtime(&timer);
 	strftime(timestamp, BUF_SIZE, "%d-%m-%Y %T", cur_time);
 	printf("[%s] Transmit completed.\n", timestamp);
-	fprintf(fd, "[%s] Transmit completed.\n", timestamp);
+	// fprintf(fd, "[%s] Transmit completed.\n", timestamp);
 
 	return 0;
 }

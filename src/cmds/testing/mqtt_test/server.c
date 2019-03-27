@@ -11,7 +11,7 @@ int main(int argc, char *argv[]) {
     char buf[BUF_SIZE], host[NI_MAXHOST], service[NI_MAXSERV];
 	int r;
 	/* logging */
-	FILE *fd = fopen("log/server.log", "a");
+	// FILE *fd = fopen("log/server.log", "a");
 	char timestamp[BUF_SIZE];
 	time_t timer;
 	struct tm *cur_time;
@@ -39,8 +39,8 @@ int main(int argc, char *argv[]) {
 
 		printf("[%s] Failed to start server: %s\n",
 				timestamp, strerror(sockfd));
-		fprintf(fd, "[%s] Failed to start server: %s\n",
-				timestamp, strerror(sockfd));
+		// fprintf(fd, "[%s] Failed to start server: %s\n",
+		// 		timestamp, strerror(sockfd));
 		return sockfd;
 	}
 
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 		
 		if (nread == -1) {
 			printf("[%s] Failed request.", timestamp);
-			fprintf(fd, "[%s] Failed request.", timestamp);
+			// fprintf(fd, "[%s] Failed request.", timestamp);
 			continue;
 		}
 
@@ -65,18 +65,18 @@ int main(int argc, char *argv[]) {
 		if (r == 0) {
 			printf("[%s] Received %ld bytes from %s:%s. Message: %s\n",
 						timestamp, (long) nread, host, service, buf);
-			fprintf(fd, "[%s] Received %ld bytes from %s:%s. Message: %s\n",
-						timestamp, (long) nread, host, service, buf);
+			// fprintf(fd, "[%s] Received %ld bytes from %s:%s. Message: %s\n",
+			// 			timestamp, (long) nread, host, service, buf);
 		} else {
 			printf("[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
-			fprintf(fd, "[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
+			// fprintf(fd, "[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
 		}
 
 		if (nread != sendto(sockfd, buf, nread, 0, 
 							(struct sockaddr *) &peer_addr, peer_addr_len))
 		{
 			printf("[%s] Failed to send response.", timestamp);
-			fprintf(fd, "[%s] Failed to send response.", timestamp);
+			// fprintf(fd, "[%s] Failed to send response.", timestamp);
 		}
 	}
 }

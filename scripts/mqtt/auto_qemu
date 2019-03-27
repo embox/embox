@@ -11,6 +11,6 @@ DATADIR=$(dirname "$0")
 
 sudo -E qemu-system-i386 -kernel ./build/base/bin/embox -enable-kvm -m 256 -nographic \
 -netdev tap,id=n0,ifname="tap0",script=$DATADIR/start_script,downscript=$DATADIR/stop_script,vnet_hdr=no \
--device virtio-net-pci,netdev=n0,mac=AA:BB:CC:DD:EE:02
+-device virtio-net-pci,netdev=n0,mac=52:54:CC:DD:EE:00
 
 $ip link delete br0 type bridge
