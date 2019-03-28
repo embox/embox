@@ -17,6 +17,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <arpa/inet.h>
+#include <net/l2/ethernet.h>
 
 #define XS_MAX_KEY_LENGTH 		256
 #define XS_MAX_VALUE_LENGTH		1024
@@ -81,7 +82,7 @@ static void xenstore_info() {
 
 	memset(&domid, 0, XS_MAX_DOMID_LENGTH);
 	r = xenstore_read("domid", domid, XS_MAX_DOMID_LENGTH);
-	
+
 	if (r < 0)
 		printk("Can't retrieve domid. Error %i\n", r);
 
@@ -91,7 +92,7 @@ static void xenstore_info() {
 	memset(&key, 0, XS_MAX_KEY_LENGTH);
 	sprintf(key, "/local/domain/%s", domid);
 	r = xenstore_ls_val(key, XS_LS_RECURSIVE);
-	
+
 	if (r < 0)
 		printk("Can't retrieve /local/domain/%s contents. Error %i\n", domid, r);
 
@@ -107,7 +108,7 @@ enum host_net_op {
 	HOST_NET_STOP,
 };
 void host_net_tx(struct host_net_adp *hnet, const void *buf, int len) {
-	
+
 }
 int host_net_cfg(struct host_net_adp *hnet, enum host_net_op op) {
 	return 0;
@@ -128,7 +129,7 @@ struct net_device * xen_net_dev_alloc(size_t priv_size) {
 	return NULL;
 }
 void xen_net_dev_free(struct net_device *dev) {
-	
+
 }
 
 
@@ -189,22 +190,12 @@ static int xen_net_init(void) {
 
 	int res = 0;
 	struct net_device *nic;
-	struct host_net_adp *hnet;
-	nic = xen_net_dev_alloc(sizeof(struct host_net_adp));
+	nic = etherdev_alloc(sizeof(struct host_net_adp));
 	if (nic == NULL) {
 		return -ENOMEM;
 	}
 	nic->drv_ops = &xen_net_drv_ops;
 	nic->irq = HOST_NET_IRQ;
-
-	hnet = netdev_priv(nic, struct host_net_adp);
-
-	res = host_net_cfg(hnet, HOST_NET_INIT);
-	if (res < 0) {
-		xen_net_dev_free(nic);
-		printk("xen: can't init network: %s\n", strerror(-res));
-		return 0;
-	}
 
 	res = irq_attach(HOST_NET_IRQ, xen_net_irq, IF_SHARESUP, nic,
 			"xen_net");
@@ -212,7 +203,5 @@ static int xen_net_init(void) {
 		return res;
 	}
 
-	// ?????????????????????????????????
-	// return inetdev_register_dev(nic);
-    return 0;
+	return inetdev_register_dev(nic);
 }
