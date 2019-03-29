@@ -18,14 +18,19 @@ int sock_connect(const char *nodename, const char *servname,
 		if (sockfd == -1)
 			continue;
 
-		if (0 == bind(sockfd, res_it->ai_addr, res_it->ai_addrlen))
-			break;		/* Success */
-
+		if(hints->ai_flags == AI_PASSIVE){
+			if (0 == bind(sockfd, res_it->ai_addr, res_it->ai_addrlen))
+				break;		/* Success */
+		} else {
+			if (0 == connect(sockfd, res_it->ai_addr, res_it->ai_addrlen))
+				break;		/* Success */
+		}
+		
 		close(sockfd);
 	}
 
 	if (res_it == NULL) {		/* No address succeeded */
-		fprintf(stderr, "Could not bind\n");
+		fprintf(stderr, "Could not bind/connect\n");
 		return -ENOENT;
 	}
 
