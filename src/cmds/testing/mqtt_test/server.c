@@ -5,8 +5,8 @@ int main(int argc, char *argv[]) {
 	struct addrinfo hints;
 	int sockfd;
 	/* message recieving */
-    struct sockaddr_storage peer_addr;
-    socklen_t peer_addr_len = sizeof(struct sockaddr_storage);
+    struct sockaddr peer_addr;
+    socklen_t peer_addr_len = sizeof(struct sockaddr);
     ssize_t nread;
     char buf[BUF_SIZE], host[NI_MAXHOST], service[NI_MAXSERV];
 	int r;
@@ -46,7 +46,7 @@ int main(int argc, char *argv[]) {
 
 	while (1) {
 		nread = recvfrom(sockfd, buf, BUF_SIZE, 0,
-						(struct sockaddr *) &peer_addr, &peer_addr_len);
+						&peer_addr, &peer_addr_len);
 
 		timer = time(NULL);
 		cur_time = localtime(&timer);
@@ -58,22 +58,27 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 
-		r = getnameinfo((struct sockaddr *) &peer_addr,
-						peer_addr_len, host, NI_MAXHOST,
+		r = getnameinfo(&peer_addr, peer_addr_len, host, NI_MAXHOST,
 						service, NI_MAXSERV, NI_NUMERICSERV);
 
-		if (r == 0) {
-			printf("[%s] Received %ld bytes from %s:%s. Message: %s\n",
-						timestamp, (long) nread, host, service, buf);
+		if (r != 0) {
+			printf("[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
+			// fprintf(fd, "[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
+
+			printf("[%s] Received %ld bytes from unknown host. Message: %s\n",
+					timestamp, (long) nread, buf);
 			// fprintf(fd, "[%s] Received %ld bytes from %s:%s. Message: %s\n",
 			// 			timestamp, (long) nread, host, service, buf);
 		} else {
-			printf("[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
-			// fprintf(fd, "[%s] getnameinfo: %s\n", timestamp, gai_strerror(r));
+			printf("[%s] Received %ld bytes from %s:%s. Message: %s\n",
+					timestamp, (long) nread, host, service, buf);
+			// fprintf(fd, "[%s] Received %ld bytes from %s:%s. Message: %s\n",
+			// 			timestamp, (long) nread, host, service, buf);
 		}
 
+
 		if (nread != sendto(sockfd, buf, nread, 0, 
-							(struct sockaddr *) &peer_addr, peer_addr_len))
+							&peer_addr, peer_addr_len))
 		{
 			printf("[%s] Failed to send response.", timestamp);
 			// fprintf(fd, "[%s] Failed to send response.", timestamp);
