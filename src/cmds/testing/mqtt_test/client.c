@@ -35,17 +35,21 @@ int main(int argc, char *argv[]) {
 	}
 	
 	i = (argc > 1)? atoi(argv[1]) : 0;
-	for (; i <= 10; i+=2) {
+	for (; i <= 64; i+=1) {
 		sprintf(msg, "ping%i", i);
 		len = strlen(msg) + 1;
+		int sleep_time; 
 
 		timer = time(NULL);
 		cur_time = localtime(&timer);
 		strftime(timestamp, BUF_SIZE, "%d-%m-%Y %T", cur_time);
 
+		srandom(timer);
+		sleep_time = random() % 5;
+
 		if (len > BUF_SIZE) {
 			// fprintf(fd, "[%s] Message too long.", timestamp);
-			sleep(i);
+			sleep(sleep_time);
 			continue;
 		}
 
@@ -53,7 +57,7 @@ int main(int argc, char *argv[]) {
 		if (nwrite != len) {
 			printf("[%s] partial/failed write.\n", timestamp);
 			// fprintf(fd, "[%s] partial/failed write.\n", timestamp);
-			sleep(i);
+			sleep(sleep_time);
 			continue;
 		}
 
@@ -62,6 +66,7 @@ int main(int argc, char *argv[]) {
 		// fprintf(fd, "[%s] Sent %ld bytes to server. Message: %s\n",
 		// 			 timestamp, (long) nwrite, msg);
 
+#if 0
 		nwrite = read(sockfd, buf, BUF_SIZE);
 		if (nwrite == -1) {
 			printf("[%s] Read failure: %s\n", timestamp, strerror(errno));
@@ -74,8 +79,9 @@ int main(int argc, char *argv[]) {
 				timestamp, (long) nwrite, msg);
 		// fprintf(fd, "[%s] Recieved %ld bytes from server. Message: %s\n",
 		// 			timestamp, (long) nwrite, msg);
+#endif
 		
-		sleep(i);
+		sleep(sleep_time);
 	}
 
 	timer = time(NULL);
