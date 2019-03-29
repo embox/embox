@@ -2,7 +2,7 @@ iface eth0 inet static
 	address 10.0.2.16
 	netmask 255.255.255.0
 	gateway 10.0.2.10
-	hwaddress aa:bb:cc:dd:ee:02
+	hwaddress 52:54:cc:dd:ee:00
 
 iface lo inet static
 	address 127.0.0.1
