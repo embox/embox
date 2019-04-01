@@ -3,7 +3,7 @@ ExternalProject_Add(
    boost
    PREFIX .
    DOWNLOAD_DIR $ENV{EMBOX_ROOT}/download
-   URL http://optimate.dl.sourceforge.net/project/boost/boost/1.54.0/boost_1_54_0.tar.gz
+   URL http://sourceforge.net/projects/boost/files/boost/1.54.0/boost_1_54_0.tar.gz
    URL_MD5 efbfbff5a85a9330951f243d0a46e4b9
    UPDATE_COMMAND ""
    LIST_SEPARATOR ^^
