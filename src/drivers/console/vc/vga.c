@@ -122,10 +122,11 @@ static void vc_diag_putc(const struct diag *diag, char ch) {
 	vterm_video_putc(&vc_vga_video.video, ch);
 }
 
-const struct diag_ops vc_video_diag_ops = {
+static const struct diag_ops vc_video_diag_ops = {
 	.init = vc_diag_init,
 	.putc = vc_diag_putc,
 };
+
 const struct vc_video_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
 	.diag = {
 		.ops = &vc_video_diag_ops,

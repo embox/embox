@@ -45,7 +45,7 @@ static int bpi_diag_kbhit(const struct diag *diag) {
 	return REG_LOAD(&UART_LSR) & LSR_FLAG_DR;
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.putc  = bpi_diag_putc,
 		.getc  = bpi_diag_getc,
 		.kbhit = bpi_diag_kbhit,

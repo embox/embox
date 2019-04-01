@@ -100,13 +100,3 @@ int diag_setup(const struct diag *diag) {
 
 	return 0;
 }
-#if 0
-void iodev_setup(const struct iodev_ops *new_iodev) {
-	cdiag = new_iodev;
-}
-
-struct iodev_ops const*iodev_current(void) {
-	return cdiag;
-}
-#endif
-

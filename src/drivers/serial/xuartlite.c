@@ -78,7 +78,7 @@ static int xuartlite_diag_has_symbol(const struct diag *diag) {
 	return !is_rx_empty();
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.putc = xuartlite_diag_putc,
 		.getc = xuartlite_diag_getc,
 		.kbhit = xuartlite_diag_has_symbol,

@@ -381,7 +381,7 @@ static void fbcon_diag_putc(const struct diag *diag, char ch) {
 	vterm_putc(&fbcon_current->vterm, ch);
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 	.putc = fbcon_diag_putc,
 );
 

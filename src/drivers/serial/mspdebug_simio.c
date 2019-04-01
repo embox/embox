@@ -27,7 +27,7 @@ static int mspdebug_diag_kbhit(const struct diag *diag) {
 	return 0;
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.init = mspdebug_diag_init,
 		.putc = mspdebug_diag_putc,
 		.getc = mspdebug_diag_getc,

@@ -25,7 +25,7 @@ static char um_diag_getc(const struct diag *diag) {
 	return ch;
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.putc = um_diag_putc,
 		.getc = um_diag_getc,
 );

@@ -94,7 +94,7 @@ static int raspi_diag_hasrx(const struct diag *diag) {
 	return !(REG_LOAD(UART0_FR) & (1 << 4));
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.init = raspi_diag_setup,
 		.putc = raspi_diag_putc,
 		.getc = raspi_diag_getc,

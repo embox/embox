@@ -151,10 +151,4 @@ static const struct uart_params uart_defparams = {
 		.irq = false,
 };
 
-const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &efm32_uart0,
-		.params = &uart_defparams,
-};
+DIAG_SERIAL_DEF(&efm32_uart0, &uart_defparams);

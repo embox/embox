@@ -94,7 +94,7 @@ static int msp430usci_diag_kbhit(const struct diag *diag) {
 	return (REG_LOAD(IFG2) & RXIFG);
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.init = msp430usci_diag_init,
 		.putc = msp430usci_diag_putc,
 		.getc = msp430usci_diag_getc,

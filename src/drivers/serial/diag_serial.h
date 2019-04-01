@@ -24,5 +24,13 @@ struct uart_diag {
 
 extern const struct diag_ops uart_diag_ops;
 
-#endif /* DRIVERS_SERIAL_DIAG_H_ */
+#define DIAG_SERIAL_DEF(uart_struct, uart_params) \
+	const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = { \
+		.diag = { \
+			.ops = &uart_diag_ops, \
+		}, \
+		.uart = uart_struct, \
+		.params = uart_params \
+	};
 
+#endif /* DRIVERS_SERIAL_DIAG_H_ */
