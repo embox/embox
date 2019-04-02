@@ -11,6 +11,7 @@
 #include <fcntl.h>
 
 #include <stdio.h>
+#include <assert.h>
 #include <string.h>
 #include <signal.h>
 #include <sys/select.h>
@@ -63,6 +64,7 @@
 //TODO is not posix. Must be posix_openpt() and friends
 extern int ppty(int pptyfds[2]);
 
+static int telnet_fix_crnul(unsigned char *buf, int len);
 
 static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
 	unsigned char cmd[3];
@@ -73,49 +75,104 @@ static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
 	write(sock, cmd, 3);
 }
 
-/* Skip management session */
-static void ignore_telnet_options(int sock, int pptyfd) {
-	unsigned char ch, op_type, param;
+/* Handle telnet options. Returns bytes handled. */
+static size_t handle_telnet_options(const unsigned char *buf, size_t len,
+		int sock) {
+	unsigned char *p;
+	unsigned char op_type;
+	unsigned char op_param;
+	size_t n = 0;
 
-	read(sock, &ch, 1);
-	while ((ch & (1 << 7)) && (ch != T_IAC)) {
-		read(sock, &ch, 1);
+	if (len == 0) {
+		return 0;
 	}
+
+	p = (unsigned char *) buf;
 
 	while (1) {
-		if (ch == T_IAC) {
-			read(sock, &op_type, 1);
+		if (*p++ != T_IAC || n++ >= len) {
+			return min(n, len);
+		}
 
-			if (op_type == T_WILL || op_type == T_DO || op_type == T_WONT || op_type == T_DONT) {
-				read(sock, &param, 1);
-			}
+		op_type = *p++;
+		n++;
 
-			if (op_type == T_WILL) {
-				if (param == O_GO_AHEAD) {
-					telnet_cmd(sock, T_DO, param);
-				} else {
-					telnet_cmd(sock, T_DONT, param);
-				}
-			} else if (op_type == T_DO) {
-				if ((param == O_GO_AHEAD) || (param == O_ECHO)) {
-					telnet_cmd(sock, T_WILL, param);
-				} else {
-					telnet_cmd(sock, T_WONT, param);
-				}
+		if (op_type == T_WILL || op_type == T_DO ||
+				op_type == T_WONT || op_type == T_DONT) {
+			op_param = *p++;
+			n++;
+		}
+
+		if (n > len) {
+			/* XXX End of packet. It means, probably, it's something wrong
+			 * with telnet options, e.g. only part of options arrived
+			 * in this packet. So just return @len. */
+			return len;
+		}
+
+		if (op_type == T_WILL) {
+			if (op_param == O_GO_AHEAD) {
+				telnet_cmd(sock, T_DO, op_param);
 			} else {
-				/* Currently do nothing, probably it's an answer for our request */
+				telnet_cmd(sock, T_DONT, op_param);
+			}
+		} else if (op_type == T_DO) {
+			if ((op_param == O_GO_AHEAD) || (op_param == O_ECHO)) {
+				telnet_cmd(sock, T_WILL, op_param);
+			} else {
+				telnet_cmd(sock, T_WONT, op_param);
 			}
 		} else {
-			/* Get this symbol to shell, it belongs to usual traffic */
-			write(pptyfd, &ch, 1);
-			return;
-		}
-
-		/* We use here nonblock socket */
-		if (read(sock, &ch, 1) <= 0) {
-			return;
+			/* Currently do nothing, probably it's an answer for our request */
 		}
 	}
+	return 0;
+}
+
+/* Process raw client data from @data and save it back to original @data.
+ *
+ * Client data can contain not only client data, but also telnet options.
+ * Example of packets:
+ *  - |***client_data***telnet_options***|
+ *  - |***telnet_options***client_data***|
+ *  - |***client_data***telnet_options***client_data***|
+ */
+static size_t handle_client_data(unsigned char *data, size_t len,
+		int sock, int pptyfd) {
+	unsigned char *p;
+	unsigned char *out;
+	unsigned char *client_start; /* Start of client bytes */
+	size_t client_n; /* Number of client bytes */
+	size_t ops_n; /* Number of telnet options bytes */
+
+	p = data;
+	out = data;
+
+	while (len) {
+		/* Get client data till the next telnet options */
+		client_start = p;
+		client_n = 0;
+		while ((*p != T_IAC) && len) {
+			p++;
+			client_n++;
+			len--;
+		}
+		/* Process client data */
+		if (client_n > 0) {
+			client_n = telnet_fix_crnul(client_start, client_n);
+			memcpy(out, client_start, client_n);
+			out += client_n;
+		}
+
+		/* Precess telnet options till the next client data */
+		assert((*p == T_IAC) || (len == 0));
+		ops_n = handle_telnet_options(p, len, sock);
+		len -= ops_n;
+		p += ops_n;
+	}
+
+	/* Return size of client data copied */
+	return (out - data);
 }
 
 static int utmp_login(short ut_type, const char *host) {
@@ -248,9 +305,6 @@ static void *telnetd_client_handler(struct client_args* client_args) {
 	telnet_cmd(client_args->sock, T_WILL, O_GO_AHEAD);
 	telnet_cmd(client_args->sock, T_WILL, O_ECHO);
 
-	/* handle options from client */
-	ignore_telnet_options(client_args->sock, client_args->pptyfd[0]);
-
 	fcntl(client_args->sock, F_SETFL, 0); /* O_NONBLOCK */
 #if TELNETD_USE_PTHEAD
 	msg[0] = msg[1] = client_args->pptyfd[1];
@@ -350,17 +404,15 @@ static void *telnetd_client_handler(struct client_args* client_args) {
 			}
 		}
 
-		if (FD_ISSET(client_args->sock, &readfds)){
+		if (FD_ISSET(client_args->sock, &readfds)) {
 			s = sbuff;
+
 			if ((sock_data_len = read(client_args->sock, s, XBUFF_LEN)) <= 0) {
 				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
 			}
-			sock_data_len = telnet_fix_crnul(s, sock_data_len);
 
-			/* TODO: Check if there's T_IAC in s and delete it and
-					 following commands, instead of dropping whole message */
-			if (memchr(s, T_IAC, sock_data_len) != NULL)
-				sock_data_len = 0;
+			sock_data_len = handle_client_data(s, sock_data_len,
+				client_args->sock, client_args->pptyfd[0]);
 
 			if (errno == ECONNREFUSED) {
 				goto out_kill;
