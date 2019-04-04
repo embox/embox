@@ -3,6 +3,7 @@ package embox.mem
 @DefaultImpl(heap_bm)
 abstract module heap_api {
 	option number heap_size = 524288
+	option number align = 4
 	depends embox.kernel.task.resource.task_heap
 }
 
@@ -43,9 +44,11 @@ module heap_bm extends heap_api {
 }
 
 module heap_simple extends heap_api {
+	option number log_level=1
 	source "heap_simple.c"
 
 	depends embox.mem.heap_place
+	depends embox.util.log
 }
 
 module sysmalloc_task_based extends sysmalloc_api {
@@ -59,7 +62,7 @@ module sysmalloc_task_based extends sysmalloc_api {
 
 @DefaultImpl(static_heap)
 abstract module heap_place {
-	
+
 }
 
 module static_heap extends heap_place {
