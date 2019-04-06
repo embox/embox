@@ -129,24 +129,12 @@ static int uart_fill_name(struct uart *dev) {
 	return 0;
 }
 
-extern const struct idesc_ops idesc_serial_ops;
-static struct device tty_device = {
-	.dev_iops = &idesc_serial_ops,
-};
-
-extern struct file_operations ttys_fops;
+extern int ttys_register(const char *name, void *dev_info);
 
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
-	struct dev_module *cdev;
-
-	cdev = pool_alloc(&uart_pool);
-	if (!cdev) {
-		return -ENOMEM;
-	}
 
 	if (uart_fill_name(uart)) {
-		pool_free(&uart_pool, cdev);
 		return -EBUSY;
 	}
 
@@ -156,12 +144,7 @@ int uart_register(struct uart *uart,
 		memset(&uart->params, 0, sizeof(struct uart_params));
 	}
 
-	memset(cdev, 0, sizeof(*cdev));
-	memcpy(cdev->name, uart->dev_name, sizeof(uart->dev_name));
-	cdev->dev_priv = uart;
-	cdev->device = &tty_device;
-	cdev->dev_file.f_ops = &ttys_fops;
-	char_dev_register(cdev);
+	ttys_register(uart->dev_name, uart);
 
 	return 0;
 }

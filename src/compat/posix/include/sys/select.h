@@ -10,7 +10,7 @@
 #define SYS_SELECT_H_
 
 #include <sys/types.h>
-
+#include <limits.h>
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS

@@ -123,7 +123,7 @@ module journal {
 	depends buffer_cache
 	depends embox.mem.slab
 
-	depends embox.util.DList
+	depends embox.util.dlist
 }
 
 module buffer_cache {

@@ -25,9 +25,6 @@ SECTIONS {
 
 	.text : {
 		_start = .;
-		/* 0x01000000 */
-		*(.e2k_entry);
-
 		 _t_entry = .;
 		/* Interrupt handler */
 		*(.ttable_entry0)
@@ -39,6 +36,9 @@ SECTIONS {
 		*(.ttable_entry2)
 		. = _t_entry + 0x1800;
 		_t_entry_end = .;
+
+		*(.e2k_entry)
+		*(.cpu_idle)
 
 		/* text */
 	}

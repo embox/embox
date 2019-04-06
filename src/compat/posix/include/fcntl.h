@@ -71,6 +71,7 @@ extern int fcntl(int fd, int cmd, ...);
  * The result is unspecified if this flag is applied to a non-directory file.
  */
 #define O_SEARCH           0x4000
+#define O_PATH             O_SEARCH
 
 /* If path names a symbolic link, fail and set errno to [ELOOP] */
 #define O_NOFOLLOW         0x8000

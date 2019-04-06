@@ -322,6 +322,7 @@ static int imx6_receive(struct net_device *dev_id, struct fec_priv *priv) {
 			dcache_inval(desc, sizeof(struct fec_buf_desc));
 			if (!(desc->flags & FLAG_E)) {
 				log_debug("found frame %d, should be %d", i, priv->rbd_index);
+				priv->rbd_index = i;
 				break;
 			}
 		}
@@ -330,8 +331,6 @@ static int imx6_receive(struct net_device *dev_id, struct fec_priv *priv) {
 
 	while(!(desc->flags & FLAG_E)) {
 		log_debug("Receiving packet %d", priv->rbd_index);
-		desc = &_rx_desc_ring[priv->rbd_index];
-		dcache_inval(desc, sizeof(struct fec_buf_desc));
 
 		priv->rbd_index = (priv->rbd_index + 1) % RX_BUF_FRAMES;
 		dcache_flush(priv, sizeof(struct fec_priv));

@@ -1,5 +1,6 @@
 package platform.etnaviv.cmd
 
+@App
 @AutoCmd
 @Cmd(name = "etnaviv_2d_test",
 	help = "Draw simple 2D scene with Etnaviv GPU")
@@ -17,8 +18,10 @@ module etnaviv_2d_test {
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
 	depends platform.etnaviv.xml_headers
+	depends third_party.freedesktop.mesa.mesa_etnaviv
 }
 
+@App
 @AutoCmd
 @Cmd(name = "cube",
 	help = "Draw simple cube")
@@ -33,8 +36,10 @@ module cube {
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
 	depends third_party.lib.estransform
 	depends platform.etnaviv.xml_headers
+	depends third_party.freedesktop.mesa.mesa_etnaviv
 }
 
+@App
 @AutoCmd
 @Cmd(name = "hardcode_cube",
 	help = "Draw cube from pre-compiled buffer")
@@ -47,8 +52,10 @@ module hardcode_cube {
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
 	depends platform.etnaviv.xml_headers
+	depends third_party.freedesktop.mesa.mesa_etnaviv
 }
 
+@App
 @AutoCmd
 @Cmd(name = "tri",
 	help = "Draw triangle with purple background using gallium")
@@ -64,4 +71,47 @@ module tri {
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
 	depends third_party.lib.estransform
+	depends third_party.freedesktop.mesa.mesa_etnaviv
 }
+
+@App
+@AutoCmd
+@Cmd(name = "etnaviv_compiler",
+	help = "Draw triangle with purple background using gallium")
+@BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
+@Build(stage=2,script="true")
+module etnaviv_compiler {
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/auxiliary")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/drivers/etnaviv")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/")
+
+	source "etnaviv_compiler_cmdline.c"
+
+	depends third_party.freedesktop.mesa.libdrm_etnaviv
+	depends third_party.freedesktop.mesa.mesa_etnaviv
+}
+
+@App
+@AutoCmd
+@Cmd(name = "quad_tex",
+	help = "Draw quad-texangle with purple background using gallium")
+
+@BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
+@Build(stage=2,script="true")
+module quad_tex {
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/auxiliary")
+	source "quad_tex.c"
+
+	depends third_party.freedesktop.mesa.libdrm_etnaviv
+	depends third_party.freedesktop.mesa.mesa_etnaviv
+	depends third_party.lib.estransform
+}
+

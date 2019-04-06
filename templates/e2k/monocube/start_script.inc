@@ -10,3 +10,4 @@
 "export PWD=/",
 "export HOME=/",
 #endif
+/* It works: "ticker -c 10" */

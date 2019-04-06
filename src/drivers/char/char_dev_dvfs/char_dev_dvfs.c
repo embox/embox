@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include <mem/misc/pool.h>
 #include <util/array.h>
 #include <util/dlist.h>
 #include <util/indexator.h>
@@ -19,6 +20,9 @@
 
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
+#define IDESC_POOL_SIZE OPTION_GET(NUMBER, cdev_idesc_quantity)
+POOL_DEF(idesc_pool, struct idesc, IDESC_POOL_SIZE);
+
 static struct dev_module *devtab[MAX_DEV_QUANTITY];
 INDEX_DEF(char_dev_idx, 0, MAX_DEV_QUANTITY);
 
@@ -26,6 +30,16 @@ ARRAY_SPREAD_DEF(const struct dev_module, __char_device_registry);
 
 struct dev_module **get_cdev_tab(void) {
 	return &devtab[0];
+}
+
+int char_dev_init_all(void) {
+	struct dev_module *cdev;
+
+	array_spread_foreach_ptr(cdev, __char_device_registry) {
+		char_dev_register(cdev);
+	}
+
+	return 0;
 }
 
 int char_dev_register(struct dev_module *cdev) {
@@ -43,10 +57,6 @@ int char_dev_register(struct dev_module *cdev) {
 	devtab[cdev_id] = cdev;
 	cdev->dev_id = cdev_id;
 
-	if (cdev->dev_file.f_ops == NULL) {
-		cdev->dev_file.f_ops = &char_dev_fops;
-	}
-
 	return 0;
 }
 
@@ -63,25 +73,68 @@ int char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
 	return 0;
 }
 
+static void char_dev_idesc_close(struct idesc *idesc) {
+}
+
+static const struct idesc_ops idesc_char_dev_def_ops = {
+		.close = char_dev_idesc_close,
+		.fstat = char_dev_idesc_fstat,
+};
+
+struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
+	struct idesc *idesc;
+
+	idesc = pool_alloc(&idesc_pool);
+	if (idesc == NULL) {
+		log_error("Can't allocate char device");
+		return NULL;
+	}
+
+	if (cdev) {
+		idesc_init(idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
+	} else {
+		idesc_init(idesc, &idesc_char_dev_def_ops, S_IROTH | S_IWOTH);
+	}
+
+	return idesc;
+}
+
+#if 0
 static struct idesc *char_dev_open(struct inode *node, struct idesc *idesc) {
-	struct dev_module *devmod = node->i_data;
+	struct dev_module *cdev = node->i_data;
 
-	devmod->dev_file.f_inode = node;
+	if (!cdev) {
+		log_error("Can't open char device");
+		return NULL;
+	}
 
+	if (cdev->dev_open != NULL) {
+		idesc = cdev->open(dev_cdev, cdev->dev_priv);
+		return idesc;
+	}
+
+	idesc = pool_alloc(&cdev_idesc_pool);
+	if (idesc == NULL) {
+		log_error("Can't allocate char device");
+		return NULL;
+	}
+	
+	idesc_init(idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
+	return idesc;
+	
 	/* Perform device-specific initialization if neccessary.
 	 *
 	 * Generally it should be symmetrics with idesc_close(), but
 	 * idesc ops has no open(), so we need to "imitate" opening like that */
-	if (devmod->device && devmod->device->dev_dops && devmod->device->dev_dops->open) {
-		if (devmod->device->dev_dops->open(devmod, devmod->dev_priv)) {
+	/*
+	if (devmod->dev_open) {
+		if (devmod->dev_open(devmod, devmod->dev_priv)) {
 			log_error("Failed to open %s", devmod->name);
 			return NULL;
 		}
 	}
 
-	return &devmod->dev_file.f_idesc;
+	return ;
+	*/
 }
-
-struct file_operations char_dev_fops = {
-	.open = char_dev_open,
-};
+#endif

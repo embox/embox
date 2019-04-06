@@ -13,7 +13,7 @@
 
 struct usb_dev;
 struct usb_driver;
-struct kfile_operations;
+struct file_operations;
 struct usb_dev_desc;
 struct node;
 
@@ -25,7 +25,7 @@ struct usb_device_id {
 struct usb_driver {
 	int (*probe)(struct usb_driver *drv, struct usb_dev *dev, void **data);
 	void (*disconnect)(struct usb_dev *dev, void *data);
-	const struct kfile_operations *file_ops;
+	const struct file_operations *file_ops;
 	struct dlist_head drv_link;
 
 	struct usb_device_id *id_table;

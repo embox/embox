@@ -117,8 +117,7 @@ int etnaviv_gpu_get_param(struct etnaviv_gpu *gpu, uint32_t param, uint64_t *val
 #define etnaviv_field(val, field) \
 	(((val) & field##__MASK) >> field##__SHIFT)
 
-static void etnaviv_hw_specs(struct etnaviv_gpu *gpu)
-{
+static void etnaviv_hw_specs(struct etnaviv_gpu *gpu) {
 	if (gpu->identity.minor_features0 &
 	    chipMinorFeatures0_MORE_MINOR_FEATURES) {
 		uint32_t specs[4];
@@ -267,8 +266,7 @@ static void etnaviv_hw_specs(struct etnaviv_gpu *gpu)
 		gpu->identity.varyings_count -= 1;
 }
 
-static void etnaviv_hw_identify(struct etnaviv_gpu *gpu)
-{
+static void etnaviv_hw_identify(struct etnaviv_gpu *gpu) {
 	uint32_t chipIdentity;
 
 	chipIdentity = gpu_read(gpu, VIVS_HI_CHIP_IDENTITY);
@@ -379,15 +377,13 @@ static void etnaviv_hw_identify(struct etnaviv_gpu *gpu)
 	etnaviv_hw_specs(gpu);
 }
 
-static void etnaviv_gpu_load_clock(struct etnaviv_gpu *gpu, uint32_t clock)
-{
+static void etnaviv_gpu_load_clock(struct etnaviv_gpu *gpu, uint32_t clock) {
 	gpu_write(gpu, VIVS_HI_CLOCK_CONTROL, clock |
 		  VIVS_HI_CLOCK_CONTROL_FSCALE_CMD_LOAD);
 	gpu_write(gpu, VIVS_HI_CLOCK_CONTROL, clock);
 }
 
-static void etnaviv_gpu_update_clock(struct etnaviv_gpu *gpu)
-{
+static void etnaviv_gpu_update_clock(struct etnaviv_gpu *gpu) {
 	unsigned int fscale = 1 << (6 - 1);//gpu->freq_scale);
 	uint32_t clock = VIVS_HI_CLOCK_CONTROL_DISABLE_DEBUG_REGISTERS |
 	                 VIVS_HI_CLOCK_CONTROL_FSCALE_VAL(fscale);
@@ -395,8 +391,7 @@ static void etnaviv_gpu_update_clock(struct etnaviv_gpu *gpu)
 	etnaviv_gpu_load_clock(gpu, clock);
 }
 
-static int etnaviv_hw_reset(struct etnaviv_gpu *gpu)
-{
+static int etnaviv_hw_reset(struct etnaviv_gpu *gpu) {
 	uint32_t control, idle;
 	bool failed = true;
 
@@ -895,9 +890,7 @@ int etnaviv_gpu_wait_fence_interruptible(struct etnaviv_gpu *gpu,
 				fence, gpu->retired_fence,
 				gpu->completed_fence);
 			ret = -ETIMEDOUT;
-		} /* else if (ret != -ERESTARTSYS) {
-			ret = 0;
-		} */
+		}
 	}
 
 	return ret;

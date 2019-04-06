@@ -60,7 +60,7 @@ struct super_block_operations {
 	int           (*destroy_inode)(struct inode *inode);
 	int           (*write_inode)(struct inode *inode);
 	int           (*umount_begin)(struct super_block *sb);
-	struct idesc *(*open_idesc)(struct lookup *l);
+	struct idesc *(*open_idesc)(struct lookup *l, int __oflag);
 };
 
 struct inode {
@@ -192,7 +192,7 @@ struct lookup {
 extern struct dentry *dvfs_root(void);
 extern int dvfs_lookup(const char *path, struct lookup *lookup);
 extern int dvfs_remove(const char *path);
-struct idesc *dvfs_file_open_idesc(struct lookup *lookup);
+struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);
 extern int dvfs_close(struct file *desc);
 extern int dvfs_write(struct file *desc, char *buf, int count);
 extern int dvfs_read(struct file *desc, char *buf, int count);

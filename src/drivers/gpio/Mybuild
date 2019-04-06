@@ -1,37 +1,19 @@
 package embox.driver.gpio
 
-abstract module pins {
-	@IncludeExport(path="drivers")
+module core {
+	option number gpio_chips_count = 1
+	option number gpio_irqs_count = 4 /* Number of GPIO pins irq handlers */
+
+	/* User API */
+	@IncludeExport(path="drivers/gpio")
 	source "gpio.h"
+
+	/* Driver API */
+	@IncludeExport(path="drivers/gpio")
+	source "gpio_driver.h"
+
+	source "gpio.c"
 }
 
-abstract module api {
-	@IncludeExport(path="drivers")
-	source "gpio.h"
-}
-
-module at91_pins extends pins {
-	source "at91_pins.c"
-
-	depends pins_core
-	depends embox.kernel.irq
-}
-
-module pins_core {
-	source "pins.c"
-}
-
-module rdc_gpio extends api {
-	source "rdc_gpio.c", "rdc_gpio.h"
-
-}
-
-module stm32 extends api {
-	source "stm32_gpio.c", "stm32_gpio.h"
-}
-
-module omap3_gpio extends api {
-	source "omap3_gpio.c", "omap3_gpio.h"
-
-	depends embox.kernel.irq
-}
+/* Should be implemented by GPIO drivers */
+abstract module api {}

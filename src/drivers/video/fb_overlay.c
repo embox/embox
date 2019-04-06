@@ -23,6 +23,10 @@ void fb_overlay_init(struct fb_info *fbi, void *base) {
 	overlay_sw_base = base;
 }
 
+/**
+ * @brief Print character to framebuffer (x, y), where coords are used as
+ *        symbol coordinates, not pixels
+ */
 void fb_overlay_put_char(int x, int y, char ch) {
 	char const *data;
 	uint8_t *dest;
@@ -48,8 +52,22 @@ void fb_overlay_put_char(int x, int y, char ch) {
 	}
 }
 
+/**
+ * @brief Print message to fb starting at (x, y), coords are passed as
+ *        symbol numbers, not pixels
+ */
 void fb_overlay_put_string(int x, int y, char *str) {
 	while (*str) {
+		fb_overlay_put_char(x++, y, *str);
+		str++;
+	}
+}
+
+/**
+ * @brief Same as fb_overlay_put_string(), but stops on '\n'
+ */
+void fb_overlay_put_line(int x, int y, char *str) {
+	while (*str && *str != '\n') {
 		fb_overlay_put_char(x++, y, *str);
 		str++;
 	}

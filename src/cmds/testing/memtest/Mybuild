@@ -1,0 +1,37 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "memtest",
+     help = "Simple tool to measure memory performance",
+     man  = '''
+     	NAME
+		memtest -- simple test for memory performance
+	SYNOPSIS
+		memtest [-nh] [-l LENGTH]
+	DESCRIPTION
+		This command measures speed of memcpy() in RAM.
+
+		If called with -p flag, perform stress test for heap.
+	OPTIONS
+		-n Test non-cached memory
+		-l LENGTH Number of bytes to be operated (default 0x1000000 for memcpy() and 0x2000 for heap)
+		-r REPEAT Number of repeats (default 64 for memcpy() and 2048 for heap)
+		-p Run stress-test for heap (a.k.a. pyramid)
+		-q Maximum number of heap regions
+		-s Random seed
+	AUTHORS
+		Denis Deryugin <denis.deryugin@gmail.com>
+	''')
+
+module memtest {
+	option number max_heap_regions=4096
+
+	source "memtest.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.util.sleep
+
+	depends embox.mem.vmem
+}

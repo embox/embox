@@ -4,6 +4,6 @@ Right now we have no interface for this in Embox, but in future the following co
 can be used:
 
 	REG32_STORE(0x20e0194, 0x5);
-	gpio_settings(gpio_by_num(3), (0x1 << 30), GPIO_MODE_OUTPUT);
-	gpio_set_level(gpio_by_num(3), (0x1 << 30), 1); /* Turn on */
-	gpio_set_level(gpio_by_num(3), (0x1 << 30), 0); /* Turn off */
+	gpio_setup_mode(3, (0x1 << 30), GPIO_MODE_OUTPUT);
+	gpio_set(3, (0x1 << 30), 1); /* Turn on */
+	gpio_set(3, (0x1 << 30), 0); /* Turn off */

@@ -12,42 +12,26 @@
 #include <drivers/device.h>
 #include <fs/dvfs.h>
 #include <util/array.h>
-#include <util/dlist.h>
-#include <util/macro.h>
-#include <util/member.h>
 
-extern struct file_operations char_dev_fops;
-
-#define CHAR_DEV_DEF(chname, idesc_op, open_fn, priv) \
-	static struct dev_operations MACRO_GUARD(dev_ops) = { \
-		.open = open_fn, \
-	}; \
-	static struct device MACRO_GUARD(ch_ops) = { \
-		.dev_dops = &MACRO_GUARD(dev_ops), \
-		.dev_iops = idesc_op, \
-	}; \
+#define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv) \
 	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \
 	ARRAY_SPREAD_ADD(__char_device_registry, { \
-		.dev_file = { \
-			.f_ops = &char_dev_fops, \
-			.f_idesc = { \
-				.idesc_ops = idesc_op, \
-			}, \
-		}, \
-		.dev_id   = STATIC_DEVMOD_ID, \
-		.device   = &MACRO_GUARD(ch_ops), \
-		.name     = chname, \
-		.dev_priv = priv, \
-	})
+			.name = chname, \
+			.dev_priv = priv, \
+			.dev_iops = idesc_op, \
+			.dev_open = open_fn, \
+			.dev_close = close_fn, \
+			 })
 
+extern int char_dev_init_all(void);
 extern int char_dev_register(struct dev_module *cdev);
+extern int char_dev_idesc_fstat(struct idesc *idesc, void *buff);
+extern struct idesc *char_dev_idesc_create(struct dev_module *cdev);
 
 static inline struct dev_module *idesc_to_dev_module(struct idesc *desc) {
 	struct file *f = mcast_out(desc, struct file, f_idesc);
 
-	return mcast_out(f, struct dev_module, dev_file);
+	return f->f_inode->i_data;
 }
-
-extern int char_dev_idesc_fstat(struct idesc *idesc, void *buff);
 
 #endif /* CHAR_DEV_DVFS_H_ */

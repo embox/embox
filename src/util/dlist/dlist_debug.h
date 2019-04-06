@@ -52,6 +52,7 @@ static inline void __dlist_add(struct dlist_head *_new, struct dlist_head *next,
 	__dlist_debug_check(next);
 	_new->prev = prev;
 	_new->next = next;
+	_new->poison = ~(uintptr_t) _new;
 	next->prev = _new;
 	prev->next = _new;
 	__dlist_debug_check(_new);
@@ -109,6 +110,7 @@ static inline void dlist_add_next(struct dlist_head *_new,
 	* initialization */
 	// assert(__is_linked(list)); /* add to not initialized list */
 
+	__dlist_debug_check(list);
 	_new->list_id = list->list_id; /* mark item head as added to this list */
 
 	/* Real adding the element
@@ -119,7 +121,7 @@ static inline void dlist_add_next(struct dlist_head *_new,
 }
 
 /**
- * Implementation of the #dlist_add_next function
+ * Implementation of the #dlist_add_prev function
  * First of all it examine correct state of the item head and the list head.
  * List head must be in a list but item head not.
  * Then if state is correct it marks the _new item head as owned this list.
@@ -136,6 +138,7 @@ static inline void dlist_add_prev(struct dlist_head *_new,
 	 * initialization */
 	// assert(__is_linked(list)); /* add to not initialized list */
 
+	__dlist_debug_check(list);
 	_new->list_id = list->list_id; /* mark item head as added to this list */
 
 	/* Real adding the element
@@ -155,6 +158,7 @@ static inline void dlist_add_prev(struct dlist_head *_new,
 static inline void dlist_del(struct dlist_head *head) {
 	// assert(__is_linked(head)); /* we can't remove initialized element */
 
+	__dlist_debug_check(head);
 	/* close the list
 	 * the previous element refer to the next element and next element refer to
 	 * the previous */

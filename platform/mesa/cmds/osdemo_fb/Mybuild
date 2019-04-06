@@ -1,5 +1,6 @@
 package embox.cmd
 
+@App
 @AutoCmd
 @Cmd(name = "osdemo_fb",
 	help = "Adopted osdemo application from mesa_demo",
@@ -21,12 +22,13 @@ module osdemo_fb {
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include")
 	source "osdemo_fb.c"
 
-	depends embox.driver.video.fb_overlay
+	depends embox.lib.fps
 
 	depends third_party.freedesktop.mesa.mesa_osmesa
 	depends third_party.freedesktop.mesa.libglu_osmesa
 }
 
+@App
 @AutoCmd
 @Cmd(name = "osdemo_imx6",
 	help = "Adopted osdemo application from mesa_demo",
@@ -40,7 +42,6 @@ module osdemo_fb {
 		AUTHORS
 			Anton Bondarev
 	''')
-
 @BuildDepends(third_party.freedesktop.mesa.mesa_etnaviv)
 @BuildDepends(third_party.freedesktop.mesa.libglu_etnaviv)
 @Build(stage=2,script="true")
@@ -50,6 +51,7 @@ module osdemo_imx6 {
 	source "osdemo_fb.c"
 
 	depends embox.driver.video.fb_overlay
+	depends embox.lib.fps
 
 	depends third_party.freedesktop.mesa.mesa_etnaviv
 	depends third_party.freedesktop.mesa.libglu_etnaviv

@@ -1,0 +1,27 @@
+package embox.driver.i2c
+
+abstract module stm32_i2c {}
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module stm32_i2c_f4 extends stm32_i2c {
+	option number log_level=1
+
+	@IncludeExport(path="drivers/i2c", target_name="stm32_i2c_conf.h")
+	source "i2c_conf_f4.h"
+
+	source "stm32_i2c.c"
+
+	depends embox.driver.i2c
+	depends embox.driver.gpio.api
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+}
+
+@BuildDepends(stm32_i2c)
+module stm32_i2c1 {
+	source "stm32_i2c1.c"
+}
+
+@BuildDepends(stm32_i2c)
+module stm32_i2c2 {
+	source "stm32_i2c2.c"
+}

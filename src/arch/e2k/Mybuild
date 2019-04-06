@@ -3,12 +3,25 @@ package embox.arch.e2k
 abstract module cpu { }
 
 module arch {
+	option number cpu_count=2
+	option number log_level=0
+
 	source "entry.c"
 	source "kernel_entry.S"
 	source "e2k_interrupt.c"
 	source "e2k_syscall_handler.c"
 
-	depends embox.arch.e2k.locore
+	depends locore
+}
+
+module interrupt extends embox.arch.interrupt {
+	source "ipl_impl.h"
+	source "ipl_impl.c"
+}
+
+module context extends embox.arch.context {
+	option number log_level = 0
+	source "context.c", "context_switch.S", "context.h"
 }
 
 module x86_boot {

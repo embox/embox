@@ -1,0 +1,32 @@
+#!/usr/bin/expect
+
+source [file join [file dirname [info script]] framework/test_core.exp]
+
+namespace import autotest::*
+
+TEST_SUITE_SETUP
+
+TEST_CASE_DECLARE_FIXME {
+TEST_CASE_TARGET {Touch and rm on /dev/ should be rejected} {
+	set TELNET_PROMPT ":/#"
+
+	send "touch /dev/1.txt\r"
+	test_assert_regexp_equal "error" $TELNET_PROMPT
+	send "mv /dev/zero .\r"
+	test_assert_regexp_equal "error" $TELNET_PROMPT
+	send "rm /dev\r"
+	test_assert_regexp_equal "error" $TELNET_PROMPT
+
+	return 0
+}
+}
+
+TEST_CASE_TARGET {Is there /dev/ttyS0} {
+	set TELNET_PROMPT ":/#"
+
+	send "ls /dev/ttyS0\r"
+	test_assert_regexp_equal "/dev/ttyS0" $TELNET_PROMPT
+
+	return 0
+}
+

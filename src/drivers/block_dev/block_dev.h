@@ -25,7 +25,6 @@
 
 struct file_operations;
 typedef struct block_dev {
-	struct file_operations *dev_ops;
 	dev_t id;
 	char name[NAME_MAX + 1];
 	void *dev_vfs_info;

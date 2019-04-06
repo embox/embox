@@ -1,116 +1,137 @@
 /**
  * @file
- * @brief Pseudo-dynamic memory allocator.
+ * @brief Simple memory allocator
  *
  * @date 13.10.09
- * @author Nikolay Korotky
+ * @author Nikolay Korotky -- initial implementation
+ * @author Denis Deryugin -- rework
  */
-
 
 #include <string.h>
 #include <stdlib.h>
 #include <embox/unit.h>
 #include <mem/heap.h>
 #include <mem/page.h>
+#include <kernel/printk.h>
+#include <util/binalign.h>
+#include <util/log.h>
 
-static int has_initialized = 0;
-static char *managed_memory_start;
-static char *last_valid_address;
+static int simple_heap_intialized = 0;
+static void *heap_simple_start;
+static void *heap_simple_end;
 
 #define HEAP_SIZE OPTION_MODULE_GET(embox__mem__heap_api,NUMBER,heap_size)
+#define HEAP_ALIGN OPTION_MODULE_GET(embox__mem__heap_api,NUMBER,align)
 
 #define MEM_POOL_SIZE  (HEAP_SIZE / PAGE_SIZE())
 static void *mem_pool;
 
 struct mem_control_block {
 	int is_available;
-	size_t size;
+	size_t size; /* Length of memory chunk WITHOUT this structure
+	              * (which is located at the beginning of the chunk) */
 };
+
+#define MCB_SZ binalign_bound(sizeof(struct mem_control_block), HEAP_ALIGN)
 
 static int malloc_init(void) {
 	extern struct page_allocator *__heap_pgallocator;
 	struct mem_control_block *init_mcb;
 
 	mem_pool = page_alloc(__heap_pgallocator, MEM_POOL_SIZE);
-	if(NULL == mem_pool) {
+	if (NULL == mem_pool) {
 		return -1;
 	}
 
-	managed_memory_start = (void*) mem_pool;
-	last_valid_address   = managed_memory_start;
-	has_initialized      = 1;
+	if (!binalign_check_bound((uintptr_t) mem_pool, HEAP_ALIGN)) {
+		log_error("Page allocator is unaligned!");
+		page_free(__heap_pgallocator, mem_pool, MEM_POOL_SIZE);
+		return -1;
+	}
 
-	init_mcb = (struct mem_control_block *) managed_memory_start;
+	heap_simple_start = mem_pool;
+	heap_simple_end   = heap_simple_start + HEAP_SIZE;
+
+	simple_heap_intialized = 1;
+
+	init_mcb = (struct mem_control_block *) heap_simple_start;
 	init_mcb->is_available = 1;
-	init_mcb->size = sizeof(mem_pool) - sizeof(struct mem_control_block);
+	init_mcb->size = HEAP_SIZE - MCB_SZ;
 
 	return 0;
 }
 
 static void _mem_defrag(void) {
-	char *current_location, *next;
-	struct mem_control_block *current_location_mcb, *next_mcb;
-	current_location = managed_memory_start;
-	current_location_mcb = (struct mem_control_block *) current_location;
-	while (current_location_mcb->size) {
-		if (current_location_mcb->is_available == 1) {
-			next = current_location + current_location_mcb->size;
-			next_mcb = (struct mem_control_block *) next;
-			if (next_mcb->is_available == 1) {
-				current_location_mcb->size += next_mcb->size;
+	void *ptr;
+	struct mem_control_block *mcb, *next_mcb;
+
+	ptr = heap_simple_start;
+
+	while (ptr < heap_simple_end) {
+		mcb = (struct mem_control_block *) ptr;
+		if (mcb->is_available == 1) {
+			next_mcb = (struct mem_control_block *) (ptr + mcb->size + MCB_SZ);
+
+			if ((void *) next_mcb < (void *) heap_simple_end &&
+					next_mcb->is_available == 1) {
+				mcb->size += next_mcb->size + MCB_SZ;
 			}
 		}
-		current_location += current_location_mcb->size;
-		current_location_mcb = (struct mem_control_block *) current_location;
+
+		ptr += mcb->size + MCB_SZ;
 	}
 }
 
 void free(void *ptr) {
 	struct mem_control_block *mcb;
-	mcb = (void *)((char *) ptr - sizeof(struct mem_control_block));
+
+	mcb = (void *)((char *) ptr - MCB_SZ);
 	mcb->is_available = 1;
+
 	 _mem_defrag();
 	return;
 }
 
 void *malloc(size_t size) {
-	char *current_location;
-	struct mem_control_block *current_location_mcb;
-	char *memory_location = NULL;
+	void *ptr;
+	struct mem_control_block *mcb, *next_mcb;
 
-	if (size == 0)
+	if (size == 0) {
 		return NULL;
-
-	if (!has_initialized) {
-		if(-1 == malloc_init())
-			return NULL;
 	}
-	current_location = managed_memory_start;
-	size += sizeof(struct mem_control_block);
 
-	while (current_location != last_valid_address) {
-		current_location_mcb = (struct mem_control_block *) current_location;
-		if (current_location_mcb->is_available) {
-			if (current_location_mcb->size >= size) {
-				current_location_mcb->is_available = 0;
-				memory_location = current_location;
-				break;
+	if (!simple_heap_intialized) {
+		if (-1 == malloc_init()) {
+			log_error("Failed to initialize heap!\n");
+			return NULL;
+		}
+	}
+
+	ptr = heap_simple_start;
+	size = binalign_bound(size, HEAP_ALIGN);
+
+	while (ptr + MCB_SZ + size < heap_simple_end) {
+		mcb = ptr;
+
+		if (mcb->is_available && mcb->size >= size) {
+			mcb->is_available = 0;
+
+			if (mcb->size > size + MCB_SZ) {
+				next_mcb = ptr + size + MCB_SZ;
+
+				next_mcb->size = mcb->size - size - MCB_SZ;
+				next_mcb->is_available = 1;
+
+				mcb->size = size;
 			}
+
+			return ptr + MCB_SZ;
 		}
-		current_location += current_location_mcb->size;
+
+		ptr += mcb->size + MCB_SZ;
 	}
-	if (!memory_location) {
-		memory_location = last_valid_address;
-		last_valid_address += size;
-		if (last_valid_address > managed_memory_start + MEM_POOL_SIZE) {
-			return NULL;
-		}
-		current_location_mcb = (struct mem_control_block *) memory_location;
-		current_location_mcb->is_available = 0;
-		current_location_mcb->size	 = size;
-	}
-	memory_location += sizeof(struct mem_control_block);
-	return memory_location;
+
+	return 0;
 }
 
 void *calloc(size_t nmemb, size_t size) {
@@ -122,11 +143,14 @@ void *calloc(size_t nmemb, size_t size) {
 void *realloc(void *ptr, size_t size) {
 	struct mem_control_block *mcb;
 	char *tmp = malloc(size);
+
 	if (ptr == NULL) {
 		return tmp;
 	}
-	mcb = (void *) ((char *) ptr - sizeof(struct mem_control_block));
-	memcpy(tmp, ptr, mcb->size - sizeof(struct mem_control_block));
+
+	mcb = ptr - MCB_SZ;
+	memcpy(tmp, ptr, mcb->size);
 	free(ptr);
+
 	return tmp;
 }

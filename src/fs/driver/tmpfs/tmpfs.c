@@ -104,7 +104,7 @@ static int    tmpfs_close(struct file_desc *desc);
 static size_t tmpfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t tmpfs_write(struct file_desc *desc, void *buf, size_t size);
 
-static struct kfile_operations tmpfs_fop = {
+static struct file_operations tmpfs_fop = {
 	.open = tmpfs_open,
 	.close = tmpfs_close,
 	.read = tmpfs_read,

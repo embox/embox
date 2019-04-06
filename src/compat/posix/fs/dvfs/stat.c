@@ -16,7 +16,7 @@ int stat(const char *path, struct stat *buf) {
 	assert(path);
 	assert(buf);
 
-	fd = open(path, O_RDONLY); /* Actually, flag should be smth O_PATH */
+	fd = open(path, O_RDONLY | O_PATH); /* Actually, flag should be smth O_PATH */
 
 	if (fd == -1 && errno == EISDIR) {
 		/* Stub */

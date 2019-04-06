@@ -1,16 +1,18 @@
 package third_party.STLport
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/STLport/core/include/stlport")
-@BuildDepends(third_party.gcc.core)
-static module core {
+@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/STLport/libstlportg/include/stlport")
+@BuildDepends(embox.lib.libgcc)
+@BuildDepends(embox.lib.libsupcxx)
+static module libstlportg {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/embox-lib")
 	source "libstlportg.a"
 
 	depends embox.compat.posix.proc.atexit_api
-	@NoRuntime depends embox.mem.vmem_api // include sys/mman.h
+	@NoRuntime depends embox.mem.vmem_api /* include sys/mman.h */
 	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.compat.libc.all
-	@NoRuntime depends third_party.gcc.core // FIXME
+	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.lib.libgcc
 	@NoRuntime depends embox.compat.posix.pthread_key
 }

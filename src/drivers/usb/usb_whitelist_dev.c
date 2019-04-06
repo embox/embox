@@ -9,6 +9,9 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/uio.h>
 
 #include <fs/file_operation.h>
 #include <fs/file_desc.h>
@@ -187,21 +190,33 @@ static struct idesc *usb_whitelist_open(struct node *node, struct file_desc *fil
 	return &file_desc->idesc;
 }
 
-static int usb_whitelist_close(struct file_desc *desc) {
-	return 0;
+static void usb_whitelist_close(struct idesc *idesc) {
+
 }
 
-static size_t usb_whitelist_read(struct file_desc *desc, void *buf, size_t size) {
-	struct usb_whitelist_conf *wl_conf = &whitelist_conf;
-	int req_rules = min(size / sizeof(struct usb_whitelist_rule), wl_conf->rules_n);
-	size_t req_size =  req_rules * sizeof(struct usb_whitelist_rule);
+static ssize_t usb_whitelist_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+	struct usb_whitelist_conf *wl_conf;
+	int req_rules;
+	ssize_t req_size;
+	void *buf;
+	size_t nbyte;
+
+	assert(iov);
+	buf = iov->iov_base;
+	assert(cnt == 1);
+	nbyte = iov->iov_len;
+
+	wl_conf = &whitelist_conf;
+	req_rules = min(nbyte / sizeof(struct usb_whitelist_rule), wl_conf->rules_n);
+
+	req_size =  req_rules * sizeof(struct usb_whitelist_rule);
 
 	memcpy(buf, whitelist_conf.rules, req_size);
 
 	return req_size;
 }
 
-static int usb_whitelist_ioctl(struct file_desc *desc, int request, void *data) {
+static int usb_whitelist_ioctl(struct idesc *idesc, int request, void *data) {
 	struct usb_whitelist_conf *wl_conf = &whitelist_conf;
 	struct usb_whitelist_rule *wl_rule = NULL;
 	int rule_id;
@@ -231,11 +246,8 @@ static int usb_whitelist_ioctl(struct file_desc *desc, int request, void *data) 
 	return ret;
 }
 
-static const struct kfile_operations usb_whitelist_ops = {
+static const struct file_operations usb_whitelist_ops = {
 	.open  = usb_whitelist_open,
-	.ioctl = usb_whitelist_ioctl,
-	.read  = usb_whitelist_read,
-	.close = usb_whitelist_close,
 };
 
 static void usb_whitelist_parse_builtin(struct usb_whitelist_conf *wl_conf,
@@ -302,5 +314,16 @@ static int usb_whitelist_dev_init(void) {
 
 	usb_whitelist_parse_builtin(wl_conf, builtin_whitelist);
 
-	return char_dev_register(USB_WHITELIST_DEV_NAME, &usb_whitelist_ops);
+	/*
+	return char_dev_register(USB_WHITELIST_DEV_NAME, &usb_whitelist_ops, NULL);
+	*/
+	return 0;
 }
+
+static struct idesc_ops usb_whitelist_iops = {
+	.ioctl = usb_whitelist_ioctl,
+	.id_readv  = usb_whitelist_read,
+	.close = usb_whitelist_close,
+};
+
+CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, NULL, NULL, &usb_whitelist_iops, NULL);

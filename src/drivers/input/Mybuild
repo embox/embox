@@ -10,6 +10,6 @@ module core {
 	source "keymap.h"
 
 	depends embox.kernel.irq
-	depends embox.util.DList
+	depends embox.util.dlist
 	depends embox.kernel.lthread.lthread
 }

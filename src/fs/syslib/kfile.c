@@ -28,10 +28,12 @@
 
 extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
 
-struct file_desc *kopen(struct node *node, int flag) {
+extern struct idesc *char_dev_open(struct node *node, int flags);
+
+struct idesc *kopen(struct node *node, int flag) {
 	struct nas *nas;
 	struct file_desc *desc;
-	const struct kfile_operations *ops;
+	const struct file_operations *ops;
 	int ret;
 	struct idesc *idesc;
 
@@ -42,19 +44,24 @@ struct file_desc *kopen(struct node *node, int flag) {
 
 	nas = node->nas;
 	/* if we try open a file (not special) we must have the file system */
-	if (NULL == nas->fs ) {
+	if (NULL == nas->fs) {
 		SET_ERRNO(ENOSUPP);
 		return NULL;
 	}
 
-	if (node_is_file(node)) {
+	if (node_is_directory(node)) {
+		ops = nas->fs->file_op;
+	} else {
 		if (NULL == nas->fs->drv) {
 			SET_ERRNO(ENOSUPP);
 			return NULL;
 		}
-		ops = (struct kfile_operations *) nas->fs->drv->file_op;
-	} else {
-		ops = nas->fs->file_op;
+
+		if (!node_is_file(node)) {
+			return char_dev_open(node, flag);
+		}
+		
+		ops = nas->fs->drv->file_op;
 	}
 
 	if(ops == NULL) {
@@ -78,7 +85,7 @@ struct file_desc *kopen(struct node *node, int flag) {
 		goto out;
 	} else {
 		file_desc_destroy(desc);
-		return (struct file_desc *)idesc;
+		return idesc;
 	}
 
 free_out:
@@ -89,7 +96,7 @@ free_out:
 	}
 
 out:
-	return desc;
+	return &desc->idesc;
 }
 
 

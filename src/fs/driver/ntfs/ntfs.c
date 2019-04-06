@@ -845,7 +845,7 @@ static const struct fsop_desc ntfs_fsop = {
 	.truncate = embox_ntfs_truncate,
 };
 
-static struct kfile_operations ntfs_fop = {
+static struct file_operations ntfs_fop = {
 	.open = ntfs_open,
 	.close = ntfs_close,
 	.read = ntfs_read,

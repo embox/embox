@@ -11,12 +11,21 @@
 
 #include <asm/io.h>
 
-static inline uint32_t lapic_read(uint32_t reg) {
+static inline uint32_t lapic_read(uint64_t reg) {
 	return e2k_read32((void *) reg);
 }
 
-static inline void lapic_write(uint32_t reg, uint32_t value) {
+static inline void lapic_write(uint64_t reg, uint32_t value) {
 	e2k_write32(value, (void *) reg);
+}
+
+/* Get number of current IRQ number.
+ * I do not find the similar thing for x86, so make it
+ * E2K specific for now. */
+#define APIC_VECT   (0xFEE00000 + 0xff0)
+
+static inline int lapic_get_irq(void) {
+	return lapic_read(APIC_VECT) - 32;
 }
 
 #endif /* LAPIC_REGS_E2K_H_ */

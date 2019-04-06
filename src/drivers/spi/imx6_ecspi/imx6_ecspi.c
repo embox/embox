@@ -7,7 +7,7 @@
  */
 
 #include <drivers/common/memory.h>
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio.h>
 #include <drivers/spi.h>
 #include <embox/unit.h>
 #include <errno.h>
@@ -75,7 +75,6 @@ static struct periph_memory_desc imx6_ecspi_mem = {
 PERIPH_MEMORY_DEFINE(imx6_ecspi_mem);
 
 static void imx6_ecspi_set_cs(int cs, int state) {
-	struct gpio *gpio;
 	int gpio_n = 0;
 	int port = 0;
 
@@ -87,9 +86,8 @@ static void imx6_ecspi_set_cs(int cs, int state) {
 	gpio_n = imx6_ecspi_gpio_info[cs][0];
 	port   = imx6_ecspi_gpio_info[cs][1];
 
-	gpio = gpio_by_num(gpio_n);
-	gpio_settings(gpio, 1 << port, GPIO_MODE_OUTPUT);
-	gpio_set_level(gpio, 1 << port, state);
+	gpio_setup_mode(gpio_n, 1 << port, GPIO_MODE_OUTPUT);
+	gpio_set(gpio_n, 1 << port, state);
 }
 
 static uint8_t imx6_ecspi_transfer_byte(uint8_t val) {

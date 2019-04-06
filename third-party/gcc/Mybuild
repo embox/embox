@@ -2,7 +2,7 @@ package third_party.gcc
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/core/install/include")
-static module core {
+static module core extends embox.lib.libsupcxx {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libgcc.a", "libsupc++.a"
 

@@ -2,13 +2,13 @@
 package embox.driver.lcd
 
 module hd44780 {
-	option string control_port
+	option number control_port
 
 	option number reg_select_pin
 	option number rw_pin
 	option number clock_pin
 
-	option string data_port
+	option number data_port
 	option number data_pins_offset
 
 	option number line_n

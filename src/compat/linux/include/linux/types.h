@@ -45,7 +45,8 @@ typedef unsigned char 		u8_t;
 typedef unsigned short int 	u16_t;
 typedef unsigned long int 	u32_t;
 
-typedef uint32_t          dma_addr_t;
+typedef uint32_t dma_addr_t;
+typedef uint32_t phys_addr_t;
 
 #endif /* __ASSEMBLER__ */
 

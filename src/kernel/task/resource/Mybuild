@@ -20,12 +20,19 @@ module idesc_table {
 	@NoRuntime depends embox.compat.libc.assert
 }
 
-module mmap {
+@DefaultImpl(mmap_trivial)
+abstract module mmap { }
+
+module mmap_full extends mmap {
 	source "mmap.c"
 
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.mem.mmap_api
 	@NoRuntime depends embox.compat.libc.assert
+}
+
+module mmap_trivial extends mmap {
+	source "mmap_trivial.c"
 }
 
 module mmap_notify {
@@ -56,6 +63,8 @@ module security {
 }
 
 module sig_table {
+	option number sig_table_size=64
+
 	source "sig_table.c"
 
 	depends embox.kernel.task.task_resource

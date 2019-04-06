@@ -13,9 +13,11 @@ env:
   matrix:
     - TEMPLATE=arm/qemu
     - TEMPLATE=arm/stm32_f4
+    - TEMPLATE=arm/stm32f4cube
     - TEMPLATE=x86/qemu
     - TEMPLATE=x86/smp
     - TEMPLATE=x86/user_apps
+    - TEMPLATE=x86/qt-app
     - TEMPLATE=x86/test/lang
     - TEMPLATE=x86/test/fs
     - TEMPLATE=x86/test/net
@@ -53,7 +55,7 @@ script:
   - set -e # make this script fail as soon as any individual command fail
   - . ./scripts/docker/docker_rc.sh
   - dr make confload-"$TEMPLATE"
-  - travis_wait run dr 'make &> build.log; tail -c 3M build.log'
+  - run dr ./scripts/continuous/build.sh
   - run dr ./scripts/continuous/run.sh "$TEMPLATE"
 
 addons:

@@ -34,8 +34,12 @@
  * It shows which branch has higher probability.
  * See gcc documentation for __builtin_expect()
  */
+#ifndef likely
 #define likely(x)	(__builtin_constant_p(x) ? !!(x) :  __builtin_expect(!!(x), 1))
+#endif /* likely */
+#ifndef unlikely
 #define unlikely(x)	(__builtin_constant_p(x) ? !!(x) :  __builtin_expect(!!(x), 0))
+#endif /* unlikely */
 
 #if !defined(__STDC__) || !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199901L
 #define __barrier()

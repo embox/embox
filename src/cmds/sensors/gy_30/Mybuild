@@ -1,0 +1,9 @@
+package embox.cmd.sensors
+
+@AutoCmd
+@Cmd(name="gy_30", help="GY-30")
+module gy_30 {
+	source "gy_30.c"
+
+	depends embox.driver.sensors.gy_30
+}

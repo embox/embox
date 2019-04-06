@@ -12,25 +12,23 @@
 #include <util/err.h>
 #include <util/indexator.h>
 
+#include <drivers/device.h>
 #include <mem/misc/pool.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
 #include "idesc_serial.h"
-#include <fs/file_operation.h>
-#include <fs/node.h>
-//#include <fs/file_desc.h>
 #include <util/err.h>
 
-static struct idesc *uart_fsop_open(struct node *node, struct file_desc *file_desc, int flags)  {
+static struct idesc *uart_cdev_open(struct dev_module *cdev, void *flags) {
 	struct uart *uart;
 	struct idesc *idesc;
 	int res;
 
-	uart = uart_dev_lookup(node->name);
+	uart = uart_dev_lookup(cdev->name);
 	if (!uart) {
 		return err_ptr(ENOENT);
 	}
-	idesc = idesc_serial_create(uart, flags);
+	idesc = idesc_serial_create(uart, *((int *)flags));
 	if (err(idesc)) {
 		return idesc;
 	}
@@ -42,10 +40,21 @@ static struct idesc *uart_fsop_open(struct node *node, struct file_desc *file_de
 	return idesc;
 }
 
-const struct kfile_operations ttys_fops = {
-	.open = uart_fsop_open,
-};
+#define SERIAL_POOL_SIZE OPTION_GET(NUMBER, serial_quantity)
+POOL_DEF(cdev_serials_pool, struct dev_module, SERIAL_POOL_SIZE);
 
-int ttys_register(const char*name, void *dev_info) {
-	return char_dev_register(name, &ttys_fops);
+int ttys_register(const char *name, void *dev_info) {
+	struct dev_module *cdev;
+
+	cdev = pool_alloc(&cdev_serials_pool);
+	if (!cdev) {
+		return -ENOMEM;
+	}
+	memset(cdev, 0, sizeof(*cdev));
+	memcpy(cdev->name, name, sizeof(cdev->name));
+	cdev->dev_open = uart_cdev_open;
+	cdev->dev_iops = idesc_serial_get_ops();
+	cdev->dev_priv = dev_info;
+
+	return char_dev_register(cdev);
 }

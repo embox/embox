@@ -5,7 +5,7 @@ package third_party.qpid
 		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/lib")
 @BuildDepends(third_party.boost.core)
 @BuildDepends(third_party.e2fsprogs.core)
-@BuildDepends(third_party.STLport.core)
+@BuildDepends(third_party.STLport.libstlportg)
 /* NOTE this was static module, until some day I tried to connect to broker via tcp.
    TCPConnector class was missing, that registers tcp proto in static constructor of
    some artifical class. Since noone reference that, tcp was disabled.
@@ -32,7 +32,7 @@ module core {
 	@NoRuntime depends embox.net.lib.getifaddrs
 	@NoRuntime depends third_party.boost.core
 	@NoRuntime depends third_party.e2fsprogs.core
-	@NoRuntime depends third_party.STLport.core
+	@NoRuntime depends third_party.STLport.libstlportg
 	@NoRuntime depends embox.compat.posix.pthread_key
 	@NoRuntime depends embox.compat.posix.regex_trex
 	@NoRuntime depends embox.compat.posix.sys.mman.msync

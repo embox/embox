@@ -26,10 +26,6 @@ struct etnaviv_mmu;
 struct etnaviv_gem_object;
 struct etnaviv_gem_submit;
 
-struct etnaviv_file_private {
-	int dummy;
-};
-
 struct etnaviv_drm_private {
 	int num_gpus;
 	struct etnaviv_gpu *gpu[ETNA_MAX_PIPES];
@@ -38,61 +34,25 @@ struct etnaviv_drm_private {
 int etnaviv_ioctl_gem_submit(struct drm_device *dev, void *data,
 		struct drm_file *file);
 
-int etnaviv_gem_mmap(struct file *filp, struct vm_area_struct *vma);
-int etnaviv_gem_fault(struct vm_fault *vmf);
 int etnaviv_gem_mmap_offset(struct drm_gem_object *obj, uint64_t *offset);
-struct sg_table *etnaviv_gem_prime_get_sg_table(struct drm_gem_object *obj);
-void *etnaviv_gem_prime_vmap(struct drm_gem_object *obj);
-void etnaviv_gem_prime_vunmap(struct drm_gem_object *obj, void *vaddr);
-int etnaviv_gem_prime_mmap(struct drm_gem_object *obj,
-			   struct vm_area_struct *vma);
-struct drm_gem_object *etnaviv_gem_prime_import_sg_table(struct drm_device *dev,
-	struct dma_buf_attachment *attach, struct sg_table *sg);
-int etnaviv_gem_prime_pin(struct drm_gem_object *obj);
-void etnaviv_gem_prime_unpin(struct drm_gem_object *obj);
-void *etnaviv_gem_vmap(struct drm_gem_object *obj);
-int etnaviv_gem_cpu_prep(struct drm_gem_object *obj, uint32_t op,
-		struct timespec *timeout);
-int etnaviv_gem_cpu_fini(struct drm_gem_object *obj);
-void etnaviv_gem_free_object(struct drm_gem_object *obj);
 int etnaviv_gem_new_handle(struct drm_device *dev, struct drm_file *file,
 		uint32_t size, uint32_t flags, uint32_t *handle);
-struct drm_gem_object *etnaviv_gem_new_locked(struct drm_device *dev,
-		uint32_t size, uint32_t flags);
 struct drm_gem_object *etnaviv_gem_new(struct drm_device *dev,
 		uint32_t size, uint32_t flags);
-int etnaviv_gem_new_userptr(struct drm_device *dev, struct drm_file *file,
-	uintptr_t ptr, uint32_t size, uint32_t flags, uint32_t *handle);
 uint16_t etnaviv_buffer_init(struct etnaviv_gpu *gpu);
 uint16_t etnaviv_buffer_config_mmuv2(struct etnaviv_gpu *gpu, uint32_t mtlb_addr, uint32_t safe_addr);
-void etnaviv_buffer_end(struct etnaviv_gpu *gpu);
 void etnaviv_buffer_queue(struct etnaviv_gpu *gpu, unsigned int event,
 	struct etnaviv_cmdbuf *cmdbuf);
-void etnaviv_validate_init(void);
 bool etnaviv_cmd_validate_one(struct etnaviv_gpu *gpu,
 	uint32_t *stream, unsigned int size,
 	struct drm_etnaviv_gem_submit_reloc *relocs, unsigned int reloc_size);
-
-#ifdef CONFIG_DEBUG_FS
-void etnaviv_gem_describe_objects(struct etnaviv_drm_private *priv,
-	struct seq_file *m);
-#endif
-
-void *etnaviv_ioremap(struct platform_device *pdev, const char *name,
-		const char *dbgname);
-void etnaviv_writel(uint32_t data, void __iomem *addr);
-uint32_t etnaviv_readl(const void __iomem *addr);
-
-#define DBG(fmt, ...) DRM_DEBUG(fmt"\n", ##__VA_ARGS__)
-#define VERB(fmt, ...) if (0) DRM_DEBUG(fmt"\n", ##__VA_ARGS__)
 
 /*
  * Return the storage size of a structure with a variable length array.
  * The array is nelem elements of elem_size, where the base structure
  * is defined by base.  If the size overflows size_t, return zero.
  */
-static inline size_t size_vstruct(size_t nelem, size_t elem_size, size_t base)
-{
+static inline size_t size_vstruct(size_t nelem, size_t elem_size, size_t base) {
 	if (elem_size && nelem > (SIZE_MAX - base) / elem_size)
 		return 0;
 	return base + nelem * elem_size;

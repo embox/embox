@@ -36,27 +36,19 @@ extern void dcache_flush(const void *p, size_t size);
 
 static struct etnaviv_gem_submit *submit_create(struct drm_device *dev,
 		struct etnaviv_gpu *gpu, size_t nr) {
-	struct etnaviv_gem_submit *submit;
-	size_t sz = size_vstruct(nr, sizeof(submit->bos[0]), sizeof(*submit));
+	/* In current implementation we process single gem_submit
+	 * at any time, so just return static structure instead of malloc */
+	static struct etnaviv_gem_submit submit;
+	memset(&submit, 0, sizeof(submit));
+	submit.dev = dev;
+	submit.gpu = gpu;
 
-	submit = kmalloc(sz, GFP_TEMPORARY | __GFP_NOWARN | __GFP_NORETRY);
-	if (submit) {
-		submit->dev = dev;
-		submit->gpu = gpu;
-
-		/* initially, until copy_from_user() and bo lookup succeeds: */
-		submit->nr_bos = 0;
-	} else {
-		log_error("failed to kmalloc()");
-	}
-
-	return submit;
+	return &submit;
 }
 
 static int submit_lookup_objects(struct etnaviv_gem_submit *submit,
 	struct drm_file *file, struct drm_etnaviv_gem_submit_bo *submit_bos,
-	unsigned nr_bos)
-{
+	unsigned nr_bos) {
 	struct drm_etnaviv_gem_submit_bo *bo;
 	unsigned i;
 	int ret = 0;

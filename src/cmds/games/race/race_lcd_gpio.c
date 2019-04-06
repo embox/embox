@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <drivers/gpio.h>
+#include <drivers/gpio/gpio.h>
 #include <drivers/lcd/lcd.h>
 
 #include "race.h"
@@ -42,6 +42,6 @@ void race_print_score(const int score) {
 }
 
 int race_is_car_moved(void) {
-	gpio_settings(GPIO_A, 0xff << 0, GPIO_MODE_INPUT);
-	return gpio_get_level(GPIO_A, 0xff << 0) & 0x01;
+	gpio_setup_mode(GPIO_PORT_A, 0xff << 0, GPIO_MODE_INPUT);
+	return gpio_get(GPIO_PORT_A, 0xff << 0) & 0x01;
 }

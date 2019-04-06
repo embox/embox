@@ -169,6 +169,13 @@ extern void abort(void);
 #define EXIT_SUCCESS 0
 extern void _NORETURN exit(int status);
 
+#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 ))
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wshadow"
+#endif /* __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 )) */
+#endif /*__GNUC__ */
 /**
  * Returns the absolute value of an argument. If the argument is not negative,
  * the argument is returned. If the argument is negative, the negation of the
@@ -178,9 +185,15 @@ extern void _NORETURN exit(int status);
  *
  * @return the absolute value of the argument
  */
-static inline int abs(int x) { return x < 0 ? -x : x; } // TODO move from here
+static inline int abs(int x) { return x < 0 ? -x : x; }
 static inline long labs(long x) { return x < 0 ? -x : x; }
+#ifdef __GNUC__
+#if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 ))
 
+#pragma GCC diagnostic pop
+
+#endif /* __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 )) */
+#endif /*__GNUC__ */
 
 extern char * getenv(const char *name);
 extern int putenv(char *string);

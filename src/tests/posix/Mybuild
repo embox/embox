@@ -126,3 +126,9 @@ module waitpid_test {
 	depends embox.compat.posix.proc.waitpid
 }
 
+module fnmatch_test {
+	source "fnmatch_test.c"
+
+	depends embox.compat.posix.fnmatch
+}
+
