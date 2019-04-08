@@ -18,7 +18,7 @@
 #include "idesc_serial.h"
 #include <fs/dvfs.h>
 
-static struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
+struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
 	struct idesc *idesc;
 	struct file *f;
 	int res;
