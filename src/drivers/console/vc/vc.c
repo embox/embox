@@ -73,7 +73,7 @@ static const struct idesc_ops idesc_vc_ops = {
 	.fstat     = char_dev_idesc_fstat,
 };
 
-static idesc *vc_open(struct dev_module *mod, void *dev_priv) {
+static struct idesc *vc_open(struct dev_module *mod, void *dev_priv) {
 	struct vterm_video *vc_vga;
 
 	vc_vga = vc_vga_init();
@@ -96,9 +96,11 @@ static int vc_init(void) {
 		return -ENOMEM;
 	}
 	memset(vc_dev, 0, sizeof(*vc_dev));
-	vc_dev->name = VC_DEV_NAME;
+	strncpy(vc_dev->name, VC_DEV_NAME, sizeof(vc_dev->name));
+	vc_dev->name[sizeof(vc_dev->name) - 1] = '\0';
+
 	vc_dev->dev_iops = &idesc_vc_ops;
 	vc_dev->dev_open = vc_open;
 
-	return char_dev_register(&vc_dev);
+	return char_dev_register(vc_dev);
 }

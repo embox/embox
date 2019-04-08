@@ -20,7 +20,7 @@ static void nxt_lcd_diag_putc(const struct diag *diag, char ch) {
 	display_char(ch);
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.init = nxt_lcd_diag_init,
 		.putc = nxt_lcd_diag_putc,
 );

@@ -32,6 +32,6 @@ static void diag_mem_putc(const struct diag *diag, char ch) {
 	diag_buf[diag_buf_head] = '\0';
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 	.putc = diag_mem_putc,
 );

@@ -57,7 +57,7 @@ static void at91uart_diag_putc(const struct diag *diag, char ch) {
 	REG_STORE(AT91C_US0_THR, (unsigned long) ch);
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.init = at91uart_diag_init,
 		.putc = at91uart_diag_putc,
 		.getc = at91uart_diag_getc,
