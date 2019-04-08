@@ -1,26 +1,24 @@
 package embox.cmd.fs
 
 @AutoCmd
-@Cmd(name = "jffs2",
+@Cmd(name = "mkflashemu",
 	help = "make emulation bdev as flash device",
 	man = '''
 		NAME
-			jffs2 - create a flash block device
+			mkflashemu - create a flash block device
 		SYNOPSIS
-			jffs2 [-h] NAME DEV
+			mkflashemu [-h] [[-n BLOCKS] [-b BLOCK_SIZE] dev_name]
 		DESCRIPTION
-			jffs2 is used to create a pseudo flash device DEV, based on
+			mkflashemu is used to create a pseudo flash device DEV, based on
 			block device named NAME
 		AUTHORS
 			Andrey Gazukin
 	''')
-module jffs2 {
-	source "jffs2.c"
+module mkflashemu {
+	source "mkflashemu.c"
 
 	depends embox.driver.flash.emulator
 	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
-	depends embox.fs.core
-	depends embox.driver.flash.core
 	depends embox.framework.LibFramework
 }
