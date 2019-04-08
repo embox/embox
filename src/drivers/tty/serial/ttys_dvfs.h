@@ -19,7 +19,9 @@ struct tty_uart {
 	struct uart *uart;
 };
 
+extern struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv);
+
 #define TTYS_DEF(name, uart) \
-		CHAR_DEV_DEF(name, NULL, NULL, NULL, uart)
+		CHAR_DEV_DEF(name, uart_cdev_open, NULL, NULL, uart)
 
 #endif /* TTYS_H_ */
