@@ -76,6 +76,7 @@ module static_heap extends heap_place {
 	source "static_heap.c"
 
 	depends embox.mem.bitmask
+	depends embox.mem.heap_api
 }
 
 module static_heap2 {
