@@ -76,4 +76,14 @@ extern uint8_t USART_TX_AF(void *usart_base);
 extern GPIO_TypeDef *USART_RX_GPIO_PORT(void *usart_base);
 extern GPIO_TypeDef *USART_TX_GPIO_PORT(void *usart_base);
 
+/* Look at stm32f4xx_hal_uart.h and find ORE */
+#define STM32_USART_CLEAR_ORE(uart) \
+	do { \
+		uint32_t __tmpreg; \
+		if (STM32_USART_FLAGS(uart) & USART_SR_ORE) \
+			/* Just read RX */ \
+			__tmpreg = STM32_USART_RXDATA(uart); \
+		(void) __tmpreg; \
+	} while (0)
+
 #endif /* SRC_DRIVERS_SERIAL_STM32_USART_STM32_USART_CONF_F4_H_ */
