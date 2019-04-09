@@ -24,7 +24,6 @@ struct context {
 	uint64_t cr1_hi;
 
 	/* Stacks */
-	uint64_t sbr;
 	uint64_t usd_lo;
 	uint64_t usd_hi;
 	uint64_t psp_lo;
@@ -43,13 +42,12 @@ struct context {
 #define E2K_CTX_CR0_HI  0x08
 #define E2K_CTX_CR1_LO  0x10
 #define E2K_CTX_CR1_HI  0x18
-#define E2K_CTX_SBR     0x20
-#define E2K_CTX_USD_LO  0x28
-#define E2K_CTX_USD_HI  0x30
-#define E2K_CTX_PSP_LO  0x38
-#define E2K_CTX_PSP_HI  0x40
-#define E2K_CTX_PCSP_LO 0x48
-#define E2K_CTX_PCSP_HI 0x50
-#define E2K_CTX_UPSR    0x58
+#define E2K_CTX_USD_LO  0x20
+#define E2K_CTX_USD_HI  0x28
+#define E2K_CTX_PSP_LO  0x30
+#define E2K_CTX_PSP_HI  0x38
+#define E2K_CTX_PCSP_LO 0x40
+#define E2K_CTX_PCSP_HI 0x48
+#define E2K_CTX_UPSR    0x50
 
 #endif /* ARCH_E2K_CONTEXT_H_ */
