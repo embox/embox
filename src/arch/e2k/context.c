@@ -55,9 +55,7 @@ static void e2k_calculate_stacks(struct context *ctx, uint64_t sp,
 	log_debug("  PCSP.base=0x%lx, PCSP.size=0x%lx\n",
 		PCSP_CALC_STACK_BASE(sp, size), pcsp_size);
 
-	ctx->sbr = USD_CALC_STACK_BASE(sp, size);
-
-	ctx->usd_lo |= ctx->sbr << USD_BASE;
+	ctx->usd_lo |= USD_CALC_STACK_BASE(sp, size) << USD_BASE;
 	usd_size = USD_CALC_STACK_SIZE(sp, size);
 	assert(usd_size);
 	ctx->usd_hi |= usd_size << USD_SIZE;
