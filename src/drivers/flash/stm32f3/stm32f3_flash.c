@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <util/math.h>
 
-#include <drivers/block_dev/flash/flash_dev.h>
+#include <drivers/flash/flash.h>
 #include <fs/node.h>
 #include <hal/reg.h>
 #include <hal/mem.h>
@@ -25,22 +25,23 @@
 
 extern char _flash_start, _flash_end;
 
+#define STM32F3_FLASH_START ((uint32_t) &_flash_start)
+#define STM32F3_FLASH_END   ((uint32_t) &_flash_end)
+
 static const struct flash_dev_drv stm32f3_flash_drv;
 const struct flash_dev stm32f3_flash = {
 	.bdev = NULL,
 	.drv = &stm32f3_flash_drv,
-	.flags = 0,
-	.start = (uint32_t) &_flash_start,
-	.end   = (uint32_t) &_flash_end,
 	.num_block_infos = 1,
-	.block_info = {
+	.size = STM32F3_FLASH_END - STM32F3_FLASH_START,
+	.block_info = { {
 		.block_size = 0x000800,
 		.blocks = 32
-	},
+	} },
 };
 
 static inline int stm32f3_flash_check_range(struct flash_dev *dev, unsigned long base, size_t len) {
-	return dev->start + base + len <= dev->end;
+	return STM32F3_FLASH_START + base + len <= STM32F3_FLASH_END;
 }
 
 static inline int stm32f3_flash_check_align(unsigned long base, size_t len) {
@@ -52,7 +53,7 @@ static inline int stm32f3_flash_check_block(struct flash_dev *dev, uint32_t bloc
 
 	n_block = 0;
 	for (i = 0; i < dev->num_block_infos; i ++) {
-		n_block += dev->block_info.blocks;
+		n_block += dev->block_info[i].blocks;
 	}
 
 	return block < n_block;
@@ -82,7 +83,7 @@ static int stm32f3_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 
 	erase_struct = (FLASH_EraseInitTypeDef) {
 		.TypeErase = TYPEERASE_PAGES,
-		.PageAddress = dev->start + block * STM32F3_FLASH_PAGE_SIZE,
+		.PageAddress = STM32F3_FLASH_START + block * STM32F3_FLASH_PAGE_SIZE,
 		.NbPages = 1,
 	};
 
@@ -96,11 +97,11 @@ static int stm32f3_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 
 
 static int stm32f3_flash_read(struct flash_dev *dev, uint32_t base, void* data, size_t len) {
-	size_t rlen = min(len, dev->end - dev->start + base);
+	size_t rlen = min(len, STM32F3_FLASH_END- STM32F3_FLASH_START + base);
 
 	/* read can be unaligned */
 
-	memcpy(data, (void *) dev->start + base, rlen);
+	memcpy(data, (void *) STM32F3_FLASH_START + base, rlen);
 
 	return rlen;
 }
@@ -133,7 +134,7 @@ static int stm32f3_flash_program(struct flash_dev *dev, uint32_t base, const voi
 	/* Write data halfword by halfword */
 	for (offset = 0; offset < len; offset += 2) {
 		if (HAL_OK != HAL_FLASH_Program(TYPEPROGRAM_HALFWORD,
-					dev->start + base + offset,
+					STM32F3_FLASH_START + base + offset,
 					*((uint32_t*) data + offset)))
 			return -1; /* TODO: set appropriate code */
 	}
@@ -146,7 +147,7 @@ static int stm32f3_flash_program(struct flash_dev *dev, uint32_t base, const voi
 
 static int stm32f3_flash_copy(struct flash_dev *dev, uint32_t base_dst,
 				uint32_t base_src, size_t len) {
-	return stm32f3_flash_program(dev, base_dst, (void *) dev->start + base_src, len);
+	return stm32f3_flash_program(dev, base_dst, (void *) STM32F3_FLASH_START + base_src, len);
 }
 
 static const struct flash_dev_drv stm32f3_flash_drv = {

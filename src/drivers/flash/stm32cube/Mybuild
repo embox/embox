@@ -16,7 +16,7 @@ module stm32f4cube {
 	source "stm32flash_conf.h"
 
 	depends third_party.bsp.stmf4cube.core
-	depends lib
+	depends core
 }
 
 @BuildDepends(third_party.bsp.stmf3cube.core)
@@ -35,5 +35,5 @@ module stm32f3cube {
 	source "stm32flash_conf.h"
 
 	depends third_party.bsp.stmf3cube.core
-	depends lib
+	depends core
 }

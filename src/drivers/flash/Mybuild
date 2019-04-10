@@ -1,23 +1,27 @@
 package embox.driver.flash
 
-module lib {
-	@IncludeExport(path="drivers/block_dev/flash")
-	source "flash.h"
-	@IncludeExport(path="drivers/block_dev/flash")
-	source "flash_dev.h"
-}
+@DefaultImpl(embox.driver.flash.flash_nofs)
+abstract module core {
+	option number dev_quantity = 4
+	option number block_info_max = 4
 
-module core {
 	source "flash.c"
 
+	@IncludeExport(path="drivers/flash")
+	source "flash.h"
+
+	depends embox.mem.pool
+	depends embox.util.indexator
+}
+
+module flash_fs extends core {
+	source "flash_fs.c"
+
+	depends embox.driver.block_api
+}
+
+module flash_nofs extends core {
 	option number dev_quantity=4
 
-	depends lib
-
-	depends embox.fs.node
-	depends embox.mem.page_api
-	depends embox.mem.pool
-	depends embox.driver.block
-	depends embox.mem.phymem
-	depends embox.util.indexator
+	source "flash_nofs.c"
 }

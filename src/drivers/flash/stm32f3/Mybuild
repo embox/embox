@@ -6,5 +6,5 @@ module stm32_f3 {
 	source "stm32f3_flash.lds.S"
 
 	depends third_party.bsp.st_f3.core
-	depends lib
+	depends core
 }

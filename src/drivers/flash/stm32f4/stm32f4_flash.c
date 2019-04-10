@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <util/math.h>
 
-#include <drivers/block_dev/flash/flash_dev.h>
+#include <drivers/flash/flash.h>
 #include <fs/node.h>
 #include <hal/reg.h>
 #include <hal/mem.h>
@@ -23,18 +23,19 @@
 #define STM32_FIRST_BLOCK_OFFSET 1
 #define STM32_ERR_MASK 0x1f3
 
+#define STM32F4_FLASH_START ((uint32_t) &_flash_start)
+#define STM32F4_FLASH_END   ((uint32_t) &_flash_end)
+
 static const struct flash_dev_drv stm32_flash_drv;
 const struct flash_dev stm32_flash = {
 	.bdev = NULL,
 	.drv = &stm32_flash_drv,
-	.flags = 0,
-	.start = 0x08004000,
-	.end   = 0x08010000,
 	.num_block_infos = 1,
-	.block_info = {
+	.size = STM32F4_FLASH_END - STM32F4_FLASH_START,
+	.block_info = { {
 		.block_size = 0x004000,
 		.blocks = 3
-	},
+	} },
 };
 
 static inline void stm32_flash_set_program_size(void) {
@@ -43,7 +44,7 @@ static inline void stm32_flash_set_program_size(void) {
 }
 
 static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long base, size_t len) {
-	return dev->start + base + len <= dev->end;
+	return STM32F4_FLASH_START + base + len <= STM32F4_FLASH_END;
 }
 
 static inline int stm32_flash_check_align(unsigned long base, size_t len) {
@@ -60,7 +61,7 @@ static inline int stm32_flash_check_block(struct flash_dev *dev, uint32_t block)
 
 	n_block = 0;
 	for (i = 0; i < dev->num_block_infos; i ++) {
-		n_block += dev->block_info.blocks;
+		n_block += dev->block_info[i].blocks;
 	}
 
 	return block < n_block;
@@ -105,11 +106,11 @@ static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 
 
 static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void* data, size_t len) {
-	size_t rlen = min(len, dev->end - dev->start + base);
+	size_t rlen = min(len, STM32F4_FLASH_END - STM32F4_FLASH_START + base);
 
 	/* read can be unaligned */
 
-	memcpy(data, (void *) dev->start + base, rlen);
+	memcpy(data, (void *) STM32F4_FLASH_START + base, rlen);
 
 	return rlen;
 }
@@ -140,7 +141,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 
 	sr = REG_LOAD(&FLASH->SR);
 	if (!(sr & STM32_ERR_MASK)) {
-		regcpy32((void *) dev->start + base, data, len >> 2);
+		regcpy32((void *) STM32F4_FLASH_START + base, data, len >> 2);
 		stm32_flash_wait();
 		err = 0;
 	} else {
@@ -155,7 +156,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 
 static int stm32_flash_copy(struct flash_dev *dev, uint32_t base_dst,
 				uint32_t base_src, size_t len) {
-	return stm32_flash_program(dev, base_dst, (void *) dev->start + base_src, len);
+	return stm32_flash_program(dev, base_dst, (void *) STM32F4_FLASH_START + base_src, len);
 }
 
 static const struct flash_dev_drv stm32_flash_drv = {

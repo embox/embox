@@ -16,7 +16,7 @@
 
 #include <net/inetdevice.h>
 
-#include <drivers/block_dev/flash/flash_dev.h>
+#include <drivers/flash/flash.h>
 
 #include "libleddrv.h"
 #include "led_names.h"
