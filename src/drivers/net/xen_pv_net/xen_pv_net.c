@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <stdlib.h>
 #include <embox/unit.h>
 #include <xenstore.h>
 #include <kernel/printk.h>
@@ -19,6 +20,11 @@
 #include <arpa/inet.h>
 #include <net/l2/ethernet.h>
 
+#include <xen/io/ring.h>
+#include <xen/xen.h>
+#include <xen/io/netif.h>
+#include <xen/grant_table.h>
+
 #define XS_MAX_KEY_LENGTH 		256
 #define XS_MAX_VALUE_LENGTH		1024
 #define XS_MAX_NAME_LENGTH		16
@@ -27,7 +33,69 @@
 #define XS_LS_NOT_RECURSIVE		0
 #define XS_LS_RECURSIVE			1
 
+char _text;
+
+// #define wmb() __asm__("dsb":::"memory");
+typedef uint32_t grant_ref_t;
+
+#define PAGE_SIZE				4096
+#define L1_PAGETABLE_SHIFT      12
+#define VIRT_START                 ((unsigned long)&_text)
+#define PFN_DOWN(x)				   ((x) >> L1_PAGETABLE_SHIFT)
+#define to_phys(x)                 ((unsigned long)(x)-VIRT_START)
+#define pfn_to_mfn(_pfn) 		   ((unsigned long)(_pfn))
+#define virt_to_pfn(_virt)         (PFN_DOWN(to_phys(_virt)))
+#define virt_to_mfn(_virt)         (pfn_to_mfn(virt_to_pfn(_virt)))
+
+#define NET_TX_RING_SIZE __CONST_RING_SIZE(netif_tx, PAGE_SIZE)
+#define NET_RX_RING_SIZE __CONST_RING_SIZE(netif_rx, PAGE_SIZE)
+
 EMBOX_UNIT_INIT(xen_net_init);
+
+static grant_entry_v1_t gnttab_table[16];
+grant_ref_t ref = 0; // it's ok
+
+char memory_pages[2][PAGE_SIZE];
+
+struct net_buffer {
+    void* page;
+    grant_ref_t gref;
+};
+
+struct netfront_dev {
+    domid_t dom;
+
+    unsigned short tx_freelist[NET_TX_RING_SIZE + 1];
+    // struct semaphore tx_sem;
+
+    struct net_buffer rx_buffers[NET_RX_RING_SIZE];
+    struct net_buffer tx_buffers[NET_TX_RING_SIZE];
+
+    struct netif_tx_front_ring tx;
+    struct netif_rx_front_ring rx;
+    grant_ref_t tx_ring_ref;
+    grant_ref_t rx_ring_ref;
+    evtchn_port_t evtchn;
+
+    char *nodename;
+    char *backend;
+    char *mac;
+
+    // xenbus_event_queue events;
+
+    void (*netif_rx)(unsigned char* data, int len, void* arg);
+    void *netif_rx_arg;
+};
+
+struct netfront_dev_list {
+    struct netfront_dev *dev;
+    unsigned char rawmac[6];
+    char *ip;
+
+    int refcount;
+
+    struct netfront_dev_list *next;
+};
 
 int xenstore_ls_val(char *ls_key, int flag) {
 	char ls_value[XS_MAX_VALUE_LENGTH];
@@ -178,13 +246,61 @@ static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
 	return IRQ_NONE;
 }
 
-
 static const struct net_driver xen_net_drv_ops = {
 	.xmit = xen_net_xmit,
 	.start = xen_net_start,
 	.stop = xen_net_stop,
 	.set_macaddr = xen_net_setmac,
 };
+
+grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly)
+{
+    gnttab_table[ref].frame = frame;
+    gnttab_table[ref].domid = domid;
+    // wmb();
+    readonly *= GTF_readonly;
+    gnttab_table[ref].flags = GTF_permit_access | readonly;
+
+    return ref++;
+}
+
+static struct netfront_dev *init_netfront(char *_nodename,
+                                		  void (*thenetif_rx)(unsigned char* data,
+                                                       		  int len, void* arg),
+                                   		  unsigned char rawmac[6],
+                                   		  char **ip)
+{
+
+	struct netif_tx_sring *txs;
+    struct netif_rx_sring *rxs;
+	
+    txs = (struct netif_tx_sring *) memory_pages[0];
+    rxs = (struct netif_rx_sring *) memory_pages[1];
+    memset(txs, 0, PAGE_SIZE);
+    memset(rxs, 0, PAGE_SIZE);
+
+    SHARED_RING_INIT(txs);
+    SHARED_RING_INIT(rxs);
+
+	char nodename[256];
+	static int netfrontends = 0;
+
+	snprintf(nodename, sizeof(nodename), "device/vif/%d", netfrontends);
+
+	struct netfront_dev *dev = NULL;
+	dev = malloc(sizeof(*dev));
+	memset(dev, 0, sizeof(*dev));
+	dev->nodename = strdup(nodename);
+
+    FRONT_RING_INIT(&dev->tx, txs, PAGE_SIZE);
+    FRONT_RING_INIT(&dev->rx, rxs, PAGE_SIZE);
+
+	dev->tx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(txs), 0);
+    dev->rx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(rxs), 0);
+	
+	return dev;
+}
+
 static int xen_net_init(void) {
 	xenstore_info();
 
@@ -203,5 +319,16 @@ static int xen_net_init(void) {
 		return res;
 	}
 
-	return inetdev_register_dev(nic);
+	char nodename[] = "device/vif/0";
+	struct netfront_dev *dev = init_netfront(nodename, NULL, NULL, NULL);
+	
+	printk("nodename: %s\n"
+		   "backend: %s\n"
+		   "mac %s\n",
+		   dev->nodename,
+		   dev->backend,
+		   dev->mac);
+		   
+	return 0;
+	// return inetdev_register_dev(nic);
 }
