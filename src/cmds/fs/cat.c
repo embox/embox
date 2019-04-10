@@ -56,6 +56,13 @@ int main(int argc, char **argv) {
 		}
 		new_line = (buff == '\n') ? 1 : 0;
 	}
+
+	if (buff != '\n') {
+		printf("\n");
+	}
+
+	fflush(stdout);
+
 	fclose(fd);
 	return 0;
 }
