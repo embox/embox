@@ -86,7 +86,7 @@ extern int block_dev_write(void *bdev, const char *buffer, size_t count, blkno_t
 extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
-extern int block_dev_named(char *name, struct indexator *indexator);
+extern int block_dev_named(const char *name, struct indexator *indexator);
 extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
 extern struct block_dev *block_dev_create_common(const char *path, void *driver, void *privdata);
