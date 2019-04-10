@@ -9,6 +9,7 @@ module dev {
 	depends embox.mem.sysmalloc_api
 	depends embox.util.dlist
 	depends embox.util.hashtable
+	depends embox.net.skbuff
 }
 
 module core {
