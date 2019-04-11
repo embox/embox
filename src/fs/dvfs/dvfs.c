@@ -86,7 +86,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		return -ENOMEM;
 	}
 	dentry_fill(sb, new_inode, lookup->item, lookup->parent);
-	strncpy(lookup->item->name, name, DENTRY_NAME_LEN);
+	strncpy(lookup->item->name, name, DENTRY_NAME_LEN - 1);
 	inode_fill(sb, new_inode, lookup->item);
 
 	lookup->item->flags |= flags;
@@ -537,7 +537,7 @@ static int iterate_cached(struct super_block *sb,
 		path_end++;
 	}
 	dvfs_pathname(next_inode, full_path + path_end, 0);
-	strncpy(next_dentry->name, full_path + path_end, DENTRY_NAME_LEN);
+	strncpy(next_dentry->name, full_path + path_end, DENTRY_NAME_LEN - 1);
 	lookup->item = next_dentry;
 
 	if ((cached = dvfs_cache_get(full_path, lookup))) {
