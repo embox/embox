@@ -38,3 +38,7 @@ struct node;
 struct idesc *char_dev_open(struct node *node, int flags) {
 	return NULL;
 }
+
+int char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
+	return 0;
+}
