@@ -6,6 +6,7 @@
  * @author Nikolay Korotky
  */
 
+#include <fs/file_operation.h>
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 

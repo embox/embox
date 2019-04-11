@@ -10,6 +10,7 @@
 #define MEM_MMAP_NOMMU_H_
 
 #include <stdint.h>
+#include <hal/mmu.h>
 #include <util/dlist.h>
 
 struct marea {
@@ -24,6 +25,7 @@ struct emmap {
 	struct marea *stack_marea;
 	struct marea *heap_marea;
 	void *brk;
+	mmu_ctx_t ctx;
 
 	struct dlist_head marea_list;
 };
