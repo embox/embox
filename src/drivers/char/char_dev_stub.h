@@ -14,7 +14,17 @@
 struct idesc;
 struct dev_module;
 
-#define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv)
+#ifdef __GNUC__
+	/* Avoid warning for unused parameters with ((unused)) attribute */
+	#define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv) \
+		__attribute__((unused)) static struct { \
+			void *o, *c, *i, *p; \
+		} unused##__LINE__ = { \
+			.o = open_fn, .c = close_fn, .i = idesc_op, .p = priv \
+		};
+#else
+	#define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv)
+#endif /* __GNUC__ */
 
 extern int char_dev_init_all(void);
 extern int char_dev_register(const struct dev_module *cdev);
