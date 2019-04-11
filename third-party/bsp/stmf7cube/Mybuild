@@ -9,6 +9,7 @@ static module core extends third_party.bsp.st_bsp_api {
 	option number eth_tx_packet_count = 5
 
 	@Cflags("-Wno-unused")
+	@Cflags("-Wno-attributes")
 	@DefineMacro("STM32F746xx")
 	@DefineMacro("HAL_ETH_MODULE_ENABLED")
 	@DefineMacro("HAL_PCD_MODULE_ENABLED")
