@@ -1,15 +1,11 @@
 package embox.driver.flash
 
 module emulator {
-	source "emulator.c"
-	option number dev_quantity=4
+	@IncludeExport(path="drivers/flash")
+	source "emulator.h"
 
-	depends embox.fs.node
-	depends embox.mem.page_api
+	source "emulator.c"
+
 	depends embox.mem.sysmalloc_api
-	depends embox.mem.pool
-	depends embox.driver.block
-	depends embox.mem.phymem
-	depends embox.util.indexator
-	depends embox.driver.flash.core
+	depends embox.driver.flash.flash_fs
 }

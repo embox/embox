@@ -11,5 +11,6 @@ module dfs {
 	option number minimum_file_size = 2048
 	option number inode_count = 16
 	option number max_name_len = 16
+	option number pages_max = 64536
 }
 

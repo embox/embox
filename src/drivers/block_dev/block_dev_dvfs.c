@@ -60,5 +60,7 @@ struct block_dev *block_dev_create(const char *path, void *driver, void *privdat
  * @return Negative error code or 0 if succeed
  */
 int block_dev_destroy(void *dev) {
+	struct dev_module *devmod = dev;
+	block_dev_free(devmod->dev_priv);
 	return dev_module_destroy(dev);
 }

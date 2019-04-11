@@ -16,5 +16,5 @@ module stm32_f4 {
 	source "stm32flash_conf.h"
 
 	depends third_party.bsp.st_f4.core
-	depends embox.driver.flash.lib
+	depends embox.driver.flash.core
 }

@@ -12,10 +12,11 @@
 #include <errno.h>
 #include <util/math.h>
 
-#include <drivers/block_dev/flash/flash_dev.h>
+#include <drivers/flash/flash.h>
 #include <hal/reg.h>
 #include <hal/mem.h>
 #include <kernel/printk.h>
+#include <util/log.h>
 
 #include <drivers/block_dev/flash/stm32flash.h>
 
@@ -24,22 +25,11 @@
 
 extern char _flash_start, _flash_end;
 
-static const struct flash_dev_drv stm32flash_drv;
-static const struct flash_dev stm32flash = {
-	.bdev = NULL,
-	.drv = &stm32flash_drv,
-	.flags = 0,
-	.start = (uint32_t) &_flash_start,
-	.end   = (uint32_t) &_flash_end,
-	.num_block_infos = 1,
-	.block_info = {
-		.block_size = STM32_FLASH_PAGE_SIZE,
-		.blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_PAGE_SIZE
-	},
-};
+#define STM32_FLASH_START ((uint32_t) &_flash_start)
+#define STM32_FLASH_END   ((uint32_t) &_flash_end)
 
 static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long base, size_t len) {
-	return dev->start + base + len <= dev->end;
+	return STM32_FLASH_START + base + len <= STM32_FLASH_END;
 }
 
 static inline int stm32_flash_check_align(unsigned long base, size_t len) {
@@ -52,7 +42,7 @@ static inline int stm32f3_flash_check_block(struct flash_dev *dev, uint32_t bloc
 
 	n_block = 0;
 	for (i = 0; i < dev->num_block_infos; i ++) {
-		n_block += dev->block_info.blocks;
+		n_block += dev->block_info[i].blocks;
 	}
 
 	return block < n_block;
@@ -98,11 +88,11 @@ static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 
 
 static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void* data, size_t len) {
-	size_t rlen = min(len, dev->end - dev->start + base);
+	size_t rlen = min(len, STM32_FLASH_END - STM32_FLASH_START + base);
 
 	/* read can be unaligned */
 
-	memcpy(data, (void *) dev->start + base, rlen);
+	memcpy(data, (void *) STM32_FLASH_START + base, rlen);
 
 	return rlen;
 }
@@ -133,7 +123,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 
 	sr = REG_LOAD(&FLASH->SR);
 	if (!(sr & STM32_ERR_MASK)) {
-		regcpy32((void *) dev->start + base, data, len >> 2);
+		regcpy32((void *) STM32_FLASH_START + base, data, len >> 2);
 		stm32_flash_wait();
 		err = 0;
 	} else {
@@ -148,7 +138,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void*
 
 static int stm32_flash_copy(struct flash_dev *dev, uint32_t base_dst,
 				uint32_t base_src, size_t len) {
-	return stm32_flash_program(dev, base_dst, (void *) dev->start + base_src, len);
+	return stm32_flash_program(dev, base_dst, (void *) STM32_FLASH_START + base_src, len);
 }
 
 static const struct flash_dev_drv stm32_flash_drv = {
@@ -157,3 +147,26 @@ static const struct flash_dev_drv stm32_flash_drv = {
 	.flash_program = stm32_flash_program,
 	.flash_copy = stm32_flash_copy,
 };
+
+static int stm32_f4_flash_init(void *arg) {
+	struct flash_dev *flash;
+
+	flash = flash_create("stm32flash", STM32_FLASH_FLASH_SIZE);
+
+	if (flash == NULL) {
+		log_error("Failed to create flash device!");
+		return -1;
+	}
+
+	flash->drv = &stm32_flash_drv;
+	flash->size = STM32_FLASH_END - STM32_FLASH_START;
+	flash->num_block_infos = 1;
+	flash->block_info[0] = (flash_block_info_t) {
+		.block_size = STM32_FLASH_PAGE_SIZE,
+		.blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_PAGE_SIZE
+	};
+
+	return 0;
+}
+
+FLASH_DEV_DEF("stm32flash", &stm32_flash_drv, stm32_f4_flash_init);

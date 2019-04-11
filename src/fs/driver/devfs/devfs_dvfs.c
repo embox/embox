@@ -80,6 +80,7 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 			if (bdevtab[i]) {
 				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, bdevtab[i]->dev_module, S_IFBLK);
+				next->length = bdevtab[i]->size;
 				return 0;
 			}
 		}
@@ -143,6 +144,7 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
 		if (bdevtab[i] && !strcmp(bdevtab[i]->name, name)) {
 			devfs_fill_inode(node, bdevtab[i]->dev_module, S_IFBLK);
+			node->length = bdevtab[i]->size;
 			return node;
 		}
 	}
@@ -177,6 +179,10 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 
 	assert(node->i_data);
 
+	if (S_ISBLK(node->flags)) {
+		return desc;
+	}
+
 	dev = node->i_data;
 	assert(dev->dev_open);
 
@@ -205,6 +211,7 @@ static int devfs_ioctl(struct file *desc, int request, void *data) {
 	return 0;
 }
 
+extern struct idesc_ops idesc_bdev_ops;
 /* Call device-specific open() handler */
 static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	struct inode  *i_no;
@@ -217,6 +224,15 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 
 	i_no = l->item->d_inode;
 	dev = i_no->i_data;
+
+	if (S_ISBLK(i_no->flags)) {
+		/* XXX */
+		desc = dvfs_file_open_idesc(l, __oflag);
+
+		desc->idesc_ops = &idesc_bdev_ops;
+
+		return desc;
+	}
 
 	assert(dev);
 	if(__oflag & O_PATH) {

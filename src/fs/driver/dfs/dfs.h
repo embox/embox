@@ -7,7 +7,7 @@
 #ifndef _DFS_H_
 #define _DFS_H_
 
-#include <drivers/block_dev/flash/flash_dev.h>
+#include <drivers/flash/flash.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 
