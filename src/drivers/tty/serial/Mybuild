@@ -17,6 +17,7 @@ module serial_dvfs {
 
 	depends tty
 	depends embox.driver.char_dev_dvfs
+	depends embox.driver.common
 }
 
 module serial_oldfs {
@@ -33,6 +34,7 @@ module serial_oldfs {
 
 	depends tty
 	depends embox.driver.char_dev_old
+	depends embox.driver.common
 }
 
 module serial_stub {
