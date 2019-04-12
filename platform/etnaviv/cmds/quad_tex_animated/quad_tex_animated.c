@@ -7,7 +7,7 @@
 #include <lib/fps.h>
 
 #define USE_TRACE 0
-#define WIDTH 480
+#define WIDTH 800
 #define HEIGHT 480
 #define NEAR 0
 #define FAR 1
@@ -301,13 +301,17 @@ static void draw(struct program *p) {
 
 	struct fb_info *mesa_fbi;
 	mesa_fbi = fb_lookup(0);
-	void *sw_base = fps_enable_swap(mesa_fbi);
+
+	void *sw_base;
 
 	struct pipe_transfer *transfer;
 	struct pipe_surface *surface = p->framebuffer.cbufs[0];
 	struct pipe_context *pipe = p->pipe;
 	struct pipe_resource *texture = surface->texture;
 	void *ptr = 0;
+
+	fps_enable_swap(mesa_fbi);
+
 	cso_set_blend(p->cso, &p->blend);
 	cso_set_depth_stencil_alpha(p->cso, &p->depthstencil);
 	cso_set_rasterizer(p->cso, &p->rasterizer);
@@ -361,6 +365,7 @@ static void draw(struct program *p) {
 				0, 0, surface->width, surface->height, &transfer);
 
 		uint16_t *p16;
+		sw_base = fps_current_frame(mesa_fbi);
 		for (int i = 0; i < HEIGHT; i++) {
 			p16 = ((void *)ptr) + (i * WIDTH * 2);
 			memcpy(sw_base + mesa_fbi->var.xres * i * 2, p16, WIDTH * 2);
