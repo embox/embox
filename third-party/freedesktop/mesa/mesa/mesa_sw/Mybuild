@@ -7,6 +7,8 @@ module  mesa_osmesa {
 	source "^BUILD/extbld/^MOD_PATH/install/libOSMesa.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libglapi.a"
 
+	depends embox.compat.posix.util.gettimeofday
+	depends embox.compat.posix.sched
 	depends embox.compat.posix.fs.rewinddir_api
 	depends embox.compat.posix.fs.chown_api
 	depends embox.compat.posix.fs.mknod_api

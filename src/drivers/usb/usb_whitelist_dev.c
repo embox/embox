@@ -187,7 +187,7 @@ int usb_whitelist_check(struct usb_dev *dev) {
 }
 
 /* XXX */
-#ifndef DEVICE_H_
+#ifndef _IDESC_DEV_
 struct idesc_dev {
 	struct idesc idesc;
 	void *dev;

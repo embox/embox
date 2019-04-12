@@ -80,7 +80,7 @@ static size_t handle_telnet_options(const unsigned char *buf, size_t len,
 		int sock) {
 	unsigned char *p;
 	unsigned char op_type;
-	unsigned char op_param;
+	unsigned char op_param = '\0';
 	size_t n = 0;
 
 	if (len == 0) {

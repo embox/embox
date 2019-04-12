@@ -98,14 +98,14 @@ int fb_devfs_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
 		return -ENOMEM;
 	}
 	memset(cdev, 0, sizeof(*cdev));
-	memcpy(cdev->name, "fb0", sizeof(cdev->name));
+	strncpy(cdev->name, "fb0", sizeof(cdev->name));
 	cdev->dev_iops = &fb_idesc_ops;
 
 	fb_device.fb_ops = ops;
 	fb_device.map_base = map_base;
 	fb_device.map_size = map_size;
 	fb_device.kfile_ops = &fb_device_ops;
-	
+
 	char_dev_register(cdev);
 	return 0;
 }
