@@ -83,8 +83,19 @@ static int mxcfb_set_par(struct fb_info *fbi, const struct fb_var_screeninfo *va
 	return 0;
 }
 
+static int mxcfb_set_base(struct fb_info *fbi, void *new_base) {
+	ipu_init_channel_buffer(mxc_fbi.ipu,
+					 mxc_fbi.ipu_ch, IPU_INPUT_BUFFER,
+					 IPU_PIX_FMT_RGB565,
+					 fbi->var.xres, fbi->var.yres,
+					 fbi->var.xres * fbi->var.bits_per_pixel / 8,
+					 (uint32_t) new_base);
+	return 0;
+}
+
 static struct fb_ops mxcfb_ops = {
-	.fb_set_var = mxcfb_set_par,
+	.fb_set_var  = mxcfb_set_par,
+	.fb_set_base = mxcfb_set_base,
 };
 
 extern void dcache_flush(const void *p, size_t size);

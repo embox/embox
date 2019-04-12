@@ -18,11 +18,11 @@
 
 #include <hal/reg.h>
 #include "ipu_priv.h"
-#include <kernel/printk.h>
+#include <util/log.h>
 
-#define dev_dbg(x, ...) printk(__VA_ARGS__)
-#define dev_warn(x, ...) printk(__VA_ARGS__)
-#define dev_err(x, ...) printk(__VA_ARGS__)
+#define dev_dbg(x, ...) log_debug(__VA_ARGS__)
+#define dev_warn(x, ...) log_warning(__VA_ARGS__)
+#define dev_err(x, ...) log_error(__VA_ARGS__)
 
 extern uint32_t *ipu_cpmem_base;
 
