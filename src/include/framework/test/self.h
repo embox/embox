@@ -60,6 +60,12 @@
 			&__TEST_FIXTURE_OP(case_teardown), test_suite_nm, test_private_nm, \
 			_autorun)
 
+#ifdef __cplusplus
+# define GLOBAL_C extern "C"
+#else
+# define GLOBAL_C
+#endif
+
 #define __EMBOX_TEST_SUITE_NM_EXT(_description, _suite_setup, _suite_teardown, \
 		_case_setup, _case_teardown, test_suite_nm, test_private_nm, _autorun) \
 	EXTERN_C const struct mod_ops __test_mod_ops;                    \
@@ -67,7 +73,7 @@
 			__TEST_CASES_ARRAY, NULL);                               \
 	static struct __test_private test_private_nm;                    \
 	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);                            \
-	const struct test_mod mod_self = {                               \
+	GLOBAL_C const struct test_mod mod_self = {                    \
 		/* .mod   = */ MOD_SELF_INIT(__EMBUILD_MOD__, &__test_mod_ops), \
 		/* .suite = */ {                                             \
 			/* .test_cases        = */ __TEST_CASES_ARRAY,           \
