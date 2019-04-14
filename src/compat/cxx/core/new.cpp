@@ -13,11 +13,11 @@
 
 const std::nothrow_t std::nothrow = { };
 
-static std::new_handler __new_handler = 0;
+static std::new_handler alloc_failure_handler = 0;
 
 std::new_handler std::set_new_handler(std::new_handler handler) throw() {
-	std::new_handler prev_handler = __new_handler;
-	__new_handler = handler;
+	std::new_handler prev_handler = alloc_failure_handler;
+	alloc_failure_handler = handler;
 	return prev_handler;
 }
 
@@ -28,22 +28,12 @@ std::new_handler std::set_new_handler(std::new_handler handler) throw() {
 #endif
 #endif
 // Implementation of new and delete operators for single object
-void* operator new(std::size_t size) throw(std::bad_alloc) {
-	void *ptr;
-
-	if (size == 0) { /* std::malloc(0) is not predictable */
-		size = 1;
-	}
+void* operator new(std::size_t size)  throw() {
+	void *ptr = NULL;
 
 	if ((ptr = std::malloc(size)) == 0) {
-		std::new_handler handler = __new_handler;
-		if (handler == 0) {
-		/*
-			Cannot throw: exceptions are disabled
-			throw std::bad_alloc();
-		*/
-		} else {
-			handler();
+		if (alloc_failure_handler) {
+			alloc_failure_handler();
 		}
 	}
 
@@ -56,27 +46,12 @@ void* operator new(std::size_t size) throw(std::bad_alloc) {
 #endif
 
 void* operator new(std::size_t size, const std::nothrow_t& nothrow_const) throw() {
-	void *ptr;
-
-	if (size == 0) { /* std::malloc(0) is not predictable */
-		size = 1;
-	}
+	void *ptr = NULL;
 
 	if ((ptr = std::malloc(size)) == 0) {
-		std::new_handler handler = __new_handler;
-		if (handler == 0) {
-			return 0;
+		if (alloc_failure_handler) {
+			alloc_failure_handler();
 		}
-		/*
-		Cannot use: no exceptions
-		try {
-			handler();
-		}
-		catch (const std::bad_alloc&) {
-			return 0;
-		}
-		*/
-		handler();
 	}
 
 	return ptr;
@@ -106,7 +81,7 @@ void operator delete[](void* ptr, unsigned int) throw() {
 #endif
 #endif
 // Forwarding functions for array of objects
-void* operator new[](std::size_t size) throw(std::bad_alloc) {
+void* operator new[](std::size_t size) throw() {
 	return ::operator new(size);
 }
 #ifdef __GNUC__
