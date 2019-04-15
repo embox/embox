@@ -6,7 +6,6 @@ package third_party.zeromq
 static module core {
 	depends embox.compat.libc.all
 	depends embox.compat.libc.math
-	depends embox.lib.cxx.lib
 
 	depends third_party.STLport.libstlportg
 

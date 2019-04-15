@@ -18,7 +18,6 @@ static module cldc {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libcldc_vm_g.a", "jvmspi.o"
 
-	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends third_party.phoneme.javacall
 	@NoRuntime depends third_party.phoneme.pcsl
 	@NoRuntime depends third_party.phoneme.src

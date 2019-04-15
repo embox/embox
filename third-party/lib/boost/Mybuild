@@ -15,7 +15,6 @@ static module core {
 		"libboost_wave.a"
 
 	@NoRuntime depends embox.compat.posix.util.environ
-	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends third_party.STLport.libstlportg
 	@NoRuntime depends embox.compat.posix.pthread_key
