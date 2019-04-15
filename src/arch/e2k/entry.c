@@ -6,6 +6,8 @@
 #include <hal/ipl.h>
 #include <framework/mod/options.h>
 
+extern void e2k_trap_handler(struct pt_regs *regs);
+
 #define CPU_COUNT OPTION_GET(NUMBER, cpu_count)
 
 #define E2K_DONE \
@@ -37,6 +39,13 @@ static void e2k_kernel_start(void) {
 	kernel_start();
 }
 
+__attribute__ ((__section__(".cpu_idle")))
+void cpu_idle(void) {
+	idled_cpus_count = __e2k_atomic32_add(1, &idled_cpus_count);
+	while(1)
+		;
+}
+
 __attribute__ ((__section__(".e2k_entry")))
 void e2k_entry(struct pt_regs *regs) {
 	/* Since we enable exceptions only when all CPUs except the main one
@@ -64,11 +73,4 @@ void e2k_entry(struct pt_regs *regs) {
 	}
 
 	e2k_kernel_start();
-}
-
-__attribute__ ((__section__(".cpu_idle")))
-void cpu_idle(void) {
-	idled_cpus_count = __e2k_atomic32_add(1, &idled_cpus_count);
-	while(1)
-		;
 }

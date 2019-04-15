@@ -84,7 +84,7 @@ void context_init(struct context *ctx, unsigned int flags,
 		void (*routine_fn)(void), void *sp, unsigned int stack_size) {
 	memset(ctx, 0, sizeof(*ctx));
 
-	e2k_calculate_stacks(ctx, sp, stack_size);
+	e2k_calculate_stacks(ctx, (uint64_t)sp, stack_size);
 
 	e2k_calculate_crs(ctx, (uint64_t) routine_fn);
 

@@ -4,6 +4,12 @@
 #include <e2k_mas.h>
 
 #ifndef	__ASSEMBLER__
+
+#include <config/embox/arch/e2k/arch.h>
+#include <framework/mod/options.h>
+
+#define MAX_CORES OPTION_MODULE_GET(embox__arch__e2k__arch,NUMBER,cpu_count)
+
 typedef unsigned char __e2k_u8_t;
 typedef unsigned short int __e2k_u16_t;
 typedef unsigned int __e2k_u32_t;
@@ -11,6 +17,7 @@ typedef unsigned long long __e2k_u64_t;
 typedef void *__e2k_ptr_t;
 
 typedef struct { __e2k_u64_t lo, hi; } e2k_reg128_t;
+
 #endif /* __ASSEMBLER__ */
 
 
