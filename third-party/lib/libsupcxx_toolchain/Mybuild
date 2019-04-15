@@ -3,4 +3,10 @@ package third_party.lib
 static module libsupcxx_toolchain extends embox.lib.libsupcxx {
 	@Rule(script="$(CP) \"$$($(LIBGCC_FINDER) -print-file-name=libsupc++.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/libsupcxx_toolchain/")
 	source "libsupc++.a"
+
+	depends impure_ptr
+}
+
+module impure_ptr {
+	source "impure_ptr.c"
 }
