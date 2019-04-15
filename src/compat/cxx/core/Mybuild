@@ -1,15 +1,5 @@
 package embox.lib.cxx
 
-module standalone extends embox.lib.libsupcxx {
-	/* Generic files */
-	source "new.cpp"
-
-	/* Private C++ files */
-	source "purevirt_routines.cpp"
-
-	depends embox.compat.libc.all
-}
-
 module ConstructorsInvocator {
 	source "cxx_invoke_constructors.c"
 	source "cxx_invoke_constructors.h"
