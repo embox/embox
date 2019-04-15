@@ -6,9 +6,10 @@
  * @author Avdyukhin Dmitry
  */
 
+#include <stdint.h>
+
 #include <embox/test.h>
-#include <stdio.h>
-#include <string.h>
+
 #include <util/tree.h>
 
 EMBOX_TEST_SUITE("util/tree test");
@@ -160,7 +161,7 @@ static int link2int(struct tree_link *link) {
 }
 
 static int link2int_is(struct tree_link *link, void *x) {
-	return (link2int(link) == (int) x);
+	return (link2int(link) == (intptr_t) x);
 }
 
 TEST_CASE("Successful search among children") {

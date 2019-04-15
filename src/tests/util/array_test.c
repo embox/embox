@@ -8,7 +8,7 @@
 
 #include <embox/test.h>
 
-#include <string.h>
+#include <stdint.h>
 #include <util/array.h>
 
 EMBOX_TEST_SUITE("util/array test");
@@ -40,8 +40,8 @@ ARRAY_SPREAD_ADD_NAMED(spread_1_aligned, spread_aligned_element, {{0}});
 
 TEST_CASE("Pointers to a spread array and to the first array element should "
 		"be equal") {
-	volatile unsigned int head = (unsigned int) spread_1_aligned;
-	volatile unsigned int element = (unsigned int) spread_aligned_element;
+	volatile uintptr_t head = (uintptr_t) spread_1_aligned;
+	volatile uintptr_t element = (uintptr_t) spread_aligned_element;
 
 	test_assert_equal(head, element);
 }

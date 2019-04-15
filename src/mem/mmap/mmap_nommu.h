@@ -30,8 +30,6 @@ struct emmap {
 	struct dlist_head marea_list;
 };
 
-typedef uintptr_t mmu_vaddr_t;
-
 extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
 extern void mmap_del_marea(struct marea *marea);
 extern struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr);
