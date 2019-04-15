@@ -55,9 +55,9 @@ int ch_to_digit(char ch, int base) {
 }
 
 static void unscanchar(const char **str, int ch) {
-	if ((unsigned int) str >= 2) {
+	if ((uintptr_t) str >= 2) {
 		(*str) --;
-	} else if ((int) str == 1) {
+	} else if ((uintptr_t) str == 1) {
 		ungetc(ch, file);
 	} else {
 		ungetchar(ch);
@@ -67,11 +67,11 @@ static void unscanchar(const char **str, int ch) {
 static int scanchar(const char **str) {
 	extern int getchar(void);
 	int ch;
-	if ((unsigned int)str >= 2) {
+	if ((uintptr_t)str >= 2) {
 		ch = **str;
 		(*str)++;
 		return ch == '\0' ? EOF : ch;
-	} else if ((int)str == 1) {
+	} else if ((uintptr_t)str == 1) {
 		return getc(file);
 	} else {
 		if ('\n' == (ch = getchar())) {
