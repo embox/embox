@@ -250,7 +250,7 @@ static inline void spin_unlock_ipl_enable(spinlock_t *lock) {
 	for (spinlock_t *__lock = (lock);                 !__done; ) \
 	for (int __cond = !!SPIN_LOCK_COND(__lock, cond); !__done;   \
 			({ if (__cond) spin_unlock(__lock); }))              \
-	while (!__done && (__done = 1)) /* break/continue control this loop */  \
+	while (!__done && (++__done)) /* break/continue control this loop */  \
 		if (__cond)
 
 #define SPIN_PROTECTED_DO(lock, expr) \
