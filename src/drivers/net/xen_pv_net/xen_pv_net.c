@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
@@ -24,6 +25,8 @@
 #include <xen/xen.h>
 #include <xen/io/netif.h>
 #include <xen/grant_table.h>
+
+#include <xen/io/xenbus.h>
 
 #define XS_MAX_KEY_LENGTH 		256
 #define XS_MAX_VALUE_LENGTH		1024
@@ -167,6 +170,115 @@ static void xenstore_info() {
 	printk("\n --- XenStore Info End ---\n");
 }
 
+static void xenstore_interaction(dev) {
+	char xs_key[XS_MAX_KEY_LENGTH], xs_value[XS_MAX_KEY_LENGTH];
+	int err;
+
+	printk("Start transaction\n");
+
+	memset(xs_key, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_key, "%s/tx-ring-ref", dev->nodename);
+	memset(xs_value, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_value, "%u", dev->tx_ring_ref);
+	err = xenstore_write(xs_key, xs_value);
+    if (err) {
+        printk("[PANIC!] Can not write tx ring-ref\n");
+		return;
+    }
+
+	memset(xs_key, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_key, "%s/rx-ring-ref", dev->nodename);
+	memset(xs_value, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_value, "%u", dev->rx_ring_ref);
+	err = xenstore_write(xs_key, xs_value);
+    if (err) {
+        printk("[PANIC!] Can not write rx ring-ref\n");
+		return;
+    }
+
+#if 0
+	memset(xs_key, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_key, "%s/event-channel", dev->nodename);
+	memset(xs_value, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_value, "%u", dev->evtchn);
+	err = xenstore_write(xs_key, xs_value);
+    if (err) {
+        printk("[PANIC!] Can not write event-channel");
+		return;
+    }
+#endif
+
+	memset(xs_key, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_key, "%s/request-rx-copy", dev->nodename);
+	memset(xs_value, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_value, "%u", 1);
+	err = xenstore_write(xs_key, xs_value);
+    if (err) {
+        printk("[PANIC!] Can not write request-rx-copy\n");
+		return;
+    }
+
+
+	memset(xs_key, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_key, "%s/state", dev->nodename);
+	memset(xs_value, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_value, "%u", XenbusStateConnected);
+    sprintf(path, sizeof(path), "%s/state", dev->nodename);
+    err = xenstore_write(xs_key, xs_value);
+    if (err) {
+        printk("[PANIC!] can not switch state\n");
+		return;
+    }
+
+	printk("End transaction\n");
+
+	memset(xs_key, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_key, "%s/backend", dev->nodename);
+	xenstore_read(xs_key, dev->backend, XS_MAX_KEY_LENGTH);
+
+	memset(xs_key, 0, XS_MAX_KEY_LENGTH);
+	sprintf(xs_key, "%s/mac", dev->nodename);
+	xenstore_read(xs_key, dev->mac, XS_MAX_KEY_LENGTH);
+    
+    if ((dev->backend == NULL) || (dev->mac == NULL)) {
+        printk("[PANIC!] backend/mac failed\n");
+		return;
+    }
+
+    printk("backend at %s\n", dev->backend);
+    printk("mac is %s\n", dev->mac);
+
+    {
+        XenbusState state;
+		int count = 0;
+
+		memset(xs_key, 0, XS_MAX_KEY_LENGTH);
+        sprintf(xs_key, "%s/state", dev->backend);
+
+        // xenbus_watch_path_token(XBT_NIL, path, path, &dev->events);
+
+		memset(xs_value, 0, XS_MAX_KEY_LENGTH);
+		xenstore_read(xs_key, xs_value, XS_MAX_KEY_LENGTH);
+        state = atoi(xs_value);
+        while (count < 10 && state < XenbusStateConnected) {
+			memset(xs_value, 0, XS_MAX_KEY_LENGTH);
+			xenstore_read(xs_key, xs_value, XS_MAX_KEY_LENGTH);
+			state = atoi(xs_value);
+			sleep(1);
+			++count;
+		}
+        if (state != XenbusStateConnected) {
+            printk("[PANIC!] backend not avalable, state=%d\n", state);
+            // xenbus_unwatch_path_token(XBT_NIL, path, path);
+            return;
+        }
+    }
+
+    printk("**************************\n");
+
+    // unmask_evtchn(dev->evtchn);
+}
+
 struct host_net_adp {
 	int fd;
 };
@@ -253,6 +365,7 @@ static const struct net_driver xen_net_drv_ops = {
 	.set_macaddr = xen_net_setmac,
 };
 
+<<<<<<< HEAD
 grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly)
 {
     gnttab_table[ref].frame = frame;
