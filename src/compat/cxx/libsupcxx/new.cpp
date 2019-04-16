@@ -61,19 +61,22 @@ void operator delete(void* ptr) throw() {
 	std::free(ptr);
 }
 
-void operator delete(void* ptr, unsigned int i) throw() {
+#if defined(__cpp_sized_deallocation)
+void operator delete(void* ptr, std::size_t) throw() {
 	/* XXX */
 	std::free(ptr);
 }
+
+void operator delete[](void* ptr, std::size_t) throw() {
+	/* XXX */
+	::operator delete(ptr);
+}
+#endif
 
 void operator delete(void* ptr, const std::nothrow_t& nothrow_const) throw() {
 	::operator delete(ptr);
 }
 
-void operator delete[](void* ptr, unsigned int) throw() {
-	/* XXX */
-	::operator delete(ptr);
-}
 #ifdef __GNUC__
 #if __GNUC__ > 6
 #pragma GCC diagnostic push
