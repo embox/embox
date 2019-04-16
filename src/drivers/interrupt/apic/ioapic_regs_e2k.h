@@ -11,18 +11,18 @@
 
 #include <stdint.h>
 
-#define IOAPIC_DEF_ADDR	          0xFEC00000
+#define IOAPIC_DEF_ADDR	          (uintptr_t)0xFEC00000
 #define IOREGSEL                  (IOAPIC_DEF_ADDR + 0x00)
 #define IOREGWIN                  (IOAPIC_DEF_ADDR + 0x10)
 
 static inline uint32_t ioapic_read(uint8_t reg) {
-	e2k_write32(reg, (void *)IOREGSEL);
-	return e2k_read32((void *)IOREGWIN);
+	e2k_write32(reg, IOREGSEL);
+	return e2k_read32(IOREGWIN);
 }
 
 static inline void ioapic_write(uint8_t reg, uint32_t val) {
-	e2k_write32(reg, (void *)IOREGSEL);
-	e2k_write32(val, (void *)IOREGWIN);
+	e2k_write32(reg, IOREGSEL);
+	e2k_write32(val, IOREGWIN);
 }
 
 #endif /* IOAPIC_REGS_E2K_H_ */

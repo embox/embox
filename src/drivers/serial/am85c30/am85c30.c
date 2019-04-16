@@ -26,7 +26,7 @@ EMBOX_UNIT_INIT(uart_init);
 static inline void
 am85c30_com_outb(uintptr_t iomem_addr, uint8_t data)
 {
-	e2k_write8(data, (void*)(UART_BASE + 1));
+	e2k_write8(data, (UART_BASE + 1));
 	wmb();
 }
 
@@ -34,7 +34,7 @@ static inline uint8_t
 am85c30_com_inb(uintptr_t iomem_addr)
 {
 	unsigned char data_val;
-	data_val = e2k_read8((void*)(UART_BASE + 1));
+	data_val = e2k_read8((UART_BASE + 1));
 	rmb();
 	return (data_val);
 }
@@ -44,9 +44,9 @@ am85c30_com_inb_command(uintptr_t iomem_addr, uint8_t reg)
 {
 	uint8_t reg_val;
 	if (reg != 0)
-		e2k_write8(reg, (void*)(UART_BASE));
+		e2k_write8(reg, (UART_BASE));
 	wmb();
-	reg_val = e2k_read8((void*)(UART_BASE));
+	reg_val = e2k_read8((UART_BASE));
 	rmb();
 	return (reg_val);
 }
@@ -55,14 +55,14 @@ static inline void
 am85c30_com_outb_command(uintptr_t iomem_addr, uint8_t reg, uint8_t val)
 {
 	if (reg != 0)
-		e2k_write8(reg, (void*)(UART_BASE));
-	e2k_write8(val, (void*)(UART_BASE));
+		e2k_write8(reg, (UART_BASE));
+	e2k_write8(val, (UART_BASE));
 	wmb();
 }
 
 static inline void am85c30_sync(void)
 {
-	(void)e2k_read8((void*)(UART_BASE));
+	(void)e2k_read8((UART_BASE));
 	rmb();
 }
 

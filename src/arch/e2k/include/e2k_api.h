@@ -2,6 +2,7 @@
 #define _E2K_API_H_
 
 #include <e2k_mas.h>
+#include <stdint.h>
 
 #ifndef	__ASSEMBLER__
 
@@ -10,13 +11,7 @@
 
 #define MAX_CORES OPTION_MODULE_GET(embox__arch__e2k__arch,NUMBER,cpu_count)
 
-typedef unsigned char __e2k_u8_t;
-typedef unsigned short int __e2k_u16_t;
-typedef unsigned int __e2k_u32_t;
-typedef unsigned long long __e2k_u64_t;
 typedef void *__e2k_ptr_t;
-
-typedef struct { __e2k_u64_t lo, hi; } e2k_reg128_t;
 
 #endif /* __ASSEMBLER__ */
 
@@ -25,33 +20,33 @@ typedef struct { __e2k_u64_t lo, hi; } e2k_reg128_t;
 ({ \
 	asm volatile ("adds \t0x0, %0, %%r" #reg_no \
 		: \
-		: "ri" ((__e2k_u32_t) (val))); \
+		: "ri" ((uint32_t) (val))); \
 })
 
 #define E2K_SET_DREG(reg_no, val) \
 ({ \
 	asm volatile ("addd \t0x0, %0, %%dr" #reg_no \
 		: \
-		: "ri" ((__e2k_u64_t) (val))); \
+		: "ri" ((uint64_t) (val))); \
 })
 
 #define E2K_SET_DGREG(reg_no, val) \
 ({ \
 	asm volatile ("addd \t0x0, %0, %%dg" #reg_no \
 		: \
-		: "ri" ((__e2k_u64_t) (val))); \
+		: "ri" ((uint64_t) (val))); \
 })
 #define E2K_SET_DGREG_NV(reg_no, val) \
 ({ \
 	asm ("addd \t%0, 0, %%dg" #reg_no \
 		: \
-		: "ri" ((__e2k_u64_t) (val))); \
+		: "ri" ((uint64_t) (val))); \
 })
 
 
 #define E2K_GET_BREG(reg_no) \
 ({ \
-	register __e2k_u32_t res; \
+	register uint32_t res; \
 	asm volatile ("adds \t0x0, %%b[" #reg_no "], %0" \
 		 : "=r" (res)); \
 		res; \
@@ -59,7 +54,7 @@ typedef struct { __e2k_u64_t lo, hi; } e2k_reg128_t;
 
 #define E2K_GET_DBREG(reg_no) \
 ({ \
-	register __e2k_u64_t res; \
+	register uint64_t res; \
 	asm volatile ("addd \t0x0, %%db[" #reg_no "], %0" \
 		: "=r" (res)); \
 		res; \
@@ -69,19 +64,19 @@ typedef struct { __e2k_u64_t lo, hi; } e2k_reg128_t;
 ({ \
 	asm volatile ("adds \t0x0, %0, %%b[" #reg_no "]" \
 		: \
-		: "ri" ((__e2k_u32_t) (val))); \
+		: "ri" ((uint32_t) (val))); \
 })
 
 #define E2K_SET_DBREG(reg_no, val) \
 ({ \
 	asm volatile ("addd \t0x0, %0, %%db[" #reg_no "]" \
 		: \
-		: "ri" ((__e2k_u64_t) (val))); \
+		: "ri" ((uint64_t) (val))); \
 })
 
 #define E2K_GET_SREG(reg_mnemonic) \
 ({ \
-	register __e2k_u32_t res; \
+	register uint32_t res; \
 	asm volatile ("rrs \t%%" #reg_mnemonic ", %0" \
 		: "=r" (res)); \
 	res; \
@@ -89,7 +84,7 @@ typedef struct { __e2k_u64_t lo, hi; } e2k_reg128_t;
 
 #define E2K_GET_DSREG(reg_mnemonic) \
 ({ \
-	register __e2k_u64_t res; \
+	register uint64_t res; \
 	asm volatile ("rrd \t%%" #reg_mnemonic ", %0" \
 		: "=r" (res)); \
 	res; \
@@ -99,21 +94,21 @@ typedef struct { __e2k_u64_t lo, hi; } e2k_reg128_t;
 ({ \
 	asm volatile ("rws \t%0, %%" #reg_mnemonic \
 			: \
-			: "ri" ((__e2k_u32_t) (val))); \
+			: "ri" ((uint32_t) (val))); \
 })
 
 #define E2K_SET_DSREG(reg_mnemonic, val) \
 ({ \
 	asm volatile ("rwd \t%0, %%" #reg_mnemonic \
 			: \
-			: "ri" ((__e2k_u64_t) (val))); \
+			: "ri" ((uint64_t) (val))); \
 })
 
 #define E2K_SET_CTPR(reg_mnemonic, val) \
 ({ \
 	asm volatile ("rwd \t%0, %%" #reg_mnemonic \
 			: \
-			: "ri" ((__e2k_u64_t) (val)) \
+			: "ri" ((uint64_t) (val)) \
 			: #reg_mnemonic ); \
 })
 
@@ -527,7 +522,7 @@ typedef unsigned long __e2k_syscall_arg_t;
 
 #define E2K_GET_REG(reg_no) \
 ({ \
-    register __e2k_u32_t res; \
+    register uint32_t res; \
     asm volatile ("adds \t0x0, %%r" #reg_no ", %0"  \
                   : "=r" (res)); \
     res; \
@@ -535,7 +530,7 @@ typedef unsigned long __e2k_syscall_arg_t;
 
 #define E2K_GET_DREG(reg_no) \
 ({ \
-    register __e2k_u64_t res; \
+    register uint64_t res; \
     asm volatile ("addd \t0x0, %%dr" #reg_no ", %0"  \
                   : "=r" (res)); \
     res; \
@@ -543,7 +538,7 @@ typedef unsigned long __e2k_syscall_arg_t;
 
 #define E2K_GET_DGREG(reg_no) \
 ({ \
-    register __e2k_u64_t res; \
+    register uint64_t res; \
     asm volatile ("addd \t0x0, %%dg" #reg_no ", %0"  \
                   : "=r" (res)); \
     res; \
@@ -604,7 +599,7 @@ do {									\
 ({ \
 	asm volatile ("movts \t%1, %0"  \
 			: "=r" (dst_reg) \
-			: "r" ((__e2k_u32_t) (src_reg))); \
+			: "r" ((uint32_t) (src_reg))); \
 })
 
 #define _E2K_GET_DGREG_VAL_AND_TAG(greg_no, dst_reg, tag)	\
@@ -946,7 +941,7 @@ do {									\
 		defined __LCC__ && __LCC__ >= 120
 # define E2K_GET_SREG_NV(reg_mnemonic) \
 ({ \
-	register __e2k_u32_t res; \
+	register uint32_t res; \
 	asm ("rrs %%" #reg_mnemonic ", %0" \
 		: "=r" (res)); \
 	res; \
@@ -954,7 +949,7 @@ do {									\
 
 # define E2K_GET_DSREG_NV(reg_mnemonic) \
 ({ \
-	register __e2k_u64_t res; \
+	register uint64_t res; \
 	asm ("rrd %%" #reg_mnemonic ", %0" \
 		: "=r" (res)); \
 	res; \
@@ -963,19 +958,19 @@ do {									\
 # define E2K_SET_SREG_NV(reg_mnemonic, val) \
 ({ \
 	/* Fake return value is needed for lcc to optimize inline asm... */ \
-	register __e2k_u32_t res; \
+	register uint32_t res; \
 	asm ("rws %1, %%" #reg_mnemonic \
 		: "=r" (res) \
-		: "ri" ((__e2k_u32_t) (val))); \
+		: "ri" ((uint32_t) (val))); \
 })
 
 # define E2K_SET_DSREG_NV(reg_mnemonic, val) \
 ({ \
 	/* Fake return value is needed for lcc to optimize inline asm... */ \
-	register __e2k_u64_t res; \
+	register uint64_t res; \
 	asm ("rwd %1, %%" #reg_mnemonic \
 		: "=r" (res) \
-		: "ri" ((__e2k_u64_t) (val))); \
+		: "ri" ((uint64_t) (val))); \
 })
 
 /*
@@ -993,10 +988,10 @@ do {									\
 
 # define E2K_SET_DSREG_NV_NOIRQ(reg_mnemonic, val) \
 ({ \
-	register __e2k_u64_t res; \
+	register uint64_t res; \
 	asm ("rwd %1, %%" #reg_mnemonic \
 		: "=r" (res) \
-		: "ri" ((__e2k_u64_t) (val))); \
+		: "ri" ((uint64_t) (val))); \
 })
 
 #else
@@ -1016,10 +1011,10 @@ do {									\
 		      "{rwd \t%0, %%sbr}" \
 		      "{nop 2}" \
 		      : \
-		      : "ri" ((__e2k_u64_t) (sbr)), \
-			"ri" ((__e2k_u64_t) (usd_hi)), \
-			"ri" ((__e2k_u64_t) (usd_lo)), \
-			"ri" ((__e2k_u32_t) (upsr))); \
+		      : "ri" ((uint64_t) (sbr)), \
+			"ri" ((uint64_t) (usd_hi)), \
+			"ri" ((uint64_t) (usd_lo)), \
+			"ri" ((uint32_t) (upsr))); \
 })
 
 
@@ -1027,14 +1022,14 @@ do {									\
 ({ \
 	asm volatile ("{rws \t%0, %%" #reg_mnemonic "}" \
 		      : \
-		      : "ri" ((__e2k_u32_t) (val))); \
+		      : "ri" ((uint32_t) (val))); \
 })
 
 #define E2K_SET_DSREG_CLOSED(reg_mnemonic, val) \
 ({ \
 	asm volatile ("{rwd \t%0, %%" #reg_mnemonic "}" \
 		      : \
-		      : "ri" ((__e2k_u64_t) (val))); \
+		      : "ri" ((uint64_t) (val))); \
 })
 
 /* lcc ignores manually specified clobbers for opened GNU asm,
@@ -1046,7 +1041,7 @@ do {									\
 		      "rws %0, %%psr" \
 		      "}" \
 		      : \
-		      : "ri" ((__e2k_u64_t) (val)) \
+		      : "ri" ((uint64_t) (val)) \
 		      : IRQ_BARRIER_CLOBBERS); \
 })
 #define E2K_SET_UPSR_IRQ_BARRIER(val) \
@@ -1056,7 +1051,7 @@ do {									\
 		      "rws %0, %%upsr" \
 		      "}" \
 		      : \
-		      : "ri" ((__e2k_u64_t) (val)) \
+		      : "ri" ((uint64_t) (val)) \
 		      : IRQ_BARRIER_CLOBBERS); \
 })
 #define E2K_SET_UPSR_IRQ_BARRIER_NO_NOPS(val) \
@@ -1065,14 +1060,14 @@ do {									\
 		      "rws %0, %%upsr" \
 		      "}" \
 		      : \
-		      : "ri" ((__e2k_u64_t) (val)) \
+		      : "ri" ((uint64_t) (val)) \
 		      : IRQ_BARRIER_CLOBBERS); \
 })
 
 
 #define E2K_GET_MMUREG_2(reg_mnemonic) \
 ({ \
-    register __e2k_u64_t res; \
+    register uint64_t res; \
     asm volatile ("mmurr,2 \t%%" #reg_mnemonic ", %0" \
                   : "=r" (res)); \
     res; \
@@ -1080,7 +1075,7 @@ do {									\
 
 #define E2K_GET_MMUREG(reg_mnemonic) \
 ({ \
-    register __e2k_u64_t res; \
+    register uint64_t res; \
     asm volatile ("mmurr,5 \t%%" #reg_mnemonic ", %0" \
                   : "=r" (res)); \
     res; \
@@ -1090,13 +1085,13 @@ do {									\
 ({ \
     asm volatile ("mmurw,2 \t%0, %%" #reg_mnemonic \
                   : \
-                  : "r" ((__e2k_u64_t) (val))); \
+                  : "r" ((uint64_t) (val))); \
 })
 
 
 #define E2K_GET_AAUREG(reg_mnemonic, chan_letter) \
 ({ \
-    register __e2k_u32_t res; \
+    register uint32_t res; \
     asm ("aaurr," #chan_letter " \t%%" #reg_mnemonic ", %0" \
                   : "=r" (res)); \
     res; \
@@ -1114,7 +1109,7 @@ do {									\
 ({ \
     asm volatile ("aaurw," #chan_letter " \t%0, %%" #reg_mnemonic \
                   : \
-                  : "r" ((__e2k_u32_t) (val))); \
+                  : "r" ((uint32_t) (val))); \
 })
 
 /* This macro is used to pack two 'aaurr' into one long instruction */
@@ -1123,12 +1118,12 @@ do {									\
     asm ("aaurw,2 \t%0, %%" #l_reg "\n" \
          "aaurw,5 \t%1, %%" #r_reg \
          : \
-         : "r" ((__e2k_u32_t) (lval)), "r" ((__e2k_u32_t) (rval))); \
+         : "r" ((uint32_t) (lval)), "r" ((uint32_t) (rval))); \
 })
 
 #define E2K_GET_AAUDREG(reg_mnemonic, chan_letter) \
 ({ \
-    register __e2k_u64_t res; \
+    register uint64_t res; \
     asm ("aaurrd," #chan_letter " %%" #reg_mnemonic ", %0" \
                   : "=r" (res)); \
     res; \
@@ -1146,7 +1141,7 @@ do {									\
 ({ \
     asm volatile ("aaurwd \t%0, %%" #reg_mnemonic \
                   : \
-                  : "r" ((__e2k_u64_t) (val))); \
+                  : "r" ((uint64_t) (val))); \
 })
 
 #define E2K_SET_AAUDREGS(l_reg, r_reg, lval, rval) \
@@ -1160,8 +1155,8 @@ do {									\
 
 #define E2K_GET_AAUQREG(mem_p, reg_mnemonic) \
 ({ \
-    register __e2k_u64_t lo asm ("%b[0]"); \
-    register __e2k_u64_t hi asm ("%b[1]"); \
+    register uint64_t lo asm ("%b[0]"); \
+    register uint64_t hi asm ("%b[1]"); \
     asm volatile ("aaurrq \t%%" #reg_mnemonic ", %%qb[0]" \
                   : \
                   : \
@@ -1172,14 +1167,14 @@ do {									\
 
 #define E2K_GET_AAUQREGS(mem_p, reg1, reg2, reg3, reg4) \
 ({ \
-    register __e2k_u64_t lo1 asm ("%b[0]"); \
-    register __e2k_u64_t hi1 asm ("%b[1]"); \
-    register __e2k_u64_t lo2 asm ("%b[2]"); \
-    register __e2k_u64_t hi2 asm ("%b[3]"); \
-    register __e2k_u64_t lo3 asm ("%b[4]"); \
-    register __e2k_u64_t hi3 asm ("%b[5]"); \
-    register __e2k_u64_t lo4 asm ("%b[6]"); \
-    register __e2k_u64_t hi4 asm ("%b[7]"); \
+    register uint64_t lo1 asm ("%b[0]"); \
+    register uint64_t hi1 asm ("%b[1]"); \
+    register uint64_t lo2 asm ("%b[2]"); \
+    register uint64_t hi2 asm ("%b[3]"); \
+    register uint64_t lo3 asm ("%b[4]"); \
+    register uint64_t hi3 asm ("%b[5]"); \
+    register uint64_t lo4 asm ("%b[6]"); \
+    register uint64_t hi4 asm ("%b[7]"); \
     asm volatile ("aaurrq \t%%" #reg1 ", %%qb[0]\n" \
                   "aaurrq \t%%" #reg2 ", %%qb[2]\n" \
                  "aaurrq \t%%" #reg3 ", %%qb[4]\n" \
@@ -1200,8 +1195,8 @@ do {									\
 
 #define E2K_SET_AAUQREG(reg_mnemonic, mem_p) \
 ({ \
-    register __e2k_u64_t lo asm ("%b[0]"); \
-    register __e2k_u64_t hi asm ("%b[1]"); \
+    register uint64_t lo asm ("%b[0]"); \
+    register uint64_t hi asm ("%b[1]"); \
     lo = (mem_p)->lo; \
     hi = (mem_p)->hi; \
     asm volatile ("aaurwq \t%%qb[0], %%" #reg_mnemonic \
@@ -1282,20 +1277,20 @@ do {									\
                     "r" ((type) (val))); \
 })
 
-#define E2K_READ_B(addr)  _E2K_READ ((addr), __e2k_u8_t, b)
-#define E2K_READ_H(addr)  _E2K_READ ((addr), __e2k_u16_t, h)
-#define E2K_READ_W(addr)  _E2K_READ ((addr), __e2k_u32_t, w)
-#define E2K_READ_D(addr)  _E2K_READ ((addr), __e2k_u64_t, d)
+#define E2K_READ_B(addr)  _E2K_READ ((addr), uint8_t, b)
+#define E2K_READ_H(addr)  _E2K_READ ((addr), uint16_t, h)
+#define E2K_READ_W(addr)  _E2K_READ ((addr), uint32_t, w)
+#define E2K_READ_D(addr)  _E2K_READ ((addr), uint64_t, d)
 
-#define E2K_READ_B_FAST(addr)  _E2K_READ_FAST ((addr), __e2k_u8_t, b)
-#define E2K_READ_H_FAST(addr)  _E2K_READ_FAST ((addr), __e2k_u16_t, h)
-#define E2K_READ_W_FAST(addr)  _E2K_READ_FAST ((addr), __e2k_u32_t, w)
-#define E2K_READ_D_FAST(addr)  _E2K_READ_FAST ((addr), __e2k_u64_t, d)
+#define E2K_READ_B_FAST(addr)  _E2K_READ_FAST ((addr), uint8_t, b)
+#define E2K_READ_H_FAST(addr)  _E2K_READ_FAST ((addr), uint16_t, h)
+#define E2K_READ_W_FAST(addr)  _E2K_READ_FAST ((addr), uint32_t, w)
+#define E2K_READ_D_FAST(addr)  _E2K_READ_FAST ((addr), uint64_t, d)
 
-#define E2K_WRITE_B(addr, val)  _E2K_WRITE (addr, val, __e2k_u8_t, b)
-#define E2K_WRITE_H(addr, val)  _E2K_WRITE (addr, val, __e2k_u16_t, h)
-#define E2K_WRITE_W(addr, val)  _E2K_WRITE (addr, val, __e2k_u32_t, w)
-#define E2K_WRITE_D(addr, val)  _E2K_WRITE (addr, val, __e2k_u64_t, d)
+#define E2K_WRITE_B(addr, val)  _E2K_WRITE (addr, val, uint8_t, b)
+#define E2K_WRITE_H(addr, val)  _E2K_WRITE (addr, val, uint16_t, h)
+#define E2K_WRITE_W(addr, val)  _E2K_WRITE (addr, val, uint32_t, w)
+#define E2K_WRITE_D(addr, val)  _E2K_WRITE (addr, val, uint64_t, d)
 
 /*
  * Do load with specified MAS
@@ -1321,13 +1316,13 @@ do {									\
 })
 
 #define E2K_READ_MAS_B_CH(addr, mas, chan_letter) \
-		_E2K_READ_MAS ((addr), (mas), __e2k_u8_t, b, chan_letter)
+		_E2K_READ_MAS ((addr), (mas), uint8_t, b, chan_letter)
 #define E2K_READ_MAS_H_CH(addr, mas, chan_letter) \
-		_E2K_READ_MAS ((addr), (mas), __e2k_u16_t, h, chan_letter)
+		_E2K_READ_MAS ((addr), (mas), uint16_t, h, chan_letter)
 #define E2K_READ_MAS_W_CH(addr, mas, chan_letter) \
-		_E2K_READ_MAS ((addr), (mas), __e2k_u32_t, w, chan_letter)
+		_E2K_READ_MAS ((addr), (mas), uint32_t, w, chan_letter)
 #define E2K_READ_MAS_D_CH(addr, mas, chan_letter) \
-		_E2K_READ_MAS ((addr), (mas), __e2k_u64_t, d, chan_letter)
+		_E2K_READ_MAS ((addr), (mas), uint64_t, d, chan_letter)
 
 #define E2K_READ_MAS_B(addr, mas)  E2K_READ_MAS_B_CH ((addr), (mas), 2)
 #define E2K_READ_MAS_H(addr, mas)  E2K_READ_MAS_H_CH ((addr), (mas), 2)
@@ -1339,10 +1334,10 @@ do {									\
 #define E2K_READ_MAS_W_5(addr, mas)  E2K_READ_MAS_W_CH ((addr), (mas), 5)
 #define E2K_READ_MAS_D_5(addr, mas)  E2K_READ_MAS_D_CH ((addr), (mas), 5)
 
-#define E2K_WRITE_MAS_B(addr, val, mas)  _E2K_WRITE_MAS (addr, val, mas, __e2k_u8_t, b, 2)
-#define E2K_WRITE_MAS_H(addr, val, mas)  _E2K_WRITE_MAS (addr, val, mas, __e2k_u16_t, h, 2)
-#define E2K_WRITE_MAS_W(addr, val, mas)  _E2K_WRITE_MAS (addr, val, mas, __e2k_u32_t, w, 2)
-#define E2K_WRITE_MAS_D(addr, val, mas)  _E2K_WRITE_MAS (addr, val, mas, __e2k_u64_t, d, 2)
+#define E2K_WRITE_MAS_B(addr, val, mas)  _E2K_WRITE_MAS (addr, val, mas, uint8_t, b, 2)
+#define E2K_WRITE_MAS_H(addr, val, mas)  _E2K_WRITE_MAS (addr, val, mas, uint16_t, h, 2)
+#define E2K_WRITE_MAS_W(addr, val, mas)  _E2K_WRITE_MAS (addr, val, mas, uint32_t, w, 2)
+#define E2K_WRITE_MAS_D(addr, val, mas)  _E2K_WRITE_MAS (addr, val, mas, uint64_t, d, 2)
 
 /*
  * Read from and write to system configuration registers SIC
@@ -1351,20 +1346,20 @@ do {									\
 
 #define E2K_SET_SICREG(reg_mnemonic, val, cln, pln) \
 ({ \
-	register __e2k_u64_t addr; \
-	register __e2k_u64_t node_id = (cln) << 2; \
+	register uint64_t addr; \
+	register uint64_t node_id = (cln) << 2; \
 	node_id = node_id + ((pln)&0x3); \
-	addr = (__e2k_u64_t) THE_NODE_NBSR_PHYS_BASE(node_id); \
+	addr = (uint64_t) THE_NODE_NBSR_PHYS_BASE(node_id); \
 	addr = addr + SIC_##reg_mnemonic; \
 	E2K_WRITE_MAS_W(addr,val, MAS_IOADDR); \
 })
 #define E2K_GET_SICREG(reg_mnemonic, cln, pln) \
 ({ \
-	register __e2k_u32_t res; \
-	register __e2k_u64_t addr; \
-	register __e2k_u64_t node_id = (cln) << 2; \
+	register uint32_t res; \
+	register uint64_t addr; \
+	register uint64_t node_id = (cln) << 2; \
 	node_id = node_id + ((pln)&0x3); \
-	addr = (__e2k_u64_t) THE_NODE_NBSR_PHYS_BASE(node_id); \
+	addr = (uint64_t) THE_NODE_NBSR_PHYS_BASE(node_id); \
 	addr = addr + SIC_##reg_mnemonic; \
 	res = E2K_READ_MAS_W(addr, MAS_IOADDR); \
 	res; \
@@ -1396,7 +1391,7 @@ do {									\
  	asm volatile ("ldrd," #chan_letter "\t[%1 + %2], %0" \
  			: "=r"(val) \
  			: "r" ((__e2k_ptr_t) (addr)), \
- 			  "r" ((__e2k_u64_t) (opc))); \
+ 			  "r" ((uint64_t) (opc))); \
 })
 
 #define E2K_RECOVERY_LOAD_TO_CH(addr, opc, val, trap_cellar_chan) \
@@ -1423,8 +1418,8 @@ do { \
 			"ldrd,2\t[%0 + %2], %%b[1]}" \
 			: \
 			: "r" ((__e2k_ptr_t) (addr)), \
-			"r" ((__e2k_u64_t) (opc_lo)) \
-			"r" ((__e2k_u64_t) (opc_hi)) \
+			"r" ((uint64_t) (opc_lo)) \
+			"r" ((uint64_t) (opc_hi)) \
 			: "b[0]", "b[1]"); \
 })
 
@@ -1433,7 +1428,7 @@ do { \
 	asm volatile ("ldrd," #chan_letter "\t[%0 + %1], %%dg" #greg_no \
 			: \
 			: "r" ((__e2k_ptr_t) (addr)), \
-			  "r" ((__e2k_u64_t) (opc))); \
+			  "r" ((uint64_t) (opc))); \
 })
 
 #define E2K_LOAD_TAGGED_DGREGS(addr, numlo, numhi)	\
@@ -1727,8 +1722,8 @@ do { \
 	asm volatile ("strd," #chan_letter "\t[%0 + %1], %2"	\
 		    :						\
 		    : "r" ((__e2k_ptr_t) (addr)),		\
-		      "r" ((__e2k_u64_t) (opc)),		\
-		      "r" ((__e2k_u64_t) (__tmp)));		\
+		      "r" ((uint64_t) (opc)),		\
+		      "r" ((uint64_t) (__tmp)));		\
 })
 
 
@@ -1740,9 +1735,9 @@ do { \
  *	any one half of quad-word with tag
  * Operands and result of macros should have types:
  *	addr	__e2k_ptr_t
- *	val	__e2k_u64_t
- *	lo	__e2k_u64_t (low half of quad-word value)
- *	hi	__e2k_u64_t (high half of quad-word value)
+ *	val	uint64_t
+ *	lo	uint64_t (low half of quad-word value)
+ *	hi	uint64_t (high half of quad-word value)
  */
 
 #define E2K_LOAD_TAGGED_VALUE(addr, val) \
@@ -1753,7 +1748,7 @@ do { \
 #define	E2K_LOAD_TAGGED_DWORD		E2K_LOAD_TAGGED_VALUE
 #define	E2K_LOAD_TAGGED_QWORD(addr, lo, hi)	\
 		{E2K_LOAD_TAGGED_VALUE(addr, lo); \
-		E2K_LOAD_TAGGED_VALUE(((__e2k_u64_t *)addr) + 1, hi);}
+		E2K_LOAD_TAGGED_VALUE(((uint64_t *)addr) + 1, hi);}
 
 
 #define E2K_STORE_TAGGED_DWORD E2K_STORE_TAGGED_VALUE
@@ -1775,7 +1770,7 @@ do { \
 		      " strd," #chan_letter " \t[%1 + %3], %0\n" \
 		      : "+r" (__tmp_reg) \
 		      : "r" ((__e2k_ptr_t) (addr)), \
-			"ri" ((__e2k_u32_t) (tag)), \
+			"ri" ((uint32_t) (tag)), \
 			"ri" ((opc)) \
 		      : "memory"); \
 } while (0)
@@ -2260,7 +2255,7 @@ do { \
 			: "+r"(__dword),				\
 			  "=r"(__dtag)					\
 			: "r" ((__e2k_ptr_t) (addr)),			\
-			  "r" ((__e2k_u64_t) (opc)));			\
+			  "r" ((uint64_t) (opc)));			\
 	val = __dword;							\
 	tag = __dtag;							\
 })
@@ -2381,7 +2376,7 @@ do { \
 #define	E2K_LOAD_TAGGED_QWORD_AND_TAGS(addr, lo,                \
                                        hi, tag_lo, tag_hi)	\
 		{E2K_LOAD_VAL_AND_TAGD(addr, lo, tag_lo);       \
-		E2K_LOAD_VAL_AND_TAGD(((__e2k_u64_t *) (addr)) + 1,\
+		E2K_LOAD_VAL_AND_TAGD(((uint64_t *) (addr)) + 1,\
                                       hi, tag_hi);}
 
 /**
@@ -2392,7 +2387,7 @@ do { \
     register int res; \
     asm volatile ("gettags \t%1, %0" \
                   : "=r" (res) \
-                  : "r" ((__e2k_u32_t) (src)) \
+                  : "r" ((uint32_t) (src)) \
 		 ); \
     res; \
 })
@@ -2402,7 +2397,7 @@ do { \
     register int res; \
     asm volatile ("gettagd \t%1, %0" \
                   : "=r" (res) \
-                  : "r" ((__e2k_u64_t) (src)) \
+                  : "r" ((uint64_t) (src)) \
 		 ); \
     res; \
 })
@@ -2414,7 +2409,7 @@ do { \
     asm volatile ("puttags \t%1, %2, %0" \
                   : "=r" (dst) \
                   : "r" (dst), \
-                    "ri" ((__e2k_u32_t) (tag)) \
+                    "ri" ((uint32_t) (tag)) \
 		 ); \
 })
 
@@ -2424,7 +2419,7 @@ do { \
     asm volatile ("puttagd \t%1, %2, %0" \
                   : "=r" (dst) \
                   : "r" (dst), \
-                    "ri" ((__e2k_u32_t) (tag)) \
+                    "ri" ((uint32_t) (tag)) \
 		 ); \
 })
 
@@ -2472,15 +2467,15 @@ do { \
     asm volatile ("}\n\n"); \
 })
 
-#define E2K_ATOMIC_LBRACKET_B(addr, mas, label_no)  _E2K_ATOMIC_LBRACKET ((addr), (mas), label_no, __e2k_u8_t, b)
-#define E2K_ATOMIC_LBRACKET_H(addr, mas, label_no)  _E2K_ATOMIC_LBRACKET ((addr), (mas), label_no, __e2k_u16_t, h)
-#define E2K_ATOMIC_LBRACKET_W(addr, mas, label_no)  _E2K_ATOMIC_LBRACKET ((addr), (mas), label_no, __e2k_u32_t, w)
-#define E2K_ATOMIC_LBRACKET_D(addr, mas, label_no)  _E2K_ATOMIC_LBRACKET ((addr), (mas), label_no, __e2k_u64_t, d)
+#define E2K_ATOMIC_LBRACKET_B(addr, mas, label_no)  _E2K_ATOMIC_LBRACKET ((addr), (mas), label_no, uint8_t, b)
+#define E2K_ATOMIC_LBRACKET_H(addr, mas, label_no)  _E2K_ATOMIC_LBRACKET ((addr), (mas), label_no, uint16_t, h)
+#define E2K_ATOMIC_LBRACKET_W(addr, mas, label_no)  _E2K_ATOMIC_LBRACKET ((addr), (mas), label_no, uint32_t, w)
+#define E2K_ATOMIC_LBRACKET_D(addr, mas, label_no)  _E2K_ATOMIC_LBRACKET ((addr), (mas), label_no, uint64_t, d)
 
-#define E2K_ATOMIC_RBRACKET_B(addr, val, mas, label_no)  _E2K_ATOMIC_RBRACKET (addr, val, mas, label_no, __e2k_u8_t, b)
-#define E2K_ATOMIC_RBRACKET_H(addr, val, mas, label_no)  _E2K_ATOMIC_RBRACKET (addr, val, mas, label_no, __e2k_u16_t, h)
-#define E2K_ATOMIC_RBRACKET_W(addr, val, mas, label_no)  _E2K_ATOMIC_RBRACKET (addr, val, mas, label_no, __e2k_u32_t, w)
-#define E2K_ATOMIC_RBRACKET_D(addr, val, mas, label_no)  _E2K_ATOMIC_RBRACKET (addr, val, mas, label_no, __e2k_u64_t, d)
+#define E2K_ATOMIC_RBRACKET_B(addr, val, mas, label_no)  _E2K_ATOMIC_RBRACKET (addr, val, mas, label_no, uint8_t, b)
+#define E2K_ATOMIC_RBRACKET_H(addr, val, mas, label_no)  _E2K_ATOMIC_RBRACKET (addr, val, mas, label_no, uint16_t, h)
+#define E2K_ATOMIC_RBRACKET_W(addr, val, mas, label_no)  _E2K_ATOMIC_RBRACKET (addr, val, mas, label_no, uint32_t, w)
+#define E2K_ATOMIC_RBRACKET_D(addr, val, mas, label_no)  _E2K_ATOMIC_RBRACKET (addr, val, mas, label_no, uint64_t, d)
 
 
 /*
@@ -3437,14 +3432,14 @@ do { \
 /* Put bits in reverse order */
 #define E2K_BITREVS(val) \
 ({ \
-	register __e2k_u32_t __res; \
+	register uint32_t __res; \
 	asm ("bitrevs %1, %0" : "=r" (__res)  : "r" (val)); \
 	__res; \
 })
 
 #define E2K_BITREVD(val) \
 ({ \
-	register __e2k_u64_t __res; \
+	register uint64_t __res; \
 	asm ("bitrevd %1, %0" : "=r" (__res)  : "r" (val)); \
 	__res; \
 })
@@ -3452,14 +3447,14 @@ do { \
 /* Get number of leading zeroes */
 #define E2K_LZCNTS(val) \
 ({ \
-	register __e2k_u32_t __res; \
+	register uint32_t __res; \
 	asm ("lzcnts %1, %0" : "=r" (__res)  : "r" (val)); \
 	__res; \
 })
 
 #define E2K_LZCNTD(val) \
 ({ \
-	register __e2k_u64_t __res; \
+	register uint64_t __res; \
 	asm ("lzcntd %1, %0" : "=r" (__res)  : "r" (val)); \
 	__res; \
 })
@@ -3467,14 +3462,14 @@ do { \
 /* Get number of 1's */
 #define E2K_POPCNTS(val) \
 ({ \
-	register __e2k_u32_t __res; \
+	register uint32_t __res; \
 	asm ("popcnts %1, %0" : "=r" (__res)  : "r" (val)); \
 	__res; \
 })
 
 #define E2K_POPCNTD(val) \
 ({ \
-	register __e2k_u64_t __res; \
+	register uint64_t __res; \
 	asm ("popcntd %1, %0" : "=r" (__res)  : "r" (val)); \
 	__res; \
 })
@@ -3640,7 +3635,7 @@ do { \
 
 #define E2K_FLUSH_ALL_TC \
 ({ \
-	register __e2k_u64_t res; \
+	register uint64_t res; \
 	asm volatile ("{nop 3; invtc 0x0, %0}" \
 		      : "=r" (res)); \
 	res; \
@@ -3648,7 +3643,7 @@ do { \
 
 #define E2K_GET_TCD() \
 ({ \
-    register __e2k_u64_t res; \
+    register uint64_t res; \
     asm volatile ( \
     		"\n\t{gettc \t0x1 , %%ctpr1; nop 5}" \
 		"\n\trrd \t%%ctpr1, %0" \
@@ -4055,7 +4050,7 @@ do { \
 
 #define	E2K_CLEAR_CTPRS()			\
 do {						\
-	__e2k_u64_t	reg;			\
+	uint64_t	reg;			\
 	asm volatile (				\
 		"{\n"				\
 		"puttagd 0, 5, %0\n"		\

@@ -22,8 +22,6 @@
 #include "../i8259_regs.h"
 #endif
 
-#define IOAPIC_DEF_ADDR	          0xFEC00000
-
 #define IOAPIC_ID                 0x0
 #define IOAPIC_VERSION            0x1
 #define IOAPIC_ARB                0x2
