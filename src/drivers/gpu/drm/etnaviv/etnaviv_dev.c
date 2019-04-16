@@ -53,6 +53,8 @@
 #define R2D_GPU2D_IRQ	OPTION_GET(NUMBER,r2d_gpu2d_irq)
 #define V2D_GPU2D_IRQ	OPTION_GET(NUMBER,v2d_gpu2d_irq)
 
+#define USE_GPU2D	OPTION_GET(BOOLEAN,use_gpu2d)
+
 #define ETNA_UNCACHED_BUFFER_SZ	(16 * 1024 * 1024)
 
 static uint8_t etnaviv_uncached_buffer[ETNA_UNCACHED_BUFFER_SZ] __attribute__ ((aligned (0x1000)));
@@ -225,6 +227,7 @@ static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 			return NULL;
 		}
 
+#if USE_GPU2D
 		if (irq_attach(	R2D_GPU2D_IRQ,
 				etna_irq_handler,
 				0,
@@ -240,18 +243,21 @@ static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 				"i.MX6 GPU2D")) {
 			return NULL;
 		}
+#endif
 
 		imx_gpu_power_set(1);
 
 		clk_enable("gpu3d");
+#if USE_GPU2D
 		clk_enable("gpu2d");
+#endif
 		clk_enable("openvg");
 		clk_enable("vpu");
-
+#if USE_GPU2D
 		etnaviv_gpu_init(&etnaviv_gpus[PIPE_ID_PIPE_2D]);
-		etnaviv_gpu_init(&etnaviv_gpus[PIPE_ID_PIPE_3D]);
-
 		etnaviv_gpu_debugfs(&etnaviv_gpus[PIPE_ID_PIPE_2D], "GPU2D");
+#endif
+		etnaviv_gpu_init(&etnaviv_gpus[PIPE_ID_PIPE_3D]);
 		etnaviv_gpu_debugfs(&etnaviv_gpus[PIPE_ID_PIPE_2D], "GPU3D");
 	}
 

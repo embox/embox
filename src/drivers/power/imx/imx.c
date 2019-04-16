@@ -96,19 +96,6 @@ static void imx_anatop_pu_enable(int enable) {
 
 extern int clk_enable(char *clk_name);
 extern int clk_disable(char *clk_name);
-static void imx_power_clk(int enable) {
-	if (enable) {
-		clk_enable("gpu3d");
-		clk_enable("gpu2d");
-		clk_enable("openvg");
-		clk_enable("vpu");
-	} else {
-		clk_disable("gpu3d");
-		clk_disable("gpu2d");
-		clk_disable("openvg");
-		clk_disable("vpu");
-	}
-}
 
 void imx_gpu_power_set(int up) {
 	int t = 0xfffff;
@@ -122,8 +109,6 @@ void imx_gpu_power_set(int up) {
 		REG32_ORIN(GPC_CNTR, GPU_VPU_PUP_REQ);
 
 		while (REG32_LOAD(GPC_CNTR) & GPU_VPU_PUP_REQ);
-
-		imx_power_clk(1);
 	} else {
 		/* Power-down */
 		REG32_STORE(PGC_GPU_CTRL, 1);
