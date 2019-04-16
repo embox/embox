@@ -7,8 +7,6 @@
 #include <lib/fps.h>
 
 #define USE_TRACE 0
-#define WIDTH 800
-#define HEIGHT 480
 #define NEAR 0
 #define FAR 1
 #define FLIP 0
@@ -74,6 +72,9 @@ struct program
 	struct pipe_resource *target;
 	struct pipe_resource *tex;
 	struct pipe_sampler_view *view;
+
+	int width;
+	int height;
 };
 
 static float vertices[4][2][4] = {
@@ -133,8 +134,8 @@ static void init_prog(struct program *p)
 		memset(&tmplt, 0, sizeof(tmplt));
 		tmplt.target = PIPE_TEXTURE_2D;
 		tmplt.format = PIPE_FORMAT_B5G6R5_UNORM; /* All drivers support this */
-		tmplt.width0 = WIDTH;
-		tmplt.height0 = HEIGHT;
+		tmplt.width0 = p->width;
+		tmplt.height0 = p->height;
 		tmplt.depth0 = 1;
 		tmplt.array_size = 1;
 		tmplt.last_level = 0;
@@ -213,8 +214,8 @@ static void init_prog(struct program *p)
 	surf_tmpl.u.tex.last_layer = 0;
 	/* drawing destination */
 	memset(&p->framebuffer, 0, sizeof(p->framebuffer));
-	p->framebuffer.width = WIDTH;
-	p->framebuffer.height = HEIGHT;
+	p->framebuffer.width = p->width;
+	p->framebuffer.height = p->height;
 	p->framebuffer.nr_cbufs = 1;
 	p->framebuffer.cbufs[0] = p->pipe->create_surface(p->pipe, p->target, &surf_tmpl);
 
@@ -223,14 +224,14 @@ static void init_prog(struct program *p)
 		float x = 0;
 		float y = 0;
 		float z = NEAR;
-		float half_width = (float)WIDTH / 2.0f;
-		float half_height = (float)HEIGHT / 2.0f;
+		float half_width = (float)p->width / 2.0f;
+		float half_height = (float)p->height / 2.0f;
 		float half_depth = ((float)FAR - (float)NEAR) / 2.0f;
 		float scale, bias;
 
 		if (FLIP) {
 			scale = -1.0f;
-			bias = (float)HEIGHT;
+			bias = (float)p->height;
 		} else {
 			scale = 1.0f;
 			bias = 0.0f;
@@ -302,9 +303,9 @@ static void draw(struct program *p) {
 	struct fb_info *mesa_fbi;
 	mesa_fbi = fb_lookup(0);
 
-	void *sw_base;
+	void *sw_base[2] = { NULL, NULL };
 
-	struct pipe_transfer *transfer;
+	struct pipe_transfer *transfer[2];
 	struct pipe_surface *surface = p->framebuffer.cbufs[0];
 	struct pipe_context *pipe = p->pipe;
 	struct pipe_resource *texture = surface->texture;
@@ -329,8 +330,11 @@ static void draw(struct program *p) {
 
 	/* vertex element data */
 	cso_set_vertex_elements(p->cso, 2, p->velem);
+	int current_id;
+
 	while (true) {
 		step++;
+		current_id = step % 2;
 		const float theta = 0.01;
 
 		for (int i = 0; i < 4; i++) {
@@ -359,21 +363,21 @@ static void draw(struct program *p) {
 				2); /* attribs/vert */
 
 		p->pipe->flush(p->pipe, NULL, 0);
-
 		ptr = pipe_transfer_map(pipe, texture, surface->u.tex.level,
 				surface->u.tex.first_layer, PIPE_TRANSFER_READ,
-				0, 0, surface->width, surface->height, &transfer);
+				0, 0, surface->width, surface->height, &transfer[current_id]);
 
-		uint16_t *p16;
-		sw_base = fps_current_frame(mesa_fbi);
-		for (int i = 0; i < HEIGHT; i++) {
-			p16 = ((void *)ptr) + (i * WIDTH * 2);
-			memcpy(sw_base + mesa_fbi->var.xres * i * 2, p16, WIDTH * 2);
+		sw_base[current_id] = ptr;
+
+		if (sw_base[0] && sw_base[1]) {
+			/* Make sure we have both bsae frame and back frame
+			 * filled. Actualy, it's the same as (steps > 1) */
+			fps_set_base_frame(mesa_fbi, sw_base[0]);
+			fps_set_back_frame(mesa_fbi, sw_base[1]);
+			fps_print(mesa_fbi);
+			fps_swap(mesa_fbi);
+			pipe->transfer_unmap(pipe, transfer[current_id ^ 1]);
 		}
-
-		fps_print(mesa_fbi);
-		fps_swap(mesa_fbi);
-		pipe->transfer_unmap(pipe, transfer);
 	}
 }
 

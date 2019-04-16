@@ -38,20 +38,19 @@ void fps_set_format(const char *format) {
 
 /* fps_sw_base is interpreted as follows:
  *   1) If framebuffer drivers supports changing frame base pointer, then
- *      it points to first buffer, and after it there's another buffer with
- *      the same size, i.e.:
+ *      sw_base[0] is a first buffer, and sw_base[1] is a back buffer
  *
- *      |    <- screen size ->       ||
- *      [ first pixel .... last_pixel][ first pixel of back buffer ..
- *       ^                             ^
- *       fps_sw_base                   fps_sw_base + width * height * 8 / bpp
- *
- *   2) Otherwise it's just a pointer to temporary frame buffer
+ *   2) Otherwise they just point to the same memory location
  */
-static uint8_t *fps_sw_base = 0;
-void fps_set_base(struct fb_info *fb, void *base) {
+static uint8_t *fps_sw_base[2] = { 0, 0 };
+void fps_set_base_frame(struct fb_info *fb, void *base) {
 	/* XXX works only with single FB */
-	fps_sw_base = base;
+	fps_sw_base[0] = base;
+}
+
+void fps_set_back_frame(struct fb_info *fb, void *base) {
+	/* XXX works only with single FB */
+	fps_sw_base[1] = base;
 }
 
 /**
@@ -88,7 +87,7 @@ void fps_print(struct fb_info *fb) {
 
 	snprintf(msg_buf, sizeof(msg_buf), fps_format_string, fps);
 
-	fb_overlay_init(fb, fps_sw_base != 0 ? (void *) fps_current_frame(fb) : (void *) fb->screen_base);
+	fb_overlay_init(fb, fps_sw_base[0] != 0 ? (void *) fps_current_frame(fb) : (void *) fb->screen_base);
 
 	msg = msg_buf;
 	line = 0;
@@ -117,7 +116,7 @@ void *fps_enable_swap(struct fb_info *fb) {
 	screen_sz = fb->var.xres * fb->var.yres *
 		fb->var.bits_per_pixel / 8;
 
-	if (fps_sw_base != 0) {
+	if (fps_sw_base[0] != 0) {
 		log_error("Can't initialize second frame buffer");
 		return fps_sw_base;
 	}
@@ -127,14 +126,20 @@ void *fps_enable_swap(struct fb_info *fb) {
 		screen_sz *= 2;
 	}
 
-	if (0 == (fps_sw_base = malloc(screen_sz))) {
+	if (0 == (fps_sw_base[0] = malloc(screen_sz))) {
 		log_error("Failed to allocate buffer");
 		return 0;
 	}
 
-	memset(fps_sw_base, 0, screen_sz);
+	memset(fps_sw_base[0], 0, screen_sz);
 
-	return fps_sw_base;
+	if (fb->ops.fb_set_base != NULL) {
+		fps_sw_base[1] = fps_sw_base[0] + screen_sz / 2;
+	} else {
+		fps_sw_base[1] = fps_sw_base[0];
+	}
+
+	return fps_sw_base[0];
 }
 
 
@@ -144,24 +149,23 @@ static int fps_current = 0;
  *        currently is on the screen
  */
 void *fps_current_frame(struct fb_info *fb) {
-	int screen_sz;
-
 	assert(fb);
-	screen_sz = fb->var.xres * fb->var.yres *
-		fb->var.bits_per_pixel / 8;
 
 	if (fps_current % 2 == 0) {
-		return fps_sw_base;
+		assert(fps_sw_base[0]);
+		return fps_sw_base[0];
 	} else {
-		return fps_sw_base + screen_sz;
+		assert(fps_sw_base[1]);
+		return fps_sw_base[1];
 	}
 }
+
 /**
  * @brief Copy temporary buffer to actual hw frame buffer
  */
 int fps_swap(struct fb_info *fb) {
 	assert(fb);
-	assert(fps_sw_base);
+	assert(fps_sw_base[0]);
 
 	if (fb->ops.fb_set_base != NULL) {
 		fb->ops.fb_set_base(fb, fps_current_frame(fb));
