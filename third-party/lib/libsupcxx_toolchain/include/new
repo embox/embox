@@ -6,12 +6,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef STANDALONE_NEW_
-#define STANDALONE_NEW_
-
-#if defined(__EXCEPTIONS) && __EXCEPTIONS==1
-#error Exceptions must be disabled
-#endif
+#ifndef THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_NEW_
+#define THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_NEW_
 
 #include <cstdlib>
 #include <exception>
@@ -19,7 +15,6 @@
 extern "C++" {
 
 namespace std {
-
 	class bad_alloc : public exception {
 	public:
 		bad_alloc() throw() { }
@@ -70,4 +65,4 @@ inline void operator delete[](void*, void*) throw() { }
 
 } // extern "C++"
 
-#endif // STANDALONE_NEW_
+#endif // THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_NEW_
