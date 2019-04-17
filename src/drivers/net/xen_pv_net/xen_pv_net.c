@@ -11,6 +11,8 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
+
 #include <embox/unit.h>
 #include <xenstore.h>
 #include <kernel/printk.h>
@@ -170,7 +172,7 @@ static void xenstore_info() {
 	printk("\n --- XenStore Info End ---\n");
 }
 
-static void xenstore_interaction(dev) {
+static void xenstore_interaction(struct netfront_dev *dev) {
 	char xs_key[XS_MAX_KEY_LENGTH], xs_value[XS_MAX_KEY_LENGTH];
 	int err;
 
@@ -275,8 +277,9 @@ static void xenstore_interaction(dev) {
     }
 
     printk("**************************\n");
-
     // unmask_evtchn(dev->evtchn);
+
+	return;
 }
 
 struct host_net_adp {
