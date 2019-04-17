@@ -1,0 +1,30 @@
+package embox.cmd.testing.mqtt_udp
+
+@AutoCmd
+@Cmd(name = "server",
+    help = "MQTT test server",
+    man = '''
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+module server {
+	source "server.c"
+}
+
+@AutoCmd
+@Cmd(name = "client",
+    help = "MQTT test client",
+    man = '''
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+module client {
+	source "client.c"	
+}
+
+module all {
+	source "mqtt_test.h"
+	source "mqtt_test.c"
+
+	depends server,	client
+}
