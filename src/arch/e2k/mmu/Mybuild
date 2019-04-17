@@ -1,0 +1,16 @@
+package embox.arch.e2k
+
+module mmu extends embox.mem.vmem {
+	option number log_level=1
+	option number page_size=4096
+	source "mmu.c"
+	source "mmu.h"
+
+	depends embox.mem.vmem_depends
+}
+
+module mmuinfo extends embox.arch.mmuinfo {
+	option number log_level=1
+
+	source "mmuinfo.c"
+}
