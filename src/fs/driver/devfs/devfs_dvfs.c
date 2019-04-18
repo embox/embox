@@ -16,6 +16,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdint.h>
 
 #include <util/err.h>
 
@@ -73,12 +74,12 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 	struct dev_module *dev_module;
 	struct block_dev **bdevtab = get_bdev_tab();
 	struct dev_module **cdevtab = get_cdev_tab();
-	switch ((int)ctx->fs_ctx & 3) {
+	switch ((intptr_t)ctx->fs_ctx & 3) {
 	case 0:
 		/* Block device */
-		for (i = ((int) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++) {
+		for (i = ((intptr_t) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++) {
 			if (bdevtab[i]) {
-				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
+				ctx->fs_ctx = (void*) ((intptr_t) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, bdevtab[i]->dev_module, S_IFBLK);
 				next->length = bdevtab[i]->size;
 				return 0;
@@ -91,8 +92,8 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 		i = 0;
 		/* Statically registered devices */
 		array_spread_foreach_ptr(dev_module, __char_device_registry) {
-			if (i++ == (int) ctx->fs_ctx >> 2) {
-				ctx->fs_ctx = (void*) ((int) ctx->fs_ctx + 0x4);
+			if (i++ == (intptr_t) ctx->fs_ctx >> 2) {
+				ctx->fs_ctx = (void*) ((intptr_t) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, dev_module, S_IFCHR);
 				return 0;
 			}
@@ -100,8 +101,8 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 
 		/* Dynamically allocated devices */
 		for (j = 0; j < MAX_CDEV_QUANTITY; j++) {
-			if (cdevtab[j] && i++ == (int) ctx->fs_ctx >> 2) {
-				ctx->fs_ctx = (void *) ((int) ctx->fs_ctx + 0x4);
+			if (cdevtab[j] && i++ == (intptr_t) ctx->fs_ctx >> 2) {
+				ctx->fs_ctx = (void *) ((intptr_t) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, cdevtab[j], S_IFCHR);
 				return 0;
 			}

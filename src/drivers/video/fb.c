@@ -395,8 +395,8 @@ static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *
 	height = min(area->height, info->var.yres - max(area->sy, area->dy));
 
 	assert(info->screen_base != NULL);
-	dstn = srcn = (uint32_t)info->screen_base % sizeof(*dst);
-	dst = src = (uint32_t *)((uint32_t)info->screen_base - dstn);
+	dstn = srcn = (uintptr_t)info->screen_base % sizeof(*dst);
+	dst = src = (uint32_t *)((uintptr_t)info->screen_base - dstn);
 	dstn = dstn * CHAR_BIT + (area->dy * info->var.xres
 			+ area->dx) * info->var.bits_per_pixel;
 	srcn = srcn * CHAR_BIT + (area->sy * info->var.xres
@@ -539,8 +539,8 @@ static void fb_default_fillrect(struct fb_info *info, const struct fb_fillrect *
 	pat_orig = pixel_to_pat(info->var.bits_per_pixel, rect->color);
 
 	assert(info->screen_base != NULL);
-	dstn = (uint32_t)info->screen_base % sizeof(*dst);
-	dst = (uint32_t *)((uint32_t)info->screen_base - dstn);
+	dstn = (uintptr_t)info->screen_base % sizeof(*dst);
+	dst = (uint32_t *)((uintptr_t)info->screen_base - dstn);
 	dstn = dstn * CHAR_BIT + (rect->dy * info->var.xres
 			+ rect->dx) * info->var.bits_per_pixel;
 	roff = sizeof(*dst) * CHAR_BIT % info->var.bits_per_pixel;

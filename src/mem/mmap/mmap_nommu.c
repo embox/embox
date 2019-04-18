@@ -23,8 +23,8 @@ EMBOX_UNIT(init, fini);
 
 static DLIST_DEFINE(glob_list);
 
-static uint32_t mem_start;
-static uint32_t mem_end;
+static uintptr_t mem_start;
+static uintptr_t mem_end;
 static uint32_t mem_page_count;
 
 void mmap_init(struct emmap *mmap) {
@@ -116,7 +116,7 @@ static int init() {
 
 	mem_page_count = 1;
 
-	if (!(mem_start = (uint32_t)phymem_alloc(mem_page_count))) {
+	if (!(mem_start = (uintptr_t)phymem_alloc(mem_page_count))) {
 		return -ENOMEM;
 	}
 

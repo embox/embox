@@ -15,6 +15,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <setjmp.h>
+#include <stdint.h>
 
 #include <kernel/printk.h>
 #include <kernel/panic.h>
@@ -144,7 +145,7 @@ void __test_assertion_handle(int pass,
 	assert(point);
 
 	if (current) {
-		longjmp(current->before_run, (int) point);
+		longjmp(current->before_run, (intptr_t) point);
 
 	} else {
 		handle_case_result(NULL, point);

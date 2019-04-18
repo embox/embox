@@ -11,7 +11,6 @@
 #include <drivers/pci/pci.h>
 #include <asm/io.h>
 
-
 /* Using for search PCI configuration space start position address */
 #define PCI_REG_ADDR(bus, physdev, fun, where) \
 	(((where) & ~3) | ((fun) << 12) | ((physdev) << 15) | ((bus) << 20))
@@ -25,11 +24,11 @@ static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 	/* pci_mem_core_t *ppmc = (pci_mem_core_t *) (pMACHINE->pPMC); */
 	/* TODO Get SIC_RT_PCICFG_BASE */
 	unsigned long pci_conf_base = 0x200000;
-	unsigned long dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
+	uintptr_t dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
 
 	pci_conf_base <<= 12;
 
-	tmp = e2k_read32((void*)(dev_addr + pci_conf_base));
+	tmp = e2k_read32((dev_addr + pci_conf_base));
 
 	if (tmp == 0xFFFFFFFF) {
 		* (uint32_t *) ptr = PCI_VENDOR_WRONG;
@@ -53,11 +52,11 @@ static inline uint32_t e2k_pci_config_write(uint32_t bus, uint32_t dev_fn,
 	/* pci_mem_core_t *ppmc = (pci_mem_core_t *) (pMACHINE->pPMC); */
 	/* TODO Get SIC_RT_PCICFG_BASE */
 	unsigned long pci_conf_base = 0x200000;
-	unsigned long dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
+	uintptr_t dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
 
 	log_error("*******************");
 
-	e2k_write32(value, (void*)dev_addr + pci_conf_base);
+	e2k_write32(value, dev_addr + pci_conf_base);
 /*
 	ptr = (void *) (pci_conf_base + where);
 	if (size == 1) {
