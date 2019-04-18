@@ -6,4 +6,5 @@ module xen_pv_net {
 	depends embox.arch.xen.xenstore
 	depends embox.net.l2.ethernet
 	depends embox.net.core
+	depends embox.compat.libc.str_dup
 }
