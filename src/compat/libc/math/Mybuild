@@ -1,6 +1,6 @@
 package embox.compat.libc
 
-@DefaultImpl(math_openlibm)
+@DefaultImpl(math_builtins)
 abstract module math {
 }
 
