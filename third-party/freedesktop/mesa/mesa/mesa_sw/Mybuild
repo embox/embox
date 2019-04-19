@@ -14,4 +14,6 @@ module  mesa_osmesa {
 	depends embox.compat.posix.fs.mknod_api
 	depends third_party.freedesktop.mesa.libdrm
 	@NoRuntime depends embox.compat.posix.pthread_key
+
+	depends embox.lib.cxx.libsupcxx_standalone
 }

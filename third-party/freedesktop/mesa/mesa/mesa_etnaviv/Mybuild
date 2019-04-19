@@ -17,4 +17,5 @@ module  mesa_etnaviv {
 	depends embox.compat.posix.pthread_key
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
+	depends embox.lib.cxx.libsupcxx_standalone
 }
