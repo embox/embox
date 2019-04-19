@@ -5,6 +5,8 @@
 #include <drivers/video/fb.h>
 #include <drivers/video/fb_overlay.h>
 #include <lib/fps.h>
+#include <kernel/time/ktime.h>
+#include <mem/vmem.h>
 
 #define USE_TRACE 0
 #define NEAR 0
@@ -102,6 +104,10 @@ static void init_prog(struct program *p)
 {
 	struct pipe_surface surf_tmpl;
 	int ret;
+
+	struct fb_info *mesa_fbi = fb_lookup(0);
+	p->width = mesa_fbi->var.xres;
+	p->height = mesa_fbi->var.yres;
 
 	/* find a hardware device */
 	ret = pipe_loader_probe(&p->dev, 1);
@@ -296,12 +302,9 @@ static void close_prog(struct program *p)
 void dcache_flush(const void *p, size_t size);
 static void draw(struct program *p) {
 	const struct pipe_sampler_state *samplers[] = {&p->sampler};
-	static int step = -1;
-	/* set the render target */
-	cso_set_framebuffer(p->cso, &p->framebuffer);
+	static int step = 0;
 
-	struct fb_info *mesa_fbi;
-	mesa_fbi = fb_lookup(0);
+	struct fb_info *mesa_fbi = fb_lookup(0);
 
 	void *sw_base[2] = { NULL, NULL };
 
@@ -310,8 +313,10 @@ static void draw(struct program *p) {
 	struct pipe_context *pipe = p->pipe;
 	struct pipe_resource *texture = surface->texture;
 	void *ptr = 0;
+	int first_run = 1, current_id = 0;
 
-	fps_enable_swap(mesa_fbi);
+	/* set the render target */
+	cso_set_framebuffer(p->cso, &p->framebuffer);
 
 	cso_set_blend(p->cso, &p->blend);
 	cso_set_depth_stencil_alpha(p->cso, &p->depthstencil);
@@ -330,7 +335,6 @@ static void draw(struct program *p) {
 
 	/* vertex element data */
 	cso_set_vertex_elements(p->cso, 2, p->velem);
-	int current_id;
 
 	while (true) {
 		step++;
@@ -363,19 +367,37 @@ static void draw(struct program *p) {
 				2); /* attribs/vert */
 
 		p->pipe->flush(p->pipe, NULL, 0);
+
 		ptr = pipe_transfer_map(pipe, texture, surface->u.tex.level,
 				surface->u.tex.first_layer, PIPE_TRANSFER_READ,
 				0, 0, surface->width, surface->height, &transfer[current_id]);
 
 		sw_base[current_id] = ptr;
 
+		ksleep(5);
+
 		if (sw_base[0] && sw_base[1]) {
-			/* Make sure we have both bsae frame and back frame
-			 * filled. Actualy, it's the same as (steps > 1) */
-			fps_set_base_frame(mesa_fbi, sw_base[0]);
-			fps_set_back_frame(mesa_fbi, sw_base[1]);
+			if (first_run) {
+				vmem_set_flags(vmem_current_context(),
+					(mmu_vaddr_t) sw_base[0],
+					p->width * p->height * 2,
+					VMEM_PAGE_WRITABLE);
+
+				vmem_set_flags(vmem_current_context(),
+					(mmu_vaddr_t) sw_base[1],
+					p->width * p->height * 2,
+					VMEM_PAGE_WRITABLE);
+
+				fps_set_base_frame(mesa_fbi, sw_base[0]);
+				fps_set_back_frame(mesa_fbi, sw_base[1]);
+
+				first_run = 0;
+			}
+
 			fps_print(mesa_fbi);
+
 			fps_swap(mesa_fbi);
+
 			pipe->transfer_unmap(pipe, transfer[current_id ^ 1]);
 		}
 	}
