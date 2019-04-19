@@ -56,6 +56,7 @@ typedef struct node {
 
 struct node_info {
 	size_t        size;
+	unsigned int  ctime; /* time of last status change */
 	unsigned int  mtime;
 };
 

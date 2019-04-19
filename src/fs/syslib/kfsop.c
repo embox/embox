@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/stat.h>
-
+#include <utime.h>
 #include <sys/file.h>
 
 #include <fs/vfs.h>
@@ -291,6 +291,17 @@ int klstat(const char *path, struct stat *buf) {
 	kfile_fill_stat(node.node, buf);
 
 	return 0;
+}
+
+int kutime(const char *path,const struct utimbuf *times) {
+	struct path node;
+	int res;
+
+	if (0 != (res = fs_perm_lookup(path, NULL, &node))) {
+		return res;
+	}
+
+	return kfile_change_stat(node.node, times);
 }
 
 int kformat(const char *pathname, const char *fs_type) {

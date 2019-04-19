@@ -19,6 +19,8 @@
 #include <fs/path.h>
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
+#include <sys/time.h>
+#include <utime.h>
 
 int ktruncate(struct node *node, off_t length) {
 	int ret;
@@ -64,6 +66,33 @@ int kfile_fill_stat(struct node *node, struct stat *stat_buff) {
 	stat_buff->st_mode = node->mode;
 	stat_buff->st_uid = node->uid;
 	stat_buff->st_gid = node->gid;
+	stat_buff->st_ctime = ni->ctime;
+	stat_buff->st_mtime = ni->mtime;
+	return 0;
+}
+
+int kfile_change_stat(struct node *node, const struct utimbuf *times) {
+	struct nas *nas;
+	struct node_info *ni;
+	struct timeval now;
+
+	if (node == NULL) {
+		return -ENOENT;
+	}
+
+	nas = node->nas;
+	ni = &nas->fi->ni;
+
+	if (times == NULL) {
+		if (gettimeofday(&now, NULL) == -1) {
+			return -EINVAL;
+		}
+		ni->ctime = now.tv_sec;
+		return 0;
+	}
+
+	ni->ctime = times->actime;
+	ni->mtime = times->modtime;
 
 	return 0;
 }
