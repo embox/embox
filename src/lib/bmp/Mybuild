@@ -1,0 +1,8 @@
+package embox.lib
+
+static module bmp {
+	source "bmp.c"
+
+	@IncludeExport(path="lib")
+	source "bmp.h"
+}
