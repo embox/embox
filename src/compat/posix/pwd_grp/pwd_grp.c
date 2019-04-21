@@ -179,7 +179,7 @@ struct passwd *getpwnam(const char *name) {
 	struct passwd *res;
 	int ret;
 
-	if (0 != (ret = getpwnam_r(name, &getpwnam_buffer, buff, 0x80,  &res))) {
+	if (0 != (ret = getpwnam_r(name, &getpwnam_buffer, buff, sizeof(buff),  &res))) {
 		SET_ERRNO(-ret);
 		return NULL;
 	}
@@ -219,7 +219,7 @@ struct passwd *getpwuid(uid_t uid) {
 	struct passwd *res;
 	int ret;
 
-	if (0 != (ret = getpwuid_r(uid, &getpwuid_buffer, buff, 80, &res))) {
+	if (0 != (ret = getpwuid_r(uid, &getpwuid_buffer, buff, sizeof(buff), &res))) {
 		SET_ERRNO(-ret);
 		return NULL;
 	}
@@ -307,9 +307,9 @@ int getgrnam_r(const char *name, struct group *grp,
 }
 
 struct group * getgrgid(gid_t gid) {
-	static struct group *result;
-	struct group grp;
-	char buf[64];
+	static struct group grp;
+	static char buf[64];
+	struct group *result;
 	int ret;
 
 	ret = getgrgid_r(gid, &grp, buf, sizeof buf, &result);
@@ -356,7 +356,7 @@ int getmaxuid() {
 		return res;
 	}
 
-	while (0 == (res = fgetpwent_r(file, &pwd, buff, 80, &result))) {
+	while (0 == (res = fgetpwent_r(file, &pwd, buff, sizeof(buff), &result))) {
 		if (pwd.pw_uid > curmax) {
 			curmax = pwd.pw_uid;
 		}
