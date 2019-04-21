@@ -25,6 +25,9 @@ static inline struct group *getgrnam(const char *name) {
 
 __BEGIN_DECLS
 
+extern int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
+		size_t buflen, struct group **gbufp);
+
 extern struct group * getgrgid(gid_t gid);
 extern int getgrgid_r(gid_t, struct group *, char *, size_t, struct group **);
 extern int getgrnam_r(const char *, struct group *, char *, size_t , struct group **);
