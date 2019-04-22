@@ -291,6 +291,20 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 	return 0;
 }
 
+struct group *fgetgrent(FILE *stream) {
+	static struct group grp_buf;
+	static char buf[64];
+	struct group *res;
+	int ret;
+
+	if (0 != (ret = fgetgrent_r(stream, &grp_buf, buf, sizeof(buf), &res))) {
+		SET_ERRNO(ret);
+		return NULL;
+	}
+
+	return res;
+}
+
 int getgrnam_r(const char *name, struct group *grp,
 	char *buf, size_t buflen, struct group **result) {
 	int res;

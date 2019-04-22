@@ -22,6 +22,7 @@ __BEGIN_DECLS
 
 extern int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 		size_t buflen, struct group **gbufp);
+extern struct group *fgetgrent(FILE *stream);
 
 extern struct group * getgrgid(gid_t gid);
 extern struct group *getgrnam(const char *name);
