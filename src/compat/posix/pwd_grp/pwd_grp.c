@@ -327,6 +327,21 @@ struct group * getgrgid(gid_t gid) {
 	return result;
 }
 
+struct group *getgrnam(const char *name) {
+	static struct group grp_buf;
+	static char buf[64];
+	struct group *res;
+	int ret;
+
+	ret = getgrnam_r(name, &grp_buf, buf, sizeof(buf), &res);
+	if (0 != ret) {
+		SET_ERRNO(ret);
+		return NULL;
+	}
+
+	return res;
+}
+
 int getgrgid_r(gid_t gid, struct group *grp,
 	char *buf, size_t buflen, struct group **result) {
 	int res;

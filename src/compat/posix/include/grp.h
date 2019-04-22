@@ -18,19 +18,17 @@ struct group {
 	char  **gr_mem; /* Pointer to a null-terminated array of character pointers to member names.*/
 };
 
-static inline struct group *getgrnam(const char *name) {
-	(void)name;
-	return NULL;
-}
-
 __BEGIN_DECLS
 
 extern int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 		size_t buflen, struct group **gbufp);
 
 extern struct group * getgrgid(gid_t gid);
-extern int getgrgid_r(gid_t, struct group *, char *, size_t, struct group **);
-extern int getgrnam_r(const char *, struct group *, char *, size_t , struct group **);
+extern struct group *getgrnam(const char *name);
+extern int getgrgid_r(gid_t gid, struct group *gbuf, char *buf,
+		size_t buflen, struct group **gbufp);
+extern int getgrnam_r(const char *name, struct group *gbuf, char *buf,
+		size_t buflen, struct group **gbufp);
 
 __END_DECLS
 
