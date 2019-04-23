@@ -377,6 +377,61 @@ int getgrgid_r(gid_t gid, struct group *grp,
 	return res == ENOENT ? 0 : res;
 }
 
+static FILE *_grp_stream = NULL;
+
+int getgrent_r(struct group *gbuf, char *buf,
+		size_t buflen, struct group **gbufp) {
+	int ret;
+
+	if (NULL == _grp_stream) {
+		if (0 != (ret = open_db(GROUP_FILE, &_grp_stream))) {
+			*gbufp = NULL;
+			return ret;
+		}
+	}
+	if (0 != (ret = fgetgrent_r(_grp_stream, gbuf, buf, buflen, gbufp))) {
+		if (ENOENT != ret) {
+			fclose(_grp_stream);
+			_grp_stream = NULL;
+		}
+		*gbufp = NULL;
+		return ret;
+	}
+
+	return 0;
+}
+
+struct group *getgrent(void) {
+	static struct group grp_buf;
+	static char buf[64];
+	struct group *res;
+	int ret;
+
+	if (0 != (ret = getgrent_r(&grp_buf, buf, sizeof(buf), &res))) {
+		SET_ERRNO(ret);
+		return NULL;
+	}
+
+	return res;
+}
+
+void setgrent(void) {
+	if (NULL != _grp_stream) {
+		if (0 != fseek(_grp_stream, 0L, SEEK_SET)) {
+			fclose(_grp_stream);
+			_grp_stream = NULL;
+			SET_ERRNO(EIO);
+		}
+	}
+}
+
+void endgrent(void) {
+	if (NULL != _grp_stream) {
+		fclose(_grp_stream);
+		_grp_stream = NULL;
+	}
+}
+
 int getmaxuid() {
 	int res, curmax = 0;
 	FILE *file;

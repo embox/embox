@@ -31,6 +31,12 @@ extern int getgrgid_r(gid_t gid, struct group *gbuf, char *buf,
 extern int getgrnam_r(const char *name, struct group *gbuf, char *buf,
 		size_t buflen, struct group **gbufp);
 
+extern int getgrent_r(struct group *gbuf, char *buf,
+		size_t buflen, struct group **gbufp);
+extern struct group *getgrent(void);
+extern void setgrent(void);
+extern void endgrent(void);
+
 __END_DECLS
 
 #endif /* GRP_H_ */
