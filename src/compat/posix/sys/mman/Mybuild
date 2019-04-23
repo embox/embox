@@ -11,3 +11,24 @@ static module msync {
 static module libmman {
 	depends msync
 }
+
+@DefaultImpl(mmap_stub)
+abstract module mmap_api {
+}
+
+module mmap extends mmap_api {
+	option number log_level = 0
+
+	source "mmap.c"
+
+	depends embox.fs.syslib.idesc_mmap_api
+	depends embox.mem.mmap_api
+	depends embox.mem.phymem
+	depends embox.mem.vmem
+}
+
+module mmap_stub extends mmap_api {
+	option number log_level = 0
+
+	source "mmap_stub.c"
+}
