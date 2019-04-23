@@ -186,13 +186,6 @@ int usb_whitelist_check(struct usb_dev *dev) {
 	return -EBUSY;
 }
 
-/* XXX */
-#ifndef _IDESC_DEV_
-struct idesc_dev {
-	struct idesc idesc;
-	void *dev;
-};
-#endif
 static struct idesc *usb_whitelist_open(struct dev_module *devmod, void *arg) {
 	struct idesc_dev *idev = mcast_out(devmod, struct idesc_dev, dev);
 	return &idev->idesc;
