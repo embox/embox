@@ -59,5 +59,10 @@ static const struct task_resource_desc task_mmap_desc = {
 
 struct emmap * task_resource_mmap(const struct task *task) {
 	assert(task != NULL);
-	return (void *)task->resources + task_mmap_offset;
+
+	if (task == task_kernel_task()) {
+		return (void *)task->resources + task_mmap_offset;
+	} else {
+		return task_resource_mmap(task_kernel_task());
+	}
 }
