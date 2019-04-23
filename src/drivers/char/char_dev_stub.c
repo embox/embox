@@ -42,3 +42,11 @@ struct idesc *char_dev_open(struct node *node, int flags) {
 int char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
 	return 0;
 }
+
+struct idesc *char_dev_default_open(struct dev_module *cdev, void *priv) {
+	return NULL;
+}
+
+void char_dev_default_close(struct idesc *idesc) {
+	/* Do nothing */
+}
