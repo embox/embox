@@ -41,4 +41,5 @@ module mmap {
 
 	depends embox.mem.vmem
 	depends embox.kernel.task.resource.mmap_full
+	depends embox.compat.posix.sys.mman.mmap
 }
