@@ -29,7 +29,7 @@ INDEX_DEF(dev_module_idx, 0, MAX_DEV_MODULE_COUNT);
 struct dev_module *dev_module_create(
 	const char *name,
 	struct idesc * (*open)  (struct dev_module *, void *),
-	int 		   (*close) (struct idesc *),
+	void 		   (*close) (struct idesc *),
 	const struct idesc_ops *dev_iops,
 	void *privdata
 ) {

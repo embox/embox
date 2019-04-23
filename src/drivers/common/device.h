@@ -31,7 +31,7 @@ struct dev_module {
 	const struct idesc_ops *dev_iops;
 
 	struct idesc *(*dev_open)  (struct dev_module *, void *);
-	int 		  (*dev_close) (struct idesc *);
+	void 		  (*dev_close) (struct idesc *);
 
 	void  *dev_priv;
 };
@@ -39,7 +39,7 @@ struct dev_module {
 extern struct dev_module *dev_module_create(
 	const char *name,
 	struct idesc * (*open)  (struct dev_module *, void *),
-	int 		   (*close) (struct idesc *),
+	void		   (*close) (struct idesc *),
 	const struct idesc_ops *dev_iops,
 	void *privdata
 );
