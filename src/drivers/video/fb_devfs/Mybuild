@@ -6,10 +6,12 @@ abstract module fb_devfs_api {
 
 module fb_devfs_stub extends fb_devfs_api {
 	source "fb_devfs_stub.c"
+
+	depends fb_header
 }
 
 module fb_devfs extends fb_devfs_api {
 	source "fb_devfs.c"
 
-	depends embox.driver.video.fb
+	depends fb_header
 }

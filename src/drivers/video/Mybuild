@@ -1,14 +1,18 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.video
 
+module fb_header {
+	@IncludeExport(path="drivers/video")
+	source "fb.h"
+}
+
 module fb {
 	source "fb.c"
 
-	@IncludeExport(path="drivers/video")
-	source "fb.h"
-
 	option number fb_amount=2
 	option number log_level = 0
+
+	depends fb_header
 	depends embox.mem.pool
 	@NoRuntime depends embox.compat.libc.all
 	depends fb_videomodes
