@@ -24,6 +24,20 @@
 
 typedef uint32_t vmem_page_flags_t;
 
+static inline vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
+	vmem_page_flags_t vmem_page_flags = 0;
+	if (flags & PROT_WRITE) {
+		vmem_page_flags |= VMEM_PAGE_WRITABLE;
+	}
+	if (flags & PROT_EXEC) {
+		vmem_page_flags |= VMEM_PAGE_EXECUTABLE;
+	}
+	if (!(flags & PROT_NOCACHE)) {
+		vmem_page_flags |= VMEM_PAGE_CACHEABLE;
+	}
+	return vmem_page_flags;
+}
+
 #define vmem_set_context(ctx)   mmu_set_context(ctx)
 
 extern int vmem_create_context(mmu_ctx_t *ctx);
