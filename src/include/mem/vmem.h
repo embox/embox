@@ -52,7 +52,7 @@ extern void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_s
 extern int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
 
 extern int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t flags);
-extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t len, vmem_page_flags_t flags);
+extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, vmem_page_flags_t flags);
 
 extern void vmem_handle_page_fault(mmu_vaddr_t virt_addr);
 
