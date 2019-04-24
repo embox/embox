@@ -33,6 +33,8 @@
 
 #include <framework/mod/options.h>
 
+#include <net/util/show_packet.h>
+
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
 
 #define MODOPS_PREP_BUFF_CNT OPTION_GET(NUMBER, prep_buff_cnt)
@@ -86,6 +88,8 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 		vring_push_desc(desc_id, &vq->ring);
 	}
 	sched_unlock();
+
+	show_packet(skb_data_cast_in(skb_data), skb->len, "tx");
 
 	skb_free(skb);
 
