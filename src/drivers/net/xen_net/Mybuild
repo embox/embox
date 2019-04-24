@@ -1,7 +1,10 @@
 package embox.driver.net
 
-module xen_pv_net {
-	source "xen_pv_net.c"
+module xen {
+	source "xen_net.c",
+			"netfront.c",
+			"xs_info.c"
+
 
 	depends embox.arch.xen.xenstore
 	depends embox.net.l2.ethernet
