@@ -35,20 +35,6 @@ static inline int mmap_active(struct emmap *mmap) {
 	return mmap_kernel_inited() && mmap == task_resource_mmap(task_self());
 }
 
-static vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
-	vmem_page_flags_t vmem_page_flags = 0;
-	if (flags & PROT_WRITE) {
-		vmem_page_flags |= VMEM_PAGE_WRITABLE;
-	}
-	if (flags & PROT_EXEC) {
-		vmem_page_flags |= VMEM_PAGE_EXECUTABLE;
-	}
-	if (!(flags & PROT_NOCACHE)) {
-		vmem_page_flags |= VMEM_PAGE_CACHEABLE;
-	}
-	return vmem_page_flags;
-}
-
 int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
 	size_t len = mmu_size_align(marea->end - marea->start);
 
@@ -71,6 +57,24 @@ struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
 			return marea;
 		}
 	}
+	return NULL;
+}
+
+struct marea *mmap_find_marea_next(struct emmap *mmap, mmu_vaddr_t vaddr,
+		struct marea *prev) {
+	struct marea *marea;
+	int found_prev = prev == NULL ? 1 : 0;
+
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
+		if (found_prev && INSIDE(vaddr, marea->start, marea->end)) {
+			return marea;
+		}
+
+		if (marea == prev) {
+			found_prev = 1;
+		}
+	}
+
 	return NULL;
 }
 

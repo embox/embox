@@ -22,6 +22,7 @@ module core {
 	depends embox.compat.posix.fs.chown_api
 	depends embox.compat.posix.fs.rewinddir_api
 	depends embox.compat.posix.proc.atexit_api
+	depends embox.compat.posix.sys.mman.mmap
 }
 
 @Build(stage=2,script="true")

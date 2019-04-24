@@ -24,6 +24,20 @@
 
 typedef uint32_t vmem_page_flags_t;
 
+static inline vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
+	vmem_page_flags_t vmem_page_flags = 0;
+	if (flags & PROT_WRITE) {
+		vmem_page_flags |= VMEM_PAGE_WRITABLE;
+	}
+	if (flags & PROT_EXEC) {
+		vmem_page_flags |= VMEM_PAGE_EXECUTABLE;
+	}
+	if (!(flags & PROT_NOCACHE)) {
+		vmem_page_flags |= VMEM_PAGE_CACHEABLE;
+	}
+	return vmem_page_flags;
+}
+
 #define vmem_set_context(ctx)   mmu_set_context(ctx)
 
 extern int vmem_create_context(mmu_ctx_t *ctx);
@@ -38,7 +52,7 @@ extern void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_s
 extern int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
 
 extern int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t flags);
-extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t len, vmem_page_flags_t flags);
+extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, vmem_page_flags_t flags);
 
 extern void vmem_handle_page_fault(mmu_vaddr_t virt_addr);
 

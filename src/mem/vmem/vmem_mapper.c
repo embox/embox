@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
-
+#include <kernel/printk.h>
 #include <hal/mmu.h>
 #include <util/binalign.h>
 #include <mem/vmem.h>
@@ -81,7 +81,7 @@ int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t 
  *
  * @return Negative error value, zero if succeeded
  */
-int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t len, vmem_page_flags_t flags) {
+int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, vmem_page_flags_t flags) {
 	int ret;
 
 	while (len > 0) {
@@ -95,8 +95,10 @@ int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t len, vmem_page_f
 
 	return 0;
 }
-
+int dop = 0;
 static void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags) {
+	if (dop)
+		printk("SET %p\n", pte);
 	mmu_pte_set_writable(pte, flags & VMEM_PAGE_WRITABLE);
 	mmu_pte_set_executable(pte, flags & VMEM_PAGE_EXECUTABLE);
 	mmu_pte_set_cacheable(pte, flags & VMEM_PAGE_CACHEABLE);
