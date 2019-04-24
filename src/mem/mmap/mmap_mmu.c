@@ -60,6 +60,24 @@ struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
 	return NULL;
 }
 
+struct marea *mmap_find_marea_next(struct emmap *mmap, mmu_vaddr_t vaddr,
+		struct marea *prev) {
+	struct marea *marea;
+	int found_prev = prev == NULL ? 1 : 0;
+
+	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
+		if (found_prev && INSIDE(vaddr, marea->start, marea->end)) {
+			return marea;
+		}
+
+		if (marea == prev) {
+			found_prev = 1;
+		}
+	}
+
+	return NULL;
+}
+
 static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
 	if (mmap_find_marea(mmap, marea->start)
 			|| mmap_find_marea(mmap, marea->end)) {

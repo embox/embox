@@ -41,6 +41,8 @@ struct emmap {
 extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
 extern void mmap_del_marea(struct marea *marea);
 extern struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr);
+extern struct marea *mmap_find_marea_next(struct emmap *mmap, mmu_vaddr_t vaddr,
+		struct marea *prev);
 extern int mmap_kernel_inited(void);
 extern struct emmap *mmap_early_emmap(void);
 extern int mmap_mapping(struct emmap *emmap);
