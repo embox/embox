@@ -113,17 +113,18 @@ int munmap(void *addr, size_t size) {
 	mmap_del_marea(marea);
 
 	if (mmap_kernel_inited()) {
-		mmap_do_marea_unmap(emmap, marea);
+		marea_destroy(marea);
 
+		/* TODO calculate possible overlap more accurate */
 		if ((m = mmap_find_marea(emmap, (mmu_vaddr_t) addr))) {
 			/* Another marea for context overlaps this memory segment,
 			 * so we should restore old memory attributes */
-			mmap_do_marea_unmap(emmap, m);
-			mmap_do_marea_map(emmap, m);
+			mmap_do_marea_map_overwrite(emmap, m);
+		} else {
+			mmap_do_marea_unmap(emmap, marea);
 		}
 	}
 
-	marea_destroy(marea);
 
 	return 0;
 }

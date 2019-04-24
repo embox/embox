@@ -60,9 +60,12 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
-	mmu_paddr_t v_end = virt_addr + reg_size;
+	mmu_paddr_t v_end;
 	size_t pgd_idx, pmd_idx, pte_idx;
 	void *addr;
+
+	v_end = binalign_bound(virt_addr + reg_size, MMU_PAGE_SIZE);
+	virt_addr = virt_addr & (~MMU_PAGE_MASK);
 
 	/* Considering that all boundaries are already aligned */
 	assert(!(virt_addr & MMU_PAGE_MASK));

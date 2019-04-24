@@ -45,6 +45,16 @@ int mmap_do_marea_map(struct emmap *mmap, struct marea *marea) {
 			marea_to_vmem_flags(marea->flags));
 }
 
+int mmap_do_marea_map_overwrite(struct emmap *mmap, struct marea *marea) {
+	size_t len = mmu_size_align(marea->end - marea->start);
+
+	return vmem_map_region_overwrite(mmap->ctx,
+			marea->start,
+			marea->start,
+			len,
+			marea_to_vmem_flags(marea->flags));
+}
+
 void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
 	size_t len = mmu_size_align(marea->end - marea->start);
 	vmem_unmap_region(mmap->ctx, marea->start, len);

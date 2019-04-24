@@ -74,6 +74,14 @@ struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
 	return &idev->idesc;
 }
 
+struct idesc *char_dev_default_open(struct dev_module *cdev, void *priv) {
+	return char_dev_idesc_create(cdev);
+}
+
+void char_dev_default_close(struct idesc *idesc) {
+	pool_free(&idev_pool, idesc);
+}
+
 struct idesc *char_dev_open(struct node *node, int flags) {
 	struct dev_module *cdev = node->nas->fi->privdata;
 
