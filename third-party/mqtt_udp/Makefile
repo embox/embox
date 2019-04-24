@@ -1,15 +1,37 @@
-PKG_SOURCES := https://github.com/dzavalishin/mqtt_udp.git
+PKG_NAME	:= mqtt_udp
+PKG_VER  	:= 0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa
 
-# PKG_PATCHES := mqtt_udp.patch
+PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
 
-# include $(EXTBLD_LIB)
+PKG_SOURCES := https://github.com/dzavalishin/mqtt_udp/archive/$(PKG_VER).tar.gz
+PKG_MD5 	:= 4707c6f644c6fa09bf000e9ab22cd7b4
+
+PKG_PATCHES := patch.txt
+
+include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
+	export EMBOX_GCC_LINK=full
+	cd $(PKG_SOURCE_DIR)/lang/c && chmod +x configure && (./configure \
+		CC=$(EMBOX_GCC) \
+		CFLAGS="$(EMBOX_IMPORTED_CFLAGS) -g -O2" \
+		CPPFLAGS="$(EMBOX_IMPORTED_CPPFLAGS) -Drpl_malloc=malloc" \
+		--host=$(AUTOCONF_TARGET_TRIPLET) \
+		--target=$(AUTOCONF_TARGET_TRIPLET) \
+	)
+
 	touch $@
 
 $(BUILD) :
+	cd $(PKG_SOURCE_DIR)/lang/c && ( \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	)
+
 	touch $@
 
 $(INSTALL) :
-	cp $(PKG_SOURCE_DIR)/lang/c/* $(PKG_INSTALL_DIR)
+	cp $(PKG_SOURCE_DIR)/lang/c/libmqttudp.a $(PKG_INSTALL_DIR)/libmqttudp.a
+	cp $(PKG_SOURCE_DIR)/lang/c/mqtt_udp.h $(PKG_INSTALL_DIR)/mqtt_udp.h
+	cp $(PKG_SOURCE_DIR)/lang/c/mqtt_udp_defs.h $(PKG_INSTALL_DIR)/mqtt_udp_defs.h
+
 	touch $@

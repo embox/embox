@@ -7,7 +7,11 @@ package embox.cmd.testing.mqtt_udp
         AUTHOR
             Written by Mark Kovalev.
     ''')
+@BuildDepends(third_party.mqtt_udp.core)
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
+@Build(stage=2,script="true")
 module server {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
 	source "server.c"
 }
 
@@ -18,13 +22,10 @@ module server {
         AUTHOR
             Written by Mark Kovalev.
     ''')
+@BuildDepends(third_party.mqtt_udp.core)
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
+@Build(stage=2,script="true")
 module client {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
 	source "client.c"	
-}
-
-module all {
-	source "mqtt_test.h"
-	source "mqtt_test.c"
-
-	depends server,	client
 }

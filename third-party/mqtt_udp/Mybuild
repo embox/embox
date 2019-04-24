@@ -1,14 +1,13 @@
 package third_party.mqtt_udp
 
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
 module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	
-	@IncludeExport(path="mqtt")
-	source "mqtt_udp.h"
+	//@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	//@IncludeExport(path="mqtt")
+	//source "mqtt_udp.h"
 
-	soutce "mqtt_udp_send.c"
-	soutce "mqtt_udp_recv.c"
-	soutce "mqtt_udp_match.c"
-	soutce "mqtt_udp_util.c"
-	soutce "mqtt_udp_parse.c"
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "libmqttudp.a"
+	
+	depends embox.compat.libc.all
 }

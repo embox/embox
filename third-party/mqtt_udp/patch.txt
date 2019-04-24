@@ -1,0 +1,37 @@
+diff -aur mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/configure mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa/lang/c/configure
+--- mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/configure	2019-03-09 17:40:15.000000000 +0300
++++ mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa/lang/c/configure	2019-04-19 16:37:12.086407199 +0300
+@@ -3515,23 +3515,23 @@
+ fi
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_malloc_0_nonnull" >&5
+ $as_echo "$ac_cv_func_malloc_0_nonnull" >&6; }
+-if test $ac_cv_func_malloc_0_nonnull = yes; then :
++# if test $ac_cv_func_malloc_0_nonnull = yes; then :
+ 
+ $as_echo "#define HAVE_MALLOC 1" >>confdefs.h
+ 
+-else
+-  $as_echo "#define HAVE_MALLOC 0" >>confdefs.h
++# else
++#   $as_echo "#define HAVE_MALLOC 0" >>confdefs.h
+ 
+-   case " $LIBOBJS " in
+-  *" malloc.$ac_objext "* ) ;;
+-  *) LIBOBJS="$LIBOBJS malloc.$ac_objext"
+- ;;
+-esac
++#    case " $LIBOBJS " in
++#   *" malloc.$ac_objext "* ) ;;
++#   *) LIBOBJS="$LIBOBJS malloc.$ac_objext"
++#  ;;
++# esac
+ 
+ 
+-$as_echo "#define malloc rpl_malloc" >>confdefs.h
++# $as_echo "#define malloc rpl_malloc" >>confdefs.h
+ 
+-fi
++# fi
+ 
+ 
+ for ac_func in memset socket strlcpy
