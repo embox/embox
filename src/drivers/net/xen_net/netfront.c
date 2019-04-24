@@ -38,7 +38,7 @@ static grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame,
     return ref++;
 }
 
-static void xenstore_interaction(struct netfront_dev *dev) {
+static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
 	char xs_key[XS_MSG_LEN], xs_value[XS_MSG_LEN];
 	int err;
 
@@ -87,15 +87,13 @@ static void xenstore_interaction(struct netfront_dev *dev) {
 		return;
 	}
 
-
 	memset(xs_key, 0, XS_MSG_LEN);
 	sprintf(xs_key, "%s/state", dev->nodename);
 
 	memset(xs_value, 0, XS_MSG_LEN);
 	sprintf(xs_value, "%u", XenbusStateConnected);
 
-#if 0
-	sprintf(path, sizeof(path), "%s/state", dev->nodename);
+#if 1
 	err = xenstore_write(xs_key, xs_value);
 	if (err) {
 		printk("[PANIC!] can not switch state\n");
@@ -142,11 +140,19 @@ static void xenstore_interaction(struct netfront_dev *dev) {
 			sleep(1);
 			++count;
 		}
+
 		if (state != XenbusStateConnected) {
 			printk("[PANIC!] backend not avalable, state=%d\n", state);
 			// xenbus_unwatch_path_token(XBT_NIL, path, path);
 			return;
 		}
+#if 1
+		memset(xs_key, 0, XS_MSG_LEN);
+		sprintf(xs_key, "%s/ip", dev->backend);
+		memset(xs_value, 0, XS_MSG_LEN);
+		xenstore_read(xs_key, xs_value, XS_MSG_LEN);
+		strcpy(*ip, xs_value);
+#endif
 	}
 
 	printk("**************************\n");
@@ -189,7 +195,16 @@ struct netfront_dev *init_netfront(
 	dev->tx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(txs), 0);
 	dev->rx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(rxs), 0);
 
-	xenstore_interaction(dev);
+	xenstore_interaction(dev, ip);
+
+    if (rawmac)
+        sscanf(dev->mac,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+			   &rawmac[0],
+			   &rawmac[1],
+			   &rawmac[2],
+			   &rawmac[3],
+			   &rawmac[4],
+			   &rawmac[5]);
 
 	return dev;
 }

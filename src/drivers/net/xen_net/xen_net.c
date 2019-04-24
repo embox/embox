@@ -108,7 +108,7 @@ static const struct net_driver xen_net_drv_ops = {
 static int xen_net_init(void) {
 	int res = 0;
 	struct net_device *nic;
-	
+
 	nic = etherdev_alloc(sizeof(struct host_net_adp));
 	if (nic == NULL) {
 		return -ENOMEM;
@@ -125,14 +125,20 @@ static int xen_net_init(void) {
 	xenstore_info();
 
 	char nodename[] = "device/vif/0";
-	struct netfront_dev *dev = init_netfront(nodename, NULL, NULL, NULL);
+	unsigned char rawmac[6];
+	char *ip = (char *) malloc(16);
+	struct netfront_dev *dev = init_netfront(nodename, NULL, rawmac, &ip);
 	
 	printk("nodename: %s\n"
 		   "backend: %s\n"
-		   "mac %s\n",
+		   "mac: %s\n"
+		   "ip: %s\n",
 		   dev->nodename,
 		   dev->backend,
-		   dev->mac);
+		   dev->mac,
+		   ip);
+
+	free(ip);
 		   
 	return 0;
 	// return inetdev_register_dev(nic);
