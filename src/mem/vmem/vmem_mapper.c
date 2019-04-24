@@ -18,11 +18,27 @@
 #include <mem/vmem/vmem_alloc.h>
 
 static void vmem_set_pte_flags(mmu_pte_t *pte, vmem_page_flags_t flags);
-static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
+static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
+		size_t reg_size, vmem_page_flags_t flags, bool enable_overwrite);
 static int do_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
 
 int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
-	int res = do_map_region(ctx, phy_addr, virt_addr, reg_size, flags);
+	int res = do_map_region(ctx, phy_addr, virt_addr, reg_size, flags, false);
+
+	if (res) {
+		vmem_unmap_region(ctx, virt_addr, reg_size);
+	}
+
+	mmu_flush_tlb();
+	return res;
+}
+
+/**
+ * @brief Same as vmem_map_region(), but don't fail if vaddr is already mapped
+ */
+int vmem_map_region_overwrite(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
+		size_t reg_size, vmem_page_flags_t flags) {
+	int res = do_map_region(ctx, phy_addr, virt_addr, reg_size, flags, true);
 
 	if (res) {
 		vmem_unmap_region(ctx, virt_addr, reg_size);
@@ -159,7 +175,8 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
 	}
 
 
-static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags) {
+static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
+		size_t reg_size, vmem_page_flags_t flags, bool enable_overwrite) {
 	mmu_pgd_t *pgd;
 	mmu_pmd_t *pmd;
 	mmu_pte_t *pte;
@@ -186,7 +203,9 @@ static int do_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_a
 
 			for ( ; pte_idx < MMU_PTE_ENTRIES; pte_idx++) {
 				/* Considering that address has not mapped yet */
-				assert(!mmu_pte_present(pte + pte_idx));
+				if (!enable_overwrite) {
+					assert(!mmu_pte_present(pte + pte_idx));
+				}
 
 				mmu_pte_set(pte + pte_idx, phy_addr);
 				vmem_set_pte_flags(pte + pte_idx, flags);
