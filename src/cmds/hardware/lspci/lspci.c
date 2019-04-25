@@ -172,15 +172,13 @@ dump_regs(struct pci_slot_dev *pci_dev, uint32_t offset, uint32_t length) {
 				(pci_dev->slot << 3) | pci_dev->func, i, &val);
 		if (ret != PCIUTILS_SUCCESS) {
 			printf("E%d", ret);
-		}
-		else {
+		} else {
 			printf("%x%x", val/16, val%16);
 		}
 
 		if (i % 16 == 15) {
 			printf("\n");
-		}
-		else {
+		} else {
 			printf(" ");
 		}
 	}
@@ -207,25 +205,26 @@ static void dump_regs2(struct pci_slot_dev *pci_dev) {
 		regs = bridge_regs;
 	}
 	while (regs[i].width != 0) {
-		if (regs[i].width == 1) {
+		switch (regs[i].width) {
+		case 1:
 			ret = pci_read_config8(pci_dev->busn,
 					(pci_dev->slot << 3) | pci_dev->func,
 					regs[i].offset, &val8);
 			val = val8;
-		}
-		else if (regs[i].width == 2) {
+			break;
+		case 2:
 			ret = pci_read_config16(pci_dev->busn,
 					(pci_dev->slot << 3) | pci_dev->func,
 					regs[i].offset, &val16);
 			val = val16;
-		}
-		else if (regs[i].width == 4) {
+			break;
+		case 4:
 			ret = pci_read_config32(pci_dev->busn,
 					(pci_dev->slot << 3) | pci_dev->func,
 					regs[i].offset, &val32);
 			val = val32;
-		}
-		else {
+			break;
+		default:
 			printf("Bad register width: %d\n", regs[i].width);
 			return;
 		}
@@ -233,11 +232,11 @@ static void dump_regs2(struct pci_slot_dev *pci_dev) {
 		if (ret == 0) {
 			printf("%s (%x, %d): %x\n",
 					regs[i].name, regs[i].offset, regs[i].width, val);
-		}
-		else {
+		} else {
 			printf("%s (%x, %d): ERROR %d\n",
 					regs[i].name, regs[i].offset, regs[i].width, ret);
 		}
+
 		i++;
 	}
 }
