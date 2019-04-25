@@ -8,6 +8,7 @@
 #include <util/log.h>
 
 #include <stdint.h>
+
 #include <drivers/pci/pci.h>
 #include <asm/io.h>
 
@@ -15,6 +16,13 @@
 #define PCI_REG_ADDR(bus, physdev, fun, where) \
 	(((where) & ~3) | ((fun) << 12) | ((physdev) << 15) | ((bus) << 20))
 
+static inline uint8_t uint32_to_uint8(uint32_t val, int offset) {
+	return (uint8_t) ((val >> (offset * 8)) & 0xFF);
+}
+
+static inline uint16_t uint32_to_uint16(uint32_t val, int offset) {
+	return (uint16_t) ((val >> (offset * 8)) & 0xFFFF);
+}
 
 static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, int size, void *ptr) {
@@ -36,12 +44,14 @@ static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 	}
 
 	if (size == 1) {
-		* (uint8_t *) ptr = tmp;
+		* (uint8_t *) ptr = uint32_to_uint8(tmp, where & 3);
 	} else if (size == 2) {
-		* (uint16_t *) ptr = tmp;
+		* (uint16_t *) ptr = uint32_to_uint16(tmp, where & 3);
 	} else {
 		* (uint32_t *) ptr = tmp;
 	}
+
+	log_debug("bus %d def_fn %d where %d result 0x%X", bus, dev_fn, where, tmp);
 
 	return PCIUTILS_SUCCESS;
 }
