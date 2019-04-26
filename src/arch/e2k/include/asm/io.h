@@ -15,11 +15,6 @@
 #include <e2k_api.h>
 #include <asm/hal/memory_barrier.h>
 
-#if 0
-#define WMB_AFTER_ATOMIC	".word 0x00008001\n" \
-				".word 0x30000084\n"
-#endif
-
 #define __e2k_atomic32_add(__val, __addr) \
 ({ \
 	int __rval; \
@@ -43,43 +38,6 @@ static inline void e2k_wait_all(void) {
 			"st_c = %4, all_e = %5, all_c = %6"
 			: : "i" (0), "i" (1), "i" (1), "i" (0), "i" (0), "i" (1), "i" (1) : "memory");
 }
-#if 0
-#define _sal	0x100	/* store-after-load modifier for _lt_c */
-#define _sas	0x80	/* store-after-store modifier for _st_c */
-#define _trap	0x40	/* stop the conveyor untill interrupt */
-#define _ma_c	0x20
-#define _fl_c	0x10
-#define _ld_c	0x8	/* stop until all load operations complete */
-#define _st_c	0x4	/* stop until store operations complete */
-#define _all_e	0x2
-#define _all_c	0x1
-
-#define E2K_WAIT(num) \
-({ \
-	asm volatile ("{wait ma_c=%5, fl_c=%4, "\
-			"ld_c = %3, st_c=%2, all_e=%1, all_c=%0}" \
-		      : \
-		      : "i" (((num) & 0x1)), \
-			"i" (((num) & 0x2)  >> 1), \
-			"i" (((num) & 0x4)  >> 2), \
-			"i" (((num) & 0x8)  >> 3), \
-			"i" (((num) & 0x10) >> 4), \
-			"i" (((num) & 0x20) >> 5) \
-		      : "memory" ); \
-})
-#endif
-
-#if 0
-#define mb()	E2K_WAIT(_st_c | _ld_c)
-#define rmb()	E2K_WAIT(_ld_c)
-
-static inline void wmb() {
-	_Pragma ("no_asm_inline")
-	asm volatile (	".word 0x00008001\n"
-			".word 0x30000084\n"
-			::: "memory");
-}
-#endif
 
 static inline void e2k_write8(uint8_t val, uintptr_t addr) {
 	E2K_WRITE_MAS_B(addr, val, MAS_IOADDR);
@@ -96,7 +54,6 @@ static inline void e2k_write16(uint16_t val, uintptr_t addr) {
        asm volatile ("sth,2\t0x0, [%0] %2, %1" :
 		: "r" (addr), "r" (val), "i" (MAS_IOADDR) : "memory");
 #endif
-
 }
 
 static inline void e2k_write32(uint32_t val, uintptr_t addr) {
@@ -167,11 +124,5 @@ static inline void e2k_out8(uint8_t val, int port) {
 static inline uint8_t e2k_in8(int port) {
 	return e2k_read8((E2K_X86_IO_PORT_BASE + port));
 }
-
-#define out8 e2k_out8
-#define in8 e2k_in8
-
-#define outb out8
-#define inb in8
 
 #endif /* E2K_IO_H_ */
