@@ -8,13 +8,11 @@
  */
 
 #include <stddef.h>
-#include <linux/list.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <util/array.h>
 
-#include <kernel/printk.h>
+#include <util/array.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_repo.h>
@@ -157,32 +155,39 @@ static void show_device(struct pci_slot_dev *pci_dev, int full) {
 	}
 }
 
-static void dump_regs(struct pci_slot_dev *pci_dev, uint32_t offset, uint32_t length) {
+static void
+dump_regs(struct pci_slot_dev *pci_dev, uint32_t offset, uint32_t length) {
 	int i;
 	uint8_t val;
 	uint32_t ret;
 
-	if (offset % 16) printf("%x: ", offset);
-	for (i = offset; i < offset+length; i++)
-	{
-		if (i % 16 == 0) printf("%x: ", i);
-		ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, i, &val);
-		if (ret != PCIUTILS_SUCCESS)
-			printf("E%d", ret);
-		else
-			printf("%x%x", val/16, val%16);
-
-		if (i % 16 == 15)
-			printf("\n");
-		else
-			printf(" ");
+	if (offset % 16) {
+		printf("%x: ", offset);
 	}
-	if (i % 16)
+	for (i = offset; i < offset+length; i++) {
+		if (i % 16 == 0) {
+			printf("%x: ", i);
+		}
+		ret = pci_read_config8(pci_dev->busn,
+				(pci_dev->slot << 3) | pci_dev->func, i, &val);
+		if (ret != PCIUTILS_SUCCESS) {
+			printf("E%d", ret);
+		} else {
+			printf("%x%x", val/16, val%16);
+		}
+
+		if (i % 16 == 15) {
+			printf("\n");
+		} else {
+			printf(" ");
+		}
+	}
+	if (i % 16) {
 		printf("\n");
+	}
 }
 
-static void dump_regs2(struct pci_slot_dev *pci_dev)
-{
+static void dump_regs2(struct pci_slot_dev *pci_dev) {
 	int i = 0;
 	uint8_t val8;
 	uint16_t val16;
@@ -190,40 +195,48 @@ static void dump_regs2(struct pci_slot_dev *pci_dev)
 
 	struct pci_reg *regs = endpoint_regs;
 
-	ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, PCI_HEADER_TYPE, &val8);
-	if (ret != 0)
-	{
-		printk("Unable to read device type: %d\n", ret);
+	ret = pci_read_config8(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func, PCI_HEADER_TYPE, &val8);
+	if (ret != 0) {
+		printf("Unable to read device type: %d\n", ret);
 		return;
 	}
-	if ((val8 & 0x7F) == 1)
+	if ((val8 & 0x7F) == 1) {
 		regs = bridge_regs;
-	while (regs[i].width != 0)
-	{
-		if (regs[i].width == 1)
-		{
-			ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val8);
+	}
+	while (regs[i].width != 0) {
+		switch (regs[i].width) {
+		case 1:
+			ret = pci_read_config8(pci_dev->busn,
+					(pci_dev->slot << 3) | pci_dev->func,
+					regs[i].offset, &val8);
 			val = val8;
-		}
-		else if (regs[i].width == 2)
-		{
-			ret = pci_read_config16(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val16);
+			break;
+		case 2:
+			ret = pci_read_config16(pci_dev->busn,
+					(pci_dev->slot << 3) | pci_dev->func,
+					regs[i].offset, &val16);
 			val = val16;
-		}
-		else if (regs[i].width == 4)
-		{
-			ret = pci_read_config32(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func, regs[i].offset, &val32);
+			break;
+		case 4:
+			ret = pci_read_config32(pci_dev->busn,
+					(pci_dev->slot << 3) | pci_dev->func,
+					regs[i].offset, &val32);
 			val = val32;
-		}
-		else {
-			printk("Bad register width: %d\n", regs[i].width);
+			break;
+		default:
+			printf("Bad register width: %d\n", regs[i].width);
 			return;
 		}
 
-		if (ret == 0)
-			printf("%s (%x, %d): %x\n", regs[i].name, regs[i].offset, regs[i].width, val);
-		else
-			printf("%s (%x, %d): ERROR %d\n", regs[i].name, regs[i].offset, regs[i].width, ret);
+		if (ret == 0) {
+			printf("%s (%x, %d): %x\n",
+					regs[i].name, regs[i].offset, regs[i].width, val);
+		} else {
+			printf("%s (%x, %d): ERROR %d\n",
+					regs[i].name, regs[i].offset, regs[i].width, ret);
+		}
+
 		i++;
 	}
 }
@@ -247,50 +260,44 @@ int main(int argc, char **argv) {
 	uint8_t  func = 0;
 	int func_set = 0;
 
-	if (argc == 1) {
-		full = 0;
-	} else {
-		getopt_init();
-		while (-1 != (opt = getopt(argc, argv, "hfxb:s:u:nl:o:r:w:"))) {
-			switch (opt) {
-			case 'f':
-				full = 1;
-				break;
-			case 'x':
-				dump = 1;
-				break;
-			case 'b':
-				busn_set = 1;
-				busn = strtoul(optarg, &endptr, 0);
-				break;
-			case 's':
-				slot_set = 1;
-				slot = strtoul(optarg, &endptr, 0);
-				break;
-			case 'u':
-				func_set = 1;
-				func = strtoul(optarg, &endptr, 0);
-				break;
-			case 'n':
-				names = 1;
-				break;
-			case 'l':
-				length = strtoul(optarg, &endptr, 0);
-				break;
-			case 'o':
-				offset = strtoul(optarg, &endptr, 0);
-				break;
-			case '?':
-			case 'h':
-				print_usage();
-				return 0;
-			default:
-				print_error();
-				return 0;
-			}
+	while (-1 != (opt = getopt(argc, argv, "hfxb:s:u:nl:o:r:w:"))) {
+		switch (opt) {
+		case 'f':
+			full = 1;
+			break;
+		case 'x':
+			dump = 1;
+			break;
+		case 'b':
+			busn_set = 1;
+			busn = strtoul(optarg, &endptr, 0);
+			break;
+		case 's':
+			slot_set = 1;
+			slot = strtoul(optarg, &endptr, 0);
+			break;
+		case 'u':
+			func_set = 1;
+			func = strtoul(optarg, &endptr, 0);
+			break;
+		case 'n':
+			names = 1;
+			break;
+		case 'l':
+			length = strtoul(optarg, &endptr, 0);
+			break;
+		case 'o':
+			offset = strtoul(optarg, &endptr, 0);
+			break;
+		case '?':
+		case 'h':
+			print_usage();
+			return 0;
+		default:
+			print_error();
+			return 0;
 		}
-	}/*else have some parameters*/
-
+	}
 
 	pci_foreach_dev(pci_dev) {
 		if (busn_set && pci_dev->busn != busn) continue;

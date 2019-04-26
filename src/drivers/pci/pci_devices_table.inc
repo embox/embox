@@ -1,5 +1,6 @@
 /* Cirrus */
 { PCI_VENDOR_ID_CIRRUS,   PCI_DEV_ID_CIRRUS_5446,            "Cirrus Logic 5446 CGA"},
+{ PCI_VENDOR_ID_CIRRUS,   PCI_DEV_ID_CIRRUS_CS4281,          "Crystal CS4281 PCI Audio"},
 /* Realtek */
 { PCI_VENDOR_ID_REALTEK,  PCI_DEV_ID_REALTEK_8029,           "8029 NIC"},
 { PCI_VENDOR_ID_REALTEK,  PCI_DEV_ID_REALTEK_8139,           "RTL-8139/8139C/8139C+"},
@@ -45,4 +46,17 @@
 /* XILINX */
 {PCI_VENDOR_ID_XILINX,    PCI_DEV_ID_XILINX_SPARTAN6,        "Spartan 6 PCI interface"},
 /* VirtIO */
-{ PCI_VENDOR_ID_VIRTIO,   PCI_DEV_ID_VIRTIO_NET,             "Virtual High Performance Ethernet card"}
+{ PCI_VENDOR_ID_VIRTIO,   PCI_DEV_ID_VIRTIO_NET,             "Virtual High Performance Ethernet card"},
+/* Silicon Motion, Inc. */
+{ PCI_VENDOR_ID_SMI,   PCI_DEV_ID_LYNX_EXP,                  "SM750"},
+{ PCI_VENDOR_ID_SMI,   PCI_DEV_ID_LYNX_SE,                   "SM718 LynxSE+"},
+{ PCI_VENDOR_ID_SMI,   PCI_DEV_ID_LYNX_3DM,                  "SM720 Lynx3DM"},
+/* MCST */
+{ PCI_VENDOR_ID_MCST_PCIE_BRIDGE, PCI_DEVICE_ID_MCST_PCIE_BRIDGE, "Elbrus PCIe bridge"},
+{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_MCST_VIRT_PCI_BRIDGE,        "Elbrus Virt PCI bridge"},
+{ PCI_VENDOR_ID_MCST_TMP, PCI_DEVICE_ID_MCST_PCI_BRIDGE,          "Elbrus PCI bridge"},
+{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_MCST_ELBRUS_E1000,           "MCST ETH1000 Gigabit Ethernet"},
+{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_MCST_IDE,                    "MCST IDE"},
+{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_MCST_SATA,                   "MCST SATA"},
+{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_MCST_USB_OHCI,               "OHCI for Elbrus"},
+{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_MCST_USB_EHCI,               "EHCI for Elbrus"}
