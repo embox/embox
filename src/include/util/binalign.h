@@ -12,7 +12,7 @@
 #define __binalign_mask(x, mask)       (((x) + (mask)) & ~(mask))
 
 #define __binalign(x, power) \
-		__binalign_bound(x, 0x1 << (power))
+		__binalign_bound(x, (typeof(x)) 0x1 << (power))
 
 #ifndef __ASSEMBLER__
 
