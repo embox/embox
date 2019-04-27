@@ -328,7 +328,7 @@ void _NORETURN task_exit(void *res) {
 
 	task_start_exit();
 
-	task_do_exit(task_self(), TASKST_EXITED_MASK | ((int) res & TASKST_EXITST_MASK));
+	task_do_exit(task_self(), TASKST_EXITED_MASK | ((intptr_t) res & TASKST_EXITST_MASK));
 
 	task_finish_exit();
 }
