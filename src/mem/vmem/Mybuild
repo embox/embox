@@ -1,7 +1,13 @@
 package embox.mem
 
+module vmem_header {
+	@IncludeExport(path="mem")
+	source "vmem.h"
+}
+
 @DefaultImpl(vmem_nommu)
 abstract module vmem_api {
+	depends vmem_header
 }
 
 module vmem_nommu extends vmem_api {
@@ -22,6 +28,7 @@ module vmem extends vmem_api {
 	depends embox.mem.phymem
 	depends embox.mem.mmap_mmu
 	depends embox.fs.syslib.idesc_mmap_api
+	depends vmem_header
 }
 
 module vmem_alloc {
@@ -42,6 +49,7 @@ module vmem_alloc {
 
 	depends embox.mem.page_api
 	depends embox.arch.mmu
+	depends vmem_header
 }
 
 module vmem_starter {
