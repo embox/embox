@@ -108,23 +108,6 @@ int initgroups(const char *user, gid_t group) {
 }
 
 static inline
-void setgrent(void) {
-	DPRINT();
-}
-
-static inline
-struct group *getgrent(void) {
-	DPRINT();
-	errno = EPERM;
-	return 0;
-}
-
-static inline
-void endgrent(void) {
-	DPRINT();
-}
-
-static inline
 unsigned int alarm(unsigned int seconds) {
 	DPRINT();
 	return 0;
