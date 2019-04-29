@@ -172,6 +172,33 @@ __END_DECLS
 #define    PRIXLEAST16 "X"
 #define    PRIXFAST16  "X"
 
+#if defined(__arm__) || defined (__e2k__) || defined(__mips__) || defined(__sparc__) || defined(__microblaze__) || defined(__PPC__)
+#define    PRIo32      "lo"
+#define    PRIoLEAST32 "lo"
+#define    PRIoFAST32  "lo"
+#define    PRIu32      "lu"
+#define    PRIuLEAST32 "lu"
+#define    PRIuFAST32  "lu"
+#define    PRIx32      "lx"
+#define    PRIxLEAST32 "lx"
+#define    PRIxFAST32  "lx"
+#define    PRIX32      "lX"
+#define    PRIXLEAST32 "lX"
+#define    PRIXFAST32  "lX"
+
+#define    PRIu64      "llu"
+#define    PRIi64      "lli"
+#define    PRIx64      "llx"
+#define    PRIX64      "llX"
+#define    PRId64      "lld"
+
+#define    PRIoPTR     PRIo32
+#define    PRIuPTR     PRIu32
+#define    PRIxPTR     "llx"
+#define    PRIXPTR     "llX"
+
+#elif defined (i386)
+
 #define    PRIo32      "o"
 #define    PRIoLEAST32 "o"
 #define    PRIoFAST32  "o"
@@ -185,17 +212,44 @@ __END_DECLS
 #define    PRIXLEAST32 "X"
 #define    PRIXFAST32  "X"
 
-#define    PRIu64      "llu"
-#define    PRIi64      "lli"
-#define    PRIx64      "llx"
-#define    PRIX64      "llX"
-#define    PRId64      "lld"
+#define    PRIu64      "lu"
+#define    PRIi64      "li"
+#define    PRIx64      "lx"
+#define    PRIX64      "lX"
+#define    PRId64      "ld"
 
 #define    PRIoPTR     PRIo32
 #define    PRIuPTR     PRIu32
-#define    PRIxPTR     PRIx32
-#define    PRIXPTR     "lX"
+#define    PRIxPTR     "x"
+#define    PRIXPTR     "X"
 
+#else
+
+#define    PRIo32      "o"
+#define    PRIoLEAST32 "o"
+#define    PRIoFAST32  "o"
+#define    PRIu32      "u"
+#define    PRIuLEAST32 "u"
+#define    PRIuFAST32  "u"
+#define    PRIx32      "x"
+#define    PRIxLEAST32 "x"
+#define    PRIxFAST32  "x"
+#define    PRIX32      "X"
+#define    PRIXLEAST32 "X"
+#define    PRIXFAST32  "X"
+
+#define    PRIu64      "lu"
+#define    PRIi64      "li"
+#define    PRIx64      "lx"
+#define    PRIX64      "lX"
+#define    PRId64      "ld"
+
+#define    PRIoPTR     PRIo32
+#define    PRIuPTR     PRIu32
+#define    PRIxPTR     "x"
+#define    PRIXPTR     "X"
+
+#endif
 
 #define    PRIoMAX     PRIo32
 #define    PRIuMAX     PRIu64

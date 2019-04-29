@@ -7,6 +7,8 @@
  */
 
 #include <string.h>
+#include <inttypes.h>
+
 #include <asm/hal/mmu.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
@@ -125,7 +127,7 @@ uint32_t vmem_info(uint32_t vaddr)
     printk("vmem info: base %p; vaddr %p", (void*) vmem_current_context(), (void *) vaddr);
 
     if (*l1_desc == 0x0) {
-        printk(" unmapped l1_desc = 0x%X\n", *l1_desc);
+        printk(" unmapped l1_desc = 0x%" PRIx32 "\n", *l1_desc);
         return 0x0;
     }
 

@@ -7,6 +7,8 @@
  */
 #include <util/log.h>
 
+#include <inttypes.h>
+
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <asm/hal/reg.h>
@@ -33,7 +35,7 @@ void mon_func(void) {
 }
 
 #define ARM_GDB_BAD_INSTRUCTION    0xe1212374 /* bkpt 0x1234 */
-void arm_exception_handler(unsigned int *regs) {
+void arm_exception_handler(uint32_t *regs) {
 	uint32_t val;
 
 	if (regs && ((regs[15] & 0x3) == 0) && /* Avoid unaligned access */
@@ -42,11 +44,11 @@ void arm_exception_handler(unsigned int *regs) {
 		regs[15] += 4;
 	} else {
 		printk("\nEXCEPTION:\n"
-				"r0=%08x r1=%08x r2=%08x r3=%08x\n"
-				"r4=%08x r5=%08x r6=%08x r7=%08x\n"
-				"r8=%08x r9=%08x r10=%08x r11=%08x\n"
-				"r12=%08x r14=%08x\n"
-				"cpsr=%08x spsr=%08x\n",
+				"r0=%08" PRIx32 " r1=%08" PRIx32 " r2=%08" PRIx32 " r3=%08" PRIx32 "\n"
+				"r4=%08" PRIx32 " r5=%08" PRIx32 " r6=%08" PRIx32 " r7=%08" PRIx32 "\n"
+				"r8=%08" PRIx32 " r9=%08" PRIx32 " r10=%08" PRIx32 " r11=%08" PRIx32 "\n"
+				"r12=%08" PRIx32 " r14=%08" PRIx32 "\n"
+				"cpsr=%08" PRIx32 " spsr=%08" PRIx32 "\n",
 				regs[2], regs[3], regs[4], regs[5],
 				regs[6], regs[7], regs[8], regs[9],
 				regs[10], regs[11], regs[12], regs[13],
@@ -54,10 +56,10 @@ void arm_exception_handler(unsigned int *regs) {
 				regs[0], regs[1]);
 		printk("REGS* = %p\n", regs);
 		val = get_cpsr();
-		printk("[SMC] cpsr = %x\n", val);
-		printk("[SMC] vbar = %x\n",  cp15_get_vbar());
+		printk("[SMC] cpsr = %" PRIx32 "\n", val);
+		printk("[SMC] vbar = %" PRIx32 "\n",  cp15_get_vbar());
 #ifdef CORTEX_A9
-		printk("[SMC] mbvar = %x\n", cp15_get_mvbar());
+		printk("[SMC] mbvar = %" PRIx32 "\n", cp15_get_mvbar());
 		cp15_set_scr(0x1);
 		printk(">>>>>>>>>>>>>>> NS=1 updated \n");
 #endif

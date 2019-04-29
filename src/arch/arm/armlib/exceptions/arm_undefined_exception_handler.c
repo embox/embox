@@ -7,6 +7,7 @@
  */
 
 #include <stdint.h>
+#include <inttypes.h>
 
 #include <arm/fpu.h>
 #include <framework/mod/options.h>
@@ -33,14 +34,14 @@ void arm_undefined_exception(struct pt_regs_exception *pt_regs) {
 	}
 #endif
 
-	printk("Undefined exception: ret pc = 0x%08X spsr = 0x%08X\n",
+	printk("Undefined exception: ret pc = 0x%08" PRIx32 " spsr = 0x%08" PRIx32 "\n",
 			pt_regs->prev_lr, pt_regs->spsr);
 
 	printk("regs:\n"
-			"%08x %08x %08x %08x\n"
-			"%08x %08x %08x %08x\n"
-			"%08x %08x %08x %08x\n"
-			"%08x sp(r13) %08x lr (r14) %08x\n",
+			"%08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32 "\n"
+			"%08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32 "\n"
+			"%08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32 "\n"
+			"%08" PRIx32 " sp(r13) %08" PRIx32 " lr (r14) %08" PRIx32 "\n",
 			pt_regs->regs[0], pt_regs->regs[1], pt_regs->regs[2],
 			pt_regs->regs[3], pt_regs->regs[4], pt_regs->regs[5],
 			pt_regs->regs[6], pt_regs->regs[7],	pt_regs->regs[8],

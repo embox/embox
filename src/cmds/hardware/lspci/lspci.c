@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include <util/array.h>
 
@@ -146,7 +147,7 @@ static void show_device(struct pci_slot_dev *pci_dev, int full) {
 			if (0 == base_addr) {
 				continue;
 			}
-			printf("\t  Region (%s): Base: 0x%lX [0x%lX]\n",
+			printf("\t  Region (%s): Base: 0x%" PRIXPTR " [0x%" PRIXPTR "]\n",
 					pci_get_region_type(base_addr),
 					base_addr & ~((1 << 4) - 1),
 					(base_addr & ~((1 << 4) - 1)) +
