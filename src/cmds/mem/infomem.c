@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <inttypes.h>
+
 #include <mem/phymem.h>
 #include <mem/vmem/vmem_alloc.h>
 #include <mem/vmem.h>
@@ -79,7 +81,7 @@ static void print_segments(void) {
 	printf("\nPERIPH SEGMENTS:\n");
 
 	for (int i = 0; i < size; i++) {
-		printf("seg_num %d: start - 0x%x, end - 0x%x, len - 0x%x\n",
+		printf("seg_num %d: start - 0x%" PRIx32 ", end - 0x%" PRIx32 ", len - 0x%" PRIx32 "\n",
 				i, buff[i]->start, buff[i]->start + buff[i]->len, buff[i]->len);
 	}
 

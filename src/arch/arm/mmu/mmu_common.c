@@ -7,6 +7,7 @@
  */
 
 #include <string.h>
+#include <inttypes.h>
 
 #include <asm/hal/mmu.h>
 #include <asm/regs.h>
@@ -121,7 +122,7 @@ mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
-	printk("set ctx %0x\n", ctx);
+	printk("set ctx 0x%" PRIx32 "\n", (uint32_t)ctx);
 	uint32_t ttbr0 = arm_get_ttbr0();
 	ttbr0 &= ~TTBR0_ADDR_MASK;
 	ttbr0 |= ctx & TTBR0_ADDR_MASK;

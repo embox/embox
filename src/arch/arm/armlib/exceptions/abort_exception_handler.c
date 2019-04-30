@@ -6,6 +6,7 @@
  * @date 28.06.2018
  */
 #include <stdint.h>
+#include <inttypes.h>
 
 #include <kernel/printk.h>
 
@@ -15,10 +16,10 @@ struct pt_regs_exception {
 
 void arm_data_abort_exception(struct pt_regs_exception *pt_regs) {
 	printk("Data abort exception!\nregs:\n"
-			"%08x %08x %08x %08x\n"
-			"%08x %08x %08x %08x\n"
-			"%08x %08x %08x %08x\n"
-			"%08x %08x\n",
+			"%08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32 "\n"
+			"%08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32 "\n"
+			"%08" PRIx32 " %08" PRIx32 " %08" PRIx32 " %08" PRIx32 "\n"
+			"%08" PRIx32 " %08" PRIx32 "\n",
 			pt_regs->regs[0], pt_regs->regs[1], pt_regs->regs[2],
 			pt_regs->regs[3], pt_regs->regs[4], pt_regs->regs[5],
 			pt_regs->regs[6], pt_regs->regs[7], pt_regs->regs[8],

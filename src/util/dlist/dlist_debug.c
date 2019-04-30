@@ -5,8 +5,9 @@
  * @date 05.12.2013
  * @author Eldar Abusalimov
  */
-
+#include <inttypes.h>
 #include <assert.h>
+
 #include <util/dlist.h>
 #include <framework/mod/options.h>
 
@@ -22,10 +23,10 @@ void __dlist_debug_check(const struct dlist_head *head) {
 			n->prev == head &&
 			p->next == head),
 			"\n"
-			"head: %p, poison: %lu, ~poison: %p,\n"
+			"head: %p, poison: %p, ~poison: %p,\n"
 			"n: %p, n->prev: %p,\n"
 			"p: %p, p->next: %p\n",
-			head, poison, (void *) ~poison,
+			head, (void *)poison, (void *) ~poison,
 			n, n->prev,
 			p, p->next);
 

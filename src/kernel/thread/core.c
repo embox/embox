@@ -23,6 +23,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <time.h>
+#include <inttypes.h>
 
 #include <embox/unit.h>
 
@@ -69,7 +70,7 @@ static void _NORETURN thread_trampoline(void) {
 	struct thread *current = thread_self();
 	void *res;
 
-	assertf(!critical_allows(CRITICAL_SCHED_LOCK), "0x%x", (uint32_t)__critical_count);
+	assertf(!critical_allows(CRITICAL_SCHED_LOCK), "0x%" PRIx32 "", (uint32_t)__critical_count);
 
 	thread_ack_switched();
 

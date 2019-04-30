@@ -11,6 +11,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include <framework/mod/api.h>
 #include <framework/mod/integrity.h>
@@ -65,7 +66,7 @@ int main(int argc, char **argv) {
 		mod_print(mod);
 		printf("\n");
 		if (show_label) {
-			printf("\tlabel:%x:%x:%x:%x\n",
+			printf("\tlabel:%" PRIx32 ":%" PRIx32 ":%" PRIx32 ":%" PRIx32 "\n",
 					(uint32_t)mod_label(mod)->text.vma,
 					(uint32_t)mod_label(mod)->data.vma,
 					(uint32_t)mod_label(mod)->bss.vma,

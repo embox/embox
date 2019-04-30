@@ -5,6 +5,7 @@
  * @date 9.11.2012
  * @author Alexander Kalmuk
  */
+#include <stdint.h>
 
 #include <net/lib/snmp.h>
 #include <errno.h>
@@ -13,21 +14,21 @@
 
 #define __HDR_LEN 2 /* length(type) + length(len): |type|len|data... */
 
-static __u32 __id;
+static uint32_t __id;
 
-static __u8 snmp_len(struct snmp_desc *snmp_desc);
-static __u8 pdu_len(struct snmp_desc *snmp_desc);
-static __u8 data_len(struct snmp_desc *snmp_desc);
-static __u8 var_len(struct varbind *var);
+static uint8_t snmp_len(struct snmp_desc *snmp_desc);
+static uint8_t pdu_len(struct snmp_desc *snmp_desc);
+static uint8_t data_len(struct snmp_desc *snmp_desc);
+static uint8_t var_len(struct varbind *var);
 static int is_snmp_response(struct snmp_desc *snmp_desc);
-static void fill_snmp(char **dst, char *src, enum pdu_type type, __u32 len);
-static __u8 extract_snmp(char *dst, unsigned char **src);
+static void fill_snmp(char **dst, char *src, enum pdu_type type, uint32_t len);
+static uint8_t extract_snmp(char *dst, unsigned char **src);
 static int snmp_alloc_var(struct varbind *var, char **userbuf, size_t *bufsize);
 
-__u32 snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet) {
+uint32_t snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet) {
 	char *cur = (char*)snmp_packet;
 	struct varbind *var;
-	__u32 packet_len = 0;
+	uint32_t packet_len = 0;
 
 	/* Fill SNMP: inclusion: snmp<-pdu<-data */
 	*(cur++) = (char)PDU_SEQUENCE;
@@ -71,7 +72,7 @@ __u32 snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet) {
 }
 
 int snmp_parse(struct snmp_desc *snmp_desc, const char *snmp_recv, char *userbuf, size_t bufsize) {
-	__u32 len;
+	uint32_t len;
 	unsigned char *cur = (unsigned char*)snmp_recv;
 
 	/* Extract SNMP: inclusion: snmp<-pdu<-data */
@@ -125,7 +126,7 @@ int snmp_parse(struct snmp_desc *snmp_desc, const char *snmp_recv, char *userbuf
 	return 0;
 }
 
-static void fill_snmp(char **pdst, char *src, enum pdu_type type, __u32 len) {
+static void fill_snmp(char **pdst, char *src, enum pdu_type type, uint32_t len) {
 	char *dst = *pdst;
 
 	*pdst += len + __HDR_LEN;
@@ -136,9 +137,9 @@ static void fill_snmp(char **pdst, char *src, enum pdu_type type, __u32 len) {
 	memcpy(dst, src, len);
 }
 
-static __u8 extract_snmp(char *dst, unsigned char **psrc) {
+static uint8_t extract_snmp(char *dst, unsigned char **psrc) {
 	unsigned char *src = *psrc;
-	__u8 len;
+	uint8_t len;
 
 	len = *(++src);
 	memcpy(dst, ++src, len);
@@ -168,21 +169,21 @@ static int snmp_alloc_var(struct varbind *var, char **userbuf, size_t *bufsize) 
 	return 0;
 }
 
-static __u8 snmp_len(struct snmp_desc *snmp_desc) {
+static uint8_t snmp_len(struct snmp_desc *snmp_desc) {
 	/* +2 bytes for every field (i.e. 2*2) + 2 for pdu header */
 	return (pdu_len(snmp_desc) + strlen(snmp_desc->security) +
 			sizeof(snmp_desc->version) + 2 * __HDR_LEN + __HDR_LEN);
 }
 
-static __u8 pdu_len(struct snmp_desc *snmp_desc) {
+static uint8_t pdu_len(struct snmp_desc *snmp_desc) {
 	/* +2 for data header +data_len +2 bytes for every fields (i.e. +2*3) */
 	return (data_len(snmp_desc) + sizeof(snmp_desc->error)
 			+ sizeof(snmp_desc->error_index) + sizeof(__id) + __HDR_LEN * 3 + __HDR_LEN);
 }
 
-static __u8 data_len(struct snmp_desc *snmp_desc) {
+static uint8_t data_len(struct snmp_desc *snmp_desc) {
 	struct varbind *var;
-	__u8 len = 0;
+	uint8_t len = 0;
 
 	dlist_foreach_entry(var, &snmp_desc->varbind_list, link) {
 		len += var_len(var) + __HDR_LEN; /* actual data and header */
@@ -191,8 +192,8 @@ static __u8 data_len(struct snmp_desc *snmp_desc) {
 	return len;
 }
 
-static __u8 var_len(struct varbind *var) {
-	__u8 len = 0;
+static uint8_t var_len(struct varbind *var) {
+	uint8_t len = 0;
 
 	len += var->oid_len;
 	if (var->data) {
