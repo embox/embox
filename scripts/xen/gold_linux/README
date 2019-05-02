@@ -1,7 +1,21 @@
-# To configure domU networking run these commands at the domU:
-
 # set ip addr to interface:
 ip addr add dev eth0 192.168.2.2/24
 ip link set eth0 up
+
 # add default record to routetable:
-ip route add default via 192.168.2.2
+ip route add default via 192.168.2.1
+ip route flush cache
+
+# configure dns server
+echo 'nameserver 8.8.8.8' > /etc/resolv.conf
+
+# add default apk repository
+echo "http://dl-3.alpinelinux.org/alpine/v3.9/main" >> /etc/apk/repositories
+
+# add stable community repository (required for docker installation)
+echo "http://dl-cdn.alpinelinux.org/alpine/latest-stable/community" >> /etc/apk/repositories
+
+# intall docker (now doesn't work, it is necessary to extend disk space)
+apk update
+apk add docker
+
