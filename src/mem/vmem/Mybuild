@@ -11,6 +11,7 @@ abstract module vmem_api {
 }
 
 module vmem_nommu extends vmem_api {
+	@IncludeExport(path="mem", target_name="vmem.h")
 	source "vmem_nommu.h"
 
 	depends embox.fs.syslib.idesc_mmap_api
