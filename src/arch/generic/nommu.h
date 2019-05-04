@@ -26,6 +26,9 @@ typedef uint32_t __mmu_ctx_t;
 typedef uint32_t __mmu_pgd_t;
 typedef uint32_t __mmu_pmd_t;
 typedef uint32_t __mmu_pte_t;
+
+typedef uint32_t __mmu_reg_t;
+
 #endif /*__ASSEMBLER__ */
 
 #endif /* ARCH_NOMMU_H_ */
