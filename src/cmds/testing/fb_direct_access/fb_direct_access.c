@@ -27,7 +27,7 @@ int main() {
 
 	fb_info = fb_lookup(0);
 
-	printf("%dx%d, %dbpp\n", fb_info->var.xres, fb_info->var.yres, fb_info->var.bits_per_pixel);
+	printf("%ldx%ld, %ldbpp\n", fb_info->var.xres, fb_info->var.yres, fb_info->var.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */
 	bytes_per_pixel = fb_info->var.bits_per_pixel / 8;
