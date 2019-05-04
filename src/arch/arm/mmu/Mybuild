@@ -29,6 +29,10 @@ module mmu_small_page extends embox.arch.mmu {
 	depends embox.mem.vmem_header
 }
 
+module mmuinfo extends embox.arch.mmuinfo {
+	source "mmuinfo.c"
+}
+
 module mmu_test extends embox.arch.testtrap {
 	source "mmu_test.c"
 }
