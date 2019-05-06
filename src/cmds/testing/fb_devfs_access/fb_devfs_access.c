@@ -44,7 +44,7 @@ int main() {
 		exit(3);
 	}
 
-	printf("%dx%d, %dbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
+	printf("%ldx%ld, %ldbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */
 	screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
