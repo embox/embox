@@ -6,6 +6,7 @@
  */
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <sys/mman.h>
 
@@ -88,14 +89,14 @@ static int gic_init(void) {
 
 	tmp = REG_LOAD(GICD_TYPER);
 	printk("\n"
-			"\t\tNumber of SPI: %d\n"
-			"\t\tNumber of supported CPU interfaces: %d\n"
+			"\t\tNumber of SPI: %"PRIu32"\n"
+			"\t\tNumber of supported CPU interfaces: %"PRIu32"\n"
 			"\t\tSecutity Extension %s implemented\n",
 			GICD_TYPER_ITLINES(tmp) * 32,
 			1 + GICD_TYPER_CPUNR(tmp),
 			GICD_TYPER_SECEXT(tmp) ? "" : "not ");
 	if (tmp & (1 << 10)) {
-		printk("\t\tNumber of LSPI: %d", GICD_TYPER_LSPI(tmp));
+		printk("\t\tNumber of LSPI: %"PRIu32, GICD_TYPER_LSPI(tmp));
 	} else {
 		printk("\t\tLSPI not implemented");
 	}
