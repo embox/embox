@@ -128,12 +128,28 @@ __END_DECLS
 #define    PRIiLEAST16 "i"
 #define    PRIiFAST16  "i"
 
+#if defined(__arm__) || defined (__e2k__) || defined(__mips__) || defined(__sparc__) || defined(__microblaze__) || defined(__PPC__)
+#define    PRId32      "ld"
+#define    PRIdLEAST32 "ld"
+#define    PRIdFAST32  "ld"
+#define    PRIi32      "li"
+#define    PRIiLEAST32 "li"
+#define    PRIiFAST32  "li"
+#elif defined (i386)
 #define    PRId32      "d"
 #define    PRIdLEAST32 "d"
 #define    PRIdFAST32  "d"
 #define    PRIi32      "i"
 #define    PRIiLEAST32 "i"
 #define    PRIiFAST32  "i"
+#else
+#define    PRId32      "ld"
+#define    PRIdLEAST32 "ld"
+#define    PRIdFAST32  "ld"
+#define    PRIi32      "li"
+#define    PRIiLEAST32 "li"
+#define    PRIiFAST32  "li"
+#endif
 
 #define    PRIdPTR     PRId32
 #define    PRIiPTR     PRIi32
