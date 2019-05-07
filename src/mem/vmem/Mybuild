@@ -30,7 +30,6 @@ module vmem extends vmem_api {
 
 	depends embox.arch.mmu
 	depends vmem_alloc
-	depends embox.mem.phymem
 	depends embox.mem.mmap_mmu
 	depends embox.fs.syslib.idesc_mmap_api
 	depends vmem_header
