@@ -33,8 +33,12 @@ SECTIONS {
 
 	/* XXX symbols __exidx_start/end are required by libgcc.a --Alexander */
 	.ARM.exidx : {
+		__exidx_start = .;
 		*(.ARM.exidx*)
+		__exidx_end = .;
 	} SECTION_REGION(text)
-	__exidx_start = ADDR(.ARM.exidx);
-	__exidx_end = __exidx_start + SIZEOF(.ARM.exidx);
+
+	.ARM.extab : {
+		*(.ARM.extab*)
+	} SECTION_REGION(text)
 }
