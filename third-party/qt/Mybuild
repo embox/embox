@@ -24,6 +24,7 @@ static module core {
 	@NoRuntime depends embox.compat.posix.proc.waitpid
 	@NoRuntime depends embox.lib.LibExecStub
 	@NoRuntime depends embox.compat.posix.pthread_key
+	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
 	@NoRuntime depends embox.lib.libsupcxx
 	@NoRuntime depends embox.lib.libgcc
 }
