@@ -40,6 +40,7 @@ module bochs {
 	depends embox.driver.pci
 	@NoRuntime depends fb
 	@NoRuntime depends embox.compat.libc.all
+	depends embox.compat.posix.sys.mman.mmap_api
 }
 
 module raspi_video {
@@ -58,6 +59,7 @@ module cirrus_logic {
 
 	depends fb
 	depends embox.driver.pci
+	depends embox.compat.posix.sys.mman.mmap_api
 }
 
 module generic {
