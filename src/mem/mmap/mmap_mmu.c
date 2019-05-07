@@ -60,73 +60,9 @@ void mmap_do_marea_unmap(struct emmap *mmap, struct marea *marea) {
 	vmem_unmap_region(mmap->ctx, marea->start, len);
 }
 
-struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
-	struct marea *marea;
-	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		if (INSIDE(vaddr, marea->start, marea->end)) {
-			return marea;
-		}
-	}
-	return NULL;
-}
-
-struct marea *mmap_find_marea_next(struct emmap *mmap, mmu_vaddr_t vaddr,
-		struct marea *prev) {
-	struct marea *marea;
-	int found_prev = prev == NULL ? 1 : 0;
-
-	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
-		if (found_prev && INSIDE(vaddr, marea->start, marea->end)) {
-			return marea;
-		}
-
-		if (marea == prev) {
-			found_prev = 1;
-		}
-	}
-
-	return NULL;
-}
-
-static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
-	if (mmap_find_marea(mmap, marea->start)
-			|| mmap_find_marea(mmap, marea->end)) {
-		return -EEXIST;
-	}
-	return 0;
-}
-
-void mmap_add_marea(struct emmap *mmap, struct marea *marea) {
-	log_debug("add to %p start %p end %p",marea, marea->start, marea->end);
-	dlist_add_prev(&marea->mmap_link, &mmap->marea_list);
-}
-
-void mmap_del_marea(struct marea *marea) {
-	dlist_del(&marea->mmap_link);
-}
-
-void mmap_add_phy_page(struct emmap *mmap, struct phy_page *phy_page) {
-	dlist_add_prev(&phy_page->page_link, &mmap->page_list);
-}
-
-void mmap_del_phy_page(struct phy_page *phy_page) {
-	dlist_del(&phy_page->page_link);
-}
-
-struct phy_page *mmap_find_phy_page(struct emmap *mmap, void *start) {
-	struct phy_page *phy_page;
-	dlist_foreach_entry(phy_page, &mmap->page_list, page_link) {
-		if (start == phy_page->page) {
-			return phy_page;
-		}
-	}
-	return NULL;
-}
-
 void mmap_init(struct emmap *mmap) {
 	int err;
 	dlist_init(&mmap->marea_list);
-	dlist_init(&mmap->page_list);
 
 	if ((err = vmem_init_context(&mmap->ctx))) {
 		panic("%s: %s\n", __func__, strerror(-err));
@@ -149,19 +85,21 @@ void mmap_free(struct emmap *mmap) {
 
 void mmap_clear(struct emmap *mmap) {
 	struct marea *marea;
-	struct phy_page *phy_page;
 
 	dlist_foreach_entry(marea, &mmap->marea_list, mmap_link) {
 		vmem_unmap_region(mmap->ctx, marea->start, mmu_size_align(marea->end - marea->start));
 
 		marea_destroy(marea);
 	}
+}
 
-	dlist_foreach_entry(phy_page, &mmap->page_list, page_link) {
-		phymem_free(phy_page->page, phy_page->page_number);
-
-		phy_page_destroy(phy_page);
+static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
+	if (mmap_find_marea(mmap, marea->start)
+		|| mmap_find_marea(mmap, marea->end)) {
+		return -EEXIST;
 	}
+
+	return 0;
 }
 
 struct marea *mmap_place_marea(struct emmap *mmap, uint32_t start, uint32_t end, uint32_t flags) {
@@ -194,80 +132,4 @@ error_free:
 	marea_destroy(marea);
 error:
 	return NULL;
-}
-
-struct marea *mmap_alloc_marea(struct emmap *mmap, size_t size, uint32_t flags) {
-	struct dlist_head *item = &mmap->marea_list;
-	uint32_t s_ptr = mem_start;
-	struct marea *marea;
-
-	size = MAREA_ALIGN_UP(size);
-
-	do {
-		if ((marea = mmap_place_marea(mmap, s_ptr, s_ptr + size, flags))) {
-			return marea;
-		}
-
-		item = item->next;
-		if (item == &mmap->marea_list) {
-			break;
-		}
-
-		marea = dlist_entry(item, struct marea, mmap_link);
-		s_ptr = MAREA_ALIGN_UP(marea->end);
-	} while(1);
-
-	return NULL;
-}
-
-static void mmap_unmap_on_error(struct emmap *emmap, struct marea *err_ma) {
-	struct marea *marea;
-	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
-		if (marea == err_ma) {
-			break;
-		}
-		mmap_do_marea_unmap(emmap, marea);
-	}
-}
-
-int mmap_mapping(struct emmap *emmap) {
-	struct marea *marea;
-	int err;
-
-	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
-		log_debug("do_map: to %p start %p end %p", marea, marea->start, marea->end);
-		err = mmap_do_marea_map(emmap, marea);
-		if (err) {
-			goto out_err;
-		}
-	}
-
-	return 0;
-
-out_err:
-	mmap_unmap_on_error(emmap, marea);
-	return err;
-}
-
-int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
-	struct marea *marea, *new_marea;
-
-	dlist_foreach_entry(marea, &p_mmap->marea_list, mmap_link) {
-		if (!(new_marea = marea_create(marea->start, marea->end, marea->flags, marea->is_allocated))) {
-			return -ENOMEM;
-		}
-		mmap_add_marea(mmap, new_marea);
-	}
-
-	return mmap_mapping(mmap);
-}
-
-#include <kernel/task/resource/mmap.h>
-
-mmu_ctx_t mmap_get_current_context(void) {
-	struct emmap *emmap;
-
-	emmap = task_self_resource_mmap();
-
-	return emmap->ctx;
 }

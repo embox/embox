@@ -18,14 +18,10 @@
 
 #include <mem/vmem.h>
 
-#include <module/embox/mem/mmap_mmu.h>
+#include <mem/mapping/mmap.h>
+#include <mem/mapping/marea.h>
 
 static struct emmap early_emmap = {
-#if 0
-	NULL,
-	NULL,
-	NULL,
-#endif
 	NULL,
 	0,
 	DLIST_INIT(early_emmap.marea_list)

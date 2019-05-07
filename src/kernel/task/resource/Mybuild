@@ -33,6 +33,9 @@ module mmap_full extends mmap {
 
 module mmap_trivial extends mmap {
 	source "mmap_trivial.c"
+
+	depends embox.mem.mmap_header
+	depends embox.mem.marea_header
 }
 
 module mmap_notify {
