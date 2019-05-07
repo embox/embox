@@ -90,8 +90,10 @@ endif
 # Module-level rules.
 module_prereqs = $(o_files) $(a_files) $(common_prereqs)
 
+# Here we also rename .ARM.exidx section because some ARM none-eabi
+# compilers crash with Seg Fault for some reason.
 $(OBJ_DIR)/module/% : objcopy_flags = \
-	$(foreach s,text rodata data bss,--rename-section .$s=.$s.module.$(module_id))
+	$(foreach s,text rodata data bss ARM.exidx,--rename-section .$s=.$s.module.$(module_id))
 
 ar_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.a : mk/arhelper.mk
