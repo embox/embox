@@ -28,7 +28,4 @@ module mmap extends mmap_api {
 }
 
 module mmap_stub extends mmap_api {
-	option number log_level = 0
-
-	source "mmap_stub.c"
 }
