@@ -10,6 +10,7 @@
 #define DEVICE_H_
 
 #include <stddef.h>
+#include <fs/idesc.h>
 
 struct idesc;
 struct dev_module;
@@ -25,6 +26,11 @@ struct dev_module;
 #else
 	#define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv)
 #endif /* __GNUC__ */
+
+struct idesc_dev {
+	struct idesc idesc;
+	void *dev;
+};
 
 extern int char_dev_init_all(void);
 extern int char_dev_register(const struct dev_module *cdev);
