@@ -41,7 +41,7 @@ $(CONFIGURE) :
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
 			CFLAGS_FOR_TARGET="$(cppflags) $(target_libgcc_cppflags) $${EMBOX_IMPORTED_CFLAGS}" \
-			CXXFLAGS_FOR_TARGET="$(cppflags) $${EMBOX_IMPORTED_CXXFLAGS} -fpermissive" \
+			CXXFLAGS_FOR_TARGET="$(cppflags) $${EMBOX_IMPORTED_CXXFLAGS} -fpermissive -std=gnu++98" \
 			LDFLAGS_FOR_TARGET="$${EMBOX_IMPORTED_LDFLAGS}"; \
 	)
 	touch $@
