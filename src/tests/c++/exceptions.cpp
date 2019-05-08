@@ -26,7 +26,7 @@ TEST_CASE("Throw/catch exception") {
 		test_emit('a');
 		throw MyException();
 	}
-	catch (MyException e) {
+	catch (MyException& e) {
 		test_emit('b');
 	}
 	test_assert_emitted("ab");
