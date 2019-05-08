@@ -49,6 +49,8 @@ module raspi_video {
 	depends embox.driver.mailbox.bcm2835_mailbox
 	@NoRuntime depends fb
 	@NoRuntime depends embox.compat.libc.all
+	depends embox.mem.vmem_device_memory
+	depends embox.compat.posix.sys.mman.mmap
 }
 
 module cirrus_logic {
