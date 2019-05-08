@@ -14,6 +14,10 @@ module vmem_nommu extends vmem_api {
 	@IncludeExport(path="mem", target_name="vmem.h")
 	source "vmem_nommu.h"
 
+	source "vmem_device_memory.c"
+
+	depends embox.mem.mmap_nommu
+	depends embox.kernel.task.resource.mmap
 	depends embox.fs.syslib.idesc_mmap_api
 }
 
@@ -26,7 +30,6 @@ module vmem extends vmem_api {
 
 	depends embox.arch.mmu
 	depends vmem_alloc
-	depends embox.mem.phymem
 	depends embox.mem.mmap_mmu
 	depends embox.fs.syslib.idesc_mmap_api
 	depends vmem_header

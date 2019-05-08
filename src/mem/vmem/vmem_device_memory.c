@@ -14,7 +14,6 @@
 #include <kernel/task/resource/mmap.h>
 #include <mem/mapping/marea.h>
 #include <mem/mmap.h>
-#include <mem/phymem.h>
 
 static struct emmap *self_mmap(void) {
 	if (0 == mmap_kernel_inited()) {
