@@ -44,6 +44,7 @@ module raspi_systick extends embox.arch.clock {
 	//depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
 	@NoRuntime depends embox.kernel.time.timer_handler
+	depends embox.driver.periph_memory
 }
 
 @BuildDepends(embox.arch.arm.cmsis)
