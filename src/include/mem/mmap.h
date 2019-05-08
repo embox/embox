@@ -9,9 +9,9 @@
 #ifndef MEM_MMAP_H_
 #define MEM_MMAP_H_
 
-#include <module/embox/mem/mmap_api.h>
+#include <mem/mapping/marea.h>
+#include <mem/mapping/mmap.h>
 
-//TODO:
 #define MAREA_ALIGMENT            0x1000
 #define MAREA_ALIGMENT_MASK       (MAREA_ALIGMENT - 1)
 

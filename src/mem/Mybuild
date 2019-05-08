@@ -4,5 +4,5 @@ module phymem {
 	option number log_level = 3 /*log_info */
 
 	source "phymem.c"
-	depends embox.mem.vmem_api
+	depends embox.mem.vmem_device_memory
 }

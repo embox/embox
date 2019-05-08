@@ -6,21 +6,12 @@
  * @author Anton Bulychev
  */
 
-#ifndef MEM_MMAP_MMU_H_
-#define MEM_MMAP_MMU_H_
+#ifndef MEM_MMAP_PRIV_H_
+#define MEM_MMAP_PRIV_H_
 
 #include <stdint.h>
 #include <util/dlist.h>
 #include <hal/mmu.h>
-
-struct marea {
-	uintptr_t start;
-	uintptr_t end;
-	uint32_t flags;
-	uint32_t is_allocated;
-
-	struct dlist_head mmap_link;
-};
 
 struct phy_page {
 	void *page;
@@ -38,6 +29,8 @@ struct emmap {
 	struct dlist_head page_list;
 };
 
+struct marea;
+
 extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
 extern void mmap_del_marea(struct marea *marea);
 extern struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr);
@@ -51,4 +44,4 @@ extern void mmap_add_phy_page(struct emmap *mmap, struct phy_page *phy_page);
 extern void mmap_del_phy_page(struct phy_page *phy_page);
 extern struct phy_page *mmap_find_phy_page(struct emmap *mmap, void *start);
 
-#endif /* MEM_MMAP_MMU_H_ */
+#endif /* MEM_MMAP_PRIV_H_ */
