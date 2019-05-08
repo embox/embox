@@ -1,21 +1,37 @@
 package third_party.boost
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/boost/core/include")
-@BuildDepends(third_party.STLport.libstlportg)
-static module core {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/lib")
-	source "libboost_atomic.a", "libboost_chrono.a",
-		"libboost_context.a", "libboost_date_time.a",
-		"libboost_exception.a", "libboost_filesystem.a",
-		"libboost_log.a", "libboost_log_setup.a",
-		"libboost_program_options.a", "libboost_random.a",
-		"libboost_signals.a", "libboost_system.a",
-		"libboost_thread.a", "libboost_timer.a",
-		"libboost_wave.a"
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/boost/libs/install/include")
+@BuildDepends(embox.lib.libsupcxx)
+@BuildDepends(embox.lib.stl)
+static module libs {
+	@AddPrefix("^BUILD/extbld/third_party/boost/libs/install/lib")
+	source "libboost_atomic.a", 
+			"libboost_chrono.a",
+			"libboost_context.a",
+			"libboost_date_time.a",
+			"libboost_exception.a",
+			"libboost_program_options.a",
+			"libboost_random.a",
+			"libboost_system.a",
+			"libboost_thread.a",
+			"libboost_timer.a"
 
 	@NoRuntime depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.compat.libc.all
-	@NoRuntime depends third_party.STLport.libstlportg
+	@NoRuntime depends embox.lib.stl
 	@NoRuntime depends embox.compat.posix.pthread_key
+}
+
+@AutoCmd
+@Cmd(name="boost_demo_time_math",
+	help="example for BOOST date_time",
+	man="")
+@BuildDepends(third_party.boost.libs)
+@Build(stage=2,script="true")
+module boost_demo_time_math {
+	@AddPrefix("^BUILD/extbld/third_party/boost/libs/install/examples")
+	source "time_math.o"
+
+	@NoRuntime depends third_party.boost.libs
 }
