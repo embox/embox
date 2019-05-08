@@ -26,6 +26,8 @@ namespace std {
 		virtual const char* what() const throw() { return "std::bad_exception"; }
 	};
 
+	bool uncaught_exception() throw();
+
 	typedef void (*terminate_handler)();
 
 	typedef void (*unexpected_handler)();
