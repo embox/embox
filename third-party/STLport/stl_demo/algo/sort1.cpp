@@ -5,7 +5,16 @@
  *  © Copyright Nicolai M. Josuttis 1999
 */
 
-#include "algostuff.hpp"
+
+#if defined(__GNUC__) && (__GNUC__ >= 6)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmisleading-indentation"
+#endif
+	#include "algostuff.hpp"
+#if defined(__GNUC__) && (__GNUC__ >= 6)
+#pragma GCC diagnostic pop
+#endif
+
 using namespace std;
 
 int main(int argc, char *argv[])
