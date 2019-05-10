@@ -125,7 +125,7 @@ static inline size_t pci_get_region_size(uint32_t region_reg) {
 }
 
 static void show_device(struct pci_slot_dev *pci_dev, int full) {
-	printf("%02d:%2x.%d (PCI dev %04X:%04X) [%d %d]\n"
+	printf("%02" PRId32 ":%2" PRIx8 ".%" PRId8 " (PCI dev %04X:%04X) [%d %d]\n"
 				"\t %s: %s %s (rev %02d)\n",
 				pci_dev->busn,
 				pci_dev->slot,
@@ -163,7 +163,7 @@ dump_regs(struct pci_slot_dev *pci_dev, uint32_t offset, uint32_t length) {
 	uint32_t ret;
 
 	if (offset % 16) {
-		printf("%x: ", offset);
+		printf("%" PRIx32 ": ", offset);
 	}
 	for (i = offset; i < offset+length; i++) {
 		if (i % 16 == 0) {
@@ -172,9 +172,9 @@ dump_regs(struct pci_slot_dev *pci_dev, uint32_t offset, uint32_t length) {
 		ret = pci_read_config8(pci_dev->busn,
 				(pci_dev->slot << 3) | pci_dev->func, i, &val);
 		if (ret != PCIUTILS_SUCCESS) {
-			printf("E%d", ret);
+			printf("E%" PRIx32 "", ret);
 		} else {
-			printf("%x%x", val/16, val%16);
+			printf("%" PRIx8 "%" PRIx8 "", val/16, val%16);
 		}
 
 		if (i % 16 == 15) {
@@ -199,7 +199,7 @@ static void dump_regs2(struct pci_slot_dev *pci_dev) {
 	ret = pci_read_config8(pci_dev->busn,
 			(pci_dev->slot << 3) | pci_dev->func, PCI_HEADER_TYPE, &val8);
 	if (ret != 0) {
-		printf("Unable to read device type: %d\n", ret);
+		printf("Unable to read device type: %" PRId32 "\n", ret);
 		return;
 	}
 	if ((val8 & 0x7F) == 1) {
@@ -231,10 +231,10 @@ static void dump_regs2(struct pci_slot_dev *pci_dev) {
 		}
 
 		if (ret == 0) {
-			printf("%s (%x, %d): %x\n",
+			printf("%s (%" PRIx8 ", %d): %" PRIx32 "\n",
 					regs[i].name, regs[i].offset, regs[i].width, val);
 		} else {
-			printf("%s (%x, %d): ERROR %d\n",
+			printf("%s (%" PRIx8 ", %d): ERROR %" PRIx32 "\n",
 					regs[i].name, regs[i].offset, regs[i].width, ret);
 		}
 
