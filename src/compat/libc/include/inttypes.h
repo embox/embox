@@ -208,11 +208,6 @@ __END_DECLS
 #define    PRIX64      "llX"
 #define    PRId64      "lld"
 
-#define    PRIoPTR     PRIo32
-#define    PRIuPTR     PRIu32
-#define    PRIxPTR     "llx"
-#define    PRIXPTR     "llX"
-
 #elif defined (i386)
 
 #define    PRIo32      "o"
@@ -234,11 +229,6 @@ __END_DECLS
 #define    PRIX64      "lX"
 #define    PRId64      "ld"
 
-#define    PRIoPTR     PRIo32
-#define    PRIuPTR     PRIu32
-#define    PRIxPTR     "x"
-#define    PRIXPTR     "X"
-
 #else
 
 #define    PRIo32      "o"
@@ -259,6 +249,24 @@ __END_DECLS
 #define    PRIx64      "lx"
 #define    PRIX64      "lX"
 #define    PRId64      "ld"
+
+#endif
+
+#if defined (__e2k__)
+
+#define    PRIoPTR     PRIo32
+#define    PRIuPTR     PRIu32
+#define    PRIxPTR     "llx"
+#define    PRIXPTR     "llX"
+
+#elif defined (i386) || defined(__arm__) || defined(__mips__) || defined(__sparc__) || defined(__microblaze__) || defined(__PPC__)
+
+#define    PRIoPTR     PRIo32
+#define    PRIuPTR     PRIu32
+#define    PRIxPTR     "x"
+#define    PRIXPTR     "X"
+
+#else
 
 #define    PRIoPTR     PRIo32
 #define    PRIuPTR     PRIu32
