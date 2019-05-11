@@ -12,7 +12,6 @@
 #include <hal/mmu.h>
 #include <asm/cp15.h>
 
-
 extern uint32_t _get_mmu_tlb_type(void);
 extern uint32_t _get_mmu_translation_table_base_0(void);
 extern uint32_t _get_mmu_translation_table_base_1(void);
