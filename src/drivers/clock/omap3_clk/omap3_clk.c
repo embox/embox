@@ -15,7 +15,6 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/printk.h>
-#include <mem/vmem.h>
 #include <util/binalign.h>
 
 #include <embox/unit.h>
@@ -109,13 +108,6 @@ static struct clock_source omap3_clk_clock_source = {
 
 static int omap_clk_init(void) {
 	/* Map one vmem page to handle this device if mmu is used */
-	mmap_device_memory(
-			(void*) ((uintptr_t) GPTIMER1_BASE & ~MMU_PAGE_MASK),
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			binalign_bound(sizeof(struct gptimerxx_x), MMU_PAGE_SIZE),
-			MAP_FIXED,
-			((uintptr_t) GPTIMER1_BASE & ~MMU_PAGE_MASK)
-			);
 	clock_source_register(&omap3_clk_clock_source);
 	return irq_attach(GPTIMER1_IRQ, clock_handler, 0, &omap3_clk_clock_source, "omap3_clk");
 }

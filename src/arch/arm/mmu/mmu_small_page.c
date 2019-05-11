@@ -101,10 +101,12 @@ void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
 
 #define L1_ADDR_MASK 0xFFFFFC00
 #define L2_ADDR_MASK 0xFFF
+#define TTBR0_ADDR_MASK 0xFFFFFF00
+uint32_t arm_get_ttbr0(void);
 
 static uint32_t *get_l1_desc(uint32_t virt_addr)
 {
-	uint32_t *_translation_table = (void*)vmem_current_context();
+	uint32_t *_translation_table = (void *) (arm_get_ttbr0() & TTBR0_ADDR_MASK);
 	int l1_idx = virt_addr >> 20;
 	return &_translation_table[l1_idx];
 }
@@ -124,7 +126,9 @@ uint32_t vmem_info(uint32_t vaddr)
 
     vaddr &= ~0xFFF;
 
-    printk("vmem info: base %p; vaddr %p", (void*) vmem_current_context(), (void *) vaddr);
+    printk("vmem info: base %p; vaddr %p",
+		    (void *) (arm_get_ttbr0() & TTBR0_ADDR_MASK),
+		    (void *) vaddr);
 
     if (*l1_desc == 0x0) {
         printk(" unmapped l1_desc = 0x%" PRIx32 "\n", *l1_desc);
