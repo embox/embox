@@ -4,27 +4,22 @@ module mqtt_test {
 	source "mqtt_test.h"
 	source "mqtt_test.c"
 
-	depends embox.cmd.testing.server
-	depends embox.cmd.testing.client
+	depends server, client
 }
 
 @AutoCmd
-@Cmd(name = "server",
-    help = "MQTT test server",
+@Cmd(name = "test_server",
+    help = "",
     man = '''
-        AUTHOR
-            Written by Mark Kovalev.
     ''')
 module server {
 	source "server.c"
 }
 
 @AutoCmd
-@Cmd(name = "client",
-    help = "MQTT test client",
+@Cmd(name = "test_client",
+    help = "",
     man = '''
-        AUTHOR
-            Written by Mark Kovalev.
     ''')
 module client {
 	source "client.c"	
