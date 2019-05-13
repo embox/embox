@@ -86,7 +86,7 @@ int etnaviv_ioctl_gem_new(struct drm_device *dev, void *data, struct drm_file *f
 	}
 
 	return etnaviv_gem_new_handle(dev, file, args->size,
-			args->flags, &args->handle);
+			args->flags, (void *) &args->handle);
 }
 
 int etnaviv_ioctl_gem_info(struct drm_device *dev, void *data, struct drm_file *file)
