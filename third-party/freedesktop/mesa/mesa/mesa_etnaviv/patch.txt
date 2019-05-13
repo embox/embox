@@ -688,6 +688,14 @@ diff -aur mesa-18.2.5-orig/src/mesa/state_tracker/tests/Makefile.in mesa-18.2.5/
 diff -aur mesa-18.2.5-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp mesa-18.2.5/src/mesa/state_tracker/st_glsl_to_tgsi.cpp
 --- mesa-18.2.5-orig/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2018-11-15 15:32:30.000000000 +0300
 +++ mesa-18.2.5/src/mesa/state_tracker/st_glsl_to_tgsi.cpp	2018-11-27 13:44:25.490152782 +0300
+@@ -29,6 +29,7 @@
+  *
+  * Translate GLSL IR to TGSI.
+  */
++#include <GL/gl.h>
+ 
+ #include "st_glsl_to_tgsi.h"
+ 
 @@ -58,7 +58,7 @@
  #include "st_glsl_to_tgsi_temprename.h"
  
@@ -818,18 +826,6 @@ diff -aur mesa-18.2.5-orig/src/mesa/state_tracker/st_glsl_to_tgsi_temprename.cpp
     conditionality_in_loop_id(conditionality_untouched),
     if_scope_write_flags(0),
     next_ifelse_nesting_depth(0),
-diff -aur mesa-18.2.5-orig/include/drm-uapi/drm.h .mesa-18.2.5/include/drm-uapi/drm.h
---- mesa-18.2.5-orig/include/drm-uapi/drm.h	2018-11-15 15:32:30.000000000 +0300
-+++ mesa-18.2.5/include/drm-uapi/drm.h	2018-11-27 14:33:18.038728314 +0300
-@@ -44,7 +44,7 @@
- 
- #else /* One of the BSDs */
- 
--#include <sys/ioccom.h>
-+//#include <sys/ioccom.h>
- #include <sys/types.h>
- typedef int8_t   __s8;
- typedef uint8_t  __u8;
 diff -aur mesa-18.2.5-orig/src/gallium/auxiliary/tgsi/tgsi_ureg.h mesa-18.2.5/src/gallium/auxiliary/tgsi/tgsi_ureg.h
 --- mesa-18.2.5-orig/src/gallium/auxiliary/tgsi/tgsi_ureg.h	2018-11-15 15:32:30.000000000 +0300
 +++ mesa-18.2.5/src/gallium/auxiliary/tgsi/tgsi_ureg.h	2018-11-27 15:14:22.242543610 +0300
@@ -1209,3 +1205,122 @@ diff -aur -x configure mesa-18.2.5-orig/include/c99_math.h mesa-18.2.5/include/c
 +#endif /* #ifdef __cplusplus */
  
  #endif /* #define _C99_MATH_H_ */
+--- mesa-18.2.5-orig/include/GL/gl.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/include/GL/gl.h	2019-05-13 15:58:00.273171450 +0300
+@@ -27,6 +27,45 @@
+ #ifndef __gl_h_
+ #define __gl_h_
+ 
++#ifndef STDINT_H_
++#define STDINT_H_
++#include <asm-generic/types32.h>
++typedef __s8 int8_t;
++typedef __u8 uint8_t;
++typedef __s16 int16_t;
++typedef __u16 uint16_t;
++typedef __s32 int32_t;
++typedef __u32 uint32_t;
++typedef __s64 int64_t;
++typedef __u64 uint64_t;
++typedef __intptr_t intptr_t;
++typedef __uintptr_t uintptr_t;
++typedef int64_t intmax_t;
++typedef uint64_t uintmax_t;
++
++#define UINT64_C(c) __UINT64_C(c)
++#define UINT8_MAX __UINT8_MAX__
++#define INT8_MAX __UINT8_MAX__
++#define UINT16_MAX __UINT16_MAX__
++#define INT16_MAX __UINT16_MAX__
++#define UINT32_MAX __UINT32_MAX__
++#define INT32_MAX __UINT32_MAX__
++#define UINT64_MAX __UINT64_MAX__
++#define INT64_MAX __UINT64_MAX__
++
++#define UINT8_MIN 0
++#define INT8_MIN -__UINT8_MAX__
++#define UINT16_MIN 0
++#define INT16_MIN -__UINT16_MAX__
++#define UINT32_MIN 0
++#define INT32_MIN -__UINT32_MAX__
++#define UINT64_MIN 0
++#define INT64_MIN -__UINT64_MAX__
++
++#define UINTPTR_MAX __UINTPTR_MAX__
++
++#endif
++
+ #if defined(USE_MGL_NAMESPACE)
+ #include "gl_mangle.h"
+ #endif
+diff -aur mesa-18.2.5-orig/include/drm-uapi/drm.h mesa-18.2.5/include/drm-uapi/drm.h
+--- mesa-18.2.5-orig/include/drm-uapi/drm.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/include/drm-uapi/drm.h	2019-05-13 15:59:42.046502371 +0300
+@@ -44,16 +44,10 @@
+ 
+ #else /* One of the BSDs */
+ 
+-#include <sys/ioccom.h>
++//#include <sys/ioccom.h>
+ #include <sys/types.h>
+-typedef int8_t   __s8;
+-typedef uint8_t  __u8;
+-typedef int16_t  __s16;
+-typedef uint16_t __u16;
+-typedef int32_t  __s32;
+-typedef uint32_t __u32;
+-typedef int64_t  __s64;
+-typedef uint64_t __u64;
++#include <asm-generic/types32.h>
++
+ typedef size_t   __kernel_size_t;
+ typedef unsigned long drm_handle_t;
+ 
+diff -aur mesa-18.2.5-orig/src/util/set.h mesa-18.2.5/src/util/set.h
+--- mesa-18.2.5-orig/src/util/set.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/util/set.h	2019-05-13 16:08:26.513156659 +0300
+@@ -31,6 +31,8 @@
+ #include <inttypes.h>
+ #include <stdbool.h>
+ 
++#define uint32_t unsigned
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+diff -aur mesa-18.2.5-orig/src/compiler/glsl/ir.h mesa-18.2.5/src/compiler/glsl/ir.h
+--- mesa-18.2.5-orig/src/compiler/glsl/ir.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/compiler/glsl/ir.h	2019-05-13 16:09:51.389821322 +0300
+@@ -34,6 +34,8 @@
+ #include "ir_visitor.h"
+ #include "ir_hierarchical_visitor.h"
+ 
++#define uint32_t unsigned
++
+ #ifdef __cplusplus
+ 
+ /**
+diff -aur mesa-18.2.5-orig/src/util/hash_table.h mesa-18.2.5/src/util/hash_table.h
+--- mesa-18.2.5-orig/src/util/hash_table.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/util/hash_table.h	2019-05-13 16:06:46.233159024 +0300
+@@ -34,6 +34,8 @@
+ #include "c99_compat.h"
+ #include "macros.h"
+ 
++#define uint32_t unsigned
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+diff -aur mesa-18.2.5-orig/src/mesa/main/mtypes.h .mesa-18.2.5/src/mesa/main/mtypes.h
+--- mesa-18.2.5-orig/src/mesa/main/mtypes.h	2018-11-15 15:32:30.000000000 +0300
++++ mesa-18.2.5/src/mesa/main/mtypes.h	2019-05-13 16:30:08.303125934 +0300
+@@ -34,7 +34,7 @@
+ #define MTYPES_H
+ 
+ 
+-#include <stdint.h>             /* uint32_t */
++#include <GL/gl.h>             /* uint32_t */
+ #include <stdbool.h>
+ #include "c11/threads.h"
+ 

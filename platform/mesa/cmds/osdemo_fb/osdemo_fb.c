@@ -39,7 +39,7 @@ static int animated_scene;
 void init_buffers(void) {
 	mesa_fbi = fb_lookup(0);
 
-	printf("%dx%d, %dbpp\n", mesa_fbi->var.xres, mesa_fbi->var.yres,
+	printf("%"PRIu32"x%"PRIu32", %"PRIu32"bpp\n", mesa_fbi->var.xres, mesa_fbi->var.yres,
 			mesa_fbi->var.bits_per_pixel);
 
 	Width = mesa_fbi->var.xres;

@@ -15,6 +15,8 @@
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <inttypes.h>
+
 #include <../arch/arm/armlib/mem_barriers.h>
 
 #include "etnaviv_compat.h"
@@ -118,7 +120,7 @@ void etnaviv_buffer_dump(struct etnaviv_gpu *gpu,
 	uint32_t *ptr = buf->vaddr + off;
 	int i;
 
-	log_debug("virt %p phys 0x%08x free 0x%08x\n", ptr,
+	log_debug("virt %p phys 0x%08"PRIu32" free 0x%08"PRIu32"\n", ptr,
 			etnaviv_cmdbuf_get_va(buf) + off, size - len * 4 - off);
 
 	if (mod_logger.logging.level == 0) {
@@ -130,7 +132,7 @@ void etnaviv_buffer_dump(struct etnaviv_gpu *gpu,
 			printk("\n");
 		if (i % 8 == 0)
 			printk("\t%p: ", ptr + i);
-		printk("%08x ", *(ptr + i));
+		printk("%08"PRIu32" ", *(ptr + i));
 	}
 
 	printk("\n");
