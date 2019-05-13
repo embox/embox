@@ -53,12 +53,17 @@ int ntp_build(struct ntphdr *ntph, int leap, int mode,
 	return 0;
 }
 
-static void ndl_to_ts(const struct ntp_data_l *ndl,
-		struct timespec *out_ts) {
-	assert(ndl != NULL);
+static void ndl_to_ts(const void *in, struct timespec *out_ts) {
+	struct ntp_data_l ndl;
+
+	assert(in != NULL);
 	assert(out_ts != NULL);
-	out_ts->tv_sec = ntohl(ndl->sec) - SECONDS_1900_1970;
-	out_ts->tv_nsec = (ntohl(ndl->frac) / 1000) * 232;
+
+	/* This is a workaround to avoid accessing unaligned data */
+	memcpy(&ndl, in, sizeof(ndl));
+
+	out_ts->tv_sec = ntohl(ndl.sec) - SECONDS_1900_1970;
+	out_ts->tv_nsec = (ntohl(ndl.frac) / 1000) * 232;
 }
 
 int ntp_data_l_to_timespec(const struct ntp_data_l *ndl,
