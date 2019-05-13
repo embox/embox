@@ -172,7 +172,7 @@ int fps_swap(struct fb_info *fb) {
 		fps_current++;
 	} else {
 		memcpy(fb->screen_base,
-			fps_sw_base,
+			fps_sw_base[0],
 			fb->var.xres * fb->var.yres * fb->var.bits_per_pixel / 8);
 	}
 	return 0;
