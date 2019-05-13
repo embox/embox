@@ -36,9 +36,6 @@ struct priolist_link {
 	int               prio;
 };
 
-typedef member_t(struct priolist_link, node_link) priolist_node_t;
-typedef member_t(struct priolist_link, prio_link) priolist_prio_t;
-
 #define PRIOLIST_INIT(list) \
 	{                                               \
 		.node_list = DLIST_INIT((list)->node_list), \
@@ -68,11 +65,13 @@ static inline int priolist_link_alone(struct priolist_link *link) {
 }
 
 static inline struct priolist_link *priolist_first(struct priolist *list) {
-	return member_to_object(dlist_first(&list->node_list), priolist_node_t);
+	struct dlist_head *f = dlist_first(&list->node_list);
+	return mcast_out(f, struct priolist_link, node_link);
 }
 
 static inline struct priolist_link *priolist_first_or_null(struct priolist *list) {
-	return member_to_object(dlist_first_or_null(&list->node_list), priolist_node_t);
+	struct dlist_head *f = dlist_first_or_null(&list->node_list);
+	return mcast_out(f, struct priolist_link, node_link);
 }
 
 extern void priolist_add(struct priolist_link *link, struct priolist *list);
