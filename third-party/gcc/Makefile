@@ -1,11 +1,16 @@
 
 PKG_NAME := gcc
-PKG_VER  := 4.8.1
+
+#PKG_VER  := 4.8.1
+PKG_VER  := 6.3.0
 
 PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := 74cc12b7afe051ab7d0e00269e49fc9b
 
-PKG_PATCHES := pkg_patch.txt
+#PKG_MD5     := 74cc12b7afe051ab7d0e00269e49fc9b
+PKG_MD5 := 6e5ea04789678f1250c1b30c4d9ec417
+
+#PKG_PATCHES := pkg_patch.txt
+PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
@@ -13,6 +18,8 @@ ifeq (arm,$(EMBOX_ARCH))
 AUTOCONF_TARGET_TRIPLET := arm-none-eabi
 else ifeq (sparc,$(EMBOX_ARCH))
 AUTOCONF_TARGET_TRIPLET := sparc-elf
+else ifeq (mips,$(EMBOX_ARCH))
+AUTOCONF_TARGET_TRIPLET := mips-elf
 else ifeq (x86,$(EMBOX_ARCH))
 AUTOCONF_TARGET_TRIPLET := i386-pc-elf
 else
@@ -31,17 +38,20 @@ $(CONFIGURE) :
 	mkdir -p $(PKG_BUILD_DIR) && cd $(PKG_BUILD_DIR) && ( \
 		. $(EMBOX_GCC_ENV) && $(PKG_SOURCE_DIR)/configure \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
+			--with-cross-host=embox \
 			--disable-multilib \
 			--disable-shared \
 			--disable-tls \
 			--disable-nls \
 			--disable-libssp \
+			--without-headers \
 			--without-newlib \
 			--enable-languages=c,c++ \
+			--enable-soft-float \
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
 			CFLAGS_FOR_TARGET="$(cppflags) $(target_libgcc_cppflags) $${EMBOX_IMPORTED_CFLAGS}" \
-			CXXFLAGS_FOR_TARGET="$(cppflags) $${EMBOX_IMPORTED_CXXFLAGS} -fpermissive -std=gnu++98" \
+			CXXFLAGS_FOR_TARGET="$(cppflags) $${EMBOX_IMPORTED_CXXFLAGS} -fpermissive" \
 			LDFLAGS_FOR_TARGET="$${EMBOX_IMPORTED_LDFLAGS}"; \
 	)
 	touch $@
@@ -52,26 +62,26 @@ $(BUILD) :
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
-			RAW_CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
+			RAW_CXX_FOR_TARGET=$(EMBOX_GXX) \
 			AR_FOR_TARGET=ar \
 			RANLIB_FOR_TARGET=ranlib \
-         	TARGET-libiberty="LINKER=true CC=true AR=true RANLIB=touch all" \
-         	TARGET-zlib="LINKER=true CC=true AR=true RANLIB=touch all" \
-         	TARGET-libbacktrace="LINKER=true CC=true AR=touch \
+			TARGET-libiberty="LINKER=true CC=true AR=true RANLIB=touch all" \
+			TARGET-zlib="LINKER=true CC=true AR=true RANLIB=touch all" \
+			TARGET-libbacktrace="LINKER=true CC=true AR=touch \
 				LINK=\"mkdir -p .libs && true\" \
 				LIBS=\"&& touch .libs/libbacktrace.a\" all" \
-         	TARGET-libcpp="LINKER=true CC=true CXX=true POSTCOMPILE=true \
+			TARGET-libcpp="LINKER=true CC=true CXX=true POSTCOMPILE=true \
 				AR=true RANLIB=touch all" \
-         	TARGET-libdecnumber="LINKER=true CC=true AR=true RANLIB=touch all" \
-         	TARGET-fixincludes="LINKER=true CC=true AR=true all" \
+			TARGET-libdecnumber="LINKER=true CC=true AR=true RANLIB=touch all" \
+			TARGET-fixincludes="LINKER=true CC=true AR=true all" \
 			TARGET-lto-plugin="CC=true LIBTOOL=true all" \
-         	TARGET-gcc="LINKER=true CC=true CXX=true \
+			TARGET-gcc="LINKER=true CC=true AR=true \
 				GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
-				AR=true RANLIB=true libgcc-support stmp-int-hdrs" \
-         	TARGET-target-libgcc="PICFLAG= EXTRA_PARTS= all" \
-         	TARGET-target-libstdc++-v3="SUBDIRS=\"include libsupc++\" \
-				all-recursive" \
-         	all-target-libgcc all-target-libstdc++-v3; \
+				AR=true RANLIB=true libgcc-support stmp-int-hdrs CXXDEPMODE=true" \
+			TARGET-target-libgcc="PICFLAG= EXTRA_PARTS= all" \
+			TARGET-target-libstdc++-v3="SUBDIRS=\"include libsupc++\" \
+			all-recursive" \
+			all-target-libgcc all-target-libstdc++-v3; \
 	)
 	touch $@
 

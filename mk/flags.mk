@@ -220,6 +220,7 @@ override CXXFLAGS += -I$(abspath $(SRC_DIR)/compat/cxx/include)
 #	C++ has build-in type bool
 override CXXFLAGS += -DSTDBOOL_H_
 override CXXFLAGS += $(cxxflags)
+override CXXFLAGS += -std=gnu++11
 
 # Compiler flags
 cflags := $(CFLAGS)

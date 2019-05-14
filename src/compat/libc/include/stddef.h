@@ -27,5 +27,6 @@
 
 #include <defines/ptrdiff_t.h>
 
+typedef long double max_align_t;
 
 #endif /* STDDEF_H_ */
