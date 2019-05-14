@@ -22,15 +22,4 @@ static module libgcc extends embox.lib.libgcc {
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include")
 static module gcc_build {
 	depends embox.compat.posix.proc.atexit_api
-	@NoRuntime depends gcc_stubs
-}
-
-module gcc_stubs {
-	@IncludePathBefore("$(THIRDPARTY_DIR)/gcc/include")
-	source "stubs.c"
-
-	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.compat.libc.str
-	@NoRuntime depends embox.lib.Printk
-	depends embox.compat.posix.proc.atexit_api
 }
