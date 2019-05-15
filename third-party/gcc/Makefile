@@ -79,14 +79,27 @@ $(BUILD) :
 				GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 				AR=true RANLIB=true libgcc-support stmp-int-hdrs CXXDEPMODE=true" \
 			TARGET-target-libgcc="PICFLAG= EXTRA_PARTS= all" \
-			TARGET-target-libstdc++-v3="SUBDIRS=\"include libsupc++\" \
-			all-recursive" \
 			all-target-libgcc all-target-libstdc++-v3; \
 	)
 	touch $@
 
+STL_HEADERS := algorithm bitset complex forward_list future iosfwd iterator locale \
+	mutex queue regex shared_mutex stdexcept system_error typeindex unordered_set vector \
+	array chrono condition_variable fstream iomanip iostream limits map numeric random \
+	scoped_allocator sstream streambuf thread type_traits utility atomic codecvt deque \
+	functional ios istream list memory ostream ratio set stack string tuple unordered_map valarray
+
 $(INSTALL) :
+	$(eval BITS_HEADERS := $(wildcard $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/*))
+	$(eval BITS_HEADERS := $(filter-out $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/stamp-bits, $(BITS_HEADERS)))
+	$(eval BITS_TARGET_HEADERS := $(wildcard $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/*))
+	$(eval EXT_HEADERS := $(wildcard $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/ext/*))
+	$(eval DEBUG_HEADERS := $(wildcard $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/debug/*))
+	$(eval BACKWARD_HEADERS := $(wildcard $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/backward/*))
+
 	mkdir -p $(PKG_INSTALL_DIR)/include $(PKG_INSTALL_DIR)/include/bits
+	mkdir -p $(PKG_INSTALL_DIR)/include/std $(PKG_INSTALL_DIR)/include/ext
+	mkdir -p $(PKG_INSTALL_DIR)/include/debug $(PKG_INSTALL_DIR)/include/backward
 	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libgcc/unwind.h $(PKG_INSTALL_DIR)/include/
 	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/cxxabi.h $(PKG_INSTALL_DIR)/include/
 	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/exception $(PKG_INSTALL_DIR)/include/
@@ -94,16 +107,15 @@ $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/new $(PKG_INSTALL_DIR)/include/
 	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/typeinfo $(PKG_INSTALL_DIR)/include/
 	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/atomic_lockfree_defines.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/cxxabi_forced.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/exception_defines.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/exception_ptr.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/hash_bytes.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/bits/nested_exception.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/c++config.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/cpu_defines.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/cxxabi_tweaks.h $(PKG_INSTALL_DIR)/include/bits/
-	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/$(AUTOCONF_TARGET_TRIPLET)/bits/os_defines.h $(PKG_INSTALL_DIR)/include/bits/
+	echo $(BITS_HEADERS)
+	cp $(BITS_HEADERS) $(PKG_INSTALL_DIR)/include/bits/
+	cp $(BITS_TARGET_HEADERS) $(PKG_INSTALL_DIR)/include/bits/
+	cp -r $(EXT_HEADERS) $(PKG_INSTALL_DIR)/include/ext/
+	cp -r $(DEBUG_HEADERS) $(PKG_INSTALL_DIR)/include/debug/
+	cp $(BACKWARD_HEADERS) $(PKG_INSTALL_DIR)/include/backward/
+	cd $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/; cp $(STL_HEADERS) $(PKG_INSTALL_DIR)/include/std/; cd ..; \
 	mkdir -p $(PKG_INSTALL_DIR)/lib
 	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libgcc/libgcc.a $(PKG_INSTALL_DIR)/lib/
 	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/libsupc++/.libs/libsupc++.a $(PKG_INSTALL_DIR)/lib
+	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/src/.libs/libstdc++.a $(PKG_INSTALL_DIR)/lib
 	touch $@

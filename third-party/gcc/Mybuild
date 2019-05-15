@@ -6,7 +6,7 @@ static module libsupcxx extends embox.lib.libsupcxx {
 	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
 	source "libsupc++.a"
 
-	depends gcc_build
+	@NoRuntime depends gcc_build
 }
 
 @BuildDepends(gcc_build)
@@ -15,7 +15,16 @@ static module libgcc extends embox.lib.libgcc {
 	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
 	source "libgcc.a"
 
-	depends gcc_build
+	@NoRuntime depends gcc_build
+}
+
+@BuildDepends(gcc_build)
+@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include/std")
+static module libstdcxx extends embox.lib.stl {
+	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
+	source "libstdc++.a"
+
+	@NoRuntime depends gcc_build
 }
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
