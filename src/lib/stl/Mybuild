@@ -1,0 +1,5 @@
+package embox.lib
+
+@DefaultImpl(third_party.STLport.libstlportg)
+abstract module stl {
+}
