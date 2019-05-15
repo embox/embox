@@ -188,7 +188,8 @@ __END_DECLS
 #define    PRIXLEAST16 "X"
 #define    PRIXFAST16  "X"
 
-#if defined(__arm__) || defined (__e2k__) || defined(__mips__) || defined(__sparc__) || defined(__microblaze__) || defined(__PPC__)
+
+#if defined(__arm__) || defined (__e2k__) || (defined(__mips__) && !defined(__gnu_linux__)) || defined(__sparc__) || defined(__microblaze__) || defined(__PPC__)
 #define    PRIo32      "lo"
 #define    PRIoLEAST32 "lo"
 #define    PRIoFAST32  "lo"
@@ -208,7 +209,7 @@ __END_DECLS
 #define    PRIX64      "llX"
 #define    PRId64      "lld"
 
-#elif defined (i386)
+#elif defined (i386) || (defined(__mips__) && defined(__gnu_linux__))
 
 #define    PRIo32      "o"
 #define    PRIoLEAST32 "o"
