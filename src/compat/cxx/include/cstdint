@@ -1,0 +1,9 @@
+#ifndef EMBOX_CSTDINT_
+#define EMBOX_CSTDINT_
+
+#include <stdint.h>
+
+namespace std {
+} // namespace std
+
+#endif // EMBOX_CSTDINT_

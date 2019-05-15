@@ -4,6 +4,7 @@
 #include <locale.h>
 
 namespace std {
+	using ::setlocale;
 } // namespace std
 
 #endif // EMBOX_CLOCALE_
