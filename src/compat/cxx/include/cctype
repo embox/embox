@@ -24,6 +24,7 @@ namespace std {
 	using ::isxdigit;
 	using ::tolower;
 	using ::toupper;
+	using ::isblank;
 } // namespace std
 
 #endif // CCTYPE_
