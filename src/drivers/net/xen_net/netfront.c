@@ -14,14 +14,24 @@
 #include <defines/null.h>
 
 #include <xenstore.h>
+#include <barrier.h>
 
 #include "netfront.h"
 
 #define XS_MSG_LEN 256
 
+#define ASSERT(x)                           \
+do {                                        \
+	if (!(x)) {                          	\
+		printk("ASSERTION FAILED!");       	\
+	}                                       \
+} while(0)
+
+#define BUG_ON(x) ASSERT(!(x))
+
 static char _text;
 
-static char memory_pages[2][PAGE_SIZE];
+static char memory_pages[16][PAGE_SIZE];
 
 static grant_entry_v1_t gnttab_table[16];
 static grant_ref_t ref = 0; // it's ok
@@ -36,6 +46,11 @@ static grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame,
     gnttab_table[ref].flags = GTF_permit_access | readonly;
 
     return ref++;
+}
+
+static inline int xennet_rxidx(RING_IDX idx)
+{
+    return idx & (NET_RX_RING_SIZE - 1);
 }
 
 static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
@@ -161,6 +176,79 @@ static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
 	return;
 }
 
+void network_rx(struct netfront_dev *dev)
+{
+    RING_IDX rp,cons,req_prod;
+    int nr_consumed, i;
+	int more, notify;
+    int dobreak;
+
+    nr_consumed = 0;
+moretodo:
+    rp = dev->rx.sring->rsp_prod;
+    rmb(); /* Ensure we see queued responses up to 'rp'. */
+
+    dobreak = 0;
+    for (cons = dev->rx.rsp_cons; cons != rp && !dobreak; nr_consumed++, cons++)
+    {
+		printk("IM IN IT");
+        struct net_buffer* buf;
+        unsigned char* page;
+        int id;
+
+        struct netif_rx_response *rx = RING_GET_RESPONSE(&dev->rx, cons);
+
+        id = rx->id;
+        BUG_ON(id >= NET_RX_RING_SIZE);
+
+        buf = &dev->rx_buffers[id];
+        page = (unsigned char*)buf->page;
+        // gnttab_end_access(buf->gref);
+
+        if (rx->status > NETIF_RSP_NULL) {
+#ifdef HAVE_LIBC
+            if (dev->netif_rx == NETIF_SELECT_RX) {
+                int len = rx->status;
+                ASSERT(current == main_thread);
+                if (len > dev->len)
+                    len = dev->len;
+                memcpy(dev->data, page+rx->offset, len);
+                dev->rlen = len;
+                /* No need to receive the rest for now */
+                dobreak = 1;
+            } else
+#endif
+		        dev->netif_rx(page+rx->offset, rx->status, dev->netif_rx_arg);
+        }
+    }
+    dev->rx.rsp_cons=cons;
+
+    RING_FINAL_CHECK_FOR_RESPONSES(&dev->rx,more);
+    if(more && !dobreak) goto moretodo;
+
+    req_prod = dev->rx.req_prod_pvt;
+
+    for (i = 0; i < nr_consumed; i++) {
+        int id = xennet_rxidx(req_prod + i);
+        netif_rx_request_t *req = RING_GET_REQUEST(&dev->rx, req_prod + i);
+        struct net_buffer* buf = &dev->rx_buffers[id];
+        void* page = buf->page;
+
+        /* We are sure to have free gnttab entries since they got released above */
+        buf->gref = req->gref = gnttab_grant_access(dev->dom,
+                                                    virt_to_mfn(page),
+                                                    0);
+        req->id = id;
+    }
+
+    wmb();
+
+    dev->rx.req_prod_pvt = req_prod + i;
+    RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
+    if (notify)
+		printk("NOTIFY!\n");
+}
+
 struct netfront_dev *init_netfront(
 	char *_nodename,
 	void (*thenetif_rx)(unsigned char* data,
@@ -205,6 +293,19 @@ struct netfront_dev *init_netfront(
 			   &rawmac[3],
 			   &rawmac[4],
 			   &rawmac[5]);
+	
+	printk("nodename: %s\n"
+		   "backend: %s\n"
+		   "mac: %s\n"
+		   "ip: %s\n",
+		   dev->nodename,
+		   dev->backend,
+		   dev->mac,
+		   *ip);
+
+	while(1) {
+		network_rx(dev);
+	}
 
 	return dev;
 }

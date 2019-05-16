@@ -105,6 +105,17 @@ static const struct net_driver xen_net_drv_ops = {
 	.set_macaddr = xen_net_setmac,
 };
 
+static void print_packet(unsigned char* data, int len, void* arg) {
+	unsigned char *out = data;
+
+	printk("Packet: [");
+	while (len) {
+		printk("%c ", *out++);
+		--len;
+	}
+	printk("]\n");
+}
+
 static int xen_net_init(void) {
 	int res = 0;
 	struct net_device *nic;
@@ -127,7 +138,7 @@ static int xen_net_init(void) {
 	char nodename[] = "device/vif/0";
 	unsigned char rawmac[6];
 	char *ip = (char *) malloc(16);
-	struct netfront_dev *dev = init_netfront(nodename, NULL, rawmac, &ip);
+	struct netfront_dev *dev = init_netfront(nodename, print_packet, rawmac, &ip);
 	
 	printk("nodename: %s\n"
 		   "backend: %s\n"
