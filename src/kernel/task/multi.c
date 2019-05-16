@@ -34,7 +34,11 @@ struct task_trampoline_arg {
 struct task *task_self(void) {
 	struct thread *th = thread_self();
 
-	assert(th);
+	if (!th) {
+		/* Scheduler was not started yet */
+		return task_kernel_task();
+	}
+
 	assert(th->task);
 
 	return th->task;
