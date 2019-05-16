@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
 
 	command = argv[1];
 
-	if (strcmp(argv[2], "stop") == 0) {
+	if (argc > 2 && strcmp(argv[2], "stop") == 0) {
 		service_delete(command);
 		return 0;
 	}
