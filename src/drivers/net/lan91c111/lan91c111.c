@@ -8,6 +8,7 @@
 #include <sys/mman.h>
 
 #include <util/log.h>
+#include <drivers/common/memory.h>
 
 #include <kernel/printk.h>
 #include <kernel/irq.h>
@@ -299,15 +300,6 @@ EMBOX_UNIT_INIT(lan91c111_init);
 static int lan91c111_init(void) {
         struct net_device *nic;
 
-	if (NULL == mmap_device_memory(
-		(void*) BANK_BASE_ADDR,
-		0x10,
-		PROT_READ | PROT_WRITE | PROT_NOCACHE,
-		MAP_FIXED,
-		(unsigned long) BANK_BASE_ADDR)) {
-		return -1;
-	}
-
         if (NULL == (nic = etherdev_alloc(0))) {
                 return -ENOMEM;
         }
@@ -321,3 +313,10 @@ static int lan91c111_init(void) {
 
 	return inetdev_register_dev(nic);
 }
+
+static struct periph_memory_desc lan91c111_mem = {
+	.start = BANK_BASE_ADDR,
+	.len   = 0x10,
+};
+
+PERIPH_MEMORY_DEFINE(lan91c111_mem);
