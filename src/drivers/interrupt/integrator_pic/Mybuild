@@ -7,4 +7,6 @@ module integrator_pic extends irqctrl_api {
 
 	source "integrator_pic.c"
 	source "integrator_pic.h"
+
+	depends embox.driver.periph_memory
 }
