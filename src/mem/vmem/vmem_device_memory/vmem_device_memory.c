@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 
+#include <util/binalign.h>
 #include <util/log.h>
 
 #include <stddef.h>
@@ -12,16 +13,8 @@
 
 #include <hal/mmu.h>
 #include <kernel/task/resource/mmap.h>
-#include <mem/mapping/marea.h>
 #include <mem/mmap.h>
-
-static struct emmap *self_mmap(void) {
-	if (0 == mmap_kernel_inited()) {
-		return mmap_early_emmap();
-	} else {
-		return task_self_resource_mmap();
-	}
-}
+#include <mem/vmem.h>
 
 /**
  * @brief Map specific memory address to access device
@@ -35,26 +28,26 @@ static struct emmap *self_mmap(void) {
  * @return Pointer to allocated vmem or NULL if failed
  */
 void *mmap_device_memory(void *addr,
-                           size_t len,
-                           int prot,
-                           int flags,
-                           uint64_t physical){
+		size_t len,
+		int prot,
+		int flags,
+		uint64_t physical){
 	/* TODO handle addr=NULL, region should be mapped to any addr
 	 * TODO handle flags anyhow */
-	struct emmap *emmap = self_mmap();
-	struct marea *marea;
+	uintptr_t start = (uintptr_t) (physical & ~MMU_PAGE_MASK);
+	uintptr_t end = binalign_bound(physical + len, MMU_PAGE_SIZE);
+	len = end - start;
 
-	marea = marea_create(physical & ~MMU_PAGE_MASK,
-			(len + physical + MMU_PAGE_MASK) & ~MMU_PAGE_MASK,
-			prot, false);
-
-	if (NULL == marea) {
+	if (mmap_place(EMMAP_SELF, start, len, prot)) {
 		return NULL;
 	}
-	mmap_add_marea(emmap, marea);
 
-	if (mmap_kernel_inited()) {
-		mmap_do_marea_map(emmap, marea);
+	if (vmem_mmu_enabled()) {
+		vmem_map_region(vmem_current_context(),
+				start,
+				start,
+				len,
+				prot_to_vmem_flags(prot));
 	}
 
 	return addr;

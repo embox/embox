@@ -1,56 +1,14 @@
 package embox.mem
 
-module marea_header {
-	@IncludeExport(path="mem/mapping")
-	source "marea.h"
-}
-
-module marea {
-	option number marea_num = 0x1000
-
-	source "marea.c"
-
-	depends marea_header
-	depends embox.mem.pool
-}
-
 module mmap_header {
 	@IncludeExport(path="mem/mapping")
 	source "mmap.h"
 }
 
-@DefaultImpl(embox.mem.mmap_stub)
-abstract module mmap_api {
-	depends embox.kernel.task.resource.mmap
-}
-
-module mmap_stub extends mmap_api {
-	source "mmap_stub.c"
-}
-
-module mmap_nommu extends mmap_api {
-	source "mmap_nommu.c"
-	source "mmap_common.c"
+module mmap {
+	source "mmap.c"
 
 	depends marea
 	depends mmap_header
 	depends embox.kernel.task.resource.mmap
-	depends embox.mem.page_api
-}
-
-module mmap_mmu extends mmap_api {
-	option number log_level=0
-
-	source "mmap_common.c"
-	source "mmap_mmu.c"
-	source "mmap_kernel.c"
-
-	depends marea
-	depends mmap_header
-	depends embox.mem.page_api
-	depends embox.kernel.task.resource.mmap
-	depends embox.kernel.task.resource.mmap_notify
-	/* TODO tsort loop: mmap_init calls for vmem_init_context, which must be initialized */
-	depends embox.mem.vmem
-	depends embox.arch.mmu
 }

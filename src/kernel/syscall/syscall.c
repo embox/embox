@@ -42,27 +42,26 @@ void *sys_brk(void *new_brk) {
 
 void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_t pgoffset) {
 	uint32_t offset = pgoffset * 0x1000;
-	struct marea *marea;
-	void *addr;
 
-	if (start) {
-		marea = mmap_place_marea(task_self_resource_mmap(), (uint32_t) start, (uint32_t) start + length, flags);
-	} else {
-		marea = mmap_alloc_marea(task_self_resource_mmap(), length, flags);
+	if (!start) {
+		start = (void *) mmap_alloc(EMMAP_SELF, length);
+
+		if (start == NULL) {
+			return (void *) -1;
+		}
 	}
 
-	if (!marea) {
+	if (mmap_place(EMMAP_SELF,
+				(uintptr_t) start, length, flags)) {
 		return (void *) (-1);
 	}
 
-	addr = (void *) marea_get_start(marea);
-
 	if (fd != -1) {
 		lseek(fd, offset, SEEK_SET);
-		read(fd, addr, length);
+		read(fd, start, length);
 	}
 
-	return addr;
+	return start;
 }
 
 #if 0

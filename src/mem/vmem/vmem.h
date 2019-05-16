@@ -24,7 +24,7 @@
 
 typedef uint32_t vmem_page_flags_t;
 
-static inline vmem_page_flags_t marea_to_vmem_flags(uint32_t flags) {
+static inline vmem_page_flags_t prot_to_vmem_flags(uint32_t flags) {
 	vmem_page_flags_t vmem_page_flags = 0;
 	if (flags & PROT_WRITE) {
 		vmem_page_flags |= VMEM_PAGE_WRITABLE;

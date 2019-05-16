@@ -27,7 +27,10 @@ module mmap_full extends mmap {
 	source "mmap.c"
 
 	depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.mem.mmap_api
+	@NoRuntime depends embox.mem.vmem_api
+	@NoRuntime depends embox.mem.mmap
+	@NoRuntime depends embox.mem.marea
+	@NoRuntime depends embox.mem.marea_header
 	@NoRuntime depends embox.compat.libc.assert
 }
 
@@ -35,7 +38,8 @@ module mmap_trivial extends mmap {
 	source "mmap_trivial.c"
 
 	depends embox.mem.mmap_header
-	depends embox.mem.marea_header
+	@NoRuntime depends embox.mem.vmem_api
+	depends embox.kernel.task.task_resource
 }
 
 module mmap_notify {
@@ -43,7 +47,7 @@ module mmap_notify {
 
 	@NoRuntime depends embox.arch.mmu
 	@NoRuntime depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.mem.mmap_api
+	@NoRuntime depends embox.mem.mmap
 	@NoRuntime depends embox.compat.libc.assert
 }
 

@@ -1,0 +1,15 @@
+package embox.mem
+
+module marea_header {
+	@IncludeExport(path="mem/mapping")
+	source "marea.h"
+}
+
+module marea {
+	option number marea_num = 0x1000
+
+	source "marea.c"
+
+	depends marea_header
+	depends embox.mem.pool
+}
