@@ -14,6 +14,8 @@
 #include <mem/vmem.h>
 #include <kernel/printk.h>
 
+void dcache_flush(const void *p, size_t size);
+
 mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
 	return (mmu_pmd_t*) (((uint32_t)*pgd) & ~MMU_PAGE_MASK);
 }
@@ -29,7 +31,7 @@ mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
 void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
 	*pgd = (mmu_pgd_t) ((((uint32_t)pmd) & ~MMU_PAGE_MASK)
 		| ARM_MMU_TYPE_PAGE);
-
+	dcache_flush(pgd, sizeof(*pgd));
 }
 
 void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
@@ -38,6 +40,7 @@ void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
 void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
 	*pte = (mmu_pte_t) ((((uint32_t)addr) & ~MMU_PAGE_MASK)
 		| L1D_TYPE_SD | ARM_MMU_PAGE_READ_ACC);
+	dcache_flush(pte, sizeof(*pte));
 }
 
 void mmu_pgd_unset(mmu_pgd_t *pgd) {
@@ -50,6 +53,7 @@ void mmu_pmd_unset(mmu_pgd_t *pmd) {
 
 void mmu_pte_unset(mmu_pgd_t *pte) {
 	*pte = 0x0;
+	dcache_flush(pte, sizeof(*pte));
 }
 
 int mmu_pgd_present(mmu_pgd_t *pgd) {
@@ -68,6 +72,7 @@ void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
 	if (value & VMEM_PAGE_WRITABLE) {
 		*pte |= ARM_MMU_PAGE_WRITE_ACC;
 	}
+	dcache_flush(pte, sizeof(*pte));
 }
 
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
@@ -84,6 +89,7 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
 		*pte |= L1D_B;         /* Shareable device memory */
 	}
 
+	dcache_flush(pte, sizeof(*pte));
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
