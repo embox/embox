@@ -30,7 +30,7 @@ int krmdir(const char *pathname) {
 }
 
 
-int klstat(const char *path, stat_t *buf) {
+int klstat(const char *path, struct stat *buf) {
 	return -1;
 }
 

@@ -109,7 +109,7 @@ parse:
 static int change_mode(char *path, int recursive, char *mode_str) {
 	struct dirent *dent;
 	DIR *dir;
-	stat_t sb;
+	struct stat sb;
 	mode_t mode;
 
 	if (-1 == stat(path, &sb)) {

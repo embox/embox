@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
 	int fd;
 	char buff[16];
 	size_t size;
-	stat_t st;
+	struct stat st;
 	md5_state_t state;
 	md5_byte_t digest[16];
 	int di;

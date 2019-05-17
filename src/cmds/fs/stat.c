@@ -13,16 +13,16 @@
 #include <fcntl.h>
 #include <errno.h>
 
-stat_t filestat;
+struct stat filestat;
 
 static void print_usage(void) {
 	printf("Usage: stat [FILE]...\n");
 }
 
 static void print_statistic(void *stat) {
-	stat_t *filestat;
+	struct stat *filestat;
 
-	filestat = (stat_t *) stat;
+	filestat = (struct stat *) stat;
 
 	printf("Size: %d    Blocks: %d    IO Block: %d  \n",
 		(int)filestat->st_size, filestat->st_blocks, (int)filestat->st_blksize);
