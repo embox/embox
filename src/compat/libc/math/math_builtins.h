@@ -22,6 +22,9 @@ extern float roundf(float x);
 extern long double roundl(long double x);
 
 extern double pow(double x, double y);
+extern float powf(float x, float y);
+extern long double powl(long double x, long double y);
+
 extern double log10(double x);
 
 extern double ceil(double x);
@@ -93,6 +96,16 @@ extern float tanhf(float x);
 extern long double tanhl(long double x);
 
 __END_DECLS
+
+#define FP_NAN         0
+#define FP_INFINITE    1
+#define FP_NORMAL      2
+#define FP_SUBNORMAL   3
+#define FP_ZERO        4
+
+#define fpclassify(x) \
+	__builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, \
+		FP_SUBNORMAL, FP_ZERO, x)
 
 #define isnan(x) \
 	((sizeof (x) == sizeof (float)) ? __builtin_isnanf(x) \
