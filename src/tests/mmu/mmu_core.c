@@ -102,10 +102,6 @@ static int mmu_case_setup(void) {
 	ctx = vmem_current_context();
 	vmem_set_context(ctx);
 
-	if (!vmem_mmu_enabled()) {
-		vmem_on();
-	}
-
 	/* XXX hack for page-aligned array. __aligned__ don't work for big pages */
 	page = (char*) (((uintptr_t) mmu_test_buffer + VMEM_PAGE_SIZE - 1) &
 			(~MMU_PAGE_MASK));
@@ -118,10 +114,6 @@ static int mmu_case_setup(void) {
 }
 
 static int mmu_case_teardown(void) {
-	if (vmem_mmu_enabled()) {
-		vmem_off();
-	}
-
 	mmu_sys_privileges();
 	vmem_map_region(ctx, (mmu_vaddr_t) page, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
 	return 0;

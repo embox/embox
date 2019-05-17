@@ -6,7 +6,11 @@
  * @author Anton Bulychev
  */
 
+#include <framework/mod/options.h>
 #include <util/log.h>
+
+#include <stdint.h>
+#include <sys/mman.h>
 
 #include <embox/unit.h>
 #include <hal/mmu.h>
@@ -15,9 +19,8 @@
 #include <kernel/task/kernel_task.h>
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
-#include <mem/mapping/marea.h>
 #include <mem/mmap.h>
-#include <sys/mman.h>
+
 #include <util/binalign.h>
 #include <util/math.h>
 
@@ -33,16 +36,11 @@ void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd
 	*pte_idx = ((uint32_t) virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
 }
 
-static int vmem_kernel_map_marea(void *start, uint32_t len, uint32_t flags) {
-	struct marea *ma;
-
-	ma = marea_create((mmu_paddr_t) start, (mmu_paddr_t) start + len, flags, false);
-	if (!ma) {
-		return -1;
-	}
-
-	mmap_add_marea(task_resource_mmap(task_kernel_task()), ma);
-	return 0;
+static int vmem_kernel_map(void *start, uint32_t len, uint32_t flags) {
+	return mmap_place(task_resource_mmap(task_kernel_task()),
+			(uintptr_t) start,
+			len,
+			flags);
 }
 
 void vmem_on(void) {
@@ -75,8 +73,7 @@ int vmem_map_kernel(void) {
 			max(	&_rodata_vma + (size_t) &_rodata_len,
 				&_bss_vma + (size_t) &_bss_len_with_reserve));
 
-	err = vmem_kernel_map_marea(
-		(void*) kernel_map_start,
+	err = vmem_kernel_map((void*) kernel_map_start,
 		binalign_bound(kernel_map_end - kernel_map_start, MMU_PAGE_SIZE),
 		PROT_WRITE | PROT_READ | PROT_EXEC);
 
@@ -87,3 +84,34 @@ void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
 	panic("MMU page fault: virt_addr - 0x%x\n", (unsigned int) virt_addr);
 }
 
+EMBOX_UNIT_INIT(vmem_init);
+static int vmem_init(void) {
+	int ret;
+	struct marea *marea;
+	struct emmap *emmap;
+	struct task *task;
+
+
+	ret = vmem_map_kernel();
+	assert(ret == 0);
+
+	task_foreach(task) {
+		emmap = task_resource_mmap(task);
+		dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
+			if (vmem_map_region(emmap->ctx,
+					marea->start,
+					marea->start,
+					marea->size,
+					prot_to_vmem_flags(marea->flags))) {
+				panic("Failed to initialize kernel memory mapping");
+			}
+		}
+	}
+
+	emmap = task_resource_mmap(task_kernel_task());
+	mmu_set_context(emmap->ctx);
+
+	vmem_on();
+
+	return 0;
+}

@@ -14,16 +14,12 @@ module vmem_nommu extends vmem_api {
 	@IncludeExport(path="mem", target_name="vmem.h")
 
 	source "vmem_nommu.h"
+	source "vmem_nommu.c"
 
-	depends embox.mem.mmap_nommu
+	depends embox.mem.mmap_header
+	depends embox.mem.mmap
 	depends embox.kernel.task.resource.mmap
 	depends embox.fs.syslib.idesc_mmap_api
-	depends embox.mem.marea_header
-	depends embox.mem.mmap_header
-	depends embox.mem.mmap_nommu
-
-	/* Not a real dependency, just for backwards compatibility */
-	depends embox.mem.vmem_device_memory_stub
 }
 
 module vmem extends vmem_api {
@@ -34,17 +30,18 @@ module vmem extends vmem_api {
 
 	depends embox.arch.mmu
 	depends vmem_alloc
-	depends embox.mem.mmap_mmu
+	depends embox.mem.mmap_header
+	depends embox.mem.mmap
 	depends embox.fs.syslib.idesc_mmap_api
 	depends vmem_header
-	depends embox.mem.marea_header
-	depends embox.mem.mmap_header
+	depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.resource.mmap
+	depends embox.driver.periph_memory_mmap
 
-	/* Not a real dependency, just for backwards compatibility */
 	depends embox.mem.vmem_device_memory_full
 }
 
-module vmem_alloc {
+static module vmem_alloc {
 	option number log_level = 1
 
 	option number virtual_pages_count = 20
@@ -63,9 +60,4 @@ module vmem_alloc {
 	depends embox.mem.page_api
 	depends embox.arch.mmu
 	depends vmem_header
-	depends embox.mem.marea_header
-}
-
-module vmem_starter {
-	source "vmem_starter.c"
 }

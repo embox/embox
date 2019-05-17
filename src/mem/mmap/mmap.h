@@ -29,16 +29,13 @@ struct emmap {
 	struct dlist_head page_list;
 };
 
-struct marea;
+#define EMMAP_SELF ((void *) 0)
+#define EMMAP_KERNEL ((void *) 1)
 
-extern void mmap_add_marea(struct emmap *mmap, struct marea *marea);
-extern void mmap_del_marea(struct marea *marea);
-extern struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr);
-extern struct marea *mmap_find_marea_next(struct emmap *mmap, mmu_vaddr_t vaddr,
-		struct marea *prev);
-extern int mmap_kernel_inited(void);
-extern struct emmap *mmap_early_emmap(void);
-extern int mmap_mapping(struct emmap *emmap);
+extern int mmap_place(struct emmap *mmap, uintptr_t start, size_t size, uint32_t flags);
+extern int mmap_release(struct emmap *mmap, uintptr_t addr);
+extern uintptr_t mmap_alloc(struct emmap *mmap, size_t size);
+extern int mmap_prot(struct emmap *mmap, uintptr_t addr);
 
 extern void mmap_add_phy_page(struct emmap *mmap, struct phy_page *phy_page);
 extern void mmap_del_phy_page(struct phy_page *phy_page);

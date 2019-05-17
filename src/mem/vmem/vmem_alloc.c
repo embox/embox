@@ -60,6 +60,11 @@ static struct page_allocator *virt_page_allocator;
 EMBOX_UNIT_INIT(vmem_alloc_init);
 
 static int vmem_alloc_init(void) {
+	if (pgd_allocator) {
+		/* Already initialized */
+		return 0;
+	}
+
 	pgd_allocator = page_allocator_init(pgd_raw, sizeof(pgd_raw), MMU_PGD_SIZE);
 	pmd_allocator = page_allocator_init(pmd_raw, sizeof(pmd_raw), MMU_PMD_SIZE);
 #if (PTE_COUNT > 1)
@@ -78,7 +83,9 @@ static int vmem_alloc_init(void) {
 mmu_pgd_t *vmem_alloc_pgd_table(void) {
 	void *addr;
 
-	assert(pgd_allocator);
+	if (!pgd_allocator) {
+		vmem_alloc_init();
+	}
 
 	addr = page_alloc(pgd_allocator, 1);
 

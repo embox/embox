@@ -1,0 +1,8 @@
+package embox.kernel.task.resource
+
+module phymem {
+	@IncludeExport(path="kernel/task/resource")
+	source "task_phymem.h"
+
+	source "phymem.c"
+}

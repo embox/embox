@@ -13,6 +13,7 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/mmap.h>
+#include <mem/vmem.h>
 #include <mem/mmap.h>
 
 TASK_RESOURCE_DEF(task_mmap_desc, struct emmap);
@@ -22,9 +23,8 @@ static void task_mmap_init(const struct task *task, void *mmap_space) {
 	assert(mmap != NULL);
 
 	if (task == task_kernel_task()) {
-		mmap_init(mmap);
-	} else {
-		mmap->ctx = 0x0;
+		dlist_init(&mmap->marea_list);
+		vmem_init_context(&mmap->ctx);
 	}
 }
 

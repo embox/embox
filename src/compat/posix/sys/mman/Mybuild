@@ -21,9 +21,10 @@ module mmap extends mmap_api {
 
 	source "mmap.c"
 
-	depends embox.fs.syslib.idesc_mmap_api
-	depends embox.mem.mmap_api
+	depends embox.fs.syslib.idesc_mmap
+	depends embox.mem.mmap
 	depends embox.mem.phymem
+	depends embox.kernel.task.resource.phymem
 	depends embox.mem.vmem
 }
 
