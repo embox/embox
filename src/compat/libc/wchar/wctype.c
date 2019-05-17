@@ -88,3 +88,15 @@ wint_t towctrans(wint_t w, wctrans_t t) {
 		return w;
 	}
 }
+
+wint_t towlower(wint_t wc) {
+	if (wc == WEOF)
+		return WEOF;
+	return (wc < (wint_t)0x100 ? tolower(wc) : wc);
+}
+
+wint_t towupper(wint_t wc) {
+	if (wc == WEOF)
+		return WEOF;
+	return (wc < (wint_t)0x100 ? toupper(wc) : wc);
+}
