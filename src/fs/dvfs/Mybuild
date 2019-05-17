@@ -24,7 +24,7 @@ module core extends embox.fs.fs_api {
 	source "dvfs_str.c"
 
 	depends embox.fs.path_helper
-	depends embox.fs.rootfs_dvfs
+	@NoRuntime depends embox.fs.rootfs_dvfs
 
 	depends embox.driver.block_dvfs
 	depends embox.fs.dvfs.cache_strategy
