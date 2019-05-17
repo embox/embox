@@ -42,7 +42,7 @@ typedef int64_t time64_t;
 __BEGIN_DECLS
 
 /* gettimeofday is posix function, but settimeofday is not. */
-extern void settimeofday(struct timespec *ts, struct timezone *tz);
+extern void setnsofday(const struct timespec *ts, const struct timezone *tz);
 extern void getnsofday(struct timespec *t, struct timezone *tz);
 
 extern struct timespec ns_to_timespec(const __s64 nsec);

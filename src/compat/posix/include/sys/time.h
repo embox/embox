@@ -10,12 +10,21 @@
 #ifndef COMPAT_POSIX_SYS_TIME_H_
 #define COMPAT_POSIX_SYS_TIME_H_
 
-
-
 /*The time_t and suseconds_t types are defined as described in <sys/types.h>.*/
 #include <defines/time_t.h>
 #include <defines/suseconds_t.h>
 
+#include <sys/select.h>
+
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
+#define ITIMER_REAL    0x1 /* Decrements in real time. */
+#define ITIMER_VIRTUAL 0x2 /* Decrements in process virtual time. */
+/* Decrements both in process virtual time and when the system is running on
+ * behalf of the process. */
+#define ITIMER_PROF    0x4
 
 /* The <sys/time.h> header defines the timeval structure that includes at least
  * the following members:
@@ -37,29 +46,28 @@ struct itimerval {
 	struct timeval it_value;     /* Timer expiration. */
 };
 
-
-
-#include <sys/cdefs.h>
-
-__BEGIN_DECLS
-
 extern int gettimeofday(struct timeval *ts, void *tz);
 
-/* TODO this is only for Linux */
+extern int getitimer(int, struct itimerval *);
+
+extern int setitimer(int which, const struct itimerval *value,
+		struct itimerval *ovalue);
+
+/* LEGACY */
+extern int utimes(const char *path, const struct timeval times[2]);
+
+/* Only Linux compatible */
 struct timezone {
-    int tz_minuteswest;     /* minutes west of Greenwich */
-    int tz_dsttime;         /* type of DST correction */
+	int tz_minuteswest;     /* minutes west of Greenwich */
+	int tz_dsttime;         /* type of DST correction */
 };
 
-/* TODO Linux specific signature
-extern int gettimeofday(struct timeval *ts, struct timezone *tz);
-*/
+/* gettimeofday is posix function, but settimeofday is not. */
+extern int settimeofday(const struct timeval *tv, const struct timezone *tz);
 
-//TODO only Linux compatible
 /**
  * timeval operations
  */
-
 extern void timeradd(struct timeval *a, struct timeval *b, struct timeval *r);
 
 extern void timersub(struct timeval *a, struct timeval *b, struct timeval *r);
@@ -73,9 +81,6 @@ extern int timerisset(struct timeval *tvp);
 		|| (((a)->tv_sec == (b)->tv_sec) \
 			&& ((a)->tv_usec CMP (b)->tv_usec)))
 
-
 __END_DECLS
-
-#include <sys/select.h>
 
 #endif /* COMPAT_POSIX_SYS_TIME_H_ */

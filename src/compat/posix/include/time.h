@@ -69,8 +69,6 @@ struct itimerspec {
 	struct timespec it_value;     /* Initial expiration */
 };
 
-
-
 #include <sys/cdefs.h>
 __BEGIN_DECLS
 
