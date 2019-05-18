@@ -24,4 +24,6 @@ typedef uint32_t __mmu_pgd_t;
 typedef uint32_t __mmu_pmd_t;
 typedef uint32_t __mmu_pte_t;
 
+typedef uint32_t __mmu_reg_t;
+
 #endif /* PPC_MMU_H_ */

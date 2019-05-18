@@ -36,6 +36,9 @@ abstract module mmu {
 	option number page_size
 }
 
+abstract module mmuinfo {
+}
+
 @Mandatory
 @DefaultImpl(embox.arch.generic.syscall_stub)
 abstract module syscall { }

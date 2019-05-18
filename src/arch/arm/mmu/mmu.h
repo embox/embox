@@ -11,6 +11,7 @@
 
 #include <framework/mod/options.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 typedef uintptr_t __mmu_paddr_t;
 typedef uintptr_t __mmu_vaddr_t;
@@ -20,6 +21,8 @@ typedef uint32_t __mmu_ctx_t;
 typedef uint32_t __mmu_pgd_t;
 typedef uint32_t __mmu_pmd_t;
 typedef uint32_t __mmu_pte_t;
+
+typedef uint32_t __mmu_reg_t;
 
 #include <module/embox/arch/mmu.h>
 
@@ -62,4 +65,5 @@ typedef uint32_t __mmu_pte_t;
 #define ARM_MMU_PAGE_WRITE_ACC     0x0010
 #endif /* V5_FORMAT */
 
+#define __PRIxMMUREG PRIx32
 #endif /* ARM_MMU_H_ */

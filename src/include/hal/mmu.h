@@ -20,6 +20,8 @@ typedef __mmu_pgd_t mmu_pgd_t;
 typedef __mmu_pmd_t mmu_pmd_t;
 typedef __mmu_pte_t mmu_pte_t;
 
+typedef __mmu_reg_t mmu_reg_t;
+
 #define MMU_PTE_SHIFT     __MMU_PTE_SHIFT
 #define MMU_PMD_SHIFT     __MMU_PMD_SHIFT
 #define MMU_PGD_SHIFT     __MMU_PGD_SHIFT
@@ -39,9 +41,20 @@ typedef __mmu_pte_t mmu_pte_t;
 #define MMU_PMD_SIZE      (MMU_PMD_ENTRIES * sizeof(mmu_vaddr_t))
 #define MMU_PTE_SIZE      (MMU_PTE_ENTRIES * sizeof(mmu_vaddr_t))
 
+
+#define PRIxMMUREG      __PRIxMMUREG
+
+struct mmuinfo_regs {
+	char mmu_reg_name[0x20];
+	mmu_reg_t mmu_reg_value;
+};
+
+extern int arch_mmu_get_regs_table_size(void);
+extern int
+arch_mmu_get_regs_table(struct mmuinfo_regs *buf, int buf_size, int offset);
+
 extern void mmu_on(void);
 extern void mmu_off(void);
-
 
 extern mmu_vaddr_t mmu_get_fault_address(void);
 
