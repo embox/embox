@@ -18,6 +18,8 @@
 
 #include "netfront.h"
 
+//#define DEBUG
+
 #define XS_MSG_LEN 256
 
 #define ASSERT(x)                           \
@@ -303,9 +305,11 @@ struct netfront_dev *init_netfront(
 		   dev->mac,
 		   *ip);
 
+#ifdef DEBUG
 	while(1) {
 		network_rx(dev);
 	}
+#endif // DEBUG
 
 	return dev;
 }
