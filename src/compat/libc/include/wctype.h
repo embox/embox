@@ -36,21 +36,12 @@ WCFUNC(xdigit);
 
 #undef WCFUNC
 
-static inline wint_t towlower(wint_t wc) {
-	if (wc == WEOF)
-		return WEOF;
-	return (wc < (wint_t)0x100 ? tolower(wc) : wc);
-}
-
-static inline wint_t towupper(wint_t wc) {
-	if (wc == WEOF)
-		return WEOF;
-	return (wc < (wint_t)0x100 ? toupper(wc) : wc);
-}
-
 #include <sys/cdefs.h>
 
 __BEGIN_DECLS
+
+extern wint_t towlower(wint_t wc);
+extern wint_t towupper(wint_t wc);
 
 extern int iswctype(wint_t, wctype_t);
 extern wint_t towctrans(wint_t, wctrans_t);
