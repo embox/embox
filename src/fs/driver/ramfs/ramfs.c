@@ -324,14 +324,14 @@ static int ramfs_fseek(void *file, long offset, int whence) {
 static int ramfs_stat(void *file, void *buff) {
 	struct file_desc *desc;
 	ramfs_file_info_t *fi;
-	stat_t *buffer;
+	struct stat *buffer;
 
 	desc = (struct file_desc *) file;
 	fi = (ramfs_file_info_t *)desc->node->fi;
-	buffer = (stat_t *) buff;
+	buffer = (struct stat *) buff;
 
 	if (buffer) {
-			memset(buffer, 0, sizeof(stat_t));
+			memset(buffer, 0, sizeof(struct stat));
 
 			buffer->st_mode = fi->mode;
 			buffer->st_ino = fi->index;
