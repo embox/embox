@@ -202,10 +202,7 @@ extern int unsetenv(const char *name);
 extern int clearenv(void);
 extern int system(const char *command);
 
-static inline int mkstemp(char *path_template) {
-	(void)path_template;
-	return -1;
-}
+extern int mkstemp(char *path_template);
 
 extern int mbtowc(wchar_t *out, const char *in, size_t n);
 extern int wctomb(char *out, const wchar_t *in );

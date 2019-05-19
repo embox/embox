@@ -42,10 +42,17 @@ static module multibyte {
 	source "wctomb.c"
 }
 
+static module mktemp {
+	option number log_level=4
+
+	source "mkstemp.c"
+}
+
 static module all {
 	depends core,
 		config,
 		rand,
 		system,
-		multibyte
+		multibyte,
+		mktemp
 }
