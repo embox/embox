@@ -1,16 +1,328 @@
-#!/bin/bash
-ip=$(which ip)
+#!/usr/bin/env bash
 
-$ip link add name br0 type bridge
-$ip link set dev br0 up
-$ip addr flush dev br0
-$ip link set dev br0 address aa:bb:cc:dd:ee:00
-$ip addr add dev br0 10.0.2.1/24
+# Check associative arrays support
+[ ${BASH_VERSION:0:1} -ge 4 ] || { echo "Bash 4.0 or later is required"; exit 1; }
 
-DATADIR=$(dirname "$0")
+DATADIR="$(dirname "$0")"
+CONFDIR=./conf
 
-sudo -E qemu-system-i386 -kernel ./build/base/bin/embox -enable-kvm -m 256 -nographic \
--netdev tap,id=n0,ifname="tap0",script=$DATADIR/start_script,downscript=$DATADIR/stop_script,vnet_hdr=no \
--device virtio-net-pci,netdev=n0,mac=52:54:CC:DD:EE:00
+MODS_CONF=$CONFDIR/mods.config
+LDS_CONF=$CONFDIR/lds.conf
+BUILD_CONF=$CONFDIR/build.conf
 
-$ip link delete br0 type bridge
+ARCHs=()
+NICs=()
+
+info() {
+	echo -e $@ >&2
+}
+
+error() {
+	echo -e $@ >&2
+	exit 1
+}
+
+guessed_info() {
+	info $1: ${!1} "$2"
+}
+
+error_empty() {
+	if [ -z "${!1}" ]; then
+		error $1 is empty
+	fi
+}
+
+get_user_undef_guess() {
+	label="(got)"
+	if [ -z "${!1+defined}" ]; then
+		eval "$1=\"$($2)\""
+		label="(guessed)"
+	fi
+	guessed_info "$1" $label
+}
+
+get_user_empty_guess() {
+	get_user_undef_guess "$@"
+	error_empty "$1"
+}
+
+guess_arch() {
+	cat $BUILD_CONF | gcc -P -E - | sed -n 's/ARCH *= *//p';
+}
+get_user_empty_guess AUTOQEMU_ARCH guess_arch
+
+guess_mem() {
+	ram=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p')
+	if [ $ram ]; then
+		echo $ram
+	else
+		echo 128
+	fi
+}
+get_user_empty_guess AUTOQEMU_MEM guess_mem
+
+guess_nics() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.net.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v loopback | head -n 1;
+}
+get_user_undef_guess AUTOQEMU_NICS guess_nics
+
+guessed_info AUTOQEMU_NICS_CONFIG "(got)"
+
+guess_sound() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.audio.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v portaudio_stub | head -n 1;
+}
+get_user_undef_guess AUTOQEMU_AUDIO guess_sound
+
+guessed_info AUTOQEMU_AUDIO_CONFIG "(got)"
+
+
+guess_graphic() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.video.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | head -n 3;
+}
+get_user_undef_guess AUTOQEMU_GRAPHIC guess_graphic
+
+guessed_info AUTOQEMU_GRAPHIC_CONFIG "(got)"
+
+guess_diag() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's/.*embox.driver.diag*[^"]*"\([^"]*\).*/\1/p' | head -n 1;
+}
+get_user_undef_guess AUTOQEMU_DIAG guess_diag
+
+guessed_info AUTOQEMU_DIAG_CONFIG "(got)"
+
+
+guess_kvm() {
+	ret=""
+	# Build kvm argument
+	if [ "$AUTOQEMU_ARCH" = "x86" -a "$OSTYPE" = "linux-gnu" ]; then
+		egrep '(vmx|svm)' /proc/cpuinfo > /dev/null
+		if [ $? -eq 0 ]; then
+			ret="-enable-kvm"
+		else
+			info VT is not supported by CPU
+		fi
+
+		dmesg | tail | grep "kvm: disabled by bios" > /dev/null
+		if [ $? -eq 0 ]; then
+			info "kvm disabled by bios. You can enable VT in bios"
+			ret=
+		fi
+
+		lsmod | egrep '(kvm_intel|kvm_amd)' > /dev/null
+		if [ $? -ne 0 ]; then
+			info no kvm kernel module loaded
+			ret=
+		fi
+	fi
+	echo $ret;
+}
+get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
+
+guess_load_arg() {
+	NAND_SIZE=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p')
+	if [ ! $NAND_SIZE ]; then
+		echo "-kernel ${KERNEL:-./build/base/bin/embox}"
+	else
+		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
+			echo "Making uImage..." >&2
+			OMAP_UBOOT_IMAGE_BOARD=overo ./scripts/uboot-uimage >/dev/null
+			if [ 0 -ne $? ]; then
+				exit 1
+			fi
+			echo "Making nand image..." >&2
+			./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage $NAND_SIZE >/dev/null 2>/dev/null
+			rm ./uImage
+		fi
+		echo "-mtdblock beagle_nand.img"
+	fi
+}
+get_user_empty_guess AUTOQEMU_LOAD_ARG guess_load_arg
+
+guess_machine() {
+	case $AUTOQEMU_ARCH in
+		arm)
+			if cat $BUILD_CONF | gcc -P -E - | grep "overo" >/dev/null; then
+				echo "-M overo"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "integratorcp" >/dev/null; then
+				echo "-M integratorcp"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "vexpress-a9" > /dev/null; then
+				echo "-M vexpress-a9"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "sabrelite" > /dev/null; then
+				echo "-M sabrelite"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s811evb" > /dev/null; then
+				echo "-M lm3s811evb"
+			fi
+			;;
+		microblaze)
+			echo "-M petalogix-s3adsp1800"
+			;;
+		mips)
+			echo "-M mipssim"
+			;;
+		mips64)
+			echo "-M mipssim"
+			;;
+		ppc)
+			echo "-M virtex-ml507"
+			;;
+		sparc)
+			echo "-M leon3_generic -cpu LEON3"
+			;;
+		x86)
+			;;
+	esac
+}
+get_user_undef_guess AUTOQEMU_MACHINE guess_machine
+
+declare -A ARCH2QEMU
+ARCH2QEMU=(
+	[x86]="i386"
+)
+
+QEMU=${AUTOQEMU_PREFIX}qemu-system-${ARCH2QEMU[$AUTOQEMU_ARCH]:-$AUTOQEMU_ARCH}
+AWK=$(which gawk >/dev/null && echo gawk || echo awk)
+QEMU_VER=$($QEMU --version | $AWK -f $DATADIR/qemuver.awk)
+
+if [ $QEMU_VER -gt 010200 ]; then
+	MB_XEMACLINE="xlnx.xps-ethernetlite"
+else
+	MB_XEMACLINE="xilinx-ethlite"
+fi
+
+declare -A NIC2QEMU
+NIC2QEMU=(
+	[e1000]="e1000"
+	[ne2k_pci]="ne2k_pci"
+	[rtl8139]="rtl8139"
+	[virtio]="virtio"
+	[xemaclite]=$MB_XEMACLINE
+	[lan9118]="lan9118"
+	[lan91c111]="smc91c111"
+	[mipsnet]="mipsnet"
+	[fec]="imx.enet"
+)
+
+IFS=" " read -a qemu_nics <<< "$AUTOQEMU_NICS"
+IFS=" " read -a qemu_nics_config <<< "$AUTOQEMU_NICS_CONFIG"
+sudo=""
+nic_lines=""
+nic_n=${#qemu_nics[*]}
+if [ $nic_n -gt 0 ]; then
+	sudo='sudo -E'
+	for ni in "${!qemu_nics[@]}"; do
+
+		nic_model=${NIC2QEMU[${qemu_nics[$ni]}]}
+		echo
+		if [ ! $nic_model ]; then
+			error "nic model ${qemu_nics[$ni]} is not supported"
+		fi
+
+		if [ ${qemu_nics_config[$ni]} ] && [ ${qemu_nics_config[$ni]} != "-" ]; then
+			host_nic_config=${qemu_nics_config[$ni]}
+		else
+			if [ $nic_model = "virtio" ]; then
+				vnet_hdr="vnet_hdr=no"
+			else
+				vnet_hdr=""
+			fi
+			host_nic_config="tap,script=$DATADIR/start_script,downscript=$DATADIR/stop_script,$vnet_hdr"
+		fi
+
+		nic_macaddr="AA:BB:CC:DD:EE:0$(($ni + 2))"
+
+		# For new version of QEMU it should be in future:
+		# -nic $host_nic_config,model=$nic_model,mac=$nic_macaddr
+		#
+		nic_lines="$nic_lines \
+			-net nic,netdev=n$ni,model=$nic_model,macaddr=$nic_macaddr \
+			-netdev $host_nic_config,id=n$ni"
+	done
+fi
+
+declare -A AUDIO2QEMU
+AUDIO2QEMU=(
+	[intel_ac_pa]="ac97"
+	[es1370]="es1370"
+	[aaci_pl041]="default"
+)
+
+AUDIO_DEV=" " read -a qemu_sound <<< "$AUTOQEMU_AUDIO"
+AUDIO_DEV=" " read -a qemu_sound_config <<< "$AUTOQEMU_AUDIO_CONFIG"
+
+sound_lines=""
+sound_n=${#qemu_sound[*]}
+if [ $sound_n -gt 0 ]; then
+
+	for so in "${!qemu_sound[@]}"; do
+		sound_model=${AUDIO2QEMU[${qemu_sound[$so]}]}
+		echo
+		if [ $sound_model = "default" ]; then
+			sound_lines="$sound_lines"
+		else
+			if [ ! $sound_model ]; then
+				error "sound model ${qemu_sound[$ni]} is not supported"
+			fi
+			sound_lines="$sound_lines -soundhw $sound_model"
+		fi
+	done
+	if [[ -z "${QEMU_AUDIO_DRV}" ]]; then
+		# Use ALSA by default
+		export QEMU_AUDIO_DRV=alsa
+		info 'Using host ALSA subsystem. You can change it by setting QEMU_AUDIO_DRV'
+		info 'For example, "export QEMU_AUDIO_DRV=oss"\n'
+	fi
+	info 'QEMU_AUDIO_DRV is now' ${QEMU_AUDIO_DRV} '\n'
+fi
+
+
+#-vga [std|cirrus|vmware|qxl|xenfb|tcx|cg3|none]
+declare -A GRAPHIC2QEMU
+GRAPHIC2QEMU=(
+	[bochs]="std"
+	[cirrus_logic]="cirrus"
+	[pl110]="pl110"
+)
+
+qemu_graphic=$(guess_graphic)
+graphic_lines="-nographic"
+graphic_n=${#qemu_graphic[*]}
+if [ $graphic_n -gt 0 ]; then
+	if [ -z "${AUTOQEMU_NOGRAPHIC_ARG+defined}" ]; then
+		for so in $qemu_graphic; do
+			graphic_model=${GRAPHIC2QEMU[$so]}
+			if [ ! $graphic_model ]; then
+				graphic_lines="-nographic"
+			else
+				if [ $graphic_model = "pl110" ]; then
+					graphic_lines="-serial stdio"
+				else
+					graphic_lines="-vga $graphic_model -serial stdio"
+				fi
+				break
+			fi
+		done
+		if [ $graphic_lines = "-nographic" ]; then
+			if [ $(guess_diag) = "embox__driver__console__vc__vga" ]; then
+				graphic_lines="-vga std"
+			fi
+		fi
+		if [ $graphic_lines = "-nographic" ]; then
+			if [ $(guess_diag) = "embox__driver__console__vc__vga" ]; then
+				graphic_lines="-vga std"
+			fi
+		fi
+
+	else
+		graphic_lines=$AUTOQEMU_NOGRAPHIC_ARG
+	fi
+
+fi
+
+ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines $graphic_lines $@"
+
+info "$ARG_LINE"
+$ARG_LINE
+
+if [ -f beagle_nand.img ]; then
+	rm beagle_nand.img
+fi
