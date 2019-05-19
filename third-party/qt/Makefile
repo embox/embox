@@ -70,32 +70,21 @@ ifneq ($(words $(QMAKE_CONF_M4)),1)
 $(error need exactly one qmake.conf.m4)
 endif
 
-QT_CPPFLAGS := $(filter -I%,$(EMBOX_CPPFLAGS))
 QT_CPPFLAGS += -include qt_embox_compat.h
-ifeq (1,$(call option_get,stl_support))
-QT_CPPFLAGS += -I$(EXTERNAL_BUILD_DIR)/third_party/STLport/libstlportg/include/stlport
-endif
-
 QT_CFLAGS   := $(QT_CPPFLAGS) -Wno-error
-QT_CXXFLAGS := $(QT_CPPFLAGS) $(filter -I%,$(EMBOX_CXXFLAGS)) -fpermissive -Wno-error
-QT_CXXFLAGS := $(subst -I./,-I$(ROOT_DIR)/,$(QT_CXXFLAGS))
-
-QT_MAKEFLAGS=
-ifneq ($(filter -j, $(EMBOX_MAKEFLAGS)),)
-	QT_MAKEFLAGS += -j $(shell nproc)
-endif
+QT_CXXFLAGS := $(QT_CPPFLAGS) -fpermissive -Wno-error
 
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		CC='$(EMBOX_GCC)' CXX='$(EMBOX_GXX)' CFLAGS='$(QT_CFLAGS)' CXXFLAGS='$(QT_CXXFLAGS)' \
 			m4 --prefix-builtins $(QMAKE_CONF_M4) > $(QMAKE_CONF) && \
-		MAKEFLAGS='$(QT_MAKEFLAGS)' ./configure $(QT_CONF_FLAGS) \
+		MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' ./configure $(QT_CONF_FLAGS) \
 	)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		$(MAKE) MAKEFLAGS='$(QT_MAKEFLAGS)'; \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
@@ -103,7 +92,7 @@ $(ROOTFS_IMAGE) : $(INSTALL)
 
 $(INSTALL) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		$(MAKE) install MAKEFLAGS='$(QT_MAKEFLAGS)' \
+		$(MAKE) install MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 	)
 	cp $(PKG_SOURCE_DIR)/mkspecs/qdevice.pri $(PKG_INSTALL_DIR)/mkspecs/
 	mkdir -p $(ROOT_DIR)/conf/rootfs/fonts
