@@ -35,3 +35,18 @@ diff -aur mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/configur
  
  
  for ac_func in memset socket strlcpy
+diff -aur -x configure mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/glue/unix/udp_open.c mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa/lang/c/glue/unix/udp_open.c
+--- mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/glue/unix/udp_open.c	2019-03-09 17:40:15.000000000 +0300
++++ mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa/lang/c/glue/unix/udp_open.c	2019-05-19 21:32:10.123576106 +0300
+@@ -64,6 +64,11 @@
+ 		//    error("setsockopt(SO_REUSEADDR) failed");
+     }
+ 
++	{
++		char *devname = "eth0";
++        setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, devname, strlen(devname));
++	}
++
+     //last_socket = fd;
+     return fd;
+ }
