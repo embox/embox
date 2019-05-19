@@ -1,9 +1,6 @@
 package embox.cmd.testing
 
 module mqtt_test {
-	source "mqtt_test.h"
-	source "mqtt_test.c"
-
 	depends server, client
 }
 
