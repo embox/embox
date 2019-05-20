@@ -9,9 +9,7 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tclsh/tcl_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/tcl/tclsh/include \
-	${EMBOX_IMPORTED_CPPFLAGS}
+tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tclsh/tcl_embox_compat.h
 
 $(CONFIGURE) :
 	cd $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix && ( \

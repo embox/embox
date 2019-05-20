@@ -12,7 +12,6 @@ include $(EXTBLD_LIB)
 
 BOOST_ADDITIONAL_CPPFLAGS += -I$(abspath .)/include
 BOOST_ADDITIONAL_CPPFLAGS += -include $(abspath .)/boost_embox_compat.h
-BOOST_ADDITIONAL_CPPFLAGS += $(filter -I%,$(EMBOX_CPPFLAGS))
 
 USER_TOOLS_CONFIG=$(PKG_SOURCE_DIR)/tools/build/src/user-config.jam
 USER_BOOST_CONFIG=$(PKG_SOURCE_DIR)/boost/config/user.hpp
@@ -47,14 +46,12 @@ $(BUILD) :
 	echo "#define BOOST_HAS_THREADS" >> $(USER_BOOST_CONFIG)
 	echo "#define BOOST_HAS_PTHREADS" >> $(USER_BOOST_CONFIG)
 	echo "#define BOOST_STRICT_CONFIG" >> $(USER_BOOST_CONFIG)
-
 	# Build boost libraries
 	cd $(PKG_SOURCE_DIR) && ( \
 		./b2 \
 		$(B2_OPTIONS) \
 		install \
 	)
-	
 	# Build example
 	cd $(PKG_SOURCE_DIR) && ( \
 		./b2 \

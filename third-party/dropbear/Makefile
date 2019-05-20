@@ -9,10 +9,7 @@ PKG_PATCHES := dropbear.patch
 
 include $(EXTBLD_LIB)
 
-EMBOX_IMPORTED_CFLAGS += -DLTC_NO_BSWAP
-EMBOX_IMPORTED_CFLAGS += -nostdinc
-
-EMBOX_IMPORTED_CPPFLAGS += -nostdinc
+DROPBEAR_CPPFLAGS += -DLTC_NO_BSWAP
 
 $(CONFIGURE) :
 	cp stubs.h $(PKG_SOURCE_DIR)
@@ -20,8 +17,7 @@ $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		./configure \
 			CC=$(EMBOX_GCC) \
-			CFLAGS="$(EMBOX_IMPORTED_CFLAGS)" \
-			CPPFLAGS="$(EMBOX_IMPORTED_CPPFLAGS)" \
+			CFLAGS="$(DROPBEAR_CPPFLAGS)" \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			--prefix=/ \

@@ -9,9 +9,7 @@ PKG_PATCHES := pkg_patch.txt
 
 include $(EXTBLD_LIB)
 
-tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tcludp/tcludp_embox_compat.h \
-	-I$(ROOT_DIR)/build/extbld/third_party/tcl/core/install/include \
-	${EMBOX_IMPORTED_CPPFLAGS}
+tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tcludp/tcludp_embox_compat.h
 
 $(CONFIGURE) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
