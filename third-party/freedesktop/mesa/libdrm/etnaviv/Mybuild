@@ -1,6 +1,10 @@
 package third_party.freedesktop.mesa
 
 @Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm/")
 module libdrm_etnaviv {
 	source "^BUILD/extbld/^MOD_PATH/install/libdrm.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libdrm_etnaviv.a"
