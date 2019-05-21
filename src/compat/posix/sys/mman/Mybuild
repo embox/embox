@@ -25,7 +25,7 @@ module mmap extends mmap_api {
 	depends embox.mem.mmap
 	depends embox.mem.phymem
 	depends embox.kernel.task.resource.phymem
-	depends embox.mem.vmem
+	depends embox.mem.vmem_api
 }
 
 module mmap_stub extends mmap_api {

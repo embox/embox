@@ -4,7 +4,7 @@ module mmu_core {
 	source "mmu_core.c"
 
 	depends embox.framework.LibFramework
-	depends embox.mem.vmem
+	depends embox.mem.vmem_api
 
 	depends embox.arch.mmu
 	depends embox.arch.testtrap
@@ -15,7 +15,7 @@ module mmu_double_map {
 
 	source "mmu_double_map.c"
 
-	depends embox.mem.vmem
+	depends embox.mem.vmem_api
 
 	depends embox.arch.mmu
 	depends embox.arch.testtrap
