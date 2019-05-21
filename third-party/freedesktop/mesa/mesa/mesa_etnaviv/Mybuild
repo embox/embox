@@ -3,6 +3,11 @@ package third_party.freedesktop.mesa
 @App
 @BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
 @Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/include")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/auxiliary")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/drivers/etnaviv/")
 module  mesa_etnaviv {
 	source "^BUILD/extbld/^MOD_PATH/install/libglapi.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libOSMesa.a"

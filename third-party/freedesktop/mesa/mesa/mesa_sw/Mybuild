@@ -3,6 +3,10 @@ package third_party.freedesktop.mesa
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildDepends(third_party.STLport.libstlportg)
 @BuildDepends(third_party.freedesktop.mesa.libdrm)
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/include")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/auxiliary")
 module  mesa_osmesa {
 	source "^BUILD/extbld/^MOD_PATH/install/libOSMesa.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libglapi.a"
