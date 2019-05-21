@@ -368,20 +368,3 @@ int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 
 	return 0;
 }
-
-int task_notify_switch(struct thread *prev, struct thread *next) {
-	task_notifing_resource_hnd notify_res;
-	int res;
-
-	if (prev->task == next->task) {
-		return 0;
-	}
-
-	task_notifing_resource_foreach(notify_res) {
-		if (0 != (res = notify_res(prev, next))) {
-			return res;
-		}
-	}
-
-	return 0;
-}

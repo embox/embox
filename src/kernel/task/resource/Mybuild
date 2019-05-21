@@ -42,15 +42,6 @@ module mmap_trivial extends mmap {
 	depends embox.kernel.task.task_resource
 }
 
-module mmap_notify {
-	source "mmap_notify.c"
-
-	@NoRuntime depends embox.arch.mmu
-	@NoRuntime depends embox.kernel.task.task_resource
-	@NoRuntime depends embox.mem.mmap
-	@NoRuntime depends embox.compat.libc.assert
-}
-
 module module_ptr {
 	source "module_ptr.c"
 }
