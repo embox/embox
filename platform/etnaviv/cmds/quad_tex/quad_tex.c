@@ -7,6 +7,7 @@
 #include <lib/fps.h>
 #include <kernel/time/ktime.h>
 #include <mem/vmem.h>
+#include <unistd.h>
 
 #define USE_TRACE 0
 #define NEAR 0
@@ -50,8 +51,7 @@
 #include "util/u_surface.h"
 #include "util/u_tile.h"
 
-struct program
-{
+struct program {
 	struct pipe_loader_device *dev;
 	struct pipe_screen *screen;
 	struct pipe_context *pipe;
@@ -77,6 +77,8 @@ struct program
 
 	int width;
 	int height;
+
+	bool animated;
 };
 
 static float vertices[4][2][4] = {
@@ -399,13 +401,42 @@ static void draw(struct program *p) {
 			fps_swap(mesa_fbi);
 
 			pipe->transfer_unmap(pipe, transfer[current_id ^ 1]);
+
+			if (!p->animated) {
+				return;
+			}
 		}
 	}
 }
 
-int main(int argc, char** argv)
-{
+static void print_help(char **argv) {
+	printf("Draw rectangle with a texture.\n"
+		"USAGE:\n"
+		"\t%s [-ah]\n", argv[0]);
+}
+
+int main(int argc, char** argv) {
 	struct program *p = CALLOC_STRUCT(program);
+	int opt;
+
+	if (p == NULL) {
+		printf("Not enough memory to run test\n");
+		return -ENOMEM;
+	}
+
+	/* Default parameters */
+	p->animated = false;
+
+	while (-1 != (opt = getopt(argc, argv, "ah"))) {
+		switch (opt) {
+		case 'a':
+			p->animated = true;
+			break;
+		case 'h':
+			print_help(argv);
+			return 0;
+		}
+	}
 
 	init_prog(p);
 	draw(p);
