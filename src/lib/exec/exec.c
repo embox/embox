@@ -168,13 +168,13 @@ static int load_interp(char *filename, exec_t *exec) {
 		}
 	}
 
-	base_addr = mmap_alloc(EMMAP_SELF, size);
+	base_addr = mmap_alloc(task_self_resource_mmap(), size);
 	if (base_addr == 0) {
 		free(ph_table);
 		return -ENOMEM;
 	}
 
-	mmap_place(EMMAP_SELF, base_addr, size, 0);
+	mmap_place(task_self_resource_mmap(), base_addr, size, 0);
 	vmem_map_region(vmem_current_context(), base_addr, base_addr, size,
 				VMEM_PAGE_WRITABLE | VMEM_PAGE_EXECUTABLE | VMEM_PAGE_USERMODE);
 
@@ -257,7 +257,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 		}
 #else
 		size = binalign_bound(ph->p_memsz, MMU_PAGE_SIZE);
-		if (mmap_place(EMMAP_SELF, ph->p_vaddr, size,
+		if (mmap_place(task_self_resource_mmap(), ph->p_vaddr, size,
 					PROT_EXEC | PROT_READ | PROT_WRITE)) {
 			free(ph_table);
 			return -ENOMEM;
@@ -303,7 +303,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 uint32_t mmap_create_stack(struct emmap *mmap) {
 	size_t size = 4096;
 	uintptr_t base = mmap_alloc(mmap, size);
-	mmap_place(EMMAP_SELF, base, size, 0);
+	mmap_place(task_self_resource_mmap(), base, size, 0);
 	vmem_map_region(mmap->ctx, base, base, size,
 				VMEM_PAGE_WRITABLE | VMEM_PAGE_EXECUTABLE | VMEM_PAGE_USERMODE);
 	return base + size;

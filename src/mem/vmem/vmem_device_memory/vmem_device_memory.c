@@ -38,7 +38,7 @@ void *mmap_device_memory(void *addr,
 	uintptr_t end = binalign_bound(physical + len, MMU_PAGE_SIZE);
 	len = end - start;
 
-	if (mmap_place(EMMAP_SELF, start, len, prot)) {
+	if (mmap_place(task_self_resource_mmap(), start, len, prot)) {
 		return NULL;
 	}
 
