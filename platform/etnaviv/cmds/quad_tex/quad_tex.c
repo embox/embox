@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 #define MAX_QUADS 1024
-
+#define EPS 0.001
 #define USE_TRACE 0
 #define NEAR 0
 #define FAR 1
@@ -80,8 +80,7 @@ struct program {
 	int frame_width;
 	int frame_height;
 
-	int quad_width;
-	int qiad_height;
+	float quad_sz;
 
 	int quads;
 
@@ -316,7 +315,7 @@ static void draw(struct program *p) {
 	struct fb_info *mesa_fbi = fb_lookup(0);
 
 	float off[MAX_QUADS][2];
-	float quad_sz = 0.9 / p->quads;
+	float quad_sz = p->quad_sz > EPS ? p->quad_sz : .9 / sqrt(p->quads);
 
 	float w = quad_sz;
 	float h = quad_sz;
@@ -465,8 +464,9 @@ int main(int argc, char** argv) {
 	/* Default parameters */
 	p->animated = false;
 	p->quads = 1;
+	p->quad_sz = 0.0;
 
-	while (-1 != (opt = getopt(argc, argv, "ahn:"))) {
+	while (-1 != (opt = getopt(argc, argv, "ahn:s:"))) {
 		switch (opt) {
 		case 'a':
 			p->animated = true;
@@ -477,6 +477,14 @@ int main(int argc, char** argv) {
 				printf("Wrong parameter for -n\n");
 				return -EINVAL;
 			}
+			break;
+		case 's':
+			p->quad_sz = atof(optarg);
+			if (p->quad_sz < 0) {
+				printf("Quad size should be positive float number\n");
+				return -EINVAL;
+			}
+
 			break;
 		case 'h':
 			print_help(argv);
