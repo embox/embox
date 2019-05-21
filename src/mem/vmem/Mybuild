@@ -11,11 +11,10 @@ abstract module vmem_api {
 }
 
 module vmem_nommu extends vmem_api {
-	@IncludeExport(path="mem", target_name="vmem.h")
 
-	source "vmem_nommu.h"
 	source "vmem_nommu.c"
 
+	depends vmem_header
 	depends embox.mem.mmap_header
 	depends embox.mem.mmap
 	depends embox.kernel.task.resource.mmap

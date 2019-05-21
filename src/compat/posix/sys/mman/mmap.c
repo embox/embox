@@ -81,10 +81,9 @@ void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 
 	if (flags & MAP_ANONYMOUS) {
 		prot |= MAP_ANONYMOUS;
-	}
-
-	if (mmap_place(emmap, (uintptr_t) virt, len, prot)) {
-		return MAP_FAILED;
+		if (mmap_place(emmap, (uintptr_t) virt, len, prot)) {
+			return MAP_FAILED;
+		}
 	}
 
 	return virt;

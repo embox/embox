@@ -374,3 +374,15 @@ diff -aur libdrm-2.4.96-orig/xf86drm.c libdrm-2.4.96/xf86drm.c
        -mllvm)
  	prev=mllvm
  	continue
+diff -aur libdrm-2.4.96-orig/etnaviv/etnaviv_bo.c libdrm-2.4.96/etnaviv/etnaviv_bo.c
+--- libdrm-2.4.96-orig/etnaviv/etnaviv_bo.c	2019-03-04 12:52:04.044351386 +0300
++++ libdrm-2.4.96/etnaviv/etnaviv_bo.c	2019-05-20 16:47:49.056151472 +0300
+@@ -314,7 +314,7 @@
+ 			get_buffer_info(bo);
+ 		}
+ 
+-		bo->map = drm_mmap(0, bo->size, PROT_READ | PROT_WRITE,
++		bo->map = drm_mmap(0, bo->size, PROT_READ | PROT_WRITE | PROT_NOCACHE,
+ 				MAP_SHARED, bo->dev->fd, bo->offset);
+ 		if (bo->map == MAP_FAILED) {
+ 			ERROR_MSG("mmap failed: %s", strerror(errno));

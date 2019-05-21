@@ -6,7 +6,7 @@
 #include <inttypes.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <kernel/panic.h>
 #include <linux/wait.h>
 
 #include "etnaviv_compat.h"
@@ -600,7 +600,7 @@ int etnaviv_gpu_init(struct etnaviv_gpu *gpu) {
 	/* Exclude VG cores with FE2.0 */
 	if (gpu->identity.features & chipFeatures_PIPE_VG &&
 	    gpu->identity.features & chipFeatures_FE20) {
-		log_error("Ignoring GPU with VG and FE2.0");
+		panic("Wrong GPU register values, try to restart");
 		return -ENXIO;
 	}
 
