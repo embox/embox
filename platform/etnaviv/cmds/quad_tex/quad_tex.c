@@ -9,6 +9,8 @@
 #include <mem/vmem.h>
 #include <unistd.h>
 
+#define MAX_QUADS 1024
+
 #define USE_TRACE 0
 #define NEAR 0
 #define FAR 1
@@ -75,8 +77,13 @@ struct program {
 	struct pipe_resource *tex;
 	struct pipe_sampler_view *view;
 
-	int width;
-	int height;
+	int frame_width;
+	int frame_height;
+
+	int quad_width;
+	int qiad_height;
+
+	int quads;
 
 	bool animated;
 };
@@ -108,8 +115,8 @@ static void init_prog(struct program *p)
 	int ret;
 
 	struct fb_info *mesa_fbi = fb_lookup(0);
-	p->width = mesa_fbi->var.xres;
-	p->height = mesa_fbi->var.yres;
+	p->frame_width = mesa_fbi->var.xres;
+	p->frame_height = mesa_fbi->var.yres;
 
 	/* find a hardware device */
 	ret = pipe_loader_probe(&p->dev, 1);
@@ -142,8 +149,8 @@ static void init_prog(struct program *p)
 		memset(&tmplt, 0, sizeof(tmplt));
 		tmplt.target = PIPE_TEXTURE_2D;
 		tmplt.format = PIPE_FORMAT_B5G6R5_UNORM; /* All drivers support this */
-		tmplt.width0 = p->width;
-		tmplt.height0 = p->height;
+		tmplt.width0 = p->frame_width;
+		tmplt.height0 = p->frame_height;
 		tmplt.depth0 = 1;
 		tmplt.array_size = 1;
 		tmplt.last_level = 0;
@@ -222,8 +229,8 @@ static void init_prog(struct program *p)
 	surf_tmpl.u.tex.last_layer = 0;
 	/* drawing destination */
 	memset(&p->framebuffer, 0, sizeof(p->framebuffer));
-	p->framebuffer.width = p->width;
-	p->framebuffer.height = p->height;
+	p->framebuffer.width = p->frame_width;
+	p->framebuffer.height = p->frame_height;
 	p->framebuffer.nr_cbufs = 1;
 	p->framebuffer.cbufs[0] = p->pipe->create_surface(p->pipe, p->target, &surf_tmpl);
 
@@ -232,14 +239,14 @@ static void init_prog(struct program *p)
 		float x = 0;
 		float y = 0;
 		float z = NEAR;
-		float half_width = (float)p->width / 2.0f;
-		float half_height = (float)p->height / 2.0f;
+		float half_width = (float)p->frame_width / 2.0f;
+		float half_height = (float)p->frame_height / 2.0f;
 		float half_depth = ((float)FAR - (float)NEAR) / 2.0f;
 		float scale, bias;
 
 		if (FLIP) {
 			scale = -1.0f;
-			bias = (float)p->height;
+			bias = (float)p->frame_height;
 		} else {
 			scale = 1.0f;
 			bias = 0.0f;
@@ -304,10 +311,16 @@ static void close_prog(struct program *p)
 void dcache_flush(const void *p, size_t size);
 static void draw(struct program *p) {
 	const struct pipe_sampler_state *samplers[] = {&p->sampler};
-	static int step = 0;
-
+	int step = 0;
+	float theta = 0;
 	struct fb_info *mesa_fbi = fb_lookup(0);
 
+	float off[MAX_QUADS][2];
+	float quad_sz = 0.9 / p->quads;
+
+	float w = quad_sz;
+	float h = quad_sz;
+	float quadVerts[4][2] = {{w, h}, {-w, h}, {-w, -h}, {w, -h}};
 	void *sw_base[2] = { NULL, NULL };
 
 	struct pipe_transfer *transfer[2];
@@ -338,10 +351,30 @@ static void draw(struct program *p) {
 	/* vertex element data */
 	cso_set_vertex_elements(p->cso, 2, p->velem);
 
+	for(int i = 0; i < p->quads; ++i) {
+		off[i][0] = ((rand() % 1500) - 750.0f) / 1000.0f;
+		off[i][1] = ((rand() % 1500) - 750.0f) / 1000.0f;
+	}
+
+	if (p->quads == 1) {
+		off[0][0] = off[0][1] = 0.0;
+	}
+
 	while (true) {
+		theta += 0.01;
+		const float c = cos(theta);
+		const float s = sin(theta);
+
+		float x[4] = {};
+		float y[4] = {};
+
+		for (int i = 0; i < 4; i++) {
+			x[i] = c * quadVerts[i][0] - s * quadVerts[i][1];
+			y[i] = s * quadVerts[i][0] + c * quadVerts[i][1];
+		}
+
 		step++;
 		current_id = step % 2;
-		const float theta = 0.01;
 
 		for (int i = 0; i < 4; i++) {
 			/* Rotate vertices by 'theta' radians */
@@ -356,18 +389,23 @@ static void draw(struct program *p) {
 			}
 		}
 
-		dcache_flush(vertices, sizeof(vertices));
 		/* clear the render target */
 		p->pipe->clear(p->pipe, PIPE_CLEAR_COLOR, &p->clear_color, 0, 0);
-		/* set misc state we care about */
 
-		pipe_buffer_write(p->pipe, p->vbuf, 0, sizeof(vertices), vertices);
-		util_draw_vertex_buffer(p->pipe, p->cso,
-				p->vbuf, 0, 0,
-				PIPE_PRIM_QUADS,
-				4,  /* verts */
-				2); /* attribs/vert */
+		for(int quad = 0; quad < p->quads; quad++) {
+			for (int i = 0; i < 4; i++) {
+				vertices[i][0][0] = x[i] + off[quad][0];
+				vertices[i][0][1] = y[i] + off[quad][1];
+			}
 
+			pipe_buffer_write(p->pipe, p->vbuf, 0, sizeof(vertices), vertices);
+
+			util_draw_vertex_buffer(p->pipe, p->cso,
+					p->vbuf, 0, 0,
+					PIPE_PRIM_QUADS,
+					4,  /* verts */
+					2); /* attribs/vert */
+		}
 		p->pipe->flush(p->pipe, NULL, 0);
 
 		ptr = pipe_transfer_map(pipe, texture, surface->u.tex.level,
@@ -381,14 +419,14 @@ static void draw(struct program *p) {
 		if (sw_base[0] && sw_base[1]) {
 			if (first_run) {
 				vmem_set_flags(vmem_current_context(),
-					(mmu_vaddr_t) sw_base[0],
-					p->width * p->height * 2,
-					VMEM_PAGE_WRITABLE);
+						(mmu_vaddr_t) sw_base[0],
+						p->frame_width * p->frame_height * 2,
+						VMEM_PAGE_WRITABLE);
 
 				vmem_set_flags(vmem_current_context(),
-					(mmu_vaddr_t) sw_base[1],
-					p->width * p->height * 2,
-					VMEM_PAGE_WRITABLE);
+						(mmu_vaddr_t) sw_base[1],
+						p->frame_width * p->frame_height * 2,
+						VMEM_PAGE_WRITABLE);
 
 				fps_set_base_frame(mesa_fbi, sw_base[0]);
 				fps_set_back_frame(mesa_fbi, sw_base[1]);
@@ -412,7 +450,7 @@ static void draw(struct program *p) {
 static void print_help(char **argv) {
 	printf("Draw rectangle with a texture.\n"
 		"USAGE:\n"
-		"\t%s [-ah]\n", argv[0]);
+		"\t%s [-ah] [-n NUM]\n", argv[0]);
 }
 
 int main(int argc, char** argv) {
@@ -426,11 +464,19 @@ int main(int argc, char** argv) {
 
 	/* Default parameters */
 	p->animated = false;
+	p->quads = 1;
 
-	while (-1 != (opt = getopt(argc, argv, "ah"))) {
+	while (-1 != (opt = getopt(argc, argv, "ahn:"))) {
 		switch (opt) {
 		case 'a':
 			p->animated = true;
+			break;
+		case 'n':
+			p->quads = atoi(optarg);
+			if (p->quads < 0 || p->quads >= MAX_QUADS) {
+				printf("Wrong parameter for -n\n");
+				return -EINVAL;
+			}
 			break;
 		case 'h':
 			print_help(argv);
