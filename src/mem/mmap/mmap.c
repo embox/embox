@@ -50,12 +50,6 @@ static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
 int mmap_place(struct emmap *mmap, uintptr_t start, size_t size, uint32_t flags) {
 	struct marea *marea;
 
-	if (mmap == EMMAP_SELF) {
-		mmap = task_self_resource_mmap();
-	} else if (mmap == EMMAP_KERNEL) {
-		mmap = task_resource_mmap(task_kernel_task());
-	}
-
 	assert(mmap);
 
 	if (!(marea = marea_alloc(start, size, flags))) {
@@ -75,12 +69,6 @@ int mmap_place(struct emmap *mmap, uintptr_t start, size_t size, uint32_t flags)
 int mmap_release(struct emmap *mmap, uintptr_t addr) {
 	struct marea *m;
 
-	if (mmap == EMMAP_SELF) {
-		mmap = task_self_resource_mmap();
-	} else if (mmap == EMMAP_KERNEL) {
-		mmap = task_resource_mmap(task_kernel_task());
-	}
-
 	assert(mmap);
 
 	m = mmap_find_marea(mmap, addr);
@@ -95,12 +83,6 @@ int mmap_release(struct emmap *mmap, uintptr_t addr) {
 
 int mmap_prot(struct emmap *mmap, uintptr_t addr) {
 	struct marea *m;
-
-	if (mmap == EMMAP_SELF) {
-		mmap = task_self_resource_mmap();
-	} else if (mmap == EMMAP_KERNEL) {
-		mmap = task_resource_mmap(task_kernel_task());
-	}
 
 	assert(mmap);
 
@@ -119,12 +101,6 @@ uintptr_t mmap_alloc(struct emmap *mmap, size_t size) {
 	uintptr_t ptr_s = MAREA_ALIGN_UP(0x1);
 	uintptr_t ptr_e = MAREA_ALIGN_UP(ptr_s + size);
 	struct marea *marea;
-
-	if (mmap == EMMAP_SELF) {
-		mmap = task_self_resource_mmap();
-	} else if (mmap == EMMAP_KERNEL) {
-		mmap = task_resource_mmap(task_kernel_task());
-	}
 
 	assert(mmap);
 

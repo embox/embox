@@ -328,7 +328,7 @@ void _NORETURN task_exit(void *res) {
 
 	task_start_exit();
 
-	task_do_exit(task_self(), TASKST_EXITED_MASK | ((int) res & TASKST_EXITST_MASK));
+	task_do_exit(task_self(), TASKST_EXITED_MASK | ((intptr_t) res & TASKST_EXITST_MASK));
 
 	task_finish_exit();
 }
@@ -365,23 +365,6 @@ int task_set_priority(struct task *tsk, task_priority_t new_prior) {
 
 	}
 	sched_unlock();
-
-	return 0;
-}
-
-int task_notify_switch(struct thread *prev, struct thread *next) {
-	task_notifing_resource_hnd notify_res;
-	int res;
-
-	if (prev->task == next->task) {
-		return 0;
-	}
-
-	task_notifing_resource_foreach(notify_res) {
-		if (0 != (res = notify_res(prev, next))) {
-			return res;
-		}
-	}
 
 	return 0;
 }

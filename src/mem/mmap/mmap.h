@@ -29,9 +29,6 @@ struct emmap {
 	struct dlist_head page_list;
 };
 
-#define EMMAP_SELF ((void *) 0)
-#define EMMAP_KERNEL ((void *) 1)
-
 extern int mmap_place(struct emmap *mmap, uintptr_t start, size_t size, uint32_t flags);
 extern int mmap_release(struct emmap *mmap, uintptr_t addr);
 extern uintptr_t mmap_alloc(struct emmap *mmap, size_t size);

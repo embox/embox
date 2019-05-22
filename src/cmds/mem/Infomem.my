@@ -34,6 +34,6 @@ module infomem {
 	depends embox.compat.posix.util.getopt
 	depends embox.mem.phymem
 	depends embox.mem.vmem_alloc
-	depends embox.mem.vmem
+	depends embox.mem.vmem_api
 	depends embox.driver.periph_memory
 }

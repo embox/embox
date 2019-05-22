@@ -72,7 +72,7 @@ static int periph_memory_init(void) {
 		addr_start *= MMU_PAGE_SIZE;
 		addr_end   *= MMU_PAGE_SIZE;
 
-		if (mmap_place(EMMAP_KERNEL, addr_start,
+		if (mmap_place(task_resource_mmap(task_kernel_task()), addr_start,
 					addr_end - addr_start,
 					PROT_READ | PROT_WRITE | PROT_NOCACHE)) {
 			return -ENOMEM;

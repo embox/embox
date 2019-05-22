@@ -44,14 +44,14 @@ void *sys_mmap2(void *start, size_t length, int prot, int flags, int fd, uint32_
 	uint32_t offset = pgoffset * 0x1000;
 
 	if (!start) {
-		start = (void *) mmap_alloc(EMMAP_SELF, length);
+		start = (void *) mmap_alloc(task_self_resource_mmap(), length);
 
 		if (start == NULL) {
 			return (void *) -1;
 		}
 	}
 
-	if (mmap_place(EMMAP_SELF,
+	if (mmap_place(task_self_resource_mmap(),
 				(uintptr_t) start, length, flags)) {
 		return (void *) (-1);
 	}

@@ -6,6 +6,7 @@
  */
 
 #include <unistd.h>
+#include <stdint.h>
 
 #include <kernel/panic.h>
 #include <kernel/task.h>
@@ -51,7 +52,7 @@ int vfork_child_start(struct task *child) {
 }
 
 void *task_exit_callback(void *arg) {
-	_exit((int)arg);
+	_exit((intptr_t)arg);
 
 	return arg;
 }
