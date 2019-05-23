@@ -15,7 +15,9 @@ echo "http://dl-3.alpinelinux.org/alpine/v3.9/main" >> /etc/apk/repositories
 # add stable community repository (required for docker installation)
 echo "http://dl-cdn.alpinelinux.org/alpine/latest-stable/community" >> /etc/apk/repositories
 
-# intall docker (now doesn't work, it is necessary to extend disk space)
+# Run nginx with index.html from hwproj.me in docker container
 apk update
 apk add docker
-
+rc-update add docker boot
+service docker start
+docker run --name nginx -d -p 80:80 vladimirkutuev/nginx:v1
