@@ -3,7 +3,7 @@ To run httpd on the alpine domU:
 1) On the dom0
 
 Make it with static linking:
-# make alpine
+# make STATIC=1
 
 Share executable file with web server:
 # python3 -m http.server
