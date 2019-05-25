@@ -28,13 +28,14 @@ static int phymem_init(void) {
 	log_boot("start=%p end=%p size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
 
 	va = mmap_device_memory(phymem_alloc_start,
-			binalign_bound(mem_len, PAGE_SIZE()),
+			mem_len,
 			PROT_WRITE | PROT_READ,
 			MAP_FIXED,
-			(uintptr_t) phymem_alloc_start);
+			(uint64_t)((uintptr_t) phymem_alloc_start));
 
-	if (va)
+	if (va) {
 		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
+	}
 	log_boot_stop();
 	return phymem_alloc_start == va ? 0 : -EIO;
 }
