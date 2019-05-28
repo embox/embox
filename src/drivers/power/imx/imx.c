@@ -15,6 +15,7 @@
 #include <hal/reg.h>
 #include <util/log.h>
 #include <kernel/printk.h>
+#include <kernel/time/ktime.h>
 
 EMBOX_UNIT_INIT(imx_power_init);
 
@@ -80,7 +81,6 @@ static void imx_anatop_pu_enable(int enable) {
 	/* Note: currently this function works only with VDDPU
 	 * (VDDSOC is usually initialized by bootloader */
 	uint32_t tmp;
-	int t = 0xfffff;
 
 	tmp = REG32_LOAD(ANADIG_CORE);
 
@@ -91,20 +91,18 @@ static void imx_anatop_pu_enable(int enable) {
 	}
 
 	REG32_STORE(ANADIG_CORE, tmp);
-	while(t--);
+	ksleep(50);
 }
 
 extern int clk_enable(char *clk_name);
 extern int clk_disable(char *clk_name);
 
 void imx_gpu_power_set(int up) {
-	int t = 0xfffff;
-
 	if (up) {
 		/* Power-up */
 		imx_anatop_pu_enable(1);
 		/* TODO calculate delay? */
-		while(t--);
+		ksleep(50);
 
 		REG32_ORIN(GPC_CNTR, GPU_VPU_PUP_REQ);
 
@@ -116,7 +114,7 @@ void imx_gpu_power_set(int up) {
 
 		while (REG32_LOAD(GPC_CNTR) & GPU_VPU_PDN_REQ);
 
-		while(t--);
+		ksleep(50);
 		imx_anatop_pu_enable(0);
 	}
 }
