@@ -9,10 +9,9 @@
 #include <util/log.h>
 
 #include <errno.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <sys/mman.h>
-
-#include <hal/mmu.h>
 
 #include <mem/mmap.h>
 #include <mem/phymem.h>
@@ -23,7 +22,7 @@
 #define INSIDE(x,a,b)       (((a) <= (x)) && ((x) < (b)))
 #define INTERSECT(a,b,c,d)  (INSIDE(a,c,d) || INSIDE(c,a,b))
 
-static struct marea *mmap_find_marea(struct emmap *mmap, mmu_vaddr_t vaddr) {
+static struct marea *mmap_find_marea(struct emmap *mmap, uintptr_t vaddr) {
 	struct marea *marea;
 
 	assert(mmap);
