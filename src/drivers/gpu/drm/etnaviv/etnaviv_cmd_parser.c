@@ -59,7 +59,7 @@ bool etnaviv_cmd_validate_one(struct etnaviv_gpu *gpu, uint32_t *stream,
 			stream, size, relocs, reloc_size);
 	while (buf < end) {
 		uint32_t cmd = *buf;
-		unsigned int len, n, off;
+		unsigned int len, n = 0, off;
 		unsigned int op = cmd >> 27;
 		log_debug("buf(%p) cmd(%x) op(%x)", buf, cmd, op);
 
