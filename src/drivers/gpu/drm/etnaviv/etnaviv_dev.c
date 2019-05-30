@@ -147,7 +147,7 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data)
 
 	if (intr != 0) {
 		log_debug("intr 0x%08x", intr);
-
+		gpu->busy = 0;
 		if (intr & VIVS_HI_INTR_ACKNOWLEDGE_AXI_BUS_ERROR) {
 			uint32_t axi_status = gpu_read(gpu, VIVS_HI_AXI_STATUS);
 			gpu_write(gpu, VIVS_HI_INTR_ACKNOWLEDGE,
@@ -193,6 +193,7 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data)
 	return ret;
 }
 
+void dcache_flush(const void *p, size_t size);
 static int etnaviv_ref = 0;
 static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 	struct file *file;
@@ -258,7 +259,12 @@ static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 					sizeof(etnaviv_uncached_buffer),
 					VMEM_PAGE_WRITABLE))) {
 		log_error("Failed to set page attributes! Error %d", err);
+
+		return NULL;
 	}
+
+	mmu_flush_tlb();
+	dcache_flush(etnaviv_uncached_buffer, sizeof(etnaviv_uncached_buffer));
 
 	return &file->f_idesc;
 }

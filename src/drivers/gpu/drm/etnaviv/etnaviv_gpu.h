@@ -108,6 +108,8 @@ struct etnaviv_gpu {
 	uint32_t active_fence;
 	uint32_t completed_fence;
 	uint32_t retired_fence;
+
+	int busy;
 };
 
 extern int etnaviv_gpu_get_param(struct etnaviv_gpu *gpu, uint32_t param,

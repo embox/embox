@@ -514,7 +514,6 @@ static void etnaviv_gpu_enable_mlcg(struct etnaviv_gpu *gpu) {
 }
 
 void etnaviv_gpu_start_fe(struct etnaviv_gpu *gpu, uint32_t address, uint16_t prefetch) {
-	dcache_flush((void *) (address + 0x10000000), prefetch * 8);
 	gpu_write(gpu, VIVS_FE_COMMAND_ADDRESS, address);
 	gpu_write(gpu, VIVS_FE_COMMAND_CONTROL,
 		  VIVS_FE_COMMAND_CONTROL_ENABLE |
@@ -915,12 +914,13 @@ int etnaviv_gpu_submit(struct etnaviv_gpu *gpu,
 		gpu->lastctx = cmdbuf->ctx;
 	}
 
+	while (gpu->busy) { }; /* Wait for interrupt for previous command buffer */
+	gpu->busy = 1;
+
 	etnaviv_buffer_queue(gpu, event, cmdbuf);
 	cmdbuf->nr_bos = submit->nr_bos;
 	etnaviv_buffer_dump(gpu, cmdbuf, 0, cmdbuf->user_size);
-	dcache_flush(cmdbuf->vaddr, cmdbuf->user_size * 4);
 	etnaviv_buffer_dump(gpu, gpu->buffer, 0, gpu->buffer->user_size);
-	dcache_flush(gpu->buffer->vaddr, cmdbuf->user_size * 4);
 
 	return 0;
 }
