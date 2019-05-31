@@ -5,6 +5,7 @@
  * @author  Anton Kozlov
  * @date    23.05.2014
  */
+#include <errno.h>
 
 #include <embox/cmd.h>
 #include <fs/vfs.h>
@@ -23,6 +24,9 @@ static int binfs_mount(void *dev, void *dir) {
 				S_IFREG | S_IXUSR | S_IXGRP | S_IXOTH);
 	}
 
+	if (NULL == (dir_node->nas->fs = filesystem_create("binfs"))) {
+		return -ENOMEM;
+	}
 	return 0;
 }
 
@@ -49,4 +53,3 @@ static struct fs_driver binfs_driver = {
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(binfs_driver);
-
