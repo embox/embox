@@ -14,6 +14,7 @@ module kernel_task {
 	@NoRuntime depends embox.kernel.task.api
 	depends embox.kernel.task.task_resource // FIXME
 	depends embox.kernel.task.task_table_api
+	depends embox.mem.phymem_api
 }
 
 module multi extends api {

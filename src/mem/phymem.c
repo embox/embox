@@ -22,22 +22,10 @@ static int phymem_init(void) {
 	char *const phymem_alloc_start = phymem_allocated_start();
 	char *const phymem_alloc_end = phymem_allocated_end();
 	const size_t mem_len = phymem_alloc_end - phymem_alloc_start;
-	void *va;
 
-	log_boot_start();
-	log_boot("start=%p end=%p size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
+	__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
 
-	va = mmap_device_memory(phymem_alloc_start,
-			mem_len,
-			PROT_WRITE | PROT_READ,
-			MAP_FIXED,
-			(uint64_t)((uintptr_t) phymem_alloc_start));
-
-	if (va) {
-		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
-	}
-	log_boot_stop();
-	return phymem_alloc_start == va ? 0 : -EIO;
+	return 0;
 }
 
 char * const phymem_allocated_start(void) {

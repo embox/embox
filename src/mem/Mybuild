@@ -1,8 +1,21 @@
 package embox.mem
 
-module phymem {
+@DefaultImpl(phymem_stub)
+abstract module phymem_api {}
+
+module phymem_stub extends phymem_api {
+}
+
+module phymem extends phymem_api {
 	option number log_level = 3 /*log_info */
 
 	source "phymem.c"
+	@NoRuntime depends embox.mem.phymem_mapping
+}
+
+module phymem_mapping {
+	option number log_level = 3 /*log_info */
+
+	source "phymem_mapping.c"
 	depends embox.mem.vmem_device_memory
 }
