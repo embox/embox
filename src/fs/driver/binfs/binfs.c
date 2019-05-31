@@ -24,7 +24,7 @@ static int binfs_mount(void *dev, void *dir) {
 				S_IFREG | S_IXUSR | S_IXGRP | S_IXOTH);
 	}
 
-	if (NULL == (dir_node->nas->fs = filesystem_create("binfs"))) {
+	if (NULL == (dir_node->nas->fs = filesystem_create(BINFS_NAME))) {
 		return -ENOMEM;
 	}
 	return 0;
@@ -47,7 +47,7 @@ static struct fsop_desc binfs_fsop = {
 };
 
 static struct fs_driver binfs_driver = {
-	.name = "binfs",
+	.name = BINFS_NAME,
 	.fsop = &binfs_fsop,
 	.mount_dev_by_string = true,
 };
