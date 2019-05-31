@@ -413,8 +413,6 @@ static void draw(struct program *p) {
 
 		sw_base[current_id] = ptr;
 
-		ksleep(5);
-
 		if (sw_base[0] && sw_base[1]) {
 			if (first_run) {
 				vmem_set_flags(vmem_current_context(),

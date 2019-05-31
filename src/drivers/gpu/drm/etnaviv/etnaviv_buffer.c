@@ -35,11 +35,9 @@
  * Command Buffer helper:
  */
 
-extern void dcache_flush(const void *p, size_t size);
 static inline void OUT(struct etnaviv_cmdbuf *buffer, uint32_t data) {
 	uint32_t *vaddr = (uint32_t *)buffer->vaddr;
 	vaddr[buffer->user_size / 4] = data;
-	dcache_flush(&vaddr[buffer->user_size / 4], 4);
 	buffer->user_size += 4;
 }
 
@@ -152,8 +150,6 @@ static void etnaviv_buffer_replace_wait(struct etnaviv_cmdbuf *buffer,
 	data_mem_barrier();
 	lw[0] = cmd;
 	data_mem_barrier();
-
-	dcache_flush(lw, 8);
 }
 /*
  * Ensure that there is space in the command buffer to contiguously write
@@ -220,9 +216,6 @@ void etnaviv_buffer_queue(struct etnaviv_gpu *gpu, unsigned int event,
 	unsigned int waitlink_offset = buffer->user_size - 16;
 	uint32_t return_target, return_dwords;
 	uint32_t link_target, link_dwords;
-
-	dcache_flush(buffer->vaddr, buffer->size * 4);
-	dcache_flush(cmdbuf->vaddr, cmdbuf->size * 4);
 
 	log_debug("exec_state=%d", gpu->exec_state);
 	link_target = etnaviv_cmdbuf_get_va(cmdbuf);
