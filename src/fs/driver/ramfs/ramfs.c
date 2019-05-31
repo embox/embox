@@ -18,6 +18,7 @@
 #include <util/indexator.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h> /* PAGE_SIZE() */
+#include <mem/page.h>
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>

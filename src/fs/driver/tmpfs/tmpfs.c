@@ -21,6 +21,7 @@
 
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <mem/page.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/block_dev/ramdisk/ramdisk.h>
