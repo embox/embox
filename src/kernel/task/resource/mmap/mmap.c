@@ -29,7 +29,7 @@ static void task_mmap_init(const struct task *task, void *mmap_space) {
 
 	dlist_init(&mmap->marea_list);
 
-	vmem_init_context(&mmap->ctx);
+	vmem_create_context(&mmap->ctx);
 }
 
 static int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {

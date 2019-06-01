@@ -35,17 +35,6 @@ mmu_ctx_t vmem_current_context(void) {
 	return emmap->ctx;
 }
 
-/* FIXME: remove create context from here */
-int vmem_init_context(mmu_ctx_t *ctx) {
-	int err;
-
-	if ((err = vmem_create_context(ctx))) {
-		return err;
-	}
-
-	return 0;
-}
-
 static void vmem_free_table_level(int lvl, uintptr_t *tbl) {
 	if (lvl == MMU_LAST_LEVEL) {
 		vmem_free_table(lvl, tbl);

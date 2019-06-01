@@ -51,28 +51,12 @@ extern void mmu_set(int lvl, uintptr_t *entry, uintptr_t value);
 extern void mmu_unset(int lvl, uintptr_t *entry);
 extern int mmu_present(int lvl, uintptr_t *entry);
 
-#if 0
-extern void mmu_pgd_unset(mmu_pgd_t *pgd);
-extern mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd);
-extern mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd);
-extern mmu_paddr_t mmu_pte_value(mmu_pte_t *pte);
-
-extern void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd);
-extern void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte);
-extern void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr);
-
-extern void mmu_pgd_unset(mmu_pgd_t *pgd);
-extern void mmu_pmd_unset(mmu_pgd_t *pmd);
-extern void mmu_pte_unset(mmu_pgd_t *pte);
-
-extern int mmu_pgd_present(mmu_pgd_t *pgd);
-extern int mmu_pmd_present(mmu_pmd_t *pmd);
-extern int mmu_pte_present(mmu_pte_t *pte);
-
-#endif
 extern void mmu_pte_set_writable(uintptr_t *pte, int value);
 extern void mmu_pte_set_cacheable(uintptr_t *pte, int value);
 extern void mmu_pte_set_usermode(uintptr_t *pte, int value);
 extern void mmu_pte_set_executable(uintptr_t *pte, int val);
+
+extern void mmu_flush_tlb(void);
+
 #endif /* MMU_LEVELS > 0 */
 #endif /* HAL_MMU_H_ */

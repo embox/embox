@@ -41,7 +41,6 @@ static inline vmem_page_flags_t prot_to_vmem_flags(uint32_t flags) {
 #define vmem_set_context(ctx)   mmu_set_context(ctx)
 
 extern int vmem_create_context(mmu_ctx_t *ctx);
-extern int vmem_init_context(mmu_ctx_t *ctx);
 extern mmu_ctx_t vmem_current_context(void);
 extern void vmem_free_context(mmu_ctx_t ctx);
 
@@ -57,7 +56,6 @@ extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, vme
 extern void vmem_on(void);
 extern void vmem_off(void);
 extern int vmem_mmu_enabled(void);
-extern void mmu_flush_tlb(void);
 
 #define MMU_LAST_LEVEL (MMU_LEVELS - 1)
 
