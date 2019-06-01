@@ -58,5 +58,9 @@ extern void mmu_pte_set_executable(uintptr_t *pte, int val);
 
 extern void mmu_flush_tlb(void);
 
+#else /* MMU_LEVELS == 0 */
+typedef int mmu_ctx_t;
+
 #endif /* MMU_LEVELS > 0 */
+
 #endif /* HAL_MMU_H_ */

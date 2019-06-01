@@ -7,18 +7,11 @@ module vmem_header {
 
 @DefaultImpl(vmem_nommu)
 abstract module vmem_api {
-	depends vmem_header
 }
 
 module vmem_nommu extends vmem_api {
-
-	source "vmem_nommu.c"
-
-	depends vmem_header
-	depends embox.mem.mmap_header
-	depends embox.mem.mmap
-	depends embox.kernel.task.resource.mmap
-	depends embox.fs.syslib.idesc_mmap_api
+	@IncludeExport(path="mem",target_name="vmem.h")
+	source "vmem_nommu.h"
 }
 
 module vmem extends vmem_api {
