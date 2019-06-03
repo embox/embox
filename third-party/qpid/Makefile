@@ -1,30 +1,32 @@
 
-PKG_NAME := qpidc
-PKG_VER  := 0.24
+PKG_NAME := qpid-cpp
+PKG_VER  := 1.39.0
 
-PKG_SOURCES := http://archive.apache.org/dist/qpid/0.24/qpid-cpp-$(PKG_VER).tar.gz
-PKG_MD5     := f6245e2e68ccd1bac8fe706db3fba707
+PKG_SOURCES := http://mirror.linux-ia64.org/apache/qpid/cpp/$(PKG_VER)/qpid-cpp-$(PKG_VER).tar.gz
+PKG_MD5     := 466ff0b534ee656cbb0e0e33871df31f
 
-PKG_PATCHES := patch.txt
+PKG_PATCHES := patch.txt \
+	fix_boost_warnings.txt
 
 include $(EXTBLD_LIB)
 
 QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h \
 	-I$(ROOT_DIR)/third-party/qpid/include \
-	-I$(EXTERNAL_BUILD_DIR)/third_party/STLport/libstlportg/install/include/stlport \
-	-I$(ROOT_DIR)/build/extbld/third_party/gcc/core/install/include \
-	-I$(SRC_DIR)/compat/cxx/include \
-	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include"
+	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include\
+	-std=gnu++11 \
+	-Wno-expansion-to-defined \
+	-Wno-write-strings \
+	-Wno-unused-parameter"
 
 QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/lib"
 
 QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include;$(ROOT_DIR)/third-party/qpid/include"
 
 $(CONFIGURE) :
-	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp || true
-	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex.cpp  $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex_.cpp || true
-	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options.cpp       $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options_.cpp || true
-	ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib.cpp         $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib_.cpp || true
+	#ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp || true
+	#ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex.cpp  $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex_.cpp || true
+	#ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options.cpp       $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/log/Options_.cpp || true
+	#ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib.cpp         $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/sys/Shlib_.cpp || true
 	export EMBOX_GCC_LINK=full; \
 	export CXXFLAGS=$(QPID_CXX_FLAGS); \
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && rm -rf bld && mkdir bld && cd bld && ( \
@@ -47,7 +49,8 @@ $(CONFIGURE) :
 		-DBUILD_XML:BOOL=off \
 		-DCMAKE_INSTALL_PREFIX:PATH=$(PKG_INSTALL_DIR)\
 		-DCMAKE_BUILD_TYPE:STRING=Debug \
-		-DBOOST_ROOT:PATH=$(ROOT_DIR)/build/extbld/third_party/boost/core \
+		-DBOOST_ROOT:PATH=$(ROOT_DIR)/build/extbld/third_party/boost/libs \
+		-DBOOST_LIBRARYDIR:PATH=$(ROOT_DIR)/build/extbld/third_party/boost/libs/install/lib \
 		-DCMAKE_REQUIRED_INCLUDES:PATH=$(QPID_CMAKE_REQUIRED_INCLUDES) \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
 		-DCMAKE_BUILD_TYPE:STRING=Debug \
