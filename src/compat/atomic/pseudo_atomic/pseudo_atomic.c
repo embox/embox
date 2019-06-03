@@ -11,6 +11,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <kernel/spinlock.h>
 
@@ -146,4 +147,23 @@ unsigned char __atomic_exchange_1(volatile void *p, unsigned char val, int memor
 	spin_unlock(&atomic_lock);
 
 	return prev;
+}
+
+bool __atomic_compare_exchange_4(uint32_t *ptr, uint32_t *expected,
+	uint32_t desired, bool weak,
+	int success_memorder, int failure_memorder) {
+	(void) success_memorder;
+	(void) failure_memorder;
+	(void) weak;
+	bool ret;
+	spin_lock(&atomic_lock);
+	if (*ptr == *expected) {
+		*ptr = desired;
+		ret = true;
+	} else {
+		*expected = *ptr;
+		ret = false;
+	}
+	spin_unlock(&atomic_lock);
+	return ret;
 }
