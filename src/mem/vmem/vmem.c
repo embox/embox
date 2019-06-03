@@ -4,6 +4,7 @@
  *
  * @date 05.10.2012
  * @author Anton Bulychev
+ * @author Anton Bondarev
  */
 
 #include <framework/mod/options.h>
@@ -30,12 +31,6 @@ static int mmu_enabled;
 /* Section pointers. */
 extern char _text_vma, _rodata_vma, _data_vma, _bss_vma;
 extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
-
-void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx) {
-	*pgd_idx = (size_t) (virt_addr & MMU_PGD_MASK) >> MMU_PGD_SHIFT;
-	*pmd_idx = (size_t) (virt_addr & MMU_PMD_MASK) >> MMU_PMD_SHIFT;
-	*pte_idx = (size_t) (virt_addr & MMU_PTE_MASK) >> MMU_PTE_SHIFT;
-}
 
 void vmem_on(void) {
 	mmu_on();
@@ -83,10 +78,6 @@ int vmem_map_kernel(void) {
 	return err;
 }
 
-void vmem_handle_page_fault(mmu_vaddr_t virt_addr) {
-	panic("MMU page fault: virt_addr - 0x%x\n", (unsigned int) virt_addr);
-}
-
 EMBOX_UNIT_INIT(vmem_init);
 static int vmem_init(void) {
 	int ret;
@@ -100,9 +91,9 @@ static int vmem_init(void) {
 	log_debug("kernel has been successfully mapped");
 	task_foreach(task) {
 		emmap = task_resource_mmap(task);
-		log_debug("map region (base 0x%" PRIxPTR " size 0x%zu flags 0x%" PRIx32 ")",
-				marea->start, marea->size, prot_to_vmem_flags(marea->flags));
 		dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
+			log_debug("map region (base 0x%" PRIxPTR " size %zu flags 0x%" PRIx32 ")",
+					marea->start, marea->size, prot_to_vmem_flags(marea->flags));
 			if (vmem_map_region(emmap->ctx,
 					marea->start,
 					marea->start,

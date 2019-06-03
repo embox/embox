@@ -1,5 +1,5 @@
 /**
- * @file PowerPC 440 definations
+ * @file PowerPC 440 definitions
  *
  * @date 17.10.12
  * @author Anton Bondarev

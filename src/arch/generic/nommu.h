@@ -13,6 +13,9 @@
 
 #include <stdint.h>
 
+/*TODO 0 level table */
+#define MMU_LEVELS         0
+
 #define __MMU_PGD_SHIFT         24
 #define __MMU_PMD_SHIFT         18
 #define __MMU_PTE_SHIFT         12

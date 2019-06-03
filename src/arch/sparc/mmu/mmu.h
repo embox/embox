@@ -9,9 +9,9 @@
 #ifndef MMU_H_
 #define MMU_H_
 
-// FROM arch/generic/mmu/mmu.h
-
 #include <stdint.h>
+
+#define MMU_LEVELS              3
 
 #define __MMU_PGD_SHIFT         24
 #define __MMU_PMD_SHIFT         18

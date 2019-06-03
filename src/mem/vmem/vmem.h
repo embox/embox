@@ -49,21 +49,40 @@ extern mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr);
 
 extern int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
 		size_t reg_size, vmem_page_flags_t flags);
-extern int vmem_map_region_overwrite(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
-		size_t reg_size, vmem_page_flags_t flags);
+
 extern void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size);
-extern int vmem_create_space(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size, vmem_page_flags_t flags);
 
-extern int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t flags);
 extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, vmem_page_flags_t flags);
-
-extern void vmem_handle_page_fault(mmu_vaddr_t virt_addr);
 
 extern void vmem_on(void);
 extern void vmem_off(void);
 extern int vmem_mmu_enabled(void);
 extern void mmu_flush_tlb(void);
 
-extern void vmem_get_idx_from_vaddr(mmu_vaddr_t virt_addr, size_t *pgd_idx, size_t *pmd_idx, size_t *pte_idx);
+#define MMU_LAST_LEVEL (MMU_LEVELS - 1)
+
+#ifndef __MMU_SHIFT_1
+#define __MMU_SHIFT_1 0
+#endif
+
+#ifndef __MMU_SHIFT_2
+#define __MMU_SHIFT_2 0
+#endif
+
+#ifndef __MMU_SHIFT_3
+#define __MMU_SHIFT_3 0
+#endif
+
+#define MMU_SHIFT(i) ((i == -1) ? 32 : \
+			(i) == 0 ? __MMU_SHIFT_0 : \
+			(i) == 1 ? __MMU_SHIFT_1 : \
+			(i) == 2 ? __MMU_SHIFT_2 : __MMU_SHIFT_3)
+
+#define MMU_ENTRIES(i) (1 << (MMU_SHIFT(i - 1) - MMU_SHIFT((i))))
+#define MMU_MASK(i) ((MMU_ENTRIES(i) - 1) << MMU_SHIFT(i))
+#define MMU_SIZE(i) (MMU_ENTRIES(i) * sizeof(mmu_vaddr_t))
+
+extern uintptr_t *vmem_alloc_table(int lvl);
+extern void vmem_free_table(int lvl, uintptr_t *table);
 
 #endif /* MEM_VMEM_H_ */

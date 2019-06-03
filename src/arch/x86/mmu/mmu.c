@@ -5,6 +5,7 @@
  * @date 04.10.2012
  * @author Anton Bulychev
  */
+#include <util/log.h>
 
 #include <stdint.h>
 #include <kernel/panic.h>
@@ -16,7 +17,7 @@
 
 #define MMU_PMD_FLAG  (MMU_PAGE_WRITABLE | MMU_PAGE_USERMODE)
 
-static mmu_pgd_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
+static uintptr_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
 
 /*
@@ -102,77 +103,66 @@ void mmu_set_context(mmu_ctx_t ctx) {
 	set_cr3((uint32_t) mmu_get_root(ctx));
 }
 
-mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
+mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
 	mmu_ctx_t ctx = (mmu_ctx_t) (++ctx_counter);
 	ctx_table[ctx] = pgd;
 	return ctx;
 }
 
-mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
+uintptr_t *mmu_get_root(mmu_ctx_t ctx) {
 	return ctx_table[ctx];
 }
 
 /* Present functions */
-
-int mmu_pgd_present(mmu_pgd_t *pgd) {
-	return 1;
-}
-
-int mmu_pmd_present(mmu_pmd_t *pmd) {
-	return ((uint32_t) *pmd & MMU_PAGE_PRESENT);
-}
-
-int mmu_pte_present(mmu_pte_t *pte) {
-	return ((uint32_t) *pte & MMU_PAGE_PRESENT);
+int mmu_present(int lvl, uintptr_t *entry) {
+	switch (lvl) {
+	case 0:
+		return (((uint32_t)*entry) & MMU_PAGE_PRESENT);
+	case 1:
+		return (((uint32_t)*entry) & MMU_PAGE_PRESENT);
+	default:
+		log_error("Wrong lvl=%d for ARM small page", lvl);
+		return 0;
+	}
 }
 
 /* Set functions */
-
-void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
-	panic("%s\n", __func__);
-}
-
-void mmu_pmd_set(mmu_pmd_t *pmd, mmu_pmd_t *pte) {
-	*pmd = (mmu_pmd_t) ((((uint32_t) pte) & (~MMU_PAGE_MASK))
-			| MMU_PMD_FLAG | MMU_PAGE_PRESENT);
-}
-
-void mmu_pte_set(mmu_pgd_t *pte, mmu_paddr_t addr) {
-	*pte = (mmu_pte_t) ((((uint32_t) addr) & (~MMU_PAGE_MASK))
-			| MMU_PAGE_PRESENT);
+void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
+	switch (lvl) {
+	case 0:
+		*entry = ((((uint32_t) value) & (~MMU_PAGE_MASK))
+				| MMU_PMD_FLAG | MMU_PAGE_PRESENT);
+		break;
+	case 1:
+		*entry = ((((uint32_t) value) & (~MMU_PAGE_MASK)) | MMU_PAGE_PRESENT);
+		break;
+	default:
+		log_error("Wrong lvl=%d for ARM small page", lvl);
+		break;
+	}
 }
 
 /* Value functions */
 
-mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return (mmu_pmd_t *) pgd;
-}
-
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
-	return (mmu_pte_t *) ((*pmd) & (~MMU_PAGE_MASK));
-}
-
-mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
-	return (mmu_paddr_t) ((*pte) & (~MMU_PAGE_MASK));
+uintptr_t *mmu_value(int lvl, uintptr_t *entry) {
+	switch (lvl) {
+	case 0:
+	case 1:
+		return (uintptr_t *) (*entry & ~MMU_PAGE_MASK);
+	default:
+		log_error("Wrong lvl=%d for ARM small page", lvl);
+		return 0;
+	}
 }
 
 /* Unset functions */
-
-void mmu_pgd_unset(mmu_pgd_t *pgd) {
-	panic("%s\n", __func__);
-}
-
-void mmu_pmd_unset(mmu_pmd_t *pmd) {
-	*pmd = 0;
-}
-
-void mmu_pte_unset(mmu_pgd_t *pte) {
-	*pte = 0;
+void mmu_unset(int lvl, uintptr_t *entry) {
+	*entry = 0;
 }
 
 /* Page Table flags */
 
-void mmu_pte_set_writable(mmu_pte_t *pte, int val) {
+void mmu_pte_set_writable(uintptr_t *pte, int val) {
 	if (val) {
 		*pte = *pte | MMU_PAGE_WRITABLE;
 	} else {
@@ -180,7 +170,7 @@ void mmu_pte_set_writable(mmu_pte_t *pte, int val) {
 	}
 }
 
-void mmu_pte_set_usermode(mmu_pte_t *pte, int val) {
+void mmu_pte_set_usermode(uintptr_t *pte, int val) {
 	if (val) {
 		*pte = *pte | MMU_PAGE_USERMODE;
 	} else {
@@ -188,7 +178,7 @@ void mmu_pte_set_usermode(mmu_pte_t *pte, int val) {
 	}
 }
 
-void mmu_pte_set_cacheable(mmu_pte_t *pte, int val) {
+void mmu_pte_set_cacheable(uintptr_t *pte, int val) {
 	if (val) {
 		*pte = *pte & (~MMU_PAGE_DISABLE_CACHE);
 	} else {
@@ -196,6 +186,5 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int val) {
 	}
 }
 
-void mmu_pte_set_executable(mmu_pte_t *pte, int val) {
-
+void mmu_pte_set_executable(uintptr_t *pte, int val) {
 }

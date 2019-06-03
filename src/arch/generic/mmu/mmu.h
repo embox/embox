@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
+#define MMU_LEVELS              3
+
 #define __MMU_PGD_SHIFT         24
 #define __MMU_PMD_SHIFT         18
 #define __MMU_PTE_SHIFT         12

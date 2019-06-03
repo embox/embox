@@ -84,7 +84,6 @@ static int mmu_handle_page_fault(uint32_t trap_nr, void *data) {
 
 	// TODO handle types of FT (invalid address, protection error, etc.)
 	MMU_DEBUG_PRINT(printk("\nfsr - 0x%x, far - 0x%x\n", fsr, far));
-	vmem_handle_page_fault((mmu_vaddr_t) far);
 
 	return 0;
 }

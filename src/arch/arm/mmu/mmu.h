@@ -18,25 +18,20 @@ typedef uintptr_t __mmu_vaddr_t;
 
 typedef uint32_t __mmu_ctx_t;
 
-typedef uint32_t __mmu_pgd_t;
-typedef uint32_t __mmu_pmd_t;
-typedef uint32_t __mmu_pte_t;
-
 typedef uint32_t __mmu_reg_t;
 
 #include <module/embox/arch/mmu.h>
 
 #ifdef __MODULE__embox__arch__arm__mmu_section__H_
+#define MMU_LEVELS  1
 /* Section mode */
-#define __MMU_PTE_SHIFT	20
-#define __MMU_PMD_SHIFT	20
-#define __MMU_PGD_SHIFT	20
+#define __MMU_SHIFT_0	20
 
 #elif defined __MODULE__embox__arch__arm__mmu_small_page__H_
+#define MMU_LEVELS  2
 /* Small page mode */
-#define __MMU_PTE_SHIFT	12
-#define __MMU_PMD_SHIFT	12
-#define __MMU_PGD_SHIFT	20
+#define __MMU_SHIFT_1	12
+#define __MMU_SHIFT_0	20
 #if OPTION_MODULE_GET(embox__arch__arm__mmu_small_page, NUMBER, v5_format) == 1
 #define V5_FORMAT
 #endif
@@ -44,7 +39,6 @@ typedef uint32_t __mmu_reg_t;
 #else
 #error Unsupported paging mode
 #endif
-
 
 /* Bits 0:1 are for section mode
  * Bits 3:2 are for cache and buffer. They are clear for now. */
