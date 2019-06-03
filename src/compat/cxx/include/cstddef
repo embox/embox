@@ -13,6 +13,28 @@
 namespace std {
 	using ::ptrdiff_t;
 	using ::size_t;
+
+	using ::uint8_t;
+	using ::uint16_t;
+	using ::uint32_t;
+	using ::uint64_t;
+
+	using ::int8_t;
+	using ::int16_t;
+	using ::int32_t;
+	using ::int64_t;
+
+	/* Stubs */
+	template<class T, ::size_t N> struct array;
+
+	class recursive_mutex {
+	public:
+		void lock(void) {
+		}
+
+		void unlock(void) {
+		}
+	}; 
 } // namespace std
 
 #endif // CSTDDEF_

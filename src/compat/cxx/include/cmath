@@ -10,13 +10,22 @@
 
 #include <math.h>
 
+#undef isnan
+#undef isfinite
+#undef isinf
+#undef isnormal
+#undef signbit
+#undef isgreater
+#undef isless
+#undef isgreaterequal
+#undef islessequal
+#undef islessgreater
+#undef isunordered
+#undef fpclassify
+
 namespace std {
 	using ::floor;
-	inline float floor(float x) { return floorf(x); }
-	inline long double floor(long double x) { return floorl(x); }
 	using ::pow;
-	inline float pow(float x, float y) { return powf(x, y); }
-	inline long double pow(long double x, long double y) { return powl(x, y); }
 	using ::ceil;
 	using ::acos;
 	using ::fmod;
@@ -38,6 +47,76 @@ namespace std {
 	using ::log10;
 	using ::sqrt;
 
+	static inline float floor(float x) {
+		return floorf(x);
+	}
+
+	static inline float abs(float x) {
+		return fabs(x);
+	}
+
+	static inline double abs(double x) {
+		if (x < 0) {
+			return -x;
+		}
+
+		return x;
+	}
+
+	static inline long long int abs(long long int x) {
+		if (x < 0) {
+			return -x;
+		}
+
+		return x;
+	}
+
+	static inline long double floor(long double x) {
+		return floorl(x);
+	}
+
+	static inline float pow(float x, float y) {
+		return powf(x, y);
+	}
+
+	static inline long double pow(long double x, long double y) {
+		return powl(x, y);
+	}
+
+	static inline bool isnan(float value) {
+		return __builtin_isnanf(value);
+	}
+
+	static inline bool isnan(double value) {
+		return __builtin_isnan(value);
+	}
+
+	static inline bool isnan(long double value) {
+		return __builtin_isnanl(value);
+	}
+
+	static inline int signbit(float value) {
+		return __builtin_signbitf(value);
+	}
+
+	static inline int signbit(double value) {
+		return __builtin_signbit(value);
+	}
+
+	static inline int signbit(long double value) {
+		return __builtin_signbitl(value);
+	}
+
+	static inline double max(double x, int y) {
+		double _y = (double) y;
+
+		if (_y > x) {
+			return _y;
+		}
+
+		return x;
+	}
+
 } // namespace std
 
-#endif // CMATH_
+#endif /* CMATH_ */
