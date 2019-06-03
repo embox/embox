@@ -1,27 +1,64 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-# This script is used to patch an third-party application.
+# This script is used to patch third-party applications.
 # For example, if you want to create a patch for third_party/fuse/fuse just do:
-#    ./scripts/app_diff.sh fuse-2.9.4 build/extbld/third_party/fuse/core third-party/fuse/fuse
+#    ./scripts/app_diff.sh download/fuse-2.9.4.tar.gz build/extbld/third_party/fuse/core/fuse-2.9.4
 # Args:
-# $1 - application name
-# $2 - path to application within the build folder
-# $3 - sources folder
+# $1 - path to original archive
+# $2 - path to application in build/extbld folder
+#
+# You can also export PATCHES_APPLY_BEFORE="patch1.txt patch2.txt".
+# For example PATCHES_APPLY_BEFORE=third_party/fuse/patch1.txt:third_party/fuse/patch2.txt
+# to apply existing patches before
+#
 
-EMBOX_DIR="$(pwd)"
-APP_NAME=$1 #fuse-2.9.4
-EXTBLD_APP_DIR=$EMBOX_DIR/$2 #build/extbld/third_party/fuse/core
-SRC_APP_DIR=$EMBOX_DIR/$3 #third-party/fuse/fuse
+ROOT_DIR=$PWD
+APP_ARCHIVE_PATH=$1
+APP_PATH=$2
 
-cd $EXTBLD_APP_DIR
-mkdir -p $APP_NAME-orig
-tar xf $EMBOX_DIR/download/${APP_NAME}.tar.* -C $APP_NAME-orig --strip-components=1
-diff -aur -x configure $APP_NAME-orig $APP_NAME | grep -v "^Only in" | tee $SRC_APP_DIR/patch.txt
-rm -rf $APP_NAME-orig
+print_usage() {
+	echo -e "Usage:"
+	echo -e "  ./scripts/app_diff.sh <APP_ARCHIVE_PATH> <APP_PATH>"
+	echo -e "  Example:"
+	echo -e "    ./scripts/app_diff.sh download/fuse-2.9.4.tar.gz build/extbld/third_party/fuse/core/fuse-2.9.4\n"
+	echo -e "You can also export PATCHES_APPLY_BEFORE to apply some patches before:"
+	echo -e "  export PATCHES_APPLY_BEFORE=third_party/fuse/patch1.txt:third_party/fuse/patch2.txt"
+}
 
-#ORIGIN_DIR=../$APP_NAME-orig
-#cd $EXTBLD_APP_DIR
-#mkdir -p $ORIGIN_DIR
-#unzip $EMBOX_DIR/download/${APP_NAME}.zip -d $ORIGIN_DIR
-#diff -aur -x configure $ORIGIN_DIR/$APP_NAME $APP_NAME | grep -v "^Only in" | tee $SRC_APP_DIR/patch.txt
-#rm -rf $ORIGIN_DIR
+if [ -z $APP_ARCHIVE_PATH ] || [ -z $APP_PATH ]; then
+	print_usage
+	exit 1
+fi
+
+shift 2
+DIFF_OPTIONS=$@
+
+EXTRACT_FOLDER=.orig_archive
+
+mkdir -p $EXTRACT_FOLDER
+
+ARCHIVE_BASENAME=$(basename $APP_ARCHIVE_PATH)
+case $ARCHIVE_BASENAME in
+	*tar|*tar.gz|*tar.xz|*tar.bz2|*tgz|*tbz)
+		tar -xf $APP_ARCHIVE_PATH -C $EXTRACT_FOLDER ;;
+	*zip)
+		unzip -qq $APP_ARCHIVE_PATH -d $EXTRACT_FOLDER ;;
+	*)
+		echo "Unsupported archive extension"; exit 1 ;;
+esac
+
+pushd $EXTRACT_FOLDER > /dev/null
+
+# Apply patches if any
+if [ ! -z "$PATCHES_APPLY_BEFORE" ]; then
+	IFS=:
+	for i in ${PATCHES_APPLY_BEFORE}
+	do
+		patch -s -p0 < $ROOT_DIR/$i
+	done
+fi
+LC_ALL=C diff -aur $DIFF_OPTIONS * ../$APP_PATH | grep -v '^Only in'
+
+popd > /dev/null
+
+rm -rf $EXTRACT_FOLDER
