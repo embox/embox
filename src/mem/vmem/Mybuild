@@ -28,10 +28,7 @@ module vmem extends vmem_api {
 	source "mapper.c"
 	source "vmem_context.c"
 
-	source "alloc.c"
-
-	source "vmem_page.lds.S"
-
+	depends embox.mem.vmem_alloc
 	depends embox.mem.page_api
 	depends embox.arch.mmu
 

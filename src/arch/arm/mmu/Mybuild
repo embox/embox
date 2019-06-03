@@ -11,6 +11,7 @@ module mmu_section extends embox.arch.mmu {
 	source "mmu_common.c"
 
 	source "mmu_section.c"
+	depends embox.mem.vmem_alloc_pool
 }
 
 module mmu_small_page extends embox.arch.mmu {
@@ -27,6 +28,7 @@ module mmu_small_page extends embox.arch.mmu {
 	source "mmu_small_page.c"
 
 	depends embox.mem.vmem_header
+	depends embox.mem.vmem_alloc_pool
 }
 
 module mmuinfo extends embox.arch.mmuinfo {

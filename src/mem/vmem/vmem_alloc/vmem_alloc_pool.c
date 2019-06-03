@@ -4,6 +4,7 @@
  *
  * @date 24.09.2012
  * @author Anton Bulychev
+ * @author Anton Bondarev
  */
 
 #include <util/log.h>
@@ -17,8 +18,8 @@
 
 #include <framework/mod/options.h>
 
-static char lvl0_raw[(1024 + 1) * MMU_SIZE(0)] __attribute__ ((aligned(MMU_SIZE(0))));
-static char lvl1_raw[(1024 + 1) * MMU_SIZE(1)] __attribute__ ((aligned(MMU_SIZE(1))));
+static char lvl0_raw[(1024) * MMU_SIZE(0)] __attribute__ ((aligned(MMU_SIZE(0))));
+static char lvl1_raw[(1024) * MMU_SIZE(1)] __attribute__ ((aligned(MMU_SIZE(1))));
 
 PAGE_ALLOCATOR_DEF(lvl0_allocator, lvl0_raw, 1024, MMU_SIZE(0));
 PAGE_ALLOCATOR_DEF(lvl1_allocator, lvl1_raw, 1024, MMU_SIZE(1));

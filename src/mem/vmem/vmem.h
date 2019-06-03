@@ -82,7 +82,4 @@ extern void mmu_flush_tlb(void);
 #define MMU_MASK(i) ((MMU_ENTRIES(i) - 1) << MMU_SHIFT(i))
 #define MMU_SIZE(i) (MMU_ENTRIES(i) * sizeof(mmu_vaddr_t))
 
-extern uintptr_t *vmem_alloc_table(int lvl);
-extern void vmem_free_table(int lvl, uintptr_t *table);
-
 #endif /* MEM_VMEM_H_ */
