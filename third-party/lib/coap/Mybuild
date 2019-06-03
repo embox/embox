@@ -2,7 +2,7 @@ package third_party.lib
 
 
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
-static module libcoap {
+static module coap {
 	source "^BUILD/extbld/^MOD_PATH/install/libcoap.a"
 	source "coap.h"
 
@@ -20,18 +20,18 @@ static module libcoap {
 
 @AutoCmd
 @Cmd(name="coap_client", help="", man="")
-@BuildDepends(libcoap)
+@BuildDepends(coap)
 @Build(stage=2,script="true")
 module coap_client {
 	source "^BUILD/extbld/^MOD_PATH/install/client.o"
-	depends libcoap
+	depends coap
 }
 
 @AutoCmd
 @Cmd(name="coap_server", help="", man="")
-@BuildDepends(libcoap)
+@BuildDepends(coap)
 @Build(stage=2,script="true")
 module coap_server {
 	source "^BUILD/extbld/^MOD_PATH/install/server.o"
-	depends libcoap
+	depends coap
 }
