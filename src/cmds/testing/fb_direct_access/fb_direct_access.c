@@ -44,10 +44,13 @@ int main() {
 
 		for (x = 0; x < width; x++) {
 			if (bytes_per_pixel == 4) {
-				((uint32_t *)fbp)[idx + x] = (0 << 24) |                    /* No transparency */
-							((200 - (y - 100) / 5) << 16) | /* A lot of red */
-							((15 + (x - 100) / 2) << 8) |   /* A little green*/
-							(100 << 0);                     /* Some blue */
+				int b = MIN(0xFF, (1 + x + y) / ((width + height) / 0xFF));
+				int g = MIN(0xFF, (x + 1) / (width / 0xFF));
+				int r = MIN(0xFF, (1 + height - y) / (height / 0xFF));
+				uint32_t t = ((r & 0xFF) << 16) |
+						((g & 0xFF) << 8) | (b & 0xFF);
+
+				((uint32_t *)fbp)[idx + x] = t;
 			} else { /* assume RGB565 */
 				int b = MIN(0x1F, (1 + x + y) / ((width + height) / 0x1F));
 				int g = MIN(0x3F, (x + 1) / (width / 0x3F));
