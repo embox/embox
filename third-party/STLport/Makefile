@@ -12,6 +12,7 @@ include $(EXTBLD_LIB)
 STLPORT_CPPFLAGS += -I../../stlport
 STLPORT_CPPFLAGS += -DUSE_SPRINTF_INSTEAD
 STLPORT_CPPFLAGS += -I$(abspath .)/include
+STLPORT_CPPFLAGS += -Wno-narrowing
 
 ifneq (,$(filter -fno-rtti,$(EMBOX_CXXFLAGS)))
 EMBOX_RTTI_FLAG          = --without-rtti
