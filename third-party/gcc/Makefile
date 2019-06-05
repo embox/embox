@@ -36,9 +36,9 @@ PKG_BUILD_DIR  := $(BUILD_DIR)/build
 
 EMBOX_DERIVED_CXXFLAGS = $(filter -g% -f% -m% -O% -G% -E% -Wa%,$(EMBOX_CXXFLAGS))
 ifeq (arm,$(EMBOX_ARCH))
-GCC_IMPORTED_CXXFLAGS = $(filter-out -fno-rtti,$(EMBOX_DERIVED_CXXFLAGS))
+GCC_IMPORTED_CXXFLAGS = $(filter-out -std=% -fno-rtti,$(EMBOX_DERIVED_CXXFLAGS))
 else
-GCC_IMPORTED_CXXFLAGS = $(EMBOX_DERIVED_CXXFLAGS)
+GCC_IMPORTED_CXXFLAGS = $(filter-out -std=%, $(EMBOX_DERIVED_CXXFLAGS))
 endif
 
 $(CONFIGURE) :
