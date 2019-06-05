@@ -14,6 +14,8 @@ static module pthreads {
 
 static module pthread_key {
 	source "pthread_key.c"
+
+	depends pthreads
 	depends embox.kernel.thread.thread_local_heap
 }
 
