@@ -29,11 +29,15 @@ typedef __s16  int16_t;
 typedef __INT16_TYPE__ int16_t;
 #endif
 
+#ifdef __ARM_32BIT_STATE
+typedef int int32_t; /* For compatibility with 3rd-party software */
+#else
 #ifndef __INT32_TYPE__
 typedef __s32  int32_t;
 #else
 typedef __INT32_TYPE__ int32_t;
 #endif
+#endif /* __ARM_32BIT_STATE */
 
 #ifndef __INT64_TYPE__
 typedef __s64  int64_t;
@@ -53,11 +57,15 @@ typedef __u16  uint16_t;
 typedef __UINT16_TYPE__ uint16_t;
 #endif
 
+#ifdef __ARM_32BIT_STATE
+typedef unsigned int uint32_t; /* For compatibility with 3rd-party software */
+#else
 #ifndef __UINT32_TYPE__
 typedef __u32  uint32_t;
 #else
 typedef __UINT32_TYPE__ uint32_t;
 #endif
+#endif /* __ARM_32BIT_STATE */
 
 #ifndef __UINT64_TYPE__
 typedef __u64 uint64_t;
