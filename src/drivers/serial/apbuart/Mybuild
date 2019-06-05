@@ -10,6 +10,8 @@ module apbuart extends embox.driver.diag.diag_api {
 
 	@NoRuntime depends embox.driver.ambapp_api
 
+	depends embox.driver.periph_memory
+
 	depends core
 	depends diag
 }
