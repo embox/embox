@@ -12,7 +12,7 @@
 #include <module/embox/arch/mmu.h>
 
 #ifndef MMU_LEVELS
-#define MMU_LEVELS 3
+#error "set MMU_LEVELS"
 #endif
 
 #define MMU_PAGE_SIZE     (4096)
@@ -37,16 +37,45 @@ extern int arch_mmu_get_regs_table_size(void);
 extern int
 arch_mmu_get_regs_table(struct mmuinfo_regs *buf, int buf_size, int offset);
 
+/**
+ * Switches on virtual mode in system.
+ */
 extern void mmu_on(void);
+
+/**
+ * Switches off virtual mode in system. Switches on real mode.
+ */
 extern void mmu_off(void);
 
 extern mmu_vaddr_t mmu_get_fault_address(void);
 
+/**
+ * Allocates new pgd table.
+ *
+ * @return new MMU context
+ * @retval new MMU context on success
+ * @retval -1 on failed
+ */
 extern mmu_ctx_t mmu_create_context(uintptr_t *pgd);
+
+/**
+ * Delete pgd and all nested table from mmu tables
+ *
+ * @param ctx MMU context has been created @link #mmu_create_context() @endlink
+ */
+extern void mmu_delete_context(mmu_ctx_t ctx);
+
 extern void mmu_set_context(mmu_ctx_t ctx);
 
+/**
+ * Get root pointer of context
+ *
+ * @param ctx - context
+ * @retval pointer to first pgd of memory
+ */
 extern uintptr_t *mmu_get_root(mmu_ctx_t ctx);
-extern uintptr_t *mmu_value(int lvl, uintptr_t *entry);
+
+extern uintptr_t *mmu_get(int lvl, uintptr_t *entry);
 extern void mmu_set(int lvl, uintptr_t *entry, uintptr_t value);
 extern void mmu_unset(int lvl, uintptr_t *entry);
 extern int mmu_present(int lvl, uintptr_t *entry);
@@ -57,9 +86,6 @@ extern void mmu_pte_set_usermode(uintptr_t *pte, int value);
 extern void mmu_pte_set_executable(uintptr_t *pte, int val);
 
 extern void mmu_flush_tlb(void);
-
-#else /* MMU_LEVELS == 0 */
-typedef int mmu_ctx_t;
 
 #endif /* MMU_LEVELS > 0 */
 

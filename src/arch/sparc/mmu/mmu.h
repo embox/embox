@@ -17,6 +17,10 @@
 #define __MMU_PMD_SHIFT         18
 #define __MMU_PTE_SHIFT         12
 
+#define __MMU_SHIFT_0       __MMU_PGD_SHIFT
+#define __MMU_SHIFT_1       __MMU_PMD_SHIFT
+#define __MMU_SHIFT_2       __MMU_PTE_SHIFT
+
 #ifndef __ASSEMBLER__
 
 typedef uint32_t __mmu_paddr_t;
@@ -24,22 +28,7 @@ typedef uint32_t __mmu_vaddr_t;
 
 typedef uint32_t __mmu_ctx_t;
 
-typedef uint32_t __mmu_pgd_t;
-typedef uint32_t __mmu_pmd_t;
-typedef uint32_t __mmu_pte_t;
-
 typedef uint32_t __mmu_reg_t;
-
-/*
- * Additional information, which was taken from SPARC and is used in
- * another RISC architectures.
- */
-
-//extern void mmu_set_val(void *addr, unsigned long value);
-
-extern __mmu_pgd_t *context_table[];
-
-extern int ctx_counter;
 
 #endif
 

@@ -42,7 +42,7 @@ static void vmem_free_table_level(int lvl, uintptr_t *tbl) {
 	}
 	for (int idx = 0; idx < MMU_ENTRIES(lvl); idx++) {
 		if (mmu_present(lvl, tbl + idx)) {
-			vmem_free_table_level(lvl + 1, mmu_value(lvl, (tbl + idx)));
+			vmem_free_table_level(lvl + 1, mmu_get(lvl, (tbl + idx)));
 		}
 	}
 	vmem_free_table(lvl, tbl);

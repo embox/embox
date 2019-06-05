@@ -109,7 +109,7 @@ void mmu_pte_set(uintptr_t *pte, mmu_paddr_t addr) {
 #endif
 
 /* Value functions */
-uintptr_t *mmu_value(int lvl, uintptr_t *entry) {
+uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
 	switch (lvl) {
 	case 0:
 		return (uintptr_t *)(*entry & ~MMU_PAGE_MASK);

@@ -45,6 +45,6 @@ static inline int vmem_create_context(mmu_ctx_t *ctx) {
 
 #define vmem_free_context()
 
-#define vmem_translate(a,b) 0
+#define vmem_translate(a,b) b
 
 #endif /* VMEM_NOMMU_H */

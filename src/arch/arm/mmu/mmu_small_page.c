@@ -21,7 +21,7 @@
 
 extern void dcache_flush(const void *p, size_t size);
 
-uintptr_t *mmu_value(int lvl, uintptr_t *entry) {
+uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
 	switch (lvl) {
 	case 0:
 		return (uintptr_t *) (*entry & L1_ADDR_MASK);

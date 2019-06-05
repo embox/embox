@@ -45,7 +45,7 @@ static struct mmu_entry *vmem_entry_get_tables(mmu_ctx_t ctx, mmu_vaddr_t virt_a
 	entry->table[0] = mmu_get_root(ctx);
 
 	for (i = 1; i < MMU_LEVELS; i++) {
-		entry->table[i] = mmu_value(i - 1, entry->table[i - 1] + entry->idx[i - 1]);
+		entry->table[i] = mmu_get(i - 1, entry->table[i - 1] + entry->idx[i - 1]);
 		if (entry->table[i] == NULL) {
 			break;
 		}
@@ -118,7 +118,7 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
 
 	pte = entries.table[MMU_LEVELS-1] + entries.idx[MMU_LEVELS-1];
 
-	return (mmu_paddr_t)mmu_value(MMU_LEVELS-1, pte) + (virt_addr & MMU_PAGE_MASK);
+	return (mmu_paddr_t)mmu_get(MMU_LEVELS-1, pte) + (virt_addr & MMU_PAGE_MASK);
 }
 
 static int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t flags) {

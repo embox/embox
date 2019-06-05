@@ -5,28 +5,22 @@
  * @date 20.07.2014
  * @author Alexander Kalmuk
  */
+#include <util/log.h>
+
+#include <stdint.h>
+#include <string.h>
+#include <util/binalign.h>
 
 #include <asm/asi.h>
 #include <asm/mmu_consts.h>
 #include <hal/mmu.h>
 #include <hal/test/traps_core.h>
-#include <kernel/printk.h>
-#include <kernel/time/ktime.h>
+
 #include <mem/page.h>
-#include <string.h>
-#include <util/binalign.h>
 
 #include <mem/vmem.h> // for mmu_handle_page_fault()
 
-//#define MMU_DEBUG
-
-#ifdef MMU_DEBUG
-#define MMU_DEBUG_PRINT(x) x
-#else
-#define MMU_DEBUG_PRINT(x)
-#endif
-
-mmu_pgd_t *context_table[0x100]  __attribute__((aligned(MMU_PAGE_SIZE)));
+static uintptr_t *context_table[0x100]  __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_cnt;
 
 static inline void mmu_set_mmureg(unsigned long addr_reg,
@@ -73,29 +67,11 @@ static inline void mmu_set_val(void *addr, unsigned long value) {
 	);
 }
 
-static int mmu_handle_page_fault(uint32_t trap_nr, void *data) {
-	uint32_t far;
-#ifdef MMU_DEBUG
-	uint32_t fsr;
-
-	fsr = mmu_get_mmureg(LEON_CNR_F);
-#endif
-	far = mmu_get_mmureg(LEON_CNR_FADDR);
-
-	// TODO handle types of FT (invalid address, protection error, etc.)
-	MMU_DEBUG_PRINT(printk("\nfsr - 0x%x, far - 0x%x\n", fsr, far));
-
-	return 0;
-}
-
 void mmu_on(void) {
 	uint32_t val;
 
 	/* Set up context table pointer */
 	mmu_set_ctable_ptr((unsigned long) context_table);
-
-	/* Set up page fault handler */
-	testtraps_set_handler(TRAP_TYPE_HARDTRAP, 0x9, mmu_handle_page_fault);
 
 	/* Turn on MMU */
 	val = mmu_get_mmureg(LEON_CNR_CTRL);
@@ -104,7 +80,7 @@ void mmu_on(void) {
 
 	mmu_flush_cache_all();
 
-	MMU_DEBUG_PRINT(printk("\nmmu enabled\n"));
+	log_debug("mmu enabled");
 }
 
 void mmu_off(void) {
@@ -115,7 +91,7 @@ void mmu_off(void) {
 	mmu_set_mmureg(LEON_CNR_CTRL, val);
 }
 
-static void mmu_ctxd_set(mmu_ctx_t *ctxp, mmu_pgd_t *pgdp) {
+static void mmu_ctxd_set(mmu_ctx_t *ctxp, uintptr_t *pgdp) {
 	mmu_set_val((unsigned long *) ctxp,
 		(MMU_ET_PTD | (((unsigned long) pgdp) >> 4)));
 }
@@ -124,10 +100,10 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 	return mmu_get_mmureg(LEON_CNR_FADDR);
 }
 
-mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
+mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
 	mmu_ctx_t ctx = (mmu_ctx_t) (++ctx_cnt);
 	mmu_ctxd_set((mmu_ctx_t *) (context_table + ctx), pgd);
-	MMU_DEBUG_PRINT(printk("created context - 0x%x\n", ctx));
+	log_debug("created context - 0x%x", ctx);
 	return ctx;
 }
 
@@ -135,61 +111,55 @@ void mmu_set_context(mmu_ctx_t ctx) {
 	mmu_set_mmureg(LEON_CNR_CTX, ctx);
 }
 
-mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return (mmu_pgd_t *) ((((unsigned long) context_table[ctx]) & MMU_PTD_PMASK) << 4);
+uintptr_t *mmu_get_root(mmu_ctx_t ctx) {
+	return (uintptr_t *) ((((unsigned long) context_table[ctx]) & MMU_PTD_PMASK) << 4);
 }
 
-mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return (mmu_pmd_t *) ((((unsigned long) *pgd) & MMU_PTD_PMASK) << 4);
+uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
+	switch (lvl) {
+	case 0:
+	case 1:
+		return (uintptr_t *) ((((unsigned long) *entry) & MMU_PTD_PMASK) << 4);
+	case 2:
+		return (uintptr_t *)(((*entry) & MMU_PTE_PMASK) << 4);
+	}
+	return 0;
 }
 
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
-	return (mmu_pte_t *) ((((unsigned long) *pmd) & MMU_PTD_PMASK) << 4);
+void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
+	switch (lvl) {
+	case 0:
+	case 1:
+		mmu_set_val((unsigned long *) entry,
+			(MMU_ET_PTD | (((unsigned long) value) >> 4)));
+		return;
+	case 2:
+		mmu_set_val((unsigned long *) entry, ((value >> 4) & MMU_PTE_PMASK) | MMU_ET_PTE);
+		return;
+	}
 }
 
-mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
-	return (((unsigned long) *pte) & MMU_PTE_PMASK) << 4;
+void mmu_unset(int lvl, uintptr_t *entry)  {
+	switch(lvl) {
+	case 1:
+	case 2:
+		*entry = 0;
+		break;
+	}
 }
 
-void mmu_pte_set(mmu_pte_t *ptep, mmu_pte_t addr) {
-	mmu_set_val((unsigned long *) ptep, ((addr >> 4) & MMU_PTE_PMASK) | MMU_ET_PTE);
+int mmu_present(int lvl, uintptr_t *entry)  {
+	switch(lvl) {
+	case 0:
+	case 1:
+		return *entry & MMU_ET_PTD;
+	case 2:
+		return *entry & MMU_ET_PTE;
+	}
+	return 0;
 }
 
-void mmu_pgd_set(mmu_pgd_t *pgdp, mmu_pmd_t *pmdp) {
-	mmu_set_val((unsigned long *) pgdp,
-		(MMU_ET_PTD | (((unsigned long) pmdp) >> 4)));
-}
-
-void mmu_pmd_set(mmu_pmd_t *pmdp, mmu_pte_t *ptep) {
-	mmu_set_val((unsigned long *) pmdp,
-		(MMU_ET_PTD | (((unsigned long) ptep) >> 4)));
-}
-
-void mmu_pgd_unset(mmu_pgd_t *pgd) {
-	return ;
-}
-
-void mmu_pmd_unset(mmu_pmd_t *pmd) {
-	*pmd = 0;
-}
-
-void mmu_pte_unset(mmu_pgd_t *pte) {
-	*pte = 0;
-}
-
-int mmu_pgd_present(mmu_pgd_t *pgd) {
-	return ((uint32_t) *pgd & MMU_ET_PTD);
-}
-
-int mmu_pmd_present(mmu_pmd_t *pmd) {
-	return ((uint32_t) *pmd & MMU_ET_PTD);
-}
-
-int mmu_pte_present(mmu_pte_t *pte) {
-	return ((uint32_t) *pte & MMU_ET_PTE);
-}
-
-void mmu_pte_set_writable(mmu_pte_t *pte, int value){
+void mmu_pte_set_writable(uintptr_t *pte, int value){
 	if (value) {
 		*pte = *pte | MMU_PAGE_WRITABLE;
 	} else {
@@ -197,7 +167,7 @@ void mmu_pte_set_writable(mmu_pte_t *pte, int value){
 	}
 }
 
-void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
+void mmu_pte_set_cacheable(uintptr_t *pte, int value) {
 	if (value) {
 		*pte = *pte | MMU_PAGE_CACHEABLE;
 	} else {
@@ -205,14 +175,27 @@ void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
 	}
 }
 
-void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
-	//MMU_DEBUG_PRINT(printk("\nmmu_pte_set_usermode does not implemented!\n"));
+void mmu_pte_set_usermode(uintptr_t *pte, int value) {
 }
 
-void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
+void mmu_pte_set_executable(uintptr_t *pte, int value) {
 	if (value) {
 		*pte = *pte | MMU_PAGE_EXECUTABLE;
 	} else {
 		*pte = *pte & (~MMU_PAGE_EXECUTABLE);
 	}
+}
+
+static inline void mmu_flush_tlb_all(void) {
+	mmu_flush_cache_all();
+	__asm__ __volatile__(
+		"sta %%g0, [%0] %1\n\t"
+		:
+		: "r" (0x400), "i" (0x18) /* magic number detected */
+		: "memory"
+	);
+}
+
+void mmu_flush_tlb(void) {
+	mmu_flush_tlb_all();
 }
