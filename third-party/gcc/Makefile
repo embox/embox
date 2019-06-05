@@ -34,6 +34,13 @@ cppflags = -I$(ROOT_DIR)/third-party/gcc/include \
 	-I$(PKG_BUILD_DIR)/gcc/include
 PKG_BUILD_DIR  := $(BUILD_DIR)/build
 
+EMBOX_DERIVED_CXXFLAGS = $(filter -g% -f% -m% -O% -G% -E% -Wa%,$(EMBOX_CXXFLAGS))
+ifeq (arm,$(EMBOX_ARCH))
+GCC_IMPORTED_CXXFLAGS = $(filter-out -fno-rtti,$(EMBOX_DERIVED_CXXFLAGS))
+else
+GCC_IMPORTED_CXXFLAGS = $(EMBOX_DERIVED_CXXFLAGS)
+endif
+
 $(CONFIGURE) :
 	mkdir -p $(PKG_BUILD_DIR) && cd $(PKG_BUILD_DIR) && ( \
 		. $(EMBOX_GCC_ENV) && $(PKG_SOURCE_DIR)/configure \
@@ -51,7 +58,7 @@ $(CONFIGURE) :
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
 			CFLAGS_FOR_TARGET="$(cppflags) $(target_libgcc_cppflags) $${EMBOX_IMPORTED_CFLAGS}" \
-			CXXFLAGS_FOR_TARGET="$(cppflags) $${EMBOX_IMPORTED_CXXFLAGS} -fpermissive" \
+			CXXFLAGS_FOR_TARGET="$(cppflags) $(GCC_IMPORTED_CXXFLAGS) -fpermissive" \
 			LDFLAGS_FOR_TARGET="$${EMBOX_IMPORTED_LDFLAGS}"; \
 	)
 	touch $@
@@ -62,7 +69,7 @@ $(BUILD) :
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
-			RAW_CXX_FOR_TARGET=$(EMBOX_GXX) \
+			RAW_CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
 			AR_FOR_TARGET=ar \
 			RANLIB_FOR_TARGET=ranlib \
 			TARGET-libiberty="LINKER=true CC=true AR=true RANLIB=touch all" \
@@ -107,12 +114,11 @@ $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/new $(PKG_INSTALL_DIR)/include/
 	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/typeinfo $(PKG_INSTALL_DIR)/include/
 	cp $(PKG_SOURCE_DIR)/libstdc++-v3/libsupc++/atomic_lockfree_defines.h $(PKG_INSTALL_DIR)/include/bits/
-	echo $(BITS_HEADERS)
-	cp $(BITS_HEADERS) $(PKG_INSTALL_DIR)/include/bits/
-	cp $(BITS_TARGET_HEADERS) $(PKG_INSTALL_DIR)/include/bits/
+	cp -r $(BITS_HEADERS) $(PKG_INSTALL_DIR)/include/bits/
+	cp -r $(BITS_TARGET_HEADERS) $(PKG_INSTALL_DIR)/include/bits/
 	cp -r $(EXT_HEADERS) $(PKG_INSTALL_DIR)/include/ext/
 	cp -r $(DEBUG_HEADERS) $(PKG_INSTALL_DIR)/include/debug/
-	cp $(BACKWARD_HEADERS) $(PKG_INSTALL_DIR)/include/backward/
+	cp -r $(BACKWARD_HEADERS) $(PKG_INSTALL_DIR)/include/backward/
 	cd $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libstdc++-v3/include/; cp $(STL_HEADERS) $(PKG_INSTALL_DIR)/include/std/; cd ..; \
 	mkdir -p $(PKG_INSTALL_DIR)/lib
 	cp $(PKG_BUILD_DIR)/$(AUTOCONF_TARGET_TRIPLET)/libgcc/libgcc.a $(PKG_INSTALL_DIR)/lib/
