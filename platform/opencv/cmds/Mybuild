@@ -1,0 +1,24 @@
+package platform.opencv.cmds
+
+@AutoCmd
+@Cmd(name = "edges",
+	help = "Basic OpenCV test")
+@BuildDepends(third_party.lib.opencv)
+@Build(stage=2)
+module edges {
+	source "edges.cpp"
+
+	depends embox.driver.video.fb
+	depends third_party.lib.opencv
+}
+
+@AutoCmd
+@Cmd(name = "opencv_version",
+	help = "Print OpenCV build info")
+@BuildDepends(third_party.lib.opencv)
+@Build(stage=2)
+module version {
+	source "version.cpp"
+
+	depends third_party.lib.opencv
+}
