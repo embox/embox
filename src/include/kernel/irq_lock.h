@@ -23,12 +23,17 @@
  */
 static inline void irq_lock(void) {
 	extern ipl_t __irq_lock_ipl;
+	ipl_t tmp_ipl;
+	int irq_locked;
 
-	if (!critical_inside(CRITICAL_IRQ_LOCK)) {
-		__irq_lock_ipl = ipl_save();
-	}
-
+	tmp_ipl = ipl_save();
+	irq_locked = critical_inside(CRITICAL_IRQ_LOCK);
 	critical_enter(CRITICAL_IRQ_LOCK);
+	if (!irq_locked) {
+		__irq_lock_ipl = tmp_ipl;
+	} else {
+		ipl_restore(tmp_ipl);
+	}
 }
 
 /**
