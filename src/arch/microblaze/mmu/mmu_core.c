@@ -164,3 +164,6 @@ void mmu_set_context(mmu_ctx_t ctx) {
 		: "memory"
 	);
 }
+
+void mmu_flush_tlb(void) {
+}
