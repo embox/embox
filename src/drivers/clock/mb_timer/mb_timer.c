@@ -7,6 +7,8 @@
  * @author Anton Bondarev
  */
 
+#include <drivers/common/memory.h>
+
 #include <asm/bitops.h>
 #include <hal/clock.h>
 #include <hal/system.h>
@@ -132,3 +134,10 @@ static struct clock_source mb_cs = {
 };
 
 EMBOX_UNIT_INIT(mb_clock_init);
+
+static struct periph_memory_desc mb_timer_mem = {
+	.start = CONFIG_XILINX_TIMER_BASEADDR,
+	.len   = sizeof(struct timer_regs),
+};
+
+PERIPH_MEMORY_DEFINE(mb_timer_mem);
