@@ -17,6 +17,8 @@ static module opencv {
 
 	depends embox.compat.posix.proc.atexit_api
 	depends embox.compat.posix.util.gettimeofday
+	depends embox.compat.atomic.pseudo_atomic
+	depends embox.compat.libc.math
 	@NoRuntime depends embox.mem.vmem_api // include sys/mman.h
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.pthread_key
