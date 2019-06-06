@@ -33,7 +33,6 @@ module pci_bios extends pci_bios_api {
 	option number pci_window_size
 	source "pci_bios.c"
 
-	depends embox.mem.page_api
 	depends embox.driver.pci_chip.pci_chip
 }
 

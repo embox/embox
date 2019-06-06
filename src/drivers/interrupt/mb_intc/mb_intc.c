@@ -7,6 +7,9 @@
  */
 
 #include <stdint.h>
+
+#include <drivers/common/memory.h>
+
 #include <asm/bitops.h>
 #include <hal/reg.h>
 
@@ -66,7 +69,6 @@ void irqctrl_disable(unsigned int irq) {
 
 //TODO this not set in microblaze
 void irqctrl_force(unsigned int irq_num) {
-
 }
 
 void irqctrl_clear(unsigned int irq) {
@@ -81,3 +83,10 @@ int irqctrl_pending(unsigned int irq) {
 unsigned int irqctrl_get_irq_num(void) {
 	return REG_LOAD(&irqc->ivr);
 }
+
+static struct periph_memory_desc mb_intc_mem = {
+	.start = CONFIG_XILINX_INTC_BASEADDR,
+	.len   = sizeof(struct irqc_regs),
+};
+
+PERIPH_MEMORY_DEFINE(mb_intc_mem);

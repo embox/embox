@@ -27,7 +27,7 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
 	mmu_ctx_t ctx = vmem_current_context();
 	vmem_page_flags_t flags = VMEM_PAGE_WRITABLE;
 
-	vmem_page_set_flags(ctx, (mmu_vaddr_t) mem, flags);
+	vmem_set_flags(ctx, (mmu_vaddr_t) mem, size, flags);
 
 	return mem;
 }

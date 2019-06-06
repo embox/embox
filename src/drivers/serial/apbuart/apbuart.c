@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include <drivers/common/memory.h>
+
 #include <drivers/amba_pnp.h>
 #include <drivers/char_dev.h>
 #include <hal/reg.h>
@@ -133,6 +135,14 @@ static int dev_regs_init() {
 	return 0;
 }
 #elif OPTION_DEFINED(NUMBER,apbuart_base)
+
+static struct periph_memory_desc apbuart_mem = {
+	.start = OPTION_GET(NUMBER,apbuart_base),
+	.len   = sizeof(struct apbuart_regs),
+};
+
+PERIPH_MEMORY_DEFINE(apbuart_mem);
+
 static int dev_regs_init() {
 	dev_regs = (volatile struct apbuart_regs *) OPTION_GET(NUMBER,apbuart_base);
 	return 0;

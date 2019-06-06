@@ -9,6 +9,8 @@
 
 #include <stdint.h>
 
+#include <drivers/common/memory.h>
+
 #include <asm/bitops.h>
 #include <kernel/irq.h>
 
@@ -83,3 +85,10 @@ DIAG_OPS_DEF(
 		.getc = xuartlite_diag_getc,
 		.kbhit = xuartlite_diag_has_symbol,
 );
+
+static struct periph_memory_desc xuartlite_mem = {
+	.start = CONFIG_XILINX_UARTLITE_BASEADDR,
+	.len   = sizeof(struct uart_regs),
+};
+
+PERIPH_MEMORY_DEFINE(xuartlite_mem);

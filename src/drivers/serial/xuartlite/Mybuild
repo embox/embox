@@ -1,0 +1,10 @@
+package embox.driver.serial
+
+module xuartlite extends embox.driver.diag.diag_api {
+	source "xuartlite.c"
+
+	option number xuartlite_base
+	option number irq_num
+
+	depends embox.driver.periph_memory
+}

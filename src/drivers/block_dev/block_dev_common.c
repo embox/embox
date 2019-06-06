@@ -15,6 +15,7 @@
 #include <fs/bcache.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <mem/page.h>
 #include <util/array.h>
 #include <util/indexator.h>
 #include <util/math.h>
