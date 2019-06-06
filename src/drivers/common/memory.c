@@ -27,10 +27,11 @@ ARRAY_SPREAD_DEF(struct periph_memory_desc *, __periph_mem_registry);
 
 EMBOX_UNIT_INIT(periph_memory_init);
 
-static struct _segment {
+struct _segment {
 	uintptr_t start;
 	uintptr_t end;
-} _segments[PERIPH_MAX_SEGMENTS];
+};
+static struct _segment _segments[PERIPH_MAX_SEGMENTS];
 
 static int _seg_cmp(const void *fst, const void *snd) {
 	return ((struct _segment *) fst)->start -
@@ -38,7 +39,7 @@ static int _seg_cmp(const void *fst, const void *snd) {
 }
 
 /**
- * @brief Group pripheral memory into mmap-s
+ * @brief Group peripheral memory into mmap-s
  */
 static int periph_memory_init(void) {
 	struct periph_memory_desc *desc;

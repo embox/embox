@@ -10,10 +10,11 @@
 #define _DRIVERS_COMMON_MEMORY_H
 
 #include <stdint.h>
+#include <util/array.h>
 
 struct periph_memory_desc {
-	uint32_t start;
-	uint32_t len;
+	uintptr_t start;
+	uintptr_t len;
 };
 
 #define PERIPH_MAX_SEGMENTS 64
