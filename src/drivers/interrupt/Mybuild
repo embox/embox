@@ -15,12 +15,6 @@ module i8259 extends irqctrl_api {
 	source "i8259.c", "i8259.h"
 }
 
-module mb_intc extends irqctrl_api {
-	source "mb_intc.c", "mb_intc.h"
-
-	option number mbintc_base
-}
-
 module raspi extends irqctrl_api {
 	source "raspi.c", "raspi.h"
 
