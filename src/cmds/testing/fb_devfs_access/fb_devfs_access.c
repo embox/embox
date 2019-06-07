@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
@@ -44,7 +45,7 @@ int main() {
 		exit(3);
 	}
 
-	printf("%ldx%ld, %ldbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
+	printf("%" PRId32 "x%" PRId32 ", %" PRId32 "bpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */
 	screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
