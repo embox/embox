@@ -54,11 +54,11 @@ SECTIONS {
 		_dtors_end   = .;
 
 		ALIGNMENT();
-		/*_eh_frame_start = .;*/
-		__EH_FRAME_BEGIN__ = .;
+		_eh_frame_begin = .;
 		KEEP(*(.eh_frame))
 		KEEP(*(.eh_frame.*))
-		/*KEEP(*(.gcc_except_table))*/
+		KEEP(*(.eh_frame_end))
+		/* KEEP(*(.gcc_except_table*)) */
 
 		ALIGNMENT();
 		*(.checksum)
