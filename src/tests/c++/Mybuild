@@ -4,6 +4,8 @@ package embox.test.cxx
 module memory_test {
 	source "memory.cpp"
 
+	depends embox.lib.cxx.ConstructionPolicy
+	depends embox.lib.cxx.DestructionPolicy
 	@NoRuntime depends embox.lib.libsupcxx
 }
 
@@ -11,6 +13,8 @@ module memory_test {
 module exception_test {
 	source "exceptions.cpp"
 
+	depends embox.lib.cxx.ConstructionPolicy
+	depends embox.lib.cxx.DestructionPolicy
 	@NoRuntime depends embox.lib.libsupcxx
 }
 
@@ -18,5 +22,7 @@ module exception_test {
 module inheritance_test {
 	source "inheritance.cpp"
 
+	depends embox.lib.cxx.ConstructionPolicy
+	depends embox.lib.cxx.DestructionPolicy
 	@NoRuntime depends embox.lib.libsupcxx
 }
