@@ -11,4 +11,6 @@
 
 int main() {
 	printf("OpenCV: %s", cv::getBuildInformation().c_str());
+
+	return 0;
 }
