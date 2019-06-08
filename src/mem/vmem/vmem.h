@@ -38,8 +38,6 @@ static inline vmem_page_flags_t prot_to_vmem_flags(uint32_t flags) {
 	return vmem_page_flags;
 }
 
-#define vmem_set_context(ctx)   mmu_set_context(ctx)
-
 extern int vmem_create_context(mmu_ctx_t *ctx);
 extern mmu_ctx_t vmem_current_context(void);
 extern void vmem_free_context(mmu_ctx_t ctx);

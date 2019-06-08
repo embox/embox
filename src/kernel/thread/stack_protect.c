@@ -18,7 +18,7 @@ void stack_protect(struct thread *t, size_t size)
     assert(((mmu_vaddr_t)t) & ~VMEM_PAGE_MASK);
 
     ctx = vmem_current_context();
-    vmem_set_context(ctx);
+    mmu_set_context(ctx);
 
     vmem_unmap_region(ctx, (mmu_vaddr_t)t, size);
     vmem_map_region(ctx, (mmu_vaddr_t)t, (mmu_vaddr_t)t, size, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
@@ -34,7 +34,7 @@ void stack_protect_release(struct thread *t)
     if (!stack_protect_enabled()) { return; }
 
     ctx = vmem_current_context();
-    vmem_set_context(ctx);
+    mmu_set_context(ctx);
     vmem_set_flags(ctx, (mmu_vaddr_t)t + VMEM_PAGE_SIZE, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE | VMEM_PAGE_USERMODE);
     mmu_flush_tlb();
 }
