@@ -7,6 +7,7 @@
  */
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -27,7 +28,7 @@ int main() {
 
 	fb_info = fb_lookup(0);
 
-	printf("%ldx%ld, %ldbpp\n", fb_info->var.xres, fb_info->var.yres, fb_info->var.bits_per_pixel);
+	printf("%" PRId32 "x%" PRId32 ", %" PRId32 "bpp\n",fb_info->var.xres, fb_info->var.yres, fb_info->var.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */
 	bytes_per_pixel = fb_info->var.bits_per_pixel / 8;
