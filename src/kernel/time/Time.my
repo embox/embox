@@ -24,7 +24,7 @@ module kernel_time {
 
 module jiffies {
 	source "jiffies.c"
-	depends embox.arch.clock
+	//depends embox.arch.clock
 	depends clock_source
 	depends slowdown
 }
@@ -32,8 +32,7 @@ module jiffies {
 module timer_handler {
 	option number hnd_priority = 200
 	source "timer.c"
-	depends jiffies
-	depends embox.arch.clock
+
 	depends embox.kernel.lthread.lthread
 }
 

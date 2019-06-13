@@ -21,6 +21,7 @@ module core {
 
 	@NoRuntime depends embox.kernel.sched.sched
 	@NoRuntime depends embox.kernel.sched.sched_ticker
+	@NoRuntime depends embox.kernel.sched.timing.timing
 	@NoRuntime depends embox.arch.context
 
 	depends stack_api
