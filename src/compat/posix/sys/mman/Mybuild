@@ -32,4 +32,5 @@ module mmap_stub extends mmap_api {
 	option number log_level = 0
 
 	source "mmap_stub.c"
+	depends embox.fs.syslib.idesc_mmap_api
 }
