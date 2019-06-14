@@ -11,8 +11,6 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
-EMBOX_UNIT_INIT(module_init);
-
 const struct clock_source *cs_jiffies;
 
 clock_t clock_sys_ticks(void) {
@@ -39,7 +37,7 @@ uint32_t clock_freq(void) {
 	return cs_jiffies->event_device->event_hz;
 }
 
-static int module_init(void) {
+int jiffies_init(void) {
 	const struct clock_source *cs;
 	struct time_dev_conf jiffies_conf = {
 		HW_TIMER_PERIOD
