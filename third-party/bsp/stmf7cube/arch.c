@@ -11,6 +11,7 @@
 
 #include <hal/arch.h>
 #include <hal/clock.h>
+#include <hal/ipl.h>
 
 #include <system_stm32f7xx.h>
 #include <stm32f7xx_hal.h>
@@ -63,6 +64,8 @@ static void SystemClock_Config(void)
 extern void nvic_table_fill_stubs(void);
 
 void arch_init(void) {
+	ipl_t ipl = ipl_save();
+
 	static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 216000000);
 
 	SystemInit();
@@ -71,6 +74,8 @@ void arch_init(void) {
 	nvic_table_fill_stubs();
 
 	SystemClock_Config();
+
+	ipl_restore(ipl);
 }
 
 void arch_idle(void) {
