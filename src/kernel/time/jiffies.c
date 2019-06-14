@@ -16,6 +16,9 @@ EMBOX_UNIT_INIT(module_init);
 const struct clock_source *cs_jiffies;
 
 clock_t clock_sys_ticks(void) {
+	if (!cs_jiffies) {
+		return 0;
+	}
 	return (clock_t)cs_jiffies->jiffies;
 }
 
