@@ -90,7 +90,10 @@ static int nvic_init(void) {
 	int i;
 	void *ptr;
 
+	ipl = ipl_save();
+
 	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
+		irqctrl_disable(i);
 		exception_table[i] = ((int) interrupt_handle_enter) | 1;
 	}
 
@@ -101,8 +104,6 @@ static int nvic_init(void) {
 
 	assert(EXCEPTION_TABLE_SZ >= 14);
 	exception_table[14] = ((int) __pendsv_handle) | 1;
-
-	ipl = ipl_save();
 
 	REG_STORE(SCB_VTOR, 1 << 29 /* indicate, table in SRAM */ |
 			(int) exception_table);
