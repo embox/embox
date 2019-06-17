@@ -40,7 +40,7 @@ static struct timespec cs_full_read(struct clock_source *cs);
 static struct timespec cs_event_read(struct clock_source *cs);
 static struct timespec cs_counter_read(struct clock_source *cs);
 
-static inline cycle_t cs_jiffies(struct clock_source *cs) {
+static inline cycle_t clock_source_get_jiffies(struct clock_source *cs) {
 	return (((cycle_t) cs->jiffies) << SLOWDOWN_SHIFT) + (cycle_t) cs->jiffies_cnt;
 }
 
@@ -76,6 +76,8 @@ int clock_source_register(struct clock_source *cs) {
 	}
 
 	dlist_add_prev(dlist_head_init(&csh->lnk), &clock_source_list);
+
+	jiffies_init();
 
 	return ENOERR;
 }
@@ -145,10 +147,10 @@ static struct timespec cs_full_read(struct clock_source *cs) {
 	safe = 0;
 
 	do {
-		old_jiffies = cs_jiffies(cs);
+		old_jiffies = clock_source_get_jiffies(cs);
 		cycles = cd->read();
 		safe++;
-	} while (old_jiffies != cs_jiffies(cs) && safe < 3);
+	} while (old_jiffies != clock_source_get_jiffies(cs) && safe < 3);
 
 	if (ed->pending && ed->pending(ed->irq_nr)) {
 		old_jiffies++;
@@ -170,7 +172,7 @@ static struct timespec cs_full_read(struct clock_source *cs) {
 }
 
 static struct timespec cs_event_read(struct clock_source *cs) {
-	return jiffies_to_timespec(cs->event_device->event_hz, cs_jiffies(cs));
+	return jiffies_to_timespec(cs->event_device->event_hz, clock_source_get_jiffies(cs));
 }
 
 static struct timespec cs_counter_read(struct clock_source *cs) {
