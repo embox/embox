@@ -1,5 +1,5 @@
-diff -aur opencv-4.0.1-prog/CMakeLists.txt gopencv-4.0.1/CMakeLists.txt
---- opencv-4.0.1-prog/CMakeLists.txt	2018-12-22 10:03:30.000000000 +0300
+diff -aur opencv-4.0.1-orig/CMakeLists.txt gopencv-4.0.1/CMakeLists.txt
+--- opencv-4.0.1-orig/CMakeLists.txt	2018-12-22 10:03:30.000000000 +0300
 +++ opencv-4.0.1/CMakeLists.txt	2019-06-03 16:34:32.091555347 +0300
 @@ -743,14 +743,7 @@
  #  Detect endianness of build platform
@@ -17,8 +17,8 @@ diff -aur opencv-4.0.1-prog/CMakeLists.txt gopencv-4.0.1/CMakeLists.txt
  
  # ----------------------------------------------------------------------------
  #  Detect 3rd-party libraries
-diff -aur opencv-4.0.1-prog/modules/core/src/persistence.hpp gopencv-4.0.1/modules/core/src/persistence.hpp
---- opencv-4.0.1-prog/modules/core/src/persistence.hpp	2018-12-22 10:03:30.000000000 +0300
+diff -aur opencv-4.0.1-orig/modules/core/src/persistence.hpp gopencv-4.0.1/modules/core/src/persistence.hpp
+--- opencv-4.0.1-orig/modules/core/src/persistence.hpp	2018-12-22 10:03:30.000000000 +0300
 +++ opencv-4.0.1/modules/core/src/persistence.hpp	2019-06-03 16:36:07.505215678 +0300
 @@ -12,7 +12,7 @@
  #include <string>
