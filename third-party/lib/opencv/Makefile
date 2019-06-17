@@ -1,6 +1,7 @@
 PKG_VER          := 4.0.1
 PKG_SOURCES      := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
-PKG_ARCHIVE_NAME := opencv$(PKG_VER).zip
+PKG_NAME         := opencv
+PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
 PKG_MD5          := eb367fc73de66e6d8808e8712138c6b4
 
 PKG_PATCHES := patch.txt
