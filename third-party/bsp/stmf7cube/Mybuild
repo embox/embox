@@ -216,4 +216,5 @@ module sdram {
 	depends embox.kernel.time.timer_handler
 	depends embox.kernel.time.timekeeper
 	depends system_init
+	depends embox.driver.interrupt.cortexm_nvic
 }

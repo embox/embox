@@ -1,6 +1,8 @@
-PKG_VER  := 4.0.1
-PKG_SOURCES := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
-PKG_MD5     := eb367fc73de66e6d8808e8712138c6b4
+PKG_VER          := 4.0.1
+PKG_SOURCES      := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
+PKG_NAME         := opencv
+PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
+PKG_MD5          := eb367fc73de66e6d8808e8712138c6b4
 
 PKG_PATCHES := patch.txt
 
@@ -95,11 +97,8 @@ all:
 
 .PHONY: all
 
-$(CONFIGURE) :
-	cd $(BUILD_DIR); cp $(THIRDPARTY_DIR)/lib/opencv/CMakeLists.txt $(BUILD_DIR)/opencv-4.0.1/
-
 $(BUILD) :
-	cd $(BUILD_DIR) && mkdir build; cd build && cmake $(OPENCV_FLAGS) ../opencv-4.0.1/ && make -j $(shell nproc)
+	cd $(BUILD_DIR) && mkdir build; cd build && cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/ && make -j $(shell nproc)
 
 
 $(INSTALL) :
