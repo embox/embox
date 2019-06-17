@@ -98,7 +98,7 @@ all:
 .PHONY: all
 
 $(BUILD) :
-	cd $(BUILD_DIR) && mkdir build; cd build && cmake $(OPENCV_FLAGS) ../opencv-4.0.1/ && make -j $(shell nproc)
+	cd $(BUILD_DIR) && mkdir build; cd build && cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/ && make -j $(shell nproc)
 
 
 $(INSTALL) :
