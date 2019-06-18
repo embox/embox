@@ -7,7 +7,7 @@ PKG_VER := 2252cbd02c176a31f74fa10f8fcdf926c3124987
 PKG_ARCHIVE_NAME := openlibm-$(PKG_VER).tar.gz
 
 PKG_SOURCES := https://github.com/embox/openlibm/archive/$(PKG_VER).tar.gz
-PKG_MD5 := 2252cbd02c176a31f74fa10f8fcdf926c3124987
+PKG_MD5 := f5bec5f9f47d11067820497858334673
 
 PKG_PATCHES := patch.txt
 
