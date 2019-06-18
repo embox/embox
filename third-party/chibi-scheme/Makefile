@@ -2,8 +2,6 @@
 PKG_NAME := chibi-scheme
 PKG_VER  := 0.6.1
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
-
 PKG_SOURCES := https://github.com/ashinn/$(PKG_NAME)/archive/$(PKG_VER).tar.gz
 PKG_MD5     := 16b69c3497b46dfb65af8d98549b037b
 

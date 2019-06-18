@@ -3,9 +3,7 @@
 PKG_NAME := mesa
 PKG_VER  := 18.2.5
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.xz
-
-PKG_SOURCES := https://mesa.freedesktop.org/archive/$(PKG_ARCHIVE_NAME)
+PKG_SOURCES := https://mesa.freedesktop.org/archive/$(PKG_NAME)-$(PKG_VER).tar.xz
 
 PKG_MD5     := b31a43ebb8b37fb704a9a75c90bbd71b
 

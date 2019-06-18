@@ -2,10 +2,7 @@
 PKG_NAME := mesa-demos
 PKG_VER  := 8.3.0
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.bz2
-
-
-PKG_SOURCES := https://mesa.freedesktop.org/archive/demos/$(PKG_VER)/$(PKG_ARCHIVE_NAME)
+PKG_SOURCES := https://mesa.freedesktop.org/archive/demos/$(PKG_NAME)-$(PKG_VER).tar.bz2
 
 PKG_MD5     := 628e75c23c17394f11a316c36f8e4164
 
