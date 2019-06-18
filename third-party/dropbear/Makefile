@@ -2,7 +2,9 @@
 PKG_NAME := dropbear
 PKG_VER  := 2018.76
 
-PKG_SOURCES := https://matt.ucc.asn.au/dropbear/releases/$(PKG_NAME)-$(PKG_VER).tar.bz2
+PKG_SOURCES := https://matt.ucc.asn.au/dropbear/releases/$(PKG_NAME)-$(PKG_VER).tar.bz2 \
+	https://dropbear.nl/mirror/releases/$(PKG_NAME)-$(PKG_VER).tar.bz2
+
 PKG_MD5     := c3912f7fcdcc57c99937e4a79480d2c2
 
 PKG_PATCHES := dropbear.patch
