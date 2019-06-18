@@ -2,10 +2,7 @@
 PKG_NAME := glu
 PKG_VER  := 9.0.0
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.bz2
-
-
-PKG_SOURCES := ftp://ftp.freedesktop.org/pub/mesa/glu/$(PKG_ARCHIVE_NAME)
+PKG_SOURCES := ftp://ftp.freedesktop.org/pub/mesa/glu/$(PKG_NAME)-$(PKG_VER).tar.bz2
 
 PKG_MD5     := be9249132ff49275461cf92039083030
 
