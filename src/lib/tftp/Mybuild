@@ -1,0 +1,15 @@
+package embox.lib
+
+module tftp {
+	option number log_level=0
+
+	source "tftp.c"
+
+	@IncludeExport(path="lib")
+	source "tftp.h"
+
+	@NoRuntime depends embox.compat.libc.stdio.all
+	@NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.net.udp
+	@NoRuntime depends embox.net.udp_sock
+}

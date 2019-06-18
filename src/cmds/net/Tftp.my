@@ -35,6 +35,7 @@ package embox.cmd.net
 module tftp {
 	source "tftp.c"
 
+	depends embox.lib.tftp
 	depends embox.compat.libc.all
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.util.getopt
