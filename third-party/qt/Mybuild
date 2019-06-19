@@ -9,6 +9,9 @@ package third_party.qt
 static module core {
 	option boolean stl_support=false
 	option boolean process_support=false
+	option boolean fonts_support=true
+	option boolean vnc_support=true
+	option string qconfig="full"
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libQtCore.a", "libQtGui.a", "libQtMultimedia.a",
