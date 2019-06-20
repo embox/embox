@@ -23,7 +23,9 @@ static inline int task_table_add(struct task *tsk) {
 }
 
 static inline struct task * task_table_get(int tid) {
-	assert(tid == 0);
+	if (tid != 1) {
+		return NULL;
+	}
 	return task_kernel_task();
 }
 
@@ -37,7 +39,7 @@ static inline int task_table_has_space(void) {
 
 static inline int task_table_get_first(int since) {
 	assert(since >= 0);
-	return since == 0 ? 0 : -ENOENT;
+	return since == 1 ? 1 : -ENOENT;
 }
 
 #endif /* KERNEL_TASK_TASK_NO_TABLE_H_ */

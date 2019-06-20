@@ -107,9 +107,9 @@ __END_DECLS
 
 #define task_foreach(tsk) \
 	for (int tid = 1; \
-			(tid = task_table_get_first(tid)) >= 0 \
-				&& (tsk = task_table_get(tid), assert(tsk != NULL), 1); \
-			tid = task_get_id(tsk) + 1)
+			((tid = task_table_get_first(tid)) >= 0) && \
+			(tsk = task_table_get(tid)); \
+			tid++)
 
 
 
