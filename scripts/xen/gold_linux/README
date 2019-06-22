@@ -10,10 +10,10 @@ ip route flush cache
 echo 'nameserver 8.8.8.8' > /etc/resolv.conf
 
 # add default apk repository
-echo "http://dl-3.alpinelinux.org/alpine/v3.9/main" >> /etc/apk/repositories
+echo "http://dl-cdn.alpinelinux.org/alpine/v3.9/main" >> /etc/apk/repositories
 
 # add stable community repository (required for docker installation)
-echo "http://dl-cdn.alpinelinux.org/alpine/latest-stable/community" >> /etc/apk/repositories
+echo "http://dl-cdn.alpinelinux.org/alpine/v3.9/community" >> /etc/apk/repositories
 
 # Run nginx with index.html from hwproj.me in docker container
 apk update
