@@ -26,6 +26,7 @@ static int umether_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
 
 	host_net_tx(hnet, skb->mac.raw, skb->len);
+	skb_free(skb);
 
 	return 0;
 }
