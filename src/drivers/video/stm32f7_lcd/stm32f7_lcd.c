@@ -23,7 +23,7 @@
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(stm32f7_lcd_init);
 
-#define LCD_FRAMEBUFFER  SDRAM_DEVICE_ADDR
+#define LCD_FRAMEBUFFER  OPTION_GET(NUMBER, fb_base)
 
 static int stm32f7_lcd_set_var(struct fb_info *info,
 		struct fb_var_screeninfo const *var) {
