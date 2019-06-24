@@ -18,6 +18,21 @@
 
 #include <linux/fb.h>
 
+#define DPRINTF(fmt, ...) \
+    do { \
+        fprintf(stderr, "> QEmboxFB: " fmt, ## __VA_ARGS__); \
+    } while (0)
+
+void QEmboxFbIntegration::printFbInfo(void)
+{
+	DPRINTF("Framebuffer info:\n");
+	DPRINTF("  Framebuffer start = 0x%x\n", (unsigned int) fbData);
+	DPRINTF("  Width = %d, Height = %d\n", fbWidth, fbHeight);
+	DPRINTF("  BytesPerLine = %d\n", fbBytesPerLine);
+	DPRINTF("  Format = %d\n", fbFormat);
+	DPRINTF("\n");
+}
+
 QEmboxFbIntegration::QEmboxFbIntegration()
 	: fontDb(new QGenericUnixFontDatabase())
 {
@@ -56,6 +71,8 @@ QEmboxFbIntegration::QEmboxFbIntegration()
 
 	mPrimaryScreen->setPhysicalSize(QSize(fbWidth, fbHeight));
 	mScreens.append(mPrimaryScreen);
+
+	this->printFbInfo();
 }
 
 QEmboxFbIntegration::~QEmboxFbIntegration()
@@ -165,6 +182,8 @@ QRegion QEmboxFbScreen::doRedraw()
 {
 	QVector<QRect> rects;
 	QRegion touched = QFbScreen::doRedraw();
+
+	DPRINTF("QEmboxFbScreen::doRedraw\n");
 	
 	if (!compositePainter) {
 		compositePainter = new QPainter(mFbScreenImage);

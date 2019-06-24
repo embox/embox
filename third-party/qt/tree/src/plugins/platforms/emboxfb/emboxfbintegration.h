@@ -54,6 +54,7 @@ private:
 	enum { UNKNOWN = 0, EMBOX_RGB888, EMBOX_BGR888, EMBOX_RGBA8888,
 		   EMBOX_BGRA8888, EMBOX_RGB565, EMBOX_BGR565 };
 
+	void           printFbInfo(void);
 	QImage::Format emboxFbFormatToQImageFormat(int emboxFbFormat);
 
 	int fbFd;
