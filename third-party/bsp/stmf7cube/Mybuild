@@ -209,6 +209,9 @@ module arch extends embox.arch.arch {
 @Build(stage=1,script="true")
 @BuildDepends(core)
 module sdram {
+	/* If true, swap SDRAM from 0xc0000000 to 0x60000000 */
+	option boolean fmc_swap = false
+
 	source "sdram_init.c"
 
 	depends embox.kernel.time.jiffies
