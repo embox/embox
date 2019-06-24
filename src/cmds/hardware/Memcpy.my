@@ -1,0 +1,24 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "memcpy",
+	help = "Copy contents of memory",
+	man = '''
+		NAME
+			memcpy - copy memory
+		SYNOPSIS
+			mem [-h] <dest> <src> <n>
+		DESCRIPTION
+			Just memcpy()
+		OPTIONS
+			-h
+				Shows usage
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module memcpy {
+	source "memcpy.c"
+
+	@NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.framework.LibFramework
+}
