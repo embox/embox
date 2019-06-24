@@ -22,7 +22,13 @@
 
 EMBOX_UNIT_INIT(sdram_init);
 
+#define FMC_SWAP OPTION_GET(BOOLEAN, fmc_swap)
+
 static int sdram_init(void) {
-  BSP_SDRAM_Init();
-  return 0;
+	BSP_SDRAM_Init();
+	
+	if (FMC_SWAP) {
+		HAL_EnableFMCMemorySwapping();
+	}
+	return 0;
 }

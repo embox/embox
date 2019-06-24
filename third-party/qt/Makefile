@@ -5,7 +5,8 @@ PKG_VER  := 4.8.5
 PKG_SOURCES := http://download.qt-project.org/archive/qt/4.8/$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_MD5     := 1864987bdbb2f58f8ae8b350dfdbe133
 
-PKG_PATCHES := pkg_patch.txt
+PKG_PATCHES := pkg_patch.txt \
+	patch_cortex_m7.txt
 
 include $(EXTBLD_LIB)
 

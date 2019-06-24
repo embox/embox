@@ -23,7 +23,7 @@
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(stm32f7_lcd_init);
 
-#define LCD_FRAMEBUFFER  SDRAM_DEVICE_ADDR
+#define LCD_FRAMEBUFFER  OPTION_GET(NUMBER, fb_base)
 
 static int stm32f7_lcd_set_var(struct fb_info *info,
 		struct fb_var_screeninfo const *var) {
@@ -36,8 +36,8 @@ static int stm32f7_lcd_get_var(struct fb_info *info,
 
 	var->xres_virtual = var->xres = BSP_LCD_GetXSize();
 	var->yres_virtual = var->yres = BSP_LCD_GetYSize();
-	var->bits_per_pixel = 24;
-	var->fmt = BGR888;
+	var->bits_per_pixel = 32;
+	var->fmt = RGBA8888;
 
 	return 0;
 }
