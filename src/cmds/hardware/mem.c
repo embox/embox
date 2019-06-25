@@ -35,7 +35,7 @@ static const size_t aalign[] = {
 };
 
 static void print_usage(void) {
-	printf("Usage: mem [-h] [-l -s -c] -a addr [-n count]\n");
+	printf("Usage: mem [-h] [-l -s -c] addr [-n count]\n");
 }
 
 static int parse_option(char *optarg, int opt, long unsigned int *number) {
@@ -58,25 +58,18 @@ static int parse_option(char *optarg, int opt, long unsigned int *number) {
 }
 
 int main(int argc, char **argv) {
-	bool a_flag = false;
 	int opt, i, ret;
 	void *address;
 	unsigned long val;
 	size_t length = DEFAULT_LENGTH;
+	bool length_passed = false;
 	enum access_type at = MEM_AT_LONG;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc, argv, "a:n:hcsl"))) {
+	while (-1 != (opt = getopt(argc, argv, "n:hcsl"))) {
 		switch (opt) {
-		case 'a':
-			ret = parse_option(optarg, opt, (unsigned long int *) &address);
-			if (ret != 0) {
-				return ret;
-			}
-			a_flag = true;
-			break;
-
 		case 'n':
+			length_passed = true;
 			ret = parse_option(optarg, opt, (unsigned long int *) &length);
 			if (ret != 0) {
 				return ret;
@@ -102,8 +95,15 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (!a_flag) {
-		printf("mem: address required\n");
+	errno = 0;
+	if (length_passed) {
+		address = (void *) strtoul(argv[argc - 3], 0, 0);
+	} else  {
+		address = (void *) strtoul(argv[argc - 1], 0, 0);
+	}
+
+	if (errno != 0) {
+		printf("Failed to get address!\n");
 		print_usage();
 		return -EINVAL;
 	}
