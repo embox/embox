@@ -14,7 +14,7 @@
 #include <hal/mmu.h>
 
 static void print_usage(void) {
-	printf("Usage: mmumap [-h][-p pid] [-t] [-v virt_addr] [-o page_options]\n");
+	printf("Usage: mmutest [-h][-p pid] [-t] [-v virt_addr] [-o page_options]\n");
 }
 
 
