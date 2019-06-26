@@ -7,7 +7,7 @@ package embox.cmd
 		NAME
 			mem - reads from memory
 		SYNOPSIS
-			mem [-h] [-l -s -c] -a addr [-n count]
+			mem [-h] [-l -s -c] addr [-n count]
 		DESCRIPTION
 			Read from memory from address the specified number of units.
 		OPTIONS
@@ -19,12 +19,12 @@ package embox.cmd
 				Perform reading by sizeof(short)
 			-s
 				Perform reading by sizeof(char)
-			-a addr
+			addr
 				The target memory address
 			-n count
 				Number of units to read
 		EXAMPLES
-			mem -a 0x40000000 -n 32
+			mem 0x40000000 -n 32
 		SEE ALSO
 			wmem, testmem
 		AUTHORS
