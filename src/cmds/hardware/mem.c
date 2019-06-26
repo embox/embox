@@ -65,7 +65,6 @@ int main(int argc, char **argv) {
 	bool length_passed = false;
 	enum access_type at = MEM_AT_LONG;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "n:hcsl"))) {
 		switch (opt) {
 		case 'n':
