@@ -417,6 +417,27 @@ $(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 		$(if $(strip $(call invoke, \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_app))),1)
 
+my_linker_section_text   := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.text)
+my_linker_section_rodata := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.rodata)
+my_linker_section_data   := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.data)
+my_linker_section_bss    := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.bss)
+
+$(@module_ld_rmk) $(@module_ar_rmk) : linker_section_text = \
+		$(strip $(call annotation_value, \
+			$(call get,$@,allTypes),$(my_linker_section_text)))
+
+$(@module_ld_rmk) $(@module_ar_rmk) : linker_section_rodata = \
+		$(strip $(call annotation_value, \
+			$(call get,$@,allTypes),$(my_linker_section_rodata)))
+
+$(@module_ld_rmk) $(@module_ar_rmk) : linker_section_data = \
+		$(strip $(call annotation_value, \
+			$(call get,$@,allTypes),$(my_linker_section_data)))
+
+$(@module_ld_rmk) $(@module_ar_rmk) : linker_section_bss = \
+		$(strip $(call annotation_value, \
+			$(call get,$@,allTypes),$(my_linker_section_bss)))
+
 build_deps = $(call annotation_value,$1,$(my_bld_dep_value))
 
 # Maps moduleType to that one, which instance is in build. For example, if 'api' extended
@@ -441,6 +462,10 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 		$(call gen_make_dep,$(out),$$$$($(kind)_prerequisites)); \
 		$(call gen_make_tsvar,$(out),module_id,$(id_)); \
 		$(call gen_make_tsvar,$(out),is_app,$(is_app)); \
+		$(call gen_make_tsvar,$(out),linker_section_text,$(linker_section_text)); \
+		$(call gen_make_tsvar,$(out),linker_section_rodata,$(linker_section_rodata)); \
+		$(call gen_make_tsvar,$(out),linker_section_data,$(linker_section_data)); \
+		$(call gen_make_tsvar,$(out),linker_section_bss,$(linker_section_bss)); \
 		$(call gen_make_tsvar,$(out),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \

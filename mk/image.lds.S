@@ -18,6 +18,7 @@ PHDRS {
 	rodata   PT_LOAD  FLAGS(5);  /* R_E */
 	data     PT_LOAD  FLAGS(6);  /* RW_ */
 	bss      PT_LOAD  FLAGS(6);  /* RW_ */
+	#include <phdrs.lds.h>
 }
 
 SECTION_SYMBOLS(text)
@@ -97,12 +98,7 @@ SECTIONS {
 	_bss_len = _bss_end - _bss_vma;
 	_bss_len_with_reserve = SIZEOF(.bss);
 
-#if HAS_SECTION_REGION(heap)
-	.heap : ALIGN(DATA_ALIGNMENT) {
-		*(.heap)
-		*(.heap.*)
-	} SECTION_REGION(heap)
-#endif
+	#include <sections.lds.h>
 
 	/DISCARD/ : {
 		*(.comment)
