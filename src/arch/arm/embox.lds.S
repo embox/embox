@@ -7,16 +7,11 @@ OUTPUT_ARCH(arm)
 ENTRY(start)
 
 MEMORY {
-	MEMORY_REGION(RAM)
-	MEMORY_REGION(ROM)
-#if HAS_MEMORY_REGION(SRAM_CCM)
-	MEMORY_REGION(SRAM_CCM)
-#endif
+	#include <regions.lds.h>
 }
 
 _ram_base = ORIGIN(RAM);
 _ram_size = LENGTH(RAM);
-
 
 SECTIONS {
 	.text : {
