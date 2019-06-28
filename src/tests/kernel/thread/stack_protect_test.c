@@ -62,7 +62,7 @@ TEST_CASE("Stack overflow causes exception") {
 
 static int case_setup(void) {
     ctx = vmem_current_context();
-    vmem_set_context(ctx);
+    mmu_set_context(ctx);
 
     mmu_was_enabled = vmem_mmu_enabled();
     if (!mmu_was_enabled) {

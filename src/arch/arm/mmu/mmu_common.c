@@ -117,7 +117,7 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 	return val;
 }
 
-mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
+mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
 	return (mmu_ctx_t) pgd;
 }
 
@@ -156,8 +156,8 @@ void arm_set_asid(uint32_t asid) {
  *
  * @return Pointer to translation table
  */
-mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return (void*) ctx;
+uintptr_t *mmu_get_root(mmu_ctx_t ctx) {
+	return (uintptr_t *) ctx;
 }
 
 /* Software accessible MMU registers */

@@ -24,7 +24,7 @@ static void task_mmap_init(const struct task *task, void *mmap_space) {
 
 	if (task == task_kernel_task()) {
 		dlist_init(&mmap->marea_list);
-		vmem_init_context(&mmap->ctx);
+		vmem_create_context(&mmap->ctx);
 	}
 }
 

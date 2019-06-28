@@ -100,7 +100,7 @@ TEST_CASE("Readonly pages shouldn't be written") {
 
 static int mmu_case_setup(void) {
 	ctx = vmem_current_context();
-	vmem_set_context(ctx);
+	mmu_set_context(ctx);
 
 	/* XXX hack for page-aligned array. __aligned__ don't work for big pages */
 	page = (char*) (((uintptr_t) mmu_test_buffer + VMEM_PAGE_SIZE - 1) &
