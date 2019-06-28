@@ -123,6 +123,7 @@ static const struct clk clks_repo[] = {
 	{ MXC_CCM_CCGR4, 3 << 6,  "usdhc3" },
 	{ MXC_CCM_CCGR4, 3 << 8,  "usdhc4" },
 	{ MXC_CCM_CCGR6, 3 << 14, "vpu" },
+	{ MXC_CCM_CCGR6, 3 <<  0, "usboh3" },
 };
 
 int clk_enable(char *clk_name) {
