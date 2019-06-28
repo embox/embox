@@ -17,6 +17,7 @@
 #include <framework/mod/options.h>
 
 #define CCM_BASE           OPTION_GET(NUMBER, base_addr)
+#define CCM_ANALOG_BASE    OPTION_GET(NUMBER, analog_addr)
 
 #define MXC_CCM_CCR         (CCM_BASE + 0x00)
 #define MXC_CCM_CCDR        (CCM_BASE + 0x04)
@@ -190,4 +191,49 @@ void clk_reg_dump(void) {
 	}
 }
 
-PERIPH_MEMORY_DEFINE(ccm, CCM_BASE, 0x100);
+static struct periph_memory_desc ccm_mem = {
+	.start = CCM_BASE,
+	.len   = 0x100,
+};
+
+PERIPH_MEMORY_DEFINE(ccm_mem);
+
+#define CCM_ANALOG_PLL_USB1_CLR          (CCM_ANALOG_BASE + 0x18)
+#define CCM_ANALOG_PLL_USB1_SET          (CCM_ANALOG_BASE + 0x14)
+#define CCM_ANALOG_PLL_USB2_CLR          (CCM_ANALOG_BASE + 0x28)
+#define CCM_ANALOG_PLL_USB2_SET          (CCM_ANALOG_BASE + 0x2C)
+# define CCM_ANALOG_PLL_USB_BYPASS      (1 << 16)
+# define CCM_ANALOG_PLL_USB_ENABLE      (1 << 13)
+# define CCM_ANALOG_PLL_USB_POWER       (1 << 12)
+# define CCM_ANALOG_PLL_USB_EN_USB_CLKS (1 <<  6)
+
+void ccm_analog_usb_init(int port) {
+	switch (port) {
+	case 0:
+		REG32_STORE(CCM_ANALOG_PLL_USB1_CLR,
+				CCM_ANALOG_PLL_USB_BYPASS);
+
+		REG32_STORE(CCM_ANALOG_PLL_USB1_SET,
+				CCM_ANALOG_PLL_USB_ENABLE |
+				CCM_ANALOG_PLL_USB_POWER |
+				CCM_ANALOG_PLL_USB_EN_USB_CLKS);
+		break;
+	case 1:
+		REG32_STORE(CCM_ANALOG_PLL_USB2_CLR,
+				CCM_ANALOG_PLL_USB_BYPASS);
+
+		REG32_STORE(CCM_ANALOG_PLL_USB2_SET,
+				CCM_ANALOG_PLL_USB_ENABLE |
+				CCM_ANALOG_PLL_USB_POWER |
+				CCM_ANALOG_PLL_USB_EN_USB_CLKS);
+	default:
+		log_error("Wrong port");
+	}
+}
+
+static struct periph_memory_desc ccm_analog_mem = {
+	.start = CCM_ANALOG_BASE,
+	.len   = 0x180,
+};
+
+PERIPH_MEMORY_DEFINE(ccm_analog_mem);
