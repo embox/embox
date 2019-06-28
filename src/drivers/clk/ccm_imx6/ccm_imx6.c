@@ -181,39 +181,12 @@ void clk_reg_dump(void) {
 	log_debug("MXC_CCM_CCGR6 =0x%08x", REG32_LOAD(MXC_CCM_CCGR6));
 	log_debug("================= REGISTER DUMP END ===================");
 
-
 	for (int i = 0; i < 0x88 / 4 / 4; i++) {
 		log_debug("0x%08x 0x%08x 0x%08x 0x%08x",
 				REG32_LOAD(CCM_BASE + i * 4 * 4),
 				REG32_LOAD(CCM_BASE + i * 4 * 4 + 4),
 				REG32_LOAD(CCM_BASE + i * 4 * 4 + 8),
 				REG32_LOAD(CCM_BASE + i * 4 * 4 + 12));
-
-	}
-
-	log_debug("");
-	for (int i = 0x20C8000; i <= 0x20C817C; i+=4) {
-		log_debug("%p =0x%08x", i, REG32_LOAD(i));
-	}
-
-
-
-
-	static uint32_t vals[] = {
-		0x040110ff, 0x00000000, 0x00000038, 0x00000100,
-		0x00000000, 0x00018d00, 0x00010204, 0x0090a800,
-		0x02a12f06, 0x00490b00, 0x0ec102c1, 0x007312c1,
-		0x33e71f92, 0x00012093, 0x00012090, 0x00010841,
-		0x00010241, 0x00000000, 0x00000000, 0x00000003,
-		0x00000000, 0x00000078, 0x041a0000, 0xffffffff,
-		0x000e0101, 0x0000fe62, 0x0040000f, 0x00300000,
-		0x01ff0000, 0x3770300f, 0x000cf303, 0x00000003,
-	};
-	return;
-	for (int i = 0; i < 0x88 / 4; i++) {
-		if (i != 0x7c / 4)
-		REG32_STORE(CCM_BASE + i * 4, vals[i]);
-		log_debug("setup 0x%x\n", i * 4);
 	}
 }
 
