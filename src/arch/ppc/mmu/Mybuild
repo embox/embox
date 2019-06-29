@@ -1,6 +1,8 @@
 package embox.arch.ppc
 
-module mmu extends embox.arch.mmu {
+module mmu extends embox.mem.vmem {
 	option number page_size=4096
 	source "mmu.c", "mmu.h"
+
+	depends embox.mem.vmem_depends
 }

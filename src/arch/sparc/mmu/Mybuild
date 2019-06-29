@@ -1,6 +1,6 @@
 package embox.arch.sparc
 
-module mmu extends embox.arch.mmu {
+module mmu extends embox.mem.vmem {
 	option number log_level = 0
 
 	option number page_size=4096
@@ -8,5 +8,5 @@ module mmu extends embox.arch.mmu {
 
 	source "mmu.c", "mmu.h"
 
-	//depends embox.arch.sparc.testtrap // used to define page fault handler
+	depends embox.mem.vmem_depends
 }

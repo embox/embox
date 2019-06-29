@@ -9,7 +9,7 @@ static module libstlportg extends embox.lib.stl {
 	source "libstlportg.a"
 
 	depends embox.compat.posix.proc.atexit_api
-	@NoRuntime depends embox.mem.vmem_api /* include sys/mman.h */
+	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api /* include sys/mman.h */
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.lib.libsupcxx
 	@NoRuntime depends embox.lib.libgcc

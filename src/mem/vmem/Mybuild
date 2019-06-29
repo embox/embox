@@ -5,25 +5,22 @@ module vmem_header {
 	source "vmem.h"
 }
 
-@DefaultImpl(vmem_nommu)
-abstract module vmem_api {
-}
-
-module vmem_nommu extends vmem_api {
+module vmem_nommu extends embox.arch.mmu {
 	@IncludeExport(path="mem",target_name="vmem.h")
 	source "vmem_nommu.h"
 }
 
-module vmem extends vmem_api {
+module vmem extends embox.arch.mmu {
 	option number log_level = 1
 
 	source "vmem.c"
 	source "mapper.c"
 	source "vmem_context.c"
+}
 
+module vmem_depends {
 	depends embox.mem.vmem_alloc
 	depends embox.mem.page_api
-	depends embox.arch.mmu
 
 	depends embox.mem.mmap_header
 	depends embox.mem.mmap
