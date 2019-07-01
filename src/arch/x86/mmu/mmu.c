@@ -179,10 +179,10 @@ void mmu_pte_set_usermode(uintptr_t *pte, int val) {
 }
 
 void mmu_pte_set_cacheable(uintptr_t *pte, int val) {
-	if (val) {
-		*pte = *pte & (~MMU_PAGE_DISABLE_CACHE);
-	} else {
+	if (val & PROT_NOCACHE) {
 		*pte = *pte | MMU_PAGE_DISABLE_CACHE;
+	} else {
+		*pte = *pte & (~MMU_PAGE_DISABLE_CACHE);
 	}
 }
 

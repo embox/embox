@@ -16,27 +16,7 @@
 #define VMEM_PAGE_SIZE        MMU_PAGE_SIZE
 #define VMEM_PAGE_MASK        MMU_PAGE_MASK
 
-#define VMEM_PAGE_WRITABLE    (1 << 0)
-#define VMEM_PAGE_CACHEABLE   (1 << 1)
-#define VMEM_PAGE_USERMODE    (1 << 2)
-/* Used on sparc LEON3 */
-#define VMEM_PAGE_EXECUTABLE  (1 << 3)
-
-typedef uint32_t vmem_page_flags_t;
-
-static inline vmem_page_flags_t prot_to_vmem_flags(uint32_t flags) {
-	vmem_page_flags_t vmem_page_flags = 0;
-	if (flags & PROT_WRITE) {
-		vmem_page_flags |= VMEM_PAGE_WRITABLE;
-	}
-	if (flags & PROT_EXEC) {
-		vmem_page_flags |= VMEM_PAGE_EXECUTABLE;
-	}
-	if (!(flags & PROT_NOCACHE)) {
-		vmem_page_flags |= VMEM_PAGE_CACHEABLE;
-	}
-	return vmem_page_flags;
-}
+#define VMEM_PAGE_USERMODE    (1 << 6)
 
 extern int vmem_create_context(mmu_ctx_t *ctx);
 extern mmu_ctx_t vmem_current_context(void);
@@ -45,11 +25,11 @@ extern void vmem_free_context(mmu_ctx_t ctx);
 extern mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr);
 
 extern int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
-		size_t reg_size, vmem_page_flags_t flags);
+		size_t reg_size, int flags);
 
 extern void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size);
 
-extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, vmem_page_flags_t flags);
+extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int flags);
 
 extern void vmem_on(void);
 extern void vmem_off(void);

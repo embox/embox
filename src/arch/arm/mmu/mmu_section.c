@@ -7,6 +7,8 @@
  */
 
 #include <string.h>
+#include <sys/mman.h>
+
 #include <asm/hal/mmu.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
@@ -61,20 +63,26 @@ int mmu_pte_present(mmu_pte_t *pte) {
 
 void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
 #if 0	
-	if (value & VMEM_PAGE_WRITABLE)
+	if (value & PROT_WRITE)
 		*pte |= ARM_MMU_SECTION_WRITE_ACC;
 #endif
 }
 
 void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
-	if (value & VMEM_PAGE_CACHEABLE)
-		*pte |= 0x08; /* ARM_MMU_SECTION_C */
+	if (value & PROT_NOCACHE) {
+		*pte &= ~L1D_C; /* ARM_MMU_SECTION_C */
+	} else {
+		*pte |= L1D_C; /* ARM_MMU_SECTION_C */
+	}
 }
 
 void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
 }
 
 void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
-	if (!(value & VMEM_PAGE_EXECUTABLE))
-		*pte |= 0x10; /* ARM_MMU_SECTION_XN */
+	if (value & PROT_EXEC) {
+		*pte &= ~L1D_XN; /* ARM_MMU_SECTION_XN */
+	} else {
+		*pte |= L1D_XN; /* ARM_MMU_SECTION_XN */
+	}
 }

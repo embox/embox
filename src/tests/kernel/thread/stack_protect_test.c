@@ -25,7 +25,7 @@ static inline int soverflow_handler(uint32_t nr, void *data) {
 	exception_flag = 1;
 
 	vmem_unmap_region(ctx, page, VMEM_PAGE_SIZE);
-	vmem_map_region(ctx, page, page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+	vmem_map_region(ctx, page, page, VMEM_PAGE_SIZE, PROT_WRITE | PROT_READ);
 
 	return 1;
 }

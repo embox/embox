@@ -1,13 +1,13 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/mman.h>
 
 #include <drivers/video/fb.h>
 #include <drivers/video/fb_overlay.h>
 #include <lib/fps.h>
 #include <kernel/time/ktime.h>
 #include <mem/vmem.h>
-#include <unistd.h>
 
 #define MAX_QUADS 1024
 #define EPS 0.001
@@ -418,12 +418,12 @@ static void draw(struct program *p) {
 				vmem_set_flags(vmem_current_context(),
 						(mmu_vaddr_t) sw_base[0],
 						p->frame_width * p->frame_height * 2,
-						VMEM_PAGE_WRITABLE);
+						PROT_WRITE | PROT_READ | PROT_NOCACHE);
 
 				vmem_set_flags(vmem_current_context(),
 						(mmu_vaddr_t) sw_base[1],
 						p->frame_width * p->frame_height * 2,
-						VMEM_PAGE_WRITABLE);
+						PROT_WRITE | PROT_READ | PROT_NOCACHE);
 
 				fps_set_base_frame(mesa_fbi, sw_base[0]);
 				fps_set_back_frame(mesa_fbi, sw_base[1]);

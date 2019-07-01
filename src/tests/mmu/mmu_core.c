@@ -36,7 +36,7 @@ static mmu_paddr_t paddr;
 
 /* MMU data access exception handler */
 static inline int dfault_handler(uint32_t trap_nr, void *data) {
-	vmem_set_flags((mmu_ctx_t) ctx, BIGADDR, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+	vmem_set_flags((mmu_ctx_t) ctx, BIGADDR, VMEM_PAGE_SIZE, PROT_WRITE | PROT_READ );
 	exception_flag = 1;
 
 	test_assert_not_equal(*((volatile uint32_t *) paddr), UNIQ_VAL);
@@ -51,7 +51,7 @@ static inline int pagefault_handler(uint32_t nr, void *data) {
 	err_addr = mmu_get_fault_address();
 
 	vmem_map_region(ctx, (mmu_paddr_t) ((unsigned long) page),
-			(mmu_vaddr_t) err_addr, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+			(mmu_vaddr_t) err_addr, VMEM_PAGE_SIZE, PROT_WRITE | PROT_READ );
 
 	exception_flag = 1;
 	return 1; // execute exception-cause instruction once more
@@ -76,7 +76,7 @@ static inline int readonly_handler(uint32_t nr, void *data) {
 
 	/* Remap page with write access */
 	vmem_unmap_region(ctx, (uintptr_t) page, VMEM_PAGE_SIZE);
-	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+	vmem_map_region(ctx, (uintptr_t) page, (uintptr_t) page, VMEM_PAGE_SIZE, PROT_WRITE | PROT_READ );
 
 	return 1;
 }
@@ -115,6 +115,6 @@ static int mmu_case_setup(void) {
 
 static int mmu_case_teardown(void) {
 	mmu_sys_privileges();
-	vmem_map_region(ctx, (mmu_vaddr_t) page, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+	vmem_map_region(ctx, (mmu_vaddr_t) page, (mmu_vaddr_t) page, VMEM_PAGE_SIZE, PROT_WRITE | PROT_READ );
 	return 0;
 }

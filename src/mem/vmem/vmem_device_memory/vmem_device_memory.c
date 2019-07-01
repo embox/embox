@@ -47,7 +47,7 @@ void *mmap_device_memory(void *addr,
 				start,
 				start,
 				len,
-				prot_to_vmem_flags(prot));
+				prot);
 	}
 
 	return addr;

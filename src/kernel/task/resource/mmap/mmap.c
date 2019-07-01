@@ -45,7 +45,7 @@ static int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 				vmem_translate(p_mmap->ctx, marea->start),
 				marea->start,
 				marea->size,
-				prot_to_vmem_flags(marea->flags)))) {
+				marea->flags))) {
 				return err;
 		}
 	}

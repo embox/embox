@@ -15,6 +15,8 @@
  */
 
 #include <stdio.h>
+#include <sys/mman.h>
+
 #include <kernel/thread/sync/mutex.h>
 #include <util/binalign.h>
 #include <util/bitmap.h>
@@ -69,7 +71,7 @@ etnaviv_cmdbuf_suballoc_new(struct etnaviv_gpu * gpu) {
 	if (vmem_set_flags(vmem_current_context(),
 					(mmu_vaddr_t) suballoc->addr,
 					SUBALLOC_SIZE,
-					VMEM_PAGE_WRITABLE)) {
+					PROT_WRITE | PROT_READ | PROT_NOCACHE)) {
 		log_error("Failed to set vmem flags");
 		goto free_dma;
 	}

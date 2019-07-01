@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
 	int seconds;
 	int repeat = 0;
 	bool do_heap_test = false;
-	vmem_page_flags_t flags;
+	int flags;
 
 	struct timespec time_post;
 	struct timespec time_pre;
@@ -218,10 +218,10 @@ int main(int argc, char **argv) {
 
 	if (nocache) {
 		printf("Mark memory as non-cacheable\n");
-		flags = VMEM_PAGE_WRITABLE;
+		flags = PROT_WRITE | PROT_READ | PROT_NOCACHE;
 	} else {
 		printf("Mark memory as cacheable\n");
-		flags = VMEM_PAGE_WRITABLE | VMEM_PAGE_CACHEABLE;
+		flags = PROT_WRITE | PROT_READ;
 	}
 
 	if ((err = vmem_set_flags(vmem_current_context(),

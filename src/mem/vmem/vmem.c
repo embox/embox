@@ -93,12 +93,12 @@ static int vmem_init(void) {
 		emmap = task_resource_mmap(task);
 		dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
 			log_debug("map region (base 0x%" PRIxPTR " size %zu flags 0x%" PRIx32 ")",
-					marea->start, marea->size, prot_to_vmem_flags(marea->flags));
+					marea->start, marea->size, marea->flags);
 			if (vmem_map_region(emmap->ctx,
 					marea->start,
 					marea->start,
 					marea->size,
-					prot_to_vmem_flags(marea->flags))) {
+					marea->flags)) {
 				panic("Failed to initialize kernel memory mapping");
 			}
 		}
