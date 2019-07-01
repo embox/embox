@@ -12,7 +12,7 @@
 
 EMBOX_UNIT_INIT(kernel_task_init);
 
-static struct task kernel_task __attribute__((section(".bss.ktask")));
+static struct task kernel_task __attribute__((section(".bss.embox.ktask")));
 
 struct task * task_kernel_task(void) {
 	return &kernel_task;
