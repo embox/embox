@@ -13,7 +13,6 @@ EMBOX_TEST_SUITE("Stack protection test suite");
 TEST_SETUP(case_setup);
 TEST_TEARDOWN(case_teardown);
 
-static int mmu_was_enabled;
 static mmu_ctx_t ctx;
 static volatile int exception_flag;
 static volatile int first_check;
@@ -64,18 +63,11 @@ static int case_setup(void) {
     ctx = vmem_current_context();
     mmu_set_context(ctx);
 
-    mmu_was_enabled = vmem_mmu_enabled();
-    if (!mmu_was_enabled) {
-        vmem_on();
-    }
     stack_protect_enable();
     return 0;
 }
 
 static int case_teardown(void) {
-    if (vmem_mmu_enabled() && !mmu_was_enabled) {
-        vmem_off();
-    }
     stack_protect_disable();
     return 0;
 }

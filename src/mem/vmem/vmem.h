@@ -31,10 +31,6 @@ extern void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_s
 
 extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int flags);
 
-extern void vmem_on(void);
-extern void vmem_off(void);
-extern int vmem_mmu_enabled(void);
-
 #define MMU_LAST_LEVEL (MMU_LEVELS - 1)
 
 #ifndef __MMU_SHIFT_1

@@ -18,23 +18,20 @@
 static void print_vmem(struct page_allocator *pgd_allocator,
 		struct page_allocator *pmd_allocator,
 		struct page_allocator *pte_allocator) {
-	int is_on_vmem = vmem_mmu_enabled();
 
 	printf("\nVIRTUAL MEMORY:\n");
-	printf("vmem is %s\n", is_on_vmem ? "ON" : "OFF");
 
-	if (is_on_vmem) {
-		printf("PGD tables count / free - %zu / %zu\n", pgd_allocator->pages_n,
-					pgd_allocator->free / pgd_allocator->page_size);
-		printf("PMD tables count / free - %zu / %zu\n", pmd_allocator->pages_n,
-					pmd_allocator->free / pmd_allocator->page_size);
-		if (pte_allocator) {
-			printf("PTE tables count / free - %zu / %zu\n", pte_allocator->pages_n,
-					pte_allocator->free / pte_allocator->page_size);
-		} else {
-			printf("PTE do not available in this configuration\n");
-		}
+	printf("PGD tables count / free - %zu / %zu\n", pgd_allocator->pages_n,
+				pgd_allocator->free / pgd_allocator->page_size);
+	printf("PMD tables count / free - %zu / %zu\n", pmd_allocator->pages_n,
+				pmd_allocator->free / pmd_allocator->page_size);
+	if (pte_allocator) {
+		printf("PTE tables count / free - %zu / %zu\n", pte_allocator->pages_n,
+				pte_allocator->free / pte_allocator->page_size);
+	} else {
+		printf("PTE do not available in this configuration\n");
 	}
+
 	printf("-----------------------------------------\n");
 }
 

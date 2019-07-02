@@ -42,13 +42,11 @@ void *mmap_device_memory(void *addr,
 		return NULL;
 	}
 
-	if (vmem_mmu_enabled()) {
-		vmem_map_region(vmem_current_context(),
+	vmem_map_region(vmem_current_context(),
 				start,
 				start,
 				len,
 				prot);
-	}
 
 	return addr;
 }

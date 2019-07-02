@@ -16,8 +16,6 @@
 
 #define VMEM_PAGE_USERMODE    (1 << 6)
 
-#define vmem_mmu_enabled() 0
-
 static inline int vmem_create_context(mmu_ctx_t *ctx) {
 	(void)ctx;
 	return 0;

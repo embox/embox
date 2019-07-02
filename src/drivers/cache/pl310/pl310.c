@@ -72,8 +72,6 @@ static void _reg_dump(char *s) {
 uint8_t _test_buf[BUF_SZ];
 
 extern int32_t vmem_info(uint32_t vaddr);
-extern void vmem_on(void);
-extern void vmem_off(void);
 
 static int pl310_init(void) {
 	memset(_test_buf, 0, BUF_SZ);
