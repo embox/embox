@@ -9,21 +9,13 @@
 #ifndef VMEM_NOMMU_H
 #define VMEM_NOMMU_H
 
-#include <stdint.h>
-
 #include <hal/mmu.h>
-#include <sys/mman.h>
 
-#define VMEM_PAGE_USERMODE    (1 << 6)
-
-static inline int vmem_create_context(mmu_ctx_t *ctx) {
-	(void)ctx;
-	return 0;
-}
+#define vmem_create_context(ctx)
 
 #define vmem_current_context() 0
 
-#define vmem_free_context()
+#define vmem_free_context(ctx)
 
 #define vmem_translate(a,b) b
 
