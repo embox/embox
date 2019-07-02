@@ -67,15 +67,7 @@ static void _reg_dump(char *s) {
 	log_debug("=====================================\n");
 }
 
-#define BUF_SZ (16 * 1024 * 1024)
-
-uint8_t _test_buf[BUF_SZ];
-
-extern int32_t vmem_info(uint32_t vaddr);
-
 static int pl310_init(void) {
-	memset(_test_buf, 0, BUF_SZ);
-
 	REG_STORE(L2X0_CTRL, 0);
 
 	REG_ORIN(L2X0_AUX_CTRL, L2X0_AUX_INSTR_PREFETCH);
