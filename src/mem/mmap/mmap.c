@@ -46,7 +46,7 @@ static int mmap_check_marea(struct emmap *mmap, struct marea *marea) {
 	return 0;
 }
 
-int mmap_place(struct emmap *mmap, uintptr_t start, size_t size, uint32_t flags) {
+int mmap_place(struct emmap *mmap, uintptr_t start, size_t size, int flags) {
 	struct marea *marea;
 
 	assert(mmap);
