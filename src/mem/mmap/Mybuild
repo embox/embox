@@ -11,4 +11,5 @@ module mmap {
 	depends marea
 	depends mmap_header
 	depends embox.kernel.task.resource.mmap
+	depends embox.mem.vmem_depends
 }

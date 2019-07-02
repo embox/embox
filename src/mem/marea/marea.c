@@ -16,7 +16,7 @@
 
 POOL_DEF(marea_pool, struct marea, MAREA_NUM);
 
-struct marea *marea_alloc(uintptr_t start, size_t size, uint32_t flags) {
+struct marea *marea_alloc(uintptr_t start, size_t size, int flags) {
 	struct marea *marea;
 
 	if (!(marea = pool_alloc(&marea_pool))) {

@@ -14,12 +14,12 @@
 struct marea {
 	uintptr_t start;
 	size_t size;
-	uint32_t flags;
+	int flags;
 
 	struct dlist_head mmap_link;
 };
 
-extern struct marea *marea_alloc(uintptr_t start, size_t size, uint32_t flags);
+extern struct marea *marea_alloc(uintptr_t start, size_t size, int flags);
 extern void marea_free(struct marea *marea);
 
 #endif /* MAREA_H_ */

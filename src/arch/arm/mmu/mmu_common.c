@@ -20,7 +20,7 @@
 #include <framework/mod/options.h>
 #include <kernel/printk.h>
 
-EMBOX_UNIT_INIT(mmu_init);
+//EMBOX_UNIT_INIT(mmu_init);
 
 #define DOMAIN_ACCESS OPTION_GET(NUMBER, domain_access)
 #define CTX_NUMBER    32 /* TODO: make it related to number of tasks */
@@ -71,6 +71,7 @@ void _print_mmu_regs(void);
 * @note Set flag CR_M at c1, the control register
 */
 void mmu_on(void) {
+	mmu_init();
 #ifndef NOMMU
 	__asm__ __volatile__ (
 		"mrc p15, 0, r0, c1, c0, 0\n\t"

@@ -6,6 +6,7 @@
  * @author Anton Bulychev
  */
 #include <stdint.h>
+#include <sys/mman.h>
 
 #include <hal/mmu.h>
 
@@ -88,10 +89,10 @@ void mmu_pte_set_usermode(uintptr_t *pte, int val) {
 }
 
 void mmu_pte_set_cacheable(uintptr_t *pte, int val) {
-	if (val) {
-		mmu_set_val(pte, *pte | MMU_PAGE_CACHEABLE);
-	} else {
+	if (val & PROT_NOCACHE) {
 		mmu_set_val(pte, *pte & (~MMU_PAGE_CACHEABLE));
+	} else {
+		mmu_set_val(pte, *pte | MMU_PAGE_CACHEABLE);
 	}
 }
 

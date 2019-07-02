@@ -168,10 +168,10 @@ void mmu_pte_set_writable(uintptr_t *pte, int value){
 }
 
 void mmu_pte_set_cacheable(uintptr_t *pte, int value) {
-	if (value) {
-		*pte = *pte | MMU_PAGE_CACHEABLE;
-	} else {
+	if (value & PROT_NOCACHE) {
 		*pte = *pte & (~MMU_PAGE_CACHEABLE);
+	} else {
+		*pte = *pte | MMU_PAGE_CACHEABLE;
 	}
 }
 

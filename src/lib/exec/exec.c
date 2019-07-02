@@ -176,7 +176,7 @@ static int load_interp(char *filename, exec_t *exec) {
 
 	mmap_place(task_self_resource_mmap(), base_addr, size, 0);
 	vmem_map_region(vmem_current_context(), base_addr, base_addr, size,
-				VMEM_PAGE_WRITABLE | VMEM_PAGE_EXECUTABLE | VMEM_PAGE_USERMODE);
+			PROT_WRITE | PROT_READ | PROT_EXEC | VMEM_PAGE_USERMODE);
 
 	for (int i = 0; i < header.e_phnum; i++) {
 		ph = &ph_table[i];
@@ -270,7 +270,7 @@ static int load_exec(const char *filename, exec_t *exec) {
 				(mmu_paddr_t) paddr,
 				ph->p_vaddr,
 				size,
-				VMEM_PAGE_WRITABLE | VMEM_PAGE_EXECUTABLE | VMEM_PAGE_USERMODE);
+				PROT_WRITE | PROT_READ | PROT_EXEC | VMEM_PAGE_USERMODE);
 
 		/* XXX brk is a max of ph's right sides. It unaligned now! */
 		mmap_set_brk(task_self_resource_mmap(),
@@ -305,7 +305,7 @@ uint32_t mmap_create_stack(struct emmap *mmap) {
 	uintptr_t base = mmap_alloc(mmap, size);
 	mmap_place(task_self_resource_mmap(), base, size, 0);
 	vmem_map_region(mmap->ctx, base, base, size,
-				VMEM_PAGE_WRITABLE | VMEM_PAGE_EXECUTABLE | VMEM_PAGE_USERMODE);
+			PROT_WRITE | PROT_READ | PROT_EXEC | VMEM_PAGE_USERMODE);
 	return base + size;
 }
 

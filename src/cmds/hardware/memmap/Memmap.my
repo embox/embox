@@ -26,5 +26,5 @@ module memmap {
 
 	depends embox.mem.marea_header
 	depends embox.mem.mmap_header
-	depends embox.mem.vmem_api
+	depends embox.arch.mmu
 }

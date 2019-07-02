@@ -58,7 +58,7 @@ void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 					(mmu_paddr_t) phy,
 					(mmu_vaddr_t) virt,
 					len,
-					prot_to_vmem_flags(prot));
+					prot);
 		}
 	} else {
 		assert(fd > 0);
@@ -74,7 +74,7 @@ void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	if ((err = vmem_set_flags(emmap->ctx,
 					(mmu_vaddr_t) virt,
 					len,
-					prot_to_vmem_flags(prot)))) {
+					prot))) {
 		log_error("Failed to set memory attributes for mmap()");
 		return MAP_FAILED;
 	}

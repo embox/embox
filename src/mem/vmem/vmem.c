@@ -26,25 +26,9 @@
 #include <util/binalign.h>
 #include <util/math.h>
 
-static int mmu_enabled;
-
 /* Section pointers. */
 extern char _text_vma, _rodata_vma, _data_vma, _bss_vma;
 extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
-
-void vmem_on(void) {
-	mmu_on();
-	mmu_enabled = 1;
-}
-
-void vmem_off(void) {
-	mmu_off();
-	mmu_enabled = 0;
-}
-
-int vmem_mmu_enabled(void) {
-	return mmu_enabled;
-}
 
 int vmem_map_kernel(void) {
 	int err = 0;
@@ -93,12 +77,12 @@ static int vmem_init(void) {
 		emmap = task_resource_mmap(task);
 		dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
 			log_debug("map region (base 0x%" PRIxPTR " size %zu flags 0x%" PRIx32 ")",
-					marea->start, marea->size, prot_to_vmem_flags(marea->flags));
+					marea->start, marea->size, marea->flags);
 			if (vmem_map_region(emmap->ctx,
 					marea->start,
 					marea->start,
 					marea->size,
-					prot_to_vmem_flags(marea->flags))) {
+					marea->flags)) {
 				panic("Failed to initialize kernel memory mapping");
 			}
 		}
@@ -107,7 +91,7 @@ static int vmem_init(void) {
 	emmap = task_resource_mmap(task_kernel_task());
 	mmu_set_context(emmap->ctx);
 
-	vmem_on();
+	mmu_on();
 
 	return 0;
 }

@@ -47,7 +47,7 @@ static void show_vmem_translation(void) {
 
 	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
 		printf("map region (base 0x%" PRIxPTR " size %zu flags 0x%" PRIx32 ")\n",
-				marea->start, marea->size, prot_to_vmem_flags(marea->flags));
+				marea->start, marea->size, marea->flags);
 		for (voff = 0; voff < marea->size; voff += MMU_PAGE_SIZE) {
 			paddr = vmem_translate(emmap->ctx, marea->start + voff);
 			printf("0x%16x -> 0x%16x \n", marea->start + voff, paddr);

@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <inttypes.h>
+#include <sys/mman.h>
 
 #include <asm/hal/mmu.h>
 #include <hal/mmu.h>
@@ -67,7 +68,7 @@ int mmu_present(int lvl, uintptr_t *entry) {
 }
 
 void mmu_pte_set_writable(uintptr_t *pte, int value) {
-	if (value & VMEM_PAGE_WRITABLE) {
+	if (value & PROT_WRITE) {
 		*pte |= ARM_MMU_PAGE_WRITE_ACC;
 	}
 	dcache_flush(pte, sizeof(*pte));
@@ -78,13 +79,13 @@ void mmu_pte_set_cacheable(uintptr_t *pte, int value) {
 #ifndef V5_FORMAT
 	*pte &= ~L1D_TEX_MASK;
 #endif
-	if (value & VMEM_PAGE_CACHEABLE) {
+	if (value & PROT_NOCACHE) {
+		*pte |= L1D_B;         /* Shareable device memory */
+	} else {
 #ifndef V5_FORMAT
 		*pte |= L1D_TEX_USE;   /* Outer strongly-ordered memory */
 #endif
 		*pte |= L1D_C | L1D_B; /* Inner write-through cached memory */
-	} else {
-		*pte |= L1D_B;         /* Shareable device memory */
 	}
 
 	dcache_flush(pte, sizeof(*pte));
@@ -95,10 +96,10 @@ void mmu_pte_set_usermode(uintptr_t *pte, int value) {
 
 void mmu_pte_set_executable(uintptr_t *pte, int value) {
 #if 0
-	if (!(value & VMEM_PAGE_EXECUTABLE)) {
-		*pte |= L1D_XN;
+	if (value & PROT_EXEC) {
+		*pte &= ~L1D_XN; /* ARM_MMU_SECTION_XN */
 	} else {
-		*pte &= ~L1D_XN;
+		*pte |= L1D_XN; /* ARM_MMU_SECTION_XN */
 	}
 #endif
 }

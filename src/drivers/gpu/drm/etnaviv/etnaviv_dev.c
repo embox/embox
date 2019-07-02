@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <sys/mman.h>
 
 #include <util/err.h>
 
@@ -257,7 +258,7 @@ static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 	if ((err = vmem_set_flags(vmem_current_context(),
 					(mmu_vaddr_t) etnaviv_uncached_buffer,
 					sizeof(etnaviv_uncached_buffer),
-					VMEM_PAGE_WRITABLE))) {
+					PROT_WRITE | PROT_READ | PROT_NOCACHE))) {
 		log_error("Failed to set page attributes! Error %d", err);
 
 		return NULL;

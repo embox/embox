@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include <hal/mmu.h>
 #include <util/binalign.h>
@@ -23,10 +24,10 @@ struct mmu_entry {
 	int idx[MMU_LEVELS];
 };
 
-static void vmem_set_pte_flags(uintptr_t *pte, vmem_page_flags_t flags) {
-	mmu_pte_set_writable(pte, flags & VMEM_PAGE_WRITABLE);
-	mmu_pte_set_executable(pte, flags & VMEM_PAGE_EXECUTABLE);
-	mmu_pte_set_cacheable(pte, flags & VMEM_PAGE_CACHEABLE);
+static void vmem_set_pte_flags(uintptr_t *pte, uint32_t flags) {
+	mmu_pte_set_writable(pte, flags & PROT_WRITE);
+	mmu_pte_set_executable(pte, flags & PROT_EXEC);
+	mmu_pte_set_cacheable(pte, flags & PROT_NOCACHE);
 	mmu_pte_set_usermode(pte, flags & VMEM_PAGE_USERMODE);
 }
 
@@ -61,7 +62,7 @@ static struct mmu_entry *vmem_entry_from_vaddr(mmu_ctx_t ctx, mmu_vaddr_t virt_a
 	return entry;
 }
 
-static int vmem_entry_set_pte(struct mmu_entry *entry, mmu_paddr_t phy_addr, vmem_page_flags_t flags) {
+static int vmem_entry_set_pte(struct mmu_entry *entry, mmu_paddr_t phy_addr, int flags) {
 	int i = 0;
 
 	assert(entry);
@@ -92,7 +93,7 @@ static int vmem_entry_try_free(struct mmu_entry *entry) {
 }
 
 int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
-		size_t reg_size, vmem_page_flags_t flags) {
+		size_t reg_size, int flags) {
 	struct mmu_entry entries;
 
 	for ( ; reg_size; reg_size -= MMU_PAGE_SIZE) {
@@ -107,7 +108,6 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
 	mmu_flush_tlb();
 
 	return 0;
-
 }
 
 mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
@@ -121,7 +121,7 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
 	return (mmu_paddr_t)mmu_get(MMU_LEVELS-1, pte) + (virt_addr & MMU_PAGE_MASK);
 }
 
-static int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_flags_t flags) {
+static int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, int flags) {
 	struct mmu_entry entries;
 	struct mmu_entry *entry = &entries;
 
@@ -138,7 +138,7 @@ static int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, vmem_page_f
  *
  * @return Negative error value, zero if succeeded
  */
-int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, vmem_page_flags_t flags) {
+int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int flags) {
 	int ret;
 
 	while (len > 0) {
