@@ -4,9 +4,9 @@
 #include <framework/mod/options.h>
 
 SECTIONS {
-	.bss.vmem_pages (NOLOAD): ALIGN(OPTION_MODULE_GET(embox__arch__mmu, NUMBER, page_size)) {
+	.bss.embox.vmem_pages (NOLOAD): ALIGN(OPTION_MODULE_GET(embox__arch__mmu, NUMBER, page_size)) {
 		__vmem_pages_start = .;
-		*(.bss.vmem_pages)
+		*(.bss.embox.vmem_pages)
 		__vmem_pages_end = .;
 	}
 }

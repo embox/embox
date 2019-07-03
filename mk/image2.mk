@@ -90,10 +90,54 @@ endif
 # Module-level rules.
 module_prereqs = $(o_files) $(a_files) $(common_prereqs)
 
+# Return sections like .bss, .bss._something, etc. But preserve .bss..something
+# and .bss.embox.something since it is used for Embox's internal purpuses.
+# The same is for text, rodata, data sections.
+#
+# 1. File
+# 2. Section name - text, rodata, data, bss
+get_sections = $(filter .$2%, $(filter-out .$2..% .$2.embox%, $(shell $(OBJDUMP) -h $1)))
+
+# 1. File name (objects *.o or libraries *.a)
+# 2. Section name - text, rodata, data, bss
+# 3. Name of section specified with @LinkerSection annonation
+rename_section = \
+	$(if $3, \
+		$(foreach section, $(call get_sections,$1,$2), \
+			$(section)=.$3.$(section).module.$(module_id) \
+		), \
+		.$2=.$2.module.$(module_id) \
+	)
+
 # Here we also rename .ARM.exidx section because some ARM none-eabi
 # compilers crash with Seg Fault for some reason.
-$(OBJ_DIR)/module/% : objcopy_flags = \
-	$(foreach s,text rodata data bss ARM.exidx,--rename-section .$s=.$s.module.$(module_id))
+$(OBJ_DIR)/module/% : objcopy_options = \
+	$(patsubst %, --rename-section %, \
+		$(sort $(foreach f,$(o_files) $(a_files), \
+			$(call rename_section,$f,text,$(linker_section_text)) \
+			$(call rename_section,$f,rodata,$(linker_section_rodata)) \
+			$(call rename_section,$f,data,$(linker_section_data)) \
+			$(call rename_section,$f,bss,$(linker_section_bss)) \
+			$(call rename_section,$f,ARM.exidx,) \
+	)))
+
+#
+# Execv segfault workaround: Due to possibly very long objcopy_options
+# we should to pass objcopy_options partially. First 10000 options,
+# then next 10000 options and so on.
+#
+# 1. objcopy options
+# 2. File for objcopy
+#
+do_objcopy = \
+	$(eval tmp_file=$2.objcopy_options.txt) \
+	$(foreach i,$(shell seq 1 10000 $(words $1)), \
+		$(if $(wordlist $(i),$(words $1),$1), \
+			$(file >>$(tmp_file), $(wordlist 1,10000,$(wordlist $(i),$(words $1),$1))) \
+		) \
+	) \
+	$(EXTERNAL_MAKE_FLAGS) $(abspath $(ROOT_DIR))/mk/objcopy_helper.sh $(tmp_file) $2; \
+	$(RM) $(tmp_file)
 
 ar_prerequisites = $(module_prereqs)
 $(OBJ_DIR)/module/%.a : mk/arhelper.mk
@@ -101,8 +145,8 @@ $(OBJ_DIR)/module/%.a : mk/arhelper.mk
 		AR='$(AR)' ARFLAGS='$(ARFLAGS)' \
 		A_FILES='$(a_files)' \
 		O_FILES='$(o_files)' \
-		APP_ID='$(is_app)' $(if $(is_app), \
-			OBJCOPY='$(OBJCOPY)' OBJCOPYFLAGS='$(objcopy_flags)')
+		APP_ID='$(is_app)';
+	@$(call do_objcopy, $(objcopy_options), $@)
 
 ld_prerequisites = $(module_prereqs)
 obj_build=$(if $(strip $(value mod_postbuild)),$@.build.o,$@)
@@ -110,9 +154,8 @@ obj_postbuild=$@
 $(OBJ_DIR)/module/%.o :
 	$(LD) -r -o $(obj_build) $(ldflags) $(call fmt_line,$(o_files) \
             $(if $(a_files),--whole-archive $(a_files) --no-whole-archive))
-	$(if $(module_id),$(OBJCOPY) $(objcopy_flags) $(obj_build))
+	@$(if $(module_id),$(call do_objcopy, $(objcopy_options), $(obj_build)))
 	$(mod_postbuild)
-
 
 # Here goes image creation rules...
 #

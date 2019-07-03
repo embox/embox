@@ -44,6 +44,10 @@
 #define section(name, region, ...) \
 	__section(name, region, __VA_ARGS__)
 
+#define phdr(section_name, type, flags) \
+	$N$define LDS_SECTION_PHDR_TYPE_##section_name type \
+	$N$define LDS_SECTION_PHDR_FLAGS_##section_name flags
+
 #define __defined(macro) \
 	defined(macro)
 
@@ -78,7 +82,6 @@
 #define ROM(origin, length)  region(ROM, origin, length)
 
 /* Region alias. */
-#define SDRAM RAM
 #define FLASH ROM
 
 #include "lds.conf"

@@ -44,6 +44,7 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.C
 
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
 	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
+	-I$(SRCGEN_DIR) \
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 

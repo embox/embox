@@ -6,8 +6,7 @@ OUTPUT_ARCH(powerpc)
 ENTRY(_start)
 
 MEMORY {
-	MEMORY_REGION(RAM)
-	MEMORY_REGION(ROM)
+	#include <regions.lds.h>
 }
 
 _ram_base = ORIGIN(RAM);

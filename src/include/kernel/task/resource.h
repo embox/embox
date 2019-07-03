@@ -27,7 +27,7 @@ struct task_resource_desc {
 #define TASK_RESOURCE_DEF(desc, type) \
 	typeof(type) __kernel_task_resource_storage_##desc \
 			__attribute__((aligned(sizeof(void *)), \
-						section(".bss.ktask.resource"))); \
+						section(".bss.embox.ktask.resource"))); \
 	static const struct task_resource_desc desc; \
 	ARRAY_SPREAD_DECLARE(const struct task_resource_desc *const, \
 			task_resource_desc_array); \

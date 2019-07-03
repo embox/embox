@@ -1,7 +1,7 @@
 SECTIONS {
-	.rodata.initfs : {
+	.rodata.embox.initfs : {
 		_initfs_start = .;
-		*(.rodata.initfs)
+		*(.rodata.embox.initfs)
 		_initfs_end = .;
 	}
 }
