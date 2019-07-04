@@ -65,8 +65,8 @@ static int read_file(FILE *fp, char *buff, size_t buff_sz, size_t *out_bytes) {
 
 static int tftp_send_file(char *filename, char *hostname, char binary_on, void *addr) {
 	struct tftp_stream *s = tftp_new_stream(hostname, filename, TFTP_DIR_PUT, (bool) binary_on);
-	FILE *fp;
-	size_t bytes;
+	FILE *fp = NULL;
+	size_t bytes = 0;
 	int ret = 0;
 	uint8_t buf[TFTP_SEGSIZE];
 
@@ -151,7 +151,7 @@ int main(int argc, char **argv) {
 	int ret, i;
 	char param_ascii, param_binary, param_get, param_put;
 	int (*file_hnd)(char *, char *, char, void *);
-	void *addr;
+	void *addr = NULL;
 
 	/* Initialize objects */
 	param_ascii = param_binary = param_get = param_put = 0;
