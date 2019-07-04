@@ -11,5 +11,6 @@ module mmap {
 	depends marea
 	depends mmap_header
 	depends embox.kernel.task.resource.mmap
-	depends embox.mem.vmem_depends
+
+	depends embox.arch.mmu /* FIXME. depends only for runtime sequence */
 }
