@@ -1,0 +1,38 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "uniq",
+	help = "Filter  adjacent matching lines from FILE, writing to standard output.",
+	man = '''
+		NAME
+			uniq - report or omit repeated lines
+
+		SYNOPSIS
+			uniq [OPTION]... [FILE]...
+
+		DESCRIPTION
+			Filter  adjacent matching lines from FILE, writing to standard output.
+
+		OPTIONS
+			-c  prefix lines by the number of occurrences
+
+			-d  only print duplicate lines, one for each group
+
+			-D  print all duplicate lines
+
+			-z  line delimiter is NUL, not newline
+
+			-h  display this help and exit
+
+		AUTHOR
+			Written by Nastya Nizharadze.
+	''')
+module uniq {
+	source "uniq.c"
+
+	depends embox.compat.libc.all
+
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.fs.file
+	depends embox.framework.LibFramework
+}
