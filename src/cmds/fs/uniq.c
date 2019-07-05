@@ -16,11 +16,11 @@
 #define NL_AND_NUL 2
 
 #define FLAG_DUPLICATES (1 << 4)
-#define 		 FLAG_C (1 << 3)
-#define 		 FLAG_d (1 << 2)
-#define 		 FLAG_D (1 << 1)
-#define 		 FLAG_Z (1 << 0)
-#define 		 NO_FLAG 0
+#define FLAG_C          (1 << 3)
+#define FLAG_d          (1 << 2)
+#define FLAG_D          (1 << 1)
+#define FLAG_Z          (1 << 0)
+#define NO_FLAG          0
 
 static void print_usage(void) {
 	printf(
