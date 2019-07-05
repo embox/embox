@@ -23,7 +23,7 @@ module vmem_depends {
 	depends embox.mem.page_api
 
 	depends embox.mem.mmap_header
-	depends embox.mem.mmap
+	@NoRuntime depends embox.mem.mmap
 	depends embox.fs.syslib.idesc_mmap_api
 	depends vmem_header
 	depends embox.kernel.task.kernel_task
