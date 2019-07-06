@@ -109,13 +109,13 @@ static const struct uart_params uart_diag_params = {
 
 DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
 
+static int ns16550_init(void) {
+	return uart_register(&uart0, &uart_defparams);
+}
+
 static struct periph_memory_desc ns16550_mem = {
 	.start = COM_BASE,
 	.len   = 0x1000,
 };
-
-static int ns16550_init(void) {
-	return uart_register(&uart0, &uart_defparams);
-}
 
 PERIPH_MEMORY_DEFINE(ns16550_mem);
