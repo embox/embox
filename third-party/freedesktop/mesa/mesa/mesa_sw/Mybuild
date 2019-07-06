@@ -16,8 +16,8 @@ module  mesa_osmesa {
 	depends embox.compat.posix.fs.rewinddir_api
 	depends embox.compat.posix.fs.chown_api
 	depends embox.compat.posix.fs.mknod_api
-	depends embox.fs.syslib.idesc_mmap
-	depends embox.compat.posix.sys.mman.mmap
+	depends embox.fs.syslib.idesc_mmap_api
+	depends embox.compat.posix.sys.mman.mmap_api
 	depends third_party.freedesktop.mesa.libdrm
 	@NoRuntime depends embox.compat.posix.pthread_key
 
