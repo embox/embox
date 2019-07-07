@@ -6,6 +6,12 @@ module fb_header {
 	source "fb.h"
 }
 
+static module fb_section {
+	option number size = 0
+
+	source "fb.lds.S"
+}
+
 module fb {
 	source "fb.c"
 
