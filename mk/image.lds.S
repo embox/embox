@@ -25,6 +25,7 @@ SECTION_SYMBOLS(text)
 SECTION_SYMBOLS(rodata)
 SECTION_SYMBOLS(data)
 SECTION_SYMBOLS(bss)
+#include <section_symbols.lds.h>
 
 SECTIONS {
 	.text : ALIGN(TEXT_ALIGNMENT) {
