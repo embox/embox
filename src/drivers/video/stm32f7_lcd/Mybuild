@@ -3,6 +3,11 @@ package embox.driver.video
 @BuildDepends(third_party.bsp.stmf7cube.core)
 module stm32f7_lcd {
 	option number fb_base = 0xc0000000
+	option number height = 272
+	option number width = 480
+	option number bpp = 32
+	option boolean use_fb_section = false
+	option string fb_section_start = ""
 
 	source "stm32f7_lcd.c"
 

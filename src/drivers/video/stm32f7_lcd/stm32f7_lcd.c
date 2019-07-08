@@ -23,7 +23,18 @@
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(stm32f7_lcd_init);
 
-#define LCD_FRAMEBUFFER  OPTION_GET(NUMBER, fb_base)
+#define USE_FB_SECTION OPTION_GET(BOOLEAN,use_fb_section)
+
+#if USE_FB_SECTION
+#define STM32_FB_SECTION_START OPTION_GET(STRING,fb_section_start)
+extern char STM32_FB_SECTION_START;
+#else
+#define STM32_FB_START  OPTION_GET(NUMBER, fb_base)
+#endif
+
+#define STM32_LCD_HEIGHT  OPTION_GET(NUMBER, height)
+#define STM32_LCD_WIDTH   OPTION_GET(NUMBER, width)
+#define STM32_LCD_BPP     OPTION_GET(NUMBER, bpp)
 
 static int stm32f7_lcd_set_var(struct fb_info *info,
 		struct fb_var_screeninfo const *var) {
@@ -36,8 +47,19 @@ static int stm32f7_lcd_get_var(struct fb_info *info,
 
 	var->xres_virtual = var->xres = BSP_LCD_GetXSize();
 	var->yres_virtual = var->yres = BSP_LCD_GetYSize();
-	var->bits_per_pixel = 32;
-	var->fmt = RGBA8888;
+	var->bits_per_pixel = STM32_LCD_BPP;
+
+	switch (STM32_LCD_BPP) {
+	case 16:
+		var->fmt = RGB565;
+		break;
+	case 32:
+		var->fmt = RGBA8888;
+		break;
+	default:
+		log_error("stm32f7_lcd_get_var unknown BPP = %d\n", STM32_LCD_BPP);
+		return -1;
+	}
 
 	return 0;
 }
@@ -56,6 +78,8 @@ static uint32_t stm32f7_get_image_color(const struct fb_image *image, int num) {
 		} else {
 			return image->bg_color;
 		}
+	case 16:
+		return ((uint16_t *) image->data)[num];
 	case 32:
 		return ((uint32_t *) image->data)[num];
 	default:
@@ -85,7 +109,7 @@ static struct fb_ops stm32f7_lcd_ops = {
 };
 
 static int stm32f7_lcd_init(void) {
-	char *mmap_base = (void*) LCD_FRAMEBUFFER;
+	char *mmap_base;
 	size_t mmap_len = 0;
 
 	if (BSP_LCD_Init() != LCD_OK) {
@@ -93,7 +117,27 @@ static int stm32f7_lcd_init(void) {
 		return -1;
 	}
 
-	BSP_LCD_LayerDefaultInit(LTDC_ACTIVE_LAYER, LCD_FRAMEBUFFER);
+#if USE_FB_SECTION
+	mmap_base = (char *) &STM32_FB_SECTION_START;
+#else
+	mmap_base = (char *) STM32_FB_START;
+#endif
+
+	BSP_LCD_SetXSize(STM32_LCD_WIDTH);
+	BSP_LCD_SetYSize(STM32_LCD_HEIGHT);
+
+	switch (STM32_LCD_BPP) {
+	case 16:
+		BSP_LCD_LayerRgb565Init(LTDC_ACTIVE_LAYER, (unsigned int) mmap_base);
+		break;
+	case 32:
+		BSP_LCD_LayerDefaultInit(LTDC_ACTIVE_LAYER, (unsigned int) mmap_base);
+		break;
+	default:
+		log_error("Failed to init LCD Layer!");
+		return -1;
+	}
+
 	BSP_LCD_SelectLayer(LTDC_ACTIVE_LAYER);
 	BSP_LCD_Clear(LCD_COLOR_BLACK);
 
