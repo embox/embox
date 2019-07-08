@@ -9,7 +9,7 @@ ZEROMQ_CMAKE_DIR = $(BUILD_DIR)/cmake
 ZEROMQ_LIB       = $(BUILD_DIR)/lib/libzeromq.a
 ZEROMQ_FLAGS     = $(ZEROMQ_CMAKE_DIR)/flags
 
-EMBOX_IMPORTED_CPPFLAGS += -I$(EXTERNAL_BUILD_DIR)/third_party/STLport/libstlportg/include/stlport
+EMBOX_IMPORTED_CPPFLAGS += -I$(EXTERNAL_BUILD_DIR)/third_party/STLport/libstlportg/install/include/stlport
 EMBOX_IMPORTED_CPPFLAGS += -I$(abspath .)/include
 EMBOX_IMPORTED_CPPFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CPPFLAGS += -include $(ROOT_DIR)/third-party/STLport/stlport_embox_compat.h
