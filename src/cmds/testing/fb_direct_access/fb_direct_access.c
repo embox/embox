@@ -51,7 +51,7 @@ int main() {
 				uint32_t t = ((r & 0xFF) << 16) |
 						((g & 0xFF) << 8) | (b & 0xFF);
 
-				((uint32_t *)fbp)[idx + x] = t;
+				((uint32_t *)fbp)[idx + x] = t | 0xff000000;
 			} else { /* assume RGB565 */
 				int b = MIN(0x1F, (1 + x + y) / ((width + height) / 0x1F));
 				int g = MIN(0x3F, (x + 1) / (width / 0x3F));
