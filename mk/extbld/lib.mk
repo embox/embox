@@ -39,7 +39,7 @@ sources_archive_mirrors := $(filter-out %.git,$(PKG_SOURCES))
 
 pkg_ext ?=
 first_url := $(word 1,$(sources_archive_mirrors))
-ifneq ($(filter %.tar.gz %.tar.bz %.tar.xz,$(first_url)),)
+ifneq ($(filter %.tar.gz %.tar.bz %.tar.bz2 %.tar.xz,$(first_url)),)
 	pkg_ext := .tar$(suffix $(first_url))
 else ifneq ($(filter %.tgz %.tbz %.zip,$(first_url)),)
 	pkg_ext := $(suffix $(first_url))
