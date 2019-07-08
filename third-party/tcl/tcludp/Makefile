@@ -2,7 +2,8 @@
 PKG_NAME := tcludp
 PKG_VER  := 1.0.10
 
-PKG_SOURCES := http://sourceforge.net/projects/tcludp/files/$(PKG_NAME)/$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_SOURCES := http://sourceforge.net/projects/tcludp/files/$(PKG_NAME)/$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz \
+	http://download.embox.rocks/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_MD5     := 1843398b4ee9fbc17eb2e19465710f80
 
 PKG_PATCHES := pkg_patch.txt

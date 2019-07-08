@@ -2,7 +2,8 @@
 PKG_NAME := e2fsprogs
 PKG_VER  := 1.42.8
 
-PKG_SOURCES := http://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_SOURCES := http://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz \
+	http://download.embox.rocks/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_MD5     := 8ef664b6eb698aa6b733df59b17b9ed4
 
 PKG_PATCHES := patch.txt

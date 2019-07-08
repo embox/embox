@@ -2,7 +2,8 @@
 PKG_NAME := tcl
 PKG_VER  := 8.6.1
 
-PKG_SOURCES := http://sourceforge.net/projects/tcl/files/Tcl/$(PKG_VER)/$(PKG_NAME)$(PKG_VER)-src.tar.gz
+PKG_SOURCES := http://sourceforge.net/projects/tcl/files/Tcl/$(PKG_VER)/$(PKG_NAME)$(PKG_VER)-src.tar.gz \
+	http://download.embox.rocks/$(PKG_NAME)$(PKG_VER)-src.tar.gz
 PKG_MD5     := aae4b701ee527c6e4e1a6f9c7399882e
 
 PKG_PATCHES := patch.txt
