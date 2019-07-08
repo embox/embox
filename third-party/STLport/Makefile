@@ -2,7 +2,9 @@
 PKG_NAME := STLport
 PKG_VER  := 5.2.1
 
-PKG_SOURCES := http://download.sourceforge.net/project/stlport/STLport/$(PKG_NAME)-$(PKG_VER).tar.bz2
+PKG_SOURCES := https://netcologne.dl.sourceforge.net/project/stlport/STLport/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.bz2 \
+	http://download.embox.rocks/$(PKG_NAME)-$(PKG_VER).tar.bz2
+
 PKG_MD5     := a8341363e44d9d06a60e03215b38ddde
 
 PKG_PATCHES := patch.txt
@@ -43,7 +45,7 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	mkdir -p $(PKG_INSTALL_DIR)/../embox-lib/ $(PKG_INSTALL_DIR)/../include/
-	cp $(PKG_SOURCE_DIR)/build/lib/obj/embox-gcc/so_g/libstlportg.a $(PKG_INSTALL_DIR)/../embox-lib/
-	cp -r -f $(PKG_SOURCE_DIR)/stlport $(PKG_INSTALL_DIR)/../include/
+	mkdir -p $(PKG_INSTALL_DIR)/lib/ $(PKG_INSTALL_DIR)/include/
+	cp $(PKG_SOURCE_DIR)/build/lib/obj/embox-gcc/so_g/libstlportg.a $(PKG_INSTALL_DIR)/lib/
+	cp -r -f $(PKG_SOURCE_DIR)/stlport $(PKG_INSTALL_DIR)/include/
 	touch $@
