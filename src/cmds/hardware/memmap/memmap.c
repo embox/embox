@@ -27,10 +27,10 @@ extern char _ram_size;
 
 static void show_regions(void) {
 	printf("| region name |   start    |    end     |    size    |    free    |\n");
-	printf("|  sdram      | 0x%8" PRIx32 " | 0x%8" PRIx32 " | 0x%8" PRIx32 " | 0x%8" PRIx32 " |\n",
-			(uint32_t)&_ram_base,
-			(uint32_t)&_ram_base + (uint32_t)&_ram_size,
-			(uint32_t)__phymem_end, (uint32_t)__phymem_allocator->free);
+	printf("|  sdram      | 0x%8" PRIxPTR " | 0x%8" PRIxPTR " | 0x%8" PRIxPTR " | 0x%8" PRIxPTR " |\n",
+			(uintptr_t)&_ram_base,
+			(uintptr_t)&_ram_base + (uintptr_t)&_ram_size,
+			(uintptr_t)__phymem_end, (uintptr_t)__phymem_allocator->free);
 }
 
 static void show_all(void) {
@@ -42,6 +42,7 @@ static void show_vmem_translation(void) {
 	struct emmap *emmap;
 	uintptr_t voff;
 	uintptr_t paddr;
+	struct mmu_translate_info mmu_translate_info;
 
 	emmap = task_resource_mmap(task_kernel_task());
 
@@ -49,7 +50,7 @@ static void show_vmem_translation(void) {
 		printf("map region (base 0x%" PRIxPTR " size %zu flags 0x%" PRIx32 ")\n",
 				marea->start, marea->size, marea->flags);
 		for (voff = 0; voff < marea->size; voff += MMU_PAGE_SIZE) {
-			paddr = vmem_translate(emmap->ctx, marea->start + voff);
+			paddr = vmem_translate(emmap->ctx, marea->start + voff, &mmu_translate_info);
 			printf("0x%16x -> 0x%16x \n", marea->start + voff, paddr);
 		}
 	}
