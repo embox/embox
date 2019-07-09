@@ -145,6 +145,10 @@ extern int __isfinite(double d);
 extern int __isfinitef(float f);
 extern int __isfinitel(long double e);
 
+extern double hypot(double x, double y);
+extern float hypotf(float x, float y);
+extern long double hypotl(long double x, long double y);
+
 __END_DECLS
 
 #define FP_NAN 0
