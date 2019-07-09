@@ -18,7 +18,17 @@
 
 #include <kernel/printk.h>
 
+#if defined STM32F746xx
 #include "stm32746g_discovery_lcd.h"
+#elif defined STM32F769xx
+#include "stm32f769i_discovery_lcd.h"
+/* This macro is not defined for STM32F769I, but it still
+ * works just fine with the same numeric constatnt */
+#define LTDC_ACTIVE_LAYER 1
+void     BSP_LCD_LayerRgb565Init(uint16_t LayerIndex, uint32_t FB_Address);
+#else
+#error Unsupported platform
+#endif
 
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(stm32f7_lcd_init);

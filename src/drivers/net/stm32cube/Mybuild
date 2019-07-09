@@ -17,7 +17,7 @@ module stm32f4cube_eth {
 	depends embox.net.util.show_packet
 }
 
-@BuildDepends(third_party.bsp.stmf7cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7cube_eth {
 	source "stm32f7cube_eth.c"
 	source "stm32cube_eth.c"
@@ -32,4 +32,5 @@ module stm32f7cube_eth {
 	depends embox.net.core
 	depends embox.net.entry_api
 	depends embox.net.util.show_packet
+	depends third_party.bsp.st_bsp_api
 }
