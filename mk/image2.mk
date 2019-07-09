@@ -98,14 +98,18 @@ module_prereqs = $(o_files) $(a_files) $(common_prereqs)
 # 2. Section name - text, rodata, data, bss
 get_sections = $(filter .$2%, $(filter-out .$2..% .$2.embox%, $(shell $(OBJDUMP) -h $1)))
 
+section_in_region = \
+	$(shell grep LDS_SECTION_VMA_$1 $(SRCGEN_DIR)/config.lds.h)
+
 # 1. File name (objects *.o or libraries *.a)
 # 2. Section name - text, rodata, data, bss
 # 3. Name of section specified with @LinkerSection annonation
 rename_section = \
 	$(if $3, \
-		$(foreach section, $(call get_sections,$1,$2), \
-			$(section)=.$3.$(section).module.$(module_id) \
-		), \
+		$(if $(call section_in_region,$3), \
+			$(foreach section, $(call get_sections,$1,$2), \
+				$(section)=.$3.$(section).module.$(module_id) \
+		), .$2=.$2.module.$(module_id)), \
 		.$2=.$2.module.$(module_id) \
 	)
 
