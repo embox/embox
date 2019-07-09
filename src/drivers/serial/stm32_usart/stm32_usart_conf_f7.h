@@ -69,7 +69,6 @@
 #elif MODOPS_USARTX == 1
 #define USARTx                           USART1
 #define USARTx_CLK_ENABLE()              __HAL_RCC_USART1_CLK_ENABLE();
-#define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
 
 #define USARTx_FORCE_RESET()             __HAL_RCC_USART1_FORCE_RESET()
@@ -79,9 +78,20 @@
 #define USARTx_TX_PIN                    GPIO_PIN_9
 #define USARTx_TX_GPIO_PORT              GPIOA
 #define USARTx_TX_AF                     GPIO_AF7_USART1
+
+#if defined STM32F746xx
+#define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
 #define USARTx_RX_PIN                    GPIO_PIN_7
 #define USARTx_RX_GPIO_PORT              GPIOB
 #define USARTx_RX_AF                     GPIO_AF7_USART1
+#elif defined STM32F769xx
+#define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
+#define USARTx_RX_PIN                    GPIO_PIN_10
+#define USARTx_RX_GPIO_PORT              GPIOA
+#define USARTx_RX_AF                     GPIO_AF7_USART1
+#else
+#error Unsupported platform
+#endif
 
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART1_IRQn + 16
