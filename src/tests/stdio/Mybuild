@@ -13,3 +13,12 @@ module scanf_test {
 	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
+
+module fgets_test {
+	source "fgets_test.c"
+	@InitFS
+	source  "test_fgets.txt",
+			"test_fgets_empty.txt"
+	depends embox.compat.libc.all
+	depends embox.framework.LibFramework
+}
