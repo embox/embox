@@ -160,7 +160,7 @@ int mmu_present(int lvl, uintptr_t *entry)  {
 }
 
 void mmu_pte_set_writable(uintptr_t *pte, int value){
-	if (value) {
+	if (value & PROT_WRITE) {
 		*pte = *pte | MMU_PAGE_WRITABLE;
 	} else {
 		*pte = *pte & (~MMU_PAGE_WRITABLE);
