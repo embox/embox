@@ -15,7 +15,15 @@
 
 #include <system_stm32f7xx.h>
 #include <stm32f7xx_hal.h>
+
+#if defined STM32F746xx
 #include <stm32746g_discovery.h>
+#elif defined STM32F769xx
+#include <stm32f769i_discovery.h>
+#else
+#error Unsupported platform
+#endif
+
 #include <stm32f7xx_hal_cortex.h>
 
 #include <framework/mod/options.h>

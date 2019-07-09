@@ -1,0 +1,192 @@
+package third_party.bsp.stm32746g_cube
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildArtifactPath(cppflags="-DSTM32F746xx -DUSBD_LPM_ENABLED=1 -I$(ROOT_DIR)/third-party/bsp/stm32746g_cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/,Drivers/STM32F7xx_HAL_Driver/Inc  Drivers/BSP/STM32746G-Discovery/ Drivers/CMSIS/Device/ST/STM32F7xx/Include Drivers/CMSIS/Include Projects/STM32746G-Discovery/Examples/BSP/Inc Utilities/Log Middlewares/ST/STM32_USB_Device_Library/Core/Inc Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc Middlewares/ST/STM32_USB_Host_Library/Core/Inc Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc Middlewares/Third_Party/FatFs/src)")
+static module core extends third_party.bsp.stmf7cube.core {
+	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
+	option number eth_rx_packet_count = 5
+	option number eth_tx_packet_count = 5
+
+	@Cflags("-Wno-unused")
+	@Cflags("-Wno-attributes")
+	@DefineMacro("HAL_ETH_MODULE_ENABLED")
+	@DefineMacro("HAL_PCD_MODULE_ENABLED")
+	@DefineMacro("HAL_HCD_MODULE_ENABLED")
+	@DefineMacro("USE_HAL_DRIVER")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Examples/BSP/Inc")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH")
+	source
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_adc.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_adc_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_can.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cec.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_crc_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cryp.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cryp_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dac.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dac_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dcmi.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dcmi_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_eth.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_gpio.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_hash.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_hash_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_hcd.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2s.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_irda.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_iwdg.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_msp_template.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_nand.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_nor.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pcd.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pcd_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_qspi.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rcc_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rng.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rtc.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_rtc_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sai.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sai_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sd.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sdram.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_smartcard.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_smartcard_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_spdifrx.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_spi.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sram.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_tim_ex.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_uart.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_usart.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_wwdg.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_sdmmc.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_usb.c",
+		"STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c"
+
+		@IncludeExport(path="")
+		source "stm32f7xx_hal_conf.h"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module system_init extends third_party.bsp.stmf7cube.system_init {
+	@DefineMacro("STM32F746xx")
+	@DefineMacro("USE_STDPERIPH_DRIVER")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/STM32F7xx_HAL_Driver/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/CMSIS/Include")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Examples/BSP/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Examples/BSP/Src/system_stm32f7xx.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module stm32f7_discovery_bsp extends third_party.bsp.stmf7cube.stm32f7_discovery_bsp {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery")
+	/* Cubse LCD call SDRAM_Init, we don't wont that, so tell Cube's LCD do not init SDRAM */
+	@DefineMacro("DATA_IN_ExtSDRAM")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery.c",
+			"./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_sdram.c",
+			"./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_lcd.c",
+			"./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_audio.c",
+			"./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_camera.c",
+			"./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_eeprom.c",
+			"./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_qspi.c",
+			"./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_sd.c",
+			"./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/STM32746G-Discovery/stm32746g_discovery_ts.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module stm32f7_discovery_components extends third_party.bsp.stmf7cube.stm32f7_discovery_components {
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ft5336")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ft5336/ft5336.c"
+
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/wm8994")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/wm8994/wm8994.c"
+
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ov9655")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ov9655/ov9655.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module stm32f7_discovery_utilities {
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Utilities/Log")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Utilities/Log/lcd_log.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module middlewares_usb_device {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Device/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_conf_template.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Device/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_bot.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_data.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_scsi.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_storage_template.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module middlewares_usb_host {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Host/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_conf_template.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ctlreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ioreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Host/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc_bot.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc_scsi.c"
+}
+
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module middlewares_fat_fs {
+	@DefineMacro("_STR_VOLUME_ID=0")
+	/* FIXME: Do not use FatFs config from USB_Host/MSC_Standalone */
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Projects/STM32746G-Discovery/Applications/USB_Host/MSC_Standalone/Inc")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stm32746g_cube/core/STM32Cube_FW_F7_V1.5.0/Middlewares/Third_Party/FatFs/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stm32746g_cube/core")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/Third_Party/FatFs/src/ff.c"
+}

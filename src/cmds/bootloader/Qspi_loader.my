@@ -11,11 +11,12 @@ package embox.cmd
 	AUTHORS
 		Denis Deryugin <deryugin.denis@gmail.com>
 	''')
-@BuildDepends(third_party.bsp.stmf7cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module qspi_loader {
 	source "qspi_loader.c"
 
 	depends embox.lib.tftp
 	depends embox.driver.flash.stm32f7_qspi
+	depends third_party.bsp.st_bsp_api
 	depends third_party.bsp.stmf7cube.stm32f7_discovery_bsp
 }

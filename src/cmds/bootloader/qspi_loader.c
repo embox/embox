@@ -10,8 +10,15 @@
 
 #include <lib/tftp.h>
 
+#if defined STM32F746xx
 #include "stm32746g_discovery.h"
 #include "stm32746g_discovery_qspi.h"
+#elif defined STM32F769xx
+#include "stm32f769i_discovery.h"
+#include "stm32f769i_discovery_qspi.h"
+#else
+#error Unsupported platform
+#endif
 
 static int qspi_recv_file(char *filename, char *hostname) {
 	struct tftp_stream *s = tftp_new_stream(hostname, filename, TFTP_DIR_GET, true);
