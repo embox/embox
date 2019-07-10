@@ -16,6 +16,9 @@ enum fformat raw_get_file_format(uint8_t *file) {
 	if (!memcmp(file, "RIFF", 4)) {
 		/* TODO check file consistency */
 		return RIFF_FILE;
+	/* Is it a BMP file? */
+	} else if (!memcmp(file, "BM", 2)) {
+		return BMP_FILE;
 	}
 
 	return TEXT_FILE; /* Regular text file */
