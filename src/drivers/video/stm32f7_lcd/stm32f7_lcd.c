@@ -149,6 +149,12 @@ static int stm32f7_lcd_init(void) {
 	}
 
 	BSP_LCD_SelectLayer(LTDC_ACTIVE_LAYER);
+
+#ifdef STM32F769xx
+	/* STM32746 doesn't support brightness change */
+	BSP_LCD_SetBrightness(100);
+#endif
+
 	BSP_LCD_Clear(LCD_COLOR_BLACK);
 
 	fb_create(&stm32f7_lcd_ops, mmap_base, mmap_len);
