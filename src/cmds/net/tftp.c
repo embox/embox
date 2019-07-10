@@ -102,7 +102,7 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on, void *
 
 static int tftp_recv_file(char *filename, char *hostname, char binary_on, void *addr) {
 	struct tftp_stream *s = tftp_new_stream(hostname, filename, TFTP_DIR_GET, (bool) binary_on);
-	FILE *fp;
+	FILE *fp = NULL;
 	int bytes;
 	uint8_t buf[TFTP_SEGSIZE];
 
