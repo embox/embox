@@ -12,3 +12,14 @@ module stm32f4_sd extends sd {
 	depends embox.driver.block_common
 	depends third_party.bsp.stmf4cube.core
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f7_sd extends sd {
+	option boolean use_local_buf=true /* Used to fix align problems */
+	option number sd_buf_size=4096
+
+	source "stm32f7_sd.c"
+
+	depends embox.driver.block_common
+	depends third_party.bsp.st_bsp_api
+}
