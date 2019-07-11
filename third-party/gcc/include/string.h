@@ -9,11 +9,6 @@
 
 __BEGIN_DECLS
 
-static inline int strcoll(const char *s1, const char *s2) {
-	assert(0);
-	return 0;
-}
-
 static inline size_t strxfrm(char *s1, const char *s2, size_t n) {
 	assert(0);
 	return 0;
