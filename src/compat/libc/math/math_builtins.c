@@ -20,8 +20,16 @@ int signbit(double x) {
 	return __builtin_signbit(x);
 }
 
+float fabsf(float x) {
+	return __builtin_fabsf(x);
+}
+
 double fabs(double x) {
 	return __builtin_fabs(x);
+}
+
+long double fabsl(long double x) {
+	return __builtin_fabsl(x);
 }
 
 double round(double x) {
@@ -202,9 +210,11 @@ long double sqrtl(long double x) {
 double tan(double x) {
 	return __builtin_tan(x);
 }
+
 float tanf(float x) {
 	return __builtin_tanf(x);
 }
+
 long double tanl(long double x) {
 	return __builtin_tanl(x);
 }
@@ -212,9 +222,218 @@ long double tanl(long double x) {
 double tanh(double x) {
 	return __builtin_tanh(x);
 }
+
 float tanhf(float x) {
 	return __builtin_tanhf(x);
 }
+
 long double tanhl(long double x) {
 	return __builtin_tanhl(x);
+}
+
+long lrintf(float x) {
+	return __builtin_lrintf(x);
+}
+
+long lrint(double x) {
+	return __builtin_lrint(x);
+}
+
+long lrintl(long double x) {
+	return __builtin_lrintl(x);
+}
+
+long long llrintf(float x) {
+	return __builtin_llrintf(x);
+}
+
+long long llrint(double x) {
+	return __builtin_llrint(x);
+}
+
+long long llrintl(long double x) {
+	return __builtin_llrintl(x);
+}
+
+float log2f(float x) {
+	return __builtin_log2f(x);
+}
+
+double log2(double x) {
+	return __builtin_log2(x);
+}
+
+long double log2l(long double x) {
+	return __builtin_log2l(x);
+}
+
+float exp2f(float x) {
+	return __builtin_exp2f(x);
+}
+
+double exp2(double x) {
+	return __builtin_exp2(x);
+}
+
+long double exp2l(long double x) {
+	return __builtin_exp2l(x);
+}
+
+float truncf(float x) {
+	return __builtin_truncf(x);
+}
+
+double trunc(double x) {
+	return __builtin_trunc(x);
+}
+
+long double truncl(long double x) {
+	return __builtin_truncl(x);
+}
+
+float rintf(float x) {
+	return __builtin_rintf(x);
+}
+
+double rint(double x) {
+	return __builtin_rint(x);
+}
+
+long double rintl(long double x) {
+	return __builtin_rintl(x);
+}
+
+float fminf(float x, float y) {
+	return __builtin_fminf(x, y);
+}
+
+double fmin(double x, double y) {
+	return __builtin_fmin(x, y);
+}
+
+long double fminl(long double x, long double y) {
+	return __builtin_fminl(x, y);
+}
+
+float fmaxf(float x, float y) {
+	return __builtin_fmaxf(x, y);
+}
+
+double fmax(double x, double y) {
+	return __builtin_fmax(x, y);
+}
+
+long double fmaxl(long double x, long double y) {
+	return __builtin_fmaxl(x, y);
+}
+
+float copysignf(float x, float y) {
+	return __builtin_copysignf(x, y);
+}
+
+double copysign(double x, double y) {
+	return __builtin_copysign(x, y);
+}
+
+long double copysignl(long double x, long double y) {
+	return __builtin_copysignl(x, y);
+}
+
+long lroundf(float x) {
+	return __builtin_lroundf(x);
+}
+
+long lround(double x) {
+	return __builtin_lround(x);
+}
+
+long lroundl(long double x) {
+	return __builtin_lroundl(x);
+}
+
+long long llroundf(float x) {
+	return __builtin_llroundf(x);
+}
+
+long long llround(double x) {
+	return __builtin_llround(x);
+}
+
+long long llroundl(long double x) {
+	return __builtin_llroundl(x);
+}
+
+union IEEEf2bits {
+	float	f;
+	struct {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+		unsigned int	man	:23;
+		unsigned int	exp	:8;
+		unsigned int	sign	:1;
+#else /* _BIG_ENDIAN */
+		unsigned int	sign	:1;
+		unsigned int	exp	:8;
+		unsigned int	man	:23;
+#endif
+	} bits;
+};
+
+union IEEEd2bits {
+	double	d;
+	struct {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+#if __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
+		unsigned int	manl	:32;
+#endif
+		unsigned int	manh	:20;
+		unsigned int	exp	:11;
+		unsigned int	sign	:1;
+#if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
+		unsigned int	manl	:32;
+#endif
+#else /* _BIG_ENDIAN */
+		unsigned int	sign	:1;
+		unsigned int	exp	:11;
+		unsigned int	manh	:20;
+		unsigned int	manl	:32;
+#endif
+	} bits;
+};
+
+int __isnormal(double d) {
+	union IEEEd2bits u;
+
+	u.d = d;
+	return (u.bits.exp != 0 && u.bits.exp != 2047);
+}
+
+int __isnormalf(float f) {
+	union IEEEf2bits u;
+
+	u.f = f;
+	return (u.bits.exp != 0 && u.bits.exp != 255);
+}
+
+int __isnormall(long double f) {
+	/* Long double format is platform-specific, so just use stub */
+	return 1;
+}
+
+int __isfinite(double d) {
+	union IEEEd2bits u;
+
+	u.d = d;
+	return (u.bits.exp != 2047);
+}
+
+int __isfinitef(float f) {
+	union IEEEf2bits u;
+
+	u.f = f;
+	return (u.bits.exp != 255);
+}
+
+int __isfinitel(long double e) {
+	/* Long double format is platform-specific, so just use stub */
+	return 1;
 }
