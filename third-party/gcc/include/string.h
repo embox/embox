@@ -9,11 +9,6 @@
 
 __BEGIN_DECLS
 
-static inline size_t strxfrm(char *s1, const char *s2, size_t n) {
-	assert(0);
-	return 0;
-}
-
 __END_DECLS
 
 #endif /* GCC_STRING_H_ */
