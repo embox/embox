@@ -10,27 +10,25 @@
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
-#include <defines/null.h>
-#include <defines/size_t.h>
 
 #define IS_NOT_ASCII (1u << 7)
 
 size_t strxfrm(char *dest, const char *src, size_t n) {
-	size_t srclen; 
+	size_t srclen, min_copy, buff;
 	unsigned const char *sp = (unsigned const char *) src;
+    
 	srclen = strlen(src);
-	
-	while (*sp++ & (IS_NOT_ASCII));
+	buff = (((srclen + 1) < (n)) ? (srclen + 1) : (n));
+	min_copy = buff;
+
+	while (!(*sp++ & (IS_NOT_ASCII)) && buff--);
 	if ((*(--sp)) & (IS_NOT_ASCII)) {
 		printf("strxfrm: error: not ASCII character\n");
 		assert(0);
 	}
 
 	if (n != 0) {
-		strncpy(dest, src, (srclen + 1) < n ? (srclen + 1) : n);
-		return srclen;
+		strncpy(dest, src, min_copy);
 	}
-
-	*dest = '\0';
-	return 0;
+	return srclen;
 }

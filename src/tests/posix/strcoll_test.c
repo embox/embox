@@ -6,7 +6,6 @@
  * @date    08.07.2019
  */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <embox/test.h>
@@ -16,7 +15,6 @@ EMBOX_TEST_SUITE("strcoll test");
 TEST_CASE("strcoll should return negative number because 'A' < 'a'") {
 	char *line1;
 	char *line2;
-
 	line1 = "abA";
 	line2 = "aba";
 	test_assert_true(strcoll(line1, line2) < 0);

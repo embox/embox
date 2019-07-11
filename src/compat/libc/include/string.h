@@ -155,7 +155,7 @@ extern int strncmp(const char *str1, const char *str2, size_t n);
  */
 extern int strcoll(const char *s1, const char *s2);
 
-/** 
+/**
  * Copy no more than n symbols from src to dest in such way that
  * strcmp with modified strings works in the same way as strcoll.
  * @param dest

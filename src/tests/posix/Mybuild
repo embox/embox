@@ -17,6 +17,7 @@ module all {
 	depends waitpid_test
 	depends utime_test
 	depends strcoll_test
+	depends strxfrm_test
 }
 
 module utime_test {
@@ -142,5 +143,12 @@ module fnmatch_test {
 
 module strcoll_test {
 	source "strcoll_test.c"
+
+	depends embox.compat.libc.all
+}
+
+module strxfrm_test {
+	source "strxfrm_test.c"
+
 	depends embox.compat.libc.all
 }

@@ -15,7 +15,7 @@
 int strcoll(const char *s1, const char *s2) {
 
 	if (((*s1) & (IS_NOT_ASCII)) || ((*s2) & IS_NOT_ASCII)) {
-		printf("unexpected character\n");
+		printf("strcoll: error: not ASCII character\n");
 		assert(0);
 	}
 	while (*s1 && *s1 == *s2) {
