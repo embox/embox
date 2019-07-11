@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
 	int opt;
 	int err;
 	int sleep_msec = MAX_REC_DURATION;
-	char *filename;
+	char *filename = NULL;
 	PaStream *stream = NULL;
 
 	struct PaStreamParameters in_par;
