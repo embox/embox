@@ -10,7 +10,7 @@ module ide {
 	@IncludeExport(path="drivers")
 	source "ide.h"
 
-	depends embox.driver.block
+	depends embox.driver.block_api
 	depends embox.util.LibUtil
 	depends embox.driver.block_common
 	depends embox.util.indexator
