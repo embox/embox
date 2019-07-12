@@ -3,8 +3,16 @@
 #endif /* HAL_ARCH_H_ */
 
 #ifndef __BYTE_ORDER__
-#define __BYTE_ORDER __LITTLE_ENDIAN
-#define BYTE_ORDER _BYTE_ORDER
+
+#ifndef __ORDER_LITTLE_ENDIAN__
+#define __ORDER_LITTLE_ENDIAN__ _LITTLE_ENDIAN
 #endif
 
+#define __BYTE_ORDER__ __ORDER_LITTLE_ENDIAN__
+#define __FLOAT_WORD_ORDER__ __ORDER_LITTLE_ENDIAN__
+
+#define __ORDER_BIG_ENDIAN__ 0
+#endif
+
+#define __BYTE_ORDER __ORDER_LITTLE_ENDIAN__
 #define __PLATFORM_ARCH "e2k"
