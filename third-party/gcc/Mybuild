@@ -1,5 +1,6 @@
 package third_party.gcc
 
+@BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include")
 static module libsupcxx extends embox.lib.libsupcxx {
@@ -9,6 +10,7 @@ static module libsupcxx extends embox.lib.libsupcxx {
 	@NoRuntime depends gcc_build
 }
 
+@BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include")
 static module libgcc extends embox.lib.libgcc {
@@ -18,6 +20,7 @@ static module libgcc extends embox.lib.libgcc {
 	@NoRuntime depends gcc_build
 }
 
+@BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include/std")
 static module libstdcxx extends embox.lib.stl {
@@ -27,6 +30,7 @@ static module libstdcxx extends embox.lib.stl {
 	@NoRuntime depends gcc_build
 }
 
+@BuildDepends(third_party.lib.OpenLibm)
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include")
 static module gcc_build {
