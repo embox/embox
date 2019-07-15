@@ -8,6 +8,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
+
+#include <drivers/device.h>
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
@@ -103,7 +105,7 @@ struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file 
 	*sb = (struct super_block) {
 		.fs_drv    = drv,
 		.bdev_file = bdev_file,
-		.bdev      = bdev_file ? bdev_file->f_inode->i_data : NULL,
+		.bdev      = bdev_file ? ((struct dev_module *) bdev_file->f_inode->i_data)->dev_priv : NULL,
 	};
 
 	if (drv->fill_sb)
