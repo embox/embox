@@ -8,6 +8,7 @@
  * 	- access_type added
  */
 
+#include <inttypes.h>
 #include <unistd.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -15,6 +16,12 @@
 #include <errno.h>
 
 #define DEFAULT_LENGTH 0x4
+
+#if (__WORDSIZE == 32)
+#define PRINT_POINTER_WIDTH "8"
+#elif (__WORDSIZE == 64)
+#define PRINT_POINTER_WIDTH "16"
+#endif
 
 enum access_type {
 	MEM_AT_CHAR,
@@ -25,7 +32,7 @@ enum access_type {
 static const char *fmts[] = {
 	"0x%02lx  ",
 	"0x%04lx  ",
-	"0x%08lx  ",
+	"0x%0" PRINT_POINTER_WIDTH "lx  ",
 };
 
 static const size_t aalign[] = {
@@ -42,14 +49,14 @@ static int parse_option(char *optarg, int opt, long unsigned int *number) {
 	char *endptr;
 
 	if ((optarg == NULL) || (*optarg == '\0')) {
-		printf("wmem -%c: option expected\n", opt);
+		printf("mem -%c: option expected\n", opt);
 		print_usage();
 		return -EINVAL;
 	}
 
 	*number = strtoul(optarg, &endptr, 0);
 	if (*endptr != '\0') {
-		printf("wmem -%c: invalid option: %s\n", opt, optarg);
+		printf("mem -%c: invalid option: %s\n", opt, optarg);
 		print_usage();
 		return -EINVAL;
 	}
@@ -58,7 +65,7 @@ static int parse_option(char *optarg, int opt, long unsigned int *number) {
 }
 
 int main(int argc, char **argv) {
-	int opt, i, ret;
+	int opt, ret;
 	void *address;
 	unsigned long val;
 	size_t length = DEFAULT_LENGTH;
@@ -107,18 +114,16 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	if ((int) address & ((1 << at) - 1)) {
+	if ((uintptr_t) address & ((1 << at) - 1)) {
 		printf("address is not aligned to selected mem access\n");
 		return -EINVAL;
 	}
 
 	/*address = (unsigned int *) ((int) address & ~(sizeof(address) - 1));*/
 	/*length = (length + sizeof(address) - 1) / sizeof(address);*/
-	i = 0;
 	while (length--) {
-		if (i-- == 0) {
-			i = 3;
-			printf("\n0x%08x:\t", (unsigned int) address);
+		if (0 == ((uintptr_t)address & 0xF)) {
+			printf("\n0x%0" PRINT_POINTER_WIDTH "x:\t", (uintptr_t) address);
 		}
 
 		switch (at) {
