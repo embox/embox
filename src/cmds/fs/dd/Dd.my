@@ -7,7 +7,7 @@ package embox.cmd.fs
 		NAME
 			dd - read files and block devices
 		SYNOPSIS
-			dd if=SOURCE skip=START count=BLOCKS
+			dd if=SOURCE [skip=START] [count=BLOCKS] [format=raw|hex_c]
 		DESCRIPTION
 			Print data of SOURCE to standard output.
 		AUTHOR
@@ -16,7 +16,9 @@ package embox.cmd.fs
 module dd {
 	source "dd.c"
 
-	depends embox.compat.libc.all
-	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.fs.read
+	depends embox.compat.posix.fs.open
+	depends embox.compat.posix.fs.write
 }

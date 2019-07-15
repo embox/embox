@@ -66,10 +66,14 @@ static uint8_t sd_buf[SD_BUF_SIZE];
 #endif
 static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	assert(count <= SD_BUF_SIZE);
-	int res;
+	int res = -1;
 	size_t bsize = bdev->block_size;
 #ifdef USE_LOCAL_BUF
-	res = BSP_SD_ReadBlocks((uint32_t *) sd_buf, blkno * bsize, bsize, 1) ? -1 : bsize;
+	/* XXX for some reason BSP_SD_ReadBlocks randomly fails from time
+	 * to time, so just re-read data in this case */
+	while (res == -1) {
+		res = BSP_SD_ReadBlocks((uint32_t *) sd_buf, blkno * bsize, bsize, 1) ? -1 : bsize;
+	}
 	while (BSP_SD_GetStatus() != SD_TRANSFER_OK);
 	memcpy(buf, sd_buf, bsize);
 #else

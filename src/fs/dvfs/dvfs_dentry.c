@@ -170,8 +170,13 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	if (*path == '/') {
 		dentry = task_fs()->root;
 		path++;
-	} else
-		dentry = task_fs()->pwd;
+	} else {
+		if (lookup->item == NULL) {
+			dentry = task_fs()->pwd;
+		} else {
+			dentry = lookup->item;
+		}
+	}
 
 	if (*path == '\0') {
 		*lookup = (struct lookup) {

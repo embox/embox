@@ -28,10 +28,10 @@ static inline void fill_dirent(struct dirent *dirent, struct dentry *dentry) {
 
 DIR *opendir(const char *path) {
 	DIR *d;
-	struct lookup l;
+	struct lookup l = {0, 0};
 	int err;
 
-	if ((err = dvfs_lookup(path, &l))) {
+	if ((err = dvfs_lookup(path, &l)) || l.item == NULL) {
 		SET_ERRNO(-err);
 		return NULL;
 	}
@@ -65,7 +65,7 @@ int closedir(DIR *dir) {
 }
 
 struct dirent *readdir(DIR *dir) {
-	struct lookup l;
+	struct lookup l = {0, 0};
 	struct dentry *prev;
 
 	if (!dir) {

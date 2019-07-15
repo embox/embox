@@ -518,7 +518,7 @@ struct super_block_operations fat_sbops = {
  */
 static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	struct fat_fs_info *fsi;
-	struct block_dev *dev = bdev_file->f_inode->i_data;
+	struct block_dev *dev = ((struct dev_module *) bdev_file->f_inode->i_data)->dev_priv;
 	assert(sb);
 	assert(dev);
 

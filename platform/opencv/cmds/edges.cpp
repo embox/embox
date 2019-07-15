@@ -17,14 +17,16 @@
 using namespace cv;
 using namespace std;
 
-static void help() {
+static void help(void) {
 	printf("\nThis sample demonstrates Canny edge detection\n"
 			"Call:\n"
-			"	./edge [threshold]\n\n");
+			"	./edge [image [threshold]] \n\n");
 }
 
 static const char* keys = {
-	"{help h||}{@repeat |1     | number}"
+	"{help h||}"
+	"{@image        | \"fruits.png\" | source image   }"
+	"{@repeat |1     | number}"
 };
 
 int main(int argc, const char** argv) {
@@ -39,8 +41,8 @@ int main(int argc, const char** argv) {
 		return 0;
 	}
 
-	edgeThresh = parser.get<int>(0);
-	string filename = "fruits.png";
+	edgeThresh = parser.get<int>(1);
+	string filename = parser.get<String>("@image");
 	image = imread(filename, 1);
 	if(image.empty()) {
 		printf("Cannot read image file: %s\n", filename.c_str());
