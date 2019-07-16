@@ -25,6 +25,7 @@ module fb {
 	depends fonts
 	depends embox.driver.char_dev
 	depends embox.driver.video.fb_devfs
+	@NoRuntime depends fb_overlay
 }
 
 module fb_overlay {
@@ -33,7 +34,7 @@ module fb_overlay {
 
 	source "fb_overlay.c"
 
-	depends fb
+	@NoRuntime depends fb
 	depends fonts
 }
 

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <limits.h>
 #include <errno.h>
+#include <drivers/video/fb_overlay.h>
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/printk.h>
@@ -72,6 +73,7 @@ static void fb_ops_fixup(struct fb_ops *ops) {
 struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
 	struct fb_dev *dev;
 	struct fb_info *info = NULL;
+	int banner_xofft, banner_yofft;
 
 	assert(ops);
 
@@ -95,6 +97,22 @@ struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_s
 		fb_ops_fixup(&info->ops);
 		fb_update_current_var(info);
 		fb_devfs_create(info, map_base, map_size);
+
+		#define BANNER_WIDTH  (35 * 8) /* 35 chars using 8x16 font */
+		#define BANNER_HEIGHT (10 * 16) /* 10 lines using 8x16 font*/
+		banner_xofft = (info->var.xres - BANNER_WIDTH) / (16);
+		banner_yofft = (info->var.yres - BANNER_HEIGHT) / (32);
+		fb_overlay_init(info, map_base);
+		fb_overlay_put_line(banner_xofft, banner_yofft + 1, ".------.          _");
+		fb_overlay_put_line(banner_xofft, banner_yofft + 2, "|  ____|         | | ");
+		fb_overlay_put_line(banner_xofft, banner_yofft + 3, "| |____ _ __ ___ | |_    _____  __");
+		fb_overlay_put_line(banner_xofft, banner_yofft + 4, "|  ____| '_ ` _ \\|  _ \\ / _ \\ \\/ /");
+		fb_overlay_put_line(banner_xofft, banner_yofft + 5, "| |____| | | | | | |_) | (_) >  <");
+		fb_overlay_put_line(banner_xofft, banner_yofft + 6, "|______|_| |_| |_|____/ \\___/_/\\_\\");
+		fb_overlay_put_line(banner_xofft, banner_yofft + 8, "Build date: " __DATE__);
+		fb_overlay_put_line(banner_xofft, banner_yofft + 9, "Build time: " __TIME__);
+		fb_overlay_put_line(banner_xofft, banner_yofft + 10, "Compiler version: " __VERSION__);
+
 	}
 out:
 	mutex_unlock(&fb_static);
