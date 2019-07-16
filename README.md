@@ -1,7 +1,19 @@
 Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 
-Embox is a configurable real-time operating system designed for resource constrained and embedded systems.
+Embox is a configurable RTOS designed for resource constrained and embedded systems. Embox main idea is using Linux software without Linux.
+
+Achievements
+-------------
+* [VoIP phone on STM32F7Discovery based on PJSIP project](https://github.com/embox/embox/wiki/PJSIP-on-STM32)
+* [Qt on STM32F7Discovery](https://github.com/embox/embox/wiki/Qt-on-STM32)
+* [OpenCV on STM32F769i board](https://github.com/embox/embox/wiki/OpenCV-on-STM32)
+* A lot of programming languages available: Python, Lisp, Java (phoneme), TCL, Ruby, Lua
+* SSHD based on Dropbear project
+* Mesa3d
+* Quake3
+* zeromq, qpid
+* ...
 
 Key features
 ---------------
