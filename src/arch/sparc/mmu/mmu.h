@@ -9,6 +9,7 @@
 #ifndef MMU_H_
 #define MMU_H_
 
+
 #include <stdint.h>
 
 #define MMU_LEVELS              3
@@ -22,6 +23,7 @@
 #define __MMU_SHIFT_2       __MMU_PTE_SHIFT
 
 #ifndef __ASSEMBLER__
+#include <inttypes.h>
 
 typedef uint32_t __mmu_paddr_t;
 typedef uint32_t __mmu_vaddr_t;
@@ -29,6 +31,30 @@ typedef uint32_t __mmu_vaddr_t;
 typedef uint32_t __mmu_ctx_t;
 
 typedef uint32_t __mmu_reg_t;
+
+#define __PRIxMMUREG PRIx32
+
+#include <asm/asi.h>
+
+static inline void mmu_set_mmureg(unsigned long addr_reg,
+				unsigned long regval) {
+	__asm__ __volatile__(
+		"sta %0, [%1] %2\n\t"
+		:
+		: "r"(regval), "r"(addr_reg), "i"(ASI_M_MMUREGS)
+		: "memory"
+	);
+}
+
+static inline unsigned long mmu_get_mmureg(unsigned long addr_reg) {
+	register int retval;
+	__asm__ __volatile__(
+		"lda [%1] %2, %0\n\t"
+		: "=r" (retval)
+		: "r" (addr_reg), "i" (ASI_M_MMUREGS)
+	);
+	return retval;
+}
 
 #endif
 
@@ -44,5 +70,6 @@ typedef uint32_t __mmu_reg_t;
 #define MMU_PAGE_SUPERVISOR  ((1UL << 2) << 2)
 
 #define MMU_PAGE_CACHEABLE   (1UL << 7)
+
 
 #endif /* MMU_H_ */

@@ -10,3 +10,9 @@ module mmu extends embox.mem.vmem {
 
 	depends embox.mem.vmem_depends
 }
+
+module mmuinfo extends embox.arch.mmuinfo {
+	option number log_level=1
+
+	source "mmuinfo.c"
+}
