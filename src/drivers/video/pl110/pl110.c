@@ -113,9 +113,9 @@ static int pl110_lcd_init(void) {
 	REG32_CLEAR(PL110_CONTROL, PL110_BPP_MASK);
 	REG32_ORIN(PL110_CONTROL, 5 << PL110_BPP_OFFT);
 
-	fb_create(&pl110_lcd_ops, mmap_base, mmap_len);
-
 	memset(mmap_base, 0, PL110_DISPLAY_WIDTH * PL110_DISPLAY_HEIGHT);
+
+	fb_create(&pl110_lcd_ops, mmap_base, mmap_len);
 
 	return 0;
 }
