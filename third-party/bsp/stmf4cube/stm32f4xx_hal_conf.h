@@ -245,7 +245,11 @@
 #endif /* HAL_RCC_MODULE_ENABLED */
 
 #ifdef HAL_GPIO_MODULE_ENABLED
+/* XXX workaround for macro collision */
+#undef GPIO_MODE_INPUT
   #include "stm32f4xx_hal_gpio.h"
+#undef GPIO_MODE_INPUT
+#define GPIO_MODE_INPUT (1 << 0) /* XXX should be the same as gpio_driver.h declaration */
 #endif /* HAL_GPIO_MODULE_ENABLED */
 
 #ifdef HAL_DMA_MODULE_ENABLED
