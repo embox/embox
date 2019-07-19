@@ -240,7 +240,7 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 		return char_dev_idesc_create(NULL);
 	}
 	assert(dev->dev_open);
-	desc = dev->dev_open(dev, (void *)__oflag);
+	desc = dev->dev_open(dev, (void *)(uintptr_t) __oflag);
 
 	return desc;
 }

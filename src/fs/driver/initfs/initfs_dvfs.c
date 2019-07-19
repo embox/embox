@@ -56,7 +56,7 @@ static size_t initfs_read(struct file *desc, void *buf, size_t size) {
 		size = inode->length - desc->pos;
 	}
 
-	memcpy(buf, (char *) inode->start_pos + desc->pos, size);
+	memcpy(buf, (char *) (uintptr_t) (inode->start_pos + desc->pos), size);
 
 	return size;
 }
@@ -67,7 +67,7 @@ static int initfs_ioctl(struct file *desc, int request, void *data) {
 
 	p_addr = data;
 
-	*p_addr = (char*) inode->start_pos;
+	*p_addr = (char*) (uintptr_t) inode->start_pos;
 
 	return 0;
 }
@@ -171,7 +171,7 @@ static int initfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct cpio_entry entry;
 	char *c;
 
-	if (NULL == cpio_parse_entry((char*) inode->i_no, &entry))
+	if (NULL == cpio_parse_entry((char *) (uintptr_t) inode->i_no, &entry))
 		return -1;
 
 	switch (flags) {

@@ -173,7 +173,7 @@ static void * run_cmd(void *data) {
 	if (ret != 0) {
 		printf("%s: Command returned with code %d: %s\n",
 				cmd_name(cdata.cmd), ret, strerror(-ret));
-		return (void *)ret; /* error: ret */
+		return (void *) (uintptr_t) ret; /* error: ret */
 	}
 
 	return NULL; /* ok */
