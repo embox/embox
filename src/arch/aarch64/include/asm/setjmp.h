@@ -5,13 +5,15 @@
 
 /**
  * All callee preserved registers:
- * v1 - v7, fp, ip, sp, lr, f4, f5, f6, f7
+ * SP, LR, x19-x28
  */
-#define _JBLEN 23
+#define _JBLEN 12
 
 #ifndef __ASSEMBLER__
 
-typedef	int __jmp_buf[_JBLEN];
+#include <stdint.h>
+
+typedef	uint64_t __jmp_buf[_JBLEN];
 
 #endif
 
