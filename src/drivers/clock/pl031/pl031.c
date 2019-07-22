@@ -17,7 +17,7 @@
 
 #define PL031_BASE      OPTION_GET(NUMBER, base_addr)
 #define PL031_IRQ       OPTION_GET(NUMBER, irq_nr)
-#define PL031_TARGET_HZ OPTION_GET(NUMBER, freq)
+#define PL031_TARGET_HZ 1
 
 #define PL031_DR   (PL031_BASE + 0x00)
 #define PL031_MR   (PL031_BASE + 0x04)
@@ -28,15 +28,13 @@
 #define PL031_MIS  (PL031_BASE + 0x18)
 #define PL031_ICR  (PL031_BASE + 0x1C)
 
-#define LOAD_VALUE 1024
-
 #define PL031_CR_START     (1 << 0)
 #define PL031_IMSC_EN      (1 << 0)
 #define PL031_ICR_CLEAR    (1 << 0)
 
 static struct clock_source pl031_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	REG32_STORE(PL031_ICR_CLEAR, PL031_ICR);
+	REG32_STORE(PL031_ICR, PL031_ICR_CLEAR);
 	return IRQ_HANDLED;
 }
 
@@ -51,10 +49,11 @@ static int pl031_init(void) {
 }
 
 static int pl031_config(struct time_dev_conf * conf) {
-	REG32_STORE(LOAD_VALUE, PL031_LR);
+	REG32_STORE(PL031_LR, 0x0);
 
-	REG32_STORE(PL031_CR_START, PL031_CR);
-	REG32_STORE(PL031_IMSC_EN, PL031_IMSC); /* Enable IRQ */
+	REG32_STORE(PL031_MR, 0x1);
+	REG32_STORE(PL031_CR, PL031_CR_START);
+	REG32_STORE(PL031_IMSC, PL031_IMSC_EN); /* Enable IRQ */
 	return 0;
 }
 
