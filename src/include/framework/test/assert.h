@@ -117,7 +117,7 @@ failed: test_assert_not_null(<#value>)
 @endverbatim
  */
 #define test_assert_not_null(value) \
-	__test_assertion_handle((int) (value), \
+	__test_assertion_handle((uintptr_t) (value), \
 			__test_assertion_point_ref("test_assert_not_null(" #value ")"))
 
 /**
