@@ -14,20 +14,22 @@
 #include <stdint.h>
 
 #include <asm/hal/reg.h>
+#include <asm/modes.h>
 
-typedef int __ipl_t;
+typedef uint64_t __ipl_t;
 
 static inline void ipl_init(void) {
-	/* NIY */
+	set_daif(get_daif() | DAIF_I_BIT | DAIF_F_BIT);
 }
 
 static inline __ipl_t ipl_save(void) {
-	/* NIY */
-	return 0;
+	uint64_t r = get_daif();
+	set_daif(r & ~(DAIF_I_BIT | DAIF_F_BIT));
+	return r;
 }
 
 static inline void ipl_restore(__ipl_t ipl) {
-	/* NIY */
+	set_daif(ipl);
 }
 
 #endif /* __ASSEMBLER__ */

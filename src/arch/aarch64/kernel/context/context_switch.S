@@ -9,4 +9,4 @@
 .text
 .global context_switch
 context_switch:
-	/* NIY */
+	b context_switch
