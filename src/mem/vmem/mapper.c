@@ -19,13 +19,6 @@
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 
-static void vmem_set_pte_flags(uintptr_t *pte, uint32_t flags) {
-	mmu_pte_set_writable(pte, flags & PROT_WRITE);
-	mmu_pte_set_executable(pte, flags & PROT_EXEC);
-	mmu_pte_set_cacheable(pte, flags & PROT_NOCACHE);
-	mmu_pte_set_usermode(pte, flags & VMEM_PAGE_USERMODE);
-}
-
 static struct mmu_entry *vmem_entry_get_idxs(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, struct mmu_entry *entry) {
 	int i;
 
@@ -59,6 +52,7 @@ static struct mmu_entry *vmem_entry_from_vaddr(mmu_ctx_t ctx, mmu_vaddr_t virt_a
 
 static int vmem_entry_set_pte(struct mmu_entry *entry, mmu_paddr_t phy_addr, int flags) {
 	int i = 0;
+	uintptr_t pte;
 
 	assert(entry);
 
@@ -71,9 +65,8 @@ static int vmem_entry_set_pte(struct mmu_entry *entry, mmu_paddr_t phy_addr, int
 			mmu_set(i, entry->table[i] + entry->idx[i], (uintptr_t) entry->table[i + 1]);
 		}
 	}
-
-	mmu_set(MMU_LAST_LEVEL, entry->table[MMU_LAST_LEVEL] + entry->idx[MMU_LAST_LEVEL], phy_addr);
-	vmem_set_pte_flags(entry->table[MMU_LAST_LEVEL] + entry->idx[MMU_LAST_LEVEL], flags);
+	pte = mmu_pte_pack(phy_addr, flags);
+	mmu_pte_set(entry->table[MMU_LAST_LEVEL] + entry->idx[MMU_LAST_LEVEL], pte);
 
 	return 0;
 }
@@ -118,7 +111,7 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr,
 		memcpy(&mmu_translate_info->mmu_entry, &entries,
 				sizeof(mmu_translate_info->mmu_entry));
 		mmu_translate_info->ctx = ctx;
-		mmu_translate_info->pte = pte;
+		mmu_translate_info->pte = mmu_pte_get(pte) ;
 	}
 
 	return (mmu_paddr_t)mmu_get(MMU_LEVELS-1, pte) + (virt_addr & MMU_PAGE_MASK);
@@ -126,13 +119,18 @@ mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr,
 
 static int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, int flags) {
 	struct mmu_entry entries;
+	uintptr_t pte;
+	uintptr_t phy_addr;
+	int old_flags;
 	struct mmu_entry *entry = &entries;
 
 	vmem_entry_get_idxs(ctx, virt_addr, &entries);
 	vmem_entry_get_tables(ctx, virt_addr, &entries);
 
-	vmem_set_pte_flags(entry->table[MMU_LAST_LEVEL] + entry->idx[MMU_LAST_LEVEL], 0);
-	vmem_set_pte_flags(entry->table[MMU_LAST_LEVEL] + entry->idx[MMU_LAST_LEVEL], flags);
+	pte = mmu_pte_get(entry->table[MMU_LAST_LEVEL] + entry->idx[MMU_LAST_LEVEL]);
+	phy_addr = mmu_pte_unpack(pte, &old_flags);
+	pte = mmu_pte_pack(phy_addr, flags);
+	mmu_pte_set(entry->table[MMU_LAST_LEVEL] + entry->idx[MMU_LAST_LEVEL], pte);
 	return 0;
 }
 

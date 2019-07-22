@@ -22,7 +22,7 @@ struct mmu_entry {
 struct mmu_translate_info {
 	struct mmu_entry mmu_entry;
 	mmu_ctx_t ctx;
-	uintptr_t *pte;
+	uintptr_t pte;
 };
 
 #define VMEM_PAGE_SIZE        MMU_PAGE_SIZE

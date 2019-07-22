@@ -80,6 +80,11 @@ extern void mmu_set(int lvl, uintptr_t *entry, uintptr_t value);
 extern void mmu_unset(int lvl, uintptr_t *entry);
 extern int mmu_present(int lvl, uintptr_t *entry);
 
+extern uintptr_t mmu_pte_pack(uintptr_t addr, int flags);
+extern int mmu_pte_set(uintptr_t *entry, uintptr_t value);
+extern uintptr_t mmu_pte_get(uintptr_t *entry);
+extern uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags);
+
 extern void mmu_pte_set_writable(uintptr_t *pte, int value);
 extern void mmu_pte_set_cacheable(uintptr_t *pte, int value);
 extern void mmu_pte_set_usermode(uintptr_t *pte, int value);
