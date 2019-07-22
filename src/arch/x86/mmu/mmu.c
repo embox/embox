@@ -160,6 +160,48 @@ void mmu_unset(int lvl, uintptr_t *entry) {
 	*entry = 0;
 }
 
+uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
+	int flags = 0;
+
+	if (prot & PROT_WRITE) {
+		flags |= MMU_PAGE_WRITABLE;
+	}
+	if (prot & PROT_NOCACHE) {
+		flags |= MMU_PAGE_DISABLE_CACHE;
+	}
+	if (prot & VMEM_PAGE_USERMODE) {
+		flags |= MMU_PAGE_USERMODE;
+	}
+	return addr | flags | MMU_PAGE_PRESENT;
+}
+
+int mmu_pte_set(uintptr_t *entry, uintptr_t value) {
+	*entry = value;
+	return 0;
+}
+
+uintptr_t mmu_pte_get(uintptr_t *entry) {
+	return *entry & ~MMU_PAGE_MASK;
+}
+
+uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
+	int prot = 0;
+
+	if (pte & MMU_PAGE_WRITABLE) {
+		prot |= PROT_WRITE;
+	}
+	if (pte & MMU_PAGE_DISABLE_CACHE) {
+		prot |= PROT_NOCACHE;
+	}
+	if (pte & MMU_PAGE_USERMODE) {
+		prot |= VMEM_PAGE_USERMODE;
+	}
+	*flags = prot;
+
+	return pte & MMU_PAGE_MASK;
+}
+
+#if 0
 /* Page Table flags */
 
 void mmu_pte_set_writable(uintptr_t *pte, int val) {
@@ -188,3 +230,4 @@ void mmu_pte_set_cacheable(uintptr_t *pte, int val) {
 
 void mmu_pte_set_executable(uintptr_t *pte, int val) {
 }
+#endif
