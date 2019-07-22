@@ -11,7 +11,6 @@
 
 #include <stdint.h>
 #include <asm/bitops.h>
-//#include <hal/mm/mmu_types.h>
 
 #define RTLBLO_I_BIT           REVERSE_BIT(29)
 #define RTLBLO_EX_BIT          REVERSE_BIT(22)

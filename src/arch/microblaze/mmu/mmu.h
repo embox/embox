@@ -44,7 +44,7 @@ extern void mmu_set_val(void *addr, unsigned long value);
 #define MMU_ET_PRESENT       0x3
 
 #define MMU_PAGE_WRITABLE    ((1UL << 0) << 2)
-#define MMU_PAGE_SOMEFLAG    ((1UL << 1) << 2)
+#define MMU_PAGE_EXECUTABLE  ((1UL << 1) << 2)
 #define MMU_PAGE_SUPERVISOR  ((1UL << 2) << 2)
 
 #define MMU_PAGE_CACHEABLE   (1UL << 7)

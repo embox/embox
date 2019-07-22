@@ -71,6 +71,48 @@ void mmu_unset(int lvl, uintptr_t *entry) {
 	}
 }
 
+uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
+	int flags = 0;
+
+	if (prot & PROT_WRITE) {
+		flags |= MMU_PAGE_WRITABLE;
+	}
+	if (!(prot & PROT_NOCACHE)) {
+		flags |= MMU_PAGE_CACHEABLE;
+	}
+	if (prot & PROT_EXEC) {
+		flags |= MMU_PAGE_EXECUTABLE;
+	}
+	return ((addr >> 4) & MMU_PTE_PMASK) | MMU_ET_PTE;
+}
+
+int mmu_pte_set(uintptr_t *entry, uintptr_t value) {
+	mmu_set_val(entry, value);
+	return 0;
+}
+
+uintptr_t mmu_pte_get(uintptr_t *entry) {
+	return *entry;
+}
+
+uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
+	int prot = 0;
+
+	if (pte & MMU_PAGE_WRITABLE) {
+		prot |= PROT_WRITE;
+	}
+	if (!(pte & MMU_PAGE_CACHEABLE)) {
+		prot |= PROT_NOCACHE;
+	}
+	if (pte & MMU_PAGE_EXECUTABLE) {
+		prot |= PROT_EXEC;
+	}
+	*flags = prot;
+
+	return (pte & MMU_PTE_PMASK) << 4;
+}
+
+#if 0
 /* Page Table flags */
 void mmu_pte_set_writable(uintptr_t *pte, int val) {
 	if (val) {
@@ -98,3 +140,4 @@ void mmu_pte_set_cacheable(uintptr_t *pte, int val) {
 
 void mmu_pte_set_executable(uintptr_t *pte, int val) {
 }
+#endif
