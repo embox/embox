@@ -19,11 +19,6 @@
 #include <mem/vmem.h>
 #include <mem/vmem/vmem_alloc.h>
 
-struct mmu_entry {
-	uintptr_t *table[MMU_LEVELS];
-	int idx[MMU_LEVELS];
-};
-
 static void vmem_set_pte_flags(uintptr_t *pte, uint32_t flags) {
 	mmu_pte_set_writable(pte, flags & PROT_WRITE);
 	mmu_pte_set_executable(pte, flags & PROT_EXEC);
@@ -110,13 +105,21 @@ int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
 	return 0;
 }
 
-mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr) {
+mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr,
+		struct mmu_translate_info * mmu_translate_info) {
 	uintptr_t *pte;
 	struct mmu_entry entries;
 
 	vmem_entry_from_vaddr(ctx, virt_addr, &entries);
 
 	pte = entries.table[MMU_LEVELS-1] + entries.idx[MMU_LEVELS-1];
+
+	if (mmu_translate_info) {
+		memcpy(&mmu_translate_info->mmu_entry, &entries,
+				sizeof(mmu_translate_info->mmu_entry));
+		mmu_translate_info->ctx = ctx;
+		mmu_translate_info->pte = pte;
+	}
 
 	return (mmu_paddr_t)mmu_get(MMU_LEVELS-1, pte) + (virt_addr & MMU_PAGE_MASK);
 }

@@ -9,9 +9,21 @@
 #ifndef MEM_VMEM_H_
 #define MEM_VMEM_H_
 
+#include <stdint.h>
 #include <hal/mmu.h>
 #include <stddef.h>
 #include <sys/mman.h>
+
+struct mmu_entry {
+	uintptr_t *table[MMU_LEVELS];
+	int idx[MMU_LEVELS];
+};
+
+struct mmu_translate_info {
+	struct mmu_entry mmu_entry;
+	mmu_ctx_t ctx;
+	uintptr_t *pte;
+};
 
 #define VMEM_PAGE_SIZE        MMU_PAGE_SIZE
 #define VMEM_PAGE_MASK        MMU_PAGE_MASK
@@ -22,7 +34,8 @@ extern int vmem_create_context(mmu_ctx_t *ctx);
 extern mmu_ctx_t vmem_current_context(void);
 extern void vmem_free_context(mmu_ctx_t ctx);
 
-extern mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr);
+extern mmu_paddr_t vmem_translate(mmu_ctx_t ctx, mmu_vaddr_t virt_addr,
+		struct mmu_translate_info * mmu_translate_info);
 
 extern int vmem_map_region(mmu_ctx_t ctx, mmu_paddr_t phy_addr, mmu_vaddr_t virt_addr,
 		size_t reg_size, int flags);
