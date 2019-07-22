@@ -2,6 +2,7 @@ package embox.driver.serial
 
 module imx_uart {
 	option number num=1
+	option number imx=6
 	option number baud_rate=115200
 	option number iomuxc_base=0x020e0000
 	option boolean pin_config=false

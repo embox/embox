@@ -20,6 +20,8 @@ EMBOX_UNIT_INIT(uart_init);
 #define IRQ_NUM		(58 + UART_NUM)
 #define PIN_CONFIG	OPTION_GET(BOOLEAN,pin_config)
 
+#if IMX == 6
+
 #if UART_NUM == 0
 #define UART_BASE 0x02020000
 #elif UART_NUM == 1
@@ -33,6 +35,26 @@ EMBOX_UNIT_INIT(uart_init);
 #else
 #error Wrong UART number!
 #endif
+
+#elif IMX == 8
+
+#if UART_NUM == 0
+#define UART_BASE 0x30860000
+#elif UART_NUM == 1
+#define UART_BASE 0x30890000
+#elif UART_NUM == 2
+#define UART_BASE 0x30880000
+#elif UART_NUM == 3
+#define UART_BASE 0x30A60000
+#else
+#error Wrong UART number!
+#endif
+
+#else /* IMX */
+
+#error Unsupported i.MX version
+
+#endif /* IMX */
 
 #define UART(x)		(*(volatile uint32_t *)(UART_BASE + (x)))
 
