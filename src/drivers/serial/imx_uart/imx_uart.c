@@ -16,9 +16,10 @@
 
 EMBOX_UNIT_INIT(uart_init);
 
-#define UART_NUM	OPTION_GET(NUMBER,num)
-#define IRQ_NUM		(58 + UART_NUM)
-#define PIN_CONFIG	OPTION_GET(BOOLEAN,pin_config)
+#define UART_NUM        OPTION_GET(NUMBER,num)
+#define IMX             OPTION_GET(NUMBER,imx)
+#define IRQ_NUM         (58 + UART_NUM)
+#define PIN_CONFIG      OPTION_GET(BOOLEAN,pin_config)
 
 #if IMX == 6
 
@@ -101,6 +102,7 @@ static void imxuart_configure_pins(void) {
 	 * and then set source for the UART like follows; look manual for
 	 * more details */
 #if PIN_CONFIG
+#if IMX == 6
 	switch(UART_NUM) {
 	case 0:
 		/* TX */
@@ -131,12 +133,14 @@ static void imxuart_configure_pins(void) {
 		break;
 	}
 #endif
+#endif
 	return;
 }
 
 static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
 	imxuart_configure_pins();
 
+#if IMX == 6
 	/* Reset */
 	UART(UCR2) = 0;
 	while(UART(UTS) & UTS_RST);
@@ -162,6 +166,7 @@ static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
 		reg |= UCR1_RRDYEN;
 		UART(UCR1) = reg;
 	}
+#endif
 	return 0;
 }
 
