@@ -46,7 +46,7 @@ int arch_mmu_get_regs_table(struct mmuinfo_regs *buf, int buf_size, int offset) 
 		return 0;
 	}
 	cnt = min(buf_size, cnt);
-	for (i= 0; i < cnt; i ++) {
+	for (i = 0; i < cnt; i ++) {
 		strncpy(buf[i].mmu_reg_name, mmuinfo_regs[offset + i].reg_name, sizeof(buf[i].mmu_reg_name));
 		buf[i].mmu_reg_name[sizeof(buf[i].mmu_reg_name)-1] = '\0';
 

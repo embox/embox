@@ -67,41 +67,60 @@ int mmu_present(int lvl, uintptr_t *entry) {
 	}
 }
 
-void mmu_pte_set_writable(uintptr_t *pte, int value) {
-	if (value & PROT_WRITE) {
-		*pte |= ARM_MMU_PAGE_WRITE_ACC;
-	}
-	dcache_flush(pte, sizeof(*pte));
-}
+uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
+	int flags = ARM_MMU_PAGE_READ_ACC; /* TODO PROT_READ must be set implicitly */
 
-void mmu_pte_set_cacheable(uintptr_t *pte, int value) {
-	*pte &= ~(L1D_B | L1D_C);
+	if (prot & PROT_WRITE) {
+		flags |= ARM_MMU_PAGE_WRITE_ACC;
+	}
+	if (prot & PROT_READ) {
+		flags |= ARM_MMU_PAGE_READ_ACC;
+	}
+	if (!(prot & PROT_NOCACHE)) {
 #ifndef V5_FORMAT
-	*pte &= ~L1D_TEX_MASK;
+		flags |= L1D_TEX_USE;   /* Outer strongly-ordered memory */
 #endif
-	if (value & PROT_NOCACHE) {
-		*pte |= L1D_B;         /* Shareable device memory */
+		flags |= L1D_C | L1D_B; /* Inner write-through cached memory */
 	} else {
-#ifndef V5_FORMAT
-		*pte |= L1D_TEX_USE;   /* Outer strongly-ordered memory */
-#endif
-		*pte |= L1D_C | L1D_B; /* Inner write-through cached memory */
+		flags |= L1D_B;         /* Shareable device memory */
 	}
 
-	dcache_flush(pte, sizeof(*pte));
-}
-
-void mmu_pte_set_usermode(uintptr_t *pte, int value) {
-}
-
-void mmu_pte_set_executable(uintptr_t *pte, int value) {
-#if 0
-	if (value & PROT_EXEC) {
-		*pte &= ~L1D_XN; /* ARM_MMU_SECTION_XN */
+	if (prot & PROT_EXEC) {
+		flags &= ~L1D_XN; /* ARM_MMU_SECTION_XN */
 	} else {
-		*pte |= L1D_XN; /* ARM_MMU_SECTION_XN */
+		flags |= L1D_XN; /* ARM_MMU_SECTION_XN */
 	}
-#endif
+	return (addr & L2_ADDR_MASK) | L1D_TYPE_SD |flags;
+}
+
+int mmu_pte_set(uintptr_t *entry, uintptr_t value) {
+	*entry = value;
+	dcache_flush(entry, sizeof(*entry));
+	return 0;
+}
+
+uintptr_t mmu_pte_get(uintptr_t *entry) {
+	return *entry;
+}
+
+uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
+	int prot = 0;
+
+	if (pte & ARM_MMU_PAGE_WRITE_ACC) {
+		prot |= PROT_WRITE;
+	}
+	if (pte & ARM_MMU_PAGE_READ_ACC) {
+		prot |= PROT_READ;
+	}
+	if (!(pte & L1D_C)) {
+		prot |= PROT_NOCACHE;
+	}
+	if (!(pte & L1D_XN)) {
+		prot |= PROT_EXEC;
+	}
+	*flags = prot;
+
+	return pte & L2_ADDR_MASK;
 }
 
 /* vmem_info */
