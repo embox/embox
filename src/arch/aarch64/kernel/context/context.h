@@ -14,10 +14,10 @@
 #include <stdint.h>
 
 struct context {
-	uintptr_t system_r[13];
-	uintptr_t sp;
-	uintptr_t lr;
-	uintptr_t cpsr;
+	uint64_t x[31];
+	uint64_t sp;
+	uint64_t spsr;
+	uint64_t daif;
 };
 
 #endif /* __ASSEMBLER__ */
