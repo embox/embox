@@ -10,3 +10,7 @@ module mmu extends embox.mem.vmem {
 	depends embox.mem.vmem_depends
 	depends embox.arch.x86.testtrap
 }
+
+module mmuinfo extends embox.arch.mmuinfo {
+	source "mmuinfo.c"
+}
