@@ -39,10 +39,10 @@
 #define REG_ANDIN(addr, mask)  __REG_ANDIN(addr, mask)
 
 #define REG32_LOAD(addr) \
-	*((volatile uint32_t *)(addr))
+	*((volatile uint32_t *)((uintptr_t) addr))
 
 #define REG32_STORE(addr, val) \
-	do { *((volatile uint32_t *)(addr)) = (val); } while (0)
+	do { *((volatile uint32_t *)((uintptr_t) addr)) = (val); } while (0)
 
 #define REG32_ORIN(addr, mask) \
 	REG32_STORE(addr, REG32_LOAD(addr) | ((uint32_t) mask))

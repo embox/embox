@@ -128,7 +128,7 @@ static const struct __test_assertion_point *test_run(test_case_run_t run) {
 	}
 	current = NULL;
 
-	return (const struct __test_assertion_point *) caught;
+	return (const struct __test_assertion_point *) (uintptr_t) caught;
 }
 
 struct test_emit_buffer *__test_emit_buffer_current(void) {
