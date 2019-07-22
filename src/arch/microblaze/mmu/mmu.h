@@ -10,6 +10,7 @@
 #define ARCH_GENERIC_MMU_H_
 
 #include <stdint.h>
+#include <inttypes.h>
 
 #define MMU_LEVELS              3
 
@@ -27,6 +28,8 @@ typedef uintptr_t __mmu_vaddr_t;
 typedef uint32_t __mmu_ctx_t;
 
 typedef uint32_t __mmu_reg_t;
+
+#define __PRIxMMUREG PRIx32
 
 /*
  * Additional information, which was taken from SPARC and is used in
