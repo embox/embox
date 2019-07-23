@@ -24,12 +24,6 @@ void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
 	while(1) {}
 }
 
-void setjmp(void) {
-}
-
-void longjmp(void) {
-}
-
 void ptregs_jmp(void) {
 }
 

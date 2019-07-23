@@ -6,6 +6,7 @@
  * @date 2019-07-18
  */
 
+#include <hal/clock.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
@@ -34,7 +35,10 @@
 
 static struct clock_source pl031_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
+	clock_tick_handler(irq_nr, data);
+
 	REG32_STORE(PL031_ICR, PL031_ICR_CLEAR);
+	REG32_STORE(PL031_LR, 0x0);
 	return IRQ_HANDLED;
 }
 
