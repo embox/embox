@@ -7,6 +7,7 @@
  * @date 10.01.2018
  */
 #include <math.h>
+#include <endian.h> /* FIXME __BYTE_ORDER__ */
 
 double modf(double x, double *i_ptr) {
 	return __builtin_modf(x, i_ptr);

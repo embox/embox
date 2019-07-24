@@ -10,6 +10,7 @@
 #define X86_MMU_H_
 
 #include <stdint.h>
+#include <inttypes.h>
 
 #define MMU_LEVELS              2
 
@@ -25,5 +26,7 @@ typedef uint32_t __mmu_reg_t;
 
 #define __MMU_SHIFT_0    __MMU_PGD_SHIFT
 #define __MMU_SHIFT_1    __MMU_PTE_SHIFT
+
+#define __PRIxMMUREG PRIx32
 
 #endif /* X86_MMU_H_ */

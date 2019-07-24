@@ -1,11 +1,11 @@
 package embox.cmd.hw
 
 @AutoCmd
-@Cmd(name = "mmutest",
+@Cmd(name = "mmutrans",
 	help = "Managing virtual memory table",
 	man = '''
 		NAME
-			mmutest - testing virtual memory table
+			mmutrans - testing virtual memory table
 		SYNOPSIS
 
 		DESCRIPTION
@@ -13,6 +13,6 @@ package embox.cmd.hw
 		AUTHORS
 			Anton Bondarev
 	''')
-module  mmutest {
-	source "mmutest.c"
+module  mmutrans {
+	source "mmutrans.c"
 }

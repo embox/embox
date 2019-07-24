@@ -17,6 +17,6 @@
 
 #define vmem_free_context(ctx)
 
-#define vmem_translate(a,b) b
+#define vmem_translate(a, b, c) (b)
 
 #endif /* VMEM_NOMMU_H */

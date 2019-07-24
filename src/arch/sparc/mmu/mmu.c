@@ -23,26 +23,6 @@
 static uintptr_t *context_table[0x100]  __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_cnt;
 
-static inline void mmu_set_mmureg(unsigned long addr_reg,
-				unsigned long regval) {
-	__asm__ __volatile__(
-		"sta %0, [%1] %2\n\t"
-		:
-		: "r"(regval), "r"(addr_reg), "i"(ASI_M_MMUREGS)
-		: "memory"
-	);
-}
-
-static inline unsigned long mmu_get_mmureg(unsigned long addr_reg) {
-	register int retval;
-	__asm__ __volatile__(
-		"lda [%1] %2, %0\n\t"
-		: "=r" (retval)
-		: "r" (addr_reg), "i" (ASI_M_MMUREGS)
-	);
-	return retval;
-}
-
 /** Set context table pointer */
 static inline void mmu_set_ctable_ptr(unsigned long paddr) {
 	paddr = ((paddr >> 4) & MMU_CTX_PMASK);
@@ -119,9 +99,9 @@ uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
 	switch (lvl) {
 	case 0:
 	case 1:
-		return (uintptr_t *) ((((unsigned long) *entry) & MMU_PTD_PMASK) << 4);
+		return (uintptr_t *) ((*entry & MMU_PTD_PMASK) << 4);
 	case 2:
-		return (uintptr_t *)(((*entry) & MMU_PTE_PMASK) << 4);
+		return (uintptr_t *)((*entry & MMU_PTE_PMASK) << 4);
 	}
 	return 0;
 }
@@ -159,8 +139,50 @@ int mmu_present(int lvl, uintptr_t *entry)  {
 	return 0;
 }
 
+
+uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
+	int flags = 0;
+
+	if (prot & PROT_WRITE) {
+		flags |= MMU_PAGE_WRITABLE;
+	}
+	if (!(prot & PROT_NOCACHE)) {
+		flags |= MMU_PAGE_CACHEABLE;
+	}
+	if (prot & PROT_EXEC) {
+		flags |= MMU_PAGE_EXECUTABLE;
+	}
+	return ((addr >> 4) & MMU_PTE_PMASK) | flags | MMU_ET_PTE;
+}
+
+int mmu_pte_set(uintptr_t *entry, uintptr_t value) {
+	mmu_set_val(entry, value);
+	return 0;
+}
+
+uintptr_t mmu_pte_get(uintptr_t *entry) {
+	return *entry;
+}
+
+uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
+	int prot = 0;
+
+	if (pte & MMU_PAGE_WRITABLE) {
+		prot |= PROT_WRITE;
+	}
+	if (!(pte & MMU_PAGE_CACHEABLE)) {
+		prot |= PROT_NOCACHE;
+	}
+	if (pte & MMU_PAGE_EXECUTABLE) {
+		prot |= PROT_EXEC;
+	}
+	*flags = prot;
+
+	return (pte & MMU_PTE_PMASK) << 4;
+}
+#if 0
 void mmu_pte_set_writable(uintptr_t *pte, int value){
-	if (value) {
+	if (value & PROT_WRITE) {
 		*pte = *pte | MMU_PAGE_WRITABLE;
 	} else {
 		*pte = *pte & (~MMU_PAGE_WRITABLE);
@@ -185,6 +207,7 @@ void mmu_pte_set_executable(uintptr_t *pte, int value) {
 		*pte = *pte & (~MMU_PAGE_EXECUTABLE);
 	}
 }
+#endif
 
 static inline void mmu_flush_tlb_all(void) {
 	mmu_flush_cache_all();

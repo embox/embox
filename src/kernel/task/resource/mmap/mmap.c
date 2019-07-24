@@ -42,7 +42,7 @@ static int mmap_inherit(struct emmap *mmap, struct emmap *p_mmap) {
 		}
 
 		if ((err = vmem_map_region(mmap->ctx,
-				vmem_translate(p_mmap->ctx, marea->start),
+				vmem_translate(p_mmap->ctx, marea->start, NULL),
 				marea->start,
 				marea->size,
 				marea->flags))) {

@@ -10,12 +10,6 @@
 #include <util/math.h>
 
 #include <hal/mmu.h>
-#include <asm/cp15.h>
-
-extern uint32_t _get_mmu_tlb_type(void);
-extern uint32_t _get_mmu_translation_table_base_0(void);
-extern uint32_t _get_mmu_translation_table_base_1(void);
-extern uint32_t _get_mmu_domain_access_control(void);
 
 struct mmuinfo_reg_access {
 	const char *reg_name;
@@ -23,14 +17,7 @@ struct mmuinfo_reg_access {
 };
 
 static const struct mmuinfo_reg_access mmuinfo_regs[] = {
-		{"TLB Type", _get_mmu_tlb_type},
-		{"SCTRL", cp15_get_sctrl},
-		/* {"ACTRL", cp15_get_actrl}, */
-		/* {"CPACR", cp15_get_cpacr}, */
-		/* {"Non-Secure Access Control", cp15_get_nsacr}, */
-		{"Translation Table Base 0", _get_mmu_translation_table_base_0},
-		{"Translation Table Base 1", _get_mmu_translation_table_base_1},
-		{"Domain Access Control", _get_mmu_domain_access_control}
+		/*{"MSR", get_msr}, */
 };
 
 int arch_mmu_get_regs_table_size(void) {

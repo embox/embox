@@ -1,21 +1,28 @@
 /**
  * @file
  *
- * @date Apr 30, 2019
+ * @date Jul 16, 2019
  * @author Anton Bondarev
  */
+
 #include <string.h>
 
 #include <util/array.h>
 #include <util/math.h>
 
+#include <asm/asi.h>
+#include <asm/mmu_consts.h>
 #include <hal/mmu.h>
-#include <asm/cp15.h>
 
-extern uint32_t _get_mmu_tlb_type(void);
-extern uint32_t _get_mmu_translation_table_base_0(void);
-extern uint32_t _get_mmu_translation_table_base_1(void);
-extern uint32_t _get_mmu_domain_access_control(void);
+mmu_reg_t mmureg_get_mmuctrl(void) {
+	return mmu_get_mmureg(LEON_CNR_CTRL);
+}
+mmu_reg_t mmureg_get_ctxp(void) {
+	return mmu_get_mmureg(LEON_CNR_CTXP);
+}
+mmu_reg_t mmureg_get_ctx(void) {
+	return mmu_get_mmureg(LEON_CNR_CTX);
+}
 
 struct mmuinfo_reg_access {
 	const char *reg_name;
@@ -23,14 +30,9 @@ struct mmuinfo_reg_access {
 };
 
 static const struct mmuinfo_reg_access mmuinfo_regs[] = {
-		{"TLB Type", _get_mmu_tlb_type},
-		{"SCTRL", cp15_get_sctrl},
-		/* {"ACTRL", cp15_get_actrl}, */
-		/* {"CPACR", cp15_get_cpacr}, */
-		/* {"Non-Secure Access Control", cp15_get_nsacr}, */
-		{"Translation Table Base 0", _get_mmu_translation_table_base_0},
-		{"Translation Table Base 1", _get_mmu_translation_table_base_1},
-		{"Domain Access Control", _get_mmu_domain_access_control}
+		{"MMU_CTRL", mmureg_get_mmuctrl},
+		{"MMU_CTXP", mmureg_get_ctxp},
+		{"MMU_CTX", mmureg_get_ctx},
 };
 
 int arch_mmu_get_regs_table_size(void) {

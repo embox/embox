@@ -10,6 +10,7 @@
 #define ARCH_GENERIC_MMU_H_
 
 #include <stdint.h>
+#include <inttypes.h>
 
 #define MMU_LEVELS              3
 
@@ -28,6 +29,8 @@ typedef uint32_t __mmu_ctx_t;
 
 typedef uint32_t __mmu_reg_t;
 
+#define __PRIxMMUREG PRIx32
+
 /*
  * Additional information, which was taken from SPARC and is used in
  * another RISC architectures.
@@ -44,7 +47,7 @@ extern void mmu_set_val(void *addr, unsigned long value);
 #define MMU_ET_PRESENT       0x3
 
 #define MMU_PAGE_WRITABLE    ((1UL << 0) << 2)
-#define MMU_PAGE_SOMEFLAG    ((1UL << 1) << 2)
+#define MMU_PAGE_EXECUTABLE  ((1UL << 1) << 2)
 #define MMU_PAGE_SUPERVISOR  ((1UL << 2) << 2)
 
 #define MMU_PAGE_CACHEABLE   (1UL << 7)

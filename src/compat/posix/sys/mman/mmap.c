@@ -49,7 +49,7 @@ void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 			virt = (void *) mmap_alloc(emmap, len);
 		}
 
-		if (vmem_translate(emmap->ctx, (mmu_vaddr_t) virt) != 0) {
+		if (vmem_translate(emmap->ctx, (mmu_vaddr_t) virt, NULL) != 0) {
 			/* Virtual address is already taken, so return
 			 * physical address instead */
 			addr = phy;
@@ -94,7 +94,7 @@ int munmap(void *addr, size_t size) {
 	size_t len = binalign_bound(size, VMEM_PAGE_SIZE);
 
 	if (mmap_prot(emmap, (uintptr_t) addr) & MAP_ANONYMOUS) {
-		mmu_paddr_t phy_addr = vmem_translate(emmap->ctx, (mmu_vaddr_t) addr);
+		mmu_paddr_t phy_addr = vmem_translate(emmap->ctx, (mmu_vaddr_t) addr, NULL);
 		vmem_unmap_region(emmap->ctx, (mmu_vaddr_t) addr, len);
 		phymem_free((void *) phy_addr, len / VMEM_PAGE_SIZE);
 	} else {
