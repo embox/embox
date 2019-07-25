@@ -38,6 +38,18 @@
 #define REG_ORIN(addr, mask)   __REG_ORIN(addr, mask)
 #define REG_ANDIN(addr, mask)  __REG_ANDIN(addr, mask)
 
+#define REG64_LOAD(addr) \
+	*((volatile uint64_t *)((uintptr_t) addr))
+
+#define REG64_STORE(addr, val) \
+	do { *((volatile uint64_t *)((uintptr_t) addr)) = (val); } while (0)
+
+#define REG64_ORIN(addr, mask) \
+	REG64_STORE(addr, REG64_LOAD(addr) | ((uint64_t) mask))
+
+#define REG64_CLEAR(addr, mask) \
+	REG64_STORE(addr, REG64_LOAD(addr) & (~((uint64_t) mask)))
+
 #define REG32_LOAD(addr) \
 	*((volatile uint32_t *)((uintptr_t) addr))
 
