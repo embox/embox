@@ -38,7 +38,10 @@ aarch64_exception_table:
 	b exception_exit
 	/* FIQ exception */
 	.align 7
-	b exception_stub
+	stp	x29, x30, [sp, #-16]!
+	bl exception_entry
+	bl interrupt_handle
+	b exception_exit
 	/* System error exception */
 	.align 7
 	b exception_stub
