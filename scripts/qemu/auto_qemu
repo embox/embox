@@ -153,6 +153,9 @@ guess_machine() {
 				echo "-M lm3s811evb"
 			fi
 			;;
+		aarch64)
+			echo "-M virt -cpu cortex-a53"
+			;;
 		microblaze)
 			echo "-M petalogix-s3adsp1800"
 			;;
