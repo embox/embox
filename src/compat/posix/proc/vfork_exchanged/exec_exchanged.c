@@ -19,5 +19,5 @@ void *task_exec_callback(void *arg) {
 
 	res = exec_call();
 
-	return (void*)res;
+	return (void*) (uintptr_t) res;
 }

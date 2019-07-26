@@ -18,7 +18,13 @@ EMBOX_UNIT_INIT(uart_init);
 
 #define UART_NUM        OPTION_GET(NUMBER,num)
 #define IMX             OPTION_GET(NUMBER,imx)
+
+#if IMX == 6
 #define IRQ_NUM         (58 + UART_NUM)
+#else
+#define IRQ_NUM         (26 + UART_NUM)
+#endif
+
 #define PIN_CONFIG      OPTION_GET(BOOLEAN,pin_config)
 
 #if IMX == 6

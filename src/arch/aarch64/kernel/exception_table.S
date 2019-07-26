@@ -38,7 +38,10 @@ aarch64_exception_table:
 	b exception_exit
 	/* FIQ exception */
 	.align 7
-	b exception_stub
+	stp	x29, x30, [sp, #-16]!
+	bl exception_entry
+	bl interrupt_handle
+	b exception_exit
 	/* System error exception */
 	.align 7
 	b exception_stub
@@ -85,6 +88,29 @@ aarch64_reset_handler:
 	mov	x0, #3 << 20
 	msr	cpacr_el1, x0			/* Enable FP/SIMD */
 
+	/* Zero .bss */
+	ldr	x0, =_bss_vma
+	mov	x1, #0
+	ldr	x2, =_bss_len
+bss_loop:
+	str	x1, [x0, 0]
+	add	x0, x0, #8
+	subs	x2, x2, #8
+	b.gt	bss_loop
+
+	/* Copy .data */
+	ldr	x0, =_data_vma
+	ldr	x1, =_data_lma
+	ldr	x2, =_data_len
+data_loop:
+	ldr	x3, [x1, 0]
+	str	x3, [x0, 0]
+	add	x0, x0, #8
+	add	x1, x1, #8
+	subs	x2, x2, #8
+	b.gt	data_loop
+
+	/* Jump to arch-independent part */
 	b kernel_start
 
 exception_stub:
