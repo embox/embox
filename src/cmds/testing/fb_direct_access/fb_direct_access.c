@@ -28,6 +28,11 @@ int main() {
 
 	fb_info = fb_lookup(0);
 
+	if (fb_info == NULL) {
+		printf("Failed to find frame buffer device\n");
+		return 0;
+	}
+
 	printf("%" PRId32 "x%" PRId32 ", %" PRId32 "bpp\n",fb_info->var.xres, fb_info->var.yres, fb_info->var.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */
