@@ -120,7 +120,6 @@ static struct fb_ops stm32f7_lcd_ops = {
 
 static int stm32f7_lcd_init(void) {
 	char *mmap_base;
-	size_t mmap_len = 0;
 
 	if (BSP_LCD_Init() != LCD_OK) {
 		log_error("Failed to init LCD!");
@@ -157,7 +156,11 @@ static int stm32f7_lcd_init(void) {
 
 	BSP_LCD_Clear(LCD_COLOR_BLACK);
 
-	fb_create(&stm32f7_lcd_ops, mmap_base, mmap_len);
+	fb_create(&stm32f7_lcd_ops,
+			mmap_base,
+			STM32_LCD_WIDTH *
+			STM32_LCD_HEIGHT /
+			8 * STM32_LCD_BPP);
 
 	return 0;
 }
