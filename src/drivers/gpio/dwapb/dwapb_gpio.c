@@ -88,9 +88,4 @@ static int dwapb_gpio_init(void) {
 	return gpio_register_chip(&dwapb_gpio_chip, GPIO_CHIP_ID);
 }
 
-static struct periph_memory_desc arasan_mem = {
-	.start = BASE_CTRL_ADDR,
-	.len   = 0x200
-};
-
-PERIPH_MEMORY_DEFINE(arasan_mem);
+PERIPH_MEMORY_DEFINE(arasan, BASE_CTRL_ADDR, 0x200);

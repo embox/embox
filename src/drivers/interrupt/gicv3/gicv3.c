@@ -173,9 +173,4 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
-static struct periph_memory_desc gic_mem = {
-	.start = GIC_DISTRIBUTOR_BASE,
-	.len   = 0x2020,
-};
-
-PERIPH_MEMORY_DEFINE(gic_mem);
+PERIPH_MEMORY_DEFINE(gic, GIC_DISTRIBUTOR_BASE, 0x2020);

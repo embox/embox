@@ -94,9 +94,4 @@ static int integratorcp_init(void) {
 			"integratorcp_clk");
 }
 
-static struct periph_memory_desc integratorcp_clock_mem = {
-	.start = TIMER_BASE,
-	.len   = 0x30,
-};
-
-PERIPH_MEMORY_DEFINE(integratorcp_clock_mem);
+PERIPH_MEMORY_DEFINE(integratorcp_clock, TIMER_BASE, 0x30);

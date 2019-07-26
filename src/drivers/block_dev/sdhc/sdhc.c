@@ -169,12 +169,7 @@ struct block_dev_driver imx6_usdhc_driver = {
 
 BLOCK_DEV_DEF("imx6_usdhc", &imx6_usdhc_driver);
 
-static struct periph_memory_desc imx6_usdhc_mem = {
-	.start = BASE_ADDR,
-	.len   = 0x4000,
-};
-
-PERIPH_MEMORY_DEFINE(imx6_usdhc_mem);
+PERIPH_MEMORY_DEFINE(imx6_usdhc, BASE_ADDR, 0x4000);
 
 static uint32_t sdhc_get_size() {
 	uint32_t t;

@@ -26,9 +26,4 @@ uint32_t iomuxc_read(uint32_t reg) {
 	return REG32_LOAD(IOMUXC_BASE + reg);
 }
 
-static struct periph_memory_desc iomuxc_mem = {
-	.start = IOMUXC_BASE,
-	.len   = 0x1000,
-};
-
-PERIPH_MEMORY_DEFINE(iomuxc_mem);
+PERIPH_MEMORY_DEFINE(iomuxc, IOMUXC_BASE, 0x1000);

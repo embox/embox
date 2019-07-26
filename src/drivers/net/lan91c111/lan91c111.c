@@ -314,9 +314,4 @@ static int lan91c111_init(void) {
 	return inetdev_register_dev(nic);
 }
 
-static struct periph_memory_desc lan91c111_mem = {
-	.start = BANK_BASE_ADDR,
-	.len   = 0x10,
-};
-
-PERIPH_MEMORY_DEFINE(lan91c111_mem);
+PERIPH_MEMORY_DEFINE(lan91c111, BANK_BASE_ADDR, 0x10);

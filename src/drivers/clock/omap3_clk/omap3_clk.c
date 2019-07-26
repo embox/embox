@@ -112,16 +112,6 @@ static int omap_clk_init(void) {
 	return irq_attach(GPTIMER1_IRQ, clock_handler, 0, &omap3_clk_clock_source, "omap3_clk");
 }
 
-static struct periph_memory_desc omap3_gptimer_mem = {
-	.start = (uint32_t) GPTIMER1_BASE,
-	.len   = 0x1000,
-};
+PERIPH_MEMORY_DEFINE(omap3_gptimer, GPTIMER1_BASE, 0x1000);
 
-PERIPH_MEMORY_DEFINE(omap3_gptimer_mem);
-
-static struct periph_memory_desc omap3_cm_mem = {
-	.start = (uint32_t) CM_FCLKEN_WKUP,
-	.len   = 0x50,
-};
-
-PERIPH_MEMORY_DEFINE(omap3_cm_mem);
+PERIPH_MEMORY_DEFINE(omap3_cm, CM_FCLKEN_WKUP, 0x50);

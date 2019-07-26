@@ -135,9 +135,4 @@ static struct clock_source mb_cs = {
 
 EMBOX_UNIT_INIT(mb_clock_init);
 
-static struct periph_memory_desc mb_timer_mem = {
-	.start = CONFIG_XILINX_TIMER_BASEADDR,
-	.len   = sizeof(struct timer_regs),
-};
-
-PERIPH_MEMORY_DEFINE(mb_timer_mem);
+PERIPH_MEMORY_DEFINE(mb_timer, CONFIG_XILINX_TIMER_BASEADDR, sizeof(struct timer_regs));

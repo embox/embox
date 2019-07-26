@@ -101,16 +101,6 @@ int ldb_bits(void) {
 	return DATA_WIDTH;
 }
 
-static struct periph_memory_desc ldb_iomux_mem = {
-	.start = 0x20E0000,
-	.len   = 0x1000,
-};
+PERIPH_MEMORY_DEFINE(ldb_iomux, 0x20E0000, 0x1000);
 
-PERIPH_MEMORY_DEFINE(ldb_iomux_mem);
-
-static struct periph_memory_desc ccm_analog_mem = {
-	.start = 0x20C8000,
-	.len   = 0x200,
-};
-
-PERIPH_MEMORY_DEFINE(ccm_analog_mem);
+PERIPH_MEMORY_DEFINE(ccm_analog, 0x20C8000, 0x200);
