@@ -105,9 +105,4 @@ static int el24d1_uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
 
-static struct periph_memory_desc el24d1_uart_mem = {
-	.start = UART_BASE,
-	.len   = 0xB0,
-};
-
-PERIPH_MEMORY_DEFINE(el24d1_uart_mem);
+PERIPH_MEMORY_DEFINE(el24d1_uart, UART_BASE, 0xB0);

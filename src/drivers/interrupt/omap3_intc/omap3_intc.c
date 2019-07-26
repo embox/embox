@@ -127,9 +127,4 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
-static struct periph_memory_desc omap3_intc_mem = {
-	.start = OMAP35X_INTC_BASE,
-	.len   = 0x1000,
-};
-
-PERIPH_MEMORY_DEFINE(omap3_intc_mem);
+PERIPH_MEMORY_DEFINE(omap3_intc, OMAP35X_INTC_BASE, 0x1000);

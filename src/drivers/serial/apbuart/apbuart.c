@@ -136,12 +136,7 @@ static int dev_regs_init() {
 }
 #elif OPTION_DEFINED(NUMBER,apbuart_base)
 
-static struct periph_memory_desc apbuart_mem = {
-	.start = OPTION_GET(NUMBER,apbuart_base),
-	.len   = sizeof(struct apbuart_regs),
-};
-
-PERIPH_MEMORY_DEFINE(apbuart_mem);
+PERIPH_MEMORY_DEFINE(apbuart, OPTION_GET(NUMBER,apbuart_base), sizeof(struct apbuart_regs));
 
 static int dev_regs_init() {
 	dev_regs = (volatile struct apbuart_regs *) OPTION_GET(NUMBER,apbuart_base);

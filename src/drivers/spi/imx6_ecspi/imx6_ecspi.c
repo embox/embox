@@ -68,11 +68,7 @@ static int imx6_ecspi_init(void) {
 }
 EMBOX_UNIT_INIT(imx6_ecspi_init);
 
-static struct periph_memory_desc imx6_ecspi_mem = {
-	.start = BASE_ADDR,
-	.len   = 0x44,
-};
-PERIPH_MEMORY_DEFINE(imx6_ecspi_mem);
+PERIPH_MEMORY_DEFINE(imx6_ecspi, BASE_ADDR, 0x44);
 
 static void imx6_ecspi_set_cs(int cs, int state) {
 	int gpio_n = 0;

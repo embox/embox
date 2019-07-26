@@ -89,9 +89,4 @@ static int pl310_init(void) {
 	return 0;
 }
 
-static struct periph_memory_desc pl310_mem = {
-	.start = PL310_BASE,
-	.len   = 0x1000
-};
-
-PERIPH_MEMORY_DEFINE(pl310_mem);
+PERIPH_MEMORY_DEFINE(pl310, PL310_BASE, 0x1000);

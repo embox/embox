@@ -78,9 +78,4 @@ static int imx_cpuinfo_init(void) {
 	return 0;
 }
 
-static struct periph_memory_desc imx_usb_mem = {
-	.start = USB_ANALOG_BASE,
-	.len   = 0x300,
-};
-
-PERIPH_MEMORY_DEFINE(imx_usb_mem);
+PERIPH_MEMORY_DEFINE(imx_usb, USB_ANALOG_BASE, 0x300);

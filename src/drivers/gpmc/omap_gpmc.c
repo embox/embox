@@ -97,9 +97,4 @@ static int gpmc_init(void) {
 	return 0;
 }
 
-static struct periph_memory_desc omap_gpmc_mem = {
-	.start = GPMC_BASE_ADDRESS,
-	.len   = 0x200,
-};
-
-PERIPH_MEMORY_DEFINE(omap_gpmc_mem);
+PERIPH_MEMORY_DEFINE(omap_gpmc, GPMC_BASE_ADDRESS, 0x200);

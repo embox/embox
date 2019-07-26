@@ -120,9 +120,4 @@ static int pl110_lcd_init(void) {
 	return 0;
 }
 
-static struct periph_memory_desc pl110_mem = {
-	.start = PL110_BASE,
-	.len   = 0x400,
-};
-
-PERIPH_MEMORY_DEFINE(pl110_mem);
+PERIPH_MEMORY_DEFINE(pl110, PL110_BASE, 0x400);

@@ -403,15 +403,5 @@ static struct idesc_ops etnaviv_dev_idesc_ops = {
 
 CHAR_DEV_DEF(ETNAVIV_DEV_NAME, etnaviv_dev_open, NULL, &etnaviv_dev_idesc_ops, NULL);
 
-static struct periph_memory_desc vivante3d_mem = {
-	.start = VIVANTE_3D_BASE,
-	.len   = 0x4000,
-};
-
-static struct periph_memory_desc vivante2d_mem = {
-	.start = VIVANTE_2D_BASE,
-	.len   = 0x4000,
-};
-
-PERIPH_MEMORY_DEFINE(vivante2d_mem);
-PERIPH_MEMORY_DEFINE(vivante3d_mem);
+PERIPH_MEMORY_DEFINE(vivante2d, VIVANTE_2D_BASE, 0x4000);
+PERIPH_MEMORY_DEFINE(vivante3d, VIVANTE_3D_BASE, 0x4000);

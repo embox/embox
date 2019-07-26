@@ -119,16 +119,6 @@ void imx_gpu_power_set(int up) {
 	}
 }
 
-static struct periph_memory_desc imx_power_mem = {
-	.start = GPC_BASE,
-	.len   = 0x2B0,
-};
+PERIPH_MEMORY_DEFINE(imx_power, GPC_BASE, 0x2B0);
 
-PERIPH_MEMORY_DEFINE(imx_power_mem);
-
-static struct periph_memory_desc imx_anadig_mem = {
-	.start = ANADIG_BASE,
-	.len   = 0x100,
-};
-
-PERIPH_MEMORY_DEFINE(imx_anadig_mem);
+PERIPH_MEMORY_DEFINE(imx_anadig, ANADIG_BASE, 0x100);

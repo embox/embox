@@ -568,9 +568,4 @@ static int dwc_init(void) {
 	return inetdev_register_dev(nic);
 }
 
-static struct periph_memory_desc dwc_mem = {
-	.start = BASE_ADDR,
-	.len   = 0x2000,
-};
-
-PERIPH_MEMORY_DEFINE(dwc_mem);
+PERIPH_MEMORY_DEFINE(dwc, BASE_ADDR, 0x2000);

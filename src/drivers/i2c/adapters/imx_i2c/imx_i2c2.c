@@ -61,9 +61,4 @@ static int imx_i2c2_init(void) {
 	return i2c_bus_register(&imx_i2c2_adap, 2, "i2c2");
 }
 
-static struct periph_memory_desc imx_i2c2_mem = {
-	.start = IMX_I2C_BASE,
-	.len   = 0x100,
-};
-
-PERIPH_MEMORY_DEFINE(imx_i2c2_mem);
+PERIPH_MEMORY_DEFINE(imx_i2c2, IMX_I2C_BASE, 0x100);

@@ -111,9 +111,4 @@ static struct clock_source this_clock_source = {
 
 EMBOX_UNIT_INIT(this_init);
 
-static struct periph_memory_desc raspi_systick_mem = {
-	.start = BCM2835_SYSTEM_TIMER_BASE,
-	.len   = sizeof(struct raspi_timer_regs),
-};
-
-PERIPH_MEMORY_DEFINE(raspi_systick_mem);
+PERIPH_MEMORY_DEFINE(raspi_systick, BCM2835_SYSTEM_TIMER_BASE, sizeof(struct raspi_timer_regs));

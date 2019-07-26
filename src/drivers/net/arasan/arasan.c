@@ -501,18 +501,6 @@ static int arasan_init(void) {
 	return inetdev_register_dev(nic);
 }
 
-static struct periph_memory_desc arasan_mem = {
-	.start = BASE_ADDR,
-	.len   = 0x200
-};
+PERIPH_MEMORY_DEFINE(arasan, BASE_ADDR, 0x200);
 
-PERIPH_MEMORY_DEFINE(arasan_mem);
-
-
-
-static struct periph_memory_desc cmctr_mem = {
-	.start = CMCTR_BASE,
-	.len   = 0x200
-};
-
-PERIPH_MEMORY_DEFINE(cmctr_mem);
+PERIPH_MEMORY_DEFINE(cmctr, CMCTR_BASE, 0x200);

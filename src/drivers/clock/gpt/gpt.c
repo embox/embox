@@ -128,9 +128,4 @@ static struct clock_source this_clock_source = {
 
 EMBOX_UNIT_INIT(this_init);
 
-static struct periph_memory_desc gpt_timer_mem = {
-	.start = GPT_BASE_ADDR,
-	.len   = 0x28,
-};
-
-PERIPH_MEMORY_DEFINE(gpt_timer_mem);
+PERIPH_MEMORY_DEFINE(gpt_timer, GPT_BASE_ADDR, 0x28);

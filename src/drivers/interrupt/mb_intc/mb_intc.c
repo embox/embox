@@ -84,9 +84,4 @@ unsigned int irqctrl_get_irq_num(void) {
 	return REG_LOAD(&irqc->ivr);
 }
 
-static struct periph_memory_desc mb_intc_mem = {
-	.start = CONFIG_XILINX_INTC_BASEADDR,
-	.len   = sizeof(struct irqc_regs),
-};
-
-PERIPH_MEMORY_DEFINE(mb_intc_mem);
+PERIPH_MEMORY_DEFINE(mb_intc, CONFIG_XILINX_INTC_BASEADDR, sizeof(struct irqc_regs));

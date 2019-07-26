@@ -86,9 +86,4 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
-static struct periph_memory_desc icu_mem = {
-	.start = ICU_BASE,
-	.len   = 0x10,
-};
-
-PERIPH_MEMORY_DEFINE(icu_mem);
+PERIPH_MEMORY_DEFINE(icu, ICU_BASE, 0x10);

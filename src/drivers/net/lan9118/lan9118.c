@@ -449,10 +449,6 @@ static int lan9118_init(void) {
 
 #if LAN9118_IRQ_TYPE != LAN9118_IRQ_GPIO
 /* Static memory (CS3) Ethernet 0x4E000000-0x4EFFFFFF (SMC) 16MB */
-static struct periph_memory_desc lan9118_mem = {
-	.start = LAN9118_BASE_ADDRESS,
-	.len   = LAN9118_MEMORY_REG_SIZE,
-};
+PERIPH_MEMORY_DEFINE(lan9118, LAN9118_BASE_ADDRESS, LAN9118_MEMORY_REG_SIZE);
 
-PERIPH_MEMORY_DEFINE(lan9118_mem);
 #endif

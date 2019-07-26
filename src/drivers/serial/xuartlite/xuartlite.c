@@ -86,9 +86,4 @@ DIAG_OPS_DEF(
 		.kbhit = xuartlite_diag_has_symbol,
 );
 
-static struct periph_memory_desc xuartlite_mem = {
-	.start = CONFIG_XILINX_UARTLITE_BASEADDR,
-	.len   = sizeof(struct uart_regs),
-};
-
-PERIPH_MEMORY_DEFINE(xuartlite_mem);
+PERIPH_MEMORY_DEFINE(xuartlite, CONFIG_XILINX_UARTLITE_BASEADDR, sizeof(struct uart_regs));

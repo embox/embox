@@ -91,8 +91,4 @@ static struct gpio_chip imx_gpio_chip = {
 	.nports = GPIO_MAX
 };
 
-static struct periph_memory_desc imx_gpio_mem = {
-	.start = BASE_ADDR(0),
-	.len   = 0x4000 * 5,
-};
-PERIPH_MEMORY_DEFINE(imx_gpio_mem);
+PERIPH_MEMORY_DEFINE(imx_gpio, BASE_ADDR(0), (0x4000 * 5));

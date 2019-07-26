@@ -263,33 +263,13 @@ void ipu_free_irq(struct ipu_soc *ipu, uint32_t irq, void *dev_id) {
 	ipu_cm_write(ipu, reg, IPUIRQ_2_CTRLREG(irq));
 }
 
-static struct periph_memory_desc ipu_mem = {
-	.start = IPU_BASE,
-	.len   = 0x200000,
-};
-
-PERIPH_MEMORY_DEFINE(ipu_mem);
+PERIPH_MEMORY_DEFINE(ipu, IPU_BASE, 0x200000);
 
 #define DCIC1_BASE 0x20E4000
 #define DCIC2_BASE 0x20E8000
 
-static struct periph_memory_desc dcic1_mem = {
-	.start = DCIC1_BASE,
-	.len   = 0x20,
-};
+PERIPH_MEMORY_DEFINE(ipu_dcic1, DCIC1_BASE, 0x20);
 
-PERIPH_MEMORY_DEFINE(dcic1_mem);
+PERIPH_MEMORY_DEFINE(ipu_dcic2, DCIC2_BASE, 0x20);
 
-static struct periph_memory_desc dcic2_mem = {
-	.start = DCIC2_BASE,
-	.len   = 0x20,
-};
-
-PERIPH_MEMORY_DEFINE(dcic2_mem);
-
-static struct periph_memory_desc src_mem = {
-	.start = SRC_BASE,
-	.len   = 0x4,
-};
-
-PERIPH_MEMORY_DEFINE(src_mem);
+PERIPH_MEMORY_DEFINE(ipu_src, SRC_BASE, 0x4);

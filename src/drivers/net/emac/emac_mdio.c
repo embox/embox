@@ -208,9 +208,4 @@ void emac_mdio_config(void) {
 #endif
 }
 
-static struct periph_memory_desc emac_mdio_region = {
-	.start = (uint32_t) MDIO_BASE,
-	.len   = 0x800,
-};
-
-PERIPH_MEMORY_DEFINE(emac_mdio_region);
+PERIPH_MEMORY_DEFINE(emac_mdio_region, MDIO_BASE, 0x800);

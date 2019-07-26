@@ -228,9 +228,4 @@ static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
 
-static struct periph_memory_desc imx_uart_mem = {
-	.start = UART_BASE,
-	.len   = 0xAC,
-};
-
-PERIPH_MEMORY_DEFINE(imx_uart_mem);
+PERIPH_MEMORY_DEFINE(imx_uart, UART_BASE, 0xAC);
