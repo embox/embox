@@ -9,6 +9,8 @@
 #ifndef LIB_BMP_H_
 #define LIB_BMP_H_
 
+#define BMP_NUM_OF_CHANNELS 3
+
 struct bmp {
 	uint32_t width;
 	uint32_t height;
