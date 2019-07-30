@@ -69,13 +69,11 @@ static int this_init(void) {
 
 	clock_source_register(&this_clock_source);
 
-	for (int i = 0; i < 256; i++) {
-		irq_attach(i,
-	                  clock_handler,
-	                  0,
-	                  &this_clock_source,
-	                  "i.MX General Purpose Timer");
-	}
+	irq_attach(GPT_IRQ,
+		  clock_handler,
+		  0,
+		  &this_clock_source,
+		  "i.MX General Purpose Timer");
 	return 0;
 }
 
@@ -96,6 +94,8 @@ static int this_config(struct time_dev_conf * conf) {
 	REG32_ORIN(GPT_CR, GPT_CR_ENMOD);
 
 	REG32_ORIN(GPT_CR, GPT_CR_EN);
+
+	REG32_ORIN(GPT_CR, 0x1 << 20);
 
 	REG32_STORE(GPT_IR, GPT_IR_OF1);
 
