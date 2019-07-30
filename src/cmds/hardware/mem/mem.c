@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 	/*length = (length + sizeof(address) - 1) / sizeof(address);*/
 	while (length--) {
 		if (0 == ((uintptr_t)address & 0xF)) {
-			printf("\n0x%0" PRINT_POINTER_WIDTH "x:\t", (uintptr_t) address);
+			printf("\n0x%0" PRIxPTR ":\t", (uintptr_t) address);
 		}
 
 		switch (at) {
