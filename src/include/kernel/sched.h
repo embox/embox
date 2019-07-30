@@ -25,7 +25,7 @@
 
 #include <kernel/time/time.h>
 
-#define SCHED_TIMEOUT_INFINITE     (unsigned long)(-1)
+#define SCHED_TIMEOUT_INFINITE     (-1L)
 
 #ifdef SMP
 # define TW_SMP_WAKING  (~0x0)  /**< In the middle of sched_wakeup. */
