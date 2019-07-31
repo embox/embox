@@ -15,6 +15,7 @@
 #include <sys/mman.h>
 
 struct mmu_entry {
+	uintptr_t entries[MMU_LEVELS];
 	uintptr_t *table[MMU_LEVELS];
 	int idx[MMU_LEVELS];
 };

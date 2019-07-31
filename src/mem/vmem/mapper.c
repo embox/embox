@@ -32,12 +32,13 @@ static struct mmu_entry *vmem_entry_get_tables(mmu_ctx_t ctx, mmu_vaddr_t virt_a
 	int i;
 
 	entry->table[0] = mmu_get_root(ctx);
-
+	entry->entries[0] = *(entry->table[0] + entry->idx[0]);
 	for (i = 1; i < MMU_LEVELS; i++) {
 		entry->table[i] = mmu_get(i - 1, entry->table[i - 1] + entry->idx[i - 1]);
 		if (entry->table[i] == NULL) {
 			break;
 		}
+		entry->entries[i] = *(entry->table[i] + entry->idx[i]);
 	}
 
 	return entry;
