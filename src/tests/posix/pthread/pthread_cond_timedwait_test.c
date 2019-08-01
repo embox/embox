@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <kernel/time/time.h>
 
 static pthread_cond_t *cond;
 static pthread_mutex_t *mut;
@@ -26,9 +27,13 @@ TEST_TEARDOWN(teardown);
 TEST_CASE("Time-out occurring")
 {
 	int res;
+	struct timespec relative_time;
+
 	time_to_sleep -> tv_sec = 5;
 	time_to_sleep -> tv_nsec = 0;
 
+	clock_gettime(CLOCK_REALTIME, &relative_time);
+	*time_to_sleep = timespec_add(*time_to_sleep, relative_time);
 
 	pthread_mutex_lock(mut);
 	res = pthread_cond_timedwait(cond, mut, time_to_sleep);
