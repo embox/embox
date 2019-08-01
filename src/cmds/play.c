@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <stdlib.h>
 
 #include <drivers/audio/portaudio.h>
 #include <fs/file_format.h>
@@ -130,10 +131,11 @@ int main(int argc, char **argv) {
 			callback = &sin_callback;
 			break;
 		case 'm':
-			if ((optarg == NULL) || (!sscanf(optarg, "%x", &audio_memory_addr))) {
+			if (!optarg) {
 				print_usage();
 				return -1;
 			}
+			audio_memory_addr = (uint32_t) strtoul(optarg, NULL, 0);
 			printf("Audio file memory address is 0x%x\n", audio_memory_addr);
 			break;
 		default:
