@@ -12,6 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
+#include <stdlib.h>
 
 #include <drivers/audio/portaudio.h>
 #include <fs/file_format.h>
@@ -188,10 +189,11 @@ int main(int argc, char **argv) {
 			}
 			break;
 		case 'm':
-			if ((optarg == NULL) || (!sscanf(optarg, "%x", &audio_memory_addr))) {
+			if (!optarg) {
 				print_usage();
 				return -1;
 			}
+			audio_memory_addr = (uint32_t) strtoul(optarg, NULL, 0);
 			in_buf = (uint16_t *) (audio_memory_addr + sizeof (struct wave_header));
 			break;
 		default:
