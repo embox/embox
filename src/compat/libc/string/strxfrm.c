@@ -14,12 +14,11 @@
 #define IS_NOT_ASCII (1u << 7)
 
 size_t strxfrm(char *dest, const char *src, size_t n) {
-	size_t srclen, min_copy, buff;
+	size_t srclen,  buff;
 	unsigned const char *sp = (unsigned const char *) src;
-    
+
 	srclen = strlen(src);
-	buff = (((srclen + 1) < (n)) ? (srclen + 1) : (n));
-	min_copy = buff;
+	buff = srclen + 1 < n ? srclen + 1 : n;
 
 	while (!(*sp++ & (IS_NOT_ASCII)) && buff--);
 	if ((*(--sp)) & (IS_NOT_ASCII)) {
@@ -28,7 +27,7 @@ size_t strxfrm(char *dest, const char *src, size_t n) {
 	}
 
 	if (n != 0) {
-		strncpy(dest, src, min_copy);
+		strncpy(dest, src, n);
 	}
 	return srclen;
 }
