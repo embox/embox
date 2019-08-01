@@ -27,7 +27,7 @@ static void e2k_kernel_start(void) {
 	while (idled_cpus_count < CPU_COUNT - 1)
 		;
 
-	/* PSR is local register and makes sence only within a function,
+	/* PSR is local register and makes sense only within a function,
 	* so we set it here before kernel start. */
 	asm volatile ("rrs %%psr, %0" : "=r"(psr) :);
 	psr |= (PSR_IE | PSR_NMIE | PSR_UIE);
@@ -46,13 +46,23 @@ void cpu_idle(void) {
 		;
 }
 
+#include <hal/context.h>
+static struct context cpu_ctx_prev[2];
+static struct context cpu_ctx[2];/* 2 CPU */
+static int idle_stack[0x1000];
+
+#include <module/embox/kernel/stack.h>
+
+#define KERNEL_STACK_SZ OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size)
+extern char _stack_top;
+
 __attribute__ ((__section__(".e2k_entry")))
 void e2k_entry(struct pt_regs *regs) {
 	/* Since we enable exceptions only when all CPUs except the main one
 	 * reached the idle state (cpu_idle), we can rely that order and can
 	 * guarantee exceptions happen strictly after all CPUS entries. */
 	if (entries_count >= CPU_COUNT) {
-		/* Entering here because of expection or interrupt */
+		/* Entering here because of exception or interrupt */
 		e2k_trap_handler(regs);
 
 		RESTORE_COMMON_REGS(regs);
@@ -60,7 +70,7 @@ void e2k_entry(struct pt_regs *regs) {
 		E2K_DONE;
 	}
 
-	/* It wasn't expection, so we decide this usual program execution,
+	/* It wasn't exception, so we decide this usual program execution,
 	 * that is, Embox started on CPU0 or CPU1 */
 
 	e2k_wait_all();
@@ -69,8 +79,11 @@ void e2k_entry(struct pt_regs *regs) {
 
 	if (entries_count > 1) {
 		/* XXX currently we support only single core */
-		cpu_idle();
+		/* Run cpu_idle on 2nd CPU */
+		context_init(&cpu_ctx[0], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE, cpu_idle, idle_stack, sizeof(idle_stack));
+		context_switch(&cpu_ctx_prev[0], &cpu_ctx[0]);
 	}
-
-	e2k_kernel_start();
+	/* Run e2k_kernel_start on 1st CPU */
+	context_init(&cpu_ctx[1], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE, e2k_kernel_start, &_stack_top, KERNEL_STACK_SZ);
+	context_switch(&cpu_ctx_prev[1], &cpu_ctx[1]);
 }

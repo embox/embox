@@ -5,9 +5,7 @@ OUTPUT_ARCH(e3s)
 ENTRY(_start)
 
 MEMORY {
-	MEMORY_REGION(RAM)
-	MEMORY_REGION(ROM)
-	MEMORY_REGION(BOOTINFO)
+	#include <regions.lds.h>
 }
 
 _ram_base = ORIGIN(RAM);
@@ -21,7 +19,7 @@ SECTIONS {
 		*(.x86_boot)
 		. = _bootinfo_start + 0x10000;
 		_bootinfo_end = .;
-	} SECTION_REGION(bootinfo)
+	}
 
 	.text : {
 		_start = .;
@@ -41,5 +39,5 @@ SECTIONS {
 		*(.cpu_idle)
 
 		/* text */
-	}
+	} SECTION_REGION(text)
 }

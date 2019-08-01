@@ -34,10 +34,16 @@ static int mmu_translate(pid_t pid, uintptr_t virt_addr) {
 
 	printf("%" PRIxPTR " -> %" PRIxPTR "\n", virt_addr, paddr);
 	printf("ctx (%" PRIxPTR ") \n", (uintptr_t)mmu_translate_info.ctx);
-	for (i = 0; i < MMU_LEVELS; i ++) {
-		printf("table_%d: %" PRIxPTR " idx_%d: %d\n",
-			i, (uintptr_t) mmu_translate_info.mmu_entry.table[i],
-			i, mmu_translate_info.mmu_entry.idx[i]);
+	printf("pgd (root_table): %" PRIxPTR " idx: %d entry (0x%" PRIxPTR ")\n",
+			(uintptr_t) mmu_translate_info.mmu_entry.table[0],
+			mmu_translate_info.mmu_entry.idx[0],
+			mmu_translate_info.mmu_entry.entries[0]);
+	for (i = 1; i < MMU_LEVELS; i ++) {
+		printf("table_%d: %" PRIxPTR " idx: %d entry (0x%" PRIxPTR ")\n",
+			i,
+			(uintptr_t) mmu_translate_info.mmu_entry.table[i],
+			mmu_translate_info.mmu_entry.idx[i],
+			mmu_translate_info.mmu_entry.entries[i] );
 	}
 	printf("pte: %" PRIxPTR "\n", (uintptr_t)mmu_translate_info.pte);
 	return 0;

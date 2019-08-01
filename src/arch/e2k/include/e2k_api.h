@@ -162,7 +162,7 @@
 			::: "memory"); \
 })
 
-
+#define E2K_WAIT_ALL E2K_WAIT(_ma_c|_fl_c|_all_e|_all_c)
 
 /* Wait for the load to finish before issuing
  * next memory loads/stores. */
