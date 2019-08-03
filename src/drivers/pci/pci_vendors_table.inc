@@ -9,4 +9,5 @@
 {PCI_VENDOR_ID_PLX,     "PLX Technology"},
 {PCI_VENDOR_ID_XILINX,  "Xilinx Corporation"},
 {PCI_VENDOR_ID_VIRTIO,  "VirtIO"},
-{PCI_VENDOR_ID_SMI,     "Silicon Motion, Inc."}
+{PCI_VENDOR_ID_SMI,     "Silicon Motion, Inc."},
+{PCI_VENDOR_ID_RED_HAT, "Red Hat, Inc."}
