@@ -8,6 +8,9 @@
 
 #include <errno.h>
 #include <string.h>
+#include <stdint.h>
+#include <sys/mman.h>
+
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/time/ktime.h>
@@ -565,6 +568,10 @@ static int ohci_pci_init(struct pci_slot_dev *pci_dev) {
 	struct usb_hcd *hcd;
 	int ret;
 
+	base = (struct ohci_reg *)mmap_device_memory(base, 0x1000,
+			PROT_WRITE | PROT_READ,
+			MAP_FIXED,
+			(uintptr_t)base);
 	if (!ohci_verify(base)) {
 		return -ENOTSUP;
 	}
