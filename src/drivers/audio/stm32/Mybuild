@@ -1,17 +1,41 @@
 package embox.driver.audio
 
-@BuildDepends(third_party.bsp.stmf7cube.core)
-module stm32_audio_f7 {
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f764g_discovery {
 	option number log_level = 1
 	option number volume = 70
 	option number audio_buf_len = 4096
 
-	source "stm32_audio_f7.c"
+	@IncludeExport(path="drivers/audio", target_name="stm32f7_audio.h")
+	source "stm32f764g_discovery_audio.h"
+
+	source "stm32_audio_f7.c",
+			"stm32f764g_discovery_audio.c"
 
 	depends embox.driver.audio.portaudio_lib
 	depends embox.driver.audio.audio_dev
 
-	depends third_party.bsp.stmf7cube.core
+	depends third_party.bsp.st_bsp_api
+	depends third_party.bsp.stmf7cube.stm32f7_discovery_bsp
+	depends third_party.bsp.stmf7cube.stm32f7_discovery_components
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f769i_discovery {
+	option number log_level = 1
+	option number volume = 70
+	option number audio_buf_len = 4096
+
+	@IncludeExport(path="drivers/audio", target_name="stm32f7_audio.h")
+	source "stm32f769i_discovery_audio.h"
+
+	source "stm32_audio_f7.c",
+			"stm32f769i_discovery_audio.c"
+
+	depends embox.driver.audio.portaudio_lib
+	depends embox.driver.audio.audio_dev
+
+	depends third_party.bsp.st_bsp_api
 	depends third_party.bsp.stmf7cube.stm32f7_discovery_bsp
 	depends third_party.bsp.stmf7cube.stm32f7_discovery_components
 }
