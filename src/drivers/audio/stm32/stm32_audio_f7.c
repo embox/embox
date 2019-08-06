@@ -18,16 +18,12 @@
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
 
-#include "stm32746g_discovery.h"
-#include "stm32746g_discovery_audio.h"
+#include <drivers/audio/stm32f7_audio.h>
 
 EMBOX_UNIT_INIT(stm32_audio_init);
 
 #define STM32_DEFAULT_VOLUME    OPTION_GET(NUMBER, volume)
 #define STM32_AUDIO_BUF_LEN     OPTION_GET(NUMBER, audio_buf_len)
-
-#define STM32_AUDIO_OUT_DMA_IRQ (AUDIO_OUT_SAIx_DMAx_IRQ + 16)
-#define STM32_AUDIO_IN_DMA_IRQ  (AUDIO_IN_SAIx_DMAx_IRQ + 16)
 
 /* Rate is sharable between input and output, see comments
  * in stm32_audio_set_rate() below */
@@ -54,11 +50,6 @@ static struct stm32_hw stm32_hw_in;
 static uint8_t stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN * 2];
 static uint8_t stm32_audio_out_bufs[STM32_AUDIO_BUF_LEN * 2];
 
-static irq_return_t stm32_audio_out_dma_interrupt(unsigned int irq_num,
-		void *audio_dev);
-static irq_return_t stm32_audio_in_dma_interrupt(unsigned int irq_num,
-		void *audio_dev);
-
 static void stm32_audio_in_activate(void) {
 	stm32_hw_in.stm32_audio_running = 0;
 
@@ -82,36 +73,8 @@ static void stm32_audio_out_activate(void) {
 	}
 }
 
-/* XXX
- * STM32 Cube suppose only 3 possible audio configurations:
- * 1. BSP_AUDIO_OUT_Play - only OUTPUT
- * 2. BSP_AUDIO_IN_Record - only INPUT
- * 3. BSP_AUDIO_IN_OUT_Init - BOTH
- * So the only one possibility to use both audio in and audio out is
- * to use BSP_AUDIO_IN_OUT_Init, which makes run BOTH at any time. It means
- * that even we use 'record' audio out will be activated too.
- * WORKAROUND: Run both IN and OUT everytime, and actually do not stop them
- * even if auddio_dev->stop() is called.
- */
 static int stm32_audio_init(void) {
-	if (0 != irq_attach(STM32_AUDIO_IN_DMA_IRQ, stm32_audio_in_dma_interrupt,
-				0, NULL, "stm32_audio_dma_in")) {
-		log_error("irq_attach error");
-	}
-	if (0 != irq_attach(STM32_AUDIO_OUT_DMA_IRQ, stm32_audio_out_dma_interrupt,
-				0, NULL, "stm32_audio_out")) {
-		log_error("irq_attach error");
-	}
-
-	/* Set volume 90 for both audio input and output. Then we can change
-	 * output volume in stm32_audio_out_start() */
-	if (0 != BSP_AUDIO_IN_OUT_Init(
-				INPUT_DEVICE_DIGITAL_MICROPHONE_2,
-				OUTPUT_DEVICE_HEADPHONE,
-				90, 16000)) {
-		log_error("BSP_AUDIO_IN_OUT_Init error");
-		return -1;
-	}
+	stm32f7_audio_init();
 
 	/* Now activate and run INPUT and OUTPUT permanently */
 	stm32_audio_out_activate();
@@ -225,16 +188,6 @@ void BSP_AUDIO_IN_Error_CallBack() {
 	log_error("");
 }
 
-static irq_return_t stm32_audio_in_dma_interrupt(unsigned int irq_num,
-		void *audio_dev) {
-	extern SAI_HandleTypeDef haudio_in_sai;
-	HAL_DMA_IRQHandler(haudio_in_sai.hdmarx);
-	return IRQ_HANDLED;
-}
-
-static_assert(86 == STM32_AUDIO_IN_DMA_IRQ);
-STATIC_IRQ_ATTACH(86, stm32_audio_in_dma_interrupt, NULL);
-
 /******** Functions for OUTPUT audio device ********/
 static void stm32_audio_out_start(struct audio_dev *dev) {
 	stm32_hw_out.stm32_audio_running = 1;
@@ -290,13 +243,3 @@ void BSP_AUDIO_OUT_TransferComplete_CallBack(void) {
 void BSP_AUDIO_OUT_Error_CallBack() {
 	log_error("");
 }
-
-static irq_return_t stm32_audio_out_dma_interrupt(unsigned int irq_num,
-		void *audio_dev) {
-	extern SAI_HandleTypeDef haudio_out_sai;
-	HAL_DMA_IRQHandler(haudio_out_sai.hdmatx);
-	return IRQ_HANDLED;
-}
-
-static_assert(76 == STM32_AUDIO_OUT_DMA_IRQ);
-STATIC_IRQ_ATTACH(76, stm32_audio_out_dma_interrupt, NULL);

@@ -96,6 +96,7 @@
 #define HAL_CORTEX_MODULE_ENABLED
 /* #define HAL_PCD_MODULE_ENABLED    */
 /* #define HAL_HCD_MODULE_ENABLED    */
+#define HAL_DFSDM_MODULE_ENABLED
 
 
 /* ########################## HSE/HSI Values adaptation ##################### */
@@ -420,6 +421,10 @@
 #ifdef HAL_HCD_MODULE_ENABLED
  #include "stm32f7xx_hal_hcd.h"
 #endif /* HAL_HCD_MODULE_ENABLED */
+
+#ifdef HAL_DFSDM_MODULE_ENABLED
+ #include "stm32f7xx_hal_dfsdm.h"
+#endif /* HAL_DFSDM_MODULE_ENABLED */
 
 /* Exported macro ------------------------------------------------------------*/
 #ifdef  USE_FULL_ASSERT
