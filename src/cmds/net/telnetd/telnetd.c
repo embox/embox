@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <utmp.h>
 #include <stdlib.h>
+#include <sched.h>
 
 #include <util/math.h>
 
@@ -476,9 +477,14 @@ int main(int argc, char **argv) {
 						MD(printf("cannot execv process err=%d\n", errno));
 					}
 				}
+				/* FIXME
+				 * It's required the only for sync.
+				 * Now telnetd_client_handler() must be execute after
+				 * "telnetd shell" has started
+				 */
+				sched_yield();
 			}
 #endif
-
 			MD(printf("telnetd: %d\n", client_args.sock));
 			telnetd_client_handler(&client_args);
 			_exit(0);
