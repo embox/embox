@@ -24,9 +24,6 @@ void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
 	while(1) {}
 }
 
-void ptregs_jmp(void) {
-}
-
 void __extenddftf2(void) {
 }
 

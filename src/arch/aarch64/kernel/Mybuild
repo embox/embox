@@ -2,6 +2,7 @@ package embox.arch.aarch64
 
 module arch extends embox.arch.arch {
 	source "arch.c"
+	source "ptregs_jmp.S"
 
 	depends embox.arch.aarch64.locore
 	depends embox.arch.aarch64.interrupt
@@ -26,4 +27,10 @@ module exception_table {
 
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
+}
+
+static module vfork extends embox.arch.vfork_entry {
+	source "vfork.S"
+
+	depends embox.compat.posix.proc.vfork_entry
 }
