@@ -37,8 +37,8 @@ TEST_CASE_TARGET {ntpdate test} {
 	send "date\r"
 	expect {
 		timeout  { puts "ntpdate.exp: date command timeout\n"; exit 1 }
-		# Date 2014-01-05 is from class (2.*)
-		-re {2.*} {
+		# Wait here only for date (not time) - 2014-01-05 is from class (2.{9})
+		-regexp {2.{9}} {
 			regexp {.{10}} $expect_out(0,string) embox_date
 			if {$embox_date != $host_date} {
 				puts "embox_date=$embox_date is not equal to host_date=$host_date"
