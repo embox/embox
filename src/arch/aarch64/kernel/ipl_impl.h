@@ -19,12 +19,12 @@
 typedef uint64_t __ipl_t;
 
 static inline void ipl_init(void) {
-	set_daif(get_daif() | DAIF_I_BIT | DAIF_F_BIT);
+	set_daif(get_daif() & ~(DAIF_I_BIT | DAIF_F_BIT));
 }
 
 static inline __ipl_t ipl_save(void) {
 	uint64_t r = get_daif();
-	set_daif(r & ~(DAIF_I_BIT | DAIF_F_BIT));
+	set_daif(r | DAIF_I_BIT | DAIF_F_BIT);
 	return r;
 }
 

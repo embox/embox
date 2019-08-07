@@ -29,6 +29,7 @@ static inline void set_daif(uint64_t reg) {
 #define read_system_reg(name) ({ \
 		volatile uint64_t reg; \
 		asm volatile("mrs  %0, "#name";" \
+			"isb;" \
 			: "=r"(reg) \
 		); \
 		reg; \
@@ -36,6 +37,7 @@ static inline void set_daif(uint64_t reg) {
 
 #define write_system_reg(name, reg) do { \
 		asm volatile("msr "#name", %0;" \
+			"isb;" \
 			: : "r"(reg) \
 		); \
 	} while (0)
@@ -112,4 +114,99 @@ static inline void icc_eoir1_el1_write(uint64_t reg) {
 	write_system_reg(S3_0_C12_C12_1, reg);
 }
 
+static inline uint64_t icc_sre_el1_read(void) {
+	return read_system_reg(S3_0_C12_C12_5);
+}
+
+static inline void icc_sre_el1_write(uint64_t reg) {
+	write_system_reg(S3_4_C12_C9_5, reg);
+}
+
+static inline uint64_t icc_sre_el2_read(void) {
+	return read_system_reg(S3_4_C12_C9_5);
+}
+
+static inline void icc_sre_el2_write(uint64_t reg) {
+	write_system_reg(S3_0_C12_C12_5, reg);
+}
+
+static inline uint64_t icc_sre_el3_read(void) {
+	return read_system_reg(S3_6_C12_C12_5);
+}
+
+static inline void icc_sre_el3_write(uint64_t reg) {
+	write_system_reg(S3_6_C12_C12_5, reg);
+}
+
+static inline uint64_t icc_hppir0_el1_read(void) {
+	return read_system_reg(S3_0_C12_C8_2);
+}
+
+static inline void icc_hppir0_el1_write(uint64_t reg) {
+	write_system_reg(S3_0_C12_C8_2, reg);
+}
+
+static inline uint64_t icc_hppir1_el1_read(void) {
+	return read_system_reg(S3_0_C12_C12_2);
+}
+
+static inline void icc_hppir1_el1_write(uint64_t reg) {
+	write_system_reg(S3_0_C12_C12_2, reg);
+}
+
+static inline uint64_t aarch64_isr_el1(void) {
+	return read_system_reg(ISR_EL1);
+}
+
+static inline uint64_t aarch64_current_el(void) {
+	return read_system_reg(CurrentEL);
+}
+
+static inline uint64_t aarch64_hcr_el2_read(void) {
+	return read_system_reg(HCR_EL2);
+}
+
+static inline uint64_t aarch64_ttbr0_el2_read(void) {
+	return read_system_reg(TTBR0_EL2);
+}
+
+static inline uint64_t aarch64_ttbr1_el2_read(void) {
+	return 0;//read_system_reg(TTBR1_EL2);
+}
+
+static inline void aarch64_hcr_el2_write(uint64_t reg) {
+	write_system_reg(HCR_EL2, reg);
+}
+
+static inline uint64_t aarch64_sctlr_el2_read(void) {
+	return read_system_reg(SCTLR_EL2);
+}
+
+static inline uint64_t aarch64_sctlr_el1_read(void) {
+	return read_system_reg(SCTLR_EL1);
+}
+
+static inline uint64_t aarch64_esr_el2_read(void) {
+	return read_system_reg(ESR_EL2);
+}
+
+static inline uint64_t aarch64_esr_el1_read(void) {
+	return read_system_reg(ESR_EL1);
+}
+
+static inline uint64_t aarch64_spsr_el2_read(void) {
+	return read_system_reg(SPSR_EL2);
+}
+
+static inline uint64_t aarch64_spsr_el1_read(void) {
+	return read_system_reg(SPSR_EL1);
+}
+
+static inline uint64_t aarch64_far_el2_read(void) {
+	return read_system_reg(FAR_EL2);
+}
+
+static inline uint64_t aarch64_far_el1_read(void) {
+	return read_system_reg(FAR_EL1);
+}
 #endif /* AARCH_HAL_REG_ */
