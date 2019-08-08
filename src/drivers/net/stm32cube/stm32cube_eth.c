@@ -52,72 +52,53 @@ static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB]__attribute__ ((aligned (4)))
 #endif
 
 static void low_level_init(unsigned char mac[6]) {
-	//uint32_t regvalue;
-	int err;
-
 	memset(&stm32_eth_handler, 0, sizeof(stm32_eth_handler));
 
 	stm32_eth_handler.Instance = (ETH_TypeDef *) ETH_BASE;
 	/* Fill ETH_InitStructure parametrs */
 	stm32_eth_handler.Init.MACAddr = mac;
 	stm32_eth_handler.Init.AutoNegotiation = ETH_AUTONEGOTIATION_DISABLE;
-	//stm32_eth_handler.Init.AutoNegotiation = ETH_AUTONEGOTIATION_ENABLE;
 	stm32_eth_handler.Init.Speed = ETH_SPEED_100M;
 	stm32_eth_handler.Init.DuplexMode = ETH_MODE_FULLDUPLEX;
 	stm32_eth_handler.Init.MediaInterface = ETH_MEDIA_INTERFACE_RMII;
-	stm32_eth_handler.Init.ChecksumMode = ETH_CHECKSUM_BY_SOFTWARE;//ETH_CHECKSUM_BY_HARDWARE;
+	stm32_eth_handler.Init.ChecksumMode = ETH_CHECKSUM_BY_SOFTWARE;
 	stm32_eth_handler.Init.PhyAddress = PHY_ADDRESS;
 	stm32_eth_handler.Init.RxMode = ETH_RXINTERRUPT_MODE;
 
-	if (HAL_OK != (err = HAL_ETH_Init(&stm32_eth_handler))) {
-		log_error("HAL_ETH_Init err %d\n", err);
+	if (HAL_OK != HAL_ETH_Init(&stm32_eth_handler)) {
+		log_error("HAL_ETH_Init error\n");
 	}
 	if (stm32_eth_handler.State == HAL_ETH_STATE_READY) {
-		log_error("STATE_READY sp %d duplex %d\n", stm32_eth_handler.Init.Speed, stm32_eth_handler.Init.DuplexMode);
+		log_error("STATE_READY sp %d duplex %d\n",
+			stm32_eth_handler.Init.Speed, stm32_eth_handler.Init.DuplexMode);
 	}
 
 	/*(#)Initialize Ethernet DMA Descriptors in chain mode and point to allocated buffers:*/
 	HAL_ETH_DMATxDescListInit(&stm32_eth_handler, DMATxDscrTab, &Tx_Buff[0][0],
 			ETH_TXBUFNB); /*for Transmission process*/
-	if (HAL_OK != (err = HAL_ETH_DMARxDescListInit(&stm32_eth_handler, DMARxDscrTab, &Rx_Buff[0][0],
-			ETH_RXBUFNB))) { /*for Reception process*/
-		log_error("HAL_ETH_DMARxDescListInit %d\n", err);
+	if (HAL_OK != HAL_ETH_DMARxDescListInit(&stm32_eth_handler,
+			DMARxDscrTab, &Rx_Buff[0][0],
+			ETH_RXBUFNB)) { /*for Reception process*/
+		log_error("HAL_ETH_DMARxDescListInit error\n");
 	}
 
 	/* (#)Enable MAC and DMA transmission and reception: */
 	HAL_ETH_Start(&stm32_eth_handler);
-#if 0
-	/**** Configure PHY to generate an interrupt when Eth Link state changes ****/
-	/* Read Register Configuration */
-	HAL_ETH_ReadPHYRegister(&stm32_eth_handler, PHY_MICR, &regvalue);
-
-	regvalue |= (PHY_MICR_INT_EN | PHY_MICR_INT_OE);
-
-	/* Enable Interrupts */
-	HAL_ETH_WritePHYRegister(&stm32_eth_handler, PHY_MICR, regvalue);
-
-	/* Read Register Configuration */
-	HAL_ETH_ReadPHYRegister(&stm32_eth_handler, PHY_MISR, &regvalue);
-
-	regvalue |= PHY_MISR_LINK_INT_EN;
-
-	/* Enable Interrupt on change of link status */
-	HAL_ETH_WritePHYRegister(&stm32_eth_handler, PHY_MISR, regvalue);
-#endif
 }
 
 static struct sk_buff *low_level_input(void) {
 	struct sk_buff *skb;
 	int len;
 	uint8_t *buffer;
-	uint32_t i=0;
+	uint32_t i = 0;
 	__IO ETH_DMADescTypeDef *dmarxdesc;
 
 	skb = NULL;
 
 	/* get received frame */
-	if (HAL_ETH_GetReceivedFrame_IT(&stm32_eth_handler) != HAL_OK)
+	if (HAL_ETH_GetReceivedFrame_IT(&stm32_eth_handler) != HAL_OK) {
 		return NULL;
+	}
 
 	/* Obtain the size of the packet and put it into the "len" variable. */
 	len = stm32_eth_handler.RxFrameInfos.length;
@@ -137,13 +118,13 @@ static struct sk_buff *low_level_input(void) {
 	dmarxdesc = stm32_eth_handler.RxFrameInfos.FSRxDesc;
 
 	/* Set Own bit in Rx descriptors: gives the buffers back to DMA */
-	for (i=0; i< stm32_eth_handler.RxFrameInfos.SegCount; i++) {
+	for (i = 0; i < stm32_eth_handler.RxFrameInfos.SegCount; i++) {
 		dmarxdesc->Status |= ETH_DMARXDESC_OWN;
 		dmarxdesc = (ETH_DMADescTypeDef *)(dmarxdesc->Buffer2NextDescAddr);
 	}
 
 	/* Clear Segment_Count */
-	stm32_eth_handler.RxFrameInfos.SegCount =0;
+	stm32_eth_handler.RxFrameInfos.SegCount = 0;
 
 	/* When Rx Buffer unavailable flag is set: clear it and resume reception */
 	if ((stm32_eth_handler.Instance->DMASR & ETH_DMASR_RBUS) != (uint32_t)RESET) {
@@ -174,30 +155,44 @@ static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
 	memcpy(dev->dev_addr, addr, ETH_ALEN);
 	return ENOERR;
 }
-
+#ifdef TX_NO_BUFF
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	__IO ETH_DMADescTypeDef *dma_tx_desc;
 
 	dma_tx_desc = stm32_eth_handler.TxDesc;
-
-#ifdef TX_NO_BUFF
+	/* Transmit skbuff directly without any buffer. */
 	dma_tx_desc->Buffer1Addr = (uint32_t) skb->mac.raw;
-#else
-	memcpy((void *)dma_tx_desc->Buffer1Addr, skb->mac.raw, skb->len);
-#endif
 
 	/* Prepare transmit descriptors to give to DMA */
-	HAL_ETH_TransmitFrame(&stm32_eth_handler, skb->len);
-
-#ifdef TX_NO_BUFF
+	if (0 != HAL_ETH_TransmitFrame(&stm32_eth_handler, skb->len)) {
+		log_error("HAL_ETH_TransmitFrame failed\n");
+		return -1;
+	}
+	/* Wait until paacket transmitted and descriptor released. */
 	while (dma_tx_desc->Status & ETH_DMATXDESC_OWN)
 		;
-#endif
 
 	skb_free(skb);
 
 	return 0;
 }
+#else
+static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
+	__IO ETH_DMADescTypeDef *dma_tx_desc;
+
+	dma_tx_desc = stm32_eth_handler.TxDesc;
+	memcpy((void *)dma_tx_desc->Buffer1Addr, skb->mac.raw, skb->len);
+
+	/* Prepare transmit descriptors to give to DMA */
+	if (0 != HAL_ETH_TransmitFrame(&stm32_eth_handler, skb->len)) {
+		log_error("HAL_ETH_TransmitFrame failed\n");
+		return -1;
+	}
+	skb_free(skb);
+
+	return 0;
+}
+#endif
 
 static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 	struct net_device *nic_p = dev_id;
@@ -208,6 +203,10 @@ static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 		return IRQ_NONE;
 	}
 
+	if (heth->Instance->DMASR & ETH_DMA_FLAG_FBE) {
+		log_error("DMA error: DMASR = 0x%08x\n", heth->Instance->DMASR);
+	}
+
 	/* Frame received */
 	if (__HAL_ETH_DMA_GET_FLAG(heth, ETH_DMA_FLAG_R)) {
 		/* Receive complete callback */
@@ -215,16 +214,12 @@ static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 			skb->dev = nic_p;
 
 			show_packet(skb->mac.raw, skb->len, "rx");
+
 			netif_rx(skb);
 		}
 		/* Clear the Eth DMA Rx IT pending bits */
 		__HAL_ETH_DMA_CLEAR_IT(heth, ETH_DMA_IT_R);
 	}
-#if 0
-	if (__HAL_ETH_DMA_GET_FLAG(heth, ETH_DMA_FLAG_T)) {
-		__HAL_ETH_DMA_CLEAR_IT(heth, ETH_DMA_FLAG_T);
-	}
-#endif
 	__HAL_ETH_DMA_CLEAR_IT(heth, ETH_DMA_IT_NIS);
 	return IRQ_HANDLED;
 }
