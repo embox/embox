@@ -158,8 +158,17 @@ static inline uint64_t aarch64_isr_el1(void) {
 	return read_system_reg(ISR_EL1);
 }
 
-static inline uint64_t aarch64_current_el(void) {
+/* Raw CurrentEL register */
+static inline uint64_t aarch64_current_el_read(void) {
 	return read_system_reg(CurrentEL);
+}
+
+/* Convert CurrentEL to number from 0 to 3 */
+static inline int aarch64_current_el(void) {
+#define CURRENT_EL_OFFSET 2
+#define CURRENT_EL_MASK   6
+	return (int) ((aarch64_current_el_read() & CURRENT_EL_MASK)
+			>> CURRENT_EL_OFFSET);
 }
 
 static inline uint64_t aarch64_hcr_el2_read(void) {
@@ -170,8 +179,20 @@ static inline uint64_t aarch64_ttbr0_el2_read(void) {
 	return read_system_reg(TTBR0_EL2);
 }
 
+static inline void aarch64_ttbr0_el2_write(uint64_t reg) {
+	write_system_reg(TTBR0_EL2, reg);
+}
+
+static inline uint64_t aarch64_ttbr0_el1_read(void) {
+	return read_system_reg(TTBR0_EL1);
+}
+
+static inline void aarch64_ttbr0_el1_write(uint64_t reg) {
+	write_system_reg(TTBR0_EL1, reg);
+}
+
 static inline uint64_t aarch64_ttbr1_el2_read(void) {
-	return 0;//read_system_reg(TTBR1_EL2);
+	return read_system_reg(TTBR1_EL2);
 }
 
 static inline void aarch64_hcr_el2_write(uint64_t reg) {
@@ -182,8 +203,16 @@ static inline uint64_t aarch64_sctlr_el2_read(void) {
 	return read_system_reg(SCTLR_EL2);
 }
 
+static inline void aarch64_sctlr_el2_write(uint64_t reg) {
+	write_system_reg(SCTLR_EL2, reg);
+}
+
 static inline uint64_t aarch64_sctlr_el1_read(void) {
 	return read_system_reg(SCTLR_EL1);
+}
+
+static inline void aarch64_sctlr_el1_write(uint64_t reg) {
+	write_system_reg(SCTLR_EL1, reg);
 }
 
 static inline uint64_t aarch64_esr_el2_read(void) {
@@ -206,7 +235,32 @@ static inline uint64_t aarch64_far_el2_read(void) {
 	return read_system_reg(FAR_EL2);
 }
 
+static inline void aarch64_far_el2_write(uint64_t reg) {
+	write_system_reg(FAR_EL2, reg);
+}
+
 static inline uint64_t aarch64_far_el1_read(void) {
 	return read_system_reg(FAR_EL1);
 }
+
+static inline void aarch64_far_el1_write(uint64_t reg) {
+	write_system_reg(FAR_EL1, reg);
+}
+
+static inline uint64_t aarch64_tcr_el1_read(void) {
+	return read_system_reg(TCR_EL1);
+}
+
+static inline void aarch64_tcr_el1_write(uint64_t reg) {
+	write_system_reg(TCR_EL1, reg);
+}
+
+static inline uint64_t aarch64_tcr_el2_read(void) {
+	return read_system_reg(TCR_EL2);
+}
+
+static inline void aarch64_tcr_el2_write(uint64_t reg) {
+	write_system_reg(TCR_EL2, reg);
+}
+
 #endif /* AARCH_HAL_REG_ */

@@ -59,7 +59,11 @@ extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int
 #define __MMU_SHIFT_3 0
 #endif
 
-#define MMU_SHIFT(i) ((i == -1) ? 32 : \
+#ifndef MMU_VADDR_WIDTH
+#define MMU_VADDR_WIDTH (8 * sizeof(uintptr_t))
+#endif
+
+#define MMU_SHIFT(i) ((i == -1) ? MMU_VADDR_WIDTH : \
 			(i) == 0 ? __MMU_SHIFT_0 : \
 			(i) == 1 ? __MMU_SHIFT_1 : \
 			(i) == 2 ? __MMU_SHIFT_2 : __MMU_SHIFT_3)
