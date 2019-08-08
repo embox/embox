@@ -65,7 +65,8 @@ static void *mm_segment_alloc(int page_cnt) {
 	/* Requsted memory wasn't allocated by mm_cur_allocator->pg_allocator above,
 	 * because due to there is no more free memory. Try find new allocator */
 	for (i = 0; i < ARRAY_SIZE(mm_page_allocs); i++) {
-		if (mm_page_allocs[i].pg_allocator) {
+		if (mm_page_allocs[i].pg_allocator
+				&& *mm_page_allocs[i].pg_allocator) {
 			ret = page_alloc(*mm_page_allocs[i].pg_allocator, page_cnt);
 			if (ret) {
 				mm_cur_allocator = &mm_page_allocs[i];
@@ -73,6 +74,7 @@ static void *mm_segment_alloc(int page_cnt) {
 			}
 		}
 	}
+
 	return ret;
 }
 
@@ -153,14 +155,56 @@ static void *mspace_do_alloc(size_t boundary, size_t size, struct dlist_head *ms
 	return NULL;
 }
 
+/*
+ * It's basically required for more efficient memory consuming.
+ * It's more efficient to allocate many pages at once rather than
+ * many small pieces.
+ **/
+#if OPTION_GET(BOOLEAN, task_is_greed)
+static struct mm_segment *mm_try_alloc_segment(size_t size, size_t boundary) {
+	/* Try to allocate as much size as possible starting with 1Mb.
+	 * Why 1Mb? Don't know, magical number.. Since it should be maximum size
+	 * of all available heaps in Embox, but it's more difficult to implement. */
+	const size_t max_size = (0x100000 + PAGE_SIZE()) / PAGE_SIZE();
+	const size_t min_size = (size + boundary + PAGE_SIZE()) / PAGE_SIZE();
+	size_t i;
+	struct mm_segment *mm = NULL;
+
+	for (i = max_size; i > min_size; i--) {
+		mm = mm_segment_alloc(i);
+		if (mm) {
+			break;
+		}
+	}
+	if (mm) {
+		mm->size = i * PAGE_SIZE();
+	}
+	return mm;
+}
+#else
+static struct mm_segment *mm_try_alloc_segment(size_t size, size_t boundary) {
+	size_t pages_cnt;
+	struct mm_segment *mm = NULL;
+
+	pages_cnt = size / PAGE_SIZE() + boundary / PAGE_SIZE();
+	pages_cnt += (size % PAGE_SIZE() + boundary % PAGE_SIZE()
+			+ 2 * PAGE_SIZE()) / PAGE_SIZE();
+	mm = mm_segment_alloc(pages_cnt);
+	if (mm) {
+		mm->size = pages_cnt * PAGE_SIZE();
+	}
+	return mm;
+}
+#endif
+
 void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 	/* No corresponding heap was found */
 	struct mm_segment *mm;
-	size_t segment_pages_cnt;
 	void *block;
 
-	if (size == 0)
+	if (size == 0) {
 		return NULL;
+	}
 
 	assert(mspace);
 
@@ -169,16 +213,10 @@ void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace) {
 		return block;
 	}
 
-	/* XXX allocate more approproate count of pages without redundancy */
-	/* Note, integer overflow may occur */
-	segment_pages_cnt = size / PAGE_SIZE() + boundary / PAGE_SIZE();
-	segment_pages_cnt += (size % PAGE_SIZE() + boundary % PAGE_SIZE() + 2 * PAGE_SIZE()) / PAGE_SIZE();
-
-	mm = mm_segment_alloc(segment_pages_cnt);
-	if (mm == NULL)
+	mm = mm_try_alloc_segment(size, boundary);
+	if (mm == NULL) {
 		return NULL;
-
-	mm->size = segment_pages_cnt * PAGE_SIZE();
+	}
 	dlist_head_init(&mm->link);
 	dlist_add_next(&mm->link, mspace);
 
