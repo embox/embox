@@ -187,7 +187,6 @@ static int embox_ntfs_node_delete(struct node *node) {
 	free(ufilename);
 
 	pool_free(&ntfs_file_pool, node->nas->fi->privdata);
-	free(ufilename);
 	vfs_del_leaf(node);
 
 	if (ntfs_inode_close(pni)) {
