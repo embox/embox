@@ -21,6 +21,8 @@ module boundary_markers {
 
 module mspace_malloc {
 	option number log_level = 1
+	/* Each task tries to allocate as much memory as possible */
+	option boolean task_is_greed = false
 
 	@IncludeExport(path="mem/heap")
 	source "mspace_malloc.h"
