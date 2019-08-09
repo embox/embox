@@ -51,7 +51,7 @@ static int (*ctrl_hnd)(void *pack_data) = wait_connect;
 static struct bc_msg out_msg;
 
 static uint16_t calc_chksumm(struct bc_msg * msg) {
-	uint16_t sum;
+	uint16_t sum = 0;
 	int i;
 	uint8_t *buffer = (uint8_t *)&(msg->type);
 
