@@ -15,9 +15,6 @@
 #error "set MMU_LEVELS"
 #endif
 
-#define MMU_PAGE_SIZE     (4096)
-#define MMU_PAGE_MASK     (4095)
-
 #if MMU_LEVELS > 0
 typedef __mmu_paddr_t mmu_paddr_t;
 typedef __mmu_vaddr_t mmu_vaddr_t;

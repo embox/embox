@@ -66,6 +66,9 @@ extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int
 
 #define MMU_ENTRIES(i) (1 << (MMU_SHIFT(i - 1) - MMU_SHIFT((i))))
 #define MMU_MASK(i) ((MMU_ENTRIES(i) - 1) << MMU_SHIFT(i))
-#define MMU_SIZE(i) (MMU_ENTRIES(i) * sizeof(mmu_vaddr_t))
+#define MMU_SIZE(i) (MMU_ENTRIES(i + 1) * sizeof(mmu_vaddr_t))
+
+#define MMU_PAGE_SIZE  (1 << MMU_SHIFT(MMU_LAST_LEVEL))
+#define MMU_PAGE_MASK  (MMU_PAGE_SIZE - 1)
 
 #endif /* MEM_VMEM_H_ */

@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#include <mem/vmem.h>
 #include <hal/mmu.h>
 
 static uintptr_t *context_table[0x100]  __attribute__((aligned(MMU_PAGE_SIZE)));
