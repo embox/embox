@@ -62,8 +62,9 @@ int main(int argc, const char** argv) {
 	printf("Framebuffer: %dx%d %dbpp\n", fbi->var.xres, fbi->var.yres, fbi->var.bits_per_pixel);
 	printf("Image: %dx%d; Threshold=%d\n", cedge.cols, cedge.rows, edgeThresh);
 
-	for (int x = 0; x < cedge.cols; x++) {
-		for (int y = 0; y < cedge.rows; y++) {
+
+	for (int y = 0; y < cedge.rows; y++) {
+		for (int x = 0; x < cedge.cols; x++) {
 			Vec3b intensity = cedge.at<Vec3b>(y, x);
 			unsigned rgb888	=
 				0xFF000000 |
