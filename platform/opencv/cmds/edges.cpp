@@ -64,13 +64,13 @@ int main(int argc, const char** argv) {
 
 
 	for (int y = 0; y < cedge.rows; y++) {
-		for (int x = 0; x < cedge.cols; x++) {
-			Vec3b intensity = cedge.at<Vec3b>(y, x);
+		const uchar *row = &cedge.at<uchar>(y, 0);
+		for (int x = 0; x < 3 * cedge.cols; x += 3) {
 			unsigned rgb888	=
 				0xFF000000 |
-				intensity.val[0] |
-				((intensity.val[1]) << 8) |
-				((intensity.val[2]) << 16);
+				unsigned(row[x]) |
+				(unsigned(row[x + 1]) << 8) |
+				(unsigned(row[x + 2]) << 16);
 
 			((uint32_t *) fbi->screen_base)[fbi->var.xres * y + x] = rgb888;
 		}
