@@ -62,16 +62,17 @@ int main(int argc, const char** argv) {
 	printf("Framebuffer: %dx%d %dbpp\n", fbi->var.xres, fbi->var.yres, fbi->var.bits_per_pixel);
 	printf("Image: %dx%d; Threshold=%d\n", cedge.cols, cedge.rows, edgeThresh);
 
-	for (int i = 0; i < cedge.cols; i++) {
-		for (int j = 0; j < cedge.rows; j++) {
-			Vec3b intensity = cedge.at<Vec3b>(j, i);
+
+	for (int y = 0; y < cedge.rows; y++) {
+		const uchar *row = &cedge.at<uchar>(y, 0);
+		for (int x = 0; x < 3 * cedge.cols; x += 3) {
 			unsigned rgb888	=
 				0xFF000000 |
-				intensity.val[0] |
-				((intensity.val[1]) << 8) |
-				((intensity.val[2]) << 16);
+				unsigned(row[x]) |
+				(unsigned(row[x + 1]) << 8) |
+				(unsigned(row[x + 2]) << 16);
 
-			((uint32_t *) fbi->screen_base)[fbi->var.xres * j + i] = rgb888;
+			((uint32_t *) fbi->screen_base)[fbi->var.xres * y + x] = rgb888;
 		}
 	}
 
