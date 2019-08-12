@@ -18,5 +18,6 @@ module fb_draw_image {
 
 	depends embox.fs.file_format
 	depends embox.lib.bmp
+	depends embox.lib.png
 	depends embox.driver.video.fb
 }

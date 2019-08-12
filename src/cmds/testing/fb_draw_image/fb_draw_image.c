@@ -15,6 +15,7 @@
 #include <sys/ioctl.h>
 #include <fs/file_format.h>
 #include <lib/bmp.h>
+#include <lib/png.h>
 
 #include <drivers/video/fb.h>
 
@@ -25,11 +26,10 @@ static void print_usage(void) {
 	 );
 }
 
-static int get_fbp(uint8_t *fbp, struct fb_info *fb_info, uint8_t *img, uint32_t width, uint32_t height) {
+static int get_fbp(uint8_t *fbp, struct fb_info *fb_info, uint8_t *img, uint32_t width, uint32_t height, uint32_t num_of_channels) {
 	int x, y, pos = 0;
 	long int idx = fb_info->var.xoffset + fb_info->var.xres * fb_info->var.yoffset;
 	int bytes_per_pixel = fb_info->var.bits_per_pixel / 8;
-
 	for (y = 0; y < height; y++) {
 		idx += fb_info->var.xres;
 
@@ -38,7 +38,7 @@ static int get_fbp(uint8_t *fbp, struct fb_info *fb_info, uint8_t *img, uint32_t
 				int b = img[pos];
 				int g = img[pos + 1];
 				int r = img[pos + 2];
-				pos += 3;
+				pos += num_of_channels;
 				uint32_t t = ((r & 0xFF) << 16) |
 						((g & 0xFF) << 8) | (b & 0xFF);
 
@@ -47,7 +47,7 @@ static int get_fbp(uint8_t *fbp, struct fb_info *fb_info, uint8_t *img, uint32_t
 				int b = img[pos + 2];
 				int g = img[pos + 1];
 				int r = img[pos];
-				pos += 3;
+				pos += num_of_channels;
 				uint16_t t = ((r & 0x1F) << 11) |
 						((g & 0x3F) << 5) | (b & 0x1F);
 				((uint16_t *)fbp)[idx + x] = t;
@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
 	uint8_t *fbp = 0;
 	uint8_t file_header[FILE_HEADER_LEN];
 	struct bmp bmp_data;
+	struct png png_data;
 
 	if (argc != 2) {
 		print_usage();
@@ -98,10 +99,35 @@ int main(int argc, char *argv[]) {
 				printf("Error : can't load bmp file.\n");
 				return -1;
 			}
-
-			get_fbp(fbp, fb_info, bmp_data.image, bmp_data.width, bmp_data.height);
+			if (bmp_data.width > fb_info->var.xres || bmp_data.height > fb_info->var.yres) {
+				printf("Error : bmp image bigger than framebuffer\n");
+				bmp_unload(&bmp_data);
+				return -1;
+			}
+			get_fbp(fbp, fb_info, bmp_data.image, bmp_data.width, bmp_data.height, BMP_NUM_OF_CHANNELS);
 
 			bmp_unload(&bmp_data);
+			break;
+
+		case PNG_FILE:
+			if (png_load(argv[1], &png_data) != 0) {
+				printf("Error : can't load png file.\n");
+				return -1;
+			}
+
+			if (png_data.width > fb_info->var.xres || png_data.height > fb_info->var.yres) {
+				printf("Error : png image bigger than framebuffer\n");
+				png_unload(&png_data);
+				return -1;
+			}
+
+			if (png_data.color == PNG_TRCL) {
+				get_fbp(fbp, fb_info, png_data.image, png_data.width, png_data.height, PNG_TRCL);
+			} else {
+				get_fbp(fbp, fb_info, png_data.image, png_data.width, png_data.height, PNG_TRCLA);
+			}
+
+			png_unload(&png_data);
 			break;
 
 		default:
