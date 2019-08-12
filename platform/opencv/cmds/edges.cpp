@@ -72,7 +72,7 @@ int main(int argc, const char** argv) {
 				(unsigned(row[x + 1]) << 8) |
 				(unsigned(row[x + 2]) << 16);
 
-			((uint32_t *) fbi->screen_base)[fbi->var.xres * y + x] = rgb888;
+			((uint32_t *) fbi->screen_base)[fbi->var.xres * y + x / 3] = rgb888;
 		}
 	}
 
