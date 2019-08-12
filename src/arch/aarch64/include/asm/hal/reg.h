@@ -166,7 +166,7 @@ static inline uint64_t aarch64_current_el_read(void) {
 /* Convert CurrentEL to number from 0 to 3 */
 static inline int aarch64_current_el(void) {
 #define CURRENT_EL_OFFSET 2
-#define CURRENT_EL_MASK   6
+#define CURRENT_EL_MASK   0xC
 	return (int) ((aarch64_current_el_read() & CURRENT_EL_MASK)
 			>> CURRENT_EL_OFFSET);
 }
