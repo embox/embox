@@ -60,4 +60,16 @@ extern int irqctrl_pending(unsigned int irq);
  */
 extern void irqctrl_eoi(unsigned int irq);
 
+/**
+ * Set up interrupt priority.
+ * A lower priority value indicates a lower interrupt priority.
+ */
+extern void irqctrl_set_prio(unsigned int interrupt_nr, unsigned int prio);
+
+/**
+ * Get interrupt priority.
+ * A lower priority value indicates a lower interrupt priority.
+ */
+extern unsigned int irqctrl_get_prio(unsigned int interrupt_nr);
+
 #endif /* DRIVER_IRQCTRL_H_ */
