@@ -16,7 +16,7 @@
 #include <mem/vmem.h>
 
 static void print_usage(void) {
-	printf("Usage: mmutrans [-h] virt_addr [-p pid] [-t] ");
+	printf("Usage: mmutrans [-h] virt_addr [-p pid] [-t]\n");
 }
 
 static int mmu_translate(pid_t pid, uintptr_t virt_addr) {

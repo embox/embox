@@ -15,6 +15,7 @@
 #ifndef NOMMU
 
 #include <drivers/common/memory.h>
+#include <mem/vmem.h>
 #include <hal/mmu.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/mmap.h>

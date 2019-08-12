@@ -6,6 +6,7 @@
  * @date 2019-07-18
  */
 
+#include <drivers/common/memory.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
@@ -86,3 +87,5 @@ static struct clock_source pl031_clock_source = {
 EMBOX_UNIT_INIT(pl031_init);
 
 STATIC_IRQ_ATTACH(PL031_IRQ, clock_handler, &imx6_clock_source);
+
+PERIPH_MEMORY_DEFINE(pl031_mem, PL031_BASE, 0x20);

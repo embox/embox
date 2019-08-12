@@ -175,4 +175,5 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
-PERIPH_MEMORY_DEFINE(gic, GIC_CPU_BASE, 0x2020);
+PERIPH_MEMORY_DEFINE(gic_cpu, GIC_CPU_BASE, 0x2020);
+PERIPH_MEMORY_DEFINE(gic_distributor, GIC_DISTRIBUTOR_BASE, 0x1000);
