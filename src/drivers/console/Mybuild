@@ -26,6 +26,6 @@ module fbcon {
 	depends mpx_simple
 	depends embox.cmd.user.login //fbcon start `login` at every console
 
-	depends embox.cmd.sh.tish
+	depends embox.cmd.sh.shell_api
 }
 
