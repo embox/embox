@@ -119,6 +119,6 @@ static int ti8168_clk_init(void) {
 	return irq_attach(ti8168_clk_event.irq_nr, ti8168_clock_handler, 0, &ti8168_clk_clock_source, "omap3_clk");
 }
 
-PERIPH_MEMORY_DEFINE(dm816x_timer, TI8168_GPTIMER1_BASE, 0x1000);
+PERIPH_MEMORY_DEFINE(dm816x_timer, (uintptr_t) TI8168_GPTIMER1_BASE, 0x1000);
 
 PERIPH_MEMORY_DEFINE(dm816x_timer_cm, 0x48180000, 0x1000);
