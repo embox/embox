@@ -17,14 +17,15 @@ ptregs_jmp:
 	/* Need to set new ESP now, correct value
 	 * in pt_regs can be overwriten by movsd */
 	movl	PT_ESP(%eax),%esp
-	subl	$PT_ESP, %esp
+	subl	$PT_SS, %esp
 
 	movl	%eax, %esi
 	addl	$PT_ESP, %esi
 	movl	PT_ESP(%eax), %edi
+	subl    $4, %edi
 	movl	$PT_SS_N, %ecx
 	std
 	rep		movsd
+	cld
 
 	RESTORE_ALL
-
