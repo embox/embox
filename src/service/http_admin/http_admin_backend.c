@@ -16,6 +16,7 @@
 #include <net/inetdevice.h>
 #include <net/util/macaddr.h>
 #include <cJSON.h>
+#include <util/log.h>
 
 static char *http_admin_build_iface_list(void) {
 	struct ifaddrs *i_ifa, *ifa = NULL;
@@ -110,6 +111,8 @@ static void http_admin_post(char *post_data) {
 	if (!strcmp(action, "iface_update")) {
 		cJSON *iface_desc = cJSON_GetObjectItem(post_json, "data");
 
+		log_debug("Action: iface update");
+
 		iface_dev = inetdev_get_by_name(
 			cJSON_GetObjectString(iface_desc, "name"));
 		if (!iface_dev) {
@@ -143,7 +146,11 @@ static void http_admin_post(char *post_data) {
 		system("flash_settings store");
 	}
 
+	cJSON_Delete(post_json);
+	return;
+
 outerr:
+	log_error("failed");
 	cJSON_Delete(post_json);
 }
 
@@ -164,7 +171,6 @@ int main(int argc, char *argv[]) {
 	} else if (0 == strcmp("POST", method)) {
 		char buf[256];
 		size_t clen = atoi(getenv("CONTENT_LENGTH"));
-
 		if (clen < sizeof(buf) && 0 < fread(buf, clen, 1, stdin)) {
 			buf[clen] = '\0';
 			http_admin_post(buf);
