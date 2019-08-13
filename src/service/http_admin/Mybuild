@@ -1,6 +1,7 @@
 
 package embox.service
 
+@AutoCmd
 @Cmd(name="http_admin_backend", help="", man="")
 @BuildDepends(third_party.lib.cjson)
 module http_admin {

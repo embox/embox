@@ -16,9 +16,6 @@
 #include <net/inetdevice.h>
 #include <net/util/macaddr.h>
 #include <cJSON.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(http_admin_main);
 
 static char *http_admin_build_iface_list(void) {
 	struct ifaddrs *i_ifa, *ifa = NULL;
@@ -150,7 +147,7 @@ outerr:
 	cJSON_Delete(post_json);
 }
 
-static int http_admin_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	char *method;
 
 	printf(
