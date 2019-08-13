@@ -1,10 +1,11 @@
 
 package embox.service
 
+@AutoCmd
 @Cmd(name="http_admin_backend", help="", man="")
 @BuildDepends(third_party.lib.cjson)
 module http_admin {
-
+	option number log_level = 1
 	source "http_admin_backend.c"
 
 	@InitFS(target_dir="http_admin")

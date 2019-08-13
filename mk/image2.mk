@@ -57,12 +57,10 @@ fmt_line = $(addprefix \$(\n)$(\t)$(\t),$1)
 
 initfs_prerequisites = $(cpio_files) \
 	$(wildcard $(USER_ROOTFS_DIR) $(USER_ROOTFS_DIR)/*) $(common_prereqs)
-$(ROOTFS_IMAGE) : rel_cpio_files = \
-		$(patsubst $(abspath $(ROOTFS_DIR))/%,%,$(abspath $(cpio_files)))
 $(ROOTFS_IMAGE) :
 	@mkdir -p $(ROOTFS_DIR)
 	cd $(ROOTFS_DIR) \
-		&& find $(rel_cpio_files) -depth -print | $(CPIO) -L --quiet -H newc -o -O $(abspath $@)
+		&& find * -depth -print | $(CPIO) -L --quiet -H newc -o -O $(abspath $@)
 	if [ -d $(USER_ROOTFS_DIR) ]; \
 	then \
 		cd $(USER_ROOTFS_DIR) \
