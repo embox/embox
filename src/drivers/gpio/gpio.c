@@ -67,9 +67,14 @@ void gpio_handle_irq(struct gpio_chip *chip, unsigned int irq_nr,
 
 int gpio_setup_mode(unsigned short port, gpio_mask_t pins, int mode) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
-
+	if (!chip) {
+		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
+		return -EACCES;
+	}
 	port = GPIO_PORT(port);
-	if (!chip || (port >= chip->nports)) {
+	if (port >= chip->nports) {
+		log_error("port (%d) > chip->nports (%d)",
+			chip, port, chip->nports);
 		return -EACCES;
 	}
 	assert(chip->setup_mode);
@@ -78,9 +83,14 @@ int gpio_setup_mode(unsigned short port, gpio_mask_t pins, int mode) {
 
 void gpio_set(unsigned short port, gpio_mask_t pins, char level) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
-
+	if (!chip) {
+		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
+		return;
+	}
 	port = GPIO_PORT(port);
-	if (!chip || (port >= chip->nports)) {
+	if (port >= chip->nports) {
+		log_error("port (%d) > chip->nports (%d)",
+			chip, port, chip->nports);
 		return;
 	}
 	assert(chip->set);
@@ -89,9 +99,14 @@ void gpio_set(unsigned short port, gpio_mask_t pins, char level) {
 
 gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
-
+	if (!chip) {
+		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
+		return -1;
+	}
 	port = GPIO_PORT(port);
-	if (!chip || (port >= chip->nports)) {
+	if (port >= chip->nports) {
+		log_error("port (%d) > chip->nports (%d)",
+			chip, port, chip->nports);
 		return -1;
 	}
 	assert(chip->get);
@@ -101,9 +116,14 @@ gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins) {
 void gpio_toggle(unsigned short port, gpio_mask_t pins) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
 	gpio_mask_t state;
-
+	if (!chip) {
+		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
+		return;
+	}
 	port = GPIO_PORT(port);
-	if (!chip || (port >= chip->nports)) {
+	if (port >= chip->nports) {
+		log_error("port (%d) > chip->nports (%d)",
+			chip, port, chip->nports);
 		return;
 	}
 	assert(chip->get && chip->set);
@@ -116,14 +136,20 @@ int gpio_irq_attach(unsigned short port, gpio_mask_t pins,
 		irq_handler_t pin_handler, void *data) {
 	struct gpio_irq_handler *gpio_hnd;
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
-
-	port = GPIO_PORT(port);
-	if (!chip || (port >= chip->nports)) {
+	if (!chip) {
+		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
 		return -EINVAL;
 	}
-
+	port = GPIO_PORT(port);
+	if (port >= chip->nports) {
+		log_error("port (%d) > chip->nports (%d)",
+			chip, port, chip->nports);
+		return -EINVAL;
+	}
 	gpio_hnd = pool_alloc(&gpio_irq_pool);
 	if (!gpio_hnd) {
+		log_error("chip=%d, gpio_hnd=%p",
+			GPIO_CHIP(port), gpio_hnd);
 		return -ENOMEM;
 	}
 	dlist_add_next(dlist_head_init(&gpio_hnd->link), &gpio_irq_list);
