@@ -55,22 +55,22 @@
 
 #define CALL_WPTREGS \
 	push    %ebp;               \
-	mov     %esp, %ebp;         \
-	subl 	$28, %esp;          \
+	movl    %esp, %ebp;         \
+	subl    $28, %esp;          \
 	SAVE_ALL_REGS;              \
 	movl    %esp, %eax;         \
 	addl    $PT_EBP, %eax;      \
 	push    SAVED_EBP(%esp);    \
-	pop     (%eax);             \
-	movl	FRAME_END(%esp), %ecx; \
-	movl	%ecx, PT_EIP(%esp); \
-	push	%cs;				\
-	popl	PT_CS(%esp);		\
+	popl    (%eax);             \
+	movl    FRAME_END(%esp), %ecx; \
+	movl    %ecx, PT_EIP(%esp); \
+	push    %cs;                \
+	popl    PT_CS(%esp);        \
 	pushf;                      \
-	popl	PT_EFLAGS(%esp);    \
-	movl	%esp, %eax;         \
-	addl	$FRAME_END+4, %eax; \
-	movl	%eax, PT_ESP(%esp); \
+	popl    PT_EFLAGS(%esp);    \
+	movl    %esp, %eax;         \
+	addl    $FRAME_END+4, %eax; \
+	movl    %eax, PT_ESP(%esp); \
 	push    %esp;               \
 	call
 
