@@ -6,8 +6,11 @@
 
 "msleep 1000",
 
-"mount -t DumbFS stm32f4_sd_card conf",
+"ls /dev",
+
+"mount -t DumbFS /dev/stm32flash0 /conf",
 "led_driver init",
 "flash_settings restore",
 "modbus_server &",
+"ifconfig",
 "httpd http_admin",
