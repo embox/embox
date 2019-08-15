@@ -59,6 +59,9 @@
 #define REG32_ORIN(addr, mask) \
 	REG32_STORE(addr, REG32_LOAD(addr) | ((uint32_t) mask))
 
+#define REG32_ANDIN(addr, mask) \
+	REG32_STORE(addr, REG32_LOAD(addr) & ((uint32_t) mask))
+
 #define REG32_CLEAR(addr, mask) \
 	REG32_STORE(addr, REG32_LOAD(addr) & (~((uint32_t) mask)))
 
