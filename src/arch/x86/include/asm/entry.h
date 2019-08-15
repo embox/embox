@@ -54,17 +54,23 @@
 	iret;
 
 #define CALL_WPTREGS \
-	subl 	$28, %esp;          \
+	push    %ebp;               \
+	movl    %esp, %ebp;         \
+	subl    $28, %esp;          \
 	SAVE_ALL_REGS;              \
-	movl	PT_END(%esp), %ecx; \
-	movl	%ecx, PT_EIP(%esp); \
-	push	%cs;				\
-	popl	PT_CS(%esp);		\
+	movl    %esp, %eax;         \
+	addl    $PT_EBP, %eax;      \
+	push    SAVED_EBP(%esp);    \
+	popl    (%eax);             \
+	movl    FRAME_END(%esp), %ecx; \
+	movl    %ecx, PT_EIP(%esp); \
+	push    %cs;                \
+	popl    PT_CS(%esp);        \
 	pushf;                      \
-	popl	PT_EFLAGS(%esp);    \
-	movl	%esp, %eax;         \
-	addl	$PT_END+4, %eax;    \
-	movl	%eax, PT_ESP(%esp); \
+	popl    PT_EFLAGS(%esp);    \
+	movl    %esp, %eax;         \
+	addl    $FRAME_END+4, %eax; \
+	movl    %eax, PT_ESP(%esp); \
 	push    %esp;               \
 	call
 
@@ -103,6 +109,7 @@
 #define PT_EIP     52
 #define PT_EIP_N   13
 #define PT_CS      56
+#define PT_CS_N    14
 #define PT_EFLAGS  60
 #define PT_EFLAGS_N 15
 #define PT_ESP     64
@@ -110,7 +117,11 @@
 #define PT_SS      68
 #define PT_SS_N    17
 
-#define PT_END     72
+#define SAVED_EBP     72
+#define SAVED_EBP_N   18
+
+#define FRAME_END    76
+#define FRAME_END_N   19
 
 #endif /* __ASSEMBLER__ */
 
