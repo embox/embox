@@ -27,7 +27,7 @@ struct node *find_node(DIR *dir, char * node_name) {
 
 	while (NULL != (dent = readdir(dir))) {
 		if (0 == strcmp(dent->d_name, node_name)) {
-			return (struct node *)dent->d_ino;
+			return (struct node *) (uintptr_t) dent->d_ino;
 		}
 	}
 
