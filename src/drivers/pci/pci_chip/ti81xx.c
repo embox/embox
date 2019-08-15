@@ -301,6 +301,11 @@ static int ti81xx_pci_init(void) {
 	return 0;
 }
 
+/* NOTE: this may be inaccurate! */
+unsigned int pci_irq_number(struct pci_slot_dev *dev) {
+	return (unsigned int) dev->irq_line;
+}
+
 PERIPH_MEMORY_DEFINE(pci_chip, TI81_CM, 0x1000);
 
 PERIPH_MEMORY_DEFINE(pci_root, TI81_PRCM, 0x1000);
