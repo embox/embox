@@ -74,6 +74,8 @@ struct indexator;
 struct block_dev;
 struct dev_module;
 
+extern struct block_dev **get_bdev_tab(void);
+
 extern struct block_dev *block_dev_create(const char *name, void *driver, void *privdata);
 extern struct block_dev *block_dev(void *bdev);
 
