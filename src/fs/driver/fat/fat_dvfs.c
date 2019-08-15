@@ -403,7 +403,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 
 	fsi = parent->i_sb->sb_data;
 	dirinfo = parent->i_data;
-	dirinfo->currententry = (int) ctx->fs_ctx;
+	dirinfo->currententry = (uintptr_t) ctx->fs_ctx;
 
 	if (dirinfo->currententry == 0) {
 		/* Need to get directory data from drive */
@@ -421,7 +421,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	switch (res) {
 	case DFS_OK:
 		fat_fill_inode(next, &de, dirinfo);
-		ctx->fs_ctx = (void*) ((int)dirinfo->currententry);
+		ctx->fs_ctx = (void*) ((uintptr_t)dirinfo->currententry);
 		return 0;
 	case DFS_EOF:
 		/* Fall through */
