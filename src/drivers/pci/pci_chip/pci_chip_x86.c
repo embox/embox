@@ -99,3 +99,8 @@ uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
 	out32(value, PCI_CONFIG_DATA);
 	return PCIUTILS_SUCCESS;
 }
+
+/* NOTE: this may be inaccurate! */
+unsigned int pci_irq_number(struct pci_slot_dev *dev) {
+	return (unsigned int) dev->irq_line;
+}
