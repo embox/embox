@@ -120,7 +120,7 @@ typedef struct net_device {
 	unsigned char addr_len; /**< hardware address length      */
 	unsigned int flags; /**< interface flags (a la BSD)   */
 	unsigned int mtu; /**< interface MTU value          */
-	unsigned long base_addr; /**< device I/O address           */
+	uintptr_t base_addr; /**< device I/O address           */
 	unsigned int irq; /**< device IRQ number            */
 	struct net_device_stats stats;
 	const struct net_device_ops *ops; /**< Hardware description  */
