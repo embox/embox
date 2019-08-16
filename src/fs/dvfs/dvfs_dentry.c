@@ -120,8 +120,9 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	if (strlen(buff) > 1 && path_is_double_dot(buff))
 		return dvfs_path_walk(path + 2, parent->parent, lookup);
 
-	if (strlen(buff) > 1 && path_is_single_dot(buff))
-		return dvfs_path_walk(path + 2, parent, lookup);
+	if (path_is_single_dot(buff)) {
+		return dvfs_path_walk(path + 1, parent, lookup);
+	}
 
 	/* TODO use cache instead */
 	assert(parent->d_sb);
