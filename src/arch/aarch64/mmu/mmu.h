@@ -65,4 +65,7 @@ typedef uintptr_t __mmu_ctx_t;
 #define AARCH64_MMU_PROPERTY_UXN              (1LL << 53) /* Unpriveleged eXecute-Never */
 #define AARCH64_MMU_PROPERTY_PXN              (1LL << 54) /* Priveleged eXecute-Never */
 
+#include <inttypes.h>
+#define __PRIxMMUREG PRIx64
+
 #endif /* AARCH_MMU_H_ */

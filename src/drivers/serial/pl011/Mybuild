@@ -9,5 +9,6 @@ module pl011 extends embox.driver.diag.diag_api {
 
 	depends core
 	depends diag
+	depends embox.driver.char_dev
 	depends embox.driver.periph_memory
 }

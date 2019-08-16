@@ -66,11 +66,11 @@ int main(int argc, char **argv) {
 		mod_print(mod);
 		printf("\n");
 		if (show_label) {
-			printf("\tlabel:%" PRIx32 ":%" PRIx32 ":%" PRIx32 ":%" PRIx32 "\n",
-					(uint32_t)mod_label(mod)->text.vma,
-					(uint32_t)mod_label(mod)->data.vma,
-					(uint32_t)mod_label(mod)->bss.vma,
-					(uint32_t)mod_label(mod)->rodata.vma);
+			printf("\tlabel:%" PRIxPTR ":%" PRIxPTR ":%" PRIxPTR ":%" PRIxPTR "\n",
+					(uintptr_t)mod_label(mod)->text.vma,
+					(uintptr_t)mod_label(mod)->data.vma,
+					(uintptr_t)mod_label(mod)->bss.vma,
+					(uintptr_t)mod_label(mod)->rodata.vma);
 		}
 
 		if (integrity_check) {

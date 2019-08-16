@@ -60,7 +60,7 @@ struct idesc *kopen(struct node *node, int flag) {
 		if (!node_is_file(node)) {
 			return char_dev_open(node, flag);
 		}
-		
+
 		ops = nas->fs->drv->file_op;
 	}
 
@@ -71,14 +71,14 @@ struct idesc *kopen(struct node *node, int flag) {
 
 	desc = file_desc_create(node, flag);
 	if (0 != err(desc)) {
-		SET_ERRNO(-(int)desc);
+		SET_ERRNO(-(uintptr_t)desc);
 		return NULL;
 	}
 	desc->ops = ops;
 
 	idesc = desc->ops->open(node, desc, flag);
 	if (err(idesc)){
-		ret = (int)idesc;
+		ret = (uintptr_t)idesc;
 		goto free_out;
 	}
 	if ((struct idesc *)idesc == &desc->idesc) {

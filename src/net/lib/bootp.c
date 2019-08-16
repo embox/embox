@@ -109,7 +109,7 @@ int bootp_get_nameserver(struct bootphdr *bph, in_addr_t *ip) {
 		if (ret == 0) {
 			return -ENOENT;
 		} else {
-			return (int) ret;
+			return (uintptr_t) ret;
 		}
 	}
 	*ip = *(in_addr_t *)ret;
@@ -125,7 +125,7 @@ int bootp_get_gateway(struct bootphdr *bph, in_addr_t *ip) {
 		if (ret == 0) {
 			return -ENOENT;
 		} else {
-			return (int)ret;
+			return (uintptr_t) ret;
 		}
 	}
 	*ip = *(in_addr_t *)ret;
@@ -141,7 +141,7 @@ int bootp_get_mask(struct bootphdr *bph, in_addr_t *ip) {
 		if (ret == 0) {
 			return -ENOENT;
 		} else {
-			return (int)ret;
+			return (uintptr_t) ret;
 		}
 	}
 	*ip = *(in_addr_t *)ret;

@@ -23,15 +23,4 @@ SECTIONS {
 		*(.text.*)
 		*(.glue_7t) *(.glue_7)
 	}
-
-	/* XXX symbols __exidx_start/end are required by libgcc.a --Alexander */
-	.ARM.exidx : {
-		__exidx_start = .;
-		*(.ARM.exidx*)
-		__exidx_end = .;
-	} SECTION_REGION(text)
-
-	.ARM.extab : {
-		*(.ARM.extab*)
-	} SECTION_REGION(text)
 }

@@ -44,7 +44,7 @@ static int pci_mod_enable(const struct mod *self) {
 			if (!pci_drv_probe(pci_drv, dev)) {
 
 				printk(PCI_INFO_LABEL "%s handles %04x:%04x "
-						"bus %" PRId32 "slot %" PRId8 " func %" PRId8 "\n",
+						"bus %" PRId32 " slot %" PRId8 " func %" PRId8 "\n",
 						pci_drv->name, dev->vendor, dev->device,
 						dev->busn, dev->slot, dev->func);
 

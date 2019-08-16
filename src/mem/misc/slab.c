@@ -80,7 +80,7 @@ void print_slab_info(cache_t *cachep, slab_t *slabp) {
 
 /* return information about page which an object belongs to */
 static page_info_t* ptr_to_page(void *objp) {
-	unsigned int index = ((unsigned int) objp - (unsigned int) heap_start_ptr)
+	unsigned int index = ((uintptr_t) objp - (uintptr_t) heap_start_ptr)
 			/ PAGE_SIZE();
 	return &(pages[index]);
 }
