@@ -9,10 +9,11 @@
  */
 
 #include <errno.h>
-#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <stdio.h>
+#include <unistd.h>
 
 #include <dirent.h>
 #include <pwd.h>
@@ -171,7 +172,7 @@ int main(int argc, char **argv) {
 
 		sprintf(dir_name, "%s", argv[optind]);
 	} else {
-		sprintf(dir_name, "%s", "");
+		strcpy(dir_name, ".");
 	}
 
 	if (NULL == (dir = opendir(dir_name))) {

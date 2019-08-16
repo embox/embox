@@ -25,6 +25,8 @@ static module file_dvfs extends file {
 }
 
 static module chdir_dvfs extends chdir {
+	option number log_level = 1
+
 	source "chdir.c"
 
 	depends embox.compat.posix.util.environ
