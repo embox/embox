@@ -24,6 +24,10 @@
 #define FLASHSET_WHAT_LED 0x00000002
 #define FLASHSET_WHAT_LEDNAMES 0x00000004
 
+#define NIC_FILENAME       "/conf/nic"
+#define LED_FILENAME       "/conf/led"
+#define LED_NAMES_FILENAME "/conf/led_names"
+
 #define DPRINTF(fmt, ...) \
 	fprintf(stderr, "flash_settings: %s: " fmt, __func__, ##__VA_ARGS__)
 
@@ -78,12 +82,14 @@ static int flashset_nic_store(const char *nic_name) {
 	memcpy(&fsn_network.fsn_mac, iface_dev->dev->dev_addr,
 		sizeof(fsn_network.fsn_mac));
 
-	fd = open("nic", O_CREAT);
+	fd = open(NIC_FILENAME, O_CREAT | O_RDWR);
+
 	errcode = write(fd, (char*) &fsn_network, sizeof(fsn_network));
 	close(fd);
 	if (errcode < 0) {
 		goto outerr;
 	}
+
 	return 0;
 outerr:
 	DPRINTF("failed\n");
@@ -94,7 +100,7 @@ static int flashset_nic_restore(const char *nic_name) {
 	struct in_device *iface_dev;
 	int errcode, fd;
 
-	fd = open("nic", 0);
+	fd = open(NIC_FILENAME, 0);
 	if (fd < 0) {
 		DPRINTF("failed\n");
 		return fd;
@@ -139,7 +145,7 @@ static int flashset_led_store(void) {
 		return errcode;
 	}
 
-	fd = open("led", O_CREAT);
+	fd = open(LED_FILENAME, O_CREAT | O_RDWR);
 	if (fd < 0) {
 		DPRINTF("Error opening led\n");
 		return -1;
@@ -156,7 +162,7 @@ static int flashset_led_store(void) {
 
 static int flashset_led_restore(void) {
 	int errcode, fd;
-	fd = open("led", 0);
+	fd = open(LED_FILENAME, 0);
 	if (fd < 0) {
 		DPRINTF("Error opening led\n");
 		return -1;
@@ -173,7 +179,7 @@ static int flashset_led_restore(void) {
 }
 
 static int flashset_lednames_store(void) {
-	int errcode, fd = open("led_names", O_CREAT);
+	int errcode, fd = open(LED_NAMES_FILENAME, O_CREAT | O_RDWR);
 	if (fd < 0) {
 		DPRINTF("Error opening led_names\n");
 		return -1;
@@ -191,7 +197,7 @@ static int flashset_lednames_store(void) {
 }
 
 static int flashset_lednames_restore(void) {
-	int fd = open("led_names", 0), errcode;
+	int fd = open(LED_NAMES_FILENAME, 0), errcode;
 	if (fd < 0) {
 		DPRINTF("Error opening led_names\n");
 		return -1;
@@ -210,8 +216,6 @@ static int flashset_lednames_restore(void) {
 
 int main(int argc, char *argv[]) {
 	int errcode;
-
-	chdir("/conf");
 
 	if (0 == strcmp(argv[1], "store")) {
 		fprintf(stderr, "Storing flash settings\n");
