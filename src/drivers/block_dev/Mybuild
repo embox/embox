@@ -39,5 +39,6 @@ module block_dvfs extends block_api {
 	source "block_dev_dvfs.c"
 	source "block_dev_idesc_dvfs.c"
 
+	depends block_common
 	depends embox.driver.common
 }
