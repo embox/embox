@@ -29,90 +29,90 @@ struct leddrv_pin_desc {
 
 #if LEDBLOCK_MAJOR == 0
 static const struct leddrv_pin_desc leddrv_clk =
-	{ .gpio = GPIO_PORT_E, .pin = 7 };
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 7) };
 
 static const struct leddrv_pin_desc leddrv_datas[] = {
 	/* prototype register numeration */
-	{ .gpio = GPIO_PORT_B, .pin = 14 },
-	{ .gpio = GPIO_PORT_B, .pin = 15 },
-	{ .gpio = GPIO_PORT_E, .pin = 15 },
-	{ .gpio = GPIO_PORT_E, .pin = 13 },
-	{ .gpio = GPIO_PORT_E, .pin = 14 },
-	{ .gpio = GPIO_PORT_E, .pin = 11 },
-	{ .gpio = GPIO_PORT_E, .pin = 12 },
-	{ .gpio = GPIO_PORT_E, .pin = 10 },
-	{ .gpio = GPIO_PORT_E, .pin = 9 },
-	{ .gpio = GPIO_PORT_E, .pin = 8 },
+	{ .gpio = GPIO_PORT_B, .pin = (1 << 14) },
+	{ .gpio = GPIO_PORT_B, .pin = (1 << 15) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 15) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 13) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 14) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 11) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 12) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 10) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 9) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 8) },
 };
 #endif
 
 #if LEDBLOCK_MAJOR == 1 && LEDBLOCK_MINOR == 0
 static const struct leddrv_pin_desc leddrv_clk =
-	{ .gpio = GPIO_PORT_E, .pin = 7 };
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 7) };
 
 static const struct leddrv_pin_desc leddrv_datas[] = {
 	/* v1 register numeration, forward, wrong */
-	{ .gpio = GPIO_PORT_E, .pin = 12 },
-	{ .gpio = GPIO_PORT_E, .pin = 14 },
-	{ .gpio = GPIO_PORT_E, .pin = 13 },
-	{ .gpio = GPIO_PORT_B, .pin = 14 },
-	{ .gpio = GPIO_PORT_B, .pin = 15 },
-	{ .gpio = GPIO_PORT_E, .pin = 15 },
-	{ .gpio = GPIO_PORT_E, .pin = 11 },
-	{ .gpio = GPIO_PORT_E, .pin = 10 },
-	{ .gpio = GPIO_PORT_E, .pin = 9 },
-	{ .gpio = GPIO_PORT_E, .pin = 8 },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 12) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 14) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 13) },
+	{ .gpio = GPIO_PORT_B, .pin = (1 << 14) },
+	{ .gpio = GPIO_PORT_B, .pin = (1 << 15) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 15) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 11) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 10) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 9) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 8) },
 };
 #endif
 
 #if LEDBLOCK_MAJOR == 1 && LEDBLOCK_MINOR == 1
 static const struct leddrv_pin_desc leddrv_clk =
-	{ .gpio = GPIO_PORT_E, .pin = 8 };
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 8) };
 
 static const struct leddrv_pin_desc leddrv_datas[] = {
 	/* prototype register numeration */
-	{ .gpio = GPIO_PORT_E, .pin = 11 },
-	{ .gpio = GPIO_PORT_E, .pin = 13 },
-	{ .gpio = GPIO_PORT_E, .pin = 14 },
-	{ .gpio = GPIO_PORT_B, .pin = 14 },
-	{ .gpio = GPIO_PORT_D, .pin = 8 },
-	{ .gpio = GPIO_PORT_E, .pin = 15 },
-	{ .gpio = GPIO_PORT_E, .pin = 12 },
-	{ .gpio = GPIO_PORT_E, .pin = 9 },
-	{ .gpio = GPIO_PORT_E, .pin = 10 },
-	{ .gpio = GPIO_PORT_E, .pin = 7 },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 11) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 13) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 14) },
+	{ .gpio = GPIO_PORT_B, .pin = (1 << 14) },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 8) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 15) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 12) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 9) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 10) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 7) },
 };
 #endif
 
 #if LEDBLOCK_MAJOR == 2
 static const struct leddrv_pin_desc leddrv_shf_clk =
-	{ .gpio = GPIO_PORT_E, .pin = 8 };
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 8) };
 static const struct leddrv_pin_desc leddrv_str_clk =
-	{ .gpio = GPIO_PORT_D, .pin = 9 };
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 9) };
 static const struct leddrv_pin_desc leddrv_datas[] = {
-	{ .gpio = GPIO_PORT_E, .pin = 11 },
-	{ .gpio = GPIO_PORT_E, .pin = 13 },
-	{ .gpio = GPIO_PORT_E, .pin = 14 },
-	{ .gpio = GPIO_PORT_B, .pin = 14 },
-	{ .gpio = GPIO_PORT_D, .pin = 8 },
-	{ .gpio = GPIO_PORT_E, .pin = 15 },
-	{ .gpio = GPIO_PORT_E, .pin = 12 },
-	{ .gpio = GPIO_PORT_E, .pin = 9 },
-	{ .gpio = GPIO_PORT_E, .pin = 10 },
-	{ .gpio = GPIO_PORT_E, .pin = 7 },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 11) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 13) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 14) },
+	{ .gpio = GPIO_PORT_B, .pin = (1 << 14) },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 8) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 15) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 12) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 9) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 10) },
+	{ .gpio = GPIO_PORT_E, .pin = (1 << 7) },
 };
 
 static const struct leddrv_pin_desc leddrv_alarms[] = {
-	{ .gpio = GPIO_PORT_D, .pin = 3 },
-	{ .gpio = GPIO_PORT_D, .pin = 4 },
-	{ .gpio = GPIO_PORT_D, .pin = 1 },
-	{ .gpio = GPIO_PORT_C, .pin = 12 },
-	{ .gpio = GPIO_PORT_A, .pin = 10 },
-	{ .gpio = GPIO_PORT_A, .pin = 8 },
-	{ .gpio = GPIO_PORT_D, .pin = 2 },
-	{ .gpio = GPIO_PORT_D, .pin = 7 },
-	{ .gpio = GPIO_PORT_D, .pin = 5 },
-	{ .gpio = GPIO_PORT_D, .pin = 6 },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 3) },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 4) },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 1) },
+	{ .gpio = GPIO_PORT_C, .pin = (1 << 12) },
+	{ .gpio = GPIO_PORT_A, .pin = (1 << 10) },
+	{ .gpio = GPIO_PORT_A, .pin = (1 << 8) },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 2) },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 7) },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 5) },
+	{ .gpio = GPIO_PORT_D, .pin = (1 << 6) },
 };
 #endif
 

@@ -54,7 +54,6 @@ void devfs_fill_inode(struct inode *inode,
 }
 
 ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
-extern struct block_dev **get_bdev_tab();
 extern struct dev_module **get_cdev_tab();
 /**
  * @brief Iterate elements of /dev

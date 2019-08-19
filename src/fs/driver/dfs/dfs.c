@@ -47,8 +47,11 @@ static inline int block_from_pos(int pos) { return pos / NAND_BLOCK_SIZE; }
 
 static inline int _erase(unsigned int block) {
 	int i;
+
+	assert(NAND_PAGES_MAX > NAND_PAGES_PER_BLOCK * (block + 1));
+
 	for (i = 0; i < NAND_PAGES_PER_BLOCK; i++)
-		bitmap_set_bit(dfs_free_pages, i + block * NAND_BLOCK_SIZE / NAND_PAGE_SIZE);
+		bitmap_set_bit(dfs_free_pages, i + block * NAND_PAGES_PER_BLOCK);
 	return flash_erase(dfs_flashdev, block);
 }
 
@@ -221,7 +224,8 @@ int dfs_format(void) {
 		.magic = {DFS_MAGIC_0, DFS_MAGIC_1},
 		.inode_count = 0,
 		.max_inode_count = DFS_INODES_MAX,
-		.buff_bk = 2,
+		/* Set buffer block to the last one */
+		.buff_bk = dfs_flashdev->block_info[0].blocks - 1,
 		.free_space = _capacity(sizeof(struct dfs_sb_info)) +
 		              DFS_INODES_MAX * _capacity(sizeof(struct dfs_dir_entry)),
 	};

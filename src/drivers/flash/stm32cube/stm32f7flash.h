@@ -5,20 +5,20 @@
  * @author Anton Bondarev
  */
 
-#ifndef SRC_DRIVERS_FLASH_STM32F4FLASH_H_
-#define SRC_DRIVERS_FLASH_STM32F4FLASH_H_
+#ifndef SRC_DRIVERS_FLASH_STM32F7FLASH_H_
+#define SRC_DRIVERS_FLASH_STM32F7FLASH_H_
 
 #include <framework/mod/options.h>
 
 #define STM32_FLASH_FLASH_SIZE         OPTION_GET(NUMBER,flash_size)
 #define STM32_ADDR_FLASH_SECTOR_0      ((uint32_t)0x08000000)
 /* First 4 sectors of STM32F4-Discovery flash are 16Kb */
-#define STM32_FLASH_SECTOR_SIZE        (16 * 1024)
+#define STM32_FLASH_SECTOR_SIZE        (32 * 1024)
 /* We use only first 4 16Kb sectors */
 #define STM32_FLASH_SECTORS_COUNT      4
 
 #ifndef __ASSEMBLER__
-#include <stm32f4xx_hal.h>
+#include <stm32f7xx_hal.h>
 #include <string.h>
 
 static inline void stm32_fill_flash_erase_struct(
@@ -31,4 +31,4 @@ static inline void stm32_fill_flash_erase_struct(
 }
 #endif
 
-#endif /* SRC_DRIVERS_FLASH_STM32F4FLASH_H_ */
+#endif /* SRC_DRIVERS_FLASH_STM32F7FLASH_H_ */
