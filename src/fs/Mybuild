@@ -130,7 +130,6 @@ module buffer_cache {
 	source "bcache.c"
 	option number bcache_size=128
 
-	depends embox.compat.libc.all
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
 
