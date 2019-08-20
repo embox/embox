@@ -5,8 +5,8 @@ module stm32f7cube {
 	option number log_level = 1
 	option number flash_size=0x18000
 
-	source "stm32_flash_cube.c"
-	source "stm32cube_flash.lds.S"
+	source "stm32_flash.c"
+	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
 	source "stm32f7flash.h"
@@ -20,8 +20,8 @@ module stm32f4cube {
 	option number log_level = 1
 	option number flash_size=0xc000
 
-	source "stm32_flash_cube.c"
-	source "stm32cube_flash.lds.S"
+	source "stm32_flash.c"
+	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
 	source "stm32f4flash.h"
@@ -35,8 +35,8 @@ module stm32f3cube {
 	option number log_level = 1
 	option number flash_size=0x10000
 
-	source "stm32_flash_cube.c"
-	source "stm32cube_flash.lds.S"
+	source "stm32_flash.c"
+	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
 	source "stm32f3flash.h"
