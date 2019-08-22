@@ -24,6 +24,7 @@ endif
 
 OPENCV_FLAGS = \
 		-DBUILD_SHARED_LIBS=OFF -DBUILD_opencv_python_bindings_generator=OFF -DBUILD_JAVA=OFF -DBUILD_TESTS=OFF -DBUILD_opencv_apps=OFF BUILD_opencv_java_bindings_generator=OFF -DBUILD_opencv_ml=OFF -DWITH_FFMPEG=OFF -DWITH_EIGEN=OFF -DBUILD_IPP_IW=OFF -DBUILD_ITT=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_PROTOBUF=OFF \
+		-DOPENCV_FORCE_3RDPARTY_BUILD=ON \
 		-DBUILD_opencv_calib3d=OFF \
 		-DBUILD_opencv_dnn=OFF \
 		-DBUILD_opencv_features2d=ON \
