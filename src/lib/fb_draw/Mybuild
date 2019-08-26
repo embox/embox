@@ -1,0 +1,8 @@
+package embox.lib
+
+static module fb_draw {
+	source "fb_draw.c"
+
+	@IncludeExport(path="lib")
+	source "fb_draw.h"
+}
