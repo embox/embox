@@ -475,8 +475,8 @@ static int ohci_request(struct usb_request *req) {
 
 	assertf(cnt == 1, "only one token is supported");
 
-	ohci_ed_fill(ed, req->endp); /* function address could change due bus
-				   enumeration */
+	/* function address could change due bus enumeration */
+	ohci_ed_fill(ed, req->endp);
 
 	ohci_transfer(ed, token, req->buf, req->len, req);
 
@@ -513,7 +513,7 @@ static inline enum usb_request_status ohci_td_stat(struct ohci_td *td) {
 	}
 }
 
-uint32_t ohci_td_received_len(struct ohci_td *td, struct usb_request *req) {
+static uint32_t ohci_td_received_len(struct ohci_td *td, struct usb_request *req) {
 	assert(((uint32_t) req->buf <= td->buf_p) || !td->buf_p);
 
 	if (!td->buf_p) {
@@ -550,7 +550,7 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 		struct ohci_td *td, *next_td;
 		struct usb_request *req;
 
-                td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
+		td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
 
 		do {
 			req = ohci2req(td);
