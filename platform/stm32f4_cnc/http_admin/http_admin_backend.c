@@ -18,8 +18,7 @@
 #include <cJSON.h>
 #include <embox/cmd.h>
 
-/* all that needs for NVIC_SystemReset in next include */
-#include <stm32f4xx_wwdg.h>
+#include <stm32f4xx_hal.h>
 
 EMBOX_CMD(http_admin_main);
 

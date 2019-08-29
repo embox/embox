@@ -3,7 +3,7 @@ package stm32f4_cnc
 
 @Cmd(name="http_admin_backend", help="", man="")
 @BuildDepends(third_party.lib.cjson)
-@BuildDepends(third_party.bsp.st_f4.core)
+@BuildDepends(third_party.bsp.stmf4cube.core)
 module http_admin {
 
 	source "http_admin_backend.c"
