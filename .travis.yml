@@ -13,7 +13,6 @@ env:
   matrix:
     - TEMPLATE=aarch64/qemu
     - TEMPLATE=arm/qemu
-    - TEMPLATE=arm/stm32_f4
     - TEMPLATE=arm/stm32f4-discovery
     - TEMPLATE=x86/qemu
     - TEMPLATE=x86/smp
