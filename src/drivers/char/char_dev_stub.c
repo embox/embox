@@ -15,10 +15,10 @@
 /**
  * @brief Stub
  *
- * @return Always -1
+ * @return Always 0
  */
 int char_dev_init_all(void) {
-	return -ENOSUPP;
+	return 0;
 }
 
 /**

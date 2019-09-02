@@ -75,15 +75,30 @@ struct block_dev *block_dev_create(const char *path, void *driver, void *privdat
 	struct path node, root;
 	struct nas *nas;
 	struct node_fi *node_fi;
+	char full_path[PATH_MAX];
 
-	bdev = block_dev_create_common(path, driver, privdata);
+	/* XXX  Workaround for compatibility with DVFS.
+	 * Drivers which are used in both vfs and dvfs
+	 * currently use different namings:
+	 *  block_dev_create(blk0, ...) for dvfs
+	 *  block_dev_create(/dev/blk0, ...) for vfs.
+	 * So in case if block_dev_create was called without /dev
+	 * just prepend the path with /dev. */
+	if (strncmp("/dev", path, 4)) {
+		strcpy(full_path, "/dev/");
+		strncat(full_path, path, PATH_MAX - strlen("/dev") - 1);
+	} else {
+		strncpy(full_path, path, PATH_MAX);
+	}
+
+	bdev = block_dev_create_common(full_path, driver, privdata);
 	if (NULL == bdev) {
 		return NULL;
 	}
 
 	vfs_get_root_path(&root);
 
-	if (0 != vfs_create(&root, path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
+	if (0 != vfs_create(&root, full_path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
 		block_dev_free(bdev);
 		return NULL;
 	}
