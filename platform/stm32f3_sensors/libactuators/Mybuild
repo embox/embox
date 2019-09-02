@@ -1,6 +1,6 @@
 package stm32f3_sensors.libactuators
 
-@BuildDepends(third_party.bsp.st_f3.core)
+@BuildDepends(third_party.bsp.stmf3cube.core)
 module motor {
 	source "motor.c"
 
