@@ -17,7 +17,7 @@
 #include <lib/bmp.h>
 #include <lib/png.h>
 
-#include <drivers/video/fb.h>
+#include <lib/fb_draw.h>
 
 static void print_usage(void) {
 	printf(
@@ -26,47 +26,36 @@ static void print_usage(void) {
 	 );
 }
 
-static int get_fbp(uint8_t *fbp, struct fb_info *fb_info, uint8_t *img, uint32_t width, uint32_t height, uint32_t num_of_channels) {
-	int x, y, pos = 0;
-	long int idx = fb_info->var.xoffset + fb_info->var.xres * fb_info->var.yoffset;
-	int bytes_per_pixel = fb_info->var.bits_per_pixel / 8;
+static int draw_image(struct screen *screen_info, uint8_t *img, uint32_t height, uint32_t width, int num_of_channels) {
+	long int img_pos = 0, scr_pos = 0;
+	int x, y;
+	printf("%d\n", screen_info->width);
 	for (y = 0; y < height; y++) {
-		idx += fb_info->var.xres;
 
 		for (x = 0; x < width; x++) {
-			if (bytes_per_pixel == 4) {
-				int b = img[pos];
-				int g = img[pos + 1];
-				int r = img[pos + 2];
-				pos += num_of_channels;
-				uint32_t t = ((r & 0xFF) << 16) |
-						((g & 0xFF) << 8) | (b & 0xFF);
-
-				((uint32_t *)fbp)[idx + x] = t | 0xff000000;
-			} else {
-				int b = img[pos + 2];
-				int g = img[pos + 1];
-				int r = img[pos];
-				pos += num_of_channels;
-				uint16_t t = ((r & 0x1F) << 11) |
-						((g & 0x3F) << 5) | (b & 0x1F);
-				((uint16_t *)fbp)[idx + x] = t;
+			if (fb_draw_put_pix(img[img_pos], img[img_pos + 1], img[img_pos + 2], 32, screen_info, scr_pos + x) != 0) {
+				return -1;
 			}
+			img_pos += num_of_channels;
 		}
+		scr_pos += screen_info->width;
 	}
 	return 0;
 }
 
 int main(int argc, char *argv[]) {
 	int fd = 0;
-	struct fb_info *fb_info;
-	uint8_t *fbp = 0;
+	struct screen screen_info;
 	uint8_t file_header[FILE_HEADER_LEN];
 	struct bmp bmp_data;
 	struct png png_data;
 
 	if (argc != 2) {
 		print_usage();
+		return -1;
+	}
+
+	if (fb_draw_init_screen(&screen_info, 0) != 0) {
 		return -1;
 	}
 
@@ -84,14 +73,6 @@ int main(int argc, char *argv[]) {
 	}
 	close(fd);
 
-	/* work with framebuffer */
-	fb_info = fb_lookup(0);
-
-	printf("%" PRId32 "x%" PRId32 ", %" PRId32 "bpp\n", fb_info->var.xres, fb_info->var.yres, fb_info->var.bits_per_pixel);
-
-	/* Map the device to memory */
-	fbp = (uint8_t *) fb_info->screen_base;
-
 	/* work with file */
 	switch (raw_get_file_format(file_header)) {
 		case BMP_FILE:
@@ -99,12 +80,15 @@ int main(int argc, char *argv[]) {
 				printf("Error : can't load bmp file.\n");
 				return -1;
 			}
-			if (bmp_data.width > fb_info->var.xres || bmp_data.height > fb_info->var.yres) {
-				printf("Error : bmp image bigger than framebuffer\n");
+
+			if (bmp_data.width > screen_info.width || bmp_data.height > screen_info.height) {
+				printf("Error : image > screen.\n");
+			}
+
+			if (draw_image(&screen_info, bmp_data.image, bmp_data.height, bmp_data.width, BMP_NUM_OF_CHANNELS) != 0) {
 				bmp_unload(&bmp_data);
 				return -1;
 			}
-			get_fbp(fbp, fb_info, bmp_data.image, bmp_data.width, bmp_data.height, BMP_NUM_OF_CHANNELS);
 
 			bmp_unload(&bmp_data);
 			break;
@@ -115,16 +99,20 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 
-			if (png_data.width > fb_info->var.xres || png_data.height > fb_info->var.yres) {
-				printf("Error : png image bigger than framebuffer\n");
-				png_unload(&png_data);
-				return -1;
+			if (png_data.width > screen_info.width || png_data.height > screen_info.height) {
+				printf("Error : image > screen.\n");
 			}
 
 			if (png_data.color == PNG_TRCL) {
-				get_fbp(fbp, fb_info, png_data.image, png_data.width, png_data.height, PNG_TRCL);
+				if (draw_image(&screen_info, png_data.image, png_data.height, png_data.width, PNG_TRCL) != 0) {
+					png_unload(&png_data);
+					return -1;
+				}
 			} else {
-				get_fbp(fbp, fb_info, png_data.image, png_data.width, png_data.height, PNG_TRCLA);
+				if (draw_image(&screen_info, png_data.image, png_data.height, png_data.width, PNG_TRCLA) != 0) {
+					png_unload(&png_data);
+					return -1;
+				}
 			}
 
 			png_unload(&png_data);
