@@ -72,6 +72,15 @@ static module cmsis extends embox.arch.arm.cmsis {
 	depends core
 }
 
+@Build(stage=1,script="true")
+@BuildDepends(core)
+static module stm32f3_discovery_bsp {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/core/STM32Cube_FW_F3_V1.6.0/Drivers/BSP/Components/l3gd20")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/core/STM32Cube_FW_F3_V1.6.0/Drivers/BSP/Components/lsm303dlhc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf3cube/core")
+	source "STM32Cube_FW_F3_V1.6.0/Drivers/BSP/Components/l3gd20/l3gd20.c",
+		"STM32Cube_FW_F3_V1.6.0/Drivers/BSP/Components/lsm303dlhc/lsm303dlhc.c"
+}
 
 @Build(stage=1,script="true")
 @BuildDepends(core)
