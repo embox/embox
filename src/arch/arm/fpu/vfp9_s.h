@@ -39,17 +39,17 @@ extern int try_vfp_instructions(void /*struct pt_regs_fpu *vfp */);
 	vmrs      tmp, FPEXC ; \
 	stmia     stack!, {tmp}; \
 	ands      tmp, tmp, #1<<30; \
-	beq       fpu_out_save_inc; \
+	beq       1f; \
 	vstmia    stack!, {d0-d15}; \
-fpu_out_save_inc:
+1:
 
 #define ARM_FPU_CONTEXT_SAVE_DEC(tmp, stack) \
 	vmrs      tmp, FPEXC ;             \
 	sub       stack, stack, #(4 * 32); \
 	tst       tmp, #1<<30;             \
-	beq       fpu_skip_save_dec;       \
+	beq       1f;                   \
 	vstmia    stack, {d0-d15};         \
-fpu_skip_save_dec:                     \
+1:                                  \
 	stmfd     stack!, {tmp};
 
 
@@ -57,17 +57,17 @@ fpu_skip_save_dec:                     \
 	ldmia     stack!, {tmp}; \
 	vmsr      FPEXC, tmp; \
 	ands      tmp, tmp, #1<<30; \
-	beq       fpu_out_load_inc; \
+	beq       1f;            \
 	vldmia    stack!, {d0-d15}; \
-fpu_out_load_inc:
+1:
 
 #define ARM_FPU_CONTEXT_LOAD_DEC(tmp, stack) \
 	ldmfd     stack!, {tmp}; \
 	/* vmsr      FPEXC, tmp; */ \
 	ands      tmp, tmp, #1<<30; \
-	beq       fpu_skip_load_dec; \
-	vldmia    stack, {d0-d15}; \
-fpu_skip_load_dec: \
+	beq       1f;            \
+	vldmia    stack, {d0-d15};  \
+1:                           \
 	add       stack, stack, #4 * 32;
 
 #endif /* __ASSEMBLER__ */
