@@ -95,6 +95,9 @@ static int stm32f7_sd_init(void *arg) {
 		bdev = block_dev_create(STM32F7_SD_DEVNAME, &stm32f7_sd_driver, NULL);
 		bdev->size = stm32f7_sd_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
 		return 0;
+	} else if (BSP_SD_IsDetected() != SD_PRESENT) {
+		/* microSD Card is not inserted, do nothing. */
+		return 0;
 	} else {
 		log_error("BSP_SD_Init error\n");
 		irq_detach(STM32_DMA_RX_IRQ, NULL);
