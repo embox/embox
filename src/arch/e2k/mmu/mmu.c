@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#include <mem/vmem.h>
 #include <mmu_regs.h>
 #include <hal/mmu.h>
 
