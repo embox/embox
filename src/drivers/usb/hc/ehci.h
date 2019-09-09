@@ -224,10 +224,12 @@ struct ehci_hcd {
 };
 
 static inline struct usb_hcd *ehci_to_hcd(struct ehci_hcd *ehci) {
+	assert(ehci);
 	return ehci->usb_hcd;
 }
 
 static inline struct ehci_hcd *hcd_to_ehci(struct usb_hcd *hcd) {
+	assert(hcd);
 	return (struct ehci_hcd *) hcd->hci_specific;
 }
 

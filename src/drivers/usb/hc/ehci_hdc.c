@@ -22,6 +22,7 @@ POOL_DEF(ehci_hcd_pool, struct ehci_hcd, USB_MAX_HCD);
 POOL_DEF(ehci_qh_pool, struct ehci_qh, USB_MAX_ENDP);
 
 static inline struct ehci_qh *endp_to_qh(struct usb_endp *endp) {
+	assert(endp);
 	return endp->hci_specific;
 }
 
@@ -33,6 +34,8 @@ static inline void udelay(volatile int usec) {
 static int ehci_handshake(struct ehci_hcd *ehci,
 		void *ptr, uint32_t mask, uint32_t done, int usec) {
 	uint32_t result;
+
+	assert(ehci);
 
 	do {
 		result = ehci_read(ehci, ptr);
@@ -51,6 +54,9 @@ static int ehci_handshake(struct ehci_hcd *ehci,
 
 static uint32_t ehci_port_reset(struct ehci_hcd *ehci, int i) {
 	uint32_t pstatus;
+
+	assert(ehci);
+	assert(ehci->ehci_regs);
 
 	pstatus = ehci_read(ehci, &ehci->ehci_regs->port_status[i]);
 	ehci_write(ehci, pstatus | EHCI_PORT_POWER, &ehci->ehci_regs->port_status[i]);
@@ -74,6 +80,10 @@ static uint32_t ehci_port_reset(struct ehci_hcd *ehci, int i) {
 
 static void ehci_port_probe(struct ehci_hcd *ehci, int i) {
 	uint32_t status;
+
+	assert(ehci);
+	assert(ehci->ehci_regs);
+
 	status = ehci_read(ehci, &ehci->ehci_regs->port_status[i]);
 	if ( !(status & EHCI_PORT_PE) && (status & EHCI_PORT_CONNECT) ) {
 		status = ehci_port_reset(ehci, i);
@@ -86,8 +96,12 @@ static void ehci_port_probe(struct ehci_hcd *ehci, int i) {
  */
 static int ehci_reset(struct ehci_hcd *ehci) {
 	int retval;
-	uint32_t command = ehci_read(ehci, &ehci->ehci_regs->command);
+	uint32_t command;
 
+	assert(ehci);
+	assert(ehci->ehci_regs);
+
+	command = ehci_read(ehci, &ehci->ehci_regs->command);
 	command |= EHCI_CMD_RESET;
 	log_debug("command reset %x", command);
 	ehci_write(ehci, command, &ehci->ehci_regs->command);
@@ -103,6 +117,9 @@ static int ehci_reset(struct ehci_hcd *ehci) {
  */
 static int ehci_halt (struct ehci_hcd *ehci) {
 	uint32_t temp;
+
+	assert(ehci);
+	assert(ehci->ehci_regs);
 
 	/* disable any irqs left enabled by previous code */
 	ehci_write(ehci, 0, &ehci->ehci_regs->intr_enable);
@@ -123,6 +140,9 @@ static int ehci_halt (struct ehci_hcd *ehci) {
 /* start HC running; it's halted, ehci_init() has been run (once) */
 static inline int ehci_run(struct ehci_hcd *ehci) {
 	uint32_t hcc_params;
+
+	assert(ehci);
+	assert(ehci->ehci_regs);
 
 	ehci_write(ehci, 0, &ehci->ehci_regs->frame_index);
 	/* EHCI spec section 4.1 */
@@ -196,6 +216,9 @@ static int echi_hcd_init(struct ehci_hcd *ehci_hcd) {
 	int log2_irq_thresh = 1;
 	uint32_t temp;
 
+	assert(ehci_hcd);
+	assert(ehci_hcd->ehci_caps);
+
 	ehci_hcd->command = 0;
 
 	ehci_hcd->periodic_size = 512;
@@ -250,6 +273,9 @@ static void *ehci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	int cap_len;
 	uint32_t rh_port_n;
 
+	assert(hcd);
+	assert(args);
+
 	ehci_hcd = pool_alloc(&ehci_hcd_pool);
 	if (!ehci_hcd) {
 		return NULL;
@@ -269,7 +295,11 @@ static void *ehci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 }
 
 static void ehci_hcd_free(struct usb_hcd *hcd, void *spec) {
-	struct ehci_hcd *ehci = hcd_to_ehci(hcd);
+	struct ehci_hcd *ehci;
+
+	assert(hcd);
+
+	ehci = hcd_to_ehci(hcd);
 
 	assert(ehci == spec);
 
@@ -278,6 +308,8 @@ static void ehci_hcd_free(struct usb_hcd *hcd, void *spec) {
 
 static void *ehci_ed_alloc(struct usb_endp *ep) {
 	struct ehci_qh *ed;
+
+	assert(ep);
 
 	ed = ehci_qh_alloc(hcd_to_ehci(ep->dev->hcd));
 
@@ -290,6 +322,8 @@ static void ehci_ed_free(struct usb_endp *ep, void *spec) {
 
 static int ehci_start(struct usb_hcd *hcd) {
 	struct ehci_hcd *ehci_hcd;
+
+	assert(hcd);
 
 	ehci_hcd = hcd_to_ehci(hcd);
 
@@ -317,8 +351,14 @@ static int ehci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 }
 
 static void ehci_rh_get_port_stat(struct ehci_hcd *ehci) {
-	unsigned i = EHCI_HCS_N_PORTS (ehci_read(ehci, &ehci->ehci_caps->hcs_params));
+	unsigned i;
 	struct usb_hub *rhub;
+
+	assert(ehci);
+	assert(ehci->ehci_regs);
+	assert(ehci->ehci_caps);
+
+	i = EHCI_HCS_N_PORTS (ehci_read(ehci, &ehci->ehci_caps->hcs_params));
 
 	rhub = ehci_to_hcd(ehci)->root_hub;
 
@@ -343,8 +383,12 @@ static irq_return_t ehci_irq(unsigned int irq_nr, void *data) {
 	uint32_t masked_status;
 	uint32_t cmd;
 
+	assert(data);
+
 	hcd = data;
 	ehci = hcd_to_ehci(hcd);
+
+	assert(ehci->ehci_regs);
 
 	status = ehci_read(ehci, &ehci->ehci_regs->status);
 
@@ -397,6 +441,9 @@ static void echi_qh_insert_async(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	uint32_t command;
 	struct ehci_qh *head;
 
+	assert(ehci);
+	assert(ehci->ehci_regs);
+
 	head = ehci->async;
 	qh->qh_next = head->qh_next;
 	head->qh_next.qh = qh;
@@ -412,22 +459,33 @@ static void echi_qh_insert_async(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 }
 
 static void ehci_qh_sched(struct ehci_hcd *ehci, struct ehci_qh *qh) {
+	assert(ehci);
+	assert(qh);
+
 	echi_qh_insert_async(ehci, qh);
 }
 
 static void ehci_transfer(struct ehci_qh *qh, uint32_t token, void *buf,
 		size_t len, struct usb_request *req) {
+	assert(qh);
+
 	qh->req = req;
 }
 
-static void ehci_qh_fill(struct ehci_hcd *ehci,struct usb_request *req,struct ehci_qh *qh, struct ehci_qtd_hw *qtd) {
+static void ehci_qh_fill(struct ehci_hcd *ehci, struct usb_request *req, struct ehci_qh *qh, struct ehci_qtd_hw *qtd) {
 	struct ehci_qh_hw *hw;
 	struct usb_endp *ep;
 
+	assert(req);
+	assert(qh);
+
 	ep = req->endp;
+	assert(ep);
+
 	qh->qdt = qtd;
 
 	hw = qh->hw;
+	assert(hw);
 
 	hw->hw_info1 = EHCI_QH_HIGH_SPEED |
 			EHCI_QH_TOGGLE_CTL |
@@ -446,6 +504,8 @@ static int ehci_request(struct usb_request *req) {
 
 	uint32_t token;
 	int cnt = 0;
+
+	assert(req);
 
 	log_debug("token %d req->len %d", req->token, req->len);
 
