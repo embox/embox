@@ -8,6 +8,18 @@ module ohci_pci {
 	depends embox.driver.pci
 }
 
+module ehci_pci {
+	option number log_level=1
+
+	source "ehci_pci.c"
+	source "ehci_hdc.c"
+	source "ehci_mem.c"
+	source "ehci_q.c"
+
+	depends embox.driver.usb.core
+	depends embox.driver.pci
+}
+
 module ti81xx {
 	source "ti81xx.c"
 

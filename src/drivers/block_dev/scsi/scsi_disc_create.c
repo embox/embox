@@ -4,6 +4,8 @@
  * @data 10.11.15
  * @author: Anton Bondarev
  */
+#include <util/log.h>
+
 #include <errno.h>
 #include <limits.h>
 #include <string.h>
@@ -56,6 +58,10 @@ static void* scsi_create_thread(void *arg) {
 	}
 
 	bdev = block_dev_create(path, (void *) &bdev_driver_scsi, NULL);
+	if (!bdev) {
+		log_error("can't create block device");
+		return NULL;
+	}
 
 	bdev->privdata = sdev;
 	bdev->size = sdev->blk_n * sdev->blk_size;

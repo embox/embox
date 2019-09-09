@@ -4,6 +4,8 @@ package embox.driver.block_dev
 abstract module scsi_disk {
 }
 module scsi_disk_old extends scsi_disk {
+	option number log_level=1
+
 	source "scsi_disc.c"
 	source "scsi_disc_create.c"
 
@@ -11,6 +13,8 @@ module scsi_disk_old extends scsi_disk {
 }
 
 module scsi_disk_dvfs extends scsi_disk {
+	option number log_level=1
+
 	source "scsi_disc_dvfs.c"
 	source "scsi_disc_create.c"
 

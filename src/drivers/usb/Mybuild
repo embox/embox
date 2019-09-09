@@ -2,8 +2,10 @@
 package embox.driver.usb
 
 module core {
+	option number log_level = 1
+
 	source "usb_core.c"
-	depends whitelist_api
+	depends whitelist_dev
 
 	source "usb_port.c"
 	source "usb_queue.c"
@@ -18,10 +20,7 @@ module core {
 	source "usb_dev_desc.c"
 }
 
-@DefaultImpl(whitelist_dev)
-abstract module whitelist_api { }
-
-module whitelist_dev extends whitelist_api {
+module whitelist_dev {
 	option string whitelist = ""
 	/*option string whitelist = "0x46f4:0x0001:3,0x8086:0x1234"*/
 
@@ -30,19 +29,6 @@ module whitelist_dev extends whitelist_api {
 	source "usb_whitelist_dev.c"
 
 	depends embox.driver.char_dev
-	depends core
-}
-
-module whitelist_dev_dvfs extends whitelist_api {
-	option string whitelist = ""
-	/*option string whitelist = "0x46f4:0x0001:3,0x8086:0x1234"*/
-
-	@IncludeExport(path="drivers/usb")
-	source "usb_whitelist_dev.h"
-	source "usb_whitelist_dev_dvfs.c"
-
-	depends embox.driver.char_dev
-	depends core
 }
 
 module driver_example {
@@ -50,4 +36,3 @@ module driver_example {
 
 	depends core
 }
-

@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <stddef.h>
+
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
 #include <drivers/usb/usb.h>
@@ -199,7 +200,7 @@ struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
 	struct usb_request *req;
 
 	req = usb_request_alloc(endp);
-	assertf(req, "%s: allocating usb request failed", __func__);
+	assert(req);
 
 	req->endp = endp;
 	req->token = token;

@@ -1,4 +1,4 @@
-package embox.cmd.hw.lsusb
+package embox.cmd.hw
 
 @AutoCmd
 @Cmd(name = "lsusb",
