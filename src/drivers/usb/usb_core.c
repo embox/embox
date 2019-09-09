@@ -392,8 +392,11 @@ int usb_rh_nofity(struct usb_hcd *hcd) {
 int usb_hcd_register(struct usb_hcd *hcd) {
 	int ret;
 
+	assert(hcd);
+
 	dlist_add_next(&hcd->lnk, &usb_hcds);
 
+	assert(hcd->ops);
 	assert(hcd->ops->hcd_start);
 	assert(hcd->ops->hcd_stop);
 	assert(hcd->ops->rhub_ctrl);
