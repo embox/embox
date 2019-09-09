@@ -85,6 +85,11 @@ static int lynxfb_set_var(struct fb_info *info, const struct fb_var_screeninfo *
 static int lynxfb_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
 
 	memset(var, 0, sizeof(struct fb_var_screeninfo));
+	var->bits_per_pixel = 16;
+	var->fmt = BGR565;
+	var->xres = 1024;
+	var->yres = 768;
+
 
 	return 0;
 }
@@ -124,8 +129,6 @@ static void lynxfb_hw_init(struct pci_slot_dev *pci_dev) {
 
 	lynxfb_hw750_inithw(&lynxfb_share);
 
-	//TODO double set memory
-	memset(share->pvMem, 0x0, share->vidmem_size);
 	memset(share->pvMem, 0x0, share->vidmem_size);
 }
 
