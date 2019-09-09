@@ -89,7 +89,7 @@ static int ehci_reset(struct ehci_hcd *ehci) {
 	uint32_t command = ehci_read(ehci, &ehci->ehci_regs->command);
 
 	command |= EHCI_CMD_RESET;
-	log_debug("comand reset %x", command);
+	log_debug("command reset %x", command);
 	ehci_write(ehci, command, &ehci->ehci_regs->command);
 	retval = ehci_handshake(ehci, &ehci->ehci_regs->command,
 			EHCI_CMD_RESET, 0, 250 * 10);
