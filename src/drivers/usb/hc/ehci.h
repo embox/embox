@@ -253,4 +253,8 @@ extern struct ehci_qh *ehci_qh_alloc(struct ehci_hcd *ehci);
 extern void ehci_qh_free(struct ehci_hcd *ehci, struct ehci_qh *qh);
 extern void scan_async (struct ehci_hcd *ehci);
 
+/* Helper functions to print registers for HCD */
+extern void ehci_caps_dump(struct ehci_hcd *ehci);
+extern void ehci_regs_dump(struct ehci_hcd *ehci);
+
 #endif /* SRC_DRIVERS_USB_HC_EHCI_H_ */

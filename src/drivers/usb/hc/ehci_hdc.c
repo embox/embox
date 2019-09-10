@@ -20,7 +20,7 @@
 
 #if !OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hdc,NUMBER,tt_support)
 #define tdi_in_host_mode(ehci) (1)
-#define tdi_reset()
+#define tdi_reset(ehci)
 
 #else
 #define USBMODE_SDIS    (1<<3) /* Stream disable */
@@ -72,6 +72,7 @@ static int ehci_handshake(struct ehci_hcd *ehci,
 	assert(ehci);
 
 	do {
+		log_debug("tick");
 		result = ehci_read(ehci, ptr);
 		if (result == ~(uint32_t)0) {/* card removed */
 			log_debug("-ENODEV");
@@ -143,6 +144,7 @@ static int ehci_reset(struct ehci_hcd *ehci) {
 	command |= EHCI_CMD_RESET;
 	log_debug("command reset %x", command);
 	ehci_write(ehci, command, &ehci->ehci_regs->command);
+	log_debug("command reset %x", command);
 	retval = ehci_handshake(ehci, &ehci->ehci_regs->command,
 			EHCI_CMD_RESET, 0, 250 * 10);
 
