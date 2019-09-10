@@ -143,6 +143,7 @@ static inline int ehci_run(struct ehci_hcd *ehci) {
 
 	assert(ehci);
 	assert(ehci->ehci_regs);
+	assert(ehci->ehci_caps);
 
 	ehci_write(ehci, 0, &ehci->ehci_regs->frame_index);
 	/* EHCI spec section 4.1 */
@@ -327,10 +328,15 @@ static int ehci_start(struct usb_hcd *hcd) {
 
 	ehci_hcd = hcd_to_ehci(hcd);
 
+	log_debug("Starting EHCI...");
+	ehci_caps_dump(ehci_hcd);
+	ehci_regs_dump(ehci_hcd);
+
 	ehci_halt(ehci_hcd);
 	ehci_reset(ehci_hcd);
 
 	ehci_run(ehci_hcd);
+	log_debug("EHCI started!");
 
 	return 0;
 }
