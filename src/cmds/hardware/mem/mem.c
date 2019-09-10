@@ -69,6 +69,7 @@ int main(int argc, char **argv) {
 	void *address;
 	unsigned long val;
 	size_t length = DEFAULT_LENGTH;
+	size_t align;
 	bool length_passed = false;
 	enum access_type at = MEM_AT_LONG;
 
@@ -119,10 +120,11 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 
+	align = (uintptr_t) address & 0xF;
 	/*address = (unsigned int *) ((int) address & ~(sizeof(address) - 1));*/
 	/*length = (length + sizeof(address) - 1) / sizeof(address);*/
 	while (length--) {
-		if (0 == ((uintptr_t)address & 0xF)) {
+		if (0 == (((uintptr_t)address - align) & 0xF)) {
 			printf("\n0x%0" PRIxPTR ":\t", (uintptr_t) address);
 		}
 
