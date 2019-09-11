@@ -48,7 +48,11 @@ int chdir(const char *path) {
 			return SET_ERRNO(EIO);
 		}
 
-		t->pwd = l.item;
+		if (t->pwd != l.item) {
+			dentry_ref_dec(t->pwd);
+			t->pwd = l.item;
+			dentry_ref_inc(t->pwd);
+		}
 
 		return 0;
 	} else {
