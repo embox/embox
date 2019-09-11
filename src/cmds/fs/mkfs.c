@@ -110,6 +110,11 @@ int main(int argc, char **argv) {
 	fs_type = DEFAULT_FS_TYPE;
 	blocks = DEFAULT_BLOCK_QTTY;
 
+	if (argc < 2) {
+		print_usage();
+		return 0;
+	}
+
 	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "ht:q:F:"))) {
 		switch (opt) {
