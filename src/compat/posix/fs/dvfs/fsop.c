@@ -14,7 +14,7 @@
 #include <fs/dvfs.h>
 
 int mkdir(const char *pathname, mode_t mode) {
-	struct lookup lu;
+	struct lookup lu = { };
 	char *t;
 	int res;
 
