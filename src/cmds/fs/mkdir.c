@@ -25,6 +25,12 @@ int main(int argc, char **argv) {
 	int mode_set = 0;
 	int mode = 0777;
 
+	if (argc < 2) {
+		printf("%s: missing operand\n", argv[0]);
+		print_usage();
+		return 0;
+	}
+
 	while (-1 != (opt = getopt(argc - 1, argv, "hm:v"))) {
 		switch(opt) {
 		case 'h':

@@ -118,7 +118,6 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "ht:q:F:"))) {
 		switch (opt) {
 		case 'F':
@@ -143,7 +142,6 @@ int main(int argc, char **argv) {
 			}
 
 			return mkfs_create_ramdisk(path, blocks);
-		case '?':
 		case 'h':
 			print_usage();
 			return 0;
