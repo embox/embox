@@ -20,7 +20,7 @@
 #define E2K_JMBBUFF_KSTTOP   (_JBRNUM + 4)
 #endif
 
-#define _JBLEN   (_JBRNUM + 5)
+#define _JBLEN   (_JBRNUM )
 
 #ifndef __ASSEMBLER__
 
