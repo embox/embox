@@ -70,7 +70,10 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 			printf("File %s not found.\n", path);
 			return 0;
 		}
-		/* TODO pointers check? */
+
+		assert(lu.item->d_inode);
+		assert(lu.item->d_inode->i_data);
+
 		return drv->format(lu.item->d_inode->i_data, fs_specific);
 	}
 #endif
