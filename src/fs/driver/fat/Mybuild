@@ -25,6 +25,9 @@ module fat_old extends fat {
 }
 
 module fat_dvfs extends fat {
+	option number default_fat_version = 32
+	option number log_level = 1
+
 	source "fat_dvfs.c"
 
 	depends embox.driver.block_common

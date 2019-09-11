@@ -18,6 +18,9 @@
 #include <fs/fat.h>
 #include <fs/dvfs.h>
 #include <util/math.h>
+#include <util/log.h>
+
+#define DEFAULT_FAT_VERSION OPTION_GET(NUMBER, default_fat_version)
 
 extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
@@ -589,13 +592,20 @@ static int fat_mount_end(struct super_block *sb) {
  * @return Negative error code or 0 if succeed
  */
 static int fat_format(void *dev, void *priv) {
-	int fat_n = priv ? atoi((char*) priv) : 12;
+	int fat_n = priv ? atoi((char*) priv) : 0;
 	struct block_dev *bdev;
 
 	assert(dev);
 
-	if (!fat_n)
-		fat_n = 12;
+	if (!fat_n) {
+		fat_n = DEFAULT_FAT_VERSION;
+	}
+
+	if (fat_n != 12 && fat_n != 16 && fat_n != 32) {
+		log_error("Unsupported FAT version: FAT%d "
+				"(FAT12/FAT16/FAT32 available)", fat_n);
+		return -EINVAL;
+	}
 
 	bdev = dev_module_to_bdev(dev);
 	fat_create_partition(bdev, fat_n);
