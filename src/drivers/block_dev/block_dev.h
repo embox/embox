@@ -103,6 +103,11 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 
 extern int block_devs_init(void);
 
+#include <drivers/device.h>
+static inline struct block_dev *dev_module_to_bdev(struct dev_module *devmod) {
+	return (struct block_dev *) devmod->dev_priv;
+}
+
 /* This part is actually just for dvfs */
 struct dev_module;
 extern int bdev_read_block(struct dev_module *devmod, void *buf, int blk);
