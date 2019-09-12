@@ -104,8 +104,8 @@ struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file 
 	sb = pool_alloc(&superblock_pool);
 
 	if (bdev_file) {
-		assert(bdev_vile->f_inode);
-		assert(bdev_vile->f_inode->i_data);
+		assert(bdev_file->f_inode);
+		assert(bdev_file->f_inode->i_data);
 	}
 
 	*sb = (struct super_block) {
