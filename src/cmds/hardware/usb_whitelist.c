@@ -246,6 +246,7 @@ static int usb_wl_rule_parse(char *strrule[], int strn,
 }
 
 #define USB_WL_DEV_PATH_LEN 64
+#define USB_WL_DEVFS_PREFIX "/dev/"
 int main(int argc, char *argv[]) {
 	struct usb_whitelist_rule wl_rule;
 	char usb_wl_dev_path[USB_WL_DEV_PATH_LEN];
@@ -258,8 +259,14 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
-	strncpy(usb_wl_dev_path, "/dev/", USB_WL_DEV_PATH_LEN);
-	strncat(usb_wl_dev_path, USB_WHITELIST_DEV_NAME, USB_WL_DEV_PATH_LEN);
+	strncpy(usb_wl_dev_path,
+			USB_WL_DEVFS_PREFIX,
+			sizeof(usb_wl_dev_path) - 1);
+	usb_wl_dev_path[sizeof(usb_wl_dev_path) - 1] = '\0';
+
+	strncat(usb_wl_dev_path,
+			USB_WHITELIST_DEV_NAME,
+			sizeof(usb_wl_dev_path) - 1 - strlen(USB_WL_DEVFS_PREFIX));
 
 	fdwl = open(usb_wl_dev_path, O_RDONLY);
 	if (0 > fdwl) {

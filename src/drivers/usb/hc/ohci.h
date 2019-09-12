@@ -121,7 +121,7 @@ struct ohci_reg {
 	uint32_t hc_rh_desc_b;
 	uint32_t hc_rh_stat;
 	uint32_t hc_rh_port_stat[];
-} __attribute__((packed));
+} __attribute__((packed,aligned(sizeof(uint32_t))));
 
 struct ohci_hcd {
 	struct usb_hcd *hcd;
