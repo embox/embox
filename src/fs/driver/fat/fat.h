@@ -44,6 +44,21 @@
 #define ATTR_LONG_NAME \
 	(ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
 
+/* Long dirent preceedes "regular" dirent entry, for details refer to
+ *     https://wiki.osdev.org/FAT */
+struct fat_long_dirent {
+	uint8_t order;
+#define FAT_LONG_ORDER_LAST     0x40
+#define FAT_LONG_ORDER_NUM_MASK 0x0F
+	uint8_t name1[10];
+	uint8_t attr;   /* Should always be 0xF */
+	uint8_t type;   /* Zero for name entries */
+	uint8_t chksum;
+	uint8_t name2[12];
+	uint8_t reserved[2]; /* Should always be zero */
+	uint8_t name3[4];
+};
+
 /*
  * 	Directory entry structure
  * 	note: if name[0] == 0xe5, this is a free dir entry
@@ -58,8 +73,8 @@
  * 	             bit 5-10 = minutes (0-59)
  * 				 bit 11-15= hours (0-23)
  */
-struct dirent {
-	uint8_t name[11];		/* filename */
+struct fat_dirent {
+	uint8_t name[MSDOS_NAME];	/* filename */
 	uint8_t attr;			/* attributes (see ATTR_* constant definitions) */
 	uint8_t reserved;		/* reserved, must be 0 */
 	uint8_t crttimetenth;	/* create time, 10ths of a second (0-199 are valid) */
@@ -252,16 +267,20 @@ struct dirinfo {
 #include <framework/mod/options.h>
 #define FAT_MAX_SECTOR_SIZE OPTION_MODULE_GET(embox__fs__driver__fat, NUMBER, fat_max_sector_size)
 
-extern void fat_set_filetime(struct dirent *de);
+extern void fat_set_filetime(struct fat_dirent *de);
 extern void fat_get_filename(char *tmppath, char *filename);
 extern int fat_check_filename(char *filename);
+extern int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name);
 
 extern char *path_canonical_to_dir(char *dest, char *src);
 extern char *path_dir_to_canonical(char *dest, char *src, char dir);
 extern int      fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
 extern int      fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
 extern uint32_t fat_get_next(struct fat_fs_info *fsi,
-                             struct dirinfo * dirinfo, struct dirent * dirent);
+                             struct dirinfo * dirinfo, struct fat_dirent * dirent);
+extern uint32_t fat_get_next_long(struct fat_fs_info *fsi,
+                             struct dirinfo *dir, struct fat_dirent *dirent,
+			     char *name_buf);
 extern int      fat_create_partition(void *bdev, int fat_n);
 extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
                                   uint8_t *pptype, uint32_t *psize);
@@ -272,7 +291,7 @@ extern uint32_t fat_get_free_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch);
 extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
                              uint8_t *dirname, struct dirinfo *dirinfo);
 extern uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
-                             struct dirinfo *di, struct dirent *de);
+                             struct dirinfo *di, struct fat_dirent *de);
 extern void     fat_set_direntry (uint32_t dir_cluster, uint32_t cluster);
 extern uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 		uint8_t *p_scratch, size_t *size);
@@ -292,5 +311,14 @@ extern struct fat_file_info *fat_file_alloc(void);
 extern void fat_file_free(struct fat_file_info *fi);
 extern struct dirinfo *fat_dirinfo_alloc(void);
 extern void fat_dirinfo_free(struct dirinfo *di);
+
+extern int fat_entries_per_name(const char *name);
+extern void fat_write_longname(char *name, struct fat_dirent *di);
+extern uint32_t fat_write_de(struct fat_fs_info *fsi,
+                             struct dirinfo *dirinfo, struct fat_dirent *dirent);
+extern uint32_t fat_get_free_entries(struct fat_fs_info *fsi,
+		struct dirinfo *dir, struct fat_dirent *dirent, int n);
+extern uint8_t fat_canonical_name_checksum(const char *name);
+extern int fat_reset_dir(struct dirinfo *di);
 
 #endif /* FAT_H_ */
