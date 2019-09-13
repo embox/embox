@@ -26,19 +26,22 @@ static const char *script_commands[] = {
 static int run_script(void) {
 	const char *command;
 	const struct shell *shell;
+	const char *tty_dev_name;
 
+	printf("\nLooking for shell [%s] device [%s]\n", OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
 	shell = shell_lookup(OPTION_STRING_GET(shell_name));
 	if (NULL == shell) {
 		shell = shell_any();
 		if (NULL == shell) {
+			printf("Havn't been any shell found\n");
 			return -ENOENT;
 		}
 	}
 
-	setup_tty(OPTION_STRING_GET(tty_dev));
+	tty_dev_name = setup_tty(OPTION_STRING_GET(tty_dev));
 
 	printf("\nStarted shell [%s] on device [%s]\n",
-		OPTION_STRING_GET(shell_name), OPTION_STRING_GET(tty_dev));
+		shell->name, tty_dev_name);
 
 	printf("loading start script:\n");
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {

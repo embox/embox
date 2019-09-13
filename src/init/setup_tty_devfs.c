@@ -13,9 +13,9 @@
 #include <stdlib.h>
 #include <limits.h>
 
-extern int diag_fd(void);
+#include "setup_tty.h"
 
-int setup_tty(const char *dev_name) {
+const char *setup_tty(const char *dev_name) {
 	int fd;
 	char full_name[PATH_MAX];
 
@@ -26,14 +26,16 @@ int setup_tty(const char *dev_name) {
 		strcat(full_name, dev_name);
 
 		if (-1 == (fd = open(full_name, O_RDWR))) {
+			dev_name = DIAG_NAME;
 			fd = diag_fd();
 		}
 	} else {
+		dev_name = DIAG_NAME;
 		fd = diag_fd();
 	}
 
 	if (fd < 0) {
-		return fd;
+		return NULL;
 	}
 
 	dup2(fd, STDIN_FILENO);
@@ -44,5 +46,5 @@ int setup_tty(const char *dev_name) {
 		close(fd);
 	}
 
-	return 0;
+	return dev_name;
 }
