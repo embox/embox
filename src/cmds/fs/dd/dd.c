@@ -152,7 +152,7 @@ static int dd_cond_open(const char *path, int mode, int def_fd) {
 	int fd;
 
 	if (path) {
-		fd = open(path, mode);
+		fd = open(path, mode, S_IRALL | S_IWALL);
 		if (0 > fd) {
 			return -errno;
 		}
@@ -195,7 +195,7 @@ int main(int argc, char **argv) {
 		dp.count = buff.st_size;
 	}
 
-	ofd = dd_cond_open(dp.ofile, O_WRONLY, STDOUT_FILENO);
+	ofd = dd_cond_open(dp.ofile, O_WRONLY | O_CREAT, STDOUT_FILENO);
 	if (ofd < 0) {
 		err = ofd;
 		goto out_ifd_close;
