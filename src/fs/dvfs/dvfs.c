@@ -327,7 +327,8 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 		block_dev = block_dev_find(dev_name);
 		bdev_file = dvfs_alloc_file();
 		if (!bdev_file) {
-			return err_ptr(ENOMEM);
+			SET_ERRNO(ENOENT);
+			return NULL;
 		}
 		devfs_drv->fill_sb(&devfs_sb, bdev_file);
 		memset(bdev_file, 0, sizeof(struct file));
@@ -342,7 +343,8 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 	/* devfs presents, perform usual mount */
 	dvfs_lookup(dev_name, &lookup);
 	if (!lookup.item) {
-		return err_ptr(ENOENT);
+		SET_ERRNO(ENOENT);
+		return NULL;
 	}
 	/* TODO pass flags */
 	bdev_file = (struct file*) dvfs_file_open_idesc(&lookup, 0);

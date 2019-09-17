@@ -70,7 +70,10 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 			printf("File %s not found.\n", path);
 			return 0;
 		}
-		/* TODO pointers check? */
+
+		assert(lu.item->d_inode);
+		assert(lu.item->d_inode->i_data);
+
 		return drv->format(lu.item->d_inode->i_data, fs_specific);
 	}
 #endif
@@ -110,7 +113,11 @@ int main(int argc, char **argv) {
 	fs_type = DEFAULT_FS_TYPE;
 	blocks = DEFAULT_BLOCK_QTTY;
 
-	getopt_init();
+	if (argc < 2) {
+		print_usage();
+		return 0;
+	}
+
 	while (-1 != (opt = getopt(argc, argv, "ht:q:F:"))) {
 		switch (opt) {
 		case 'F':
@@ -135,7 +142,6 @@ int main(int argc, char **argv) {
 			}
 
 			return mkfs_create_ramdisk(path, blocks);
-		case '?':
 		case 'h':
 			print_usage();
 			return 0;
