@@ -17,6 +17,7 @@ do { \
 
 static int volatile entries_count = 0;
 static int volatile idled_cpus_count = 0;
+static int volatile sync_count = 0;
 
 static void e2k_kernel_start(void) {
 	extern void kernel_start(void);
@@ -49,7 +50,7 @@ void cpu_idle(void) {
 #include <hal/context.h>
 static struct context cpu_ctx_prev[2];
 static struct context cpu_ctx[2];/* 2 CPU */
-static int idle_stack[0x1000];
+static char idle_stack[0x10000] __attribute__((aligned(0x4000)));
 
 #include <module/embox/kernel/stack.h>
 
@@ -80,10 +81,16 @@ void e2k_entry(struct pt_regs *regs) {
 	if (entries_count > 1) {
 		/* XXX currently we support only single core */
 		/* Run cpu_idle on 2nd CPU */
+
+		/* it's just needed if log_debug enabled in e2k_context module
+		 * else output will be wrong because 2 cpu printing at the same time */
+		while(!sync_count);
+
 		context_init(&cpu_ctx[0], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE, cpu_idle, idle_stack, sizeof(idle_stack));
 		context_switch(&cpu_ctx_prev[0], &cpu_ctx[0]);
 	}
 	/* Run e2k_kernel_start on 1st CPU */
 	context_init(&cpu_ctx[1], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE, e2k_kernel_start, &_stack_top, KERNEL_STACK_SZ);
+	sync_count = __e2k_atomic32_add(1, &sync_count);
 	context_switch(&cpu_ctx_prev[1], &cpu_ctx[1]);
 }

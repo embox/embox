@@ -30,8 +30,11 @@ int system_start(void) {
 	int argc;
 	const struct cmd *cmd;
 	char cmd_line[64];
+	const char *tty_dev_name;
 
-	setup_tty(OPTION_STRING_GET(tty_dev));
+	tty_dev_name = setup_tty(OPTION_STRING_GET(tty_dev));
+
+	printf("Default IO device[%s]\n", tty_dev_name);
 
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		strncpy(cmd_line, command, sizeof(cmd_line) - 1);

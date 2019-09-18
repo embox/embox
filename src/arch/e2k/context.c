@@ -21,23 +21,28 @@
 #define round_down(x, bound) ((x) & ~((bound) - 1))
 
 /* Reserve 1/4 for PSP stack, 1/4 for PCSP stack, and 1/2 for USD stack */
-#define PSP_CALC_STACK_BASE(sp, size) binalign_bound(sp - size, E2K_STACK_ALIGN)
-#define PSP_CALC_STACK_SIZE(sp, size) binalign_bound((size) / 4, E2K_STACK_ALIGN)
+#define PSP_CALC_STACK_BASE(sp, size) (sp - (size) / 4)
+#define PSP_CALC_STACK_SIZE(sp, size) ((size) / 4)
 
-#define PCSP_CALC_STACK_BASE(sp, size) \
-	(PSP_CALC_STACK_BASE(sp, size) + PSP_CALC_STACK_SIZE(sp, size))
-#define PCSP_CALC_STACK_SIZE(sp, size) binalign_bound((size) / 4, E2K_STACK_ALIGN)
+#define PCSP_CALC_STACK_BASE(sp, size) (sp - (size) / 2)
+#define PCSP_CALC_STACK_SIZE(sp, size) ((size) / 4)
 
-#define USD_CALC_STACK_BASE(sp, size) round_down(sp, E2K_STACK_ALIGN)
-#define USD_CALC_STACK_SIZE(sp, size) \
-	round_down(USD_CALC_STACK_BASE(sp, size) - PCSP_CALC_STACK_BASE(sp, size),\
-		E2K_STACK_ALIGN)
+#define USD_CALC_STACK_BASE(sp, size) PCSP_CALC_STACK_BASE(sp, size)
+#define USD_CALC_STACK_SIZE(sp, size) ((size) / 2)
 
 static void e2k_calculate_stacks(struct context *ctx, uint64_t sp,
 	uint64_t size) {
 	uint64_t psp_size, pcsp_size, usd_size;
+	uint64_t aligned_sp;
 
 	log_debug("Stacks:\n");
+
+	/* Round SP */
+	aligned_sp = round_down(sp, E2K_STACK_ALIGN);
+	/* Round size. Align size to (4 * E2K_STACK_ALIGN), so
+	 * size / 4 will be aligned to E2K_STACK_ALIGN. */
+	size = round_down(size - (sp - aligned_sp), 4 * E2K_STACK_ALIGN);
+	sp = aligned_sp;
 
 	ctx->psp_lo |= PSP_CALC_STACK_BASE(sp, size) << PSP_BASE;
 	ctx->psp_lo |= E2_RWAR_RW_ENABLE << PSP_RW;
