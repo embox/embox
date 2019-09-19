@@ -1,5 +1,5 @@
 /**
- * @file imx_usb_regs.h
+ * @file
  * @brief Registers definition
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version

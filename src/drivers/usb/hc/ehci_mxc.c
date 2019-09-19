@@ -1,5 +1,5 @@
 /**
- * @file imx.c
+ * @file
  * @brief
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
@@ -17,9 +17,9 @@
 #include <kernel/printk.h>
 #include <util/log.h>
 
-#include "../hc/ehci.h"
+#include "ehci.h"
 
-#include "imx_usb_regs.h"
+#include "usb_ehci_mxc_regs.h"
 
 EMBOX_UNIT_INIT(imx_usb_init);
 

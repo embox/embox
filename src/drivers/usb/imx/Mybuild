@@ -1,9 +1,0 @@
-package embox.driver.usb
-
-module imx {
-	option number log_level = 4
-	source "imx.c"
-
-	depends embox.driver.usb.core
-	depends embox.driver.clk.ccm_imx6
-}

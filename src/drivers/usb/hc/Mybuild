@@ -42,3 +42,12 @@ module usb_dwc {
 	depends embox.kernel.thread.sync
 	depends embox.driver.power.bcm2835_power
 }
+
+module ehci_mxc {
+	option number log_level = 4
+	source "ehci_mxc.c"
+
+	depends embox.driver.usb.core
+	depends embox.driver.clk.ccm_imx6
+	depends embox.driver.usb.hc.ehci_hdc
+}
