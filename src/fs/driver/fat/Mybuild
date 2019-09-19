@@ -6,6 +6,8 @@ abstract module fat {
 	option number fat_descriptor_quantity=4
 	option number fat_max_sector_size = 512
 
+	option boolean support_long_names = true
+
 	@IncludeExport(path="fs")
 	source "fat.h"
 
@@ -25,9 +27,11 @@ module fat_old extends fat {
 }
 
 module fat_dvfs extends fat {
+	option number default_fat_version = 32
+	option number log_level = 1
+
 	source "fat_dvfs.c"
 
 	depends embox.driver.block_common
 	depends embox.fs.dvfs.core
 }
-

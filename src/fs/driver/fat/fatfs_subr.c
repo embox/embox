@@ -74,16 +74,11 @@ void fat_get_filename(char *tmppath, char *filename) {
 	if (*p == DIR_SEPARATOR) {
 		p++;
 	}
-	path_canonical_to_dir(filename, p);
-	if (p > tmppath) {
-		p--;
-	}
-	if (*p == DIR_SEPARATOR || p == tmppath) {
-		*p = 0;
-	}
+
+	return;
 }
 
-void fat_set_filetime(struct dirent *de) {
+void fat_set_filetime(struct fat_dirent *de) {
 	/* TODO set normal time */
 		de->crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */
 		de->crttime_h = 0x08;
@@ -120,10 +115,10 @@ char *path_canonical_to_dir(char *dest, char *src) {
 			continue;
 		}
 		if (*src >= 'a' && *src <='z') {
-			*src = (*src - 'a') + 'A';
+			*(dest + i) = (*src - 'a') + 'A';
+		} else {
+			*(dest + i) = *src;
 		}
-
-		*(dest + i) = *src;
 		src++;
 	}
 
