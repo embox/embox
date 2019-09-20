@@ -39,8 +39,6 @@ int open(const char *path, int __oflag, ...) {
 	char path_buf[PATH_MAX];
 	char name[NAME_MAX];
 	struct idesc *kfile;
-	va_list args;
-	mode_t mode;
 	int rc;
 	char *parent_path;
 	char *bname;
@@ -54,11 +52,6 @@ int open(const char *path, int __oflag, ...) {
 	if (strlen(path) >= PATH_MAX) {
 		return SET_ERRNO(ENAMETOOLONG);
 	}
-
-	va_start(args, __oflag);
-	mode = va_arg(args, mode_t);
-	mode = umask_modify(mode);
-	va_end(args);
 
 	strncpy(path_buf, path, PATH_MAX - 1);
 	path_buf[PATH_MAX - 1] = '\0';
@@ -87,6 +80,14 @@ int open(const char *path, int __oflag, ...) {
 
 	if (node == NULL) {
 		if (__oflag & O_CREAT) {
+			va_list args;
+			mode_t mode;
+
+			va_start(args, __oflag);
+			mode = va_arg(args, mode_t);
+			mode = umask_modify(mode);
+			va_end(args);
+
 			if(0 > kcreat(&dir->path, name, mode, &node_path)) {
 				rc = -errno;
 				goto out;
@@ -96,8 +97,8 @@ int open(const char *path, int __oflag, ...) {
 			goto out;
 		}
 	} else {
-		/* When used with O_CREAT, if the file already exists it is an error
-		 * and the open() will fail. */
+		/* If flag O_EXCL is specified in conjunction with O_CREAT, and
+		 * path already exists, then open() fails with the error EEXIST. */
 		if (__oflag & O_EXCL && __oflag & O_CREAT) {
 			rc = -EEXIST;
 			goto out;
