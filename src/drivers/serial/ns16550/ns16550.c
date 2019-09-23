@@ -30,6 +30,7 @@
 struct com {
         UART_REG(rbr);          /* 0 */
         UART_REG(ier);          /* 1 */
+#define NS16550_IER_RX_IRQ	(1 << 0)
         UART_REG(fcr);          /* 2 */
         UART_REG(lcr);          /* 3 */
         UART_REG(mcr);          /* 4 */
@@ -57,6 +58,7 @@ struct com {
 EMBOX_UNIT_INIT(ns16550_init);
 
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
+	COM3->ier |= NS16550_IER_RX_IRQ;
 	return 0;
 }
 
@@ -96,7 +98,7 @@ static const struct uart_params uart_defparams = {
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = false,
+		.irq = true,
 };
 
 static const struct uart_params uart_diag_params = {
