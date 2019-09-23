@@ -18,6 +18,40 @@
 
 #include "ehci.h"
 
+#if !OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hdc,NUMBER,tt_support)
+#define tdi_in_host_mode(ehci) (1)
+#define tdi_reset()
+
+#else
+#define USBMODE_SDIS    (1<<3) /* Stream disable */
+#define USBMODE_BE      (1<<2) /* BE/LE endianness select */
+#define USBMODE_CM_HC   (3<<0) /* host controller mode */
+#define USBMODE_CM_IDLE (0<<0) /* idle state */
+
+static inline int tdi_in_host_mode(struct ehci_hcd *ehci) {
+	uint32_t tmp;
+
+	tmp = ehci_read(ehci, &ehci->ehci_regs->usbmode);
+	return (tmp & 3) == USBMODE_CM_HC;
+}
+
+static inline void tdi_reset(struct ehci_hcd *ehci) {
+	uint32_t tmp;
+
+	tmp = ehci_read(ehci, &ehci->ehci_regs->usbmode);
+	tmp |= USBMODE_CM_HC;
+#if 0
+	/* The default byte access to MMR space is LE after
+	 * controller reset. Set the required endian mode
+	 * for transfer buffers to match the host microprocessor
+	 */
+	if (ehci_big_endian_mmio(ehci))
+		tmp |= USBMODE_BE;
+#endif
+	ehci_write(ehci, tmp, &ehci->ehci_regs->usbmode);
+}
+#endif
+
 POOL_DEF(ehci_hcd_pool, struct ehci_hcd, USB_MAX_HCD);
 POOL_DEF(ehci_qh_pool, struct ehci_qh, USB_MAX_ENDP);
 
@@ -40,15 +74,19 @@ static int ehci_handshake(struct ehci_hcd *ehci,
 	do {
 		result = ehci_read(ehci, ptr);
 		if (result == ~(uint32_t)0) {/* card removed */
+			log_debug("-ENODEV");
 			return -ENODEV;
 		}
+		log_debug("tick %x", result);
 		result &= mask;
 		if (result == done) {
 			return 0;
 		}
+
 		udelay(1);
 		usec--;
 	}while (usec > 0);
+
 	return -ETIMEDOUT;
 }
 
@@ -108,6 +146,8 @@ static int ehci_reset(struct ehci_hcd *ehci) {
 	retval = ehci_handshake(ehci, &ehci->ehci_regs->command,
 			EHCI_CMD_RESET, 0, 250 * 10);
 
+	tdi_reset (ehci);
+	log_debug("reset done %x", retval);
 	return retval;
 }
 
@@ -115,7 +155,7 @@ static int ehci_reset(struct ehci_hcd *ehci) {
  * Force HC to halt state from unknown (EHCI spec section 2.3).
  * Must be called with interrupts enabled and the lock not held.
  */
-static int ehci_halt (struct ehci_hcd *ehci) {
+static int ehci_halt(struct ehci_hcd *ehci) {
 	uint32_t temp;
 
 	assert(ehci);
@@ -123,6 +163,10 @@ static int ehci_halt (struct ehci_hcd *ehci) {
 
 	/* disable any irqs left enabled by previous code */
 	ehci_write(ehci, 0, &ehci->ehci_regs->intr_enable);
+
+	if (!tdi_in_host_mode(ehci)) {
+		return 0;
+	}
 
 	/*
 	 * This routine gets called during probe before ehci->command
@@ -132,7 +176,7 @@ static int ehci_halt (struct ehci_hcd *ehci) {
 	temp = ehci_read(ehci, &ehci->ehci_regs->command);
 	temp &= ~(EHCI_CMD_RUN | EHCI_CMD_IAAD);
 	ehci_write(ehci, temp, &ehci->ehci_regs->command);
-
+	log_debug("command halt %x", temp);
 	return ehci_handshake(ehci, &ehci->ehci_regs->status,
 			EHCI_STS_HALT, EHCI_STS_HALT, 16 * 125);
 }
