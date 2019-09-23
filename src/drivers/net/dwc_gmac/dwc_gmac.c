@@ -38,8 +38,8 @@ EMBOX_UNIT_INIT(dwc_init);
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM    OPTION_GET(NUMBER, irq_num)
 
-#define RX_DESC_QUANTITY 0x20
-#define TX_DESC_QUANTITY 0x10
+#define RX_DESC_QUANTITY OPTION_GET(NUMBER, rx_desc_quantity)
+#define TX_DESC_QUANTITY OPTION_GET(NUMBER, tx_desc_quantity)
 
 struct dwc_priv {
 	uint32_t                  base_addr;
