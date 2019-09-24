@@ -40,6 +40,8 @@ void ehci_caps_dump(struct ehci_hcd *ehci) {
 }
 
 void ehci_regs_dump(struct ehci_hcd *ehci) {
+	int i;
+
 	if (ehci == NULL) {
 		log_debug("Can't dump registers: ehci is NULL!");
 		return;
@@ -61,4 +63,11 @@ void ehci_regs_dump(struct ehci_hcd *ehci) {
 	log_debug("async_next      = %08"PRIX32, ehci->ehci_regs->async_next);
 	log_debug("txfill_tuning   = %08"PRIX32, ehci->ehci_regs->txfill_tuning);
 	log_debug("configured_flag = %08"PRIX32, ehci->ehci_regs->configured_flag);
+
+	i = EHCI_HCS_N_PORTS(ehci_read(ehci, &ehci->ehci_caps->hcs_params));
+	while (i--) {
+		int pstatus;
+		pstatus = ehci_read(ehci, &ehci->ehci_regs->port_status[i]);
+		log_debug("port[%i] status = %08"PRIX32, i, pstatus);
+	}
 }
