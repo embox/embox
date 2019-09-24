@@ -33,12 +33,12 @@ static int gpio_by_name(char *name) {
 	}
 
 	switch (name[0]) {
-	case 0: case 'a': case 'A': return GPIO_PORT_A;
-	case 1: case 'b': case 'B': return GPIO_PORT_B;
-	case 2: case 'c': case 'C': return GPIO_PORT_C;
-	case 3: case 'd': case 'D': return GPIO_PORT_D;
-	case 4: case 'e': case 'E': return GPIO_PORT_E;
-	case 5: case 'f': case 'F': return GPIO_PORT_F;
+	case '0': case 'a': case 'A': return GPIO_PORT_A;
+	case '1': case 'b': case 'B': return GPIO_PORT_B;
+	case '2': case 'c': case 'C': return GPIO_PORT_C;
+	case '3': case 'd': case 'D': return GPIO_PORT_D;
+	case '4': case 'e': case 'E': return GPIO_PORT_E;
+	case '5': case 'f': case 'F': return GPIO_PORT_F;
 	default:
 		fprintf(stderr, "Can't convert character '%c' to GPIO. Error.",
 			name[0]);
