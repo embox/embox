@@ -221,8 +221,9 @@ void ccm_analog_usb_init(int port) {
 				CCM_ANALOG_PLL_USB_ENABLE |
 				CCM_ANALOG_PLL_USB_POWER |
 				CCM_ANALOG_PLL_USB_EN_USB_CLKS);
+		break;
 	default:
-		log_error("Wrong port");
+		log_error("Wrong port %d", port);
 	}
 }
 
