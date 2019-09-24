@@ -9,11 +9,14 @@ package embox.cmd.hardware
 		pin <gpio> <pin> <state>
 	DESCRIPTION
 	<state> must be one of:
-		set           -- set '1'
-		reset (unset) -- set '0'
-		toggle        -- invert
+		get    -- Get value of pin 
+		set    -- Up pin 
+		reset  -- Down pin 
+		unset  -- Down pin 
+		toggle -- Reverts pin 
+		blink  -- Toggle pin every second
 	AUTHORS
-			Denis Deryugin <deryugin.denis@gmail.com>
+		Denis Deryugin <deryugin.denis@gmail.com>
 	''')
 
 @BuildDepends(third_party.bsp.stmf4cube.core)
