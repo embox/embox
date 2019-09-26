@@ -1,0 +1,23 @@
+package embox.arch.riscv.kernel
+
+module boot extends embox.arch.boot {
+	source "boot.S"
+	source "trap.c"
+}
+
+module arch extends embox.arch.arch {
+	source "arch.c"
+}
+
+module libarch extends embox.arch.libarch {
+	source "setjmp.S"
+}
+
+module locore extends embox.arch.locore {
+	depends interrupt
+}
+
+module interrupt extends embox.arch.interrupt {
+        source "ipl_impl.c", "ipl_impl.h"
+}
+
