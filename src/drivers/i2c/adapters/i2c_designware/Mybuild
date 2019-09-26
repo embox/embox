@@ -1,0 +1,57 @@
+package embox.driver.adapters
+
+module i2c_designware {
+	option number log_level=1
+
+	source "i2c_designware.c"
+
+	depends embox.driver.i2c
+}
+
+module i2c_designware_0 {
+	option number log_level=1
+
+	option number base_addr=0xFFC04000
+	option number irq_num=190
+	
+	source "i2c_designware_0.c"
+
+	@NoRuntime depends i2c_designware
+	depends embox.driver.i2c
+}
+
+module i2c_designware_1 {
+	option number log_level=1
+
+	option number base_addr=0xFFC05000
+	option number irq_num=191
+	
+	source "i2c_designware_1.c"
+
+	@NoRuntime depends i2c_designware
+	depends embox.driver.i2c
+}
+
+module i2c_designware_2 {
+	option number log_level=1
+
+	option number base_addr=0xFFC06000
+	option number irq_num=192
+	
+	source "i2c_designware_2.c"
+
+	@NoRuntime depends i2c_designware
+	depends embox.driver.i2c
+}
+
+module i2c_designware_3 {
+	option number log_level=1
+
+	option number base_addr=0xFFC07000
+	option number irq_num=193
+	
+	source "i2c_designware_3.c"
+
+	@NoRuntime depends i2c_designware
+	depends embox.driver.i2c
+}
