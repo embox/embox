@@ -1,0 +1,5 @@
+package embox.arch.riscv
+
+static module libarch extends embox.arch.libarch {
+	source "setjmp.S"
+}
