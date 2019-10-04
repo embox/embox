@@ -31,6 +31,10 @@ module mips_intc extends irqctrl_api {
 	source "mips_intc.c", "mips_intc.h"
 }
 
+module riscv_intc extends irqctrl_api {
+	source "riscv_intc.c", "riscv_intc.h"
+}
+
 module bpi_intc extends irqctrl_api {
 	source "bpi_intc.c", "bpi_intc.h"
 }
