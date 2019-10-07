@@ -2,7 +2,8 @@
 package third_party.lib
 
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
-static module OpenLibm {
+static module OpenLibm extends embox.compat.libc.math {
 	source "^BUILD/extbld/^MOD_PATH/install/libopenlibm.a"
+	@IncludeExport(target_name="math.h")
 	source "impl.h"
 }
