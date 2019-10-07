@@ -5,4 +5,6 @@ module estransform {
 	source "esTransform.h"
 
 	source "esTransform.c"
+
+	depends embox.compat.libc.math
 }
