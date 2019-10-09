@@ -55,3 +55,7 @@ int jiffies_init(void) {
 
 	return 0;
 }
+
+int time_before(clock_t now, clock_t wait) {
+       return now > wait;
+}

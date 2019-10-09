@@ -17,7 +17,7 @@ EMBOX_UNIT_INIT(time_init);
 static struct timespec timekeep_g_time;
 static struct itimer timekeep_g_itimer;
 
-void settimeofday(struct timespec *newtime, struct timezone *tz) {
+void setnsofday(const struct timespec *newtime, const struct timezone *tz) {
 	timekeep_g_time = *newtime;
 	itimer_init(&timekeep_g_itimer, timekeep_g_itimer.cs, 0);
 }

@@ -140,7 +140,7 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 		if (ret != 0) {
 			return ret;
 		}
-		settimeofday(&ts, NULL);
+		setnsofday(&ts, NULL);
 	}
 
 	return 0;

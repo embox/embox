@@ -6,10 +6,10 @@
  * @date    22.05.2014
  */
 
-#include <kernel/task.h>
 #include <sys/times.h>
 
-extern clock_t clock_sys_ticks(void);
+#include <kernel/task.h>
+#include <hal/clock.h>
 
 clock_t times (struct tms *__buffer) {
 	//DPRINT();
