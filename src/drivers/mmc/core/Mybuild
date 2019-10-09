@@ -1,0 +1,17 @@
+package embox.driver.mmc
+
+module mmc_core {
+	option number dev_quantity = 64
+	option number log_level = 1
+
+	@IncludeExport(path="drivers/mmc")
+	source "mmc_core.h"
+	@IncludeExport(path="drivers/mmc")
+	source "mmc_card.h"
+	@IncludeExport(path="drivers/mmc")
+	source "mmc_host.h"
+	@IncludeExport(path="drivers/mmc")
+	source "mmc.h"
+
+	source "mmc_host.c"
+}
