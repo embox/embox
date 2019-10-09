@@ -30,6 +30,8 @@
 #define FAR 1
 #define FLIP 0
 
+#include <framework/mod/options.h>
+
 #include "pipe/p_state.h"
 #include "pipe/p_context.h"
 #include "pipe/p_screen.h"
@@ -100,11 +102,11 @@ static void init_prog(struct program *p)
 			},
 			{
 				{ -0.9f, 0.9f, 0.0f, 1.0f },
-				{ 0.0f, 1.0f, 0.0f, 1.0f }
+				{ 0.0f, 1.0f, 0.0f, 0.5f }
 			},
 			{
 				{ 0.9f, 0.9f, 0.0f, 1.0f },
-				{ 0.0f, 0.0f, 1.0f, 1.0f }
+				{ 0.0f, 0.0f, 1.0f, 0.1f }
 			}
 		};
 
@@ -132,6 +134,17 @@ static void init_prog(struct program *p)
 
 	/* disabled blending/masking */
 	memset(&p->blend, 0, sizeof(p->blend));
+#if OPTION_GET(BOOLEAN, use_alpha)
+	p->blend.rt[0] = (struct pipe_rt_blend_state) {
+		.blend_enable = 1,
+		.rgb_func = PIPE_BLEND_ADD,
+		.rgb_src_factor = PIPE_BLENDFACTOR_SRC_ALPHA,
+		.rgb_dst_factor = PIPE_BLENDFACTOR_INV_SRC_ALPHA,
+		.alpha_func = PIPE_BLEND_ADD,
+		.alpha_src_factor = PIPE_BLENDFACTOR_SRC_ALPHA,
+		.alpha_dst_factor = PIPE_BLENDFACTOR_INV_SRC_ALPHA,
+	};
+#endif /* Use Alpha */
 	p->blend.rt[0].colormask = PIPE_MASK_RGBA;
 
 	/* no-op depth/stencil/alpha */

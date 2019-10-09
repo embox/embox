@@ -53,6 +53,8 @@
 #include "util/u_surface.h"
 #include "util/u_tile.h"
 
+#include <tgsi/tgsi_text.h> /* For compiling custom TGSI shader */
+
 struct program {
 	struct pipe_loader_device *dev;
 	struct pipe_screen *screen;
@@ -280,11 +282,39 @@ static void init_prog(struct program *p)
 	}
 
 	/* fragment shader */
-	p->fs = util_make_fragment_tex_shader(p->pipe, TGSI_TEXTURE_2D,
-			TGSI_INTERPOLATE_LINEAR,
-			TGSI_RETURN_TYPE_FLOAT,
-			TGSI_RETURN_TYPE_FLOAT, false,
-			false);
+	{
+#if OPTION_GET(BOOLEAN, saturate_texture)
+		static char text[] =
+			"FRAG\n"
+			"DCL IN[0], GENERIC[0], LINEAR\n"
+			"DCL OUT[0], COLOR\n"
+			"DCL SAMP[0]\n"
+			"DCL SVIEW[0], 2D, FLOAT\n"
+			"DCL TEMP[0]\n"
+			"  0: TEX TEMP[0], IN[0], SAMP[0], 2D\n"
+			"  1: ADD TEMP[0], TEMP[0], TEMP[0]\n"
+			"  1: MOV OUT[0], TEMP[0]\n"
+			"  2: END\n";
+
+		struct tgsi_token tokens[1024];
+		struct pipe_shader_state state;
+
+		if (!tgsi_text_translate(text, tokens, ARRAY_SIZE(tokens))) {
+			printf("Failed to compile fragment shader!\n");
+			return;
+		}
+
+		memset(&state, 0, sizeof state);
+		state.tokens = tokens;
+		p->fs = p->pipe->create_fs_state(p->pipe, &state);
+#else /* Saturate texture */
+		p->fs = util_make_fragment_tex_shader(p->pipe, TGSI_TEXTURE_2D,
+				TGSI_INTERPOLATE_LINEAR,
+				TGSI_RETURN_TYPE_FLOAT,
+				TGSI_RETURN_TYPE_FLOAT, false,
+				false);
+#endif
+	}
 }
 
 static void close_prog(struct program *p)

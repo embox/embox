@@ -48,12 +48,15 @@ module hardcode_cube {
 @App
 @AutoCmd
 @Cmd(name = "tri",
-	help = "Draw triangle with purple background using gallium")
-
+	help = '''
+	Draw triangle with purple background using gallium. It's possible to
+	configure this module for alpha-channel test.
+	''')
 @BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
 @BuildDepends(third_party.freedesktop.mesa.mesa_etnaviv)
 @Build(stage=2,script="true")
 module tri {
+	option boolean use_alpha = false
 	source "tri.c"
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
