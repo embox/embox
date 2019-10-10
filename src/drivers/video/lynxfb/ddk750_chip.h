@@ -20,18 +20,16 @@ extern void volatile *mmio750;
 
 //TODO only for e2k
 #include <asm/io.h>
-//#define readl    e2k_read32
-//#define writel   e2k_write32
 
 /* software control endianness */
 static inline uint32_t peek32(uint32_t addr)
 {
-	return e2k_read32((void*)(addr + mmio750));
+	return e2k_read32((uintptr_t)(addr + mmio750));
 }
 
 static inline void poke32(uint32_t data, uint32_t addr)
 {
-	e2k_write32(data, (void *)(addr + mmio750));
+	e2k_write32(data, (uintptr_t)(addr + mmio750));
 }
 
 /* This is all the chips recognized by this library */

@@ -1,0 +1,18 @@
+package embox.cmd.hw
+
+@AutoCmd
+@Cmd(name = "mmutrans",
+	help = "Managing virtual memory table",
+	man = '''
+		NAME
+			mmutrans - testing virtual memory table
+		SYNOPSIS
+
+		DESCRIPTION
+			Detailed description.
+		AUTHORS
+			Anton Bondarev
+	''')
+module  mmutrans {
+	source "mmutrans.c"
+}

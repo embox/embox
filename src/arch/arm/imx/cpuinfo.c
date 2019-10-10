@@ -6,6 +6,7 @@
  * @date 22.05.2017
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 
 #include <arch/arm/imx/cpuinfo.h>
@@ -68,7 +69,7 @@ void print_imx_cpuinfo() {
 	uint32_t rev = _imx_revision();
 	printk("\t\tCPU identification:\n");
 	printk("\t\t    i.MX%s\n", _imx_type((rev >> 16) & 0xFF));
-	printk("\t\t    Revision: %d.%d\n", (rev >> 8) & 0xFF, rev & 0xFF);
+	printk("\t\t    Revision: %"PRIu32".%"PRIu32"\n", (rev >> 8) & 0xFF, rev & 0xFF);
 }
 
 static int imx_cpuinfo_init(void) {
@@ -77,9 +78,4 @@ static int imx_cpuinfo_init(void) {
 	return 0;
 }
 
-static struct periph_memory_desc imx_usb_mem = {
-	.start = USB_ANALOG_BASE,
-	.len   = 0x300,
-};
-
-PERIPH_MEMORY_DEFINE(imx_usb_mem);
+PERIPH_MEMORY_DEFINE(imx_usb, USB_ANALOG_BASE, 0x300);

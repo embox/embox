@@ -39,14 +39,12 @@ C_ENTRY(context_switch):
 	std %dr5, [%dr0 + E2K_CTX_CR1_HI]
 
 	/* Save prev stacks */
-	rrd %sbr,     %dr2
 	rrd %usd.lo,  %dr3
 	rrd %usd.hi,  %dr4
 	rrd %psp.lo,  %dr5
 	rrd %psp.hi,  %dr6
 	rrd %pcsp.lo, %dr7
 	rrd %pcsp.hi, %dr8
-	std %dr2, [%dr0 + E2K_CTX_SBR]
 	std %dr3, [%dr0 + E2K_CTX_USD_LO]
 	std %dr4, [%dr0 + E2K_CTX_USD_HI]
 	std %dr5, [%dr0 + E2K_CTX_PSP_LO]
@@ -65,14 +63,12 @@ C_ENTRY(context_switch):
 	rwd %dr5, %cr1.hi
 
 	/* Load next stacks */
-	ldd [%dr1 + E2K_CTX_SBR],     %dr2
 	ldd [%dr1 + E2K_CTX_USD_LO],  %dr3
 	ldd [%dr1 + E2K_CTX_USD_HI],  %dr4
 	ldd [%dr1 + E2K_CTX_PSP_LO],  %dr5
 	ldd [%dr1 + E2K_CTX_PSP_HI],  %dr6
 	ldd [%dr1 + E2K_CTX_PCSP_LO], %dr7
 	ldd [%dr1 + E2K_CTX_PCSP_HI], %dr8
-	rwd %dr2, %sbr
 	rwd %dr3, %usd.lo
 	rwd %dr4, %usd.hi
 	rwd %dr5, %psp.lo

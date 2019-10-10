@@ -1,0 +1,20 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(	name = "goto",
+	help = "execute code from specific memory location",
+	man  = '''
+     	NAME
+		goto - execute code from specific memory location
+	SYNOPSIS
+		goto [[-i] ADDRESS]
+	DESCRIPTION
+	OPTIONS
+		-i - Disable interrupts before jump
+		ADDRESS - memory location accessible via system bus
+	AUTHORS
+		Denis Deryugin <deryugin.denis@gmail.com>
+	''')
+module goto {
+	source "goto.c"
+}

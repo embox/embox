@@ -33,7 +33,6 @@ module iperf_stubs {
 	source "stubs.c"
 
 	depends embox.compat.posix.proc.atexit_api
-	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.lib.Printk

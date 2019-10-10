@@ -79,8 +79,8 @@ static int fat_mount_files(struct nas *dir_nas) {
 	uint32_t pstart, psize;
 	uint8_t pactive, ptype;
 	struct dirinfo di;
-	struct dirent de;
-	uint8_t name[MSDOS_NAME + 2];
+	struct fat_dirent de;
+	uint8_t name[PATH_MAX];
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
 	mode_t mode;
@@ -100,19 +100,9 @@ static int fat_mount_files(struct nas *dir_nas) {
 		return -EBUSY;
 	}
 	/* move out from first root directory entry table*/
-	cluster = fat_get_next(fsi, &di, &de);
+	cluster = fat_get_next_long(fsi, &di, &de, NULL);
 
-	while (DFS_EOF != (cluster = fat_get_next(fsi, &di, &de))) {
-		if (de.name[0] == 0)
-			continue;
-
-		path_dir_to_canonical((char *) name, (char *) de.name,
-							  de.attr & ATTR_DIRECTORY);
-		if ((0 == strncmp((char *) de.name, ".  ", 3)) ||
-			(0 == strncmp((char *) de.name, ".. ", 3))) {
-			continue;
-		}
-
+	while (DFS_OK == (cluster = fat_get_next_long(fsi, &di, &de, (char *) name)) || cluster == DFS_ALLOCNEW) {
 		mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
 		if (NULL == (fi = fat_file_alloc())) {
@@ -139,7 +129,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 
 static int fat_create_dir_entry(struct nas *parent_nas) {
 	struct dirinfo di;
-	struct dirent de;
+	struct fat_dirent de;
 	char name[MSDOS_NAME + 2];
 	char dir_path[PATH_MAX];
 	char dir_buff[FAT_MAX_SECTOR_SIZE];
@@ -245,16 +235,19 @@ static struct file_operations fatfs_fop = {
  */
 static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int flag) {
 	struct nas *nas;
-	uint8_t path [PATH_MAX];
+	char path [PATH_MAX];
 	struct fat_file_info *fi;
 	int res;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
 
-	vfs_get_relative_path(node, (char *) path, PATH_MAX);
+	vfs_get_relative_path(node, path, PATH_MAX);
 
-	res = fat_open_file(fi, (uint8_t *)path, flag, fat_sector_buff, &nas->fi->ni.size);
+	while (path[0] == '/') {
+		strcpy(path, path + 1);
+	}
+	res = fat_open_file(fi, (uint8_t *) path, flag, fat_sector_buff, &nas->fi->ni.size);
 	if (DFS_OK == res) {
 		fi->pointer = desc->cursor;
 		return &desc->idesc;
@@ -435,14 +428,9 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 	char dir_buff[FAT_MAX_SECTOR_SIZE];
 	char dir_path[PATH_MAX];
 	char *dpath;
-	int rc;
 	char tmppath[PATH_MAX];
 
 	assert(parent_node && node);
-
-	if (0 != (rc = fat_check_filename(node->name))) {
-		return -rc;
-	}
 
 	nas = node->nas;
 	parent_nas = parent_node->nas;

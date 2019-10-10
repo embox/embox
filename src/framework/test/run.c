@@ -15,6 +15,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <setjmp.h>
+#include <stdint.h>
 
 #include <kernel/printk.h>
 #include <kernel/panic.h>
@@ -127,7 +128,7 @@ static const struct __test_assertion_point *test_run(test_case_run_t run) {
 	}
 	current = NULL;
 
-	return (const struct __test_assertion_point *) caught;
+	return (const struct __test_assertion_point *) (uintptr_t) caught;
 }
 
 struct test_emit_buffer *__test_emit_buffer_current(void) {
@@ -144,7 +145,7 @@ void __test_assertion_handle(int pass,
 	assert(point);
 
 	if (current) {
-		longjmp(current->before_run, (int) point);
+		longjmp(current->before_run, (intptr_t) point);
 
 	} else {
 		handle_case_result(NULL, point);

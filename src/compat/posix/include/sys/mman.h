@@ -19,8 +19,6 @@
 
 __BEGIN_DECLS
 
-#include <module/embox/mem/vmem_api.h>
-
 #define PROT_NONE     0x00
 #define PROT_READ     0x01
 #define PROT_WRITE    0x02

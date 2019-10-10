@@ -76,7 +76,7 @@ static void set_date(char *new_date) {
 	cur_time = mktime(&date);
 	tv.tv_sec = cur_time;
 	tv.tv_nsec = 0;
-	settimeofday(&tv, NULL);
+	setnsofday(&tv, NULL);
 }
 
 static int show_fdate(char *fmt) {

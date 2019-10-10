@@ -8,6 +8,8 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include <drivers/common/memory.h>
+
 #include <drivers/amba_pnp.h>
 #include <drivers/char_dev.h>
 #include <hal/reg.h>
@@ -133,6 +135,9 @@ static int dev_regs_init() {
 	return 0;
 }
 #elif OPTION_DEFINED(NUMBER,apbuart_base)
+
+PERIPH_MEMORY_DEFINE(apbuart, OPTION_GET(NUMBER,apbuart_base), sizeof(struct apbuart_regs));
+
 static int dev_regs_init() {
 	dev_regs = (volatile struct apbuart_regs *) OPTION_GET(NUMBER,apbuart_base);
 	return 0;
@@ -170,13 +175,7 @@ static const struct uart_params uart_diag_params = {
 		.irq = false,
 };
 
-const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &uart0,
-		.params = &uart_diag_params,
-};
+DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
 
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);

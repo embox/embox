@@ -22,10 +22,10 @@ static struct flash_dev *dfs_flashdev;
 #define DFS_MAGIC_0 0x0D
 #define DFS_MAGIC_1 0xF5
 
-#define NAND_PAGE_SIZE 8
-#define NAND_BLOCK_SIZE (dfs_flashdev->block_info.block_size)
+#define NAND_PAGE_SIZE OPTION_GET(NUMBER, page_size)
+#define NAND_BLOCK_SIZE OPTION_GET(NUMBER, block_size)
 #define NAND_PAGES_PER_BLOCK (NAND_BLOCK_SIZE / NAND_PAGE_SIZE)
-#define NAND_PAGES_MAX (1024 * 128 / 8 * 3)
+#define NAND_PAGES_MAX OPTION_GET(NUMBER, pages_max)
 
 #define MIN_FILE_SZ OPTION_GET(NUMBER, minimum_file_size)
 
@@ -47,8 +47,11 @@ static inline int block_from_pos(int pos) { return pos / NAND_BLOCK_SIZE; }
 
 static inline int _erase(unsigned int block) {
 	int i;
+
+	assert(NAND_PAGES_MAX > NAND_PAGES_PER_BLOCK * (block + 1));
+
 	for (i = 0; i < NAND_PAGES_PER_BLOCK; i++)
-		bitmap_set_bit(dfs_free_pages, i + block * NAND_BLOCK_SIZE / NAND_PAGE_SIZE);
+		bitmap_set_bit(dfs_free_pages, i + block * NAND_PAGES_PER_BLOCK);
 	return flash_erase(dfs_flashdev, block);
 }
 
@@ -108,8 +111,23 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	return 0;
 }
 
-static inline int _copy(unsigned long to, unsigned long from, size_t len) {
-	return _write(to, (void*) (dfs_flashdev->start + from), len);
+static inline int _copy(unsigned long to, unsigned long from, int len) {
+	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(4)));
+
+	while (len > 0) {
+		if (_read(from, b, min(len, sizeof(b)))) {
+			return -1;
+		}
+		if (_write(to, b, min(len, sizeof(b)))) {
+			return -1;
+		}
+
+		len -= sizeof(b);
+		to += sizeof(b);
+		from += sizeof(b);
+	}
+
+	return 0;
 }
 
 static inline int _blkcpy(unsigned int to, unsigned long from) {
@@ -185,16 +203,20 @@ int dfs_format(void) {
 	struct dfs_sb_info *sbi = dfs_sb()->sb_data;
 	struct dfs_dir_entry root;
 	char buf[NAND_PAGE_SIZE];
-	int i;
+	int i, j, k;
 	int err;
 
 	if (!dfs_flashdev) {
 		return -ENOENT;
 	}
 
-	for (i = 0; i < dfs_flashdev->block_info.blocks; i++) {
-		if ((err = _erase(i)))
-			return err;
+	for (j = 0, k = 0; j < dfs_flashdev->num_block_infos; j++) {
+		for (i = 0; i < dfs_flashdev->block_info[j].blocks; i++) {
+			if ((err = _erase(k)))
+				return err;
+			k++;
+			i++;
+		}
 	}
 
 	/* Empty FS */
@@ -202,7 +224,8 @@ int dfs_format(void) {
 		.magic = {DFS_MAGIC_0, DFS_MAGIC_1},
 		.inode_count = 0,
 		.max_inode_count = DFS_INODES_MAX,
-		.buff_bk = 2,
+		/* Set buffer block to the last one */
+		.buff_bk = dfs_flashdev->block_info[0].blocks - 1,
 		.free_space = _capacity(sizeof(struct dfs_sb_info)) +
 		              DFS_INODES_MAX * _capacity(sizeof(struct dfs_dir_entry)),
 	};
@@ -575,9 +598,10 @@ struct super_block *dfs_sb(void) {
 	return dfs_super;
 }
 
-extern struct flash_dev stm32_flash;
 static int dfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	int i;
+
+	assert(NAND_PAGES_MAX >= NAND_PAGES_PER_BLOCK);
 
 	dfs_super = sb;
 	*sb = (struct super_block) {
@@ -593,7 +617,7 @@ static int dfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	if (!sb->bdev)
 		sb->bdev = dfs_flashdev->bdev;
 
-	dfs_set_dev(&stm32_flash);
+	dfs_set_dev(flash_by_id(0));
 	dfs_read_sb_info(dfs_sb()->sb_data);
 
 	for (i = 0; i < NAND_PAGES_MAX; i++)

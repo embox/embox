@@ -23,8 +23,9 @@
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(pl110_lcd_init);
 
-#define PL110_BASE       OPTION_GET(NUMBER,base_addr)
-#define LCD_FRAMEBUFFER  SDRAM_DEVICE_ADDR
+#define PL110_BASE           OPTION_GET(NUMBER,base_addr)
+#define PL110_DISPLAY_WIDTH  OPTION_GET(NUMBER,display_width)
+#define PL110_DISPLAY_HEIGHT OPTION_GET(NUMBER,display_height)
 
 #define PL110_TIMING0    (PL110_BASE + 0x000)
 # define PL110_PPL_MASK  0xFC
@@ -48,18 +49,13 @@ EMBOX_UNIT_INIT(pl110_lcd_init);
 #define PL110_LPCURR     (PL110_BASE + 0x030)
 #define PL110_PALETTE(n) (PL110_BASE + 0x200 + (n) * 4)
 
-#define PL110_MAX_WIDTH    1024
-#define PL110_MAX_HEIGHT   1024
-
 static int pl110_lcd_set_var(struct fb_info *info,
 		struct fb_var_screeninfo const *var) {
 	return 0;
 }
 
-static uint32_t pl110_fb[PL110_MAX_WIDTH * PL110_MAX_HEIGHT]
+static uint32_t pl110_fb[PL110_DISPLAY_WIDTH * PL110_DISPLAY_HEIGHT]
                         __attribute__ ((aligned (0x4)));
-
-static uint32_t pl110_fb_width, pl110_fb_height;
 
 static int pl110_lcd_get_var(struct fb_info *info,
 		struct fb_var_screeninfo *var) {
@@ -87,7 +83,7 @@ static int pl110_lcd_get_var(struct fb_info *info,
 	}
 
 	var->bits_per_pixel = tmp;
-	var->fmt = RGB888;
+	var->fmt = RGBA8888;
 
 	return 0;
 }
@@ -102,13 +98,13 @@ static int pl110_lcd_init(void) {
 	size_t mmap_len = 0;
 	uint32_t tmp;
 
-	tmp = pl110_fb_width = 640;
+	tmp = PL110_DISPLAY_WIDTH;
 	tmp /= 16;
 	tmp--;
 	tmp <<= PL110_PPL_OFFT;
 	REG32_STORE(PL110_TIMING0, tmp);
 
-	tmp = pl110_fb_height = 480;
+	tmp = PL110_DISPLAY_HEIGHT;
 	tmp++;
 	REG32_STORE(PL110_TIMING1, tmp);
 	REG32_STORE(PL110_UPBASE, (uint32_t) pl110_fb);
@@ -119,18 +115,9 @@ static int pl110_lcd_init(void) {
 
 	fb_create(&pl110_lcd_ops, mmap_base, mmap_len);
 
-	pl110_fb_width  = PL110_MAX_WIDTH;
-	pl110_fb_height = PL110_MAX_HEIGHT;
-
-	for (int i = 0; i < 640 * 480; i++)
-		pl110_fb[i] = 0xff000000;
+	memset(mmap_base, 0, PL110_DISPLAY_WIDTH * PL110_DISPLAY_HEIGHT);
 
 	return 0;
 }
 
-static struct periph_memory_desc pl110_mem = {
-	.start = PL110_BASE,
-	.len   = 0x400,
-};
-
-PERIPH_MEMORY_DEFINE(pl110_mem);
+PERIPH_MEMORY_DEFINE(pl110, PL110_BASE, 0x400);

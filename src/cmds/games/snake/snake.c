@@ -215,7 +215,7 @@ int main(int argc, char **argv) {
 
 		usleep(sleep_time);
 		last_valid = 0;
-		while (!diag_kbhit() && !last_valid ) {
+		while (diag_kbhit() && !last_valid ) {
 			d = dispatch((ch = diag_getc()));
 			d2 = point_plus(d,diff);
 			valid(d2);
@@ -224,7 +224,7 @@ int main(int argc, char **argv) {
 			diff = d;
 			diff_char = ch;
 		}
-		while (!diag_kbhit())
+		while (diag_kbhit())
 			diag_getc();
 	}
 	diag_getc();

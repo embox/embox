@@ -2,7 +2,7 @@ package stm32f4_cnc
 
 @AutoCmd
 @Cmd(name="live_status", help="Live CGI updates")
-@BuildDepends(third_party.bsp.st_f4.core)
+@BuildDepends(third_party.bsp.stmf4cube.core)
 module live_status {
 	source "live_status.c"
 }

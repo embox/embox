@@ -11,8 +11,7 @@ OUTPUT_ARCH(mips)
 ENTRY(_start)
 
 MEMORY {
-	MEMORY_REGION(RAM)
-	MEMORY_REGION(ROM)
+	#include <regions.lds.h>
 }
 
 _ram_base = ORIGIN(RAM);
@@ -35,6 +34,7 @@ SECTIONS {
 		*(.comment)
 		*(.note)
 		*(.mdebug.* .gnu.attributes)
+		*(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*) *(.eh_frame) *(.eh_frame.*)
 	}
 }
 

@@ -163,6 +163,7 @@ struct fb_ops {
 	void (*fb_fillrect)(struct fb_info *info, const struct fb_fillrect *rect);
 	void (*fb_imageblit)(struct fb_info *info, const struct fb_image *image);
 	void (*fb_cursor)(struct fb_info *info, const struct fb_cursor *cursor);
+	int (*fb_set_base)(struct fb_info *info, void *new_base);
 };
 
 struct fb_info {
@@ -193,7 +194,7 @@ extern void fb_imageblit(struct fb_info *info, const struct fb_image *image);
 extern void fb_cursor(struct fb_info *info, const struct fb_cursor *cursor);
 
 
-extern int fb_devfs_create(const struct fb_ops *ops, char *map_base, size_t map_size);
+extern int fb_devfs_create(struct fb_info *fbi, char *map_base, size_t map_size);
 
 __END_DECLS
 

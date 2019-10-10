@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <stdarg.h>
 #include <string.h>
 #include <math.h>
@@ -98,7 +99,7 @@ int main(int argc, char *argv[]) {
 
 	fb_info = fb_lookup(0);
 
-	printf("%dx%d, %dbpp\n", fb_info->var.xres, fb_info->var.yres,
+	printf("%" PRId32 "x%" PRId32 ", %" PRId32 "bpp\n", fb_info->var.xres, fb_info->var.yres,
 			fb_info->var.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */

@@ -2,7 +2,8 @@
 PKG_NAME := e2fsprogs
 PKG_VER  := 1.42.8
 
-PKG_SOURCES := http://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_SOURCES := http://downloads.sourceforge.net/project/e2fsprogs/e2fsprogs/v$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz \
+	http://download.embox.rocks/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_MD5     := 8ef664b6eb698aa6b733df59b17b9ed4
 
 PKG_PATCHES := patch.txt
@@ -10,8 +11,7 @@ PKG_PATCHES := patch.txt
 include $(EXTBLD_LIB)
 
 E2FSPROGS_CPPFLAGS = -include $(ROOT_DIR)/third-party/e2fsprogs/e2fsprogs_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/e2fsprogs/include \
-	${EMBOX_IMPORTED_CPPFLAGS}
+	-I$(ROOT_DIR)/third-party/e2fsprogs/include
 
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && autoconf && ( \

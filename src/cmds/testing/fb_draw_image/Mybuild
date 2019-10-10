@@ -1,0 +1,23 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "fb_draw_image",
+	help = "demo application draw images to the framebuffer",
+	man = '''
+		NAME
+			fb_draw_image
+		SYNOPSIS
+			fb_draw_image [FILE]
+		DESCRIPTION
+			if [FILE] format is supporting then draw it to the framebuffer
+		AUTHORS
+			Filipp Chubukov
+	''')
+module fb_draw_image {
+	source "fb_draw_image.c"
+
+	depends embox.fs.file_format
+	depends embox.lib.bmp
+	depends embox.lib.png
+	depends embox.lib.fb_draw
+}

@@ -1,0 +1,14 @@
+package embox.driver.clock
+
+module gpt extends embox.arch.clock {
+	option number log_level = 0
+
+	option number base_addr
+	option number irq_num
+	option number freq=1000 /* Hz */
+
+	source "gpt.c"
+
+	@NoRuntime depends embox.kernel.time.timer_handler
+	depends embox.driver.interrupt.irqctrl_api
+}

@@ -20,16 +20,6 @@ module gptimer extends embox.arch.clock {
 	option number irq_num=8               /* if amba pnp disable */
 }
 
-module mb_timer extends embox.arch.clock {
-	source "mb_timer.c"
-
-	option number mbtimer_base
-	option number irq_num
-
-	depends embox.kernel.irq
-	@NoRuntime depends embox.kernel.time.timer_handler
-}
-
 module cortexm_systick extends embox.arch.clock {
 	source "cortexm_systick.c"
 
@@ -44,6 +34,7 @@ module raspi_systick extends embox.arch.clock {
 	//depends embox.kernel.irq
 	depends embox.kernel.time.clock_source
 	@NoRuntime depends embox.kernel.time.timer_handler
+	depends embox.driver.periph_memory
 }
 
 @BuildDepends(embox.arch.arm.cmsis)

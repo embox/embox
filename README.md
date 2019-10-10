@@ -1,8 +1,43 @@
 Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 
-Embox is a configurable operating system kernel designed for resource
-constrained and embedded systems.
+Embox is a configurable RTOS designed for resource constrained and embedded systems. Embox main idea is using Linux software without Linux.
+
+Achievements
+-------------
+* [VoIP phone on STM32F7Discovery based on PJSIP project](https://github.com/embox/embox/wiki/PJSIP-on-STM32)
+* [Qt on STM32F7Discovery](https://github.com/embox/embox/wiki/Qt-on-STM32)
+* [OpenCV on STM32F769i board](https://github.com/embox/embox/wiki/OpenCV-on-STM32)
+* A lot of programming languages available: Python, Lisp, Java (phoneme), TCL, Ruby, Lua
+* SSHD based on Dropbear project
+* Mesa3d
+* Quake3
+* zeromq, qpid
+* ...
+
+Key features
+---------------
+* POSIX-compliant
+* C++ support
+* File systems: FAT, ext2/3/4, ...
+* TCP/IP: BSD sockets; supported protocols: UDP, HTTP, ARP, NTP, ICMP, ...
+* Cross-platform: ARM, MIPS, x86, Microblaze, SPARC, PowerPC, E2K
+* Popular platforms: STM32, i.MX6, RaPi, ...
+* Provides popular desktop software on MCU (e.g. STM32): Qt, OpenCV, PJSIP, dropbear, ...
+* Unix-like shell utilities: ls, cat, mount, ...
+* Popular programming languages: java, python, lua, tcl, lisp, ruby
+
+Contacts
+---------------
+Mailing lists:
+* embox-devel@googlegroups.com -- main mailing list
+* embox-ru@googlegroups.com -- mailing list in Russian
+
+Documentation
+---------------
+* [Wiki](https://github.com/embox/embox/wiki)
+* [PDF](https://github.com/embox/embox-docs/releases)
+* [GitHub repository with source for docs](https://github.com/embox/embox-docs)
 
 Getting started
 ---------------
@@ -112,4 +147,4 @@ sudo ./scripts/qemu/auto_qemu
 The output is quite the same as in the case of the x86 architecture.
 
 #### Networking support
-Embox supports networking on x86, ARM, and Microblaze.
+Embox supports networking on qemu x86, ARM, MIPS and Microblaze.

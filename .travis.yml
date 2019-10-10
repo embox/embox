@@ -11,9 +11,9 @@ env:
     # Encrypted COVERITY_SCAN_TOKEN
     - secure: KKhG29VpIOr5mq9xHptpDSfFEcSRKB8BX4e5zL0VQNJGkrNAHJ7ba+boHKEmSJJ1fZvHC18XOb886BIsn0i+lFrVymYDR8L8ca3e/k26LktnqMn76ORK1WYkD1fiRg3lX25v/j0TkoLB7pmDnMhZyGzg20675V1sHbl/KCO1LJI=
   matrix:
+    - TEMPLATE=aarch64/qemu
     - TEMPLATE=arm/qemu
-    - TEMPLATE=arm/stm32_f4
-    - TEMPLATE=arm/stm32f4cube
+    - TEMPLATE=arm/stm32f4-discovery
     - TEMPLATE=x86/qemu
     - TEMPLATE=x86/smp
     - TEMPLATE=x86/user_apps
@@ -21,6 +21,7 @@ env:
     - TEMPLATE=x86/test/lang
     - TEMPLATE=x86/test/fs
     - TEMPLATE=x86/test/net
+    - TEMPLATE=x86/test/units
     - TEMPLATE=x86/test/packetdrill
     - TEMPLATE=x86/test/qt-vnc
     - TEMPLATE=sparc/qemu

@@ -8,4 +8,4 @@
 "export PWD=/",
 "export HOME=/",
 "export QT_QPA_FONTDIR=/fonts",
-"animatedtiles -platfrom vnc",
+"animatedtiles -platform vnc",

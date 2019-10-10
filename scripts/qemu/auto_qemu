@@ -75,6 +75,12 @@ get_user_undef_guess AUTOQEMU_AUDIO guess_sound
 
 guessed_info AUTOQEMU_AUDIO_CONFIG "(got)"
 
+guess_usb() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.usb.hc.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | head -n 1;
+}
+get_user_undef_guess AUTOQEMU_USB guess_usb
+
+guessed_info AUTOQEMU_USB_CONFIG "(got)"
 
 guess_graphic() {
 	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.video.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | head -n 3;
@@ -152,6 +158,9 @@ guess_machine() {
 			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s811evb" > /dev/null; then
 				echo "-M lm3s811evb"
 			fi
+			;;
+		aarch64)
+			echo "-M virt -cpu cortex-a53"
 			;;
 		microblaze)
 			echo "-M petalogix-s3adsp1800"
@@ -239,6 +248,9 @@ if [ $nic_n -gt 0 ]; then
 	done
 fi
 
+#############################################
+# AUDIO
+#############################################
 declare -A AUDIO2QEMU
 AUDIO2QEMU=(
 	[intel_ac_pa]="ac97"
@@ -273,7 +285,39 @@ if [ $sound_n -gt 0 ]; then
 	fi
 	info 'QEMU_AUDIO_DRV is now' ${QEMU_AUDIO_DRV} '\n'
 fi
+#############################################
+# END AUDIO
+#############################################
 
+#############################################
+# USB
+#############################################
+declare -A USB2QEMU
+USB2QEMU=(
+	[ehci_pci]="usb-ehci"
+	[ohci_pci]="pci-ohci"
+)
+
+USB_DEV=" " read -a qemu_usb <<< "$AUTOQEMU_USB"
+USB_DEV=" " read -a qemu_usb_config <<< "$AUTOQEMU_USB_CONFIG"
+
+usb_lines=""
+usb_n=${#qemu_usb[*]}
+if [ $usb_n -gt 0 ]; then
+
+	for so in "${!qemu_usb[@]}"; do
+		usb_model=${USB2QEMU[${qemu_usb[$so]}]}
+		echo
+		if [ ! $usb_model ]; then
+			error "usb model ${qemu_usb[$ni]} is not supported"
+		else
+			usb_lines="$usb_lines -device $usb_model"
+		fi
+	done
+fi
+#############################################
+# END USB
+#############################################
 
 #-vga [std|cirrus|vmware|qxl|xenfb|tcx|cg3|none]
 declare -A GRAPHIC2QEMU
@@ -318,7 +362,7 @@ if [ $graphic_n -gt 0 ]; then
 
 fi
 
-ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines $graphic_lines $@"
+ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines $graphic_lines $usb_lines $@"
 
 info "$ARG_LINE"
 $ARG_LINE

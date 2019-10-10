@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include <drivers/common/memory.h>
+#include <kernel/time/ktime.h>
 #include <hal/reg.h>
 #include <util/log.h>
 
@@ -66,29 +67,16 @@ static void _reg_dump(char *s) {
 	log_debug("=====================================\n");
 }
 
-#define BUF_SZ (16 * 1024 * 1024)
-
-uint8_t _test_buf[BUF_SZ];
-
-extern int32_t vmem_info(uint32_t vaddr);
-extern void vmem_on(void);
-extern void vmem_off(void);
-
 static int pl310_init(void) {
-	memset(_test_buf, 0, BUF_SZ);
-
 	REG_STORE(L2X0_CTRL, 0);
 
 	REG_ORIN(L2X0_AUX_CTRL, L2X0_AUX_INSTR_PREFETCH);
 	REG_ORIN(L2X0_AUX_CTRL, L2X0_AUX_DATA_PREFETCH);
-	//REG_ORIN(L2X0_AUX_CTRL, (3 << 23));
-	//REG_ORIN(L2X0_INTR_MASK, 0xFFFFFFFF);
 
 	REG_STORE(L70_INVAL, 0xFFF);
 	REG_STORE(PL310_BASE + 0x730, 0);
 
-	int t = 0xffffff;
-	while(t--);
+	ksleep(50);
 
 	REG_STORE(L2X0_CTRL, 1);
 
@@ -96,31 +84,9 @@ static int pl310_init(void) {
 	asm volatile ("mcr p15, 0, %0, c8, c6, 0" : : "r" (0));
 	asm volatile ("mcr p15, 0, %0, c8, c5, 0" : : "r" (0));
 
-#if 0
-	t = 0xffffff;
-	while(t--);
-
-	log_debug("Start memory test\n");
-
-	int t1 = clock();
-	for (int j = 0; j < 1; j++) {
-		for (int i = 0; i < BUF_SZ; i++) {
-			_test_buf[i] ^= i ^ j;
-		}
-	}
-	int t2 = clock();
-	log_debug("Time elapsed: %d\n", t2 - t1);
-
-	log_debug("Finish memory test");
-#endif
 	_reg_dump("");
 
 	return 0;
 }
 
-static struct periph_memory_desc pl310_mem = {
-	.start = PL310_BASE,
-	.len   = 0x1000
-};
-
-PERIPH_MEMORY_DEFINE(pl310_mem);
+PERIPH_MEMORY_DEFINE(pl310, PL310_BASE, 0x1000);

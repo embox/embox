@@ -1,0 +1,13 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name="stl_demo_sort1",
+	help="example for stl algo sort",
+	man="")
+@BuildDepends(embox.lib.stl)
+@Build(stage=2,script="true")
+module stl_demo_sort1 {
+	source "sort1.cpp"
+
+	@NoRuntime depends embox.lib.stl
+}

@@ -15,6 +15,15 @@ module all {
 	depends sleep_test
 	depends sigchld_test
 	depends waitpid_test
+	depends utime_test
+	depends strcoll_test
+	depends strxfrm_test
+}
+
+module utime_test {
+	source "utime_test.c"
+	depends embox.compat.posix.utime
+	depends embox.fs.driver.ramfs /* for creat() and close() */
 }
 
 module environ_test {
@@ -132,3 +141,14 @@ module fnmatch_test {
 	depends embox.compat.posix.fnmatch
 }
 
+module strcoll_test {
+	source "strcoll_test.c"
+
+	depends embox.compat.libc.all
+}
+
+module strxfrm_test {
+	source "strxfrm_test.c"
+
+	depends embox.compat.libc.all
+}

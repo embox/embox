@@ -9,35 +9,52 @@
 #ifndef MMU_H_
 #define MMU_H_
 
-// FROM arch/generic/mmu/mmu.h
 
 #include <stdint.h>
+
+#define MMU_LEVELS              3
 
 #define __MMU_PGD_SHIFT         24
 #define __MMU_PMD_SHIFT         18
 #define __MMU_PTE_SHIFT         12
 
+#define __MMU_SHIFT_0       __MMU_PGD_SHIFT
+#define __MMU_SHIFT_1       __MMU_PMD_SHIFT
+#define __MMU_SHIFT_2       __MMU_PTE_SHIFT
+
 #ifndef __ASSEMBLER__
+#include <inttypes.h>
 
 typedef uint32_t __mmu_paddr_t;
 typedef uint32_t __mmu_vaddr_t;
 
 typedef uint32_t __mmu_ctx_t;
 
-typedef uint32_t __mmu_pgd_t;
-typedef uint32_t __mmu_pmd_t;
-typedef uint32_t __mmu_pte_t;
+typedef uint32_t __mmu_reg_t;
 
-/*
- * Additional information, which was taken from SPARC and is used in
- * another RISC architectures.
- */
+#define __PRIxMMUREG PRIx32
 
-//extern void mmu_set_val(void *addr, unsigned long value);
+#include <asm/asi.h>
 
-extern __mmu_pgd_t *context_table[];
+static inline void mmu_set_mmureg(unsigned long addr_reg,
+				unsigned long regval) {
+	__asm__ __volatile__(
+		"sta %0, [%1] %2\n\t"
+		:
+		: "r"(regval), "r"(addr_reg), "i"(ASI_M_MMUREGS)
+		: "memory"
+	);
+}
 
-extern int ctx_counter;
+static inline unsigned long mmu_get_mmureg(unsigned long addr_reg) {
+	register int retval;
+	__asm__ __volatile__(
+		"lda [%1] %2, %0\n\t"
+		: "=r" (retval)
+		: "r" (addr_reg), "i" (ASI_M_MMUREGS)
+	);
+	return retval;
+}
 
 #endif
 
@@ -53,5 +70,6 @@ extern int ctx_counter;
 #define MMU_PAGE_SUPERVISOR  ((1UL << 2) << 2)
 
 #define MMU_PAGE_CACHEABLE   (1UL << 7)
+
 
 #endif /* MMU_H_ */

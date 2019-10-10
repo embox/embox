@@ -71,34 +71,33 @@ static void fb_ops_fixup(struct fb_ops *ops) {
 
 struct fb_info *fb_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
 	struct fb_dev *dev;
-	struct fb_info *info;
+	struct fb_info *info = NULL;
+
+	assert(ops);
 
 	mutex_lock(&fb_static);
 	{
 		dev = pool_alloc(&fb_pool);
-		if (dev) {
-			info = &dev->info;
-			info->id = fb_count++;
-			dlist_init(&dev->link);
-			dlist_add_next(&dev->link, &fb_list);
-		} else{
-			info = NULL;
+		if (!dev) {
+			log_error("Failed to create framebuffer");
+			goto out;
 		}
-	}
-	mutex_unlock(&fb_static);
 
-	if (info) {
+		info = &dev->info;
+
+		info->id = fb_count++;
+		dlist_init(&dev->link);
+		dlist_add_next(&dev->link, &fb_list);
 		info->screen_base = map_base;
 		info->screen_size = map_size;
 
 		memcpy(&info->ops, ops, sizeof(struct fb_ops));
 		fb_ops_fixup(&info->ops);
-
-
-		/* FIXME probably should be in open/start */
 		fb_update_current_var(info);
+		fb_devfs_create(info, map_base, map_size);
 	}
-	fb_devfs_create(ops, map_base, map_size);
+out:
+	mutex_unlock(&fb_static);
 
 	return info;
 }
@@ -395,8 +394,8 @@ static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *
 	height = min(area->height, info->var.yres - max(area->sy, area->dy));
 
 	assert(info->screen_base != NULL);
-	dstn = srcn = (uint32_t)info->screen_base % sizeof(*dst);
-	dst = src = (uint32_t *)((uint32_t)info->screen_base - dstn);
+	dstn = srcn = (uintptr_t)info->screen_base % sizeof(*dst);
+	dst = src = (uint32_t *)((uintptr_t)info->screen_base - dstn);
 	dstn = dstn * CHAR_BIT + (area->dy * info->var.xres
 			+ area->dx) * info->var.bits_per_pixel;
 	srcn = srcn * CHAR_BIT + (area->sy * info->var.xres
@@ -539,8 +538,8 @@ static void fb_default_fillrect(struct fb_info *info, const struct fb_fillrect *
 	pat_orig = pixel_to_pat(info->var.bits_per_pixel, rect->color);
 
 	assert(info->screen_base != NULL);
-	dstn = (uint32_t)info->screen_base % sizeof(*dst);
-	dst = (uint32_t *)((uint32_t)info->screen_base - dstn);
+	dstn = (uintptr_t)info->screen_base % sizeof(*dst);
+	dst = (uint32_t *)((uintptr_t)info->screen_base - dstn);
 	dstn = dstn * CHAR_BIT + (rect->dy * info->var.xres
 			+ rect->dx) * info->var.bits_per_pixel;
 	roff = sizeof(*dst) * CHAR_BIT % info->var.bits_per_pixel;

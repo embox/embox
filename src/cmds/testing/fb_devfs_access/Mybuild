@@ -16,6 +16,8 @@ package embox.cmd.testing
 module fb_devfs_access {
 	source "fb_devfs_access.c"
 
+	depends embox.compat.posix.sys.mman.mmap_api
 	depends embox.driver.video.fb
+	depends embox.fs.syslib.idesc_mmap
 }
 

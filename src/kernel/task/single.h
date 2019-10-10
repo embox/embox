@@ -105,10 +105,6 @@ static inline void _NORETURN task_exit(void *res) {
 	}
 }
 
-static inline int task_notify_switch(struct thread *prev, struct thread *next) {
-	return 0;
-}
-
 static inline void task_thread_register(struct task *tsk, struct thread *t) {
 	assert(tsk != NULL);
 	assert(t != NULL);

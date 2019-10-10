@@ -13,10 +13,8 @@
 #include <unistd.h>
 
 #include <ifaddrs.h>
-
 #include <net/inetdevice.h>
-
-#include <drivers/block_dev/flash/flash_dev.h>
+#include <drivers/flash/flash.h>
 
 #include "libleddrv.h"
 #include "led_names.h"
@@ -25,6 +23,13 @@
 #define FLASHSET_WHAT_NET 0x00000001
 #define FLASHSET_WHAT_LED 0x00000002
 #define FLASHSET_WHAT_LEDNAMES 0x00000004
+
+#define NIC_FILENAME       "/conf/nic"
+#define LED_FILENAME       "/conf/led"
+#define LED_NAMES_FILENAME "/conf/led_names"
+
+#define DPRINTF(fmt, ...) \
+	fprintf(stderr, "flash_settings: %s: " fmt, __func__, ##__VA_ARGS__)
 
 struct flashset_network_settings {
 	struct sockaddr fsn_addr;
@@ -36,19 +41,18 @@ static struct flashset_network_settings fsn_network;
 static unsigned char fsn_leds_state[LEDDRV_LED_N];
 
 static int flashset_nic_store(const char *nic_name) {
-        struct ifaddrs *i_ifa, *nic_ifa, *ifa;
+		struct ifaddrs *i_ifa, *nic_ifa, *ifa;
 	struct in_device *iface_dev;
 	int errcode, fd;
 
 	ifa = NULL;
-        if (-1 == (errcode = getifaddrs(&ifa))) {
+	if (-1 == (errcode = getifaddrs(&ifa))) {
 		goto outerr;
-        }
+	}
 
 	nic_ifa = NULL;
-        for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
-
-                if (i_ifa->ifa_addr == NULL ||
+	for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
+		if (i_ifa->ifa_addr == NULL ||
 			i_ifa->ifa_addr->sa_family != AF_INET) {
 			continue;
 		}
@@ -78,11 +82,17 @@ static int flashset_nic_store(const char *nic_name) {
 	memcpy(&fsn_network.fsn_mac, iface_dev->dev->dev_addr,
 		sizeof(fsn_network.fsn_mac));
 
-	fd = open("nic", O_CREAT);
-	errcode = write(fd, (char*) &fsn_network, sizeof(fsn_network));
+	fd = open(NIC_FILENAME, O_CREAT | O_RDWR);
 
-outerr:
+	errcode = write(fd, (char*) &fsn_network, sizeof(fsn_network));
 	close(fd);
+	if (errcode < 0) {
+		goto outerr;
+	}
+
+	return 0;
+outerr:
+	DPRINTF("failed\n");
 	return errcode;
 }
 
@@ -90,9 +100,12 @@ static int flashset_nic_restore(const char *nic_name) {
 	struct in_device *iface_dev;
 	int errcode, fd;
 
-	fd = open("nic", 0);
-	if (fd < 0)
+	fd = open(NIC_FILENAME, 0);
+	if (fd < 0) {
+		DPRINTF("failed\n");
 		return fd;
+	}
+
 	errcode = read(fd, (char*) &fsn_network, sizeof(fsn_network));
 	if (errcode < 0)
 		goto outerr;
@@ -117,8 +130,10 @@ static int flashset_nic_restore(const char *nic_name) {
 		goto outerr;
 	}
 
-	errcode = 0;
+	close(fd);
+	return 0;
 outerr:
+	DPRINTF("failed\n");
 	close(fd);
 	return errcode;
 }
@@ -126,57 +141,75 @@ outerr:
 static int flashset_led_store(void) {
 	int errcode, fd;
 	if (0 > (errcode = leddrv_getstates(fsn_leds_state))) {
+		DPRINTF("leddrv_getstates failed\n");
 		return errcode;
 	}
 
-	fd = open("led", O_CREAT);
-	if (fd < 0)
-		return fd;
+	fd = open(LED_FILENAME, O_CREAT | O_RDWR);
+	if (fd < 0) {
+		DPRINTF("Error opening led\n");
+		return -1;
+	}
 
 	errcode = write(fd, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
 	close(fd);
+	if (errcode < 0) {
+		DPRINTF("Error writing led\n");
+	}
 
 	return errcode;
 }
 
 static int flashset_led_restore(void) {
 	int errcode, fd;
-	fd = open("led", 0);
-	if (fd < 0)
-		return fd;
+	fd = open(LED_FILENAME, 0);
+	if (fd < 0) {
+		DPRINTF("Error opening led\n");
+		return -1;
+	}
 	errcode = read(fd, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
 	close(fd);
 
-	if (errcode < 0)
+	if (errcode < 0) {
+		DPRINTF("Error reading led\n");
 		return errcode;
+	}
 
 	return leddrv_updatestates(fsn_leds_state);
 }
 
 static int flashset_lednames_store(void) {
-	int errcode, fd = open("led_names", O_CREAT);
-	if (fd < 0)
-		return fd;
+	int errcode, fd = open(LED_NAMES_FILENAME, O_CREAT | O_RDWR);
+	if (fd < 0) {
+		DPRINTF("Error opening led_names\n");
+		return -1;
+	}
 
 	errcode = write(fd, (char*) &led_names, sizeof(led_names));
 	close(fd);
 
-	if (errcode < 0)
+	if (errcode < 0) {
+		DPRINTF("Error writing led_names\n");
 		return errcode;
+	}
 
 	return 0;
 }
 
 static int flashset_lednames_restore(void) {
-	int fd = open("led_names", 0), errcode;
-	if (fd < 0)
+	int fd = open(LED_NAMES_FILENAME, 0), errcode;
+	if (fd < 0) {
+		DPRINTF("Error opening led_names\n");
 		return -1;
+	}
 
 	errcode = read(fd, (char*) &led_names, sizeof(led_names));;
 	close(fd);
 
-	if (errcode < 0)
+	if (errcode < 0) {
+		DPRINTF("Error reading led_names\n");
 		return errcode;
+	}
 
 	return 0;
 }
@@ -184,13 +217,13 @@ static int flashset_lednames_restore(void) {
 int main(int argc, char *argv[]) {
 	int errcode;
 
-	chdir("/conf");
-
 	if (0 == strcmp(argv[1], "store")) {
 		fprintf(stderr, "Storing flash settings\n");
 		/* storing requested info */
 		for (int i_arg = 2; i_arg < argc; ++i_arg) {
 			const char *what = argv[i_arg];
+
+			DPRINTF("Storing setting \"%s\"\n", what);
 
 			if (0 == strcmp(what, "net")) {
 				errcode = flashset_nic_store("eth0");

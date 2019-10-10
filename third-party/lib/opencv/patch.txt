@@ -1,0 +1,54 @@
+diff -aur opencv-4.0.1-orig/CMakeLists.txt gopencv-4.0.1/CMakeLists.txt
+--- opencv-4.0.1-orig/CMakeLists.txt	2018-12-22 10:03:30.000000000 +0300
++++ opencv-4.0.1/CMakeLists.txt	2019-06-03 16:34:32.091555347 +0300
+@@ -743,14 +743,7 @@
+ #  Detect endianness of build platform
+ # ----------------------------------------------------------------------------
+ 
+-if(IOS)
+-  # test_big_endian needs try_compile, which doesn't work for iOS
+-  # http://public.kitware.com/Bug/view.php?id=12288
+-  set(WORDS_BIGENDIAN 0)
+-else()
+-  include(TestBigEndian)
+-  test_big_endian(WORDS_BIGENDIAN)
+-endif()
++set(WORDS_BIGENDIAN 0)
+ 
+ # ----------------------------------------------------------------------------
+ #  Detect 3rd-party libraries
+diff -aur opencv-4.0.1-orig/modules/core/src/persistence.hpp gopencv-4.0.1/modules/core/src/persistence.hpp
+--- opencv-4.0.1-orig/modules/core/src/persistence.hpp	2018-12-22 10:03:30.000000000 +0300
++++ opencv-4.0.1/modules/core/src/persistence.hpp	2019-06-03 16:36:07.505215678 +0300
+@@ -12,7 +12,7 @@
+ #include <string>
+ #include <iterator>
+ 
+-#define USE_ZLIB 1
++#define USE_ZLIB 0
+ #if USE_ZLIB
+ #  ifndef _LFS64_LARGEFILE
+ #    define _LFS64_LARGEFILE 0
+diff -aur opencv-4.0.1-orig/modules/core/src/precomp.hpp opencv-4.0.1/modules/core/src/precomp.hpp
+--- opencv-4.0.1-orig/modules/core/src/precomp.hpp	2018-12-22 10:03:30.000000000 +0300
++++ opencv-4.0.1/modules/core/src/precomp.hpp	2019-06-05 15:06:44.386965020 +0300
+@@ -67,6 +67,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
++#include <unistd.h> /* For close() */
+ 
+ #include <algorithm>
+ #include <cmath>
+diff -aur opencv-4.0.1-orig/modules/core/include/opencv2/core/fast_math.hpp opencv-4.0.1/modules/core/include/opencv2/core/fast_math.hpp
+--- opencv-4.0.1-orig/modules/core/include/opencv2/core/fast_math.hpp	2018-12-22 10:03:30.000000000 +0300
++++ opencv-4.0.1/modules/core/include/opencv2/core/fast_math.hpp	2019-06-06 13:57:58.290041983 +0300
+@@ -69,7 +69,7 @@
+ #    include <math.h>
+ #  endif
+ #endif
+-
++#undef __arm__ /* This check is not performed correctly, so we need to switch off ARM FPU instructions */
+ #if defined __GNUC__ && defined __arm__ && (defined __ARM_PCS_VFP || defined __ARM_VFPV3__ || defined __ARM_NEON__) && !defined __SOFTFP__ && !defined(__CUDACC__)
+     // 1. general scheme
+     #define ARM_ROUND(_value, _asm_string) \

@@ -2,15 +2,11 @@ package stm32f3_sensors.cmd
 
 @AutoCmd
 @Cmd(name="sensors", help="Read gyroscope and accelerometer", man="")
-@BuildDepends(third_party.bsp.st_f3.core)
-@BuildDepends(third_party.bsp.st_f3.sensors)
+@BuildDepends(third_party.bsp.stmf3cube.core)
 module sensors {
 	@IncludePath("$(PLATFORM_DIR)/stm32f3_sensors/include")
 	source "sensors.c"
 
-	depends embox.driver.flash.stm32_f3
-	depends embox.driver.flash.lib
-	depends third_party.bsp.st_f3.core
 	depends stm32f3_sensors.utils.kalman
 
 	depends stm32f3_sensors.libsensors.acc
@@ -20,13 +16,9 @@ module sensors {
 
 @AutoCmd
 @Cmd(name="motor_control", help="Periodically run motor right or left", man="")
-@BuildDepends(third_party.bsp.st_f3.core)
-@BuildDepends(third_party.bsp.st_f3.sensors)
+@BuildDepends(third_party.bsp.stmf3cube.core)
 module motor_control {
 	source "motor_control.c"
-
-	depends embox.driver.flash.stm32_f3
-	depends third_party.bsp.st_f3.core
 
 	depends stm32f3_sensors.libfilters.filtered_derivative
 	depends stm32f3_sensors.libfilters.dynamic_window

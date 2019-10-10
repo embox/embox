@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" ng-app="HttpAdmin">
+<head>
+  <meta charset="utf-8">
+  <title>HTTP Admin</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.9/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.19/angular-route.min.js"></script>
+  <script src="ui-bootstrap-tpls-0.12.1.min.js"></script>
+  <script src="app.js"></script>
+</head>
+<body>
+
+  <nav class="navbar navbar-default" role="navigation" ng-controller="NavBarCtrl">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+
+      <button type="button" class="navbar-toggle" ng-init="navCollapsed = true" ng-click="navCollapsed = !navCollapsed">
+	<span class="sr-only">Toggle navigation</span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+	<span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Embox Panel</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" ng-class="!navCollapsed && 'in'" ng-click="navCollapsed=true">
+
+      <ul class="nav navbar-nav">
+        <li ng-class="{'active' : isActive('leds')}"><a href="#/leds">Leds</a></li>
+	    <li ng-class="{'active' : isActive('interfaces')}"><a href="#/interfaces">Network</a></li>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </nav>
+
+  <div ng-view></div>
+
+</body>
+</html>

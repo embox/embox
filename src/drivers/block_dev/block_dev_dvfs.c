@@ -33,21 +33,22 @@ struct block_dev *block_dev_create(const char *path, void *driver, void *privdat
 	assert(path);
 	assert(driver);
 
+	if (NULL == (bdev = block_dev_create_common(dvfs_last_link(path), driver, privdata))) {
+		return NULL;
+	}
+	devmod = dev_module_create(bdev->name, NULL, NULL, &idesc_bdev_ops, bdev);
+	bdev->dev_module = devmod;
+
+	if (dvfs_lookup("/dev", &lu)) {
+		return bdev;
+	}
+
 	/* Get root of devfs in smarter way? */
 	strcpy(full_path, "/dev/");
 	strncat(full_path, path, DVFS_MAX_PATH_LEN - strlen("/dev") - 1);
-	if (dvfs_lookup("/dev", &lu)) {
-		return NULL;
-	}
 
 	lu.parent = lu.item;
 	lu.item = NULL;
-
-	if (NULL == (bdev = block_dev_create_common(dvfs_last_link(path), driver, privdata)))
-		return NULL;
-
-	devmod = dev_module_create(bdev->name, NULL, NULL, &idesc_bdev_ops, bdev);
-	bdev->dev_module = devmod;
 
 	return bdev;
 }
@@ -60,5 +61,7 @@ struct block_dev *block_dev_create(const char *path, void *driver, void *privdat
  * @return Negative error code or 0 if succeed
  */
 int block_dev_destroy(void *dev) {
+	struct dev_module *devmod = dev;
+	block_dev_free(devmod->dev_priv);
 	return dev_module_destroy(dev);
 }

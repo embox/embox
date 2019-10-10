@@ -8,13 +8,9 @@ module syscall_stub extends embox.arch.syscall {
 	source "syscall_stub.h"
 }
 
-module nommu extends embox.arch.mmu {
+module nommu extends embox.mem.vmem_nommu {
 	option number page_size=4
 	source "nommu.h"
-}
-
-module mmu extends embox.arch.mmu {
-	source "mmu/mmu.c", "mmu/mmu.h"
 }
 
 module nousermode extends embox.arch.usermode {

@@ -2,10 +2,7 @@
 PKG_NAME := glu
 PKG_VER  := 9.0.0
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.bz2
-
-
-PKG_SOURCES := ftp://ftp.freedesktop.org/pub/mesa/glu/$(PKG_ARCHIVE_NAME)
+PKG_SOURCES := ftp://ftp.freedesktop.org/pub/mesa/glu/$(PKG_NAME)-$(PKG_VER).tar.bz2
 
 PKG_MD5     := be9249132ff49275461cf92039083030
 
@@ -20,9 +17,9 @@ $(CONFIGURE) :
 			--disable-shared --enable-static \
 			--disable-debug --enable-osmesa \
 			GL_LIBS="-L$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/install" \
-			GL_CFLAGS="-O2 -I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include" \
+			GL_CFLAGS="-std=c++11 -O2 -I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include" \
 			OSMESA_LIBS="-L$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/install" \
-			OSMESA_CFLAGS="-O2 -I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include" \
+			OSMESA_CFLAGS="-std=c++11 -O2 -I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include" \
 	)
 	touch $@
 

@@ -21,6 +21,9 @@
 #include <kernel/time/timer_strat.h>
 #include <defines/clock_t.h>
 
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+
 struct sys_timer;
 
 /**
@@ -155,5 +158,7 @@ extern int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t tic
  * @param id timer identifier
  */
 extern int timer_close(struct sys_timer *ptimer);
+
+__END_DECLS
 
 #endif /* KERNEL_TIMER_H_ */

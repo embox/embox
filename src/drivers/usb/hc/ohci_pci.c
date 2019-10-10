@@ -8,6 +8,9 @@
 
 #include <errno.h>
 #include <string.h>
+#include <stdint.h>
+#include <sys/mman.h>
+
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/time/ktime.h>
@@ -168,6 +171,39 @@ static void ohci_ed_fill(struct ohci_ed *ed, struct usb_endp *endp) {
 	REG_STORE(&ed->flags, flags);
 }
 
+static inline unsigned int ohci_port_stat_map(uint16_t val) {
+	unsigned short ret = 0;
+
+	if (val & OHCI_RH_R_CONN_W_CLREN) {
+		ret |= USB_HUB_PORT_CONNECT;
+	}
+	if (val & OHCI_RH_R_PWR_W_STPWR) {
+		ret |= USB_HUB_PORT_POWER;
+	}
+
+	return ret;
+}
+
+static void usb_rh_get_port_stat(struct ohci_hcd *ohcd) {
+	int i;
+	struct usb_hub *rhub;
+
+	rhub = ohci2hcd(ohcd)->root_hub;
+
+	for (i = 0; i < rhub->port_n; i++) {
+		uint32_t port_stat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[i]);
+
+		rhub->ports[i].status = ohci_port_stat_map(port_stat & 0xffff);
+		rhub->ports[i].changed = ohci_port_stat_map(port_stat >> 16);
+/*
+		if (port_stat >> 16) {
+			OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[i],
+					port_stat & 0xffff0000);
+		}
+		*/
+	}
+}
+
 static int ohci_start(struct usb_hcd *hcd) {
 	struct ohci_hcd *ohcd;
 	bool need_wait;
@@ -241,6 +277,9 @@ static int ohci_start(struct usb_hcd *hcd) {
 
 	OHCI_WRITE_STATE(ohcd, OHCI_CTRL_FUNC_STATE_OPRT);
 
+	usb_rh_get_port_stat(ohcd);
+	usb_rh_nofity(hcd);
+
 	return 0;
 }
 
@@ -248,18 +287,6 @@ static int ohci_stop(struct usb_hcd *hcd) {
 	return 0;
 }
 
-static inline unsigned int ohci_port_stat_map(uint16_t val) {
-	unsigned short ret = 0;
-
-	if (val & OHCI_RH_R_CONN_W_CLREN) {
-		ret |= USB_HUB_PORT_CONNECT;
-	}
-	if (val & OHCI_RH_R_PWR_W_STPWR) {
-		ret |= USB_HUB_PORT_POWER;
-	}
-
-	return ret;
-}
 
 static int ohci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 			unsigned short value) {
@@ -448,8 +475,8 @@ static int ohci_request(struct usb_request *req) {
 
 	assertf(cnt == 1, "only one token is supported");
 
-	ohci_ed_fill(ed, req->endp); /* function address could change due bus
-				   enumeration */
+	/* function address could change due bus enumeration */
+	ohci_ed_fill(ed, req->endp);
 
 	ohci_transfer(ed, token, req->buf, req->len, req);
 
@@ -486,7 +513,7 @@ static inline enum usb_request_status ohci_td_stat(struct ohci_td *td) {
 	}
 }
 
-uint32_t ohci_td_received_len(struct ohci_td *td, struct usb_request *req) {
+static uint32_t ohci_td_received_len(struct ohci_td *td, struct usb_request *req) {
 	assert(((uint32_t) req->buf <= td->buf_p) || !td->buf_p);
 
 	if (!td->buf_p) {
@@ -498,30 +525,23 @@ uint32_t ohci_td_received_len(struct ohci_td *td, struct usb_request *req) {
 	return td->buf_p - (uint32_t) req->buf;
 }
 
-
 static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
-	struct usb_hcd *hcd = data;
-	struct ohci_hcd *ohcd = hcd2ohci(hcd);
-	uint32_t intr_stat = OHCI_READ(ohcd, &ohcd->base->hc_intstat);
+	struct usb_hcd *hcd;
+	struct ohci_hcd *ohcd;
+	uint32_t intr_stat;
+
+	hcd = data;
+	ohcd = hcd2ohci(hcd);
+	intr_stat = OHCI_READ(ohcd, &ohcd->base->hc_intstat);
 
 	/*printk("%s: irq_stat=0x%08x\n", __func__, intr_stat);*/
 
 	if (intr_stat & OHCI_INTERRUPT_RHUB) {
-		struct usb_hub *rhub = ohci2hcd(ohcd)->root_hub;
+
 
 		OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_RHUB);
 
-		for (int i = 0; i < rhub->port_n; i++) {
-			uint32_t port_stat = OHCI_READ(ohcd, &ohcd->base->hc_rh_port_stat[i]);
-
-			rhub->ports[i].status = ohci_port_stat_map(port_stat & 0xffff);
-			rhub->ports[i].changed = ohci_port_stat_map(port_stat >> 16);
-
-			if (port_stat >> 16) {
-				OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[i],
-						port_stat & 0xffff0000);
-			}
-		}
+		usb_rh_get_port_stat(ohcd);
 
 		usb_rh_nofity(hcd);
 	}
@@ -530,7 +550,7 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 		struct ohci_td *td, *next_td;
 		struct usb_request *req;
 
-                td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
+		td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
 
 		do {
 			req = ohci2req(td);
@@ -565,6 +585,10 @@ static int ohci_pci_init(struct pci_slot_dev *pci_dev) {
 	struct usb_hcd *hcd;
 	int ret;
 
+	base = (struct ohci_reg *)mmap_device_memory(base, 0x1000,
+			PROT_WRITE | PROT_READ,
+			MAP_FIXED,
+			(uintptr_t)base);
 	if (!ohci_verify(base)) {
 		return -ENOTSUP;
 	}

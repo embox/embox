@@ -26,12 +26,6 @@ struct diag {
 	const struct diag_ops *ops;
 };
 
-enum diag_kbhit_ret {
-	KBHIT_CAN_GETC = 0, /**< Will not block, getc will return immediatly */
-	KBHIT_WILL_BLK = 1, /**< Will block awaiting input */
-	KBHIT_WILL_FOREVER, /**< Have no getc capability, getc will take forever */
-};
-
 /**
  * @brief Initialize diag input/output
  *
@@ -47,7 +41,7 @@ extern int diag_init(void);
 extern void diag_putc(char ch);
 
 /**
- * @brief Get symbol. Can take unpredicatable time awaiting input.
+ * @brief Get symbol. Can take unpredictable time awaiting input.
  *
  * @return Valid input character
  */
@@ -56,30 +50,18 @@ extern char diag_getc(void);
 /**
  * @brief Test diag input buffer.
  *
- * @return see @a diag_kbhit_ret description
+ * @return 1 if there is a symbol for getc() 0 in other cases
  */
-extern enum diag_kbhit_ret diag_kbhit(void);
-
-/**
- * @brief Set new diag interface. Intended for some emergency situation, when
- * new diag is known only in runtime
- *
- * @param diag
- *
- * @return 0 on success
- * @return Negative otherwise
- */
-extern int diag_setup(const struct diag *diag);
+extern int diag_kbhit(void);
 
 #define DIAG_IMPL_NAME(_modname) \
 	MACRO_CONCAT(_modname, diag_impl)
 
-
-#define DIAG_OPS_DECLARE(...) \
-	static const struct diag_ops __DIAG_OPS_NAME(__EMBUILD_MOD__) = { __VA_ARGS__ }; \
-	const struct diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = { \
-		.ops = &__DIAG_OPS_NAME(__EMBUILD_MOD__), \
-       	}
+#define DIAG_OPS_DEF(...) \
+		static const struct diag_ops __DIAG_OPS_NAME(__EMBUILD_MOD__) = { __VA_ARGS__ }; \
+		const struct diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = { \
+			.ops = &__DIAG_OPS_NAME(__EMBUILD_MOD__), \
+		}
 
 #define __DIAG_OPS_NAME(_modname) \
 	MACRO_CONCAT(_modname, _diag_ops)

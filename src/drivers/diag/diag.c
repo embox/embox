@@ -9,11 +9,13 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <termios.h>
+
 #include <kernel/panic.h>
 #include <util/ring.h>
 #include <drivers/diag.h>
 #include <drivers/tty/termios_ops.h>
-#include <termios.h>
+
 #include <framework/mod/options.h>
 
 #if OPTION_DEFINED(STRING,impl)
@@ -31,30 +33,28 @@ static const struct termios diag_tio = {
 };
 
 int diag_init(void) {
-	const struct diag *tdiag = cdiag;
 
-	if (tdiag->ops->init) {
-		return tdiag->ops->init(tdiag);
+	if (cdiag->ops->init) {
+		return cdiag->ops->init(cdiag);
 	}
 
 	return 0;
 }
 
 char diag_getc(void) {
-	const struct diag *tdiag = cdiag;
 	char ch;
 
-	if (!tdiag->ops->getc) {
+	if (!cdiag->ops->getc) {
 		panic("diag_getc called with no implementation");
 	}
 
-	if (tdiag->ops->kbhit) {
-		while (!tdiag->ops->kbhit(tdiag)) {
+	if (cdiag->ops->kbhit) {
+		while (!cdiag->ops->kbhit(cdiag)) {
 
 		}
 	}
 
-	ch = tdiag->ops->getc(tdiag);
+	ch = cdiag->ops->getc(cdiag);
 	return ch != '\r' ? ch : '\n';
 }
 
@@ -62,51 +62,24 @@ char diag_getc(void) {
 void diag_putc(char ch) {
 	char buf[BUFLEN];
 	struct ring r;
-	const struct diag *tdiag = cdiag;
 
-	assert(tdiag->ops->putc);
+	assert(cdiag->ops->putc);
 
 	ring_init(&r);
 
 	termios_putc(&diag_tio, ch, &r, buf, BUFLEN);
 
 	while (!ring_empty(&r)) {
-		tdiag->ops->putc(tdiag, buf[r.tail]);
+		cdiag->ops->putc(cdiag, buf[r.tail]);
 		ring_just_read(&r, BUFLEN, 1);
 	}
 }
 
-extern enum diag_kbhit_ret diag_kbhit(void) {
-	const struct diag *tdiag = cdiag;
+int diag_kbhit(void) {
 
-	if (tdiag->ops->kbhit) {
-		return tdiag->ops->kbhit(tdiag) ? KBHIT_CAN_GETC : KBHIT_WILL_BLK;
+	if (cdiag->ops->kbhit) {
+		return cdiag->ops->kbhit(cdiag);
 	}
-
-	if (tdiag->ops->getc) {
-		return KBHIT_WILL_BLK;
-	}
-
-	return KBHIT_WILL_FOREVER;
-}
-
-int diag_setup(const struct diag *diag) {
-
-	if (!diag) {
-		return -EINVAL;
-	}
-
-	cdiag = diag;
 
 	return 0;
 }
-#if 0
-void iodev_setup(const struct iodev_ops *new_iodev) {
-	cdiag = new_iodev;
-}
-
-struct iodev_ops const*iodev_current(void) {
-	return cdiag;
-}
-#endif
-

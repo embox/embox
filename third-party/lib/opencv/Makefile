@@ -1,0 +1,106 @@
+PKG_VER          := 4.0.1
+PKG_SOURCES      := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
+PKG_NAME         := opencv
+PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
+PKG_MD5          := eb367fc73de66e6d8808e8712138c6b4
+
+PKG_PATCHES := patch.txt
+
+include $(EXTBLD_LIB)
+
+EMBOX_IMPORTED_CXXFLAGS += -save-temps=obj
+EMBOX_IMPORTED_CXXFLAGS += -DUSE_SPRINTF_INSTEAD
+
+EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
+ifneq ($(filter -j,$(EMBOX_MAKEFLAGS)),)
+EMBOX_IMPORTED_MAKEFLAGS += $(shell nproc)
+endif
+
+ifneq (,$(filter -fno-rtti,$(EMBOX_CXXFLAGS)))
+EMBOX_RTTI_FLAG          = --without-rtti
+else
+EMBOX_RTTI_FLAG          =
+endif
+
+OPENCV_FLAGS = \
+		-DBUILD_SHARED_LIBS=OFF -DBUILD_opencv_python_bindings_generator=OFF -DBUILD_JAVA=OFF -DBUILD_TESTS=OFF -DBUILD_opencv_apps=OFF BUILD_opencv_java_bindings_generator=OFF -DBUILD_opencv_ml=OFF -DWITH_FFMPEG=OFF -DWITH_EIGEN=OFF -DBUILD_IPP_IW=OFF -DBUILD_ITT=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_PROTOBUF=OFF \
+		-DOPENCV_FORCE_3RDPARTY_BUILD=ON \
+		-DBUILD_opencv_calib3d=OFF \
+		-DBUILD_opencv_dnn=OFF \
+		-DBUILD_opencv_features2d=ON \
+		-DBUILD_opencv_flann=OFF \
+		-DBUILD_opencv_gapi=OFF \
+		-DBUILD_opencv_highgui=OFF \
+		-DBUILD_opencv_imgcodecs=ON \
+		-DBUILD_opencv_imgproc=ON \
+		-DBUILD_opencv_java_bindings_generator=OFF \
+		-DBUILD_opencv_objdetect=ON \
+		-DBUILD_opencv_photo=ON \
+		-DBUILD_opencv_stitching=OFF \
+		-DBUILD_opencv_ts=OFF \
+		-DBUILD_opencv_video=OFF \
+		-DBUILD_opencv_videoio=OFF \
+		-DCPACK_BINARY_STGZ=OFF \
+		-DCPACK_BINARY_TGZ=OFF \
+		-DCPACK_BINARY_TZ=OFF \
+		-DCPACK_SOURCE_TBZ2=OFF \
+		-DCPACK_SOURCE_TGZ=OFF \
+		-DCPACK_SOURCE_TXZ=OFF \
+		-DCPACK_SOURCE_TZ=OFF \
+		-DCV_ENABLE_INTRINSICS=OFF \
+		-DCV_TRACE=OFF \
+		-DENABLE_CCACHE=OFF \
+		-DENABLE_OMIT_FRAME_POINTER=OFF \
+		-DENABLE_PIC=OFF \
+		-DENABLE_PRECOMPILED_HEADERS=OFF \
+		-DOPENCL_FOUND=OFF \
+		-DOPENCV_DNN_OPENCL=OFF \
+		-DOPENCV_GENERATE_SETUPVARS=OFF \
+		-DVIDEOIO_ENABLE_PLUGINS=OFF \
+		-DVIDEOIO_ENABLE_STRICT_PLUGIN_CHECK=OFF \
+		-DWITH_1394=OFF \
+		-DWITH_CAROTENE=OFF \
+		-DWITH_ADE=OFF \
+		-DWITH_GSTREAMER=OFF \
+		-DWITH_GTK=OFF \
+		-DWITH_IMGCODEC_HDR=ON \
+		-DWITH_IMGCODEC_PFM=ON \
+		-DWITH_IMGCODEC_PXM=ON \
+		-DWITH_IMGCODEC_SUNRASTER=OFF \
+		-DWITH_IPP=OFF \
+		-DWITH_ITT=OFF \
+		-DWITH_JASPER=OFF \
+		-DWITH_JPEG=OFF \
+		-DWITH_LAPACK=OFF \
+		-DWITH_OPENCL=OFF \
+		-DWITH_OPENCLAMDBLAS=OFF \
+		-DWITH_OPENCLAMDFFT=OFF \
+		-DWITH_OPENEXR=OFF \
+		-DWITH_PNG=ON \
+		-DWITH_PROTOBUF=OFF \
+		-DWITH_PTHREADS_PF=OFF \
+		-DWITH_QUIRC=OFF \
+		-DWITH_TIFF=OFF \
+		-DWITH_V4L=OFF \
+		-DWITH_VTK=OFF \
+		-DWITH_WEBP=OFF \
+		-DCMAKE_SYSTEM_PROCESSOR:STRING=$(AUTOCONF_TARGET_TRIPLET) \
+		-DCMAKE_C_COMPILER:PATH=$(EMBOX_GCC) \
+		-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
+		-DCMAKE_AR:STRING=ar \
+		-DCMAKE_SYSTEM_NAME:STRING=Generic \
+		-DCMAKE_BUILD_TYPE:STRING=Debug \
+		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
+		-DCMAKE_BUILD_TYPE:STRING=Debug \
+		-DC_HAS_MFPU_NEON=0
+
+all:
+
+.PHONY: all
+
+$(BUILD) :
+	cd $(BUILD_DIR) && mkdir build; cd build && cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/ && make -j $(shell nproc)
+
+
+$(INSTALL) :
+	cd $(BUILD_DIR) && cp build/lib/libopencv_*.a build/3rdparty/lib/*a install

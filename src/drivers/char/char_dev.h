@@ -23,7 +23,7 @@
 			.dev_open = open_fn, \
 			.dev_close = close_fn, \
 			 })
-
+#define _IDESC_DEV_ /* XXX */
 struct idesc_dev {
 	struct idesc idesc;
 	struct dev_module *dev;
@@ -40,5 +40,8 @@ static inline struct dev_module *idesc_to_dev_module(struct idesc *desc) {
 
 	return idev->dev;
 }
+
+extern struct idesc *char_dev_default_open(struct dev_module *cdev, void *priv);
+extern void char_dev_default_close(struct idesc *idesc);
 
 #endif /* DEVICE_H_ */

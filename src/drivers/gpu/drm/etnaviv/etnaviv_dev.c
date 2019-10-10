@@ -16,6 +16,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <sys/mman.h>
 
 #include <util/err.h>
 
@@ -84,7 +85,7 @@ int etnaviv_ioctl_gem_new(struct drm_device *dev, void *data, struct drm_file *f
 	}
 
 	return etnaviv_gem_new_handle(dev, file, args->size,
-			args->flags, &args->handle);
+			args->flags, (void *) &args->handle);
 }
 
 int etnaviv_ioctl_gem_info(struct drm_device *dev, void *data, struct drm_file *file)
@@ -147,7 +148,7 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data)
 
 	if (intr != 0) {
 		log_debug("intr 0x%08x", intr);
-
+		gpu->busy = 0;
 		if (intr & VIVS_HI_INTR_ACKNOWLEDGE_AXI_BUS_ERROR) {
 			uint32_t axi_status = gpu_read(gpu, VIVS_HI_AXI_STATUS);
 			gpu_write(gpu, VIVS_HI_INTR_ACKNOWLEDGE,
@@ -193,6 +194,7 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data)
 	return ret;
 }
 
+void dcache_flush(const void *p, size_t size);
 static int etnaviv_ref = 0;
 static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 	struct file *file;
@@ -216,43 +218,39 @@ static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 		etnaviv_gpus[PIPE_ID_PIPE_2D].mmio = (void *)VIVANTE_2D_BASE;
 		etnaviv_gpus[PIPE_ID_PIPE_3D].mmio = (void *)VIVANTE_3D_BASE;
 
+		clk_enable("openvg");
+		clk_enable("gpu3d");
+		clk_enable("gpu2d");
+		clk_enable("vpu");
+		imx_gpu_power_set(1);
+		etnaviv_gpu_init(&etnaviv_gpus[PIPE_ID_PIPE_2D]);
+		etnaviv_gpu_debugfs(&etnaviv_gpus[PIPE_ID_PIPE_2D], "GPU2D");
+		etnaviv_gpu_init(&etnaviv_gpus[PIPE_ID_PIPE_3D]);
+		etnaviv_gpu_debugfs(&etnaviv_gpus[PIPE_ID_PIPE_2D], "GPU3D");
 
 		if (irq_attach(	GPU3D_IRQ,
-				etna_irq_handler,
-				0,
-				&etnaviv_gpus[PIPE_ID_PIPE_3D],
-				"i.MX6 GPU3D")) {
+					etna_irq_handler,
+					0,
+					&etnaviv_gpus[PIPE_ID_PIPE_3D],
+					"i.MX6 GPU3D")) {
 			return NULL;
 		}
 
 		if (irq_attach(	R2D_GPU2D_IRQ,
-				etna_irq_handler,
-				0,
-				&etnaviv_gpus[PIPE_ID_PIPE_2D],
-				"i.MX6 GPU2D")) {
+					etna_irq_handler,
+					0,
+					&etnaviv_gpus[PIPE_ID_PIPE_2D],
+					"i.MX6 GPU2D")) {
 			return NULL;
 		}
 
 		if (irq_attach(	V2D_GPU2D_IRQ,
-				etna_irq_handler,
-				0,
-				&etnaviv_gpus[PIPE_ID_PIPE_2D],
-				"i.MX6 GPU2D")) {
+					etna_irq_handler,
+					0,
+					&etnaviv_gpus[PIPE_ID_PIPE_2D],
+					"i.MX6 GPU2D")) {
 			return NULL;
 		}
-
-		imx_gpu_power_set(1);
-
-		clk_enable("gpu3d");
-		clk_enable("gpu2d");
-		clk_enable("openvg");
-		clk_enable("vpu");
-
-		etnaviv_gpu_init(&etnaviv_gpus[PIPE_ID_PIPE_2D]);
-		etnaviv_gpu_init(&etnaviv_gpus[PIPE_ID_PIPE_3D]);
-
-		etnaviv_gpu_debugfs(&etnaviv_gpus[PIPE_ID_PIPE_2D], "GPU2D");
-		etnaviv_gpu_debugfs(&etnaviv_gpus[PIPE_ID_PIPE_2D], "GPU3D");
 	}
 
 	etnaviv_ref++;
@@ -260,9 +258,14 @@ static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 	if ((err = vmem_set_flags(vmem_current_context(),
 					(mmu_vaddr_t) etnaviv_uncached_buffer,
 					sizeof(etnaviv_uncached_buffer),
-					VMEM_PAGE_WRITABLE))) {
+					PROT_WRITE | PROT_READ | PROT_NOCACHE))) {
 		log_error("Failed to set page attributes! Error %d", err);
+
+		return NULL;
 	}
+
+	mmu_flush_tlb();
+	dcache_flush(etnaviv_uncached_buffer, sizeof(etnaviv_uncached_buffer));
 
 	return &file->f_idesc;
 }
@@ -400,15 +403,5 @@ static struct idesc_ops etnaviv_dev_idesc_ops = {
 
 CHAR_DEV_DEF(ETNAVIV_DEV_NAME, etnaviv_dev_open, NULL, &etnaviv_dev_idesc_ops, NULL);
 
-static struct periph_memory_desc vivante3d_mem = {
-	.start = VIVANTE_3D_BASE,
-	.len   = 0x4000,
-};
-
-static struct periph_memory_desc vivante2d_mem = {
-	.start = VIVANTE_2D_BASE,
-	.len   = 0x4000,
-};
-
-PERIPH_MEMORY_DEFINE(vivante2d_mem);
-PERIPH_MEMORY_DEFINE(vivante3d_mem);
+PERIPH_MEMORY_DEFINE(vivante2d, VIVANTE_2D_BASE, 0x4000);
+PERIPH_MEMORY_DEFINE(vivante3d, VIVANTE_3D_BASE, 0x4000);

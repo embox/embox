@@ -38,8 +38,8 @@ EMBOX_UNIT_INIT(dwc_init);
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM    OPTION_GET(NUMBER, irq_num)
 
-#define RX_DESC_QUANTITY 0x20
-#define TX_DESC_QUANTITY 0x10
+#define RX_DESC_QUANTITY OPTION_GET(NUMBER, rx_desc_quantity)
+#define TX_DESC_QUANTITY OPTION_GET(NUMBER, tx_desc_quantity)
 
 struct dwc_priv {
 	uint32_t                  base_addr;
@@ -56,8 +56,11 @@ struct dwc_priv {
 
 static struct dwc_priv dwc_priv;
 
-static uint8_t rx_buffers[0x800][RX_DESC_QUANTITY] __attribute__((aligned(8)));
-static uint8_t tx_buffers[0x800][TX_DESC_QUANTITY] __attribute__((aligned(8)));
+/* We need such big align to make sure that nothing else except buffers lies on
+ * these MMU pages */
+static uint8_t rx_buffers[RX_DESC_QUANTITY][0x1000] __attribute__((aligned(0x1000)));
+static uint8_t tx_buffers[TX_DESC_QUANTITY][0x1000] __attribute__((aligned(0x1000)));
+
 static struct dma_extended_desc rx_descs_pool[RX_DESC_QUANTITY];
 static struct dma_extended_desc tx_descs_pool[TX_DESC_QUANTITY];
 
@@ -568,9 +571,4 @@ static int dwc_init(void) {
 	return inetdev_register_dev(nic);
 }
 
-static struct periph_memory_desc dwc_mem = {
-	.start = BASE_ADDR,
-	.len   = 0x2000,
-};
-
-PERIPH_MEMORY_DEFINE(dwc_mem);
+PERIPH_MEMORY_DEFINE(dwc, BASE_ADDR, 0x2000);

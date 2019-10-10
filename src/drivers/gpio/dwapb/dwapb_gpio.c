@@ -19,7 +19,7 @@
 #include <drivers/gpio/gpio_driver.h>
 
 #define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
-#define BASE_CTRL_ADDR OPTION_GET(NUMBER,base_addr)
+#define BASE_CTRL_ADDR ((uintptr_t) OPTION_GET(NUMBER,base_addr))
 
 #define DWAPB_GPIO_PORTS_COUNT 4
 
@@ -73,8 +73,13 @@ static void dwapb_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
 }
 
 static gpio_mask_t dwapb_gpio_get(unsigned char port, gpio_mask_t mask) {
-	log_error("dwapb_gpio_get UNIMPLEMENTED\n");
-	return 0;
+	struct gpio_dwapb_port *gpio_port;
+	uint32_t dr;
+
+	gpio_port = (void *)(BASE_CTRL_ADDR + port * sizeof(struct gpio_dwapb_port));
+	dr = REG32_LOAD(&gpio_port->dr);
+
+	return dr & mask;
 }
 
 static struct gpio_chip dwapb_gpio_chip = {
@@ -88,9 +93,4 @@ static int dwapb_gpio_init(void) {
 	return gpio_register_chip(&dwapb_gpio_chip, GPIO_CHIP_ID);
 }
 
-static struct periph_memory_desc arasan_mem = {
-	.start = BASE_CTRL_ADDR,
-	.len   = 0x200
-};
-
-PERIPH_MEMORY_DEFINE(arasan_mem);
+PERIPH_MEMORY_DEFINE(arasan, BASE_CTRL_ADDR, 0x200);

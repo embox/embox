@@ -13,8 +13,6 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
-#include <fs/file_operation.h>
-#include <fs/file_desc.h>
 #include <drivers/char_dev.h>
 #include <sys/ioctl.h>
 #include <util/math.h>
@@ -186,8 +184,8 @@ int usb_whitelist_check(struct usb_dev *dev) {
 	return -EBUSY;
 }
 
-static struct idesc *usb_whitelist_open(struct node *node, struct file_desc *file_desc, int flags) {
-	return &file_desc->idesc;
+static struct idesc *usb_whitelist_open(struct dev_module *devmod, void *arg) {
+	return char_dev_idesc_create(devmod);
 }
 
 static void usb_whitelist_close(struct idesc *idesc) {
@@ -245,10 +243,6 @@ static int usb_whitelist_ioctl(struct idesc *idesc, int request, void *data) {
 
 	return ret;
 }
-
-static const struct file_operations usb_whitelist_ops = {
-	.open  = usb_whitelist_open,
-};
 
 static void usb_whitelist_parse_builtin(struct usb_whitelist_conf *wl_conf,
 		const char *builtin_whitelist) {
@@ -314,9 +308,6 @@ static int usb_whitelist_dev_init(void) {
 
 	usb_whitelist_parse_builtin(wl_conf, builtin_whitelist);
 
-	/*
-	return char_dev_register(USB_WHITELIST_DEV_NAME, &usb_whitelist_ops, NULL);
-	*/
 	return 0;
 }
 
@@ -326,4 +317,4 @@ static struct idesc_ops usb_whitelist_iops = {
 	.close = usb_whitelist_close,
 };
 
-CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, NULL, NULL, &usb_whitelist_iops, NULL);
+CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, usb_whitelist_open, NULL, &usb_whitelist_iops, NULL);

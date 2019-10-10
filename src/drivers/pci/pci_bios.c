@@ -66,11 +66,11 @@ static int pci_slot_configure(uint32_t busn, uint32_t devfn){
 		length = 1 + ~(bar & 0xFFFFFFF0);
 
 		window = space_alloc(&pci_allocator, length, length);
-		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), (uint32_t)window);
+		pci_write_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), (uint32_t) (uintptr_t)window);
 		log_debug("pci bus %d fn = %d bar_num %d "
 				  "bar = 0x%X win = 0x%X len = 0x%X\n",
 				   busn, devfn, bar_num,
-				   bar, (uint32_t)window, (uint32_t)length);
+				   bar, (uint32_t) (uintptr_t) window, (uint32_t) (uintptr_t) length);
 	}
 	return 0;
 }
@@ -108,8 +108,8 @@ static int pci_bridge_configure(int busn, int devfn) {
 	/* align space at 1Mb and check the difference */
 	space_end = space_alloc(&pci_allocator, 0, PCI_WINDOW_SIZE);
 	if (space_base < space_end) {
-		memconf = ((uint32_t)(space_base) >> 16) & 0xFFF0;
-		memconf |= ((uint32_t)(space_end)-1) & 0xFFF00000;
+		memconf = ((uintptr_t)(space_base) >> 16) & 0xFFF0;
+		memconf |= ((uintptr_t)(space_end)-1) & 0xFFF00000;
 
 		pci_write_config32(busn, devfn, 0x20, memconf);
 	}

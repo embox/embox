@@ -71,10 +71,4 @@ static int dw_hdmi_init(void) {
 	return 0;
 }
 
-static struct periph_memory_desc dw_hdmi_mem = {
-	.start = DW_HDMI_BASE,
-	.len   = 0x8000,
-};
-
-PERIPH_MEMORY_DEFINE(dw_hdmi_mem);
-
+PERIPH_MEMORY_DEFINE(dw_hdmi, DW_HDMI_BASE, 0x8000);

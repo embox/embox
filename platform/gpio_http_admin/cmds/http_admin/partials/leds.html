@@ -1,0 +1,18 @@
+<div class="container" ng-controller="LedsCtrl">
+  <div class="row">
+  <div class="leds-buttons" ng-repeat="led in leds">
+    <div class="col-sm-3">
+    <button class="btn led-off"
+            ng-class="{'led-off': !led.active, 'led-on': led.active}"
+            ng-click="led_toggle(led)">
+       LED{{led.index}}
+   </button>
+   </div>
+  </div>
+  </div>
+
+  <div class="row">
+    <!-- Save -->
+    <button type="button" class="btn btn-link" ng-click="save()">Save</button>
+  </div>
+</div>

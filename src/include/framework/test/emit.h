@@ -13,6 +13,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <sys/cdefs.h>
+
 #include <util/macro.h>
 
 struct test_emit_buffer {
@@ -32,6 +34,8 @@ struct test_emit_buffer {
 		.buff = storage_nm,                      \
 		.buff_sz = (size),                       \
 	}
+
+__BEGIN_DECLS
 
 extern void test_emit_into(struct test_emit_buffer *buffer, char ch);
 
@@ -82,6 +86,8 @@ static inline char *test_get_emitted(void) {
 	extern struct test_emit_buffer *__test_emit_buffer_current(void);
 	return test_get_emitted_into(__test_emit_buffer_current());
 }
+
+__END_DECLS
 
 #ifdef __CDT_PARSER__
 

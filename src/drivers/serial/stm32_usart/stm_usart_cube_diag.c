@@ -49,6 +49,11 @@ static int stm32_uart_putc(struct uart *dev, int ch) {
 
 static int stm32_uart_hasrx(struct uart *dev) {
 	USART_TypeDef *uart = (void *) dev->base_addr;
+
+	/* Clear possible Overruns. It can happen, for example,
+	 * when start scripts executed and you press buttons at the same time. */
+	STM32_USART_CLEAR_ORE(uart);
+
 	return STM32_USART_FLAGS(uart) & USART_FLAG_RXNE;
 }
 
@@ -137,10 +142,4 @@ static const struct uart_params diag_defparams = {
 		.irq = false,
 };
 
-const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &stm32_diag,
-		.params = &diag_defparams,
-};
+DIAG_SERIAL_DEF(&stm32_diag, &diag_defparams);

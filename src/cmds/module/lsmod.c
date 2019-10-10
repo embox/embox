@@ -11,6 +11,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include <framework/mod/api.h>
 #include <framework/mod/integrity.h>
@@ -65,11 +66,11 @@ int main(int argc, char **argv) {
 		mod_print(mod);
 		printf("\n");
 		if (show_label) {
-			printf("\tlabel:%x:%x:%x:%x\n",
-					(uint32_t)mod_label(mod)->text.vma,
-					(uint32_t)mod_label(mod)->data.vma,
-					(uint32_t)mod_label(mod)->bss.vma,
-					(uint32_t)mod_label(mod)->rodata.vma);
+			printf("\tlabel:%" PRIxPTR ":%" PRIxPTR ":%" PRIxPTR ":%" PRIxPTR "\n",
+					(uintptr_t)mod_label(mod)->text.vma,
+					(uintptr_t)mod_label(mod)->data.vma,
+					(uintptr_t)mod_label(mod)->bss.vma,
+					(uintptr_t)mod_label(mod)->rodata.vma);
 		}
 
 		if (integrity_check) {

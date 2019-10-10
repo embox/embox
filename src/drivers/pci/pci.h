@@ -171,7 +171,9 @@ struct pci_slot_dev {
 	uint16_t device;
 	uint8_t baseclass;
 	uint8_t subclass;
-	uint8_t irq;
+	unsigned int irq; /* IRQ number suitable for passing to irq_attach() */
+	uint8_t irq_pin;  /* IRQ pin from PCI configuration space */
+	uint8_t irq_line; /* IRQ line from PCI configuration space */
 	uint32_t bar[6];
 	uint8_t primary;
 	uint8_t secondary;

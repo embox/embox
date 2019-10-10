@@ -1,52 +1,28 @@
-diff -aur boost_1_54_0/boost/asio/detail/impl/socket_ops.ipp boost/boost/asio/detail/impl/socket_ops.ipp
---- boost_1_54_0/boost/asio/detail/impl/socket_ops.ipp	2013-05-20 16:32:20.000000000 +0400
-+++ boost/boost/asio/detail/impl/socket_ops.ipp	2013-10-07 17:11:51.575062004 +0400
-@@ -1722,7 +1722,8 @@
- 
- #if defined(BOOST_ASIO_WINDOWS) \
-   || defined(__CYGWIN__) \
--  || defined(__SYMBIAN32__)
-+  || defined(__SYMBIAN32__) \
-+  || defined(__EMBOX__)
-   fd_set fds;
-   FD_ZERO(&fds);
-   FD_SET(s, &fds);
-@@ -1763,7 +1764,8 @@
- 
- #if defined(BOOST_ASIO_WINDOWS) \
-   || defined(__CYGWIN__) \
--  || defined(__SYMBIAN32__)
-+  || defined(__SYMBIAN32__) \
-+  || defined(__EMBOX__)
-   fd_set fds;
-   FD_ZERO(&fds);
-   FD_SET(s, &fds);
-@@ -1804,7 +1806,8 @@
- 
- #if defined(BOOST_ASIO_WINDOWS) \
-   || defined(__CYGWIN__) \
--  || defined(__SYMBIAN32__)
-+  || defined(__SYMBIAN32__) \
-+  || defined(__EMBOX__)
-   fd_set write_fds;
-   FD_ZERO(&write_fds);
-   FD_SET(s, &write_fds);
-diff -aur boost_1_54_0/boost/asio/detail/socket_types.hpp boost/boost/asio/detail/socket_types.hpp
---- boost_1_54_0/boost/asio/detail/socket_types.hpp	2013-05-20 16:32:20.000000000 +0400
-+++ boost/boost/asio/detail/socket_types.hpp	2013-10-07 16:28:42.201491602 +0400
-@@ -46,7 +46,7 @@
- # include <boost/asio/detail/old_win_sdk_compat.hpp>
- #else
- # include <sys/ioctl.h>
--# if !defined(__SYMBIAN32__)
-+# if !defined(__SYMBIAN32__) && !defined(__EMBOX__)
- #  include <sys/poll.h>
- # endif
- # include <sys/types.h>
-diff -aur boost_1_54_0/tools/build/v2/tools/gcc.jam boost/tools/build/v2/tools/gcc.jam
---- boost_1_54_0/tools/build/v2/tools/gcc.jam	2013-05-12 22:02:44.000000000 +0400
-+++ boost/tools/build/v2/tools/gcc.jam	2013-10-29 15:38:03.660573765 +0400
-@@ -1032,7 +1032,7 @@
+diff -aur -x configure boost_1_65_0-orig/boost/config/stdlib/libstdcpp3.hpp boost_1_65_0/boost/config/stdlib/libstdcpp3.hpp
+--- boost_1_65_0-orig/boost/config/stdlib/libstdcpp3.hpp	2017-08-19 19:49:40.000000000 +0300
++++ boost_1_65_0/boost/config/stdlib/libstdcpp3.hpp	2019-05-16 19:56:36.179173749 +0300
+@@ -37,7 +37,8 @@
+         || defined(_GLIBCXX_HAS_GTHREADS) \
+         || defined(_WIN32) \
+         || defined(_AIX) \
+-        || defined(__HAIKU__)
++        || defined(__HAIKU__) \
++        || defined(__EMBOX__)
+       //
+       // If the std lib has thread support turned on, then turn it on in Boost
+       // as well.  We do this because some gcc-3.4 std lib headers define _REENTANT
+diff -aur -x configure boost_1_65_0-orig/boost/config/user.hpp boost_1_65_0/boost/config/user.hpp
+--- boost_1_65_0-orig/boost/config/user.hpp	2017-08-19 19:49:40.000000000 +0300
++++ boost_1_65_0/boost/config/user.hpp	2019-05-16 19:57:24.343760757 +0300
+@@ -130,4 +130,3 @@
+ //
+ // to ensure the correct libraries are selected at link time.
+ // #define BOOST_LIB_BUILDID amd64
+-
+diff -aur -x configure boost_1_65_0-orig/tools/build/src/tools/gcc.jam boost_1_65_0/tools/build/src/tools/gcc.jam
+--- boost_1_65_0-orig/tools/build/src/tools/gcc.jam	2017-08-19 19:49:50.000000000 +0300
++++ boost_1_65_0/tools/build/src/tools/gcc.jam	2019-05-16 19:53:41.381039305 +0300
+@@ -1035,7 +1035,7 @@
              case *bsd    : option = -pthread ;  # There is no -lrt on BSD.
              case sgi     : # gcc on IRIX does not support multi-threading.
              case darwin  : # No threading options.
@@ -55,16 +31,3 @@ diff -aur boost_1_54_0/tools/build/v2/tools/gcc.jam boost/tools/build/v2/tools/g
          }
  
          if $(option)
-         
-diff -aur boost_1_54_0/boost/program_options/environment_iterator.hpp boost/boost/program_options/environment_iterator.hpp 
---- boost_1_54_0/boost/program_options/environment_iterator.hpp	2004-05-14 17:40:31.000000000 +0400
-+++ boost/boost/program_options/environment_iterator.hpp	2014-02-24 17:34:24.226295031 +0400
-@@ -32,7 +32,7 @@
-         
-         void get()
-         {
--            if (*m_environment == 0)
-+            if (!m_environment || *m_environment == 0)
-                 found_eof();
-             else {
-                 std::string s(*m_environment);

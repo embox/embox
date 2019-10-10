@@ -83,8 +83,6 @@ extern void _NORETURN task_exit(void *res);
 
 extern void task_delete(struct task *tsk);
 
-extern int task_notify_switch(struct thread *prev, struct thread *next);
-
 extern pid_t task_waitpid(pid_t pid);
 extern pid_t task_waitpid_posix(pid_t pid, int *status, int options);
 
@@ -109,9 +107,9 @@ __END_DECLS
 
 #define task_foreach(tsk) \
 	for (int tid = 1; \
-			(tid = task_table_get_first(tid)) >= 0 \
-				&& (tsk = task_table_get(tid), assert(tsk != NULL), 1); \
-			tid = task_get_id(tsk) + 1)
+			((tid = task_table_get_first(tid)) >= 0) && \
+			(tsk = task_table_get(tid)); \
+			tid++)
 
 
 

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
@@ -44,7 +45,7 @@ int main() {
 		exit(3);
 	}
 
-	printf("%dx%d, %dbpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
+	printf("%" PRId32 "x%" PRId32 ", %" PRId32 "bpp\n", vinfo.xres, vinfo.yres, vinfo.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */
 	screensize = vinfo.xres * vinfo.yres * vinfo.bits_per_pixel / 8;
@@ -52,7 +53,7 @@ int main() {
 	/* Map the device to memory */
 	fbp = (char *) mmap(0, screensize, PROT_READ | PROT_WRITE, MAP_SHARED, fbfd,
 			0);
-	if ((int) fbp == -1) {
+	if ((intptr_t) fbp == -1) {
 		perror("Error: failed to map framebuffer device to memory");
 		exit(4);
 	}

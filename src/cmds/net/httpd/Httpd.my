@@ -75,7 +75,7 @@ module httpd_pthread {
 abstract module httpd_cgi_interface { }
 
 module httpd_cgi extends httpd_cgi_interface {
-	option number log_level=0
+	option number log_level=1
 	source "httpd_cgi.c"
 	depends embox.compat.posix.proc.vfork
 }

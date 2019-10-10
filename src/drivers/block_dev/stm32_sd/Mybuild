@@ -12,3 +12,31 @@ module stm32f4_sd extends sd {
 	depends embox.driver.block_common
 	depends third_party.bsp.stmf4cube.core
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f764g_discovery_sd extends sd {
+	option boolean use_local_buf=true /* Used to fix align problems */
+	option number sd_buf_size=4096
+
+	@IncludeExport(target_name="stm32f7_discovery_sd.h")
+	source "stm32f764g_discovery_sd.h"
+
+	source "stm32f7_sd.c"
+
+	depends embox.driver.block_common
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f769i_discovery_sd extends sd {
+	option boolean use_local_buf=true /* Used to fix align problems */
+	option number sd_buf_size=4096
+
+	@IncludeExport(target_name="stm32f7_discovery_sd.h")
+	source "stm32f769i_discovery_sd.h"
+
+	source "stm32f7_sd.c"
+
+	depends embox.driver.block_common
+	depends third_party.bsp.st_bsp_api
+}

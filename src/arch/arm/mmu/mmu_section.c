@@ -5,76 +5,113 @@
  * @version
  * @date 2015-08-18
  */
+#include <util/log.h>
 
 #include <string.h>
+#include <sys/mman.h>
+
 #include <asm/hal/mmu.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
 
-mmu_pmd_t *mmu_pgd_value(mmu_pgd_t *pgd) {
-	return pgd;
+extern void dcache_flush(const void *p, size_t size);
+
+uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
+	switch (lvl) {
+	case 0:
+		return (uintptr_t *) (*entry & ~MMU_PAGE_MASK);
+	default:
+		log_error("Wrong lvl=%d for ARM small page", lvl);
+		return 0;
+	}
 }
 
-mmu_pte_t *mmu_pmd_value(mmu_pmd_t *pmd) {
-	return pmd;
-}
-
-mmu_paddr_t mmu_pte_value(mmu_pte_t *pte) {
-	return 0;
-}
-
-void mmu_pgd_set(mmu_pgd_t *pgd, mmu_pmd_t *pmd) {
-}
-
-void mmu_pmd_set(mmu_pgd_t *pmd, mmu_pmd_t *pte) {
-}
-
-void mmu_pte_set(mmu_pte_t *pte, mmu_paddr_t addr) {
+void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
+	switch (lvl) {
+	case 0:
 #if 0
 	*pte = (mmu_pte_t) ((addr & ~MMU_PAGE_MASK)
 			| ARM_MMU_TYPE_SECTION
 			| ARM_MMU_SECTION_READ_ACC);
 #endif
-	*pte = (mmu_pte_t) ((addr & ~MMU_PAGE_MASK)
+	*entry = ((value & ~MMU_PAGE_MASK)
+			| 0x00C06); /* B=0, XN = 0, Dom=0; AP=11, TEX = 0, APX=0 */
+	default:
+		log_error("Wrong lvl=%d for ARM small page", lvl);
+		return;
+	}
+
+
+	dcache_flush(entry, sizeof(*entry));
+}
+
+void mmu_unset(int lvl, uintptr_t *entry) {
+	*entry = 0;
+	dcache_flush(entry, sizeof(*entry));
+}
+
+int mmu_present(int lvl, uintptr_t *entry) {
+	switch (lvl) {
+	case 0:
+		return (*entry & ARM_MMU_TYPE_SECTION) == ARM_MMU_TYPE_SECTION;
+	default:
+		log_error("Wrong lvl=%d for ARM small page", lvl);
+		return 0;
+	}
+}
+
+uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
+#if 0
+	/* TODO not work now */
+	int flags = ARM_MMU_PAGE_READ_ACC; /* TODO PROT_READ must be set implicitly */
+
+	if (prot & PROT_WRITE) {
+		flags |= ARM_MMU_PAGE_WRITE_ACC;
+	}
+	if (prot & PROT_READ) {
+		flags |= ARM_MMU_PAGE_READ_ACC;
+	}
+	if (!(prot & PROT_NOCACHE)) {
+		flags |= L1D_C;
+	}
+
+	if (prot & PROT_EXEC) {
+		flags &= ~L1D_XN; /* ARM_MMU_SECTION_XN */
+	} else {
+		flags |= L1D_XN; /* ARM_MMU_SECTION_XN */
+	}
+	return (addr & ~MMU_PAGE_MASK) | flags | ARM_MMU_TYPE_SECTION;
+#endif
+	return ((addr & ~MMU_PAGE_MASK)
 			| 0x00C06); /* B=0, XN = 0, Dom=0; AP=11, TEX = 0, APX=0 */
 }
 
-void mmu_pgd_unset(mmu_pgd_t *pgd) {
+int mmu_pte_set(uintptr_t *entry, uintptr_t value) {
+	*entry = value;
+	dcache_flush(entry, sizeof(*entry));
+	return 0;
 }
 
-void mmu_pmd_unset(mmu_pgd_t *pmd) {
+uintptr_t mmu_pte_get(uintptr_t *entry) {
+	return *entry;
 }
 
-void mmu_pte_unset(mmu_pgd_t *pte) {
-	*pte = 0x0;
-}
+uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
+	int prot = 0;
 
-int mmu_pgd_present(mmu_pgd_t *pgd) {
-	return 1;
-}
-int mmu_pmd_present(mmu_pmd_t *pmd) {
-	return 1;
-}
-int mmu_pte_present(mmu_pte_t *pte) {
-	return (*pte & ARM_MMU_TYPE_SECTION) == ARM_MMU_TYPE_SECTION;
-}
+	if (pte & ARM_MMU_PAGE_WRITE_ACC) {
+		prot |= PROT_WRITE;
+	}
+	if (pte & ARM_MMU_PAGE_READ_ACC) {
+		prot |= PROT_READ;
+	}
+	if (!(pte & L1D_C)) {
+		prot |= PROT_NOCACHE;
+	}
+	if (!(pte & L1D_XN)) {
+		prot |= PROT_EXEC;
+	}
+	*flags = prot;
 
-void mmu_pte_set_writable(mmu_pte_t *pte, int value) {
-#if 0	
-	if (value & VMEM_PAGE_WRITABLE)
-		*pte |= ARM_MMU_SECTION_WRITE_ACC;
-#endif
-}
-
-void mmu_pte_set_cacheable(mmu_pte_t *pte, int value) {
-	if (value & VMEM_PAGE_CACHEABLE)
-		*pte |= 0x08; /* ARM_MMU_SECTION_C */
-}
-
-void mmu_pte_set_usermode(mmu_pte_t *pte, int value) {
-}
-
-void mmu_pte_set_executable(mmu_pte_t *pte, int value) {
-	if (!(value & VMEM_PAGE_EXECUTABLE))
-		*pte |= 0x10; /* ARM_MMU_SECTION_XN */
+	return pte & ~MMU_PAGE_MASK;
 }

@@ -4,7 +4,8 @@ static module LibExec {
 	source "exec.c"
 
 	depends embox.kernel.task.resource.mmap_full
-	depends embox.mem.mmap_api
+	depends embox.kernel.task.resource.phymem
+	depends embox.mem.mmap
 	@NoRuntime depends LibElf
 }
 

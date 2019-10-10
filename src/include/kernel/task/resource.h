@@ -24,12 +24,10 @@ struct task_resource_desc {
 	int (*exec)(const struct task *task, const char *path, char *const argv[]);
 };
 
-typedef int (*task_notifing_resource_hnd)(struct thread *prev, struct thread *next);
-
 #define TASK_RESOURCE_DEF(desc, type) \
 	typeof(type) __kernel_task_resource_storage_##desc \
 			__attribute__((aligned(sizeof(void *)), \
-						section(".bss.ktask.resource"))); \
+						section(".bss.embox.ktask.resource"))); \
 	static const struct task_resource_desc desc; \
 	ARRAY_SPREAD_DECLARE(const struct task_resource_desc *const, \
 			task_resource_desc_array); \
@@ -48,12 +46,6 @@ extern char _ktask_resource_start, _ktask_resource_end;
 #define TASK_RESOURCE_SIZE \
 	((size_t)(&_ktask_resource_end - &_ktask_resource_start))
 
-#define TASK_RESOURCE_NOTIFY(fn) \
-	static int fn(struct thread *prev, struct thread *next); \
-	ARRAY_SPREAD_DECLARE(const task_notifing_resource_hnd, \
-			task_notifing_resource); \
-	ARRAY_SPREAD_ADD(task_notifing_resource, fn)
-
 extern void task_resource_init(const struct task *task);
 extern int task_resource_inherit(const struct task *task,
 		const struct task *parent);
@@ -62,14 +54,9 @@ extern void task_resource_exec(const struct task *task, const char *path, char *
 
 ARRAY_SPREAD_DECLARE(const struct task_resource_desc *const,
 		task_resource_desc_array);
-ARRAY_SPREAD_DECLARE(const task_notifing_resource_hnd,
-		task_notifing_resource);
 
 #define task_resource_foreach(item) \
 	array_spread_foreach(item, task_resource_desc_array)
-
-#define task_notifing_resource_foreach(item) \
-	array_spread_foreach(item, task_notifing_resource)
 
 #include <assert.h>
 #include <kernel/task.h>

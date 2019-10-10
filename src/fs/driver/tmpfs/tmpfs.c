@@ -21,6 +21,7 @@
 
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
+#include <mem/page.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/block_dev/ramdisk/ramdisk.h>
@@ -349,14 +350,14 @@ static int tmpfs_fseek(void *file, long offset, int whence) {
 static int tmpfs_stat(void *file, void *buff) {
 	struct file_desc *desc;
 	tmpfs_file_info_t *fi;
-	stat_t *buffer;
+	struct stat *buffer;
 
 	desc = (struct file_desc *) file;
 	fi = (tmpfs_file_info_t *)desc->node->fi;
-	buffer = (stat_t *) buff;
+	buffer = (struct stat *) buff;
 
 	if (buffer) {
-			memset(buffer, 0, sizeof(stat_t));
+			memset(buffer, 0, sizeof(struct stat));
 
 			buffer->st_mode = fi->mode;
 			buffer->st_ino = fi->index;

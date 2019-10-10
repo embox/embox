@@ -15,4 +15,3 @@
 
 vfork:
 	CALL_WPTREGS vfork_body
-

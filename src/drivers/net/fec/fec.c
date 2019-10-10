@@ -532,9 +532,4 @@ static int fec_init(void) {
 	return inetdev_register_dev(nic);
 }
 
-static struct periph_memory_desc fec_mem = {
-	.start = NIC_BASE,
-	.len   = 0x200,
-};
-
-PERIPH_MEMORY_DEFINE(fec_mem);
+PERIPH_MEMORY_DEFINE(fec, NIC_BASE, 0x200);

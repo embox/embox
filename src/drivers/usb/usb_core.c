@@ -6,14 +6,17 @@
  * @date    02.10.2013
  */
 
+#include <util/log.h>
+
 #include <errno.h>
 #include <string.h>
+
 #include <util/member.h>
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
 #include <kernel/irq_lock.h>
 #include <kernel/time/ktime.h>
-#include <kernel/printk.h>
+
 #include <kernel/panic.h>
 #include <drivers/usb/usb_driver.h>
 
@@ -107,7 +110,7 @@ void usb_request_complete(struct usb_request *req) {
 	/* TODO reset failed request */
 
 	if (req->req_stat != USB_REQ_NOERR) {
-		printk("usb_request %p: failed\n", req);
+		log_error("usb_request %p: failed\n", req);
 	}
 
 	usb_request_remove(req, req->req_stat == USB_REQ_NOERR);
@@ -190,8 +193,9 @@ int usb_endp_control(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		}
 	}
 
-	rstt = usb_endp_request_alloc(endp, notify_hnd, arg, USB_TOKEN_STATUS | dntoken,
-		       	NULL, 0);
+	rstt = usb_endp_request_alloc(
+			endp, notify_hnd, arg, USB_TOKEN_STATUS | dntoken, NULL, 0);
+
 	if (!rstt) {
 		goto out2;
 	}
@@ -297,7 +301,7 @@ void usb_whitelist_accepts(struct usb_dev *dev) {
 	}
 
 
-	printk("usb_core: found vendor=%04x product=%04x; initializing\n",
+	log_info("\nusb_core: found vendor=%04x product=%04x; initializing",
 			dev->dev_desc.id_vendor, dev->dev_desc.id_product);
 
 	usb_endp_control(ctrl_endp, usb_dev_request_hnd_conf_header, NULL,

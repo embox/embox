@@ -15,21 +15,6 @@ module i8259 extends irqctrl_api {
 	source "i8259.c", "i8259.h"
 }
 
-module irqmp extends irqctrl_api {
-	source "irqmp.c", "irqmp.h"
-
-	depends embox.driver.ambapp_api
-	depends embox.mem.vmem_api
-
-	option number irqmp_base=0x80000200
-}
-
-module mb_intc extends irqctrl_api {
-	source "mb_intc.c", "mb_intc.h"
-
-	option number mbintc_base
-}
-
 module raspi extends irqctrl_api {
 	source "raspi.c", "raspi.h"
 

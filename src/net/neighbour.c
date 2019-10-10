@@ -132,17 +132,6 @@ static int nbr_send_request(struct neighbour *nbr) {
 	}
 }
 
-#include <net/l3/icmpv4.h>
-static void nbr_drop_w_queue(struct neighbour *nbr) {
-	struct sk_buff *skb;
-
-	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
-		icmp_discard(skb, ICMP_DEST_UNREACH, ICMP_HOST_UNREACH);
-	}
-
-	nbr->sent_times = 0;
-}
-
 static int nbr_build_and_send_pkt(struct sk_buff *skb,
 		const struct net_header_info *hdr_info) {
 	int ret;
@@ -454,7 +443,6 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 			if (nbr->incomplete) {
 				if (nbr->resend <= MODOPS_NEIGHBOUR_TMR_FREQ) {
 					if (nbr->sent_times == MODOPS_NEIGHBOUR_ATTEMPT) {
-						(void)nbr_drop_w_queue(nbr);
 						nbr_free(nbr);
 					}
 					else {

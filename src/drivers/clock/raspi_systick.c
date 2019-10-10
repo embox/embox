@@ -10,6 +10,7 @@
  * @author Vita Loginova
  */
 
+#include <drivers/common/memory.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
@@ -17,7 +18,6 @@
 #include <kernel/time/clock_source.h>
 #include <sys/mman.h>
 #include <hal/mmu.h>
-#include <mem/vmem.h>
 #include <util/binalign.h>
 
 #include <embox/unit.h>
@@ -73,15 +73,6 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 }
 
 static int this_init(void) {
-	/* Map one vmem page to handle this device if mmu is used */
-	mmap_device_memory(
-			(void*) ((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK),
-			PROT_READ | PROT_WRITE | PROT_NOCACHE,
-			binalign_bound(sizeof(struct raspi_timer_regs), MMU_PAGE_SIZE),
-			MAP_FIXED,
-			((uintptr_t) BCM2835_SYSTEM_TIMER_BASE & ~MMU_PAGE_MASK)
-			);
-
 	clock_source_register(&this_clock_source);
 	irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source,
 		"Raspberry PI systick timer");
@@ -119,3 +110,5 @@ static struct clock_source this_clock_source = {
 };
 
 EMBOX_UNIT_INIT(this_init);
+
+PERIPH_MEMORY_DEFINE(raspi_systick, BCM2835_SYSTEM_TIMER_BASE, sizeof(struct raspi_timer_regs));

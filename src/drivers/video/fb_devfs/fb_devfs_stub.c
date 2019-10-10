@@ -8,6 +8,6 @@
 
 #include <drivers/video/fb.h>
 
-int fb_devfs_create(const struct fb_ops *ops, char *map_base, size_t map_size) {
+int fb_devfs_create(struct fb_info *fbi, char *map_base, size_t map_size) {
 	return 0;
 }

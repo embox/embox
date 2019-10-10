@@ -9,12 +9,15 @@
 #include <util/log.h>
 
 #include <errno.h>
+#include <sys/mman.h>
 
 #include <drivers/common/memory.h>
 
 #include <embox/unit.h>
 #include <hal/reg.h>
+#ifndef NOMMU
 #include <mem/vmem.h>
+#endif
 
 #include <drivers/omap_gpmc.h>
 #include <drivers/gpmc.h>
@@ -67,7 +70,8 @@ static int gpmc_cs_enable_mem(int cs, uint32_t base, uint32_t size) {
 	gpmc_cs_reg_write(cs, GPMC_CS_CONFIG7, l);
 
 #ifndef NOMMU
-	vmem_map_region(vmem_current_context(), base, base, size, VMEM_PAGE_WRITABLE);
+	/* TODO use mmap instead of vmem_map_region */
+	vmem_map_region(vmem_current_context(), base, base, size, PROT_WRITE | PROT_READ | PROT_NOCACHE);
 #endif
 
 	return 0;
@@ -93,9 +97,4 @@ static int gpmc_init(void) {
 	return 0;
 }
 
-static struct periph_memory_desc omap_gpmc_mem = {
-	.start = GPMC_BASE_ADDRESS,
-	.len   = 0x200,
-};
-
-PERIPH_MEMORY_DEFINE(omap_gpmc_mem);
+PERIPH_MEMORY_DEFINE(omap_gpmc, GPMC_BASE_ADDRESS, 0x200);

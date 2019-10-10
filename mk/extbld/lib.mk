@@ -1,10 +1,6 @@
 ##
 # This file should be included by extbld Makefiles.
 #
-# This also could generate md5sums for specified extbld Makefile:
-# Assuming you are in ROOT_DIR, and you are going to generate md5sums of third_party/smth/, run
-# make EXTBLD_LIB=$PWD/mk/extbld/lib.mk ROOT_DIR=$PWD -C third-party/smth BUILD_DIR=$PWD/build/extbld/third_party/smth md5_gen
-#
 
 ifeq ($(strip $(ROOT_DIR)),)
 $(error ROOT_DIR is not set)
@@ -18,12 +14,11 @@ include $(ROOT_DIR)/mk/core/common.mk
 include $(ROOT_DIR)/mk/core/string.mk
 
 .PHONY : all download extract patch configure build install
-.PHONY : md5_gen
 
 all : download extract patch configure build install
 
-PKG_SOURCE_DIR   ?= $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 PKG_INSTALL_DIR  := $(BUILD_DIR)/install
+PKG_SOURCE_DIR   = $(filter-out %/install,$(wildcard $(BUILD_DIR)/*))
 DOWNLOAD_BASEDIR := $(ROOT_DIR)/download
 ifeq ($(value PKG_DOWNLOADS_SEPARATE),)
 DOWNLOAD_DIR     := $(DOWNLOAD_BASEDIR)
@@ -34,23 +29,35 @@ endif
 $(DOWNLOAD_DIR) $(BUILD_DIR) $(PKG_INSTALL_DIR):
 	mkdir -p $@
 
+PKG_NAME    ?=
+PKG_VER     ?=
 PKG_SOURCES ?=
-# Name of an archive where package will be saved to.
-PKG_ARCHIVE_NAME ?=""
-sources_git      := $(filter %.git,$(PKG_SOURCES))
-targets_git	  = $(basename $(notdir $1))
-sources_download := $(filter-out %.git,$(PKG_SOURCES))
-# Return PKG_ARCHIVE_NAME of the specified package in case if
-# the url does not contain package name
-pkg_archive_name  = $(if $(call eq,$(PKG_ARCHIVE_NAME),""),$(call notdir,$1),$(PKG_ARCHIVE_NAME))
-sources_extract  := $(filter %.tar.gz %.tar.bz2 %.tar.xz %tgz %tbz %zip,$(call pkg_archive_name,$(sources_download)))
+
+sources_git := $(filter %.git,$(PKG_SOURCES))
+targets_git = $(basename $(notdir $1))
+sources_archive_mirrors := $(filter-out %.git,$(PKG_SOURCES))
+
+pkg_ext ?=
+first_url := $(word 1,$(sources_archive_mirrors))
+ifneq ($(filter %.tar.gz %.tar.bz %.tar.bz2 %.tar.xz,$(first_url)),)
+	pkg_ext := .tar$(suffix $(first_url))
+else ifneq ($(filter %.tgz %.tbz %.zip,$(first_url)),)
+	pkg_ext := $(suffix $(first_url))
+endif
+
+ifneq ($(PKG_VER),)
+	pkg_archive_name := $(PKG_NAME)-$(PKG_VER)$(pkg_ext)
+else
+	pkg_archive_name := $(PKG_NAME)$(pkg_ext)
+endif
 
 DOWNLOAD  := $(BUILD_DIR)/.downloaded
 $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
-	$(foreach d,$(sources_download), \
-		if [ ! -f $(DOWNLOAD_DIR)/$(call pkg_archive_name,$d) ]; then \
-			cd $(DOWNLOAD_DIR) && (curl -o $(call pkg_archive_name,$d) -k -L '$d'); \
-		fi;)
+	$(foreach d,$(sources_archive_mirrors), \
+		if [ ! -f $(DOWNLOAD_DIR)/$(pkg_archive_name) ] ; then \
+			cd $(DOWNLOAD_DIR); \
+			curl -o $(pkg_archive_name) -f -k -L '$d' || $(RM) $(pkg_archive_name); \
+		fi;) \
 	$(foreach g,$(sources_git), \
 		if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
 			cd $(DOWNLOAD_DIR); \
@@ -60,29 +67,21 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 
 DOWNLOAD_CHECK  := $(BUILD_DIR)/.download_checked
 $(DOWNLOAD_CHECK) : $(DOWNLOAD)
-	$(if $(call eq,$(words $(PKG_SOURCES)),$(words $(PKG_MD5))),, \
-		echo "different number of sources and MD5"; false)
-	( cd $(DOWNLOAD_DIR); \
-		$(foreach c,$(filter-out %.-,$(join $(PKG_SOURCES),$(addprefix .,$(PKG_MD5)))), \
-			$(MD5) $(call pkg_archive_name,$(basename $c)) | grep $(subst .,,$(suffix $c)) 2>&1 >/dev/null ; ) \
+	cd $(DOWNLOAD_DIR) && ( \
+		$(MD5) $(pkg_archive_name) | $(AWK) '{print $$1}' | grep $(PKG_MD5) 2>&1 >/dev/null; \
 	)
 	touch $@
 
 download : $(DOWNLOAD) $(DOWNLOAD_CHECK)
-md5_gen : $(DOWNLOAD)
-	@echo PKG_MD5 := \\
-	@$(foreach s,$(PKG_SOURCES),md5=$$(md5sum $(DOWNLOAD_DIR)/$(call pkg_archive_name,$s) 2>/dev/null) && echo -e "\\t$${md5%%  *} \\" || echo -- "-";)
-	@echo
 
 EXTRACT  := $(BUILD_DIR)/.extracted
 extract : $(EXTRACT)
 $(EXTRACT): | $(DOWNLOAD_DIR) $(BUILD_DIR)
-	$(foreach i,$(sources_extract),\
-		$(if $(filter %zip,$i),unzip -q $(DOWNLOAD_DIR)/$i -d $(BUILD_DIR),\
-			mkdir -p $(BUILD_DIR) && ( cd $(BUILD_DIR); tar -xf $(DOWNLOAD_DIR)/$i) );)
+	$(if $(filter %zip,$(pkg_ext)), \
+		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(BUILD_DIR), \
+		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR))
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
-			$(call targets_git,$(sources_git)) \
-			$(filter-out $(sources_extract),$(call pkg_archive_name,$(sources_download))))"; \
+			$(call targets_git,$(sources_git)))"; \
 		if [ "$$COPY_FILES" ]; then \
 			cp -R $$COPY_FILES $(BUILD_DIR); \
 		fi

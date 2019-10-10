@@ -5,6 +5,6 @@ module syscall {
 
 	//depends embox.arch.syscall
 	depends embox.kernel.syscall.syscall_table
-	depends embox.mem.mmap_api
+	depends embox.mem.mmap
 	depends embox.kernel.task.resource.mmap
 }

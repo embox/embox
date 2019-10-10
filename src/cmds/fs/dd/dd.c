@@ -55,20 +55,20 @@ static int write_stdout(char *buff, size_t size, unsigned int addr) {
 	substr_p = point = buff;
 
 	for (cnt = 0; cnt < size; cnt += 16) {
-		printf("%08X: ", addr);
+		printf("%08x: ", addr);
 		for (i_str = 0; i_str < 2; i_str++) {
 			for (i_substr = 0; i_substr < 8; i_substr++) {
-				printf("%02hhX ", (unsigned char) *point++);
+				printf("%02hhx ", (unsigned char) *point++);
 			}
 			printf(" ");
 		}
 
 		printf("|");
 		for (i_str = 0; i_str < 16; i_str++) {
-			if (((unsigned char) *substr_p) >= 32) { /*is not service simbol */
+			if ((((unsigned char) *substr_p) >= 32 &&
+					((unsigned char) *substr_p) < 127)) { /*is not service simbol */
 				printf("%c", *substr_p);
-			}
-			else {
+			} else {
 				printf(".");
 			}
 			substr_p++;
@@ -152,7 +152,7 @@ static int dd_cond_open(const char *path, int mode, int def_fd) {
 	int fd;
 
 	if (path) {
-		fd = open(path, mode);
+		fd = open(path, mode, S_IRALL | S_IWALL);
 		if (0 > fd) {
 			return -errno;
 		}
@@ -168,6 +168,7 @@ int main(int argc, char **argv) {
 	int ifd, ofd;
 	int n_read, n_write, err;
 	int format = 0;
+	unsigned int addr = 0;
 
 	err = dd_param_fill(argc, argv, &dp);
 	if (err) {
@@ -194,7 +195,7 @@ int main(int argc, char **argv) {
 		dp.count = buff.st_size;
 	}
 
-	ofd = dd_cond_open(dp.ofile, O_WRONLY, STDOUT_FILENO);
+	ofd = dd_cond_open(dp.ofile, O_WRONLY | O_CREAT, STDOUT_FILENO);
 	if (ofd < 0) {
 		err = ofd;
 		goto out_ifd_close;
@@ -224,8 +225,6 @@ int main(int argc, char **argv) {
 	} while (dp.skip != 0);
 
 	do {
-		unsigned int addr = 0;
-
 		n_read = read(ifd, tbuf, dp.bs);
 		if (n_read < 0) {
 			err = -errno;

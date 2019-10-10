@@ -15,6 +15,7 @@
 #include <hal/reg.h>
 #include <util/log.h>
 #include <kernel/printk.h>
+#include <kernel/time/ktime.h>
 
 EMBOX_UNIT_INIT(imx_power_init);
 
@@ -80,7 +81,6 @@ static void imx_anatop_pu_enable(int enable) {
 	/* Note: currently this function works only with VDDPU
 	 * (VDDSOC is usually initialized by bootloader */
 	uint32_t tmp;
-	int t = 0xfffff;
 
 	tmp = REG32_LOAD(ANADIG_CORE);
 
@@ -91,39 +91,22 @@ static void imx_anatop_pu_enable(int enable) {
 	}
 
 	REG32_STORE(ANADIG_CORE, tmp);
-	while(t--);
+	ksleep(50);
 }
 
 extern int clk_enable(char *clk_name);
 extern int clk_disable(char *clk_name);
-static void imx_power_clk(int enable) {
-	if (enable) {
-		clk_enable("gpu3d");
-		clk_enable("gpu2d");
-		clk_enable("openvg");
-		clk_enable("vpu");
-	} else {
-		clk_disable("gpu3d");
-		clk_disable("gpu2d");
-		clk_disable("openvg");
-		clk_disable("vpu");
-	}
-}
 
 void imx_gpu_power_set(int up) {
-	int t = 0xfffff;
-
 	if (up) {
 		/* Power-up */
 		imx_anatop_pu_enable(1);
 		/* TODO calculate delay? */
-		while(t--);
+		ksleep(50);
 
 		REG32_ORIN(GPC_CNTR, GPU_VPU_PUP_REQ);
 
 		while (REG32_LOAD(GPC_CNTR) & GPU_VPU_PUP_REQ);
-
-		imx_power_clk(1);
 	} else {
 		/* Power-down */
 		REG32_STORE(PGC_GPU_CTRL, 1);
@@ -131,21 +114,11 @@ void imx_gpu_power_set(int up) {
 
 		while (REG32_LOAD(GPC_CNTR) & GPU_VPU_PDN_REQ);
 
-		while(t--);
+		ksleep(50);
 		imx_anatop_pu_enable(0);
 	}
 }
 
-static struct periph_memory_desc imx_power_mem = {
-	.start = GPC_BASE,
-	.len   = 0x2B0,
-};
+PERIPH_MEMORY_DEFINE(imx_power, GPC_BASE, 0x2B0);
 
-PERIPH_MEMORY_DEFINE(imx_power_mem);
-
-static struct periph_memory_desc imx_anadig_mem = {
-	.start = ANADIG_BASE,
-	.len   = 0x100,
-};
-
-PERIPH_MEMORY_DEFINE(imx_anadig_mem);
+PERIPH_MEMORY_DEFINE(imx_anadig, ANADIG_BASE, 0x100);

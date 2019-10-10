@@ -681,27 +681,12 @@ static int ti816x_init(void) {
 	return inetdev_register_dev(nic);
 }
 
+PERIPH_MEMORY_DEFINE(emac_region, EMAC_BASE, 0x800);
 
-static struct periph_memory_desc emac_region = {
-	.start = (uint32_t) EMAC_BASE,
-	.len   = 0x800,
-};
-
-PERIPH_MEMORY_DEFINE(emac_region);
-
-static struct periph_memory_desc emac_ctrl_region = {
-	.start = (uint32_t) EMAC_CTRL_BASE,
-	.len   = 0x800,
-};
-
-PERIPH_MEMORY_DEFINE(emac_ctrl_region);
+PERIPH_MEMORY_DEFINE(emac_ctrl_region, EMAC_CTRL_BASE, 0x800);
 
 #if EMAC_VERSION == 1
 /* Neccessary to clear interrupts */
-static struct periph_memory_desc emac_cm_region = {
-	.start = (uint32_t) LVL_INTR_CLEAR,
-	.len   = 4,
-};
+PERIPH_MEMORY_DEFINE(emac_cm_region, LVL_INTR_CLEAR, 4);
 
-PERIPH_MEMORY_DEFINE(emac_cm_region);
 #endif

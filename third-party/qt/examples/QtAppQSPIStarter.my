@@ -1,0 +1,17 @@
+package third_party.qt.example
+
+@AutoCmd
+@BuildDepends(third_party.qt.core)
+@Cmd(name = "qt_app_qspi_starter",
+	help = "Loads an initializes qt from QSPI",
+	man = '''
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module qt_app_qspi_starter {
+	source "qt_app_qspi_starter.c"
+
+	@NoRuntime depends third_party.qt.core
+
+	depends embox.lib.cxx.ConstructorsInvocator
+}

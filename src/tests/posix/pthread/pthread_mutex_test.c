@@ -59,9 +59,7 @@ TEST_CASE("Mutex with type PTHREAD_MUTEX_RECURSIVE correctness") {
 TEST_CASE("Mutex with type PTHREAD_MUTEX_DEFAULT correctness") {
 	pthread_mutex_t mutex;
 	pthread_mutex_init(&mutex, NULL);
-
-	// fail with assert, it is correct
-	//pthread_mutex_unlock(&mutex);
+	pthread_mutex_unlock(&mutex);
 	test_assert_zero(pthread_mutex_lock(&mutex));
 	test_assert_equal(-EBUSY, pthread_mutex_trylock(&mutex));
 	test_assert_zero(pthread_mutex_unlock(&mutex));

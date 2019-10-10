@@ -15,6 +15,8 @@ enum fformat {
 	ERR_FILE = -1,
 	TEXT_FILE,
 	RIFF_FILE,
+	BMP_FILE,
+	PNG_FILE
 };
 
 /* http://soundfile.sapp.org/doc/WaveFormat/ */

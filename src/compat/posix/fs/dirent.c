@@ -86,13 +86,13 @@ struct dirent *readdir(DIR *dir) {
 	}
 
 	if ( 0 != vfs_get_child_next(&dir->path,
-			(struct node *)dir->current.d_ino, &child)) {
+			(struct node *) (uintptr_t) dir->current.d_ino, &child)) {
 		return NULL;
 	}
 
 	strncpy(dir->current.d_name, child.node->name, DIRENT_DNAME_LEN);
 
-	dir->current.d_ino = (ino_t)child.node;
+	dir->current.d_ino = (ino_t) (uintptr_t) child.node;
 
 	return &dir->current;
 }

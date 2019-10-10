@@ -8,14 +8,15 @@
 
 #include <hal/mmu.h>
 #include <mem/vmem.h>
+#include <mem/mmap.h>
 #include <mem/vmem/vmem_alloc.h>
 
 #include <kernel/sched/sched_lock.h>
 
-extern mmu_ctx_t mmap_get_current_context(void);
+#include <kernel/task/resource/mmap.h>
 
 int vmem_create_context(mmu_ctx_t *ctx) {
-	mmu_pgd_t *pgd = vmem_alloc_pgd_table();
+	uintptr_t *pgd = vmem_alloc_table(0);
 
 	if (!pgd) {
 		return -ENOMEM;
@@ -27,21 +28,26 @@ int vmem_create_context(mmu_ctx_t *ctx) {
 }
 
 mmu_ctx_t vmem_current_context(void) {
-	return mmap_get_current_context();
+	struct emmap *emmap;
+
+	emmap = task_self_resource_mmap();
+
+	return emmap->ctx;
 }
 
-/* FIXME: remove create context from here */
-int vmem_init_context(mmu_ctx_t *ctx) {
-	int err;
-
-	if ((err = vmem_create_context(ctx))) {
-		return err;
+static void vmem_free_table_level(int lvl, uintptr_t *tbl) {
+	if (lvl == MMU_LAST_LEVEL) {
+		vmem_free_table(lvl, tbl);
+		return;
 	}
-
-	return 0;
-	//return vmem_map_kernel(*ctx);
+	for (int idx = 0; idx < MMU_ENTRIES(lvl); idx++) {
+		if (mmu_present(lvl, tbl + idx)) {
+			vmem_free_table_level(lvl + 1, mmu_get(lvl, (tbl + idx)));
+		}
+	}
+	vmem_free_table(lvl, tbl);
 }
 
 void vmem_free_context(mmu_ctx_t ctx) {
-	vmem_free_pgd_table(mmu_get_root(ctx));
+	vmem_free_table_level(0, mmu_get_root(ctx));
 }

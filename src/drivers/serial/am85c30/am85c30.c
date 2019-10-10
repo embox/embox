@@ -1,5 +1,3 @@
-#include "../am85c30/am85c30.h"
-
 /**
  * @file e2k.c
  * @brief Monocube serial driver
@@ -8,61 +6,63 @@
  * @date 18.12.2017
  */
 
+#include <stdint.h>
+
 #include <asm/io.h>
 #include <drivers/common/memory.h>
 #include <drivers/diag.h>
 #include <drivers/serial/uart_device.h>
 #include <drivers/serial/diag_serial.h>
-#include <embox/unit.h>
 
+#include "am85c30.h"
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(uart_init);
 
-#define UART_BASE   0x83200040
+#define UART_BASE   (uintptr_t)0x83200040
 #define	IRQ_NUM     3 /* ZILOG_IRQ_DEFAULT 3 */ /* default IRQ # */
 
-
 static inline void
-am85c30_com_outb(void *iomem_addr, uint8_t data)
+am85c30_com_outb(uintptr_t iomem_addr, uint8_t data)
 {
-	e2k_write8(data, UART_BASE + 1);
+	e2k_write8(data, (UART_BASE + 1));
 	wmb();
 }
 
 static inline uint8_t
-am85c30_com_inb(void *iomem_addr)
+am85c30_com_inb(uintptr_t iomem_addr)
 {
 	unsigned char data_val;
-	data_val = e2k_read8(UART_BASE + 1);
+	data_val = e2k_read8((UART_BASE + 1));
 	rmb();
 	return (data_val);
 }
 
 static inline uint8_t
-am85c30_com_inb_command(void* iomem_addr, uint8_t reg)
+am85c30_com_inb_command(uintptr_t iomem_addr, uint8_t reg)
 {
 	uint8_t reg_val;
 	if (reg != 0)
-		e2k_write8(reg, UART_BASE);
+		e2k_write8(reg, (UART_BASE));
 	wmb();
-	reg_val = e2k_read8(UART_BASE);
+	reg_val = e2k_read8((UART_BASE));
 	rmb();
 	return (reg_val);
 }
 
 static inline void
-am85c30_com_outb_command(void *iomem_addr, uint8_t reg, uint8_t val)
+am85c30_com_outb_command(uintptr_t iomem_addr, uint8_t reg, uint8_t val)
 {
 	if (reg != 0)
-		e2k_write8(reg, UART_BASE);
-	e2k_write8(val, UART_BASE);
+		e2k_write8(reg, (UART_BASE));
+	e2k_write8(val, (UART_BASE));
 	wmb();
 }
 
-
 static inline void am85c30_sync(void)
 {
-	(void)e2k_read8(UART_BASE);
+	(void)e2k_read8((UART_BASE));
 	rmb();
 }
 
@@ -83,9 +83,9 @@ int am85c30_putc(struct uart *dev, int ch) {
 	unsigned long port;
 
 	port = UART_BASE;
-	while ((am85c30_com_inb_command((void*)port, AM85C30_RR0) & AM85C30_D2) == 0)
+	while ((am85c30_com_inb_command(port, AM85C30_RR0) & AM85C30_D2) == 0)
 		;
-	am85c30_com_outb((void*)port + 0x01, ch);
+	am85c30_com_outb(port + 0x01, ch);
 	am85c30_sync();
 
 	return 0;
@@ -97,11 +97,10 @@ static int am85c30_has_symbol(struct uart *dev) {
 	port = UART_BASE;
 	uint8_t val;
 
-	val = am85c30_com_inb_command((void*)port, AM85C30_RR0);
+	val = am85c30_com_inb_command(port, AM85C30_RR0);
 
 	return val & AM85C30_D0;
 }
-
 
 static int am85c30_getc(struct uart *dev) {
 	unsigned long port;
@@ -112,12 +111,11 @@ static int am85c30_getc(struct uart *dev) {
 	while (am85c30_has_symbol(NULL) == 0) {
 	}
 
-	r1 = am85c30_com_inb_command(port, AM85C30_RR1);
-	ch = am85c30_com_inb(port+1);
+	r1 = am85c30_com_inb_command((uintptr_t)port, AM85C30_RR1);
+	ch = am85c30_com_inb((uintptr_t)(port+1));
 
 	return ch;
 }
-
 
 static const struct uart_ops am85c30_uart_ops = {
 	.uart_getc = am85c30_getc,
@@ -148,13 +146,7 @@ static const struct uart_params uart_diag_params = {
 	.irq = false,
 };
 
-const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-	.diag = {
-		.ops = &uart_diag_ops,
-	},
-	.uart = &uart0,
-	.params = &uart_diag_params,
-};
+DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
 
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);

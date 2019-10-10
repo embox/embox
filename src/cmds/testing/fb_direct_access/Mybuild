@@ -16,6 +16,5 @@ package embox.cmd.testing
 module fb_direct_access {
 	source "fb_direct_access.c"
 
-	depends embox.driver.video.fb
+	depends embox.lib.fb_draw
 }
-

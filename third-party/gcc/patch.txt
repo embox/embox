@@ -1,0 +1,43 @@
+diff -aur gcc-6.3.0-orig/gcc/c/Make-lang.in gcc-6.3.0/gcc/c/Make-lang.in
+--- gcc-6.3.0-orig/gcc/c/Make-lang.in	2016-01-04 17:30:50.000000000 +0300
++++ gcc-6.3.0/gcc/c/Make-lang.in	2019-04-23 14:41:25.065778460 +0300
+@@ -63,9 +63,9 @@
+ # compute checksum over all object files and the options
+ cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+ 	$(C_OBJS) $(BACKEND) $(LIBDEPS) 
+-	build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
+-                     checksum-options > cc1-checksum.c.tmp && 		 \
+-	$(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c
++#	build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
++#                     checksum-options > cc1-checksum.c.tmp && 		 \
++#	$(srcdir)/../move-if-change cc1-checksum.c.tmp cc1-checksum.c
+ 
+ cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
+ 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
+diff -aur gcc-6.3.0-orig/gcc/cp/Make-lang.in gcc-6.3.0/gcc/cp/Make-lang.in
+--- gcc-6.3.0-orig/gcc/cp/Make-lang.in	2016-03-09 01:30:44.000000000 +0300
++++ gcc-6.3.0/gcc/cp/Make-lang.in	2019-04-23 14:41:25.065778460 +0300
+@@ -92,9 +92,9 @@
+ # compute checksum over all object files and the options
+ cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
+ 	$(CXX_OBJS) $(BACKEND) $(LIBDEPS) 
+-	build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(LIBDEPS) \
+-                     checksum-options > cc1plus-checksum.c.tmp &&	   \
+-	$(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c
++#	build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(LIBDEPS) \
++#                     checksum-options > cc1plus-checksum.c.tmp &&	   \
++#	$(srcdir)/../move-if-change cc1plus-checksum.c.tmp cc1plus-checksum.c
+ 
+ cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
+ 	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+diff -aur gcc-6.3.0-orig/libstdc++-v3/configure gcc-6.3.0/libstdc++-v3/configure
+--- gcc-6.3.0-orig/libstdc++-v3/configure	2016-12-12 21:03:30.000000000 +0300
++++ gcc-6.3.0/libstdc++-v3/configure	2019-04-23 14:43:10.271167273 +0300
+@@ -78260,7 +78260,7 @@
+ 
+     ;;
+   *)
+-    as_fn_error "No support for this host/target combination." "$LINENO" 5
++    # as_fn_error "No support for this host/target combination." "$LINENO" 5
+    ;;
+ esac

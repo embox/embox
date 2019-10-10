@@ -1,0 +1,12 @@
+package embox.driver.clock
+
+module mb_timer extends embox.arch.clock {
+	source "mb_timer.c"
+
+	option number mbtimer_base
+	option number irq_num
+
+	depends embox.kernel.irq
+	depends embox.kernel.time.timer_handler
+	depends embox.driver.periph_memory
+}

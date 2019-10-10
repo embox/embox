@@ -1,5 +1,6 @@
 package third_party.qt
 
+@LinkerSection(text="qt_text",rodata="qt_rodata",data="qt_data",bss="qt_bss")
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include/QtCore")
 @BuildDepends(embox.lib.libsupcxx)
@@ -9,6 +10,9 @@ package third_party.qt
 static module core {
 	option boolean stl_support=false
 	option boolean process_support=false
+	option boolean fonts_support=true
+	option boolean vnc_support=true
+	option string qconfig="full"
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libQtCore.a", "libQtGui.a", "libQtMultimedia.a",
@@ -16,7 +20,6 @@ static module core {
 		"libQtTest.a", "libQtXml.a"
 
 	@NoRuntime depends embox.compat.libc.all
-	@NoRuntime depends embox.lib.cxx.lib
 	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.fs.rootfs
 	@NoRuntime depends embox.compat.posix.LibPosix
@@ -25,6 +28,7 @@ static module core {
 	@NoRuntime depends embox.compat.posix.proc.waitpid
 	@NoRuntime depends embox.lib.LibExecStub
 	@NoRuntime depends embox.compat.posix.pthread_key
+	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
 	@NoRuntime depends embox.lib.libsupcxx
 	@NoRuntime depends embox.lib.libgcc
 }

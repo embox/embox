@@ -16,31 +16,29 @@
 #include <net/inetdevice.h>
 #include <net/util/macaddr.h>
 #include <cJSON.h>
-#include <embox/cmd.h>
-
-EMBOX_CMD(http_admin_main);
+#include <util/log.h>
 
 static char *http_admin_build_iface_list(void) {
-        struct ifaddrs *i_ifa, *ifa = NULL;
+	struct ifaddrs *i_ifa, *ifa = NULL;
 	cJSON *iface_array;
-       	char *json_list;
+	char *json_list;
 
 	iface_array = cJSON_CreateArray();
 	if (!iface_array) {
 		goto outerr;
 	}
 
-        if (-1 == getifaddrs(&ifa)) {
+	if (-1 == getifaddrs(&ifa)) {
 		goto outerr;
-        }
+	}
 
-        for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
+	for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
 		struct in_device *iface_dev;
 		struct sockaddr *iaddr = i_ifa->ifa_addr;
 		cJSON *iface_obj;
 		char buf[64];
 
-                if (iaddr == NULL || iaddr->sa_family != AF_INET) {
+		if (iaddr == NULL || iaddr->sa_family != AF_INET) {
 			continue;
 		}
 
@@ -70,9 +68,10 @@ static char *http_admin_build_iface_list(void) {
 		if (!iface_dev) {
 			goto outerr;
 		}
-		macaddr_print((unsigned char *) buf, (unsigned char *) iface_dev->dev->dev_addr);
+		macaddr_print((unsigned char *) buf,
+			(unsigned char *) iface_dev->dev->dev_addr);
 		cJSON_AddStringToObject(iface_obj, "mac", buf);
-        }
+	}
 
 	json_list = cJSON_PrintUnformatted(iface_array);
 
@@ -112,26 +111,32 @@ static void http_admin_post(char *post_data) {
 	if (!strcmp(action, "iface_update")) {
 		cJSON *iface_desc = cJSON_GetObjectItem(post_json, "data");
 
-		iface_dev = inetdev_get_by_name(cJSON_GetObjectString(iface_desc, "name"));
+		log_debug("Action: iface update");
+
+		iface_dev = inetdev_get_by_name(
+			cJSON_GetObjectString(iface_desc, "name"));
 		if (!iface_dev) {
 			goto outerr;
 		}
 
-		if (1 != inet_pton(AF_INET, cJSON_GetObjectString(iface_desc, "ip"), &if_addr)) {
+		if (1 != inet_pton(AF_INET,
+				cJSON_GetObjectString(iface_desc, "ip"), &if_addr)) {
 			goto outerr;
 		}
 		if (inetdev_set_addr(iface_dev, if_addr.s_addr)) {
 			goto outerr;
 		}
 
-		if (1 != inet_pton(AF_INET, cJSON_GetObjectString(iface_desc, "netmask"), &if_netmask)) {
+		if (1 != inet_pton(AF_INET,
+				cJSON_GetObjectString(iface_desc, "netmask"), &if_netmask)) {
 			goto outerr;
 		}
 		if (inetdev_set_mask(iface_dev, if_netmask.s_addr)) {
 			goto outerr;
 		}
 
-		if (!macaddr_scan((unsigned char *)cJSON_GetObjectString(iface_desc, "mac"), if_hwaddr)) {
+		if (!macaddr_scan((unsigned char *)cJSON_GetObjectString(
+				iface_desc, "mac"), if_hwaddr)) {
 			goto outerr;
 		}
 		if (netdev_set_macaddr(iface_dev->dev, if_hwaddr)) {
@@ -141,11 +146,15 @@ static void http_admin_post(char *post_data) {
 		system("flash_settings store");
 	}
 
+	cJSON_Delete(post_json);
+	return;
+
 outerr:
+	log_error("failed");
 	cJSON_Delete(post_json);
 }
 
-static int http_admin_main(int argc, char *argv[]) {
+int main(int argc, char *argv[]) {
 	char *method;
 
 	printf(
@@ -162,7 +171,6 @@ static int http_admin_main(int argc, char *argv[]) {
 	} else if (0 == strcmp("POST", method)) {
 		char buf[256];
 		size_t clen = atoi(getenv("CONTENT_LENGTH"));
-
 		if (clen < sizeof(buf) && 0 < fread(buf, clen, 1, stdin)) {
 			buf[clen] = '\0';
 			http_admin_post(buf);

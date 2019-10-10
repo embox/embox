@@ -7,6 +7,7 @@
  */
 
 #include <string.h>
+#include <inttypes.h>
 
 #include <asm/hal/mmu.h>
 #include <asm/regs.h>
@@ -19,7 +20,7 @@
 #include <framework/mod/options.h>
 #include <kernel/printk.h>
 
-EMBOX_UNIT_INIT(mmu_init);
+//EMBOX_UNIT_INIT(mmu_init);
 
 #define DOMAIN_ACCESS OPTION_GET(NUMBER, domain_access)
 #define CTX_NUMBER    32 /* TODO: make it related to number of tasks */
@@ -70,6 +71,7 @@ void _print_mmu_regs(void);
 * @note Set flag CR_M at c1, the control register
 */
 void mmu_on(void) {
+	mmu_init();
 #ifndef NOMMU
 	__asm__ __volatile__ (
 		"mrc p15, 0, r0, c1, c0, 0\n\t"
@@ -116,12 +118,12 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 	return val;
 }
 
-mmu_ctx_t mmu_create_context(mmu_pgd_t *pgd) {
+mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
 	return (mmu_ctx_t) pgd;
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
-	printk("set ctx %0x\n", ctx);
+	printk("set ctx 0x%" PRIx32 "\n", (uint32_t)ctx);
 	uint32_t ttbr0 = arm_get_ttbr0();
 	ttbr0 &= ~TTBR0_ADDR_MASK;
 	ttbr0 |= ctx & TTBR0_ADDR_MASK;
@@ -155,8 +157,8 @@ void arm_set_asid(uint32_t asid) {
  *
  * @return Pointer to translation table
  */
-mmu_pgd_t *mmu_get_root(mmu_ctx_t ctx) {
-	return (void*) ctx;
+uintptr_t *mmu_get_root(mmu_ctx_t ctx) {
+	return (uintptr_t *) ctx;
 }
 
 /* Software accessible MMU registers */

@@ -11,6 +11,8 @@ static module str {
 	source "strchr.c"
 	source "strchrnul.c"
 	source "strcmp.c"
+	source "strcoll.c"
+	source "strxfrm.c"
 	source "stpcpy.c"
 	source "strcpy.c"
 	source "strcspn.c"

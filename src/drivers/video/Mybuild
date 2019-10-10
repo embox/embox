@@ -1,14 +1,24 @@
 /*FIXME mybuild wrong packet name */
 package embox.driver.video
 
+module fb_header {
+	@IncludeExport(path="drivers/video")
+	source "fb.h"
+}
+
+static module fb_section {
+	option number size = 0
+
+	source "fb.lds.S"
+}
+
 module fb {
 	source "fb.c"
 
-	@IncludeExport(path="drivers/video")
-	source "fb.h"
-
 	option number fb_amount=2
 	option number log_level = 0
+
+	depends fb_header
 	depends embox.mem.pool
 	@NoRuntime depends embox.compat.libc.all
 	depends fb_videomodes
@@ -36,6 +46,7 @@ module bochs {
 	depends embox.driver.pci
 	@NoRuntime depends fb
 	@NoRuntime depends embox.compat.libc.all
+	depends embox.compat.posix.sys.mman.mmap_api
 }
 
 module raspi_video {
@@ -44,6 +55,8 @@ module raspi_video {
 	depends embox.driver.mailbox.bcm2835_mailbox
 	@NoRuntime depends fb
 	@NoRuntime depends embox.compat.libc.all
+	depends embox.mem.vmem_device_memory
+	depends embox.compat.posix.sys.mman.mmap
 }
 
 module cirrus_logic {
@@ -54,6 +67,7 @@ module cirrus_logic {
 
 	depends fb
 	depends embox.driver.pci
+	depends embox.compat.posix.sys.mman.mmap_api
 }
 
 module generic {

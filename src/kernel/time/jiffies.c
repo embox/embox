@@ -11,11 +11,12 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
-EMBOX_UNIT_INIT(module_init);
-
 const struct clock_source *cs_jiffies;
 
 clock_t clock_sys_ticks(void) {
+	if (!cs_jiffies) {
+		return 0;
+	}
 	return (clock_t)cs_jiffies->jiffies;
 }
 
@@ -36,7 +37,7 @@ uint32_t clock_freq(void) {
 	return cs_jiffies->event_device->event_hz;
 }
 
-static int module_init(void) {
+int jiffies_init(void) {
 	const struct clock_source *cs;
 	struct time_dev_conf jiffies_conf = {
 		HW_TIMER_PERIOD
@@ -53,4 +54,8 @@ static int module_init(void) {
 	cs->event_device->config(&jiffies_conf);
 
 	return 0;
+}
+
+int time_before(clock_t now, clock_t wait) {
+       return now > wait;
 }

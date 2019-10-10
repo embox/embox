@@ -1,5 +1,13 @@
 package embox.arch.microblaze
 
-module mmu extends embox.arch.generic.mmu {
+module mmu extends embox.mem.vmem {
 	source "mmu_core.c"
+	source "mmu.c"
+	source "mmu.h"
+
+	depends embox.mem.vmem_depends	
+}
+
+module mmuinfo extends embox.arch.mmuinfo {
+	source "mmuinfo.c"
 }

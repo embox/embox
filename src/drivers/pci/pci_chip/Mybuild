@@ -27,3 +27,12 @@ module pci_chip_elbrus extends pci_chip {
 	@IncludeExport(path="drivers/pci/pci_chip")
 	source "pci_utils.h"
 }
+
+module gpex extends pci_chip {
+	option number log_level = 1
+
+	source "gpex.c"
+
+	@IncludeExport(path="drivers/pci/pci_chip")
+	source "pci_utils.h"
+}

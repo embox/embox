@@ -8,6 +8,8 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <inttypes.h>
+
 #include <mem/phymem.h>
 #include <mem/vmem/vmem_alloc.h>
 #include <mem/vmem.h>
@@ -16,23 +18,20 @@
 static void print_vmem(struct page_allocator *pgd_allocator,
 		struct page_allocator *pmd_allocator,
 		struct page_allocator *pte_allocator) {
-	int is_on_vmem = vmem_mmu_enabled();
 
 	printf("\nVIRTUAL MEMORY:\n");
-	printf("vmem is %s\n", is_on_vmem ? "ON" : "OFF");
 
-	if (is_on_vmem) {
-		printf("PGD tables count / free - %zu / %zu\n", pgd_allocator->pages_n,
-					pgd_allocator->free / pgd_allocator->page_size);
-		printf("PMD tables count / free - %zu / %zu\n", pmd_allocator->pages_n,
-					pmd_allocator->free / pmd_allocator->page_size);
-		if (pte_allocator) {
-			printf("PTE tables count / free - %zu / %zu\n", pte_allocator->pages_n,
-					pte_allocator->free / pte_allocator->page_size);
-		} else {
-			printf("PTE do not available in this configuration\n");
-		}
+	printf("PGD tables count / free - %zu / %zu\n", pgd_allocator->pages_n,
+				pgd_allocator->free / pgd_allocator->page_size);
+	printf("PMD tables count / free - %zu / %zu\n", pmd_allocator->pages_n,
+				pmd_allocator->free / pmd_allocator->page_size);
+	if (pte_allocator) {
+		printf("PTE tables count / free - %zu / %zu\n", pte_allocator->pages_n,
+				pte_allocator->free / pte_allocator->page_size);
+	} else {
+		printf("PTE do not available in this configuration\n");
 	}
+
 	printf("-----------------------------------------\n");
 }
 
@@ -79,7 +78,7 @@ static void print_segments(void) {
 	printf("\nPERIPH SEGMENTS:\n");
 
 	for (int i = 0; i < size; i++) {
-		printf("seg_num %d: start - 0x%x, end - 0x%x, len - 0x%x\n",
+		printf("seg_num %d: start - 0x%" PRIx32 ", end - 0x%" PRIx32 ", len - 0x%" PRIx32 "\n",
 				i, buff[i]->start, buff[i]->start + buff[i]->len, buff[i]->len);
 	}
 

@@ -2,7 +2,8 @@
 PKG_NAME := ext2fuse
 PKG_VER  := 0.8.1
 
-PKG_SOURCES := http://downloads.sourceforge.net/project/$(PKG_NAME)/$(PKG_NAME)/$(PKG_VER)/$(PKG_NAME)-src-$(PKG_VER).tar.gz
+PKG_SOURCES := http://downloads.sourceforge.net/project/$(PKG_NAME)/$(PKG_NAME)/$(PKG_VER)/$(PKG_NAME)-src-$(PKG_VER).tar.gz \
+	http://download.embox.rocks/$(PKG_NAME)-src-$(PKG_VER).tar.gz
 PKG_MD5     := 8926c6eeb9ea17846466ca4bd7143489
 
 PKG_PATCHES := patch.txt

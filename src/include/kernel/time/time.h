@@ -38,8 +38,11 @@ typedef uint64_t cycle_t;
  */
 typedef int64_t time64_t;
 
+#include <sys/cdefs.h>
+__BEGIN_DECLS
+
 /* gettimeofday is posix function, but settimeofday is not. */
-extern void settimeofday(struct timespec *ts, struct timezone *tz);
+extern void setnsofday(const struct timespec *ts, const struct timezone *tz);
 extern void getnsofday(struct timespec *t, struct timezone *tz);
 
 extern struct timespec ns_to_timespec(const __s64 nsec);
@@ -117,5 +120,8 @@ static inline cycle_t ns_to_cycles(uint32_t hz, time64_t ns) {
 extern clock_t ns2jiffies(time64_t ns);
 extern clock_t ms2jiffies(time64_t ms);
 extern time64_t jiffies2ms(clock_t jiff);
+extern int jiffies_init(void);
+
+__END_DECLS
 
 #endif /* KERNEL_TIME_TIME_H_ */

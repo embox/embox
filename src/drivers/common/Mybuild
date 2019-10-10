@@ -10,7 +10,6 @@ module common {
 	source "device.c"
 
 	depends embox.compat.libc.str
-	depends embox.fs.driver.devfs
 	depends embox.util.indexator
 }
 
@@ -23,8 +22,8 @@ module periph_memory_mmap extends periph_memory {
 
 	source "memory.c"
 
-	depends embox.arch.mmu
-	depends embox.mem.mmap_api
+	@NoRuntime depends embox.mem.mmap
+	depends embox.kernel.task.kernel_task
 	depends embox.util.Array
 }
 

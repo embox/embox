@@ -1,30 +1,16 @@
 package embox.mem
 
-@DefaultImpl(embox.mem.mmap_nommu)
-abstract module mmap_api {
-	depends embox.kernel.task.resource.mmap
+module mmap_header {
+	@IncludeExport(path="mem/mapping")
+	source "mmap.h"
 }
 
-module mmap_nommu extends mmap_api {
-	source "mmap_nommu.h", "mmap_nommu.c"
+module mmap {
+	source "mmap.c"
 
-	depends embox.mem.page_api
-	depends embox.mem.phymem
-}
-
-module mmap_mmu extends mmap_api {
-	option number log_level=0
-
-	source "mmap_mmu.h"
-	source "mmap_mmu.c"
-	source "marea.c"
-	source "mmap_kernel.c"
-	source "mmap_userspace.c"
-
-	
+	depends marea
+	depends mmap_header
 	depends embox.kernel.task.resource.mmap
-	depends embox.kernel.task.resource.mmap_notify
-	/* TODO tsort loop: mmap_init calls for vmem_init_context, which must be initialized */
-	depends embox.mem.vmem
-	depends embox.arch.mmu
+
+	depends embox.arch.mmu /* FIXME. depends only for runtime sequence */
 }

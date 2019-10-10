@@ -1,0 +1,23 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "block_dev_test",
+	help = "Simple test for block device r/w operations",
+	man  = '''
+		NAME
+			block_dev_test -- simple test for block device r/w operations
+		SYNOPSIS
+			block_dev_test [-hl] [-i iterations]
+				-l -- Show list of all block devices
+				-i -- R/W operations count
+		AUTHORS
+			Alexander Kalmuk
+	''')
+
+module block_dev_test {
+	source "block_dev_test.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
+}

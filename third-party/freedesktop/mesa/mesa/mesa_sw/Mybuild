@@ -3,13 +3,23 @@ package third_party.freedesktop.mesa
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildDepends(third_party.STLport.libstlportg)
 @BuildDepends(third_party.freedesktop.mesa.libdrm)
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/include")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/src/gallium/auxiliary")
 module  mesa_osmesa {
 	source "^BUILD/extbld/^MOD_PATH/install/libOSMesa.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libglapi.a"
 
+	depends embox.compat.posix.util.gettimeofday
+	depends embox.compat.posix.sched
 	depends embox.compat.posix.fs.rewinddir_api
 	depends embox.compat.posix.fs.chown_api
 	depends embox.compat.posix.fs.mknod_api
+	depends embox.fs.syslib.idesc_mmap_api
+	depends embox.compat.posix.sys.mman.mmap_api
 	depends third_party.freedesktop.mesa.libdrm
 	@NoRuntime depends embox.compat.posix.pthread_key
+
+	depends embox.lib.cxx.libsupcxx_standalone
 }

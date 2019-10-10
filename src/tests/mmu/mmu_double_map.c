@@ -41,7 +41,7 @@ static int mmu_case_setup(void) {
 	ctx = vmem_current_context();
 
 	res = vmem_map_region(ctx, (mmu_vaddr_t) test_page,
-			(mmu_vaddr_t) TEST_VIRT_ADDR_MAP, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+			(mmu_vaddr_t) TEST_VIRT_ADDR_MAP, VMEM_PAGE_SIZE, PROT_WRITE | PROT_READ);
 
 	if (res) {
 		return res;

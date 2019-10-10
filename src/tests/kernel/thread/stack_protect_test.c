@@ -13,7 +13,6 @@ EMBOX_TEST_SUITE("Stack protection test suite");
 TEST_SETUP(case_setup);
 TEST_TEARDOWN(case_teardown);
 
-static int mmu_was_enabled;
 static mmu_ctx_t ctx;
 static volatile int exception_flag;
 static volatile int first_check;
@@ -25,7 +24,7 @@ static inline int soverflow_handler(uint32_t nr, void *data) {
 	exception_flag = 1;
 
 	vmem_unmap_region(ctx, page, VMEM_PAGE_SIZE);
-	vmem_map_region(ctx, page, page, VMEM_PAGE_SIZE, VMEM_PAGE_WRITABLE);
+	vmem_map_region(ctx, page, page, VMEM_PAGE_SIZE, PROT_WRITE | PROT_READ);
 
 	return 1;
 }
@@ -62,20 +61,13 @@ TEST_CASE("Stack overflow causes exception") {
 
 static int case_setup(void) {
     ctx = vmem_current_context();
-    vmem_set_context(ctx);
+    mmu_set_context(ctx);
 
-    mmu_was_enabled = vmem_mmu_enabled();
-    if (!mmu_was_enabled) {
-        vmem_on();
-    }
     stack_protect_enable();
     return 0;
 }
 
 static int case_teardown(void) {
-    if (vmem_mmu_enabled() && !mmu_was_enabled) {
-        vmem_off();
-    }
     stack_protect_disable();
     return 0;
 }

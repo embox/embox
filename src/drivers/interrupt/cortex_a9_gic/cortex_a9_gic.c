@@ -6,6 +6,7 @@
  */
 
 #include <assert.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <sys/mman.h>
 
@@ -19,7 +20,7 @@
 #include <util/log.h>
 
 #define GIC_CPU_BASE           OPTION_GET(NUMBER, cpu_base_addr)
-#define GIC_DISTRIBUTOR_BASE   (uint32_t)OPTION_GET(NUMBER, distributor_base_addr)
+#define GIC_DISTRIBUTOR_BASE   OPTION_GET(NUMBER, distributor_base_addr)
 
 EMBOX_UNIT_INIT(gic_init);
 
@@ -77,25 +78,25 @@ EMBOX_UNIT_INIT(gic_init);
 #define SPURIOUS_IRQ          0x3FF
 
 static int gic_init(void) {
-	uint32_t tmp = REG_LOAD(GICD_CTLR);
-	REG_STORE(GICD_CTLR, tmp | 0x1);
+	uint32_t tmp = REG32_LOAD(GICD_CTLR);
+	REG32_STORE(GICD_CTLR, tmp | 0x1);
 
-	tmp = REG_LOAD(GICC_CTLR);
-	REG_STORE(GICC_CTLR, tmp | 0x1);
+	tmp = REG32_LOAD(GICC_CTLR);
+	REG32_STORE(GICC_CTLR, tmp | 0x1);
 
 	/* Set priority filter level */
-	REG_STORE(GICC_PMR, 0xFF);
+	REG32_STORE(GICC_PMR, 0xFF);
 
-	tmp = REG_LOAD(GICD_TYPER);
+	tmp = REG32_LOAD(GICD_TYPER);
 	printk("\n"
-			"\t\tNumber of SPI: %d\n"
-			"\t\tNumber of supported CPU interfaces: %d\n"
+			"\t\tNumber of SPI: %"PRIu32"\n"
+			"\t\tNumber of supported CPU interfaces: %"PRIu32"\n"
 			"\t\tSecutity Extension %s implemented\n",
 			GICD_TYPER_ITLINES(tmp) * 32,
 			1 + GICD_TYPER_CPUNR(tmp),
 			GICD_TYPER_SECEXT(tmp) ? "" : "not ");
 	if (tmp & (1 << 10)) {
-		printk("\t\tNumber of LSPI: %d", GICD_TYPER_LSPI(tmp));
+		printk("\t\tNumber of LSPI: %"PRIu32, GICD_TYPER_LSPI(tmp));
 	} else {
 		printk("\t\tLSPI not implemented");
 	}
@@ -111,17 +112,17 @@ void irqctrl_enable(unsigned int irq) {
 
 	/* Writing zeroes to this register has no
 	 * effect, so we just write single "1" */
-	REG_STORE(GICD_ISENABLER(n), 1 << m);
+	REG32_STORE(GICD_ISENABLER(n), 1 << m);
 
 	/* N-N irq model: all CPUs receive this IRQ */
-	REG_STORE(GICD_ICFGR(n), 1 << m);
+	REG32_STORE(GICD_ICFGR(n), 1 << m);
 
 	/* All CPUs do listen to this IRQ */
 	n = irq / 4;
 	m = irq % 4;
-	tmp  = REG_LOAD(GICD_ITARGETSR(n));
+	tmp  = REG32_LOAD(GICD_ITARGETSR(n));
 	tmp |= 0xFF << (8 * m);
-	REG_STORE(GICD_ITARGETSR(n), tmp);
+	REG32_STORE(GICD_ITARGETSR(n), tmp);
 }
 
 void irqctrl_disable(unsigned int irq) {
@@ -130,7 +131,7 @@ void irqctrl_disable(unsigned int irq) {
 
 	/* Writing zeroes to this register has no
 	 * effect, so we just write single "1" */
-	REG_STORE(GICD_ICENABLER(n), 1 << m);
+	REG32_STORE(GICD_ICENABLER(n), 1 << m);
 }
 
 void irqctrl_force(unsigned int irq) {
@@ -142,11 +143,11 @@ int irqctrl_pending(unsigned int irq) {
 
 /* Sends an EOI (end of interrupt) signal to the PICs. */
 void irqctrl_eoi(unsigned int irq) {
-	REG_STORE(GICC_EOIR, irq);
+	REG32_STORE(GICC_EOIR, irq);
 }
 
 void interrupt_handle(void) {
-	unsigned int irq = REG_LOAD(GICC_IAR);
+	unsigned int irq = REG32_LOAD(GICC_IAR);
 	if (irq == SPURIOUS_IRQ)
 		return;
 
@@ -174,9 +175,5 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
-static struct periph_memory_desc gic_mem = {
-	.start = GIC_CPU_BASE,
-	.len   = 0x2020,
-};
-
-PERIPH_MEMORY_DEFINE(gic_mem);
+PERIPH_MEMORY_DEFINE(gic_cpu, GIC_CPU_BASE, 0x2020);
+PERIPH_MEMORY_DEFINE(gic_distributor, GIC_DISTRIBUTOR_BASE, 0x1000);

@@ -15,6 +15,10 @@ __BEGIN_DECLS
 #define DIRENT_DNAME_LEN 40
 
 struct dirent {
+	/* TODO: POSIX requiers ino_t to be defined as unsigned integer
+	 * https://pubs.opengroup.org/onlinepubs/009695399/basedefs/sys/types.h.html
+	 * but in Embox d_ino is used as a pointer in some modules, which
+	 * limits VFS to use inodes from first 4 GiB of memory  */
 	ino_t  d_ino;                    /* File serial number. */
 	char   d_name[DIRENT_DNAME_LEN]; /* Name of entry. */
 

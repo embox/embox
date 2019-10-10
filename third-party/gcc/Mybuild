@@ -1,22 +1,38 @@
 package third_party.gcc
 
-@Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/core/install/include")
-static module core extends embox.lib.libsupcxx {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
-	source "libgcc.a", "libsupc++.a"
+@BuildDepends(third_party.lib.OpenLibm)
+@BuildDepends(gcc_build)
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include")
+static module libsupcxx extends embox.lib.libsupcxx {
+	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
+	source "libsupc++.a"
 
-	depends embox.compat.posix.proc.atexit_api
-	@NoRuntime depends gcc_stubs
-	@NoRuntime depends embox.lib.cxx.libsupcxx
+	@NoRuntime depends gcc_build
 }
 
-module gcc_stubs {
-	@IncludePathBefore("$(THIRDPARTY_DIR)/gcc/include")
-	source "stubs.c"
+@BuildDepends(third_party.lib.OpenLibm)
+@BuildDepends(gcc_build)
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include")
+static module libgcc extends embox.lib.libgcc {
+	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
+	source "libgcc.a"
 
-	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.compat.libc.str
-	@NoRuntime depends embox.lib.Printk
+	@NoRuntime depends gcc_build
+}
+
+@BuildDepends(third_party.lib.OpenLibm)
+@BuildDepends(gcc_build)
+@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include/std")
+static module libstdcxx extends embox.lib.stl {
+	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
+	source "libstdc++.a"
+
+	@NoRuntime depends gcc_build
+}
+
+@BuildDepends(third_party.lib.OpenLibm)
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include")
+static module gcc_build {
 	depends embox.compat.posix.proc.atexit_api
 }

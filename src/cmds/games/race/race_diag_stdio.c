@@ -39,5 +39,5 @@ void race_print_score(const int score) {
 }
 
 int race_is_car_moved(void) {
-	return !diag_kbhit() && ' ' == diag_getc();
+	return diag_kbhit() && ' ' == diag_getc();
 }

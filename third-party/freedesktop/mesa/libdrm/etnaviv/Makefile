@@ -2,10 +2,7 @@
 PKG_NAME := libdrm
 PKG_VER  := 2.4.96
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
-
-
-PKG_SOURCES := https://dri.freedesktop.org/libdrm/$(PKG_ARCHIVE_NAME)
+PKG_SOURCES := https://dri.freedesktop.org/libdrm/$(PKG_NAME)-$(PKG_VER).tar.gz
 
 PKG_MD5     := dd0a89154ee3d60c37ee5b8099979875
 

@@ -212,9 +212,4 @@ void clk_reg_dump(void) {
 	}
 }
 
-static struct periph_memory_desc ccm_mem = {
-	.start = CCM_BASE,
-	.len   = 0x100,
-};
-
-PERIPH_MEMORY_DEFINE(ccm_mem);
+PERIPH_MEMORY_DEFINE(ccm, CCM_BASE, 0x100);

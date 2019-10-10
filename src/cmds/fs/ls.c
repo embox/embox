@@ -9,10 +9,11 @@
  */
 
 #include <errno.h>
-#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <stdio.h>
+#include <unistd.h>
 
 #include <dirent.h>
 #include <pwd.h>
@@ -20,7 +21,7 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-typedef void item_print(const char *path, stat_t *sb);
+typedef void item_print(const char *path, struct stat *sb);
 
 static void print_usage(void) {
 	printf("Usage: ls [-hlR] path\n");
@@ -34,11 +35,11 @@ static void print_access(int flags) {
 
 #define BUFLEN 1024
 
-static void printer_simple(const char *path, stat_t *sb) {
+static void printer_simple(const char *path, struct stat *sb) {
 	printf(" %s\n", path);
 }
 
-static void printer_long(const char *path, stat_t *sb) {
+static void printer_long(const char *path, struct stat *sb) {
 	struct passwd pwd, *res;
 	struct group grp, *gres;
 	char buf[BUFLEN];
@@ -98,7 +99,7 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 		int pathlen = strlen(path);
 		int dent_namel = strlen(dent->d_name);
 		char line[pathlen + dent_namel + 3];
-		stat_t sb;
+		struct stat sb;
 
 		if (pathlen > 0) {
 			sprintf(line, "%s/%s", path, dent->d_name);
@@ -158,7 +159,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (optind < argc) {
-		stat_t sb;
+		struct stat sb;
 
 		if (-1 == stat(argv[optind], &sb)) {
 			return -errno;
@@ -171,7 +172,7 @@ int main(int argc, char **argv) {
 
 		sprintf(dir_name, "%s", argv[optind]);
 	} else {
-		sprintf(dir_name, "%s", "");
+		strcpy(dir_name, ".");
 	}
 
 	if (NULL == (dir = opendir(dir_name))) {

@@ -16,9 +16,18 @@
 
 EMBOX_UNIT_INIT(uart_init);
 
-#define UART_NUM	OPTION_GET(NUMBER,num)
-#define IRQ_NUM		(58 + UART_NUM)
-#define PIN_CONFIG	OPTION_GET(BOOLEAN,pin_config)
+#define UART_NUM        OPTION_GET(NUMBER,num)
+#define IMX             OPTION_GET(NUMBER,imx)
+
+#if IMX == 6
+#define IRQ_NUM         (58 + UART_NUM)
+#else
+#define IRQ_NUM         (26 + UART_NUM)
+#endif
+
+#define PIN_CONFIG      OPTION_GET(BOOLEAN,pin_config)
+
+#if IMX == 6
 
 #if UART_NUM == 0
 #define UART_BASE 0x02020000
@@ -33,6 +42,26 @@ EMBOX_UNIT_INIT(uart_init);
 #else
 #error Wrong UART number!
 #endif
+
+#elif IMX == 8
+
+#if UART_NUM == 0
+#define UART_BASE 0x30860000
+#elif UART_NUM == 1
+#define UART_BASE 0x30890000
+#elif UART_NUM == 2
+#define UART_BASE 0x30880000
+#elif UART_NUM == 3
+#define UART_BASE 0x30A60000
+#else
+#error Wrong UART number!
+#endif
+
+#else /* IMX */
+
+#error Unsupported i.MX version
+
+#endif /* IMX */
 
 #define UART(x)		(*(volatile uint32_t *)(UART_BASE + (x)))
 
@@ -79,6 +108,7 @@ static void imxuart_configure_pins(void) {
 	 * and then set source for the UART like follows; look manual for
 	 * more details */
 #if PIN_CONFIG
+#if IMX == 6
 	switch(UART_NUM) {
 	case 0:
 		/* TX */
@@ -109,12 +139,14 @@ static void imxuart_configure_pins(void) {
 		break;
 	}
 #endif
+#endif
 	return;
 }
 
 static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
 	imxuart_configure_pins();
 
+#if IMX == 6
 	/* Reset */
 	UART(UCR2) = 0;
 	while(UART(UTS) & UTS_RST);
@@ -140,6 +172,7 @@ static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
 		reg |= UCR1_RRDYEN;
 		UART(UCR1) = reg;
 	}
+#endif
 	return 0;
 }
 
@@ -189,21 +222,10 @@ static const struct uart_params uart_diag_params = {
 	.irq = false,
 };
 
-const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-	.diag = {
-		.ops = &uart_diag_ops,
-	},
-	.uart = &uart0,
-	.params = &uart_diag_params,
-};
+DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
 
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
 
-static struct periph_memory_desc imx_uart_mem = {
-	.start = UART_BASE,
-	.len   = 0xAC,
-};
-
-PERIPH_MEMORY_DEFINE(imx_uart_mem);
+PERIPH_MEMORY_DEFINE(imx_uart, UART_BASE, 0xAC);

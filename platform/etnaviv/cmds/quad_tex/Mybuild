@@ -1,0 +1,22 @@
+package platform.etnaviv.cmd
+
+@App
+@AutoCmd
+@Cmd(name = "quad_tex",
+	help = "Draw quad-texangle with purple background using gallium")
+@BuildDepends(third_party.freedesktop.mesa.libdrm_etnaviv)
+@BuildDepends(third_party.freedesktop.mesa.mesa_etnaviv)
+@Build(stage=2,script="true")
+module quad_tex {
+	option boolean saturate_texture = false
+	
+	source "quad_tex.c"
+
+	depends third_party.freedesktop.mesa.libdrm_etnaviv
+	depends third_party.freedesktop.mesa.mesa_etnaviv
+	depends third_party.lib.estransform
+
+	@InitFS
+	source "embox_logo256x256.tex"
+}
+

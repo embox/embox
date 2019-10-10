@@ -1,50 +1,34 @@
 package embox.mem
 
-@DefaultImpl(vmem_nommu)
-abstract module vmem_api {
+module vmem_header {
+	@IncludeExport(path="mem")
+	source "vmem.h"
 }
 
-module vmem_nommu extends vmem_api {
+module vmem_nommu extends embox.arch.mmu {
+	@IncludeExport(path="mem",target_name="vmem.h")
 	source "vmem_nommu.h"
-
-	depends embox.fs.syslib.idesc_mmap_api
 }
 
-module vmem extends vmem_api {
+module vmem extends embox.arch.mmu {
 	option number log_level = 1
 
-	source "vmem.c", "vmem_mapper.c", "vmem_unmapper.c"
+	source "vmem.c"
+	source "mapper.c"
 	source "vmem_context.c"
-	source "vmem_device_memory.c"
-	source "mmap.c"
-
-	depends embox.arch.mmu
-	depends vmem_alloc
-	depends embox.mem.phymem
-	depends embox.mem.mmap_mmu
-	depends embox.fs.syslib.idesc_mmap_api
 }
 
-module vmem_alloc {
-	option number log_level = 1
-
-	option number virtual_pages_count = 20
-
-	option number pgd_count = 2048
-	option number pmd_count = 2048
-	option number pte_count = 2048
-
-	option number pgd_align = 0
-	option number pmd_align = 0
-	option number pte_align = 0
-
-	source "vmem_alloc.c"
-	source "vmem_page.lds.S"
-
+module vmem_depends {
+	depends embox.mem.vmem_alloc
 	depends embox.mem.page_api
-	depends embox.arch.mmu
-}
 
-module vmem_starter {
-	source "vmem_starter.c"
+	depends embox.mem.mmap_header
+	@NoRuntime depends embox.mem.mmap
+	depends embox.fs.syslib.idesc_mmap_api
+	depends vmem_header
+	depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.resource.mmap
+	depends embox.driver.periph_memory_mmap
+
+	depends embox.mem.vmem_device_memory_full
 }

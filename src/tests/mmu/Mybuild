@@ -4,7 +4,6 @@ module mmu_core {
 	source "mmu_core.c"
 
 	depends embox.framework.LibFramework
-	depends embox.mem.vmem
 
 	depends embox.arch.mmu
 	depends embox.arch.testtrap
@@ -14,8 +13,6 @@ module mmu_double_map {
 	option number vaddr_offset = 0x80000000
 
 	source "mmu_double_map.c"
-
-	depends embox.mem.vmem
 
 	depends embox.arch.mmu
 	depends embox.arch.testtrap

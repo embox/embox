@@ -1,0 +1,15 @@
+package embox.mem
+
+@DefaultImpl(vmem_device_memory_stub)
+abstract module vmem_device_memory {
+}
+
+module vmem_device_memory_stub extends vmem_device_memory {
+	source "vmem_device_memory_stub.c"
+}
+
+module vmem_device_memory_full extends vmem_device_memory {
+	source "vmem_device_memory.c"
+
+	depends embox.mem.mmap
+}

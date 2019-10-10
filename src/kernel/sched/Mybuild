@@ -19,6 +19,8 @@ module sched {
 	depends wait_queue
 
 	depends embox.kernel.sched.current.api
+
+	//depends embox.arch.clock
 }
 
 module schedee {
@@ -27,7 +29,6 @@ module schedee {
 	depends strategy.runq.api
 	depends priority.priority
 	depends affinity.affinity
-	depends timing.timing
 }
 
 @DefaultImpl(sched_ticker_preempt)

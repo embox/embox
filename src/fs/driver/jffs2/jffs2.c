@@ -38,7 +38,8 @@
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
 #include <fs/file_desc.h>
-#include <drivers/block_dev/flash/flash.h>
+#include <drivers/flash/flash.h>
+#include <drivers/flash/emulator.h>
 
 #define FS_NAME "jffs2"
 
@@ -1651,7 +1652,7 @@ static int jffs2fs_format(void *dev) {
 		return -ERANGE;
 	}
 
-	return flash_emu_dev_create(dev_node, flash_node_name);
+	return flash_emu_dev_create(flash_node_name, 16 * 1024, 1024);
 }
 
 static struct block_dev *jffs_bdev_by_node(struct node *dev_node, int *err) {

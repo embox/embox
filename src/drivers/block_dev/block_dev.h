@@ -74,6 +74,8 @@ struct indexator;
 struct block_dev;
 struct dev_module;
 
+extern struct block_dev **get_bdev_tab(void);
+
 extern struct block_dev *block_dev_create(const char *name, void *driver, void *privdata);
 extern struct block_dev *block_dev(void *bdev);
 
@@ -86,7 +88,7 @@ extern int block_dev_write(void *bdev, const char *buffer, size_t count, blkno_t
 extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
 extern int block_dev_destroy(void *bdev);
-extern int block_dev_named(char *name, struct indexator *indexator);
+extern int block_dev_named(const char *name, struct indexator *indexator);
 extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
 extern struct block_dev *block_dev_create_common(const char *path, void *driver, void *privdata);
@@ -100,6 +102,11 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 
 
 extern int block_devs_init(void);
+
+#include <drivers/device.h>
+static inline struct block_dev *dev_module_to_bdev(struct dev_module *devmod) {
+	return (struct block_dev *) devmod->dev_priv;
+}
 
 /* This part is actually just for dvfs */
 struct dev_module;

@@ -7,7 +7,7 @@ package embox.cmd.fs
 		NAME
 			mount - mount device into directory
 		SYNOPSIS
-			mount [-h]  [ -t type ] dev dir
+			mount [-h]  [ -t fs_type dev dir ]
 		DESCRIPTION
 			Note that one does not really mount a device, one mounts
 			a filesystem (of the given type) found on the device.

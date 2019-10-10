@@ -58,7 +58,7 @@ static void diag_xen_putc(const struct diag *diag, char ch) {
 	HYPERVISOR_event_channel_op(EVTCHNOP_send, &event);
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 	.init = diag_xen_init,
 	.putc = diag_xen_putc,
 );

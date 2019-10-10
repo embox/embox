@@ -1,0 +1,8 @@
+package embox.driver.flash
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f7_qspi {
+	source "stm32f7_qspi.c"
+
+	depends third_party.bsp.st_bsp_api
+}

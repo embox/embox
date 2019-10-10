@@ -59,7 +59,7 @@ package embox.cmd
 module usb_whitelist {
 	source "usb_whitelist.c"
 
-	depends embox.driver.usb.whitelist_api
+	depends embox.driver.usb.whitelist_dev
 	depends embox.framework.LibFramework
 }
 

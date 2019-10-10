@@ -37,14 +37,6 @@
 
 #include <sys/mman.h>
 
-// because of strcmp
-#include <string.h>
-// this function has to be added to string.h
-static inline int strcoll(const char *s1, const char *s2) {
-	printf(">>> strcoll(%s,%s)\n", s1, s2);
-	return strcmp(s1, s2);
-}
-
 // The following definitions are needed only for testlib and are not linked
 
 // Required by libtiff

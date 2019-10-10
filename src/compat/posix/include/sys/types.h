@@ -78,6 +78,9 @@ typedef long long loff_t;
 typedef unsigned long fsblkcnt_t;
 typedef unsigned long fsfilcnt_t;
 
+typedef unsigned long blkcnt_t;
+typedef unsigned long blksize_t;
+
 #endif /* __ASSEMBLER__ */
 
 __END_DECLS

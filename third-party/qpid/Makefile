@@ -11,7 +11,7 @@ include $(EXTBLD_LIB)
 
 QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h \
 	-I$(ROOT_DIR)/third-party/qpid/include \
-	-I$(EXTERNAL_BUILD_DIR)/third_party/STLport/libstlportg/include/stlport \
+	-I$(EXTERNAL_BUILD_DIR)/third_party/STLport/libstlportg/install/include/stlport \
 	-I$(ROOT_DIR)/build/extbld/third_party/gcc/core/install/include \
 	-I$(SRC_DIR)/compat/cxx/include \
 	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include"

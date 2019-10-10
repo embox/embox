@@ -8,7 +8,7 @@ include $(SRCGEN_DIR)/image.rule.mk
 EMBOX_IMPORTED_CPPFLAGS  = $(filter -D% -U% -I% -nostdinc,$(filter-out -D"% -D'%,$(EMBOX_EXPORT_CPPFLAGS)))
 
 EMBOX_IMPORTED_CFLAGS    = $(filter -g% -f% -m% -O% -G% -E% -Wa%,$(CFLAGS))
-EMBOX_IMPORTED_CXXFLAGS  = $(filter -g% -f% -m% -O% -G% -E% -Wa%,$(CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS  = $(filter -g% -f% -m% -O% -G% -E% -Wa% -std=%,$(CXXFLAGS))
 
 EMBOX_IMPORTED_LDFLAGS   = $(filter -static -nostdlib -E%,$(LDFLAGS))
 EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m elf_i386,$(LDFLAGS)))
@@ -48,19 +48,15 @@ else
 root2dist = $1
 endif
 
-# TODO: Probably it is more correct to impove Embox's cxx includes, rather than
-# use gcc includes. In any case, it is an issue we need to think about.
-EMBOX_CPPFLAGS_WITHOUT_LIBSTDCXX = $(filter-out %cxx/include, $(EMBOX_IMPORTED_CPPFLAGS))
-
 $(EMBOX_GCC_ENV): $(MKGEN_DIR)/build.mk $(MKGEN_DIR)/image.rule.mk
 $(EMBOX_GCC_ENV): mk/flags.mk mk/extbld/toolchain.mk
 $(EMBOX_GCC_ENV): | $(dir $(EMBOX_GCC_ENV))
 	@echo EMBOX_CROSS_COMPILE='"$(CROSS_COMPILE)"'                       > $@
-	@echo EMBOX_IMPORTED_CPPFLAGS='"$(call root2dist,$(EMBOX_CPPFLAGS_WITHOUT_LIBSTDCXX))"' >> $@
-	@echo EMBOX_IMPORTED_CFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CFLAGS))"'              >> $@
-	@echo EMBOX_IMPORTED_CXXFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CXXFLAGS))"'          >> $@
-	@echo EMBOX_IMPORTED_LDFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS))"'            >> $@
-	@echo EMBOX_IMPORTED_LDFLAGS_FULL='"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS_FULL))"'  >> $@
+	@echo EMBOX_IMPORTED_CPPFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CPPFLAGS))"'         >> $@
+	@echo EMBOX_IMPORTED_CFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CFLAGS))"'             >> $@
+	@echo EMBOX_IMPORTED_CXXFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CXXFLAGS))"'         >> $@
+	@echo EMBOX_IMPORTED_LDFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS))"'           >> $@
+	@echo EMBOX_IMPORTED_LDFLAGS_FULL='"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS_FULL))"' >> $@
 
 TOOLCHAIN_TEST_SRC := $(ROOT_DIR)/mk/extbld/toolchain_test.c
 TOOLCHAIN_TEST_OUT := $(OBJ_DIR)/toolchain_test

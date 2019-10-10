@@ -1,0 +1,39 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "mem",
+	help = "Prints the contents of memory",
+	man = '''
+		NAME
+			mem - reads from memory
+		SYNOPSIS
+			mem [-h] [-l -s -c] addr [-n count]
+		DESCRIPTION
+			Read from memory from address the specified number of units.
+		OPTIONS
+			-h
+				Shows usage
+			-l
+				Perform reading by sizeof(long)
+			-s
+				Perform reading by sizeof(short)
+			-s
+				Perform reading by sizeof(char)
+			addr
+				The target memory address
+			-n count
+				Number of units to read
+		EXAMPLES
+			mem 0x40000000 -n 32
+		SEE ALSO
+			wmem, testmem
+		AUTHORS
+			Alexey Fomin
+	''')
+module mem {
+	source "mem.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.posix.util.getopt
+	depends embox.framework.LibFramework
+}

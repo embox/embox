@@ -1,7 +1,17 @@
 package embox.arch.x86
 
-module mmu extends embox.arch.mmu {
+module mmu extends embox.mem.vmem {
+	option number log_level=0
+
 	option number page_size=4096
+
 	source "mmu.c", "mmu.h"
+
+	depends embox.mem.vmem_depends
 	depends embox.arch.x86.testtrap
+	depends embox.kernel.task.kernel_task
+}
+
+module mmuinfo extends embox.arch.mmuinfo {
+	source "mmuinfo.c"
 }

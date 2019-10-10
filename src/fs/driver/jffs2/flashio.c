@@ -16,7 +16,7 @@
 #include "nodelist.h"
 
 #include <drivers/block_dev.h>
-#include <drivers/block_dev/flash/flash.h>
+#include <drivers/flash/flash.h>
 #include <drivers/block_dev.h>
 #include <mem/sysmalloc.h>
 
@@ -148,7 +148,7 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 
 bool jffs2_flash_erase(struct jffs2_sb_info * c,
 			   struct jffs2_eraseblock * jeb) {
-	flash_getconfig_erase_t e;
+	flash_ioctl_erase_t e;
 	uint32_t err_addr;
 	int err;
 	uint32_t len = sizeof (e);
@@ -159,7 +159,7 @@ bool jffs2_flash_erase(struct jffs2_sb_info * c,
 	e.len = c->sector_size;
 	e.err_address = (uint32_t) &err_addr;
 
-	err = block_dev_ioctl(sb->bdev, GET_CONFIG_FLASH_ERASE, &e, len);
+	err = block_dev_ioctl(sb->bdev, FLASH_IOCTL_ERASE, &e, len);
 
 	return (err != ENOERR || e.flasherr != 0);
 }

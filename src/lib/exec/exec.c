@@ -12,13 +12,17 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <util/math.h>
+#include <util/binalign.h>
 #include <sys/mman.h>
 
 #include <lib/libelf.h>
 #include <kernel/usermode.h>
 #include <mem/mmap.h>
+#include <mem/vmem.h>
+#include <mem/phymem.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/mmap.h>
+#include <kernel/task/resource/task_phymem.h>
 
 #define AT_NULL		0		/* End of vector */
 #define AT_IGNORE	1		/* Entry should be ignored */
@@ -131,7 +135,6 @@ static int load_interp(char *filename, exec_t *exec) {
 	Elf32_Ehdr header;
 	Elf32_Phdr *ph_table, *ph;
 	Elf32_Addr base_addr;
-	struct marea *marea;
 	size_t size;
 	int err;
 	int fd = open(filename, O_RDONLY);
@@ -165,13 +168,15 @@ static int load_interp(char *filename, exec_t *exec) {
 		}
 	}
 
-	if (!(marea = mmap_alloc_marea(task_self_resource_mmap(), size, 0))) {
+	base_addr = mmap_alloc(task_self_resource_mmap(), size);
+	if (base_addr == 0) {
 		free(ph_table);
 		return -ENOMEM;
 	}
 
-	//base_addr = marea_get_start(marea);
-	base_addr = marea->start;
+	mmap_place(task_self_resource_mmap(), base_addr, size, 0);
+	vmem_map_region(vmem_current_context(), base_addr, base_addr, size,
+			PROT_WRITE | PROT_READ | PROT_EXEC | VMEM_PAGE_USERMODE);
 
 	for (int i = 0; i < header.e_phnum; i++) {
 		ph = &ph_table[i];
@@ -198,9 +203,8 @@ static int load_exec(const char *filename, exec_t *exec) {
 	size_t size;
 	Elf32_Phdr *ph_table;
 	Elf32_Phdr *ph;
-	struct marea *marea;
-	//void *pa;
 	int err;
+	void *paddr;
 	char interp[255];
 	int has_interp = 0;
 
@@ -252,17 +256,26 @@ static int load_exec(const char *filename, exec_t *exec) {
 			return -1;
 		}
 #else
+		size = binalign_bound(ph->p_memsz, MMU_PAGE_SIZE);
+		if (mmap_place(task_self_resource_mmap(), ph->p_vaddr, size,
+					PROT_EXEC | PROT_READ | PROT_WRITE)) {
+			free(ph_table);
+			return -ENOMEM;
+		}
 
-		marea = mmap_place_marea(task_self_resource_mmap(), ph->p_vaddr, ph->p_vaddr + ph->p_memsz, 0);
+		paddr = phymem_alloc(size);
+		task_resource_phymem_add(task_self(), paddr, size / MMU_PAGE_SIZE);
+
+		vmem_map_region(vmem_current_context(),
+				(mmu_paddr_t) paddr,
+				ph->p_vaddr,
+				size,
+				PROT_WRITE | PROT_READ | PROT_EXEC | VMEM_PAGE_USERMODE);
 
 		/* XXX brk is a max of ph's right sides. It unaligned now! */
 		mmap_set_brk(task_self_resource_mmap(),
 			max(mmap_get_brk(task_self_resource_mmap()), (void *) ph->p_vaddr + ph->p_memsz));
 
-		if (!marea) {
-			free(ph_table);
-			return -ENOMEM;
-		}
 #endif
 		if ((err = elf_read_segment(fd, ph, (void *) ph->p_vaddr))) {
 			free(ph_table);
@@ -288,10 +301,12 @@ static int load_exec(const char *filename, exec_t *exec) {
 }
 
 uint32_t mmap_create_stack(struct emmap *mmap) {
-	struct marea * marea;
-	marea = mmap_alloc_marea(mmap, 4096, 0);
-
-	return marea->end;
+	size_t size = 4096;
+	uintptr_t base = mmap_alloc(mmap, size);
+	mmap_place(task_self_resource_mmap(), base, size, 0);
+	vmem_map_region(mmap->ctx, base, base, size,
+			PROT_WRITE | PROT_READ | PROT_EXEC | VMEM_PAGE_USERMODE);
+	return base + size;
 }
 
 //extern uint32_t mmap_userspace_create(struct emmap *emmap, size_t stack_size);
@@ -302,7 +317,6 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 	int err;
 	exec_t exec;
 	struct emmap *emmap;
-	//struct marea *marea;
 
 	emmap = task_self_resource_mmap();
 
@@ -318,8 +332,6 @@ int execve_syscall(const char *filename, char *const argv[], char *const envp[])
 	}
 
 	stack = mmap_create_stack(emmap);
-	//stack = mmap_userspace_create(emmap, 0x1000);
-	//marea = mmap_place_marea(emmap, 0xFFFF8000, 0xFFFFF000, 0);
 
 	fill_stack(&stack, &exec, argv, envp);
 

@@ -1,6 +1,7 @@
 /* This file provides an drawing primitives
  example of work nuklear on OS Embox */
 #include <stdio.h>
+#include <inttypes.h>
 #include <sys/mman.h>
 
 #include <drivers/video/fb.h>
@@ -76,7 +77,7 @@ int main(int argc, char *argv[]) {
 	struct nk_color rgb_white = { .a = 0xff, .r = 0xff, .g = 0xff, .b = 0xff};
 	fb_info = fb_lookup(0);
 
-	printf("%dx%d, %dbpp\n", fb_info->var.xres, fb_info->var.yres,
+	printf("%" PRId32 "x%" PRId32 ", %" PRId32 "bpp\n", fb_info->var.xres, fb_info->var.yres,
 			fb_info->var.bits_per_pixel);
 
 	/* Figure out the size of the screen in bytes */

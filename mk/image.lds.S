@@ -18,12 +18,14 @@ PHDRS {
 	rodata   PT_LOAD  FLAGS(5);  /* R_E */
 	data     PT_LOAD  FLAGS(6);  /* RW_ */
 	bss      PT_LOAD  FLAGS(6);  /* RW_ */
+	#include <phdrs.lds.h>
 }
 
 SECTION_SYMBOLS(text)
 SECTION_SYMBOLS(rodata)
 SECTION_SYMBOLS(data)
 SECTION_SYMBOLS(bss)
+#include <section_symbols.lds.h>
 
 SECTIONS {
 	.text : ALIGN(TEXT_ALIGNMENT) {
@@ -54,11 +56,11 @@ SECTIONS {
 		_dtors_end   = .;
 
 		ALIGNMENT();
-		/*_eh_frame_start = .;*/
-		__EH_FRAME_BEGIN__ = .;
+		_eh_frame_begin = .;
 		KEEP(*(.eh_frame))
 		KEEP(*(.eh_frame.*))
-		/*KEEP(*(.gcc_except_table))*/
+		KEEP(*(.eh_frame_end))
+		/* KEEP(*(.gcc_except_table*)) */
 
 		ALIGNMENT();
 		*(.checksum)
@@ -97,12 +99,7 @@ SECTIONS {
 	_bss_len = _bss_end - _bss_vma;
 	_bss_len_with_reserve = SIZEOF(.bss);
 
-#if HAS_SECTION_REGION(heap)
-	.heap : ALIGN(DATA_ALIGNMENT) {
-		*(.heap)
-		*(.heap.*)
-	} SECTION_REGION(heap)
-#endif
+	#include <sections.lds.h>
 
 	/DISCARD/ : {
 		*(.comment)

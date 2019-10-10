@@ -92,21 +92,10 @@ static const struct uart_params uart_diag_params = {
 		.irq = false,
 };
 
-const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &uart0,
-		.params = &uart_diag_params,
-};
+DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
 
 static int uart_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
 
-static const struct periph_memory_desc pl011_mem = {
-	.start = UART_BASE,
-	.len   = 0x48,
-};
-
-PERIPH_MEMORY_DEFINE(pl011_mem);
+PERIPH_MEMORY_DEFINE(pl011, UART_BASE, 0x48);

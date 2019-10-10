@@ -38,4 +38,9 @@ extern uint32_t pci_write_config16(uint32_t bus, uint32_t dev_fn,
 extern uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, uint32_t value);
 
+/* PCI IRQ numbering depends on platform, this function calculates
+ * platform-specific IRQ number */
+struct pci_slot_dev;
+extern unsigned int pci_irq_number(struct pci_slot_dev *dev);
+
 #endif /* PCI_UTILS_H_ */

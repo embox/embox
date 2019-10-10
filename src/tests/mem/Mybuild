@@ -39,6 +39,7 @@ module slab {
 module mmap {
 	source "mmap.c"
 
-	depends embox.mem.vmem
+	depends embox.arch.mmu
 	depends embox.kernel.task.resource.mmap_full
+	depends embox.compat.posix.sys.mman.mmap
 }

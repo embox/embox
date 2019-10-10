@@ -33,7 +33,6 @@ module infomem {
 	@NoRuntime depends embox.compat.libc.stdio.printf
 	depends embox.compat.posix.util.getopt
 	depends embox.mem.phymem
-	depends embox.mem.vmem_alloc
-	depends embox.mem.vmem
+
 	depends embox.driver.periph_memory
 }

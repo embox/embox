@@ -10,19 +10,22 @@
 #define _DRIVERS_COMMON_MEMORY_H
 
 #include <stdint.h>
+#include <util/array.h>
 
 struct periph_memory_desc {
-	uint32_t start;
-	uint32_t len;
+	uintptr_t start;
+	uintptr_t len;
 };
 
 #define PERIPH_MAX_SEGMENTS 64
 
-#define PERIPH_MEMORY_DEFINE(_mem_desc)	\
+#define PERIPH_MEMORY_DEFINE(dev_name, mem_base, mem_len) \
+		static const struct periph_memory_desc dev_name ## _mem = { \
+				.start = mem_base, .len = mem_len}; \
 	ARRAY_SPREAD_DECLARE(const struct periph_memory_desc *, \
 			__periph_mem_registry);	\
 	ARRAY_SPREAD_ADD(__periph_mem_registry, \
-			&_mem_desc)
+			&dev_name ## _mem)
 
 extern int periph_desc(struct periph_memory_desc **buff);
 

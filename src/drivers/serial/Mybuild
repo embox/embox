@@ -61,13 +61,6 @@ module raspi_uart extends embox.driver.diag.diag_api {
 	depends diag
 }
 
-module xuartlite extends embox.driver.diag.diag_api {
-	source "xuartlite.c"
-
-	option number xuartlite_base
-	option number irq_num
-}
-
 module stm32_usart extends embox.driver.diag.diag_api {
 	option number baud_rate
 	/*option boolean hw_flow = false*/
@@ -114,4 +107,12 @@ module multiclet extends embox.driver.diag.diag_api {
 	source "multiclet_uart.c"
 
 	depends third_party.bsp.multiclet.core
+}
+
+module sifive_uart extends embox.driver.diag.diag_api {
+	option number base_addr
+	option number clock_freq
+	option number baud_rate
+
+	source "sifive_uart.c"
 }

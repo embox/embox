@@ -1,0 +1,22 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(	name = "qspi_loader",
+	help = "Load data to stm32f7discovery QSPI memory",
+	man  = '''
+     	NAME
+		qspi_loader - load data to stm32f7discovery QSPI memory via tftp
+	SYNOPSIS
+		qspi_loader FILE_NAME SERVER_ADDERSS
+	AUTHORS
+		Denis Deryugin <deryugin.denis@gmail.com>
+	''')
+@BuildDepends(third_party.bsp.st_bsp_api)
+module qspi_loader {
+	source "qspi_loader.c"
+
+	depends embox.lib.tftp
+	depends embox.driver.flash.stm32f7_qspi
+	depends third_party.bsp.st_bsp_api
+	depends third_party.bsp.stmf7cube.stm32f7_discovery_bsp
+}

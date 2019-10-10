@@ -8,14 +8,21 @@
 #include <util/log.h>
 
 #include <stdint.h>
+
 #include <drivers/pci/pci.h>
 #include <asm/io.h>
-
 
 /* Using for search PCI configuration space start position address */
 #define PCI_REG_ADDR(bus, physdev, fun, where) \
 	(((where) & ~3) | ((fun) << 12) | ((physdev) << 15) | ((bus) << 20))
 
+static inline uint8_t uint32_to_uint8(uint32_t val, int offset) {
+	return (uint8_t) ((val >> (offset * 8)) & 0xFF);
+}
+
+static inline uint16_t uint32_to_uint16(uint32_t val, int offset) {
+	return (uint16_t) ((val >> (offset * 8)) & 0xFFFF);
+}
 
 static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, int size, void *ptr) {
@@ -25,11 +32,11 @@ static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 	/* pci_mem_core_t *ppmc = (pci_mem_core_t *) (pMACHINE->pPMC); */
 	/* TODO Get SIC_RT_PCICFG_BASE */
 	unsigned long pci_conf_base = 0x200000;
-	unsigned long dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
+	uintptr_t dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
 
 	pci_conf_base <<= 12;
 
-	tmp = e2k_read32((void*)(dev_addr + pci_conf_base));
+	tmp = e2k_read32((dev_addr + pci_conf_base));
 
 	if (tmp == 0xFFFFFFFF) {
 		* (uint32_t *) ptr = PCI_VENDOR_WRONG;
@@ -37,12 +44,14 @@ static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 	}
 
 	if (size == 1) {
-		* (uint8_t *) ptr = tmp;
+		* (uint8_t *) ptr = uint32_to_uint8(tmp, where & 3);
 	} else if (size == 2) {
-		* (uint16_t *) ptr = tmp;
+		* (uint16_t *) ptr = uint32_to_uint16(tmp, where & 3);
 	} else {
 		* (uint32_t *) ptr = tmp;
 	}
+
+	log_debug("bus %d def_fn %d where %d result 0x%X", bus, dev_fn, where, tmp);
 
 	return PCIUTILS_SUCCESS;
 }
@@ -53,11 +62,11 @@ static inline uint32_t e2k_pci_config_write(uint32_t bus, uint32_t dev_fn,
 	/* pci_mem_core_t *ppmc = (pci_mem_core_t *) (pMACHINE->pPMC); */
 	/* TODO Get SIC_RT_PCICFG_BASE */
 	unsigned long pci_conf_base = 0x200000;
-	unsigned long dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
+	uintptr_t dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
 
 	log_error("*******************");
 
-	e2k_write32(value, (void*)dev_addr + pci_conf_base);
+	e2k_write32(value, dev_addr + pci_conf_base);
 /*
 	ptr = (void *) (pci_conf_base + where);
 	if (size == 1) {
@@ -108,4 +117,9 @@ uint32_t pci_write_config16(uint32_t bus, uint32_t dev_fn,
 uint32_t pci_write_config32(uint32_t bus, uint32_t dev_fn,
 		uint32_t where,	uint32_t value) {
 	return e2k_pci_config_write(bus, dev_fn, where, 4, value);
+}
+
+/* NOTE: this may be inaccurate! */
+unsigned int pci_irq_number(struct pci_slot_dev *dev) {
+	return (unsigned int) dev->irq_line;
 }

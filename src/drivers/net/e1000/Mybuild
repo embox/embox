@@ -10,6 +10,8 @@ module e1000 {
 	depends embox.driver.pci
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq
+	depends embox.net.core
 	depends embox.net.dev
 	depends embox.net.entry_api
+	depends embox.net.netfilter
 }

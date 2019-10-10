@@ -28,7 +28,7 @@ module telnetd {
 	depends embox.kernel.thread.core
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.proc.signal
-	depends embox.cmd.sh.tish
+	depends embox.cmd.sh.shell_api
 	depends embox.compat.posix.utmp_api
 	depends embox.compat.posix.proc.exec
 	depends embox.compat.posix.idx.ppty

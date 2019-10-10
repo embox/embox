@@ -7,6 +7,7 @@
  */
 
 #include <fcntl.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -715,7 +716,7 @@ int main(int argc, char *argv[]) {
 	height = fb->var.yres;
 	frame_size = width * height * fb->var.bits_per_pixel / 8;
 
-	printf("Screen: %dx%d (%dbpp)\n", width, height,
+	printf("Screen: %dx%d (%"PRIu32"bpp)\n", width, height,
 			fb->var.bits_per_pixel);
 
 	if ((version = drmGetVersion(fd))) {

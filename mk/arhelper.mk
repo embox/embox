@@ -10,7 +10,6 @@
 #   O_FILES: input objects
 #   APP_ID:  an identifier which (if set) is used to rename object sections
 #   AR and ARFLAGS: archiver ('ar') and creation flags (e.g. 'rcs')
-#   OBJCOPY and OBJCOPYFLAGS: used when APP_ID is set
 #
 
 $(TARGET) :  # default
@@ -72,12 +71,6 @@ a_objs := $(foreach a,$(A_FILES),$(foreach abs,$(abspath $a), \
 
 
 objs = $(o_objs) $(a_objs)
-
-ifdef APP_ID
-$(o_objs) $(a_objs) :
-	$(OBJCOPY) $(OBJCOPYFLAGS) $< $@
-endif
-
 
 $(TARGET) : mk/arhelper.mk
 $(TARGET) : $(o_objs) $(a_objs)

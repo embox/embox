@@ -3,7 +3,7 @@ package third_party.qpid
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/include/qpid",
 		ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qpid/core/install/lib")
-@BuildDepends(third_party.boost.core)
+@BuildDepends(third_party.boost.libs)
 @BuildDepends(third_party.e2fsprogs.core)
 @BuildDepends(third_party.STLport.libstlportg)
 /* NOTE this was static module, until some day I tried to connect to broker via tcp.
@@ -30,7 +30,7 @@ module core {
 	@NoRuntime depends embox.compat.posix.util.utsname
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.net.lib.getifaddrs
-	@NoRuntime depends third_party.boost.core
+	@NoRuntime depends third_party.boost.libs
 	@NoRuntime depends third_party.e2fsprogs.core
 	@NoRuntime depends third_party.STLport.libstlportg
 	@NoRuntime depends embox.compat.posix.pthread_key

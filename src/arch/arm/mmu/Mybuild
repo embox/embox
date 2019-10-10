@@ -1,6 +1,6 @@
 package embox.arch.arm
 
-module mmu_section extends embox.arch.mmu {
+module mmu_section extends embox.mem.vmem {
 	option number page_size=0x100000
 	option number domain_access=3
 	option number log_level = 0
@@ -11,9 +11,13 @@ module mmu_section extends embox.arch.mmu {
 	source "mmu_common.c"
 
 	source "mmu_section.c"
+
+	depends embox.mem.vmem_header
+	depends embox.mem.vmem_alloc_pool
+	depends embox.mem.vmem_depends
 }
 
-module mmu_small_page extends embox.arch.mmu {
+module mmu_small_page extends embox.mem.vmem {
 	option number page_size=4096
 	option number domain_access=3
 	option number log_level = 0
@@ -26,7 +30,13 @@ module mmu_small_page extends embox.arch.mmu {
 
 	source "mmu_small_page.c"
 
-	depends embox.mem.vmem
+	depends embox.mem.vmem_header
+	depends embox.mem.vmem_alloc_pool
+	depends embox.mem.vmem_depends
+}
+
+module mmuinfo extends embox.arch.mmuinfo {
+	source "mmuinfo.c"
 }
 
 module mmu_test extends embox.arch.testtrap {

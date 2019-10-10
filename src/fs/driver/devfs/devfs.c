@@ -6,13 +6,13 @@
  * @author Nikolay Korotky
  */
 
+#include <fs/file_operation.h>
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 
 #include <fs/file_desc.h>
 #include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
-#include <drivers/block_dev/flash/flash_dev.h>
 
 static int devfs_init(void *par) {
 	return 0;
@@ -32,11 +32,6 @@ static int devfs_mount(void *dev, void *dir) {
 	}
 
 	ret = char_dev_init_all();
-	if (ret != 0) {
-		return ret;
-	}
-
-	ret = flash_devs_init();
 	if (ret != 0) {
 		return ret;
 	}

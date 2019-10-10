@@ -22,9 +22,14 @@
 #define PCI_VENDOR_ID_XILINX              0x10EE
 #define PCI_VENDOR_ID_VIRTIO              0x1AF4
 #define PCI_VENDOR_ID_SMI                 0x126f
+#define PCI_VENDOR_ID_RED_HAT             0x1b36
+
+#define PCI_VENDOR_ID_MCST_PCIE_BRIDGE    0xe3e3
+#define PCI_VENDOR_ID_MCST_TMP            0x1fff
 
 /* Cirrus device id's */
 #define PCI_DEV_ID_CIRRUS_5446            0x00b8
+#define PCI_DEV_ID_CIRRUS_CS4281          0x6005
 
 /* Realtek device id's */
 #define PCI_DEV_ID_REALTEK_8029           0x8029
@@ -68,12 +73,16 @@
 #define PCI_DEV_ID_INTEL_IGC_GM965        0x2a02
 #define PCI_DEV_ID_INTEL_82371SB_ISA      0x7000
 #define PCI_DEV_ID_INTEL_82371SB_IDE      0x7010
+#define PCI_DEV_ID_INTEL_82371SB_USB      0x7020
+#define PCI_DEV_ID_INTEL_PIIX4_ACPI       0x7113
+#define PCI_DEV_ID_INTEL_82801DB_USB_EHCI 0x24cd
+#define PCI_DEV_ID_INTEL_82801I_USB_EHCI  0x293A
 
 /* Bochs device id's */
 #define PCI_DEV_ID_BOCHS_VGA              0x1111
 
 /* Apple device id's */
-#define PCI_DEV_ID_APPLE_OHCI_HOST	  0x003f
+#define PCI_DEV_ID_APPLE_OHCI_HOST        0x003f
 
 #define PCI_DEV_ID_PLX_PEX8619            0x8619
 
@@ -82,10 +91,24 @@
 /* VirtIO device id's */
 #define PCI_DEV_ID_VIRTIO_NET             0x1000
 
-#define PCI_DEV_ID_LYNX_EXP	              0x0750
-#define PCI_DEV_ID_LYNX_SE	              0x0718
-#define PCI_DEV_ID_LYNX_EM	              0x0712
-#define PCI_DEV_ID_LYNX_3DM	              0x0720
-#define PCI_DEV_ID_VOYAGER 	              0x0501
+#define PCI_DEV_ID_LYNX_EXP               0x0750
+#define PCI_DEV_ID_LYNX_SE                0x0718
+#define PCI_DEV_ID_LYNX_EM                0x0712
+#define PCI_DEV_ID_LYNX_3DM               0x0720
+#define PCI_DEV_ID_VOYAGER                0x0501
+
+/* MCST device id's */
+#define PCI_DEVICE_ID_MCST_SATA                 0x4748
+#define PCI_DEVICE_ID_MCST_ELBRUS_E1000         0x4D45
+#define PCI_DEVICE_ID_MCST_IDE                  0x4D49
+#define PCI_DEVICE_ID_MCST_USB_OHCI             0x554F
+#define PCI_DEVICE_ID_MCST_USB_EHCI             0x5545
+#define PCI_DEVICE_ID_MCST_PCI_BRIDGE           0x8000
+#define PCI_DEVICE_ID_MCST_PCIE_BRIDGE          0xabcd
+#define PCI_DEVICE_ID_MCST_VIRT_PCI_BRIDGE      0xe3e3
+
+/* Red Hat, Inc. */
+#define PCI_DEVICE_ID_QEMU_PCIE_HOST_BRINGE     0x0008
 
 #endif /* PCI_ID_H_ */
+

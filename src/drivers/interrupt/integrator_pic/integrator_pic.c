@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#include <drivers/common/memory.h>
 #include <kernel/critical.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
@@ -29,15 +30,6 @@ EMBOX_UNIT_INIT(integrator_pic_init);
  * Initialize the PIC
  */
 static int integrator_pic_init(void) {
-	if (NULL == mmap_device_memory(
-		(void*) ICU_BASE,
-		0x10,
-		PROT_READ | PROT_WRITE | PROT_NOCACHE,
-		MAP_FIXED,
-		(unsigned long) ICU_BASE)) {
-		return -1;
-	}
-
 	REG_STORE(ICU_IRQENCLR, ((1 << IRQCTRL_IRQS_TOTAL) - 1));
 	return 0;
 }
@@ -93,3 +85,5 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	printk("swi!\n");
 }
+
+PERIPH_MEMORY_DEFINE(icu, ICU_BASE, 0x10);

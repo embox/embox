@@ -23,21 +23,9 @@
 #include <drivers/pci/pci_driver.h>
 
 #define PCI_BUS_N_TO_SCAN OPTION_GET(NUMBER,bus_n_to_scan)
+#define PCI_IRQ_BASE      OPTION_GET(NUMBER,irq_base)
 
 EMBOX_UNIT_INIT(pci_init);
-
-typedef struct pci_slot {
-	uint8_t bus;
-	uint8_t slot;
-	uint8_t func;
-	uint16_t ven;
-	uint16_t dev;
-	uint8_t base_clase;
-	uint8_t subclass;
-	uint8_t rev;
-	uint8_t irq;
-	uint32_t bar[6];
-} pci_slot_t;
 
 POOL_DEF(devs_pool, struct pci_slot_dev, OPTION_GET(NUMBER,dev_quantity));
 
@@ -62,7 +50,8 @@ static int pci_get_slot_info(struct pci_slot_dev *dev) {
 	pci_read_config8(dev->busn, devfn, PCI_BASECLASS_CODE, &dev->baseclass);
 	pci_read_config8(dev->busn, devfn, PCI_SUBCLASS_CODE, &dev->subclass);
 	pci_read_config8(dev->busn, devfn, PCI_REVISION_ID, &dev->rev);
-	pci_read_config8(dev->busn, devfn, PCI_INTERRUPT_LINE, &dev->irq);
+	pci_read_config8(dev->busn, devfn, PCI_INTERRUPT_LINE, &dev->irq_line);
+	pci_read_config8(dev->busn, devfn, PCI_INTERRUPT_PIN, &dev->irq_pin);
 
 	for (bar_num = 0; bar_num < ARRAY_SIZE(dev->bar); bar_num ++) {
 		pci_read_config32(dev->busn, devfn,
@@ -70,6 +59,7 @@ static int pci_get_slot_info(struct pci_slot_dev *dev) {
 	}
 	dev->func = PCI_FUNC(devfn);
 	dev->slot = PCI_SLOT(devfn);
+	dev->irq = pci_irq_number(dev);
 
 	return 0;
 }

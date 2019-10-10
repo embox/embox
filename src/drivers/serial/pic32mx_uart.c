@@ -245,7 +245,7 @@ static int pic32_uart_diag_init(const struct diag *diag) {
 	return 0;
 }
 
-DIAG_OPS_DECLARE(
+DIAG_OPS_DEF(
 		.init = pic32_uart_diag_init,
 		.putc = pic32_uart_diag_putc,
 		.getc = pic32_uart_diag_getc,

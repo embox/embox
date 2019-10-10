@@ -1,9 +1,9 @@
 SECTIONS {
-	.bss.ktask : {
-		*(.bss.ktask)
+	.bss.embox.ktask : {
+		*(.bss.embox.ktask)
 
 		_ktask_resource_start = .;
-		*(.bss.ktask.resource)
+		*(.bss.embox.ktask.resource)
 		_ktask_resource_end = .;
 	}
 }

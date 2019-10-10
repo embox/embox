@@ -10,4 +10,8 @@
 
 #include <wchar.h>
 
+namespace std {
+	using ::mbstate_t;
+}
+
 #endif // CWCHAR_

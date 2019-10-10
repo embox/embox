@@ -1,0 +1,8 @@
+package mybuild.lang
+
+annotation LinkerSection {
+	string text
+	string data
+	string rodata
+	string bss
+}

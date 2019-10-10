@@ -8,7 +8,6 @@
 
 #include <unistd.h>
 #include <errno.h>
-#include <kernel/task.h>
 
 int isatty(int fd) {
 	struct stat st;

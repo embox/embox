@@ -1,0 +1,24 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "mkflashemu",
+	help = "make emulation bdev as flash device",
+	man = '''
+		NAME
+			mkflashemu - create a flash block device
+		SYNOPSIS
+			mkflashemu [-h] [[-n BLOCKS] [-b BLOCK_SIZE] dev_name]
+		DESCRIPTION
+			mkflashemu is used to create a pseudo flash device DEV, based on
+			block device named NAME
+		AUTHORS
+			Andrey Gazukin
+	''')
+module mkflashemu {
+	source "mkflashemu.c"
+
+	depends embox.driver.flash.emulator
+	depends embox.compat.libc.all
+	depends embox.compat.posix.util.getopt
+	depends embox.framework.LibFramework
+}

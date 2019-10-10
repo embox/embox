@@ -98,7 +98,7 @@ void sched_set_current(struct schedee *schedee) {
 
 static void sched_check_preempt(struct schedee *t) {
 	// TODO ask runq
-	if (schedee_priority_get(schedee_get_current()) <
+	if (schedee_priority_get(schedee_get_current()) <=
 			schedee_priority_get(t))
 		sched_post_switch(); // TODO SMP
 }

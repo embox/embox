@@ -105,7 +105,7 @@ static void clear_next(struct free_block *block) {
 static void set_end_size(struct free_block *block) {
 	size_t size = get_clear_size(block->size);
 
-	*(uint32_t *) ((void *) block + size - 4) = size;
+	*(uintptr_t *) ((void *) block + size - sizeof(block->size)) = size;
 }
 
 static struct free_block * concatenate_prev(struct free_block *block) {
@@ -116,7 +116,7 @@ static struct free_block * concatenate_prev(struct free_block *block) {
 		return block;
 	}
 
-	prev_size = *((uint32_t *) ((uint32_t *) block - 1));
+	prev_size = *((uintptr_t *) ((uintptr_t *) block - 1));
 	pblock = (struct free_block *) ((char *) block - get_clear_size(prev_size));
 
 	/* Set size for new free block */
@@ -153,7 +153,7 @@ static struct free_block * concatenate_next(struct free_block *block) {
 }
 
 static void block_set_size(struct free_block *block, size_t size) {
-	uint32_t flags = get_flags(block->size);
+	uintptr_t flags = get_flags(block->size);
 	block->size = flags | size;
 }
 
@@ -253,7 +253,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 	size = (size + (3)) & ~(3); /* align by word*/
 
 	for (link = free_blocks_list->next; link != free_blocks_list; link = link->next) {
-		block = (struct free_block *) ((uint32_t *) link - 1);
+		block = (struct free_block *) ((uintptr_t *) link - 1);
 		if ((size + sizeof(block->size)) > get_clear_size(block->size)) {
 			continue;
 		}
@@ -283,7 +283,7 @@ void *bm_memalign(void *heap, size_t boundary, size_t size) {
 			/* we already have size */
 		}
 
-		ret_addr = (void *) ((uint32_t *) block + 1);
+		ret_addr = (void *) ((uintptr_t *) block + 1);
 
 		heap_desc->count++;
 
@@ -301,7 +301,7 @@ void bm_free(void *heap, void *ptr) {
 	assert(ptr);
 
 	sched_lock();
-	block = (struct free_block *) ((uint32_t *) ptr - 1);
+	block = (struct free_block *) ((uintptr_t *) ptr - 1);
 
 	if (!block_is_busy(block)) {
 		sched_unlock();

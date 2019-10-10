@@ -1,27 +1,28 @@
 package embox.test.cxx
 
-module memory {
-	@IncludePath("$(SRC_DIR)/compat/cxx/include")
+@BuildDepends(embox.lib.libsupcxx)
+module memory_test {
 	source "memory.cpp"
 
-	depends embox.lib.cxx.lib
-	depends embox.framework.cmd
+	depends embox.lib.cxx.ConstructionPolicy
+	depends embox.lib.cxx.DestructionPolicy
+	@NoRuntime depends embox.lib.libsupcxx
 }
 
-module exceptions {
+@BuildDepends(embox.lib.libsupcxx)
+module exception_test {
 	source "exceptions.cpp"
 
-	depends embox.lib.cxx.libsupcxx
-	depends embox.framework.test
+	depends embox.lib.cxx.ConstructionPolicy
+	depends embox.lib.cxx.DestructionPolicy
+	@NoRuntime depends embox.lib.libsupcxx
 }
 
-module inheritance {
+@BuildDepends(embox.lib.libsupcxx)
+module inheritance_test {
 	source "inheritance.cpp"
 
-	depends embox.lib.cxx.lib
-	depends embox.framework.test
-}
-
-module appctorsdtors extends embox.lib.cxx.app {
-	source "appctorsdtors.cpp"
+	depends embox.lib.cxx.ConstructionPolicy
+	depends embox.lib.cxx.DestructionPolicy
+	@NoRuntime depends embox.lib.libsupcxx
 }

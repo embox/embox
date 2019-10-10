@@ -5,7 +5,7 @@
  * @version
  * @date 20.12.2017
  */
-
+#include <stdint.h>
 #include <asm/io.h>
 
 #include <embox/unit.h>
@@ -17,7 +17,7 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time_device.h>
 
-#define E2K_CLOCK_BASE 0x83200000
+#define E2K_CLOCK_BASE (uintptr_t)0x83200000
 #define IRQ_NR     OPTION_GET(NUMBER, irq_num)
 #define LT_FREQ    OPTION_GET(NUMBER, freq)
 
@@ -83,8 +83,8 @@ static int e2k_clock_init(void) {
 	irq_attach(IRQ_NR, e2k_clock_handler, 0, &e2k_clock_source, "e2k clock");
 
 	/* Setup frequency */
-	e2k_write32(clock_hz << 9, (void*)E2K_COUNTER_LIMIT);
-	e2k_write32(LT_INVERT_COUNTER_CNTR_LAUNCH, (void*)E2K_COUNTER_CONTROL);
+	e2k_write32(clock_hz << 9, E2K_COUNTER_LIMIT);
+	e2k_write32(LT_INVERT_COUNTER_CNTR_LAUNCH, E2K_COUNTER_CONTROL);
 
 	return 0;
 }

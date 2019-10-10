@@ -16,11 +16,15 @@ module block_common {
 	depends embox.mem.heap_place
 }
 
-module block {
+@DefaultImpl(block)
+abstract module block_api {
+}
+
+/* Deprecated version */
+module block extends block_api {
 	source "block_dev.c"
 
 	depends block_common
-
 	depends embox.fs.buffer_cache
 	depends embox.fs.buffer_crypt_api
 	depends embox.fs.rootfs
@@ -30,7 +34,8 @@ module block {
 	depends embox.mem.phymem
 }
 
-module block_dvfs {
+/* New version */
+module block_dvfs extends block_api {
 	source "block_dev_dvfs.c"
 	source "block_dev_idesc_dvfs.c"
 

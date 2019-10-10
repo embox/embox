@@ -1,20 +1,5 @@
 package embox.driver.serial
 
-@BuildDepends(third_party.bsp.st_f4.core)
-module stm_usart extends embox.driver.diag.diag_api {
-	option number baud_rate
-	option number usartx=6
-	/*option boolean hw_flow = false*/
-
-	source "stm_usart.c"
-
-	/*depends embox.driver.gpio.stm32*/
-	depends embox.driver.serial.core
-	depends embox.driver.serial.diag
-
-	depends third_party.bsp.st_f4.core
-}
-
 @BuildDepends(third_party.bsp.stmf3cube.core)
 module stm_usart_f3 extends embox.driver.diag.diag_api {
 	option number baud_rate
@@ -51,7 +36,7 @@ module stm_usart_f4 extends embox.driver.diag.diag_api {
 	depends third_party.bsp.stmf4cube.core
 }
 
-@BuildDepends(third_party.bsp.stmf7cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f7 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=1
@@ -65,7 +50,7 @@ module stm_usart_f7 extends embox.driver.diag.diag_api {
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
 
-	depends third_party.bsp.stmf7cube.core
+	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(embox.driver.diag.diag_api)

@@ -4,3 +4,9 @@ static module libarch extends embox.arch.libarch {
 	source "e2k_setjmp.S"
 	source "e2k_syscall.S"
 }
+
+static module vfork extends embox.arch.vfork_entry {
+	source "e2k_vfork.S"
+
+	depends embox.compat.posix.proc.vfork_entry
+}

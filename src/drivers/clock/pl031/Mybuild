@@ -1,0 +1,11 @@
+package embox.driver.clock
+
+module pl031 extends embox.arch.clock {
+	source "pl031.c"
+
+	option number base_addr=0x9010000
+	option number irq_nr=34
+
+	depends embox.kernel.time.clock_source
+	depends embox.driver.interrupt.irqctrl_api
+}

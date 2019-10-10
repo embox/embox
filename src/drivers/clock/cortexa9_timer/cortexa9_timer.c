@@ -54,8 +54,8 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 }
 
 static int this_init(void) {
-	clock_source_register(&this_clock_source);
 	REG_STORE(PTIMER_CONTROL, 0);
+	clock_source_register(&this_clock_source);
 	return irq_attach(PTIMER_IRQ,
 	                  clock_handler,
 	                  0,
@@ -105,9 +105,4 @@ EMBOX_UNIT_INIT(this_init);
 
 STATIC_IRQ_ATTACH(PTIMER_IRQ, clock_handler, &this_clock_source);
 
-static struct periph_memory_desc cortexa9_timer_mem = {
-	.start = PTIMER_BASE_ADDR,
-	.len   = 0x10,
-};
-
-PERIPH_MEMORY_DEFINE(cortexa9_timer_mem);
+PERIPH_MEMORY_DEFINE(cortexa9_timer, PTIMER_BASE_ADDR, 0x10);

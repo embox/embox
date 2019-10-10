@@ -18,7 +18,7 @@ int open(const char *path, int __oflag, ...) {
 	struct idesc *idesc;
 	struct idesc_table *it;
 	int res;
-	struct lookup lookup;
+	struct lookup lookup = {0, 0};
 	struct inode  *i_no;
 
 	if ((res = dvfs_lookup(path, &lookup))) {

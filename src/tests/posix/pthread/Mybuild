@@ -17,6 +17,12 @@ module pthread_cond {
 	source "pthread_cond_test.c"
 }
 
+module pthread_key {
+	source "pthread_key_test.c"
+	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.pthread_key
+}
+
 module pthread_cond_timedwait_test {
 	source "pthread_cond_timedwait_test.c"
 

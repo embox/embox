@@ -17,94 +17,251 @@
 
 #ifndef __ASSEMBLER__
 
+#ifndef __INT8_TYPE__
 typedef __s8  int8_t;
-typedef __s16 int16_t;
-typedef __s32 int32_t;
-typedef __s64 int64_t;
+#else
+typedef __INT8_TYPE__ int8_t;
+#endif
 
+#ifndef __INT16_TYPE__
+typedef __s16  int16_t;
+#else
+typedef __INT16_TYPE__ int16_t;
+#endif
+
+#ifdef __ARM_32BIT_STATE
+typedef int int32_t; /* For compatibility with 3rd-party software */
+#else
+#ifndef __INT32_TYPE__
+typedef __s32  int32_t;
+#else
+typedef __INT32_TYPE__ int32_t;
+#endif
+#endif /* __ARM_32BIT_STATE */
+
+#ifndef __INT64_TYPE__
+typedef __s64  int64_t;
+#else
+typedef __INT64_TYPE__ int64_t;
+#endif
+
+#ifndef __UINT8_TYPE__
 typedef __u8  uint8_t;
-typedef __u16 uint16_t;
-typedef __u32 uint32_t;
+#else
+typedef __UINT8_TYPE__ uint8_t;
+#endif
+
+#ifndef __UINT16_TYPE__
+typedef __u16  uint16_t;
+#else
+typedef __UINT16_TYPE__ uint16_t;
+#endif
+
+#ifdef __ARM_32BIT_STATE
+typedef unsigned int uint32_t; /* For compatibility with 3rd-party software */
+#else
+#ifndef __UINT32_TYPE__
+typedef __u32  uint32_t;
+#else
+typedef __UINT32_TYPE__ uint32_t;
+#endif
+#endif /* __ARM_32BIT_STATE */
+
+#ifndef __UINT64_TYPE__
 typedef __u64 uint64_t;
+#else
+typedef __UINT64_TYPE__ uint64_t;
+#endif
 
+#ifndef __INT_LEAST8_TYPE__
 typedef __s8  int_least8_t;
-typedef __s16 int_least16_t;
-typedef __s32 int_least32_t;
-typedef __s64 int_least64_t;
+#else
+typedef __INT_LEAST8_TYPE__ int_least8_t;
+#endif
 
+#ifndef __INT_LEAST16_TYPE__
+typedef __s16  int_least16_t;
+#else
+typedef __INT_LEAST16_TYPE__ int_least16_t;
+#endif
+
+#ifndef __INT_LEAST32_TYPE__
+typedef __s32  int_least32_t;
+#else
+typedef __INT_LEAST32_TYPE__ int_least32_t;
+#endif
+
+#ifndef __INT_LEAST64_TYPE__
+typedef __s64  int_least64_t;
+#else
+typedef __INT_LEAST64_TYPE__ int_least64_t;
+#endif
+
+#ifndef __UINT_LEAST8_TYPE__
 typedef __u8  uint_least8_t;
-typedef __u16 uint_least16_t;
-typedef __u32 uint_least32_t;
-typedef __u64 uint_least64_t;
+#else
+typedef __UINT_LEAST8_TYPE__ uint_least8_t;
+#endif
 
+#ifndef __UINT_LEAST16_TYPE__
+typedef __u16  uint_least16_t;
+#else
+typedef __UINT_LEAST16_TYPE__ uint_least16_t;
+#endif
 
+#ifndef __UINT_LEAST32_TYPE__
+typedef __u32  uint_least32_t;
+#else
+typedef __UINT_LEAST32_TYPE__ uint_least32_t;
+#endif
+
+#ifndef __UINT_LEAST64_TYPE__
+typedef __u64  uint_least64_t;
+#else
+typedef __UINT_LEAST64_TYPE__ uint_least64_t;
+#endif
+
+#ifndef __INT_FAST8_TYPE__
 typedef __s_fast int_fast8_t;
+#else
+typedef __INT_FAST8_TYPE__ int_fast8_t;
+#endif
+
+#ifndef __INT_FAST16_TYPE__
 typedef __s_fast int_fast16_t;
+#else
+typedef __INT_FAST16_TYPE__ int_fast16_t;
+#endif
+
+#ifndef __INT_FAST32_TYPE__
 typedef __s_fast int_fast32_t;
+#else
+typedef __INT_FAST32_TYPE__ int_fast32_t;
+#endif
+
+#ifndef __INT_FAST64_TYPE__
 typedef __s_fast int_fast64_t;
+#else
+typedef __INT_FAST64_TYPE__ int_fast64_t;
+#endif
 
+#ifndef __UINT_FAST8_TYPE__
 typedef __u_fast uint_fast8_t;
+#else
+typedef __UINT_FAST8_TYPE__ uint_fast8_t;
+#endif
+
+#ifndef __UINT_FAST16_TYPE__
 typedef __u_fast uint_fast16_t;
+#else
+typedef __UINT_FAST16_TYPE__ uint_fast16_t;
+#endif
+
+#ifndef __UINT_FAST32_TYPE__
 typedef __u_fast uint_fast32_t;
+#else
+typedef __UINT_FAST32_TYPE__ uint_fast32_t;
+#endif
+
+#ifndef __UINT_FAST64_TYPE__
 typedef __u_fast uint_fast64_t;
+#else
+typedef __UINT_FAST64_TYPE__ uint_fast64_t;
+#endif
 
+#ifndef __INTMAX_TYPE__
 typedef int64_t intmax_t;
+#else
+typedef __INTMAX_TYPE__ intmax_t;
+#endif
+
+#ifndef __UINTMAX_TYPE__
 typedef uint64_t uintmax_t;
+#else
+typedef __UINTMAX_TYPE__ uintmax_t;
+#endif
 
-
+#ifndef __INTPTR_TYPE__
 typedef __intptr_t intptr_t;
+#else
+typedef __INTPTR_TYPE__ intptr_t;
+#endif
 
+#ifndef __UINTPTR_TYPE__
 typedef __uintptr_t uintptr_t;
+#else
+typedef __UINTPTR_TYPE__ uintptr_t;
+#endif
 
 
-/* XXX these macros should be defined as INT64_MAX/MIN and UINT64_MAX/MIN --Alexander */
 #define INTMAX_MIN  (-INTMAX_MAX - 1)
-#define INTMAX_MAX  9223372036854775807LL
+#define INTMAX_MAX  INT64_MAX
 
-#define UINTMAX_MAX 18446744073709551615ULL
-
-#define INT16_MAX 32767
+#define UINTMAX_MAX UINT64_MAX
 
 #if !defined __cplusplus || defined __STDC_LIMIT_MACROS
 
-#ifdef __INT8_MAX__
 # undef INT8_MAX
+#ifndef __INT8_MAX__
+# define INT8_MAX 0x7f
+#else
 # define INT8_MAX __INT8_MAX__
+#endif
 # undef INT8_MIN
 # define INT8_MIN (-INT8_MAX - 1)
-#endif
-#ifdef __UINT8_MAX__
+
 # undef UINT8_MAX
+#ifndef __UINT8_MAX__
+# define UINT8_MAX 0xff
+#else
 # define UINT8_MAX __UINT8_MAX__
 #endif
-#ifdef __INT16_MAX__
+
 # undef INT16_MAX
+#ifndef __INT16_MAX__
+# define INT16_MAX 0x7fff
+#else
 # define INT16_MAX __INT16_MAX__
+#endif
 # undef INT16_MIN
 # define INT16_MIN (-INT16_MAX - 1)
-#endif
-#ifdef __UINT16_MAX__
+
 # undef UINT16_MAX
+#ifndef __UINT16_MAX__
+# define UINT16_MAX 0xffff
+#else
 # define UINT16_MAX __UINT16_MAX__
 #endif
-#ifdef __INT32_MAX__
+
 # undef INT32_MAX
+#ifndef __INT32_MAX__
+# define INT32_MAX 0x7fffffff
+#else
 # define INT32_MAX __INT32_MAX__
+#endif
 # undef INT32_MIN
 # define INT32_MIN (-INT32_MAX - 1)
-#endif
-#ifdef __UINT32_MAX__
+
 # undef UINT32_MAX
+#ifndef __UINT32_MAX__
+# define UINT32_MAX 0xffffffff
+#else
 # define UINT32_MAX __UINT32_MAX__
 #endif
-#ifdef __INT64_MAX__
+
 # undef INT64_MAX
+#ifndef __INT64_MAX__
+# define INT64_MAX 0x7fffffffffffffffLL /* 9223372036854775807LL */
+#else
 # define INT64_MAX __INT64_MAX__
+#endif
 # undef INT64_MIN
 # define INT64_MIN (-INT64_MAX - 1)
-#endif
-#ifdef __UINT64_MAX__
+
 # undef UINT64_MAX
+#ifndef __UINT64_MAX__
+# define UINT64_MAX 0xffffffffffffffffLL /*18446744073709551615ULL */
+#else
 # define UINT64_MAX __UINT64_MAX__
 #endif
 
@@ -220,7 +377,6 @@ typedef __uintptr_t uintptr_t;
 #define UINTMAX_C(c) __UINTMAX_C(c)
 
 #endif /* !defined __cplusplus || defined __STDC_CONSTANT_MACROS */
-
 
 #endif /* __ASSEMBLER__ */
 

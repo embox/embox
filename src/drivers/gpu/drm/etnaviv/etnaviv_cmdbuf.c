@@ -15,9 +15,12 @@
  */
 
 #include <stdio.h>
+#include <sys/mman.h>
+
 #include <kernel/thread/sync/mutex.h>
 #include <util/binalign.h>
 #include <util/bitmap.h>
+#include <mem/vmem.h>
 
 #include "etnaviv_compat.h"
 #include "etnaviv_cmdbuf.h"
@@ -41,6 +44,7 @@ struct etnaviv_cmdbuf_suballoc {
 	BITMAP_DECL(bitmap, SUBALLOC_GRANULES);
 };
 
+void dcache_flush(const void *p, size_t size);
 struct etnaviv_cmdbuf_suballoc *
 etnaviv_cmdbuf_suballoc_new(struct etnaviv_gpu * gpu) {
 	struct etnaviv_cmdbuf_suballoc *suballoc;
@@ -63,6 +67,16 @@ etnaviv_cmdbuf_suballoc_new(struct etnaviv_gpu * gpu) {
 		log_error("Failed to allocate suballoc buffer");
 		goto free_suballoc;
 	}
+
+	if (vmem_set_flags(vmem_current_context(),
+					(mmu_vaddr_t) suballoc->addr,
+					SUBALLOC_SIZE,
+					PROT_WRITE | PROT_READ | PROT_NOCACHE)) {
+		log_error("Failed to set vmem flags");
+		goto free_dma;
+	}
+	mmu_flush_tlb();
+	dcache_flush(suballoc->addr, SUBALLOC_SIZE);
 
 	memset(suballoc->addr, 0, SUBALLOC_SIZE);
 

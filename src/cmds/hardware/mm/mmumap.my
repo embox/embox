@@ -1,0 +1,18 @@
+package embox.cmd.hw
+
+@AutoCmd
+@Cmd(name = "mmumap",
+	help = "Managing virtual memory table",
+	man = '''
+		NAME
+			mmumap - Managing virtual memory table
+		SYNOPSIS
+
+		DESCRIPTION
+			Detailed description.
+		AUTHORS
+			Anton Bondarev
+	''')
+module  mmumap {
+	source "mmumap.c"
+}

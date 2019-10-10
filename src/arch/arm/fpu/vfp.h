@@ -40,37 +40,37 @@ extern int try_vfp_instructions(void);
 	mrc       p15, 0, tmp, c1, c0, 2; \
 	stmia     stack!, {tmp}; \
 	tst       tmp, #0xF00000; \
-	beq       fpu_out_save_inc; \
+	beq       1f;          \
 	vstmia    stack!, {d0-d15}; \
 	vstmia    stack!, {d16-d31}; \
-fpu_out_save_inc:
+1:
 
 #define ARM_FPU_CONTEXT_SAVE_DEC(tmp, stack) \
 	mrc       p15, 0, tmp, c1, c0, 2; \
 	tst       tmp, #0xF00000; \
-	beq       fpu_out_save_dec; \
+	beq       1f; \
 	vstmdb    stack!, {d0-d15}; \
 	vstmdb    stack!, {d16-d31}; \
-fpu_out_save_dec: \
+1: \
 	stmfd     stack!, {tmp};
 
 #define ARM_FPU_CONTEXT_LOAD_INC(tmp, stack) \
 	ldmia     stack!, {tmp}; \
 	mcr       p15, 0, tmp, c1, c0, 2; \
 	tst       tmp, #0xF00000; \
-	beq       fpu_out_load_inc; \
+	beq       1f; \
 	vldmia    stack!, {d0-d15}; \
 	vldmia    stack!, {d16-d31}; \
-fpu_out_load_inc:
+1:
 
 #define ARM_FPU_CONTEXT_LOAD_DEC(tmp, stack) \
 	ldmfd     stack!, {tmp}; \
 	mcr       p15, 0, tmp, c1, c0, 2; \
 	tst       tmp, #0xF00000; \
-	beq       fpu_out_load_dec; \
+	beq       1f; \
 	vldmia   stack!, {d16-d31}; \
 	vldmia   stack!, {d0-d15}; \
-fpu_out_load_dec:
+1:
 
 #endif /* __ASSEMBLER__ */
 

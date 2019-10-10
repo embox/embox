@@ -3,9 +3,10 @@
  * @author Anton Bondarev
  */
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <unistd.h>
-
+#include <kernel/panic.h>
 #include <linux/wait.h>
 
 #include "etnaviv_compat.h"
@@ -319,7 +320,7 @@ static void etnaviv_hw_identify(struct etnaviv_gpu *gpu) {
 		}
 	}
 
-	log_info("model: GC%x, revision: %x", gpu->identity.model, gpu->identity.revision);
+	log_info("model: GC%"PRIu32", revision: %"PRIu32, gpu->identity.model, gpu->identity.revision);
 
 	gpu->identity.features = gpu_read(gpu, VIVS_HI_CHIP_FEATURE);
 
@@ -513,7 +514,6 @@ static void etnaviv_gpu_enable_mlcg(struct etnaviv_gpu *gpu) {
 }
 
 void etnaviv_gpu_start_fe(struct etnaviv_gpu *gpu, uint32_t address, uint16_t prefetch) {
-	dcache_flush((void *) (address + 0x10000000), prefetch * 8);
 	gpu_write(gpu, VIVS_FE_COMMAND_ADDRESS, address);
 	gpu_write(gpu, VIVS_FE_COMMAND_CONTROL,
 		  VIVS_FE_COMMAND_CONTROL_ENABLE |
@@ -599,7 +599,7 @@ int etnaviv_gpu_init(struct etnaviv_gpu *gpu) {
 	/* Exclude VG cores with FE2.0 */
 	if (gpu->identity.features & chipFeatures_PIPE_VG &&
 	    gpu->identity.features & chipFeatures_FE20) {
-		log_error("Ignoring GPU with VG and FE2.0");
+		panic("Wrong GPU register values, try to restart");
 		return -ENXIO;
 	}
 
@@ -747,45 +747,45 @@ int etnaviv_gpu_debugfs(struct etnaviv_gpu *gpu, char *s) {
 	verify_dma(gpu, &debug);
 
 	seq_puts(m, "\tfeatures\n");
-	seq_printf(m, "\t minor_features0: 0x%08x\n",
+	seq_printf(m, "\t minor_features0: 0x%08"PRIu32"\n",
 		   gpu->identity.minor_features0);
-	seq_printf(m, "\t minor_features1: 0x%08x\n",
+	seq_printf(m, "\t minor_features1: 0x%08"PRIu32"\n",
 		   gpu->identity.minor_features1);
-	seq_printf(m, "\t minor_features2: 0x%08x\n",
+	seq_printf(m, "\t minor_features2: 0x%08"PRIu32"\n",
 		   gpu->identity.minor_features2);
-	seq_printf(m, "\t minor_features3: 0x%08x\n",
+	seq_printf(m, "\t minor_features3: 0x%08"PRIu32"\n",
 		   gpu->identity.minor_features3);
-	seq_printf(m, "\t minor_features4: 0x%08x\n",
+	seq_printf(m, "\t minor_features4: 0x%08"PRIu32"\n",
 		   gpu->identity.minor_features4);
-	seq_printf(m, "\t minor_features5: 0x%08x\n",
+	seq_printf(m, "\t minor_features5: 0x%08"PRIu32"\n",
 		   gpu->identity.minor_features5);
 
 	seq_puts(m, "\tspecs\n");
-	seq_printf(m, "\t stream_count:  %d\n",
+	seq_printf(m, "\t stream_count:  %"PRIu32"\n",
 			gpu->identity.stream_count);
-	seq_printf(m, "\t register_max: %d\n",
+	seq_printf(m, "\t register_max: %"PRIu32"\n",
 			gpu->identity.register_max);
-	seq_printf(m, "\t thread_count: %d\n",
+	seq_printf(m, "\t thread_count: %"PRIu32"\n",
 			gpu->identity.thread_count);
-	seq_printf(m, "\t vertex_cache_size: %d\n",
+	seq_printf(m, "\t vertex_cache_size: %"PRIu32"\n",
 			gpu->identity.vertex_cache_size);
-	seq_printf(m, "\t shader_core_count: %d\n",
+	seq_printf(m, "\t shader_core_count: %"PRIu32"\n",
 			gpu->identity.shader_core_count);
-	seq_printf(m, "\t pixel_pipes: %d\n",
+	seq_printf(m, "\t pixel_pipes: %"PRIu32"\n",
 			gpu->identity.pixel_pipes);
-	seq_printf(m, "\t vertex_output_buffer_size: %d\n",
+	seq_printf(m, "\t vertex_output_buffer_size: %"PRIu32"\n",
 			gpu->identity.vertex_output_buffer_size);
-	seq_printf(m, "\t buffer_size: %d\n",
+	seq_printf(m, "\t buffer_size: %"PRIu32"\n",
 			gpu->identity.buffer_size);
-	seq_printf(m, "\t instruction_count: %d\n",
+	seq_printf(m, "\t instruction_count: %"PRIu32"\n",
 			gpu->identity.instruction_count);
-	seq_printf(m, "\t num_constants: %d\n",
+	seq_printf(m, "\t num_constants: %"PRIu32"\n",
 			gpu->identity.num_constants);
-	seq_printf(m, "\t varyings_count: %d\n",
+	seq_printf(m, "\t varyings_count: %"PRIu8"\n",
 			gpu->identity.varyings_count);
 
-	seq_printf(m, "\taxi: 0x%08x\n", axi);
-	seq_printf(m, "\tidle: 0x%08x\n", idle);
+	seq_printf(m, "\taxi: 0x%08"PRIu32"\n", axi);
+	seq_printf(m, "\tidle: 0x%08"PRIu32"\n", idle);
 	idle |= ~gpu->idle_mask & ~VIVS_HI_IDLE_STATE_AXI_LP;
 	if ((idle & VIVS_HI_IDLE_STATE_FE) == 0)
 		seq_puts(m, "\t FE is not idle\n");
@@ -820,9 +820,9 @@ int etnaviv_gpu_debugfs(struct etnaviv_gpu *gpu, char *s) {
 		uint32_t write = gpu_read(gpu, VIVS_MC_DEBUG_WRITE);
 
 		seq_puts(m, "\tMC\n");
-		seq_printf(m, "\t read0: 0x%08x\n", read0);
-		seq_printf(m, "\t read1: 0x%08x\n", read1);
-		seq_printf(m, "\t write: 0x%08x\n", write);
+		seq_printf(m, "\t read0: 0x%08"PRIu32"\n", read0);
+		seq_printf(m, "\t read1: 0x%08"PRIu32"\n", read1);
+		seq_printf(m, "\t write: 0x%08"PRIu32"\n", write);
 	}
 
 	seq_puts(m, "\tDMA ");
@@ -846,17 +846,17 @@ int etnaviv_gpu_debugfs(struct etnaviv_gpu *gpu, char *s) {
 
 
 
-	seq_printf(m, "\t address 0: 0x%08x\n", debug.address[0]);
-	seq_printf(m, "\t address 1: 0x%08x\n", debug.address[1]);
-	seq_printf(m, "\t state 0: 0x%08x\n", debug.state[0]);
-	seq_printf(m, "\t state 1: 0x%08x\n", debug.state[1]);
+	seq_printf(m, "\t address 0: 0x%08"PRIu32"\n", debug.address[0]);
+	seq_printf(m, "\t address 1: 0x%08"PRIu32"\n", debug.address[1]);
+	seq_printf(m, "\t state 0: 0x%08"PRIu32"\n", debug.state[0]);
+	seq_printf(m, "\t state 1: 0x%08"PRIu32"\n", debug.state[1]);
 	seq_printf(m, "\t    command state       = %d (%s)\n", cmdState, _cmdState   [cmdState]);
 	seq_printf(m, "\t    command DMA state   = %d (%s)\n", cmdDmaState, _cmdDmaState[cmdDmaState]);
 	seq_printf(m, "\t    command fetch state = %d (%s)\n", cmdFetState, _cmdFetState[cmdFetState]);
 	seq_printf(m, "\t    DMA request state   = %d (%s)\n", dmaReqState, _reqDmaState[dmaReqState]);
 	seq_printf(m, "\t    cal state           = %d (%s)\n", calState, _calState   [calState]);
 	seq_printf(m, "\t    VE request state    = %d (%s)\n", veReqState, _veReqState [veReqState]);
-	seq_printf(m, "\t last fetch 64 bit word: 0x%08x 0x%08x\n",
+	seq_printf(m, "\t last fetch 64 bit word: 0x%08"PRIu32" 0x%08"PRIu32"\n",
 		   dma_lo, dma_hi);
 
 	ret = 0;
@@ -914,12 +914,13 @@ int etnaviv_gpu_submit(struct etnaviv_gpu *gpu,
 		gpu->lastctx = cmdbuf->ctx;
 	}
 
+	while (gpu->busy) { }; /* Wait for interrupt for previous command buffer */
+	gpu->busy = 1;
+
 	etnaviv_buffer_queue(gpu, event, cmdbuf);
 	cmdbuf->nr_bos = submit->nr_bos;
 	etnaviv_buffer_dump(gpu, cmdbuf, 0, cmdbuf->user_size);
-	dcache_flush(cmdbuf->vaddr, cmdbuf->user_size * 4);
 	etnaviv_buffer_dump(gpu, gpu->buffer, 0, gpu->buffer->user_size);
-	dcache_flush(gpu->buffer->vaddr, cmdbuf->user_size * 4);
 
 	return 0;
 }

@@ -5,83 +5,48 @@
  * @author Felix Sulima
  */
 
-#include <framework/example/self.h>
-
 #include <new>
 #include <cstdio>
 
-// TEST: include all C++ headers
-#include <cassert>
-#include <cctype>
-#include <cerrno>
-#include <cmath>
-#include <csetjmp>
-#include <cstdarg>
-#include <cstddef>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <exception>
-#include <new>
-#include <typeinfo>
-// END TEST
+#include <embox/test.h>
+#include "test_cxx.h"
 
-EMBOX_EXAMPLE(run);
+EMBOX_TEST_SUITE_EXT("c++ inheritance test", NULL, NULL, NULL, NULL);
 
-class Base;
-typedef void (* pbase_fn_t) (Base &base);
+namespace {
 
 class Base {
 public:
-	Base(pbase_fn_t fn) {
-		std::printf(">> [obj %p] Base(%p)\n", this, fn);
-		if (fn) {
-			fn(*this);
-		}
+	Base(int val) {
+		test_emit('a');
 	}
-	virtual void testPureVirtual(void) = 0;
+	virtual void pure_virtual_fn(void) = 0;
 	virtual ~Base() = 0;
 };
 
 Base::~Base() {
-	std::printf(">> [obj %p] ~Base()\n", this);
+	test_emit('b');
 }
 
 class Derived : public Base {
 public:
-	virtual void testPureVirtual(void) { std::printf(">> [obj %p] Derived.testPureVirtual() without any arguments\n", this); }
-	Derived(pbase_fn_t fn) : Base(fn) { std::printf(">> [obj %p] Derived(%p)\n", this, fn); }
-	~Derived() { std::printf(">> [obj %p] ~Derived()\n", this); }
+	Derived(int val) : Base(val) {test_emit('c');}
+	~Derived() { test_emit('d');}
+	void pure_virtual_fn(void) {test_emit('e');}
 };
 
-static void callPureVirtual(Base& base) {
-	assert(true);
-	base.testPureVirtual();
+TEST_CASE("Inheritance test") {
+	{
+		Derived derived(0);
+	}
+	test_assert_emitted("acdb");
 }
 
-static int run(int argc, char **argv) {
-
-
-	// stack
+TEST_CASE("Calling virtual function") {
 	{
-		std::puts("Derived without any arguments -- on stack");
-		Derived derived();
+		Derived derived(0);
+		derived.pure_virtual_fn();
 	}
-
-
-	// Null argument
-	{
-		std::puts("Derived with NULL argument -- on stack");
-		Derived derived(NULL);
-	}
-
-
-	// Calling pure virtual function
-	{
-		std::puts("Calling pure virtual function");
-		Derived derived(callPureVirtual);
-	}
-
-	return 0;
+	test_assert_emitted("acedb");
 }
-
+} /* namespace */

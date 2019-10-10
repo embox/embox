@@ -1,0 +1,10 @@
+package embox.lib
+
+static module png {
+	source "png.c"
+
+	@IncludeExport(path="lib")
+	source "png.h"
+
+	depends embox.driver.video.fb
+}

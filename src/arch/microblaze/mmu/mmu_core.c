@@ -44,7 +44,7 @@ static inline mmu_vaddr_t mmu_fault_address(void) {
 
 static int tlb_miss(int number) {
 	mmu_vaddr_t vaddr = mmu_fault_address();
-	mmu_paddr_t paddr = vmem_translate(cur_ctx, vaddr);
+	mmu_paddr_t paddr = vmem_translate(cur_ctx, vaddr, NULL);
 
 	if (paddr) {
 		vaddr -= vaddr & MMU_PAGE_MASK;
@@ -163,4 +163,7 @@ void mmu_set_context(mmu_ctx_t ctx) {
 		: "r" (ctx)
 		: "memory"
 	);
+}
+
+void mmu_flush_tlb(void) {
 }

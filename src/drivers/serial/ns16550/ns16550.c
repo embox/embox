@@ -30,6 +30,7 @@
 struct com {
         UART_REG(rbr);          /* 0 */
         UART_REG(ier);          /* 1 */
+#define NS16550_IER_RX_IRQ	(1 << 0)
         UART_REG(fcr);          /* 2 */
         UART_REG(lcr);          /* 3 */
         UART_REG(mcr);          /* 4 */
@@ -57,6 +58,7 @@ struct com {
 EMBOX_UNIT_INIT(ns16550_init);
 
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
+	COM3->ier |= NS16550_IER_RX_IRQ;
 	return 0;
 }
 
@@ -96,7 +98,7 @@ static const struct uart_params uart_defparams = {
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = false,
+		.irq = true,
 };
 
 static const struct uart_params uart_diag_params = {
@@ -107,21 +109,10 @@ static const struct uart_params uart_diag_params = {
 		.irq = false,
 };
 
-const struct uart_diag DIAG_IMPL_NAME(__EMBUILD_MOD__) = {
-		.diag = {
-			.ops = &uart_diag_ops,
-		},
-		.uart = &uart0,
-		.params = &uart_diag_params,
-};
-
-static struct periph_memory_desc ns16550_mem = {
-	.start = COM_BASE,
-	.len   = 0x1000,
-};
+DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
 
 static int ns16550_init(void) {
 	return uart_register(&uart0, &uart_defparams);
 }
 
-PERIPH_MEMORY_DEFINE(ns16550_mem);
+PERIPH_MEMORY_DEFINE(ns16550, COM_BASE, 0x1000);

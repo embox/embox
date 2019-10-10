@@ -9,9 +9,10 @@
 #ifndef FRAMEWORK_TEST_ASSERT_H_
 #define FRAMEWORK_TEST_ASSERT_H_
 
-
 #include <string.h>
 #include <sys/cdefs.h>
+
+#include <stdint.h>
 
 #include <util/location.h>
 
@@ -56,7 +57,7 @@ failed: test_assert(<#condition>)
 @endverbatim
  */
 #define test_assert(condition) \
-	__test_assertion_handle((int) (condition), \
+	__test_assertion_handle((intptr_t) (condition), \
 			__test_assertion_point_ref("test_assert(" #condition ")"))
 
 /**
@@ -116,7 +117,7 @@ failed: test_assert_not_null(<#value>)
 @endverbatim
  */
 #define test_assert_not_null(value) \
-	__test_assertion_handle((int) (value), \
+	__test_assertion_handle((uintptr_t) (value), \
 			__test_assertion_point_ref("test_assert_not_null(" #value ")"))
 
 /**

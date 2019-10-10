@@ -301,30 +301,15 @@ static int ti81xx_pci_init(void) {
 	return 0;
 }
 
-static struct periph_memory_desc pci_chip_mem = {
-	.start = TI81_CM,
-	.len   = 0x1000,
-};
+/* NOTE: this may be inaccurate! */
+unsigned int pci_irq_number(struct pci_slot_dev *dev) {
+	return (unsigned int) dev->irq_line;
+}
 
-PERIPH_MEMORY_DEFINE(pci_chip_mem);
+PERIPH_MEMORY_DEFINE(pci_chip, TI81_CM, 0x1000);
 
-static struct periph_memory_desc pci_root_mem = {
-	.start = TI81_PRCM,
-	.len   = 0x1000,
-};
+PERIPH_MEMORY_DEFINE(pci_root, TI81_PRCM, 0x1000);
 
-PERIPH_MEMORY_DEFINE(pci_root_mem);
+PERIPH_MEMORY_DEFINE(pci_region0, TI81_PCI_REGION0, 0x4000);
 
-static struct periph_memory_desc pci_region0_mem = {
-	.start = TI81_PCI_REGION0,
-	.len   = 0x4000,
-};
-
-PERIPH_MEMORY_DEFINE(pci_region0_mem);
-
-static struct periph_memory_desc pci_region1_mem = {
-	.start = TI81_PCI_REGION1,
-	.len   = 0x100000,
-};
-
-PERIPH_MEMORY_DEFINE(pci_region1_mem);
+PERIPH_MEMORY_DEFINE(pci_region1, TI81_PCI_REGION1, 0x100000);

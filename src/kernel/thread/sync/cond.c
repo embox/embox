@@ -103,6 +103,10 @@ int cond_timedwait(cond_t *c, struct mutex *m, const struct timespec *ts) {
 	} else {
 		clock_gettime(CLOCK_REALTIME, &relative_time);
 		relative_time = timespec_sub(*ts, relative_time);
+		if ((relative_time.tv_nsec < 0) || (relative_time.tv_sec < 0)) {
+			relative_time.tv_nsec = 0;
+			relative_time.tv_sec = 0;
+		}
 		timeout = (clock_t) (timespec_to_ns(&relative_time) / NSEC_PER_MSEC); //TODO overflow
 	}
 

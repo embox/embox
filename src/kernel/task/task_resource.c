@@ -20,7 +20,6 @@
 EMBOX_UNIT_INIT(task_resource_module_init);
 
 ARRAY_SPREAD_DEF(const struct task_resource_desc *const, task_resource_desc_array);
-ARRAY_SPREAD_DEF(const task_notifing_resource_hnd, task_notifing_resource);
 
 void task_resource_init(const struct task *task) {
 	const struct task_resource_desc *res;

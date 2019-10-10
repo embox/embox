@@ -21,7 +21,7 @@
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
 #define IDESC_POOL_SIZE OPTION_GET(NUMBER, cdev_idesc_quantity)
-POOL_DEF(idesc_pool, struct idesc, IDESC_POOL_SIZE);
+POOL_DEF(idesc_pool, struct idesc_dev, IDESC_POOL_SIZE);
 
 static struct dev_module *devtab[MAX_DEV_QUANTITY];
 INDEX_DEF(char_dev_idx, 0, MAX_DEV_QUANTITY);
@@ -82,7 +82,7 @@ static const struct idesc_ops idesc_char_dev_def_ops = {
 };
 
 struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
-	struct idesc *idesc;
+	struct idesc_dev *idesc;
 
 	idesc = pool_alloc(&idesc_pool);
 	if (idesc == NULL) {
@@ -90,51 +90,21 @@ struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
 		return NULL;
 	}
 
+	idesc->dev = cdev;
+
 	if (cdev) {
-		idesc_init(idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
+		idesc_init(&idesc->idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
 	} else {
-		idesc_init(idesc, &idesc_char_dev_def_ops, S_IROTH | S_IWOTH);
+		idesc_init(&idesc->idesc, &idesc_char_dev_def_ops, S_IROTH | S_IWOTH);
 	}
 
-	return idesc;
+	return &idesc->idesc;
 }
 
-#if 0
-static struct idesc *char_dev_open(struct inode *node, struct idesc *idesc) {
-	struct dev_module *cdev = node->i_data;
-
-	if (!cdev) {
-		log_error("Can't open char device");
-		return NULL;
-	}
-
-	if (cdev->dev_open != NULL) {
-		idesc = cdev->open(dev_cdev, cdev->dev_priv);
-		return idesc;
-	}
-
-	idesc = pool_alloc(&cdev_idesc_pool);
-	if (idesc == NULL) {
-		log_error("Can't allocate char device");
-		return NULL;
-	}
-	
-	idesc_init(idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
-	return idesc;
-	
-	/* Perform device-specific initialization if neccessary.
-	 *
-	 * Generally it should be symmetrics with idesc_close(), but
-	 * idesc ops has no open(), so we need to "imitate" opening like that */
-	/*
-	if (devmod->dev_open) {
-		if (devmod->dev_open(devmod, devmod->dev_priv)) {
-			log_error("Failed to open %s", devmod->name);
-			return NULL;
-		}
-	}
-
-	return ;
-	*/
+struct idesc *char_dev_default_open(struct dev_module *cdev, void *priv) {
+	return char_dev_idesc_create(cdev);
 }
-#endif
+
+void char_dev_default_close(struct idesc *idesc) {
+	return pool_free(&idesc_pool, idesc);
+}

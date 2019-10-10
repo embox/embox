@@ -12,7 +12,9 @@ package embox.cmd.fs
 			mkdir is used to create a directory
 		OPTIONS
 			-v
-				Create virtual directory. Could be useful for readonly FS.
+				Create  virtual  directory. It  means  that  directory
+				will  present in  FS tree, but  will  not be  actually
+				written to disk. This could be useful for readonly FS.
 		AUTHORS
 			Nikolay Korotky
 	''')

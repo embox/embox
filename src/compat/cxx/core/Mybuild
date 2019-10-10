@@ -1,25 +1,5 @@
 package embox.lib.cxx
 
-@DefaultImpl(embox.lib.cxx.standalone)
-abstract module lib {
-}
-
-module libsupcxx extends lib {
-	@NoRuntime depends third_party.gcc.core
-
-	source "register_eh_frame.c"
-}
-
-module standalone extends lib {
-	/* Generic files */
-	source "new.cpp"
-
-	/* Private C++ files */
-	source "purevirt_routines.cpp"
-
-	depends embox.compat.libc.all
-}
-
 module ConstructorsInvocator {
 	source "cxx_invoke_constructors.c"
 	source "cxx_invoke_constructors.h"

@@ -45,17 +45,17 @@ static inline void arm_fpu_context_init(void *opaque) {
 	ldr       tmp, =FPU_CPACR; \
 	ldr       tmp, [tmp]; \
 	tst       tmp, #0xF00000; \
-	beq       fpu_out_save_inc; \
+	beq       1f; \
 	vstmia    stack!, {s0-s31}; \
-fpu_out_save_inc:
+1:
 
 #define ARM_FPU_CONTEXT_LOAD_INC(tmp, stack) \
 	ldr       tmp, =FPU_CPACR; \
 	ldr       tmp, [tmp]; \
 	tst       tmp, #0xF00000; \
-	beq       fpu_out_load_inc; \
+	beq       1f; \
 	vldmia    stack!, {s0-s31}; \
-fpu_out_load_inc:
+1:
 
 #endif /* __ASSEMBLER__ */
 

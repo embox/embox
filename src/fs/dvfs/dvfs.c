@@ -86,7 +86,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		return -ENOMEM;
 	}
 	dentry_fill(sb, new_inode, lookup->item, lookup->parent);
-	strncpy(lookup->item->name, name, DENTRY_NAME_LEN);
+	strncpy(lookup->item->name, name, DENTRY_NAME_LEN - 1);
 	inode_fill(sb, new_inode, lookup->item);
 
 	lookup->item->flags |= flags;
@@ -327,7 +327,8 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 		block_dev = block_dev_find(dev_name);
 		bdev_file = dvfs_alloc_file();
 		if (!bdev_file) {
-			return err_ptr(ENOMEM);
+			SET_ERRNO(ENOENT);
+			return NULL;
 		}
 		devfs_drv->fill_sb(&devfs_sb, bdev_file);
 		memset(bdev_file, 0, sizeof(struct file));
@@ -342,7 +343,8 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 	/* devfs presents, perform usual mount */
 	dvfs_lookup(dev_name, &lookup);
 	if (!lookup.item) {
-		return err_ptr(ENOENT);
+		SET_ERRNO(ENOENT);
+		return NULL;
 	}
 	/* TODO pass flags */
 	bdev_file = (struct file*) dvfs_file_open_idesc(&lookup, 0);
@@ -537,7 +539,7 @@ static int iterate_cached(struct super_block *sb,
 		path_end++;
 	}
 	dvfs_pathname(next_inode, full_path + path_end, 0);
-	strncpy(next_dentry->name, full_path + path_end, DENTRY_NAME_LEN);
+	strncpy(next_dentry->name, full_path + path_end, DENTRY_NAME_LEN - 1);
 	lookup->item = next_dentry;
 
 	if ((cached = dvfs_cache_get(full_path, lookup))) {

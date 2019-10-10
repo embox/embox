@@ -39,6 +39,8 @@ static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
 
 	while (ch != delim) {
 		if (ch == EOF) {
+			if (ferror(stream))
+				return EIO;
 			return EOF;
 		}
 
@@ -57,7 +59,7 @@ static int read_field(FILE *stream, char **buf, size_t *buflen, char **field,
 	}
 
 	if (*buflen <= 0) {
-		return -ERANGE;
+		return ERANGE;
 	}
 
 	*((*buf)++) = '\0';
@@ -74,7 +76,7 @@ static int read_int_field(FILE *stream, const char *format, void *field, int del
 
 	ret = fscanf(stream, format, field);
 	if (0 > ret && ferror(stream)) {
-		return -ret;
+		return EIO;
 	}
 
 	if (delim != (val = fgetc(stream))) {
@@ -179,7 +181,7 @@ struct passwd *getpwnam(const char *name) {
 	struct passwd *res;
 	int ret;
 
-	if (0 != (ret = getpwnam_r(name, &getpwnam_buffer, buff, 0x80,  &res))) {
+	if (0 != (ret = getpwnam_r(name, &getpwnam_buffer, buff, sizeof(buff),  &res))) {
 		SET_ERRNO(-ret);
 		return NULL;
 	}
@@ -219,7 +221,7 @@ struct passwd *getpwuid(uid_t uid) {
 	struct passwd *res;
 	int ret;
 
-	if (0 != (ret = getpwuid_r(uid, &getpwuid_buffer, buff, 80, &res))) {
+	if (0 != (ret = getpwuid_r(uid, &getpwuid_buffer, buff, sizeof(buff), &res))) {
 		SET_ERRNO(-ret);
 		return NULL;
 	}
@@ -237,18 +239,26 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 	*gbufp = NULL;
 
 	if (0 != (res = read_field(fp, &buf, &buf_len, &gbuf->gr_name, ':'))) {
+		if (EOF == res)
+			return ENOENT;
 		return res;
 	}
 
 	if (0 != (res = read_field(fp, &buf, &buf_len, &gbuf->gr_passwd, ':'))) {
+		if (EOF == res)
+			return ENOENT;
 		return res;
 	}
 
 	if (0 != (res = read_int_field(fp, "%hd", &gbuf->gr_gid, ':'))) {
+		if (EOF == res)
+			return ENOENT;
 		return res;
 	}
 
 	if (0 != (res = read_field(fp, &buf, &buf_len, &ch, '\n'))) {
+		if (EOF == res)
+			return ENOENT;
 		return res;
 	}
 
@@ -260,7 +270,7 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 	while (NULL != (ch = strchr(ch, ','))) {
 
 		if (buf_len < sizeof(char *)) {
-			return -ERANGE;
+			return ERANGE;
 		}
 
 		buf_len -= sizeof(char *);
@@ -272,7 +282,7 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 	}
 
 	if (buf_len < sizeof(char *)) {
-		return -ERANGE;
+		return ERANGE;
 	}
 	*(++pmem) = NULL;
 
@@ -281,10 +291,26 @@ int fgetgrent_r(FILE *fp, struct group *gbuf, char *tbuf,
 	return 0;
 }
 
+struct group *fgetgrent(FILE *stream) {
+	static struct group grp_buf;
+	static char buf[64];
+	struct group *res;
+	int ret;
+
+	if (0 != (ret = fgetgrent_r(stream, &grp_buf, buf, sizeof(buf), &res))) {
+		SET_ERRNO(ret);
+		return NULL;
+	}
+
+	return res;
+}
+
 int getgrnam_r(const char *name, struct group *grp,
 	char *buf, size_t buflen, struct group **result) {
 	int res;
 	FILE *file;
+
+	*result = NULL;
 
 	if (0 != (res = open_db(GROUP_FILE, &file))) {
 		return res;
@@ -297,34 +323,45 @@ int getgrnam_r(const char *name, struct group *grp,
 	}
 
 	fclose(file);
-
-	if (0 != res) {
-		result = NULL;
-		return res == ENOENT ? 0 : -1;
-	}
-	return 0;
-
+	return res == ENOENT ? 0 : res;
 }
 
 struct group * getgrgid(gid_t gid) {
-	static struct group *result;
-	struct group grp;
-	char buf[64];
+	static struct group grp;
+	static char buf[64];
+	struct group *result;
 	int ret;
 
 	ret = getgrgid_r(gid, &grp, buf, sizeof buf, &result);
 	if (ret != 0) {
-		SET_ERRNO(-ret);
+		SET_ERRNO(ret);
 		return NULL;
 	}
 
 	return result;
 }
 
+struct group *getgrnam(const char *name) {
+	static struct group grp_buf;
+	static char buf[64];
+	struct group *res;
+	int ret;
+
+	ret = getgrnam_r(name, &grp_buf, buf, sizeof(buf), &res);
+	if (0 != ret) {
+		SET_ERRNO(ret);
+		return NULL;
+	}
+
+	return res;
+}
+
 int getgrgid_r(gid_t gid, struct group *grp,
 	char *buf, size_t buflen, struct group **result) {
 	int res;
 	FILE *file;
+
+	*result = NULL;
 
 	if (0 != (res = open_db(GROUP_FILE, &file))) {
 		return res;
@@ -337,13 +374,62 @@ int getgrgid_r(gid_t gid, struct group *grp,
 	}
 
 	fclose(file);
+	return res == ENOENT ? 0 : res;
+}
 
-	if (0 != res) {
-		result = NULL;
-		return res == ENOENT ? 0 : -1;
+static FILE *_grp_stream = NULL;
+
+int getgrent_r(struct group *gbuf, char *buf,
+		size_t buflen, struct group **gbufp) {
+	int ret;
+
+	if (NULL == _grp_stream) {
+		if (0 != (ret = open_db(GROUP_FILE, &_grp_stream))) {
+			*gbufp = NULL;
+			return ret;
+		}
+	}
+	if (0 != (ret = fgetgrent_r(_grp_stream, gbuf, buf, buflen, gbufp))) {
+		if (ENOENT != ret) {
+			fclose(_grp_stream);
+			_grp_stream = NULL;
+		}
+		*gbufp = NULL;
+		return ret;
 	}
 
 	return 0;
+}
+
+struct group *getgrent(void) {
+	static struct group grp_buf;
+	static char buf[64];
+	struct group *res;
+	int ret;
+
+	if (0 != (ret = getgrent_r(&grp_buf, buf, sizeof(buf), &res))) {
+		SET_ERRNO(ret);
+		return NULL;
+	}
+
+	return res;
+}
+
+void setgrent(void) {
+	if (NULL != _grp_stream) {
+		if (0 != fseek(_grp_stream, 0L, SEEK_SET)) {
+			fclose(_grp_stream);
+			_grp_stream = NULL;
+			SET_ERRNO(EIO);
+		}
+	}
+}
+
+void endgrent(void) {
+	if (NULL != _grp_stream) {
+		fclose(_grp_stream);
+		_grp_stream = NULL;
+	}
 }
 
 int getmaxuid() {
@@ -356,7 +442,7 @@ int getmaxuid() {
 		return res;
 	}
 
-	while (0 == (res = fgetpwent_r(file, &pwd, buff, 80, &result))) {
+	while (0 == (res = fgetpwent_r(file, &pwd, buff, sizeof(buff), &result))) {
 		if (pwd.pw_uid > curmax) {
 			curmax = pwd.pw_uid;
 		}

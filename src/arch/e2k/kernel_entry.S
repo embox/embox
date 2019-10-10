@@ -26,18 +26,18 @@ ttable_entry0:
 	rrd %lsr,   %dr5
 
 	/* sizeof pt_regs */
-	getsp -(5 * 8), %dr0
+	getsp -(E2K_PT_REGS_SIZE), %dr0
 
-	std %dr1, [%dr0 + PT_CTRP1] /* regs->ctpr1 = ctpr1 */
-	std %dr2, [%dr0 + PT_CTRP2] /* regs->ctpr2 = ctpr2 */
-	std %dr3, [%dr0 + PT_CTRP3] /* regs->ctpr3 = ctpr3 */
+	std %dr1, [%dr0 + E2K_PT_REGS_CTRP1] /* regs->ctpr1 = ctpr1 */
+	std %dr2, [%dr0 + E2K_PT_REGS_CTRP2] /* regs->ctpr2 = ctpr2 */
+	std %dr3, [%dr0 + E2K_PT_REGS_CTRP3] /* regs->ctpr3 = ctpr3 */
 
-	std %dr4, [%dr0 + PT_ILCR]  /* regs->ilcr = ilcr */
-	std %dr5, [%dr0 + PT_LSR]   /* regs->lsr = lsr */
+	std %dr4, [%dr0 + E2K_PT_REGS_ILCR]  /* regs->ilcr = ilcr */
+	std %dr5, [%dr0 + E2K_PT_REGS_LSR]   /* regs->lsr = lsr */
 
 	disp    %ctpr1, e2k_entry
 	ct      %ctpr1
-.size	 $ttable_entry0,.-$ttable_entry0
+.size  $ttable_entry0,.-$ttable_entry0
 
 
 .global ttable_entry1;
@@ -62,7 +62,7 @@ ttable_entry1:
 	puttagd %dr4, 0, %dr4
 	ct %ctpr1
 	}
-.size	 $ttable_entry1,.-$ttable_entry1
+.size  $ttable_entry1,.-$ttable_entry1
 
 
 
@@ -88,4 +88,4 @@ ttable_entry2:
 	puttagd %dr4, 0, %dr4
 	ct %ctpr1
 	}
-.size	 $ttable_entry2,.-$ttable_entry2
+.size $ttable_entry2,.-$ttable_entry2

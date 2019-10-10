@@ -1,15 +1,17 @@
 package embox.driver.video
 
 @DefaultImpl(fb_devfs_stub)
-abstract module fb_devfs {
+abstract module fb_devfs_api {
 }
 
-module fb_devfs_stub extends fb_devfs {
+module fb_devfs_stub extends fb_devfs_api {
 	source "fb_devfs_stub.c"
+
+	depends fb_header
 }
 
-module fb_devfs_old extends fb_devfs {
-	source "fb_devfs_old.c"
+module fb_devfs extends fb_devfs_api {
+	source "fb_devfs.c"
 
-	depends embox.driver.video.fb
+	depends fb_header
 }

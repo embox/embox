@@ -1,0 +1,30 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "memmap",
+	help = "Prints memory map for different address space",
+	man = '''
+		NAME
+			memmap - reads from memory
+		SYNOPSIS
+			mem [-hsa]
+		DESCRIPTION
+			Show information about system memory allocation
+		OPTIONS
+			-h
+				Shows usage
+			-a
+				Print all available information about memory allocation
+			-s
+				Print information about segments
+
+		AUTHORS
+			Anton Bondarev
+	''')
+module memmap {
+	source "memmap.c"
+
+	depends embox.mem.marea_header
+	depends embox.mem.mmap_header
+	depends embox.arch.mmu
+}
