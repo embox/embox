@@ -353,6 +353,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 
 	drv = fs_driver_find_drv(fs_type);
 	if (!drv) {
+		printf("Error : fs type %s not found.\n", fs_type);
 		errno = EINVAL;
 		return -1;
 	}
