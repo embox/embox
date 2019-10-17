@@ -37,6 +37,7 @@ module core_notty extends core {
 
 	@NoRuntime depends embox.util.indexator
 	@NoRuntime depends embox.driver.tty.serial_stub
+
 	@NoRuntime depends embox.util.dlist
 	@NoRuntime depends embox.mem.pool
 }
