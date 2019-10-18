@@ -13,7 +13,7 @@
 #include <string.h>
 #include <net/util/show_packet.h>
 #include <util/log.h>
-#include <kernel/printk.h>
+
 #define BASE_ADDR OPTION_GET(NUMBER, base_addr)
 
 #define USDHC_DS_ADDR               (BASE_ADDR + 0x00)
@@ -52,13 +52,10 @@
 
 #define TIMEOUT 0x1FFFFF
 
-#define CMD8_CHECK_PATTERN		0x0AA
-#define CMD8_STANDART_VOLTAGE		0x100 /* 2.7-3.6V */
+#define CMD8_CHECK_PATTERN          0x0AA
+#define CMD8_STANDART_VOLTAGE       0x100 /* 2.7-3.6V */
 
 #define SDHCI_IRQ_EN_BITS (1 | 2 | 0x100 | 0x10000 | 0x20000 | 0x40000 | 0x80000 | 0x100000 | 0x400000 | 0x20 | 0x10 | 0x8)
-
-static int imx6_usdhc_send_cmd(int cmd_idx, uint32_t arg);
-static void imx6_usdhc_send_app_cmd(int cmd_idx, uint32_t arg, uint32_t rca);
 
 static void _resp_dump(void) {
 	log_debug("===================");
@@ -215,11 +212,11 @@ static int imx6_usdhc_send_cmd(int cmd_idx, uint32_t arg) {
 	REG32_STORE(USDHC_MIX_CTRL, mix);
 	REG32_STORE(USDHC_CMD_XFR_TYP, wcmd);
 
-	log_debug("send cmd: id=%d, arg=0x%08x", cmd_idx, arg);
+	log_debug("send cmd: id=%d, arg=0x%08x wcmd=0x%08x", cmd_idx, arg, wcmd);
 
 	/* Wait command to be completed */
 	t = TIMEOUT;
-	while(!(REG32_LOAD(USDHC_INT_STATUS) & -1) && --t);
+	while(!(REG32_LOAD(USDHC_INT_STATUS) & 1) && --t);
 
 	if (cmd_idx == 7) {
 		t = TIMEOUT;
@@ -240,15 +237,15 @@ static int imx6_usdhc_send_cmd(int cmd_idx, uint32_t arg) {
 	t = REG32_LOAD(USDHC_INT_STATUS);
 	log_debug("INTERRUPT STATUS=0x%08x", t);
 
-
 	REG32_STORE(USDHC_INT_STATUS, t);
-	if (t & 1)
+	if (t & 1) {
 		return 0;
-	else
+	} else {
 		return -1;
+	}
 }
 
-static void imx6_usdhc_send_app_cmd(int cmd_idx, uint32_t arg, uint32_t rca) {
+static inline void imx6_usdhc_send_app_cmd(int cmd_idx, uint32_t arg, uint32_t rca) {
 	if (0 == imx6_usdhc_send_cmd(55, rca << 16) &&
 		(REG32_LOAD(USDHC_CMD_RSP0) == 0x120 /* XXX */)) {
 		imx6_usdhc_send_cmd(cmd_idx, arg);
@@ -419,7 +416,7 @@ static int imx6_usdhc_probe(void *args) {
 
 	REG32_STORE(USDHC_INT_STATUS_EN, -1);
 	REG32_STORE(USDHC_PROT_CTRL, 0x00000020);
-	REG32_ORIN(USDHC_SYS_CTRL, 0xf << 16);
+	REG32_ORIN(USDHC_SYS_CTRL, (0xf << 16) | 0xF);
 
 	imx6_usdhc_set_block_len(BLK_LEN);
 	/* SD initialization. Refer to SDIO specification for more details */
@@ -427,6 +424,7 @@ static int imx6_usdhc_probe(void *args) {
 	imx6_usdhc_send_cmd(0, 0);
 	tmp = 0xFFFFF;
 	while(tmp--);
+
 	/* Check supported voltage */
 	tmp = (CMD8_STANDART_VOLTAGE) | CMD8_CHECK_PATTERN;
 	if (0 == imx6_usdhc_send_cmd(8, tmp) && (REG32_LOAD(USDHC_CMD_RSP0) == tmp)) {
