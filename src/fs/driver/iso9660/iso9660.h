@@ -59,7 +59,7 @@ typedef int64_t off64_t;
 
 typedef struct cdfs {
 	void *bdev;
-	int blks;
+	uint64_t blks;
 	int volblks;
 	int vdblk;
 	int joliet;

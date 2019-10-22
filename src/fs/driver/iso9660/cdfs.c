@@ -415,8 +415,7 @@ int cdfs_mount(struct nas *root_nas)
 	fsi = root_nas->fs->fsi;
 
 	/* Check block size */
-	if (CDFS_BLOCKSIZE !=
-			block_dev_ioctl(root_nas->fs->bdev, IOCTL_GETBLKSIZE, NULL, 0)) {
+	if (CDFS_BLOCKSIZE != block_dev_block_size(root_nas->fs->bdev)) {
 		return -ENXIO;
 	}
 
@@ -424,8 +423,7 @@ int cdfs_mount(struct nas *root_nas)
 	cdfs = (cdfs_t *) sysmalloc(sizeof(cdfs_t));
 	memset(cdfs, 0, sizeof(cdfs_t));
 	cdfs->bdev = root_nas->fs->bdev;
-	cdfs->blks =
-			block_dev_ioctl(root_nas->fs->bdev, IOCTL_GETDEVSIZE, NULL, 0);
+	cdfs->blks = block_dev_size(root_nas->fs->bdev);
 	if (cdfs->blks < 0) {
 		return cdfs->blks;
 	}

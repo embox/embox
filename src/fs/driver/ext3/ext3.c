@@ -205,7 +205,7 @@ static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t star
     assert(jdev);
 
     jp->j_dev = jdev;
-    jp->j_disk_sectorsize = block_dev_ioctl(jdev, IOCTL_GETBLKSIZE, NULL, 0);
+    jp->j_disk_sectorsize = block_dev_block_size(jdev);
 
     assert(jp->j_disk_sectorsize >= 512);
 

@@ -134,11 +134,12 @@ static int ramfs_close(struct file_desc *desc) {
 static int ramfs_read_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector) {
 	struct ramfs_fs_info *fsi;
-	int blksize, blkno, sectorsize;
+	size_t blksize;
+	int blkno, sectorsize;
 
 	fsi = nas->fs->fsi;
 
-	blksize = block_dev_ioctl(nas->fs->bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blksize = block_dev_block_size(nas->fs->bdev);
 	sectorsize = fsi->block_size;
 	assert(blksize > 0 && sectorsize > 0);
 	blkno = sector * (sectorsize / blksize);
@@ -155,11 +156,12 @@ static int ramfs_read_sector(struct nas *nas, char *buffer,
 static int ramfs_write_sector(struct nas *nas, char *buffer,
 		uint32_t count, uint32_t sector) {
 	struct ramfs_fs_info *fsi;
-	int blksize, blkno, sectorsize;
+	size_t blksize;
+	int blkno, sectorsize;
 
 	fsi = nas->fs->fsi;
 
-	blksize = block_dev_ioctl(nas->fs->bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blksize = block_dev_block_size(nas->fs->bdev);
 	sectorsize = fsi->block_size;
 	assert(blksize > 0 && sectorsize > 0);
 	blkno = sector * (sectorsize / blksize);

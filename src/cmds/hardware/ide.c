@@ -20,7 +20,8 @@ static void print_usage(void) {
 
 static void print_drive (struct ide_tab *ide) {
 	hd_t *drive;
-	int dev_size, dev_bsize;
+	uint64_t dev_size;
+	size_t dev_bsize;
 
 	for(int i  = 0; i < 4; i++) {
 		printf("\nIDE Channel %d-%d: ", i/2, i%2);
@@ -34,8 +35,9 @@ static void print_drive (struct ide_tab *ide) {
 			printf(" None");
 		} else {
 			drive = (hd_t *) ide->drive[i];
-			dev_bsize = block_dev_ioctl(drive->bdev, IOCTL_GETBLKSIZE, NULL, 0);
-			dev_size = block_dev_ioctl(drive->bdev, IOCTL_GETDEVSIZE, NULL, 0);
+			assert(drive);
+			dev_bsize = block_dev_block_size(drive->bdev);
+			dev_size = block_dev_size(drive->bdev);
 			printf(" %s;", ((struct node *)block_dev(drive->bdev)->dev_vfs_info)->name);
 			printf(" %s", drive->param.serial);
 			printf(" %s", drive->param.model);
