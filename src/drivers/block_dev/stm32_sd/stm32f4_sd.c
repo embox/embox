@@ -14,7 +14,10 @@
 
 #include "stm32f4_discovery_sdio_sd.h"
 
-static int stm32f4_sd_init(void *arg);
+#include <embox/unit.h>
+
+#include <util/log.h>
+
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size);
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
 static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
@@ -31,20 +34,25 @@ block_dev_driver_t stm32f4_sd_driver = {
 	.ioctl = stm32f4_sd_ioctl,
 	.read  = stm32f4_sd_read,
 	.write = stm32f4_sd_write,
-	.probe = stm32f4_sd_init,
+	.probe = NULL,
 };
 
-BLOCK_DEV_DEF(STM32F4_SD_DEVNAME, &stm32f4_sd_driver);
+EMBOX_UNIT_INIT(stm32f4_sd_init);
 
-static int stm32f4_sd_init(void *arg) {
+static int stm32f4_sd_init(void) {
 	struct block_dev *bdev;
-	if (block_dev_lookup(STM32F4_SD_DEVNAME) && (BSP_SD_Init() == MSD_OK)) {
+
+	if (BSP_SD_Init() == MSD_OK) {
+		log_debug("SD card present");
 		bdev = block_dev_create(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
+		assert(bdev);
+
 		bdev->size = stm32f4_sd_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
-		return 0;
 	} else {
-		return -1;
+		log_debug("SD card is not present");
 	}
+
+	return 0;
 }
 
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size) {
