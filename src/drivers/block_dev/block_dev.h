@@ -32,7 +32,7 @@ typedef struct block_dev {
 	struct block_dev_driver *driver;
 	void *privdata;
 
-	size_t size;
+	uint64_t size;
 	size_t block_size;
 	struct block_dev_cache *cache;
 
@@ -62,7 +62,7 @@ typedef struct block_dev_cache {
 	blkno_t blkno;
 	blkno_t lastblkno;
 	char *data;
-	int blksize;
+	size_t blksize;
 	int blkfactor;
 	int depth;
 	char *pool;
@@ -93,6 +93,9 @@ extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
 extern struct block_dev *block_dev_create_common(const char *path, void *driver, void *privdata);
 extern struct block_dev *block_dev_find(const char *bd_name);
+
+extern uint64_t block_dev_size(struct block_dev *dev);
+extern size_t block_dev_block_size(struct block_dev *dev);
 
 #include <util/array.h>
 

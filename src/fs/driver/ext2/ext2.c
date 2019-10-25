@@ -786,7 +786,8 @@ static int ext2fs_format(void *dev) {
 	struct ext2_gd gd;
 	struct ext2fs_dinode *di;
 	char buff[SBSIZE];
-	size_t dev_size, dev_bsize;
+	uint64_t dev_size;
+	size_t dev_bsize;
 	int sector;
 	float dev_factor;
 
@@ -802,8 +803,8 @@ static int ext2fs_format(void *dev) {
 	memset(&gd, 0, sizeof(struct ext2_gd));
 
 	bdev = (struct block_dev *) dev_fi->privdata;
-	dev_size = block_dev_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
-	dev_bsize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	dev_size = block_dev_size(bdev);
+	dev_bsize = block_dev_block_size(bdev);
 	dev_factor = SBSIZE / dev_bsize;
 
 	ext2_dflt_sb(&sb, dev_size, dev_factor);

@@ -729,7 +729,6 @@ static s64 ntfs_device_bdev_io_pread(struct ntfs_device *dev, void *buf,
 		s64 count, s64 offset)
 {
 	struct block_dev *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
-	//int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 	if (count == block_dev_read_buffered(bdev, buf, count, offset)) {
 		return count;
 	}
@@ -752,7 +751,6 @@ static s64 ntfs_device_bdev_io_pwrite(struct ntfs_device *dev, const void *buf,
 		s64 count, s64 offset)
 {
 	struct block_dev *bdev = ((struct ntfs_bdev_desc*)dev->d_private)->dev;
-	//int blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
 	if (NDevReadOnly(dev)) {
 		errno = EROFS;
 		return -1;

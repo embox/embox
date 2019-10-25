@@ -104,10 +104,10 @@ static inline struct buffer_head *sb_bread(struct qnx6_superblock *sb, unsigned 
 	struct buffer_head *bh = bcache_getblk_locked(sb->s_bdev, block, sb->s_blocksize);
 	unsigned fs_blksize = sb->s_blocksize;
 	struct block_dev *bdev = bh->bdev;
-	unsigned bdev_blksize;
+	size_t bdev_blksize;
 
 	/* FIXME */
-       	bdev_blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	bdev_blksize = block_dev_block_size(bdev);
 
 	if (bh && buffer_new(bh)) {
 		/* FIXME */

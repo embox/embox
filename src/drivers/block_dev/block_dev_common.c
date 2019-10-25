@@ -138,8 +138,8 @@ struct block_dev *block_dev(void *dev) {
 }
 
 int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, size_t offset) {
-	int blksize, blkno, cplen, cursor;
-	int res, i;
+	size_t blksize;
+	int blkno, cplen, cursor, res, i;
 	struct buffer_head *bh;
 
 	assert(bdev);
@@ -151,7 +151,7 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 	if (offset + count > bdev->size) {
 		return -EIO;
 	}
-	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blksize = block_dev_block_size(bdev);
 	if (blksize < 0) {
 		return blksize;
 	}
@@ -179,8 +179,8 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 }
 
 int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t count, size_t offset) {
-	int blksize, blkno, cplen, cursor;
-	int res, i;
+	size_t blksize;
+	int blkno, cplen, cursor, res, i;
 	struct buffer_head *bh;
 
 	assert(bdev);
@@ -192,7 +192,7 @@ int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t 
 		return -EIO;
 	}
 
-	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blksize = bdev->block_size;
 	if (blksize < 0) {
 		return blksize;
 	}
@@ -236,14 +236,14 @@ int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t 
 
 int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	struct block_dev *bdev;
-	int blksize;
+	size_t blksize;
 
 	if (NULL == dev) {
 		return -ENODEV;
 	}
 	bdev = block_dev(dev);
 
-	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blksize = block_dev_block_size(bdev);
 	if (blksize < 0) {
 		return blksize;
 	}
@@ -252,7 +252,7 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 
 int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) {
 	struct block_dev *bdev;
-	int blksize;
+	size_t blksize;
 
 	if (NULL == dev) {
 		return -ENODEV;
@@ -260,7 +260,7 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 
 	bdev = block_dev(dev);
 
-	blksize = block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0);
+	blksize = block_dev_block_size(bdev);
 	if (blksize < 0) {
 		return blksize;
 	}
@@ -309,8 +309,7 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	cache->lastblkno = -1;
 	cache->buff_cntr = -1;
 
-	if (0 >= (cache->blksize =
-			block_dev_ioctl(bdev, IOCTL_GETBLKSIZE, NULL, 0))) {
+	if (0 >= (cache->blksize = block_dev_block_size(bdev))) {
 		return NULL;
 	}
 
@@ -360,3 +359,14 @@ block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
 	return cache;
 }
 
+uint64_t block_dev_size(struct block_dev *dev) {
+	assert(dev);
+
+	return dev->size;
+}
+
+size_t block_dev_block_size(struct block_dev *dev) {
+	assert(dev);
+
+	return dev->block_size;
+}
