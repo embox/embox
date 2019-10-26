@@ -15,50 +15,17 @@
 #include <limits.h>
 
 #include <drivers/device.h>
-#include <fs/fat.h>
+
 #include <fs/dvfs.h>
 #include <util/math.h>
 #include <util/log.h>
 
+#include "fat.h"
+
 #define DEFAULT_FAT_VERSION OPTION_GET(NUMBER, default_fat_version)
 
-extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
-
-extern struct file_operations fat_fops;
-
-int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
-	size_t ret;
-	int blk;
-	int blkpersec = fsi->vi.bytepersec / fsi->bdev->block_size;
-
-	blk = sector * blkpersec;
-
-	ret = block_dev_read(fsi->bdev, (char*) buffer, fsi->vi.bytepersec, blk);
-	if (ret != fsi->vi.bytepersec)
-		return DFS_ERRMISC;
-	else
-		return DFS_OK;
-}
-
-int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
-	size_t ret;
-	int blk;
-	int blkpersec = fsi->vi.bytepersec / fsi->bdev->block_size;
-
-	blk = sector * blkpersec;
-	ret = block_dev_write(fsi->bdev, (char*) buffer, fsi->vi.bytepersec, blk);
-	if (ret != fsi->vi.bytepersec)
-		return DFS_ERRMISC;
-	else
-		return DFS_OK;
-}
-
-static int fat_sec_by_clus(struct fat_fs_info *fsi, int clus) {
-	return clus > 2 ? (clus - 2) * fsi->vi.secperclus + fsi->vi.dataarea : 0;
-}
-
 /**
- * @brief Set approptiate flags and i_data for given inode
+ * @brief Set appropriate flags and i_data for given inode
  *
  * @param inode Inode to be filled
  * @param di FAT directory entry related to file
@@ -151,23 +118,6 @@ err_out:
 	return -1;
 }
 
-/**
-* @brief Read related dir entries into dir buffer
-*
-* @param fsi Used to determine bdev and fat type (12/16/32)
-* @param di  Pointer to dirinfo structure
-*
-* @return Negative error number
-* @retval 0 Success
-*/
-static inline int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di) {
-	int sector;
-
-	sector = fat_sec_by_clus(fsi, di->currentcluster) + di->currentsector;
-
-	return fat_read_sector(fsi, di->p_scratch, sector);
-}
-
 /* @brief Figure out if node at specific path exists or not
  * @note  Assume dir is root
  * @note IMPORTANT: this functions should not be calls in the middle of iterate,
@@ -244,15 +194,9 @@ succ_out:
  * @return Negative error code
  */
 static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	int res;
-	uint32_t temp;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
 	struct dirinfo *di, *new_di;
-	char tmp_name[MSDOS_NAME];
-	struct fat_dirent de;
-	uint32_t cluster;
-	int entries;
 	char *name;
 
 	assert(i_new);
@@ -270,83 +214,23 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	name = i_new->i_dentry->name;
 	assert(name);
 
-	entries = fat_entries_per_name(name);
-
-	res = fat_get_free_entries(fsi, di, &de, entries);
-	if (res != DFS_OK) {
-		return -1;
-	}
-
-	if (entries > 1) {
-		path_canonical_to_dir(tmp_name, name);
-		/* Write long-name descriptors */
-		for (int i = entries - 1; i >= 1; i--) {
-			memset(&de, 0, sizeof(de));
-			fat_write_longname(name + 13 * (i - 1), &de);
-			de.attr = ATTR_LONG_NAME;
-			de.crttimetenth = fat_canonical_name_checksum(tmp_name);
-			de.name[0] = FAT_LONG_ORDER_NUM_MASK & i;
-			if (i == entries - 1) {
-				de.name[0] |= FAT_LONG_ORDER_LAST;
-			}
-
-			fat_write_de(fsi, di, &de);
-
-			fat_get_next(fsi, di, &de);
-		}
-	}
-
-	cluster = fat_get_free_fat_(fsi, fat_sector_buff);
-	/* We need to write 8.3 entry anyway, even for long-name descritors */
-	/* Be carefully, this functions explicitly erases de.attr */
-	path_canonical_to_dir((char*) de.name, name);
-	de.attr = S_ISDIR(mode) ? ATTR_DIRECTORY : 0;
-	de.startclus_l_l = cluster & 0xff;
-	de.startclus_l_h = (cluster & 0xff00) >> 8;
-	de.startclus_h_l = (cluster & 0xff0000) >> 16;
-	de.startclus_h_h = (cluster & 0xff000000) >> 24;
-
 	if (FILE_TYPE(mode, S_IFDIR)) {
-		if (!(new_di = fat_dirinfo_alloc()))
+		if (!(new_di = fat_dirinfo_alloc())) {
 			return -ENOMEM;
+		}
 		di->p_scratch = fat_sector_buff;
 		fi = &new_di->fi;
 	} else {
-		if (!(fi = fat_file_alloc()))
+		if (!(fi = fat_file_alloc())) {
 			return -ENOMEM;
+		}
 	}
+	fi->fsi          = fsi;
+	fi->volinfo      = &fsi->vi;
 
 	i_new->i_data = fi;
 
-	*fi = (struct fat_file_info) {
-		.fsi          = fsi,
-		.volinfo      = &fsi->vi,
-		.dirsector    = di->currentsector + fat_sec_by_clus(fsi, di->currentcluster),
-		.diroffset    = di->currententry,
-		.cluster      = cluster,
-		.firstcluster = cluster,
-	};
-
-	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector))
-		return -1;
-
-	memcpy(&(((struct fat_dirent *) fat_sector_buff)[fi->diroffset]),
-			&de, sizeof(struct fat_dirent));
-	if (fat_write_sector(fsi, fat_sector_buff, fi->dirsector))
-		return -1;
-
-	/* Mark newly allocated cluster as end of chain */
-	switch(fsi->vi.filesystem) {
-		case FAT12:		cluster = 0xfff;	break;
-		case FAT16:		cluster = 0xffff;	break;
-		case FAT32:		cluster = 0x0fffffff;	break;
-		default:		return DFS_ERRMISC;
-	}
-
-	temp = 0;
-	fat_set_fat_(fsi, fat_sector_buff, &temp, fi->cluster, cluster);
-
-	return ENOERR;
+	return fat_create_file(fi, di, name, mode);
 }
 
 static int fat_close(struct file *desc) {
@@ -469,7 +353,7 @@ struct inode_operations fat_iops = {
 	.truncate = fat_truncate,
 };
 
-struct file_operations fat_fops = {
+static struct file_operations fat_fops = {
 	.close = fat_close,
 	.write = fat_write,
 	.read = fat_read,
@@ -510,8 +394,8 @@ static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	assert(sb);
 	assert(bdev_file);
 	assert(bdev_file->f_inode);
-	assert(bdev_file->f_inode->i_data)
-		;
+	assert(bdev_file->f_inode->i_data);
+
 	dev = ((struct dev_module *) bdev_file->f_inode->i_data)->dev_priv;
 	assert(dev);
 
