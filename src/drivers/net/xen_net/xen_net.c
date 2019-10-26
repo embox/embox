@@ -117,6 +117,7 @@ static void print_packet(unsigned char* data, int len, void* arg) {
 }
 
 static int xen_net_init(void) {
+	printk("\n===========xen_net_init============\n");
 	int res = 0;
 	struct net_device *nic;
 
@@ -139,7 +140,7 @@ static int xen_net_init(void) {
 	unsigned char rawmac[6];
 	char *ip = (char *) malloc(16);
 	struct netfront_dev *dev = init_netfront(nodename, print_packet, rawmac, &ip);
-	
+	printk("\n================afterinit_netfront===================");
 	printk("nodename: %s\n"
 		   "backend: %s\n"
 		   "mac: %s\n"
@@ -150,7 +151,6 @@ static int xen_net_init(void) {
 		   ip);
 
 	free(ip);
-		   
-	return 0;
-	// return inetdev_register_dev(nic);
+	
+	return inetdev_register_dev(nic);
 }

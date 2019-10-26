@@ -92,6 +92,27 @@ static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
 		printk("[PANIC!] Can not write event-channel");
 		return;
 	}
+#else
+	memset(xs_key, 0, XS_MSG_LEN);
+	sprintf(xs_key, "%s/event-channel-tx", dev->nodename);
+	memset(xs_value, 0, XS_MSG_LEN);
+	sprintf(xs_value, "%u", dev->evtchn_tx);
+	err = xenstore_write(xs_key, xs_value);
+	if (err) {
+		printk("[PANIC!] Can not write event-channel");
+		return;
+	}
+
+	memset(xs_key, 0, XS_MSG_LEN);
+	sprintf(xs_key, "%s/event-channel-rx", dev->nodename);
+	memset(xs_value, 0, XS_MSG_LEN);
+	sprintf(xs_value, "%u", dev->evtchn_rx);
+	err = xenstore_write(xs_key, xs_value);
+	if (err) {
+		printk("[PANIC!] Can not write event-channel");
+		return;
+	}
+
 #endif
 
 	memset(xs_key, 0, XS_MSG_LEN);
@@ -258,6 +279,7 @@ struct netfront_dev *init_netfront(
 	unsigned char rawmac[6],
 	char **ip
 ) {
+	printk("\n==============init_netfront================\n");
 	struct netif_tx_sring *txs;
 	struct netif_rx_sring *rxs;
 

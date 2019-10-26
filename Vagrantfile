@@ -6,6 +6,7 @@ end
 
 Vagrant.configure("2") do |config|
   config.vm.network "forwarded_port", guest: 80, host: 8080
+  config.vm.network "forwarded_port", guest: 1234, host: 1234
 
   config.vm.provider "virtualbox" do |v|
     v.memory = 2048
@@ -13,7 +14,7 @@ Vagrant.configure("2") do |config|
   end
   
   config.vm.define "xen", autostart: false do |xen|
-    xen.vm.box = "bento/ubuntu-16.04"
+    xen.vm.box = "ubuntu/bionic64"
     
     xen.vm.synced_folder ".", "/embox", type: "rsync",
 	    rsync__exclude: ".git/"
@@ -22,9 +23,10 @@ Vagrant.configure("2") do |config|
       export DEBIAN_FRONTEND=noninteractive
       apt-get update
       apt-get -y upgrade
-      apt-get -y install xen-system-amd64 bridge-utils
+      apt-get -y install xen-hypervisor-amd64 bridge-utils
 
       echo "cd /embox" >> /home/vagrant/.bashrc
+      echo "export PATH=$PATH:/usr/lib/xen-4.9/bin" >> /home/vagrant/.bashrc
     SHELL
 
     xen.vm.provision :reload
