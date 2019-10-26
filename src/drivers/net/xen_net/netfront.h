@@ -16,6 +16,7 @@
 #include <xen/io/netif.h>
 #include <xen/io/xenbus.h>
 #include <xen/grant_table.h>
+#include <xen/event_channel.h>
 
 #define PAGE_SIZE 				4096
 #define L1_PAGETABLE_SHIFT 		12
@@ -49,8 +50,12 @@ struct netfront_dev {
     struct netif_rx_front_ring rx;
     grant_ref_t tx_ring_ref;
     grant_ref_t rx_ring_ref;
-    // evtchn_port_t evtchn;
-
+#if 0
+    evtchn_port_t evtchn;
+#else
+    evtchn_port_t evtchn_tx;
+    evtchn_port_t evtchn_rx;
+#endif
     char *nodename;
     char backend[64];
     char mac[64];
