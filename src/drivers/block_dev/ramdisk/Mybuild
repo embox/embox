@@ -15,7 +15,7 @@ module ramdisk_old extends ramdisk {
 	depends embox.fs.node
 	depends embox.mem.page_api
 	depends embox.mem.pool
-	depends embox.driver.block
+	depends embox.driver.block_oldfs
 	depends embox.mem.phymem
 	depends embox.util.indexator
 }

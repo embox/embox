@@ -15,7 +15,7 @@ module jffs2 {
 
 	depends embox.fs.node, embox.fs.driver.repo
 	depends embox.fs.driver.fat
-	depends embox.driver.block
+	depends embox.driver.block_oldfs
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.driver.flash.core
