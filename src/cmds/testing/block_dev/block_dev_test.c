@@ -1,21 +1,23 @@
 /**
- * @file 
+ * @file
  * @brief Simple test for r/w operation on block device
- * 
+ *
  * @author Alexander Kalmuk
  * @date 15.08.2019
  */
 
-#include <unistd.h>
 #include <assert.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 #include <framework/mod/options.h>
 #include <drivers/flash/flash.h>
 #include <module/embox/driver/block_common.h>
+#include <util/pretty_print.h>
 
 #define MAX_BDEV_QUANTITY \
 	OPTION_MODULE_GET(embox__driver__block_common, NUMBER, dev_quantity)
@@ -96,21 +98,109 @@ static int flash_dev_test(struct flash_dev *fdev) {
 #undef FLASH_RW_LEN
 }
 
-static int block_dev_test(const char *name) {
+static void fill_buffer(int8_t *buf, size_t cnt) {
+	while (cnt) {
+		long int r = random();
+		size_t step = sizeof(r);
+
+		if (cnt < step) {
+			break;
+		}
+
+		memcpy(buf, &r, step);
+
+		buf += step;
+		cnt -= step;
+	}
+}
+
+static void dump_buf(int8_t *buf, size_t cnt, char *fmt) {
+	char msg[256];
+	size_t step = pretty_print_row_len();
+
+	printf("============================\n");
+	printf("%s\n", fmt);
+	printf("============================\n");
+	while (cnt) {
+		pretty_print_row(buf, cnt, msg);
+
+		printf("%s\n", msg);
+
+		if (cnt < step) {
+			cnt = 0;
+		} else {
+			cnt -= step;
+		}
+
+		buf += step;
+	}
+	printf("============================\n");
+}
+
+static int block_dev_test(struct block_dev *bdev) {
+	size_t blk_sz;
+	int8_t *read_buf, *write_buf;
+	uint64_t blocks;
+	int err;
+
+	blk_sz = bdev->block_size;
+	if (blk_sz == 0) {
+		printf("block size is zero, that's probably shouldn't happen\n");
+		return -1;
+	}
+
+	blocks = bdev->size / ((uint64_t) blk_sz);
+	read_buf = malloc(blk_sz);
+	write_buf = malloc(blk_sz);
+
+	if (read_buf == NULL || write_buf == NULL) {
+		printf("Failed to allocate memory for buffer!\n");
+		return -ENOMEM;
+	}
+
+	for (uint64_t i = 0; i < blocks; i++) {
+		fill_buffer(write_buf, blk_sz);
+
+		err = block_dev_write(bdev, (void *) write_buf, blk_sz, i);
+		if (err < 0) {
+			printf("Failed to write block #%"PRIu64"\n", i);
+			return err;
+		}
+
+		err = block_dev_read(bdev, (void *) read_buf, blk_sz, i);
+		if (err < 0) {
+			printf("Failed to read block #%"PRIu64"\n", i);
+			return err;
+		}
+
+		err = memcmp(read_buf, write_buf, blk_sz);
+		if (err != 0) {
+			printf("Write/read mismatch!\n");
+			dump_buf(write_buf, blk_sz, "Write buffer");
+			dump_buf(read_buf, blk_sz, "Read buffer");
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+static int dev_test(const char *name) {
 	struct block_dev *bdev;
 	struct flash_dev *fdev;
 
 	bdev = block_dev_find(name);
 	if (!bdev) {
-		printf("Block device \"%s\" not found\n");
+		printf("Block device \"%s\" not found\n", name);
 		return -1;
 	}
+
 	fdev = get_flash_dev(bdev);
-	if (!fdev) {
-		printf("Only flash block devices are supported\n");
-		return -1;
+	if (fdev) {
+		return flash_dev_test(fdev);
+	} else {
+		return block_dev_test(bdev);
 	}
-	return flash_dev_test(fdev);
 }
 
 int main(int argc, char **argv) {
@@ -140,7 +230,7 @@ int main(int argc, char **argv) {
 	printf("Starting block device test (iters = %d)...\n", iters);
 	for (i = 0; i < iters; i++) {
 		printf("iter %d...\n", i);
-		if (block_dev_test(argv[argc - 1]) < 0) {
+		if (dev_test(argv[argc - 1]) < 0) {
 			printf("FAILED\n");
 			return -1;
 		}
