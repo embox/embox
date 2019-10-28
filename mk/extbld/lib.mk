@@ -56,7 +56,9 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach d,$(sources_archive_mirrors), \
 		if [ ! -f $(DOWNLOAD_DIR)/$(pkg_archive_name) ] ; then \
 			cd $(DOWNLOAD_DIR); \
-			curl -o $(pkg_archive_name) -f -k -L '$d' || $(RM) $(pkg_archive_name); \
+			curl -o $(pkg_archive_name) -f -k -L '$d' && \
+			($(MD5) $(pkg_archive_name) | $(AWK) '{print $$1}' | grep $(PKG_MD5) 2>&1 >/dev/null;) || \
+			$(RM) $(pkg_archive_name); \
 		fi;) \
 	$(foreach g,$(sources_git), \
 		if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
