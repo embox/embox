@@ -54,7 +54,7 @@ run_qemu_fs() {
 	img_mount=
 	QEMU_MOUNT_HD="\"mount -t $FS /dev/hda /mnt/fs_test\","
 	case $FS in
-		vfat | ext2 | ext3 | ext4 | qnx6 | ntfs)
+		vfat | ext2 | ext3 | ext4 | ntfs)
 			img_mount="$QEMU_MOUNT_HD"
 			;;
 		jffs2)
@@ -82,7 +82,7 @@ run_qemu_fs() {
 
 	img_run=
 	case $FS in
-		vfat | ext2 | ext3 | ext4 | qnx6 | jffs2 | ntfs)
+		vfat | ext2 | ext3 | ext4 | jffs2 | ntfs)
 			img_run="-hda $IMG"
 			;;
 		iso9660)
