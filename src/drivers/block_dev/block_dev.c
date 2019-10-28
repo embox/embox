@@ -22,7 +22,7 @@
 #include <fs/file_desc.h>
 #include <fs/bcache.h>
 #include <fs/file_operation.h>
-
+#include <fs/fs_driver.h>
 #include <drivers/block_dev.h>
 
 EMBOX_UNIT_INIT(blockdev_init);
@@ -54,7 +54,7 @@ static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
 	return n_write;
 }
 
-static struct file_operations blockdev_fop = {
+static const struct file_operations blockdev_fop = {
 	.open = bdev_open,
 	.close = bdev_close,
 	.read = bdev_read,
@@ -63,9 +63,14 @@ static struct file_operations blockdev_fop = {
 
 static struct filesystem *blockdev_fs;
 
+static const struct fs_driver blockdev_fs_drv = {
+	.file_op = &blockdev_fop
+};
+
 static int blockdev_init(void) {
 	blockdev_fs = filesystem_create("empty");
 	blockdev_fs->file_op = &blockdev_fop;
+	blockdev_fs->drv = (struct fs_driver *)&blockdev_fs_drv;
 
 	return 0;
 }
