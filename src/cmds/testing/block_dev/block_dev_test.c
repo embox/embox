@@ -155,6 +155,15 @@ static int block_dev_test(struct block_dev *bdev) {
 
 	if (read_buf == NULL || write_buf == NULL) {
 		printf("Failed to allocate memory for buffer!\n");
+
+		if (read_buf != NULL) {
+			free(read_buf);
+		}
+
+		if (write_buf != NULL) {
+			free(write_buf);
+		}
+
 		return -ENOMEM;
 	}
 
@@ -181,6 +190,9 @@ static int block_dev_test(struct block_dev *bdev) {
 			return -1;
 		}
 	}
+
+	free(read_buf);
+	free(write_buf);
 
 	return 0;
 }
