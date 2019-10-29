@@ -10,11 +10,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <fs/fat.h>
+
 #include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>
 
+#include "fat.h"
 
 int fat_check_filename(char *filename) {
 	char *point;

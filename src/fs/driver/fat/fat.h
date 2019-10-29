@@ -267,6 +267,10 @@ struct dirinfo {
 #include <framework/mod/options.h>
 #define FAT_MAX_SECTOR_SIZE OPTION_MODULE_GET(embox__fs__driver__fat, NUMBER, fat_max_sector_size)
 
+static inline int fat_sec_by_clus(struct fat_fs_info *fsi, int clus) {
+	return clus > 2 ? (clus - 2) * fsi->vi.secperclus + fsi->vi.dataarea : 0;
+}
+
 extern void fat_set_filetime(struct fat_dirent *de);
 extern void fat_get_filename(char *tmppath, char *filename);
 extern int fat_check_filename(char *filename);
@@ -320,5 +324,8 @@ extern uint32_t fat_get_free_entries(struct fat_fs_info *fsi,
 		struct dirinfo *dir, struct fat_dirent *dirent, int n);
 extern uint8_t fat_canonical_name_checksum(const char *name);
 extern int fat_reset_dir(struct dirinfo *di);
+extern int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di);
+
+extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 
 #endif /* FAT_H_ */
