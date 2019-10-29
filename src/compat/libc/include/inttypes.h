@@ -224,11 +224,11 @@ __END_DECLS
 #define    PRIXLEAST32 "X"
 #define    PRIXFAST32  "X"
 
-#define    PRIu64      "lu"
-#define    PRIi64      "li"
-#define    PRIx64      "lx"
-#define    PRIX64      "lX"
-#define    PRId64      "ld"
+#define    PRIu64      "llu"
+#define    PRIi64      "lli"
+#define    PRIx64      "llx"
+#define    PRIX64      "llX"
+#define    PRId64      "lld"
 
 #elif defined(__aarch64__)
 #define    PRIo32      "o"

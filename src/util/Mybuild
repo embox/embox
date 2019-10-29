@@ -63,3 +63,10 @@ static module indexator {
 	depends embox.compat.libc.stdlib.core
 	depends embox.compat.libc.str
 }
+
+static module pretty_print {
+	@IncludeExport(path="util")
+	source "pretty_print.h"
+	
+	source "pretty_print.c"
+}
