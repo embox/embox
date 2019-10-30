@@ -16,13 +16,13 @@ module block_common {
 	depends embox.mem.heap_place
 }
 
-@DefaultImpl(block)
+@DefaultImpl(block_oldfs)
 abstract module block_api {
 }
 
 /* Deprecated version */
-module block extends block_api {
-	source "block_dev.c"
+module block_oldfs extends block_api {
+	source "block_dev_oldfs.c"
 
 	depends block_common
 	depends embox.fs.buffer_cache

@@ -15,7 +15,7 @@ module tmpfs {
 	depends embox.fs.core
 	depends embox.fs.driver.repo
 	depends embox.fs.node
-	depends embox.driver.block
+	depends embox.driver.block_oldfs
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.driver.ramdisk

@@ -14,7 +14,7 @@ abstract module fat {
 	source "fatfs_subr.c"
 	source "fat_common_mem.c"
 
-	depends embox.driver.block
+	depends embox.driver.block_oldfs
 }
 
 module fat_old extends fat {

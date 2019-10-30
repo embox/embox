@@ -57,7 +57,7 @@ struct idesc *kopen(struct node *node, int flag) {
 			return NULL;
 		}
 
-		if (!node_is_file(node)) {
+		if (S_ISCHR(node->mode)) {
 			return char_dev_open(node, flag);
 		}
 
