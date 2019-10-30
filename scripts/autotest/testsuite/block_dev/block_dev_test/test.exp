@@ -1,0 +1,19 @@
+TEST_CASE {Run block_dev_test once} {
+	global embox_prompt
+	global block_dev_raw
+
+	send "block_dev_test $block_dev_raw\r"
+	# Wait for 3 min
+	test_expect_strings_timeout 180 "OK" $embox_prompt
+}
+
+TEST_CASE {Run block_dev_test multiple times} {
+	global embox_prompt
+	global block_dev_raw
+
+	for {set i 0} {$i < 4} {incr i} {
+		send "block_dev_test $block_dev_raw\r"
+		# Wait for 3 min
+		test_expect_strings_timeout 180 "OK" $embox_prompt
+	}
+}

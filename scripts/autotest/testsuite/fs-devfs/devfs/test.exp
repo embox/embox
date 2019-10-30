@@ -1,0 +1,17 @@
+TEST_CASE {Is there /dev/ttyS0} {
+	global embox_prompt
+
+	send "ls /dev/ttyS0\r"
+	test_expect_strings "/dev/ttyS0" $embox_prompt
+}
+
+TEST_CASE {Touch and rm on /dev/ should be rejected} {
+	global embox_prompt
+
+	send "touch /dev/1.txt\r"
+	test_expect_strings "error" $embox_prompt
+	send "mv /dev/zero .\r"
+	test_expect_strings "error" $embox_prompt
+	send "rm /dev\r"
+	test_expect_strings "error" $embox_prompt
+}

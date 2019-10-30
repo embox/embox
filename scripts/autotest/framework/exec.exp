@@ -1,0 +1,24 @@
+proc ::autotest::target_connect {} {
+	# https://stackoverflow.com/questions/30532532/expect-fails-when-running-proc-inside-proc
+	global spawn_id
+	global embox_ip
+	global embox_prompt
+
+	spawn telnet $embox_ip
+
+	expect {
+		timeout | eof { puts "\ntelnet: connection timeout\n"; exit 1 }
+		-re "$embox_prompt" { }
+	}
+}
+
+proc ::autotest::target_disconnect {} {
+	global spawn_id
+	send "exit\r"
+	expect "Connection closed by foreign host"
+}
+
+proc ::autotest::test_exec {test_body} {
+	eval $test_body
+	return 0
+}
