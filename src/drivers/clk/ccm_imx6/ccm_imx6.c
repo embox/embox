@@ -118,6 +118,10 @@ static const struct clk clks_repo[] = {
 	{ MXC_CCM_CCGR3, 3 << 12, "ldb_di0" },
 	{ MXC_CCM_CCGR3, 3 << 14, "ldb_di1" },
 	{ MXC_CCM_CCGR3, 3 << 30, "openvg" },
+	{ MXC_CCM_CCGR4, 3 << 2,  "usdhc1" },
+	{ MXC_CCM_CCGR4, 3 << 4,  "usdhc2" },
+	{ MXC_CCM_CCGR4, 3 << 6,  "usdhc3" },
+	{ MXC_CCM_CCGR4, 3 << 8,  "usdhc4" },
 	{ MXC_CCM_CCGR6, 3 << 14, "vpu" },
 };
 
