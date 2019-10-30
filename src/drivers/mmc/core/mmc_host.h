@@ -115,7 +115,7 @@ struct mmc_host {
 	int high_capacity;
 
 	void *priv;
-#if 0
+#if 1
 	struct mmc_ios ios; /* current io bus settings */
 
 	unsigned int f_min;
@@ -145,4 +145,7 @@ extern int mmc_dev_destroy(struct mmc_host *mmc);
 extern int mmc_hw_reset(struct mmc_host *host);
 extern int mmc_sw_reset(struct mmc_host *host);
 
+static inline void *mmc_priv(struct mmc_host *mmc) {
+	return mmc->priv;
+}
 #endif /* SRC_DRIVERS_MMC_CORE_MMC_HOST_H_ */

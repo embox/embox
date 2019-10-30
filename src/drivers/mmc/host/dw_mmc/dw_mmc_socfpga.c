@@ -40,6 +40,7 @@ static inline void udelay(int i) {
 
 #define BASE_ADDR OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM   OPTION_GET(NUMBER, irq_num)
+#define SLOTS_QUANTITY OPTION_GET(NUMBER, slots_quantity)
 
 /* Common flag combinations */
 #define DW_MCI_DATA_ERROR_FLAGS (SDMMC_INT_DRTO | SDMMC_INT_DCRC | \
@@ -103,6 +104,7 @@ struct idmac_desc {
 	uint32_t des3; /* buffer 2 physical address */
 };
 
+POOL_DEF(dw_mci_slot_pool, struct dw_mci_slot, SLOTS_QUANTITY);
 
 static bool dw_mci_ctrl_reset(struct dw_mci *host, uint32_t reset) {
 	uint32_t ctrl;
@@ -1090,11 +1092,16 @@ static int dw_mci_init_slot(struct dw_mci *host, unsigned int id) {
 	uint32_t freq[2];
 #endif
 
-	mmc = mmc_alloc_host(sizeof(struct dw_mci_slot), NULL);
+	mmc = mmc_alloc_host();
 	if (!mmc) {
+		log_error("couldn't allocate mmc host");
 		return -ENOMEM;
 	}
-
+	mmc->priv = pool_alloc(&dw_mci_slot_pool);
+	if (!mmc->priv) {
+		log_error("couldn't allocate dw_mci_slot");
+		return -ENOMEM;
+	}
 	slot = mmc_priv(mmc);
 	slot->id = id;
 	slot->sdio_id = host->sdio_id0 + id;
