@@ -6,17 +6,16 @@
  * @date 01.05.2017
  */
 
-#include <util/log.h>
-
 #include <string.h>
+#include <unistd.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/common/memory.h>
-#include <framework/mod/options.h>
-#include <hal/reg.h>
-
 #include <drivers/mmc/mmc_core.h>
 #include <drivers/mmc/mmc_host.h>
+#include <framework/mod/options.h>
+#include <hal/reg.h>
+#include <util/log.h>
 
 #include <embox/unit.h>
 
@@ -31,6 +30,7 @@
 #define BLK_LEN    512
 
 #define TIMEOUT    0x1FFFFF
+#define RETRIES    1000
 
 #define SDHCI_IRQ_EN_BITS (1 | 2 | 0x100 | 0x10000 | 0x20000 | 0x40000 | 0x80000 | 0x100000 | 0x400000 | 0x20 | 0x10 | 0x8)
 
@@ -93,6 +93,7 @@ static void sdhci_cmd_done(struct sdhci_host *host, struct mmc_request *req) {
 
 static void imx6_usdhc_send_cmd(struct sdhci_host *host, int cmd_idx, uint32_t arg, int flags) {
 	uint32_t wcmd = 0;
+	int retry = RETRIES;
 #if NEW_API
 
 	wcmd |= (cmd_idx & 0x3f) << 24;
@@ -129,9 +130,16 @@ static void imx6_usdhc_send_cmd(struct sdhci_host *host, int cmd_idx, uint32_t a
 	sdhci_writel(host, USDHC_CMD_XFR_TYP, wcmd);
 
 	/* Wait command to be completed */
-	while(!(sdhci_readl(host, USDHC_INT_STATUS) & 0x1)) {
+	while(!(sdhci_readl(host, USDHC_INT_STATUS) & 0x1) && retry > 0) {
+		usleep(USEC_PER_MSEC);
+		retry--;
 	}
 
+	if (retry == 0) {
+		log_debug("Timeout!");
+	}
+
+	log_debug("USDHC_INT_STATUS=%08x", sdhci_readl(host, USDHC_INT_STATUS));
 	sdhci_writel(host, USDHC_INT_STATUS, 0x1);
 }
 
