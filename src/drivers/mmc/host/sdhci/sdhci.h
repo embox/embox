@@ -10,6 +10,8 @@
 
 #include <stdint.h>
 
+#include <hal/reg.h>
+
 #define USDHC_DS_ADDR               (0x00)
 #define USDHC_BLK_ATT               (0x04)
 #define USDHC_CMD_ARG               (0x08)
@@ -22,9 +24,14 @@
 #define USDHC_PRES_STATE            (0x24)
 # define USDHC_PRES_STATE_CDPL      (1 << 18) /* Card detection pin level */
 #define USDHC_PROT_CTRL             (0x28)
+# define USDHC_PROT_CTRL_LCTL       (1 << 0) /* Led control */
+# define USDHC_PROT_CTRL_DTW_1BIT   (0 << 1) /* Data transfer width */
+# define USDHC_PROT_CTRL_DTW_4BIT   (1 << 1)
+# define USDHC_PROT_CTRL_DTW_8BIT   (2 << 1)
 #define USDHC_SYS_CTRL              (0x2C)
 # define USDHC_SYS_CTRL_RSTA        (1 << 24)
 #define USDHC_INT_STATUS            (0x30)
+# define USDHC_INT_STATUS_CC        (1 << 0) /* Command complete */
 #define USDHC_INT_STATUS_EN         (0x34)
 #define USDHC_INT_SIGNAL_EN         (0x38)
 #define USDHC_AUTOCMD12_ERR_STATUS  (0x3C)
@@ -72,6 +79,10 @@ static inline uint32_t sdhci_readl(struct sdhci_host *host, int reg) {
 
 static inline void sdhci_writel(struct sdhci_host *host, int reg, uint32_t val) {
 	REG32_STORE(host->ioaddr + reg, val);
+}
+
+static inline void sdhci_orl(struct sdhci_host *host, int reg, uint32_t val) {
+	REG32_ORIN(host->ioaddr + reg, val);
 }
 
 static inline uint8_t sdhci_readb(struct sdhci_host *host, int reg) {
