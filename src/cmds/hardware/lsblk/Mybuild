@@ -1,0 +1,23 @@
+package embox.cmd.hw
+
+@AutoCmd
+@Cmd(name = "lsblk",
+	man = '''
+	NAME
+       lsblk - list block devices
+    SYNOPSIS
+       lsblk [ options ]
+    DESCRIPTION
+       lsblk  lists  information  about  all  available or the specified block
+       devices.
+	OPTIONS
+			-h
+				Shows usage
+	SEE ALSO
+			lsblk
+	AUTHORS
+			Anton Bondarev
+	''')
+module lsblk {
+	source "lsblk.c"
+}
