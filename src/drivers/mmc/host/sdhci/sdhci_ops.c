@@ -6,6 +6,7 @@
  * @date 30.10.2019
  */
 #include <assert.h>
+#include <errno.h>
 #include <unistd.h>
 
 #include <drivers/mmc/mmc_core.h>
