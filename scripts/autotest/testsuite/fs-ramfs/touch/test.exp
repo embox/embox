@@ -1,0 +1,20 @@
+TEST_CASE {Touch one file} {
+	global embox_prompt
+
+	test_exec_embox_cmd "touch f1.txt\r"
+	send "ls\r"
+	test_expect_strings "f1.txt" $embox_prompt
+}
+
+TEST_CASE {Touch multiple files} {
+	global embox_prompt
+
+	# Touch 8 files - file0.txt, file1.txt, ..., file7.txt
+	for {set i 0} {$i < 8} {incr i} {
+		exec sleep 0.5
+		test_exec_embox_cmd "touch file$i.txt\r"
+	}
+	# Check first and last files are created
+	send "ls\r"
+	test_expect_strings "file0.txt" "file7.txt" $embox_prompt
+}

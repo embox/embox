@@ -1,0 +1,7 @@
+TEST_CASE {Create file with a long name} {
+	global embox_prompt
+
+	test_exec_embox_cmd "touch veryverylonglongname.txt\r"
+	send "ls\r"
+	test_expect_strings "veryverylonglongname.txt" $embox_prompt
+}

@@ -1,0 +1,9 @@
+TEST_CASE {dd if=/dev/zero of=1.txt count=1} {
+	global embox_prompt
+
+	test_exec_embox_cmd "touch 1.txt\r"
+	test_exec_embox_cmd "dd if=/dev/zero of=1.txt count=1\r"
+
+	send "md5sum 1.txt\r"
+	test_expect_strings "bf619eac0cdf3f68d496ea9344137e8b" $embox_prompt
+}

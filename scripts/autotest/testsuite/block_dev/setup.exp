@@ -1,0 +1,3 @@
+set block_dev_raw $env(TEST_BLKDEV0_RAW_NAME)
+
+target_connect

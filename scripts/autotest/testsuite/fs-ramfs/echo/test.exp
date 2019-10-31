@@ -1,0 +1,45 @@
+TEST_CASE {Echo to regular file} {
+	global embox_prompt
+
+	test_exec_embox_cmd "touch 1.txt\r"
+	test_exec_embox_cmd "echo 0123456789 > 1.txt\r"
+
+	send "cat 1.txt\r"
+	test_expect_strings "0123456789" $embox_prompt
+
+	#test_exec_embox_cmd "rm 1.txt\r"
+}
+
+TEST_CASE {Multiple echo to file} {
+	global embox_prompt
+
+	for {set i 0} {$i < 32} {incr i} {
+		test_exec_embox_cmd "echo hello$i > echotest.txt\r"
+		send "cat echotest.txt\r"
+		test_expect_strings "hello$i" $embox_prompt
+	}
+}
+
+TEST_CASE {Multiple echo's with append} {
+	global embox_prompt
+
+	for {set i 0} {$i < 8} {incr i} {
+		test_exec_embox_cmd "echo a >> echotest2.txt\r"
+	}
+	send "cat echotest2.txt\r"
+	test_expect_strings "aaaaaaaa" $embox_prompt
+}
+
+# Sometimes this test failed.
+TEST_CASE_DECLARE_FIXME {
+TEST_CASE {Echo multiple times to regular file} {
+	global embox_prompt
+
+	test_exec_embox_cmd "touch 1.txt\r"
+	for {set i 0} {$i < 1000} {incr i} {
+		test_exec_embox_cmd "echo 0123456789 > 1.txt\r"
+		send "cat 1.txt\r"
+		test_expect_strings "0123456789" $embox_prompt
+	}
+}
+}

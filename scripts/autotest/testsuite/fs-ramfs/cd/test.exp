@@ -1,0 +1,10 @@
+TEST_CASE {Reject cd into file} {
+	global embox_prompt
+
+	test_exec_embox_cmd "touch 1.txt\r"
+
+	send "cd 1.txt\r"
+	test_expect_strings "failed to exec cd" $embox_prompt
+
+	test_exec_embox_cmd "rm 1.txt\r"
+}

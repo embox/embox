@@ -1,0 +1,116 @@
+package provide autotest 1.0
+
+namespace eval ::autotest {
+	namespace export TEST_SETUP_HOST TEST_TEARDOWN_HOST \
+		TEST_SETUP_TARGET TEST_TEARDOWN_TARGET \
+		TEST_CASE \
+		TEST_CASE_DECLARE_FIXME
+
+	namespace export test_expect_strings
+	namespace export test_expect_strings_timeout
+	namespace export test_exec_embox_cmd
+	namespace export test_exec_embox_cmd_timeout
+
+	namespace export target_connect
+	namespace export target_disconnect
+
+	variable embox_prompt
+	variable embox_ip
+	variable host_ip
+}
+
+source [file join [file dirname [info script]] exec.exp]
+source [file join [file dirname [info script]] cmd.exp]
+
+# This variable is used to show that current test case is broken
+# currently. That is, test case is correct, but Embox errored while
+# running this test case because of some Embox's bugs.
+set current_test_case_fixme false
+
+proc ::autotest::TEST_SETUP_HOST {setup_body} {
+	eval $setup_body
+}
+
+proc ::autotest::TEST_TEARDOWN_HOST {teardown_body} {
+	eval $teardown_body
+}
+
+proc ::autotest::TEST_SETUP_TARGET {setup_body} {
+	telnet_connect
+	eval $setup_body
+	telnet_disconnect
+}
+
+proc ::autotest::TEST_TEARDOWN_TARGET {teardown_body} {
+	telnet_connect
+	eval $teardown_body
+	telnet_disconnect
+}
+
+proc ::autotest::TEST_CASE_DECLARE_FIXME {test_case_body} {
+	global current_test_case_fixme
+
+	set current_test_case_fixme true
+	eval $test_case_body
+	set current_test_case_fixme false
+}
+
+proc ::autotest::TEST_CASE {test_name test_body} {
+	global embox_ip
+	global current_test_case_fixme
+
+	# Do not execute test if it marked with TEST_CASE_DECLARE_FIXME
+	if {$current_test_case_fixme == true} {
+		set result_str "    FIXME: TEST CASE \"$test_name\" is known to be broken"
+		puts $result_str
+		return
+	}
+
+	puts "    TEST CASE \"$test_name\" running ..."
+	
+	# Execute test
+	set res [test_exec $test_body]
+
+	if {$res != 0} {
+		puts "    TEST CASE \"$test_name\" ERROR"
+		exit 1
+	} else {
+		puts "    TEST CASE \"$test_name\" OK"
+	}
+}
+
+proc wait_target_is_ready {} {
+	global embox_prompt
+	global embox_ip
+	global spawn_id
+
+	while true {
+		spawn telnet $embox_ip
+		expect -re "$embox_prompt" { break }
+	}
+	send "exit\r"
+	expect "Connection closed by foreign host"
+}
+
+namespace import autotest::*
+
+set embox_prompt "#"
+
+set testsuite   [lindex $::argv 0]
+set test        [lindex $::argv 1]
+set embox_ip    [lindex $::argv 2]
+set host_ip     [lindex $::argv 3]
+
+# Wait until Embox starts trying to connect through Telnet
+wait_target_is_ready
+
+cd $testsuite
+source setup.exp
+
+cd $test
+source test.exp
+
+cd $testsuite
+source finish.exp
+
+exit 0

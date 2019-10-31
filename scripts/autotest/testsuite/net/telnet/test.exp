@@ -1,0 +1,36 @@
+TEST_CASE {Execute "help" command once} {
+	global embox_prompt
+
+	send "help\r"
+	test_expect_strings "Available commands" $embox_prompt
+}
+
+TEST_CASE {Execute "help" multiple times} {
+	global embox_prompt
+
+	for {set i 0} {$i < 128} {incr i} {
+		send "help\r"
+		test_expect_strings "Available commands" $embox_prompt
+		exec sleep 0.1
+	}
+}
+
+target_disconnect
+
+TEST_CASE {Connect and exit several times telnet} {
+	global spawn_id
+	global embox_ip
+	global embox_prompt
+
+	for {set i 0} {$i < 32} {incr i} {
+		exec sleep 0.5
+		puts "\nCONNECT iter=$i"
+
+		spawn telnet $embox_ip
+		test_expect_strings $embox_prompt
+		send "exit\r"
+		test_expect_strings "Connection closed by foreign host"
+	}
+}
+
+target_connect

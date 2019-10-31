@@ -1,0 +1,50 @@
+proc __expect_regexp {new_timeout pattern} {
+	set timeout $new_timeout
+	expect {
+		timeout { puts "\n\nautotest error: Waiting for \"$pattern\" pattern timeout\n\n"; exit 1 }
+		-re "$pattern" {}
+	}
+	return 0
+}
+
+# Sends $cmd to remote target (Embox) and sequentially waits for each
+# pattern from $args to appear
+proc test_expect_strings {args} {
+	foreach pattern $args {
+		__expect_regexp 10 $pattern
+	}
+	return 0
+}
+
+proc test_expect_strings_timeout {new_timeout args} {
+	foreach pattern $args {
+		__expect_regexp $new_timeout $pattern
+	}
+	return 0
+}
+
+proc test_exec_embox_cmd_timeout {new_timeout cmd} {
+	global embox_prompt
+
+	set timeout $new_timeout
+
+	send $cmd
+	expect {
+		timeout {
+			puts "\n\nautotest error: Timeout running \"$cmd\"\n\n"; exit 1
+		}
+		-re "error" {
+			puts "\n\nautotest error: Error running \"$cmd\"\n\n"; exit 1
+		}
+		-re "$embox_prompt" { }
+	}
+
+	set timeout 10
+
+	return 0
+}
+
+proc test_exec_embox_cmd {cmd} {
+	test_exec_embox_cmd_timeout 20 $cmd
+	return 0
+}

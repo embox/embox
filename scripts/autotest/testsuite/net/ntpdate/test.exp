@@ -1,0 +1,41 @@
+# This test works in three steps:
+# 1. Execute 'ntpdate <host_ip>' on Embox.
+# 2. Get host's date in the format xxxx-xx-xx (e.g. 2014-01-05).
+# 3. Execute 'date' on Embox and compare result (first 10 symbols of output)
+#    with result of the item 2.
+
+set host_date ""
+
+TEST_SETUP_HOST {
+	global host_date
+	# Get current host's date in the format same as in Embox (e.g. 2014-01-05).
+	spawn date -u --rfc-3339=date
+	expect {
+		# 10 is a length of date - e.g. 2014-01-05
+		-regexp {.{10}}
+	}
+	set host_date $expect_out(0,string)
+}
+
+TEST_CASE {ntpdate test} {
+	global host_ip
+	global host_date
+
+	send "ntpdate $host_ip\r"
+	test_expect_strings ":/#"
+
+	# And compare the host date with the Embox's one.
+	# XXX: compare the both times too, not only dates
+	send "date\r"
+	expect {
+		timeout  { puts "ntpdate.exp: date command timeout\n"; exit 1 }
+		# Wait here only for date (not time) - 2014-01-05 is from class (2.{9})
+		-regexp {2.{9}} {
+			regexp {.{10}} $expect_out(0,string) embox_date
+			if {$embox_date != $host_date} {
+				puts "embox_date=$embox_date is not equal to host_date=$host_date"
+				exit 1
+			}
+		}
+	}
+}

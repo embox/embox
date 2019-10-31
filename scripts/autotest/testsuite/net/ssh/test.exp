@@ -1,0 +1,57 @@
+target_disconnect
+
+TEST_CASE {Connect through SSH to Embox and execute "help" once} {
+	global spawn_id
+	global embox_ip
+	global embox_prompt
+
+	spawn ssh root@$embox_ip
+	expect {
+		timeout { puts "SSH connection error" }
+		-re "password:" {
+			send "root\r"
+			exp_continue
+		}
+		-re "Are you sure you want to continue connecting" {
+			send "yes\r"
+			exp_continue
+		}
+		-re $embox_prompt {}
+	}
+
+	send "help\r"
+	test_expect_strings "Available commands" $embox_prompt
+
+	send "exit\r"
+	test_expect_strings "Connection to .* closed"
+}
+
+TEST_CASE {Connect and exit several times SSH} {
+	global spawn_id
+	global embox_ip
+	global embox_prompt
+
+	for {set i 0} {$i < 32} {incr i} {
+		exec sleep 0.5
+		puts "\nCONNECT iter=$i"
+
+		spawn ssh root@$embox_ip
+		expect {
+			timeout { puts "SSH connection error" }
+			-re "password:" {
+				send "root\r"
+				exp_continue
+			}
+			-re "Are you sure you want to continue connecting" {
+				send "yes\r"
+				exp_continue
+			}
+			-re $embox_prompt {}
+		}
+
+		send "exit\r"
+		test_expect_strings "Connection to .* closed"
+	}
+}
+
+target_connect

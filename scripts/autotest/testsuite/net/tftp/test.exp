@@ -1,0 +1,19 @@
+TEST_CASE {Get one small file} {
+    global host_ip
+    global embox_prompt
+
+    test_exec_embox_cmd "tftp -g hello.txt $host_ip\r"
+    send "cat hello.txt\r"
+    test_expect_strings "hello123" $embox_prompt
+}
+
+TEST_CASE {Get file 4M file multiple times} {
+    global host_ip
+    global embox_prompt
+
+    for {set i 0} {$i < 8} {incr i} {
+        exec sleep 2.0
+        puts "\niter=$i"
+        test_exec_embox_cmd_timeout 60 "tftp -g file_4Mb $host_ip\r"
+    }
+}
