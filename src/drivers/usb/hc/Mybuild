@@ -15,6 +15,8 @@ module ehci_hdc {
 	source "ehci_mem.c"
 	source "ehci_q.c"
 	source "ehci_helpers.c"
+
+	depends embox.driver.usb.core
 }
 
 module ehci_pci {
