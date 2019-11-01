@@ -72,7 +72,6 @@ static int ehci_handshake(struct ehci_hcd *ehci,
 	assert(ehci);
 
 	do {
-		log_debug("tick");
 		result = ehci_read(ehci, ptr);
 		if (result == ~(uint32_t)0) {/* card removed */
 			log_debug("-ENODEV");
@@ -194,7 +193,9 @@ static inline int ehci_run(struct ehci_hcd *ehci) {
 	ehci_write(ehci, 0, &ehci->ehci_regs->frame_index);
 	/* EHCI spec section 4.1 */
 
-	ehci_write(ehci, ehci->periodic_dma, &ehci->ehci_regs->frame_list);
+	/* TODO we use only async queue now set EHCI_CMD_PSE
+	 ehci_write(ehci, ehci->periodic_dma, &ehci->ehci_regs->frame_list);
+	 */
 	ehci_write(ehci, ehci->async->qh_dma, &ehci->ehci_regs->async_next);
 
 	/*
@@ -221,12 +222,12 @@ static inline int ehci_run(struct ehci_hcd *ehci) {
 		ehci_write(ehci, 0, &ehci->ehci_regs->segment);
 	}
 
-
+	/* TODO we use only async queue now set EHCI_CMD_PSE*/
 	/* Philips, Intel, and maybe others need CMD_RUN before the
 	 root hub will detect new devices (why?); NEC doesn't
 	 */
 	ehci->command &= ~(EHCI_CMD_LRESET |
-			EHCI_CMD_IAAD | EHCI_CMD_PSE | EHCI_CMD_ASE | EHCI_CMD_RESET);
+			EHCI_CMD_IAAD |/* EHCI_CMD_PSE | */ EHCI_CMD_ASE | EHCI_CMD_RESET);
 	ehci->command |= EHCI_CMD_RUN;
 	ehci_write(ehci, ehci->command, &ehci->ehci_regs->command);
 	log_debug("command init %x", ehci->command);

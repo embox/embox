@@ -150,7 +150,6 @@ static int imx_usb_init(void) {
 
 	log_boot_stop();
 
-
 	/* Configure GPIO pins */
 
 	return 0;
