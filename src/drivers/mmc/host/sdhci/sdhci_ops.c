@@ -193,7 +193,7 @@ int sdhci_hw_probe(struct sdhci_host *host) {
 		mmc = mmc_alloc_host();
 		mmc->ops = &sdhci_mmc_ops;
 		mmc->priv = host;
-		mmc_sw_reset(mmc);
+		mmc_scan(mmc);
 		sdhci_reg_dump(host);
 	} else {
 		log_debug("CDPL bit is zero! %08x", sdhci_readl(host, USDHC_PRES_STATE));
