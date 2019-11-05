@@ -14,4 +14,9 @@ module mmc_core {
 	source "mmc.h"
 
 	source "mmc_host.c"
+
+	/* Following files contain version-specific stuff */
+	source "sdio.c",
+		"sd.c",
+		"mmc.c"
 }
