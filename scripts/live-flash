@@ -28,15 +28,15 @@ grub1_do () {
 	grub-install --root-directory=$MOUNT_POINT $DRIVE
 
 	cp $DATA_DIR/grub1-config $MOUNT_POINT/boot/grub/menu.lst
-
 }
 
 grub2_do () {
 	DRIVE=$1
-	grub-install --root-directory=$MOUNT_POINT $DRIVE
+
+	mkdir -p $MOUNT_POINT/boot
+	grub-install --target=i386-pc --boot-directory=$MOUNT_POINT/boot $DRIVE
 
 	cp $DATA_DIR/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
-
 }
 
 syslinux_do() {
@@ -53,7 +53,6 @@ syslinux_do() {
 	cp $SYSLINUX_SHARE/{libcom32,mboot}.c32 $SYSLINUX_DIR/
 
 	cp $DATA_DIR/syslinux-config $MP/boot/syslinux/syslinux.cfg
-
 }
 
 if [ ! $# = 2 ]; then
@@ -61,34 +60,25 @@ if [ ! $# = 2 ]; then
 	exit 1
 fi
 
+set -x
+
 DRIVE=$2
+LOOPDEV=
 PARTITION=${DRIVE}1
 [ -d $MOUNT_POINT ] || mkdir $MOUNT_POINT
 umount $PARTITION
 
 if [ -z $LIVEFLASH_CPONLY ]; then
-	dd if=/dev/zero of=$DRIVE bs=512 count=1
 	if [ ! -b $DRIVE ]; then
-		# default values (as seems to QEMU)
-		SECTOR_SIZE=512
-		SECTOR_TRACK=63
-		HEAD_N=16
-
-		# cylinder_n depends from image size
-		CYLINDER_N=$(( `stat -c %s $DRIVE` / \
-			($SECTOR_SIZE * $SECTOR_TRACK * $HEAD_N) ))
-
-		PARTITION_OFFSET_CYLINDERS=60
-
-		echo "$PARTITION_OFFSET_CYLINDERS,,L,*" | \
-			sfdisk -H $HEAD_N -C $CYLINDER_N -S $SECTOR_TRACK $DRIVE
-		PARTITION=`losetup -f`
-		losetup -o $(( $PARTITION_OFFSET_CYLINDERS \
-				* $SECTOR_TRACK \
-				* $HEAD_N \
-				* $SECTOR_SIZE )) \
-			$PARTITION $DRIVE
+		dd if=/dev/zero of=$DRIVE bs=1M count=512
+		LOOPDEV=`losetup -f`
+		PARTITION=${LOOPDEV}p1
+		echo ",,L,*" | sfdisk $DRIVE
+		losetup -P $LOOPDEV $DRIVE
 	else
+		# I am not sure if this required or not, just derived
+		# from older commits.
+		dd if=/dev/zero of=$DRIVE bs=512 count=1
 		echo "60,,L,*" | sfdisk $DRIVE
 
 	fi
@@ -117,5 +107,5 @@ umount $MOUNT_POINT
 rmdir $MOUNT_POINT
 
 if [ ! -b $DRIVE ]; then
-	losetup -d $PARTITION
+	losetup -d $LOOPDEV
 fi
