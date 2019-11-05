@@ -196,7 +196,7 @@ static int pl181_init(void) {
 
 	pl181_dump_status();
 
-	mmc_sw_reset(mmc);
+	mmc_scan(mmc);
 
 	return 0;
 }
