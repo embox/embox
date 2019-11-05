@@ -22,8 +22,6 @@
 POOL_DEF(mmc_dev_pool, struct mmc_host, MMC_DEV_QUANTITY);
 INDEX_DEF(mmc_idx, 0, MMC_DEV_QUANTITY);
 
-static int mmc_send_cmd(struct mmc_host *host, int cmd, int arg, int flags, uint32_t *resp);
-
 static int mmc_block_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	log_debug("NIY");
 	return 0;
@@ -152,10 +150,9 @@ int mmc_dev_destroy(struct mmc_host *mmc) {
 }
 
 /* Send simple command without data */
-static int mmc_send_cmd(struct mmc_host *host, int cmd, int arg, int flags, uint32_t *resp) {
+int mmc_send_cmd(struct mmc_host *host, int cmd, int arg, int flags, uint32_t *resp) {
 	struct mmc_request req;
 
-	assert(resp);
 	assert(host);
 	assert(host->ops);
 	assert(host->ops->request);
@@ -168,100 +165,44 @@ static int mmc_send_cmd(struct mmc_host *host, int cmd, int arg, int flags, uint
 
 	host->ops->request(host, &req);
 
-	memcpy(resp, req.cmd.resp, sizeof(uint32_t) * 4);
+	if (resp) {
+		memcpy(resp, req.cmd.resp, sizeof(uint32_t) * 4);
+	}
 
 	return 0;
 }
 
 int mmc_sw_reset(struct mmc_host *host) {
-	uint32_t resp[4];
-	uint64_t size;
-	int man_year, man_mon;
-	static const char mon_name[12][4] = {
-		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
-		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-	};
+	log_debug("NIY");
+	return 0;
+}
 
+static void mmc_go_idle(struct mmc_host *host) {
 	/* CMD0 sets card in an inactive state */
-	mmc_send_cmd(host, 0, 0, 0, resp);
+	mmc_send_cmd(host, 0, 0, 0, NULL);
+}
 
-	mmc_send_cmd(host, 55, 0, MMC_RSP_R1, resp);
+int mmc_scan(struct mmc_host *host) {
+	assert(host);
 
-#define VOLTAGE_WINDOW_MMC	0x00FF8080 /* Taken from u-boot */
-#define VOLTAGE_WINDOW_SD	0x80010000
+	mmc_go_idle(host);
 
-	mmc_send_cmd(host, 41, VOLTAGE_WINDOW_MMC & 0xff8000, MMC_RSP_R3, resp);
-
-	mmc_send_cmd(host, 1, 0, 0, resp);
-
-	/* Send CID (get manifacture ID etc.) */
-	mmc_send_cmd(host, 2, 0, MMC_RSP_R2, resp);
-
-	log_debug("MMC CID: %08x %08x %08x %08x",
-			resp[0], resp[1], resp[2], resp[3]);
-
-	log_debug("MMC info (parsed CID):");
-	log_debug("Manufacturer ID =0x%2x", resp[0] >> 24);
-	log_debug("OEM/OID         =0x%2x%2x", (resp[0] >> 16) & 0xFF, (resp[0] >> 8) & 0xFF);
-	log_debug("Product name    =%c%c%c%c%c",
-			(char) (resp[0] & 0xFF),
-			(char) ((resp[1] >> 24) & 0xFF),
-			(char) ((resp[1] >> 16) & 0xFF),
-			(char) ((resp[1] >> 8) & 0xFF),
-			(char) (resp[1] & 0xFF));
-	log_debug("Revision        =0x%02x", (resp[2] >> 24) & 0xFF);
-	log_debug("Serial number   =0x%2x%2x%2x%2x",
-			(resp[2] >> 16) & 0xFF,
-			(resp[2] >> 8) & 0xFF,
-			resp[2] & 0xFF,
-			(resp[3] >> 24) & 0xFF);
-
-	man_year = 2000 + 10 * ((resp[3] >> 16) & 0xFF) +
-			(((resp[3] >> 8) & 0xFF) >> 4);
-	man_mon = (resp[3] >> 8) & 0xF;
-
-	assert(man_mon < 12);
-
-	log_debug("Date             %s %d", mon_name[man_mon], man_year);
-
-	/* Avoid warnings if log_level = 0 */
-	(void) man_year, (void) man_mon, (void) mon_name;
-
-	/* CMD3 sets stand-by mode */
-	mmc_send_cmd(host, 3, 0, MMC_RSP_R6, resp);
-
-	host->rca = resp[0] >> 16;
-
-	log_debug("MMC RCA: %04x", host->rca);
-
-	/* Send CSD (get device size and so on) */
-	/* TODO setup RCA for MMC cards? */
-	mmc_send_cmd(host, 9, host->rca << 16, MMC_RSP_R2, resp);
-	log_debug("MMC CSD: %08x %08x %08x %08x",
-			resp[0], resp[1], resp[2], resp[3]);
-
-	if (!(resp[0] & 0x40000000)) {
-		host->high_capacity = 1;
-		size = ((resp[1] >> 8) & 0x3) << 10;
-		size |= (resp[1] & 0xFF) << 2;
-		//size |= (resp[2] & 0x3) << 10;
-
-		size = 256 * 1024 * (size + 1);
-		log_debug("Size = %lld bytes (High-Capacity SD)", size);
-	} else {
-		host->high_capacity = 0;
-		size = (resp[1] & 0xFF) << 16;
-		size |= ((resp[2] >> 24) & 0xFF) << 8;
-		size |= (resp[2] >> 16) & 0xFF;
-		size = 512 * 1024 * (size + 1);
-		log_debug("Size = %lld bytes (Standart Capacity SD)", size);
+	/* The order is important! */
+	if (!mmc_try_sdio(host)) {
+		log_debug("SDIO detected");
+		return 0;
 	}
 
-	assert(host->bdev);
-	host->bdev->size = size;
-	host->bdev->block_size = 512;
+	if (!mmc_try_sd(host)) {
+		log_debug("SD detected");
+		return 0;
+	}
 
-	mmc_send_cmd(host, 7, host->rca << 16, 0, resp);
+	if (!mmc_try_mmc(host)) {
+		log_debug("MMC detected");
+		return 0;
+	}
 
-	return 0;
+	log_debug("Failed to detect any memory card");
+	return -1;
 }

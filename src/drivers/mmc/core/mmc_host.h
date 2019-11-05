@@ -144,8 +144,18 @@ extern struct mmc_host *mmc_alloc_host(void);
 extern int mmc_dev_destroy(struct mmc_host *mmc);
 extern int mmc_hw_reset(struct mmc_host *host);
 extern int mmc_sw_reset(struct mmc_host *host);
+extern int mmc_send_cmd(struct mmc_host *host, int cmd, int arg,
+		int flags, uint32_t *resp);
 
 static inline void *mmc_priv(struct mmc_host *mmc) {
 	return mmc->priv;
 }
+
+extern int mmc_scan(struct mmc_host *host);
+
+/* Version-specific functions */
+extern int mmc_try_sdio(struct mmc_host *host);
+extern int mmc_try_sd(struct mmc_host *host);
+extern int mmc_try_mmc(struct mmc_host *host);
+
 #endif /* SRC_DRIVERS_MMC_CORE_MMC_HOST_H_ */
