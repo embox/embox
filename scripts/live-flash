@@ -20,8 +20,15 @@ usage() {
 	echo "<type> is bootloader type: grub (for grub v1.0), grub2 or syslinux"
 	echo "<device> is dev file of flash."
 	echo
-	echo "Example:"
-	echo "    $0 grub /dev/sdb"
+	echo "Also you can use <device> to create raw image for QEMU."
+	echo
+	echo "Example 1 (create live flash):"
+	echo "    $0 grub2 /dev/sdb"
+	echo
+	echo "Example 2 (create QEMU flash):"
+	echo "    $0 grub2 grub2.img, or:"
+	echo "    $0 syslinux syslinux.img"
+	echo "      Then run as: qemu-system-i386 -hda grub2.img -m 256"
 }
 
 grub1_do () {
@@ -62,6 +69,16 @@ if [ ! $# = 2 ]; then
 	exit 1
 fi
 
+if [ -z $LIVEFLASH_CPONLY ]; then
+	case $1 in
+		grub|grub2|syslinux) ;; # ok
+		*) # error
+			echo "Unknown bootloader type $1"
+			usage
+			exit 1 ;;
+	esac
+fi
+
 set -x
 
 DRIVE=$2
@@ -90,17 +107,11 @@ fi
 mount $PARTITION $MOUNT_POINT
 
 if [ -z $LIVEFLASH_CPONLY ]; then
-	if [ z"$1" == zgrub ]; then
-		grub1_do $DRIVE $MOUNT_POINT
-	elif [ z"$1" == zgrub2 ]; then
-		grub2_do $DRIVE $MOUNT_POINT
-	elif [ z"$1" == zsyslinux ]; then
-		syslinux_do $DRIVE $MOUNT_POINT
-
-	else
-		echo Unknown bootloader type
-		exit 1
-	fi
+	case $1 in
+		grub)      grub1_do $DRIVE $MOUNT_POINT ;;
+		grub2)     grub2_do $DRIVE $MOUNT_POINT ;;
+		syslinux)  syslinux_do $DRIVE $MOUNT_POINT ;;
+	esac
 fi
 
 cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
