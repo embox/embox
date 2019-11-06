@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-SYSLINUX_ROOT=$(dirname $0)/syslinux
-EXTLINUX=${SYSLINUX_ROOT}/sbin/extlinux
+SYSLINUX_ROOT=/usr/lib/syslinux
+SYSLINUX_MBR=$(find $SYSLINUX_ROOT -name mbr.bin)
+SYSLINUX_BIOS_DIR=$(find $SYSLINUX_ROOT -type d -name bios)
 SYSLINUX_SHARE=${SYSLINUX_ROOT}/usr/share/syslinux
 
 EMBOX_MULTIBOOT=./build/base/bin/embox
@@ -33,7 +34,7 @@ grub1_do () {
 grub2_do () {
 	DRIVE=$1
 
-	mkdir -p $MOUNT_POINT/boot
+	[ -d $MOUNT_POINT/boot ] || mkdir -p $MOUNT_POINT/boot
 	grub-install --target=i386-pc --boot-directory=$MOUNT_POINT/boot $DRIVE
 
 	cp $DATA_DIR/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
@@ -46,11 +47,12 @@ syslinux_do() {
 
 	[ -d $SYSLINUX_DIR ] || mkdir -p $SYSLINUX_DIR
 
-	$EXTLINUX -i $SYSLINUX_DIR
+	# Based on https://wiki.archlinux.org/index.php/Syslinux#Manual_install
 
-	dd if=${SYSLINUX_ROOT}/usr/share/syslinux/mbr.bin of=$DRIVE
+	extlinux --install $SYSLINUX_DIR
 
-	cp $SYSLINUX_SHARE/{libcom32,mboot}.c32 $SYSLINUX_DIR/
+	dd if=$SYSLINUX_MBR of=$DRIVE bs=440 count=1 conv=notrunc
+	cp ${SYSLINUX_BIOS_DIR}/*.c32 $SYSLINUX_DIR/
 
 	cp $DATA_DIR/syslinux-config $MP/boot/syslinux/syslinux.cfg
 }
