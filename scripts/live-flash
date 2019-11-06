@@ -33,18 +33,18 @@ usage() {
 
 grub1_do () {
 	DRIVE=$1
-	grub-install --root-directory=$MOUNT_POINT $DRIVE
+	sudo grub-install --root-directory=$MOUNT_POINT $DRIVE
 
-	cp $DATA_DIR/grub1-config $MOUNT_POINT/boot/grub/menu.lst
+	sudo cp $DATA_DIR/grub1-config $MOUNT_POINT/boot/grub/menu.lst
 }
 
 grub2_do () {
 	DRIVE=$1
 
-	[ -d $MOUNT_POINT/boot ] || mkdir -p $MOUNT_POINT/boot
-	grub-install --target=i386-pc --boot-directory=$MOUNT_POINT/boot $DRIVE
+	[ -d $MOUNT_POINT/boot ] || sudo mkdir -p $MOUNT_POINT/boot
+	sudo grub-install --target=i386-pc --boot-directory=$MOUNT_POINT/boot $DRIVE
 
-	cp $DATA_DIR/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
+	sudo cp $DATA_DIR/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
 }
 
 syslinux_do() {
@@ -52,16 +52,16 @@ syslinux_do() {
 	MP=$2
 	SYSLINUX_DIR=$MP/boot/syslinux
 
-	[ -d $SYSLINUX_DIR ] || mkdir -p $SYSLINUX_DIR
+	[ -d $SYSLINUX_DIR ] || sudo mkdir -p $SYSLINUX_DIR
 
 	# Based on https://wiki.archlinux.org/index.php/Syslinux#Manual_install
 
-	extlinux --install $SYSLINUX_DIR
+	sudo extlinux --install $SYSLINUX_DIR
 
-	dd if=$SYSLINUX_MBR of=$DRIVE bs=440 count=1 conv=notrunc
-	cp ${SYSLINUX_BIOS_DIR}/*.c32 $SYSLINUX_DIR/
+	sudo dd if=$SYSLINUX_MBR of=$DRIVE bs=440 count=1 conv=notrunc
+	sudo cp ${SYSLINUX_BIOS_DIR}/*.c32 $SYSLINUX_DIR/
 
-	cp $DATA_DIR/syslinux-config $MP/boot/syslinux/syslinux.cfg
+	sudo cp $DATA_DIR/syslinux-config $MP/boot/syslinux/syslinux.cfg
 }
 
 if [ ! $# = 2 ]; then
@@ -84,8 +84,8 @@ set -x
 DRIVE=$2
 LOOPDEV=
 PARTITION=${DRIVE}1
-[ -d $MOUNT_POINT ] || mkdir $MOUNT_POINT
-umount $PARTITION
+[ -d $MOUNT_POINT ] || sudo mkdir $MOUNT_POINT
+sudo umount $PARTITION
 
 if [ -z $LIVEFLASH_CPONLY ]; then
 	if [ ! -b $DRIVE ]; then
@@ -93,7 +93,7 @@ if [ -z $LIVEFLASH_CPONLY ]; then
 		LOOPDEV=`losetup -f`
 		PARTITION=${LOOPDEV}p1
 		echo ",,L,*" | sfdisk $DRIVE
-		losetup -P $LOOPDEV $DRIVE
+		sudo losetup -P $LOOPDEV $DRIVE
 	else
 		# I am not sure if this required or not, just derived
 		# from older commits.
@@ -101,10 +101,10 @@ if [ -z $LIVEFLASH_CPONLY ]; then
 		echo "60,,L,*" | sfdisk $DRIVE
 
 	fi
-	MKE2FS_DEVICE_SECTSIZE=512 mke2fs $PARTITION -b 1024 -v
+	MKE2FS_DEVICE_SECTSIZE=512 sudo mke2fs $PARTITION -b 1024 -v
 fi
 
-mount $PARTITION $MOUNT_POINT
+sudo mount $PARTITION $MOUNT_POINT
 
 if [ -z $LIVEFLASH_CPONLY ]; then
 	case $1 in
@@ -114,11 +114,11 @@ if [ -z $LIVEFLASH_CPONLY ]; then
 	esac
 fi
 
-cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
+sudo cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
 
-umount $MOUNT_POINT
-rmdir $MOUNT_POINT
+sudo umount $MOUNT_POINT
+sudo rm -rf $MOUNT_POINT
 
 if [ ! -b $DRIVE ]; then
-	losetup -d $LOOPDEV
+	sudo losetup -d $LOOPDEV
 fi
