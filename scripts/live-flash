@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-SYSLINUX_ROOT=$(dirname $0)/syslinux
-EXTLINUX=${SYSLINUX_ROOT}/sbin/extlinux
+SYSLINUX_ROOT=/usr/lib/syslinux
+SYSLINUX_MBR=$(find $SYSLINUX_ROOT -name mbr.bin)
+SYSLINUX_BIOS_DIR=$(find $SYSLINUX_ROOT -type d -name bios)
 SYSLINUX_SHARE=${SYSLINUX_ROOT}/usr/share/syslinux
 
 EMBOX_MULTIBOOT=./build/base/bin/embox
@@ -19,24 +20,31 @@ usage() {
 	echo "<type> is bootloader type: grub (for grub v1.0), grub2 or syslinux"
 	echo "<device> is dev file of flash."
 	echo
-	echo "Example:"
-	echo "    $0 grub /dev/sdb"
+	echo "Also you can use <device> to create raw image for QEMU."
+	echo
+	echo "Example 1 (create live flash):"
+	echo "    $0 grub2 /dev/sdb"
+	echo
+	echo "Example 2 (create QEMU flash):"
+	echo "    $0 grub2 grub2.img, or:"
+	echo "    $0 syslinux syslinux.img"
+	echo "      Then run as: qemu-system-i386 -hda grub2.img -m 256"
 }
 
 grub1_do () {
 	DRIVE=$1
-	grub-install --root-directory=$MOUNT_POINT $DRIVE
+	sudo grub-install --root-directory=$MOUNT_POINT $DRIVE
 
-	cp $DATA_DIR/grub1-config $MOUNT_POINT/boot/grub/menu.lst
-
+	sudo cp $DATA_DIR/grub1-config $MOUNT_POINT/boot/grub/menu.lst
 }
 
 grub2_do () {
 	DRIVE=$1
-	grub-install --root-directory=$MOUNT_POINT $DRIVE
 
-	cp $DATA_DIR/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
+	[ -d $MOUNT_POINT/boot ] || sudo mkdir -p $MOUNT_POINT/boot
+	sudo grub-install --target=i386-pc --boot-directory=$MOUNT_POINT/boot $DRIVE
 
+	sudo cp $DATA_DIR/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
 }
 
 syslinux_do() {
@@ -44,16 +52,16 @@ syslinux_do() {
 	MP=$2
 	SYSLINUX_DIR=$MP/boot/syslinux
 
-	[ -d $SYSLINUX_DIR ] || mkdir -p $SYSLINUX_DIR
+	[ -d $SYSLINUX_DIR ] || sudo mkdir -p $SYSLINUX_DIR
 
-	$EXTLINUX -i $SYSLINUX_DIR
+	# Based on https://wiki.archlinux.org/index.php/Syslinux#Manual_install
 
-	dd if=${SYSLINUX_ROOT}/usr/share/syslinux/mbr.bin of=$DRIVE
+	sudo extlinux --install $SYSLINUX_DIR
 
-	cp $SYSLINUX_SHARE/{libcom32,mboot}.c32 $SYSLINUX_DIR/
+	sudo dd if=$SYSLINUX_MBR of=$DRIVE bs=440 count=1 conv=notrunc
+	sudo cp ${SYSLINUX_BIOS_DIR}/*.c32 $SYSLINUX_DIR/
 
-	cp $DATA_DIR/syslinux-config $MP/boot/syslinux/syslinux.cfg
-
+	sudo cp $DATA_DIR/syslinux-config $MP/boot/syslinux/syslinux.cfg
 }
 
 if [ ! $# = 2 ]; then
@@ -61,61 +69,56 @@ if [ ! $# = 2 ]; then
 	exit 1
 fi
 
+if [ -z $LIVEFLASH_CPONLY ]; then
+	case $1 in
+		grub|grub2|syslinux) ;; # ok
+		*) # error
+			echo "Unknown bootloader type $1"
+			usage
+			exit 1 ;;
+	esac
+fi
+
+set -x
+
 DRIVE=$2
+LOOPDEV=
 PARTITION=${DRIVE}1
-[ -d $MOUNT_POINT ] || mkdir $MOUNT_POINT
-umount $PARTITION
+[ -d $MOUNT_POINT ] || sudo mkdir $MOUNT_POINT
+sudo umount $PARTITION
 
 if [ -z $LIVEFLASH_CPONLY ]; then
-	dd if=/dev/zero of=$DRIVE bs=512 count=1
 	if [ ! -b $DRIVE ]; then
-		# default values (as seems to QEMU)
-		SECTOR_SIZE=512
-		SECTOR_TRACK=63
-		HEAD_N=16
-
-		# cylinder_n depends from image size
-		CYLINDER_N=$(( `stat -c %s $DRIVE` / \
-			($SECTOR_SIZE * $SECTOR_TRACK * $HEAD_N) ))
-
-		PARTITION_OFFSET_CYLINDERS=60
-
-		echo "$PARTITION_OFFSET_CYLINDERS,,L,*" | \
-			sfdisk -H $HEAD_N -C $CYLINDER_N -S $SECTOR_TRACK $DRIVE
-		PARTITION=`losetup -f`
-		losetup -o $(( $PARTITION_OFFSET_CYLINDERS \
-				* $SECTOR_TRACK \
-				* $HEAD_N \
-				* $SECTOR_SIZE )) \
-			$PARTITION $DRIVE
+		dd if=/dev/zero of=$DRIVE bs=1M count=512
+		LOOPDEV=`losetup -f`
+		PARTITION=${LOOPDEV}p1
+		echo ",,L,*" | sfdisk $DRIVE
+		sudo losetup -P $LOOPDEV $DRIVE
 	else
+		# I am not sure if this required or not, just derived
+		# from older commits.
+		dd if=/dev/zero of=$DRIVE bs=512 count=1
 		echo "60,,L,*" | sfdisk $DRIVE
 
 	fi
-	MKE2FS_DEVICE_SECTSIZE=512 mke2fs $PARTITION -b 1024 -v
+	MKE2FS_DEVICE_SECTSIZE=512 sudo mke2fs $PARTITION -b 1024 -v
 fi
 
-mount $PARTITION $MOUNT_POINT
+sudo mount $PARTITION $MOUNT_POINT
 
 if [ -z $LIVEFLASH_CPONLY ]; then
-	if [ z"$1" == zgrub ]; then
-		grub1_do $DRIVE $MOUNT_POINT
-	elif [ z"$1" == zgrub2 ]; then
-		grub2_do $DRIVE $MOUNT_POINT
-	elif [ z"$1" == zsyslinux ]; then
-		syslinux_do $DRIVE $MOUNT_POINT
-
-	else
-		echo Unknown bootloader type
-		exit 1
-	fi
+	case $1 in
+		grub)      grub1_do $DRIVE $MOUNT_POINT ;;
+		grub2)     grub2_do $DRIVE $MOUNT_POINT ;;
+		syslinux)  syslinux_do $DRIVE $MOUNT_POINT ;;
+	esac
 fi
 
-cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
+sudo cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
 
-umount $MOUNT_POINT
-rmdir $MOUNT_POINT
+sudo umount $MOUNT_POINT
+sudo rm -rf $MOUNT_POINT
 
 if [ ! -b $DRIVE ]; then
-	losetup -d $PARTITION
+	sudo losetup -d $LOOPDEV
 fi
