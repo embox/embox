@@ -752,8 +752,8 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 		ret = fat_read_sector(fsi, dirinfo->p_scratch,
 				dirinfo->currentsector + dirinfo->currentcluster * volinfo->secperclus);
 
-		dirinfo->currentsector = volinfo->rootdir;
-		dirinfo->currentcluster = 2;
+		dirinfo->currentsector = volinfo->rootdir % volinfo->secperclus;
+		dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
 
 		return ret;
 	} else {
@@ -854,7 +854,7 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 
 	log_debug("dir->currententry %d", dir->currententry);
 	/* Do we need to read the next sector of the directory? */
-	if (dir->currententry >= ent_per_sec) {
+	if (dir->currententry >= ent_per_sec - 1) {
 		dir->currententry = 0;
 		dir->currentsector++;
 
@@ -913,8 +913,7 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 						dir->currentcluster);
 			}
 
-			read_sector  = (dir->currentcluster - 2) * volinfo->secperclus;
-			read_sector += volinfo->dataarea + dir->currentsector;
+			read_sector = dir->currentcluster * volinfo->secperclus + dir->currentsector;
 
 			if (fat_read_sector(fsi, dir->p_scratch, read_sector))
 				return DFS_ERRMISC;
@@ -1772,8 +1771,7 @@ int fat_reset_dir(struct dirinfo *di) {
 			di->currentcluster = 2;
 		} else {
 			di->currentsector = (vi->rootdir % vi->secperclus);
-			di->currentsector = vi->rootdir;
-			di->currentcluster = 2;
+			di->currentcluster = vi->rootdir / vi->secperclus;
 		}
 
 		di->currententry = 1;
