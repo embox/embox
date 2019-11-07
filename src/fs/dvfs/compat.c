@@ -28,7 +28,8 @@ int mount(char *dev, char *dir, char *fs_type) {
 	if (fm) {
 		return fuse_module_mount(fm, dev, dir);
 	}
-	return dvfs_mount(dev, dir, fs_type, 0);
+	errno = dvfs_mount(dev, dir, fs_type, 0); /* Compatibility with old VFS */
+	return errno;
 }
 
 /**
