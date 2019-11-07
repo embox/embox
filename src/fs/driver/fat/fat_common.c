@@ -1856,6 +1856,8 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 
 			fat_get_next(fsi, di, &de);
 		}
+	} else {
+		memcpy(filename, name, sizeof(filename));
 	}
 
 	cluster = fat_get_free_fat_(fsi, fat_sector_buff);
