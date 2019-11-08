@@ -18,6 +18,7 @@ int open(const char *path, int __oflag, ...) {
 	struct idesc *idesc;
 	struct idesc_table *it;
 	int res;
+	int created = 0;
 	struct lookup lookup = {0, 0};
 	struct inode  *i_no;
 
@@ -30,6 +31,8 @@ int open(const char *path, int __oflag, ...) {
 			char *last_name = strrchr(path, '/');
 			if (dvfs_create_new(last_name ? last_name + 1 : path, &lookup, __oflag)) {
 				return SET_ERRNO(ENOSPC);
+			} else {
+				created = 1;
 			}
 		} else {
 			return SET_ERRNO(ENOENT);
@@ -72,7 +75,12 @@ int open(const char *path, int __oflag, ...) {
 		return SET_ERRNO(-res);
 	}
 
-	dentry_ref_inc(lookup.item);
+	if (!created) {
+		/* Avoid double increase of usage counter.
+		 * If new file was created, it's marked as
+		 * "used" already */
+		dentry_ref_inc(lookup.item);
+	}
 
 	return res;
 }
