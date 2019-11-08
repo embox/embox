@@ -164,6 +164,15 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 			return NULL;
 		}
 	}
+
+	if ((__oflag & O_APPEND) && (desc->f_inode)) {
+		/* XXX for some reason position of the last symbol
+		 * is zero both for empty and 1-byte files,  this
+		 * probably should be fixed  */
+		desc->pos = desc->f_inode->length == 0 ?
+			0 : desc->f_inode->length - 1;
+	}
+
 	return &desc->f_idesc;
 }
 
