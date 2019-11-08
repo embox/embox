@@ -232,8 +232,9 @@ struct dw_mci_slot {
 	struct dw_mci *host;
 
 	uint32_t ctype;
+
+	struct mmc_request *mrq;
 #if 0
-	struct mmc_request	*mrq;
 	struct list_head	queue_node;
 #endif
 	unsigned int clock;
