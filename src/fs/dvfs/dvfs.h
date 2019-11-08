@@ -180,6 +180,7 @@ extern int            dvfs_destroy_file(struct file *desc);
 
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);
+extern int            dvfs_fs_dentry_try_free(struct super_block *sb);
 
 extern struct dvfsmnt *dvfs_alloc_mnt(void);
 extern int             dvfs_destroy_mnt(struct dvfsmnt *mnt);

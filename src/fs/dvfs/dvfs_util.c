@@ -211,6 +211,26 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 		return -EBUSY;
 }
 
+/*
+ * @brief Try to free a single dentry from given FS
+ *
+ * @retval Number of freed dentries
+ */
+int dvfs_fs_dentry_try_free(struct super_block *sb) {
+	struct dentry *dentry;
+
+	assert(sb);
+
+	dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
+		if (sb == dentry->d_sb && dentry->usage_count == 0) {
+			dvfs_destroy_dentry(dentry);
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 /**
  * @brief Update dentry flags according to it's inode content
  *

@@ -97,10 +97,23 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		dentry_ref_inc(lookup->item);
 		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
 	} else {
-		if (!sb->sb_iops->create)
+		if (!sb->sb_iops->create) {
 			res = -ENOSUPP;
-		else
-			res = sb->sb_iops->create(new_inode, lookup->parent->d_inode, flags);
+		} else {
+			res = sb->sb_iops->create(new_inode,
+					lookup->parent->d_inode,
+					flags);
+			if (res == -ENOMEM) {
+				/* This may be due to lack of some internal FS
+				 * resources,  so  we  can  try  to free  some
+				 * dentry and try again */
+				if (dvfs_fs_dentry_try_free(sb)) {
+					res = sb->sb_iops->create(new_inode,
+							lookup->parent->d_inode,
+							flags);
+				}
+			}
+		}
 	}
 
 	if (res) {
