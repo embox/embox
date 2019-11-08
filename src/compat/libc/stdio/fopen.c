@@ -30,7 +30,7 @@ static int mode2flag(const char *mode) {
 	}
 
 	if (strchr(mode, 'a')) {
-		flags |= O_APPEND | O_CREAT;
+		flags |= O_APPEND | O_CREAT | O_RDWR;
 	}
 
 	return flags;
