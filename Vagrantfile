@@ -8,7 +8,7 @@ end
 Vagrant.configure("2") do |config|
 
   config.vm.define "xen", autostart: false do |xen|
-    xen.vm.box = "bento/ubuntu-17.10"
+    xen.vm.box = "ubuntu/bionic64"
 
     xen.vm.provision "shell", inline: <<-SHELL
     DEBIAN_FRONTEND=noninteractive \
