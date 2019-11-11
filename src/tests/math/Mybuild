@@ -13,5 +13,6 @@ module fpu_context_consistency_test {
 
 	depends embox.compat.libc.all
 	depends embox.compat.libc.math
+	depends embox.compat.posix.pthreads
 	depends embox.framework.LibFramework
 }
