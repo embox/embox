@@ -268,7 +268,12 @@ struct dirinfo {
 #define FAT_MAX_SECTOR_SIZE OPTION_MODULE_GET(embox__fs__driver__fat, NUMBER, fat_max_sector_size)
 
 static inline int fat_sec_by_clus(struct fat_fs_info *fsi, int clus) {
-	return fsi->vi.secperclus * clus;
+	if (fsi->vi.filesystem == FAT32) {
+		return (clus - 2) * fsi->vi.secperclus + fsi->vi.dataarea;
+	} else {
+		/* FAT12, FAT16 */
+		return fsi->vi.secperclus * clus;
+	}
 }
 
 extern void fat_set_filetime(struct fat_dirent *de);
