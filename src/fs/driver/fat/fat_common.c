@@ -968,7 +968,21 @@ uint32_t fat_get_next_long(struct fat_fs_info *fsi, struct dirinfo *dir,
 
 	if (dirent->attr != ATTR_LONG_NAME) {
 		if (name_buf != NULL) {
+			char *t;
 			strncpy(name_buf, (char *) dirent->name, MSDOS_NAME);
+
+			/* MSDOS names are padded with spaces,
+			 * so we need to trimmer it */
+			t = name_buf + MSDOS_NAME - 1;
+			while (t >= name_buf) {
+				if (*t == ' ') {
+					*t = '\0';
+				} else {
+					break;
+				}
+
+				t--;
+			}
 		}
 	} else {
 		/* Long name entry */
