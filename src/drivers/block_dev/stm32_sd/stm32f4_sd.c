@@ -47,7 +47,7 @@ static int stm32f4_sd_init(void) {
 		bdev = block_dev_create(STM32F4_SD_DEVNAME, &stm32f4_sd_driver, NULL);
 		assert(bdev);
 
-		bdev->size = stm32f4_sd_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
+		bdev->size = (unsigned) stm32f4_sd_ioctl(bdev, IOCTL_GETDEVSIZE, NULL, 0);
 	} else {
 		log_debug("SD card is not present");
 	}
