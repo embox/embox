@@ -61,6 +61,10 @@ if [ -z "$HOST_IP" ]; then
 	HOST_IP=10.0.2.10
 fi
 
+if [ -z "$EMBOX_PROMPT" ]; then
+	EMBOX_PROMPT="#"
+fi
+
 if [ -z "$TEST_PRINT_ALL" ]; then
 	TEST_PRINT_ALL=1
 fi
@@ -76,10 +80,10 @@ for testcase in $TESTCASES; do
 
 	if [ ${TEST_PRINT_ALL} -eq 0 ]; then
 		expect $BASEDIR/framework/core.exp $BASEDIR/testsuite/$TESTSUITE $testcase \
-			$EMBOX_IP $HOST_IP > ${TESTSUITE}_$testcase.log
+			$EMBOX_IP $HOST_IP $EMBOX_PROMPT > ${TESTSUITE}_$testcase.log
 	else
 		expect $BASEDIR/framework/core.exp $BASEDIR/testsuite/$TESTSUITE $testcase \
-			$EMBOX_IP $HOST_IP
+			$EMBOX_IP $HOST_IP $EMBOX_PROMPT
 	fi
 	rc=$?
 
