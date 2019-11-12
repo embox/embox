@@ -413,10 +413,15 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	} else {
 		dvfs_lookup(dest, &lookup);
 
-		if (lookup.item == NULL)
-			return -ENOENT;
+		if (lookup.item == NULL) {
+			err = ENOENT;
+			goto err_free_all;
+		}
 
-		assert(lookup.item->flags & S_IFDIR);
+		if (!(lookup.item->flags & S_IFDIR)) {
+			err = -EINVAL;
+			goto err_free_all;
+		}
 
 		if (!(lookup.item->flags & DVFS_DIR_VIRTUAL)) {
 			/* Hide dentry of the directory */
