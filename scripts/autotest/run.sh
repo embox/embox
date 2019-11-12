@@ -49,6 +49,10 @@ for testcase in $TESTCASES; do
 done
 
 if [ -z "$TEST_EMBOX_ROOT" ]; then
+	if [ "$EUID" -eq 0 ]; then
+		echo "Please, run with 'sudo -E'"
+		exit 1
+	fi
 	echo "TEST_EMBOX_ROOT is not set. 'export TEST_EMBOX_ROOT=<path to embox>'"
 	exit 1
 fi

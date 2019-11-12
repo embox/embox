@@ -1,0 +1,37 @@
+set tty_dev $env(TEST_PICOCOM_TTY_DEV)
+
+proc ::autotest::target_connect {} {
+	# https://stackoverflow.com/questions/30532532/expect-fails-when-running-proc-inside-proc
+	global spawn_id
+	global embox_prompt
+	global tty_dev
+
+	spawn picocom $tty_dev -b 115200
+	expect "Terminal ready"
+	send "\r"
+	expect {
+		timeout | eof { puts "\npicocom: connection timeout\n"; exit 1 }
+		-re "$embox_prompt" { }
+	}
+}
+
+proc ::autotest::target_disconnect {} {
+	global spawn_id
+	# Ctrl-A Ctrl-Q Enter
+	send "\x01\x11\r"
+	expect eof
+}
+
+proc ::autotest::target_wait_until_ready {} {
+	global spawn_id
+	global embox_prompt
+	global tty_dev
+
+	while true {
+		spawn picocom $tty_dev -b 115200
+		expect "Terminal ready"
+		send "\r"
+		expect -re "$embox_prompt" { break }
+	}
+	target_disconnect
+}

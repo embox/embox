@@ -18,7 +18,15 @@ proc ::autotest::target_disconnect {} {
 	expect "Connection closed by foreign host"
 }
 
-proc ::autotest::test_exec {test_body} {
-	eval $test_body
-	return 0
+proc ::autotest::target_wait_until_ready {} {
+	global embox_prompt
+	global embox_ip
+	global spawn_id
+
+	while true {
+		spawn telnet $embox_ip
+		expect -re "$embox_prompt" { break }
+	}
+	send "exit\r"
+	expect "Connection closed by foreign host"
 }
