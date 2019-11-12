@@ -518,7 +518,6 @@ int dvfs_umount(struct dentry *mpoint) {
 	}
 
 	dentry_ref_dec(mpoint);
-	dentry_ref_dec(mpoint);
 
 	if ((err = _dentry_destroy(mpoint,
 	                           !(mpoint->flags & DVFS_DIR_VIRTUAL))))

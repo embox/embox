@@ -147,6 +147,7 @@ struct dumb_fs_driver {
 	int (*format)(void *dev, void *priv);
 	int (*fill_sb)(struct super_block *sb, struct file *dev);
 	int (*mount_end)(struct super_block *sb);
+	int (*clean_sb)(struct super_block *sb);
 };
 
 struct auto_mount {

@@ -409,12 +409,22 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
  * @return Negative error code or zero if succeed
  */
 int dvfs_destroy_sb(struct super_block *sb) {
-	/* TODO fs-specific resource free? */
-	if (sb->root)
+	int err = 0;
+
+	assert(sb);
+	assert(sb->fs_drv);
+
+	if (sb->fs_drv->clean_sb) {
+		err = sb->fs_drv->clean_sb(sb);
+	}
+
+	if (sb->root) {
 		sb->root->d_sb = NULL;
+	}
 
 	pool_free(&superblock_pool, sb);
-	return 0;
+
+	return err;
 }
 
 /**
