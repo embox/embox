@@ -13,13 +13,15 @@ namespace eval ::autotest {
 
 	namespace export target_connect
 	namespace export target_disconnect
+	namespace export target_wait_until_ready
 
 	variable embox_prompt
 	variable embox_ip
 	variable host_ip
 }
 
-source [file join [file dirname [info script]] exec.exp]
+set connection_type     $env(TEST_TARGET_CONNECTION_TYPE)
+source [file join [file dirname [info script]] target_$connection_type.exp]
 source [file join [file dirname [info script]] cmd.exp]
 
 # This variable is used to show that current test case is broken
@@ -36,15 +38,15 @@ proc ::autotest::TEST_TEARDOWN_HOST {teardown_body} {
 }
 
 proc ::autotest::TEST_SETUP_TARGET {setup_body} {
-	telnet_connect
+	target_connect
 	eval $setup_body
-	telnet_disconnect
+	target_disconnect
 }
 
 proc ::autotest::TEST_TEARDOWN_TARGET {teardown_body} {
-	telnet_connect
+	target_connect
 	eval $teardown_body
-	telnet_disconnect
+	target_disconnect
 }
 
 proc ::autotest::TEST_CASE_DECLARE_FIXME {test_case_body} {
@@ -53,6 +55,11 @@ proc ::autotest::TEST_CASE_DECLARE_FIXME {test_case_body} {
 	set current_test_case_fixme true
 	eval $test_case_body
 	set current_test_case_fixme false
+}
+
+proc test_exec {test_body} {
+	eval $test_body
+	return 0
 }
 
 proc ::autotest::TEST_CASE {test_name test_body} {
@@ -79,29 +86,16 @@ proc ::autotest::TEST_CASE {test_name test_body} {
 	}
 }
 
-proc wait_target_is_ready {} {
-	global embox_prompt
-	global embox_ip
-	global spawn_id
-
-	while true {
-		spawn telnet $embox_ip
-		expect -re "$embox_prompt" { break }
-	}
-	send "exit\r"
-	expect "Connection closed by foreign host"
-}
-
 namespace import autotest::*
 
 set testsuite    [lindex $::argv 0]
 set test         [lindex $::argv 1]
-set embox_ip     [lindex $::argv 2]
-set host_ip      [lindex $::argv 3]
-set embox_prompt [lindex $::argv 4]
+set embox_ip     $env(EMBOX_IP)
+set host_ip      $env(HOST_IP)
+set embox_prompt $env(EMBOX_PROMPT)
 
-# Wait until Embox starts trying to connect through Telnet
-wait_target_is_ready
+# Wait until Embox starts
+target_wait_until_ready
 
 cd $testsuite
 source setup.exp
