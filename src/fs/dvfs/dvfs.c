@@ -405,7 +405,9 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 
 	bdev_file = dvfs_get_mount_bdev(dev);
 
-	sb = dvfs_alloc_sb(drv, bdev_file);
+	if (NULL == (sb = dvfs_alloc_sb(drv, bdev_file))) {
+		return -ENOMEM;
+	}
 
 	if (!strcmp(dest, "/")) {
 		set_rootfs_sb(sb);
@@ -413,10 +415,15 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	} else {
 		dvfs_lookup(dest, &lookup);
 
-		if (lookup.item == NULL)
-			return -ENOENT;
+		if (lookup.item == NULL) {
+			err = -ENOENT;
+			goto err_free_all;
+		}
 
-		assert(lookup.item->flags & S_IFDIR);
+		if (!(lookup.item->flags & S_IFDIR)) {
+			err = -EINVAL;
+			goto err_free_all;
+		}
 
 		if (!(lookup.item->flags & DVFS_DIR_VIRTUAL)) {
 			/* Hide dentry of the directory */
@@ -456,9 +463,15 @@ err_free_all:
 	if (d != NULL) {
 		dvfs_destroy_inode(d->d_inode);
 	}
+
 	if (bdev_file) {
 		dvfs_close(bdev_file);
 	}
+
+	if (sb) {
+		dvfs_destroy_sb(sb);
+	}
+
 	return err;
 err_ok:
 	return 0;
@@ -504,7 +517,6 @@ int dvfs_umount(struct dentry *mpoint) {
 			return err;
 	}
 
-	dentry_ref_dec(mpoint);
 	dentry_ref_dec(mpoint);
 
 	if ((err = _dentry_destroy(mpoint,

@@ -432,16 +432,24 @@ static int fat_mount_end(struct super_block *sb) {
 	struct fat_fs_info *fsi;
 
 	uint8_t tmp[] = { '\0' };
+
+	assert(sb);
+	assert(sb->bdev);
 	assert(sb->bdev->block_size <= FAT_MAX_SECTOR_SIZE);
 
-	if (NULL == (di = fat_dirinfo_alloc()))
+	if (NULL == (di = fat_dirinfo_alloc())) {
 		return -ENOMEM;
+	}
 
 	di->p_scratch = fat_sector_buff;
 
 	fsi = sb->sb_data;
-	if (fat_open_dir(fsi, tmp, di))
+	assert(fsi);
+
+	if (fat_open_dir(fsi, tmp, di)) {
+		fat_dirinfo_free(di);
 		return -1;
+	}
 
 	di->fi = (struct fat_file_info) {
 		.fsi          = fsi,
@@ -488,11 +496,33 @@ static int fat_format(void *dev, void *priv) {
 	return 0;
 }
 
+/**
+ * @brief Cleanup FS-specific stuff. No need to clean all files: VFS should
+ * do it by itsekft
+ *
+ * @param sb Pointer to superblock
+ *
+ * @return Negative error code or 0 if succeed
+ */
+static int fat_clean_sb(struct super_block *sb) {
+	struct fat_fs_info *fsi;
+
+	assert(sb);
+
+	fsi = sb->sb_data;
+	assert(fsi);
+
+	fat_fs_free(fsi);
+
+	return 0;
+}
+
 static const struct dumb_fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,
 	.mount_end = fat_mount_end,
 	.format    = fat_format,
+	.clean_sb  = fat_clean_sb,
 };
 
 ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
