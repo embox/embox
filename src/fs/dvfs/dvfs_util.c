@@ -101,7 +101,10 @@ struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file 
 	struct super_block *sb;
 	assert(drv);
 
-	sb = pool_alloc(&superblock_pool);
+	if (NULL == (sb = pool_alloc(&superblock_pool))) {
+		return NULL;
+	}
+
 
 	if (bdev_file) {
 		assert(bdev_file->f_inode);
@@ -114,8 +117,12 @@ struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file 
 		.bdev      = bdev_file ? ((struct dev_module *) bdev_file->f_inode->i_data)->dev_priv : NULL,
 	};
 
-	if (drv->fill_sb)
-		drv->fill_sb(sb, bdev_file);
+	if (drv->fill_sb) {
+		if (0 != drv->fill_sb(sb, bdev_file)) {
+			pool_free(&superblock_pool, sb);
+			return NULL;
+		}
+	}
 
 	return sb;
 }
