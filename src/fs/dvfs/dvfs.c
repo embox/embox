@@ -456,9 +456,15 @@ err_free_all:
 	if (d != NULL) {
 		dvfs_destroy_inode(d->d_inode);
 	}
+
 	if (bdev_file) {
 		dvfs_close(bdev_file);
 	}
+
+	if (sb) {
+		dvfs_destroy_sb(sb);
+	}
+
 	return err;
 err_ok:
 	return 0;
