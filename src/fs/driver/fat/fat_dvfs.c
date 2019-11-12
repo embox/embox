@@ -432,16 +432,24 @@ static int fat_mount_end(struct super_block *sb) {
 	struct fat_fs_info *fsi;
 
 	uint8_t tmp[] = { '\0' };
+
+	assert(sb);
+	assert(sb->bdev);
 	assert(sb->bdev->block_size <= FAT_MAX_SECTOR_SIZE);
 
-	if (NULL == (di = fat_dirinfo_alloc()))
+	if (NULL == (di = fat_dirinfo_alloc())) {
 		return -ENOMEM;
+	}
 
 	di->p_scratch = fat_sector_buff;
 
 	fsi = sb->sb_data;
-	if (fat_open_dir(fsi, tmp, di))
+	assert(fsi);
+
+	if (fat_open_dir(fsi, tmp, di)) {
+		fat_dirinfo_free(di);
 		return -1;
+	}
 
 	di->fi = (struct fat_file_info) {
 		.fsi          = fsi,
