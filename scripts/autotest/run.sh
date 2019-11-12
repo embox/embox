@@ -19,7 +19,7 @@ show_available_testcases() {
 
 if [ "$1" = "-h" ]; then
 	echo "Usage: $0 <testsuite> <test cases>"
-	echo "  You can 'export TEST_PRINT_ALL=true' to make tests echo to console"
+	echo "  You can 'export TEST_PRINT_ALL=1' to make tests echo to console"
 	exit 1
 fi
 
@@ -61,6 +61,10 @@ if [ -z "$HOST_IP" ]; then
 	HOST_IP=10.0.2.10
 fi
 
+if [ -z "$TEST_PRINT_ALL" ]; then
+	TEST_PRINT_ALL=1
+fi
+
 echo "Starting testsuite $TESTSUITE ..."
 
 rm -f $TESTSUITE.log
@@ -70,7 +74,7 @@ summary=
 for testcase in $TESTCASES; do
 	echo "  Starting test $TESTSUITE/$testcase ..."
 
-	if [ -z "${TEST_PRINT_ALL}" ]; then
+	if [ ${TEST_PRINT_ALL} -eq 0 ]; then
 		expect $BASEDIR/framework/core.exp $BASEDIR/testsuite/$TESTSUITE $testcase \
 			$EMBOX_IP $HOST_IP > ${TESTSUITE}_$testcase.log
 	else
