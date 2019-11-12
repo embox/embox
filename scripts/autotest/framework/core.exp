@@ -96,9 +96,9 @@ namespace import autotest::*
 
 set testsuite    [lindex $::argv 0]
 set test         [lindex $::argv 1]
-set embox_ip     [lindex $::argv 2]
-set host_ip      [lindex $::argv 3]
-set embox_prompt [lindex $::argv 4]
+set embox_ip     $env(EMBOX_IP)
+set host_ip      $env(HOST_IP)
+set embox_prompt $env(EMBOX_PROMPT)
 
 # Wait until Embox starts trying to connect through Telnet
 wait_target_is_ready

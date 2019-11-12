@@ -49,21 +49,18 @@ for testcase in $TESTCASES; do
 done
 
 if [ -z "$TEST_EMBOX_ROOT" ]; then
-	printf "TEST_EMBOX_ROOT is not set. 'export TEST_EMBOX_ROOT=<path to embox>'\n"
+	echo "TEST_EMBOX_ROOT is not set. 'export TEST_EMBOX_ROOT=<path to embox>'"
 	exit 1
 fi
 
-if [ -z "$EMBOX_IP" ]; then
-	EMBOX_IP=10.0.2.16
+if [ -z "$TEST_CURRENT_CONFIG" ]; then
+	echo "Configuration is not set"
+	echo "Please, source one of scripts/autotest/configs/*"
+	echo " E.g.: source scripts/autotest/configs/default.sh, for QEMU default"
+	exit 1
 fi
 
-if [ -z "$HOST_IP" ]; then
-	HOST_IP=10.0.2.10
-fi
-
-if [ -z "$EMBOX_PROMPT" ]; then
-	EMBOX_PROMPT="#"
-fi
+printf "\nCurrent configuration: \"$TEST_CURRENT_CONFIG\"\n"
 
 if [ -z "$TEST_PRINT_ALL" ]; then
 	TEST_PRINT_ALL=1
