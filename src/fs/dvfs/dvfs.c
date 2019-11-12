@@ -405,7 +405,9 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 
 	bdev_file = dvfs_get_mount_bdev(dev);
 
-	sb = dvfs_alloc_sb(drv, bdev_file);
+	if (NULL == (sb = dvfs_alloc_sb(drv, bdev_file))) {
+		return -ENOMEM;
+	}
 
 	if (!strcmp(dest, "/")) {
 		set_rootfs_sb(sb);
@@ -414,7 +416,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 		dvfs_lookup(dest, &lookup);
 
 		if (lookup.item == NULL) {
-			err = ENOENT;
+			err = -ENOENT;
 			goto err_free_all;
 		}
 

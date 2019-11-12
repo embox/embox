@@ -105,7 +105,6 @@ struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file 
 		return NULL;
 	}
 
-
 	if (bdev_file) {
 		assert(bdev_file->f_inode);
 		assert(bdev_file->f_inode->i_data);
