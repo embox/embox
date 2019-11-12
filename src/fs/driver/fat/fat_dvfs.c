@@ -496,11 +496,33 @@ static int fat_format(void *dev, void *priv) {
 	return 0;
 }
 
+/**
+ * @brief Cleanup FS-specific stuff. No need to clean all files: VFS should
+ * do it by itsekft
+ *
+ * @param sb Pointer to superblock
+ *
+ * @return Negative error code or 0 if succeed
+ */
+static int fat_clean_sb(struct super_block *sb) {
+	struct fat_fs_info *fsi;
+
+	assert(sb);
+
+	fsi = sb->sb_data;
+	assert(fsi);
+
+	fat_fs_free(fsi);
+
+	return 0;
+}
+
 static const struct dumb_fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,
 	.mount_end = fat_mount_end,
 	.format    = fat_format,
+	.clean_sb  = fat_clean_sb,
 };
 
 ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
