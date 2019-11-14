@@ -1078,26 +1078,27 @@ uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
 	return DFS_ERRMISC;
 }
 
+static void fat_direntry_set_clus(struct fat_dirent *de, uint32_t clus) {
+	de->startclus_l_l = clus& 0xff;
+	de->startclus_l_h = (clus & 0xff00) >> 8;
+	de->startclus_h_l = (clus & 0xff0000) >> 16;
+	de->startclus_h_h = (clus & 0xff000000) >> 24;
+}
+
 void fat_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
 	struct fat_dirent *de = (struct fat_dirent *) fat_sector_buff;
 
 	de[0] = (struct fat_dirent) {
 		.name = MSDOS_DOT,
 		.attr = ATTR_DIRECTORY,
-		.startclus_l_l = cluster & 0xff,
-		.startclus_l_h = (cluster & 0xff00) >> 8,
-		.startclus_h_l = (cluster & 0xff0000) >> 16,
-		.startclus_h_h = (cluster & 0xff000000) >> 24,
 	};
+	fat_direntry_set_clus(&de[0], cluster);
 
 	de[1] = (struct fat_dirent) {
 		.name = MSDOS_DOTDOT,
 		.attr = ATTR_DIRECTORY,
-		.startclus_l_l = dir_cluster & 0xff,
-		.startclus_l_h = (dir_cluster & 0xff00) >> 8,
-		.startclus_h_l = (dir_cluster & 0xff0000) >> 16,
-		.startclus_h_h = (dir_cluster & 0xff000000) >> 24,
 	};
+	fat_direntry_set_clus(&de[1], dir_cluster);
 
 	fat_set_filetime(&de[0]);
 	fat_set_filetime(&de[1]);
@@ -1131,11 +1132,8 @@ int fat_root_dir_record(void *bdev) {
 	de = (struct fat_dirent) {
 		.name = "ROOT DIR   ",
 		.attr = ATTR_DIRECTORY,
-		.startclus_l_l = cluster & 0xff,
-		.startclus_l_h = (cluster & 0xff00) >> 8,
-		.startclus_h_l = (cluster & 0xff0000) >> 16,
-		.startclus_h_h = (cluster & 0xff000000) >> 24,
 	};
+	fat_direntry_set_clus(&de, cluster);
 
 	fat_set_filetime(&de);
 
