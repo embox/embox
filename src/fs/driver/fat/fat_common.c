@@ -393,12 +393,9 @@ uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsec
  *	buffer for one sector (SECTOR_SIZE) and a populated struct volinfo
  *	Returns a FAT32 BAD_CLUSTER value for any error, otherwise the contents
  *	of the desired FAT entry.
- *	p_scratchcache should point to a UINT32. This variable caches the physical
- *	sector number last read into the scratch buffer for performance
- *	enhancement reasons.
  */
-uint32_t fat_get_fat_(struct fat_fs_info *fsi,
-		uint8_t *p_scratch,	uint32_t *p_scratchcache, uint32_t cluster) {
+uint32_t fat_get_fat(struct fat_fs_info *fsi,
+		uint8_t *p_scratch, uint32_t cluster) {
 	uint32_t offset, sector, result;
 	struct volinfo *volinfo = &fsi->vi;
 
@@ -418,16 +415,8 @@ uint32_t fat_get_fat_(struct fat_fs_info *fsi,
 
 	sector = offset / volinfo->bytepersec + volinfo->fat1;
 
-	if (sector != *p_scratchcache) {
-		if (fat_read_sector(fsi, p_scratch, sector)) {
-			/*
-			 * avoid anyone assuming that this cache value is still valid,
-			 * which might cause disk corruption
-			 */
-			*p_scratchcache = 0;
-			return DFS_BAD_CLUS;
-		}
-		*p_scratchcache = sector;
+	if (fat_read_sector(fsi, p_scratch, sector)) {
+		return DFS_BAD_CLUS;
 	}
 
 	/*
@@ -447,14 +436,8 @@ uint32_t fat_get_fat_(struct fat_fs_info *fsi,
 			result = (uint32_t) p_scratch[offset];
 			sector++;
 			if (fat_read_sector(fsi, p_scratch, sector)) {
-				/*
-				 * avoid anyone assuming that this cache value is still valid,
-				 *  which might cause disk corruption
-				 */
-				*p_scratchcache = 0;
 				return DFS_BAD_CLUS;
 			}
-			*p_scratchcache = sector;
 			result |= ((uint32_t) p_scratch[0]) << 8;
 		} else {
 			result = (uint32_t) p_scratch[offset] |
@@ -509,8 +492,8 @@ static uint32_t fat_end_of_chain(struct fat_fs_info *fsi) {
  * also conserve power and flash write life.
  */
 
-uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
-		uint32_t *p_scratchcache, uint32_t cluster, uint32_t new_contents) {
+uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
+		uint32_t cluster, uint32_t new_contents) {
 	uint32_t offset, sector, result;
 	struct volinfo *volinfo = &fsi->vi;
 
@@ -536,17 +519,8 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 	 */
 	sector = offset / volinfo->bytepersec + volinfo->fat1;
 
-	/* If this is not the same sector we last read, then read it into RAM */
-	if (sector != *p_scratchcache) {
-		if (fat_read_sector(fsi, p_scratch, sector)) {
-			/*
-			 * avoid anyone assuming that this cache value is still valid,
-			 * which might cause disk corruption
-			 */
-			*p_scratchcache = 0;
-			return DFS_ERRMISC;
-		}
-		*p_scratchcache = sector;
+	if (fat_read_sector(fsi, p_scratch, sector)) {
+		return DFS_ERRMISC;
 	}
 
 	/*
@@ -573,11 +547,11 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 			else {
 				p_scratch[offset] = new_contents & 0xff;
 			}
-			result = fat_write_sector(fsi, p_scratch, *p_scratchcache);
+			result = fat_write_sector(fsi, p_scratch, sector);
 			/* mirror the FAT into copy 2 */
 			if (DFS_OK == result) {
 				result = fat_write_sector(fsi, p_scratch,
-						(*p_scratchcache) + volinfo->secperfat);
+						sector + volinfo->secperfat);
 			}
 
 			/*
@@ -585,8 +559,7 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 			 * and poke the first byte with the remainder of this FAT entry.
 			 */
 			if (DFS_OK == result) {
-				(*p_scratchcache)++;
-				result = fat_read_sector(fsi, p_scratch, *p_scratchcache);
+				result = fat_read_sector(fsi, p_scratch, ++sector);
 				if (DFS_OK == result) {
 					/* Odd cluster: High 12 bits being set*/
 					if (cluster & 1) {
@@ -597,19 +570,12 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 						p_scratch[0] = (p_scratch[0] & 0xf0) |
 								(new_contents & 0x0f);
 					}
-					result = fat_write_sector(fsi, p_scratch,
-							*p_scratchcache);
+					result = fat_write_sector(fsi, p_scratch, sector);
 					/* mirror the FAT into copy 2 */
 					if (DFS_OK == result) {
 						result = fat_write_sector(fsi, p_scratch,
-								(*p_scratchcache)+volinfo->secperfat);
+								sector+volinfo->secperfat);
 					}
-				} else {
-					/*
-					 * avoid anyone assuming that this cache value is still
-					 * valid, which might cause disk corruption
-					 */
-					*p_scratchcache = 0;
 				}
 			}
 		}
@@ -631,11 +597,11 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 				p_scratch[offset+1] = (p_scratch[offset+1] & 0xf0) |
 						((new_contents & 0x0f00) >> 8);
 			}
-			result = fat_write_sector(fsi, p_scratch, *p_scratchcache);
+			result = fat_write_sector(fsi, p_scratch, sector);
 			/* mirror the FAT into copy 2 */
 			if (DFS_OK == result) {
 				result = fat_write_sector(fsi, p_scratch,
-						(*p_scratchcache) + volinfo->secperfat);
+						sector + volinfo->secperfat);
 			}
 		}
 		break;
@@ -647,13 +613,13 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 	case FAT16:
 		p_scratch[offset + 1] = (new_contents & 0xff00) >> 8;
 		p_scratch[offset] = (new_contents & 0xff);
-		result = fat_write_sector(fsi, p_scratch, *p_scratchcache);
+		result = fat_write_sector(fsi, p_scratch, sector);
 		/* mirror the FAT into copy 2 */
 		if (DFS_OK == result)
 			result = fat_write_sector(
 					fsi,
 					p_scratch,
-					(*p_scratchcache) + volinfo->secperfat
+					sector + volinfo->secperfat
 				);
 		break;
 	default:
@@ -705,17 +671,17 @@ static void fat_append_longname(char *name, struct fat_dirent *di) {
  * 	otherwise the contents of the desired FAT entry.
  * 	Returns FAT32 bad_sector (0x0ffffff7) if there is no free cluster available
  */
-uint32_t fat_get_free_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch) {
-	uint32_t i, result = 0xffffffff, p_scratchcache = 0;
+uint32_t fat_get_free_fat(struct fat_fs_info *fsi, uint8_t *p_scratch) {
+	uint32_t i;
 	/*
 	 * Search starts at cluster 2, which is the first usable cluster
 	 * NOTE: This search can't terminate at a bad cluster, because there might
 	 * legitimately be bad clusters on the disk.
 	 */
 	for (i = 2; i < fsi->vi.numclusters; i++) {
-		result = fat_get_fat_(fsi, p_scratch, &p_scratchcache, i);
-		if (!result)
+		if (!fat_get_fat(fsi, p_scratch, i)) {
 			return i;
+		}
 	}
 	return DFS_BAD_CLUS;
 }
@@ -850,7 +816,6 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 		struct dirinfo *dir, struct fat_dirent *dirent) {
 	struct volinfo *volinfo;
 	struct fat_dirent *dirent_src;
-	uint32_t tempint;
 	int next_ent;
 	int ent_per_sec;
 	int end_of_chain;
@@ -884,16 +849,23 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 				return DFS_ERRMISC;
 		} else {
 			if (dir->currentsector >= volinfo->secperclus) {
+				int tempclus;
+
 				dir->currentsector = 0;
+
+				tempclus = fat_get_fat(fsi,
+						dir->p_scratch,
+						dir->currentcluster);
+
 				switch (volinfo->filesystem) {
 				case FAT12:
-					end_of_chain = dir->currentcluster >= 0xff7;
+					end_of_chain = tempclus >= 0xff7;
 					break;
 				case FAT16:
-					end_of_chain = dir->currentcluster >= 0xfff7;
+					end_of_chain = tempclus >= 0xfff7;
 					break;
 				case FAT32:
-					end_of_chain = dir->currentcluster >= 0xffffff7;
+					end_of_chain = tempclus >= 0xffffff7;
 					break;
 				default:
 					return DFS_ERRMISC;
@@ -913,15 +885,12 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 					 */
 					else
 						return DFS_ALLOCNEW;
+				} else {
+					dir->currentcluster = tempclus;
 				}
-
-				dir->currentcluster = fat_get_fat_(fsi,
-						dir->p_scratch,
-						&tempint,
-						dir->currentcluster);
 			}
 
-			read_sector = dir->currentcluster * volinfo->secperclus + dir->currentsector;
+			read_sector = fat_sec_by_clus(fsi, dir->currentcluster) + dir->currentsector;
 
 			if (fat_read_sector(fsi, dir->p_scratch, read_sector))
 				return DFS_ERRMISC;
@@ -993,7 +962,6 @@ uint32_t fat_get_next_long(struct fat_fs_info *fsi, struct dirinfo *dir,
 			}
 		}
 	} else {
-		/* Long name entry */
 		while (dirent->attr == ATTR_LONG_NAME) {
 			if (name_buf != NULL) {
 				fat_append_longname(name_buf, dirent);
@@ -1008,6 +976,26 @@ uint32_t fat_get_next_long(struct fat_fs_info *fsi, struct dirinfo *dir,
 
 }
 
+/* Fill given cluster number with zeroes */
+static uint32_t fat_clear_clus(struct fat_fs_info *fsi,
+		uint32_t clus, uint8_t *p_scratch) {
+	uint32_t sec;
+
+	assert(fsi);
+	assert(p_scratch);
+
+	sec = fat_sec_by_clus(fsi, clus);
+
+	memset(p_scratch, 0, fsi->vi.bytepersec);
+	for (int i = 0; i < fsi->vi.secperclus; i++) {
+		if (fat_write_sector(fsi, p_scratch, sec + i)) {
+			return DFS_ERRMISC;
+		}
+	}
+
+	return 0;
+}
+
 /*
  * INTERNAL
  * Find a free directory entry in the directory specified by path
@@ -1019,60 +1007,46 @@ uint32_t fat_get_next_long(struct fat_fs_info *fsi, struct dirinfo *dir,
  * de is updated with the same return information you would expect
  * from fat_get_next
  */
-uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi, uint8_t *path,
+uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi,
 		struct dirinfo *di, struct fat_dirent *de) {
-	uint32_t tempclus,i;
-	struct volinfo *volinfo;
-
-	volinfo = &fsi->vi;
-
-	//if (fat_open_dir(fsi, path, di)) {
-	//	return DFS_NOTFOUND;
-	//}
+	uint32_t clus;
 
 	di->flags |= DFS_DI_BLANKENT;
 
-	/*
-	 * Note we are reusing tempclus as a temporary result holder.
-	 */
-	tempclus = 0;
 	do {
-		tempclus = fat_get_next(fsi, di, de);
+		clus = fat_get_next(fsi, di, de);
 
-		if (tempclus == DFS_OK && (!de->name[0])) {
-			return DFS_OK;
-		} else if (tempclus == DFS_EOF) {
-			return DFS_ERRMISC;
-		} else if (tempclus == DFS_ALLOCNEW) {
-			tempclus = fat_get_free_fat_(fsi, di->p_scratch);
-			if (tempclus == DFS_BAD_CLUS) {
-				return DFS_ERRMISC;
+		if (clus == DFS_OK) {
+			if (!de->name[0]) {
+				return DFS_OK;
+			} else {
+				continue;
 			}
-
-			memset(di->p_scratch, 0, volinfo->bytepersec);
-			for (i = 0; i < volinfo->secperclus; i++) {
-				if (fat_write_sector(fsi, di->p_scratch,
-						volinfo->dataarea + ((tempclus - 2) *
-								volinfo->secperclus) + i)) {
-					return DFS_ERRMISC;
-				}
-			}
-			i = 0;
-			fat_set_fat_(fsi,
-					di->p_scratch, &i, di->currentcluster, tempclus);
-
-			di->currentcluster = tempclus;
-			di->currentsector = 0;
-			di->currententry = 0; /* tempclus is not zero but contains fat entry, so next loop will call */
-			switch(volinfo->filesystem) {
-				case FAT12:		tempclus = 0xfff;	break;
-				case FAT16:		tempclus = 0xffff;	break;
-				case FAT32:		tempclus = 0x0fffffff;	break;
-				default:		return DFS_ERRMISC;
-			}
-			fat_set_fat_(fsi, di->p_scratch, &i, di->currentcluster, tempclus);
 		}
-	} while (!tempclus);
+
+		if (clus == DFS_EOF) {
+			return DFS_ERRMISC;
+		}
+
+		clus = fat_get_free_fat(fsi, di->p_scratch);
+		if (clus == DFS_BAD_CLUS) {
+			return DFS_ERRMISC;
+		}
+
+		if (0 != fat_clear_clus(fsi, clus, di->p_scratch)) {
+			return DFS_ERRMISC;
+		}
+
+		fat_set_fat(fsi, di->p_scratch, di->currentcluster, clus);
+
+		di->currentcluster = clus;
+		di->currentsector = 0;
+		di->currententry = 0; /* clus is not zero but contains fat entry,
+					 so next loop will call */
+		clus = fat_end_of_chain(fsi);
+
+		fat_set_fat(fsi, di->p_scratch, di->currentcluster, clus);
+	} while (!clus);
 
 	/* We shouldn't get here */
 	return DFS_ERRMISC;
@@ -1295,7 +1269,7 @@ uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 				result = DFS_EOF;
 			}
 			else {
-				fi->cluster = fat_get_fat_(fsi, p_scratch, &bytesread, fi->cluster);
+				fi->cluster = fat_get_fat(fsi, p_scratch, fi->cluster);
 			}
 		}
 	}
@@ -1459,8 +1433,7 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		  	byteswritten = 0;
 
 			lastcluster = fi->cluster;
-			fi->cluster = fat_get_fat_(fsi, p_scratch,
-					&byteswritten, fi->cluster);
+			fi->cluster = fat_get_fat(fsi, p_scratch, fi->cluster);
 
 			/* Allocate a new cluster? */
 			if (((fi->volinfo->filesystem == FAT12) &&
@@ -1470,24 +1443,14 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 					((fi->volinfo->filesystem == FAT32) &&
 					(fi->cluster >= 0x0ffffff8))) {
 			  	uint32_t tempclus;
-				tempclus = fat_get_free_fat_(fsi, p_scratch);
-				byteswritten = 0; /* invalidate cache */
+				tempclus = fat_get_free_fat(fsi, p_scratch);
 				if (tempclus == DFS_BAD_CLUS)
 					return DFS_ERRMISC;
 				/* Link new cluster onto file */
-				fat_set_fat_(fsi, p_scratch,
-						&byteswritten, lastcluster, tempclus);
+				fat_set_fat(fsi, p_scratch, lastcluster, tempclus);
 				fi->cluster = tempclus;
-
-				/* Mark newly allocated cluster as end of chain */
-				switch(fi->volinfo->filesystem) {
-					case FAT12:		tempclus = 0xfff;	break;
-					case FAT16:		tempclus = 0xffff;	break;
-					case FAT32:		tempclus = 0x0fffffff;	break;
-					default:		return DFS_ERRMISC;
-				}
-				fat_set_fat_(fsi, p_scratch,
-						&byteswritten, fi->cluster, tempclus);
+				tempclus = fat_end_of_chain(fsi);
+				fat_set_fat(fsi, p_scratch, fi->cluster, tempclus);
 
 				result = DFS_OK;
 			}
@@ -1499,18 +1462,10 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		if (div(*size, clastersize).quot !=
 			div(fi->pointer, clastersize).quot) {
 
-			byteswritten = 0;/* invalidate cache */
-			nextcluster = fat_get_fat_(fsi, p_scratch,
-					&byteswritten, fi->cluster);
+			nextcluster = fat_get_fat(fsi, p_scratch, fi->cluster);
 
-			switch(fi->volinfo->filesystem) {
-				case FAT12:		lastcluster = 0xfff;	break;
-				case FAT16:		lastcluster = 0xfff;	break;
-				case FAT32:		lastcluster = 0x0fffffff;	break;
-				default:		return DFS_ERRMISC;
-			}
-			fat_set_fat_(fsi, p_scratch, &byteswritten,
-					fi->cluster, lastcluster);
+			lastcluster = fat_end_of_chain(fsi);
+			fat_set_fat(fsi, p_scratch, fi->cluster, lastcluster);
 
 			/* Now follow the cluster chain to free the file space */
 			while (!((fi->volinfo->filesystem == FAT12 &&
@@ -1520,17 +1475,13 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 					(fi->volinfo->filesystem == FAT32 &&
 					nextcluster >= 0x0ffffff7))) {
 				lastcluster = nextcluster;
-				nextcluster = fat_get_fat_(fsi, p_scratch,
-						&byteswritten, nextcluster);
+				nextcluster = fat_get_fat(fsi, p_scratch, nextcluster);
 
-				fat_set_fat_(fsi, p_scratch,
-						&byteswritten, lastcluster, 0);
+				fat_set_fat(fsi, p_scratch, lastcluster, 0);
 			}
 
 		}
 	}
-
-	//*size = fi->pointer; // TODO implement fat truncate
 
 	/* Update directory entry */
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
@@ -1624,13 +1575,7 @@ uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 			if (di.currentcluster == 0) {
 				fi->dirsector = volinfo->rootdir + di.currentsector;
 			} else {
-				/*
-				fi->dirsector = volinfo->dataarea +
-						((di.currentcluster - 2) *
-						volinfo->secperclus) + di.currentsector;
-						*/
-				fi->dirsector =
-						di.currentsector + fat_sec_by_clus(fsi, di.currentcluster);
+				fi->dirsector = di.currentsector + fat_sec_by_clus(fsi, di.currentcluster);
 			}
 			fi->diroffset = di.currententry - 1;
 			if (volinfo->filesystem == FAT32) {
@@ -1661,18 +1606,12 @@ uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
  */
 int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 		uint8_t *p_scratch) {
-	uint32_t cache;
 	uint32_t tempclus;
 	struct volinfo *volinfo;
 	struct fat_fs_info *fsi;
 
 	fsi = fi->fsi;
 	volinfo = &fsi->vi;
-	cache = 0;
-
-	/* if (DFS_OK != fat_open_file(fi, path, O_RDONLY, p_scratch, NULL)) {
-		return DFS_NOTFOUND;
-	} */
 
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
@@ -1687,11 +1626,8 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 			(volinfo->filesystem == FAT16 && fi->firstcluster >= 0xfff7) ||
 			(volinfo->filesystem == FAT32 && fi->firstcluster >= 0x0ffffff7))) {
 		tempclus = fi->firstcluster;
-		//assert(fsi->bdev == nas->fs->bdev);
-		fi->firstcluster = fat_get_fat_(fsi, p_scratch,
-				&cache, fi->firstcluster);
-		//assert(nas->fs->bdev == fsi->bdev);
-		fat_set_fat_(fsi, p_scratch, &cache, tempclus, 0);
+		fi->firstcluster = fat_get_fat(fsi, p_scratch, fi->firstcluster);
+		fat_set_fat(fsi, p_scratch, tempclus, 0);
 	}
 	return DFS_OK;
 }
@@ -1702,20 +1638,12 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
  */
 int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
 		uint8_t *p_scratch) {
-	uint32_t cache;
 	uint32_t tempclus;
 	struct volinfo *volinfo;
 	struct fat_fs_info *fsi;
 
 	fsi = fi->fsi;
 	volinfo = &fsi->vi;
-
-	cache = 0;
-
-	/* fat_open_file gives us all the information we need to delete it */
-	/* if (DFS_OK != fat_open_file(fi, path, O_RDONLY, p_scratch, NULL)) {
-		return DFS_NOTFOUND;
-	} */
 
 	/* First, read the directory sector and delete that entry */
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
@@ -1731,11 +1659,8 @@ int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
 			(volinfo->filesystem == FAT16 && fi->firstcluster >= 0xfff7) ||
 			(volinfo->filesystem == FAT32 && fi->firstcluster >= 0x0ffffff7))) {
 		tempclus = fi->firstcluster;
-		//assert(nas->fs->bdev == fsi->bdev);
-		fi->firstcluster = fat_get_fat_(fsi, p_scratch,
-				&cache, fi->firstcluster);
-		//assert(nas->fs->bdev == fsi->bdev);
-		fat_set_fat_(fsi, p_scratch, &cache, tempclus, 0);
+		fi->firstcluster = fat_get_fat(fsi, p_scratch, fi->firstcluster);
+		fat_set_fat(fsi, p_scratch, tempclus, 0);
 	}
 	return DFS_OK;
 }
@@ -1817,7 +1742,7 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 	uint8_t filename[12];
 	struct fat_dirent de;
 	struct volinfo *volinfo;
-	uint32_t cluster, temp;
+	uint32_t cluster;
 	struct fat_fs_info *fsi;
 	int entries;
 	uint32_t res;
@@ -1870,58 +1795,34 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 		memcpy(filename, name, sizeof(filename));
 	}
 
-	cluster = fat_get_free_fat_(fsi, fat_sector_buff);
+	cluster = fat_get_free_fat(fsi, fat_sector_buff);
 	de = (struct fat_dirent) {
 		.attr = S_ISDIR(mode) ? ATTR_DIRECTORY : 0,
-		.startclus_l_l = cluster & 0xff,
-		.startclus_l_h = (cluster & 0xff00) >> 8,
-		.startclus_h_l = (cluster & 0xff0000) >> 16,
-		.startclus_h_h = (cluster & 0xff000000) >> 24,
 	};
+	fat_direntry_set_clus(&de, cluster);
 	memcpy(de.name, filename, MSDOS_NAME);
 	fat_set_filetime(&de);
 
 	fi->volinfo = volinfo;
 	fi->pointer = 0;
-	/*
-	 * The reason we store this extra info about the file is so that we can
-	 * speedily update the file size, modification date, etc. on a file
-	 * that is opened for writing.
-	 */
-
-	//fi->dirsector = volinfo->dataarea + (di->fi.cluster - 2) * volinfo->secperclus;
-	/* 'di' have to be filled already */
-	//fi->dirsector = di->currentsector + di->currentcluster * volinfo->secperclus;
 	fi->dirsector = di->currentsector + fat_sec_by_clus(fsi, di->currentcluster);
 	fi->diroffset = di->currententry;
 	fi->cluster = cluster;
 	fi->firstcluster = cluster;
 
-	/*
-	 * write the directory entry
-	 * note that we no longer have the sector containing the directory
-	 * entry, tragically, so we have to re-read it
-	 */
-
 	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector)) {
 		return DFS_ERRMISC;
 	}
+
 	memcpy(&(((struct fat_dirent*) fat_sector_buff)[fi->diroffset]),
 			&de, sizeof(struct fat_dirent));
+
 	if (fat_write_sector(fsi, fat_sector_buff, fi->dirsector)) {
 		return DFS_ERRMISC;
 	}
-	/* Mark newly allocated cluster as end of chain */
-	switch(volinfo->filesystem) {
-		case FAT12:		cluster = 0xfff;	break;
-		case FAT16:		cluster = 0xffff;	break;
-		case FAT32:		cluster = 0x0fffffff;	break;
-		default:		return DFS_ERRMISC;
-	}
 
-	temp = 0;
-	fat_set_fat_(fsi,
-			fat_sector_buff, &temp, fi->cluster, cluster);
+	cluster = fat_end_of_chain(fsi);
+	fat_set_fat(fsi, fat_sector_buff, fi->cluster, cluster);
 
 	if (S_ISDIR(mode)) {
 		/* create . and ..  files of this catalog */
@@ -2089,11 +1990,13 @@ uint32_t fat_get_free_entries(struct fat_fs_info *fsi,
 	assert(dir);
 	assert(dirent);
 
+	dir->flags |= DFS_DI_BLANKENT;
+
 	while (true) {
 		failed = false;
 
 		/* Find some free entry */
-		while (DFS_OK == (res = fat_get_next(fsi, dir, &de))) {
+		while (DFS_OK == (res = fat_get_free_dir_ent(fsi, dir, &de))) {
 		}
 
 		if (res != DFS_EOF) {
