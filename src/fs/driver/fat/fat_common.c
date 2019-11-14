@@ -401,17 +401,17 @@ uint32_t fat_get_fat(struct fat_fs_info *fsi,
 	struct volinfo *volinfo = &fsi->vi;
 
 	switch (volinfo->filesystem) {
-		case FAT12:
-			offset = cluster + (cluster / 2);
-			break;
-		case FAT16:
-			offset = cluster * 2;
-			break;
-		case FAT32:
-			offset = cluster * 4;
-			break;
-		default:
-			return DFS_BAD_CLUS;
+	case FAT12:
+		offset = cluster + (cluster / 2);
+		break;
+	case FAT16:
+		offset = cluster * 2;
+		break;
+	case FAT32:
+		offset = cluster * 4;
+		break;
+	default:
+		return DFS_BAD_CLUS;
 	}
 
 	sector = offset / volinfo->bytepersec + volinfo->fat1;
@@ -493,37 +493,25 @@ static uint32_t fat_is_end_of_chain(struct fat_fs_info *fsi, uint32_t clus) {
  * Set FAT entry for specified cluster number
  * You must provide a scratch buffer for one sector (SECTOR_SIZE)
  * and a populated volinfo_t Returns DFS_ERRMISC for any error, otherwise
- * DFS_OK p_scratchcache should point to a UINT32. This variable caches the
- * physical sector number last read into the scratch buffer for performance
- * enhancement reasons.
- *
- * NOTE: This code is HIGHLY WRITE-INEFFICIENT, particularly for flash media.
- * Considerable performance gains can be realized by caching the sector.
- * However this is difficult to achieve on FAT12 without requiring 2 sector
- * buffers of scratch space, and it is a design requirement of this code to
- * operate on a single 512-byte scratch. If you are operating DOSFS over flash,
- * you are strongly advised to implement a writeback cache in your physical
- * I/O driver. This will speed up your code significantly and will
- * also conserve power and flash write life.
- */
-
+ * DFS_OK p_scratchcache should point to a UINT32.
+ * */
 uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
 		uint32_t cluster, uint32_t new_contents) {
 	uint32_t offset, sector, result;
 	struct volinfo *volinfo = &fsi->vi;
 
 	switch (volinfo->filesystem) {
-		case FAT12:
-			offset = cluster + (cluster / 2);
-			break;
-		case FAT16:
-			offset = cluster * 2;
-			break;
-		case FAT32:
-			offset = cluster * 4;
-			break;
-		default:
-			return DFS_ERRMISC;
+	case FAT12:
+		offset = cluster + (cluster / 2);
+		break;
+	case FAT16:
+		offset = cluster * 2;
+		break;
+	case FAT32:
+		offset = cluster * 4;
+		break;
+	default:
+		return DFS_ERRMISC;
 	}
 
 	new_contents &= fat_end_of_chain(fsi);
@@ -973,7 +961,6 @@ uint32_t fat_get_next_long(struct fat_fs_info *fsi, struct dirinfo *dir,
 	}
 
 	return ret;
-
 }
 
 /* Fill given cluster number with zeroes */
@@ -1966,8 +1953,7 @@ uint32_t fat_get_free_entries(struct fat_fs_info *fsi,
 		failed = false;
 
 		/* Find some free entry */
-		while (DFS_OK == (res = fat_get_free_dir_ent(fsi, dir, &de))) {
-		}
+		res = fat_get_free_dir_ent(fsi, dir, &de);
 
 		if (res != DFS_EOF) {
 			break;
