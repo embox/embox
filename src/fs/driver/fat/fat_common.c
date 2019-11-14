@@ -478,6 +478,19 @@ uint32_t fat_get_fat_(struct fat_fs_info *fsi,
 	return result;
 }
 
+static uint32_t fat_end_of_chain(struct fat_fs_info *fsi) {
+	switch(fsi->vi.filesystem) {
+	case FAT12:
+		return 0xfff;
+	case FAT16:
+		return 0xffff;
+	case FAT32:
+		return 0x0fffffff; /* FAT32 is really "FAT28" */
+	default:
+		return 0;
+	}
+}
+
 /*
  * Set FAT entry for specified cluster number
  * You must provide a scratch buffer for one sector (SECTOR_SIZE)
@@ -504,19 +517,18 @@ uint32_t fat_set_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch,
 	switch (volinfo->filesystem) {
 		case FAT12:
 			offset = cluster + (cluster / 2);
-			new_contents &=0xfff;
 			break;
 		case FAT16:
 			offset = cluster * 2;
-			new_contents &=0xffff;
 			break;
 		case FAT32:
 			offset = cluster * 4;
-			new_contents &=0x0fffffff;	/* FAT32 is really "FAT28" */
 			break;
 		default:
 			return DFS_ERRMISC;
 	}
+
+	new_contents &= fat_end_of_chain(fsi);
 	/*
 	 * at this point, offset is the BYTE offset of the desired sector from
 	 * the start of the FAT.
@@ -1158,16 +1170,8 @@ int fat_root_dir_record(void *bdev) {
 		root_dir_sz--;
 	}
 
-
-	/* Mark newly allocated cluster as end of chain */
-	switch (fsi.vi.filesystem) {
-		case FAT12:		cluster = 0xfff;	break;
-		case FAT16:		cluster = 0xffff;	break;
-		case FAT32:		cluster = 0x0fffffff;	break;
-		default:		return DFS_ERRMISC;
-	}
-	psize = 0;
-	fat_set_fat_(&fsi, fat_sector_buff, &psize, cluster, cluster);
+	cluster = fat_end_of_chain(&fsi);
+	fat_set_fat(&fsi, fat_sector_buff, cluster, cluster);
 
 	return DFS_OK;
 }
