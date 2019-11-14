@@ -18,6 +18,7 @@
 #include <drivers/block_dev.h>
 #include "fat.h"
 
+#include <util/log.h>
 #include <util/math.h>
 
 #include <framework/mod/options.h>
@@ -474,6 +475,20 @@ static uint32_t fat_end_of_chain(struct fat_fs_info *fsi) {
 	}
 }
 
+static uint32_t fat_is_end_of_chain(struct fat_fs_info *fsi, uint32_t clus) {
+	switch (fsi->vi.filesystem) {
+	case FAT12:
+		return clus >= 0xff7;
+	case FAT16:
+		return clus >= 0xfff7;
+	case FAT32:
+		return clus >= 0xffffff7;
+	}
+
+	log_error("Wrong FAT version");
+	return 1;
+}
+
 /*
  * Set FAT entry for specified cluster number
  * You must provide a scratch buffer for one sector (SECTOR_SIZE)
@@ -818,7 +833,6 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 	struct fat_dirent *dirent_src;
 	int next_ent;
 	int ent_per_sec;
-	int end_of_chain;
 	int read_sector;
 
 	volinfo = &fsi->vi;
@@ -857,21 +871,7 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 						dir->p_scratch,
 						dir->currentcluster);
 
-				switch (volinfo->filesystem) {
-				case FAT12:
-					end_of_chain = tempclus >= 0xff7;
-					break;
-				case FAT16:
-					end_of_chain = tempclus >= 0xfff7;
-					break;
-				case FAT32:
-					end_of_chain = tempclus >= 0xffffff7;
-					break;
-				default:
-					return DFS_ERRMISC;
-				}
-
-				if (end_of_chain) {
+				if (fat_is_end_of_chain(fsi, tempclus)) {
 					/* We are at the end of the directory chain.
 					 * If this is a normal find operation, we should indicate
 					 * that there is nothing more to see.
@@ -1254,21 +1254,9 @@ uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		/* check to see if we stepped over a cluster boundary */
 		if (div(fi->pointer - bytesread, clastersize).quot !=
 			div(fi->pointer, clastersize).quot) {
-			/*
-			 * An act of minor evil - we use bytesread as a scratch integer,
-			 * knowing that its value is not used after updating *successcount
-			 * above
-			 */
-			bytesread = 0;
-			if (((fi->volinfo->filesystem == FAT12) &&
-					(fi->cluster >= 0xff8)) ||
-					((fi->volinfo->filesystem == FAT16) &&
-							(fi->cluster >= 0xfff8)) ||
-							((fi->volinfo->filesystem == FAT32) &&
-									(fi->cluster >= 0x0ffffff8))) {
+			if (fat_is_end_of_chain(fsi, fi->cluster)) {
 				result = DFS_EOF;
-			}
-			else {
+			} else {
 				fi->cluster = fat_get_fat(fsi, p_scratch, fi->cluster);
 			}
 		}
@@ -1436,12 +1424,7 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 			fi->cluster = fat_get_fat(fsi, p_scratch, fi->cluster);
 
 			/* Allocate a new cluster? */
-			if (((fi->volinfo->filesystem == FAT12) &&
-					(fi->cluster >= 0xff8)) ||
-					((fi->volinfo->filesystem == FAT16) &&
-					(fi->cluster >= 0xfff8)) ||
-					((fi->volinfo->filesystem == FAT32) &&
-					(fi->cluster >= 0x0ffffff8))) {
+			if (fat_is_end_of_chain(fsi, fi->cluster)) {
 			  	uint32_t tempclus;
 				tempclus = fat_get_free_fat(fsi, p_scratch);
 				if (tempclus == DFS_BAD_CLUS)
@@ -1468,12 +1451,7 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 			fat_set_fat(fsi, p_scratch, fi->cluster, lastcluster);
 
 			/* Now follow the cluster chain to free the file space */
-			while (!((fi->volinfo->filesystem == FAT12 &&
-					nextcluster >= 0x0ff7) ||
-					(fi->volinfo->filesystem == FAT16 &&
-					nextcluster >= 0xfff7) ||
-					(fi->volinfo->filesystem == FAT32 &&
-					nextcluster >= 0x0ffffff7))) {
+			while (!fat_is_end_of_chain(fsi, nextcluster)) {
 				lastcluster = nextcluster;
 				nextcluster = fat_get_fat(fsi, p_scratch, nextcluster);
 
@@ -1607,11 +1585,9 @@ uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 		uint8_t *p_scratch) {
 	uint32_t tempclus;
-	struct volinfo *volinfo;
 	struct fat_fs_info *fsi;
 
 	fsi = fi->fsi;
-	volinfo = &fsi->vi;
 
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
@@ -1622,9 +1598,7 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 	}
 
 	/* Now follow the cluster chain to free the file space */
-	while (!((volinfo->filesystem == FAT12 && fi->firstcluster >= 0x0ff7) ||
-			(volinfo->filesystem == FAT16 && fi->firstcluster >= 0xfff7) ||
-			(volinfo->filesystem == FAT32 && fi->firstcluster >= 0x0ffffff7))) {
+	while (!fat_is_end_of_chain(fsi, fi->firstcluster)) {
 		tempclus = fi->firstcluster;
 		fi->firstcluster = fat_get_fat(fsi, p_scratch, fi->firstcluster);
 		fat_set_fat(fsi, p_scratch, tempclus, 0);
@@ -1639,11 +1613,9 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
 		uint8_t *p_scratch) {
 	uint32_t tempclus;
-	struct volinfo *volinfo;
 	struct fat_fs_info *fsi;
 
 	fsi = fi->fsi;
-	volinfo = &fsi->vi;
 
 	/* First, read the directory sector and delete that entry */
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
@@ -1655,9 +1627,7 @@ int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
 	}
 
 	/* Now follow the cluster chain to free the file space */
-	while (!((volinfo->filesystem == FAT12 && fi->firstcluster >= 0x0ff7) ||
-			(volinfo->filesystem == FAT16 && fi->firstcluster >= 0xfff7) ||
-			(volinfo->filesystem == FAT32 && fi->firstcluster >= 0x0ffffff7))) {
+	while (!fat_is_end_of_chain(fsi, fi->firstcluster)) {
 		tempclus = fi->firstcluster;
 		fi->firstcluster = fat_get_fat(fsi, p_scratch, fi->firstcluster);
 		fat_set_fat(fsi, p_scratch, tempclus, 0);
