@@ -96,7 +96,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 	};
 
 	fi->dirsector = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
-	fi->diroffset = tmp_entry - 1;
+	fi->diroffset = tmp_entry;
 	fi->cluster = (uint32_t) de->startclus_l_l |
 	  ((uint32_t) de->startclus_l_h) << 8 |
 	  ((uint32_t) de->startclus_h_l) << 16 |
@@ -106,6 +106,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 			      ((uint32_t) de->filesize_1) << 8 |
 			      ((uint32_t) de->filesize_2) << 16 |
 			      ((uint32_t) de->filesize_3) << 24;
+	fi->fdi = di;
 
 	inode->length    = fi->filelen;
 	inode->start_pos = fi->firstcluster * fi->volinfo->secperclus * fi->volinfo->bytepersec;
@@ -225,8 +226,9 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 			return -ENOMEM;
 		}
 	}
-	fi->fsi          = fsi;
-	fi->volinfo      = &fsi->vi;
+	fi->fsi     = fsi;
+	fi->volinfo = &fsi->vi;
+	fi->fdi     = di;
 
 	i_new->i_data = fi;
 

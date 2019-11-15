@@ -1862,7 +1862,8 @@ void fat_write_longname(char *name, struct fat_dirent *di) {
 
 int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name) {
 	struct fat_fs_info *fsi;
-	struct fat_dirent *di;
+	struct fat_dirent de;
+	struct dirinfo *dir;
 	int offt = 1;
 
 	assert(name);
@@ -1873,27 +1874,25 @@ int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name) {
 
 	log_debug("fi->dirsector (%d)", fi->dirsector);
 
-	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
-		return DFS_ERRMISC;
-	}
-
 	name[0] = '\0';
 
-	di = &((struct fat_dirent *) p_scratch)[fi->diroffset];
-	if (fi->diroffset > 0) {
-		di = &((struct fat_dirent *) p_scratch)[fi->diroffset - 1];
-		if (di->attr == ATTR_LONG_NAME) {
-			while (di->attr == ATTR_LONG_NAME && fi->diroffset - offt >= 0) {
-				fat_append_longname(name, di);
-				offt++;
-				di = &((struct fat_dirent *) p_scratch)[fi->diroffset - offt];
-			}
-		} else {
-			di = &((struct fat_dirent *) p_scratch)[fi->diroffset];
-			strcpy(name, (void *) di->name);
+	dir = fi->fdi;
+	fat_reset_dir(dir);
+	read_dir_buf(fsi, dir);
+
+	while (1) {
+		int dirsect = dir->currentsector + fat_sec_by_clus(fsi, dir->currentcluster);
+
+		if (dirsect == fi->dirsector && dir->currententry == fi->diroffset) {
+			break;
 		}
-	} else {
-		strcpy(name, (void *) di->name);
+
+		fat_get_next_long(fsi, dir, &de, name);
+	}
+
+	if (name[0] == '\0') {
+		/* Entry is the first in the directory */
+		fat_get_next_long(fsi, dir, &de, name);
 	}
 
 	/* In FAT names by default are padded with zeroes,
