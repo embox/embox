@@ -300,8 +300,6 @@ extern uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
 extern uint32_t fat_get_free_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch);
 extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
                              uint8_t *dirname, struct dirinfo *dirinfo);
-extern uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi,
-                             struct dirinfo *di, struct fat_dirent *de);
 extern void     fat_set_direntry (uint32_t dir_cluster, uint32_t cluster);
 extern uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 		uint8_t *p_scratch, size_t *size);
@@ -324,13 +322,9 @@ extern void fat_dirinfo_free(struct dirinfo *di);
 
 extern int fat_entries_per_name(const char *name);
 extern void fat_write_longname(char *name, struct fat_dirent *di);
-extern uint32_t fat_write_de(struct fat_fs_info *fsi,
-                             struct dirinfo *dirinfo, struct fat_dirent *dirent);
-extern uint32_t fat_get_free_entries(struct fat_fs_info *fsi,
-		struct dirinfo *dir, struct fat_dirent *dirent, int n);
 extern uint8_t fat_canonical_name_checksum(const char *name);
 extern int fat_reset_dir(struct dirinfo *di);
-extern int read_dir_buf(struct fat_fs_info *fsi, struct dirinfo *di);
+extern int read_dir_buf(struct dirinfo *di);
 
 extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 

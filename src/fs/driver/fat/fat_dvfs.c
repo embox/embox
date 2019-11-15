@@ -96,7 +96,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 	};
 
 	fi->dirsector = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
-	fi->diroffset = tmp_entry;
+	fi->diroffset = tmp_entry - 1;
 	fi->cluster = (uint32_t) de->startclus_l_l |
 	  ((uint32_t) de->startclus_l_h) << 8 |
 	  ((uint32_t) de->startclus_h_l) << 16 |
@@ -157,7 +157,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	tmp_clus = di->currentcluster;
 	fat_reset_dir(di);
 
-	if (read_dir_buf(fsi, di)) {
+	if (read_dir_buf(di)) {
 		goto err_out;
 	}
 
@@ -209,7 +209,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	di = i_dir->i_data;
 
 	fat_reset_dir(di);
-	read_dir_buf(fsi, di);
+	read_dir_buf(di);
 
 	assert(i_new->i_dentry);
 	name = i_new->i_dentry->name;
@@ -219,7 +219,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 		if (!(new_di = fat_dirinfo_alloc())) {
 			return -ENOMEM;
 		}
-		di->p_scratch = fat_sector_buff;
+		new_di->p_scratch = fat_sector_buff;
 		fi = &new_di->fi;
 	} else {
 		if (!(fi = fat_file_alloc())) {
@@ -285,7 +285,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 		fat_reset_dir(dirinfo);
 	}
 
-	read_dir_buf(fsi, dirinfo);
+	read_dir_buf(dirinfo);
 
 	while (((res = fat_get_next_long(fsi, dirinfo, &de, NULL)) ==  DFS_OK) || res == DFS_ALLOCNEW) {
 		if (!memcmp(de.name, MSDOS_DOT, strlen(MSDOS_DOT)) ||
