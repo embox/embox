@@ -551,10 +551,10 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			point += sizeof(vf);
 			predesc = (readdir_desc_t *) point;
 
-			if(predesc->file_attr.type == 1) {
-				predesc->file_attr.mode = S_IFREG | predesc->file_attr.mode;
+			if (predesc->file_attr.type == 1) {
+				predesc->file_attr.mode |= S_IFREG;
 			} else {
-				predesc->file_attr.mode = S_IFDIR | predesc->file_attr.mode;
+				predesc->file_attr.mode |= S_IFDIR;
 			}
 
 			if(0 == path_is_dotname(predesc->file_name.name.data,
