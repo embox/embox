@@ -61,7 +61,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 	tmp_cluster = di->currentcluster;
 
 	while (de->attr == ATTR_LONG_NAME) {
-		res = fat_get_next(fsi, di, de);
+		res = fat_get_next(di, de);
 
 		if (res != DFS_OK && res != DFS_ALLOCNEW) {
 			return -EINVAL;
@@ -139,7 +139,6 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	struct inode *node;
 	char tmppath[PATH_MAX];
 	int found = 0;
-	struct fat_fs_info *fsi;
 
 	assert(name);
 	assert(dir->d_inode);
@@ -150,8 +149,6 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	assert(di);
 
-	fsi = sb->sb_data;
-
 	tmp_ent = di->currententry;
 	tmp_sec = di->currentsector;
 	tmp_clus = di->currentcluster;
@@ -161,7 +158,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 		goto err_out;
 	}
 
-	while (!fat_get_next_long(fsi, di, &de, tmppath)) {
+	while (!fat_get_next_long(di, &de, tmppath)) {
 		if (!strncmp(tmppath, name, sizeof(tmppath))) {
 			found = 1;
 			break;
@@ -265,7 +262,6 @@ static size_t fat_write(struct file *desc, void *buf, size_t size) {
  * @return Error code
  */
 static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
-	struct fat_fs_info *fsi;
 	struct dirinfo *dirinfo;
 	struct fat_dirent de;
 	char path[PATH_MAX];
@@ -276,7 +272,6 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 
 	assert(parent->i_sb);
 
-	fsi = parent->i_sb->sb_data;
 	dirinfo = parent->i_data;
 	dirinfo->currententry = (uintptr_t) ctx->fs_ctx;
 
@@ -287,7 +282,7 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 
 	read_dir_buf(dirinfo);
 
-	while (((res = fat_get_next_long(fsi, dirinfo, &de, NULL)) ==  DFS_OK) || res == DFS_ALLOCNEW) {
+	while (((res = fat_get_next_long(dirinfo, &de, NULL)) ==  DFS_OK) || res == DFS_ALLOCNEW) {
 		if (!memcmp(de.name, MSDOS_DOT, strlen(MSDOS_DOT)) ||
 			!memcmp(de.name, MSDOS_DOTDOT, strlen(MSDOS_DOT))) {
 			continue;

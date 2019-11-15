@@ -286,21 +286,15 @@ extern char *path_canonical_to_dir(char *dest, char *src);
 extern char *path_dir_to_canonical(char *dest, char *src, char dir);
 extern int      fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
 extern int      fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector);
-extern uint32_t fat_get_next(struct fat_fs_info *fsi,
-                             struct dirinfo * dirinfo, struct fat_dirent * dirent);
-extern uint32_t fat_get_next_long(struct fat_fs_info *fsi,
-                             struct dirinfo *dir, struct fat_dirent *dirent,
+extern uint32_t fat_get_next(struct dirinfo * dirinfo, struct fat_dirent * dirent);
+extern uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent,
 			     char *name_buf);
 extern int      fat_create_partition(void *bdev, int fat_n);
 extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
                                   uint8_t *pptype, uint32_t *psize);
 extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);
-extern uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
-                             uint32_t cluster, uint32_t new_contents);
-extern uint32_t fat_get_free_fat_(struct fat_fs_info *fsi, uint8_t *p_scratch);
 extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
                              uint8_t *dirname, struct dirinfo *dirinfo);
-extern void     fat_set_direntry (uint32_t dir_cluster, uint32_t cluster);
 extern uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 		uint8_t *p_scratch, size_t *size);
 extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,

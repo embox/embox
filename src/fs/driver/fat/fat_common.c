@@ -69,6 +69,9 @@ static const char bootcode[130] =
 	  0x69, 0x6e, 0x20, 0x2e, 0x2e, 0x2e, 0x20, 0x0d, 0x0a, 0x00 };
 
 static uint32_t fat_dir_rewind(struct dirinfo *di, int n);
+static uint32_t fat_write_de(struct dirinfo *di, struct fat_dirent *de);
+static uint32_t fat_get_free_entries(struct dirinfo *dir, int n);
+static uint32_t fat_dir_extend(struct dirinfo *di);
 int fat_read_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) {
 	size_t ret;
 	int blk;
@@ -487,7 +490,6 @@ static uint32_t fat_is_end_of_chain(struct fat_fs_info *fsi, uint32_t clus) {
 		return clus >= 0xffffff7;
 	}
 
-	log_error("Wrong FAT version");
 	return 1;
 }
 
@@ -497,7 +499,7 @@ static uint32_t fat_is_end_of_chain(struct fat_fs_info *fsi, uint32_t clus) {
  * and a populated volinfo_t Returns DFS_ERRMISC for any error, otherwise
  * DFS_OK p_scratchcache should point to a UINT32.
  * */
-uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
+static uint32_t fat_set_fat(struct fat_fs_info *fsi, uint8_t *p_scratch,
 		uint32_t cluster, uint32_t new_contents) {
 	uint32_t offset, sector, result;
 	struct volinfo *volinfo = &fsi->vi;
@@ -676,7 +678,7 @@ static void fat_append_longname(char *name, struct fat_dirent *di) {
  * 	otherwise the contents of the desired FAT entry.
  * 	Returns FAT32 bad_sector (0x0ffffff7) if there is no free cluster available
  */
-uint32_t fat_get_free_fat(struct fat_fs_info *fsi, uint8_t *p_scratch) {
+static uint32_t fat_get_free_fat(struct fat_fs_info *fsi, uint8_t *p_scratch) {
 	uint32_t i;
 	/*
 	 * Search starts at cluster 2, which is the first usable cluster
@@ -769,7 +771,7 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 			de.name[0] = '\0';
 
 			do {
-				result = fat_get_next(fsi, dirinfo, &de);
+				result = fat_get_next(dirinfo, &de);
 			} while (!result && memcmp(de.name, tmpfn, MSDOS_NAME));
 
 			if (!memcmp(de.name, tmpfn, MSDOS_NAME) && (de.attr & ATTR_DIRECTORY)) {
@@ -895,9 +897,7 @@ static uint32_t fat_get_current(struct dirinfo *dir, struct fat_dirent *dirent) 
  * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
  * or DFS_ERRMISC for a media error
  */
-static uint32_t fat_dir_extend(struct dirinfo *di);
-uint32_t fat_get_next(struct fat_fs_info *fsi,
-		struct dirinfo *dir, struct fat_dirent *dirent) {
+uint32_t fat_get_next(struct dirinfo *dir, struct fat_dirent *dirent) {
 	struct fat_dirent *dirent_src;
 	uint32_t tmp;
 
@@ -940,27 +940,19 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 	return DFS_OK;
 }
 
-static inline int dirinfo_is_root(struct volinfo *vi, struct dirinfo *di) {
-	assert(vi);
-	assert(di);
-
-	if (vi->filesystem == FAT32) {
-		return di->currentsector == 0 && di->currentcluster == 2;
-	} else {
-		return di->currentsector == (vi->rootdir % vi->secperclus);
-	}
-}
 /* Same as fat_get_next(), but skip long-name entries with following 8.3-entries */
-uint32_t fat_get_next_long(struct fat_fs_info *fsi, struct dirinfo *dir,
-		struct fat_dirent *dirent, char *name_buf) {
+uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char *name_buf) {
 	uint32_t ret;
+	struct fat_fs_info *fsi;
 
-	assert(fsi);
 	assert(dir);
 	assert(dir->p_scratch);
 	assert(dirent);
 
-	ret = fat_get_next(fsi, dir, dirent);
+	fsi = dir->fi.fsi;
+	assert(fsi);
+
+	ret = fat_get_next(dir, dirent);
 
 	if (dirent->attr != ATTR_LONG_NAME) {
 		if (name_buf != NULL) {
@@ -985,7 +977,7 @@ uint32_t fat_get_next_long(struct fat_fs_info *fsi, struct dirinfo *dir,
 			if (name_buf != NULL) {
 				fat_append_longname(name_buf, dirent);
 			}
-			ret = fat_get_next(fsi, dir, dirent);
+			ret = fat_get_next(dir, dirent);
 		}
 		/* Now cur_di points to 8.3 entry which corresponds to current
 		 * file, so we need to get next entry for a next file */
@@ -1087,13 +1079,13 @@ static uint32_t fat_get_free_dir_ent(struct dirinfo *di, struct fat_dirent *de) 
 }
 
 static void fat_direntry_set_clus(struct fat_dirent *de, uint32_t clus) {
-	de->startclus_l_l = clus& 0xff;
+	de->startclus_l_l = clus & 0xff;
 	de->startclus_l_h = (clus & 0xff00) >> 8;
 	de->startclus_h_l = (clus & 0xff0000) >> 16;
 	de->startclus_h_h = (clus & 0xff000000) >> 24;
 }
 
-void fat_set_direntry (uint32_t dir_cluster, uint32_t cluster) {
+static void fat_set_direntry(uint32_t dir_cluster, uint32_t cluster) {
 	struct fat_dirent *de = (struct fat_dirent *) fat_sector_buff;
 
 	de[0] = (struct fat_dirent) {
@@ -1571,7 +1563,7 @@ uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 	/* Need to get directory data from drive */
 	fat_reset_dir(&di);
 
-	while (!fat_get_next_long(fsi, &di, &de, tmppath)) {
+	while (!fat_get_next_long(&di, &de, tmppath)) {
 		if (!strcmp(tmppath, filename)) {
 			if (de.attr & ATTR_DIRECTORY){
 				return DFS_WRONGRES;
@@ -1741,8 +1733,6 @@ int fat_reset_dir(struct dirinfo *di) {
  * Returns various DFS_* error states. If the result is DFS_OK, file
  * was created and can be used.
  */
-static uint32_t fat_write_de(struct dirinfo *di, struct fat_dirent *de);
-static uint32_t fat_get_free_entries(struct dirinfo *dir, int n);
 int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, int mode) {
 	uint8_t filename[12];
 	struct fat_dirent de;
@@ -1920,12 +1910,12 @@ int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name) {
 			break;
 		}
 
-		fat_get_next_long(fsi, dir, &de, name);
+		fat_get_next_long(dir, &de, name);
 	}
 
 	if (name[0] == '\0') {
 		/* Entry is the first in the directory */
-		fat_get_next_long(fsi, dir, &de, name);
+		fat_get_next_long(dir, &de, name);
 	}
 
 	/* In FAT names by default are padded with zeroes,
