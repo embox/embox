@@ -805,31 +805,14 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 	return DFS_OK;
 }
 
-/*
- * Get next entry in opened directory structure.
- * Copies fields into the dirent structure, updates dirinfo. Note that it is
- * the _caller's_ responsibility to	handle the '.' and '..' entries.
- * A deleted file will be returned as a NULL entry (first char of filename=0)
- * by this code. Filenames beginning with 0x05 will be translated to 0xE5
- * automatically. Long file name entries will be returned as NULL.
- * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
- * or DFS_ERRMISC for a media error
- */
-uint32_t fat_get_next(struct fat_fs_info *fsi,
-		struct dirinfo *dir, struct fat_dirent *dirent) {
-	struct volinfo *volinfo;
-	struct fat_dirent *dirent_src;
-	int next_ent;
-	int ent_per_sec;
+static uint32_t fat_fetch_dir(struct dirinfo *dir) {
+	struct fat_fs_info *fsi = dir->fi.fsi;
+	struct volinfo *volinfo = &fsi->vi;
+	int ent_per_sec = volinfo->bytepersec / sizeof(struct fat_dirent);
 	int read_sector;
 
-	volinfo = &fsi->vi;
-	ent_per_sec = volinfo->bytepersec / sizeof(struct fat_dirent);
-	dirent->name[0] = '\0';
-
-	log_debug("dir->currententry %d", dir->currententry);
-	/* Do we need to read the next sector of the directory? */
-	if (dir->currententry >= ent_per_sec - 1) {
+	if (dir->currententry >= ent_per_sec) {
+		int next_ent;
 		dir->currententry = 0;
 		dir->currentsector++;
 
@@ -883,6 +866,32 @@ uint32_t fat_get_next(struct fat_fs_info *fsi,
 			if (fat_read_sector(fsi, dir->p_scratch, read_sector))
 				return DFS_ERRMISC;
 		}
+	}
+
+	return DFS_OK;
+}
+
+/*
+ * Get next entry in opened directory structure.
+ * Copies fields into the dirent structure, updates dirinfo. Note that it is
+ * the _caller's_ responsibility to	handle the '.' and '..' entries.
+ * A deleted file will be returned as a NULL entry (first char of filename=0)
+ * by this code. Filenames beginning with 0x05 will be translated to 0xE5
+ * automatically. Long file name entries will be returned as NULL.
+ * returns DFS_EOF if there are no more entries, DFS_OK if this entry is valid,
+ * or DFS_ERRMISC for a media error
+ */
+uint32_t fat_get_next(struct fat_fs_info *fsi,
+		struct dirinfo *dir, struct fat_dirent *dirent) {
+	struct fat_dirent *dirent_src;
+	uint32_t tmp;
+
+	dirent->name[0] = '\0';
+
+	log_debug("dir->currententry %d", dir->currententry);
+	/* Do we need to read the next sector of the directory? */
+	if (DFS_OK != (tmp = fat_fetch_dir(dir))) {
+		return tmp;
 	}
 
 	dirent_src = &((struct fat_dirent *) dir->p_scratch)[dir->currententry];
@@ -983,6 +992,29 @@ static uint32_t fat_clear_clus(struct fat_fs_info *fsi,
 	return 0;
 }
 
+static uint32_t fat_dir_extend(struct dirinfo *di) {
+	struct fat_fs_info *fsi = di->fi.fsi;
+	uint32_t clus;
+	clus = fat_get_free_fat(fsi, di->p_scratch);
+	if (clus == DFS_BAD_CLUS) {
+		return DFS_ERRMISC;
+	}
+
+	if (0 != fat_clear_clus(fsi, clus, di->p_scratch)) {
+		return DFS_ERRMISC;
+	}
+
+	fat_set_fat(fsi, di->p_scratch, di->currentcluster, clus);
+
+	di->currentcluster = clus;
+	di->currentsector = 0;
+	di->currententry = 0; /* clus is not zero but contains fat entry,
+				 so next loop will call */
+	clus = fat_end_of_chain(fsi);
+
+	fat_set_fat(fsi, di->p_scratch, di->currentcluster, clus);
+	return DFS_OK;
+}
 /*
  * INTERNAL
  * Find a free directory entry in the directory specified by path
@@ -996,14 +1028,12 @@ static uint32_t fat_clear_clus(struct fat_fs_info *fsi,
  */
 uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi,
 		struct dirinfo *di, struct fat_dirent *de) {
-	uint32_t clus;
-
-	di->flags |= DFS_DI_BLANKENT;
+	uint32_t ret;
 
 	do {
-		clus = fat_get_next(fsi, di, de);
+		ret = fat_get_next(fsi, di, de);
 
-		if (clus == DFS_OK) {
+		if (ret == DFS_OK) {
 			if (!de->name[0]) {
 				return DFS_OK;
 			} else {
@@ -1011,29 +1041,15 @@ uint32_t fat_get_free_dir_ent(struct fat_fs_info *fsi,
 			}
 		}
 
-		if (clus == DFS_EOF) {
-			return DFS_ERRMISC;
+		if (ret == DFS_EOF) {
+			return DFS_EOF;
 		}
 
-		clus = fat_get_free_fat(fsi, di->p_scratch);
-		if (clus == DFS_BAD_CLUS) {
-			return DFS_ERRMISC;
+		/* Need to allocate new cluster */
+		if (DFS_OK != (ret = fat_dir_extend(di))) {
+			return ret;
 		}
-
-		if (0 != fat_clear_clus(fsi, clus, di->p_scratch)) {
-			return DFS_ERRMISC;
-		}
-
-		fat_set_fat(fsi, di->p_scratch, di->currentcluster, clus);
-
-		di->currentcluster = clus;
-		di->currentsector = 0;
-		di->currententry = 0; /* clus is not zero but contains fat entry,
-					 so next loop will call */
-		clus = fat_end_of_chain(fsi);
-
-		fat_set_fat(fsi, di->p_scratch, di->currentcluster, clus);
-	} while (!clus);
+	} while (1);
 
 	/* We shouldn't get here */
 	return DFS_ERRMISC;
@@ -1745,8 +1761,10 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 			}
 
 			fat_write_de(fsi, di, &de);
-
-			fat_get_next(fsi, di, &de);
+			di->currententry++;
+			if (DFS_EOF == fat_fetch_dir(di)) {
+				fat_dir_extend(di);
+			}
 		}
 	} else {
 		memcpy(filename, name, sizeof(filename));
@@ -1941,23 +1959,23 @@ uint32_t fat_get_free_entries(struct fat_fs_info *fsi,
 		struct dirinfo *dir, struct fat_dirent *dirent, int n) {
 	struct fat_dirent de;
 	uint32_t res;
+	uint32_t entry;
 	bool failed;
 
 	assert(fsi);
 	assert(dir);
 	assert(dirent);
 
-	dir->flags |= DFS_DI_BLANKENT;
-
 	while (true) {
 		failed = false;
 
 		/* Find some free entry */
 		res = fat_get_free_dir_ent(fsi, dir, &de);
+		entry = dir->currententry - 1;
 
-		if (res != DFS_EOF) {
-			break;
-		}
+//		if (res != DFS_EOF) {
+//			break;
+//		}
 
 		memcpy(dirent, &de, sizeof(de));
 
@@ -1976,6 +1994,8 @@ uint32_t fat_get_free_entries(struct fat_fs_info *fsi,
 
 		return DFS_OK;
 	}
+
+	dir->currententry = entry;
 
 	return res;
 }
