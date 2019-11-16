@@ -8,6 +8,7 @@
 
 #include <string.h>
 #include <sys/stat.h>
+#include <libgen.h>
 
 #include <drivers/device.h>
 #include <drivers/block_dev.h>
@@ -33,7 +34,7 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 	assert(path);
 	assert(driver);
 
-	if (NULL == (bdev = block_dev_create_common(dvfs_last_link(path), driver, privdata))) {
+	if (NULL == (bdev = block_dev_create_common((char *)basename((char *)path), driver, privdata))) {
 		return NULL;
 	}
 	devmod = dev_module_create(bdev->name, NULL, NULL, &idesc_bdev_ops, bdev);

@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <libgen.h>
 
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
@@ -79,7 +80,8 @@ struct block_dev *block_dev_create_common(const char *path, const struct block_d
 		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
-	strncpy (bdev->name, strrchr(path, '/') ? strrchr(path, '/') + 1 : path, NAME_MAX);
+	strncpy(bdev->name, basename((char *)path), sizeof(bdev->name) - 1);
+	bdev->name[sizeof(bdev->name) - 1]  = '\0';
 
 	return bdev;
 }

@@ -12,6 +12,7 @@
 #include <string.h>
 #include <limits.h>
 #include <assert.h>
+#include <libgen.h>
 
 #include <mem/phymem.h>
 
@@ -82,6 +83,13 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 	struct node_fi *node_fi;
 	char full_path[PATH_MAX];
 
+	bdev = block_dev_create_common((char *)basename((char *)path), driver, privdata);
+	if (NULL == bdev) {
+		return NULL;
+	}
+
+	vfs_get_root_path(&root);
+
 	/* XXX  Workaround for compatibility with DVFS.
 	 * Drivers which are used in both vfs and dvfs
 	 * currently use different namings:
@@ -95,13 +103,6 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 	} else {
 		strncpy(full_path, path, PATH_MAX);
 	}
-
-	bdev = block_dev_create_common(full_path, driver, privdata);
-	if (NULL == bdev) {
-		return NULL;
-	}
-
-	vfs_get_root_path(&root);
 
 	if (0 != vfs_create(&root, full_path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
 		block_dev_free(bdev);
