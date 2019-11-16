@@ -6,7 +6,6 @@
  * @author Andrey Gazukin
  */
 
-
 #ifndef BLOCK_DEV_H_
 #define BLOCK_DEV_H_
 
@@ -23,13 +22,12 @@
 #define DEV_TYPE_BLOCK          2
 #define DEV_TYPE_PACKET         3
 
-struct file_operations;
-typedef struct block_dev {
+struct block_dev {
 	dev_t id;
 	char name[NAME_MAX + 1];
 	void *dev_vfs_info;
 
-	struct block_dev_driver *driver;
+	const struct block_dev_driver *driver;
 	void *privdata;
 
 	uint64_t size;
@@ -41,9 +39,9 @@ typedef struct block_dev {
 	/* partitions */
 	size_t start_offset;
 	struct block_dev *parrent_bdev;
-} block_dev_t;
+};
 
-typedef struct block_dev_driver {
+struct block_dev_driver {
 	char *name;
 
 	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
@@ -51,14 +49,14 @@ typedef struct block_dev_driver {
 	int (*write)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 
 	int (*probe)(void *args);
-} block_dev_driver_t;
+};
 
-typedef struct block_dev_module {
+struct block_dev_module {
 	const char * name;
-	block_dev_driver_t *dev_drv;
-} block_dev_module_t;
+	const struct block_dev_driver *dev_drv;
+};
 
-typedef struct block_dev_cache {
+struct block_dev_cache {
 	blkno_t blkno;
 	blkno_t lastblkno;
 	char *data;
@@ -67,20 +65,17 @@ typedef struct block_dev_cache {
 	int depth;
 	char *pool;
 	int buff_cntr;
-} block_dev_cache_t;
-
+};
 
 struct indexator;
-struct block_dev;
-struct dev_module;
 
 extern struct block_dev **get_bdev_tab(void);
 
-extern struct block_dev *block_dev_create(const char *name, void *driver, void *privdata);
+extern struct block_dev *block_dev_create(const char *name, const struct block_dev_driver *driver, void *privdata);
 extern struct block_dev *block_dev(void *bdev);
 
-extern block_dev_cache_t *block_dev_cache_init(void *bdev, int blocks);
-extern block_dev_cache_t *block_dev_cached_read(void *bdev, blkno_t blkno);
+extern struct block_dev_cache *block_dev_cache_init(void *bdev, int blocks);
+extern struct block_dev_cache *block_dev_cached_read(void *bdev, blkno_t blkno);
 extern int block_dev_read(void *bdev, char *buffer, size_t count, blkno_t blkno);
 extern int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, size_t offset);
 extern int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t count, size_t offset);
@@ -91,7 +86,7 @@ extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(const char *name, struct indexator *indexator);
 extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
-extern struct block_dev *block_dev_create_common(const char *path, void *driver, void *privdata);
+extern struct block_dev *block_dev_create_common(const char *path, const struct block_dev_driver *driver, void *privdata);
 extern struct block_dev *block_dev_find(const char *bd_name);
 
 extern uint64_t block_dev_size(struct block_dev *dev);

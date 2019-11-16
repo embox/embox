@@ -49,7 +49,7 @@ static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
-block_dev_driver_t stm32f7_sd_driver = {
+static const struct block_dev_driver stm32f7_sd_driver = {
 	.name  = STM32F7_SD_DEVNAME,
 	.ioctl = stm32f7_sd_ioctl,
 	.read  = stm32f7_sd_read,

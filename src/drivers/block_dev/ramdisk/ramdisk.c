@@ -36,7 +36,7 @@ static int read_sectors(struct block_dev *bdev, char *buffer, size_t count, blkn
 static int write_sectors(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 
-block_dev_driver_t ramdisk_pio_driver = {
+static const struct block_dev_driver ramdisk_pio_driver = {
 	"ramdisk_drv",
 	ram_ioctl,
 	read_sectors,

@@ -36,7 +36,7 @@ struct block_dev **get_bdev_tab(void) {
 
 static int block_dev_cache_free(void *dev) {
 	struct block_dev *bdev;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 
 	if (NULL == dev) {
 		return -1;
@@ -54,7 +54,7 @@ static int block_dev_cache_free(void *dev) {
 	return  0;
 }
 
-struct block_dev *block_dev_create_common(const char *path, void *driver, void *privdata) {
+struct block_dev *block_dev_create_common(const char *path, const struct block_dev_driver *driver, void *privdata) {
 	struct block_dev *bdev;
 	size_t bdev_id;
 
@@ -290,9 +290,9 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 	}
 }
 
-block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
+struct block_dev_cache *block_dev_cache_init(void *dev, int blocks) {
 	int pagecnt;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	struct block_dev *bdev;
 
 	if (NULL == dev) {
@@ -331,8 +331,8 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	return  cache;
 }
 
-block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
-	block_dev_cache_t *cache;
+struct block_dev_cache *block_dev_cached_read(void *dev, blkno_t blkno) {
+	struct block_dev_cache *cache;
 	struct block_dev *bdev;
 
 	if (NULL == dev) {

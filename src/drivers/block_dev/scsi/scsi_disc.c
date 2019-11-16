@@ -165,7 +165,7 @@ static int scsi_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) 
 	return ret;
 }
 
-const block_dev_driver_t bdev_driver_scsi = {
+const struct block_dev_driver bdev_driver_scsi = {
 	"scsi disk",
 	scsi_ioctl,
 	scsi_read,

@@ -24,7 +24,7 @@ extern struct idesc_ops idesc_bdev_ops;
  *
  * @return Pointer to created device or NULL if failed
  */
-struct block_dev *block_dev_create(const char *path, void *driver, void *privdata) {
+struct block_dev *block_dev_create(const char *path, const struct block_dev_driver *driver, void *privdata) {
 	struct block_dev *bdev;
 	char full_path[DVFS_MAX_PATH_LEN];
 	struct lookup lu;
