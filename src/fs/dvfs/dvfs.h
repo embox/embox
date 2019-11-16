@@ -225,10 +225,6 @@ extern int dentry_full_path(struct dentry *dentry, char *buf);
 extern int dentry_ref_inc(struct dentry *dentry);
 extern int dentry_ref_dec(struct dentry *dentry);
 
-/* String handling */
-extern const char *dvfs_last_link(const char *path);
-extern void dvfs_traling_slash_trim(char *str);
-
 extern int dvfs_bdev_read(
 		struct file *bdev_file,
 		char *buff,
