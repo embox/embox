@@ -111,11 +111,4 @@ static inline struct block_dev *dev_module_to_bdev(struct dev_module *devmod) {
 	return (struct block_dev *) devmod->dev_priv;
 }
 
-/* This part is actually just for dvfs */
-struct dev_module;
-extern int bdev_read_block(struct dev_module *devmod, void *buf, int blk);
-extern int bdev_write_block(struct dev_module *devmod, void *buf, int blk);
-extern int bdev_read_blocks(struct dev_module *devmod, void *buf, int blk, int count);
-extern int bdev_write_blocks(struct dev_module *devmod, void *buf, int blk, int count);
-
 #endif /* BLOCK_DEV_H_ */
