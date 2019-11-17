@@ -6,7 +6,7 @@ module block_common {
 
 	option number dev_quantity = 8
 	option number default_block_size = 512
-	source "block_dev_common.c"
+	source "block_dev.c"
 	source "block_dev_namer.c"
 
 	depends embox.mem.phymem
@@ -22,7 +22,6 @@ abstract module block_api {
 
 /* Deprecated version */
 module block_oldfs extends block_api {
-	source "block_dev_oldfs.c"
 	source "block_dev_idesc_oldfs.c"
 
 	depends block_common
@@ -37,7 +36,6 @@ module block_oldfs extends block_api {
 
 /* New version */
 module block_dvfs extends block_api {
-	source "block_dev_dvfs.c"
 	source "block_dev_idesc_dvfs.c"
 
 	depends block_common

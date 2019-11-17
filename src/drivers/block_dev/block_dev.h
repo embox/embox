@@ -86,7 +86,6 @@ extern int block_dev_destroy(void *bdev);
 extern int block_dev_named(const char *name, struct indexator *indexator);
 extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
-extern struct block_dev *block_dev_create_common(const char *path, const struct block_dev_driver *driver, void *privdata);
 extern struct block_dev *block_dev_find(const char *bd_name);
 
 extern uint64_t block_dev_size(struct block_dev *dev);
