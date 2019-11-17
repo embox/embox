@@ -26,58 +26,11 @@
 #include <fs/fs_driver.h>
 #include <drivers/block_dev.h>
 
-EMBOX_UNIT_INIT(blockdev_init);
-
-static struct idesc *bdev_open(struct node *node, struct file_desc *file_desc, int flags) {
-	return &file_desc->idesc;
-}
-
-static int bdev_close(struct file_desc *desc) {
-	return 0;
-}
-
-static size_t bdev_read(struct file_desc *desc, void *buf, size_t size) {
-	int n_read = block_dev_read_buffered((struct block_dev *) desc->node->nas->fi->privdata,
-			buf, size, desc->cursor);
-	if (n_read > 0) {
-		desc->cursor += n_read;
-	}
-	return n_read;
-}
-
-static size_t bdev_write(struct file_desc *desc, void *buf, size_t size) {
-	int n_write = block_dev_write_buffered((struct block_dev *) desc->node->nas->fi->privdata,
-			buf, size, desc->cursor);
-	if (n_write > 0) {
-		desc->cursor += n_write;
-	}
-
-	return n_write;
-}
-
-static const struct file_operations blockdev_fop = {
-	.open = bdev_open,
-	.close = bdev_close,
-	.read = bdev_read,
-	.write = bdev_write,
-};
-
-static struct filesystem *blockdev_fs;
-
-static const struct fs_driver blockdev_fs_drv = {
-	.file_op = &blockdev_fop
-};
-
-static int blockdev_init(void) {
-	blockdev_fs = filesystem_create("empty");
-	blockdev_fs->file_op = &blockdev_fop;
-	blockdev_fs->drv = (struct fs_driver *)&blockdev_fs_drv;
-
-	return 0;
-}
+extern struct idesc_ops idesc_bdev_ops;
 
 struct block_dev *block_dev_create(const char *path, const struct block_dev_driver *driver, void *privdata) {
 	struct block_dev *bdev;
+	struct dev_module *devmod;
 	struct path node, root;
 	struct nas *nas;
 	struct node_fi *node_fi;
@@ -87,6 +40,9 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 	if (NULL == bdev) {
 		return NULL;
 	}
+
+	devmod = dev_module_create(bdev->name, NULL, NULL, &idesc_bdev_ops, bdev);
+	bdev->dev_module = devmod;
 
 	vfs_get_root_path(&root);
 
@@ -110,12 +66,12 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 	}
 
 	bdev->dev_vfs_info = node.node;
+
 	nas = node.node->nas;
-	nas->fs = blockdev_fs;
 	node_fi = nas->fi;
 	node_fi->privdata = bdev;
-	node_fi->ni.size = 0;/*TODO*/
-	node_fi->ni.mtime = 0;/*TODO*/
+	//node_fi->ni.size = 0;/*TODO*/
+	//node_fi->ni.mtime = 0;/*TODO*/
 
 	return bdev;
 }
@@ -129,4 +85,3 @@ int block_dev_destroy(void *dev) {
 
 	return 0;
 }
-

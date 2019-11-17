@@ -23,6 +23,7 @@ abstract module block_api {
 /* Deprecated version */
 module block_oldfs extends block_api {
 	source "block_dev_oldfs.c"
+	source "block_dev_idesc_oldfs.c"
 
 	depends block_common
 	depends embox.fs.buffer_cache
