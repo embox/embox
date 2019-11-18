@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
 
 #include <fs/dvfs.h>
 
@@ -38,30 +39,33 @@ int rename(const char *src_name, const char *dst_name) {
 	/* TODO check if local name is not dot or double dot => EINVAL;
 	 * 	check if dst is subdir of src => EINVAL */
 
-	if ((err = dvfs_lookup(src_name, &lu)))
+	if ((err = dvfs_lookup(src_name, &lu))) {
 		return SET_ERRNO(err);
+	}
 	from = lu.item;
 
 	err = dvfs_lookup(dst_name, &lu);
-	if (err != 0 && err != -ENOENT)
+	if (err != 0 && err != -ENOENT) {
 		return SET_ERRNO(err);
+	}
 	to = lu.item;
 
 	if (err == 0) {
-		if (dvfs_remove(dst_name))
+		if (dvfs_remove(dst_name)) {
 			return SET_ERRNO(EIO);
+		}
 	}
 
-	if (!FILE_TYPE(from->flags, S_IFDIR) && (to && FILE_TYPE(to->flags, S_IFDIR)))
+	if (!FILE_TYPE(from->flags, S_IFDIR) && (to && FILE_TYPE(to->flags, S_IFDIR))) {
 		return SET_ERRNO(EISDIR);
+	}
 
-	/* Some ugly string handling, it's better to rewrite it somehow */
 	strncpy(dst_parent_path, dst_name, sizeof(dst_parent_path) - 1);
 	dst_parent_path[sizeof(dst_parent_path) - 1] = '\0';
-	*((char*) dvfs_last_link(dst_parent_path)) = '\0';
 
-	if ((err = dvfs_lookup(dst_parent_path, &lu)))
+	if ((err = dvfs_lookup(dirname(dst_parent_path), &lu))) {
 		return SET_ERRNO(err);
+	}
 
 	dst_parent = lu.item;
 
@@ -71,31 +75,35 @@ int rename(const char *src_name, const char *dst_name) {
 
 	if (dst_parent->d_sb == from->d_sb && dst_parent->d_sb->sb_iops->rename) {
 		/* Same FS with rename support*/
-		return dst_parent->d_sb->sb_iops->rename(from->d_inode, dst_parent->d_inode, dvfs_last_link(dst_name));
+		return dst_parent->d_sb->sb_iops->rename(from->d_inode, dst_parent->d_inode, basename((char *)dst_name));
 	} else {
 		/* Different FS or same FS without rename support */
 		assert(from);
 		assert(from->d_sb);
 		assert(from->d_sb->sb_iops);
 
-		if (!from->d_sb->sb_iops->remove || !dst_parent->d_sb->sb_iops->create)
+		if (!from->d_sb->sb_iops->remove || !dst_parent->d_sb->sb_iops->create) {
 			return SET_ERRNO(EROFS);
+		}
 
 		in  = fopen(src_name, "r");
 		out = fopen(dst_name, "w");
 		pos = 0;
 
-		if (!in || !out)
+		if (!in || !out) {
 			goto err_out;
+		}
 
 		while (pos < from->d_inode->length) {
 			err = fread(buf, sizeof(buf[0]), FS_BUFFER_SZ, in);
-			if (err < 0)
+			if (err < 0) {
 				goto err_out;
+			}
 
 			err = fwrite(buf, sizeof(buf[0]), err, out);
-			if (err < 0)
+			if (err < 0) {
 				goto err_out;
+			}
 
 			pos += FS_BUFFER_SZ;
 		}
@@ -108,10 +116,12 @@ int rename(const char *src_name, const char *dst_name) {
 
 	return 0;
 err_out:
-	if (in)
+	if (in) {
 		fclose(in);
-	if (out)
+	}
+	if (out) {
 		fclose(out);
+	}
 
 	return -1;
 }
