@@ -61,7 +61,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 	tmp_cluster = di->currentcluster;
 
 	while (de->attr == ATTR_LONG_NAME) {
-		res = fat_get_next(fsi, di, de);
+		res = fat_get_next(di, de);
 
 		if (res != DFS_OK && res != DFS_ALLOCNEW) {
 			return -EINVAL;
@@ -106,6 +106,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 			      ((uint32_t) de->filesize_1) << 8 |
 			      ((uint32_t) de->filesize_2) << 16 |
 			      ((uint32_t) de->filesize_3) << 24;
+	fi->fdi = di;
 
 	inode->length    = fi->filelen;
 	inode->start_pos = fi->firstcluster * fi->volinfo->secperclus * fi->volinfo->bytepersec;
@@ -138,7 +139,6 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	struct inode *node;
 	char tmppath[PATH_MAX];
 	int found = 0;
-	struct fat_fs_info *fsi;
 
 	assert(name);
 	assert(dir->d_inode);
@@ -149,18 +149,16 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	assert(di);
 
-	fsi = sb->sb_data;
-
 	tmp_ent = di->currententry;
 	tmp_sec = di->currentsector;
 	tmp_clus = di->currentcluster;
 	fat_reset_dir(di);
 
-	if (read_dir_buf(fsi, di)) {
+	if (read_dir_buf(di)) {
 		goto err_out;
 	}
 
-	while (!fat_get_next_long(fsi, di, &de, tmppath)) {
+	while (!fat_get_next_long(di, &de, tmppath)) {
 		if (!strncmp(tmppath, name, sizeof(tmppath))) {
 			found = 1;
 			break;
@@ -208,7 +206,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	di = i_dir->i_data;
 
 	fat_reset_dir(di);
-	read_dir_buf(fsi, di);
+	read_dir_buf(di);
 
 	assert(i_new->i_dentry);
 	name = i_new->i_dentry->name;
@@ -218,15 +216,16 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 		if (!(new_di = fat_dirinfo_alloc())) {
 			return -ENOMEM;
 		}
-		di->p_scratch = fat_sector_buff;
+		new_di->p_scratch = fat_sector_buff;
 		fi = &new_di->fi;
 	} else {
 		if (!(fi = fat_file_alloc())) {
 			return -ENOMEM;
 		}
 	}
-	fi->fsi          = fsi;
-	fi->volinfo      = &fsi->vi;
+	fi->fsi     = fsi;
+	fi->volinfo = &fsi->vi;
+	fi->fdi     = di;
 
 	i_new->i_data = fi;
 
@@ -263,7 +262,6 @@ static size_t fat_write(struct file *desc, void *buf, size_t size) {
  * @return Error code
  */
 static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
-	struct fat_fs_info *fsi;
 	struct dirinfo *dirinfo;
 	struct fat_dirent de;
 	char path[PATH_MAX];
@@ -274,7 +272,6 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 
 	assert(parent->i_sb);
 
-	fsi = parent->i_sb->sb_data;
 	dirinfo = parent->i_data;
 	dirinfo->currententry = (uintptr_t) ctx->fs_ctx;
 
@@ -283,9 +280,9 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 		fat_reset_dir(dirinfo);
 	}
 
-	read_dir_buf(fsi, dirinfo);
+	read_dir_buf(dirinfo);
 
-	while (((res = fat_get_next_long(fsi, dirinfo, &de, NULL)) ==  DFS_OK) || res == DFS_ALLOCNEW) {
+	while (((res = fat_get_next_long(dirinfo, &de, NULL)) ==  DFS_OK) || res == DFS_ALLOCNEW) {
 		if (!memcmp(de.name, MSDOS_DOT, strlen(MSDOS_DOT)) ||
 			!memcmp(de.name, MSDOS_DOTDOT, strlen(MSDOS_DOT))) {
 			continue;

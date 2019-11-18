@@ -59,7 +59,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 		return -ENODEV;
 	}
 
-	while (DFS_EOF != fat_get_next(parent_nas->fs->fsi, &di, &de)) {
+	while (DFS_EOF != fat_get_next(&di, &de)) {
 		if (de.name[0] == 0)
 			continue;
 
@@ -132,7 +132,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 		fat_reset_dir(&di);
 	}
 
-	while (DFS_OK == (cluster = fat_get_next_long(fsi, &di, &de, (char *) name)) || cluster == DFS_ALLOCNEW) {
+	while (DFS_OK == (cluster = fat_get_next_long(&di, &de, (char *) name)) || cluster == DFS_ALLOCNEW) {
 		mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
 
 		if (NULL == (fi = fat_file_alloc())) {
