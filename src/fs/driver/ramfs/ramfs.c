@@ -61,7 +61,7 @@ static int ramfs_init(void * par) {
 	struct path dir_node;
 	struct node *dev_node;
 	int res;
-	ramdisk_t *ramdisk;
+	struct ramdisk *ramdisk;
 
 	if (!par) {
 		return 0;
