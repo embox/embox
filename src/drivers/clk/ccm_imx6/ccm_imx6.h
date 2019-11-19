@@ -11,4 +11,6 @@
 extern int clk_enable(char *clk_name);
 extern int clk_disable(char *clk_name);
 
+extern void ccm_analog_usb_init(int port);
+
 #endif /* SRC_DRIVERS_CLK_CCM_IMX6_CCM_IMX6_H_ */

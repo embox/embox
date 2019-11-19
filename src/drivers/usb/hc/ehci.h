@@ -224,10 +224,12 @@ struct ehci_hcd {
 };
 
 static inline struct usb_hcd *ehci_to_hcd(struct ehci_hcd *ehci) {
+	assert(ehci);
 	return ehci->usb_hcd;
 }
 
 static inline struct ehci_hcd *hcd_to_ehci(struct usb_hcd *hcd) {
+	assert(hcd);
 	return (struct ehci_hcd *) hcd->hci_specific;
 }
 
@@ -250,5 +252,9 @@ extern void ehci_qtd_free(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd);
 extern struct ehci_qh *ehci_qh_alloc(struct ehci_hcd *ehci);
 extern void ehci_qh_free(struct ehci_hcd *ehci, struct ehci_qh *qh);
 extern void scan_async (struct ehci_hcd *ehci);
+
+/* Helper functions to print registers for HCD */
+extern void ehci_caps_dump(struct ehci_hcd *ehci);
+extern void ehci_regs_dump(struct ehci_hcd *ehci);
 
 #endif /* SRC_DRIVERS_USB_HC_EHCI_H_ */
