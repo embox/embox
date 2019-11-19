@@ -551,6 +551,12 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			point += sizeof(vf);
 			predesc = (readdir_desc_t *) point;
 
+			if (predesc->file_attr.type == 1) {
+				predesc->file_attr.mode |= S_IFREG;
+			} else {
+				predesc->file_attr.mode |= S_IFDIR;
+			}
+
 			if(0 == path_is_dotname(predesc->file_name.name.data,
 									predesc->file_name.name.len)) {
 				if (NULL == (node = nfs_create_file(parent_nas, predesc))) {
