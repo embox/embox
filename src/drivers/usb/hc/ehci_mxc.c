@@ -14,7 +14,6 @@
 #include <embox/unit.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 #include <util/log.h>
 
 #include "ehci.h"
@@ -61,24 +60,18 @@ static inline void imx_usb_phy_enable(int port) {
 	int tmp;
 
 	REG32_STORE(USBPHY_CTRL_SET(port), USBPHY_CTRL_SFTRST);
-	printk("trace %s:%d\n", __func__, __LINE__);
 	tmp = 0xffff;
 	while(tmp--);
-	printk("trace %s:%d\n", __func__, __LINE__);
 
 	REG32_STORE(USBPHY_CTRL_CLR(port),
 			USBPHY_CTRL_SFTRST | USBPHY_CTRL_CLKGATE);
 
-	printk("trace %s:%d\n", __func__, __LINE__);
 	REG32_STORE(USBPHY_PWD(port), 0);
 
-	printk("trace %s:%d\n", __func__, __LINE__);
 	/* enable FS/LS device */
 
 	REG32_STORE(USBPHY_CTRL_SET(port),
 			USBPHY_CTRL_ENUTMILEVEL2 | USBPHY_CTRL_ENUTMILEVEL3);
-
-	printk("trace %s:%d\n", __func__, __LINE__);
 }
 
 static inline void imx_usb_powerup(int port) {
