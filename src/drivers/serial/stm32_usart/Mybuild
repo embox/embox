@@ -53,6 +53,24 @@ module stm_usart_f7 extends embox.driver.diag.diag_api {
 	depends third_party.bsp.st_bsp_api
 }
 
+@BuildDepends(third_party.bsp.stml4cube.core)
+module stm_usart_l4 extends embox.driver.diag.diag_api {
+	option number baud_rate
+	option number usartx=1
+
+	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
+	source "stm32_usart_conf_l4.h"
+
+	source "hal_msp_l4.c"
+	source "stm_usart_cube_diag.c"
+
+	depends embox.driver.char_dev
+	depends embox.driver.serial.core
+	depends embox.driver.serial.diag
+
+	depends third_party.bsp.stml4cube.core
+}
+
 @BuildDepends(embox.driver.diag.diag_api)
 module stm_ttyS0 {
 	option number baud_rate
