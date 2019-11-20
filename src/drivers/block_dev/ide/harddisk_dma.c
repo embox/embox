@@ -20,7 +20,7 @@
 
 
 extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
-static block_dev_driver_t idedisk_udma_driver;
+static const struct block_dev_driver idedisk_udma_driver;
 
 static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
 	int i;
@@ -265,7 +265,7 @@ static int idedisk_udma_init (void *args) {
 	return 0;
 }
 
-static block_dev_driver_t idedisk_udma_driver = {
+static const struct block_dev_driver idedisk_udma_driver = {
 	"idedisk_udma_drv",
 	hd_ioctl,
 	hd_read_udma,

@@ -1,21 +1,9 @@
 package embox.driver.block_dev
 
-@DefaultImpl(scsi_disk_old)
-abstract module scsi_disk {
-}
-module scsi_disk_old extends scsi_disk {
+module scsi_disk {
 	option number log_level=1
 
 	source "scsi_disc.c"
-	source "scsi_disc_create.c"
-
-	depends embox.driver.block.partition
-}
-
-module scsi_disk_dvfs extends scsi_disk {
-	option number log_level=1
-
-	source "scsi_disc_dvfs.c"
 	source "scsi_disc_create.c"
 
 	depends embox.driver.block.partition

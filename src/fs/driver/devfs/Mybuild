@@ -5,7 +5,7 @@ abstract module devfs {
 }
 
 module devfs_old extends devfs {
-	source "devfs.c"
+	source "devfs_oldfs.c"
 
 	depends embox.fs.core
 	depends embox.fs.driver.PseudoFs

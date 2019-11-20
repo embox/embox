@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <libgen.h>
 
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
@@ -19,6 +20,10 @@
 #include <util/array.h>
 #include <util/indexator.h>
 #include <util/math.h>
+
+extern struct idesc_ops idesc_bdev_ops;
+extern int devfs_add_block(struct block_dev *dev);
+extern int devfs_del_block(struct block_dev *dev);
 
 #define DEFAULT_BDEV_BLOCK_SIZE OPTION_GET(NUMBER, default_block_size)
 #define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
@@ -36,7 +41,7 @@ struct block_dev **get_bdev_tab(void) {
 
 static int block_dev_cache_free(void *dev) {
 	struct block_dev *bdev;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 
 	if (NULL == dev) {
 		return -1;
@@ -52,36 +57,6 @@ static int block_dev_cache_free(void *dev) {
 	pool_free(&cache_pool, cache);
 
 	return  0;
-}
-
-struct block_dev *block_dev_create_common(const char *path, void *driver, void *privdata) {
-	struct block_dev *bdev;
-	size_t bdev_id;
-
-	bdev = (struct block_dev *) pool_alloc(&blockdev_pool);
-	if (NULL == bdev) {
-		return NULL;
-	}
-
-	memset(bdev, 0, sizeof(struct block_dev));
-
-	bdev_id = index_alloc(&block_dev_idx, INDEX_MIN);
-	if (bdev_id == INDEX_NONE) {
-		block_dev_free(bdev);
-		return NULL;
-	}
-	devtab[bdev_id] = bdev;
-
-	*bdev = (struct block_dev) {
-		.id = (dev_t)bdev_id,
-		.driver = driver,
-		.privdata = privdata,
-		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
-	};
-
-	strncpy (bdev->name, strrchr(path, '/') ? strrchr(path, '/') + 1 : path, NAME_MAX);
-
-	return bdev;
 }
 
 void block_dev_free(struct block_dev *dev) {
@@ -103,7 +78,6 @@ int block_devs_init(void) {
 				return ret;
 			}
 		}
-
 	}
 
 	return 0;
@@ -290,9 +264,9 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 	}
 }
 
-block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
+struct block_dev_cache *block_dev_cache_init(void *dev, int blocks) {
 	int pagecnt;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	struct block_dev *bdev;
 
 	if (NULL == dev) {
@@ -331,8 +305,8 @@ block_dev_cache_t *block_dev_cache_init(void *dev, int blocks) {
 	return  cache;
 }
 
-block_dev_cache_t *block_dev_cached_read(void *dev, blkno_t blkno) {
-	block_dev_cache_t *cache;
+struct block_dev_cache *block_dev_cached_read(void *dev, blkno_t blkno) {
+	struct block_dev_cache *cache;
 	struct block_dev *bdev;
 
 	if (NULL == dev) {
@@ -369,4 +343,51 @@ size_t block_dev_block_size(struct block_dev *dev) {
 	assert(dev);
 
 	return dev->block_size;
+}
+
+struct block_dev *block_dev_create(const char *path, const struct block_dev_driver *driver, void *privdata) {
+	struct block_dev *bdev;
+	struct dev_module *devmod;
+	size_t bdev_id;
+
+	bdev = (struct block_dev *) pool_alloc(&blockdev_pool);
+	if (NULL == bdev) {
+		return NULL;
+	}
+
+	memset(bdev, 0, sizeof(struct block_dev));
+
+	bdev_id = index_alloc(&block_dev_idx, INDEX_MIN);
+	if (bdev_id == INDEX_NONE) {
+		block_dev_free(bdev);
+		return NULL;
+	}
+	devtab[bdev_id] = bdev;
+
+	*bdev = (struct block_dev) {
+		.id = (dev_t)bdev_id,
+		.driver = driver,
+		.privdata = privdata,
+		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
+	};
+
+	strncpy(bdev->name, basename((char *)path), sizeof(bdev->name) - 1);
+	bdev->name[sizeof(bdev->name) - 1]  = '\0';
+
+	devmod = dev_module_create(bdev->name, NULL, NULL, &idesc_bdev_ops, bdev);
+	bdev->dev_module = devmod;
+
+	devfs_add_block(bdev);
+
+	return bdev;
+}
+
+int block_dev_destroy(void *dev) {
+	struct dev_module *devmod = dev;
+
+	devfs_del_block(devmod->dev_priv);
+
+	block_dev_free(devmod->dev_priv);
+
+	return dev_module_destroy(dev);
 }

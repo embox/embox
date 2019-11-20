@@ -137,7 +137,7 @@ static int cdfs_fnmatch(cdfs_t *cdfs, char *fn1, int len1, char *fn2, int len2) 
 }
 
 static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	unsigned char *pt;
 	int ptblk;
 	int ptlen;
@@ -280,8 +280,8 @@ static int cdfs_find_dir(cdfs_t *cdfs, char *name, int len) {
 	return -ENOENT;
 }
 
-static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, block_dev_cache_t **dirbuf, iso_directory_record_t **dirrec) {
-	block_dev_cache_t *cache;
+static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, struct block_dev_cache **dirbuf, iso_directory_record_t **dirrec) {
+	struct block_dev_cache *cache;
 	char *p;
 	iso_directory_record_t *rec;
 	int blk;
@@ -345,7 +345,7 @@ static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, block_de
 }
 
 static int cdfs_find_file(cdfs_t *cdfs, char *name, int len,
-				block_dev_cache_t **cache, iso_directory_record_t **rec) {
+				struct block_dev_cache **cache, iso_directory_record_t **rec) {
 	int dir;
 	int split;
 	int n;
@@ -406,7 +406,7 @@ int cdfs_mount(struct nas *root_nas)
 	cdfs_t *cdfs;
 	int rc;
 	int blk;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	iso_volume_descriptor_t *vd;
 	int type;
 	unsigned char *esc;
@@ -529,7 +529,7 @@ int cdfs_umount(struct cdfs_fs_info *fsi) {
 static int cdfs_open(struct nas *nas, char *name) {
 	cdfs_t *cdfs;
 	iso_directory_record_t *rec;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	time_t date;
 	int size;
 	int extent;
@@ -587,7 +587,7 @@ static int cdfs_read(struct nas *nas, void *data, size_t size, off64_t pos) {
 	int iblock;
 	int start;
 	int blk;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	struct cdfs_file_info *fi;
 	struct cdfs_fs_info *fsi;
 	cdfs_t *cdfs;
@@ -647,7 +647,7 @@ static int cdfs_opendir(struct nas *nas, char *name) {
 	cdfs_t *cdfs;
 	iso_directory_record_t *rec;
 	cdfs_file_t *cdfile;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	time_t date;
 	int size;
 	int extent;
@@ -692,7 +692,7 @@ static int cdfs_readdir(struct nas *nas, direntry_t *dirp, int count) {
 	cdfs_file_t *cdfile;
 	cdfs_t *cdfs;
 	iso_directory_record_t *rec;
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	int namelen;
 	int reclen;
 	int blkleft;
@@ -997,7 +997,7 @@ static struct node *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct node *roo
 }
 
 static int cdfs_create_file_node(node_t *dir_node, cdfs_t *cdfs, int dir) {
-	block_dev_cache_t *cache;
+	struct block_dev_cache *cache;
 	char *p;
 	iso_directory_record_t *rec;
 	int blk;

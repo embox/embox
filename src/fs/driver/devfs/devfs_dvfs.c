@@ -21,10 +21,11 @@
 #include <util/err.h>
 
 #include <drivers/char_dev.h>
+#include <drivers/block_dev.h>
 #include <drivers/device.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
-#include <kernel/printk.h>
+
 #include <util/array.h>
 
 #include <module/embox/driver/block_common.h>
@@ -287,3 +288,11 @@ static struct auto_mount devfs_auto_mount = {
 
 ARRAY_SPREAD_DECLARE(const struct auto_mount *const, auto_mount_tab);
 ARRAY_SPREAD_ADD(auto_mount_tab, &devfs_auto_mount);
+
+int devfs_add_block(struct block_dev *bdev) {
+	return 0;
+}
+
+int devfs_del_block(struct block_dev *bdev) {
+	return 0;
+}

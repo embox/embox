@@ -14,7 +14,8 @@
 
 #include <drivers/block_dev.h>
 #include <drivers/device.h>
-#include <fs/dvfs.h>
+#include <fs/file_desc.h>
+#include <fs/node.h>
 
 static void bdev_idesc_close(struct idesc *desc) {
 }
@@ -22,7 +23,7 @@ static void bdev_idesc_close(struct idesc *desc) {
 static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	void *buf;
 	size_t nbyte;
-	struct file *file;
+	struct file_desc *file;
 	struct block_dev *bdev;
 	struct dev_module *devmod;
 	size_t blk_no;
@@ -33,16 +34,16 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	assert(cnt == 1);
 	nbyte = iov->iov_len;
 
-	file = (struct file *) desc;
+	file = (struct file_desc *) desc;
 
-	devmod = file->f_inode->i_data;
+	devmod = file->node->nas->fi->privdata;
 	bdev = devmod->dev_priv;
 	if (!bdev->parrent_bdev) {
 		/* It's not a partition */
-		blk_no = file->pos / bdev->block_size;
+		blk_no = file->cursor / bdev->block_size;
 	} else {
 		/* It's a partition */
-		blk_no = bdev->start_offset + (file->pos / bdev->block_size);
+		blk_no = bdev->start_offset + (file->cursor / bdev->block_size);
 		bdev = bdev->parrent_bdev;
 	}
 
@@ -53,12 +54,12 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 		return res;
 	}
 
-	file->pos += res;
+	file->cursor += res;
 	return res;
 }
 
 static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
-	struct file *file;
+	struct file_desc *file;
 	struct dev_module *devmod;
 	struct block_dev *bdev;
 	size_t blk_no;
@@ -68,16 +69,16 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	assert(iov);
 	assert(cnt == 1);
 
-	file = (struct file *)desc;
+	file = (struct file_desc *)desc;
 
-	devmod = file->f_inode->i_data;
+	devmod = file->node->nas->fi->privdata;
 	bdev = devmod->dev_priv;
 	if (!bdev->parrent_bdev) {
 		/* It's not a partition */
-		blk_no = file->pos / bdev->block_size;
+		blk_no = file->cursor / bdev->block_size;
 	} else {
 		/* It's a partition */
-		blk_no = bdev->start_offset + (file->pos / bdev->block_size);
+		blk_no = bdev->start_offset + (file->cursor / bdev->block_size);
 		bdev = bdev->parrent_bdev;
 	}
 
@@ -87,7 +88,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	if (res < 0) {
 		return res;
 	}
-	file->pos += res;
+	file->cursor += res;
 
 	return res;
 }
@@ -95,15 +96,15 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	struct dev_module *devmod;
 	struct block_dev *bdev;
-	struct file *file;
+	struct file_desc *file;
 
 	assert(idesc);
 
-	file = (struct file *) idesc;
-	assert(file->f_inode);
-	assert(file->f_inode->i_data);
+	file = (struct file_desc *) idesc;
+	assert(file->node);
+	assert(file->node->nas->fi->privdata);
 
-	devmod = file->f_inode->i_data;
+	devmod = file->node->nas->fi->privdata;
 	bdev = devmod->dev_priv;
 
 	switch (cmd) {

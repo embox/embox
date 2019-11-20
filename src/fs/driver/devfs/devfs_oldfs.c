@@ -5,6 +5,7 @@
  * @date 14.10.10
  * @author Nikolay Korotky
  */
+#include <errno.h>
 
 #include <fs/file_operation.h>
 #include <fs/fs_driver.h>
@@ -59,3 +60,33 @@ static const struct fs_driver devfs_driver = {
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
+
+int devfs_add_block(struct block_dev *bdev) {
+	struct path node, root;
+	struct nas *nas;
+	struct node_fi *node_fi;
+	char full_path[PATH_MAX];
+
+	vfs_get_root_path(&root);
+
+	strcpy(full_path, "/dev/");
+	strncat(full_path, bdev->name, PATH_MAX - strlen("/dev") - 1);
+
+	if (0 != vfs_create(&root, full_path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
+		return -ENOENT;
+	}
+
+	bdev->dev_vfs_info = node.node;
+
+	nas = node.node->nas;
+	node_fi = nas->fi;
+	node_fi->privdata = bdev;
+
+	return 0;
+}
+
+int devfs_del_block(struct block_dev *bdev) {
+	vfs_del_leaf(bdev->dev_vfs_info);
+
+	return 0;
+}

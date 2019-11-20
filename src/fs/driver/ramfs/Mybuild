@@ -26,5 +26,5 @@ module ramfs_dvfs extends ramfs {
 	source "ramfs_dvfs.c"
 
 	depends embox.mem.pool
-	depends embox.driver.ramdisk_dvfs
+	depends embox.driver.ramdisk
 }
