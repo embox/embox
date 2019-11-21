@@ -31,6 +31,8 @@
 #define IOMUXC_SW_MUX_CTL_PAD_KEY_COL3           0x210
 #define IOMUXC_SW_MUX_CTL_PAD_KEY_ROW3           0x214
 
+#define IOMUXC_SW_MUX_CTL_PAD_GPIO01             0x224
+
 #define IOMUXC_SW_MUX_CTL_PAD_GPIO03             0x22C
 
 #define IOMUXC_SW_MUX_CTL_PAD_GPIO06             0x230
