@@ -120,10 +120,24 @@ static void imx6_usdhc_send_cmd(struct sdhci_host *host, int cmd_idx, uint32_t a
 }
 
 static int sdhci_reset(struct sdhci_host *host) {
-	sdhci_writel(host, USDHC_SYS_CTRL, sdhci_readl(host, USDHC_SYS_CTRL) | USDHC_SYS_CTRL_RSTA);
+	int retry = RETRIES;
 
-	int timeout = TIMEOUT;
-	while(timeout--);
+	sdhci_orl(host, USDHC_SYS_CTRL, USDHC_SYS_CTRL_RSTA);
+
+	sdhci_writel(host, USDHC_SYS_CTRL, 0xb011f);
+
+	/* Wait until both CMD and DAT lines are inactive */
+	while (sdhci_readl(host, USDHC_PRES_STATE) & (
+			USDHC_PRES_STATE_CDIHB | USDHC_PRES_STATE_CIHB)) {
+		usleep(USEC_PER_MSEC);
+		if (retry-- <= 0) {
+			log_error("Timeout!");
+			return EBUSY;
+		}
+	};
+
+	/* Wait 80 clocks */
+	sdhci_orl(host, USDHC_SYS_CTRL, USDHC_SYS_CTRL_INITA);
 
 	if (sdhci_readl(host, USDHC_SYS_CTRL) & USDHC_SYS_CTRL_RSTA) {
 		log_error("Reset timeout");
