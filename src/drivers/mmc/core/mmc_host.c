@@ -193,11 +193,13 @@ int mmc_scan(struct mmc_host *host) {
 		return 0;
 	}
 
+	mmc_go_idle(host);
 	if (!mmc_try_sd(host)) {
 		log_debug("SD detected");
 		return 0;
 	}
 
+	mmc_go_idle(host);
 	if (!mmc_try_mmc(host)) {
 		log_debug("MMC detected");
 		return 0;
