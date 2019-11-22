@@ -206,27 +206,25 @@ int sdhci_hw_probe(struct sdhci_host *host) {
 	uint32_t tmp;
 	int err;
 	struct mmc_host *mmc;
-
 	if (0 != (err = sdhci_reset(host))) {
 		return err;
 	}
 
-	sdhci_writel(host, USDHC_SYS_CTRL, 0xb011f);
 	sdhci_writel(host, USDHC_INT_STATUS_EN, -1);
 	sdhci_orl(host, USDHC_PROT_CTRL,
 			USDHC_PROT_CTRL_LCTL | USDHC_PROT_CTRL_DTW_4BIT);
 
 	tmp = 512 | (1 << 16);
 	sdhci_writel(host, USDHC_BLK_ATT, tmp);
-	if (sdhci_readl(host, USDHC_PRES_STATE) & USDHC_PRES_STATE_CDPL) {
-		mmc = mmc_alloc_host();
-		mmc->ops = &sdhci_mmc_ops;
-		mmc->priv = host;
-		mmc_scan(mmc);
-		sdhci_reg_dump(host);
-	} else {
-		log_debug("CDPL bit is zero! %08x", sdhci_readl(host, USDHC_PRES_STATE));
+
+	mmc = mmc_alloc_host();
+	mmc->ops = &sdhci_mmc_ops;
+	mmc->priv = host;
+	if (0 != mmc_scan(mmc)) {
+		mmc_dev_destroy(mmc);
 	}
+
+	sdhci_reg_dump(host);
 
 	return 0;
 }
