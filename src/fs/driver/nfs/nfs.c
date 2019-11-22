@@ -13,6 +13,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <util/log.h>
 
 #include <fs/vfs.h>
 #include <fs/nfs.h>
@@ -551,10 +552,21 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 			point += sizeof(vf);
 			predesc = (readdir_desc_t *) point;
 
-			if (predesc->file_attr.type == 1) {
-				predesc->file_attr.mode |= S_IFREG;
-			} else {
-				predesc->file_attr.mode |= S_IFDIR;
+			switch (predesc->file_attr.type) {
+				case 1:
+					/* regular file */
+					predesc->file_attr.mode |= S_IFREG;
+					break;
+				case 2:
+				case 3:
+					/* directory */
+					predesc->file_attr.mode |= S_IFDIR;
+					break;
+				default:
+					/* unknown file type */
+					log_error("Unknown file type");
+					sysfree(rcv_buf);
+					return -1;
 			}
 
 			if(0 == path_is_dotname(predesc->file_name.name.data,

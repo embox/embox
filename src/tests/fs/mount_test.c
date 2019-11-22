@@ -10,34 +10,32 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <embox/test.h>
+#include <framework/mod/options.h>
 
 #include <fs/mount.h>
 
-#define FS_TEST_SHARE_PATH "10.0.2.10:/var/nfs_test"
+EMBOX_TEST_SUITE("mount test");
+
+#define FS_TEST_SHARE_PATH OPTION_STRING_GET(share_path)
+#define FS_TEST_FS_TYPE OPTION_STRING_GET(fs_type)
 #define FS_TEST_MOUNTPOINT "/mnt/fs_test"
-#define FS_TEST_FS_TYPE "nfs"
 
 static const char fs_test_create_file[] = FS_TEST_MOUNTPOINT "/test_file";
 static const char fs_test_create_dir[] = FS_TEST_MOUNTPOINT "/test_dir";
 
-EMBOX_TEST_SUITE("mount nfs tests");
-
-TEST_CASE("Mount, create files and umount") {
-	 int fd;
-
-	 test_assert(0 <= mount(FS_TEST_SHARE_PATH, FS_TEST_MOUNTPOINT, FS_TEST_FS_TYPE));
-
-	 test_assert(0 <= (fd = creat(fs_test_create_file, 0666)));
-
-	 close(fd);
-
-	 test_assert(0 <= mkdir(fs_test_create_dir, 0777));
-
-	 test_assert(0 <= umount(FS_TEST_MOUNTPOINT));
-}
-
-TEST_CASE("Mount again, check file's info, remove and umount") {
+TEST_CASE("Mount, create files, umount, mount again and check correct file stats") {
+	int fd;
 	struct stat st;
+
+	test_assert(0 <= mount(FS_TEST_SHARE_PATH, FS_TEST_MOUNTPOINT, FS_TEST_FS_TYPE));
+
+	test_assert(0 <= (fd = creat(fs_test_create_file, 0666)));
+
+	close(fd);
+
+	test_assert(0 <= mkdir(fs_test_create_dir, 0777));
+
+	test_assert(0 <= umount(FS_TEST_MOUNTPOINT));
 
 	test_assert(0 <= mount(FS_TEST_SHARE_PATH, FS_TEST_MOUNTPOINT, FS_TEST_FS_TYPE));
 
