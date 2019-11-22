@@ -22,6 +22,8 @@
 #define USDHC_CMD_RSP3              (0x1C)
 #define USDHC_DATA_BUFF_ACC_PORT    (0x20)
 #define USDHC_PRES_STATE            (0x24)
+# define USDHC_PRES_STATE_CIHB      (1 << 0) /* CMD line is active */
+# define USDHC_PRES_STATE_CDIHB     (1 << 1) /* DAT line is active */
 # define USDHC_PRES_STATE_CDPL      (1 << 18) /* Card detection pin level */
 #define USDHC_PROT_CTRL             (0x28)
 # define USDHC_PROT_CTRL_LCTL       (1 << 0) /* Led control */
@@ -30,6 +32,9 @@
 # define USDHC_PROT_CTRL_DTW_8BIT   (2 << 1)
 #define USDHC_SYS_CTRL              (0x2C)
 # define USDHC_SYS_CTRL_RSTA        (1 << 24)
+# define USDHC_SYS_CTRL_RSTC        (1 << 25)
+# define USDHC_SYS_CTRL_RSTD        (1 << 26)
+# define USDHC_SYS_CTRL_INITA       (1 << 27)
 #define USDHC_INT_STATUS            (0x30)
 # define USDHC_INT_STATUS_CC        (1 << 0) /* Command complete */
 #define USDHC_INT_STATUS_EN         (0x34)

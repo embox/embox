@@ -15,7 +15,7 @@
 
 #include "sdhci_ops.h"
 
-void sdhci_reg_dump(struct sdhci_host *host) {
+static void sdhci_reg_dump(struct sdhci_host *host) {
 	log_debug("===================");
 	log_debug("REG DUMP");
 	log_debug("===================");
@@ -49,8 +49,39 @@ void sdhci_reg_dump(struct sdhci_host *host) {
 	log_debug("USDHC_VEND_SPEC2           =0x%08x", sdhci_readl(host, 0xC8));
 }
 
-#define RETRIES    1000
-#define TIMEOUT    1000
+#define RETRIES    100
+static int sdhci_reset(struct sdhci_host *host) {
+	int retry = RETRIES;
+
+	sdhci_orl(host, USDHC_SYS_CTRL, USDHC_SYS_CTRL_RSTA);
+
+	sdhci_writel(host, USDHC_SYS_CTRL, 0x8b011f);
+
+	/* Wait until both CMD and DAT lines are inactive */
+	while (sdhci_readl(host, USDHC_PRES_STATE) & (
+			USDHC_PRES_STATE_CDIHB | USDHC_PRES_STATE_CIHB)) {
+		usleep(USEC_PER_MSEC);
+		if (retry-- <= 0) {
+			log_error("Timeout!");
+			return EBUSY;
+		}
+	};
+
+	/* Wait 80 clocks */
+	sdhci_orl(host, USDHC_SYS_CTRL, USDHC_SYS_CTRL_INITA);
+
+	if (sdhci_readl(host, USDHC_SYS_CTRL) & USDHC_SYS_CTRL_RSTA) {
+		log_error("Reset timeout");
+		return EBUSY;
+	}
+
+	sdhci_writel(host, USDHC_MIX_CTRL, 0);
+	sdhci_writel(host, USDHC_CLK_TUNE_CTRL_STATUS, 0);
+
+	usleep(100 * USEC_PER_MSEC);
+	return 0;
+}
+
 static void sdhci_cmd_done(struct sdhci_host *host, struct mmc_request *req) {
 	int i;
 
@@ -100,40 +131,38 @@ static void imx6_usdhc_send_cmd(struct sdhci_host *host, int cmd_idx, uint32_t a
 		}
 	}
 
+	sdhci_writel(host, USDHC_INT_STATUS, 0xffffffff);
+
+	while(sdhci_readl(host, USDHC_PRES_STATE) & 0x7) {
+		usleep(USEC_PER_MSEC);
+		if (retry-- <= 0) {
+			log_error("Card is busy! PRES_STATE=%08x",
+					sdhci_readl(host, USDHC_PRES_STATE));
+			return;
+		}
+	}
+
 	sdhci_writel(host, USDHC_CMD_ARG, arg);
+	sdhci_writel(host, USDHC_MIX_CTRL, 0);
 
 	log_debug("send cmd: 0x%08x idx = %d arg = %x", wcmd, cmd_idx, arg);
 
 	sdhci_writel(host, USDHC_CMD_XFR_TYP, wcmd);
 
 	/* Wait command to be completed */
+	retry = RETRIES;
 	while(!(sdhci_readl(host, USDHC_INT_STATUS) & USDHC_INT_STATUS_CC)) {
 		usleep(USEC_PER_MSEC);
 		if (retry-- <= 0) {
 			log_error("Timeout!");
+			sdhci_reset(host);
 			break;
 		}
 	}
 
 	log_debug("USDHC_INT_STATUS=%08x", sdhci_readl(host, USDHC_INT_STATUS));
+	log_debug("USDHC_PRES_STAT=%08x", sdhci_readl(host, USDHC_PRES_STATE));
 	sdhci_writel(host, USDHC_INT_STATUS, USDHC_INT_STATUS_CC);
-}
-
-static int sdhci_reset(struct sdhci_host *host) {
-	sdhci_writel(host, USDHC_SYS_CTRL, sdhci_readl(host, USDHC_SYS_CTRL) | USDHC_SYS_CTRL_RSTA);
-
-	int timeout = TIMEOUT;
-	while(timeout--);
-
-	if (sdhci_readl(host, USDHC_SYS_CTRL) & USDHC_SYS_CTRL_RSTA) {
-		log_error("Reset timeout");
-		return EBUSY;
-	}
-
-	sdhci_writel(host, USDHC_VEND_SPEC,
-			sdhci_readl(host, USDHC_VEND_SPEC) | (1 << 31) | (1 << 14) | (1 << 13));
-
-	return 0;
 }
 
 static int sdhci_get_cd(struct mmc_host *host) {
@@ -177,27 +206,25 @@ int sdhci_hw_probe(struct sdhci_host *host) {
 	uint32_t tmp;
 	int err;
 	struct mmc_host *mmc;
-
 	if (0 != (err = sdhci_reset(host))) {
 		return err;
 	}
 
-	sdhci_writel(host, USDHC_SYS_CTRL, 0xb011f);
 	sdhci_writel(host, USDHC_INT_STATUS_EN, -1);
 	sdhci_orl(host, USDHC_PROT_CTRL,
 			USDHC_PROT_CTRL_LCTL | USDHC_PROT_CTRL_DTW_4BIT);
 
 	tmp = 512 | (1 << 16);
 	sdhci_writel(host, USDHC_BLK_ATT, tmp);
-	if (sdhci_readl(host, USDHC_PRES_STATE) & USDHC_PRES_STATE_CDPL) {
-		mmc = mmc_alloc_host();
-		mmc->ops = &sdhci_mmc_ops;
-		mmc->priv = host;
-		mmc_scan(mmc);
-		sdhci_reg_dump(host);
-	} else {
-		log_debug("CDPL bit is zero! %08x", sdhci_readl(host, USDHC_PRES_STATE));
+
+	mmc = mmc_alloc_host();
+	mmc->ops = &sdhci_mmc_ops;
+	mmc->priv = host;
+	if (0 != mmc_scan(mmc)) {
+		mmc_dev_destroy(mmc);
 	}
+
+	sdhci_reg_dump(host);
 
 	return 0;
 }

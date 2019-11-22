@@ -145,6 +145,10 @@ free_mmc:
 }
 
 int mmc_dev_destroy(struct mmc_host *mmc) {
+	if (mmc->bdev) {
+		block_dev_destroy(mmc->bdev->dev_module);
+	}
+	index_free(&mmc_idx, mmc->idx);
 	pool_free(&mmc_dev_pool, mmc);
 	return 0;
 }
@@ -193,11 +197,13 @@ int mmc_scan(struct mmc_host *host) {
 		return 0;
 	}
 
+	mmc_go_idle(host);
 	if (!mmc_try_sd(host)) {
 		log_debug("SD detected");
 		return 0;
 	}
 
+	mmc_go_idle(host);
 	if (!mmc_try_mmc(host)) {
 		log_debug("MMC detected");
 		return 0;
@@ -205,4 +211,44 @@ int mmc_scan(struct mmc_host *host) {
 
 	log_debug("Failed to detect any memory card");
 	return -1;
+}
+
+void mmc_dump_cid(uint32_t *cid) {
+	int man_year, man_mon;
+	static const char mon_name[12][4] = {
+		"Jan", "Feb", "Mar", "Apr", "May", "Jun",
+		"Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+	};
+
+	assert(cid);
+
+	log_debug("MMC CID: %08x %08x %08x %08x",
+			cid[0], cid[1], cid[2], cid[3]);
+
+	log_debug("MMC info (parsed CID):");
+	log_debug("Manufacturer ID =0x%2x", cid[0] >> 24);
+	log_debug("OEM/OID         =0x%2x%2x", (cid[0] >> 16) & 0xFF, (cid[0] >> 8) & 0xFF);
+	log_debug("Product name    =%c%c%c%c%c",
+			(char) (cid[0] & 0xFF),
+			(char) ((cid[1] >> 24) & 0xFF),
+			(char) ((cid[1] >> 16) & 0xFF),
+			(char) ((cid[1] >> 8) & 0xFF),
+			(char) (cid[1] & 0xFF));
+	log_debug("Revision        =0x%02x", (cid[2] >> 24) & 0xFF);
+	log_debug("Serial number   =0x%2x%2x%2x%2x",
+			(cid[2] >> 16) & 0xFF,
+			(cid[2] >> 8) & 0xFF,
+			cid[2] & 0xFF,
+			(cid[3] >> 24) & 0xFF);
+
+	man_year = 2000 + 10 * ((cid[3] >> 16) & 0xFF) +
+			(((cid[3] >> 8) & 0xFF) >> 4);
+	man_mon = (cid[3] >> 8) & 0xF;
+
+	assert(man_mon < 12);
+
+	log_debug("Date             %s %d", mon_name[man_mon], man_year);
+
+	/* Avoid warnings if log_level = 0 */
+	(void) man_year, (void) man_mon, (void) mon_name;
 }

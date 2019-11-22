@@ -70,4 +70,6 @@ struct mmc_request {
 	struct mmc_data data;
 };
 
+extern void mmc_dump_cid(uint32_t *cid);
+
 #endif /* SRC_DRIVERS_MMC_CORE_MMC_CORE_H_ */
