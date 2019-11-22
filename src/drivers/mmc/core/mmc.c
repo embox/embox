@@ -41,6 +41,10 @@ int mmc_try_mmc(struct mmc_host *host) {
 	log_debug("MMC CSD: %08x %08x %08x %08x",
 			resp[0], resp[1], resp[2], resp[3]);
 
+	if ((resp[0] | resp[1] | resp[2] | resp[3]) == 0) {
+		return -1;
+	}
+
 	if (!(resp[0] & 0x40000000)) {
 		host->high_capacity = 1;
 		size = ((resp[1] >> 8) & 0x3) << 10;
