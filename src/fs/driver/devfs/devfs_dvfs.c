@@ -288,11 +288,3 @@ static struct auto_mount devfs_auto_mount = {
 
 ARRAY_SPREAD_DECLARE(const struct auto_mount *const, auto_mount_tab);
 ARRAY_SPREAD_ADD(auto_mount_tab, &devfs_auto_mount);
-
-int devfs_add_block(struct block_dev *bdev) {
-	return 0;
-}
-
-int devfs_del_block(struct block_dev *bdev) {
-	return 0;
-}
