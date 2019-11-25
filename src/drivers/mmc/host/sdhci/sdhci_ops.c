@@ -7,6 +7,7 @@
  */
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <drivers/mmc/mmc_core.h>
@@ -16,9 +17,9 @@
 #include "sdhci_ops.h"
 
 static void sdhci_reg_dump(struct sdhci_host *host) {
-	log_debug("===================");
+	log_debug("======================================");
 	log_debug("REG DUMP");
-	log_debug("===================");
+	log_debug("======================================");
 	log_debug("USDHC_DS_ADDR              =0x%08x", sdhci_readl(host, 0x00));
 	log_debug("USDHC_BLK_ATT              =0x%08x", sdhci_readl(host, 0x04));
 	log_debug("USDHC_CMD_ARG              =0x%08x", sdhci_readl(host, 0x08));
@@ -104,7 +105,7 @@ static void sdhci_cmd_done(struct sdhci_host *host, struct mmc_request *req) {
 }
 
 static void imx6_usdhc_send_cmd(struct sdhci_host *host, int cmd_idx, uint32_t arg, int flags) {
-	uint32_t wcmd = 0;
+	uint32_t wcmd = 0, mix = 0;
 	int retry = RETRIES;
 
 	wcmd |= (cmd_idx & 0x3f) << 24;
@@ -124,12 +125,14 @@ static void imx6_usdhc_send_cmd(struct sdhci_host *host, int cmd_idx, uint32_t a
 
 	if (flags & MMC_DATA_XFER) {
 		wcmd |= 0x1 << 21;
-		/* enable DMA in imx it places in MIX_CTRL */
-		wcmd |= 0x1;
+
+		mix |= MIX_DMAEN;
+
 		if (flags & MMC_DATA_READ) {
-			wcmd |= 0x10;
+			mix |= MIX_CARD2HOST;
 		}
 	}
+
 
 	sdhci_writel(host, USDHC_INT_STATUS, 0xffffffff);
 
@@ -143,7 +146,7 @@ static void imx6_usdhc_send_cmd(struct sdhci_host *host, int cmd_idx, uint32_t a
 	}
 
 	sdhci_writel(host, USDHC_CMD_ARG, arg);
-	sdhci_writel(host, USDHC_MIX_CTRL, 0);
+	sdhci_writel(host, USDHC_MIX_CTRL, mix);
 
 	log_debug("send cmd: 0x%08x idx = %d arg = %x", wcmd, cmd_idx, arg);
 
@@ -160,8 +163,6 @@ static void imx6_usdhc_send_cmd(struct sdhci_host *host, int cmd_idx, uint32_t a
 		}
 	}
 
-	log_debug("USDHC_INT_STATUS=%08x", sdhci_readl(host, USDHC_INT_STATUS));
-	log_debug("USDHC_PRES_STAT=%08x", sdhci_readl(host, USDHC_PRES_STATE));
 	sdhci_writel(host, USDHC_INT_STATUS, USDHC_INT_STATUS_CC);
 }
 
@@ -175,6 +176,10 @@ static int sdhci_get_cd(struct mmc_host *host) {
 	}
 }
 
+void dcache_inval(const void *p, size_t size);
+void dcache_flush(const void *p, size_t size);
+
+static uint8_t _buf[512] __attribute__ ((aligned(128))); /* Workaround for unaligned buffer */
 static void sdhci_mmc_request(struct mmc_host *mmc_host, struct mmc_request *req) {
 	struct sdhci_host *host;
 
@@ -187,14 +192,32 @@ static void sdhci_mmc_request(struct mmc_host *mmc_host, struct mmc_request *req
 			req->cmd.opcode, req->cmd.arg, req->cmd.flags);
 
 	if (req->cmd.flags & MMC_DATA_XFER) {
-		sdhci_writel(host, USDHC_INT_STATUS, -1);
-
-		sdhci_writel(host, USDHC_DS_ADDR, (uint32_t) req->data.addr);
+		memset(_buf, 0, sizeof(_buf));
+		sdhci_writel(host, USDHC_DS_ADDR, (uint32_t) _buf);
+		if (req->cmd.flags & MMC_DATA_WRITE) {
+			memcpy(_buf, (void *) req->data.addr, sizeof(_buf));
+			dcache_flush(_buf, sizeof(_buf));
+		}
 	}
 
 	imx6_usdhc_send_cmd(host, req->cmd.opcode, req->cmd.arg, req->cmd.flags);
 
 	sdhci_cmd_done(host, req);
+
+	if (req->cmd.flags & MMC_DATA_XFER) {
+		int timeout = RETRIES;
+		while((sdhci_readl(host, USDHC_PRES_STATE) & (1 << 9))) {
+			usleep(10 * USEC_PER_MSEC);
+			if (timeout-- <= 0) {
+				log_error("Data transfer timeout");
+				break;
+			}
+		}
+		if (req->cmd.flags & MMC_DATA_READ) {
+			dcache_inval(_buf, sizeof(_buf));
+			memcpy((void *) req->data.addr, _buf, sizeof(_buf));
+		}
+	}
 }
 
 static const struct mmc_host_ops sdhci_mmc_ops = {
