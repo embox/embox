@@ -5,6 +5,7 @@
  * @version
  * @date 05.11.2019
  */
+#include <unistd.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/mmc/mmc.h>
@@ -25,6 +26,8 @@ int mmc_try_sd(struct mmc_host *host) {
 #define SD_VOLTAGE_WINDOW 0xFF8000
 #define CMD55_VALID_RESP  0x120
 	do {
+		usleep(10 * USEC_PER_MSEC);
+
 		if (retry-- < 0) {
 			log_debug("Failed to detect SD card");
 			return -1;
