@@ -54,7 +54,7 @@ static int mmc_block_read(struct block_dev *bdev, char *buffer, size_t count, bl
 
 	req.data.addr = (uintptr_t) buffer;
 	req.data.blksz = bdev->block_size;
-	req.data.blocks = count;
+	req.data.blocks = count / bdev->block_size;
 
 	assert(mmc->ops);
 	assert(mmc->ops->request);
@@ -90,7 +90,7 @@ static int mmc_block_write(struct block_dev *bdev, char *buffer, size_t count, b
 
 	req.data.addr = (uintptr_t) buffer;
 	req.data.blksz = bdev->block_size;
-	req.data.blocks = count;
+	req.data.blocks = count / bdev->block_size;
 
 	assert(mmc->ops);
 	assert(mmc->ops->request);
