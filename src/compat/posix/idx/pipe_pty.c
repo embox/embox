@@ -267,6 +267,7 @@ static int pty_ioctl(struct idesc *idesc, int request, void *data) {
 static int pty_master_status(struct idesc *idesc, int mask) {
 	struct idesc_pty *ipty = (struct idesc_pty *) idesc;
 	struct pty *pty = ipty->pty;
+	struct tty *tty = pty_to_tty(pty);
 	int res;
 
 	/* if slave is closed read/write/err will not block and will
@@ -275,18 +276,22 @@ static int pty_master_status(struct idesc *idesc, int mask) {
 		return 1;
 	}
 
+	mutex_lock(&tty->lock);
+
 	switch (mask) {
 	case POLLIN:
-		res = ring_can_read(&pty_to_tty(pty)->o_ring, TTY_IO_BUFF_SZ, 1);
+		res = ring_can_read(&tty->o_ring, TTY_IO_BUFF_SZ, 1);
 		break;
 	case POLLOUT:
-		res = ring_can_write(&pty_to_tty(pty)->rx_ring, TTY_RX_BUFF_SZ, 1);
+		res = ring_can_write(&tty->rx_ring, TTY_RX_BUFF_SZ, 1);
 		break;
 	default:
 	case POLLERR:
 		res = 0;
 		break;
 	}
+
+	mutex_unlock(&tty->lock);
 
 	return res;
 }
