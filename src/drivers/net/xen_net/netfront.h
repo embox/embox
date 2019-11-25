@@ -83,5 +83,6 @@ extern struct netfront_dev *init_netfront(
 	unsigned char rawmac[6],
 	char **ip
 );
+void network_rx(struct netfront_dev *dev);
 
 #endif /* NETFRONT_H_ */
