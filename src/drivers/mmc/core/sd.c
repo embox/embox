@@ -82,7 +82,7 @@ int mmc_try_sd(struct mmc_host *host) {
 	host->bdev->size = size;
 	host->bdev->block_size = 512;
 
-	mmc_send_cmd(host, 7, host->rca << 16, 0, resp);
+	mmc_send_cmd(host, 7, host->rca << 16, MMC_RSP_R1B, resp);
 
 	return 0;
 }
