@@ -17,6 +17,8 @@
 #include <barrier.h>
 
 #include "netfront.h"
+//add this for unmask
+#include <xen/event.h>
 
 #define XS_MSG_LEN 256
 
@@ -68,6 +70,98 @@ int alloc_evtchn(evtchn_port_t *port)
 		*port = alloc_unbound.port;
 
 	return err;
+}
+
+//this is from os.h
+#define ADDR (*(volatile long *) addr)
+static  void synch_clear_bit(int nr, volatile void * addr)
+{
+    __asm__ __volatile__ (
+        "lock btrl %1,%0"
+        : "=m" (ADDR) : "Ir" (nr) : "memory" );
+}
+
+static  int synch_var_test_bit(int nr, volatile void * addr)
+{
+    int oldbit;
+    __asm__ __volatile__ (
+        "btl %2,%1\n\tsbbl %0,%0"
+        : "=r" (oldbit) : "m" (ADDR), "Ir" (nr) );
+    return oldbit;
+}
+
+static  int synch_const_test_bit(int nr, const volatile void * addr)
+{
+    return ((1UL << (nr & 31)) & 
+            (((const volatile unsigned int *) addr)[nr >> 5])) != 0;
+}
+
+#define synch_test_bit(nr,addr) \
+(__builtin_constant_p(nr) ? \
+ synch_const_test_bit((nr),(addr)) : \
+ synch_var_test_bit((nr),(addr)))
+
+static  int synch_test_and_set_bit(int nr, volatile void * addr)
+{
+    int oldbit;
+    __asm__ __volatile__ (
+        "lock btsl %2,%1\n\tsbbl %0,%0"
+        : "=r" (oldbit), "=m" (ADDR) : "Ir" (nr) : "memory");
+    return oldbit;
+}
+
+/* This is a barrier for the compiler only, NOT the processor! */
+#define barrier() __asm__ __volatile__("": : :"memory")
+
+void force_evtchn_callback(void)
+{
+	extern shared_info_t xen_shared_info;
+	shared_info_t *HYPERVISOR_shared_info = &xen_shared_info;
+#ifdef XEN_HAVE_PV_UPCALL_MASK
+    int save;
+#endif
+    vcpu_info_t *vcpu;
+    vcpu = &HYPERVISOR_shared_info->vcpu_info[0];
+#ifdef XEN_HAVE_PV_UPCALL_MASK
+    save = vcpu->evtchn_upcall_mask;
+#endif
+
+    while (vcpu->evtchn_upcall_pending) {
+#ifdef XEN_HAVE_PV_UPCALL_MASK
+        vcpu->evtchn_upcall_mask = 1;
+#endif
+        barrier();
+        do_hypervisor_callback(NULL);
+        barrier();
+#ifdef XEN_HAVE_PV_UPCALL_MASK
+        vcpu->evtchn_upcall_mask = save;
+        barrier();
+#endif
+    };
+}
+
+void unmask_evtchn(uint32_t port)
+{
+	extern shared_info_t xen_shared_info;
+    shared_info_t *s = &xen_shared_info;
+    vcpu_info_t *vcpu_info = &s->vcpu_info[0];
+
+    synch_clear_bit(port, &s->evtchn_mask[0]);
+
+    /*
+     * The following is basically the equivalent of 'hw_resend_irq'. Just like
+     * a real IO-APIC we 'lose the interrupt edge' if the channel is masked.
+     */
+    if (  synch_test_bit        (port,    &s->evtchn_pending[0]) && 
+         !synch_test_and_set_bit(port / (sizeof(unsigned long) * 8),
+              &vcpu_info->evtchn_pending_sel) )
+    {
+        vcpu_info->evtchn_upcall_pending = 1;
+#ifdef XEN_HAVE_PV_UPCALL_MASK
+        if ( !vcpu_info->evtchn_upcall_mask )
+#endif
+            force_evtchn_callback();
+    }
 }
 
 static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
