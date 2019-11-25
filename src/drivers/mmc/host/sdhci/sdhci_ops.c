@@ -225,6 +225,30 @@ static const struct mmc_host_ops sdhci_mmc_ops = {
 	.get_cd  = sdhci_get_cd,
 };
 
+static void sdhci_set_bus_width(struct sdhci_host *host, int bits) {
+	uint32_t tmp;
+
+	tmp = sdhci_readl(host, USDHC_PROT_CTRL);
+	tmp &= ~USDHC_PROT_CTRL_DTW_MASK;
+	switch (bits) {
+	case 1:
+		tmp |= USDHC_PROT_CTRL_DTW_1BIT;
+		break;
+	case 4:
+		tmp |= USDHC_PROT_CTRL_DTW_4BIT;
+		break;
+	case 8:
+		tmp |= USDHC_PROT_CTRL_DTW_4BIT;
+		break;
+	default:
+		log_error("Unsupported data width: %d bits, use 1 bit anyway",
+				bits);
+		tmp |= USDHC_PROT_CTRL_DTW_1BIT;
+	}
+
+	sdhci_writel(host, USDHC_PROT_CTRL, tmp);
+}
+
 int sdhci_hw_probe(struct sdhci_host *host) {
 	uint32_t tmp;
 	int err;
@@ -234,8 +258,8 @@ int sdhci_hw_probe(struct sdhci_host *host) {
 	}
 
 	sdhci_writel(host, USDHC_INT_STATUS_EN, -1);
-	sdhci_orl(host, USDHC_PROT_CTRL,
-			USDHC_PROT_CTRL_LCTL | USDHC_PROT_CTRL_DTW_4BIT);
+	/* TODO: figure the real data bus width */
+	sdhci_set_bus_width(host, 1);
 
 	tmp = 512 | (1 << 16);
 	sdhci_writel(host, USDHC_BLK_ATT, tmp);
