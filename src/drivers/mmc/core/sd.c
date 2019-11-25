@@ -62,19 +62,19 @@ int mmc_try_sd(struct mmc_host *host) {
 	log_debug("MMC CSD: %08x %08x %08x %08x",
 			resp[0], resp[1], resp[2], resp[3]);
 
-	if (!(resp[0] & 0x40000000)) {
+	if (resp[0] & 0x40000000) {
 		host->high_capacity = 1;
-		size = ((resp[1] >> 8) & 0x3) << 10;
-		size |= (resp[1] & 0xFF) << 2;
-
-		size = 256 * 1024 * (size + 1);
-		log_debug("Size = %lld bytes (High-Capacity SD)", size);
-	} else {
-		host->high_capacity = 0;
 		size = (resp[1] & 0xFF) << 16;
 		size |= ((resp[2] >> 24) & 0xFF) << 8;
 		size |= (resp[2] >> 16) & 0xFF;
 		size = 512 * 1024 * (size + 1);
+		log_debug("Size = %lld bytes (High-Capacity SD)", size);
+	} else {
+		host->high_capacity = 0;
+		size = ((resp[1] >> 8) & 0x3) << 10;
+		size |= (resp[1] & 0xFF) << 2;
+
+		size = 256 * 1024 * (size + 1);
 		log_debug("Size = %lld bytes (Standart Capacity SD)", size);
 	}
 
