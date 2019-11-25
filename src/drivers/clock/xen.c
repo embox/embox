@@ -76,6 +76,7 @@ static int xen_clock_init(void) {
 	if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_virq, &op) != 0) {
 		panic("Error has happened during timer initialization.\n");
 	}
+	printk("\n>>>>>Timer port=%u\n", op.port);
 	xen_event_device.irq_nr = op.port;
 
 	system_time = xen_time();
