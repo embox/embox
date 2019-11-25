@@ -1170,6 +1170,8 @@ static uint32_t dw_mci_prepare_command(struct mmc_host *mmc, struct mmc_command 
 	return cmdr;
 }
 
+extern void dcache_flush(const void *p, size_t size);
+extern void dcache_inval(const void *p, size_t size);
 static void dw_mci_start_request(struct dw_mci *host,
 		struct dw_mci_slot *slot, struct mmc_command *cmd) {
 	struct mmc_request *mrq;
@@ -1194,6 +1196,9 @@ static void dw_mci_start_request(struct dw_mci *host,
 		mci_writel(host, TMOUT, 0xFFFFFFFF);
 		mci_writel(host, BYTCNT, data->blksz * data->blocks);
 		mci_writel(host, BLKSIZ, data->blksz);
+		if (cmd->flags & MMC_DATA_WRITE) {
+			dcache_flush((void *) data->addr, data->blksz * data->blocks);
+		}
 	}
 
 	cmdflags = dw_mci_prepare_command(slot->mmc, cmd, &mrq->data);
@@ -1209,6 +1214,10 @@ static void dw_mci_start_request(struct dw_mci *host,
 	}
 
 	dw_mci_start_command(host, cmd, cmdflags);
+
+	if (data->addr && (cmd->flags & MMC_DATA_READ)) {
+		dcache_inval((void *) data->addr, data->blksz * data->blocks);
+	}
 #if 0
 	if (cmd->opcode == SD_SWITCH_VOLTAGE) {
 		unsigned long irqflags;
