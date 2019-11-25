@@ -51,6 +51,8 @@ struct mmc_command {
 #define MMC_DATA_WRITE  (1 << 8)
 #define MMC_DATA_READ   (1 << 9)
 #define MMC_DATA_XFER   (MMC_DATA_READ | MMC_DATA_WRITE)
+
+	int error;
 };
 
 struct mmc_data {
