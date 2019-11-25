@@ -30,6 +30,7 @@
 # define USDHC_PROT_CTRL_DTW_1BIT   (0 << 1) /* Data transfer width */
 # define USDHC_PROT_CTRL_DTW_4BIT   (1 << 1)
 # define USDHC_PROT_CTRL_DTW_8BIT   (2 << 1)
+# define USDHC_PROT_CTRL_DTW_MASK   (3 << 1)
 #define USDHC_SYS_CTRL              (0x2C)
 # define USDHC_SYS_CTRL_RSTA        (1 << 24)
 # define USDHC_SYS_CTRL_RSTC        (1 << 25)

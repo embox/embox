@@ -40,8 +40,11 @@ static int mmc_block_read(struct block_dev *bdev, char *buffer, size_t count, bl
 	mmc = bdev->privdata;
 	assert(mmc);
 
-	/* TODO may be different for high capacity storage */
-	arg = blkno * bdev->block_size;
+	if (mmc->high_capacity) {
+		arg = blkno;
+	} else {
+		arg = blkno * bdev->block_size;
+	}
 
 	memset(&req, 0, sizeof(req));
 
@@ -51,7 +54,7 @@ static int mmc_block_read(struct block_dev *bdev, char *buffer, size_t count, bl
 
 	req.data.addr = (uintptr_t) buffer;
 	req.data.blksz = bdev->block_size;
-	req.data.blocks = count;
+	req.data.blocks = count / bdev->block_size;
 
 	assert(mmc->ops);
 	assert(mmc->ops->request);
@@ -73,8 +76,11 @@ static int mmc_block_write(struct block_dev *bdev, char *buffer, size_t count, b
 	mmc = bdev->privdata;
 	assert(mmc);
 
-	/* TODO may be different for high capacity storage */
-	arg = blkno * bdev->block_size;
+	if (mmc->high_capacity) {
+		arg = blkno;
+	} else {
+		arg = blkno * bdev->block_size;
+	}
 
 	memset(&req, 0, sizeof(req));
 
@@ -84,7 +90,7 @@ static int mmc_block_write(struct block_dev *bdev, char *buffer, size_t count, b
 
 	req.data.addr = (uintptr_t) buffer;
 	req.data.blksz = bdev->block_size;
-	req.data.blocks = count;
+	req.data.blocks = count / bdev->block_size;
 
 	assert(mmc->ops);
 	assert(mmc->ops->request);
