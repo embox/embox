@@ -35,9 +35,9 @@ enum dma_data_direction {
  */
 static inline void *dma_alloc_coherent(struct device *dev, size_t size,
 		dma_addr_t *handle, gfp_t flag) {
-	void *mem = sysmalloc(size);
+	void *mem = sysmemalign(MMU_PAGE_SIZE, size);
 	mmu_ctx_t ctx = vmem_current_context();
-	int flags = PROT_WRITE | PROT_READ /*| PROT_NOCACHE */;
+	int flags = PROT_WRITE | PROT_READ | PROT_NOCACHE;
 
 	vmem_set_flags(ctx, (mmu_vaddr_t) mem, size, flags);
 
