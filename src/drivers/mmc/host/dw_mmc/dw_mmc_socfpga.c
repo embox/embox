@@ -300,7 +300,7 @@ static int dw_mci_init_dma(struct dw_mci *host) {
 }
 
 static void dw_mci_wait_while_busy(struct dw_mci *host, uint32_t cmd_flags) {
-	unsigned long timeout = clock_sys_ticks() + ms2jiffies(500);
+	int timeout = 1000;
 
 	/*
 	 * Databook says that before issuing a new data transfer command
@@ -313,12 +313,12 @@ static void dw_mci_wait_while_busy(struct dw_mci *host, uint32_t cmd_flags) {
 	if ((cmd_flags & SDMMC_CMD_PRV_DAT_WAIT) &&
 			!(cmd_flags & SDMMC_CMD_VOLT_SWITCH)) {
 		while (mci_readl(host, STATUS) & SDMMC_STATUS_BUSY) {
-			if (time_after(clock_sys_ticks(), timeout)) {
+			if (timeout-- < 0) {
 				/* Command will fail; we'll pass error then */
 				log_error("Busy; trying anyway");
 				break;
 			}
-			usleep(10);
+			usleep(USEC_PER_MSEC);
 		}
 	}
 }
