@@ -304,9 +304,6 @@ struct dw_mci {
 	void (*pull_data)(struct dw_mci *host, void *buf, int cnt);
 };
 
-extern int dw_mci_probe(struct dw_mci *host);
-
-
 /* FIFO register access macros. These should not change the data endian-ness
  * as they are written to memory to be dealt with by the upper layers */
 #define mci_fifo_readw(__reg)     REG16_LOAD(__reg)
@@ -316,7 +313,6 @@ extern int dw_mci_probe(struct dw_mci *host);
 #define mci_fifo_writew(__reg, __value)     REG16_STORE(__reg, __value)
 #define mci_fifo_writel(__reg, __value)     REG32_STORE(__reg, __value)
 #define mci_fifo_writeq(__reg, __value)     REG64_STORE(__reg, __value)
-
 
 /* Register access macros */
 #define mci_readl(dev, reg) \
