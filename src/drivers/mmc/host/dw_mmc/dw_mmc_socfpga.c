@@ -188,13 +188,18 @@ static inline int dw_mci_prepare_desc32(struct dw_mci *host, struct mmc_data *da
 		log_debug("mem_addr(%x), length(%d); desc_first(%x)", mem_addr, length, desc_first);
 
 		for ( ; length ; desc++) {
+			int timeout = 1000;
 			desc_len = (length <= DW_MCI_DESC_DATA_LENGTH) ?
 				length : DW_MCI_DESC_DATA_LENGTH;
 
 			length -= desc_len;
 
 			while (REG_LOAD(&desc->des0) & cpu_to_le32(IDMAC_DES0_OWN)) {
-				usleep(10);
+				usleep(USEC_PER_MSEC);
+				if (timeout-- < 0) {
+					log_error("DMA desc is not freed for too long!");
+					return -1;
+				}
 			}
 
 			desc->des0 = cpu_to_le32(IDMAC_DES0_OWN |
