@@ -6,587 +6,369 @@
  * @author Vladimir Sokolov
  */
 
-#include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
-
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 #include <signal.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <arpa/inet.h>
+#include <sys/types.h>
 #include <sys/select.h>
 #include <sys/socket.h>
 #include <sys/wait.h>
-#include <time.h>
-#include <unistd.h>
-#include <utmp.h>
-#include <stdlib.h>
-#include <sched.h>
 
-#include <util/math.h>
+#include "telnet.h"
 
+/* Uncomment to enable debug messages. */
+/* #define TELNETD_DEBUG */
+
+#ifdef TELNETD_FOR_LINUX
+/* Using port >= 1024 to run without sudo */
+#define TELNETD_PORT 3023
+#define TELNETD_MAX_CONNECTIONS 4
+#define SHELL_NAME  "/bin/sh"
+#else
 #include <framework/mod/options.h>
+#define TELNETD_PORT OPTION_GET(NUMBER,port)
+#define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,max_connections)
+#define SHELL_NAME OPTION_STRING_GET(shell)
+#endif
 
-#define TELNETD_MAX_CONNECTIONS OPTION_GET(NUMBER,telnetd_max_connections)
-#define TELNETD_USE_PTHEAD      OPTION_GET(NUMBER,telnetd_use_pthread)
-
-#if TELNETD_USE_PTHEAD
-#include <pthread.h>
+#ifdef TELNETD_DEBUG
+#define DPRINTF(fmt, ...) \
+    do { \
+        fprintf(stdout, "telnet: %s: " fmt, __func__, ## __VA_ARGS__); \
+    } while (0)
+#else
+#define DPRINTF(fmt, ...) do {} while (0)
 #endif
 
 /* Telnetd address bind to */
 #define TELNETD_ADDR INADDR_ANY
 /* Telnetd port bind to */
-#define TELNETD_PORT 23
 
-#define XBUFF_LEN 128
+static struct telnet_session *tsessions[TELNETD_MAX_CONNECTIONS];
+static int telnet_maxfd;
 
-/* Allow to turn off/on extra debugging information */
-#if 0
-#	define MD(x) do {\
-		x;\
-	} while (0);
-#else
-#	define MD(x) do{\
-	} while (0);
-#endif
-
-/* http://www.tcpipguide.com/free/t_TelnetProtocolCommands-3.htm */
-#define T_WILL      251
-#define T_WONT      252
-#define T_DO        253
-#define T_DONT      254
-#define T_IAC       255
-#define T_INTERRUPT 244
-
-#define O_ECHO      1     /* Manage ECHO, RFC 857 */
-#define O_GO_AHEAD  3     /* Disable GO AHEAD, RFC 858 */
-
-//TODO is not posix. Must be posix_openpt() and friends
-extern int ppty(int pptyfds[2]);
-
-static int telnet_fix_crnul(unsigned char *buf, int len);
-
-static void telnet_cmd(int sock, unsigned char op, unsigned char param) {
-	unsigned char cmd[3];
-
-	cmd[0] = T_IAC;
-	cmd[1] = op;
-	cmd[2] = param;
-	write(sock, cmd, 3);
+static void telnet_find_new_maxfd(void) {
+	int i;
+	struct telnet_session *ts;
+	for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
+		ts = tsessions[i];
+		if (!ts) {
+			continue;
+		}
+		if (ts->sockfd > telnet_maxfd) {
+			telnet_maxfd = ts->sockfd;
+		}
+		if (ts->ptyfd > telnet_maxfd) {
+			telnet_maxfd = ts->ptyfd;
+		}
+	}
 }
 
-/* Handle telnet options. Returns bytes handled. */
-static size_t handle_telnet_options(const unsigned char *buf, size_t len,
-		int sock) {
-	unsigned char *p;
-	unsigned char op_type;
-	unsigned char op_param = '\0';
-	size_t n = 0;
-
-	if (len == 0) {
-		return 0;
-	}
-
-	p = (unsigned char *) buf;
-
-	while (1) {
-		if (*p++ != T_IAC || n++ >= len) {
-			return min(n, len);
-		}
-
-		op_type = *p++;
-		n++;
-
-		if (op_type == T_WILL || op_type == T_DO ||
-				op_type == T_WONT || op_type == T_DONT) {
-			op_param = *p++;
-			n++;
-		}
-
-		if (n > len) {
-			/* XXX End of packet. It means, probably, it's something wrong
-			 * with telnet options, e.g. only part of options arrived
-			 * in this packet. So just return @len. */
-			return len;
-		}
-
-		if (op_type == T_WILL) {
-			if (op_param == O_GO_AHEAD) {
-				telnet_cmd(sock, T_DO, op_param);
-			} else {
-				telnet_cmd(sock, T_DONT, op_param);
+static struct telnet_session *telnet_alloc_session(void) {
+	struct telnet_session *ts;
+	int i;
+	DPRINTF("telnet_alloc_session\n");
+	for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
+		if (!tsessions[i]) {
+			ts = malloc(sizeof *ts);
+			if (!ts) {
+				return NULL;
 			}
-		} else if (op_type == T_DO) {
-			if ((op_param == O_GO_AHEAD) || (op_param == O_ECHO)) {
-				telnet_cmd(sock, T_WILL, op_param);
-			} else {
-				telnet_cmd(sock, T_WONT, op_param);
-			}
-		} else {
-			/* Currently do nothing, probably it's an answer for our request */
+			memset(ts, 0, sizeof *ts);
+			tsessions[i] = ts;
+			return ts;
 		}
 	}
-	return 0;
-}
-
-/* Process raw client data from @data and save it back to original @data.
- *
- * Client data can contain not only client data, but also telnet options.
- * Example of packets:
- *  - |***client_data***telnet_options***|
- *  - |***telnet_options***client_data***|
- *  - |***client_data***telnet_options***client_data***|
- */
-static size_t handle_client_data(unsigned char *data, size_t len,
-		int sock, int pptyfd) {
-	unsigned char *p;
-	unsigned char *out;
-	unsigned char *client_start; /* Start of client bytes */
-	size_t client_n; /* Number of client bytes */
-	size_t ops_n; /* Number of telnet options bytes */
-
-	p = data;
-	out = data;
-
-	while (len) {
-		/* Get client data till the next telnet options */
-		client_start = p;
-		client_n = 0;
-		while ((*p != T_IAC) && len) {
-			p++;
-			client_n++;
-			len--;
-		}
-		/* Process client data */
-		if (client_n > 0) {
-			client_n = telnet_fix_crnul(client_start, client_n);
-			memcpy(out, client_start, client_n);
-			out += client_n;
-		}
-
-		/* Precess telnet options till the next client data */
-		assert((*p == T_IAC) || (len == 0));
-		ops_n = handle_telnet_options(p, len, sock);
-		len -= ops_n;
-		p += ops_n;
-	}
-
-	/* Return size of client data copied */
-	return (out - data);
-}
-
-static int utmp_login(short ut_type, const char *host) {
-	struct utmp utmp;
-
-	memset(&utmp, 0, sizeof(utmp));
-
-	utmp.ut_type = ut_type;
-	utmp.ut_pid = getpid();
-	snprintf(utmp.ut_id, UT_IDSIZE, "/%d", utmp.ut_pid);
-	snprintf(utmp.ut_line, UT_LINESIZE, "pty/%d", utmp.ut_pid);
-	strncpy(utmp.ut_host, host, UT_HOSTSIZE - 1);
-	memset(&utmp.ut_exit, 0, sizeof(struct exit_status));
-
-	gettimeofday(&utmp.ut_tv, NULL);
-
-	if (!pututline(&utmp)) {
-		return errno;
-	}
-
-	return 0;
-}
-
-static inline void *shell_hnd(void* args) {
-	int ret;
-	int *msg = (int*)args;
-	struct sockaddr_in sockaddr;
-	socklen_t socklen = sizeof(sockaddr);
-
-	ret = getpeername(msg[2], (struct sockaddr *)&sockaddr, &socklen);
-	if (ret != 0) {
-		MD(printf("getpeername return error: %d\n", errno));
-		_exit(ret);
-	}
-
-	ret = utmp_login(LOGIN_PROCESS, inet_ntoa(sockaddr.sin_addr));
-	if (ret != 0) {
-		MD(printf("utmp_login LOGIN error: %d\n", ret));
-	}
-	if (-1 == close(STDIN_FILENO)) {
-		MD(printf("close STDIN_FILENO error: %d\n", errno));
-	}
-	if (-1 == close(STDOUT_FILENO)) {
-		MD(printf("close STDOUT_FILENO error: %d\n", errno));
-	}
-	if (-1 == close(STDERR_FILENO)) {
-		MD(printf("close STDERR_FILENO error: %d\n", errno));
-	}
-	if (-1 == dup2(msg[0], STDIN_FILENO)) {
-		MD(printf("dup2 STDIN_FILENO error: %d\n", errno));
-	}
-	if (-1 == dup2(msg[1], STDOUT_FILENO)) {
-		MD(printf("dup2 STDOUT_FILENO error: %d\n", errno));
-	}
-	if (-1 == dup2(msg[1], STDERR_FILENO)) {
-		MD(printf("dup2 STDERR_FILENO error: %d\n", errno));
-	}
-#if TELNETD_USE_PTHEAD
-	ret = system("tish");
-	if (ret != 0) {
-		printf("system return error: %d\n", ret);
-		_exit(ret);
-	}
-#else
-	ret = execv("tish", NULL);
-	if (ret != 0) {
-		printf("execv return error: %d\n", ret);
-		_exit(ret);
-	}
-#endif
-	ret = utmp_login(DEAD_PROCESS, "");
-	if (ret != 0) {
-		MD(printf("utmp_login DEAD error: %d\n", ret));
-	}
-
-	_exit(0);
 	return NULL;
 }
 
-/* Here we delete '\0' symbols from *buf:
-   abc\r\0de\r\0
-   abc\rde\r*/
-static int telnet_fix_crnul(unsigned char *buf, int len) {
-	unsigned char *bpi = buf, *bpo = buf;
-	while (bpi < buf + len) {
-		if (bpi < buf + len - 1 && 0 == memcmp(bpi, "\r\0", 2)) {
-			*bpo++ = *bpi;
-			bpi += 2;
-		} else {
-			*bpo++ = *bpi++;
+static void telnet_free_session(struct telnet_session *ts) {
+	int i;
+	pid_t pid;
+
+	DPRINTF("telnet_free_session\n");
+
+	pid = ts->pid;
+	if (pid != -1) {
+		/* Kill session if it is not killed yet with usual exit. */
+		kill(pid, SIGKILL);
+		waitpid(pid, NULL, 0);
+	}
+
+	close(ts->sockfd);
+	close(ts->ptyfd);
+
+	for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
+		if (tsessions[i] == ts) {
+			free(ts);
+			tsessions[i] = NULL;
+			break;
 		}
 	}
-	return bpo - buf;
 }
 
-struct client_args {
-	int sock;
-	int pptyfd[2];
-};
+static void telnet_sigchld_hnd(int sig) {
+	pid_t pid;
+	struct telnet_session *ts;
+	int i;
 
-#if !TELNETD_USE_PTHEAD
-static void sigchild_handler(int sig) {
-	wait(NULL);
-	_exit(0);
+	DPRINTF("Get SIGCHLD\n");
+
+	while (1) {
+		pid = waitpid(-1, NULL, WNOHANG);
+		if (pid <= 0) {
+			break;
+		}
+		for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
+			ts = tsessions[i];
+			if (ts && (ts->pid == pid)) {
+				ts->pid = -1;
+				break;
+			}
+		}
+	}
 }
-#endif
 
-/* Shell thread for telnet */
-static void *telnetd_client_handler(struct client_args* client_args) {
-	/* Choose tmpbuff size a half of size of pbuff to make
-	 * replacement: \n\n...->\r\n\r\n... */
-	unsigned char sbuff[XBUFF_LEN], pbuff[XBUFF_LEN];
-	unsigned char *s = sbuff, *p = pbuff;
-	int sock_data_len = 0; /* len of rest of socket data in local buffer sbuff */
-	int pipe_data_len = 0; /* len of rest of pipe data in local buffer pbuff */
+static void telnet_execv_shell(void) {
+	char *const shell_args[] = {SHELL_NAME, NULL};
+	execv(SHELL_NAME, shell_args);
+}
 
-	int nfds;
-	fd_set readfds, writefds, exceptfds;
-	struct timeval timeout;
-#if TELNETD_USE_PTHEAD
-	pthread_t thread;
-	int msg[3];
-#endif
+static struct telnet_session *telnet_create_new_session(int sock) {
+	int master_pty, slave_pty;
+	pid_t pid;
+	struct telnet_session *ts;
 
-	MD(printf("starting telnet_thread_handler\n"));
-	/* Set socket to be nonblock. See ignore_telnet_options() */
-	fcntl(client_args->sock, F_SETFL, O_NONBLOCK);
+	ts = telnet_alloc_session();
+	if (!ts) {
+		DPRINTF("Failed to alloc new session\n");
+		return NULL;
+	}
+
+	master_pty = telnet_open_master_pty(ts);
+	if (master_pty < 0) {
+		DPRINTF("Failed to open master pty\n");
+		return 0;
+	}
+	/* It's used to do not pass pty master to children. */
+	fcntl(master_pty, F_SETFD, FD_CLOEXEC);
+
+	ts->sockfd = sock;
+	ts->ptyfd  = master_pty;
+	if (ts->sockfd > telnet_maxfd) {
+		telnet_maxfd = ts->sockfd;
+	}
+	if (ts->ptyfd > telnet_maxfd) {
+		telnet_maxfd = ts->ptyfd;
+	}
 
 	/* Send our parameters */
-	telnet_cmd(client_args->sock, T_WILL, O_GO_AHEAD);
-	telnet_cmd(client_args->sock, T_WILL, O_ECHO);
+	telnet_cmd(ts->sockfd, T_WILL, O_GO_AHEAD);
+	telnet_cmd(ts->sockfd, T_WILL, O_ECHO);
 
-	fcntl(client_args->sock, F_SETFL, 0); /* O_NONBLOCK */
-#if TELNETD_USE_PTHEAD
-	msg[0] = msg[1] = client_args->pptyfd[1];
-	msg[2] = client_args->sock;
-
-	if (pthread_create(&thread, NULL, shell_hnd, (void *) &msg)) {
-		telnet_cmd(client_args->sock, T_INTERRUPT, 0);
-		close(client_args->sock);
-		close(client_args->pptyfd[0]);
-		close(client_args->pptyfd[1]);
-		goto out;
+	pid = vfork();
+	if (pid < 0) {
+		close(master_pty);
+		telnet_free_session(ts);
+		DPRINTF("vfork failed\n");
+		return NULL;
 	}
-#else
-	signal(SIGCHLD, sigchild_handler);
+	if (pid > 0) {
+		/* Parent */
+#ifndef TELNETD_FOR_LINUX
+		/* FIXME remove. CLosing the slave end. */
+		close(ts->pptyfds[1]);
 #endif
-	/* Preparations for select call */
-	nfds = max(client_args->sock, client_args->pptyfd[0]) + 1;
+		ts->pid = pid;
+		return ts;
+	}
+	/* Child */
+	slave_pty = telnet_open_slave_pty(ts, master_pty);
+	if (slave_pty < 0) {
+		DPRINTF("Failed to open slave pty\n");
+		exit(1);
+	}
 
-	timeout.tv_sec = 100;
-	timeout.tv_usec = 0;
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
 
-	/* Try to read/write into/from pipes. We write raw data from socket into pipe,
-	 * and than receive from it the result of command running, and send it back to
-	 * client. */
-	while(1) {
+	dup2(slave_pty, STDIN_FILENO);
+	dup2(slave_pty, STDOUT_FILENO);
+	dup2(slave_pty, STDERR_FILENO);
+
+	telnet_execv_shell();
+
+	return NULL;
+}
+
+static void telnet_main_loop(int server_sock) {
+	int fd_count;
+	fd_set readfds, writefds;
+	struct telnet_session *ts;
+	int i;
+
+	signal(SIGCHLD, telnet_sigchld_hnd);
+
+main_loop:
+	FD_ZERO(&readfds);
+	FD_ZERO(&writefds);
+	/* Setup select fd sets for each active session. */
+	for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
+		ts = tsessions[i];
+		if (!ts) {
+			continue;
+		}
+		if (ts->pid == -1) {
+			telnet_free_session(ts);
+			continue;
+		}
+		if (!ts->sock_buff.count) {
+			/* Read to buf only if it is empty */
+			ts->sock_buff.p = ts->sock_buff.data;
+			FD_SET(ts->sockfd, &readfds);
+		} else {
+			FD_SET(ts->ptyfd, &writefds);
+		}
+		if (!ts->pty_buff.count) {
+			/* Read to buf only if it is empty */
+			ts->pty_buff.p = ts->pty_buff.data;
+			FD_SET(ts->ptyfd, &readfds);
+		} else {
+			FD_SET(ts->sockfd, &writefds);
+		}
+	}
+	/* Here we find maximal fd among all sessions for select(). */
+	telnet_find_new_maxfd();
+
+	/* We also select on server socket for new incoming connections. */
+	FD_SET(server_sock, &readfds);
+	if (server_sock > telnet_maxfd) {
+		telnet_maxfd = server_sock;
+	}
+
+	fd_count = select(telnet_maxfd + 1, &readfds, &writefds, NULL, NULL);
+	if (fd_count <= 0) {
+		/* Try again */
+		goto main_loop;
+	}
+
+	if (FD_ISSET(server_sock, &readfds)) {
+		int client_sock;
+		struct sockaddr_in client_sockaddr;
+		socklen_t client_socket_len = sizeof client_sockaddr;
+
+		client_sock = accept(server_sock,
+				(struct sockaddr *)&client_sockaddr, &client_socket_len);
+		if (client_sock < 0) {
+			DPRINTF("accept() failed. code=%d\n", -errno);
+			goto main_loop;
+		}
+		/* It's used to do not pass socket to children. */
+		fcntl(client_sock, F_SETFD, FD_CLOEXEC);
+		DPRINTF("Connection from address %s:%d\n",
+				inet_ntoa(client_sockaddr.sin_addr),
+				ntohs(client_sockaddr.sin_port));
+
+		ts = telnet_create_new_session(client_sock);
+		if (!ts) {
+			/* Close current connection and process other below. */
+			DPRINTF("Failed to create new session\n");
+			close(client_sock);
+		}
+	}
+
+	/* For each telnet session */
+	for (i = 0; i < TELNETD_MAX_CONNECTIONS; i++) {
 		int len;
-		int fd_cnt;
 
-		FD_ZERO(&readfds);
-		FD_ZERO(&writefds);
-		FD_ZERO(&exceptfds);
-
-		FD_SET(client_args->sock, &readfds);
-		FD_SET(client_args->pptyfd[0], &readfds);
-		if (pipe_data_len > 0) {
-			FD_SET(client_args->sock, &writefds);
-		}
-		if (sock_data_len > 0) {
-			FD_SET(client_args->pptyfd[0], &writefds);
-		}
-		FD_SET(client_args->sock, &exceptfds);
-
-		MD(printf("."));
-
-		fd_cnt = select(nfds, &readfds, &writefds, &exceptfds, &timeout);
-
-		/* XXX telnet must receive signal on socket closing, but now
-		 * alternatively here is this check */
-		if (!fd_cnt) {
-#if 0
-			fcntl(sock, F_SETFL, O_NONBLOCK);
-			len = read(sock, s, XBUFF_LEN);
-			if ((len == 0) || ((len == -1) && (errno != EAGAIN))) {
-				MD(printf("read on sock: %d %d\n", len, errno));
-				goto out_kill;
-			}
-			fcntl(sock, F_SETFL, 0);
-
-			/* preventing further execution since some fds is set,
- 			 * but they are not active and will block (fd_cnt == 0)
-			 */
-#endif
+		ts = tsessions[i];
+		if (!ts) {
 			continue;
 		}
 
-		if (FD_ISSET(client_args->sock, &exceptfds)) {
-			goto out_kill;
-		}
-
-		if (FD_ISSET(client_args->sock, &writefds)) {
-			if ((len = write(client_args->sock, p, pipe_data_len)) > 0) {
-				pipe_data_len -= len;
-				p += len;
+		if (FD_ISSET(ts->sockfd, &writefds)) {
+			len = write(ts->sockfd, ts->pty_buff.p, ts->pty_buff.count);
+			if (len > 0) {
+				ts->pty_buff.count -= len;
+				ts->pty_buff.p += len;
 			} else {
-				MD(printf("write on sock: %d %d\n", len, errno));
-				goto out_kill;
+				DPRINTF("write to server sock failed\n");
+				goto kill_session;
 			}
 		}
 
-		if (FD_ISSET(client_args->pptyfd[0], &readfds)){
-			p = pbuff;
-			if ((pipe_data_len = read(client_args->pptyfd[0], pbuff, XBUFF_LEN)) <= 0) {
-				MD(printf("read on pptyfd: %d %d\n", pipe_data_len, errno));
-				goto out_close;
+		if (FD_ISSET(ts->ptyfd, &readfds)) {
+			ts->pty_buff.count = read(ts->ptyfd,
+	                                  ts->pty_buff.data, DATA_BUF_LEN);
+			if (ts->pty_buff.count <= 0) {
+				DPRINTF("read from pty master failed\n");
+				goto kill_session;
 			}
 		}
 
-		if (FD_ISSET(client_args->pptyfd[0], &writefds)) {
-			if ((len = write(client_args->pptyfd[0], s, sock_data_len)) > 0) {
-				sock_data_len -= len;
-				s += len;
+		if (FD_ISSET(ts->ptyfd, &writefds)) {
+			len = write(ts->ptyfd, ts->sock_buff.p, ts->sock_buff.count);
+			if (len > 0) {
+				ts->sock_buff.count -= len;
+				ts->sock_buff.p += len;
 			} else {
-				MD(printf("write on pptyfd: %d %d\n", len, errno));
-				if (errno == EPIPE) {
-					goto out_kill; /* this means that pipe was closed by shell */
-				}
+				/* this means that pipe was closed by shell */
+				DPRINTF("write to pty master failed\n");
+				goto kill_session;
 			}
 		}
 
-		if (FD_ISSET(client_args->sock, &readfds)) {
-			s = sbuff;
-
-			if ((sock_data_len = read(client_args->sock, s, XBUFF_LEN)) <= 0) {
-				MD(printf("read on sock: %d %d\n", sock_data_len, errno));
+		if (FD_ISSET(ts->sockfd, &readfds)) {
+			ts->sock_buff.count = read(ts->sockfd,
+	                                   ts->sock_buff.data, DATA_BUF_LEN);
+			if (ts->sock_buff.count <= 0) {
+				goto kill_session;
 			}
-
-			sock_data_len = handle_client_data(s, sock_data_len,
-				client_args->sock, client_args->pptyfd[0]);
-
-			if (errno == ECONNREFUSED) {
-				goto out_kill;
-			}
+			ts->sock_buff.count = telnet_handle_client_data(ts->sock_buff.p,
+	                                   ts->sock_buff.count, ts->sockfd);
 		}
-	} /* while(1) */
-
-out_kill:
-	write(client_args->pptyfd[0], "exit\n", 6);
-out_close:
-	close(client_args->pptyfd[0]);
-	close(client_args->sock);
-#if TELNETD_USE_PTHEAD
-out:
-#endif
-	MD(printf("exiting from telnet_thread_handler\n"));
-	_exit(0);
-
-	return NULL;
+		continue;
+kill_session:
+		telnet_free_session(ts);
+	}
+	goto main_loop;
 }
 
 int main(int argc, char **argv) {
-	int listening_descr;
-	int res;
-	struct sockaddr_in listening_socket;
-	struct sockaddr_in client_socket;
-	socklen_t client_socket_len;
-	int client_descr;
-	int telnet_connections_count;
+	struct sockaddr_in server_sockaddr;
+	int server_sock;
 
-	if (argc > 1) {
-		struct client_args client_args;
+	server_sockaddr.sin_family      = AF_INET;
+	server_sockaddr.sin_port        = htons(TELNETD_PORT);
+	server_sockaddr.sin_addr.s_addr = htonl(TELNETD_ADDR);
 
-		if (0 == strcmp("connection", argv[1])) {
-			client_args.sock = atoi(argv[2]);
-
-			if (ppty(client_args.pptyfd) < 0) {
-				MD(printf("new pipe error: %d\n", errno));
-				close(client_args.sock);
-				_exit(0);
-			}
-#if !TELNETD_USE_PTHEAD
-			{
-				int child_pid;
-				char *child_argv[5];
-				char client_pty[10];
-
-				child_pid = vfork();
-				if (child_pid < 0) {
-					MD(printf("cannot vfork process err=%d\n", child_pid));
-					_exit(0);
-				}
-				child_argv[0] = "telnetd";
-				child_argv[1] = "shell";
-				child_argv[2] = argv[2];
-				child_argv[3] = itoa(client_args.pptyfd[1], client_pty, 10);
-				child_argv[4] = NULL;
-				if (child_pid == 0) {
-					res = execv("telnetd", child_argv);
-					if (res == -1) {
-						MD(printf("cannot execv process err=%d\n", errno));
-					}
-				}
-				/* FIXME
-				 * It's required the only for sync.
-				 * Now telnetd_client_handler() must be execute after
-				 * "telnetd shell" has started
-				 */
-				sched_yield();
-			}
-#endif
-			MD(printf("telnetd: %d\n", client_args.sock));
-			telnetd_client_handler(&client_args);
-			_exit(0);
-		}
-#if !TELNETD_USE_PTHEAD
-		if (0 == strcmp("shell", argv[1])) {
-			int msg[3];
-			msg[0] = msg[1] = atoi(argv[3]);
-			msg[2] = atoi(argv[2]);
-			MD(printf("telnetd: shell sock %d pty %d\n", msg[1], msg[2]));
-			shell_hnd(&msg);
-			_exit(0);
-		}
-#endif
-	}
-
-	telnet_connections_count = 0;
-
-	listening_socket.sin_family = AF_INET;
-	listening_socket.sin_port = htons(TELNETD_PORT);
-	listening_socket.sin_addr.s_addr = htonl(TELNETD_ADDR);
-
-	if ((listening_descr = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
-		printf("can't create socket\n");
+	if ((server_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+		printf("telnet: Can't create main server socket\n");
 		return -errno;
 	}
-
-	client_socket_len = sizeof(client_socket);
-	if (bind(listening_descr, (struct sockaddr *)&listening_socket,
-											sizeof(listening_socket)) < 0) {
-		printf("bind() failed\n");
+	if (bind(server_sock, (struct sockaddr *)&server_sockaddr,
+			sizeof server_sockaddr) < 0) {
+		printf("telnet: bind() failed on main server socket (%s)\n",
+			strerror(errno));
 		goto listen_failed;
 	}
-
-	if (listen(listening_descr, TELNETD_MAX_CONNECTIONS) < 0) {
-		printf("listen() failed\n");
+	if (listen(server_sock, TELNETD_MAX_CONNECTIONS) < 0) {
+		printf("telnet: listen() failed on main server socket\n");
 		goto listen_failed;
 	}
+	printf("telnetd started on port %d\n", TELNETD_PORT);
 
-	MD(printf("telnetd is ready to accept connections\n"));
-	while (1) {
-		int child_pid;
-		char *child_argv[4];
-		char client_desc_str[5];
-
-		if (telnet_connections_count >= TELNETD_MAX_CONNECTIONS) {
-			sleep(1);
-			continue;
-		}
-
-		if (telnet_connections_count > 0) {
-			child_pid = waitpid(-1, NULL, WNOHANG);
-			if (child_pid > 0) {
-				MD(printf("Child process with pid = %d exited\n", child_pid));
-				telnet_connections_count --;
-			}
-		}
-
-		client_descr = accept(listening_descr,
-				(struct sockaddr *)&client_socket, &client_socket_len);
-
-		if (client_descr < 0) {
-			MD(printf("accept() failed. code=%d\n", -errno));
-			continue;
-		}
-
-		MD(printf("Attempt to connect from address %s:%d\n",
-			inet_ntoa(client_socket.sin_addr), ntohs(client_socket.sin_port)));
-
-		if (client_descr >= 1000) {
-			/* there are 4 digit buffer for an accepted descriptor */
-			MD(printf("too big descriptor number=%d\n", client_descr));
-			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			close(client_descr);
-			continue;
-		}
-
-		child_pid = vfork();
-		if (child_pid < 0) {
-			telnet_cmd(client_descr, T_INTERRUPT, 0);
-			MD(printf("cannot vfork process err=%d\n", child_pid));
-			close(client_descr);
-			continue;
-		}
-		child_argv[0] = "telnetd";
-		child_argv[1] = "connection";
-		child_argv[2] = itoa(client_descr, client_desc_str, 10);
-		child_argv[3] = NULL;
-		if (child_pid == 0) {
-			res = execv("telnetd", child_argv);
-			if (res == -1) {
-				MD(printf("cannot execv process err=%d\n", errno));
-			}
-		}
-
-		close(client_descr);
-		telnet_connections_count ++;
-	}
+	telnet_main_loop(server_sock);
 
 listen_failed:
-	res = -errno;
-	close(listening_descr);
+	close(server_sock);
 
-	return res;
+	return -errno;
 }
