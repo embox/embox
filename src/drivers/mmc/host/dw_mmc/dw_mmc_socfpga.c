@@ -750,6 +750,7 @@ static int dw_mci_init_slot(struct dw_mci *host, unsigned int id) {
 	}
 
 	slot = mmc_priv(mmc);
+	memset(slot, 0, sizeof(*slot));
 	slot->id = id;
 	slot->sdio_id = host->sdio_id0 + id;
 	slot->mmc = mmc;
