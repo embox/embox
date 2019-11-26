@@ -107,21 +107,21 @@
 #define SDMMC_INT_SDIO(n)           BIT(16 + (n))
 #define SDMMC_INT_EBE               BIT(15)
 #define SDMMC_INT_ACD               BIT(14)
-#define SDMMC_INT_SBE               BIT(13)
-#define SDMMC_INT_HLE               BIT(12)
-#define SDMMC_INT_FRUN              BIT(11)
-#define SDMMC_INT_HTO               BIT(10)
+#define SDMMC_INT_SBE               BIT(13) /* 2000 */
+#define SDMMC_INT_HLE               BIT(12) /* 1000 */
+#define SDMMC_INT_FRUN              BIT(11) /* 0800 */
+#define SDMMC_INT_HTO               BIT(10) /* 0400 */
 #define SDMMC_INT_VOLT_SWITCH       BIT(10) /* overloads bit 10! */
-#define SDMMC_INT_DRTO              BIT(9)
-#define SDMMC_INT_RTO               BIT(8)
-#define SDMMC_INT_DCRC              BIT(7)
-#define SDMMC_INT_RCRC              BIT(6)
-#define SDMMC_INT_RXDR              BIT(5)
-#define SDMMC_INT_TXDR              BIT(4)
-#define SDMMC_INT_DATA_OVER         BIT(3)
-#define SDMMC_INT_CMD_DONE          BIT(2)
-#define SDMMC_INT_RESP_ERR          BIT(1)
-#define SDMMC_INT_CD                BIT(0)
+#define SDMMC_INT_DRTO              BIT(9)  /* 0200 */
+#define SDMMC_INT_RTO               BIT(8)  /* 0100 */
+#define SDMMC_INT_DCRC              BIT(7)  /* 0080 */
+#define SDMMC_INT_RCRC              BIT(6)  /* 0040 */
+#define SDMMC_INT_RXDR              BIT(5)  /* 0020 */
+#define SDMMC_INT_TXDR              BIT(4)  /* 0010 */
+#define SDMMC_INT_DATA_OVER         BIT(3)  /* 0008 */
+#define SDMMC_INT_CMD_DONE          BIT(2)  /* 0004 */
+#define SDMMC_INT_RESP_ERR          BIT(1)  /* 0002 */
+#define SDMMC_INT_CD                BIT(0)  /* 0001 */
 #define SDMMC_INT_ERROR             0xbfc2
 /* Command register defines */
 #define SDMMC_CMD_START             BIT(31)
@@ -263,6 +263,8 @@ struct dw_mci {
 	struct mmc_command *cmd;
 	struct mmc_data    *data;
 
+	unsigned int        prev_blksz;
+
 	uint32_t num_slots;
 	uint32_t fifoth_val;
 	uint16_t verid;
@@ -302,9 +304,6 @@ struct dw_mci {
 	void (*pull_data)(struct dw_mci *host, void *buf, int cnt);
 };
 
-extern int dw_mci_probe(struct dw_mci *host);
-
-
 /* FIFO register access macros. These should not change the data endian-ness
  * as they are written to memory to be dealt with by the upper layers */
 #define mci_fifo_readw(__reg)     REG16_LOAD(__reg)
@@ -314,7 +313,6 @@ extern int dw_mci_probe(struct dw_mci *host);
 #define mci_fifo_writew(__reg, __value)     REG16_STORE(__reg, __value)
 #define mci_fifo_writel(__reg, __value)     REG32_STORE(__reg, __value)
 #define mci_fifo_writeq(__reg, __value)     REG64_STORE(__reg, __value)
-
 
 /* Register access macros */
 #define mci_readl(dev, reg) \
