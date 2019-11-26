@@ -439,7 +439,7 @@ static uint32_t dw_mci_prepare_command(struct mmc_host *mmc, struct mmc_command 
 
 	if (data->addr) {
 		cmdr |= SDMMC_CMD_DAT_EXP;
-		if (data->flags & MMC_DATA_WRITE) {
+		if (cmd->flags & MMC_DATA_WRITE) {
 			cmdr |= SDMMC_CMD_DAT_WR;
 		}
 	}
