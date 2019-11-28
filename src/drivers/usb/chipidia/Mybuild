@@ -12,4 +12,5 @@ module ci_hdrc_imx {
 	depends embox.driver.usb.core
 	depends embox.driver.clk.ccm_imx6
 	depends embox.driver.usb.hc.ehci_hdc
+	depends embox.driver.usb.phy.phy_mxs_usb
 }

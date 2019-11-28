@@ -1,0 +1,159 @@
+/**
+ * @file
+ *
+ * @date Nov 28, 2019
+ * @author Anton Bondarev
+ */
+#include <util/log.h>
+
+#include <stddef.h>
+
+#include <drivers/clk/ccm_imx6.h>
+#include <drivers/common/memory.h>
+#include <hal/reg.h>
+
+#define USB_PHY_QUANTITY 2
+
+/* PHY-related stuff */
+/* There are two ports in i.MX6 processors */
+#define USBPHY_BASE(port) (0x20C9000 + 0x1000 * port)
+#define IMX6_USB_PHY_UTMI0  76
+#define IMX6_USB_PHY_UTMI1  77
+
+
+#define USBPHY_PWD(port)           (USBPHY_BASE(port) + 0x00)
+#define USBPHY_PWD_SET(port)       (USBPHY_BASE(port) + 0x04)
+#define USBPHY_PWD_CLR(port)       (USBPHY_BASE(port) + 0x08)
+#define USBPHY_PWD_TOG(port)       (USBPHY_BASE(port) + 0x0C)
+#define USBPHY_TX(port)            (USBPHY_BASE(port) + 0x10)
+#define USBPHY_TX_SET(port)        (USBPHY_BASE(port) + 0x14)
+#define USBPHY_TX_CLR(port)        (USBPHY_BASE(port) + 0x18)
+#define USBPHY_TX_TOG(port)        (USBPHY_BASE(port) + 0x1C)
+#define USBPHY_RX(port)            (USBPHY_BASE(port) + 0x20)
+#define USBPHY_RX_SET(port)        (USBPHY_BASE(port) + 0x24)
+#define USBPHY_RX_CLR(port)        (USBPHY_BASE(port) + 0x28)
+#define USBPHY_RX_TOG(port)        (USBPHY_BASE(port) + 0x2C)
+#define USBPHY_CTRL(port)          (USBPHY_BASE(port) + 0x30)
+#define USBPHY_CTRL_SET(port)      (USBPHY_BASE(port) + 0x34)
+#define USBPHY_CTRL_CLR(port)      (USBPHY_BASE(port) + 0x38)
+#define USBPHY_CTRL_TOG(port)      (USBPHY_BASE(port) + 0x3C)
+# define USBPHY_CTRL_SFTRST        (1 << 31)
+# define USBPHY_CTRL_CLKGATE       (1 << 30)
+# define USBPHY_CTRL_ENUTMILEVEL3  (1 << 15)
+# define USBPHY_CTRL_ENUTMILEVEL2  (1 << 14)
+#define USBPHY_STATUS(port)        (USBPHY_BASE(port) + 0x40)
+#define USBPHY_DEBUG(port)         (USBPHY_BASE(port) + 0x50)
+#define USBPHY_DEBUG_SET(port)     (USBPHY_BASE(port) + 0x54)
+#define USBPHY_DEBUG_CLR(port)     (USBPHY_BASE(port) + 0x58)
+#define USBPHY_DEBUG_TOG(port)     (USBPHY_BASE(port) + 0x5C)
+#define USBPHY_DEBUG0_STATUS(port) (USBPHY_BASE(port) + 0x60)
+#define USBPHY_DEBUG1(port)        (USBPHY_BASE(port) + 0x70)
+#define USBPHY_DEBUG1_SET(port)    (USBPHY_BASE(port) + 0x74)
+#define USBPHY_DEBUG1_CLR(port)    (USBPHY_BASE(port) + 0x78)
+#define USBPHY_DEBUG1_TOG(port)    (USBPHY_BASE(port) + 0x7C)
+#define USBPHY_VERSION(port)       (USBPHY_BASE(port) + 0x80)
+
+#define USB_ANALOG_BASE(port) (0x20C81A0 + 0x80 * port)
+
+#define USB_ANALOG_VBUS_DETECT(port)      (USB_ANALOG_BASE(port) + 0x00)
+#define USB_ANALOG_VBUS_DETECT_SET(port)  (USB_ANALOG_BASE(port) + 0x04)
+#define USB_ANALOG_VBUS_DETECT_CLR(port)  (USB_ANALOG_BASE(port) + 0x08)
+#define USB_ANALOG_VBUS_DETECT_TOG(port)  (USB_ANALOG_BASE(port) + 0x0C)
+#define USB_ANALOG_CHRG_DETECT(port)      (USB_ANALOG_BASE(port) + 0x10)
+#define USB_ANALOG_CHRG_DETECT_SET(port)  (USB_ANALOG_BASE(port) + 0x14)
+#define USB_ANALOG_CHRG_DETECT_CLR(port)  (USB_ANALOG_BASE(port) + 0x18)
+#define USB_ANALOG_CHRG_DETECT_TOG(port)  (USB_ANALOG_BASE(port) + 0x1C)
+# define USB_ANALOG_EN_B                  (1 << 20)
+# define USB_ANALOG_CHK_CHRG_B            (1 << 19)
+# define USB_ANALOG_CHK_CONTACT           (1 << 18)
+#define USB_ANALOG_VBUS_DETECT_STAT(port) (USB_ANALOG_BASE(port) + 0x20)
+#define USB_ANALOG_CHRG_DETECT_STAT(port) (USB_ANALOG_BASE(port) + 0x30)
+#define USB_ANALOG_MISC_DETECT(port)      (USB_ANALOG_BASE(port) + 0x40)
+#define USB_ANALOG_MISC_DETECT_SET(port)  (USB_ANALOG_BASE(port) + 0x44)
+#define USB_ANALOG_MISC_DETECT_CLR(port)  (USB_ANALOG_BASE(port) + 0x48)
+#define USB_ANALOG_MISC_DETECT_TOG(port)  (USB_ANALOG_BASE(port) + 0x4C)
+#define USB_ANALOG_DIGPROG                (USB_ANALOG_BASE(0)    + 0xA0)
+
+#define USBPHY_PWD_SET(port)       (USBPHY_BASE(port) + 0x04)
+#define USBPHY_PWD_CLR(port)       (USBPHY_BASE(port) + 0x08)
+#define USBPHY_PWD_TOG(port)       (USBPHY_BASE(port) + 0x0C)
+#define USBPHY_TX(port)            (USBPHY_BASE(port) + 0x10)
+#define USBPHY_TX_SET(port)        (USBPHY_BASE(port) + 0x14)
+#define USBPHY_TX_CLR(port)        (USBPHY_BASE(port) + 0x18)
+#define USBPHY_TX_TOG(port)        (USBPHY_BASE(port) + 0x1C)
+#define USBPHY_RX(port)            (USBPHY_BASE(port) + 0x20)
+#define USBPHY_RX_SET(port)        (USBPHY_BASE(port) + 0x24)
+#define USBPHY_RX_CLR(port)        (USBPHY_BASE(port) + 0x28)
+#define USBPHY_RX_TOG(port)        (USBPHY_BASE(port) + 0x2C)
+#define USBPHY_CTRL(port)          (USBPHY_BASE(port) + 0x30)
+#define USBPHY_CTRL_SET(port)      (USBPHY_BASE(port) + 0x34)
+#define USBPHY_CTRL_CLR(port)      (USBPHY_BASE(port) + 0x38)
+#define USBPHY_CTRL_TOG(port)      (USBPHY_BASE(port) + 0x3C)
+# define USBPHY_CTRL_CLKGATE       (1 << 30)
+#define USBPHY_STATUS(port)        (USBPHY_BASE(port) + 0x40)
+#define USBPHY_DEBUG(port)         (USBPHY_BASE(port) + 0x50)
+#define USBPHY_DEBUG_SET(port)     (USBPHY_BASE(port) + 0x54)
+#define USBPHY_DEBUG_CLR(port)     (USBPHY_BASE(port) + 0x58)
+#define USBPHY_DEBUG_TOG(port)     (USBPHY_BASE(port) + 0x5C)
+#define USBPHY_DEBUG0_STATUS(port) (USBPHY_BASE(port) + 0x60)
+#define USBPHY_DEBUG1(port)        (USBPHY_BASE(port) + 0x70)
+#define USBPHY_DEBUG1_SET(port)    (USBPHY_BASE(port) + 0x74)
+#define USBPHY_DEBUG1_CLR(port)    (USBPHY_BASE(port) + 0x78)
+#define USBPHY_DEBUG1_TOG(port)    (USBPHY_BASE(port) + 0x7C)
+#define USBPHY_VERSION(port)       (USBPHY_BASE(port) + 0x80)
+
+struct ehci_mxc_usbphy {
+	int phy_num;
+	uintptr_t base;
+};
+
+static struct ehci_mxc_usbphy ehci_mxc_usbphys[USB_PHY_QUANTITY];
+
+static inline void ehci_mxc_regdump(struct ehci_mxc_usbphy *usbphy) {
+	log_boot("========= PHY REGISTERS =========\n");
+	log_boot("USBPHY%d_PWD     %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_PWD(usbphy->phy_num)));
+	log_boot("USBPHY%d_TX      %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_TX(usbphy->phy_num)));
+	log_boot("USBPHY%d_RX      %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_RX(usbphy->phy_num)));
+	log_boot("USBPHY%d_CTRL    %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_CTRL(usbphy->phy_num)));
+	log_boot("USBPHY%d_STATUS  %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_STATUS(usbphy->phy_num)));
+}
+
+struct ehci_mxc_usbphy *imx_usb_phy_create(int i) {
+	if (i >= USB_PHY_QUANTITY) {
+		return NULL;
+	}
+	ehci_mxc_usbphys[i].base = USBPHY_BASE(i);
+	ehci_mxc_usbphys[i].phy_num = i;
+
+	return &ehci_mxc_usbphys[i];
+}
+
+void imx_usb_phy_enable(int port) {
+	int tmp;
+
+	REG32_STORE(USBPHY_CTRL_SET(port), USBPHY_CTRL_SFTRST);
+	tmp = 0xffff;
+	while(tmp--);
+
+	REG32_STORE(USBPHY_CTRL_CLR(port),
+			USBPHY_CTRL_SFTRST | USBPHY_CTRL_CLKGATE);
+
+	REG32_STORE(USBPHY_PWD(port), 0);
+
+	/* enable FS/LS device */
+
+	REG32_STORE(USBPHY_CTRL_SET(port),
+			USBPHY_CTRL_ENUTMILEVEL2 | USBPHY_CTRL_ENUTMILEVEL3);
+}
+
+void imx_usb_powerup(int port) {
+	REG32_STORE(USBPHY_CTRL_SET(port), USBPHY_CTRL_CLKGATE);
+
+	REG32_STORE(USB_ANALOG_CHRG_DETECT(port),
+			USB_ANALOG_EN_B | USB_ANALOG_CHK_CHRG_B);
+
+	ccm_analog_usb_init(port);
+}
+
+PERIPH_MEMORY_DEFINE(imx_usb_phy, USBPHY_BASE(0), 0x2000);
+
