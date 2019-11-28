@@ -1,0 +1,15 @@
+
+package embox.driver.usb
+
+module ci_hdrc_imx {
+	option number log_level = 4
+
+	option number base_addr = 0x02184000
+	option number hc_quantity = 2
+
+	source "ci_hdrc_imx.c"
+
+	depends embox.driver.usb.core
+	depends embox.driver.clk.ccm_imx6
+	depends embox.driver.usb.hc.ehci_hdc
+}

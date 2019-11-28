@@ -16,7 +16,7 @@
 #include <kernel/irq.h>
 #include <util/log.h>
 
-#include "ehci.h"
+#include <drivers/usb/ehci.h>
 
 #include "usb_ehci_mxc_regs.h"
 

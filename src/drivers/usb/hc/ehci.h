@@ -10,7 +10,7 @@
 
 #include <drivers/usb/usb.h>
 
-#include "ehci_regs.h"
+#include <drivers/usb/ehci_regs.h>
 
 /* type tag from {qh,itd,sitd,fstn}->hw_next */
 #define EHCI_Q_NEXT_TYPE(ehci, dma) ((dma) & 3 << 1)

@@ -254,6 +254,9 @@ static inline int ehci_run(struct ehci_hcd *ehci) {
 	/* Turn On Interrupts */
 	ehci_write(ehci, EHCI_INTR_MASK, &ehci->ehci_regs->intr_enable);
 
+	ehci_caps_dump(ehci);
+	ehci_regs_dump(ehci);
+
 	return 0;
 }
 
