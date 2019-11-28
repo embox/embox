@@ -129,6 +129,7 @@ module journal {
 module buffer_cache {
 	source "bcache.c"
 	option number bcache_size=128
+	option number bcache_align=512
 
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
