@@ -17,11 +17,11 @@
 
 #include <fs/bcache.h>
 
-
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(bcache_init);
 
-#define BCACHE_SIZE OPTION_GET(NUMBER, bcache_size)
+#define BCACHE_SIZE   OPTION_GET(NUMBER, bcache_size)
+#define BCACHE_ALIGN  OPTION_GET(NUMBER, bcache_align)
 
 POOL_DEF(buffer_head_pool, struct buffer_head, BCACHE_SIZE);
 static DLIST_DEFINE(bh_list);
@@ -117,7 +117,7 @@ static int graw_buffers(struct block_dev *bdev, int block, size_t size) {
 	bh->bdev = bdev;
 	bh->block = block;
 	bh->blocksize = size;
-	bh->data = sysmalloc(size); /* TODO kmalloc */
+	bh->data = sysmemalign(BCACHE_ALIGN, size);
 
 	if (!bh->data) {
 		pool_free(&buffer_head_pool, bh);
