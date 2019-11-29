@@ -217,6 +217,11 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	}
 	bdev = block_dev(dev);
 
+	if (bdev->parent_bdev != NULL) {
+		blkno += bdev->start_offset;
+		bdev = bdev->parent_bdev;
+	}
+
 	blksize = block_dev_block_size(bdev);
 	if (blksize < 0) {
 		return blksize;
@@ -233,6 +238,11 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 	}
 
 	bdev = block_dev(dev);
+
+	if (bdev->parent_bdev != NULL) {
+		blkno += bdev->start_offset;
+		bdev = bdev->parent_bdev;
+	}
 
 	blksize = block_dev_block_size(bdev);
 	if (blksize < 0) {
