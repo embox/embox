@@ -38,13 +38,13 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 
 	devmod = file->node->nas->fi->privdata;
 	bdev = devmod->dev_priv;
-	if (!bdev->parrent_bdev) {
+	if (!bdev->parent_bdev) {
 		/* It's not a partition */
 		blk_no = file->cursor / bdev->block_size;
 	} else {
 		/* It's a partition */
 		blk_no = bdev->start_offset + (file->cursor / bdev->block_size);
-		bdev = bdev->parrent_bdev;
+		bdev = bdev->parent_bdev;
 	}
 
 	assert(bdev->driver);
@@ -73,13 +73,13 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 
 	devmod = file->node->nas->fi->privdata;
 	bdev = devmod->dev_priv;
-	if (!bdev->parrent_bdev) {
+	if (!bdev->parent_bdev) {
 		/* It's not a partition */
 		blk_no = file->cursor / bdev->block_size;
 	} else {
 		/* It's a partition */
 		blk_no = bdev->start_offset + (file->cursor / bdev->block_size);
-		bdev = bdev->parrent_bdev;
+		bdev = bdev->parent_bdev;
 	}
 
 	assert(bdev->driver);
@@ -113,8 +113,8 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	case IOCTL_GETBLKSIZE:
 		return bdev->block_size;
 	default:
-		if (bdev->parrent_bdev) {
-			bdev = bdev->parrent_bdev;
+		if (bdev->parent_bdev) {
+			bdev = bdev->parent_bdev;
 		}
 		assert(bdev->driver);
 		if (NULL == bdev->driver->ioctl)

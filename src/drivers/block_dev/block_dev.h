@@ -38,7 +38,7 @@ struct block_dev {
 
 	/* partitions */
 	size_t start_offset;
-	struct block_dev *parrent_bdev;
+	struct block_dev *parent_bdev;
 };
 
 struct block_dev_driver {

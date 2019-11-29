@@ -60,7 +60,7 @@ int create_partitions(struct block_dev *bdev) {
 				(uint32_t)(mbr.ptable[part_n].size_1) << 8 |
 				(uint32_t)(mbr.ptable[part_n].size_0) << 0;
 
-		part_bdev->parrent_bdev = bdev;
+		part_bdev->parent_bdev = bdev;
 		part_bdev->block_size = bdev->block_size;
 	}
 
