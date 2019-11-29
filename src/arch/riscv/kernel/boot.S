@@ -80,7 +80,7 @@ _start:
 park:   # infinite wait for interrupts
 	wfi
 	j       park
-
+/*
 trap_vector:
 	# Save registers.
 	addi    sp, sp, -CONTEXT_SIZE
@@ -128,7 +128,7 @@ trap_vector:
 
 	# Return
 	mret
-
+*/
 
 	.bss
 	.align 4
