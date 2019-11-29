@@ -37,7 +37,7 @@ struct block_dev {
 	struct dev_module *dev_module;
 
 	/* partitions */
-	size_t start_offset;
+	uint64_t start_offset;
 	struct block_dev *parent_bdev;
 };
 

@@ -50,15 +50,15 @@ int create_partitions(struct block_dev *bdev) {
 			return -ENOMEM;
 		}
 
-		part_bdev->start_offset = (uint32_t)(mbr.ptable[part_n].start_3) << 24 |
+		part_bdev->start_offset = (int64_t) ((uint32_t)(mbr.ptable[part_n].start_3) << 24 |
 				(uint32_t)(mbr.ptable[part_n].start_2) << 16 |
 				(uint32_t)(mbr.ptable[part_n].start_1) << 8 |
-				(uint32_t)(mbr.ptable[part_n].start_0) << 0;
+				(uint32_t)(mbr.ptable[part_n].start_0) << 0);
 
-		part_bdev->size = (uint32_t)(mbr.ptable[part_n].size_3) << 24 |
+		part_bdev->size = (int64_t) ((uint32_t)(mbr.ptable[part_n].size_3) << 24 |
 				(uint32_t)(mbr.ptable[part_n].size_2) << 16 |
 				(uint32_t)(mbr.ptable[part_n].size_1) << 8 |
-				(uint32_t)(mbr.ptable[part_n].size_0) << 0;
+				(uint32_t)(mbr.ptable[part_n].size_0) << 0);
 
 		part_bdev->parent_bdev = bdev;
 		part_bdev->block_size = bdev->block_size;
