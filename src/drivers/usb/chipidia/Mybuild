@@ -8,6 +8,7 @@ module ci_hdrc_imx {
 	option number hc_quantity = 2
 
 	source "ci_hdrc_imx.c"
+	source "usbmisk_imx.c"
 
 	depends embox.driver.usb.core
 	depends embox.driver.clk.ccm_imx6

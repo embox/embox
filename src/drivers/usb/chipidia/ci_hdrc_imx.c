@@ -8,15 +8,17 @@
 
 #include <errno.h>
 
-#include <drivers/clk/ccm_imx6.h>
-#include <drivers/common/memory.h>
-#include <drivers/usb/usb.h>
-#include <embox/unit.h>
-#include <hal/reg.h>
-#include <kernel/irq.h>
 #include <util/log.h>
 
+#include <drivers/clk/ccm_imx6.h>
+#include <drivers/common/memory.h>
+#include <hal/reg.h>
+#include <kernel/irq.h>
+
+#include <drivers/usb/usb.h>
 #include <drivers/usb/ehci.h>
+
+#include <embox/unit.h>
 
 #include "usb_ehci_mxc_regs.h"
 
@@ -29,6 +31,7 @@ struct ehci_mxc_usbphy;
 struct ehci_mxc_usbphy *imx_usb_phy_create(int i);
 extern void imx_usb_phy_enable(int port);
 extern void imx_usb_powerup(int port);
+extern int usbmisc_imx6q_init(int index);
 
 struct ehci_mxc_hc {
 	uintptr_t base;
@@ -97,6 +100,7 @@ static int imx_usb_init(void) {
 		ehci_mxc_hcs[i].ehci = NULL;
 		ehci_mxc_hcs[i].usbphy = imx_usb_phy_create(i);
 
+		usbmisc_imx6q_init(i);
 		imx_usb_phy_enable(i);
 		imx_usb_powerup(i);
 
