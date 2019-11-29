@@ -19,4 +19,6 @@ module mmc_core {
 	source "sdio.c",
 		"sd.c",
 		"mmc.c"
+
+	depends embox.driver.block.partition
 }
