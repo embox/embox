@@ -43,17 +43,18 @@ static int usbmisc_imx6q_set_wakeup(int index, int enabled) {
 		val &= ~wakeup_setting;
 	}
 	REG_STORE(IMX_USB_NONCORE_BASE + index * 4, val);
+	log_debug("addr(%x), val(%x)", index * 4, val);
 
 	return ret;
 }
 
 int usbmisc_imx6q_init(int index) {
 	uint32_t reg;
-
+/*
 	reg = REG_LOAD(IMX_USB_NONCORE_BASE + index * 4);
 	reg |= MX6_BM_OVER_CUR_DIS;
 	REG_STORE(IMX_USB_NONCORE_BASE + index * 4, reg);
-
+*/
 	/* SoC non-burst setting */
 	reg = REG_LOAD(IMX_USB_NONCORE_BASE + index * 4);
 	reg |= MX6_BM_NON_BURST_SETTING;
