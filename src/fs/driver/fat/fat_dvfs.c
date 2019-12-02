@@ -389,7 +389,11 @@ static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	struct fat_fs_info *fsi;
 	struct block_dev *dev;
 	assert(sb);
-	assert(bdev_file);
+	if (!bdev_file) {
+		/* FAT always uses block device, so we can't fill superblock */
+		return -ENOENT;
+	}
+
 	assert(bdev_file->f_inode);
 	assert(bdev_file->f_inode->i_data);
 
