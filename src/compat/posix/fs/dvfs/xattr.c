@@ -12,7 +12,7 @@
 #include <fs/dvfs.h>
 
 int getxattr(const char *path, const char *name, char *value, size_t size) {
-	struct lookup lookup;
+	struct lookup lookup = {};
 	struct inode *inode;
 	int err;
 
@@ -30,7 +30,7 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 
 int setxattr(const char *path, const char *name, const char *value, size_t size,
 	       	int flags) {
-	struct lookup lookup;
+	struct lookup lookup = {};
 	struct inode *inode;
 	int err;
 

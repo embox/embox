@@ -11,7 +11,7 @@
 #include <fs/dvfs.h>
 
 int chown(const char *path, uid_t owner, gid_t group) {
-	struct lookup lookup;
+	struct lookup lookup = {};
 	int res;
 
 	if (!path) {

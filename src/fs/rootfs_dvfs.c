@@ -44,7 +44,7 @@ static int rootfs_mount(void) {
 	const char *dev, *fs_type;
 	const struct dumb_fs_driver *fsdrv;
 	const struct auto_mount *auto_mnt;
-	struct lookup lu;
+	struct lookup lu = {};
 	char *tmp;
 	int err;
 

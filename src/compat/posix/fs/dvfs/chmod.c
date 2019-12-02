@@ -11,7 +11,7 @@
 #include <fs/dvfs.h>
 
 int chmod(const char *path, mode_t mode) {
-	struct lookup l;
+	struct lookup l = {};
 	int res = dvfs_lookup(path, &l);
 	struct dentry *d = l.item;
 
