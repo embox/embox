@@ -507,12 +507,18 @@ static int fat_format(void *dev, void *priv) {
  */
 static int fat_clean_sb(struct super_block *sb) {
 	struct fat_fs_info *fsi;
+	struct dirinfo *di;
 
 	assert(sb);
+	assert(sb->root);
+	assert(sb->root->d_inode);
+
+	di = sb->root->d_inode->i_data;
+	assert(di);
+	fat_dirinfo_free(di);
 
 	fsi = sb->sb_data;
 	assert(fsi);
-
 	fat_fs_free(fsi);
 
 	return 0;
