@@ -25,6 +25,7 @@ int create_partitions(struct block_dev *bdev) {
 	struct mbr mbr;
 	int rc;
 	int part_n;
+	int last_digit = 0;
 	char part_name[PART_NAME_MAX];
 	struct block_dev *part_bdev;
 
@@ -38,13 +39,18 @@ int create_partitions(struct block_dev *bdev) {
 	if ((mbr.sig_55 != 0x55) || (mbr.sig_aa != 0xAA)) {
 		return 0;
 	}
+
+	if (isdigit(bdev->name[strlen(bdev->name) - 1])) {
+		last_digit = 1;
+	}
+
 	for (part_n = 0; part_n < 4; part_n ++) {
 
 		if(mbr.ptable[part_n].type == 0) {
 			return part_n;
 		}
 
-		sprintf(part_name, "/dev/%s%d", bdev->name, part_n + 1);
+		sprintf(part_name, "/dev/%s%s%d", bdev->name, last_digit ? "p" : "", part_n + 1);
 		part_bdev = block_dev_create(part_name, bdev->driver, NULL);
 		if (!part_bdev) {
 			return -ENOMEM;
