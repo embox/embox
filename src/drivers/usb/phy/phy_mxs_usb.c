@@ -20,7 +20,6 @@
 #define IMX6_USB_PHY_UTMI0  76
 #define IMX6_USB_PHY_UTMI1  77
 
-
 #define USBPHY_PWD(port)           (USBPHY_BASE(port) + 0x00)
 #define USBPHY_PWD_SET(port)       (USBPHY_BASE(port) + 0x04)
 #define USBPHY_PWD_CLR(port)       (USBPHY_BASE(port) + 0x08)
@@ -37,10 +36,15 @@
 #define USBPHY_CTRL_SET(port)      (USBPHY_BASE(port) + 0x34)
 #define USBPHY_CTRL_CLR(port)      (USBPHY_BASE(port) + 0x38)
 #define USBPHY_CTRL_TOG(port)      (USBPHY_BASE(port) + 0x3C)
-# define USBPHY_CTRL_SFTRST        (1 << 31)
-# define USBPHY_CTRL_CLKGATE       (1 << 30)
-# define USBPHY_CTRL_ENUTMILEVEL3  (1 << 15)
-# define USBPHY_CTRL_ENUTMILEVEL2  (1 << 14)
+# define USBPHY_CTRL_SFTRST                (1 << 31)
+# define USBPHY_CTRL_CLKGATE               (1 << 30)
+# define USBPHY_CTRL_ENAUTOSET_USBCLKS     (1 << 26)
+# define USBPHY_CTRL_ENAUTOCLR_USBCLKGATE  (1 << 25)
+# define USBPHY_CTRL_ENAUTOCLR_PHY_PWD     (1 << 20)
+# define USBPHY_CTRL_ENAUTOCLR_CLKGATE     (1 << 19)
+# define USBPHY_CTRL_ENAUTO_PWRON_PLL      (1 << 18)
+# define USBPHY_CTRL_ENUTMILEVEL3          (1 << 15)
+# define USBPHY_CTRL_ENUTMILEVEL2          (1 << 14)
 #define USBPHY_STATUS(port)        (USBPHY_BASE(port) + 0x40)
 #define USBPHY_DEBUG(port)         (USBPHY_BASE(port) + 0x50)
 #define USBPHY_DEBUG_SET(port)     (USBPHY_BASE(port) + 0x54)
@@ -127,33 +131,30 @@ struct ehci_mxc_usbphy *imx_usb_phy_create(int i) {
 
 	return &ehci_mxc_usbphys[i];
 }
-
+extern int stmp_reset_block(void *reset_addr) ;
 void imx_usb_phy_enable(int port) {
-	int tmp;
+	uint32_t val;
 
-	REG32_STORE(USBPHY_CTRL_SET(port), USBPHY_CTRL_SFTRST);
-	tmp = 0xffff;
-	while(tmp--);
+	ccm_analog_usb_init(port);
 
-	REG32_STORE(USBPHY_CTRL_CLR(port),
-			USBPHY_CTRL_SFTRST | USBPHY_CTRL_CLKGATE);
-
+	stmp_reset_block((void *)(uintptr_t)USBPHY_CTRL(port));
 	REG32_STORE(USBPHY_PWD(port), 0);
+	log_debug("reg(%x) val(%x)", 0, 0);
 
 	/* enable FS/LS device */
-
-	REG32_STORE(USBPHY_CTRL_SET(port),
-			USBPHY_CTRL_ENUTMILEVEL2 | USBPHY_CTRL_ENUTMILEVEL3);
+	val = USBPHY_CTRL_ENAUTOSET_USBCLKS |
+			USBPHY_CTRL_ENAUTOCLR_USBCLKGATE |
+			USBPHY_CTRL_ENAUTOCLR_PHY_PWD |
+			USBPHY_CTRL_ENAUTOCLR_CLKGATE |
+			USBPHY_CTRL_ENAUTO_PWRON_PLL |
+			USBPHY_CTRL_ENUTMILEVEL2 |
+			USBPHY_CTRL_ENUTMILEVEL3;
+	REG32_STORE(USBPHY_CTRL_SET(port), val);
+	log_debug("reg(%x) val(%x)", 0x34, val);
 }
 
 void imx_usb_powerup(int port) {
-	REG32_STORE(USBPHY_CTRL_SET(port), USBPHY_CTRL_CLKGATE);
-
-	REG32_STORE(USB_ANALOG_CHRG_DETECT(port),
-			USB_ANALOG_EN_B | USB_ANALOG_CHK_CHRG_B);
-
-	ccm_analog_usb_init(port);
+	//ccm_analog_usb_init(port);
 }
 
 PERIPH_MEMORY_DEFINE(imx_usb_phy, USBPHY_BASE(0), 0x2000);
-

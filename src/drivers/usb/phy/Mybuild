@@ -5,4 +5,5 @@ module phy_mxs_usb {
 	option number log_level = 4
 
 	source "phy_mxs_usb.c"
+	source "stmp_device.c"
 }
