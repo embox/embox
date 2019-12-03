@@ -91,6 +91,7 @@ struct ehci_caps {
 #define EHCI_PORT_PE         (1 << 2)      /* port enable */
 #define EHCI_PORT_CSC        (1 << 1)      /* connect status change */
 #define EHCI_PORT_CONNECT    (1 << 0)      /* device connected */
+#define EHCI_PORT_RWC_BITS   (EHCI_PORT_CSC | EHCI_PORT_PEC | EHCI_PORT_OCC)
 
 /* CONFIGFLAG */
 #define EHCI_CF_DONE                      (1 << 0)   /* true: we'll support "high speed" */
