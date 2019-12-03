@@ -55,6 +55,9 @@
 # define MCI_DATACTRL_BLK_MASK (0xF0)
 #define MCI_DATACNT            (PL181_BASE + 0x030)
 #define MCI_STATUS             (PL181_BASE + 0x034)
+# define MCI_STATUS_TXFHE      (1 << 14)
+# define MCI_STATUS_TXD        (1 << 20)
+# define MCI_STATUS_RXD        (1 << 21)
 #define MCI_CLEAR              (PL181_BASE + 0x038)
 #define MCI_MASK0              (PL181_BASE + 0x03C)
 #define MCI_MASK1              (PL181_BASE + 0x040)
@@ -153,6 +156,8 @@ static void pl181_mmc_request(struct mmc_host *host, struct mmc_request *req) {
 	req->cmd.resp[3] = REG32_LOAD(MCI_RESPONSE3);
 
 	if (req->cmd.flags & MMC_DATA_XFER) {
+		int xfer = req->data.blksz * req->data.blocks;
+
 		REG32_STORE(MCI_DATALENGTH, req->data.blocks * req->data.blksz);
 		REG32_STORE(MCI_DATALENGTH, req->data.blksz);
 		log_debug("Set datalen %d", req->data.blksz);
@@ -163,17 +168,19 @@ static void pl181_mmc_request(struct mmc_host *host, struct mmc_request *req) {
 		buff = (void *) req->data.addr;
 		log_debug("buff=%p", buff);
 
-		for (int i = 0; i < 512 / 4; i++) {
-			int timeout = 0xffff;
-			while (REG32_LOAD(MCI_FIFOCNT) == 0 && timeout-- > 0);
-
+		while (xfer > 0) {
 			if (req->cmd.flags & MMC_DATA_READ) {
-				*buff = REG32_LOAD(MCI_FIFO(0));
+				if (REG32_LOAD(MCI_STATUS) & MCI_STATUS_RXD) {
+					*buff++ = REG32_LOAD(MCI_FIFO(0));
+					xfer -= sizeof(uint32_t);
+				}
 			} else {
-				REG32_STORE(MCI_FIFO(0), *buff);
+				if (REG32_LOAD(MCI_STATUS) & MCI_STATUS_TXFHE) {
+					REG32_STORE(MCI_FIFO(0), *buff);
+					buff++;
+					xfer -= sizeof(uint32_t);
+				}
 			}
-
-			buff++;
 		}
 	}
 }
