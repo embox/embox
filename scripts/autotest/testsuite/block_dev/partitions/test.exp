@@ -1,0 +1,8 @@
+TEST_CASE {Run partition test} {
+	global embox_prompt
+	global block_dev_raw
+
+	send "block_dev_test -p $block_dev_raw\r"
+	# Wait for 3 min
+	test_expect_strings_timeout 180 "OK" $embox_prompt
+}
