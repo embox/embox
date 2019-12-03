@@ -2,10 +2,11 @@
 package embox.driver.usb
 
 module ci_hdrc_imx {
-	option number log_level = 4
+	option number log_level = 1
 
-	option number base_addr = 0x02184000
-	option number hc_quantity = 2
+	/*usb1*/
+	option number base_addr = 0x02184200
+	option number irq_num = 72
 
 	source "ci_hdrc_imx.c"
 	source "usbmisk_imx.c"

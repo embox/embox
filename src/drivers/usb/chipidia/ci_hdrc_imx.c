@@ -25,7 +25,7 @@
 EMBOX_UNIT_INIT(imx_usb_init);
 
 #define IMX_USB_CORE_BASE     OPTION_GET(NUMBER, base_addr)
-#define EHCI_MXC_HC_QUANTITY  OPTION_GET(NUMBER, hc_quantity)
+#define IMX_USB_IRQ           OPTION_GET(NUMBER, irq_num)
 
 struct ehci_mxc_usbphy;
 struct ehci_mxc_usbphy *imx_usb_phy_create(int i);
@@ -40,7 +40,7 @@ struct ehci_mxc_hc {
 	struct ehci_hdc *ehci;
 };
 
-static struct ehci_mxc_hc ehci_mxc_hcs[EHCI_MXC_HC_QUANTITY];
+static struct ehci_mxc_hc ehci_mxc_hc;
 
 static inline uint32_t ehci_mxc_read(struct ehci_mxc_hc *hc, int reg) {
 	return REG32_LOAD(hc->base + reg);
@@ -50,7 +50,6 @@ static inline void ehci_mxc_write(struct ehci_mxc_hc *hc, int reg, uint32_t val)
 	REG32_STORE(hc->base + reg, val);
 }
 
-//#define USB_PORT 1
 #define IMX6_USB0_IRQ       72
 #define IMX6_USB1_IRQ       73
 #define IMX6_USB2_IRQ       74
@@ -65,7 +64,6 @@ static void ehci_mxc_regdump(struct ehci_mxc_hc *hc) {
 	log_boot("USB_UOG_HWRXBUF    %08x\n", ehci_mxc_read(hc, USB_UOG_HWRXBUF));
 
 }
-
 
 static inline irq_return_t imx6_irq(unsigned int irq_nr, void *data) {
 	log_debug("IRQ%d enter", irq_nr);
@@ -88,26 +86,22 @@ static inline int ehci_mxc_init(struct ehci_mxc_hc *hc) {
 }
 
 static int imx_usb_init(void) {
-	int i;
-
 	clk_enable("usboh3");
 
 	log_boot_start();
 
-	for (i = 0; i < EHCI_MXC_HC_QUANTITY; i ++) {
-		ehci_mxc_hcs[i].base = IMX_USB_CORE_BASE + 0x200 * i;
-		ehci_mxc_hcs[i].irq_num = IMX6_USB0_IRQ + i;
-		ehci_mxc_hcs[i].ehci = NULL;
-		ehci_mxc_hcs[i].usbphy = imx_usb_phy_create(i);
+	ehci_mxc_hc.base = IMX_USB_CORE_BASE;
+	ehci_mxc_hc.irq_num = IMX6_USB0_IRQ;
+	ehci_mxc_hc.ehci = NULL;
+	ehci_mxc_hc.usbphy = imx_usb_phy_create(1);
 
-		usbmisc_imx6q_init(i);
-		imx_usb_phy_enable(i);
-		imx_usb_powerup(i);
+	usbmisc_imx6q_init(1);
+	imx_usb_phy_enable(1);
+	imx_usb_powerup(1);
 
-		ehci_mxc_init(&ehci_mxc_hcs[i]);
+	ehci_mxc_init(&ehci_mxc_hc);
 
-		ehci_hcd_register((void *) (ehci_mxc_hcs[i].base + 0x100), ehci_mxc_hcs[i].irq_num);
-	}
+	ehci_hcd_register((void *) (ehci_mxc_hc.base + 0x100), ehci_mxc_hc.irq_num);
 
 	log_boot_stop();
 
