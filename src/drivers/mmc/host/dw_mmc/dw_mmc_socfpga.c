@@ -90,9 +90,7 @@ POOL_DEF(dw_mci_slot_pool, struct dw_mci_slot, SLOTS_QUANTITY);
 
 static bool dw_mci_ctrl_reset(struct dw_mci *host, uint32_t reset) {
 	uint32_t ctrl;
-	unsigned long timeout;
-
-	timeout = clock_sys_ticks() + ms2jiffies(2000);
+	int timeout = 2000;
 
 	ctrl = mci_readl(host, CTRL);
 	ctrl |= reset;
@@ -104,7 +102,9 @@ static bool dw_mci_ctrl_reset(struct dw_mci *host, uint32_t reset) {
 		if (!(ctrl & reset)) {
 			return true;
 		}
-	} while (time_before(clock_sys_ticks(), timeout));
+
+		usleep(USEC_PER_MSEC);
+	} while (timeout-- > 0);
 
 	log_error("Timeout resetting block (ctrl reset %#x)", ctrl & reset);
 
