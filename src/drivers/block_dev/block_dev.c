@@ -107,6 +107,18 @@ struct block_dev *block_dev_find(const char *bd_name) {
 	return NULL;
 }
 
+int block_dev_max_id(void) {
+	return MAX_DEV_QUANTITY;
+}
+
+struct block_dev *block_dev_by_id(int id) {
+	if (id < 0 || id >= MAX_DEV_QUANTITY) {
+		return NULL;
+	}
+
+	return devtab[id];
+}
+
 struct block_dev *block_dev(void *dev) {
 	return (struct block_dev *)dev;
 }
