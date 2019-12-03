@@ -395,6 +395,12 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 int block_dev_destroy(void *dev) {
 	struct dev_module *devmod = dev;
 
+	for (int i = 0; i < MAX_DEV_QUANTITY; i++) {
+		if (devtab[i] && devtab[i]->parent_bdev == devmod->dev_priv) {
+			block_dev_destroy(devtab[i]->dev_module);
+		}
+	}
+
 	devfs_del_block(devmod->dev_priv);
 
 	block_dev_free(devmod->dev_priv);
