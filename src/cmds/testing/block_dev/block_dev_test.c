@@ -16,6 +16,7 @@
 
 #include <framework/mod/options.h>
 #include <drivers/flash/flash.h>
+#include <lib/crypt/md5.h>
 #include <module/embox/driver/block_common.h>
 #include <util/pretty_print.h>
 
@@ -145,7 +146,7 @@ static int block_dev_test(struct block_dev *bdev) {
 
 	blk_sz = bdev->block_size;
 	if (blk_sz == 0) {
-		printf("block size is zero, that's probably shouldn't happen\n");
+		printf("block size is zero, that probably shouldn't happen\n");
 		return -1;
 	}
 
@@ -173,13 +174,13 @@ static int block_dev_test(struct block_dev *bdev) {
 		err = block_dev_write(bdev, (void *) write_buf, blk_sz, i);
 		if (err < 0) {
 			printf("Failed to write block #%"PRIu64"\n", i);
-			return err;
+			goto free_buf;
 		}
 
 		err = block_dev_read(bdev, (void *) read_buf, blk_sz, i);
 		if (err < 0) {
 			printf("Failed to read block #%"PRIu64"\n", i);
-			return err;
+			goto free_buf;
 		}
 
 		err = memcmp(read_buf, write_buf, blk_sz);
@@ -187,25 +188,19 @@ static int block_dev_test(struct block_dev *bdev) {
 			printf("Write/read mismatch!\n");
 			dump_buf(write_buf, blk_sz, "Write buffer");
 			dump_buf(read_buf, blk_sz, "Read buffer");
-			return -1;
+			goto free_buf;
 		}
 	}
 
+free_buf:
 	free(read_buf);
 	free(write_buf);
 
-	return 0;
+	return err;
 }
 
-static int dev_test(const char *name) {
-	struct block_dev *bdev;
+static int dev_test(struct block_dev *bdev) {
 	struct flash_dev *fdev;
-
-	bdev = block_dev_find(name);
-	if (!bdev) {
-		printf("Block device \"%s\" not found\n", name);
-		return -1;
-	}
 
 	fdev = get_flash_dev(bdev);
 	if (fdev) {
@@ -215,17 +210,256 @@ static int dev_test(const char *name) {
 	}
 }
 
+static int md5_outside_part(struct block_dev *bdev,
+		struct block_dev *part,
+		md5_byte_t *digest,
+		void *read_buf) {
+	md5_state_t state;
+	int err;
+	int blk_sz = part->block_size;
+	uint64_t blocks = bdev->size / ((uint64_t) blk_sz);
+
+	md5_init(&state);
+
+	uint64_t last_blk = part->start_offset + part->size / blk_sz;
+
+	/* Data before partition */
+	for (uint64_t j = 0; j < part->start_offset; j++) {
+		err = block_dev_read(bdev, read_buf, blk_sz, j);
+		if (err < 0) {
+			printf("Failed to read block #%"PRIu64"\n", j);
+			return -1;
+		}
+
+		md5_append(&state, read_buf, blk_sz);
+	}
+
+	/* Data beyond partition */
+	for (uint64_t j = last_blk; j < blocks; j++) {
+		err = block_dev_read(bdev, read_buf, blk_sz, j);
+		if (err < 0) {
+			printf("Failed to read block #%"PRIu64"\n", j);
+			return -1;
+		}
+
+		md5_append(&state, read_buf, blk_sz);
+	}
+
+	md5_finish(&state, digest);
+	return 0;
+}
+
+#define TEST_PARTS 4
+static int part_test(struct block_dev *bdev) {
+	struct block_dev *parts[TEST_PARTS] = { NULL };
+	int8_t *read_buf, *write_buf;
+	int parts_n = 0, err, blocks;
+	size_t blk_sz;
+
+	blk_sz = bdev->block_size;
+	if (blk_sz == 0) {
+		printf("block size is zero, that probably shouldn't happen\n");
+		return 0;
+	}
+
+	printf("Looking for partitions...\n");
+	for (int i = 0; i < block_dev_max_id(); i++) {
+		struct block_dev *b = block_dev_by_id(i);
+
+		if (b && b->parent_bdev == bdev) {
+			printf("%s\n", b->name);
+			if (b->block_size != blk_sz) {
+				printf("Block size mismatch! %d for %s; %d for %s\n",
+						blk_sz, bdev->name, b->block_size, b->name);
+				return 0;
+			}
+
+			if (parts_n == TEST_PARTS) {
+				printf("Too many partitions, test only first %d\n",
+						TEST_PARTS);
+				break;
+			}
+
+			parts[parts_n++] = b;
+		}
+	}
+
+	if (parts[0] == NULL) {
+		printf("No partitions found. Run without '-p' flag "
+				"for simple block device test.\n");
+		return 0;
+	}
+
+	read_buf = malloc(blk_sz);
+	write_buf = malloc(blk_sz);
+
+	if (read_buf == NULL || write_buf == NULL) {
+		printf("Failed to allocate memory for buffer!\n");
+
+		if (read_buf != NULL) {
+			free(read_buf);
+		}
+
+		if (write_buf != NULL) {
+			free(write_buf);
+		}
+
+		return 0;
+	}
+
+	printf("Step 1/3: Check if partitions writes also change %s content\n",
+			bdev->name);
+	for (int i = 0; i < parts_n; i++) {
+		blocks = parts[i]->size / ((uint64_t) blk_sz);
+
+		printf("%s ... ", parts[i]->name);
+		fflush(stdout);
+
+		for (int64_t j = 0; j < blocks; j++) {
+			fill_buffer(write_buf, blk_sz);
+			err = block_dev_write(parts[i], (void *) write_buf, blk_sz, j);
+			if (err < 0) {
+				printf("Failed to write block #%"PRIu64"\n", j);
+				goto free_buf;
+			}
+
+			err = block_dev_read(bdev,
+					(void *) read_buf,
+					blk_sz,
+					j + parts[i]->start_offset);
+			if (err < 0) {
+				printf("Failed to read block #%"PRIu64"\n", j);
+				goto free_buf;
+			}
+
+			err = memcmp(read_buf, write_buf, blk_sz);
+			if (err != 0) {
+				printf("Write/read mismatch!\n");
+				dump_buf(write_buf, blk_sz, "Write buffer");
+				dump_buf(read_buf, blk_sz, "Read buffer");
+				goto free_buf;
+			}
+		}
+		printf("OK\n");
+	}
+
+	printf("Step 2/3: Check if %s writes also change partitions content\n",
+			bdev->name);
+	blocks = bdev->size / ((uint64_t) blk_sz);
+
+	/* Skip first block because it contains MBR */
+	for (int64_t j = 1; j < blocks; j++) {
+		fill_buffer(write_buf, blk_sz);
+		err = block_dev_write(bdev, (void *) write_buf, blk_sz, j);
+		if (err < 0) {
+			printf("Failed to write block #%"PRIu64" to %s\n",
+					j, bdev->name);
+			goto free_buf;
+		}
+
+		for (int i = 0; i < parts_n; i++) {
+			uint64_t last_blk = parts[i]->start_offset +
+				parts[i]->size / blk_sz;
+
+			if (parts[i]->start_offset <= j && last_blk > j) {
+				err = block_dev_read(parts[i],
+						(void *) read_buf,
+						blk_sz,
+						j - parts[i]->start_offset);
+				if (err < 0) {
+					printf("Failed to read block #%"PRIu64" from %s\n",
+							j, parts[i]->name);
+					goto free_buf;
+				}
+
+				err = memcmp(read_buf, write_buf, blk_sz);
+				if (err != 0) {
+					printf("Write/read mismatch! %s block %"PRIu64"\n",
+							bdev->name, j);
+					dump_buf(write_buf, blk_sz, "Write buffer");
+					dump_buf(read_buf, blk_sz, "Read buffer");
+					goto free_buf;
+				}
+			}
+		}
+	}
+	printf("OK\n");
+
+	printf("Step 3/3: Check if partition writes do not affect other partitions\n");
+	blocks = bdev->size / ((uint64_t) blk_sz);
+	for (int i = 0; i < parts_n; i++) {
+		uint64_t last_blk = parts[i]->size / blk_sz;
+		md5_byte_t digest_pre[16], digest_post[16];
+
+		printf("%s ... ", parts[i]->name);
+		fflush(stdout);
+
+		if (md5_outside_part(bdev, parts[i], digest_pre, read_buf)) {
+			goto free_buf;
+		}
+
+		/* Loop border is taken too large on purpose */
+		for (uint64_t j = 0; j < blocks; j++) {
+			fill_buffer(write_buf, blk_sz);
+			err = block_dev_write(parts[i], (void *) write_buf, blk_sz, j);
+
+			if (j < last_blk) {
+				/* Inner writes should succeed */
+				if (err < 0) {
+					printf("Failed to write block #%"PRIu64" from %s\n",
+							j, parts[i]->name);
+					goto free_buf;
+				}
+			} else if (err >= 0) {
+				/* Outer writes should fail */
+				printf("Block #%"PRIu64" is outside of %s, "
+						"but it was written successfully\n",
+						j,
+						parts[i]->name);
+				goto free_buf;
+			}
+		}
+
+		if (md5_outside_part(bdev, parts[i], digest_post, read_buf)) {
+			goto free_buf;
+		}
+
+		if (memcmp(digest_pre, digest_post, sizeof(digest_pre))) {
+			printf("Writes to %s change content outside of partition!\n",
+					parts[i]->name);
+			goto free_buf;
+		}
+		printf("OK\n");
+	}
+
+	free(read_buf);
+	free(write_buf);
+
+	return 0;
+
+free_buf:
+	printf("FAILED!\n");
+	free(read_buf);
+	free(write_buf);
+
+	return err;
+}
+
 int main(int argc, char **argv) {
 	int opt;
-	int i, iters = 1;
+	int i, iters = 1, test_partitions = 0;
+	struct block_dev *bdev;
 
 	if (argc < 2) {
 		print_help();
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc, argv, "hli:"))) {
+	while (-1 != (opt = getopt(argc, argv, "hpli:"))) {
 		switch (opt) {
+			case 'p':
+				test_partitions = 1;
+				break;
 			case 'l':
 				print_block_devs();
 				return 0;
@@ -239,14 +473,25 @@ int main(int argc, char **argv) {
 		}
 	}
 
+	bdev = block_dev_find(argv[argc - 1]);
+	if (!bdev) {
+		printf("Block device \"%s\" not found\n", argv[argc - 1]);
+		return 0;
+	}
+
+	if (test_partitions) {
+		return part_test(bdev);
+	}
+
 	printf("Starting block device test (iters = %d)...\n", iters);
 	for (i = 0; i < iters; i++) {
 		printf("iter %d...\n", i);
-		if (dev_test(argv[argc - 1]) < 0) {
+		if (dev_test(bdev) < 0) {
 			printf("FAILED\n");
 			return -1;
 		}
 	}
 	printf("OK\n");
+
 	return 0;
 }
