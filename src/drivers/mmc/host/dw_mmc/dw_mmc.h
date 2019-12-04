@@ -272,7 +272,6 @@ struct dw_mci {
 
 	/* DMA interface members*/
 	int use_dma;
-	int using_dma;
 	int dma_64bit_address;
 
 	struct idmac_desc *desc_ring;
