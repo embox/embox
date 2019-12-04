@@ -480,8 +480,21 @@ static void dw_mci_start_request(struct dw_mci *host,
 
 	dw_mci_start_command(host, cmd, cmdflags);
 
-	if (data->addr && (cmd->flags & MMC_DATA_READ)) {
-		dcache_inval((void *) data->addr, data->blksz * data->blocks);
+	if (data->addr) {
+		int timeout = 1000;
+		while (!(host->data_status & SDMMC_INT_DATA_OVER)) {
+			usleep(USEC_PER_MSEC);
+			if (timeout-- < 0) {
+				log_error("Data transfer timeout");
+				break;
+			}
+		}
+
+		host->data_status &= ~SDMMC_INT_DATA_OVER;
+
+		if (cmd->flags & MMC_DATA_READ) {
+			dcache_inval((void *) data->addr, data->blksz * data->blocks);
+		}
 	}
 }
 
@@ -658,14 +671,12 @@ static irq_return_t dw_mci_interrupt(unsigned int irq, void *dev_id) {
 
 		if (pending & DW_MCI_DATA_ERROR_FLAGS) {
 			mci_writel(host, RINTSTS, DW_MCI_DATA_ERROR_FLAGS);
-			host->data_status = pending;
+			host->data_status |= pending;
 		}
 
 		if (pending & SDMMC_INT_DATA_OVER) {
 			mci_writel(host, RINTSTS, SDMMC_INT_DATA_OVER);
-			if (!host->data_status) {
-				host->data_status = pending;
-			}
+			host->data_status |= SDMMC_INT_DATA_OVER;
 		}
 
 		if (pending & SDMMC_INT_RXDR) {
