@@ -9,6 +9,7 @@
 #include <limits.h>
 
 #include <drivers/block_dev.h>
+#include <drivers/block_dev/partition.h>
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/mmc_core.h>
 #include <drivers/mmc/mmc_host.h>
@@ -200,18 +201,21 @@ int mmc_scan(struct mmc_host *host) {
 	/* The order is important! */
 	if (!mmc_try_sdio(host)) {
 		log_debug("SDIO detected");
+		create_partitions(host->bdev);
 		return 0;
 	}
 
 	mmc_go_idle(host);
 	if (!mmc_try_sd(host)) {
 		log_debug("SD detected");
+		create_partitions(host->bdev);
 		return 0;
 	}
 
 	mmc_go_idle(host);
 	if (!mmc_try_mmc(host)) {
 		log_debug("MMC detected");
+		create_partitions(host->bdev);
 		return 0;
 	}
 

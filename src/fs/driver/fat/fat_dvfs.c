@@ -389,7 +389,11 @@ static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
 	struct fat_fs_info *fsi;
 	struct block_dev *dev;
 	assert(sb);
-	assert(bdev_file);
+	if (!bdev_file) {
+		/* FAT always uses block device, so we can't fill superblock */
+		return -ENOENT;
+	}
+
 	assert(bdev_file->f_inode);
 	assert(bdev_file->f_inode->i_data);
 
@@ -503,12 +507,18 @@ static int fat_format(void *dev, void *priv) {
  */
 static int fat_clean_sb(struct super_block *sb) {
 	struct fat_fs_info *fsi;
+	struct dirinfo *di;
 
 	assert(sb);
+	assert(sb->root);
+	assert(sb->root->d_inode);
+
+	di = sb->root->d_inode->i_data;
+	assert(di);
+	fat_dirinfo_free(di);
 
 	fsi = sb->sb_data;
 	assert(fsi);
-
 	fat_fs_free(fsi);
 
 	return 0;

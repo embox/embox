@@ -37,7 +37,7 @@ struct fuse_mount_params {
 
 static int fuse_fill_dentry(struct super_block *sb, char *dest) {
 	struct dentry *d;
-	struct lookup lookup;
+	struct lookup lookup = {};
 	int err;
 
 	if ((err = dvfs_lookup(dest, &lookup))) {

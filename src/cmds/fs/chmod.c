@@ -121,7 +121,7 @@ static int change_mode(char *path, int recursive, char *mode_str) {
 		return -1;
 	}
 
-	if (!(sb.st_mode & S_IFDIR && recursive)) {
+	if (!(S_ISDIR(sb.st_mode) && recursive)) {
 		return chmod(path, mode);
 	}
 
@@ -151,7 +151,7 @@ static int change_mode(char *path, int recursive, char *mode_str) {
 
 		chmod(line, mode);
 
-		if (sb.st_mode & S_IFDIR && recursive) {
+		if (S_ISDIR(sb.st_mode) && recursive) {
 			DIR *d;
 
 			if (NULL == (d = opendir(line))) {

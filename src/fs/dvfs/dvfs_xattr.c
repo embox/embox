@@ -11,7 +11,7 @@
 #include <fs/dvfs.h>
 
 int dvfs_xattr_get(const char *path, const char *name, char *value, size_t size) {
-	struct lookup lu;
+	struct lookup lu = {};
 	struct inode *inode;
 	int err;
 

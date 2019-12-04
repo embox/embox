@@ -185,7 +185,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
  * @retval -1 File not found
  */
 int dvfs_remove(const char *path) {
-	struct lookup lookup;
+	struct lookup lookup = {};
 	struct inode  *i_no;
 	int res;
 
@@ -318,7 +318,7 @@ int dvfs_fstat(struct file *desc, struct stat *sb) {
 
 static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 	struct file *bdev_file;
-	struct lookup lookup;
+	struct lookup lookup = {};
 	int res;
 
 	if (!dev_name) {
@@ -390,7 +390,7 @@ extern int set_rootfs_sb(struct super_block *sb);
  * @retval -ENOENT Mount point or device not found
  */
 int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags) {
-	struct lookup lookup;
+	struct lookup lookup = {};
 	const struct dumb_fs_driver *drv;
 	struct super_block *sb;
 	struct dentry *d = NULL;

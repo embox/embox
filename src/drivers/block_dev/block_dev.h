@@ -37,8 +37,8 @@ struct block_dev {
 	struct dev_module *dev_module;
 
 	/* partitions */
-	size_t start_offset;
-	struct block_dev *parrent_bdev;
+	uint64_t start_offset;
+	struct block_dev *parent_bdev;
 };
 
 struct block_dev_driver {
@@ -87,6 +87,9 @@ extern int block_dev_named(const char *name, struct indexator *indexator);
 extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);
 extern struct block_dev *block_dev_find(const char *bd_name);
+
+extern int block_dev_max_id(void);
+extern struct block_dev *block_dev_by_id(int id);
 
 extern uint64_t block_dev_size(struct block_dev *dev);
 extern size_t block_dev_block_size(struct block_dev *dev);

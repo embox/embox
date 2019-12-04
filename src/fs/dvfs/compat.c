@@ -44,7 +44,7 @@ int mount(char *dev, char *dir, char *fs_type) {
  * @retval -EINVAL File is not a mount point
  */
 int umount(char *dir) {
-	struct lookup lu;
+	struct lookup lu = {};
 	int err;
 
 	if ((err = dvfs_lookup(dir, &lu))) {

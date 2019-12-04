@@ -107,6 +107,18 @@ struct block_dev *block_dev_find(const char *bd_name) {
 	return NULL;
 }
 
+int block_dev_max_id(void) {
+	return MAX_DEV_QUANTITY;
+}
+
+struct block_dev *block_dev_by_id(int id) {
+	if (id < 0 || id >= MAX_DEV_QUANTITY) {
+		return NULL;
+	}
+
+	return devtab[id];
+}
+
 struct block_dev *block_dev(void *dev) {
 	return (struct block_dev *)dev;
 }
@@ -217,6 +229,15 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	}
 	bdev = block_dev(dev);
 
+	if (blkno >= bdev->size / bdev->block_size) {
+		return -EINVAL;
+	}
+
+	if (bdev->parent_bdev != NULL) {
+		blkno += bdev->start_offset;
+		bdev = bdev->parent_bdev;
+	}
+
 	blksize = block_dev_block_size(bdev);
 	if (blksize < 0) {
 		return blksize;
@@ -233,6 +254,15 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 	}
 
 	bdev = block_dev(dev);
+
+	if (blkno >= bdev->size / bdev->block_size) {
+		return -EINVAL;
+	}
+
+	if (bdev->parent_bdev != NULL) {
+		blkno += bdev->start_offset;
+		bdev = bdev->parent_bdev;
+	}
 
 	blksize = block_dev_block_size(bdev);
 	if (blksize < 0) {
@@ -384,6 +414,12 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 
 int block_dev_destroy(void *dev) {
 	struct dev_module *devmod = dev;
+
+	for (int i = 0; i < MAX_DEV_QUANTITY; i++) {
+		if (devtab[i] && devtab[i]->parent_bdev == devmod->dev_priv) {
+			block_dev_destroy(devtab[i]->dev_module);
+		}
+	}
 
 	devfs_del_block(devmod->dev_priv);
 

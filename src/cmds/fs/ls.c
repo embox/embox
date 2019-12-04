@@ -114,7 +114,7 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 
 		printer(line, &sb);
 
-		if (sb.st_mode & S_IFDIR && recursive) {
+		if (S_ISDIR(sb.st_mode) && recursive) {
 			DIR *d;
 
 			if (NULL == (d = opendir(line))) {
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
 			return -errno;
 		}
 
-		if (~sb.st_mode & S_IFDIR) {
+		if (!S_ISDIR(sb.st_mode)) {
 			printer(argv[optind], &sb);
 			return 0;
 		}
