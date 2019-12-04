@@ -18,7 +18,7 @@
 
 #include "ehci.h"
 
-#if !OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hdc,NUMBER,tt_support)
+#if !OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hcd,NUMBER,tt_support)
 #define tdi_in_host_mode(ehci) (1)
 #define tdi_reset(ehci)
 

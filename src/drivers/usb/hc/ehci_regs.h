@@ -9,7 +9,7 @@
 #define SRC_DRIVERS_USB_HC_EHCI_REGS_H_
 
 #include <framework/mod/options.h>
-#include <config/embox/driver/usb/hc/ehci_hdc.h>
+#include <config/embox/driver/usb/hc/ehci_hcd.h>
 
 #include <stdint.h>
 
@@ -111,7 +111,7 @@ struct ehci_regs {
 	uint32_t reserved2[6];
 	uint32_t configured_flag; /* CONFIGFLAG: offset 0x40 */
 	uint32_t port_status[0]; /* PORTSC: offset 0x44 */
-#if OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hdc,NUMBER,tt_support)
+#if OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hcd,NUMBER,tt_support)
 	uint32_t reserved3[9];
 
 	/* USBMODE: offset 0x68 */
