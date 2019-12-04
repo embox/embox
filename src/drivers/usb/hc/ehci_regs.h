@@ -9,7 +9,7 @@
 #define SRC_DRIVERS_USB_HC_EHCI_REGS_H_
 
 #include <framework/mod/options.h>
-#include <config/embox/driver/usb/hc/ehci_hdc.h>
+#include <config/embox/driver/usb/hc/ehci_hcd.h>
 
 #include <stdint.h>
 
@@ -91,6 +91,7 @@ struct ehci_caps {
 #define EHCI_PORT_PE         (1 << 2)      /* port enable */
 #define EHCI_PORT_CSC        (1 << 1)      /* connect status change */
 #define EHCI_PORT_CONNECT    (1 << 0)      /* device connected */
+#define EHCI_PORT_RWC_BITS   (EHCI_PORT_CSC | EHCI_PORT_PEC | EHCI_PORT_OCC)
 
 /* CONFIGFLAG */
 #define EHCI_CF_DONE                      (1 << 0)   /* true: we'll support "high speed" */
@@ -110,7 +111,7 @@ struct ehci_regs {
 	uint32_t reserved2[6];
 	uint32_t configured_flag; /* CONFIGFLAG: offset 0x40 */
 	uint32_t port_status[0]; /* PORTSC: offset 0x44 */
-#if OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hdc,NUMBER,tt_support)
+#if OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hcd,NUMBER,tt_support)
 	uint32_t reserved3[9];
 
 	/* USBMODE: offset 0x68 */

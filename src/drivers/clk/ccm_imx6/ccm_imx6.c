@@ -193,10 +193,14 @@ void clk_reg_dump(void) {
 
 PERIPH_MEMORY_DEFINE(ccm, CCM_BASE, 0x100);
 
-#define CCM_ANALOG_PLL_USB1_CLR          (CCM_ANALOG_BASE + 0x18)
+#define CCM_ANALOG_PLL_USB1              (CCM_ANALOG_BASE + 0x10)
 #define CCM_ANALOG_PLL_USB1_SET          (CCM_ANALOG_BASE + 0x14)
+#define CCM_ANALOG_PLL_USB1_CLR          (CCM_ANALOG_BASE + 0x18)
+
+#define CCM_ANALOG_PLL_USB2              (CCM_ANALOG_BASE + 0x20)
+#define CCM_ANALOG_PLL_USB2_SET          (CCM_ANALOG_BASE + 0x24)
 #define CCM_ANALOG_PLL_USB2_CLR          (CCM_ANALOG_BASE + 0x28)
-#define CCM_ANALOG_PLL_USB2_SET          (CCM_ANALOG_BASE + 0x2C)
+
 # define CCM_ANALOG_PLL_USB_BYPASS      (1 << 16)
 # define CCM_ANALOG_PLL_USB_ENABLE      (1 << 13)
 # define CCM_ANALOG_PLL_USB_POWER       (1 << 12)

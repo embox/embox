@@ -18,7 +18,7 @@
 
 #include "ehci.h"
 
-#if !OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hdc,NUMBER,tt_support)
+#if !OPTION_MODULE_GET(embox__driver__usb__hc__ehci_hcd,NUMBER,tt_support)
 #define tdi_in_host_mode(ehci) (1)
 #define tdi_reset(ehci)
 
@@ -90,6 +90,19 @@ static int ehci_handshake(struct ehci_hcd *ehci,
 	return -ETIMEDOUT;
 }
 
+static int ehci_port_power(struct ehci_hcd *ehci, int portnum, int enable) {
+	uint32_t *status_reg = &ehci->ehci_regs->port_status[portnum];
+	uint32_t temp = ehci_read(ehci, status_reg) & ~EHCI_PORT_RWC_BITS;
+
+	if (enable) {
+		ehci_write(ehci, temp | EHCI_PORT_POWER, status_reg);
+	} else {
+		ehci_write(ehci, temp & ~EHCI_PORT_POWER, status_reg);
+	}
+
+	return 0;
+}
+
 static uint32_t ehci_port_reset(struct ehci_hcd *ehci, int i) {
 	uint32_t pstatus;
 
@@ -123,6 +136,7 @@ static void ehci_port_probe(struct ehci_hcd *ehci, int i) {
 	assert(ehci->ehci_regs);
 
 	status = ehci_read(ehci, &ehci->ehci_regs->port_status[i]);
+
 	if ( !(status & EHCI_PORT_PE) && (status & EHCI_PORT_CONNECT) ) {
 		status = ehci_port_reset(ehci, i);
 	}
@@ -254,6 +268,9 @@ static inline int ehci_run(struct ehci_hcd *ehci) {
 	/* Turn On Interrupts */
 	ehci_write(ehci, EHCI_INTR_MASK, &ehci->ehci_regs->intr_enable);
 
+	ehci_caps_dump(ehci);
+	ehci_regs_dump(ehci);
+
 	return 0;
 }
 
@@ -370,6 +387,7 @@ static void ehci_ed_free(struct usb_endp *ep, void *spec) {
 
 static int ehci_start(struct usb_hcd *hcd) {
 	struct ehci_hcd *ehci_hcd;
+	int i;
 
 	assert(hcd);
 
@@ -384,6 +402,10 @@ static int ehci_start(struct usb_hcd *hcd) {
 
 	ehci_run(ehci_hcd);
 	log_debug("EHCI started!");
+
+	for(i=0; i < EHCI_HCS_N_PORTS(ehci_hcd->ehci_caps->hcs_params); i++) {
+		ehci_port_power(ehci_hcd, i, 1);
+	}
 
 	return 0;
 }

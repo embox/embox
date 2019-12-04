@@ -10,7 +10,7 @@
 
 #include <drivers/usb/usb.h>
 
-#include "ehci_regs.h"
+#include <drivers/usb/ehci_regs.h>
 
 /* type tag from {qh,itd,sitd,fstn}->hw_next */
 #define EHCI_Q_NEXT_TYPE(ehci, dma) ((dma) & 3 << 1)
@@ -233,13 +233,13 @@ static inline struct ehci_hcd *hcd_to_ehci(struct usb_hcd *hcd) {
 	return (struct ehci_hcd *) hcd->hci_specific;
 }
 
-static inline uint32_t ehci_read(struct ehci_hcd *ehci_hdc, volatile uint32_t *regs) {
-	(void)ehci_hdc;
+static inline uint32_t ehci_read(struct ehci_hcd *ehci, volatile uint32_t *regs) {
+	(void)ehci;
 	return *regs;
 }
 
-static inline void ehci_write(struct ehci_hcd *ehci_hdc, uint32_t val, volatile uint32_t *regs) {
-	(void)ehci_hdc;
+static inline void ehci_write(struct ehci_hcd *ehci, uint32_t val, volatile uint32_t *regs) {
+	(void)ehci;
 	*regs = val;
 }
 
