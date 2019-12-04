@@ -28,12 +28,12 @@
 
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 
-#define MAX_DEV_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
+#define MAX_RAMDISK_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
 #define RAMDISK_SIZE OPTION_GET(NUMBER,size)
 #define RAMDISK_BLOCK_SIZE OPTION_GET(NUMBER,block_size)
 
-POOL_DEF(ramdisk_pool,struct ramdisk,MAX_DEV_QUANTITY);
-INDEX_DEF(ramdisk_idx, 0, MAX_DEV_QUANTITY);
+POOL_DEF(ramdisk_pool,struct ramdisk,MAX_RAMDISK_QUANTITY);
+INDEX_DEF(ramdisk_idx, 0, MAX_RAMDISK_QUANTITY);
 
 static int read_sectors(struct block_dev *bdev,
 		char *buffer, size_t count, blkno_t blkno) {

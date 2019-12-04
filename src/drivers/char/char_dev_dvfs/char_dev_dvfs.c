@@ -18,13 +18,13 @@
 
 #include <drivers/char_dev.h>
 
-#define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
+#define MAX_CDEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
 #define IDESC_POOL_SIZE OPTION_GET(NUMBER, cdev_idesc_quantity)
 POOL_DEF(idesc_pool, struct idesc_dev, IDESC_POOL_SIZE);
 
-static struct dev_module *devtab[MAX_DEV_QUANTITY];
-INDEX_DEF(char_dev_idx, 0, MAX_DEV_QUANTITY);
+static struct dev_module *devtab[MAX_CDEV_QUANTITY];
+INDEX_DEF(char_dev_idx, 0, MAX_CDEV_QUANTITY);
 
 ARRAY_SPREAD_DEF(const struct dev_module, __char_device_registry);
 

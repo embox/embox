@@ -24,8 +24,8 @@
 
 #define CD_WAIT_US 3000
 
-#define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
-INDEX_DEF(idecd_idx, 0, MAX_DEV_QUANTITY);
+#define MAX_IDE_QUANTITY OPTION_GET(NUMBER,dev_quantity)
+INDEX_DEF(idecd_idx, 0, MAX_IDE_QUANTITY);
 
 static const struct block_dev_driver idecd_pio_driver;
 

@@ -12,6 +12,12 @@
 #include <limits.h>
 #include <sys/types.h>
 
+#include <framework/mod/options.h>
+#include <config/embox/driver/block_common.h>
+
+#define MAX_BDEV_QUANTITY \
+	OPTION_MODULE_GET(embox__driver__block_common, NUMBER, dev_quantity)
+
 #define IOCTL_GETBLKSIZE        1
 #define IOCTL_GETDEVSIZE        2
 #define IOCTL_GETGEOMETRY       3
@@ -93,6 +99,7 @@ extern struct block_dev *block_dev_by_id(int id);
 
 extern uint64_t block_dev_size(struct block_dev *dev);
 extern size_t block_dev_block_size(struct block_dev *dev);
+extern struct block_dev *block_dev_get_parent(struct block_dev *dev);
 
 #include <util/array.h>
 
