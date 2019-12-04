@@ -148,11 +148,14 @@ static int dw_mci_idmac_init(struct dw_mci *host) {
 		p[i].des3 = cpu_to_le32(host->desc_ring
 				+ (sizeof(struct idmac_desc) * (i + 1)));
 		p[i].des1 = 0;
+
+		dcache_flush(p, sizeof(*p));
 	}
 
 	/* Set the last descriptor as the end-of-ring descriptor */
 	p[i].des3 = cpu_to_le32(host->desc_ring);
 	p[i].des0 = cpu_to_le32(IDMAC_DES0_ER);
+	dcache_flush(p + i, sizeof(*p));
 
 	dw_mci_idmac_reset(host);
 
