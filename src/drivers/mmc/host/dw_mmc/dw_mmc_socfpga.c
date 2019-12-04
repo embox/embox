@@ -144,6 +144,7 @@ static int dw_mci_idmac_init(struct dw_mci *host) {
 	/* Forward link the descriptor list */
 	p = host->desc_ring;
 	for (i = 0; i < host->ring_size - 1; i++) {
+		memset(p + i, 0, sizeof(*p));
 		p[i].des3 = cpu_to_le32(host->desc_ring
 				+ (sizeof(struct idmac_desc) * (i + 1)));
 		p[i].des1 = 0;
