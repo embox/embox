@@ -138,24 +138,20 @@ static int dw_mci_idmac_init(struct dw_mci *host) {
 	struct idmac_desc *p;
 	int i;
 
-	if (host->dma_64bit_address == 1) {
-		log_error("64 bit addresses are not supported");
-		return -1;
-	}
-
 	/* Number of descriptors in the ring buffer */
 	host->ring_size = DESC_RING_BUF_SZ / sizeof(struct idmac_desc);
 
 	/* Forward link the descriptor list */
-	for (i = 0, p = host->desc_ring; i < host->ring_size - 1; i++, p++) {
-		p->des3 = cpu_to_le32(host->desc_ring
+	p = host->desc_ring;
+	for (i = 0; i < host->ring_size - 1; i++) {
+		p[i].des3 = cpu_to_le32(host->desc_ring
 				+ (sizeof(struct idmac_desc) * (i + 1)));
-		p->des1 = 0;
+		p[i].des1 = 0;
 	}
 
 	/* Set the last descriptor as the end-of-ring descriptor */
-	p->des3 = cpu_to_le32(host->desc_ring);
-	p->des0 = cpu_to_le32(IDMAC_DES0_ER);
+	p[i].des3 = cpu_to_le32(host->desc_ring);
+	p[i].des0 = cpu_to_le32(IDMAC_DES0_ER);
 
 	dw_mci_idmac_reset(host);
 
@@ -231,11 +227,6 @@ static int dw_mci_idmac_start_dma(struct dw_mci *host, unsigned int sg_len) {
 	uint32_t temp;
 	int ret = 0;
 
-	if (host->dma_64bit_address == 1) {
-		log_error("64 bit descriptors are not supported");
-		return -1;
-	}
-
 	ret = dw_mci_prepare_desc32(host, host->data, sg_len);
 	if (ret) {
 		log_error("Failed to prepare descriptor");
@@ -271,8 +262,9 @@ static int dw_mci_init_dma(struct dw_mci *host) {
 
 	if (addr_config == 1) {
 		/* host supports IDMAC in 64-bit address mode */
-		host->dma_64bit_address = 1;
-		log_info("IDMAC supports 64-bit address mode.");
+		log_info("IDMAC supports 64-bit address mode, but "
+				"driver doesn't support it");
+		return -1;
 	} else {
 		/* host supports IDMAC in 32-bit address mode */
 		host->dma_64bit_address = 0;
