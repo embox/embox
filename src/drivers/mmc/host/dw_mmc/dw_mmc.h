@@ -275,8 +275,7 @@ struct dw_mci {
 	int using_dma;
 	int dma_64bit_address;
 
-	uintptr_t sg_dma;
-	void *sg_cpu;
+	struct idmac_desc *desc_ring;
 	const struct dw_mci_dma_ops *dma_ops;
 	/* For idmac */
 	unsigned int ring_size;

@@ -147,14 +147,14 @@ static int dw_mci_idmac_init(struct dw_mci *host) {
 	host->ring_size = DESC_RING_BUF_SZ / sizeof(struct idmac_desc);
 
 	/* Forward link the descriptor list */
-	for (i = 0, p = host->sg_cpu; i < host->ring_size - 1; i++, p++) {
-		p->des3 = cpu_to_le32(host->sg_dma
+	for (i = 0, p = host->desc_ring; i < host->ring_size - 1; i++, p++) {
+		p->des3 = cpu_to_le32(host->desc_ring
 				+ (sizeof(struct idmac_desc) * (i + 1)));
 		p->des1 = 0;
 	}
 
 	/* Set the last descriptor as the end-of-ring descriptor */
-	p->des3 = cpu_to_le32(host->sg_dma);
+	p->des3 = cpu_to_le32(host->desc_ring);
 	p->des0 = cpu_to_le32(IDMAC_DES0_ER);
 
 	dw_mci_idmac_reset(host);
@@ -164,7 +164,7 @@ static int dw_mci_idmac_init(struct dw_mci *host) {
 			SDMMC_IDMAC_INT_RI | SDMMC_IDMAC_INT_TI);
 
 	/* Set the descriptor base address */
-	mci_writel(host, DBADDR, host->sg_dma);
+	mci_writel(host, DBADDR, (uint32_t) host->desc_ring);
 
 	return 0;
 }
@@ -176,7 +176,7 @@ static inline int dw_mci_prepare_desc32(struct dw_mci *host, struct mmc_data *da
 
 	sg_len = 1;
 
-	desc_first = desc_last = desc = host->sg_cpu;
+	desc_first = desc_last = desc = host->desc_ring;
 
 	for (i = 0; i < sg_len; i++) {
 		unsigned int length;
@@ -280,14 +280,13 @@ static int dw_mci_init_dma(struct dw_mci *host) {
 	}
 
 	/* Alloc memory for sg translation */
-	host->sg_cpu = dma_alloc_coherent(NULL, DESC_RING_BUF_SZ, &host->sg_dma, 0);
-	if (!host->sg_cpu) {
+	host->desc_ring = dma_alloc_coherent(NULL, DESC_RING_BUF_SZ, (void *) &host->desc_ring, 0);
+	if (!host->desc_ring) {
 		log_error("could not alloc DMA memory");
 		return -1;
 	}
 
-	memset(host->sg_cpu, 0, DESC_RING_BUF_SZ);
-	host->sg_dma = (uintptr_t)host->sg_cpu; // TODO
+	memset(host->desc_ring, 0, DESC_RING_BUF_SZ);
 
 	log_info("Using internal DMA controller.");
 
@@ -362,7 +361,7 @@ static int dw_mci_submit_data_dma(struct dw_mci *host, struct mmc_data *data) {
 		return sg_len;
 	}
 
-	log_debug("%#lx sg_dma: %#lx sg_len: %d", host->sg_cpu, host->sg_dma, sg_len);
+	log_debug("desc_ring: %#lx sg_len: %d", host->desc_ring, sg_len);
 
 	/* Enable the DMA interface */
 	temp = mci_readl(host, CTRL);
