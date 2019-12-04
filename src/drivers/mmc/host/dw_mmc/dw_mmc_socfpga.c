@@ -500,11 +500,6 @@ static void dw_mci_setup_bus(struct dw_mci_slot *slot, bool force_clkinit) {
 
 	log_debug("slot id(%d)", slot->id);
 
-	/* We must continue to set bit 28 in CMD until the change is complete */
-	if (host->state == STATE_WAITING_CMD11_DONE) {
-		sdmmc_cmd_bits |= SDMMC_CMD_VOLT_SWITCH;
-	}
-
 	div = 0;
 
 	/* disable clock */
@@ -662,13 +657,6 @@ static irq_return_t dw_mci_interrupt(unsigned int irq, void *dev_id) {
 	log_debug("host (%p) pending MINTSTS (%x)", host, pending);
 
 	if (pending) {
-		/* Check volt switch first, since it can look like an error */
-		if ((host->state == STATE_SENDING_CMD11) &&
-				(pending & SDMMC_INT_VOLT_SWITCH)) {
-			mci_writel(host, RINTSTS, SDMMC_INT_VOLT_SWITCH);
-			pending &= ~SDMMC_INT_VOLT_SWITCH;
-		}
-
 		if (pending & DW_MCI_CMD_ERROR_FLAGS) {
 			mci_writel(host, RINTSTS, DW_MCI_CMD_ERROR_FLAGS);
 			host->cmd_status = pending;
