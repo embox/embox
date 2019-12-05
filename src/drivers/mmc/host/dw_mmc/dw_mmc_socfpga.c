@@ -19,7 +19,6 @@
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 #include <drivers/common/memory.h>
-#include <asm-generic/dma-mapping.h>
 #include <kernel/irq.h>
 
 #include <linux/byteorder.h>
@@ -62,7 +61,7 @@ extern void dcache_inval(const void *p, size_t size);
 		SDMMC_IDMAC_INT_FBE | SDMMC_IDMAC_INT_RI | \
 		SDMMC_IDMAC_INT_TI)
 
-#define DESC_RING_BUF_SZ PAGE_SIZE()
+#define DESC_RING_BUF_SZ 4096
 
 struct idmac_desc {
 	uint32_t des0; /* Control Descriptor */
@@ -276,9 +275,9 @@ static int dw_mci_init_dma(struct dw_mci *host) {
 	}
 
 	/* Alloc memory for sg translation */
-	host->desc_ring = dma_alloc_coherent(NULL, DESC_RING_BUF_SZ, (void *) &host->desc_ring, 0);
+	host->desc_ring = periph_memory_alloc(DESC_RING_BUF_SZ);
 	if (!host->desc_ring) {
-		log_error("could not alloc DMA memory");
+		log_error("could not alloc memory for descriptors");
 		return -1;
 	}
 
