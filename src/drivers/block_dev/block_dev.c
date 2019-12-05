@@ -374,10 +374,22 @@ size_t block_dev_block_size(struct block_dev *dev) {
 	return dev->block_size;
 }
 
-struct block_dev *block_dev_get_parent(struct block_dev *dev) {
+struct block_dev *block_dev_parent(struct block_dev *dev) {
 	assert(dev);
 
 	return dev->parent_bdev;
+}
+
+const char *block_dev_name(struct block_dev *dev) {
+	assert(dev);
+
+	return dev->name;
+}
+
+dev_t block_dev_id(struct block_dev *dev) {
+	assert(dev);
+
+	return dev->id;
 }
 
 struct block_dev *block_dev_create(const char *path, const struct block_dev_driver *driver, void *privdata) {
