@@ -11,7 +11,7 @@ module siginfoq_stub extends siginfoq_api {
 module siginfoq extends siginfoq_api {
 	source "siginfoq.h"
 	source "siginfoq.c"
-	option number pool_sz = 64
+	option number siginfo_pool_sz = 64
 }
 
 module sigstate_stub extends sigstate_api {
