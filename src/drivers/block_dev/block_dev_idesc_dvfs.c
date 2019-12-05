@@ -27,6 +27,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	struct dev_module *devmod;
 	size_t blk_no;
 	int res;
+	off_t pos;
 
 	assert(iov);
 	buf = iov->iov_base;
@@ -35,14 +36,16 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 
 	file = (struct file *) desc;
 
+	pos = file->pos;
+
 	devmod = file->f_inode->i_data;
 	bdev = devmod->dev_priv;
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
-		blk_no = file->pos / bdev->block_size;
+		blk_no = pos / bdev->block_size;
 	} else {
 		/* It's a partition */
-		blk_no = bdev->start_offset + (file->pos / bdev->block_size);
+		blk_no = bdev->start_offset + (pos / bdev->block_size);
 		bdev = bdev->parent_bdev;
 	}
 
@@ -52,8 +55,8 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	if (res < 0) {
 		return res;
 	}
+	file->pos = (pos + res);
 
-	file->pos += res;
 	return res;
 }
 
@@ -63,6 +66,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	struct block_dev *bdev;
 	size_t blk_no;
 	int res;
+	off_t pos;
 
 	assert(desc);
 	assert(iov);
@@ -70,14 +74,16 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 
 	file = (struct file *)desc;
 
+	pos = file->pos;
+
 	devmod = file->f_inode->i_data;
 	bdev = devmod->dev_priv;
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
-		blk_no = file->pos / bdev->block_size;
+		blk_no = pos / bdev->block_size;
 	} else {
 		/* It's a partition */
-		blk_no = bdev->start_offset + (file->pos / bdev->block_size);
+		blk_no = bdev->start_offset + (pos / bdev->block_size);
 		bdev = bdev->parent_bdev;
 	}
 
@@ -87,7 +93,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	if (res < 0) {
 		return res;
 	}
-	file->pos += res;
+	file->pos = (pos + res);
 
 	return res;
 }
