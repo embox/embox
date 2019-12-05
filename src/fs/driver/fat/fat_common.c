@@ -930,7 +930,7 @@ uint32_t fat_get_next(struct dirinfo *dir, struct fat_dirent *dirent) {
 	}
 
 	if (dirent->name[0] == 0xe5) {
-		dirent->name[0] = '\0';
+		memset(dirent, 0, sizeof(*dirent));
 	} else if (dirent->name[0] == 0x05)
 		/* handle kanji filenames beginning with 0xE5 */
 		dirent->name[0] = 0xe5;
@@ -952,7 +952,12 @@ uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char 
 	fsi = dir->fi.fsi;
 	assert(fsi);
 
-	ret = fat_get_next(dir, dirent);
+	do {
+		ret = fat_get_next(dir, dirent);
+		if (ret == DFS_EOF) {
+			return ret;
+		}
+	} while (dirent->name[0] == '\0');
 
 	if (dirent->attr != ATTR_LONG_NAME) {
 		if (name_buf != NULL) {
