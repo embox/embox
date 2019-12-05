@@ -10,12 +10,13 @@
 #include <stdlib.h>
 #include <sys/mman.h>
 
+#include <mem/vmem.h>
+#include <mem/sysmalloc.h>
 #include <module/embox/arch/mmu.h>
 
 #ifndef NOMMU
 
 #include <drivers/common/memory.h>
-#include <mem/vmem.h>
 #include <hal/mmu.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/mmap.h>
@@ -97,5 +98,22 @@ int periph_desc(struct periph_memory_desc **buff) {
 
 	return i;
 }
-
 #endif /* NOMMU */
+
+void *periph_memory_alloc(size_t len) {
+	void *mem = sysmemalign(MMU_PAGE_SIZE, len);
+	if (!mem) {
+		return NULL;
+	}
+
+	vmem_set_flags(vmem_current_context(),
+			(mmu_vaddr_t) mem,
+			len,
+			PROT_WRITE | PROT_READ | PROT_NOCACHE);
+
+	return mem;
+}
+
+void periph_memory_free(void *ptr) {
+	sysfree(ptr);
+}

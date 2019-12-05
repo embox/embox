@@ -185,20 +185,7 @@
 #define SDMMC_CTRL_ALL_RESET_FLAGS \
 	(SDMMC_CTRL_RESET | SDMMC_CTRL_FIFO_RESET | SDMMC_CTRL_DMA_RESET)
 
-
-
 #define MAX_MCI_SLOTS 2
-
-enum dw_mci_state {
-	STATE_IDLE = 0,
-	STATE_SENDING_CMD,
-	STATE_SENDING_DATA,
-	STATE_DATA_BUSY,
-	STATE_SENDING_STOP,
-	STATE_DATA_ERROR,
-	STATE_SENDING_CMD11,
-	STATE_WAITING_CMD11_DONE,
-};
 
 enum {
 	EVENT_CMD_COMPLETE = 0,
@@ -213,18 +200,6 @@ enum {
 	TRANS_MODE_EDMAC
 };
 
-struct dw_mci;
-/* DMA ops for Internal/External DMAC interface */
-struct dw_mci_dma_ops {
-	/* DMA Ops */
-	int (*init)(struct dw_mci *host);
-	int (*start)(struct dw_mci *host, unsigned int sg_len);
-	void (*complete)(void *host);
-	void (*stop)(struct dw_mci *host);
-	void (*cleanup)(struct dw_mci *host);
-	void (*exit)(struct dw_mci *host);
-};
-
 struct mmc_host;
 struct dw_mci;
 struct dw_mci_slot {
@@ -234,11 +209,7 @@ struct dw_mci_slot {
 	uint32_t ctype;
 
 	struct mmc_request *mrq;
-#if 0
-	struct list_head	queue_node;
-#endif
 	unsigned int clock;
-	unsigned int __clk_old;
 
 	unsigned long flags;
 #define DW_MMC_CARD_PRESENT	0
@@ -272,12 +243,9 @@ struct dw_mci {
 
 	/* DMA interface members*/
 	int use_dma;
-	int using_dma;
 	int dma_64bit_address;
 
-	uintptr_t sg_dma;
-	void *sg_cpu;
-	const struct dw_mci_dma_ops *dma_ops;
+	struct idmac_desc *desc_ring;
 	/* For idmac */
 	unsigned int ring_size;
 
@@ -288,31 +256,7 @@ struct dw_mci {
 
 	unsigned long pending_events;
 	unsigned long completed_events;
-	enum dw_mci_state state;
-
-	/* FIFO push and pull */
-	int fifo_depth;
-	int data_shift;
-	uint8_t part_buf_start;
-	uint8_t part_buf_count;
-	union {
-		uint16_t part_buf16;
-		uint32_t part_buf32;
-		uint64_t part_buf;
-	};
-	void (*push_data)(struct dw_mci *host, void *buf, int cnt);
-	void (*pull_data)(struct dw_mci *host, void *buf, int cnt);
 };
-
-/* FIFO register access macros. These should not change the data endian-ness
- * as they are written to memory to be dealt with by the upper layers */
-#define mci_fifo_readw(__reg)     REG16_LOAD(__reg)
-#define mci_fifo_readl(__reg)     REG32_LOAD(__reg)
-#define mci_fifo_readq(__reg)     REG64_LOAD(__reg)
-
-#define mci_fifo_writew(__reg, __value)     REG16_STORE(__reg, __value)
-#define mci_fifo_writel(__reg, __value)     REG32_STORE(__reg, __value)
-#define mci_fifo_writeq(__reg, __value)     REG64_STORE(__reg, __value)
 
 /* Register access macros */
 #define mci_readl(dev, reg) \

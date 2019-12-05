@@ -28,5 +28,7 @@ struct periph_memory_desc {
 			&dev_name ## _mem)
 
 extern int periph_desc(struct periph_memory_desc **buff);
+extern void *periph_memory_alloc(size_t len);
+extern void periph_memory_free(void *ptr);
 
 #endif /* _DRIVERS_COMMON_MEMORY_H */

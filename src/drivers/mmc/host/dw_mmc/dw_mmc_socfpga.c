@@ -19,7 +19,6 @@
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 #include <drivers/common/memory.h>
-#include <asm-generic/dma-mapping.h>
 #include <kernel/irq.h>
 
 #include <linux/byteorder.h>
@@ -62,7 +61,7 @@ extern void dcache_inval(const void *p, size_t size);
 		SDMMC_IDMAC_INT_FBE | SDMMC_IDMAC_INT_RI | \
 		SDMMC_IDMAC_INT_TI)
 
-#define DESC_RING_BUF_SZ PAGE_SIZE()
+#define DESC_RING_BUF_SZ 4096
 
 struct idmac_desc {
 	uint32_t des0; /* Control Descriptor */
@@ -90,9 +89,7 @@ POOL_DEF(dw_mci_slot_pool, struct dw_mci_slot, SLOTS_QUANTITY);
 
 static bool dw_mci_ctrl_reset(struct dw_mci *host, uint32_t reset) {
 	uint32_t ctrl;
-	unsigned long timeout;
-
-	timeout = clock_sys_ticks() + ms2jiffies(2000);
+	int timeout = 2000;
 
 	ctrl = mci_readl(host, CTRL);
 	ctrl |= reset;
@@ -104,7 +101,9 @@ static bool dw_mci_ctrl_reset(struct dw_mci *host, uint32_t reset) {
 		if (!(ctrl & reset)) {
 			return true;
 		}
-	} while (time_before(clock_sys_ticks(), timeout));
+
+		usleep(USEC_PER_MSEC);
+	} while (timeout-- > 0);
 
 	log_error("Timeout resetting block (ctrl reset %#x)", ctrl & reset);
 
@@ -138,24 +137,24 @@ static int dw_mci_idmac_init(struct dw_mci *host) {
 	struct idmac_desc *p;
 	int i;
 
-	if (host->dma_64bit_address == 1) {
-		log_error("64 bit addresses are not supported");
-		return -1;
-	}
-
 	/* Number of descriptors in the ring buffer */
 	host->ring_size = DESC_RING_BUF_SZ / sizeof(struct idmac_desc);
 
 	/* Forward link the descriptor list */
-	for (i = 0, p = host->sg_cpu; i < host->ring_size - 1; i++, p++) {
-		p->des3 = cpu_to_le32(host->sg_dma
+	p = host->desc_ring;
+	for (i = 0; i < host->ring_size - 1; i++) {
+		memset(p + i, 0, sizeof(*p));
+		p[i].des3 = cpu_to_le32(host->desc_ring
 				+ (sizeof(struct idmac_desc) * (i + 1)));
-		p->des1 = 0;
+		p[i].des1 = 0;
+
+		dcache_flush(p, sizeof(*p));
 	}
 
 	/* Set the last descriptor as the end-of-ring descriptor */
-	p->des3 = cpu_to_le32(host->sg_dma);
-	p->des0 = cpu_to_le32(IDMAC_DES0_ER);
+	p[i].des3 = cpu_to_le32(host->desc_ring);
+	p[i].des0 = cpu_to_le32(IDMAC_DES0_ER);
+	dcache_flush(p + i, sizeof(*p));
 
 	dw_mci_idmac_reset(host);
 
@@ -164,7 +163,7 @@ static int dw_mci_idmac_init(struct dw_mci *host) {
 			SDMMC_IDMAC_INT_RI | SDMMC_IDMAC_INT_TI);
 
 	/* Set the descriptor base address */
-	mci_writel(host, DBADDR, host->sg_dma);
+	mci_writel(host, DBADDR, (uint32_t) host->desc_ring);
 
 	return 0;
 }
@@ -176,7 +175,7 @@ static inline int dw_mci_prepare_desc32(struct dw_mci *host, struct mmc_data *da
 
 	sg_len = 1;
 
-	desc_first = desc_last = desc = host->sg_cpu;
+	desc_first = desc_last = desc = host->desc_ring;
 
 	for (i = 0; i < sg_len; i++) {
 		unsigned int length;
@@ -231,11 +230,6 @@ static int dw_mci_idmac_start_dma(struct dw_mci *host, unsigned int sg_len) {
 	uint32_t temp;
 	int ret = 0;
 
-	if (host->dma_64bit_address == 1) {
-		log_error("64 bit descriptors are not supported");
-		return -1;
-	}
-
 	ret = dw_mci_prepare_desc32(host, host->data, sg_len);
 	if (ret) {
 		log_error("Failed to prepare descriptor");
@@ -271,8 +265,9 @@ static int dw_mci_init_dma(struct dw_mci *host) {
 
 	if (addr_config == 1) {
 		/* host supports IDMAC in 64-bit address mode */
-		host->dma_64bit_address = 1;
-		log_info("IDMAC supports 64-bit address mode.");
+		log_info("IDMAC supports 64-bit address mode, but "
+				"driver doesn't support it");
+		return -1;
 	} else {
 		/* host supports IDMAC in 32-bit address mode */
 		host->dma_64bit_address = 0;
@@ -280,14 +275,13 @@ static int dw_mci_init_dma(struct dw_mci *host) {
 	}
 
 	/* Alloc memory for sg translation */
-	host->sg_cpu = dma_alloc_coherent(NULL, DESC_RING_BUF_SZ, &host->sg_dma, 0);
-	if (!host->sg_cpu) {
-		log_error("could not alloc DMA memory");
+	host->desc_ring = periph_memory_alloc(DESC_RING_BUF_SZ);
+	if (!host->desc_ring) {
+		log_error("could not alloc memory for descriptors");
 		return -1;
 	}
 
-	memset(host->sg_cpu, 0, DESC_RING_BUF_SZ);
-	host->sg_dma = (uintptr_t)host->sg_cpu; // TODO
+	memset(host->desc_ring, 0, DESC_RING_BUF_SZ);
 
 	log_info("Using internal DMA controller.");
 
@@ -362,7 +356,7 @@ static int dw_mci_submit_data_dma(struct dw_mci *host, struct mmc_data *data) {
 		return sg_len;
 	}
 
-	log_debug("%#lx sg_dma: %#lx sg_len: %d", host->sg_cpu, host->sg_dma, sg_len);
+	log_debug("desc_ring: %#lx sg_len: %d", host->desc_ring, sg_len);
 
 	/* Enable the DMA interface */
 	temp = mci_readl(host, CTRL);
@@ -488,8 +482,21 @@ static void dw_mci_start_request(struct dw_mci *host,
 
 	dw_mci_start_command(host, cmd, cmdflags);
 
-	if (data->addr && (cmd->flags & MMC_DATA_READ)) {
-		dcache_inval((void *) data->addr, data->blksz * data->blocks);
+	if (data->addr) {
+		int timeout = 1000;
+		while (!(host->data_status & SDMMC_INT_DATA_OVER)) {
+			usleep(USEC_PER_MSEC);
+			if (timeout-- < 0) {
+				log_error("Data transfer timeout");
+				break;
+			}
+		}
+
+		host->data_status &= ~SDMMC_INT_DATA_OVER;
+
+		if (cmd->flags & MMC_DATA_READ) {
+			dcache_inval((void *) data->addr, data->blksz * data->blocks);
+		}
 	}
 }
 
@@ -500,11 +507,6 @@ static void dw_mci_setup_bus(struct dw_mci_slot *slot, bool force_clkinit) {
 	uint32_t sdmmc_cmd_bits = SDMMC_CMD_UPD_CLK | SDMMC_CMD_PRV_DAT_WAIT;
 
 	log_debug("slot id(%d)", slot->id);
-
-	/* We must continue to set bit 28 in CMD until the change is complete */
-	if (host->state == STATE_WAITING_CMD11_DONE) {
-		sdmmc_cmd_bits |= SDMMC_CMD_VOLT_SWITCH;
-	}
 
 	div = 0;
 
@@ -663,13 +665,6 @@ static irq_return_t dw_mci_interrupt(unsigned int irq, void *dev_id) {
 	log_debug("host (%p) pending MINTSTS (%x)", host, pending);
 
 	if (pending) {
-		/* Check volt switch first, since it can look like an error */
-		if ((host->state == STATE_SENDING_CMD11) &&
-				(pending & SDMMC_INT_VOLT_SWITCH)) {
-			mci_writel(host, RINTSTS, SDMMC_INT_VOLT_SWITCH);
-			pending &= ~SDMMC_INT_VOLT_SWITCH;
-		}
-
 		if (pending & DW_MCI_CMD_ERROR_FLAGS) {
 			mci_writel(host, RINTSTS, DW_MCI_CMD_ERROR_FLAGS);
 			host->cmd_status = pending;
@@ -678,14 +673,12 @@ static irq_return_t dw_mci_interrupt(unsigned int irq, void *dev_id) {
 
 		if (pending & DW_MCI_DATA_ERROR_FLAGS) {
 			mci_writel(host, RINTSTS, DW_MCI_DATA_ERROR_FLAGS);
-			host->data_status = pending;
+			host->data_status |= pending;
 		}
 
 		if (pending & SDMMC_INT_DATA_OVER) {
 			mci_writel(host, RINTSTS, SDMMC_INT_DATA_OVER);
-			if (!host->data_status) {
-				host->data_status = pending;
-			}
+			host->data_status |= SDMMC_INT_DATA_OVER;
 		}
 
 		if (pending & SDMMC_INT_RXDR) {
