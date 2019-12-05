@@ -14,14 +14,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#include <framework/mod/options.h>
+#include <drivers/block_dev.h>
 #include <drivers/flash/flash.h>
 #include <lib/crypt/md5.h>
-#include <module/embox/driver/block_common.h>
 #include <util/pretty_print.h>
-
-#define MAX_BDEV_QUANTITY \
-	OPTION_MODULE_GET(embox__driver__block_common, NUMBER, dev_quantity)
 
 static void print_help(void) {
 	printf("Usage: block_dev_test [-hl] [-i iters] <block device name>\n");

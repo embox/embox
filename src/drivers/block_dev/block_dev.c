@@ -26,14 +26,13 @@ extern int devfs_add_block(struct block_dev *dev);
 extern int devfs_del_block(struct block_dev *dev);
 
 #define DEFAULT_BDEV_BLOCK_SIZE OPTION_GET(NUMBER, default_block_size)
-#define MAX_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
 ARRAY_SPREAD_DEF(const struct block_dev_module, __block_dev_registry);
-POOL_DEF(cache_pool, struct block_dev_cache, MAX_DEV_QUANTITY);
-POOL_DEF(blockdev_pool, struct block_dev, MAX_DEV_QUANTITY);
-INDEX_DEF(block_dev_idx, 0, MAX_DEV_QUANTITY);
+POOL_DEF(cache_pool, struct block_dev_cache, MAX_BDEV_QUANTITY);
+POOL_DEF(blockdev_pool, struct block_dev, MAX_BDEV_QUANTITY);
+INDEX_DEF(block_dev_idx, 0, MAX_BDEV_QUANTITY);
 
-static struct block_dev *devtab[MAX_DEV_QUANTITY];
+static struct block_dev *devtab[MAX_BDEV_QUANTITY];
 
 struct block_dev **get_bdev_tab(void) {
 	return &devtab[0];
@@ -98,7 +97,7 @@ struct block_dev_module *block_dev_lookup(const char *bd_name) {
 struct block_dev *block_dev_find(const char *bd_name) {
 	int i;
 
-	for (i = 0; i < MAX_DEV_QUANTITY; i++) {
+	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
 		if (devtab[i] && 0 == strcmp(devtab[i]->name, bd_name)) {
 			return devtab[i];
 		}
@@ -108,11 +107,11 @@ struct block_dev *block_dev_find(const char *bd_name) {
 }
 
 int block_dev_max_id(void) {
-	return MAX_DEV_QUANTITY;
+	return MAX_BDEV_QUANTITY;
 }
 
 struct block_dev *block_dev_by_id(int id) {
-	if (id < 0 || id >= MAX_DEV_QUANTITY) {
+	if (id < 0 || id >= MAX_BDEV_QUANTITY) {
 		return NULL;
 	}
 
@@ -375,6 +374,24 @@ size_t block_dev_block_size(struct block_dev *dev) {
 	return dev->block_size;
 }
 
+struct block_dev *block_dev_parent(struct block_dev *dev) {
+	assert(dev);
+
+	return dev->parent_bdev;
+}
+
+const char *block_dev_name(struct block_dev *dev) {
+	assert(dev);
+
+	return dev->name;
+}
+
+dev_t block_dev_id(struct block_dev *dev) {
+	assert(dev);
+
+	return dev->id;
+}
+
 struct block_dev *block_dev_create(const char *path, const struct block_dev_driver *driver, void *privdata) {
 	struct block_dev *bdev;
 	struct dev_module *devmod;
@@ -415,7 +432,7 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 int block_dev_destroy(void *dev) {
 	struct dev_module *devmod = dev;
 
-	for (int i = 0; i < MAX_DEV_QUANTITY; i++) {
+	for (int i = 0; i < MAX_BDEV_QUANTITY; i++) {
 		if (devtab[i] && devtab[i]->parent_bdev == devmod->dev_priv) {
 			block_dev_destroy(devtab[i]->dev_module);
 		}

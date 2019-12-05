@@ -31,7 +31,6 @@
 #include <module/embox/driver/block_common.h>
 #include <module/embox/driver/char_dev_dvfs.h>
 
-#define MAX_BDEV_QUANTITY OPTION_MODULE_GET(embox__driver__block_common, NUMBER, dev_quantity)
 #define MAX_CDEV_QUANTITY OPTION_MODULE_GET(embox__driver__char_dev_dvfs, NUMBER, dev_quantity)
 
 /**

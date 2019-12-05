@@ -15,12 +15,12 @@
 #include <util/indexator.h>
 #include <util/err.h>
 
-#define MAX_DEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
+#define MAX_BDEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
 
-POOL_DEF(flash_pool, struct flash_dev, MAX_DEV_QUANTITY);
-INDEX_DEF(flash_idx, 0, MAX_DEV_QUANTITY);
+POOL_DEF(flash_pool, struct flash_dev, MAX_BDEV_QUANTITY);
+INDEX_DEF(flash_idx, 0, MAX_BDEV_QUANTITY);
 
-static struct flash_dev *flashdev_tab[MAX_DEV_QUANTITY];
+static struct flash_dev *flashdev_tab[MAX_BDEV_QUANTITY];
 
 struct flash_dev *flash_alloc(void) {
 	struct flash_dev *flash;
@@ -56,7 +56,7 @@ int flash_free(struct flash_dev *dev) {
 
 static int flash_initialized = 0;
 struct flash_dev *flash_by_id(int idx) {
-	if (idx < 0 || idx >= MAX_DEV_QUANTITY) {
+	if (idx < 0 || idx >= MAX_BDEV_QUANTITY) {
 		return NULL;
 	}
 
@@ -68,7 +68,7 @@ struct flash_dev *flash_by_id(int idx) {
 }
 
 int flash_max_id(void) {
-	return MAX_DEV_QUANTITY;
+	return MAX_BDEV_QUANTITY;
 }
 
 ARRAY_SPREAD_DEF(const flash_dev_module_t, __flash_dev_registry);
