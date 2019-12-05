@@ -44,14 +44,6 @@ module InitFsTest {
 	depends embox.fs.rootfs
 }
 
-module tmpfs_test {
-	source "tmpfs_test.c"
-
-	depends embox.fs.driver.tmpfs
-	depends embox.compat.posix.LibPosix
-	depends embox.framework.LibFramework
-}
-
 module permissions {
 	source "permissions.c"
 

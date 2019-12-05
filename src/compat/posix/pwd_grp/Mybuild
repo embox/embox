@@ -39,8 +39,6 @@ module passwd_db_dynamic extends passwd_db {
 
 	@InitFS(chmod="0600")
 	source "shadow"
-
-	depends embox.fs.driver.tmpfs
 }
 
 static module crypt {
