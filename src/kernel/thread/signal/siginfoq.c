@@ -19,8 +19,8 @@
 
 #include <framework/mod/options.h>
 
-#define LINK_POOL_SZ \
-	OPTION_GET(NUMBER, pool_sz)
+#define SIGINFO_POOL_SZ \
+	OPTION_GET(NUMBER, siginfo_pool_sz)
 
 struct siginfoq_link {
 	struct slist_link link;
@@ -28,7 +28,7 @@ struct siginfoq_link {
 };
 typedef member_t(struct siginfoq_link, link) siginfoq_member_t;
 
-OBJALLOC_DEF(siginfoq_link_pool, struct siginfoq_link, LINK_POOL_SZ);
+OBJALLOC_DEF(siginfoq_link_pool, struct siginfoq_link, SIGINFO_POOL_SZ);
 
 struct siginfoq *siginfoq_init(struct siginfoq *infoq) {
 	slist_init(&infoq->queue);

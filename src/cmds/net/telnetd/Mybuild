@@ -16,23 +16,18 @@ package embox.cmd.net
 			Vladimir Sokolov
 	''')
 module telnetd {
-	source "telnetd.c"
+	source "telnetd.c",
+		"telnet_util.c"
 
-	option number telnetd_use_pthread = 1
-	option number telnetd_max_connections = 5
+	option number port = 23
+	option number max_connections = 5
+	option string shell = "tish"
 
-	depends embox.net.socket
-	depends embox.net.tcp_sock
-	depends embox.net.tcp
-
-	depends embox.kernel.thread.core
 	depends embox.compat.posix.net.socket
-	depends embox.compat.posix.proc.signal
-	depends embox.cmd.sh.shell_api
-	depends embox.compat.posix.utmp_api
-	depends embox.compat.posix.proc.exec
 	depends embox.compat.posix.idx.ppty
 	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.proc.exec
 	depends embox.compat.posix.proc.waitpid
-	depends embox.arch.vfork_entry
+	depends embox.compat.posix.proc.vfork
 }
