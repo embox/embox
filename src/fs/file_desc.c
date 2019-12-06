@@ -20,6 +20,7 @@
 #include <kernel/task/resource/idesc_table.h>
 #include <embox/unit.h>
 #include <util/err.h>
+#include <fs/node.h>
 
 extern const struct idesc_xattrops file_idesc_xattrops;
 
@@ -104,4 +105,11 @@ off_t file_set_pos(struct file_desc *file, off_t off) {
 	file->cursor = off;
 
 	return file->cursor;
+}
+
+void *file_get_inode_data(struct file_desc *file) {
+	assert(file->node);
+	assert(file->node->nas->fi->privdata);
+
+	return file->node->nas->fi->privdata;
 }
