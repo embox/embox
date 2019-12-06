@@ -69,6 +69,18 @@ module mips_clk extends embox.arch.clock {
 	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
+module riscv_clk extends embox.arch.clock {
+	option number base_mtime
+	
+
+	source "riscv_clk.c"
+
+	depends embox.kernel.irq
+	depends embox.kernel.time.clock_source
+	depends embox.arch.interrupt
+	@NoRuntime depends embox.kernel.time.timer_handler
+}
+
 module lapic_timer extends embox.arch.clock {
 	source "lapic_timer.c"
 

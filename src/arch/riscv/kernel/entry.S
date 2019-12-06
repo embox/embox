@@ -19,15 +19,17 @@ trap_handler:
 	srli    t6, t6, 31
 	beqz    t6, riscv_exception_handler
 	j       riscv_interrupt_handler
+	RESTORE_ALL
 
 .align 4
 riscv_exception_handler:
+
 	lw      t6, PT_PC(sp)
 	addi    t6, t6, 4
 	sw      t6, PT_PC(sp)
 	RESTORE_ALL
 
-.align 4
+/*.align 4
 riscv_interrupt_handler:
 
-	RESTORE_ALL
+	RESTORE_ALL*/

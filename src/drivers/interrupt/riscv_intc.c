@@ -20,12 +20,12 @@ static int unit_init(void) {
 }
 
 void irqctrl_enable(unsigned int interrupt_nr) {
-	set_csr_bit(sie, (1 << interrupt_nr));
+	set_csr_bit(mie, (1 << ((interrupt_nr * 2) + 1))); //look bad
 }
 
 void irqctrl_disable(unsigned int interrupt_nr) {
-	clear_csr_bit(sie, (1 << interrupt_nr));
+	clear_csr_bit(mie, (1 << ((interrupt_nr * 2) + 1)));
 }
-
+/*
 void irqctrl_force(unsigned int irq_num) {
-}
+}*/

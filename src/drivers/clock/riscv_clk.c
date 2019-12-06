@@ -1,0 +1,68 @@
+/**
+ * @file
+ *
+ * @brief RISC-V build-in timer
+ *
+ * @date 12.12.2019
+ * @author Anastasia Nizharadze
+ */
+
+#include <errno.h>
+
+#include <asm/regs.h>
+#include <hal/clock.h>
+#include <hal/system.h>
+#include <kernel/irq.h>
+#include <kernel/time/clock_source.h>
+
+#include <embox/unit.h>
+
+#define HZ 1000
+#define COUNT_OFFSET (SYS_CLOCK / HZ)
+#define MTIME        OPTION_GET(NUMBER, base_mtime)
+
+static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
+/*	int a = COUNT_OFFSET;
+	__asm volatile ("sw %0, (mtimecmp)" :: "r" (a));
+	__asm volatile ("sw zero, (mtime)");
+*/
+
+	clock_tick_handler(irq_nr, dev_id);
+	return IRQ_HANDLED;
+}
+
+static int riscv_clock_setup(struct time_dev_conf * conf) {
+
+	return ENOERR;
+}
+
+static struct time_event_device riscv_event_device  = {
+	.config = riscv_clock_setup,
+	.event_hz = 1000,
+	.name = "riscv_clk",
+	.irq_nr = (((MIE_MTIE) - 1) / 2)
+};
+
+static struct clock_source riscv_clock_source = {
+	.name = "riscv_clk",
+	.event_device = &riscv_event_device,
+	.read = clock_source_read /* attach default read function */
+};
+
+static int riscv_clock_init(void) {
+	int err;
+
+	err = clock_source_register(&riscv_clock_source);
+	if (err) {
+		return err;
+	}
+
+	err = irq_attach((((MIE_MTIE) - 1) / 2), clock_handler, 0, &riscv_clock_source, "riscv_clk");
+	if (err) {
+		return err;
+	}
+
+	return 0;
+}
+
+EMBOX_UNIT_INIT(riscv_clock_init);
