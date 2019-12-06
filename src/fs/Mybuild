@@ -22,7 +22,10 @@ module filesystem {
 module file_desc {
 	option number fdesc_quantity=32
 
+	@IncludeExport(path="fs")
+	source "file_desc.h"
 	source "file_desc.c"
+
 	source "file_xattr.c"
 
 	depends idesc
