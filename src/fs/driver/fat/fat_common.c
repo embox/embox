@@ -716,6 +716,8 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 	dirinfo->currentsector = 0;
 	dirinfo->currententry = 0;
 
+	dirinfo->fi.mode = S_IFDIR;
+
 	if (dir_is_root(dirname)) {
 		uint32_t ret;
 		dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
@@ -1669,6 +1671,24 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 	}
 }
 
+static int fat_dir_empty(struct fat_file_info *fi) {
+	struct dirinfo *di = (void *) fi;
+	struct fat_dirent de = { };
+	int res;
+
+	fat_reset_dir(di);
+
+	if (read_dir_buf(di)) {
+		return 0;
+	}
+
+	while (de.name[0] == '\0') {
+		res = fat_get_next(di, &de);
+	}
+
+	return DFS_EOF == res;
+}
+
 /*
  * Delete a file
  * p_scratch must point to a sector-sized buffer
@@ -1680,6 +1700,10 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 	struct dirinfo *di = fi->fdi;
 
 	fsi = fi->fsi;
+
+	if (S_ISDIR(fi->mode) && !fat_dir_empty(fi)) {
+		return -EPERM;
+	}
 
 	fat_dir_clean_long(di, fi);
 

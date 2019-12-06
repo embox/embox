@@ -74,6 +74,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 
 		memset(new_di, 0, sizeof(struct dirinfo));
 		new_di->p_scratch = fat_sector_buff;
+		new_di->fi.mode = S_IFDIR;
 		inode->flags |= S_IFDIR;
 
 		new_di->currentcluster = (uint32_t) de->startclus_l_l |
@@ -218,6 +219,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 		}
 		new_di->p_scratch = fat_sector_buff;
 		fi = &new_di->fi;
+		fi->mode |= S_IFDIR;
 	} else {
 		if (!(fi = fat_file_alloc())) {
 			return -ENOMEM;
