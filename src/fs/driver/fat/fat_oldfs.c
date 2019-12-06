@@ -415,16 +415,9 @@ static int fatfs_delete(struct node *node) {
 	if (path[root_path_len] == '\0') {
 		fat_fs_free(fsi);
 	} else {
-		if (node_is_directory(node)) {
-			if (fat_unlike_directory(fi, (uint8_t *) path + root_path_len,
-				(uint8_t *) fat_sector_buff)) {
-				return -1;
-			}
-		} else {
-			if (fat_unlike_file(fi, (uint8_t *) path + root_path_len,
-				(uint8_t *) fat_sector_buff)) {
-				return -1;
-			}
+		if (fat_unlike_file(fi, (uint8_t *) path + root_path_len,
+					(uint8_t *) fat_sector_buff)) {
+			return -1;
 		}
 	}
 	fat_file_free(fi);

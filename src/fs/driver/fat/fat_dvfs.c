@@ -305,16 +305,15 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 static int fat_remove(struct inode *inode) {
 	struct fat_file_info *fi;
 	struct dirinfo *di;
-	int res;
 
 	if (FILE_TYPE(inode->flags, S_IFDIR)) {
 		di = inode->i_data;
-		res = fat_unlike_directory(&di->fi, NULL, (uint8_t*) fat_sector_buff);
+		fi = &di->fi;
 	} else {
 		fi = inode->i_data;
-		res = fat_unlike_file(fi, NULL, (uint8_t*) fat_sector_buff);
 	}
-	return res;
+
+	return fat_unlike_file(fi, NULL, (uint8_t*) fat_sector_buff);
 }
 
 static int fat_pathname(struct inode *inode, char *buf, int flags) {

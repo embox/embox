@@ -1700,38 +1700,6 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 	return DFS_OK;
 }
 
-/*
- * Delete a file
- * p_scratch must point to a sector-sized buffer
- */
-int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
-		uint8_t *p_scratch) {
-	uint32_t tempclus;
-	struct fat_fs_info *fsi;
-	struct dirinfo *di = fi->fdi;
-
-	fsi = fi->fsi;
-
-	fat_dir_clean_long(di, fi);
-
-	/* First, read the directory sector and delete that entry */
-	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
-		return DFS_ERRMISC;
-	}
-	((struct fat_dirent*) p_scratch)[fi->diroffset].name[0] = 0xe5;
-	if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
-		return DFS_ERRMISC;
-	}
-
-	/* Now follow the cluster chain to free the file space */
-	while (!fat_is_end_of_chain(fsi, fi->firstcluster)) {
-		tempclus = fi->firstcluster;
-		fi->firstcluster = fat_get_fat(fsi, p_scratch, fi->firstcluster);
-		fat_set_fat(fsi, p_scratch, tempclus, 0);
-	}
-	return DFS_OK;
-}
-
 /**
  * @brief Fill dirent with dirinfo data
  *
