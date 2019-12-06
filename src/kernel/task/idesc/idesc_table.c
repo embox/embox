@@ -124,6 +124,26 @@ void idesc_table_finit(struct idesc_table *t) {
 	}
 }
 
+/* Alloc idesc at the specified position. */
+static int idesc_table_idx_copy(struct idesc_table *t, int idx,
+	struct idesc *idesc, int cloexec) {
+	assert(t);
+	assert(idesc);
+
+	if (index_try_lock(&t->indexator, idx) != 1) {
+		return -1;
+	}
+
+	idesc->idesc_count++;
+
+	if (cloexec) {
+		idesc_cloexec_set(idesc);
+	}
+	t->idesc_table[idx] = idesc;
+
+	return idx;
+}
+
 int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 	int i, ret;
 	struct idesc *idesc;
@@ -137,8 +157,8 @@ int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 		if (parent_table->idesc_table[i]) {
 			idesc = idesc_table_get(parent_table, i);
 			assert(idesc);
-			if (!idesc_is_cloexeced(t->idesc_table[i])) {
-				ret = idesc_table_add(t, idesc, 0);
+			if (!idesc_is_cloexeced(parent_table->idesc_table[i])) {
+				ret = idesc_table_idx_copy(t, i, idesc, 0);
 				assert(ret >= 0); /* FIXME */
 			}
 		}
