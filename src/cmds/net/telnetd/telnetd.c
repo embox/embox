@@ -363,7 +363,6 @@ int main(int argc, char **argv) {
 		printf("telnet: listen() failed on main server socket\n");
 		goto listen_failed;
 	}
-	printf("telnetd started on port %d\n", TELNETD_PORT);
 
 	telnet_main_loop(server_sock);
 
