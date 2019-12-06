@@ -13,10 +13,10 @@
 #include <sys/types.h>
 
 #include <framework/mod/options.h>
-#include <config/embox/driver/block_common.h>
+#include <config/embox/driver/block_dev.h>
 
 #define MAX_BDEV_QUANTITY \
-	OPTION_MODULE_GET(embox__driver__block_common, NUMBER, dev_quantity)
+	OPTION_MODULE_GET(embox__driver__block_dev, NUMBER, dev_quantity)
 
 #define IOCTL_GETBLKSIZE        1
 #define IOCTL_GETDEVSIZE        2

@@ -9,7 +9,7 @@ module stm32f4_sd extends sd {
 
 	source "stm32f4_sd.c"
 
-	depends embox.driver.block_common
+	depends embox.driver.block_dev
 	depends third_party.bsp.stmf4cube.core
 }
 
@@ -23,7 +23,7 @@ module stm32f764g_discovery_sd extends sd {
 
 	source "stm32f7_sd.c"
 
-	depends embox.driver.block_common
+	depends embox.driver.block_dev
 	depends third_party.bsp.st_bsp_api
 }
 
@@ -37,6 +37,6 @@ module stm32f769i_discovery_sd extends sd {
 
 	source "stm32f7_sd.c"
 
-	depends embox.driver.block_common
+	depends embox.driver.block_dev
 	depends third_party.bsp.st_bsp_api
 }

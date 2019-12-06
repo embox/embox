@@ -21,6 +21,6 @@ module block_dev_test {
 	depends embox.compat.libc.str
 	depends embox.compat.posix.util.getopt
 	depends embox.driver.flash.core
-	depends embox.driver.block_api
+	depends embox.driver.block_dev
 	depends embox.util.pretty_print
 }

@@ -9,6 +9,6 @@ module pl181 {
 
 	source "pl181.c"
 
-	depends embox.driver.block_common
+	depends embox.driver.block_dev
 	depends embox.driver.mmc.mmc_core
 }

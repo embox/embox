@@ -17,7 +17,7 @@ abstract module core {
 module flash_fs extends core {
 	source "flash_fs.c"
 
-	depends embox.driver.block_api
+	depends embox.driver.block_dev
 }
 
 module flash_nofs extends core {
