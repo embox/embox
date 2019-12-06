@@ -14,7 +14,7 @@
 
 #include <drivers/block_dev.h>
 #include <drivers/device.h>
-#include <fs/dvfs.h>
+#include <fs/file_desc.h>
 
 static void bdev_idesc_close(struct idesc *desc) {
 }
@@ -36,9 +36,9 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 
 	file = (struct file *) desc;
 
-	pos = file->pos;
+	pos = file_get_pos(file);
 
-	devmod = file->f_inode->i_data;
+	devmod = file_get_inode_data(file);
 	bdev = devmod->dev_priv;
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
@@ -55,7 +55,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	if (res < 0) {
 		return res;
 	}
-	file->pos = (pos + res);
+	file_set_pos(file, pos + res);
 
 	return res;
 }
@@ -74,9 +74,9 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 
 	file = (struct file *)desc;
 
-	pos = file->pos;
+	pos = file_get_pos(file);
 
-	devmod = file->f_inode->i_data;
+	devmod = file_get_inode_data(file);
 	bdev = devmod->dev_priv;
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
@@ -93,7 +93,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	if (res < 0) {
 		return res;
 	}
-	file->pos = (pos + res);
+	file_set_pos(file, pos + res);
 
 	return res;
 }
@@ -106,10 +106,8 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	assert(idesc);
 
 	file = (struct file *) idesc;
-	assert(file->f_inode);
-	assert(file->f_inode->i_data);
 
-	devmod = file->f_inode->i_data;
+	devmod = file_get_inode_data(file);
 	bdev = devmod->dev_priv;
 
 	switch (cmd) {
