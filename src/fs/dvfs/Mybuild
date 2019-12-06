@@ -6,6 +6,9 @@ module core extends embox.fs.fs_api {
 	@IncludeExport(path="fs")
 	source "dvfs.h"
 
+	@IncludeExport(path="fs")
+	source "file_desc.h"
+
 	option number superblock_pool_size=4
 	option number inode_pool_size=64
 	option number dentry_pool_size=64

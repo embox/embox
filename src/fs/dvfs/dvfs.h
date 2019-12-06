@@ -10,6 +10,7 @@
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
 #include <fs/idesc.h>
+#include <fs/file_desc.h>
 #include <fs/file_system.h>
 #include <util/dlist.h>
 
@@ -113,17 +114,6 @@ struct dentry {
 
 struct dentry_operations {
 
-};
-
-struct file {
-	struct idesc f_idesc;
-
-	struct dentry *f_dentry;
-	struct inode  *f_inode;
-
-	off_t pos;
-
-	struct file_operations *f_ops;
 };
 
 /* NOTE ON FILE OPEN
