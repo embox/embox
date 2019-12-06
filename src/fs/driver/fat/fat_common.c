@@ -1682,7 +1682,7 @@ static int fat_dir_empty(struct fat_file_info *fi) {
 		return 0;
 	}
 
-	while (de.name[0] == '\0') {
+	while (de.name[0] == '\0' && res != DFS_EOF) {
 		res = fat_get_next(di, &de);
 	}
 
