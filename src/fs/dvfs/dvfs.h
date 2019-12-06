@@ -166,9 +166,6 @@ struct dir_ctx {
 extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
 extern int            dvfs_destroy_inode(struct inode *inode);
 
-extern struct file   *dvfs_alloc_file(void);
-extern int            dvfs_destroy_file(struct file *desc);
-
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);
 extern int            dvfs_fs_dentry_try_free(struct super_block *sb);

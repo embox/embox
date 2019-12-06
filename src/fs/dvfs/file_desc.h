@@ -26,4 +26,12 @@ struct file {
 	struct file_operations *f_ops;
 };
 
+extern off_t file_get_pos(struct file *file);
+extern off_t file_set_pos(struct file *file, off_t off);
+
+extern void *file_get_inode_data(struct file *file);
+
+extern struct file *dvfs_alloc_file(void);
+extern int dvfs_destroy_file(struct file *desc);
+
 #endif /* SRC_FS_DVFS_FILE_DESC_H_ */

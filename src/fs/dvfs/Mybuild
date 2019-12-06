@@ -8,6 +8,7 @@ module core extends embox.fs.fs_api {
 
 	@IncludeExport(path="fs")
 	source "file_desc.h"
+	source "file_desc.c"
 
 	option number superblock_pool_size=4
 	option number inode_pool_size=64
