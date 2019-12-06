@@ -318,12 +318,15 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 	struct cifs_fs_info *fsi;
 	SMBCFILE *file;
 	size_t res;
+	off_t pos;
+
+	pos = file_get_pos(file_desc);
 
 	fsi = file_desc->node->nas->fs->fsi;
 	file = file_desc->file_info;
 
-	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, file_desc->cursor, SEEK_SET);
-	if (res != file_desc->cursor) {
+	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
+	if (res != pos) {
 		if (-1 == res) {
 			return -errno;
 		} else {
@@ -334,7 +337,7 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 	res = smbc_getFunctionRead(fsi->ctx)(fsi->ctx, file, buf, size);
 
 	if (res > 0) {
-		file_desc->cursor += res;
+		file_set_pos(file_desc, pos + res);
 	}
 
 	return res;
@@ -344,12 +347,15 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	struct cifs_fs_info *fsi;
 	SMBCFILE *file;
 	size_t res;
+	off_t pos;
+
+	pos = file_get_pos(file_desc);
 
 	fsi = file_desc->node->nas->fs->fsi;
 	file = file_desc->file_info;
 
-	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, file_desc->cursor, SEEK_SET);
-	if (res != file_desc->cursor) {
+	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
+	if (res != pos) {
 		if (-1 == res) {
 			return -errno;
 		} else {
@@ -360,8 +366,8 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	res = smbc_getFunctionWrite(fsi->ctx)(fsi->ctx, file, buf, size);
 
 	if (res > 0) {
-		file_desc->cursor += res;
-		file_desc->node->nas->fi->ni.size = max(file_desc->node->nas->fi->ni.size, file_desc->cursor);
+		pos = file_set_pos(file_desc, pos + res);
+		file_desc->node->nas->fi->ni.size = max(file_desc->node->nas->fi->ni.size, pos);
 	}
 
 	return res;

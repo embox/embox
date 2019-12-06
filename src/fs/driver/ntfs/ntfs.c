@@ -530,13 +530,16 @@ static size_t ntfs_read(struct file_desc *file_desc, void *buf, size_t size)
 {
 	struct ntfs_desc_info *desc;
 	size_t res;
+	off_t pos;
+
+	pos = file_get_pos(file_desc);
 
 	desc = file_desc->file_info;
 
-	res = ntfs_attr_pread(desc->attr, file_desc->cursor, size, buf);
+	res = ntfs_attr_pread(desc->attr, pos, size, buf);
 
 	if (res > 0) {
-		file_desc->cursor += res;
+		file_set_pos(file_desc, pos + res);
 	}
 
 	return res;
@@ -545,13 +548,16 @@ static size_t ntfs_read(struct file_desc *file_desc, void *buf, size_t size)
 static size_t ntfs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	struct ntfs_desc_info *desc;
 	size_t res;
+	off_t pos;
+
+	pos = file_get_pos(file_desc);
 
 	desc = file_desc->file_info;
 
-	res = ntfs_attr_pwrite(desc->attr, file_desc->cursor, size, buf);
+	res = ntfs_attr_pwrite(desc->attr, pos, size, buf);
 
 	if (res > 0) {
-		file_desc->cursor += res;
+		file_set_pos(file_desc, pos + res);
 		file_desc->node->nas->fi->ni.size = desc->attr->data_size;
 	}
 

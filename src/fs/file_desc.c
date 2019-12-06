@@ -12,7 +12,6 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-
 #include <fs/perm.h>
 #include <mem/objalloc.h>
 
@@ -95,4 +94,14 @@ struct file_desc *file_desc_get(int idx) {
 
 	return (struct file_desc *) idesc;
 
+}
+
+off_t file_get_pos(struct file_desc * file) {
+	return file->cursor;
+}
+
+off_t file_set_pos(struct file_desc *file, off_t off) {
+	file->cursor = off;
+
+	return file->cursor;
 }

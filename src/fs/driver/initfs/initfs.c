@@ -48,6 +48,9 @@ static int initfs_close(struct file_desc *desc) {
 static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct initfs_file_info *fi;
 	struct nas *nas;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	nas = desc->node->nas;
 	fi = (struct initfs_file_info*) nas->fi;
@@ -56,12 +59,12 @@ static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 		return -ENOENT;
 	}
 
-	if (size > fi->ni.size - desc->cursor) {
-		size = fi->ni.size - desc->cursor;
+	if (size > fi->ni.size - pos) {
+		size = fi->ni.size - pos;
 	}
 
-	memcpy(buf, fi->addr + desc->cursor, size);
-	desc->cursor += size;
+	memcpy(buf, fi->addr + pos, size);
+	file_set_pos(desc, pos + size);
 
 	return size;
 }

@@ -71,12 +71,15 @@ static void unaligned_set_hyper(uint64_t *dst, void *src) {
 static struct idesc *nfsfs_open(struct node *node, struct file_desc *desc, int flags) {
 	nfs_file_info_t *fi;
 	struct nas *nas;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	nas = node->nas;
 	fi = (nfs_file_info_t *)nas->fi->privdata;
 
 	fi->mode = flags;
-	fi->offset = desc->cursor;
+	fi->offset = pos;
 
 	if(0 == nfs_lookup(nas)) {
 		nas->fi->ni.size = fi->attr.size;
@@ -91,7 +94,8 @@ static int nfsfs_close(struct file_desc *desc) {
 
 	nas = desc->node->nas;
 	fi = (nfs_file_info_t *)nas->fi->privdata;
-	fi->offset = desc->cursor = 0;
+	fi->offset = 0;
+	file_set_pos(desc, 0);
 
 	return 0;
 }
@@ -103,11 +107,14 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	read_reply_t reply;
 	size_t datalen;
 	struct nas *nas;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	nas = desc->node->nas;
 	fi = (nfs_file_info_t *) nas->fi->privdata;
 	datalen = 0;
-	fi->offset = desc->cursor;
+	fi->offset = pos;
 
 	while(1) {
 		size_to_read = min(size, DIRCOUNT);
@@ -137,7 +144,7 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 			break;
 		}
 	}
-	desc->cursor = fi->offset;
+	file_set_pos(desc, fi->offset);
 	return datalen;
 }
 
@@ -148,11 +155,14 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	write_req_t req;
 	write_reply_t reply;
 	struct nas *nas;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	size_to_write = size;
 	nas = desc->node->nas;
 	fi = (nfs_file_info_t *) nas->fi->privdata;
-	fi->offset = desc->cursor;
+	fi->offset = pos;
 
 	/* set read structure */
 	req.count = req.datalen = size_to_write;
@@ -170,10 +180,12 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	}
 
 	fi->offset += reply.count;
-	desc->cursor = fi->offset;
-	if (nas->fi->ni.size < desc->cursor) {
-		nas->fi->ni.size = desc->cursor;
+	pos = fi->offset;
+	if (nas->fi->ni.size < pos) {
+		nas->fi->ni.size = pos;
 	}
+
+	file_set_pos(desc, fi->offset);
 
 	return reply.count;
 }

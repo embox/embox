@@ -122,7 +122,7 @@ static struct idesc *ramfs_open(struct node *node, struct file_desc *desc, int f
 	nas = node->nas;
 	fi = (ramfs_file_info_t *)nas->fi->privdata;
 
-	fi->pointer = desc->cursor;
+	fi->pointer = file_get_pos(desc);;
 
 	return &desc->idesc;
 }
@@ -179,12 +179,15 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct nas *nas = desc->node->nas;
 	struct ramfs_fs_info *fsi = nas->fs->fsi;
 	void *pbuf, *ebuf;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	pbuf = buf;
-	ebuf = buf + min(nas->fi->ni.size - desc->cursor, size);
+	ebuf = buf + min(nas->fi->ni.size - pos, size);
 	while (pbuf < ebuf) {
-		blkno_t blk = desc->cursor / fsi->block_size;
-		int offset = desc->cursor % fsi->block_size;
+		blkno_t blk = pos / fsi->block_size;
+		int offset = pos % fsi->block_size;
 		int read_n;
 
 		assert (blk < fsi->block_per_file);
@@ -198,9 +201,11 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 		read_n = min(fsi->block_size - offset, ebuf - pbuf);
 		memcpy (pbuf, sector_buff + offset, read_n);
 
-		desc->cursor += read_n;
+		pos += read_n;
 		pbuf += read_n;
 	}
+
+	file_set_pos(desc, pos);
 
 	return pbuf - buf;
 }
@@ -215,6 +220,9 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	uint32_t start_block;
 	struct nas *nas;
 	struct ramfs_fs_info *fsi;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	nas = desc->node->nas;
 	fi = (ramfs_file_info_t *)nas->fi->privdata;
@@ -222,7 +230,7 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	bytecount = 0;
 
-	fi->pointer = desc->cursor;
+	fi->pointer = pos;
 	len = size;
 	end_pointer = fi->pointer + len;
 	start_block = fi->index * fsi->block_per_file;
@@ -286,7 +294,7 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		nas->fi->ni.size = fi->pointer;
 	}
 
-	desc->cursor = fi->pointer;
+	file_set_pos(desc, fi->pointer);
 	return bytecount;
 }
 

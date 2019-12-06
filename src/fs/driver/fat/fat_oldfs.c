@@ -225,7 +225,7 @@ static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int 
 
 	res = fat_open_file(fi, (uint8_t *) path, flag, fat_sector_buff, &nas->fi->ni.size);
 	if (DFS_OK == res) {
-		fi->pointer = desc->cursor;
+		fi->pointer = file_get_pos(desc);
 		return &desc->idesc;
 	}
 
@@ -244,7 +244,7 @@ static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
-	fi->pointer = desc->cursor;
+	fi->pointer = file_get_pos(desc);
 	fi->fsi     = nas->fs->fsi;
 	/* Don't try to read past EOF */
 	if (size > nas->fi->ni.size - fi->pointer) {
@@ -253,7 +253,7 @@ static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 	rezult = fat_read_file(fi, fat_sector_buff, buf, &bytecount, size);
 	if (DFS_OK == rezult) {
-		desc->cursor = fi->pointer;
+		file_set_pos(desc, fi->pointer);
 		return bytecount;
 	}
 	return rezult;
@@ -267,7 +267,7 @@ static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
-	fi->pointer = desc->cursor;
+	fi->pointer = file_get_pos(desc);
 	fi->fsi = nas->fs->fsi;
 
 	fi->mode = O_RDWR; /* XXX */
@@ -275,7 +275,7 @@ static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size) {
 	rezult = fat_write_file(fi, fat_sector_buff, (uint8_t *)buf,
 			&bytecount, size, &nas->fi->ni.size);
 	if (DFS_OK == rezult) {
-		desc->cursor = fi->pointer;
+		file_set_pos(desc, fi->pointer);
 		return bytecount;
 	}
 	return rezult;
