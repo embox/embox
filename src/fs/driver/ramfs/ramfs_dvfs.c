@@ -60,11 +60,11 @@ INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
 
-static int ramfs_close(struct file *desc) {
+static int ramfs_close(struct file_desc *desc) {
 	return 0;
 }
 
-static size_t ramfs_read(struct file *desc, void *buf, size_t size) {
+static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct ramfs_fs_info *fsi;
 	void *pbuf, *ebuf;
 	struct block_dev *bdev;
@@ -110,7 +110,7 @@ static size_t ramfs_read(struct file *desc, void *buf, size_t size) {
 	return pbuf - buf;
 }
 
-static size_t ramfs_write(struct file *desc, void *buf, size_t size) {
+static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	ramfs_file_info_t *fi;
 	size_t len;
 	size_t current, cnt;
@@ -357,7 +357,7 @@ struct super_block_operations ramfs_sbops = {
 	.destroy_inode = ramfs_destroy_inode,
 };
 
-static int ramfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
+static int ramfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	struct ramfs_fs_info *fsi;
 
 	assert(sb);

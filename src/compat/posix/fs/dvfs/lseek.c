@@ -10,18 +10,19 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <fs/dvfs.h>
+#include <fs/file_desc.h>
 #include <fs/index_descriptor.h>
 #include <kernel/task/resource/idesc_table.h>
 
 off_t lseek(int fd, off_t offset, int origin) {
 	struct stat sb;
-	struct file *file;
+	struct file_desc *file;
+	off_t pos;
 
 	if (!idesc_index_valid(fd)) {
 		return SET_ERRNO(EBADF);
 	}
-	if (NULL == (file = (struct file *)index_descriptor_get(fd))) {
+	if (NULL == (file = (struct file_desc *)index_descriptor_get(fd))) {
 		return SET_ERRNO(EBADF);
 	}
 
@@ -32,21 +33,23 @@ off_t lseek(int fd, off_t offset, int origin) {
 		return SET_ERRNO(EPIPE);
 	}
 
+	pos = file_get_pos(file);
 	switch (origin) {
 		case SEEK_SET:
-			file->pos = offset;
+			pos = offset;
 			break;
 
 		case SEEK_CUR:
-			file->pos += offset;
+			pos += offset;
 			break;
 
 		case SEEK_END:
-			file->pos = sb.st_size + offset;
+			pos = sb.st_size + offset;
 			break;
 
 		default:
 			return -EINVAL;
 	}
-	return file->pos;
+	file_set_pos(file, pos);
+	return pos;
 }

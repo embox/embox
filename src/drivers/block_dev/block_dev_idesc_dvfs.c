@@ -22,7 +22,7 @@ static void bdev_idesc_close(struct idesc *desc) {
 static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	void *buf;
 	size_t nbyte;
-	struct file *file;
+	struct file_desc *file;
 	struct block_dev *bdev;
 	struct dev_module *devmod;
 	size_t blk_no;
@@ -34,7 +34,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	assert(cnt == 1);
 	nbyte = iov->iov_len;
 
-	file = (struct file *) desc;
+	file = (struct file_desc *) desc;
 
 	pos = file_get_pos(file);
 
@@ -61,7 +61,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 }
 
 static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
-	struct file *file;
+	struct file_desc *file;
 	struct dev_module *devmod;
 	struct block_dev *bdev;
 	size_t blk_no;
@@ -72,7 +72,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	assert(iov);
 	assert(cnt == 1);
 
-	file = (struct file *)desc;
+	file = (struct file_desc *)desc;
 
 	pos = file_get_pos(file);
 
@@ -101,11 +101,11 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	struct dev_module *devmod;
 	struct block_dev *bdev;
-	struct file *file;
+	struct file_desc *file;
 
 	assert(idesc);
 
-	file = (struct file *) idesc;
+	file = (struct file_desc *) idesc;
 
 	devmod = file_get_inode_data(file);
 	bdev = devmod->dev_priv;

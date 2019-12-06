@@ -47,7 +47,7 @@ struct initfs_dir_info {
 
 POOL_DEF(initfs_dir_pool, struct initfs_dir_info, OPTION_GET(NUMBER,dir_quantity));
 
-static size_t initfs_read(struct file *desc, void *buf, size_t size) {
+static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct inode *inode;
 
 	inode = desc->f_inode;
@@ -61,7 +61,7 @@ static size_t initfs_read(struct file *desc, void *buf, size_t size) {
 	return size;
 }
 
-static int initfs_ioctl(struct file *desc, int request, void *data) {
+static int initfs_ioctl(struct file_desc *desc, int request, void *data) {
 	struct inode *inode = desc->f_inode;
 	char **p_addr;
 
@@ -228,7 +228,7 @@ struct file_operations initfs_fops = {
 	.ioctl = initfs_ioctl,
 };
 
-static int initfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
+static int initfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	sb->sb_iops = &initfs_iops;
 	sb->sb_fops = &initfs_fops;
 	sb->sb_ops  = &initfs_sbops;

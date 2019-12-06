@@ -9,16 +9,16 @@
 #include <fs/dvfs.h>
 #include <fs/file_desc.h>
 
-off_t file_get_pos(struct file *file) {
+off_t file_get_pos(struct file_desc *file) {
 	return file->pos;
 }
 
-off_t file_set_pos(struct file *file, off_t off) {
+off_t file_set_pos(struct file_desc *file, off_t off) {
 	file->pos = off;
 	return file->pos;
 }
 
-void *file_get_inode_data(struct file *file) {
+void *file_get_inode_data(struct file_desc *file) {
 	assert(file);
 	assert(file->f_inode);
 

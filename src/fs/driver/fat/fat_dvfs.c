@@ -232,11 +232,11 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return fat_create_file(fi, di, name, mode);
 }
 
-static int fat_close(struct file *desc) {
+static int fat_close(struct file_desc *desc) {
 	return 0;
 }
 
-static size_t fat_read(struct file *desc, void *buf, size_t size) {
+static size_t fat_read(struct file_desc *desc, void *buf, size_t size) {
 	uint32_t res;
 	struct fat_file_info *fi;
 
@@ -248,7 +248,7 @@ static size_t fat_read(struct file *desc, void *buf, size_t size) {
 	return res;
 }
 
-static size_t fat_write(struct file *desc, void *buf, size_t size) {
+static size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
 	uint32_t res;
 	struct fat_file_info *fi;
 
@@ -393,7 +393,7 @@ struct super_block_operations fat_sbops = {
  *
  * @return Negative error code
  */
-static int fat_fill_sb(struct super_block *sb, struct file *bdev_file) {
+static int fat_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	struct fat_fs_info *fsi;
 	struct block_dev *dev;
 	assert(sb);

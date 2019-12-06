@@ -207,7 +207,7 @@ static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 
-static int devfs_ioctl(struct file *desc, int request, void *data) {
+static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
 	return 0;
 }
 
@@ -261,7 +261,7 @@ struct file_operations devfs_fops = {
 	.ioctl = devfs_ioctl,
 };
 
-static int devfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
+static int devfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	sb->sb_iops = &devfs_iops;
 	sb->sb_fops = &devfs_fops;
 	sb->sb_ops  = &devfs_sbops;

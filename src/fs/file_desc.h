@@ -28,10 +28,10 @@ struct file_desc {
 	void *file_info; /* customize in each file system */
 };
 
-extern off_t file_get_pos(struct file *file);
-extern off_t file_set_pos(struct file *file, off_t off);
+extern off_t file_get_pos(struct file_desc *file);
+extern off_t file_set_pos(struct file_desc *file, off_t off);
 
-extern void *file_get_inode_data(struct file *file);
+extern void *file_get_inode_data(struct file_desc *file);
 
 extern struct file_desc *file_desc_create(struct node *node, int __oflag);
 

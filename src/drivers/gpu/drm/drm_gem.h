@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-struct file;
+struct file_desc;
 struct drm_device;
 struct drm_file;
 
@@ -43,7 +43,7 @@ struct drm_gem_object {
 	 * storage (contiguous CMA memory, special reserved blocks). In this
 	 * case @filp is NULL.
 	 */
-	struct file *filp;
+	struct file_desc *filp;
 
 	/**
 	 * @size:

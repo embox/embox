@@ -14,7 +14,7 @@
 
 struct fuse_sb_priv_data ext2fuse_sb_priv_data;
 
-static int ext2fuse_fill_sb(struct super_block *sb, struct file *bdev_file) {
+static int ext2fuse_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	assert(sb);
 
 	sb->sb_data = &ext2fuse_sb_priv_data;

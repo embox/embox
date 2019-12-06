@@ -16,7 +16,7 @@
 
 int ftruncate(int fd, off_t length) {
 	struct idesc *idesc;
-	struct file *file;
+	struct file_desc *file;
 	int ret;
 
 	if (!idesc_index_valid(fd)
@@ -24,7 +24,7 @@ int ftruncate(int fd, off_t length) {
 		return SET_ERRNO(EBADF);
 	}
 
-	file = (struct file *) idesc;
+	file = (struct file_desc *) idesc;
 
 	assert(file->f_inode);
 	assert(file->f_inode->i_ops);

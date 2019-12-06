@@ -540,15 +540,15 @@ static struct idesc *dfs_open(struct inode *node, struct idesc *desc) {
 		return NULL;
 	}
 
-	((struct file*)desc)->f_ops = &dfs_fops;
+	((struct file_desc*)desc)->f_ops = &dfs_fops;
 	return desc;
 }
 
-static int dfs_close(struct file *desc) {
+static int dfs_close(struct file_desc *desc) {
 	return 0;
 }
 
-static size_t dfs_write(struct file *desc, void *buf, size_t size) {
+static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	int pos;
 	int l;
 	assert(desc);
@@ -566,7 +566,7 @@ static size_t dfs_write(struct file *desc, void *buf, size_t size) {
 	return l;
 }
 
-size_t dfs_read(struct file *desc, void *buf, size_t size) {
+size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 	assert(desc);
 	assert(desc->f_inode);
 	assert(buf);
@@ -598,7 +598,7 @@ struct super_block *dfs_sb(void) {
 	return dfs_super;
 }
 
-static int dfs_fill_sb(struct super_block *sb, struct file *bdev_file) {
+static int dfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	int i;
 
 	assert(NAND_PAGES_MAX >= NAND_PAGES_PER_BLOCK);
