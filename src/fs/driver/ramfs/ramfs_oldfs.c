@@ -20,11 +20,10 @@
 #include <mem/phymem.h> /* PAGE_SIZE() */
 #include <mem/page.h>
 
+#include <fs/file_desc.h>
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
-#include <fs/ramfs.h>
 #include <fs/file_system.h>
-#include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/path.h>
 
@@ -34,24 +33,24 @@
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
 #include <drivers/block_dev/ramdisk/ramdisk.h>
+#include "ramfs.h"
+
+/* define sizes in 4096 blocks */
+#define MAX_FILE_SIZE   OPTION_GET(NUMBER, ramfs_file_size)
+#define RAMFS_FILES     OPTION_GET(NUMBER, inode_quantity)
+#define FILESYSTEM_SIZE (MAX_FILE_SIZE * RAMFS_FILES)
 
 /* ramfs filesystem description pool */
 POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor_quantity));
 
 /* ramfs file description pool */
-POOL_DEF(ramfs_file_pool, struct ramfs_file_info, OPTION_GET(NUMBER,inode_quantity));
+POOL_DEF(ramfs_file_pool, struct ramfs_file_info, RAMFS_FILES);
 
-INDEX_DEF(ramfs_file_idx,0,OPTION_GET(NUMBER,inode_quantity));
-
-/* define sizes in 4096 blocks */
-#define MAX_FILE_SIZE OPTION_GET(NUMBER,ramfs_file_size)
-#define FILESYSTEM_SIZE (MAX_FILE_SIZE * OPTION_GET(NUMBER,inode_quantity))
-
-
-#define RAMFS_DEV  "/dev/ram#"
-#define RAMFS_DIR  "/"
+INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
+
+#define RAMFS_DEV  "/dev/ram#"
 static char ramfs_dev[] = RAMFS_DEV;
 
 static int ramfs_format(void *path);

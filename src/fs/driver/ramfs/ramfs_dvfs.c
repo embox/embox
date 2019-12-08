@@ -14,40 +14,26 @@
 #include <fcntl.h>
 #include <limits.h>
 
-#include <fs/dvfs.h>
-
 #include <util/array.h>
 #include <util/indexator.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h> /* PAGE_SIZE() */
+#include <mem/page.h>
+
+#include <fs/dvfs.h>
 
 #include <util/math.h>
 #include <util/err.h>
 
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
+#include "ramfs.h"
 
 /* define sizes in 4096 blocks */
 #define MAX_FILE_SIZE   OPTION_GET(NUMBER, ramfs_file_size)
 #define RAMFS_FILES     OPTION_GET(NUMBER, inode_quantity)
-#define FILESYSTEM_SIZE (MAX_FILE_SIZE * RAM_FILES)
-
-#define RAMFS_NAME_LEN	32
-
-typedef struct ramfs_fs_info {
-	uint32_t numblocks;			/* number of block in volume */
-	uint32_t block_size;		/* size of block */
-	uint32_t block_per_file;	/* max number of blocks filesize*/
-} ramfs_fs_info_t;
-
-typedef struct ramfs_file_info {
-	int     index;		        /* number of file in FS*/
-	int     mode;				/* mode in which this file was opened */
-	uint32_t pointer;			/* current (BYTE) pointer */
-	char    name[RAMFS_NAME_LEN];
-	struct inode *inode;
-	ramfs_fs_info_t *fsi;
-} ramfs_file_info_t;
+#define FILESYSTEM_SIZE (MAX_FILE_SIZE * RAMFS_FILES)
 
 /* ramfs filesystem description pool */
 POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor_quantity));
@@ -55,8 +41,6 @@ POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor
 struct ramfs_file_info ramfs_files[RAMFS_FILES];
 
 INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
-
-#define RAMFS_DIR  "/"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
 
