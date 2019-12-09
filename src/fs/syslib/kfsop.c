@@ -643,6 +643,10 @@ int kumount(const char *dir) {
 		return res;
 	}
 
+	if (dir_node.node != vfs_get_root()) {
+		node_free(dir_node.node);
+	}
+
 	mount_table_del(node.mnt_desc);
 
 //	/*restore previous fs type from parent dir */

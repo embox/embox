@@ -1674,7 +1674,7 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 static int fat_dir_empty(struct fat_file_info *fi) {
 	struct dirinfo *di = (void *) fi;
 	struct fat_dirent de = { };
-	int res;
+	int res = 0;
 
 	fat_reset_dir(di);
 
