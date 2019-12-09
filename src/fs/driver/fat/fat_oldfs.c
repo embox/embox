@@ -194,15 +194,15 @@ static int fat_umount_entry(struct nas *nas) {
 
 /* File operations */
 static struct idesc *fatfs_open(struct node *node, struct file_desc *file_desc, int flags);
-static int    fatfs_close(struct file_desc *desc);
-static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size);
-static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size);
 
+extern size_t fat_read(struct file_desc *desc, void *buf, size_t size);
+extern size_t fat_write(struct file_desc *desc, void *buf, size_t size);
+extern int    fat_close(struct file_desc *desc);
 static struct file_operations fatfs_fop = {
 	.open = fatfs_open,
-	.close = fatfs_close,
-	.read = fatfs_read,
-	.write = fatfs_write,
+	.close = fat_close,
+	.read = fat_read,
+	.write = fat_write,
 };
 
 /*
@@ -231,43 +231,6 @@ static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int 
 	}
 
 	return err_ptr(res);
-}
-
-static int fatfs_close(struct file_desc *desc) {
-	return 0;
-}
-
-static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
-	size_t rezult;
-	uint32_t bytecount;
-	struct fat_file_info *fi;
-
-	fi = file_get_inode_data(desc);
-	fi->pointer = file_get_pos(desc);
-
-	rezult = fat_read_file(fi, fat_sector_buff, buf, &bytecount, size);
-	if (DFS_OK == rezult) {
-		return bytecount;
-	}
-	return rezult;
-}
-
-static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size) {
-	size_t rezult;
-	uint32_t bytecount;
-	struct fat_file_info *fi;
-
-	fi = file_get_inode_data(desc);
-	fi->pointer = file_get_pos(desc);
-
-	fi->mode = O_RDWR; /* XXX */
-
-	rezult = fat_write_file(fi, fat_sector_buff, (uint8_t *)buf,
-			&bytecount, size, &desc->node->nas->fi->ni.size);
-	if (DFS_OK == rezult) {
-		return bytecount;
-	}
-	return rezult;
 }
 
 static int fatfs_format(void *dev) {

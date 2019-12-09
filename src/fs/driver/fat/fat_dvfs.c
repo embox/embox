@@ -238,32 +238,6 @@ static int fat_close(struct file_desc *desc) {
 	return 0;
 }
 
-static size_t fat_read(struct file_desc *desc, void *buf, size_t size) {
-	uint32_t res;
-	struct fat_file_info *fi;
-
-	fi = file_get_inode_data(desc);
-	fi->pointer = file_get_pos(desc);
-
-	fat_read_file(fi, fat_sector_buff, buf, &res, min(size, fi->filelen - desc->pos));
-
-	return res;
-}
-
-static size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
-	uint32_t res;
-	struct fat_file_info *fi;
-
-	fi = file_get_inode_data(desc);
-	fi->pointer = file_get_pos(desc);
-
-	fi->mode = O_RDWR; /* XXX */
-
-	fat_write_file(fi, fat_sector_buff, buf, &res, size, &desc->f_inode->length);
-	fi->filelen = desc->f_inode->length;
-	return res;
-}
-
 /* @brief Get next inode in directory
  * @param inode   Structure to be filled
  * @param parent  Inode of parent directory
@@ -359,6 +333,9 @@ struct inode_operations fat_iops = {
 	.truncate = fat_truncate,
 };
 
+extern size_t fat_read(struct file_desc *desc, void *buf, size_t size);
+extern size_t fat_write(struct file_desc *desc, void *buf, size_t size);
+extern int    fat_close(struct file_desc *desc);
 static struct file_operations fat_fops = {
 	.close = fat_close,
 	.write = fat_write,
