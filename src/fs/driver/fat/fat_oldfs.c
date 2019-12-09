@@ -245,11 +245,6 @@ static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
 	fi = file_get_inode_data(desc);
 	fi->pointer = file_get_pos(desc);
 
-	/* Don't try to read past EOF */
-	if (size > desc->node->nas->fi->ni.size - fi->pointer) {
-		size = desc->node->nas->fi->ni.size - fi->pointer;
-	}
-
 	rezult = fat_read_file(fi, fat_sector_buff, buf, &bytecount, size);
 	if (DFS_OK == rezult) {
 		return bytecount;
