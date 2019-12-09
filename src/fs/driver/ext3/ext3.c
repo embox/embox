@@ -42,8 +42,7 @@
 OBJALLOC_DEF(ext3_journal_cache, ext3_journal_specific_t, EXT3_JOURNAL_CNT);
 
 /* file operations */
-static struct idesc *ext3fs_open(struct inode *node, struct file_desc *file_desc,
-		int flags);
+static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc);
 static int ext3fs_close(struct file_desc *desc);
 static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
@@ -61,14 +60,14 @@ static struct fs_driver ext3fs_driver;
 /*
  * file_operation
  */
-static struct idesc *ext3fs_open(struct inode *node, struct file_desc *desc, int flags) {
+static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return err_ptr(EINVAL);
 	}
 
-	return drv->file_op->open(node, desc, flags);
+	return drv->file_op->open(node, idesc);
 }
 
 static int ext3fs_close(struct file_desc *desc) {

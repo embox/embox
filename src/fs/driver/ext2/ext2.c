@@ -136,8 +136,7 @@ POOL_DEF(ext2_file_pool, struct ext2_file_info,
 
 /* TODO link counter */
 
-static struct idesc *ext2fs_open(struct inode *node, struct file_desc *file_desc,
-		int flags);
+static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc);
 static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
@@ -440,7 +439,7 @@ int ext2_open(struct nas *nas) {
 /*
  * file_operation
  */
-static struct idesc *ext2fs_open(struct inode *node, struct file_desc *desc, int flags) {
+static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc) {
 	int rc;
 	struct nas *nas;
 	struct ext2_file_info *fi;
@@ -449,7 +448,7 @@ static struct idesc *ext2fs_open(struct inode *node, struct file_desc *desc, int
 	nas = node->nas;
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
-	fi->f_pointer = file_get_pos(desc); /* reset seek pointer */
+	fi->f_pointer = file_get_pos(file_desc_from_idesc(idesc));
 
 	if (NULL == (fi->f_buf = ext2_buff_alloc(nas, fsi->s_block_size))) {
 		return err_ptr(ENOMEM);
@@ -463,7 +462,7 @@ static struct idesc *ext2fs_open(struct inode *node, struct file_desc *desc, int
 		file_set_size(desc, fi->f_di.i_size);
 	}
 
-	return &desc->idesc;
+	return idesc;
 }
 
 static int ext2fs_close(struct file_desc *desc) {

@@ -40,8 +40,8 @@ static struct fsop_desc devfs_fsop = {
 	.mount = devfs_mount,
 };
 
-struct idesc *devfs_open(struct inode *node, struct file_desc *file_desc, int flags) {
-	return &file_desc->idesc;
+struct idesc *devfs_open(struct inode *node, struct idesc *idesc) {
+	return idesc;
 }
 
 static struct file_operations devfs_fops = {

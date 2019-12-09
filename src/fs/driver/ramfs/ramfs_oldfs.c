@@ -59,16 +59,16 @@ static struct file_operations ramfs_fop = {
 	.write = ramfs_write,
 };
 
-static struct idesc *ramfs_open(struct inode *node, struct file_desc *desc, int flags) {
+static struct idesc *ramfs_open(struct inode *node, struct idesc *idesc) {
 	struct nas *nas;
 	struct ramfs_file_info *fi;
 
 	nas = node->nas;
 	fi = (struct ramfs_file_info *)nas->fi->privdata;
 
-	fi->pointer = file_get_pos(desc);;
+	fi->pointer = file_get_pos(file_desc_from_idesc(idesc));;
 
-	return &desc->idesc;
+	return idesc;
 }
 
 

@@ -458,8 +458,7 @@ error:
 	return -rc;
 }
 
-static struct idesc *ntfs_open(struct inode *node, struct file_desc *file_desc,
-		int flags)
+static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc)
 {
 	struct ntfs_file_info *fi;
 	struct ntfs_fs_info *fsi;
@@ -495,12 +494,12 @@ static struct idesc *ntfs_open(struct inode *node, struct file_desc *file_desc,
 
 	desc->attr = attr;
 	desc->ni = ni;
-	file_desc->file_info = desc;
+	file_desc_set_file_info(file_desc_from_idesc(idesc), desc);
 
 	// Yet another bullshit: size is not valid until open
 	file_set_size(file_desc, attr->data_size);
 
-	return &file_desc->idesc;
+	return idesc;
 }
 
 static int ntfs_close(struct file_desc *file_desc)

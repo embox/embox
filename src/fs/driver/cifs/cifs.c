@@ -260,8 +260,7 @@ error:
 	return -rc;
 }
 
-static struct idesc *cifs_open(struct inode *node, struct file_desc *file_desc,
-		int flags)
+static struct idesc *cifs_open(struct inode *node, struct idesc *idesc)
 {
 	struct cifs_fs_info *fsi;
 	char fileurl[2 * PATH_MAX];
@@ -285,17 +284,17 @@ static struct idesc *cifs_open(struct inode *node, struct file_desc *file_desc,
 		return err_ptr(errno);
 	}
 
-	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,flags,0);
+	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,idesc->idesc_flags,0);
 	if(!file) {
 		return err_ptr(errno);
 	}
 
-	file_desc->file_info = file;
+	file_desc_set_file_info(file_desc_from_idesc(idesc), file);
 
 	// Yet another bullshit: size is not valid until open
 	file_set_size(file_desc, st.st_size);
 
-	return &file_desc->idesc;
+	return idesc;
 }
 
 static int cifs_close(struct file_desc *file_desc)

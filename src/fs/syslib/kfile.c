@@ -77,7 +77,8 @@ struct idesc *kopen(struct inode *node, int flag) {
 	}
 	desc->ops = ops;
 
-	idesc = desc->ops->open(node, desc, flag);
+	desc->idesc.idesc_flags = flag;
+	idesc = desc->ops->open(node, &desc->idesc);
 	if (err(idesc)){
 		ret = (uintptr_t)idesc;
 		goto free_out;

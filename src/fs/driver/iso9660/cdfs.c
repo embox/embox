@@ -779,7 +779,7 @@ void cdfs_init(void) {
 */
 
 /* File operations */
-static struct idesc *cdfsfs_open(struct inode *node, struct file_desc *desc, int flags);
+static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc);
 static int    cdfsfs_close(struct file_desc *desc);
 static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size);
 
@@ -789,16 +789,9 @@ static struct file_operations cdfsfs_fop = {
 	.read = cdfsfs_read,
 };
 
-static struct idesc *cdfsfs_open(struct inode *node, struct file_desc *desc, int flags) {
+static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc) {
 	char path [PATH_MAX];
-	struct nas *nas;
-	struct cdfs_file_info *fi;
 	int res;
-
-	nas = node->nas;
-	fi = nas->fi->privdata;
-
-	fi->flags = flags;
 
 	vfs_get_relative_path(node, path, PATH_MAX);
 
@@ -806,7 +799,7 @@ static struct idesc *cdfsfs_open(struct inode *node, struct file_desc *desc, int
 	if (res) {
 		return err_ptr(-res);
 	}
-	return &desc->idesc;
+	return idesc;
 }
 
 static int cdfsfs_close(struct file_desc *desc) {
