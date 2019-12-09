@@ -19,17 +19,17 @@
 
 struct nas;
 
-typedef struct file_lock_shared {
+struct flock_shared {
 	struct thread *holder;
 	struct dlist_head flock_link;
-} flock_shared_t;
+};
 
-typedef struct file_lock {
+struct node_flock {
 	struct mutex      exlock;
 	long              shlock_count;
 	struct dlist_head shlock_holders;
 	spinlock_t        flock_guard;
-} flock_t;
+};
 
 struct node {
 	/* node name (use vfs_get_path_by_node() for get full path*/
@@ -44,7 +44,7 @@ struct node {
 
 	int                   mounted; /* is mount point*/
 
-	flock_t               flock;
+	struct node_flock     flock;
 
 	/* service data structure for enabling tree operation */
 	struct tree_link      tree_link;

@@ -35,7 +35,7 @@
 #include <mem/misc/pool.h>
 
 #define MAX_FLOCK_QUANTITY OPTION_GET(NUMBER, flock_quantity)
-POOL_DEF(flock_pool, flock_shared_t, MAX_FLOCK_QUANTITY);
+POOL_DEF(flock_pool, struct flock_shared, MAX_FLOCK_QUANTITY);
 
 static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	struct path node;
@@ -660,8 +660,8 @@ int kumount(const char *dir) {
 	return 0;
 }
 
-static int flock_shared_get(flock_t *flock) {
-	flock_shared_t *shlock;
+static int flock_shared_get(struct node_flock *flock) {
+	struct flock_shared *shlock;
 	struct thread *current = thread_self();
 
 	shlock = pool_alloc(&flock_pool);
@@ -675,8 +675,8 @@ static int flock_shared_get(flock_t *flock) {
 	return -ENOERR;
 }
 
-static int flock_shared_put(flock_t *flock) {
-	flock_shared_t *shlock;
+static int flock_shared_put(struct node_flock *flock) {
+	struct flock_shared *shlock;
 	struct thread *current = thread_self();
 
 	dlist_foreach_entry(shlock, &flock->shlock_holders, flock_link) {
@@ -710,7 +710,7 @@ static inline void flock_exclusive_put(struct mutex *exlock) {
  */
 int kflock(int fd, int operation) {
 	int rc;
-	flock_t *flock;
+	struct node_flock *flock;
 	struct mutex *exlock;
 	spinlock_t *flock_guard;
 	long *shlock_count;
