@@ -33,9 +33,9 @@ int char_dev_register(const struct dev_module *cdev) {
 	return -ENOSUPP;
 }
 
-struct node;
+struct inode;
 
-struct idesc *char_dev_open(struct node *node, int flags) {
+struct idesc *char_dev_open(struct inode *node, int flags) {
 	return NULL;
 }
 

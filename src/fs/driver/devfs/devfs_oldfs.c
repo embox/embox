@@ -40,7 +40,7 @@ static struct fsop_desc devfs_fsop = {
 	.mount = devfs_mount,
 };
 
-struct idesc *devfs_open(struct node *node, struct file_desc *file_desc, int flags) {
+struct idesc *devfs_open(struct inode *node, struct file_desc *file_desc, int flags) {
 	return &file_desc->idesc;
 }
 
@@ -59,7 +59,6 @@ DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
 int devfs_add_block(struct block_dev *bdev) {
 	struct path node, root;
 	struct nas *nas;
-	struct node_fi *node_fi;
 	char full_path[PATH_MAX];
 
 	vfs_get_root_path(&root);
@@ -74,8 +73,7 @@ int devfs_add_block(struct block_dev *bdev) {
 	bdev->dev_vfs_info = node.node;
 
 	nas = node.node->nas;
-	node_fi = nas->fi;
-	node_fi->privdata = bdev;
+	nas->fi->privdata = bdev;
 
 	return 0;
 }

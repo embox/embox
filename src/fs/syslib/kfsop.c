@@ -278,7 +278,7 @@ int krmdir(const char *pathname) {
 
 }
 
-extern int kfile_fill_stat(struct node *node, struct stat *stat_buff);
+extern int kfile_fill_stat(struct inode *node, struct stat *stat_buff);
 int klstat(const char *path, struct stat *buf) {
 	struct path node;
 	int res;
@@ -365,7 +365,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 	}
 
 	if (drv->mount_dev_by_string) {
-		dev_node.node = (struct node *) dev;
+		dev_node.node = (struct inode *) dev;
 	} else {
 		if (ENOERR != (res = fs_perm_lookup(dev, &lastpath, &dev_node))) {
 			errno = res == -ENOENT ? ENODEV : -res;
@@ -469,7 +469,7 @@ int krename(const char *oldpath, const char *newpath) {
 	char *name, *newpathbuf = NULL;
 	char *newpatharg, *oldpatharg;
 	struct path oldnode, newnode;
-	struct node *diritem;
+	struct inode *diritem;
 	/* We use custom tree traversal while I can't
 	 * get success with tree_foreach_children */
 	struct tree_link *link, *end_link;

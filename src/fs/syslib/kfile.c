@@ -26,11 +26,11 @@
 #include <fs/perm.h>
 #include <security/security.h>
 
-extern struct node *kcreat(struct path *dir, const char *path, mode_t mode);
+extern struct inode *kcreat(struct path *dir, const char *path, mode_t mode);
 
-extern struct idesc *char_dev_open(struct node *node, int flags);
+extern struct idesc *char_dev_open(struct inode *node, int flags);
 
-struct idesc *kopen(struct node *node, int flag) {
+struct idesc *kopen(struct inode *node, int flag) {
 	struct nas *nas;
 	struct file_desc *desc;
 	const struct file_operations *ops;

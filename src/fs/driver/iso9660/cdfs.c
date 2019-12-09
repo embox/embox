@@ -779,7 +779,7 @@ void cdfs_init(void) {
 */
 
 /* File operations */
-static struct idesc *cdfsfs_open(struct node *node, struct file_desc *desc, int flags);
+static struct idesc *cdfsfs_open(struct inode *node, struct file_desc *desc, int flags);
 static int    cdfsfs_close(struct file_desc *desc);
 static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size);
 
@@ -789,7 +789,7 @@ static struct file_operations cdfsfs_fop = {
 	.read = cdfsfs_read,
 };
 
-static struct idesc *cdfsfs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *cdfsfs_open(struct inode *node, struct file_desc *desc, int flags) {
 	char path [PATH_MAX];
 	struct nas *nas;
 	struct cdfs_file_info *fi;
@@ -871,7 +871,7 @@ static void cdfs_free_fs(struct nas *nas) {
 }
 
 static int cdfsfs_mount(void *dev, void *dir) {
-	struct node *dir_node, *dev_node;
+	struct inode *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct cdfs_file_info *fi;
 	struct cdfs_fs_info *fsi;
@@ -922,7 +922,7 @@ static int cdfsfs_mount(void *dev, void *dir) {
 }
 
 static int cdfs_umount_entry(struct nas *nas) {
-	struct node *child;
+	struct inode *child;
 
 	if (node_is_directory(nas->node)) {
 		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
@@ -939,7 +939,7 @@ static int cdfs_umount_entry(struct nas *nas) {
 }
 
 static int cdfsfs_umount(void *dir) {
-	struct node *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 	struct cdfs_fs_info *fsi;
 
@@ -959,11 +959,11 @@ static int cdfsfs_umount(void *dir) {
 }
 
 
-static struct node *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct node *root) {
+static struct inode *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct inode *root) {
 	char path[PATH_MAX];
 	char tail[PATH_MAX];
 	iso_pathtable_record_t *pathrec;
-	struct node *dir;
+	struct inode *dir;
 
 	dir = root;
 	pathrec = cdfs->path_table[numrec];
@@ -988,7 +988,7 @@ static struct node *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct node *roo
 	return dir;
 }
 
-static int cdfs_create_file_node(struct node *dir_node, cdfs_t *cdfs, int dir) {
+static int cdfs_create_file_node(struct inode *dir_node, cdfs_t *cdfs, int dir) {
 	struct block_dev_cache *cache;
 	char *p;
 	iso_directory_record_t *rec;
@@ -998,7 +998,7 @@ static int cdfs_create_file_node(struct node *dir_node, cdfs_t *cdfs, int dir) {
 	int namelen;
 	int flags;
 	struct cdfs_file_info *fi;
-	struct node *node;
+	struct inode *node;
 	struct nas *nas, *dir_nas;
 	wchar_t *wname;
 	char name[PATH_MAX];
@@ -1105,7 +1105,7 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 	cdfs_t *cdfs;
 	int namelen;
 	char name[PATH_MAX];
-	struct node *root_node, *node, *dir_node;
+	struct inode *root_node, *node, *dir_node;
 	struct nas *nas;
 	struct cdfs_file_info *fi, *parent_fi;
 	struct cdfs_fs_info *fsi;

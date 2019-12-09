@@ -59,10 +59,7 @@ static struct file_operations ramfs_fop = {
 	.write = ramfs_write,
 };
 
-/*
- * file_operation
- */
-static struct idesc *ramfs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ramfs_open(struct inode *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
 	struct ramfs_file_info *fi;
 
@@ -97,7 +94,7 @@ static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
 	return fi;
 }
 
-static int ramfs_create(struct node *parent_node, struct node *node) {
+static int ramfs_create(struct inode *parent_node, struct inode *node) {
 	struct nas *nas;
 
 	nas = node->nas;
@@ -112,7 +109,7 @@ static int ramfs_create(struct node *parent_node, struct node *node) {
 	return 0;
 }
 
-static int ramfs_delete(struct node *node) {
+static int ramfs_delete(struct inode *node) {
 	struct ramfs_file_info *fi;
 	struct nas *nas;
 
@@ -129,7 +126,7 @@ static int ramfs_delete(struct node *node) {
 	return 0;
 }
 
-static int ramfs_truncate(struct node *node, off_t length) {
+static int ramfs_truncate(struct inode *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	if (length > MAX_FILE_SIZE) {
@@ -154,7 +151,7 @@ static int ramfs_format(struct block_dev *bdev, void *priv) {
 }
 
 static int ramfs_mount(void *dev, void *dir) {
-	struct node *dir_node, *dev_node;
+	struct inode *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct ramfs_file_info *fi;
 	struct ramfs_fs_info *fsi;
@@ -227,7 +224,7 @@ static char ramfs_dev[] = RAMFS_DEV;
 
 static int ramfs_init(void * par) {
 	struct path dir_node;
-	struct node *dev_node;
+	struct inode *dev_node;
 	int res;
 	struct ramdisk *ramdisk;
 

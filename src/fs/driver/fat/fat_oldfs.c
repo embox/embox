@@ -48,7 +48,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 	char dir_buff[FAT_MAX_SECTOR_SIZE];
 	struct nas *nas;
 	struct fat_file_info *fi;
-	struct node *node;
+	struct inode *node;
 	mode_t mode;
 
 	di.p_scratch = (uint8_t *) dir_buff;
@@ -97,7 +97,7 @@ static int fat_create_dir_entry(struct nas *parent_nas) {
 
 static int fat_mount_files(struct nas *dir_nas) {
 	uint32_t cluster;
-	struct node *node;
+	struct inode *node;
 	struct nas *nas;
 	uint32_t pstart, psize;
 	uint8_t pactive, ptype;
@@ -176,7 +176,7 @@ static void fat_free_fs(struct nas *nas) {
 }
 
 static int fat_umount_entry(struct nas *nas) {
-	struct node *child;
+	struct inode *child;
 
 	if (node_is_directory(nas->node)) {
 		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
@@ -193,7 +193,7 @@ static int fat_umount_entry(struct nas *nas) {
 }
 
 /* File operations */
-static struct idesc *fatfs_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *fatfs_open(struct inode *node, struct file_desc *file_desc, int flags);
 
 extern size_t fat_read(struct file_desc *desc, void *buf, size_t size);
 extern size_t fat_write(struct file_desc *desc, void *buf, size_t size);
@@ -208,7 +208,7 @@ static struct file_operations fatfs_fop = {
 /*
  * file_operation
  */
-static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int flag) {
+static struct idesc *fatfs_open(struct inode *node, struct file_desc *desc,  int flag) {
 	struct nas *nas;
 	char path [PATH_MAX];
 	struct fat_file_info *fi;
@@ -235,8 +235,76 @@ static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int 
 	return err_ptr(res);
 }
 
+<<<<<<< HEAD
+=======
+static int fatfs_close(struct file_desc *desc) {
+	return 0;
+}
+
+static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
+	size_t rezult;
+	uint32_t bytecount;
+	struct fat_file_info *fi;
+
+	fi = file_get_inode_data(desc);
+	fi->pointer = file_get_pos(desc);
+
+	/* Don't try to read past EOF */
+	if (size > desc->node->nas->fi->ni.size - fi->pointer) {
+		size = desc->node->nas->fi->ni.size - fi->pointer;
+	}
+
+	rezult = fat_read_file(fi, fat_sector_buff, buf, &bytecount, size);
+	if (DFS_OK == rezult) {
+		file_set_pos(desc, fi->pointer);
+		return bytecount;
+	}
+	return rezult;
+}
+
+static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size) {
+	size_t rezult;
+	uint32_t bytecount;
+	struct fat_file_info *fi;
+
+	fi = file_get_inode_data(desc);
+	fi->pointer = file_get_pos(desc);
+
+	fi->mode = O_RDWR; /* XXX */
+
+	rezult = fat_write_file(fi, fat_sector_buff, (uint8_t *)buf,
+			&bytecount, size, &desc->node->nas->fi->ni.size);
+	if (DFS_OK == rezult) {
+		file_set_pos(desc, fi->pointer);
+		return bytecount;
+	}
+	return rezult;
+}
+
+/* File system operations */
+static int fatfs_init(void * par) {
+	return 0;
+}
+
+static int fatfs_format(void *dev) {
+	struct inode *dev_node;
+	struct nas *dev_nas;
+
+	if (NULL == (dev_node = dev)) {
+		return -ENODEV;/*device not found*/
+	}
+
+	dev_nas = dev_node->nas;
+
+	fat_create_partition(dev_nas->fi->privdata, 12);
+	fat_root_dir_record(dev_nas->fi->privdata);
+
+	return 0;
+}
+
+>>>>>>> oldfs: Rn 'struct node'->'struct inode'
 static int fatfs_mount(void *dev, void *dir) {
-	struct node *dir_node, *dev_node;
+	struct inode *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
@@ -285,7 +353,7 @@ error:
 	return rc;
 }
 
-static int fatfs_create(struct node *parent_node, struct node *node) {
+static int fatfs_create(struct inode *parent_node, struct inode *node) {
 	struct nas *parent_nas, *nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
@@ -330,7 +398,7 @@ static int fatfs_create(struct node *parent_node, struct node *node) {
 	return 0;
 }
 
-static int fatfs_delete(struct node *node) {
+static int fatfs_delete(struct inode *node) {
 	struct nas *nas;
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
@@ -359,7 +427,7 @@ static int fatfs_delete(struct node *node) {
 	return 0;
 }
 
-static int fatfs_truncate(struct node *node, off_t length) {
+static int fatfs_truncate(struct inode *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
@@ -370,7 +438,7 @@ static int fatfs_truncate(struct node *node, off_t length) {
 }
 
 static int fatfs_umount(void *dir) {
-	struct node *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 
 	dir_node = dir;

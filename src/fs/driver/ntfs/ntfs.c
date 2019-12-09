@@ -132,9 +132,9 @@ static int embox_ntfs_node_create(struct node *parent_node, struct node *new_nod
 	return 0;
 }
 
-static int embox_ntfs_node_delete(struct node *node) {
+static int embox_ntfs_node_delete(struct inode *node) {
 	ntfs_inode *ni, *pni;
-	struct node *parent_node;
+	struct inode *parent_node;
 	ntfschar *ufilename;
 	int ufilename_len;
 	struct ntfs_fs_info *pfsi;
@@ -193,7 +193,7 @@ static int embox_ntfs_node_delete(struct node *node) {
 	return 0;
 }
 
-static int embox_ntfs_truncate(struct node *node, off_t length) {
+static int embox_ntfs_truncate(struct inode *node, off_t length) {
 	struct ntfs_file_info *fi;
 	struct ntfs_fs_info *fsi;
 	ntfs_inode *ni;
@@ -248,7 +248,7 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		const int name_len, const int name_type, const s64 pos,
 		const MFT_REF mref, const unsigned dt_type) {
 	struct nas *dir_nas = dirent;
-	struct node *node;
+	struct inode *node;
 	struct ntfs_fs_info *fsi;
 	ntfs_inode *ni;
 	mode_t mode;
@@ -334,7 +334,7 @@ static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode 
 }
 
 static int ntfs_umount_entry(struct nas *nas) {
-	struct node *child;
+	struct inode *child;
 
 	if(node_is_directory(nas->node)) {
 		while(NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
@@ -351,7 +351,7 @@ static int ntfs_umount_entry(struct nas *nas) {
 }
 
 static int embox_ntfs_umount(void *dir) {
-	struct node *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 	struct ntfs_fs_info *fsi;
 
@@ -386,7 +386,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 	ntfs_volume *vol;
 
 	int rc;
-	struct node *dir_node, *dev_node;
+	struct inode *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct node_fi *dev_fi;
 	struct ntfs_device *ntfs_dev;
@@ -458,7 +458,7 @@ error:
 	return -rc;
 }
 
-static struct idesc *ntfs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ntfs_open(struct inode *node, struct file_desc *file_desc,
 		int flags)
 {
 	struct ntfs_file_info *fi;
@@ -572,7 +572,7 @@ struct ntfs_bdev_desc {
 static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 {
 	int err;
-	struct node *dev_node, *dev_folder;
+	struct inode *dev_node, *dev_folder;
 
 	if (NDevOpen(dev)) {
 		errno = EBUSY;

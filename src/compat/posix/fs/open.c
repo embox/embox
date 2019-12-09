@@ -22,12 +22,12 @@
 #include <dirent_impl.h>
 #include "getumask.h"
 
-struct node *find_node(DIR *dir, char * node_name) {
+struct inode *find_node(DIR *dir, char * node_name) {
 	struct dirent * dent;
 
 	while (NULL != (dent = readdir(dir))) {
 		if (0 == strcmp(dent->d_name, node_name)) {
-			return (struct node *) (uintptr_t) dent->d_ino;
+			return (struct inode *) (uintptr_t) dent->d_ino;
 		}
 	}
 
@@ -43,7 +43,7 @@ int open(const char *path, int __oflag, ...) {
 	char *parent_path;
 	char *bname;
 	DIR *dir;
-	struct node *node;
+	struct inode *node;
 	struct path node_path;
 	struct idesc_table*it;
 

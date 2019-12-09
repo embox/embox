@@ -16,8 +16,8 @@ EMBOX_TEST_SUITE("Test for various vfs operations");
 TEST_SETUP_SUITE(setup_suite);
 TEST_TEARDOWN_SUITE(teardown_suite);
 
-static struct node *test_root;
-static struct node *a, *b, *c, *d, *e;
+static struct inode *test_root;
+static struct inode *a, *b, *c, *d, *e;
 
 /* Builds the tree under `test_root':
  *
@@ -66,7 +66,7 @@ static int teardown_suite(void) {
 	return 0;
 }
 
-static struct node *vfs_lookup_nr(struct node *node, const char *str_path) {
+static struct inode *vfs_lookup_nr(struct inode *node, const char *str_path) {
 	static struct path nr_return;
 	int lookup_ecode;
 

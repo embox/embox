@@ -36,7 +36,7 @@ static void file_desc_free(struct file_desc *desc) {
 
 extern const struct idesc_ops idesc_file_ops;
 
-struct file_desc *file_desc_create(struct node *node, int flag) {
+struct file_desc *file_desc_create(struct inode *node, int flag) {
 	struct file_desc *desc;
 	int perm_flags;
 	int ret;

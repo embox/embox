@@ -14,7 +14,7 @@
 #define BINFS_NAME "binfs"
 
 static int binfs_mount(void *dev, void *dir) {
-	struct node *dir_node = dir;
+	struct inode *dir_node = dir;
 	const struct cmd *cmd;
 
 	dir_node = dir;
@@ -31,8 +31,8 @@ static int binfs_mount(void *dev, void *dir) {
 }
 
 static int binfs_umount(void *dir) {
-	struct node *dir_node = dir;
-	struct node *child;
+	struct inode *dir_node = dir;
+	struct inode *child;
 
 	while (NULL != (child = vfs_subtree_get_child_next(dir_node, NULL))) {
 		vfs_del_leaf(child);

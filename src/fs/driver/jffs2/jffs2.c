@@ -377,7 +377,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 
 
 static int umount_vfs_dir_entry(struct nas *nas) {
-	struct node *child;
+	struct inode *child;
 
 	if (node_is_directory(nas->node)) {
 		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
@@ -1360,7 +1360,7 @@ uint32_t jffs2_to_os_mode (uint32_t jmode) {
 	return 0;
 }
 
-static struct idesc *jffs2fs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *jffs2fs_open(struct inode *node, struct file_desc *file_desc,
 		int flags);
 static int jffs2fs_close(struct file_desc *desc);
 static size_t jffs2fs_read(struct file_desc *desc, void *buf, size_t size);
@@ -1376,7 +1376,7 @@ static struct file_operations jffs2_fop = {
 /*
  * file_operation
  */
-static struct idesc *jffs2fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *jffs2fs_open(struct inode *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
@@ -1477,9 +1477,9 @@ static int jffs2_free_fs(struct nas *nas) {
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
 static int jffs2fs_mount(void *dev, void *dir);
-static int jffs2fs_create(struct node *parent_node, struct node *node);
-static int jffs2fs_delete(struct node *node);
-static int jffs2fs_truncate(struct node *node, off_t length);
+static int jffs2fs_create(struct inode *parent_node, struct inode *node);
+static int jffs2fs_delete(struct inode *node);
+static int jffs2fs_truncate(struct inode *node, off_t length);
 static int jffs2fs_umount(void *dir);
 
 
@@ -1522,7 +1522,7 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 	struct jffs2_full_dirent *fd_list;
 	struct _inode *inode = NULL;
 	uint32_t ino = 0;
-	struct node *vfs_node;
+	struct inode *vfs_node;
 	struct nas *nas;
 	struct _inode *dir_i;
 	struct jffs2_file_info *fi;
@@ -1564,7 +1564,7 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 	return 0;
 }
 
-static int jffs2fs_create(struct node *parent_node, struct node *node) {
+static int jffs2fs_create(struct inode *parent_node, struct inode *node) {
 	int rc;
 	struct nas *nas;
 	struct jffs2_file_info *fi, *parents_fi;
@@ -1596,9 +1596,9 @@ static int jffs2fs_create(struct node *parent_node, struct node *node) {
 	return 0;
 }
 
-static int jffs2fs_delete(struct node *node) {
+static int jffs2fs_delete(struct inode *node) {
 	int rc;
-	struct node *parents;
+	struct inode *parents;
 	struct jffs2_file_info *par_fi, *fi;
 
 	if (NULL == (parents = vfs_subtree_get_parent(node))) {
@@ -1629,7 +1629,7 @@ static int jffs2fs_delete(struct node *node) {
 	return 0;
 }
 
-static int jffs_flash_name(struct node *dev_node, char flash_name[PATH_MAX]) {
+static int jffs_flash_name(struct inode *dev_node, char flash_name[PATH_MAX]) {
 	char dev_node_path[PATH_MAX];
 
 	vfs_get_relative_path(dev_node, dev_node_path, PATH_MAX);
@@ -1645,7 +1645,7 @@ static int jffs2fs_format(struct block_dev *bdev, void *priv) {
 	return flash_emu_dev_create(flash_node_name, 16 * 1024, 1024);
 }
 
-static struct block_dev *jffs_bdev_by_node(struct node *dev_node, int *err) {
+static struct block_dev *jffs_bdev_by_node(struct inode *dev_node, int *err) {
 	struct node_fi *dev_fi;
 	struct nas *dev_nas;
 
@@ -1660,9 +1660,9 @@ static struct block_dev *jffs_bdev_by_node(struct node *dev_node, int *err) {
 	return dev_fi->privdata;
 }
 
-static struct block_dev *jffs_get_flashdev(struct node *dev_node, int *err) {
+static struct block_dev *jffs_get_flashdev(struct inode *dev_node, int *err) {
 	char flash_node_name[PATH_MAX];
-	struct node *flash_node;
+	struct inode *flash_node;
 
 	jffs_flash_name(dev_node, flash_node_name);
 
@@ -1675,7 +1675,7 @@ static struct block_dev *jffs_get_flashdev(struct node *dev_node, int *err) {
 
 static int jffs2fs_mount(void *dev, void *dir) {
 	int rc;
-	struct node *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
@@ -1727,7 +1727,7 @@ static int jffs2fs_mount(void *dev, void *dir) {
 	return -rc;
 }
 
-static int jffs2fs_truncate (struct node *node, off_t length) {
+static int jffs2fs_truncate (struct inode *node, off_t length) {
 	struct nas *nas = node->nas;
 	struct jffs2_file_info *fi;
 
@@ -1740,7 +1740,7 @@ static int jffs2fs_truncate (struct node *node, off_t length) {
 }
 
 static int jffs2fs_umount(void *dir) {
-	struct node *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 	int rc;
 

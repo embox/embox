@@ -22,7 +22,7 @@
 #include <sys/time.h>
 #include <utime.h>
 
-int ktruncate(struct node *node, off_t length) {
+int ktruncate(struct inode *node, off_t length) {
 	int ret;
 	struct nas *nas;
 	struct fs_driver *drv;
@@ -53,7 +53,7 @@ int ktruncate(struct node *node, off_t length) {
 	return ret;
 }
 
-int kfile_fill_stat(struct node *node, struct stat *stat_buff) {
+int kfile_fill_stat(struct inode *node, struct stat *stat_buff) {
 	struct nas *nas;
 	struct node_info *ni;
 
@@ -71,7 +71,7 @@ int kfile_fill_stat(struct node *node, struct stat *stat_buff) {
 	return 0;
 }
 
-int kfile_change_stat(struct node *node, const struct utimbuf *times) {
+int kfile_change_stat(struct inode *node, const struct utimbuf *times) {
 	struct nas *nas;
 	struct node_info *ni;
 	struct timeval now;

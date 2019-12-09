@@ -118,7 +118,7 @@ static int ensure_dinode(struct nas *nas) {
 	return 0;
 }
 
-static int xattr_block(struct node *node, struct ext2_xattr_hdr **blk,
+static int xattr_block(struct inode *node, struct ext2_xattr_hdr **blk,
 		char check_magic) {
 	struct ext2fs_dinode *dinode;
 	struct ext2_xattr_hdr *xattr_blk;
@@ -174,7 +174,7 @@ static void block_rehash(struct ext2_xattr_hdr *xattr_blk) {
 	xattr_blk->h_hash = h2d32(hash);
 }
 
-int ext2fs_listxattr(struct node *node, char *list, size_t len) {
+int ext2fs_listxattr(struct inode *node, char *list, size_t len) {
 	struct ext2_xattr_hdr *xattr_blk;
 	struct ext2_xattr_ent *xattr_ent;
 	int res, last_len = len;
@@ -276,7 +276,7 @@ static void str_val(struct ext2_xattr_hdr *xattr_blk,
 	xattr_ent->e_value_offs = h2d32(*min_value_offs);
 }
 
-int ext2fs_setxattr(struct node *node, const char *name, const char *value,
+int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 		size_t len, int flags) {
 	struct ext2_xattr_hdr *xattr_blk = NULL;
 	struct ext2_xattr_ent *xattr_ent, *i_ent;
@@ -442,7 +442,7 @@ cleanup_out:
 	return res;
 }
 
-int ext2fs_getxattr(struct node *node, const char *name, char *value,
+int ext2fs_getxattr(struct inode *node, const char *name, char *value,
 		size_t len) {
 	struct ext2_xattr_hdr *xattr_blk;
 	struct ext2_xattr_ent *xattr_ent;

@@ -136,7 +136,7 @@ POOL_DEF(ext2_file_pool, struct ext2_file_info,
 
 /* TODO link counter */
 
-static struct idesc *ext2fs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ext2fs_open(struct inode *node, struct file_desc *file_desc,
 		int flags);
 static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
@@ -440,7 +440,7 @@ int ext2_open(struct nas *nas) {
 /*
  * file_operation
  */
-static struct idesc *ext2fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ext2fs_open(struct inode *node, struct file_desc *desc, int flags) {
 	int rc;
 	struct nas *nas;
 	struct ext2_file_info *fi;
@@ -540,9 +540,9 @@ static int ext2_umount_entry(struct nas *nas);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
 static int ext2fs_mount(void *dev, void *dir);
-static int ext2fs_create(struct node *parent_node, struct node *node);
-static int ext2fs_delete(struct node *node);
-static int ext2fs_truncate(struct node *node, off_t length);
+static int ext2fs_create(struct inode *parent_node, struct inode *node);
+static int ext2fs_delete(struct inode *node);
+static int ext2fs_truncate(struct inode *node, off_t length);
 static int ext2fs_umount(void *dir);
 
 
@@ -579,7 +579,7 @@ static ext2_file_info_t *ext2_fi_alloc(struct nas *nas, void *fs) {
 	return fi;
 }
 
-static int ext2fs_create(struct node *parent_node, struct node *node) {
+static int ext2fs_create(struct inode *parent_node, struct inode *node) {
 	int rc;
 	struct nas *nas, *parents_nas;
 
@@ -601,9 +601,9 @@ static int ext2fs_create(struct node *parent_node, struct node *node) {
 	return 0;
 }
 
-static int ext2fs_delete(struct node *node) {
+static int ext2fs_delete(struct inode *node) {
 	int rc;
-	struct node *parents;
+	struct inode *parents;
 
 	if (NULL == (parents = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
@@ -825,7 +825,7 @@ static int ext2fs_format(struct block_dev *bdev, void *priv) {
 
 static int ext2fs_mount(void *dev, void *dir) {
 	int rc;
-	struct node *dir_node, *dev_node;
+	struct inode *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
@@ -892,7 +892,7 @@ static int ext2fs_mount(void *dev, void *dir) {
 	return -rc;
 }
 
-static int ext2fs_truncate (struct node *node, off_t length) {
+static int ext2fs_truncate (struct inode *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
@@ -901,7 +901,7 @@ static int ext2fs_truncate (struct node *node, off_t length) {
 }
 
 static int ext2fs_umount(void *dir) {
-	struct node *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 
 	dir_node = dir;
@@ -939,7 +939,7 @@ static void ext2_free_fs(struct nas *nas) {
 
 
 static int ext2_umount_entry(struct nas *nas) {
-	struct node *child;
+	struct inode *child;
 
 	if (node_is_directory(nas->node)) {
 		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
@@ -1437,7 +1437,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	struct ext2_file_info *dir_fi, *fi;
 	struct ext2_fs_info *fsi;
 	char *name, *name_buff;
-	struct node *node;
+	struct inode *node;
 	mode_t mode;
 
 	rc = 0;

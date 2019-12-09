@@ -42,7 +42,7 @@
 OBJALLOC_DEF(ext3_journal_cache, ext3_journal_specific_t, EXT3_JOURNAL_CNT);
 
 /* file operations */
-static struct idesc *ext3fs_open(struct node *node, struct file_desc *file_desc,
+static struct idesc *ext3fs_open(struct inode *node, struct file_desc *file_desc,
 		int flags);
 static int ext3fs_close(struct file_desc *desc);
 static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
@@ -51,9 +51,9 @@ static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
 /* fs operations */
 static int ext3fs_format(struct block_dev *bdev, void *priv);
 static int ext3fs_mount(void *dev, void *dir);
-static int ext3fs_create(struct node *parent_node, struct node *node);
-static int ext3fs_delete(struct node *node);
-static int ext3fs_truncate(struct node *node, off_t length);
+static int ext3fs_create(struct inode *parent_node, struct inode *node);
+static int ext3fs_delete(struct inode *node);
+static int ext3fs_truncate(struct inode *node, off_t length);
 static int ext3fs_umount(void *dir);
 
 static struct fs_driver ext3fs_driver;
@@ -61,7 +61,7 @@ static struct fs_driver ext3fs_driver;
 /*
  * file_operation
  */
-static struct idesc *ext3fs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *ext3fs_open(struct inode *node, struct file_desc *desc, int flags) {
 	struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
@@ -116,7 +116,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return res;
 }
 
-static int ext3fs_create(struct node *parent_node, struct node *node) {
+static int ext3fs_create(struct inode *parent_node, struct inode *node) {
 	struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
@@ -140,7 +140,7 @@ static int ext3fs_create(struct node *parent_node, struct node *node) {
 	return res;
 }
 
-static int ext3fs_delete(struct node *node) {
+static int ext3fs_delete(struct inode *node) {
 	struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
@@ -240,8 +240,8 @@ static int ext3fs_mount(void *dev, void *dir) {
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
 	int inode_sector, ret, rsize;
-	struct node *dev_node = dev;
-	struct nas *dir_nas = ((struct node *)dir)->nas;
+	struct inode *dev_node = dev;
+	struct nas *dir_nas = ((struct inode *)dir)->nas;
 	journal_t *jp = NULL;
 	ext3_journal_specific_t *ext3_spec;
 	journal_fs_specific_t spec = {
@@ -271,7 +271,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 	}
 
 	/* Getting first block for inode number EXT3_JOURNAL_SUPERBLOCK_INODE */
-	dir_nas = ((struct node *)dir)->nas;
+	dir_nas = ((struct inode *)dir)->nas;
 	fsi = dir_nas->fs->fsi;
 
 	inode_sector = ino_to_fsba(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE);
@@ -303,7 +303,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 	return 0;
 }
 
-static int ext3fs_truncate (struct node *node, off_t length) {
+static int ext3fs_truncate (struct inode *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
@@ -317,7 +317,7 @@ static int ext3fs_umount(void *dir) {
 	ext3_journal_specific_t *data;
 	int res;
 
-	fsi = ((struct node *)dir)->nas->fs->fsi;
+	fsi = ((struct inode *)dir)->nas->fs->fsi;
 	data = fsi->journal->j_fs_specific.data;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {

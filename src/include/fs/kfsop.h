@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <utime.h>
 
-struct node;
+struct inode;
 struct stat;
 struct path;
 
@@ -34,12 +34,12 @@ extern int kumount(const char *dir);
 
 extern int krename(const char *oldpath, const char *newpath);
 
-extern int kfile_fill_stat(struct node *node, struct stat *stat_buff);
+extern int kfile_fill_stat(struct inode *node, struct stat *stat_buff);
 
 extern int kflock(int fd, int operation);
 
 extern int kutime(const char *path, const struct utimbuf *times);
 
-extern int kfile_change_stat(struct node *node, const struct utimbuf *times);
+extern int kfile_change_stat(struct inode *node, const struct utimbuf *times);
 
 #endif /* FS_KFSOP_H_ */

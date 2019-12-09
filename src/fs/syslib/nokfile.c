@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <fs/kfile.h>
 
-struct idesc *kopen(struct node *node, int flag) {
+struct idesc *kopen(struct inode *node, int flag) {
 	return NULL;
 }
 
@@ -38,8 +38,6 @@ int kioctl(struct file_desc *fp, int request, void *data) {
 	return -ENOSYS;
 }
 
-struct node;
-
-int ktruncate(struct node *node, off_t length) {
+int ktruncate(struct inode *node, off_t length) {
 	return -ENOSYS;
 }

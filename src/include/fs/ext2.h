@@ -629,14 +629,14 @@ extern int ext2_buff_free(struct nas *nas, char *buff);
 extern uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
 extern int ext2_unsetbit(uint32_t *bitmap, uint32_t bit);
 
-extern int ext2fs_listxattr(struct node *node, char *list, size_t len)
+extern int ext2fs_listxattr(struct inode *node, char *list, size_t len)
 	__attribute__((weak));
 
-extern int ext2fs_setxattr(struct node *node, const char *name,
+extern int ext2fs_setxattr(struct inode *node, const char *name,
 		const char *value, size_t len, int flags)
 	__attribute__((weak));
 
-extern int ext2fs_getxattr(struct node *node, const char *name,
+extern int ext2fs_getxattr(struct inode *node, const char *name,
 			char *value, size_t len)
 	__attribute__((weak));
 

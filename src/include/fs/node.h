@@ -30,7 +30,7 @@ struct node_flock {
 	spinlock_t        flock_guard;
 };
 
-struct node {
+struct inode {
 	/* node name (use vfs_get_path_by_node() for get full path*/
 	char                  name[NAME_MAX + 1];
 
@@ -61,7 +61,7 @@ struct node_fi {
 };
 
 struct nas {
-	struct node          *node;
+	struct inode          *node;
 	struct filesystem    *fs;
 	struct node_fi       *fi;
 };
@@ -71,15 +71,15 @@ struct nas {
  * @param name_len (optional) how many bytes to take from name.
  *    If zero, the name must be a null-terminated string.
  */
-extern struct node *node_alloc(const char *name, size_t name_len);
+extern struct inode *node_alloc(const char *name, size_t name_len);
 
-extern void node_free(struct node *node);
+extern void node_free(struct inode *node);
 
-static inline struct node *node_parent(struct node *node) {
-	return tree_element(node->tree_link.par, struct node, tree_link);
+static inline struct inode *node_parent(struct inode *node) {
+	return tree_element(node->tree_link.par, struct inode, tree_link);
 }
 
-static inline int node_is_directory(struct node *node) {
+static inline int node_is_directory(struct inode *node) {
 	return S_ISDIR(node->mode);
 }
 

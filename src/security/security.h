@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-struct node;
+struct inode;
 
 /**
  * @brief Checks permission to create node in @a dir with mode @a mode
@@ -24,14 +24,14 @@ struct node;
  * @return 0 on allowed
  * @return -EACCES in access denied
  */
-extern int security_node_create(struct node *dir, mode_t mode);
+extern int security_node_create(struct inode *dir, mode_t mode);
 
 /**
  * @brief Sets node credentials of current user
  *
  * @param node
  */
-extern void security_node_cred_fill(struct node *node);
+extern void security_node_cred_fill(struct inode *node);
 
 /**
  * @brief Checks permission on node delete. @a dir already checked for
@@ -43,7 +43,7 @@ extern void security_node_cred_fill(struct node *node);
  * @return 0 on allowed
  * @return -EACCES in access denied
  */
-extern int security_node_delete(struct node *dir, struct node *node);
+extern int security_node_delete(struct inode *dir, struct inode *node);
 
 /**
  * @brief Checks node for access.
@@ -54,7 +54,7 @@ extern int security_node_delete(struct node *dir, struct node *node);
  * @return 0 on allowed
  * @return -EACCES in access denied
  */
-extern int security_node_permissions(struct node *node, int flags);
+extern int security_node_permissions(struct inode *node, int flags);
 
 /**
  * @brief Checks for mount operation. @a dev is already checked for
@@ -65,7 +65,7 @@ extern int security_node_permissions(struct node *node, int flags);
  * @return 0 on allowed
  * @return -EACCES in access denied
  */
-extern int security_mount(struct node *dev, struct node *mountpoint);
+extern int security_mount(struct inode *dev, struct inode *mountpoint);
 
 /**
  * @brief Checks for umount operation.
@@ -75,7 +75,7 @@ extern int security_mount(struct node *dev, struct node *mountpoint);
  * @return 0 on allowed
  * @return -EACCES in access denied
  */
-extern int security_umount(struct node *mountpoint);
+extern int security_umount(struct inode *mountpoint);
 
 /**
  * @brief Check for xattr get.
@@ -89,7 +89,7 @@ extern int security_umount(struct node *mountpoint);
  * @return -EACCES on denied
  *
  */
-extern int security_xattr_get(struct node *node, const char *name, char *value, size_t len);
+extern int security_xattr_get(struct inode *node, const char *name, char *value, size_t len);
 
 /**
  * @brief Check for xattr set.
@@ -104,7 +104,7 @@ extern int security_xattr_get(struct node *node, const char *name, char *value, 
  * @return -EACCES on denied
  *
  */
-extern int security_xattr_set(struct node *node, const char *name,
+extern int security_xattr_set(struct inode *node, const char *name,
 			const char *value, size_t len, int flags);
 
 /**
@@ -116,7 +116,7 @@ extern int security_xattr_set(struct node *node, const char *name,
  * @return -EACCES on denied
  *
  */
-extern int security_xattr_list(struct node *node, char *list, size_t len);
+extern int security_xattr_list(struct inode *node, char *list, size_t len);
 
 struct idesc;
 
