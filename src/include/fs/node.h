@@ -16,7 +16,6 @@
 #include <kernel/thread/sync/mutex.h>
 #include <fcntl.h>
 
-
 struct nas;
 
 struct flock_shared {
@@ -61,11 +60,11 @@ struct node_fi {
 	void  *privdata;
 };
 
-typedef struct nas {
+struct nas {
 	struct node          *node;
 	struct filesystem    *fs;
 	struct node_fi       *fi;
-} nas_t;
+};
 
 /**
  * @param name Non-empty string.
