@@ -460,7 +460,7 @@ static struct idesc *ext2fs_open(struct node *node, struct file_desc *desc, int 
 		return err_ptr(rc);
 	}
 	else {
-		nas->fi->ni.size = fi->f_di.i_size;
+		file_set_size(desc, fi->f_di.i_size);
 	}
 
 	return &desc->idesc;
@@ -527,7 +527,7 @@ static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
 
 	bytecount = ext2_write_file(nas, buff, size);
 
-	nas->fi->ni.size = fi->f_di.i_size;
+	file_set_size(desc, fi->f_di.i_size);
 
 	return bytecount;
 }

@@ -213,6 +213,7 @@ static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int 
 	char path [PATH_MAX];
 	struct fat_file_info *fi;
 	int res;
+	size_t new_sz;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
@@ -224,7 +225,8 @@ static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int 
 		strcpy(path, path + 1);
 	}
 
-	res = fat_open_file(fi, (uint8_t *) path, flag, fat_sector_buff, &nas->fi->ni.size);
+	res = fat_open_file(fi, (uint8_t *) path, flag, fat_sector_buff, &new_sz);
+	file_set_size(desc, new_sz);
 	if (DFS_OK == res) {
 		fi->pointer = file_get_pos(desc);
 		return &desc->idesc;

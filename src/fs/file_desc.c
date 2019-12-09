@@ -107,6 +107,16 @@ off_t file_set_pos(struct file_desc *file, off_t off) {
 	return file->cursor;
 }
 
+size_t file_get_size(struct file_desc *file) {
+	struct nas *nas = file->node->nas;
+	return nas->fi->ni.size;
+}
+
+void file_set_size(struct file_desc *file, size_t size) {
+	struct nas *nas = file->node->nas;
+	nas->fi->ni.size = size;
+}
+
 void *file_get_inode_data(struct file_desc *file) {
 	assert(file->node);
 	assert(file->node->nas->fi->privdata);

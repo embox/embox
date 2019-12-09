@@ -1387,7 +1387,7 @@ static struct idesc *jffs2fs_open(struct node *node, struct file_desc *desc, int
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	nas->fi->ni.size = fi->_inode->i_size;
+	file_set_size(desc, fi->_inode->i_size);
 
 	vfs_get_relative_path(nas->node, path, PATH_MAX);
 
@@ -1407,7 +1407,7 @@ static int jffs2fs_close(struct file_desc *desc) {
 	}
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
-	nas->fi->ni.size = fi->_inode->i_size;
+	file_set_size(desc, fi->_inode->i_size);
 
 	return jffs2_fo_close(fi->_inode);
 }
@@ -1450,7 +1450,7 @@ static size_t jffs2fs_write(struct file_desc *desc, void *buff, size_t size) {
 
 	bytecount = jffs2_fo_write(desc, buff, size);
 
-	nas->fi->ni.size = fi->_inode->i_size;
+	file_set_size(desc, fi->_inode->i_size);
 
 	return bytecount;
 }

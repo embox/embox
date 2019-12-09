@@ -70,7 +70,8 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 	pos = file_get_pos(desc);
 
 	pbuf = buf;
-	ebuf = buf + min(fi->inode->length - pos, size);
+	ebuf = buf + min(file_get_size(desc) - desc->pos, size);
+
 	while (pbuf < ebuf) {
 		blkno_t blk = pos / fsi->block_size;
 		int offset = pos % fsi->block_size;
@@ -179,8 +180,8 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		}
 	}
 	/* if we write over the last EOF, set new filelen */
-	if (desc->f_inode->length < fi->pointer) {
-		desc->f_inode->length = fi->pointer;
+	if (file_get_size(desc) < fi->pointer) {
+		file_set_size(desc, fi->pointer)
 	}
 
 	return bytecount;
