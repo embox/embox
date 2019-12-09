@@ -572,7 +572,7 @@ struct ntfs_bdev_desc {
 static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 {
 	int err;
-	node_t *dev_node, *dev_folder;
+	struct node *dev_node, *dev_folder;
 
 	if (NDevOpen(dev)) {
 		errno = EBUSY;

@@ -42,13 +42,13 @@ extern void vfs_get_leaf_path(struct path *path);
 extern int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
 	size_t plen);
 
-extern int vfs_add_leaf(node_t *child, node_t *parent);
+extern int vfs_add_leaf(struct node *child, struct node *parent);
 
-extern int vfs_del_leaf(node_t *nod);
+extern int vfs_del_leaf(struct node *nod);
 
-extern node_t *vfs_create_root(void);
-extern node_t *vfs_get_root(void);
-extern node_t *vfs_get_leaf(void);
+extern struct node *vfs_create_root(void);
+extern struct node *vfs_get_root(void);
+extern struct node *vfs_get_leaf(void);
 
 extern int vfs_create(struct path *parent, const char *path, mode_t mode,
 		struct path *child);
@@ -138,7 +138,7 @@ extern struct node *vfs_subtree_create(struct node *parent, const char *path, mo
 
 extern struct node *vfs_subtree_create_intermediate(struct node *parent, const char *path, mode_t mode);
 
-extern node_t *vfs_subtree_get_parent(node_t *node);
+extern struct node *vfs_subtree_get_parent(struct node *node);
 
 
 #endif /* FS_VFS_H_ */

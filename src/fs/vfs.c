@@ -40,7 +40,7 @@ struct lookup_tuple {
 
 static int vfs_lookup_cmp(struct tree_link *link, void *data) {
 	struct lookup_tuple *lookup = data;
-	node_t *node = tree_element(link, node_t, tree_link);
+	struct node *node = tree_element(link, struct node, tree_link);
 	const char *name = node->name;
 	return !(strncmp(name, lookup->name, lookup->len) || name[lookup->len]);
 }
@@ -409,7 +409,7 @@ struct node *vfs_subtree_create_intermediate(struct node *parent,
 	return __vfs_subtree_create(parent, path, mode, 1);
 }
 
-node_t *vfs_get_leaf(void) {
+struct node *vfs_get_leaf(void) {
 	struct path leaf;
 
 	vfs_get_leaf_path(&leaf);
@@ -417,7 +417,7 @@ node_t *vfs_get_leaf(void) {
 	return leaf.node;
 }
 
-int vfs_del_leaf(node_t *node) {
+int vfs_del_leaf(struct node *node) {
 	int rc;
 
 	assert(node);
@@ -429,8 +429,8 @@ int vfs_del_leaf(node_t *node) {
 	return rc;
 }
 
-node_t *vfs_create_root(void) {
-	node_t *root_node;
+struct node *vfs_create_root(void) {
+	struct node *root_node;
 
 	root_node = node_alloc("/", 0);
 	assert(root_node);
@@ -439,8 +439,8 @@ node_t *vfs_create_root(void) {
 	return root_node;
 }
 
-node_t *vfs_get_root(void) {
-	static node_t *root_node;
+struct node *vfs_get_root(void) {
+	static struct node *root_node;
 
 	if (!root_node) {
 		root_node = vfs_create_root();
@@ -450,12 +450,12 @@ node_t *vfs_get_root(void) {
 	return root_node;
 }
 
-int vfs_add_leaf(node_t *child, node_t *parent) {
+int vfs_add_leaf(struct node *child, struct node *parent) {
 	tree_add_link(&(parent->tree_link), &(child->tree_link));
 	return 0;
 }
 
-node_t *vfs_subtree_get_parent(node_t *node) {
+struct node *vfs_subtree_get_parent(struct node *node) {
 	return __vfs_get_parent(node);
 }
 

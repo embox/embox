@@ -603,7 +603,7 @@ static int ext2fs_create(struct node *parent_node, struct node *node) {
 
 static int ext2fs_delete(struct node *node) {
 	int rc;
-	node_t *parents;
+	struct node *parents;
 
 	if (NULL == (parents = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
@@ -1437,7 +1437,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	struct ext2_file_info *dir_fi, *fi;
 	struct ext2_fs_info *fsi;
 	char *name, *name_buff;
-	node_t *node;
+	struct node *node;
 	mode_t mode;
 
 	rc = 0;

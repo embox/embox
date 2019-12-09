@@ -728,7 +728,7 @@ static int ext4fs_format(struct block_dev *dev, void *priv) {
 
 static int ext4fs_delete(struct node *node) {
 	int rc;
-	node_t *parents;
+	struct node *parents;
 
 	if (NULL == (parents = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
@@ -1288,7 +1288,7 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 	struct ext4_file_info *dir_fi, *fi;
 	struct ext4_fs_info *fsi;
 	char *name, *name_buff;
-	node_t *node;
+	struct node *node;
 	mode_t mode;
 
 	rc = 0;

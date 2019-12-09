@@ -988,7 +988,7 @@ static struct node *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct node *roo
 	return dir;
 }
 
-static int cdfs_create_file_node(node_t *dir_node, cdfs_t *cdfs, int dir) {
+static int cdfs_create_file_node(struct node *dir_node, cdfs_t *cdfs, int dir) {
 	struct block_dev_cache *cache;
 	char *p;
 	iso_directory_record_t *rec;
@@ -998,7 +998,7 @@ static int cdfs_create_file_node(node_t *dir_node, cdfs_t *cdfs, int dir) {
 	int namelen;
 	int flags;
 	struct cdfs_file_info *fi;
-	node_t *node;
+	struct node *node;
 	struct nas *nas, *dir_nas;
 	wchar_t *wname;
 	char name[PATH_MAX];

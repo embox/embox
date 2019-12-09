@@ -365,7 +365,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 	}
 
 	if (drv->mount_dev_by_string) {
-		dev_node.node = (node_t *) dev;
+		dev_node.node = (struct node *) dev;
 	} else {
 		if (ENOERR != (res = fs_perm_lookup(dev, &lastpath, &dev_node))) {
 			errno = res == -ENOENT ? ENODEV : -res;

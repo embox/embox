@@ -33,7 +33,7 @@ static int node_init(void) {
 	return 0;
 }
 
-static inline int flock_init(node_t *node) {
+static inline int flock_init(struct node *node) {
 	/* flock initialization */
 	mutex_init(&node->flock.exlock);
 	node->flock.shlock_count = 0;
@@ -43,7 +43,7 @@ static inline int flock_init(node_t *node) {
 	return ENOERR;
 }
 
-node_t *node_alloc(const char *name, size_t name_len) {
+struct node *node_alloc(const char *name, size_t name_len) {
 	struct node_tuple *nt;
 
 	struct node *node;
@@ -85,6 +85,6 @@ node_t *node_alloc(const char *name, size_t name_len) {
 	return node;
 }
 
-void node_free(node_t *node) {
+void node_free(struct node *node) {
 	pool_free(&node_pool, member_cast_out(node, struct node_tuple, node));
 }
