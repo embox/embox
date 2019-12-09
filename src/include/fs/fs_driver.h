@@ -17,7 +17,6 @@
 struct node;
 
 struct fsop_desc {
-	int (*init)(void *par);
 	int (*format)(void *par);
 	int (*mount)(void *dev_node, void *dir_node);
 	int (*create_node)(struct node *parent_node, struct node *new_node);

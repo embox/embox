@@ -49,8 +49,7 @@ static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
 
 /* fs operations */
-static int ext3fs_init(void * par);
-static int ext3fs_format(void *path);
+static int ext3fs_format(struct block_dev *bdev, void *priv);
 static int ext3fs_mount(void *dev, void *dir);
 static int ext3fs_create(struct node *parent_node, struct node *node);
 static int ext3fs_delete(struct node *node);
