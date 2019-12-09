@@ -17,6 +17,7 @@
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
+#include <util/log.h>
 #include <util/math.h>
 
 /* Utility functions */
@@ -204,8 +205,15 @@ int dvfs_remove(const char *path) {
 
 	res = i_no->i_ops->remove(i_no);
 
-	if (res == 0)
-		dvfs_destroy_dentry(lookup.item);
+	if (res == 0) {
+		dentry_ref_dec(lookup.item);
+		res = dvfs_destroy_dentry(lookup.item);
+		if (res != 0) {
+			log_error("Failed to destroy dentry");
+		}
+	} else {
+		log_error("Failed to remove inode");
+	}
 
 	return res;
 }
